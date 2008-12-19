@@ -1,0 +1,134 @@
+                                   BUGS
+
+
+This is a place where I can record bugs and the like as I spot them. I HOPE
+that as they get resolved I will either remove them from the list here or
+write comments about the fixes. But reality suggests that that will not
+always happen!  I will put a "**" in front of ones I believe are fixed.
+
+To start with these are mainly going to be not just CSL-specific but
+issues within CSL itself. Some cleverer way to organise bugs than a simple
+text file is probably called for.
+
+**25 May 2008 (CSL)
+   On Windows (at least I tested on Vista-64 but with a 32-bit build)
+   launch csl or fwindemo (etc) then try the Font/Font menu. When the
+   application is compiled normally that works as expected. But when
+   both FOX and the application are compiled with debugging options
+   it appears to loop.
+   29 May: --enable-debug but -O0 for the compilation of FOX makes it behave
+   OK again. Some time I will need to compile the files that make up FOX one
+   by one with -O1 and see which one leads to that change. Meanwhile
+   adjustments to Xft font support lead to the X11 version responding to
+   the FONT menu by only showing the Computer Modern family of fonts
+   available, and that is a bit of a disaster since none of those are
+   fixed pitch.
+   31 May: Font/Font better on Windows, but on Linux it does not display
+   the current font as its default selection in the expected manner.
+   2 June: changes to FXTerminal and FXFontSelector fix that.
+
+**25 May 2008 (CSL)
+   The "^T" keystroke exchanges the characters, but in the windowed
+   interfaces the flipped ones are redrawn in black not the normal
+   red input colour. The input line gets redrawn when some other character
+   is entered.  27 May: this was true for a range of other editing directives
+   and may now be fixed by using eg replaceStyledText where I used to use
+   just replaceText in FXTerminal.cpp
+
+**25 May 2008 (CSL)
+   The "^L" keystroke clears the screen, but typing a character afterwards
+   led to a "bad argument to changeStyle" diagnostic because I had not
+   reset promptEnd. Should now be fixed, but ought I to re-insert the current
+   prompt on clearing the screen?
+
+**26 May 2008 (CSL)
+   termdemo on Linux behaves OK, but "fwindemo -w" or fwindemo without
+   DISPLAY set seems to fail to use colours and fails to accept control
+   keys when I tested it from an xterm using remote access. 28 May fixed - the
+   build within FOX had not detected (n)curses etc properly.
+
+**26 May 2008 (CSL)
+   "fontdemo cmmi10" behaved OK from a remote xterm (but PERHAPS the font was
+   present on the x-term?) but showmathdemo crashed with a segmentation fault!
+   Ditto when run native. 31 May: Rework of the use of Xft etc fixes this.
+
+05 June 2008 (CSL, ?PSL)
+   Redlog does not run its test programs, so I have commented it out from the
+   list of things to test!
+
+09 July 2008 (CSL)
+   Xft/fontconfig startup on MacOS can be VERY slow at least the first time,
+   to the extent that it seems that the programs have just got stuck. At
+   present by belief is that this is merely (!) that it can take minutes
+   of CPU time to set up the fontconfig caches by inspecting all the fonts.
+
+09 July 2008 (CSL)
+   Windows64 (via mingw64) behaves sort of OK for CSL, but fontdemo and
+   showmathdemo just display an empty frame. Hmmm.
+
+09 July 2008 (PSL)
+   The sets of pre-build PSL "bpsl" etc files need review by somebody who
+   understands them, and the scripts/pslver.sh script reviewed so it picks
+   the right one. I am uncertain about the "-td" parameter value that will
+   be best, and the way that the varies between 32 and 64-bit models.
+
+09 July 2008 (CSL, PSL)
+   A scheme to re-build individual packages (and to collect relevant
+   dependency information) is needed.
+
+09 July 2008 (PSL)
+   The build-sequence needs integrating into Makefile.am and it then needs
+   dependency information so it will be re-done in relevant situations. Also
+   the destination for all the log files needs to be reviewed.
+
+09 July 2008 (CSL, PSL)
+   Perhaps a scheme to run individual tests is needed.
+
+
+09 July 2008 (PSL)
+   The win32/bpsl.exe is a hacked one that uses static allocation and hence
+   survives Vista-64, but it is probably inflexible when that trick is not
+   necessary
+
+09 July 2008 (PSL)
+   script to launch REDUCE needed to go in "bin" directory
+
+09 July 2008 (PSL)
+   On Windows, how should I select between bpsl.exe and bpslw.exe? In
+   general if people want to use redfront or emacs how can that be done?
+
+09 July 2008 (redfront)
+   Needs altering from GNU readline to the BSD-licensed "libedit"
+   (see http://sourceforge.net/projects/libedit (probably defunt) and
+   http://www.thrysoee.dk/editline/ which is an autoconfed variant
+   on what you find at
+   cvsweb.netbsd.org/bsdweb.cgi/src/lib/libedit/?sortby=date#dirlist).
+   This aims for total compatibility with GNU readline but with a license
+   that makes redistribution of binaries less complicated and that will
+   hence fit with this project better.
+
+09 July 2008 (PSL)
+   A quick test seemed to show that the amd64 build on Linux took a LOT
+   longer than the linux(32) build on the same machine. Why? Is this to do
+   with how much memory was allocated?
+
+09 July 2008 (CSL)
+   Should I put "images" as directories so that "make" can observe
+   date-stamps on individual fasl files directly and easily?
+
+24 July 2008 (CSL)
+   Much broken while I am in the middle of changing so that image files can
+   be replaced by image directories!
+
+24 July 2008 (CSL)
+   The build "--with-cygwin" appears not to link at present. Not making
+   investigation an especially high priority.
+
+
+25 July 2008 (PSL mostly I think)
+   support/remake.red and PERHAPS other places express views about where
+   files live, as in "$reduce/lisp/psl/$MACHINE/red/" in update!-fasl2
+   and maybe other places. This does not match the new file layout and is
+   a bit delicate anyway.
+
+===============================================================================

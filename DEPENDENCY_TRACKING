@@ -1,0 +1,72 @@
+                      DEPENDENCY TRACKING AND REDUCE
+
+
+
+Use of "make" to build everything carries with it some sort of expectation
+that when one of the source files is changed there will be a way to track the
+(potential) consequences of the change so the next rebuild will re-make the
+minimum set of components to propagate consequences of the change.
+
+Doing this for all of REDUCE has both technical and practical awkwardnesses.
+I will concentrate on the latter.
+
+REDUCE is a layered system. I will discuss it here in the context of the
+CSL-based variant, but similar issues (but perhaps less severe?) arise in the
+PSL case.
+
+The CSL based build of the whole of REDUCE from scratch involves the following
+steps
+      compile the FOX GUI toolkit
+      compile CSL sources to make a "bootstrapreduce" executable
+      use that to process the reduce sources to create "bootstrapreduce.img"
+      run all REDUCE tests to create profile information
+      using the profile information compile some scattered REDUCE sources
+          into C code
+      compile that C and link with bits of CSL to make the "reduce" executable
+      Using that create "reduce.img"
+
+When nothing has ever been built before all of the above steps are required.
+That means that each step should logically be recorded as having a dependency
+on the previous ones.
+
+The effect of treating all those dependencies strictly would be that making
+the smallest alteration anywhere in the FOX library (or for slightly curious
+reasons in any of the scripts used to direct anything) would lead to a heavy
+handed recompilation of the whole of REDUCE. However in general changes in the
+GUI support are really not at all liable to have any effect on what ends up
+in the REDUCE image files and this tedious re-build would be both frustrating
+and a waste.
+
+At the next level up SOME changes in the CSL kernel will indeed lead to the
+need for rebuilding image files, but many (perhaps most?) can be expected just
+to lead to a desire to re-compile the executables. If a header file in CSL is
+edited to add a new declaration that can often force ALL of the sources to be
+re-built even though the change is irrelevant to most of them.
+
+Running the profiling step is expensive, but the procedures that make use of
+the profile information have been designed so that there is no significant harm
+if it is slightly out of date. Re-compilation of parts of REDUCE into C should
+only be necessary rarely, even though for safety and perfection it should be
+done every time anything in the bootstrap world alters even slightly.
+
+
+My response to this has been to try to set up an incomplete set of dependencies
+such that rebuilding work balances safety against cost. The current scheme is
+that FOX is only automatically built or rebuilt if it is not initially present
+at all. So anybody who makes changes in that part of the tree may need to
+advise everybody either to delete their build versions of everything and do a
+full clean build or to re-make in the FOX directory by hand.
+
+Similarly I make the profiling step something that is only triggered manually,
+and I provide an initial sample set of profile output that should serve well
+enough for most purposes.
+
+The rest of the rebuilding is set up more cautiously, but on a fast current
+computer the full recompilation process that is the worst that it can trigger
+only takes a minute or so, which I hope will be found to be tolerable.
+
+
+
+
+
+                                                  Arthur Norman.  July 2008

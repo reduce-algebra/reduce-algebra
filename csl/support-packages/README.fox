@@ -1,0 +1,68 @@
+NOTE VERY WELL: Fox 1.6.x and 1.7.10 were all LPGPL 2.1, but 1.7.11 has
+moved to LGPL 3.0 and substantally downgraded the fox additional permission
+for static linking. Well following discussion with the author of FOX, he
+believes he had intended what I see as a downgraded regime with regard to
+static linking with 1.6.x, and so I should adhere to his intent rather than
+any reading I might make of his actual words.
+ 
+I will use the earlier versions of FOX for now until I have had a chance to
+let the dust settle on GPL 3  And perhaps for FSF to think again about the
+issue of compatibility between GPL 2 and GPL 3 whereby for instance a
+GPL 2 project may not be linked against an LGPL 3 library because (as I
+understand it) the LGPL 3 imposes constraints that GPL 2 views as unacceptable
+restrictions on freedom.
+
+Furthemore in order to satisfy the stricter rules about copying that I
+now understand that FOX expects while not burdening my users more than I
+want I am now NOT using either the patches file here or the scripts
+in this directory for building FOX: instead I am keeping an unpacked
+version. The version at which I have split off is 1.6.21 which is
+distinctly not the latest version from the FOX master web-site, but I am not
+aware of any recent developments or corrections there that matter much to me.
+In my separate directory I have removed various sample applications etc that
+were under the GPL to avoid any constraints at all that could emerge from
+use of them.
+
+The Fox Toolkit is distributed under the LGPL and was originated by 
+Jeroen van der Zijp. It has a home page at http://www.fox-toolkit.org
+(and possibly also .com) and I include a distribution source file
+for convenience and it unambiguously clear which version my code has
+been tested with.
+
+I build for a Windows target using "cygwin" and the "mingw32" set of tools.
+I have not tested and do not support use of Microsoft, Watcom or other C and
+C++ compilers. For Linux and Unix I have had success of a wide range of
+32-bit systems and also on OpenSuSE's release of 64-bit Linux.
+I can build for Windows-64 by using the Microsoft command-line C compiler
+launched from cygwin and used as a cross-compiler.
+
+The scripts "build-all.sh" and  "build-fox-1.6.sh" show the options that I use
+to create binaries of FOX just sufficient for my purposes. At the time
+of writing FOX-1.6 is the "stable" branch. 
+
+I provide a set of patches to FOX some of which are to customise it in ways
+that I want, others are to make the build under cygwin (and the cross-
+build for Windows-64) work smoothly for me, but the current build for
+windows 64 used the beta releases of mingw-w64.
+
+The script "build-all.sh" arranges to put the compiled version of FOX
+in a local directory (without overriding "--prefix" FOX would try to
+install itself in /usr/local, and hence would need root authority).
+
+You will then need to use "--with=fox=../fox/<arch>" to tell the build of CSL
+where to find the FOX libraries.
+
+When I tried my scripts on "historic" versions of Linux (eg RedHat 6.1 and
+7.2) I found it NECESSARY to build and install updated versions of the
+automake and autoconf tools, which is why I have copies of their source
+here too.
+
+A build on Solaris 10 x86 was possible but to succeed there I needed to
+repair a file libstdc++.a that was faulty on the distribution media (following
+instructions found on a Solaris-related newsgroup), install gcc and many
+related tools and conduct the build using "gmake" from a "bash" shell rather
+than using the Solaris native shell and make utility. On that platform I used
+autoconf etc made from the archives that I supply.
+
+-----
+

@@ -1,0 +1,148 @@
+         Support for compilation into real machine code in CSL
+         =====================================================
+
+First note that this does not really exist yet, and the facilities and
+ideas described here are part of an EXPERIMENT rather than stable
+and viable reality. And yet more - since I first wrote this I have re-thought
+the way I want to achieve the aim of faster code so the scheme described here
+is NOT liable to be the way that I go...
+
+Furthermore these days Unix systems seem to be moving towards greater
+protection so mixing data and executable memory is liable to be MUCH
+harder than it used to be and any completion of this work correspondingly
+more laden with system-specific stuff that is just there to defeat the
+protection mechanisms!
+
+An objective is that a single CSL image file should continue to work
+properly with any version of the system. This means that if run on a
+computer that uses a machine code where no hard-code compiler is available
+the system should run all byte-coded. It also suggests that there should
+be support for having multiple sets of machine code in the one image.
+
+The first part of realising this is to arrange that there is a numeric
+code value that is available at run-time and that identifies the current
+machine architecture. Part of this is set up in the CSL sources in the
+file "machine.h" by defining a symbol HARD_CODE_TAG, which is an integer
+in the range 0 to 31 (if I ever get close to having more different sorts
+of computer than that I will think some more!). The tag found in this way
+can be qualified (in csl.c) by setting some of the 0xe0 bits to distinguish
+between systems that "machine.h" does not. Eg this MIGHT be used to
+distinguish between 486, Pentium and Pentium-Pro optimisations in an
+Intel-targetted version, where different optimisations would be useful in
+the three cases.  The value of hard_code_tag end up in the range 0 to 255
+with 0 reserved to mean "no hard code facility available for this
+architecture".  The value of this tag is available at run-time on the
+features list (lispsystem!* in Standard Lisp mode) as an entry of the
+form (native . nnn).
+
+Hard coded functions live in a set of pages (hard_code_pages). In memory
+there will be just one such set of pages, and for a FIRST version at least
+their contents will be fixed and not subject to garbage collection. I
+hope that eventually it will be possible to have a garbage collector for this
+space though, and so the code in CSL makes provision for a second space
+of hard code that the main one could be copied across into. In generating
+machine code the possibility that even while machine code is being
+executed a garbage collection might want to relocate it should be considered,
+and for some architectures this thought may be sufficiently dreadful that
+it must be avoided even if on other systems it is permitted.
+
+In an image file there can be many different sets of hard code pages.
+Because preserving a new image only wants to over-write one of these
+(the one for the current machine type) these will not be stored as
+part of the main initial image itself, but as items rather like "fasl"
+modules. Well actually rather more like the way that help data is stored
+in the image file. I will support the idea that for codes 1 to 255
+the numeric code -1 to -255 can be passed in to the low-level file
+manipulation code in "preserve.c" (just as special values are used for
+IMAGE_CODE and HELP_CODE). At startup it can be checked whether a hard code
+module of the relevant sort exists, and if so it can be loaded. The format in
+the module will be a 2-byte integer showing how many pages are there followed
+by dumps of the data to go in each such page. On doing a "preserve" to write
+out a new checkpoint image the code will in effect preface the writing of the
+root portion of the image with a "(faslout 'HardCode<nn>);
+(write-out-the-hard-code)(faslend)" or whatever to put a copy of what is
+in memory back into the module. Well, I guess the correct strategy will
+be for it to do this if anything has been done that changes the set of
+things compiled into machine code.
+
+When hard code is loaded two more things have to be done. Firstly the
+code may need to be relocated, both to allow for the address in memory
+that it ends up at, and then to fix up places where it refers to entrypoints
+into the rest of CSL and to statically allocated data. This will be done by
+making the contents of a hard code page contain relevant relocation
+information so that it can be scanned when first loaded and the code patched
+up. The relocation and patch-up information needs to be designed so that
+a single relocation program can deal with all the possible relocation modes
+needed by various architectures, even though only a few will be implemented
+to start with. Secondly it will be necessary to point actual entrypoints
+into code towards the proper bits of compiled code. This last is achieved by
+having (in the main heap image) a list (hard_code) that gives such
+entrypoints. For every function that has been hard coded for at least one
+architecture this has an entry, so overall its structure is:
+       ((f-name-1 nargs . details-1) (f-name-2 nargs . details-2) ...)
+The value nargs is an integer as used in symbol_set_definition (fns2.c)
+and where each "details" is a list of items
+       details = ((type-and-page offset . env) ...)
+here type-and-page is an integer (a Lisp fixnum). The top 8 bits give the
+machine type that this entry refers to. If these bits are zero we are
+talking here about a byte-coded definition. Every function that is hard
+compiled for some architecture must have a bytecoded definition stored here
+(so it can be instated on systems where no hard code is available).
+Non-zero values are used when genuine hard code is available. The next
+2 bits give four possibilities. The obvious one is when the code-pointer
+described here just goes into the natural function cell of the symbol and the
+other two function calls get filled with default values. The remaining three
+codes are used to make it possible to put a value into just the FN1, FN2 or
+FNN call of the function. The bottom 4 bits of the fixnum are TAG_FIXNUM
+to indicate that it is a small integer, so that leaves 18 over. These are
+used to specify a page-number in the hard code heap. Since pages are
+64K or (more usually) 256K bytes large having 18 bits of page selection is
+comfortably generous for the moment.  Lisp integer "offset" is a byte
+offset within the selected page. "env" is an arbitrary Lisp value (but very
+often a vector) that will be placed in the environment cell when the function
+is defined. Note that it may often (I hope) be that the same environment
+vector will be used for several different machine architectures, and in
+such cases the reference will be to a shared object, so space might not
+be too badly wasted.
+
+See relocate_hard_code() in restart.c and preserve_hard_code in preserve.c
+for some more details.
+
+The following Lisp functions may be used:
+
+   (setq v (make-native n))    create handle on n bytes of native code space
+   (putv-native v k w)         put byte w at offset k
+   (getv-native v k)           retrieve byte (for checking)
+   (putv-native v k w 1/2/4)   as putv-native but the trailing integer arg
+   (getv-native v k 1/2/4)     .. says use 1, 2 or 4 byte value.
+   (preserve)                  dumps all current native code for re-loading
+   (native-address 'lispfn nargs)  get address of entrypoint for function
+                               when called with n args
+   (native-address n)          integer n selects an address to hand back
+                               as an integer. See fns3.c for details
+
+The native code as created must include (put there by the person
+generating the code) relocation etc information.
+
+   (symbol-set-native fname args bpsbase offset env)
+fname must be a symbol.
+(args & 0xff) is the number of args to the function. If other bits of args
+being set tell the system NOT to set the other 2 function cells to error
+calls, so USUALLY just use args=1,2 or 3.
+bpsbase is the value returnned earlier by (make-native nnn). Bytes in it
+must have been filled in by (native-putv ..) calls.
+offset is the offset within this vector that the entrypoint should be set
+to. The offset is needed because the first few bytes of the vector will need
+to hold relocation information for when the code is re-loaded. At present
+PLEASE start the contents of the vector at byte 8 leaving the first few bytes
+untouched. Sometimes (later on) a function taking variable numbers of args
+will also have several entrypoints into the same vector - another reason for
+having the offset.
+env is a thing to put in the environment cell of the function, and this will
+be passed as the first argument to any call, so it will probably usefully
+be a vector of literal Lisp objects that the function wants to use.
+
+Problem: I maybe want to support cross-compilation of native code, and for
+that the function symbol-set-native may need to be told what architecture
+the relevant code has been created for?
+

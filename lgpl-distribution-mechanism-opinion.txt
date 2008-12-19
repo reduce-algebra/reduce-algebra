@@ -1,0 +1,140 @@
+
+
+
+-------- Original Message --------
+Subject: Clarification of "customary media"
+Date: Fri, 26 Sep 2008 09:04:32 +0100 (GMT Daylight Time)
+From: Arthur Norman <acn1@cam.ac.uk>
+To: help@softwarefreedom.org
+
+I have been reading your new Guide to Compliance, and it makes an
+explanation of new wording in (L)GPL 3 that it describes as being
+clarification rather than a new provision, and which would impact the
+way I at present arrange my compliance.
+
+I have some code that uses an LGPL 2 library and (of  course!) the
+version of that library that I use is modified from the original.
+Furthermore it is not so common a library that I could expect every user
+to have it read-installed. I thus have to ship a binary of the library
+along with my own material and of course then the corresponding source.
+
+As stressed in your guide I have to make certain that recipients can get
+exactly the source version corresponding to the binary they have.
+
+Since my own code will go out under a BSD license I REALLY want people
+who download just a binary from my website to be able to pass that
+binary on to others with NO additional obligations on them. And I want
+that to be the case whatever the status of the recipient. The license
+terms for the code that belongs to me and my contributors is not up for
+reconsideration.
+
+To achieve this I arrange that the binary form of my code has embedded
+within it all the relevant minimal source, and the accompanying
+documentation and the effect of going "myapp --help" explain that by
+running "myapp --dump-source <destination>" the user can obtain a tar
+archive of the minimal source, build scripts etc etc.
+
+I had been taking the view that this mechanism is a burden in that it
+increases the size of the executable noticably (but I was viewing that
+cost as lower than the other compliance routes open to me). It arranges
+that any person who receives an executable binary automatically and as
+part of the same reasonably unseverable unit automatically receives the
+source at the same time, and that an executable file that when run can
+unpack a set of files is "customary". For me it means that my Makefile
+can check datestamps and in general keep the source archive exactly in
+step with the binary I make for distribution, reducing my exposure to
+another risk you highlight.
+
+My expectation was thus that this scheme not only kept ME secure, but
+that it automatically ensured that downstream users were free to
+re-distribute my binaries because they would in so doing pass on the
+source, and that even if they fail to pass on the README file that I
+include that the "myapp --help" will count as "a prominent notice". The
+source archive that gets unpacked of course contains a copy of LGPL 2.1.
+So although some say that the behaviour of those downstream of me is
+their business not mine that is not my position and I want them to be
+compliance-safe even if they are neither expert nor keen.
+
+That all sets out a situation. So now my question:
+
+In the light of
+     "GPLv2 refers to the various storage mechanisms as medi[a]
+     customarily used for software interchange. While the Internet has
+     attained primacy as a means of software distribution where
+     super-fast Internet connections are available, GPLv2 was written at
+     a time when downloading software was not practical (and was often
+     impossible). For much of the world, this condition has not changed
+     since GPLv2s publication, and the Internet still cannot be considered
+     a medium customary for software interchange. GPLv3 clarifies this
+     matter, requiring that source be fixed on a durable physical medium
+     customarily used for software interchange.
+     This language affirms that option (a) requires binary redistributors
+     to provide source on a physical medium."
+can you please reassure me that for GPLv2 the mechanims I describe will
+ensure that I am compliant and that my downstream users are compliant if
+they (eg) put a copy of just my binary on a web-site?
+
+My reading of the above suggests that I will never be able to use any
+LGPLv3 library in any otherwise BSD-licensed package where I want
+downstream users to have TOTALLY unencumbered freedom to redistribute,
+because they would not be able to redistribute without either sending
+out durable physical media with what they pass on or arrange to make
+written offers that confirm that they would keep stuff available to
+anybody in the world for a significant period.
+
+Thanks in advance for your thoughts.
+
+         Arthur Norman
+
+
+
+
+
+
+From aaronw@softwarefreedom.org Thu Oct 16 18:54:19 2008
+Date: Thu, 16 Oct 2008 13:54:15 -0400
+From: Aaron Williamson <aaronw@softwarefreedom.org>
+To: acn1@cam.ac.uk
+Subject: Re: Clarification of "customary media"
+
+Hello Arthur,
+
+Thank you for your question.  I am glad to hear that you have found the
+Compliance Guide useful and I'm happy to clarify this portion for you.  However
+please be aware that, as you are not a client of SFLC and I have not personally
+reviewed your software distribution, nor are SFLC's lawyers licensed to practice
+outside the United States, the following should not be considered legal advice.
+ If you need advice on the particulars of your situation, you should contact an
+attorney licensed to practice in your jurisdiction.
+
+While the distribution scheme you describe does not match any of the three
+enumerated options under Section 3 of LGPLv2, note that the last paragraph in
+Section 3 contains essentially a fourth option:
+
+	If distribution of executable or object code is made by offering access
+	to copy from a designated place, then offering equivalent access to copy
+	the source code from the same place counts as distribution of the source
+	code, even though third parties are not compelled to copy the source
+	along with the object code.
+
+Because customers who receive an executable that is bundled with source code
+always have equivalent access to the source, it is possible to distribute
+binaries in this manner without necessitating distribution via physical media.
+From your description, it sounds as though this option applies to your binaries
+-- I think that your extraordinary efforts to ensure downstream compliance are
+commendable and likely fully compliant under this provision.
+
+Please let me know if you have any further questions.
+
+Best Regards,
+
+-- 
+Aaron Williamson
+Legal Counsel
+Software Freedom Law Center
+1995 Broadway, 17th Fl.
+New York, NY 10023
+(212) 461-1911 direct
+(212) 580-0898 fax
+www.softwarefreedom.org
+

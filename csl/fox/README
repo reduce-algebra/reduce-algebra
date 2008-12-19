@@ -1,0 +1,189 @@
+This is a patched and extended version of FOX 1.6.21.
+
+The original FOX distribution comes with an addendum to the license that
+permits use of binaries linked with an UNMODIFIED version of the library
+under very flexible terms. The author of FOX has made it clear that his intent
+is that that extension only applies to versions explicitly sanctioned by him,
+and so any bug-fixes or extensions made by others may not be released by
+those authors in a way that allows the derived work to take advantage of the
+addendum, however public the changes are, unless and until he chooses to
+adopt them.
+
+Thus it is important to make it explicit here that even if you have seen the
+FOX library addendum somewhere else I have deleted the file containing it
+in this copy and the code here is thus released under just LGPL.
+
+I will observe that the original versions of the FOX library in versions up
+to 1.6 are marked as being available under "LGPL 2.1 or later at your choice".
+I choose to redistribute them here under version 2.1 of that license and the
+changes and extensions that I make are only licensed under LGPL 2.1 and so
+without further agreement from me may not be treated as being convertable
+to LGPL 3, and the static linking exception does not apply to my changes or
+contributions.
+
+However as a special exception to LGPL 2.1 I grant permission for my code
+to be merged or linked with other code that is subject to LGPL version 3 or
+GPL version 3. This provision does not represent permission to alter the
+license of my code to be that of LGPL 3 or GPL 3 - of itself and when removed
+from any LGPL 3 context it remains LGPL 2.1 and the freedom enshrined by that
+can not be reduced by adding in the additional constraints that LGPL 3 views
+as protections. However clearly the combined work that then includes my work
+would be subject to "3". But as per LGPL 2.1 (and the same would be true if
+I had used a BSD-style license here) notices explaining the license terms
+related to my code should not be removed. Anybody who changes or extends my
+code is permitted but not obliged to apply this exception, and perhaps by doing
+do they do not lock out (L)GPL 3 users but guarantee continued support for
+(L)GPL 2.1 in a way that the "or later" clause does not (since that permits
+anybody to unilaterally select just one version of the library to use, to the
+potential detriment of those whose choice differs).
+
+As compared with the original FOX 1.6 archive I have removed the various
+sample applications that were included but that did not form part of the
+FOX *library*, since in general they are not relevant for the purposes
+I have here and they are subject to more restrictive license terms.
+
+The end effect is that anybody who wishes to convey, propagate, distribute,
+give, sell or in any other way provide a copy of any binary that is made
+using any file from this directory should ensure that a copy of this
+directory is also made available. Please consult the exact terms of the
+LGPL 2.1 and adhere to them carefully. But the source code and build
+files in this directory are clearly sufficient to create the library in the
+form that I use it (because that is exactly what I do) and so those files
+contain within them the "minimal source" as required.
+
+           A C Norman. May 2008
+
+
+                                The FOX GUI Library
+                                ===================
+
+	              Jeroen van der Zijp <jeroen@fox-toolkit.org>
+
+
+
+
+
+What Is FOX?
+============
+
+FOX is a C++ based Toolkit for developing Graphical User Interfaces easily and
+effectively.   It offers a wide, and growing, collection of Controls, and provides
+state of the art facilities such as drag and drop, selection, as well as OpenGL widgets
+for 3D graphical manipulation.  FOX also implements icons, images, and user-convenience
+features such as status line help, and tooltips.  Tooltips may even be used for 3D
+objects!
+
+Considerable importance has been placed on making FOX one of the fastest toolkits
+around, and to minimize memory use:- FOX uses a number of techniques to speed up drawing
+and spatial layout of the GUI.  Memory is conserved by allowing programmers to create
+and destroy GUI elements on the fly.
+
+Even though FOX offers a large collection of Controls already, FOX leverages C++ to
+allow programmers to easily build additional Controls and GUI elements, simply by taking
+existing controls, and creating a derived class which simply adds or redefines the
+desired behavior.
+
+One of the prime design goals of FOX is the ease of programming; thus, most controls
+can be created using a single line of C++ code; most parameters have sensible default
+values, so that they may be omitted, and layout managers ensure that designers of GUI's
+do not have to worry about precise alignments.
+
+Another nice feature of FOX which significantly reduces the number of lines of code
+which have to be written is FOX's ability to have widgets connect to each other, and
+passing certain commands between them; for example, a menu entry Hide Toolbar can be
+directly connected to the Toolbar, and cause it to hide.
+
+Finally, FOX makes it easy to maintain the state of the GUI in an application by having
+the GUI elements automatically updating themselves by interrogating the application's
+state.  This feature eliminates the large amount of effort that may go into sensitizing,
+graying out, checking/unchecking etc. depending on the application state.
+
+
+
+Where to get it?
+================
+
+You can FTP the complete FOX GUI toolkit from our FTP site:
+
+
+	ftp://ftp.fox-toolkit.org/pub/
+
+
+The distribution includes this on-line (HTML) documentation you see here.
+
+
+Mailing List.
+=============
+
+To stay informed, we now have a mailing list for FOX.  To subscribe, send mail to
+foxgui-users-request@lists.sourceforge.net with the word subscribe in the message body.
+Messages to the list can be sent to foxgui-users@lists.sourceforge.net.
+FOX announcements will be made through the foxgui-announce@lists.sourceforge.net list;
+you can subscribe to this list by sending a message "subscribe" to the list server at
+foxgui-announce-request@lists.sourceforge.net.
+
+
+Installation.
+=============
+
+Please refer to the file INSTALL.  FOX should compile on a large number of UNIX
+systems.  The current "configure" scripts are however still somewhat primitive;
+if you need to make specific alterations to the configure system, feel free to
+send them to me so that I may merge them into the main distribution.
+The current FOX distribution compiles on Windows NT using the eXceed system; we
+expect however to get some core functionality to become available under the native
+Windows environment fairly soon.
+
+
+
+Getting started.
+================
+
+To get started programming with FOX, take a look at the tests directory, which contains
+some example programs.  The best one to look at is probably the "glviewer" application.
+Note that you need OpenGL or Mesa on your machine in order to compile it.
+
+
+
+Finding FOX using GNU configure.
+================================
+
+GNU auto configure has features to detect the whereabouts of a library (AC_CHECK_LIB).
+Unfortunately, it assumes that you're looking for a C library, not a C++ library,
+and thus name mangling prevents it from finding FOX as all of FOX's API are C++.
+
+A special "dummy" C-linkage function was created to allow GNU auto configure to
+find the FOX library; you can use it in your configure.in as follows:
+
+
+        AC_CHECK_LIB(FOX, fxfindfox)
+
+
+
+
+Bugs.
+=====
+
+Please file bugs and questions to the list foxgui-users@lists.sourceforge.net.  Before
+filing a bug, please take a moment to download the latest version of FOX, and make sure
+the problem still persists:- FOX is being developed fairly rapidly, and it is possible
+that some of the problems you may have experienced have already been fixed.
+
+
+
+License.
+========
+
+The FOX Library proper is licensed under GNU Lesser GPL; all the examples and demo
+programs are licensed under GPL.
+
+If you write software based on the FOX library, please include the following in your
+About Box, or some other place where a user may be able to see it:
+
+
+        This software uses the FOX Toolkit (http://www.fox-toolkit.org).
+        
+
+
+Thanks!
+

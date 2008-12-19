@@ -1,0 +1,52 @@
+                              The CSL/REDUCE system
+                              =====================
+
+
+
+Systems Which are Supported or Known to work:
+=============================================
+
+  o Linux (gcc), x86, x86-64 (Opteron).
+  o Windows XP, 2K, NT, Windows 9x, (MinGW)
+  o Apple MAC OS-X.  You will need an X-Server, either Apple's or XFree.
+
+
+
+For most UNIX systems.
+======================
+
+For most unix systems you can configure simply as:
+
+
+        ./configure
+
+
+After configure runs its course, simply type ``make'' to build the library,
+and ``make install'' to install it.
+
+Building for Debug or Release.
+==============================
+
+Normal builds [w/o any special arguments to configure] will include assert and
+trace statements into the library, but no debug symbols.  This mode compiles
+the fastest and allows for tracing. 
+
+Building for debug will add debug symbols as needed by your debugger.  It also
+includes assert and tracing into the library.  This setting is recommended if
+you need to debug CSL itself.  Full debug executables are build by
+configuring with:
+
+
+        ./configure --enable-debug
+
+
+
+Release builds strip all debug information, asserts, and tracing, and generates
+optimized code.  The resulting library is the smallest/fastest, and this is the
+recommended setting for production code.  To build for release, use:
+
+
+        ./configure --enable-release
+
+
+

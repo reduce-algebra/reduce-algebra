@@ -1,0 +1,19 @@
+EXPORT: Signatures 16-Dec-2007.09:30:20 <@@D@FGBGBM@F>
+42564065 56c81eb8 0 0 bcint.red
+39ea3db3 65048f2e 0 0 cgb.bib
+4b10eda3 5bb934a3 0 1 cgb.red
+482c0bc4 5347adda 0 0 cgb.rlg
+39ea4a7a 1e104d8f 0 0 cgb.tex
+42ceaffc 611d6ca6 0 0 cgb.tst
+00000000 00000000 1 0 CVS
+4b10eda3 7ef10833 0 0 CVS/Entries
+482c0a00 00bd145a 0 0 CVS/Repository
+482c0a00 150c0fbd 0 0 CVS/Root
+43ea3b85 2c705406 0 0 devcommit
+43ea3a0f 656623e9 0 0 devmake
+42564077 0b5ca59c 0 0 dp.red
+4aaf5baa 68d50736 0 0 gb.red
+42da9e55 1c692e27 0 0 gbsc.red
+39c4ce96 40fee115 0 0 smartev.red
+39c4ced7 6c5b7500 0 0 svdp.red
+39c4ce36 49e812ac 0 0 vecev.red

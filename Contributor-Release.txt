@@ -1,0 +1,70 @@
+The following is a disclaimer used with earlier versions of REDUCE
+where contributors granted Tony Hearn broad rights to distribute the
+code and to permit others to do so. The bulk of the code in this
+archive has been re-licensed under the BSD license under the powers
+granted to Hearn by this instrument.
+
+
+
+
+                     REDUCE PROGRAM CONTRIBUTION FORM
+
+
+Description of Program Material:
+
+
+
+
+
+
+
+Principal Author:
+
+
+Organization (if applicable):
+
+
+Postal Address:
+
+
+
+
+
+
+Electronic Mail Address:
+
+
+Telephone:
+
+
+Are you the sole author of this software?
+
+
+If not, please write the names of the other authors here and attach their
+addresses and telephone numbers.
+
+
+
+
+
+
+                        Acknowledgment and Agreement
+                        -------------- --- ---------
+
+To the best of my knowledge, I have the right to contribute this program
+material without breaching any obligation concerning nondisclosure of
+proprietary or confidential information of other persons or organizations.
+I am contributing this program material on a nonconfidential, nonobligatory
+basis to Anthony C. Hearn ("Hearn") for possible use in the REDUCE algebraic
+computation system and its associated program libraries.  I agree that Hearn
+may use, duplicate, modify, publish, distribute and market the program
+material, and authorize others to do so without obligation or liability of
+any kind.  Hearn may publish my name and address, as the contributor, to
+facilitate user inquiries pertaining to this program material.
+
+
+
+Signature ____________________________________   Date __________________
+
+__________________________________________________________________________
+

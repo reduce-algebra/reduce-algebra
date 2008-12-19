@@ -1,0 +1,31 @@
+The files here are taken from the teTeX distribution of TeX,
+which has a home page at www.tug.org/teTeX. Up to date and complete
+copies of all the files that make up teTeX can be found on any
+of the mirrors of the "ctan" tex archives, as well as other major
+file repositories.
+
+For the purposes of the FXPostscriptPrinter class that I use to
+print documents in Postscript I need metrics for (say) the 35 Adobe
+fonts present in almost all Postscript printers. The font metrics
+can be downloaded directly from Adobe's site for individual use. The
+metric files have Adobe's copyright notices in them. However the versions
+distributed here as part of teTeX are explicitly listed as being available
+for re-distribution in whole or part for commercial or non-commercial
+purposes. The commentary accompanying teTeX 2 indicates that the license
+issues for all files included there have been carefully reviewed, and the
+package as a whole is a large, very widely distributed and well-known one.
+
+I note that comments I have found elsewhere on the web indicate that
+Adobe's policy has been to count the metrics assocaited with its fonts to
+be freely available (of course the font outlines are proprietary), but that
+some other font vendors take a different line. A web search will find
+these font metrics used or distributed with a variety of software packages
+(eg a2ps). Not all distributions use the "Berry" file-names used here.
+The measurements extracted from these files are very widely available
+in ".tfm" form, and for those keen on the GPL a set of metrics that would
+(I believe) match up exactly are provided as part of the URW Type 1 fonts
+again available via many web archives.
+
+Arthur Norman
+
+

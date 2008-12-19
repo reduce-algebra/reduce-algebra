@@ -1,0 +1,774 @@
+dnl Process this file with autoconf to produce a configure script.
+
+
+dnl
+dnl This file has been modified by A C Norman, 2008
+dnl
+
+AC_INIT(include/fx.h)
+
+dnl Major Library release number
+FOX_MAJOR_VERSION=1
+
+dnl Minor Library release number
+FOX_MINOR_VERSION=6
+
+dnl Increment after every source code change
+FOX_PATCH_LEVEL=21
+
+dnl Binaries compiled with this patchlevel of FOX will need at least
+dnl version MAJOR.MINOR.INTERFACE_VERSION to run. The assertion
+dnl FOX_INTERFACE_VERSION >= FOX_BINARY_VERSION must hold.
+dnl
+dnl Increment this when an API is added
+FOX_INTERFACE_VERSION=0
+
+dnl Binaries compiled with at least MAJOR.MINOR.BINARY_VERSION are
+dnl compatible with this release of FOX.
+dnl
+dnl Set this to FOX_INTERFACE_VERSION's value if API changed or removed
+FOX_BINARY_VERSION=0
+
+dnl Combined version number
+VERSION=$FOX_MAJOR_VERSION.$FOX_MINOR_VERSION.$FOX_PATCH_LEVEL
+AM_INIT_AUTOMAKE(fox,$VERSION)
+
+dnl Report what was found
+AC_MSG_CHECKING(major version)
+AC_MSG_RESULT($FOX_MAJOR_VERSION)
+AC_MSG_CHECKING(minor version)
+AC_MSG_RESULT($FOX_MINOR_VERSION)
+AC_MSG_CHECKING(patchlevel)
+AC_MSG_RESULT($FOX_PATCH_LEVEL)
+
+AC_SUBST(FOX_MAJOR_VERSION)
+AC_SUBST(FOX_MINOR_VERSION)
+AC_SUBST(FOX_PATCH_LEVEL)
+
+dnl CURRENT:  Most recent interface library implements
+dnl REVISION: The implementation number of the CURRENT interface
+dnl AGE:      The difference between the newest and oldest interfaces that this
+dnl           library implements.  The library implements all the interface numbers
+dnl           in the range from number CURRENT - AGE to CURRENT.
+LT_RELEASE=$FOX_MAJOR_VERSION.$FOX_MINOR_VERSION
+LT_CURRENT=$FOX_INTERFACE_VERSION
+LT_REVISION=`expr $FOX_PATCH_LEVEL - $FOX_INTERFACE_VERSION`
+LT_AGE=`expr $FOX_INTERFACE_VERSION - $FOX_BINARY_VERSION`
+
+AC_SUBST(LT_RELEASE)
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
+
+dnl Prevents setting flags.
+dnl CXXFLAGS=""
+
+
+dnl "--with-mingw64" is what I will be trying from now on to build for
+dnl 64-bit windows. It requires a (cross) compiler called
+dnl x86_64-pc-mingw32-g++ to be available. I will in due course
+dnl retire the older option "--with-xp64" that used the Microsoft
+dnl command-line compiler from their DDK.
+
+AC_ARG_WITH(mingw64,
+   [  --with-mingw64          Try to cross-build using 64-bit mingw])
+
+if test "x$with_mingw64" = "xyes"
+then
+   mingw64="yes"
+else
+   mingw64="no"
+fi
+
+FASTMATH=" -ffast-math "
+WSOCK="wsock32"
+
+if test "x$mingw64" = "xyes"
+then
+   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32])
+   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-pc-mingw32-gcc])
+   host="x86_64-pc-mingw32"
+   ac_tool_prefix="x86_64-pc-mingw32-"
+   cross_compiling=yes
+   STRIP="x86_64-pc-mingw32-strip"
+   AR="x86_64-pc-mingw32-ar"
+fi
+
+dnl The "--with-xp64" flag is a distinct cheat! If the Microsoft Compilers
+dnl and libraries have been set up so that the command "cl" runs a C
+dnl compiler that targets Windows XP (64 bit) [this will sometimes be
+dnl run as a cross compiler hosted on an older release of Windows, and
+dnl increasingly a native compiler on XP-64 itself] but we are nevertheless
+dnl running under a "bash" shell (eg as provided by the cygwin environment)
+dnl then this will cross-build a 64-bit Windows version of the FOX library.
+dnl One hassle with this is that the "autoconf" conventions for cross
+dnl compilation do not fit this totally well, and when the cygwin shell
+dnl runs on real Windows-64 autoconf does not detect the build machine
+dnl automatically, so I FAKE the build alias and force the cross_compilation
+dnl option explicitly. This is now being replaced by --with-ming64
+
+AC_ARG_WITH(xp64, [  --with-xp64            cross build for 64-bit windows])
+
+AM_CONDITIONAL(xp64, test "x$with_xp64" = "xyes" || test "x$mingw64" = "xyes")
+AM_CONDITIONAL(msvcxp64, test "x$with_xp64" = "xyes" && test "x$mingw64" != "xyes")
+
+if test "x$with_xp64" = "xyes"; then
+   AC_MSG_WARN(--with-xp64 selected: enabling hacked cross compile)
+   build="i686-pc-windows"
+   build_alias="i686-pc-windows"
+   cross_compiling="yes"
+   CC=cl
+   CXX=cl
+   CPP="cl /E"
+   CFLAGS="$CFLAGS /Wp64 /EHsc /GR -D_WIN64=1"
+   CXXFLAGS="$CXXFLAGS /Wp64 /EHsc /GR -D_WIN64=1"
+dnl /Wp64 warns on 64-bit portability issues
+dnl /EHsc is to do with exception handling, /GR is RTTI
+dnl The _WIN64 define is used by FOX sources to detect this case.
+   LIBS="$LIBS bufferoverflowU.lib"
+dnl The Microsoft SDK compilers need the above library explicitly specified
+fi
+
+
+AC_CANONICAL_HOST()
+AC_MSG_RESULT(HOST_OS = $host_os)
+
+dnl Check to see if they specified MingW32 location
+AC_ARG_WITH(mingw32,[  --with-mingw32[=DIR]    MingW32 installation location])
+
+dnl Checks for the MingW32 compiler environment. If present, sets shell
+dnl variable MINGW32 to 'yes'. If not present, sets MINGW32 to the
+dnl empty string.
+dnl Checks for the Cygwin environment. If present, sets shell variable
+dnl CYGWIN to 'yes'; if not present, sets CYGWIN to the empty string.
+
+dnl (re-coded so that canonical_host is done just once)
+
+MINGW32=""
+CYGWIN=""
+case $host_os in
+   *mingw*)  MINGW32="yes";;
+   *cygwin*) CYGWIN="yes";;
+   *solaris*) solaris="yes";;
+esac
+
+if test "x$with_xp64" = "xyes" || test "x$with_mingw64" = "xyes"; then
+dnl MINGW32 is used here to say "compiling to be linked with the
+dnl Microsoft libraries, not for a Unix-like world", and xp64 is that
+dnl even though it uses the Microsoft compiler not gcc.
+  MINGW32="yes"
+fi
+
+dnl If the user forced CC or CFLAGS to contain "-mno-cygwin" then the
+dnl environment we have is MINGW32 (as well as CYGWIN). The consequence
+dnl will be that Windows APIs will be used to do various things that
+dnl would otherwise done by Posix-style calls.
+
+if test "x$CYGWIN" = "xyes"; then
+case "$CC $CFLAGS" in
+  *-mno-cygwin*)
+       AC_MSG_WARN(-mno-cywgin: MINGW32 environment even though CYGWIN shell)
+       MINGW32="yes"
+       ;;
+  *)
+       AC_MSG_WARN(CYGWIN environment being used)
+       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+esac
+fi
+
+AM_CONDITIONAL(cygwinshell, test "x$MINGW32" = "xyes")
+
+dnl There is an ugliness here. Under MacOSX I will want to enable
+dnl "fat" binaries, ie compile for several architectures at once. If I do
+dnl that then the dependency tracking mechanism that automake uses will
+dnl fail. But to disable it I need to do the disabling before I go
+dnl AC_PROG_CC. So here I have a rather grungy set of tests that
+dnl detect when that is liable to be the case
+
+dnl Eventually perhaps I should be 4-way fat - powerpc and intel and also
+dnl both 32-and 64-bit. But for now the Macintosh version is only 32-bit.
+
+case $host in
+  *darwin*)
+    echo "#include <stdio.h>" > conftest.c
+    echo "int main() { printf(\"hello\"); return 0; }" >> conftest.c
+# On the next line gcc will fail if the 10.5 SDK is not available, and in
+# such cases it will moan about "no include path in which to search for
+# stdio.h"  and then that the built-in function printf has been implicitly
+# declared in a way that is messed up. The result would look ugly for something
+# where the fail-safe response is just to avoid using it, and that is why
+# I redirect stdout and stderr to /dev/null.
+    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+    then
+      AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
+      enable_dependency_tracking="no"
+    else
+      if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      then
+        AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
+        enable_dependency_tracking="no"
+      else
+        AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
+      fi
+    fi
+    ;;
+  *)
+    ;;
+esac
+
+dnl Checks for programs.
+AC_PROG_MAKE_SET
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_CXX
+AM_PROG_LIBTOOL
+
+case $host_os in
+   *darwin*)
+# I MUST do this after AC_PROG_CC. I should perhaps provide a flag to
+# allow people to ask for a single-architecture binary.
+  AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
+# If it seems to be supported at all I will go "-arch ppc -arch i386" to
+# build a fat binary that will run on both powerpc and intel-based
+# 32-bit macs. But *NOTE* that in such case dependency tracking using the
+# machanisms that automake usually tries to use will FAIL.
+#
+# First I check if I can use the 10.5 or 10.4u SDK.
+  if test "x$GCC" = "xyes"
+  then
+    OLDCFLAGS="$CFLAGS"
+    sysroot=""
+    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                    [[printf("Hello\n");]])],
+      [sysroot="/Developer/SDKs/MacOSX10.5.sdk"
+       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+       LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"],
+      [CFLAGS="$OLDCFLAGS"])
+    if test "x$sysroot" = "x"
+    then
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                      [[printf("Hello\n");]])],
+        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+        LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"],
+        [CFLAGS="$OLDCFLAGS"])
+    fi
+  fi
+  if test "x$GCC" = "xyes"
+  then
+    OLDCFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -arch ppc -arch i386"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                    [[printf("Hello\n");]])],
+      [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
+      LDFLAGS="$LDFLAGS -arch ppc -arch i386"
+      fat_support_available="yes"],
+      [CFLAGS="$OLDCFLAGS"
+      fat_support_available="no"])
+  else
+    fat_support_available="no"
+  fi
+  AC_MSG_NOTICE([fat_support=$fat_support_available])
+  ;;
+esac
+
+dnl Run tests in C++
+dnl AC_LANG_CPLUSPLUS
+
+dnl Checks for header files.
+AC_PATH_X
+AC_PATH_XTRA
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
+AC_HEADER_DIRENT
+AC_FUNC_MMAP
+AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_HEADERS(sys/param.h)
+AC_CHECK_HEADERS(sys/select.h)
+AC_CHECK_HEADERS(sys/filio.h)
+
+dnl Clear out the X11 flags for the case where we're cross-compiling
+dnl for i586-mingw32 targets under Unix.
+if test "x$CYGWIN" = "xyes" -o "x$MINGW32" = "xyes" ; then
+X_CFLAGS=""
+X_LIBS=""
+fi
+
+dnl Byte order
+if test "x$CYGWIN" = "xyes" -o "x$MINGW32" = "xyes" ; then
+dnl For Win32 X86 => little endian.
+FOX_BYTEORDER=0
+AC_SUBST(FOX_BYTEORDER)
+else
+AC_C_BIGENDIAN
+if test "x$ac_cv_c_bigendian" = "xyes"; then
+FOX_BYTEORDER=1
+else
+FOX_BYTEORDER=0
+fi
+AC_SUBST(FOX_BYTEORDER)
+fi
+
+
+if test "x$mingw64" = "xyes"; then
+AC_DEFINE(WIN32)
+AC_DEFINE(WIN64)
+AC_DEFINE(_WIN64)
+LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
+elif test "x$with_xp64" = "xyes"; then
+AC_DEFINE(WIN32)
+dnl At present with the windows-64 build I seem to need to include
+dnl all these explicitly.
+LIBS="${LIBS} comctl32.lib shell32.lib advapi32.lib gdi32.lib"
+LIBS="${LIBS} ${WSOCK}.lib winspool.lib mpr.lib user32.lib"
+elif test "x$MINGW32" = "xyes" ; then
+AC_DEFINE(WIN32)
+LIBS="${LIBS} -lcomctl32 -l${WSOCK} -lws2_32 -lwinspool -lmpr"
+LDFLAGS="${LDFLAGS} -mwindows -e _mainCRTStartup"
+if test "x$with_mingw32" != "x" ; then
+CPPFLAGS="${CPPFLAGS} -I$with_mingw32/include"
+LIBS="${LIBS} -L$with_mingw32/lib"
+fi
+X_BASE_LIBS=""
+else
+X_BASE_LIBS="-lXext -lX11"
+fi
+
+AC_SUBST(X_BASE_LIBS)
+AC_EXEEXT
+
+dnl Checks for QNX (Dustin Graves <dgraves@computer.org>)
+AC_MSG_CHECKING(for QNX environment)
+case "$host_os" in
+  *-qnx*)
+    AC_MSG_RESULT(yes)
+    dnl Check g++ for -fno-builtin dependency
+    if test "${GXX}" = "yes" ; then
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_MSG_CHECKING(if QNX C++ compiler requires -fno-builtin)
+      AC_CACHE_VAL(ac_cv_no_builtin,
+       [AC_TRY_COMPILE([#include<stdlib.h>
+                        #include<math.h>
+                        #include<string.h>],
+                        [return 0;],
+                        [ac_cv_no_builtin=false],
+                        [ac_cv_no_builtin=true])])
+      if test "$ac_cv_no_builtin" = true ; then
+        CXXFLAGS="${CXXFLAGS} -fno-builtin"
+        AC_MSG_RESULT(yes)
+      else
+        AC_MSG_RESULT(no)
+      fi
+      AC_LANG_RESTORE
+    fi
+    ;;
+  *)
+    AC_MSG_RESULT(no)
+esac
+
+
+dnl Checks for the Sun WorkShop Compiler
+AC_MSG_CHECKING(for Sun WorkShop C++)
+if $CXX -V 2>&1 | egrep 'WorkShop Compilers 4.2' > /dev/null; then
+AC_MSG_RESULT(4.2)
+CXXFLAGS="${CXXFLAGS} -instances=global -features=anachronisms"
+elif $CXX -V 2>&1 | egrep 'WorkShop Compilers 5.0' > /dev/null; then
+AC_MSG_RESULT(5.0)
+CXXFLAGS="${CXXFLAGS} -instances=global -features=anachronisms,no%conststrings"
+elif $CXX -V 2>&1 | egrep 'Sun WorkShop 6' > /dev/null; then
+AC_MSG_RESULT(Forte6)
+CXXFLAGS="${CXXFLAGS} -instances=global -features=anachronisms,no%conststrings"
+else
+AC_MSG_RESULT(no)
+fi
+
+dnl If you are building in MINGW32 there remains a danger that CYGWIN
+dnl headers may be present, and so even though X-related stuff is not
+dnl wanted it could end up picked up here even though it woudl not then
+dnl link. So I skip a load of X-related options in the case where I do
+dnl not want them...
+
+if test "x$MINGW32" != "xyes"; then
+
+AC_CHECK_HEADER([Xlib.h],[],[])
+
+dnl Check for Xft2 support
+AC_MSG_CHECKING(for Xft support)
+AC_ARG_WITH(xft,[  --with-xft              enable Xft support])
+AC_MSG_RESULT([$with_xft])
+if test "x$with_xft" = "xyes"; then
+AC_PATH_PROGS(PKG_CONFIG, pkg-config, [no],
+  [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:$PATH])
+if test "$PKG_CONFIG" != "no"
+then
+  XFTCFLAGS=`$PKG_CONFIG --cflags xft`
+  XFTLIBS=`$PKG_CONFIG --libs xft`
+else
+  AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
+    [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:$PATH])
+  if test "$XFT_CONFIG" != "no"
+  then
+    XFTCFLAGS=`$XFT_CONFIG --cflags`
+    XFTLIBS=`$XFT_CONFIG --libs`
+  else
+    AC_MSG_ERROR([*** Xft not detected])
+  fi
+fi
+saved_cppflags="${CXXFLAGS}"
+CXXFLAGS="${CXXFLAGS} -DHAVE_XFT_H=1 $XFTCFLAGS"
+X_BASE_LIBS="${X_BASE_LIBS} $XFTLIBS"
+fi
+
+
+dnl Check for XShape support
+AC_ARG_ENABLE(shape,[  --with-shape            enable XShape support])
+AC_MSG_RESULT([$with_shape])
+if test "x$with_shape" != "xno"; then
+AC_CHECK_HEADER(X11/extensions/shape.h,
+                CXXFLAGS="${CXXFLAGS} -DHAVE_XSHAPE_H=1",
+                [],
+                [#ifdef HAVE_XLIB_H
+                 #include "Xlib.h"
+                 #endif
+                ])
+fi
+
+
+dnl Check for XShm support
+AC_ARG_ENABLE(xshm,[  --with-xshm             compile with XShm support])
+AC_MSG_RESULT([$with_xshm])
+if test "x$with_xshm" != "xno"; then
+XSHM="-DHAVE_XSHM_H=1"
+AC_CHECK_HEADER(X11/extensions/XShm.h,,XSHM="",
+                [#ifdef HAVE_XLIB_H
+                 #include "Xlib.h"
+                 #endif
+                ])
+AC_CHECK_HEADER(sys/ipc.h,,XSHM=""
+                [#ifdef HAVE_XLIB_H
+                 #include "Xlib.h"
+                 #endif
+                ])
+AC_CHECK_HEADER(sys/shm.h,,XSHM="",
+                [#ifdef HAVE_XLIB_H
+                 #include "Xlib.h"
+                 #endif
+                ])
+CXXFLAGS="${CXXFLAGS} ${XSHM}"
+fi
+
+fi
+
+dnl Using reentrant library calls
+AC_MSG_CHECKING(for thread-safe library calls)
+AC_ARG_ENABLE(xthreads,[  --enable-threadsafe     Thread-safe library calls])
+AC_MSG_RESULT([$enable_threadsafe])
+if test "x$enable_threadsafe" != "xno" ; then
+CXXFLAGS="${CXXFLAGS} -DFOX_THREAD_SAFE=1 -D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT"
+fi
+
+dnl Find posix thread library
+if test "x$MINGW32" != "xyes" ; then
+AC_CHECK_HEADER(pthread.h,,AC_MSG_ERROR([*** POSIX thread support not available ***]))
+PTHREAD_LIBS=notfound
+if test "x$PTHREAD_LIBS" = xnotfound; then
+AC_CHECK_LIB(pthread, pthread_exit, PTHREAD_LIBS="-lpthread")
+fi
+if test "x$PTHREAD_LIBS" = xnotfound; then
+AC_CHECK_LIB(pthreads, pthread_exit, PTHREAD_LIBS="-lpthreads")
+fi
+if test "x$PTHREAD_LIBS" = xnotfound; then
+AC_CHECK_LIB(c_r, pthread_exit, PTHREAD_LIBS="-lc_r")
+fi
+if test "x$PTHREAD_LIBS" = xnotfound; then
+AC_CHECK_FUNC(pthread_exit, PTHREAD_LIBS="")
+fi
+if test "x$PTHREAD_LIBS" = xnotfound; then
+AC_MSG_ERROR(*** Unable to locate working posix thread library ***)
+fi
+CXXFLAGS="${CXXFLAGS} -D_GNU_SOURCE"
+LIBS="${LIBS} $PTHREAD_LIBS"
+fi
+
+dnl Semaphore init
+AC_CHECK_LIB(rt,sem_init,LIBS="${LIBS} -lrt")
+
+dnl Check for JPEG Image support
+AC_ARG_ENABLE(jpeg,[  --disable-jpeg          compile without JPEG image support])
+AC_MSG_RESULT([$enable_jpeg])
+if test "x$enable_jpeg" != "xno"; then
+AC_CHECK_HEADER(jpeglib.h,CXXFLAGS="${CXXFLAGS} -DHAVE_JPEG_H=1"; LIBS="${LIBS} ${LIBJPEG:=-ljpeg}")
+fi
+
+
+dnl Check for PNG Image support; note zlib is needed for PNG
+AC_ARG_ENABLE(png,[  --disable-png           compile without PNG image support])
+AC_MSG_RESULT([$enable_png])
+if test "x$enable_png" != "xno"; then
+AC_CHECK_HEADERS(png.h,CXXFLAGS="${CXXFLAGS} -DHAVE_PNG_H=1"; LIBS="${LIBS} ${LIBPNG:=-lpng}")
+fi
+
+
+dnl Check for TIFF Image support; note zlib is needed for TIFF
+AC_ARG_ENABLE(tiff,[  --disable-tiff          compile without TIFF image support])
+AC_MSG_RESULT([$enable_tiff])
+if test "x$enable_tiff" != "xno"; then
+AC_CHECK_HEADERS(tiff.h,CXXFLAGS="${CXXFLAGS} -DHAVE_TIFF_H=1"; LIBS="${LIBS} ${LIBTIFF:=-ltiff}")
+fi
+
+
+dnl Check for libz compression library
+AC_ARG_ENABLE(zlib,[  --disable-zlib          compile without zlib support])
+AC_MSG_RESULT([$enable_zlib])
+if test "x$enable_zlib" != "xno"; then
+AC_CHECK_HEADERS(zlib.h,CXXFLAGS="${CXXFLAGS} -DHAVE_ZLIB_H=1"; LIBS="${LIBS} ${LIBZ:=-lz}")
+fi
+
+
+dnl Check for bzip2 compression library
+AC_ARG_ENABLE(bz2lib,[  --disable-bz2lib        compile without bz2lib support])
+AC_MSG_RESULT([$enable_bz2lib])
+if test "x$enable_bz2lib" != "xno"; then
+AC_CHECK_HEADERS(bzlib.h,CXXFLAGS="${CXXFLAGS} -DHAVE_BZ2LIB_H=1"; LIBS="${LIBS} ${LIBBZ2:=-lbz2}")
+fi
+
+
+dnl As before, avoid checking for some X-related headers is MINGW32 is in
+dnl use.
+
+if test "x$MINGW32" != "xyes"; then
+
+dnl Check for Xcursor support
+AC_ARG_WITH(xcursor,[  --with-xcursor          compile with Xcursor support])
+AC_MSG_RESULT([$with_xcursor])
+dnl a MINGW32 build may have CYGWIN (and hence X) headers present but it
+dnl REALLY does not want to use them.
+if test "x$with_xcursor" != "xno"; then
+AC_CHECK_HEADER(X11/Xcursor/Xcursor.h,
+                CXXFLAGS="${CXXFLAGS} -DHAVE_XCURSOR_H=1"; X_BASE_LIBS="${X_BASE_LIBS} -lXcursor",
+                [],
+                [#ifdef HAVE_XLIB_H
+                 #include "Xlib.h"
+                 #endif
+                ])
+fi
+
+
+dnl Check for XRandR support
+AC_ARG_WITH(xrandr,[  --with-xrandr           compile with XRandR support])
+AC_MSG_RESULT([$with_xrandr])
+if test "x$with_xrandr" != "xno"; then
+AC_CHECK_HEADER(X11/extensions/Xrandr.h,
+                CXXFLAGS="${CXXFLAGS} -DHAVE_XRANDR_H=1"; X_BASE_LIBS="${X_BASE_LIBS} -lXrandr",
+                [],
+                [#ifdef HAVE_XLIB_H
+                 #include "Xlib.h"
+                 #endif
+                ])
+fi
+
+
+# On at least some systems static linking against X11 needs -ldl
+# Also I will use dlopen (and friends) for dynamic loading of stuff
+# compiled via C.
+AC_CHECK_LIB(dl, dlopen)
+
+# Fox 1.6 seems to use nanosleep in FXThread and on some systems at least
+# the means I must link against librt.
+AC_CHECK_LIB(rt, clock_nanosleep)
+
+# I want to support some flavour of direct screen addressing. 
+# On Windows I use the Console API. 
+# Otherwise I need both term.h and [n]curses.h. Sometimes the file
+# may be <ncurses/term.h>. If term.h is not available I may survive
+# on tgetent.
+# For linking I count "setupterm" as an adequate function to test for
+# as diagnostic of curses.
+
+# I am giving up on supporting things that only have "termcap" on the
+# grounds that that is now supposed to count as ancient.
+
+AC_CHECK_HEADERS(termios.h sys/ioctl.h)
+
+AC_CHECK_HEADERS(curses.h ncurses.h)
+
+AC_MSG_NOTICE([curses=$HAVE_CURSES_H ncurses=$HAVE_NCURSES_H])
+
+AC_CHECK_LIB(curses, setupterm, [],
+  [AC_CHECK_LIB(ncurses, setupterm)])
+
+# There is a misery here! "term.h" (on some machines) needs cuses.h
+# included first (typically to define "bool" for it).
+AC_CHECK_HEADERS(term.h,[],[],
+   [#if HAVE_CURSES_H
+    #include <curses.h>
+    #else
+    #if HAVE_NCURSES_H
+    #include <ncurses.h>
+    #endif
+    #endif])
+AC_CHECK_HEADERS(ncurses/term.h,[],[],
+   [#if HAVE_CURSES_H
+    #include <curses.h>
+    #else
+    #if HAVE_NCURSES_H
+    #include <ncurses.h>
+    #endif
+    #endif])
+
+AC_CHECK_FUNCS([tgetent tputs])
+
+# Now I have access to some terminfo support. I would like to know if
+# the convenience function cfmakeraw is present since if so I will use
+# it, but if it is not there I will just simulate what I hope it does.
+AC_CHECK_FUNCS(cfmakeraw)
+
+# Some platforms appear to require the Xcursor library. The next line
+# should arrange that it gets scanned if it is available. This test
+# does not make a lot of sense on Windows, but in that case it will
+# just harmlessly fail. And sometimes (especially for static linking)
+# a Xrender library is needed too... However Solarix 10 x86 seems to
+# misdetect Xrender when in 64-bit mode so I fudge that away here.
+
+if test "x$solaris" != "xyes"
+then
+  AC_CHECK_LIB(Xrender, XRenderCreateCursor)
+  AC_CHECK_LIB(Xcursor, XcursorImageCreate)
+fi
+
+fi
+
+dnl Check for Input Method support
+AC_ARG_WITH(xim,[  --with-xim              compile with XIM support])
+AC_MSG_RESULT([$with_xim])
+##if test "x$with_xim" = "xno"; then
+if test "x$with_xim" != "xyes"; then
+CXXFLAGS="${CXXFLAGS} -DNO_XIM"
+fi
+
+
+dnl Add math lib if TIFF Image support
+if test "x$enable_tiff" != "xno"; then
+LIBS="${LIBS} ${MATHLIB:=-lm}"
+fi
+
+dnl Check vsscanf
+AC_CHECK_FUNCS(vsscanf vsnprintf strtoll strtoull)
+
+dnl Checking for socket libraries.
+SOCKLIBS=""
+AC_CHECK_LIB(socket,socket, if test "$uname" != "IRIX"; then SOCKLIBS="-lsocket"; fi)
+AC_CHECK_LIB(nsl,gethostbyaddr,if test "$uname" != "IRIX"; then SOCKLIBS="${SOCKLIBS} -lnsl"; fi)
+
+dnl Check for dynamic loader
+AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_LIB(dld, shl_load)
+
+dnl Checking for CUPS
+AC_MSG_CHECKING(for CUPS support)
+AC_ARG_ENABLE(cups,[  --enable-cups           compile with CUPS support])
+AC_MSG_RESULT([$enable_cups])
+if test "x$enable_cups" = "xyes"; then
+CUPSLIBS=""
+AC_CHECK_LIB(cups,httpConnect,CUPSLIBS="-lcups")
+dnl For the moment, we only need to link to socket libraries when linking with cups
+AC_CHECK_HEADER(cups/cups.h,if test "x${CUPSLIBS}" != "x"; then CXXFLAGS="${CXXFLAGS} -DHAVE_CUPS_H=1"; LIBS="${LIBS} ${CUPSLIBS} ${SOCKLIBS}"; fi)
+fi
+
+
+dnl Add copious amounts of debugging with gcc, egcs, etc
+if test "${GXX}" = "yes" ; then
+CXXFLAGS="${CXXFLAGS} -Wall -W -Woverloaded-virtual -Wformat"
+fi
+
+dnl Debugging turned on
+AC_MSG_CHECKING(for debugging)
+AC_ARG_ENABLE(debug,[  --enable-debug          compile for debugging])
+AC_MSG_RESULT([$enable_debug])
+if test "x$enable_debug" = "xyes" ; then
+if test "x$with_xp64" = "xyes"; then
+dnl Debug-enable for the Microsoft compiler...
+CXXFLAGS="${CXXFLAGS} -Zi -DDEBUG"
+else
+dnl I might normally expect to use -O1 or -O2 when debugging however I
+dnl I have had pain on some platforms then, so I drop all the way back to -O0
+CXXFLAGS="${CXXFLAGS} -O0 -g -DDEBUG"
+fi
+else
+CXXFLAGS="${CXXFLAGS} -O2"
+fi
+
+dnl Building for release
+AC_MSG_CHECKING(for release build)
+AC_ARG_ENABLE(release,[  --enable-release        compile for release])
+AC_MSG_RESULT([$enable_release])
+if test "x$enable_release" = "xyes" ; then
+CXXFLAGS="${CXXFLAGS} $OPTFLAGS -DNDEBUG"
+if test "${GXX}" = "yes" ; then
+CXXFLAGS="${CXXFLAGS} -Wuninitialized $FASTMATH -finline-functions -fomit-frame-pointer -fexpensive-optimizations -fno-strict-aliasing"
+fi
+fi
+
+dnl Enable profiling
+AC_MSG_CHECKING(for profiling)
+AC_ARG_WITH(profiling,[  --with-profiling        choices are yes, no, or gprof])
+AC_MSG_RESULT([$with_profiling])
+if test "x$with_profiling" = "xyes" ; then
+CXXFLAGS="${CXXFLAGS} -p"
+elif test "x$with_profiling" = "xgprof" ; then
+CXXFLAGS="${CXXFLAGS} -pg"
+fi
+
+
+saved_cppflags="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+
+dnl Compile with 3D support
+dnl You have the option of NOT compiling with 3D support even if you have it
+AC_MSG_CHECKING(for OpenGL support)
+AC_ARG_WITH(opengl,[  --with-opengl           choices are yes, no])
+AC_MSG_RESULT([$with_opengl])
+if test "x$with_opengl" != "xno" ; then
+if test "x$CYGWIN" = "xyes" -o "x$MINGW32" = "xyes" ; then
+AC_CHECK_HEADER(GL/glu.h,CXXFLAGS="${CXXFLAGS} -DHAVE_GLU_H=1"; LIBS="${LIBS} ${LIBGLU:=-lglu32}")
+AC_CHECK_HEADER(GL/gl.h,CXXFLAGS="${CXXFLAGS} -DHAVE_GL_H=1"; LIBS="${LIBS} ${LIBGL:=-lopengl32}")
+GL_TESTS="gltest.exe glviewer.exe"
+else
+AC_CHECK_HEADER(GL/glu.h,CXXFLAGS="${CXXFLAGS} -DHAVE_GLU_H=1"; LIBS="${LIBS} ${LIBGLU:=-lGLU}")
+AC_CHECK_HEADER(GL/gl.h,CXXFLAGS="${CXXFLAGS} -DHAVE_GL_H=1"; LIBS="${LIBS} ${LIBGL:=-lGL}")
+GL_TESTS="gltest glviewer"
+fi
+fi
+
+CPPFLAGS="$saved_cppflags"
+
+
+AC_SUBST(GL_LIBS)
+AC_SUBST(GL_TESTS)
+
+AM_CONDITIONAL(canrun, test "x$cross_compiling" != "xyes")
+
+dnl Done.
+AC_OUTPUT(Makefile
+utils/Makefile
+include/Makefile
+include/fxver.h
+src/Makefile
+src/version.rc
+doc/Makefile
+doc/art/Makefile
+doc/screenshots/Makefile
+fox.spec
+fox-config
+fox.pc)
+
+echo ""
+echo "Configure finished!"
+echo "              Do:  'make' to compile FOX."
+echo "            Then:  'make install' to install it."
+echo ""
+

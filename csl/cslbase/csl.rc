@@ -1,0 +1,13 @@
+//
+// Resource file for CWIN.                Copyright (C) Codemist Ltd, 1994-6
+//                                        A C Norman
+//
+
+
+CWIN              ICON csl.ico         // Used in "ABOUT" dialog box and
+                                       // when window is minimised
+
+#include "cwin.rc"
+
+// End of csl.rc
+

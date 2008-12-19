@@ -1,0 +1,14 @@
+//
+// Resource file for reduce.           Copyright (C) Codemist Ltd, 1995-2008
+//                                     A C Norman
+//
+
+
+CWIN              ICON reduce.ico      // Used in "ABOUT" dialog box and
+                                       // when window is minimised
+
+#include "cwin.rc"
+
+// End of reduce.rc
+
+

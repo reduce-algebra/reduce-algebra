@@ -1,0 +1,173 @@
+\chapter{Commands and Declarations}
+
+A command\index{Command} is an order to the system to do something.  Some
+commands cause visible results (such as calling for input or output);
+others, usually called declarations\index{Declaration}, set options,
+define properties of variables, or define procedures.  Commands are
+formally defined as a statement followed by a terminator
+\begin{verbatim}
+        <command> ::= <statement> <terminator>
+        <terminator> ::= ;|$
+\end{verbatim}
+Some {\REDUCE} commands and declarations are described in the following
+sub-sections.
+
+\section{Array Declarations}
+
+Array\ttindex{ARRAY} declarations in {\REDUCE} are similar to FORTRAN
+dimension statements.  For example:
+\begin{verbatim}
+        array a(10),b(2,3,4);
+\end{verbatim}
+Array indices each range from 0 to the value declared. An element of an
+array is referred to in standard FORTRAN notation, e.g. {\tt A(2)}.
+
+We can also use an expression for defining an array bound, provided the
+value of the expression is a positive integer. For example, if {\tt X} has the
+value 10 and {\tt Y} the value 7 then
+{\tt array c(5*x+y)} is the same as {\tt array c(57)}.
+
+If an array is referenced by an index outside its range, an error occurs.
+If the array is to be one-dimensional, and the bound a number or a variable
+(not a more general expression) the parentheses may be omitted:
+\begin{verbatim}
+        array a 10, c 57;
+\end{verbatim}
+The operator {\tt LENGTH}\ttindex{LENGTH} applied to an array name
+returns a list of its dimensions.
+
+All array elements are initialized to 0 at declaration time. In other words,
+an array element has an {\em instant evaluation\/}\index{Instant evaluation}
+property and cannot stand for itself.  If this is required, then an
+operator should be used instead.
+
+Array declarations can appear anywhere in a program. Once a symbol is
+declared to name an array, it can not also be used as a variable, or to
+name an operator or a procedure. It can however be re-declared to be an
+array, and its size may be changed at that time. An array name can also
+continue to be used as a parameter in a procedure, or a local variable in
+a compound statement, although this use is not recommended, since it can
+lead to user confusion over the type of the variable.
+
+Arrays once declared are global in scope, and so can then be referenced
+anywhere in the program. In other words, unlike arrays in most other
+languages, a declaration within a block (or a procedure) does not limit
+the scope of the array to that block, nor does the array go away on
+exiting the block (use {\tt CLEAR} instead for this purpose).
+
+\section{Mode Handling Declarations}\index{Mode}
+
+The {\tt ON}\ttindex{ON} and {\tt OFF}\ttindex{OFF} declarations are
+available to the user for controlling various system options.  Each option
+is represented by a {\em switch\/}\index{Switch} name. {\tt ON} and {\tt OFF}
+take a list of switch names as argument and turn them on and off
+respectively, e.g.,
+\begin{verbatim}
+       on time;
+\end{verbatim}
+causes the system to print a message after each command giving the elapsed
+CPU time since the last command, or since {\tt TIME}\ttindex{TIME} was
+last turned off, or the session began.  Another useful switch with
+interactive use is {\tt DEMO},\ttindex{DEMO} which causes the system to
+pause after each command in a file (with the exception of comments)
+until a \key{Return} is typed on the terminal.  This
+enables a user to set up a demonstration file and step through it command
+by command.
+
+As with most declarations, arguments to {\tt ON} and {\tt OFF} may be
+strung together separated by commas.  For example,
+\begin{verbatim}
+        off time,demo;
+\end{verbatim}
+will turn off both the time messages and the demonstration switch.
+
+We note here that while most {\tt ON} and {\tt OFF} commands are obeyed
+almost instantaneously, some trigger time-consuming actions such as
+reading in necessary modules from secondary storage.
+
+A diagnostic message is printed if {\tt ON}\ttindex{ON} or {\tt OFF}
+\ttindex{OFF} are used with a switch that is not known to the system.  For
+example, if you misspell {\tt DEMO} and type
+\begin{verbatim}
+     on demq;
+\end{verbatim}
+you will get the message\index{Switch}
+\begin{verbatim}
+        ***** DEMQ not defined as switch.
+\end{verbatim}
+
+\section{END}
+
+The identifier {\tt END}\ttindex{END} has two separate uses.
+
+1) Its use in a {\tt BEGIN \ldots END} bracket has been discussed in
+connection with compound statements.
+
+2) Files to be read using {\tt IN} should end with an extra {\tt END};
+command.  The reason for this is explained in the section on the {\tt IN}
+command.  This use of {\tt END} does not allow an immediately
+preceding {\tt END} (such as the {\tt END} of a procedure definition), so
+we advise using {\tt ;END;} there.
+
+%3) A command {\tt END}; entered at the top level transfers control to the
+%Lisp system\index{Lisp} which is the host of the {\REDUCE} system.  All
+%files opened by {\tt IN} or {\tt OUT} statements are closed in the
+%process.  {\tt END;} does not stop {\REDUCE}.  Those familiar with Lisp can
+%experiment with typing identifiers and ({\tt <function name> <argument
+%list>}) lists to see the value returned by Lisp. (No terminators, other
+%than the RETURN key, should be used.) The data structures created during
+%the {\REDUCE} run are accessible.
+
+%You remain in this Lisp mode until you explicitly re-enter {\REDUCE} by
+%saying {\tt (BEGIN)} at the Lisp top level.  In most systems, a Lisp error
+%also returns you to {\REDUCE} (exceptions are noted in the operating
+%instructions for your particular {\REDUCE} implementation).  In either
+%case, you will return to {\REDUCE} in the same mode, algebraic or
+%symbolic, that you were in before the {\tt END};.  If you are in
+%Lisp mode\index{Lisp mode} by mistake -- which is usually the case,
+%the result of typing more {\tt END}s\ttindex{END} than {\tt BEGIN}s --
+%type {\tt (BEGIN)} in parentheses and hit the RETURN key.
+
+\section{BYE Command}\ttindex{BYE}
+
+The command {\tt BYE}; (or alternatively {\tt QUIT};)\ttindex{QUIT}
+stops the execution
+of {\REDUCE}, closes all open output files, and returns you to the calling
+program (usually the operating system).  Your {\REDUCE} session is
+normally destroyed.
+
+\section{SHOWTIME Command}\ttindex{SHOWTIME}
+
+{\tt SHOWTIME}; prints the elapsed time since the last call of this
+command or, on its first call, since the current {\REDUCE} session began.
+The time is normally given in milliseconds and gives the time as measured
+by a system clock.  The operations covered by this measure are system
+dependent.
+
+\section{DEFINE Command}
+
+The command {\tt DEFINE}\ttindex{DEFINE} allows a user to supply a new name for
+any identifier or replace it by any well-formed expression.  Its argument
+is a list of expressions of the form
+\begin{verbatim}
+        <identifier> = <number>|<identifier>|<operator>|
+                        <reserved word>|<expression>
+\end{verbatim}
+
+{\it Example:}
+\begin{verbatim}
+        define be==,x=y+z;
+\end{verbatim}
+means that {\tt BE} will be interpreted as an equal sign, and {\tt X}
+as the expression {\tt y+z} from then on.  This renaming is done at parse
+time, and therefore takes precedence over any other replacement declared
+for the same identifier.  It stays in effect until the end of the
+{\REDUCE} run.
+
+The identifiers {\tt ALGEBRAIC} and {\tt SYMBOLIC} have properties which
+prevent {\tt DEFINE}\ttindex{DEFINE} from being used on them.  To define
+{\tt ALG} to be a synonym for {\tt ALGEBRAIC}, use the more complicated
+construction
+\begin{verbatim}
+        put('alg,'newnam,'algebraic);
+\end{verbatim}

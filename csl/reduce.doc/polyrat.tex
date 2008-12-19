@@ -1,0 +1,751 @@
+\chapter{Polynomials and Rationals}
+
+Many operations in computer algebra are concerned with polynomials
+\index{Polynomial} and rational functions\index{Rational function}.  In
+this section, we review some of the switches and operators available for
+this purpose.  These are in addition to those that work on general
+expressions (such as {\tt DF} and {\tt INT}) described elsewhere.  In the
+case of operators, the arguments are first simplified before the
+operations are applied.  In addition, they operate only on arguments of
+prescribed types, and produce a type mismatch error if given arguments
+which cannot be interpreted in the required mode with the current switch
+settings.  For example, if an argument is required to be a kernel and
+{\tt a/2} is used (with no other rules for {\tt A}), an error
+\begin{verbatim}
+        A/2 invalid as kernel
+\end{verbatim}
+will result.
+
+With the exception of those that select various parts of a polynomial or
+rational function, these operations have potentially significant effects on
+the space and time associated with a given calculation. The user should
+therefore experiment with their use in a given calculation in order to
+determine the optimum set for a given problem.
+
+One such operation provided by the system is an operator {\tt LENGTH}
+\ttindex{LENGTH} which returns the number of top level terms in the
+numerator of its argument.  For example,
+\begin{verbatim}
+        length ((a+b+c)^3/(c+d));
+\end{verbatim}
+has the value 10.  To get the number of terms in the denominator, one
+would first select the denominator by the operator {\tt DEN}\ttindex{DEN}
+and then call {\tt LENGTH}, as in
+\begin{verbatim}
+        length den ((a+b+c)^3/(c+d));
+\end{verbatim}
+Other operations currently supported, the relevant switches and operators,
+and the required argument and value modes of the latter, follow.
+
+\section{Controlling the Expansion of Expressions}
+
+The switch {\tt EXP}\ttindex{EXP} controls the expansion of expressions.  If
+it is off, no expansion of powers or products of expressions occurs.
+Users should note however that in this case results come out in a normal
+but not necessarily canonical form.  This means that zero expressions
+simplify to zero, but that two equivalent expressions need not necessarily
+simplify to the same form.
+
+{\it Example:} With {\tt EXP} on, the two expressions
+\begin{verbatim}
+        (a+b)*(a+2*b)
+\end{verbatim}
+and
+\begin{verbatim}
+        a^2+3*a*b+2*b^2
+\end{verbatim}
+will both simplify to the latter form.  With {\tt EXP}
+off, they would remain unchanged, unless the complete factoring {\tt
+(ALLFAC)} option were in force. {\tt EXP} is normally on.
+
+Several operators that expect a polynomial as an argument behave
+differently when {\tt EXP} is off, since there is often only one term at
+the top level.  For example, with {\tt EXP} off
+\begin{verbatim}
+        length((a+b+c)^3/(c+d));
+\end{verbatim}
+returns the value 1.
+
+\section{Factorization of Polynomials}\index{Factorization}
+{\REDUCE} is capable of factorizing univariate and multivariate polynomials
+that have integer coefficients, finding all factors that also have integer
+coefficients. The package for doing this was written by Dr. Arthur C.
+Norman and Ms. P. Mary Ann Moore at The University of Cambridge. It is
+described in P. M. A. Moore and A. C. Norman, ``Implementing a Polynomial
+Factorization and GCD Package'', Proc. SYMSAC '81, ACM (New York) (1981),
+109-116.
+
+The easiest way to use this facility is to turn on the switch
+{\tt FACTOR},\ttindex{FACTOR} which causes all expressions to be output in
+a factored form.  For example, with {\tt FACTOR} on, the expression
+{\tt A\verb|^|2-B\verb|^|2} is returned as {\tt (A+B)*(A-B)}.
+
+It is also possible to factorize a given expression explicitly.  The
+operator {\tt FACTORIZE}\ttindex{FACTORIZE} that invokes this facility is
+used with the syntax
+\begin{verbatim}
+     FACTORIZE(EXPRN:polynomial[,INTEXP:prime integer]):list,
+\end{verbatim}
+the optional argument of which will be described later. Thus to find and
+display all factors of the cyclotomic polynomial $x^{105}-1$, one could
+write:
+\begin{verbatim}
+        factorize(x^105-1);
+\end{verbatim}
+The result is a list of factor,exponent pairs.
+In the above example, there is no overall numerical factor in the result,
+so the results will consist only of polynomials in x.  The number of such
+polynomials can be found by using the operator {\tt LENGTH}.\ttindex{LENGTH}
+If there is a numerical factor, as in factorizing $12x^{2}-12$,
+that factor will appear as the first member of the result.
+It will however not be factored further.  Prime factors of such numbers
+can be found, using a probabilistic algorithm, by turning on the switch
+{\tt IFACTOR}.\ttindex{IFACTOR}  For example,
+\begin{verbatim}
+        on ifactor; factorize(12x^2-12);
+\end{verbatim}
+would result in the output
+\begin{verbatim}
+	{{2,2},{3,1},{X + 1,1},{X - 1,1}}.
+\end{verbatim}
+
+If the first argument of {\tt FACTORIZE} is an integer, it will be
+decomposed into its prime components, whether or not {\tt IFACTOR} is on.
+
+Note that the {\tt IFACTOR} switch only affects the result of {\tt FACTORIZE}.
+It has no effect if the {\tt FACTOR}\ttindex{FACTOR} switch is also on.
+
+The order in which the factors occur in the result (with the exception of
+a possible overall numerical coefficient which comes first) can be system
+dependent and should not be relied on. Similarly it should be noted that
+any pair of individual factors can be negated without altering their
+product, and that {\REDUCE} may sometimes do that.
+
+The factorizer works by first reducing multivariate problems to univariate
+ones and then solving the univariate ones modulo small primes. It normally
+selects both evaluation points and primes using a random number generator
+that should lead to different detailed behavior each time any particular
+problem is tackled. If, for some reason, it is known that a certain
+(probably univariate) factorization can be performed effectively with a
+known prime, {\tt P} say, this value of {\tt P} can be handed to
+{\tt FACTORIZE}\ttindex{FACTORIZE} as a second
+argument. An error will occur if a non-prime is provided to {\tt FACTORIZE} in
+this manner. It is also an error to specify a prime that divides the
+discriminant of the polynomial being factored, but users should note that
+this condition is not checked by the program, so this capability should be
+used with care.
+
+Factorization can be performed over a number of polynomial coefficient
+domains in addition to integers. The particular description of the relevant
+domain should be consulted to see if factorization is supported. For
+example, the following statements will factorize $x^{4}+1$ modulo 7:
+\begin{verbatim}
+        setmod 7;
+        on modular;
+        factorize(x^4+1);
+\end{verbatim}
+The factorization module is provided with a trace facility that may be useful
+as a way of monitoring progress on large problems, and of satisfying
+curiosity about the internal workings of the package. The most simple use
+of this is enabled by issuing the {\REDUCE} command\ttindex{TRFAC}
+{\tt on trfac;} .
+Following this, all calls to the factorizer will generate informative
+messages reporting on such things as the reduction of multivariate to
+univariate cases, the choice of a prime and the reconstruction of full
+factors from their images.  Further levels of detail in the trace are
+intended mainly for system tuners and for the investigation of suspected
+bugs.  For example, {\tt TRALLFAC} gives tracing information at all levels
+of detail.  The switch that can be set by {\tt on timings;} makes it
+possible for one who is familiar with the algorithms used to determine
+what part of the factorization code is consuming the most resources.
+{\tt on overview}; reduces the amount of detail presented in other forms of
+trace.  Other forms of trace output are enabled by directives of the form
+\begin{verbatim}
+        symbolic set!-trace!-factor(<number>,<filename>);
+\end{verbatim}
+where useful numbers are 1, 2, 3 and 100, 101, ... .  This facility is
+intended to make it possible to discover in fairly great detail what just
+some small part of the code has been doing --- the numbers refer mainly to
+depths of recursion when the factorizer calls itself, and to the split
+between its work forming and factorizing images and reconstructing full
+factors from these.  If {\tt NIL} is used in place of a filename the trace
+output requested is directed to the standard output stream.  After use of
+this trace facility the generated trace files should be closed by calling
+\begin{verbatim}
+        symbolic close!-trace!-files();
+\end{verbatim}
+{\it NOTE:} Using the factorizer with {\tt MCD}\ttindex{MCD} off will
+result in an error.
+
+\section{Cancellation of Common Factors}
+Facilities are available in {\REDUCE} for cancelling common factors in the
+numerators and denominators of expressions, at the option of the user. The
+system will perform this greatest common divisor computation if the switch
+{\tt GCD}\ttindex{GCD} is on. ({\tt GCD} is normally off.)
+
+A check is automatically made, however, for common variable and numerical
+products in the numerators and denominators of expressions, and the
+appropriate cancellations made.
+
+When {\tt GCD} is on, and {\tt EXP} is off, a check is made for square
+free factors in an expression.  This includes separating out and
+independently checking the content of a given polynomial where
+appropriate. (For an explanation of these terms, see Anthony C. Hearn,
+``Non-Modular Computation of Polynomial GCDs Using Trial Division'', Proc.
+EUROSAM 79, published as Lecture Notes on Comp.  Science, Springer-Verlag,
+Berlin, No 72 (1979) 227-239.)
+
+{\it Example:} With {\tt EXP}\ttindex{EXP} off and {\tt GCD}\ttindex{GCD}
+on,
+the polynomial {\tt a*c+a*d+b*c+b*d} would be returned as {\tt (A+B)*(C+D)}.
+
+Under normal circumstances, GCDs are computed using an algorithm described
+in the above paper. It is also possible in {\REDUCE} to compute GCDs using
+an alternative algorithm, called the EZGCD Algorithm, which uses modular
+arithmetic.  The switch {\tt EZGCD}\ttindex{EZGCD}, if on in addition to
+{\tt GCD}, makes this happen.
+
+In non-trivial cases, the EZGCD algorithm is almost always better
+than the basic algorithm, often by orders of magnitude.  We therefore
+{\em strongly\/} advise users to use the {\tt EZGCD} switch where they have the
+resources available for supporting the package.
+
+For a description of the EZGCD algorithm, see J. Moses and D.Y.Y. Yun,
+``The EZ GCD Algorithm'', Proc. ACM 1973, ACM, New York (1973) 159-166.
+
+{\it NOTE:}
+This package shares code with the factorizer, so a certain amount of trace
+information can be produced using the factorizer trace switches.
+
+\subsection{Determining the GCD of Two Polynomials}
+This operator, used with the syntax
+\begin{verbatim}
+        GCD(EXPRN1:polynomial,EXPRN2:polynomial):polynomial,
+\end{verbatim}
+returns the greatest common divisor of the two polynomials {\tt EXPRN1} and
+{\tt EXPRN2}.
+
+{\it Examples:}
+\begin{verbatim}
+        gcd(x^2+2*x+1,x^2+3*x+2) ->  X+1
+        gcd(2*x^2-2*y^2,4*x+4*y) ->  2*X+2*Y
+        gcd(x^2+y^2,x-y)         ->  1.
+\end{verbatim}
+
+\section{Working with Least Common Multiples}
+
+Greatest common divisor calculations can often become expensive if
+extensive work with large rational expressions is required. However, in
+many cases, the only significant cancellations arise from the fact that
+there are often common factors in the various denominators which are
+combined when two rationals are added. Since these denominators tend to be
+smaller and more regular in structure than the numerators, considerable
+savings in both time and space can occur if a full GCD check is made when
+the denominators are combined and only a partial check when numerators are
+constructed. In other words, the true least common multiple of the
+denominators is computed at each step. The switch {\tt LCM}\ttindex{LCM}
+is available for this purpose, and is normally on.
+
+In addition, the operator {\tt LCM},\ttindex{LCM} used with the syntax
+\begin{verbatim}
+        LCM(EXPRN1:polynomial,EXPRN2:polynomial):polynomial,
+\end{verbatim}
+returns the least common multiple of the two polynomials {\tt EXPRN1} and
+{\tt EXPRN2}.
+
+{\it Examples:}
+\begin{verbatim}
+        lcm(x^2+2*x+1,x^2+3*x+2) ->  X**3 + 4*X**2 + 5*X + 2
+        lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(X**2 - Y**2)
+\end{verbatim}
+
+\section{Controlling Use of Common Denominators}
+
+When two rational functions are added, {\REDUCE} normally produces an
+expression over a common denominator. However, if the user does not want
+denominators combined, he or she can turn off the switch {\tt MCD}
+\ttindex{MCD} which controls this process.  The latter switch is
+particularly useful if no greatest common divisor calculations are
+desired, or excessive differentiation of rational functions is required.
+
+{\it CAUTION:}  With {\tt MCD} off, results are not guaranteed to come out in
+either normal or canonical form.  In other words, an expression equivalent
+to zero may in fact not be simplified to zero.  This option is therefore
+most useful for avoiding expression swell during intermediate parts of a
+calculation.
+
+{\tt MCD}\ttindex{MCD} is normally on.
+
+\section{REMAINDER Operator}\ttindex{REMAINDER}
+
+This operator is used with the syntax
+\begin{verbatim}
+     REMAINDER(EXPRN1:polynomial,EXPRN2:polynomial):polynomial.
+\end{verbatim}
+It returns the remainder when {\tt EXPRN1} is divided by {\tt EXPRN2}.  This
+is the true remainder based on the internal ordering of the variables, and
+not the pseudo-remainder. The pseudo-remainder \ttindex{PSEUDO\_REMAINDER}
+and in general pseudo-division \ttindex{PSEUDO\_DIVIDE} of polynomials
+can be calculated after loading  the {\tt polydiv} package.
+Please refer to the documentation of this package for details.
+
+{\it Examples:}
+\begin{verbatim}
+        remainder((x+y)*(x+2*y),x+3*y) ->  2*Y**2
+        remainder(2*x+y,2)             ->  Y.
+\end{verbatim}
+
+{\it CAUTION:} In the default case, remainders are calculated over the
+integers.  If you need the remainder with respect to another domain, it
+must be declared explicitly.
+
+{\it Example:}
+\begin{verbatim}
+        remainder(x^2-2,x+sqrt(2)); -> X^2 - 2
+        load_package arnum;
+        defpoly sqrt2**2-2;
+        remainder(x^2-2,x+sqrt2); -> 0
+\end{verbatim}
+
+\section{RESULTANT Operator}\ttindex{RESULTANT}
+
+This is used with the syntax
+\begin{verbatim}
+     RESULTANT(EXPRN1:polynomial,EXPRN2:polynomial,VAR:kernel):
+        polynomial.
+\end{verbatim}
+It computes the resultant of the two given polynomials with respect to the
+given variable, the coefficients of the polynomials can be taken from any
+domain. The result can be identified as the determinant of a
+Sylvester matrix, but can often also be thought of informally as the
+result obtained when the given variable is eliminated between the two input
+polynomials. If the two input polynomials have a non-trivial GCD their
+resultant vanishes.
+
+The switch {\tt Bezout}\ttindex{Bezout} controls the computation of the
+resultants. It is off by default. In this case a subresultant algorithm
+is used. If the switch Bezout is turned on, the resultant is computed via
+the Bezout Matrix. However, in the latter case, only polynomial coefficients
+are permitted.
+
+\begin{samepage}
+The sign conventions used by the resultant function follow those in R.
+Loos, ``Computing in Algebraic Extensions'' in ``Computer Algebra --- Symbolic
+and Algebraic Computation'', Second Ed., Edited by B. Buchberger, G.E.
+Collins and R. Loos, Springer-Verlag, 1983. Namely, with {\tt A} and {\tt B}
+not dependent on {\tt X}:
+
+\begin{verbatim}
+                               deg(p)*deg(q)
+   resultant(p(x),q(x),x)= (-1)             *resultant(q,p,x)
+
+                            deg(p)
+   resultant(a,p(x),x)   = a
+
+   resultant(a,b,x)      = 1
+\end{verbatim}
+\end{samepage}
+
+{\it Examples:}
+
+\begin{samepage}
+\begin{verbatim}
+                                     2
+   resultant(x/r*u+y,u*y,u)   ->  - y
+\end{verbatim}
+\end{samepage}
+
+{\it calculation in an algebraic extension:}
+
+\begin{samepage}
+\begin{verbatim}
+   load arnum;
+   defpoly sqrt2**2 - 2;
+
+   resultant(x + sqrt2,sqrt2 * x +1,x) -> -1
+\end{verbatim}
+\end{samepage}
+
+{\it or in a modular domain:}
+
+\begin{samepage}
+\begin{verbatim}
+   setmod 17;
+   on modular;
+
+   resultant(2x+1,3x+4,x)    -> 5
+\end{verbatim}
+\end{samepage}
+\section{DECOMPOSE Operator}\ttindex{DECOMPOSE}
+
+The {\tt DECOMPOSE} operator takes a multivariate polynomial as argument,
+and returns an expression and a list of equations from which the
+original polynomial can be found by composition.  Its syntax is:
+\begin{verbatim}
+     DECOMPOSE(EXPRN:polynomial):list.
+\end{verbatim}
+For example:
+\begin{verbatim}
+     decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-
+                    218900*x^3+65690*x^2-7700*x+234)
+                   2                  2            2
+              -> {U  + 35*U + 234, U=V  + 10*V, V=X  - 22*X}
+                                     2
+     decompose(u^2+v^2+2u*v+1)  -> {W  + 1, W=U + V}
+\end{verbatim}
+Users should note however that, unlike factorization, this decomposition
+is not unique.
+
+\section{INTERPOL operator}\ttindex{INTERPOL}
+
+Syntax:
+\begin{verbatim}
+        INTERPOL(<values>,<variable>,<points>);
+\end{verbatim}
+
+where {\tt <values>} and {\tt <points>} are lists of equal length and
+{\tt <variable>} is an algebraic expression (preferably a kernel).
+
+{\tt INTERPOL} generates an interpolation polynomial {\em f\/} in the given
+variable of degree length({\tt <values>})-1.  The unique polynomial {\em f\/}
+is defined by the property that for corresponding elements {\em v\/} of
+{\tt <values>} and {\em p\/} of {\tt <points>} the relation $f(p)=v$ holds.
+
+The Aitken-Neville interpolation algorithm is used which guarantees a
+stable result even with rounded numbers and an ill-conditioned problem.
+
+\section{Obtaining Parts of Polynomials and Rationals}
+
+These operators select various parts of a polynomial or rational function
+structure. Except for the cost of rearrangement of the structure, these
+operations take very little time to perform.
+
+For those operators in this section that take a kernel {\tt VAR} as their
+second argument, an error results if the first expression is not a
+polynomial in {\tt VAR}, although the coefficients themselves can be
+rational as long as they do not depend on {\tt VAR}.  However, if the
+switch {\tt RATARG}\ttindex{RATARG} is on, denominators are not checked
+for dependence on {\tt VAR}, and are taken to be part of the coefficients.
+
+\subsection{DEG Operator}\ttindex{DEG}
+
+This operator is used with the syntax
+\begin{verbatim}
+        DEG(EXPRN:polynomial,VAR:kernel):integer.
+\end{verbatim}
+It returns the leading degree\index{Degree} of the polynomial {\tt EXPRN}
+in the variable {\tt VAR}.  If {\tt VAR} does not occur as a variable in
+{\tt EXPRN}, 0 is returned.
+
+{\it Examples:}
+\begin{verbatim}
+        deg((a+b)*(c+2*d)^2,a) ->  1
+        deg((a+b)*(c+2*d)^2,d) ->  2
+        deg((a+b)*(c+2*d)^2,e) ->  0.
+\end{verbatim}
+Note also that if {\tt RATARG} is on,
+\begin{verbatim}
+        deg((a+b)^3/a,a)       ->  3
+\end{verbatim}
+since in this case, the denominator {\tt A} is considered part of the
+coefficients of the numerator in {\tt A}.  With {\tt RATARG} off, however,
+an error would result in this case.
+
+\subsection{DEN Operator}\ttindex{DEN}
+
+This is used with the syntax:
+\begin{verbatim}
+        DEN(EXPRN:rational):polynomial.
+\end{verbatim}
+It returns the denominator of the rational expression {\tt EXPRN}.  If
+{\tt EXPRN} is a polynomial, 1 is returned.
+
+{\it Examples:}
+\begin{verbatim}
+        den(x/y^2)   ->  Y**2
+        den(100/6)   ->  3
+                [since 100/6 is first simplified to 50/3]
+        den(a/4+b/6) ->  12
+        den(a+b)     ->  1
+\end{verbatim}
+
+\subsection{LCOF Operator}\ttindex{LCOF}
+
+LCOF is used with the syntax
+\begin{verbatim}
+        LCOF(EXPRN:polynomial,VAR:kernel):polynomial.
+\end{verbatim}
+It returns the leading coefficient\index{Leading coefficient} of the
+polynomial {\tt EXPRN} in the variable {\tt VAR}.  If {\tt VAR} does not
+occur as a variable in {\tt EXPRN}, {\tt EXPRN} is returned.
+\extendedmanual{\newpage}
+{\it Examples:}
+\begin{verbatim}
+        lcof((a+b)*(c+2*d)^2,a) ->  C**2+4*C*D+4*D**2
+        lcof((a+b)*(c+2*d)^2,d) ->  4*(A+B)
+        lcof((a+b)*(c+2*d),e)   ->  A*C+2*A*D+B*C+2*B*D
+\end{verbatim}
+
+\subsection{LPOWER Operator}\ttindex{LPOWER}
+
+\begin{samepage}
+Syntax:
+\begin{verbatim}
+        LPOWER(EXPRN:polynomial,VAR:kernel):polynomial.
+\end{verbatim}
+LPOWER returns the leading power of {\tt EXPRN} with respect to {\tt VAR}.
+If {\tt EXPRN} does not depend on {\tt VAR}, 1 is returned.
+\end{samepage}
+
+{\it Examples:}
+\begin{verbatim}
+        lpower((a+b)*(c+2*d)^2,a) ->  A
+        lpower((a+b)*(c+2*d)^2,d) ->  D**2
+        lpower((a+b)*(c+2*d),e)   ->  1
+\end{verbatim}
+
+\subsection{LTERM Operator}\ttindex{LTERM}
+
+\begin{samepage}
+Syntax:
+\begin{verbatim}
+        LTERM(EXPRN:polynomial,VAR:kernel):polynomial.
+\end{verbatim}
+LTERM returns the leading term of {\tt EXPRN} with respect to {\tt VAR}.
+If {\tt EXPRN} does not depend on {\tt VAR}, {\tt EXPRN} is returned.
+\end{samepage}
+
+{\it Examples:}
+\begin{verbatim}
+        lterm((a+b)*(c+2*d)^2,a) ->  A*(C**2+4*C*D+4*D**2)
+        lterm((a+b)*(c+2*d)^2,d) ->  4*D**2*(A+B)
+        lterm((a+b)*(c+2*d),e)   ->  A*C+2*A*D+B*C+2*B*D
+\end{verbatim}
+
+{\COMPATNOTE} In some earlier versions of REDUCE, {\tt LTERM} returned
+{\tt 0} if the {\tt EXPRN} did not depend on {\tt VAR}.  In the present
+version, {\tt EXPRN} is always equal to {\tt LTERM(EXPRN,VAR)} $+$ {\tt
+REDUCT(EXPRN,VAR)}.
+
+\subsection{MAINVAR Operator}\ttindex{MAINVAR}
+
+Syntax:
+\begin{verbatim}
+        MAINVAR(EXPRN:polynomial):expression.
+\end{verbatim}
+Returns the main variable (based on the internal polynomial representation)
+of {\tt EXPRN}. If {\tt EXPRN} is a domain element, 0 is returned.
+
+{\it Examples:}
+
+Assuming {\tt A} has higher kernel order than {\tt B}, {\tt C}, or {\tt D}:
+\begin{verbatim}
+        mainvar((a+b)*(c+2*d)^2) ->  A
+        mainvar(2)               ->  0
+\end{verbatim}
+
+\subsection{NUM Operator}\ttindex{NUM}
+
+Syntax:
+\begin{verbatim}
+        NUM(EXPRN:rational):polynomial.
+\end{verbatim}
+Returns the numerator of the rational expression {\tt EXPRN}.  If {\tt EXPRN}
+is a polynomial, that polynomial is returned.
+
+{\it Examples:}
+\begin{verbatim}
+        num(x/y^2)  ->  X
+        num(100/6)   ->  50
+        num(a/4+b/6) ->  3*A+2*B
+        num(a+b)     ->  A+B
+\end{verbatim}
+
+\subsection{REDUCT Operator}\ttindex{REDUCT}
+
+Syntax:
+\begin{verbatim}
+        REDUCT(EXPRN:polynomial,VAR:kernel):polynomial.
+\end{verbatim}
+Returns the reductum of {\tt EXPRN} with respect to {\tt VAR} (i.e., the
+part of {\tt EXPRN} left after the leading term is removed).  If {\tt
+EXPRN} does not depend on the variable {\tt VAR}, 0 is returned.
+
+{\it Examples:}
+\begin{verbatim}
+     reduct((a+b)*(c+2*d),a) ->  B*(C + 2*D)
+     reduct((a+b)*(c+2*d),d) ->  C*(A + B)
+     reduct((a+b)*(c+2*d),e) ->  0
+\end{verbatim}
+
+{\COMPATNOTE} In some earlier versions of REDUCE, {\tt REDUCT} returned
+{\tt EXPRN} if it did not depend on {\tt VAR}.  In the present version, {\tt
+EXPRN} is always equal to {\tt LTERM(EXPRN,VAR)} $+$ {\tt
+REDUCT(EXPRN,VAR)}.
+
+\section{Polynomial Coefficient Arithmetic}\index{Coefficient}
+{\REDUCE} allows for a variety of numerical domains for the numerical
+coefficients of polynomials used in calculations.  The default mode is
+integer arithmetic, although the possibility of using real coefficients
+\index{Real coefficient} has been discussed elsewhere.  Rational
+coefficients have also been available by using integer coefficients in
+both the numerator and denominator of an expression, using the {\tt ON
+DIV}\ttindex{DIV} option to print the coefficients as rationals.
+However, {\REDUCE} includes several other coefficient options in its basic
+version which we shall describe in this section.  All such coefficient
+modes are supported in a table-driven manner so that it is
+straightforward to extend the range of possibilities.  A description of
+how to do this is given in R.J. Bradford, A.C. Hearn, J.A. Padget and
+E. Schr\"ufer, ``Enlarging the {\REDUCE} Domain of Computation,'' Proc. of
+SYMSAC '86, ACM, New York (1986), 100--106.
+
+\subsection{Rational Coefficients in Polynomials}\index{Coefficient}
+\index{Rational coefficient}
+Instead of treating rational numbers as the numerator and denominator of a
+rational expression, it is also possible to use them as polynomial
+coefficients directly. This is accomplished by turning on the switch
+{\tt RATIONAL}.\ttindex{RATIONAL}
+
+{\it Example:} With {\tt RATIONAL} off, the input expression {\tt a/2}
+would be converted into a rational expression, whose numerator was {\tt A}
+and denominator 2.  With {\tt RATIONAL} on, the same input would become a
+rational expression with numerator {\tt 1/2*A} and denominator {\tt 1}.
+Thus the latter can be used in operations that require polynomial input
+whereas the former could not.
+
+\subsection{Real Coefficients in Polynomials}\index{Coefficient}
+\index{Real coefficient}
+The switch {\tt ROUNDED}\ttindex{ROUNDED} permits the use of arbitrary
+sized real coefficients in polynomial expressions.  The actual precision
+of these coefficients can be set by the operator {\tt PRECISION}.
+\ttindex{PRECISION} For example, {\tt precision 50;} sets the precision to
+fifty decimal digits.  The default precision is system dependent and can
+be found by {\tt precision 0;}.  In this mode, denominators are
+automatically made monic, and an appropriate adjustment is made to the
+numerator.
+
+{\it Example:} With {\tt ROUNDED} on, the input expression {\tt a/2} would
+be converted into a rational expression whose numerator is {\tt 0.5*A} and
+denominator {\tt 1}.
+
+Internally, {\REDUCE} uses floating point numbers up to the precision
+supported by the underlying machine hardware, and so-called {\em
+bigfloats} for higher precision or whenever necessary to represent numbers
+whose value cannot be represented in floating point.  The internal
+precision is two decimal digits greater than the external precision to
+guard against roundoff inaccuracies.  Bigfloats represent the fraction and
+exponent parts of a floating-point number by means of (arbitrary
+precision) integers, which is a more precise representation in many cases
+than the machine floating point arithmetic, but not as efficient.  If a
+case arises where use of the machine arithmetic leads to problems, a user
+can force {\REDUCE} to use the bigfloat representation at all precisions by
+turning on the switch {\tt ROUNDBF}.\ttindex{ROUNDBF}  In rare cases,
+this switch is turned on by the system, and the user informed by the
+message
+\begin{verbatim}
+        ROUNDBF turned on to increase accuracy
+\end{verbatim}
+
+Rounded numbers are normally printed to the specified precision.  However,
+if the user wishes to print such numbers with less precision, the printing
+precision can be set by the command {\tt PRINT\_PRECISION}.
+\ttindex{PRINT\_PRECISION} For example, {\tt print\_precision 5;} will
+cause such numbers to be printed with five digits maximum.
+
+Under normal circumstances when {\tt ROUNDED} is on, {\REDUCE} converts the
+number 1.0 to the integer 1.  If this is not desired, the switch
+{\tt NOCONVERT}\ttindex{NOCONVERT} can be turned on.
+
+Numbers that are stored internally as bigfloats are normally printed with
+a space between every five digits to improve readability.  If this
+feature is not required, it can be suppressed by turning off the switch
+{\tt BFSPACE}.\ttindex{BFSPACE}
+
+Further information on the bigfloat arithmetic may be found in T. Sasaki,
+``Manual for Arbitrary Precision Real Arithmetic System in {\REDUCE}'',
+Department of Computer Science, University of Utah, Technical Note No.
+TR-8 (1979).
+
+When a real number is input, it is normally truncated to the precision in
+effect at the time the number is read.  If it is desired to keep the full
+precision of all numbers input, the switch {\tt ADJPREC}\ttindex{ADJPREC}
+(for {\em adjust precision\/}) can be turned on.  While on, {\tt ADJPREC}
+will automatically increase the precision, when necessary, to match that
+of any integer or real input, and a message printed to inform the user of
+the precision increase.
+
+When {\tt ROUNDED} is on, rational numbers are normally converted to
+rounded representation.  However, if a user wishes to keep such numbers in
+a rational form until used in an operation that returns a real number,
+the switch {\tt ROUNDALL}\ttindex{ROUNDALL} can be turned off.  This
+switch is normally on.
+
+Results from rounded calculations are returned in rounded form with two
+exceptions: if the result is recognized as {\tt 0} or {\tt 1} to the
+current precision, the integer result is returned.
+
+\subsection{Modular Number Coefficients in Polynomials}\index{Coefficient}
+\index{Modular coefficient}
+{\REDUCE} includes facilities for manipulating polynomials whose
+coefficients are computed modulo a given base.  To use this option, two
+commands must be used; {\tt SETMOD} {\tt <integer>},\ttindex{SETMOD} to set
+the prime modulus, and {\tt ON MODULAR}\ttindex{MODULAR} to cause the
+actual modular calculations to occur.
+For example, with {\tt setmod 3;} and {\tt on modular;}, the polynomial
+{\tt (a+2*b)\verb|^|3} would become {\tt A\verb|^|3+2*B\verb|^|3}.
+
+The argument of {\tt SETMOD} is evaluated algebraically, except that
+non-modular (integer) arithmetic is used.  Thus the sequence
+\begin{verbatim}
+        setmod 3; on modular; setmod 7;
+\end{verbatim}
+will correctly set the modulus to 7.
+
+Modular numbers are by default represented by integers in the interval
+[0,p-1] where p is the current modulus.  Sometimes it is more convenient
+to use an equivalent symmetric representation in the interval
+[-p/2+1,p/2], or more precisely
+[-floor((p-1)/2), ceiling((p-1)/2)],
+especially if the modular numbers map objects that include
+negative quantities.  The switch {\tt BALANCED\_MOD}\ttindex{BALANCED\_MOD}
+allows you to select the symmetric representation for output.
+
+Users should note that the modular calculations are on the polynomial
+coefficients only.  It is not currently possible to reduce the exponents
+since no check for a prime modulus is made (which would allow
+$x^{p-1}$ to be reduced to 1 mod p).  Note also that any division by a
+number not co-prime with the modulus will result in the error ``Invalid
+modular division''.
+
+\subsection{Complex Number Coefficients in Polynomials}\index{Coefficient}
+\index{Complex coefficient}
+Although {\REDUCE} routinely treats the square of the variable {\em i\/} as
+equivalent to $-1$, this is not sufficient to reduce expressions involving
+{\em i\/} to lowest terms, or to factor such expressions over the complex
+numbers.  For example, in the default case,
+\begin{verbatim}
+        factorize(a^2+1);
+\end{verbatim}
+gives the result
+\begin{verbatim}
+	{{A**2+1,1}}
+\end{verbatim}
+and
+\begin{verbatim}
+        (a^2+b^2)/(a+i*b)
+\end{verbatim}
+is not reduced further.  However, if the switch
+{\tt COMPLEX}\ttindex{COMPLEX} is turned on, full complex arithmetic is then
+carried out.  In other words, the above factorization will give the result
+\begin{verbatim}
+	{{A + I,1},{A - I,1}}
+\end{verbatim}
+and the quotient will be reduced to {\tt A-I*B}.
+
+The switch {\tt COMPLEX} may be combined with {\tt ROUNDED} to give complex
+real numbers; the appropriate arithmetic is performed in this case.
+
+Complex conjugation is used to remove complex numbers from denominators of
+expressions.  To do this if {\tt COMPLEX} is off, you must turn the switch
+{\tt RATIONALIZE}\ttindex{RATIONALIZE} on.
+

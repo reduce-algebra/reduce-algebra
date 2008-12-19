@@ -1,0 +1,14 @@
+This directory contains PSL binaries.
+=====================================
+
+Do not re-distribute without checking with ZIB (neun@zib.de).
+
+
+There are two sorts of things here. Firstly there are a bunch of directories
+with names like psl-amd64 and psl-win32 that contain ready-built binaries
+of a basic kermel version of PSL.
+
+Then there are a load of script and related files used for re-building REDUCE
+in a PSL world.
+
+

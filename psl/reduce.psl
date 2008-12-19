@@ -1,0 +1,23 @@
+#!/bin/csh -f
+# Script to load PSL REDUCE. It should be installed in /usr/local/bin,
+# somewhere in your search path.
+if ($?reduce == 0) then
+   setenv reduce reducevar
+endif
+if ($?MACHINE == 0) then
+  setenv MACHINE linux
+endif
+
+if ( -e $reduce/lisp/psl/$MACHINE/psl/64 ) then
+#   64 bit system
+    set MEM=2000
+      else
+    set MEM=16000000
+endif
+
+setenv gnuplot $reduce/wutil/$MACHINE
+setenv GNUPLOT_DRIVER_DIR $reduce/wutil/$MACHINE
+
+$reduce/lisp/psl/$MACHINE/psl/bpsl -td $MEM \
+      -f $reduce/lisp/psl/$MACHINE/red/reduce.img
+

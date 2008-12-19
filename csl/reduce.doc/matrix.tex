@@ -1,0 +1,293 @@
+\chapter{Matrix Calculations} \index{Matrix calculations}
+A very powerful feature of {\REDUCE} is the ease with which matrix
+calculations can be performed. To extend our syntax to this class of
+calculations we need to add another prefix operator, {\tt MAT},
+\ttindex{MAT} and a further
+variable and expression type as follows:
+
+\section{MAT Operator}\ttindex{MAT}
+This prefix operator is used to represent $n\times m$ matrices. {\tt
+MAT} has {\em n} arguments interpreted as rows of the matrix, each of
+which is a list of {\em m} expressions representing elements in that row.
+For example, the matrix
+\[ \left( \begin{array}{lcr} a & b & c \\ d & e & f \end{array} \right) \]
+would be written as {\tt mat((a,b,c),(d,e,f))}.
+
+Note that the single column matrix
+\[ \left( \begin{array}{c} x \\ y \end{array} \right) \]
+becomes {\tt mat((x),(y))}.  The inside parentheses are required to
+distinguish it from the single row matrix
+\[ \left( \begin{array}{lr} x & y \end{array} \right) \]
+that would be written as {\tt mat((x,y))}.
+
+\section{Matrix Variables}
+
+An identifier may be declared a matrix variable by the declaration {\tt
+MATRIX}.\ttindex{MATRIX}
+The size of the matrix may be declared explicitly in the matrix
+declaration, or by default in assigning such a variable to a matrix
+expression. For example,
+\begin{verbatim}
+        matrix x(2,1),y(3,4),z;
+\end{verbatim}
+declares {\tt X} to be a 2 x 1 (column) matrix, {\tt Y} to be a 3 x 4
+matrix and {\tt Z} a matrix whose size is to be declared later.
+
+Matrix declarations can appear anywhere in a program. Once a symbol is
+declared to name a matrix, it can not also be used to name an array,
+operator or a procedure, or used as an ordinary variable. It can however
+be redeclared to be a matrix, and its size may be changed at that time.
+Note however that matrices once declared are {\em global\/} in scope, and so
+can then be referenced anywhere in the program.  In other words, a
+declaration within a block (or a procedure) does not limit the scope of
+the matrix to that block, nor does the matrix go away on exiting the block
+(use {\tt CLEAR} instead for this purpose).  An element of a matrix is
+referred to in the expected manner; thus {\tt x(1,1)} gives the first
+element of the matrix {\tt X} defined above.  References to elements of a
+matrix whose size has not yet been declared leads to an error.  All
+elements of a matrix whose size is declared are initialized to 0.  As a
+result, a matrix element has an {\em instant evaluation\/}\index{Instant
+evaluation} property and cannot stand for itself.  If this is required,
+then an operator should be used to name the matrix elements as in:
+\begin{verbatim}
+        matrix m; operator x;  m := mat((x(1,1),x(1,2));
+\end{verbatim}
+
+\section{Matrix Expressions}
+
+These follow the normal rules of matrix algebra as defined by the
+following syntax:\ttindex{MAT}
+\begin{verbatim}
+        <matrix expression> ::=
+                  MAT<matrix description>|<matrix variable>|
+                  <scalar expression>*<matrix expression>|
+                  <matrix expression>*<matrix expression>
+                  <matrix expression>+<matrix expression>|
+                  <matrix expression>^<integer>|
+                  <matrix expression>/<matrix expression>
+\end{verbatim}
+Sums and products of matrix expressions must be of compatible size;
+otherwise an error will result during their evaluation.  Similarly, only
+square matrices may be raised to a power.  A negative power is computed as
+the inverse of the matrix raised to the corresponding positive power.
+{\tt a/b} is interpreted as {\tt a*b\verb|^|(-1)}.
+
+{\it Examples:}
+
+Assuming {\tt X} and {\tt Y} have been declared as matrices, the following
+are matrix expressions
+\begin{verbatim}
+        y
+        y^2*x-3*y^(-2)*x
+        y + mat((1,a),(b,c))/2
+\end{verbatim}
+The computation of the quotient of two matrices normally uses a two-step
+elimination method due to Bareiss.  An alternative method using Cramer's
+method is also available.  This is usually less efficient than the Bareiss
+method unless the matrices are large and dense, although we have no solid
+statistics on this as yet.  To use Cramer's method instead, the switch
+{\tt CRAMER}\ttindex{CRAMER} should be turned on.
+
+
+\section{Operators with Matrix Arguments}
+
+The operator {\tt LENGTH}\ttindex{LENGTH} applied to a matrix returns a
+list of the number of rows and columns in the matrix.  Other operators
+useful in matrix calculations are defined in the following subsections.
+Attention is also drawn to the LINALG
+\extendedmanual{(chapter~\ref{LINALG})} and NORMFORM
+\extendedmanual{(chapter~\ref{NORMFORM})} packages.
+
+\subsection{DET Operator}\ttindex{DET}
+Syntax:
+\begin{verbatim}
+        DET(EXPRN:matrix_expression):algebraic.
+\end{verbatim}
+
+The operator {\tt DET} is used to represent the determinant of a square
+matrix expression.  E.g.,
+\begin{verbatim}
+        det(y^2)
+\end{verbatim}
+is a scalar expression whose value is the determinant of the square of the
+matrix {\tt Y}, and
+\begin{verbatim}
+        det mat((a,b,c),(d,e,f),(g,h,j));
+\end{verbatim}
+is a scalar expression whose value is the determinant of the matrix
+\[ \left( \begin{array}{lcr} a & b & c \\ d & e & f \\ g & h & j
+\end{array} \right) \]
+
+Determinant expressions have the {\em instant evaluation\/} property.
+\index{Instant evaluation}  In other words, the statement
+\begin{verbatim}
+        let det mat((a,b),(c,d)) = 2;
+\end{verbatim}
+sets the {\em value\/} of the determinant to 2, and does not set up a rule
+for the determinant itself.
+
+\subsection{MATEIGEN Operator}\ttindex{MATEIGEN}
+Syntax:
+\begin{verbatim}
+        MATEIGEN(EXPRN:matrix_expression,ID):list.
+\end{verbatim}
+
+{\tt MATEIGEN} calculates the eigenvalue equation and the corresponding
+eigenvectors of a matrix, using the variable {\tt ID} to denote the
+eigenvalue.  A square free decomposition of the characteristic polynomial
+is carried out.  The result is a list of lists of 3 elements, where the
+first element is a square free factor of the characteristic polynomial,
+the second its multiplicity and the third the corresponding eigenvector
+(as an {\em n} by 1 matrix).  If the square free decomposition was
+successful, the product of the first elements in the lists is the minimal
+polynomial.  In the case of degeneracy, several eigenvectors can exist for
+the same eigenvalue, which manifests itself in the appearance of more than
+one arbitrary variable in the eigenvector.  To extract the various parts
+of the result use the operations defined on lists.
+
+{\it Example:}
+ The command
+\begin{verbatim}
+        mateigen(mat((2,-1,1),(0,1,1),(-1,1,1)),eta);
+\end{verbatim}
+gives the output
+\begin{verbatim}
+        {{ETA - 1,2,
+
+          [ARBCOMPLEX(1)]
+          [             ]
+          [ARBCOMPLEX(1)]
+          [             ]
+          [      0      ]
+
+          },
+
+         {ETA - 2,1,
+
+          [      0      ]
+          [             ]
+          [ARBCOMPLEX(2)]
+          [             ]
+          [ARBCOMPLEX(2)]
+
+          }}
+\end{verbatim}
+
+\subsection{TP Operator}\ttindex{TP}
+Syntax:
+\begin{verbatim}
+        TP(EXPRN:matrix_expression):matrix.
+\end{verbatim}
+
+This operator takes a single matrix argument and returns its transpose.
+
+\subsection{Trace Operator}\ttindex{TRACE}
+Syntax:
+\begin{verbatim}
+        TRACE(EXPRN:matrix_expression):algebraic.
+\end{verbatim}
+The operator {\tt TRACE} is used to represent the trace of a square matrix.
+
+\subsection{Matrix Cofactors}\ttindex{COFACTOR}
+Syntax:
+\begin{verbatim}
+  COFACTOR(EXPRN:matrix_expression,ROW:integer,COLUMN:integer):
+	   algebraic
+\end{verbatim}
+
+The operator {\tt COFACTOR} returns the cofactor of the element in row
+{\tt ROW} and column {\tt COLUMN} of the matrix {\tt MATRIX}.  Errors occur
+if {\tt ROW} or {\tt COLUMN} do not simplify to integer expressions or if
+{\tt MATRIX} is not square.
+
+\subsection{NULLSPACE Operator}\ttindex{NULLSPACE}
+Syntax:
+\begin{verbatim}
+        NULLSPACE(EXPRN:matrix_expression):list
+\end{verbatim}
+{\tt NULLSPACE} calculates for a matrix {\tt A} a list of linear
+independent vectors (a basis) whose linear combinations satisfy the
+equation $A x = 0$.  The basis is provided in a form such that as many
+upper components as possible are isolated.
+
+Note that with {\tt b := nullspace a} the expression {\tt length b} is the
+{\em nullity\/} of A, and that {\tt second length a - length b} calculates the
+{\em rank\/} of A.  The rank of a matrix expression can also be found more
+directly by the {\tt RANK} operator described below.
+
+{\it Example:} The command
+\begin{verbatim}
+        nullspace mat((1,2,3,4),(5,6,7,8));
+\end{verbatim}
+   gives the output
+ 
+\begin{verbatim}
+        {
+         [ 1  ]
+         [    ]
+         [ 0  ]
+         [    ]
+         [ - 3]
+         [    ]
+         [ 2  ]
+         ,
+         [ 0  ]
+         [    ]
+         [ 1  ]
+         [    ]
+         [ - 2]
+         [    ]
+         [ 1  ]
+         }
+\end{verbatim}
+ 
+In addition to the {\REDUCE} matrix form, {\tt NULLSPACE} accepts as input a
+matrix given as a list of lists, that is interpreted as a row matrix.  If
+that form of input is chosen, the vectors in the result will be
+represented by lists as well.  This additional input syntax facilitates
+the use of {\tt NULLSPACE} in applications different from classical linear
+algebra.
+
+\subsection{RANK Operator}\ttindex{RANK}
+ 
+Syntax:
+\begin{verbatim}
+        RANK(EXPRN:matrix_expression):integer
+\end{verbatim}
+{\tt RANK} calculates the rank of its argument, that, like {\tt NULLSPACE}
+can either be a standard matrix expression, or a list of lists, that can
+be interpreted either as a row matrix or a set of equations.
+
+{\tt Example:}
+
+\begin{verbatim}
+        rank mat((a,b,c),(d,e,f));
+\end{verbatim}
+returns the value 2.
+
+\section{Matrix Assignments} \index{Matrix assignment}
+
+Matrix expressions may appear in the right-hand side of assignment
+statements. If the left-hand side of the assignment, which must be a
+variable, has not already been declared a matrix, it is declared by default
+to the size of the right-hand side. The variable is then set to the value
+of the right-hand side.
+
+Such an assignment may be used very conveniently to find the solution of a
+set of linear equations. For example, to find the solution of the
+following set of equations
+\begin{verbatim}
+        a11*x(1) + a12*x(2) = y1
+        a21*x(1) + a22*x(2) = y2
+\end{verbatim}
+we simply write
+\begin{verbatim}
+        x := 1/mat((a11,a12),(a21,a22))*mat((y1),(y2));
+\end{verbatim}
+
+\section{Evaluating Matrix Elements}
+
+Once an element of a matrix has been assigned, it may be referred to in
+standard array element notation.  Thus {\tt y(2,1)} refers to the element
+in the second row and first column of the matrix {\tt Y}.
+

@@ -1,0 +1,14 @@
+I am a bit worried that some file-names here were truncated to 8+3 and
+SOMETIMES that seems not to matter to PSL but sometimes it does. I have put
+a everything back to full-length form (eg datamachine.b) but somebody else who
+understands PSL better may like to review whether this was the right thing to
+do! My GUESS is that the short names were a relic from times when Windows
+has limits of filename lengths?
+
+The one thing I have left (as an oddity) is auto-tr.b AND autoload-tr.b, where
+the 8+3 truncation introduced a name-clash.
+
+I do not know what the file "hugo" is for but it lists the short names not
+the full ones.
+
+         ACN  July 2008

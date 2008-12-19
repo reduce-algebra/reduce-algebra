@@ -1,0 +1,36 @@
+#!/bin/csh -f
+
+# remake: build compiled versions of any updated source files.
+
+# Author: Anthony C. Hearn.
+
+rm -f $reduce/log/$lisp/$MACHINE/remake.log
+
+date > $reduce/log/$lisp/$MACHINE/remake.log
+
+# Build core system
+
+$reduce/util/remake2
+
+# Build packages in "packages" directory.
+
+source $reduce/upackage.bat
+
+foreach x ($upackages)
+   $reduce/util/mkpckge $x
+ end
+
+if ( -e $reduce/lisp/$lisp/$MACHINE/mkreduce ) then
+   rm $reduce/lisp/$lisp/$MACHINE/mkreduce
+   $reduce/util/mkreduce.$lisp
+endif
+
+foreach x ($upackages2)
+   $reduce/util/mkpckge $x
+ end
+
+foreach x ($upackages3)
+   $reduce/util/mkpckge $x
+ end
+
+date >> $reduce/log/$lisp/$MACHINE/remake.log

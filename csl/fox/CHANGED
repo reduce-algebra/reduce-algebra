@@ -1,0 +1,52 @@
+The file in this directory are a derived work of FOX 1.6.21, and are
+subject to the LGPL, a copy of which is present here. One requirement
+of that is that changes are prominently noted and a date is attached. This
+file is to collect that information in a way intende to be as clear and
+easy for people to use as possible. I am taking the view that files that one
+would re-generate using the gnu autoconf tools (eg Makefile.in) do not need
+to be marked or listed provided the master copy (eg Makefile.am) that they
+are derived from is. I will also use this as a place to provide a very very
+brief annotation as to why some of these files had to be altered.
+
+
+(a) Changed files
+
+autogen.sh                     remake "configure" script etc
+configure.in                   support for mingw, windows64, fat-MAC etc
+include/FXApp.h                "unsigned"->"FX_WPARAM" to survive windows-64
+include/FXText.h               add TEXT_COLUMNWRAP manifest
+include/fxdefs.h               windows-64 support
+src/FXApp.cpp                  as FXApp.h
+src/FXDCWindow.cpp             Windows-64 and type of stipple.
+src/FXDebugTarget.cpp          64-bit item in a printf on windows-64
+src/FXFont.cpp                 old versions of fontconfig do not have FX_WIDTH
+                               and some FC_WEIGHT options. Fix so it compiles
+                               on my Tiger Mac.
+src/FXFontSelector.cpp         set up size in selector dialog to match
+                               requested size if you have a scalable font.
+src/FXText.cpp                 option to wrap at a fixed column
+src/FXWindow.cpp               HANDLE vs FXuint to be win64-safe
+src/Makefile.am                support 64-bit windows build using MS
+                               command-line tools, add in my new files
+utils/Makefile.am              if cross-building use gcc to compile utils.
+
+
+(b) New files
+
+include/FXDCNativePrinter.h    header files for my new stuff
+include/FXMathText.h
+include/FXPostscriptFont.h
+include/FXShowMath.h
+include/FXTerminal.h
+
+src/FXDCNativePrinter.cpp      can use windows native printin as well as
+                               printing to postscript
+src/FXMathText.cpp             like FXText.cpp but scope for in-line maths
+src/FXPostscriptFont.cpp       Postscript font metrics for printing
+src/FXPrintSample.cpp          accompanied the basis that FXDCNativePrinter
+                               built on
+src/FXShowMath.cpp             display mathematical expressions
+src/FXTerminal.cpp             a terminal for interactive sessions to run in
+src/FXWorker.cpp               thread-related parts assocated with FXTermninal
+
+============================================================

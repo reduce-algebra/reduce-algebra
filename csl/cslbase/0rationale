@@ -1,0 +1,82 @@
+                              Rationale
+                              =========
+
+This license permits unrestricted use of the material covered if it is not
+redistributed outside the recipient's organisation, subject to acceptance 
+of the disclaimer of liability. Redistribution in full or in part, or 
+creation of derivative works is permitted including the use of all or 
+part of the material in a commercial package. 
+
+The first three clauses that control redistribution follow the well-
+established BSD license. The fourth clause is there because Codemist
+developed this code and still maintains version of it in different contexts
+as commercial products. Despite this Codemist wishes to make a version
+of the code available to the community: initially to support the Axiom
+algebra system but with the possibility of whatever other uses people find
+for it, commercial or otherwise.  The first part (making modified source
+code available to Codemist) would automatically be satisfied if you made
+your modifications generally public by, for instance, putting them on a web
+page somewhere or contributing them to a publicly accessible cvs
+repository: it could also be satisfied by e-mailing consolidated
+updates to Codemist. The requirement should thus only feel onerous if you 
+are minded to incorporate this code in a non-open project: in such
+cases Codemist, in return for having made the code available to start
+with, insists that it receives any updates or upgrades to its code
+that you create. Codemist does not make any demands at all with regard
+to the larger body of non-open code that gets parts of this code 
+incorporated into it. 
+
+The next part gives Codemist the right to use corrections, updates 
+and developments of this code in any way it chooses. This can include
+making these publicly available, and it can also include merging them 
+into the non-open project from which this one derives, without watering 
+down the proprietary nature of that version in any way at all. Thus 
+the Codemist commercial project may benefit from updates contributed 
+this way. But if contributors choose to make their updates fully public 
+(as they are permitted to under this license) everybody else can benefit 
+from all the updates too.
+
+The final part demands that contributors do not return to Codemist anything
+that they do not have sufficient rights to. Note that (as is the case
+with all variants on the BSD license) this means that material subject
+to the GPL may not be merged in with this material and then re-circulated,
+since in such a case the GPL would lay claim to the entire package (even
+if only one line of GPL code had been inserted), and that would impose
+additional constraints on recipients that are not acceptable under this
+license.
+
+As I understand the BSD and GNU licenses this difficulty whereby code
+made publicly available at no charge and with full permission to modify
+can be under one or other license but material from one tradition may not
+be incorporated into the other (in either direction) is a generic one
+in the open source community and is not special or specific to this
+particular instance. In a significant number of cases it can be overcome by
+keeping the distinctly-licensed code bodies slightly at arm's length: for
+instance letting one load the other as a dynamic library or plug-in or
+forming a remote-procedure interface can leave the two units having a clear
+separate identity.
+
+When part or all of the code licensed here is incorporated into a 
+distinct work Codemist's intent is not to lay claim to rights to the larger 
+work as a whole: it just assert rights over the changes to the 
+Codemist software developed in the process of making it fit to be 
+embedded in the new context.
+
+None of this gives Codemist (or anybody else) exclusive rights to 
+changes. The license permits (and Codemist encourages) those who 
+make changes to distribute the whole of their work in source form thus 
+giving everybody (not just Codemist) rights to make commercial or 
+non-commercial use of everything.
+
+Since everybody has access to this code anybody who feels able to extend
+and support it for themselves does not need anything more. However anybody
+thinking of using significant chunks of it in a commercial product might
+like to consider whether some consultancy support from Codemist or
+discussions about any related but distinct Codemist technology would be
+in their interests.
+
+
+               acn@codemist.co.uk  Arthur Norman.  Codemist Ltd.  2002
+
+
+=======================================================================

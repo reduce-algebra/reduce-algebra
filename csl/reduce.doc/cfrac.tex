@@ -1,0 +1,41 @@
+\section{CONTINUED\_FRACTION Operator}
+\index{approximation}\index{rational number}
+
+The operator CONTINUED\_FRACTION approximates the real number 
+( \nameref{rational} number, \nameref{rounded} number)
+into a continued fraction. CONTINUE_FRACTION has one or
+two arguments, the number to be converted and an optional
+precision:
+\begin{verbatim}
+    continued\_fraction(<num>)
+ or
+    continued\_fraction(<num>,<size>)
+\end{verbatim}
+The result is a list of two elements: the
+first one is the rational value of the approximation, the second one
+is the list of terms of the continued fraction which represents the
+same value according to the definition \verb&t0 +1/(t1 + 1/(t2 + ...))&.
+Precision: the second optional parameter \meta{size} is an upper bound
+for the absolute value of the result denominator. If omitted, the
+approximation is performed up to the current system precision.
+
+{\tt Examples:}
+\begin{verbatim}
+continued_fraction pi;
+
+                  ->
+
+  1146408
+{---------,{3,7,15,1,292,1,1,1,2,1}}
+  364913
+
+continued_fraction(pi,100);
+
+                  ->
+
+  22
+{----,{3,7}}
+  7
+
+
+\end{verbatim}
