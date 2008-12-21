@@ -35,7 +35,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([FOXTESTS],[1.4.21])
-AM_INIT_AUTOMAKE([-Wall -Wno-override foreign dist-bzip2])
+AM_INIT_AUTOMAKE([-Wall -Wno-override -Wno-portability foreign dist-bzip2])
 
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
@@ -97,6 +97,21 @@ AC_ARG_WITH(m64,
    [  --with-m64              Force 64-bit model even if 32-bit is default],
    bits64="yes")
 
+
+AC_ARG_WITH(csl,
+  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  [],
+  [with_csl="no"])
+
+AC_ARG_WITH(psl,
+  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  [],
+  [with_psl="no"])
+
+AC_ARG_WITH(build,
+  AC_HELP_STRING([--with-build], [Used internally to control build directory]),
+  [],
+  [with_build="unknown"])
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)

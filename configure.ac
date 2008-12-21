@@ -12,10 +12,16 @@ AC_ARG_WITH(csl,
   AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
   [with_csl="no"])
+
 AC_ARG_WITH(psl,
   AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
   [],
   [with_psl="no"])
+
+AC_ARG_WITH(build,
+  AC_HELP_STRING([--with-build], [Used internally to control build directory]),
+  [],
+  [with_build="unknown"])
 
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
@@ -81,7 +87,7 @@ esac
 
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 
@@ -212,10 +218,11 @@ then
   do
     if test "$LTC" = "false"
     then
-      AC_MSG_NOTICE([checking for $p/libtoolcacheize])
+#     AC_MSG_NOTICE([checking for $p/libtoolcacheize])
       if test -x $p/libtoolcacheize
       then
          LTC="$p/libtoolcacheize"
+         IFS="$IFSsave"
          AC_MSG_NOTICE([Found $LTC])
       fi
     fi

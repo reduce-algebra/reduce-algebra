@@ -8,7 +8,7 @@ AC_CANONICAL_HOST()
 
 AC_CONFIG_SRCDIR(README.PSL)
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 
@@ -19,6 +19,16 @@ AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32], [Force use of 32-bit mode on 64-bit host]),
    [],
    [with_m32="no"])
+
+AC_ARG_WITH(csl,
+  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  [],
+  [with_csl="no"])
+
+AC_ARG_WITH(psl,
+  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  [],
+  [with_psl="no"])
 
 AC_ARG_WITH(build,
    AC_HELP_STRING([--with-build], [specify host-name to use when logging]),

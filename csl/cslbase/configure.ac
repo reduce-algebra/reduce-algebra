@@ -54,7 +54,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([CSL],[6.03])
-AM_INIT_AUTOMAKE([-Wall -Wno-override foreign dist-bzip2])
+AM_INIT_AUTOMAKE([-Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 
 # Explain that a file "config.h" should be generated
@@ -108,6 +108,16 @@ then
    STRIP="x86_64-pc-mingw32-strip"
    AR="x86_64-pc-mingw32-ar"
 fi
+
+AC_ARG_WITH(csl,
+  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  [],
+  [with_csl="no"])
+
+AC_ARG_WITH(psl,
+  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  [],
+  [with_psl="no"])
 
 # What host am I on?
 AC_CANONICAL_HOST()
