@@ -20519,6 +20519,10 @@ fi
 
 if test "x$MINGW32" != "xyes"; then
 
+if test -f /usr/X11R6/include; then
+  CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include "
+fi
+
 if test "${ac_cv_header_Xlib_h+set}" = set; then
   { $as_echo "$as_me:$LINENO: checking for Xlib.h" >&5
 $as_echo_n "checking for Xlib.h... " >&6; }

@@ -394,6 +394,10 @@ dnl not want them...
 
 if test "x$MINGW32" != "xyes"; then
 
+if test -d /usr/X11R6/include; then
+  CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include "
+fi
+
 AC_CHECK_HEADER([Xlib.h],[],[])
 
 dnl Check for Xft2 support
