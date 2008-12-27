@@ -336,6 +336,7 @@ symbolic procedure letexprn(u,v,w,x,b,flgg);
                             then if flagp(x,'used!*) then rmsubs()
                                   else nil
                            else if 'used!* memq cddr fkern x
+                              or car x eq 'df
                             then rmsubs();
                           setk1(x,v,b)>>
                   else if atom x then return errpri1 u

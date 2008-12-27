@@ -54,7 +54,7 @@ create!-package('(ftr),'(util));
 fluid '(!*echo !*downcase !*upcase current!-char!* previous!-char!*
         member!-channel!* old!-channel!*);
 
-global '(!*raise charassoc!* loaded!-modules!*);
+global '(!*raise charassoc!*);
 
 global '(dir!*);  % output directory name.
 
@@ -174,14 +174,25 @@ symbolic procedure make_dist_file x;
       ochan := open(mkfil v,'output);
       oldochan := wrs ochan;
       evload list x;   % To get package list.
-      loaded!-modules!* := union(list x, loaded!-modules!*);
       v := get(x,'package);
       if null v then v := list x;
       for each j in v do
-         file!-transform(module2!-to!-file(j,x),function write_module);
+	 file!-transform(module2file(j,x),function write_module);
       prin2t if !*downcase then "end;" else "END;";
       wrs oldochan;
       close ochan
+   end;
+
+symbolic procedure module2file(u,v);
+   % Converts the module u to a fully rooted file name with v the
+   % package name, assuming files exist on $rsrc followed by path
+   % defined by package given by associate of u in modules!*.
+   begin scalar x;
+      x := "$reduce/src/";
+      for each j in get(v,'path) do
+%        x := concat(x,concat(string!-downcase j,dirchar!*));
+	 x := concat(x,concat(string!-downcase j,"/"));
+      return concat(x,concat(string!-downcase u,".red"))
    end;
 
 symbolic procedure write_module;

@@ -31,8 +31,7 @@
 % fluid '(!*backtrace !*mode !*redefmsg !*usermode);
 fluid '(!*backtrace !*mode);
 
-global '(exportslist!* importslist!* loaded!-packages!* loaded!-modules!*
-         mode!-list!*);
+global '(exportslist!* importslist!* loaded!-packages!* mode!-list!*);
 
 !*mode := 'symbolic;   % initial value.
 
@@ -82,13 +81,8 @@ put('load,'stat,'rlis);
 put('load,'formfn,'formload);
 
 symbolic procedure formload(u,vars,mode);
-   if eq(mode, 'symbolic) then
-      list('progn,
-% Adapted to maintain loaded!-modules!*
-           list('setq, 'loaded!-modules!*,
-              list('union, 'loaded!-modules!*, mkquote cdr u)),
-           list('evload, mkquote cdr u))
-   else list('load!_package, mkquote cdr u);
+   list((if eq(mode,'symbolic) then 'evload else 'load!_package),
+	mkquote cdr u);
 
 symbolic procedure load!-package u;
    begin scalar x;
@@ -101,7 +95,6 @@ symbolic procedure load!-package u;
                   cdr x)
         then rederr
            list("error in loading package",u,"or package not found");
-      loaded!-modules!* := union(loaded!-modules!*, list u);
       if (x := get(u,'patchfn))
         then begin scalar !*usermode,!*redefmsg; eval list x end;
       loaded!-packages!* := u . loaded!-packages!*

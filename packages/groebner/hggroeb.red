@@ -33,7 +33,7 @@ module hggroeb; % Homogeneous Graded Grobner bases.
 %    A local redefinition of the function groebspolynom is
 %    used to exclude pairs which do not fit into the grade interval.
 
-fluid '(dd!-1!*, dd!-2!*);
+fluid '(dd!-1!* dd!-2!*);
 
 % imported fluids.
 
