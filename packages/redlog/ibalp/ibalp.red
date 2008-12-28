@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: ibalp.red,v 1.45 2008/01/23 16:34:48 sturm Exp $
+% $Id: ibalp.red,v 1.46 2008/08/24 06:31:14 sturm Exp $
 % ----------------------------------------------------------------------
 % Copyright (c) 2003-2008 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: ibalp.red,v $
+% Revision 1.46  2008/08/24 06:31:14  sturm
+% Added blackbox rl_betterp!*().
+%
 % Revision 1.45  2008/01/23 16:34:48  sturm
 % varsel returns a (1-element) list now for rlqevarseltry.
 %
@@ -192,11 +195,10 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(ibalp_rcsid!* ibalp_copyright!*);
-   ibalp_rcsid!* := "$Id: ibalp.red,v 1.45 2008/01/23 16:34:48 sturm Exp $";
+   ibalp_rcsid!* := "$Id: ibalp.red,v 1.46 2008/08/24 06:31:14 sturm Exp $";
    ibalp_copyright!* :=
       "Copyright (c) 2003-2008 A. Dolzmann, A. Seidl, and T. Sturm"
 >>;
-
 
 module ibalp;
 % Initial Boolean Algebra Lisp Prefix Form. Provides for
@@ -237,6 +239,7 @@ put('ibalp,'rl_params,'(
    (rl_elimset!* . ibalp_elimset)
    (rl_translat!* . ibalp_translat)
    (rl_varsel!* . ibalp_varsel)
+   (rl_betterp!* . cl_betterp)
    (rl_transform!* . ibalp_transform)
    (rl_trygauss!* . ibalp_trygauss)
    (rl_specelim!* . ibalp_specelim)

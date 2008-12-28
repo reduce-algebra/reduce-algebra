@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: dcfsfkacem.red,v 1.4 2004/03/23 11:31:45 dolzmann Exp $
+% $Id: dcfsfkacem.red,v 1.5 2008/08/24 05:24:32 sturm Exp $
 % ----------------------------------------------------------------------
 % copyright (c) 2004 thomas sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: dcfsfkacem.red,v $
+% Revision 1.5  2008/08/24 05:24:32  sturm
+% Fixed missing semicolon.
+%
 % Revision 1.4  2004/03/23 11:31:45  dolzmann
 % Corrected tags for cvs.
 %
@@ -38,13 +41,12 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(dcfsfkacem_rcsid!* dcfsfkacem_copyright!*);
-   dcfsfkacem_rcsid!* := "$Id: dcfsfkacem.red,v 1.4 2004/03/23 11:31:45 dolzmann Exp $";
+   dcfsfkacem_rcsid!* := "$Id: dcfsfkacem.red,v 1.5 2008/08/24 05:24:32 sturm Exp $";
    dcfsfkacem_copyright!* := "copyright (c) 2004 t. sturm"
 >>;
 
 module dcfsfkacem;
 % diferentially closed field standard form.
-
 
 % part 1
 
@@ -2714,7 +2716,7 @@ procedure dqe_elimopt!-neq(phi,diffequaliste,var);
 	 prin2t {ordg,gradg};
       >>; 
       res := dqe_neqnullfkt dqe_termcoefkt(prod,var);
-      res := dqe_simplify res
+      res := dqe_simplify res;
       return res
    end;
 

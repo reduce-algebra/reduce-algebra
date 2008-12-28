@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: rlsched.red,v 1.73 2008/05/23 07:58:56 sturm Exp $
+% $Id: rlsched.red,v 1.74 2008/08/24 05:29:37 sturm Exp $
 % ----------------------------------------------------------------------
 % Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: rlsched.red,v $
+% Revision 1.74  2008/08/24 05:29:37  sturm
+% Added services rlposgqe and rlposgqea.
+%
 % Revision 1.73  2008/05/23 07:58:56  sturm
 % Added service rlqeg and implementation for ofsf.
 %
@@ -277,11 +280,10 @@
 lisp <<
    fluid '(rl_sched_rcsid!* rl_sched_copyright!*);
    rl_sched_rcsid!* :=
-      "$Id: rlsched.red,v 1.73 2008/05/23 07:58:56 sturm Exp $";
+      "$Id: rlsched.red,v 1.74 2008/08/24 05:29:37 sturm Exp $";
    rl_sched_copyright!* :=
       "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module rlsched;
 % Reduce logic component scheduler. Submodule of [redlog]. Service and
@@ -316,8 +318,14 @@ rl_mkserv('ex,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
 
 rl_mkserv('all,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
 
+rl_mkserv('posgqe,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
+   (list)),'rl_s2a!-gqe,T);
+
 rl_mkserv('gqe,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
    (list)),'rl_s2a!-gqe,T);
+
+rl_mkserv('posgqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
+   (list)),'rl_s2a!-gqea,T);
 
 rl_mkserv('gqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
    (list)),'rl_s2a!-gqea,T);

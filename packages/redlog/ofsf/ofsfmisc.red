@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfmisc.red,v 1.15 2006/08/02 08:12:38 sturm Exp $
+% $Id: ofsfmisc.red,v 1.16 2008/08/24 05:28:13 sturm Exp $
 % ----------------------------------------------------------------------
 % Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: ofsfmisc.red,v $
+% Revision 1.16  2008/08/24 05:28:13  sturm
+% Admit substitution of parametric denominators.
+%
 % Revision 1.15  2006/08/02 08:12:38  sturm
 % Added module clresolv.
 %
@@ -77,11 +80,10 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_misc_rcsid!* ofsf_misc_copyright!*);
-   ofsf_misc_rcsid!* := "$Id: ofsfmisc.red,v 1.15 2006/08/02 08:12:38 sturm Exp $";
+   ofsf_misc_rcsid!* := "$Id: ofsfmisc.red,v 1.16 2008/08/24 05:28:13 sturm Exp $";
    ofsf_misc_copyright!* :=
       "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module ofsfmisc;
 % Ordered field standard form miscellaneous. Submodule of [ofsf].
@@ -199,17 +201,25 @@ procedure ofsf_t2cdl(term);
    {ofsf_0mk2('lessp,term),ofsf_0mk2('equal,term),ofsf_0mk2('greaterp,term)};
 
 procedure ofsf_subat(al,f);
-   begin scalar nlhs;
-      nlhs := subf(ofsf_arg2l f,al);
-      if not domainp denr nlhs then
-	 rederr "parametric denominator after substitution";
-      return ofsf_0mk2(ofsf_op f,numr nlhs)
-   end;
+   ofsf_simpat {ofsf_op f,ofsf_suba(al,prepf ofsf_arg2l f),0};
+
+procedure ofsf_suba(al,f);
+   % Substitute algebraically. [f] is Lisp prefix. Returns Lisp
+   % prefix.
+   if atom f then
+      lto_catsoc(f,al) or f
+   else
+      car f . for each arg in cdr f collect ofsf_suba(al,arg);
 
 procedure ofsf_subalchk(al);
-   for each x in al do
-      if not domainp denr simp cdr x then
-	 rederr "parametric denominator in substituted term";
+   % Formerly cheked for parametric denominators, but: We correctly
+   % handle them in ofsf_subat now. Also, a rederr here causes and
+   % error message "***** sub", probably due to some errorset in
+   % subeval.
+   if not !*rlnzden and not !*rlposden then
+      for each pr in al do
+      	 if not domainp denr simp cdr pr then
+	    rederr "parametric denominator in substituted expression";
 
 procedure ofsf_eqnrhskernels(x);
    nconc(kernels numr w,kernels denr w) where w=simp cdr x;

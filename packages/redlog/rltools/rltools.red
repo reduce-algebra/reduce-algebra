@@ -46,7 +46,6 @@ lisp <<
    rltools_copyright!* := "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
 >>;
 
-
 module rltools;
 % Redlog tools.
 
@@ -64,14 +63,16 @@ exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
       
 imports groebner,groebnr2;
 
-% The user of errorset here replaces CSL vs PSL customisation... but will this
-% package really work if the Groebner packages are not available? Was the
-% test only supposed to cope with issues of the order in which modules got
-% build?
+if 'psl member lispsystem!* then <<
+   if filestatus("$reduce/lisp/psl/$MACHINE/red/groebner.b",nil) then
+      load!-package 'groebner;
+   if filestatus("$reduce/lisp/psl/$MACHINE/red/groebnr2.b",nil) then
+      load!-package 'groebnr2;
+>>;
 
-lisp errorset('(load!-package 'groebner), nil, nil);
-lisp errorset('(load!-package 'groebnr2), nil, nil);
-
-endmodule;  % [rltools]
-
-end;  % of file
+if 'csl member lispsystem!* then <<
+   if modulep 'groebner then
+      load!-package 'groebner;
+   if modulep 'groebnr2 then
+      load!-package 'groebnr2
+>>;

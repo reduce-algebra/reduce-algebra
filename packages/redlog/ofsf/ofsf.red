@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: ofsf.red,v 1.58 2008/05/23 07:58:30 sturm Exp $
+% $Id: ofsf.red,v 1.59 2008/08/24 05:29:54 sturm Exp $
 % ----------------------------------------------------------------------
 % Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: ofsf.red,v $
+% Revision 1.59  2008/08/24 05:29:54  sturm
+% Added services rlposgqe and rlposgqea.
+%
 % Revision 1.58  2008/05/23 07:58:30  sturm
 % Added service rlqeg and implementation for ofsf.
 %
@@ -430,10 +433,9 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_rcsid!* ofsf_copyright!*);
-   ofsf_rcsid!* := "$Id: ofsf.red,v 1.58 2008/05/23 07:58:30 sturm Exp $";
+   ofsf_rcsid!* := "$Id: ofsf.red,v 1.59 2008/08/24 05:29:54 sturm Exp $";
    ofsf_copyright!* := "Copyright (c) 1995-2008 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module ofsf;
 % Ordered field standard form. Main module. Algorithms on first-order
@@ -583,8 +585,10 @@ put('ofsf,'rl_services,'(
    (rl_qe!* . ofsf_qe)
    (rl_posqea!* . ofsf_posqea)
    (rl_qea!* . ofsf_qea)
+   (rl_posgqe!* . ofsf_posgqe)
    (rl_gqe!* . cl_gqe)
    (rl_qeg!* . ofsf_qeg)
+   (rl_posgqea!* . ofsf_posgqea)
    (rl_gqea!* . cl_gqea)
    (rl_qeipo!* . cl_qeipo)
    (rl_qews!* . cl_qews)

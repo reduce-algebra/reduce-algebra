@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: dvfsf.red,v 1.17 2004/05/25 12:24:31 dolzmann Exp $
+% $Id: dvfsf.red,v 1.18 2008/08/24 06:26:34 sturm Exp $
 % ----------------------------------------------------------------------
 % Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: dvfsf.red,v $
+% Revision 1.18  2008/08/24 06:26:34  sturm
+% Added blackbox rl_betterp!*().
+%
 % Revision 1.17  2004/05/25 12:24:31  dolzmann
 % Added service rlqnum.
 %
@@ -109,10 +112,9 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(dvfsf_rcsid!* dvfsf_copyright!*);
-   dvfsf_rcsid!* := "$Id: dvfsf.red,v 1.17 2004/05/25 12:24:31 dolzmann Exp $";
+   dvfsf_rcsid!* := "$Id: dvfsf.red,v 1.18 2008/08/24 06:26:34 sturm Exp $";
    dvfsf_copyright!* := "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module dvfsf;
 % Discretely valued field standard form. Main module. Algorithms on
@@ -166,6 +168,7 @@ put('dvfsf,'rl_params,'(
    (rl_bnfsimpl!* . cl_bnfsimpl)
    (rl_fctrat!* . dvfsf_fctrat)
    (rl_varsel!* . dvfsf_varsel)
+   (rl_betterp!* . cl_betterp)
    (rl_a2cdl!* . dvfsf_a2cdl)
    (rl_qemkans!* . dvfsf_qemkans)
    (rl_termmlat!* . dvfsf_termmlat)

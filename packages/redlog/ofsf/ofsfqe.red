@@ -1,5 +1,5 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfqe.red,v 1.40 2008/05/23 07:58:04 sturm Exp $
+% $Id: ofsfqe.red,v 1.41 2008/08/24 05:30:06 sturm Exp $
 % ----------------------------------------------------------------------
 % Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
@@ -27,6 +27,9 @@
 %
 
 % $Log: ofsfqe.red,v $
+% Revision 1.41  2008/08/24 05:30:06  sturm
+% Added services rlposgqe and rlposgqea.
+%
 % Revision 1.40  2008/05/23 07:58:04  sturm
 % Force separation of roots with !*rlqe[a]precise. This was a bug!
 % Added service rlqeg and implementation for ofsf.
@@ -196,10 +199,9 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_qe_rcsid!* ofsf_qe_copyright!*);
-   ofsf_qe_rcsid!* := "$Id: ofsfqe.red,v 1.40 2008/05/23 07:58:04 sturm Exp $";
+   ofsf_qe_rcsid!* := "$Id: ofsfqe.red,v 1.41 2008/08/24 05:30:06 sturm Exp $";
    ofsf_qe_copyright!* := "Copyright (c) 1995-2008 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module ofsfqe;
 % Ordered field standard form quantifier elimination. Submodule of [ofsf].
@@ -217,6 +219,18 @@ procedure ofsf_posqea(f,theo);
    begin scalar !*rlpos;
       !*rlpos := t;
       return ofsf_qea(ofsf_posqe!-prep f,theo)
+   end;
+
+procedure ofsf_posgqe(f,theo,xvl);
+   begin scalar !*rlpos;
+      !*rlpos := t;
+      return cl_gqe(ofsf_posqe!-prep f,theo,xvl)
+   end;
+
+procedure ofsf_posgqea(f,theo,xvl);
+   begin scalar !*rlpos;
+      !*rlpos := t;
+      return cl_gqea(ofsf_posqe!-prep f,theo,xvl)
    end;
 
 procedure ofsf_posqe!-prep(f);
