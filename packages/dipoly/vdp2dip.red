@@ -165,7 +165,7 @@ module vdp2dip;
 % A virtual polynomial here is a record(list) with the entries
 %  ('vdp < vdpevlmon > < vdplbc > < form > < plist >)
 %
-%    ´ vdp        A type tag;
+%    ' vdp        A type tag;
 %     < vdpevlmon > the exponents of the variables in the
 %                 leading monomial;the positions correspond to
 %                 the positions in vdpvars!*. Trailing zeroes

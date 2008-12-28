@@ -29,13 +29,7 @@
 % The baroque syntax in this file is a consequence of the bootstrapping
 % process.
 
-global '(loaded!-packages!*);
-
-% A few functions will appear again in remake.red, and xslrend.red but
-% they are needed at this stage during the bootstrap build of REDUCE.
-% So perhaps to avoid repetition I could find somewhere even earlier to
-% include it, but for now there is repetition to should be kept in step.
-
+global '(loaded!-packages!* oldchan!*);
 
 % Since some of the early modules may have tabs in them, we must redefine
 % seprp.
@@ -43,53 +37,35 @@ global '(loaded!-packages!*);
 symbolic procedure seprp u;
     or(eq(u,'! ),eq(u,'!	),eq(u,!$eol!$));
 
-symbolic procedure mkfil u;
-   % Converts file descriptor U into valid system filename.
-   if stringp u then u
-    else if not idp u then typerr(u,"file name")
-    else string!-downcase u;
-
-symbolic procedure string!-downcase u;
-   begin scalar z;
-      if not stringp u then u := '!" . append(explode2 u,'(!"))
-      else u := explode u;
-% This has to be written in the bootstrap kernel of the RLISP language
-% and so looks a little ugly.
-   a: if null u then return compress reverse z;
-      z := red!-char!-downcase car u . z;
-      u := cdr u;
-      go to a;
-   end;
-
-symbolic procedure red!-char!-downcase u;
-   begin scalar x;
-      x := atsoc(u,charassoc!*);
-      if x then return cdr x
-      else return u;
-   end;
-
-charassoc!* :=
-         '((!A . !a) (!B . !b) (!C . !c) (!D . !d) (!E . !e) (!F . !f)
-           (!G . !g) (!H . !h) (!I . !i) (!J . !j) (!K . !k) (!L . !l)
-           (!M . !m) (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r)
-           (!S . !s) (!T . !t) (!U . !u) (!V . !v) (!W . !w) (!X . !x)
-           (!Y . !y) (!Z . !z));
-
-symbolic procedure concat(u,v);
+symbolic procedure concat2(u,v);
+   % This would be better supported at a lower level.
    compress('!" . append(explode2 u,nconc(explode2 v,list '!")));
 
-% End of fudges. Note that this file is only used while bootstrapping so the
-% redundant or non-optimised versions here do not persist into the final image.
+symbolic procedure string!-downcase u;
+   % This definition is designed to overcome bootstrapping difficulties
+   % in the various Lisps used.
+   begin scalar y,z;
+      if null stringp u then u := '!" . append(explode2 u,'(!"))
+      else u := explode u;
+   a: if null u then return compress reverse z;
+      y := atsoc(car u,
+	 '((A . "a") (B . "b") (C . "c") (D . "d") (E . "e") (F . "f")
+	   (G . "g") (H . "h") (I . "i") (J . "j") (K . "k") (L . "l")
+	   (M . "m") (N . "n") (O . "o") (P . "p") (Q . "q") (R . "r")
+	   (S . "s") (T . "t") (U . "u") (V . "v") (W . "w") (X . "x")
+	   (Y . "y") (Z . "z")));
+      if y then z := car explode2 cdr y . z else z := car u . z;
+      u := cdr u;
+      go to a
+   end;
 
-symbolic procedure module2!-to!-file(u,v);
-   % Converts the module u in package directory v to a fully rooted file
-   % name.
-   concat("$reduce/packages/",concat(mkfil v,
-          concat("/",concat(mkfil u,".red"))));
+symbolic procedure mod2file(u,v);
+    concat2("$reduce/packages/",concat2(string!-downcase v,
+      concat2("/",concat2(string!-downcase u,".red"))));
 
 symbolic procedure inmodule(u,v);
    begin
-      u := open(module2!-to!-file(u,v),'input);
+      u := open(mod2file(u,v),'input);
       v := rds u;
       cursym!* := '!*semicol!*;
    a: if eq(cursym!*,'end) then return progn(rds v, close u);

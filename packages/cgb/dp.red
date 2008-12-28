@@ -1,9 +1,12 @@
 % ----------------------------------------------------------------------
-% $Id: dp.red,v 1.24 2003/07/17 06:27:35 dolzmann Exp $
+% $Id: dp.red,v 1.25 2007/12/16 10:51:20 sturm Exp $
 % ----------------------------------------------------------------------
-% Copyright (c) 1999-2003 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1999-2008 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % $Log: dp.red,v $
+% Revision 1.25  2007/12/16 10:51:20  sturm
+% Just code cosmetics.
+%
 % Revision 1.24  2003/07/17 06:27:35  dolzmann
 % Added procedure bc_vars.
 %
@@ -108,7 +111,7 @@
 % ----------------------------------------------------------------------
 lisp <<
    fluid '(dp_rcsid!* dp_copyright!*);
-   dp_rcsid!* := "$Id: dp.red,v 1.24 2003/07/17 06:27:35 dolzmann Exp $";
+   dp_rcsid!* := "$Id: dp.red,v 1.25 2007/12/16 10:51:20 sturm Exp $";
    dp_copyright!* := "Copyright (c) 1999-2003 by A. Dolzmann and T. Sturm"
 >>;
 
@@ -182,7 +185,7 @@ procedure bc_a2bc(u);
    % Converts the algebraic (kernel) u into a base coefficient.
    simp!* u;
 
-procedure bc_fd a;
+procedure bc_fd(a);
    % Base coefficient from domain element.
    a ./ 1;
 

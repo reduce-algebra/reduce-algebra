@@ -75,7 +75,7 @@ if eqn(constpart,0) then return
 end;
 
 
-fluid '(linrecx!*,linrecvar!*);
+fluid '(linrecx!* linrecvar!*);
 
 algebraic procedure solve_lin_rec(rec,ic);
    % solves homogenous linear recursion relation REC which

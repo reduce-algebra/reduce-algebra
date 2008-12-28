@@ -37,7 +37,7 @@ fluid '(!*break
         !*writingfaslfile
         lispsystem!*);
 
-global '(!*argnochk nolist!* loaded!-modules!*);
+global '(!*argnochk nolist!*);
 
 symbolic procedure psl!-file!-write!-date u;
    % Returns write date of file u as an integer.
@@ -55,8 +55,6 @@ symbolic procedure olderfaslp(u,v);
 % Code for updating cross reference information.
 
 nolist!* := append('(module endmodule),nolist!*);
-
-% +++++ The cross-referencing capability probably no longer works.
 
 symbolic procedure update!-cref x;
    % Updates cross-reference for x (module . path).
@@ -102,7 +100,6 @@ symbolic procedure package!-remake2(u,v);
 %     if !*crefchk then update!-cref2(u . v);
       update!-fasl2(u . v);
       evload list u;
-      loaded!-modules := union(loaded!-modules!*, list u);
       y := get(u,'package);
       if y then y := cdr y;
       for each j in y do
@@ -114,8 +111,10 @@ symbolic procedure package!-remake2(u,v);
 symbolic procedure update!-fasl2 x;
    begin scalar y,z;
       if 'psl memq lispsystem!*
-        then y := concat2("$fasl/", concat2(mkfil car x, ".b"))
+	then y := concat2("$reduce/lisp/psl/$MACHINE/red/",
+			  concat2(mkfil car x,".b"))
        else y := car x;
+      if memq(car x,'(fide)) then !*argnochk := nil;   % STILL TRUE??
       z := module2!-to!-file(car x,cdr x);
       if olderfaslp(y,z)
         then <<terpri();
@@ -135,9 +134,7 @@ symbolic procedure upd!-fasl1(u,v,w);
       !*faslp := t;
       !*quiet!_faslout := t;
       if not('psl memq lispsystem!*) then !*lower := t;
-      if !*loadall and w neq u then <<
-         evload list w;
-         loaded!-modules := union(loaded!-modules!*, list w) >>;
+      if !*loadall and w neq u then evload list w;
       if x := get(u,'compiletime)
         then <<prin2 "*** Compile time: "; prin2t x; lispeval x>>;
       u := mkfil u;
@@ -145,7 +142,8 @@ symbolic procedure upd!-fasl1(u,v,w);
 %     prin2t bldmsg("*** Compiling %w ...",u);
       terpri();
       if 'psl memq lispsystem!*
-        then lispeval list('faslout, concat2("$fasl/",u))
+	then lispeval list('faslout,
+			   concat2("$reduce/lisp/psl/$MACHINE/red/",u))
        else lispeval list('faslout,u);
       infile v;
       lispeval '(faslend)

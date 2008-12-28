@@ -200,7 +200,13 @@ load!-package 'ezgcd;
 
 load!-package 'groebner;  % for torder
 
-errorset('(load!-package 'redlog), nil, nil); % Can we really survive without?
+if 'psl member lispsystem!* then
+   if filestatus("$reduce/lisp/psl/$MACHINE/red/redlog.b",nil) then
+      load!-package 'redlog;
+
+if 'csl member lispsystem!* then
+   if modulep 'redlog then
+      load!-package 'redlog;
 
 switch cgbstat,cgbfullred,cgbverbose,cgbcontred,cgbgs,cgbreal,
    cgbsgreen,cgbfaithful;

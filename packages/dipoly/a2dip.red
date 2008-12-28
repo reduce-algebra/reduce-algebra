@@ -26,8 +26,13 @@ module a2dip;
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+% Repeat of smacros defined in vdp2dip.
 
-% Modified by: H. Melenk.
+smacro procedure dipfmon(a,e);
+   e . a . nil;
+
+smacro procedure vevzero!? u;
+   null u or(car u=0 and vevzero!?1 cdr u);
 
 symbolic procedure a2dip u;
 %     Converts the algebraic (prefix) form u to a distributive poly.
@@ -38,7 +43,10 @@ if atom u then a2dipatom u
      then typerr(car u,"dipoly operator")
        % Handling expt separately because the exponents should
        % not be simplified as domain elements.
-    else if car u='expt then dipfnpow(a2dip cadr u,caddr u)
+    else if car u='expt
+     then if vevzero!? car a2dip cadr u and vevzero!? car a2dip caddr u
+	    then dipfmon(simp!* u,evzero())
+	   else dipfnpow(a2dip cadr u,caddr u)
     else (if x then apply(x,list for each y in cdr u collect a2dip y)
          else a2dipatom u)
           where x=get(car u,'dipfn);
