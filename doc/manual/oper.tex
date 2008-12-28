@@ -1,0 +1,740 @@
+\chapter{Built-in Prefix Operators}
+In the following subsections are descriptions of the most useful prefix
+\index{Prefix}
+operators built into {\REDUCE} that are not defined in other sections (such
+as substitution operators). Some are fully defined internally as
+procedures; others are more nearly abstract operators, with only some of
+their properties known to the system.
+
+In many cases, an operator is described by a prototypical header line as
+follows. Each formal parameter is given a name and followed by its allowed
+type. The names of classes referred to in the definition are printed in
+lower case, and parameter names in upper case. If a parameter type is not
+commonly used, it may be a specific set enclosed in brackets {\tt \{} \ldots
+{\tt \}}.
+Operators that accept formal parameter lists of arbitrary length have the
+parameter and type class enclosed in square brackets indicating that zero
+or more occurrences of that argument are permitted. Optional parameters
+and their type classes are enclosed in angle brackets.
+
+\section{Numerical Operators}\index{Numerical operator}
+{\REDUCE} includes a number of functions that are analogs of those found
+in most numerical systems.  With numerical arguments, such functions
+return the expected result.  However, they may also be called with
+non-numerical arguments.  In such cases, except where noted, the system
+attempts to simplify the expression as far as it can.  In such cases, a
+residual expression involving the original operator usually remains.
+These operators are as follows:
+
+\subsection{ABS}
+{\tt ABS}\ttindex{ABS} returns the absolute value
+of its single argument, if that argument has a numerical value.
+A non-numerical argument is returned as an absolute value, with an overall
+numerical coefficient taken outside the absolute value operator. For example:
+\begin{verbatim}
+	abs(-3/4)     ->  3/4
+	abs(2a)       ->  2*ABS(A)
+	abs(i)        ->  1
+	abs(-x)       ->  ABS(X)
+\end{verbatim}
+
+\subsection{CEILING}\ttindex{CEILING}
+This operator returns the ceiling (i.e., the least integer greater than
+the given argument) if its single argument has a numerical value.  A
+non-numerical argument is returned as an expression in the original
+operator.  For example:
+
+\begin{verbatim}
+	ceiling(-5/4) ->  -1
+	ceiling(-a)   ->  CEILING(-A)
+\end{verbatim}
+
+\subsection{CONJ}\ttindex{CONJ}
+This returns the complex conjugate
+of an expression, if that argument has an numerical value.  A
+non-numerical argument is returned as an expression in the operators
+{\tt REPART}\ttindex{REPART} and {\tt IMPART}\ttindex{IMPART}. For example:
+\begin{verbatim}
+	conj(1+i)     -> 1-I
+	conj(a+i*b)   -> REPART(A) - REPART(B)*I - IMPART(A)*I
+			 - IMPART(B)
+\end{verbatim}
+
+\subsection{FACTORIAL}\ttindex{FACTORIAL}
+
+If the single argument of {\tt FACTORIAL} evaluates to a non-negative
+integer, its factorial is returned.  Otherwise an expression involving
+{\tt FACTORIAL} is returned. For example:
+\begin{verbatim}
+	factorial(5)  ->  120
+	factorial(a)  ->  FACTORIAL(A)
+\end{verbatim}
+
+\subsection{FIX}\ttindex{FIX}
+This operator returns the fixed value (i.e., the integer part of
+the given argument) if its single argument has a numerical value.  A
+non-numerical argument is returned as an expression in the original
+operator.  For example:
+
+\begin{verbatim}
+	fix(-5/4)   ->  -1
+	fix(a)      ->  FIX(A)
+\end{verbatim}
+
+\subsection{FLOOR}\ttindex{FLOOR}
+This operator returns the floor (i.e., the greatest integer less than
+the given argument) if its single argument has a numerical value.  A
+non-numerical argument is returned as an expression in the original
+operator.  For example:
+
+\begin{verbatim}
+	floor(-5/4)   ->  -2
+	floor(a)      ->  FLOOR(A)
+\end{verbatim}
+
+\subsection{IMPART}\ttindex{IMPART}
+This operator returns the imaginary part of an expression, if that argument
+has an numerical value.  A non-numerical argument is returned as an expression
+in the operators {\tt REPART}\ttindex{REPART} and {\tt IMPART}.  For example:
+\begin{verbatim}
+	impart(1+i)   -> 1
+	impart(a+i*b) -> REPART(B) + IMPART(A)
+\end{verbatim}
+
+\subsection{MAX/MIN}
+
+{\tt MAX} and {\tt MIN}\ttindex{MAX}\ttindex{MIN} can take an arbitrary
+number of expressions as their arguments.  If all arguments evaluate to
+numerical values, the maximum or minimum of the argument list is returned.
+If any argument is non-numeric, an appropriately reduced expression is
+returned.  For example:
+\begin{verbatim}
+	max(2,-3,4,5) ->  5
+	min(2,-2)     ->  -2.
+	max(a,2,3)    ->  MAX(A,3)
+	min(x)        ->  X
+\end{verbatim}
+{\tt MAX} or {\tt MIN} of an empty list returns 0.
+
+\subsection{NEXTPRIME}\ttindex{NEXTPRIME}
+
+{\tt NEXTPRIME} returns the next prime greater than its integer argument,
+using a probabilistic algorithm.  A type error occurs if the value of the
+argument is not an integer.  For example:
+\begin{verbatim}
+	nextprime(5)      ->  7
+	nextprime(-2)     ->  2
+	nextprime(-7)     -> -5
+	nextprime 1000000 -> 1000003
+\end{verbatim}
+whereas {\tt nextprime(a)} gives a type error.
+
+\subsection{RANDOM}\ttindex{RANDOM}
+
+{\tt random(}{\em n\/}{\tt)} returns a random number $r$ in the range $0
+\leq r < n$.  A type error occurs if the value of the argument is not a
+positive integer in algebraic mode, or positive number in symbolic mode.
+For example:
+\begin{verbatim}
+	random(5)         ->    3
+	random(1000)      ->  191
+\end{verbatim}
+whereas {\tt random(a)} gives a type error.
+
+\subsection{RANDOM\_NEW\_SEED}\ttindex{RANDOM\_NEW\_SEED}
+
+{\tt random\_new\_seed(}{\em n\/}{\tt)} reseeds the random number generator
+to a sequence determined by the integer argument $n$.  It can be used to
+ensure that a repeatable pseudo-random sequence will be delivered
+regardless of any previous use of {\tt RANDOM}, or can be called early in
+a run with an argument derived from something variable (such as the time
+of day) to arrange that different runs of a REDUCE program will use
+different random sequences.  When a fresh copy of REDUCE is first created
+it is as if {\tt random\_new\_seed(1)} has been obeyed.
+
+A type error occurs if the value of the argument is not a positive integer.
+
+\subsection{REPART}\ttindex{REPART}
+This returns the real part of an expression, if that argument has an
+numerical value.  A non-numerical argument is returned as an expression in
+the operators {\tt REPART} and {\tt IMPART}\ttindex{IMPART}.  For example:
+\begin{verbatim}
+	repart(1+i)   -> 1
+	repart(a+i*b) -> REPART(A) - IMPART(B)
+\end{verbatim}
+
+\subsection{ROUND}\ttindex{ROUND}
+This operator returns the rounded value (i.e, the nearest integer) of its
+single argument if that argument has a numerical value.  A non-numeric
+argument is returned as an expression in the original operator.  For
+example:
+\begin{verbatim}
+	round(-5/4)   ->  -1
+	round(a)      ->  ROUND(A)
+\end{verbatim}
+
+\subsection{SIGN}\ttindex{SIGN}
+{\tt SIGN} tries to evaluate the sign of its argument. If this
+is possible {\tt SIGN} returns one of 1, 0 or -1.  Otherwise, the result
+is the original form or a simplified variant. For example:
+\begin{verbatim}
+	sign(-5)      ->  -1
+	sign(-a^2*b)  ->  -SIGN(B)
+\end{verbatim}
+Note that even powers of formal expressions are assumed to be
+positive only as long as the switch {\tt COMPLEX} is off.
+
+\section{Mathematical Functions}
+
+{\REDUCE} knows that the following represent mathematical functions
+\index{Mathematical function} that can
+take arbitrary scalar expressions as their single argument:
+\begin{verbatim}
+       ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
+       ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH DILOG EI EXP
+       HYPOT LN LOG LOGB LOG10 SEC SECH SIN SINH SQRT TAN TANH
+\end{verbatim}
+\ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}
+\ttindex{ACOTH}\ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}
+\ttindex{ASECH}\ttindex{ASIN}
+\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
+\ttindex{ATAN2}\ttindex{COS}
+\ttindex{COSH}\ttindex{COT}\ttindex{COTH}\ttindex{CSC}
+\ttindex{CSCH}\ttindex{DILOG}\ttindex{Ei}\ttindex{EXP}
+\ttindex{HYPOT}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
+\ttindex{SEC}\ttindex{SECH}\ttindex{SIN}
+\ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
+where {\tt LOG} is the natural logarithm (and equivalent to {\tt LN}),
+and {\tt LOGB} has two arguments of which the second is the logarithmic base.
+
+The derivatives of all these functions are also known to the system.
+
+{\REDUCE} knows various elementary identities and properties
+of these functions. For example:
+\begin{verbatim}
+      cos(-x) = cos(x)              sin(-x) = - sin (x)
+      cos(n*pi) = (-1)^n            sin(n*pi) = 0
+      log(e)  = 1                   e^(i*pi/2) = i
+      log(1)  = 0                   e^(i*pi) = -1
+      log(e^x) = x                  e^(3*i*pi/2) = -i
+\end{verbatim}
+
+Beside these identities, there are a lot of simplifications
+for elementary functions
+defined in the {\REDUCE} system as rulelists. In order to
+view these, the SHOWRULES operator can be used, e.g.
+
+\begin{verbatim}
+      SHOWRULES tan;
+
+{tan(~n*arbint(~i)*pi + ~(~ x)) => tan(x) when fixp(n),
+
+ tan(~x)
+
+  => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan)
+
+ ,
+
+      ~x + ~(~ k)*pi
+ tan(----------------)
+	    ~d
+
+	     x                             k    1
+  =>  - cot(---) when x freeof pi and abs(---)=---,
+	     d                             d    2
+
+      ~(~ w) + ~(~ k)*pi           w + remainder(k,d)*pi
+ tan(--------------------) => tan(-----------------------)
+	    ~(~ d)                           d
+
+			       k
+ when w freeof pi and ratnump(---) and fixp(k)
+			       d
+
+	   k
+  and abs(---)>=1,
+	   d
+
+ tan(atan(~x)) => x,
+
+			     2
+ df(tan(~x),~x) => 1 + tan(x) }
+
+\end{verbatim}
+
+For further simplification, especially of expressions involving
+trigonometric functions, see the TRIGSIMP\ttindex{TRIGSIMP} package
+documentation.
+
+Functions not listed above may be defined in the special functions
+package SPECFN\ttindex{SPECFN}.
+
+The user can add further rules for the reduction of expressions involving
+these operators by using the {\tt LET}\ttindex{LET} command.
+
+% The square root function can be input using the name {\tt SQRT}, or the
+% power operation {\tt \verb|^|(1/2)}.  On output, unsimplified square roots
+% are normally represented by the operator {\tt SQRT} rather than a
+% fractional power.
+
+In many cases it is desirable to expand product arguments of logarithms,
+or collect a sum of logarithms into a single logarithm.  Since these are
+inverse operations, it is not possible to provide rules for doing both at
+the same time and preserve the {\REDUCE} concept of idempotent evaluation.
+As an alternative, REDUCE provides two switches {\tt EXPANDLOGS}
+\ttindex{EXPANDLOGS} and {\tt COMBINELOGS}\ttindex{COMBINELOGS} to carry
+out these operations.  Both are off by default.  Thus to expand {\tt
+LOG(X*Y)} into a sum of logs, one can say
+\begin{verbatim}
+	ON EXPANDLOGS; LOG(X*Y);
+\end{verbatim}
+and to combine this sum into a single log:
+\begin{verbatim}
+	ON COMBINELOGS; LOG(X) + LOG(Y);
+\end{verbatim}
+
+At the present time, it is possible to have both switches on at once,
+which could lead to infinite recursion.  However, an expression is
+switched from one form to the other in this case.  Users should not rely
+on this behavior, since it may change in the next release.
+
+The current version of {\REDUCE} does a poor job of simplifying surds.  In
+particular, expressions involving the product of variables raised to
+non-integer powers do not usually have their powers combined internally,
+even though they are printed as if those powers were combined.  For
+example, the expression
+\begin{verbatim}
+	x^(1/3)*x^(1/6);
+\end{verbatim}
+will print as
+\begin{verbatim}
+	SQRT(X)
+\end{verbatim}
+but will have an internal form containing the two exponentiated terms.
+If you now subtract {\tt sqrt(x)} from this expression, you will {\em not\/}
+get zero.  Instead, the confusing form
+\begin{verbatim}
+	SQRT(X) - SQRT(X)
+\end{verbatim}
+will result.  To combine such exponentiated terms, the switch
+{\tt COMBINEEXPT}\ttindex{COMBINEEXPT} should be turned on.
+
+The square root function can be input using the name {\tt SQRT}, or the
+power operation {\tt \verb|^|(1/2)}.  On output, unsimplified square roots
+are normally represented by the operator {\tt SQRT} rather than a
+fractional power.  With the default system switch settings, the argument
+of a square root is first simplified, and any divisors of the expression
+that are perfect squares taken outside the square root argument.  The
+remaining expression is left under the square root.
+% However, if the switch {\tt REDUCED}\ttindex{REDUCED} is on,
+% multiplicative factors in the argument of the square root are also
+% separated, becoming individual square roots. Thus with {\tt REDUCED} off,
+Thus the expression
+\begin{verbatim}
+	 sqrt(-8a^2*b)
+ \end{verbatim}
+becomes
+\begin{verbatim}
+	2*a*sqrt(-2*b).
+\end{verbatim}
+% whereas with {\tt REDUCED} on, it would become
+% \begin{verbatim}
+%         2*a*i*sqrt(2)*sqrt(b) .
+% \end{verbatim}
+% The switch {\tt REDUCED}\ttindex{REDUCED} also applies to other rational
+% powers in addition to square roots.
+
+Note that such simplifications can cause trouble if {\tt A} is eventually
+given a value that is a negative number.  If it is important that the
+positive property of the square root and higher even roots always be
+preserved, the switch {\tt PRECISE}\ttindex{PRECISE} should be set on
+(the default value).
+This causes any non-numerical factors taken out of surds to be represented
+by their absolute value form.
+With % both {\tt REDUCED} and
+{\tt PRECISE} on then, the above example would become
+\begin{verbatim}
+	2*abs(a)*sqrt(-2*b).
+\end{verbatim}
+
+The statement that {\REDUCE} knows very little about these functions
+applies only in the mathematically exact {\tt off rounded} mode.  If
+{\tt ROUNDED}\ttindex{ROUNDED} is on, any of the functions
+\begin{verbatim}
+	ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN ASINH
+	ATAN ATANH ATAN2 COS COSH COT COTH CSC CSCH EXP HYPOT
+	LN LOG LOGB LOG10 SEC SECH SIN SINH SQRT TAN TANH
+\end{verbatim}
+\ttindex{ACOS}\ttindex{ACOSH}\ttindex{ACOT}\ttindex{ACOTH}
+\ttindex{ACSC}\ttindex{ACSCH}\ttindex{ASEC}\ttindex{ASECH}
+\ttindex{ASIN}\ttindex{ASINH}\ttindex{ATAN}\ttindex{ATANH}
+\ttindex{ATAN2}\ttindex{COS}\ttindex{COSH}\ttindex{COT}
+\ttindex{COTH}\ttindex{CSC}\ttindex{CSCH}\ttindex{EXP}\ttindex{HYPOT}
+\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}\ttindex{SEC}
+\ttindex{SECH}\ttindex{SIN}\ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}
+\ttindex{TANH}
+when given a numerical argument has its value calculated to the current
+degree of floating point precision.  In addition, real (non-integer
+valued) powers of numbers will also be evaluated.
+
+If the {\tt COMPLEX} switch is turned on in addition to {\tt ROUNDED},
+these functions will also calculate a real or complex result, again to
+the current degree of floating point precision,
+if given complex arguments.  For example, with {\tt on rounded,complex;}
+\begin{verbatim}
+	2.3^(5.6i)   ->   -0.0480793490914 - 0.998843519372*I
+	cos(2+3i)    ->   -4.18962569097 - 9.10922789376*I
+\end{verbatim}
+
+\section{DF Operator}
+The operator {\tt DF}\ttindex{DF} is used to represent partial
+differentiation\index{Differentiation} with respect
+to one or more variables. It is used with the syntax:
+\begin{verbatim}
+     DF(EXPRN:algebraic[,VAR:kernel<,NUM:integer>]):algebraic.
+\end{verbatim}
+The first argument is the expression to be differentiated. The remaining
+arguments specify the differentiation variables and the number of times
+they are applied.
+
+The number {\tt NUM} may be omitted if it is 1.  For example,
+\begin{quote}
+\begin{tabbing}
+{\tt            df(y,x1,2,x2,x3,2)} \= = $\partial^{5}y/\partial x_{1}^{2} \
+ \partial x_{2}\partial x_{3}^{2}.$\kill
+{\tt            df(y,x)} \> = $\partial y/\partial x$ \\
+{\tt            df(y,x,2)} \> = $\partial^{2}y/\partial x^{2}$ \\
+{\tt            df(y,x1,2,x2,x3,2)} \> = $\partial^{5}y/\partial x_{1}^{2} \
+ \partial x_{2}\partial x_{3}^{2}.$
+\end{tabbing}
+\end{quote}
+The evaluation of {\tt df(y,x)} proceeds as follows: first, the values of
+{\tt Y} and {\tt X} are found.  Let us assume that {\tt X} has no assigned
+value, so its value is {\tt X}.  Each term or other part of the value of
+{\tt Y} that contains the variable {\tt X} is differentiated by the
+standard rules.  If {\tt Z} is another variable, not {\tt X} itself, then
+its derivative with respect to {\tt X} is taken to be 0, unless {\tt Z}
+has previously been declared to {\tt DEPEND} on {\tt X}, in which
+case the derivative is reported as the symbol {\tt df(z,x)}.
+
+
+\subsection{Adding Differentiation Rules}
+
+The {\tt LET}\ttindex{LET} statement can be used to introduce
+rules for differentiation of user-defined operators.  Its general form is
+\begin{verbatim}
+	FOR ALL <var1>,...,<varn>
+	     LET DF(<operator><varlist>,<vari>)=<expression>
+\end{verbatim}
+where {\tt <varlist>} ::= ({\tt <var1>},\dots,{\tt <varn>}), and
+{\tt <var1>},...,{\tt <varn>} are the dummy variable arguments of
+{\tt <operator>}.
+
+An analogous form applies to infix operators.
+
+{\it Examples:}
+\begin{verbatim}
+	for all x let df(tan x,x)= 1 + tan(x)^2;
+\end{verbatim}
+(This is how the tan differentiation rule appears in the {\REDUCE}
+source.)
+\begin{verbatim}
+	for all x,y let df(f(x,y),x)=2*f(x,y),
+			df(f(x,y),y)=x*f(x,y);
+\end{verbatim}
+Notice that all dummy arguments of the relevant operator must be declared
+arbitrary by the {\tt FOR ALL} command, and that rules may be supplied for
+operators with any number of arguments.  If no differentiation rule
+appears for an argument in an operator, the differentiation routines will
+return as result an expression in terms of {\tt DF}\ttindex{DF}.  For
+example, if the rule for the differentiation with respect to the second
+argument of {\tt F} is not supplied, the evaluation of {\tt df(f(x,z),z)}
+would leave this expression unchanged. (No {\tt DEPEND} declaration
+is needed here, since {\tt f(x,z)} obviously ``depends on'' {\tt Z}.)
+
+Once such a rule has been defined for a given operator, any future
+differentiation\index{Differentiation} rules for that operator must be
+defined with the same number of arguments for that operator, otherwise we
+get the error message
+\begin{verbatim}
+	Incompatible DF rule argument length for <operator>
+\end{verbatim}
+
+\section{INT Operator}
+{\tt INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite
+integration\index{Integration}\index{Indefinite integration} using a
+combination of the Risch-Norman algorithm and pattern matching.  It is
+used with the syntax:
+\begin{verbatim}
+   INT(EXPRN:algebraic,VAR:kernel):algebraic.
+\end{verbatim}
+This will return correctly the indefinite integral for expressions comprising
+polynomials, log functions, exponential functions and tan and atan. The
+arbitrary constant is not represented. If the integral cannot be done in
+closed terms, it returns a formal integral for the answer in one of two ways:
+\begin{enumerate}
+\item It returns the input, {\tt INT(\ldots,\ldots)} unchanged.
+
+\item It returns an expression involving {\tt INT}s of some
+      other functions (sometimes more complicated than
+      the original one, unfortunately).
+\end{enumerate}
+Rational functions can be integrated when the denominator is factorizable
+by the program. In addition it will attempt to integrate expressions
+involving error functions, dilogarithms and other trigonometric
+expressions. In these cases it might not always succeed in finding the
+solution, even if one exists.
+
+{\it Examples:}
+\begin{verbatim}
+	int(log(x),x) ->  X*(LOG(X) - 1),
+	int(e^x,x)    ->  E**X.
+\end{verbatim}
+The program checks that the second argument is a variable and gives an
+error if it is not.
+
+{\it Note:} If the {\tt int} operator is called with 4 arguments,
+{\REDUCE} will implicitly call the definite integration package (DEFINT)
+and this package will interpret the third and fourth arguments as the lower
+and upper limit of integration, respectively.  For details, consult
+the documentation on the DEFINT package.
+
+
+\subsection{Options}
+
+The switch {\tt TRINT} when on will trace the operation of the algorithm. It
+produces a great deal of output in a somewhat illegible form, and is not
+of much interest to the general user. It is normally off.
+
+If the switch {\tt FAILHARD} is on the algorithm will terminate with an
+error if the integral cannot be done in closed terms, rather than return a
+formal integration form. {\tt FAILHARD} is normally off.
+
+The switch {\tt NOLNR} suppresses the use of the linear properties of
+integration in cases when the integral cannot be found in closed terms.
+It is normally off.
+
+\subsection{Advanced Use}
+
+If a function appears in the integrand that is not one of the functions
+{\tt EXP, ERF, TAN, ATAN, LOG, DILOG}\ttindex{EXP}\ttindex{ERF}
+\ttindex{TAN}\ttindex{ATAN}\ttindex{LOG}\ttindex{DILOG}
+then the algorithm will make an
+attempt to integrate the argument if it can, differentiate it and reach a
+known function.  However the answer cannot be guaranteed in this case.  If
+a function is known to be algebraically independent of this set it can be
+flagged transcendental by
+\begin{verbatim}
+	flag('(trilog),'transcendental);
+\end{verbatim}
+in which case this function will be added to the permitted field
+descriptors for a genuine decision procedure. If this is done the user is
+responsible for the mathematical correctness of his actions.
+
+The standard version does not deal with algebraic extensions. Thus
+integration of expressions involving square roots and other like things
+can lead to trouble.  A contributed package that supports integration of
+functions involving square roots is available, however
+(ALGINT\extendedmanual{, chapter~\ref{ALGINT}}).
+In addition there is a definite integration
+package, DEFINT\extendedmanual{( chapter~\ref{DEFINT})}.
+
+\subsection{References}
+
+	A. C. Norman \& P. M. A. Moore, ``Implementing the New Risch
+		Algorithm'', Proc. 4th International Symposium on Advanced
+		Comp. Methods in Theor. Phys., CNRS, Marseilles, 1977.
+
+	S. J. Harrington, ``A New Symbolic Integration System in Reduce'',
+		Comp. Journ. 22 (1979) 2.
+
+	A. C. Norman \& J. H. Davenport, ``Symbolic Integration --- The Dust
+		Settles?'', Proc. EUROSAM 79, Lecture Notes in Computer
+		Science 72, Springer-Verlag, Berlin Heidelberg New York
+		(1979) 398-407.
+
+%\subsection{Definite Integration} \index{Definite integration}
+%
+%If {\tt INT} is used with the syntax
+%
+%\begin{verbatim}
+%   INT(EXPRN:algebraic,VAR:kernel,LOWER:algebraic,UPPER:algebraic):algebraic.
+%\end{verbatim}
+%
+%The definite integral of {\tt EXPRN} with respect to {\tt VAR} is
+%calculated between the limits {\tt LOWER} and {\tt UPPER}.  In the present
+%system, this is calculated either by pattern matching, or by first finding
+%the indefinite integral, and then substituting the limits into this.
+
+\section{LENGTH Operator}
+{\tt LENGTH}\ttindex{LENGTH} is a generic operator for finding the
+length of various objects in the system.  The meaning depends on the type
+of the object.  In particular, the length of an algebraic expression is
+the number of additive top-level terms its expanded representation.
+
+{\it Examples:}
+\begin{verbatim}
+	length(a+b)    ->  2
+	length(2)      ->  1.
+\end{verbatim}
+Other objects that support a length operator include arrays, lists and
+matrices. The explicit meaning in these cases is included in the description
+of these objects.
+
+\section{MAP Operator}\ttindex{MAP}
+
+The {\tt MAP} operator applies a uniform evaluation pattern to all members
+of a composite structure: a matrix, a list, or the arguments of an
+operator expression.  The evaluation pattern can be a unary procedure, an
+operator, or an algebraic expression with one free variable.
+
+It is used with the syntax:
+\begin{verbatim}
+   MAP(U:function,V:object)
+\end{verbatim}
+Here {\tt object} is a list, a matrix or an operator expression.
+{\tt Function} can be one of the following:
+\begin{enumerate}
+\item the name of an operator for a single argument: the operator
+is evaluated once with each element of {\tt object} as its single argument;
+\item an algebraic expression with exactly one free variable, that is
+a variable preceded by the tilde symbol. The expression
+is evaluated for each element of {\tt object}, where the element is
+substituted for the free variable;
+\item a replacement rule of the form {\tt var => rep}
+where {\tt var} is a variable (a kernel without a subscript)
+and {\tt rep} is an expression that contains {\tt var}.
+{\tt Rep} is evaluated for each element of {\tt object} where
+the element is substituted for  {\tt var}. {\tt Var} may be
+optionally preceded by a tilde.
+\end{enumerate}
+The rule form  for {\tt function} is needed when more than
+one free variable occurs.
+
+Examples:
+\begin{verbatim}
+	map(abs,{1,-2,a,-a})  ->  {1,2,ABS(A),ABS(A)}
+	map(int(~w,x), mat((x^2,x^5),(x^4,x^5))) ->
+
+		[  3     6 ]
+		[ x     x  ]
+		[----  ----]
+		[ 3     6  ]
+		[          ]
+		[  5     6 ]
+		[ x     x  ]
+		[----  ----]
+		[ 5     6  ]
+
+	map(~w*6, x^2/3 = y^3/2 -1) -> 2*X^2=3*(Y^3-2)
+\end{verbatim}
+
+You can use {\tt MAP} in nested expressions. However, you cannot
+apply {\tt MAP} to a non-composed object, e.g. an identifier or a number.
+
+
+\section{MKID Operator}\ttindex{MKID}
+In many applications, it is useful to create a set of identifiers for
+naming objects in a consistent manner. In most cases, it is sufficient to
+create such names from two components. The operator {\tt MKID} is provided
+for this purpose. Its syntax is:
+\begin{verbatim}
+MKID(U:id,V:id|non-negative integer):id
+\end{verbatim}
+for example
+\begin{verbatim}
+	mkid(a,3)      -> A3
+	mkid(apple,s)  -> APPLES
+\end{verbatim}
+while {\tt mkid(a+b,2)} gives an error.
+
+The {\tt SET}\ttindex{SET} operator can be used to give a value to the
+identifiers created by {\tt MKID}, for example
+\begin{verbatim}
+	set(mkid(a,3),3);
+\end{verbatim}
+will give {\tt A3} the value 2.
+
+\section{PF Operator}\ttindex{PF}
+
+{\tt PF(<exp>,<var>)} transforms the expression {\tt <exp>} into a list of
+partial fractions with respect to the main variable, {\tt <var>}.  {\tt PF}
+does a complete partial fraction decomposition, and as the algorithms used
+are fairly unsophisticated (factorization and the extended Euclidean
+algorithm), the code may be unacceptably slow in complicated cases.
+
+{\it Example:}
+Given {\tt 2/((x+1)\verb|^|2*(x+2))} in the workspace,
+{\tt pf(ws,x);} gives the result
+\begin{verbatim}
+	    2      - 2         2
+	{-------,-------,--------------} .
+	  X + 2   X + 1    2
+			  X  + 2*X + 1
+\end{verbatim}
+
+If you want the denominators in factored form, use {\tt off exp;}.
+Thus, with {\tt 2/((x+1)\verb|^|2*(x+2))} in the workspace, the commands
+{\tt off exp; pf(ws,x);} give the result
+\begin{verbatim}
+	    2      - 2       2
+	{-------,-------,----------} .
+	  X + 2   X + 1          2
+			  (X + 1)
+\end{verbatim}
+
+To recombine the terms, {\tt FOR EACH \ldots SUM} can be used.  So with
+the above list in the workspace, {\tt for each j in ws sum j;} returns the
+result
+\begin{verbatim}
+	     2
+     ------------------
+		     2
+      (X + 2)*(X + 1)
+\end{verbatim}
+
+Alternatively, one can use the operations on lists to extract any desired
+term.
+
+\section{SELECT Operator}\ttindex{SELECT}
+\ttindex{map}\ttindex{list}
+
+The {\tt SELECT} operator extracts from a list,
+or from the arguments of an n--ary operator, elements corresponding
+to a boolean predicate. It is used with the syntax:
+\begin{verbatim}
+  SELECT(U:function,V:list)
+\end{verbatim}
+
+{\tt Function} can be one of the following forms:
+\begin{enumerate}
+\item the name of an operator for a single argument: the operator
+is evaluated once with each element of {\tt object} as its single argument;
+\item an algebraic expression with exactly one free variable, that is
+a variable preceded by the tilde symbol. The expression
+is evaluated for each element of \meta{object}, where the element is
+substituted for the free variable;
+\item a replacement rule of the form \meta{var $=>$ rep}
+where {\tt var} is a variable (a kernel without subscript)
+and {\tt rep} is an expression that contains {\tt var}.
+{\tt Rep} is evaluated for each element of {\tt object} where
+the element is substituted for  {\tt var}. {\tt var} may be
+optionally preceded by a tilde.
+\end{enumerate}
+The rule form  for {\tt function} is needed when more than
+one free variable occurs.
+
+The result of evaluating {\tt function} is
+interpreted as a boolean value corresponding to the conventions of
+{\REDUCE}. These values are composed with the leading operator of the
+input expression.
+
+{\it Examples:}
+\begin{verbatim}
+	select( ~w>0 , {1,-1,2,-3,3}) -> {1,2,3}
+	select(evenp deg(~w,y),part((x+y)^5,0):=list)
+	       -> {X^5 ,10*X^3*Y^2 ,5*X*Y^4}
+	select(evenp deg(~w,x),2x^2+3x^3+4x^4) -> 4X^4 + 2X^2
+\end{verbatim}
+
+

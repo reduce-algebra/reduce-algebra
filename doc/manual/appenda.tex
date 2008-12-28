@@ -1,0 +1,88 @@
+\appendix
+\chapter{Reserved Identifiers}
+
+We list here all identifiers that are normally reserved in \REDUCE{}
+including names of commands, operators and switches initially in the system.
+Excluded are words that are reserved in specific implementations of the
+system.
+
+\vspace{13pt}
+\begin{list}{}{\renewcommand{\makelabel}[1]{#1\hspace{\fill}}%
+               \settowidth{\labelwidth}{Numerical Operators}%
+               \setlength{\labelsep}{1em}%
+	       \settowidth{\leftmargin}{Numerical Operators\hspace*{\labelsep}}%
+	       \sloppy}
+
+\item[Commands] {\tt ALGEBRAIC} {\tt ANTISYMMETRIC}
+{\tt ARRAY} {\tt BYE} {\tt CLEAR} \linebreak
+{\tt CLEARRULES} {\tt COMMENT} {\tt
+CONT} {\tt DECOMPOSE} {\tt DEFINE} {\tt DEPEND} {\tt DISPLAY} {\tt ED}
+{\tt EDITDEF} {\tt END} {\tt EVEN} {\tt FACTOR} {\tt FOR} {\tt FORALL}
+{\tt FOREACH} {\tt GO} {\tt GOTO} {\tt IF} {\tt IN} {\tt INDEX} {\tt INFIX}
+{\tt INPUT} {\tt INTEGER} {\tt KORDER} {\tt LET} {\tt LINEAR} {\tt LISP}
+{\tt LISTARGP} {\tt LOAD} {\tt LOAD\_PACKAGE} {\tt MASS} {\tt MATCH} {\tt
+MATRIX} {\tt MSHELL} {\tt NODEPEND} {\tt NONCOM} {\tt NONZERO} {\tt NOSPUR}
+{\tt ODD} {\tt OFF}
+{\tt ON} {\tt OPERATOR} {\tt ORDER} {\tt OUT} {\tt PAUSE} {\tt PRECEDENCE}
+{\tt PRINT\_PRECISION} {\tt PROCEDURE} {\tt QUIT} {\tt REAL} {\tt REMFAC}
+{\tt REMIND} {\tt RETRY} {\tt RETURN} {\tt SAVEAS} {\tt SCALAR} {\tt
+SETMOD} {\tt SHARE} {\tt SHOWTIME} {\tt SHUT} {\tt SPUR} {\tt SYMBOLIC}
+{\tt SYMMETRIC} {\tt VECDIM} {\tt VECTOR} {\tt WEIGHT} {\tt WRITE} {\tt
+WTLEVEL}
+
+\item[Boolean Operators] {\tt EVENP} {\tt FIXP}
+{\tt FREEOF} {\tt NUMBERP} {\tt ORDP} {\tt PRIMEP}
+
+\item[Infix Operators]
+ \verb|:=| \verb|=| \verb|>=| \verb|>| \verb|<=| \verb|<| \verb|=>|
+ \verb|+| \verb|*| \verb|/| \verb|^| \verb|**| \verb|.| {\tt WHERE}
+{\tt SETQ} {\tt OR} {\tt AND} {\tt MEMBER} {\tt MEMQ} {\tt
+EQUAL} {\tt NEQ} {\tt EQ} {\tt GEQ} {\tt GREATERP} {\tt LEQ} {\tt LESSP}
+{\tt PLUS} {\tt DIFFERENCE} {\tt MINUS} {\tt TIMES} {\tt QUOTIENT} {\tt
+EXPT} {\tt CONS}
+
+\item[Numerical Operators] {\tt ABS} {\tt ACOS}
+{\tt ACOSH} {\tt ACOT} {\tt ACOTH} {\tt ACSC} {\tt ACSCH} {\tt ASEC} {\tt
+ASECH} {\tt ASIN} {\tt ASINH} {\tt ATAN} {\tt ATANH} {\tt ATAN2} {\tt COS}
+{\tt COSH} {\tt COT} {\tt COTH} {\tt CSC} {\tt CSCH} {\tt EXP} {\tt
+FACTORIAL} {\tt FIX} {\tt FLOOR} {\tt HYPOT} {\tt LN} {\tt LOG} {\tt LOGB}
+{\tt LOG10} {\tt NEXTPRIME} {\tt ROUND} {\tt SEC} {\tt SECH} {\tt SIN}
+{\tt SINH} {\tt SQRT} {\tt TAN} {\tt TANH}
+
+\item[Prefix Operators] {\tt APPEND} {\tt
+ARGLENGTH} {\tt CEILING} {\tt COEFF} {\tt COEFFN} {\tt COFACTOR} {\tt
+CONJ} {\tt DEG} {\tt DEN} {\tt DET} {\tt DF} {\tt DILOG} {\tt EI}
+{\tt EPS} {\tt ERF} {\tt FACTORIZE} {\tt FIRST} {\tt GCD} {\tt G} {\tt
+IMPART} {\tt INT} {\tt INTERPOL} {\tt LCM} {\tt LCOF} {\tt LENGTH} {\tt
+LHS} {\tt LINELENGTH} {\tt LTERM} {\tt MAINVAR} {\tt MAT} {\tt MATEIGEN}
+{\tt MAX} {\tt MIN} {\tt MKID} {\tt NULLSPACE} {\tt NUM} {\tt PART} {\tt
+PF} {\tt PRECISION} {\tt RANDOM} {\tt RANDOM\_NEW\_SEED} {\tt RANK} {\tt
+REDERR} {\tt REDUCT} {\tt REMAINDER} {\tt REPART} {\tt REST} {\tt
+RESULTANT} {\tt REVERSE} {\tt RHS} {\tt SECOND} {\tt SET} {\tt SHOWRULES}
+{\tt SIGN} {\tt SOLVE} {\tt STRUCTR} {\tt SUB} {\tt SUM} {\tt THIRD} {\tt
+TP} {\tt TRACE} {\tt VARNAME}
+
+\item[Reserved Variables] {\tt CARD\_NO} {\tt E} {\tt EVAL\_MODE}
+{\tt FORT\_WIDTH} {\tt HIGH\_POW} {\tt I} {\tt INFINITY} {\tt K!*} {\tt
+LOW\_POW} {\tt NIL} {\tt PI} {\tt ROOT\_MULTIPLICITY} {\tt T}
+
+\item[Switches] {\tt ADJPREC} {\tt ALGINT} {\tt ALLBRANCH} {\tt ALLFAC}
+{\tt BFSPACE} {\tt COMBINEEXPT} {\tt COMBINELOGS}
+{\tt COMP} {\tt COMPLEX} {\tt CRAMER} {\tt CREF} {\tt DEFN} {\tt DEMO}
+{\tt DIV} {\tt ECHO} {\tt ERRCONT} {\tt EVALLHSEQP} {\tt EXP} {\tt
+EXPANDLOGS} {\tt EZGCD} {\tt FACTOR} {\tt FORT} {\tt FULLROOTS} {\tt GCD}
+{\tt IFACTOR} {\tt INT} {\tt INTSTR} {\tt LCM} {\tt LIST} {\tt LISTARGS}
+{\tt MCD} {\tt MODULAR} {\tt MSG} {\tt MULTIPLICITIES} {\tt NAT} {\tt
+NERO} {\tt NOSPLIT} {\tt OUTPUT} {\tt PERIOD} {\tt PRECISE} {\tt PRET}
+{\tt PRI} {\tt RAT} {\tt RATARG} {\tt RATIONAL} {\tt RATIONALIZE} {\tt
+RATPRI} {\tt REVPRI} {\tt RLISP88} {\tt ROUNDALL} {\tt ROUNDBF} {\tt
+ROUNDED} {\tt SAVESTRUCTR} {\tt SOLVESINGULAR} {\tt TIME} {\tt TRA} {\tt
+TRFAC} {\tt TRIGFORM} {\tt TRINT}
+
+\item[Other Reserved Ids] {\tt BEGIN} {\tt DO} {\tt
+EXPR} {\tt FEXPR} {\tt INPUT} {\tt LAMBDA} {\tt
+LISP} {\tt MACRO} {\tt PRODUCT} {\tt REPEAT} {\tt SMACRO} {\tt
+SUM} {\tt UNTIL} {\tt WHEN} {\tt WHILE} {\tt WS}
+
+\end{list}
+

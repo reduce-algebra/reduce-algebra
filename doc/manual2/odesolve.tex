@@ -1,0 +1,85 @@
+\chapter[ODESOLVE: Ordinary differential eqns]%
+        {ODESOLVE: \protect\\ Ordinary differential equations solver}
+\label{ODESOLVE}
+\typeout{[ODESOLVE: Ordinary differential equations solver]}
+
+{\footnotesize
+\begin{center}
+Malcolm A.H. MacCallum \\
+School of Mathematical Sciences, Queen Mary and Westfield College \\
+University of London \\
+Mile End Road \\
+London E1 4NS, England \\[0.05in]
+e--mail: mm@maths.qmw.ac.uk
+\end{center}
+}
+\ttindex{ODESOLVE}
+
+\index{ordinary differential equations}
+The ODESOLVE package is a solver for ordinary differential equations.
+At the present time it has very limited capabilities,
+
+\begin{enumerate}
+\item it can handle only a single scalar equation presented as an
+algebraic expression or equation, and
+\item it can solve only first-order equations of simple types,
+linear equations with constant coefficients and Euler equations.
+\end{enumerate}
+
+\noindent These solvable types are exactly those for
+which Lie symmetry techniques give no useful information.
+
+\section{Use}
+The only top-level function the user should normally invoke is:
+\ttindex{ODESOLVE}
+
+\vspace{.1in}
+\begin{tabbing}
+{\tt ODESOLVE}(\=EXPRN:{\em expression, equation}, \\
+\>VAR1:{\em variable}, \\
+\>VAR2:{\em variable}):{\em list-algebraic}
+\end{tabbing}
+\vspace{.1in}
+
+\noindent {\tt ODESOLVE} returns a list containing an equation (like solve):
+
+\begin{description}
+\item[EXPRN] is a single scalar expression such that EXPRN = 0 is the
+ordinary differential equation (ODE for short) to be solved,
+or is an equivalent equation.
+\item[VAR1] is the name of the dependent variable.
+\item[VAR2] is the name of the independent variable
+\end{description}
+
+\noindent (For simplicity these will be called y and x in the sequel)
+The returned value is a list containing the equation giving the
+general solution of the ODE (for simultaneous equations this will be a
+list of equations eventually). It will contain occurrences of the
+\index{ARBCONST operator}
+operator {\tt ARBCONST} for the arbitrary constants in the general
+solution.  The arguments of {\tt ARBCONST} should be new, as with {\tt
+ARBINT} etc. in SOLVE. A counter {\tt !!ARBCONST} is used to arrange
+this (similar to the way {\tt ARBINT} is implemented).
+
+Some other top-level functions may be of use elsewhere, especially:
+\ttindex{SORTOUTODE}
+
+\vspace{.1in}
+\noindent{\tt SORTOUTODE}(EXPRN:{\em algebraic}, Y:{\em var}, X:{\em var}):
+{\em expression}
+\vspace{.1in}
+
+\noindent which finds the order and degree of the EXPRN as a
+differential equation for Y with respect to Y and sets the linearity
+and highest derivative occurring in reserved variables ODEORDER,
+ODEDEGREE,\ttindex{ODEORDER}\ttindex{ODEDEGREE}\ttindex{ODELINEARITY}\ttindex{HIGHESTDERIV}ODELINEARITY
+and HIGHESTDERIV.  An expression equivalent to the ODE is
+returned, or zero if EXPRN (equated to 0) is not an ODE in the
+given variables.
+
+\section{Commentary}
+
+The methods used by this package are described in detail in the full
+documentation, which should be inspected together with the examples
+file.
+

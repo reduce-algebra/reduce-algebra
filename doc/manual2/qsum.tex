@@ -1,0 +1,240 @@
+\chapter[QSUM: {\slshape q}-hypergeometric sums]%
+{QSUM : Package for {\slshape q}-hypergeometric sums}
+\label{QSUM}
+\typeout{{QSUM : Package for summation of
+                $q$-hypergeometric terms}}
+
+
+\newcommand{\funkdef}[3]{\left\{\!\!\!\begin{array}{cc}
+                                #1 & \!\!\!\mbox{\rm{if} $#2$ } \\
+                                #3 & \!\!\!\mbox{\rm{otherwise}}
+                                \end{array}
+                         \right.}
+\newcommand{\funkdefff}[6]{\left\{\begin{array}{ccc}
+                                 #1 && \mbox{{if} $#2$ } \\
+                                 #3 && \mbox{{if} $#4$ } \\
+                                 #5 && \mbox{{if} $#6$ }
+                                 \end{array}
+                          \right.}
+
+\newcommand{\qphihyp}[5]{{}_{#1}\phi_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|q,#5\right]}
+\newcommand{\qpsihyp}[5]{{}_{#1}\psi_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|q,#5\right]}
+\newcommand{\hyp}[5]{{}_{#1}F_{#2}\left.\left[\begin{array}{c}
+	#3 \\ #4 \end{array}\right|#5\right]}
+
+\newcommand{\fcn}[2]{{\mathrm #1}(#2)}
+\newcommand{\ifcn}[3]{{\mathrm #1}_{#2}(#3)}
+\newcommand{\qgosper}{$q$-Gosper\ }
+\newcommand{\qgosperalg}{\qgosper algorithm\ }
+\newcommand{\qzeilalg}{$q$-Zeilberger algorithm\ }
+\newcommand{\qfac}[2]{\left(#1;\,q\right)_{#2}}
+\newcommand{\qatom}[1]{\left(#1;\,q\right)_{\infty}}
+%\newcommand{\qbinomial}[2]{\left(\begin{array}{c}#1\\#2\end{array}\right)_q}
+%\newcommand{\binomial}[2]{\left(\begin{array}{c}#1\\#2\end{array}\right)}
+\newcommand{\binomial}[2]{{#1 \choose #2}}
+\newcommand{\qbinomial}[2]{{{#1 \choose #2}\!}_q}
+\newcommand{\qfactorial}[2]{}
+
+\newcounter{redprompt}
+{\setcounter{redprompt}{0}}
+\newcommand{\redprompt}{\stepcounter{redprompt}\theredprompt:}
+\newenvironment{redoutput}{\small\begin{alltt}}{\end{alltt}\noindent{}}
+
+{\footnotesize
+\begin{center}
+Harald B\"oing \\
+Wolfram Koepf \\
+Konrad-Zuse-Zentrum f\"ur Informationstechnik Berlin \\
+Takustra\"se 7 \\
+D-14195 Berlin-Dahlem \\
+e-mail: koepf@zib.de
+\end{center}
+}
+\ttindex{QSUM}
+%\markboth{CHAPTER \ref{QSUM}. QSUM: SUMMATION OF Q-HYPERGEOMETRIC TERMS}{}
+%\thispagestyle{myheadings}
+
+
+This package is an implementation of the $q$-analogues of Gosper's
+and Zeilberger's
+%
+\footnote{The {\tt ZEILBERG} package (Chap. \ref{ZEILBERG} 
+p. \pageref{ZEILBERG}, see also \cite{Koepf:95})
+contains the hypergeometric versions.}
+%
+algorithm for indefinite and definite summation of
+$q$-hypergeometric terms, respectively.
+
+An expression $a_k$ is called a {\sl $q$-hypergeometric term}, if
+$a_{k}/a_{k-1}$ is a rational function with respect to $q^k$. Most
+$q$-terms are based on the {\sl $q$-shifted factorial} or 
+{\sl qpochhammer}. Other typical $q$-hypergeometric terms are ratios 
+of products of powers, $q$-factorials, $q$-binomial coefficients, and 
+$q$-shifted factorials that are integer-linear in their arguments. \\
+The package is loaded with {\tt load\_package qsum}.
+
+\section{Elementary {\slshape q}-Functions}
+The package supports the input of the following elementary 
+{\slshape q}-functions:
+\begin{itemize}
+
+\item {\verb@qpochhammer(a,q,infinity)@}
+	\ttindex{QPOCHHAMMER}
+	\[ \qfac{a}{\infty}:= \prod_{j=0}^{\infty}{\left(1-a\,q^j\right)} \]
+\item {\verb@qpochhammer(a,q,k)@}
+	\[ \qfac{a}{k}:= \funkdefff{\prod_{j=0}^{k-1}{\left(1-a\,q^j\right)}}%
+		{k>0}{1}{k=0}{\prod_{j=1}^{k}{\left(1-a\,q^{-j}\right)^{-1}}}{k<0}
+	\]
+\item {\verb@qbrackets(k,q)@}
+	\ttindex{QBRACKETS}
+	\[  {}[q,k]:=\frac{q^k-1}{q-1}  \]
+\item {\verb@qfactorial(k,q)@}
+	\ttindex{QFACTORIAL}
+	\[   {}[k]_q!:= \frac{\qfac{q}{k}}{(1-q)^k}  \]
+\item {\verb@qbinomial(n,k,q)@}
+	\ttindex{QBINOMIAL}
+	\[  \qbinomial{n}{k}:=
+		\frac{\qfac{q}{n}}{\qfac{q}{k}\cdot\qfac{q}{n-k}} \]
+\item {\protect\verb@qphihyperterm({a1,a2,...,ar},{b1,b2,...,bs},q,z,k)@}
+	\ttindex{QPHIHYPERTERM}
+	\[ \sum_{k=0}^{\infty}{\frac{\qfac{a_1,a_2,\ldots,a_r}{k}}
+	{\qfac{b_1,b_2,\ldots,b_s}{k}}
+	\,\frac{z^k}{\qfac{q}{k}}\,\left[(-1)^k\,
+	q^{\binomial{k}{2}}\right]^{1+s-r}} \]
+
+\item {\protect\verb@qpsihyperterm({a1,a2,...,ar},{b1,b2,...,bs},q,z,k)@}
+	\ttindex{QPSIHYPERTERM}
+        \[\sum_{k=-\infty}^{\infty}{\frac{\qfac{a_1,a_2,\ldots,a_r}{k}}
+	{\qfac{b_1,b_2,\ldots,b_s}{k}}\,z^k\,
+	\left[(-1)^k\,q^{\binomial{k}{2}}\right]^{s-r}} \]
+\end{itemize}
+where $\qfac{a_1,a_2,\ldots,a_r}{k}$ stands for the
+product $\prod_{j=1}^r{\qfac{a_j}{k}}$.
+
+\section{The {\ttfamily QGOSPER} operator}
+
+The {\tt qgosper} operator is an implementation of the $q$-Gosper
+algorithm \cite{Koornwinder:93}.
+\begin{itemize}
+	\item {\verb@qgosper(a,q,k)@} determines a $q$-hypergeometric
+		antidifference. (By default it returns a {\sl downward}
+		antidifference, which may be changed by the switch 
+		{\verb@qgosper_down@}.)
+		If it does not return a \textsl{q}-hypergeometric antidifference,
+		then such an antidifference does not exist.
+	\item {\verb@qgosper(a,q,k,m,n)@} determines a closed formula
+		for the definite sum \[\sum\limits_{k=m}^n a_k\] using the
+		$q$-analogue of Gosper's algorithm. 
+		This is only successful if \textsl{q}-Gosper's algorithm applies.
+\end{itemize}
+
+{\bf Example:}
+\begin{verbatim}
+1: qgosper(qpochhammer(a,q,k)*q^k/qpochhammer(q,q,k),q,k);
+
+   k
+ (q *a - 1)*qpochhammer(a,q,k)
+-------------------------------
+  (a - 1)*qpochhammer(q,q,k)
+
+\end{verbatim}
+
+
+
+\section{The {\ttfamily QSUMRECURSION} operator}
+\label{QSUMRECURSION}
+
+The \f{QSUMRECURSION\ttindex{QSUMRECURSION}} operator is an implementation 
+of the $q$-Zeilberger algorithm \cite{Koornwinder:93}.
+It tries to determine a homogeneous recurrence equation for 
+$\fcn{summ}{n}$ wrt. $n$ with polynomial coefficients (in $n$), where
+
+\[
+	\fcn{summ}{n}:= \sum_{k=-\infty}^{\infty}{\fcn{f}{n,k}}.
+\]
+
+There are three different ways to pass a summand $\fcn{f}{n,k}$
+to {\verb@qsumrecursion@}:
+
+\begin{itemize}
+	\item {\verb@qsumrecursion(f,q,k,n)@}, where {\tt f} is a
+		$q$-hypergeometric term wrt. {\tt k} and {\tt n},
+		{\tt k} is the summation variable and {\tt n} the recursion
+		variable, {\tt q} is a symbol.
+	\item {\verb@qsumrecursion(upper,lower,q,z,n)@} is a shortcut for \\
+		{\verb@qsumrecursion(qphihyperterm(upper,lower,q,z,k),q,k,n)@}
+	\item {\verb@qsumrecursion(f,upper,lower,q,z,n)@} is a similar 
+		shortcut for\\
+		{\verb@qsumrecursion(f*qphihyperterm(upper,lower,q,z,k),q,k,n)@},
+\end{itemize}
+
+i.\,e.\ {\tt upper} and {\tt lower} are lists of upper and lower
+parameters of the generalized $q$-hypergeometric function.
+The third form is handy if you have any additional factors.
+
+For all three instances it is possible to pass the order, if known 
+in advance, as additional argument at the end of the parameter sequence.
+You can also specifiy a range by a list of two positive integers, the first
+one specifying the lowest and the second one the highest order. By default
+\f{QSUMRECURSION} will search for recurrences of order from 1 to 5. Usually
+it uses {\tt summ} as name for the summ-function. If you want to change this 
+behaviour then use the following syntax: \f{QSUMRECURSION(f,q,k,s(n))}.
+
+\begin{verbatim}
+2: qsumrecursion(qpochhammer(q^(-n),q,k)*z^k /
+                 qpochhammer(q,q,k),q,k,n);
+
+      n                     n
+- ((q  - z)*summ(n - 1) - q *summ(n))
+\end{verbatim}
+
+\section{Global Variables and Switches}
+
+There are several switches defined in the \f{QSUM} package. Please take a
+look in the accompanying documentation file {\tt qsum.tex} in 
+\$REDUCEPATH/packages/. \\
+
+The most important switches are:
+
+\begin{itemize}
+
+\item \verb@qgosper_down@, default setting is on. It determines
+	whether \verb@qgosper@ returns a downward or an upward
+	antidifference $g_k$ for the input term $a_k$,
+	.\,e.\ $a_k=g_k-g_{k-1}$ or $a_k=g_{k+1}-g_k$ respectively.
+\item \verb@qsumrecursion_certificate@, default off. 
+	As Zeilberger's algorithm 
+	delivers a recurrence equation for a $q$-hypergeometric term
+	$\mathrm{f}(n,k)$ this switch is used to get all necessary 
+	informations for proving this recurrence equation.
+
+	If it is set on, instead of simply returning the 
+	resulting recurrence equation (for the sum)---if one 
+	exists---\verb@qsumrecursion@  returns 
+	a list \verb@{rec,cert,f,k,dir}@ with
+	five items: The first entry contains the
+	recurrence equation, while the other items enable you to
+	prove the recurrence a posteriori by rational arithmetic.
+
+	If we denote by \verb@r@ the recurrence
+	\verb@rec@ where we substituted the \verb@summ@-function
+	by the input term \verb@f@ (with the corresponding shifts
+	in \verb@n@) then the following equation is valid:
+	\[  \verb@r = cert*f - sub(k=k-1,cert*f)@  \]
+	or
+	\[  \verb@r = sub(k=k+1,cert*f) - cert*f@  \]
+	if \verb@dir=downward_antidifference@ or
+	\verb@dir=upward_antidifference@ respectively.
+\end{itemize}
+
+There is one global variable:
+
+\begin{itemize}
+\item \verb@qsumrecursion_recrange!*@ controls for
+which recursion orders the procedure \verb@qsumrecursion@ looks.
+It has to be a list with two entries, the first one representing
+the lowest and the second one the highest order of a recursion
+to search for. By default it is set to \verb@{1,5}@.
+\end{itemize}

@@ -1,0 +1,379 @@
+\documentstyle[11pt,reduce]{article}
+
+\begin{document}
+
+\title{Guide to Writing \REDUCE Reference Documents}
+\date{}
+\author{H. Melenk \& R. Sch\"opf}
+\maketitle
+
+\section{Introduction}
+
+Since Version 3.5 of \REDUCE, the documentation of a package consists of two
+parts, a manual part that is used to introduce the user to the background
+and the functionality of the package in a textbook style, and a reference
+part to be used more like an encyclopedia for retrieving isolated items or
+relations\footnote{%
+At present most of the packages lack a special reference document and a
+plain text version of the manuals are browsed instead. One purpose of this
+text is to encourage package suppliers to add a better-suited reference
+material to their product}. Both parts need different formats. While the
+\REDUCE manual style was fixed some time ago, the \REDUCE reference style
+was developed from scratch for \REDUCE 3.5 and essentially unmodified for
+\REDUCE 3.6.  This paper is intended as a guide to writing a document in
+the reference style.
+
+{\bf Note}: The case of the keywords used in this document is relevant. E.g.
+you must write {\bf Examples}, {\bf Operator} on one hand, but {\bf verbatim}
+on the other.
+
+\section{Media}
+
+A reference document source is a text in \LaTeX{} language following a
+specific set of rules. This source text is converted for two different
+target media:
+
+\begin{itemize}
+\item  printed reference manual for the package and a printed extension of
+the \REDUCE reference manual
+
+\item  on-line help for the package as an extension of the \REDUCE on-line
+help system.
+\end{itemize}
+
+The printed text is formatted by \LaTeX{} using the style specific file {\bf %
+redref.sty}. For the on-line help system a special translation mechanism is
+used that generates data structures for different target systems. A
+description of the transformation process is given below. At present the
+target systems are
+
+\begin{itemize}
+\item  Microsoft Windows help format for MS WINHELP;
+
+\item  GNU Info format, used by GNU Info, xinfo and the \REDUCE X interface
+program XR;
+
+\item  WWW (world wide web)\footnote{%
+formatter contributed by A. Strotmann, Cologne}.
+\end{itemize}
+
+The reference format has been designed to serve both purposes with one
+unique source. However, the restrictions are much more rigid than with
+ordinary \TeX{} styles. These restrictions must be followed carefully,
+otherwise the translation to help files will fail. Please note that a
+successful translation by \LaTeX{} is necessary but not sufficient as a
+test, since not all restrictions are controlled in the environment
+established by the style file.
+
+\section{General Structure}
+
+The overall structure is given by the traditional \LaTeX{} hierarchy 
+\begin{verbatim}
+\begin{document}{...}
+     \chapter{ }
+       \section{ }
+         \subsection{ }
+           \subsubsection{ }
+  \end{document}
+\end{verbatim}
+
+where -- of course -- some or all of the inner levels may be omitted. The
+structure is automatically converted into a directory hierarchy using the
+given titles. These {\bf must} be unique in the whole document (not only in
+the local section).
+
+Informal guideline: the titles should be as short as possible.
+
+The bottom level information must be cut explicitly into pieces that are
+named $nodes$ throughout this paper. There must not be any text outside a
+node - any such text may either get lost or disturb the translation process.
+
+Typical nodes are: an operator, a variable, a switch etc. In the manual form
+a node is a graphically separated part of a page with an emphasized heading.
+In the help form a node is a separate page. In both forms the text for a
+node can (and should) contain references to other nodes. These are encoded
+either as printed references (manual) or as hypertext links (help) that you
+can follow by clicking the word with the mouse. In addition, there are
+directories and indexes that alternatively lead the user to the desired
+information, and which also use the nodes as reference points.
+
+Informal guideline: hierarchy entries and nodes may be mixed on each level.
+On the other hand such a mixture may be unpleasant for online use. Also, the
+structure should not be too deep, otherwise the user must click lots of
+items until he reaches the desired item.
+
+\section{Nodes}
+
+\subsection{Node Context}
+
+In the source language a node is encoded as \LaTeX{} environment
+\begin{verbatim}
+\begin{<node-type>}[<options>]{<node-name>}
+    <line-1>
+     . . .     % the node body
+    <line-n>
+\end{<node-type>}
+\end{verbatim}
+
+The third part of the header line \verb|[<options>]| is omitted except for
+very special cases.
+
+The leading \verb|<node-type>| describes the type of information that is
+given in the node. Specific for the type are the layout and especially the
+heading and directory enty. \verb|<node-type>| is one of the following
+
+\begin{itemize}
+\item  {\bf Introduction}: typically a piece of text used at the beginning
+of a section to give general information for the whole section. 
+\verb|<node-name>| is a free heading, which, however, should be as short as
+possible.
+
+\item  {\bf Operator}: description of an operator. \verb|<node-name>| is the
+operator name. When the operator is represented by a special character
+symbol, \verb|<options>| is the (internal) alphanumeric name and \{%
+\verb|<node-name>|\} contains the special character equivalent. E.g. 
+\begin{verbatim}
+\begin{Operator}[replace]{=>}
+\end{verbatim}
+References should then be directed towards the alphanumeric name.
+
+\item  {\bf Function}: similar to Operator.
+
+\item  {\bf Statement}: description of a syntax extension. \verb|<node-name>|
+is the leading keyword or the statement.
+
+\item  {\bf Command}: description of a command type syntax extension. 
+\verb|<node-name>| is the leading keyword or the command.
+
+\item  {\bf Declaration}: description of a declaration type syntax
+extension. \verb|<node-name>| is the leading keyword or the declaration
+statement.
+
+\item  {\bf Switch}: description of a switch. \verb|<node-name>| is the
+switch name. Note that the body of a Switch node must give information of
+the default setting.
+
+\item  {\bf Variable}: description of a global (share) variable. 
+\verb|<node-name>| is the variable name.
+
+\item  {\bf Constant}: description of a Constant. \verb|<node-name>| is the
+constant name.
+
+\item  {\bf Concept}: used to introduce a description of a term that does
+not fit into one of the other classes, E.g. ``kernel''. \verb|<node-name>|
+is the target keyword.
+\end{itemize}
+
+In all cases \verb|<node-name>| must be written exactly as used in all
+references (correct case, no additional blanks etc.).  For \REDUCE 3.5 and
+later versions, this is lower case for most items.  Special characters
+other than underscore should be avoided whenever possible because these
+are often not accepted by the target systems.
+
+\subsection{Node Structure}
+
+Inside a node the default state is ``normal text". Special environments (%
+\verb|\begin{..}| -- \verb|\end{..}| contexts) are supported that allow you
+to format text. These are
+
+\begin{itemize}
+\item  {\bf Syntax}: description of the syntax for an operator, statement or
+command. This is translated into a fixed font. For special advice see below.
+
+\item  {\bf Examples}: description of prototypical applications, including
+input and output. Here special formatting is performed - see below.
+
+\item  {\bf verbatim}: text is printed unchanged in fixed font.
+
+\item  {\bf Tex}: a text that allows full \LaTeX{} functionality; such a
+piece of information is ignored during compilation for help.
+
+\item  {\bf Info}: a text which is processed when compiling for help and
+which is ignored during \LaTeX{} processing.
+\end{itemize}
+
+Typically \verb|Tex| and \verb|Info| are used one after the other in order
+to describe the same context in an advanced (Tex) and a simple (Info) style.
+
+\subsubsection{Normal Text}
+
+This is text translated to a proportional font (where applicable). An empty
+line causes a new paragraph to be started. Only a very limited \TeX{}
+compatibility is given: Use the backslash for protecting special characters
+like \{ and \}. Additionally formatting elements are available:
+
+\begin{itemize}
+\item  \verb|\|verb
+
+\item  \verb|\|ldots
+
+\item  \verb|\|cdots
+
+\item  \verb|\|pi
+
+\item  \verb|\|em (may be without effect for some targets)
+
+\item  \verb|\|meta\{x\}: write $x$ as meta symbol for a syntax
+description. In general this will lead to an output similar to $x$.
+
+\item  \verb|\|name\{x\}: write $x$ as a \REDUCE symbol. This form should be
+used for all keywords, operator names etc.
+
+\item  \verb|\|nameref\{x\}: write $x$ as a \REDUCE symbol and generate a
+reference to a node with the name $x$. This features is used to establish
+the cross links in the information structure.
+
+\item  \verb|\|index\{x\}: generate an index entry. $x$ does not appear in
+the target text.
+\end{itemize}
+
+Additionally there is a new command
+
+\begin{quotation}
+\verb|\IFTEX{|\TeX{} text\verb|}{|info text\verb|}|
+\end{quotation}
+
+that allows you to write parts of the text in two forms, one fancy form for 
+\LaTeX{} processing and a simpler form for the help environment. For
+example, a mathematical formula like $\exp (x)$ must be written as follows: 
+\begin{verbatim}
+\IFTEX{$\exp(x)$}{exp(x)}
+\end{verbatim}
+
+Note: the \verb|*| variants of \verb|\verb| and \verb|verbatim| cannot be
+used. Informal guidelines:
+
+\begin{itemize}
+\item  The text should have a nice structure. When the text has many lines
+insert paragraph breaks such that the eye of the reader finds fixing points.
+
+\item  All \verb|\|index entries should follow immediately the header line
+of the node.
+
+\item  Ensure that the spelling of index entries is unified, e.g. use only
+singular and lower case (except for proper names).
+
+\item  Use \verb|\|nameref for as many names as possible. The
+interrelations help the user to navigate through your document. Mention
+every related node at least once in a \verb|\|nameref; if a related node
+does not have a ``natural'' place in the text add a ``See also'' paragraph
+at the end of the node.
+
+\item  Don't repeat \verb|\|nameref for the same object in one node unless
+the distance between the citation points is rather big (nore than half a
+page) - use \verb|\|name for repeated occurrences.
+\end{itemize}
+
+\subsubsection{Syntax Context}
+
+This section contains the formal pattern of the introduced operator or
+statement. The following items must be preceded by a backslash: {\bf round
+brackets}, {\bf curly brackets}, {\bf underscore}, {\bf dollar}. Use 
+\verb|\meta| in the description for the variable items and explain these
+using the same forms in the following plain text. The fixed items should be
+encoded using \verb|\name|.
+
+Examples: 
+\begin{verbatim}
+
+\begin{Syntax}
+\meta{logical\_expression} \name{and} \meta{logical\_expression}
+\end{Syntax}
+
+\begin{Syntax}
+\name{<<}\meta{statement}\{; \meta{statement} \name{or}
+                           \$\meta{statement}\}\optional \name{>>}
+\end{Syntax}
+\end{verbatim}
+
+\subsubsection{Examples Context}
+
+This section gives prototypical application examples. The text here has to
+follow a special format where the line breaks in the input are unimportant
+(except in the multiline option):
+
+\begin{enumerate}
+\item  Each example must be terminated by a double backslash. This signals
+that the next example starts (which should begin on the next line) or that
+the last example is complete.
+
+\item  An example starts with the input line. This will be printed in
+verbatim style with fixed font.
+
+\item  If the example has an associated output, this is started by an
+ampersand (\verb|&|) character. The output must be either coded as \TeX{}
+math line with restricted math facilities, using only
+
+\begin{itemize}
+\item  \verb|^| for raised exponents and
+
+\item  \verb|\rfrac| for fractions (similar to \verb|\frac| in \TeX{}),
+\end{itemize}
+
+or the output may be a sequence of several lines that are then printed in
+verbatim style. In the second case the lines must be enclosed in a pair 
+\verb|\begin{multilineoutput}| \verb|\end{multilineoutput}|.
+\end{enumerate}
+
+Informal guidelines:
+
+Write short examples. Take into account that the space is very restricted
+when using an online help system. In particular, the lines are rather short.
+
+Examples:
+
+\begin{verbatim}
+
+\begin{Examples}
+alist := \{1,2,\{a,b\}\};      &      ALIST := \{1,2,\{A,B\}\} \\
+blist := \{3,4,5,sin(y)\};   &      BLIST := \{3,4,5,SIN(Y)\} \\
+append(alist,blist);       &      \{1,2,\{A,B\},3,4,5,SIN(Y)\} \\
+append(alist,\{\});          &      \{1,2,\{A,B\}\} \\
+append(list z,blist);      &      \{Z,3,4,5,SIN(Y)\}
+\end{Examples}
+
+
+\begin{Examples}
+solve(log(sin(x+3)),x);    &
+\begin{multilineoutput}{6cm}
+    4*arbint(1)*pi + pi - 6     4*arbint(1)*pi + pi - 6
+\{x=-------------------------,x=-------------------------\}
+	       2                           2
+\end{multilineoutput}
+\end{Examples}
+\end{verbatim}
+
+\section{\LaTeX{} Translation}
+
+This should not cause any difficulties as long as the style files accessible.
+
+\section{Help System Transformation}
+
+In the \REDUCE library a set of utilities is available that allow you to
+transform a reference style input file into an input to a target system.
+These are source files in \REDUCE syntax, and you need a \REDUCE 3.5 or later
+executable to use these. At present the source files are
+
+\begin{itemize}
+\item  comphelp.red: driver and input analysis,
+
+\item  helpwin.red: output for MS Windows syntax
+
+\item  helpunx.tex: output for GNU Info format
+
+\item  minitex.red: formula formatting
+\end{itemize}
+
+First you must compile these using the script file $compile$. The result
+will be binaries $cmphelpu.b$ and $cmphelpw.b$. For running these use
+scripts $mkhelpu$ or $mkhelpw$ that take the name of the input file as
+argument. This file may contain \verb|\include| or \verb|\input| statements
+for secondary sources. During processing a list of sections and nodes is
+printed to the standard output. The conversion process stops if a context
+error is found - then the actual context hierarchy is printed. When the
+analysis phase has been successful, in a second phase the target file is
+generated. This is either a file $*.x$ (Info), to be further processed by
+the GNU makeinfo, or a file $*.rtf$ that is input for the Microsoft help
+compiler HC.
+
+\end{document}

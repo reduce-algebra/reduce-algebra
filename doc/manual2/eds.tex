@@ -1,0 +1,449 @@
+\chapter{EDS: Exterior differential systems}
+\label{EDS}
+\typeout{{EDS: Exterior differential systems}}
+
+{\footnotesize
+\begin{center}
+David Hartley \\
+Physics and Mathematical Physics \\
+University of Adelaide SA 5005, Australia \\
+e-mail: DHartley@physics.adelaide.edu.au
+\end{center}
+}
+\ttindex{EDS: Exterior differential dystems}
+\ttindex{EDS}
+
+\section{Introduction}
+
+Exterior differential systems give a geometrical framework for partial
+differential equations and more general differential geometric problems.
+The geometrical formulation has several advantages stemming from its
+coordinate-independence, including superior treatment of nonlinear and
+global problems. {\tt EDS} provides a number of tools for setting up and 
+manipulating exterior differential systems and implements many features of 
+the theory. Its main strengths are the ability to use anholonomic or moving 
+frames and the care taken with nonlinear problems.
+
+The package is loaded 
+%\footnote{The package {\tt EXCALC}
+%(Chap. \ref{EXCALC} p. \pageref{EXCALC}) and the package {\tt XIDEAL} 
+%(Chap. \ref{XIDEAL} p. \pageref{XIDEAL}) are loaded automatically with
+%this package.} 
+by typing \quad {\tt load eds;} \par
+Reading the full documentation, which comes with this 
+package, is strongly recommended.
+The test file eds.tst, which is also in the package,  provides
+three inspiring examples on the subject. \\
+EDS uses E.~Schr{\"u}fer's EXCALC package for the underlying
+exterior calculus operations.
+
+\section{Data Structures and Concepts}
+\subsection{EDS}
+A simple \meta{EDS}, or exterior differential system, is a triple
+{\tt (S,$\Omega$,M)}, where {\it M} is a {\it coframing}, {\it S} is a
+system on {\it M}, and {\it $\Omega$} is an independence condition. 
+Exterior differential equations without independence condition are not
+treated by {\tt EDS}. {\it $\Omega$} should be either a decomposable
+\meta{p-form} or a \meta{system} of 1-forms on {\it M}. \\
+More generally an \meta{EDS} is a list of simple \meta{EDS} objects
+where the various coframings are all disjoint. \\
+The solutions of {\it (S,$\Omega$,M)} are integral manifolds, or immersions
+on which {\it S} vanishes and the rank of $\Omega$ is preserved. Solutions
+at a single point are described by integral elements.
+
+\subsection{Coframing}
+Within the context of {\tt EDS}, a {\it coframing} means a real 
+finite-dimensional differentiable manifold with a given global cobasis. 
+The information about a coframing required by {\tt EDS} is kept in a
+\meta{coframing} object. The cobasis is the identifying element of
+an {\tt EDS}. In addition to the cobasis, there can be given {\it coordinates,
+structure equations} and {\it restrictions}. 
+In addition to the cobasis, {\it coordinates, structure equations} and
+{\it restrictions} can be given.
+The coordinates may be an incomplete or 
+overcomplete set. The structure equations express the exterior derivative of the
+coordinates and cobasis elements as needed. All coordinate differentials must 
+be expressed in terms of the given cobasis, but not all cobasis derivatives
+need be known. 
+The restrictions are a set of inequalities describing point sets
+not in the manifold. \\
+Please note that the \meta{coframing} object is by no means a full description
+of a differentiable manifold. However, the \meta{coframing} object carries 
+sufficient information about the underlying manifold to allow a range of exterior
+systems calculations to be carried out.
+
+\subsection{Systems and background coframing}
+The label \meta{system} refers to a list $\{<${\it p-form expr}$>,\ldots\}$ of
+differential forms. If an {\tt EDS} operator also accepts a \meta{system} as 
+argument, then any extra information which is required is taken from the
+background coframing. \\
+It is possible to activate the rules and orderings of a \f{COFRAMING} operator
+globally, by making it the {\it background coframing}. All subsequent \f{EXCALC}
+\ttindex{EXCALC} operations will be governed by those rules. Operations on 
+\meta{EDS} objects are unaffected, since their coframings are still activated
+locally.
+
+\subsection{Integral elements}
+An \meta{integral element} of an exterior system $(S,\Omega,M)$ is a subspace
+$P \subset T_pM$ of the tangent space at some point $p \in M$. This integral
+element can be represented by its annihilator $P^\perp \subset T^*_pM$, comprising
+those 1-forms at $p$ which annihilate every vector in $P$. This can also be understood
+as a maximal set of 1-forms at $p$ such that $S \simeq 0 \pmod{P^\perp}$ and the
+rank of $\Omega$ is preserved modulo $P^\perp$. \\
+An \meta{integral element} in EDS is a distribution of 1-forms on $M$,
+specified as a \meta{system} of 1-forms.
+
+\subsection{Properties and normal form}
+For large problems, it can require a great deal of computation to establish
+whether, for example, a system is closed or not. In order to save
+recomputing such properties, an \meta{EDS} object carries a list of
+\meta{properties} of the form 
+\begin{list}{}
+\item {\tt \{\meta{keyword} = \meta{value},$\cdots$\}}
+\end{list}
+where \meta{keyword} is one of \f{closed}, \f{quasilinear}, \f{pfaffian} or
+\f{involutive}, and \meta{value} is either \f{0} (false) or \f{1}
+(true). These properties are suppressed when an \meta{EDS} is printed,
+unless the \f{nat} switch is \f{off}. They can be examined using the
+\f{PROPERTIES} operator. \\
+Parts of the theory of exterior differential systems apply only at points
+on the underlying manifold where the system is in some sense
+non-singular. To ensure the theory applies, EDS automatically works all
+exterior systems $(S,\Omega,M)$ into a {\em normal form}. This means that
+the Pfaffian component of $S$ and the independence condition $\Omega$ are 
+in {\it solved} forms, distinguished terms from the 1-forms in $S$ have
+been eliminated from the rest of $S$ and from $\Omega$ and any 1-forms in
+$S$ which vanish modulo the independence condition are removed from the
+system and their coefficients are appended as 0-forms.
+
+\section{The EDS Package}
+
+In the descriptions of the various operators we define the following
+abbreviations for function parameters:
+\vspace{0.25cm}
+
+\begin{tabular}{ll}
+$E$, $E'$   & \meta{EDS}\\
+$S$         & \meta{system}\\
+$M$, $N$    & \meta{coframing}, or a \meta{system} specifying a \meta{coframing}\\
+$r$         & \meta{integer}\\
+$\Omega$    & \meta{p-form}\\
+$f$         & \meta{map}\\
+$rsx$       & \meta{list of inequalities}\\
+$cob$       & \meta{list of 1-form variables}\\
+$crd$, $dep$, $ind$     
+            & \meta{list of 0-form variables}\\
+$drv$       & \meta{list of rules for exterior derivatives}\\
+$pde$       & \meta{list of expressions or equations}\\
+$X$         & \meta{transform}\\
+$T$         & \meta{tableau}\\
+$P$         & \meta{integral element}\\
+\end{tabular}
+
+
+\subsection{Constructing EDS objects}
+
+An EDS \meta{coframing} is constructed using the \f{COFRAMING} operator.
+In one form it examines the argument for 0-form and 1-form variables. The more
+basic syntax takes the \meta{cobasis} as a list of 1-forms, \meta{coordinates}
+as a list of 0-forms, \meta{restrictions} as a list of inequalities and 
+\meta{structure equations} as a list giving the exterior derivatives of the
+coordinates and cobasis elements. All arguments except the cobasis are optional. \\
+A simple \meta{EDS} is constructed using the \f{EDS} operator where the
+\meta{indep. condition} can be either a decomposable \meta{p-form} or a
+\meta{system} of 1-forms. The \meta{coframing} and the \meta{properties}
+arguments can be omitted. The {\it EDS} is put into normal form before being 
+returned. With \f{SET\_COFRAMING} the background coframing is set. \\
+The operator \f{PDS2EDS} encodes a PDE system into an \meta{EDS} object. \\
+
+\begin{tabular}{lll}
+\f{COFRAMING}(cob,crd,rsx,drv)\ttindex{COFRAMING} &
+\f{COFRAMING}(S)\ttindex{COFRAMING} &
+\f{EDS}(S,$\Omega$,M)\ttindex{EDS} \\
+\f{CONTACT}(r,M,N)\ttindex{CONTACT} &
+\f{PDE2EDS}(pde,dep,ind)\ttindex{PDE2EDS} &
+\f{SET\_COFRAMING}(M)\ttindex{SET\_COFRAMING} \\
+\f{SET\_COFRAMING}(E)\ttindex{SET\_COFRAMING} &
+\f{SET\_COFRAMING}()\ttindex{SET\_COFRAMING} 
+\end{tabular}
+\vspace{0.5cm}
+
+{\bf Example:}
+\begin{verbatim}
+1: load eds;
+
+2: pform {x,y,z,p,q}=0,{e(i),w(i,j)}=1;
+
+3: indexrange {i,j,k}={1,2},{a,b,c}={3};
+
+4: eds({d z - p*d x - q*d y, d p^d q},{d x,d y});
+
+EDS({d z - p*d x - q*d y,d p^d q},d x^d y) 
+
+5: OMrules:=index_expand {d e(i)=>-w(i,-j)^e(j),w(i,-j)+w(j,-i)=>0}$
+
+6: eds({e(a)},{e(i)}) where OMrules;
+
+      3    1  2
+EDS({e },{e ,e })
+
+7: coframing ws;
+            3  2    1  2         1        2  2 
+coframing({e ,w   ,e ,e },{},{d e  =>  - e ^w   ,
+                 1                             1 
+               2     1  2 
+            d e  => e ^w   },{})
+                          1  
+\end{verbatim}
+
+
+\subsection{Inspecting EDS objects}
+
+Using these operators you can get parts of your \meta{EDS} object. The
+\f{PROPERTIES}(E) operator for example returns a list of properties which are
+normally not printed out, unless the \f{NAT}\ttindex{NAT} switch is off. \\
+
+\begin{tabular}{lll}
+\f{COFRAMING}(E)\ttindex{COFRAMING} &
+\f{COFRAMING}()\ttindex{COFRAMING} &
+\f{COBASIS}(M)\ttindex{COBASIS} \\
+\f{COBASIS}(E)\ttindex{COBASIS} &
+\f{COORDINATES}(M)\ttindex{COORDINATES} &
+\f{COORDINATES}(E)\ttindex{COORDINATES} \\
+\f{STRUCTURE\_EQUATIONS}(M)\ttindex{STRUCTURE\_EQUATIONS} &
+\f{STRUCTURE\_EQUATIONS}(E)\ttindex{STRUCTURE\_EQUATIONS} &
+\f{RESTRICTIONS}(M)\ttindex{RESTRICTIONS} \\
+\f{RESTRICTIONS}(E)\ttindex{RESTRICTIONS} &
+\f{SYSTEM}(E)\ttindex{SYSTEM} &
+\f{INDEPENDENCE}(E)\ttindex{INDEPENDENCE} \\
+\f{PROPERTIES}(E)\ttindex{PROPERTIES} &
+\f{ONE\_FORMS}(E)\ttindex{ONE\_FORMS} &
+\f{ONE\_FORMS}(S)\ttindex{ONE\_FORMS} \\
+\f{ZERO\_FORMS}(E)\ttindex{ZERO\_FORMS} &
+\f{ZERO\_FORMS}(S)\ttindex{ZERO\_FORMS} &
+\end{tabular}
+\vspace{0.5cm}
+
+{\bf Example:}
+\begin{verbatim}
+8: depend u,x,y; depend v,x,y;
+
+9: pde2eds({df(u,y,y)=df(v,x),df(v,y)=y*df(v,x)});
+
+EDS({d u - u *d x - u *d y, d u  - u   *d x - u   *d y,
+            x        y         x    x x        y x
+
+     d u  - u   *d x - v *d y, d v - v *d x - v *y*d y},d x^d y)
+        y    y x        x             x        x
+
+10: dependencies;
+
+{{u,y,x},{v,y,x}}
+
+11: coordinates contact(3,{x},{u});
+
+{x,u,u ,u   ,u     }
+      x  x x  x x x 
+
+12: fdomain u=u(x);
+
+13: coordinates {d u+d y};
+
+{x,y} 
+
+\end{verbatim}
+
+\subsection{Manipulating EDS objects}
+
+These operators allow you to manipulate your \meta{EDS} objects. The
+\f{AUGMENT}(E,S) operator, see example below, appends the extra forms in the second
+argument to the system part of the first. The original \meta{EDS} remains
+unchanged. As another example by using the \f{TRANSFORM} operator 
+a change of the cobasis is made, where the argument \meta{transform} is a list of
+substitutions. \\
+
+\begin{tabular}{llll}
+\f{AUGMENT}(E,S)\ttindex{AUGMENT} &
+$M$ \f{CROSS} $N$\ttindex{CROSS} &
+$E$ \f{CROSS} $N$\ttindex{CROSS} &
+\f{PULLBACK(E,f)}\ttindex{PULLBACK} \\
+\f{PULLBACK}(S,f)\ttindex{PULLBACK} &
+\f{PULLBACK}($\Omega$,f)\ttindex{PULLBACK} &
+\f{PULLBACK}(M,f)\ttindex{PULLBACK} &
+\f{RESTRICT}(E,f)\ttindex{RESTRICT} \\
+\f{RESTRICT}(S,f)\ttindex{RESTRICT} &
+\f{RESTRICT}($\Omega$,f)\ttindex{RESTRICT} &
+\f{RESTRICT}(M,f)\ttindex{RESTRICT} &
+\f{TRANSFORM}(M,X)\ttindex{TRANSFORM} \\
+\f{TRANSFORM}(E,X)\ttindex{TRANSFORM} &
+\f{TRANSFORM}(S,X)\ttindex{TRANSFORM} &
+\f{TRANSFORM}($\Omega$,X)\ttindex{TRANSFORM} &
+\f{LIFT(E)}\ttindex{LIFT} \\
+\end{tabular}
+\vspace{0.5cm}
+
+{\bf Example:}
+\begin{verbatim}
+% Non-Pfaffian system for a Monge-Ampere equation
+
+14: PFORM {x,y,z}=0$
+
+15: S := CONTACT(1,{x,y},{z});
+
+s := EDS({d z - z *d x - z *d y},d x^d y)
+                 x        y
+
+16: S:= AUGMENT(S,{d z(-x)^d z(-y)});
+
+s := EDS({d z - z *d x - z *d y,
+                 x        y
+
+          d z ^d z },d x^d y)
+             x    y
+\end{verbatim}
+
+
+\subsection{Analysing and Testing exterior systems}
+
+{\bf Analysing exterior systems} \par
+This section introduces higher level operators for extracting information about
+exterior systems. Many of them require a \meta{EDS} in normal form generated
+in positive degree as input, but some can also analyse a \meta{system} or a
+single \meta{p-form}. \\ 
+
+\begin{tabular}{lll}
+\f{CARTAN\_SYSTEM}(E)\ttindex{CARTAN\_SYSTEM} &
+\f{CARTAN\_SYSTEM}(S)\ttindex{CARTAN\_SYSTEM} &
+\f{CARTAN\_SYSTEM}($\Omega$)\ttindex{CARTAN\_SYSTEM} \\
+\f{CAUCHY\_SYSTEM}(E)\ttindex{CAUCHY\_SYSTEM} &
+\f{CAUCHY\_SYSTEM}(S)\ttindex{CAUCHY\_SYSTEM} &
+\f{CAUCHY\_SYSTEM}($\Omega$)\ttindex{CAUCHY\_SYSTEM} \\
+\f{CHARACTERS}(E)\ttindex{CHARACTERS} &
+\f{CHARACTERS}(T)\ttindex{CHARACTERS} &
+\f{CHARACTERS}(E,P)\ttindex{CHARACTERS} \\
+\f{CLOSURE}(E)\ttindex{CLOSURE} &
+\f{DERIVED\_SYSTEM}(E)\ttindex{DERIVED\_SYSTEMS} &
+\f{DERIVED\_SYSTEM}(S)\ttindex{DERIVED\_SYSTEMS} \\
+\f{DIM\_GRASSMANN\_VARIETY}(E)\ttindex{DIM\_GRASSMANN\_VARIETY} &
+\f{DIM\_GRASSMANN\_VARIETY}(E,P)\ttindex{DIM\_GRASSMANN\_VARIETY} &
+\f{DIM}(M)\ttindex{DIM} \\
+\f{DIM}(E)\ttindex{DIM} &
+\f{INVOLUTION}(E)\ttindex{INVOLUTION} &
+\f{LINEARISE}(E,P)\ttindex{LINEARISE} \\
+\f{INTEGRAL\_ELEMENT}(E)\ttindex{INTEGRAL\_ELEMENT} &
+\f{PROLONG}(E)\ttindex{PROLONG} &
+\f{TABLEAU}(E)\ttindex{TABLEAU} \\
+\f{TORSION}(E)\ttindex{TORSION} &
+\f{GRASSMANN\_VARIETY}(E)\ttindex{GRASSMANN\_VARIETY} &
+\end{tabular}
+\par
+\ \\
+{\bf Testing exterior systems} \par
+The following operators allow various properties of an \meta{EDS} to be checked.
+The result is either a {\bf 1} or a {\bf 0}, so these operators can be used in 
+boolean expressions. Since checking these properties is very time-consuming, the
+result of the first test is stored on the \meta{properties} record of an
+\meta{EDS} to avoid re-checking. This memory can be cleared using the
+\f{CLEANUP}\ttindex{CLEANUP} opearator. \\
+
+\begin{tabular}{llll}
+\f{CLOSED}(E)\ttindex{CLOSED} &
+\f{CLOSED}(S)\ttindex{CLOSED} &
+\f{CLOSED}($\Omega$)\ttindex{CLOSED} &
+\f{INVOLUTIVE}(E)\ttindex{INVOLUTIVE} \\
+\f{PFAFFIAN}(E)\ttindex{PFAFFIAN} &
+\f{QUASILINEAR}(E)\ttindex{QUASILINEAR} &
+\f{SEMILINEAR}(E)\ttindex{SEMILINEAR} &
+$E$ \f{EQUIV} $E'$\ttindex{EQUIV} \\
+\end{tabular}
+\vspace{0.5cm}
+
+\subsection{Switches}
+
+EDS provides several switches to govern the display of information and enhance 
+the speed or reliability of the calculations. For example the switch \f{EDSVERBOSE} 
+if {\tt ON} will display additional information as the calculation progresses, 
+which might generate too much output for larger problems. \\
+All switches are {\tt OFF} by default.
+
+\begin{tabular}{llllll}
+\f{EDSVERBOSE}\ttindex{EDSVERBOSE} &
+\f{EDSDEBUG}\ttindex{EDSDEBUG} &
+\f{EDSSLOPPY}\ttindex{EDSSLOPPY} &
+\f{EDSDISJOINT}\ttindex{EDSDISJOINT} &
+\f{RANPOS}\ttindex{RANPOS} &
+\f{GENPOS}\ttindex{GENPOS} \\
+\end{tabular}
+
+\subsection{Auxilliary functions}
+
+The operators of this section are designed to ease working with exterior forms
+and exterior systems in {\REDUCE}\ . \\
+
+\begin{tabular}{lll}
+\f{COORDINATES}(S)\ttindex{COORDINATES} &
+\f{INVERT}(X)\ttindex{INVERT} &
+\f{STRUCTURE\_EQUATIONS}(X)\ttindex{STRUCTURE\_EQUATIONS} \\
+\f{STRUCTURE\_EQUATIONS}(X,$X^{-1}$)\ttindex{STRUCTURE\_EQUATIONS} &
+\f{LINEAR\_DIVISORS}($\Omega$)\ttindex{LINEAR\_DIVISORS} &
+\f{EXFACTORS}($\Omega$)\ttindex{EXFACTORS} \\
+\f{INDEX\_EXPAND}(ANY)\ttindex{INDEX\_EXPAND} &
+\f{PDE2JET}(pde,dep,ind)\ttindex{PDE2JET} &
+\f{MKDEPEND}(list)\ttindex{MKDEPEND} \\
+\f{DISJOIN}(f,g,...)\ttindex{DISJOIN} &
+\f{CLEANUP}(E)\ttindex{CLEANUP} &
+\f{CLEANUP}(M)\ttindex{CLEANUP} \\
+\f{REORDER}(E)\ttindex{REORDER} &
+\f{REORDER}(M)\ttindex{REORDER} &
+\end{tabular}
+
+\subsection{Experimental Functions}
+
+The following operators are experimental facilities since, they are
+either algorithmically not well-founded, or their implementation is
+very unstable, or they have known bugs. \\
+
+\begin{tabular}{lll}
+\f{POINCARE}($\Omega$)\ttindex{POINCARE} &
+\f{INVARIANTS}(E,crd)\ttindex{INVARIANTS} &
+\f{INVARIANTS}(S,crd)\ttindex{INVARIANTS} \\
+\f{SYMBOL\_RELATIONS}(E,$\pi$)\ttindex{SYMBOL\_RELATIONS} &
+\f{SYMBOL\_MATRIX}(E,$\xi$)\ttindex{SYMBOL\_MATRIX} &
+\f{CHARACTERISTIC\_VARIETY}(E,$\xi$)\ttindex{CHARACTERISTIC\_VARIETY} \\
+\end{tabular}
+\vspace{0.5cm}
+
+{\bf Example:}
+\begin{verbatim}
+17: % Riemann invariants for Euler-Poisson-Darboux equation.
+17: % Set up the EDS for the equation, and examine tableau.
+17: depend u,x,y; EPD :=PDE2EDS{DF(u,x,y)=-(df(u,x)+df(u,y))/(x+y)}$
+
+19: tableau EPD;
+
+[d u       0   ]
+[   x x        ]
+[              ]
+[  0     d u   ]
+[           y y]
+
+20: % 1-form dx is characteristic: construct characteristic EDS.
+20: xvars {}; C := cartan_system select(~f^d x=0,system closure epd)$
+
+22: S := augment(eds(system EPD,d y),C)$
+
+23: % Compute derived flag
+23: while not equiv(S,S1 := derived_system S) do S := S1;
+
+24: % Stabilised. Find the Riemann invariants.
+24: invariants(S,reverse coordinates S);
+
+{x,
+
+ u *x + u *y + u,
+  x      x
+
+  - u   *x - u   *y - 2*u }
+     x x      x x        x
+\end{verbatim}
+

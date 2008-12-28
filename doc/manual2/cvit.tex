@@ -1,0 +1,68 @@
+\chapter[CVIT:Dirac gamma matrix traces]%
+        {CVIT: Fast calculation of Dirac gamma matrix traces}
+\label{CVIT}
+\typeout{[CVIT:Dirac gamma matrix traces]}
+
+{\footnotesize
+\begin{center}
+V. Ilyin, A. Kryukov, A. Rodionov and A. Taranov \\
+Institute for Nuclear Physics \\
+Moscow State University  \\
+Moscow, 119899 Russia
+\end{center}
+}
+
+\ttindex{CVIT}
+
+The package consists of 5 sections, and provides an alternative to the
+\REDUCE\ high-energy physics system.  Instead of being based on
+$\Gamma$-matrices as a basis for a Clifford algebra, it is based on
+treating $\Gamma$-matrices as 3-j symbols, as described by
+Cvitanovic.
+
+The functions it provides are the same as those of the standard
+package.  It does have four switches which control its behaviour.
+
+\noindent{\tt CVIT}\ttindex{CVIT}
+
+If it is on then use Kennedy-Cvitanovic algorithm else use standard
+facilities.
+
+\noindent{\tt CVITOP}\ttindex{CVITOP}
+
+Switches on Fierz optimisation.  Default is off;
+
+\noindent{\tt CVITBTR}\ttindex{CVITBTR}
+
+Switches on the bubbles and triangles factorisation.  The default is
+on.
+
+
+\noindent{\tt CVITRACE}\ttindex{CVITRACE}
+
+Controls internal tracing of the CVIT package.  Default is off.
+
+\begin{verbatim}
+index j1,j2,j3,;
+
+vecdim n$
+
+g(l,j1,j2,j2,j1);
+
+
+ 2
+n
+
+
+g(l,j1,j2)*g(l1,j3,j1,j2,j3);
+
+
+ 2
+n
+
+g(l,j1,j2)*g(l1,j3,j1,j3,j2);
+
+
+n*( - n + 2)
+\end{verbatim}
+

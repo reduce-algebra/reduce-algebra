@@ -1,0 +1,391 @@
+\chapter[PHYSOP: Operator Calculus]%
+{PHYSOP: Operator calculus in quantum theory}
+\label{PHYSOP}
+\typeout{{PHYSOP: Operator calculus in quantum theory}}
+
+{\footnotesize
+\begin{center}
+Mathias Warns \\
+Physikalisches Institut der Universit\"at Bonn  \\
+Endenicher Allee 11--13 \\
+D--5300 BONN 1, Germany \\[0.05in]
+e--mail: UNP008@DBNRHRZ1.bitnet
+\end{center}
+}
+\ttindex{PHYSOP}
+
+The package PHYSOP has been designed to meet the requirements of
+theoretical physicists looking for a
+computer algebra tool to perform complicated calculations
+in quantum theory
+with expressions containing operators. These operations
+consist mainly in the calculation of commutators between operator
+expressions and in the evaluations of operator matrix elements
+in some abstract space.
+
+\section{The NONCOM2 Package}
+
+The package NONCOM2  redefines some standard \REDUCE\ routines
+in order to modify the way noncommutative operators are handled by the
+system.  It redefines the \f{NONCOM}\ttindex{NONCOM} statement in
+a way more suitable for calculations in physics. Operators have now to
+be declared noncommutative pairwise, {\em i.e.\ }coding: \\
+
+\begin{verbatim}
+    NONCOM A,B;
+\end{verbatim}
+declares the operators \f{A} and \f{B} to be noncommutative but allows them
+to commute with any other (noncommutative or not) operator present in
+the expression. In a similar way if one wants {\em e.g.\ }\f{A(X)} and
+\f{A(Y)} not to commute, one has now to code:
+
+\begin{verbatim}
+    NONCOM A,A;
+\end{verbatim}
+
+A final example should make
+the use of the redefined \f{NONCOM} statement clear:
+
+\begin{verbatim}
+NONCOM A,B,C;
+\end{verbatim}
+declares \f{A}  to be noncommutative with \f{B} and \f{C},
+\f{B} to be noncommutative
+with \f{A} and \f{C} and \f{C} to be noncommutative
+with \f{A} and \f{B}.
+Note that after these declaration
+{\em e.g.\ }\f{A(X)} and \f{A(Y)}
+are still commuting kernels.
+
+Finally to keep the compatibility with standard \REDUCE\, declaring a
+\underline{single} identifier using the \f{NONCOM} statement has the same
+effect as in
+standard \REDUCE.
+
+From the user's point of view there are no other
+new commands implemented by the package.
+
+
+\section{The PHYSOP package}
+
+The package PHYSOP implements a new \REDUCE\ data type to perform
+calculations with physical operators.  The noncommutativity of
+operators is
+implemented using the NONCOM2 package so this file should be loaded
+prior to the use of PHYSOP.
+
+\subsection{Type declaration commands}
+
+The new \REDUCE\ data type PHYSOP implemented by the package allows the
+definition of a new kind of operators ({\em i.e.\ }kernels carrying
+an arbitrary
+number of arguments). Throughout this manual, the name
+``operator''
+will refer, unless explicitly stated otherwise, to this new data type.
+This data type is in turn
+divided into 5 subtypes.  For each of this subtype, a declaration command
+has been defined:
+\begin{description}
+\item[\f{SCALOP A;} ]\ttindex{SCALOP} declares \f{A} to be a scalar
+operator. This operator may
+carry an arbitrary number of arguments; after the
+declaration: \f{ SCALOP A; }
+all kernels of the form
+\f{A(J), A(1,N), A(N,L,M)}
+are recognised by the system as being scalar operators.
+
+\item[\f{VECOP V;} ]\ttindex{VECOP} declares \f{V} to be a vector operator.
+As for scalar operators, the vector operators may carry an arbitrary
+number of arguments. For example \f{V(3)} can be used to represent
+the vector operator $\vec{V}_{3}$. Note that the dimension of space
+in which this operator lives is \underline{arbitrary}.
+One can however address a specific component of the
+vector operator by using a special index declared as \f{PHYSINDEX} (see
+below). This index must then be the first in the argument list
+of the vector operator.
+
+\item[\f{TENSOP C(3);} ] \ttindex{TENSOP}
+declares \f{C} to be a tensor operator of rank 3. Tensor operators
+of any fixed integer rank larger than 1 can be declared.
+Again this operator may carry an arbitrary number of arguments
+and the space dimension is not fixed.
+The tensor
+components can be addressed by using  special \f{PHYSINDEX} indices
+(see below) which have to be placed in front of all other
+arguments in the argument list.
+
+
+\item[\f{STATE U;} ]\ttindex{STATE} declares \f{U} to be a state, {\em i.e.\ }an
+object on
+which operators have a certain action.  The state  U can also carry an
+arbitrary number of arguments.
+
+\item[\f{PHYSINDEX X;} ]\ttindex{PHYSINDEX} declares \f{X} to be a special
+index which will be used
+to address components of vector and tensor operators.
+\end{description}
+
+
+A command \f{CLEARPHYSOP}\ttindex{CLEARPHYSOP}
+removes
+the PHYSOP type from an identifier in order to use it for subsequent
+calculations.  However it should be
+remembered that \underline{no}
+substitution rule is cleared by this function. It
+is therefore left to the user's responsibility to clear previously all
+substitution rules involving the identifier from which the PHYSOP type
+is removed.
+
+\subsection{Ordering of operators in an expression}
+
+The ordering of kernels in an expression is performed according to
+the following rules: \\
+1. \underline{Scalars} are always ordered ahead of
+PHYSOP operators in an expression.
+The \REDUCE\ statement \f{KORDER}\ttindex{KORDER} can be used to control the
+ordering of scalars but has no
+effect on the ordering of operators.
+
+2. The default ordering of operators follows the
+order in which they have been declared (not the alphabetical one).
+This ordering scheme can be changed using the command \f{OPORDER}.
+\ttindex{OPORDER}
+Its syntax is similar to the \f{KORDER} statement, {\em i.e.\ }coding:
+\f{OPORDER A,V,F;}
+means that all occurrences of the operator \f{A} are ordered ahead of
+those of \f{V} etc.  It is also possible to include operators
+carrying
+indices (both normal and special ones) in the argument list of
+\f{OPORDER}. However including objects  \underline{not}
+defined as operators ({\em i.e.\ }scalars or indices) in the argument list
+of the \f{OPORDER} command leads to an error.
+
+3. Adjoint operators are placed by the declaration commands just
+after the original operators on the \f{OPORDER} list. Changing the
+place of an operator on this list means \underline{not} that the
+adjoint operator is moved accordingly. This adjoint operator can
+be moved freely  by including it in the argument list of the
+\f{OPORDER} command.
+
+\subsection{Arithmetic operations on operators}
+
+The following arithmetic operations are possible with
+operator expressions: \\
+
+1. Multiplication or division of an operator by a scalar.
+
+2. Addition and subtraction of operators of the \underline{same}
+type.
+
+3. Multiplication of operators is only defined between two
+\underline{scalar} operators.
+
+4. The scalar product of two VECTOR operators is implemented
+      with a new function \f{DOT}\ttindex{DOT}. The system expands
+the product of
+two vector operators into an ordinary product of the components of these
+operators by inserting a special index generated by the program.
+To give an example, if one codes:
+\begin{verbatim}
+VECOP V,W;
+V DOT W;
+\end{verbatim}
+the system will transform the product into:
+\begin{verbatim}
+V(IDX1) * W(IDX1)
+\end{verbatim}
+where \f{IDX1} is a \f{PHYSINDEX} generated by the system (called a
+DUMMY INDEX in the following) to express the summation over the
+components.  The identifiers \f{IDXn} (\f{n} is a nonzero integer) are
+reserved variables for this purpose and should not be used for other
+applications. The arithmetic operator
+\f{DOT} can be used both in infix and prefix form with two arguments.
+
+5. Operators (but not states) can only be raised to an
+\underline{integer} power. The system expands this power
+expression into a product of the corresponding number of terms
+inserting dummy indices if necessary. The following examples explain
+the transformations occurring on power expressions (system output
+is indicated with an \f{-->}):
+\begin{verbatim}
+SCALOP A; A**2;
+  --> A*A
+VECOP V; V**4;
+  --> V(IDX1)*V(IDX1)*V(IDX2)*V(IDX2)
+TENSOP C(2); C**2;
+  --> C(IDX3,IDX4)*C(IDX3,IDX4)
+\end{verbatim}
+Note in particular the way how the system interprets powers of
+tensor operators which is different from the notation used in matrix
+algebra.
+
+6. Quotients of operators are only defined between
+scalar operator expressions.
+The system transforms the quotient of 2 scalar operators into the
+product of the first operator times the inverse of the second one.
+
+\begin{verbatim}
+SCALOP A,B;   A / B;
+            -1
+      A *( B  )
+\end{verbatim}
+
+7. Combining the  last 2 rules explains the way how the system
+handles negative powers of operators:
+
+\noindent
+\begin{verbatim}
+SCALOP B;
+B**(-3);
+        -1    -1    -1
+  --> (B  )*(B  )*(B  )
+\end{verbatim}
+
+The method of inserting dummy indices and expanding powers of
+operators has been chosen to facilitate the handling of
+complicated operator
+expressions and particularly their application  on states.
+However it may be useful to get rid of these
+dummy indices in order to enhance the readability of the
+system's final output.
+For this purpose the switch \f{CONTRACT}\ttindex{CONTRACT} has to
+be turned on (\f{CONTRACT} is normally set to \f{OFF}).
+The system in this case contracts over dummy indices reinserting the
+\f{DOT} operator and reassembling the expanded powers.  However due to
+the predefined operator ordering the system may not remove all the
+dummy indices introduced  previously.
+%%file).
+
+\subsection{Special functions}
+
+\subsubsection{Commutation relations}
+
+If two PHYSOPs have been declared noncommutative using the (redefined)
+\f{NONCOM}\ttindex{NONCOM} statement, it is possible to introduce in the environment
+elementary (anti-) commutation relations between them. For
+this purpose,
+two scalar operators \f{COMM}\ttindex{COMM} and
+\f{ANTICOMM}\ttindex{ANTICOMM} are available.
+These operators are used in conjunction with \f{LET} statements.
+Example:
+
+\begin{verbatim}
+SCALOP A,B,C,D;
+LET COMM(A,B)=C;
+FOR ALL N,M LET ANTICOMM(A(N),B(M))=D;
+VECOP U,V,W; PHYSINDEX X,Y,Z;
+FOR ALL X,Y LET COMM(V(X),W(Y))=U(Z);
+\end{verbatim}
+
+Note that if special indices are used as dummy variables in
+\f{FOR ALL ... LET} constructs then these indices should  have been
+declared previously using the \f{PHYSINDEX} command.\ttindex{PHYSINDEX}
+
+Every time the system
+encounters a product term involving two
+noncommutative operators which have to be reordered on account of the
+given operator ordering, the list of available (anti-) commutators is
+checked in the following way: First the system looks for a
+\underline{commutation} relation which matches the  product term. If it
+fails then the defined \underline{anticommutation} relations are
+checked. If there is no successful match the product term
+ \f{A*B} is replaced by: \\
+
+\begin{verbatim}
+A*B;
+ --> COMM(A,B) + B*A
+\end{verbatim}
+so that the user may introduce the commutation relation later on.
+
+The user may want to force the system to look for
+\underline{anticommutators} only; for this purpose a switch \f{ANTICOM}
+\ttindex{ANTICOM}
+is defined which has to be turned on ( \f{ANTICOM} is normally set to
+\f{OFF}). In this case, the above example is replaced by:
+
+\begin{verbatim}
+ON ANTICOM;
+A*B;
+ -->  ANTICOMM(A,B) - B*A
+\end{verbatim}
+
+For the calculation of (anti-) commutators between complex
+operator
+expressions, the functions \f{COMMUTE}\ttindex{COMMUTE} and
+\f{ANTICOMMUTE}\ttindex{ANTICOMMUTE} have been defined.
+
+\begin{verbatim}
+VECOP P,A,K;
+PHYSINDEX X,Y;
+FOR ALL X,Y LET COMM(P(X),A(Y))=K(X)*A(Y);
+COMMUTE(P**2,P DOT A);
+\end{verbatim}
+
+\subsubsection{Adjoint expressions}
+
+As has been already mentioned, for each operator and state defined
+using the declaration commands, the system
+generates automatically the corresponding adjoint operator. For the
+calculation of the adjoint representation of a complicated
+operator expression, a function  \f{ADJ}\ttindex{ADJ} has been defined.
+
+\begin{verbatim}
+SCALOP A,B;
+ADJ(A*B);
+        +    +
+  --> (A )*(B )
+\end{verbatim}
+
+\subsubsection{Application of operators on states}
+
+A function \f{OPAPPLY}\ttindex{OPAPPLY} has been
+defined for the application of operators to states.
+It has two arguments and is used in the following combinations:
+
+{\bf (i)}  \f{LET OPAPPLY(}{\it operator, state}\f{) =} {\it state};
+This is to define a elementary
+action of an operator on a state in analogy to the way
+elementary commutation relations are introduced to the system.
+
+\begin{verbatim}
+SCALOP A; STATE U;
+FOR ALL N,P LET OPAPPLY((A(N),U(P))= EXP(I*N*P)*U(P);
+\end{verbatim}
+
+{\bf (ii)} \f{LET OPAPPLY(}{\it state, state}\f{) =} {\it scalar exp.};
+This form is to define scalar products between states and normalisation
+conditions.
+
+\begin{verbatim}
+STATE U;
+FOR ALL N,M LET OPAPPLY(U(N),U(M)) = IF N=M THEN 1 ELSE 0;
+\end{verbatim}
+
+{\bf (iii)} {\it state} \f{:= OPAPPLY(}{\it operator expression, state});
+ In this way, the action of an operator expression on a given state
+is calculated using elementary relations defined as explained in {\bf
+(i)}. The result may be assigned to a different state vector.
+
+{\bf (iv)} \f{OPAPPLY(}{\it state}\f{, OPAPPLY(}{\it operator expression,
+state}\f{))}; This is the way how to calculate matrix elements of
+operator
+expressions. The system proceeds in the following way: first the
+rightmost operator is applied on the right state, which means that the
+system tries
+to find an elementary relation which match the application of the
+operator on the state. If it fails
+the system tries to apply the leftmost operator of the expression on the
+left state using the adjoint representations. If this fails also,
+the system prints out a warning message and stops the evaluation.
+Otherwise the next operator occuring in the expression is
+taken and so on until the complete expression is applied.  Then the
+system
+looks for a relation expressing the scalar product of the two
+resulting states and prints out the final result. An example of such
+a calculation is given in the test file.
+
+The infix version of the \f{OPAPPLY} function is the vertical bar
+$\mid$. It is \underline{right} associative and placed in the
+precedence
+list just above the minus ($-$) operator.
+

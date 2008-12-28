@@ -1,0 +1,860 @@
+\documentstyle{article}
+\author{}
+\date{}
+\title{REDUCE: Overview}
+\begin{document}
+\sloppy
+\maketitle
+
+\section*{Introduction}
+The first version of {\small REDUCE} was developed and published by
+Anthony C.  Hearn about 25 years ago.  The starting point was a class of
+formal computations for problems in high energy physics (Feynman diagrams,
+cross sections etc.), which are hard and time consuming if done by hand.
+Although the facilities of the current {\small REDUCE} are much more
+advanced than those of the early versions, the direction towards big
+formal computations in applied mathematics, physics and engineering has
+been stable over the years, but with a much broader set of applications.
+
+Like symbolic computation in general, {\small REDUCE} has profited by the
+increasing power of computer architectures and by the information exchange
+made available by recent network developments.  Spearheaded by A.C.
+Hearn, several groups in different countries take part in the {\small
+REDUCE} development, and the contributions of users have significantly
+widened the application field.
+
+Today {\small REDUCE} can be used with a variety of hardware platforms
+from the {\small DOS}-based personal computer up to the Cray
+supercomputer.  However, the primary vehicle is the class of advanced UNIX
+workstations.
+
+Although {\small REDUCE} is a mature program system, it is extended and
+updated on a continuous basis.  Since the establishment of the {\small
+REDUCE} Network Library in 1989, users take part in the development, thus
+reducing the incompatibilities encountered with new system releases.
+
+In July 1995 version 3.6 of {\small REDUCE} was released.  Information
+regarding the available implementations can be obtained by electronic
+mail: submit `send info-package' to `reduce-netlib@rand.org',
+`reduce-netlib@can.nl' or
+`reduce-netlib@pi.cc.u-tokyo.ac.jp'.
+The same information is available from an Internet gopher server with
+the address info.rand.org.  The network library files are in a ``REDUCE
+Library'' directory under the directory ``Publicly Available Software''.
+The relevant URL is gopher://info.rand.org/11/software/reduce .  Finally,
+a World Wide Web {\REDUCE} server with URL http://www.rrz.uni-koeln.de/REDUCE/
+is also supported.  In addition to general information about {\REDUCE}, this
+server has pointers to the network library, the demonstration versions,
+examples of {\REDUCE} programming, a set of manuals, and the {\REDUCE} online
+help system.
+
+\section{Problem solving}
+ 
+The primary domain of {\small REDUCE} is the solution of large scale
+formal problems in mathematics, science and engineering. {\small REDUCE}
+offers a number of powerful operators which often give an immediate answer
+to a given problem, e.g. solving a linear equation system or computing a
+determinant (with symbolic entries, of course).  More typical however are
+relatively complicated applications where only the combination of several
+evaluation steps leads to the desired result.  Consequently the
+development of {\small REDUCE} primarily is oriented towards a collection
+of powerful tools, which enable problem solving by combination.
+
+In some cases even complete new algorithmic bases will be required for
+problem solving. {\small REDUCE} supports this by various interfaces to
+all levels of symbolic evaluation, and the modules of {\small REDUCE} and
+of the {\small REDUCE} Network Library demonstrate by example how this
+technique is to be used.
+\section{Data Types, Structures}
+ 
+\subsection{Elementary Expressions}
+
+The central object of {\small REDUCE} is the formal expression, which is
+built with respect to the common mathematical rules.  Elementary items are
+
+\begin{itemize}
+\item numbers (integers, rationals, rounded fractionals, real or
+complex); the domain can be selected dynamically,
+\item symbols (names with or without indices)
+\item functional expressions (names followed by a parameter list)
+\item operator symbols {\bf +,-,*,/,**}
+\item parentheses for precedence control.
+\end{itemize}
+ 
+A symbol here can play the role of an unknown in the mathematical sense,
+as well as a placeholder for a value.  An expression can be assigned to a
+symbol as a value such that later all references to the symbol are
+replaced by the assigned value.
+
+ 
+Examples of elementary expressions:
+   
+\begin{verbatim}
+    3.1415928      % fraction
+    a              % simple variable
+    (x+y)**2 / 2   % quadratic expression
+    log(u)+log(v)  % function
+\end{verbatim}
+
+\subsection{Aggregates}
+ 
+There are data structures that collect a number of formal expressions:
+ 
+\begin{itemize}
+\item An {\tt equation} is an object where the operator {\bf =} takes
+highest precedence, with two slots for expressions, the {\bf lhs} and
+{\bf rhs}:
+\begin{verbatim}
+     p=u**2
+\end{verbatim}
+
+\item A {\tt list} is a linear sequence of expressions, where each of the
+members is elementary or itself an aggregate.  There are operations for
+construction, join, decomposition and reordering of lists:
+\begin{verbatim}
+    {2,3,5,7,11,13,17,19} 
+\end{verbatim}
+
+\item An {\tt array} is a rectangular multidimensional structure; the
+elements are identified by integer indices.  Elements always have a value,
+which defaults to zero.
+
+\begin{verbatim}
+ array primes(10);
+ primes(0):=2;
+ for i:=1: 10 do
+  primes(i):=nextprime(primes(i-1));
+\end{verbatim}
+
+\item A {\tt matrix} is a named structure of rows and columns, whose
+elements are identified by two positive integers.  For matrices with
+compatible dimensions and for matrices and scalars there are operations
+corresponding to the laws of linear algebra.
+E.g. using the derivative operator {\bf df} to construct
+a Jacobian
+\begin{verbatim}
+   matrix jac(n,n);
+   for i:=1:n do for j:=1:n do
+    jac(i,j):=df(f(i),x(j));
+\end{verbatim}
+
+\end{itemize}
+
+\section{Programming Paradigms}
+ 
+For specifying symbolic tasks and algorithms {\small REDUCE} offers a set
+of different programming paradigms:
+
+ \subsection{Algebraic Desk Calculator}
+
+Using {\small REDUCE} as a desk calculator for symbolic and numeric
+expressions is the simplest approach.  Formulas can be entered, combined,
+stored and processed by a set of powerful operators like differentiation,
+integration, polynomial GCD, factorization etc.  Any formula will be
+processed immediately with the objective of finding its most complete
+simplification, and the result will be presented on the screen as soon as
+available.
+
+Example: Taylor polynomial for {\bf x*sin(x)}
+
+\begin{verbatim}
+for i:=0:5 sum 
+  sub(x=0,df(x*sin(x),x,i)) * x**i 
+            / factorial(i);
+
+    1   4    2
+ - ---*X  + X
+    6
+\end{verbatim}
+
+ 
+\subsection{Imperative Algebraic Programming}
+
+Evaluation of a single formula with the immediate output of the result is
+a special case of a statement of the {\small REDUCE} programming language,
+which, from a syntactical standpoint, is part of the ALGOL family.  This
+programming language allows the user to code complicated evaluation
+sequences such as conditionals, groups, blocks, iterations controlled by
+counters or list structures, and the definition of complete parameterized
+procedures with local variables.
+
+Example: definition of a procedure for expanding a function to a Taylor
+polynomial:
+
+\begin{verbatim}
+procedure tay(u,x,n);
+  begin scalar ser,fac;  
+    ser:=sub(x=0,u);fac:=1; 
+    for i:=1:n do 
+    <<u:=df(u,x); fac:=fac*i;   
+      ser:=ser+sub(x=0,u)*x**i/fac >>;
+    return(ser);  
+  end;
+\end{verbatim}
+
+A call to this procedure:
+\begin{verbatim}
+tay(x*sin(x),x,5);
+\end{verbatim}
+yields
+\begin{verbatim}
+    1   4    2
+ - ---*X  + X
+    6
+\end{verbatim}
+
+Example: a recursive program for collecting a basis of Legendre
+polynomials from the recurrence relation:
+
+\begin{verbatim}
+    P{n+1,x) = ((2n+1)*x*P(n,x) - n*P(n-1,x))/(n+1)
+\end{verbatim}
+
+
+The infix operator "." adds a new element to the head of a list.
+
+\begin{verbatim}
+procedure Legendre_basis(m,x);
+  % Start with basis of order 1
+   Legendre_basis_aux(m,x,1,{x,1});
+
+procedure Legendre_basis_aux(m,x,n,ls);
+    % ls contains polynomials n, n-1, n-2 ...
+  if n>=m then ls     % done
+  else Legendre_basis_aux(m,x,n+1,
+  (((2n+1)*x*first ls - n*second ls)/(n+1))
+       . ls);
+\end{verbatim}
+
+A call to this procedure
+\begin{verbatim}
+Legendre_basis(3,z);
+\end{verbatim}
+yields
+\begin{verbatim}
+  5   3    3
+{---*Z  - ---*Z,
+  2        2
+
+  3   2    1
+ ---*Z  - ---,
+  2        2
+
+ Z, 1}
+\end{verbatim}
+
+\subsection{Rule Oriented Programming}
+
+In {\small REDUCE}, global algebraic relations can be formulated with
+rules.  A rule links an algebraic search pattern to a replacement pattern,
+sometimes controlled by additional conditions.  Rules can be activated
+(and deactivated) globally, or they can be invoked with a limited scope
+for single evaluations.  So the user has an arbitrary precise control over
+the algebraic simplification.
+
+Example:  Expanding trigonometric functions for combined arguments; the
+tilde symbol represents an implicit for--all.
+
+\begin{verbatim}
+Sin_Cos_rules:=
+{sin(~x+~y)=>sin(x)*cos(y) + cos(x)*sin(y),
+ cos(~x+~y)=>cos(x)*cos(y) - sin(x)*sin(y)};
+\end{verbatim}
+
+Global activation is achieved by
+\begin{verbatim}
+let Sin_Cos_rules;
+\end{verbatim}
+   
+Note: {\small REDUCE} has no predefined "knowledge" about these
+relations for trigonometric functions, as they can be used as production
+rules in either form depending on whether expansion or collection is
+required; only the user can define which mode is adequate for his problem.
+
+Using rules, a complete calculus can be implemented; the rule syntax here
+is very close to the mathematical notation for multistep cases.
+
+Example: Definition of Hermite polynomials:
+ 
+\begin{verbatim}
+operator Hermite;
+Hermite_rules:=
+{Hermite(0,~x) => 1,
+ Hermite(1,~x) => 2*x,
+ Hermite(~n,~x) => 2*x*Hermite(n-1,x)
+          -2*(n-1)*Hermite(n-2,x)
+              when n>1};
+
+let Hermite_rules;
+\end{verbatim}
+
+Generation of a Hermite polynomial:
+ 
+\begin{verbatim}
+Hermite(4,z);
+
+    4       2
+16*Z  - 48*Z  + 12
+\end{verbatim}
+
+\subsection{Symbolic Imperative Programming}
+
+The paradigms described so far give access to the {\small REDUCE}
+facilities at the top level.  They enable a compact programming close to
+the application problem.  No knowledge about the internal data structures
+is necessary, since {\small REDUCE} converts data automatically to the
+formats needed locally for each evaluation step.  On the other hand, such
+frequent conversions are time consuming and so for very large problems it
+might be desirable to keep intermediate results in the internal form in
+order to avoid the conversion overhead.  Here the ``symbolic'' mode of
+{\small REDUCE} can be used, which allows the access to internal data
+structures and procedures directly with the same syntax as in top level
+programming.
+
+Of course, this level of programming requires some knowledge about {\small
+LISP} and about internal {\small REDUCE} structures.  However, it enables
+the implementation of algorithms with the highest possible efficiency.
+
+\section{Algebraic Evaluation}
+ 
+The evaluation of expressions is the heart of {\small REDUCE}.  Because of
+its great complexity, it is only briefly touched on here.  One central
+problem in automatic formula manipulation is the detection of identity
+between objects, e.g. the confirmation
+     {\bf a + b  =   b + a }
+under the assumption of commutative addition.
+
+It is well known that this problem is equivalent to the problem of
+recognizing that an expression is zero, in other words to the existence of
+an algorithm for the transformation of a formula into an equivalent
+canonical normal form.  Unfortunately there is no universal canonical
+form; only for subcases, for example polynomials, rationals, and ideals,
+are canonical forms known.  Therefore {\small REDUCE} evaluation is based
+on a canonical form for rational functions (i.e., quotients of
+multivariate polynomials), where symbols or function expressions play the
+role of variables ({\small REDUCE}: kernels). {\small REDUCE} attempts to
+tranform as many functions as possible into the canonical form by applying
+additional heuristic rules.
+
+A coarse sketch of evaluation is as follows:
+
+\begin{itemize}
+\item a symbol with an assigned value is
+replaced by the value,
+\item a call for a known procedure is
+replaced by the value produced by the procedure invocation,
+\item matching rules are applied,
+\item polynomials are expanded recursively using a lexicographic
+order of variables (kernels): a multivariate polynomial is a
+polynomial in its highest variable with decreasing exponents,
+where the coefficients are polynomials in the remaining
+variables,
+\item a rational function is converted into a form with common
+denominator (i.e., a quotient of two polynomials).
+\end{itemize}
+
+This is, of course, a highly recursive process, which is applied until no
+more transformations are possible.
+\section{Approximations}
+ 
+In the domain of symbolic computation, mostly exact arithmetic is used,
+especially with algorithms from the classical Computer Algebra.  That
+aspect is supported by {\small REDUCE} with arbitrarily long integer
+arithmetic and, built on top of that, rational and modular (p-adic)
+numbers.
+
+The values of transcendental functions with general numeric arguments do
+not fall into these domains, even if symbols like  {\bf pi}, {\bf e}, {\bf i}
+are attached.  Nevertheless symbolic computation can be used for fields beyond
+classical algebra, for example in the domain of analytic approximations in
+numerical mathematics.
+
+\subsection{Power Series}
+
+Power series are a valuable tool for the formal approximation of
+functions, e.g. in the area of differential equations. {\small REDUCE}
+supports several types of power series, among them univariate Taylor
+series with variable order and multivariate Taylor series with fixed
+order.
+
+\subsection{Rounded Numbers}
+ 
+For several decades, floating point numbers have been recognized as a
+useful tool for numerical computations, although they do not possess most
+of the algebraic properties of numbers.  In {\small REDUCE} they are
+incorporated as "rounded numbers" which, when compared to classical
+floating point numbers (e.g. in the IEEE view) they offer interesting
+additional properties:
+
+\begin{itemize}
+\item  the mantissa length can be selected
+arbitrarily (i.e., selected as a number of decimal digits),
+\item there is no limit for the exponent and so no
+upper or lower limit for the magnitude of a number.
+\end{itemize}
+ 
+Technically, this arithmetic is implemented by an embedding of the
+standard (hardware) floating point operations in a software package, which
+tries to execute as much as possible in fast hardware and which converts
+to software emulation as soon as the hardware limits are passed.  Based on
+this number domain, attractive algorithms can be implemented, which start
+with coarse approximations and then refine the overall precision in an
+adaptive style when approaching the desired solution.
+
+\subsection{Interface for Numerical Programs}
+ 
+A field of growing importance for symbolic computation is the use of
+algorithms of mixed symbolic-numeric type, when for example a symbolic
+calculation carries out formal transformations on an equation system for
+control or conditioning of a numerical solver.  Examples are the automatic
+programming of Jacobians for ODE solvers, or the reduction of the order of
+a system by exploiting formal symmetries.  By the cooperation of symbolic
+and numeric components, {\small REDUCE} offers several facilities for the
+generation of partial or complete programs in languages such as FORTRAN or
+C.  As automatically generated programs tend to flood the target
+compilers, {\small REDUCE} also provides for the optimization of the
+numeric code.
+\section{I/O}
+ 
+In interactive mode, {\small REDUCE} normally prints results in a two
+dimensional ``mathematical'' form, where exponents are raised, quotients
+are printed with denominator below numerator, and matrices are represented
+as rectangular blocks.  The output can be influenced by a variety of
+switches, e.g. for reordering or collecting of terms.
+
+For special purposes, additional output forms are available:
+ 
+\begin{itemize}
+\item linear form: the data can be re-used for later
+input in {\small REDUCE} or another system,
+\item foreign syntax: the expressions are printed in
+the syntax of FORTRAN, C or another programming language
+for the direct insertion in numeric codes,
+\item TeX: indirect formatting as input for the TeX
+layout program to be inserted into a publication.
+\end{itemize}
+ 
+Examples for {\bf q:=(x+y)**3}:
+
+natural (default) output:
+\begin{verbatim}
+      3      2          2    3
+Q := X  + 3*X *Y + 3*X*Y  + Y
+\end{verbatim}
+for later re--use:
+\begin{verbatim}
+Q := X**3 + 3*X**2*Y + 3*X*Y**2 + Y**3$
+\end{verbatim}
+as contribution to a FORTRAN source:
+\begin{verbatim}
+      Q=X**3+3.*X**2*Y+3.*X*Y**2+Y**3
+\end{verbatim}
+for a LaTeX document:
+\begin{verbatim}
+\begin{displaymath}
+q=x^{3}+3 x^{2} y+3 x y^{2}+y^{3}
+\end{displaymath}
+\end{verbatim}
+ 
+In addition to direct terminal access, I/O can also be redirected to
+files.
+\section{Open System}
+ 
+In contrast to most other symbolic math systems, {\small REDUCE}
+traditionally is completely open:
+ 
+\begin{itemize}
+\item {\small REDUCE} is written in a language {\small RLISP}, which
+incorporates the functionality of {\small LISP} in a user friendly syntax.
+At the same time {\small RLISP} is the language of application.
+
+\item Traditionally {\small REDUCE} is delivered with all sources.  So the
+algorithmic basis is visible to any user.  Even the {\small REDUCE}
+translator (compiling {\small RLISP} to {\small LISP}) is delivered as
+source code.
+
+\item Any internal {\small REDUCE} function and data structure can be
+accessed by the user directly (in symbolic style programming).  Most of
+the {\small REDUCE} implementations contain a {\small LISP} compiler, such
+that the user can produce very efficient modules. {\small REDUCE} can be
+integrated into other ({\small LISP}-) packages as an algebraic engine.
+
+\item {\small REDUCE} inherits automatically from {\small LISP} the
+facility of dynamic loading of modules, of incremental compilation and
+dynamic function redefinition.  Even the kernel of {\small REDUCE} is open
+for local modification.  Obviously this is a dangerous feature where
+system integrity is concerned, but, on the other hand, an innovative user
+finds a rich testbed here.
+\end{itemize}
+
+One effect of the liberality of {\small REDUCE} is the large number of
+application packages written by users.  Many of these packages now are now
+included in {\small REDUCE} or in the {\small REDUCE} Network Library.
+\renewcommand{\thesection}{Appendix \Alph{section}}
+\setcounter{section}{0}
+
+\section{REDUCE Packages}
+ 
+State: late 1993.
+ 
+\begin{itemize}
+\item ALGINT integration for functions involving roots
+(James H. Davenport)
+ 
+\item ARNUM  algebraic numbers (Eberhard Schr\"ufer)
+ 
+\item ASSIST  useful utilities for various applications (Hubert Caprasse)
+
+\item AVECTOR vector algebra (David Harper)
+ 
+\item CALI  computational commutative algebra (Hans-Gert Graebe)
+
+\item CAMAL  calculations in celestial mechanics (John Fitch)
+
+\item CHANGEVAR transformation of variables in differential equations
+(G. \"{U}\c{c}oluk)
+
+\item COMPACT condensing of expressions with polynomial side relations
+        (Anthony C. Hearn)
+ 
+\item CRACK solving overdetermined systems of PDEs or ODEs
+(Andreas Brand, Thomas Wolf)
+
+\item CVIT Dirac gamma matrices (V.Ilyin, A.Kryukov, A.Rodionov,
+         A.Taranov)
+
+\item DESIR differential equations and singularities 
+(C. Dicrescenzo, F. Richard-Jung, E. Tournier)
+
+\item EXCALC  calculus for differential geometry (Eberhard Schr\"ufer)
+ 
+\item FIDE code generation for finite difference schemes
+(Richard Liska)
+
+\item GENTRAN  code generation in FORTRAN, RATFOR, C (Barbara Gates)
+ 
+\item GNUPLOT  display of functions and surfaces (Herbert Melenk)
+
+\item GROEBNER computation in multivariate polynomial ideals
+         (Herbert Melenk, H.Michael M\"oller, Winfried Neun)
+ 
+\item HEPHYS  high energy physics (Anthony C. Hearn)
+
+\item IDEALS  arithmetic for polynomial ideals (Herbert Melenk)
+
+\item INVSYS involutive polynomial systems (Alexey Zharkov)
+
+\item LAPLACE  Laplace and inverse Laplace transform (C. Kazasov et al.)
+
+\item LIE  functions for the classification of real n-dimensional Lie
+algebras (Carsten, Franziska Sch\"obel)
+
+\item LIMITS  finding limits (Stanley L. Kameny)
+
+\item LININEQ  linear inequalities and linear programming (Herbert Melenk)
+
+\item NUMERIC  solving numerical problems using rounded mode (Herbert Melenk)
+
+\item ODESOLVE ordinary differential equations (Malcolm MacCallum et al.)
+ 
+\item ORTHOVEC calculus for scalar and vector quantities
+         (J.W. Eastwood)
+ 
+\item PHYSOP additional support for non-commuting quantities (Mathias Warns)
+
+\item PM  general algebraic pattern matcher (Kevin McIsaac)
+
+\item REACTEQN  manipulation of chemical reaction systems (Herbert Melenk)
+
+\item RLFI, TRI  TeX and LaTeX output (Richard Liska, Ladislav Drska,
+Werner Antweiler)
+
+\item ROOTS  roots of polynomials (Stanley L. Kameny)
+ 
+\item SCOPE  optimization of numerical programs (J. A. van Hulzen)
+ 
+\item SPDE symmetry analysis for partial differential equations
+         (Fritz Schwarz)
+ 
+\item SPECFN  special functions (Chris Cannam et al.)
+
+\item SPECFN2  special special functions (Victor Adamchik,
+Winfried Neun)
+
+\item SUM sum and product of series (Fuji Kako)
+
+\item SYMMETRY  symmetry-adapted bases and block diagonal forms of
+symmetric matrices (Karin Gatermann)
+
+\item TAYLOR multivariate Taylor series (Rainer Sch\"opf)
+ 
+\item TPS  univariate Taylor series with indefinite order
+         (Alan Barnes, Julian Padget)
+
+\item WU  Wu algorithm for polynomial systems (Russell Bradford)
+\end{itemize} 
+\section{Examples}
+
+Polynomials, rational functions:
+ 
+\begin{verbatim}
+coeff(X**3 + 3*X**2*Y + 3*X*Y**2 + Y**3,x);
+
+  3    2
+{Y ,3*Y ,3*Y,1}
+
+gcd(X**2 + 4*X + 3,X**2 - 2*X - 3);
+
+X + 1
+
+resultant(X**2 + 4*X + 3,X**2 - 2*X - 3,x);
+
+0
+
+decompose(x**6+6x**4+x**3+9x**2+3x-5);
+
+  2            3
+{U  + U - 5,U=X  + 3*X}
+
+factorize(x**6+6x**4+x**3+9x**2+3x);
+
+    2      3
+{X,X  + 3,X  + 3*X + 1}
+ 
+roots(x**6+6x**4+x**3+9x**2+3x-5);
+
+{X=0.543562, X=-0.775167, X=-0.27178+1.79488*I,
+ X=-0.27178-1.79488*I, X=0.38758+1.8576*I,
+ X=0.38758-1.8576*I}
+
+interpol({0,7,26,63},z,{1,2,3,4});
+ 
+ 3
+Z  - 1
+
+\end{verbatim}
+partial fraction decomposition:
+\begin{verbatim}
+pf(2/((x+1)^2*(x+2)),x); 
+
+    2      - 2       2
+{-------,-------,----------}
+  X + 2   X + 1          2
+                  (X + 1)
+
+\end{verbatim}
+Matrices:
+\begin{verbatim} 
+ m:=mat((1,x),(2,y));
+
+     [1  X]
+M := [    ]
+     [2  Y]
+
+
+ 1/m;
+
+[   - Y         X    ]
+[---------  ---------]
+[ 2*X - Y    2*X - Y ]
+[                    ]
+[    2         - 1   ]
+[---------  ---------]
+[ 2*X - Y    2*X - Y ]
+
+ det m;
+
+ - 2*X + Y
+
+\end{verbatim} 
+Ordinary differential equations:
+\begin{verbatim} 
+odesolve(df(y,x)=y+x**2+2,y,x);
+
+    X                2
+{Y=E *ARBCONST(1) - X  - 2*X - 4}
+
+\end{verbatim}
+Linear system (hidden):
+\begin{verbatim}
+ solve({(a*x+y)/(z-1)-3,y+b+z,x-y},
+       {x,y,z});
+
+      - 3*(B + 1)
+{{X=--------------,
+        A + 4
+
+      - 3*(B + 1)
+  Y=--------------,
+        A + 4
+
+      - A*B - B + 3
+  Z=----------------}}
+         A + 4
+
+\end{verbatim}
+Transcendental equations:
+\begin{verbatim} 
+ solve(a**(2*x)-3*a**x+2,x);
+
+    2*ARBINT(2)*I*PI
+{X=------------------,
+         LOG(A)
+
+    LOG(2) + 2*ARBINT(3)*I*PI
+ X=---------------------------}
+             LOG(A)
+
+\end{verbatim}
+Polynomial systems:
+\begin{verbatim}
+
+solve(
+ { a*c1 - b*c1**2 - g*c1*c2 + e*c3,
+   -g*c1*c2 + (e+t)*c3 -k*c2,
+   g*c1*c2 + k*c2 - (e+t) * c3},
+  {c3,c2,c1});
+
+{{C1=ARBCOMPLEX(2),
+
+   C1*(-C1*B*E-C1*B*T+A*E+A*T)
+C2=---------------------------,
+            C1*G*T-E*K
+
+          2
+   C1*(-C1 *B*G+C1*A*G-C1*B*K+A*K)
+C3=-------------------------------}}
+            C1*G*T-E*K
+
+
+\end{verbatim}
+Structural analysis:
+\begin{verbatim}
+compact(s*(1-(sin x**2))
+       +c*(1-(cos x)**2)
+       +(sin x)**2+(cos x)**2,
+   {cos x^2+sin x^2=1});
+
+      2           2
+SIN(X) *C + COS(X) *S + 1
+
+\end{verbatim}
+Calculus:
+\begin{verbatim}
+ 
+ df(exp(x**2)/x,x,2);
+
+     2
+    X      4    2
+ 2*E  *(2*X  - X  + 1)
+-----------------------
+           3
+          X
+
+ int(x^3*exp(2x),x);
+
+  2*X     3      2
+ E   *(4*X  - 6*X  + 6*X - 3)
+------------------------------
+              8
+
+ limit(x*sin(1/x),x,infinity);
+
+1
+\end{verbatim}
+Series:
+\begin{verbatim}
+on rounded; taylor(sin(x+1),x,0,4);
+
+0.8414709848079 + 0.5403023058681*X
+                                       3
+- 0.420735492404*X - 0.09005038431136*X  
+                    4
++ 0.03506129103366*X  + ...
+
+sum(n,n);
+
+ N*(N + 1)
+-----------
+     2
+
+prod(n/(n+2),n);
+
+      1
+--------------
+  2
+ N  + 3*N + 2
+\end{verbatim}
+Complex numbers:
+\begin{verbatim}
+ 
+ w:=(x+3*i)**2;
+
+      2
+W := X  + (6*I)*X - 9
+\end{verbatim}
+Rounded numbers:
+\begin{verbatim} 
+precision 25; pi**2;
+
+9.869 60440 10893 58618 83449 1
+\end{verbatim}
+Modular numbers:
+\begin{verbatim} 
+on modular; setmod 17; (x-1)**2;
+
+ 2
+X  + 15*X + 1
+
+factorize ws;
+
+{X + 16,X + 16}
+\end{verbatim}
+\begin{thebibliography}{9}
+
+\item F. Brackx, D. Constales: Computer Algebra with
+{\small LISP} and {\small REDUCE}, Kluwer, 1991
+
+\item J.H. Davenport, Y. Siret, E. Tournier: Computer Algebra,
+second printing, Academic Press, London, 1989
+
+\item Anthony C. Hearn: {\small REDUCE} User's Manual, Version 3.6,
+The Rand Corporation, Santa Monica (CA), 1995
+
+\item F. W. Hehl, V. Winkelmann, H. Meyer:
+{\small REDUCE}, ein Kompaktkurs \"uber die Anwendung von Computer-Algebra,
+(in German), Springer 1993               
+
+\item Malcolm MacCallum, Francis Wright:
+Algebraic Computing with {\small REDUCE},
+Oxford University Press, 1991
+
+\item Norman MacDonald:  {\small REDUCE} for physicists,
+Institute of Physics Publishing, Bristol, UK, 1994
+
+\item Gerhard Rayna, {\small REDUCE}, Software for Algebraic Computation,
+Springer, New York, 1987
+
+\item D.Stauffer, F.W.Hehl, N.Ito, V.Winkelmann, J.G.Zabolitzky:
+ Computer Simulation and Computer Algebra, Lectures for Beginners,
+ third enlarged edition, Springer 1993
+
+\bibitem W.-H. Steeb. D. Lewien: Algorithms and Computation with
+{\small REDUCE}, BI Wissenschaftsverlag, 1992
+
+\item J. Ueberberg: Einf\"uhrung in die Computeralgebra
+mit {\small REDUCE}(in German), BI Wissenschaftsverlag, 1992
+
+\item {\small REDUCE} Network Library, Bibliography,
+reduce-library@rand.org, permanently updated
+\end{thebibliography}
+This document was produced by:
+\vspace*{-5mm}
+\begin{verbatim}
+Konrad-Zuse-Zentrum fuer Informationstechnik
+ - Symbolik
+Heilbronner Str 10
+D 10711 Berlin Wilmersdorf
+Germany
+\end{verbatim}
+\end{document}

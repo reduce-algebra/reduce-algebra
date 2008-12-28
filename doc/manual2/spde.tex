@@ -1,0 +1,111 @@
+\chapter[SPDE: Symmetry groups of {PDE}'s]%
+        {SPDE: A package for finding symmetry groups of {PDE}'s}
+\label{SPDE}
+\typeout{{SPDE: A package for finding symmetry groups of {PDE}'s}}
+
+{\footnotesize
+\begin{center}
+Fritz Schwarz \\ 
+GMD, Institut F1 \\
+Postfach 1240 \\ 
+5205 St. Augustin, Germany \\[0.05in]
+e--mail: fritz.schwarz@gmd.de
+\end{center}
+}
+\ttindex{SPDE}
+
+The package SPDE provides a set of functions which may be applied
+to determine the symmetry group of Lie- or point-symmetries of a
+given system of partial differential equations.  Preferably it is
+used interactively on a computer terminal. In many cases the
+determining system is solved completely automatically. In some
+other cases the user has to provide some additional input
+information for the solution algorithm to terminate. 
+
+\section{System Functions and Variables}
+
+The symmetry analysis of partial differential equations logically
+falls into three parts. Accordingly the most important functions
+provided by the package are:
+
+\begin{table}
+\begin{center}
+\begin{tabular}{| c | c | }\hline
+Function name & Operation \\ \hline \hline
+\ttindex{CRESYS}
+CRESYS(\s{arguments}) & Constructs determining system \\ \hline
+\ttindex{SIMPSYS}
+SIMPSYS() & Solves determining system \\ \hline
+\ttindex{RESULT}
+RESULT() & Prints infinitesimal generators \\
+&  and commutator table \\ \hline
+\end{tabular}
+\end{center}
+\caption{SPDE Functions}
+\end{table}
+
+Some other useful functions for obtaining various kinds of output
+are:
+
+\begin{table}
+\begin{center}
+\begin{tabular}{| c | c |} \hline
+Function name & Operation \\ \hline \hline
+\ttindex{PRSYS}
+PRSYS() & Prints determining system \\ \hline
+\ttindex{PRGEN}
+PRGEN() & Prints infinitesimal generators \\ \hline
+\ttindex{COMM}
+COMM(U,V) & Prints commutator of generators U and V \\ \hline
+\end{tabular}
+\end{center}
+\caption{SPDE Useful Output Functions}\label{spde:useful}
+\end{table}
+
+SPDE expects a system of differential equations to be defined as the
+values of the operator {\tt deq} and other operators.  A simple
+example follows.
+
+\begin{verbatim}
+load_package spde;
+
+deq 1:=u(1,1)+u(1,2,2);
+
+deq(1) := u(1,2,2) + u(1,1)
+
+CRESYS deq 1;
+
+PRSYS();
+
+
+GL(1):=2*df(eta(1),u(1),x(2)) - df(xi(2),x(2),2) - df(xi(2),x(1))
+
+GL(2):=df(eta(1),u(1),2) - 2*df(xi(2),u(1),x(2))
+
+GL(3):=df(eta(1),x(2),2) + df(eta(1),x(1))
+
+GL(4):=df(xi(2),u(1),2)
+
+GL(5):=df(xi(2),u(1)) - df(xi(1),u(1),x(2))
+
+GL(6):=2*df(xi(2),x(2)) - df(xi(1),x(2),2) - df(xi(1),x(1))
+
+GL(7):=df(xi(1),u(1),2)
+
+GL(8):=df(xi(1),u(1))
+
+GL(9):=df(xi(1),x(2))
+
+
+The remaining dependencies
+
+xi(2) depends on u(1),x(2),x(1)
+
+xi(1) depends on u(1),x(2),x(1)
+
+eta(1) depends on u(1),x(2),x(1)
+\end{verbatim}
+
+A detailed description can be found in the SPDE documentation and
+examples. 
+

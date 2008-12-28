@@ -1,0 +1,913 @@
+\section{Arithmetic Operations}
+
+\begin{Introduction}{ARITHMETIC\_OPERATIONS}
+This section considers operations defined in REDUCE that concern numbers,
+or operators that can operate on numbers in addition, in most cases, to
+more general expressions.
+\end{Introduction}
+
+\begin{Operator}{ABS}
+\index{absolute value}
+The \name{abs} operator returns the absolute value of its argument.
+
+\begin{Syntax}
+\name{abs}\(\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} can be any REDUCE scalar expression.
+
+\begin{Examples}
+abs(-a);                    &        ABS(A) \\
+abs(-5);                    &        5 \\
+a := -10;                   &        A := -10 \\
+abs(a);                     &        10 \\
+abs(-a);                    &        10
+\end{Examples}
+\begin{Comments}
+If the argument has had no numeric value assigned to it, such as an
+identifier or polynomial, \name{abs} returns an expression involving
+\name{abs} of its argument, doing as much simplification of the argument
+as it can, such as dropping any preceding minus sign.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Switch}{ADJPREC}
+\index{input}\index{precision}
+When a real number is input, it is normally truncated to the 
+\nameref{precision} in
+effect at the time the number is read.  If it is desired to keep the full
+precision of all numbers input, the switch \name{adjprec}
+(for \meta{adjust precision}) can be turned on.  While on, \name{adjprec}
+will automatically increase the precision, when necessary, to match that
+of any integer or real input, and a message printed to inform the user of
+the precision increase.
+
+\begin{Examples}
+on rounded; \\
+1.23456789012345; & 1.23456789012 \\
+on adjprec; \\
+1.23456789012345; \\
+*** precision increased to 15 \\
+1.23456789012345
+\end{Examples}
+\end{Switch}
+
+
+\begin{Operator}{ARG}
+\index{complex}\index{polar angle}
+If \nameref{complex} and \nameref{rounded} are on, and {\em arg}
+evaluates to a complex number, \name{arg} returns the polar angle of {\em
+arg}, measured in radians.  Otherwise an expression in {\em arg} is
+returned.
+
+\begin{Examples}
+arg(3+4i)  & ARG(3 + 4*I) \\
+on rounded, complex; \\
+ws; & 0.927295218002 \\
+arg a; & ARG(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{CEILING}
+\index{integer}
+
+\begin{Syntax}
+\name{ceiling}\(\meta{expression}\)
+\end{Syntax}
+
+This operator returns the ceiling (i.e., the least integer greater than or
+equal to its argument) if its argument has a numerical value.  For
+negative numbers, this is equivalent to \nameref{fix}.  For non-numeric
+arguments, the value is an expression in the original operator.
+
+\begin{Examples}
+ceiling 3.4; & 4 \\
+fix 3.4; & 3 \\
+ceiling(-5.2); & -5 \\
+fix(-5.2); & -5 \\
+ceiling a; & CEILING(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{CHOOSE}
+\name{choose}(\meta{m},\meta{m}) returns the number of ways of choosing
+\meta{m} objects from a collection of \meta{n} distinct objects --- in other
+words the binomial coefficient.  If \meta{m} and \meta{n} are not positive
+integers, or $m > n$, the expression is returned unchanged.
+than or equal to
+\begin{Examples}
+choose(2,3); & 3 \\
+choose(3,2); & CHOOSE(3,2) \\
+choose(a,b); & CHOOSE(A,B)
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}{DEG2DMS}
+\index{degrees}\index{radians}
+\begin{Syntax}
+\name{deg2dms}\(\meta{expression}\)
+\end{Syntax}
+
+In \nameref{rounded} mode, if \meta{expression} is a real number, the
+operator \name{deg2dms} will interpret it as degrees, and convert it to a
+list containing the equivalent degrees, minutes and seconds.  In all other
+cases, an expression in terms of the original operator is returned.
+
+\begin{Examples}
+deg2dms 60; & DEG2DMS(60) \\
+on rounded; \\
+ws; & \{60,0,0\} \\
+deg2dms 42.4; & \{42,23,60.0\} \\
+deg2dms a; & DEG2DMS(A)
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{DEG2RAD}
+\index{degrees}\index{radians}
+
+\begin{Syntax}
+\name{deg2rad}\(\meta{expression}\)
+\end{Syntax}
+
+In \nameref{rounded} mode, if \meta{expression} is a real number, the
+operator \name{deg2rad} will interpret it as degrees, and convert it to
+the equivalent radians.  In all other cases, an expression in terms of the
+original operator is returned.
+
+\begin{Examples}
+deg2rad 60; & DEG2RAD(60) \\
+on rounded; \\
+ws; & 1.0471975512 \\
+deg2rad a; & DEG2RAD(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{DIFFERENCE}
+The \name{difference} operator may be used as either an infix or prefix binary
+subtraction operator.  It is identical to \name{-} as a binary operator.
+
+\begin{Syntax}
+\name{difference}\(\meta{expression},\meta{expression}\) or
+
+\meta{expression} \name{difference} \meta{expression}
+      \{\name{difference} \meta{expression}\}\optional
+\end{Syntax}
+
+\meta{expression} can be a number or any other valid REDUCE expression.  Matrix
+expressions are allowed if they are of the same dimensions.
+
+\begin{Examples}
+
+difference(10,4);                                     &         6 \\
+
+15 difference 5 difference 2;                         &         8 \\
+
+a difference b;                                       &         A - B
+
+\end{Examples}
+
+\begin{Comments}
+The \name{difference} operator is left associative, as shown in the second
+example above.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{DILOG}
+\index{dilogarithm function}
+The \name{dilog} operator is known to the differentiation and integration
+operators, but has numeric value attached only at \name{dilog(0)}.  Dilog is
+defined by
+\begin{TEX}
+\begin{displaymath}
+  dilog(x) = -\int{{log(x)\,dx}\over{x-1}}
+\end{displaymath}
+\end{TEX}
+\begin{INFO}
+  dilog(x) = -int(log(x),x)/(x-1)
+\end{INFO}
+\begin{Examples}
+df(dilog(x**2),x);          &      - \rfrac{2*LOG(X^{2})*X}{X^{2}  - 1}\\
+
+int(dilog(x),x);            &     DILOG(X)*X - DILOG(X) + LOG(X)*X - X \\
+
+dilog(0);                   &     \rfrac{PI^{2}}{6}
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{DMS2DEG}
+\index{degrees}\index{radians}
+
+\begin{Syntax}
+\name{dms2deg}\(\meta{list}\)
+\end{Syntax}
+
+In \nameref{rounded} mode, if \meta{list} is a list of three real numbers,
+the operator \name{dms2deg} will interpret the list as degrees, minutes
+and seconds and convert it to the equivalent degrees.  In all other cases,
+an expression in terms of the original operator is returned.
+
+\begin{Examples}
+dms2deg \{42,3,7\}; & DMS2DEG(\{42,3,7\}) \\
+on rounded; \\
+ws; & 42.0519444444 \\
+dms2deg a; & DMS2DEG(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{DMS2RAD}
+\index{degrees}\index{radians}
+
+\begin{Syntax}
+\name{dms2rad}\(\meta{list}\)
+\end{Syntax}
+
+In \nameref{rounded} mode, if \meta{list} is a list of three real numbers,
+the operator \name{dms2rad} will interpret the list as degrees, minutes
+and seconds and convert it to the equivalent radians.  In all other cases,
+an expression in terms of the original operator is returned.
+
+\begin{Examples}
+dms2rad \{42,3,7\}; & DMS2RAD(\{42,3,7\}) \\
+on rounded; \\
+ws; & 0.733944887421 \\
+dms2rad a; & DMS2RAD(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{FACTORIAL}
+\index{gamma}
+\begin{Syntax}
+\name{factorial}\(\meta{expression}\)
+\end{Syntax}
+
+If the argument of \name{factorial} is a positive integer or zero, its
+factorial is returned.  Otherwise the result is expressed in terms of the
+original operator.  For more general operations, the \nameref{gamma} operator
+is available in the \nameref{Special Function Package}.
+
+\begin{Examples}
+factorial 4; & 24 \\
+factorial 30 ; & 265252859812191058636308480000000 \\
+factorial(a) ; FACTORIAL(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{FIX}
+\index{integer}
+\begin{Syntax}
+\name{fix}\(\meta{expression}\)
+\end{Syntax}
+
+The operator \name{fix} returns the integer part of its argument, if that
+argument has a numerical value.  For positive numbers, this is equivalent
+to \nameref{floor}, and, for negative numbers, \nameref{ceiling}.  For
+non-numeric arguments, the value is an expression in the original operator.
+
+\begin{Examples}
+fix 3.4; & 3 \\
+floor 3.4; & 3 \\
+ceiling 3.4; & 4 \\
+fix(-5.2); & -5 \\
+floor(-5.2); & -6 \\
+ceiling(-5.2); & -5 \\
+fix(a); & FIX(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{FIXP}
+\index{integer}
+The \name{fixp} logical operator returns true if its argument is an integer.
+\begin{Syntax}
+\name{fixp}\(\meta{expression}\) or \name{fixp} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE expression, \meta{simple\_expression}
+must be a single identifier or begin with a prefix operator.
+
+\begin{Examples}
+if fixp 1.5 then write "ok" else write "not";
+			     &             not \\
+if fixp(a) then write "ok" else write "not";
+			     &             not \\
+a := 15;                     &             A := 15 \\
+if fixp(a) then write "ok" else write "not";
+			     &             ok
+\end{Examples}
+
+\begin{Comments}
+Logical operators can only be used inside conditional expressions such as
+\name{if}\ldots\name{then} or \name{while}\ldots\name{do}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{FLOOR}
+\index{integer}
+
+\begin{Syntax}
+\name{floor}\(\meta{expression}\)
+\end{Syntax}
+
+This operator returns the floor (i.e., the greatest integer less than or
+equal to its argument) if its argument has a numerical value.  For
+positive numbers, this is equivalent to \nameref{fix}.  For non-numeric
+arguments, the value is an expression in the original operator.
+
+\begin{Examples}
+floor 3.4; & 3 \\
+fix 3.4; & 3 \\
+floor(-5.2); & -6 \\
+fix(-5.2); & -5 \\
+floor a; & FLOOR(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{EXPT}
+The \name{expt} operator is both an infix and prefix binary exponentiation
+operator.  It is identical to \name{^} or \name{**}.
+\begin{Syntax}
+\name{expt}\(\meta{expression},\meta{expression}\)
+ or \meta{expression} \name{expt} \meta{expression}
+\end{Syntax}
+\begin{Examples}
+a expt b;                    &    A^{B} \\
+expt(a,b);                   &    A^{B} \\
+(x+y) expt 4;                &    X^{4} + 4*X^{3}*Y + 6*X^{2}*Y^{2} + 4*X*Y^{3} + Y^{4}
+\end{Examples}
+\begin{Comments}
+Scalar expressions may be raised to fractional and floating-point powers.
+Square matrix expressions may be raised to positive powers, and also to
+negative powers if non-singular.
+
+\name{expt} is left associative.  In other words, \name{a expt b expt c} is
+equivalent to \name{a expt (b*c)}, not \name{a expt (b expt c)}, which
+would be right associative.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{GCD}
+\index{greatest common divisor}\index{polynomial}
+The \name{gcd} operator returns the greatest common divisor of two
+polynomials.
+\begin{Syntax}
+\name{gcd}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+\meta{expression} must be a polynomial (or integer), otherwise an error
+occurs.
+
+\begin{Examples}
+gcd(2*x**2 - 2*y**2,4*x + 4*y);                         &       2*(X + Y) \\
+gcd(sin(x),x**2 + 1);                                   &       1  \\
+gcd(765,68);                                            &       17
+\end{Examples}
+
+\begin{Comments}
+The operator \name{gcd} described here provides an explicit means to find the
+gcd of two expressions.  The switch \name{gcd} described below simplifies
+expressions by finding and canceling gcd's at every opportunity.  When
+the switch \nameref{ezgcd} is also on, gcd's are figured using the EZ GCD
+algorithm, which is usually faster.
+%%% The \nameref{heugcd} switch is also available, providing
+%%% gcd's by the Heuristic algorithm.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{LN}
+\index{logarithm}
+\begin{Syntax}
+\name{ln}\(\meta{expression}\)
+\end{Syntax}
+\meta{expression} can be any valid scalar REDUCE expression.
+
+The \name{ln} operator returns the natural logarithm of its argument.
+However, unlike \nameref{log}, there are no algebraic rules associated
+with it; it will only evaluate when \nameref{rounded} is on, and the
+argument is a real number.
+
+\begin{Examples}
+ln(x);                     &         LN(X) \\
+ln 4;                      &         LN(4) \\
+ln(e);                     &         LN(E) \\
+df(ln(x),x);               &         DF(LN(X),X) \\
+on rounded; \\
+ln 4;                      &         1.38629436112 \\
+ln e;                      &         1
+\end{Examples}
+
+\begin{Comments}
+Because of the restricted algebraic properties of \name{ln}, users are
+advised to use \nameref{log} whenever possible.
+\end{Comments}
+
+\end{Operator}
+
+
+\begin{Operator}{LOG}
+\index{logarithm}
+The \name{log} operator returns the natural logarithm of its argument.
+\begin{Syntax}
+\name{log}\(\meta{expression}\) or \name{log} \meta{expression}
+\end{Syntax}
+
+\meta{expression} can be any valid scalar REDUCE expression.
+
+\begin{Examples}
+log(x);                     &         LOG(X) \\
+log 4;                      &         LOG(4) \\
+log(e);                     &         1 \\
+on rounded; \\
+log 4;                      &         1.38629436112
+\end{Examples}
+
+\begin{Comments}
+\name{log} returns a numeric value only when \nameref{rounded} is on.  In that
+case, use of a negative argument for \name{log} results in an error
+message.  No error is given on a negative argument when REDUCE is not in
+that mode.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{LOGB}
+\index{logarithm}
+\begin{Syntax}
+\name{logb}\(\meta{expression}\,\meta{integer}\)
+\end{Syntax}
+\meta{expression} can be any valid scalar REDUCE expression.
+
+The \name{logb} operator returns the logarithm of its first argument using
+the second argument as base.  However, unlike \nameref{log}, there are no
+algebraic rules associated with it; it will only evaluate when
+\nameref{rounded} is on, and the first argument is a real number.
+
+\begin{Examples}
+logb(x,2);                 &         LOGB(X,2) \\
+logb(4,3);                 &         LOGB(4,3) \\
+logb(2,2);                 &         LOGB(2,2) \\
+df(logb(x,3),x);           &         DF(LOGB(X,3),X) \\
+on rounded; \\
+logb(4,3);                 &         1.26185950714 \\
+logb(2,2);                 &         1
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{MAX}
+\index{maximum}
+The operator \name{max} is an n-ary prefix operator, which returns the largest
+value in its arguments.
+\begin{Syntax}
+\name{max}\(\meta{expression}\{,\meta{expression}\}\optional\)
+
+\end{Syntax}
+
+\meta{expression} must evaluate to a number.  \name{max} of an empty list
+returns 0.
+
+\begin{Examples}
+max(4,6,10,-1);              &        10 \\
+<<a := 23;b := 2*a;c := 4**2;max(a,b,c)>>;
+			     &        46 \\
+max(-5,-10,-a);              &        -5
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{MIN}
+\index{minimum}
+The operator \name{min} is an n-ary prefix operator, which returns the
+smallest value in its arguments.
+\begin{Syntax}
+\name{min}\(\meta{expression}\{,\meta{expression}\}\optional\)
+\end{Syntax}
+
+\meta{expression} must evaluate to a number. \name{min} of an empty list
+returns 0.
+\begin{Examples}
+min(-3,0,17,2);              &        -3 \\
+<<a := 23;b := 2*a;c := 4**2;min(a,b,c)>>;
+			     &        16 \\
+min(5,10,a);                 &        5
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}{MINUS}
+The \name{minus} operator is a unary minus, returning the negative of its
+argument.  It is equivalent to the unary \name{-}.
+\begin{Syntax}
+\name{minus}\(\meta{expression}\)
+
+
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression.
+
+\begin{Examples}
+minus(a);                    &          - A \\
+minus(-1);                   &          1 \\
+minus((x+1)**4);             &          - (X^{4} + 4*X^{3} + 6*X^{2} + 4*X + 1)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{NEXTPRIME}
+\index{prime number}
+\begin{Syntax}
+\name{nextprime}\(\meta{expression}\)
+\end{Syntax}
+
+If the argument of \name{nextprime} is an integer, the least prime greater
+than that argument is returned.  Otherwise, a type error results.
+
+\begin{Examples}
+nextprime 5001; & 5003  \\
+nextprime(10^30); & 1000000000000000000000000000057 \\
+nextprime a; & ***** A invalid as integer
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Switch}{NOCONVERT}
+Under normal circumstances when \name{rounded} is on, \REDUCE\ converts the
+number 1.0 to the integer 1.  If this is not desired, the switch
+\name{noconvert} can be turned on.
+\begin{Examples}
+on rounded; \\
+1.0000000000001; & 1 \\
+on noconvert; \\
+1.0000000000001; & 1.0 \\
+\end{Examples}
+\end{Switch}
+
+\begin{Operator}{NORM}
+\index{complex}
+\begin{Syntax}
+\name{norm}\(\meta{expression}\)
+\end{Syntax}
+
+If \name{rounded} is on, and the argument is a real number, \meta{norm}
+returns its absolute value.  If \name{complex} is also on, \meta{norm}
+returns the square root of the sum of squares of the real and imaginary
+parts of the argument.  In all other cases, a result is returned in
+terms of the original operator.
+
+\begin{Examples}
+norm (-2); & NORM(-2) \\
+on rounded;\\
+ws; &  2.0 \\
+norm(3+4i); & NORM(4*I+3) \\
+on complex;\\
+ws; &  5.0\\
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{PERM}
+\index{permutation}
+\begin{Syntax}
+perm(\meta{expression1},\meta{expression2})
+\end{Syntax}
+
+If \meta{expression1} and \meta{expression2} evaluate to positive integers,
+\name{perm} returns the number of permutations possible in selecting
+\meta{expression1} objects from \meta{expression2} objects.
+In other cases, an expression in the original operator is returned.
+
+\begin{Examples}
+perm(1,1); & 1 \\
+perm(3,5); & 60 \\
+perm(-3,5); & PERM(-3,5) \\
+perm(a,b); & PERM(A,B)
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{PLUS}
+The \name{plus} operator is both an infix and prefix n-ary addition
+operator.  It exists because of the way in which {\REDUCE} handles such
+operators internally, and is not recommended for use in algebraic mode
+programming. \nameref{plussign}, which has the identical effect, should be
+used instead.
+\begin{Syntax}
+\name{plus}\(\meta{expression},\meta{expression}\{,\meta{expression}\}
+\optional\) or \\
+        \meta{expression} \name{plus} \meta{expression} \{\name{plus} \meta{expression}\}\optional
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE expression, including matrix
+expressions of the same dimensions.
+
+\begin{Examples}
+a plus b plus c plus d;      &      A + B + C + D \\
+4.5 plus 10;                 & \rfrac{29}{2} \\\\
+plus(x**2,y**2);             &      X^{2} + Y^{2}
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}{QUOTIENT}
+The \name{quotient} operator is both an infix and prefix binary operator that
+returns the quotient of its first argument divided by its second.  It is
+also a unary \nameref{recip}rocal operator.  It is identical to \name{/} and 
+\nameref{slash}.
+\begin{Syntax}
+\name{quotient}\(\meta{expression},\meta{expression}\) or
+\meta{expression} \name{quotient} \meta{expression}  or
+\name{quotient}\(\meta{expression}\) or
+\name{quotient} \meta{expression}
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE scalar expression.  Matrix
+expressions can also be used if the second expression is invertible and the
+matrices are of the correct dimensions.
+\begin{Examples}
+quotient(a,x+1);              &         \rfrac{A}{X + 1} \\
+7 quotient 17;                &         \rfrac{7}{17} \\
+on rounded; \\
+4.5 quotient 2;               &          2.25 \\
+quotient(x**2 + 3*x + 2,x+1); &          X + 2 \\
+matrix m,inverse; \\
+m := mat((a,b),(c,d));        & \begin{multilineoutput}{6cm}
+M(1,1) := A;
+M(1,2) := B;
+M(2,1) := C
+M(2,2) := D
+\end{multilineoutput}\\
+
+inverse := quotient m;        & \begin{multilineoutput}{8cm}
+INVERSE(1,1) := \rfrac{D}{A*D - B*C}
+INVERSE(1,2) := - \rfrac{B}{A*D - B*C}
+INVERSE(2,1) := - \rfrac{C}{A*D - B*C}
+INVERSE(2,2) := \rfrac{A}{A*D - B*C}
+\end{multilineoutput}
+
+\end{Examples}
+
+\begin{Comments}
+The \name{quotient} operator is left associative: \name{a quotient b quotient c}
+is equivalent to \name{(a quotient b) quotient c}.
+
+If a matrix argument to the unary \name{quotient} is not invertible, or if the
+second matrix argument to the binary quotient is not invertible, an error
+message is given.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{RAD2DEG}
+\index{degrees}\index{radians}
+\begin{Syntax}
+\name{rad2deg}\(\meta{expression}\)
+\end{Syntax}
+
+In \nameref{rounded} mode, if \meta{expression} is a real number, the
+operator \name{rad2deg} will interpret it as radians, and convert it to
+the equivalent degrees.  In all other cases, an expression in terms of the
+original operator is returned.
+
+\begin{Examples}
+rad2deg 1; & RAD2DEG(1) \\
+on rounded; \\
+ws; & 57.2957795131 \\
+rad2deg a; & RAD2DEG(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{RAD2DMS}
+\index{degrees}\index{radians}
+
+\begin{Syntax}
+\name{rad2dms}\(\meta{expression}\)
+\end{Syntax}
+
+In \nameref{rounded} mode, if \meta{expression} is a real number, the
+operator \name{rad2dms} will interpret it as radians, and convert it to a
+list containing the equivalent degrees, minutes and seconds.  In all other
+cases, an expression in terms of the original operator is returned.
+
+\begin{Examples}
+rad2dms 1; & RAD2DMS(1) \\
+on rounded; \\
+ws; & \{57,17,44.8062470964\} \\
+rad2dms a; & RAD2DMS(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{RECIP}
+\name{recip} is the  alphabetical name for the division operator \name{/}
+or \nameref{slash} used as a unary operator.  The use of \name{/} is preferred.
+
+\begin{Examples}
+recip a; & \rfrac{1}{A} \\
+recip 2; & \rfrac{1}{2}
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{REMAINDER}
+\index{polynomial}
+The \name{remainder} operator returns the remainder after its first
+argument is divided by its second argument.
+
+\begin{Syntax}
+\name{remainder}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE polynomial, and is not limited
+to numeric values.
+
+\begin{Examples}
+remainder(13,6);                                        &         1 \\
+remainder(x**2 + 3*x + 2,x+1);                          &         0  \\
+remainder(x**3 + 12*x + 4,x**2 + 1);                    &         11*X + 4 \\
+remainder(sin(2*x),x*y);                                &         SIN(2*X)
+\end{Examples}
+
+\begin{Comments}
+In the default case, remainders are calculated over the integers.  If you
+need the remainder with respect to another domain, it must be declared
+explicitly.
+
+If the first argument to \name{remainder} contains a denominator not equal to
+1, an error occurs.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ROUND}
+\index{integer}
+
+\begin{Syntax}
+\name{round}\(\meta{expression}\)
+\end{Syntax}
+
+If its argument has a numerical value, \name{round} rounds it to the
+nearest integer.  For non-numeric arguments, the value is an expression in
+the original operator.
+
+\begin{Examples}
+round 3.4; & 3 \\
+round 3.5; & 4 \\
+round a; & ROUND(A)
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Command}{SETMOD}
+\index{modular}
+The \name{setmod} command sets the modulus value for subsequent \nameref{modular}
+arithmetic.
+\begin{Syntax}
+\name{setmod} \meta{integer}
+\end{Syntax}
+
+\meta{integer} must be positive, and greater than 1.  It need not be a prime
+number.
+
+\begin{Examples}
+setmod 6;                    &                1 \\
+on modular; \\
+16;                          &                4 \\
+x^2 + 5x + 7;                &                X^{2} + 5*X + 1 \\
+x/3;                         &                \rfrac{X}{3} \\
+setmod 2;                    &                6 \\
+(x+1)^4;                     &                X^{4} + 1 \\
+x/3;                         &                X
+\end{Examples}
+\begin{Comments}
+\name{setmod} returns the previous modulus, or 1 if none has been set
+before.  \name{setmod} only has effect when \nameref{modular} is on.
+
+Modular operations are done only on numbers such as coefficients of 
+polynomials, not on the exponents.   The modulus need not be prime.
+Attempts to divide by a power of the modulus produces an error message, since the
+operation is equivalent to dividing by 0.  However, dividing by a factor
+of a non-prime modulus does not produce an error message.
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{SIGN}
+
+\begin{Syntax}
+\name{sign} \meta{expression}
+\end{Syntax}
+
+\name{sign} tries to evaluate the sign of its argument. If this
+is possible \name{sign} returns one of 1, 0 or -1.  Otherwise, the result
+is the original form or a simplified variant.
+
+\begin{Examples}
+        sign(-5)      &  -1\\
+        sign(-a^2*b)  &  -SIGN(B)\\
+\end{Examples}
+
+\begin{Comments}
+Even powers of formal expressions are assumed to be positive only as long
+as the switch \nameref{complex} is off.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{SQRT}
+\index{square root}
+The \name{sqrt} operator returns the square root of its argument.
+\begin{Syntax}
+\name{sqrt}\(\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} can be any REDUCE scalar expression.
+
+\begin{Examples}
+sqrt(16*a^3);               &         4*SQRT(A)*A \\
+sqrt(17);                    &         SQRT(17) \\
+on rounded; \\
+sqrt(17);                    &         4.12310562562 \\
+off rounded; \\
+sqrt(a*b*c^5*d^3*27);      &
+                     3*SQRT(D)*SQRT(C)*SQRT(B)*SQRT(A)*SQRT(3)*C^{2}*D
+\end{Examples}
+\begin{Comments}
+\name{sqrt} checks its argument for squared factors and removes them.
+% If the \name{reduced} switch is on, square roots of a product become a
+% product of square roots.
+
+Numeric values for square roots that are not exact integers are given only
+when \nameref{rounded} is on.
+
+Please note that \name{sqrt(a**2)} is given as \name{a}, which may be
+incorrect if \name{a} eventually has a negative value.  If you are
+programming a calculation in which this is a concern, you can turn on the
+\nameref{precise} switch, which causes the absolute value of the square root
+to be returned.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{TIMES}
+The \name{times} operator is an infix or prefix n-ary multiplication
+operator.  It is identical to \name{*}.
+\begin{Syntax}
+\meta{expression} \name{times} \meta{expression} \{\name{times} \meta{expression}\}\optional
+
+ or \name{times}\(\meta{expression},\meta{expression} \{,\meta{expression}\}\optional\)
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE scalar or matrix expression.
+Matrix expressions must be of the correct dimensions.  Compatible scalar
+and matrix expressions can be mixed.
+
+\begin{Examples}
+var1 times var2;             &         VAR1*VAR2 \\
+times(6,5);                  &         30 \\
+matrix aa,bb; \\
+aa := mat((1),(2),(x))\$ \\
+bb := mat((0,3,1))\$ \\
+aa times bb times 5;         & 
+\begin{multilineoutput}{6cm}
+[0   15    5 ]
+[            ]
+[0   30   10 ]
+[            ]
+[0  15*X  5*X]
+\end{multilineoutput}
+\end{Examples}
+\end{Operator}
+

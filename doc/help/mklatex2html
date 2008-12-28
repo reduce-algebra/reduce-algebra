@@ -1,0 +1,6 @@
+# The following command with the associated .ini file (due to Rainer Schoepf)
+# will produce an html version of the help material.
+# You should first run mkhelp to generate redhelp.aux.
+
+latex2html -split 0 -html_version 3.0,table -tmp /tmp -no_navigation \
+   -init_file latex2html.ini redhelp.tex

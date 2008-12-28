@@ -1,0 +1,62 @@
+\chapter[REACTEQN: Chemical reaction equations]%
+	{REACTEQN: Support for chemical reaction equations}
+\label{REACTEQN}
+\typeout{{REACTEQN: Support for chemical reaction equations}}
+
+{\footnotesize
+\begin{center}
+Herbert Melenk \\
+Konrad--Zuse--Zentrum f\"ur Informationstechnik Berlin \\
+Takustra\"se 7 \\
+D--14195 Berlin--Dahlem, Germany \\[0.05in]
+e--mail: melenk@zib.de
+\end{center}
+}
+\ttindex{REACTEQN}
+
+The \REDUCE\ package REACTEQN allows one to transform chemical reaction
+systems into ordinary differential equation systems corresponding to
+the laws of pure mass action.
+
+It provides the single function
+
+\begin{verbatim}
+    reac2ode {   <reaction> [,<rate> [,<rate>]]
+               [,<reaction> [,<rate> [,<rate>]]]
+                       ....
+                  };
+\end{verbatim}
+
+A rate is any \REDUCE\ expression, and two rates are applicable only
+for forward and backward reactions.  A reaction is coded as a linear
+sum of the series variables, with the operator $->$ for forward
+reactions and $<>$ for two-way reactions.
+
+The result is a system of explicit ordinary differential equations
+with polynomial righthand sides.  As side effect the following
+variables are set:
+\newpage
+\begin{description}
+\item[{\tt rates}]
+\index{reacteqn ! {\tt rates}} A list of the rates in the system.
+\item[{\tt species}]
+\index{reacteqn ! {\tt species}} A list of the species in the system.
+\item[{\tt inputmat}]
+\index{reacteqn ! {\tt inputmat}} A matrix of the input coefficients.
+\item[{\tt outputmat}]
+\index{reacteqn ! {\tt outputmat}} A matrix of the output coefficients.
+\end{description}
+
+In the matrices the row number corresponds to the input reaction
+number, while the column number corresponds to the species index.
+
+If the rates are numerical values, it will be in most cases
+appropriate to select a \REDUCE\ evaluation mode for floating point numbers.
+
+{\tt Inputmat} and {\tt outputmat} can be used for linear algebra type
+investigations of the reaction system.  The classical reaction
+matrix is the difference of these matrices; however, the two
+matrices contain more information than their differences because
+the appearance of a species on both sides is not reflected by
+the reaction matrix.
+

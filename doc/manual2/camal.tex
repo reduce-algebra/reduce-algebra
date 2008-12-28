@@ -1,0 +1,88 @@
+\chapter[CAMAL: Celestial Mechanics]{CAMAL: Calculations in Celestial Mechanics} 
+\label{CAMAL}
+\typeout{{CAMAL: Calculations in Celestial Mechanics}}
+
+{\footnotesize
+\begin{center}
+J. P. Fitch \\
+School of Mathematical Sciences, University of Bath\\
+BATH BA2 7AY, England \\[0.05in]
+e--mail: jpff@cs.bath.ac.uk
+\end{center}
+}
+
+\ttindex{CAMAL}
+The CAMAL package provides facilities for calculations in Fourier
+series similar to those in the specialist Celestial Mechanics system
+of the 1970s, and the Cambridge Algebra system in
+particular.\index{Fourier Series}\index{CAMAL}\index{Celestial
+Mechanics} 
+
+\section{Operators for Fourier Series}
+
+\subsection*{\f{HARMONIC}}\ttindex{HARMONIC}
+
+The celestial mechanics system distinguish between polynomial
+variables and angular variables.  All angles must be declared before
+use with the \f{HARMONIC} function. 
+\begin{verbatim}
+        harmonic theta, phi;
+\end{verbatim}
+
+
+\subsection*{\f{FOURIER}}\ttindex{FOURIER}
+
+The \f{FOURIER} function coerces its argument into the domain of a
+Fourier Series.   The expression may contain {\em sine} and {\em
+cosine} terms of linear sums of harmonic variables.
+\begin{verbatim}
+        fourier sin(theta)
+\end{verbatim}
+
+Fourier series expressions may be added, subtracted multiplies and
+differentiated in the usual \REDUCE\ fashion.  Multiplications involve
+the automatic linearisation of products of angular functions.
+
+There are three other functions which correspond to the usual
+restrictive harmonic differentiation and integration, and harmonic
+substitution.
+
+\subsection*{\f{HDIFF} and \f{HINT}}\ttindex{HDIFF}\ttindex{HINT{}}
+
+Differentiate or integrate a Fourier expression with respect to an angular
+variable.  Any secular terms in the integration are disregarded without
+comment.
+\begin{verbatim}
+    load_package camal;
+    harmonic u;
+    bige := fourier (sin(u) + cos(2*u));
+    aa := fourier 1+hdiff(bige,u); 
+    ff := hint(aa*aa*fourier cc,u);
+\end{verbatim}
+
+\subsection*{\f{HSUB}}\ttindex{HSUB}
+
+The operation of substituting an angle plus a Fourier expression for
+an angles and expanding to some degree is called harmonic substitution.
+The function takes 5 arguments; the basic expression, the angle being
+replaced, the angular part of the replacement, the fourier part of the
+replacement and a degree to which to expand.
+\begin{verbatim}
+    harmonic u,v,w,x,y,z;
+    xx:=hsub(fourier((1-d*d)*cos(u)),u,u-v+w-x-y+z,yy,n);
+\end{verbatim}
+
+\section{A Short Example}
+
+The following program solves Kepler's Equation as a Fourier series to
+the degree $n$.
+
+\begin{verbatim}
+        bige := fourier 0;
+        for k:=1:n do <<
+          wtlevel k;
+          bige:=fourier e * hsub(fourier(sin u), u, u, bige, k);
+        >>;
+        write "Kepler Eqn solution:", bige$
+\end{verbatim}
+

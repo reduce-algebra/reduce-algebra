@@ -1,0 +1,53 @@
+The following are support files, not part of the reference manual
+
+	 guide.tex
+	 help.tex
+	 mktable        % produces list of all keywords.
+	 redref.tex
+	 rhelp.tex
+
+The following are not normally included in the general reference manual
+
+	deferred.tex
+	obsolete.tex
+	rdebug.tex
+	sl.tex
+	symbolic.tex
+
+The following are support for building the reference manual
+
+array.sty
+mkhelp
+redhelp.tex             % Used to build paper copy of reference manual
+redindex.sty
+xredhelp.tex            % Copy of redhelp.tex (so you can do rm redhelp.*
+			% after building reference manual
+
+
+The following are reference manual text
+
+algebra.tex
+arith.tex
+boolean.tex
+command.tex
+concept.tex
+declare.tex
+elemfn.tex
+hephys.tex
+intro.tex
+io.tex
+linalg.tex
+matrix.tex
+normform.tex
+outmode.tex
+pk-gplot.tex
+pk-groeb.tex
+pk-misc.tex
+pk-numer.tex
+pk-roots.tex
+pk-specf.tex
+switch.tex
+symbolic.tex
+syntax.tex
+taylor.tex
+variable.tex
