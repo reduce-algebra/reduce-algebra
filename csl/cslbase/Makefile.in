@@ -1733,10 +1733,10 @@ csl.img:	csl$(COMEXT) $(csldep)
 
 save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
-@windows_TRUE@	rm reduce-windows-$(shell data +%Y%m%d").zip
-@windows_TRUE@	zip reduce-windows-$(shell data +%Y%m%d").zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
-@windows_FALSE@	rm reduce-$(ARCHITECTURE)-$(shell data +%Y%m%d").tar.bz2
-@windows_FALSE@	tar cvfj reduce-$(ARCHITECTURE)-$(shell data +%Y%m%d").tar.bz2 reduce reduce.img reduce.doc reduce.fonts
+@windows_TRUE@	rm reduce-windows-$(shell date +%Y%m%d).zip
+@windows_TRUE@	zip reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
+@windows_FALSE@	rm reduce-$(ARCHITECTURE)-$(shell date +%Y%m%d).tar.bz2
+@windows_FALSE@	tar cvfj reduce-$(ARCHITECTURE)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
 
 #save:	all
 #	echo Save files from this build
