@@ -99,6 +99,7 @@ then
   omit1="-name packages -prune -o \
          -name gabriel -prune -o \
          -name libedit -prune -o \
+         -name doc -prune -o \
          -name reduce.doc -prune -o \
          -name reduce.fonts -prune -o \
          -name support-packages -prune -o \

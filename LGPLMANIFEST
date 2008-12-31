@@ -1,6 +1,7 @@
 .
 ./BUGS
 ./BUILDING
+./Contributor-Release.txt
 ./DEPENDENCY_TRACKING
 ./LGPLMANIFEST
 ./MANIFEST
@@ -223,6 +224,7 @@
 ./csl/cslbase/syscsl.h
 ./csl/cslbase/sysfwin.c
 ./csl/cslbase/sysipaq.c
+./csl/cslbase/tagifs.c
 ./csl/cslbase/tags.h
 ./csl/cslbase/termdemo.c
 ./csl/cslbase/termed.c
@@ -1022,6 +1024,7 @@
 ./csl/profile.dat
 ./depcomp
 ./install-sh
+./lgpl-distribution-mechanism-opinion.txt
 ./missing
 ./rebuild.sh
 ./scripts
