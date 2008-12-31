@@ -38,6 +38,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+LIBOBJDIR =
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(am__EXEEXT_1) dyndemo$(EXEEXT)
@@ -1632,7 +1633,10 @@ reduce.dir:	reduce$(COMEXT) $(reducedep)
 # Copy HTML help files in a directory reduce.doc - also install gnuplot if windows
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
-	$(CP) -r $(srcdir)/../reduce.doc reduce.doc
+	mkdir reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.html reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 # I also unpack copies of the gnuplot binaries into this directory.
 # Note that I have a binary of zip in the support-packages directory
 # but I am going to require here that a version that works under whatever
@@ -1726,6 +1730,13 @@ csl.img:	csl$(COMEXT) $(csldep)
 @canrun_TRUE@		-- buildlogs/csl.img.log \
 @canrun_TRUE@		-j csl.dep
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
+
+save:	all
+	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
+@windows_TRUE@	rm reduce-windows-$(shell data +%Y%m%d").zip
+@windows_TRUE@	zip reduce-windows-$(shell data +%Y%m%d").zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
+@windows_FALSE@	rm reduce-$(ARCHITECTURE)-$(shell data +%Y%m%d").tar.bz2
+@windows_FALSE@	tar cvfj reduce-$(ARCHITECTURE)-$(shell data +%Y%m%d").tar.bz2 reduce reduce.img reduce.doc reduce.fonts
 
 #save:	all
 #	echo Save files from this build

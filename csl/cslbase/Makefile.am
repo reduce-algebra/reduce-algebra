@@ -854,7 +854,10 @@ endif !canrun
 # Copy HTML help files in a directory reduce.doc - also install gnuplot if windows
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
-	$(CP) -r $(srcdir)/../reduce.doc reduce.doc
+	mkdir reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.html reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 if windows
 # I also unpack copies of the gnuplot binaries into this directory.
 # Note that I have a binary of zip in the support-packages directory
@@ -1015,6 +1018,16 @@ binfiles=$(mainbin) csl$(EXEEXT)
 if windows
 binfiles+=csl$(COMEXT)
 endif windows
+
+save:	all
+	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
+if windows
+	rm reduce-windows-$(shell data +%Y%m%d").zip
+	zip reduce-windows-$(shell data +%Y%m%d").zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
+else !windows
+	rm reduce-$(ARCHITECTURE)-$(shell data +%Y%m%d").tar.bz2
+	tar cvfj reduce-$(ARCHITECTURE)-$(shell data +%Y%m%d").tar.bz2 reduce reduce.img reduce.doc reduce.fonts
+endif !windows
 
 #save:	all
 #	echo Save files from this build
