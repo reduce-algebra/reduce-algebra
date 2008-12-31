@@ -398,17 +398,22 @@ symbolic procedure begin;
      scalar w,!*redefmsg;
      !*echo := not !*int;
      !*extraecho := t;
+     if modulep 'tmprint then <<
+        w := verbos 0;
+        load!-module 'tmprint;
+        verbos w;
+        if outputhandler!* = 'fancy!-output then fmp!-switch nil >>;
 % If invoked from texmacs do something special...
-     if modulep 'tmprint and member('texmacs, lispsystem!*) then <<
+     if getd 'fmp!-switch and member('texmacs, lispsystem!*) then <<
          w := verbos 0;
-         load!-module 'tmprint;
          fmp!-switch t;
          off1 'promptnumbers;
          verbos w >>
 % If the tmprint module is loaded and I have a window that can support it
 % I will display things in a "fancy" way within the CSL world.
-     else if getd 'fmp!-switch then
-        fmp!-switch member('showmath, lispsystem!*);
+     else if getd 'fmp!-switch then <<
+        if member('showmath, lispsystem!*) then fmp!-switch t
+        else if outputhandler!* = 'fancy!-output then fmp!-switch nil >>;
      ifl!* := ipl!* := ofl!* := nil;
      if date!* then <<
         verbos nil;
