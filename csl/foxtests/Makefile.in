@@ -36,6 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+LIBOBJDIR =
 noinst_PROGRAMS = expression$(EXEEXT) dctest$(EXEEXT) codecs$(EXEEXT) \
 	dialog$(EXEEXT) ControlPanel$(EXEEXT) groupbox$(EXEEXT) \
 	scribble$(EXEEXT) wizard$(EXEEXT) layout$(EXEEXT) rex$(EXEEXT) \

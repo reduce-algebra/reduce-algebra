@@ -615,7 +615,7 @@ then
                     [CFLAGS="$OLDCFLAGS"])
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" == "xyes") && test "x$solaris" != "xyes"
+if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"
 then
 # I will not even look for Xft if I am building for win32 not X. I will
 # also (for now - March 2007) avoid even attempting to detect Xft if I am
