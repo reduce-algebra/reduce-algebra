@@ -236,7 +236,7 @@ symbolic procedure errach u;
         printty u;
         lpriw(" ",nil);
         rerror(alg,4,
-               "Please send output and input listing to A. C. Hearn")
+   "Please report output and input listing on the sourceforge bug tracker")
    end;
 
 symbolic procedure errpri1 u;
