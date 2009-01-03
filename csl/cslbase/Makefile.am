@@ -1025,16 +1025,16 @@ if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 	zip reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
 else !windows
-	-rm -f reduce-$(ARCHITECTURE)-$(shell date +%Y%m%d).tar.bz2
-	tar cvfj reduce-$(ARCHITECTURE)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
+	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
+	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
 endif !windows
 
 #save:	all
 #	echo Save files from this build
 #	echo MAKE=$(MAKE)
 #	$(srcdir)/save-objs.sh $(srcdir) $(OBJEXT) $(FOXLIB) -f $(srcfiles)
-#	$(srcdir)/save-files.sh $(ARCHITECTURE) $(binfiles)
-#	$(srcdir)/save-relink.sh $(ARCHITECTURE) $(binfiles)
+#	$(srcdir)/save-files.sh $(BUILD) $(binfiles)
+#	$(srcdir)/save-relink.sh $(BUILD) $(binfiles)
 #	./relink.sh
 
 # end of Makefile

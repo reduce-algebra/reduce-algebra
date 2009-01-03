@@ -1586,8 +1586,10 @@ symbolic procedure s!:expand_jump(op, offset);
               error(0, "function uses too many literals (2048 limit)")
           else if arg > 255 then begin
              scalar high, low;
-             low := ilogand(expanded, 255);
-             high := truncate(expanded - low, 256);
+%            low := ilogand(expanded, 255);
+%            high := truncate(expanded - low, 256);
+             low := ilogand(arg, 255);
+             high := truncate(arg - low, 256);
 % LOADLIT and LOADFREE are encoded here as sub-types of the BIGCALL opcode.
              expanded := 'BIGCALL .
                get(car expanded, 's!:longform) + high .

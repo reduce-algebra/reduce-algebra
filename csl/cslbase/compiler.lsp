@@ -836,14 +836,14 @@ cond ((and expanded (not (and (leq 2 offset) (lessp offset (plus 256 2)) (or
 (null arg) (lessp arg 256))))) (progn (setq op (cadr expanded)) (setq 
 expanded (car expanded)) (cond (arg (progn (cond ((greaterp arg 2047) (error 
 0 "function uses too many literals (2048 limit)")) (t (cond ((greaterp arg 
-255) (prog (high low) (setq low (ilogand expanded 255)) (setq high (truncate 
-(difference expanded low) 256)) (setq expanded (plus (cons (quote BIGCALL) (
-get (car expanded) (quote s!:longform))) (cons high (cons low (cddr expanded)
-)))))) (t (setq expanded (subst arg (quote !*) expanded)))))) (setq offset (
-plus offset 1))))) (setq offset (difference offset (length expanded))) (setq 
-arg nil))) (t (setq expanded nil))) (setq opcode (get op (quote s!:opcode))) 
-(cond ((null opcode) (error 0 (list op offset "invalid block exit")))) (cond 
-((and (lessp (plus (minus 256) 2) offset) (lessp offset (plus 256 2))) (setq 
+255) (prog (high low) (setq low (ilogand arg 255)) (setq high (truncate (
+difference arg low) 256)) (setq expanded (plus (cons (quote BIGCALL) (get (
+car expanded) (quote s!:longform))) (cons high (cons low (cddr expanded))))))
+) (t (setq expanded (subst arg (quote !*) expanded)))))) (setq offset (plus 
+offset 1))))) (setq offset (difference offset (length expanded))) (setq arg 
+nil))) (t (setq expanded nil))) (setq opcode (get op (quote s!:opcode))) (
+cond ((null opcode) (error 0 (list op offset "invalid block exit")))) (cond (
+(and (lessp (plus (minus 256) 2) offset) (lessp offset (plus 256 2))) (setq 
 offset (difference offset 2))) (t (progn (setq high t) (setq offset (
 difference offset 3))))) (cond ((lessp offset 0) (progn (setq opcode (
 byte!-getv s!:backwards_jump opcode)) (setq offset (minus offset))))) (cond (
