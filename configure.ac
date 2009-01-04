@@ -30,6 +30,89 @@ then
     [you must specify either --with-csl or --with-psl to select a Lisp])
 fi
 
+############################################################################
+#
+# Modern versions of the autoconf tools seems to moan dreadfully if you pass
+# down a flag that they do not know about, and so I transcribe into here
+# all the flags that the CSL configuration may ever want!
+
+AC_ARG_WITH(lgplfiles,
+   AC_HELP_STRING([--with-lgplfiles],
+                  [Make binaries safe to distribute wrt LGPL]),
+   [],
+   [with_lgplfiles="yes"])
+
+AC_ARG_WITH(mingw64,
+   AC_HELP_STRING([--with-mingw64],
+                  [Try to cross-build using 64-bit mingw]),
+   [],
+   [with_mingw64="no"])
+
+AC_ARG_WITH(m32,
+   AC_HELP_STRING([--with-m32],
+                  [Force 32-bit model even on 64-bit gcc]),
+   [],
+   [with_m32="no"])
+
+AC_ARG_WITH(m64,
+   AC_HELP_STRING([--with-m64],
+                  [Force 64-bit model even if 32-bit is default]),
+   [],
+   [with_m64="no"])
+
+AC_ARG_WITH(cygwin,
+  AC_HELP_STRING([--with-cygwin],
+                 [Force use of raw cywgin (note GPL)]),
+  [],
+  [with_cygwin="no"])
+AC_ARG_WITH(mingw,
+  AC_HELP_STRING([--with-mingw[=DIR]],
+                 [MingW installation location]),
+  mingw_location="$withval",
+  mingw_location="")
+AC_ARG_WITH(fox,
+  AC_HELP_STRING([--with-fox=DIR],
+                 [FOX installation location]),
+  [],
+  [with_fox="no"])
+AC_ARG_WITH(fox-pending,
+  AC_HELP_STRING([--with-fox-pending],
+                 [do not check dir from --with-fox]),
+  [],
+  [with_fox_pending="no"])
+AC_ARG_WITH(xft,
+  AC_HELP_STRING([--with-xft],
+                 [Can be used to disable use of XFT. Default is yes]),
+  [],
+  [with_xft="yes"])
+AC_ARG_ENABLE(debug,
+  AC_HELP_STRING([--enable-debug],
+                 [compile for debugging]),
+  [],
+  [enable_debug="no"])
+AC_ARG_ENABLE(conservative,
+  AC_HELP_STRING([--enable-conservative],
+                 [garbage collect option]),
+  [],
+  [enable_conservative="no"])
+AC_ARG_ENABLE(test,
+  AC_HELP_STRING([--enable-test],
+                 [testing-mode version]),
+  [],
+  [enable_test="no"])
+AC_ARG_ENABLE(jit,
+  AC_HELP_STRING([--enable-jit],
+                 [build in experimental JIT]),
+  [],
+  [enable_jit="no"])
+AC_ARG_ENABLE(static,
+  AC_HELP_STRING([--enable-static],
+                 [link it all statically]),
+  [],
+  [enable_static="no"])
+
+###########################################################################
+
 # I have a fairly elaborate scheme to select a directory to use.
 build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 

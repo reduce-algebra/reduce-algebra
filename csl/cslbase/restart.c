@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 74bb74a8 31-Aug-2008 */
+/* Signature: 73cc0460 04-Jan-2009 */
 
 #include "headers.h"
 
@@ -163,7 +163,7 @@ Lisp_Object input_libraries, output_library, current_file, break_function;
 Lisp_Object standard_output, standard_input, debug_io;
 Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
-Lisp_Object gchook, resources;
+Lisp_Object gchook, resources, callstack;
 Lisp_Object hankaku_symbol;
 Lisp_Object workbase[51];
 
@@ -5147,6 +5147,7 @@ void copy_into_nilseg(int fg)
     BASE[152]    = nativecoded_symbol;
     BASE[153]    = gchook;
     BASE[154]    = resources;
+    BASE[155]    = callstack;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
@@ -5308,6 +5309,7 @@ void copy_out_of_nilseg(int fg)
     nativecoded_symbol    = BASE[152];
     gchook                = BASE[153];
     resources             = BASE[154];
+    callstack             = BASE[155];
 
 #ifdef COMMON
 

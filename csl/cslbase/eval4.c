@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4e2eb0fa 24-May-2008 */
+/* Signature: 4eebc042 04-Jan-2009 */
 
 #include "headers.h"
 
@@ -66,7 +66,17 @@ Lisp_Object MS_CDECL bytecoded0(Lisp_Object def, int nargs, ...)
         freshline_trace();
         trace_printf("Entering ");
         loop_print_trace(name_from(def));
-        trace_printf(" (no args)\n");
+        trace_printf(" (no args)");
+        if (callstack != nil)
+        {   trace_printf(" from ");
+/*/*
+ * The following line is not garbage-collector safe, and similarly for the
+ * other places I print trace output involving callstack. But since it is
+ * just for use when debugging I will be sloppy about that just for now!
+ */
+            loop_print_trace(qcar(callstack));
+        }
+        trace_printf("\n");
         trace_all = 1;
         nil = C_nil;
         if (exception_pending()) { popv(3); return nil; }
@@ -98,6 +108,10 @@ Lisp_Object bytecoded1(Lisp_Object def, Lisp_Object a)
         freshline_trace();
         trace_printf("Entering ");
         loop_print_trace(name_from(def));
+        if (callstack != nil)
+        {   trace_printf(" from ");
+            loop_print_trace(qcar(callstack));
+        }
         trace_printf("\nArg1: ");
         loop_print_trace(stack[-1]);
         trace_printf("\n");
@@ -151,6 +165,10 @@ Lisp_Object bytecoded2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
         freshline_trace();
         trace_printf("Entering ");
         loop_print_trace(name_from(def));
+        if (callstack != nil)
+        {   trace_printf(" from ");
+            loop_print_trace(qcar(callstack));
+        }
         trace_printf("\nArg1: ");
         loop_print_trace(stack[-2]);
         trace_printf("\n");
@@ -205,6 +223,10 @@ Lisp_Object MS_CDECL bytecoded3(Lisp_Object def, int nargs, ...)
         freshline_trace();
         trace_printf("Entering ");
         loop_print_trace(name_from(def));
+        if (callstack != nil)
+        {   trace_printf(" from ");
+            loop_print_trace(qcar(callstack));
+        }
         trace_printf("\nArg1: ");
         loop_print_trace(stack[-3]);
         trace_printf("\n");
@@ -320,7 +342,12 @@ Lisp_Object MS_CDECL tracebytecoded0(Lisp_Object def, int nargs, ...)
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    trace_printf(" (no args)\n");
+    trace_printf(" (no args)");
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\n");
     nil = C_nil;
     if (exception_pending()) { popv(3); return nil; }
     def = stack[0];
@@ -379,7 +406,12 @@ Lisp_Object tracebytecoded1(Lisp_Object def, Lisp_Object a)
         flip_exception();
         return nil;
     }
-    trace_printf(" (1 arg)\nArg1: ");
+    trace_printf(" (1 arg)");
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\nArg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
     nil = C_nil;
@@ -444,7 +476,12 @@ Lisp_Object tracebytecoded2(Lisp_Object def,
         flip_exception();
         return nil;
     }
-    trace_printf(" (2 args)\nArg1: ");
+    trace_printf(" (2 args)");
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\nArg1: ");
     loop_print_trace(stack[-1]);
     nil = C_nil;
     if (exception_pending())
@@ -529,7 +566,12 @@ Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object def, int nargs, ...)
         flip_exception();
         return nil;
     }
-    trace_printf(" (3 args)\nArg1: ");
+    trace_printf(" (3 args)");
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\nArg1: ");
     loop_print_trace(stack[-2]);
     nil = C_nil;
     if (exception_pending())
@@ -623,7 +665,12 @@ Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object def, int nargs, ...)
     stackcheck1(stack-stack_save, def);
     freshline_trace();
     loop_print_trace(name_from(def));
-    trace_printf(" (%d args)\n", nargs);
+    trace_printf(" (%d args)", nargs);
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
         loop_print_trace(stack[i-nargs]);
@@ -1259,7 +1306,12 @@ static Lisp_Object vtracebyteoptn(Lisp_Object def, int nargs,
     stackcheck1(stack-stack_save, def);
     freshline_trace();
     loop_print_trace(name_from(def));
-    trace_printf(" (%d args)\n", nargs);
+    trace_printf(" (%d args)", nargs);
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
         loop_print_trace(stack[i-nargs]);
@@ -1386,7 +1438,12 @@ static Lisp_Object vtracebyterestn(Lisp_Object def, int nargs,
     stackcheck1(stack-stack_save, def);
     freshline_trace();
     loop_print_trace(name_from(def));
-    trace_printf(" (%d args)\n", nargs);
+    trace_printf(" (%d args)", nargs);
+    if (callstack != nil)
+    {   trace_printf(" from ");
+        loop_print_trace(qcar(callstack));
+    }
+    trace_printf("\n");
     for (i=1; i<=nargs; i++)
     {   trace_printf("Arg%d: ", i);
         loop_print_trace(stack[i-nargs]);

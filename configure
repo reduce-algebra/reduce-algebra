@@ -683,9 +683,20 @@ enable_option_checking
 with_csl
 with_psl
 with_build
-with_cygwin
+with_lgplfiles
+with_mingw64
 with_m32
 with_m64
+with_cygwin
+with_mingw
+with_fox
+with_fox_pending
+with_xft
+enable_debug
+enable_conservative
+enable_test
+enable_jit
+enable_static
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1316,12 +1327,31 @@ if test -n "$ac_init_help"; then
    esac
   cat <<\_ACEOF
 
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-debug          compile for debugging
+  --enable-conservative   garbage collect option
+  --enable-test           testing-mode version
+  --enable-jit            build in experimental JIT
+  --enable-static         link it all statically
+
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
+  --with-lgplfiles        Make binaries safe to distribute wrt LGPL
+  --with-mingw64          Try to cross-build using 64-bit mingw
+  --with-m32              Force 32-bit model even on 64-bit gcc
+  --with-m64              Force 64-bit model even if 32-bit is default
+  --with-cygwin           Force use of raw cywgin (note GPL)
+  --with-mingw=DIR        MingW installation location
+  --with-fox=DIR          FOX installation location
+  --with-fox-pending      do not check dir from --with-fox
+  --with-xft              Can be used to disable use of XFT. Default is yes
   --with-cygwin           Use raw cygwin so link with cygwin1.dll (GPL)
   --with-m32              Pass "-m32" to C compiler
   --with-m64              Pass "-m64" to C compiler
@@ -1930,6 +1960,126 @@ then
 $as_echo "$as_me: error: you must specify either --with-csl or --with-psl to select a Lisp" >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+############################################################################
+#
+# Modern versions of the autoconf tools seems to moan dreadfully if you pass
+# down a flag that they do not know about, and so I transcribe into here
+# all the flags that the CSL configuration may ever want!
+
+
+# Check whether --with-lgplfiles was given.
+if test "${with_lgplfiles+set}" = set; then
+  withval=$with_lgplfiles;
+else
+  with_lgplfiles="yes"
+fi
+
+
+
+# Check whether --with-mingw64 was given.
+if test "${with_mingw64+set}" = set; then
+  withval=$with_mingw64;
+else
+  with_mingw64="no"
+fi
+
+
+
+# Check whether --with-m32 was given.
+if test "${with_m32+set}" = set; then
+  withval=$with_m32;
+else
+  with_m32="no"
+fi
+
+
+
+# Check whether --with-m64 was given.
+if test "${with_m64+set}" = set; then
+  withval=$with_m64;
+else
+  with_m64="no"
+fi
+
+
+
+# Check whether --with-cygwin was given.
+if test "${with_cygwin+set}" = set; then
+  withval=$with_cygwin;
+else
+  with_cygwin="no"
+fi
+
+
+# Check whether --with-mingw was given.
+if test "${with_mingw+set}" = set; then
+  withval=$with_mingw; mingw_location="$withval"
+else
+  mingw_location=""
+fi
+
+
+# Check whether --with-fox was given.
+if test "${with_fox+set}" = set; then
+  withval=$with_fox;
+else
+  with_fox="no"
+fi
+
+
+# Check whether --with-fox-pending was given.
+if test "${with_fox_pending+set}" = set; then
+  withval=$with_fox_pending;
+else
+  with_fox_pending="no"
+fi
+
+
+# Check whether --with-xft was given.
+if test "${with_xft+set}" = set; then
+  withval=$with_xft;
+else
+  with_xft="yes"
+fi
+
+# Check whether --enable-debug was given.
+if test "${enable_debug+set}" = set; then
+  enableval=$enable_debug;
+else
+  enable_debug="no"
+fi
+
+# Check whether --enable-conservative was given.
+if test "${enable_conservative+set}" = set; then
+  enableval=$enable_conservative;
+else
+  enable_conservative="no"
+fi
+
+# Check whether --enable-test was given.
+if test "${enable_test+set}" = set; then
+  enableval=$enable_test;
+else
+  enable_test="no"
+fi
+
+# Check whether --enable-jit was given.
+if test "${enable_jit+set}" = set; then
+  enableval=$enable_jit;
+else
+  enable_jit="no"
+fi
+
+# Check whether --enable-static was given.
+if test "${enable_static+set}" = set; then
+  enableval=$enable_static;
+else
+  enable_static="no"
+fi
+
+
+###########################################################################
 
 # I have a fairly elaborate scheme to select a directory to use.
 build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`

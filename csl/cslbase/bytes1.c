@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 50389abf 24-May-2008 */
+/* Signature: 306ae5db 04-Jan-2009 */
 
 #include "headers.h"
 
@@ -1011,7 +1011,7 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
     double tot;
 #endif
     argcheck(nargs, 0, "bytecounts");
-#ifdef NO_BYTECOUNT
+#ifndef NO_BYTECOUNT
     i = 0;
     trace_printf("bytecode statistics not available\n");
 #else
@@ -1321,6 +1321,19 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #ifdef CHECK_STACK
     if (check_stack(ffname,__LINE__)) return aerror("stack overflow");
 #endif
+
+#ifndef NO_BYTECOUNT
+/*
+ * If I am collecting bytecounts I am in the slow version of REDUCE
+ * with everything bytecoded rather than turned into C. I will view this as
+ * a debugging as well as a bootstrapping environment, so I will keep more
+ * information about the call stack.
+ */
+    push2(code, lit);
+    callstack = cons(elt(lit, 0), callstack);
+    pop2(lit, code);
+    errexit();
+#endif
     litvec = lit;
 /*
  * The next lines are used to allow for functions with > 3 args, and for
@@ -1405,6 +1418,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
             C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+            if (callstack != nil) callstack = qcdr(callstack);
+#endif
             return A_reg;
 
 
@@ -1417,6 +1433,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
             C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+            if (callstack != nil) callstack = qcdr(callstack);
+#endif
             return A_reg;
 
 
@@ -1429,6 +1448,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
             C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+            if (callstack != nil) callstack = qcdr(callstack);
+#endif
             return A_reg;
 
     case OP_NILEXIT:
@@ -1436,6 +1458,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
             C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+            if (callstack != nil) callstack = qcdr(callstack);
+#endif
             return onevalue(nil);
 
     case OP_FREEBIND:
@@ -4629,6 +4654,9 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
             qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
             C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+            if (callstack != nil) callstack = qcdr(callstack);
+#endif
             return A_reg;
 
 
@@ -5049,6 +5077,9 @@ jcall0: r1 = elt(litvec, fname);
             continue;
         }
         C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+        if (callstack != nil) callstack = qcdr(callstack);
+#endif
         return f345(qenv(r1), 0);
 
 call1:  r1 = elt(litvec, fname);
@@ -5130,6 +5161,9 @@ jcall1: r1 = elt(litvec, fname);
             continue;
         }
         C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+        if (callstack != nil) callstack = qcdr(callstack);
+#endif
         return f1(qenv(r1), A_reg);
 
 call2:  r1 = elt(litvec, fname);
@@ -5229,6 +5263,9 @@ jcall2: r1 = elt(litvec, fname);
             continue;
         }
         C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+        if (callstack != nil) callstack = qcdr(callstack);
+#endif
         return f2(qenv(r1), B_reg, A_reg);
 
 call3:  r1 = elt(litvec, fname);
@@ -5312,6 +5349,9 @@ jcall3: r1 = elt(litvec, fname);
             continue;
         }
         C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+        if (callstack != nil) callstack = qcdr(callstack);
+#endif
         return f345(qenv(r1), 3, r2, B_reg, A_reg);
 
 jcalln:
@@ -5359,6 +5399,9 @@ jcalln:
         qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
         C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+        if (callstack != nil) callstack = qcdr(callstack);
+#endif
         return A_reg;
 
 create_closure:
@@ -5496,6 +5539,9 @@ create_closure:
         qcount(elt(litvec, 0)) += OPCOUNT;
 #endif
         C_stack = entry_stack;
+#ifndef NO_BYTECOUNT
+        if (callstack != nil) callstack = qcdr(callstack);
+#endif
         flip_exception();
         return nil;
     }
