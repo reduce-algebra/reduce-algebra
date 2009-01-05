@@ -1011,7 +1011,7 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
     double tot;
 #endif
     argcheck(nargs, 0, "bytecounts");
-#ifndef NO_BYTECOUNT
+#ifdef NO_BYTECOUNT
     i = 0;
     trace_printf("bytecode statistics not available\n");
 #else
