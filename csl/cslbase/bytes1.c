@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 306ae5db 04-Jan-2009 */
+/* Signature: 2e0d089f 05-Jan-2009 */
 
 #include "headers.h"
 
@@ -1329,10 +1329,15 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * a debugging as well as a bootstrapping environment, so I will keep more
  * information about the call stack.
  */
+#ifdef ACN
     push2(code, lit);
+    C_stack = stack;
     callstack = cons(elt(lit, 0), callstack);
+    stack = C_stack;
     pop2(lit, code);
+    C_stack = stack;
     errexit();
+#endif
 #endif
     litvec = lit;
 /*
