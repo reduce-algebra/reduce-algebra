@@ -73,7 +73,7 @@ symbolic procedure exptunwind(u,v);
              then <<x := mergex(car v,w);
                     if fixp x then <<n := x*n; v := delete(w,cdr v)>>
                      else v := x . delete(w,cdr v)>>
-            else <<u := car v .* u .+ nil; v := cdr v>>>>;
+            else <<u := multpf(car v, u); v := cdr v>>>>;
       return multd(n,u)
    end;
 
