@@ -1023,7 +1023,7 @@ save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
 if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-	zip reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
+	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
 else !windows
 	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
 	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
