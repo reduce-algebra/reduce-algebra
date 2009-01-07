@@ -1,7 +1,3 @@
-%%%% WARNING
-%%%% Not under BSD License (yet?)
-
-
 % TeX-REDUCE-Interface 0.70
 % set GREEK asserted
 % set LOWERCASE asserted
@@ -21,12 +17,7 @@ module tri;
 %                  5000 Koeln 41
 %                  Federal Republic of Germany
 %                  E-Mail: reduce@rrz.Uni-Koeln.DE
-% All rights reserved.  Permission to copy without fee all  or  part  of
-% this  software  product is hereby granted provided that the copies are
-% not made or distributed for direct commercial  advantage,  this  copy-
-% right notice and its date appear,  and notice is given that copying is
-% by permission of the authors.  To copy otherwise requires a fee and/or
-% specific permission.  This  software  product  has  been  developed by
+% This  software  product  has  been  developed by
 % WERNER ANTWEILER  at the  University of Cologne Computer Center,  West
 % Germany. The TeX-Reduce-Interface  has been totally written in REDUCE-
 % LISP.
@@ -35,7 +26,34 @@ module tri;
 % Modifications: David Hartley.
 %
 % Last Update: 14-Jul-96                                    Version 0.70
+% Permission to distribute under BSD License granted by authors January 2009
 % ======================================================================
+
+
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+%
+%
 %
 %                              Section Survey
 % ----------------------------------------------------------------------

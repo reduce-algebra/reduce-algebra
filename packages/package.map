@@ -160,7 +160,7 @@
  (mrvlimit      "mrvlimit"              test                 csl psl)
  (residue       "residue"               test                 csl psl)
  (susy2         "susy2"                 test                 csl psl)
-%----- (tri           "tri"                   test                 csl psl)
+ (tri           "tri"                   test                 csl psl)
  (trigsimp      "trigsimp"              test                 csl psl)
  (xcolor        "xcolor"                test                 csl psl)
  (wu            "wu"                    test                 csl psl)
