@@ -228,9 +228,7 @@ will cause {\tt h(-5)} to be evaluated as 0, but {\tt H} of a positive
 integer, or of an argument that is not an integer at all, would not be
 affected.  Any boolean expression can follow the {\tt SUCH THAT} keywords.
 
-\subsection{Removing Assignments and Substitution Rules}\ttindex{CLEAR}
-
-\label{reserved:CLEAR}
+\hypertarget{reserved:CLEAR}{\subsection{Removing Assignments and Substitution Rules}}\ttindex{CLEAR}
 
 The user may remove all assignments and substitution rules from any
 expression by the command {\tt CLEAR}, in the form
@@ -468,6 +466,7 @@ A rule list may be named, for example
 Such named rule lists may be inspected as needed. E.g., the command
 {\tt trig1;} would cause the above list to be printed.
 
+\hypertarget{CLEARRULES}{}
 Rule lists may be used in two ways.  They can be globally instantiated by
 means of the command {\tt LET}.\ttindex{LET} For example,
 \begin{verbatim}
@@ -483,6 +482,7 @@ cancelled by the command {\tt CLEARRULES},\ttindex{CLEARRULES} as in
         CLEARRULES <rule list>|<name of rule list>(,...) .
 \end{verbatim}
 
+\hypertarget{WHERE}{}
 The second way to use rule lists is to invoke them locally by means of a
 {\tt WHERE}\ttindex{WHERE} clause.  For example
 \begin{verbatim}
