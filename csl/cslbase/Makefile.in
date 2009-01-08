@@ -1677,6 +1677,10 @@ prof-inst:	profile.dat
 	$(CP) profile.dat $(srcdir)/../../cslbuild
 	-$(RM) -f profile.dat
 
+$(srcdir)/../../cslbuild/profile.dat:
+	-mkdir -p $(srcdir)/../../cslbuild
+	$(CP) $(srcdir)/../profile.dat $(srcdir)/../../cslbuild
+
 c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \

@@ -906,6 +906,9 @@ prof-inst:	profile.dat
 	$(CP) profile.dat $(srcdir)/../../cslbuild
 	-$(RM) -f profile.dat
 
+$(srcdir)/../../cslbuild/profile.dat:
+	-mkdir -p $(srcdir)/../../cslbuild
+	$(CP) $(srcdir)/../profile.dat $(srcdir)/../../cslbuild
 
 c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
 if canrun
