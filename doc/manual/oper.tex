@@ -27,6 +27,7 @@ residual expression involving the original operator usually remains.
 These operators are as follows:
 
 \subsection{ABS}
+\hypertarget{operator:ABS}{}
 {\tt ABS}\ttindex{ABS} returns the absolute value
 of its single argument, if that argument has a numerical value.
 A non-numerical argument is returned as an absolute value, with an overall
@@ -39,6 +40,7 @@ numerical coefficient taken outside the absolute value operator. For example:
 \end{verbatim}
 
 \subsection{CEILING}\ttindex{CEILING}
+\hypertarget{operator:CEILING}{}
 This operator returns the ceiling (i.e., the least integer greater than
 the given argument) if its single argument has a numerical value.  A
 non-numerical argument is returned as an expression in the original
@@ -50,6 +52,7 @@ operator.  For example:
 \end{verbatim}
 
 \subsection{CONJ}\ttindex{CONJ}
+\hypertarget{operator:CONJ}{}
 This returns the complex conjugate
 of an expression, if that argument has an numerical value.  A
 non-numerical argument is returned as an expression in the operators
@@ -61,6 +64,7 @@ non-numerical argument is returned as an expression in the operators
 \end{verbatim}
 
 \subsection{FACTORIAL}\ttindex{FACTORIAL}
+\hypertarget{operator:FACTORIAL}{}
 
 If the single argument of {\tt FACTORIAL} evaluates to a non-negative
 integer, its factorial is returned.  Otherwise an expression involving
@@ -71,6 +75,7 @@ integer, its factorial is returned.  Otherwise an expression involving
 \end{verbatim}
 
 \subsection{FIX}\ttindex{FIX}
+\hypertarget{operator:FIX}{}
 This operator returns the fixed value (i.e., the integer part of
 the given argument) if its single argument has a numerical value.  A
 non-numerical argument is returned as an expression in the original
@@ -82,6 +87,7 @@ operator.  For example:
 \end{verbatim}
 
 \subsection{FLOOR}\ttindex{FLOOR}
+\hypertarget{operator:FLOOR}{}
 This operator returns the floor (i.e., the greatest integer less than
 the given argument) if its single argument has a numerical value.  A
 non-numerical argument is returned as an expression in the original
@@ -93,6 +99,7 @@ operator.  For example:
 \end{verbatim}
 
 \subsection{IMPART}\ttindex{IMPART}
+\hypertarget{operator:IMPART}{}
 This operator returns the imaginary part of an expression, if that argument
 has an numerical value.  A non-numerical argument is returned as an expression
 in the operators {\tt REPART}\ttindex{REPART} and {\tt IMPART}.  For example:
@@ -102,6 +109,8 @@ in the operators {\tt REPART}\ttindex{REPART} and {\tt IMPART}.  For example:
 \end{verbatim}
 
 \subsection{MAX/MIN}
+\hypertarget{operator:MAX}{}
+\hypertarget{operator:MIN}{}
 
 {\tt MAX} and {\tt MIN}\ttindex{MAX}\ttindex{MIN} can take an arbitrary
 number of expressions as their arguments.  If all arguments evaluate to
@@ -117,6 +126,7 @@ returned.  For example:
 {\tt MAX} or {\tt MIN} of an empty list returns 0.
 
 \subsection{NEXTPRIME}\ttindex{NEXTPRIME}
+\hypertarget{operator:NEXTPRIME}{}
 
 {\tt NEXTPRIME} returns the next prime greater than its integer argument,
 using a probabilistic algorithm.  A type error occurs if the value of the
@@ -130,6 +140,7 @@ argument is not an integer.  For example:
 whereas {\tt nextprime(a)} gives a type error.
 
 \subsection{RANDOM}\ttindex{RANDOM}
+\hypertarget{operator:RANDOM}{}
 
 {\tt random(}{\em n\/}{\tt)} returns a random number $r$ in the range $0
 \leq r < n$.  A type error occurs if the value of the argument is not a
@@ -142,6 +153,7 @@ For example:
 whereas {\tt random(a)} gives a type error.
 
 \subsection{RANDOM\_NEW\_SEED}\ttindex{RANDOM\_NEW\_SEED}
+\hypertarget{operator:RANDOM\_NEW\_SEED}{}
 
 {\tt random\_new\_seed(}{\em n\/}{\tt)} reseeds the random number generator
 to a sequence determined by the integer argument $n$.  It can be used to
@@ -155,6 +167,7 @@ it is as if {\tt random\_new\_seed(1)} has been obeyed.
 A type error occurs if the value of the argument is not a positive integer.
 
 \subsection{REPART}\ttindex{REPART}
+\hypertarget{operator:REPART}{}
 This returns the real part of an expression, if that argument has an
 numerical value.  A non-numerical argument is returned as an expression in
 the operators {\tt REPART} and {\tt IMPART}\ttindex{IMPART}.  For example:
@@ -164,6 +177,7 @@ the operators {\tt REPART} and {\tt IMPART}\ttindex{IMPART}.  For example:
 \end{verbatim}
 
 \subsection{ROUND}\ttindex{ROUND}
+\hypertarget{operator:ROUND}{}
 This operator returns the rounded value (i.e, the nearest integer) of its
 single argument if that argument has a numerical value.  A non-numeric
 argument is returned as an expression in the original operator.  For
@@ -174,6 +188,7 @@ example:
 \end{verbatim}
 
 \subsection{SIGN}\ttindex{SIGN}
+\hypertarget{operator:SIGN}{}
 {\tt SIGN} tries to evaluate the sign of its argument. If this
 is possible {\tt SIGN} returns one of 1, 0 or -1.  Otherwise, the result
 is the original form or a simplified variant. For example:
@@ -185,6 +200,40 @@ Note that even powers of formal expressions are assumed to be
 positive only as long as the switch {\tt COMPLEX} is off.
 
 \section{Mathematical Functions}
+\hypertarget{operator:ACOS}{}
+\hypertarget{operator:ACOSH}{}
+\hypertarget{operator:ACOT}{}
+\hypertarget{operator:ACOTH}{}
+\hypertarget{operator:ACSC}{}
+\hypertarget{operator:ACSCH}{}
+\hypertarget{operator:ASEC}{}
+\hypertarget{operator:ASECH}{}
+\hypertarget{operator:ASIN}{}
+\hypertarget{operator:ASINH}{}
+\hypertarget{operator:ATAN}{}
+\hypertarget{operator:ATANH}{}
+\hypertarget{operator:ATAN2}{}
+\hypertarget{operator:COS}{}
+\hypertarget{operator:COSH}{}
+\hypertarget{operator:COT}{}
+\hypertarget{operator:COTH}{}
+\hypertarget{operator:CSC}{}
+\hypertarget{operator:CSCH}{}
+\hypertarget{operator:DILOG}{}
+\hypertarget{operator:EI}{}
+\hypertarget{operator:EXP}{}
+\hypertarget{operator:HYPOT}{}
+\hypertarget{operator:LN}{}
+\hypertarget{operator:LOG}{}
+\hypertarget{operator:LOGB}{}
+\hypertarget{operator:LOG10}{}
+\hypertarget{operator:SEC}{}
+\hypertarget{operator:SECH}{}
+\hypertarget{operator:SIN}{}
+\hypertarget{operator:SINH}{}
+\hypertarget{operator:SQRT}{}
+\hypertarget{operator:TAN}{}
+\hypertarget{operator:TANH}{}
 
 {\REDUCE} knows that the following represent mathematical functions
 \index{Mathematical function} that can
@@ -277,6 +326,8 @@ these operators by using the {\tt LET}\ttindex{LET} command.
 % are normally represented by the operator {\tt SQRT} rather than a
 % fractional power.
 
+\hypertarget{switch:COMBINELOGS}{}
+\hypertarget{switch:EXPANDLOGS}{}
 In many cases it is desirable to expand product arguments of logarithms,
 or collect a sum of logarithms into a single logarithm.  Since these are
 inverse operations, it is not possible to provide rules for doing both at
@@ -298,6 +349,7 @@ which could lead to infinite recursion.  However, an expression is
 switched from one form to the other in this case.  Users should not rely
 on this behavior, since it may change in the next release.
 
+\hypertarget{switch:COMBINEEXPT}{}
 The current version of {\REDUCE} does a poor job of simplifying surds.  In
 particular, expressions involving the product of variables raised to
 non-integer powers do not usually have their powers combined internally,
@@ -344,6 +396,7 @@ becomes
 % The switch {\tt REDUCED}\ttindex{REDUCED} also applies to other rational
 % powers in addition to square roots.
 
+\hypertarget{switch:PRECISE}{}
 Note that such simplifications can cause trouble if {\tt A} is eventually
 given a value that is a negative number.  If it is important that the
 positive property of the square root and higher even roots always be
@@ -387,6 +440,7 @@ if given complex arguments.  For example, with {\tt on rounded,complex;}
 \end{verbatim}
 
 \section{DF Operator}
+\hypertarget{operator:DF}{}
 The operator {\tt DF}\ttindex{DF} is used to represent partial
 differentiation\index{Differentiation} with respect
 to one or more variables. It is used with the syntax:
@@ -419,6 +473,7 @@ case the derivative is reported as the symbol {\tt df(z,x)}.
 
 
 \subsection{Adding Differentiation Rules}
+\hypertarget{command:LET}{}
 
 The {\tt LET}\ttindex{LET} statement can be used to introduce
 rules for differentiation of user-defined operators.  Its general form is
@@ -461,6 +516,7 @@ get the error message
 \end{verbatim}
 
 \section{INT Operator}
+\hypertarget{operator:INT}{}
 {\tt INT}\ttindex{INT} is an operator in {\REDUCE} for indefinite
 integration\index{Integration}\index{Indefinite integration} using a
 combination of the Risch-Norman algorithm and pattern matching.  It is
@@ -501,6 +557,9 @@ the documentation on the DEFINT package.
 
 
 \subsection{Options}
+\hypertarget{switch:TRINT}{}
+\hypertarget{switch:FAILHARD}{}
+\hypertarget{switch:NOLNR}{}
 
 The switch {\tt TRINT} when on will trace the operation of the algorithm. It
 produces a great deal of output in a somewhat illegible form, and is not
@@ -515,6 +574,7 @@ integration in cases when the integral cannot be found in closed terms.
 It is normally off.
 
 \subsection{Advanced Use}
+\hypertarget{operator:ERF}{}
 
 If a function appears in the integrand that is not one of the functions
 {\tt EXP, ERF, TAN, ATAN, LOG, DILOG}\ttindex{EXP}\ttindex{ERF}
@@ -567,6 +627,7 @@ package, DEFINT\extendedmanual{( chapter~\ref{DEFINT})}.
 %the indefinite integral, and then substituting the limits into this.
 
 \section{LENGTH Operator}
+\hypertarget{operator:LENGTH}{}
 {\tt LENGTH}\ttindex{LENGTH} is a generic operator for finding the
 length of various objects in the system.  The meaning depends on the type
 of the object.  In particular, the length of an algebraic expression is
@@ -582,6 +643,7 @@ matrices. The explicit meaning in these cases is included in the description
 of these objects.
 
 \section{MAP Operator}\ttindex{MAP}
+\hypertarget{operator:MAP}{}
 
 The {\tt MAP} operator applies a uniform evaluation pattern to all members
 of a composite structure: a matrix, a list, or the arguments of an
@@ -634,6 +696,7 @@ apply {\tt MAP} to a non-composed object, e.g. an identifier or a number.
 
 
 \section{MKID Operator}\ttindex{MKID}
+\hypertarget{operator:MKID}{}
 In many applications, it is useful to create a set of identifiers for
 naming objects in a consistent manner. In most cases, it is sufficient to
 create such names from two components. The operator {\tt MKID} is provided
@@ -656,6 +719,7 @@ identifiers created by {\tt MKID}, for example
 will give {\tt A3} the value 2.
 
 \section{PF Operator}\ttindex{PF}
+\hypertarget{operator:PF}{}
 
 {\tt PF(<exp>,<var>)} transforms the expression {\tt <exp>} into a list of
 partial fractions with respect to the main variable, {\tt <var>}.  {\tt PF}
@@ -697,6 +761,7 @@ Alternatively, one can use the operations on lists to extract any desired
 term.
 
 \section{SELECT Operator}\ttindex{SELECT}
+\hypertarget{operator:SELECT}{}
 \ttindex{map}\ttindex{list}
 
 The {\tt SELECT} operator extracts from a list,

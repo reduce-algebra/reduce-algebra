@@ -7,6 +7,7 @@ encountered.
 
 \section{High Energy Physics Operators}
 \label{HEPHYS}
+\hypertarget{command:INDEX}{}
 
 We begin by introducing three new operators required in these calculations.
 
@@ -51,6 +52,7 @@ declared as indices.
 
 Errors occur if indices are not properly matched in expressions.
 
+\hypertarget{command:REMIND}{}
 If a user later wishes to remove the index property from specific vectors,
 he can do it with the declaration {\tt REMIND}.\ttindex{REMIND} Thus
 {\tt remind v1...vn;} removes the index flags from the variables {\tt V1}
@@ -58,6 +60,7 @@ through {\tt Vn}.  However, these variables remain vectors in the system.
 
 \subsection{G Operator for Gamma Matrices}\index{Dirac $\gamma$ matrix}
 \ttindex{G}
+\hypertarget{operator:G}{}
 
 Syntax:
 \begin{verbatim}
@@ -104,6 +107,7 @@ The notation of Bjorken and Drell is assumed in all operations involving
 $\gamma$ matrices.
 
 \subsection{EPS Operator}\ttindex{EPS}
+\hypertarget{operator:EPS}{}
 Syntax:
 \begin{verbatim}
          EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp)
@@ -125,6 +129,7 @@ written as {\tt eps(i,j,p,q)}, with {\tt I} and {\tt J} flagged as indices,
 and so on.
 
 \section{Vector Variables}
+\hypertarget{command:VECTOR}{}
 
 Apart from the line identification identifier in the {\tt G} operator, all
 other arguments of the operators in this section are vectors.  Variables
@@ -177,6 +182,8 @@ g(l,p) + m*<unit 4 by 4 matrix>}.  Multiplication of Dirac
 expressions, as for matrix expressions, is of course non-commutative.
 
 \section{Trace Calculations}\index{High energy trace}
+\hypertarget{command:NOSPUR}{}
+\hypertarget{command:SPUR}{}
 
 When a Dirac expression is evaluated, the system computes one quarter of
 the trace of each $\gamma$ matrix product in the expansion of the expression.
@@ -216,6 +223,8 @@ See also the CVIT package for an alternative
 mechanism\extendedmanual{ (chapter~\ref{CVIT})}.
 
 \section{Mass Declarations}\ttindex{MASS}
+\hypertarget{command:MASS}{}
+\hypertarget{command:MSHELL}{}
 
 It is often necessary to put a particle ``on the mass shell'' in a
 calculation.  This can, of course, be accomplished with a {\tt LET}
@@ -310,6 +319,7 @@ This program will print the following result
 \end{verbatim}
 
 \section{Extensions to More Than Four Dimensions}
+\hypertarget{command:VECDIM}{}
 
 In our discussion so far, we have assumed that we are working in the
 normal four dimensions of QED calculations. However, in most cases, the

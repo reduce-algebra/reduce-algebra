@@ -33,6 +33,7 @@ For those familiar with them, these operators in fact mirror the
 operations defined for Lisp lists.  These operators are as follows:
 
 \subsection{LIST}
+\hypertarget{operator:LIST}{}
 
 The operator LIST is an alternative to the usage of curly brackets. LIST
 accepts an arbitrary number of arguments and returns a list
@@ -43,26 +44,32 @@ list(a,list(list(b,c),d),e);       ->  {{a},{{b,c},d},e}
 \end{verbatim}
 
 \subsection{FIRST}
+\hypertarget{operator:FIRST}{}
 
 This operator\ttindex{FIRST} returns the first member of a list.  An error
 occurs if the argument is not a list, or the list is empty.
 
 \subsection{SECOND}
+\hypertarget{operator:SECOND}{}
 
 {\tt SECOND}\ttindex{SECOND} returns the second member of a list.  An error
 occurs if the argument is not a list or has no second element.
 
 \subsection{THIRD}
+\hypertarget{operator:THIRD}{}
 
 This operator\ttindex{THIRD} returns the third member of a list.  An error
 occurs if the argument is not a list or has no third element.
 
 \subsection{REST}
+\hypertarget{operator:REST}{}
 
 {\tt REST}\ttindex{REST} returns its argument with the first element
 removed.  An error occurs if the argument is not a list, or is empty.
 
 \subsection{$.$ (Cons) Operator}
+\hypertarget{operator:CONS}{}
+\hypertarget{reserved:consop}{}
 
 This operator\ttindex{. (CONS)} adds (``conses'') an expression to the
 front of a list.  For example:
@@ -71,6 +78,7 @@ front of a list.  For example:
 \end{verbatim}
 
 \subsection{APPEND}
+\hypertarget{operator:APPEND}{}
 
 This operator\ttindex{APPEND} appends its first argument to its second to
 form a new list.
@@ -81,6 +89,7 @@ form a new list.
 \end{verbatim}
 
 \subsection{REVERSE}
+\hypertarget{operator:REVERSE}{}
 
 The operator {\tt REVERSE}\ttindex{REVERSE} returns its argument with the
 elements in the reverse order.  It only applies to the top level list, not
@@ -91,6 +100,8 @@ any lower level lists that may occur.  Examples are:\index{List operation}
 \end{verbatim}
 
 \subsection{List Arguments of Other Operators}
+\hypertarget{switch:LISTARGS}{}
+\hypertarget{command:LISTARGP}{}
 
 If an operator other than those specifically defined for lists is given a
 single argument that is a list, then the result of this operation will be

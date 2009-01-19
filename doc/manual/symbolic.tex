@@ -1,6 +1,7 @@
 \chapter{Symbolic Mode}\index{Symbolic mode}
 
 \hypertarget{target:modes}{}
+\hypertarget{reserved:LISP}{}
 
 At the system level, {\REDUCE} is based on a version of the programming
 language Lisp\index{Lisp} known as {\em Standard Lisp\/} which is described
@@ -135,6 +136,7 @@ Thus {\tt  (A~!.~~B)} is the list consisting of the three elements {\tt A},
 and {\tt B}.
 
 \section{Lambda Expressions}\ttindex{LAMBDA}
+\hypertarget{reserved:LAMBDA}{}
 \label{sec-lambda}
 
 {\tt LAMBDA} expressions provide the means for constructing Lisp {\tt LAMBDA}
@@ -177,6 +179,7 @@ Where possible, {\tt WHERE} syntax is preferred to {\tt LAMBDA} syntax,
 since it is more natural.
 
 \section{Symbolic Assignment Statements}\index{Assignment}
+\hypertarget{command:SETQ}{}
 
 In symbolic mode, if the left side of an assignment statement is a
 variable, a {\tt SETQ} of the right-hand side to that variable occurs.  If
@@ -226,6 +229,8 @@ the following could be used:
             else if u = caar v then car v
             else assoc(u, cdr v);
 \end{verbatim}
+\hypertarget{reserved:MACRO}{}
+\hypertarget{reserved:EXPR}{}
 If the default mode were symbolic, then {\tt SYMBOLIC} could be omitted in
 the above definition. {\tt MACRO}s\ttindex{MACRO} may be defined by
 prefixing the keyword {\tt PROCEDURE} by the word {\tt MACRO}.
@@ -237,6 +242,8 @@ Report.) For example, we could define a {\tt MACRO CONSCONS} by
            expand(cdr l,'cons);
 \end{verbatim}
 
+\hypertarget{reserved:SMACRO}{}
+\hypertarget{reserved:FEXPR}{}
 Another form of macro, the {\tt SMACRO}\ttindex{SMACRO} is also available.
 These are described in the Standard Lisp Report.  The Report also defines
 a function type {\tt FEXPR}.\ttindex{FEXPR}
@@ -245,6 +252,7 @@ and most uses can be replaced by macros.  At the present time, there are
 no {\tt FEXPR}s in the core REDUCE system.
 
 \section{Standard Lisp Equivalent of Reduce Input}
+\hypertarget{switch:DEFN}{}
 
 A user can obtain the Standard Lisp equivalent of his {\REDUCE} input by
 turning on the switch {\tt DEFN}\ttindex{DEFN} (for definition).  The
@@ -252,6 +260,7 @@ system then prints the Lisp translation of his input but does not evaluate
 it.  Normal operation is resumed when {\tt DEFN} is turned off.
 
 \section{Communicating with Algebraic Mode}\index{Mode communication}
+\hypertarget{command:SHARE}{}
 
 One of the principal motivations for a user of the algebraic facilities of
 {\REDUCE} to learn about symbolic mode\index{Symbolic mode} is that it

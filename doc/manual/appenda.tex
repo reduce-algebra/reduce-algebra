@@ -13,70 +13,335 @@ system.
 	       \settowidth{\leftmargin}{Numerical Operators\hspace*{\labelsep}}%
 	       \sloppy}
 
-\item[Commands] \hyperlink{target:modes}{\texttt{ALGEBRAIC}}
+\item[Commands]
+\hyperlink{target:modes}{\texttt{ALGEBRAIC}}
 \hyperlink{reserved:SYMMETRIC}{\texttt{ANTISYMMETRIC}}
 \hyperlink{reserved:ARRAY}{\texttt{ARRAY}}
-\hyperlink{reserved:BYE}{\texttt{BYE}}
+\hyperlink{command:BYE}{\texttt{BYE}}
 \hyperlink{reserved:CLEAR}{\texttt{CLEAR}} \linebreak
 \hyperlink{CLEARRULES}{\texttt{CLEARRULES}}
 \hyperlink{comments}{\texttt{COMMENT}}
-\hyperlink{CONT-and-PAUSE}{\texttt{CONT}} {\texttt{DECOMPOSE}} {\texttt{DEFINE}} {\texttt{DEPEND}} {\texttt{DISPLAY}} {\texttt{ED}}
-{\texttt{EDITDEF}} {\texttt{END}} {\texttt{EVEN}} {\texttt{FACTOR}} {\texttt{FOR}} {\texttt{FORALL}}
-{\texttt{FOREACH}} {\texttt{GO}} {\texttt{GOTO}} {\texttt{IF}} {\texttt{IN}} {\texttt{INDEX}} {\texttt{INFIX}}
-{\texttt{INPUT}} {\texttt{INTEGER}} {\texttt{KORDER}} {\texttt{LET}} {\texttt{LINEAR}} {\texttt{LISP}}
-{\texttt{LISTARGP}} {\texttt{LOAD}} {\tt LOAD\_PACKAGE} {\texttt{MASS}} {\texttt{MATCH}} {\texttt{MATRIX}} {\texttt{MSHELL}} {\texttt{NODEPEND}} {\texttt{NONCOM}} {\texttt{NONZERO}} {\texttt{NOSPUR}}
-{\texttt{ODD}} {\texttt{OFF}}
-{\texttt{ON}} {\texttt{OPERATOR}} {\texttt{ORDER}} {\texttt{OUT}}
-\hyperlink{CONT-and-PAUSE}{\texttt{PAUSE}} {\texttt{PRECEDENCE}}
-{\tt PRINT\_PRECISION} {\texttt{PROCEDURE}} {\texttt{QUIT}} {\texttt{REAL}} {\texttt{REMFAC}}
-{\texttt{REMIND}} {\texttt{RETRY}} {\texttt{RETURN}} {\texttt{SAVEAS}} {\texttt{SCALAR}} {\texttt{SETMOD}} {\texttt{SHARE}} {\texttt{SHOWTIME}} {\texttt{SHUT}} {\texttt{SPUR}} \hyperlink{target:modes}{\texttt{SYMBOLIC}}
-\hyperlink{reserved:SYMMETRIC}{\texttt{SYMMETRIC}} {\texttt{VECDIM}} {\texttt{VECTOR}} {\texttt{WEIGHT}}
-\hyperlink{WRITE}{\texttt{WRITE}} {\texttt{WTLEVEL}}
+\hyperlink{CONT-and-PAUSE}{\texttt{CONT}}
+\hyperlink{operator:DECOMPOSE}{\texttt{DECOMPOSE}}
+\hyperlink{command:DEFINE}{\texttt{DEFINE}}
+\hyperlink{command:DEPEND}{\texttt{DEPEND}}
+\hyperlink{operator:DISPLAY}{\texttt{DISPLAY}}
+\hyperlink{command:ED}{\texttt{ED}}
+\hyperlink{command:EDITDEF}{\texttt{EDITDEF}}
+\hyperlink{reserved:END}{\texttt{END}}
+\hyperlink{command:EVEN}{\texttt{EVEN}}
+\hyperlink{command:FACTOR}{\texttt{FACTOR}}
+\hyperlink{command:FOR}{\texttt{FOR}}
+\hyperlink{command:FORALL}{\texttt{FORALL}}
+\hyperlink{command:FOREACH}{\texttt{FOREACH}}
+\hyperlink{command:GOTO}{\texttt{GO}}
+\hyperlink{command:GOTO}{\texttt{GOTO}}
+\hyperlink{command:IF}{\texttt{IF}}
+\hyperlink{command:IN}{\texttt{IN}}
+\hyperlink{command:INDEX}{\texttt{INDEX}}
+\hyperlink{command:INFIX}{\texttt{INFIX}}
+\hyperlink{reserved:INPUT}{\texttt{INPUT}}
+\hyperlink{command:INTEGER}{\texttt{INTEGER}}
+\hyperlink{command:KORDER}{\texttt{KORDER}}
+\hyperlink{command:LET}{\texttt{LET}}
+\hyperlink{command:LINEAR}{\texttt{LINEAR}}
+\hyperlink{target:modes}{\texttt{LISP}}
+\hyperlink{command:LISTARGP}{\texttt{LISTARGP}}
+\hyperlink{command:LOAD}{\texttt{LOAD}}
+\hyperlink{command:LOAD_PACKAGE}{\texttt{LOAD\_PACKAGE}}
+\hyperlink{command:MASS}{\texttt{MASS}}
+\hyperlink{command:MATCH}{\texttt{MATCH}}
+\hyperlink{command:MATRIX}{\texttt{MATRIX}}
+\hyperlink{command:MSHELL}{\texttt{MSHELL}}
+\hyperlink{command:NODEPEND}{\texttt{NODEPEND}}
+\hyperlink{command:NONCOM}{\texttt{NONCOM}}
+\hyperlink{command:NONZERO}{\texttt{NONZERO}}
+\hyperlink{command:NOSPUR}{\texttt{NOSPUR}}
+\hyperlink{command:ODD}{\texttt{ODD}}
+\hyperlink{command:OFF}{\texttt{OFF}}
+\hyperlink{command:ON}{\texttt{ON}}
+\hyperlink{command:OPERATOR}{\texttt{OPERATOR}}
+\hyperlink{command:ORDER}{\texttt{ORDER}}
+\hyperlink{command:OUT}{\texttt{OUT}}
+\hyperlink{CONT-and-PAUSE}{\texttt{PAUSE}}
+\hyperlink{command:PRECEDENCE}{\texttt{PRECEDENCE}}
+\hyperlink{command:PRINT_PRECISION}{\texttt{PRINT\_PRECISION}}
+\hyperlink{command:PROCEDURE}{\texttt{PROCEDURE}}
+\hyperlink{command:QUIT}{\texttt{QUIT}}
+\hyperlink{command:REAL}{\texttt{REAL}}
+\hyperlink{command:REMFAC}{\texttt{REMFAC}}
+\hyperlink{command:REMIND}{\texttt{REMIND}}
+\hyperlink{command:RETRY}{\texttt{RETRY}}
+\hyperlink{command:RETURN}{\texttt{RETURN}}
+\hyperlink{command:SAVEAS}{\texttt{SAVEAS}}
+\hyperlink{command:SCALAR}{\texttt{SCALAR}}
+\hyperlink{command:SETMOD}{\texttt{SETMOD}}
+\hyperlink{command:SHARE}{\texttt{SHARE}}
+\hyperlink{command:SHOWTIME}{\texttt{SHOWTIME}}
+\hyperlink{command:SHUT}{\texttt{SHUT}}
+\hyperlink{command:SPUR}{\texttt{SPUR}}
+\hyperlink{target:modes}{\texttt{SYMBOLIC}}
+\hyperlink{reserved:SYMMETRIC}{\texttt{SYMMETRIC}}
+\hyperlink{command:VECDIM}{\texttt{VECDIM}}
+\hyperlink{command:VECTOR}{\texttt{VECTOR}}
+\hyperlink{command:WEIGHT}{\texttt{WEIGHT}}
+\hyperlink{command:WRITE}{\texttt{WRITE}}
+\hyperlink{command:WTLEVEL}{\texttt{WTLEVEL}}
 
-\item[Boolean Operators] {\texttt{EVENP}} {\texttt{FIXP}}
-{\texttt{FREEOF}} {\texttt{NUMBERP}} {\texttt{ORDP}} {\texttt{PRIMEP}}
+\item[Boolean Operators]
+\hyperlink{operator:EVENP}{\texttt{EVENP}}
+\hyperlink{operator:FIXP}{\texttt{FIXP}}
+\hyperlink{operator:FREEOF}{\texttt{FREEOF}}
+\hyperlink{operator:NUMBERP}{\texttt{NUMBERP}}
+\hyperlink{operator:ORDP}{\texttt{ORDP}}
+\hyperlink{operator:PRIMEP}{\texttt{PRIMEP}}
 
 \item[Infix Operators]
-\hyperlink{reserved:assignop}{\texttt{:=}} \verb|=| \verb|>=| \verb|>| \verb|<=| \verb|<| \verb|=>|
- \verb|+| \verb|*| \verb|/| \verb|^| \verb|**| \verb|.| 
-\hyperlink{WHERE}{\texttt{WHERE}}
-{\texttt{SETQ}} {\texttt{OR}} {\texttt{AND}} {\texttt{MEMBER}} {\texttt{MEMQ}} {\texttt{EQUAL}} {\texttt{NEQ}} {\texttt{EQ}} {\texttt{GEQ}} {\texttt{GREATERP}} {\texttt{LEQ}} {\texttt{LESSP}}
-{\texttt{PLUS}} {\texttt{DIFFERENCE}} {\texttt{MINUS}} {\texttt{TIMES}} {\texttt{QUOTIENT}} {\texttt{EXPT}} {\texttt{CONS}}
+\hyperlink{reserved:assignop}{\texttt{:=}}
+\hyperlink{reserved:equalop}{\texttt{=}}
+\hyperlink{reserved:geqop}{\texttt{>=}}
+\hyperlink{reserved:greaterop}{\texttt{>}}
+\hyperlink{reserved:leqop}{\texttt{<=}}
+\hyperlink{reserved:lessop}{\texttt{<}}
+\hyperlink{reserved:impliesop}{\texttt{=>}}
+\hyperlink{reserved:plusop}{\texttt{+}}
+\hyperlink{reserved:minusop}{\texttt{-}}
+\hyperlink{reserved:timesop}{\texttt{*}}
+\hyperlink{reserved:quotientop}{\texttt{/}}
+\hyperlink{reserved:caretop}{\texttt{\char94}}
+\hyperlink{reserved:exptop}{\texttt{**}}
+\hyperlink{reserved:consop}{\texttt{.}}
+\hyperlink{operator:WHERE}{\texttt{WHERE}}
+\hyperlink{command:SETQ}{\texttt{SETQ}}
+\hyperlink{operator:OR}{\texttt{OR}}
+\hyperlink{operator:AND}{\texttt{AND}}
+\hyperlink{operator:MEMBER}{\texttt{MEMBER}}
+\hyperlink{operator:MEMQ}{\texttt{MEMQ}}
+%\hyperlink{operator:EQUAL}
+{\texttt{EQUAL}}
+\hyperlink{operator:NEQ}{\texttt{NEQ}}
+\hyperlink{operator:EQ}{\texttt{EQ}}
+%\hyperlink{operator:GEQ}
+{\texttt{GEQ}}
+%\hyperlink{operator:GREATERP}
+{\texttt{GREATERP}}
+%\hyperlink{operator:LEQ}
+{\texttt{LEQ}}
+%\hyperlink{operator:LESSP}
+{\texttt{LESSP}}
+%\hyperlink{operator:PLUS}
+{\texttt{PLUS}}
+%\hyperlink{operator:DIFFERENCE}
+{\texttt{DIFFERENCE}}
+%\hyperlink{operator:MINUS}
+{\texttt{MINUS}}
+%\hyperlink{operator:TIMES}
+{\texttt{TIMES}}
+%\hyperlink{operator:QUOTIENT}
+{\texttt{QUOTIENT}}
+%\hyperlink{operator:EXPT}
+{\texttt{EXPT}}
+\hyperlink{operator:CONS}{\texttt{CONS}}
 
-\item[Numerical Operators] {\texttt{ABS}} {\texttt{ACOS}}
-{\texttt{ACOSH}} {\texttt{ACOT}} {\texttt{ACOTH}} {\texttt{ACSC}} {\texttt{ACSCH}} {\texttt{ASEC}} {\texttt{ASECH}} {\texttt{ASIN}} {\texttt{ASINH}} {\texttt{ATAN}} {\texttt{ATANH}} {\texttt{ATAN2}} {\texttt{COS}}
-{\texttt{COSH}} {\texttt{COT}} {\texttt{COTH}} {\texttt{CSC}} {\texttt{CSCH}} {\texttt{EXP}} {\texttt{FACTORIAL}} {\texttt{FIX}} {\texttt{FLOOR}} {\texttt{HYPOT}} {\texttt{LN}} {\texttt{LOG}} {\texttt{LOGB}}
-{\texttt{LOG10}} {\texttt{NEXTPRIME}} {\texttt{ROUND}} {\texttt{SEC}} {\texttt{SECH}} {\texttt{SIN}}
-{\texttt{SINH}} {\texttt{SQRT}} {\texttt{TAN}} {\texttt{TANH}}
+\item[Numerical Operators]
+\hyperlink{operator:ABS}{\texttt{ABS}}
+\hyperlink{operator:ACOS}{\texttt{ACOS}}
+\hyperlink{operator:ACOSH}{\texttt{ACOSH}}
+\hyperlink{operator:ACOT}{\texttt{ACOT}}
+\hyperlink{operator:ACOTH}{\texttt{ACOTH}}
+\hyperlink{operator:ACSC}{\texttt{ACSC}}
+\hyperlink{operator:ACSCH}{\texttt{ACSCH}}
+\hyperlink{operator:ASEC}{\texttt{ASEC}}
+\hyperlink{operator:ASECH}{\texttt{ASECH}}
+\hyperlink{operator:ASIN}{\texttt{ASIN}}
+\hyperlink{operator:ASINH}{\texttt{ASINH}}
+\hyperlink{operator:ATAN}{\texttt{ATAN}}
+\hyperlink{operator:ATANH}{\texttt{ATANH}}
+\hyperlink{operator:ATAN2}{\texttt{ATAN2}}
+\hyperlink{operator:COS}{\texttt{COS}}
+\hyperlink{operator:COSH}{\texttt{COSH}}
+\hyperlink{operator:COT}{\texttt{COT}}
+\hyperlink{operator:COTH}{\texttt{COTH}}
+\hyperlink{operator:CSC}{\texttt{CSC}}
+\hyperlink{operator:CSCH}{\texttt{CSCH}}
+\hyperlink{operator:EXP}{\texttt{EXP}}
+\hyperlink{operator:FACTORIAL}{\texttt{FACTORIAL}}
+\hyperlink{operator:FIX}{\texttt{FIX}}
+\hyperlink{operator:FLOOR}{\texttt{FLOOR}}
+\hyperlink{operator:HYPOT}{\texttt{HYPOT}}
+\hyperlink{operator:LN}{\texttt{LN}}
+\hyperlink{operator:LOG}{\texttt{LOG}}
+\hyperlink{operator:LOGB}{\texttt{LOGB}}
+\hyperlink{operator:LOG10}{\texttt{LOG10}}
+\hyperlink{operator:NEXTPRIME}{\texttt{NEXTPRIME}}
+\hyperlink{operator:ROUND}{\texttt{ROUND}}
+\hyperlink{operator:SEC}{\texttt{SEC}}
+\hyperlink{operator:SECH}{\texttt{SECH}}
+\hyperlink{operator:SIN}{\texttt{SIN}}
+\hyperlink{operator:SINH}{\texttt{SINH}}
+\hyperlink{operator:SQRT}{\texttt{SQRT}}
+\hyperlink{operator:TAN}{\texttt{TAN}}
+\hyperlink{operator:TANH}{\texttt{TANH}}
 
-\item[Prefix Operators] {\texttt{APPEND}} {\tt
-ARGLENGTH} {\texttt{CEILING}} {\texttt{COEFF}} {\texttt{COEFFN}} {\texttt{COFACTOR}} {\tt
-CONJ} {\texttt{DEG}} {\texttt{DEN}} {\texttt{DET}} {\texttt{DF}} {\texttt{DILOG}} {\texttt{EI}}
-{\texttt{EPS}} {\texttt{ERF}} {\texttt{FACTORIZE}} {\texttt{FIRST}} {\texttt{GCD}} {\texttt{G}} {\texttt{IMPART}} {\texttt{INT}} {\texttt{INTERPOL}} {\texttt{LCM}} {\texttt{LCOF}} {\texttt{LENGTH}} {\texttt{LHS}} {\texttt{LINELENGTH}} {\texttt{LTERM}} {\texttt{MAINVAR}} {\texttt{MAT}} {\texttt{MATEIGEN}}
-{\texttt{MAX}} {\texttt{MIN}} {\texttt{MKID}} {\texttt{NULLSPACE}} {\texttt{NUM}} {\texttt{PART}} {\texttt{PF}} {\texttt{PRECISION}} {\texttt{RANDOM}} {\tt RANDOM\_NEW\_SEED} {\texttt{RANK}} {\texttt{REDERR}} {\texttt{REDUCT}} {\texttt{REMAINDER}} {\texttt{REPART}} {\texttt{REST}} {\texttt{RESULTANT}} {\texttt{REVERSE}} {\texttt{RHS}} {\texttt{SECOND}} {\texttt{SET}} {\texttt{SHOWRULES}}
-{\texttt{SIGN}} {\texttt{SOLVE}} {\texttt{STRUCTR}} {\texttt{SUB}} {\texttt{SUM}} {\texttt{THIRD}} {\texttt{TP}} {\texttt{TRACE}} {\texttt{VARNAME}}
+\item[Prefix Operators]
+\hyperlink{operator:APPEND}{\texttt{APPEND}}
+\hyperlink{operator:ARGLENGTH}{\texttt{ARGLENGTH}}
+\hyperlink{operator:CEILING}{\texttt{CEILING}}
+\hyperlink{operator:COEFF}{\texttt{COEFF}}
+\hyperlink{operator:COEFFN}{\texttt{COEFFN}}
+\hyperlink{operator:COFACTOR}{\texttt{COFACTOR}}
+\hyperlink{operator:CONJ}{\texttt{CONJ}}
+\hyperlink{operator:DEG}{\texttt{DEG}}
+\hyperlink{operator:DEN}{\texttt{DEN}}
+\hyperlink{operator:DET}{\texttt{DET}}
+\hyperlink{operator:DF}{\texttt{DF}}
+\hyperlink{operator:DILOG}{\texttt{DILOG}}
+\hyperlink{operator:EI}{\texttt{EI}}
+\hyperlink{operator:EPS}{\texttt{EPS}}
+\hyperlink{operator:ERF}{\texttt{ERF}}
+\hyperlink{operator:FACTORIZE}{\texttt{FACTORIZE}}
+\hyperlink{operator:FIRST}{\texttt{FIRST}}
+\hyperlink{operator:GCD}{\texttt{GCD}}
+\hyperlink{operator:G}{\texttt{G}}
+\hyperlink{operator:IMPART}{\texttt{IMPART}}
+\hyperlink{operator:INT}{\texttt{INT}}
+\hyperlink{operator:INTERPOL}{\texttt{INTERPOL}}
+\hyperlink{operator:LCM}{\texttt{LCM}}
+\hyperlink{operator:LCOF}{\texttt{LCOF}}
+\hyperlink{operator:LENGTH}{\texttt{LENGTH}}
+\hyperlink{operator:LHS}{\texttt{LHS}}
+\hyperlink{operator:LINELENGTH}{\texttt{LINELENGTH}}
+\hyperlink{operator:LTERM}{\texttt{LTERM}}
+\hyperlink{operator:MAINVAR}{\texttt{MAINVAR}}
+\hyperlink{operator:MAT}{\texttt{MAT}}
+\hyperlink{operator:MATEIGEN}{\texttt{MATEIGEN}}
+\hyperlink{operator:MAX}{\texttt{MAX}}
+\hyperlink{operator:MIN}{\texttt{MIN}}
+\hyperlink{operator:MKID}{\texttt{MKID}}
+\hyperlink{operator:NULLSPACE}{\texttt{NULLSPACE}}
+\hyperlink{operator:NUM}{\texttt{NUM}}
+\hyperlink{operator:PART}{\texttt{PART}}
+\hyperlink{operator:PF}{\texttt{PF}}
+\hyperlink{operator:PRECISION}{\texttt{PRECISION}}
+\hyperlink{operator:PROD}{\texttt{PROD}}
+\hyperlink{operator:RANDOM}{\texttt{RANDOM}}
+\hyperlink{operator:RANDOM\_NEW\_SEED}{\texttt{RANDOM\_NEW\_SEED}}
+\hyperlink{operator:RANK}{\texttt{RANK}}
+\hyperlink{operator:REDERR}{\texttt{REDERR}}
+\hyperlink{operator:REDUCT}{\texttt{REDUCT}}
+\hyperlink{operator:REMAINDER}{\texttt{REMAINDER}}
+\hyperlink{operator:REPART}{\texttt{REPART}}
+\hyperlink{operator:REST}{\texttt{REST}}
+\hyperlink{operator:RESULTANT}{\texttt{RESULTANT}}
+\hyperlink{operator:REVERSE}{\texttt{REVERSE}}
+\hyperlink{operator:RHS}{\texttt{RHS}}
+\hyperlink{operator:SECOND}{\texttt{SECOND}}
+\hyperlink{command:SET}{\texttt{SET}}
+\hyperlink{operator:SHOWRULES}{\texttt{SHOWRULES}}
+\hyperlink{operator:SIGN}{\texttt{SIGN}}
+\hyperlink{operator:SOLVE}{\texttt{SOLVE}}
+\hyperlink{operator:STRUCTR}{\texttt{STRUCTR}}
+\hyperlink{operator:SUB}{\texttt{SUB}}
+\hyperlink{operator:SUM}{\texttt{SUM}}
+\hyperlink{operator:THIRD}{\texttt{THIRD}}
+\hyperlink{operator:TP}{\texttt{TP}}
+\hyperlink{operator:TRACE}{\texttt{TRACE}}
+\hyperlink{operator:VARNAME}{\texttt{VARNAME}}
 
-\item[Reserved Variables] \hyperlink{CARD_NO}{\texttt{CARD\_NO}} {\texttt{E}}
+\item[Reserved Variables]
+\hyperlink{reserved:CARD_NO}{\texttt{CARD\_NO}}
+\hyperlink{reserved:E}{\texttt{E}}
 \hyperlink{target:modes}{\tt EVAL\_MODE}
-{\tt FORT\_WIDTH} {\tt HIGH\_POW} {\texttt{I}} {\texttt{INFINITY}} {\texttt{K!*}} {\tt LOW\_POW} {\texttt{NIL}} {\texttt{PI}} {\tt ROOT\_MULTIPLICITY} {\texttt{T}}
+\hyperlink{reserved:FORT_WIDTH}{\tt FORT\_WIDTH}
+\hyperlink{reserved:HIGH_POW}{\texttt{HIGH\_POW}}
+\hyperlink{reserved:I}{\texttt{I}}
+\hyperlink{reserved:INFINITY}{\texttt{INFINITY}}
+\hyperlink{reserved:K!*}{\texttt{K!*}}
+\hyperlink{reserved:LOW_POW}{\texttt{LOW\_POW}}
+\hyperlink{reserved:NIL}{\texttt{NIL}}
+\hyperlink{reserved:PI}{\texttt{PI}}
+\hyperlink{reserved:ROOT_MULTIPLICITIES}{\tt ROOT\_MULTIPLICITIES}
+\hyperlink{reserved:T}{\texttt{T}}
 
-\item[Switches] {\texttt{ADJPREC}} {\texttt{ALGINT}} {\texttt{ALLBRANCH}} {\texttt{ALLFAC}}
-{\texttt{BFSPACE}} {\texttt{COMBINEEXPT}} {\texttt{COMBINELOGS}}
-{\texttt{COMP}} {\texttt{COMPLEX}} {\texttt{CRAMER}} {\texttt{CREF}} {\texttt{DEFN}} {\texttt{DEMO}}
-{\texttt{DIV}} {\texttt{ECHO}} {\texttt{ERRCONT}} {\texttt{EVALLHSEQP}} {\texttt{EXP}} {\tt
-EXPANDLOGS} {\texttt{EZGCD}} {\texttt{FACTOR}} {\texttt{FORT}} {\texttt{FULLROOTS}} {\texttt{GCD}}
-{\texttt{IFACTOR}} {\texttt{INT}} {\texttt{INTSTR}} {\texttt{LCM}} {\texttt{LIST}} {\texttt{LISTARGS}}
-{\texttt{MCD}} {\texttt{MODULAR}} {\texttt{MSG}} {\texttt{MULTIPLICITIES}} {\texttt{NAT}} {\tt
-NERO} {\texttt{NOSPLIT}} {\texttt{OUTPUT}} {\texttt{PERIOD}} {\texttt{PRECISE}} {\texttt{PRET}}
-{\texttt{PRI}} {\texttt{RAT}} {\texttt{RATARG}} {\texttt{RATIONAL}} {\texttt{RATIONALIZE}} {\tt
-RATPRI} {\texttt{REVPRI}} {\texttt{RLISP88}} {\texttt{ROUNDALL}} {\texttt{ROUNDBF}} {\tt
-ROUNDED} {\texttt{SAVESTRUCTR}} {\texttt{SOLVESINGULAR}} {\texttt{TIME}} {\texttt{TRA}}
-{\texttt{TRFAC}} {\texttt{TRIGFORM}} {\texttt{TRINT}}
+\item[Switches]
+\hyperlink{switch:ADJPREC}{\texttt{ADJPREC}}
+\hyperlink{switch:ALGINT}{\texttt{ALGINT}}
+\hyperlink{switch:ALLBRANCH}{\texttt{ALLBRANCH}}
+\hyperlink{switch:ALLFAC}{\texttt{ALLFAC}}
+\hyperlink{switch:BALANCED_MOD}{\texttt{BALANCE\_MOD}}
+\hyperlink{switch:BFSPACE}{\texttt{BFSPACE}}
+\hyperlink{switch:COMBINEEXPT}{\texttt{COMBINEEXPT}}
+\hyperlink{switch:COMBINELOGS}{\texttt{COMBINELOGS}}
+\hyperlink{switch:COMP}{\texttt{COMP}}
+\hyperlink{switch:COMPLEX}{\texttt{COMPLEX}}
+\hyperlink{switch:CRAMER}{\texttt{CRAMER}}
+\hyperlink{switch:CREF}{\texttt{CREF}}
+\hyperlink{switch:DEFN}{\texttt{DEFN}}
+\hyperlink{switch:DEMO}{\texttt{DEMO}}
+\hyperlink{switch:DIV}{\texttt{DIV}}
+\hyperlink{switch:ECHO}{\texttt{ECHO}}
+\hyperlink{switch:ERRCONT}{\texttt{ERRCONT}}
+\hyperlink{switch:EVALLHSEQP}{\texttt{EVALLHSEQP}}
+\hyperlink{switch:EXP}{\texttt{EXP}}
+\hyperlink{switch:EXPANDLOGS}{\texttt{EXPANDLOGS}}
+\hyperlink{switch:EZGCD}{\texttt{EZGCD}}
+\hyperlink{switch:FACTOR}{\texttt{FACTOR}}
+\hyperlink{switch:FORT}{\texttt{FORT}}
+\hyperlink{switch:FULLROOTS}{\texttt{FULLROOTS}}
+\hyperlink{switch:GCD}{\texttt{GCD}}
+\hyperlink{switch:IFACTOR}{\texttt{IFACTOR}}
+\hyperlink{switch:INT}{\texttt{INT}}
+\hyperlink{switch:INTSTR}{\texttt{INTSTR}}
+\hyperlink{switch:LCM}{\texttt{LCM}}
+\hyperlink{switch:LIST}{\texttt{LIST}}
+\hyperlink{switch:LISTARGS}{\texttt{LISTARGS}}
+\hyperlink{switch:MCD}{\texttt{MCD}}
+\hyperlink{switch:MODULAR}{\texttt{MODULAR}}
+\hyperlink{switch:MSG}{\texttt{MSG}}
+\hyperlink{switch:MULTIPLICITIES}{\texttt{MULTIPLICITIES}}
+\hyperlink{switch:NAT}{\texttt{NAT}}
+\hyperlink{switch:NERO}{\texttt{NERO}}
+\hyperlink{switch:NOSPLIT}{\texttt{NOSPLIT}}
+\hyperlink{switch:OUTPUT}{\texttt{OUTPUT}}
+\hyperlink{switch:PERIOD}{\texttt{PERIOD}}
+\hyperlink{switch:PRECISE}{\texttt{PRECISE}}
+\hyperlink{switch:PRET}{\texttt{PRET}}
+\hyperlink{switch:PRI}{\texttt{PRI}}
+\hyperlink{switch:RAT}{\texttt{RAT}}
+\hyperlink{switch:RATARG}{\texttt{RATARG}}
+\hyperlink{switch:RATIONAL}{\texttt{RATIONAL}}
+\hyperlink{switch:RATIONALIZE}{\texttt{RATIONALIZE}}
+\hyperlink{switch:RATPRI}{\texttt{RATPRI}}
+\hyperlink{switch:REVPRI}{\texttt{REVPRI}}
+\hyperlink{switch:RLISP88}{\texttt{RLISP88}}
+\hyperlink{switch:ROUNDALL}{\texttt{ROUNDALL}}
+\hyperlink{switch:ROUNDBF}{\texttt{ROUNDBF}}
+\hyperlink{switch:ROUNDED}{\texttt{ROUNDED}}
+\hyperlink{switch:SAVESTRUCTR}{\texttt{SAVESTRUCTR}}
+\hyperlink{switch:SOLVESINGULAR}{\texttt{SOLVESINGULAR}}
+\hyperlink{switch:TIME}{\texttt{TIME}}
+\hyperlink{switch:TRA}{\texttt{TRA}}
+\hyperlink{switch:TRFAC}{\texttt{TRFAC}}
+\hyperlink{switch:TRIGFORM}{\texttt{TRIGFORM}}
+\hyperlink{switch:TRINT}{\texttt{TRINT}}
 
-\item[Other Reserved Ids] {\texttt{BEGIN}} {\texttt{DO}}
-{\texttt{EXPR}} {\texttt{FEXPR}} {\texttt{INPUT}} {\texttt{LAMBDA}}
-{\texttt{LISP}} {\texttt{MACRO}} {\texttt{PRODUCT}} {\texttt{REPEAT}}
-{\texttt{SMACRO}} {\texttt{SUM}} {\texttt{UNTIL}} {\texttt{WHEN}} {\texttt{WHILE}} {\texttt{WS}}
+\item[Other Reserved Ids]
+\hyperlink{command:BEGIN}{\texttt{BEGIN}}
+\hyperlink{reserved:DO}{\texttt{DO}}
+\hyperlink{reserved:EXPR}{\texttt{EXPR}}
+\hyperlink{reserved:FEXPR}{\texttt{FEXPR}}
+\hyperlink{reserved:INPUT}{\texttt{INPUT}}
+\hyperlink{reserved:LAMBDA}{\texttt{LAMBDA}}
+\hyperlink{reserved:LISP}{\texttt{LISP}}
+\hyperlink{reserved:MACRO}{\texttt{MACRO}}
+\hyperlink{reserved:PRODUCT}{\texttt{PRODUCT}}
+\hyperlink{command:REPEAT}{\texttt{REPEAT}}
+\hyperlink{reserved:SMACRO}{\texttt{SMACRO}}
+\hyperlink{reserved:SUM}{\texttt{SUM}}
+\hyperlink{reserved:UNTIL}{\texttt{UNTIL}}
+\hyperlink{reserved:WHEN}{\texttt{WHEN}}
+\hyperlink{command:WHILE}{\texttt{WHILE}}
+\hyperlink{reserved:WS}{\texttt{WS}}
 
 \end{list}
 

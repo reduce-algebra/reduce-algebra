@@ -42,10 +42,12 @@ for example:
 \begin{verbatim}
         int(sqrt(x+sqrt(x**2+1))/x,x);
 \end{verbatim}
+\hypertarget{switch:ALGINT}{}
 If one later wishes to integrate expressions without using the facilities of
 this package, the switch {\tt ALGINT} \ttindex{ALGINT} should be turned
 off.  This is turned on automatically when the package is loaded.
 
+\hypertarget{switch:TRA}{}
 The switches supported by the standard integrator (e.g., {\tt TRINT})
 \ttindex{TRINT} are also supported by this package.  In addition, the
 switch {\tt TRA}, \ttindex{TRA} if on, will give further tracing
@@ -740,6 +742,8 @@ hypergeometric functions.
 Author: Victor Adamchik, with major updates by Winfried Neun.
 
 \section{SUM: A package for series summation} \ttindex{SUM}
+\hypertarget{operator:SUM}{}
+\hypertarget{operator:PROD}{}
 
 This package implements the Gosper algorithm for the summation of series.
 It defines operators {\tt SUM} and {\tt PROD}.  The operator {\tt SUM}

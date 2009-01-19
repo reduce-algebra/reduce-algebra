@@ -10,7 +10,7 @@
   colorlinks=true,linkbordercolor={1 1 1},
   linkcolor=blue,
   bookmarksnumbered=true,
-  pdftitle={REDUCE User's Manual},
+  pdftitle={REDUCE User's Manual, Version 3.8},
   pdfauthor={\textcopyright Anthony C. Hearn},
   pdfdisplaydoctitle=true,
 }
@@ -101,10 +101,10 @@
 %\newcommand{\meta}[1]{\mbox{$\langle$\it#1\/$\rangle$}}
 
 % \k{...} is a keyword. Just do in bold for the moment.
-\renewcommand{\k}[1] {{\bf #1}}
+\renewcommand{\k}[1] {\textbf{#1}}
 
 % \f is a function name. Just do this as tt.
-\newcommand{\f}[1] {{\tt #1}}
+\newcommand{\f}[1] {\texttt{#1}}
 
 % An example macro for numbering and indenting examples.
 \newcounter{examplectr}
@@ -113,41 +113,43 @@
 
 \setcounter{examplectr}{0}
 
-\input{title}
+\include{title}
 
 \newpage
 
 \pagestyle{headings}
 %\setcounter{page}{0}
+\pdfbookmark[0]{Contents}{toc}
 \tableofcontents
 
-\input{abstract}
-\input{acknowl}
-\input{intro}
-\input{progstr}
-\input{exprn}
-\input{list}
-\input{statemnt}
-\input{command}
-\input{oper}
-\input{solve}
-\input{oper2}
-\input{structr}
-\input{polyrat}
-\input{subst}
-\input{io}
-\input{inter}
-\input{matrix}
-\input{proc}
-\input{user}
-\input{symbolic}
-\input{rlisp88}
-\input{rlispref}
-\input{hephys}
-\input{util}
-\input{maintain}
-\input{appenda}
+\include{abstract}
+\include{acknowl}
+\include{intro}
+\include{progstr}
+\include{exprn}
+\include{list}
+\include{statemnt}
+\include{command}
+\include{oper}
+\include{solve}
+\include{oper2}
+\include{structr}
+\include{polyrat}
+\include{subst}
+\include{io}
+\include{inter}
+\include{matrix}
+\include{proc}
+\include{user}
+\include{symbolic}
+\include{rlisp88}
+\include{rlispref}
+\include{hephys}
+\include{util}
+\include{maintain}
+\include{appenda}
 
+\pdfbookmark[0]{Index}{Index}
 \printindex
 
 \end{document}

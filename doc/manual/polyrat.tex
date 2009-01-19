@@ -38,6 +38,7 @@ Other operations currently supported, the relevant switches and operators,
 and the required argument and value modes of the latter, follow.
 
 \section{Controlling the Expansion of Expressions}
+\hypertarget{switch:EXP}{}
 
 The switch {\tt EXP}\ttindex{EXP} controls the expansion of expressions.  If
 it is off, no expansion of powers or products of expressions occurs.
@@ -67,6 +68,8 @@ the top level.  For example, with {\tt EXP} off
 returns the value 1.
 
 \section{Factorization of Polynomials}\index{Factorization}
+\hypertarget{switch:FACTOR}{}
+\hypertarget{switch:IFACTOR}{}
 {\REDUCE} is capable of factorizing univariate and multivariate polynomials
 that have integer coefficients, finding all factors that also have integer
 coefficients. The package for doing this was written by Dr. Arthur C.
@@ -80,6 +83,7 @@ The easiest way to use this facility is to turn on the switch
 a factored form.  For example, with {\tt FACTOR} on, the expression
 {\tt A\verb|^|2-B\verb|^|2} is returned as {\tt (A+B)*(A-B)}.
 
+\hypertarget{operator:FACTORIZE}{}
 It is also possible to factorize a given expression explicitly.  The
 operator {\tt FACTORIZE}\ttindex{FACTORIZE} that invokes this facility is
 used with the syntax
@@ -144,6 +148,7 @@ example, the following statements will factorize $x^{4}+1$ modulo 7:
         on modular;
         factorize(x^4+1);
 \end{verbatim}
+\hypertarget{switch:TRFAC}{}
 The factorization module is provided with a trace facility that may be useful
 as a way of monitoring progress on large problems, and of satisfying
 curiosity about the internal workings of the package. The most simple use
@@ -178,6 +183,7 @@ this trace facility the generated trace files should be closed by calling
 result in an error.
 
 \section{Cancellation of Common Factors}
+\hypertarget{switch:GCD}{}
 Facilities are available in {\REDUCE} for cancelling common factors in the
 numerators and denominators of expressions, at the option of the user. The
 system will perform this greatest common divisor computation if the switch
@@ -199,6 +205,7 @@ Berlin, No 72 (1979) 227-239.)
 on,
 the polynomial {\tt a*c+a*d+b*c+b*d} would be returned as {\tt (A+B)*(C+D)}.
 
+\hypertarget{switch:EZGCD}{}
 Under normal circumstances, GCDs are computed using an algorithm described
 in the above paper. It is also possible in {\REDUCE} to compute GCDs using
 an alternative algorithm, called the EZGCD Algorithm, which uses modular
@@ -218,6 +225,7 @@ This package shares code with the factorizer, so a certain amount of trace
 information can be produced using the factorizer trace switches.
 
 \subsection{Determining the GCD of Two Polynomials}
+\hypertarget{operator:GCD}{}
 This operator, used with the syntax
 \begin{verbatim}
         GCD(EXPRN1:polynomial,EXPRN2:polynomial):polynomial,
@@ -233,6 +241,7 @@ returns the greatest common divisor of the two polynomials {\tt EXPRN1} and
 \end{verbatim}
 
 \section{Working with Least Common Multiples}
+\hypertarget{switch:LCM}{}
 
 Greatest common divisor calculations can often become expensive if
 extensive work with large rational expressions is required. However, in
@@ -246,6 +255,7 @@ constructed. In other words, the true least common multiple of the
 denominators is computed at each step. The switch {\tt LCM}\ttindex{LCM}
 is available for this purpose, and is normally on.
 
+\hypertarget{operator:LCM}{}
 In addition, the operator {\tt LCM},\ttindex{LCM} used with the syntax
 \begin{verbatim}
         LCM(EXPRN1:polynomial,EXPRN2:polynomial):polynomial,
@@ -260,6 +270,7 @@ returns the least common multiple of the two polynomials {\tt EXPRN1} and
 \end{verbatim}
 
 \section{Controlling Use of Common Denominators}
+\hypertarget{switch:MCD}{}
 
 When two rational functions are added, {\REDUCE} normally produces an
 expression over a common denominator. However, if the user does not want
@@ -277,6 +288,7 @@ calculation.
 {\tt MCD}\ttindex{MCD} is normally on.
 
 \section{REMAINDER Operator}\ttindex{REMAINDER}
+\hypertarget{operator:REMAINDER}{}
 
 This operator is used with the syntax
 \begin{verbatim}
@@ -308,6 +320,8 @@ must be declared explicitly.
 \end{verbatim}
 
 \section{RESULTANT Operator}\ttindex{RESULTANT}
+\hypertarget{operator:RESULTANT}{}
+\hypertarget{switch:BEZOUT}{}
 
 This is used with the syntax
 \begin{verbatim}
@@ -322,7 +336,7 @@ result obtained when the given variable is eliminated between the two input
 polynomials. If the two input polynomials have a non-trivial GCD their
 resultant vanishes.
 
-The switch {\tt Bezout}\ttindex{Bezout} controls the computation of the
+The switch {\tt BEZOUT}\ttindex{BEZOUT} controls the computation of the
 resultants. It is off by default. In this case a subresultant algorithm
 is used. If the switch Bezout is turned on, the resultant is computed via
 the Bezout Matrix. However, in the latter case, only polynomial coefficients
@@ -377,6 +391,7 @@ not dependent on {\tt X}:
 \end{verbatim}
 \end{samepage}
 \section{DECOMPOSE Operator}\ttindex{DECOMPOSE}
+\hypertarget{operator:DECOMPOSE}{}
 
 The {\tt DECOMPOSE} operator takes a multivariate polynomial as argument,
 and returns an expression and a list of equations from which the
@@ -397,6 +412,7 @@ Users should note however that, unlike factorization, this decomposition
 is not unique.
 
 \section{INTERPOL operator}\ttindex{INTERPOL}
+\hypertarget{operator:INTERPOL}{}
 
 Syntax:
 \begin{verbatim}
@@ -428,6 +444,7 @@ switch {\tt RATARG}\ttindex{RATARG} is on, denominators are not checked
 for dependence on {\tt VAR}, and are taken to be part of the coefficients.
 
 \subsection{DEG Operator}\ttindex{DEG}
+\hypertarget{operator:DEG}{}
 
 This operator is used with the syntax
 \begin{verbatim}
@@ -452,6 +469,7 @@ coefficients of the numerator in {\tt A}.  With {\tt RATARG} off, however,
 an error would result in this case.
 
 \subsection{DEN Operator}\ttindex{DEN}
+\hypertarget{operator:DEN}{}
 
 This is used with the syntax:
 \begin{verbatim}
@@ -470,6 +488,7 @@ It returns the denominator of the rational expression {\tt EXPRN}.  If
 \end{verbatim}
 
 \subsection{LCOF Operator}\ttindex{LCOF}
+\hypertarget{operator:LCOF}{}
 
 LCOF is used with the syntax
 \begin{verbatim}
@@ -487,6 +506,7 @@ occur as a variable in {\tt EXPRN}, {\tt EXPRN} is returned.
 \end{verbatim}
 
 \subsection{LPOWER Operator}\ttindex{LPOWER}
+\hypertarget{operator:LPOWER}{}
 
 \begin{samepage}
 Syntax:
@@ -505,6 +525,7 @@ If {\tt EXPRN} does not depend on {\tt VAR}, 1 is returned.
 \end{verbatim}
 
 \subsection{LTERM Operator}\ttindex{LTERM}
+\hypertarget{operator:LTERM}{}
 
 \begin{samepage}
 Syntax:
@@ -528,6 +549,7 @@ version, {\tt EXPRN} is always equal to {\tt LTERM(EXPRN,VAR)} $+$ {\tt
 REDUCT(EXPRN,VAR)}.
 
 \subsection{MAINVAR Operator}\ttindex{MAINVAR}
+\hypertarget{operator:MAINVAR}{}
 
 Syntax:
 \begin{verbatim}
@@ -545,6 +567,7 @@ Assuming {\tt A} has higher kernel order than {\tt B}, {\tt C}, or {\tt D}:
 \end{verbatim}
 
 \subsection{NUM Operator}\ttindex{NUM}
+\hypertarget{operator:NUM}{}
 
 Syntax:
 \begin{verbatim}
@@ -562,6 +585,7 @@ is a polynomial, that polynomial is returned.
 \end{verbatim}
 
 \subsection{REDUCT Operator}\ttindex{REDUCT}
+\hypertarget{operator:REDUCT}{}
 
 Syntax:
 \begin{verbatim}
@@ -600,6 +624,7 @@ E. Schr\"ufer, ``Enlarging the {\REDUCE} Domain of Computation,'' Proc. of
 SYMSAC '86, ACM, New York (1986), 100--106.
 
 \subsection{Rational Coefficients in Polynomials}\index{Coefficient}
+\hypertarget{switch:RATIONAL}{}
 \index{Rational coefficient}
 Instead of treating rational numbers as the numerator and denominator of a
 rational expression, it is also possible to use them as polynomial
@@ -615,6 +640,9 @@ whereas the former could not.
 
 \subsection{Real Coefficients in Polynomials}\index{Coefficient}
 \index{Real coefficient}
+\hypertarget{switch:ROUNDED}{}
+\hypertarget{switch:ROUNDBF}{}
+\hypertarget{operator:PRECISION}{}
 The switch {\tt ROUNDED}\ttindex{ROUNDED} permits the use of arbitrary
 sized real coefficients in polynomial expressions.  The actual precision
 of these coefficients can be set by the operator {\tt PRECISION}.
@@ -646,16 +674,19 @@ message
         ROUNDBF turned on to increase accuracy
 \end{verbatim}
 
+\hypertarget{command:PRINT_PRECISION}{}
 Rounded numbers are normally printed to the specified precision.  However,
 if the user wishes to print such numbers with less precision, the printing
 precision can be set by the command {\tt PRINT\_PRECISION}.
 \ttindex{PRINT\_PRECISION} For example, {\tt print\_precision 5;} will
 cause such numbers to be printed with five digits maximum.
 
+\hypertarget{switch:NOCONVERT}{}
 Under normal circumstances when {\tt ROUNDED} is on, {\REDUCE} converts the
 number 1.0 to the integer 1.  If this is not desired, the switch
 {\tt NOCONVERT}\ttindex{NOCONVERT} can be turned on.
 
+\hypertarget{switch:BFSPACE}{}
 Numbers that are stored internally as bigfloats are normally printed with
 a space between every five digits to improve readability.  If this
 feature is not required, it can be suppressed by turning off the switch
@@ -666,6 +697,7 @@ Further information on the bigfloat arithmetic may be found in T. Sasaki,
 Department of Computer Science, University of Utah, Technical Note No.
 TR-8 (1979).
 
+\hypertarget{switch:ADJPREC}{}
 When a real number is input, it is normally truncated to the precision in
 effect at the time the number is read.  If it is desired to keep the full
 precision of all numbers input, the switch {\tt ADJPREC}\ttindex{ADJPREC}
@@ -674,6 +706,7 @@ will automatically increase the precision, when necessary, to match that
 of any integer or real input, and a message printed to inform the user of
 the precision increase.
 
+\hypertarget{switch:ROUNDALL}{}
 When {\tt ROUNDED} is on, rational numbers are normally converted to
 rounded representation.  However, if a user wishes to keep such numbers in
 a rational form until used in an operation that returns a real number,
@@ -685,6 +718,8 @@ exceptions: if the result is recognized as {\tt 0} or {\tt 1} to the
 current precision, the integer result is returned.
 
 \subsection{Modular Number Coefficients in Polynomials}\index{Coefficient}
+\hypertarget{switch:MODULAR}{}
+\hypertarget{command:SETMOD}{}
 \index{Modular coefficient}
 {\REDUCE} includes facilities for manipulating polynomials whose
 coefficients are computed modulo a given base.  To use this option, two
@@ -701,6 +736,7 @@ non-modular (integer) arithmetic is used.  Thus the sequence
 \end{verbatim}
 will correctly set the modulus to 7.
 
+\hypertarget{switch:BALANCED_MOD}{}
 Modular numbers are by default represented by integers in the interval
 [0,p-1] where p is the current modulus.  Sometimes it is more convenient
 to use an equivalent symmetric representation in the interval
@@ -719,6 +755,7 @@ modular division''.
 
 \subsection{Complex Number Coefficients in Polynomials}\index{Coefficient}
 \index{Complex coefficient}
+\hypertarget{switch:COMPLEX}
 Although {\REDUCE} routinely treats the square of the variable {\em i\/} as
 equivalent to $-1$, this is not sufficient to reduce expressions involving
 {\em i\/} to lowest terms, or to factor such expressions over the complex
@@ -745,6 +782,7 @@ and the quotient will be reduced to {\tt A-I*B}.
 The switch {\tt COMPLEX} may be combined with {\tt ROUNDED} to give complex
 real numbers; the appropriate arithmetic is performed in this case.
 
+\hypertarget{switch:RATIONALIZE}{}
 Complex conjugation is used to remove complex numbers from denominators of
 expressions.  To do this if {\tt COMPLEX} is off, you must turn the switch
 {\tt RATIONALIZE}\ttindex{RATIONALIZE} on.

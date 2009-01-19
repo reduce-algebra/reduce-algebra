@@ -1,4 +1,5 @@
 \section{SOLVE Operator}\ttindex{SOLVE}
+\hypertarget{operator:SOLVE}{}
 SOLVE is an operator for solving one or more simultaneous algebraic
 equations. It is used with the syntax:
 \begin{verbatim}
@@ -21,6 +22,7 @@ of equations built with exponentials or logarithms are often
 expressed in terms of Lambert's {\tt W} function.\index{Lambert's W}
 This function is (partially) implemented in the special functions package.
 
+\hypertarget{switch:CRAMER}{}
 Linear equations are solved by the multi-step elimination method due to
 Bareiss, unless the switch {\tt CRAMER}\ttindex{CRAMER} is on, in which
 case Cramer's method is used.  The Bareiss method is usually more
@@ -54,6 +56,7 @@ unknowns.  For example,
 
      solve({x+3y=7,y-x=1},{x,y}) -> {{X=1,Y=2}}.
 \end{verbatim}
+\hypertarget{reserved:ROOT_MULTIPLICITIES}{}
 The TAG argument is used to uniquely identify those particular solutions.
 Solution multiplicities are stored in the global variable {\tt
 ROOT\_MULTIPLICITIES} rather than the solution list.  The value of this
@@ -69,6 +72,7 @@ gives the results
         {2}
 \end{verbatim}
 
+\hypertarget{switch:MULTIPLICITIES}{}
 If you want the multiplicities explicitly displayed, the switch
 {\tt MULTIPLICITIES}\ttindex{MULTIPLICITIES} can be turned on. For example
 \begin{verbatim}
@@ -118,6 +122,8 @@ expand_cases ws;
 \end{verbatim}
 
 \subsection{Solutions of Equations Involving Cubics and Quartics}
+\hypertarget{switch:FULLROOTS}{}
+\hypertarget{switch:TRIGFORM}{}
 
 Since roots of cubics and quartics can often be very messy, a switch
 {\tt FULLROOTS}\ttindex{FULLROOTS} is available, that, when off (the
@@ -211,6 +217,9 @@ xx;
 \end{verbatim}
 
 \subsection{Other Options}
+\hypertarget{switch:SOLVESINGULAR}{}
+\hypertarget{switch:ALLBRANCH}{}
+\hypertarget{switch:ARBVARS}{}
 
 If {\tt SOLVESINGULAR}\ttindex{SOLVESINGULAR} is on (the default setting),
 degenerate systems such as {\tt x+y=0}, {\tt 2x+2y=0} will be solved by
@@ -314,10 +323,10 @@ which excludes formally the case $b=0$; obviously this special
 parameter value makes the system singular. The set of assumptions
 is complete for both, linear and non--linear systems.
     
-
+\hypertarget{switch:VAROPT}{}
 {\tt SOLVE} rearranges the variable sequence
 to reduce the (expected) computing time. This behavior is controlled
-by the switch {\tt varopt}\ttindex{varopt}, which is on by default.
+by the switch {\tt VAROPT}\ttindex{VAROPT}, which is on by default.
 If it is turned off, the supplied variable sequence is used
 or the system kernel ordering is taken if the variable
 list is omitted. The effect is demonstrated by an example:
@@ -353,7 +362,7 @@ is used such that the solution has now the form $(x_i,y(x_i))$.
 Controlling the variable sequence is especially important if
 the system has one or more free variables.
 As an alternative to turning off {\tt varopt}, a partial dependency among
-the variables can be declared using the {\tt depend}\index{depend}
+the variables can be declared using the {\tt depend}\ttindex{DEPEND}
 statement: {\tt solve} then rearranges the variable sequence but keeps any
 variable ahead of those on which it depends.
 \extendedmanual{\newpage}

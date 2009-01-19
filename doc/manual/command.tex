@@ -56,6 +56,10 @@ the scope of the array to that block, nor does the array go away on
 exiting the block (use {\tt CLEAR} instead for this purpose).
 
 \section{Mode Handling Declarations}\index{Mode}
+\hypertarget{command:ON}{}
+\hypertarget{command:OFF}{}
+\hypertarget{switch:TIME}{}
+\hypertarget{switch:DEMO}{}
 
 The {\tt ON}\ttindex{ON} and {\tt OFF}\ttindex{OFF} declarations are
 available to the user for controlling various system options.  Each option
@@ -97,6 +101,7 @@ you will get the message\index{Switch}
 \end{verbatim}
 
 \section{END}
+\hypertarget{reserved:END}{}
 
 The identifier {\tt END}\ttindex{END} has two separate uses.
 
@@ -128,7 +133,8 @@ we advise using {\tt ;END;} there.
 %the result of typing more {\tt END}s\ttindex{END} than {\tt BEGIN}s --
 %type {\tt (BEGIN)} in parentheses and hit the RETURN key.
 
-\hypertarget{reserved:BYE}{\section{BYE Command}}\ttindex{BYE}
+\hypertarget{command:QUIT}{}
+\hypertarget{command:BYE}{\section{BYE Command}}\ttindex{BYE}
 
 The command {\tt BYE}; (or alternatively {\tt QUIT};)\ttindex{QUIT}
 stops the execution
@@ -137,6 +143,7 @@ program (usually the operating system).  Your {\REDUCE} session is
 normally destroyed.
 
 \section{SHOWTIME Command}\ttindex{SHOWTIME}
+\hypertarget{command:SHOWTIME}{}
 
 {\tt SHOWTIME}; prints the elapsed time since the last call of this
 command or, on its first call, since the current {\REDUCE} session began.
@@ -145,6 +152,7 @@ by a system clock.  The operations covered by this measure are system
 dependent.
 
 \section{DEFINE Command}
+\hypertarget{command:DEFINE}{}
 
 The command {\tt DEFINE}\ttindex{DEFINE} allows a user to supply a new name for
 any identifier or replace it by any well-formed expression.  Its argument

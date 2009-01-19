@@ -5,6 +5,7 @@ evaluation of expressions.  Such substitutions use the prefix operator
 {\tt SUB}, various forms of the command {\tt LET}, and rule sets.
 
 \section{SUB Operator}\ttindex{SUB}
+\hypertarget{operator:SUB}{}
 
 Syntax:
 \begin{verbatim}
@@ -55,6 +56,8 @@ The braces around the substitution list may also be omitted, as in:
 \end{verbatim}
 
 \section{LET Rules}\ttindex{LET}
+\hypertarget{command:LET}{}
+\hypertarget{reserved:impliesop}{}
 Unlike substitutions introduced via {\tt SUB}, {\tt LET}
 rules are global in scope and stay in effect until replaced or {\tt CLEAR}ed.
 
@@ -170,6 +173,7 @@ Finally, if an error occurs in any equation in a {\tt LET} statement
 THAT)}, the remaining rules are not evaluated.
 
 \subsection{FOR ALL \ldots LET}\ttindex{FOR ALL}
+\hypertarget{command:FORALL}{}
 If a substitution for all possible values of a given argument of an
 operator is required, the declaration {\tt FOR ALL} may be used. The
 syntax of such a command is
@@ -214,6 +218,7 @@ appear as {\tt =X}.  An error will also occur if a variable in the
 equation.
 
 \subsection{FOR ALL \ldots SUCH THAT \ldots LET}
+\hypertarget{command:SUCHTHAT}{}
 \ttindex{FOR ALL}\ttindex{SUCH THAT}
 
 If a substitution is desired for more than a single value of a variable in
@@ -387,6 +392,7 @@ After a substitution has been made, the expression being evaluated is
 reexamined in case a new allowed substitution has been generated. This
 process is continued until no more substitutions can be made.
 
+\hypertarget{command:MATCH}{}
 As mentioned elsewhere, when a substitution expression appears in a
 product, the substitution is made if that expression divides the product.
 For example, the rule
@@ -427,6 +433,7 @@ In time, they will be used more and more in {\REDUCE}.  However, since they
 are relatively new, much of the {\REDUCE} code you see uses the older
 constructs.
 
+\hypertarget{reserved:WHEN}{}
 A rule list is a list of {\em rules\/} that have the syntax
 \begin{verbatim}
      <expression> => <expression> (WHEN <boolean expression>)
@@ -482,7 +489,7 @@ cancelled by the command {\tt CLEARRULES},\ttindex{CLEARRULES} as in
         CLEARRULES <rule list>|<name of rule list>(,...) .
 \end{verbatim}
 
-\hypertarget{WHERE}{}
+\hypertarget{operator:WHERE}{}
 The second way to use rule lists is to invoke them locally by means of a
 {\tt WHERE}\ttindex{WHERE} clause.  For example
 \begin{verbatim}
@@ -642,6 +649,7 @@ ff(3*z,z);
 \end{verbatim}
 
 \subsection*{Displaying Rules Associated with an Operator}
+\hypertarget{operator:SHOWRULES}{}
 
 The operator {\tt SHOWRULES}\ttindex{SHOWRULES} takes a single identifier
 as argument, and returns in rule-list form the operator rules associated
@@ -733,6 +741,7 @@ result zero, since the numerator would simplify to zero.  Similarly
 {\tt x\verb|^|20/x\verb|^|10} would give a {\tt Zero divisor} error message,
 since both numerator and denominator would first simplify to zero.
 
+\hypertarget{command:WEIGHT}{}
 The method just described is not adequate when expressions involve several
 variables having different degrees of smallness. In this case, it is
 necessary to supply an asymptotic weight to each variable and count up the
@@ -752,6 +761,7 @@ assigned to the calculation.  If it is, the term is deleted.  To compute
 the total weight of a product, the individual weights of each kernel form
 are multiplied by their corresponding powers and then added.
 
+\hypertarget{command:WTLEVEL}{}
 The weight level of the system is initially set to 1. The user may change
 this setting by the command\ttindex{WTLEVEL}
 \begin{verbatim}

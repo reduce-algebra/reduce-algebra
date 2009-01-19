@@ -1,4 +1,5 @@
 \chapter{Procedures}\ttindex{PROCEDURE}
+\hypertarget{command:PROCEDURE}{}
 
 It is often useful to name a statement for repeated use in calculations
 with varying parameters, or to define a complete evaluation procedure for
@@ -114,8 +115,7 @@ Suppose we need a function {\tt p(n,x)} that, for any positive integer
 textbook formula defining these functions:
 \begin{displaymath}
 p_n(x) = \frac{1}{n!}\  
-\frac{d^n}{dy^n}\ \frac{1}{(y^2 - 2xy + 1)
-^{\frac{1}{2}}}\Bigg\vert_{y=0}
+\frac{{d}^n}{dy^n}\ \frac{1}{{(y^2 - 2xy + 1)}^{\frac{1}{2}}}\Bigr\vert_{y=0}
 \end{displaymath}
 Put into words, the Legendre polynomial $p_n(x)$ is the result of
 substituting $y=0$ in the $n^{th}$ partial derivative with respect to $y$
@@ -166,6 +166,7 @@ its standard recurrence relation:
             else ((2*n-1)*x*p(n-1,x)-(n-1)*p(n-2,x))/n;
 \end{verbatim}
 
+\hypertarget{operator:REDERR}{}
 The operator {\tt REDERR}\ttindex{REDERR} in the above example provides
 for a simple error exit from an algebraic procedure (and also a block).
 It can take a string as argument.

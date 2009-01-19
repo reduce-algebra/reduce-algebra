@@ -6,6 +6,7 @@ development over the years.  The following are supported in most of the
 implementations of {\REDUCE} currently available.
 
 \section{The Standard Lisp Compiler}\index{Compiler}
+\hypertarget{switch:COMP}{}
 
 Many versions of {\REDUCE} include a Standard Lisp compiler that is
 automatically loaded on demand.  You should check your system specific
@@ -40,6 +41,8 @@ the number of words left unused in binary program space. \\
 
 \section{Fast Loading Code Generation Program}\index{Fast loading of code}
 \label{sec-load}
+\hypertarget{command:LOAD}{}
+\hypertarget{command:LOAD_PACKAGE}{}
 In most versions of {\REDUCE}, it is possible to take any set of Lisp, Rlisp
 or {\REDUCE} commands and build a fast loading version of them. In Rlisp or
 {\REDUCE}, one does the following:
@@ -90,6 +93,7 @@ this package has now been loaded, that is required for the correct
 operation of the system.
 
 \section{The Standard Lisp Cross Reference Program}\index{Cross reference}
+\hypertarget{switch:CREF}{}
 
 {\tt CREF}\ttindex{CREF} is a Standard Lisp program for processing a
 set of Standard LISP function definitions to produce:
@@ -175,6 +179,7 @@ by the cross-reference program, so this flag can also be used to select
 those macros you require expanded and those you do not.
 
 \section{Prettyprinting Reduce Expressions}\index{Prettyprinting}
+\hypertarget{switch:PRET}{}
 
 {\REDUCE} includes a module for printing {\REDUCE} syntax in a standard
 format.  This module is activated by the switch {\tt PRET},
@@ -187,6 +192,7 @@ there will be occasional instances where results are printed in symbolic
 mode form that bears little resemblance to the original input, even though
 it is formally equivalent.
 
+\hypertarget{switch:MSG}{}
 If you want to prettyprint a whole file, say {\tt off output,msg;}
 \ttindex{MSG} and (hopefully) only clean output will result.  Unlike {\tt
 DEFN},\ttindex{DEFN} input is also evaluated with {\tt PRET}

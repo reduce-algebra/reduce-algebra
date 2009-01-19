@@ -104,6 +104,12 @@ or
 \end{verbatim}
 Parentheses can also be used to control the precedence of expressions.
 
+\hypertarget{operator:EVENP}{}
+\hypertarget{operator:FIXP}{}
+\hypertarget{operator:FREEOF}{}
+\hypertarget{operator:NUMBERP}{}
+\hypertarget{operator:ORDP}{}
+\hypertarget{operator:PRIMEP}{}
 In addition to the logical and relational operators defined earlier as
 infix operators, the following boolean operators are also defined:\\
 \mbox{}\\
@@ -148,6 +154,7 @@ NB:  For those familiar with symbolic mode, the meaning of some of
 these operators is different in that mode.  For example, {\tt NUMBERP} is
 true only for integers and reals in symbolic mode.
 
+\hypertarget{operator:AND}{}
 When two or more boolean expressions are combined with {\tt AND}, they are
 evaluated one by one until a {\em false\/} expression is found. The rest are
 not evaluated. Thus
@@ -157,6 +164,7 @@ not evaluated. Thus
 does not attempt to make the {\tt x>y} comparison unless {\tt X} and {\tt Y}
 are both verified to be numbers.
 
+\hypertarget{operator:OR}{}
 Similarly, evaluation of a sequence of boolean expressions connected by
 {\tt OR} stops as soon as a {\em true\/} expression is found.
 
@@ -192,12 +200,15 @@ In addition to their role as boolean expressions, they can also be used as
 arguments to several operators (e.g., {\tt SOLVE}), and can be
 returned as values.
 
+\hypertarget{switch:EVALLHSEQP}{}
 Under normal circumstances, the right-hand-side of the equation is
 evaluated but not the left-hand-side.  This also applies to any substitutions
 made by the {\tt SUB}\ttindex{SUB} operator.  If both sides are to be
 evaluated, the switch {\tt EVALLHSEQP}\ttindex{EVALLHSEQP} should be
 turned on.
 
+\hypertarget{operator:LHS}{}
+\hypertarget{operator:RHS}{}
 To facilitate the handling of equations, two selectors, {\tt LHS}
 \ttindex{LHS} and {\tt RHS},\ttindex{RHS} which return the left- and
 right-hand sides of a equation\index{Equation} respectively, are provided.

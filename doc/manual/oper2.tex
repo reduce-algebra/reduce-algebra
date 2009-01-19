@@ -1,4 +1,7 @@
 \section{Even and Odd Operators}\index{Even operator}\index{Odd operator}
+\hypertarget{command:EVEN}{}
+\hypertarget{command:ODD}{}
+\hypertarget{command:NONZERO}{}
 An operator can be declared to be {\em even\/} or {\em odd\/} in its first
 argument by the declarations {\tt EVEN}\ttindex{EVEN} and
 {\tt ODD}\ttindex{ODD} respectively.  Expressions involving an operator
@@ -20,6 +23,7 @@ mean that
 To inhibit the last transformation, say {\tt nonzero f2;}.
 
 \section{Linear Operators}\index{Linear operator}
+\hypertarget{command:LINEAR}{}
 An operator can be declared to be linear in its first argument over powers
 of its second argument.  If an operator {\tt F} is so declared, {\tt F} of
 any sum is broken up into sums of {\tt F}s, and any factors that are not
@@ -73,6 +77,7 @@ integration\index{Integration} of some expressions that arise in fourth
 order quantum electrodynamics.
 
 \section{Non-Commuting Operators}\index{Non-commuting operator}
+\hypertarget{command:NONCOM}{}
 An operator can be declared to be non-commutative under multiplication by
 the declaration {\tt NONCOM}.\ttindex{NONCOM}
 
@@ -135,6 +140,7 @@ interchange occurs with each operator.  An expression like {\tt l(x,x)}
 would also be replaced by 0.
 
 \section{Declaring New Prefix Operators}
+\hypertarget{command:OPERATOR}{}
 
 The user may add new prefix\index{Prefix} operators to the system by
 using the declaration {\tt OPERATOR}. For example:
@@ -165,6 +171,8 @@ for this purpose).
 
 
 \section{Declaring New Infix Operators}
+\hypertarget{command:INFIX}{}
+\hypertarget{command:PRECEDENCE}{}
 
 Users can add new infix operators by using the declarations
 {\tt INFIX}\ttindex{INFIX} and {\tt PRECEDENCE}.\ttindex{PRECEDENCE}
@@ -206,6 +214,8 @@ We should note here that infix operators so defined are always binary:
 \end{quote}
 
 \section{Creating/Removing Variable Dependency}
+\hypertarget{command:DEPEND}{}
+\hypertarget{command:NODEPEND}{}
 
 There are several facilities in {\REDUCE}, such as the differentiation
 \index{Differentiation}

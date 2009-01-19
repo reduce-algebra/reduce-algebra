@@ -8,6 +8,8 @@ four commands for this purpose, namely, {\tt IN}, {\tt OUT}, {\tt SHUT},
 LOAD\_PACKAGE} are discussed in Section~\ref{sec-load}.
 
 \section{IN Command}\ttindex{IN}
+\hypertarget{command:IN}{}
+\hypertarget{switch:ECHO}{}
 This command takes a list of file names as argument and directs the system
 to input\index{Input} each file (that should contain {\REDUCE} statements
 and commands) into the system.  File names can either be an identifier or
@@ -34,6 +36,7 @@ which may improve system efficiency.  If {\tt END} is omitted, an error
 message {\tt "End-of-file read"} will occur.
 
 \section{OUT Command}\ttindex{OUT}
+\hypertarget{command:OUT}{}
 This command takes a single file name as argument, and directs output to
 that file from then on, until another {\tt OUT} changes the output file,
 or {\tt SHUT} closes it.  Output can go to only one file at a time,
@@ -71,6 +74,7 @@ to read -- using {\tt IN} -- the value of the expression {\tt XYZ}:
 \end{verbatim}
 
 \section{SHUT Command}\ttindex{SHUT}
+\hypertarget{command:SHUT}{}
 This command takes a list of names of files that have been previously
 opened via an {\tt OUT} statement and closes them. Most systems require this
 action by the user before he ends the {\REDUCE} job (if not sooner),

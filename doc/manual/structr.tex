@@ -35,6 +35,7 @@ stored uniquely like variables.  Subsequently, the kernel is carried
 through the calculation as a variable unless transformations are
 introduced for the operator at a later stage.
 
+\hypertarget{switch:INTSTR}{}
 In those cases where the evaluation process leaves an operator expression
 with non-trivial arguments, the form of the argument can vary depending on
 the state of the system at the point of evaluation.  Such arguments are
@@ -91,6 +92,7 @@ wish to differentiate it with respect to {\tt Y}, we can simply say
 \end{verbatim}
 to get the desired answer.
 
+\hypertarget{command:SAVEAS}{}
 If the user wishes to assign the workspace to a variable or expression for
 later use, the {\tt SAVEAS}\ttindex{SAVEAS} statement can be used.  It
 has the syntax
@@ -129,6 +131,7 @@ generally known in advance.  Instead, {\REDUCE} provides a series of mode
 options to the user that should enable him to produce his output in a
 comprehensible and possibly pleasing form.
 
+\hypertarget{switch:OUTPUT}{}
 The most extreme option offered is to suppress the output entirely from
 any top level evaluation.  This is accomplished by turning off the switch
 {\tt OUTPUT}\ttindex{OUTPUT} which is normally on.  It is useful for
@@ -143,6 +146,7 @@ declaration} however, can be used to affect this format.  To begin with,
 we look at an operator for changing the length of the output line.
 
 \subsection{LINELENGTH Operator}\ttindex{LINELENGTH}
+\hypertarget{operator:LINELENGTH}{}
 
 This operator is used with the syntax
 \begin{verbatim}
@@ -153,6 +157,7 @@ previous output line length (so that it can be stored for later resetting
 of the output line if needed).
 
 \subsection{Output Declarations}
+\hypertarget{switch:PRI}{}
 
 We now describe a number of switches and declarations that are available
 for controlling output formats. It should be noted, however, that the
@@ -167,6 +172,7 @@ With {\tt PRI} on, the output declarations\index{Output declaration}
 and switches available are as follows:
 
 \subsubsection{ORDER Declaration}
+\hypertarget{command:ORDER}{}
 
 The declaration {\tt ORDER}\ttindex{ORDER} may be used to order variables
 on output.  The syntax is:
@@ -191,6 +197,7 @@ would order {\tt Z} ahead of {\tt Y} and {\tt X}.  The default ordering is
 usually alphabetic.
 
 \subsubsection{FACTOR Declaration}
+\hypertarget{command:FACTOR}{}
 
 This declaration takes a list of identifiers or kernels\index{Kernel}
 as argument. {\tt FACTOR}\ttindex{FACTOR} is not a factoring command
@@ -210,6 +217,7 @@ causes all powers of {\tt X} and {\tt SIN(X)} and all functions of
 Note that {\tt FACTOR} does not affect the order of its arguments.  You
 should also use {\tt ORDER} if this is important.
 
+\hypertarget{command:REMFAC}{}
 The declaration {\tt remfac v1,...,vn;}\ttindex{REMFAC} removes the
 factoring flag from the expressions {\tt v1} through {\tt vn}.
 
@@ -225,6 +233,7 @@ example, namely the printing of the expression
 The relevant switches are as follows:
 
 \subsubsection{ALLFAC Switch}
+\hypertarget{switch:ALLFAC}{}
 
 This switch will cause the system to search the whole expression, or any
 sub-expression enclosed in parentheses, for simple multiplicative factors
@@ -244,6 +253,7 @@ and with {\tt ALLFAC} on as
 where otherwise stated.
 
 \subsubsection{DIV Switch}\ttindex{DIV}
+\hypertarget{switch:DIV}{}
 
 This switch makes the system search the denominator of an expression for
 simple factors that it divides into the numerator, so that rational
@@ -256,6 +266,7 @@ expression would print as
 {\tt DIV} is normally off.
 
 \subsubsection{LIST Switch}\ttindex{LIST}
+\hypertarget{switch:LIST}{}
 
 This switch causes the system to print each term in any sum on a separate
 line. With {\tt LIST} on, our expression prints as
@@ -273,6 +284,7 @@ line. With {\tt LIST} on, our expression prints as
 {\tt LIST} is normally off.
 
 \subsubsection{NOSPLIT Switch}\ttindex{NOSPLIT}
+\hypertarget{switch:NOSPLIT}{}
 
 Under normal circumstances, the printing routines try to break an expression
 across lines at a natural point.  This is a fairly expensive process.  If
@@ -281,6 +293,7 @@ can speed up the printing of expressions by turning off the switch
 {\tt NOSPLIT}.  This switch is normally on.
 
 \subsubsection{RAT Switch}\ttindex{RAT}
+\hypertarget{switch:RAT}{}
 
 This switch is only useful with expressions in which variables are
 factored with {\tt FACTOR}. With this mode, the overall denominator of the
@@ -313,6 +326,7 @@ off we retrieve the original structure
 \end{verbatim}
 
 \subsubsection{RATPRI Switch}\ttindex{RATPRI}
+\hypertarget{switch:RATPRI}{}
 
 If the numerator and denominator of an expression can each be printed in
 one line, the output routines will print them in a two dimensional
@@ -327,6 +341,7 @@ Turning this switch off causes such expressions to be output in a linear
 form.
 
 \subsubsection{REVPRI Switch}\ttindex{REVPRI}
+\hypertarget{switch:REVPRI}{}
 
 The normal ordering of terms in output is from highest to lowest power.
 In some situations (e.g., when a power series is output), the opposite
@@ -344,6 +359,7 @@ whereas with {\tt REVPRI} on, it will print as
 \end{verbatim}
 
 \hypertarget{WRITE}{\subsection{WRITE Command}}\ttindex{WRITE}
+\hypertarget{command:WRITE}{}
 
 In simple cases no explicit output\index{Output} command is necessary in
 {\REDUCE}, since the value of any expression is automatically printed if a
@@ -458,6 +474,7 @@ command, is as follows:
 \end{verbatim}
 \end{enumerate}
 \subsection{Suppression of Zeros}
+\hypertarget{switch:NERO}{}
 
 It is sometimes annoying to have zero assignments (i.e. assignments of the
 form {\tt <expression> := 0}) printed, especially in printing large arrays
@@ -478,7 +495,8 @@ these calculations in a FORTRAN\index{FORTRAN} or similar system.  For
 this purpose, {\REDUCE} offers facilities for users to produce FORTRAN
 compatible files for numerical processing.
 
-\hypertarget{CARD_NO}{}
+\hypertarget{reserved:CARD_NO}{}
+\hypertarget{switch:FORT}{}
 First, when the switch {\tt FORT}\ttindex{FORT} is on, the system will
 print expressions in a FORTRAN notation.  Expressions begin in column
 seven.  If an expression extends over one line, a continuation mark (.)
@@ -562,6 +580,9 @@ a comment line of the form
 will be printed if you try to print a list with {\tt FORT} on.
 
 \subsubsection{{FORTRAN} Output Options}\index{Output}\index{FORTRAN}
+\hypertarget{reserved:FORT_WIDTH}{}
+\hypertarget{switch:PERIOD}{}
+\hypertarget{switch:FORTUPPER}{}
 
 There are a number of methods available to change the default format of the
 FORTRAN output.
@@ -590,6 +611,7 @@ mode switch to {\tt OFF}.
 FORTRAN output is normally produced in lower case.  If upper case is desired,
 the switch {\tt FORTUPPER}\ttindex{FORTUPPER} should be turned on.
 
+\hypertarget{operator:VARNAME}{}
 Finally, the default name {\tt ANS} assigned to an unnamed expression and
 its subparts can be changed by the operator {\tt VARNAME}.
 \ttindex{VARNAME}  This takes a single identifier as argument, which then
@@ -602,6 +624,7 @@ packages\extendedmanual{described in chapters~\ref{GENTRAN} and \ref{SCOPE}}.
 
 \subsection{Saving Expressions for Later Use as Input}
 \index{Saving an expression}
+\hypertarget{switch:NAT}{}
 
 It is often useful to save an expression on an external file for use later
 as input in further calculations. The commands for opening and closing
@@ -626,6 +649,7 @@ will generate a file {\tt out} that contains
 \end{verbatim}
 
 \subsection{Displaying Expression Structure}\index{Displaying structure}
+\hypertarget{operator:STRUCTR}{}
 
 In those cases where the final result has a complicated form, it is often
 convenient to display the skeletal structure of the answer.  The operator
@@ -664,6 +688,7 @@ output:\newpage
 
               ANS1 := A + B
 \end{verbatim}
+\hypertarget{switch:SAVESTRUCTR}{}
 The workspace remains unchanged after this operation, since {\tt STRUCTR}
 \ttindex{STRUCTR} in the default situation returns
 no value (if {\tt STRUCTR} is used as a sub-expression, its value is taken
@@ -708,6 +733,7 @@ and that {\tt V} has been declared to be an array.  With {\tt EXP} off and
 \end{verbatim}
 
 \section{Changing the Internal Order of Variables}
+\hypertarget{command:KORDER}{}
 
 The internal ordering of variables (more specifically kernels) can have
 a significant effect on the space and time associated with a calculation.
@@ -740,6 +766,8 @@ parts of polynomials and rational functions (such as a denominator) are
 described in another section.
 
 \subsection{COEFF Operator}\ttindex{COEFF}
+\hypertarget{operator:COEFF}{}
+\hypertarget{switch:RATARG}{}
 Syntax:
 \begin{verbatim}
         COEFF(EXPRN:polynomial,VAR:kernel)
@@ -774,6 +802,8 @@ gives an error if {\tt RATARG} is off, and the result
 \end{verbatim}
 if {\tt RATARG} is on.
 
+\hypertarget{reserved:HIGH_POW}{}
+\hypertarget{reserved:LOW_POW}{}
 The length of the result of {\tt COEFF} is the highest power of {\tt VAR}
 encountered plus 1.  In the above examples it is 7.  In addition, the
 variable {\tt HIGH\_POW}\ttindex{HIGH\_POW} is set to the highest non-zero
@@ -783,6 +813,7 @@ constant term.  If {\tt EXPRN} is a constant, then {\tt HIGH\_POW} and
 {\tt LOW\_POW} are both set to zero.
 
 \subsection{COEFFN Operator}\ttindex{COEFFN}
+\hypertarget{operator:COEFFN}{}
 
 The {\tt COEFFN} operator is designed to give the user a particular
 coefficient of a variable in a polynomial, as opposed to {\tt COEFF} that
@@ -794,6 +825,7 @@ It returns the $n^{th}$ coefficient of {\tt VAR} in the polynomial
 {\tt EXPRN}.
 
 \subsection{PART Operator}\ttindex{PART}
+\hypertarget{operator:PART}{}
 Syntax:
 \begin{verbatim}
         PART(EXPRN:algebraic[,INTEXP:integer])
@@ -836,6 +868,7 @@ the ordering of the variables is alphabetical), then
 and
         part(a+b,0)  ->  PLUS
 \end{verbatim}
+\hypertarget{operator:ARGLENGTH}{}
 An operator {\tt ARGLENGTH}\ttindex{ARGLENGTH} is available to determine
 the number of arguments of the top level operator in an expression.  If
 the expression does not contain a top level operator, then $-1$ is returned.

@@ -6,6 +6,7 @@ calculations we need to add another prefix operator, {\tt MAT},
 variable and expression type as follows:
 
 \section{MAT Operator}\ttindex{MAT}
+\hypertarget{operator:MAT}{}
 This prefix operator is used to represent $n\times m$ matrices. {\tt
 MAT} has {\em n} arguments interpreted as rows of the matrix, each of
 which is a list of {\em m} expressions representing elements in that row.
@@ -21,6 +22,7 @@ distinguish it from the single row matrix
 that would be written as {\tt mat((x,y))}.
 
 \section{Matrix Variables}
+\hypertarget{command:MATRIX}{}
 
 An identifier may be declared a matrix variable by the declaration {\tt
 MATRIX}.\ttindex{MATRIX}
@@ -99,6 +101,7 @@ Attention is also drawn to the LINALG
 \extendedmanual{(chapter~\ref{NORMFORM})} packages.
 
 \subsection{DET Operator}\ttindex{DET}
+\hypertarget{operator:DET}{}
 Syntax:
 \begin{verbatim}
         DET(EXPRN:matrix_expression):algebraic.
@@ -127,6 +130,7 @@ sets the {\em value\/} of the determinant to 2, and does not set up a rule
 for the determinant itself.
 
 \subsection{MATEIGEN Operator}\ttindex{MATEIGEN}
+\hypertarget{operator:MATEIGEN}{}
 Syntax:
 \begin{verbatim}
         MATEIGEN(EXPRN:matrix_expression,ID):list.
@@ -174,6 +178,7 @@ gives the output
 \end{verbatim}
 
 \subsection{TP Operator}\ttindex{TP}
+\hypertarget{operator:TP}
 Syntax:
 \begin{verbatim}
         TP(EXPRN:matrix_expression):matrix.
@@ -182,6 +187,7 @@ Syntax:
 This operator takes a single matrix argument and returns its transpose.
 
 \subsection{Trace Operator}\ttindex{TRACE}
+\hypertarget{operator:TRACE}
 Syntax:
 \begin{verbatim}
         TRACE(EXPRN:matrix_expression):algebraic.
@@ -189,6 +195,7 @@ Syntax:
 The operator {\tt TRACE} is used to represent the trace of a square matrix.
 
 \subsection{Matrix Cofactors}\ttindex{COFACTOR}
+\hypertarget{operator:COFACTOR}{}
 Syntax:
 \begin{verbatim}
   COFACTOR(EXPRN:matrix_expression,ROW:integer,COLUMN:integer):
@@ -201,6 +208,7 @@ if {\tt ROW} or {\tt COLUMN} do not simplify to integer expressions or if
 {\tt MATRIX} is not square.
 
 \subsection{NULLSPACE Operator}\ttindex{NULLSPACE}
+\hypertarget{operator:NULLSPACE}{}
 Syntax:
 \begin{verbatim}
         NULLSPACE(EXPRN:matrix_expression):list
@@ -249,6 +257,7 @@ the use of {\tt NULLSPACE} in applications different from classical linear
 algebra.
 
 \subsection{RANK Operator}\ttindex{RANK}
+\hypertarget{operator:RANK}{}
  
 Syntax:
 \begin{verbatim}
