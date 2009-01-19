@@ -103,7 +103,7 @@ FUNCTION {output.bibitem}
     {}
     { sort.key$ #1 #1 substring$ "u" change.case$ 'last.label :=
       "<A NAME=" quote$ * last.label * quote$ * "></A><p><dt><a href=" *
-      quote$ * "bib.html" * quote$ * ">[top]</a><p>" * write$ newline$
+      quote$ * "#TOP" * quote$ * ">[top]</a><p>" * write$ newline$
     }
   if$
 %  URL empty$
@@ -365,11 +365,11 @@ FUNCTION {either.or.check}
 FUNCTION {format.bvolume}
 { volume empty$
     { "" }
-    { "volume" volume tie.or.space.connect
-      series empty$
-	'skip$
-	{ " of " * series emphasize * }
+    { series empty$
+	{ "volume" }
+	{ series emphasize }
       if$
+      volume tie.or.space.connect
       "volume and number" number either.or.check
     }
   if$
@@ -567,7 +567,7 @@ FUNCTION {format.book.crossref}
 	      crossref * warning$
 	      "" *
 	    }
-	    { "{\em " * series * "\/}" * }
+	    { "\emph{" * series * "\/}" * }
 	  if$
 	}
 	{ key * }
@@ -1377,12 +1377,19 @@ FUNCTION {write.link.header}
 % DFK changed to HTML
 FUNCTION {begin.bib}
 { "<HTML>" write$ newline$
-  "<HEAD><TITLE>REDUCE Bibliography</TITLE></HEAD>" write$ newline$
+  "<HEAD>" write$ newline$
+  "  <TITLE>REDUCE Bibliography</TITLE>" write$ newline$
+  "  <link rel=" quote$ * "stylesheet" * quote$ *
+  " type=" * quote$ * "text/css" * quote$ *
+  " href=" * quote$ * "bibl.css" * quote$ * ">" * write$ newline$
+  "</HEAD>" write$ newline$
   "<BODY>" write$ newline$
+  "<A NAME=" quote$ * "TOP" * quote$ * "></A>" * write$ newline$
+  "<H1>Bibliography</H1>" write$ newline$
   "This document contains a list of all known references to REDUCE." write$ newline$
   "It no doubt contains errors and omissions. Please report these to the" write$ newline$
   "<a href=" quote$ * "mailto:reduce@rand.org" * quote$ * ">REDUCE developers</a>." * write$ newline$
-  "A <a href=" quote$ * "biblioform.htm" * quote$ * ">form</a> is also available for submitting entries" * write$ newline$
+  "A <a href=" quote$ * "http://www.reduce-algebra.com/biblioform.htm" * quote$ * ">form</a> is also available for submitting entries" * write$ newline$
   "to this bibliography." write$ newline$
   "References to online versions of any documents are particularly welcome." write$ newline$
   write.link.header
@@ -1399,6 +1406,11 @@ ITERATE {call.type$}
 FUNCTION {end.bib}
 { newline$
   "</DL>" write$ newline$
+  "<hr>" write$ newline$
+  "<p>Services provided by<br>" write$ newline$
+  "<a href=" quote$ * "http://sourceforge.net/" * quote$ *
+  "><img class=" quote$ "noborder" * quote$ * * * " src=" * quote$ * "http://c.fsdn.com/sf/images/sfx_logo2.png" * quote$ * 
+  "></a>" * write$ newline$
   "</BODY>" write$ newline$
   "</HTML>" write$ newline$
 }
