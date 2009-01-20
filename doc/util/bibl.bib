@@ -3527,7 +3527,8 @@
   publisher = {Academic Press},
   year = {1993},
   author = {J. H. Davenport and Y. Siret and E. Tournier},
-  edition = {2nd}
+  edition = {2nd},
+  isbn = {0122042328}
 }
 
 @BOOK{Davenport:88b,
@@ -3696,6 +3697,15 @@
 	than other authors."}
 }
 
+@INPROCEEDINGS{Diver:86,
+  author = {D. A. Diver and E. W. Laing},
+  title = {Proc. 8th {Europhysics} Conference on Computational Physics},
+  booktitle = {Computing in Plasma Physics},
+  year = {1986},
+  editor = {D. Biskamp},
+  isbn = {0720407133}
+}
+
 @INPROCEEDINGS{Diver:88,
   author = {D. A. Diver and E. W. Laing},
   booktitle = {Proc. {XV} {European} Conference on Controlled Fusion and Plasma
@@ -3713,13 +3723,6 @@
   number = {GUTPA 88/04-01},
   month = {July},
   comment = {Presented at 15th {UK} Plasma Physics Conference, {UMIST}.}
-}
-
-@INPROCEEDINGS{Diver:86,
-  author = {D. A. Diver and E. W. Laing},
-  title = {Proc. 8th {Europhysics} Conference on Computational Physics},
-  booktitle = {Computing in Plasma Physics},
-  year = {1986}
 }
 
 @MANUAL{Dolzmann:99,
@@ -5638,9 +5641,11 @@
 
 @BOOK{Geddes:92,
   title = {Algorithms for Computer Algebra},
-  publisher = {Klewer Academic Publishers},
+  publisher = {Kluwer Academic Publishers},
   year = {1992},
-  author = {K.O. Geddes and S.R. Czapor and G. Labahn}
+  author = {K.O. Geddes and S.R. Czapor and G. Labahn},
+  doi = {10.1007/b102438},
+  isbn = {0-7923-9259-0}
 }
 
 @ARTICLE{Generalis:84,
@@ -5714,7 +5719,7 @@ http://arxiv.org/abs/math?papernum=9912030}
 	Evolution Equations},
   booktitle = {Proceedings of the IFIP TC2/WG 2.5 Working Conference on Programming
 	Environments for High-Level Scientific Problem Solving},
-  year = {1992},
+  year = {1991},
   pages = {107--117},
   address = {Amsterdam, The Netherlands, The Netherlands},
   publisher = {North-Holland Publishing Co.},
@@ -6191,15 +6196,19 @@ http://arxiv.org/abs/math?papernum=9912030}
   year = {1984}
 }
 
-@ARTICLE{Goldman:89,
+@INPROCEEDINGS{Goldman:89,
   author = {V. V. Goldman and J. A. van Hulzen},
   title = {Automatic Code Vectorization of Arithmetic Expressions by Bottom-Up
 	Structure Recognition},
-  journal = {Computer Algebra and Parallelism},
+  booktitle = {Computer Algebra and Parallelism},
   year = {1989},
-  pages = {119-132},
   editor = {J. Della Dora and J. Fitch},
-  publisher = {Academic Press, London}
+  pages = {119-132},
+  publisher = {Academic Press, London},
+  note = {Presentations made at a workshop held at the TIM3 Laboratory of the
+	University of Grenoble, June, 1988.},
+  isbn = {012209042X},
+  doi = {10.1016/0307-904X(90)90179-9}
 }
 
 @INPROCEEDINGS{Golley,
@@ -6237,13 +6246,18 @@ http://arxiv.org/abs/math?papernum=9912030}
   url = {http://doi.acm.org/10.1145/390016.808472}
 }
 
-@INPROCEEDINGS{Gosper:78,
+@ARTICLE{Gosper:78,
   author = {Gosper, Jr, R. W.},
   title = {Decision Procedure for Indefinite Hypergeometric Summation},
-  booktitle = {Proc. Natl. Acad. Sci. USA},
+  journal = {Proc. Natl. Acad. Sci. USA},
   year = {1978},
-  number = {75},
-  pages = {40-42}
+  volume = {75},
+  pages = {40-42},
+  number = {1},
+  month = {January},
+  keywords = {algorithm, binomial coefficient identities, closed form, symbolic
+	computation, linear recurrences},
+  url = {http://www.pnas.org/content/75/1/40.abstract}
 }
 
 @INPROCEEDINGS{Goto:78,
@@ -6350,7 +6364,12 @@ http://arxiv.org/abs/math?papernum=9912030}
   year = {1994},
   volume = {3},
   number = {1},
-  pages = {323-326}
+  pages = {323-326},
+  abstract = {Computer algebra programs CRACK and CLASSYM, and for automatically
+	formulating and solving Killing equations and calculating the corresponding
+	Lie algebra are described and examples are given.},
+  doi = {10.1142/S0218271894000551},
+  journal = {International Journal of Modern Physics D}
 }
 
 @ARTICLE{Greenland:84,
@@ -6408,7 +6427,7 @@ http://arxiv.org/abs/math?papernum=9912030}
 	{PRS}, avoiding wasteful recomputation as much as possible. It is
 	suggested that this is an efficient method to compute the Resultant
 	and {GCD} of Sparse Polynomials.},
-  doi = {10.1109/TC.1978.1674974 },
+  doi = {10.1109/TC.1978.1674974},
   url = {http://dx.doi.org/10.1109/TC.1978.1674974 }
 }
 
@@ -6547,7 +6566,7 @@ http://arxiv.org/abs/math?papernum=9912030}
 
 @INPROCEEDINGS{Griss:78a,
   author = {Martin L. Griss and Robert R. Kessler},
-  title = {REDUCE/1700: A micro-coded Algebra system},
+  title = {{REDUCE/1700: A micro-coded Algebra system}},
   booktitle = {MICRO 11: Proceedings of the 11th annual workshop on Microprogramming},
   year = {1978},
   pages = {130--138},
@@ -7001,7 +7020,7 @@ http://arxiv.org/abs/math?papernum=9912030}
   pages = {197-205},
   number = {2},
   month = {August},
-  note = {We give an account of the theory of Gr{\"o}bner bases for Clifford
+  abstract = {We give an account of the theory of Gr{\"o}bner bases for Clifford
 	and Grassmann algebras, both important in physical applications.
 	We describe a characterization criterion tailored to these algebras
 	which is significantly simpler than those given earlier or for more
@@ -7010,6 +7029,7 @@ http://arxiv.org/abs/math?papernum=9912030}
 	along with an algorithm for calculating Gr{\"o}bner bases in these
 	algebras. Finally we describe a REDUCE implementation of our algorithm
 	and give an application example.},
+  doi = {10.1006/jsco.1995.1046},
   url = {http://dx.doi.org/10.1006/jsco.1995.1046}
 }
 
@@ -11728,14 +11748,16 @@ http://arxiv.org/abs/math?papernum=9912030}
   month = {January}
 }
 
-@ARTICLE{Melenk:89b,
+@INPROCEEDINGS{Melenk:89b,
   author = {Herbert Melenk and Winfried Neun},
   title = {Parallel Polynomial Operations in the Large {Buchberger} Algorithm},
-  journal = {Computer Algebra and Parallelism},
+  booktitle = {Computer Algebra and Parallelism},
   year = {1989},
-  pages = {143-158},
   editor = {J. Della Dora and J. Fitch},
-  publisher = {Academic Press, London}
+  pages = {143-158},
+  publisher = {Academic Press, London},
+  isbn = {012209042X},
+  doi = {10.1016/0307-904X(90)90179-9}
 }
 
 @TECHREPORT{Melenk:89a,
@@ -16373,11 +16395,12 @@ http://arxiv.org/abs/math?papernum=9912030}
 @INBOOK{Wolf:98b,
   chapter = {4.3.5 and on CD-ROM},
   pages = {465-468},
-  title = {Crack, LiePDE, ApplySym and ConLaw},
+  title = {{Crack, LiePDE, ApplySym and ConLaw}},
   publisher = {Springer},
   year = {2002},
   editor = {Grabmeier, J. and Kaltofen, E. and Weispfenning, V.},
   author = {T.~Wolf},
+  isbn = {978-3-540-65466-7},
   booktitle = {Computer Algebra Handbook},
   url = {http://www.springer.com/math/cse/book/978-3-540-65466-7}
 }
@@ -16390,6 +16413,7 @@ http://arxiv.org/abs/math?papernum=9912030}
   year = {2002},
   editor = {Grabmeier, J. and Kaltofen, E. and Weispfenning, V.},
   author = {T.~Wolf},
+  isbn = {978-3-540-65466-7},
   booktitle = {Computer Algebra Handbook},
   url = {http://www.springer.com/math/cse/book/978-3-540-65466-7}
 }
@@ -16444,12 +16468,28 @@ http://arxiv.org/abs/math?papernum=9912030}
   url = {http://www.springer.com/astronomy/general+relativity/book/978-3-540-60361-0}
 }
 
+@INPROCEEDINGS{Wolf:04,
+  author = {Wolf, T.},
+  title = {{P}artial and {C}omplete {L}inearization of {PDEs} {B}ased on {C}onservation
+	{L}aws},
+  booktitle = {{T}rends in {M}athematics: {D}ifferential {E}quations with {S}ymbolic
+	{C}omputation},
+  year = {2005},
+  editor = {Dongming Wang and Zhiming Zheng},
+  pages = {291-306},
+  publisher = {Birkhaeuser Verlag Basel/Switzerland},
+  note = {also as preprint ar{X}iv nlin.SI/0501034},
+  isbn = {ISBN 3-7643-7368-7},
+  url = {http://arxiv.org/abs/nlin/0501034}
+}
+
 @UNPUBLISHED{Wolf:07,
   author = {Wolf, T.},
-  title = {The Parametric Solution of Underdetermined linear ODEs},
+  title = {The Parametric Solution of Underdetermined linear {ODE}s},
   note = {preprint},
   year = {2007},
-  pages = {16}
+  pages = {16},
+  url = {http://lie.math.brocku.ca/twolf/papers/uode.pdf}
 }
 
 @ARTICLE{Wolf:06a,
@@ -16465,16 +16505,19 @@ http://arxiv.org/abs/math?papernum=9912030}
   url = {http://www.springerlink.com/content/gh21v55703738061}
 }
 
-@INPROCEEDINGS{Wolf:04,
-  author = {Wolf, T.},
-  title = {{P}artial and {C}omplete {L}inearization of {PDE}s {B}ased on {C}onservation
-	{L}aws},
-  booktitle = {{T}rends in {M}athematics: {D}ifferential {E}quations with {S}ymbolic
-	{C}omputation},
+@ARTICLE{Wolf:05,
+  author = {Thomas Wolf},
+  title = {The package {CRACK} for solving large overdetermined systems},
+  journal = {SIGSAM Bull.},
   year = {2005},
-  pages = {291-306},
-  note = {also as preprint ar{X}iv nlin.SI/0501034},
-  isbn = {ISBN 3-7643-7368-7}
+  volume = {39},
+  pages = {95--96},
+  number = {3},
+  issn = {0163-5824},
+  address = {New York, NY, USA},
+  doi = {10.1145/1113439.1113455},
+  publisher = {ACM},
+  url = {http://doi.acm.org/10.1145/1113439.1113455}
 }
 
 @INPROCEEDINGS{Wolf:02,
@@ -16498,21 +16541,13 @@ http://arxiv.org/abs/math?papernum=9912030}
   url = {http://arxiv.org/abs/nlin/0301032}
 }
 
-@UNPUBLISHED{Wolf:04a,
-  author = {T.~Wolf},
-  title = {Partial and complete linearization of PDEs based on conservation
-	laws},
-  note = {preprint},
-  year = {2004},
-  pages = {17}
-}
-
 @UNPUBLISHED{Wolf:04b,
   author = {T.~Wolf},
   title = {Merging Solutions of Polynomial Algebraic Systems},
-  note = {preprint, http://lie.math.brocku.ca/twolf/papers/merge-sig.ps},
+  note = {preprint,},
   year = {2004},
-  pages = {5}
+  pages = {5},
+  url = {http://lie.math.brocku.ca/twolf/papers/merge-sig.ps}
 }
 
 @ARTICLE{Wolf:02a,
@@ -16652,7 +16687,11 @@ http://arxiv.org/abs/math?papernum=9912030}
   year = {2003},
   volume = {8},
   pages = {155-162},
-  number = {2}
+  number = {2},
+  comment = {Also on arXiv: http://arxiv.org/abs/nlin/0302001},
+  keywords = {Nonlinear Sciences - Exactly Solvable and Integrable Systems, Mathematical
+	Physics, Mathematics - Mathematical Physics},
+  url = {http://www.turpion.org/php/full/getFT.phtml/rd_8_155.pdf?journal_id=rd&paper_id=234&agree=on&tpdfn=rd_8_155&x=60&y=8}
 }
 
 @ARTICLE{Wood:89,
@@ -16767,6 +16806,32 @@ http://arxiv.org/abs/math?papernum=9912030}
   url = {http://dx.doi.org/10.1007/BF02240148}
 }
 
+@INCOLLECTION{Wu:84a,
+  author = {Wu, W.-T.},
+  title = {On the decision problem and the mechanization of theorem-proving
+	in elementary geometry},
+  booktitle = {Automated Theorem Proving: After 25 Years},
+  publisher = {AMS, Providence, Rhode Island},
+  year = {1984},
+  editor = {W. W. Bledsoe and D. W. Loveland},
+  volume = {29},
+  series = {Contemporary Mathematics},
+  pages = {213-234},
+  isbn = {978-0-8218-5027-5}
+}
+
+@INCOLLECTION{Wu:84b,
+  author = {Wu, W.-T.},
+  title = {Some recent advances in mechanical theorem proving of geometry},
+  booktitle = {Automated Theorem Proving: After 25 Years},
+  publisher = {AMS, Providence, Rhode Island},
+  year = {1984},
+  editor = {W. W. Bledsoe and D. W. Loveland},
+  volume = {29},
+  series = {Contemporary Mathematics},
+  pages = {235-241}
+}
+
 @BOOK{Wu:94,
   title = {Mechanical Theorem Proving in Geometries},
   publisher = {Springer, Wien},
@@ -16775,27 +16840,6 @@ http://arxiv.org/abs/math?papernum=9912030}
   number = {1},
   series = {Texts and Monographs in Symbolic Computation},
   url = {http://www.springer.com/springerwiennewyork/mathematics/book/978-3-211-82506-8}
-}
-
-@INCOLLECTION{Wu:84a,
-  author = {Wu, W.-T.},
-  title = {On the decision problem and the mechanization of theorem-proving
-	in elementary geometry},
-  booktitle = {Contemp. Math.},
-  publisher = {AMS, Providence, Rhode Island},
-  year = {1984},
-  volume = {19},
-  pages = {213-234}
-}
-
-@INCOLLECTION{Wu:84b,
-  author = {Wu, W.-T.},
-  title = {Some recent advances in mechanical theorem proving of geometry},
-  booktitle = {Contemp. Math.},
-  publisher = {AMS, Providence, Rhode Island},
-  year = {1984},
-  volume = {19},
-  pages = {235-241}
 }
 
 @INCOLLECTION{Wulkow:90,
@@ -16819,7 +16863,17 @@ http://arxiv.org/abs/math?papernum=9912030}
   booktitle = {Proceedings of the IEEE 1995 Particle Acelerator Conference, Dallas
 	(USA)},
   year = {1995},
-  pages = {2868},
+  volume = {5},
+  pages = {2868-2870},
+  abstract = {A construction scheme for generating functions (GFs) suitable for
+	particle tracking across arbitrary magnetic fields is presented.
+	The GF is approximated by a power series solution of the Hamilton-Jacobi
+	differential equation with analytical expressions for the coefficients.
+	This approach is applied to magnetic fringing fields, which are presented
+	as simplified analytical expressions. A short REDUCE code transforms
+	the vector potentials automatically into an expanded GF.},
+  citeseerurl = {http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.46.4588},
+  doi = {10.1109/PAC.1995.505720},
   institution = {BESSY Berlin, Germany}
 }
 
@@ -17027,6 +17081,7 @@ http://arxiv.org/abs/math?papernum=9912030}
   pages = {11-16},
   organization = {IMACS},
   publisher = {Laboratoire d'Informatique Fondamentale de Lille, France},
+  citeseerurl = {http://citeseerx.ist.psu.edu/showciting?cid=876489},
   comment = {An "involutive set" is a canonical basis of a 0-dim polynomial ideal
 	based on Janet division and well suited for equation solving. It
 	can be transformed into a lexicographic Groebner basis by linear
