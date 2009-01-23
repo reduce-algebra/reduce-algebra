@@ -1,44 +1,96 @@
 \chapter {Maintaining {\REDUCE}}
 
-{\REDUCE} continues to evolve both in terms of the number of facilities
-available, and the power of the individual facilities.  Corrections are
-made as bugs are discovered, and awkward features simplified.  In order to
-provide users with easy access to such enhancements, a {\em {\REDUCE}
-network library\/} has been established from which material can be extracted
-by anyone with electronic mail access to the Internet computer network.
+Since January 1, 2009 {\REDUCE} is Open Source Software. It is hosted at
+\begin{quote}
+  \url{http://reduce-algebra.sourceforge.net/}
+\end{quote}
+We mention here three ways in which {\REDUCE} is maintained. The first is
+the collection of queries, observations and bug-reports. All users are
+encouraged to subscribe to the
+\href{https://sourceforge.net/mail/?group_id=248416}{mailing list}
+that Sourceforge.net provides so that they will receive information
+about updates and concerns. Also on SourceForge there is a
+\href{https://sourceforge.net/tracker/?group_id=248416}{bug tracker}
+and a \href{https://sourceforge.net/forum/?group_id=248416}{forum}.
+The expectation is that the maintainers and keen users of {\REDUCE} will
+monitor those and try to respond to issues. However these resources
+are not there to seek answers to Maths homework problems - they are
+intended specifically for issues to do with the use and support of
+{\REDUCE}.
 
-In addition to miscellaneous documents, source and utility files, the
-library includes a bibliography of papers referencing {\REDUCE} which
-contains over 800 entries.  Instructions on using this library are sent to
-all registered {\REDUCE} users who provide a network address.  If you
-would like a more complete list of the contents of the library, send to
-{\em reduce-netlib@rand.org\/} the single line message {\em send index\/} or
-{\em help}. The current {\REDUCE} information
-package can be obtained from the network library by including on a
-separate line {\em send info-package\/} and a demonstration file by
-including the line {\em send demonstration}.  If you prefer, hard copies
-of the information package and the bibliography are available from the
-{\REDUCE} secretary at RAND, 1700 Main Street, P.O. Box 2138, Santa
-Monica, CA 90407-2138 ({\em reduce@rand.org}).  Copies of the network
-library are also maintained at other addresses.  At the time of writing,
-{\em reduce-netlib@can.nl\/} and {\em reduce-netlib@pi.cc.u-tokyo.ac.jp\/}
-may also be used instead of {\em reduce-netlib@rand.org}.
+The second level of support is provided by the fact that all the sources of 
+{\REDUCE} are available, so any user who is having difficulty either with a bug 
+or understanding system behaviour can consult the code to see if (for 
+instance) comments in it clarify something that was unclear from the regular 
+documentation.
 
-A World Wide Web {\REDUCE} server with URL
-\begin{verbatim}
-	http://www.rrz.uni-koeln.de/REDUCE/
-\end{verbatim}
-is also supported.  In addition to general information about {\REDUCE}, this
-server has pointers to the network library, the demonstration versions,
-examples of {\REDUCE} programming, a set of manuals, and the {\REDUCE} online
-help system.
+The source files for {\REDUCE} are available on SourceForge in the
+\href{https://sourceforge.net/svn/?group_id=248416}{Subversion
+  repository}. Check the "code/SVN" tab on the SourceForge page to
+find instructions for using a Subversion client to fetch the most up
+to date copy of everything. From time to time there may be one-file
+archives of a snapshot of the sources placed in the download area on
+SourceForge, and eventually some of these mat be marked as ``stable''
+releases, but at present it is recommended that developers use a copy
+from the Subversion repository.
 
-Finally, there is a {\REDUCE} electronic forum accessible from the same
-networks.  This enables {\REDUCE} users to raise questions and discuss
-ideas concerning the use and development of {\REDUCE} with other users.
-Additions and changes to the network library and new releases of {\REDUCE}
-are also announced in this forum.  Any user with appropriate electronic
-mail access is encouraged to register for membership in this forum.  To do
-so, send a message requesting inclusion to \\
-{\em reduce-forum-request@rand.org}.
+The files fetched there come with a directory called ``trunk'' that holds the 
+main current {\REDUCE}, and one called ``branches'' that is reserved for future 
+experimental versions. All the files that we have for creating help files and 
+manuals should also be present in the files you fetch.
+
+The packages that make up the source for the algebraic capabilities of
+{\REDUCE} are in the ``packages'' sub-directory, and often there are test
+files for a package present there and especially for contributed
+packages there will be documentation in the form of a \LaTeX{} file.
+Although {\REDUCE} is coded in its own language many people in the past
+have found that it does not take too long to start to get used to it.
+
+In various cases even fairly ``ordinary end users'' may wish to fetch the 
+source version of {\REDUCE} and compile it all for themselves. This may either 
+be because they need the benefit of a bug-fix only recently checked into the 
+subversion repository or because no pre-compiled binary is available for the 
+particular computer and operating system they use. This latter is to some 
+extent unavoidable since {\REDUCE} can run on both 32 and 64-bit Windows, the 
+various MacOSX options (eg Intel and Powerpc), many different distributions 
+of Linux, some BSD variants and Solaris (at least). It is not practically 
+feasible for us to provide a constant stream of up to date ready-built 
+binaries for all these.
+
+There are instructions for compiling {\REDUCE} present at the top of the trunk 
+source tree. Usually the hardest issue seems to be encuring that your 
+computer has an adequate set of development tools and libraries installled 
+before you start, but once that is sorted out the hope is that the 
+compilation of {\REDUCE} should proceed uneventfully if sometimes tediously.
+
+In a typical Open Source way the hope is that some of those who build {\REDUCE} 
+from source or explore the source (out of general interest or to pursue an 
+understanding of some bug or detail) will transform themselves into 
+contributors or developers which moves on to the third level of support.
+
+At this third level any user can contribute proposals for bug fixes or
+extensions to {\REDUCE} or its documentation. It might be valuable to
+collect a library of additional user-contributed examples illustrating
+the use of the system too. To do this first ensure that you have a
+fully up to date copy of the sources from Subversion, and then
+depending on just what sort of change is being proposed provide the
+updates to the developers via the SourceForge bug tracker or other
+route. In time we may give more concrete guidance about the format of
+changes that will be easiest to handle. It is obviously important that
+proposed changes have been properly tested and that they are
+accompanied with a clear explanation of why they are of benefit. A
+specific concern here is that in the past fixes to a bug in one part
+of {\REDUCE} have had bad effects on some other applications and
+packages, so some degree of caution is called for. Anybody who
+develops a significant whole new package for {\REDUCE} is encouraged to
+make the developers aware so that it can be considered for inclusion.
+
+So the short form explanation about Support and Maintenance is that it is 
+mainly focussed around the SourceForge system. That if discussions about 
+bugs, requirements or issues are conducted there then all users and potential 
+users of {\REDUCE} will be able to benefit from reviewing them, and the 
+Sourceforge mailing lists, tracker, forums and wiki will grow to be both a 
+static repository of answers to common questions, an active set of locations 
+to to get new issues looked at and a focus for guiding future development.
+
 
