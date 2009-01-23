@@ -1,0 +1,15 @@
+How to build the manual from source.
+====================================
+
+There are two scripts:
+
+ mkpdf.sh   -- creates a PDF file using pdflatex
+ mkhtml.sh  -- creates a HTML version using TeX4ht
+
+Prerequisites are:
+ 1. a TeX installation, including pdflatex and makeindex (ie a standard TeX)
+ 2. TeX4ht (see http://www.cse.ohio-state.edu/~gurari/TeX4ht/mn.html)
+
+The file reduce.cfg contains the necessary configuration lines for TeX4ht.
+
+ 
