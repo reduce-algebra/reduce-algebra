@@ -52,7 +52,7 @@ then
   *Fedora*)
     os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/fedora\\1/'`
     ;;
-  *Scientific Linux*)
+  *Scientific*Linux*)
     os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/scientificlinux\\1/'`
     ;;
   *Debian*)
