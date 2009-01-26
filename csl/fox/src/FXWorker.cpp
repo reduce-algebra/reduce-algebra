@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 42ac6f7b 04-Jun-2008 */
+/* Signature: 7dced379 26-Jan-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -287,8 +287,9 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
     int screenh = reg->readIntEntry("screen", "screenh", -1);
 
     if (screenx < 0 || screeny < 0 || screenw <= 100 || screenh < 20)
-        screenx = screeny = screenw = screenh = 0;
-
+    {   screenx = screeny = 50; // When I had 0 here that was off the screen!
+        screenw = screenh = 0;
+    }
     int fontsize =
         reg->readIntEntry("screen", "fontsize", -1);
 #if (FOX_MINOR<=4)
