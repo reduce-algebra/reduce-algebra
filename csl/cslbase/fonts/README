@@ -2,9 +2,10 @@ The versions of the fonts here have been MODIFIED by A C Norman
 (September 2004) in an attempt to circumvent what appears at the
 time of writing to be an X server anomaly that caused some characters
 to fail to appear on the screen. The modification was performed as
+follows:
 
-Also the names specified for the fonts seemed to make it ghard for me
-to use fontconfig/Xft to select them, so I changed names.
+(Also the names specified for the fonts seemed to make it hard for me
+to use fontconfig/Xft to select them, so I changed names.)
 
 (a) Use t1disasm to convert the fonts from binary (*.pfb) to human-
     readable form.
@@ -45,10 +46,15 @@ to use fontconfig/Xft to select them, so I changed names.
     me to manage things, but the type1 fonts are used on Unix/Linux/Darwin
     and the Truetype ones on Windows.]
 
-This process should not change the shape, matrics or encoding of any
+This process should not change the shape, metrics or encoding of any
 character.
 
 
 
              A C Norman.  October 2004
+
+
+January 2009: I find that on some Linux systems some mathml (perhaps)
+application provides fonts that clash with these and cause dreadful
+confusion!
 
