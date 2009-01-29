@@ -49,11 +49,14 @@ name ought to work as well.
 OR
 
 (2) Use subversion to fetch or refresh a copy from the master site.
-        svn checkout https://gauguin.trin.cam.ac.uk/svn/fullopenreduce
-    That should create a directory called "openreduce" for you. The first time
-    you fetch (at least) you will need to accept a self-signed SSL certificate
-    that gauguin offers. To refresh your files, enter the openreduce
-    directory and go
+
+svn checkout
+  https://reduce-algebra.svn.sourceforge.net/svnroot/reduce-algebra
+  reduce-algebra
+(all the above three lines really stand for one long line of input)
+
+    That should create a directory called "reduce-algebra" for you.
+    To refresh your files, enter the reduce-algebra directory and go
         svn update
     Note that the main copy of everything will end up in the "trunk"
     sub-directory of what you fetch.
@@ -179,6 +182,7 @@ is the main one used for rebuilding the system.
 
 
 
-A C Norman. July 2008
+A C Norman. July 2008. Updated Jan 2009
+
 
 
