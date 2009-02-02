@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 0ce55e68 13-Jul-2008 */
+/* Signature: 77b7a3c2 02-Feb-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -572,8 +572,12 @@ static void *getMathsFont(FXApp *app,
 // custom fonts were intended to provide. Thus with Xft I will use exactly
 // cmr10, cmmi10, cmsy10 and cmex10 and NEVER Computer Modern fonts at any
 // other size.
+    char xname[32];
+// As part of trying to ensure that MY version of the fonts get used I have
+// renamed them as eg csl-reduce-cmmi10.
+    sprintf(xname, "csl-reduce-%s", fallback);
     return XftFontOpen(dpy, screen,
-                       XFT_FAMILY, XftTypeString, fallback,
+                       XFT_FAMILY, XftTypeString, xname,
                        XFT_SIZE,   XftTypeDouble, 0.1*(double)size,
                        (const char *)0);
 #endif
@@ -875,6 +879,9 @@ static char *loadPrivateFonts(FXApp *appl, FXWindow *w)
     }
 // ensure that fonts are really available. If I do not actually add any
 // I will not fuss about this!
+//
+// Well with the attempts at maths display behaviour if I do not manage
+// to add my custom fonts is liable to be a disaster!
     if (someAdded && !FcConfigBuildFonts(FcConfigGetCurrent()))
         return "FcConfigBuildFonds failed";
 // I now have some confidence that the fonts that I want will be available
@@ -883,7 +890,7 @@ static char *loadPrivateFonts(FXApp *appl, FXWindow *w)
 #ifdef DEBUG_LIST_AVAILABLE_FONTS
     for (int i=0; i<4; i++)
     {   XftFontSet *fs = XftListFonts(dpy, screen,
-                 XFT_FAMILY,  XftTypeString, fontNames[i].name,
+//               XFT_FAMILY,  XftTypeString, fontNames[i].name,
                  (const char *)0, 
                  XFT_STYLE, XFT_FILE, XFT_ENCODING,
                  (const char *)0);

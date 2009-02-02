@@ -16,6 +16,8 @@ to use fontconfig/Xft to select them, so I changed names.)
     names for the font are in lower case.
     [seems to be required so that fontconfig/Xft/freetype can match the
     font in an unambiguous way]
+    Also make the names include "csl-reduce" so as to further reduce any
+    possibility with any other sets of related fonts.
 (d) Duplicate the definition of the first glyph defined by textually
     copying its definition, but giving that Postscript procedure
     a new name (eg /acnminus).
@@ -45,6 +47,7 @@ to use fontconfig/Xft to select them, so I changed names.)
     the various formats present across all platforms to make it easier for
     me to manage things, but the type1 fonts are used on Unix/Linux/Darwin
     and the Truetype ones on Windows.]
+    I now use BaKoMa truetype fonts rather than ones derived from here...
 
 This process should not change the shape, metrics or encoding of any
 character.
