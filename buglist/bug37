@@ -1,0 +1,9 @@
+lisp(*lower :=t);
+
+% translates into
+
+% (setk 'lower t)
+
+% It should probably give a syntax error.
+
+end;

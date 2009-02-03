@@ -1,0 +1,63 @@
+% Date: Tue, 02 Dec 1997 20:01:40 +0100 (MET)
+% From: Erik Olofsen +31 71 5263344 / 5152719
+ 
+load_package scope$
+on double$
+off exp$
+ 
+alf1 := {cc1    = c1/c501,
+	 cc2    = c2/c502,
+	 pp1    = p/(emx1-p),
+	 pp2    = p/(emx2-p),
+	 ppg1   = pp1^(-1/gam1),
+	 ppg2   = pp2^(-1/gam2),
+	 rppg1  = pp1^(-1/gam1/2),
+	 rppg2  = pp2^(-1/gam2/2),
+	 thef   = cc1*ppg1 + cc2*ppg2 + alph*cc1*rppg1*cc2*rppg2 }$
+ 
+dcc1   := c1/c501$
+dcc2   := c2/c502$
+dpp1   := p/(emx1-p)$
+dpp2   := p/(emx2-p)$
+dppg1  := dpp1^(-1/gam1)$
+dppg2  := dpp2^(-1/gam2)$
+drppg1 := dpp1^(-1/gam1/2)$
+drppg2 := dpp2^(-1/gam2/2)$
+ 
+dthef := cc1*ppg1 + cc2*ppg2 + alph*cc1*rppg1*cc2*rppg2$
+ 
+alf2 := append(alf1, {dfdcc1      = df(dthef,cc1),
+                      dfdcc2      = df(dthef,cc2),
+		      dfdppg1     = df(dthef,ppg1),
+		      dfdppg2     = df(dthef,ppg2),
+		      dfdrppg1    = df(dthef,rppg1),
+		      dfdrppg2    = df(dthef,rppg2),
+                      dcc1dc501   = df(dcc1,c501),
+                      dcc2dc502   = df(dcc2,c502),
+                      dppg1dgam1  = df(dppg1,gam1),
+                      dppg1demx1  = df(dppg1,emx1),
+                      dppg2dgam2  = df(dppg2,gam2),
+                      dppg2demx2  = df(dppg2,emx2),
+                      drppg1dgam1 = df(drppg1,gam1),
+                      drppg1demx1 = df(drppg1,emx1),
+                      drppg2dgam2 = df(drppg2,gam2),
+                      drppg2demx2 = df(drppg2,emx2) })$
+ 
+alf3 := algopt(alf2)$
+ 
+alf4 := append(alf3, {dfdc501 = dfdcc1*dcc1dc501,
+                      dfdgam1 = dfdppg1*dppg1dgam1 + dfdrppg1*drppg1dgam1,
+                      dfdemx1 = dfdppg1*dppg1demx1 + dfdrppg1*drppg1demx1,
+                      dfdc502 = dfdcc2*dcc2dc502,
+                      dfdgam2 = dfdppg2*dppg2dgam2 + dfdrppg2*drppg2dgam2,
+                      dfdemx2 = dfdppg2*dppg2demx2 + dfdrppg2*drppg2demx2,
+		      dfdalph = df(dthef,alph) })$
+ 
+alf5 := append(alf4, {dfdcc1dcc1     = df(dthef,cc1,cc1),
+		      dcc1dc501dc501 = df(dcc1,c501,c501) })$
+ 
+alf6 := algopt(alf5)$
+ 
+alf7 := append(alf6, {dfdc501dc501 = dfdcc1*dcc1dc501dc501 + dfdcc1dcc1*dcc1dc501 })$
+ 
+end;

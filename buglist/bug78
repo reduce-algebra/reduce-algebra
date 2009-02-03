@@ -1,0 +1,38 @@
+% Date:    Mon, 02 Oct 1995 11:42:29 -0000
+% From:    jpff@maths.bath.ac.uk
+
+% Documentation says
+% Line 124 of pm.doc says
+
+% Examples:
+
+%        m(f(a,b),f(?a,?b_=(?a=?b)));
+%        0
+
+%        m(f(a,a),f(?a,?b_=(?a=?b)));
+%        {?B->A,?A->A}
+
+%        Note that f(?a,?b_=(?a=?b)) is the same as f(?a,?a)
+
+% However ...
+
+load_package pm;
+
+operator f;
+
+m(f(a,b),f(?a,?b_=(?a=?b)));
+
+m(f(a,a),f(?a,?b_=(?a=?b)));
+
+if (m(f(a,a),f(?a,?b_=(?a=?b)))) then write "yes" else write"no";
+
+if (m(f(a,b),f(?a,?b_=(?a=?b)))) then write "yes" else write"no";
+
+% My other problem is that the pattern matching function si seems to
+% clash somewhat with the sine-integral function si.
+
+% I have other problems with PM; the system and documentation are not as
+% close as one would like.
+
+end;
+

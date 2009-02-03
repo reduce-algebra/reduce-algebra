@@ -1,0 +1,19 @@
+% From W. Neun/ W. Koepf.
+% This example shows the high cost of expnd1.
+
+procedure ChebyshevT(n,x);
+ begin
+   if n=0 then return(1) else if n=1 then return(x) else
+   if (floor(n/2)=n/2) then return(2*ChebyshevT(n/2,x)^2-1)
+   else return(2*ChebyshevT((n-1)/2,x)*ChebyshevT((n+1)/2,x)-x)
+ end$
+
+off exp;
+ 
+chebyshevt(1000,x)$
+
+symbolic procedure expnd1 u; u;
+
+chebyshevt(1000,x)$
+
+end;

@@ -1,0 +1,21 @@
+% The error message should be a little more obvious in this example.
+% (Problem is the use of "x" in the scalar list.)
+
+on rounded;
+
+procedure rt01 n;
+        begin   scalar x, x0, ep;
+        clear f, d;
+        operator f, d;
+        precision n;
+        f := x**2 - sin(x);
+        d := df(f,x);
+        x0 := 0.87; ep := 1.0**(-n);
+   a:   if abs(sub(x=x0,f)) < ep then return x0;
+        x0 := x0 - sub(x=x0,f)/sub(x=x0,d);
+        go to a;
+        end;
+
+rt01 5;
+
+end;

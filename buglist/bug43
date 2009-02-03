@@ -1,0 +1,27 @@
+% Date:     Thu, 12 Feb 98 18:02:12 GMT
+% From: J P Fitch <jpff@maths.bath.ac.uk>
+
+load_package defint;
+lik := ((1 + ( mu - 1 )^2 / ( 3 sigma^2 ) ) *( 1 + ( mu + 1 )^2 / ( 3 sigma^2 )
+))^( -2 ) / sigma^2;
+% load_package gnuplot;
+% plot lik;
+
+% This shows that the function is positive with a bump near the origin.
+% so now we integrate...
+
+int(lik,sigma,0,infinity);
+
+% and the answer is zero.  It is suggested that this is wrong.
+% Maple gives a silly answer as well, but it would be nice to get it right.
+
+% Date:    Fri, 13 Feb 1998 16:15:14 -0100
+% From:    neun@zib.de (Winfried Neun)
+
+% Whatever it is not mine, it is Stan's. I do know that this info
+% does not help too much, but the integration is correct if the
+% second variable (mu) is substitutes by (3 say).
+% This type of integrals is the only one which Stans code is able to
+% handle with infinity as upper bound (poly/poly)
+
+end;

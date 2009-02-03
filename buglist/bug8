@@ -1,0 +1,14 @@
+% This example, from Shigetoshi Katsura <katsura@juna.j.dendai.ac.jp>,
+% generates a catastrophic error, presumably because a careful enough
+% check of the non-commutative division is not maintained in the matrix
+% code.
+
+operator a;
+
+noncom a;
+
+m := mat((a(x),a(y)),(a(z),a(w)));
+
+m**(-1);
+     
+end;

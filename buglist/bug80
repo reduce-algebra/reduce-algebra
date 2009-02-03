@@ -1,0 +1,12 @@
+% Date:    Wed, 24 Apr 1996 11:38:23 BST
+% From:    Thomas Wolf <tw@lie.maths.qmw.ac.uk>
+
+% The following let rule changes the set of solutions.
+
+solve({z=2/(tan(atan(x)-c5)**2-2*c6), y=tan(atan(x)-c5)},{c5,c6});
+
+let {sin(~x)**2 => 1-cos(x)**2}$
+
+solve({z=2/(tan(atan(x)-c5)**2-2*c6), y=tan(atan(x)-c5)},{c5,c6});
+
+end;

@@ -1,0 +1,117 @@
+                             $reduce/doc/bugs
+			     ----------------
+
+This directory contains descriptions of the known bugs (bug*) and
+features (feature*) in the current development system. It also includes
+some of those problems that have been fixed (fixed*).
+
+These reports describe problems in the following areas:
+
+EQUATION SOLVING
+
+bug1
+bug2
+bug4
+bug11
+bug19
+bug27
+bug34
+bug42
+
+
+DEFINT
+
+bug43
+
+
+FACTORIZATION
+
+feature4
+bug20
+bug28
+bug50
+
+
+HIGH ENERGY PHYSICS
+
+bug25
+
+
+INTEGRATION
+
+bug3
+bug5
+bug16
+bug21
+bug31
+bug45
+bug46
+bug47
+bug48
+bug49
+
+MATRICES, RESULTANTS, ETC.
+
+bug26
+
+
+SIMPLIFICATION
+
+bug6
+bug7
+bug14
+bug17
+bug18
+bug22
+bug23
+bug24
+bug29
+bug30
+bug33
+bug38
+bug39
+feature8 (surds)
+
+SPUR
+
+bug40
+
+
+FREEOF
+
+bug36
+
+
+NONCOM
+
+bug8
+
+
+OUTPUT
+
+bug12
+bug15
+
+
+SCOPE
+
+bug41
+
+
+SYNTAX
+
+bug13
+bug35
+bug37
+feature5
+feature6
+
+
+COMPACT
+
+feature7
+
+
+TPS
+
+bug44

@@ -1,0 +1,15 @@
+depend f,x,y;
+write"f is ";
+if freeof(f,y) then write"independent"
+               else write"dependent";
+write" of y."$
+write"df(f,x) is ";
+if freeof(df(f,x),y) then write"independent"
+                     else write"dependent";
+write" of y."$
+write"int(f,x) is ";
+if freeof(int(f,x),y) then write"independent"
+                      else write"dependent";
+write" of y."$
+end;
+

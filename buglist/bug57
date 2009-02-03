@@ -1,0 +1,18 @@
+% Date:    Thu, 13 Mar 1997 18:04:52 GMT
+% From:    John Fitch <jpff@maths.bath.ac.uk>
+
+% REDUCE can integrate in some formats, but not others.
+
+load_package defint;
+
+df(erf(x),x);
+
+int(ws,x,-infinity, infinity);
+
+int(exp(-x^2)/sqrt(pi),x,-infinity, infinity);
+
+exp(-x^2)/sqrt(pi);
+
+int(ws,x,-infinity, infinity);
+
+end;

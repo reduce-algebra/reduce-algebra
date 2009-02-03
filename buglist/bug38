@@ -1,0 +1,8 @@
+% Date: Tue, 30 Aug 1994 10:30:39 +0200
+% From: caprasse@vm1.ulg.ac.be (Hubert Caprasse)
+% With rational on, some trigonometrical expressions don't simplify.
+
+on rational;
+sin(pi/2);    % Doesn't simplify.
+cos(pi/2);    % Simplifies.
+end;

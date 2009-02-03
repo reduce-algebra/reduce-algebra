@@ -1,0 +1,10 @@
+% Variables don't migrate properly into domain elements that are not
+% numbers.
+
+load_package tps;
+
+ps(1/(1+x),x,0);
+
+ws + x;
+
+end;

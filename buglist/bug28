@@ -1,0 +1,37 @@
+% Date: Wed, 22 Jun 1994 15:59:04 +0200
+% From: A.J.Tibben <a.j.tibben@math.utwente.nl>
+
+% Thank you for your fast response regarding my problem with factorizing
+% with
+on complex;
+% however another problem has occured. Some simple examples:
+
+factorize((a-1)*(a-b-i));
+
+% doesn't factorize and more seriously
+
+factorize((a-1)*(a-i)*(a-b));
+
+% again leads to a loop.
+
+% I have traced the code a bit and think the problem is in 'gifactor:'.
+% The loop there changes 'mvu' such that it doesn't have real roots in
+% that parameter, but it checks it for 'mvar u' in sqfrp. I have patched
+% it by changing 'mvu:=caar mvu' in 'mvu:=mvar u' and it works up till
+% now, but probably the right way to it is by changing the kernel order.
+
+end;
+
+Comment from H. Melenk:
+
+Richard's SUM-bug has a deeper background: k is entered by SUM as formal
+argument and SIMPDF cannot see that it is intended as differentiation
+order and not as differentiation variable. Because of its syntax
+REDUCE is generally unable to operate with differentials of undetermined
+order.
+
+REDUCE Development Version, 14-Jun-94 ...
+
+1: df(sin x,x,k);
+
+0

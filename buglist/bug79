@@ -1,0 +1,85 @@
+% From: Thomas Wolf <T.Wolf@qmw.ac.uk>
+% Date: Tue, 13 Oct 1998 18:49:15 +0100 (BST)
+
+% The final expressions are not in lowest terms.
+
+a :=2*sqrt(2)-4/sqrt(2);
+
+% a := 0
+
+a:=4/sqrt(2);
+
+%         4
+%a := ---------
+%      sqrt(2)
+
+b:=2*sqrt(2);
+
+%b := 2*sqrt(2)
+
+a:=e**(2*sqrt(2)) / e**(4/sqrt(2));
+
+%       2*sqrt(2)
+%      e
+%a := ------------
+%       4/sqrt(2)
+%      e
+
+a-1;
+
+%     4/sqrt(2)    2*sqrt(2)
+%  - e          + e
+%----------------------------
+%          4/sqrt(2)
+%         e
+
+end;
+
+From: neun@zib.de (Winfried Neun)
+To: T.Wolf@qmw.ac.uk (Thomas Wolf)
+Date: Wed, 14 Oct 1998 10:34:19 -0100 (GMT-1:00)
+
+Dear Thomas,
+> 
+> In running CRACK it is important to recognize expressions that
+> vanish because because otherwise it could appear that an equation
+> is of some order which is not true because the coefficient of some
+> derivative actually vanishes or the integrator tries to integrate
+> terms again and again although they are already zero, they only
+> have not been recognized as such. I recently had problems with
+> simplifying expressions involving sqrt(2):
+
+If it just sqrt(2)! Well, anyway, one could try with an ugly
+beasts like:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+operator saveit; % saves expr from being swallowed again
+
+let {~n//~d => saveit(n/(d^2))*d when fixp(n/d^2)};
+
+let {saveit(~n) => n};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% I guess that we have to take care of complex values??
+
+4: a:=2*sqrt(2)-4/sqrt(2);
+
+a := 0
+
+5: a:=4/sqrt(2);
+
+a := 2*sqrt(2)
+
+6: b:=2*sqrt(2);
+
+b := 2*sqrt(2)
+
+7:  a:=e**(2*sqrt(2)) / e**(4/sqrt(2));
+
+a := 1
+
+8:  a-1;
+
+0

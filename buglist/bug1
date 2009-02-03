@@ -1,0 +1,104 @@
+% From John Fitch
+% This one gives an error on both development and distributed systems.
+% This blows up with simplification recursion too deep.
+% However, the behavior is different.
+
+% ACH, 8-2-06: In current development system, this gives an non-numeric
+% argument error in mkrn (called from rnfactor!:).
+
+on rounded;
+ne := 1.460922;
+no := 1.495859;
+ne2 := 1.472351;
+no2 := 1.514747;
+f:=( (cos(y))^2/no2^2 + (sin(y))^2/ne2^2)^(-1/2) - 1/2*( no +((cos(y))^2/no^2
+ + (sin(y))^2/ne^2)^(-1/2)) ;
+solve(f,y);
+
+% I discovered that by taking the numerator of this, substituting sin^2=> 1-cos^2
+% and then doing solve(ws) I get the amazing message
+
+on fullroots;
+f;
+num ws;
+let sin(y)^2 = 1-cos(y)^2;
+ws;
+solve(ws);
+end;
+....->->->->
+
+                                  2                 1/2
+Unknowns: {( - 103301057797*cos(y)  + 2237594147881)   ,
+
+                                  2                 1/2
+           ( - 126641006808*cos(y)  + 2294458474009)   }
+
++++ Error attempt to take car of an atom: nil
+
+The choice of unknown is certainly odd, the car(nil) is a bug.
+
+
+[Later]
+
+It gets worse.
+10: ws 8;
+
+                                      2
+ - 1495859*sqrt( - 103301057797*cos(y)  + 2237594147881)
+
+                            2
+*sqrt( - 126641006808*cos(y)  + 2294458474009) - 2
+
+                            2
+*sqrt( - 126641006808*cos(y)  + 2294458474009)
+
+*sqrt(1193920432058703587678001) + 2
+
+                            2
+*sqrt( - 103301057797*cos(y)  + 2237594147881)
+
+*sqrt(4973967157724061868478809)
+
+11: let cos(y)^2 = yyy;
+
+12: ws;
+
+ - 1495859*sqrt( - 103301057797*yyy + 2237594147881)
+
+*sqrt( - 126641006808*yyy + 2294458474009) - 2
+
+*sqrt( - 126641006808*yyy + 2294458474009)
+
+*sqrt(1193920432058703587678001) + 2
+
+*sqrt( - 103301057797*yyy + 2237594147881)
+
+*sqrt(4973967157724061868478809)
+
+13: solve(ws,yyy);
+
+       - ( - 126641006808*yyy + 2294458474009) + 2294458474009
+{yyy=----------------------------------------------------------}
+                            126641006808
+
+Now that is some solution.  It says 0=0 in a suprising way.
+==John
+
+-----------------------------
+
+% This doesn't help.
+
+symbolic procedure rnfactor!: u;
+   begin scalar x,y,dmode!*; integer m,n;
+     x := subf(u,nil);
+     if not domainp denr x then return factorf u;
+     y := factorf numr x;
+     n := car y;
+     dmode!* := '!:rn!:;
+     y := for each j in cdr y collect
+           <<n := n*(m := (lnc ckrn car j)**cdr j);
+             quotfd(car j,m) . cdr j>>;
+     return int!-equiv!-chk mkrn(n,denr x) . y
+   end;
+
+end;

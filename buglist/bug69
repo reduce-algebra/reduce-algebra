@@ -1,0 +1,20 @@
+% Date:    Wed, 11 Jan 1995 14:00:53 +0100
+% From:    melenk@ZIB-Berlin.DE (Herbert Melenk)
+% Subject: *match and noncom
+
+operator x,dta;
+noncom x;
+for all j,k let dta(j,k)*x(j)=x(k),dta(k,j)*x(j)=x(k);
+x(j)*x(b)*dta(j,k);
+
+% gives x(j)*x(b)*x(j)**(-1)*x(k) and not x(k)*x(b);
+
+% I think that subs3q needs to be modified such that in a product
+% match with one noncom factor the replacement is done in the
+% position of that factor and not in the rightmost one.
+
+% Or you might pull out the noncom parts of the pattern and the object
+% first because they are non critical with respect to the ordering and
+% can be cancelled later by commutative division.
+
+end;

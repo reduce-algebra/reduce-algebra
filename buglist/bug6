@@ -1,0 +1,52 @@
+% From: melenk@sc.ZIB-Berlin.DE (Herbert Melenk)
+% Date: Fri, 27 May 1994 10:03:05 +0200
+
+a := u=v;
+
+part(a,0) := 'replaceby;
+
+% ***** `setpart!*' is an undefined function
+
+end;
+
+Date: Fri, 27 May 1994 10:31:06 +0000
+From: melenk@sc.ZIB-Berlin.DE (Herbert Melenk)
+Subject: replaceby, 2nd act
+
+s1 := {a1 - a2 + x};
+rl := {a1 => a2};
+
+s2:=s1 where rl;
+
+{x}   <<< that is OK
+
+procedure hugo(ss,rr);
+  begin scalar qq;
+    qq := ss where rr;
+    write qq;
+  end;
+hugo(s1,rl);
+
+{a1 - a2 + x}  <<< that is NOT OK
+
+procedure hugo(ss);
+  begin scalar qq;
+    qq := ss where rl;
+    write qq;
+  end;
+hugo(s1);
+
+{a1 - a2 + x}  <<< that is also wrong
+
+procedure hugo(ss,rr);
+  begin scalar qq;
+    let rr;
+    qq := ss;
+    clearrules rr;
+    write qq;
+  end;
+hugo(s1,rl);
+
+{x}  <<< that seems to work
+
+

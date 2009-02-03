@@ -1,0 +1,9 @@
+% This gives a strange buffer overflow in PSL.
+
+matrix m(10,10);
+
+for i:=1:10 do for j:=1:10 do m(i,j) := random(10^50);
+
+m(11,11);
+
+end;

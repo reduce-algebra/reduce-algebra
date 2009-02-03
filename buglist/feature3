@@ -1,0 +1,15 @@
+% This example requires some thought to get lowest terms.
+
+on fullroots;
+y := x^3-20x^2+62x-36;
+z := solve(y,x);
+let s3 = rhs first z*rhs second z*rhs third z;
+s3;
+off trigform;
+z := solve(y,x);
+s3;
+% The following were also required in REDUCE 3.6.
+% on combineexpt;
+% ws;
+
+end;

@@ -1,0 +1,9 @@
+% Presumably i^30 is simplified first to -1 in the following:
+
+sum(i^30,i,1,n);
+
+% On the other hand, this gives the expected answer:
+
+sum(j^30,j,1,n);
+
+end;

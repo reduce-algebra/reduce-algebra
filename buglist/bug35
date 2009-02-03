@@ -1,0 +1,9 @@
+% Date: Wed, 11 Sep 96 14:37:51 BST
+% From: jpff@maths.bath.ac.uk
+
+% This example gives an inscrutable error message as a result of the
+% syntax error (missing 0 before the second period).
+
+4*(X-1.175391)*(X+.425391);
+
+end;

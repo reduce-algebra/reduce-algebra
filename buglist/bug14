@@ -1,0 +1,15 @@
+% The following should retain the "sub" structure.
+
+depend f,x;
+
+sub(x=h,f);
+
+% and Y should be left in the SUB list.
+
+depend r,x,y;
+
+p := df(r,x);
+
+sub(x=0,y=0,p);
+
+end;

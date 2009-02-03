@@ -1,0 +1,15 @@
+% The squared expression doesn't factor ...
+
+x1 := (e^((e^x)/2) + 1)$
+
+y := x1^2;
+
+factorize y;
+
+% ... unless you add explicit rules.
+
+let e^((e^x)/2)=a,e^(e^x)=a^2;
+
+factorize y;
+
+end;

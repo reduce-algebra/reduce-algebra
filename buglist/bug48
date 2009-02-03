@@ -1,0 +1,29 @@
+%From: jpff@maths.bath.ac.uk
+%Date:     Tue, 27 Aug 96 15:06:30 BST
+%Subject:  Another integration failure
+
+load_package defint;
+
+f := (2*exp(x) - x^2 - 2*x -2)/(exp(x)*x^3);
+
+g := e^(-i*n*phi) * sub(x=b*t*phi^2,f);
+
+%              2
+%         b*phi *t    2    4  2          2
+%      2*e         - b *phi *t  - 2*b*phi *t - 2
+%g := -------------------------------------------
+%                 2
+%            b*phi *t + i*n*phi  3    6  3
+%           e                  *b *phi *t
+
+int(g,phi,-infinity, infinity);
+
+%                repart(n)
+%***** abs(atan(-----------)) - 1.57079632679 invalid as number
+%                impart(n)
+
+%***** Substitution for log(i) not allowed
+
+% Not a very helpful error message I think!
+
+end;

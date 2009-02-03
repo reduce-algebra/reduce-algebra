@@ -1,0 +1,20 @@
+% Date:    Mon, 06 May 1996 16:55:36
+% From:    "POPOWICZ Ziemowit" <ZIEMEK@proton.ift.uni.wroc.pl>
+
+% Why is the result zero when the noncom2 package is loaded?
+
+load_package noncom2;
+
+operator d,fun;
+
+noncom d,fun;
+
+% implementation of Leibnitz rule
+
+% d(1) denotes the differentations and fun the object
+
+let { d(1)*fun(~f,~n) => fun(f,n+1) + fun(f,n)*d(1)};
+
+result:=d(1)^2*fun(f,0)-d(1)*fun(f,0)^2;
+
+end;

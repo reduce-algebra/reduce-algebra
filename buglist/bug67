@@ -1,0 +1,35 @@
+% You do get an answer, but only after much more time than should be needed.
+
+% Date:    Thu, 25 Feb 1999 11:51:50 +0100
+% From:    Alain Moussiaux <amoussia@fundp.ac.be>
+
+comment
+YOU SOLVE EQ1 WITH RESPECT TO CTE
+
+1)THE ANSWER IS GIVEN IN Time: 12040 ms  plus GC time: 1780 ms 
+2)YOU TRY A SECOND TIME YOU NEED  Time: 900 ms  
+3)YOU TRY A LAST TEST AND YOU WILL NEVER HAVE AN ANSWERD!!!!
+
+  THE PROBLEM IS NOT TO SOLVE 2,3 OR 4 TIMES THE SAME EQUATION
+BUT THE PROBLEM IS THAT IF THE SOLVE WAS CALLED IN A PROCEDURE
+TO SOLVE A LOT OF EQUATIONS WICH HAVE NOTHING TO DO WITH
+EQ1 WHEN YOU ARRIVE WHERE YOU MUST SOLVE EQ1 IT IS INTRACTABLE...;
+
+on evallhseqp; 
+ 
+on time; 
+ 
+eq1:=y=(-sqrt(-2*log(x)*a+cte)*b+1)/(x**(3*a*b**2)*sqrt(-2*log(x)*a+cte)); 
+ 
+solve(eq1,cte); 
+ 
+solve(eq1,cte); 
+ 
+solve(eq1,cte); 
+
+%HERE YOU WILL NEVER HAVE AN ANSWER !!!!
+%HERE YOU WILL NEVER HAVE AN ANSWER !!!!
+%HERE YOU WILL NEVER HAVE AN ANSWER !!!!  
+
+end;
+

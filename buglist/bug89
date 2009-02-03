@@ -1,0 +1,6 @@
+% This gives a catastrophic error from gcdf.
+
+int(exp(2*y)*int(exp(-y)*cos(y)*int(csc(y)^2*int(y^(-5)*
+cos(y),y),y),y),y);
+ 
+end;

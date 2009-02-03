@@ -1,0 +1,17 @@
+% Date:    Tue, 04 Jul 1995 09:49:23 -0000
+% From:    Thomas Wolf <T.Wolf@qmw.ac.uk>
+
+% This program hangs in the factorizer.
+
+load crack,odesolve$
+on backtrace$
+tr factorize;
+lisp <<facint_:=1;
+       print_:=20;
+       odesolve_:=5
+>>;
+depend y,x;
+sol:=crack({num (16*e**2*df(y,x)**5-df(1/df(y,x),x,3)**2),
+            num (16*(d*x+f)**2*df(y,x)**5-h**2*df(y/df(y,x),x,3)**2)},
+           {},{y},{});
+end$

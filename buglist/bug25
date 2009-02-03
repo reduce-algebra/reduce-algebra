@@ -1,0 +1,13 @@
+% This sequence leads to a catastrophic error.
+
+load_package hephys;
+
+nospur l1$
+
+index m$
+
+vector u,v,w$
+
+g(l1,m)*g(l2,m,u,v,w);
+
+end;

@@ -1,0 +1,19 @@
+% From: Jarmo Hietarinta <hietarin@utu.fi>
+% Date: Sunday, February 04, 2001 11:26 PM
+
+% The following is not reduced to the simplest form.
+
+Comment from Eberhard Schruefer:  This a longstanding problem.  To get
+a low complexity algorithm isn't easy (even if only domain elements are
+involved).  James and I tried something (for domains) almost ten years
+ago along the line of Schinzel's theorem which has promisse of being
+efficient;
+
+(e^((3x)/4)+2*e^(x/4)+e^(x/2) - 3)/(e^((3x)/4) - e^(x/4) - e^(x/2) + 1);
+
+% on combineexpt;
+
+num df(ws,x) - 6*e^x -4*e^(x/2) - e^(x/4);
+
+end;
+

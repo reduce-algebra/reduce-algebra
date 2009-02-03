@@ -1,0 +1,22 @@
+% Date: Fri, 17 Sep 1999 08:57:41 +0100 (BST)
+% From: "Dr A.C. Norman" <acn1@cam.ac.uk>
+
+load_package numeric;
+
+num_solve({3*x+4*y-3, 2*x-7*y+11, x-y-1},{x,y});
+
+% ***** numbers of variables and functions don't match
+
+comment
+
+the blurb seems to say
+
+...be given. If not given, random values are taken instead. If the number
+of forms is not equal to the number of variables, the Newton method
+cannot be applied. Then the minimum of the sum of absolute squares is
+located instead.
+
+Ie I think that the manual says you should be able to give more equations
+than variables;
+
+end;

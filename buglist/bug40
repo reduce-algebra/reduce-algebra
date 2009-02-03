@@ -1,0 +1,10 @@
+% The results in these two cases aren't the same.
+
+vector a,al,be,mu,nu;
+nospur l1;
+b := g(l1,a,al,be);
+c := g(l2,a,al,be,mu,nu);
+index al,be;
+d1 := g(l1,a,al,be)*g(l2,a,al,be,mu,nu);
+d2 := b*c;
+end;

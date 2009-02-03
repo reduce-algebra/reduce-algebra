@@ -1,0 +1,13 @@
+% Presumably, there should be a factor pulled out in final value.
+
+operator p;
+
+noncom p;
+
+xx := p(1) *(p(2)^2 + 2*p(2)*p(1) + p(1)^2) + 3;
+
+on factor;
+
+xx;
+
+end;

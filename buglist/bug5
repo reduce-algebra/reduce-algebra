@@ -1,0 +1,18 @@
+% Date: Thu, 5 Mar 1998 11:10:19 +0000 (GMT)
+% From: "Dr A.C. Norman" <acn1@cus.cam.ac.uk>
+
+% This shows something horrid about attempts to get degree bounds in
+% integration, and hence shows our current code falling down a bit pit.
+% The example is "only" out by a degree of 9 or 10, but just by
+% increasing the degree of the denominator in the integrand it could be
+% made nastier!  I present it as the integral - then differentiate back
+% to get the neat integrand then show us failing on that.
+
+b := (e^(1/x)*(362880*x^9  - 362880*x^8  + 181440*x^7  - 60480*x^6
+	    + 15120*x^5 - 3024*x^4 + 504*x^3  - 72*x^2  + 9*x - 1))/x^9;
+
+c := df(b,x);
+
+int(c,x);
+
+end;

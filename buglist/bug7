@@ -1,0 +1,10 @@
+% From: Arthur Norman <acn1@cam.ac.uk>
+   a := (x+1)^4 *(x^2+x+1)^2 * (x^4+x^3+x^2+x+1);
+   on rounded;
+   precision 20;
+   a^100;
+% well actually I want a^500 or some such and to my amazement I see lots
+% of huge bignum work.  The numbers do not get moved from integers into
+% bigfloats.  A spurious *1.0 did not seem to help, but a sequence *0.1
+% followed by *10.0 did the trick, but something feels dodgy there.
+   end;

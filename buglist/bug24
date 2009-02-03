@@ -1,0 +1,26 @@
+% From: James Davenport <jhd@maths.bath.ac.uk>
+
+Comment if you're going to use GENSYM's in FOR loops
+you might as well use them everywhere: the following
+(deliberately perverse, I admit) piece of RLISP crashes;
+
+for endptr:=1:10 collect endptr;
+
+comment
+***** Non-numeric argument in arithmetic
+
+The reason is, of course, the way this is translated:
+
+(PROG (ENDPTR G0002 ENDPTR)
+   (SETQ ENDPTR 1)
+   (COND ((MINUSP (DIFFERENCE 10 ENDPTR)) (RETURN NIL)))
+   (SETQ G0002 (SETQ ENDPTR (CONS ENDPTR NIL)))
+LOOPLABEL
+   (SETQ ENDPTR (PLUS2 ENDPTR 1))
+   (COND ((MINUSP (DIFFERENCE 10 ENDPTR)) (RETURN G0002)))
+   (RPLACD ENDPTR (CONS ENDPTR NIL))
+   (SETQ ENDPTR (CDR ENDPTR))
+   (GO LOOPLABEL))
+;
+
+end;

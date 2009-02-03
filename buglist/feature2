@@ -1,0 +1,5 @@
+% Should his and similar constructs give an error message?
+
+lcof(y^(5/2),y);
+
+end;

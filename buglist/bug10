@@ -1,0 +1,5 @@
+% This one should return a complex number, even though complex is not on.
+
+on rounded;  acos(4.5);
+
+end;

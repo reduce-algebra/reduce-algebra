@@ -1,0 +1,21 @@
+% Date: Wed, 4 Nov 1998 13:42:35 +0100
+% From: melenk@zib.de (Herbert Melenk)
+% The following examples give a confusing error, arising from the fact
+% that the current modular factorization code doesn't support
+% factorization over non-prime moduli.
+
+setmod 4;
+on modular;
+f:=(2*x + 3*x)*(x + x);
+factorize f;
+
+f:=(2*x + 3*y)*(x + 3*y);
+factorize f;
+
+%        1
+% ***** --- invalid as (expression mod 4)
+%        2
+
+happens, before fctrfkronm is involved.
+
+end;

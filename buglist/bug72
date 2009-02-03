@@ -1,0 +1,20 @@
+% Date:    Mon, 27 Apr 1998 11:57:58 BST
+% From:    Alain Moussiaux <amoussia@fundp.ac.be>
+
+% r1 should not be equal to r2.
+
+eq1:=y=-sqrt(b-xi**2)*sqrt(a)/(a*sqrt(eta)); 
+ 
+r1:=solve(eq1,eta); 
+ 
+eq2:=y=sqrt(b-xi**2)*sqrt(a)/(a*sqrt(eta)); 
+ 
+r2:=solve(eq2,eta); 
+ 
+end;
+
+
+
+
+
+

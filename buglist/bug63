@@ -1,0 +1,10 @@
+% Date:    Wed, 21 May 1997 13:34:13 BST
+% From:    Chris Herssens <herc@plato.luc.ac.be>
+
+% There is a bug in limit namely
+
+limit(exp(-exp(-x)),x,infinity); % gives 1
+
+limit(exp(-exp(-x))-1,x,infinity); % gives 2 and not 0
+
+end;

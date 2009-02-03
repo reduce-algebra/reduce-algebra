@@ -1,0 +1,6 @@
+% Date: Tue, 23 Jan 1996 18:24:56 +0100
+% From: Paul.Zimmermann@loria.fr (Paul Zimmermann)
+
+int(1/(2*x-1)^3/(x*(x-1)^2)^(1/3),x);
+
+end;

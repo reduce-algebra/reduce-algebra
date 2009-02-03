@@ -1,0 +1,7 @@
+% This problem gives the erroneous result "0".
+
+q:= 1/(sin(x)^2 + cos(x)^2 - 1);
+
+df(q,x);
+
+end;

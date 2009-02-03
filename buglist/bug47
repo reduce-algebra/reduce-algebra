@@ -1,0 +1,37 @@
+% From: jpff@maths.bath.ac.uk
+% Date:     Mon, 27 May 96 14:16:53 BST
+% Subject:  An old integral
+
+% Looking back through old mail I found the "bad" integral
+
+	int(1/sqrt(1-cos(x)),x);
+
+comment
+Mathematica failed on this, awhile Maple does it.  Reduce fails rather
+oddly -- it does not even atempt the half-angle transformation.  If I
+force the exponential version things are worse;
+
+1/sqrt(1-c);
+
+%       1
+%----------------
+% sqrt( - c + 1)
+
+sub(c=(e^(i*x)+e^(-i*x))/2,ws);
+
+%              1
+%------------------------------
+%         - 1         i*x
+% sqrt(--------)*abs(e    - 1)
+%          i*x
+%       2*e
+
+int(ws,x);
+
+%                   (i*x)/2
+%                  e
+% - sqrt(2)*int(---------------,x)*i
+%                     i*x
+%                abs(e    - 1)
+
+end;

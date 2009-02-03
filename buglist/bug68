@@ -1,0 +1,15 @@
+% Date:    Tue, 05 Mar 1996 15:59:10 +0200
+% From:    caprasse@vm1.ulg.ac.be (Hubert Caprasse)
+
+vector v1,v2;
+
+es:= v1.v2; % ==> es := v1.v2
+
+a1:=v1$ a2:=v2$
+
+sub(a1=a2,es); % ==> v1.v2 % substitution is NOT done.
+
+% NOTICE: In a procedure (with parameter es) in which a1 and a2 are declared 
+%         local, the same substitution WORKS.
+
+end;

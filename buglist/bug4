@@ -1,0 +1,12 @@
+% Date: Wed, 10 Sep 1997 08:52:37 +0100 (WET DST)
+% From: Alain Moussiaux <Alain.Moussiaux@fundp.ac.be>
+
+% This terminates with solve confusion in root_of_eval, or a similar
+% problem.
+
+eq1:=atan((2*sqrt(y)-sqrt(2)*x)/(sqrt(2)*x))-
+     atan((2*sqrt(y)+sqrt(2)*x)/(sqrt(2)*x)) -cte; % +log(x);
+
+r1:=solve(eq1,y);
+
+end;

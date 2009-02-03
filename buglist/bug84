@@ -1,0 +1,109 @@
+%  From: "Dr. Paul Toumazos" <toumazos@picknowl.com.au>
+%  Date: 31 Aug 2000
+
+%%% This shows 2 bugs in gentran/scope:
+%%% 1. In the code generated  for mttb, the intermediate
+%%%    variables g12 & g13 appear on the right-hand side of the first
+%%%    expression before appearing on the left-hand side of an
+%%%    expression.
+%%%
+%%% 2. The code genration for mttc fails.
+
+matrix MTTB(3,2);$
+MTTB(1,1) := (e**((q_1 + q_3)/t_s)*abs(e**(q_1/t_s))*f_s + 2*e**(q_1/t_s)*abs(e**(q_1/t_s))*c_0*k_3 + e**(q_3/t_s)*abs(e**(q_1/t_s))*k_1 - e**((q_1 + q_3)/t_s)*sqrt((e**((2*q_1 + q_3)/t_s)*f_s**2 + 4*e**((2*q_1)/t_s)*c_0*f_s*k_3 + 2*e**((q_1 + q_3)/t_s)*f_s*k_1 + e**(q_3/t_s)*k_1**2)/e**(q_3/t_s)))/(2*e**(q_1/t_s)*abs(e**(q_1/t_s))*k_3)$
+MTTB(2,1) := (e**((q_2 + q_3)/t_s)*k_1*(e**(q_1/t_s)*abs(e**(q_1/t_s))*f_s + abs(e**(q_1/t_s))*k_1 - e**(q_1/t_s)*sqrt((e**((2*q_1 + q_3)/t_s)*f_s**2 + 4*e**((2*q_1)/t_s)*c_0*f_s*k_3 + 2*e**((q_1 + q_3)/t_s)*f_s*k_1 + e**(q_3/t_s)*k_1**2)/e**(q_3/t_s))))/(2*e**((2*q_1)/t_s)*abs(e**(q_1/t_s))*k_3*(e**(q_2/t_s)*f_s + k_2))$
+MTTB(3,1) := c_p*(t_0 - t_s)$
+MTTB(3,2) := 1$
+matrix MTTC(3,3);$
+MTTC(1,1) := 1$
+MTTC(2,2) := 1$
+MTTC(3,3) := 1/c_p$
+
+% Gentran stuff
+load gentran; load scope;
+
+% tr typecheck, asstype, dettype, typerror;
+
+ON GENTRANOPT;
+GENTRANLANG!* := 'pascal;
+ON GETDECS;
+DEFTYPE!* := 'REAL;
+
+%%% The following is a bug fix  from ZIB to fix
+%%% segmentation violation problem
+symbolic procedure maxtype type;
+% ------------------------------------------------------------------- ;
+% A type may be a pair (l u) wher l is the minimum type for a variable;
+% and  u is the maximum type. This procedure returns the maximum type.;
+% ------------------------------------------------------------------- ;
+   if atom type
+   then type
+   else if pairp cdr type then cadr type else car type;
+
+% This fix handles the case that the type is a list with ONE entry.
+% Should never happen ?? W.N.
+%%%%%% End of bug fix
+
+
+gentran mttb :=: mttb;
+gentran mttc :=: mttc;
+
+END;
+
+%%%% The following is a transcript of the corresponding output
+
+% gentran mttb :=: mttb;
+
+
+
+% var
+%     t_0,c_p,k_2,g33,q_2,g46,c_0,g44,k_1,g39,f_s,g12,g13,g9,g15,q_3,g40
+%      ,g45,t_s,g47,q_1,g25,k_3: real;
+%     mttb: array[0..n,0..n] of real;
+% begin
+%     begin
+%         g25:=2.0*k_3*g13*g12;
+%         g47:=2.0*q_1;
+%         g45:=q_1/t_s;
+%         g40:=exp(2.0*g45)*k_3;
+%         g15:=exp(q_3/t_s);
+%         g9:=exp((q_1+q_3)/t_s);
+%         g13:=exp(g45);
+%         g12:=abs(g13);
+%         g39:=f_s*g12;
+%         g44:=k_1*g12;
+%         g46:=g39-sqrt((f_s*(exp((g47+q_3)/t_s)*f_s+4.0*g40*c_0)+k_1*(
+%          2.0*f_s*g9+k_1*g15))/g15);
+%         mttb[1,1]:=(g46*g9+g44*g15+g25*c_0)/g25;
+%         mttb[1,2]:=0.0;
+%         g33:=q_3+q_2;
+%         mttb[2,1]:=(g46*exp((g33+q_1)/t_s)*k_1+g44*exp(g33/t_s)*k_1)/(
+%          2.0*(g40*k_2*g12+g39*exp((g47+q_2)/t_s)*k_3));
+%         mttb[2,2]:=0.0;
+%         mttb[3,1]:=c_p*(t_0-t_s);
+%         mttb[3,2]:=1
+%     end
+% end;
+
+% t
+
+% gentran mttc :=: mttc;
+
+
+
+
+% ***** Type error:
+
+% (integer) mttc(n,n)
+
+% integer() := real
+
+% ***** Wrong typing
+
+% Cont? (Y or N) y
+% y
+
+
+% END;
+
+% 2:

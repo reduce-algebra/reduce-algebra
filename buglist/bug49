@@ -1,0 +1,56 @@
+% From: jpff@maths.bath.ac.uk
+% Subject: Another integral that does not succeed
+% Date: Wed, 14 Aug 96 16:38:44 BST
+
+int((4*t+pi)/cos(t), t, -pi/4, pi/4);
+
+% just fails to get anywhere;
+
+% The answer is in MACSYMA is
+  %pi log(sqrt(2) + 2) - %pi log(2 - sqrt(2))/sqrt(2))
+
+% or equivalently 2 %pi log(sqrt(2) + 1)
+
+%while in REDUCE we have
+
+%                             t  2
+%                        tan(---) *t
+%              pi             2
+% - (8*(sub(t=----,int(---------------,t))
+%              4             t  2
+%                       tan(---)  - 1
+%                            2
+
+%                                   t  2
+%                              tan(---) *t
+%                  - pi             2                        pi
+%        - sub(t=-------,int(---------------,t))) - log(tan(----) + 1)*pi
+%                   4              t  2                      8
+%                             tan(---)  - 1
+%                                  2
+
+%                pi                          pi
+%     + log(tan(----) - 1)*pi - log( - (tan(----) + 1))*pi
+%                8                           8
+
+%                    pi
+%     + log( - (tan(----) - 1))*pi)
+%                    8
+
+% From Winfried Neun:
+
+% The problem is that the indefinte integral gets
+
+% int((4*t+pi)/cos(t), t);
+
+%                t  2
+%           tan(---) *t
+%                2                      t                      t                2
+% - 8*int(---------------,t) - log(tan(---) - 1)*pi + log(tan(---) + 1)*pi + 2*t
+%               t  2                    2                      2
+%          tan(---)  - 1
+%               2
+
+% and then the substitution is made for the limits.
+
+end;

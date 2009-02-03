@@ -1,0 +1,5 @@
+% This gives a syntax error.
+
+'(-0.1);
+
+end;

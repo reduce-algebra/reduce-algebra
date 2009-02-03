@@ -1,0 +1,25 @@
+% Date:    Wed, 03 May 1995 10:18:33 +0200
+% From:    Albert Salat <als@ipp-garching.mpg.de>
+
+% With REDUCE 3.5 on a unix system the following program produces an
+% erroneous integration:
+
+  depend k, z ;
+
+  f:= k * sqrt(z) ;
+
+% F := SQRT(Z)*K$
+
+  intf:= int( f, z ) ;
+
+% INTF := (2*SQRT(Z)*K*Z)/3$
+ 
+  tf:= df( intf, z ) ;
+
+% TF := (SQRT(Z)*(2*DF(K,Z)*Z + 3*K))/3$
+
+  zero:= f - tf ;
+
+% ZERO := ( - 2*SQRT(Z)*DF(K,Z)*Z)/3$
+
+end;

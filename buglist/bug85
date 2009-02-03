@@ -1,0 +1,17 @@
+% Date:    Fri, 11 Aug 2000 18:48:50 BST
+% From:    "Dr Francis J. Wright" <F.J.Wright@qmw.ac.uk>
+
+% The following integral appears to run forever with the regular
+% integrator, but finishes quickly (although not returned in a closed
+% form) if algint is loaded.
+
+ex := (sqrt(k)*sqrt(k**2 + y**2)*k)/(sqrt(c)*sqrt(a*k**2 + a*y**2 -
+      sqrt(k**2 + y**2)*k*y - k**3 - k*y**2)*sqrt(2));
+
+% int(ex,y);
+
+load_package algint;
+
+int(ex,y);
+
+end;

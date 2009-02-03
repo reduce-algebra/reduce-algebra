@@ -1,0 +1,18 @@
+% Date:    Tue, 02 Jun 1998 16:30:25 -0000
+% From:    neun@zib.de (Winfried Neun)
+
+load defint;
+on complex;
+f := (16*i*log(( - i)/4) - 10*i*log(( - i)/2) - 16*i*log(i/4) +
+	10*i*log(i/2) + pi)/ 90$
+
+let logcomplex; % Stans simplification o.k.
+f;       
+clearrules logcomplex;
+
+on combinelogs; % standard system, problem ?
+f;
+
+% The results differ by a factor of 7.
+
+end;

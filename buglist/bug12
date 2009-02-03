@@ -1,0 +1,9 @@
+% On div doesn't work in lists, or maybe it's equations ...
+
+xx := solve({x+y=a+b,x-y=0},{x,y});
+
+on div;
+
+xx;
+
+end;

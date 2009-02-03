@@ -1,0 +1,12 @@
+% Date:    Fri, 11 Dec 87  9:58 CET
+% From: Eberhard Schruefer
+
+solve(x**c-3,x);
+
+%     1/c       2*arbint(1)*pi          2*arbint(1)*pi
+% {x=3   *(cos(----------------) + sin(----------------)*i)}
+%                     c                       c
+
+% However, only arbint(1)=0 is correct.
+
+end;

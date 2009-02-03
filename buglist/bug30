@@ -1,0 +1,5 @@
+% The following doesn't initially simplify to 0, although reval ws does.
+
+sub(b=3a/v**2, sqrt b*sqrt a*abs v - sqrt 3*a);
+
+end;

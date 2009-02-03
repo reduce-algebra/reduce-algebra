@@ -1,0 +1,12 @@
+% Date: Tue, 28 Jun 1994 13:56:54 +0100
+% From: Andry Grozin <A.Grozin@open.ac.uk>
+% Subject: is it a bug or a feature?
+
+operator x,y;
+
+procedure tst(p,q);
+<< for all n let x(n)=y(n,q); p:=p; for all n clear x(n); p >>;
+
+tst(x(2),m); tst(x(2),n);
+
+end;

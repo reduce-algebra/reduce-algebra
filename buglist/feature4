@@ -1,0 +1,7 @@
+% lets R3.5 and R3.6 eat up all heap (fastest memory eater ever seen).
+% This is because it tries to create e^x 202639 times.
+% It's ok with nopowers off in the development version as of 25 Jan 98.
+
+factorize( e**(202639*x));
+
+end;
