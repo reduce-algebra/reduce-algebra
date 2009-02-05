@@ -1,91 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: acfsf.red,v 1.14 2007/10/05 13:38:33 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
-% $Log: acfsf.red,v $
-% Revision 1.14  2007/10/05 13:38:33  sturm
-% Adapted to CGB interfaces.
-%
-% Revision 1.13  2004/05/25 12:23:19  dolzmann
-% Added service rlqnum.
-%
-% Revision 1.12  2003/05/19 10:38:31  dolzmann
-% The Groebner Simplifier now uses the gb package.
-%
-% Revision 1.11  2002/05/28 13:21:51  sturm
-% Added black box rl_fbqe() and corresponding switch rlqefb.
-% That is, for ofsf, rlqe uses rlcad in case of failure now.
-%
-% Revision 1.10  1999/09/22 12:58:56  dolzmann
-% Added context switch rlsusi, which is by default off.
-%
-% Revision 1.9  1999/04/12 09:25:48  sturm
-% Removed procedure acfsf_canegrel and acfsf_anegrel.
-% Updated comments for exported procedures.
-%
-% Revision 1.8  1999/04/04 19:01:52  sturm
-% Added fluid declaration for !*gbverbose.
-%
-% Revision 1.7  1999/03/23 12:26:29  sturm
-% Renamed switch rlsisqf to rlsiatadv.
-%
-% Revision 1.6  1999/03/23 07:54:31  dolzmann
-% Changed copyright information.
-% Added list of exported procedures and import list.
-% Added fluids for the rcsid of the file and for the copyright information.
-%
-% Revision 1.5  1999/03/21 13:33:02  dolzmann
-% Registered acfsf_getineq as the black box implementation for rl_getineq.
-% Use cl_bnfsimpl instead of acfsf_bnfsimpl.
-% Removed black box rl_zero.
-% Added service rlthsimpl.
-% Registered service rlqeipo.
-% Registered service rlgentheo.
-%
-% Revision 1.4  1997/10/02 13:14:39  sturm
-% The CGB switches have been renamed from gcgb... to cgb...
-%
-% Revision 1.3  1997/10/01 11:13:42  dolzmann
-% Added service rlqe.
-%
-% Revision 1.2  1997/08/24 16:18:39  sturm
-% Added service rl_surep with black box rl_multsurep.
-% Added service rl_siaddatl.
-%
-% Revision 1.1  1997/08/22 17:30:37  sturm
-% Created an acfsf context based on ofsf.
-%
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
 lisp <<
    fluid '(acfsf_rcsid!* acfsf_copyright!*);
-   acfsf_rcsid!* := "$Id: acfsf.red,v 1.14 2007/10/05 13:38:33 sturm Exp $";
-   acfsf_copyright!* := "Copyright (c) 1995-1999 A. Dolzmann and T. Sturm"
+   acfsf_rcsid!* := "$Id$";
+   acfsf_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module acfsf;
 % Algebraically closed field standard form. Main module. Algorithms on
@@ -100,7 +47,6 @@ load!-package 'cl;
 remflag('(load!-package),'eval);  % for bootstrapping
 load!-package 'cgb;
 flag('(load!-package),'eval);
-
 
 exports acfsf_simpterm,acfsf_prepat,acfsf_resimpat,acfsf_lengthat,
    acfsf_chsimpat,acfsf_simpat,acfsf_op,acfsf_arg2l,acfsf_arg2r,acfsf_argn,
