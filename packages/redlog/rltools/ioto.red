@@ -1,75 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: ioto.red,v 1.4 2003/12/02 15:27:36 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ioto.red,v $
-% Revision 1.4  2003/12/02 15:27:36  sturm
-% Introduced ioto_nterpri to avoid ugly linebreaks in verbosity output.
-%
-% Revision 1.3  1999/03/22 15:22:20  dolzmann
-% Changed copyright information.
-% Corrected comments.
-%
-% Revision 1.2  1999/01/17 15:32:20  dolzmann
-% Added comments.
-%
-% Revision 1.1  1996/04/30 12:06:42  sturm
-% Merged ioto, lto, and sfto into rltools.
-%
-% Revision 1.1  1996/03/22 11:58:08  sturm
-% Moved and renamed. Previously iotopsl.red.
-%
-% Revision 1.5  1996/03/09 13:34:44  sturm
-% Added use of !#-macros for resolving Lisp dependencies.
-% Minor modifications in procedure ioto_realtime.
-%
-% Revision 1.4  1996/03/04 17:20:02  sturm
-% Added procedure ioto_prtmsg.
-% Tried to achive CSL compatibility:
-% Added procedures ioto_pslp, ioto_flush.
-% Used SL function posn instead of system call.
-% Under CSL, ioto_realtime should return "???" now.
-%
-% Revision 1.3  1995/08/30  08:10:33  sturm
-% Added procedure procedure ioto_cplu. :-)
-%
-% Revision 1.2  1995/07/07  10:55:51  sturm
-% Added procedure ioto_realtime.
-%
-% Revision 1.1  1995/06/21  14:32:12  dolzmann
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ioto_rcsid!* ioto_copyright!*);
-   ioto_rcsid!* := "$Id: ioto.red,v 1.4 2003/12/02 15:27:36 sturm Exp $";
-   ioto_copyright!* := "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+   ioto_rcsid!* := "$Id$";
+   ioto_copyright!* := "Copyright (c) 1995-2009 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module ioto;
 % Input/Output tools.

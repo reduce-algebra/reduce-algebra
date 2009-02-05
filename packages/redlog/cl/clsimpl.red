@@ -1,153 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: clsimpl.red,v 1.32 2008/01/23 16:32:40 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: clsimpl.red,v $
-% Revision 1.32  2008/01/23 16:32:40  sturm
-% Some improvements in the simplification of bounded quantifiers. There is still a lot to be done!
-%
-% Revision 1.31  2007/10/06 06:13:28  sturm
-% Fix in cl_siaddatl() for CGB computations with theory argument.
-%
-% Revision 1.30  2007/03/28 10:27:50  sturm
-% Removed semicolon at the end of cl_simpl1.
-%
-% Revision 1.29  2007/03/22 17:36:10  lasaruk
-% Wrong number of arguments in cl_simpl1 call fixed
-%
-% Revision 1.28  2006/06/23 09:28:01  lasaruk
-% Temorary added a call to pasf in bound strengthteen procedure to avoid
-% univariate formulas enter the bound
-%
-% Revision 1.27  2005/04/27 19:38:21  lasaruk
-% Substitution in bounds added.
-%
-% Revision 1.26  2005/04/13 18:10:14  lasaruk
-% Bound strengthen procedure can handle trivial atomic matrices
-%
-% Revision 1.25  2005/03/25 14:49:56  lasaruk
-% Bound smart simplifier rewritten
-%
-% Revision 1.24  2004/08/29 20:43:56  lasaruk
-% Bqua jumpts out in case of bounded quantifier
-% with an empty solution set.
-%
-% Revision 1.22  2003/08/19 09:29:04  seidl
-% Restructured and partly rewritten simplification of bounded
-% quantifiers by identifying rules (TV), (EQ), (SB), (SM), (STRB).
-% Removed a hack by introducing blackbox "bsatp".
-%
-% Revision 1.21  2003/08/14 21:44:05  seidl
-% Simplification of bounded quantifiers looks quite good now. A hack has
-% to be cured by a blackbox bsatp (bound sat. predicate). rlsism can be
-% savely turned on now in pasf, but there is a problem with susi and
-% congruences.
-%
-% Revision 1.20  2003/08/14 16:45:04  seidl
-% Improved simplification of bounded quantifiers. If the bound or the
-% matrix is a truth value, then the result will be a truth value.
-%
-% Revision 1.19  2003/08/05 08:58:34  seidl
-% Intermediate check-in.
-%
-% Revision 1.18  2003/07/22 07:21:10  seidl
-% Simplification is aware of bounds that are equations now. Found bug in
-% b2terml, TODO Lasaruk.
-%
-% Revision 1.17  2003/07/22 06:17:50  seidl
-% Intermediate check-in. Part of advanced smart simplification works
-% already.
-%
-% Revision 1.16  2003/07/14 12:39:48  lasaruk
-% some cl-methods corrected to work with bounded quantifiers
-%
-% Revision 1.15  2003/06/01 21:01:56  seidl
-% Moved code for simplifying bounded quantifiers to a procedure. Resolved a
-% bug there. Added further simplifications there.
-%
-% Revision 1.14  2003/04/09 18:31:02  seidl
-% Augmented cl_simpl1 and added cl_strb, so the standard simplifier can
-% deal now with bounded quantifiers. If possible, the bound condition is
-% strengthened.
-%
-% Revision 1.13  2003/01/31 08:44:40  sturm
-% Fixed a bug in cl_smsimpl!-imprep!-atprem and cl_smsimpl!-imprep!-atconcl.
-%
-% Revision 1.12  1999/09/22 13:00:18  dolzmann
-% Added procedure cl_susiminlevel for the ofsf part of susi.
-%
-% Revision 1.11  1999/04/13 13:11:01  sturm
-% Updated comments for exported procedures.
-%
-% Revision 1.10  1999/03/22 17:06:43  dolzmann
-% Changed copyright information.
-% Added and reformatted comments.
-%
-% Revision 1.9  1999/03/21 13:34:45  dolzmann
-% Added the cl-part of the super simplifier susi.
-%
-% Revision 1.8  1999/01/17 15:36:43  dolzmann
-% Corrected some typos in the comments.
-%
-% Revision 1.7  1997/08/24 16:14:56  sturm
-% Added procedure cl_sitheo using fluid !*rlsithok.
-% Added service rl_surep with black box rl_multsurep.
-% Added service rl_siaddatl.
-%
-% Revision 1.6  1996/10/07 11:45:55  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.5  1996/09/05 11:50:11  dolzmann
-% Minor changes in procedure cl_simplat.
-%
-% Revision 1.4  1996/09/05 11:14:20  dolzmann
-% Fixed a bug in cl_simplat: atomic formulas are always simplified.
-%
-% Revision 1.3  1996/07/13 11:01:59  dolzmann
-% Fixed a bug in cl_simpl.
-% Introduced new black box rl_smcpknowl.
-% Removed procedure cl_cpknowl.
-% Added context independent black box implementations cl_smcpknowl,
-% cl_smrmknowl, cl_smupdknowl, cl_smmkatl, cl_smsimpl!-impl, and
-% cl_smsimpl!-equiv1.
-%
-% Revision 1.2  1996/03/25 08:50:55  sturm
-% Fixed a bug in procedure cl_simpl.
-%
-% Revision 1.1  1996/03/22 10:31:32  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(cl_simpl_rcsid!* cl_simpl_copyright!*);
-   cl_simpl_rcsid!* := "$Id: clsimpl.red,v 1.32 2008/01/23 16:32:40 sturm Exp $";
-   cl_simpl_copyright!* := "(c) 1995-1999 by A. Dolzmann and T. Sturm"
+   cl_simpl_rcsid!* :=
+      "$Id$";
+   cl_simpl_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module clsimpl;
 % Common logic simplification routines. Submodule of [cl]. Here the

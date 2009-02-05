@@ -1,119 +1,37 @@
 % ----------------------------------------------------------------------
-% $Id: dvfsf.red,v 1.18 2008/08/24 06:26:34 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: dvfsf.red,v $
-% Revision 1.18  2008/08/24 06:26:34  sturm
-% Added blackbox rl_betterp!*().
-%
-% Revision 1.17  2004/05/25 12:24:31  dolzmann
-% Added service rlqnum.
-%
-% Revision 1.16  2002/05/28 13:21:56  sturm
-% Added black box rl_fbqe() and corresponding switch rlqefb.
-% That is, for ofsf, rlqe uses rlcad in case of failure now.
-%
-% Revision 1.15  1999/05/06 12:18:37  sturm
-% Updated comments for exported procedures.
-%
-% Revision 1.14  1999/03/23 15:10:45  dolzmann
-% Fixed a bug in dvfsf_enter.
-%
-% Revision 1.13  1999/03/23 08:44:16  dolzmann
-% Changed copyright information.
-% Added list of exported procedures.
-%
-% Revision 1.12  1999/03/22 12:37:51  dolzmann
-% Adapted procedure dvfsf_enter to the protocol required from the new rl_set.
-%
-% Revision 1.11  1999/03/21 13:35:40  dolzmann
-% Corrected comments.
-% Added black box implementation dvfsf_subsumption.
-% Use property number!-of!-args instead of num!-of!-args.
-% Use new procedure dvfsf_chsimpat instead of dvfsf_chsimpat. The AM
-% interface allows now the input of relation chains.
-% Fixed a bug in dvfsf_simpat: The AM interface now handles rationals
-% correct.
-% Added procedure dvfsf_opp.
-% Added package dvfsfsism.
-% Register dvfsf-code instead of cl-code for smart simplification.
-% Added switch rlsusi.
-%
-% Revision 1.10  1999/03/19 18:34:42  dolzmann
-% Added services rl_varl, rl_fvarl, and rl_bvarl.
-%
-% Revision 1.9  1999/03/19 15:50:31  dolzmann
-% Added service rlifacml.
-%
-% Revision 1.8  1999/03/19 15:20:51  dolzmann
-% Added service rl_subfof.
-%
-% Revision 1.7  1999/03/19 12:17:47  dolzmann
-% Added service rlmkcanonic.
-%
-% Revision 1.6  1999/01/17 16:21:42  dolzmann
-% Added services rl_explats, rl_termml, rl_terml, rl_struct, and
-% rl_ifstruct.
-% Added black boxes rl_termmlat, rl_structat, and rl_ifstructat.
-% Added procedure dvfsf_simpterm.
-% Removed unused properties simptermfn, mktermfn, and preptermfn from
-% context tag.
-% Added properties rl_prepterm, and rl_simpterm.
-% Added fluid binding for switches rlsiexpl, rlsiexpla, and rlsifac.
-% Changed copyright notice.
-%
-% Revision 1.5  1999/01/10 11:13:03  sturm
-% Added black box rl_specelim (cl_specelim).
-% Added service rlqea.
-%
-% Revision 1.4  1997/11/03 15:11:21  sturm
-% Added BB implementation dvfsf_a2cdl and services rl_tab, rlitab,
-% and rl_atab.
-% Turned on BFS for QE by default.
-%
-% Revision 1.3  1996/09/30 12:38:12  sturm
-% Fixed some comments for automatic processing.
-%
-% Revision 1.2  1996/07/13 11:51:34  dolzmann
-% Pakage dvfsf now uses context independent smart simplification facilities
-% of cl.
-% Removed control of switch rlsism.
-% Set servives rl_dnf and rl_cnf to dvfsf_dnf and dvfsf_cnf respectively.
-% Package dvfsf now uses cl black box implementations for black boxes
-% rl_sacatlp and rl_sacat.
-%
-% Revision 1.1  1996/07/08 12:15:19  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(dvfsf_rcsid!* dvfsf_copyright!*);
-   dvfsf_rcsid!* := "$Id: dvfsf.red,v 1.18 2008/08/24 06:26:34 sturm Exp $";
-   dvfsf_copyright!* := "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+   dvfsf_rcsid!* := "$Id$";
+   dvfsf_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
 
 module dvfsf;

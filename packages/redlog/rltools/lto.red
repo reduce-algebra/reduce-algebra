@@ -1,104 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: lto.red,v 1.15 2008/01/23 16:59:19 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: lto.red,v $
-% Revision 1.15  2008/01/23 16:59:19  sturm
-% Added lto_idconcat, lto_idconcat2.
-%
-% Revision 1.14  2007/11/19 12:24:46  kaesers
-% Added procedure lto_alinsert.
-%
-% Revision 1.13  2007/11/05 23:50:06  kaesers
-% Added lto_lengthp.
-%
-% Revision 1.12  2007/10/24 13:29:14  kaesers
-% Added lto_sublistp.
-%
-% Revision 1.11  2007/10/17 13:24:09  kaesers
-% Added procedure lto_listend.
-%
-% Revision 1.10  2007/10/15 23:54:40  kaesers
-% Optimized lto_mergesort code.
-%
-% Revision 1.9  2007/09/13 20:30:13  kaesers
-% Added some new functions
-%
-% Revision 1.8  2006/08/02 08:12:38  sturm
-% Added module clresolv.
-%
-% Revision 1.7  2003/01/29 10:44:08  sturm
-% Moved list2set and list2vector to lto.red.
-%
-% Revision 1.6  1999/03/24 12:29:57  dolzmann
-% Added the procedure lto_max for computing the maximum of a list of
-% integers.
-%
-% Revision 1.5  1999/03/22 15:26:15  dolzmann
-% Changed copyright information.
-% Added and reformatted comments.
-%
-% Revision 1.4  1997/11/05 06:35:10  dolzmann
-% Added comments.
-% Moved system dependent procedures to the end of the file.
-% Updated copyright message.
-% Replaced "written by" in the CVS header by the usual copyright message.
-%
-% Revision 1.3  1996/10/17 12:31:52  sturm
-% Moved sconcat2, sconcat, and at2str from qepcad.red to lto.red.
-%
-% Revision 1.2  1996/09/05 11:17:36  dolzmann
-% Added procedures delq, delqip, delqip1, and adjoin for non-PSL versions.
-%
-% Revision 1.1  1996/04/30 12:06:44  sturm
-% Merged ioto, lto, and sfto into rltools.
-%
-% Revision 1.1  1996/03/22 12:11:09  sturm
-% Moved.
-%
-% Revision 1.4  1996/02/18 13:52:15  sturm
-% Added procedure lto_natsoc.
-%
-% Revision 1.3  1996/02/18 12:39:18  dolzmann
-% Added procedure lto_cassoc.
-%
-% Revision 1.2  1995/06/21  07:35:47  sturm
-% Added procedures lto_nconcn, lto_alunion, and lto_almerge.
-%
-% Revision 1.1  1995/05/29  14:47:19  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(lto_rcsid!* lto_copyright!*);
-   lto_rcsid!* := "$Id: lto.red,v 1.15 2008/01/23 16:59:19 sturm Exp $";
-   lto_copyright!* := "Copyright (c) 1995-2008 by A. Dolzmann and T. Sturm"
+   lto_rcsid!* := "$Id$";
+   lto_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module lto;
 % List tools.

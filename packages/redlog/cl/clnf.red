@@ -1,92 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: clnf.red,v 1.16 2005/04/05 22:55:52 lasaruk Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: clnf.red,v $
-% Revision 1.16  2005/04/05 22:55:52  lasaruk
-% definition of free variables refined
-%
-% Revision 1.15  2003/05/31 14:40:58  lasaruk
-% cl_renamevars modified to work with bounded quantifiers.
-%
-% Revision 1.14  2003/04/15 14:07:41  seidl
-% Checked Lasaruk's changes, fixed issue in rl_nnf1 (don't negate bounds).
-%
-% Revision 1.13  2003/04/14 10:13:38  lasaruk
-% Negation normal form, cl_flip and cl_apply2ats changed to work with
-% new introduced bounded quantifiers. All changes are bracketed by %
-% /LASARUK and % /END_LASARUK. Any other changes in code should be dismissed.
-%
-% Revision 1.12  2002/08/23 08:44:18  dolzmann
-% Minor code cosmetic.
-%
-% Revision 1.11  1999/04/13 13:10:58  sturm
-% Updated comments for exported procedures.
-%
-% Revision 1.10  1999/03/22 17:08:07  dolzmann
-% Changed copyright information.
-%
-% Revision 1.9  1999/03/19 16:07:17  dolzmann
-% Fixed a bug in cl_tnf: cl_tnff and cl_tnft call rl_t2cdl instead of
-% ofsf_t2cdl.
-%
-% Revision 1.8  1997/08/14 10:09:16  sturm
-% Added documentation for cl_rename!-vars.
-%
-% Revision 1.7  1996/10/17 13:51:54  sturm
-% Introduced services rlvarl, rlfvarl, and rlbvarl. Renamed cl_varl to
-% cl_varl1 for this.
-%
-% Revision 1.6  1996/10/07 11:45:51  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.5  1996/10/02 10:24:06  dolzmann
-% Fixed a bug in cl_tnft.
-%
-% Revision 1.4  1996/10/01 10:24:54  reiske
-% Introduced new service rltnf and related code.
-%
-% Revision 1.3  1996/07/07 14:35:37  sturm
-% Turned some cl calls into service calls.
-% Introduced new service rl_nnfnot.
-%
-% Revision 1.2  1996/06/05 15:06:40  sturm
-% Added procedure cl_varl as an entry point for cl_varl1.
-%
-% Revision 1.1  1996/03/22 10:31:30  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(cl_nf_rcsid!* cl_nf_copyright!*);
-   cl_nf_rcsid!* := "$Id: clnf.red,v 1.16 2005/04/05 22:55:52 lasaruk Exp $";
-   cl_nf_copyright!* := "(c) 1995-1999 by A. Dolzmann and T. Sturm"
+   cl_nf_rcsid!* := "$Id$";
+   cl_nf_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module clnf;
 % Common logic normal forms. Submodule of [cl].

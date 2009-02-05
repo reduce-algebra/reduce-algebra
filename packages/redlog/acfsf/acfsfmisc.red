@@ -1,67 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: acfsfmisc.red,v 1.8 2007/03/28 10:34:03 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
-% $Log: acfsfmisc.red,v $
-% Revision 1.8  2007/03/28 10:34:03  sturm
-% Do not use function names as variables (rlint).
-%
-% Revision 1.7  1999/04/13 13:05:33  sturm
-% Minor corrections in comments.
-%
-% Revision 1.6  1999/04/12 09:25:48  sturm
-% Removed procedure acfsf_canegrel and acfsf_anegrel.
-% Updated comments for exported procedures.
-%
-% Revision 1.5  1999/04/01 11:27:16  dolzmann
-% Added comment for acfsf_structat.
-%
-% Revision 1.4  1999/03/23 08:19:21  dolzmann
-% Changed copyright information.
-% Added fluids for the rcsid of the file and for the copyright information.
-%
-% Revision 1.3  1999/03/21 13:40:39  dolzmann
-% Added procedure acfsf_canegrel and acfsf_anegrel which were commented out.
-%
-% Revision 1.2  1997/08/24 16:18:40  sturm
-% Added service rl_surep with black box rl_multsurep.
-% Added service rl_siaddatl.
-%
-% Revision 1.1  1997/08/22 17:30:40  sturm
-% Created an acfsf context based on ofsf.
-%
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
 lisp <<
    fluid '(acfsf_misc_rcsid!* acfsf_misc_copyright!*);
    acfsf_misc_rcsid!* :=
-      "$Id: acfsfmisc.red,v 1.8 2007/03/28 10:34:03 sturm Exp $";
-   acfsf_misc_copyright!* := "Copyright (c) 1995-1999 A. Dolzmann and T. Sturm"
+      "$Id$";
+   acfsf_misc_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module acfsfmisc;
 % Algebraically closed field standard form other. Submodule of [acfsf].

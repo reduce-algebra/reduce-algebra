@@ -1,73 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: dcfsfqe.red,v 1.10 2007/12/16 12:31:56 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2004-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: dcfsfqe.red,v $
-% Revision 1.10  2007/12/16 12:31:56  sturm
-% Removed duplicate procedure dcfsf_mvar.
-%
-% Revision 1.9  2004/05/27 11:57:24  dolzmann
-% Added procedrure dcfsf_derivationnf.
-%
-% Revision 1.8  2004/05/25 13:14:37  dolzmann
-% Fixed a bug in dcfsf_simpd. simpd evaluates its first argument.
-%
-% Revision 1.7  2004/05/03 08:59:17  dolzmann
-% Added verbose output.
-%
-% Revision 1.6  2004/04/27 16:54:54  dolzmann
-% Fixed a bug in the latest bug fix.
-%
-% Revision 1.5  2004/04/27 10:24:25  dolzmann
-% Fixed a bug in dcfsf_qebasis2: Infinite recursion should no longer occurr.
-%
-% Revision 1.4  2004/04/26 16:34:02  dolzmann
-% dcfsf_qevar can now handle truth values.
-% Removed superflous calls of cl_simpl.
-%
-% Revision 1.3  2004/04/26 16:24:44  dolzmann
-% Implemented quantifier elimination.
-%
-% Revision 1.2  2004/03/22 15:52:29  sturm
-% Implemented derivative of differential polynomial including theory.
-% Not tested so far.
-%
-% Revision 1.1  2004/03/22 12:31:49  sturm
-% Initial check-in.
-% Mostly copied from acfsf.
-% Includes Diploma Thesis by Kacem plus wrapper for this.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(dcfsfqe_rcsid!* dcfsfqe_copyright!*);
-   dcfsfqe_rcsid!* := "$Id: dcfsfqe.red,v 1.10 2007/12/16 12:31:56 sturm Exp $";
-   dcfsfqe_copyright!* := "Copyright (c) 2004-2008 A. Dolzmann, T. Sturm"
+   dcfsf_qe_rcsid!* :=
+      "$Id$";
+   dcfsf_qe_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module dcfsfqe;
 % Diferentially closed field standard form quantifier elimination.

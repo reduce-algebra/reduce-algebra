@@ -1,128 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: clbnf.red,v 1.21 2008/07/06 18:30:11 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2003 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: clbnf.red,v $
-% Revision 1.21  2008/07/06 18:30:11  sturm
-% Hack for CNF/DNF of prenex quantified formulas.
-%
-% Revision 1.20  2003/12/08 15:30:00  dolzmann
-% Renamed variable state to kstate, because hephys/physop.red defines
-% state as an stat function. This causes errors reading clbnf provided
-% physop is loaded.
-%
-% Revision 1.19  2003/06/11 08:45:23  dolzmann
-% Rewritten Quine simplification such that rl_simpl is not called by
-% default. Calling rl_simpl can cause male function due to unwanted
-% algebraic simplifications.
-% Added procedure for converting a bnf into set representation wrt. a
-% given operator.
-% Added black boxes rl_qssimpl and rl_qssiadd.
-% Added black box implementations cl_qssimpl and cl_qssibysimpl.
-%
-% Revision 1.18  2003/06/06 08:06:14  dolzmann
-% Added power set computation by enumeration.
-%
-% Revision 1.17  2003/06/04 07:23:04  dolzmann
-% Added CNF support to cl_quine by computing the minimal DNF of the negated
-% input formula.
-%
-% Revision 1.16  2003/06/04 06:08:09  dolzmann
-% Added procedure cl_qssusubytab as a generic implementation for
-% blackbox rl_qssubsumtion. It requires rl_qssusuat.
-% Improved procedure cl_qsimpltestccl.
-%
-% Revision 1.15  2003/06/03 16:09:40  dolzmann
-% Fixed a bug in cl_qsnconsens1: The return value nil of rl_qstrycons
-% entered the list of consensus.
-% Fixed a bug in cl_qssusubyit: The eq test to 'true was missing.
-%
-% Revision 1.14  2003/06/03 11:18:10  dolzmann
-% Completely overworked quine simplification. In particular: Removed
-% bugs during prime implicant computation. Added missing tautology test
-% for implication test. Added comments on use of black boxes. Moved and
-% sorted procedure definitions.
-%
-% Revision 1.13  2003/05/27 08:19:54  dolzmann
-% Procedure cl_qsconsens now returns a list of consensus. Adapted
-% procedure cl_qscpi accordingly.
-%
-% Revision 1.12  2003/05/27 07:27:51  dolzmann
-% Use cl_qssub instead of rl_subfof;
-% Added black box rl_qssubat.
-% Added default implementation cl_qssubat for black box rl_qssubat.
-% Added procedure cl_qssimplc as a future replacement for rl_simpl.
-% Changed cl_bnf2set. cl_quine can now deal with BNFs containing
-% identical clauses.
-%
-% Revision 1.11  2003/05/23 16:01:01  dolzmann
-% Added selection from all prime implicants as descibed in Quine 1955.
-% Fixed a bug in consensus computation: nil as an legal conses was not
-% recognized.
-%
-% Revision 1.10  2003/05/21 09:03:27  dolzmann
-% Added first experimental implementation of service rlquine for
-% simplifying Boolean normal forms in the style of W. V. Quine.
-%
-% Revision 1.9  2003/05/20 11:35:46  dolzmann
-% Moved procedures.
-%
-% Revision 1.8  1999/04/13 13:10:55  sturm
-% Updated comments for exported procedures.
-%
-% Revision 1.7  1999/04/01 11:26:47  dolzmann
-% Reformatted one procedure.
-%
-% Revision 1.6  1999/03/22 17:07:12  dolzmann
-% Changed copyright information.
-% Reformatted comments.
-%
-% Revision 1.5  1999/03/21 13:34:06  dolzmann
-% Corrected comments.
-%
-% Revision 1.4  1996/10/07 11:45:47  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.3  1996/07/13 10:53:07  dolzmann
-% Added black box implementations cl_bnfsimpl, cl_sacatlp, and cl_sacat.
-%
-% Revision 1.2  1996/07/07 14:34:19  sturm
-% Turned some cl calls into service calls.
-%
-% Revision 1.1  1996/03/22 10:31:27  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(cl_bnf_rcsid!* cl_bnf_copyright!*);
-   cl_bnf_rcsid!* := "$Id: clbnf.red,v 1.21 2008/07/06 18:30:11 sturm Exp $";
-   cl_bnf_copyright!* := "(c) 1995-2003 by A. Dolzmann, A. Seidl, and T. Sturm"
+   cl_bnf_rcsid!* := "$Id$";
+   cl_bnf_copyright!* := "(c) 1995-2009 by A. Dolzmann, A. Seidl, and T. Sturm"
 >>;
-
 
 module clbnf;
 % Common logic boolean normal forms. Submodule of [cl]. This module

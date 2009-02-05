@@ -1,124 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: clmisc.red,v 1.24 2005/04/27 19:38:21 lasaruk Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: clmisc.red,v $
-% Revision 1.24  2005/04/27 19:38:21  lasaruk
-% Substitution in bounds added.
-%
-% Revision 1.23  2004/11/22 23:36:59  seidl
-% Added cl_prenexp. Added bound quantifier case to cl_qnum. Affirmed the
-% way to count atomic formulas for formulas with bounded quantifiers.
-% Removed two /LASARUKs.
-%
-% Revision 1.22  2004/08/06 15:34:24  lasaruk
-% Added handling of bounded quantifiers in substitution
-%
-% Revision 1.21  2003/08/05 08:58:34  seidl
-% Intermediate check-in.
-%
-% Revision 1.20  2003/07/14 12:39:48  lasaruk
-% some cl-methods corrected to work with bounded quantifiers
-%
-% Revision 1.19  2003/07/11 17:16:04  sturm
-% New service rlqnum (number of quantifiers).
-%
-% Revision 1.18  2003/04/15 14:07:41  seidl
-% Checked Lasaruk's changes, fixed issue in rl_nnf1 (don't negate bounds).
-%
-% Revision 1.17  2003/04/14 10:13:38  lasaruk
-% Negation normal form, cl_flip and cl_apply2ats changed to work with
-% new introduced bounded quantifiers. All changes are bracketed by %
-% /LASARUK and % /END_LASARUK. Any other changes in code should be dismissed.
-%
-% Revision 1.16  2002/08/23 09:32:16  seidl
-% Added a comment.
-%
-% Revision 1.15  1999/04/13 13:10:57  sturm
-% Updated comments for exported procedures.
-%
-% Revision 1.14  1999/03/22 17:08:06  dolzmann
-% Changed copyright information.
-%
-% Revision 1.13  1999/03/21 13:34:24  dolzmann
-% Removed unused procedure cl_varmem.
-% Corrected comments.
-%
-% Revision 1.12  1999/01/17 16:02:30  dolzmann
-% Added and corrected comments.
-%
-% Revision 1.11  1997/10/01 11:11:42  dolzmann
-% Added procedure cl_splt.
-%
-% Revision 1.10  1997/08/24 16:18:48  sturm
-% Added service rl_surep with black box rl_multsurep.
-% Added service rl_siaddatl.
-%
-% Revision 1.9  1997/04/08 14:33:17  sturm
-% Fixed a bug in cl_subfof: sub(y=z,ex(x,x+y=0)) did unnecessarily rename x.
-%
-% Revision 1.8  1996/10/23 14:28:55  sturm
-% sub(a=0,ex(x,true)) crashed due to the truth value within the
-% quantifier scope.
-%
-% Revision 1.7  1996/10/17 13:54:07  sturm
-% Renamed cl_varl to cl_varl1.
-% Rename cl_fvarl to cl_subfvarl and removed redundant parameter there.
-% Same for cl_fvarl1.
-%
-% Revision 1.6  1996/10/07 11:45:50  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.5  1996/09/05 11:11:51  dolzmann
-% Added procedure cl_f2ml. Procedure cl_atml1 now uses cl_f2ml.
-% New procedures for determing multiplicity lists and sets of terms or
-% irreducible factors.
-% Added procedures cl_struct and cl_ifstruct and related code.
-%
-% Revision 1.4  1996/07/07 14:35:16  sturm
-% Introduced new black box rl_eqnrhskernels.
-%
-% Revision 1.3  1996/06/05 15:08:42  sturm
-% Second argument of cl_subfof is a formula now.
-% Added renaming to cl_subfof.
-%
-% Revision 1.2  1996/05/21 17:13:19  sturm
-% Added service implementation cl_subfof.
-%
-% Revision 1.1  1996/03/22 10:31:28  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(cl_misc_rcsid!* cl_misc_copyright!*);
-   cl_misc_rcsid!* := "$Id: clmisc.red,v 1.24 2005/04/27 19:38:21 lasaruk Exp $";
-   cl_misc_copyright!* := "(c) 1995-1999 by A. Dolzmann and T. Sturm"
+   cl_misc_rcsid!* :=
+      "$Id$";
+   cl_misc_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module clmisc;
 % Common logic miscellaneous algorithms. Submodule of [cl].

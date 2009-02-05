@@ -1,93 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: dvfsfmisc.red,v 1.14 1999/04/05 11:23:43 dolzmann Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: dvfsfmisc.red,v $
-% Revision 1.14  1999/04/05 11:23:43  dolzmann
-% Fixed a bug in dvfsf_mkcanonic.
-%
-% Revision 1.13  1999/04/01 11:24:59  dolzmann
-% Changed comments.
-% Fixed a bug in dvfsf_varsubstat.
-%
-% Revision 1.12  1999/03/24 12:41:51  dolzmann
-% Added and reformatted comments.
-% Fixed a bug in dvfsf_fctrat: The alist of the left and right hand sides
-% are merged instead of concatenated.
-%
-% Revision 1.11  1999/03/23 08:52:17  dolzmann
-% Changed copyright information.
-%
-% Revision 1.10  1999/03/21 13:35:23  dolzmann
-% Added black box implementation dvfsf_subsumption.
-%
-% Revision 1.9  1999/03/19 18:35:32  dolzmann
-% Changed procedure dvfsf_varlat: p is not longer treated as a variable.
-%
-% Revision 1.8  1999/03/19 15:20:37  dolzmann
-% Added procedures dvfsf_subat, dvfsf_subalchk, and dvfsf_eqnrhskernels
-% for the CL implementation of the service rl_subfof.
-%
-% Revision 1.7  1999/03/19 12:17:47  dolzmann
-% Added service rlmkcanonic.
-%
-% Revision 1.6  1999/01/17 16:24:01  dolzmann
-% Changed copyright notice.
-% Changed semantics of dvfsf_fctrat: Polynomials in p does not belong to
-% the content.
-% Added black boxes rl_termmlat, rl_structat, and rl_ifstructat.
-% Added services rl_explats.
-%
-% Revision 1.5  1997/11/03 15:11:51  sturm
-% Added BB implementation dvfsf_a2cdl.
-%
-% Revision 1.4  1996/10/07 11:32:06  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.3  1996/07/15 14:08:09  sturm
-% Fixed a bug in dvfsf_negateat.
-%
-% Revision 1.2  1996/07/13 11:40:36  dolzmann
-% Added procedures dvfsf_dnf and dvfsf_cnf for Boolean normal form
-% computation with subsumption.
-% Removed procedure dvfsf_bnfsimpl.
-%
-% Revision 1.1  1996/07/08 12:15:22  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(dvfsf_misc_rcsid!* dvfsf_misc_copyright!*);
    dvfsf_misc_rcsid!* :=
-      "$Id: dvfsfmisc.red,v 1.14 1999/04/05 11:23:43 dolzmann Exp $";
-   dvfsf_misc_copyright!* :=
-      "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   dvfsf_misc_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module dvfsfmisc;
 % Discretely valued field standard form miscellaneous. Submodule of [dvfsf].

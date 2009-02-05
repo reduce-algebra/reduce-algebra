@@ -1,151 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: clqe.red,v 1.29 2008/05/23 07:55:23 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: clqe.red,v $
-% Revision 1.29  2008/05/23 07:55:23  sturm
-% Ignore rlqe[a]precise unless for outermost block.
-%
-% Revision 1.28  2008/01/23 16:30:40  sturm
-% Fixed requantification for QE with answer for the case that deg
-% violation happens in some inner block. In that case there is now
-% simply a (requantified) formula returned, which might be sth to
-% discuss.
-% Do not output (with rlverbose) degree-violating polynomials anymore.
-% Instead, we say "FAILURE:<var>^<deg>", which is considerably more
-% compact.
-% Added switch rlqevarseltry and code for this.
-%
-% Revision 1.27  2007/12/04 15:23:31  sturm
-% Verbose output and requantification for rlqea in cl_qe1.
-%
-% Revision 1.26  2003/12/02 15:31:19  sturm
-% Use ioto_nterpri for verbose output ("+ 4" is a most conservative guess).
-%
-% Revision 1.25  2003/01/31 15:31:52  sturm
-% Worked on verbosity output of QE routines.
-%
-% Revision 1.24  2002/08/23 12:32:10  dolzmann
-% Added local quantifier elimination.
-%
-% Revision 1.23  2002/05/28 13:21:54  sturm
-% Added black box rl_fbqe() and corresponding switch rlqefb.
-% That is, for ofsf, rlqe uses rlcad in case of failure now.
-%
-% Revision 1.22  2001/05/15 18:30:25  sturm
-% Changed eq on numbers to equal as Tony suggested.
-%
-% Revision 1.21  1999/04/13 13:11:00  sturm
-% Updated comments for exported procedures.
-%
-% Revision 1.20  1999/03/22 17:07:59  dolzmann
-% Changed copyright information.
-% Reformatted comments.
-%
-% Revision 1.19  1999/03/21 13:34:57  dolzmann
-% Changed error message in cl_qeipo1.
-% Adapted cl_qews to the changed protocol of rl_trygauss.
-% Use rl_qe instead of cl_qe in cl_qeipo1 and cl_qews1.
-%
-% Revision 1.18  1999/03/18 14:08:03  sturm
-% Added new service rl_specelim!* in cl_qe for covering the "super
-% quadratic special case' for ofsf. This method is toggled by switch
-% rlsqsc, which is off by default. Context dvfsf uses cl_specelim which
-% is constantly "false." Context acfsf does not use cl_qe at all.
-%
-% Revision 1.17  1999/01/17 15:36:43  dolzmann
-% Corrected some typos in the comments.
-%
-% Revision 1.16  1998/04/09 10:52:07  sturm
-% Removed scalar binding of argument bvl in procedure cl_trygauss.
-%
-% Revision 1.15  1997/10/02 09:14:06  sturm
-% Fixed a bug in answer computation with shift.
-%
-% Revision 1.14  1996/10/27 15:19:34  sturm
-% cl_qe and cl_qea did not pass the bvl argument to cl_qe1.
-% cl_qews1 did not pass the bvl argument to rl_trygauss.
-%
-% Revision 1.13  1996/10/23 12:02:37  sturm
-% Added "exceptionlist" paramter to rlgqe and rlgqea. Several quantifier
-% blocks are treated correctly now.
-%
-% Revision 1.12  1996/10/23 11:27:14  dolzmann
-% Added switch rlqevarsel and corresponding code.
-%
-% Revision 1.11  1996/10/07 11:45:53  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.10  1996/09/29 14:22:21  sturm
-% Introduced services rlqea and rlgqea.
-%
-% Revision 1.9  1996/09/05 11:12:45  dolzmann
-% Rewritten procedure cl_qeblock2.
-% Fluid variable cl_identify!-atl!* is cleared before eliminating each
-% variable in each container element.
-% Added comments.
-% Implemented a deep Gauss elimination.
-%
-% Revision 1.8  1996/08/01 11:44:21  reiske
-% Added procedures cl_qeipo, cl_qews: quantifier elimination in position.
-%
-% Revision 1.7  1996/07/07 14:35:54  sturm
-% Turned some cl calls into service calls.
-% Removed use of fluid zehn!*.
-%
-% Revision 1.6  1996/06/07 08:53:16  sturm
-% Ignore answers when checking for equal container elements.
-%
-% Revision 1.5  1996/06/05 15:05:27  sturm
-% Split disjunctions when adding to the container, particularly in the
-% beginning.
-% Mind !*rlqegsd also in the beginning.
-%
-% Revision 1.4  1996/05/21 17:13:29  sturm
-% Removed binding of !*rl_siexpla in cl_gqe.
-%
-% Revision 1.3  1996/05/13 13:33:36  sturm
-% Added formula simplification using the simplified theory to cl_gqe.
-%
-% Revision 1.2  1996/05/12 08:26:55  sturm
-% Added procedure cl_gqe.
-% Procedure cl_qe turns on rlsipw and rlsipo.
-% Added code for generic branch computation.
-%
-% Revision 1.1  1996/03/22 10:31:31  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(cl_qe_rcsid!* cl_qe_copyright!*);
-   cl_qe_rcsid!* := "$Id: clqe.red,v 1.29 2008/05/23 07:55:23 sturm Exp $";
-   cl_qe_copyright!* := "(c) 1995-2008 by A. Dolzmann and T. Sturm"
+   cl_qe_rcsid!* := "$Id$";
+   cl_qe_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
 >>;
-
 
 module clqe;
 % Common logic quantifier elimination by elimination sets. Submodule
