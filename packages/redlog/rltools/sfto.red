@@ -1,116 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: sfto.red,v 1.16 2007/12/16 08:19:12 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: sfto.red,v $
-% Revision 1.16  2007/12/16 08:19:12  sturm
-% Moved loading of groebner, groebnr2 from sfto to the main module rltools.
-% sfto_lmultf has moved here from ofsfsiat.
-%
-% Revision 1.15  2004/05/27 11:57:59  dolzmann
-% Added procedure sfto_varf.
-%
-% Revision 1.14  2003/12/16 13:01:54  sturm
-% Fixed comment and removed unused scalar declaration in sfto_exteucd.
-%
-% Revision 1.13  2003/12/16 12:59:04  sturm
-% Added procedure sfto_exteucd for integer GCD's with cofactors.
-% AM frontend exteuc uses this now for integer arguments.
-%
-% Revision 1.12  2003/05/19 10:40:11  dolzmann
-% Changed comment.
-%
-% Revision 1.11  2003/01/13 10:00:52  dolzmann
-% Added predicated for linear terms and linear weak paramteric terms.
-%
-% Revision 1.10  2002/01/25 13:05:10  sturm
-% Added procedure sfto_dprpartksf().
-%
-% Revision 1.9  2001/12/15 18:16:14  sturm
-% Added function sfto_exteucf() and AM interface.
-%
-% Revision 1.8  1999/03/22 15:26:43  dolzmann
-% Changed copyright information.
-% Added and reformatted comments.
-%
-% Revision 1.7  1999/01/17 15:33:13  dolzmann
-% Added procedure sfto_sqfpartz for computing the square-free part of an
-% integer.
-%
-% Revision 1.6  1999/01/10 12:09:16  dolzmann
-% Added procedures sfto_zdeqn, sfto_zdgtn, sfto_zdgen for the decomposition of
-% integers.
-%
-% Revision 1.5  1996/10/08 13:54:59  dolzmann
-% Renamed "degree parity decomposition" to "parity decomposition".
-% Adapted names of procedures and switches accordingly.
-%
-% Revision 1.4  1996/09/05 11:17:48  dolzmann
-% Added procedure sfto_monfp.
-%
-% Revision 1.3  1996/07/07 12:56:12  dolzmann
-% Fixed a bug in sfto_preducef and sfto_greducef.
-%
-% Revision 1.2  1996/05/13 13:54:26  dolzmann
-% Added procedure sfto_sqrtf.
-%
-% Revision 1.1  1996/04/30 12:06:46  sturm
-% Merged ioto, lto, and sfto into rltools.
-%
-% Revision 1.2  1996/04/30 09:13:33  sturm
-% Added procedure sfto_gcdf implementing the Davenport test.
-%
-% Revision 1.1  1996/03/22 12:19:17  sturm
-% Moved.
-%
-% Revision 1.5  1996/03/04 17:15:46  sturm
-% Added procedure sfto_decdegf.
-% Moved sfto_reorder from module ofsf to this module.
-%
-% Revision 1.4  1996/03/04 13:09:54  dolzmann
-% Moved procedures sfto_groebnerf, sfto_preducef, sfto_greducef and
-% loading of groebner packages from module ofsfgs to this module.
-%
-% Revision 1.3  1995/08/30  08:26:45  sturm
-% Fixed a bug in procedure sfto_dprpartf.
-%
-% Revision 1.2  1995/08/30  07:35:19  sturm
-% Added procedures sfto_dprpartf and sfto_dprpartf1.
-%
-% Revision 1.1  1995/05/29  14:47:23  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(sfto_rcsid!* sfto_copyright!*);
-   sfto_rcsid!* := "$Id: sfto.red,v 1.16 2007/12/16 08:19:12 sturm Exp $";
-   sfto_copyright!* := "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+   sfto_rcsid!* := "$Id$";
+   sfto_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module sfto;
 % Standard form tools.
@@ -665,10 +587,29 @@ procedure sfto_varf(f);
    then
       mvar f;
 
-procedure sfto_lmultf fl;
+procedure sfto_lmultf(fl);
    % Ordered field standard form list multf. [fl] is a list of SFs.
    % Returns an SF. Result is the product of the SFs in [fl].
    if null fl then 1 else multf(car fl,sfto_lmultf cdr fl);
+
+procedure sfto_tdegf(f);
+   % Ordered field standard form total degree standard form. [f] is an
+   % SF. Returns an SF. The result is the total degree of [f].
+   begin scalar w,x; integer td;
+      if domainp f then
+      	 return 0;
+      x := mvar f;
+      while not domainp f and mvar f eq x do <<
+	 w := sfto_tdegf lc f + ldeg f;
+	 if w > td then
+	    td := w;
+	 f := red f
+      >>;
+      w := sfto_tdegf f;
+      if  w > td then
+	 return w;
+      return td
+   end;
 
 endmodule;  % [sfto]
 
