@@ -100,6 +100,7 @@ then
          -name gabriel -prune -o \
          -name libedit -prune -o \
          -name doc -prune -o \
+         -name buglist -prune -o \
          -name reduce.doc -prune -o \
          -name reduce.fonts -prune -o \
          -name support-packages -prune -o \
@@ -130,6 +131,8 @@ find . \
        -name pslbuild -prune -o         \
        -name csllogs -prune -o          \
        -name psllogs -prune -o          \
+       -name libedit-20070831-2.10 -prune -o \
+       -name build -prune -o            \
        -name packages-pre-BSD -prune -o \
        -name \*.old -prune -o           \
        \( -name cygwin32                \
