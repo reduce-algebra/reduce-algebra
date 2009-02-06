@@ -1,102 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ibalpqsat.red,v 1.21 2008/01/02 20:37:18 zengler Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2007-2008 A. Dolzmann, and T. Sturm
+% Copyright (c) 2007-2009 Andreas Dolzmann and Thomas Sturm
 % ---------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ibalpqsat.red,v $
-% Revision 1.21  2008/01/02 20:37:18  zengler
-% Go into QE when formula is not in CNF.
-%
-% Revision 1.20  2007/12/23 00:51:54  zengler
-% Added procedure to convert .cnf and .qdimacs to Lisp Prefix
-%
-% Revision 1.19  2007/12/21 22:16:14  zengler
-% Added procedures to read .cnf and .qdimacs files.
-%
-% Revision 1.18  2007/12/21 03:59:18  zengler
-% Fixed a bug in option administration. Fixed a bug in Q-SAT.
-%
-% Revision 1.17  2007/12/21 00:09:49  zengler
-% Changed optionlist procedures (Syntaxcheck now in rlami)
-%
-% Revision 1.16  2007/12/20 22:27:01  zengler
-% Changed procedure names for setting the q-sat options.
-%
-% Revision 1.15  2007/12/20 10:27:36  zengler
-% Added sytax check for option list.
-%
-% Revision 1.14  2007/12/20 10:18:24  zengler
-% Code rewrite complete. Added comments. Fixed bug in Q-SAT.
-%
-% Revision 1.13  2007/12/19 02:22:02  zengler
-% Added option administration. Code rewriting. Minor bugfixes.
-%
-% Revision 1.12  2007/12/17 01:25:46  zengler
-% Added pure literal elimination. Some minor bugfixes. CNF calculation works now for SAT.
-%
-% Revision 1.11  2007/12/16 12:53:47  sturm
-% Renamed ibalp_pset3knf to ibalp_pset3knf!-zengler for the time being.
-%
-% Revision 1.10  2007/12/16 09:29:29  zengler
-% some little code rewriting, corrected two minor bugs
-%
-% Revision 1.9  2007/12/01 12:27:56  zengler
-% Added procedure for parametric Q-SAT
-%
-% Revision 1.8  2007/11/24 20:22:56  zengler
-% New cyclic data structure. atsocs are no longer needed!
-%
-% Revision 1.7  2007/11/21 13:41:40  zengler
-% Addition of conflict-driven QSAT Solver. Still only works for CNF-Formulas.
-%
-% Revision 1.6  2007/09/09 23:02:14  zengler
-% Completely new SAT solving engine. Based on conflict driven clause learning. With new branching heuristic ZMOM and activity heuristics.
-%
-% Revision 1.5  2007/08/09 13:50:42  zengler
-% New strategies for choosing variables.
-%
-% Revision 1.4  2007/07/14 22:02:52  zengler
-% Changed Lists for Vectors. Great SpeedUp.
-%
-% Revision 1.3  2007/07/12 23:01:53  zengler
-% Corrected many syntactic things. Added a strategy for choosing variables.
-%
-% Revision 1.2  2007/07/10 01:20:06  zengler
-% Created main framework for the DLL Algoithm
-%
-% Revision 1.1  2007/06/13 06:37:52  sturm
-% Added module ibalpqsat and interface for rlqsat, which is ibalp_qsat.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ibalp_qsat_rcsid!* ibalp_qsat_copyright!*);
-   ibalp_qsat_rcsid!* := "$Id: ibalpqsat.red,v 1.21 2008/01/02 20:37:18 zengler Exp $";
-   ibalp_qsat_copyright!* := "Copyright (c) 2007-2008 A. Dolzmann and T. Sturm"
+   ibalp_qsat_rcsid!* :=
+      "$Id$";
+   ibalp_qsat_copyright!* := "Copyright (c) 2007-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module ibalpqsat;
 
