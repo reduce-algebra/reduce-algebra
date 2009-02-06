@@ -1,426 +1,40 @@
 % ----------------------------------------------------------------------
-% $Id: pasfqe.red,v 1.114 2008/01/27 15:05:53 lasaruk Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2001 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: pasfqe.red,v $
-% Revision 1.114  2008/01/27 15:05:53  lasaruk
-% Quoted 't replaced by t
-%
-% Revision 1.113  2007/12/16 12:40:26  sturm
-% Fixed issue in pasf_qe_rcsid!*.
-% Bugfix: lc had been used as local variable in pasf_vsubstcatf.
-%
-% Revision 1.112  2007/09/19 14:03:33  lasaruk
-% Bug in pasf_inplaceqe resolved
-%
-% Revision 1.111  2007/09/19 08:02:38  lasaruk
-% Small bug in PQE corrected
-%
-% Revision 1.110  2007/07/29 00:59:31  lasaruk
-% Congruence case in PQE implemented. Small bug in pasf_siat.red corrected.
-%
-% Revision 1.109  2007/07/22 19:39:16  lasaruk
-% Probabilistic QE changed to work with probability parameter.
-%
-% Revision 1.108  2007/07/10 09:13:36  lasaruk
-% Bug in substitution procedure in pasfmisc corrected.
-%
-% Revision 1.107  2007/07/05 06:20:45  lasaruk
-% Probabilistic quantifier elimination skeleton added.
-%
-% Revision 1.106  2007/06/19 19:07:44  lasaruk
-% Bug in interval computation corrected
-%
-% Revision 1.105  2007/04/01 12:42:57  lasaruk
-% ifacl ifacml implemented
-%
-% Revision 1.104  2007/03/22 17:45:35  lasaruk
-% rlint bug reports corrected
-%
-% Revision 1.103  2006/11/06 19:07:52  lasaruk
-% eq's replaced by eqn's in integer comparisons
-%
-% Revision 1.102  2006/06/29 05:45:15  lasaruk
-% debug output removed
-%
-% Revision 1.101  2006/06/29 05:41:08  lasaruk
-% Conflation corrected
-%
-% Revision 1.100  2006/06/28 17:55:17  lasaruk
-% Special case of virtual substitution added
-%
-% Revision 1.99  2006/06/23 11:01:19  lasaruk
-% Gauss elimination turned off for univariate case. Properly created ranges.
-%
-% Revision 1.98  2006/06/23 09:28:42  lasaruk
-% Small modifications
-%
-% Revision 1.97  2006/06/23 08:24:45  lasaruk
-% initial checkin of univariate separated qe
-%
-% Revision 1.96  2006/06/02 07:37:56  lasaruk
-% bugs found by cref eliminated
-%
-% Revision 1.95  2006/06/02 06:29:16  lasaruk
-% calls to pasf_inplaceqe1 are now with two arguments, as desired
-%
-% Revision 1.94  2006/05/15 21:42:22  sturm
-% Adapted call of pasf_expanda.
-%
-% Revision 1.93  2006/04/09 07:48:06  lasaruk
-% Substitution can be performed only with presburger terms.
-% Expansion procedure for answers added.
-%
-% Revision 1.92  2006/03/17 15:16:04  lasaruk
-% Answer formula is always simplified on output.
-%
-% Revision 1.91  2006/03/15 19:02:14  lasaruk
-% Weak and strict quantifier elimination and quantifier elimination with
-% answers separated into rlqe (rlwqe) and rlwqe (rlwqea).
-% The first expands always.
-%
-% Revision 1.90  2006/03/07 07:42:26  lasaruk
-% weak quantifier elimination with answers according to the papaer added
-%
-% Revision 1.89  2005/11/18 10:19:29  lasaruk
-% Local tests for incorrect forumals added: quantified modulus and quantified
-% bound parameters.
-%
-% Revision 1.88  2005/08/04 11:03:58  lasaruk
-% Uniform comments
-%
-% Revision 1.87  2005/07/31 13:23:16  lasaruk
-% Congruence empty case modified. Some changes in gauss elimination. Comments
-%
-% Revision 1.86  2005/07/17 20:31:28  lasaruk
-% Comments rewritten
-%
-% Revision 1.85  2005/04/29 12:17:16  lasaruk
-% Debugging code removed
-%
-% Revision 1.84  2005/04/27 19:39:23  lasaruk
-% Version the tests for diplomarbeit ran on
-%
-% Revision 1.83  2005/04/22 20:29:25  lasaruk
-% Elimination set conflating added
-%
-% Revision 1.82  2005/04/18 21:13:24  lasaruk
-% Structural elimination sets with discussed strategy
-%
-% Revision 1.81  2005/04/14 15:28:18  lasaruk
-% Finetuning and some bugfixes that come with tests
-%
-% Revision 1.80  2005/04/13 18:07:51  lasaruk
-% QE-Code rewritten with datastructures. Each non-internal representation 
-% greater than a pair is now encapsulated in a datastructure
-%
-% Revision 1.79  2005/04/06 14:59:20  lasaruk
-% New switch rlpasfbapprox for bound approximation added.
-%
-% Revision 1.78  2005/04/05 22:49:45  lasaruk
-% new quantifier elimination method introduced
-%
-% Revision 1.77  2005/03/25 14:50:50  lasaruk
-% Light tests for bounded quantifier simplification added
-%
-% Revision 1.76  2005/03/17 16:58:45  lasaruk
-% Code structure changed
-%
-% Revision 1.75  2005/02/24 15:20:03  lasaruk
-% QE code completely rewritten using a correct representant choice
-%
-% Revision 1.74  2005/01/28 02:28:48  lasaruk
-% Representation search code rewritten. Now correct treatment of congruences.
-% Partial elimination sets code rewritten, but produces still too many sets.
-%
-% Revision 1.73  2005/01/24 23:32:50  lasaruk
-% Minor changes while debugging
-%
-% Revision 1.72  2005/01/24 20:52:44  lasaruk
-% Correct semantics for substituting negative denominators and
-% correct congruence handling.
-%
-% Revision 1.71  2005/01/24 16:02:08  lasaruk
-% Uniform Presburger Arithmetic is now implemented. Elimination code rewritten,
-% so no elimination normal form is explicitly computed.
-%
-% Revision 1.70  2005/01/22 19:50:57  lasaruk
-% Uniform presburger arithmetic introduced
-%
-% Revision 1.69  2005/01/20 23:19:59  lasaruk
-% Partial elimination sets improoved. Linear optimization rewritten with
-% single QE call, minimal value search and bound value reconstruction.
-% Care for bounded quantifiers in gauss elimination and condensing added.
-%
-% Revision 1.68  2005/01/17 22:17:00  lasaruk
-% Linear optimization added. For now withot parameters.
-%
-% Revision 1.67  2005/01/16 22:47:24  lasaruk
-% Partial elimination sets
-%
-% Revision 1.66  2005/01/15 20:28:27  lasaruk
-% Quantifier elimination with answers experimental version
-%
-% Revision 1.65  2005/01/15 01:04:26  lasaruk
-% Positional condensing
-%
-% Revision 1.64  2005/01/13 03:05:10  lasaruk
-% Assymetric bounds
-%
-% Revision 1.63  2004/12/29 14:31:38  lasaruk
-% Quantifier elimination with condensing and generic code. QE with answers does
-% not work yet properly, due to inssuficient care of bounded quantifiers.
-% Positional condesning is also missing.
-%
-% Revision 1.62  2004/12/18 21:31:10  lasaruk
-% Gauss-Elimination added
-%
-% Revision 1.61  2004/08/29 20:42:13  lasaruk
-% Simplification of atomic formulas rewritten without the term
-% normal form. Administration details switches and other
-% stuff put into some order and are commented now. Floor and
-% ceil procedures corrected to fit the semantics. pasf_susidec
-% moved to pasf_dec. pasf_deci for integer decomposition added.
-% In QE the simplification is done at the last stage even if
-% rlpasfsimplify is turned off. All suitable rl_mkn's are turned
-% to rl_smkn. In pasfsiat.red order reduction has been added.
-% In pasfsism.red substitution and simplification goals have
-% been revisited. Configuration tested on more than 3*10^5
-% formulas with different structure.
-%
-% Revision 1.60  2004/08/11 15:17:08  lasaruk
-% New comments done. Now automatic procedure documentation
-% possible. Some code rewritten.
-%
-% Revision 1.59  2004/08/06 15:35:17  lasaruk
-% Congruence simplification added. Some errors corrected.
-%
-% Revision 1.58  2004/06/01 15:25:15  lasaruk
-% simple gauss simplification added, transitive simplification
-% with switches temporary removed, additive simplification
-% filled with some minor cases
-%
-% Revision 1.57  2004/02/22 21:08:15  lasaruk
-% Added switch rlsusisubst for substitution of equalities. Substitution
-% results in smaller formulas or formulas with less free variables.
-% Up to 80% length reduction. Switch rlsusitr should not be used yet.
-%
-% Revision 1.56  2003/12/16 07:45:34  lasaruk
-% Redlog normal form in the simplifier.
-%
-% Revision 1.55  2003/12/11 10:51:19  lasaruk
-% Smart simplification improoved.
-%
-% Revision 1.54  2003/12/02 15:27:13  sturm
-% Introduced ioto_nterpri to avoid ugly linebreaks in verbosity output.
-%
-% Revision 1.53  2003/12/02 15:00:57  sturm
-% Removed a call to cl_simpl in pasf_qeex (superfluous checking for truth
-% values).
-% Do a more general check on variable not occurring.
-%
-% Revision 1.52  2003/12/02 14:37:07  sturm
-% Rewritten pasf_qeexblock and added canonical verbose output.
-%
-% Revision 1.51  2003/11/05 13:27:14  lasaruk
-% Some major redlog programming rules applied to the code.
-% Formulas are made positive acc. to the current kernel order.
-%
-% Revision 1.50  2003/10/28 10:02:03  dolzmann
-% Added correct content of fluids pasf_siat_rcsid!* and
-% pasf_siat_copyright!*.
-%
-% Revision 1.49  2003/10/16 16:17:38  lasaruk
-% Compiler error messages partially removed. All others are due
-% to the noncompleteness of packet.
-%
-% Revision 1.48  2003/10/12 15:18:11  sturm
-% pasf_qe requires second (theo, dummy for now) argument. This became visible
-% under CSL.
-%
-% Revision 1.47  2003/08/28 15:30:40  lasaruk
-% Simplification verbose output done better. QE-Bug with truth values
-% corrected (will be done more effitient). Some fancy examples added.
-%
-% Revision 1.46  2003/07/16 12:58:50  lasaruk
-% Error in QE removed.
-%
-% Revision 1.45  2003/07/16 12:51:35  lasaruk
-% Tipp error.
-%
-% Revision 1.44  2003/07/16 12:48:33  lasaruk
-% See message below.
-%
-% Revision 1.43  2003/07/15 12:40:41  seidl
-% Renamed pasf_iv2qff to pasf_ivl2qff and pasf_qff2iv to pasf_qff2ivl.
-% Provided algebraic mode access to simplb, ivl2qff, qdd2ivl. Changed
-% pasf_mkrng so intervals with same upper and lower bound result in an
-% equation. Fixed serious bug in pasf_prepat. Added cvs header to
-% pasf.tst. Todo Lasaruk: pasf_ivl2qff crashes with empty interval as
-% argument, see testfile.
-%
-% Revision 1.42  2003/06/04 12:33:40  lasaruk
-% Some smaller modifications.
-%
-% Revision 1.41  2003/05/28 20:37:51  lasaruk
-% Expansion done better.
-%
-% Revision 1.40  2003/05/26 20:50:57  lasaruk
-% Range expansion with congruences
-%
-% Revision 1.39  2003/05/22 22:00:58  lasaruk
-% DNF added.
-%
-% Revision 1.38  2003/05/17 17:04:16  lasaruk
-% bugs removed
-%
-% Revision 1.37  2003/05/17 16:27:56  lasaruk
-% Pasf simplification added. Some errors corrected.
-%
-% Revision 1.36  2003/05/15 23:34:47  lasaruk
-% Interval expansion added
-%
-% Revision 1.35  2003/04/20 12:04:04  lasaruk
-% Completely removed any reference to range predicates (in input
-% also). PNF made shorter.
-%
-% Revision 1.34  2003/04/14 10:11:39  lasaruk
-% Changes to work with bounded quantifieres added . Simplification bug
-% (content) removed. Range predicates removed.
-%
-% Revision 1.33  2003/03/26 11:19:23  lasaruk
-% Formula runthrough rewritten as cl_atnum. True/false in rlexpabnd bug
-% removed. Some services added.
-%
-% Revision 1.32  2003/03/04 09:33:23  lasaruk
-% Advanced simplification. PNF code attached but not used yet. Some code
-% migration. Documentation debugged.
-%
-% Revision 1.31  2003/02/24 19:50:19  lasaruk
-% Congruences without x removed.
-%
-% Revision 1.30  2003/02/18 12:45:03  lasaruk
-% Better code for some methods.
-%
-% Revision 1.29  2003/02/17 14:44:55  lasaruk
-% Debug messages removed.
-%
-% Revision 1.28  2003/02/17 10:55:40  lasaruk
-% Stable full featured version
-%
-% Revision 1.27  2003/02/03 13:41:04  lasaruk
-% Experimental version with full functionality. A bit buggy.
-%
-% Revision 1.26  2003/02/02 17:33:44  lasaruk
-% Internal representation of data is converted completely into SF's
-% except the representation of moduli.
-%
-% Revision 1.25  2003/02/01 08:42:50  lasaruk
-% Stack container implemented.
-%
-% Revision 1.24  2003/02/01 07:38:33  lasaruk
-% Recursive range expansion.
-%
-% Revision 1.23  2003/01/31 14:25:06  lasaruk
-% Bug fixed.
-%
-% Revision 1.22  2003/01/31 14:18:48  lasaruk
-% Found better method for impoding.
-%
-% Revision 1.21  2003/01/31 14:09:58  lasaruk
-% New variable method added. K is no loger fixed, but a new variable.
-%
-% Revision 1.20  2003/01/29 16:07:46  lasaruk
-% Better limits.
-%
-% Revision 1.19  2003/01/29 15:24:47  sturm
-% Added service rlexpand for context pasf. Had to split pasf_exprng for this.
-%
-% Revision 1.18  2003/01/27 17:40:02  lasaruk
-% Switches renamed. Bugs in docu fixed.
-%
-% Revision 1.17  2003/01/26 18:31:49  lasaruk
-% Simplification position altered.
-%
-% Revision 1.16  2003/01/26 17:49:37  lasaruk
-% Null congruence error added. Terms without quant. varl. stay
-% untouched. Bugs fixed.
-%
-% Revision 1.15  2003/01/21 17:39:14  lasaruk
-% Switch rlsiatadv turned off. Bugs fixed.
-%
-% Revision 1.14  2003/01/21 10:44:14  lasaruk
-% Congruence substitution added. Bugs fixed.
-%
-% Revision 1.13  2003/01/20 10:36:51  lasaruk
-% First trial to work with congruences. Bugs fixed.
-%
-% Revision 1.12  2003/01/06 18:20:32  lasaruk
-% Bugs fixed
-%
-% Revision 1.11  2003/01/06 17:33:27  lasaruk
-% Some simplifier bugs fixed. Alternating quantifier elimination attached.
-%
-% Revision 1.10  2003/01/05 15:55:05  lasaruk
-% Simplification improoved. Expansion of range predicates added.
-%
-% Revision 1.9  2002/12/31 13:57:49  lasaruk
-% Simplifier bugs fixed.
-%
-% Revision 1.8  2002/12/31 13:33:34  lasaruk
-% Standard simplifier attached. Standard simplification of expressions
-% attached.
-%
-% Revision 1.7  2002/12/23 07:41:19  lasaruk
-% Simplifier turned off temporary
-%
-% Revision 1.6  2002/12/23 07:07:05  lasaruk
-% Elimination code completely rewritten
-%
-% Revision 1.5  2002/12/10 08:49:41  lasaruk
-% Correct elimination of an exist. quantifier call added.
-% Procedures debugged.
-%
-% Revision 1.3  2002/12/02 12:53:37  lasaruk
-% Elimination of one variable in front of an ex quantifier. Not really
-% worth looking at.
-%
-% Revision 1.2  2002/11/15 12:00:48  seidl
-% Head added.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(pasf_qe_rcsid!* pasf_qe_copyright!*);
    pasf_qe_rcsid!* :=
-      "$Id: pasfqe.red,v 1.114 2008/01/27 15:05:53 lasaruk Exp $";
+      "$Id$";
    pasf_qe_copyright!* :=
-      "Copyright (c) 2003 A. Dolzmann, A. Seidl, and T. Sturm"
+      "Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm"
 >>;
-
 
 module pasfqe;
 % Presburger arithmetic standard form quantifier elimination. Submodule of
@@ -1117,6 +731,41 @@ procedure pasf_testptpqe(pos,nom,den,a,b,p,g);
    % pqe. [pos] is the position of the formula; [nom] is the numerator term;
    % [den] is the denominator; [a] is the lower interval boundary; [b] is the
    % upper interval boundary; [p] is the probability for PQE; [g] is nil iff
+   % there are no guards to create. Returns a probabilistic elimination set.
+   if !*rlpqeold then
+	pasf_testptpqeold(pos,nom,den,a,b,p,g)
+   else
+	pasf_testptpqenew(pos,nom,den,a,b,p,g);
+
+procedure pasf_testptpqenew(pos,nom,den,a,b,p,g);
+   % Presburger arithmetic standard form elimination test points for
+   % pqe. [pos] is the position of the formula; [nom] is the numerator term;
+   % [den] is the denominator; [a] is the lower interval boundary; [b] is the
+   % upper interval boundary; [p] is the probability for PQE; [g] is nil iff
+   % there are no guards to create. Returns an ELIMSET which comes from the 
+   % substitution of a random test term.
+   begin scalar n,r,res;
+	 r := pasf_mkrndf(b,pasf_newvar('false));
+	 res := {elimpt_new(pos,
+	    if g then 
+	       rl_smkn('and,{pasf_0mk2('neq,den),
+	    	  pasf_0mk2(('cong . den),addf(nom,r))})
+	    else
+	       'true,addf(nom,r),den,nil,nil),
+	 elimpt_new(pos,
+	    if g then 
+	       rl_smkn('and,{pasf_0mk2('neq,den),
+	    	  pasf_0mk2(('cong . den),addf(nom,negf r))})
+	    else
+	       'true,addf(nom,negf r),den,nil,nil)};
+      return res;
+   end;
+
+procedure pasf_testptpqeold(pos,nom,den,a,b,p,g);
+   % Presburger arithmetic standard form elimination test points for
+   % pqe. [pos] is the position of the formula; [nom] is the numerator term;
+   % [den] is the denominator; [a] is the lower interval boundary; [b] is the
+   % upper interval boundary; [p] is the probability for PQE; [g] is nil iff
    % there are no guards to create. Returns an ELIMSET which contains random
    % points from the range $[t+a,t+b]$ such that each term is hit with
    % probability [p].
@@ -1124,7 +773,6 @@ procedure pasf_testptpqe(pos,nom,den,a,b,p,g);
       n := max2(ceiling(ln(1.0-numr p*1.0/denr p)/ln(1.0-1.0/(b-a+1))-1),1);
       for i := 1 : n do <<
 	 rnd := numr simp (random(b-a+1)+a);
-	 print rnd;
 	 res := elimpt_new(pos,
 	    if g then 
 	       rl_smkn('and,{pasf_0mk2('neq,den),
