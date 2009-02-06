@@ -1,44 +1,33 @@
 % ----------------------------------------------------------------------
-% $Id: redlog.tst,v 1.7 2002/08/20 14:44:50 seidl Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1997
-% Andreas Dolzmann and Thomas Sturm, Universitaet Passau
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
-% $Log: redlog.tst,v $
-% Revision 1.7  2002/08/20 14:44:50  seidl
-% Moved CAD example to a better place.
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
 %
-% Revision 1.6  2002/08/20 14:32:36  seidl
-% rlcad cox6 added.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% Revision 1.5  1999/04/13 21:53:26  sturm
-% Removed "on echo".
-%
-% Revision 1.4  1999/04/05 12:25:29  dolzmann
-% Fixed a bug.
-%
-% Revision 1.3  1999/04/05 12:15:43  dolzmann
-% Added code for testing the contexts acfsf and dvfsf.
-%
-% Revision 1.2  1997/08/20 16:22:07  sturm
-% Do not use "on time".
-%
-% Revision 1.1  1997/08/18 15:59:01  sturm
-% Renamed "rl.red" to "redlog.red", and thus "rl.tst" to this file
-% "redlog.tst."
-%
-% ----------------------------------------------------------------------
-% Revision 1.3  1996/10/14 16:18:39  sturm
-% Added sc50b for testing the optimizer.
-%
-% Revision 1.2  1996/10/03 16:09:39  sturm
-% Added new QE example for testing rlatl, ..., rlifacml, rlstruct,
-% rlifstruct.
-%
-% Revision 1.1  1996/09/30 17:07:52  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 on rlverbose;
 
 % Ordered fields standard form:
