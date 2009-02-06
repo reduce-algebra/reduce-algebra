@@ -1,80 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: qqesiat.red,v 1.10 2006/03/14 19:36:04 strasser Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qqesiat.red,v $
-% Revision 1.10  2006/03/14 19:36:04  strasser
-% Only cosmetic changes.
-%
-% Revision 1.9  2006/03/02 13:19:44  strasser
-% Some correction in [qqe_simplqequal].
-%
-% Revision 1.8  2006/01/08 17:34:28  strasser
-% Add some comments. Changes in [qqe_simplbtat] and [qqe_simplqequal].
-% Some minor changes.
-% Moved the following functions to [qqeqemisc.red]:
-% [qqe_simpl!-clause], [qqe_simpl!-clause!-term].
-%
-% Revision 1.7  2005/12/16 02:05:09  strasser
-% Small extension of [qqe_simpl!-clause].
-%
-% Revision 1.6  2005/11/15 22:49:28  strasser
-% Some further work on [qqe_simpl!-clause] in order to be included in QE.
-%
-% Revision 1.5  2005/11/15 02:13:23  strasser
-% Added the functions [qqe_simpl!-clause] and [qqe_simpl!-clause!-term].
-%
-% Revision 1.4  2005/11/14 00:28:24  strasser
-% Minor changes.
-%
-% Revision 1.3  2005/11/09 21:59:29  strasser
-% For module [qqeqe.red] changes in calculation of satlengths. For module
-% [qqesiat]: added functions [qqe_simplbtat], [qqe_eta!-in!-term],
-% [qqe_eta!-in!-term1]. In [qqetrans.red] minor changes.
-%
-% Revision 1.2  2005/10/04 13:41:57  strasser
-% Improved readability of code. in [qqesiat.red]: Split the function
-% [qqe_simplterm] into [qqe_simplterm], [qqe_simplterm!-add],
-% [qqe_simplterm!-tail] and [qqe_simplterm!-head]. Improved functionality
-% of the term simplitfier.
-%
-% Revision 1.1  2005/10/01 18:05:31  strasser
-% Moved [qqe_simplat1], [qqe_simplequal], [qqe_simplqneq] into the new file
-% [qqesiat.red]. Upgraded functionality of the simplifier for atomic formulas
-% of queue type (qequal, qneq).
-%
 lisp <<
    fluid '(qqe_siat_rcsid!* qqe_siat_copyright!*);
    qqe_siat_rcsid!* :=
-      "$Id: qqesiat.red,v 1.10 2006/03/14 19:36:04 strasser Exp $";
-   qqe_siat_copyright!* :=
-      "Copyright (c) 2005 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   qqe_siat_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module qqesiat;
 % QQE simplify atomic formula. Submodule of [qqe].

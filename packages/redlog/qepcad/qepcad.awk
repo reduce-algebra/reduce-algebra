@@ -1,23 +1,33 @@
 # ----------------------------------------------------------------------
-# $Id: qepcad.awk,v 1.2 2002/09/18 15:14:14 dolzmann Exp $
+# $Id$
 # ----------------------------------------------------------------------
-# Written by Thomas Sturm, (c) Universitaet Passau, 1995
+# Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 # ----------------------------------------------------------------------
-# $Log: qepcad.awk,v $
-# Revision 1.2  2002/09/18 15:14:14  dolzmann
-# Added hack for qepcad B. (Phrase "In other words" is missing.)
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
 #
-# Revision 1.1  1996/03/22 12:15:20  sturm
-# Moved.
+#    * Redistributions of source code must retain the relevant
+#      copyright notice, this list of conditions and the following
+#      disclaimer.
+#    * Redistributions in binary form must reproduce the above
+#      copyright notice, this list of conditions and the following
+#      disclaimer in the documentation and/or other materials provided
+#      with the distribution.
 #
-# Revision 1.2  1995/12/06  11:04:53  sturm
-# Made results available to Reduce.
-# Added proper treatment of the switches rlverbose and time.
-#
-# Revision 1.1  1995/12/06  10:51:57  sturm
-# Initial check-in.
-#
-# ----------------------------------------------------------------------
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+
 BEGIN {time=tolower(time); verb=tolower(verb)}
 /^In other words/ {f=0}
 /^==============================/ {f=0}

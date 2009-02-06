@@ -1,64 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: pasfbnf.red,v 1.7 2005/08/04 11:03:57 lasaruk Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2002 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
-% $Log: pasfbnf.red,v $
-% Revision 1.7  2005/08/04 11:03:57  lasaruk
-% Uniform comments
-%
-% Revision 1.6  2005/07/17 16:34:08  lasaruk
-% DNF and CNF methodes moved in. Comments rewritten.
-%
-% Revision 1.5  2005/01/24 16:02:07  lasaruk
-% Uniform Presburger Arithmetic is now implemented. Elimination code rewritten,
-% so no elimination normal form is explicitly computed.
-%
-% Revision 1.4  2004/08/11 15:17:07  lasaruk
-% New comments done. Now automatic procedure documentation possible. 
-% Some code rewritten.
-%
-% Revision 1.3  2003/11/05 13:27:14  lasaruk
-% Some major redlog programming rules applied to the code.
-% Formulas are made positive acc. to the current kernel order.
-%
-% Revision 1.2  2003/10/16 16:17:38  lasaruk
-% Compiler error messages partially removed. All others are due
-% to the noncompleteness of packet.
-%
-% Revision 1.1  2003/05/22 22:00:58  lasaruk
-% DNF added.
-% ----------------------------------------------------------------------
-
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
 lisp <<
    fluid '(pasf_bnf_rcsid!* pasf_bnf_copyright!*);
-   pasf_bnf_rcsid!* := "$Id: pasfbnf.red,v 1.7 2005/08/04 11:03:57 lasaruk Exp $";
+   pasf_bnf_rcsid!* :=
+      "$Id$";
    pasf_bnf_copyright!* :=
-      "Copyright (c) 1995-2002 by A. Dolzmann, A. Seidl, and T. Sturm"
+      "Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm"
 >>;
 
 module pasfbnf;

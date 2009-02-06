@@ -1,78 +1,42 @@
 % ----------------------------------------------------------------------
-% $Id: qqeqemisc.red,v 1.10 2007/12/16 12:45:13 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-
-% $Log: qqeqemisc.red,v $
-% Revision 1.10  2007/12/16 12:45:13  sturm
-% Fixed fluid declaration for qqe_qemisc_copyright!*.
-%
-% Revision 1.9  2006/03/20 03:48:51  strasser
-% Only cosmetic changes.
-%
-% Revision 1.8  2006/03/20 03:17:12  strasser
-% Strong update for the simplification algorithm for the QE.
-% Changed function [qqe_simpl!-clause]. Add functions [qqe_simpl!-dnf],
-% [qqe_simpl!-clause!-qequal], [qqe_simpl!-clause!-qneq],
-% [qqe_simpl!-clause!-remprop]. Exchanged the word "quantor" with
-% "quantifier".
-%
-% Revision 1.7  2006/03/14 19:22:19  strasser
-% Only cosmetic changes.
-%
-% Revision 1.6  2006/03/03 00:38:07  strasser
-% Minor fixes in [qqe_subst!-qneq!-ext], [qqe_subst!-qequal!-ext!-p],
-% [qqe_subst], [qqe_get!-quantor!-sequenz].
-%
-% Revision 1.5  2006/03/02 13:12:47  strasser
-% Minor fixes in [qqe_subst!-simplterm],
-% [qqe_atf!-qequal!-ext!-p!-min!-rights],
-% [qqe_atf!-qequal!-ext!-p!-min!-lefts].
-%
-% Revision 1.4  2006/03/01 03:01:57  strasser
-% Included consideration of negative pattern in [qqe_pat!-lengths], which
-% was forgotten so far.
-%
-% Revision 1.3  2006/01/08 18:01:45  strasser
-% Moved [qqe_qprefix!-var] to [qqemisc.red].
-% Moved in the procedures [qqe_simpl!-clause], [qqe_simpl!-clause!-term]
-% from [qqesiat.red].
-% Add header. Add some comments.
-%
 lisp <<
    fluid '(qqe_qemisc_rcsid!* qqe_qemisc_copyright!*);
-   qqe_qemisc_rcsid!* := "$Id: qqeqemisc.red,v 1.10 2007/12/16 12:45:13 sturm Exp $";
-   qqe_qemisc_copyright!* := "Copyright (c) 2005-2008 by A. Dolzmann and T. Sturm"
+   qqe_qemisc_rcsid!* :=
+      "$Id$";
+   qqe_qemisc_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
  
 module qqeqemisc;
 % Quantifier elimination for queues miscellaneous helping functions.
-
 
 % do i have to list them a second time here!?! as these are fluids of
 % module qqeqe.red and qqeqemisc is only submodule of that. !!!
@@ -1388,7 +1352,7 @@ procedure qqe_simpl!-clause!-term(term);
 %%    begin
 %%       if qqe_cpg!-incl node then 
 %%          return qqe_cpg!-incl qqe_cpg!-supernode!-first node
-%%       else if qqe_cpg!-supernode!-get!-next(qqe_cpg!-list!-get!-prev node, % dafC<r mC<sste ein incl Knoten als Liste C<bergeben werden
+%%       else if qqe_cpg!-supernode!-get!-next(qqe_cpg!-list!-get!-prev node, % dafuer muesste ein incl Knoten als Liste uebergeben werden
 %%          then return {'e,qqe_cpg!-minlength!-node car cdr node}
 %%       else qqe_cpg!-get!-next!-reiterate(list,node);
 %%    end;
@@ -1477,6 +1441,6 @@ procedure qqe_simpl!-clause!-term(term);
 %%       else return nil;
 %%    end;
 
-endmodule;
+endmodule;  % [qqeqemisc]
 
-end;
+end;  % of file

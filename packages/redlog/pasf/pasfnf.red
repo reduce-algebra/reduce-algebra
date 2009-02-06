@@ -1,129 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: pasfnf.red,v 1.25 2008/01/27 15:05:53 lasaruk Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2001 A. Dolzmann, A. Lasaruk, A. Seidl, and T. Sturm
+% Copyright (c) 2001-2009 A. Dolzmann, A. Lasaruk, A. Seidl, T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
-% $Log: pasfnf.red,v $
-% Revision 1.25  2008/01/27 15:05:53  lasaruk
-% Quoted 't replaced by t
-%
-% Revision 1.24  2005/08/04 11:03:58  lasaruk
-% Uniform comments
-%
-% Revision 1.23  2005/07/17 16:40:26  lasaruk
-% Comments rewritten
-%
-% Revision 1.22  2005/04/14 15:28:18  lasaruk
-% Finetuning and some bugfixes that come with tests
-%
-% Revision 1.21  2005/02/24 15:20:03  lasaruk
-% QE code completely rewritten using a correct representant choice
-%
-% Revision 1.20  2005/02/23 13:15:36  lasaruk
-% PNF changed to work with bounded quantifiers as with normal quantifiers.
-% DNF and CNF algorithms changed to produce a pseudo dnf.
-%
-% Revision 1.19  2005/01/24 16:02:07  lasaruk
-% Uniform Presburger Arithmetic is now implemented. Elimination code rewritten,
-% so no elimination normal form is explicitly computed.
-%
-% Revision 1.18  2005/01/21 17:55:32  lasaruk
-% pnf corrected. dnf and cnf are linked to pasf functions that just expand
-%
-% Revision 1.17  2004/08/29 20:42:13  lasaruk
-% Simplification of atomic formulas rewritten without the term
-% normal form. Administration details switches and other
-% stuff put into some order and are commented now. Floor and
-% ceil procedures corrected to fit the semantics. pasf_susidec
-% moved to pasf_dec. pasf_deci for integer decomposition added.
-% In QE the simplification is done at the last stage even if
-% rlpasfsimplify is turned off. All sutable rl_mkn's are turned
-% to rl_smkn. In pasfsiat.red order reduction has been added.
-% In pasfsism.red substitution and simplification goals have
-% been revisited. Configuration tested on more than 3*10^5
-% formulas with different structure.
-%
-% Revision 1.16  2004/08/11 15:17:08  lasaruk
-% New comments done. Now automatic procedure documentation possible. 
-% Some code rewritten.
-%
-% Revision 1.15  2003/11/05 13:27:14  lasaruk
-% Some major redlog programming rules applied to the code.
-% Formulas are made positive acc. to the current kernel order.
-%
-% Revision 1.14  2003/07/16 13:50:47  lasaruk
-% Debug messages removed. Bug in printing congurences removed.
-% Testfile adjusted to changes (working cases).
-%
-% Revision 1.13  2003/07/14 12:37:58  lasaruk
-% Common utilities attached and tested (see the testfile).
-%
-% Revision 1.12  2003/05/31 14:41:50  lasaruk
-% PNF corrected. examples added.
-%
-% Revision 1.11  2003/04/20 12:04:04  lasaruk
-% Completely removed any reference to range predicates (in input
-% also). PNF made shorter.
-%
-% Revision 1.10  2003/04/14 10:11:39  lasaruk
-% Changes to work with bounded quantifieres added . Simplification bug
-% (content) removed. Range predicates removed.
-%
-% Revision 1.9  2003/03/26 11:19:23  lasaruk
-% Formula runthrough rewritten as cl_atnum. True/false in rlexpabnd bug
-% removed. Some services added.
-%
-% Revision 1.8  2003/03/16 22:31:45  lasaruk
-% PNF-bug removed.
-%
-% Revision 1.7  2003/03/11 12:30:36  lasaruk
-% Bug in normal form computation fixed.
-%
-% Revision 1.6  2003/03/11 00:41:29  lasaruk
-% Prenex normal form with correct range predicate handling added. Documentation
-% extended. Todo section added.
-%
-% Revision 1.5  2003/03/04 09:33:23  lasaruk
-% Advanced simplification. PNF code attached but not used yet. Some code
-% migration. Documentation debugged.
-%
-% Revision 1.4  2003/02/28 11:55:40  lasaruk
-% Simplifier congruence bug removed. Switch siatadv now actively used.
-%
-% Revision 1.3  2003/02/18 16:02:12  seidl
-% Header for CVS added.
-%
-% ----------------------------------------------------------------------
-
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
 lisp <<
    fluid '(pasf_nf_rcsid!* pasf_nf_copyright!*);
-   pasf_nf_rcsid!* := "$Id: pasfnf.red,v 1.25 2008/01/27 15:05:53 lasaruk Exp $";
+   pasf_nf_rcsid!* :=
+      "$Id$";
    pasf_nf_copyright!* :=
-      "Copyright (c) 1995-2002 by A. Dolzmann, A. Lasaruk, A. Seidl, and T. Sturm"
+      "Copyright (c) 1995-2009 A. Dolzmann, A. Lasaruk, A. Seidl, and T. Sturm"
 >>;
 
 module pasfnf;

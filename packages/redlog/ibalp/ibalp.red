@@ -1,203 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: ibalp.red,v 1.46 2008/08/24 06:31:14 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2003-2008 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ibalp.red,v $
-% Revision 1.46  2008/08/24 06:31:14  sturm
-% Added blackbox rl_betterp!*().
-%
-% Revision 1.45  2008/01/23 16:34:48  sturm
-% varsel returns a (1-element) list now for rlqevarseltry.
-%
-% Revision 1.44  2007/12/23 00:53:20  zengler
-% Added service rl_readdimacs.
-%
-% Revision 1.43  2007/12/21 22:17:26  zengler
-% Added service rl_qsatdimacs.
-%
-% Revision 1.42  2007/12/20 22:27:01  zengler
-% Changed procedure names for setting the q-sat options.
-%
-% Revision 1.41  2007/12/20 15:31:38  sturm
-% Added service rl_qsatoptions.
-%
-% Revision 1.40  2007/06/13 06:37:52  sturm
-% Added module ibalpqsat and interface for rlqsat, which is ibalp_qsat.
-%
-% Revision 1.39  2007/04/29 17:39:57  sturm
-% Introduced new service rlkapur, and a corresponding dummy procedure
-% in ibalp.
-%
-% Revision 1.38  2007/04/23 14:06:16  sturm
-% New module ibalpkapur.
-%
-% Revision 1.37  2006/11/25 14:19:05  sturm
-% Fixed wrong number of arguments in ibalp_varsel.
-%
-% Revision 1.36  2006/11/25 10:57:43  sturm
-% Fixed an issue with case sensitivity in CSL. Until this version, IBALP
-% probably never worked in CSL. In addition to !*raise we switch off *lower
-% now, but none of them statically anymore. Inside the code we use !A etc.
-% instead.
-%
-% Revision 1.35  2006/06/28 07:58:19  sturm
-% Load redlog because rl_texmacsp() is used.
-%
-% Revision 1.34  2004/08/05 12:20:03  sturm
-% Fixed printing.
-%
-% Revision 1.33  2003/09/25 07:47:58  sturm
-% Removed conflicts. Probably no change.
-%
-% Revision 1.32  2003/09/25 07:30:35  seidl
-% Pretty printing for TeXmacs.
-%
-% Revision 1.31  2003/07/11 17:16:06  sturm
-% New service rlqnum (number of quantifiers).
-%
-% Revision 1.30  2003/06/11 08:45:49  dolzmann
-% Added black box rl_qssimpl.
-%
-% Revision 1.29  2003/06/03 11:19:58  dolzmann
-% Removed unused variables from ibalp_simplat1.
-% Added black box definitions.
-%
-% Revision 1.28  2003/05/27 07:32:31  dolzmann
-% Added black block implementation for ibalp_qssubat.
-%
-% Revision 1.27  2003/05/23 16:01:31  dolzmann
-% Added implementation of black-box ibalp_qscsaat.
-%
-% Revision 1.26  2003/05/21 09:05:03  dolzmann
-% Added service rlquine.
-%
-% Revision 1.25  2003/05/03 20:47:36  sturm
-% Fixed a bug in ibalp_simpatom.
-% Fixed a bug in ibalp_varsel (and the same in ibalp_badvarsel).
-%
-% Revision 1.24  2003/05/03 18:29:42  sturm
-% Implemented an improved ibalp_qevarsel.
-% Fixed a bug in ibalp_varlt1 (could not cause wrong results).
-%
-% Revision 1.23  2003/05/03 16:03:26  sturm
-% Implemented procedure ibalp_prepterm.
-% Added definition for parameter rl_tordp!*, s.t. service rl_termml!* works.
-%
-% Revision 1.22  2003/05/03 14:51:53  sturm
-% Added development switch ibalpbadvarsel for dual strategy.
-%
-% Revision 1.21  2003/05/03 14:44:18  sturm
-% Added variable selection strategy.
-% Added verbose output for case that elimination set contains only one
-% variable.
-%
-% Revision 1.20  2003/05/03 12:33:28  sturm
-% Added tableaux methods.
-%
-% Revision 1.19  2003/05/03 12:07:30  sturm
-% Replaced parameter function cl_sacat by ibalp_sacat.
-% Made some fluid declarations.
-%
-% Revision 1.18  2003/05/01 18:56:54  sturm
-% Added substitution and Boolean normal forms.
-%
-% Revision 1.17  2003/05/01 17:22:45  sturm
-% Fixed a missing scalar declaration in ibalp_simpterm. This led to
-% semantic errors!
-%
-% Revision 1.16  2003/05/01 08:48:31  sturm
-% Rewritten ibalp_simpterm/ibalp_resimpterm.
-%
-% Revision 1.15  2003/04/25 11:57:17  seidl
-% Modified ibalp_simplat1 so it works with smart simplification.
-%
-% Revision 1.14  2003/04/24 17:20:47  sturm
-% Fixed procedures ibalp_simpterm, ibalp_resimpterm, etc.
-% Added procedure ibalp_opp.
-% Added procedure ibalp_ordatp.
-%
-% Revision 1.13  2003/04/24 16:32:07  seidl
-% Smart simplification now available, rlsism is on now by default.
-% Changed ibalp_ordatp; still we need a better predicate, one which
-% sorts in addition by variable name (this is needed for commutative
-% law).
-%
-% Revision 1.12  2003/04/23 11:02:40  sturm
-% Rewritten ibalp_negateat.
-% Provided rlqea.
-%
-% Revision 1.11  2003/04/17 16:52:47  seidl
-% Added ibalp_termmlat and declared various services.
-%
-% Revision 1.10  2003/04/17 15:22:31  sturm
-% Fixed bugs in QE code.
-% Added services rl_ex!* and rl_all!*.
-%
-% Revision 1.9  2003/04/17 14:48:02  seidl
-% Removed bug from ibalp_varlt1.
-%
-% Revision 1.8  2003/04/17 13:34:52  sturm
-% Quantifier elimination should work.
-%
-% Revision 1.7  2003/04/17 12:13:32  seidl
-% After simplification, atoms are of the form a=1 or a=0 now, and NNF works
-% as it should, i.e. there is no "not" in the result.
-%
-% Revision 1.6  2003/04/15 14:02:17  seidl
-% Simplified result has now always atoms of the form a=1. This is needed
-% for rlpcprint.
-%
-% Revision 1.5  2003/04/10 18:34:22  seidl
-% Changed <=>, =>, <= to <->, ->, <- to avoid conflict with lessequal.
-% Simplification (including term expansion) implemented. Modified
-% ibalp_negateat, added ibalb_flip01, ibalp_simplat1 ibalp_term2fo and
-% ibalp_ordatp.
-%
-% Revision 1.4  2003/03/27 13:12:03  sturm
-% Clean treatment of static case sensitivity.
-%
-% Revision 1.3  2003/03/27 12:53:10  sturm
-% Fixed a buig in ibalp_priequal.
-%
-% Revision 1.2  2003/03/27 12:38:41  sturm
-% Implemented printing for bnot.
-% Added procedures ibalp_upcase, ibalp_downcase, ibalp_uppercasep.
-% Added procedures ibalp_pcvar,ibalp_pcvarp.
-% Implemented rlpcvar, which is stat rlis, i.e., has sytax like e.g. "tr".
-%
-% Revision 1.1  2003/03/26 18:20:44  seidl
-% Initail check-in. Syntax works.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ibalp_rcsid!* ibalp_copyright!*);
-   ibalp_rcsid!* := "$Id: ibalp.red,v 1.46 2008/08/24 06:31:14 sturm Exp $";
+   ibalp_rcsid!* := "$Id$";
    ibalp_copyright!* :=
-      "Copyright (c) 2003-2008 A. Dolzmann, A. Seidl, and T. Sturm"
+      "Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm"
 >>;
 
 module ibalp;

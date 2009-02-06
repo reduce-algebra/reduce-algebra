@@ -1,199 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: rlami.red,v 1.47 2007/12/21 22:18:25 zengler Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: rlami.red,v $
-% Revision 1.47  2007/12/21 22:18:25  zengler
-% Added rl_a2s!-string.
-%
-% Revision 1.46  2007/12/21 03:58:07  zengler
-% Fixed a bug in rl_a2s!-qsatoptions.
-%
-% Revision 1.45  2007/12/21 00:11:15  zengler
-% Added rl_s2a!-qsatoptions and rl_a2s!-qsatoptions for option settings of rlqsat.
-%
-% Revision 1.44  2007/12/20 15:38:10  sturm
-% Moved procedures rl_a2s!-sflist and rl_s2a!-sflistlist from rlsched to rlami.
-%
-% Revision 1.43  2007/07/10 09:14:35  lasaruk
-% Added service pqea for probabilistic quantifier elimination with answers.
-%
-% Revision 1.42  2007/07/05 06:20:07  lasaruk
-% Added a2s!-sf for rational number conversion. Added service pqe.
-%
-% Revision 1.41  2006/11/25 14:15:32  sturm
-% Admit reserved identifiers (pi,i,e) as quantified variables.
-%
-% Revision 1.40  2006/05/15 21:44:34  sturm
-% Some bug fixes for Texmacs printing: Avoid fancy!-prin2 " ".
-%
-% Revision 1.39  2006/04/09 07:48:36  lasaruk
-% Expansion service for answers added
-%
-% Revision 1.38  2006/03/10 21:57:04  lasaruk
-% rlqewa renamed to rlwqea
-%
-% Revision 1.37  2006/03/07 07:41:02  lasaruk
-% weak quantifier elimination with answers service rlqewa added
-%
-% Revision 1.36  2005/09/26 13:40:54  sturm
-% The context tag in Pseudo-Lisp Prefix is a list now (for qqe).
-%
-% Revision 1.35  2005/04/13 18:11:02  lasaruk
-% In the call to bsatp the second variable added
-%
-% Revision 1.34  2004/08/11 15:18:45  lasaruk
-% Test for finite solution set in bounded quantifiers added
-%
-% Revision 1.33  2003/11/11 15:10:07  sturm
-% Modified printing for bounded quantifiers. Do not use various
-% symbols for logical and.
-%
-% Revision 1.32  2003/10/21 15:23:16  gilch
-% Added procedure rl_s2a!-ghqe.
-%
-% Revision 1.31  2003/10/12 19:41:14  sturm
-% Introduced rl_texmacs. The test "if get('or,'fancy!-infix!-symbol) = 218"
-% does not work in general since Windows does not guarantee to load
-% fmprint at startup.
-%
-% Revision 1.30  2003/10/12 18:26:17  sturm
-% Printing for both fmprint and tmprint in pasf now.
-% The test is done via "if get('or,'fancy!-infix!-symbol) = 218" for now.
-% IBALP printing remains to be adapted.
-%
-% Revision 1.29  2003/10/12 16:57:04  sturm
-% Fixed bug in rl_fancy!-pribq.
-%
-% Revision 1.28  2003/10/12 16:53:29  sturm
-% Texmacs fancy-printing crashed Windows. Substituted fancy procedures
-% by less fancy but working ones for now.
-%
-% Revision 1.27  2003/08/21 14:46:38  seidl
-% Fancy printing for bounded quantifiers (for TeXmacs).
-%
-% Revision 1.26  2003/08/19 09:32:10  seidl
-% Added bquap case to rl_lengthfof.
-%
-% Revision 1.25  2003/04/09 18:25:09  seidl
-% Bounded quantifiers now only allowed within PASF context. Augmented
-% rl_resimp for bounded quantifiers.
-%
-% Revision 1.24  2003/03/27 22:55:05  seidl
-% Introduced bounded quantifiers. Added rl_simpbq, rl_pribq, modified
-% rl_prepfof1.
-%
-% Revision 1.23  2003/01/29 10:43:43  sturm
-% Built clean optional argument interface for rlcad and rlgcad. This was buggy.
-%
-% Revision 1.22  2003/01/27 11:50:56  sturm
-% Fixed a bug in rl_a2s_idlist s.t. it properly handles [nil] now. [nil]
-% indicates (in contrast to the empty algebraic list) that there is no
-% optional argument present.
-%
-% Revision 1.21  2003/01/25 11:49:41  sturm
-% Changed return value and interface for rlcadporder/ofsf_cadporder and
-% rlgcadporder/ofsf_gcadporder. They return a list of variables now.
-% s2a conversion is done in the scheduler now. Adapted rlcad/ofsf_cad and
-% rlgcad/ofsf_gcad accordingly.
-%
-% Revision 1.20  2003/01/11 17:58:01  sturm
-% Added AM services rlcadporder, rlgcadporder for ofsf.
-%
-% Revision 1.19  2002/08/23 12:32:01  dolzmann
-% Added local quantifier elimination.
-%
-% Revision 1.18  1999/03/23 09:23:55  dolzmann
-% Changed copyright information.
-%
-% Revision 1.17  1999/03/22 08:07:56  sturm
-% Turned error message "select a language" in into "select a context".
-%
-% Revision 1.16  1999/03/21 13:39:44  dolzmann
-% Modified procedure rl_qvarchk: Reserved identifiers are not allowed
-% as quantified variables.
-%
-% Revision 1.15  1997/08/14 10:10:46  sturm
-% Renamed rldecdeg to rldecdeg1.
-% Added service rldecdeg.
-%
-% Revision 1.14  1997/08/13 12:45:46  dolzmann
-% Added procedure rl_s2a!-decdeg.
-%
-% Revision 1.13  1997/08/12 17:03:54  sturm
-% Fixed fancy printing for Xr and PC versions.
-%
-% Revision 1.12  1996/10/17 13:52:23  sturm
-% Introduced services rlvarl, rlfvarl, and rlbvarl. Renamed cl_varl to
-% cl_varl1 for this.
-%
-% Revision 1.11  1996/10/07 12:03:54  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.10  1996/10/03 16:07:04  sturm
-% Modified error message in rl_s2a!-struct.
-%
-% Revision 1.9  1996/10/01 10:25:18  reiske
-% Introduced new service rltnf and related code.
-%
-% Revision 1.8  1996/09/29 14:21:28  sturm
-% Removed switch rlqeans. Introduced service rlqea instead.
-% Also introduced corresponding service rlgqea.
-%
-% Revision 1.7  1996/09/26 11:51:09  dolzmann
-% Do not use T as formal parameter.
-%
-% Revision 1.6  1996/09/05 11:16:48  dolzmann
-% Added procedures rl_cleanup, rl_a2s!-id, rl_s2a!-term, and rl_s2a!-struct.
-% Renamed procedure rl_a2s!-terml to rl_s2a!-struct.
-%
-% Revision 1.5  1996/07/02 15:12:28  sturm
-% Fixed a bug in length computation.
-%
-% Revision 1.4  1996/06/05 15:11:25  sturm
-% Added procedure rl_sub!*fof.
-%
-% Revision 1.3  1996/05/21 17:12:34  sturm
-% Removed rl_subfof. Substitution code has moved to cl.
-%
-% Revision 1.2  1996/05/12 08:28:23  sturm
-% Added procedures rl_s2a!-gqe and rl_s2a!-atl.
-%
-% Revision 1.1  1996/03/22 12:18:27  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(rl_ami_rcsid!* rl_ami_copyright!*);
    rl_ami_rcsid!* :=
-      "$Id: rlami.red,v 1.47 2007/12/21 22:18:25 zengler Exp $";
-   rl_ami_copyright!* := "Copyright (c) 1995-2008 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   rl_ami_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module rlami;
 % Reduce logic component algebraic mode interface. Submodule of [redlog].

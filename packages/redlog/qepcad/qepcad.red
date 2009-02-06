@@ -1,84 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: qepcad.red,v 1.7 1997/08/18 17:29:55 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995, 1996, 1997
-% Andreas Dolzmann and Thomas Sturm, Universitaet Passau
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qepcad.red,v $
-% Revision 1.7  1997/08/18 17:29:55  sturm
-% Changes due to renaming:
-%    "rl.red" -> "redlog.red"
-%    "rl.tst" -> "redlog.tst"
-%    "rl.texi" -> "redlog.texi".
-%
-% Revision 1.6  1997/03/14 16:42:54  sturm
-% Treat truth values in the input correctly.
-% Return nil to the AM with optional file name argument.
-% Raise a "rederr" if QEPCAD fails.
-% Run the interface under "errorset."
-%
-% Revision 1.5  1996/10/17 13:52:17  sturm
-% Introduced services rlvarl, rlfvarl, and rlbvarl. Renamed cl_varl to
-% cl_varl1 for this.
-%
-% Revision 1.4  1996/10/17 12:31:39  sturm
-% Moved sconcat2, sconcat, and at2str from qepcad.red to lto.red.
-%
-% Revision 1.3  1996/07/13 11:25:12  dolzmann
-% Fixed a bug in qepcad_qepcad: Proper treatment of calling qepacd
-% without output of return value.
-%
-% Revision 1.2  1996/04/30 12:11:29  sturm
-% Added create!-package statement.
-%
-% Revision 1.1  1996/03/22 12:16:33  sturm
-% Moved. Added rl_set call.
-%
-% Revision 1.4  1996/03/18 15:47:00  sturm
-% Moved rl operator classification predicates to module rl.
-%
-% Revision 1.3  1996/03/09 13:36:33  sturm
-% Adapted the (now) rl access functions and cl predicates to the new
-% names.
-%
-% Revision 1.2  1995/12/06  11:04:51  sturm
-% Made results available to Reduce.
-% Added proper treatment of the switches rlverbose and time.
-%
-% Revision 1.1  1995/08/30  08:15:51  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(qepcad_rcsid!* qepcad_copyright!*);
-   qepcad_rcsid!* := "$Id: qepcad.red,v 1.7 1997/08/18 17:29:55 sturm Exp $";
-   qepcad_copyright!* :=
-      "Copyright (c) 1995, 1996, 1997 by A. Dolzmann and T. Sturm, Universitaet Passau"
+   qepcad_rcsid!* :=
+      "$Id$";
+   qepcad_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module qepcad;
 

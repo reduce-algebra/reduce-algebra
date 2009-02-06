@@ -1,88 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfmisc.red,v 1.16 2008/08/24 05:28:13 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfmisc.red,v $
-% Revision 1.16  2008/08/24 05:28:13  sturm
-% Admit substitution of parametric denominators.
-%
-% Revision 1.15  2006/08/02 08:12:38  sturm
-% Added module clresolv.
-%
-% Revision 1.14  2002/08/23 08:44:40  dolzmann
-% Minor code cosmetic.
-%
-% Revision 1.13  1999/04/01 11:25:56  dolzmann
-% Added and corrected comments.
-%
-% Revision 1.12  1999/03/23 07:41:38  dolzmann
-% Changed copyright information.
-%
-% Revision 1.11  1997/08/24 16:18:51  sturm
-% Added service rl_surep with black box rl_multsurep.
-% Added service rl_siaddatl.
-%
-% Revision 1.10  1996/10/23 11:17:45  dolzmann
-% Corrected comments.
-%
-% Revision 1.9  1996/10/07 12:03:26  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.8  1996/10/03 16:06:09  sturm
-% Fixed a bug in ofsf_structat.
-%
-% Revision 1.7  1996/10/01 10:25:08  reiske
-% Introduced new service rltnf and related code.
-%
-% Revision 1.6  1996/09/30 16:55:59  sturm
-% Cleaned up the use of several (conditional) negate-relation procedures.
-%
-% Revision 1.5  1996/09/05 11:15:19  dolzmann
-% Added implementation for black boxes rl_structat, rl_ifstructat, and
-% rl_termmlat.
-%
-% Revision 1.4  1996/08/01 11:45:48  reiske
-% Added implementation for black boxes rl_a2cdl and rl_getineq.
-%
-% Revision 1.3  1996/07/07 14:39:50  sturm
-% Added implementation for black box ofsf_eqnrhskernels.
-%
-% Revision 1.2  1996/05/21 17:14:19  sturm
-% Added procedures ofsf_subat and ofsf_subalchk.
-%
-% Revision 1.1  1996/03/22 12:14:11  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_misc_rcsid!* ofsf_misc_copyright!*);
-   ofsf_misc_rcsid!* := "$Id: ofsfmisc.red,v 1.16 2008/08/24 05:28:13 sturm Exp $";
-   ofsf_misc_copyright!* :=
-      "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+   ofsf_misc_rcsid!* :=
+      "$Id$";
+   ofsf_misc_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
 
 module ofsfmisc;

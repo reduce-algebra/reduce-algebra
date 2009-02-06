@@ -1,70 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfsiat.red,v 1.9 2007/12/16 08:15:10 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfsiat.red,v $
-% Revision 1.9  2007/12/16 08:15:10  sturm
-% Thoroughly overworked simplat1 for positive QE.
-% The changes affect the non-positive case to some extent as well.
-% ofsf_lmultf has moved to sfto.
-%
-% Revision 1.8  1999/03/23 12:26:33  sturm
-% Renamed switch rlsisqf to rlsiatadv.
-%
-% Revision 1.7  1999/03/23 07:41:39  dolzmann
-% Changed copyright information.
-%
-% Revision 1.6  1996/10/08 13:54:37  dolzmann
-% Renamed "degree parity decomposition" to "parity decomposition".
-% Adapted names of procedures and switches accordingly.
-%
-% Revision 1.5  1996/10/07 12:03:32  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.4  1996/09/30 16:56:02  sturm
-% Cleaned up the use of several (conditional) negate-relation procedures.
-%
-% Revision 1.3  1996/09/05 11:16:08  dolzmann
-% Fixed a bug in ofsf_simplleq and ofsf_simplgreaterp.
-%
-% Revision 1.2  1996/05/12 08:27:49  sturm
-% Introduced code for splitting of trivial square sums.
-%
-% Revision 1.1  1996/03/22 12:14:16  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_siat_rcsid!* ofsf_siat_copyright!*);
-   ofsf_siat_rcsid!* := "$Id: ofsfsiat.red,v 1.9 2007/12/16 08:15:10 sturm Exp $";
-   ofsf_siat_copyright!* :=
-      "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+   ofsf_siat_rcsid!* :=
+      "$Id$";
+   ofsf_siat_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module ofsfsiat;
 % Ordered field standard form simplification. Submodule of [ofsf].

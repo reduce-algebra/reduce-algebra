@@ -1,236 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfcadproj.red,v 1.37 2005/07/26 06:50:26 seidl Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2001 A. Dolzmann, L. Gilch, A. Seidl, and T. Sturm
+% Copyright (c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
-% $Log: ofsfcadproj.red,v $
-% Revision 1.37  2005/07/26 06:50:26  seidl
-% Added third argument (additional projection polynomials) to rlcad.
-%
-% Revision 1.36  2005/02/13 13:27:12  seidl
-% Removed a bug regarding generic CAD, which was introduced when dealing
-% with answers.
-%
-% Revision 1.35  2004/12/05 23:36:47  seidl
-% Worked on rlrorders. Searched for a bug, which
-% turned out to be a feature.
-%
-% Revision 1.34  2004/12/05 01:57:59  seidl
-% Rewrote isregular, transreg, regularize to take lists of polynomials
-% as arguments. Added rlregularize1.
-%
-% Revision 1.33  2004/11/29 08:26:25  seidl
-% Added prenexp test to cadvbl.
-%
-% Revision 1.32  2004/11/22 16:30:33  seidl
-% Optimal regularization wrt. number of monomials.
-%
-% Revision 1.31  2004/11/22 10:06:07  seidl
-% Added total degree, regularity test, transformation and
-% regularization.
-%
-% Revision 1.30  2004/11/20 15:49:23  seidl
-% Minor modifications.
-%
-% Revision 1.29  2004/05/17 16:10:26  seidl
-% Propagation of answers.
-%
-% Revision 1.28  2004/05/14 16:05:02  seidl
-% All cells have symbolic root information now, using the keywords root,
-% below, between, beyond and arbitrary.
-%
-% Revision 1.27  2004/05/10 17:01:33  seidl
-% First step in switching to tagged standard forms. rlcad works, but variants
-% might be temporarily unavailable.
-%
-% Revision 1.26  2004/05/03 09:04:27  dolzmann
-% Modified code for computing an optimized variable order.
-%
-% Revision 1.25  2003/09/25 07:31:38  seidl
-% Some changes.
-%
-% Revision 1.24  2003/08/28 13:51:03  seidl
-% Worked on projection orders.
-%
-% Revision 1.23  2003/07/15 07:50:59  seidl
-% Removed unused stuff.
-%
-% Revision 1.22  2003/02/02 22:13:50  seidl
-% Global Variable ofsf_cadtheo!* eliminated. Verbose output changed.
-%
-% Revision 1.21  2003/01/30 12:28:26  sturm
-% Procedure ofsf_cadporder3 was missing declaration for w.
-%
-% Revision 1.20  2003/01/29 17:35:29  seidl
-% Even second-level verbose output now depends on switch rlverbose.
-%
-% Revision 1.19  2003/01/29 11:53:49  sturm
-% Moved ofsf_det from ofsfcadproj to ofsfdet.
-%
-% Revision 1.18  2003/01/29 11:34:42  sturm
-% Moved determinant code to from module ofsfcadproj to new module ofsfdet.
-%
-% Revision 1.17  2003/01/25 12:30:31  sturm
-% Commented ofsf_gcadporder and ofsf_cadporder and subroutines.
-%
-% Revision 1.16  2003/01/25 11:49:38  sturm
-% Changed return value and interface for rlcadporder/ofsf_cadporder and
-% rlgcadporder/ofsf_gcadporder. They return a list of variables now.
-% s2a conversion is done in the scheduler now. Adapted rlcad/ofsf_cad and
-% rlgcad/ofsf_gcad accordingly.
-%
-% Revision 1.15  2003/01/11 20:01:10  seidl
-% McCallum projection used for 3 variable level, if temporary switch rlcadmc3
-% is turned on (default). Improved solution formula construction, if first
-% attempt fails, then second try with all possible projection factors.
-%
-% Revision 1.14  2003/01/11 19:51:04  sturm
-% Readded lost verbosity output on variable choice in ofsf_cadporder3.
-%
-% Revision 1.13  2003/01/11 17:57:58  sturm
-% Added AM services rlcadporder, rlgcadporder for ofsf.
-%
-% Revision 1.12  2003/01/10 15:15:37  seidl
-% Sorting introduced in splitredl. Switch rlpscsgen to turn off generic pscs.
-%
-% Revision 1.11  2003/01/10 10:04:11  seidl
-% Bug in splitting of redukta list fixed.
-%
-% Revision 1.10  2003/01/07 17:09:46  seidl
-% Works with rlcadverbose off again.
-%
-% Revision 1.9  2003/01/06 18:21:06  seidl
-% Generic versions of S1 and S2hon.
-%
-% Revision 1.8  2003/01/04 22:39:13  seidl
-% Fixed bug in ofsf_projcoll.
-%
-% Revision 1.7  2003/01/04 18:53:07  seidl
-% New projection subset projcobb2gen (reducta for generic projection);
-% uses global variables ofsf_cadtheo!* and ofsf_cadbvl!*; verbose
-% output: (end): all reducta were needed, (th>): the theory implied the
-% leading coefficient to be non-zero, (>th): a valid assumption was
-% added to the theory. rlgencad now uses new projection set projcohogen.
-%
-% Revision 1.6  2003/01/04 09:14:19  seidl
-% More projection operators, e.g. tagged McCallum-Brown projection. Redukta
-% changed (deg in Collins' definition now interpreted as total degree).
-%
-% Revision 1.5  2002/11/27 12:39:18  seidl
-% Projection rewritten. So far the new code is not used by the cad. Most
-% of the projection subsets, operators, transforations and sets are
-% accessible in algebraic mode.
-%
-% Revision 1.4  2002/06/05 17:32:22  seidla
-% Generic projection.
-%
-% Revision 1.3  2002/02/19 13:34:51  seidla
-% New projection phase for slimmer sets of projection factors. Comprises
-% Collins' improvement for 2 variables and smaller sets of reducta. The
-% set of reducta has to be looked at again.
-%
-% Revision 1.2  2002/01/16 16:14:11  sturm
-% Removed unused copied and modified Bareiss code.
-% Removed sfto_multf().
-%
-% Revision 1.1  2002/01/16 13:03:49  seidla
-% Imported CAD from rlprojects.
-%
-% Revision 1.17  2002/01/09 14:14:02  seidla
-% factorization now for all projection sets if switch rlcadfac is turned
-% on.
-%
-% Revision 1.16  2002/01/07 11:16:06  sturm
-% Developing new implementation of Bareiss. Switch !*ourdet is off by
-% default currently, such that CAD is not affected.
-%
-% Revision 1.15  2001/12/14 15:49:28  sturm
-% Fixed bug in ofsf_pscmatrix1(): 0 had been collected as SF's instead of nil.
-% Added line sorting to ofsf_bareiss().
-%
-% Revision 1.14  2001/12/13 15:13:09  sturm
-% Added procedure ofsf_bareiss().
-% Procedure bareiss!-det() is redundant now.
-%
-% Revision 1.13  2001/12/12 19:29:08  gilch
-% Added ofsf_ordp. Updated ofsf_hongrrunion and ofsf_rrunion for use with ofsf_rrunion.
-%
-% Revision 1.12  2001/12/12 15:14:03  gilch
-% Added ofsf_setminus. Fixed a bug in ofsf_hongrrunion
-%
-% Revision 1.11  2001/12/12 10:04:55  gilch
-% Fixed a bug in ofsf_hongrrunion
-%
-% Revision 1.10  2001/12/10 21:41:38  gilch
-% Added procedure ofsf_hongrrunion. Updated ofsf_projop and ofsf_aprojop for
-% use with Hong projection set R
-%
-% Revision 1.9  2001/12/04 09:12:12  gilch
-% Added ofsf_derivatives1. Changed ofsf_cc.
-%
-% Revision 1.8  2001/12/03 17:04:55  gilch
-% Changed ofsf_reducta. rlcadverbose output added for counting projection sets.
-%
-% Revision 1.7  2001/12/01 20:12:38  seidla
-% removed dead code. changed verbose output. fixed bug with switches.
-% still the projection phase is not correct, see examples as6vv and
-% cox6p.
-%
-% Revision 1.6  2001/11/30 14:32:22  seidla
-% new layout for ofsf_cadproj (different parameters). reordering in
-% ofsf_projop and ofsf_aprojop removed. verbose output changed. new
-% switch rlcadhongproj.
-%
-% Revision 1.5  2001/11/30 12:54:24  gilch
-% Fixed a bug in ofsf_reducta. Updated ofsf_cadproj for use with
-% alternative projections methods(always aproj,never aproj,partical aproj)
-%
-% Revision 1.4  2001/11/27 13:02:08  seidla
-% log information for revision 1.2 and 1.1 added
-%
-% Revision 1.3  2001/11/27 12:55:10  seidla
-% cvs header added and bug fixed in ofsf_cadaproj
-%
-% revision 1.2
-% date: 2001/11/26 16:45:00;  author: seidla;  state: Exp;  lines: +100 -5
-% procedures ofsf_bb etc. and ofsf_projop and ofsf_aprojop added.
-% comment for a future verseion of ofsf_cadproj added. there seems to be
-% a bug in ofsf_reducta. further clarification on how to calculate the
-% augmented projection has to be made due to contradictory information.
-%
-% revision 1.1
-% date: 2001/11/23 10:58:33;  author: seidla;  state: Exp;
-% Code for projection phase moved to this file.
-% ----------------------------------------------------------------------
-
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
 lisp <<
-   fluid '(ofsfcadproj_rcsid!* ofsfcadproj_copyright!*);
-   ofsfcadproj_rcsid!* := "$Id: ofsfcadproj.red,v 1.37 2005/07/26 06:50:26 seidl Exp $";
-   ofsfcadproj_copyright!* := "(c) 2000 by A. Dolzmann, L. Gilch, A. Seidl, T. Sturm"
+   fluid '(ofsf_cadproj_rcsid!* ofsf_cadproj_copyright!*);
+   ofsf_cadproj_rcsid!* :=
+      "$Id$";
+   ofsf_cadproj_copyright!* :=
+      "(c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, T. Sturm"
 >>;
 
 fluid '(ofsf_cadbvl!*);

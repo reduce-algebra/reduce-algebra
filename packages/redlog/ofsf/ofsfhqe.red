@@ -1,126 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfhqe.red,v 1.8 2007/10/05 13:38:33 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2003 Andreas Dolzmann and Lorenz Gilch
+% Copyright (c) 2003-2009 Andreas Dolzmann and Lorenz Gilch
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfhqe.red,v $
-% Revision 1.8  2007/10/05 13:38:33  sturm
-% Adapted to CGB interfaces.
-%
-% Revision 1.7  2003/11/07 12:39:55  dolzmann
-% Changed comments. Removed lines that were commented out.
-%
-% Revision 1.6  2003/10/24 11:55:45  gilch
-% Renamed !*rlrqtfcsplit to !*rlhqetfcsplit.
-% Renamed !*rlrqvb to !*rlhqevb.
-% Renamed !*rlrqvarsel to !*rlhqevarsel.
-% Renamed !*rlrqvarselx to !*rlhqevarselx.
-% Renamed !*rlrqdim0 to !*rlhqedim0.
-% Renamed !*rlrqtheory to !*rlhqetheory.
-% Renamed !*rlrqgbred to !*rlhqegbred.
-% Renamed !*rlrqconnect to !*rlhqeconnect.
-% Renamed !*rlrqstrconst to !*rlhqestrconst.
-% Renamed !*rlrqgbdimmin to !*rlhqegbdimmin.
-% Renamed !*rlrqgen to !*rlhqegen.
-% Renamed ofsf_rqtheo!* to ofsf_hqetheo!*.
-% Renamed ofsf_rqxvars!* to ofsf_hqexvars!*.
-%
-% Revision 1.5  2003/10/24 07:17:17  dolzmann
-% Added lost spaces after numbers.
-%
-% Revision 1.4  2003/10/23 15:33:43  gilch
-% Overworked verbose messages.
-%
-% Revision 1.3  2003/10/23 15:04:17  dolzmann
-% Overworked verbose messages.
-%
-% Revision 1.2  2003/10/21 15:47:54  gilch
-% Corrected wrong prefix ofsf_ to gbsc.
-%
-% Revision 1.1  2003/10/21 15:20:06  gilch
-% Moved rlprojects/{gbdim.red,d0.red,qenf.red,rrcqe.red} into this module.
-% Changed prefix.
-% Renamed switch rlrqselectxn to rlrqvarsel.
-% Renamed switch rlrqselectxn2 to rlrqvarselx.
-% Renamed switch rlrqverbose to rlrqvb.
-% Renamed switch rlrqtoplevelonly to rlrqdim0.
-% Renamed switch rlrqinitialcd to rlrqtheory.
-% Moved switch declarations to redlog.red.
-% Moved inital switch setting to redlog.red.
-% Moved fluid declarations for switches to ofsf.red.
-% Renamed fluid rlrqgeneric!* to ofsf_rqtheo and rlrqgenvar to ofsf_rqxvars.
-% Renamed rrcqe_rrcqe to ofsf_hqe.
-% Renamed rrcqe_rrcqegen to ofsf_ghqe.
-% Renamed rrcqegenres to rl_s2a!-ghqe and moved to rlami.
-% Renamed ofsf_mkf to ofsf_rqrequantify and ofsf_mkf(!) to ofsf_sfl2f.
-% Renamed procedure ofsf_simp to ofsf_rqsimpl.
-% Renamed procedure ofsf_htl to ofsf_mvp.
-% Renamed procedure ofsf_main to ofsf_d0main and ofsf_main to ofsf_d0main1.
-%
-% Revision 1.9  2003/08/19 15:02:26  gilch
-% Fixed a bug in rrcqe_genvar.
-%
-% Revision 1.8  2003/07/21 11:27:58  gilch
-% Added switches rlrqgen, rlrqgeneric, rlrqgenvar. Added procedures
-% rrcqe_rrcqegenres, rrcqe_rrcqegen, rrcqe_genvar. Updated rrcqe_rrcqe for
-% generic QE.
-%
-% Revision 1.7  2003/06/26 11:45:13  gilch
-% Fixed bugs in rrcqe_rrcnfblockqe and rrcqe_connect.
-%
-% Revision 1.6  2003/06/25 13:16:37  gilch
-% Added verbose outputs.
-%
-% Revision 1.5  2003/05/27 15:22:28  gilch
-% Added procedures rrcqe_connect, rrcqe_samephi, rrcqe_samephip,
-% rrcqe_connectrrcnf, rrcqe_smkn, rrcqe_conjp. Added switch rlrqconnect.
-% Updated procedures rrcqe_rrcnfeliminate and rrcqe_rrcnfblockqe for use with
-% rlrqconnect.
-%
-% Revision 1.4  2003/05/07 11:36:33  gilch
-% Added switch rlrqtoplevelonly and updated rrcqe_rrcqe for use with it. Added
-% procedured rrcqe_mkf,rrcqe_mkf2 and rrcqe_mkf3.
-%
-% Revision 1.3  2003/05/02 08:58:27  gilch
-% Added switch rlrqverbose.
-%
-% Revision 1.2  2003/04/29 14:34:02  gilch
-% Added procedure rrcqe_simp, added verbose outputs.
-%
-% Revision 1.1  2003/04/25 13:00:58  gilch
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_hqe_rcsid!* ofsf_hqe_copyright!*);
    ofsf_hqe_rcsid!* :=
-      "$Id: ofsfhqe.red,v 1.8 2007/10/05 13:38:33 sturm Exp $";
-   ofsf_hqe_copyright!* := "Copyright (c) 2003 by A. Dolzmann and L. Gilch"
+      "$Id$";
+   ofsf_hqe_copyright!* := "Copyright (c) 2003-2009 A. Dolzmann and L. Gilch"
 >>;
-
 
 module ofsfhqe;
 % Ordered fields standard form Hermitian quantifier elimination.

@@ -1,240 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: rl.red,v 1.15 1997/08/12 17:03:51 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995, 1996
-% Andreas Dolzmann and Thomas Sturm, Universitaet Passau
+% Copyright (c) 1995-1997 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: rl.red,v $
-% Revision 1.15  1997/08/12 17:03:51  sturm
-% Fixed fancy printing for Xr and PC versions.
-%
-% Revision 1.14  1996/10/23 11:28:08  dolzmann
-% Added switch rlqevarsel and corresponding code.
-%
-% Revision 1.13  1996/10/20 15:55:07  sturm
-% Added switches rlnzden, rlposden, and rladdcond and corresponding code
-% handling the input of reciprocal terms.
-%
-% Revision 1.12  1996/10/08 13:54:52  dolzmann
-% Renamed "degree parity decomposition" to "parity decomposition".
-% Adapted names of procedures and switches accordingly.
-%
-% Revision 1.11  1996/10/08 13:01:26  dolzmann
-% Removed switch rltabcb.
-%
-% Revision 1.10  1996/10/01 10:25:17  reiske
-% Introduced new service rltnf and related code.
-%
-% Revision 1.9  1996/09/29 14:21:25  sturm
-% Removed switch rlqeans. Introduced service rlqea instead.
-% Also introduced corresponding service rlgqea.
-%
-% Revision 1.8  1996/09/05 11:16:37  dolzmann
-% Introduced new switch !*rlqegenct.
-% Turned on rlsiexpla by default.
-% Introduced property cleanupfn on the internal service procedure identifier.
-%
-% Revision 1.7  1996/07/13 11:22:22  dolzmann
-% Introduced new switches rlgsbnf and rlgsutord with default values.
-%
-% Revision 1.6  1996/07/08 07:18:42  sturm
-% ex, all, and !*fof are no longer operators. Consequently, the number
-% of arguments of ex and all is checked now.
-%
-% Revision 1.5  1996/07/02 15:12:21  sturm
-% Fixed a bug in length computation.
-%
-% Revision 1.4  1996/06/24 09:11:44  sturm
-% Put 'lengthfn to rtype 'logical instead of tag '!*fof.
-%
-% Revision 1.3  1996/06/05 15:10:42  sturm
-% Turned off rlsimpl and rlsiexpla by default.
-% Changed the subfn of the rtype logical to rl_sub!*fof.
-%
-% Revision 1.2  1996/05/12 08:28:07  sturm
-% Introduced new switches rldavgcd and rlsitsqspl.
-%
-% Revision 1.1  1996/03/22 12:18:24  sturm
-% Moved and split.
-%
-% Revision 1.23  1996/03/18 15:47:20  sturm
-% Added service rlatml.
-% Made rl_simp apply rl_simpl in dependence on the switch rlsimpl.
-% Changed rl_reval to avoid double simplification.
-% Removed rl_aeval.
-% Major changes in the treatment of switches. Moved default declarations
-% from context files to here.
-% Major changes in rl_set.
-% Removed treatment of several context properties: rl_enterargnum,
-% rl_me2tag, rl_tag2me.
-% The for loop actions "mkand" and "mkor" flatten the top-level now.
-% Moved rl operator classification predicates from module cl to here.
-% Rewritten rl_prepfof1, rl_resimp.
-% Changed context conversion in rl_simp!*fof.
-% Added macros rl_mkbb: black boxes are introduced by this now.
-% Added macro rl_mkserv replacing smacro rl_mkinterf. Major changes in
-% AM-SM paramter passing routines.
-% Changed data-driven code for internal representations. Introduced
-% "rl_"-properties on the context tag: rl_lengthat, rl_resimpat, and
-% rl_prepat, rl_prepterm, rl_simpterm.
-%
-% Revision 1.22  1996/03/11 13:19:03  reiske
-% Added black boxes fctrat and tordp.
-% Added interface for rlapnf and rlifacl.
-%
-% Revision 1.21  1996/03/10 13:04:09  sturm
-% Added switch rlqeheu.
-% Added interface for rlmatrix.
-%
-% Revision 1.20  1996/03/10 12:48:34  dolzmann
-% Added new switch !*rlgsvb.
-%
-% Revision 1.19  1996/03/09 13:37:01  sturm
-% Added switch rlqesr.
-% Renamed fluid rl_tag!* to rl_cid!*, removed fluid rl_ctag!*.
-% Moved rl_updcache1 to rl_updcache.
-% Moved the black boxes from module cl to here changing the "cl_"
-% prefixes into "rl_".
-% Moved the  constructors/access functions from module cl to here
-% renaming them as follows:
-%  cl_op       -> rl_op
-%  cl_arg1     -> rl_arg1
-%  cl_arg2l    -> rl_arg2l
-%  cl_arg2r    -> rl_arg2r
-%  cl_argn     -> rl_argn
-%  cl_var      -> rl_var
-%  cl_mat      -> rl_mat
-%  cl_constr1  -> rl_mk1
-%  cl_constr2  -> rl_mk2
-%  cl_constrn  -> rl_mkn
-%  cl_sconstrn -> rl_smkn
-%  cl_constrq  -> rl_mkq
-% Overworked structuring into submodules.
-% Added primitive support for a subfn.
-%
-% Revision 1.18  1996/03/04 17:14:14  sturm
-% Moved the treatment of the switch !*rlsimpl to rl_mk!*fof and
-% rl_prepfof. Turned off !*rlrealtime temporarily for the call to
-% rl_simpl.
-%
-% Revision 1.17  1996/03/04 13:09:39  dolzmann
-% Added switch !*rlbnfsac.
-% Removed switch !*rlbnfsb.
-%
-% Revision 1.16  1996/02/26 12:51:38  sturm
-% Fixed bugs in rl_updcache1 and rl_mkinterf.
-%
-% Revision 1.15  1996/02/18 14:07:41  sturm
-% Added switches rlsifac and rlqegsd.
-% Removed switch rlqesdnf.
-% Added optional theory to rlqe. Modified rl_qe!-s2a accordingly.
-% Made rlatl available in the AM.
-%
-% Revision 1.14  1996/02/18 12:42:52  dolzmann
-% Fixed a bug in rl_simp.
-% Added optional parameters to rlgsc, rlgsd, and rlgsn.
-% Added switch rlgserf.
-%
-% Revision 1.13  1995/11/16  08:12:14  sturm
-% Added switch rlsimpl and respective code.
-% Added primitive support for Xr.
-% Rewritten rl_simpq: Variable lists as first argument are possible now.
-% Added module rlfor implementing mkand and mkor actions in for-loops.
-% Added an optional parameter to the interface for rlex and rlall.
-%
-% Revision 1.12  1995/10/18  10:17:59  sturm
-% Added switches rlbnfsb and rlbnfsm.
-%
-% Revision 1.11  1995/09/05  07:59:02  sturm
-% Added switches rlqesdnf, rlsipw, rlsipo.
-%
-% Revision 1.10  1995/08/31  13:57:32  sturm
-% Added procedure rl_!*foflength.
-% Modified rl_mk!*fof for a more consistent AM representation of atomic
-% formulas.
-%
-% Revision 1.9  1995/08/30  07:44:14  sturm
-% Modified rl_set. It accepts and returns a list now. Added fluid
-% rl_argl!* for the extra rl_set parameters.
-% Removed psopfn rl_set from AM.
-% Fixed rlrealtime to nil in rl_identifyonoff.
-%
-% Revision 1.8  1995/08/08  10:22:39  sturm
-% Removed switch rldev and dependent code.
-% Renamed rl_ppriand to rl_ppriop. It is now used with all RL infix
-% operators.
-% Added rl_prepq.
-% Fixed a bug in procedure rl_mkinterf1.
-% Added extra optional argument to rlsimpl. Extended its AM backconversion.
-%
-% Revision 1.7  1995/08/03  05:32:52  dolzmann
-% Added procedure rlgsn.
-%
-% Revision 1.6  1995/08/02  07:22:02  sturm
-% Added fluid rl_deflang!* and default language code.
-% Added switches rlsiidem and rlsiso.
-% Changed copyright messages.
-%
-% Revision 1.5  1995/07/12  15:11:26  sturm
-% Added procedure rl_identifyonoff.
-%
-% Revision 1.4  1995/07/07  11:29:50  sturm
-% Removed "_" in switch names and AM interface names.
-% Added switches rlrealtime, rlopt1s, renamed switch rl_smsimpl to rlsism.
-% Renamed Groebner simplifiers: rl_gbcsimpl to rlgsc and
-% rl_gbdsimpl to rlgsd.
-% Added procedures rl_simpterm, rl_prepterm, and rl_mkterm.
-% Major changes in module rl3 (AM interface), added realtime code.
-%
-% Revision 1.3  1995/06/21  09:04:37  sturm
-% Removed declarations of non-used local variables.
-% Commented create!-package out.
-% Changed qe inteface, added opt and optgen interfaces.
-% Added switches rl_parallel, rl_qeans, rl_qedfs.
-% Renamed switches rl_tablib and rl_tablcb to rl_tabib and rl_tabcb resp.
-%
-% Revision 1.2  1995/06/01  13:36:37  dolzmann
-% Renamed switch rl_nocheck to rl_sichk with opposite semantic.
-% Added switch rl_gsprod.
-% Moved treatment of SQ's from rl_simpatom to rl_simp.
-%
-% Revision 1.1  1995/05/29  14:47:22  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(rl_rcsid!* rl_copyright!*);
-   rl_rcsid!* := "$Id: rl.red,v 1.15 1997/08/12 17:03:51 sturm Exp $";
-   rl_copyright!* :=
-      "Copyright (c) 1995 by A. Dolzmann and T. Sturm, Universitaet Passau"
+   rl_rcsid!* := "$Id$";
+   rl_copyright!* := "Copyright (c) 1995-1997  A. Dolzmann, T. Sturm"
 >>;
-
-
-% file rl.red
-% Reduce logic component.
 
 module rl;
 % Reduce logic component.

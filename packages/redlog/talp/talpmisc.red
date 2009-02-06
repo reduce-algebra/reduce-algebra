@@ -1,92 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: talpmisc.red,v 1.17 2007/12/16 12:46:50 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2004-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: talpmisc.red,v $
-% Revision 1.17  2007/12/16 12:46:50  sturm
-% Removed duplicate procedure talp_atfp.
-%
-% Revision 1.16  2006/06/28 08:00:26  sturm
-% Bug fix: CSL does not admit t as a procedure parameter variable.
-%
-% Revision 1.15  2005/02/15 20:56:30  hoffelne
-% removed superfluous procedures
-%
-% Revision 1.14  2005/02/01 10:30:39  hoffelne
-% bug fixed
-%
-% Revision 1.13  2004/11/11 21:01:54  hoffelne
-% fixed a bug in talp_ordatp
-%
-% Revision 1.12  2004/09/21 21:50:17  hoffelne
-% simplifications added
-%
-% Revision 1.11  2004/09/16 10:07:46  hoffelne
-% minor modifications
-%
-% Revision 1.10  2004/09/13 11:14:52  hoffelne
-% moved parts of talpmisc to talpsiat
-%
-% Revision 1.9  2004/09/10 10:59:28  hoffelne
-% minor changes
-%
-% Revision 1.8  2004/09/09 18:36:38  hoffelne
-% added further simplifications
-%
-% Revision 1.7  2004/07/10 14:30:23  hoffelne
-% minor changes
-%
-% Revision 1.6  2004/07/07 11:19:39  hoffelne
-% added service talp_rnf (refined normal form)
-%
-% Revision 1.5  2004/07/04 12:17:46  hoffelne
-% added service rl_tab + minor changes
-%
-% Revision 1.4  2004/06/29 11:55:17  hoffelne
-% added normal forms (pnf,apnf,nnf)
-%
-% Revision 1.3  2004/06/29 10:08:24  hoffelne
-% minor modifications
-%
-% Revision 1.2  2004/06/28 20:26:54  hoffelne
-% added talpbnf.red, a couple of services and normal forms
-%
-% Revision 1.1  2004/06/28 10:48:02  hoffelne
-% added talpmisc.red, declared a couple of services
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(talp_misc_rcsid!* talp_misc_copyright!*);
    talp_misc_rcsid!* :=
-      "$Id: talpmisc.red,v 1.17 2007/12/16 12:46:50 sturm Exp $";
-   talp_misc_copyright!* :=
-      "Copyright (c) 2004-2008 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   talp_misc_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module talpmisc;
 % Term algebra Lisp prefix miscellaneous. Submodule of [talp].

@@ -1,206 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfqe.red,v 1.41 2008/08/24 05:30:06 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfqe.red,v $
-% Revision 1.41  2008/08/24 05:30:06  sturm
-% Added services rlposgqe and rlposgqea.
-%
-% Revision 1.40  2008/05/23 07:58:04  sturm
-% Force separation of roots with !*rlqe[a]precise. This was a bug!
-% Added service rlqeg and implementation for ofsf.
-%
-% Revision 1.39  2008/01/23 16:50:13  sturm
-% Do not output (with rlverbose) degree-violating polynomials anymore.
-% Instead, we say "FAILURE:<var>^<deg>", which is considerably more
-% compact.
-% Added switch rlqevarseltry and code for this.
-% posqe does not fix rlsifaco anymore.
-% Added experimental rlqelog to get an idea about what rlqe is doing.
-%
-% Revision 1.38  2007/12/16 08:09:08  sturm
-% Added symbolic entry points for positive QE (ofsf_posqe, ofsf_posqea).
-% Modified ofsf_ignshift to react to pseudo-switch !*rlpos.
-%
-% Revision 1.37  2007/12/04 14:54:08  sturm
-% Try to discover and remove positive factors in the denominator when
-% substituting (ofsf_qesubrat1, ofsf_qesubqat).
-% Precise elimination set computation if rlqeaprecise is on.
-% Filter bounds before counting sides if rlqefilterbounds is on.
-% Improved ofsf_qemkans1 and children. reversip-reverse in the top for-loop
-% would index epsilons and infinities the other way round.
-%
-% Revision 1.36  2007/03/28 11:03:56  sturm
-% Do not use functions as variables (rlint).
-%
-% Revision 1.35  2006/11/15 18:42:36  sturm
-% There was unconditional verbosity output in ofsf_subsimpl.
-%
-% Revision 1.34  2005/07/26 08:23:42  seidl
-% Modified ofsf_fbqe to new format of ofsf_cad.
-%
-% Revision 1.33  2003/02/03 09:57:53  seidl
-% Modified ofsf_fbqe to new format of ofsf_cad.
-%
-% Revision 1.32  2003/01/31 17:10:21  sturm
-% Removed unused scalar w from procedure ofsf_sqsc.
-%
-% Revision 1.31  2003/01/31 17:05:44  sturm
-% Verbosity output also for ofsf_qea.
-%
-% Revision 1.30  2003/01/31 15:31:54  sturm
-% Worked on verbosity output of QE routines.
-%
-% Revision 1.29  2003/01/27 11:49:34  sturm
-% Introduced ofsf_fbqe, s.t. fallbackqe is compatible with new ofsf_cad,
-% which has got a second argument now.
-%
-% Revision 1.28  2003/01/14 16:07:50  dolzmann
-% Added switch rlxopt.
-%
-% Revision 1.27  2003/01/13 10:00:13  dolzmann
-% Added definitions for ofsfxopt. Changed services qe and qea.
-%
-% Revision 1.26  2002/08/23 12:32:20  dolzmann
-% Added local quantifier elimination.
-%
-% Revision 1.25  2002/08/23 08:44:41  dolzmann
-% Minor code cosmetic.
-%
-% Revision 1.24  2002/01/25 12:12:39  sturm
-% Modified ofsf_decdeg0 to return the performed variable substitutions
-% as its cdr. Thus it can be used as an entry point from inside ofsf
-% if the user wants to create verbosity output.
-%
-% Revision 1.23  1999/03/23 07:41:28  dolzmann
-% Changed copyright information.
-% Changed comments for exc.
-%
-% Revision 1.22  1999/03/21 13:37:38  dolzmann
-% Changed in procedure ofsf_thregen '(false) into {'false}.
-% Fixed a bug in ofsf_thregen: ofsf_thregen returned an atomic formula
-% instead of a list of atomic formulas for an disjunctive f.
-% Corrected comments.
-%
-% Revision 1.21  1999/03/18 14:08:21  sturm
-% Added new service rl_specelim!* in cl_qe for covering the "super
-% quadratic special case' for ofsf. This method is toggled by switch
-% rlsqsc, which is off by default. Context dvfsf uses cl_specelim which
-% is constantly "false." Context acfsf does not use cl_qe at all.
-%
-% Revision 1.20  1999/01/17 16:10:35  dolzmann
-% Added and corrected comments.
-%
-% Revision 1.19  1998/04/09 11:00:04  sturm
-% Added switch rlqeqsc for quadratic special case. This now OFF by default!
-%
-% Revision 1.18  1997/10/02 09:14:13  sturm
-% Fixed a bug in answer computation with shift.
-%
-% Revision 1.17  1997/08/14 10:10:31  sturm
-% Renamed rldecdeg to rldecdeg1.
-% Added service rldecdeg.
-%
-% Revision 1.16  1997/06/27 13:04:51  sturm
-% Fixed a bug in ofsf_decdeg1.
-%
-% Revision 1.15  1997/04/15 11:31:44  dolzmann
-% New procedure ofsf_decdeg offers a symbolic mode interface for
-% decrementing the degree of variables in formulas.
-% Modified procedure ofsf_transform accordingly.
-% ofsf_subsimpl now outputs an exclamation mark if it enlarges the
-% theory.
-%
-% Revision 1.14  1997/04/08 14:31:12  sturm
-% Sort the answer substitution list wrt. ordp of the right hand side kernels.
-%
-% Revision 1.13  1996/10/23 11:24:16  dolzmann
-% Added and corrected comments.
-% Moved procedure ofsf_mkstrict into module ofsf.
-%
-% Revision 1.12  1996/10/15 15:47:21  dolzmann
-% Fixed a bug in ofsf_qefsolset.
-%
-% Revision 1.11  1996/10/08 13:54:35  dolzmann
-% Renamed "degree parity decomposition" to "parity decomposition".
-% Adapted names of procedures and switches accordingly.
-%
-% Revision 1.10  1996/10/07 12:03:30  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.9  1996/09/30 16:53:54  sturm
-% Fixed a bug in ofsf_gelimset.
-% Cleaned up the use of several (conditional) negate-relation procedures.
-%
-% Revision 1.8  1996/09/05 11:15:56  dolzmann
-% Added comments.
-% Minor changes in ofsf_mksol21q and ofsf_elimsetscq. New handling of
-% root expressions with c=1.
-% Renamed procedure ofsf_translat1lin to ofsf_translatlin.
-% Renamed procedure ofsf_translat1qua to ofsf_translatqua.
-% Completely rewritten Gauss elimination code: removed procedures
-% ofsf_trygauss, ofsf_findeqsol, and ofsf_bettergaussp. Added
-% implementation for black boxes rl_qefsolset, rl_bettergaussp!*,
-% rl_bestgaussp, and rl_esetunion.
-% Introduced new switch !*rlqegenct and related code.
-%
-% Revision 1.7  1996/07/07 14:43:06  sturm
-% Removed use of fluid zehn!*.
-% Call cl_nnfnot instead of cl_nnf1.
-% Fixed a bug in ofsf_gelimset.
-%
-% Revision 1.6  1996/06/07 08:49:54  sturm
-% Fixed bugs in ofsf_translat, ofsf_gelimset, and ofsf_decdegat.
-%
-% Revision 1.5  1996/05/13 13:45:24  dolzmann
-% Improved ordering between the several kinds of Gauss elimination.
-%
-% Revision 1.4  1996/05/12 14:54:27  dolzmann
-% Check for occurrence of variable in substitution.
-% Modified ofsf_transform: Optimized treatment of atomic formulas x^n*r R 0.
-%
-% Revision 1.3  1996/05/12 08:27:33  sturm
-% Added code for generic branch computation.
-% Changes in ofsf_trygauss: Introduced an ordering between the several
-% kinds of Gauss elimination.
-% Added code for service ofsf_thsimpl.
-%
-% Revision 1.2  1996/04/18 14:30:47  sturm
-% Improved root substitution in procedure ofsf_qesubrord1.
-% Fixed a bug in ofsf_getsubrcoeffs.
-%
-% Revision 1.1  1996/03/22 12:14:14  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_qe_rcsid!* ofsf_qe_copyright!*);
-   ofsf_qe_rcsid!* := "$Id: ofsfqe.red,v 1.41 2008/08/24 05:30:06 sturm Exp $";
-   ofsf_qe_copyright!* := "Copyright (c) 1995-2008 by A. Dolzmann and T. Sturm"
+   ofsf_qe_rcsid!* :=
+      "$Id$";
+   ofsf_qe_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
 
 module ofsfqe;

@@ -1,74 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfxopt.red,v 1.5 2007/03/29 11:15:37 dolzmann Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1998-2003 Dr. Andreas Dolzmann
+% Copyright (c) 1998-2009 Andreas Dolzmann
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfxopt.red,v $
-% Revision 1.5  2007/03/29 11:15:37  dolzmann
-% Bugfix: Wrong quote inside quoted list.
-%
-% Revision 1.4  2006/05/17 11:41:34  dolzmann
-% Fixed a bug in ofsf_xopt!-check: This procedure now sets all
-% simplification switches as ofsf_xopt-xopt.
-% The formula ex(x,x**2-9=0 and x< -2) is after default simplification
-% linear (ex(x,x+3=0)) but not after the reduced simplification used in
-% ofsf_xopt!-xopt.
-%
-% Revision 1.3  2003/01/31 17:07:09  sturm
-% Procedure ofsf_xopt!-check makes cl_simpl(cl_pnf f,nil,-1) now.
-% This has to be changed later, because this simplification is performed
-% twice now.
-%
-% Revision 1.2  2003/01/14 16:08:50  dolzmann
-% Fixed a bug in ofsf_xopt!-xopt. ofsf_xopt!-xopt had returned a answer
-% instead of a formula for quantifier-free formulas.
-%
-% Revision 1.1  2003/01/13 09:59:24  dolzmann
-% Initial check-in.
-% Extended optimization, formerly called xopt.
-%
-%-----------------------------------------------------------------------
-% Revision 1.3  1999/11/13 16:34:34  dolzmann
-% Adapted to REDLOG 2.0. Changed copyright message.
-%
-% Revision 1.2  1999/11/13 16:07:53  dolzmann
-% Adapted to REDLOG 2.0.
-%
-% Revision 1.1  1998/05/25 06:51:00  dolzmann
-% Extended optimization: Initial check-in.
-% This code is the pure optimization coded extract from sopt.red.
-% Added and corrected comments. Sorted the procedures.
-% Modified xopt_s2a!-ansl.
-%-----------------------------------------------------------------------
 lisp <<
-   fluid '(ofsfxopt_rcsid!* ofsfxopt_copyright!*);
-   ofsfxopt_rcsid!* := "$Id: ofsfxopt.red,v 1.5 2007/03/29 11:15:37 dolzmann Exp $";
-   ofsfxopt_copyright!* := "Copyright (c) 1998-2003 by Dr. A. Dolzmann"
+   fluid '(ofsf_xopt_rcsid!* ofsf_xopt_copyright!*);
+   ofsf_xopt_rcsid!* :=
+      "$Id$";
+   ofsf_xopt_copyright!* := "Copyright (c) 1998-2009 A. Dolzmann"
 >>;
-
 
 module ofsfxopt;
 % Extended optimization. A very restricted form of the QE by virtual

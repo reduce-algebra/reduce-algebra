@@ -1,76 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: rlcont.red,v 1.10 2008/01/23 16:56:11 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: rlcont.red,v $
-% Revision 1.10  2008/01/23 16:56:11  sturm
-% Added rlcswadd() and rl_copyc().
-%
-% Revision 1.9  2007/01/21 10:23:05  sturm
-% Agreed with AD on a set of contxt aliases.
-%
-% Revision 1.8  2006/06/18 10:14:13  sturm
-% Bug fix in rl_enter: rlset(ofsf,0) caused cdr on nil.
-%
-% Revision 1.7  2006/06/18 09:06:33  sturm
-% Implemented support for context aliases.
-% Experimentally added lots of aliases (too many?).
-% In comments, there is unfinished experimental code for rlset with 'stat and
-% 'formfn. The idea is to support parsing of "real" and "integer".
-%
-% Revision 1.6  2005/09/26 13:40:54  sturm
-% The context tag in Pseudo-Lisp Prefix is a list now (for qqe).
-%
-% Revision 1.5  1999/03/23 09:23:56  dolzmann
-% Changed copyright information.
-%
-% Revision 1.4  1999/03/22 12:41:42  dolzmann
-% Reimplemented procedure rl_set for calling the exit functions of the
-% context before calling the enter function of the new context. The old
-% version could not handle the calling sequence rlset(dvfsf,5);
-% rlset(dvfsf) correctly.
-%
-% Revision 1.3  1996/10/07 12:03:55  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.2  1996/09/05 11:16:59  dolzmann
-% Added procedures rl_serviadd and rl_bbiadd.
-%
-% Revision 1.1  1996/03/22 12:18:29  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(rl_cont_rcsid!* rl_cont_copyright!*);
    rl_cont_rcsid!* :=
-      "$Id: rlcont.red,v 1.10 2008/01/23 16:56:11 sturm Exp $";
-   rl_cont_copyright!* := "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   rl_cont_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module rlcont;
 % Reduce logic component context selection. Submodule of [redlog].

@@ -1,223 +1,40 @@
 % ----------------------------------------------------------------------
-% $Id: qqemisc.red,v 1.26 2007/07/23 16:37:43 strasser Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qqemisc.red,v $
-% Revision 1.26  2007/07/23 16:37:43  strasser
-% Bugfix in [qqe_length!-graph!-update!-edges]:
-% [qqe_length!-graph!-delete!-neighbor] call with only one argument.
-% Bugfix in [qqe_harmless!-formula!-test!-clause]:
-% [qqe_length!-graph!-clause] call with only one argument.
-% Comments polished.
-%
-% Revision 1.25  2006/03/20 03:14:21  strasser
-% Add function [qqe_lesseq!-length]. Renamed [qqe_greater!-length] in
-% [qqe_greatereq!-length]. Exchanged the word "quantor" with "quantifier".
-%
-% Revision 1.24  2006/03/14 19:33:58  strasser
-% Cosmetic changes and a small change in [qqe_length!-graph!-update!-lengths].
-%
-% Revision 1.23  2006/03/02 17:36:23  strasser
-% Add functions [qqe_make!-harmless], [qqe_make!-harmless!-clause],
-% [qqe_make!-harmless!-at].
-%
-% Revision 1.22  2006/03/02 13:06:23  strasser
-% Fixed bug in [qqe_length!-graph!-clause]. More efficient version of
-% [qqe_length!-graph!-update!-edges].
-% Add the procedures [qqe_length!-graph!-neighbor!-not!-redundant!-edge],
-% [qqe_length!-graph!-delete!-neighbor]. Debug messages now depend on the
-% variable [qqe_debug!*].
-%
-% Revision 1.21  2006/03/01 02:40:01  strasser
-% Add in [qqe_length!-graph!-delete] the removing of neighbors.
-%
-% Revision 1.20  2006/01/19 22:29:04  strasser
-% Add further comments for new functions.
-%
-% Revision 1.19  2006/01/18 23:52:40  strasser
-% Add header comments for the a lot of the new functions.
-%
-% Revision 1.18  2006/01/17 22:18:31  strasser
-% Add a clean up for all marks created in length graph and circle
-% detection algorithm. Some further work on circle detection algorithm.
-% Add functions: [procedure qqe_graph!-get!-dfsnum],
-% [procedure qqe_graph!-put!-dfsnum], [procedure qqe_graph!-rem!-dfsnum],
-% [qqe_length!-graph!-detect!-bad!-circles!-rem!-marks!-nodes],
-% [qqe_length!-graph!-detect!-bad!-circles!-rem!-marks!-edges],
-% [qqe_length!-graph!-shufflable], [qqe_length!-graph!-unmark].
-%
-% Revision 1.17  2006/01/17 05:19:45  strasser
-% Updated to a more efficient length graph algorithm (including circle
-% detection) and max/minlength calculation.
-% Added the following functions:
-% [qqe_length!-graph!-update!-lengths], [qqe_clause!-update!-lengths],
-% [qqe_length!-graph!-update!-edges], [qqe_length!-graph!-neighbor],
-% [qqe_length!-graph!-insert!-neighbor], [qqe_length!-graph!-is!-neighbor],
-% [qqe_length!-graph!-edge], [qqe_length!-graph!-neighbor!-left!-on!-edge],
-% [qqe_length!-graph!-neighbor!-edge1], [qqe_length!-graph!-neighbor!-edge2],
-% [qqe_length!-graph!-neighbor!-edge],
-% [qqe_length!-graph!-neighbor!-edge!-left],
-% [qqe_length!-graph!-neighbor!-edge!-right],
-% [qqe_length!-graph!-neighbor!-edge!-diff], [qqe_length!-graph!-edge!-mark],
-% [qqe_length!-graph!-edge!-marked], [qqe_length!-graph!-edge!-unmark],
-% [qqe_length!-graph!-edge!-el], [qqe_length!-graph!-edge!-er],
-% [qqe_length!-graph!-edge!-diff], [qqe_length!-graph!-neighbor!-diff],
-% [qqe_length!-graph!-neighbor!-node], [qqe_length!-graph!-neighbors],
-% [qqe_update!-minlength], [qqe_update!-maxlength], [qqe_update!-headmin],
-% [qqe_length!-graph!-detect!-bad!-circles],
-% [qqe_length!-graph!-remove!-edge!-marks],
-% [qqe_length!-graph!-remove!-edge!-marks!-neighbors],
-% [qqe_length!-graph!-detect!-bad!-circles!-component],
-% [qqe_length!-graph!-get!-circle], [qqe_print!-prop!-path],
-% [qqe_length!-graph!-maxlength!-bad!-circles],
-% [qqe_length!-graph!-maxlength!-bad!-circle],
-% [qqe_length!-graph!-path!-next!-node], [qqe_length!-graph!-path!-step],
-% [qqe_length!-graph!-path!-next!-edge],
-% [qqe_length!-graph!-path!-next!-edge!-left],
-% [qqe_length!-graph!-path!-next!-edge!-value],
-% [qqe_length!-graph!-path!-next!-edge!-diff],
-% [qqe_length!-graph!-maxlength!-bad!-circle1],
-% [qqe_length!-graph!-reverse!-path],
-% [qqe_length!-graph!-path!-insert!-edge!-right],
-% [qqe_length!-graph!-path!-insert!-edge!-left],
-% [qqe_length!-graph!-path!-insert!-node!-right],
-% [qqe_length!-graph!-path!-insert!-node!-left],
-% [qqe_length!-graph!-shuffle!-circle!-psets],
-% [qqe_length!-graph!-shuffle!-circle!-sets],
-% [qqe_length!-graph!-shuffle!-circles],
-% [qqe_length!-graph!-shuffle!-circles!-order],
-% [qqe_length!-graph!-neighbor!-mark], [qqe_length!-graph!-neighbor!-marked],
-% [qqe_length!-graph!-update!-maxlength],
-% [qqe_length!-graph!-update!-maxlength!-context],
-% [qqe_length!-graph!-update!-maxlengths],
-% [qqe_length!-graph!-update!-minlengths],
-% [qqe_length!-graph!-update!-minlength!-context],
-% [qqe_length!-graph!-update!-minlength], [qqe_length!-graph!-marked],
-% [qqe_length!-graph!-mark].
-% Removed the following procedures:
-% [qqe_update!-maxlength1], [qqe_update!-minlength1],
-% [qqe_update!-graph!-adlist], [qqe_length!-graph!-adlist!-add],
-% [qqe_length!-graph!-adlist!-add!-sortin].
-%
-% Revision 1.16  2006/01/08 17:24:05  strasser
-% Added a lot of comments, mainly headers.
-% Added [qqe_harmless!-formula!-test!-clause2].
-% Some change in [qqe_length!-graph!-bterm].
-%
-% Revision 1.15  2006/01/02 01:12:06  strasser
-% Add functions [[qqe_length!-graph!-bterm]],
-% [[qqe_length!-graph!-bterm!-update!-headmin]].
-% Changes in length graph procedures (variable headmin added).
-%
-% Revision 1.14  2005/11/20 19:28:00  strasser
-% Added functions [qqe_minlength!-var], [qqe_maxlength!-var],
-% [qqe_less!-length], [qqe_greater!-length], [qqe_min!-length],
-% [qqe_max!-length], [qqe_quicksort!-dbl!-crit], [qqe_partition!-dbl!-crit],
-% [qqe_lessp!-dbl!-crit].
-%
-% Revision 1.13  2005/11/15 22:55:39  strasser
-% Added support for some special cases in [qqe_update!-graph!-adlist].
-% Added function [qqe_harmless!-formula!-test!-clause1] which is needed for
-% QE. Minor changes.
-%
-% Revision 1.12  2005/11/15 02:23:03  strasser
-% Bugfix for [qqe_update!-minlength1] and some further work on the function-
-% tree of [qqe_harmless!-formula!-test].
-%
-% Revision 1.11  2005/11/14 17:10:16  strasser
-% Added functions [qqe_harmless!-formula!-test],
-% [qqe_harmless!-formula!-test!-clause], [qqe_harmless!-formula!-test!-at],
-% [qqe_harmless!-formula!-test!-term], [qqe_harmless!-formula!-test!-qterm]
-% for checking if input is harmless formula.
-%
-% Revision 1.10  2005/11/14 13:33:18  strasser
-% Bugfix in [qqe_length!-graph!-term!-notq].
-%
-% Revision 1.9  2005/11/13 23:34:45  strasser
-% Removed the debug prin2ts. Added functions [qqe_length!-graph!-delete],
-% [qqe_length!-graph!-term!-notq], [qqe_length!-graph!-at!-notq] for max- and
-% minlength calculation of harmless formulas.
-%
-% Revision 1.8  2005/11/13 02:16:50  strasser
-% Added functions [qqe_length!-graph!-adlist!-add!-sortin],
-% [qqe_length!-graph!-correct], [qqe_length!-graph!-correct!-adlist],
-% [qqe_length!-graph!-remove!-mark].
-% ----------------------------------------------------------------------
-% ----------------------------------------------------------------------
-%
-% Revision 1.7  2005/11/11 23:20:11  strasser
-% Add functions [qqe_length!-graph!-clause],
-% [qqe_length!-graph!-at!-qneq], [qqe_length!-graph!-at!-qequal],
-% [qqe_update!-maxlength],
-% [qqe_update!-maxlength1],[qqe_update!-minlength1],
-% [qqe_update!-minlength], [qqe_update!-graph!-adlist],
-% [qqe_length!-graph!-adlist!-add].
-% ----------------------------------------------------------------------
-% ----------------------------------------------------------------------
-%
-% Revision 1.6  2005/10/30 22:04:44  strasser
-% Added [qqe_bridge], [qqe_bridge!-list], [qqe_qe!-clause!-init] to
-% [qqeqe.red]. Changes in [qqe_satlengths]. Some minor changes in
-% [qqemisc.red].
-%
-% Revision 1.5  2005/10/06 01:55:46  strasser
-% Some changes in [qqe_prefix!-lefts] and [qqe_prefix!-rights], as well as a
-% bugfix in [qqe_lcm!-list]. Worked on [qqe_satlengths] and functions in that
-% execution tree.
-%
-% Revision 1.4  2005/10/04 13:41:57  strasser
-% Improved readability of code. in [qqesiat.red]: Split the function
-% [qqe_simplterm] into [qqe_simplterm], [qqe_simplterm!-add],
-% [qqe_simplterm!-tail] and [qqe_simplterm!-head]. Improved functionality
-% of the term simplitfier.
-%
-% Revision 1.3  2005/10/01 15:49:04  strasser
-% Moved the functions [qqe_prefix!-length], [qqe_prefix!-lefts],
-% [qqe_prefix!-rights], [qqe_lcm], [qqe_lcm!-list], [qqe_plcm],
-% [qqe_plcm!-list], [qqe_quicksort]. Made [qqe_prefix!-*] ofsf-compatible.
-%
-% Revision 1.2  2005/09/27 14:28:01  sturm
-% Moved some code to qqe_ofsf.
-% Some corrections within the header.
-%
-% Revision 1.1  2005/09/26 22:05:39  strasser
-% Adding file qqemisc.red, qqeqe.red, qqesism.red and qqetrans.red now
-% with correct headers as well as the lisp header block.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(qqe_misc_rcsid!* qqe_misc_copyright!*);
    qqe_misc_rcsid!* :=
-      "$Id: qqemisc.red,v 1.26 2007/07/23 16:37:43 strasser Exp $";
+      "$Id$";
    qqe_misc_copyright!* :=
-      "Copyright (c) 2005 by A. Dolzmann and T. Sturm"
+      "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
-
 
 module qqemisc;
 % qqe miscellaneous. Submodule of [qqe].
@@ -1795,8 +1612,6 @@ procedure qqe_lessp!-dbl!-crit(x1,x2);
       else return nil;
    end;
 
+endmodule;  % [qqemisc]
 
-
-endmodule;
-
-end;
+end;  % of file

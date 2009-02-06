@@ -1,81 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: talpsiat.red,v 1.13 2004/11/16 16:31:57 hoffelne Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2004 
+% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: talpsiat.red,v $
-% Revision 1.13  2004/11/16 16:31:57  hoffelne
-% minor updates
-%
-% Revision 1.12  2004/11/15 10:58:37  hoffelne
-% minor changes
-%
-% Revision 1.11  2004/11/14 22:02:52  hoffelne
-% minor changes
-%
-% Revision 1.10  2004/10/08 10:48:44  hoffelne
-% minor changes due to error in talpsiat.red
-%
-% Revision 1.9  2004/10/02 09:09:10  hoffelne
-% minor changes due to error in talpsiat.red
-%
-% Revision 1.8  2004/09/21 21:50:17  hoffelne
-% simplifications added
-%
-% Revision 1.7  2004/09/20 09:49:24  hoffelne
-% minor changes
-%
-% Revision 1.6  2004/09/16 10:07:46  hoffelne
-% minor modifications
-%
-% Revision 1.5  2004/09/13 11:14:52  hoffelne
-% moved parts of talpmisc to talpsiat
-%
-% Revision 1.4  2004/07/13 12:29:13  hoffelne
-% minor changes due to initial check-in of talpqe.red
-%
-% Revision 1.3  2004/07/07 11:19:39  hoffelne
-% added service talp_rnf (refined normal form)
-%
-% Revision 1.2  2004/06/29 12:12:40  hoffelne
-% peanuts
-%
-% Revision 1.1  2004/06/23 21:47:53  hoffelne
-% added talpsiat.red, service rlsimpl now applicable
-%
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(talp_siat_rcsid!* talp_siat_copyright!*);
    talp_siat_rcsid!* :=
-      "$Id: talpsiat.red,v 1.13 2004/11/16 16:31:57 hoffelne Exp $";
-   talp_siat_copyright!* :=
-      "Copyright (c) 1995-1999 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   talp_siat_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module talpsiat;
 % Term algebra Lisp prefix simplify for atomic formulas. Submodule of
@@ -341,6 +299,6 @@ procedure stack_print(s);
    for each x in s do
       prin2t x;
 
-endmodule; % [talp]
+endmodule;  % [talpsiat]
 
-end; % of file
+end;  % of file

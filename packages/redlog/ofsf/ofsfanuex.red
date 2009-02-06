@@ -1,290 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfanuex.red,v 1.15 2007/12/16 12:34:40 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2001-2008 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2001-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
-% $Log: ofsfanuex.red,v $
-% Revision 1.15  2007/12/16 12:34:40  sturm
-% Do not compile procedure intersection of any of CSL, PSL. It is defined in
-% both Lisps with the same semantics as here: duplicates are not eliminated.
-%
-% Revision 1.14  2007/03/28 11:03:56  sturm
-% Do not use functions as variables (rlint).
-%
-% Revision 1.13  2005/12/29 10:59:27  seidl
-% aex_findroots uses aex_cauchybound now (this code is not
-% used by CAD, but might be used by TS).
-%
-% Revision 1.12  2004/05/14 07:16:51  seidl
-% Augmented datatype ACELL with tag list. Cells, which are 0-dim in the
-% last component, inherit the tag list of the appropriate root.
-%
-% Revision 1.11  2004/05/11 19:03:55  seidl
-% Root isolation adapted to tagged polynomials.
-%
-% Revision 1.10  2004/05/10 17:01:33  seidl
-% First step in switching to tagged standard forms. rlcad works, but variants
-% might be temporarily unavailable.
-%
-% Revision 1.9  2003/02/02 22:13:12  seidl
-% Bug in verbose output fixed.
-%
-% Revision 1.8  2003/01/29 17:35:28  seidl
-% Even second-level verbose output now depends on switch rlverbose.
-%
-% Revision 1.7  2002/05/28 13:05:04  seidla
-% constp added.
-%
-% Revision 1.6  2002/02/19 13:36:48  seidla
-% Minor changes.
-%
-% Revision 1.5  2002/01/25 15:30:43  seidla
-% Further optimization in ratpoly_subrat and aex_remseq. New function
-% aex_pp for primitive part.
-%
-% Revision 1.4  2002/01/23 18:29:26  seidla
-% Optimization in ratpoly_subrat and aex_remseq.
-%
-% Revision 1.3  2002/01/16 16:10:09  seidla
-% Small bug resolved.
-%
-% Revision 1.2  2002/01/16 15:00:37  sturm
-% Changed module name.
-%
-% Revision 1.1  2002/01/16 13:03:48  seidla
-% Imported CAD from rlprojects.
-%
-% Revision 1.31  2002/01/16 11:23:22  seidla
-% Sorting of sturm chains for root isolation enabled. Optimization in
-% aex_quotrem. Optimization in aex_rem turned out not to be a good idea.
-%
-% Fine tuning in many places.
-%
-% calculation of sign changes of sturm chains now at infinity possible.
-% this is used now to check if all roots are found. gcd does not
-% normalize. reduce added for qqi in aex_quotrem.
-%
-% New version of anuex.
-%
-% Revision 1.30  2001/12/11 17:43:22  seidla
-% minimization in aex_red. as reimplementation of anuex has started,
-% support of this branch will cease soon.
-%
-% Revision 1.29  2001/11/26 16:50:22  seidla
-% now it compiles.
-%
-% Revision 1.28  2001/08/20 09:55:30  seidla
-% Final version for diploma work.
-%
-% Revision 1.27  2001/08/12 18:40:39  seidla
-% Removed new bug in aex_pseudorem1. Changes to aes_remseq, aex_sqfree,
-% aex_sgn, aex_nullp, aex_findroots wrt base cases. Now some examples
-% run considerably faster. Made some comments more precise.
-%
-% Revision 1.26  2001/08/11 19:47:06  sturm
-% Working. Changed a lot. Currently at aex_isoroot(ae,m,r,sc);
-%
-% Revision 1.25  2001/08/11 17:20:41  seidla
-% Various little changes.
-%
-% Revision 1.24  2001/08/10 10:14:46  seidla
-% Cleaned up a lot and moved unused functions to anuexplus.red.
-%
-% Revision 1.23  2001/08/07 21:23:57  sturm
-% Changed some minor things.
-%
-% Revision 1.22  2001/08/07 12:56:24  seidla
-% aex_mapmkaex0d and anu_findrootsoflist from package OFSFCAD moved to
-% here. anu_evalsignf moved to package OFSFCAD as acad_evalsignf.
-%
-% Revision 1.21  2001/06/14 21:17:03  sturm
-% Introduced fluids anuex_rcsid!* and anuex_copyright!*.
-% Made a hack in anu_evalsignf to overcome the non-implemented case where
-% some cylinder consists of only one cell. (The test point is then still
-% "nil").
-%
-% Revision 1.20  2001/06/14 19:36:53  seidla
-% New function anu_evalsignf.
-%
-% Revision 1.19  2001/06/13 11:37:21  seidla
-% aex_findroots rewritten. new: aex_pseudoqrem, aex_gcd, aex_sqfree.
-% aex_pseudoqrem tested with aex_pseudoqremtest.  speed-up for aex_comp
-% by using ssqarefree part of gcd instead of multiplication. new switch
-% anuexdebug. anu_mergesort sorts out representations of the same number.
-%
-% Revision 1.18  2001/06/12 13:43:59  sturm
-% Added a variant of anu_compdifferent under the name anu_compdifferent!-ts.
-%
-% Revision 1.17  2001/05/30 14:58:29  seidla
-% Sorting and comparison of algebraic numbers was rewritten. We refer to
-% the example cox14v. For algebraic numbers which are known to be
-% different, the base phase is now faster by factor 9. For algebraic
-% numbers which are not necessarily different, sorting is now feasible,
-% i.e. the computing time was reduced from >17h to 1000s. The changes
-% made together with the time (elsie=ultra1, bender=ultra10):
-% % Time: 41600 ms  plus GC time: 2300 ms on elsie *** starting point
-% % Time: 37630 ms  plus GC time: 2010 ms on elsie *** unnecessary item
-%   removed in anu_refine1
-% % Time: 32090 ms  plus GC time: 1770 ms on elsie *** optimization in
-%   aex_remseq and anu_comp
-% % Time: 20220 ms  plus GC time: 1110 ms on elsie *** my new mergesort
-% % Time: 17990 ms  plus GC time: 1100 ms on elsie *** sturmchain handed
-%   down in anu_compdifferent
-% % Time: 17860 ms  plus GC time: 1080 ms on elsie *** now everything runs
-%   over anu_comp
-% % Time: 11330 ms  plus GC time: 640 ms on elsie *** anu_comp calls
-%   anu_compdifferent with smaller intervals
-% % Time: 11210 ms  plus GC time: 630 ms on elsie *** apply reversip
-%   in anu_mergesort1 to avoid trailing small lists
-% % Time: 4696600 ms  plus GC time: 4990 ms on bender *** now the base
-%   phase ran the first time with anuexdifferentroots off.
-% % Time: 7900 ms  plus GC time: 430 ms on elsie *** in anu_comp intervals
-%   are changed.
-% % Time: 4630 ms  plus GC time: 230 ms on elsie *** anu_refineip is used
-% % Time: 1999180 ms  plus GC time: 3210 ms on bender ****
-%   anuexdifferentroots off
-% anu_check checks validy of algebraic numbers. aex_findroots is still
-% dodgy and has to be rewritten. After mergesort, still not all
-% intervals are distinct due to some remaining cases in anu_comp. new
-% switches anuexdifferentroots (to switch between sorting of different
-% and not necessarily different numbers) and anuexmergelookahead.
-%
-% Revision 1.16  2001/05/25 08:34:08  seidla
-% Sorting now uses anu_compdifferent. This works out for the basis phase,
-% but it is too slow. Hence sorting has to be rewritten.
-%
-% Revision 1.15  2001/05/24 15:24:53  sturm
-% Alternative implementation for anu_mergesort.
-% Removed begin inside progn to the toplevel in aex_sgn.
-% BUG: infinite recursion in aex_sgn.
-%
-% Revision 1.14  2001/05/24 13:55:16  seidla
-% nu_mergesort now returns a list of algebraic numbers with pairwise
-% distinct isolating interval. new functions anu_distinguish,
-% anu_distinguishlist, anu_refine.
-%
-% Revision 1.13  2001/05/24 12:07:09  sturm
-% bug in aex_findroots fixed.
-%
-% Revision 1.12  2001/05/24 09:09:34  seidla
-% changes to aex_rem. aex_nullp and aex_sgn rewritten.
-%
-% Revision 1.11  2001/05/24 08:51:16  sturm
-% Corrected specification comment for <CONTEXT>.
-%
-% Revision 1.10  2001/03/29 16:47:11  seidla
-% New procedure anu_fromratnex.
-%
-% Revision 1.9  2001/03/27 12:11:14  seidla
-% New procedures anu_less and anu_leq. Code cosmetics: No capital
-% letters in procedure variables anymore. New procedure
-% anuex_initialize.
-%
-% Revision 1.8  2001/03/26 21:00:45  seidla
-% aex_cauchybound works now for all cases. bug in int_add and anu_2aex
-% found. Code cosmetics: spaces around commas and capital letters in
-% procedure names removed.
-%
-% Revision 1.7  2001/03/26 13:16:34  sturm
-% Exported some more procedures.
-%
-% Revision 1.6  2001/03/26 12:04:04  seidla
-% Exported functions added. anu_mkAfromQ renamed to anu_mkfromaex,
-% aex_mkQ0d renamed to aex_mkaex0d, aex_getL renamed to aex_getctx and
-% anu_getL renamed to anu_getctx.
-%
-% Revision 1.5  2001/03/22 15:47:31  sturm
-% Removed TeX in first sentence of comments.
-%
-% Revision 1.4  2001/03/22 14:09:52  seidla
-% Code reformatted.
-%
-% Revision 1.3  2001/03/21 22:17:18  seidla
-% Code cosmetics: all comments have been rewritten to a common style.
-% A part of the code was reformatted, but not all.
-% Two bugs were found in aex_findrootsiniv.
-%
-% Revision 1.2  2001/03/21 12:34:37  sturm
-% Did some first code formatting.
-%
-% Revision 1.1  2001/03/15 12:30:34  seidla
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
-% file: anuex.red 
-% author: andreas seidl
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-% date: 13.03.2001
-% sortierung fertiggestellt. sicherheitskopie gemacht. ran.red in anuex.red
-% umbenannt. sublist in context umbenannt.
-% date 12.03.2001
-% findrootsiniv fertiggestellt. fehler im testfile: q3. sortierung angefangen.
-% date 09.03.2001
-% findroots begonnen
-% ein vermeindlicher bug in aex_sgn stellte sich als fehler im testfile
-% heraus.
-% date 08.03.2001
-% aex_containment und aex_cauchybound (falls a_m<>0) fertiggestellt.
-% findroots begonnen. 
-% date 26.02.2001
-% aex_nullp, aex_sgn. sicherheitskopien von ran.red, anuex.test, others.test.
-% date 23.02.2001
-% f"ur aex_nullp und aex_sgn bereits rest bei pseudodivision und minimize
-% implementiert.
-% date 16.02.2001
-% rekursive datenstruktur notwendig. konstruktoren und zugriffsfunktionen
-% f"ur anu und aex.
-% date: 09.02.2001
-% sturmchain und darauf aufbauend ran_sgn implementiert
-% date: 08.02.2001
-% kapitel package.tex begonnen, wo datentypen genauer spezifiziert sind.
-% ran_add nach ran_add2 und ran_mult nach ran_mult2 umbenannt
-% redundand datatype ran_poly_* gel"oscht.
-% _int_ von _num_ auf _rat_ umgestellt, entsprechende "anderungen in
-% ratpoly_sub. damit scheint ran_nullp nun zu funktionieren. weitere
-% tests sind notwendig.
-% date: 03.02.2001
-% ran_sqd nach ratpoly umbenannt, quadrat-frei
-% date: 29.01.2001
-% datentyp sqd
-% date: 23.01.2001
-% rationals are needed to allow for polynomial division.
-% hence ran_poly2sf rewritten.
-% date: 22.01.2001
-% ran_sfdeg: numberp replaced by domainp
-% date: 19.01.2001
-% datentyp poly und ran
-% date: 09.01.2001
-% datentyp int
-
 
 lisp <<
-   fluid '(ofsfanuex_rcsid!* ofsfanuex_copyright!*);
-   ofsfanuex_rcsid!* := "$Id: ofsfanuex.red,v 1.15 2007/12/16 12:34:40 sturm Exp $";
-   ofsfanuex_copyright!* := "(c) 2001-2008 by A. Dolzmann, A. Seidl, T. Sturm"
+   fluid '(ofsf_anuex_rcsid!* ofsf_anuex_copyright!*);
+   ofsf_anuex_rcsid!* :=
+      "$Id$";
+   ofsf_anuex_copyright!* := "(c) 2001-2009 A. Dolzmann, A. Seidl, T. Sturm"
 >>;
 
 module ofsfanuex;

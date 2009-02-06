@@ -1,180 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: qqe.red,v 1.33 2007/12/16 12:41:57 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qqe.red,v $
-% Revision 1.33  2007/12/16 12:41:57  sturm
-% Added fluid declaration von !*rlsism.
-%
-% Revision 1.32  2007/12/05 14:10:54  sturm
-% Removed duplicate definitions of qqe_arg2l and qqe_arg2r.
-%
-% Revision 1.31  2006/03/14 19:19:05  strasser
-% Cosmetic changes.
-%
-% Revision 1.30  2006/03/03 00:39:42  strasser
-% Better error messages for type/sort-error.
-%
-% Revision 1.29  2006/03/02 13:02:04  strasser
-% Add global variable [qqe_debug!*].
-%
-% Revision 1.28  2006/01/08 17:19:29  strasser
-% Renamed [qqe_marked_ids_rollback!*] into [qqe_marked!-ids!-rollback!*] and
-% [qqe_qadd_location!*] into [qqe_qadd!-location!*]. Some corrections in
-% arg-check algorithm.
-%
-% Revision 1.27  2006/01/03 00:48:21  strasser
-% Add support for [qqeqemisc.red].
-% Add fluid [qqe_elimb!*] denoting a switch to decide if QE should also
-% eliminate quantifiers of basic type.
-%
-% Revision 1.26  2005/11/15 22:58:44  strasser
-% Bugfix in [qqe_chsimpterm1].
-%
-% Revision 1.25  2005/11/13 23:45:22  strasser
-% Fixed bug in [qqe_chsimpterm].
-%
-% Revision 1.24  2005/11/13 16:42:12  strasser
-% Added functions [qqe_chsimpterm] and [qqe_chsimpterm1] for transformation
-% of input ltail(p)^4 --> ltail(ltail(ltail(ltail(p)))). Modified funtion
-% [qqe_chsimpat].
-%
-% Revision 1.23  2005/10/04 13:41:57  strasser
-% Improved readability of code. in [qqesiat.red]: Split the function
-% [qqe_simplterm] into [qqe_simplterm], [qqe_simplterm!-add],
-% [qqe_simplterm!-tail] and [qqe_simplterm!-head]. Improved functionality
-% of the term simplitfier.
-%
-% Revision 1.22  2005/10/04 10:15:38  strasser
-% Removed bug from [qqe_arg!-check] and removed begin..end code where not
-% needed.
-%
-% Revision 1.21  2005/10/04 01:40:13  strasser
-% Minor changes in [qqe.red] and [qqeqe.red]. Improved handling of different
-% standard represantations of atomic formulas in [qqetrans.red].
-%
-% Revision 1.20  2005/10/03 02:26:48  strasser
-% Put infix preceedence information for [qequal] and [qneq] in [qqe_ofsf.red]
-% after the declaration of the infix operators.
-%
-% Revision 1.19  2005/10/03 01:18:23  strasser
-% Add [qqe_varsubstat] to [qqe.red]. Some minor changes and removing of
-% debugging comments in [qqeqe.red], as well as in [qqetrans.red].
-%
-% Revision 1.18  2005/10/01 18:05:31  strasser
-% Moved [qqe_simplat1], [qqe_simplequal], [qqe_simplqneq] into the new file
-% [qqesiat.red]. Upgraded functionality of the simplifier for atomic formulas
-% of queue type (qequal, qneq).
-%
-% Revision 1.17  2005/10/01 02:41:24  strasser
-% Some further changes for compatibility with the wrapper packages in the
-% file [qqeqe.red]. Comments were changed in [qqe.red].
-%
-% Revision 1.16  2005/10/01 02:33:26  strasser
-% Moved simplifier for atomic formulas [qqe_simplat], [qqe_simplqequal],
-% [qqe_simplqneq] from [qqeqe.red] to [qqe.red]. Many minor changes to
-% make files from package [qqe]  compatible with wrapper packages, like for
-% example [qqe_ofsf]. Changes mainly in [qqeqe.red] and [qqetrans.red].
-%
-% Revision 1.15  2005/09/29 17:56:25  strasser
-% Conventionalized function names ("-" ---> "!-!). Moved the constructor
-% functions [qqe_iterate_*] from [qqeqe.red] in [qqe.red] and fixed a bug
-% in them.
-%
-% Revision 1.14  2005/09/29 15:04:31  strasser
-% Changed the infix values of 'qequal and 'qneq as they were the same like
-% the ones of 'and and 'or.
-%
-% Revision 1.13  2005/09/29 00:31:28  strasser
-% Added function [qqe_prepterm] (it's just identity). Removed the [ofsf]-
-% specific algebraic infix operators [equal] and [neq] in the package
-% [qqe_ofsf]. Added functions [qqe_lengthat], [qqe_prepat](=id) and
-% [qqe_chsimpat]. Made some (temporary(?)) addition to [qqe_enter].
-%
-% Revision 1.12  2005/09/28 21:43:50  strasser
-% Moved the following functions from [qqe.red] to [qqe_ofsf.red]:
-% [qqe_simpterm], [qqe_prepat], [qqe_resimpat], [qqe_lengthat],
-% [qqe_chsimpat], [qqe_chsimpat1], [qqe_simpat]. Renamed the functions
-% according to the new package, e.g. [qqe_...] -> [qqe_ofsf_...].
-% Changed in the functions the behaviour of the wrapper.
-%
-% Revision 1.11  2005/09/27 18:31:39  sturm
-% Some minor fixes.
-%
-% Revision 1.10  2005/09/27 18:08:42  sturm
-% Finished first version of enter/exit in qqe.red.
-% Moved params and services to qqe_ofsf and did some work there (for testing).
-%
-% Revision 1.9  2005/09/27 14:44:26  sturm
-% Working on qqe_enter framework. Current status is not working!
-%
-% Revision 1.8  2005/09/26 11:01:45  strasser
-% Temporary checkin for testing of reading of formulas.
-%
-% Revision 1.7  2005/09/19 15:10:12  strasser
-% Added modules [qqemisc], [qqelim] and [qqesism]. [qqesism] is at the
-% moment needed for compatibility reasons with [ofsf]. [qqemisc] contains
-% miscellaneous functions which are needed in support of algorithms in
-% various modules. [qqelim] contains quantorelimination of quantors of
-% type queue.
-%
-% Revision 1.6  2005/09/13 11:20:14  strasser
-% Corrected handling of 'equal.
-% Added constant 'qepsilon.
-% Added transformation of formulas containing ladd, radd into formulas only
-% containing heads and tails, which is supposed to be the standard input
-% format for qe over languages with queues. Add module qqetrans.
-%
-% Revision 1.5  2005/09/08 23:10:34  strasser
-% Added some comments for the rollback process.
-%
-% Revision 1.4  2005/09/08 22:59:23  strasser
-% Added typed identifier rollback for identifiers which got typed while
-% processing an incorrect formula.
-%
-% Revision 1.3  2005/09/08 18:16:32  strasser
-% Added fancy-print for qequal and qneq for texmacs support.
-%
-% Revision 1.2  2005/09/08 16:19:53  strasser
-% Added internal representation of formulas with the queue operators.
-% Recursivly checking atomic formulas for correct types of arguments.
-% Has to be loaded by 'rlset qqe' and works at the moment with ofsf for
-% the basic type.
-%
-% Revision 1.1  2005/09/05 18:39:26  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(qqe_rcsid!* qqe_copyright!*);
-   qqe_rcsid!* := "$Id: qqe.red,v 1.33 2007/12/16 12:41:57 sturm Exp $";
-   qqe_copyright!* := "Copyright (c) 2005-2008 by A. Dolzmann and T. Sturm"
+   qqe_rcsid!* := "$Id$";
+   qqe_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module qqe;
 % Quantorelimination for queues. Main module. Algorithms on formulas 
@@ -183,8 +41,7 @@ module qqe;
 % as well as unary functions ['lhead], ['rhead], ['ltail], ['rtail]. 
 % Additional binary logic operators are ['qequal] and ['qneq].
 
-create!-package('(qqe qqetrans qqemisc qqesism 
-   qqeqe qqesiat qqeqemisc),nil);
+create!-package('(qqe qqetrans qqemisc qqesism qqeqe qqesiat qqeqemisc),nil);
 
 load!-package 'rltools;
 % load!-package 'qqe_ofsf;

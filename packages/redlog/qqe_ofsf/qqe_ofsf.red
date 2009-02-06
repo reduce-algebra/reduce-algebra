@@ -1,112 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: qqe_ofsf.red,v 1.17 2006/01/02 00:56:44 strasser Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qqe_ofsf.red,v $
-% Revision 1.17  2006/01/02 00:56:44  strasser
-% Add [[qqe_qe!-basic]].
-%
-% Revision 1.16  2005/11/13 23:53:35  strasser
-% Bugfix in [qqe_ofsf_simpat].
-%
-% Revision 1.15  2005/11/13 18:58:56  strasser
-% Added functions [qqe_ofsf_chsimpat], [qqe_ofsf_chsimpat1],
-% [qqe_ofsf_chsimpterm] for the translation of input lhead(ltail(p)^3) -->
-% lhead(ltail(ltail(ltail(p)))).
-%
-% Revision 1.14  2005/10/26 01:19:49  strasser
-% Some minor change.
-%
-% Revision 1.13  2005/10/03 19:26:04  strasser
-% Added parameter rl_prepat and rl_chsimpat.
-%
-% Revision 1.12  2005/10/03 02:28:01  strasser
-% Put infix preceedence information for [qequal] and [qneq] after the infix
-% operation declarations.
-%
-% Revision 1.11  2005/10/02 22:58:24  strasser
-% Set service [rl_qe] from [qqe_qe] to [qqe_ofsf_qe]. Changed the behaviour
-% of [qqe_varsubstat]. Added function [qqe_ofsf_qe].
-%
-% Revision 1.10  2005/10/02 02:43:22  strasser
-% Put the following services back on the cl-versions, as the ofsf-services
-% demand some further wrapper functionality which is still not implemented:
-% ofsf_sacat --> cl_sacat, ofsf_cnf --> cl_cnf, ofsf_dnf --> cl_dnf.
-%
-% Revision 1.9  2005/10/01 20:34:43  strasser
-% Some minor changes.
-%
-% Revision 1.8  2005/09/29 17:56:25  strasser
-% Conventionalized function names ("-" ---> "!-!). Moved the constructor
-% functions [qqe_iterate_*] from [qqeqe.red] in [qqe.red] and fixed a bug
-% in them.
-%
-% Revision 1.7  2005/09/29 10:55:23  strasser
-% Fixed typing mistake in [qqe_ofsf_varlat]. Changed [qqe_ofsf_simplat1].
-% Some more rl-services run without error msg now (for example rl_dnf,rl_cnf,
-% rl_pnf).
-%
-% Revision 1.6  2005/09/29 00:22:14  strasser
-% Added algebraic infix operators [leq], [geq], [lessp], [greaterp]. Moved
-% Functions [qqe_ofsf_simpterm], [qqe_ofsf_lengthat] to [qqe.red]. Made some
-% minor changes for the wrappers. Variable testing and reading in of formulas
-% is working again.
-%
-% Revision 1.5  2005/09/28 21:43:50  strasser
-% Moved the following functions from [qqe.red] to [qqe_ofsf.red]:
-% [qqe_simpterm], [qqe_prepat], [qqe_resimpat], [qqe_lengthat],
-% [qqe_chsimpat], [qqe_chsimpat1], [qqe_simpat]. Renamed the functions
-% according to the new package, e.g. [qqe_...] -> [qqe_ofsf_...].
-% Changed in the functions the behaviour of the wrapper.
-%
-% Revision 1.4  2005/09/27 21:03:32  strasser
-% Changed some parameters and services. Changed function names from
-% "qqe_[function-name]" to "qqe_ofsf_[function-name]". Changed wrappers
-% so, that whenever possible the corresponding ofsf-functions are called.
-%
-% Revision 1.3  2005/09/27 18:30:58  sturm
-% Changed 'qqe to 'qqe_ofsf for param and service setting.
-%
-% Revision 1.2  2005/09/27 18:08:42  sturm
-% Finished first version of enter/exit in qqe.red.
-% Moved params and services to qqe_ofsf and did some work there (for testing).
-%
-% Revision 1.1  2005/09/27 14:22:48  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(qqe_ofsf_rcsid!* qqe_ofsf_copyright!*);
    qqe_ofsf_rcsid!* :=
-      "$Id: qqe_ofsf.red,v 1.17 2006/01/02 00:56:44 strasser Exp $";
-   qqe_ofsf_copyright!* :=
-      "Copyright (c) 2005 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   qqe_ofsf_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module qqe_ofsf;
 

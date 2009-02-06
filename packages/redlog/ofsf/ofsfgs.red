@@ -1,71 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfgs.red,v 1.10 2003/05/19 10:39:00 dolzmann Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2003 Andreas Dolzmann
+% Copyright (c) 1995-2009 Andreas Dolzmann
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfgs.red,v $
-% Revision 1.10  2003/05/19 10:39:00  dolzmann
-% The Groebner package now uses the GB package.
-%
-% Revision 1.9  1999/03/23 07:41:37  dolzmann
-% Changed copyright information.
-%
-% Revision 1.8  1997/08/24 16:16:59  sturm
-% Call cl_sitheo instead of ofsf_gssimpltheo.
-% Added service rl_surep with black box rl_multsurep.
-% Added service rl_siaddatl.
-%
-% Revision 1.7  1996/10/07 12:03:24  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.6  1996/09/26 11:55:42  dolzmann
-% Reformated source code.
-%
-% Revision 1.5  1996/09/05 11:37:47  dolzmann
-% Removed unused variable vl in procedure ofsf_gsmkradvar.
-%
-% Revision 1.4  1996/09/05 11:14:57  dolzmann
-% Removed unused variable curtorder in procedure ofsf_gsmkradvar.
-%
-% Revision 1.3  1996/07/13 11:19:09  dolzmann
-% Introduced new switches !*rlgsbnf, !*rlgsutord and related code.
-%
-% Revision 1.2  1996/07/07 14:44:10  sturm
-% Call cl_nnfnot instead of cl_nnf1.
-%
-% Revision 1.1  1996/03/22 12:14:07  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_gs_rcsid!* ofsf_gs_copyright!*);
-   ofsf_gs_rcsid!* := "$Id: ofsfgs.red,v 1.10 2003/05/19 10:39:00 dolzmann Exp $";
-   ofsf_gs_copyright!* := "Copyright (c) 1995-2003 by A. Dolzmann"
+   ofsf_gs_rcsid!* :=
+      "$Id$";
+   ofsf_gs_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann"
 >>;
-
 
 module ofsfgs;
 % Ordered field standard form groebner simplifier. Submodule of [ofsf].

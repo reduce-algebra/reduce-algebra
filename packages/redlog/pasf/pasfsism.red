@@ -1,154 +1,40 @@
 % ----------------------------------------------------------------------
-% $Id: pasfsism.red,v 1.31 2008/03/13 14:10:17 lasaruk Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2003 Andreas Dolzmann and Andreas Seidl
+% Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: pasfsism.red,v $
-% Revision 1.31  2008/03/13 14:10:17  lasaruk
-% Changes
-%
-% Revision 1.30  2007/07/10 09:13:36  lasaruk
-% Bug in substitution procedure in pasfmisc corrected.
-%
-% Revision 1.29  2007/06/21 18:43:49  lasaruk
-% Factorization of atomic formulas, smart substitution
-%
-% Revision 1.28  2007/03/22 17:45:35  lasaruk
-% rlint bug reports corrected
-%
-% Revision 1.27  2006/11/06 19:07:52  lasaruk
-% eq's replaced by eqn's in integer comparisons
-%
-% Revision 1.26  2006/06/02 07:37:56  lasaruk
-% bugs found by cref eliminated
-%
-% Revision 1.25  2005/08/04 11:03:58  lasaruk
-% Uniform comments
-%
-% Revision 1.24  2005/07/17 20:42:29  lasaruk
-% New comments
-%
-% Revision 1.23  2005/04/29 12:17:16  lasaruk
-% Debugging code removed
-%
-% Revision 1.22  2005/04/27 19:39:23  lasaruk
-% Version the tests for diplomarbeit ran on
-%
-% Revision 1.21  2005/01/24 16:02:08  lasaruk
-% Uniform Presburger Arithmetic is now implemented. Elimination code rewritten,
-% so no elimination normal form is explicitly computed.
-%
-% Revision 1.20  2005/01/22 20:23:40  lasaruk
-% Uniform Presburger Arithmetic introduced
-%
-% Revision 1.19  2005/01/15 20:28:27  lasaruk
-% Quantifier elimination with answers experimental version
-%
-% Revision 1.18  2004/11/05 19:51:43  lasaruk
-% calls to pasf_simplat1 corrected globally
-%
-% Revision 1.17  2004/08/29 20:42:13  lasaruk
-% Simplification of atomic formulas rewritten without the term
-% normal form. Administration details switches and other
-% stuff put into some order and are commented now. Floor and
-% ceil procedures corrected to fit the semantics. pasf_susidec
-% moved to pasf_dec. pasf_deci for integer decomposition added.
-% In QE the simplification is done at the last stage even if
-% rlpasfsimplify is turned off. All sutable rl_mkn's are turned
-% to rl_smkn. In pasfsiat.red order reduction has been added.
-% In pasfsism.red substitution and simplification goals have
-% been revisited. Configuration tested on more than 3*10^5
-% formulas with different structure.
-%
-% Revision 1.16  2004/08/11 15:17:08  lasaruk
-% New comments done. Now automatic procedure documentation possible. 
-% Some code rewritten.
-%
-% Revision 1.15  2004/08/06 15:35:17  lasaruk
-% Congruence simplification added. Some errors corrected.
-%
-% Revision 1.14  2004/06/09 06:38:09  lasaruk
-% Smart simplification improoved. Transitive simplification added
-% (without modifications on clsimpl not functional)
-%
-% Revision 1.13  2004/06/01 16:49:35  lasaruk
-% Errors corrected
-%
-% Revision 1.12  2004/06/01 15:25:15  lasaruk
-% simple gauss simplification added, transitive simplification
-% with switches temporary removed, additive simplification
-% filled with some minor cases
-%
-% Revision 1.11  2004/02/22 21:08:15  lasaruk
-% Added switch rlsusisubst for substitution of equalities. Substitution
-% results in smaller formulas or formulas with less free variables.
-% Up to 80% length reduction. Switch rlsusitr should not be used yet.
-%
-% Revision 1.10  2003/12/16 10:19:58  dolzmann
-% Removed wrong return values of pasf_susibinad. Added code for
-% substituting equations into atomic formulas occuring in the theory.
-%
-% Revision 1.9  2003/12/16 07:45:34  lasaruk
-% Redlog normal form in the simplifier.
-%
-% Revision 1.8  2003/12/11 10:51:19  lasaruk
-% Smart simplification improoved.
-%
-% Revision 1.7  2003/12/02 09:04:06  dolzmann
-% Removed parser error.
-%
-% Revision 1.6  2003/12/02 07:43:08  lasaruk
-% Additive smart simplification added.
-%
-% Revision 1.5  2003/11/28 09:36:54  sturm
-% Fixes in pasf_susibineq: do nothing for congrunces with different moduli.
-% Exchanged T with nil at two points.
-%
-% Revision 1.4  2003/11/28 09:11:11  dolzmann
-% Inserted a linebreak after rcsid!*.
-%
-% Revision 1.3  2003/11/27 19:30:40  lasaruk
-% Smart simplification added
-%
-% Revision 1.2  2003/11/05 13:27:14  lasaruk
-% Some major redlog programming rules applied to the code.
-% Formulas are made positive acc. to the current kernel order.
-%
-% Revision 1.1  2003/07/22 12:42:59  seidl
-% Smart simplification with theory based on susi started.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(pasf_sism_rcsid!* pasf_sism_copyright!*);
    pasf_sism_rcsid!* :=
-      "$Id: pasfsism.red,v 1.31 2008/03/13 14:10:17 lasaruk Exp $";
+      "$Id$";
    pasf_sism_copyright!* :=
-      "Copyright (c) 2003 by A. Dolzmann. A. Seidl and T. Sturm"
+      "Copyright (c) 2003-2009 A. Dolzmann. A. Seidl and T. Sturm"
 >>;
-
 
 module pasfsism;
 % Presburger arithmetic standard form smart simplification. Submodule of PASF.

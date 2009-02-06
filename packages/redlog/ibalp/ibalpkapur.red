@@ -1,63 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ibalpkapur.red,v 2.4 2007/12/16 12:19:53 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2007-2008 A. Dolzmann, and T. Sturm
+% Copyright (c) 2007-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ibalpkapur.red,v $
-% Revision 2.4  2007/12/16 12:19:53  sturm
-% krule_genrule had used "t" as a procedure parameter.
-%
-% Revision 2.3  2007/11/14 12:59:09  kaesers
-% Removed one optiona parameter of ibalp_kapur;
-% Added two new switches;
-% Some smaller optimizations.
-%
-% Revision 2.2  2007/10/16 15:56:54  kaesers
-% Rewritten kpoly_plus. (resulted in a factor 3 speedup).
-%
-% Revision 2.1  2007/10/16 00:45:02  kaesers
-% Removed obsolete procedures.
-% Added module kpoly.
-% Altered a lot of procedures slightly.
-%
-% Revision 2.0  2007/10/09 13:44:40  kaesers
-% Renamed a lot of procedures. Splitted some procedures. Bugfixing.
-% Prepared a lot of procedure to be used in tplp as well.
-%
-% Revision 1.1  2007/04/23 14:06:16  sturm
-% New module ibalpkapur.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ibalp_kapur_rcsid!* ibalp_kapur_copyright!*);
    ibalp_kapur_rcsid!* :=
-      "$Id: ibalpkapur.red,v 2.4 2007/12/16 12:19:53 sturm Exp $";
-   ibalp_kapur_copyright!* := "Copyright (c) 2007-2008 A. Dolzmann and T. Sturm"
+      "$Id$";
+   ibalp_kapur_copyright!* := "Copyright (c) 2007-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module ibalpkapur;
 % Author Stefan Kaeser

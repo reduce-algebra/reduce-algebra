@@ -1,68 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: tplp.red,v 1.9 2008/01/23 17:00:01 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2007 by T. Sturm
+% Copyright (c) 2007-2009 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-% $Log: tplp.red,v $
-% Revision 1.9  2008/01/23 17:00:01  sturm
-% Added experimental services skolemize and miniscope for tplp.
-%
-% Revision 1.8  2008/01/04 19:16:49  kaesers
-% Changed representation of constant function symbols.
-%
-% Revision 1.7  2007/11/19 17:15:23  kaesers
-% A lot of minor code optimizations.
-% Small Bugfixes.
-%
-% Revision 1.6  2007/11/05 19:10:05  kaesers
-% Some bugfixes.
-%
-% Revision 1.5  2007/11/03 16:46:01  kaesers
-% Implemented nf procedures.
-%
-% Revision 1.4  2007/10/19 12:49:10  kaesers
-% Added some more default rl-services.
-%
-% Revision 1.3  2007/10/15 18:21:40  kaesers
-% Small bugfixes.
-%
-% Revision 1.2  2007/10/15 17:56:11  kaesers
-% loaded cl and rltools;
-% added default procedures for substitution.
-%
-% Revision 1.1  2007/10/03 10:46:58  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 lisp <<
    fluid '(tplp_rcsid!* tplp_copyright!*);
-   tplp_rcsid!* := "$Id: tplp.red,v 1.9 2008/01/23 17:00:01 sturm Exp $";
-   tplp_copyright!* := "Copyright (c) 2007 by T. Sturm"
+   tplp_rcsid!* := "$Id$";
+   tplp_copyright!* := "Copyright (c) 2007-2009 T. Sturm"
 >>;
-
-
 
 module tplp;
 % Theorem proving lisp prefix. Main module. Algorithms on first-order

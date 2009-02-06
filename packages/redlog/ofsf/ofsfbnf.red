@@ -1,68 +1,40 @@
 % ----------------------------------------------------------------------
-% $Id: ofsfbnf.red,v 1.9 2003/06/11 08:46:55 dolzmann Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2003 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, and T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsfbnf.red,v $
-% Revision 1.9  2003/06/11 08:46:55  dolzmann
-% Implemented black boxes rl_qssimpl and rl_qssiadd.
-%
-% Revision 1.8  2003/06/04 06:10:22  dolzmann
-% Added black box implementation ofsf_qssusuat.
-%
-% Revision 1.7  2003/06/03 16:10:39  dolzmann
-% Added blackbox implementations for rl_qssubsumep, rl_qstrycons, and
-% rl_qssubat.
-%
-% Revision 1.6  2003/05/27 08:19:19  dolzmann
-% Changed wrong log messages.
-%
-% Revision 1.5  2003/05/27 08:17:42  dolzmann
-% Added pseudo implementation of black box cl_qscsa.
-%
-% Revision 1.4  1999/03/23 07:41:37  dolzmann
-% Changed copyright information.
-%
-% Revision 1.3  1999/03/21 13:38:04  dolzmann
-% Removed procedure acfsf_bnfsimpl which was identical to cl_bnfsimpl.
-%
-% Revision 1.2  1996/10/07 12:03:22  sturm
-% Added fluids for CVS and copyright information.
-%
-% Revision 1.1  1996/03/22 12:14:02  sturm
-% Moved and split.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_bnf_rcsid!* ofsf_bnf_copyright!*);
-   ofsf_bnf_rcsid!* := "$Id: ofsfbnf.red,v 1.9 2003/06/11 08:46:55 dolzmann Exp $";
+   ofsf_bnf_rcsid!* :=
+      "$Id$";
    ofsf_bnf_copyright!* :=
-      "Copyright (c) 1995-2003 by A. Dolzmann, A. Seidl, and T. Sturm"
+      "Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm"
 >>;
-
 
 module ofsfbnf;
 % Ordered field standard form boolean normal forms. Submodule of [ofsf].

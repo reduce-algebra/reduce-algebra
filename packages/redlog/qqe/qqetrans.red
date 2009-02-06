@@ -1,125 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: qqetrans.red,v 1.20 2006/03/19 15:19:29 strasser Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qqetrans.red,v $
-% Revision 1.20  2006/03/19 15:19:29  strasser
-% Fixed bug in case distinction in [qqe_la2lth!-addin!-laddrhead] and
-% [qqe_la2lth!-addin!-raddlhead].
-%
-% Revision 1.19  2006/03/14 19:35:01  strasser
-% Only cosmetic changes.
-%
-% Revision 1.18  2006/03/02 13:17:31  strasser
-% Debug messages are dependent on [qqe_debug!*]. Some formulas were
-% generated, wherein some parts where identical (shared memory) instead of
-% the same.
-%
-% Revision 1.17  2006/01/08 17:28:10  strasser
-% Renamed [qqe_qadd_location!*] into [qqe_qadd!-location!*].
-% Some minor changes.
-%
-% Revision 1.16  2005/11/14 13:14:30  strasser
-% Some minor changes in the function tree of [qqe_la2lth!-addin].
-%
-% Revision 1.15  2005/11/13 23:42:02  strasser
-% Replaced all [rl_chsimpat] with [rl_simpat].
-%
-% Revision 1.14  2005/11/09 21:59:29  strasser
-% For module [qqeqe.red] changes in calculation of satlengths. For module
-% [qqesiat]: added functions [qqe_simplbtat], [qqe_eta!-in!-term],
-% [qqe_eta!-in!-term1]. In [qqetrans.red] minor changes.
-%
-% Revision 1.13  2005/11/08 15:20:58  strasser
-% Modified [qqe_qadd!-inside!-relocate!-2up] and some changes mainly in the
-% function tree of [qqe_la2lth!-addin]. Should be bug free now.
-%
-% Revision 1.12  2005/11/08 03:08:28  strasser
-% In module [qqetrans.red] changes in function-tree [qqe_la2lth!-addin].
-% In module [qqeqe.red] changes in functions for calculating satlengths.
-% Both areas are still under construction.
-%
-% Revision 1.11  2005/10/06 01:55:46  strasser
-% Some changes in [qqe_prefix!-lefts] and [qqe_prefix!-rights], as well as a
-% bugfix in [qqe_lcm!-list]. Worked on [qqe_satlengths] and functions in that
-% execution tree.
-%
-% Revision 1.10  2005/10/04 13:41:57  strasser
-% Improved readability of code. in [qqesiat.red]: Split the function
-% [qqe_simplterm] into [qqe_simplterm], [qqe_simplterm!-add],
-% [qqe_simplterm!-tail] and [qqe_simplterm!-head]. Improved functionality
-% of the term simplitfier.
-%
-% Revision 1.9  2005/10/04 01:40:13  strasser
-% Minor changes in [qqe.red] and [qqeqe.red]. Improved handling of different
-% standard represantations of atomic formulas in [qqetrans.red].
-%
-% Revision 1.8  2005/10/03 19:28:37  strasser
-% Added use of blackboxes [rl_prepat] and [rl_chsimpat] instead of direct
-% access to wrapper functions.
-%
-% Revision 1.7  2005/10/03 01:18:23  strasser
-% Add [qqe_varsubstat] to [qqe.red]. Some minor changes and removing of
-% debugging comments in [qqeqe.red], as well as in [qqetrans.red].
-%
-% Revision 1.6  2005/10/02 02:38:15  strasser
-% Added [qqe_qadd!-insidef]. Improved functionality of the translater for
-% arbitrary formulas.
-%
-% Revision 1.5  2005/10/01 20:37:20  strasser
-% Some minor changes.
-%
-% Revision 1.4  2005/10/01 02:33:26  strasser
-% Moved simplifier for atomic formulas [qqe_simplat], [qqe_simplqequal],
-% [qqe_simplqneq] from [qqeqe.red] to [qqe.red]. Many minor changes to
-% make files from package [qqe]  compatible with wrapper packages, like for
-% example [qqe_ofsf]. Changes mainly in [qqeqe.red] and [qqetrans.red].
-%
-% Revision 1.3  2005/09/29 17:56:25  strasser
-% Conventionalized function names ("-" ---> "!-!). Moved the constructor
-% functions [qqe_iterate_*] from [qqeqe.red] in [qqe.red] and fixed a bug
-% in them.
-%
-% Revision 1.2  2005/09/27 14:30:15  sturm
-% Some corrections within the header.
-%
-% Revision 1.1  2005/09/26 22:05:39  strasser
-% Adding file qqemisc.red, qqeqe.red, qqesism.red and qqetrans.red now
-% with correct headers as well as the lisp header block.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(qqe_trans_rcsid!* qqe_trans_copyright!*);
    qqe_trans_rcsid!* :=
-      "$Id: qqetrans.red,v 1.20 2006/03/19 15:19:29 strasser Exp $";
-   qqe_trans_copyright!* :=
-      "Copyright (c) 2005 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   qqe_trans_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module qqetrans;
 % Queue quantor elimination translation module. Submodule of [qqe].

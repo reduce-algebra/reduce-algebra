@@ -1,105 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: ofsftfc.red,v 1.5 2003/11/07 12:40:39 dolzmann Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2003 Andreas Dolzmann and Lorenz Gilch
+% Copyright (c) 2003-2009 Andreas Dolzmann and Lorenz Gilch
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: ofsftfc.red,v $
-% Revision 1.5  2003/11/07 12:40:39  dolzmann
-% Changed wrapping of lines.
-%
-% Revision 1.4  2003/10/24 11:53:59  gilch
-% Renamed !*rlrqtfcfullsplit to !*rlhqetfcfullsplit.
-% Renamed !*rlrqtfcfast to !*rlhqetfcfast.
-% Renamed !*rlrqtfcsplit to !*rlhqetfcsplit.
-%
-% Revision 1.3  2003/10/21 15:47:14  gilch
-% Renamed ofsf_prod to ofsf_multfl.
-% Renamed prefix d0_ to ofsf_.
-%
-% Revision 1.2  2003/10/21 15:17:31  gilch
-% Renamed ofsf_main to ofsf_tfcmain and ofsf_main1 in ofsf_tfcmain1.
-%
-% Revision 1.1  2003/10/21 13:24:58  gilch
-% Moved rlprojects/tf.red and rlproject/tfc.red into this module.
-% Changed prefix to ofsf.
-% Moved and renamed switches.
-% Removed tf_ls, tf_list1, tf_select, tf_ok, tf_nzeroes, tf_neg,tf_neg1,
-% Renamed tfc_mkand to tfc_tfcmkand.
-% Renamed tfc_mkor to tfc_tfcmkor.
-% Renamed tfk_stfc to tfk_stfk.
-% Renamed tfk_ols to tfk_kols.
-% Renamed tfk_extend to tfk_kextend.
-% Renamed tfk_olsfast to tfk_kolsfast.
-% Renamed tfk_extendfast to tfk_kextendfast.
-% Renamed tfk_extend0 to tfk_kextend0.
-% Renamed tfk_extend1 to tfk_kextend1.
-% Renamed tfk_nnz to tfk_knnz.
-% Renamed tfk_pnz to tfk_kpnz.
-% Removed switch tfcbad.
-%
-% Revision 1.9  2003/07/21 11:20:45  gilch
-% Fixed bugs in procedures tfc_olsfast, tfc_extendfast.
-%
-% Revision 1.8  2003/06/26 11:49:39  gilch
-% Added switch tfcfast. Added procedures tfc_signs, tfk_olsfast,
-% tfk_extendfast. Updated tfk_stfc and tfc_stfc for use with tfcfast.
-%
-% Revision 1.7  2003/06/25 13:07:25  gilch
-% Updated module for use with type formulas of different types: Added switch
-% tfcsplit, tfcfullsplit. Added procedures tfc_main, tfc_main1, tfc_split,
-% tfc_prod, tfc_splitlist, tfk_tfk, tfk_stfc, tfk_ols, tfk_extend, tfk_extend0,
-% tfk_extend1, tfk_nnz, tfk_npz, tfk_splittypes, vergleich, vergleich1,
-% typkcost, typ0cost, splitcost.
-%
-% Revision 1.6  2003/04/25 12:56:33  gilch
-% Removed calls of cl_simpl in tfc_tfc and tfc_tfc1.
-%
-% Revision 1.5  2003/04/22 14:05:15  gilch
-% Changed "load" commands to "load!-package!" commands.
-%
-% Revision 1.4  2003/04/19 11:11:37  gilch
-% Fixed a bug in tfc_tfc.
-%
-% Revision 1.3  2003/04/17 11:28:38  gilch
-% Renamed tfc_tfc to tfc_tfc1. Added procedure new tfc_tfc.
-%
-% Revision 1.2  2003/04/16 17:06:58  gilch
-% Output formulas now contain SF's.
-%
-% Revision 1.1  2003/04/16 11:33:45  gilch
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(ofsf_tfc_rcsid!* ofsf_tfc_copyright!*);
    ofsf_tfc_rcsid!* :=
-      "$Id: ofsftfc.red,v 1.5 2003/11/07 12:40:39 dolzmann Exp $";
-   ofsf_tfc_copyright!* := "Copyright (c) 2003 by A. Dolzmann and L. Gilch"
+      "$Id$";
+   ofsf_tfc_copyright!* := "Copyright (c) 2003-2009 A. Dolzmann and L. Gilch"
 >>;
-
 
 module ofsftfc;
 % Type Formula Construction.

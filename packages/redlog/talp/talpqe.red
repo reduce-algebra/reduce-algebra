@@ -1,102 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: talpqe.red,v 1.22 2007/03/28 11:25:01 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2004
+% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: talpqe.red,v $
-% Revision 1.22  2007/03/28 11:25:01  sturm
-% Fixed bug in number of arguments (rlint).
-%
-% Revision 1.21  2005/04/07 09:08:10  hoffelne
-% minor change
-%
-% Revision 1.20  2005/04/03 12:54:23  hoffelne
-% minor improvements
-%
-% Revision 1.19  2005/02/18 15:09:12  hoffelne
-% cosmetic improvements
-%
-% Revision 1.18  2005/02/16 13:07:20  hoffelne
-% minor updates
-%
-% Revision 1.17  2005/02/01 10:40:19  hoffelne
-% minor changes
-%
-% Revision 1.16  2004/12/04 15:33:31  hoffelne
-% minor change
-%
-% Revision 1.15  2004/12/02 11:27:22  hoffelne
-% minor changes
-%
-% Revision 1.14  2004/11/20 22:31:17  hoffelne
-% minor changes
-%
-% Revision 1.13  2004/11/18 15:49:00  hoffelne
-% fixed small bug
-%
-% Revision 1.12  2004/11/18 15:16:34  hoffelne
-% minor fixes
-%
-% Revision 1.11  2004/11/17 15:11:30  hoffelne
-% minor improvements
-%
-% Revision 1.10  2004/11/14 21:46:11  hoffelne
-% cosmetic changes
-%
-% Revision 1.9  2004/11/11 12:00:44  hoffelne
-% minor improvements
-%
-% Revision 1.8  2004/10/26 14:27:35  hoffelne
-% minor changes
-%
-% Revision 1.7  2004/10/24 16:45:24  hoffelne
-% added gauss elimination
-%
-% Revision 1.6  2004/10/18 09:02:44  hoffelne
-% minor changes
-%
-% Revision 1.5  2004/10/17 19:25:03  hoffelne
-% added initial versions of qe-procedures
-%
-% Revision 1.2  2004/09/05 15:40:45  hoffelne
-% minor changes
-%
-% Revision 1.1  2004/07/13 10:24:47  hoffelne
-% initial check-in
-%
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(talp_qe_rcsid!* talp_qe_copyright!*);
    talp_qe_rcsid!* := 
-      "$Id: talpqe.red,v 1.22 2007/03/28 11:25:01 sturm Exp $";
-   talp_qe_copyright!* := "Copyright (c) 1995-2004 by A. Dolzmann and T. Sturm"
+      "$Id$";
+   talp_qe_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
 >>;
-
-
 
 module talpqe;
 % Term algebra Lisp prefix quantifier elimination. Submodule of [talp].

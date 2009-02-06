@@ -1,113 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: tplpkapur.red,v 1.20 2008/01/04 19:16:49 kaesers Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2007 by T. Sturm
+% Copyright (c) 2007-2009 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-% $Log: tplpkapur.red,v $
-% Revision 1.20  2008/01/04 19:16:49  kaesers
-% Changed representation of constant function symbols.
-%
-% Revision 1.19  2007/12/30 16:12:55  kaesers
-% Small bugfix in termorder. Using multiset ordering instead of
-% lexicographic ordering on more positions.
-%
-% Revision 1.18  2007/11/27 11:19:32  kaesers
-% Final check-in.
-%
-% Revision 1.17  2007/11/24 12:50:34  kaesers
-% Important bugfix in termorder procedures.
-%
-% Revision 1.16  2007/11/22 17:47:34  kaesers
-% Some bugfixes.
-% Added new procedures to avoid cdr calls on polynomials in module
-%    kapur.
-% Some code optimizations.
-%
-% Revision 1.15  2007/11/21 18:36:53  kaesers
-% Finished implementing multi headed rules.
-% Some bugfixes and code optimizations.
-%
-% Revision 1.14  2007/11/19 17:15:23  kaesers
-% A lot of minor code optimizations.
-% Small bugfixes.
-%
-% Revision 1.13  2007/11/14 13:00:43  kaesers
-% Removed one optional parameter of tplp_kapur;
-% Added some optimizations and switches;
-% Started implementing multimonomial rules for optimization.
-%
-% Revision 1.12  2007/11/12 16:06:09  kaesers
-% Added some optimizations.
-%
-% Revision 1.11  2007/11/05 19:10:05  kaesers
-% Some bugfixes.
-%
-% Revision 1.10  2007/11/03 16:46:38  kaesers
-% Filled spoly blackboxes.
-% Little optimization.
-%
-% Revision 1.9  2007/10/31 16:38:34  kaesers
-% Finished AM interface.
-% Added some blackboxes for spoly procedures, so that the algorithm is
-% is running already.
-%
-% Revision 1.8  2007/10/31 13:28:59  kaesers
-% Added s-polynomial generation for distinct rules.
-%
-% Revision 1.7  2007/10/25 18:07:28  kaesers
-% Added procedures to apply rules on polynomials.
-% Changed the way monomials are stored.
-%
-% Revision 1.6  2007/10/23 21:11:42  kaesers
-% Added module krule.
-% Implemented termordering.
-%
-% Revision 1.5  2007/10/19 12:50:17  kaesers
-% Implemented set of polynomials generation procedures.
-%
-% Revision 1.4  2007/10/17 13:24:53  kaesers
-% Added module kpoly.
-%
-% Revision 1.3  2007/10/15 18:21:40  kaesers
-% Small bugfixes.
-%
-% Revision 1.2  2007/10/06 17:44:15  kaesers
-% Implemented miniscoping.
-%
-% Revision 1.1  2007/10/03 10:46:58  sturm
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 lisp <<
    fluid '(tplp_kapur_rcsid!* tplp_kapur_copyright!*);
    tplp_kapur_rcsid!* :=
-      "$Id: tplpkapur.red,v 1.20 2008/01/04 19:16:49 kaesers Exp $";
-   tplp_kapur_copyright!* := "Copyright (c) 2007 by T. Sturm"
+      "$Id$";
+   tplp_kapur_copyright!* := "Copyright (c) 2007-2009 T. Sturm"
 >>;
-
-
 
 module tplpkapur;
 % Author Stefan Kaeser

@@ -1,292 +1,39 @@
 % ----------------------------------------------------------------------
-% $Id: qqeqe.red,v 1.40 2007/12/16 12:43:37 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2005-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
+% modification, are permitted provided that the following conditions
+% are met:
 %
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-% $Log: qqeqe.red,v $
-% Revision 1.40  2007/12/16 12:43:37  sturm
-% Renamed qqe_exit to qqe_qeexit to avoid ambiguity  with the by now empty
-% exit function for the context.
-%
-% Revision 1.39  2007/07/23 16:41:31  strasser
-% Bugfix in [qqe_qe!-clause]: After the call of [qqe_qe!-dna] formulas in
-% [qqe_resf!*] were not taken into account, which lead in some cases to
-% false results.
-%
-% Revision 1.38  2006/03/20 03:12:25  strasser
-% Updated for support of better simplification algorithm. Exchanged the word
-% "quantor" with "quantifier".
-%
-% Revision 1.37  2006/03/14 19:20:43  strasser
-% Cometic changes and a small bugfix in [qqe_qe].
-%
-% Revision 1.36  2006/03/03 00:40:43  strasser
-% Removed procedure [qqe_atf!-dna!-nfd!-phi] which is no longer needed.
-% Some minor fixes.
-%
-% Revision 1.35  2006/03/02 17:38:21  strasser
-% Making quantifier switch from 'all' to 'ex' the property of being a
-% harmless formula could get lost. Fixed that.
-%
-% Revision 1.34  2006/03/02 13:09:41  strasser
-% Debug messages now depend on the variable [qqe_debug!*]. Minor fixes.
-%
-% Revision 1.33  2006/01/17 05:22:11  strasser
-% Add support for the new min/maxlength calculation from module
-% [qqemisc.red]. Instead of [qqe_length!-graph!-clause] now
-% [qqe_clause!-update!-lengths] is called.
-%
-% Revision 1.32  2006/01/08 17:36:54  strasser
-% Added a case distincion in [qqe_qe!-clause].
-%
-% Revision 1.31  2006/01/03 00:35:23  strasser
-% Add a lot of comments. Removed comments which were for coding purposes.
-% [qqe_ndna] has now four instead of five arguments. Removed procedure
-% [qqe_make!-phi2]. Add procedure [qqe_ndna!-qneq!-ext!-phi2!-true] and
-% [qqe_ndna!-qneq!-ext]. Introduced switch [qqe_elimb!*] deciding if [qqe_qe]
-% eliminates also quantifiers of basic type.
-%
-% Revision 1.30  2006/01/02 01:59:38  strasser
-% Split module [[qqeqe.red]] in [[qqeqe.red]] and [[qqeqemisc.red]].
-% Moved the following functions in [[qqeqemisc.red]]:
-% - qqe_insert!-resf
-% - qqe_insert!-qvarf
-% - qqe_sort!-resf!-qvarf
-% - qqe_atf!-qequal!-ext!-c
-% - qqe_atf!-qequal!-ext!-p
-% - qqe_atf!-equal!-ext
-% - qqe_atf!-equal!-int
-% - qqe_atf!-qequal!-int
-% - qqe_atf!-qneq!-ext
-% - qqe_atf!-qneq!-ext!-qepsilon
-% - qqe_atf!-neq
-% - qqe_atf!-qneq!-int
-% - qqe_atf!-misc!-basic
-% - qqe_sort!-atf
-% - qqe_la
-% - qqe_max!-lefts!-bs!-recursive
-% - qqe_max!-lefts!-ls!-recursive
-% - qqe_max!-lefts!-term!-recursive
-% - qqe_max!-lefts!-lhs
-% - qqe_max!-lefts!-bs
-% - qqe_max!-rights!-lhs
-% - qqe_max!-rights!-bs
-% - qqe_ra
-% - qqe_max!-rights!-bs!-recursive
-% - qqe_max!-rights!-ls!-recursive
-% - qqe_max!-rights!-term!-recursive
-% - qqe_minlength
-% - qqe_max!-prefix!-length!-term!-recursive
-% - qqe_maxlength
-% - qqe_maxlength1
-% - qqe_patpos
-% - qqe_pat!-lengths
-% - qqe_pat!-length
-% - qqe_get!-quantor!-sequenz
-% - qqe_atf!-qequal!-ext!-min!-prefix
-% - qqe_atf!-qequal!-ext!-p!-min!-lefts
-% - qqe_atf!-qequal!-ext!-p!-min!-rights
-% - qqe_qprefix!-var
-% - qqe_new!-ids!-x
-% - qqe_make!-id!-x
-% - qqe_list!-take!-n
-% - qqe_subst
-% - qqe_subst!-batf
-% - qqe_subst!-bterm
-% - qqe_subst!-qequal!-ext!-p
-% - qqe_subst!-qneq!-ext
-% - qqe_makef!-qneq2equal
-% - qqe_subst!-qneq!-int
-% - qqe_subst!-qequal!-int
-% - qqe_makef!-list2qneq
-% - qqe_makef!-list2equal
-% - qqe_makef!-qequal2equal
-% - qqe_makef!-termlength!-l
-% - qqe_makef!-termlength!-g
-% - qqe_subst!-simplterm
-% - qqe_subst!-simplterm!-lhead
-% - qqe_subst!-simplterm!-rhead
-% - qqe_ndna!-qneq!-ext
-% - qqe_iterate!-quantor!-ex
-% - qqe_iterate!-quantor.
-%
-% Revision 1.29  2006/01/02 01:17:57  strasser
-% Changed some code in order to achieve smaller satlengths.
-% Add fluid [[qqe_atf!-qneq!-ext!-qepsilon!*]].
-% Add function [[qqe_atf!-qneq!-ext!-qepsilon]].
-% Add basic type qe for the extra variables of basic type, which
-% are generated in the qqe.
-%
-% Revision 1.28  2005/12/18 18:57:23  strasser
-% Add some comments. QE works now also with "all" quantifiers. Bugfixes in
-% the function tree of [qqe_subst] and [qqe_ndna!-qneq!-ext].
-%
-% Revision 1.27  2005/12/16 23:55:04  strasser
-% Add functions: [qqe_list!-take!-n], [qqe_subst], [qqe_subst!-batf],
-% [qqe_subst!-bterm], [qqe_subst!-qequal!-ext!-p], [qqe_subst!-qneq!-ext],
-% [qqe_makef!-qneq2equal], [qqe_subst!-qneq!-int], [qqe_subst!-qequal!-int],
-% [qqe_makef!-list2qneq], [qqe_makef!-list2equal], [qqe_makef!-qequal2equal],
-% [qqe_makef!-termlength!-l], [qqe_makef!-termlength!-g],
-% [qqe_subst!-simplterm], [qqe_subst!-simplterm!-lhead],
-% [qqe_subst!-simplterm!-rhead].
-% This speeds up the qe very much, as it provides on-the-fly translation,
-% which is specially adapted to the format of the terms containing l/radds
-% produced by the qe-procedure, so that module [qqetrans] has only to be called
-% in the beginning of the qe.
-%
-% Revision 1.26  2005/12/16 02:15:03  strasser
-% Add functions [qqe_make!-phi2] and [qqe_ndna!-qneq!-ext].
-% Changes in [qqe_satlengths] and [qqe_ndna].
-%
-% Revision 1.25  2005/11/20 19:25:09  strasser
-% Bugfix in [qqe_qe!-dna!-nfd]. Added functions [qqe_make!-cpg],
-% [qqe_cpg!-make!-root], [qqe_cpg!-make!-node], [qqe_cpg!-make!-supernode],
-% [qqe_cpg!-supernode!-last], [qqe_cpg!-supernode!-first], [qqe_cpg!-incl],
-% [qqe_cpg!-excl], [qqe_cpg!-make!-incl], [qqe_cpg!-insert],
-% [qqe_cpg!-make!-excl], [qqe_cpg!-empty!-graph],
-% [qqe_cpg!-insert!-supernode], [qqe_cpg!-minlength!-node],
-% [qqe_cpg!-maxlength!-node], [qqe_cpg!-var], [qqe_cpg!-insert!-incl],
-% [qqe_cpg!-insert!-excl]. Some other minor changes.
-%
-% Revision 1.24  2005/11/15 22:45:28  strasser
-% QE uses now the routines [qqe_harmless!-formula!-test!-clause1] to produce
-% error message for a big class of non harmless formulas and
-% [qqe_simpl!-clause] for simplification with help of min-/maxlength
-% calculation.
-%
-% Revision 1.23  2005/11/14 13:31:15  strasser
-% Bugfix in [qqe_satlengths].
-%
-% Revision 1.22  2005/11/13 23:50:45  strasser
-% Added support for the min- and maxlength calculation from module [qqemisc].
-%
-% Revision 1.21  2005/11/09 21:59:29  strasser
-% For module [qqeqe.red] changes in calculation of satlengths. For module
-% [qqesiat]: added functions [qqe_simplbtat], [qqe_eta!-in!-term],
-% [qqe_eta!-in!-term1]. In [qqetrans.red] minor changes.
-%
-% Revision 1.20  2005/11/08 03:08:28  strasser
-% In module [qqetrans.red] changes in function-tree [qqe_la2lth!-addin].
-% In module [qqeqe.red] changes in functions for calculating satlengths.
-% Both areas are still under construction.
-%
-% Revision 1.19  2005/10/30 22:04:44  strasser
-% Added [qqe_bridge], [qqe_bridge!-list], [qqe_qe!-clause!-init] to
-% [qqeqe.red]. Changes in [qqe_satlengths]. Some minor changes in
-% [qqemisc.red].
-%
-% Revision 1.18  2005/10/29 18:19:12  strasser
-% Removed a bug in [qqe_atf!-dna!-nfd!-rho]. Removed some debug messages.
-%
-% Revision 1.16  2005/10/26 01:19:20  strasser
-% Changed variable and function names [qqe_con!-...] in
-% [qqe_atf!-...]. Added variable [qqe_atf!-misc!-basic!*], function
-% [qqe_atf!-misc!-basic], [qqe_max!-lefts!-term!-recursive],
-% [qqe_max!-lefts!-ls!-recursive], [qqe_max!-lefts!-bs!-recursive], and
-% analogous for rights, [qqe_max!-prefix!-length!-term!-recursive],
-% [qqe_atf!-qequal!-ext!-max!-prefix], [qqe_atf!-dna!-nfd!-psi!-subst].
-% Made sorting of atomic formulas with the function tree [qqe_sort!-atf]
-% more efficient. Changes in the function tree [qqe_qe!-dna!-nfd] to use
-% less basic type quantifiers in the elimination process. Many minor
-% changes in various places. Some work still to do, that means: file is
-% compiling but not working at the moment.
-% ----------------------------------------------------------------------
-% ----------------------------------------------------------------------
-%
-% Revision 1.15  2005/10/06 01:55:46  strasser
-% Some changes in [qqe_prefix!-lefts] and [qqe_prefix!-rights], as well as a
-% bugfix in [qqe_lcm!-list]. Worked on [qqe_satlengths] and functions in that
-% execution tree.
-%
-% Revision 1.14  2005/10/04 13:41:57  strasser
-% Improved readability of code. in [qqesiat.red]: Split the function
-% [qqe_simplterm] into [qqe_simplterm], [qqe_simplterm!-add],
-% [qqe_simplterm!-tail] and [qqe_simplterm!-head]. Improved functionality
-% of the term simplitfier.
-%
-% Revision 1.13  2005/10/04 01:40:13  strasser
-% Minor changes in [qqe.red] and [qqeqe.red]. Improved handling of different
-% standard represantations of atomic formulas in [qqetrans.red].
-%
-% Revision 1.12  2005/10/03 19:28:37  strasser
-% Added use of blackboxes [rl_prepat] and [rl_chsimpat] instead of direct
-% access to wrapper functions.
-%
-% Revision 1.11  2005/10/03 01:18:23  strasser
-% Add [qqe_varsubstat] to [qqe.red]. Some minor changes and removing of
-% debugging comments in [qqeqe.red], as well as in [qqetrans.red].
-%
-% Revision 1.10  2005/10/02 18:52:18  strasser
-% Fixed a syntax failure in the output of the function [qqe_qe!-dna!-nfd].
-% The sequenz of quantors of basic type is now placed correctly.
-%
-% Revision 1.9  2005/10/02 02:40:11  strasser
-% Many smaller bugfixes for the elimination process for arbitrary formulas.
-%
-% Revision 1.8  2005/10/01 20:37:20  strasser
-% Some minor changes.
-%
-% Revision 1.7  2005/10/01 15:49:04  strasser
-% Moved the functions [qqe_prefix!-length], [qqe_prefix!-lefts],
-% [qqe_prefix!-rights], [qqe_lcm], [qqe_lcm!-list], [qqe_plcm],
-% [qqe_plcm!-list], [qqe_quicksort]. Made [qqe_prefix!-*] ofsf-compatible.
-%
-% Revision 1.6  2005/10/01 02:41:24  strasser
-% Some further changes for compatibility with the wrapper packages in the
-% file [qqeqe.red]. Comments were changed in [qqe.red].
-%
-% Revision 1.5  2005/10/01 02:33:26  strasser
-% Moved simplifier for atomic formulas [qqe_simplat], [qqe_simplqequal],
-% [qqe_simplqneq] from [qqeqe.red] to [qqe.red]. Many minor changes to
-% make files from package [qqe]  compatible with wrapper packages, like for
-% example [qqe_ofsf]. Changes mainly in [qqeqe.red] and [qqetrans.red].
-%
-% Revision 1.4  2005/09/29 17:56:25  strasser
-% Conventionalized function names ("-" ---> "!-!). Moved the constructor
-% functions [qqe_iterate_*] from [qqeqe.red] in [qqe.red] and fixed a bug
-% in them.
-%
-% Revision 1.3  2005/09/29 15:04:31  strasser
-% Changed the infix values of 'qequal and 'qneq as they were the same like
-% the ones of 'and and 'or.
-%
-% Revision 1.2  2005/09/27 14:32:02  sturm
-% Some corrections within the header.
-%
-% Revision 1.1  2005/09/26 22:05:39  strasser
-% Adding file qqemisc.red, qqeqe.red, qqesism.red and qqetrans.red now
-% with correct headers as well as the lisp header block.
-%
-% ----------------------------------------------------------------------
 lisp <<
    fluid '(qqe_qe_rcsid!* qqe_qe_copyright!*);
-   qqe_qe_rcsid!* := "$Id: qqeqe.red,v 1.40 2007/12/16 12:43:37 sturm Exp $";
-   qqe_qe_copyright!* := "Copyright (c) 2005-2008 by A. Dolzmann and T. Sturm"
+   qqe_qe_rcsid!* :=
+      "$Id$";
+   qqe_qe_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
 >>;
-
 
 module qqeqe;
 % Quantifierelimination for queues. Module with algorithms
@@ -738,6 +485,6 @@ procedure qqe_ndna!-qneq!-ext();
       return {'or, phi1, phi2};
    end;
       
-endmodule;
+endmodule;  % [qqeqe]
 
-end;
+end;  % of file
