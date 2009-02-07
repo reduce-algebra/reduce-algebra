@@ -1,41 +1,43 @@
 % ----------------------------------------------------------------------
-% $Id: svdp.red,v 1.1 1999/03/17 13:01:59 dolzmann Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
-% $Log: svdp.red,v $
-% Revision 1.1  1999/03/17 13:01:59  dolzmann
-% Initial check-in.
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
+lisp <<
+   fluid '(svdp_rcsid!* svdp_copyright!*);
+   svdp_rcsid!* := "$Id$";
+   svdp_copyright!* := "Copyright (c) 1999-2009 A. Dolzmann and T. Sturm"
+>>;
+
+module svdp;
+% Sound (small) vdp.
 % Implementation of vdp's containing only three fields for the dip, the
 % vdp number and the sugar.
-%
-% ----------------------------------------------------------------------
-module svdp;
-Sound (small) vdp.
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
 
 load!-package 'dp;
 
@@ -89,7 +91,7 @@ procedure vdp_bcquot(p,c);
    begin scalar r;
       r := vdp_fdip dip_bcquot(vdp_poly p,c);
       if !*gsugar then
-          vdp_setsugar(r,vdp_sugar p);
+ 	 vdp_setsugar(r,vdp_sugar p);
       return r
    end;
 
@@ -106,7 +108,7 @@ procedure vdp_bcprod(p,b);
    begin scalar r;
       r := vdp_fdip dip_bcprod(vdp_poly p,b);
       if !*gsugar then
-          vdp_setsugar(r,vdp_sugar p);
+ 	 vdp_setsugar(r,vdp_sugar p);
       return r
    end;
 
@@ -114,7 +116,7 @@ procedure vdp_cancelmev(p,vev);
    begin scalar r;
       r := vdp_fdip dip_cancelmev(vdp_poly p,vev);
       if !*gsugar then
-          vdp_setsugar(r,vdp_sugar p);
+ 	 vdp_setsugar(r,vdp_sugar p);
       return r
    end;
 
@@ -122,8 +124,8 @@ procedure vdp_sum(d1,d2);
    begin scalar r;
       r := vdp_fdip dip_sum(vdp_poly d1,vdp_poly d2);
       if !*gsugar then
-%         vdp_setsugar(r,max(vdp_sugar d1,vdp_sugar d2));
-          vdp_setsugar(r,max!#(vdp_sugar d1,vdp_sugar d2));
+	 % 	 vdp_setsugar(r,max(vdp_sugar d1,vdp_sugar d2));
+ 	 vdp_setsugar(r,max!#(vdp_sugar d1,vdp_sugar d2));
       return r
    end;
 
@@ -134,7 +136,7 @@ procedure vdp_prod(d1,d2);
    begin scalar r;
       r := vdp_fdip dip_prod(vdp_poly d1,vdp_poly d2);
       if !*gsugar then
-          vdp_setsugar(r,vdp_sugar d1 #+ vdp_sugar d2);
+ 	 vdp_setsugar(r,vdp_sugar d1 #+ vdp_sugar d2);
       return r
    end;
 
@@ -145,9 +147,9 @@ procedure vdp_mred(u);
    begin scalar r;
       r := vdp_fdip dip_mred vdp_poly u;
       if !*gsugar then
-         vdp_setsugar(r,vdp_sugar u);
+	 vdp_setsugar(r,vdp_sugar u);
       return r
-  end;
+   end;
 
 procedure vdp_condense(f);
    dip_condense vdp_poly f;
@@ -168,7 +170,7 @@ procedure vdp_fmon(coef,vev);
    begin scalar r;
       r := vdp_fdip dip_fmon(coef,vev);
       if !*gsugar then
-          vdp_setsugar(r,ev_tdeg vev);
+ 	 vdp_setsugar(r,ev_tdeg vev);
       return r
    end;
 
@@ -189,18 +191,18 @@ procedure vdp_f2vdp(u);
    vdp_fdip dip_f2dip u;
 
 procedure vdp_enumerate(f);
-  % f is a temporary result. Prepare it for medium range storage and
-  % assign a number.
-  if vdp_zero!? f or vdp_number f then
-     f
-  else
-     vdp_setnumber(f,vdp_pcount!* := vdp_pcount!* #+ 1);
+   % f is a temporary result. Prepare it for medium range storage and
+   % assign a number.
+   if vdp_zero!? f or vdp_number f then
+      f
+   else
+      vdp_setnumber(f,vdp_pcount!* := vdp_pcount!* #+ 1);
 
 procedure vdp_simpcont(p);
    begin scalar q;
       q := vdp_poly p;
       if null q then
-          return p;
+ 	 return p;
       return vdp_fdip dip_simpcont q
    end;
 
@@ -217,7 +219,7 @@ procedure vdp_ilcomb1(v1,c1,t1,v2,c2,t2);
    begin scalar r;
       r := vdp_fdip dip_ilcomb1(vdp_poly v1,c1,t1,vdp_poly v2,c2,t2);
       if !*gsugar then
-          vdp_setsugar(r,max!#(vdp_sugar v1 #+ ev_tdeg t1,vdp_sugar v2 #+ ev_tdeg t2));
+ 	 vdp_setsugar(r,max!#(vdp_sugar v1 #+ ev_tdeg t1,vdp_sugar v2 #+ ev_tdeg t2));
       return r
    end;
 
@@ -225,7 +227,7 @@ procedure vdp_ilcomb1r(v1,c1,v2,c2,t2);
    begin scalar r;
       r := vdp_fdip dip_ilcomb1r(vdp_poly v1,c1,vdp_poly v2,c2,t2);
       if !*gsugar then
-          vdp_setsugar(r,max!#(vdp_sugar v1,vdp_sugar v2 #+ ev_tdeg t2));
+ 	 vdp_setsugar(r,max!#(vdp_sugar v1,vdp_sugar v2 #+ ev_tdeg t2));
       return r
    end;
 

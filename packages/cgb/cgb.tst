@@ -1,22 +1,33 @@
 % ----------------------------------------------------------------------
-% $Id: cgb.tst,v 1.3 2003/10/12 14:55:24 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
-% $Log: cgb.tst,v $
-% Revision 1.3  2003/10/12 14:55:24  sturm
-% The bootstrapping technique via remflag('(load!-package),'eval); does
-% not work for CSL. Added corresponding preprocessing directive for now.
-% As a consequence, under CSL "redlog" has to be loaded explicitly when
-% using CGB.
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
 %
-% Revision 1.2  1999/04/13 21:50:44  sturm
-% Removed echo, and gbverbose settings. There is no gbverbose.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% Revision 1.1  1999/04/05 08:30:45  dolzmann
-% Copied and overworked Rev. 1.6 of the old cgb version.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 load_package redlog;
 
 % Examples taken from the manual:

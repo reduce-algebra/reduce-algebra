@@ -1,200 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: gb.red,v 1.40 2007/12/16 10:49:14 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1999-2008 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
-% $Log: gb.red,v $
-% Revision 1.40  2007/12/16 10:49:14  sturm
-% Fixed bug in gb_reduceonesteprat. This one had caused strange
-% messages about "function a used as a variable" with sremake.
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
 %
-% Revision 1.39  2007/10/05 13:41:32  sturm
-% New interfaces: Use switch cgbfaithful. Groebner system are now _not_
-% faithful by default. Procedure ggsys means _generic_
-% gsys now. Added optional theory argument to cgb computation. Removed
-% switch cgbgen.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% Revision 1.38  2003/05/20 08:17:38  dolzmann
-% Moved cd_init to the beginning of cgb_interface!$.
-% This may be neccessary for the a2s procedures.
-%
-% Revision 1.37  2003/05/20 07:38:26  dolzmann
-% Do not load modules belongig to this package.
-%
-% Revision 1.36  2003/05/20 07:24:46  dolzmann
-% Moved macro *_mkinterface to the right place.
-%
-% Revision 1.35  2003/05/19 10:21:32  dolzmann
-% Fixed bugs in interface code.
-% Modified interface code.
-%
-% Revision 1.34  2003/05/05 12:48:12  dolzmann
-% Added cleanup function.
-% Added reval to a2s procedures.
-%
-% Revision 1.33  2003/05/05 11:56:06  dolzmann
-% Added interface generator.
-% Removed old interfaces.
-% Added interface for gb_reduce.
-% Added procedure gb_gbgsys for computing a non-parametric groebner system.
-% Added interface for gbgsys.
-% Corrected comments.
-%
-% Revision 1.32  2003/04/16 09:08:15  dolzmann
-% Added switch !*cgbsugar.
-% Corrected and added some comments.
-% Remove vdp properties after gb computations.
-% Added procedure gb_reduce.
-%
-% Revision 1.31  1999/04/15 07:08:01  dolzmann
-% Do not load rltools during compilation.
-%
-% Revision 1.30  1999/04/13 20:57:04  dolzmann
-% Renamed switches to cgb...
-% Removed !*gsugar.
-% Sort the input system.
-%
-% Revision 1.29  1999/04/13 13:51:07  dolzmann
-% gb_gb was called with three arguments instead of one argument.
-%
-% Revision 1.28  1999/04/11 11:30:55  dolzmann
-% Added standard form interface gb_gbf. Added a procedure gb_gsys!$ for
-% computing non-parametric Groebner systems.
-%
-% Revision 1.27  1999/04/11 09:50:40  dolzmann
-% Completely rewritten the interface code for the AM.
-% Moved the module vdp from dp.red into this file.
-% Adappted the code to the dip_init procedure.
-%
-% Revision 1.26  1999/04/06 11:53:57  dolzmann
-% Removed switches trgroeb, trgroebr, trgreobs, and related code.
-%
-% Revision 1.25  1999/04/04 16:46:19  sturm
-% Added copyright and CVS fluids.
-%
-% Revision 1.24  1999/04/04 14:50:38  sturm
-% Implemented switch tdusetorder.
-%
-% Revision 1.23  1999/04/04 14:09:33  sturm
-% Moved dip_ilcomb and dip_ilcombr from cgb.red to dp.red.
-% Created vdp_ilcomb and vdp_ilcombr for gb.red.
-%
-% Revision 1.22  1999/04/04 12:23:16  dolzmann
-% Procedure gb_spolynomial expexts a critical pair instead of two polynomials.
-%
-% Revision 1.21  1999/04/03 13:38:37  sturm
-% Adapted to new dip_init/dip_cleanup.
-% Fixed bug in gb_strange!-reduction.
-%
-% Revision 1.20  1999/03/31 14:09:56  sturm
-% Fixed numerous details encountered during CGB reimplementation.
-%
-% Revision 1.19  1999/03/30 11:29:00  dolzmann
-% gb_a2s returns now a list of SF's.
-% Reimplemented procedure gb_vars.
-%
-% Revision 1.18  1999/03/30 09:36:43  dolzmann
-% Removed unused procedure gb_vdpvordopt3.
-%
-% Revision 1.17  1999/03/30 09:34:44  dolzmann
-% Procedure gb_groebner1 binds all locally used fluids.
-%
-% Revision 1.16  1999/03/17 12:34:06  dolzmann
-% Removed fluids !*vdpinteger, !*vdpmodular, !*grmod  and their bindings.
-% Use vdp_monp instead of vdp_length.
-% Added the lost procedure min!# under the new name gb_min!#.
-%
-% Revision 1.15  1999/03/12 13:29:41  sturm
-% Added a procedure gb_updbase. Currently used in the style of groebner.red
-% incontrast to the Asir variant. Switch gbupdb.
-%
-% Revision 1.14  1999/03/12 10:58:47  dolzmann
-% Introduced verbose output for the length of g.
-% Use procedure ev_sdivp of package dp instead of gb_vevsdivp.
-% Removed test for zero polynomials in gb_spolynomial.
-% Moved procedure vdp_ilcomb1 and vdp_ilcomb1r into package dp and
-% renamed the procedures accordingly.
-%
-% Revision 1.13  1999/03/12 08:57:59  dolzmann
-% Introduced switch gbcheckg and related code.
-% All statistics code is guarded by the respective switches.
-% Replaced all calls of vdp_putprop and vdp_getprop by access functions
-% for the properties of the dp package.
-%
-% Revision 1.12  1999/03/05 10:35:41  dolzmann
-% Adapted to newly created dp package.
-%
-% Revision 1.11  1999/03/02 15:52:11  dolzmann
-% Added switch gbcounthf for counting reducible H-polynomials with groebstat.
-%
-% Revision 1.10  1999/03/02 15:20:02  dolzmann
-% Use private gb_vdpilcomb1 and gb_vdpilcomb1r. Only slightly faster.
-%
-% Revision 1.9  1999/02/25 16:04:56  sturm
-% Added switch gbverbose: output pairs left, and frequency of heuristic
-% content reduction when altered.
-% Added switch gbcontred and fluid gb_mincontred!*.
-% Switch groebstat works independently from trgroeb.
-% Use ioto for printing statistics.
-%
-% Revision 1.8  1999/02/25 09:24:36  sturm
-% Fixed memq to member in gb_tr2crit.
-%
-% Revision 1.7  1999/02/25 08:27:45  sturm
-% Initialize gb_strangecount!* and spac in groebner2.
-%
-% Revision 1.6  1999/02/25 06:11:21  dolzmann
-% Fixed a bug in gb_tr3crit. gb is as fast as grobener on p6_sc wrt.
-% revgradlex and only 10 times slower as groebner wrt. lex.
-%
-% Revision 1.5  1999/02/24 10:48:43  sturm
-% Added switch and fluid declarations and binding. In particular
-% !*groebfullreduction, !*gtraverso!-sloppy, !*ezgcd, !*groebdivide.
-% gb is faster than groebner on p6_sc now.
-%
-% Revision 1.4  1999/02/24 08:44:28  sturm
-% Added gb_searchinlist. Successfully computes gb({x*y+1,x*z+1}).
-%
-% Revision 1.3  1999/02/24 08:36:13  sturm
-% Added gb_vdpvordopt including patch code. Fixed calls to tt.
-%
-% Revision 1.2  1999/02/23 16:43:27  sturm
-% Checked and corrected by AD. Compiles now.
-%
-% Revision 1.1  1999/02/23 16:41:38  sturm
-% Initial check-in. Obtained from REDUCE 3.6 Groebner by selecting and
-% reformatting.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 lisp <<
    fluid '(gb_rcsid!* gb_copyright!*);
-   gb_rcsid!* := "$Id: gb.red,v 1.40 2007/12/16 10:49:14 sturm Exp $";
-   gb_copyright!* := "Copyright (c) 1999-2003 by A. Dolzmann and T. Sturm"
+   gb_rcsid!* := "$Id$";
+   gb_copyright!* := "Copyright (c) 1999-2009 A. Dolzmann and T. Sturm"
 >>;
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
 
 module gb;
 
@@ -215,11 +53,11 @@ off1 'cgbcheckg;
 
 !*cgbsloppy := T;
 !*cgbsugar := nil;  % Indicator for using sugar property of VDP's.
-                    % This is on for gb computation and off for using
-                    % the code from external procedures. Do not
-                    % intermix this with !*gsugar from the groebner
-                    % package. if !*cgbsugar is nil then the all
-                    % sugars are treated as zero.
+		    % This is on for gb computation and off for using
+		    % the code from external procedures. Do not
+		    % intermix this with !*gsugar from the groebner
+		    % package. if !*cgbsugar is nil then the all
+		    % sugars are treated as zero.
 
 switch cgbupdb;
 fluid '(cgb_updbcount!* cgb_updbcountp!* cgb_updbcalls!* !*cgbupdb);
@@ -258,7 +96,7 @@ cgb_mincontred!* := 20;  % originally 10
 macro procedure gb_mkinterface(argl);
    begin
       scalar a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,modes,
-         args,bname,len,sm,prgn,ami,smi,psval,postfix;
+	 args,bname,len,sm,prgn,ami,smi,psval,postfix;
       bname := eval nth(argl,2);
       a2sl1 := eval nth(argl,3);
       a2sl2 := eval nth(argl,4);
@@ -268,29 +106,29 @@ macro procedure gb_mkinterface(argl);
       s2s := eval nth(argl,8);
       s := eval nth(argl,9);
       postfix := eval nth(argl,10);
-      modes := eval nth(argl,11);
+      modes := eval nth(argl,11);      
       len := length a2sl1;
       args := for i := 1:len+3 collect mkid('a,i);
       sm := intern compress append('(!g !b !_),explode bname);
       % Define the symbolic mode interface
       if (null modes or modes eq 'sm) then <<
-               smi := intern compress nconc(explode sm,explode postfix);
-               prgn := {'put,mkquote smi,''number!-of!-args,len+3} . prgn;
-               prgn := {'de,smi,args,{'gb_interface!$,mkquote sm, mkquote a2sl1,
-            mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote s2a,mkquote s2s,
-            mkquote s,T,'list . args}} . prgn
+      	 smi := intern compress nconc(explode sm,explode postfix);      
+      	 prgn := {'put,mkquote smi,''number!-of!-args,len+3} . prgn;
+      	 prgn := {'de,smi,args,{'gb_interface!$,mkquote sm, mkquote a2sl1,
+	    mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote s2a,mkquote s2s,
+	    mkquote s,T,'list . args}} . prgn
       >>;
       if (null modes or modes eq 'am) then <<
-               % Define the algebraic mode interface
-               ami := bname;
-               %      ami := intern compress append('(!g !b),explode bname);
-               psval := intern compress nconc(explode ami,'(!! !$));
-               prgn := {'put,mkquote ami,''psopfn,mkquote psval} . prgn;
-               prgn := {'put,mkquote psval,''number!-of!-args,1} . prgn;
-               prgn := {'put,mkquote psval,''cleanupfn,''gb_cleanup} . prgn;
-               prgn := {'de,psval,'(argl),{'gb_interface!$,mkquote sm, mkquote a2sl1,
-            mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote s2a, mkquote s2s,
-            mkquote s,nil,'argl}} . prgn
+      	 % Define the algebraic mode interface      
+      	 ami := bname;
+      	 %      ami := intern compress append('(!g !b),explode bname);
+      	 psval := intern compress nconc(explode ami,'(!! !$));
+      	 prgn := {'put,mkquote ami,''psopfn,mkquote psval} . prgn;
+      	 prgn := {'put,mkquote psval,''number!-of!-args,1} . prgn;
+      	 prgn := {'put,mkquote psval,''cleanupfn,''gb_cleanup} . prgn;
+      	 prgn := {'de,psval,'(argl),{'gb_interface!$,mkquote sm, mkquote a2sl1,
+	    mkquote a2sl2,mkquote defl,mkquote xvfn,mkquote s2a, mkquote s2s,
+	    mkquote s,nil,'argl}} . prgn
       >>;
       return 'progn . prgn
    end;
@@ -313,9 +151,9 @@ procedure gb_a2s!-psys(l);
    % [l] is an AMPSYS. Returns an FPSYS.
    begin scalar w,resl;
       for each j in getrlist reval l do <<
-               w := numr simp j;
-         if w and not(w member resl) then
-            resl := w . resl
+      	 w := numr simp j;
+	 if w and not(w member resl) then
+	    resl := w . resl
       >>;
       return sort(resl,'ordp)
    end;
@@ -334,7 +172,7 @@ procedure gb_s2a!-gbx(l);
    % side effet the global variable gltb provided !*gltbasis is on.
    <<
       if !*gltbasis then
-               gltb := gb_gb2gltb l;
+      	 gltb := gb_gb2gltb l;      
       gb_s2a!-gb l
    >>;
 
@@ -391,26 +229,26 @@ procedure gb_interface!$(fname,a2sl1,a2sl2,defl,xvfn,s2a,s2s,s,smp,argl);
    % of argument processing is done with the results of the first one.
    begin scalar w,vl,nargl,oenv,m,c,x;
       if not smp then <<
-         nargl := gb_am!-pargl(fname,a2sl1,argl,defl);
-         vl := apply(xvfn,append(nargl,{td_vars()}));
-         oenv := vdp_init(car vl,td_sortmode(),td_sortextension());
-               gvarslast := 'list . car vl;
+	 nargl := gb_am!-pargl(fname,a2sl1,argl,defl);
+	 vl := apply(xvfn,append(nargl,{td_vars()}));
+	 oenv := vdp_init(car vl,td_sortmode(),td_sortextension());
+      	 gvarslast := 'list . car vl;      
       >> else <<
-         w := gb_sm!-pargl(argl);
-         nargl := car w;
-         m := cadr w;
-         c := caddr w;
-         x := cadddr w;
-         vl := apply(xvfn,append(nargl,{m}));
-         oenv := vdp_init(car vl,c,x);
-      >>;
+	 w := gb_sm!-pargl(argl);
+	 nargl := car w;
+	 m := cadr w;
+	 c := caddr w;
+	 x := cadddr w;
+	 vl := apply(xvfn,append(nargl,{m}));
+	 oenv := vdp_init(car vl,c,x);	       
+      >>;	    
       w := errorset({'gb_interface1!$,
-         mkquote fname,mkquote a2sl2,mkquote s2a,mkquote s2s,mkquote s,
-         mkquote smp,mkquote argl, mkquote nargl,mkquote car vl,
-         mkquote cdr vl},T,!*backtrace);
+	 mkquote fname,mkquote a2sl2,mkquote s2a,mkquote s2s,mkquote s,
+	 mkquote smp,mkquote argl, mkquote nargl,mkquote car vl,
+	 mkquote cdr vl},T,!*backtrace);
       vdp_cleanup oenv;
       if errorp w then
-               rederr {"Error during ",fname};
+      	 rederr {"Error during ",fname};
       return car w
    end;
 
@@ -434,18 +272,18 @@ procedure gb_am!-pargl(fname,a2sl1,argl,defl);
       l2 := length a2sl1;
       l3 := l2 - length defl;
       if l1 < l3 or l1 > l2 then
-         rederr {fname,"called with",l1,"arguments instead of",l3,"-",l2};
+	 rederr {fname,"called with",l1,"arguments instead of",l3,"-",l2};
       scargl := argl;
       scdefl := defl;
       nargl := for each x in a2sl1 collect <<
-         if scargl then <<
-            w := car scargl;
-            scargl := cdr scargl
-         >> else <<
-            w := car scdefl;
-            scdefl := cdr scdefl
-         >>;
-         apply(x,{w})
+	 if scargl then <<
+	    w := car scargl;
+	    scargl := cdr scargl
+	 >> else <<
+	    w := car scdefl;
+	    scdefl := cdr scdefl
+	 >>;
+	 apply(x,{w})
       >>;
       return nargl
    end;
@@ -454,16 +292,16 @@ procedure gb_interface1!$(fname,a2sl2,s2a,s2s,s,smp,argl,nargl,m,p);
    begin scalar w,pl;
       pl := if s then nargl else argl;
       argl := for each x in a2sl2 collect <<
-         w := car pl;
-         pl := cdr pl;
-         apply(x,{w})
+	 w := car pl;
+	 pl := cdr pl;
+	 apply(x,{w})
       >>;
 %      w := apply(fname,nconc(argl,{m,p}));
       w := apply(fname,argl);
       w := if smp then
-         apply(s2s,{w})
+	 apply(s2s,{w})
       else
-               apply(s2a,{w});
+      	 apply(s2a,{w});
       return w
    end;
 
@@ -482,20 +320,20 @@ procedure gb_domainchk();
    % GB computations.
    if not memq(dmode!*,'(nil)) then
       rederr bldmsg("gb does not support domain: %w",get(dmode!*,'dname));
-
+      
 procedure gb_vars(l,vl);     %DROPPED: depend,rules,zero divisors.
    % Groebner bases variables. [l] is a list of SF's; [vl] is the list
    % of main variables. Returns a pair $(m . p)$ where $m$ and $p$ are
    % list of variables. $m$ is the list of used main variables and $p$
-   % is the list of used parameters.
+   % is the list of used parameters. 
    begin scalar w,m,p;
       for each f in l do
-         w := union(w,kernels f);
+	 w := union(w,kernels f);
       if vl then <<
-               m := gb_intersection(vl,w);
-               p := setdiff(w,vl)
+      	 m := gb_intersection(vl,w);
+      	 p := setdiff(w,vl)
       >> else
-         m := w;
+	 m := w;
       return gb_varsopt(l,m) . p
    end;
 
@@ -505,7 +343,7 @@ procedure gb_intersection(a,b);
    % in [b]. The order of the elements is the same as in [a].
    for each x in a join
       if x member b then
-         {x};
+	 {x};
 
 procedure gb_varsopt(l,vl);
    % Groebner bases variables optimize. [l] is a list of SF's; [vl] is
@@ -535,46 +373,46 @@ procedure gb_gbgsys(p);
 
 procedure gb_gb0(p,dummy);
    gb_gb p;
-
+   
 procedure gb_gb(p);
    begin scalar spac,p1,savetime,!*factor,!*exp,intvdpvars!*,!*gcd,!*ezgcd,
-         dip_vars!*,secondvalue!*,thirdvalue!*,cgb_gstat!*,!*cgbsugar;
+	 dip_vars!*,secondvalue!*,thirdvalue!*,cgb_gstat!*,!*cgbsugar;
       integer vdp_pcount!*,cgb_contcount!*,cgb_hcount!*,cgb_hzerocount!*,
-         cgb_tr1count!*,cgb_tr2count!*,cgb_tr3count!*,cgb_b4count!*,
-         cgb_strangecount!*,cgb_paircount!*,cgb_hfaccount!*,cgb_gcount!*,
-         cgb_gbcount!*,cgb_updbcount!*,cgb_updbcountp!*,cgb_updbcalls!*;
+	 cgb_tr1count!*,cgb_tr2count!*,cgb_tr3count!*,cgb_b4count!*,
+	 cgb_strangecount!*,cgb_paircount!*,cgb_hfaccount!*,cgb_gcount!*,
+	 cgb_gbcount!*,cgb_updbcount!*,cgb_updbcountp!*,cgb_updbcalls!*;
       !*exp := !*gcd := !*ezgcd := T;
       !*cgbsugar := T;
       if !*cgbstat then
-               savetime := time();
-      if !*cgbcheckg then
-               cgb_gstat!* := nil;
+      	 savetime := time();
+      if !*cgbcheckg then	 
+      	 cgb_gstat!* := nil;
       cgb_contcount!* := cgb_mincontred!*;
       if !*cgbstat then
-               spac := gctime();
+      	 spac := gctime();
       p1 := if !*cgbupdb then
-          gb_traverso!-sturm!-experimental p
+ 	 gb_traverso!-sturm!-experimental p
       else
-          gb_traverso p;
+ 	 gb_traverso p;
       if !*cgbstat then <<
-         ioto_tprin2t "Statistics for GB computation:";
-         ioto_prin2t {"Time: ",time() - savetime," ms plus GC time: ",
-            gctime() - spac," ms"};
-         ioto_prin2t {"H-polynomials total: ",cgb_hcount!*};
-         ioto_prin2t {"H-polynomials zero: ",cgb_hzerocount!*};
-         if !*cgbcounthf then
-            ioto_prin2t {"H-polynomials reducible: ",cgb_hfaccount!*};
-         if !*cgbcheckg then
-            ioto_prin2t {"H-polynomials gaussible: ",cgb_gcount!*,
-               " ",cgb_gstat!*};
-         ioto_prin2t {"Crit Tr1 hits: ",cgb_tr1count!*};
-         ioto_prin2t {"Crit B4 hits: ",cgb_b4count!*," (Buchberger 1)"};
-         ioto_prin2t {"Crit Tr2 hits: ",cgb_tr2count!*};
-         ioto_prin2t {"Crit Tr3 hits: ",cgb_tr3count!*};
-         if !*cgbupdb then
-            ioto_prin2t {"updbase: calls ",cgb_updbcalls!*,", del ",
-               cgb_updbcountp!*,"/",cgb_updbcount!*};
-         ioto_prin2t {"Strange reductions: ",cgb_strangecount!*}
+	 ioto_tprin2t "Statistics for GB computation:";
+	 ioto_prin2t {"Time: ",time() - savetime," ms plus GC time: ",
+	    gctime() - spac," ms"};
+	 ioto_prin2t {"H-polynomials total: ",cgb_hcount!*};
+	 ioto_prin2t {"H-polynomials zero: ",cgb_hzerocount!*};
+	 if !*cgbcounthf then
+	    ioto_prin2t {"H-polynomials reducible: ",cgb_hfaccount!*};
+	 if !*cgbcheckg then
+	    ioto_prin2t {"H-polynomials gaussible: ",cgb_gcount!*,
+	       " ",cgb_gstat!*};
+	 ioto_prin2t {"Crit Tr1 hits: ",cgb_tr1count!*};
+	 ioto_prin2t {"Crit B4 hits: ",cgb_b4count!*," (Buchberger 1)"};
+	 ioto_prin2t {"Crit Tr2 hits: ",cgb_tr2count!*};
+	 ioto_prin2t {"Crit Tr3 hits: ",cgb_tr3count!*};
+	 if !*cgbupdb then
+	    ioto_prin2t {"updbase: calls ",cgb_updbcalls!*,", del ",
+	       cgb_updbcountp!*,"/",cgb_updbcount!*};
+	 ioto_prin2t {"Strange reductions: ",cgb_strangecount!*}
       >>;
       return p1
    end;
@@ -582,40 +420,40 @@ procedure gb_gb(p);
 procedure gb_traverso!-sturm!-experimental(g0);
    begin scalar gall,g,d,s,h,p;
       g0 := for each fj in g0 join
-         if not vdp_zero!? fj then
-            {vdp_setsugar(vdp_enumerate vdp_simpcont fj,vdp_tdeg fj)};
+	 if not vdp_zero!? fj then
+	    {vdp_setsugar(vdp_enumerate vdp_simpcont fj,vdp_tdeg fj)};
       for each h in g0 do <<  % create initial critical pairs
-         p := {nil,h,h};
-               h := gb_enumerate h;
-               d := gb_traverso!-pairlist(h,g,d);
-         g := nconc(g,{h});
-         gall := nconc(gall,{h});
+	 p := {nil,h,h};
+      	 h := gb_enumerate h;
+      	 d := gb_traverso!-pairlist(h,g,d);
+	 g := nconc(g,{h});
+	 gall := nconc(gall,{h});
       >>;
       while d do <<  % critical pairs left
-         if !*cgbverbose then <<
-            ioto_prin2 {"[",cgb_paircount!*,"] "};
-            cgb_paircount!* := cgb_paircount!* #- 1
-         >>;
-         p := car d;
-         d := cdr d;
-         s := gb_spolynomial(p);
-         h := gb_simpcontnormalform gb_normalform(s,gall);
-         cgb_hcount!* := cgb_hcount!* #+ 1;
-         if vdp_zero!? h then <<
-            cgb_hzerocount!* := cgb_hzerocount!* #+ 1;
-         >> else if ev_zero!? vdp_evlmon h then <<  % base 1 found
-            h := gb_enumerate h;
-            d := nil;
-            g := {h}
-         >> else <<
-            if !*cgbcounthf then
-               if cddr fctrf vdp_2f h then
-                  cgb_hfaccount!* := cgb_hfaccount!* #+ 1;
-                  h := gb_enumerate h;
-                  d := gb_traverso!-pairlist(h,g,d);
-                  gall := gb_updbase(gall,h);
-                  g := nconc(g,{h})
-         >>
+	 if !*cgbverbose then <<
+	    ioto_prin2 {"[",cgb_paircount!*,"] "};
+	    cgb_paircount!* := cgb_paircount!* #- 1
+	 >>;
+	 p := car d;
+	 d := cdr d;
+	 s := gb_spolynomial(p);
+	 h := gb_simpcontnormalform gb_normalform(s,gall);
+	 cgb_hcount!* := cgb_hcount!* #+ 1;
+	 if vdp_zero!? h then <<
+	    cgb_hzerocount!* := cgb_hzerocount!* #+ 1;
+	 >> else if ev_zero!? vdp_evlmon h then <<  % base 1 found
+	    h := gb_enumerate h;
+	    d := nil;
+	    g := {h}
+	 >> else <<
+	    if !*cgbcounthf then
+	       if cddr fctrf vdp_2f h then
+		  cgb_hfaccount!* := cgb_hfaccount!* #+ 1;
+      	    h := gb_enumerate h;
+      	    d := gb_traverso!-pairlist(h,g,d);
+      	    gall := gb_updbase(gall,h);
+      	    g := nconc(g,{h})
+	 >>
       >>;
       return gb_traverso!-final g
    end;
@@ -623,51 +461,51 @@ procedure gb_traverso!-sturm!-experimental(g0);
 procedure gb_traverso(g0);
    begin scalar g,d,s,h,p,gstat;
       g0 := for each fj in g0 join
-         if not vdp_zero!? fj then
-            {vdp_setsugar(vdp_enumerate vdp_simpcont fj,vdp_tdeg fj)};
+	 if not vdp_zero!? fj then
+	    {vdp_setsugar(vdp_enumerate vdp_simpcont fj,vdp_tdeg fj)};
       for each h in g0 do <<  % create initial critical pairs
-         p := {nil,h,h};
-               h := gb_enumerate h;
-               d := gb_traverso!-pairlist(h,g,d);
-         g := nconc(g,{h})
+	 p := {nil,h,h};
+      	 h := gb_enumerate h;
+      	 d := gb_traverso!-pairlist(h,g,d);
+	 g := nconc(g,{h})
       >>;
       if !*cgbverbose then
-         cgb_gbcount!* := length g;
+	 cgb_gbcount!* := length g;
       while d do <<  % critical pairs left
-         if !*cgbverbose then <<
-            ioto_prin2 {"[",cgb_paircount!*,"] "};
-            cgb_paircount!* := cgb_paircount!* #- 1
-         >>;
-         p := car d;
-         d := cdr d;
-         s := gb_spolynomial(p);
-         h := gb_simpcontnormalform gb_normalform(s,g);
-         if !*cgbstat then
-            cgb_hcount!* := cgb_hcount!* #+ 1;
-         if vdp_zero!? h then
-            (if !*cgbstat then
-               cgb_hzerocount!* := cgb_hzerocount!* #+ 1)
-         else if vdp_unit!? h then <<
-            h := gb_enumerate h;
-            d := nil;
-            g := {h}
-         >> else <<
-            if !*cgbcounthf then
-               if cddr fctrf vdp_2f h then
-                  cgb_hfaccount!* := cgb_hfaccount!* #+ 1;
-            if !*cgbcheckg then <<
-               gstat := gb_chkgauss vdp_poly h;
-               if 1 member gstat then <<
-                  cgb_gcount!* := cgb_gcount!* #+ 1;
-                         cgb_gstat!* := gb_chkgauss!-stat2vl gstat . cgb_gstat!*
-               >>
-            >>;
-                  h := gb_enumerate h;
-                  d := gb_traverso!-pairlist(h,g,d);
-                  g := nconc(g,{h});
-            if !*cgbverbose then
-               cgb_gbcount!* := cgb_gbcount!* #+ 1
-         >>
+	 if !*cgbverbose then <<
+	    ioto_prin2 {"[",cgb_paircount!*,"] "};
+	    cgb_paircount!* := cgb_paircount!* #- 1
+	 >>;
+	 p := car d;
+	 d := cdr d;
+	 s := gb_spolynomial(p);
+	 h := gb_simpcontnormalform gb_normalform(s,g);
+	 if !*cgbstat then
+	    cgb_hcount!* := cgb_hcount!* #+ 1;
+	 if vdp_zero!? h then
+	    (if !*cgbstat then
+	       cgb_hzerocount!* := cgb_hzerocount!* #+ 1)	    
+	 else if vdp_unit!? h then <<
+	    h := gb_enumerate h;
+	    d := nil;
+	    g := {h}
+	 >> else <<
+	    if !*cgbcounthf then
+	       if cddr fctrf vdp_2f h then
+		  cgb_hfaccount!* := cgb_hfaccount!* #+ 1;
+	    if !*cgbcheckg then <<
+	       gstat := gb_chkgauss vdp_poly h;
+	       if 1 member gstat then <<
+		  cgb_gcount!* := cgb_gcount!* #+ 1;
+	       	  cgb_gstat!* := gb_chkgauss!-stat2vl gstat . cgb_gstat!*
+	       >>
+	    >>;
+      	    h := gb_enumerate h;
+      	    d := gb_traverso!-pairlist(h,g,d);
+      	    g := nconc(g,{h});
+	    if !*cgbverbose then
+	       cgb_gbcount!* := cgb_gbcount!* #+ 1
+	 >>
       >>;
       return gb_traverso!-final g
    end;
@@ -675,22 +513,22 @@ procedure gb_traverso(g0);
 procedure gb_updbase(g,h);
    begin scalar hev,oc;
       if !*cgbstat then
-               oc := cgb_updbcountp!*;
+      	 oc := cgb_updbcountp!*;
       hev := vdp_evlmon h;
       g := for each p in g join
-               if not ev_divides!?(hev,vdp_evlmon p) then
-             {p}
-         else <<
-            if !*cgbverbose then
-               ioto_prin2 "#";
-            if !*cgbstat then
-               cgb_updbcountp!* := cgb_updbcountp!* #+ 1;
-            nil
-         >>;
+      	 if not ev_divides!?(hev,vdp_evlmon p) then
+ 	    {p}
+	 else <<
+	    if !*cgbverbose then
+	       ioto_prin2 "#";
+	    if !*cgbstat then
+	       cgb_updbcountp!* := cgb_updbcountp!* #+ 1;
+	    nil
+	 >>;
       if !*cgbstat then <<
-               if not (oc #= cgb_updbcountp!*) then
-            cgb_updbcount!* := cgb_updbcount!* #+ 1;
-         cgb_updbcalls!* := cgb_updbcalls!* + 1
+      	 if not (oc #= cgb_updbcountp!*) then
+	    cgb_updbcount!* := cgb_updbcount!* #+ 1;
+	 cgb_updbcalls!* := cgb_updbcalls!* + 1
       >>;
       return nconc(g,{h})
    end;
@@ -700,8 +538,8 @@ procedure gb_chkgauss(p);
    begin scalar stat;
       stat := for each x in dip_vars!* collect 0;  %TODO: Reference to global var
       while p do <<
-         stat := gb_chkgauss1(dip_evlmon p,stat);
-            p := dip_mred p
+	 stat := gb_chkgauss1(dip_evlmon p,stat);
+   	 p := dip_mred p
       >>;
       return stat
    end;
@@ -710,23 +548,23 @@ procedure gb_chkgauss1(ev,stat);
    begin scalar nstat,e,s,td;
       td := ev_tdeg ev;
       if td = 0 then
-         return stat;
+	 return stat;
       td := if td #= 1 then 1 else -1;
       while ev do <<
-         e := car ev;
-         ev := cdr ev;
-         s := car stat;
-         stat := cdr stat;
-         if e #=0 then
-            nstat := s . nstat
-         else if e #> 1 or s #= -1 then
-            nstat := (-1) . nstat
-         else if e #= 1 and s #= 0 then
-            nstat := td . nstat
-         else if s #=0 and e #=0 then
-            nstat := 0 . nstat
-         else
-            rederr "ich sehe es anders"
+	 e := car ev;
+	 ev := cdr ev;
+	 s := car stat;
+	 stat := cdr stat;
+	 if e #=0 then
+	    nstat := s . nstat
+	 else if e #> 1 or s #= -1 then
+	    nstat := (-1) . nstat
+	 else if e #= 1 and s #= 0 then
+	    nstat := td . nstat
+	 else if s #=0 and e #=0 then
+	    nstat := 0 . nstat
+	 else
+	    rederr "ich sehe es anders"
       >>;
       return reversip nstat
    end;
@@ -735,10 +573,10 @@ procedure gb_chkgauss!-stat2vl(gstat);
    begin scalar scdv,r;
       scdv := dip_vars!*;
       while gstat do <<
-         if eqcar(gstat,1) then
-             r := car scdv . r;
-         gstat := cdr gstat;
-         scdv := cdr scdv
+	 if eqcar(gstat,1) then
+ 	    r := car scdv . r;
+	 gstat := cdr gstat;
+	 scdv := cdr scdv
       >>;
       return reversip r
    end;
@@ -751,7 +589,7 @@ procedure gb_enumerate(f);
    else <<
       vdp_condense f;
       if vdp_number f #= 0 then
-         f := vdp_setnumber(f,vdp_pcount!* := vdp_pcount!* #+ 1);
+	 f := vdp_setnumber(f,vdp_pcount!* := vdp_pcount!* #+ 1);
       f
    >>;
 
@@ -762,48 +600,48 @@ procedure gb_traverso!-pairlist(gk,g,d);
       % build new pair list:
       ev := vdp_evlmon gk;
       for each p in g do
-              if not gb_buchcrit4t(ev,vdp_evlmon p) then <<
-            if !*cgbstat then
-               cgb_b4count!* := cgb_b4count!* #+ 1;
-             r := ev_lcm(ev,vdp_evlmon p) . r
-                >> else
-             n := gb_makepair(p,gk) . n;
+     	 if not gb_buchcrit4t(ev,vdp_evlmon p) then <<
+	    if !*cgbstat then
+	       cgb_b4count!* := cgb_b4count!* #+ 1;
+ 	    r := ev_lcm(ev,vdp_evlmon p) . r
+       	 >> else
+ 	    n := gb_makepair(p,gk) . n;
       n := gb_tr2crit(n,r);
       n := gb_cplistsort(n,!*cgbsloppy);
       n := gb_tr3crit n;
       if !*cgbverbose and n then <<
-         cgb_paircount!* := cgb_paircount!* #+ length n;
-         ioto_cterpri();
-         ioto_prin2 {"(",cgb_gbcount!*,") "}
+	 cgb_paircount!* := cgb_paircount!* #+ length n;
+	 ioto_cterpri();
+	 ioto_prin2 {"(",cgb_gbcount!*,") "}
       >>;
       return gb_cplistmerge(d,reversip n)
    end;
 
 procedure gb_tr2crit(n,r);
    % delete equivalents to coprime lcm
-   for each p in n join
+   for each p in n join 
       if ev_member(car p,r) then <<
-         if !*cgbstat then
-            cgb_tr2count!* := cgb_tr2count!* #+ 1;
-         nil
+	 if !*cgbstat then
+	    cgb_tr2count!* := cgb_tr2count!* #+ 1;
+	 nil
       >> else
-         {p};
+	 {p};
 
 procedure gb_tr3crit(n);
    begin scalar newn,scannewn,q;
       for each p in n do <<
-         scannewn := newn;
-         q := nil;
-          while scannewn do
-            if ev_divides!?(caar scannewn,car p) then <<
-               q := t;
-               scannewn := nil;
-               if !*cgbstat then
-                         cgb_tr3count!* := cgb_tr3count!* #+ 1
-            >> else
-               scannewn := cdr scannewn;
-         if not q then
-            newn := gb_cplistsortin(p,newn,nil)
+	 scannewn := newn;
+	 q := nil;
+ 	 while scannewn do
+	    if ev_divides!?(caar scannewn,car p) then <<
+	       q := t;
+	       scannewn := nil;
+	       if !*cgbstat then
+	       	  cgb_tr3count!* := cgb_tr3count!* #+ 1
+	    >> else
+	       scannewn := cdr scannewn;
+	 if not q then
+	    newn := gb_cplistsortin(p,newn,nil)
       >>;
       return newn
    end;
@@ -812,13 +650,13 @@ procedure gb_traverso!-pairs!-discard1(gk,d);
    % crit B. Delete triange relations.
    for each pij in d join
       if gb_traverso!-trianglep(cadr pij,caddr pij,gk,car pij) then <<
-         if !*cgbstat then
-            cgb_tr1count!* := cgb_tr1count!* #+ 1;
-         if !*cgbverbose then
-            cgb_paircount!* := cgb_paircount!* #- 1;
-         nil
+	 if !*cgbstat then
+	    cgb_tr1count!* := cgb_tr1count!* #+ 1;
+	 if !*cgbverbose then
+	    cgb_paircount!* := cgb_paircount!* #- 1;
+	 nil
       >> else
-         {pij};
+	 {pij};
 
 procedure gb_traverso!-trianglep(gi,gj,gk,tij);
    ev_sdivp(gb_tt(gi,gk),tij) and ev_sdivp(gb_tt(gj,gk),tij);
@@ -827,17 +665,17 @@ procedure gb_traverso!-final(g);
    % Final reduction and sorting.
    for each rg on vdp_lsort g join
       if not gb_searchinlist(vdp_evlmon car rg,cdr rg) then
-         {vdp_remplist gb_simpcontnormalform gb_normalform(car rg,cdr rg)};
+	 {vdp_remplist gb_simpcontnormalform gb_normalform(car rg,cdr rg)};
 
 procedure gb_buchcrit4t(e1,e2);
    % nonconstructive test of lcm(e1,e2) = e1 + e2 equivalent: no
    % matches of nonzero elements.
    not ev_disjointp(e1,e2);
-
+   
 procedure gb_cplistsort(g,sloppy);
    begin scalar gg;
       for each p in g do
-          gg := gb_cplistsortin(p,gg,sloppy);
+ 	 gg := gb_cplistsortin(p,gg,sloppy);
       return gg
    end;
 
@@ -883,15 +721,15 @@ procedure gb_cplistmerge(pl1,pl2);
    % groebcplistmerge(pl1,pl2) returns the merged list.
    begin scalar cpl1,cpl2;
       if null pl1 then
-          return pl2;
+ 	 return pl2;
       if null pl2 then
-          return pl1;
+ 	 return pl1;
       cpl1 := car pl1;
       cpl2 := car pl2;
       return if gb_cpcompless!?(cpl1,cpl2,nil) then
-          cpl1 . gb_cplistmerge(cdr pl1,pl2)
+ 	 cpl1 . gb_cplistmerge(cdr pl1,pl2)
       else
-          cpl2 . gb_cplistmerge(pl1,cdr pl2)
+ 	 cpl2 . gb_cplistmerge(pl1,cdr pl2)
    end;
 
 procedure gb_makepair(f,h);
@@ -909,10 +747,10 @@ procedure gb_spolynomial(pr);
       p2 := caddr pr;
       s := gb_spolynomial1(p1,p2);   % TODO: Switch for strange reduction
       if vdp_zero!? s or vdp_unit!? s then
-          return s;
+ 	 return s;
 %      return vdp_setsugar(gb_strange!-reduction(s,p1,p2),cadddr pr)
       return gb_strange!-reduction(s,p1,p2)  % TODO: normal suger for
-                                             % special cases.
+					     % special cases. 
    end;
 
 procedure gb_spolynomial1(p1,p2);
@@ -923,17 +761,17 @@ procedure gb_spolynomial1(p1,p2);
       rp1 := vdp_mred p1;
       rp2 := vdp_mred p2;
       if vdp_zero!? rp1 and vdp_zero!? rp2 then
-          return rp1;
+ 	 return rp1;
       if vdp_zero!? rp1 then
-         return vdp_prod(rp2,vdp_fmon(bc_a2bc 1,ev_dif(ep,ep2)));
+	 return vdp_prod(rp2,vdp_fmon(bc_a2bc 1,ev_dif(ep,ep2)));
       if vdp_zero!? rp2 then
-         return vdp_prod(rp1,vdp_fmon(bc_a2bc 1,ev_dif(ep,ep1)));
+	 return vdp_prod(rp1,vdp_fmon(bc_a2bc 1,ev_dif(ep,ep1)));
       db1 := vdp_lbc p1;
       db2 := vdp_lbc p2;
       x := bc_gcd(db1,db2);
       if not bc_one!? x then <<
-         db1 := bc_quot(db1,x);
-         db2 := bc_quot(db2,x)
+	 db1 := bc_quot(db1,x);
+	 db2 := bc_quot(db2,x)
       >>;
       return vdp_ilcomb(rp2,db1,ev_dif(ep,ep2),rp1,bc_neg db2,ev_dif(ep,ep1))
    end;
@@ -946,16 +784,16 @@ procedure gb_strange!-reduction(s,p1,p2);
       tp1 := vdp_evlmon p1;
       tp2 := vdp_evlmon p2;
       c := T; while c and not vdp_zero!? s do <<
-         ts := vdp_evlmon s;
-         if gb_buch!-ev_divides!?(tp2,ts) then
-            s := gb_reduceonestepint(s,vdp_zero(),vdp_lbc s,ts,p2)
-         else if gb_buch!-ev_divides!?(tp1,ts) then
-            s := gb_reduceonestepint(s,vdp_zero(),vdp_lbc s,ts,p1)
-         else
-            c := nil
+	 ts := vdp_evlmon s;
+	 if gb_buch!-ev_divides!?(tp2,ts) then
+	    s := gb_reduceonestepint(s,vdp_zero(),vdp_lbc s,ts,p2)
+	 else if gb_buch!-ev_divides!?(tp1,ts) then
+	    s := gb_reduceonestepint(s,vdp_zero(),vdp_lbc s,ts,p1)
+	 else
+	    c := nil
       >>;
       if !*cgbstat and not (s eq saves) then
-         cgb_strangecount!* := cgb_strangecount!* #+ 1;
+	 cgb_strangecount!* := cgb_strangecount!* #+ 1;
       return s
    end;
 
@@ -972,29 +810,29 @@ procedure gb_normalform(f,g);
       fold := f;
       f1 := vdp_setsugar(vdp_zero(),vdp_sugar f);
       while not vdp_zero!? f do <<
-         vev := vdp_evlmon f;
-          c := vdp_lbc f;
-         divisor := gb_searchinlist(vev,g);
-         if divisor then <<
-            tai := T;
-            if vdp_monp divisor then
-               f := vdp_cancelmev(f,vdp_evlmon divisor)
-            else <<
-               f := gb_reduceonestepint(f,f1,c,vev,divisor);
-               f1 := secondvalue!*;
-               if !*cgbcontred then <<
-                         f := gb_adtssimpcont(f,f1,n);
-                         f1 := secondvalue!*;
-                         n := thirdvalue!*
-               >>
-            >>
-         >> else if !*cgbfullred then <<
-            f := gb_shift(f,f1);
-            f1 := secondvalue!*
-         >> else <<
-            f1 := vdp_sum(f1,f);
-             f := vdp_zero()
-         >>
+	 vev := vdp_evlmon f;
+ 	 c := vdp_lbc f;
+	 divisor := gb_searchinlist(vev,g);
+	 if divisor then <<
+	    tai := T;
+	    if vdp_monp divisor then
+	       f := vdp_cancelmev(f,vdp_evlmon divisor)
+	    else <<
+	       f := gb_reduceonestepint(f,f1,c,vev,divisor);
+	       f1 := secondvalue!*;
+	       if !*cgbcontred then <<
+	       	  f := gb_adtssimpcont(f,f1,n);
+	       	  f1 := secondvalue!*;
+	       	  n := thirdvalue!*
+	       >>
+	    >>
+	 >> else if !*cgbfullred then <<
+	    f := gb_shift(f,f1);
+	    f1 := secondvalue!*
+	 >> else <<
+	    f1 := vdp_sum(f1,f);
+ 	    f := vdp_zero()
+	 >>
       >>;
       return if tai then f1 else fold
    end;
@@ -1012,17 +850,17 @@ procedure gb_searchinlist(vev,g);
 procedure gb_adtssimpcont(f,f1,n);
    begin scalar f0;
       if vdp_zero!? f then <<
-               secondvalue!* := f1;
-               thirdvalue!* := 0;
-               return f
+      	 secondvalue!* := f1;
+      	 thirdvalue!* := 0;
+      	 return f
       >>;
       n := n + 1;
       if n #> cgb_contcount!* then <<
-               f0 := f;
-               f := gb_simpcont2(f,f1);
-               f1 := secondvalue!*;
-               gb_contentcontrol(f neq f0);
-         n := 0
+      	 f0 := f;
+      	 f := gb_simpcont2(f,f1);
+      	 f1 := secondvalue!*;
+      	 gb_contentcontrol(f neq f0);
+	 n := 0
       >>;
       secondvalue!* := f1;
       thirdvalue!* := n;
@@ -1035,18 +873,18 @@ procedure gb_simpcont2(f,f1);
    begin scalar c,s1,s2;
       c := vdp_content f;
       if bc_one!? bc_abs c then <<
-         secondvalue!* := f1;
-         return f
+	 secondvalue!* := f1;
+	 return f
       >>;
       s1 := vdp_sugar f;
       s2 := vdp_sugar f1;
       if not vdp_zero!? f1 then <<
-          c := vdp_content1(f1,c);
-         if bc_one!? bc_abs c then <<
-            secondvalue!* := f1;
-            return f
-               >>;
-         f1 := vdp_bcquot(f1,c)
+ 	 c := vdp_content1(f1,c);
+	 if bc_one!? bc_abs c then <<
+	    secondvalue!* := f1;
+	    return f
+      	 >>;
+	 f1 := vdp_bcquot(f1,c)
       >>;
       f := vdp_bcquot(f,c);
       vdp_setsugar(f,s1);
@@ -1060,11 +898,11 @@ procedure gb_contentcontrol(u);
    % update content reduction limit from u.
    <<
       cgb_contcount!* := if u then
-               ev_max!#(0,cgb_contcount!* #- 1)
+      	 ev_max!#(0,cgb_contcount!* #- 1)
       else
-               gb_min!#(cgb_mincontred!*,cgb_contcount!* #+ 1);
+      	 gb_min!#(cgb_mincontred!*,cgb_contcount!* #+ 1);
       if !*cgbverbose then
-         ioto_prin2 {"<",cgb_contcount!*,"> "}
+	 ioto_prin2 {"<",cgb_contcount!*,"> "}
    >>;
 
 procedure gb_min!#(a,b);
@@ -1089,9 +927,9 @@ procedure gb_reduceonestepint(f,f1,c,vev,g1);
    begin scalar vevcof,a,b,cg,x,rg1;
       rg1 := vdp_mred g1;
       if vdp_zero!? rg1 then <<  % g1 is monomial
-         f := vdp_mred f;
-         secondvalue!* := f1;
-         return f
+	 f := vdp_mred f;
+	 secondvalue!* := f1;
+	 return f
       >>;
       vevcof := ev_dif(vev,vdp_evlmon g1);  % nix lcm
       cg := vdp_lbc g1;
@@ -1100,7 +938,7 @@ procedure gb_reduceonestepint(f,f1,c,vev,g1);
       b := bc_quot(c,x);
       % multiply relevant parts of f and f1 by a (vbc)
       if not vdp_zero!? f1 then
-          f1 := vdp_bcprod(f1,a);
+ 	 f1 := vdp_bcprod(f1,a);
       f := vdp_ilcombr(vdp_mred f,a,rg1,bc_neg b,vevcof);
       secondvalue!*:= f1;
       return f
@@ -1121,21 +959,21 @@ procedure gb_vdpvordopt(w,vars);
       vars := sort(vars,'ordop);
       c := for each x in vars collect x . 0 . 0;
       for each poly in w do
-          gb_vdpvordopt1(poly,vars,c);
+ 	 gb_vdpvordopt1(poly,vars,c);
       c := sort(c,function gb_vdpvordopt2);
       intvdpvars!* := for each v in c collect car v;
       vars := gb_vdpvordopt31 intvdpvars!*;
       return vars
    end;
-
+ 
 procedure gb_vdpvordopt31(u);
    begin scalar v,y;
       if null u then
-          return nil;
+ 	 return nil;
       v := for each x in u join <<
-          y := assoc(x,depl!*);
-         if null y or null xnp(cdr y,u) then
-             {x}
+ 	 y := assoc(x,depl!*);
+	 if null y or null xnp(cdr y,u) then
+ 	    {x}
       >>;
       return nconc(gb_vdpvordopt31 setdiff(u,v),v)
    end;
@@ -1153,10 +991,10 @@ procedure gb_vdpvordopt1(p,vl,c);
       pow := ldeg p;
       slot := assoc(var,c);
       if pow #> cadr slot then <<
-         rplaca(cdr slot,pow);
-          rplacd(cdr slot,n)
+	 rplaca(cdr slot,pow);
+ 	 rplacd(cdr slot,n)
       >> else
-         rplacd(cdr slot,n #+ cddr slot);
+	 rplacd(cdr slot,n #+ cddr slot);
       return n #+ gb_vdpvordopt1 (red p,vl,c)
    end;
 
@@ -1293,13 +1131,13 @@ procedure vdp_prod(d1,d2);
    end;
 
 procedure vdp_zero();
-   vdp_make('invalid,'invalid,nil);
+   vdp_make('invalid,'invalid,nil);   
 
 procedure vdp_mred(u);
    begin scalar r;
       r := dip_mred vdp_poly u;
       if null r then
-          return vdp_zero();
+ 	 return vdp_zero();
       r := vdp_make(dip_lbc r,dip_evlmon r,r);
       vdp_setsugar(r,vdp_sugar u);
       return r
@@ -1322,9 +1160,9 @@ procedure vdp_putprop(poly,prop,val);
       c := cdr cdddr poly;
       p := atsoc(prop,car c);
       if p then
-          rplacd(p,val)
+ 	 rplacd(p,val)
       else
-          rplaca(c,(prop . val) . car c);
+ 	 rplaca(c,(prop . val) . car c);
       return poly
    end;
 
@@ -1361,7 +1199,7 @@ procedure vdp_f2vdp(u);
    begin scalar dip;
       dip := dip_f2dip u;
       if null dip then
-         return vdp_zero();
+	 return vdp_zero();
       return vdp_make(dip_lbc dip,dip_evlmon dip,dip)
    end;
 
@@ -1377,7 +1215,7 @@ procedure vdp_simpcont(p);
    begin scalar q;
       q := vdp_poly p;
       if null q then
-          return p;
+ 	 return p;
       return vdp_fdip dip_simpcont q
    end;
 
@@ -1394,7 +1232,7 @@ procedure vdp_ilcomb(v1,c1,t1,v2,c2,t2);
    begin scalar r;
       r := vdp_fdip dip_ilcomb(vdp_poly v1,c1,t1,vdp_poly v2,c2,t2);
       vdp_setsugar(r,ev_max!#(
-         vdp_sugar v1 #+ ev_tdeg t1,vdp_sugar v2 #+ ev_tdeg t2));
+	 vdp_sugar v1 #+ ev_tdeg t1,vdp_sugar v2 #+ ev_tdeg t2));
       return r
    end;
 
@@ -1416,19 +1254,19 @@ procedure gb_reduce(f,g);
       fold := f;
       f1 := vdp_setsugar(vdp_zero(),vdp_sugar f);
       while not vdp_zero!? f do <<
-         vev := vdp_evlmon f;
-          c := vdp_lbc f;
-         divisor := gb_searchinlist(vev,g);
-         if divisor then <<
-            tai := T;
-            if vdp_monp divisor then
-               f := vdp_cancelmev(f,vdp_evlmon divisor)
-            else
-               f := gb_reduceonesteprat(f,c,vev,divisor);
-         >> else <<
-            f := gb_shift(f,f1);
-            f1 := secondvalue!*
-         >>
+	 vev := vdp_evlmon f;
+ 	 c := vdp_lbc f;
+	 divisor := gb_searchinlist(vev,g);
+	 if divisor then <<
+	    tai := T;
+	    if vdp_monp divisor then
+	       f := vdp_cancelmev(f,vdp_evlmon divisor)
+	    else
+	       f := gb_reduceonesteprat(f,c,vev,divisor);
+	 >> else <<
+	    f := gb_shift(f,f1);
+	    f1 := secondvalue!*
+	 >> 
       >>;
       return if tai then f1 else fold
    end;
@@ -1442,7 +1280,7 @@ procedure gb_reduceonesteprat(f,c,vev,g1);
    begin scalar b,rg1,vevcof;
       rg1 := vdp_mred g1;
       if vdp_zero!? rg1 then  % g1 is monomial
-         return vdp_mred f;
+	 return vdp_mred f; 
       b := bc_quot(c,vdp_lbc g1);
       vevcof := ev_dif(vev,vdp_evlmon g1);
       return vdp_ilcombr(vdp_mred f,bc_a2bc 1,rg1,bc_neg b,vevcof);

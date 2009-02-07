@@ -1,189 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: cgb.red,v 1.33 2007/12/05 14:57:02 sturm Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1999-2003 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
 % ----------------------------------------------------------------------
-% $Log: cgb.red,v $
-% Revision 1.33  2007/12/05 14:57:02  sturm
-% Fixed number of arguments in call to cgb_gsys in cgb_cgb.
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
 %
-% Revision 1.32  2007/10/05 13:41:32  sturm
-% New interfaces: Use switch cgbfaithful. Groebner system are now _not_
-% faithful by default. Procedure ggsys means _generic_
-% gsys now. Added optional theory argument to cgb computation. Removed
-% switch cgbgen.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% Revision 1.31  2006/06/28 08:27:38  sturm
-% I am now loading groebner because torder is used. This is necessecary
-% with CSL. With PSL it appears to be no problem even w/o RLDEFLANG, which
-% I do not really understand.
-%
-% Revision 1.30  2004/05/03 16:38:25  sturm
-% Hopefully clean solution for deadlock with CGB/REDLOG compilation.
-%
-% Revision 1.29  2003/10/21 10:24:36  gilch
-% Incorporated new module gbsc.
-%
-% Revision 1.28  2003/10/12 14:50:30  sturm
-% The bootstrapping technique via remflag('(load!-package),'eval); does
-% not work for CSL. Added corresponding preprocessing directive for now.
-% As a consequence, under CSL "redlog" has to be loaded explicitly when
-% using CGB.
-%
-% Revision 1.27  2003/07/17 06:30:38  dolzmann
-% Added new argument xvarl to Groebner system computation. xvarl is a list
-% of variables. If cgbgen is on gsys makes no assumptions on variaboles
-% in xvarl.
-%
-% Revision 1.26  2003/05/20 08:17:38  dolzmann
-% Moved cd_init to the beginning of cgb_interface!$.
-% This may be neccessary for the a2s procedures.
-%
-% Revision 1.25  2003/05/20 07:38:26  dolzmann
-% Do not load modules belongig to this package.
-%
-% Revision 1.24  2003/05/20 07:24:46  dolzmann
-% Moved macro *_mkinterface to the right place.
-%
-% Revision 1.23  2003/05/19 10:27:18  dolzmann
-% Adapted to the Groebner simplifier using gb.
-% Added interface generator as in gb.
-% Used interface generator for creating all interfaces.
-% Added first version of a wrapper for non-parametric input.
-% Removed old interface code.
-% Introduced initial theory for Groebner and green Groebner system
-% computation.
-%
-% Revision 1.22  2003/04/17 16:14:45  dolzmann
-% Added AM interface ggsys for computing green Groebner systems.
-% Added switch cgbsgreen. If it is on then the green Groebner system is
-% computed by computing a regular Groebner system and finally colorying
-% it green. If off (derfault) the green groebner system is computed by a
-% modified Groebner system computation.
-% Renamed cgb_greengsysf(u) to cgb_ggsysf(u);
-%
-% Revision 1.21  2003/04/16 09:43:18  dolzmann
-% Added (inefficient) procedure for computing green Groebner systems.
-% Added procedure for computing groebner systems for SFs.
-% Added and corrected some comments.
-%
-% Revision 1.20  1999/04/13 20:56:04  dolzmann
-% Added default setting for switches.
-%
-% Revision 1.19  1999/04/13 18:41:21  dolzmann
-% Dropped zeroes and duplicates in the input system.
-% Sort Groebner systems, conditions, and (partial) bases.
-% Removed switch gsugar.
-% Removed main variable list and parameter list arguments from the
-% entire call tree.
-% Renamed all gb switches and fluids to cgb.
-%
-% Revision 1.18  1999/04/11 11:31:37  dolzmann
-% Introduced wrappers for using the gb package in case of non-parametric
-% problems.
-%
-% Revision 1.17  1999/04/11 09:49:05  dolzmann
-% Completely rewritten the interface code for the AM and the standard
-% form interface.
-%
-% Revision 1.16  1999/04/07 15:54:16  dolzmann
-% Fixed a bug in cgb_gsys2cgb: Rewritten procedure cgb_rtgsys to handle
-% the case of no main variable.
-%
-% Revision 1.15  1999/04/07 12:37:00  dolzmann
-% Fixed a bug in cgp_monp.
-% Added comments to all procedures.
-%
-% Revision 1.14  1999/04/07 09:27:08  dolzmann
-% Added switch cgbgen and related code for computing only the generic branch.
-%
-% Revision 1.13  1999/04/06 12:13:59  dolzmann
-% Moved procedures dip_append, dip_cp, dip_dcont, and dip_dcont1 from
-% module dipto into module dip.
-% Moved procedures bc_mkat, bc_dcont, and bc_2d from module bcto into the
-% bc modules of the dip package.
-%
-% Revision 1.12  1999/04/05 09:16:46  sturm
-% Do not load Redlog during complilation.
-%
-% Revision 1.11  1999/04/05 09:06:09  sturm
-% Locally bind !*rlgsvb for calls to rl_gsd.
-%
-% Revision 1.10  1999/04/04 18:30:52  sturm
-% Provide a standard form interface cgb_cgbf to cgb's.
-%
-% Revision 1.9  1999/04/04 16:46:07  sturm
-% Changed cgb_groebnereval into cgb_gsys.
-% Added copyright and CVS fluids.
-% Added create!-package.
-%
-% Revision 1.8  1999/04/04 14:50:37  sturm
-% Implemented switch tdusetorder.
-%
-% Revision 1.7  1999/04/04 14:09:31  sturm
-% Moved dip_ilcomb and dip_ilcombr from cgb.red to dp.red.
-% Created vdp_ilcomb and vdp_ilcombr for gb.red.
-%
-% Revision 1.6  1999/04/04 12:20:00  dolzmann
-% The counter gb_hzerocount!* works now.
-% Fixed a bug in cgp_2scpl: It was possible that the condition becomes
-% inconsistent.
-%
-% Revision 1.5  1999/04/03 13:37:21  sturm
-% cgb_groebner1a runs under errorset.
-% Adapted to new dip_init/dip_cleanup.
-% Bind !*msg during rl_set.
-% Replaced cgb_surep and cgb_gsd by correct versions with non-renamed dipoly
-% fluids.
-%
-% Revision 1.4  1999/04/03 11:07:29  dolzmann
-% Fixed some bugs.
-% The test file runs without Reduce errors.
-%
-% Revision 1.3  1999/04/03 10:16:16  dolzmann
-% Code completely rewritten:
-% Introduced splitted polynomials, data types for the Groebner system,
-% for branches, and for critical pairs.
-% Procedure cgb_groebner1 sets the Redlog context for the condition
-% handling.
-%
-% Revision 1.2  1999/03/31 14:05:22  sturm
-% Simple examples run.
-% cgb_spolsc is mathematically not correct.
-%
-% Revision 1.1  1999/03/24 15:10:23  sturm
-% Initial check-in. Copy of gb.red 1.16.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 lisp <<
    fluid '(cgb_rcsid!* cgb_copyright!*);
-   cgb_rcsid!* := "$Id: cgb.red,v 1.33 2007/12/05 14:57:02 sturm Exp $";
-   cgb_copyright!* := "Copyright (c) 1999-2003 by A. Dolzmann and T. Sturm"
+   cgb_rcsid!* := "$Id$";
+   cgb_copyright!* := "Copyright (c) 1999-2009 A. Dolzmann and T. Sturm"
 >>;
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
 
 % TODO:
 % - Normalize green groebner systems: Detect branches containing a unit
@@ -193,6 +42,7 @@ lisp <<
 % - Computing relatively generic and local groebner systems.
 
 module cgb;
+% Comprehensive Groebner Bases.
 
 create!-package('(cgb gb dp gbsc),nil);
 

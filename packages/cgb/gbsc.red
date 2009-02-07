@@ -1,74 +1,38 @@
 % ----------------------------------------------------------------------
-% $Id: gbsc.red,v 1.2 2003/10/21 16:07:17 gilch Exp $
+% $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2003 Andreas Dolzmann and Lorenz Gilch
+% Copyright (c) 2003-2009 Andreas Dolzmann and Lorenz Gilch
 % ----------------------------------------------------------------------
-% $Log: gbsc.red,v $
-% Revision 1.2  2003/10/21 16:07:17  gilch
-% Added fluid declartions.
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
 %
-% Revision 1.1  2003/10/21 10:24:10  gilch
-% Moved from rlprojects/rrcqe to gb.
-% Changed module name to gbsc.
-% Changed accordingly prefix to gbsc.
-% Removed unused procedures betastat, rrcmatlcm, rrcmatgcd and
-% related switches.
-% Changed rlverbose to cgbverbose.
-% Removed switch rlrqverbose and used cgbverbose instead.
-% Removed switch rrcfast.
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
 %
-% Revision 1.7  2003/06/28 15:24:12  gilch
-% Added verbose messages.
-%
-% Revision 1.6  2003/06/25 13:07:59  gilch
-% Removed unnecessary local variables.
-%
-% Revision 1.5  2003/05/02 09:05:11  gilch
-% Changed prrc_strconst, so it can handle Groebner Bases, which needn't be
-% reduced.
-%
-% Revision 1.4  2003/04/29 14:41:12  gilch
-% Imported structure constants procedure from prrc and prrcbeta.
-%
-% Revision 1.3  2003/04/22 14:11:32  gilch
-% Fixed a bug in strconst_strconst.
-%
-% Revision 1.2  2003/04/22 14:10:15  gilch
-% Fixed a bug in strconst_reduce.
-%
-% Revision 1.1  2003/04/16 11:33:05  gilch
-% Initial check-in.
-%
-% ----------------------------------------------------------------------
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
 lisp <<
    fluid '(gbsc_rcsid!* gbsc_copyright!*);
-   gbsc_rcsid!* := "$Id: gbsc.red,v 1.2 2003/10/21 16:07:17 gilch Exp $";
-   gbsc_copyright!* := "Copyright (c) 2003 by A. Dolzmann and L. Gilch"
+   gbsc_rcsid!* := "$Id$";
+   gbsc_copyright!* := "Copyright (c) 2003-2009 A. Dolzmann and L. Gilch"
 >>;
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
-
 
 module gbsc;
 % Groebner bases combined structure constants.
@@ -101,7 +65,7 @@ procedure gbsc_strconst(rt,gb,n);
             for each v in rt do
                beta := gbsc_betaset(beta,u,v,
                   %negsq quotsq(gbsc_getlincombc(v,g),vdp_lbc g))
-                   gbsc_getlincombc(v,g))
+		  gbsc_getlincombc(v,g))
          >>
          else <<
             w := gbsc_goodfctr(u,rt);
@@ -250,7 +214,7 @@ procedure gbsc_betaset(beta,u,v,sc);
          return beta
       >>;
       if not assoc(v,cdr w) then
-               cdr w := (v . sc) . cdr w
+	 cdr w := (v . sc) . cdr w
       else
          rederr "bug in gbsc_betaset (gbsc_strconst)";
       return beta
