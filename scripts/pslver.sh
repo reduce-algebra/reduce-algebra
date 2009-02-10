@@ -95,7 +95,7 @@ EOF
 # How can I distingush macg4 from macg5?
   echo "macg4"
   ;;
-*i686*darwin*)
+*i386*darwin* | *i686*darwin*)
   echo "macintel"
   ;;
 *x86_64*darwin*)
