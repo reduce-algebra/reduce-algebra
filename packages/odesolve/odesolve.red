@@ -45,6 +45,12 @@ ODESolve!-subpackages!* := '(
 
 create!-package('odesolve . ODESolve!-subpackages!*, nil)$
 
+% Modification of the "deg" function.
+
+symbolic procedure deg(u,kern);
+   <<u := simp!* u; tstpolyarg(denr u,u); numrdeg(numr u,kern)>>
+   where dmode!* = gdmode!*;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Common variable type declarations and macro definitions

@@ -163,7 +163,7 @@ create!-package('(desir),'(solve));
 % Modification of the "deg" function.
 
 symbolic procedure deg(u,kern);
-   <<u := simp!* u; tstpolyarg(u,kern); numrdeg(numr u,kern)>>
+   <<u := simp!* u; tstpolyarg(denr u,kern); numrdeg(numr u,kern)>>
      where dmode!* = gdmode!*;
 
 %symbolic procedure deg(u,kern);
