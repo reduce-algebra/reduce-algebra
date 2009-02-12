@@ -33,6 +33,8 @@ Here exponent lists may have varying length since trailing zeroes are
 assumed to be omitted. The zero component of <exp. part> contains the
 module component. It correspond to the phantom var. name cali!=mk.
 
+END COMMENT; 
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -55,9 +57,6 @@ module component. It correspond to the phantom var. name cali!=mk.
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 %
-
-
-END COMMENT;
 
 % ----------- manipulations of the degree part --------------------
 
