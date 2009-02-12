@@ -1,31 +1,11 @@
 module trigsmp2$  % TrigSimp executable code
 
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-%    * Redistributions of source code must retain the relevant copyright
-%      notice, this list of conditions and the following disclaimer.
-%    * Redistributions in binary form must reproduce the above copyright
-%      notice, this list of conditions and the following disclaimer in the
-%      documentation and/or other materials provided with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
-% CONTRIBUTORS
-% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-%
+% small revision by Winfried Neun 3. Nov. 2008
+% need to take care of the dependencies (depl*) in case a df is in the form,
+% e.g. trigsimp(cos((f1 - f2)/4)**4*df(f1,x,y),sin);
 
-
-% Revised by Francis J. Wright <F.J.Wright@Maths.QMW.ac.uk>
-% Revision Time-stamp: <17 January 1999>
+% Revised by Francis J. Wright <f.j.wright@maths.qmul.ac.uk>
+% Revision Time-stamp: <FJW, 07 November 2008>
 
 % (FJW) To do:
 %   check with non-integer number domains
@@ -40,8 +20,10 @@ fluid '(!*complex dmode!*)$
 % TrigSimp %
 %%%%%%%%%%%%
 
+fluid '(depl!*);
+
 symbolic procedure trigsimp!*(u);
-   trigsimp(reval car u, revlis cdr u);
+   (trigsimp(reval car u, revlis cdr u) where depl!* = depl!*);
 
 put('trigsimp, 'psopfn, 'trigsimp!*)$
 
@@ -269,6 +251,10 @@ symbolic procedure subs_symbolic_multiples(term, opt_args);
 
          if x_lcm neq 1 then <<
             x := !*q2a quotsq(x, x_nu); % primitive part
+            depl!* := append(depl!*,
+                sublis(list (reval x .
+                        list('auxiliary_symbolic_var!*,j)),depl!*));
+% in case of a df(x,...) in the term. This would be nullified. WN
             term := algebraic
                sub(x = auxiliary_symbolic_var!*(j)*x_lcm, term);
             unsubs := algebraic(auxiliary_symbolic_var!*(j) = x/x_lcm)
@@ -302,6 +288,11 @@ symbolic procedure get_trig_arguments(term, args);
    if atom term then args else
    begin scalar f, r;
       f := car term;                    % function or operator
+      % Winfried Neun, 1 May 2008: you might in very special cases
+      % enter with equations which contain *SQs. These equations are
+      % not perfectly reval'ed to prefix form. This is special for
+      % equations and intentional, I think.  So...
+      if (f = '!*sq) then << term := reval term; f := car term >>;
       r := cdr term;                    % arguments or operands
       if f memq '(sin cos sinh cosh) then return
          if not member(r := car r, args) then r . args else args;
