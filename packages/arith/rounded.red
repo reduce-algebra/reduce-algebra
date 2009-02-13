@@ -296,9 +296,10 @@ symbolic procedure i2rd!* u;
  mkround chkint!* u;
 
 symbolic procedure chkint!* u;
-   if !*!*roundbf then bfloat u else
-    ((if msd!: x <= !!maxbflexp then float u
-      else <<rndbfon(); bfloat u>>) where x=abs u);
+    if !*!*roundbf then bfloat u else
+     ((if floatp u then u   % Added by ACN to make i2rd!* work with floats.
+       else if msd!: x <= !!maxbflexp then float u
+       else <<rndbfon(); bfloat u>>) where x=abs u);
 
 mnflbf!! := invbf(mxflbf!! := make!:ibf (1, 800));
 
