@@ -1648,7 +1648,7 @@ procedure ofsf_qebacksub(eql);
       return for each w in eql collect <<
 	 e := {'equal,caar w,prepsq subsq(cdar w,subl)};
 	 subl := (caar w . caddr e) . subl;
-	 {e,atr}
+	 {e,cdr w}
       >>
    end;
 
