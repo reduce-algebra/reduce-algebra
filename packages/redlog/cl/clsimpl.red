@@ -109,6 +109,8 @@ procedure cl_simpl1(f,knowl,n,sop);
 	 if !*rlsism then knowl := rl_smrmknowl(knowl,rl_var f);
     	 result := cl_simpl1(rl_mat f,knowl,n-1,op);
     	 if rl_tvalp result then return result;
+	 if not (rl_var f memq cl_fvarl result) then
+	    return result;
     	 return rl_mkq(op,rl_var f,result)
       >>;
       if rl_bquap op then <<
