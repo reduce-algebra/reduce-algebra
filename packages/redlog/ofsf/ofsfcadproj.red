@@ -36,7 +36,7 @@ lisp <<
       "(c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, T. Sturm"
 >>;
 
-fluid '(ofsf_cadbvl!*);
+fluid '(ofsf_cadbvl!* !*rlpos);
 
 switch rlcadmc3;
 on1 'rlcadmc3;
@@ -1404,11 +1404,27 @@ procedure ofsf_projcoho(aa,x);
    % not require the first argument to be a set.
    begin scalar bb,ll,ss1,ss2;
       bb := ofsf_projcobbv2(aa,x);
+      bb := ofsf_defpdel bb;
       ll := ofsf_projcoll(bb,x);
+      ll := ofsf_defpdel ll;
       ss1 := ofsf_projcoss1(bb,x);
+      ss1 := ofsf_defpdel ss1;
       ss2 := list2set ofsf_projhoss2(bb,x);
+      ss2 := ofsf_defpdel ss2;
       return lto_select('notdomainp,union(union(ll,ss1),ss2))
    end;
+
+procedure ofsf_defpdel(l);
+   % Definite predicate deletion. [l] is a list of SFs. Returns a list
+   % of SFs. Delete all elements from [l] for which surep can verify
+   % definiteness. 
+      for each f in l join
+	 if not ofsf_surep(ofsf_0mk2('neq,f),nil) then
+	    {f}
+	 else if !*rlverbose then <<
+	    ioto_prin2 "*";
+	    nil
+	 >>;
 
 %symbolic operator rlprojcohogen;
 %procedure rlprojcohogen(afl,x); rlprojamat(function(ofsf_projcohogen),afl,x);
