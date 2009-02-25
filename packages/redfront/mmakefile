@@ -318,3 +318,11 @@ upload-amd64-psl:
 amd64: amd64-csl amd64-psl
 
 upload-amd64: upload-amd64-csl upload-amd64-psl
+
+configure-sf-csl: configure config.h.in
+	make -f mmakefile configure
+	make -f mmakefile config.h.in
+	rm -rf config.status config.log autom4te.cache
+	LDFLAGS="-L/sw/lib" CFLAGS="-I/sw/include" ./configure \
+		--with-reduce-binary=$$(pwd)/../../bin/reduce \
+		--with-redfront-root=$$(pwd)

@@ -4,7 +4,7 @@
 # Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
 # ----------------------------------------------------------------------
 
-CC = @CC@ -pedantic-errors -Wall
+CC = @CC@ -Wall
 
 LIBS = @LIBS@
 
