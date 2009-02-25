@@ -290,13 +290,23 @@ procedure cl_qe1(f,theo,xbvl);
 	    w
 	 >>;
       >> else <<
+	 if !*rlverbose then
+	    ioto_tprin2 {"+++ Final simplification ... ",cl_atnum f," -> "};
+	 f := rl_simpl(f,theo,-1);
+	 if !*rlverbose then
+ 	    ioto_prin2t cl_atnum f;
 	 if !*rlqefb and car answer then <<
-	    if !*rlverbose then ioto_tprin2 {"++++ Entering fallback QE: "};
-	    f := rl_fbqe f
-	 >>;
-	 if !*rlverbose then ioto_tprin2 "+++ Final simplification ... ";
-	 result := rl_simpl(f,theo,-1);
-	 if !*rlverbose then ioto_prin2t "done"
+	    if not rl_quap rl_op f then <<
+	       if !*rlverbose then
+ 		  ioto_tprin2 "++++ No more quantifiers after simplification";
+	       result := f
+	    >> else <<
+	       if !*rlverbose then
+		  ioto_tprin2 {"++++ Entering fallback QE: "};
+	       result := rl_fbqe f
+	    >>
+	 >> else
+	    result := f
       >>;
       if !*rlqegen or !*rlqelocal then
 	 result := theo . result;
