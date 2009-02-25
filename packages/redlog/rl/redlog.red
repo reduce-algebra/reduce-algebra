@@ -306,7 +306,7 @@ flag('(rl_simpbop rl_simpq rl_simpbq rl_prepbop rl_prepq rl_prepbq),'full);
 
 macro procedure rl_getversion(argl);
    begin scalar v,w;
-      v := getenv("REDLOGVERSION") or "4.0";
+      v := getenv("REDLOGVERSION") or "DEVELOPMENT VERSION";
       w := getenv("REDLOGDATE") or date();
       return lto_sconcat {"REDLOG ",v,", ",w}
    end;
@@ -316,7 +316,7 @@ operator rlabout;
 procedure rlabout();
    <<
       ioto_tprin2t rl_getversion();
-      ioto_tprin2t "(c) 1995-2007 A. Dolzmann and T. Sturm";
+      ioto_tprin2t "(c) 1995-2009 A. Dolzmann and T. Sturm";
       ioto_tprin2t "http://www.redlog.eu/"
    >>;
 
