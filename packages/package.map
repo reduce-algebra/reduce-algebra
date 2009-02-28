@@ -169,6 +169,7 @@
  (rataprx       "rataprx"               test                 csl psl)
  (rtrace        "rtrace"                                     csl psl)
  (tmprint       "tmprint"                                    csl psl)
+ (libreduce     "libreduce"                                  csl psl)
 )
 
 % End of configuration data
