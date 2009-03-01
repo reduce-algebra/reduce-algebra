@@ -331,27 +331,36 @@ procedure rl_ppriop(f,n);
    >>;
 
 procedure rl_fancy!-ppriop(f,n);
-   if null !*nat or null !*rlbrop or eqn(n,0) then
-      'failed
-   else <<
-      fancy!-prin2 "(";
-      fancy!-inprint(car f,get(car f,'infix),cdr f);
-      fancy!-prin2 ")"
+   <<
+      if null !*nat or null !*rlbrop or eqn(n,0) then
+	 'failed
+      else if !*rlbrop then
+	 fancy!-in!-brackets(
+	    {'fancy!-inprint,mkquote car f,n,mkquote cdr f},'!(,'!))
+      else
+	 fancy!-inprint(car f,n,cdr f)
    >>;
 
 procedure rl_fancy!-priq(qf);
-   begin scalar m;
-      if null !*nat then return 'failed;
-      fancy!-prefix!-operator car qf;
-      if not rl_texmacsp() then fancy!-prin2 " ";
-      maprin cadr qf;
-      if not rl_texmacsp() then fancy!-prin2 " ";
+   begin scalar m,w;
+      if null !*nat then
+	 return 'failed;
+      w := fancy!-prefix!-operator car qf;
+      if w eq 'failed then <<
+	 fancy!-terpri!* t;
+	 fancy!-prefix!-operator car qf
+      >>;
+      w := fancy!-maprint!-atom(cadr qf,0);
+      if w eq 'failed then <<
+	 fancy!-terpri!* t;
+	 fancy!-maprint!-atom(cadr qf,0)
+      >>;
       if pairp(m := caddr qf) and car m memq '(ex all) then
-	 maprin m
-      else <<
-	 fancy!-prin2 "(";
- 	 maprin m;
- 	 fancy!-prin2 ")"
+	 return rl_fancy!-priq m;
+      w := fancy!-in!-brackets({'fancy!-maprint,mkquote m,0},'!(,'!));
+      if w eq 'failed then <<
+	 fancy!-terpri!* t;
+      	 return fancy!-in!-brackets({'fancy!-maprint,mkquote m,0},'!(,'!))
       >>
    end;
 
