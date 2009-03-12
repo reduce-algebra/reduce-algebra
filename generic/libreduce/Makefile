@@ -21,7 +21,7 @@ all:
 	autoheader
 	mkdir -p $(BUILD); \
 	cd $(BUILD); \
-	../src/configure --enable-debug; \
+	../src/configure \
 	make
 
 clean:
