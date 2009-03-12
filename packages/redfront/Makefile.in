@@ -8,7 +8,7 @@ CC = @CC@ -Wall
 
 LIBS = @LIBS@
 
-CFLAGS = @CFLAGS@ @DEFS@ -DBUILDTIME="\"`date +%d-%b-%Y`\""
+CFLAGS = @CFLAGS@ @DEFS@ -DBUILDTIME="\"`LANG=en date +%d-%b-%Y`\""
 
 LDFLAGS = @LDFLAGS@
 
