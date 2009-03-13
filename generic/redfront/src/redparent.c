@@ -1,83 +1,32 @@
-/* ------------------------------------------------------------------
-   $Id: redparent.c,v 1.19 2006/12/20 11:58:24 sturm Exp $
-   ------------------------------------------------------------------
-   Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
-   ------------------------------------------------------------------
-   $Log: redparent.c,v $
-   Revision 1.19  2006/12/20 11:58:24  sturm
-   Switched to ANSI C.In send_reduce() there was an undeclared and unsused second argument der_prompt.
-
-   Revision 1.18  2006/07/21 11:07:22  sturm
-   In redfront_oh call assgnpri with 3rd arg nil instead of 'only.
-   Accordingly, read_until_prompt does not eat the first char anymore.
-   This fixes 2 bugs: (1) With lisp write "Hallo", the first char did not
-   appear. (2) There were two trailing $ with off nat.
-   There is a cleaner treatment of control-d in read_valid_line now. Before
-   (3) control-d within yesp freed a constant string.
-
-   Revision 1.17  2006/06/28 09:28:35  sturm
-   Typeout "quit;" on CTRL-D following the style of bash.
-   
-   Revision 1.16  2006/05/23 15:19:05  sturm
-   Fixed bug in read_until_prompt and read_until_first_prompt: Prompt at
-   buffer limit could cause buffer overrun.
-   
-   Revision 1.15  2006/05/19 08:44:16  sturm
-   Explicit newline for EOF exit and SIGQUIT.
-   
-   Revision 1.14  2006/05/19 08:37:29  sturm
-   Treatment of readline() return value NULL, which is caused by EOF (C-d).
-   
-   Revision 1.13  2006/05/17 18:15:43  sturm
-   Check for using_history in linreadline first.
-   This is essential at least on MacOS X.
-   
-   Revision 1.12  2004/09/23 09:55:49  sturm
-   Fixed debugging output.
-   Solaris Compilation.
-   This is used for static binaries shipped with REDUCE 3.8.
-   
-   Revision 1.11  2004/09/02 13:55:44  sturm
-   Moved evaluation of $reduce to redfront.c.
-   Added evaluation of $reduce also for redfront root.
-   
-   Revision 1.10  2004/09/02 10:13:57  dolzmann
-   redfront now uses getopt.
-   Added new option -c for version without colors.
-   Allows option -m for memory size.
-   
-   Revision 1.9  2004/09/02 09:26:54  sturm
-   Fixed setenv of $reduce.
-   
-   Revision 1.8  2004/08/28 10:27:52  sturm
-   Debug coloring.
-   
-   Revision 1.7  2003/07/02 07:38:49  sturm
-   Added banner message.
-   
-   Revision 1.6  2003/06/27 12:12:23  sturm
-   (x+1)**20 did not work.
-   
-   Revision 1.5  2003/06/26 13:52:37  sturm
-   Put most of atoploop stuff into procedures.
-   LITHIST is supposed to work now.
-   
-   Revision 1.4  2003/06/25 12:37:36  sturm
-   Some fixes.
-   
-   Revision 1.3  2003/06/25 12:06:26  sturm
-   Added lithist option.
-   acconfig.h and redfront_color.red are obsolete.
-   
-   Revision 1.2  2003/06/23 08:12:10  sturm
-   Implemented coloring and cmdhist option.
-   
-   Revision 1.1  1999/09/20 13:37:53  sturm
-   Private autoconf-based REDFRONT development branch by A. Dolzmann
-   and T. Sturm.
-   Initial check-in.
-   
------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------
+   $Id$
+   ---------------------------------------------------------------------
+   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   ---------------------------------------------------------------------
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+  
+      * Redistributions of source code must retain the relevant
+        copyright notice, this list of conditions and the following
+        disclaimer.
+      * Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials provided
+        with the distribution.
+  
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #define SYSMAXBUFFER 198
 

@@ -1,63 +1,32 @@
 dnl --------------------------------------------------------------------
-dnl $Id: configure.in,v 1.14 2006/11/16 08:45:54 sturm Exp $
+dnl $Id$
 dnl --------------------------------------------------------------------
-dnl Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
+dnl Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
 dnl --------------------------------------------------------------------
-dnl $Log: configure.in,v $
-dnl Revision 1.14  2006/11/16 08:45:54  sturm
-dnl reduce.img have moved to lisp/csl/$MACHINE.
+dnl Redistribution and use in source and binary forms, with or without
+dnl modification, are permitted provided that the following conditions
+dnl are met:
 dnl
-dnl Revision 1.13  2006/06/04 17:30:19  sturm
-dnl --with-reduce-binary now builds correctly. In that case there is always
-dnl REDUCEROOT used, and $reduce is neither checked nor set.
+dnl    * Redistributions of source code must retain the relevant
+dnl      copyright notice, this list of conditions and the following
+dnl      disclaimer.
+dnl    * Redistributions in binary form must reproduce the above
+dnl      copyright notice, this list of conditions and the following
+dnl      disclaimer in the documentation and/or other materials provided
+dnl      with the distribution.
+dnl 
+dnl THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+dnl "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+dnl LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+dnl A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+dnl OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+dnl SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+dnl LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+dnl DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+dnl THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+dnl (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+dnl OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
-dnl Revision 1.12  2006/06/03 11:31:29  sturm
-dnl Adapted to the CSL development system.
-dnl Before I had wrong ideas about image model vs. csl.
-dnl
-dnl Revision 1.11  2006/06/02 10:19:48  sturm
-dnl The default location of redfront has moved from $reduce/redfront to
-dnl $reduce/packages/redfront.
-dnl
-dnl Revision 1.10  2006/05/18 03:05:57  sturm
-dnl Carefully check for HAVE_UNION_WAIT.
-dnl
-dnl Revision 1.9  2006/05/17 18:15:43  sturm
-dnl Check for using_history in linreadline first.
-dnl This is essential at least on MacOS X.
-dnl
-dnl Revision 1.8  2004/09/23 09:55:49  sturm
-dnl Fixed debugging output.
-dnl Solaris Compilation.
-dnl This is used for static binaries shipped with REDUCE 3.8.
-dnl
-dnl Revision 1.7  2004/09/02 13:54:19  sturm
-dnl Allow to configure image location and static compilation.
-dnl
-dnl Revision 1.6  2004/09/02 08:53:42  sturm
-dnl Improved color handling.
-dnl Added support for $reduce.
-dnl This is supposed to work with PSL-based REDUCE.
-dnl
-dnl Revision 1.5  2003/06/25 12:06:26  sturm
-dnl Added lithist option.
-dnl acconfig.h and redfront_color.red are obsolete.
-dnl
-dnl Revision 1.4  2003/06/23 08:12:10  sturm
-dnl Implemented coloring and cmdhist option.
-dnl
-dnl Revision 1.3  1999/09/20 14:57:58  sturm
-dnl Adapted --with-td default to 16000000 as specified for 3.7.
-dnl
-dnl Revision 1.2  1999/09/20 13:50:54  sturm
-dnl Adapted PSL image model check to 3.7. Image can be anywhere in $reduce now.
-dnl
-dnl Revision 1.1  1999/09/20 13:37:52  sturm
-dnl Private autoconf-based REDFRONT development branch by A. Dolzmann
-dnl and T. Sturm.
-dnl Initial check-in.
-dnl
-dnl --------------------------------------------------------------------
 
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(redfront.c)

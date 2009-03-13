@@ -1,38 +1,32 @@
-/* ------------------------------------------------------------------
-   $Id: redsig.c,v 1.7 2006/12/20 12:02:01 sturm Exp $
-   ------------------------------------------------------------------
-   Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
-   ------------------------------------------------------------------
-   $Log: redsig.c,v $
-   Revision 1.7  2006/12/20 12:02:01  sturm
-   Swiched to ANSI C.Do not use most of Winfried's (still present) process termination code anymore.Both CSL and PSL redfront immediately terminate on C-c now.
-
-   Revision 1.6  2006/05/19 08:44:16  sturm
-   Explicit newline for EOF exit and SIGQUIT.
-
-   Revision 1.5  2006/05/19 06:28:38  sturm
-   Do not terminate redfront via SIGALRM anymore.
-   When killed by an external signal (e.g. SIGQUIT=C-\), set terminal color
-   to NORMALCOLOR (=black).
-
-   Revision 1.4  2006/05/18 03:05:57  sturm
-   Carefully check for HAVE_UNION_WAIT.
-
-   Revision 1.3  2006/05/17 18:15:43  sturm
-   Check for using_history in linreadline first.
-   This is essential at least on MacOS X.
-
-   Revision 1.2  2004/09/23 09:55:49  sturm
-   Fixed debugging output.
-   Solaris Compilation.
-   This is used for static binaries shipped with REDUCE 3.8.
-
-   Revision 1.1  1999/09/20 13:37:53  sturm
-   Private autoconf-based REDFRONT development branch by A. Dolzmann
-   and T. Sturm.
-   Initial check-in.
-
-   ------------------------------------------------------------------ */
+/* ---------------------------------------------------------------------
+   $Id$
+   ---------------------------------------------------------------------
+   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   ---------------------------------------------------------------------
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+  
+      * Redistributions of source code must retain the relevant
+        copyright notice, this list of conditions and the following
+        disclaimer.
+      * Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials provided
+        with the distribution.
+  
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include "redfront.h"
 

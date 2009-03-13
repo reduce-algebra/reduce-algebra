@@ -1,50 +1,32 @@
-/* ------------------------------------------------------------------
-   $Id: redchild.c,v 1.10 2006/12/20 11:51:50 sturm Exp $
-   ------------------------------------------------------------------
-   Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
-   ------------------------------------------------------------------
-   $Log: redchild.c,v $
-   Revision 1.10  2006/12/20 11:51:50  sturm
-   Switched to ANSI C.
-
-   Revision 1.9  2006/06/19 15:04:07  sturm
-   Switching to NORMALCOLOR was missing after some debug outputs.
-
-   Revision 1.8  2006/06/05 06:54:21  sturm
-   There was a bpsl instead of lisp left in create_call.
-
-   Revision 1.7  2006/06/03 11:31:29  sturm
-   Adapted to the CSL development system.
-   Before I had wrong ideas about image model vs. csl.
-
-   Revision 1.6  2004/09/23 09:55:49  sturm
-   Fixed debugging output.
-   Solaris Compilation.
-   This is used for static binaries shipped with REDUCE 3.8.
-
-   Revision 1.5  2004/09/02 13:55:44  sturm
-   Moved evaluation of $reduce to redfront.c.
-   Added evaluation of $reduce also for redfront root.
-
-   Revision 1.4  2004/09/02 10:13:57  dolzmann
-   redfront now uses getopt.
-   Added new option -c for version without colors.
-   Allows option -m for memory size.
-
-   Revision 1.3  2004/09/02 09:26:54  sturm
-   Fixed setenv of $reduce.
-
-   Revision 1.2  2004/09/02 08:53:42  sturm
-   Improved color handling.
-   Added support for $reduce.
-   This is supposed to work with PSL-based REDUCE.
-
-   Revision 1.1  1999/09/20 13:37:52  sturm
-   Private autoconf-based REDFRONT development branch by A. Dolzmann
-   and T. Sturm.
-   Initial check-in.
-
-   ------------------------------------------------------------------ */
+/* ---------------------------------------------------------------------
+   $Id$
+   ---------------------------------------------------------------------
+   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   ---------------------------------------------------------------------
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+  
+      * Redistributions of source code must retain the relevant
+        copyright notice, this list of conditions and the following
+        disclaimer.
+      * Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials provided
+        with the distribution.
+  
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include "redfront.h"
 
