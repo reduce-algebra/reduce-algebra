@@ -2143,6 +2143,9 @@ FXString translateKeyEvent(FXRawEvent& event){
   char buffer[40]; KeySym sym; FXwchar w;
   XLookupString(&event.xkey,buffer,sizeof(buffer),&sym,NULL);
   w=fxkeysym2ucs(sym);
+#ifdef TEST
+  printf("sym %#x -> chars %#x\n", sym, w);
+#endif
   return FXString(&w,1);
   }
 
@@ -2230,6 +2233,10 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
 
         // Translate to keysym; must interpret modifiers!
         event.code=keysym(ev);
+#ifdef TEST
+        printf("Keyboard event code found as %d = %#x by keysym\n",
+               event.code, event.code);
+#endif
 //      XModifierKeymap *XGetModifierMapping((Display*)display);
 
         // Translate to string on KeyPress
@@ -2239,6 +2246,9 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
             event.text=getFocusWindow()->getComposeContext()->translateEvent(ev);
           else
             event.text=translateKeyEvent(ev);
+#ifdef TEST
+          printf("translateKeyEvent generates text \"%s\ state %x"\n, event.text, event.state);
+#endif
           }
 
         // Clear string on KeyRelease
