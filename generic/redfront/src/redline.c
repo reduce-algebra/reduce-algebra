@@ -30,6 +30,12 @@
 
 #include "redfront.h"
 
+#ifndef USE_READLINE
+
+
+
+#else
+
 #include <readline/readline.h>
 
 #ifdef HAVE_HISTORY
@@ -64,7 +70,6 @@ void rf_add_history(char this_command[]) {
 #endif
 }
 
-
 char *redline(const char *prompt) {
   return readline(prompt);
 }
@@ -97,3 +102,5 @@ void redline_stifle_history(int size) {
 void redline_write_history(const char *histfile) {
   write_history(histfile);
 }
+
+#endif

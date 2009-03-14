@@ -133,7 +133,7 @@ void parse_args(int argc,char **argv) {
     case 'b':
       color=!color;
       break;
-#ifdef RBPSL
+#ifdef BPSL
     case 'm':
       memory = optarg;
       break;
@@ -142,7 +142,7 @@ void parse_args(int argc,char **argv) {
       errflg++;
     }
 
-#ifdef RBPSL
+#ifdef BPSL
   if (optind == argc - 1) {
     memory = argv[optind];
   }
@@ -153,7 +153,7 @@ void parse_args(int argc,char **argv) {
     exit (2);
   }
 
-#ifdef RBPSL
+#ifdef BPSL
   memory = parse_memarg(memory==NULL ? MEMORY : memory,argv[0]);
 #endif
 
@@ -161,7 +161,7 @@ void parse_args(int argc,char **argv) {
 }
 
 char *parse_memarg(char *argstr,char *name) {
-/* Only used for PSL (#ifdef RBPSL) */
+/* Only used for PSL (#ifdef BPSL) */
   char *nargv2;
   char lchar;
   
@@ -190,7 +190,7 @@ char *parse_memarg(char *argstr,char *name) {
 }
 
 void print_usage(char name[]) {
-#ifdef RBPSL
+#ifdef BPSL
   (void)fprintf(stderr,"usage: %s [-bh] [[-m] NUMBER[kKmM]]\n",name);
  #else
   (void)fprintf(stderr,"usage: %s [-bh]\n",name);
@@ -198,7 +198,7 @@ void print_usage(char name[]) {
 }
 
 void print_help(char name[]) {
-#ifdef RBPSL
+#ifdef BPSL
   print_usage(name);
   fprintf(stderr,"       -b\t\tblack and white mode\n");
   fprintf(stderr,"       -h\t\tthis help message\n");
@@ -214,43 +214,12 @@ void print_help(char name[]) {
 }
 
 void process_pathes(void) {
-
-#ifdef REDUCE
-
   redfrontroot = REDFRONTROOT;
-
-#else
-  char *reduce;
-
-  reduce = getenv("reduce");
-
-  if (reduce == NULL) {
-/*    setenv("reduce",REDUCEROOT,0); */
-    reduce = (char *)malloc((6+1+strlen(REDUCEROOT)+1)*sizeof(char));
-    sprintf(reduce,"reduce=%s",REDUCEROOT);
-    putenv(reduce);
 #ifdef BPSL
-    lisp = BPSL;
-#elif defined CSL
-    lisp = CSL;
-#endif
-    redimg = REDIMG;
-    redfrontroot = REDFRONTROOT;
-  } else {
-#ifdef RBPSL
-    lisp = (char *)malloc((strlen(reduce)+strlen(RBPSL)+2)*sizeof(char));
-    sprintf(lisp,"%s/%s",reduce,RBPSL);
-#elif defined RCSL
-    lisp = (char *)malloc((strlen(reduce)+strlen(RCSL)+2)*sizeof(char));
-    sprintf(lisp,"%s/%s",reduce,RCSL);
-#endif
-    redimg = (char *)malloc((strlen(reduce)+strlen(RREDIMG)+2)*sizeof(char));
-    sprintf(redimg,"%s/%s",reduce,RREDIMG);
-
-    redfrontroot = (char *)malloc((strlen(reduce)+strlen(RREDFRONTROOT)+2)*
-				  sizeof(char));
-    sprintf(redfrontroot,"%s/%s",reduce,RREDFRONTROOT);
-  }
+  lisp = BPSL;
+  redimg = REDIMG;
+#else
+  lisp = REDUCE;
 #endif
 }
 
@@ -274,4 +243,3 @@ void textcolor1(int attr, int fg, int bg) {
 #endif
   }
 }
-

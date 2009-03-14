@@ -28,7 +28,7 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define VERSION "2.1"
+#define VERSION "2.9"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -112,5 +112,3 @@ void red_kill(void);
 #define INPUTCOLOR RED /* REDUCE input line */
 #define OUTPUTCOLOR BLUE /* REDUCE mathprint output */
 #define DEBUGCOLOR CYAN /* REDFRONT output with "#define DEBUG" */
-
-#define RREDFRONTROOT "packages/redfront"

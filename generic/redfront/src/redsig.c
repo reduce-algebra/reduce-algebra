@@ -117,7 +117,7 @@ RETSIGTYPE ReduceSigChld(int arg) {
 void installSignalHandlers(void) {
   signal(SIGQUIT,ReduceSigGen);
   signal(SIGHUP,ReduceSigGen);
-#ifdef RBPSL
+#ifdef BPSL
   signal(SIGINT,ReduceSigGen);
 #else
   signal(SIGINT,ReduceSigGen); /* signal(SIGINT,ReduceSigInt); */

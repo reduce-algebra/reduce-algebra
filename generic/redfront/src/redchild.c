@@ -80,7 +80,7 @@ void create_call(int argc,char *argv[],char *nargv[]) {
     }
 #endif
 
-#ifdef RBPSL
+#ifdef BPSL
 
     if ((tempfd = open(lisp,O_RDONLY)) == -1) {  /* Does not check x */
       char errstr[1024];
@@ -123,7 +123,7 @@ void create_call(int argc,char *argv[],char *nargv[]) {
     }
 #endif
 
-#elif defined RCSL
+#elif defined REDUCE
 
     if ((tempfd = open(lisp,O_RDONLY)) == -1) {  /* Does not check x */
       char errstr[1024];
@@ -133,23 +133,13 @@ void create_call(int argc,char *argv[],char *nargv[]) {
     } else
       close(tempfd);
 
-    if ((tempfd = open(redimg,O_RDONLY)) == -1) {
-      char errstr[1024];
-      sprintf(errstr,"cannot open %s",redimg);
-      perror(errstr);
-      exit(-1);
-    } else
-      close(tempfd);
-
     nargv[0] = lisp;
     
-    nargv[1] = "-b";
+    nargv[1] = "-w";
 
-    nargv[2] = "-o";
+    nargv[2] = "-V";
 
-    nargv[3] = redimg;
-
-    nargv[4] = (char *)0;
+    nargv[3] = (char *)0;
     
 #ifdef DEBUG
     if (debug) {

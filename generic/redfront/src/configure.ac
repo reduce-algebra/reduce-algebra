@@ -31,24 +31,60 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(redfront.c)
 
+abssrcdir=`$srcdir/../../../scripts/here.sh`
+
+AC_CANONICAL_HOST
+BUILD=`eval "$SHELL $srcdir/../../../scripts/findhost.sh $host $ac_configure_args"`
+AC_MSG_NOTICE([Build platform detected as $BUILD])
+AC_SUBST(BUILD)
+
 AC_CONFIG_HEADER(config.h)
+
+AC_ARG_WITH(csl,
+  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  [],
+  [with_csl="no"])
+
+AC_ARG_WITH(psl,
+  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  [],
+  [with_psl="no"])
+
+if test "x$with_csl" != "xno" ; then
+   if test "x$with_psl" != "xno" ; then
+      AC_MSG_ERROR("use only one of --with-csl or --with-psl")
+   fi
+   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$BUILD/csl/reduce",
+      [Define your executable REDUCE (with CSL)])
+elif test "x$with_psl" != "xno" ; then
+   if test "x$with_csl" != "xno" ; then
+      AC_MSG_ERROR("use only one of --with-csl or --with-psl")
+   fi
+   AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$BUILD/psl/bpsl",
+	[Define your executable bpsl (with PSL)])
+   AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$BUILD/red/reduce.img",
+	[Define your REDUCE image (with PSL)])
+   AC_ARG_WITH(td,
+	AC_HELP_STRING([--with-td=BYTES],
+		[override the BPSL default memory [[BYTES=128000000]]]),
+	defmem=$withval,defmem=128000000)
+   AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
+	[Define bytes allocated by BPSL (-td argument) as a string])
+else
+   AC_MSG_ERROR("use one of --with-csl or --with-psl")
+fi
+
+AC_DEFINE_UNQUOTED(REDFRONTROOT,"$abssrcdir/packages/redfront",
+	[Define the location of redfront.red])
 
 dnl Checks for programs.
 AC_PROG_CC
 
 dnl Checks for libraries.
-AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
-AC_MSG_ERROR("install a termcap library first"))
-dnl AC_CHECK_LIB(ncurses,main,LIBS="-lncurses $LIBS",\
-dnl AC_MSG_ERROR("install an ncurses library first"))
-AC_CHECK_LIB(readline,readline,LIBS="-lreadline $LIBS",\
-	AC_MSG_ERROR("install GNU readline first"))
-AC_CHECK_LIB(readline,using_history,\
-	AC_DEFINE(HAVE_HISTORY,1,\
-		[history provided by libreadline or libhistory]),\
-	AC_CHECK_LIB(history,using_history,\
-		AC_DEFINE(HAVE_HISTORY,1,\
-			[history provided by libreadline or libhistory])))
+dnl AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
+dnl AC_MSG_ERROR("install a termcap library first"))
+AC_CHECK_LIB(curses,main,LIBS="-lcurses $LIBS",\
+AC_MSG_ERROR("install a curses library first"))
 AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")
 
 AC_CHECK_HEADERS(wait.h sys/wait.h,break)
@@ -69,133 +105,14 @@ AC_CACHE_CHECK(for union wait, tar_cv_header_union_wait,
   tar_cv_header_union_wait=no, tar_cv_header_union_wait=yes)])
 test $tar_cv_header_union_wait = yes && AC_DEFINE(HAVE_UNION_WAIT,1,[use (union wait)* in contrast to int* for arg2 of wait4])
 
-AC_ARG_WITH(reduce-binary,[  --with-reduce-binary=PROG
-                          complete path to the reduce binary (if NOT image
-                          model)],
-	redbin=$withval)
-
-if test "${redbin:+set}" = set; then
-
-AC_DEFINE_UNQUOTED(REDUCE,"$redbin",
-	[Define your executable Reduce (if NOT image model)])
-
-else
-
-AC_ARG_WITH(reduce-root,[  --with-reduce-root=REDUCEROOT
-                          root of the reduce tree [[/usr/local/reduce]]],
-	reduceroot=$withval,reduceroot=/usr/local/reduce)
-AC_SUBST(reduceroot)
-AC_DEFINE_UNQUOTED(REDUCEROOT,"$reduceroot",
-	[Define the location of the REDUCE tree])
-
-AC_ARG_WITH(machine,[  --with-machine=MACHINE
-                          MACHINE in the sense of Reduce [[linux]]],
-	machine=$withval,machine=linux)
-AC_SUBST(machine)
-
-AC_ARG_WITH(csl,[  --with-csl=PROG         complete path to the binary csl],
-csl=$withval)
-
-if test "${csl:+set}" = set; then
-
-AC_DEFINE_UNQUOTED(CSL,"$csl",[Define your CSL executable])
-
-AC_ARG_WITH(img,[  --with-img=IMAGE        complete path to the image file [[use find]]],rf_cv_path_image=$withval)
-
-if test "${rf_cv_path_image:+set}" != set; then
-
-AC_MSG_CHECKING(for CSL REDUCE image)
-AC_CACHE_VAL(rf_cv_path_image,
-rf_cv_path_image="`if test -r $reduceroot/lisp/csl; then find $reduceroot/lisp/csl -name "reduce.img" -print; fi`")
-
-if test "${rf_cv_path_image:+set}" = set; then
-AC_MSG_RESULT(find succeeded)
-else
-AC_MSG_RESULT(find failed)
-fi
-
-fi
-
-AC_DEFINE_UNQUOTED(RCSL,"lisp/csl/$machine/csl",
-	[Define the relative location of csl in the REDUCE tree])
-
-AC_DEFINE_UNQUOTED(RREDIMG,"lisp/csl/$machine/reduce.img",
-	[Define the relative location of reduce.img in the REDUCE tree])
-
-else
-
-AC_ARG_WITH(bpsl,[  --with-bpsl=PROG        complete path to the binary psl [[use find]]],
-bpsl=$withval,bpsl=`find $reduceroot/lisp/psl -path "*/lisp/psl/*/psl/bpsl" | head -1`)
-AC_DEFINE_UNQUOTED(BPSL,"$bpsl",[Define your PSL executable (if image model)])
-
-AC_ARG_WITH(td,[  --with-td=BYTES         override the BPSL default memory [[BYTES=128000000]]],
-	defmem=$withval,defmem=128000000)
-AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
-	[Define the number of bytes allocated by BPSL (-td argument)
-	as a string])
-
-AC_ARG_WITH(img,[  --with-img=IMAGE        complete path to the image file [[use find]]],rf_cv_path_image=$withval)
-
-if test "${rf_cv_path_image:+set}" != set; then
-
-AC_MSG_CHECKING(for PSL REDUCE image)
-AC_CACHE_VAL(rf_cv_path_image,
-rf_cv_path_image="`if test -r $reduceroot/lisp/psl; then find $reduceroot/lisp/psl -name "reduce.img" -print; fi`")
-if test "${rf_cv_path_image:+set}" = set; then
-AC_MSG_RESULT(find succeeded)
-else
-AC_MSG_RESULT(find failed)
-fi
-
-fi
-
-AC_DEFINE_UNQUOTED(RBPSL,"lisp/psl/$machine/psl/bpsl",
-	[Define the relative location of bpsl in the REDUCE tree])
-AC_DEFINE_UNQUOTED(RREDIMG,"lisp/psl/$machine/red/reduce.img",
-	[Define the relative location of reduce.img in the REDUCE tree])
-fi
-
-if test "${rf_cv_path_image:+set}" = set; then
-AC_DEFINE_UNQUOTED(REDIMG,"$rf_cv_path_image",
-	[Define your REDUCE image file (if image model)])
-fi
-
-fi
-
-AC_ARG_WITH(redfront-root,[  --with-redfront-root=DIR
-                          location of redfront.red
-                          [[REDUCEROOT/packages/redfront]]],
-	redfrontroot=$withval,redfrontroot=$reduceroot/packages/redfront)
-AC_DEFINE_UNQUOTED(REDFRONTROOT,"$redfrontroot",
-	[Define the location of redfront.red])
-
-
-AC_ARG_ENABLE(color,[  --enable-color          build for color xterm [[yes]]],
-if test "$enableval" = no ; then
-AC_DEFINE(HAVE_COLOR,0,[Define for color xterm support])
-else
-AC_DEFINE(HAVE_COLOR,1,[Define for color xterm support])
-fi,
-AC_DEFINE(HAVE_COLOR,1,[Define for color xterm support])
-)
-
-AC_ARG_ENABLE(cmdhist,[  --enable-cmdhist        use bash cmdhist history style [[yes]]],
-if test "$enableval" = no ; then
-AC_DEFINE(CMDHIST,0,[Use bash cmdhist history style])
-else
-AC_DEFINE(CMDHIST,1,[Use bash cmdhist history style])
-fi,
-AC_DEFINE(CMDHIST,1,[Use bash cmdhist history style])
-)
-
-AC_ARG_ENABLE(lithist,[  --enable-lithist        use bash lithist history style [[yes]]],
-if test "$enableval" = no ; then
-AC_DEFINE(LITHIST,0,[Use bash lithist history style])
-else
-AC_DEFINE(LITHIST,1,[Use bash lithist history style])
-fi,
-AC_DEFINE(LITHIST,1,[Use bash lithist history style])
-)
+AC_ARG_ENABLE(color,
+   AC_HELP_STRING([--enable-color],[build for color terminal [[yes]]]),
+   if test "$enableval" = no ; then
+      AC_DEFINE(HAVE_COLOR,0,[Define for color terminal support])
+   else
+      AC_DEFINE(HAVE_COLOR,1,[Define for color terminal support])
+   fi,
+   AC_DEFINE(HAVE_COLOR,1,[Define for color terminal support]))
 
 AC_ARG_WITH(hist-size,[  --with-hist-size=LINES  length of the .reduce_history file [[LINES=1000]]],
 	histfilesize=$withval,histfilesize=1000)
@@ -215,6 +132,43 @@ else
 AC_DEFINE(STATIC,"",[static linking info in banner])
 fi,
 AC_DEFINE(STATIC,"",[static linking info in banner])
+)
+
+AC_ARG_ENABLE(readline,[  --enable-readline       use GNU readline instead of editline [[no]]],
+if test "$enableval" = yes ; then
+AC_DEFINE(USE_READLINE,1,[Use GNU readline instead of editline])
+readline=yes
+fi)
+
+if test "x$readline" = "xyes" ; then
+
+AC_CHECK_LIB(readline,readline,LIBS="-lreadline $LIBS",\
+	AC_MSG_ERROR("install GNU readline first"))
+AC_CHECK_LIB(readline,using_history,\
+	AC_DEFINE(HAVE_HISTORY,1,\
+		[history provided by libreadline or libhistory]),\
+	AC_CHECK_LIB(history,using_history,\
+		AC_DEFINE(HAVE_HISTORY,1,\
+			[history provided by libreadline or libhistory])))
+
+fi
+
+AC_ARG_ENABLE(cmdhist,[  --enable-cmdhist        use bash cmdhist history style [[yes]]],
+if test "$enableval" = no ; then
+AC_DEFINE(CMDHIST,0,[Use bash cmdhist history style])
+else
+AC_DEFINE(CMDHIST,1,[Use bash cmdhist history style])
+fi,
+AC_DEFINE(CMDHIST,1,[Use bash cmdhist history style])
+)
+
+AC_ARG_ENABLE(lithist,[  --enable-lithist        use bash lithist history style [[yes]]],
+if test "$enableval" = no ; then
+AC_DEFINE(LITHIST,0,[Use bash lithist history style])
+else
+AC_DEFINE(LITHIST,1,[Use bash lithist history style])
+fi,
+AC_DEFINE(LITHIST,1,[Use bash lithist history style])
 )
 
 AC_OUTPUT(Makefile)
