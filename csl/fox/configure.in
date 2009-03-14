@@ -79,6 +79,14 @@ AC_ARG_WITH(build,
   [],
   [with_build="unknown"])
 
+AC_ARG_WITH(test,
+  AC_HELP_STRING([--with-test], [Predefine TEST to get experimental version]),
+  [],
+  [with_test="no"])
+
+if test "x$with_test" = "xyes"; then
+   AC_DEFINE(TEST)
+fi
 
 dnl "--with-mingw64" is what I will be trying from now on to build for
 dnl 64-bit windows. It requires a (cross) compiler called
