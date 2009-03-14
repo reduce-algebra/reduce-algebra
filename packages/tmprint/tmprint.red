@@ -600,7 +600,11 @@ symbolic procedure fancy!-lower!-digits1(u,s);
       << % need to close the symbol w;
          w:=reversip w;
          q:=intern compress w;
-         if stringp (x:=get(q,'fancy!-special!-symbol))
+	 % The following test "explode q = w" is a hack to avoid the
+	 % problem that in CSL compress '(a l p h a !\ !_) is just
+	 % alpha. In PSL it is !_, which is not correct either but
+	 % this does not cause problems here:
+         if explode q = w and stringp (x:=get(q,'fancy!-special!-symbol))
             then w:=explode2 x;
          if cdr w then
             if car w = '!\ then long!*:=nil else long!*:=t
