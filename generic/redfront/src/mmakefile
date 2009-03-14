@@ -31,10 +31,18 @@
 REMACC=${USER}@dormouse.fmi.uni-passau.de
 REMDIR=$(REMACC):/home/reduce/public_html/develop/reduce/packages/redfront
 
-configure: configure.in
+configure-sf-csl: configure config.h.in
+	make -f mmakefile configure
+	make -f mmakefile config.h.in
+	rm -rf config.status config.log autom4te.cache
+	LDFLAGS="-L/sw/lib" CFLAGS="-I/sw/include" ./configure \
+		--with-reduce-binary=$$(pwd)/../../../bin/reduce \
+		--with-redfront-root=$$(pwd)/../../../packages/redfront
+
+configure: configure.ac
 	autoconf
 
-config.h.in: configure.in
+config.h.in: configure.ac
 	autoheader
 
 configure-linux-csl:
@@ -342,11 +350,3 @@ upload-amd64-psl:
 amd64: amd64-csl amd64-psl
 
 upload-amd64: upload-amd64-csl upload-amd64-psl
-
-configure-sf-csl: configure config.h.in
-	make -f mmakefile configure
-	make -f mmakefile config.h.in
-	rm -rf config.status config.log autom4te.cache
-	LDFLAGS="-L/sw/lib" CFLAGS="-I/sw/include" ./configure \
-		--with-reduce-binary=$$(pwd)/../../bin/reduce \
-		--with-redfront-root=$$(pwd)

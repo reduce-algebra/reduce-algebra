@@ -28,15 +28,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-CC = @CC@ -Wall
+CC = @CC@
 
 LIBS = @LIBS@
 
-CFLAGS = @CFLAGS@ @DEFS@ -DBUILDTIME="\"`LANG=en date +%d-%b-%Y`\""
+CFLAGS = @CFLAGS@ @DEFS@ -Wall -DBUILDTIME="\"`LANG=en date +%d-%b-%Y`\""
 
 LDFLAGS = @LDFLAGS@
 
-OBJ = redfront.o redsig.o redstrings.o redparent.o redchild.o
+OBJ = redfront.o redsig.o redstrings.o redparent.o redchild.o redline.o
 
 # ----------------------------------------------------------------------
 # Do not edit below this line
@@ -51,12 +51,20 @@ redsig.o: redsig.c redfront.h config.h
 redstrings.o: redstrings.c redfront.h config.h
 redparent.o: redparent.c redfront.h config.h
 redchild.o: redchild.c redfront.h config.h
+redline.o: redline.c redfront.h config.h
 
 clean:
-	/bin/rm -f $(OBJ)
+	-rm -f $(OBJ)
 
 veryclean: clean
-	/bin/rm -f redfront
+	-rm redfront
+
+distclean: veryclean
+	-rm -f Makefile config.h config.log config.status
+
+maintainer-clean: distclean
+	-rm -fr autom4te.cache 
+	-rm -f configure config.h.in
 
 dist:
 	cd ..; \

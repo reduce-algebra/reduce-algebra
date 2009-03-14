@@ -51,7 +51,6 @@ int debug = 1;
 int debug = 0;
 #endif
 
-void init_history(void);
 void init_sockets(void);
 void parse_args(int,char **);
 char *parse_memarg(char *,char *);
@@ -103,18 +102,6 @@ int main(int argc,char **argv,char **envp) {
   }
   
   return -1;
-}
-
-void init_history(void) {
-#ifdef HAVE_HISTORY
-  char *hname;
-
-  using_history();
-
-  hname = (char *)malloc(strlen(getenv("HOME"))+strlen("/.reduce_history")+1);
-  sprintf(hname,"%s/.reduce_history",getenv("HOME"));
-  read_history(hname);
-#endif
 }
 
 void init_sockets(void) {
@@ -227,13 +214,13 @@ void print_help(char name[]) {
 }
 
 void process_pathes(void) {
-  char *reduce;
 
 #ifdef REDUCE
 
   redfrontroot = REDFRONTROOT;
 
 #else
+  char *reduce;
 
   reduce = getenv("reduce");
 

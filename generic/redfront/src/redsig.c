@@ -59,7 +59,7 @@ RETSIGTYPE ReduceSigGen(int arg) {
   red_kill();
   textcolor(NORMALCOLOR);  /* might not match, but black is better than red */
   printf("\n");
-  rl_cleanup_after_signal();
+  redline_cleanup_after_signal();
   switch (arg) {
   case SIGQUIT:
   case SIGHUP:
@@ -99,8 +99,8 @@ RETSIGTYPE ReduceSigChld(int arg) {
 
 #ifdef HAVE_HISTORY
   sprintf(tmp_char,"%s/.reduce_history",getenv("HOME"));
-  stifle_history(HISTFILESIZE);
-  write_history(tmp_char);
+  redline_stifle_history(HISTFILESIZE);
+  redline_write_history(tmp_char);
 #endif
 
   /* TS does not believe that this did any good: */
@@ -108,7 +108,7 @@ RETSIGTYPE ReduceSigChld(int arg) {
   /* kill(getpid(),SIGALRM); // Have to kill ourselves to reset e.g. readline */
   /* Instead I use the following: */
   
-  rl_cleanup_after_signal();
+  redline_cleanup_after_signal();
   /* This also avoids the Alarm Clock message, which irritated some customers. */
 
   exit(0);

@@ -38,26 +38,7 @@
 
 extern int MeToReduce[],ReduceToMe[],debug;
 
-extern int color;
-
 extern char *redfrontroot;
-
-char *color_prompt(char der_prompt[]) {
-	if (color && HAVE_COLOR) {
-		char help_prompt[50];
-		
-		strcpy(help_prompt,der_prompt);
-		sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
-			RL_PROMPT_START_IGNORE,
-			0x1B,0,PROMPTCOLOR+30,9+40,
-			RL_PROMPT_END_IGNORE,
-			help_prompt,
-			RL_PROMPT_START_IGNORE,
-			0x1B,0,INPUTCOLOR+30,9+40,
-			RL_PROMPT_END_IGNORE);
-	}
-	return der_prompt;
-}
 
 char* load_redfront_red(void) {
 	char *in_redfront_red;
@@ -146,12 +127,12 @@ char* read_valid_line(char der_prompt[]) {
 
 	der_prompt = color_prompt(der_prompt);
 	
-	line_read = readline(der_prompt);
+	line_read = redline(der_prompt);
 
 	if (line_read)
 		while (is_too_long(line_read)) {
 			free(line_read);
-			line_read = readline(der_prompt);
+			line_read = redline(der_prompt);
 		}
 	else {
 		if (strcmp(orig_prompt,"?") == 0) {
@@ -321,20 +302,6 @@ void send_reduce(char line_read[]) {
 	}
 #endif
 
-}
-
-void rf_add_history(char this_command[]) {
-#ifdef HAVE_HISTORY
-	HIST_ENTRY *ph;
-	
-	if ((this_command != (char *)NULL) && *this_command != 0) {
-		while (next_history())
-			;
-		if (!(ph = previous_history()) || strcmp(this_command,ph->line) != 0)
-			add_history(this_command);
-		free(this_command);
-	}
-#endif
 }
 
 void atoploop(void) {

@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------
    $Id$
    ---------------------------------------------------------------------
-   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   Copyright (c) 2009 Thomas Sturm
    ---------------------------------------------------------------------
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -28,89 +28,72 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define VERSION "2.1"
+#include "redfront.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <readline/readline.h>
+
+#ifdef HAVE_HISTORY
+#include <readline/history.h>
 #endif
 
-#include <stdio.h>
+extern int color;
 
-#include <stdlib.h>
+void init_history(void) {
+#ifdef HAVE_HISTORY
+  char *hname;
 
-#include <ctype.h>
+  using_history();
 
-#include <strings.h>
-
-#include <errno.h>
-
-#include <sys/types.h>
-
-#include <sys/socket.h>
-
-#include <fcntl.h>
-
-#include <sys/ioctl.h>
-
-#include <unistd.h>
-
-#include <signal.h>
-
-#if defined HAVE_WAIT_H
-#include <wait.h>
-#elif defined HAVE_SYS_WAIT_H
-#include <sys/wait.h>
+  hname = (char *)malloc(strlen(getenv("HOME"))+strlen("/.reduce_history")+1);
+  sprintf(hname,"%s/.reduce_history",getenv("HOME"));
+  read_history(hname);
 #endif
+}
 
-extern int errno;
+void rf_add_history(char this_command[]) {
+#ifdef HAVE_HISTORY
+  HIST_ENTRY *ph;
+  
+  if ((this_command != (char *)NULL) && *this_command != 0) {
+    while (next_history())
+      ;
+    if (!(ph = previous_history()) || strcmp(this_command,ph->line) != 0)
+      add_history(this_command);
+    free(this_command);
+  }
+#endif
+}
 
-struct strbuf {
-  char c;
-  struct strbuf *next,*prev;
-};
 
-void textcolor(int);
+char *redline(const char *prompt) {
+  return readline(prompt);
+}
 
-void parent(void);
+char *color_prompt(char der_prompt[]) {
+  if (color && HAVE_COLOR) {
+    char help_prompt[50];
+		
+    strcpy(help_prompt,der_prompt);
+    sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
+	    RL_PROMPT_START_IGNORE,
+	    0x1B,0,PROMPTCOLOR+30,9+40,
+	    RL_PROMPT_END_IGNORE,
+	    help_prompt,
+	    RL_PROMPT_START_IGNORE,
+	    0x1B,0,INPUTCOLOR+30,9+40,
+	    RL_PROMPT_END_IGNORE);
+  }
+  return der_prompt;
+}
 
-void child(int,char **,char **);
+void redline_cleanup_after_signal(void) {
+  return rl_cleanup_after_signal();
+}
 
-void init_history(void);
+void redline_stifle_history(int size) {
+  return stifle_history(size);
+}
 
-void rf_add_history(char *);
-
-char *redline(const char *);
-
-char *color_prompt(char *);
-
-void redline_cleanup_after_signal(void);
-
-void redline_stifle_history(int);
-
-void redline_write_history(const char *);
-
-struct strbuf *addchar(char,struct strbuf *);
-struct strbuf *remtail(struct strbuf *,struct strbuf *);
-void prtbuf(struct strbuf *);
-
-void installSignalHandlers(void);
-void removeSignalHandlers(void);
-void red_kill(void);
-
-#define BLACK 0
-#define RED 1
-#define GREEN 2
-#define YELLOW 3
-#define BLUE 4
-#define MAGENTA 5
-#define CYAN 6
-#define WHITE 7
-
-#define REDFRONTCOLOR MAGENTA /* REDFRONT output */
-#define NORMALCOLOR BLACK /* REDUCE terminal output */
-#define PROMPTCOLOR BLACK /* REDUCE prompt */
-#define INPUTCOLOR RED /* REDUCE input line */
-#define OUTPUTCOLOR BLUE /* REDUCE mathprint output */
-#define DEBUGCOLOR CYAN /* REDFRONT output with "#define DEBUG" */
-
-#define RREDFRONTROOT "packages/redfront"
+void redline_write_history(const char *histfile) {
+  write_history(histfile);
+}
