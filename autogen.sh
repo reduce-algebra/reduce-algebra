@@ -11,22 +11,22 @@ autoreconf
 
 cd csl/cslbase
 aclocal
-autoreconf
+autoreconf -f
 
 cd ../fox
 aclocal
-autoreconf
+autoreconf -f
 
 if test -d ../foxtests
 then
   cd ../foxtests
   aclocal
-  autoreconf
+  autoreconf -f
 fi
 
 cd ../../psl
 aclocal
-autoreconf
+autoreconf -f
 
 cd ..
 
