@@ -38,6 +38,8 @@ BUILD=`eval "$SHELL $srcdir/../../../scripts/findhost.sh $host $ac_configure_arg
 AC_MSG_NOTICE([Build platform detected as $BUILD])
 AC_SUBST(BUILD)
 
+RBUILD=$(basename $BUILD -debug)
+
 AC_CONFIG_HEADER(config.h)
 
 AC_ARG_WITH(csl,
@@ -54,15 +56,15 @@ if test "x$with_csl" != "xno" ; then
    if test "x$with_psl" != "xno" ; then
       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
    fi
-   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$BUILD/csl/reduce",
+   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce",
       [Define your executable REDUCE (with CSL)])
 elif test "x$with_psl" != "xno" ; then
    if test "x$with_csl" != "xno" ; then
       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
    fi
-   AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$BUILD/psl/bpsl",
+   AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl",
 	[Define your executable bpsl (with PSL)])
-   AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$BUILD/red/reduce.img",
+   AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
 	[Define your REDUCE image (with PSL)])
    AC_ARG_WITH(td,
 	AC_HELP_STRING([--with-td=BYTES],
