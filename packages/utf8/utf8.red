@@ -170,9 +170,9 @@ procedure utf8_priint(u);
       utf8_prin2!* car u;
       if cdddr u then <<
 	 utf8_prin2!* "[";
-	 utf8_prin2!* cadddr u;
+	 maprin cadddr u;
 	 utf8_prin2!* ",";
-	 utf8_prin2!* car cddddr u;
+	 maprin car cddddr u;
 	 utf8_prin2!* "]"
       >>;
       utf8_prin2!* " ";
