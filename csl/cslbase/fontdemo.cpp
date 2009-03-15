@@ -7,8 +7,9 @@
  *  Usage, eg
  *      fontdemo cmr10
  * fonts that are supposed to be available are
- *     cmr10
- *     cmmi10
+ *    Windows           X11
+ *     cmr10       csl-reduce-cmr10
+ *     cmmi10      ...
  *     cmsy10
  *     cmex10
  */
@@ -44,7 +45,7 @@
  *************************************************************************/
 
 
-/* Signature: 48b26a01 31-May-2008 */
+/* Signature: 6c92c778 15-Mar-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -188,6 +189,13 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
     FXDCWindow dc(canvas, ev);
     dc.setForeground(FXRGB(230, 200, 255));  // violent purple background
     dc.fillRectangle(ev->rect.x, ev->rect.y, ev->rect.w, ev->rect.h);
+    dc.setForeground(FXRGB(100, 220, 120));
+    for (i=0; i<256; i+=32)
+    {   for (j=0; j<32; j++)
+        {   if ((((i/32) + j) & 1) == 0) continue;
+            dc.fillRectangle(32*j+5, 3*i+40, 32, 96);
+        }
+    }
     dc.setForeground(FXRGB(90, 20, 70));
 #ifdef WIN32
     if (ff != NULL) dc.setFont(ff);
@@ -200,7 +208,7 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
             if (ff->hasChar(i+j))
                 dc.drawText(32*j+5, 3*i+40, &bb[0], 1);
 #else
-            if (i+j >= 0x80) continue;
+/*          if (i+j >= 0x80) continue; */
             FT_UInt bbb[1];
             bbb[0] = i+j+1;
             XftDrawGlyphs(ftDraw, &ftBlack, ftFont,
@@ -293,6 +301,7 @@ int main(int argc,char *argv[])
     fontname = "cmr10";
     for (int i=1; i<argc; i++)
         fontname = argv[i];
+#ifdef WIN32
     if (argc <= 1 ||
         (strcmp(fontname, "cmr10") != 0 &&
          strcmp(fontname, "cmmi10") != 0 &&
@@ -302,6 +311,20 @@ int main(int argc,char *argv[])
         printf("The fontname should be cmr10, cmmi10, cmsy10 or cmex10\n");
         return 1;
     }
+#else
+// Note that under X11 I am using customised versions of the fonts and
+// to avoid confusion with any copies already installed I use customised
+// names.
+    if (argc <= 1 ||
+        (strcmp(fontname, "csl-reduce-cmr10") != 0 &&
+         strcmp(fontname, "csl-reduce-cmmi10") != 0 &&
+         strcmp(fontname, "csl-reduce-cmsy10") != 0 &&
+         strcmp(fontname, "csl-reduce-cmex10") != 0))
+    {   printf("Usage: fontdemo [fontname]\n");
+        printf("The fontname should be csl-reduce-cmr10, csl-reduce-cmmi10, csl-reduce-cmsy10 or csl-reduce-cmex10\n");
+        return 1;
+    }
+#endif
     printf("Will display \"%s\"\n", fontname);
 
     FXApp application("Font","FontDemo");
@@ -456,6 +479,7 @@ int main(int argc,char *argv[])
     FXFontDesc fd;
     memset(&fd, 0, sizeof(fd));
     strcpy(fd.face, fontname);
+    printf("Will try to view %s\n", fontname);
     fd.size = 240;               // NB size is in DECIPOINTS here
     fd.weight = 0;
     fd.slant = 0;
