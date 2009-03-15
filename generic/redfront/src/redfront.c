@@ -131,6 +131,7 @@ void parse_args(int argc,char **argv) {
       break;
     case 'u':
       unicode = 1;
+      break;
     case 'v':
     case 'V':
       verbose = 1;
