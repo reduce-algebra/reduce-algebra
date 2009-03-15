@@ -7,13 +7,13 @@
    modification, are permitted provided that the following conditions
    are met:
   
-      * Redistributions of source code must retain the relevant
-        copyright notice, this list of conditions and the following
-        disclaimer.
-      * Redistributions in binary form must reproduce the above
-        copyright notice, this list of conditions and the following
-        disclaimer in the documentation and/or other materials provided
-        with the distribution.
+   * Redistributions of source code must retain the relevant
+   copyright notice, this list of conditions and the following
+   disclaimer.
+   * Redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the following
+   disclaimer in the documentation and/or other materials provided
+   with the distribution.
   
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -72,13 +72,15 @@ RETSIGTYPE ReduceSigGen(int arg) {
 }
 
 RETSIGTYPE ReduceSigInt(int arg) {
-/* Only used for CSL */
+  /* Only used for CSL */
+
   if (debug) {
     textcolor(DEBUGCOLOR);
     fprintf(stderr,"ReduceSigInt(%d)\n",arg);
     textcolor(NORMALCOLOR);
   }
-/*  write(MeToReduce[1],"a\n",2); */
+
+  write(MeToReduce[1],"a\n",2);
 }
 
 RETSIGTYPE ReduceSigChld(int arg) {
@@ -120,7 +122,7 @@ void installSignalHandlers(void) {
 #ifdef BPSL
   signal(SIGINT,ReduceSigGen);
 #else
-  signal(SIGINT,ReduceSigGen); /* signal(SIGINT,ReduceSigInt); */
+  signal(SIGINT,ReduceSigInt);
 #endif
   signal(SIGILL,ReduceSigGen);
   signal(SIGSTOP,SIG_DFL);
