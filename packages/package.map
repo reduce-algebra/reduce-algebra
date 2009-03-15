@@ -171,6 +171,7 @@
  (tmprint       "tmprint"                                    csl psl)
  (libreduce     "libreduce"                                  csl psl)
  (qepcad        "redlog/qepcad"                              csl psl)
+ (utf8          "utf8"                                       csl psl)
 )
 
 % End of configuration data
