@@ -34,8 +34,7 @@ extern int MeToReduce[],ReduceToMe[],debug;
 
 extern char *memory;
 
-extern char *lisp;
-extern char *redimg;
+extern int verbose;
 
 void create_call(int,char **,char **);
 
@@ -82,23 +81,23 @@ void create_call(int argc,char *argv[],char *nargv[]) {
 
 #ifdef BPSL
 
-    if ((tempfd = open(lisp,O_RDONLY)) == -1) {  /* Does not check x */
+    if ((tempfd = open(BPSL,O_RDONLY)) == -1) {  /* Does not check x */
       char errstr[1024];
-      sprintf(errstr,"cannot open %s",lisp);
+      sprintf(errstr,"cannot open %s",BPSL);
       perror(errstr);
       exit(-1);
     } else
       close(tempfd);
 
-    if ((tempfd = open(redimg,O_RDONLY)) == -1) {
+    if ((tempfd = open(REDIMG,O_RDONLY)) == -1) {
       char errstr[1024];
-      sprintf(errstr,"cannot open %s",redimg);
+      sprintf(errstr,"cannot open %s",REDIMG);
       perror(errstr);
       exit(-1);
     } else
       close(tempfd);
 
-    nargv[0] = lisp;
+    nargv[0] = BPSL;
 
     nargv[1] = "-td";
 
@@ -106,10 +105,32 @@ void create_call(int argc,char *argv[],char *nargv[]) {
     
     nargv[3] = "-f";
 
-    nargv[4] = redimg;
+    nargv[4] = REDIMG;
 
     nargv[5] = (char *)0;
+   
+#elif defined REDUCE
+
+    if ((tempfd = open(REDUCE,O_RDONLY)) == -1) {  /* Does not check x */
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",REDUCE);
+      perror(errstr);
+      exit(-1);
+    } else
+      close(tempfd);
+
+    nargv[0] = REDUCE;
     
+    nargv[1] = "-w";
+    
+    nargv[2] = "-b";
+
+    nargv[3] = verbose ? "-V" : (char *)0;
+
+    nargv[4] = (char *)0;
+    
+#endif
+
 #ifdef DEBUG
     if (debug) {
       textcolor(DEBUGCOLOR);
@@ -121,62 +142,6 @@ void create_call(int argc,char *argv[],char *nargv[]) {
       textcolor(NORMALCOLOR);
       fflush(stderr);
     }
-#endif
-
-#elif defined REDUCE
-
-    if ((tempfd = open(lisp,O_RDONLY)) == -1) {  /* Does not check x */
-      char errstr[1024];
-      sprintf(errstr,"cannot open %s",lisp);
-      perror(errstr);
-      exit(-1);
-    } else
-      close(tempfd);
-
-    nargv[0] = lisp;
-    
-    nargv[1] = "-w";
-
-    nargv[2] = "-V";
-
-    nargv[3] = (char *)0;
-    
-#ifdef DEBUG
-    if (debug) {
-      textcolor(DEBUGCOLOR);
-      fprintf(stderr,"child: argv[0]=%s\n",nargv[0]);
-      fprintf(stderr,"child: argv[1]=%s\n",nargv[1]);
-      fprintf(stderr,"child: argv[2]=%s\n",nargv[2]);
-      fprintf(stderr,"child: argv[2]=%s\n",nargv[3]);
-      textcolor(NORMALCOLOR);
-      fflush(stderr);
-    }
-#endif
-
-#else
-    
-    if ((tempfd = open(REDUCE,O_RDONLY)) == -1) {
-      char errstr[1024];
-      sprintf(errstr,"cannot open %s",REDUCE);
-      perror(errstr);
-      exit(-1);
-    }
-    else
-      close(tempfd);
-    
-    nargv[0] = REDUCE;
-
-    nargv[1] = (char *)0;
-
-#ifdef DEBUG
-    if (debug) {
-      textcolor(DEBUGCOLOR);
-      fprintf(stderr,"\nExecuting Reduce binary: %s\n",nargv[0]);
-      textcolor(NORMALCOLOR);
-      fflush(stderr);
-    }
-#endif
-
 #endif
 
 #ifdef DEBUG

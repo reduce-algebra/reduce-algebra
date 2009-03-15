@@ -38,20 +38,32 @@
 
 extern int MeToReduce[],ReduceToMe[],debug;
 
-extern char *redfrontroot;
+extern int verbose;
+extern int unicode;
 
-char* load_redfront_red(void) {
-  char *in_redfront_red;
+char* load_package(const char* package) {
+  char *cmd;
+  int len;
   char ch;
-	
-  in_redfront_red = (char *)malloc(strlen(redfrontroot)+20);
-  sprintf(in_redfront_red,"in \"%s/redfront.red\"$",redfrontroot);
-  write(MeToReduce[1],in_redfront_red,strlen(redfrontroot)+19);
+  
+  len = strlen(package)+strlen("load_package $");
+  cmd = (char *)malloc(len + 1);
+  sprintf(cmd,"load_package %s$",package);
+  write(MeToReduce[1],cmd,len);
 	
   ch = 0x0a;
   write(MeToReduce[1],&ch,1);
 
-  return in_redfront_red;
+#ifdef DEBUG
+  if (debug) {
+    textcolor(DEBUGCOLOR);
+    fprintf(stderr,"parent: sending %s\n",cmd);
+    textcolor(NORMALCOLOR);
+    fflush(stderr);
+  }
+#endif
+
+  return cmd;
 }
 
 void read_until_first_prompt(char der_prompt[]) {
@@ -201,13 +213,13 @@ void read_until_prompt(char der_prompt[]){
       } else if (status == READING_PROMPT) {
 	if ((int) ch > 31)
 	  der_prompt[pii++] = ch;
-      } else	{	/* (status == FINISHED) */
+      } else {	/* (status == FINISHED) */
 	der_prompt[pii] = 0x00; 
       } 
     }
     fflush(stdout);	
   }
-
+  
 #ifdef DEBUG
   if (debug) {
     textcolor(DEBUGCOLOR);
@@ -216,7 +228,6 @@ void read_until_prompt(char der_prompt[]){
     fflush(stderr);
   }
 #endif
-
 }
 
 char* append_line(char* c,char* l) {
@@ -305,20 +316,18 @@ void send_reduce(char line_read[]) {
 }
 
 void atoploop(void) {
-  char *in_redfront_red;
   char der_prompt[50],old_prompt[50];
   char *line_read = (char *)NULL;
   char *this_command = (char *)NULL;
-
-  in_redfront_red = load_redfront_red();
+  
+  load_package(unicode ? "redfront,utf8": "redfront");
 
   read_until_first_prompt(der_prompt);
 
 #ifdef DEBUG
   if (debug) {
     textcolor(DEBUGCOLOR);
-    /* fprintf(stderr,"0: %s	%% ;-)\n\n",in_redfront_red); */
-    fprintf(stderr,"parent: sending %s\n",in_redfront_red);
+    fprintf(stderr,"parent: read first prompt\n");
     textcolor(NORMALCOLOR);
     fflush(stderr);
   }
@@ -352,14 +361,10 @@ void parent(void) {
   setlinebuf(stdout);
 #endif
 	
-  /* sleep (2); */
-
   textcolor(REDFRONTCOLOR);
 	
-  /*		printf("REDFRONT %s%s by A. Dolzmann and T. Sturm, built %s ...\nALPHA RELEASE - DO NOT DISTRIBUTE!\n", */
-  /*		 VERSION,STATIC,BUILDTIME); */
-  printf("REDFRONT %s%s by A. Dolzmann and T. Sturm, built %s ...\n",
-	 VERSION,STATIC,BUILDTIME);
-	
+  printf("REDFRONT %s%s%s, built %s ...\n",VERSION,STATIC,
+	 (verbose) ? " by A. Dolzmann and T. Sturm" : "",BUILDTIME);
+  
   atoploop();
 }

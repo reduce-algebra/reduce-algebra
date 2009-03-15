@@ -37,10 +37,6 @@ int reduceProcessID;
 int color=1; 
 char *memory;
 
-char *lisp;
-char *redimg;
-char *redfrontroot;
-
 /* Sockets for communication with Reduce; obtained from socketpair(),
    so check your implementation! */
 int MeToReduce[2],ReduceToMe[2];
@@ -51,19 +47,19 @@ int debug = 1;
 int debug = 0;
 #endif
 
+int verbose = 0;
+int unicode = 0;
+
 void init_sockets(void);
 void parse_args(int,char **);
 char *parse_memarg(char *,char *);
 void print_usage(char *);
 void print_help(char *);
-void process_pathes(void);
 void textcolor(int);
 void textcolor1(int,int,int);
 
 int main(int argc,char **argv,char **envp) {
   parse_args(argc,argv);
-
-  process_pathes();
 
   (void)setsid();  /* become leader of a new process group */
 
@@ -124,14 +120,20 @@ void parse_args(int argc,char **argv) {
 
   int errflg=0;
   
-  while ((c = getopt(argc, argv, "bhm:")) != EOF)
+  while ((c = getopt(argc, argv, "bhuvVm:")) != EOF)
     switch (c) {
     case 'h':
       print_help(argv[0]);
       exit(1);
       break;
     case 'b':
-      color=!color;
+      color = !color;
+      break;
+    case 'u':
+      unicode = 1;
+    case 'v':
+    case 'V':
+      verbose = 1;
       break;
 #ifdef BPSL
     case 'm':
@@ -191,9 +193,9 @@ char *parse_memarg(char *argstr,char *name) {
 
 void print_usage(char name[]) {
 #ifdef BPSL
-  (void)fprintf(stderr,"usage: %s [-bh] [[-m] NUMBER[kKmM]]\n",name);
+  (void)fprintf(stderr,"usage: %s [-bhvV] [[-m] NUMBER[kKmM]]\n",name);
  #else
-  (void)fprintf(stderr,"usage: %s [-bh]\n",name);
+  (void)fprintf(stderr,"usage: %s [-bhvV]\n",name);
  #endif
 }
 
@@ -205,21 +207,15 @@ void print_help(char name[]) {
   fprintf(stderr,"       -m NUMBER\theap size in bytes\n"); 
   fprintf(stderr,"       -m NUMBERk\theap size in kilobytes\n");
   fprintf(stderr,"       -m NUMBERm\theap size in megabytes\n");  
+  fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
+  fprintf(stderr,"       -v, -V\t\tverbose\n");
   fprintf(stderr,"Example: %s -m 128m  # this is default\n",name);
 #else
   print_usage(name);
   fprintf(stderr,"       -b\t\tblack and white mode\n");
   fprintf(stderr,"       -h\t\tthis help message\n");
-#endif
-}
-
-void process_pathes(void) {
-  redfrontroot = REDFRONTROOT;
-#ifdef BPSL
-  lisp = BPSL;
-  redimg = REDIMG;
-#else
-  lisp = REDUCE;
+  fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
+  fprintf(stderr,"       -v, -V\t\tverbose\n");
 #endif
 }
 
