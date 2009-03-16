@@ -45,7 +45,7 @@
  *************************************************************************/
 
 
-/* Signature: 6c92c778 15-Mar-2009 */
+/* Signature: 144b5cfd 16-Mar-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -203,12 +203,20 @@ long FontWindow::onPaint(FXObject *, FXSelector, void *ptr)
     for (i=0; i<256; i+=32)
     {   char bb[4];
         for (j=0; j<32; j++)
-        {   bb[0] = i+j;
+        {   int c = i + j;
 #ifdef WIN32
+            int n = 1;
+            bb[0] = c;
+            if (c >= 0x80)
+            {   bb[0] = 0xc0 + (c >> 6);
+                bb[1] = 0x80 | (c & 0x3f);
+                n = 2;
+            }
             if (ff->hasChar(i+j))
-                dc.drawText(32*j+5, 3*i+40, &bb[0], 1);
+                dc.drawText(32*j+5, 3*i+40, &bb[0], n);
 #else
 /*          if (i+j >= 0x80) continue; */
+            bb[0] = i+j;
             FT_UInt bbb[1];
             bbb[0] = i+j+1;
             XftDrawGlyphs(ftDraw, &ftBlack, ftFont,
