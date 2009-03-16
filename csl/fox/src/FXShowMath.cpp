@@ -3060,16 +3060,21 @@ static char remapTable[33] =
 
 static int remap(int ch)
 {
-    ch &= 0xff;       // in case chars are signed.
 #ifndef WIN32
 // If I use Xft to render things I can afford to (and indeed had better)
 // use glyph positions in ther original locations. Also if I am printing
 // I will avoid remapping.
     return (char)ch;
 #else
-    if (ch <= 0x20) return remapTable[ch];
-    else if (ch == 0x7f) return (char)0xc4;
-    else return (char)ch;
+    int ch1;
+    ch &= 0xff;       // in case chars are signed.
+    if (ch <= 0x20) ch1 = remapTable[ch];
+    else if (ch == 0x7f) ch1 = 0xc4;
+    else ch1 = ch;
+#ifdef TEST
+    if ((char)ch != (char)ch1) printf("Char %x mapped to %x\n", ch, ch1 & 0xff);
+#endif
+    return (char)ch1;
 #endif
 }
 

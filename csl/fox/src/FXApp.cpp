@@ -2247,7 +2247,8 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
           else
             event.text=translateKeyEvent(ev);
 #ifdef TEST
-          printf("translateKeyEvent generates text \"%s\" state %x\n", event.text, event.state);
+          printf("translateKeyEvent generates text \"%s\" state %x\n",
+                  event.text.text(), event.state);
 #endif
           }
 
