@@ -54,7 +54,7 @@ exports quotelog,rl_mkbb,rl_mkserv,rl_op,rl_arg1,rl_arg2l,rl_arg2r,rl_argn,
    rl_enter,rl_onp,rl_vonoff,rl_updcache,rl_serviadd,rl_bbiadd;
 
 fluid '(rl_cid!* rl_argl!* rl_usedcname!* rl_deflang!* rl_ocswitches!*
-   rl_bbl!* rl_servl!*);
+   rl_bbl!* rl_servl!* !*utf8);
 
 fluid '(fancy!-line!* fancy!-pos!*);
 
@@ -205,12 +205,16 @@ put('and,'rl_simpfn,'rl_simpbop);
 put('and,'rl_prepfn,'rl_prepbop);
 put('and,'pprifn,'rl_ppriop);
 put('and,'fancy!-pprifn,'rl_fancy!-ppriop);
+if rl_texmacsp() then
+   put('and,'fancy!-infix!-symbol,"\,\wedge\, ");
 
 put('or,'rtypefn,'quotelog);
 put('or,'rl_simpfn,'rl_simpbop);
 put('or,'rl_prepfn,'rl_prepbop);
 put('or,'pprifn,'rl_ppriop);
 put('or,'fancy!-pprifn,'rl_fancy!-ppriop);
+if rl_texmacsp() then
+   put('or,'fancy!-infix!-symbol,"\,\vee\, ");
 
 put('not,'rtypefn,'quotelog);
 put('not,'rl_simpfn,'rl_simpbop);
@@ -223,7 +227,7 @@ put('impl,'rl_prepfn,'rl_prepbop);
 put('impl,'number!-of!-args,2);
 put('impl,'pprifn,'rl_ppriop);
 if rl_texmacsp() then
-   put('impl,'fancy!-infix!-symbol,"\longrightarrow ")
+   put('impl,'fancy!-infix!-symbol,"\,\longrightarrow\, ")
 else
    put('impl,'fancy!-infix!-symbol,222);
 
@@ -234,7 +238,7 @@ put('repl,'rl_prepfn,'rl_prepbop);
 put('repl,'number!-of!-args,2);
 put('repl,'pprifn,'rl_ppriop);
 if rl_texmacsp() then
-   put('repl,'fancy!-infix!-symbol,"\longleftarrow ")
+   put('repl,'fancy!-infix!-symbol,"\,\longleftarrow\, ")
 else
    put('repl,'fancy!-infix!-symbol,220);
 
@@ -245,7 +249,7 @@ put('equiv,'rl_prepfn,'rl_prepbop);
 put('equiv,'number!-of!-args,2);
 put('equiv,'pprifn,'rl_ppriop);
 if rl_texmacsp() then
-   put('equiv,'fancy!-infix!-symbol,"\longleftrightarrow ")
+   put('equiv,'fancy!-infix!-symbol,"\,\longleftrightarrow\, ")
 else
    put('equiv,'fancy!-infix!-symbol,219);
 

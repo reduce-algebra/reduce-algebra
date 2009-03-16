@@ -277,7 +277,8 @@ procedure rl_priq(qf);
    begin scalar m;
       if null !*nat then return 'failed;
       maprin car qf;
-      prin2!* " ";
+      if not !*utf8 then
+      	 prin2!* " ";
       maprin cadr qf;
       prin2!* " ";
       if pairp(m := caddr qf) and car m memq '(ex all) then

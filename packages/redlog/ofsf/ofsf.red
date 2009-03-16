@@ -44,6 +44,7 @@ create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe),
    nil);
 
+load!-package 'redlog;
 load!-package 'cl;
 load!-package 'rltools;
 load!-package 'linalg;
@@ -246,26 +247,36 @@ put('neq,'ofsf_simpfn,'ofsf_chsimpat);
 put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
 newtok '((!< !>) neq);
+if rl_texmacsp() then
+   put('neq,'fancy!-infix!-symbol,"\,\neq\, ");
 
 algebraic infix leq;
 put('leq,'ofsf_simpfn,'ofsf_chsimpat);
 put('leq,'number!-of!-args,2);
 put('leq,'rtypefn,'quotelog);
+if rl_texmacsp() then
+   put('leq,'fancy!-infix!-symbol,"\,\leq\, ");
 
 algebraic infix geq;
 put('geq,'ofsf_simpfn,'ofsf_chsimpat);
 put('geq,'number!-of!-args,2);
 put('geq,'rtypefn,'quotelog);
+if rl_texmacsp() then
+   put('geq,'fancy!-infix!-symbol,"\,\geq\, ");
 
 algebraic infix lessp;
 put('lessp,'ofsf_simpfn,'ofsf_chsimpat);
 put('lessp,'number!-of!-args,2);
 put('lessp,'rtypefn,'quotelog);
+if rl_texmacsp() then
+   put('lessp,'fancy!-infix!-symbol,"\,<\, ");
 
 algebraic infix greaterp;
 put('greaterp,'ofsf_simpfn,'ofsf_chsimpat);
 put('greaterp,'number!-of!-args,2);
 put('greaterp,'rtypefn,'quotelog);
+if rl_texmacsp() then
+   put('greaterp,'fancy!-infix!-symbol,"\,>\, ");
 
 flag('(equal neq leq geq lessp greaterp),'spaced);
 flag('(ofsf_chsimpat),'full);
