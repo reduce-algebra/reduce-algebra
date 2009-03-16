@@ -3055,7 +3055,7 @@ static char remapTable[33] =
     0xa9, 0xaa, 0xad, 0xae, 0xaf, 0xb0, 0xb1, 0xb2,
     0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba,
     0xbb, 0xbc, 0xbd, 0xbe, 0xbf, 0xc0, 0xc1, 0xc2,
-    0xa0
+    0xc3
 };
 
 static int remap(int ch)
@@ -3067,9 +3067,7 @@ static int remap(int ch)
 // I will avoid remapping.
     return (char)ch;
 #else
-    if (ch < 0x20) return remapTable[ch];
-// There is SOME possibility that I should remap character 0x20 to 0xa0,
-// but right now my belief is that I should not.
+    if (ch <= 0x20) return remapTable[ch];
     else if (ch == 0x7f) return (char)0xc4;
     else return (char)ch;
 #endif

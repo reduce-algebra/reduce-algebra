@@ -247,6 +247,10 @@ AC_PROG_CPP
 AC_PROG_CXX
 AM_PROG_LIBTOOL
 
+# autoreconf suggests the following to keep libtool macros up to date
+# in a better way.
+AC_CONFIG_MACRO_DIR([m4])
+
 case $host_os in
    *darwin*)
 # I MUST do this after AC_PROG_CC. I should perhaps provide a flag to
