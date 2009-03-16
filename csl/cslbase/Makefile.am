@@ -859,17 +859,21 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 if windows
+#
+# Temporarily removed while the sourceforge rules and gnuplot binary
+# redistribution get investigated.
+#
 # I also unpack copies of the gnuplot binaries into this directory.
 # Note that I have a binary of zip in the support-packages directory
 # but I am going to require here that a version that works under whatever
 # shell you are using is on your path... Install it somewhere if you need to.
-	unzip -d . -j -o \
-		$(CYGSRC)/../support-packages/gp400win32.zip \
-		gnuplot/bin/wgnuplot.exe gnuplot/bin/wgnuplot.hlp \
-		gnuplot/bin/wgnuplot.mnu
+#	unzip -d . -j -o \
+#		$(CYGSRC)/../support-packages/gp400win32.zip \
+#		gnuplot/bin/wgnuplot.exe gnuplot/bin/wgnuplot.hlp \
+#		gnuplot/bin/wgnuplot.mnu
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
-	chmod +x wgnuplot.exe
+#	chmod +x wgnuplot.exe
 endif windows
 
 -include bootstrapreduce.dep
