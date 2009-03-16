@@ -563,6 +563,12 @@
 ./csl/fox/index.html
 ./csl/fox/install-sh
 ./csl/fox/ltmain.sh
+./csl/fox/m4
+./csl/fox/m4/libtool.m4
+./csl/fox/m4/ltoptions.m4
+./csl/fox/m4/ltsugar.m4
+./csl/fox/m4/ltversion.m4
+./csl/fox/m4/lt~obsolete.m4
 ./csl/fox/missing
 ./csl/fox/mkinstalldirs
 ./csl/fox/src
