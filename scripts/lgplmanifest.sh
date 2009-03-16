@@ -98,6 +98,7 @@ then
 # creating the "minimal" version of the sources.
   omit1="-name packages -prune -o \
          -name gabriel -prune -o \
+         -name generic -prune -o \
          -name libedit -prune -o \
          -name doc -prune -o \
          -name buglist -prune -o \
@@ -152,7 +153,8 @@ find . \
                 -name libreadline\* -o  \
                 -name log.log -o        \
                 -name csl.log -o        \
-                -name xport\* -o        \
+                -name xport.\* -o       \
+                -name xport -o          \
                 -name nsort -o          \
                 -name nsort.exe -o      \
                 -name untab -o          \
