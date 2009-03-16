@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 77b7a3c2 02-Feb-2009 */
+/* Signature: 63a62eae 16-Mar-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -593,6 +593,7 @@ static void showMetrics(int ch, void *ff)
     char b[2];
     b[0] = ch;
 #ifdef WIN32
+// NB this does not cope with char codes > 0x7f at present...
     if (printDC==NULL)
     {   printf("Char %.2x font %p height = %d depth = %d width = %d\n",
              ch, ff,
@@ -1351,11 +1352,17 @@ static int bracketWidth(char type, int flags, int height, int depth)
         }
         ch = s[n-2];
     }
-    char ss[1];
+    char ss[4];
     ss[0] = remap(ch);
     void *ff = mathFont[fnt + (flags & FontSizeMask)];
 #ifdef WIN32
-    return ((FXFont *)ff)->getTextWidth(ss, 1);
+    int nn = 1;
+    if ((ss[0] & 0xff) >= 0x80)
+    {   ss[1] = 0x80 | (ss[0] & 0x3f);
+        ss[0] = 0xc0 | ((ss[0] & 0xff) >> 6);
+        nn = 2;
+    }
+    return ((FXFont *)ff)->getTextWidth(ss, nn);
 #else
     return xfWidth(ff, ss, 1);
 #endif
@@ -1545,6 +1552,10 @@ default:
     }
 }
 
+#ifdef WIN32
+static char utfchars[256];
+#endif
+
 void measureBox1(Box *b)
 {
     int f, h, w, d, dy, d1, h1;
@@ -1557,6 +1568,9 @@ void measureBox1(Box *b)
     MatrixBox *m;
     BracketBox *bb;
     TopBox *tt;
+    char utflength;
+    int l;
+    char *ss;
     if (DEBUGFONT & 4)
     {   printf("measureBox1(%p)\n", b); fflush(stdout);
         printf("type = %d\n", b->text.type); fflush(stdout);
@@ -1612,7 +1626,19 @@ case BoxText:
         h = mathFontHeight[t->flags & FontSizeMask];
         d = mathFontDepth[t->flags & FontSizeMask];
 #ifdef WIN32
-        w = ((FXFont *)ff)->getTextWidth(t->text, t->n);
+        utflength = 0;
+        l = t->n;
+        ss = t->text;
+        while (l > 0)
+        {   int c = *ss++ & 0xff;
+            l--;
+            if (c < 0x80) utfchars[utflength++] = c;
+            else
+            {   utfchars[utflength++] = 0xc0 | (c >> 6);
+                utfchars[utflength++] = 0x80 | (c & 0x3f);
+            }
+        }
+        w = ((FXFont *)ff)->getTextWidth(utfchars, utflength);
 #else
         w = xfWidth(ff, t->text, t->n);
 #endif
@@ -3837,7 +3863,24 @@ void updateOwner(Box *b, int p)
 #ifdef WIN32
 
 #define setFont1(dc, ff) dc->setFont((FXFont *)ff)
-#define drawText1(dc, x, y, ss, l) dc->drawText(x, y, ss, l)
+
+static void drawText1(FXDC *dc, int x, int y, const char *ss, int l)
+{
+    int utflength = 0;
+    while (l > 0)
+    {   int c = *ss++ & 0xff;
+        l--;
+        if (c < 0x80) utfchars[utflength++] = c;
+        else
+        {   utfchars[utflength++] = 0xc0 | (c >> 6);
+            utfchars[utflength++] = 0x80 | (c & 0x3f);
+        }
+    }
+    dc->drawText(x, y, utfchars, utflength);
+}
+
+
+
 
 #else
 
