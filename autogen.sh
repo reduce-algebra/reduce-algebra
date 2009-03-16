@@ -7,26 +7,28 @@
 # and so doing an autoreconf once at the top-level is not enough.
 
 aclocal
-autoreconf
+autoreconf -i -f -v
 
 cd csl/cslbase
 aclocal
-autoreconf -f
+autoreconf -i -f -v
 
 cd ../fox
+rm -f ltmain.sh
+touch ltmain.sh
 aclocal
-autoreconf -f
+autoreconf -i -f -v
 
 if test -d ../foxtests
 then
   cd ../foxtests
   aclocal
-  autoreconf -f
+  autoreconf -i -f -v
 fi
 
 cd ../../psl
 aclocal
-autoreconf -f
+autoreconf -i -f -v
 
 cd ..
 
