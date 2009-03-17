@@ -32,14 +32,16 @@ CC = @CC@
 
 LIBS = @LIBS@
 
-CFLAGS = @CFLAGS@ @DEFS@ -Wall -DBUILDTIME="\"`LANG=en date +%d-%b-%Y`\""
+CFLAGS = @CFLAGS@ @DEFS@ -Wall -DBUILDTIME="\"`LANG=en date +%d-%b-%Y`\"" -I.
 
 LDFLAGS = @LDFLAGS@
 
 OBJ = redfront.o redsig.o redstrings.o redparent.o redchild.o redline.o
 
-# ----------------------------------------------------------------------
-# Do not edit below this line
+srcdir = @srcdir@
+
+vpath %.c $(srcdir)
+vpath %.h .:$(srcdir)
 
 all: redfront
 
