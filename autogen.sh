@@ -6,28 +6,29 @@
 # because I am not using autoconf's own mechanisms for sub-directories
 # and so doing an autoreconf once at the top-level is not enough.
 
-aclocal
+# The flags to autoreconf indicate
+#   -i    install fresh copies of all relevant script-files etc
+#   -f    force all updates regardless of date-stamps
+#   -v    display some information about what is being done.
+
 autoreconf -i -f -v
 
 cd csl/cslbase
-aclocal
 autoreconf -i -f -v
 
 cd ../fox
+# The following two lines may be necessary on some systems?
 rm -f ltmain.sh
 touch ltmain.sh
-aclocal
 autoreconf -i -f -v
 
 if test -d ../foxtests
 then
   cd ../foxtests
-  aclocal
   autoreconf -i -f -v
 fi
 
 cd ../../psl
-aclocal
 autoreconf -i -f -v
 
 cd ..
