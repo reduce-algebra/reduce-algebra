@@ -1,0 +1,6 @@
+This package is used to synchronise a local cope of files with one on a
+remote server. These days one might use subversion or some other more general
+and more standard package, but this nevertheless has legacy application.
+
+          A C Norman
+
