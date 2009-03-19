@@ -15842,8 +15842,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 # autoreconf suggests the following to keep libtool macros up to date
-# in a better way.
-
+# in a better way. But I then have trouble with libtool after all so until
+# I understand better this is going away.
+# AC_CONFIG_MACRO_DIR([m4])
 
 case $host_os in
    *darwin*)

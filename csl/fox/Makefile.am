@@ -4,7 +4,9 @@
 AUTOMAKE_OPTIONS = foreign dist-zip
 #AUTOMAKE_OPTIONS = foreign dist-zip no-dependencies
 
-ACLOCAL_AMFLAGS = -I m4
+# The following might have been a mistake since if used might have been
+# needed in the Makefile.am of every sub-directory too?
+# ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS    = utils include src doc
 EXTRA_DIST = ADDITIONS AUTHORS INSTALL LICENSE LICENSE_ADDENDUM TRACING README fox.lsm index.html aclocal.m4

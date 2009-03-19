@@ -45,10 +45,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	config.sub depcomp install-sh ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.in
+am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -234,7 +231,10 @@ xp64_TRUE = @xp64_TRUE@
 # For non-gcc compilers, change the options to "no-dependencies"
 AUTOMAKE_OPTIONS = foreign dist-zip
 #AUTOMAKE_OPTIONS = foreign dist-zip no-dependencies
-ACLOCAL_AMFLAGS = -I m4
+
+# The following might have been a mistake since if used might have been
+# needed in the Makefile.am of every sub-directory too?
+# ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = utils include src doc
 EXTRA_DIST = ADDITIONS AUTHORS INSTALL LICENSE LICENSE_ADDENDUM TRACING README fox.lsm index.html aclocal.m4
 bin_SCRIPTS = fox-config
@@ -465,7 +465,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/include $(distdir)/m4 $(distdir)/src
+	$(mkdir_p) $(distdir)/. $(distdir)/include $(distdir)/src
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
