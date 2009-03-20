@@ -69,11 +69,31 @@ then
   esac
 fi
 
+# Now I need to build a copy of the "xport" utility. You may view it as
+# mildly eccentric to build this tool at configure time!
+
+mkdir xport
+cd xport
+$srcdir/support-packages/xport-2.05/configure
+make
+cd ..
+
 AC_MSG_NOTICE([Will build this PSL using the $pslver initial binaries])
 
-rm -rf psl
+# rm -rf psl
 mkdir psl
 cp -r $srcdir/psl-$pslver/* psl
+
+# Now in my new world about the only thing that will have been copied here
+# will be a file "xport.pat". This can then be used to arrange to fetch the
+# relevant pre-build PSL binary files from a web-site (www.zib.de) where they
+# are maintained, and is a scheme adopted here to make thePSL version
+# available NOW while a full source release is still being worked on.
+
+cd psl
+AC_MSG_NOTICE([About to update PSL binaries from master web-site at ZIB])
+../xport/xport -fetch
+cd ..
 
 # The pre-built PSL file-sets contain a file called "64", probably containing
 # just the text "yes", in cases that the implementation is 64-bit.
