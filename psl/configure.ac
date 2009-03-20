@@ -93,6 +93,9 @@ cp -r $srcdir/psl-$pslver/* psl
 cd psl
 AC_MSG_NOTICE([About to update PSL binaries from master web-site at ZIB])
 ../xport/xport -fetch
+# xport.pat should really have "executable bpsl" in it, but in case it does
+# not I will force executable status here...
+chmod +x bpsl*
 cd ..
 
 # The pre-built PSL file-sets contain a file called "64", probably containing
