@@ -1,4 +1,10 @@
 #!/bin/csh -f
+
+# This scripts is NOT in use at present - it is here as a left over from
+# old arrangements and as a reminder to those creating the new-model
+# scripts.
+
+
 # Script to load PSL REDUCE. It should be installed in /usr/local/bin,
 # somewhere in your search path.
 if ($?reduce == 0) then
