@@ -31,7 +31,10 @@ fi
 cd ../../psl
 autoreconf -i -f -v
 
-cd ..
+cd support-packages/xport-1.05
+autoreconf -i -f -v
+
+cd ../../..
 
 scripts/resetall.sh
 
