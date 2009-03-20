@@ -1,14 +1,22 @@
-This directory contains PSL binaries.
-=====================================
+Status report March 2009
+========================
 
-Do not re-distribute without checking with ZIB (neun@zib.de).
+This file contains a collection of little directories with names such as
+psl-win32 etc. Each basically contains a file "xport,pat". The directory
+"support-packages" contains a utility "xport" that can process this and that
+fetches a set of PSL binaries from a web-site as specified in xport.pat.
 
+The PSL build scripts arrange to compile xport and use it in such a way that
+the PSL binaries relevant to you computer get fetched and placed within
+the pslbuild subdirectory at the top level here.
 
-There are two sorts of things here. Firstly there are a bunch of directories
-with names like psl-amd64 and psl-win32 that contain ready-built binaries
-of a basic kermel version of PSL.
+All this arrangement is because we do not yet have the PSL sources in a tidy
+state for release - and that includes getting them in a state where the
+associated build-scripts are all easy to use and everything has been at
+least reasonably checked. It is hoped that in a while there will be a PSL
+source release, but at present this is not generally available. But the
+current arrangements should allow the PSL version of Reduce to be built
+and used.
 
-Then there are a load of script and related files used for re-building REDUCE
-in a PSL world.
 
 
