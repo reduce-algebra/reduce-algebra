@@ -13,6 +13,12 @@
 
 os="unknown"
 
+# I think it is probable that if lsb_release is available  the result it
+# provides will be more reliable than looking in /etc/issue
+
+vendor=`if lsb_release -d 2>/dev/null; then : ; else echo unknown; fi`
+version=`if lsb_release -r 2>/dev/null; then : ; else echo unknown; fi` 
+
 case `uname -a` in
 *CYGWIN* | *Cygwin* | *cygwin* | *MINGW* | *MinGW* | *Mingw* | *mingw*)
   echo "windows"

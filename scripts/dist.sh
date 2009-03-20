@@ -75,8 +75,8 @@ lgpl="no"
 d=`date +%Y%m%d`
 LGPL=""
 
-f="openreduce-$d"
-fbase="openreduce"
+f="reduce-algebra-$d"
+fbase="reduce-algebra"
 
 case $0 in
 *lgpl*)
@@ -138,7 +138,7 @@ find . \
        -name \*.old -prune -o           \
        \( -name cygwin32                \
           -exec $here/reject.sh ./psl/cygwin32 {} \; \) -prune -o \
-       -name openreduce-\* -prune -o    \
+       -name reduce-algebra-\* -prune -o    \
        -name lgplfiles\* -prune -o      \
        $omit1                           \
        -name autom4te.cache -prune -o   \
@@ -159,7 +159,7 @@ find . \
                 -name nsort.exe -o      \
                 -name untab -o          \
                 -name untab.exe -o      \
-                -name openreduce.tar.bz2 -o \
+                -name reduce-algebra.tar.bz2 -o \
                 -name .htaccess -o      \
                 -name MANIFEST.new -o   \
                 -name LGPLMANIFEST.new  \
@@ -213,7 +213,7 @@ then
 
   if test "$lgpl" = "no"
   then
-    ln -sf $f.tar.bz2 openreduce.tar.bz2
+    ln -sf $f.tar.bz2 reduce-algebra.tar.bz2
   fi
 
   ls -lhd ${fbase}*.tar.bz2
