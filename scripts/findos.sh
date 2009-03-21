@@ -66,7 +66,7 @@ then
     os="$vendor$version"
   else
     os="$vendor"
-  end
+  fi
 else
   if test -f /etc/issue
   then
