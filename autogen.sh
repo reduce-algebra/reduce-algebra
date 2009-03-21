@@ -31,7 +31,7 @@ fi
 cd ../../psl
 autoreconf -i -f -v
 
-cd support-packages/xport-1.05
+cd support-packages/xport-2.05
 autoreconf -i -f -v
 
 cd ../../..
