@@ -47,10 +47,11 @@ echo Current machine tag is $host
 # the possible cross-builds using it for 64-bit windows as well as all
 # the normal builds native on this platform.
 
-if x86_64-pc-mingw32-gcc scripts/hello.c -o hello.exe 2> /dev/null
+if { x86_64-pc-mingw32-gcc scripts/hello.c -o hello.exe ; } 2> /dev/null
 then
   host="$host x86_64-pc-windows"
 fi
+
 rm -f hello.exe
 
 # I REALLY want to use GNU make, so here is some stuff to try to
@@ -63,7 +64,7 @@ if test "x$MAKE" = "x"
 then
   if test -x /usr/sfw/bin/gmake
   then MAKE=/usr/sfw/bin/gmake
-  if test -x /usr/pkg/bin/gmake
+  elif test -x /usr/pkg/bin/gmake
   then MAKE=/usr/pkg/bin/gmake
   elif test -x /usr/local/bin/gmake
   then MAKE=/usr/local/bin/gmake
