@@ -56,12 +56,15 @@ rm -f hello.exe
 # I REALLY want to use GNU make, so here is some stuff to try to
 # find a version. The "/usr/sfw" location is used on Solaris, while
 # "/usr/local" is a plausible place to look in case a user has built and
-# installed it for themselves.
+# installed it for themselves. Some BSD variants will build imported
+# packages in /pkg/bin so I look there too...
 
 if test "x$MAKE" = "x"
 then
   if test -x /usr/sfw/bin/gmake
   then MAKE=/usr/sfw/bin/gmake
+  if test -x /usr/pkg/bin/gmake
+  then MAKE=/usr/pkg/bin/gmake
   elif test -x /usr/local/bin/gmake
   then MAKE=/usr/local/bin/gmake
   elif test -x /usr/bin/gmake
