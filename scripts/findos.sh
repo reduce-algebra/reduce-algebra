@@ -58,9 +58,9 @@ fi
 
 
 
-if "x$vendor" != "xunknown"
+if test "x$vendor" != "xunknown"
 then
-  if "x$version" != "xunknown"
+  if test "x$version" != "xunknown"
   then
     version=`echo $version | sed '-e s/[^:]*:[ \t]*//'`
     os="$vendor$version"
@@ -137,7 +137,7 @@ else
 fi
 
 # I want to ensure that there are no blanks, table or slashed in the name
-os = `echo $os | sed -e 's/[ \t/]//g'`
+os=`echo $os | sed -e 's/[ \t/]//g'`
 
 echo $os
 
