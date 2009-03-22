@@ -28,31 +28,110 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "redfront.h"
+
 #define SYSMAXBUFFER 198
 
 #define READING_OUTPUT 1
 #define READING_PROMPT 2
 #define FINISHED 0
 
-#include "redfront.h"
-
-extern int MeToReduce[],ReduceToMe[],debug;
-
+extern int MeToReduce[];
+extern int ReduceToMe[];
+extern int debug;
 extern int verbose;
 extern int unicode;
 
-char* load_package(const char* package) {
+void parent(void);
+void atoploop(void);
+char *load_package(const char *);
+void read_until_first_prompt(char *);
+char *read_valid_line(char *);
+int is_too_long(char *);
+int badline(char *);
+char *append_line(char *,char *);
+void send_reduce(char *);
+void read_until_prompt(char *);
+
+void parent(void) {
+  installSignalHandlers(); 
+	
+#ifdef HAVE_SETLINEBUF
+  setlinebuf(stdout);
+#endif
+	
+  textcolor(REDFRONTCOLOR);
+	
+  printf("REDFRONT %s",VERSION);
+  if (verbose) {
+    printf("-%s-%s by A. Dolzmann and T. Sturm",
+	   (USE_PIPES) ? "p" : "s",(STATIC) ? " s" : "d");
+  }
+  printf(", built %s ...\n",BUILDTIME);
+
+  close(MeToReduce[0]);
+  close(ReduceToMe[1]);
+
+#ifdef DEBUG
+  if (debug) {
+    textcolor(DEBUGCOLOR);
+    fprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
+	    MeToReduce[1], ReduceToMe[0]);
+    textcolor(NORMALCOLOR);
+    fflush(stderr);
+  }
+#endif
+  
+  atoploop();
+}
+
+void atoploop(void) {
+  char der_prompt[50],old_prompt[50];
+  char *line_read = (char *)NULL;
+  char *this_command = (char *)NULL;
+  
+  load_package(unicode ? "redfront,utf8": "redfront");
+
+  read_until_first_prompt(der_prompt);
+
+#ifdef DEBUG
+  if (debug) {
+    textcolor(DEBUGCOLOR);
+    fprintf(stderr,"parent: read first prompt\n");
+    textcolor(NORMALCOLOR);
+    fflush(stderr);
+  }
+#endif
+
+  while (1) {
+
+    if (line_read != (char *)NULL)
+      free(line_read);
+    line_read = read_valid_line(der_prompt);
+
+    this_command = append_line(this_command,line_read);
+
+    send_reduce(line_read);
+
+    strcpy(old_prompt,der_prompt);
+
+    read_until_prompt(der_prompt);
+
+    if (!CMDHIST || strcmp(old_prompt,der_prompt) != 0) {
+      rf_add_history(this_command);
+      this_command = NULL;
+    }
+  }
+}
+
+char *load_package(const char *package) {
   char *cmd;
   int len;
-  char ch;
   
   len = strlen(package)+strlen("load_package $");
   cmd = (char *)malloc(len + 1);
   sprintf(cmd,"load_package %s$",package);
-  write(MeToReduce[1],cmd,len);
-	
-  ch = 0x0a;
-  write(MeToReduce[1],&ch,1);
+  send_reduce(cmd);
 
 #ifdef DEBUG
   if (debug) {
@@ -104,34 +183,7 @@ void read_until_first_prompt(char der_prompt[]) {
   fflush(stdout);
 }
 
-int badline(char line[]) {
-  int i=0,n=0;
-	
-  while (n <= SYSMAXBUFFER && line[i]) {
-    if (line[i] == 0x0a)
-      n = 0;
-    i++;
-    n++;
-  }
-  return (n > SYSMAXBUFFER);
-}
-
-int is_too_long(char line_read[]) {
-#ifndef RBPSL
-  return 0;
-#else
-  if (badline(line_read)) {
-    textcolor(REDFRONTCOLOR);
-    printf("redfront: overlong input line\n");
-    textcolor(INPUTCOLOR);
-    return 1;
-  }
-  else
-    return 0;
-#endif
-}
-
-char* read_valid_line(char der_prompt[]) {
+char *read_valid_line(char der_prompt[]) {
   char orig_prompt[50];
   char *line_read;
 
@@ -170,69 +222,38 @@ char* read_valid_line(char der_prompt[]) {
   return line_read;
 }
 
-void read_until_prompt(char der_prompt[]){
-  int status=READING_OUTPUT;
-  char buffer[1000];
-  int ncharread;
-  int ii;
-  int pii=0;
-  char ch;
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(DEBUGCOLOR);
-    fprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
-	    der_prompt);
-    textcolor(NORMALCOLOR);
-    fflush(stderr);
+int is_too_long(char line_read[]) {
+#ifndef RBPSL
+  return 0;
+#else
+  if (badline(line_read)) {
+    textcolor(REDFRONTCOLOR);
+    printf("redfront: overlong input line\n");
+    textcolor(INPUTCOLOR);
+    return 1;
   }
-#endif
-
-  textcolor(NORMALCOLOR);
-
-  while(status != FINISHED) {
-    ncharread = read(ReduceToMe[0],buffer,1000);
-    for (ii=0; ii < ncharread; ii++) {
-      ch = buffer[ii];
-      if (ch == (char) 0x01) {
-	status = READING_PROMPT;
-	pii = 0;
-      } else if (ch == (char) 0x02) {
-	status = FINISHED;
-      }
-      if (status == READING_OUTPUT) {
-	if (ch == (char) 0x03 ) {
-	  textcolor(OUTPUTCOLOR);
-	}
-	else if (ch == (char) 0x04 ) {
-	  textcolor(NORMALCOLOR);
-	}
-	else {
-	  printf("%c",ch);
-	}
-      } else if (status == READING_PROMPT) {
-	if ((int) ch > 31)
-	  der_prompt[pii++] = ch;
-      } else {	/* (status == FINISHED) */
-	der_prompt[pii] = 0x00; 
-      } 
-    }
-    fflush(stdout);	
-  }
-  
-#ifdef DEBUG
-  if (debug) {
-    textcolor(DEBUGCOLOR);
-    fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
-    textcolor(NORMALCOLOR);
-    fflush(stderr);
-  }
+  else
+    return 0;
 #endif
 }
 
-char* append_line(char* c,char* l) {
+int badline(char line[]) {
+  int i=0,n=0;
+	
+  while (n <= SYSMAXBUFFER && line[i]) {
+    if (line[i] == 0x0a)
+      n = 0;
+    i++;
+    n++;
+  }
+  return (n > SYSMAXBUFFER);
+}
+
+
+char *append_line(char *c,char *l) {
 #ifdef HAVE_HISTORY
-  char* s;
+  char *s;
   int lenc,lenl;
 
 #ifdef DEBUG
@@ -315,56 +336,62 @@ void send_reduce(char line_read[]) {
 
 }
 
-void atoploop(void) {
-  char der_prompt[50],old_prompt[50];
-  char *line_read = (char *)NULL;
-  char *this_command = (char *)NULL;
-  
-  load_package(unicode ? "redfront,utf8": "redfront");
-
-  read_until_first_prompt(der_prompt);
+void read_until_prompt(char der_prompt[]){
+  int status=READING_OUTPUT;
+  char buffer[1000];
+  int ncharread;
+  int ii;
+  int pii=0;
+  char ch;
 
 #ifdef DEBUG
   if (debug) {
     textcolor(DEBUGCOLOR);
-    fprintf(stderr,"parent: read first prompt\n");
+    fprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
+	    der_prompt);
     textcolor(NORMALCOLOR);
     fflush(stderr);
   }
 #endif
 
-  while (1) {
+  textcolor(NORMALCOLOR);
 
-    if (line_read != (char *)NULL)
-      free(line_read);
-    line_read = read_valid_line(der_prompt);
-
-    this_command = append_line(this_command,line_read);
-
-    send_reduce(line_read);
-
-    strcpy(old_prompt,der_prompt);
-
-    read_until_prompt(der_prompt);
-
-    if (!CMDHIST || strcmp(old_prompt,der_prompt) != 0) {
-      rf_add_history(this_command);
-      this_command = NULL;
+  while(status != FINISHED) {
+    ncharread = read(ReduceToMe[0],buffer,1000);
+    for (ii=0; ii < ncharread; ii++) {
+      ch = buffer[ii];
+      if (ch == (char) 0x01) {
+	status = READING_PROMPT;
+	pii = 0;
+      } else if (ch == (char) 0x02) {
+	status = FINISHED;
+      }
+      if (status == READING_OUTPUT) {
+	if (ch == (char) 0x03 ) {
+	  textcolor(OUTPUTCOLOR);
+	}
+	else if (ch == (char) 0x04 ) {
+	  textcolor(NORMALCOLOR);
+	}
+	else {
+	  printf("%c",ch);
+	}
+      } else if (status == READING_PROMPT) {
+	if ((int) ch > 31)
+	  der_prompt[pii++] = ch;
+      } else {	/* (status == FINISHED) */
+	der_prompt[pii] = 0x00; 
+      } 
     }
+    fflush(stdout);	
   }
-}
-
-void parent(void) {
-  installSignalHandlers(); 
-	
-#ifdef HAVE_SETLINEBUF
-  setlinebuf(stdout);
-#endif
-	
-  textcolor(REDFRONTCOLOR);
-	
-  printf("REDFRONT %s%s%s, built %s ...\n",VERSION,STATIC,
-	 (verbose) ? " by A. Dolzmann and T. Sturm" : "",BUILDTIME);
   
-  atoploop();
+#ifdef DEBUG
+  if (debug) {
+    textcolor(DEBUGCOLOR);
+    fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
+    textcolor(NORMALCOLOR);
+    fflush(stderr);
+  }
+#endif
 }

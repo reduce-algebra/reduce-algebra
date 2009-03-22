@@ -30,12 +30,14 @@
 
 #include "redfront.h"
 
-extern int MeToReduce[],ReduceToMe[],debug;
+extern int MeToReduce[];
+extern int ReduceToMe[];
 
+extern int debug;
+extern int verbose;
 extern char *memory;
 
-extern int verbose;
-
+void child(int,char **,char **);
 void create_call(int,char **,char **);
 
 void child(int argc,char *argv[],char *envp[]) {
@@ -43,9 +45,25 @@ void child(int argc,char *argv[],char *envp[]) {
 
   removeSignalHandlers();  /* Just to make sure! */
 
+  close(MeToReduce[1]);
+  close(ReduceToMe[0]);
+
+#ifdef DEBUG
+  if (debug) {
+    textcolor(DEBUGCOLOR);
+    fprintf(stderr,"child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
+	    MeToReduce[0], ReduceToMe[1]);
+    textcolor(NORMALCOLOR);
+    fflush(stderr);
+  }
+#endif
+
   dup2(MeToReduce[0],STDIN_FILENO);
   dup2(ReduceToMe[1],STDOUT_FILENO);
 
+  close(MeToReduce[0]);
+  close(ReduceToMe[1]);
+  
   create_call(argc,argv,nargv);
   
 #ifdef DEBUG
@@ -98,15 +116,10 @@ void create_call(int argc,char *argv[],char *nargv[]) {
       close(tempfd);
 
     nargv[0] = BPSL;
-
     nargv[1] = "-td";
-
     nargv[2] = memory;
-    
     nargv[3] = "-f";
-
     nargv[4] = REDIMG;
-
     nargv[5] = (char *)0;
    
 #elif defined REDUCE
@@ -120,13 +133,9 @@ void create_call(int argc,char *argv[],char *nargv[]) {
       close(tempfd);
 
     nargv[0] = REDUCE;
-    
     nargv[1] = "-w";
-    
     nargv[2] = "-b";
-
     nargv[3] = verbose ? "-V" : (char *)0;
-
     nargv[4] = (char *)0;
     
 #endif

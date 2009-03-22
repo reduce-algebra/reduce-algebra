@@ -30,7 +30,11 @@
 
 #include "redfront.h"
 
-extern int debug,reduceProcessID,MeToReduce[];
+extern int reduceProcessID;
+
+extern int MeToReduce[];
+
+extern int debug;
 
 RETSIGTYPE ReduceSigGen(int);
 RETSIGTYPE ReduceSigInt(int);
@@ -43,9 +47,6 @@ void red_felt_term(int);
 int red_kill_sub(int);
 void red_kill_sub2(void);
 pid_t redfront_waitpid(int,int *);
-
-/* Signal handlers. Generally dedicated to catching the Reduce child
-   process, slicing it into little pieces and fleeing for one's life. */
 
 RETSIGTYPE ReduceSigGen(int arg) {
 #ifdef DEBUG
@@ -74,11 +75,13 @@ RETSIGTYPE ReduceSigGen(int arg) {
 RETSIGTYPE ReduceSigInt(int arg) {
   /* Only used for CSL */
 
+#ifdef DEBUG
   if (debug) {
     textcolor(DEBUGCOLOR);
     fprintf(stderr,"ReduceSigInt(%d)\n",arg);
     textcolor(NORMALCOLOR);
   }
+#endif
 
   write(MeToReduce[1],"a\n",2);
 }

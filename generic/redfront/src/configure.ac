@@ -42,6 +42,24 @@ RBUILD=$(basename $BUILD -debug)
 
 AC_CONFIG_HEADER(config.h)
 
+dnl Checks for programs.
+AC_PROG_CC
+
+if test "$EXEEXT" == ".exe" ; then
+   AC_DEFINE(WIN32,1,[This is some Windows version])
+   AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead if sockets])
+else
+   AC_ARG_ENABLE(pipes,
+   AC_HELP_STRING([--enable-pipes],
+		  [use pipes instead if sockets [[no/forced on Windows]]]),
+   if test "$enableval" = no ; then
+      AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
+   else
+      AC_DEFINE(USE_PIPES,1,[Define to 1 for using pipes instead if sockets])
+   fi,
+   AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
+fi
+
 AC_ARG_WITH(csl,
   AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
@@ -56,13 +74,13 @@ if test "x$with_csl" != "xno" ; then
    if test "x$with_psl" != "xno" ; then
       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
    fi
-   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce",
+   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$EXEEXT",
       [Define your executable REDUCE (with CSL)])
 elif test "x$with_psl" != "xno" ; then
    if test "x$with_csl" != "xno" ; then
       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
    fi
-   AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl",
+   AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT",
 	[Define your executable bpsl (with PSL)])
    AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
 	[Define your REDUCE image (with PSL)])
@@ -78,9 +96,6 @@ fi
 
 AC_DEFINE_UNQUOTED(REDFRONTROOT,"$abssrcdir/packages/redfront",
 	[Define the location of redfront.red])
-
-dnl Checks for programs.
-AC_PROG_CC
 
 dnl Checks for libraries.
 dnl AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
@@ -128,12 +143,12 @@ fi)
 
 AC_ARG_ENABLE(static,[  --enable-static         force static linking [[no]]],
 if test "$enableval" = yes ; then
-AC_DEFINE(STATIC,"s",[static linking info in banner])
+AC_DEFINE(STATIC,1,[static linking info in banner])
 AC_SUBST(LDFLAGS,"-static $LDFLAGS")
 else
-AC_DEFINE(STATIC,"",[static linking info in banner])
+AC_DEFINE(STATIC,0,[static linking info in banner])
 fi,
-AC_DEFINE(STATIC,"",[static linking info in banner])
+AC_DEFINE(STATIC,0,[static linking info in banner])
 )
 
 AC_ARG_ENABLE(readline,[  --enable-readline       use GNU readline instead of editline [[no]]],

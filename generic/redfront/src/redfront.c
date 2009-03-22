@@ -34,12 +34,8 @@
 
 int reduceProcessID;
 
-int color=1; 
-char *memory;
-
-/* Sockets for communication with Reduce; obtained from socketpair(),
-   so check your implementation! */
-int MeToReduce[2],ReduceToMe[2];
+int MeToReduce[2];
+int ReduceToMe[2];
 
 #ifdef DEBUG
 int debug = 1;
@@ -49,8 +45,10 @@ int debug = 0;
 
 int verbose = 0;
 int unicode = 0;
+int color = 1; 
+char *memory;
 
-void init_sockets(void);
+void init_channels(void);
 void parse_args(int,char **);
 char *parse_memarg(char *,char *);
 void print_usage(char *);
@@ -65,7 +63,7 @@ int main(int argc,char **argv,char **envp) {
 
   init_history();
 
-  init_sockets();
+  init_channels();
 
   if ((reduceProcessID = fork())) {  /* I am not the child */
 
@@ -100,16 +98,29 @@ int main(int argc,char **argv,char **envp) {
   return -1;
 }
 
-void init_sockets(void) {
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
-    perror("cannot open socket");
-    red_kill();
-    exit(-1);
-  }
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, ReduceToMe) < 0) {
-    perror("cannot open socket");
-    red_kill();
-    exit(-1);
+void init_channels(void) {
+  if (USE_PIPES) {
+    if (pipe(MeToReduce) < 0) {
+      perror("failed to create pipe MeToReduce\n");
+      red_kill();
+      exit(-1);
+    }
+    if (pipe(ReduceToMe) < 0) {
+      perror("failed to create pipe ReduceToMe\n");
+      red_kill();
+      exit(-1);
+    }
+  } else {
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
+      perror("cannot open socket MeToReduce");
+      red_kill();
+      exit(-1);
+    }
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, ReduceToMe) < 0) {
+      perror("cannot open socket ReduceToMe");
+      red_kill();
+      exit(-1);
+    }
   }
 }
 
