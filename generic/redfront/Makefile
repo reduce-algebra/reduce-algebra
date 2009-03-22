@@ -17,7 +17,7 @@ csl:
 	autoheader
 	mkdir -p csl/$(BUILD); \
 	cd csl/$(BUILD); \
-	LDFLAGS="-L/sw/lib" CFLAGS="-I/sw/include" ../../src/configure --with-csl --enable-readline --disable-universal; \
+	../../src/configure --with-csl; \
 	make
 
 psl:
@@ -26,7 +26,7 @@ psl:
 	autoheader
 	mkdir -p psl/$(BUILD); \
 	cd psl/$(BUILD); \
-	LDFLAGS="-L/sw/lib" CFLAGS="-I/sw/include" ../../src/configure --with-psl --enable-readline --disable-universal; \
+	../../src/configure --with-psl; \
 	make
 
 clean:

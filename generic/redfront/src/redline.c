@@ -30,16 +30,18 @@
 
 #include "redfront.h"
 
-#ifndef USE_READLINE
-
-
-
-#else
+#ifdef USE_READLINE
 
 #include <readline/readline.h>
 
 #ifdef HAVE_HISTORY
 #include <readline/history.h>
+#endif
+
+#else
+
+#include <editline/readline.h>
+
 #endif
 
 extern int color;
@@ -77,8 +79,9 @@ char *redline(const char *prompt) {
 char *color_prompt(char der_prompt[]) {
   if (color && HAVE_COLOR) {
     char help_prompt[50];
-		
+    
     strcpy(help_prompt,der_prompt);
+#ifdef USE_READLINE
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
 	    RL_PROMPT_START_IGNORE,
 	    0x1B,0,PROMPTCOLOR+30,9+40,
@@ -87,12 +90,15 @@ char *color_prompt(char der_prompt[]) {
 	    RL_PROMPT_START_IGNORE,
 	    0x1B,0,INPUTCOLOR+30,9+40,
 	    RL_PROMPT_END_IGNORE);
+#endif
   }
   return der_prompt;
 }
 
 void redline_cleanup_after_signal(void) {
+#ifdef USE_READLINE
   return rl_cleanup_after_signal();
+#endif
 }
 
 void redline_stifle_history(int size) {
@@ -102,5 +108,3 @@ void redline_stifle_history(int size) {
 void redline_write_history(const char *histfile) {
   write_history(histfile);
 }
-
-#endif

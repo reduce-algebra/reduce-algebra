@@ -60,6 +60,7 @@ dnl I have copied the following Apple stuff from cslbase/configure.ac.
 dnl Since I do not use automake, considerations about depnedency
 dnl tracking there are not relevant for me:
 case $host in *darwin*)
+  on_darwin=yes
   AC_MSG_NOTICE([Building for Macintosh/Darwin])
   AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
 # The following line was suggested by the libEDIT configuration files.
@@ -222,18 +223,20 @@ AC_DEFINE(USE_READLINE,1,[Use GNU libreadline instead of libedit])
 readline=yes
 fi)
 
-if test "x$readline" = "xyes" ; then
+AS_IF([test "$readline" = yes],
+  [AC_CHECK_LIB(readline,readline,LIBS="-lreadline $LIBS",
+      AC_MSG_ERROR("GNU readline not found"))
+   AC_CHECK_LIB(readline,using_history,
+      AC_DEFINE(HAVE_HISTORY,1,[history provided by libreadline]),
+      AC_CHECK_LIB(history,using_history,
+         AC_DEFINE(HAVE_HISTORY,1,[history provided by libhistory])))],
+  [AC_CHECK_LIB(edit,readline,LIBS="-ledit $LIBS",
+      AC_MSG_ERROR("libedit not found"))
+   AC_CHECK_LIB(edit,using_history,
+      AC_DEFINE(HAVE_HISTORY,1,[history provided by libedit]))])
 
-AC_CHECK_LIB(readline,readline,LIBS="-lreadline $LIBS",\
-	AC_MSG_ERROR("install GNU readline first"))
-AC_CHECK_LIB(readline,using_history,\
-	AC_DEFINE(HAVE_HISTORY,1,\
-		[history provided by libreadline or libhistory]),\
-	AC_CHECK_LIB(history,using_history,\
-		AC_DEFINE(HAVE_HISTORY,1,\
-			[history provided by libreadline or libhistory])))
-
-fi
+AS_IF([test "$readline" = yes -a "$on_darwin" = yes],
+   [CFLAGS="$CFLAGS -I/sw/include"; LDFLAGS="$LDFLAGS -L/sw/lib"])
 
 AC_ARG_ENABLE(cmdhist,[  --enable-cmdhist        use bash cmdhist history style [[yes]]],
 if test "$enableval" = no ; then
