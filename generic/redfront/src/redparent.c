@@ -62,12 +62,15 @@ void parent(void) {
 	
   textcolor(REDFRONTCOLOR);
 	
-  printf("REDFRONT %s",VERSION);
+  printf("%s %s, built %s ...\n",PACKAGE_NAME,PACKAGE_VERSION,BUILDTIME);
   if (verbose) {
-    printf("-%s-%s by A. Dolzmann and T. Sturm",
-	   (USE_PIPES) ? "p" : "s",(STATIC) ? " s" : "d");
+    printf("(c) 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
+    printf("Based on earlier projects by C. Cannam and W. Neun\n");
+    printf("%s linked version using %s for communication\n",
+	   (STATIC) ? "Statically" : "Dynamically",
+	   (USE_PIPES) ? "pipes" : "socket pairs");
+    printf("Reports bugs to <%s>\n\n",PACKAGE_BUGREPORT);
   }
-  printf(", built %s ...\n",BUILDTIME);
 
   close(MeToReduce[0]);
   close(ReduceToMe[1]);

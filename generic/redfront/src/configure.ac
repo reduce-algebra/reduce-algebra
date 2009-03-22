@@ -29,7 +29,7 @@ dnl OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(redfront.c)
+AC_INIT([REDFRONT],[2.9],[sturm@redlog.eu])
 
 abssrcdir=`$srcdir/../../../scripts/here.sh`
 
@@ -39,6 +39,22 @@ AC_MSG_NOTICE([Build platform detected as $BUILD])
 AC_SUBST(BUILD)
 
 RBUILD=$(basename $BUILD -debug)
+
+dnl Checks for programs.
+AC_PROG_CC
+
+AS_IF([test "$EXEEXT" = .exe],
+  [AC_DEFINE(WIN32,1,[This is some Windows version])
+   AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead if sockets])],
+  [AC_ARG_ENABLE(pipes,
+   AC_HELP_STRING([--enable-pipes],
+		  [use pipes not sockets (forced on Windows) [[no]]]),
+   if test "$enableval" = no ; then
+      AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
+   else
+      AC_DEFINE(USE_PIPES,1,[Define to 1 for using pipes instead if sockets])
+   fi,
+   AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))])
 
 dnl I have copied the following Apple stuff from cslbase/configure.ac.
 dnl Since I do not use automake, considerations about depnedency
@@ -109,24 +125,6 @@ esac
 
 AC_CONFIG_HEADER(config.h)
 
-dnl Checks for programs.
-AC_PROG_CC
-
-if test "$EXEEXT" = ".exe" ; then
-   AC_DEFINE(WIN32,1,[This is some Windows version])
-   AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead if sockets])
-else
-   AC_ARG_ENABLE(pipes,
-   AC_HELP_STRING([--enable-pipes],
-		  [use pipes not sockets (forced on Windows) [[no]]]),
-   if test "$enableval" = no ; then
-      AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
-   else
-      AC_DEFINE(USE_PIPES,1,[Define to 1 for using pipes instead if sockets])
-   fi,
-   AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
-fi
-
 AC_ARG_WITH(csl,
   AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
   [],
@@ -153,7 +151,7 @@ elif test "x$with_psl" != "xno" ; then
 	[Define your REDUCE image (with PSL)])
    AC_ARG_WITH(td,
 	AC_HELP_STRING([--with-td=BYTES],
-		[override the BPSL default memory [[BYTES=128000000]]]),
+		[the BPSL default memory [[BYTES=128000000]]]),
 	defmem=$withval,defmem=128000000)
    AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
 	[Define bytes allocated by BPSL (-td argument) as a string])
