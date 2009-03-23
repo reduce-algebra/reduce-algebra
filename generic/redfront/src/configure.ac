@@ -242,7 +242,7 @@ AS_IF([test "$readline" != yes &&
   [ebd=$abssrcdir/generic/redfront/libedit/$RBUILD
    CFLAGS="$CFLAGS -I$ebd/include"
    LDFLAGS="$LDFLAGS -L$ebd/lib"
-   if test "X$on_windows" != Xyes && "X$on_darwin" != Xyes ; then
+   if test "X$on_windows" != Xyes && test "X$on_darwin" != Xyes ; then
        LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib"
    fi])
 
