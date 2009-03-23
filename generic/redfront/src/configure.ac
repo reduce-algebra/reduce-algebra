@@ -45,7 +45,8 @@ AC_PROG_CC
 
 AS_IF([test "$EXEEXT" = .exe],
   [AC_DEFINE(WIN32,1,[This is some Windows version])
-   AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead if sockets])],
+   AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead if sockets])
+   on_windows=yes],
   [AC_ARG_ENABLE(pipes,
    AC_HELP_STRING([--enable-pipes],
 		  [use pipes not sockets (forced on Windows) [[no]]]),
@@ -240,7 +241,10 @@ AS_IF([test "$readline" != yes &&
          { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
   [ebd=$abssrcdir/generic/redfront/libedit/$RBUILD
    CFLAGS="$CFLAGS -I$ebd/include"
-   LDFLAGS="$LDFLAGS -L$ebd/lib -Wl,-rpath,$ebd/lib"])
+   LDFLAGS="$LDFLAGS -L$ebd/lib"
+   if test "X$on_windows" != Xyes && "X$on_darwin" != Xyes ; then
+       LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib"
+   fi])
 
 AS_IF([test "$readline" != yes],
    AC_CHECK_LIB(edit,using_history,
