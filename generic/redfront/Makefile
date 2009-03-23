@@ -8,7 +8,10 @@
 # 03/2009 - T. Sturm (sturm@redlog.eu)
 
 BUILD = $(shell ../../scripts/findhost.sh $(shell src/config.guess))
-LIBEDIT = libedit-20090111-3.0.tar.gz
+LIBEDIT_TGZ = libedit-20090111-3.0.tar.gz
+
+LIBEDIT = $(shell basename $(LIBEDIT_TGZ) .tar.gz)
+LIBEDIT_BUILD = $(LIBEDIT)/$(BUILD)
 
 all: csl psl
 
@@ -31,12 +34,11 @@ psl: libedit/$(BUILD)/include/editline/readline.h
 	make
 
 libedit/$(BUILD)/include/editline/readline.h: 
-	tar xvf ../../libedit/$(LIBEDIT)
-	ln -s $(shell basename $(LIBEDIT) .tar.gz) libedit
-	mkdir -p libedit/$(BUILD)
-	cd libedit/$(BUILD); \
-	../configure --prefix=$(realpath libedit/$(BUILD)) \
-		--disable-dependency-tracking; \
+	tar xvf ../../libedit/$(LIBEDIT_TGZ)
+	ln -sf $(LIBEDIT) libedit
+	mkdir -p $(LIBEDIT_BUILD)
+	cd $(LIBEDIT_BUILD); \
+	../configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	make install
 
 clean:
@@ -48,3 +50,6 @@ distclean:
 
 maintainer-clean: distclean
 	cd src && make -f Makefile.in maintainer-clean
+
+echo:
+	@echo $(LIBEDIT_BUILD)

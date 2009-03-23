@@ -59,7 +59,7 @@ clean:
 	-rm -f $(OBJ)
 
 veryclean: clean
-	-rm redfront
+	-rm -f redfront
 
 distclean: veryclean
 	-rm -f Makefile config.h config.log config.status
