@@ -223,20 +223,29 @@ AC_DEFINE(USE_READLINE,1,[Use GNU libreadline instead of libedit])
 readline=yes
 fi)
 
+AS_IF([test "$readline" = yes -a "$on_darwin" = yes],
+   [CFLAGS="$CFLAGS -I/sw/include"; LDFLAGS="$LDFLAGS -L/sw/lib"])
+
 AS_IF([test "$readline" = yes],
   [AC_CHECK_LIB(readline,readline,LIBS="-lreadline $LIBS",
       AC_MSG_ERROR("GNU readline not found"))
    AC_CHECK_LIB(readline,using_history,
       AC_DEFINE(HAVE_HISTORY,1,[history provided by libreadline]),
       AC_CHECK_LIB(history,using_history,
-         AC_DEFINE(HAVE_HISTORY,1,[history provided by libhistory])))],
-  [AC_CHECK_LIB(edit,readline,LIBS="-ledit $LIBS",
-      AC_MSG_ERROR("libedit not found"))
-   AC_CHECK_LIB(edit,using_history,
-      AC_DEFINE(HAVE_HISTORY,1,[history provided by libedit]))])
+         AC_DEFINE(HAVE_HISTORY,1,[history provided by libhistory])))])
 
-AS_IF([test "$readline" = yes -a "$on_darwin" = yes],
-   [CFLAGS="$CFLAGS -I/sw/include"; LDFLAGS="$LDFLAGS -L/sw/lib"])
+dnl AC_MSG_NOTICE([readline=$readline, on_darwin=$on_darwin, fat_support_available=$fat_support_available])
+
+AS_IF([test "$readline" != yes &&
+         { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
+  [CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/$RBUILD/include"
+   LDFLAGS="$LDFLAGS -L$abssrcdir/generic/redfront/libedit/$RBUILD/lib"])
+
+AS_IF([test "$readline" != yes],
+   AC_CHECK_LIB(edit,using_history,
+      [LIBS="-ledit $LIBS"
+       AC_DEFINE(HAVE_HISTORY,1,[history provided by libedit])],
+      AC_MSG_ERROR("libedit not found")))
 
 AC_ARG_ENABLE(cmdhist,[  --enable-cmdhist        use bash cmdhist history style [[yes]]],
 if test "$enableval" = no ; then
