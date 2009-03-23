@@ -238,8 +238,9 @@ dnl AC_MSG_NOTICE([readline=$readline, on_darwin=$on_darwin, fat_support_availab
 
 AS_IF([test "$readline" != yes &&
          { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
-  [CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/$RBUILD/include"
-   LDFLAGS="$LDFLAGS -L$abssrcdir/generic/redfront/libedit/$RBUILD/lib"])
+  [ebd=$abssrcdir/generic/redfront/libedit/$RBUILD
+   CFLAGS="$CFLAGS -I$ebd/include"
+   LDFLAGS="$LDFLAGS -L$ebd/lib -Wl,-rpath,$ebd/lib"])
 
 AS_IF([test "$readline" != yes],
    AC_CHECK_LIB(edit,using_history,
