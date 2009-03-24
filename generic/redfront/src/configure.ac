@@ -49,7 +49,7 @@ AS_IF([test "$EXEEXT" = .exe],
    on_windows=yes],
   [AC_ARG_ENABLE(pipes,
    AC_HELP_STRING([--enable-pipes],
-		  [use pipes not sockets (forced on Windows) [[no]]]),
+		  [use pipes not sockets on systems other than Windows]),
    if test "$enableval" = no ; then
       AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
    else
@@ -78,8 +78,8 @@ case $host in *darwin*)
   CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
 
   AC_ARG_ENABLE(universal,
-    AC_HELP_STRING([--enable-universal],
-	[build universal binary (Apple Darwin only) [[yes]]]),
+    AC_HELP_STRING([--disable-universal],
+	[do not build universal binary on Mac OS X]),
     universal="$enableval",
     universal=yes)
 
@@ -128,12 +128,12 @@ esac
 AC_CONFIG_HEADER(config.h)
 
 AC_ARG_WITH(csl,
-  AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
+  AC_HELP_STRING([--with-csl], [use the CSL Lisp system]),
   [],
   [with_csl="no"])
 
 AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  AC_HELP_STRING([--with-psl], [use the PSL Lisp system]),
   [],
   [with_psl="no"])
 
@@ -190,7 +190,7 @@ AC_CACHE_CHECK(for union wait, tar_cv_header_union_wait,
 test $tar_cv_header_union_wait = yes && AC_DEFINE(HAVE_UNION_WAIT,1,[use (union wait)* in contrast to int* for arg2 of wait4])
 
 AC_ARG_ENABLE(color,
-   AC_HELP_STRING([--enable-color],[build for color terminal [[yes]]]),
+   AC_HELP_STRING([--disable-color],[do not color any text]),
    if test "$enableval" = no ; then
       AC_DEFINE(HAVE_COLOR,0,[Define for color terminal support])
    else
@@ -198,29 +198,41 @@ AC_ARG_ENABLE(color,
    fi,
    AC_DEFINE(HAVE_COLOR,1,[Define for color terminal support]))
 
-AC_ARG_WITH(hist-size,[  --with-hist-size=LINES  length of the .reduce_history file [[LINES=1000]]],
-	histfilesize=$withval,histfilesize=1000)
+AC_ARG_WITH(hist-size,[  --with-hist-size=LINES  length of the .reduce_history file [[LINES=10000]]],
+	histfilesize=$withval,histfilesize=10000)
 AC_DEFINE_UNQUOTED(HISTFILESIZE,$histfilesize,
 	[Define the maximum number of lines in your .reduce_history])
 
-AC_ARG_ENABLE(debug,[  --enable-debug          provide information on signals and files [[no]]],
+AC_ARG_ENABLE(debug,
+   AC_HELP_STRING([--enable-debug],
+      [comprehensive printing of debugging messages]),
 if test "$enableval" = yes ; then
 AC_DEFINE(DEBUG,1,[Define this for debug information on signals and files])
 fi)
 
-AC_ARG_ENABLE(static,[  --enable-static         force static linking [[no]]],
+AC_ARG_ENABLE(static,
+   [AC_HELP_STRING([--enable-static],
+       [static linking on systems other than Windows])
+AC_HELP_STRING([--disable-static],
+       [dynamic linking on Windows])],
 if test "$enableval" = yes ; then
 AC_DEFINE(STATIC,1,[static linking info in banner])
 AC_SUBST(LDFLAGS,"-static $LDFLAGS")
 else
 AC_DEFINE(STATIC,0,[static linking info in banner])
 fi,
+if test "$on_windows" = yes ; then
+AC_DEFINE(STATIC,1,[static linking info in banner])
+AC_SUBST(LDFLAGS,"-static $LDFLAGS")
+else
 AC_DEFINE(STATIC,0,[static linking info in banner])
+fi
 )
 
-AC_ARG_ENABLE(readline,[  --enable-readline       use GNU readline instead of editline [[no]]],
-if test "$enableval" = yes ; then
-AC_DEFINE(USE_READLINE,1,[Use GNU libreadline instead of libedit])
+AC_ARG_WITH(libedit,
+   AC_HELP_STRING([--without-libedit],[do not use libedit]),
+if test "$withval" = no ; then
+AC_DEFINE(USE_READLINE,1,[libreadline instead of libedit])
 readline=yes
 fi)
 
@@ -252,7 +264,8 @@ AS_IF([test "$readline" != yes],
        AC_DEFINE(HAVE_HISTORY,1,[history provided by libedit])],
       AC_MSG_ERROR("libedit not found")))
 
-AC_ARG_ENABLE(cmdhist,[  --enable-cmdhist        use bash cmdhist history style [[yes]]],
+AC_ARG_ENABLE(cmdhist,
+   AC_HELP_STRING([--disable-cmdhist],[do not use cmdhist in the sense of bash]),
 if test "$enableval" = no ; then
 AC_DEFINE(CMDHIST,0,[Use bash cmdhist history style])
 else
@@ -261,7 +274,8 @@ fi,
 AC_DEFINE(CMDHIST,1,[Use bash cmdhist history style])
 )
 
-AC_ARG_ENABLE(lithist,[  --enable-lithist        use bash lithist history style [[yes]]],
+AC_ARG_ENABLE(lithist,
+   AC_HELP_STRING([--disable-lithist],[do not use lithist in the sense of bash]),
 if test "$enableval" = no ; then
 AC_DEFINE(LITHIST,0,[Use bash lithist history style])
 else
