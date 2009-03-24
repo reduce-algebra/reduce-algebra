@@ -30,6 +30,13 @@
 
 #include "redfront.h"
 
+extern int redfrontcolor;
+extern int normalcolor;
+extern int promptcolor;
+extern int inputcolor;
+extern int outputcolor;
+extern int debugcolor;
+
 #ifdef USE_READLINE
 
 #include <readline/readline.h>
@@ -84,11 +91,11 @@ char *color_prompt(char der_prompt[]) {
 #ifdef USE_READLINE
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
 	    RL_PROMPT_START_IGNORE,
-	    0x1B,0,PROMPTCOLOR+30,9+40,
+	    0x1B,0,promptcolor+30,9+40,
 	    RL_PROMPT_END_IGNORE,
 	    help_prompt,
 	    RL_PROMPT_START_IGNORE,
-	    0x1B,0,INPUTCOLOR+30,9+40,
+	    0x1B,0,inputcolor+30,9+40,
 	    RL_PROMPT_END_IGNORE);
 #endif
   }

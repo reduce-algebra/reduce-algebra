@@ -42,6 +42,13 @@ extern int debug;
 extern int verbose;
 extern int unicode;
 
+extern int redfrontcolor;
+extern int normalcolor;
+extern int promptcolor;
+extern int inputcolor;
+extern int outputcolor;
+extern int debugcolor;
+
 void parent(void);
 void atoploop(void);
 char *load_package(const char *);
@@ -59,35 +66,16 @@ void parent(void) {
 #ifdef HAVE_SETLINEBUF
   setlinebuf(stdout);
 #endif
-	
-  textcolor(REDFRONTCOLOR);
-	
-  if (verbose) {
-    int ur=0;
-#ifdef USE_READLINE
-    ur=1;
-#endif
-    printf("%s %s/%d, built %s ...\n",
-	   PACKAGE_NAME,
-	   PACKAGE_VERSION,
-	   4*ur + 2*USE_PIPES + STATIC,
-	   BUILDTIME);
-    printf("(c) 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
-    printf("Based on earlier projects by C. Cannam and W. Neun\n");
-    printf("Reports bugs to <%s>\n\n",PACKAGE_BUGREPORT);
-  } else {
-    printf("%s %s, built %s ...\n",PACKAGE_NAME,PACKAGE_VERSION,BUILDTIME);
-  }
-
+  
   close(MeToReduce[0]);
   close(ReduceToMe[1]);
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
 	    MeToReduce[1], ReduceToMe[0]);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -106,9 +94,9 @@ void atoploop(void) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: read first prompt\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -145,9 +133,9 @@ char *load_package(const char *package) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: sending %s\n",cmd);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -164,7 +152,7 @@ void read_until_first_prompt(char der_prompt[]) {
   char ch;
   struct strbuf *b=(struct strbuf *)0,*t=(struct strbuf *)0;
 	
-  textcolor(NORMALCOLOR);
+  textcolor(normalcolor);
 	
   while(status != FINISHED) {
     ncharread = read(ReduceToMe[0],buffer,1000); 
@@ -225,9 +213,9 @@ char *read_valid_line(char der_prompt[]) {
       line_read = malloc(2 * sizeof(char));
       strcpy(line_read,"\n");
     }
-    textcolor(INPUTCOLOR);
+    textcolor(inputcolor);
     printf("%s",line_read);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
   return line_read;
 }
@@ -238,9 +226,9 @@ int is_too_long(char line_read[]) {
   return 0;
 #else
   if (badline(line_read)) {
-    textcolor(REDFRONTCOLOR);
+    textcolor(redfrontcolor);
     printf("redfront: overlong input line\n");
-    textcolor(INPUTCOLOR);
+    textcolor(inputcolor);
     return 1;
   }
   else
@@ -268,10 +256,10 @@ char *append_line(char *c,char *l) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: entering append_line() ... c=%s, l=%s\n",
 	    (c != (char *)NULL) ? c : "NULL",(l != (char *)NULL) ? l : "NULL");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -291,9 +279,9 @@ char *append_line(char *c,char *l) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: s=%s ... leaving append_line()\n",s);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -309,10 +297,10 @@ void send_reduce(char line_read[]) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: entering send_reduce() ... line_read=%s\n",
 	    line_read);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -337,9 +325,9 @@ void send_reduce(char line_read[]) {
 
 #ifdef DEBUG
   if(debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: ... leaving send_reduce()\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -356,15 +344,15 @@ void read_until_prompt(char der_prompt[]){
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
 	    der_prompt);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
 
-  textcolor(NORMALCOLOR);
+  textcolor(normalcolor);
 
   while(status != FINISHED) {
     ncharread = read(ReduceToMe[0],buffer,1000);
@@ -378,10 +366,10 @@ void read_until_prompt(char der_prompt[]){
       }
       if (status == READING_OUTPUT) {
 	if (ch == (char) 0x03 ) {
-	  textcolor(OUTPUTCOLOR);
+	  textcolor(outputcolor);
 	}
 	else if (ch == (char) 0x04 ) {
-	  textcolor(NORMALCOLOR);
+	  textcolor(normalcolor);
 	}
 	else {
 	  printf("%c",ch);
@@ -398,9 +386,9 @@ void read_until_prompt(char der_prompt[]){
   
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif

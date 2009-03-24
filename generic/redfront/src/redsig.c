@@ -36,6 +36,13 @@ extern int MeToReduce[];
 
 extern int debug;
 
+extern int redfrontcolor;
+extern int normalcolor;
+extern int promptcolor;
+extern int inputcolor;
+extern int outputcolor;
+extern int debugcolor;
+
 RETSIGTYPE ReduceSigGen(int);
 RETSIGTYPE ReduceSigInt(int);
 RETSIGTYPE ReduceSigChld(int);
@@ -51,14 +58,14 @@ pid_t redfront_waitpid(int,int *);
 RETSIGTYPE ReduceSigGen(int arg) {
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"ReduceSigGen(%d)\n",arg);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
 #endif
   fflush(stderr);
   red_kill();
-  textcolor(NORMALCOLOR);  /* might not match, but black is better than red */
+  textcolor(normalcolor);  /* might not match, but black is better than red */
   printf("\n");
   redline_cleanup_after_signal();
   switch (arg) {
@@ -77,9 +84,9 @@ RETSIGTYPE ReduceSigInt(int arg) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"ReduceSigInt(%d)\n",arg);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
 #endif
 
@@ -96,9 +103,9 @@ RETSIGTYPE ReduceSigChld(int arg) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"Reduce process terminated\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
 #endif
 
@@ -167,9 +174,9 @@ void wnf_red_kill(void) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"\nredfront: Sending Hangup signal to Reduce process\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -177,9 +184,9 @@ void wnf_red_kill(void) {
   if (red_kill_sub(SIGHUP) != 0 && errno == ESRCH) {
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"\nredfront: No Reduce process\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
     }
 #endif
     red_kill_sub2();
@@ -191,9 +198,9 @@ void wnf_red_kill(void) {
 	(WIFEXITED(status) || WIFSIGNALED(status))) {
 #ifdef DEBUG
       if (debug) {
-	textcolor(DEBUGCOLOR);
+	textcolor(debugcolor);
 	fprintf(stderr,"%sredfront: Reduce has hung up\n",count ? "\n" : "");
-	textcolor(NORMALCOLOR);
+	textcolor(normalcolor);
       }
 #endif
       red_kill_sub2();
@@ -204,10 +211,10 @@ void wnf_red_kill(void) {
 
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,
 	      "%s[waiting]%s",count ? "" : "redfront: ",count-3 ? " " : "\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif
@@ -216,10 +223,10 @@ void wnf_red_kill(void) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,
 	    "redfront: sending SIGTERM to Reduce (%d)\n",reduceProcessID);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -228,9 +235,9 @@ void wnf_red_kill(void) {
   if (red_kill_sub(SIGTERM) != 0 && errno == ESRCH) {
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"redfront: Reduce has hung up\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
     }
 #endif
     red_kill_sub2();
@@ -242,9 +249,9 @@ void wnf_red_kill(void) {
 	(WIFEXITED(status) || WIFSIGNALED(status))) {
 #ifdef DEBUG
       if (debug) {
-	textcolor(DEBUGCOLOR);
+	textcolor(debugcolor);
 	fprintf(stderr,"%sredfront: Reduce terminated\n",count ? "\n":"");
-	textcolor(NORMALCOLOR);
+	textcolor(normalcolor);
       }
 #endif
       red_kill_sub2();
@@ -253,9 +260,9 @@ void wnf_red_kill(void) {
     sleep(1);
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"%s[waiting]%s",count ? "":"XR: ",count-3 ?" ":"\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif
@@ -263,9 +270,9 @@ void wnf_red_kill(void) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"redfront: Sending Kill signal to Reduce process\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -273,9 +280,9 @@ void wnf_red_kill(void) {
   if (red_kill_sub(SIGKILL) != 0 && errno == ESRCH) {
 #ifdef DEBUG
     if (debug) {
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fprintf(stderr,"redfront: Reduce has finally been terminated\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
     }
 #endif
     red_kill_sub2();
@@ -288,9 +295,9 @@ void wnf_red_kill(void) {
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"redfront: That troublesome Reduce has finally gone\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
 #endif
 
@@ -300,9 +307,9 @@ void wnf_red_kill(void) {
 void red_felt_hup(int arg) { 
 #ifdef DEBUG
   if (debug) { 
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"[click] ");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
 #endif
 }
@@ -310,9 +317,9 @@ void red_felt_hup(int arg) {
 void red_felt_term(int arg) {
 #ifdef DEBUG
   if (debug) { 
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"[kerblam] ");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
   }
 #endif
 }

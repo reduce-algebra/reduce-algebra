@@ -48,8 +48,26 @@ int unicode = 0;
 int color = 1; 
 char *memory;
 
-void init_channels(void);
+
+#define DEFAULT_REDFRONTCOLOR MAGENTA /* REDFRONT output */
+#define DEFAULT_NORMALCOLOR BLACK     /* REDUCE terminal output */
+#define DEFAULT_PROMPTCOLOR BLACK     /* REDUCE prompt */
+#define DEFAULT_INPUTCOLOR RED        /* REDUCE input line */
+#define DEFAULT_OUTPUTCOLOR BLUE      /* REDUCE mathprint output */
+#define DEFAULT_DEBUGCOLOR CYAN       /* REDFRONT DEBUG output" */
+
+int redfrontcolor = DEFAULT_REDFRONTCOLOR; /* REDFRONT output */
+int normalcolor = DEFAULT_NORMALCOLOR;   /* REDUCE terminal output */
+int promptcolor = DEFAULT_PROMPTCOLOR;   /* REDUCE prompt */
+int inputcolor = DEFAULT_INPUTCOLOR;    /* REDUCE input line */
+int outputcolor = DEFAULT_OUTPUTCOLOR;   /* REDUCE mathprint output */
+int debugcolor = DEFAULT_DEBUGCOLOR;    /* REDFRONT DEBUG output */
+
 void parse_args(int,char **);
+void init_channels(void);
+void print_banner(int);
+int parse_colarg(char *);
+int map_colour(int);
 char *parse_memarg(char *,char *);
 void print_usage(char *);
 void print_help(char *);
@@ -60,6 +78,8 @@ int main(int argc,char **argv,char **envp) {
   parse_args(argc,argv);
 
   (void)setsid();  /* become leader of a new process group */
+
+  print_banner(verbose);
 
   init_history();
 
@@ -74,9 +94,9 @@ int main(int argc,char **argv,char **envp) {
 
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif
@@ -86,9 +106,9 @@ int main(int argc,char **argv,char **envp) {
 
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif
@@ -98,47 +118,30 @@ int main(int argc,char **argv,char **envp) {
   return -1;
 }
 
-void init_channels(void) {
-  if (USE_PIPES) {
-    if (pipe(MeToReduce) < 0) {
-      perror("failed to create pipe MeToReduce\n");
-      red_kill();
-      exit(-1);
-    }
-    if (pipe(ReduceToMe) < 0) {
-      perror("failed to create pipe ReduceToMe\n");
-      red_kill();
-      exit(-1);
-    }
-  } else {
-    if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
-      perror("cannot open socket MeToReduce");
-      red_kill();
-      exit(-1);
-    }
-    if (socketpair(AF_UNIX, SOCK_STREAM, 0, ReduceToMe) < 0) {
-      perror("cannot open socket ReduceToMe");
-      red_kill();
-      exit(-1);
-    }
-  }
-}
-
 void parse_args(int argc,char **argv) {
   int c;
   extern char *optarg;
   extern int optind;
 
+#ifdef BPSL
+  const char *os="bc:huvVm:";
+#else
+  const char *os="bc:huvV";
+#endif
+
   int errflg=0;
   
-  while ((c = getopt(argc, argv, "bhuvVm:")) != EOF)
+  while ((c = getopt(argc, argv, os)) != EOF)
     switch (c) {
     case 'h':
       print_help(argv[0]);
       exit(1);
       break;
     case 'b':
-      color = !color;
+      color = 0;
+      break;
+    case 'c':
+      errflg += parse_colarg(optarg);
       break;
     case 'u':
       unicode = 1;
@@ -174,6 +177,51 @@ void parse_args(int argc,char **argv) {
   return;
 }
 
+int parse_colarg(char *s) {
+  int c;
+      
+  c = map_colour(*s++);
+  outputcolor = (c<0) ? DEFAULT_OUTPUTCOLOR : c;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  inputcolor = (c<0) ? DEFAULT_INPUTCOLOR : c;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  promptcolor = (c<0) ? DEFAULT_PROMPTCOLOR : c;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  normalcolor = (c<0) ? DEFAULT_NORMALCOLOR : c;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  redfrontcolor = (c<0) ? DEFAULT_REDFRONTCOLOR : c;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  debugcolor = (c<0) ? DEFAULT_DEBUGCOLOR : c;
+  if (*s == 0) return 0;
+
+  return 1;
+}
+
+int map_colour(int ch) {
+  switch (ch) {
+  case 'k': case 'K':
+  case 'B':           return BLACK;
+  case 'r': case 'R': return RED;
+  case 'g': case 'G': return GREEN;
+  case 'y': case 'Y': return YELLOW;
+  case 'b':           return BLUE;
+  case 'm': case 'M': return MAGENTA;
+  case 'c': case 'C': return CYAN;
+  case 'w': case 'W': return WHITE;
+  default:            return -1;
+  }
+}
+
 char *parse_memarg(char *argstr,char *name) {
 /* Only used for PSL (#ifdef BPSL) */
   char *nargv2;
@@ -205,30 +253,91 @@ char *parse_memarg(char *argstr,char *name) {
 
 void print_usage(char name[]) {
 #ifdef BPSL
-  (void)fprintf(stderr,"usage: %s [-bhvV] [[-m] NUMBER[kKmM]]\n",name);
+  (void)fprintf(stderr,
+		"usage: %s [-bhvV] [-c COLORSPEC] [[-m] NUMBER[kKmM]]\n",name);
  #else
-  (void)fprintf(stderr,"usage: %s [-bhvV]\n",name);
+  (void)fprintf(stderr,"usage: %s [-bhvV] [-c COLORSPEC]\n",name);
  #endif
 }
 
 void print_help(char name[]) {
-#ifdef BPSL
+  int w=color;
+  
+  color = 0;
+  print_banner(1);
+  color=w;
+
+  fprintf(stderr,"A REDUCE frontend\n\n");
+  
   print_usage(name);
+
   fprintf(stderr,"       -b\t\tblack and white mode\n");
+  fprintf(stderr,"       -c COLORSPEC\tspecify colors for input, output, prompt\n");
   fprintf(stderr,"       -h\t\tthis help message\n");
+#ifdef BPSL
   fprintf(stderr,"       -m NUMBER\theap size in bytes\n"); 
   fprintf(stderr,"       -m NUMBERk\theap size in kilobytes\n");
   fprintf(stderr,"       -m NUMBERm\theap size in megabytes\n");  
-  fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
-  fprintf(stderr,"       -v, -V\t\tverbose\n");
-  fprintf(stderr,"Example: %s -m 128m  # this is default\n",name);
-#else
-  print_usage(name);
-  fprintf(stderr,"       -b\t\tblack and white mode\n");
-  fprintf(stderr,"       -h\t\tthis help message\n");
-  fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
-  fprintf(stderr,"       -v, -V\t\tverbose\n");
 #endif
+  fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
+  fprintf(stderr,"       -v, -V\t\tverbose\n\n");
+
+  fprintf(stderr,"Examples: %s -u\n",name);
+#ifdef BPSL
+  fprintf(stderr,"          %s -c rKbMgC -m 96m -v.\n\n",name);
+#else
+  fprintf(stderr,"          %s -c rKMKbC -v\n\n",name); 
+#endif
+
+  fprintf(stderr,"There is a manpage available.\n");
+}
+
+void print_banner(int vb) {
+  textcolor(redfrontcolor);
+	
+  if (vb) {
+    int ur=0;
+#ifdef USE_READLINE
+    ur=1;
+#endif
+    printf("%s %s/%d, built %s ...\n",
+	   PACKAGE_NAME,
+	   PACKAGE_VERSION,
+	   4*ur + 2*USE_PIPES + STATIC,
+	   BUILDTIME);
+    printf("(c) 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
+    printf("Based on earlier projects by C. Cannam and W. Neun\n");
+    printf("Reports bugs to <%s>\n\n",PACKAGE_BUGREPORT);
+  } else {
+    printf("%s %s, built %s ...\n",PACKAGE_NAME,PACKAGE_VERSION,BUILDTIME);
+  }
+  textcolor(normalcolor);
+}
+
+void init_channels(void) {
+  if (USE_PIPES) {
+    if (pipe(MeToReduce) < 0) {
+      perror("failed to create pipe MeToReduce\n");
+      red_kill();
+      exit(-1);
+    }
+    if (pipe(ReduceToMe) < 0) {
+      perror("failed to create pipe ReduceToMe\n");
+      red_kill();
+      exit(-1);
+    }
+  } else {
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
+      perror("cannot open socket MeToReduce");
+      red_kill();
+      exit(-1);
+    }
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, ReduceToMe) < 0) {
+      perror("cannot open socket ReduceToMe");
+      red_kill();
+      exit(-1);
+    }
+  }
 }
 
 void textcolor(int fg) {

@@ -103,10 +103,3 @@ void red_kill(void);
 #define MAGENTA 5
 #define CYAN 6
 #define WHITE 7
-
-#define REDFRONTCOLOR MAGENTA /* REDFRONT output */
-#define NORMALCOLOR BLACK /* REDUCE terminal output */
-#define PROMPTCOLOR BLACK /* REDUCE prompt */
-#define INPUTCOLOR RED /* REDUCE input line */
-#define OUTPUTCOLOR BLUE /* REDUCE mathprint output */
-#define DEBUGCOLOR CYAN /* REDFRONT output with "#define DEBUG" */
