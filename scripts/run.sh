@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh -v
 
 # This is used to try to run a program, allowing for the fact
 # that possibly many architectures have been built in the tree.
@@ -63,6 +63,17 @@ then
     if test -x $here/../cslbuild/$hx/csl/$ap.com
     then
       bin="$here/../cslbuild/$hx/csl/$ap.com"
+      binw=`cygpath -w $bin`
+      rm -f $here/../bin/$ap
+      ln -s $bin $here/../bin/$scr
+      rm -f $here/../bin/$scr.bat
+      echo $binw %\* > $here/../bin/$scr.bat
+      exec $bin $*
+      exit 0
+    fi
+    if test -x $here/../cslbuild/$hx/csl/$ap.exe
+    then
+      bin="$here/../cslbuild/$hx/csl/$ap.exe"
       binw=`cygpath -w $bin`
       rm -f $here/../bin/$ap
       ln -s $bin $here/../bin/$scr
