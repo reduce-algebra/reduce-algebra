@@ -28,5 +28,7 @@ case $a in
   ;;
 esac
 
+echo **** Please use bin/redcsl or bin/redpsl from now on.
+
 here=${c%/*}
 exec $here/../scripts/run.sh reduce reduce $*

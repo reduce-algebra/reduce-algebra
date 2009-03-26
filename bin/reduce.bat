@@ -3,6 +3,8 @@
 set h=%~dp0
 set n=%~n0
 
+echo +++ Please use bin\redcsl or bin\redpsl or bin\redpslw fron now on.
+
 if exist %h%..\cslbuild\x86_64-pc-windows\csl\%n%.com       goto :x64
 if exist %h%..\cslbuild\i686-pc-windows\csl\%n%.com         goto :x86
 if exist %h%..\cslbuild\x86_64-pc-windows-debug\csl\%n%.com goto :x64d
