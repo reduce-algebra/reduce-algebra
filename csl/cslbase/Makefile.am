@@ -194,6 +194,12 @@ else !fox
 WINAP=-Wl,--subsystem,console
 endif !fox
 
+if windows
+GP=wgnuplot.exe
+else !windows
+GP=
+endif !windows
+
 dyndemo_LDADD = $(srcdir)/dyndemo.def
 
 reduceres = fwin-reduce.$(OBJEXT)
@@ -206,8 +212,8 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 		$(fontsdir)/cmr10.pfb
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html
-reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html
+		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
 fwindemo_DEPENDENCIES = fwin-icon.$(OBJEXT)
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
@@ -245,8 +251,8 @@ bootstrapreduce_LDADD = $(FOX_LIBS)
 reduce_LDADD = $(FOX_LIBS)
 
 csl_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html
-reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html
+bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
 
 if fox
 fontdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
@@ -603,7 +609,7 @@ termdemo_LIBS=
 # in the same directory as executables.
 #
 
-image_files = csl.img reduce.img reduce.doc $(fontsdir)
+image_files = csl.img reduce.img reduce.doc $(fontsdir) wgnuplot* gnuplot.Copyright
 install-data-local: $(image_files)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -831,7 +837,7 @@ else !canrun
 	echo Can not build reduce.img on this platform
 endif !canrun
 
-# This is a temporart target "reduce.dir" to create the image as a directory
+# This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
 reduce.dir:	reduce$(COMEXT) $(reducedep)
@@ -851,29 +857,25 @@ else !canrun
 	echo Can not build reduce.img on this platform
 endif !canrun
 
-# Copy HTML help files in a directory reduce.doc - also install gnuplot if windows
+# Copy HTML help files in a directory reduce.doc
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
 	mkdir reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.html reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
+
 if windows
 #
-# Temporarily removed while the sourceforge rules and gnuplot binary
-# redistribution get investigated.
-#
-# I also unpack copies of the gnuplot binaries into this directory.
-# Note that I have a binary of zip in the support-packages directory
-# but I am going to require here that a version that works under whatever
-# shell you are using is on your path... Install it somewhere if you need to.
-#	unzip -d . -j -o \
-#		$(CYGSRC)/../support-packages/gp400win32.zip \
-#		gnuplot/bin/wgnuplot.exe gnuplot/bin/wgnuplot.hlp \
-#		gnuplot/bin/wgnuplot.mnu
+# I also copy a set of gnuplot binaries into this directory.
+# Note that the Gnuplot license permits this, but if I host any of this
+# on Sourceforge then their terms and conditions mean I have to put a
+# set of gnuplot sources in their file release system!
+$(GP):
+	$(CP) -r $(CYGSRC)/../support-packages/gnuplot-windows-bin/* .
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
-#	chmod +x wgnuplot.exe
+	chmod +x wgnuplot.exe
 endif windows
 
 -include bootstrapreduce.dep
@@ -1030,7 +1032,7 @@ save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
 if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts
+	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts wgnuplot* gnuplot-Copyright
 else !windows
 	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
 	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
