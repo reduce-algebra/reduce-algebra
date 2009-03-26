@@ -7,4 +7,5 @@ shift
 shift
 shift
 echo %p% -td 16000000 -f %i% %%* > %h%\..\bin\%n%.bat
-%p% -td 16000000 %1 %2 %3 %4 %5 %6 %7 %8 %9
+echo %p% -td 16000000 -f %i% %*
+%p% -td 16000000 -f %i% %*
