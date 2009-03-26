@@ -1,13 +1,14 @@
 #! /bin/sh
 
-echo runpsl.sh @@@@@@@@@@@@ Not done yet
-
 
 # This is used to try to run a program, allowing for the fact
 # that possibly many architectures have been built in the tree.
 
 # This is called as
 #    run appname scriptname args
+
+# apname is bpsl scriptname will be redpsl. These are not at present
+# actually varied ever!
 
 # I want this script to be one I can launch from anywhere, but at least
 # some of its sub-scripts will not be so generous. So find out where it
@@ -53,37 +54,39 @@ shift
 host=`$here/../config.guess`
 host=`$here/findhost.sh $host`
 
-# If I am on a Windows machine and I have built a Windows-64 system
-# I should try that too. On windows the "-m32" and "-m64" flags do
-# not apply.
-
 mkdir -p $here/../bin
 
 if test "x$host" = "xi686-pc-windows"
 then
-  for hx in "x86_64-pc-windows" "x86_64-pc-windows-debug" "i686-pc-windows" "i686-pc-windows-debug"
+  for hx in "i686-pc-windows" "i686-pc-windows-debug"
   do
-    if test -x $here/../cslbuild/$hx/csl/$ap.com
+    if test -x $here/../pslbuild/$hx/psl/$ap.exe
     then
-      bin="$here/../cslbuild/$hx/csl/$ap.com"
+      bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
-      rm -f $here/../bin/$ap
-      ln -s $bin $here/../bin/$scr
-      rm -f $here/../bin/$scr.bat
-      echo $binw %\* > $here/../bin/$scr.bat
-      exec $bin $*
+#     rm -f $here/../bin/$ap
+#     ln -s $bin $here/../bin/$scr
+#     rm -f $here/../bin/$scr.bat
+#     echo $binw %\* > $here/../bin/$scr.bat
+      img=`cygpath -m $here/../pslbuild/$hx/red/reduce.img`
+      exec $bin -td 16000000 -f $img $*
       exit 0
     fi
   done
 else
   for hx in "" "-debug" "-m32" "-m32-debug" "-m64" "-m64-debug"
   do
-    if test -x $here/../cslbuild/$host$hx/csl/$ap
+    if test -x $here/../pslbuild/$host$hx/psl/$ap
     then
-      bin="$here/../cslbuild/$host$hx/csl/$ap"
-      rm -f $here/../bin/$scr
-      ln -s $bin $here/../bin/$scr
-      exec $bin $*
+      STORE=16000000
+      if test -f $here/../pslbuild/$host$hx/psl/64
+      then
+        STORE=2000
+      fi
+      bin="$here/../pslbuild/$host$hx/psl/$ap"
+#     rm -f $here/../bin/$scr
+#     ln -s $bin $here/../bin/$scr
+      exec $bin -td $STORE -f $here/../pslbuild/$hx/red/reduce.img $*
       exit 0
     fi
   done
