@@ -38,12 +38,15 @@ here=${c%/*}
 rm -rf $here/../bin/*
 
 $here/reset.sh csl
-$here/reset.sh reduce
-$here/reset.sh reduce.csl
-$here/reset.sh reduce.psl
+$here/reset.sh redcsl
+$here/reset.sh redpsl
 $here/reset.sh fwindemo
 $here/reset.sh fontdemo
 $here/reset.sh showmathdemo
 $here/reset.sh bootstrapreduce
+
+# This last one will be removed soon... at present it is like redcsl.
+$here/reset.sh reduce
+
 
 # end of script

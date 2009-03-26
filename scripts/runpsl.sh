@@ -1,5 +1,8 @@
 #! /bin/sh
 
+echo runpsl.sh @@@@@@@@@@@@ Not done yet
+
+
 # This is used to try to run a program, allowing for the fact
 # that possibly many architectures have been built in the tree.
 

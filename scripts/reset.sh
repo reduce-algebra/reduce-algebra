@@ -50,7 +50,18 @@ mkdir -p $here/../bin
 rm -f $here/../bin/$1
 cp $here/here0.sh $here/../bin/$1
 
-echo "exec \$here/../scripts/run.sh $1 \$*" >> $here/../bin/$1
+case $1 in
+redcsl)
+  echo "exec \$here/../scripts/run.sh reduce $1 \$*" >> $here/../bin/$1
+  ;;
+redpsl)
+  echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1
+  ;;
+*)
+  echo "exec \$here/../scripts/run.sh $1 $1 \$*" >> $here/../bin/$1
+  ;;
+esac
+
 
 chmod +x $here/../bin/$1
 
