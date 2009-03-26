@@ -54,8 +54,17 @@ echo "exec \$here/../scripts/run.sh $1 \$*" >> $here/../bin/$1
 
 chmod +x $here/../bin/$1
 
-rm -f $here/../bin/$1.bat
-cp $here/run.bat $here/../bin/$1.bat
+case $1 in
+reduce.psl)
+  rm -f $here/../bin/reduce.psl.bat $here/../bin/reduce.pslw.bat
+  cp $here/reduce.psl.bat $here/../bin
+  cp $here/reduce.pslw.bat $here/../bin
+  ;;
+*)
+  rm -f $here/../bin/$1.bat
+  cp $here/run.bat $here/../bin/$1.bat
+  ;;
+esac
 
 exit 0
 
