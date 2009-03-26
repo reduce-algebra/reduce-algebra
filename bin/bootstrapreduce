@@ -29,4 +29,4 @@ case $a in
 esac
 
 here=${c%/*}
-exec $here/../scripts/run.sh bootstrapreduce $*
+exec $here/../scripts/run.sh bootstrapreduce bootstrapreduce $*

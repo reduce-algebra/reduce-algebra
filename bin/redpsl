@@ -29,4 +29,4 @@ case $a in
 esac
 
 here=${c%/*}
-exec $here/../scripts/run1.sh $*
+exec $here/../scripts/runpsl.sh bpsl redpsl $*
