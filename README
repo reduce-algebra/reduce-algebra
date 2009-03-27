@@ -10,14 +10,6 @@ Tony Hearn. A bibliography somewhere in this tree reports some of the
 large numbers of papers that have been written about or relying on
 REDUCE.
 
-In this initial release of the files there are bound to be a number of
-problems and awkwardnesses, but over time with luck we will get those
-sorted out! If you have trouble please submit a report via the
-Sourceforge bug tracker or post a query on one of the forums there. But
-then have patience since those of us who work on this are doing so in
-what we laughingly describe as "spare time" and not for pay. So polite
-reports and requests are more liable to get a good response than abusive
-ones.
 
                                      Arthur Norman.  March 2009
 
@@ -197,6 +189,11 @@ complications at all on that front.
 
 
 
+The above lengthy discussion and mess about LGPL compliance may now be being
+replaced by a reading in the csl/reduce.doc directory that is lighter-weight.
+
+At some stage some experiments using Qt 4,5 (under LGPL 2.1) may appear here.
+
 
 The "gnuplot" package is used with REDUCE and its license indicates that
 it may be redistributed freely, but that modified versions may only be
@@ -243,27 +240,15 @@ students and others, including J O'Connell, M O Seymour, but were made
 available to me and to Codemist for inclusion within CSL.
 
 
-The "redfront" package in generic/redfront may at present link to the
-GNU readline library, which is subject to the full GPL (version 2). I note
-that the redfront package here is merely aggregated with the rest of the
-material and provided the full packages/redfront directory is distributed
-including all its source code all should be well. But anybody minded to
-prepare a binary-only package including redfront should either modify the
-build-sequences to use the BSD libedit or the CSL termed code or avoid
-distributing pre-built binaries or take all the actions that the GPL requires,
-which in particular include ensuring that the recipient understand that the
-preserve code freedom they may not redistribute binaries without source
-code. This situation is being considered and may well be resolved soon.
-
 The files in the "psl" directory come from ZIB and are some of the ones
 that they used with the Reduce Development System. It is hoped that the
-main sources of PSL will be available under a suitabel Open Source license
+main sources of PSL will be available under a suitable Open Source license
 soon, but in the meanwhile binaries and probably source are avaliable from
 the ZIB web-site and the files and scripts here arrange to fetch them as needed
 so that a PSL version of Reduce can be built. But until PSL is fully open
 source the Sourceforge terms of use will not permit us to put a full
 ready-build PSL Reduce in their release system. I hope we will soon have stubs
-there that can be fetched and whne run will fetch the system direct from ZIB.
+there that can be fetched and when run will fetch the system direct from ZIB.
 
 A (very) few REDUCE packages have at present been replaced by stubs while the
 original authors confirm that they are happy for their code to appear here.

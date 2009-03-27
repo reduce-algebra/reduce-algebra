@@ -864,6 +864,7 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.html reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
+	$(CP) -r $(srcdir)/../reduce.doc/*.txt reduce.doc
 
 if windows
 #
