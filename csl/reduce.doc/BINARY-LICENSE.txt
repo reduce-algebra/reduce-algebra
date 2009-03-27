@@ -1,0 +1,87 @@
+License for binary copies of REDUCE downloaded from Sourceforge
+===============================================================
+
+The CSL-based binary version of Reduce are lined with code that is subject
+to the LGPL 2.1, a copy of which is present in the reduce.doc directory
+(which is where this file is). As of March 2009 the LGPL library involved
+is the FOX GUI toolkit - in future it is possible that some code will
+use the Qt library. The use of these (and any other LGPL code) is covered by
+the LGPL.
+
+This states, in part:
+
+   "6. As an exception to the Sections above, you may also combine or
+       link a "work that uses the Library" with the Library to produce
+       a work containing portions of the Library, and distribute that
+       work under terms of your choice, provided that the terms permit
+       modification of the work for the customer's own use and reverse
+       engineering for debugging such modifications."
+
+The Reduce binaries are works containing part of the library as in the above,
+and I choose to make them available under the BSD license, which reads:
+
+
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+
+When the complete binary archive (a .tar.bz2 or .zip file) is fetched it
+will automatically include a copy of this Reduce documentation and hence
+it will satisfy license terms as regard propogation of the conditions of
+use.
+
+To ensure that my initial distribution of the binary is valid under terms
+of LGPL 2.1 I note
+
+ (a) the BSD license that I apply downstream permits modification and
+     reverse engineering
+ (b) This notice is intended to be "prominent notice" of the use of LGPL
+     libraries and that my actions are sanctioned by the LGPL 2.1
+ (c) My intent is that the exeutable program will not display copyright
+     notices. If other developers change that state then they have a
+     responsibility to arrange to add in matching copyright notices related
+     tp the LGPL code.
+ (d) in occordance with Sourceforge policy as well as the LGPL full source
+     of all components (well beyond the "minimal source" that LGPL
+     identifies) will be released on sourceforge alongside any binary
+     distribution, thus LGPL (6)(d) is used to cover source distribution.
+ (e) again since this is an open source project under the BSD license
+     all relevant data, utility programs, build scripts and the like
+     to make it possible to recompile everything on a standard system
+     is naturally present.
+
+
+Observe that the consequences of all the above is that the license terms that
+apply to anybody who downloads a binary distribution from Sourceforge are
+the permissive BSD ones rather than any more restrictive (L)GPL ones.
+
+Also note that anybody who fetches source and rebuilds or relinks against
+any LGPL libraries themselves will need to ensure that they adhere to the
+license terms if they distribute the resulting binary, and they will probably
+also wish to place a source archive beside their own binaries.
+
+
+               Arthur Norman        March 2009
+
+
