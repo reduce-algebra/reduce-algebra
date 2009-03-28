@@ -59,6 +59,10 @@ redcsl)
 redpsl)
   echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1
   echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1-s
+# redpslw and redpsl2-s are only relevant on windows when launching from
+# a cygwin shell, I think!
+  echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1w
+  echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1w-s
   ;;
 *)
   echo "exec \$here/../scripts/run.sh $1 $1 \$*" >> $here/../bin/$1
