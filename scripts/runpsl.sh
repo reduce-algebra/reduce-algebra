@@ -64,11 +64,10 @@ then
     then
       bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
-#     rm -f $here/../bin/$ap
-#     ln -s -f  $bin $here/../bin/$scr
-#     rm -f $here/../bin/$scr.bat
-#     echo $binw %\* > $here/../bin/$scr.bat
       img=`cygpath -m $here/../pslbuild/$hx/red/reduce.img`
+      rm -f $here/../bin/$scr
+      echo "exec $bin -td 16000000 -f $img \$*" > $here/../bin/$scr
+      chmod +x $here/../bin/$scr
       exec $bin -td 16000000 -f $img $*
       exit 0
     fi
