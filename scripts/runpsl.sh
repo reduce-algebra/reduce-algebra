@@ -84,8 +84,9 @@ else
         STORE=2000
       fi
       bin="$here/../pslbuild/$host$hx/psl/$ap"
-#     rm -f $here/../bin/$scr
-#     ln -s $bin $here/../bin/$scr
+      rm -f $here/../bin/$scr
+      echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/scr
+      chmod +x $here/../bin/$src
       exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
       exit 0
     fi
