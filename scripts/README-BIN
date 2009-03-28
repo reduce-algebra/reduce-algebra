@@ -1,0 +1,77 @@
+                      The Reduce "bin" directory
+                      ==========================
+
+
+The files in this directory are intended to provide an easy way to launch
+Reduce. From the Reduce "trunk" you can just issue a command such as
+             bin/redpsl
+         or  bin/redcsl
+to use the PSL or CSL version of Reduce (supposing that you have configured
+and built it!).
+
+There are some features of the scripts used here that may not at first seem
+obvious, and so I will try to explain here what these features are trying
+to achieve.
+
+The first thing is that each script here can be invoked from anywhere - the
+directory that is current when you trigger one of these scripts does not
+matter. So, for instance, you can put this directory on your PATH and then use
+Reduce freely. This remark may seem obvious, but the important aspect of it
+is that these scripts identify directories where various Reduce resources are
+to be found, and contain curious-looking code to do this.
+
+The second matter is that some people in some contexts have a single shared
+file-space that they access from a variety of different models of computer.
+The binaries that relate to different operating systems and computer
+architectures have to be kept separate, and the main configure and build
+scripts for Reduce achieve this by building binaries in sub-directories
+with name such as pslbuild/i686-pc-windows or cslbuild/x84_64-unknown-suse11.1.
+The scripts here automatically detect the nature on the machine that they are
+being run on and on that basis link through and launch the relevant version
+of the code.
+
+Finally there is a matter of overhead. Detecting and decoding file locations
+costs some effort, so the main versions of the scripts here are arranged so
+that when they are first run they perform all that analysis, but they then
+replace themselves with a version that gives essentially instant access to the
+program. For Unix-like CSL versions this is just a symbolic link set up using
+an absolute path to the executable, while in all other cases it is a shell
+script that is just one or two lines long and that again chains to the
+program using an absolute path. So once the script has been used just once
+the version put in as a replacement may be copied to anywhere else that you
+view as convenient. The original versions are designed to run when they
+themselves are stored in this directory.
+
+In the case that you use multiple machines and a single file-space this scheme
+that replaces the generic script by one tuned to the current computer may be
+unwelcome - for such cases there are versions of the scripts with a suffix
+"-s" in their name which always do the search for a version usable on the
+computer that they are run on.
+
+The file .../trunk/scripts/resetall.sh can be used to restore all these
+scripts to their original state, and should be used before creating an
+archive for distribution.
+
+The programs provided for at present are
+
+   redcsl        Reduce using the CSL Lisp system. Note that just calling
+                 redcsl will probably cause a window to pop up, but
+                 "redcsl -w" causes the code to run as a console application.
+   redpsl        Reduce using the PSL Lisp system.
+   redpslw       On Microsoft Windows this runs the PSL Reduce in a window
+
+The following may be of use of CSL developers but are not intended to be
+of general use to people who are not suffering problems or debugging new code:
+
+   bootstrapreduce  A slower CSL version that is used while building the
+                 full version, and where the function "lisp mapstore()" may
+                 be used to collect profiling information.
+   csl           The CSL Lisp system.
+   fontdemo      tests or demonstrates the Maths fonts used here
+   fwindemo      tests or demonstrates the user-interface aspect of CSL Reduce
+   showmathdemo  tests or demonstrates maths display in the CSL version 
+
+
+
+
+                                                     Arthur Norman. March 2009

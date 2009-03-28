@@ -36,6 +36,7 @@ here=${c%/*}
 
 
 rm -rf $here/../bin/*
+cp $here/README-BIN $here/../bin/README
 
 $here/reset.sh csl
 $here/reset.sh redcsl
