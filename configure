@@ -1343,7 +1343,7 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
-  --with-lgplfiles        Make binaries safe to distribute wrt LGPL
+  --with-lgplfiles        Make binaries even safer to distribute wrt LGPL
   --with-mingw64          Try to cross-build using 64-bit mingw
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
@@ -1967,12 +1967,15 @@ fi
 # down a flag that they do not know about, and so I transcribe into here
 # all the flags that the CSL configuration may ever want!
 
+# My understanding of the LGPL is now that the mechanism that this enabled
+# is not in fact needed.
+
 
 # Check whether --with-lgplfiles was given.
 if test "${with_lgplfiles+set}" = set; then
   withval=$with_lgplfiles;
 else
-  with_lgplfiles="yes"
+  with_lgplfiles="no"
 fi
 
 

@@ -36,11 +36,14 @@ fi
 # down a flag that they do not know about, and so I transcribe into here
 # all the flags that the CSL configuration may ever want!
 
+# My understanding of the LGPL is now that the mechanism that this enabled
+# is not in fact needed.
+
 AC_ARG_WITH(lgplfiles,
    AC_HELP_STRING([--with-lgplfiles],
-                  [Make binaries safe to distribute wrt LGPL]),
+                  [Make binaries even safer to distribute wrt LGPL]),
    [],
-   [with_lgplfiles="yes"])
+   [with_lgplfiles="no"])
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],

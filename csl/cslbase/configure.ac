@@ -5,19 +5,12 @@
 #
 # Special flags that can be used here:
 #
-#   --with-lgplfiles  (default is YES). With this option set the
+#   --with-lgplfiles  (default is NO). With this option set the
 #                     binaries that include FOX end up make with
 #                     a copy of all relevant source files included.
-#                     This makes redistribution of them unproblematic,
-#                     but it slows down rebuilding after changes are
-#                     make. So configuring with "--with-lgplfiles=no"
-#                     allows faster building of smaller binaries but
-#                     leaves constraints on distribution of those
-#                     binaries that (L)GPL enthusiasts view as desirable
-#                     or trivial but that I view as unacceptable. If you
-#                     use this option please ensure you understand what
-#                     you need to do before you pass a copy of a binary you
-#                     have made to anybody in any wey!
+#                     At one time I believed that this would really
+#                     ease my burden when distributing binaries of
+#                     Reduce, but I now believe it is not needed.
 #
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
@@ -75,13 +68,13 @@ AC_CONFIG_FILES(Makefile)
 
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
-# Note that the default for "--with-lgplfiles" is "yes"
+# Note that the default for "--with-lgplfiles" is "no"
 
 AC_ARG_WITH(lgplfiles,
    AC_HELP_STRING([--with-lgplfiles],
                   [Make binaries safe to distribute wrt LGPL]),
    [],
-   [with_lgplfiles="yes"])
+   [with_lgplfiles="no"])
 
 AC_MSG_NOTICE([--with-lgplfile = $with_lgplfiles])
 

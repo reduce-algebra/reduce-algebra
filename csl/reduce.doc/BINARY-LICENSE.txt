@@ -1,14 +1,44 @@
 License for binary copies of REDUCE downloaded from Sourceforge
 ===============================================================
 
-The CSL-based binary version of Reduce are lined with code that is subject
-to the LGPL 2.1, a copy of which is present in the reduce.doc directory
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+%
+   * Redistributions of source code must retain the relevant
+     copyright notice, this list of conditions and the following
+     disclaimer.
+   * Redistributions in binary form must reproduce the above
+     copyright notice, this list of conditions and the following
+     disclaimer in the documentation and/or other materials provided
+     with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+========================================================================
+
+Commentary and further explanation
+==================================
+
+The CSL-based binary versions of Reduce are linked with code that is subject
+to the LGPL 2.1. A copy of that license is present in the reduce.doc directory
 (which is where this file is). As of March 2009 the LGPL library involved
 is the FOX GUI toolkit - in future it is possible that some code will
 use the Qt library. The use of these (and any other LGPL code) is covered by
 the LGPL.
 
-This states, in part:
+LGPL states, in part:
 
    "6. As an exception to the Sections above, you may also combine or
        link a "work that uses the Library" with the Library to produce
@@ -18,33 +48,13 @@ This states, in part:
        engineering for debugging such modifications."
 
 The Reduce binaries are works containing part of the library as in the above,
-and I choose to make them available under the BSD license, which reads:
-
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions
-% are met:
-%
-%    * Redistributions of source code must retain the relevant
-%      copyright notice, this list of conditions and the following
-%      disclaimer.
-%    * Redistributions in binary form must reproduce the above
-%      copyright notice, this list of conditions and the following
-%      disclaimer in the documentation and/or other materials provided
-%      with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+and I choose to make them available under the BSD license as at the top of
+this file. Note that one objective of the LGPL is that applications linked
+against an LGPL library can even be released subject to commercial closed
+licenses, and those could permit or prohibit further distribution at their
+whim. The BSD license should in general be seen as more open than any
+proprietary distribution, so its use should not cause worry to any (L)GPL
+enthusiast.
 
 When the complete binary archive (a .tar.bz2 or .zip file) is fetched it
 will automatically include a copy of this Reduce documentation and hence
@@ -55,14 +65,15 @@ To ensure that my initial distribution of the binary is valid under terms
 of LGPL 2.1 I note
 
  (a) the BSD license that I apply downstream permits modification and
-     reverse engineering
+     reverse engineering, so the LGPL requirement that these be allowed
+     is satisfied.
  (b) This notice is intended to be "prominent notice" of the use of LGPL
-     libraries and that my actions are sanctioned by the LGPL 2.1
- (c) My intent is that the exeutable program will not display copyright
+     libraries and that my actions are sanctioned by the LGPL 2.1.
+ (c) My intent is that the executable program will not display copyright
      notices. If other developers change that state then they have a
      responsibility to arrange to add in matching copyright notices related
-     tp the LGPL code.
- (d) in occordance with Sourceforge policy as well as the LGPL full source
+     to the LGPL code.
+ (d) in accordance with Sourceforge policy as well as the LGPL full source
      of all components (well beyond the "minimal source" that LGPL
      identifies) will be released on sourceforge alongside any binary
      distribution, thus LGPL (6)(d) is used to cover source distribution.
