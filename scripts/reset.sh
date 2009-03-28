@@ -47,37 +47,48 @@ here=${c%/*}
 
 mkdir -p $here/../bin
 
-rm -f $here/../bin/$1
+rm -f $here/../bin/$1 $here/../bin/$1-s
 cp $here/here0.sh $here/../bin/$1
+cp $here/here0.sh $here/../bin/$1-s
 
 case $1 in
 redcsl)
   echo "exec \$here/../scripts/run.sh reduce $1 \$*" >> $here/../bin/$1
+  echo "exec \$here/../scripts/run.sh reduce $1 \$*" >> $here/../bin/$1-s
   ;;
 redpsl)
   echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1
+  echo "exec \$here/../scripts/runpsl.sh bpsl $1 \$*" >> $here/../bin/$1-s
   ;;
 *)
   echo "exec \$here/../scripts/run.sh $1 $1 \$*" >> $here/../bin/$1
+  echo "exec \$here/../scripts/run.sh $1 $1 \$*" >> $here/../bin/$1-s
   ;;
 esac
 
 
-chmod +x $here/../bin/$1
+chmod +x $here/../bin/$1 $here/../bin/$1-s
 
 case $1 in
 redpsl)
   rm -f $here/../bin/redpsl.bat $here/../bin/redpslw.bat
   cp $here/redpsl.bat $here/../bin
   cp $here/redpslw.bat $here/../bin
+  rm -f $here/../bin/redpsl-s.bat $here/../bin/redpslw-s.bat
+  cp $here/redpsl.bat $here/../bin/redpsl-s.bat
+  cp $here/redpslw.bat $here/../bin/redpslw-s.bat
   ;;
 redcsl)
   rm -f $here/../bin/redcsl.bat
   cp $here/redcsl.bat $here/../bin
+  rm -f $here/../bin/redcsl-s.bat
+  cp $here/redcsl.bat $here/../bin/redcsl-s.bat
   ;;
 *)
   rm -f $here/../bin/$1.bat
   cp $here/run.bat $here/../bin/$1.bat
+  rm -f $here/../bin/$1-s.bat
+  cp $here/run.bat $here/../bin/$1-s.bat
   ;;
 esac
 
