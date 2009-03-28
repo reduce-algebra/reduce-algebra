@@ -65,7 +65,7 @@ then
       bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
 #     rm -f $here/../bin/$ap
-#     ln -s $bin $here/../bin/$scr
+#     ln -s -f  $bin $here/../bin/$scr
 #     rm -f $here/../bin/$scr.bat
 #     echo $binw %\* > $here/../bin/$scr.bat
       img=`cygpath -m $here/../pslbuild/$hx/red/reduce.img`
