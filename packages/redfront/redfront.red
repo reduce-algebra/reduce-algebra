@@ -30,7 +30,7 @@
 
 lisp <<
    fluid '(redfront_rcsid!* redfront_copyright!*);
-   redfront_rcsid!* := "$Id";
+   redfront_rcsid!* := "$Id$";
    redfront_copyright!* := "(c) 1999-2009 A. Dolzmann and T. Sturm"
 >>;
 
