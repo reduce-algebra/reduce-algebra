@@ -49,6 +49,7 @@ RETSIGTYPE ReduceSigChld(int);
 void installSignalHandlers(void);
 void removeSignalHandlers(void);
 void red_kill(void);
+const char *sig_identify(int);
 void red_felt_hup(int);
 void red_felt_term(int);
 int red_kill_sub(int);
@@ -65,9 +66,11 @@ RETSIGTYPE ReduceSigGen(int arg) {
 #endif
   fflush(stderr);
   red_kill();
-  textcolor(normalcolor);  /* might not match, but black is better than red */
-  printf("\n");
-  redline_cleanup_after_signal();
+  textcolor(redfrontcolor);
+  printf("REDFRONT exiting on signal %d (%s)\n",arg,sig_identify(arg));
+  //  textcolor(normalcolor);  /* might not match, but black is better than red */
+  line_end();
+  resetcolor();
   switch (arg) {
   case SIGQUIT:
   case SIGHUP:
@@ -95,7 +98,6 @@ RETSIGTYPE ReduceSigInt(int arg) {
 
 RETSIGTYPE ReduceSigChld(int arg) {
   int *stP;
-  char tmp_char [100];
   
   stP = (int *)malloc(sizeof(int));
   
@@ -109,21 +111,18 @@ RETSIGTYPE ReduceSigChld(int arg) {
   }
 #endif
 
-#ifdef HAVE_HISTORY
-  sprintf(tmp_char,"%s/.reduce_history",getenv("HOME"));
-  redline_stifle_history(HISTFILESIZE);
-  redline_write_history(tmp_char);
-#endif
+  line_end_history();
 
-  /* TS does not believe that this did any good: */
-  
-  /* kill(getpid(),SIGALRM); // Have to kill ourselves to reset e.g. readline */
-  /* Instead I use the following: */
-  
-  redline_cleanup_after_signal();
-  /* This also avoids the Alarm Clock message, which irritated some customers. */
+  line_end();
+
+  resetcolor();
 
   exit(0);
+}
+
+RETSIGTYPE ReduceSigTstp(int arg) {
+  resetcolor();
+  kill(0,SIGSTOP);
 }
 
 void installSignalHandlers(void) {
@@ -132,10 +131,10 @@ void installSignalHandlers(void) {
 #ifdef BPSL
   signal(SIGINT,ReduceSigGen);
 #else
-  signal(SIGINT,ReduceSigInt);
+  signal(SIGINT,SIG_IGN);
 #endif
   signal(SIGILL,ReduceSigGen);
-  signal(SIGSTOP,SIG_DFL);
+  signal(SIGTSTP,ReduceSigTstp);
 #ifndef LINUX
   signal(SIGBUS,ReduceSigGen);
 #endif
@@ -160,6 +159,41 @@ void removeSignalHandlers(void) {
 
 void red_kill(void) {
   kill(reduceProcessID,SIGTERM);
+}
+
+const char *sig_identify(int signo) {
+  switch(signo) {
+  case SIGFPE:    return "SIGFPE";
+  case SIGSTOP:   return "SIGSTOP";
+  case SIGHUP:    return "SIGHUP";
+  case SIGINT:    return "SIGINT";
+  case SIGQUIT:   return "SIGQUIT";
+  case SIGILL:    return "SIGILL";
+  case SIGTRAP:   return "SIGTRAP";
+  case SIGABRT:   return "SIGABRT";
+  case SIGBUS:    return "SIGBUS";
+  case SIGSYS:    return "SIGSYS";
+  case SIGCONT:   return "SIGCONT";
+  case SIGUSR1:   return "SIGUSR1";
+  case SIGUSR2:   return "SIGUSR2";
+  case SIGSEGV:   return "SIGSEGV";
+  case SIGPIPE:   return "SIGPIPE";
+  case SIGALRM:   return "SIGALRM";
+  case SIGTERM:   return "SIGTERM";
+  case SIGCHLD:   return "SIGCHLD";
+  case SIGIO:     return "SIGIO";
+  case SIGKILL:   return "SIGKILL";
+  case SIGTSTP:   return "SIGTSTP";
+  case SIGTTIN:   return "SIGTTIN";
+  case SIGTTOU:   return "SIGTTOU";
+  case SIGURG:    return "SIGURG";
+  case SIGXCPU:   return "SIGXCPU";
+  case SIGXFSZ:   return "SIGXFSZ";
+  case SIGVTALRM: return "SIGVTALRM";
+  case SIGPROF:   return "SIGPROF";
+  case SIGWINCH:  return "SIGWINCH";
+  }
+  return NULL;
 }
 
 /* Code from here on is not used anymore for now. */

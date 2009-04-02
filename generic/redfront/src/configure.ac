@@ -29,9 +29,11 @@ dnl OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([REDFRONT],[2.9],[sturm@redlog.eu])
+AC_INIT([REDFRONT],[2.95],[sturm@redlog.eu])
 
 abssrcdir=`$srcdir/../../../scripts/here.sh`
+
+AC_DEFINE_UNQUOTED(REDFRONTSRCDIR,"$abssrcdir/generic/redfront/src",[Absolute path to the redfront source directory])
 
 AC_CANONICAL_HOST
 BUILD=`eval "$SHELL $srcdir/../../../scripts/findhost.sh $host $ac_configure_args"`
@@ -229,27 +231,27 @@ AC_DEFINE(STATIC,0,[static linking info in banner])
 fi
 )
 
+editline=yes
 AC_ARG_WITH(libedit,
    AC_HELP_STRING([--without-libedit],[do not use libedit]),
-if test "$withval" = no ; then
-AC_DEFINE(USE_READLINE,1,[libreadline instead of libedit])
-readline=yes
-fi)
+if test "$withval" = no ; then editline=no; fi)
 
-AS_IF([test "$readline" = yes -a "$on_darwin" = yes],
+if test "$editline" = yes ; then
+  AC_DEFINE(HAVE_LIBEDIT,1,[use libedit])
+fi
+
+AS_IF([test "$editline" = no -a "$on_darwin" = yes],
    [CFLAGS="$CFLAGS -I/sw/include"; LDFLAGS="$LDFLAGS -L/sw/lib"])
 
-AS_IF([test "$readline" = yes],
+AS_IF([test "$editline" = no],
   [AC_CHECK_LIB(readline,readline,LIBS="-lreadline $LIBS",
-      AC_MSG_ERROR("GNU readline not found"))
+      AC_MSG_ERROR("no editline alternative found"))
    AC_CHECK_LIB(readline,using_history,
-      AC_DEFINE(HAVE_HISTORY,1,[history provided by libreadline]),
+      AC_DEFINE(HAVE_HISTORY,1,[history available]),
       AC_CHECK_LIB(history,using_history,
          AC_DEFINE(HAVE_HISTORY,1,[history provided by libhistory])))])
 
-dnl AC_MSG_NOTICE([readline=$readline, on_darwin=$on_darwin, fat_support_available=$fat_support_available])
-
-AS_IF([test "$readline" != yes &&
+AS_IF([test "$editline" = yes &&
          { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
   [ebd=$abssrcdir/generic/redfront/libedit/$RBUILD
    CFLAGS="$CFLAGS -I$ebd/include"
@@ -258,9 +260,12 @@ AS_IF([test "$readline" != yes &&
        LDFLAGS="$LDFLAGS -Wl,-rpath,$ebd/lib"
    fi])
 
-AS_IF([test "$readline" != yes],
+AS_IF([test "$editline" = yes],
    AC_CHECK_LIB(edit,using_history,
       [LIBS="-ledit $LIBS"
+dnl I am adding the libedit/src for filecomplete.h. This is going to
+dnl be used even with the system libedit for Darwin universal builds.
+       CFLAGS="$CFLAGS -I$abssrcdir/generic/redfront/libedit/src"
        AC_DEFINE(HAVE_HISTORY,1,[history provided by libedit])],
       AC_MSG_ERROR("libedit not found")))
 

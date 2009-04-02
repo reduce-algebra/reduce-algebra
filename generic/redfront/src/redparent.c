@@ -54,7 +54,7 @@ void atoploop(void);
 char *load_package(const char *);
 void read_until_first_prompt(char *);
 char *read_valid_line(char *);
-int is_too_long(char *);
+int is_too_long(const char *);
 int badline(char *);
 char *append_line(char *,char *);
 void send_reduce(char *);
@@ -85,7 +85,7 @@ void parent(void) {
 
 void atoploop(void) {
   char der_prompt[50],old_prompt[50];
-  char *line_read = (char *)NULL;
+  char *line = (char *)NULL;
   char *this_command = (char *)NULL;
   
   load_package(unicode ? "redfront,utf8": "redfront");
@@ -103,20 +103,18 @@ void atoploop(void) {
 
   while (1) {
 
-    if (line_read != (char *)NULL)
-      free(line_read);
-    line_read = read_valid_line(der_prompt);
+    line = read_valid_line(der_prompt);
 
-    this_command = append_line(this_command,line_read);
+    this_command = append_line(this_command,line);
 
-    send_reduce(line_read);
+    send_reduce(line);
 
     strcpy(old_prompt,der_prompt);
 
     read_until_prompt(der_prompt);
 
     if (!CMDHIST || strcmp(old_prompt,der_prompt) != 0) {
-      rf_add_history(this_command);
+      line_add_history(this_command);
       this_command = NULL;
     }
   }
@@ -183,49 +181,39 @@ void read_until_first_prompt(char der_prompt[]) {
 
 char *read_valid_line(char der_prompt[]) {
   char orig_prompt[50];
-  char *line_read;
+  char *line;
 
   strcpy(orig_prompt,der_prompt);
 
-  der_prompt = color_prompt(der_prompt);
+  der_prompt = line_color_prompt(der_prompt);
 	
-  line_read = redline(der_prompt);
+  line = line_read(der_prompt);
 
-  if (line_read)
-    while (is_too_long(line_read)) {
-      free(line_read);
-      line_read = redline(der_prompt);
+  if (line)
+    while (is_too_long(line)) {
+      line = line_read(der_prompt);
     }
   else {
     if (strcmp(orig_prompt,"?") == 0) {
-      line_read = malloc(3 * sizeof(char));
-      strcpy(line_read,"n\n");
+      line = line_quit("n");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == '>') {
-      line_read = malloc(3 * sizeof(char));
-      strcpy(line_read,"q\n");
+      line = line_quit("q;");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == ':') {
-      line_read = malloc(7 * sizeof(char));
-      strcpy(line_read,"quit;\n");
+      line = line_quit("quit;");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == '*') {
-      line_read = malloc(7 * sizeof(char));
-      strcpy(line_read,"quit;\n");
+      line = line_quit("quit;");
     } else {
-      line_read = malloc(2 * sizeof(char));
-      strcpy(line_read,"\n");
+      line = line_quit("");
     }
-    textcolor(inputcolor);
-    printf("%s",line_read);
-    textcolor(normalcolor);
   }
-  return line_read;
+  return line;
 }
 
-
-int is_too_long(char line_read[]) {
+int is_too_long(const char line[]) {
 #ifndef RBPSL
   return 0;
 #else
-  if (badline(line_read)) {
+  if (badline(line)) {
     textcolor(redfrontcolor);
     printf("redfront: overlong input line\n");
     textcolor(inputcolor);
@@ -290,7 +278,7 @@ char *append_line(char *c,char *l) {
 #endif
 }
 
-void send_reduce(char line_read[]) {
+void send_reduce(char line[]) {
   char dummy_prompt[50];
   char ch;
   int ii;
@@ -298,21 +286,20 @@ void send_reduce(char line_read[]) {
 #ifdef DEBUG
   if (debug) {
     textcolor(debugcolor);
-    fprintf(stderr,"parent: entering send_reduce() ... line_read=%s\n",
-	    line_read);
+    fprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
     textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
 	
-  if (line_read == (char *)NULL) {
+  if (line == (char *)NULL) {
     ch=0x04;
     write(MeToReduce[1],&ch,1);
     ch = 0x0a;
     write(MeToReduce[1],&ch,1);
   } else {
-    for (ii=0; line_read[ii] != 0; ii++) {
-      ch = line_read[ii] & 0x7f;
+    for (ii=0; line[ii] != 0; ii++) {
+      ch = line[ii] & 0x7f;
       write(MeToReduce[1],&ch,1);
       if (ch == 0x0a) {
 	strcpy(dummy_prompt,"dummy_prompt");

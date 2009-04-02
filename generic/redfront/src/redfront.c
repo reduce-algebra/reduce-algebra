@@ -73,15 +73,17 @@ void print_usage(char *);
 void print_help(char *);
 void textcolor(int);
 void textcolor1(int,int,int);
+void stextcolor1(char *,int,int,int);
+void resetcolor(void);
 
 int main(int argc,char **argv,char **envp) {
   parse_args(argc,argv);
 
-  (void)setsid();  /* become leader of a new process group */
-
   print_banner(verbose);
 
-  init_history();
+  line_init();
+
+  line_init_history();
 
   init_channels();
 
@@ -248,6 +250,7 @@ char *parse_memarg(char *argstr,char *name) {
     return nargv2;
   }
   print_usage(name);
+  resetcolor();
   exit(1);
 }
 
@@ -348,8 +351,7 @@ void textcolor1(int attr, int fg, int bg) {
   if (color && HAVE_COLOR) {
     char command[13];
     
-    /* Command is the control command to the terminal */
-    sprintf(command, "%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
+    stextcolor1(command,attr,fg,bg);
     printf("%s", command);
     fflush(stdout);
 #ifdef DEBUG
@@ -358,5 +360,16 @@ void textcolor1(int attr, int fg, int bg) {
       fflush(stderr);
     }
 #endif
+  }
+}
+
+void stextcolor1(char command[],int attr,int fg,int bg) {
+  sprintf(command,"%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
+}
+
+void resetcolor(void) {
+  if (color && HAVE_COLOR) {
+    printf("%c[0m",0x1B);
+    fflush(stdout);
   }
 }

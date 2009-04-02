@@ -37,23 +37,34 @@ extern int debug;
 extern int verbose;
 extern char *memory;
 
+extern int redfrontcolor;
+extern int normalcolor;
+extern int promptcolor;
+extern int inputcolor;
+extern int outputcolor;
+extern int debugcolor;
+
 void child(int,char **,char **);
 void create_call(int,char **,char **);
 
 void child(int argc,char *argv[],char *envp[]) {
   char *nargv[5];
 
+  setsid();
+
   removeSignalHandlers();  /* Just to make sure! */
+
+  signal(SIGTSTP,SIG_IGN);
 
   close(MeToReduce[1]);
   close(ReduceToMe[0]);
 
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
 	    MeToReduce[0], ReduceToMe[1]);
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -68,9 +79,9 @@ void child(int argc,char *argv[],char *envp[]) {
   
 #ifdef DEBUG
   if (debug) {
-    textcolor(DEBUGCOLOR);
+    textcolor(debugcolor);
     fprintf(stderr,"child: right before execv()\n");
-    textcolor(NORMALCOLOR);
+    textcolor(normalcolor);
     fflush(stderr);
   }
 #endif
@@ -90,9 +101,9 @@ void create_call(int argc,char *argv[],char *nargv[]) {
 
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"child: entering create_call\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif
@@ -142,22 +153,22 @@ void create_call(int argc,char *argv[],char *nargv[]) {
 
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"child: argv[0]=%s\n",nargv[0]);
       fprintf(stderr,"child: argv[1]=%s\n",nargv[1]);
       fprintf(stderr,"child: argv[2]=%s\n",nargv[2]);
       fprintf(stderr,"child: argv[3]=%s\n",nargv[3]);
       fprintf(stderr,"child: argv[4]=%s\n",nargv[4]);
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif
 
 #ifdef DEBUG
     if (debug) {
-      textcolor(DEBUGCOLOR);
+      textcolor(debugcolor);
       fprintf(stderr,"child: leaving create_call\n");
-      textcolor(NORMALCOLOR);
+      textcolor(normalcolor);
       fflush(stderr);
     }
 #endif

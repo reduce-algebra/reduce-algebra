@@ -60,6 +60,25 @@
 #include <sys/wait.h>
 #endif
 
+#ifdef HAVE_LIBEDIT
+
+#include <editline/readline.h>
+#include <histedit.h>
+
+/* obsolete */
+int line_startup(const char *,int);
+int line_pre_input(const char *,int);
+
+#else
+
+#include <readline/readline.h>
+
+#ifdef HAVE_HISTORY
+#include <readline/history.h>
+#endif
+
+#endif
+
 extern int errno;
 
 struct strbuf {
@@ -69,23 +88,29 @@ struct strbuf {
 
 void textcolor(int);
 
+void resetcolor(void);
+
 void parent(void);
 
 void child(int,char **,char **);
 
-void init_history(void);
+void line_init_history(void);
 
-void rf_add_history(char *);
+void line_add_history(char *);
 
-char *redline(const char *);
+char *line_read(char *);
 
-char *color_prompt(char *);
+char *line_quit(const char *);
 
-void redline_cleanup_after_signal(void);
+char *line_color_prompt(char *);
 
-void redline_stifle_history(int);
+void line_cleanup_after_signal(void);
 
-void redline_write_history(const char *);
+void line_end_history(void);
+
+void line_init(void);
+
+void line_end(void);
 
 struct strbuf *addchar(char,struct strbuf *);
 struct strbuf *remtail(struct strbuf *,struct strbuf *);
