@@ -112,6 +112,8 @@ void line_init(void);
 
 void line_end(void);
 
+RETSIGTYPE ReduceSigInt(int);
+
 struct strbuf *addchar(char,struct strbuf *);
 struct strbuf *remtail(struct strbuf *,struct strbuf *);
 void prtbuf(struct strbuf *);

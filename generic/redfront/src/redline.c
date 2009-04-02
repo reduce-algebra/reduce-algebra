@@ -51,8 +51,9 @@ static char line_prompt[50];
 void line_init(void);
 char *line_get_prompt(EditLine *);
 char *line_get_rprompt(EditLine *);
-static const char *_rl_completion_append_character_function(const char *);
 unsigned char line_complete(EditLine *,int);
+static const char *_rl_completion_append_character_function(const char *);
+unsigned char line_help(EditLine *,int);
 char *line_read(char *);
 char *line_quit(const char *);
 char *line_color_prompt(char *);
@@ -62,11 +63,6 @@ void line_add_history(char *);
 void line_end_history(void);
 char *line_histname(void);
 
-unsigned char line_test(EditLine *ignore,int invoking_key) {
-  printf("XXX");
-  return (CC_REFRESH);
-}
-
 void line_init(void) {
   e = el_init("redfront",stdin,stdout,stderr);
   el_set(e,EL_SIGNAL,0);
@@ -75,8 +71,8 @@ void line_init(void) {
   el_set(e,EL_BIND,"^R","em-inc-search-prev",NULL);
   el_set(e,EL_ADDFN,"line_complete","ReadLine style completion",line_complete);
   el_set(e,EL_BIND,"^I","line_complete",NULL);
-  el_set(e,EL_ADDFN,"line_test","test",line_test);
-  el_set(e,EL_BIND,"^G","line_test",NULL);
+  el_set(e,EL_ADDFN,"line_help","bind",line_help);
+  el_set(e,EL_BIND,"\033OQ","line_help",NULL);
 }
 
 char *line_get_prompt(EditLine *e) {
@@ -111,6 +107,17 @@ static const char *_rl_completion_append_character_function(const char *dummy) {
   buf[0] = rl_completion_append_character;
   buf[1] = '\0';
   return buf;
+}
+
+unsigned char line_help(EditLine *ignore,int invoking_key) {
+  const char *argv[2];
+
+  argv[0]="bind";
+  argv[1]=(char *)0;
+  textcolor(redfrontcolor);
+  el_parse(e,1,argv);
+  textcolor(inputcolor);
+  return (CC_REFRESH);
 }
 
 char *line_read(char *prompt) {

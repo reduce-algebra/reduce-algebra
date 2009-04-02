@@ -60,6 +60,8 @@ char *append_line(char *,char *);
 void send_reduce(char *);
 void read_until_prompt(char *);
 
+#include <fcntl.h>
+
 void parent(void) {
   installSignalHandlers(); 
 	
@@ -103,7 +105,15 @@ void atoploop(void) {
 
   while (1) {
 
+#ifndef BPSL
+    signal(SIGINT,SIG_IGN);
+#endif
+
     line = read_valid_line(der_prompt);
+
+#ifndef BPSL
+    signal(SIGINT,ReduceSigInt);
+#endif
 
     this_command = append_line(this_command,line);
 
@@ -210,7 +220,7 @@ char *read_valid_line(char der_prompt[]) {
 }
 
 int is_too_long(const char line[]) {
-#ifndef RBPSL
+#ifndef BPSL
   return 0;
 #else
   if (badline(line)) {

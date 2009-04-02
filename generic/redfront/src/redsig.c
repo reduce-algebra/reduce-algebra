@@ -33,6 +33,7 @@
 extern int reduceProcessID;
 
 extern int MeToReduce[];
+extern int ReduceToMe[];
 
 extern int debug;
 
@@ -84,6 +85,9 @@ RETSIGTYPE ReduceSigGen(int arg) {
 
 RETSIGTYPE ReduceSigInt(int arg) {
   /* Only used for CSL */
+  int ncharread;
+  char buffer[1];
+  int flags;
 
 #ifdef DEBUG
   if (debug) {
@@ -92,7 +96,15 @@ RETSIGTYPE ReduceSigInt(int arg) {
     textcolor(normalcolor);
   }
 #endif
-
+  kill(reduceProcessID,SIGINT);
+  read(ReduceToMe[0],buffer,1);
+  flags = fcntl(ReduceToMe[0],F_GETFL);
+  fcntl(ReduceToMe[0],F_SETFL,flags|O_NONBLOCK);
+  do {
+    ncharread = read(ReduceToMe[0],buffer,1);
+  } while (ncharread != -1);
+  fcntl(ReduceToMe[0],F_SETFL,flags&~O_NONBLOCK);
+  textcolor(normalcolor);
   write(MeToReduce[1],"a\n",2);
 }
 
