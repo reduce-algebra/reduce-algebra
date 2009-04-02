@@ -29,7 +29,7 @@ dnl OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([REDFRONT],[2.95],[sturm@redlog.eu])
+AC_INIT([REDFRONT],[3.0],[sturm@redlog.eu])
 
 abssrcdir=`$srcdir/../../../scripts/here.sh`
 

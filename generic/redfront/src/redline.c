@@ -73,6 +73,7 @@ void line_init(void) {
   el_set(e,EL_BIND,"^I","line_complete",NULL);
   el_set(e,EL_ADDFN,"line_help","bind",line_help);
   el_set(e,EL_BIND,"\033OQ","line_help",NULL);
+  el_source(e, NULL);
 }
 
 char *line_get_prompt(EditLine *e) {
