@@ -114,7 +114,7 @@ procedure utf8_scprint(u,n);
 
 procedure utf8_indexsplit(u);
    begin integer idxlen; scalar l,d;
-      if numberp u then
+      if numberp u or digit u then
 	 return nil;
       l := reversip explode u;
       while digit car l do <<
