@@ -84,8 +84,8 @@ else
       fi
       bin="$here/../pslbuild/$host$hx/psl/$ap"
       rm -f $here/../bin/$scr
-      echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/scr
-      chmod +x $here/../bin/$src
+      echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
+      chmod +x $here/../bin/$scr
       exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
       exit 0
     fi
