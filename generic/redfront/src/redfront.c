@@ -308,7 +308,8 @@ void print_banner(int vb) {
 	   PACKAGE_VERSION,
 	   4*ur + 2*USE_PIPES + STATIC,
 	   BUILDTIME);
-    printf("(c) 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
+    if (unicode) printf("%c%c",0xC2,0xA9); else printf("(C)");
+    printf(" 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
     printf("Based on earlier projects by C. Cannam and W. Neun\n");
     printf("Reports bugs to <%s>\n\n",PACKAGE_BUGREPORT);
   } else {
