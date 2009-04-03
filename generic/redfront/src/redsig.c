@@ -61,13 +61,7 @@ void red_kill_sub2(void);
 pid_t redfront_waitpid(int,int *);
 
 RETSIGTYPE ReduceSigGen(int arg) {
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"ReduceSigGen(%d)\n",arg);
-    textcolor(normalcolor);
-  }
-#endif
+  dbprintf(stderr,"ReduceSigGen(%d)\n",arg);
   fflush(stderr);
   red_kill();
   textcolor(redfrontcolor);
@@ -88,16 +82,11 @@ RETSIGTYPE ReduceSigGen(int arg) {
 RETSIGTYPE ReduceSigInt(int arg) {
   /* Only used for CSL */
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"ReduceSigInt(%d)\n",arg);
-    textcolor(normalcolor);
-  }
-#endif
+  dbprintf(stderr,"ReduceSigInt(%d)\n",arg);
   kill(reduceProcessID,SIGINT);
   skip_until_string(ReduceToMe[0],CSL_SIGINT_MSG);
   write(MeToReduce[1],"a\n",2);
+  printf("\n");
 }
 
 void skip_until_string(int handle,const char string[]) {
@@ -110,13 +99,7 @@ void skip_until_string(int handle,const char string[]) {
   read(handle,buffer,len);
 
   while (strcmp(buffer,string) != 0) {
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      printf("BUF#%s#\n",buffer);
-      textcolor(normalcolor);
-    }
-#endif
+    dbprintf(stderr,"skip_until_string(): buffer=|%s|\n",buffer);
     for (i=0; i < len-1; i++)
       buffer[i] = buffer[i+1];
     read(handle,buffer+len-1,1);
@@ -131,13 +114,7 @@ RETSIGTYPE ReduceSigChld(int arg) {
   
   removeSignalHandlers();
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"Reduce process terminated\n");
-    textcolor(normalcolor);
-  }
-#endif
+  dbprintf(stderr,"ReduceSigChld(): Reduce process terminated\n");
 
   line_end_history();
 
@@ -234,23 +211,10 @@ void wnf_red_kill(void) {
   signal(SIGHUP,red_felt_hup);
   signal(SIGTERM,red_felt_term);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"\nredfront: Sending Hangup signal to Reduce process\n");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"\nredfront: Sending Hangup signal to Reduce process\n");
 
   if (red_kill_sub(SIGHUP) != 0 && errno == ESRCH) {
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"\nredfront: No Reduce process\n");
-      textcolor(normalcolor);
-    }
-#endif
+    dbprintf(stderr,"\nredfront: No Reduce process\n");
     red_kill_sub2();
     return;
   }
@@ -258,50 +222,24 @@ void wnf_red_kill(void) {
   do {
     if (redfront_waitpid(reduceProcessID,&status) == reduceProcessID &&
 	(WIFEXITED(status) || WIFSIGNALED(status))) {
-#ifdef DEBUG
-      if (debug) {
-	textcolor(debugcolor);
-	fprintf(stderr,"%sredfront: Reduce has hung up\n",count ? "\n" : "");
-	textcolor(normalcolor);
-      }
-#endif
+      dbprintf(stderr,"%sredfront: Reduce has hung up\n",count ? "\n" : "");
       red_kill_sub2();
       return;
     }
 
     sleep(1);
 
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,
-	      "%s[waiting]%s",count ? "" : "redfront: ",count-3 ? " " : "\n");
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,
+	     "%s[waiting]%s",count ? "" : "redfront: ",count-3 ? " " : "\n");
 
   } while (++count < 4);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,
-	    "redfront: sending SIGTERM to Reduce (%d)\n",reduceProcessID);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,
+	   "redfront: sending SIGTERM to Reduce (%d)\n",reduceProcessID);
   
   count = 0;
   if (red_kill_sub(SIGTERM) != 0 && errno == ESRCH) {
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"redfront: Reduce has hung up\n");
-      textcolor(normalcolor);
-    }
-#endif
+    dbprintf(stderr,"redfront: Reduce has hung up\n");
     red_kill_sub2();
     return;
   }
@@ -309,44 +247,18 @@ void wnf_red_kill(void) {
   do {
     if (redfront_waitpid(reduceProcessID,&status) == reduceProcessID &&
 	(WIFEXITED(status) || WIFSIGNALED(status))) {
-#ifdef DEBUG
-      if (debug) {
-	textcolor(debugcolor);
-	fprintf(stderr,"%sredfront: Reduce terminated\n",count ? "\n":"");
-	textcolor(normalcolor);
-      }
-#endif
+      dbprintf(stderr,"%sredfront: Reduce terminated\n",count ? "\n":"");
       red_kill_sub2();
       return;
     }
     sleep(1);
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"%s[waiting]%s",count ? "":"XR: ",count-3 ?" ":"\n");
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,"%s[waiting]%s",count ? "":"XR: ",count-3 ?" ":"\n");
   } while (++count < 4);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"redfront: Sending Kill signal to Reduce process\n");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"redfront: Sending Kill signal to Reduce process\n");
 
   if (red_kill_sub(SIGKILL) != 0 && errno == ESRCH) {
-#ifdef DEBUG
-    if (debug) {
-      textcolor(normalcolor);
-      fprintf(stderr,"redfront: Reduce has finally been terminated\n");
-      textcolor(normalcolor);
-    }
-#endif
+    dbprintf(stderr,"redfront: Reduce has finally been terminated\n");
     red_kill_sub2();
     return;
   }
@@ -355,35 +267,17 @@ void wnf_red_kill(void) {
 
   wait(0);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"redfront: That troublesome Reduce has finally gone\n");
-    textcolor(normalcolor);
-  }
-#endif
+  dbprintf(stderr,"redfront: That troublesome Reduce has finally gone\n");
 
   return;
 }
 
 void red_felt_hup(int arg) { 
-#ifdef DEBUG
-  if (debug) { 
-    textcolor(debugcolor);
-    fprintf(stderr,"[click] ");
-    textcolor(normalcolor);
-  }
-#endif
+  dbprintf(stderr,"[click] ");
 }
 
 void red_felt_term(int arg) {
-#ifdef DEBUG
-  if (debug) { 
-    textcolor(debugcolor);
-    fprintf(stderr,"[kerblam] ");
-    textcolor(normalcolor);
-  }
-#endif
+  dbprintf(stderr,"[kerblam] ");
 }
 
 /* These functions try to kill the Reduce process, as nicely as possible. */

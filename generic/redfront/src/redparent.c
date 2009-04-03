@@ -72,15 +72,8 @@ void parent(void) {
   close(MeToReduce[0]);
   close(ReduceToMe[1]);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
-	    MeToReduce[1], ReduceToMe[0]);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
+	   MeToReduce[1], ReduceToMe[0]);
   
   atoploop();
 }
@@ -94,14 +87,7 @@ void atoploop(void) {
 
   read_until_first_prompt(der_prompt);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: read first prompt\n");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"parent: read first prompt\n");
 
   while (1) {
 
@@ -139,15 +125,8 @@ char *load_package(const char *package) {
   sprintf(cmd,"load_package %s$",package);
   send_reduce(cmd);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: sending %s\n",cmd);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
-
+  dbprintf(stderr,"parent: sending %s\n",cmd);
+  
   return cmd;
 }
 
@@ -252,15 +231,9 @@ char *append_line(char *c,char *l) {
   char *s;
   int lenc,lenl;
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: entering append_line() ... c=%s, l=%s\n",
-	    (c != (char *)NULL) ? c : "NULL",(l != (char *)NULL) ? l : "NULL");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"parent: entering append_line() ... c=%s, l=%s\n",
+	   (c != (char *)NULL) ? c : "NULL",(l != (char *)NULL) ? l : "NULL");
+
   lenc = (c != (char *)NULL) ? strlen(c) : 0;
   lenl = (l != (char *)NULL) ? strlen(l) : 0;
 
@@ -275,14 +248,7 @@ char *append_line(char *c,char *l) {
   if (l != (char *)NULL)
     strcat(s,l);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: s=%s ... leaving append_line()\n",s);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"parent: s=%s ... leaving append_line()\n",s);
 
   return s;
 #endif
@@ -293,14 +259,7 @@ void send_reduce(char line[]) {
   char ch;
   int ii;
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
 	
   if (line == (char *)NULL) {
     ch=0x04;
@@ -320,15 +279,7 @@ void send_reduce(char line[]) {
     write(MeToReduce[1],&ch,1);
   }
 
-#ifdef DEBUG
-  if(debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: ... leaving send_reduce()\n");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
-
+  dbprintf(stderr,"parent: ... leaving send_reduce()\n");
 }
 
 void read_until_prompt(char der_prompt[]){
@@ -339,15 +290,8 @@ void read_until_prompt(char der_prompt[]){
   int pii=0;
   char ch;
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
-	    der_prompt);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
+	   der_prompt);
 
   textcolor(normalcolor);
 
@@ -381,12 +325,5 @@ void read_until_prompt(char der_prompt[]){
     fflush(stdout);	
   }
   
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"parent: ... leaving read_until_prompt()\n");
 }

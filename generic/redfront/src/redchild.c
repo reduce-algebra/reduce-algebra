@@ -59,15 +59,8 @@ void child(int argc,char *argv[],char *envp[]) {
   close(MeToReduce[1]);
   close(ReduceToMe[0]);
 
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
-	    MeToReduce[0], ReduceToMe[1]);
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
+	   MeToReduce[0], ReduceToMe[1]);
 
   dup2(MeToReduce[0],STDIN_FILENO);
   dup2(ReduceToMe[1],STDOUT_FILENO);
@@ -77,14 +70,7 @@ void child(int argc,char *argv[],char *envp[]) {
   
   create_call(argc,argv,nargv);
   
-#ifdef DEBUG
-  if (debug) {
-    textcolor(debugcolor);
-    fprintf(stderr,"child: right before execv()\n");
-    textcolor(normalcolor);
-    fflush(stderr);
-  }
-#endif
+  dbprintf(stderr,"child: right before execv()\n");
   
   execv(nargv[0],nargv);
 
@@ -99,14 +85,7 @@ void child(int argc,char *argv[],char *envp[]) {
 void create_call(int argc,char *argv[],char *nargv[]) {
     int tempfd;
 
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"child: entering create_call\n");
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,"child: entering create_call\n");
 
 #ifdef BPSL
 
@@ -151,25 +130,11 @@ void create_call(int argc,char *argv[],char *nargv[]) {
     
 #endif
 
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"child: argv[0]=%s\n",nargv[0]);
-      fprintf(stderr,"child: argv[1]=%s\n",nargv[1]);
-      fprintf(stderr,"child: argv[2]=%s\n",nargv[2]);
-      fprintf(stderr,"child: argv[3]=%s\n",nargv[3]);
-      fprintf(stderr,"child: argv[4]=%s\n",nargv[4]);
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,"child: argv[0]=%s\n",nargv[0]);
+    dbprintf(stderr,"child: argv[1]=%s\n",nargv[1]);
+    dbprintf(stderr,"child: argv[2]=%s\n",nargv[2]);
+    dbprintf(stderr,"child: argv[3]=%s\n",nargv[3]);
+    dbprintf(stderr,"child: argv[4]=%s\n",nargv[4]);
 
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"child: leaving create_call\n");
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,"child: leaving create_call\n");
 }

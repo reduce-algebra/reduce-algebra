@@ -71,7 +71,7 @@ int map_colour(int);
 char *parse_memarg(char *,char *);
 void print_usage(char *);
 void print_help(char *);
-void textcolor(int);
+int textcolor(int);
 void textcolor1(int,int,int);
 void stextcolor1(char *,int,int,int);
 void resetcolor(void);
@@ -94,26 +94,14 @@ int main(int argc,char **argv,char **envp) {
       exit(-1);
     }
 
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
+
     parent();
     
   } else {  /* I am the child */
 
-#ifdef DEBUG
-    if (debug) {
-      textcolor(debugcolor);
-      fprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
-      textcolor(normalcolor);
-      fflush(stderr);
-    }
-#endif
+    dbprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
+    
     child(argc,argv,envp);
   }
   
@@ -344,8 +332,14 @@ void init_channels(void) {
   }
 }
 
-void textcolor(int fg) {
+int textcolor(int fg) {
+  static int currentcolor=MAGENTA;
+  int oldcolor;
+
+  oldcolor = currentcolor;
+  currentcolor = fg;
   textcolor1(0,fg,9);
+  return oldcolor;
 }
 
 void textcolor1(int attr, int fg, int bg) {	
@@ -355,12 +349,6 @@ void textcolor1(int attr, int fg, int bg) {
     stextcolor1(command,attr,fg,bg);
     printf("%s", command);
     fflush(stdout);
-#ifdef DEBUG
-    if (debug) {
-      fprintf(stderr,"%s", command);
-      fflush(stderr);
-    }
-#endif
   }
 }
 
@@ -373,4 +361,24 @@ void resetcolor(void) {
     printf("%c[0m",0x1B);
     fflush(stdout);
   }
+}
+
+int dbprintf(FILE *file,const char *msg,...) {
+  int ecode=0;
+#ifdef DEBUG
+  int oldcolor;
+  va_list ap;
+
+  // printf("(");
+  va_start(ap,msg);
+  if (debug && file) {
+    oldcolor = textcolor(debugcolor);
+    ecode = vfprintf(stdout,msg,ap);
+    textcolor(oldcolor);
+  }
+  va_end(ap);
+  fflush(stderr);
+  // printf(")");
+#endif
+  return ecode;
 }

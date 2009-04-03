@@ -34,7 +34,11 @@
 
 #include <stdio.h>
 
+#include <stdarg.h>
+
 #include <stdlib.h>
+
+#include <errno.h>
 
 #include <ctype.h>
 
@@ -86,9 +90,11 @@ struct strbuf {
   struct strbuf *next,*prev;
 };
 
-void textcolor(int);
+int textcolor(int);
 
 void resetcolor(void);
+
+int dbprintf(FILE *,const char *,...);
 
 void parent(void);
 
