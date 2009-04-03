@@ -99,7 +99,7 @@ cd psl
 (load!-package 'alg)
 (load!-package 'mathpr)
 (load!-package 'entry)
-(setq version!* "REDUCE Experimental Version") (setq date!* (date))
+(setq version!* "Reduce (Free PSL version)") (setq date!* (date))
 (initreduce)
 
 (setq !*loadversion t)             % Load entry module during BEGIN.

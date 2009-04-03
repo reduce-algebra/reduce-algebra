@@ -1456,13 +1456,13 @@ symbolic restart!-csl nil;
 %
 % (load!-module 'cslhelp)
 
-(setq version!* "REDUCE")
+(setq version!* "Reduce (Free CSL version)")
+
+(setq date!*  (date t))
 
 (setq !*backtrace nil)
 
 (initreduce)
-
-(setq date!* "15-Sep-08")
 
 (setq no_init_file nil)
 

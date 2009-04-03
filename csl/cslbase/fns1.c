@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 04df6598 09-Jun-2008 */
+/* Signature: 0c0c2a97 03-Apr-2009 */
 
 #include "headers.h"
 
@@ -1901,6 +1901,31 @@ Lisp_Object MS_CDECL Ldate(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
+Lisp_Object MS_CDECL Ldate1(Lisp_Object nil, Lisp_Object a1)
+{
+    Lisp_Object w;
+    time_t t = time(NULL);
+    char today[32];
+    char today1[32];
+    CSL_IGNORE(nil);
+    strcpy(today, ctime(&t));  /* e.g. "Sun Sep 16 01:03:52 1973\n" */
+                               /*       012345678901234567890123 */
+    today[24] = 0;             /* loses final '\n' */
+    today1[0] = today[8]==' ' ? '0' : today[8];
+    today1[1] = today[9];
+    today1[2] = '-';
+    today1[3] = today[4];
+    today1[4] = today[5];
+    today1[5] = today[6];
+    today1[6] = '-';
+    today1[7] = today[22];
+    today1[8] = today[23];
+    today1[9] = 0;             /* Now as in 03-Apr-09 */
+    w = make_string(today1);
+    errexit();
+    return onevalue(w);
+}
+
 Lisp_Object MS_CDECL Ldatestamp(Lisp_Object nil, int nargs, ...)
 /*
  * Returns date-stamp integer, which on many systems will be the
@@ -2102,7 +2127,7 @@ setup_type const funcs1_setup[] =
     {"bpsp",                    Lbpsp, too_many_1, wrong_no_1},
     {"codep",                   Lcodep, too_many_1, wrong_no_1},
     {"constantp",               Lconstantp, too_many_1, wrong_no_1},
-    {"date",                    wrong_no_na, wrong_no_nb, Ldate},
+    {"date",                    Ldate1, wrong_no_nb, Ldate},
     {"datestamp",               wrong_no_na, wrong_no_nb, Ldatestamp},
     {"enable-backtrace",        Lenable_backtrace, too_many_1, wrong_no_1},
     {"error",                   Lerror1, Lerror2, Lerror},
