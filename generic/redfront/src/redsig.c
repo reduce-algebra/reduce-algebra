@@ -30,6 +30,8 @@
 
 #include "redfront.h"
 
+#define CSL_SIGINT_MSG "+++ Type C to continue, A to abort, X to exit: "
+
 extern int reduceProcessID;
 
 extern int MeToReduce[];
@@ -46,6 +48,7 @@ extern int debugcolor;
 
 RETSIGTYPE ReduceSigGen(int);
 RETSIGTYPE ReduceSigInt(int);
+void skip_until_string(int,const char *);
 RETSIGTYPE ReduceSigChld(int);
 void installSignalHandlers(void);
 void removeSignalHandlers(void);
@@ -69,7 +72,6 @@ RETSIGTYPE ReduceSigGen(int arg) {
   red_kill();
   textcolor(redfrontcolor);
   printf("REDFRONT exiting on signal %d (%s)\n",arg,sig_identify(arg));
-  //  textcolor(normalcolor);  /* might not match, but black is better than red */
   line_end();
   resetcolor();
   switch (arg) {
@@ -85,9 +87,6 @@ RETSIGTYPE ReduceSigGen(int arg) {
 
 RETSIGTYPE ReduceSigInt(int arg) {
   /* Only used for CSL */
-  int ncharread;
-  char buffer[1];
-  int flags;
 
 #ifdef DEBUG
   if (debug) {
@@ -97,15 +96,32 @@ RETSIGTYPE ReduceSigInt(int arg) {
   }
 #endif
   kill(reduceProcessID,SIGINT);
-  read(ReduceToMe[0],buffer,1);
-  flags = fcntl(ReduceToMe[0],F_GETFL);
-  fcntl(ReduceToMe[0],F_SETFL,flags|O_NONBLOCK);
-  do {
-    ncharread = read(ReduceToMe[0],buffer,1);
-  } while (ncharread != -1);
-  fcntl(ReduceToMe[0],F_SETFL,flags&~O_NONBLOCK);
-  textcolor(normalcolor);
+  skip_until_string(ReduceToMe[0],CSL_SIGINT_MSG);
   write(MeToReduce[1],"a\n",2);
+}
+
+void skip_until_string(int handle,const char string[]) {
+  char *buffer;
+  int len;
+  int i;
+
+  len = strlen(string);
+  buffer = malloc(len * sizeof(char) + 1);
+  read(handle,buffer,len);
+
+  while (strcmp(buffer,string) != 0) {
+#ifdef DEBUG
+    if (debug) {
+      textcolor(debugcolor);
+      printf("BUF#%s#\n",buffer);
+      textcolor(normalcolor);
+    }
+#endif
+    for (i=0; i < len-1; i++)
+      buffer[i] = buffer[i+1];
+    read(handle,buffer+len-1,1);
+  }
+  free(buffer);
 }
 
 RETSIGTYPE ReduceSigChld(int arg) {
