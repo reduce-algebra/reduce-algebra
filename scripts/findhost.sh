@@ -59,6 +59,11 @@ here=${c%/*}
 host=$1
 shift
 
+# The following line may help on FreeBSD whetre AC_CANONICAL_HOST
+# and config.guess apppear to have differing ideas. And in that case
+# please rememeber to use GNU make not the vanilla one.
+host=`echo $host | $SED -e s/amd64/x86_64/`
+
 variant=`$here/findos.sh`
 
 case $host in
