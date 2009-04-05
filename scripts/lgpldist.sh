@@ -138,6 +138,28 @@ find . \
        -name \*.old -prune -o           \
        \( -name cygwin32                \
           -exec $here/reject.sh ./psl/cygwin32 {} \; \) -prune -o \
+       \( -name csl                \
+          -exec $here/reject.sh ./generic/redfront/csl {} \; \) -prune -o \
+       \( -name psl                \
+          -exec $here/reject.sh ./generic/redfront/psl {} \; \) -prune -o \
+       \( -name configure                \
+          -exec $here/reject.sh ./generic/redfront/configure {} \; \) -prune -o \
+       \( -name config.h.in                \
+          -exec $here/reject.sh ./generic/redfront/config.h.in {} \; \) -prune -o \
+       \( -name autom4te.cache                \
+          -exec $here/reject.sh ./generic/redfront/autom4te.cache {} \; \) -prune -o \
+       \( -name configure                \
+          -exec $here/reject.sh ./generic/libreduce/configure {} \; \) -prune -o \
+       \( -name config.h.in                \
+          -exec $here/reject.sh ./generic/libreduce/config.h.in {} \; \) -prune -o \
+       \( -name autom4te.cache                \
+          -exec $here/reject.sh ./generic/libreduce/autom4te.cache {} \; \) -prune -o \
+       -name i686-\* -prune -o \
+       -name i386-\* -prune -o \
+       -name x86_64-\* -prune -o \
+       -name powerpc-\* -prune -o \
+       -name libedit -prune -o \
+       -name libedit-20090111-3.0 -prune -o \
        -name reduce-algebra-\* -prune -o    \
        -name lgplfiles\* -prune -o      \
        $omit1                           \
@@ -153,7 +175,9 @@ find . \
                 -name libreadline\* -o  \
                 -name log.log -o        \
                 -name csl.log -o        \
-                -name xport.\* -o       \
+                -name xport.chk -o      \
+                -name xport.inc -o      \
+                -name xport.tm\* -o     \
                 -name xport -o          \
                 -name nsort -o          \
                 -name nsort.exe -o      \

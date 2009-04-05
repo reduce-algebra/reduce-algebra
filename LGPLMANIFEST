@@ -1035,6 +1035,7 @@
 ./rebuild.sh
 ./scripts
 ./scripts/Makefile.safe
+./scripts/README-BIN
 ./scripts/addlicense.c
 ./scripts/cfdevel.sh
 ./scripts/dist.sh
@@ -1052,6 +1053,9 @@
 ./scripts/newlogs.sh
 ./scripts/nsort.c
 ./scripts/pslver.sh
+./scripts/redcsl.bat
+./scripts/redpsl.bat
+./scripts/redpslw.bat
 ./scripts/refresh.sh
 ./scripts/reject.sh
 ./scripts/relicense.sh
@@ -1060,6 +1064,8 @@
 ./scripts/run.bat
 ./scripts/run.sh
 ./scripts/run1.bat
+./scripts/run2.bat
+./scripts/runpsl.sh
 ./scripts/stamp.sh
 ./scripts/untab.c
 ./scripts/untab.sh
