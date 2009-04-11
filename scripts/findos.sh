@@ -136,8 +136,8 @@ else
   fi
 fi
 
-# I want to ensure that there are no blanks, table or slashed in the name
-os=`echo $os | sed -e 's/[ \t/]//g'`
+# I want to ensure that there are no blanks, tabs or slashes in the name
+os=`echo $os | sed -e 's/[ 	/]//g'`
 
 echo $os
 
