@@ -315,13 +315,82 @@ procedure rl_pribq(qf);
       maprin cadr qf; % print variable
       prin2!* " ";
       prin2!* "[";
-      maprin caddr qf; % print bound
+      rl_pribound(cadr qf,caddr qf); % print bound
       prin2!* "] ";
       prin2!* "(";
       maprin cadddr qf; % print matrix
       prin2!* ")"
    end;
 
+switch rlsmprint;
+on1 'rlsmprint;
+
+procedure rl_pribound(v,f);
+   maprin rl_fancybound(v,f);
+
+procedure rl_fancybound(v,f);
+   begin scalar w,w1,w2,argl;
+      if null !*rlsmprint then
+	 return f;
+      if eqcar(f,'or) then <<
+	 w := 'or . for each x in cdr f collect rl_fancybound(v,x);
+	 return rl_fancybound!-try!-abs w
+      >>;
+      argl := rl_argn f;
+      if cddr argl then
+	 return f;
+      w1 := rl_fancybound1(v,car argl);
+      if null w1 then
+	 return f;
+      w2 := rl_fancybound1(v,cadr argl);
+      if null w2 then
+	 return f;
+      if car w1 eq car w2 then
+	 return f;
+      if eqcar(w1,'ub) then <<
+	 w := w1;
+	 w1 := w2;
+	 w2 := w
+      >>;
+      w1 := cdr w1;
+      w2 := cdr w2;
+      return nconc(w1,{caddr w2})
+   end;
+
+procedure rl_fancybound1(v,a);
+   begin scalar w,c;
+      if car a memq '(geq greaterp) then
+	 a := {pasf_anegrel car a,{'minus,cadr a},0};
+      w := sfto_reorder(numr simp cadr a,v);
+      if not domainp w and mvar w eq v then
+	 c := lc w;
+      if car a memq '(leq lessp) and c = 1 then
+      	 return 'ub . {car a,v,prepf negf red w};
+      if pasf_op a memq '(leq lessp) and c = -1 then
+      	 return 'lb . {car a,prepf red w,v}
+   end;
+
+procedure rl_fancybound!-try!-abs(f);
+   begin scalar w,v,r1,r2,l1,l2,u1,u2;
+      w := cdr f;
+      if cddr w then
+	 return f;
+      if length car w neq 4 or length cadr w neq 4 then
+	 return f;
+      r1 := car car w;
+      r2 := car cadr w;
+      if r1 neq r2 or r1 eq 'cong then
+	 return f;
+      l1 := numr simp cadr car w;
+      v := caddr car w;
+      u1 := numr simp cadddr car w;
+      l2 := numr simp cadr cadr w;
+      u2 := numr simp cadddr cadr w;
+      if l1 = u2 and l2 = u1 and l1 = negf u1 and l2 = negf u2 then
+	 return {r1,{'minus,{'abs,prepf absf l1}},v,{'abs,prepf absf u1}};
+      return f
+   end;
+      
 procedure rl_ppriop(f,n);
    if null !*nat or null !*rlbrop or eqn(n,0) then
       'failed

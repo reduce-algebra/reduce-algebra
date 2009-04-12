@@ -163,6 +163,15 @@ procedure utf8_supscript(d);
       (!7 . (226 129 183)) (!8 . (226 129 184)) (!9 . (226 129 185))
       (!0 . (226 129 176))));
 
+procedure utf8_priabs(u);
+   if not !*utf8 then
+      'failed
+   else <<
+      prin2!* "|";
+      prin2!* cadr u;
+      prin2!* "|"
+   >>;
+
 procedure utf8_priint(u);
    if not !*utf8 then
       'failed
@@ -192,6 +201,8 @@ put('equiv,'utf8,'(1 226 134 148));
 %put('repl,'utf8,'(2 226 159 181 32));
 %put('impl,'utf8,'(2 226 159 182 32));
 %put('equiv,'utf8,'(2 226 159 183 32));
+put('bex,'utf8,'(1 226 168 134));
+put('ball,'utf8,'(1 226 168 133));
 
 put('reals,'utf8,'(1 226 132 157));
 put('ofsf,'utf8,'(1 226 132 157));
@@ -203,6 +214,11 @@ put('ibalp,'utf8,'(1 240 157 148 185));
 put('!>!=,'utf8,'(1 226 137 165));
 put('!<!=,'utf8,'(1 226 137 164));
 put('!<!>,'utf8,'(1 226 137 160));
+
+put('cong,'utf8,'(1 226 137 161));
+put('ncong,'utf8,'(1 226 137 161 226 128 139 204 184));
+%put('ncong,'utf8,'(1 226 137 162);
+%put('ncong,'utf8,'(1 226 137 161 226 131 146));
 
 put('infinity,'utf8,'(1 226 136 158));
 put('infty,'utf8,'(1 226 136 158));
@@ -236,6 +252,7 @@ put('omega,'utf8,'(1 207 137));
 
 put('int,'utf8,'(1 226 136 171));
 put('int,'prifn,'utf8_priint);
+put('abs,'prifn,'utf8_priabs);
 
 endmodule;  % utf8
 

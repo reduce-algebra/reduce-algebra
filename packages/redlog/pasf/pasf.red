@@ -44,7 +44,7 @@ module pasf;
 create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat 
    pasfqe pasfsism pasfopt),nil);
 
-fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi);
+fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*utf8);
 
 load!-package 'cl;
 load!-package 'rltools;
@@ -257,6 +257,8 @@ procedure pasf_pricong(l);
    % prefix. Returns 'failed iff printing failed.
    if null !*nat then
       'failed
+   else if !*utf8 then
+      pasf_gpricong l
    else <<
       maprin cadr l;
       prin2!* " ~";
@@ -265,11 +267,30 @@ procedure pasf_pricong(l);
       maprin caddr l
    >>;
 
+procedure pasf_gpricong(l);
+   if numberp cadddr l then <<
+      maprin cadr l;
+      prin2!* " ";
+      prin2!* intern compress nconc(explode car l,explode cadddr l);
+      prin2!* " ";
+      maprin caddr l
+   >> else <<
+      maprin cadr l;
+      prin2!* " ";
+      prin2!* car l;
+      prin2!* " ";
+      maprin caddr l;
+      prin2!* " mod ";
+      maprin cadddr l
+   >>;
+
 procedure pasf_princong(l);
    % Presburger arithmetic standard form print an incongruence. [l] is a lisp
    % prefix. Returns 'failed iff printing failed.
    if null !*nat then
       'failed
+   else if !*utf8 then
+      pasf_gpricong l
    else <<
       maprin cadr l;
       prin2!* " #";
@@ -322,7 +343,7 @@ procedure pasf_fancy!-pricong!-fm(l);
       maprin cadddr l;
       fancy!-prin2 ")"
    >>;
-
+   
 procedure pasf_verbosep();
    % Presburger arithmetic standard form verbose switch. Returns t iff the
    % main switch rlverbose is on and the switch rlpasfvb is on.

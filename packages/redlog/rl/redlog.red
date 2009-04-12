@@ -320,7 +320,12 @@ operator rlabout;
 procedure rlabout();
    <<
       ioto_tprin2t rl_getversion();
-      ioto_tprin2t "(c) 1995-2009 A. Dolzmann and T. Sturm";
+      if !*utf8 then <<
+%	 tyo 226; tyo 146; tyo 184
+	 tyo 194; tyo 169
+      >> else
+	 ioto_prin2 "(C)";
+      ioto_prin2t " 1995-2009 A. Dolzmann and T. Sturm";
       ioto_tprin2t "http://www.redlog.eu/"
    >>;
 
