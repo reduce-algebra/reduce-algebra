@@ -168,7 +168,7 @@ procedure utf8_priabs(u);
       'failed
    else <<
       prin2!* "|";
-      prin2!* cadr u;
+      maprin cadr u;
       prin2!* "|"
    >>;
 
