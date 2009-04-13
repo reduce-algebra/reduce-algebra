@@ -1208,10 +1208,10 @@ static int bracketWidth(char type, int flags, int height, int depth)
             ch = 0x5d;
             break;
     case '{':
-            ch = 0x64;
+            ch = 0x66;
             break;
     case '}':
-            ch = 0x65;
+            ch = 0x67;
             break;
     case '|':                 // LEFT vertical bar
             ch = 0x6a;
