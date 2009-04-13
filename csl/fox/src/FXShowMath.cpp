@@ -4062,7 +4062,7 @@ case '{':
         topp = "\x08\x6e\x1a\x28\x38";
         toph = 3;
         tower =  0x3e;
-        if (ntower >= 6) ntower = n - 6;
+        if (n >= 6) ntower = n - 6;
         mid = 0x3c;
         bottom = 0x3a;
         break;
