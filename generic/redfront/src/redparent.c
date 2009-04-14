@@ -63,7 +63,7 @@ void read_until_prompt(char *);
 #include <fcntl.h>
 
 void parent(void) {
-  installSignalHandlers(); 
+  sig_installHandlers(); 
 	
 #ifdef HAVE_SETLINEBUF
   setlinebuf(stdout);
@@ -72,7 +72,7 @@ void parent(void) {
   close(MeToReduce[0]);
   close(ReduceToMe[1]);
 
-  dbprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
+  deb_fprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
 	   MeToReduce[1], ReduceToMe[0]);
   
   atoploop();
@@ -87,7 +87,7 @@ void atoploop(void) {
 
   read_until_first_prompt(der_prompt);
 
-  dbprintf(stderr,"parent: read first prompt\n");
+  deb_fprintf(stderr,"parent: read first prompt\n");
 
   while (1) {
 
@@ -98,7 +98,7 @@ void atoploop(void) {
     line = read_valid_line(der_prompt);
 
 #ifndef BPSL
-    signal(SIGINT,ReduceSigInt);
+    signal(SIGINT,sig_sigInt);
 #endif
 
     this_command = append_line(this_command,line);
@@ -125,7 +125,7 @@ char *load_package(const char *package) {
   sprintf(cmd,"load_package %s$",package);
   send_reduce(cmd);
 
-  dbprintf(stderr,"parent: sending %s\n",cmd);
+  deb_fprintf(stderr,"parent: sending %s\n",cmd);
   
   return cmd;
 }
@@ -231,7 +231,7 @@ char *append_line(char *c,char *l) {
   char *s;
   int lenc,lenl;
 
-  dbprintf(stderr,"parent: entering append_line() ... c=%s, l=%s\n",
+  deb_fprintf(stderr,"parent: entering append_line() ... c=%s, l=%s\n",
 	   (c != (char *)NULL) ? c : "NULL",(l != (char *)NULL) ? l : "NULL");
 
   lenc = (c != (char *)NULL) ? strlen(c) : 0;
@@ -248,7 +248,7 @@ char *append_line(char *c,char *l) {
   if (l != (char *)NULL)
     strcat(s,l);
 
-  dbprintf(stderr,"parent: s=%s ... leaving append_line()\n",s);
+  deb_fprintf(stderr,"parent: s=%s ... leaving append_line()\n",s);
 
   return s;
 #endif
@@ -259,7 +259,7 @@ void send_reduce(char line[]) {
   char ch;
   int ii;
 
-  dbprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
+  deb_fprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
 	
   if (line == (char *)NULL) {
     ch=0x04;
@@ -279,7 +279,7 @@ void send_reduce(char line[]) {
     write(MeToReduce[1],&ch,1);
   }
 
-  dbprintf(stderr,"parent: ... leaving send_reduce()\n");
+  deb_fprintf(stderr,"parent: ... leaving send_reduce()\n");
 }
 
 void read_until_prompt(char der_prompt[]){
@@ -290,7 +290,7 @@ void read_until_prompt(char der_prompt[]){
   int pii=0;
   char ch;
 
-  dbprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
+  deb_fprintf(stderr,"parent: entering read_until_prompt() ... der_prompt=%s\n",
 	   der_prompt);
 
   textcolor(normalcolor);
@@ -325,5 +325,5 @@ void read_until_prompt(char der_prompt[]){
     fflush(stdout);	
   }
   
-  dbprintf(stderr,"parent: ... leaving read_until_prompt()\n");
+  deb_fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
 }

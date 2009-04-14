@@ -36,7 +36,7 @@ CFLAGS = @CFLAGS@ @DEFS@ -Wall -DBUILDTIME="\"`LANG=en date +%d-%b-%Y`\"" -I.
 
 LDFLAGS = @LDFLAGS@
 
-OBJ = redfront.o redsig.o redstrings.o redparent.o redchild.o redline.o
+OBJ = redfront.o redsig.o redstrings.o redparent.o redchild.o redline.o reddeb.o
 
 srcdir = @srcdir@
 
@@ -54,6 +54,7 @@ redstrings.o: redstrings.c redfront.h config.h
 redparent.o: redparent.c redfront.h config.h
 redchild.o: redchild.c redfront.h config.h
 redline.o: redline.c redfront.h config.h
+reddeb.o: redfront.h config.h
 
 clean:
 	-rm -f $(OBJ)

@@ -91,42 +91,35 @@ struct strbuf {
 };
 
 int textcolor(int);
-
 void resetcolor(void);
-
-int dbprintf(FILE *,const char *,...);
+void rf_exit(int);
 
 void parent(void);
 
 void child(int,char **,char **);
 
 void line_init_history(void);
-
 void line_add_history(char *);
-
 char *line_read(char *);
-
 char *line_quit(const char *);
-
 char *line_color_prompt(char *);
-
 void line_cleanup_after_signal(void);
-
 void line_end_history(void);
-
 void line_init(void);
-
 void line_end(void);
 
-RETSIGTYPE ReduceSigInt(int);
+RETSIGTYPE sig_sigInt(int);
+void sig_installHandlers(void);
+void sig_removeHandlers(void);
+void sig_killChild(void);
 
 struct strbuf *addchar(char,struct strbuf *);
 struct strbuf *remtail(struct strbuf *,struct strbuf *);
 void prtbuf(struct strbuf *);
 
-void installSignalHandlers(void);
-void removeSignalHandlers(void);
-void red_kill(void);
+void deb_init(void);
+int deb_fprintf(FILE *,const char *,...);
+void deb_cleanup(void);
 
 #define BLACK 0
 #define RED 1

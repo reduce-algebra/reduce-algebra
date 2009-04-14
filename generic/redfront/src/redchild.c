@@ -52,14 +52,14 @@ void child(int argc,char *argv[],char *envp[]) {
 
   setsid();
 
-  removeSignalHandlers();  /* Just to make sure! */
+  sig_removeHandlers();
 
   signal(SIGTSTP,SIG_IGN);
 
   close(MeToReduce[1]);
   close(ReduceToMe[0]);
 
-  dbprintf(stderr,"child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
+  deb_fprintf(stderr,"child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
 	   MeToReduce[0], ReduceToMe[1]);
 
   dup2(MeToReduce[0],STDIN_FILENO);
@@ -70,7 +70,7 @@ void child(int argc,char *argv[],char *envp[]) {
   
   create_call(argc,argv,nargv);
   
-  dbprintf(stderr,"child: right before execv()\n");
+  deb_fprintf(stderr,"child: right before execv()\n");
   
   execv(nargv[0],nargv);
 
@@ -79,13 +79,13 @@ void child(int argc,char *argv[],char *envp[]) {
     sprintf(errstr,"cannot execv() %s",nargv[0]);
     perror(errstr); 
   }
-  exit(-1);
+  rf_exit(-1);
 }
 
 void create_call(int argc,char *argv[],char *nargv[]) {
     int tempfd;
 
-    dbprintf(stderr,"child: entering create_call\n");
+    deb_fprintf(stderr,"child: entering create_call\n");
 
 #ifdef BPSL
 
@@ -93,7 +93,7 @@ void create_call(int argc,char *argv[],char *nargv[]) {
       char errstr[1024];
       sprintf(errstr,"cannot open %s",BPSL);
       perror(errstr);
-      exit(-1);
+      rf_exit(-1);
     } else
       close(tempfd);
 
@@ -101,7 +101,7 @@ void create_call(int argc,char *argv[],char *nargv[]) {
       char errstr[1024];
       sprintf(errstr,"cannot open %s",REDIMG);
       perror(errstr);
-      exit(-1);
+      rf_exit(-1);
     } else
       close(tempfd);
 
@@ -118,7 +118,7 @@ void create_call(int argc,char *argv[],char *nargv[]) {
       char errstr[1024];
       sprintf(errstr,"cannot open %s",REDUCE);
       perror(errstr);
-      exit(-1);
+      rf_exit(-1);
     } else
       close(tempfd);
 
@@ -130,11 +130,11 @@ void create_call(int argc,char *argv[],char *nargv[]) {
     
 #endif
 
-    dbprintf(stderr,"child: argv[0]=%s\n",nargv[0]);
-    dbprintf(stderr,"child: argv[1]=%s\n",nargv[1]);
-    dbprintf(stderr,"child: argv[2]=%s\n",nargv[2]);
-    dbprintf(stderr,"child: argv[3]=%s\n",nargv[3]);
-    dbprintf(stderr,"child: argv[4]=%s\n",nargv[4]);
+    deb_fprintf(stderr,"child: argv[0]=%s\n",nargv[0]);
+    deb_fprintf(stderr,"child: argv[1]=%s\n",nargv[1]);
+    deb_fprintf(stderr,"child: argv[2]=%s\n",nargv[2]);
+    deb_fprintf(stderr,"child: argv[3]=%s\n",nargv[3]);
+    deb_fprintf(stderr,"child: argv[4]=%s\n",nargv[4]);
 
-    dbprintf(stderr,"child: leaving create_call\n");
+    deb_fprintf(stderr,"child: leaving create_call\n");
 }

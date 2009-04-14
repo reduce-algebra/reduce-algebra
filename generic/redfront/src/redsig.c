@@ -46,50 +46,51 @@ extern int inputcolor;
 extern int outputcolor;
 extern int debugcolor;
 
-RETSIGTYPE ReduceSigGen(int);
-RETSIGTYPE ReduceSigInt(int);
-void skip_until_string(int,const char *);
-RETSIGTYPE ReduceSigChld(int);
-void installSignalHandlers(void);
-void removeSignalHandlers(void);
-void red_kill(void);
+RETSIGTYPE sig_sigGen(int);
+void sig_killChild(void);
+RETSIGTYPE sig_sigInt(int);
+void sig_skipUntilString(int,const char *);
+RETSIGTYPE sig_sigChld(int);
+RETSIGTYPE sig_sigTstp(int);
+void sig_installHandlers(void);
+void sig_removeHandlers(void);
 const char *sig_identify(int);
-void red_felt_hup(int);
-void red_felt_term(int);
-int red_kill_sub(int);
-void red_kill_sub2(void);
-pid_t redfront_waitpid(int,int *);
 
-RETSIGTYPE ReduceSigGen(int arg) {
-  dbprintf(stderr,"ReduceSigGen(%d)\n",arg);
-  fflush(stderr);
-  red_kill();
-  textcolor(redfrontcolor);
-  printf("REDFRONT exiting on signal %d (%s)\n",arg,sig_identify(arg));
+RETSIGTYPE sig_sigGen(int arg) {
+  deb_fprintf(stderr,"sig_sigGen(%d)\n",arg);
+  sig_killChild();
   line_end();
-  resetcolor();
   switch (arg) {
   case SIGQUIT:
   case SIGHUP:
   case SIGTERM:
-  case SIGINT:
-    exit(0);
+    textcolor(redfrontcolor);
+    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
+    rf_exit(0);
   default:
-    exit(-1);
+    textcolor(redfrontcolor);
+    printf("***** REDFRONT exiting on unexpected signal %d (%s)\n",
+	   arg,sig_identify(arg));
+    rf_exit(-1);
   }
 }
 
-RETSIGTYPE ReduceSigInt(int arg) {
+void sig_killChild(void) {
+  signal(SIGCHLD,SIG_IGN);
+  kill(reduceProcessID,SIGTERM);
+}
+
+RETSIGTYPE sig_sigInt(int arg) {
   /* Only used for CSL */
 
-  dbprintf(stderr,"ReduceSigInt(%d)\n",arg);
+  deb_fprintf(stderr,"sig_sigInt(%d)\n",arg);
   kill(reduceProcessID,SIGINT);
-  skip_until_string(ReduceToMe[0],CSL_SIGINT_MSG);
+  sig_skipUntilString(ReduceToMe[0],CSL_SIGINT_MSG);
   write(MeToReduce[1],"a\n",2);
   printf("\n");
 }
 
-void skip_until_string(int handle,const char string[]) {
+void sig_skipUntilString(int handle,const char string[]) {
   char *buffer;
   int len;
   int i;
@@ -99,7 +100,7 @@ void skip_until_string(int handle,const char string[]) {
   read(handle,buffer,len);
 
   while (strcmp(buffer,string) != 0) {
-    dbprintf(stderr,"skip_until_string(): buffer=|%s|\n",buffer);
+    deb_fprintf(stderr,"sig_skipUntilString(): buffer=|%s|\n",buffer);
     for (i=0; i < len-1; i++)
       buffer[i] = buffer[i+1];
     read(handle,buffer+len-1,1);
@@ -107,52 +108,53 @@ void skip_until_string(int handle,const char string[]) {
   free(buffer);
 }
 
-RETSIGTYPE ReduceSigChld(int arg) {
-  int *stP;
+RETSIGTYPE sig_sigChld(int arg) {
   
-  stP = (int *)malloc(sizeof(int));
-  
-  removeSignalHandlers();
-
-  dbprintf(stderr,"ReduceSigChld(): Reduce process terminated\n");
+  deb_fprintf(stderr,"sig_sigChld(): Reduce process terminated\n");
 
   line_end_history();
 
   line_end();
 
+  textcolor(redfrontcolor);
+
+  printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
+
   resetcolor();
 
-  exit(0);
+  rf_exit(0);
 }
 
-RETSIGTYPE ReduceSigTstp(int arg) {
+RETSIGTYPE sig_sigTstp(int arg) {
   resetcolor();
   kill(0,SIGSTOP);
 }
 
-void installSignalHandlers(void) {
-  signal(SIGQUIT,ReduceSigGen);
-  signal(SIGHUP,ReduceSigGen);
+void sig_installHandlers(void) {
+  signal(SIGQUIT,sig_sigGen);
+  signal(SIGHUP,sig_sigGen);
 #ifdef BPSL
-  signal(SIGINT,ReduceSigGen);
+  signal(SIGINT,sig_sigGen);
 #else
   signal(SIGINT,SIG_IGN);
 #endif
-  signal(SIGILL,ReduceSigGen);
-  signal(SIGTSTP,ReduceSigTstp);
+  signal(SIGILL,sig_sigGen);
+  signal(SIGTSTP,sig_sigTstp);
 #ifndef LINUX
-  signal(SIGBUS,ReduceSigGen);
+  signal(SIGBUS,sig_sigGen);
 #endif
-  signal(SIGSEGV,ReduceSigGen);
-  signal(SIGPIPE,ReduceSigGen);
-  signal(SIGCHLD,ReduceSigChld);
-  signal(SIGTERM,ReduceSigGen);
+  signal(SIGSEGV,sig_sigGen);
+  signal(SIGPIPE,sig_sigGen);
+  signal(SIGCHLD,sig_sigChld);
+  signal(SIGTERM,sig_sigGen);
 }
 
-void removeSignalHandlers(void) {
+void sig_removeHandlers(void) {
   signal(SIGQUIT,SIG_DFL);
   signal(SIGHUP,SIG_DFL);
+  signal(SIGINT,SIG_DFL);
   signal(SIGILL,SIG_DFL);
+  signal(SIGTSTP,SIG_DFL);
 #ifndef LINUX
   signal(SIGBUS,SIG_DFL);
 #endif
@@ -162,127 +164,134 @@ void removeSignalHandlers(void) {
   signal(SIGTERM,SIG_DFL);
 }
 
-void red_kill(void) {
-  kill(reduceProcessID,SIGTERM);
-}
-
 const char *sig_identify(int signo) {
+  /* The list of signals is taken from the sigaction man page: "The
+     following is a list of all signals with names as in the include
+     file <signal.h> */
   switch(signo) {
-  case SIGFPE:    return "SIGFPE";
-  case SIGSTOP:   return "SIGSTOP";
   case SIGHUP:    return "SIGHUP";
   case SIGINT:    return "SIGINT";
   case SIGQUIT:   return "SIGQUIT";
   case SIGILL:    return "SIGILL";
   case SIGTRAP:   return "SIGTRAP";
   case SIGABRT:   return "SIGABRT";
+  case SIGEMT:    return "SIGEMT";
+  case SIGFPE:    return "SIGFPE";
+  case SIGKILL:   return "SIGKILL";
   case SIGBUS:    return "SIGBUS";
-  case SIGSYS:    return "SIGSYS";
-  case SIGCONT:   return "SIGCONT";
-  case SIGUSR1:   return "SIGUSR1";
-  case SIGUSR2:   return "SIGUSR2";
   case SIGSEGV:   return "SIGSEGV";
+  case SIGSYS:    return "SIGSYS";
   case SIGPIPE:   return "SIGPIPE";
   case SIGALRM:   return "SIGALRM";
   case SIGTERM:   return "SIGTERM";
-  case SIGCHLD:   return "SIGCHLD";
-  case SIGIO:     return "SIGIO";
-  case SIGKILL:   return "SIGKILL";
+  case SIGURG:    return "SIGURG";
+  case SIGSTOP:   return "SIGSTOP";
   case SIGTSTP:   return "SIGTSTP";
+  case SIGCONT:   return "SIGCONT";
+  case SIGCHLD:   return "SIGCHLD";
   case SIGTTIN:   return "SIGTTIN";
   case SIGTTOU:   return "SIGTTOU";
-  case SIGURG:    return "SIGURG";
+  case SIGIO:     return "SIGIO";
   case SIGXCPU:   return "SIGXCPU";
   case SIGXFSZ:   return "SIGXFSZ";
   case SIGVTALRM: return "SIGVTALRM";
   case SIGPROF:   return "SIGPROF";
   case SIGWINCH:  return "SIGWINCH";
+  case SIGINFO:   return "SIGINFO";
+  case SIGUSR1:   return "SIGUSR1";
+  case SIGUSR2:   return "SIGUSR2";
   }
-  return NULL;
+  return "unknown signal";
 }
 
 /* Code from here on is not used anymore for now. */
 
-void wnf_red_kill(void) {
+void red_felt_hup(int);
+void red_felt_term(int);
+int sig_killChild_sub(int);
+void sig_killChild_sub2(void);
+pid_t redfront_waitpid(int,int *);
+
+void wnf_sig_killChild(void) {
   int status;
   int count = 0;
 
-  removeSignalHandlers();
+  sig_removeHandlers();
   signal(SIGHUP,red_felt_hup);
   signal(SIGTERM,red_felt_term);
 
-  dbprintf(stderr,"\nredfront: Sending Hangup signal to Reduce process\n");
+  deb_fprintf(stderr,"\nredfront: Sending Hangup signal to Reduce process\n");
 
-  if (red_kill_sub(SIGHUP) != 0 && errno == ESRCH) {
-    dbprintf(stderr,"\nredfront: No Reduce process\n");
-    red_kill_sub2();
+  if (sig_killChild_sub(SIGHUP) != 0 && errno == ESRCH) {
+    deb_fprintf(stderr,"\nredfront: No Reduce process\n");
+    sig_killChild_sub2();
     return;
   }
 
   do {
     if (redfront_waitpid(reduceProcessID,&status) == reduceProcessID &&
 	(WIFEXITED(status) || WIFSIGNALED(status))) {
-      dbprintf(stderr,"%sredfront: Reduce has hung up\n",count ? "\n" : "");
-      red_kill_sub2();
+      deb_fprintf(stderr,"%sredfront: Reduce has hung up\n",count ? "\n" : "");
+      sig_killChild_sub2();
       return;
     }
 
     sleep(1);
 
-    dbprintf(stderr,
+    deb_fprintf(stderr,
 	     "%s[waiting]%s",count ? "" : "redfront: ",count-3 ? " " : "\n");
 
   } while (++count < 4);
 
-  dbprintf(stderr,
+  deb_fprintf(stderr,
 	   "redfront: sending SIGTERM to Reduce (%d)\n",reduceProcessID);
   
   count = 0;
-  if (red_kill_sub(SIGTERM) != 0 && errno == ESRCH) {
-    dbprintf(stderr,"redfront: Reduce has hung up\n");
-    red_kill_sub2();
+  if (sig_killChild_sub(SIGTERM) != 0 && errno == ESRCH) {
+    deb_fprintf(stderr,"redfront: Reduce has hung up\n");
+    sig_killChild_sub2();
     return;
   }
 
   do {
     if (redfront_waitpid(reduceProcessID,&status) == reduceProcessID &&
 	(WIFEXITED(status) || WIFSIGNALED(status))) {
-      dbprintf(stderr,"%sredfront: Reduce terminated\n",count ? "\n":"");
-      red_kill_sub2();
+      deb_fprintf(stderr,"%sredfront: Reduce terminated\n",count ? "\n":"");
+      sig_killChild_sub2();
       return;
     }
     sleep(1);
-    dbprintf(stderr,"%s[waiting]%s",count ? "":"XR: ",count-3 ?" ":"\n");
+    deb_fprintf(stderr,"%s[waiting]%s",count ? "":"XR: ",count-3 ?" ":"\n");
   } while (++count < 4);
 
-  dbprintf(stderr,"redfront: Sending Kill signal to Reduce process\n");
+  deb_fprintf(stderr,"redfront: Sending Kill signal to Reduce process\n");
 
-  if (red_kill_sub(SIGKILL) != 0 && errno == ESRCH) {
-    dbprintf(stderr,"redfront: Reduce has finally been terminated\n");
-    red_kill_sub2();
+  if (sig_killChild_sub(SIGKILL) != 0 && errno == ESRCH) {
+    deb_fprintf(stderr,"redfront: Reduce has finally been terminated\n");
+    sig_killChild_sub2();
     return;
   }
 
-  red_kill_sub2();
+  sig_killChild_sub2();
 
   wait(0);
 
-  dbprintf(stderr,"redfront: That troublesome Reduce has finally gone\n");
+  deb_fprintf(stderr,"redfront: That troublesome Reduce has finally gone\n");
 
   return;
 }
 
 void red_felt_hup(int arg) { 
-  dbprintf(stderr,"[click] ");
+  deb_fprintf(stderr,"[click] ");
 }
 
 void red_felt_term(int arg) {
-  dbprintf(stderr,"[kerblam] ");
+  deb_fprintf(stderr,"[kerblam] ");
 }
 
 /* These functions try to kill the Reduce process, as nicely as possible. */
 
-int red_kill_sub(int sg) {
+int sig_killChild_sub(int sg) {
   int rv;
   
   rv = kill(reduceProcessID, sg);
@@ -296,7 +305,7 @@ int red_kill_sub(int sg) {
   return rv;
 }
 
-void red_kill_sub2(void) {
+void sig_killChild_sub2(void) {
   fflush(stderr);
   signal(SIGTERM,SIG_IGN);
   kill(0,SIGTERM);

@@ -37,17 +37,10 @@ int reduceProcessID;
 int MeToReduce[2];
 int ReduceToMe[2];
 
-#ifdef DEBUG
-int debug = 1;
-#else
-int debug = 0;
-#endif
-
 int verbose = 0;
 int unicode = 0;
 int color = 1; 
 char *memory;
-
 
 #define DEFAULT_REDFRONTCOLOR MAGENTA /* REDFRONT output */
 #define DEFAULT_NORMALCOLOR BLACK     /* REDUCE terminal output */
@@ -77,6 +70,9 @@ void stextcolor1(char *,int,int,int);
 void resetcolor(void);
 
 int main(int argc,char **argv,char **envp) {
+
+  deb_init();
+
   parse_args(argc,argv);
 
   print_banner(verbose);
@@ -91,16 +87,16 @@ int main(int argc,char **argv,char **envp) {
 
     if (reduceProcessID < 0) {  /* Failure */
       perror("cannot fork()");
-      exit(-1);
+      rf_exit(-1);
     }
 
-    dbprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
+    deb_fprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
 
     parent();
     
   } else {  /* I am the child */
 
-    dbprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
+    deb_fprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
     
     child(argc,argv,envp);
   }
@@ -125,7 +121,7 @@ void parse_args(int argc,char **argv) {
     switch (c) {
     case 'h':
       print_help(argv[0]);
-      exit(1);
+      rf_exit(1);
       break;
     case 'b':
       color = 0;
@@ -157,14 +153,12 @@ void parse_args(int argc,char **argv) {
     
   if (errflg) {
     print_usage(argv[0]);
-    exit (2);
+    rf_exit (2);
   }
 
 #ifdef BPSL
   memory = parse_memarg(memory==NULL ? MEMORY : memory,argv[0]);
 #endif
-
-  return;
 }
 
 int parse_colarg(char *s) {
@@ -239,7 +233,8 @@ char *parse_memarg(char *argstr,char *name) {
   }
   print_usage(name);
   resetcolor();
-  exit(1);
+  rf_exit(1);
+  return NULL;  // ... to make the compiler happy
 }
 
 void print_usage(char name[]) {
@@ -310,30 +305,30 @@ void init_channels(void) {
   if (USE_PIPES) {
     if (pipe(MeToReduce) < 0) {
       perror("failed to create pipe MeToReduce\n");
-      red_kill();
-      exit(-1);
+      sig_killChild();
+      rf_exit(-1);
     }
     if (pipe(ReduceToMe) < 0) {
       perror("failed to create pipe ReduceToMe\n");
-      red_kill();
-      exit(-1);
+      sig_killChild();
+      rf_exit(-1);
     }
   } else {
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
       perror("cannot open socket MeToReduce");
-      red_kill();
-      exit(-1);
+      sig_killChild();
+      rf_exit(-1);
     }
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, ReduceToMe) < 0) {
       perror("cannot open socket ReduceToMe");
-      red_kill();
-      exit(-1);
+      sig_killChild();
+      rf_exit(-1);
     }
   }
 }
 
 int textcolor(int fg) {
-  static int currentcolor=MAGENTA;
+  static int currentcolor=DEFAULT_REDFRONTCOLOR;
   int oldcolor;
 
   oldcolor = currentcolor;
@@ -363,22 +358,8 @@ void resetcolor(void) {
   }
 }
 
-int dbprintf(FILE *file,const char *msg,...) {
-  int ecode=0;
-#ifdef DEBUG
-  int oldcolor;
-  va_list ap;
-
-  // printf("(");
-  va_start(ap,msg);
-  if (debug && file) {
-    oldcolor = textcolor(debugcolor);
-    ecode = vfprintf(stdout,msg,ap);
-    textcolor(oldcolor);
-  }
-  va_end(ap);
-  fflush(stderr);
-  // printf(")");
-#endif
-  return ecode;
+void rf_exit(int ecode) {
+  deb_cleanup();
+  resetcolor();
+  exit(ecode);
 }
