@@ -240,6 +240,17 @@ FILE *my_popen(char *command, char *direction)
     return _popen(command, direction);
 #endif
 #else
+// The following use of "signal" is so that pipe failure does not raise
+// an exception and blow everything out of the water. I might have expected
+// that "popen(command-that-does-not-exist, "w")" would return NULL, but it
+// seems that sometimes it returns a pipe handle, and puts works on that
+// without visible pain and only when one does an fflush does a SIGPIPE get
+// raised. This hurts when gnuplot has not been installed on a Unix-like host.
+// The new arrangement leads to somewhat silent failure to plot in that
+// case, but is probably better than having an abrupt exit from the system.
+// I know that these days I am asked to use sigaction rather than signal, but
+// even on recent Linux variants that seems only just available...
+    signal(SIGPIPE, SIG_IGN);
     return popen(command, direction);
 #endif
 }
