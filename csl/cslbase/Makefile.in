@@ -14,8 +14,6 @@
 
 @SET_MAKE@
 
-# CSL and REDUCE build sequences
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -313,6 +311,8 @@ windows_TRUE = @windows_TRUE@
 x86_FALSE = @x86_FALSE@
 x86_TRUE = @x86_TRUE@
 
+# CSL and REDUCE build sequences
+
 # IF BUILDING WITH CYGWIN YOU *MUST* REVIEW ALL LICENSES VERY CAREFULLY
 # BEFORE REDISTRIBUTING ANY BINARIES SINCE THE MAIN CYGWIN DLL is GPL.
 #
@@ -535,7 +535,7 @@ srcfiles = $(mainsrc) $(csl_SOURCES)
 mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 	reduce$(EXEEXT) $(am__append_1)
 binfiles = $(mainbin) csl$(EXEEXT) $(am__append_2)
-@windows_FALSE@ARCHIVE = reduce-windows-$(shell date +%Y%m%d).tar.bz2
+@windows_FALSE@ARCHIVE = reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 
 @windows_TRUE@ARCHIVE = reduce-windows-$(shell date +%Y%m%d).zip
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -1220,6 +1220,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am uninstall-local
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-info-am uninstall-local
 
+]## process this file with automake to create Makefile.in
 
 @mac_framework_TRUE@all-local:	make-clickable csl.img reduce.img
 @cygwin_TRUE@@mac_framework_FALSE@all-local:	report-dlls csl.img reduce.img

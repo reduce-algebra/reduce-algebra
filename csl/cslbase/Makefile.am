@@ -1,4 +1,4 @@
-## process this file with automake to create Makefile.in
+]## process this file with automake to create Makefile.in
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
@@ -1044,7 +1044,7 @@ else !windows
 	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
 	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(BUILD)-$(shell date +%Y%m%d)
 	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce-$(BUILD)-$(shell date +%Y%m%d)
-ARCHIVE=reduce-windows-$(shell date +%Y%m%d).tar.bz2
+ARCHIVE=reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
