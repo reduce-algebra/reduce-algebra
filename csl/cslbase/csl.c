@@ -1397,7 +1397,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * will be bothered too much by the fact that there is a stray option to get
  * it displayed.  Note that on some systems there is a proper character
  * for the Copyright symbol... but there is little agreement about what
- * that code is!
+ * that code is! Furthermore to avoid needing to include Copyright statements
+ * on behalf of any and all LGPL components I will make this an authorship
+ * statement rather than a copyright claim!
  */
         case 'c':
                 fwin_restore();

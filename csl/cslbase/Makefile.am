@@ -1033,11 +1033,20 @@ save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
 if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts wgnuplot* gnuplot-Copyright
+	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
+	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
+	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(BUILD)-$(shell date +%Y%m%d)
+	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce-$(BUILD)-$(shell date +%Y%m%d)
+ARCHIVE=reduce-windows-$(shell date +%Y%m%d).zip
 else !windows
 	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
-	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
+	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
+	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
+	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(BUILD)-$(shell date +%Y%m%d)
+	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce-$(BUILD)-$(shell date +%Y%m%d)
+ARCHIVE=reduce-windows-$(shell date +%Y%m%d).tar.bz2
 endif !windows
+	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
 #save:	all
 #	echo Save files from this build

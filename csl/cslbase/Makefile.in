@@ -535,6 +535,8 @@ srcfiles = $(mainsrc) $(csl_SOURCES)
 mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 	reduce$(EXEEXT) $(am__append_1)
 binfiles = $(mainbin) csl$(EXEEXT) $(am__append_2)
+@windows_FALSE@ARCHIVE = reduce-windows-$(shell date +%Y%m%d).tar.bz2
+@windows_TRUE@ARCHIVE = reduce-windows-$(shell date +%Y%m%d).zip
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -1740,9 +1742,16 @@ csl.img:	csl$(COMEXT) $(csldep)
 save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
 @windows_TRUE@	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-@windows_TRUE@	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce.exe reduce.com reduce.img reduce.doc reduce.fonts wgnuplot* gnuplot-Copyright
+@windows_TRUE@	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_TRUE@	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_TRUE@	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_TRUE@	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce-$(BUILD)-$(shell date +%Y%m%d)
 @windows_FALSE@	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
-@windows_FALSE@	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce reduce.img reduce.doc reduce.fonts
+@windows_FALSE@	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_FALSE@	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_FALSE@	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_FALSE@	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce-$(BUILD)-$(shell date +%Y%m%d)
+	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
 #save:	all
 #	echo Save files from this build
