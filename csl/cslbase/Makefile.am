@@ -1,4 +1,4 @@
-]## process this file with automake to create Makefile.in
+## process this file with automake to create Makefile.in
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
