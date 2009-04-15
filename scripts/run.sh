@@ -95,7 +95,6 @@ else
       exit 0
     fi
   done
-  exit 0
 fi
 
 echo Failed to find a version of $ap that you have built
