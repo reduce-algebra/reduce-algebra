@@ -517,6 +517,7 @@ then
       CPPFLAGS="$CPPFLAGS $xft_cflags"
       xft_libs=`$XFT_CONFIG --libs`
       XLIBS="$XLIBS $xft_libs"
+      xft_found="yes"
       AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
       AC_MSG_NOTICE([xft-config found, so Xft should be available])
     else
@@ -542,7 +543,7 @@ then
       fi
     fi
   fi
-  if test "x$HAVE_LIBXFT" != "x1"
+  if test "x$xft_found" != "xyes"
   then
     AC_MSG_ERROR([On non-Windows platforms the Xft library development files are required])
   fi

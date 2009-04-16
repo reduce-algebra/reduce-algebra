@@ -19280,6 +19280,7 @@ test -n "$XFT_CONFIG" || XFT_CONFIG="no"
       CPPFLAGS="$CPPFLAGS $xft_cflags"
       xft_libs=`$XFT_CONFIG --libs`
       XLIBS="$XLIBS $xft_libs"
+      xft_found="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_LIBXFT 1
@@ -19643,7 +19644,7 @@ $as_echo "$as_me: freetype-config found, and Xft should be available" >&6;}
       fi
     fi
   fi
-  if test "x$HAVE_LIBXFT" != "x1"
+  if test "x$xft_found" != "xyes"
   then
     { { $as_echo "$as_me:$LINENO: error: On non-Windows platforms the Xft library development files are required" >&5
 $as_echo "$as_me: error: On non-Windows platforms the Xft library development files are required" >&2;}
