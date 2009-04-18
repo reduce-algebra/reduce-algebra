@@ -12,6 +12,12 @@
 
 //                                         Arthur Norman, April 2009
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#error This file needs "config.h"
+#endif
+
 #ifdef WIN32
 
 #include <windows.h>

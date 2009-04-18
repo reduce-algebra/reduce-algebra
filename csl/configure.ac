@@ -620,16 +620,39 @@ LIBS="$XLIBS $LIBS"
 
 if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"
 then
-  AC_CHECK_HEADERS(termios.h sys/ioctl.h)
+  AC_CHECK_HEADER(termios.h,
+    [AC_DEFINE(HAVE_TERMIOS_H, [1], [Header file termios.h available])],
+    [AC_MSG_ERROR([Header file "termios.h" needed but not found])])
 
-  AC_CHECK_HEADERS(curses.h ncurses.h)
+  AC_CHECK_HEADER(sys/ioctl.h,
+    [AC_DEFINE(HAVE_SYS_IOCTL_H, [1], [Header file sys/ioctl.h available])],
+    [AC_MSG_ERROR([Header file "sys/ioctl.h" needed but not found])])
 
-  AC_MSG_NOTICE([curses=$HAVE_CURSES_H ncurses=$HAVE_NCURSES_H])
+  curses_header="no"
+  AC_CHECK_HEADER(curses.h,
+    [AC_DEFINE(HAVE_CURSES_H, [1], [Header file curses.h available])
+     curses_header="yes"])
+  AC_CHECK_HEADER(ncurses.h,
+    [AC_DEFINE(HAVE_NCURSES_H, [], [Header file ncurses.h available])
+     curses_header="yes"])
+  if test "x$curses_header" = "xno"
+  then
+    AC_MSG_ERROR([neither "curses.h" nor "ncurses.h" found])
+  fi
 
-  AC_CHECK_LIB(curses, setupterm, [],
-    [AC_CHECK_LIB(ncurses, setupterm)])
+  curses_setupterm="no"
+  AC_CHECK_LIB(curses, setupterm, [curses_setupterm="yes"],
+    [AC_CHECK_LIB(ncurses, setupterm, [curses_setupterm="yes"])])
+  if test "x$curses_setupterm" = "xno"
+  then
+    AC_MSG_ERROR([curses library containint "setupterm" not available])
+  fi
 
-  AC_CHECK_HEADERS(term.h,[],[],
+  curses_term_h="no"
+  AC_CHECK_HEADER(term.h,
+     [AC_DEFINE(HAVE_TERM_H, [1], [Header file term.h available])
+      curses_term_h="yes"],
+     [],
      [#if HAVE_CURSES_H
       #include <curses.h>
       #else
@@ -637,7 +660,10 @@ then
       #include <ncurses.h>
       #endif
       #endif])
-  AC_CHECK_HEADERS(ncurses/term.h,[],[],
+  AC_CHECK_HEADER(ncurses/term.h,
+     [AC_DEFINE(HAVE_NCURSES_TERM_H, [1], [Header file ncurses/term.h available])
+      curses_term_h="yes"],
+     [],
      [#if HAVE_CURSES_H
       #include <curses.h>
       #else
@@ -645,50 +671,44 @@ then
       #include <ncurses.h>
       #endif
       #endif])
+  if test "x$curses_term_h" = "xno"
+  then
+    AC_MSG_ERROR([Header file "term.h" or "ncurses/term.h" not available])
+  fi
 
-  AC_CHECK_FUNCS([tgetent tputs])
+  AC_CHECK_FUNCS([tgetent],
+    AC_DEFINE(HAVE_TGETENT, [1], [Function tgetent available]),
+    AC_MSG_ERROR([Function "tgetent" not available]))
+  AC_CHECK_FUNCS([tputs],
+    AC_DEFINE(HAVE_TPUTS, [1], [Function tputs available]),
+    AC_MSG_ERROR([Function "tputs" not available]))
+  AC_CHECK_FUNCS([cfmakeraw],
+    AC_DEFINE(HAVE_CFMAKERAW, [1], [Function cfmakeraw available]),
+    AC_MSG_ERROR([Function "cfmakeraw" not available]))
 
-  AC_CHECK_FUNCS(cfmakeraw)
-
-  if test "x$HAVE_TERMIOS_H" = "x"
-  then
-    AC_MSG_WARN([include file termios.h not found, but needed])
-  fi
-  if test "x$HAVE_SYS_IOCTL_H" = "x"
-  then
-    AC_MSG_WARN([include file sys/ioctl.h not found, but needed])
-  fi
-  if test "x$HAVE_CURSES_H" = "x" && test "x$HAVE_NCURSES_H" = "x"
-  then
-    AC_MSG_WARN([include file curses.h or ncurses.h.h not found, but needed])
-  fi
-  if test "x$HAVE_TGETENT" = "x"
-  then
-    AC_MSG_WARN([function tgetent not found, but needed])
-  fi
-  if test "x$HAVE_TPUTS" = "x"
-  then
-    AC_MSG_WARN([function tputs not found, but needed])
-  fi
-  if test "x$HAVE_CFMAKERAW" = "x"
-  then
-    AC_MSG_WARN([function cfmakeraw not found, but needed])
-  fi
 fi
 
 if test "x$solaris" != "xyes" && test "x$windows_build" != "xyes" 
 then
-AC_CHECK_LIB(Xrender, XRenderCreateCursor)
-AC_CHECK_LIB(Xcursor, XcursorImageCreate)
-if test "x$HAVE_XRENDER" = "x"
-then
-  AC_MSG_WARN([library Xrender not found, but needed])
+AC_SEARCH_LIBS(XRenderCreateCursor, XRender,
+  [AC_DEFINE(HAVE_XRENDERCREATECURSOR, [1], [Function XRenderCreateCursor available])],
+  [AC_MSG_ERROR([Function "XRenderCreatecursor" not available])])
+
+AC_SEARCH_LIBS(XcursorImageCreate, Xcursor,
+  [AC_DEFINE(HAVE_XCURSORIMAGECREATE, [1], [Function XcursorImageCreate available])],
+  [AC_MSG_ERROR([Function "XcursorImageCreate" not available])])
+
 fi
-if test "x$HAVE_XCURSOR" = "x"
-then
-  AC_MSG_WARN([library Xcursor not found, but needed])
-fi
-fi
+
+# For MANY of the following I should maybe upgrade my tests so that if the
+# functions are not present I moan. But actually the easiest way of getting
+# that effect will be to put code in the program I try to compile along
+# the lines of
+#     #ifnder HAVE_XXX
+#     #error XXX seems to be unavailable
+#     #endif
+#
+# I will maybe stick that sort of stuff in soon.
 
 # Checks for header files.
 AC_FUNC_ALLOCA
@@ -812,6 +832,7 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
 cross_compiling=$save_cross
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
+AC_CONFIG_HEADERS([config.h])
 AC_OUTPUT
 
 

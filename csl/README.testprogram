@@ -23,8 +23,13 @@ version of Reduce to build. So please view this as an attempt to be helpful
 and check for a collection of things that are expected and not as a carefully
 engineered and precise qualification test for your platform!
 
+From the trunk directory you can go
+        make csltest
+OR      scripts/csl-sanity-check.sh
+and each carries out the steps described below.
 
-To use this
+
+To use this manually
 
 [optionally]    rm ltmain.sh; touch ltmain.sh; autoreconf -f -i -v
         This will re-make the various autoconf-related files. You may not
@@ -38,10 +43,12 @@ To use this
         Some people will quite properly prefer
           cd /tmp; .../reduce-algebra/trunk/csl/configure
         so that the test performed here does not leave any files within the
-        main source tree. The configure script will take of the order of 30
-        second to (say) ten minutes depending on how fast your computer and
-        which operating system it is running. If all goes well the final few
-        lines of output should be along the lines of
+        main source tree. The top-level mechanisms to run the tests build
+        the test stuff in the ...trunk/cslbuild directory.
+        The configure script will take of the order of 30 second to (say)
+        ten minutes depending on how fast your computer and which operating
+        system it is running. If all goes well the final few lines of output
+        should be along the lines of
                 configure: creating ./config.status
                 config.status: creating Makefile
                 config.status: executing depfiles commands
