@@ -652,27 +652,27 @@ then
 
   if test "x$HAVE_TERMIOS_H" = "x"
   then
-    AC_MSG_ERROR([include file termios.h not found, but needed])
+    AC_MSG_WARN([include file termios.h not found, but needed])
   fi
   if test "x$HAVE_SYS_IOCTL_H" = "x"
   then
-    AC_MSG_ERROR([include file sys/ioctl.h not found, but needed])
+    AC_MSG_WARN([include file sys/ioctl.h not found, but needed])
   fi
   if test "x$HAVE_CURSES_H" = "x" && test "x$HAVE_NCURSES_H" = "x"
   then
-    AC_MSG_ERROR([include file curses.h or ncurses.h.h not found, but needed])
+    AC_MSG_WARN([include file curses.h or ncurses.h.h not found, but needed])
   fi
   if test "x$HAVE_TGETENT" = "x"
   then
-    AC_MSG_ERROR([function tgetent not found, but needed])
+    AC_MSG_WARN([function tgetent not found, but needed])
   fi
   if test "x$HAVE_TPUTS" = "x"
   then
-    AC_MSG_ERROR([function tputs not found, but needed])
+    AC_MSG_WARN([function tputs not found, but needed])
   fi
   if test "x$HAVE_CFMAKERAW" = "x"
   then
-    AC_MSG_ERROR([function cfmakeraw not found, but needed])
+    AC_MSG_WARN([function cfmakeraw not found, but needed])
   fi
 fi
 
@@ -682,11 +682,11 @@ AC_CHECK_LIB(Xrender, XRenderCreateCursor)
 AC_CHECK_LIB(Xcursor, XcursorImageCreate)
 if test "x$HAVE_XRENDER" = "x"
 then
-  AC_MSG_ERROR([library Xrender not found, but needed])
+  AC_MSG_WARN([library Xrender not found, but needed])
 fi
 if test "x$HAVE_XCURSOR" = "x"
 then
-  AC_MSG_ERROR([library Xcursor not found, but needed])
+  AC_MSG_WARN([library Xcursor not found, but needed])
 fi
 fi
 

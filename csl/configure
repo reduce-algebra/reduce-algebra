@@ -20598,39 +20598,33 @@ done
 
   if test "x$HAVE_TERMIOS_H" = "x"
   then
-    { { $as_echo "$as_me:$LINENO: error: include file termios.h not found, but needed" >&5
-$as_echo "$as_me: error: include file termios.h not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+    { $as_echo "$as_me:$LINENO: WARNING: include file termios.h not found, but needed" >&5
+$as_echo "$as_me: WARNING: include file termios.h not found, but needed" >&2;}
   fi
   if test "x$HAVE_SYS_IOCTL_H" = "x"
   then
-    { { $as_echo "$as_me:$LINENO: error: include file sys/ioctl.h not found, but needed" >&5
-$as_echo "$as_me: error: include file sys/ioctl.h not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+    { $as_echo "$as_me:$LINENO: WARNING: include file sys/ioctl.h not found, but needed" >&5
+$as_echo "$as_me: WARNING: include file sys/ioctl.h not found, but needed" >&2;}
   fi
   if test "x$HAVE_CURSES_H" = "x" && test "x$HAVE_NCURSES_H" = "x"
   then
-    { { $as_echo "$as_me:$LINENO: error: include file curses.h or ncurses.h.h not found, but needed" >&5
-$as_echo "$as_me: error: include file curses.h or ncurses.h.h not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+    { $as_echo "$as_me:$LINENO: WARNING: include file curses.h or ncurses.h.h not found, but needed" >&5
+$as_echo "$as_me: WARNING: include file curses.h or ncurses.h.h not found, but needed" >&2;}
   fi
   if test "x$HAVE_TGETENT" = "x"
   then
-    { { $as_echo "$as_me:$LINENO: error: function tgetent not found, but needed" >&5
-$as_echo "$as_me: error: function tgetent not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+    { $as_echo "$as_me:$LINENO: WARNING: function tgetent not found, but needed" >&5
+$as_echo "$as_me: WARNING: function tgetent not found, but needed" >&2;}
   fi
   if test "x$HAVE_TPUTS" = "x"
   then
-    { { $as_echo "$as_me:$LINENO: error: function tputs not found, but needed" >&5
-$as_echo "$as_me: error: function tputs not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+    { $as_echo "$as_me:$LINENO: WARNING: function tputs not found, but needed" >&5
+$as_echo "$as_me: WARNING: function tputs not found, but needed" >&2;}
   fi
   if test "x$HAVE_CFMAKERAW" = "x"
   then
-    { { $as_echo "$as_me:$LINENO: error: function cfmakeraw not found, but needed" >&5
-$as_echo "$as_me: error: function cfmakeraw not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+    { $as_echo "$as_me:$LINENO: WARNING: function cfmakeraw not found, but needed" >&5
+$as_echo "$as_me: WARNING: function cfmakeraw not found, but needed" >&2;}
   fi
 fi
 
@@ -20788,15 +20782,13 @@ fi
 
 if test "x$HAVE_XRENDER" = "x"
 then
-  { { $as_echo "$as_me:$LINENO: error: library Xrender not found, but needed" >&5
-$as_echo "$as_me: error: library Xrender not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+  { $as_echo "$as_me:$LINENO: WARNING: library Xrender not found, but needed" >&5
+$as_echo "$as_me: WARNING: library Xrender not found, but needed" >&2;}
 fi
 if test "x$HAVE_XCURSOR" = "x"
 then
-  { { $as_echo "$as_me:$LINENO: error: library Xcursor not found, but needed" >&5
-$as_echo "$as_me: error: library Xcursor not found, but needed" >&2;}
-   { (exit 1); exit 1; }; }
+  { $as_echo "$as_me:$LINENO: WARNING: library Xcursor not found, but needed" >&5
+$as_echo "$as_me: WARNING: library Xcursor not found, but needed" >&2;}
 fi
 fi
 

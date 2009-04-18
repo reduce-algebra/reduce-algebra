@@ -119,6 +119,7 @@
 ./buglist/feature4
 ./buglist/feature8
 ./buglist/readme
+./compile
 ./config.guess
 ./config.h.in
 ./config.log
@@ -126,7 +127,16 @@
 ./configure
 ./configure.ac
 ./csl
+./csl/Makefile.am
+./csl/Makefile.in
+./csl/README.testprogram
+./csl/aclocal.m4
 ./csl/check-copies.sh
+./csl/compile
+./csl/config.guess
+./csl/config.sub
+./csl/configure
+./csl/configure.ac
 ./csl/cslbase
 ./csl/cslbase/0README
 ./csl/cslbase/0copyrt
@@ -415,6 +425,7 @@
 ./csl/cslbase/wstring.h
 ./csl/cslbase/x86defs.c
 ./csl/cslbase/x86defs.h
+./csl/depcomp
 ./csl/fox
 ./csl/fox/ADDITIONS
 ./csl/fox/AUTHORS
@@ -1389,6 +1400,10 @@
 ./csl/foxtests/tabbook.cpp
 ./csl/foxtests/table.cpp
 ./csl/foxtests/wizard.cpp
+./csl/install-sh
+./csl/libwindow.h
+./csl/ltmain.sh
+./csl/missing
 ./csl/profile.dat
 ./csl/reduce.doc
 ./csl/reduce.doc/BINARY-LICENSE.txt
@@ -1558,6 +1573,8 @@
 ./csl/support-packages/tetex/fonts/afm/adobe/zapfchan/pzcmi8a.afm
 ./csl/support-packages/tetex/fonts/afm/adobe/zapfding
 ./csl/support-packages/tetex/fonts/afm/adobe/zapfding/pzdr.afm
+./csl/testprogram.c
+./csl/window.c
 ./depcomp
 ./doc
 ./doc/help
@@ -1798,6 +1815,7 @@
 ./generic/redfront/src/redstrings.c
 ./install-sh
 ./lgpl-distribution-mechanism-opinion.txt
+./ltmain.sh
 ./missing
 ./packages
 ./packages/LICENSE

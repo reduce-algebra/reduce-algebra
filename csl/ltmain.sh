@@ -1,6 +1,6 @@
 # Generated from ltmain.m4sh.
 
-# libtool (GNU libtool 1.3087 2008-08-02) 2.2.7a
+# libtool (GNU libtool 1.3081 2009-02-17) 2.2.7a
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
@@ -70,7 +70,7 @@
 #         compiler:		$LTCC
 #         compiler flags:		$LTCFLAGS
 #         linker:		$LD (gnu? $with_gnu_ld)
-#         $progname:	(GNU libtool 1.3087 2008-08-02) 2.2.7a
+#         $progname:	(GNU libtool 1.3081 2009-02-17) 2.2.7a
 #         automake:	$automake_version
 #         autoconf:	$autoconf_version
 #
@@ -79,8 +79,8 @@
 PROGRAM=libtool
 PACKAGE=libtool
 VERSION=2.2.7a
-TIMESTAMP=" 1.3087 2008-08-02"
-package_revision=1.3087
+TIMESTAMP=" 1.3081 2009-02-17"
+package_revision=1.3081
 
 # Be Bourne compatible
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
@@ -2857,15 +2857,8 @@ func_extract_an_archive ()
     $opt_debug
     f_ex_an_ar_dir="$1"; shift
     f_ex_an_ar_oldlib="$1"
-    if test "X$ar_extract_one_by_one" != "Xyes"; then
-      func_show_eval "(cd \$f_ex_an_ar_dir && $AR ${AR_XFLAGS}${AR_SEP}\"\$f_ex_an_ar_oldlib\")" 'exit $?'
-    else
-      $AR ${AR_TFLAGS}${AR_SEP}"$f_ex_an_ar_oldlib" | while read name
-      do
-       func_show_eval "(cd \$f_ex_an_ar_dir && $AR ${AR_XFLAGS}${AR_SEP}\$name \"\$f_ex_an_ar_oldlib\")" 'exit $?'
-      done
-    fi
-    if ($AR ${AR_TFLAGS}${AR_SEP}"$f_ex_an_ar_oldlib" | sort | sort -uc >/dev/null 2>&1); then
+    func_show_eval "(cd \$f_ex_an_ar_dir && $AR x \"\$f_ex_an_ar_oldlib\")" 'exit $?'
+    if ($AR t "$f_ex_an_ar_oldlib" | sort | sort -uc >/dev/null 2>&1); then
      :
     else
       func_fatal_error "object name conflicts in archive: $f_ex_an_ar_dir/$f_ex_an_ar_oldlib"
@@ -3414,18 +3407,6 @@ func_to_host_path ()
   eval '$to_host_path_cmd "$1"'
 }
 # end func_to_host_path
-
-
-# func_to_tool_path ARG
-# converts the path ARG from $build format to toolchain
-# format.
-func_to_tool_path ()
-{
-  $opt_debug
-  eval '$to_tool_path_cmd "$1"'
-  func_to_tool_path_result=$func_to_host_path_result
-}
-# end func_to_tool_path
 
 
 # func_noop_path_convert ARG
@@ -9191,55 +9172,6 @@ func_mode_uninstall ()
 
 { test "$mode" = uninstall || test "$mode" = clean; } &&
     func_mode_uninstall ${1+"$@"}
-
-
-# func_mode_ar arg...
-func_mode_ar ()
-{
-    $opt_debug
-    ar_action="$nonopt"
-    archive=
-    files=
-
-    for arg
-    do
-      if test -z "$archive"; then
-	func_to_host_path "$arg"
-	archive=$func_to_host_path_result
-      else
-	files="$files $arg"
-      fi
-    done
-
-    test -z "$archive" && \
-      func_fatal_help "you must specify an archive"
-
-    case "$ar_action" in
-    cru)
-      test -z "$files" && \
-	func_fatal_help "you must specify some objects"
-      func_show_eval "$AR $AR_FLAGS$AR_SEP$archive $files" 'exit $?'
-      ;;
-    x)
-      if test "x$ar_extract_one_by_one" = xyes; then
-	func_extract_an_archive . "$archive"
-	exit $?
-      else
-	func_show_eval "$AR $AR_XFLAGS$AR_SEP$archive" 'exit $?'
-      fi
-      ;;
-    t)
-      func_show_eval "$AR $AR_TFLAGS$AR_SEP$archive" 'exit $?'
-      ;;
-    *)
-      func_fatal_help "bad archive action, either cru, x or t"
-      ;;
-    esac
-
-    exit $EXIT_SUCCESS
-}
-
-test "$mode" = ar && func_mode_ar ${1+"$@"}
 
 test -z "$mode" && {
   help="$generic_help"
