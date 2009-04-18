@@ -40,7 +40,7 @@ available_tags="CXX "
 
 # Which release of libtool.m4 was used?
 macro_version=2.2.7a
-macro_revision=1.3087
+macro_revision=1.3081
 
 # Whether or not to build shared libraries.
 build_libtool_libs=yes
@@ -112,9 +112,6 @@ NL2SP="tr \\015\\012 \\040\\040"
 # convert $build paths to $host format.
 to_host_path_cmd=func_noop_path_convert
 
-# convert $build paths to toolchain format.
-to_tool_path_cmd=func_noop_path_convert
-
 # How to create reloadable object files.
 reload_flag=" -r"
 reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
@@ -136,30 +133,7 @@ sharedlib_from_linklib_cmd="func_cygming_dll_for_implib_fallback"
 
 # The archiver.
 AR="ar"
-
-# Flags to create an archive.
 AR_FLAGS="cru"
-
-# Flags to list archive content.
-AR_TFLAGS="t"
-
-# Flags to extract an archive.
-AR_XFLAGS="x"
-
-# Separator between AR flags and AR files.
-AR_SEP=" "
-
-# The portable archiver.
-LT_AR=$AR
-
-# Flags to portably create an archive.
-LT_ARFLAGS=$AR_FLAGS
-
-# Extract archive members one by one.
-ar_extract_one_by_one="no"
-
-# How to feed a file listing to the archiver.
-archiver_list_spec=""
 
 # A symbol stripping program.
 STRIP="strip"
@@ -185,7 +159,7 @@ global_symbol_to_cdecl="sed -n -e 's/^T .* \\(.*\\)\$/extern int \\1();/p' -e 's
 global_symbol_to_c_name_address="sed -n -e 's/^: \\([^ ]*\\)[ ]*\$/  {\\\"\\1\\\", (void *) 0},/p' -e 's/^[ABCDGIRSTW]* \\([^ ]*\\) \\([^ ]*\\)\$/  {\"\\2\", (void *) \\&\\2},/p'"
 
 # Transform the output of nm in a C name address pair when lib prefix is needed.
-global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \\(lib[^ ]*\\)[ ]*\$/  {\\\"\\1\\\", (void *) 0},/p' -e 's/^: \\([^ ]*\\)[ ]*\$/  {\\\"lib\\1\\\", (void *) 0},/p' -e 's/^[ABCDGIRSTW]* \\([^ ]*\\) \\(lib[^ ]*\\)\$/  {\"\\2\", (void *) \\&\\2},/p' -e 's/^[ABCDGIRSTW]* \\([^ ]*\\) \\([^ ]*\\)\$/  {\"lib\\2\", (void *) \\&\\2},/p'"
+global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \\([^ ]*\\)[ ]*\$/  {\\\"\\1\\\", (void *) 0},/p' -e 's/^[ABCDGIRSTW]* \\([^ ]*\\) \\(lib[^ ]*\\)\$/  {\"\\2\", (void *) \\&\\2},/p' -e 's/^[ABCDGIRSTW]* \\([^ ]*\\) \\([^ ]*\\)\$/  {\"lib\\2\", (void *) \\&\\2},/p'"
 
 # The name of the directory that contains temporary libtool files.
 objdir=.libs
@@ -282,7 +256,7 @@ finish_eval=""
 hardcode_into_libs=no
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
+sys_lib_search_path_spec="/usr/lib/gcc/i686-pc-cygwin/3.4.4 /usr/lib /lib  /usr/lib/w32api"
 
 # Run-time system search path for libraries.
 sys_lib_dlsearch_path_spec="/lib /usr/lib"
@@ -305,7 +279,7 @@ striplib="strip --strip-unneeded"
 LD="/usr/i686-pc-cygwin/bin/ld.exe"
 
 # Commands used to build an old-style archive.
-old_archive_cmds="\$LT_AR \$LT_ARFLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
+old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
 
 # A language specific compiler.
 CC="gcc"
@@ -335,7 +309,7 @@ build_libtool_need_lc=yes
 allow_libtool_libs_with_static_runtimes=yes
 
 # Compiler flag to allow reflexive dlopens.
-export_dynamic_flag_spec="\${wl}--export-dynamic"
+export_dynamic_flag_spec="\${wl}--export-all-symbols"
 
 # Compiler flag to generate shared objects directly from archives.
 whole_archive_flag_spec="\${wl}--whole-archive\$convenience \${wl}--no-whole-archive"
@@ -456,7 +430,7 @@ compiler_lib_search_path=""
 
 # Generated from ltmain.m4sh.
 
-# libtool (GNU libtool 1.3087 2008-08-02) 2.2.7a
+# libtool (GNU libtool 1.3081 2009-02-17) 2.2.7a
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
@@ -526,7 +500,7 @@ compiler_lib_search_path=""
 #         compiler:		$LTCC
 #         compiler flags:		$LTCFLAGS
 #         linker:		$LD (gnu? $with_gnu_ld)
-#         $progname:	(GNU libtool 1.3087 2008-08-02) 2.2.7a
+#         $progname:	(GNU libtool 1.3081 2009-02-17) 2.2.7a
 #         automake:	$automake_version
 #         autoconf:	$autoconf_version
 #
@@ -535,8 +509,8 @@ compiler_lib_search_path=""
 PROGRAM=libtool
 PACKAGE=libtool
 VERSION=2.2.7a
-TIMESTAMP=" 1.3087 2008-08-02"
-package_revision=1.3087
+TIMESTAMP=" 1.3081 2009-02-17"
+package_revision=1.3081
 
 # Be Bourne compatible
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
@@ -3409,15 +3383,8 @@ func_extract_an_archive ()
     $opt_debug
     f_ex_an_ar_dir="$1"; shift
     f_ex_an_ar_oldlib="$1"
-    if test "X$ar_extract_one_by_one" != "Xyes"; then
-      func_show_eval "(cd \$f_ex_an_ar_dir && $AR ${AR_XFLAGS}${AR_SEP}\"\$f_ex_an_ar_oldlib\")" 'exit $?'
-    else
-      $AR ${AR_TFLAGS}${AR_SEP}"$f_ex_an_ar_oldlib" | while read name
-      do
-       func_show_eval "(cd \$f_ex_an_ar_dir && $AR ${AR_XFLAGS}${AR_SEP}\$name \"\$f_ex_an_ar_oldlib\")" 'exit $?'
-      done
-    fi
-    if ($AR ${AR_TFLAGS}${AR_SEP}"$f_ex_an_ar_oldlib" | sort | sort -uc >/dev/null 2>&1); then
+    func_show_eval "(cd \$f_ex_an_ar_dir && $AR x \"\$f_ex_an_ar_oldlib\")" 'exit $?'
+    if ($AR t "$f_ex_an_ar_oldlib" | sort | sort -uc >/dev/null 2>&1); then
      :
     else
       func_fatal_error "object name conflicts in archive: $f_ex_an_ar_dir/$f_ex_an_ar_oldlib"
@@ -3966,18 +3933,6 @@ func_to_host_path ()
   eval '$to_host_path_cmd "$1"'
 }
 # end func_to_host_path
-
-
-# func_to_tool_path ARG
-# converts the path ARG from $build format to toolchain
-# format.
-func_to_tool_path ()
-{
-  $opt_debug
-  eval '$to_tool_path_cmd "$1"'
-  func_to_tool_path_result=$func_to_host_path_result
-}
-# end func_to_tool_path
 
 
 # func_noop_path_convert ARG
@@ -9744,55 +9699,6 @@ func_mode_uninstall ()
 { test "$mode" = uninstall || test "$mode" = clean; } &&
     func_mode_uninstall ${1+"$@"}
 
-
-# func_mode_ar arg...
-func_mode_ar ()
-{
-    $opt_debug
-    ar_action="$nonopt"
-    archive=
-    files=
-
-    for arg
-    do
-      if test -z "$archive"; then
-	func_to_host_path "$arg"
-	archive=$func_to_host_path_result
-      else
-	files="$files $arg"
-      fi
-    done
-
-    test -z "$archive" && \
-      func_fatal_help "you must specify an archive"
-
-    case "$ar_action" in
-    cru)
-      test -z "$files" && \
-	func_fatal_help "you must specify some objects"
-      func_show_eval "$AR $AR_FLAGS$AR_SEP$archive $files" 'exit $?'
-      ;;
-    x)
-      if test "x$ar_extract_one_by_one" = xyes; then
-	func_extract_an_archive . "$archive"
-	exit $?
-      else
-	func_show_eval "$AR $AR_XFLAGS$AR_SEP$archive" 'exit $?'
-      fi
-      ;;
-    t)
-      func_show_eval "$AR $AR_TFLAGS$AR_SEP$archive" 'exit $?'
-      ;;
-    *)
-      func_fatal_help "bad archive action, either cru, x or t"
-      ;;
-    esac
-
-    exit $EXIT_SUCCESS
-}
-
-test "$mode" = ar && func_mode_ar ${1+"$@"}
-
 test -z "$mode" && {
   help="$generic_help"
   func_fatal_help "you must specify a MODE"
@@ -9842,7 +9748,7 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 LD="/usr/i686-pc-cygwin/bin/ld.exe"
 
 # Commands used to build an old-style archive.
-old_archive_cmds="\$LT_AR \$LT_ARFLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
+old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
 
 # A language specific compiler.
 CC="g++"

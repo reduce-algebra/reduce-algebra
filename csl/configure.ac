@@ -109,11 +109,6 @@ then
 fi
 
 
-if test "x$WINDRES" = "x"
-then
-  AC_CHECK_TOOL(WINDRES, windres, windres)
-fi
-
 if test "x$mingw64" = "xyes"
 then
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
@@ -278,11 +273,19 @@ fi
 
 if test "x$MAKE" = "x"
 then
-  AC_CHECK_PROGS(MAKE,[gmake make],[make])
+  AC_CHECK_PROGS(MAKE,[gmake make],[no])
+  if test "x$MAKE" = "xno"
+  then
+    AC_MSG_ERROR([Please install (the GNU version of) "make"])
+  fi
 fi
 if test "x$AR" = "x"
 then
-  AC_CHECK_PROGS(AR,[gar ar],[ar])
+  AC_CHECK_PROGS(AR,[gar ar],[no])
+  if test "x$AR" = "xno"
+  then
+    AC_MSG_ERROR([Please install "ar"])
+  fi
 fi
 if test "x$STRIP" = "x"
 then
@@ -290,7 +293,11 @@ then
 fi
 if test "x$SED" = "x"
 then
-  AC_CHECK_PROGS(SED,[gsed sed],[sed])
+  AC_CHECK_PROGS(SED,[gsed sed],[no])
+  if test "x$SED" = "xno"
+  then
+    AC_MSG_ERROR([Please install "sed"])
+  fi
 fi
 
 
@@ -380,6 +387,18 @@ then
         AC_MSG_NOTICE([This version of gcc does not accept -m64])])
   else
     AC_MSG_NOTICE([--with-m64 specified but not using gcc])
+  fi
+fi
+
+if test "x$windows_build" = "xyes"
+then
+  if test "x$WINDRES" = "x"
+  then
+    AC_CHECK_TOOL([WINDRES], [windres], [no])
+    if test "x$WINDRES" = "xno"
+    then
+      AC_MSG_ERROR([windres tool needed for windows builds: please install it])
+    fi
   fi
 fi
 
