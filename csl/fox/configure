@@ -677,14 +677,9 @@ LIPO
 NMEDIT
 DSYMUTIL
 RANLIB
-AR_FLAGS
-LT_ARFLAGS
-LT_AR
-ac_ct_AR
 AR
 DLLTOOL
 OBJDUMP
-to_tool_path_cmd
 to_host_path_cmd
 LN_S
 NM
@@ -4642,7 +4637,7 @@ esac
 
 
 macro_version='2.2.7a'
-macro_revision='1.3087'
+macro_revision='1.3081'
 
 
 
@@ -5202,11 +5197,8 @@ if test "$lt_cv_path_NM" != "no"; then
   NM="$lt_cv_path_NM"
 else
   # Didn't find any BSD compatible name lister, look for dumpbin.
-  if test -n "$DUMPBIN"; then :
-    # Let the user override the test.
-  else
-    if test -n "$ac_tool_prefix"; then
-  for ac_prog in dumpbin "link -dump"
+  if test -n "$ac_tool_prefix"; then
+  for ac_prog in "dumpbin -symbols" "link -dump -symbols"
   do
     # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
 set dummy $ac_tool_prefix$ac_prog; ac_word=$2
@@ -5250,7 +5242,7 @@ fi
 fi
 if test -z "$DUMPBIN"; then
   ac_ct_DUMPBIN=$DUMPBIN
-  for ac_prog in dumpbin "link -dump"
+  for ac_prog in "dumpbin -symbols" "link -dump -symbols"
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -5305,15 +5297,6 @@ esac
   fi
 fi
 
-    case `$DUMPBIN -symbols /dev/null 2>&1 | sed '1q'` in
-    *COFF*)
-      DUMPBIN="$DUMPBIN -symbols"
-      ;;
-    *)
-      DUMPBIN=:
-      ;;
-    esac
-  fi
 
   if test "$DUMPBIN" != ":"; then
     NM="$DUMPBIN"
@@ -5333,13 +5316,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:5336: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:5319: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:5339: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:5322: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:5342: output\"" >&5)
+  (eval echo "\"\$as_me:5325: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5595,52 +5578,6 @@ fi
 to_host_path_cmd=$lt_cv_to_host_path_cmd
 { $as_echo "$as_me:$LINENO: result: $lt_cv_to_host_path_cmd" >&5
 $as_echo "$lt_cv_to_host_path_cmd" >&6; }
-{ $as_echo "$as_me:$LINENO: checking how to convert $build paths to toolchain format" >&5
-$as_echo_n "checking how to convert $build paths to toolchain format... " >&6; }
-if test "${lt_cv_to_tool_path_cmd+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  case $host in
-  *mingw* )
-    case $build in
-      *mingw* ) # actually msys
-        lt_cv_to_tool_path_cmd=func_msys_to_mingw_path_convert
-        ;;
-      *cygwin* )
-        lt_cv_to_tool_path_cmd=func_cygwin_to_mingw_path_convert
-        ;;
-      * ) # otherwise, assume *nix
-        lt_cv_to_tool_path_cmd=func_nix_to_mingw_path_convert
-        ;;
-    esac
-    ;;
-  *cygwin* )
-    case $build in
-      *mingw* ) # actually msys
-        lt_cv_to_tool_path_cmd=func_msys_to_cygwin_path_convert
-        ;;
-      *cygwin* )
-        lt_cv_to_tool_path_cmd=func_noop_path_convert
-        ;;
-      * ) # otherwise, assume *nix
-        lt_cv_to_tool_path_cmd=func_nix_to_cygwin_path_convert
-        ;;
-    esac
-    ;;
-  * ) # unhandled hosts (and "normal" native builds)
-    lt_cv_to_tool_path_cmd=func_noop_path_convert
-    ;;
-esac
-
-fi
-
-to_tool_path_cmd=$lt_cv_to_tool_path_cmd
-{ $as_echo "$as_me:$LINENO: result: $lt_cv_to_tool_path_cmd" >&5
-$as_echo "$lt_cv_to_tool_path_cmd" >&6; }
-
-
-
-
 
 
 
@@ -6136,10 +6073,8 @@ test -z "$sharedlib_from_linklib_cmd" && sharedlib_from_linklib_cmd=$ECHO
 
 
 if test -n "$ac_tool_prefix"; then
-  for ac_prog in ar lib "link -lib"
-  do
-    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
-set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+  # Extract the first word of "${ac_tool_prefix}ar", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ar; ac_word=$2
 { $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_prog_AR+set}" = set; then
@@ -6155,7 +6090,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_AR="$ac_tool_prefix$ac_prog"
+    ac_cv_prog_AR="${ac_tool_prefix}ar"
     $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6175,15 +6110,11 @@ $as_echo "no" >&6; }
 fi
 
 
-    test -n "$AR" && break
-  done
 fi
-if test -z "$AR"; then
+if test -z "$ac_cv_prog_AR"; then
   ac_ct_AR=$AR
-  for ac_prog in ar lib "link -lib"
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
+  # Extract the first word of "ar", so it can be a program name with args.
+set dummy ar; ac_word=$2
 { $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_prog_ac_ct_AR+set}" = set; then
@@ -6199,7 +6130,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_ac_ct_AR="$ac_prog"
+    ac_cv_prog_ac_ct_AR="ar"
     $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6218,10 +6149,6 @@ else
 $as_echo "no" >&6; }
 fi
 
-
-  test -n "$ac_ct_AR" && break
-done
-
   if test "x$ac_ct_AR" = x; then
     AR="false"
   else
@@ -6233,108 +6160,12 @@ ac_tool_warned=yes ;;
 esac
     AR=$ac_ct_AR
   fi
-fi
-
-: ${AR=ar}
-
-
-
-
-
-
-{ $as_echo "$as_me:$LINENO: checking the archiver ($AR) interface" >&5
-$as_echo_n "checking the archiver ($AR) interface... " >&6; }
-if test "${lt_cv_ar_interface+set}" = set; then
-  $as_echo_n "(cached) " >&6
 else
-  lt_cv_ar_interface="ar"
-  printf "$lt_simple_compile_test_code" > conftest.$ac_ext
-  (eval echo "\"\$as_me:6252: $ac_compile\"" >&5)
-  (eval "$ac_compile" 2>conftest.err)
-  cat conftest.err >&5
-  (eval "$AR -NOLOGO -OUT:conftest.lib conftest.$ac_objext" >conftest.err 2>&1)
-  ac_status=$?
-  cat conftest.err >&5
-  test $ac_status = 0 && test -f conftest.lib && lt_cv_ar_interface="lib"
-  rm -f conftest*
-fi
-{ $as_echo "$as_me:$LINENO: result: $lt_cv_ar_interface" >&5
-$as_echo "$lt_cv_ar_interface" >&6; }
-
-case $lt_cv_ar_interface in
-ar)
-  : ${AR_FLAGS=cru}
-  : ${AR_TFLAGS=t}
-  : ${AR_XFLAGS=x}
-  test -z "$AR_SEP" && AR_SEP=' '
-  ar_extract_one_by_one=no
-  archiver_list_spec=
-  ;;
-lib)
-  : ${AR_FLAGS="-NOLOGO -OUT:"}
-  : ${AR_TFLAGS="-NOLOGO -LIST "}
-  : ${AR_XFLAGS="-NOLOGO -EXTRACT:"}
-  test -z "$AR_SEP" && AR_SEP=''
-  ar_extract_one_by_one=yes
-  archiver_list_spec='@'
-  # Don't use ranlib
-  : ${RANLIB=:}
-  ;;
-esac
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if test -n "$AR_SEP" &&
-   test "X$AR_TFLAGS" = Xt &&
-   test "X$AR_XFLAGS" = Xx &&
-   test "$ar_extract_one_by_one" = no
-then
-  LT_AR='$(AR)'
-  LT_ARFLAGS='$(AR_FLAGS)'
-  lt_ar=\$AR
-  lt_arflags=\$AR_FLAGS
-else
-  LT_AR='$(SHELL) $(top_builddir)/libtool --quiet --mode=ar'
-  LT_ARFLAGS=cru
-  lt_ar="\"\$SHELL \$0 --quiet --mode=ar\""
-  lt_arflags=cru
+  AR="$ac_cv_prog_AR"
 fi
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+test -z "$AR" && AR=ar
+test -z "$AR_FLAGS" && AR_FLAGS=cru
 
 
 
@@ -6545,7 +6376,7 @@ test -z "$RANLIB" && RANLIB=:
 
 
 # Determine commands to create old-style static archives.
-old_archive_cmds='$LT_AR $LT_ARFLAGS $oldlib$oldobjs'
+old_archive_cmds='$AR $AR_FLAGS $oldlib$oldobjs'
 old_postinstall_cmds='chmod 644 $oldlib'
 old_postuninstall_cmds=
 
@@ -6669,7 +6500,7 @@ lt_cv_sys_global_symbol_to_cdecl="sed -n -e 's/^T .* \(.*\)$/extern int \1();/p'
 
 # Transform an extracted symbol line into symbol name and symbol address
 lt_cv_sys_global_symbol_to_c_name_address="sed -n -e 's/^: \([^ ]*\)[ ]*$/  {\\\"\1\\\", (void *) 0},/p' -e 's/^$symcode* \([^ ]*\) \([^ ]*\)$/  {\"\2\", (void *) \&\2},/p'"
-lt_cv_sys_global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \(lib[^ ]*\)[ ]*$/  {\\\"\1\\\", (void *) 0},/p' -e 's/^: \([^ ]*\)[ ]*$/  {\\\"lib\1\\\", (void *) 0},/p' -e 's/^$symcode* \([^ ]*\) \(lib[^ ]*\)$/  {\"\2\", (void *) \&\2},/p' -e 's/^$symcode* \([^ ]*\) \([^ ]*\)$/  {\"lib\2\", (void *) \&\2},/p'"
+lt_cv_sys_global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \([^ ]*\)[ ]*$/  {\\\"\1\\\", (void *) 0},/p' -e 's/^$symcode* \([^ ]*\) \(lib[^ ]*\)$/  {\"\2\", (void *) \&\2},/p' -e 's/^$symcode* \([^ ]*\) \([^ ]*\)$/  {\"lib\2\", (void *) \&\2},/p'"
 
 # Handle CRLF in mingw tool chain
 opt_cr=
@@ -6885,7 +6716,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6888 "configure"' > conftest.$ac_ext
+  echo '#line 6719 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -9195,11 +9026,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9198: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9029: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9202: \$? = $ac_status" >&5
+   echo "$as_me:9033: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9534,11 +9365,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9537: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9368: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9541: \$? = $ac_status" >&5
+   echo "$as_me:9372: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9639,11 +9470,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9642: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9473: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9646: \$? = $ac_status" >&5
+   echo "$as_me:9477: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9694,11 +9525,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9697: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9528: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9701: \$? = $ac_status" >&5
+   echo "$as_me:9532: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9867,7 +9698,7 @@ _LT_EOF
             archive_expsym_cmds=''
         ;;
       m68k)
-            archive_cmds='$RM $output_objdir/a2ixlibrary.data~$ECHO "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$ECHO "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$ECHO "#define VERSION $major" >> $output_objdir/a2ixlibrary.data~$ECHO "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS$AR_SEP$lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+            archive_cmds='$RM $output_objdir/a2ixlibrary.data~$ECHO "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$ECHO "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$ECHO "#define VERSION $major" >> $output_objdir/a2ixlibrary.data~$ECHO "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
             hardcode_libdir_flag_spec='-L$libdir'
             hardcode_minus_L=yes
         ;;
@@ -9889,6 +9720,7 @@ _LT_EOF
       # _LT_TAGVAR(hardcode_libdir_flag_spec, ) is actually meaningless,
       # as there is no search path for DLLs.
       hardcode_libdir_flag_spec='-L$libdir'
+      export_dynamic_flag_spec='${wl}--export-all-symbols'
       allow_undefined_flag=unsupported
       always_export_symbols=no
       enable_shared_with_static_runtimes=yes
@@ -10087,7 +9919,7 @@ _LT_EOF
     aix3*)
       allow_undefined_flag=unsupported
       always_export_symbols=yes
-      archive_expsym_cmds='$LD -o $output_objdir/$soname $libobjs $deplibs $linker_flags -bE:$export_symbols -T512 -H512 -bM:SRE~$AR $AR_FLAGS$AR_SEP$lib $output_objdir/$soname'
+      archive_expsym_cmds='$LD -o $output_objdir/$soname $libobjs $deplibs $linker_flags -bE:$export_symbols -T512 -H512 -bM:SRE~$AR $AR_FLAGS $lib $output_objdir/$soname'
       # Note: this linker hardcodes the directories in LIBPATH if there
       # are no directories specified by -L.
       hardcode_minus_L=yes
@@ -10337,7 +10169,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	  whole_archive_flag_spec='$convenience'
 	  archive_cmds_need_lc=yes
 	  # This is similar to how AIX traditionally builds its shared libraries.
-	  archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs ${wl}-bnoentry $compiler_flags ${wl}-bE:$export_symbols${allow_undefined_flag}~$AR $AR_FLAGS$AR_SEP$output_objdir/$libname$release.a $output_objdir/$soname'
+	  archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs ${wl}-bnoentry $compiler_flags ${wl}-bE:$export_symbols${allow_undefined_flag}~$AR $AR_FLAGS $output_objdir/$libname$release.a $output_objdir/$soname'
 	fi
       fi
       ;;
@@ -10350,7 +10182,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
             archive_expsym_cmds=''
         ;;
       m68k)
-            archive_cmds='$RM $output_objdir/a2ixlibrary.data~$ECHO "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$ECHO "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$ECHO "#define VERSION $major" >> $output_objdir/a2ixlibrary.data~$ECHO "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS$AR_SEP$lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+            archive_cmds='$RM $output_objdir/a2ixlibrary.data~$ECHO "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$ECHO "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$ECHO "#define VERSION $major" >> $output_objdir/a2ixlibrary.data~$ECHO "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
             hardcode_libdir_flag_spec='-L$libdir'
             hardcode_minus_L=yes
         ;;
@@ -11306,7 +11138,8 @@ cygwin* | mingw* | pw32* | cegcc*)
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
       soname_spec='`echo ${libname} | sed -e 's/^lib/cyg/'``echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
-      sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
+
+      sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
     mingw* | cegcc*)
       # MinGW DLLs use traditional 'lib' prefix
@@ -12562,7 +12395,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12565 "configure"
+#line 12398 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12658,7 +12491,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12661 "configure"
+#line 12494 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13390,7 +13223,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	    archive_cmds_need_lc_CXX=yes
 	    # This is similar to how AIX traditionally builds its shared
 	    # libraries.
-	    archive_expsym_cmds_CXX="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs ${wl}-bnoentry $compiler_flags ${wl}-bE:$export_symbols${allow_undefined_flag}~$AR $AR_FLAGS$AR_SEP$output_objdir/$libname$release.a $output_objdir/$soname'
+	    archive_expsym_cmds_CXX="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs ${wl}-bnoentry $compiler_flags ${wl}-bE:$export_symbols${allow_undefined_flag}~$AR $AR_FLAGS $output_objdir/$libname$release.a $output_objdir/$soname'
           fi
         fi
         ;;
@@ -13725,7 +13558,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	      old_archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $oldobjs$old_deplibs~
-		$AR $AR_FLAGS$AR_SEP$oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | $NL2SP`~
+		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | $NL2SP`~
 		$RANLIB $oldlib'
 	      archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
@@ -14678,11 +14511,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14681: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14514: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14685: \$? = $ac_status" >&5
+   echo "$as_me:14518: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14777,11 +14610,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14780: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14613: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14784: \$? = $ac_status" >&5
+   echo "$as_me:14617: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14829,11 +14662,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14832: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14665: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14836: \$? = $ac_status" >&5
+   echo "$as_me:14669: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15195,7 +15028,7 @@ cygwin* | mingw* | pw32* | cegcc*)
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
       soname_spec='`echo ${libname} | sed -e 's/^lib/cyg/'``echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
-      sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
+
       ;;
     mingw* | cegcc*)
       # MinGW DLLs use traditional 'lib' prefix
@@ -24497,7 +24330,6 @@ lt_unset='`$ECHO "$lt_unset" | $SED "$delay_single_quote_subst"`'
 lt_SP2NL='`$ECHO "$lt_SP2NL" | $SED "$delay_single_quote_subst"`'
 lt_NL2SP='`$ECHO "$lt_NL2SP" | $SED "$delay_single_quote_subst"`'
 lt_cv_to_host_path_cmd='`$ECHO "$lt_cv_to_host_path_cmd" | $SED "$delay_single_quote_subst"`'
-lt_cv_to_tool_path_cmd='`$ECHO "$lt_cv_to_tool_path_cmd" | $SED "$delay_single_quote_subst"`'
 reload_flag='`$ECHO "$reload_flag" | $SED "$delay_single_quote_subst"`'
 reload_cmds='`$ECHO "$reload_cmds" | $SED "$delay_single_quote_subst"`'
 OBJDUMP='`$ECHO "$OBJDUMP" | $SED "$delay_single_quote_subst"`'
@@ -24507,13 +24339,6 @@ DLLTOOL='`$ECHO "$DLLTOOL" | $SED "$delay_single_quote_subst"`'
 sharedlib_from_linklib_cmd='`$ECHO "$sharedlib_from_linklib_cmd" | $SED "$delay_single_quote_subst"`'
 AR='`$ECHO "$AR" | $SED "$delay_single_quote_subst"`'
 AR_FLAGS='`$ECHO "$AR_FLAGS" | $SED "$delay_single_quote_subst"`'
-AR_TFLAGS='`$ECHO "$AR_TFLAGS" | $SED "$delay_single_quote_subst"`'
-AR_XFLAGS='`$ECHO "$AR_XFLAGS" | $SED "$delay_single_quote_subst"`'
-AR_SEP='`$ECHO "$AR_SEP" | $SED "$delay_single_quote_subst"`'
-lt_ar='`$ECHO "$lt_ar" | $SED "$delay_single_quote_subst"`'
-lt_arflags='`$ECHO "$lt_arflags" | $SED "$delay_single_quote_subst"`'
-ar_extract_one_by_one='`$ECHO "$ar_extract_one_by_one" | $SED "$delay_single_quote_subst"`'
-archiver_list_spec='`$ECHO "$archiver_list_spec" | $SED "$delay_single_quote_subst"`'
 STRIP='`$ECHO "$STRIP" | $SED "$delay_single_quote_subst"`'
 RANLIB='`$ECHO "$RANLIB" | $SED "$delay_single_quote_subst"`'
 old_postinstall_cmds='`$ECHO "$old_postinstall_cmds" | $SED "$delay_single_quote_subst"`'
@@ -24684,11 +24509,6 @@ DLLTOOL \
 sharedlib_from_linklib_cmd \
 AR \
 AR_FLAGS \
-AR_TFLAGS \
-AR_XFLAGS \
-AR_SEP \
-ar_extract_one_by_one \
-archiver_list_spec \
 STRIP \
 RANLIB \
 CC \
@@ -25577,9 +25397,6 @@ NL2SP=$lt_lt_NL2SP
 # convert \$build paths to \$host format.
 to_host_path_cmd=$lt_cv_to_host_path_cmd
 
-# convert \$build paths to toolchain format.
-to_tool_path_cmd=$lt_cv_to_tool_path_cmd
-
 # How to create reloadable object files.
 reload_flag=$lt_reload_flag
 reload_cmds=$lt_reload_cmds
@@ -25601,30 +25418,7 @@ sharedlib_from_linklib_cmd=$lt_sharedlib_from_linklib_cmd
 
 # The archiver.
 AR=$lt_AR
-
-# Flags to create an archive.
 AR_FLAGS=$lt_AR_FLAGS
-
-# Flags to list archive content.
-AR_TFLAGS=$lt_AR_TFLAGS
-
-# Flags to extract an archive.
-AR_XFLAGS=$lt_AR_XFLAGS
-
-# Separator between AR flags and AR files.
-AR_SEP=$lt_AR_SEP
-
-# The portable archiver.
-LT_AR=$lt_ar
-
-# Flags to portably create an archive.
-LT_ARFLAGS=$lt_arflags
-
-# Extract archive members one by one.
-ar_extract_one_by_one=$lt_ar_extract_one_by_one
-
-# How to feed a file listing to the archiver.
-archiver_list_spec=$lt_archiver_list_spec
 
 # A symbol stripping program.
 STRIP=$lt_STRIP

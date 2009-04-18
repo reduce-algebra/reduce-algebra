@@ -1787,6 +1787,7 @@
 ./generic/redfront/src/configure.ac
 ./generic/redfront/src/install-sh
 ./generic/redfront/src/redchild.c
+./generic/redfront/src/reddeb.c
 ./generic/redfront/src/redfront.1
 ./generic/redfront/src/redfront.c
 ./generic/redfront/src/redfront.h

@@ -13,7 +13,10 @@
 
 autoreconf -i -f -v
 
-cd csl/cslbase
+cd csl
+autoreconf -i -f -v
+
+cd cslbase
 autoreconf -i -f -v
 
 cd ../fox
