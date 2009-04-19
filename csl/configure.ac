@@ -570,13 +570,17 @@ fi
 
 AC_PROG_LN_S
 
-
 AC_MSG_CHECKING(for static linking)
 AC_ARG_ENABLE(static,
   AC_HELP_STRING([--enable-static],
                  [link it all statically]),
   [],
   [enable_static="no"])
+
+# Well in this particular case I reall DO NOT WANT static linking since
+# it seems to cause me some pain!
+
+enable_static="no"
 
 LOWOPT="-O0"
 HIGHOPT="-O2"
@@ -600,6 +604,7 @@ then
   if test "x$enable_static" = "xyes"
   then
     LDFLAGS="${LDFLAGS} -static"
+    echo "++++ enable_static set +++++"
   fi
 else
   if test "x$enable_debug" = "xyes"
@@ -641,8 +646,12 @@ then
   fi
 
   curses_setupterm="no"
-  AC_CHECK_LIB(curses, setupterm, [curses_setupterm="yes"],
-    [AC_CHECK_LIB(ncurses, setupterm, [curses_setupterm="yes"])])
+  AC_CHECK_LIB(curses, setupterm,
+    [curses_setupterm="yes"
+     LIBS=" -lcurses $LIBS"],
+    [AC_CHECK_LIB(ncurses, setupterm,
+      [curses_setupterm="yes"
+       LIBS=" -lncurses $LIBS"])])
   if test "x$curses_setupterm" = "xno"
   then
     AC_MSG_ERROR([curses library containint "setupterm" not available])
@@ -692,11 +701,9 @@ if test "x$solaris" != "xyes" && test "x$windows_build" != "xyes"
 then
 AC_SEARCH_LIBS(XRenderCreateCursor, XRender,
   [AC_DEFINE(HAVE_XRENDERCREATECURSOR, [1], [Function XRenderCreateCursor available])],
-  [AC_MSG_ERROR([Function "XRenderCreatecursor" not available])])
+  [AC_MSG_ERROR([Function "XRenderCreateCursor" not available])])
 
-AC_SEARCH_LIBS(XcursorImageCreate, Xcursor,
-  [AC_DEFINE(HAVE_XCURSORIMAGECREATE, [1], [Function XcursorImageCreate available])],
-  [AC_MSG_ERROR([Function "XcursorImageCreate" not available])])
+AC_SEARCH_LIBS(XcursorImageCreate, Xcursor)
 
 fi
 
