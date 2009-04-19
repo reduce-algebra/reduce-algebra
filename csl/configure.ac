@@ -693,9 +693,7 @@ then
   AC_CHECK_FUNCS([tputs],
     AC_DEFINE(HAVE_TPUTS, [1], [Function tputs available]),
     AC_MSG_ERROR([Function "tputs" not available]))
-  AC_CHECK_FUNCS([cfmakeraw],
-    AC_DEFINE(HAVE_CFMAKERAW, [1], [Function cfmakeraw available]),
-    AC_MSG_ERROR([Function "cfmakeraw" not available]))
+  AC_CHECK_FUNCS([cfmakeraw])
 
 fi
 

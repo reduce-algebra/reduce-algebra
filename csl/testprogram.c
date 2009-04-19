@@ -284,10 +284,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_ATEXIT
 #endif
 
-#ifndef HAVE_CFMAKERAW
-#error expected to have HAVE_CFMAKERAW
-#endif
-
 #ifndef HAVE_DIRENT_H
 #error expected to have HAVE_DIRENT_H
 #endif

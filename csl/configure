@@ -20971,14 +20971,6 @@ as_val=`eval 'as_val=${'$as_ac_var'}
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_CFMAKERAW 1
-_ACEOF
-
-else
-  { { $as_echo "$as_me:$LINENO: error: Function \"cfmakeraw\" not available" >&5
-$as_echo "$as_me: error: Function \"cfmakeraw\" not available" >&2;}
-   { (exit 1); exit 1; }; }
 fi
 done
 
