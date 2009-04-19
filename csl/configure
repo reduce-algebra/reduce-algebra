@@ -20379,17 +20379,154 @@ $as_echo "$as_me: error: neither \"curses.h\" nor \"ncurses.h\" found" >&2;}
    { (exit 1); exit 1; }; }
   fi
 
-# curses_setupterm="no"
-# AC_CHECK_LIB(curses, setupterm,
-#   [curses_setupterm="yes"
-#    LIBS=" -lcurses $LIBS"],
-#   [AC_CHECK_LIB(ncurses, setupterm,
-#     [curses_setupterm="yes"
-#      LIBS=" -lncurses $LIBS"])])
-# if test "x$curses_setupterm" = "xno"
-# then
-#   AC_MSG_ERROR([curses library containint "setupterm" not available])
-# fi
+  curses_tgetent="no"
+  { $as_echo "$as_me:$LINENO: checking for tgetent in -lcurses" >&5
+$as_echo_n "checking for tgetent in -lcurses... " >&6; }
+if test "${ac_cv_lib_curses_tgetent+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcurses  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char tgetent ();
+int
+main ()
+{
+return tgetent ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  ac_cv_lib_curses_tgetent=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_curses_tgetent=no
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_curses_tgetent" >&5
+$as_echo "$ac_cv_lib_curses_tgetent" >&6; }
+if test "x$ac_cv_lib_curses_tgetent" = x""yes; then
+  curses_tgetent="yes"
+     LIBS=" -lcurses $LIBS"
+else
+  { $as_echo "$as_me:$LINENO: checking for tgetent in -lncurses" >&5
+$as_echo_n "checking for tgetent in -lncurses... " >&6; }
+if test "${ac_cv_lib_ncurses_tgetent+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lncurses  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char tgetent ();
+int
+main ()
+{
+return tgetent ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  ac_cv_lib_ncurses_tgetent=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_ncurses_tgetent=no
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_ncurses_tgetent" >&5
+$as_echo "$ac_cv_lib_ncurses_tgetent" >&6; }
+if test "x$ac_cv_lib_ncurses_tgetent" = x""yes; then
+  curses_tgetent="yes"
+       LIBS=" -lncurses $LIBS"
+fi
+
+fi
+
+  if test "x$curses_tgetent" = "xno"
+  then
+    { { $as_echo "$as_me:$LINENO: error: curses library containint \"tgetent\" not available" >&5
+$as_echo "$as_me: error: curses library containint \"tgetent\" not available" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
 
   curses_term_h="no"
   { $as_echo "$as_me:$LINENO: checking for term.h" >&5
@@ -20514,12 +20651,8 @@ _ACEOF
 fi
 
 
-# if test "x$curses_term_h" = "xno"
-# then
-#   AC_MSG_ERROR([Header file "term.h" or "ncurses/term.h" not available])
-# fi
-
-# if tgetent is available then I maybe do not need term.c or ncurses/term.h
+  if test "x$curses_term_h" = "xno"
+  then
 
 for ac_func in tgetent
 do
@@ -20623,12 +20756,13 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 else
-  { { $as_echo "$as_me:$LINENO: error: Function \"tgetent\" not available" >&5
-$as_echo "$as_me: error: Function \"tgetent\" not available" >&2;}
+  { { $as_echo "$as_me:$LINENO: error: Neither function \"tgetent\" nor header \"term.h\" available" >&5
+$as_echo "$as_me: error: Neither function \"tgetent\" nor header \"term.h\" available" >&2;}
    { (exit 1); exit 1; }; }
 fi
 done
 
+  fi
 
 
 for ac_func in tputs

@@ -648,17 +648,17 @@ then
     AC_MSG_ERROR([neither "curses.h" nor "ncurses.h" found])
   fi
 
-# curses_setupterm="no"
-# AC_CHECK_LIB(curses, setupterm,
-#   [curses_setupterm="yes"
-#    LIBS=" -lcurses $LIBS"],
-#   [AC_CHECK_LIB(ncurses, setupterm,
-#     [curses_setupterm="yes"
-#      LIBS=" -lncurses $LIBS"])])
-# if test "x$curses_setupterm" = "xno"
-# then
-#   AC_MSG_ERROR([curses library containint "setupterm" not available])
-# fi
+  curses_tgetent="no"
+  AC_CHECK_LIB(curses, tgetent,
+    [curses_tgetent="yes"
+     LIBS=" -lcurses $LIBS"],
+    [AC_CHECK_LIB(ncurses, tgetent,
+      [curses_tgetent="yes"
+       LIBS=" -lncurses $LIBS"])])
+  if test "x$curses_tgetent" = "xno"
+  then
+    AC_MSG_ERROR([curses library containint "tgetent" not available])
+  fi
 
   curses_term_h="no"
   AC_CHECK_HEADER(term.h,
@@ -683,15 +683,12 @@ then
       #include <ncurses.h>
       #endif
       #endif])
-# if test "x$curses_term_h" = "xno"
-# then
-#   AC_MSG_ERROR([Header file "term.h" or "ncurses/term.h" not available])
-# fi
-
-# if tgetent is available then I maybe do not need term.c or ncurses/term.h
-  AC_CHECK_FUNCS([tgetent],
-    AC_DEFINE(HAVE_TGETENT, [1], [Function tgetent available]),
-    AC_MSG_ERROR([Function "tgetent" not available]))
+  if test "x$curses_term_h" = "xno"
+  then
+    AC_CHECK_FUNCS([tgetent],
+      AC_DEFINE(HAVE_TGETENT, [1], [Function tgetent available]),
+      AC_MSG_ERROR([Neither function "tgetent" nor header "term.h" available]))
+  fi
 
   AC_CHECK_FUNCS([tputs],
     AC_DEFINE(HAVE_TPUTS, [1], [Function tputs available]),
