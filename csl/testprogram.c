@@ -90,10 +90,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_INTTYPES_H
 #endif
 
-#ifndef HAVE_LIBDL
-#error expected to have HAVE_LIBDL
-#endif
-
 #ifndef HAVE_LIBPTHREAD
 #error expected to have HAVE_LIBPTHREAD
 #endif
@@ -292,10 +288,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_CFMAKERAW
 #endif
 
-#ifndef HAVE_CPU_SET_T
-#error expected to have HAVE_CPU_SET_T
-#endif
-
 #ifndef HAVE_DIRENT_H
 #error expected to have HAVE_DIRENT_H
 #endif
@@ -360,24 +352,12 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_LIBDL
 #endif
 
-#ifndef HAVE_LIBNSL
-#error expected to have HAVE_LIBNSL
-#endif
-
 #ifndef HAVE_LIBPTHREAD
 #error expected to have HAVE_LIBPTHREAD
 #endif
 
-#ifndef HAVE_LIBRT
-#error expected to have HAVE_LIBRT
-#endif
-
 #ifndef HAVE_LIBXFT
 #error expected to have HAVE_LIBXFT
-#endif
-
-#ifndef HAVE_MALLOC_H
-#error expected to have HAVE_MALLOC_H
 #endif
 
 #ifndef HAVE_MEMMOVE
