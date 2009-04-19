@@ -9130,7 +9130,7 @@ LIBS="$XLIBS $LIBS"
 # Otherwise I need both term.h and [n]curses.h. Sometimes the file
 # may be <ncurses/term.h>. If term.h is not available I may survive
 # on tgetent.
-# For linking I count "setupterm" as an adequate function to test for
+# For linking I count "tgetent" as an adequate function to test for
 # as diagnostic of curses.
 
 # I am giving up on supporting things that only have "termcap" on the
@@ -9441,9 +9441,9 @@ done
 $as_echo "$as_me: curses=$HAVE_CURSES_H ncurses=$HAVE_NCURSES_H" >&6;}
 
 
-{ $as_echo "$as_me:$LINENO: checking for setupterm in -lcurses" >&5
-$as_echo_n "checking for setupterm in -lcurses... " >&6; }
-if test "${ac_cv_lib_curses_setupterm+set}" = set; then
+{ $as_echo "$as_me:$LINENO: checking for tgetent in -lcurses" >&5
+$as_echo_n "checking for tgetent in -lcurses... " >&6; }
+if test "${ac_cv_lib_curses_tgetent+set}" = set; then
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -9461,11 +9461,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char setupterm ();
+char tgetent ();
 int
 main ()
 {
-return setupterm ();
+return tgetent ();
   ;
   return 0;
 }
@@ -9491,12 +9491,12 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  ac_cv_lib_curses_setupterm=yes
+  ac_cv_lib_curses_tgetent=yes
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_curses_setupterm=no
+	ac_cv_lib_curses_tgetent=no
 fi
 
 rm -rf conftest.dSYM
@@ -9504,9 +9504,9 @@ rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_curses_setupterm" >&5
-$as_echo "$ac_cv_lib_curses_setupterm" >&6; }
-if test "x$ac_cv_lib_curses_setupterm" = x""yes; then
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_curses_tgetent" >&5
+$as_echo "$ac_cv_lib_curses_tgetent" >&6; }
+if test "x$ac_cv_lib_curses_tgetent" = x""yes; then
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBCURSES 1
 _ACEOF
@@ -9515,9 +9515,9 @@ _ACEOF
 
 else
 
-{ $as_echo "$as_me:$LINENO: checking for setupterm in -lncurses" >&5
-$as_echo_n "checking for setupterm in -lncurses... " >&6; }
-if test "${ac_cv_lib_ncurses_setupterm+set}" = set; then
+{ $as_echo "$as_me:$LINENO: checking for tgetent in -lncurses" >&5
+$as_echo_n "checking for tgetent in -lncurses... " >&6; }
+if test "${ac_cv_lib_ncurses_tgetent+set}" = set; then
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -9535,11 +9535,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char setupterm ();
+char tgetent ();
 int
 main ()
 {
-return setupterm ();
+return tgetent ();
   ;
   return 0;
 }
@@ -9565,12 +9565,12 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  ac_cv_lib_ncurses_setupterm=yes
+  ac_cv_lib_ncurses_tgetent=yes
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_ncurses_setupterm=no
+	ac_cv_lib_ncurses_tgetent=no
 fi
 
 rm -rf conftest.dSYM
@@ -9578,9 +9578,9 @@ rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_ncurses_setupterm" >&5
-$as_echo "$ac_cv_lib_ncurses_setupterm" >&6; }
-if test "x$ac_cv_lib_ncurses_setupterm" = x""yes; then
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_ncurses_tgetent" >&5
+$as_echo "$ac_cv_lib_ncurses_tgetent" >&6; }
+if test "x$ac_cv_lib_ncurses_tgetent" = x""yes; then
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBNCURSES 1
 _ACEOF

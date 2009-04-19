@@ -468,10 +468,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_TERMIOS_H
 #endif
 
-#ifndef HAVE_TERM_H
-#error expected to have HAVE_TERM_H
-#endif
-
 #ifndef HAVE_TGETENT
 #error expected to have HAVE_TGETENT
 #endif

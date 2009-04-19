@@ -1000,7 +1000,7 @@ LIBS="$XLIBS $LIBS"
 # Otherwise I need both term.h and [n]curses.h. Sometimes the file
 # may be <ncurses/term.h>. If term.h is not available I may survive
 # on tgetent.
-# For linking I count "setupterm" as an adequate function to test for
+# For linking I count "tgetent" as an adequate function to test for
 # as diagnostic of curses.
 
 # I am giving up on supporting things that only have "termcap" on the
@@ -1017,8 +1017,8 @@ then
 
   AC_MSG_NOTICE([curses=$HAVE_CURSES_H ncurses=$HAVE_NCURSES_H])
 
-  AC_CHECK_LIB(curses, setupterm, [],
-    [AC_CHECK_LIB(ncurses, setupterm)])
+  AC_CHECK_LIB(curses, tgetent, [],
+    [AC_CHECK_LIB(ncurses, tgetent)])
 
 # There is a misery here! "term.h" (on some machines) needs cuses.h
 # included first (typically to define "bool" for it).
