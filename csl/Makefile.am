@@ -1,6 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
-# The Makefile generated from this is never supposed to be used!
+# The "testprogram" here is merely part ofa framework to check that
+# a reasonably full set of development resources are available for
+# building the CSL version of Reduce.
+
+ACLOCAL_AMFLAGS = -I m4
 
 lib_LTLIBRARIES = libwindow.la
 libwindow_la_SOURCES = window.c

@@ -14,7 +14,9 @@
 
 @SET_MAKE@
 
-# The Makefile generated from this is never supposed to be used!
+# The "testprogram" here is merely part ofa framework to check that
+# a reasonably full set of development resources are available for
+# building the CSL version of Reduce.
 
 
 VPATH = @srcdir@
@@ -42,7 +44,10 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure compile config.guess config.sub \
 	depcomp install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -216,6 +221,7 @@ to_host_path_cmd = @to_host_path_cmd@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+ACLOCAL_AMFLAGS = -I m4
 lib_LTLIBRARIES = libwindow.la
 libwindow_la_SOURCES = window.c
 testprogram_SOURCES = testprogram.c

@@ -48,5 +48,5 @@ then
 fi
 
 cd $here/cslbuild
-../csl/configure && make && exec ./testprogram
+../csl/configure && make clean && make && exec ./testprogram
 

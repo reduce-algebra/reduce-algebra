@@ -22,6 +22,7 @@ AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR(profile.dat)
 AC_CONFIG_FILES([Makefile])
 
+AC_CONFIG_MACRO_DIR([m4])
 AM_PROG_LIBTOOL
 
 AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])
@@ -577,10 +578,12 @@ AC_ARG_ENABLE(static,
   [],
   [enable_static="no"])
 
+if test "x$win32" != "xyes"
+then
 # Well in this particular case I reall DO NOT WANT static linking since
 # it seems to cause me some pain!
-
-enable_static="no"
+  enable_static="no"
+fi
 
 LOWOPT="-O0"
 HIGHOPT="-O2"
