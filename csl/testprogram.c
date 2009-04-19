@@ -348,10 +348,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_INTPTR_T
 #endif
 
-#ifndef HAVE_LIBDL
-#error expected to have HAVE_LIBDL
-#endif
-
 #ifndef HAVE_LIBPTHREAD
 #error expected to have HAVE_LIBPTHREAD
 #endif
