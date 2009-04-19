@@ -518,7 +518,7 @@ then
                     [CFLAGS="$OLDCFLAGS"])
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"
+if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"
 then
   AC_ARG_WITH(xft,
     AC_HELP_STRING([--with-xft],
@@ -655,8 +655,10 @@ then
     [AC_CHECK_LIB(ncurses, tgetent,
       [curses_tgetent="yes"
        LIBS=" -lncurses $LIBS"])])
-  if test "x$curses_tgetent" = "xno"
+  if test "x$curses_tgetent" = "xyes"
   then
+    AC_DEFINE([HAVE_TGETENT])
+  else
     AC_MSG_ERROR([curses library containint "tgetent" not available])
   fi
 

@@ -440,10 +440,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_SYS_STAT_H
 #endif
 
-#ifndef HAVE_SYS_SYSCTL_H
-#error expected to have HAVE_SYS_SYSCTL_H
-#endif
-
 #ifndef HAVE_SYS_TIMES_H
 #error expected to have HAVE_SYS_TIMES_H
 #endif
@@ -518,10 +514,6 @@ int main(int argc, char *argv[])
 
 #ifndef HAVE_WAITPID
 #error expected to have HAVE_WAITPID
-#endif
-
-#ifndef HAVE_XRENDERCREATECURSOR
-#error expected to have HAVE_XRENDERCREATECURSOR
 #endif
 
 #ifndef SIZEOF_INT
