@@ -648,17 +648,17 @@ then
     AC_MSG_ERROR([neither "curses.h" nor "ncurses.h" found])
   fi
 
-  curses_setupterm="no"
-  AC_CHECK_LIB(curses, setupterm,
-    [curses_setupterm="yes"
-     LIBS=" -lcurses $LIBS"],
-    [AC_CHECK_LIB(ncurses, setupterm,
-      [curses_setupterm="yes"
-       LIBS=" -lncurses $LIBS"])])
-  if test "x$curses_setupterm" = "xno"
-  then
-    AC_MSG_ERROR([curses library containint "setupterm" not available])
-  fi
+# curses_setupterm="no"
+# AC_CHECK_LIB(curses, setupterm,
+#   [curses_setupterm="yes"
+#    LIBS=" -lcurses $LIBS"],
+#   [AC_CHECK_LIB(ncurses, setupterm,
+#     [curses_setupterm="yes"
+#      LIBS=" -lncurses $LIBS"])])
+# if test "x$curses_setupterm" = "xno"
+# then
+#   AC_MSG_ERROR([curses library containint "setupterm" not available])
+# fi
 
   curses_term_h="no"
   AC_CHECK_HEADER(term.h,
