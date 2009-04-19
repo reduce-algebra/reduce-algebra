@@ -38,10 +38,6 @@ int main(int argc, char *argv[])
 
 #ifdef WIN32
 
-#ifndef HAVE_ALLOCA
-#error expected to have HAVE_ALLOCA
-#endif
-
 #ifndef HAVE_ATEXIT
 #error expected to have HAVE_ATEXIT
 #endif
@@ -282,8 +278,309 @@ int main(int argc, char *argv[])
 #error expected to have X86
 #endif
 
+#else  /* WIN32 vs X11 */
 
-#endif /* WIN32 */
+#ifndef HAVE_ARPA_INET_H
+#error expected to have HAVE_ARPA_INET_H
+#endif
+
+#ifndef HAVE_ATEXIT
+#error expected to have HAVE_ATEXIT
+#endif
+
+#ifndef HAVE_CFMAKERAW
+#error expected to have HAVE_CFMAKERAW
+#endif
+
+#ifndef HAVE_CPU_SET_T
+#error expected to have HAVE_CPU_SET_T
+#endif
+
+#ifndef HAVE_DIRENT_H
+#error expected to have HAVE_DIRENT_H
+#endif
+
+#ifndef HAVE_DLFCN_H
+#error expected to have HAVE_DLFCN_H
+#endif
+
+#ifndef HAVE_FCNTL_H
+#error expected to have HAVE_FCNTL_H
+#endif
+
+#ifndef HAVE_FLOAT_H
+#error expected to have HAVE_FLOAT_H
+#endif
+
+#ifndef HAVE_FORK
+#error expected to have HAVE_FORK
+#endif
+
+#ifndef HAVE_FTRUNCATE
+#error expected to have HAVE_FTRUNCATE
+#endif
+
+#ifndef HAVE_GETCWD
+#error expected to have HAVE_GETCWD
+#endif
+
+#ifndef HAVE_GETHOSTBYADDR
+#error expected to have HAVE_GETHOSTBYADDR
+#endif
+
+#ifndef HAVE_GETHOSTBYNAME
+#error expected to have HAVE_GETHOSTBYNAME
+#endif
+
+#ifndef HAVE_INET_NTOA
+#error expected to have HAVE_INET_NTOA
+#endif
+
+#ifndef HAVE_INT16_T
+#error expected to have HAVE_INT16_T
+#endif
+
+#ifndef HAVE_INT32_T
+#error expected to have HAVE_INT32_T
+#endif
+
+#ifndef HAVE_INT64_T
+#error expected to have HAVE_INT64_T
+#endif
+
+#ifndef HAVE_INT8_T
+#error expected to have HAVE_INT8_T
+#endif
+
+#ifndef HAVE_INTPTR_T
+#error expected to have HAVE_INTPTR_T
+#endif
+
+#ifndef HAVE_LIBDL
+#error expected to have HAVE_LIBDL
+#endif
+
+#ifndef HAVE_LIBNSL
+#error expected to have HAVE_LIBNSL
+#endif
+
+#ifndef HAVE_LIBPTHREAD
+#error expected to have HAVE_LIBPTHREAD
+#endif
+
+#ifndef HAVE_LIBRT
+#error expected to have HAVE_LIBRT
+#endif
+
+#ifndef HAVE_LIBXFT
+#error expected to have HAVE_LIBXFT
+#endif
+
+#ifndef HAVE_MALLOC_H
+#error expected to have HAVE_MALLOC_H
+#endif
+
+#ifndef HAVE_MEMMOVE
+#error expected to have HAVE_MEMMOVE
+#endif
+
+#ifndef HAVE_MEMSET
+#error expected to have HAVE_MEMSET
+#endif
+
+#ifndef HAVE_MKDIR
+#error expected to have HAVE_MKDIR
+#endif
+
+#ifndef HAVE_NETDB_H
+#error expected to have HAVE_NETDB_H
+#endif
+
+#ifndef HAVE_NETINET_IN_H
+#error expected to have HAVE_NETINET_IN_H
+#endif
+
+#ifndef HAVE_POPEN
+#error expected to have HAVE_POPEN
+#endif
+
+#ifndef HAVE_RMDIR
+#error expected to have HAVE_RMDIR
+#endif
+
+#ifndef HAVE_SIGNAL_H
+#error expected to have HAVE_SIGNAL_H
+#endif
+
+#ifndef HAVE_SOCKET
+#error expected to have HAVE_SOCKET
+#endif
+
+#ifndef HAVE_SOCKLEN_T
+#error expected to have HAVE_SOCKLEN_T
+#endif
+
+#ifndef HAVE_STDBOOL_H
+#error expected to have HAVE_STDBOOL_H
+#endif
+
+#ifndef HAVE_STDDEF_H
+#error expected to have HAVE_STDDEF_H
+#endif
+
+#ifndef HAVE_STDINT_H
+#error expected to have HAVE_STDINT_H
+#endif
+
+#ifndef HAVE_STDLIB_H
+#error expected to have HAVE_STDLIB_H
+#endif
+
+#ifndef HAVE_STRCHR
+#error expected to have HAVE_STRCHR
+#endif
+
+#ifndef HAVE_STRDUP
+#error expected to have HAVE_STRDUP
+#endif
+
+#ifndef HAVE_STRRCHR
+#error expected to have HAVE_STRRCHR
+#endif
+
+#ifndef HAVE_STRSTR
+#error expected to have HAVE_STRSTR
+#endif
+
+#ifndef HAVE_SYS_IOCTL_H
+#error expected to have HAVE_SYS_IOCTL_H
+#endif
+
+#ifndef HAVE_SYS_PARAM_H
+#error expected to have HAVE_SYS_PARAM_H
+#endif
+
+#ifndef HAVE_SYS_SOCKET_H
+#error expected to have HAVE_SYS_SOCKET_H
+#endif
+
+#ifndef HAVE_SYS_STAT_H
+#error expected to have HAVE_SYS_STAT_H
+#endif
+
+#ifndef HAVE_SYS_SYSCTL_H
+#error expected to have HAVE_SYS_SYSCTL_H
+#endif
+
+#ifndef HAVE_SYS_TIMES_H
+#error expected to have HAVE_SYS_TIMES_H
+#endif
+
+#ifndef HAVE_SYS_TIME_H
+#error expected to have HAVE_SYS_TIME_H
+#endif
+
+#ifndef HAVE_SYS_TYPES_H
+#error expected to have HAVE_SYS_TYPES_H
+#endif
+
+#ifndef HAVE_SYS_WAIT_H
+#error expected to have HAVE_SYS_WAIT_H
+#endif
+
+#ifndef HAVE_TERMIOS_H
+#error expected to have HAVE_TERMIOS_H
+#endif
+
+#ifndef HAVE_TERM_H
+#error expected to have HAVE_TERM_H
+#endif
+
+#ifndef HAVE_TGETENT
+#error expected to have HAVE_TGETENT
+#endif
+
+#ifndef HAVE_TPUTS
+#error expected to have HAVE_TPUTS
+#endif
+
+#ifndef HAVE_UINT16_T
+#error expected to have HAVE_UINT16_T
+#endif
+
+#ifndef HAVE_UINT32_T
+#error expected to have HAVE_UINT32_T
+#endif
+
+#ifndef HAVE_UINT64_T
+#error expected to have HAVE_UINT64_T
+#endif
+
+#ifndef HAVE_UINT8_T
+#error expected to have HAVE_UINT8_T
+#endif
+
+#ifndef HAVE_UINTPTR_T
+#error expected to have HAVE_UINTPTR_T
+#endif
+
+#ifndef HAVE_UNISTD_H
+#error expected to have HAVE_UNISTD_H
+#endif
+
+#ifndef HAVE_UTIME
+#error expected to have HAVE_UTIME
+#endif
+
+#ifndef HAVE_UTIME_H
+#error expected to have HAVE_UTIME_H
+#endif
+
+#ifndef HAVE_VPRINTF
+#error expected to have HAVE_VPRINTF
+#endif
+
+#ifndef HAVE_VSNPRINTF
+#error expected to have HAVE_VSNPRINTF
+#endif
+
+#ifndef HAVE_WAIT
+#error expected to have HAVE_WAIT
+#endif
+
+#ifndef HAVE_WAITPID
+#error expected to have HAVE_WAITPID
+#endif
+
+#ifndef HAVE_XRENDERCREATECURSOR
+#error expected to have HAVE_XRENDERCREATECURSOR
+#endif
+
+#ifndef SIZEOF_INT
+#error expected to have SIZEOF_INT
+#endif
+
+#ifndef SIZEOF_LONG
+#error expected to have SIZEOF_LONG
+#endif
+
+#ifndef SIZEOF_LONG_LONG
+#error expected to have SIZEOF_LONG_LONG
+#endif
+
+#ifndef SIZEOF_SHORT_INT
+#error expected to have SIZEOF_SHORT_INT
+#endif
+
+#ifndef SIZEOF_VOID_P
+#error expected to have SIZEOF_VOID_P
+#endif
+
+#ifndef STDC_HEADERS
+#error expected to have STDC_HEADERS
+#endif
+
+#endif /* X11 */
 
 /* end of sample code. */
 

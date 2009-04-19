@@ -43,11 +43,11 @@ noinst_PROGRAMS = expression$(EXEEXT) dctest$(EXEEXT) codecs$(EXEEXT) \
 	shutter$(EXEEXT) splitter$(EXEEXT) switcher$(EXEEXT) \
 	tabbook$(EXEEXT) ratio$(EXEEXT)
 subdir = .
-DIST_COMMON = README $(am__configure_deps) \
-	$(srcdir)/../../config.guess $(srcdir)/../../config.sub \
-	$(srcdir)/../../depcomp $(srcdir)/../../install-sh \
-	$(srcdir)/../../missing $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure
+DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
+	$(srcdir)/../config.sub $(srcdir)/../depcomp \
+	$(srcdir)/../install-sh $(srcdir)/../missing \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(top_srcdir)/configure
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -148,7 +148,7 @@ am_wizard_OBJECTS = wizard.$(OBJEXT)
 wizard_OBJECTS = $(am_wizard_OBJECTS)
 wizard_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/../../depcomp
+depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -301,6 +301,7 @@ sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
+top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 expression_SOURCES = expression.cpp
