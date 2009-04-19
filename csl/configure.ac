@@ -683,14 +683,16 @@ then
       #include <ncurses.h>
       #endif
       #endif])
-  if test "x$curses_term_h" = "xno"
-  then
-    AC_MSG_ERROR([Header file "term.h" or "ncurses/term.h" not available])
-  fi
+# if test "x$curses_term_h" = "xno"
+# then
+#   AC_MSG_ERROR([Header file "term.h" or "ncurses/term.h" not available])
+# fi
 
+# if tgetent is available then I maybe do not need term.c or ncurses/term.h
   AC_CHECK_FUNCS([tgetent],
     AC_DEFINE(HAVE_TGETENT, [1], [Function tgetent available]),
     AC_MSG_ERROR([Function "tgetent" not available]))
+
   AC_CHECK_FUNCS([tputs],
     AC_DEFINE(HAVE_TPUTS, [1], [Function tputs available]),
     AC_MSG_ERROR([Function "tputs" not available]))

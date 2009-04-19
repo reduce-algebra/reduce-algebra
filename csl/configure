@@ -20514,13 +20514,12 @@ _ACEOF
 fi
 
 
-  if test "x$curses_term_h" = "xno"
-  then
-    { { $as_echo "$as_me:$LINENO: error: Header file \"term.h\" or \"ncurses/term.h\" not available" >&5
-$as_echo "$as_me: error: Header file \"term.h\" or \"ncurses/term.h\" not available" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
+# if test "x$curses_term_h" = "xno"
+# then
+#   AC_MSG_ERROR([Header file "term.h" or "ncurses/term.h" not available])
+# fi
 
+# if tgetent is available then I maybe do not need term.c or ncurses/term.h
 
 for ac_func in tgetent
 do
@@ -20629,6 +20628,7 @@ $as_echo "$as_me: error: Function \"tgetent\" not available" >&2;}
    { (exit 1); exit 1; }; }
 fi
 done
+
 
 
 for ac_func in tputs
