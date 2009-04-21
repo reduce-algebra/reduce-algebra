@@ -134,6 +134,7 @@
 ./csl/check-copies.sh
 ./csl/compile
 ./csl/config.guess
+./csl/config.h.in
 ./csl/config.sub
 ./csl/configure
 ./csl/configure.ac
@@ -1403,6 +1404,12 @@
 ./csl/install-sh
 ./csl/libwindow.h
 ./csl/ltmain.sh
+./csl/m4
+./csl/m4/libtool.m4
+./csl/m4/ltoptions.m4
+./csl/m4/ltsugar.m4
+./csl/m4/ltversion.m4
+./csl/m4/lt~obsolete.m4
 ./csl/missing
 ./csl/profile.dat
 ./csl/reduce.doc
@@ -3178,7 +3185,6 @@
 ./psl/psl-cygwin32
 ./psl/psl-cygwin32/xport.pat
 ./psl/psl-eeepc
-./psl/psl-eeepc/psl
 ./psl/psl-eeepc/xport.pat
 ./psl/psl-hpux
 ./psl/psl-hpux/xport.pat
@@ -3245,6 +3251,7 @@
 ./scripts/README-BIN
 ./scripts/addlicense.c
 ./scripts/cfdevel.sh
+./scripts/csl-sanity-check.sh
 ./scripts/dist.sh
 ./scripts/findhost.sh
 ./scripts/findos.sh
