@@ -48,7 +48,7 @@ fasl=red
 
 if test -f psl/64
 then
-STORE=2000
+STORE=600
 else
 STORE=64000000
 fi
