@@ -18450,15 +18450,15 @@ printf("Hello\n");
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
 case "(($ac_try" in
   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
   *) ac_try_echo=$ac_try;;
 esac
 eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
 $as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
+  (eval "$ac_link") 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -18467,7 +18467,10 @@ $as_echo "$ac_try_echo") >&5
   (exit $ac_status); } && {
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
   { $as_echo "$as_me:$LINENO: Using -m32 to force 32-bit compilation" >&5
 $as_echo "$as_me: Using -m32 to force 32-bit compilation" >&6;}
         CXXFLAGS="$CXXFLAGS -m32"
@@ -18481,7 +18484,9 @@ sed 's/^/| /' conftest.$ac_ext >&5
 $as_echo "$as_me: This version of gcc does not accept -m32" >&6;}
 fi
 
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
   else
     { $as_echo "$as_me:$LINENO: --with-m32 specified but not using gcc" >&5
 $as_echo "$as_me: --with-m32 specified but not using gcc" >&6;}
@@ -18511,15 +18516,15 @@ printf("Hello\n");
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
 case "(($ac_try" in
   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
   *) ac_try_echo=$ac_try;;
 esac
 eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
 $as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
+  (eval "$ac_link") 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -18528,7 +18533,10 @@ $as_echo "$ac_try_echo") >&5
   (exit $ac_status); } && {
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
   { $as_echo "$as_me:$LINENO: Using -m64 to force 64-bit compilation" >&5
 $as_echo "$as_me: Using -m64 to force 64-bit compilation" >&6;}
        CXXFLAGS="$CXXFLAGS -m64"
@@ -18542,7 +18550,9 @@ sed 's/^/| /' conftest.$ac_ext >&5
 $as_echo "$as_me: This version of gcc does not accept -m64" >&6;}
 fi
 
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
   else
     { $as_echo "$as_me:$LINENO: --with-m64 specified but not using gcc" >&5
 $as_echo "$as_me: --with-m64 specified but not using gcc" >&6;}
@@ -18994,15 +19004,15 @@ printf("Hello\n");
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
 case "(($ac_try" in
   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
   *) ac_try_echo=$ac_try;;
 esac
 eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
 $as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
+  (eval "$ac_link") 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -19011,7 +19021,10 @@ $as_echo "$ac_try_echo") >&5
   (exit $ac_status); } && {
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
   fpic_available="yes"
 else
   $as_echo "$as_me: failed program was:" >&5
@@ -19020,7 +19033,9 @@ sed 's/^/| /' conftest.$ac_ext >&5
 	fpic_available="no"
 fi
 
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
     CFLAGS="$OLDCFLAGS"
   else
     fpic_available="no"
@@ -19049,15 +19064,15 @@ printf("Hello\n");
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
 case "(($ac_try" in
   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
   *) ac_try_echo=$ac_try;;
 esac
 eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
 $as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
+  (eval "$ac_link") 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -19066,7 +19081,10 @@ $as_echo "$ac_try_echo") >&5
   (exit $ac_status); } && {
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
   CXXFLAGS="$CXXFLAGS -mt"
 else
   $as_echo "$as_me: failed program was:" >&5
@@ -19075,7 +19093,9 @@ sed 's/^/| /' conftest.$ac_ext >&5
 	CFLAGS="$OLDCFLAGS"
 fi
 
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
 fi
 
 if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"

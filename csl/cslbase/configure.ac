@@ -642,8 +642,8 @@ then
   then
      OLDCFLAGS="$CFLAGS"
      CFLAGS="$CFLAGS -m32"
-     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("Hello\n");]])],
+     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                     [[printf("Hello\n");]])],
        [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])
         CXXFLAGS="$CXXFLAGS -m32"
         LDFLAGS="$LDFLAGS -m32"],
@@ -663,8 +663,8 @@ then
   then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -m64"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                       [[printf("Hello\n");]])],
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                    [[printf("Hello\n");]])],
       [AC_MSG_NOTICE([Using -m64 to force 64-bit compilation])
        CXXFLAGS="$CXXFLAGS -m64"
        LDFLAGS="$LDFLAGS -m64"],
@@ -804,7 +804,7 @@ then
   then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -fPIC"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                      [[printf("Hello\n");]])],
        [fpic_available="yes"],
        [fpic_available="no"])
@@ -826,10 +826,10 @@ then
 # such a flag is accepted and if so I will use it.
   OLDCFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mt"
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("Hello\n");]])],
-                    [CXXFLAGS="$CXXFLAGS -mt"],
-                    [CFLAGS="$OLDCFLAGS"])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                  [[printf("Hello\n");]])],
+                 [CXXFLAGS="$CXXFLAGS -mt"],
+                 [CFLAGS="$OLDCFLAGS"])
 fi
 
 if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"

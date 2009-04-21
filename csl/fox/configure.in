@@ -240,6 +240,8 @@ case $host in
     ;;
 esac
 
+AC_CONFIG_MACRO_DIR([m4])
+
 dnl Checks for programs.
 AC_PROG_MAKE_SET
 AC_PROG_CC
@@ -452,7 +454,13 @@ else
     XFTCFLAGS=`$XFT_CONFIG --cflags`
     XFTLIBS=`$XFT_CONFIG --libs`
   else
-    AC_MSG_ERROR([*** Xft not detected])
+    CPPFLAGS="${CPPFLAGS} -I/usr/include/freetype2"
+    AC_CHECK_HEADER([X11/Xft/Xft.h])
+    AC_SEARCH_LIBS([XRenderCreatePicture],[Xrender])
+    AC_SEARCH_LIBS([FcInit],[fontconfig])
+    AC_SEARCH_LIBS([deflate],[z])
+    AC_SEARCH_LIBS([FT_Init_FreeType],[freetype])
+    AC_SEARCH_LIBS([XftInit],[Xft])
   fi
 fi
 saved_cppflags="${CXXFLAGS}"
@@ -808,4 +816,5 @@ echo "Configure finished!"
 echo "              Do:  'make' to compile FOX."
 echo "            Then:  'make install' to install it."
 echo ""
+
 
