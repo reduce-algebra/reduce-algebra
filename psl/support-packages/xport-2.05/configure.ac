@@ -177,8 +177,8 @@ if test "x$GCC" = "xyes"; then
    OLDLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS -m32"
    LDFLAGS="$LDFLAGS -m32"
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                   [[printf("Hello\n");]])],
    [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])],
    [CPPFLAGS="$OLDCPPFLAGS"
     LDFLAGS="$OLDLDFLAGS"
