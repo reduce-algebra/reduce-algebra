@@ -172,6 +172,7 @@
  (libreduce     "libreduce"                                  csl psl)
  (qepcad        "redlog/qepcad"                              csl psl)
  (utf8          "utf8"                                       csl psl)
+ (rd            "rd"                                         csl psl)
 )
 
 % End of configuration data
