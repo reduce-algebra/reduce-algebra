@@ -539,11 +539,11 @@ procedure sf_foldgcd(fl);
    % fold gcd. fl is a non-empty list of SF.
    if null cdr fl then car fl else gcdf(car fl,sf_foldgcd cdr fl);
 
-procedure sf_coeffs(f,x);
-   % Coefficients. f is a not null SF. Returns a not dense list of
-   % coefficients.
-   if not null f then      
-      if domainp f or mvar f neq x then {f} else lc f . sf_coeffs(red f,x);
+%% procedure sf_coeffs(f,x);
+%%    % Coefficients. f is a not null SF. Returns a not dense list of
+%%    % coefficients.
+%%    if not null f then      
+%%       if domainp f or mvar f neq x then {f} else lc f . sf_coeffs(red f,x);
 
 procedure sf_densecoeffs(f,x);
    % Dense coefficient list.

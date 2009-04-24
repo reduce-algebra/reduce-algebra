@@ -1081,19 +1081,19 @@ procedure atree_tvyield(tt);
 procedure atree_print(tt);
 for each e in atree_print1(tt,0) do ioto_tprin2t e;
 
-procedure atree_print1(tt,l2sfn);
-   % acell_tvasstring atree_rootlabel dd;
-   % atree_print1(tt,nil);
-   % l2sfn is a function which converts a label to a string. returns a
-   % list of strings.
-   begin scalar childl, rootlabel;
-      childl := atree_childlist(tt);
-      rootlabel := atree_rootlabel(tt);
-      if null childl then %return %{apply1(l2sfn,rootlabel)};
-      return {acell_tvasstring rootlabel};
-      return for each s in childl collect
-	 (acell_tvasstring rootlabel . ("---" . atree_print1(s,l2sfn)))
-   end;
+%% procedure atree_print1(tt,l2sfn);
+%%    % acell_tvasstring atree_rootlabel dd;
+%%    % atree_print1(tt,nil);
+%%    % l2sfn is a function which converts a label to a string. returns a
+%%    % list of strings.
+%%    begin scalar childl, rootlabel;
+%%       childl := atree_childlist(tt);
+%%       rootlabel := atree_rootlabel(tt);
+%%       if null childl then %return %{apply1(l2sfn,rootlabel)};
+%%       return {acell_tvasstring rootlabel};
+%%       return for each s in childl collect
+%% 	 (acell_tvasstring rootlabel . ("---" . atree_print1(s,l2sfn)))
+%%    end;
 
 procedure atree_print1(tt,d);
    % atree_print(dd);
