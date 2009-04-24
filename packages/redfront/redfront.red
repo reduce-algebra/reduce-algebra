@@ -91,7 +91,7 @@ endmodule;  % coloutput;
 module redfront;
 
 fluid '(promptstring!* redfront_switches!* redfront_switches!-this!-sl!*
-   lispsystem!*);
+   lispsystem!* breaklevel!*);
 
 redfront_switches!* := {!*msg,!*output};
 
