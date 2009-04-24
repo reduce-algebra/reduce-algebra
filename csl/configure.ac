@@ -316,6 +316,24 @@ then
   AC_DEFINE(X86, [1], [True if Intel or AMD (32 or 64-bit)])
 fi
 
+# The following may not give the most helpful messages if there is no
+# C compiler at all, so I will do a simple pre-check based on a limited
+# number of plausible choices.
+
+CCOMPILER=none
+AC_CHECK_PROGS(CCOMPILER, [gcc cc $CC])
+CXXCOMPILER=none
+AC_CHECK_PROGS(CXXCOMPILER, [g++ CC $CXX])
+
+if test "x$CCOMPILER" = "xnone" || test "x$CXXCOMPILER" = "xnone"
+then
+   AC_MSG_WARN([You need a C compiler and a C++ compiler installed])
+   AC_MSG_WARN([and the most obvious ones do not seem to be present.])
+   AC_MSG_WARN([If you do not have a compiler you probably do not have])
+   AC_MSG_WARN([development libraries (eg for X, Xft, curses, etc etc])
+   AC_MSG_WARN([either. I will let a further test check more carefully])
+fi
+
 old_CFLAGS="$CFLAGS"
 old_CXXFLAGS="$CXXFLAGS"
 AC_MSG_NOTICE([Looking for C pre-processor])
@@ -347,7 +365,7 @@ then
   OLDLDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -Wl,--hash-style=both"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("Hello\n");]])],
+                                  [[printf("\n");]])],
     [AC_MSG_NOTICE(Will use --hash-style=both)],
     [LDFLAGS="$OLDLDFLAGS"
      AC_MSG_NOTICE(--hash-style=both not available)])
@@ -361,7 +379,7 @@ then
      OLDCFLAGS="$CFLAGS"
      CFLAGS="$CFLAGS -m32"
      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("Hello\n");]])],
+                                        [[printf("\n");]])],
        [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])
         CXXFLAGS="$CXXFLAGS -m32"
         LDFLAGS="$LDFLAGS -m32"],
@@ -380,7 +398,7 @@ then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -m64"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                       [[printf("Hello\n");]])],
+                                       [[printf("\n");]])],
       [AC_MSG_NOTICE([Using -m64 to force 64-bit compilation])
        CXXFLAGS="$CXXFLAGS -m64"
        LDFLAGS="$LDFLAGS -m64"],
@@ -413,7 +431,7 @@ then
       OLDLDFLAGS="$LDFLAGS"
       LDFLAGS="$LDFLAGS -rdynamic"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+                                      [[printf("\n");]])],
         [rdynamic_available="yes"],
         [LDFLAGS="$OLDLDFLAGS"
         rdynamic_available="no"])
@@ -434,7 +452,7 @@ then
     OLDLDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("Hello\n");]])],
+                                    [[printf("\n");]])],
       [framework_available="yes"],
       [LDFLAGS="$OLDLDFLAGS"
       framework_available="no"])
@@ -457,7 +475,7 @@ then
       OLDCFLAGS="$CFLAGS"
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+                                      [[printf("\n");]])],
         [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
          AC_MSG_NOTICE([MacOS10.5 SDK found])
          sysroot="/Developer/SDKs/MacOSX10.5.sdk"],
@@ -468,7 +486,7 @@ then
         AC_MSG_NOTICE([Checking for OSX10.4u framework])
         CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("Hello\n");]])],
+                                        [[printf("\n");]])],
           [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
            AC_MSG_NOTICE([MacOS10.4u SDK found])
            sysroot="/Developer/SDKs/MacOSX10.4u"],
@@ -478,7 +496,7 @@ then
       OLDCFLAGS="$CFLAGS"
       CFLAGS="$CFLAGS -arch ppc -arch i386"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+                                      [[printf("\n");]])],
         [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
          LDFLAGS="$LDFLAGS -arch ppc -arch i386"
          fat_support_available="yes"],
@@ -497,7 +515,7 @@ then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -fPIC"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("Hello\n");]])],
+                                     [[printf("\n");]])],
        [fpic_available="yes"],
        [fpic_available="no"])
     CFLAGS="$OLDCFLAGS"
@@ -513,7 +531,7 @@ then
   OLDCFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mt"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("Hello\n");]])],
+                                     [[printf("\n");]])],
                     [CXXFLAGS="$CXXFLAGS -mt"],
                     [CFLAGS="$OLDCFLAGS"])
 fi
@@ -626,6 +644,12 @@ AC_CHECK_LIB(pthread, pthread_create)
 
 LIBS="$XLIBS $LIBS"
 
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                [[printf("\n");]])],
+    [],
+    [AC_MSG_ERROR([Unable to link with X libraries. Please install them])])
+
+
 if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"
 then
   AC_CHECK_HEADER(termios.h,
@@ -701,11 +725,16 @@ fi
 
 if test "x$solaris" != "xyes" && test "x$windows_build" != "xyes" 
 then
+
+# I am not certain how current the avoidance of these tests on Solaris is,
+# and it may reflect issues that are now in the past!
+
 AC_SEARCH_LIBS(XRenderCreateCursor, XRender,
   [AC_DEFINE(HAVE_XRENDERCREATECURSOR, [1], [Function XRenderCreateCursor available])],
   [AC_MSG_ERROR([Function "XRenderCreateCursor" not available])])
 
 AC_SEARCH_LIBS(XcursorImageCreate, Xcursor)
+AC_SEARCH_LIBS(XRRQueryVersion, Xrandr)
 
 fi
 
@@ -763,7 +792,7 @@ AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
 save_cross=cross_compiling
 cross_compiling=no
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("Hello\n"); return 0;]])],
+                               [[printf("\n"); return 0;]])],
               [can_run_executables="yes"],
               [can_run_executables="no"],
               [can_run_executables="no"])
@@ -805,7 +834,7 @@ AC_CHECK_FUNCS([vsnprintf sysctlbyname])
 save_cross=cross_compiling
 cross_compiling=no
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("Hello\n"); return 0;]])],
+                               [[printf("\n"); return 0;]])],
               [can_run_executables="yes"],
               [can_run_executables="no"],
               [can_run_executables="no"])
@@ -834,7 +863,7 @@ fi
 save_cross=cross_compiling
 cross_compiling=no
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("Hello\n"); return 0;]])],
+                               [[printf("\n"); return 0;]])],
               [can_run_executables="yes"],
               [can_run_executables="no"],
               [can_run_executables="no"])

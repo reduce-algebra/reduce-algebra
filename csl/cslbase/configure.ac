@@ -622,7 +622,7 @@ then
   OLDLDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -Wl,--hash-style=both"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("Hello\n");]])],
+                                  [[printf("\n");]])],
     [AC_MSG_NOTICE(Will use --hash-style=both)],
     [LDFLAGS="$OLDLDFLAGS"
      AC_MSG_NOTICE(--hash-style=both not available)])
@@ -643,7 +643,7 @@ then
      OLDCFLAGS="$CFLAGS"
      CFLAGS="$CFLAGS -m32"
      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("Hello\n");]])],
+                                     [[printf("\n");]])],
        [AC_MSG_NOTICE([Using -m32 to force 32-bit compilation])
         CXXFLAGS="$CXXFLAGS -m32"
         LDFLAGS="$LDFLAGS -m32"],
@@ -664,7 +664,7 @@ then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -m64"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("Hello\n");]])],
+                                    [[printf("\n");]])],
       [AC_MSG_NOTICE([Using -m64 to force 64-bit compilation])
        CXXFLAGS="$CXXFLAGS -m64"
        LDFLAGS="$LDFLAGS -m64"],
@@ -697,7 +697,7 @@ then
       OLDLDFLAGS="$LDFLAGS"
       LDFLAGS="$LDFLAGS -rdynamic"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+                                      [[printf("\n");]])],
         [rdynamic_available="yes"],
 # This test behaves as if it succeeded if gcc did not actually refuse to
 # work if given a flag "-rdynamic", but it seems that it also lets through
@@ -725,7 +725,7 @@ then
     OLDLDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -framework Carbon -framework CoreServices -framework ApplicationServices"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                    [[printf("Hello\n");]])],
+                                    [[printf("\n");]])],
       [framework_available="yes"],
       [LDFLAGS="$OLDLDFLAGS"
       framework_available="no"])
@@ -758,7 +758,7 @@ then
       OLDCFLAGS="$CFLAGS"
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+                                      [[printf("\n");]])],
         [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
          AC_MSG_NOTICE([MacOS10.5 SDK found])
          sysroot="/Developer/SDKs/MacOSX10.5.sdk"],
@@ -769,7 +769,7 @@ then
         AC_MSG_NOTICE([Checking for OSX10.4u framework])
         CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("Hello\n");]])],
+                                        [[printf("\n");]])],
           [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
            AC_MSG_NOTICE([MacOS10.4u SDK found])
            sysroot="/Developer/SDKs/MacOSX10.4u"],
@@ -779,7 +779,7 @@ then
       OLDCFLAGS="$CFLAGS"
       CFLAGS="$CFLAGS -arch ppc -arch i386"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
+                                      [[printf("\n");]])],
         [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
          LDFLAGS="$LDFLAGS -arch ppc -arch i386"
          fat_support_available="yes"],
@@ -805,7 +805,7 @@ then
     OLDCFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -fPIC"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                     [[printf("Hello\n");]])],
+                                     [[printf("\n");]])],
        [fpic_available="yes"],
        [fpic_available="no"])
     CFLAGS="$OLDCFLAGS"
@@ -827,7 +827,7 @@ then
   OLDCFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mt"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("Hello\n");]])],
+                                  [[printf("\n");]])],
                  [CXXFLAGS="$CXXFLAGS -mt"],
                  [CFLAGS="$OLDCFLAGS"])
 fi
@@ -1057,8 +1057,9 @@ fi
 
 if test "x$solaris" != "xyes"
 then
-AC_CHECK_LIB(Xrender, XRenderCreateCursor)
-AC_CHECK_LIB(Xcursor, XcursorImageCreate)
+AC_CHECK_LIBS(XRenderCreateCursor, Xrender)
+AC_CHECK_LIBS(XcursorImageCreate, Xcursor)
+AC_CHECK_LIBS(XRRQueryVersion, Xrandr) 
 fi
 
 # Checks for header files.
@@ -1158,7 +1159,7 @@ AC_CHECK_FUNCS([vsnprintf sysctlbyname])
 save_cross=cross_compiling
 cross_compiling=no
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                               [[printf("Hello\n"); return 0;]])],
+                               [[printf("\n"); return 0;]])],
               [can_run_executables="yes"],
               [can_run_executables="no"],
               [can_run_executables="no"])
