@@ -93,7 +93,8 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlhqetfcfast !*rlhqevb !*rlhqevarsel !*rlhqevarselx !*rlhqedim0
    !*rlhqetheory !*rlhqegbred !*rlhqeconnect !*rlhqestrconst !*rlhqegbdimmin
    !*rlhqegen !*cgbfaithful !*rlqeaprecise !*rlqefilterbounds !*rlpos
-   !*rlsifaco !*rlqeans !*rlqelog !*rlqeprecise !*rlqevarseltry);
+   !*rlsifaco !*rlqeans !*rlqelog rlqelog!* !*rlqeprecise !*rlqevarseltry
+   !*msg);
 
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE   
@@ -238,42 +239,42 @@ put('ofsf,'rl_lengthat,'ofsf_lengthat);
 put('ofsf,'rl_prepterm,'prepf);
 put('ofsf,'rl_simpterm,'ofsf_simpterm);
 
-algebraic infix equal;
+% algebraic infix equal;
 put('equal,'ofsf_simpfn,'ofsf_chsimpat);
-put('equal,'number!-of!-args,2);
+% put('equal,'number!-of!-args,2);
 
-algebraic infix neq;
+% algebraic infix neq;
 put('neq,'ofsf_simpfn,'ofsf_chsimpat);
-put('neq,'number!-of!-args,2);
+% put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
-newtok '((!< !>) neq);
+newtok '((!< !>) neq) where !*msg=nil;
 if rl_texmacsp() then
    put('neq,'fancy!-infix!-symbol,"\,\neq\, ");
 
-algebraic infix leq;
+% algebraic infix leq;
 put('leq,'ofsf_simpfn,'ofsf_chsimpat);
-put('leq,'number!-of!-args,2);
+% put('leq,'number!-of!-args,2);
 put('leq,'rtypefn,'quotelog);
 if rl_texmacsp() then
    put('leq,'fancy!-infix!-symbol,"\,\leq\, ");
 
-algebraic infix geq;
+% algebraic infix geq;
 put('geq,'ofsf_simpfn,'ofsf_chsimpat);
-put('geq,'number!-of!-args,2);
+% put('geq,'number!-of!-args,2);
 put('geq,'rtypefn,'quotelog);
 if rl_texmacsp() then
    put('geq,'fancy!-infix!-symbol,"\,\geq\, ");
 
-algebraic infix lessp;
+% algebraic infix lessp;
 put('lessp,'ofsf_simpfn,'ofsf_chsimpat);
-put('lessp,'number!-of!-args,2);
+% put('lessp,'number!-of!-args,2);
 put('lessp,'rtypefn,'quotelog);
 if rl_texmacsp() then
    put('lessp,'fancy!-infix!-symbol,"\,<\, ");
 
-algebraic infix greaterp;
+% algebraic infix greaterp;
 put('greaterp,'ofsf_simpfn,'ofsf_chsimpat);
-put('greaterp,'number!-of!-args,2);
+% put('greaterp,'number!-of!-args,2);
 put('greaterp,'rtypefn,'quotelog);
 if rl_texmacsp() then
    put('greaterp,'fancy!-infix!-symbol,"\,>\, ");
