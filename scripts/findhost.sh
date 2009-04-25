@@ -65,7 +65,7 @@ shift
 # please rememeber to use GNU make not the vanilla one.
 host=`echo $host | $SED -e s/amd64/x86_64/`
 
-if test "x$1"=="x--short"
+if test "x$1" = "x--short"
 then
   variant=`$here/findos.sh short`
 else
