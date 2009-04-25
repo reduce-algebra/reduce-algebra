@@ -2,7 +2,8 @@
 
 # Find name for a directory to build stuff in.
 # Usage
-#   ./findhost.sh $host <args to ./configure>
+#     ./findhost.sh $host <args to ./configure>
+# OR  ./findhost.sh $host --short
 
 # The idea here is that I want to name the directory by the Linux
 # distribution or other OS variant, and tag on parts that indicate
@@ -59,12 +60,17 @@ here=${c%/*}
 host=$1
 shift
 
-# The following line may help on FreeBSD whetre AC_CANONICAL_HOST
+# The following line may help on FreeBSD where AC_CANONICAL_HOST
 # and config.guess apppear to have differing ideas. And in that case
 # please rememeber to use GNU make not the vanilla one.
 host=`echo $host | $SED -e s/amd64/x86_64/`
 
-variant=`$here/findos.sh`
+if test "x$1"=="x--short"
+then
+  variant=`$here/findos.sh short`
+else
+  variant=`$here/findos.sh`
+fi
 
 case $host in
 *CYGWIN* | *Cygwin* | *cygwin* | *MINGW* | *MinGW* | *Mingw* | *mingw*)
@@ -86,6 +92,12 @@ then
   host=`echo $host | $SED -e s/-suse-/-pc-/`
   host=`echo $host | $SED -e s/linux-gnu/$variant/`
   host=`echo $host | $SED -e s/apple/$variant/`
+fi
+
+if test "x$1" = "x--short"
+then
+  echo $host
+  exit 0
 fi
 
 debug=
