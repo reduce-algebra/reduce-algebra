@@ -6,10 +6,14 @@
 # for use on Linux where the tests that autoconf does do not detect
 # which distribution I am using.
 #
+# If $1 is "short" then this will omit version information.
+#
 # This code is not properly general. It mostly looks at the file
 # /etc/issue (which an administrator could have altered!) and pattern
 # matches against the cases I happen to have tested. It can thus need
-# checking and extending as new cases become relevant.
+# checking and extending as new cases become relevant. If the utility
+# lsb_release then information from that will be used, and it may be
+# more reliable.
 
 os="unknown"
 
@@ -60,7 +64,7 @@ fi
 
 if test "x$vendor" != "xunknown"
 then
-  if test "x$version" != "xunknown"
+  if test "x$version" != "xunknown" && test "x$1" != "xshort"
   then
     version=`echo $version | sed '-e s/[^:]*:[ \t]*//'`
     os="$vendor$version"
@@ -88,48 +92,96 @@ else
     fi
     case $issue in
     *Red*Hat*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/rh\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="rh"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/rh\\1/'`
+      fi
       ;;
     *SUSE*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/suse\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="suse"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/suse\\1/'`
+      fi
       ;;
     *Fedora*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/fedora\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="fedora"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/fedora\\1/'`
+      fi
       ;;
     *Scientific*Linux*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/scientificlinux\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="scientificlinux"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/scientificlinux\\1/'`
+      fi
       ;;
     *Debian*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/debian\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="debian"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/debian\\1/'`
+      fi
       ;;
     *Ubuntu*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/ubuntu\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="ubuntu"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/ubuntu\\1/'`
+      fi
       ;;
     *Mandriva*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/mandriva\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="mandriva"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/mandriva\\1/'`
+      fi
       ;;
     *Mandrake*)
-      os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/mandrake\\1/'`
+      if test "x$1" = "xshort"
+      then
+        os="mandrake"
+      else
+        os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/mandrake\\1/'`
+      fi
       ;;
     esac
   else
     if test -f /System/Library/CoreServices/SystemVersion.plist
     then
 # For MacOS I will detect the version number and report a code-name for it.
-      case `cat /System/Library/CoreServices/SystemVersion.plist` in
-      *Mac*OS*X*ProductVersion*\<string\>10.2*)
-        os="mac_10.2_jaguar"
-        ;;
-      *Mac*OS*X*ProductVersion*\<string\>10.3*)
-        os="mac_10.3_panther"
-        ;;
-      *Mac*OS*X*ProductVersion*\<string\>10.4*)
-        os="mac_10.4_tiger"
-        ;;
-      *Mac*OS*X*ProductVersion*\<string\>10.5*)
-        os="mac_10.5_leopard"
-        ;;
-      esac
+      if test "x$1" = "xshort"
+      then
+        os="mac"
+      else
+        case `cat /System/Library/CoreServices/SystemVersion.plist` in
+        *Mac*OS*X*ProductVersion*\<string\>10.2*)
+          os="mac_10.2_jaguar"
+          ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.3*)
+          os="mac_10.3_panther"
+          ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.4*)
+          os="mac_10.4_tiger"
+          ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.5*)
+          os="mac_10.5_leopard"
+          ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.6*)
+          os="mac_10.6_snowleopard"
+          ;;
+        esac
+      fi
     else
       os="unknown"
     fi
