@@ -356,6 +356,9 @@
 /* True if we are building with a JIT */
 #undef JIT
 
+/* Binaries will have source included */
+#undef LGPLFILES
+
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK

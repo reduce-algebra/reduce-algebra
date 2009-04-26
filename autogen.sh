@@ -49,12 +49,20 @@ echo "Updating autoconf scripts in $here"
 autoreconf -i -f -v
 
 cd csl
+echo " "
+echo "updating in csl"
 autoreconf -i -f -v
+autoheader --force
 
 cd cslbase
+echo " "
+echo "updating in csl/cslbase"
 autoreconf -i -f -v
+autoheader --force
 
 cd ../fox
+echo " "
+echo "updating in csl/fox"
 # The following two lines may be necessary on some systems?
 rm -f ltmain.sh
 touch ltmain.sh
@@ -63,13 +71,19 @@ autoreconf -i -f -v
 if test -d ../foxtests
 then
   cd ../foxtests
+  echo " "
+  echo "updating in csl/foxtests"
   autoreconf -i -f -v
 fi
 
 cd ../../psl
+echo " "
+echo "updating in psl"
 autoreconf -i -f -v
 
 cd support-packages/xport-2.05
+echo " "
+echo "updating in psl/support-packages/xport-2.05"
 autoreconf -i -f -v
 
 cd ../../..

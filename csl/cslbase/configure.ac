@@ -72,11 +72,14 @@ AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
 AC_ARG_WITH(lgplfiles,
    AC_HELP_STRING([--with-lgplfiles],
-                  [Make binaries safe to distribute wrt LGPL]),
+                  [Make binaries even safer to distribute wrt LGPL]),
    [],
    [with_lgplfiles="no"])
 
-AC_MSG_NOTICE([--with-lgplfile = $with_lgplfiles])
+if test "x$with_lgplfiles" != "xno"
+then
+  AC_DEFINE(LGPLFILES, [1], [Binaries will have source included])
+fi
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
@@ -1328,7 +1331,8 @@ then
   AC_MSG_NOTICE([** library cygwin1.dll, which is subject to   **])
   AC_MSG_NOTICE([** the GPL. Beware license consequences.      **])
   AC_MSG_NOTICE([** Specifically do not distribute what you    **])
-  AC_MSG_NOTICE([** build in this mode.                        **])
+  AC_MSG_NOTICE([** build in this mode without checking the    **])
+  AC_MSG_NOTICE([** cygwin license conditions carefully.       **])
   AC_MSG_NOTICE([************************************************])
 fi
 
@@ -1337,8 +1341,11 @@ then
   AC_MSG_NOTICE(["--with-lgplfiles=no" used. Do not distribute any])
   AC_MSG_NOTICE([binaries made here without understanding and abiding by])
   AC_MSG_NOTICE([the terms of the Lesser GNU Public License version 2.1])
-  AC_MSG_NOTICE([If you do not specify "--with-lgplfiles=no" you are safe])
+  AC_MSG_NOTICE([If you specify "--with-lgplfiles=yes" you are safe to])
   AC_MSG_NOTICE([distributing just binaries, but building will be slower.])
+  AC_MSG_NOTICE([Otherwise if you ship your own binary you must make])
+  AC_MSG_NOTICE([source of FOX available and at least object code for])
+  AC_MSG_NOTICE([the rest available. On Sourceforge we do that.])
 fi
 
 AC_OUTPUT

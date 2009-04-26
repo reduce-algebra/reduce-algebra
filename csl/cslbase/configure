@@ -1450,7 +1450,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-lgplfiles        Make binaries safe to distribute wrt LGPL
+  --with-lgplfiles        Make binaries even safer to distribute wrt LGPL
   --with-mingw64          Try to cross-build using 64-bit mingw
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
@@ -2453,8 +2453,14 @@ else
 fi
 
 
-{ $as_echo "$as_me:$LINENO: --with-lgplfile = $with_lgplfiles" >&5
-$as_echo "$as_me: --with-lgplfile = $with_lgplfiles" >&6;}
+if test "x$with_lgplfiles" != "xno"
+then
+
+cat >>confdefs.h <<\_ACEOF
+#define LGPLFILES 1
+_ACEOF
+
+fi
 
 
 # Check whether --with-mingw64 was given.
@@ -18828,8 +18834,10 @@ $as_echo "$as_me: ** library cygwin1.dll, which is subject to   **" >&6;}
 $as_echo "$as_me: ** the GPL. Beware license consequences.      **" >&6;}
   { $as_echo "$as_me:$LINENO: ** Specifically do not distribute what you    **" >&5
 $as_echo "$as_me: ** Specifically do not distribute what you    **" >&6;}
-  { $as_echo "$as_me:$LINENO: ** build in this mode.                        **" >&5
-$as_echo "$as_me: ** build in this mode.                        **" >&6;}
+  { $as_echo "$as_me:$LINENO: ** build in this mode without checking the    **" >&5
+$as_echo "$as_me: ** build in this mode without checking the    **" >&6;}
+  { $as_echo "$as_me:$LINENO: ** cygwin license conditions carefully.       **" >&5
+$as_echo "$as_me: ** cygwin license conditions carefully.       **" >&6;}
   { $as_echo "$as_me:$LINENO: ************************************************" >&5
 $as_echo "$as_me: ************************************************" >&6;}
 fi
@@ -18842,10 +18850,16 @@ $as_echo "$as_me: \"--with-lgplfiles=no\" used. Do not distribute any" >&6;}
 $as_echo "$as_me: binaries made here without understanding and abiding by" >&6;}
   { $as_echo "$as_me:$LINENO: the terms of the Lesser GNU Public License version 2.1" >&5
 $as_echo "$as_me: the terms of the Lesser GNU Public License version 2.1" >&6;}
-  { $as_echo "$as_me:$LINENO: If you do not specify \"--with-lgplfiles=no\" you are safe" >&5
-$as_echo "$as_me: If you do not specify \"--with-lgplfiles=no\" you are safe" >&6;}
+  { $as_echo "$as_me:$LINENO: If you specify \"--with-lgplfiles=yes\" you are safe to" >&5
+$as_echo "$as_me: If you specify \"--with-lgplfiles=yes\" you are safe to" >&6;}
   { $as_echo "$as_me:$LINENO: distributing just binaries, but building will be slower." >&5
 $as_echo "$as_me: distributing just binaries, but building will be slower." >&6;}
+  { $as_echo "$as_me:$LINENO: Otherwise if you ship your own binary you must make" >&5
+$as_echo "$as_me: Otherwise if you ship your own binary you must make" >&6;}
+  { $as_echo "$as_me:$LINENO: source of FOX available and at least object code for" >&5
+$as_echo "$as_me: source of FOX available and at least object code for" >&6;}
+  { $as_echo "$as_me:$LINENO: the rest available. On Sourceforge we do that." >&5
+$as_echo "$as_me: the rest available. On Sourceforge we do that." >&6;}
 fi
 
 cat >confcache <<\_ACEOF
