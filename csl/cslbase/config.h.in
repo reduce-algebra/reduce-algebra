@@ -121,14 +121,8 @@
 /* Define to 1 if you have the `socket' library (-lsocket). */
 #undef HAVE_LIBSOCKET
 
-/* Define to 1 if you have the `Xcursor' library (-lXcursor). */
-#undef HAVE_LIBXCURSOR
-
 /* True Xft is available */
 #undef HAVE_LIBXFT
-
-/* Define to 1 if you have the `Xrender' library (-lXrender). */
-#undef HAVE_LIBXRENDER
 
 /* Define to 1 if `lstat' has the bug that it succeeds when given the
    zero-length file name argument. */

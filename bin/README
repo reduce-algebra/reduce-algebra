@@ -72,6 +72,15 @@ of general use to people who are not suffering problems or debugging new code:
    showmathdemo  tests or demonstrates maths display in the CSL version 
 
 
+At present for the CSL versions there is one further complication. If an
+exact match for your operating system can not be found in the set of installed
+binaries then the first available "soft match" will be tried, with a message
+displayed to explain. There is no clever arrangement to cause near matches
+to be tested for in a special order. The idea behind this is so that eg if
+you had binaries for say fedora 9 installed and were actually running a
+different version of fedora (say 10) then the code will TRY the fedora 9
+binary. But in this case it will not replace the script with a faster way
+of accessing the potentially suspect version.
 
 
                                                      Arthur Norman. March 2009
