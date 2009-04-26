@@ -257,10 +257,15 @@ int main(int argc, char *argv[])
     texmacs_mode = 0;
 /*
  * An option "--my-path" just prints the path to the executable
- * and stops. An option "--dump-source FILE" writes out a source file
+ * and stops.
+ * An option "--dump-source FILE" writes out a source file
  * archive to the given place so that LGPL conditions can be satisfied.
  * An option "--help" will send comments about "--dump-source" to stdout
  * in addition to any effect it may have on the application downstream.
+ * Well on considering the LGPL 2.1 again I believe that my "--dump-source"
+ * scheme was over the top and unnecessary. See instead the commentary
+ * elsewhere in this tree about binary licensing. So I will remove the
+ * unnecessary stuff here usually.
  */
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--my-path") == 0)
@@ -268,6 +273,7 @@ int main(int argc, char *argv[])
             exit(0);
         }
 #ifdef PART_OF_FOX
+#ifdef LGPLFILES
         else if (strcmp(argv[i], "--help") == 0)
         {
 #ifdef WIN32
@@ -367,6 +373,7 @@ printf("be familiar to many.\n\n");
             printf("Source archive created as %s\n", destname);
             exit(0);
         }
+#endif /* LGPLFILES */
 #endif /* PART_OF_FOX */
     }
 
