@@ -1057,9 +1057,9 @@ fi
 
 if test "x$solaris" != "xyes"
 then
-AC_CHECK_LIBS(XRenderCreateCursor, Xrender)
-AC_CHECK_LIBS(XcursorImageCreate, Xcursor)
-AC_CHECK_LIBS(XRRQueryVersion, Xrandr) 
+  AC_SEARCH_LIBS(XRenderCreateCursor, Xrender)
+  AC_SEARCH_LIBS(XcursorImageCreate, Xcursor)
+  AC_SEARCH_LIBS(XRRQueryVersion, Xrandr) 
 fi
 
 # Checks for header files.
