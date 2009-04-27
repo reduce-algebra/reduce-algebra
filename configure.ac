@@ -104,7 +104,11 @@ done
 
 if test "x$ok" = "xno"
 then
-  ( ( $srcdir/autogen.sh && eval "$SHELL $srcdir/configure $ac_configure_args" ) ; exit 0 )
+# The INTENT here is that by using exec I will fully leave this level of
+# running configure, and as a result I hope to close the configure script
+# and so when I try to recreate it it will not be in use, and when I restart
+# I will use the new version.
+  exec $SHELL -c "$SHELL $srcdir/scripts/reautogen.sh $ac_configure_args"
 fi
 
 AC_CANONICAL_HOST()

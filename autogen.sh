@@ -46,19 +46,29 @@ here=${c%/*}
 cd $here
 echo "Updating autoconf scripts in $here"
 
-autoreconf -i -f -v
+if ! autoreconf -i -f -v
+then
+  echo "autoreconf failed in $here"
+  exit 1
+fi
 
 cd csl
 echo " "
 echo "updating in csl"
-autoreconf -i -f -v
-autoheader --force
+if ! autoreconf -i -f -v && autoheader --force
+then
+  echo "autoreconf failed in $here/csl"
+  exit 1
+fi
 
 cd cslbase
 echo " "
 echo "updating in csl/cslbase"
-autoreconf -i -f -v
-autoheader --force
+if ! autoreconf -i -f -v && autoheader --force
+then
+  echo "autoreconf failed in $here/csl/cslbase"
+  exit 1
+fi
 
 cd ../fox
 echo " "
@@ -66,25 +76,41 @@ echo "updating in csl/fox"
 # The following two lines may be necessary on some systems?
 rm -f ltmain.sh
 touch ltmain.sh
-autoreconf -i -f -v
+if ! autoreconf -i -f -v
+then
+  echo "autoreconf failed in $here/csl/fox"
+  exit 1
+fi
 
 if test -d ../foxtests
 then
   cd ../foxtests
   echo " "
   echo "updating in csl/foxtests"
-  autoreconf -i -f -v
+  if ! autoreconf -i -f -v
+  then
+    echo "autoreconf failed in $here/csl/foxtests"
+    exit 1
+  fi
 fi
 
 cd ../../psl
 echo " "
 echo "updating in psl"
-autoreconf -i -f -v
+if ! autoreconf -i -f -v
+then
+  echo "autoreconf failed in $here/psl"
+  exit 1
+fi
 
 cd support-packages/xport-2.05
 echo " "
 echo "updating in psl/support-packages/xport-2.05"
-autoreconf -i -f -v
+if ! autoreconf -i -f -v
+then
+  echo "autoreconf failed in $here/psl/support-packages/xport-2.05"
+  exit 1
+fi
 
 cd ../../..
 
