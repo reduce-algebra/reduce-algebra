@@ -52,9 +52,13 @@ else
 # Here I do NOT have an up to date version of autoconf available. So as
 # a fall-back and with some trepidation I will merely re-set date-stamps
 # on the files that are involved.
+  echo "About to touch aclocal.m4"
   find $here/.. -name aclocal.m4 -print | xargs touch
   sleep 1
-  find $here/.. -name Makefile.in -o -name config.h.in -o -name configure -print | xargs touch
+  echo "About to touch Makefile.in, config.h.in and configure"
+  find $here/.. \( -name Makefile.in -o -name config.h.in -o -name configure \) -print | xargs touch
+  echo "datestamps should now be in the right order"
+  echo " "
 fi
 
 exec $here/../configure $*
