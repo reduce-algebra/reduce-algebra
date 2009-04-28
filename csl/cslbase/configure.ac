@@ -57,8 +57,8 @@ AC_COPYRIGHT([Codemist Ltd])
 
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
-# not really verift that 2.57 is still sufficient!
-AC_PREREQ(2.57)
+# not really verift that 2.61 is still sufficient!
+AC_PREREQ(2.61)
 
 # My source file is expected to have "csl.c" in it. This is just a small
 # sanity check in case somebody tries to configure with directories

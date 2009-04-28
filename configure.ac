@@ -2,6 +2,11 @@ AC_INIT([REDUCE], [20080421], [acn1@cam.ac.uk])
 
 AC_COPYRIGHT([The REDUCE project])
 
+# I am going to expect that you have at least this version of
+# autoconf. In general I will build with  the latest version and
+# not really verift that 2.61 is still sufficient!
+AC_PREREQ(2.61)
+
 abssrcdir=`$srcdir/scripts/here.sh`
 
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
