@@ -1,0 +1,10 @@
+## Process this file with autoconf to check your version of "autoconf"
+
+# A C Norman.                                         April 2009
+
+AC_INIT([VERSIONTEST],[1.0])
+
+AC_PREREQ(2.61)
+
+# end of "configver.ac"
+
