@@ -40,7 +40,7 @@ here=${c%/*}
 # lower version numbers. 
 
 libtoolok="no"
-if which libtoolize 2>/dev/null
+if which libtoolize >/dev/null 2>&1
 then
   ltv=`libtoolize --version | head -1`
   case ${ltv##* } in
