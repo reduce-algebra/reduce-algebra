@@ -40,6 +40,36 @@ case $a in
 esac
 
 here=${c%/*}
+
+# Now I try to check that libtoolize is available and that its version
+# is at least 2.2.4. This is done by rejecting versions that seem to have
+# lower version numbers.
+
+libtoolok="no"
+if which libtoolize 2>/dev/null                                                e
+then
+  ltv=`libtoolize --version | head -1`
+  case ${ltv##* } in
+  0.* | 1.* | 2.0.* | 2.1.* | 2.2.1 | 2.2.2 | 2.2.3)
+    ;;
+  *)
+    libtoolok="yes"
+    ;;
+  esac                                                                         n
+fi
+
+fi
+
+if test "libtoolok" = "yes" && autoconf -o /dev/null $here/configver.ac >/dev/null 2>&1
+then
+  echo "autoconf and lintool seem OK"
+else
+  echo "Your version of automake of libtool is older than I like."
+  echo "I can try to build but you might like to consider upgrading"
+  echo "At present I like autoconf 2.61 and libtool 2.2.4 or newer"
+fi
+
+
 here=${here%/*}
 
 if ! test -d $here/cslbuild

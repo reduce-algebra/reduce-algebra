@@ -35,7 +35,26 @@ esac
 
 here=${c%/*}
 
-if autoconf -o /dev/null $here/configver.ac > /dev/null 2>&1
+# Now I try to check that libtoolize is available and that its version
+# is at least 2.2.4. This is done by rejecting versions that seem to have
+# lower version numbers. 
+
+libtoolok="no"
+if which libtoolize 2>/dev/null
+then
+  ltv=`libtoolize --version | head -1`
+  case ${ltv##* } in
+  0.* | 1.* | 2.0.* | 2.1.* | 2.2.1 | 2.2.2 | 2.2.3)
+    ;;
+  *)
+    libtoolok="yes"
+    ;;
+  esac
+fi
+  
+fi
+
+if test "libtoolok" = "yes" && autoconf -o /dev/null $here/configver.ac >/dev/null 2>&1
 then
 # If looks as if we have autoconf installed and it is at least version
 # 2.61, which is what I seem to need at the moment. Just for this time round
