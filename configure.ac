@@ -4,7 +4,7 @@ AC_COPYRIGHT([The REDUCE project])
 
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
-# not really verift that 2.61 is still sufficient!
+# not really verify that 2.61 is still sufficient!
 AC_PREREQ(2.61)
 
 abssrcdir=`$srcdir/scripts/here.sh`
@@ -283,7 +283,7 @@ esac
 
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
-AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([1.9.0 -Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 

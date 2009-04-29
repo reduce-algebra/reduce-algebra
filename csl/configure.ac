@@ -12,7 +12,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([CSLCONFIGTEST],[1.0])
-AM_INIT_AUTOMAKE([-Wall -Wno-portability -Wno-override foreign dist-bzip2])
+AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
@@ -23,7 +23,10 @@ AC_CONFIG_SRCDIR(profile.dat)
 AC_CONFIG_FILES([Makefile])
 
 AC_CONFIG_MACRO_DIR([m4])
-AM_PROG_LIBTOOL
+
+LT_INIT
+LT_PREREQ([2.2.4])
+AC_SUBST([LIBTOOL_DEPS])
 
 AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])
 if test "x$ACLOCAL" = "xno"
@@ -683,7 +686,7 @@ then
   then
     AC_DEFINE([HAVE_TGETENT])
   else
-    AC_MSG_ERROR([curses library containint "tgetent" not available])
+    AC_MSG_ERROR([curses library containing "tgetent" not available])
   fi
 
   curses_term_h="no"

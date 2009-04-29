@@ -35,30 +35,14 @@ esac
 
 here=${c%/*}
 
-# Now I try to check that libtoolize is available and that its version
-# is at least 2.2.4. This is done by rejecting versions that seem to have
-# lower version numbers. 
+cd $here
 
-libtoolok="no"
-if which libtoolize >/dev/null 2>&1
-then
-  ltv=`libtoolize --version | head -1`
-  case ${ltv##* } in
-  0.* | 1.* | 2.0.* | 2.1.* | 2.2.1 | 2.2.2 | 2.2.3)
-    ;;
-  *)
-    libtoolok="yes"
-    ;;
-  esac
-fi
-  
-if test "libtoolok" = "yes" && autoconf -o /dev/null $here/configver.ac >/dev/null 2>&1
+if autoconf -o /dev/null >/dev/null 2>&1
 then
 # If looks as if we have autoconf installed and it is at least version
-# 2.61, which is what I seem to need at the moment. Just for this time round
-# I am going to suppose that if I have a new autoconf then I will also have
-# a new enough automake and libtool. In a while I may upgrade the test here
-# to check them as well.
+# 2.61, which is what I seem to need at the moment.
+# The configure.ac file here arranges to check automake and libtool
+# versions too.
   if ! $here/../autogen.sh
   then
     echo "The autoconf/automake/libtoolize process seems to have failed"

@@ -35,7 +35,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([FOXTESTS],[1.4.21])
-AM_INIT_AUTOMAKE([-Wall -Wno-override -Wno-portability foreign dist-bzip2])
+AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-override -Wno-portability foreign dist-bzip2])
 
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and

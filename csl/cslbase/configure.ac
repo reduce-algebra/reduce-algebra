@@ -47,7 +47,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([CSL],[6.03])
-AM_INIT_AUTOMAKE([-Wall -Wno-portability -Wno-override foreign dist-bzip2])
+AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 
 # Explain that a file "config.h" should be generated

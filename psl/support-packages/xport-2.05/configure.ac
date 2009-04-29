@@ -3,7 +3,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([xport], [2.05])
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([1.9.0 foreign])
 
 # Explain that a file "config.h" should be generated
 # AM_CONFIG_HEADER(config.h)

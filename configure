@@ -1810,7 +1810,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
-# not really verift that 2.61 is still sufficient!
+# not really verify that 2.61 is still sufficient!
 
 
 abssrcdir=`$srcdir/scripts/here.sh`
