@@ -35,6 +35,7 @@ esac
 
 here=${c%/*}
 
+saved=`pwd`
 cd $here
 
 if autoconf -o /dev/null >/dev/null 2>&1
@@ -61,5 +62,7 @@ else
   echo "datestamps should now be in the right order"
   echo " "
 fi
+
+cd $saved
 
 exec $here/../configure $*
