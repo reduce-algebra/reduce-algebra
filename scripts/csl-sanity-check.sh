@@ -46,7 +46,7 @@ here=${c%/*}
 # lower version numbers.
 
 libtoolok="no"
-if which libtoolize 2>/dev/null 
+if which libtoolize >/dev/null 2>&1 
 then
   ltv=`libtoolize --version | head -1`
   case ${ltv##* } in
@@ -61,11 +61,19 @@ fi
 
 if test "libtoolok" = "yes" && autoconf -o /dev/null $here/configver.ac >/dev/null 2>&1
 then
-  echo "autoconf and lintool seem OK"
+  echo "autoconf and libtool seem OK"
 else
   echo "Your version of automake of libtool is older than I like."
   echo "I can try to build but you might like to consider upgrading"
   echo "At present I like autoconf 2.61 and libtool 2.2.4 or newer"
+# Here I will explicitly touch files that otherwise could cause use of
+# autoconf, automake or libtool so that the versions checked out from
+# subversion are used.
+  touch $here/../csl/aclocal.m4
+  sleep 1
+  touch $here/../csl/Makefile.in
+  touch $here/../csl/config.h.in
+  touch $here/../csl/configure
 fi
 
 
