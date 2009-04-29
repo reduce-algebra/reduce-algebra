@@ -52,8 +52,6 @@ then
   esac
 fi
   
-fi
-
 if test "libtoolok" = "yes" && autoconf -o /dev/null $here/configver.ac >/dev/null 2>&1
 then
 # If looks as if we have autoconf installed and it is at least version
