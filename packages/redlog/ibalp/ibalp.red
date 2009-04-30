@@ -813,8 +813,6 @@ procedure ibalp_varsel(f,vl,theo);
    % quantifier-free formula; [theo] is the current theory. Returns a
    % variable.
    begin scalar v; integer n;
-      if not !*rlqevarsel then
- 	 return car sort(vl,'ibalp_ordp);
       if !*ibalpbadvarsel then
 	 return ibalp_badvarsel(f,vl);
       for each pr in cl_termml f do
@@ -822,17 +820,17 @@ procedure ibalp_varsel(f,vl,theo);
 	    v := car pr;
 	    n := cdr pr
 	 >>;
-      return {v} or {car sort(vl,'ibalp_ordp)}
+      return if v then {v} else {car sort(vl,'ibalp_ordp)}
    end;
 
 procedure ibalp_badvarsel(f,vl);
    begin scalar v; integer n;
       for each pr in cl_termml f do
-	 if car pr memq vl and - cdr pr < n then <<
+	 if car pr memq vl and cdr pr < n then <<
 	    v := car pr;
 	    n := cdr pr
 	 >>;
-      return v or car sort(vl,'ibalp_ordp)
+      return if v then {v} else {car sort(vl,'ibalp_ordp)}
    end;
       
 %
