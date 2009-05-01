@@ -47,12 +47,15 @@ load!-package 'rltools;
 
 imports rltools,cl;
 
-fluid '(!*rlverbose !*rlbnfsac !*rlpcprint !*rlsiso);
+fluid '(rl_cid!* !*rlverbose !*rlbnfsac !*rlpcprint !*rlsiso !*msg);
 
 flag('(ibalp),'rl_package);
 
 % Switches
 switch rlpcprint;
+switch rlpcprintall;
+
+on1 'rlpcprintall;
 
 % Parameters
 put('ibalp,'rl_params,'(
@@ -157,13 +160,13 @@ put('equal,'number!-of!-args,2);
 procedure ibalp_priequal(f);
    % Print equal. [f] is of the form $([equal] s t)$. Returns in
    % identifier. Provided that switches [nat] and [rlpcprint] are on:
-   % If $s$ is and identifier and the corresponding uppercase
+   % If $s$ is an identifier and the corresponding uppercase
    % identifier is $S$ is a PC variable, then print $S$. Else returns
    % ['failed] and leave printing to [maprin].
    begin scalar w,rhs;
-      f := reval f;
-      if not !*nat or not !*rlpcprint then
+      if not eqcar(rl_cid!*,'ibalp) or not !*nat or not !*rlpcprint then
       	 return 'failed;
+      f := reval f;
       rhs := caddr f;
       if not eqn(rhs,1) and not eqn(rhs,0) then
 	 return 'failed;
@@ -171,13 +174,16 @@ procedure ibalp_priequal(f);
       if not idp w then
 	 return 'failed;
       w := ibalp_upcase w;
-      if not ibalp_pcvarp w then
+      if not ibalp_pcvarp w and not !*rlpcprintall then
 	 return 'failed;
       if eqn(rhs,0) then
-	 prin2!* "not(";
-      prin2!* w;
-      if eqn(rhs,0) then
-	 prin2!* ")"
+	 if !*utf8 then <<
+	    maprin 'not;
+	    maprin w
+	 >> else
+	    maprin {'not,w}
+      else
+	 maprin w
    end;
 
 procedure ibalp_fancy!-priequal(c);
@@ -218,13 +224,13 @@ algebraic infix neq;
 put('neq,'ibalp_simpfn,'ibalp_simpat);
 put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
-newtok '((!< !>) neq);
+newtok '((!< !>) neq) where !*msg=nil;
 
 algebraic operator bnot;
 put('bnot,'number!-of!-args,1);
 put('bnot,'prifn,'ibalp_pribnot);
 put('bnot,'fancy!-prifn,'ibalp_fancy!-pribnot);
-newtok '((!~) bnot);
+newtok '((!~) bnot) where !*msg=nil;;
 
 procedure ibalp_pribnot(u);
    <<
@@ -267,7 +273,7 @@ procedure ibalp_fancy!-pribnot!-fm(u);
 algebraic infix bequiv;
 put('bequiv,'number!-of!-args,2);
 put('bequiv,'fancy!-prifn,'ibalp_fancy!-pribequiv);
-newtok '((!< !- !>) bequiv);
+newtok '((!< !- !>) bequiv) where !*msg=nil;
 put('bequiv,'fancy!-infix!-symbol,"\leftrightarrow ");
 precedence bequiv,neq;
 
@@ -283,7 +289,7 @@ symbolic procedure ibalp_fancy!-pribequiv(u);
 algebraic infix bimpl;
 put('bimpl,'number!-of!-args,2);
 put('bimpl,'fancy!-prifn,'ibalp_fancy!-pribimpl);
-newtok '((!- !>) bimpl);
+newtok '((!- !>) bimpl) where !*msg=nil;
 put('bimpl,'fancy!-infix!-symbol,"\rightarrow ");
 precedence bimpl,bequiv;
 
@@ -299,7 +305,7 @@ symbolic procedure ibalp_fancy!-pribimpl(u);
 algebraic infix brepl;
 put('brepl,'number!-of!-args,2);
 put('brepl,'fancy!-prifn,'ibalp_fancy!-pribrepl);
-newtok '((!< !-) brepl);
+newtok '((!< !-) brepl) where !*msg=nil;
 put('brepl,'fancy!-infix!-symbol,"\leftarrow");
 precedence brepl,bimpl;
 
@@ -315,7 +321,7 @@ symbolic procedure ibalp_fancy!-pribrepl(u);
 algebraic infix bor;
 flag('(bor),'nary);
 put('bor,'fancy!-prifn,'ibalp_fancy!-pribor);
-newtok '((!|) bor);
+newtok '((!|) bor) where !*msg=nil;
 put('bor,'fancy!-infix!-symbol,"\|");
 precedence bor,bimpl;
 
@@ -335,7 +341,7 @@ symbolic procedure ibalp_fancy!-pribor(u);
 
 algebraic infix band;
 flag('(band),'nary);
-newtok '((!&) band);
+newtok '((!&) band) where !*msg=nil;
 if rl_texmacsp() then
    put('band,'fancy!-infix!-symbol,"\&")
 else
