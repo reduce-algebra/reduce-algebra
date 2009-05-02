@@ -59,25 +59,25 @@ canconfigure="yes"
 if ! libtoolize --version </dev/null >/dev/null 2>&1
 then
   canconfigure="no"
-  echo "libtooldoes not seem to be available
+  echo "libtooldoes not seem to be available"
 fi
 
 if ! autoconf --version </dev/null >/dev/null 2>&1
 then
   canconfigure="no"
-  echo "autoconf not seem to be available
+  echo "autoconf not seem to be available"
 fi
 
 if ! automake --version </dev/null >/dev/null 2>&1
 then
   canconfigure="no"
-  echo "automake not seem to be available
+  echo "automake not seem to be available"
 fi
 
 if ! autoheader --version </dev/null >/dev/null 2>&1
 then
   canconfigure="no"
-  echo "autoheader not seem to be available
+  echo "autoheader not seem to be available"
 fi
 
 if test "$canconfigure" = "no"
