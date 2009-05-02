@@ -28,7 +28,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # so for backwards compatibility I will use the old macro.
 #LT_INIT
 #LT_PREREQ([2.2.4])
-AC_INIT_LIBTOOL
+AC_PROG_LIBTOOL
 AC_SUBST([LIBTOOL_DEPS])
 
 AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])

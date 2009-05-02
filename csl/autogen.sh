@@ -103,6 +103,7 @@ touch ltmain.sh
 # autoreconf passes down the "-f" flag to it and then does not
 # remake aclocal.m4 after using it.
 
+echo "About to run libtoolize"
 if ! libtoolize -f -c
 then
   echo "libtoolize failed in $here"
@@ -110,6 +111,7 @@ then
   exit 1
 fi
 
+echo "About to run autoreconf"
 if ! autoreconf -i -f
 then
   echo "autoreconf failed in $here"

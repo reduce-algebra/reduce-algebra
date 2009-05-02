@@ -17,7 +17,7 @@ testprogram_LDADD = libwindow.la
 # date.
 
 $(srcdir)/autogen.stamp:	$(srcdir)/autogen.sh $(srcdir)/configure.ac \
-				$(srcdir)Makefile.am
+				$(srcdir)/Makefile.am
 	$(SHELL) $(srcdir)/autogen.sh
 
 $(srcdir)/Makefile.in \

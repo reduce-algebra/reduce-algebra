@@ -657,10 +657,13 @@ uninstall-am: uninstall-libLTLIBRARIES
 # Now some extra dependencies to keep the autoconf stuff up to
 # date.
 
-$(srcdir)/autogen.stamp:
+$(srcdir)/autogen.stamp:	$(srcdir)/autogen.sh $(srcdir)/configure.ac \
+				$(srcdir)/Makefile.am
 	$(SHELL) $(srcdir)/autogen.sh
 
-$(srcdir)/Makefile.in $(srcdir)/config.h.in:	$(srcdir)/autogen.sh
+$(srcdir)/Makefile.in \
+ $(srcdir)/config.h.in \
+ $(srcdir)/configure:	$(srcdir)/autogen.stamp
 
 # end of Makefile.am
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
