@@ -12326,7 +12326,6 @@ fi
 # C compiler at all, so I will do a simple pre-check based on a limited
 # number of plausible choices.
 
-CCOMPILER=none
 for ac_prog in gcc cc $CC
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -12368,8 +12367,8 @@ fi
 
   test -n "$CCOMPILER" && break
 done
+test -n "$CCOMPILER" || CCOMPILER="none"
 
-CXXCOMPILER=none
 for ac_prog in g++ CC $CXX
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -12411,6 +12410,8 @@ fi
 
   test -n "$CXXCOMPILER" && break
 done
+test -n "$CXXCOMPILER" || CXXCOMPILER="none"
+
 
 
 if test "x$CCOMPILER" = "xnone" || test "x$CXXCOMPILER" = "xnone"
@@ -16604,11 +16605,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16607: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16608: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16611: \$? = $ac_status" >&5
+   echo "$as_me:16612: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16703,11 +16704,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16706: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16707: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16710: \$? = $ac_status" >&5
+   echo "$as_me:16711: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16755,11 +16756,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16758: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16759: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16762: \$? = $ac_status" >&5
+   echo "$as_me:16763: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized

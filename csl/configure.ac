@@ -327,10 +327,9 @@ fi
 # C compiler at all, so I will do a simple pre-check based on a limited
 # number of plausible choices.
 
-CCOMPILER=none
-AC_CHECK_PROGS(CCOMPILER, [gcc cc $CC])
-CXXCOMPILER=none
-AC_CHECK_PROGS(CXXCOMPILER, [g++ CC $CXX])
+AC_CHECK_PROGS(CCOMPILER, [gcc cc $CC], [none])
+AC_CHECK_PROGS(CXXCOMPILER, [g++ CC $CXX], [none])
+
 
 if test "x$CCOMPILER" = "xnone" || test "x$CXXCOMPILER" = "xnone"
 then
