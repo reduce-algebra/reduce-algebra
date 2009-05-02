@@ -52,6 +52,8 @@ cd $here
 
 echo "Updating autoconf scripts in $here"
 
+rm -rf autom4te.cache
+
 canconfigure="yes"
 
 if ! libtoolize --version </dev/null >/dev/null 2>&1
@@ -94,7 +96,6 @@ then
   exit 0
 fi
 
-rm -rf autom4ta.cache
 # The following two lines may be necessary on some systems?
 rm -f ltmain.sh
 touch ltmain.sh
@@ -103,7 +104,7 @@ touch ltmain.sh
 # autoreconf passes down the "-f" flag to it and then does not
 # remake aclocal.m4 after using it.
 
-echo "About to run libtoolize"
+echo "About to run libtoolize --copy --force"
 if ! libtoolize --copy --force
 then
   echo "libtoolize failed in $here"
@@ -111,16 +112,16 @@ then
   exit 1
 fi
 
-echo "About to run aclocal"
-if ! aclocal -I m4 --force
+echo "About to run aclocal --force"
+if ! aclocal --force
 then
   echo "aclocal failed in $here"
   cd $save
   exit 1
 fi
 
-echo "About to run autoreconf"
-if ! autoreconf -i -f
+echo "About to run autoreconf -i -f -v"
+if ! autoreconf -i -f -v
 then
   echo "autoreconf failed in $here"
   cd $save

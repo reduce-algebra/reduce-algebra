@@ -22,10 +22,11 @@ AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR(profile.dat)
 AC_CONFIG_FILES([Makefile])
 
-AC_CONFIG_MACRO_DIR([m4])
+# libtool 1.5.x seems not to honour the next line, so I have backed off.
+#AC_CONFIG_MACRO_DIR([m4])
 
-# The next two are only available if you have a rather NEW libtool,
-# so for backwards compatibility I will use the old macro.
+# libtool 1.5.x does not support LT_INIT and LT_PREREQ so
+# for backwards compatibility I will use the old macro.
 #LT_INIT
 #LT_PREREQ([2.2.4])
 AC_PROG_LIBTOOL

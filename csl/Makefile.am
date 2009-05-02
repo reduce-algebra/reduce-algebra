@@ -4,7 +4,9 @@
 # a reasonably full set of development resources are available for
 # building the CSL version of Reduce.
 
-ACLOCAL_AMFLAGS = -I m4
+# The next line had looked good, but lintoo 1.5.x seems not to
+# honour it.
+# ACLOCAL_AMFLAGS = -I m4
 
 lib_LTLIBRARIES = libwindow.la
 libwindow_la_SOURCES = window.c
