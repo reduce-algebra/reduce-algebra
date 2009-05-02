@@ -104,7 +104,7 @@ touch ltmain.sh
 # remake aclocal.m4 after using it.
 
 echo "About to run libtoolize"
-if ! libtoolize -f -c
+if ! libtoolize --copy --force
 then
   echo "libtoolize failed in $here"
   cd $save
@@ -112,7 +112,7 @@ then
 fi
 
 echo "About to run aclocal"
-if ! aclocal --force
+if ! aclocal -I m4 --force
 then
   echo "aclocal failed in $here"
   cd $save
