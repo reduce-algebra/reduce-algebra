@@ -111,7 +111,7 @@ then
   exit 1
 fi
 
-echo "About to run aclocal
+echo "About to run aclocal"
 if ! aclocal --force
 then
   echo "aclocal failed in $here"
