@@ -24,38 +24,41 @@ AC_CONFIG_FILES([Makefile])
 
 AC_CONFIG_MACRO_DIR([m4])
 
-LT_INIT
-LT_PREREQ([2.2.4])
+# The next two are only available if you have a rather NEW libtool,
+# so for backwards compatibility I will use the old macro.
+#LT_INIT
+#LT_PREREQ([2.2.4])
+AC_INIT_LIBTOOL
 AC_SUBST([LIBTOOL_DEPS])
 
 AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])
 if test "x$ACLOCAL" = "xno"
 then
-  AC_MSG_ERROR([Please install aclocal (and other autoconf tools) and try again])
+  AC_MSG_WARN([Please consider installing aclocal (and other autoconf tools)])
 fi
 
 AC_CHECK_PROG([AUTOCONF],   [autoconf], [yes], [no])
 if test "x$AUTOCONF" = "xno"
 then
-  AC_MSG_ERROR([Please install autoconf and try again])
+  AC_MSG_WARN([Please consider installing autoconf])
 fi
 
 AC_CHECK_PROG([AUTOMAKE],   [automake], [yes], [no])
 if test "x$AUTOMAKE" = "xno"
 then
-  AC_MSG_ERROR([Please install automake and try again])
+  AC_MSG_WARN([Please consider installing automake])
 fi
 
 AC_CHECK_PROG([AUTORECONF], [autoreconf], [yes], [no])
 if test "x$AUTORECONF" = "xno"
 then
-  AC_MSG_ERROR([Please install autoreconf and try again])
+  AC_MSG_WARN([Please consider installing autoreconf])
 fi
 
 AC_CHECK_PROG([LIBTOOL],    [libtool], [yes], [no])
 if test "x$LIBTOOL" = "xno"
 then
-  AC_MSG_ERROR([Please install libtool and try again])
+  AC_MSG_WARN([Please consider installing libtool])
 fi
 
 
