@@ -248,7 +248,8 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 
-LT_INIT
+# LT_INIT        this is no use with earlier versions of libtool!
+AC_PROG_LIBTOOL
 LT_PREREQ([2.2.4])
 AC_SUBST([LIBTOOL_DEPS])
 

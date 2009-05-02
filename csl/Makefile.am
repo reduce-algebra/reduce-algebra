@@ -13,6 +13,14 @@ noinst_PROGRAMS = testprogram
 testprogram_SOURCES = testprogram.c
 testprogram_LDADD = libwindow.la
 
+# Now some extra dependencies to keep the autoconf stuff up to
+# date.
+
+$(srcdir)/autogen.stamp:
+	$(SHELL) $(srcdir)/autogen.sh
+
+$(srcdir)/Makefile.in $(srcdir)/config.h.in:	$(srcdir)/autogen.sh
+
 # end of Makefile.am
 
 

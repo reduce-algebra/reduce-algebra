@@ -654,6 +654,14 @@ uninstall-am: uninstall-libLTLIBRARIES
 	tags uninstall uninstall-am uninstall-libLTLIBRARIES
 
 
+# Now some extra dependencies to keep the autoconf stuff up to
+# date.
+
+$(srcdir)/autogen.stamp:
+	$(SHELL) $(srcdir)/autogen.sh
+
+$(srcdir)/Makefile.in $(srcdir)/config.h.in:	$(srcdir)/autogen.sh
+
 # end of Makefile.am
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
