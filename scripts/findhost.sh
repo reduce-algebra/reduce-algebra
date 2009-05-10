@@ -60,10 +60,25 @@ here=${c%/*}
 host=$1
 shift
 
+case $host in
+*apple-darwin*)
+# There are TWO things going on here. One is that the GNU script
+# "config.guess" seems to have changes recently between reporting i386 and
+# i686, so I wan to normalise. The second is that the build for the Mac
+# creates a "fat" universal binary that should run on either powerpc or
+# Intel Macs, and so to tag the build with one or the other architecture
+# may could as clumsy.
+  host=`echo $host | $SED -e s/i386/universal/`
+  host=`echo $host | $SED -e s/i686/universal/`
+  host=`echo $host | $SED -e s/powerpc/universal/`
+  ;;
+*)
 # The following line may help on FreeBSD where AC_CANONICAL_HOST
 # and config.guess apppear to have differing ideas. And in that case
-# please rememeber to use GNU make not the vanilla one.
-host=`echo $host | $SED -e s/amd64/x86_64/`
+# please remember to use GNU make not the vanilla one.
+  host=`echo $host | $SED -e s/amd64/x86_64/`
+  ;;
+esac
 
 if test "x$1" = "x--short"
 then

@@ -38,12 +38,39 @@ here=${c%/*}
 saved=`pwd`
 cd $here
 
-if autoconf -o /dev/null >/dev/null 2>&1
+# Oh dear! On some (but not all) Macintosh installations there will be
+# a program called libtool present that is nothing to do with GNU libtool.
+# In some (but probably not all!) such cases the GNU version of libtool
+# may be present with a "g" in front of its name, ie "glibtoolize" may
+# exist. I try to test for these messy cases here and refuse to try to
+# regenerate stuff unless I think I can see at least some variant on
+# GNU libtool(ize) available.
+
+ltv="none"
+( ltv=`libtoolize -- version` ) 1>/dev/null 2>%1
+gltv="none"
+( gltv=`glibtoolize -- version` ) 1>/dev/null 2>%1
+ltavail="no"
+case $ltv in
+*GNU libtool*)
+  ltavail="yes"
+  ;;
+*)
+  case $gltv in
+  *GNU libtool*)
+    ltavail="yes"
+    ;;
+  esac
+  ;;
+esac
+
+if test "$ltavail" = "yes" && autoconf -o /dev/null >/dev/null 2>&1
 then
 # If looks as if we have autoconf installed and it is at least version
 # 2.61, which is what I seem to need at the moment.
-# The configure.ac file here arranges to check automake and libtool
-# versions too.
+# The configure.ac file here arranges to check the automake
+# version too. But it seems hard to make it check the libtool version -
+# the most I can do there (easily) is to verify that libtool is available. 
   if ! $here/../autogen.sh
   then
     echo "The autoconf/automake/libtoolize process seems to have failed"
