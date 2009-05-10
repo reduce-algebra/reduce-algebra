@@ -55,12 +55,12 @@ gltv="none"
 ( gltv=`glibtoolize -- version` ) 1>/dev/null 2>%1
 ltavail="no"
 case $ltv in
-*GNU libtool*)
+*GNU*libtool*)
   ltavail="yes"
   ;;
 *)
   case $gltv in
-  *GNU libtool*)
+  *GNU*libtool*)
     ltavail="yes"
     LIBTOOLIZE="glibtoolize"
     ;;
@@ -70,7 +70,7 @@ esac
 
 if "$ltavail" != "yes"
 then
-  echo "Can not find gnu libtool installed. Will not do anything"
+  echo "Can not find GNU libtool installed. Will not do anything"
   exit 1
 fi
 

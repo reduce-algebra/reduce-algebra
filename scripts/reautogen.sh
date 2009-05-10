@@ -52,12 +52,12 @@ gltv="none"
 ( gltv=`glibtoolize -- version` ) 1>/dev/null 2>%1
 ltavail="no"
 case $ltv in
-*GNU libtool*)
+*GNU*libtool*)
   ltavail="yes"
   ;;
 *)
   case $gltv in
-  *GNU libtool*)
+  *GNU*libtool*)
     ltavail="yes"
     ;;
   esac
