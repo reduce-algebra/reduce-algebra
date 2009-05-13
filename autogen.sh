@@ -52,7 +52,7 @@ LIBTOOLIZE="libtoolize"
 ltv="none"
 ( ltv=`libtoolize -- version` ) 1>/dev/null 2>%1
 gltv="none"
-( gltv=`glibtoolize -- version` ) 1>/dev/null 2>%1
+# ( gltv=`glibtoolize -- version` ) 1>/dev/null 2>%1
 ltavail="no"
 case $ltv in
 *GNU*libtool*)
