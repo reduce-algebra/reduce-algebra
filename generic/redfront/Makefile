@@ -2,10 +2,35 @@
 #
 # This Makefile is a temporary solution.
 #
-# Say "make", and you will find "redfront" in the subdirectory
-# corresponding to your lisp and architecture.
+# As a quick start just go "make install" and find rfcsl and rfpsl in trunk/bin.
+# 
+# Usage Details:
 #
-# 03/2009 - T. Sturm (sturm@redlog.eu)
+# make csl:              build redfront for csl. The binary will be located
+#                        under csl/ in the directory corresponding to your
+#                        architecture
+#
+# make psl:              build redfront for psl. The binary will be located
+#                        under psl/ in the directory corresponding to your
+#                        architecture
+#
+# make =                 make csl psl
+#
+# make install-csl:      create a suitable symbolic link rfcsl in trunk/bin
+#
+# make install-psl:      create a suitable symbolic link rfpsl in trunk/bin
+#
+# make install =         make install-csl install-psl
+#
+# make uninstall:        remove symbolic links rfcsl and rfpsl from trunk/bin
+#
+# make maintainer-clean: reset this directory to its original state. This
+#                        includes uninstalling and deleting all files generated
+#                        by make all.
+#
+# Reports bugs and problems to the Reduce Help Forum at SourceForge:
+# http://sourceforge.net/forum/forum.php?forum_id=899364
+# T. Sturm (sturm@redlog.eu)
 
 BUILD = $(shell ../../scripts/findhost.sh $(shell src/config.guess))
 LIBEDIT_TGZ = libedit-20090111-3.0.tar.gz
