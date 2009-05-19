@@ -39,6 +39,12 @@ module utf8;
 
 create!-package('(utf8),nil);
 
+fluid '(lispsystem!* overflowed!* posn!* testing!-width!*);
+
+!#if (memq 'psl lispsystem!*)
+   fluid '(maxchannels writefunction out!*);
+!#endif
+
 switch utf8,utf8exp;
 on1 'utf8;
 off1 'utf8exp;
@@ -98,19 +104,42 @@ procedure utf8_scprint(u,n);
 	    if not((m:= caaar v-posn!*)<0) then
 	       spaces m;
 	    if w := get(cdr v,'utf8) then
-	       for each c in cdr w do tyo c
+	       utf8_tyo w
 	    else if w := utf8_indexsplit cdr v then <<
 	       if x := get(car w,'utf8) then
-		  for each c in cdr x do tyo c
+		  utf8_tyo x
 	       else
-	       	  prin2 car w;
-	       for each c in cddr w do tyo c
+	       	  utf8_prin2 car w;
+	       utf8_tyo cdr w
 	    >> else
-	       prin2 cdr v;
+	       utf8_prin2 cdr v;
 	    posn!* := cdaar v
  	 >>
       >>
    end;
+
+!#if (memq 'psl lispsystem!*)
+   procedure utf8_tyo(itml);
+      <<
+	 setf(wgetv(lineposition,out!*),wgetv(lineposition,out!*)+car itml);
+      	 for each itm in cdr itml do
+      	    utf8_channelwritechar(out!*,lisp2char itm)
+      >>;
+      
+   procedure utf8_channelwritechar(channel,char);
+      <<
+      	 if not wleq(0,channel) and wleq(channel,maxchannels) then
+      	    noniochannelerror(channel,"ChannelWriteChar");
+      	 idapply(wgetv(writefunction,channel),{channel,char})
+      >>;
+!#else
+   procedure utf8_tyo(itml);
+      for each itm in cdr itml do
+      	 tyo itm;
+!#endif
+	 
+procedure utf8_prin2(itm);
+   prin2 itm;
 
 procedure utf8_indexsplit(u);
    begin integer idxlen; scalar l,d;
