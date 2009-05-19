@@ -18,7 +18,9 @@ LIBEDIT_BUILD = $(LIBEDIT)/$(BUILD)
 
 all: csl psl
 
-csl: libedit/$(BUILD)/include/editline/readline.h
+csl: csl/$(BUILD)/redfront
+
+csl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h 
 	cd src; \
 	autoconf; \
 	autoheader
@@ -27,7 +29,9 @@ csl: libedit/$(BUILD)/include/editline/readline.h
 	../../src/configure --with-csl; \
 	make
 
-psl: libedit/$(BUILD)/include/editline/readline.h
+psl: psl/$(BUILD)/redfront
+
+psl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h
 	cd src; \
 	autoconf; \
 	autoheader
@@ -48,7 +52,7 @@ install: install-csl install-psl
 
 install-csl: csl
 	@cd ../../bin && \
-	if test ! -e rfcsl; then \
+	if test ! -e rfcsl -a ! -h rfcsl; then \
 	   echo "Creating symbolic link ../../bin/rfcsl"; \
 	   ln -s ../generic/redfront/csl/$(BUILD)/redfront rfcsl; \
 	else \
@@ -57,7 +61,7 @@ install-csl: csl
 
 install-psl: psl
 	@cd ../../bin && \
-	if test ! -e rfpsl; then \
+	if test ! -e rfpsl -a ! -h rfpsl ; then \
 	   echo "Creating symbolic link ../../bin/rfpsl"; \
 	   ln -s ../generic/redfront/psl/$(BUILD)/redfront rfpsl; \
 	else \
@@ -68,10 +72,8 @@ uninstall: uninstall-csl uninstall-psl
 
 uninstall-csl:
 	@cd ../../bin && \
-	if test ! -e rfcsl; then \
-	   echo "File ../../bin/rfcsl does not exist"; \
-	elif test ! -h rfcsl; then \
-	   echo "File ../../bin/rfcsl is not a symbolic link"; \
+	if test ! -h rfcsl; then \
+	   echo "No symbolic link ../../bin/rfcsl found"; \
 	else \
 	   echo "Deleting symbolic link ../../bin/rfcsl"; \
 	   rm -f rfcsl; \
@@ -79,10 +81,8 @@ uninstall-csl:
 
 uninstall-psl:
 	@cd ../../bin && \
-	if test ! -e rfpsl; then \
-	   echo "File ../../bin/rfpsl does not exist"; \
-	elif test ! -h rfpsl; then \
-	   echo "File ../../bin/rfpsl is not a symbolic link"; \
+	if test ! -h rfpsl; then \
+	   echo "No symbolic link ../../bin/rfpsl found"; \
 	else \
 	   echo "Deleting symbolic link ../../bin/rfpsl"; \
 	   rm -f rfpsl; \
@@ -92,7 +92,7 @@ clean:
 	cd csl/$(BUILD) && make clean
 	cd psl/$(BUILD) && make clean
 
-distclean:
+distclean: uninstall
 	/bin/rm -rf csl psl libedit*
 	cd ../../bin && rm -f rfcsl rfpsl
 
