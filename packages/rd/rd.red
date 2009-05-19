@@ -34,8 +34,6 @@ load!-package 'remake;
 
 fluid '(here!* packagemap!*);
 
-packagemap := "package.map";
-
 switch rd_force;
 
 copyd('olderfaslp_orig,'olderfaslp);
@@ -130,7 +128,6 @@ procedure rlint(y);
    	 in_list1(z,t)
       >>;
       off cref;
-      
    end;
 
 procedure make(y);
