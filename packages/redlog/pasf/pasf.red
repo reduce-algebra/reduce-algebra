@@ -44,7 +44,7 @@ module pasf;
 create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat 
    pasfqe pasfsism pasfopt),nil);
 
-fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*utf8);
+fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*utf8);
 
 load!-package 'cl;
 load!-package 'rltools;

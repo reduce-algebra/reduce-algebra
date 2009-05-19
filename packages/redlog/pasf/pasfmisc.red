@@ -70,9 +70,9 @@ procedure pasf_atf2iv(atf);
 	    iv_new(addf(floor,1),'pinf));
       if pasf_congp atf then
 	 % Check if the equality solution is an integer
-	 if gcdf(den,nom) eq 1 then <<
+	 if gcdf(den,pasf_m atf) eq 1 then <<
 	    eucd := sfto_exteucd(den,pasf_m atf);
-	    return iv_newcong(repr_op dc,cadr eucd)
+	    return iv_newcong(repr_op dc,multf(cadr eucd,nom))
 	 >> else
 	    return {};
      rederr{"pasf_atf2iv: illegal operator ",pasf_op atf}

@@ -71,6 +71,8 @@ procedure pasf_simplat1(atf,sop);
       else
 	 % Order relation reduction
 	 pasf_or atf;
+      if not !*rlsifac then
+	 return atf;
       % Factorization check
       return pasf_fact atf;
    end;

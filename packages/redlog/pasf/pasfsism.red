@@ -98,11 +98,10 @@ procedure pasf_susibinad(old,new);
       old := car old;
       new := car new;
       % Check for truth value of the level formula
-      if rl_tvalp new then
-	 (if new eq 'false then
-	    return 'false
-	 else
-	    return {'(delete . T)});
+      if new eq 'false then
+	 return 'false;
+      if new eq 'true then
+	 return {'(delete . T)};
       % Equal left handsides simplification
       if pasf_arg2l old = pasf_arg2l new then
 	 return pasf_susibineq(pasf_arg2l old,pasf_op old,pasf_op new,level);
@@ -117,17 +116,22 @@ procedure pasf_susibinad(old,new);
       ko := kernels car od;
       kn := kernels car nd;
       % Integer substitution
-      if pasf_op old eq 'equal and null cdr ko 
-	 and car ko memq kn then
-	  return {'(delete . T), ('add .
-		(pasf_simplat1(pasf_subfof1(new,car ko,negf cdr od),nil)
-		   . level))}
-      else if pasf_op new eq 'equal and null cdr kn 
-	 and car kn memq ko then
-	    return {'(delete . nil), ('add .
-	       (pasf_simplat1(pasf_subfof1(old,car kn,negf cdr nd),nil)
-		  . level))};
+      if pasf_op old eq 'equal and null cdr ko and car ko memq kn then
+	 return pasf_susibinad1(pasf_subfof1(new,car ko,negf cdr od),level,t);
+      if pasf_op new eq 'equal and null cdr kn and car kn memq ko then	
+	 return pasf_susibinad1(pasf_subfof1(old,car kn,negf cdr nd),level,nil);
       return nil
+   end;
+
+procedure pasf_susibinad1(sb,level,flag);
+   begin scalar ssb;
+      ssb := pasf_simplat1(sb,nil);
+      if rl_op ssb eq 'and then
+	 return {'delete . flag,
+	    for each at in rl_argn ssb collect ('add . (at . level))};
+      if rl_cxp rl_op ssb then
+	 ssb := pasf_simplat1(sb,nil) where !*rlsifac=nil;   
+      return {'delete . flag,'add . (ssb . level)}
    end;
 
 procedure pasf_susibineq(u,oop,nop,level);
@@ -200,7 +204,8 @@ procedure pasf_susibineqcong(u,oop,nop,level);
 	    % Making sure changes are really applied
 	    mo := pasf_susibineqcong1(m,n);
 	    if mo neq m then <<
-	       atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil);
+	       atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil)
+		  where !*rlsifac=nil;
 	       if atf eq 'false then
 		  return atf
 	       else if atf eq 'true then
@@ -220,7 +225,8 @@ procedure pasf_susibineqcong(u,oop,nop,level);
 	    % Making sure changes are really applied
 	    mo := pasf_susibineqcong1(n,m);
 	    if mo neq m then <<
-	       atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil);
+	       atf := pasf_simplat1(pasf_0mk2(pasf_mkop('ncong,mo),u),nil)
+	       	  where !*rlsifac=nil;
 	       if atf eq 'false then
 		  return atf
 	       else if atf eq 'true then
@@ -346,19 +352,19 @@ procedure pasf_susibinordcong(oop,ot,oabs,nop,nt,nabs,level);
    % formula; [oabs] is the constant part of the old formula; [nabs] is the
    % constant part of the new formula; [level] is the recursion
    % level. Returns a SUSIPROG that simplifies the two atomic formulas.
-   begin scalar n,m,eucd;
+   begin scalar n,m,eucd,lhs,op,at;
       n := cdr oop;
       m := cdr nop;
       % For parametric moduli nothing yet
       if null domainp n or null domainp m then return nil;
       if car oop eq 'cong and car nop eq 'cong and gcdf(n,m) = 1 then <<
+	 op := pasf_mkop('cong,numr simp (n*m));
 	 eucd := sfto_exteucd(n,m);
-	 return {'(delete . T), '(delete . nil),
-	    ('add . (pasf_simplat1(pasf_0mk2(pasf_mkop('cong,numr simp (n*m)),
-	       addf(ot, 
-		  numr simp(n*(cadr eucd)*nabs + 
-		  m*(caddr eucd)*oabs))),nil) . level))}
-      	 >>;
+	 lhs := addf(ot,numr simp(n*cadr eucd*nabs + m*caddr
+	    eucd*oabs));
+	 at := pasf_simplat1(pasf_0mk2(op,lhs),nil) where !*rlsifac=nil;
+	 return {'(delete . T),'(delete . nil), 'add . (at . level)}
+      >>;
       return nil
    end;
 
