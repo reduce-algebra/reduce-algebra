@@ -45,9 +45,13 @@ fluid '(lispsystem!* overflowed!* posn!* testing!-width!*);
    fluid '(maxchannels writefunction out!*);
 !#endif
 
-switch utf8,utf8exp;
+switch utf8;
+switch utf8exp;
+switch utf8diffquot;
+
 on1 'utf8;
 off1 'utf8exp;
+on1 'utf8diffquot;
 
 copyd('prin2!*_orig,'prin2!*);
 copyd('scprint_orig,'scprint);
@@ -201,6 +205,44 @@ procedure utf8_priabs(u);
       prin2!* "|"
    >>;
 
+procedure utf8_pripartial(u);
+   if not !*utf8 then
+      'failed
+   else <<
+      utf8_prin2!* car u;
+      maprin cadr u
+   >>;
+
+procedure utf8_pridiff(u);
+   if not !*utf8 then
+      'failed
+   else if !*utf8diffquot then <<
+      maprin {'quotient,
+	 if eqn(cadddr u,1) then
+ 	    {'partial,cadr u}
+ 	 else
+ 	    {'powpartial,cadr u,cadddr u},
+	 if eqn(cadddr u,1) then
+ 	    {'partial,caddr u}
+ 	 else
+ 	    {'expt,{'partial,caddr u},cadddr u}}
+   >> else <<
+      if eqn(cadddr u,1) then
+	 utf8_prin2!* 'partial
+      else
+      	 maprin {'expt,'partial,cadddr u};
+      utf8_prin2!* caddr u;
+      utf8_prin2!* "(";
+      maprin cadr u;
+      utf8_prin2!* ")";
+   >>;
+
+procedure utf8_pripowpartial(u);
+   <<
+      maprin {'expt,'partial,caddr u};
+      maprin cadr u
+   >>;
+
 procedure utf8_priint(u);
    if not !*utf8 then
       'failed
@@ -252,7 +294,7 @@ put('ncong,'utf8,'(1 226 137 161 226 128 139 204 184));
 put('infinity,'utf8,'(1 226 136 158));
 put('infty,'utf8,'(1 226 136 158));
 
-put('!*,'utf8,'(1 194 183));
+put('!*,'utf8,'(1 226 139 133));
 
 put('alpha,'utf8,'(1 206 177));
 put('beta,'utf8,'(1 206 178));
@@ -282,6 +324,14 @@ put('omega,'utf8,'(1 207 137));
 put('int,'utf8,'(1 226 136 171));
 put('int,'prifn,'utf8_priint);
 put('abs,'prifn,'utf8_priabs);
+
+put('partial,'utf8,'(1 226 136 130));
+put('partial,'prifn,'utf8_pripartial);
+put('powpartial,'prifn,'utf8_pripowpartial);  % Hack but how else ...?
+
+put('diff,'prifn,'utf8_pridiff);
+
+put('!*!*!*,'utf8,'(1 226 136 153));
 
 endmodule;  % utf8
 
