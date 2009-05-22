@@ -127,13 +127,14 @@ me=$0
 here=$(here.sh)
 
 forceremake=nil
-export lisp=""
+export lisp
+lisps=""
 export verbose=0
 export warn=0
 export debug=0
 export syntaxonly=0
 
-for count in 1 2 3 4 5 6 7 ; do
+for count in 1 2 3 4 5 6 7 8; do
     if [ "$1" = "-B" ]; then
 	forceremake=t
 	shift
@@ -160,25 +161,25 @@ for count in 1 2 3 4 5 6 7 ; do
     fi
 
     if [ "$1" = "-csl" ]; then
-	if [ x$lisp = xpsl ] ; then
-	    echo "$(basename $me): must specify only one lisp"
-	    exit 99
-	fi
-	lisp=csl
+#	if [ x$lisp = xpsl ] ; then
+#	    echo "$(basename $me): must specify only one lisp"
+#	    exit 99
+#	fi
+	lisps="$lisps csl"
 	shift
     fi
 
     if [ "$1" = "-psl" ]; then
-	if [ x$lisp = xcsl ] ; then
-	    echo "$(basename $me): must specify only one lisp"
-	    exit 99
-	fi
-	lisp=psl
+#	if [ x$lisp = xcsl ] ; then
+#	    echo "$(basename $me): must specify only one lisp"
+#	    exit 99
+#	fi
+	lisps="$lisps psl"
 	shift
     fi
 done
 
-if [ x$lisp = x ]; then
+if [ "x$lisps" = x ]; then
     echo "$(basename $me): must specify lisp"
     exit 99
 fi
@@ -186,6 +187,8 @@ fi
 unset RLDEFLANG  # for redlog
 
 MACHINE=$($here/scripts/findhost.sh $($here/config.guess))
+
+for lisp in $lisps; do
 
 if [ $debug -eq 1 ] ; then
     echo "here =    $here"
@@ -269,4 +272,6 @@ EOF
 
     fi
     
+done
+
 done
