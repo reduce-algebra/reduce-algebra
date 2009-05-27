@@ -173,6 +173,7 @@
  (qepcad        "redlog/qepcad"                              csl psl)
  (utf8          "utf8"                                       csl psl)
  (lpdo          "lpdo"                  test                 csl psl)
+ (mma           "redlog/mma"                                 csl psl)
 )
 
 % End of configuration data
