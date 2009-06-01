@@ -156,7 +156,7 @@ RedAns RedAns_readUntilPrompt(RedProc process) {
     
   ans->symbolic = symbolic;
   ans->pretext = StrBuf_string(pretext);
-  ans->result = StrBuf_string(result);
+  ans->result = StrBuf_string(StrBuf_pruneNl(result));
   ans->posttext = StrBuf_string(posttext);
   ans->nextprompt = StrBuf_string(nextprompt);
 
@@ -176,7 +176,7 @@ RedAns RedAns_readUntilPrompt(RedProc process) {
 void RedAns_dfa(RedProc process,StrBuf *pstatcbuf,int *psymbolic,
 		StrBuf *ppretext,StrBuf *presult,StrBuf *pposttext,
 		StrBuf *pnextprompt) {
-  char buffer[READBUFSIZE];
+  unsigned char buffer[READBUFSIZE];
   int ncharread,ii;
   int status=PRETEXT,ch;
 
@@ -192,7 +192,8 @@ void RedAns_dfa(RedProc process,StrBuf *pstatcbuf,int *psymbolic,
 	RedAns_dfaLog(process,status);
       } else if (status == RESULT) {
 	RedMsg_cfprintf(process->rlgFile,"%c",ch);
-	if (ch >= 0x20)  /* in particular skip LF */
+	//	if (ch >= 0x20)  /* in particular skip LF */
+	if (ch >= 0x07)  /* skip prompt colorings */
 	  *presult = StrBuf_addChar(*presult,ch);
       } else if (FASTMODE) {
 	continue;
