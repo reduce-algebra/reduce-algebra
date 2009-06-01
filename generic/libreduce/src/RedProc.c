@@ -61,9 +61,10 @@
 FILE *logfile=(FILE *)0;
 FILE *debugfile=(FILE *)0;
 
+static RedProc process;
+
 RedProc RedProc_new(const char *reduce) {
   pid_t processId;
-  RedProc process;
 
 #ifdef LOGFILE
   if (!logfile) logfile = RedMsg_openLogfile("libreduce.log",logfile);
@@ -111,16 +112,29 @@ RedProc RedProc_new(const char *reduce) {
 }
 
 void RedProc_initSockets(RedProc process) {
+  if (USE_PIPES) {
+    if (pipe(process->meToReduce) < 0) {
+      perror("libreduce: failed to create pipe meToReduce\n");
+      kill(process->processId,SIGTERM);
+      exit(errno);
+    }
+    if (pipe(process->reduceToMe) < 0) {
+      perror("libreduce: failed to create pipe reduceToMe\n");
+      kill(process->processId,SIGTERM);
+      exit(errno);
+    }
+  } else {
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, process->meToReduce) < 0) {
-        perror("libreduce: cannot open socket");
-        kill(process->processId,SIGTERM);
-        exit(errno);
+      perror("libreduce: failed to create pipe meToReduce\n");
+      kill(process->processId,SIGTERM);
+      exit(errno);
     }
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, process->reduceToMe) < 0) {
-        perror("libreduce: cannot open socket");
-        kill(process->processId,SIGTERM);
-        exit(errno);
+      perror("libreduce: failed to create pipe reduceToMe\n");
+      kill(process->processId,SIGTERM);
+      exit(errno);
     }
+  }
 }
 
 RedProc RedProc_parent(RedProc process) {
@@ -215,17 +229,15 @@ void RedProc_cfprint(FILE *stream,RedProc proc) {
 }
 
 RETSIGTYPE RedProc_SigChld(int arg) {
-  int *stP;
+  int *status;
   
-  stP = (int *)malloc(sizeof(int));
+  status = (int *)malloc(sizeof(int));
   
-  RedProc_removeSignalHandlers();
-
-  fprintf(stderr,
-	  "libreduce exits on unexpected termination of a REDUCE process\n");
-  fflush(stderr);
-
-  exit(SIGCHLD);
+  fprintf(stderr,"libreduce: receiving SIGCHLD\n");
+  if (wait4(process->processId,&status,WNOHANG,NULL) == process->processId) {
+    fprintf(stderr,"libreduce: Reduce has stopped or exited - Quitting\n");
+    exit(SIGCHLD);
+  }
 }
 
 void RedProc_removeSignalHandlers(void) {
