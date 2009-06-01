@@ -47,11 +47,15 @@ fluid '(lispsystem!* overflowed!* posn!* testing!-width!*);
 
 switch utf8;
 switch utf8exp;
+switch utf8expall;
 switch utf8diffquot;
+switch utf8pad;
 
 on1 'utf8;
 off1 'utf8exp;
+on1 'utf8expall;
 on1 'utf8diffquot;
+on1 'utf8pad;
 
 copyd('prin2!*_orig,'prin2!*);
 copyd('scprint_orig,'scprint);
@@ -95,18 +99,26 @@ procedure utf8_prin2!*(u);
    end;
 
 procedure scprint(u,n);
-   if not !*utf8 then
-      scprint_orig(u,n)
-   else
-      utf8_scprint(u,n);
-   
+   <<
+      if not !*utf8 then
+      	 scprint_orig(u,n)
+      else
+      	 utf8_scprint(u,n);
+      if !*utf8pad then
+      	 utf8_dots(cdaar lastcar u - posn!*)
+   >>;
+
 procedure utf8_scprint(u,n);
-   begin scalar m,w,x;
+   begin scalar m,w,x,padded;
       posn!* := 0;
       for each v in u do <<
 	 if cdar v=n then <<
 	    if not((m:= caaar v-posn!*)<0) then
-	       spaces m;
+	       if !*utf8pad and not padded then <<
+		  utf8_dots m;
+		  padded := t
+	       >> else
+	    	  spaces m;
 	    if w := get(cdr v,'utf8) then
 	       utf8_tyo w
 	    else if w := utf8_indexsplit cdr v then <<
@@ -121,6 +133,9 @@ procedure utf8_scprint(u,n);
  	 >>
       >>
    end;
+
+procedure utf8_dots(n);
+   for i := 1:n do prin2 " ";
 
 !#if (memq 'psl lispsystem!*)
    procedure utf8_tyo(itml);
@@ -175,7 +190,7 @@ procedure utf8_exptpri(x,p);
       if null !*utf8exp or not numberp caddr x then
       	 return exptpri_orig(x,p);
       expo := explode caddr x;
-      if utf8_supmixp expo then
+      if null !*utf8expall and utf8_supmixp expo then
 	 return exptpri_orig(x,p);
       q := pairp cadr x and (w := get(caadr x,'infix)) and
  	 w <= get('expt,'infix);
