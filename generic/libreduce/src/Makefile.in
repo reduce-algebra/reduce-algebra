@@ -32,7 +32,7 @@ CC = @CC@ -Wall
 
 LIBS = @LIBS@
 
-CFLAGS = -O3  @DEFS@ -I.
+CFLAGS = -O3  @DEFS@ -I. -g
 
 LDFLAGS = @LDFLAGS@
 
@@ -40,7 +40,7 @@ OBJ = RedProc.o RedAns.o RedMsg.o StrBuf.o
 
 srcdir = @srcdir@
 
-REDUCE = \"$(realpath ../../../bin/reduce)\"
+REDUCE = \"$(realpath ../../../bin/redcsl)\"
 
 all: libreduce.a lrtest bench_reduce bench_redlog
 
