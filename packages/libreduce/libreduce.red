@@ -73,7 +73,7 @@ procedure lr_posttext();
 procedure lr_printer(u,mode);
    <<
       if mode eq 'symbolic then
-	 (if result or !*mode eq 'symbolic then
+	 (if u or !*mode eq 'symbolic then
 	    lr_sprint u)
       else
 	 lr_aprint u
@@ -82,7 +82,7 @@ procedure lr_printer(u,mode);
 procedure add2resultbuf(u,mode);
    <<
       lr_result();
-      lr_printer(u,mode);
+      if null(semic!* eq '!$) then lr_printer(u,mode);
       lr_statcounter();
       prin2 statcounter;
       lr_mode();
@@ -182,6 +182,8 @@ if lr_pslp() then <<
 
 % Color PSL prompts, in case user falls through:
 
+!#if (memq 'psl lispsystem!*)
+
 procedure lr_compute!-prompt!-string(count,level);
    lr_color lr_compute!-prompt!-string!-orig(count,level);
 
@@ -195,6 +197,8 @@ procedure lr_break_prompt();
       prin2 "break["; prin2 breaklevel!*; prin2 "]";
       promptstring!* := lr_color promptstring!*
    >>;
+
+!#endif
 
 if lr_pslp() then <<
    copyd('break_prompt,'lr_break_prompt);
