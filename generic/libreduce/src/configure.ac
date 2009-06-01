@@ -41,6 +41,20 @@ AC_CONFIG_HEADER(config.h)
 dnl Checks for programs.
 AC_PROG_CC
 
+AS_IF([test "$EXEEXT" = .exe],
+  [AC_DEFINE(WIN32,1,[This is some Windows version])
+   AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead of sockets])
+   on_windows=yes],
+  [AC_ARG_ENABLE(pipes,
+   AC_HELP_STRING([--enable-pipes],
+		  [use pipes not sockets on systems other than Windows]),
+   if test "$enableval" = no ; then
+      AC_DEFINE(USE_PIPES,0,[Define  1 for using pipes instead if sockets])
+   else
+      AC_DEFINE(USE_PIPES,1,[Define to 1 for using pipes instead if sockets])
+   fi,
+   AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))])
+
 dnl Checks for libraries.
 AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")
 
