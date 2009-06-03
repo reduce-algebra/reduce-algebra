@@ -140,7 +140,7 @@
  (acfsf         "redlog/acfsf"                               csl psl)
  (dcfsf         "redlog/dcfsf"                               csl psl)
  (geometry      "geometry"                                   csl psl)
- (ibalp         "redlog/ibalp"                               csl psl)
+ (ibalp         "redlog/ibalp"          test                 csl psl)
  (pasf          "redlog/pasf"                                csl psl)
  (qqe           "redlog/qqe"                                 csl psl)
  (qqe_ofsf      "redlog/qqe_ofsf"                            csl psl)
