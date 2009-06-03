@@ -232,6 +232,24 @@ procedure lto_max(l);
    % the maximum of [l].
    if null cdr l then car l else max(car l,lto_max cdr l);
 
+procedure lto_setminus(l1,l2);
+   for each x in l1 join if not member(x,l2) then {x};
+
+procedure lto_setequalq(s1,s2);
+   % s1 and s2 are lists of identifiers not containing any duplicates.
+   begin scalar a,failed;
+      if not eqn(length s1,length s2) then
+	 return nil;
+      while not failed and s1 do <<
+	 a := car s1;
+	 if not (a memq s2) then
+	    failed := t
+	 else
+	    s1 := cdr s1
+      >>;
+      return not failed
+   end;
+
 !#if (not (memq 'psl lispsystem!*))
    procedure delq(x,l);
       % Delete with memq. [x] is ANY; [l] is a list. Returns a list.
