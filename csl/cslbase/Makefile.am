@@ -194,12 +194,6 @@ else !fox
 WINAP=-Wl,--subsystem,console
 endif !fox
 
-if windows
-GP=wgnuplot.exe
-else !windows
-GP=
-endif !windows
-
 dyndemo_LDADD = $(srcdir)/dyndemo.def
 
 reduceres = fwin-reduce.$(OBJEXT)
@@ -212,8 +206,8 @@ reduce_LDADD = $(reduceres) $(FOX_LIBS)
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 		$(fontsdir)/cmr10.pfb
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html
+reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html
 fwindemo_DEPENDENCIES = fwin-icon.$(OBJEXT)
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
@@ -251,8 +245,8 @@ bootstrapreduce_LDADD = $(FOX_LIBS)
 reduce_LDADD = $(FOX_LIBS)
 
 csl_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html
+reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html
 
 if fox
 fontdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
@@ -609,7 +603,7 @@ termdemo_LIBS=
 # in the same directory as executables.
 #
 
-image_files = csl.img reduce.img reduce.doc $(fontsdir) wgnuplot* gnuplot.Copyright
+image_files = csl.img reduce.img reduce.doc $(fontsdir)
 install-data-local: $(image_files)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -624,10 +618,10 @@ install-data-local: $(image_files)
 if windows
 
 if fox
-console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries = csl$(COMEXT) reduce$(COMEXT)
 noinstall_console_binaries = fwindemo$(COMEXT)
 else !fox
-console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries =
 noinstall_console_binaries =
 endif !fox
 
@@ -866,19 +860,6 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.txt reduce.doc
 
-if windows
-#
-# I also copy a set of gnuplot binaries into this directory.
-# Note that the Gnuplot license permits this, but if I host any of this
-# on Sourceforge then their terms and conditions mean I have to put a
-# set of gnuplot sources in their file release system!
-$(GP):
-	$(CP) -r $(CYGSRC)/../support-packages/gnuplot-windows-bin/* .
-# I view it as most unwelcome that I need the "chmod" here, but if I have
-# gcc/g++ on my path and available I will suppose I can have chmod too.
-	chmod +x wgnuplot.exe
-endif windows
-
 -include bootstrapreduce.dep
 
 bootstrapreduce.dep:
@@ -1035,7 +1016,7 @@ if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
 	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
-	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(BUILD)-$(shell date +%Y%m%d)
+	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts reduce-$(BUILD)-$(shell date +%Y%m%d)
 	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce-$(BUILD)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-windows-$(shell date +%Y%m%d).zip
 else !windows
