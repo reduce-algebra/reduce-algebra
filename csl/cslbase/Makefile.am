@@ -560,8 +560,8 @@ install-data-local: $(image_files)
 	@list='$(image_files)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=`echo "$$p" | sed 's,^.*/,,'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f || exit 1; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_DATA) $$p $(DESTDIR)$(bindir)/$$f"; \
+	   $(INSTALL_PROGRAM_ENV) $(INSTALL_DATA) $$p $(DESTDIR)$(bindir)/$$f || exit 1; \
 	  else :; fi; \
 	done
 
