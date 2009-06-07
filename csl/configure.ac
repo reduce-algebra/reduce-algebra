@@ -876,6 +876,8 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
 cross_compiling=$save_cross
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
+AC_CONFIG_SUBDIRS(cslbase)
+
 AC_CONFIG_HEADERS([config.h])
 AC_OUTPUT
 
