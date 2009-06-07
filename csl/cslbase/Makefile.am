@@ -97,7 +97,7 @@ else !jit
 jit_sources =
 endif !jit
 
-gensrc=$(srcdir)/../../cslbuild/generated-c
+gensrc=		$(builddir)/generated-c
 
 generated_sources = $(gensrc)/u01.c $(gensrc)/u02.c \
 		$(gensrc)/u03.c $(gensrc)/u04.c \
@@ -834,25 +834,24 @@ if canrun
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) \
 		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
-	-cp $(srcdir)/../../cslbuild/profile.dat $(srcdir)/../../cslbuild/profile.dat.old
-	mv profile.dat $(srcdir)/../../cslbuild
+	-cp ../profile.dat ../profile.dat.old
+	mv profile.dat ..
 else !canrun
 	echo Can not profile on this platform
 endif !canrun
 
 prof-inst:	profile.dat
-	$(CP) profile.dat $(srcdir)/../../cslbuild
+	$(CP) profile.dat ..
 	-$(RM) -f profile.dat
 
-$(srcdir)/../../cslbuild/profile.dat:
-	-mkdir -p $(srcdir)/../../cslbuild
-	$(CP) $(srcdir)/../profile.dat $(srcdir)/../../cslbuild
+../profile.dat:
+	$(CP) $(srcdir)/../profile.dat ..
 
-c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
+c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img ../profile.dat
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGSRC)/../../cslbuild \
+		-D@destdir=. \
 		-- buildlogs/c-code.log
 else !canrun
 	echo Can not generate C code on this platfrom
