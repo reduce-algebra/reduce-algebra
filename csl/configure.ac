@@ -32,30 +32,6 @@ AC_CONFIG_FILES([Makefile])
 AC_PROG_LIBTOOL
 AC_SUBST([LIBTOOL_DEPS])
 
-AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])
-if test "x$ACLOCAL" = "xno"
-then
-  AC_MSG_WARN([Please consider installing aclocal (and other autoconf tools)])
-fi
-
-AC_CHECK_PROG([AUTOCONF],   [autoconf], [yes], [no])
-if test "x$AUTOCONF" = "xno"
-then
-  AC_MSG_WARN([Please consider installing autoconf])
-fi
-
-AC_CHECK_PROG([AUTOMAKE],   [automake], [yes], [no])
-if test "x$AUTOMAKE" = "xno"
-then
-  AC_MSG_WARN([Please consider installing automake])
-fi
-
-AC_CHECK_PROG([AUTORECONF], [autoreconf], [yes], [no])
-if test "x$AUTORECONF" = "xno"
-then
-  AC_MSG_WARN([Please consider installing autoreconf])
-fi
-
 AC_CHECK_PROG([LIBTOOL],    [libtool], [yes], [no])
 if test "x$LIBTOOL" = "xno"
 then
