@@ -335,16 +335,6 @@ if fox
 	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
-if !debug
-if !darwin
-	$(STRIP) csl$(EXEEXT)
-if windows
-if fox
-	$(STRIP) csl$(COMEXT)
-endif fox
-endif windows
-endif !darwin
-endif !debug
 if lgplfiles
 if fox
 	./addresources csl$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
@@ -366,16 +356,6 @@ if fox
 	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
-if !debug
-if !darwin
-	$(STRIP) reduce$(EXEEXT)
-if windows
-if fox
-	$(STRIP) reduce$(COMEXT)
-endif fox
-endif windows
-endif !darwin
-endif !debug
 if lgplfiles
 if fox
 	./addresources reduce$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
@@ -391,11 +371,6 @@ if lgplfiles
 endif
 	-rm -f bootstrapreduce$(EXEEXT)
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) bootstrapreduce$(EXEEXT)
-endif !darwin
-endif !debug
 if lgplfiles
 if fox
 	./addresources bootstrapreduce$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
@@ -411,16 +386,6 @@ if fox
 	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
-if !debug
-if !darwin
-	$(STRIP) fwindemo$(EXEEXT)
-if windows
-if fox
-	$(STRIP) fwindemo$(COMEXT)
-endif fox
-endif windows
-endif !darwin
-endif !debug
 if lgplfiles
 if fox
 	./addresources fwindemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
@@ -435,11 +400,6 @@ if fox
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS) $(LGPLDEP)
 	-rm -f fontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) fontdemo$(EXEEXT)
-endif !darwin
-endif !debug
 if lgplfiles
 	./addresources fontdemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
 endif lgplfiles
@@ -447,11 +407,6 @@ endif lgplfiles
 foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) addresources$(EXEEXT) $(LGPLDEP)
 	-rm -f foxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) foxdemo$(EXEEXT)
-endif !darwin
-endif !debug
 if lgplfiles
 	./addresources foxdemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
 endif
@@ -459,11 +414,6 @@ endif
 showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS) $(LGPLDEP)
 	-rm -f showmathdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) showmathdemo$(EXEEXT)
-endif !darwin
-endif !debug
 if lgplfiles
 	./addresources showmathdemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
 endif
