@@ -91,4 +91,4 @@ svn status | grep "^?" | sed -e "s/^[?]/rm -rf/g" | cat
 #     svn status
 # if will not generate any reports at all. You should check that now.
 
-ch $save
+cd $save
