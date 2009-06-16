@@ -49,10 +49,8 @@ here=${c%/*}
 # various files if I can not see a "libtool" that suits me.
 
 LIBTOOLIZE="libtoolize"
-ltv="none"
-( ltv=`libtoolize -- version` ) 1>/dev/null 2>&1
-gltv="none"
-# ( gltv=`glibtoolize -- version` ) 1>/dev/null 2>&1
+ltv=`libtoolize --version 2>&1`
+gltv=`glibtoolize --version 2>&1`
 ltavail="no"
 case $ltv in
 *GNU*libtool*)
@@ -68,7 +66,7 @@ case $ltv in
   ;;
 esac
 
-if "$ltavail" != "yes"
+if test "$ltavail" != "yes"
 then
   echo "Can not find GNU libtool installed. Will not do anything"
   exit 1
