@@ -250,7 +250,7 @@ AC_PROG_CXX
 
 # LT_INIT        this is no use with earlier versions of libtool!
 AC_PROG_LIBTOOL
-LT_PREREQ([2.2.4])
+# LT_PREREQ([2.2.4])
 AC_SUBST([LIBTOOL_DEPS])
 
 # autoreconf suggests the following to keep libtool macros up to date
