@@ -6,10 +6,9 @@
 Master=panamint scp://acn1@codemist.dyndns.org:/c/projects/reduce-algebra/trunk
 Master=local    ftp://acn1:?@192.168.1.10/trunk
 
-Omit cslbuild pslbuild generic/redfront/csl generic/redfront/psl generic/libedit*
+Omit cslbuild pslbuild generic temp
 Omit autom4te.cache **/autom4te.cache .svn **/.svn
 Omit **.bak **~ **.log
-Omit generic/redfront/libedit* temp
 
 Binary **/configure configure **bpsl* **schau
 Executable **/configure configure **bpsl* **schau
