@@ -615,20 +615,14 @@ then
                     [CFLAGS="$OLDCFLAGS"])
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"
+if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
 then
-# I will not even look for Xft if I am building for win32 not X. I will
-# also (for now - March 2007) avoid even attempting to detect Xft if I am
-# building for Solaris. This is because in my testing on Solaris 10 (for
-# x86) all my tests that use Xft crash horribly. This MAY be because there is
-# something wrong in the way I try to use Xft and fontconfig, but so far
-# I have not tracked it down and MAYBE it is a glitch in how the version
-# there responds to the customised Type1 fonts that I might try to use...
+# I will not even look for Xft if I am building for win32 not X.
 #
 # Furthermore I will not try xft-config if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
 #
-# All of the abiove is more of a worry now I am starting to assume that
+# All of the above is more of a worry now I am starting to assume that
 # Xft is available...
   AC_ARG_WITH(xft,
     [  --with-xft              Can be used to disable use of XFT])
@@ -681,6 +675,9 @@ then
     fi
   fi
 fi
+
+AC_CHECK_HEADERS([X11/extensions/Xrandr.h])
+AC_CHECK_LIB(Xrandr, XRRQueryExtension)
 
 # find command to do best approx to "ln -s" and set LN_S		
 AC_PROG_LN_S
