@@ -240,19 +240,6 @@ then
   export AUTOMAKE
 fi
 
-if test "x$LIBTOOL" = "x"
-then
-  if test -x /opt/sfw/bin/libtool
-  then LIBTOOL=/opt/sfw/bin/libtool
-  elif test -x /usr/local/bin/libtool
-  then LIBTOOL=/usr/local/bin/libtool
-  elif test -x /usr/bin/libtool
-  then LIBTOOL=/usr/bin/libtool
-  else LIBTOOL=libtool
-  fi
-  export LIBTOOL
-fi
-
 if test "x$INSTALL" = "x"
 then
   if test -x /opt/sfw/bin/install
@@ -351,41 +338,6 @@ else
   fi
 fi
 
-case $machine in
-*cygwin* | *mingw* | *windows*)
-  case `uname -a` in
-  *CYGWIN* | *Cygwin* | *WINDOWS* | *Windows* | *windows* | *mingw* | *MINGW*)
-    if test -f /usr/local/bin/libtoolcacheize
-    then
-      echo libtoolcache utility available
-    else
-    echo "On Cygwin I STRONGLY suggest that you find and install"
-    echo "the libtoolcache utility, since it reduces the build time"
-    echo "for FOX by almost a factor of ten. It is NOT needed on other"
-    echo "platforms. For use here I want it installed such that a"
-    echo "command /usr/local/bin/libtoolcacheize is available."
-    echo ""
-    echo "Would you like me to try to install libtoolcache for you? (yes/no)"
-    echo "If you do not respond within 20 second I will assume NO"
-# I know I am running under cygwin here so I feel entitled to use bash
-# extensions to the shell language!
-    answer="timeout"
-    read -t 20 answer
-    case $answer in
-    yes | YES | Yes | Y | y)
-      /bin/sh $here/build-libtool-cache.sh
-      ;;
-    timeout)
-      echo "Assuming you meant \"no\""
-      ;;
-    *)
-      ;;
-    esac
-    fi
-    ;;
-  esac
-  ;;
-esac
 if test $arch = "-"
 then
   if test $m32 = "yes"
@@ -588,21 +540,6 @@ echo Am at `pwd`
 	--with-opengl=no --disable-jpeg --disable-zlib --disable-bz2lib \
 	--disable-png --disable-tiff --prefix=${FOXDIR}
 
-# On Cygwin the built time is TERRIBLE because of costs in libtool. It can
-# take almost ten times as long to build on Cygwin as under Linux. The
-# "libtoolcache" utility (do a web search to find it!) brings the build
-# cost down to about what it should be. Since this is not a tool fully
-# supported by cywgin or libtool itself you may not have it installed. Here
-# I use if if I find it installed in /usr/local/bin. That is where I put it
-# and so I will see the benefit! 
-# Note however that I do not want to do this if I am cross-building for
-# XP64. It is not needed and it breaks something!
-
-if test -x /usr/local/bin/libtoolcacheize && test $xp64 = "no"
-then
-  /usr/local/bin/libtoolcacheize
-fi
-
 echo "About to compile FOX and its test programs"
 $MAKE
 
@@ -616,24 +553,4 @@ echo "FOX 1.${FOX_SERIES}.${FOX_VERSION} should now be up to date"
 echo "Note you will have the FOX build-tree left in $foxsrc"
 echo "and you can delete it if you are short of disc space."
 
-case $machine in
-*cygwin* | *mingw* | *windows* )
-  if test -f /usr/local/bin/libtoolcacheize
-  then
-    echo Using libtoolcache
-  else
-    echo "Did that rebuild take a LONG time?"
-    echo On Cygwin I STRONGLY suggest that you find and install
-    echo the libtoolcache utility, since it reduces the build time
-    echo for FOX by almost a factor of ten. It is NOT needed on other
-    echo platforms. For use here I want it installed such that a
-    echo command /usr/local/bin/libtoolcacheize is available.
-# I delay for 10 second here to increase the chance that people read
-# the above. An extra 10 seconds on top of a build that may take
-# over an hour but that could take 10 minutes if libtoolcache was
-# installed seems reasonable to me.
-    sleep 10
-  fi
-  ;;
-esac
 

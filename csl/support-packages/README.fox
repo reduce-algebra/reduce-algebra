@@ -34,7 +34,8 @@ I have not tested and do not support use of Microsoft, Watcom or other C and
 C++ compilers. For Linux and Unix I have had success of a wide range of
 32-bit systems and also on OpenSuSE's release of 64-bit Linux.
 I can build for Windows-64 by using the Microsoft command-line C compiler
-launched from cygwin and used as a cross-compiler.
+launched from cygwin and used as a cross-compiler. Well for that I now use
+the 64-bit varient on mingw.
 
 The scripts "build-all.sh" and  "build-fox-1.6.sh" show the options that I use
 to create binaries of FOX just sufficient for my purposes. At the time

@@ -6,11 +6,7 @@
 # use of different names leads to slight differences in its behaviour!
 #
 #  dist.sh         Create full distribution
-#  lgpldist.sh     Create archive of "minimal sources etc" required to
-#                  satisfy obligations under the Lesser GNU Public License
-#                  version 2.1
 #  manifest.sh     create MANIFEST.new and compare with main MANIFEST
-#  lgplmanifest.sh create LGPLMANIFEST.new and compare with LGPLMANIFEST
 
 
 # I want a "working" version of "sed" but can not guarantee that
@@ -70,56 +66,18 @@ case $0 in
   ;;
 esac
 
-lgpl="no"
 # I will tag full archives with today's date
 d=`date +%Y%m%d`
-LGPL=""
 
 f="reduce-algebra-$d"
 fbase="reduce-algebra"
-
-case $0 in
-*lgpl*)
-  lgpl="yes"
-  f="lgplfiles"
-  fbase="lgplfiles"
-  LGPL="LGPL"
-  ;;
-esac
 
 # Note that in general "find" does not have to support a "-wholename"
 # feature, so when I need to filter on the whole rooted path here I
 # drop back to use of "-exec" and a small shell script. By only activating
 # this of the "-name" test applies the overall burden is rather small.
 
-if test "$lgpl" = "yes"
-then
-# The following lines characterise material that I will omit when
-# creating the "minimal" version of the sources.
-  omit1="-name packages -prune -o \
-         -name gabriel -prune -o \
-         -name generic -prune -o \
-         -name libedit -prune -o \
-         -name doc -prune -o \
-         -name buglist -prune -o \
-         -name reduce.doc -prune -o \
-         -name reduce.fonts -prune -o \
-         -name support-packages -prune -o \
-         -name bin -prune -o \
-         -name fonts -prune -o \
-         -name psl -prune -o \
-         -name texmacs-plugin -prune -o \
-         ( -name foxtests \
-           -exec $here/reject.sh ./csl/foxtests {} ; ) -prune -o \
-         ( -name doc \
-           -exec $here/reject.sh ./csl/fox/doc {} ; ) -prune -o"
-  omit2="-name configure -o -name texmacs-plugin.tar.gz -o \
-         -name csl.tex -o"
-else
-  omit1=
-  omit2=
-  $here/resetall.sh
-fi
+$here/resetall.sh
 
 gcc $here/nsort.c -o $here/nsort
 
@@ -161,15 +119,12 @@ find . \
        -name libedit -prune -o \
        -name libedit-20090111-3.0 -prune -o \
        -name reduce-algebra-\* -prune -o    \
-       -name lgplfiles\* -prune -o      \
-       $omit1                           \
        -name autom4te.cache -prune -o   \
        \( \! \( -name \*.bak -o         \
                 -name \*~ -o            \
-                -name LGPLMANIFEST.dep -o \
                 -name \*.aux -o         \
                 -name \*.dvi -o         \
-                -name \*.tmp\* -o $omit2 \
+                -name \*.tmp\* -o       \
                 -name \*.old -o         \
                 -name rebuild.log -o    \
                 -name libreadline\* -o  \
@@ -185,19 +140,11 @@ find . \
                 -name untab.exe -o      \
                 -name reduce-algebra.tar.bz2 -o \
                 -name .htaccess -o      \
-                -name MANIFEST.new -o   \
-                -name LGPLMANIFEST.new  \
-       \) -print \) | $here/nsort > ${LGPL}MANIFEST.new
+                -name MANIFEST.new      \
+       \) -print \) | $here/nsort > MANIFEST.new
 
 
 rm -f $here/nsort $here/nsort.exe
-
-if test "$lgpl" = "yes"
-then
-   $SED -e 's,^\.$,\$(R)/lgplfiles.tar.bz2:,;s,^./,	\$(R)/,;s,$, \\,' < LGPLMANIFEST > LGPLMANIFEST.dep
-   echo "" >> LGPLMANIFEST.dep
-   echo "# End of dependencies" >> LGPLMANIFEST.dep
-fi
 
 if test "$manifest" = "no"
 then
@@ -210,7 +157,7 @@ then
 # not manufacture a new distribution archive so often that this is
 # a big problem.
 
-  for x in `cat ${LGPL}MANIFEST`
+  for x in `cat MANIFEST`
   do
     x0=${x#./}
     if test -d $x0
@@ -235,23 +182,20 @@ then
   tar cf - $f | bzip2 > $f.tar.bz2
   rm -rf $f
 
-  if test "$lgpl" = "no"
-  then
-    ln -sf $f.tar.bz2 reduce-algebra.tar.bz2
-  fi
+  ln -sf $f.tar.bz2 reduce-algebra.tar.bz2
 
   ls -lhd ${fbase}*.tar.bz2
 
 fi
 
-if diff ${LGPL}MANIFEST ${LGPL}MANIFEST.new > /dev/null
+if diff MANIFEST MANIFEST.new > /dev/null
 then
-  echo Files are in step with ${LGPL}MANIFEST
-  rm -f ${LGPL}MANIFEST.new
+  echo Files are in step with MANIFEST
+  rm -f MANIFEST.new
 else
   echo The following files are new or lost:
-  diff ${LGPL}MANIFEST ${LGPL}MANIFEST.new
-  echo review ${LGPL}MANIFEST please
+  diff MANIFEST MANIFEST.new
+  echo review MANIFEST please
 fi
 
 cd $here0

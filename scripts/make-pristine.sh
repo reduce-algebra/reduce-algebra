@@ -75,17 +75,13 @@ svn -R revert .
 
 svn update
 
-echo "At present I wimp out from deleting all these files, but the"
-echo "following is a list of files you should delete. In the future I"
-echo "make do that automatically."
-
 # This looks for files that you have in your directory that subversion does
 # not know of as copies of things from the main repository. I set up ready to
 # delete all such. This may include local log files, work in progress or
 # ANYTHING that you have put anywhere in this tree, and the idea of this
 # script is that it is DELETED. Please note that you have been warned!
 
-svn status | grep "^?" | sed -e "s/^[?]/rm -rf/g" | cat
+svn status | grep "^?" | sed -e "s/^[?]/rm -rf/g" | /bin/sh
 
 # At the end I HOPE that if you go
 #     svn status

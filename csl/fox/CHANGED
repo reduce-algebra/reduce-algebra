@@ -1,7 +1,7 @@
 The file in this directory are a derived work of FOX 1.6.21, and are
 subject to the LGPL, a copy of which is present here. One requirement
 of that is that changes are prominently noted and a date is attached. This
-file is to collect that information in a way intende to be as clear and
+file is to collect that information in a way intended to be as clear and
 easy for people to use as possible. I am taking the view that files that one
 would re-generate using the gnu autoconf tools (eg Makefile.in) do not need
 to be marked or listed provided the master copy (eg Makefile.am) that they
@@ -26,8 +26,9 @@ src/FXFontSelector.cpp         set up size in selector dialog to match
                                requested size if you have a scalable font.
 src/FXText.cpp                 option to wrap at a fixed column
 src/FXWindow.cpp               HANDLE vs FXuint to be win64-safe
-src/Makefile.am                support 64-bit windows build using MS
-                               command-line tools, add in my new files
+src/Makefile.am                support 64-bit windows build using
+                               command-line tools, add in my new files,
+                               remove use of libtool.
 utils/Makefile.am              if cross-building use gcc to compile utils.
 
 
@@ -39,7 +40,7 @@ include/FXPostscriptFont.h
 include/FXShowMath.h
 include/FXTerminal.h
 
-src/FXDCNativePrinter.cpp      can use windows native printin as well as
+src/FXDCNativePrinter.cpp      can use windows native printing as well as
                                printing to postscript
 src/FXMathText.cpp             like FXText.cpp but scope for in-line maths
 src/FXPostscriptFont.cpp       Postscript font metrics for printing

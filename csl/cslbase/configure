@@ -643,8 +643,6 @@ cygpath_FALSE
 cygpath_TRUE
 canrun_FALSE
 canrun_TRUE
-lgplfiles_FALSE
-lgplfiles_TRUE
 jit_FALSE
 jit_TRUE
 fox_FALSE
@@ -777,7 +775,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_lgplfiles
 with_mingw64
 with_csl
 with_psl
@@ -1450,14 +1447,13 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-lgplfiles        Make binaries even safer to distribute wrt LGPL
   --with-mingw64          Try to cross-build using 64-bit mingw
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            specify host-name to use when logging
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
-  --with-cygwin           Force use of raw cywgin (note GPL)
+  --with-cygwin           Force use of raw cywgin (note cygwin license)
   --with-mingw=DIR        MingW installation location
   --with-fox=DIR          FOX installation location
   --with-fox-pending      do not check dir from --with-fox
@@ -2442,26 +2438,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 
-# Note that the default for "--with-lgplfiles" is "no"
-
-
-# Check whether --with-lgplfiles was given.
-if test "${with_lgplfiles+set}" = set; then
-  withval=$with_lgplfiles;
-else
-  with_lgplfiles="no"
-fi
-
-
-if test "x$with_lgplfiles" != "xno"
-then
-
-cat >>confdefs.h <<\_ACEOF
-#define LGPLFILES 1
-_ACEOF
-
-fi
-
 
 # Check whether --with-mingw64 was given.
 if test "${with_mingw64+set}" = set; then
@@ -2854,8 +2830,8 @@ $as_echo "$as_me: ************************************************" >&6;}
 $as_echo "$as_me: ** \"--with-cygwin\" set so I will link in the  **" >&6;}
     { $as_echo "$as_me:$LINENO: ** library cygwin1.dll, which is subject to   **" >&5
 $as_echo "$as_me: ** library cygwin1.dll, which is subject to   **" >&6;}
-    { $as_echo "$as_me:$LINENO: ** the GPL. Beware license consequences.      **" >&5
-$as_echo "$as_me: ** the GPL. Beware license consequences.      **" >&6;}
+    { $as_echo "$as_me:$LINENO: ** the Cygwin's license terms. Please check.  **" >&5
+$as_echo "$as_me: ** the Cygwin's license terms. Please check.  **" >&6;}
     { $as_echo "$as_me:$LINENO: ** Specifically do not distribute what you    **" >&5
 $as_echo "$as_me: ** Specifically do not distribute what you    **" >&6;}
     { $as_echo "$as_me:$LINENO: ** build in this mode without fully           **" >&5
@@ -2910,16 +2886,8 @@ fi
 $as_echo "$as_me: ************************************************" >&6;}
     { $as_echo "$as_me:$LINENO: ** I will set -mno-cygwin here to avoid use   **" >&5
 $as_echo "$as_me: ** I will set -mno-cygwin here to avoid use   **" >&6;}
-    { $as_echo "$as_me:$LINENO: ** of cygwin1.dll, which is subject to the    **" >&5
-$as_echo "$as_me: ** of cygwin1.dll, which is subject to the    **" >&6;}
-    { $as_echo "$as_me:$LINENO: ** GPL. The result should be that my compiled **" >&5
-$as_echo "$as_me: ** GPL. The result should be that my compiled **" >&6;}
-    { $as_echo "$as_me:$LINENO: ** application remains subject to MY choice   **" >&5
-$as_echo "$as_me: ** application remains subject to MY choice   **" >&6;}
-    { $as_echo "$as_me:$LINENO: ** of license terms rather than being forced  **" >&5
-$as_echo "$as_me: ** of license terms rather than being forced  **" >&6;}
-    { $as_echo "$as_me:$LINENO: ** to adopt the GPL.                          **" >&5
-$as_echo "$as_me: ** to adopt the GPL.                          **" >&6;}
+    { $as_echo "$as_me:$LINENO: ** of cygwin1.dll.                            **" >&5
+$as_echo "$as_me: ** of cygwin1.dll.                            **" >&6;}
     { $as_echo "$as_me:$LINENO: ************************************************" >&5
 $as_echo "$as_me: ************************************************" >&6;}
 
@@ -6057,8 +6025,9 @@ fi
 # FIXME: we rely on the cache variable name because
 # there is no other way.
 set dummy $CC
-ac_cc=`echo $2 | sed 's/[^a-zA-Z0-9_]/_/g;s/^[0-9]/_/'`
-if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" != yes"; then
+am_cc=`echo $2 | sed 's/[^a-zA-Z0-9_]/_/g;s/^[0-9]/_/'`
+eval am_t=\$ac_cv_prog_cc_${am_cc}_c_o
+if test "$am_t" != yes; then
    # Losing compiler, so override with the script.
    # FIXME: It is wrong to rewrite CC.
    # But if we don't then we get into trouble of one sort or another.
@@ -7271,8 +7240,9 @@ CXXFLAGS="$old_CXXFLAGS"
 # FIXME: we rely on the cache variable name because
 # there is no other way.
 set dummy $CC
-ac_cc=`echo $2 | sed 's/[^a-zA-Z0-9_]/_/g;s/^[0-9]/_/'`
-if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" != yes"; then
+am_cc=`echo $2 | sed 's/[^a-zA-Z0-9_]/_/g;s/^[0-9]/_/'`
+eval am_t=\$ac_cv_prog_cc_${am_cc}_c_o
+if test "$am_t" != yes; then
    # Losing compiler, so override with the script.
    # FIXME: It is wrong to rewrite CC.
    # But if we don't then we get into trouble of one sort or another.
@@ -10867,184 +10837,6 @@ if test "$ac_res" != no; then
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
-
-fi
-
-{ $as_echo "$as_me:$LINENO: checking for ANSI C header files" >&5
-$as_echo_n "checking for ANSI C header files... " >&6; }
-if test "${ac_cv_header_stdc+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <float.h>
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_cv_header_stdc=yes
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_header_stdc=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-if test $ac_cv_header_stdc = yes; then
-  # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <string.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "memchr" >/dev/null 2>&1; then
-  :
-else
-  ac_cv_header_stdc=no
-fi
-rm -f conftest*
-
-fi
-
-if test $ac_cv_header_stdc = yes; then
-  # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <stdlib.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "free" >/dev/null 2>&1; then
-  :
-else
-  ac_cv_header_stdc=no
-fi
-rm -f conftest*
-
-fi
-
-if test $ac_cv_header_stdc = yes; then
-  # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
-  if test "$cross_compiling" = yes; then
-  :
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <ctype.h>
-#include <stdlib.h>
-#if ((' ' & 0x0FF) == 0x020)
-# define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
-# define TOUPPER(c) (ISLOWER(c) ? 'A' + ((c) - 'a') : (c))
-#else
-# define ISLOWER(c) \
-		   (('a' <= (c) && (c) <= 'i') \
-		     || ('j' <= (c) && (c) <= 'r') \
-		     || ('s' <= (c) && (c) <= 'z'))
-# define TOUPPER(c) (ISLOWER(c) ? ((c) | 0x40) : (c))
-#endif
-
-#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
-int
-main ()
-{
-  int i;
-  for (i = 0; i < 256; i++)
-    if (XOR (islower (i), ISLOWER (i))
-	|| toupper (i) != TOUPPER (i))
-      return 2;
-  return 0;
-}
-_ACEOF
-rm -f conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_link") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_try") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  :
-else
-  $as_echo "$as_me: program exited with status $ac_status" >&5
-$as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-ac_cv_header_stdc=no
-fi
-rm -rf conftest.dSYM
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-
-
-fi
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_stdc" >&5
-$as_echo "$ac_cv_header_stdc" >&6; }
-if test $ac_cv_header_stdc = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define STDC_HEADERS 1
-_ACEOF
 
 fi
 
@@ -18797,14 +18589,6 @@ else
   jit_FALSE=
 fi
 
- if test "x$with_lgplfiles" != "xno"; then
-  lgplfiles_TRUE=
-  lgplfiles_FALSE='#'
-else
-  lgplfiles_TRUE='#'
-  lgplfiles_FALSE=
-fi
-
  if test "x$can_run_executables" = "xyes"; then
   canrun_TRUE=
   canrun_FALSE='#'
@@ -18821,46 +18605,6 @@ else
   cygpath_FALSE=
 fi
 
-
-if test "x$really_use_cygwin" = "xyes"
-then
-  { $as_echo "$as_me:$LINENO: ************************************************" >&5
-$as_echo "$as_me: ************************************************" >&6;}
-  { $as_echo "$as_me:$LINENO: ** \"--with-cygwin\" set so I will link in the  **" >&5
-$as_echo "$as_me: ** \"--with-cygwin\" set so I will link in the  **" >&6;}
-  { $as_echo "$as_me:$LINENO: ** library cygwin1.dll, which is subject to   **" >&5
-$as_echo "$as_me: ** library cygwin1.dll, which is subject to   **" >&6;}
-  { $as_echo "$as_me:$LINENO: ** the GPL. Beware license consequences.      **" >&5
-$as_echo "$as_me: ** the GPL. Beware license consequences.      **" >&6;}
-  { $as_echo "$as_me:$LINENO: ** Specifically do not distribute what you    **" >&5
-$as_echo "$as_me: ** Specifically do not distribute what you    **" >&6;}
-  { $as_echo "$as_me:$LINENO: ** build in this mode without checking the    **" >&5
-$as_echo "$as_me: ** build in this mode without checking the    **" >&6;}
-  { $as_echo "$as_me:$LINENO: ** cygwin license conditions carefully.       **" >&5
-$as_echo "$as_me: ** cygwin license conditions carefully.       **" >&6;}
-  { $as_echo "$as_me:$LINENO: ************************************************" >&5
-$as_echo "$as_me: ************************************************" >&6;}
-fi
-
-if test "x$with_lgplfiles" = "xno"
-then
-  { $as_echo "$as_me:$LINENO: \"--with-lgplfiles=no\" used. Do not distribute any" >&5
-$as_echo "$as_me: \"--with-lgplfiles=no\" used. Do not distribute any" >&6;}
-  { $as_echo "$as_me:$LINENO: binaries made here without understanding and abiding by" >&5
-$as_echo "$as_me: binaries made here without understanding and abiding by" >&6;}
-  { $as_echo "$as_me:$LINENO: the terms of the Lesser GNU Public License version 2.1" >&5
-$as_echo "$as_me: the terms of the Lesser GNU Public License version 2.1" >&6;}
-  { $as_echo "$as_me:$LINENO: If you specify \"--with-lgplfiles=yes\" you are safe to" >&5
-$as_echo "$as_me: If you specify \"--with-lgplfiles=yes\" you are safe to" >&6;}
-  { $as_echo "$as_me:$LINENO: distributing just binaries, but building will be slower." >&5
-$as_echo "$as_me: distributing just binaries, but building will be slower." >&6;}
-  { $as_echo "$as_me:$LINENO: Otherwise if you ship your own binary you must make" >&5
-$as_echo "$as_me: Otherwise if you ship your own binary you must make" >&6;}
-  { $as_echo "$as_me:$LINENO: source of FOX available and at least object code for" >&5
-$as_echo "$as_me: source of FOX available and at least object code for" >&6;}
-  { $as_echo "$as_me:$LINENO: the rest available. On Sourceforge we do that." >&5
-$as_echo "$as_me: the rest available. On Sourceforge we do that." >&6;}
-fi
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -19055,13 +18799,6 @@ if test -z "${jit_TRUE}" && test -z "${jit_FALSE}"; then
   { { $as_echo "$as_me:$LINENO: error: conditional \"jit\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 $as_echo "$as_me: error: conditional \"jit\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${lgplfiles_TRUE}" && test -z "${lgplfiles_FALSE}"; then
-  { { $as_echo "$as_me:$LINENO: error: conditional \"lgplfiles\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-$as_echo "$as_me: error: conditional \"lgplfiles\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -19643,8 +19380,7 @@ $debug ||
 if test -n "$CONFIG_FILES"; then
 
 
-ac_cr='
-'
+ac_cr=''
 ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
 if test "$ac_cs_awk_cr" = "a${ac_cr}b"; then
   ac_cs_awk_cr='\\r'
@@ -20245,7 +19981,16 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 
 
   case $ac_file$ac_mode in
-    "depfiles":C) test x"$AMDEP_TRUE" != x"" || for mf in $CONFIG_FILES; do
+    "depfiles":C) test x"$AMDEP_TRUE" != x"" || # Autoconf 2.62 quotes --file arguments for eval, but not when files
+# are listed without --file.  Let's play safe and only enable the eval
+# if we detect the quoting.
+case $CONFIG_FILES in
+*\'*) eval set x "$CONFIG_FILES" ;;
+*)   set x $CONFIG_FILES ;;
+esac
+shift
+for mf
+do
   # Strip MF so we end up with the name of the file.
   mf=`echo "$mf" | sed -e 's/:.*$//'`
   # Check whether this is an Automake generated Makefile or not.

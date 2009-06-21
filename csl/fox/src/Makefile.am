@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-## MODIFIED BY A C NORMAN, 2008
+## MODIFIED BY A C NORMAN, 2008, 2009
 ## The changes add some new sources and support an experimental
 ## build for windows-64 using the Microsoft command-line tools. This
 ## comment is only here because LGPL obliges me to mark any file that is
@@ -9,6 +9,10 @@
 ## "obnoxious advertising clause" while not minding that they oblige me
 ## to incorporate something rather similar here!
 
+## I have had LOTS of pain with libtool when I try to build on Windows,
+## various versions of Linux (with various generations of libtool installed),
+## BSD and Solaris etc. So I am changing the build here so that it only
+## creates simple libraries and thus is able to avoid all use of libtool.
 
 
 AM_CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
@@ -19,23 +23,22 @@ SUFFIXES = .gif .bmp
 # For a (cross-) build for Windows-64 (and possibly at some stage to build
 # using the command line Microsoft compilers for 32-bit windows using the
 # cygwin version of bash as a shell) I want to create libFOX-1.6.lib rather
-# then libFOX-1.6.la. The GNU "libtool" scheme and much of automake/autoconf
-# seems not to really understand the ".lib" suffix, and so in that case I
-# will do the build and the install essentially manually.
+# then libFOX-1.6.la. The automake/autoconf seems not to really understand
+# the ".lib" suffix, and so in that case I will do the build and the
+# install essentially manually.
 
 if msvcxp64
 
 noinst_DATA = libFOX-1.6.lib
-lib_LTLIBRARIES =
+lib_LIBRARIES =
 
 else
 
 noinst_DATA =
-lib_LTLIBRARIES = libFOX-1.6.la
-libFOX_1_6_la_LIBADD = $(X_LIBS) $(X_BASE_LIBS) $(X_EXTRA_LIBS) $(GL_LIBS)
-libFOX_1_6_la_LDFLAGS = \
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)    \
-	-export-dynamic
+lib_LIBRARIES = libFOX-1.6.a
+# The next line may have been useful when this was an LTLIBRARY but hurts
+# when it is a regular library!
+# libFOX_1_6_a_LIBADD = $(X_LIBS) $(X_BASE_LIBS) $(X_EXTRA_LIBS) $(GL_LIBS)
 endif
 
 CURSORS = \
@@ -537,12 +540,11 @@ libFOX-1.6.lib:	$(srcs)
 	lib /out:libFOX-1.6.lib $(srcs1)
 
 install-data-local:	libFOX-1.6.lib
-	echo " $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) libFOX-1.6.lib $(DESTDIR)$(libdir)/libFOX-1.6.lib"
-	$(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) libFOX-1.6.lib $(DESTDIR)$(libdir)/libFOX-1.6.lib
+	cp libFOX-1.6.lib $(DESTDIR)$(libdir)/libFOX-1.6.lib"
 
 else
 
-libFOX_1_6_la_SOURCES = \
+libFOX_1_6_a_SOURCES = \
 $(CODECS) \
 FXDCNativePrinter.cpp \
 FXPostscriptFont.cpp \

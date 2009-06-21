@@ -21,7 +21,7 @@ without further agreement from me may not be treated as being convertable
 to LGPL 3, and the static linking exception does not apply to my changes or
 contributions.
 
-However as a special exception to LGPL 2.1 I grant permission for my code
+However as a special exception to LGPL 2.1 I grant permission for *MY* code
 to be merged or linked with other code that is subject to LGPL version 3 or
 GPL version 3. This provision does not represent permission to alter the
 license of my code to be that of LGPL 3 or GPL 3 - of itself and when removed
@@ -50,6 +50,11 @@ LGPL 2.1 and adhere to them carefully. But the source code and build
 files in this directory are clearly sufficient to create the library in the
 form that I use it (because that is exactly what I do) and so those files
 contain within them the "minimal source" as required.
+
+Note that if you want to use the FOX library for purposes other than the use
+I make here you may do better fetching a copy from the main FOX web-site,
+where more updates and upgrades are liable to be available. This is in effect
+a rather frozen version.
 
            A C Norman. May 2008
 

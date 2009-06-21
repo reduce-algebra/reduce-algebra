@@ -240,23 +240,13 @@ case $host in
     ;;
 esac
 
-AC_CONFIG_MACRO_DIR([m4])
-
 dnl Checks for programs.
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 
-# LT_INIT        this is no use with earlier versions of libtool!
-AC_PROG_LIBTOOL
-# LT_PREREQ([2.2.4])
-AC_SUBST([LIBTOOL_DEPS])
-
-# autoreconf suggests the following to keep libtool macros up to date
-# in a better way. But I then have trouble with libtool after all so until
-# I understand better this is going away.
-# AC_CONFIG_MACRO_DIR([m4])
+AC_PROG_RANLIB
 
 case $host_os in
    *darwin*)

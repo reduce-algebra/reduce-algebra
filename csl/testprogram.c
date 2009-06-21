@@ -266,10 +266,6 @@ int main(int argc, char *argv[])
 #error expected to have SIZEOF_VOID_P
 #endif
 
-#ifndef STDC_HEADERS
-#error expected to have STDC_HEADERS
-#endif
-
 #ifndef X86
 #error expected to have X86
 #endif
@@ -534,10 +530,6 @@ int main(int argc, char *argv[])
 
 #ifndef SIZEOF_VOID_P
 #error expected to have SIZEOF_VOID_P
-#endif
-
-#ifndef STDC_HEADERS
-#error expected to have STDC_HEADERS
 #endif
 
 #endif /* X11 */

@@ -22,15 +22,6 @@ AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR(profile.dat)
 AC_CONFIG_FILES([Makefile])
 
-# libtool 1.5.x seems not to honour the next line, so I have backed off.
-#AC_CONFIG_MACRO_DIR([m4])
-
-# libtool 1.5.x does not support LT_INIT and LT_PREREQ so
-# for backwards compatibility I will use the old macro.
-#LT_INIT
-#LT_PREREQ([2.2.4])
-AC_PROG_LIBTOOL
-AC_SUBST([LIBTOOL_DEPS])
 
 AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])
 if test "x$ACLOCAL" = "xno"
@@ -54,12 +45,6 @@ AC_CHECK_PROG([AUTORECONF], [autoreconf], [yes], [no])
 if test "x$AUTORECONF" = "xno"
 then
   AC_MSG_WARN([Please consider installing autoreconf])
-fi
-
-AC_CHECK_PROG([LIBTOOL],    [libtool], [yes], [no])
-if test "x$LIBTOOL" = "xno"
-then
-  AC_MSG_WARN([Please consider installing libtool])
 fi
 
 
@@ -364,6 +349,8 @@ if test "x$CXX" = "x"
 then
   AC_MSG_ERROR([Please install a C++ compiler and try again])
 fi
+
+AC_PROG_RANLIB
 
 AC_MSG_NOTICE([Checking for "--hash-style=both"])
 if test "x$GCC" = "xyes"
@@ -760,7 +747,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
-AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
+AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h dlfcn.h])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h stdint.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])

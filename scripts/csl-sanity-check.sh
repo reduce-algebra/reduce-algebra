@@ -43,18 +43,18 @@ here=${c%/*}
 
 cd $here
 
-if autoconf -o /dev/null >/dev/null 2>&1 && libtoolize --version >/dev/null 2>&1
+if autoconf -o /dev/null >/dev/null 2>&1
 then
-  echo "autoconf and automake seems OK and libtool exists"
+  echo "autoconf and automake seems OK"
 else
-  echo "Either you do not have autoconf, automake & libtool installed"
+  echo "Either you do not have autoconf & automake installed"
   echo "or your version of autoconf/automake is older than I like."
   echo " "
   echo "I can try to build but you might like to consider upgrading"
   echo " "
-  echo "At present I like autoconf 2.61 and libtool 2.2.4 or newer"
+  echo "At present I like autoconf 2.61 or newer"
 # Here I will explicitly touch files that otherwise could cause use of
-# autoconf, automake or libtool so that the versions checked out from
+# autoconf or automake so that the versions checked out from
 # subversion are used.
   touch $here/../csl/aclocal.m4
   sleep 1

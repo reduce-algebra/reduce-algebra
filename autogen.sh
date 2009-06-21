@@ -43,35 +43,6 @@ esac
 
 here=${c%/*}
 
-# On a Macintosh (in particular) I have had pain because of the
-# presence of a command called "libtool" that is not the GNU tool of
-# that name. So here I check and I will refuse to recreate the
-# various files if I can not see a "libtool" that suits me.
-
-LIBTOOLIZE="libtoolize"
-ltv=`libtoolize --version 2>&1`
-gltv=`glibtoolize --version 2>&1`
-ltavail="no"
-case $ltv in
-*GNU*libtool*)
-  ltavail="yes"
-  ;;
-*)
-  case $gltv in
-  *GNU*libtool*)
-    ltavail="yes"
-    LIBTOOLIZE="glibtoolize"
-    ;;
-  esac
-  ;;
-esac
-
-if test "$ltavail" != "yes"
-then
-  echo "Can not find GNU libtool installed. Will not do anything"
-  exit 1
-fi
-
 save=`pwd`
 cd $here
 
@@ -84,12 +55,25 @@ then
   exit 1
 fi
 
-cd csl
+cd scripts
+echo " "
+echo "updating in scripts"
+if ! aclocal
+then
+  echo "reconfiguring failed in $here/scripts"
+  cd $save
+  exit 1
+fi
+if ! autoconf
+then
+  echo "reconfiguring failed in $here/scripts"
+  cd $save
+  exit 1
+fi
+
+cd ../csl
 echo " "
 echo "updating in csl"
-rm -f ltmain.sh
-touch ltmain.sh
-$LIBTOOLIZE --force
 if ! ./autogen.sh
 then
   echo "reconfiguring failed in $here/csl"
@@ -110,10 +94,6 @@ fi
 cd ../fox
 echo " "
 echo "updating in csl/fox"
-# The following lines may be necessary on some systems?
-rm -f ltmain.sh
-touch ltmain.sh
-$LIBTOOLIZE --force
 if ! autoreconf -i -f -v
 then
   echo "autoreconf failed in $here/csl/fox"

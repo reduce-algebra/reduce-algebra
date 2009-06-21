@@ -1,7 +1,7 @@
 # This is a hand-written top-level Makefile
 
 
-.PHONY: dist lgpldist all csl psl
+.PHONY: dist all csl psl
 
 all:
 	+$(SHELL) scripts/make.sh $(MFLAGS)  $(MAKECMDGOALS)
@@ -9,14 +9,6 @@ all:
 
 dist:
 	$(SHELL) scripts/dist.sh
-
--include LGPLMANIFEST.dep
-
-LGPLMANIFEST.dep:
-	touch LGPLMANIFEST.dep
-
-lgpldist: $(LGPL)
-	$(SHELL) scripts/lgpldist.sh
 
 # This script tries a fairly basic sanity check to see if the
 # support-tools, include files and libraries needed to build the

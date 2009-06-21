@@ -16,8 +16,7 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 
 ok="yes"
 
-# Step 1: aclocal.m4 must be later than configure.ac in directories where
-#         libtool is not involved.
+# Step 1: aclocal.m4 must be later than configure.ac
 
 for d in . csl csl/cslbase csl/foxtests csl/fox psl psl/support-packages/xport-2.05
 do
@@ -30,28 +29,8 @@ do
   fi
 done
 
-# Step 2: aclocal.m4 must be newer that both configure.ac and the
-#         libtool-related things in the m4 directory when they
-#         exist. In the csl/fox directory the name configure.in is
-#         used for historical reasons.
 
-lt="m4/libtool.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4 m4/lt~obsolete.m4"
-
-for d in csl csl/fox
-do
-  for x in $lt
-  do
-    if test $srcdir/$d/aclocal.m4 -ot $srcdir/$d/$x
-    then
-      echo "$d/aclocal.m4 was older than $d/$x"
-      ok="no"
-    fi
-  done
-done
-
-
-# Step 3: Makefile.in must be newer than aclocal.m4, and that will lead
-#         to it being newer than any of the libtool-related m4 files.
+# Step 2: Makefile.in must be newer than aclocal.m4.
 #         It must also be newer than Makefile.am.
 
 for d in . csl csl/cslbase csl/foxtests psl psl/support-packages/xport-2.05
@@ -68,8 +47,8 @@ do
   fi
 done
 
-# Step 3a: As step 3, but in cases where aclocal.m4 lives in a parent
-#          directory.
+# Step 3: As step 2, but in cases where aclocal.m4 lives in a parent
+#         directory.
 
 for d in csl/fox csl/fox/doc csl/fox/doc/art csl/fox/doc/screenshots csl/fox/include csl/fox/src csl/fox/utils
 do
@@ -146,15 +125,6 @@ fi
 # down a flag that they do not know about, and so I transcribe into here
 # all the flags that the CSL configuration may ever want!
 
-# My understanding of the LGPL is now that the mechanism that this enabled
-# is not in fact needed.
-
-AC_ARG_WITH(lgplfiles,
-   AC_HELP_STRING([--with-lgplfiles],
-                  [Make binaries even safer to distribute wrt LGPL]),
-   [],
-   [with_lgplfiles="no"])
-
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
                   [Try to cross-build using 64-bit mingw]),
@@ -226,11 +196,29 @@ AC_ARG_ENABLE(static,
 
 ###########################################################################
 
+# Now I want to know if the current directory is the same as $srcdir. At
+# one stage I checked that by looking to see if $srcdir was ".". That was OK
+# for direct calls of the form "./configure" where the "." as in "./" was
+# detected. But the reconfig step messes that up and anyway it is a delicate
+# cheat. So here is a different delicate cheat!
+
+rm -f ./testfile.tst $srcdir/testfile.tst
+touch $srcdir/testfile.tst
+if test -f ./testfile.tst
+then
+  rm -f ./testfile.tst
+  inplace="yes"
+else
+  inplace="no"
+fi
+
+echo in-place build attempt = $inplace
+
 # I have a fairly elaborate scheme to select a directory to use.
 build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 
-case $srcdir in
-  .)
+case $inplace in
+  yes)
 # Here somebody has run the "configure" script within the top-level
 # source directory. I really want the build to take place in a
 # host-specific subdirectory so I will divert things!
@@ -340,14 +328,18 @@ then
         extras="--with-xft"
       fi
       ;;
-    *-*solaris*)
-# Solaris is treated specially here because my experiments with it seemed
-# to show that Xft gave me a lot of pain. So I do not look for it on
-# that platform. That may at present cause everything to fail to build!
-      CFLAGS="$CFLAGS "
-      CXXFLAGS="$CXXFLAGS "
-      export CFLAGS CXXFLAGS
-      ;;
+#
+# Well it is easier for me in general if I ALWAYS assume and require Xft
+# so I will remove this cop-out... and see how things behave.
+#
+#    *-*solaris*)
+## Solaris is treated specially here because my experiments with it seemed
+## to show that Xft gave me a lot of pain. So I do not look for it on
+## that platform. That may at present cause everything to fail to build!
+#      CFLAGS="$CFLAGS "
+#      CXXFLAGS="$CXXFLAGS "
+#      export CFLAGS CXXFLAGS
+#      ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now
 # relying on it.
@@ -392,56 +384,15 @@ then
   AC_MSG_NOTICE([$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
           CPPFLAGS="$CPPFLAGS" CFLAGS="$CFLAGS" \
           CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" \
-          --disable-shared --enable-release --with-opengl=no \
+          --enable-release --with-opengl=no \
           --disable-jpeg --disable-zlib --disable-bz2lib \
           --disable-png --disable-tiff --prefix=$builddir $extras])
   eval "$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-          --disable-shared --enable-release --with-opengl=no \
+          --enable-release --with-opengl=no \
           --disable-jpeg --disable-zlib --disable-bz2lib \
           --disable-png --disable-tiff --prefix=$builddir $extras"
-
-# If you do NOT use libtoolcacheize then the time it takes to compile
-# FOX when you are on Windows is extreme. This is mainly because
-# Windows does not provide an efficient mechanism that can support "fork",
-# and the scripts within libtool end up running VERY VERY slowly.
-
-  LTC="false"
-  IFSsave="$IFS"
-  IFS=":"
-  for p in $PATH
-  do
-    if test "$LTC" = "false"
-    then
-#     AC_MSG_NOTICE([checking for $p/libtoolcacheize])
-      if test -x $p/libtoolcacheize
-      then
-         LTC="$p/libtoolcacheize"
-         IFS="$IFSsave"
-         AC_MSG_NOTICE([Found $LTC])
-      fi
-    fi
-  done
-  IFS="$IFSsave"
-# I will look in /usr/local/bin even if it is not in $PATH
-  if test "$LIC" = "false" && test -x /usr/local/bin/libtoolcacheize
-  then
-    LIC="/usr/local/bin/libtoolcacheize"
-  fi
-
-  if test "$LTC" != "false"
-  then
-    AC_MSG_NOTICE([About to run $LTC])
-    if $LTC
-    then
-      AC_MSG_NOTICE([libtoolcacheized successfully])
-    else
-      AC_MSG_NOTICE([$LTC failed])
-    fi
-  else
-    AC_MSG_NOTICE([libtoolcacheize not found])
-  fi
 
   cd $builddir
 

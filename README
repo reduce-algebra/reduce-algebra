@@ -5,7 +5,7 @@
                               March 2009
 
 
-THis is the REDUCE algebra system, which was originally developed by
+This is the REDUCE algebra system, which was originally developed by
 Tony Hearn. A bibliography somewhere in this tree reports some of the
 large numbers of papers that have been written about or relying on
 REDUCE.
@@ -57,19 +57,14 @@ binaries build from FOX (and eg either a full static binary linking it in,
 or a dynamic library of just FOX itself) is required to provide additional
 material as explained by the LGPL. A copy of those terms accompanies the
 FOX sources in the csl/fox sub-directory here. In order to comply with this
-while making things as easy as I can for anybody who just fetches a binary
-distribution of this code I have made the build scripts here incorporate
-a compressed version of all sources relevant to FOX and to relinking against
-it within the binary, and so the executable comes with a command line
-option that can cause it to export that material as a separate file.
-The effect is obviously that binaries appear larger than would otherwise be
-the case, but it should then be fully in line with license terms to
-propagate, transfer, re-distribute, convey or generally do the things one
-would like to with them. The full FOX distribution from its web-site
-contains material in addition to the minimal required sources distributed
-in this manner, and can obviously be consulted by anybody who is keen
-to do development in that area. So note explicitly for the CSL variant here
-that as regards the FOX toolkit
+you should always arrange to make source of everything available whenever
+you distribute a binary that you have created. However the LGPL permits me
+then to make any BINARIES that I distribute subject to any license of my
+own choice, and MY choice there is that those binaries are subject to the
+Modifies BSD License as it applies to the CSL and Reduce sources here. Thus
+while I will make all my sources available to satisfy LGPL anybody who
+fetches a binary copy of this code can do pretty much whatever they like
+with it.
 
 LGPL section 2 statement:
 (a) My modified variant of it is a software library.
@@ -97,49 +92,10 @@ LGPL section 4 statement:
          source code, which must be distributed under the terms of
          Sections 1 and 2 above on a medium customarily used for software
          interchange."
-The mechanism I have established to create binaries arranges that they
-naturally include all corresponding machine-readable source files for the
-library. Running an executable with a command line argument "--help"
-sends explanation of this to the standard output, while invoking it
-with an option "--dump-source" creates a source archive in a normal
-form. Thus all binaries automatically provide that relevant source is
-distributed not just with them but as part of them. By adhering to this it
-is proper to distribute the compiled/binary form of the modified FOX library.
-
-Now in "A Practical Guide to GPL Compliance" the agents of the FSF note that
-(L)GPL 3 "clarifies" the phrase "medium customarily..." into requiring
-a fixed physical form of the material or a web-based presence that is
-guaranteed to persist for a certain amount of time. LGPL 2 has just the
-wording cited here and my scheme ensures that any recipient of the binary
-version of the code can from it derive the corresponding sources as a
-".tar" file, and that they retain the ability to do so for as long as they
-retain the executable binary. I argue that this is well inside the intent of
-LGPL 2, but the fact that (L)GPL 3 appears to require something yet harder
-is yet another reason to be cautious of (L)GPL 3. Here is what SFLC actually
-say:
-     "GPLv2 refers to the various storage mechanisms as medi[a] customarily
-     used for software interchange. While the Internet has attained primacy
-     as a means of software distribution where super-fast Internet connections
-     are available, GPLv2 was written at a time when downloading software
-     was not practical (and was often impossible). For much of the world,
-     this condition has not changed since GPLv2s publication, and the
-     Internet still cannot be considered a medium customary for software
-     interchange. GPLv3 clarifies this matter, requiring that source be fixed
-     on a durable physical medium customarily used for software interchange.
-     This language affirms that option (a) requires binary redistributors
-     to provide source on a physical medium."
-I take the view that whenever a binary distribution is made under my scheme
-it is automatically accompanied by itself (!) and that an executable file
-that when run can expand to create a source archive is a thoroughly
-customary form in whihc software is distributed.
-
-The "Practical Guide" also stresses that the source distribution must exactly
-match the binary that it accompanies, and that failing to meet that
-requirement has been one to the SFLC's main reasons for filing lawsuits
-(they started their agressive programme of anti-infringement in 2007).
-The scheme I adopt here can naturally accompany each binary with the source
-code it was built for and hence really helps avoid accidental lapses.
-
+For GPL 2 and LGPL 2.1 it seems established that placing my source on
+the same web-site that binaries are satisfies this. Note that (L)GPL 3
+doe snot consider web availability of source sufficient, and so I do not
+wish to use any code subject to it.
 
 LGPL section 6 statement:
 I view this document as a prominent place and the commentary here as
@@ -155,11 +111,6 @@ To redistribute a binary where a work that uses the library has been linked
 against the library I choose to follow 6(a) of LGPL. This requires that any
 binary be accompanied with full machine readable source of the library and
 sufficient source or object code of the main application to allow relinking.
-The "--dump-source" mechanism achieves this, and that neither I nor any third
-party who re-distributes unmodified versions of the binaries I create is
-bound by any obligation to include additional written offers or the various
-alternative mechanisms envisaged by LGPL.
-
 
 Some people appear to believe that all the above would be unnecessary if the
 main code in this package was organised so as to link against the modified
@@ -189,8 +140,8 @@ complications at all on that front.
 
 
 
-The above lengthy discussion and mess about LGPL compliance may now be being
-replaced by a reading in the csl/reduce.doc directory that is lighter-weight.
+(The above lengthy discussion and mess about LGPL compliance may now be being
+replaced by a reading in the csl/reduce.doc directory that is lighter-weight.)
 
 At some stage some experiments using Qt 4,5 (under LGPL 2.1) may appear here.
 
