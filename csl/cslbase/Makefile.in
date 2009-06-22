@@ -434,7 +434,10 @@ CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 # BEWARE BEWARE BEWARE the next line must have trailing blanks
 DEST = -o   
 R = $(srcdir)/../..
-FOXDEP = ../include/fox-1.6/fxver.h
+@win64_FALSE@FOXDEP = ../lib/libFOX-1.6.a
+
+#FOXDEP=../include/fox-1.6/fxver.h
+@win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
 
 # The next section is to conspire with automake's treatement of externions for
 # executables (ie ".exe") so that eg "make reduce" will case "make reduce.exe" to

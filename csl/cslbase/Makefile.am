@@ -283,7 +283,12 @@ DEST=-o
 
 R = $(srcdir)/../..
 
-FOXDEP=../include/fox-1.6/fxver.h
+#FOXDEP=../include/fox-1.6/fxver.h
+if win64
+FOXDEP=../lib/libFOX-1.6.lib
+else !win64
+FOXDEP=../lib/libFOX-1.6.a
+endif !win64
 
 # The next rule will only trigger if fxver.h is not present at all.
 

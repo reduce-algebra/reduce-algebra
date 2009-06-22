@@ -186,6 +186,7 @@ then
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
+  win64="yes"
 else
 case $host in
 *-*-cygwin* | x86_64-pc-mingw32)
@@ -926,6 +927,7 @@ HIGHOPT="-O2"
 if test "x$CC" = "xx86_64-pc-mingw32-gcc"
 then
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
+  win64="yes"
 fi
 
 if test "x$GCC" = "xyes"
@@ -1062,7 +1064,6 @@ AC_CHECK_TYPES([cpu_set_t], [], [],
 AC_HEADER_STAT
 AC_C_CONST
 AC_STRUCT_TM
-AC_HEADER_STDBOOL
 AC_C_VOLATILE
 
 AC_CHECK_TYPES([int8_t,int16_t,int32_t,int64_t,intptr_t], [], [],
@@ -1288,6 +1289,7 @@ AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
 AM_CONDITIONAL(x86,test "x$x86" = "xyes")
 AM_CONDITIONAL(windows,test "x$windows_build" = "xyes")
+AM_CONDITIONAL(win64,test "x$win64" = "xyes")
 AM_CONDITIONAL(cygwin,test "x$cygwin_build" = "xyes")
 AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")
 AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")

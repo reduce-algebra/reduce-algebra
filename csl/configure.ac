@@ -762,7 +762,6 @@ AC_CHECK_TYPES([cpu_set_t], [], [],
 AC_HEADER_STAT
 AC_C_CONST
 AC_STRUCT_TM
-AC_HEADER_STDBOOL
 AC_C_VOLATILE
 
 # If I were keen I would check that a lot of the above actually found the

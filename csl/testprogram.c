@@ -138,10 +138,6 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_SQRT
 #endif
 
-#ifndef HAVE_STDBOOL_H
-#error expected to have HAVE_STDBOOL_H
-#endif
-
 #ifndef HAVE_STDDEF_H
 #error expected to have HAVE_STDDEF_H
 #endif
@@ -386,10 +382,6 @@ int main(int argc, char *argv[])
 
 #ifndef HAVE_SOCKLEN_T
 #error expected to have HAVE_SOCKLEN_T
-#endif
-
-#ifndef HAVE_STDBOOL_H
-#error expected to have HAVE_STDBOOL_H
 #endif
 
 #ifndef HAVE_STDDEF_H

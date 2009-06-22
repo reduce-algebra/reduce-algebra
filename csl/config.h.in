@@ -183,9 +183,6 @@
    zero-length file name argument. */
 #undef HAVE_STAT_EMPTY_STRING_BUG
 
-/* Define to 1 if stdbool.h conforms to C99. */
-#undef HAVE_STDBOOL_H
-
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H
 
@@ -328,9 +325,6 @@
 
 /* Function XRenderCreateCursor available */
 #undef HAVE_XRENDERCREATECURSOR
-
-/* Define to 1 if the system has the type `_Bool'. */
-#undef HAVE__BOOL
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */

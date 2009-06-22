@@ -784,7 +784,6 @@ AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/shm.h sys/ipc.h signal.h])
 AC_HEADER_STAT
 AC_C_CONST
 AC_STRUCT_TM
-AC_HEADER_STDBOOL
 AC_C_VOLATILE
 
 AC_CHECK_TYPES([int8_t,int16_t,int32_t,int64_t,intptr_t], [], [],
