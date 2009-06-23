@@ -19,7 +19,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | sed -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -40,7 +40,7 @@ case $a in
   ;;
 esac
 
-here=${c%/*}
+here=`echo $c | sed -e 's+/[^/]*$++'`
 
 ap="$1"
 scr="$2"
@@ -114,8 +114,9 @@ else
   do
     if test -x $hx/csl/$ap
     then
+      hx1=`echo $hx | sed -e 's+.*/++'`
       echo "You are running $host but the nearest match"
-      echo "I can find was built for ${hx##*/}. I will try"
+      echo "I can find was built for $hx1. I will try"
       echo "it, but if there are problems you need to compile"
       echo "a version for yourself using \"./configure; make\"".
       bin="$hx/csl/$ap"

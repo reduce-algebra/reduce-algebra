@@ -35,7 +35,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | $SED -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -56,7 +56,7 @@ case $a in
   ;;
 esac
 
-here=${c%/*}
+here=`echo $c | $SED -e 's+/[^/]*$++'`
 
 manifest="no"
 
@@ -159,7 +159,7 @@ then
 
   for x in `cat MANIFEST`
   do
-    x0=${x#./}
+    x0=`echo $x | sed -e 's+./++'`
     if test -d $x0
     then
        if  test "$x0" != "."
@@ -168,7 +168,7 @@ then
           mkdir -p $f/$x0
        fi
     else
-       x1=${x0%/*}
+       x1=`echo $x0 | sed -e 's+/[^/]*$++'`
 #      echo Copy $x0 to $f/$x1
 # Note that the "-p" flag preserves timestamps (and user info and
 # access permissions). The timestamps matter for the autoconf-generated
