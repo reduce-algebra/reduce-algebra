@@ -76,13 +76,15 @@ else
 STORE=64000000
 fi
 
-if ! test -d red
-then
+if test -d red
+then :
+else
   mkdir red
 fi
 
-if ! test -d deps
-then
+if test -d deps
+then :
+else
   mkdir deps
 fi
 

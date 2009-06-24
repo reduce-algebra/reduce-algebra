@@ -66,8 +66,9 @@ fi
 
 here=`echo $here | sed -e 's+/[^/]*$++'`
 
-if ! test -d $here/cslbuild
-then
+if test -d $here/cslbuild
+then :
+else
   mkdir -p $here/cslbuild
 fi
 

@@ -20,7 +20,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=`echo $a | sed =e 's+./++'`
+    a=`echo $a | sed -e 's+./++'`
     ;;
   esac
   c=`pwd`/$a
@@ -48,8 +48,9 @@ cd $here
 
 echo "Updating autoconf scripts in $here"
 
-if ! autoreconf -i -f -v
-then
+if autoreconf -i -f -v
+then :
+else
   echo "autoreconf failed in $here"
   cd $save
   exit 1
@@ -58,14 +59,16 @@ fi
 cd scripts
 echo " "
 echo "updating in scripts"
-if ! aclocal
-then
+if aclocal
+then :
+else
   echo "reconfiguring failed in $here/scripts"
   cd $save
   exit 1
 fi
-if ! autoconf
-then
+if autoconf
+then :
+else
   echo "reconfiguring failed in $here/scripts"
   cd $save
   exit 1
@@ -74,8 +77,9 @@ fi
 cd ../csl
 echo " "
 echo "updating in csl"
-if ! ./autogen.sh
-then
+if ./autogen.sh
+then :
+else
   echo "reconfiguring failed in $here/csl"
   cd $save
   exit 1
@@ -84,8 +88,9 @@ fi
 cd cslbase
 echo " "
 echo "updating in csl/cslbase"
-if ! autoreconf -i -f -v && autoheader --force
-then
+if autoreconf -i -f -v && autoheader --force
+then :
+else
   echo "autoreconf failed in $here/csl/cslbase"
   cd $save
   exit 1
@@ -94,8 +99,9 @@ fi
 cd ../fox
 echo " "
 echo "updating in csl/fox"
-if ! autoreconf -i -f -v
-then
+if autoreconf -i -f -v
+then :
+else
   echo "autoreconf failed in $here/csl/fox"
   cd $save
   exit 1
@@ -106,8 +112,9 @@ then
   cd ../foxtests
   echo " "
   echo "updating in csl/foxtests"
-  if ! autoreconf -i -f -v
-  then
+  if autoreconf -i -f -v
+  then :
+  else
     echo "autoreconf failed in $here/csl/foxtests"
     cd $save
     exit 1
@@ -117,8 +124,9 @@ fi
 cd ../../psl
 echo " "
 echo "updating in psl"
-if ! autoreconf -i -f -v
-then
+if autoreconf -i -f -v
+then :
+else
   echo "autoreconf failed in $here/psl"
   cd $save
   exit 1
@@ -127,8 +135,9 @@ fi
 cd support-packages/xport-2.05
 echo " "
 echo "updating in psl/support-packages/xport-2.05"
-if ! autoreconf -i -f -v
-then
+if autoreconf -i -f -v
+then :
+else
   echo "autoreconf failed in $here/psl/support-packages/xport-2.05"
   cd $save
   exit 1

@@ -56,20 +56,23 @@ rm -rf autom4te.cache
 
 canconfigure="yes"
 
-if ! autoconf --version </dev/null >/dev/null 2>&1
-then
+if autoconf --version </dev/null >/dev/null 2>&1
+then :
+else
   canconfigure="no"
   echo "autoconf not seem to be available"
 fi
 
-if ! automake --version </dev/null >/dev/null 2>&1
-then
+if automake --version </dev/null >/dev/null 2>&1
+then :
+else
   canconfigure="no"
   echo "automake not seem to be available"
 fi
 
-if ! autoheader --version </dev/null >/dev/null 2>&1
-then
+if autoheader --version </dev/null >/dev/null 2>&1
+then :
+else
   canconfigure="no"
   echo "autoheader not seem to be available"
 fi
@@ -91,23 +94,26 @@ then
 fi
 
 echo "About to run aclocal --force"
-if ! aclocal --force
-then
+if aclocal --force
+then :
+else
   echo "aclocal failed in $here"
   cd $save
   exit 1
 fi
 
 echo "About to run autoreconf -i -f -v"
-if ! autoreconf -i -f -v
-then
+if autoreconf -i -f -v
+then :
+else
   echo "autoreconf failed in $here"
   cd $save
   exit 1
 fi
 
-if ! autoheader
-then
+if autoheader
+then :
+else
   echo "autoheader failed in $here"
   cd $save
   exit 1

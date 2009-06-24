@@ -44,8 +44,9 @@ then
 # 2.61, which is what I seem to need at the moment.
 # The configure.ac file here arranges to check the automake
 # version too.
-  if ! $here/../autogen.sh
-  then
+  if $here/../autogen.sh
+  then :
+  else
     echo "The autoconf/automake process seems to have failed"
     echo "Please check you have up to date versions of all those installed"
     exit 1

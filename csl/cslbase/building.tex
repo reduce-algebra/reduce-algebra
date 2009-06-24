@@ -22,6 +22,9 @@ cd ..
 # so already for you.
 pushd cslbase; chmod +x stamp auto configure; ./stamp; popd
 pushd ../util; . ./setexec.sh; popd
+[If you have just plain "sh" not "bash" then of course "pushd" is not
+available, but the intent here should still be clear!]
+
 # Create and select directory for building REDUCE
 mkdir somedir
 cd somedir
