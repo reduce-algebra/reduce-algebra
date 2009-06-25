@@ -1,5 +1,15 @@
 AC_INIT([REDUCE], [20080421], [acn1@cam.ac.uk])
 
+# The next line is a dreadful thing and is in case I am launched
+# from a bash prompt, in which case the SHELL variable will be set
+# to /bin/bash (or perhaps the user's login shell?). Anyway that hurts
+# config.guess on Solaris....
+if test -x /bin/sh
+then
+  SHELL=/bin/sh
+  export SHELL
+fi
+
 AC_COPYRIGHT([The REDUCE project])
 
 # I am going to expect that you have at least this version of
@@ -10,90 +20,6 @@ AC_PREREQ(2.61)
 abssrcdir=`$srcdir/scripts/here.sh`
 
 AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
-
-# The following MESS is hereto check whether the autoconf-related files
-# are all up to date.
-
-ok="yes"
-
-# Step 1: aclocal.m4 must be later than configure.ac
-
-for d in . csl csl/cslbase csl/foxtests csl/fox psl psl/support-packages/xport-2.05
-do
-  c="configure.ac"
-  if test "$d" = "csl/fox"; then c="configure.in"; fi
-  if test $srcdir/$d/aclocal.m4 -ot $srcdir/$d/$c
-  then
-    echo $d/aclocal.m4 is older than $d/$c
-    ok="no"
-  fi
-done
-
-
-# Step 2: Makefile.in must be newer than aclocal.m4.
-#         It must also be newer than Makefile.am.
-
-for d in . csl csl/cslbase csl/foxtests psl psl/support-packages/xport-2.05
-do
-  if test $srcdir/$d/Makefile.in -ot $srcdir/$d/aclocal.m4
-  then
-    echo $d/Makefile.in is older than $d/aclocal.m4
-    ok="no"
-  fi
-  if test $srcdir/$d/Makefile.in -ot $srcdir/$d/Makefile.am
-  then
-    echo $d/Makefile.in is older than $d/Makefile.am
-    ok="no"
-  fi
-done
-
-# Step 3: As step 2, but in cases where aclocal.m4 lives in a parent
-#         directory.
-
-for d in csl/fox csl/fox/doc csl/fox/doc/art csl/fox/doc/screenshots csl/fox/include csl/fox/src csl/fox/utils
-do
-  if test $srcdir/$d/Makefile.in -ot $srcdir/csl/fox/aclocal.m4
-  then
-    echo $d/Makefile.in is older than csl/fox/aclocal.m4
-    ok="no"
-  fi
-  if test $srcdir/$d/Makefile.in -ot $srcdir/$d/Makefile.am
-  then
-    echo $d/Makefile.in is older than $d/Makefile.am
-    ok="no"
-  fi
-done
-
-# Step 4: config.h.in must be newer than aclocal.m4
-
-for d in csl csl/cslbase
-do
-  if test $srcdir/$d/config.h.in -ot $srcdir/$d/aclocal.m4
-  then
-    echo $d/config.h.in is older than $d/aclocal.m4
-    ok="no"
-  fi
-done
-
-# Step 5: configure must be newer than aclocal.m4
-
-for d in . csl csl/cslbase csl/fox csl/foxtests psl psl/support-packages/xport-2.05
-do
-  if test $srcdir/$d/configure -ot $srcdir/$d/aclocal.m4
-  then
-    echo $d/configure is older than $d/aclocal.m4
-    ok="no"
-  fi
-done
-
-if test "x$ok" = "xno"
-then
-# The INTENT here is that by using exec I will fully leave this level of
-# running configure, and as a result I hope to close the configure script
-# and so when I try to recreate it it will not be in use, and when I restart
-# I will use the new version.
-  exec $SHELL -c "$SHELL $srcdir/scripts/reautogen.sh $ac_configure_args"
-fi
 
 AC_CANONICAL_HOST()
 

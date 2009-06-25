@@ -7941,7 +7941,7 @@ rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"
+if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
 then
 # I will not even look for Xft if I am building for win32 not X.
 #
@@ -7972,7 +7972,7 @@ else
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:$PATH"
+as_dummy="/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH"
 for as_dir in $as_dummy
 do
   IFS=$as_save_IFS

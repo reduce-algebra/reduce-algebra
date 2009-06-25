@@ -1,7 +1,12 @@
 #! /bin/sh
 
 # This is used to re-run autoconf, automake etc and then restart
-# a call to "configure"
+# a call to "configure". It had been used in an attempt to arrange that
+# when one went "configure;make" the make step would not instantly
+# invoke automake etc and then run the configure step all over again. But
+# the test I had to do that were too bash-specific so I have backed off
+# from that. The result will sometimes be configures that take a lot
+# longer than is really necessary!
 
 a=$0
 c=unknown

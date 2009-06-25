@@ -11065,7 +11065,7 @@ fi
 
 
 
-if test "x$MINGW32" != "xyes"; then
+if test "x$MINGW32" != "xyes" && test "x$solaris" != "xyes"; then
 
 
 # Check whether --with-xcursor was given.

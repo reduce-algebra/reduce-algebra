@@ -812,7 +812,7 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"
+if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
 then
 # I will not even look for Xft if I am building for win32 not X.
 #
@@ -826,7 +826,7 @@ then
   if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
   then
     AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
-      [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:$PATH])
+      [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH])
     if test "$XFT_CONFIG" != "no"
     then
 # I will add to CFLAGS and XLIBS if xft-config is found

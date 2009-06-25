@@ -14,6 +14,13 @@
 AC_INIT([CSLCONFIGTEST],[1.0])
 AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
+# The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
+if test -x /bin/sh
+then
+  SHELL=/bin/sh
+  export SHELL
+fi
+
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
 # not really verify that 2.61 is still sufficient!
