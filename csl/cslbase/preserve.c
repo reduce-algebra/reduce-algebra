@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 70ed9025 19-Aug-2008 */
+/* Signature: 3fc5978e 04-Jul-2009 */
 
 #include "headers.h"
 
@@ -90,8 +90,6 @@
  */
 
 int32_t compression_worth_while = 128;
-
-#ifndef DEMO_MODE
 
 static void Cfwrite(char *a, int32_t size)
 {
@@ -227,8 +225,6 @@ static void Cfwrite(char *a, int32_t size)
         Iputc(prev);
     }
 }
-
-#endif /* DEMO_MODE */
 
 /*
  * These routines pack multiple binary files into one big one.  The
@@ -432,13 +428,6 @@ static CSLbool version_moan(int v)
         term_printf("+++++ You are at present running in a 32-bit environment.\n");
         return YES;
     }
-#if defined DEMO_MODE || defined DEMO_BUILD
-    if ((v & 0x7f) == 'd') return NO;
-    term_printf("\n");
-    term_printf("+++++ This image file is either corrupted or was not\n");
-    term_printf("+++++ built for use with the Demonstration version.\n");
-    term_printf("+++++ Unable to proceed - sorry.\n");
-#else
     if ((v & 0x7f) == IMAGE_FORMAT_VERSION) return NO;
     term_printf("\n");
     if ((v & 0x7f) == 'd')
@@ -448,7 +437,6 @@ static CSLbool version_moan(int v)
     }
     else
     {    }
-#endif
     return YES;
 }
 
@@ -469,9 +457,6 @@ directory *open_pds(char *name, int mode)
     struct stat buf;
     FILE *f;
     int l, i, n;
-#ifdef DEMO_MODE
-    mode = PDS_INPUT;
-#endif
     l = strlen(name);
     nameDir = (name[l-1] == '/') || (name[l-1] == '\\');
     f = NULL;
@@ -991,9 +976,6 @@ CSLbool open_output(char *name, int len)
  * data.
  */
 {
-#ifdef DEMO_MODE
-    return YES;
-#else
     nil_as_base
     int i, j, n;
     char *ct;
@@ -1149,7 +1131,6 @@ CSLbool open_output(char *name, int len)
     {   current_output_directory = NULL;
         return YES;
     }
-#endif /* DEMO_MODE */
 }
 
 static void list_one_native(const char *name, int why, long int size)
@@ -1511,14 +1492,11 @@ CSLbool Iopen(char *name, int len, int forinput, char *expanded_name)
         }
         return YES;
     }
-#ifndef DEMO_MODE
     if (!any_output_request)
-#endif
     {   if (expanded_name != NULL)
             strcpy(expanded_name, "<no output file specified>");
         return YES;
     }
-#ifndef DEMO_MODE
     n = would_be_output_directory;
     if (expanded_name != NULL)
     {
@@ -1541,7 +1519,6 @@ CSLbool Iopen(char *name, int len, int forinput, char *expanded_name)
         else sprintf(expanded_name, "%s%s%.*s%s", n, p1, len, name, p2);
     }
     return open_output(name, len);
-#endif
 }
 
 CSLbool Iwriterootp(char *expanded_name)
@@ -1551,10 +1528,6 @@ CSLbool Iwriterootp(char *expanded_name)
  * doing anything too drastic.
  */
 {
-#ifdef DEMO_MODE
-    strcpy(expanded_name, "<demo-system>");
-    return YES;
-#else
     Lisp_Object nil = C_nil;
     directory *d;
     Lisp_Object oo = qvalue(output_library);
@@ -1574,7 +1547,6 @@ CSLbool Iwriterootp(char *expanded_name)
     if ((d->h.updated & D_WRITE_OK) == 0) return YES;
     if (Istatus != I_INACTIVE) return YES;
     return NO;
-#endif /* DEMO_MODE */
 }
 
 CSLbool Iopen_help(int32_t offset)
@@ -1600,12 +1572,8 @@ CSLbool Iopen_help(int32_t offset)
         }
         return YES;
     }
-#ifdef DEMO_MODE
-    return YES;
-#else
     if (!any_output_request) return YES;
     return open_output(NULL, HELP_CODE);
-#endif
 }
 
 CSLbool Iopen_banner(int code)
@@ -1632,12 +1600,8 @@ CSLbool Iopen_banner(int code)
         }
         return YES;
     }
-#ifdef DEMO_MODE
-    return YES;
-#else
     if (!any_output_request) return YES;
     return open_output(NULL, BANNER_CODE);
-#endif
 }
 
 /*
@@ -1665,9 +1629,6 @@ CSLbool Iopen_to_stdout(void)
 
 CSLbool Idelete(char *name, int len)
 {
-#ifdef DEMO_MODE
-    return YES;
-#else
     nil_as_base
     int i, nrec;
     directory *d;
@@ -1707,7 +1668,6 @@ CSLbool Idelete(char *name, int len)
         }
     }
     return YES;
-#endif /* DEMO_MODE */
 }
 
 #define update_crc(chk, c)                      \
@@ -1752,8 +1712,6 @@ failed:
     return YES;
 }
 
-#ifndef DEMO_MODE
-
 static int put_checksum(FILE *f, uint32_t chk)
 {
     Lisp_Object nil = C_nil;
@@ -1779,8 +1737,6 @@ static int put_checksum(FILE *f, uint32_t chk)
     return (putc((int)chk, f) == EOF);
 }
 
-#endif /* DEMO_MODE */
-
 CSLbool Icopy(char *name, int len)
 /*
  * Find the named module in one of the input files, and if the place that
@@ -1790,9 +1746,6 @@ CSLbool Icopy(char *name, int len)
  * ignore that and only support the older situation. That is because I am lazy!
  */
 {
-#ifdef DEMO_MODE
-    return YES;
-#else
     int i, ii, j, n;
     long int k, l, save = read_bytes_remaining;
     uint32_t chk1;
@@ -1929,9 +1882,6 @@ ofound:
     for (k=0; k<l; k++)
     {   int c = getc(id->f);
         uint32_t chk_temp;
-/*
- * I do not have to do anything special about encryption here...
- */
         update_crc(chk1, c);
         if (c == EOF) return YES;
         putc(c, d->f);
@@ -1945,7 +1895,6 @@ ofound:
     setbits24(&d->d[i].D_size, (int32_t)l);
     setbits32(d->h.eof, (int32_t)ftell(d->f));
     return NO;
-#endif /* DEMO_MODE */
 }
 
 CSLbool IcloseInput(int check_checksum)
@@ -1978,9 +1927,6 @@ CSLbool IcloseOutput(int plant_checksum)
  * was most recently opened.
  */
 {
-#ifdef DEMO_MODE
-    return YES;
-#else
     int r;
     Lisp_Object nil = C_nil;
     directory *d = current_output_directory;
@@ -2016,14 +1962,10 @@ CSLbool IcloseOutput(int plant_checksum)
     d->h.updated &= ~D_UPDATED;
     current_output_entry = NULL;
     return r;
-#endif /* DEMO_MODE */
 }
 
 CSLbool finished_with(int j)
 {
-#ifdef DEMO_MODE
-    return NO;
-#else
     directory *d = fasl_files[j];
     fasl_files[j] = NULL;
 /*
@@ -2103,7 +2045,6 @@ CSLbool finished_with(int j)
     if (d->h.updated & D_PENDING) return NO;
     else if (d->f != NULL && fclose(d->f) != 0) return YES;
     else return NO;
-#endif /* DEMO_MODE */
 }
 
 CSLbool Ifinished(void)
@@ -2156,20 +2097,13 @@ int Igetc(void)
     }
     if (c == EOF) return c;
     update_crc(subfile_checksum, c);
-    if (crypt_active >= 0)
-    {   if (crypt_count >= CRYPT_BLOCK)
-        {   crypt_get_block(crypt_buffer);
-            crypt_count = 0;
-        }
-        c ^= crypt_buffer[crypt_count++];
-    }
     return (c & 0xff);
 }
 
 int32_t Iread(void *buff, int32_t size)
 /*
  * Reads (size) bytes into the indicated buffer.  Returns number of
- * bytes read. Decrypts if crypt_active >= 0.
+ * bytes read.
  */
 {
 #if 1
@@ -2212,14 +2146,6 @@ int32_t Iread(void *buff, int32_t size)
     for (i=0; i<(int)n_read; i++)
     {   int c = p[i];
         update_crc(subfile_checksum, c);
-        if (crypt_active >= 0)
-        {   if (crypt_count >= CRYPT_BLOCK)
-            {   crypt_get_block(crypt_buffer);
-                crypt_count = 0;
-            }
-            c ^= crypt_buffer[crypt_count++];
-            p[i] = (char)c;
-        }
     }
     read_bytes_remaining -= n_read;
     return n_read;
@@ -2237,25 +2163,14 @@ CSLbool Iputc(int ch)
  * was trouble.
  */
 {
-#ifdef DEMO_MODE
-    return YES;
-#else
     uint32_t chk_temp;
     Lisp_Object nil = C_nil;
     write_bytes_written++;
-    if (crypt_active >= 0)
-    {   if (crypt_count >= CRYPT_BLOCK)
-        {   crypt_get_block(crypt_buffer);
-            crypt_count = 0;
-        }
-        ch ^= crypt_buffer[crypt_count++];
-    }
     update_crc(subfile_checksum, ch);
     if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
     else if (putc(ch, binary_write_file) == EOF) return YES;
     return NO;
-#endif /* DEMO_MODE */
 }
 
 #define FWRITE_CHUNK 0x4000
@@ -2265,15 +2180,11 @@ CSLbool Iwrite(void *buff, int32_t size)
  * Writes (size) bytes from the given buffer, returning YES if trouble.
  */
 {
-#ifdef DEMO_MODE
-    return YES;
-#else
     unsigned char *p = (unsigned char *)buff;
     int32_t i;
     uint32_t chk_temp;
     Lisp_Object nil = C_nil;
-    if (crypt_active >= 0 ||
-        (fasl_stream != nil && fasl_stream != SPID_NIL))
+    if ((fasl_stream != nil && fasl_stream != SPID_NIL))
     {
 /*
  * Note that in this case the checksum is updated within Iputc() so I do
@@ -2283,11 +2194,6 @@ CSLbool Iwrite(void *buff, int32_t size)
             if (Iputc(p[i])) return YES;
         return NO;
     }
-/*
- * If encrypted writing is active I will have gone through Iputc for
- * every individual character and so will not get down to here. Thus the
- * optimised calls to fwrite() can remain intact.
- */
     for (i=0; i<size; i++)
     {   /* Beware - update_crc is a macro and the {} block here is essential */
         update_crc(subfile_checksum, p[i]);
@@ -2302,7 +2208,6 @@ CSLbool Iwrite(void *buff, int32_t size)
     if (size == 0) return NO;
     else return 
        (fwrite(p, 1, (size_t)size, binary_write_file) != (size_t)size);
-#endif /* DEMO_MODE */
 }
 
 /*
@@ -2322,7 +2227,6 @@ static void unadjust(Lisp_Object *cp)
  * If p is a pointer to an object that has moved, unadjust it.
  */
 {
-#ifndef DEMO_MODE
     Lisp_Object nil = C_nil, p = (*cp); /* Beware "=*" anachronism! */
     if (p == nil)
     {   *cp = SPID_NIL; /* Marks NIL in preserve files */
@@ -2369,12 +2273,10 @@ static void unadjust(Lisp_Object *cp)
                  (void *)cp, (void *)p);
         abort();
     }
-#endif /* DEMO_MODE */
 }
 
 static void unadjust_consheap(void)
 {
-#ifndef DEMO_MODE
     int32_t page_number;
     for (page_number = 0; page_number < heap_pages_count; page_number++)
     {   void *page = heap_pages[page_number];
@@ -2389,7 +2291,6 @@ static void unadjust_consheap(void)
             fr += sizeof(Lisp_Object);
         }
     }
-#endif /* DEMO_MODE */
 }
 
 static void convert_word_order(void *p)
@@ -2417,7 +2318,6 @@ static void convert_word_order(void *p)
 
 static void unadjust_vecheap(void)
 {
-#ifndef DEMO_MODE
     int32_t page_number, i;
     for (page_number = 0; page_number < vheap_pages_count; page_number++)
     {   void *page = vheap_pages[page_number];
@@ -2526,12 +2426,10 @@ static void unadjust_vecheap(void)
             low += 2*sizeof(Lisp_Object);
         }
     }
-#endif /* DEMO_MODE */
 }
 
 static void unadjust_bpsheap(void)
 {
-#ifndef DEMO_MODE
     int32_t page_number;
     for (page_number = 0; page_number < bps_pages_count; page_number++)
     {   void *page = bps_pages[page_number];
@@ -2559,12 +2457,10 @@ static void unadjust_bpsheap(void)
             fr += doubleword_align_up(length_of_header(h));
         }
     }
-#endif /* DEMO_MODE */
 }
 
 static void unadjust_all(void)
 {
-#ifndef DEMO_MODE
     int32_t i;
     Lisp_Object nil = C_nil;
     set_up_entry_lookup();
@@ -2592,13 +2488,11 @@ static void unadjust_all(void)
     unadjust_consheap();
     unadjust_vecheap();
     unadjust_bpsheap();
-#endif /* DEMO_MODE */
 }
 
 
 void preserve_native_code(void)
 {
-#ifndef DEMO_MODE
 /*
  * I should maybe worry a little more here about IO errors...
  */
@@ -2628,16 +2522,10 @@ void preserve_native_code(void)
         Cfwrite((char *)p, CSL_PAGE_SIZE);
     }
     IcloseOutput(1);
-#endif /* DEMO_MODE */
 }
 
 void preserve(char *banner)
 {
-#ifdef DEMO_MODE
-    err_printf("\nThe demo systen can not save a checkpoint file\n");
-    give_up();
-    return;
-#else
     int32_t i;
     CSLbool int_flag = NO;
     Lisp_Object nil = C_nil;
@@ -2696,7 +2584,6 @@ void preserve(char *banner)
 /* 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks */
         get_user_files_checksum((unsigned char *)&msg[90]);
 /* 106 to 109 free at present but available if checksum goes to 160 bits */
-/* 1 byte at 110 marks an encrypted image (work in progress!) */
         msg[110] = 0;
 /* The final byte at 111 indicates whether compression is to be used */
         {   int32_t cc = compression_worth_while;
@@ -2776,7 +2663,6 @@ void preserve(char *banner)
     if (IcloseOutput(1)) error(0, err_write_err);
     if (int_flag) term_printf("\nInterrupt during (preserve) was ignored\n");
     return;
-#endif /* DEMO_MODE */
 }
 
 /* end of file preserve.c */

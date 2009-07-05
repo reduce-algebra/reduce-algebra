@@ -68,13 +68,6 @@ CDDR CONS NCONS XCONS ACONS LENGTH LIST2 LIST2STAR LIST3 PLUS2 ADD1
 DIFFERENCE SUB1 TIMES2 GREATERP LESSP FLAGP GET LITGET GETV QGETV QGETVN 
 BIGSTACK BIGCALL ICASE FASTGET SPARE1 SPARE2)))
 
-(cond ((demo!-mode) (progn (setq p s!:opcodelist) (prog (j) (setq j 0) 
-lab1001 (cond ((minusp (times 1 (difference 254 j))) (return nil))) (progn (
-setq n (random!-number (difference 256 j))) (print n) (setq q p) (prog (k) (
-setq k 1) lab1000 (cond ((minusp (times 1 (difference n k))) (return nil))) (
-setq q (cdr q)) (setq k (plus k 1)) (go lab1000)) (setq w (car p)) (rplaca p 
-(car q)) (rplaca q w) (setq p (cdr p))) (setq j (plus j 1)) (go lab1001)))))
-
 (prog (n) (setq n 0) (prog (var1003) (setq var1003 s!:opcodelist) lab1002 (
 cond ((null var1003) (return nil))) (prog (v) (setq v (car var1003)) (progn (
 put v (quote s!:opcode) n) (setq n (plus n 1)))) (setq var1003 (cdr var1003))
