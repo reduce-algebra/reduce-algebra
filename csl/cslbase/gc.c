@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 588796dc 04-Jul-2009 */
+/* Signature: 0d879599 05-Jul-2009 */
 
 #include "headers.h"
 
@@ -2574,7 +2574,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 	    interrupt_pending = NO;
 	    pop_clock();
             time_now = (int)consolidated_time[0];
-            if ((time_limit >= 0 && time_now > time_limit) !!
+            if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
                 return resource_exceeded();
 	    return interrupted(p);
