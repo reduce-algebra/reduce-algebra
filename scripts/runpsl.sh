@@ -23,7 +23,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | sed -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -44,7 +44,7 @@ case $a in
   ;;
 esac
 
-here=${c%/*}
+here=`echo $c | sed -e 's+/[^/]*$++'`
 
 ap="$1"
 scr="$2"

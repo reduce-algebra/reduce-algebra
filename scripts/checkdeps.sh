@@ -12,7 +12,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | sed -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -33,13 +33,12 @@ case $a in
   ;;
 esac
 
-here=${c%/*}
+here=`echo $c | sed -e 's+/[^/]*$++'`
 
 cd $here/..
 
 
-# Step 1: aclocal.m4 must be later than configure.ac in directories where
-#         libtool is not involved.
+# Step 1: aclocal.m4 must be later than configure.ac
 
 srcdir="."
 
@@ -56,28 +55,8 @@ do
   fi
 done
 
-# Step 2: aclocal.m4 must be newer that both configure.ac and the
-#         libtool-related things in the m4 directory when they
-#         exist. In the csl/fox directory the name configure.in is
-#         used for historical reasons.
 
-lt="m4/libtool.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4 m4/lt~obsolete.m4"
-
-for d in csl csl/fox
-do
-  for x in $lt
-  do
-    if test $srcdir/$d/aclocal.m4 -ot $srcdir/$d/$x
-    then
-      echo "$d/aclocal.m4 was older than $d/$x"
-      ok=$d/aclocal.m4
-    fi
-  done
-done
-
-
-# Step 3: Makefile.in must be newer than aclocal.m4, and that will lead
-#         to it being newer than any of the libtool-related m4 files.
+# Step 2: Makefile.in must be newer than aclocal.m4.
 #         It must also be newer than Makefile.am.
 
 for d in . csl csl/cslbase csl/foxtests psl psl/support-packages/xport-2.05
@@ -94,8 +73,8 @@ do
   fi
 done
 
-# Step 3a: As step 3, but in cases where aclocal.m4 lives in a parent
-#          directory.
+# Step 3: As step 2, but in cases where aclocal.m4 lives in a parent
+#         directory.
 
 for d in csl/fox csl/fox/doc csl/fox/doc/art csl/fox/doc/screenshots csl/fox/include csl/fox/src csl/fox/utils
 do

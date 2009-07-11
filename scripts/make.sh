@@ -22,7 +22,6 @@
 # configured. No doubt the bit of script relating to PSL will need
 # adjusting sometime.
 
-
 args=""
 flags=""
 doingflags="yes"
@@ -36,6 +35,13 @@ do
   else args="$args $a"
   fi  
 done
+
+# config.guess fails on Solaris if SHELL is /bin/bash.
+if test -x /bin/sh
+then
+  SHELL=/bin/sh
+  export SHELL
+fi
 
 host=`./config.guess`
 host=`scripts/findhost.sh $host`
