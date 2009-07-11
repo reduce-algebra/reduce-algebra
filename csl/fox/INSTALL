@@ -581,12 +581,12 @@ FOX on QNX it might be a good idea to run:
         libtoolize -f
 
 Doing so will ensure that the configuration files needed to detect QNX
-are present.  
+are present.  
 
 Also, for now it is probably best to disable shared libraries when
-building FOX on QNX.  Programs linked with the FOX shared library will
-not run, but instead will segfault.  I plan on looking into a fix for
-this eventually.  
+building FOX on QNX.  Programs linked with the FOX shared library will
+not run, but instead will segfault.  I plan on looking into a fix for
+this eventually.  
 
 Dustin Graves <dgraves@computer.org>
 

@@ -14,6 +14,13 @@
 AC_INIT([CSLCONFIGTEST],[1.0])
 AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
+# The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
+if test -x /bin/sh
+then
+  SHELL=/bin/sh
+  export SHELL
+fi
+
 # I am going to expect that you have at least this version of
 # autoconf. In general I will build with  the latest version and
 # not really verify that 2.61 is still sufficient!
@@ -22,21 +29,6 @@ AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR(profile.dat)
 AC_CONFIG_FILES([Makefile])
 
-# libtool 1.5.x seems not to honour the next line, so I have backed off.
-#AC_CONFIG_MACRO_DIR([m4])
-
-# libtool 1.5.x does not support LT_INIT and LT_PREREQ so
-# for backwards compatibility I will use the old macro.
-#LT_INIT
-#LT_PREREQ([2.2.4])
-AC_PROG_LIBTOOL
-AC_SUBST([LIBTOOL_DEPS])
-
-AC_CHECK_PROG([LIBTOOL],    [libtool], [yes], [no])
-if test "x$LIBTOOL" = "xno"
-then
-  AC_MSG_WARN([Please consider installing libtool])
-fi
 
 
 
@@ -340,6 +332,8 @@ if test "x$CXX" = "x"
 then
   AC_MSG_ERROR([Please install a C++ compiler and try again])
 fi
+
+AC_PROG_RANLIB
 
 AC_MSG_NOTICE([Checking for "--hash-style=both"])
 if test "x$GCC" = "xyes"
@@ -736,7 +730,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
-AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
+AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h dlfcn.h])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h stdint.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
@@ -751,7 +745,6 @@ AC_CHECK_TYPES([cpu_set_t], [], [],
 AC_HEADER_STAT
 AC_C_CONST
 AC_STRUCT_TM
-AC_HEADER_STDBOOL
 AC_C_VOLATILE
 
 # If I were keen I would check that a lot of the above actually found the

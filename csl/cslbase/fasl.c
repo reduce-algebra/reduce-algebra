@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 68983e15 18-Aug-2008 */
+/* Signature: 58e1f78b 04-Jul-2009 */
 
 #include "headers.h"
 
@@ -1158,9 +1158,6 @@ Lisp_Object Lcopy_module(Lisp_Object nil, Lisp_Object file)
  * startup banner data - that must be set up by hand.
  */
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     Header h;
     int32_t len;
     char *modname;
@@ -1188,7 +1185,6 @@ Lisp_Object Lcopy_module(Lisp_Object nil, Lisp_Object file)
         Icopy(modname, (int)len);
     }
     return onevalue(nil);
-#endif
 }
 
 Lisp_Object Lcopy_native(Lisp_Object nil, Lisp_Object src, Lisp_Object dest)
@@ -1199,9 +1195,6 @@ Lisp_Object Lcopy_native(Lisp_Object nil, Lisp_Object src, Lisp_Object dest)
  * not really expected to make sense to normal end-users.
  */
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     Header h;
     int32_t len;
     char *modname, *w;
@@ -1254,7 +1247,6 @@ Lisp_Object Lcopy_native(Lisp_Object nil, Lisp_Object src, Lisp_Object dest)
     if (IcloseOutput(0)) return onevalue(nil);
 /* return T on success */
     return onevalue(lisp_true);
-#endif
 }
 
 Lisp_Object Ldelete_module(Lisp_Object nil, Lisp_Object file)
@@ -1263,9 +1255,6 @@ Lisp_Object Ldelete_module(Lisp_Object nil, Lisp_Object file)
  * was there to begin with.  (delete-module nil) deletes any help data.
  */
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     Header h;
     int32_t len;
     char *modname;
@@ -1293,7 +1282,6 @@ Lisp_Object Ldelete_module(Lisp_Object nil, Lisp_Object file)
         Idelete(modname, (int)len);
     }
     return onevalue(nil);
-#endif /* DEMO_MODE */
 }
 
 Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
@@ -1323,9 +1311,6 @@ Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
         errexit();
         return onevalue(info);
     }
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not change banner info
@@ -1363,7 +1348,6 @@ Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
         Irestore_context(save);
     }
     return onevalue(lisp_true);
-#endif /* DEMO_MODE */
 }
 
 Lisp_Object MS_CDECL Llist_modules(Lisp_Object nil, int nargs, ...)
@@ -1381,9 +1365,6 @@ Lisp_Object Lwritable_libraryp(Lisp_Object nil, Lisp_Object file)
  * This tests if a library handle refers to a writable file.
  */
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     int i;
     directory *d;
     if ((file & 0xffff) != SPID_LIBRARY) return onevalue(nil);
@@ -1391,7 +1372,6 @@ Lisp_Object Lwritable_libraryp(Lisp_Object nil, Lisp_Object file)
     d = fasl_files[i];
     i = d->h.updated;
     return onevalue(Lispify_predicate(i & D_WRITE_OK));
-#endif
 }
 
 static Lisp_Object load_module(Lisp_Object nil, Lisp_Object file,
@@ -1575,7 +1555,6 @@ static void IputcDebug(int c, int line)
 
 #endif
 
-#ifndef DEMO_MODE
 
 static void out_fasl_prefix(int32_t n)
 /*
@@ -1589,8 +1568,6 @@ static void out_fasl_prefix(int32_t n)
         Iputc((int)(n & 0xff));
     }
 }
-
-#endif
 
 Lisp_Object Lmodule_exists(Lisp_Object nil, Lisp_Object file)
 {
@@ -1631,9 +1608,6 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
  * which case the module data will be written to it.
  */
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     Lisp_Object w;        
 #ifdef SOCKETS
 /*
@@ -1758,14 +1732,10 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
         fasl_output_file = YES;
         return onevalue(lisp_true);
     }
-#endif /* DEMO_MODE */
 }
 
 Lisp_Object Ldefine_in_module(Lisp_Object nil, Lisp_Object a)
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     int32_t args, opts, ntail;
 #ifdef SOCKETS
 /*
@@ -1818,7 +1788,6 @@ case 3: Iputc(F_DEFHREST);
         break;
     }
     return onevalue(nil);
-#endif /* DEMO_MODE */
 }
 
 #ifdef DEBUG_FASL
@@ -1840,8 +1809,6 @@ static void IwriteDebug(char *x, int n, int line)
 #endif
 
 static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a);
-
-#ifndef DEMO_MODE
 
 static Lisp_Object write_module1(Lisp_Object a)
 {
@@ -1961,8 +1928,6 @@ static Lisp_Object write_module1(Lisp_Object a)
     return nil;
 }
 
-#endif /* DEMO_MODE */
-
 Lisp_Object Lwrite_module(Lisp_Object nil, Lisp_Object a)
 {
 #ifdef DEBUG_FASL
@@ -1984,9 +1949,6 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
  * must intrude).
  */
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "write-module"
@@ -2362,7 +2324,6 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
 #endif
     else write_module1(a);
     return onevalue(nil);
-#endif /* DEMO_MODE */
 }
 
 /*
@@ -2414,8 +2375,6 @@ Lisp_Object Lset_help_file(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
  * write-help-module has two arguments here because the previous version did
  * and changing that would cause short-term confusion...
  */
-
-#ifndef DEMO_MODE
 
 static void merge_sort(char *a, char *b, int left, int right)
 {
@@ -2505,14 +2464,9 @@ static int MS_CDECL compare_char_counts(void const *aa, void const *bb)
 
 #define INFO_CHAR   ('_' & 0x1f)
 
-#endif /* DEMO_MODE */
-
 Lisp_Object Lwrite_help_module(Lisp_Object nil,
                                Lisp_Object name, Lisp_Object ignore)
 {
-#ifdef DEMO_MODE
-    return onevalue(nil);
-#else
     int i, c1, c2, c3, pass, linep;
     int32_t info_seen;
     unsigned char cx1[256], cx2[256];
@@ -2854,7 +2808,6 @@ Lisp_Object Lwrite_help_module(Lisp_Object nil,
 
     help_index = v;   /* Only set up the index vector if all seemed OK */
     return onevalue(nil);
-#endif /* DEMO_MODE */
 }
 
 /*
@@ -3468,11 +3421,6 @@ Lisp_Object Lsetpchar(Lisp_Object nil, Lisp_Object a)
     stream_char_pos(lisp_work_stream) = 0;
     active_stream = lisp_work_stream;
     push(old);
-#ifdef DEMO_MODE
-    {   char *s = "DemoRed";
-        while (*s != 0) count_character(*s++, lisp_work_stream);
-    }
-#endif
     internal_prin(a, 0);
     pop(old);
     errexit();

@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 6aa7403d 04-May-2009 */
+/* Signature: 08973c20 04-Jul-2009 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1430,7 +1430,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 }
                 continue;
 
-#ifndef DEMO_MODE
 /*
  *                      -E
  * This option is for an EXPERIMENT.  It may do different things in different
@@ -1446,9 +1445,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 if (sscanf(w, "%d", &load_limit) != 1)
                     load_limit = 0x7fffffff;
                 continue;
-#endif
 
-#ifndef DEMO_MODE
 #ifdef SOCKETS
         case 'f':
 /*
@@ -1633,7 +1630,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  */
                 continue;
 #endif
-#endif /* DEMO_MODE */
 
 /*
  *                      -G
@@ -1680,7 +1676,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * The case -I- indicated the "standard" file associated with this
  * executable binary.  Several images can be given.
  */
-#ifndef DEMO_MODE
         case 'i':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1694,13 +1689,12 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     term_printf("Too many \"-I/-O\" requests: ignored\n");
                 }
                 continue;
-#endif
 
 /*
  * -J enabled the "track dependencies" hack that I have. Every time
  * that a file is opened for reading it records the file-name concerned
  * and at the end of everything it dumps a record of all the distinct
- * files to the named placem as in "-J fileuse.dat"
+ * files to the named place, as in "-J fileuse.dat"
  */
         case 'j':
                 if (c2 != 0) w = &opt[2];
@@ -1723,7 +1717,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  *             -K200M or just -K200 indicates that many megabytes
  *             -K1.6G               indicates that many gigabytes
  */
-#ifndef DEMO_MODE
         case 'k':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1798,7 +1791,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     }
                 }
                 continue;
-#endif
 
 /*
  * -L <logfile> arranges that a transcript of the standard output is
@@ -1834,7 +1826,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 }
                 continue;
 
-#ifndef DEMO_MODE
 #ifdef MEMORY_TRACE
 /*
  * If MEMORY_TRACE is set up then I can cause an exception by providing
@@ -1856,7 +1847,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 }
                 continue;
 #endif
-#endif
 
 /*
  * -N tells CSL that even if the image being loaded contains a restart-
@@ -1867,16 +1857,13 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * test and diagnose the trouble at the Lisp level. Ordinary users are
  * NOT expected to want to know about this!
  */
-#ifndef DEMO_MODE
         case 'n':               /* Ignore restart function (-N) */
                 ignore_restart_fn = YES;
                 continue;
-#endif
 
 /*
  * -O <file>  specifies an image file for output (via FASLOUT or PRESERVE).
  */
-#ifndef DEMO_MODE
         case 'o':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1892,7 +1879,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     term_printf("Too many \"-I/-O\" requests: ignored\n");
                 }
                 continue;
-#endif
 
 /*
  * -P is reserved for profile options.
@@ -1902,11 +1888,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * Please implement something for your favourite system here... what I would
  * like would be a call to monitor() or some such...
  */
-#ifndef DEMO_MODE
                 fwin_restore();
                 term_printf("Unimplemented option \"-%c\"\n", c1);
                 continue;
-#endif
 
 /*
  * -Q selects "quiet" mode.  See -V for the converse.
@@ -1969,14 +1953,12 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  *             generated here goes to the default output unit, which in
  *             some cases is just the screen.
  */
-#ifndef DEMO_MODE
         case 't':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
                 else break; /* Illegal at end of command-line */
                 module_enquiry = w;
                 continue;
-#endif
 
 /*
  * -U name     undefines the symbol <name> at the start of the run
@@ -1997,7 +1979,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 /*
  * -V selects "verbose" options at the start of the run
  */
-#ifndef DEMO_MODE
         case 'v':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
 /*
@@ -2013,7 +1994,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     term_printf("Too many requests: \"-V\" ignored\n");
                 }
                 continue;
-#endif
     
 #ifdef WINDOW_SYSTEM
 /*
@@ -2041,11 +2021,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * maybe!  Only those who have access to the source code can make
  * good use of the -X option, so it is only described here!
  */
-#ifndef DEMO_MODE
         case 'x':
                 segvtrap = NO;
                 continue;
-#endif
 /*
  * -Y  sets the variable !*hankaku , which causes the lisp reader convert
  * a Zenkaku code to Hankaku one when read. I leave this option decoded
@@ -2054,7 +2032,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * This was part of the Internationalisation effort for CSL but I repeat
  * that it is no longer supported.
  */
-#ifndef DEMO_MODE
         case 'y':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                     symbols_to_define[number_of_symbols_to_define] =
@@ -2063,18 +2040,15 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 else
                     term_printf("Too many requests: \"-Y\" ignored\n");
                 continue;
-#endif
 
 /*
  * -Z tells CSL that it should not load an initial heap image, but should
  * run in "cold start" mode.  This is only intended to be useful for
  * system builders.
  */
-#ifndef DEMO_MODE
         case 'z':               /* Cold start option -z */
                 restartp = NO;
                 continue;
-#endif
 
         default:
                 fwin_restore();
@@ -2297,11 +2271,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * Up until the time I call setup() I may only use term_printf for
  * output, because the other relevant streams will not have been set up.
  */
-#ifdef DEMO_MODE
-        setup(7, 0.0);   /* Force warm start, flag as demo mode */
-#else
         setup(restartp ? 3 : 2, store_size);
-#endif
 /*
  * I need to set the NOISY flag after doing setup to avoid it getting
  * reloaded from a heap image

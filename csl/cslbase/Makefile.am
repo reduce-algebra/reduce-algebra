@@ -277,37 +277,12 @@ DEST=-o
 
 R = $(srcdir)/../..
 
--include $(R)/LGPLMANIFEST.dep
-
-$(R)/LGPLMANIFSET.dep:
-	touch $(R)/LGPLMANIFEST.dep
-
-$(R)/lgplfiles.tar.bz2:
-	$(R)/scripts/lgpldist.sh
-# There is a HACK here. If one of the files that goes into the LGPL
-# license neurosis (that is MY neurosis!) archive is updated then the
-# file lgplfiles.tar.bz2 will need re-making. This file gets merged into
-# the binaries for REDUCE, but re-creating it is tolerably tedious and if
-# some frivolous change there led to boostratpreduce$(EXEEXT) being re-made
-# that would trigger re-compilation of image files, rebuilding of my
-# generated C code and all in all lead to even trivial changes making
-# a simple "make" take a very long time. So I ensure that
-# bootstrapreduce$(EXEEXT) ensures that there is SOME version of the file
-# (since bootstrapreduce$(EXEEXT) is really not liable to be distributed)
-# and that it and reduce$(EXEEXT) are both remade if lgplfiles changes.
-	-rm -f bootstrapreduce$(EXEEXT)
-	-rm -f reduce$(EXEEXT)
-if windows
-	-rm -f reduce$(COMEXT)
-endif
-
-if lgplfiles
-LGPLDEP = $(R)/lgplfiles.tar.bz2
-else
-LGPLDEP =
-endif
-
-FOXDEP=../include/fox-1.6/fxver.h
+#FOXDEP=../include/fox-1.6/fxver.h
+if win64
+FOXDEP=../lib/libFOX-1.6.lib
+else !win64
+FOXDEP=../lib/libFOX-1.6.a
+endif !win64
 
 # The next rule will only trigger if fxver.h is not present at all.
 
@@ -326,7 +301,7 @@ $(srcdir)/Makefile.am:
 	touch $(srcdir)/Makefile.am
 
 
-csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS) $(LGPLDEP)
+csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
 	-rm -f csl$(EXEEXT)
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -335,19 +310,8 @@ if fox
 	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
-if lgplfiles
-if fox
-	./addresources csl$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-if windows
-	./addresources csl$(COMEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif windows
-endif fox
-endif lgplfiles
 
-reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS)
-if lgplfiles
-	if ! test -f $(LGPLDEP); then $(MAKE) $(LGPLDEP); fi
-endif
+reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -356,28 +320,12 @@ if fox
 	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
-if lgplfiles
-if fox
-	./addresources reduce$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-if windows
-	./addresources reduce$(COMEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif windows
-endif fox
-endif lgplfiles
 
-bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS)
-if lgplfiles
-	if ! test -f $(LGPLDEP); then $(MAKE) $(LGPLDEP); fi
-endif
+bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
-if lgplfiles
-if fox
-	./addresources bootstrapreduce$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif fox
-endif lgplfiles
 
-fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS) $(LGPLDEP)
+fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -386,37 +334,20 @@ if fox
 	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
-if lgplfiles
-if fox
-	./addresources fwindemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-if windows
-	./addresources fwindemo$(COMEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif windows
-endif fox
-endif lgplfiles
 
 if fox
 
-fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS) $(LGPLDEP)
+fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
-if lgplfiles
-	./addresources fontdemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif lgplfiles
 
-foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) addresources$(EXEEXT) $(LGPLDEP)
+foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES)
 	-rm -f foxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
-if lgplfiles
-	./addresources foxdemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif
 
-showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) addresources$(EXEEXT) $(FOXDEPS) $(LGPLDEP)
+showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f showmathdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
-if lgplfiles
-	./addresources showmathdemo$(EXEEXT) $(srcdir)/../../lgplfiles.tar.bz2
-endif
 
 if windows
 
@@ -598,7 +529,7 @@ local_image_files = bootstrapreduce.img
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) \
-	objtype* addresources* cl-wrap* makeheaders* *.def machineid.c dynmodule* \
+	objtype* cl-wrap* makeheaders* *.def machineid.c dynmodule* \
 	object-files.tar.gz objs relink* datestamp.dat
 
 clean-local:
@@ -623,7 +554,7 @@ macr =
 endif !mac_framework
 
 generatedfiles=$(image_files) $(local_image_files) \
-	objtype addresources makeheaders machineid.c dynmodule* \
+	objtype makeheaders machineid.c dynmodule* \
 	$(macr) \
 	object-files.tar.gz objs relink* datestamp.dat
 
@@ -703,9 +634,6 @@ objtype$(EXEEXT):	$(srcdir)/objtype.c
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
 	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
 
-addresources$(EXEEXT):	$(srcdir)/addresources.c
-	gcc $(srcdir)/addresources.c -o addresources$(EXEEXT)
-
 else
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
@@ -713,9 +641,6 @@ objtype$(EXEEXT):	$(srcdir)/objtype.c
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
 	$(COMPILE) $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
-
-addresources$(EXEEXT):	$(srcdir)/addresources.c
-	$(COMPILE) $(srcdir)/addresources.c -o addresources$(EXEEXT)
 
 endif
 else !canrun
@@ -731,9 +656,6 @@ objtype$(EXEEXT):	$(srcdir)/objtype.c
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
 	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
-
-addresources$(EXEEXT):	$(srcdir)/addresources.c
-	gcc $(srcdir)/addresources.c -o addresources$(EXEEXT)
 
 endif !canrun
 

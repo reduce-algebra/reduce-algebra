@@ -5,21 +5,14 @@
 #
 # Special flags that can be used here:
 #
-#   --with-lgplfiles  (default is NO). With this option set the
-#                     binaries that include FOX end up make with
-#                     a copy of all relevant source files included.
-#                     At one time I believed that this would really
-#                     ease my burden when distributing binaries of
-#                     Reduce, but I now believe it is not needed.
-#
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
 #   --with-mingw64    Cross build using 64-bit mingw
 #   --with-cygwin     Build native cygwin X11 based system, 
-#                     Please note cygwin/GPL licensing issues, which some
-#                     people view as trivial, but there here inclusion of
-#                     GPL code would reduce the flexibility enshrined in the
-#                     BSD license as used here.
+#                     Please note cygwin licensing issues, which do not
+#                     have any adverse effects so long as you retain BSD
+#                     licensing here. But if you included CSL in a closed
+#                     product (as BSD permits) think about this!
 #   --enable-debug    Switch on debugging.
 #
 #
@@ -67,19 +60,6 @@ AC_CONFIG_SRCDIR(csl.c)
 AC_CONFIG_FILES(Makefile)
 
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
-
-# Note that the default for "--with-lgplfiles" is "no"
-
-AC_ARG_WITH(lgplfiles,
-   AC_HELP_STRING([--with-lgplfiles],
-                  [Make binaries even safer to distribute wrt LGPL]),
-   [],
-   [with_lgplfiles="no"])
-
-if test "x$with_lgplfiles" != "xno"
-then
-  AC_DEFINE(LGPLFILES, [1], [Binaries will have source included])
-fi
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
@@ -206,13 +186,14 @@ then
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
+  win64="yes"
 else
 case $host in
 *-*-cygwin* | x86_64-pc-mingw32)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
-                   [Force use of raw cywgin (note GPL)]),
+                   [Force use of raw cywgin (note cygwin license)]),
     [],
     [with_cygwin="no"])
   if test "x$with_cywgin" = "xyes"
@@ -240,7 +221,7 @@ case $host in
     AC_MSG_NOTICE([************************************************])
     AC_MSG_NOTICE([** "--with-cygwin" set so I will link in the  **])
     AC_MSG_NOTICE([** library cygwin1.dll, which is subject to   **])
-    AC_MSG_NOTICE([** the GPL. Beware license consequences.      **])
+    AC_MSG_NOTICE([** the Cygwin's license terms. Please check.  **])
     AC_MSG_NOTICE([** Specifically do not distribute what you    **])
     AC_MSG_NOTICE([** build in this mode without fully           **])
     AC_MSG_NOTICE([** the obligations imposed by this license.   **])
@@ -278,11 +259,7 @@ case $host in
 # of cygwin imposes.
     AC_MSG_NOTICE([************************************************])
     AC_MSG_NOTICE([** I will set -mno-cygwin here to avoid use   **])
-    AC_MSG_NOTICE([** of cygwin1.dll, which is subject to the    **])
-    AC_MSG_NOTICE([** GPL. The result should be that my compiled **])
-    AC_MSG_NOTICE([** application remains subject to MY choice   **])
-    AC_MSG_NOTICE([** of license terms rather than being forced  **])
-    AC_MSG_NOTICE([** to adopt the GPL.                          **])
+    AC_MSG_NOTICE([** of cygwin1.dll.                            **])
     AC_MSG_NOTICE([************************************************])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
 #
@@ -835,7 +812,7 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes") && test "x$solaris" != "xyes"
+if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
 then
 # I will not even look for Xft if I am building for win32 not X.
 #
@@ -849,7 +826,7 @@ then
   if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
   then
     AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
-      [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:$PATH])
+      [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH])
     if test "$XFT_CONFIG" != "no"
     then
 # I will add to CFLAGS and XLIBS if xft-config is found
@@ -950,6 +927,7 @@ HIGHOPT="-O2"
 if test "x$CC" = "xx86_64-pc-mingw32-gcc"
 then
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
+  win64="yes"
 fi
 
 if test "x$GCC" = "xyes"
@@ -1068,7 +1046,6 @@ fi
 # Checks for header files.
 AC_FUNC_ALLOCA
 AC_HEADER_DIRENT
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
@@ -1087,7 +1064,6 @@ AC_CHECK_TYPES([cpu_set_t], [], [],
 AC_HEADER_STAT
 AC_C_CONST
 AC_STRUCT_TM
-AC_HEADER_STDBOOL
 AC_C_VOLATILE
 
 AC_CHECK_TYPES([int8_t,int16_t,int32_t,int64_t,intptr_t], [], [],
@@ -1313,6 +1289,7 @@ AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
 AM_CONDITIONAL(x86,test "x$x86" = "xyes")
 AM_CONDITIONAL(windows,test "x$windows_build" = "xyes")
+AM_CONDITIONAL(win64,test "x$win64" = "xyes")
 AM_CONDITIONAL(cygwin,test "x$cygwin_build" = "xyes")
 AM_CONDITIONAL(darwin,test "x$darwin_build" = "xyes")
 AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")
@@ -1320,33 +1297,8 @@ AM_CONDITIONAL(debug,test "x$enable_debug" = "xyes")
 AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
 AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
 AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
-AM_CONDITIONAL(lgplfiles,test "x$with_lgplfiles" != "xno")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
-
-if test "x$really_use_cygwin" = "xyes"
-then
-  AC_MSG_NOTICE([************************************************])
-  AC_MSG_NOTICE([** "--with-cygwin" set so I will link in the  **])
-  AC_MSG_NOTICE([** library cygwin1.dll, which is subject to   **])
-  AC_MSG_NOTICE([** the GPL. Beware license consequences.      **])
-  AC_MSG_NOTICE([** Specifically do not distribute what you    **])
-  AC_MSG_NOTICE([** build in this mode without checking the    **])
-  AC_MSG_NOTICE([** cygwin license conditions carefully.       **])
-  AC_MSG_NOTICE([************************************************])
-fi
-
-if test "x$with_lgplfiles" = "xno"
-then
-  AC_MSG_NOTICE(["--with-lgplfiles=no" used. Do not distribute any])
-  AC_MSG_NOTICE([binaries made here without understanding and abiding by])
-  AC_MSG_NOTICE([the terms of the Lesser GNU Public License version 2.1])
-  AC_MSG_NOTICE([If you specify "--with-lgplfiles=yes" you are safe to])
-  AC_MSG_NOTICE([distributing just binaries, but building will be slower.])
-  AC_MSG_NOTICE([Otherwise if you ship your own binary you must make])
-  AC_MSG_NOTICE([source of FOX available and at least object code for])
-  AC_MSG_NOTICE([the rest available. On Sourceforge we do that.])
-fi
 
 AC_OUTPUT
 

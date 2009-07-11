@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1352a2c2 22-Jul-2008 */
+/* Signature: 603a33f9 04-Jul-2009 */
 
 #include "headers.h"
 
@@ -2011,13 +2011,8 @@ case TAG_ODDS:
  * expect that.
  */
                 outprefix(NO, 2);
-#if defined DEMO_MODE || defined DEMO_BUILD
-                putc_stream('?', active_stream);
-                putc_stream('?', active_stream);
-#else
                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                 putc_stream(hexdig[ch & 0xf], active_stream);
-#endif
             }
             popv(1);
             putc_stream(']', active_stream);

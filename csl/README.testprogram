@@ -31,10 +31,10 @@ and each carries out the steps described below.
 
 To use this manually
 
-[optionally]    rm ltmain.sh; touch ltmain.sh; autoreconf -f -i -v
+[optionally]    autoreconf -f -i -v
         This will re-make the various autoconf-related files. You may not
-        need to do this, but if you get complaints about automake or
-        libtool version compatibility this is what you should try. Note that
+        need to do this, but if you get complaints about automake
+        version compatibility this is what you should try. Note that
         the script .../trunk/autogen.sh performs this process in all relevant
         parts of your local tree, so can be useful if autoreconf proves
         necessary here.
@@ -52,7 +52,6 @@ To use this manually
                 configure: creating ./config.status
                 config.status: creating Makefile
                 config.status: executing depfiles commands
-                config.status: executing libtool commands
                 configure: Build environment seems OK
         If this is not the case and you get a diagnostic I hope it will be
         a clean one asking you to install some particular tool or library.

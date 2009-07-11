@@ -1473,8 +1473,11 @@ symbolic restart!-csl nil;
 % without that since I have statically-selected hot-spot compilation
 % that gives me what I believe to be a better speed/space tradeoff.
 
+% Oh well, let's change that and disable it by dafault since at least on
+% windows there are problems with windows vs cygwin file-names.
+
 (fluid '(!*native_code))
-(setq !*native_code t)
+(setq !*native_code nil)   % Try T if you are VERY keen...
 
 (checkpoint 'begin (bldmsg "%w, %w ..." version!* date!*))
 

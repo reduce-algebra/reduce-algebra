@@ -24,7 +24,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | sed -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -45,7 +45,7 @@ case $a in
   ;;
 esac
 
-here=${c%/*}
+here=`echo $c | sed -e 's+/[^/]*$++'`
 
 save=`pwd`
 cd $here
@@ -56,26 +56,23 @@ rm -rf autom4te.cache
 
 canconfigure="yes"
 
-if ! libtoolize --version </dev/null >/dev/null 2>&1
-then
-  canconfigure="no"
-  echo "libtooldoes not seem to be available"
-fi
-
-if ! autoconf --version </dev/null >/dev/null 2>&1
-then
+if autoconf --version </dev/null >/dev/null 2>&1
+then :
+else
   canconfigure="no"
   echo "autoconf not seem to be available"
 fi
 
-if ! automake --version </dev/null >/dev/null 2>&1
-then
+if automake --version </dev/null >/dev/null 2>&1
+then :
+else
   canconfigure="no"
   echo "automake not seem to be available"
 fi
 
-if ! autoheader --version </dev/null >/dev/null 2>&1
-then
+if autoheader --version </dev/null >/dev/null 2>&1
+then :
+else
   canconfigure="no"
   echo "autoheader not seem to be available"
 fi
@@ -96,40 +93,27 @@ then
   exit 0
 fi
 
-# The following two lines may be necessary on some systems?
-rm -f ltmain.sh
-touch ltmain.sh
-
-# I call libtoolize explicitly because it is not clear that
-# autoreconf passes down the "-f" flag to it and then does not
-# remake aclocal.m4 after using it.
-
-echo "About to run libtoolize --copy --force"
-if ! libtoolize --copy --force
-then
-  echo "libtoolize failed in $here"
-  cd $save
-  exit 1
-fi
-
 echo "About to run aclocal --force"
-if ! aclocal --force
-then
+if aclocal --force
+then :
+else
   echo "aclocal failed in $here"
   cd $save
   exit 1
 fi
 
 echo "About to run autoreconf -i -f -v"
-if ! autoreconf -i -f -v
-then
+if autoreconf -i -f -v
+then :
+else
   echo "autoreconf failed in $here"
   cd $save
   exit 1
 fi
 
-if ! autoheader
-then
+if autoheader
+then :
+else
   echo "autoheader failed in $here"
   cd $save
   exit 1

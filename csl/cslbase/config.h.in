@@ -198,9 +198,6 @@
    zero-length file name argument. */
 #undef HAVE_STAT_EMPTY_STRING_BUG
 
-/* Define to 1 if stdbool.h conforms to C99. */
-#undef HAVE_STDBOOL_H
-
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H
 
@@ -341,9 +338,6 @@
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
 
-/* Define to 1 if the system has the type `_Bool'. */
-#undef HAVE__BOOL
-
 /* Name of CPU */
 #undef HOST_CPU
 
@@ -355,9 +349,6 @@
 
 /* True if we are building with a JIT */
 #undef JIT
-
-/* Binaries will have source included */
-#undef LGPLFILES
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */

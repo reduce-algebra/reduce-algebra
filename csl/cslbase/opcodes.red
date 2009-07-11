@@ -142,18 +142,6 @@ SPARE1
 SPARE2
 )$
 
-if demo!-mode() then <<
-% Shuffle opcodes! This is to make a demo-mode image incompatible
-% with the release version!
-   p := s!:opcodelist;
-   for j := 0:254 do <<
-      n := random!-number(256-j);
-      print n;   % To help debug.
-      q := p;
-      for k := 1:n do q := cdr q;
-      w := car p; rplaca(p, car q); rplaca(q, w);
-      p := cdr p >> >>;
-
 end;
 
 
