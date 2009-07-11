@@ -5,11 +5,13 @@
 
 . ./fox-1.6-version.sh
 
-PAT=`pwd`
-PAT=${PAT%/*}/fox-patches
+PAT=`pwd | sed -e 's+/[^/]*$++'`
+PAT=${PAT}/fox-patches
 
 # Create a directory within which original and patches trees will live
-if ! test -d ${PAT}; then
+if test -d ${PAT}
+then :
+else
    mkdir ${PAT}
 fi
 
