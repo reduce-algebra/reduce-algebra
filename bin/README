@@ -18,7 +18,9 @@ directory that is current when you trigger one of these scripts does not
 matter. So, for instance, you can put this directory on your PATH and then use
 Reduce freely. This remark may seem obvious, but the important aspect of it
 is that these scripts identify directories where various Reduce resources are
-to be found, and contain curious-looking code to do this.
+to be found, and contain curious-looking code to do this. However you should
+not copy any of these scripts and place them in a directory other than here
+since they rely on paths relative to the place where they themselves live.
 
 The second matter is that some people in some contexts have a single shared
 file-space that they access from a variety of different models of computer.
@@ -31,22 +33,17 @@ being run on and on that basis link through and launch the relevant version
 of the code.
 
 Finally there is a matter of overhead. Detecting and decoding file locations
-costs some effort, so the main versions of the scripts here are arranged so
-that when they are first run they perform all that analysis, but they then
-replace themselves with a version that gives essentially instant access to the
-program. For Unix-like CSL versions this is just a symbolic link set up using
-an absolute path to the executable, while in all other cases it is a shell
-script that is just one or two lines long and that again chains to the
-program using an absolute path. So once the script has been used just once
-the version put in as a replacement may be copied to anywhere else that you
-view as convenient. The original versions are designed to run when they
-themselves are stored in this directory.
+costs some effort. At one stage I had an elaborate scheme where the first time
+a script was run it replaced itself with either a symbolic link or a shorter
+script that invoked the program faster. Further investigation showed that the
+relevant scripts were only seriously or uncomfortably slow on cygwin, and that
+by re-working them I could make them fast enough that I am happy to go back to
+the marginally simpler setup.
 
-In the case that you use multiple machines and a single file-space this scheme
-that replaces the generic script by one tuned to the current computer may be
-unwelcome - for such cases there are versions of the scripts with a suffix
-"-s" in their name which always do the search for a version usable on the
-computer that they are run on.
+When I had this scheme that automatically updated scripts to match the current
+machine I needed versions of the scripts that did not do that, and I gave then
+names with a suffix "-s". Those scripts are now redundand and will be removed
+sometime.
 
 The file .../trunk/scripts/resetall.sh can be used to restore all these
 scripts to their original state, and should be used before creating an
@@ -83,4 +80,4 @@ binary. But in this case it will not replace the script with a faster way
 of accessing the potentially suspect version.
 
 
-                                                     Arthur Norman. March 2009
+                                                     Arthur Norman. July 2009
