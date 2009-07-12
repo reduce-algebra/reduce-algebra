@@ -1,3 +1,4 @@
+#! /bin/sh
 a=$0
 c=unknown
 case $a in
@@ -27,5 +28,4 @@ case $a in
   fi
   ;;
 esac
-
-here=`echo $c | sed -e 's+/[^/]*$++'`
+here=`echo $c | sed -e 's+/[^/]*$++;s+/[^/]*$++'`
