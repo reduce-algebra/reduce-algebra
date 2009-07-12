@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 261df1b0 31-Aug-2008 */
+/* Signature: 7724b208 08-Jul-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -232,6 +232,22 @@ static long long int read8(FILE *f)
     return r;
 }
 
+#ifdef WIN32
+
+void consoleWait()
+{
+/*
+ * If the console had to be created specially to view this information
+ * it is probable that it will close as soon as the program closes, and so
+ * to give at least a minimal chance for the user to inspect it I will
+ * put in a delay here.
+ */
+    clock_t c0 = clock() + 5*CLOCKS_PER_SEC;
+    while (clock() < c0);
+}
+
+#endif
+
 #ifdef PART_OF_FOX
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 #else
@@ -257,117 +273,13 @@ int main(int argc, char *argv[])
     texmacs_mode = 0;
 /*
  * An option "--my-path" just prints the path to the executable
- * and stops. An option "--dump-source FILE" writes out a source file
- * archive to the given place so that LGPL conditions can be satisfied.
- * An option "--help" will send comments about "--dump-source" to stdout
- * in addition to any effect it may have on the application downstream.
+ * and stops.
  */
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--my-path") == 0)
         {   printf("%s\n", programDir);
             exit(0);
         }
-#ifdef PART_OF_FOX
-        else if (strcmp(argv[i], "--help") == 0)
-        {
-#ifdef WIN32
-/*
- * If my application had been linked as a windows-mode binary rather than
- * a console-mode one it could not have access to a standard output
- * and the material that I want to display here might end up invisible.
- * That would sort of defeat the point! If I already had a console this
- * attempt to allocate one would fail and the return value would be zero.
- */
-            int consoleCreated = AllocConsole();
-            HANDLE out = CreateFile("CONOUT$",
-                                    GENERIC_WRITE,
-                                    FILE_SHARE_WRITE,
-                                    NULL,
-                                    OPEN_EXISTING,
-                                    0,
-                                    0);
-            DWORD written;
-            char buff[120];
-            if (out == INVALID_HANDLE_VALUE)
-            {   exit(1); /* Not much I can do? */
-            }
-#define show(s)        WriteConsole(out, s, strlen(s), &written, NULL)
-#define show1(s, a)    sprintf(buff, s, a); show(buff)
-#define show2(s, a, b) sprintf(buff, s, a, b); show(buff)
-#else /* WIN32 */
-#define show(s)        printf(s)
-#define show1(s, a)    printf(s, a)
-#define show2(s, a, b) printf(s, a, b)
-#endif /* WIN32 */
-show("This program used some library code that is licensed under\n");
-show("the Lesser GNU Public License. To remain compatible with that\n");
-show("license it makes source code of the library concerned and enough\n");
-show("other material to allow rebuilding available. To access this\n");
-show("material, which includes all relevant license and Copyright\n");
-show("documents and statements run this application with the option\n");
-show("--dump-source. Eg issue a command such as:\n");
-show2("  %s --dump-source %s.tar.bz2\n", programName, programName);
-show("This should place the source files as required in an archive\n");
-show1("called %s.tar.bz2. That archive can then be unpacked: it contains\n",
-       programName);
-show("configure scripts and Makefiles in a style and manner that should\n");
-printf("be familiar to many.\n\n");
-#ifdef WIN32
-/*
- * If the console had to be created specially to view this information
- * it is probable that it will close as soon as the program closes, and so
- * to give at least a minimal chance for the user to inspect it I will
- * put in a delay here.
- */
-            if (consoleCreated != 0)
-            {   clock_t c0 = clock() + 5*CLOCKS_PER_SEC;
-                while (clock() < c0);
-            }
-#endif /* WIN32 */
-        }
-        else if (strcmp(argv[i], "--dump-source") == 0)
-        {   char *destname = "sourcefiles";
-            char destz[LONGEST_LEGAL_FILENAME];
-            FILE *f1, *f2;
-            int w;
-            long long pos, len;
-            if (i != argc-1) destname = argv[1+1];
-            f1 = fopen(fwin_full_program_name, "rb");
-            if (f1 == NULL)
-            {   printf("Unable to open executable file %s\n",
-                       fwin_full_program_name);
-                exit(1);
-            }
-            w = strlen(destname);
-            if (w <= 8 || strcmp(destname+w-8, ".tar.bz2")!=0)
-            {   sprintf(destz, "%s.tar.bz2", destname);
-                destname = destz;
-            }
-            f2 = fopen(destname, "wb");
-            if (f2 == NULL)
-            {   printf("Unable to open %s\n", destname);
-                exit(1);
-            }
-            fseek(f1, -32L, SEEK_END);
-            if (read8(f1) != 0x1234567887654321LL)
-            {   printf("Executable file is damaged\n");
-                exit(1);
-            }
-            pos = read8(f1);
-            len = read8(f1);
-            if (read8(f1) != 0x8765432112345678LL)
-            {   printf("Exectuable file is damaged\n");
-                exit(1);
-            }
-            fseek(f1, (long)pos, SEEK_SET);
-            for (w=0; w<(int)len; w++)
-                putc(getc(f1), f2);
-            fclose(f2);
-            fclose(f1);
-            printf("Source archive created as %s\n", destname);
-            exit(0);
-        }
-#endif /* PART_OF_FOX */
     }
 
 #ifdef PART_OF_FOX
@@ -384,7 +296,7 @@ printf("be familiar to many.\n\n");
  */
     windowed = 1;
 #ifdef WIN32
-/* I have tried various messy Windows API cals here to get this right.
+/* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line
@@ -464,7 +376,7 @@ printf("be familiar to many.\n\n");
  * and identifies itself as type DISK. The the case of launching the code
  * by double-clicking on the .exe file the handle is probably invalid, but
  * GetFileType returns FILE_TYPE_UNKNOWN. The end effect is that I can
- * detect cases where input has bene redirected in a way that appears to
+ * detect cases where input has been redirected in a way that appears to
  * work in both cases.  Note that if a user wants to launch an application
  * via a pipe then they should EITHER launch the ".com" version or (better)
  * explictly provide a "-w" flag to indicate that the application should
@@ -524,6 +436,23 @@ printf("be familiar to many.\n\n");
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
+#ifdef WIN32
+/*
+ * If I am running under Windows and I have set command line options
+ * that tell me to run in a console then I will create one if one does
+ * not already exist.
+ */
+    if (windowed == 0)
+    {   int consoleCreated = AllocConsole();
+        if (consoleCreated)
+        {   freopen("CONIN$", "r", stdin);
+            freopen("CONOUT$", "w", stdout);
+            freopen("CONOUT$", "w", stderr);
+/* I will also pause for 5 seconds at the end... */
+            atexit(consoleWait);
+        }
+    }
+#endif /* WIN32 */
 #else /* PART_OF_FOX */
 /* If the FOX toolkit is not available there is no point in
  * looking for a command-line option that controls whether to use it!
