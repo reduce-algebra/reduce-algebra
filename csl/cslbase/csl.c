@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 08973c20 04-Jul-2009 */
+/* Signature: 3644ab51 12-Jul-2009 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -770,6 +770,7 @@ static void lisp_main(void)
         if (!setjmp(this_level))
 #endif
         {   nil = C_nil;
+            terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
 /*
@@ -1251,7 +1252,13 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * here as a matter of security.
  */
         if (opt == NULL || *opt == 0) continue;
-        if (opt[0] == '-')
+/*
+ * Note that I do not treat an isolated "-" as introducing an "option".
+ * Instead it is treated as a file-name and it indicates the "standard"
+ * input. There may be amusing consequences for using this several times
+ * in one call, but I hope it will make sense in several sane cases.
+ */
+        if (opt[0] == '-' && opt[1] != 0)
         {   char *w;
             int c1 = opt[1], c2 = opt[2];
             if (isupper(c1)) c1 = tolower(c1);
@@ -2490,20 +2497,25 @@ static void cslaction(void)
         else
         {   int i;
             for (i=0; i<number_of_input_files; i++)
-            {   char filename[LONGEST_LEGAL_FILENAME];
-                FILE *f = open_file(filename, files_to_read[i],
-                                            strlen(files_to_read[i]), "r", NULL);
-                if (f == NULL)
-                    err_printf("\n+++ Could not read file \"%s\"\n",
-                               files_to_read[i]);
-                else
-                {   if (init_flags & INIT_VERBOSE)
-                        term_printf("\n+++ About to read file \"%s\"\n",
-                                    files_to_read[i]);
-                    report_file(filename);
-                    non_terminal_input = f;
+            {   if (strcmp(files_to_read[i], "-") == 0)
+                {   non_terminal_input = NULL;
                     lisp_main();
-                    fclose(f);
+                }
+                {   char filename[LONGEST_LEGAL_FILENAME];
+                    FILE *f = open_file(filename, files_to_read[i],
+                                                strlen(files_to_read[i]), "r", NULL);
+                    if (f == NULL)
+                        err_printf("\n+++ Could not read file \"%s\"\n",
+                                   files_to_read[i]);
+                    else
+                    {   if (init_flags & INIT_VERBOSE)
+                            term_printf("\n+++ About to read file \"%s\"\n",
+                                        files_to_read[i]);
+                        report_file(filename);
+                        non_terminal_input = f;
+                        lisp_main();
+                        fclose(f);
+                    }
                 }
             }
         }

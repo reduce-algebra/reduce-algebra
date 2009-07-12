@@ -38,12 +38,13 @@
 
 
 
-/* Signature: 1fc02700 04-Jul-2009 */
+/* Signature: 31800f5b 12-Jul-2009 */
 
 #ifndef header_stream_h
 #define header_stream_h 1
 
 extern FILE *non_terminal_input;
+extern int terminal_pushed;
 
 typedef int character_reader(void); /* used only with procedural IO */
 typedef int character_writer(int);  /* ditto */
