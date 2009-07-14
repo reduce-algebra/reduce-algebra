@@ -788,6 +788,9 @@ fi
 
 CPPFLAGS="$saved_cppflags"
 
+dnl Because I have a few files coded in C not C++ I want to set C command
+dnl flags to include eg debug and optimisation settings.
+CFLAGS="$CXXFLAGS"
 
 AC_SUBST(GL_LIBS)
 AC_SUBST(GL_TESTS)
