@@ -1565,12 +1565,6 @@ procedure lto_orderedlist2set(s);
       >>
    end;
 
-%procedure setminus(ss1,ss2);
-%   for each s1 in ss1 join if not member(s1,ss2) then {s1};
-
-%procedure intersection(ss1,ss2);
-%   setminus(ss1,setminus(ss1,ss2));
-
 procedure ofsf_s1(sl,n,sign);
    % picks the signatures from [sl], where the [n]th element equals [sign].
    for each s in sl join if nth(s,n) eq sign then {s};

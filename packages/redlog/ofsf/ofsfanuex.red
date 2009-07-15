@@ -966,7 +966,7 @@ procedure aex_ids(ae);
 
 procedure aex_freeids(ae);
    % free identifiers, the id with highest kernel order first
-   setminus(ratpoly_idl aex_ex ae,ctx_idl aex_ctx ae);
+   lto_setminus(ratpoly_idl aex_ex ae,ctx_idl aex_ctx ae);
 
 procedure aex_boundids(ae);
    intersection(aex_ids ae,ctx_idl aex_ctx ae);
@@ -2044,18 +2044,15 @@ procedure anu_refine1ip(a,s);
 procedure sf_idl f;
    % if there is a main variable, then it will be the car.
    if not domainp f then
-      mvar f . setunion(sf_idl lc f,setminus(sf_idl red f,{mvar f}));
-
-procedure setminus(ss1,ss2);
-   for each s1 in ss1 join if not member(s1,ss2) then {s1};
+      mvar f . setunion(sf_idl lc f,lto_setminus(sf_idl red f,{mvar f}));
 
 !#if (and (not (memq 'psl lispsystem!*)) (not (memq 'csl lispsystem!*)))
    procedure intersection(ss1,ss2);
-      setminus(ss1,setminus(ss1,ss2));
+      lto_setminus(ss1,lto_setminus(ss1,ss2));
 !#endif
       
 %procedure setunion(ss1,ss2);
-%   append(setminus(ss1,ss2),ss2);
+%   append(lto_setminus(ss1,ss2),ss2);
 
 procedure idorder();
    begin scalar idorderv;
