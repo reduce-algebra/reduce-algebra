@@ -273,6 +273,13 @@ procedure rl_sub!*fof(al,f);
 procedure rl_print!*fof(u);
    maprin reval u;
 
+procedure rl_setprint!*fof(x,u);
+   <<
+      fancy!-maprint(x,0);
+      fancy!-prin2!*(":=",4);
+      rl_print!*fof u
+   >>;
+
 procedure rl_priq(qf);
    begin scalar m;
       if null !*nat then return 'failed;
