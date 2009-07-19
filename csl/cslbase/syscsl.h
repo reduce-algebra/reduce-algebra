@@ -37,7 +37,7 @@
  *************************************************************************/
 
 
-/* Signature: 457fd218 31-Aug-2008 */
+/* Signature: 00c63f80 19-Jul-2009 */
 
 
 #ifndef header_syscsl_h
@@ -422,6 +422,10 @@ extern FILE *alternative_stdout;
  * Ditto reading from stdin.  Reads chars into buffer, returns count.
  */
 extern int wimpget(char *buf);
+/*
+ * I set this when wimpget sees an EOF.
+ */
+extern int terminal_eof_seen;
 /*
  * The next two call-backs tell the window manager how much time has
  * been spent and how many garbage collections have been done.

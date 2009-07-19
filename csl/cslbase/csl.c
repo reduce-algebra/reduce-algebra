@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 3644ab51 12-Jul-2009 */
+/* Signature: 7677c249 19-Jul-2009 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -2493,14 +2493,17 @@ static void cslaction(void)
         }
         else
 #endif
+        terminal_eof_seen = 0;
         if (number_of_input_files == 0) lisp_main();
         else
         {   int i;
             for (i=0; i<number_of_input_files; i++)
             {   if (strcmp(files_to_read[i], "-") == 0)
                 {   non_terminal_input = NULL;
+                    terminal_eof_seen = 0;   
                     lisp_main();
                 }
+                else
                 {   char filename[LONGEST_LEGAL_FILENAME];
                     FILE *f = open_file(filename, files_to_read[i],
                                                 strlen(files_to_read[i]), "r", NULL);
