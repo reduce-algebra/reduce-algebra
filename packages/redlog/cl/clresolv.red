@@ -58,11 +58,17 @@ procedure cl_resolve(f);
    cl_apply2ats(f,'cl_resolveat);
 
 procedure cl_resolveat(atf);
+   % Resolve atomic formula. [atf] is an atomic formula. Return a
+   % formula. Result is equivalent to [atf] but does not contain any
+   % atomic formulas for which the black box [rl_rxffn] yields a
+   % function for resolving. Caveat: The OFSF implementation of
+   % [rl_posresolve] relies on that [cl_simpl] is not called with any
+   % non-resolved formula here.
    begin scalar w;
       w := rl_simp cl_resolve1 rl_prepfof atf;
       return if !*rlresi then cl_simpl(w,nil,-1) else w
    end;
-   
+
 procedure cl_resolve1(lpf);
    % lpf is an atomic formula in lisp prefix representation. returns a
    % lisp prefix formula without extended functions.

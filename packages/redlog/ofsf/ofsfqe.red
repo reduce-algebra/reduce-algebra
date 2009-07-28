@@ -66,20 +66,7 @@ procedure ofsf_posgqea(f,theo,xvl);
    end;
 
 procedure ofsf_posqe!-prep(f);
-   begin scalar op,posconds,qvl;
-      f := cl_pnf f;
-      while rl_quap(op := rl_op f) do <<
-	 if op eq 'all then
- 	    rederr "ofsf_posqe admits only one existential quantifier block";
-	 qvl := rl_var f . qvl;
-	 f := rl_mat f
-      >>;
-      posconds := for each v in cl_fvarl f collect ofsf_0mk2('greaterp,!*k2f v);
-      f := rl_mkn('and,f . posconds);
-      for each v in qvl do
-	 f := rl_mkq('ex,v,f);
-      return f
-   end;
+   ofsf_posprep(f,nil);
 
 procedure ofsf_qe(f,theo);
    if !*rlxopt and null theo and ofsf_xopt!-check f then <<

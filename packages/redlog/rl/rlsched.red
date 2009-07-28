@@ -219,6 +219,8 @@ rl_mkserv('quine,'(rl_simp),nil,nil,'rl_mk!*fof,T);
 
 rl_mkserv('resolve,'(rl_simp),nil,nil,'rl_mk!*fof,T);
 
+rl_mkserv('posresolve,'(rl_simp),nil,nil,'rl_mk!*fof,T);
+
 % Black box scheduler.
 
 rl_mkbb('rl_simplat1,2);
