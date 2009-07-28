@@ -198,7 +198,7 @@ procedure dcfsf_simpd(u);
       n := cadr u;
       if not (numberp n and n >=0) then
 	 rederr {"dcfsf_simpd:",n,"is not a natural number"};
-      if (w:=sfto_varf vf) then
+      if (w:=sfto_idvarf vf) then
 	 return mksq({'d,w,n},1);
       vf := dcfsf_derivationnf(vf,n,nil);
       return !*f2q vf

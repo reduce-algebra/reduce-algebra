@@ -580,8 +580,16 @@ procedure sfto_linwpp(f,vl);
 
 procedure sfto_varf(f);
    % Variable form. [f] is an SF. Returns [nil] or an identifier. If
-   % [f] is a variable then return the corresponding identifier else
-   % return nil.
+   % [f] is a variable then return the corresponding kernel else
+   % return nil. In contrast to sfto_varf, this function rerturn also
+   % non-atomic kernels.
+   if not domainp f and null red f and eqn(lc f,1) and eqn(ldeg f,1) then
+      mvar f;
+
+procedure sfto_idvarf(f);
+   % Identifier variable form. [f] is an SF. Returns [nil] or an
+   % identifier. If [f] is an atomic variable then return the
+   % corresponding identifier else return nil.
    if not domainp f and
       null red f and eqn(lc f,1) and eqn(ldeg f,1) and idp mvar f
    then
