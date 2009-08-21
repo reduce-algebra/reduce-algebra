@@ -371,6 +371,8 @@ procedure cl_newv(v,m,asgal,allvl);
 
 procedure cl_subvarsubstat(newv,oldv,f);
    begin scalar op;
+      if rl_tvalp f then
+	 return f;
       op := rl_op f;
       if rl_quap op then
 	 if rl_var f eq oldv then
