@@ -217,16 +217,13 @@ showmathdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
 endif fox
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
-	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
-		-o fwin-icon.$(OBJEXT)
+	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) -o $@
 
 fwin-csl.$(OBJEXT):	$(srcdir)/fwin-csl.rc
-	$(WINDRES) $(srcdir)/fwin-csl.rc --include-dir=$(srcdir) \
-		-o fwin-csl.$(OBJEXT)
+	$(WINDRES) $(srcdir)/fwin-csl.rc --include-dir=$(srcdir) -o $@
 
 fwin-reduce.$(OBJEXT):	$(srcdir)/fwin-reduce.rc
-	$(WINDRES) $(srcdir)/fwin-reduce.rc --include-dir=$(srcdir) \
-		-o fwin-reduce.$(OBJEXT)
+	$(WINDRES) $(srcdir)/fwin-reduce.rc --include-dir=$(srcdir) -o $@
 
 else !windows
 CONAP=
@@ -257,10 +254,10 @@ endif fox
 # accept an "-o" option to indicate where it should put its object file.
 #
 fwin-csl.$(OBJEXT):	$(srcdir)/null.c
-	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
+	$(COMPILE) -c $(srcdir)/null.c -o $@
 
 fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
-	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
+	$(COMPILE) -c $(srcdir)/null.c -o $@
 
 # end of windows vs non-windows conditions
 endif !windows
@@ -271,9 +268,6 @@ endif !windows
 # be guaranteed) that the expression "-o destination" will be what works.
 
 CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
-
-# BEWARE BEWARE BEWARE the next line must have trailing blanks
-DEST=-o   
 
 R = $(srcdir)/../..
 
@@ -303,35 +297,35 @@ $(srcdir)/Makefile.am:
 
 csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
 	-rm -f csl$(EXEEXT)
-	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(CSLEXEDEF) -o $@ $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
 if fox
 	-rm -f csl$(COMEXT)
-	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(CSLCOMDEF) -o csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
-	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(REDUCEEXEDEF) -o $@ $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
 if fox
 	-rm -f reduce$(COMEXT)
-	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(REDUCECOMDEF) -o reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
-	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) -o $@ $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
+	$(CXXLINKTO) -o $@ $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
 if fox
 	-rm -f fwindemo$(COMEXT)
-	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) -o fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 endif fox
 endif windows
 
@@ -339,15 +333,15 @@ if fox
 
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fontdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) -o $@ $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
 
 foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES)
 	-rm -f foxdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) -o $@ $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
 
 showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f showmathdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
+	$(CXXLINKTO) -o $@ $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 
 if windows
 
@@ -534,7 +528,7 @@ generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 
 clean-local:
 	-rm -rf $(generatedfiles)
-	
+
 else !windows
 
 uninstall-local:
@@ -560,7 +554,7 @@ generatedfiles=$(image_files) $(local_image_files) \
 
 clean-local:
 	-rm -rf $(generatedfiles)
-	
+
 endif !windows
 
 
@@ -620,7 +614,7 @@ endif !windows
 DLLIB=
 
 dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.c $(srcdir)/dynmodule.def $(dyndep)
-	$(COMPILE_DLL) $(dyndef) $(srcdir)/dynmodule.c $(DLLIB) $(DEST)dynmodule.$(DLLEXT)
+	$(COMPILE_DLL) $(dyndef) $(srcdir)/dynmodule.c $(DLLIB) -o $@
 
 if canrun
 
@@ -629,18 +623,18 @@ if windows
 # On windows I must avoid -mno-cygwin here.
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
-	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
+	gcc $(srcdir)/objtype.c -o $@
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
-	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
+	gcc $(srcdir)/makeheaders.c -o $@
 
 else
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
-	$(COMPILE) $(srcdir)/objtype.c -o objtype$(EXEEXT)
+	$(COMPILE) $(srcdir)/objtype.c -o $@
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
-	$(COMPILE) $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
+	$(COMPILE) $(srcdir)/makeheaders.c -o $@
 
 endif
 else !canrun
@@ -652,10 +646,10 @@ else !canrun
 # programs are botf fairly small and conservative.
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
-	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
+	gcc $(srcdir)/objtype.c -o $@
 
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
-	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
+	gcc $(srcdir)/makeheaders.c -o $@
 
 endif !canrun
 
