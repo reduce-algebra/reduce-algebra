@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0acdd662 01-Sep-2008 */
+/* Signature: 588796dc 04-Jul-2009 */
 
 #include "headers.h"
 
@@ -2283,52 +2283,6 @@ static void lose_dead_hashtables(void)
         else p = &qcdr(q);
     }
 }
-
-#ifdef DEMO_MODE
-
-/*
- * This is now a historical relic! But I leave it in for entertainment of
- * a sort - at least for now.
- */
-
-extern CSLbool terminal_pushed;
-
-void give_up()
-{
-    Lisp_Object nil;
-#define m(s) err_printf(s)
-m("\n+++ DEMONSTRATION VERSION OF REDUCE - RESOURCE LIMIT EXCEEDED +++\n");
-m("This version of REDUCE has been provided for testing and\n");
-m("demonstration purposes.  It has a built-in cut-out that will\n");
-m("terminate processing after a time that should be sufficient for\n");
-m("various small tests to run, but which will probably stop it\n");
-m("from being useful as a serious tool.  You are permitted to copy\n");
-m("the demonstration version and pass it on to friends subject to\n");
-m("not changing it, and in particular neither changing the various\n");
-m("messages it prints nor attempting to circumvent the time-out\n");
-m("mechanism.  Full versions of REDUCE are available to run on a\n");
-m("wide range of types of computer, and a machine-readable file\n");
-m("listing suppliers was provided with the documentation that goes\n");
-m("with this version.  Some suppliers are:\n");
-m("  Codemist Ltd, Alta, Horsecombe Vale, Combe Down, Bath BA2 5QR,\n");
-m("    England.  Phone and fax +44-225-837430,\n");
-m("    http://www.codemist.co.uk\n");
-m("  Winfried Neun, Konrad-Zuse-Zentrum fuer Informationstechnik Berlin\n");
-m("    Heilbronner Str. 10, D 10711 Berlin-Wilmersdorf, GERMANY\n");
-m("    Phone: +44-30-89604-195  Fax +49-30-89604-125.\n");
-m("  (Codemist provided this version, the ZIB differs slightly)\n");
-m("<Close window/type RETURN to exit>\n");
-#undef m
-    nil = C_nil;
-    prompt_thing = CHAR_EOF;    /* Disables the prompt */
-    ensure_screen();
-    terminal_pushed = NOT_CHAR;
-    tty_count = 0;
-    char_from_terminal(0);      /* intended to delay until a char is typed */
-    my_exit(EXIT_FAILURE);
-}
-
-#endif /* DEMO_MODE */
 
 #ifdef HAVE_FWIN
 

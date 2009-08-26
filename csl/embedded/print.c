@@ -2011,13 +2011,8 @@ case TAG_ODDS:
  * expect that.
  */
                 outprefix(NO, 2);
-#if defined DEMO_MODE || defined DEMO_BUILD
-                putc_stream('?', active_stream);
-                putc_stream('?', active_stream);
-#else
                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                 putc_stream(hexdig[ch & 0xf], active_stream);
-#endif
             }
             popv(1);
             putc_stream(']', active_stream);

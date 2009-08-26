@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 79338bd3 04-Jan-2009 */
+/* Signature: 53b468e9 04-Jul-2009 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -906,31 +906,6 @@ extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
 extern void checksum(Lisp_Object a);
 extern unsigned char unpredictable[256];
 extern void inject_randomness(int n);
-/*
- * crypt_init() seeds the encryption engine that I used, and then
- * crypt_get_block() gets a chunk of the sequence, which I can XOR with
- * text to mess it up.
- */
-extern void crypt_init(char *key);
-#define CRYPT_BLOCK 128
-extern void crypt_get_block(unsigned char result[CRYPT_BLOCK]);
-/*
- * crypt_active is -ve if none is in use, otherwise it is a key identifier
- * (to allow for possibly multiple keys). crypt_buffer & crypt_count are
- * things filled in by crypt_get_block(). The encryption stuff here is just
- * for protection of the software, and the code that does somewhat more
- * serious encryption to create the keys used with this stream cipher live
- * elsewhere. The crypto technology in CSL is only used on image files, ie
- * chunks of compiled code etc, and no provision has been made to use it
- * on user data-files. I can store up to CRYPT_KEYS different keys with
- * a CSL system and have different modules protected by different ones of
- * them.
- */
-#define CRYPT_KEYS 10
-extern char *crypt_keys[CRYPT_KEYS];
-extern int crypt_active;
-extern unsigned char *crypt_buffer;
-extern int crypt_count;
 
 extern void ensure_screen(void);
 extern int window_heading;
@@ -1089,13 +1064,6 @@ extern Lisp_Object times2(Lisp_Object a, Lisp_Object b);
 extern int32_t       thirty_two_bits(Lisp_Object a);
 #ifdef HAVE_INT64_T
 extern int64_t       sixty_four_bits(Lisp_Object a);
-#endif
-
-#if defined DEMO_MODE || defined DEMO_BUILD
-extern void give_up();
-#endif
-#ifdef DEMO_BUILD
-extern int32_t demo_key1, demo_key2;
 #endif
 
 /*
