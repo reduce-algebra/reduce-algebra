@@ -43,4 +43,8 @@ u10.c:		config.h
 u11.c:		config.h
 u12.c:		config.h
 
+# Maintainance:
+clean:
+	rm -f $(PROG) $(OBJS)
+
 # end of Makefile
