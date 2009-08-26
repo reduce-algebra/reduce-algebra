@@ -25,6 +25,7 @@ PKGCONFIG=	pkg-config
 .c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+all:		$(PROG)
 $(PROG):	$(OBJS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
