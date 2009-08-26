@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 4a3be045 20-Jun-2009 */
+/* Signature: 7724b208 08-Jul-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -232,6 +232,22 @@ static long long int read8(FILE *f)
     return r;
 }
 
+#ifdef WIN32
+
+void consoleWait()
+{
+/*
+ * If the console had to be created specially to view this information
+ * it is probable that it will close as soon as the program closes, and so
+ * to give at least a minimal chance for the user to inspect it I will
+ * put in a delay here.
+ */
+    clock_t c0 = clock() + 5*CLOCKS_PER_SEC;
+    while (clock() < c0);
+}
+
+#endif
+
 #ifdef PART_OF_FOX
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 #else
@@ -280,7 +296,7 @@ int main(int argc, char *argv[])
  */
     windowed = 1;
 #ifdef WIN32
-/* I have tried various messy Windows API cals here to get this right.
+/* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line
@@ -360,7 +376,7 @@ int main(int argc, char *argv[])
  * and identifies itself as type DISK. The the case of launching the code
  * by double-clicking on the .exe file the handle is probably invalid, but
  * GetFileType returns FILE_TYPE_UNKNOWN. The end effect is that I can
- * detect cases where input has bene redirected in a way that appears to
+ * detect cases where input has been redirected in a way that appears to
  * work in both cases.  Note that if a user wants to launch an application
  * via a pipe then they should EITHER launch the ".com" version or (better)
  * explictly provide a "-w" flag to indicate that the application should
@@ -420,6 +436,23 @@ int main(int argc, char *argv[])
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
+#ifdef WIN32
+/*
+ * If I am running under Windows and I have set command line options
+ * that tell me to run in a console then I will create one if one does
+ * not already exist.
+ */
+    if (windowed == 0)
+    {   int consoleCreated = AllocConsole();
+        if (consoleCreated)
+        {   freopen("CONIN$", "r", stdin);
+            freopen("CONOUT$", "w", stdout);
+            freopen("CONOUT$", "w", stderr);
+/* I will also pause for 5 seconds at the end... */
+            atexit(consoleWait);
+        }
+    }
+#endif /* WIN32 */
 #else /* PART_OF_FOX */
 /* If the FOX toolkit is not available there is no point in
  * looking for a command-line option that controls whether to use it!

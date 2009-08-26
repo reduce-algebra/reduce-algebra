@@ -1,7 +1,12 @@
 #! /bin/sh
 
 # This is used to re-run autoconf, automake etc and then restart
-# a call to "configure"
+# a call to "configure". It had been used in an attempt to arrange that
+# when one went "configure;make" the make step would not instantly
+# invoke automake etc and then run the configure step all over again. But
+# the test I had to do that were too bash-specific so I have backed off
+# from that. The result will sometimes be configures that take a lot
+# longer than is really necessary!
 
 a=$0
 c=unknown
@@ -12,7 +17,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | sed -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -33,47 +38,21 @@ case $a in
   ;;
 esac
 
-here=${c%/*}
+here=`echo $c | sed -e 's+/[^/]*$++'`
 
 saved=`pwd`
 cd $here
 
-# Oh dear! On some (but not all) Macintosh installations there will be
-# a program called libtool present that is nothing to do with GNU libtool.
-# In some (but probably not all!) such cases the GNU version of libtool
-# may be present with a "g" in front of its name, ie "glibtoolize" may
-# exist. I try to test for these messy cases here and refuse to try to
-# regenerate stuff unless I think I can see at least some variant on
-# GNU libtool(ize) available.
-
-ltv="none"
-ltv=`libtoolize --version 2>&1`
-gltv="none"
-gltv=`glibtoolize --version 2>&1`
-ltavail="no"
-case $ltv in
-*GNU*libtool*)
-  ltavail="yes"
-  ;;
-*)
-  case $gltv in
-  *GNU*libtool*)
-    ltavail="yes"
-    ;;
-  esac
-  ;;
-esac
-
-if test "$ltavail" = "yes" && autoconf -o /dev/null >/dev/null 2>&1
+if autoconf -o /dev/null >/dev/null 2>&1
 then
 # If looks as if we have autoconf installed and it is at least version
 # 2.61, which is what I seem to need at the moment.
 # The configure.ac file here arranges to check the automake
-# version too. But it seems hard to make it check the libtool version -
-# the most I can do there (easily) is to verify that libtool is available. 
-  if ! $here/../autogen.sh
-  then
-    echo "The autoconf/automake/libtoolize process seems to have failed"
+# version too.
+  if $here/../autogen.sh
+  then :
+  else
+    echo "The autoconf/automake process seems to have failed"
     echo "Please check you have up to date versions of all those installed"
     exit 1
   fi

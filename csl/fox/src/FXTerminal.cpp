@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 5f99f5bb 04-Jun-2008 */
+/* Signature: 2015cdb8 13-Jul-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -3393,7 +3393,7 @@ int FXTerminal::isEditableForBackspace()
     return 1;
 }
 
-// #define INPUT_BUFFER_LENGTH 256   (in header file)
+// #define INPUT_BUFFER_LENGTH 512   (in header file)
 // int inputBufferLen = 0;
 // int inputBufferP = 0;
 // char inputBuffer[INPUT_BUFFER_LENGTH];

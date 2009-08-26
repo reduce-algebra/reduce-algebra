@@ -44,6 +44,24 @@ echo "Updating autoconf scripts"
 
 autoreconf -i -f -v || { echo "autoreconf failed in source root"; exit 1; }
 
+echo "updating in scripts"
+if aclocal
+then :
+else
+  echo "reconfiguring failed in $here/scripts"
+  cd $save
+  exit 1
+fi
+if autoconf
+then :
+else
+  echo "reconfiguring failed in $here/scripts"
+  cd $save
+  exit 1
+fi
+
+cd ../csl
+echo " "
 echo "updating in csl"
 (cd csl && rm -f ltmain.sh && touch ltmain.sh
     && ${LIBTOOLIZE} --force && ./autogen.sh) \

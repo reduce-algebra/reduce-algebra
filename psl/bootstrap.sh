@@ -18,7 +18,7 @@ case $a in
 */* )
   case $a in
   ./* )
-    a=${a#./}
+    a=`echo $a | sed -e s+./++`
     ;;
   esac
   c=`pwd`/$a
@@ -39,7 +39,7 @@ case $a in
   ;;
 esac
 
-cpsldir=${c%/*}
+cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
 creduce=$cpsldir/..
 chere=`pwd`
 
@@ -76,13 +76,15 @@ else
 STORE=64000000
 fi
 
-if ! test -d red
-then
+if test -d red
+then :
+else
   mkdir red
 fi
 
-if ! test -d deps
-then
+if test -d deps
+then :
+else
   mkdir deps
 fi
 

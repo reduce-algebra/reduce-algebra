@@ -243,7 +243,7 @@ procedure mri_simplat1(at,sop);
 	 return mri_pasf2mri(pasf_simplat1(mri_2pasfat at,sop),'int);
       if not mri_congp at then
 	 return mri_ofsf2mri(ofsf_simplat1(mri_2ofsfat at,sop),'real);
-      return mri_0mk2(mri_op at,mri_arg2l at,mri_type at)
+      return mri_0mk2(mri_op at,mri_arg2l at,type)
    end;
 
 procedure mri_simplfloor(lhs);

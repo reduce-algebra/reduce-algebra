@@ -65,9 +65,9 @@ then
       bin="$here/../pslbuild/$hx/psl/$ap.exe"
       binw=`cygpath -w $bin`
       img=`cygpath -m $here/../pslbuild/$hx/red/reduce.img`
-      rm -f $here/../bin/$scr
-      echo "exec $bin -td 16000000 -f $img \$*" > $here/../bin/$scr
-      chmod +x $here/../bin/$scr
+#     rm -f $here/../bin/$scr
+#     echo "exec $bin -td 16000000 -f $img \$*" > $here/../bin/$scr
+#     chmod +x $here/../bin/$scr
       exec $bin -td 16000000 -f $img $*
       exit 0
     fi
@@ -83,9 +83,9 @@ else
         STORE=2000
       fi
       bin="$here/../pslbuild/$host$hx/psl/$ap"
-      rm -f $here/../bin/$scr
-      echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
-      chmod +x $here/../bin/$scr
+#     rm -f $here/../bin/$scr
+#     echo "exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img \$*" > $here/../bin/$scr
+#     chmod +x $here/../bin/$scr
       exec $bin -td $STORE -f $here/../pslbuild/$host$hx/red/reduce.img $*
       exit 0
     fi
@@ -93,7 +93,7 @@ else
 fi
 
 echo Failed to find a version of $ap that you have built
-echo try "./configure; make" to build one.
+echo try "./configure --with-psl; make" to build one.
 
 exit 0
 

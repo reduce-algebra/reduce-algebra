@@ -52,7 +52,7 @@
  * and not under any more restrictice license.
  */
 
-/* Signature: 246dcc38 24-May-2008 */
+/* Signature: 5d903886 14-Jul-2009 */
 
 #ifndef header_fwin_h
 #define header_fwin_h 1
@@ -447,7 +447,7 @@ extern const char *input_history_get(int n);
 
 /*
  * By passing argv[0] to the following you can find the fully rooted
- * name of the application that you arr running. This may be useful if
+ * name of the application that you are running. This may be useful if
  * you want to put some resources (eg fonts) in the same directory as the
  * executable. If the profram was launched by quoting the name of a symbolic
  * link then that will be followed so that the path delivered is that of the

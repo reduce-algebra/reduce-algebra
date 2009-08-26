@@ -255,13 +255,113 @@ procedure ofsf_multsurep!-neq(at,atl);
       return a eq 'found
    end;
 
+procedure ofsf_posprep(f,resfnchkp);
+   begin scalar op,posconds,qvl;
+      f := cl_pnf f;
+      while rl_quap(op := rl_op f) do <<
+	 if op eq 'all then
+ 	    rederr "pos methods admit only one existential quantifier block";
+	 qvl := rl_var f . qvl;
+	 f := rl_mat f
+      >>;
+      posconds := for each v in cl_fvarl f join
+	 if resfnchkp and pairp v and ofsf_rxffn car v then
+	    for each w in list2set ofsf_lpvarl v collect
+ 	       ofsf_0mk2('greaterp,!*k2f w)
+	 else
+ 	    {ofsf_0mk2('greaterp,!*k2f v)};
+      f := rl_mkn('and,f . posconds);
+      for each v in qvl do
+	 f := rl_mkq('ex,v,f);
+      return f
+   end;
+
+procedure ofsf_lpvarl(u);
+   if idp u then
+      {u}
+   else if pairp u then
+      if not (ofsf_opp car u or ofsf_arithp car u or ofsf_rxffn car u) then
+	 {!*a2k u}
+      else
+      	 for each arg in cdr u join
+	    ofsf_lpvarl arg;
+
+procedure ofsf_arithp(op);
+   op memq '(plus minus times expt);
+
+procedure ofsf_resolve(f);
+   ofsf_resolve21(f,nil);
+   
+procedure ofsf_posresolve(f);
+   ofsf_resolve21(ofsf_posprep(f,t),t);
+
+procedure ofsf_resolve21(f,posp);
+   begin scalar w;
+      w := cl_apply2ats(f,function ofsf_resolve2topminmax);
+      w := cl_simpl(w,nil,-1);
+      % In the following line I rely on cl_resolve not to call
+      % cl_simpl with non-resolved formulas. Otherwise, e.g.,
+      % max(x+y,y+z)=0 would become false.
+      w := cl_resolve w where !*rlpos=posp;
+      w := cl_simpl(w,nil,-1) where !*rlpos=posp;
+      return w
+   end;
+
+procedure ofsf_resolve2topminmax(at);
+   begin scalar lhs,rel,op;
+      rel := ofsf_op at;
+      lhs := prepf ofsf_arg2l at;
+      if not pairp lhs then
+	 return at;
+      op := car lhs;
+      if op eq 'minus then <<
+	 rel := ofsf_anegrel rel;
+	 lhs := cadr lhs;
+	 if not pairp lhs then
+	    return at;
+	 op := car lhs
+      >>;
+      if not (op memq '(min max) and rel memq '(lessp greaterp leq geq)) then
+      	 return at;
+      return ofsf_resolveminmax(rel,op,cdr lhs)
+   end;
+
+procedure ofsf_resolveminmax(rel,op,argl);
+   begin scalar bop;
+      bop := if op eq 'min and rel memq '(lessp leq) or
+	 op eq 'max and rel memq '(greaterp geq)
+      then
+	 'or
+      else
+	 'and;
+      return rl_mkn(bop,for each arg in argl collect
+	 rl_simp {rel,arg,0})
+   end;
+
+procedure ofsf_rxffn!-abs(op,argl,condl,qll);
+   if cdr argl then
+      rederr {"ofsf_rxffn!-abs: length(argl)=",length argl}
+   else if ofsf_surep(ofsf_0mk2('geq,ofsf_simpterm car argl),nil) then
+      {rc_mk(car argl,'and . condl,lto_appendn qll)}
+   else if ofsf_surep(ofsf_0mk2('lessp,ofsf_simpterm car argl),nil) then
+      {rc_mk({'minus,car argl},'and . condl,lto_appendn qll)}
+   else
+      {rc_mk(
+	 car argl,
+	 'and . {'geq,car argl,0} . condl,
+	 lto_appendn qll),
+       rc_mk(
+	 {'minus,car argl},
+	 'and . {'leq,car argl,0} . condl,
+	 lto_appendn qll)};
+
 procedure ofsf_rxffn(op);
    if op eq 'max then
       'cl_rxffn!-max
    else if op eq 'min then
       'cl_rxffn!-max
    else if op eq 'abs then
-      'cl_rxffn!-abs
+      'ofsf_rxffn!-abs
    else if op eq 'sign then
       'cl_rxffn!-sign
    else if op eq 'sqrt then

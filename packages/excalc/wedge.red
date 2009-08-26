@@ -164,8 +164,11 @@ symbolic procedure wedgef u;
                                    negsq mksgnsq deg!*form cadar u))
       else mkwedge u;
 
+!#if (memq 'csl lispsystem!*)
+put('wedge,'fancy!-infix!-symbol,"\wedge ");
+!#else
 put('wedge,'fancy!-infix!-symbol,217);
-
+!#endif
 
 endmodule;
 

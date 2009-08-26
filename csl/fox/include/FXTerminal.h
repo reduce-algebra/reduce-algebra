@@ -45,7 +45,7 @@
 #ifndef FXTERMINAL_H
 #define FXTERMINAL_H
 
-/* Signature: 6d425b64 04-Jun-2008 */
+/* Signature: 729d7fff 13-Jul-2009 */
 
 #include "FXMathText.h"
 
@@ -438,7 +438,7 @@ public:
 
   volatile int fwin_in, fwin_out;
 
-#define INPUT_BUFFER_LENGTH 256
+#define INPUT_BUFFER_LENGTH 512
 
   int inputBufferLen;
   int inputBufferP;

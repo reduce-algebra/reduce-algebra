@@ -69,6 +69,8 @@ put('lpdotimes,'lpdo_simpfn,'lpdo_simplpdotimes);
 put('times,'rtypefn,'getrtypeor);
 put('times,'lpdo_simpfn,'lpdo_simptimes);
 
+put('abs,'lpdo_simpfn,'lpdo_simpabs);
+
 put('quotient,'lpdo_simpfn,'lpdo_simpquotient);
 
 put('partial,'rtypefn,'quotelpdo);
@@ -407,6 +409,12 @@ procedure lpdo_quot(n,d);
 procedure lpdo_simptimes(u);
    begin scalar w;
       w := simp('times . u);
+      return {w . nil}
+   end;
+
+procedure lpdo_simpabs(u);
+   begin scalar w;
+      w := simp('abs . u);
       return {w . nil}
    end;
 
@@ -922,24 +930,46 @@ procedure lpdo_factorize!$(l);
    >>;
 
 algebraic procedure lpdo_factorize(f,p,q);
-   % Factorize. [f] is a differential polynomial; [prulel], [qrulel]
-   % are alists mapping differential terms to coefficient templates;
-   % [p], [q] are identifiers. Returns a list $(A,L)$, where $A$ is
-   % one of the identifiers [true], [false], and $L$ is a list of
-   % differential polynomials. [p] and [q] are generic coefficients,
-   % where [p] is linear. In the result [true] indicates reducibility;
-   % in the positive case $L$ contains two factors, the first of which
-   % is linear.
-   begin scalar ff,so,p0,q0; % ,!*rlverbose;
+   % Factorize. [f] is a differential polynomial; [p], [q] are
+   % identifiers. Returns a list $(A,L)$, where $A$ is one of the
+   % identifiers [true], [false], and $L$ is a list of differential
+   % polynomials. [p] and [q] are generic coefficients, where [p] is
+   % linear. In the result [true] indicates reducibility; in the
+   % positive case $L$ contains two factors, the first of which is
+   % linear.
+   begin scalar ff,so,p0,q0,gamma,failedp,w; % ,!*rlverbose;
       on rlqeaprecise;
       ff := lpdofac(f,p,q);
       so := rlqea ff;
-      return for each bra in so collect <<
-      	 p0 := sub(second bra,p);
-      	 q0 := sub(second bra,q);
-	 {rlsimpl first bra,{p0,q0}}
-      >>
+      so := for each bra in so join <<
+	 gamma := rlsimpl first bra;
+	 if gamma = false then
+	    {}
+	 else if gamma = true then <<
+      	    p0 := sub(second bra,p);
+      	    q0 := sub(second bra,q);
+	    {lpdo_fixsign(p0,q0)}
+	 >> else <<
+	    failedp := t;
+	    {}
+	 >>
+      >>;
+      if so = {} and faildedp then return failed;
+      return so
    end;
+
+operator lpdo_fixsign;
+
+procedure lpdo_fixsign(p0,q0);
+   <<
+      p0 := lpdo_simp p0;
+      q0 := lpdo_simp q0;
+      if p0 and minusf numr caar p0 then <<
+	 p0 := lpdo_minus p0;
+      	 q0 := lpdo_minus q0
+      >>;
+      {'list,lpdo_mk!*lpdo p0,lpdo_mk!*lpdo q0}
+   >>;
 
 algebraic procedure lpdoglfac(f);
    lpdogdp(p(),lpdoptl f,1);

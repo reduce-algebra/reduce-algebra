@@ -226,7 +226,8 @@ put('ofsf,'rl_services,'(
    (rl_cadproj!* . ofsf_cadproj)
    (rl_hqe!* . ofsf_hqe)
    (rl_ghqe!* . ofsf_ghqe)
-   (rl_resolve!* . cl_resolve)));
+   (rl_resolve!* . ofsf_resolve)
+   (rl_posresolve!* . ofsf_posresolve)));
 
 % Admin
 put('ofsf,'simpfnname,'ofsf_simpfn);

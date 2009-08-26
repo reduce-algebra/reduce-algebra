@@ -579,13 +579,16 @@ fi
 dnl As before, avoid checking for some X-related headers is MINGW32 is in
 dnl use.
 
-if test "x$MINGW32" != "xyes"; then
+if test "x$MINGW32" != "xyes" && test "x$solaris" != "xyes"; then
 
 dnl Check for Xcursor support
 AC_ARG_WITH(xcursor,[  --with-xcursor          compile with Xcursor support])
 AC_MSG_RESULT([$with_xcursor])
 dnl a MINGW32 build may have CYGWIN (and hence X) headers present but it
-dnl REALLY does not want to use them.
+dnl REALLY does not want to use them. I have furthermore suffered a Sun
+dnl setup where the Xcursor headers are installed but where I can not find
+dnl associated libraries to use. So I will arrange to disable a search for
+dnl Xcursor.h if I am on Solaris
 if test "x$with_xcursor" != "xno"; then
 AC_CHECK_HEADER(X11/Xcursor/Xcursor.h,
                 CXXFLAGS="${CXXFLAGS} -DHAVE_XCURSOR_H=1"; X_BASE_LIBS="${X_BASE_LIBS} -lXcursor",
@@ -785,6 +788,9 @@ fi
 
 CPPFLAGS="$saved_cppflags"
 
+dnl Because I have a few files coded in C not C++ I want to set C command
+dnl flags to include eg debug and optimisation settings.
+CFLAGS="$CXXFLAGS"
 
 AC_SUBST(GL_LIBS)
 AC_SUBST(GL_TESTS)

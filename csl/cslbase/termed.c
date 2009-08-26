@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 2fb781ef 24-May-2008 */
+/* Signature: 7404f111 18-Jul-2009 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -2342,7 +2342,7 @@ static void set_shell(void)
 
 static char *term_fancy_getline(void)
 {
-    int ch;
+    int ch, any_keys = 0;
 #ifdef TEST
     fprintf(stderr, "term_fancy_getline\n");
     fflush(stderr);
@@ -2374,10 +2374,11 @@ static char *term_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
-        if (ch == EOF)
+        if (ch == EOF || (ch == CTRL('D') && !any_keys))
         {   set_normal();
             return NULL;
         }
+        any_keys = 1;
 /*
  * First ensure there is space in the buffer. In some cases maybe putting
  * the test here is marginally over-keen, since the keystroke entered

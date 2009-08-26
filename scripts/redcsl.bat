@@ -13,16 +13,20 @@ echo Go "./configure --with-csl; make" in a cygwin shell please
 goto :done
 
 :x64
-%h%..\scripts\run1 %h%..\cslbuild\x86_64-pc-windows\csl\reduce.com redcsl %*
+%h%..\cslbuild\x86_64-pc-windows\csl\reduce.com %*
+goto :done
 
 :x86
-%h%..\scripts\run1 %h%..\cslbuild\i686-pc-windows\csl\reduce.com redcsl %*
+%h%..\cslbuild\i686-pc-windows\csl\reduce.com %*
+goto :done
 
 :x64d
-%h%..\scripts\run1 %h%..\cslbuild\x86_64-pc-windows-debug\csl\reduce.com redcsl %*
+%h%..\cslbuild\x86_64-pc-windows-debug\csl\reduce.com %*
+goto :done
 
 :x86d
-%h%..\scripts\run1 %h%..\cslbuild\i686-pc-windows-debug\csl\reduce.com redcsl %*
+%h%..\cslbuild\i686-pc-windows-debug\csl\reduce.com %*
+goto :done
 
 :done
 

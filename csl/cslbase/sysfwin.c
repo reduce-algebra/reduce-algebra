@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 1a38dbb6 04-May-2009 */
+/* Signature: 692ad8fe 19-Jul-2009 */
 
 #include "headers.h"
 
@@ -135,12 +135,18 @@ void pause_for_user()
 {
 }
 
+int terminal_eof_seen = 0;
+
 int wimpget(char *buf)
 {
     int c, n=0;
     ensure_screen();
     while (n < 255)
-    {   c = fwin_getchar();
+    {   if (terminal_eof_seen) c = EOF;
+        else
+        {   c = fwin_getchar();
+            if (c == EOF || c == (0x1f & 'D')) terminal_eof_seen = 1;
+        }
         if (c == (0x1f & 'C') ||           /* ^C - quiet : quit      */
             c == (0x1f & 'G')) return 0;   /* ^G - noisy : interrupt */
         if (c == EOF) c = 0x1f & 'D';

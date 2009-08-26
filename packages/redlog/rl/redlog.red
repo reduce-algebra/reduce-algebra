@@ -190,12 +190,14 @@ procedure quotelog(x); 'logical;
 procedure rl_texmacsp();
    get('tmprint,'package);
 
+put('logical,'tag,'!*fof);
 put('logical,'evfn,'rl_reval);
 put('logical,'subfn,'rl_sub!*fof);
 put('logical,'lengthfn,'rl_lengthlogical);
 
 put('!*fof,'prifn,'rl_print!*fof);
 put('!*fof,'fancy!-prifn,'rl_print!*fof);
+put('!*fof,'fancy!-setprifn,'rl_setprint!*fof);
 %put('!*fof,'prifn,'prin2!*);
 put('!*fof,'rtypefn,'quotelog);
 put('!*fof,'rl_simpfn,'rl_simp!*fof);

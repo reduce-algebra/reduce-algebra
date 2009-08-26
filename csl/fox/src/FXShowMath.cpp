@@ -307,8 +307,8 @@ static Box *makeNestBox(int style, Box *b1, Box *b2)
     b->nest.height = 0;
     b->nest.depth = 0;
     b->nest.width = 0;
-    b->nest.sub1 = b1;
-    b->nest.sub2 = b2;
+    b->nest.sub1 = b1 != NULL ? b1 : makeSymBox(SymNothing);
+    b->nest.sub2 = b2 != NULL ? b2 : makeSymBox(SymNothing);
     b->nest.dx1 = b->nest.dy1 = 0;
     b->nest.dx2 = b->nest.dy2 = 0;
     return b;
@@ -322,9 +322,9 @@ static Box *makeNest3Box(int style, Box *b1, Box *b2, Box *b3)
     b->nest3.height = 0;
     b->nest3.depth = 0;
     b->nest3.width = 0;
-    b->nest3.sub1 = b1;
-    b->nest3.sub2 = b2;
-    b->nest3.sub3 = b3;
+    b->nest3.sub1 = b1 != NULL ? b1 : makeSymBox(SymNothing);
+    b->nest3.sub2 = b2 != NULL ? b2 : makeSymBox(SymNothing);
+    b->nest3.sub3 = b3 != NULL ? b3 : makeSymBox(SymNothing);
     b->nest3.dx1 = b->nest3.dy1 = 0;
     b->nest3.dx2 = b->nest3.dy2 = 0;
     b->nest3.dx3 = b->nest3.dy3 = 0;

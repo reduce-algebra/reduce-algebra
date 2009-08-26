@@ -1991,7 +1991,11 @@ symbolic procedure fancy!-meijerG u;
 
 % Now a few things that can be useful for testing this code...
 
-algebraic operator texsym, texbox, texfbox, texstring;
+symbolic <<
+% Arrange that if this file is loaded twice you do not get silly messages
+% to do with redefinition of these.
+  if not get('texsym, 'simpfn) then
+    algebraic operator texsym, texbox, texfbox, texstring >>;
 
 % texsym(!Longleftarrow) should generate \Longleftarrow (etc). This
 % might plausibly be useful while checking that the interface can render
@@ -2217,7 +2221,7 @@ procedure tm_setpchar!-csl(c);
 
 !#endif
 
-copyd('tm_setpchar!-orig,'setpchar);
+if not getd 'tm_setpchar!-orig then copyd('tm_setpchar!-orig,'setpchar);
 
 if tm_pslp() then
    copyd('setpchar,'tm_setpchar!-psl)

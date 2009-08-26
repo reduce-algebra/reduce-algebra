@@ -1,6 +1,7 @@
 #  Creates a table of all keywords defined the in the help files.
 
-pushd $reduce/doc/help
+save=`pwd`
+cd $reduce/doc/help
 
 grep '***** To' *.tex
 grep '\begin{Command}' *.tex
@@ -16,4 +17,4 @@ grep '\begin{INFO}' *.tex
 grep '\section' *.tex
 
 
-popd
+cd $save

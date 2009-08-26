@@ -1385,7 +1385,7 @@ procedure ofsf_buildtheory(gsys,icd);
    % initial condition. Returns a Theory, a list of inequations.
    begin scalar cdl,res;
       cdl := for each elem in gsys join car elem;
-      cdl := setminus(cdl,rl_thsimpl icd);
+      cdl := lto_setminus(cdl,rl_thsimpl icd);
       for each elem in cdl do <<
 	 if rl_op elem eq 'neq and
 	    not intersection(kernels ofsf_arg2l elem,ofsf_hqexvars!*) then
@@ -1398,7 +1398,7 @@ procedure ofsf_buildgenggsys(gsys);
    % Removes Conditions from branches, which are in a theory. [gsys] is a
    % Groebner System. Returns a Groebner System.
    for each branch in gsys collect
-      {setminus(car branch,ofsf_hqetheo!*),cadr branch};
+      {lto_setminus(car branch,ofsf_hqetheo!*),cadr branch};
 
 % -----------------------------------------------------------------------------
 % Case of zero-dimensional ideal
