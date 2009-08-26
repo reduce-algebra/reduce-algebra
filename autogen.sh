@@ -11,38 +11,6 @@
 #   -f    force all updates regardless of date-stamps
 #   -v    display some information about what is being done.
 
-a=$0
-c=unknown
-case $a in
-/* )
-  c=$a  
-  ;;
-*/* )
-  case $a in
-  ./* )
-    a=${a#./}
-    ;;
-  esac
-  c=`pwd`/$a
-  ;;
-* ) 
-  for d in $PATH
-  do
-    if test -x $d/$a
-    then
-      c=$d/$a
-    fi
-  done
-  if test $c = "unknown" ;then
-    echo "Unable to find full path for script. Please re-try"
-    echo "launching it using a fully rooted path."
-    exit 1
-  fi
-  ;;
-esac
-
-here=${c%/*}
-
 # On a Macintosh (in particular) I have had pain because of the
 # presence of a command called "libtool" that is not the GNU tool of
 # that name. So here I check and I will refuse to recreate the
@@ -72,93 +40,43 @@ then
   exit 1
 fi
 
-save=`pwd`
-cd $here
-
 echo "Updating autoconf scripts in $here"
 
-if ! autoreconf -i -f -v
-then
-  echo "autoreconf failed in $here"
-  cd $save
-  exit 1
-fi
+autoreconf -i -f -v || { echo "autoreconf failed in $here"; exit 1; }
 
-cd csl
-echo " "
 echo "updating in csl"
-rm -f ltmain.sh
-touch ltmain.sh
-$LIBTOOLIZE --force
-if ! ./autogen.sh
-then
-  echo "reconfiguring failed in $here/csl"
-  cd $save
-  exit 1
-fi
+(cd csl && rm -f ltmain.sh && touch ltmain.sh
+    && ${LIBTOOLIZE} --force && ./autogen.sh) \
+ || { echo "reconfiguring failed in $here/csl"; exit 1; }
 
-cd cslbase
-echo " "
 echo "updating in csl/cslbase"
-if ! autoreconf -i -f -v && autoheader --force
-then
-  echo "autoreconf failed in $here/csl/cslbase"
-  cd $save
-  exit 1
-fi
+(cd csl/cslbase && autoreconf -i -f -v && autoheader --force) \
+ || { echo "autoreconf failed in $here/csl/cslbase"; exit 1; }
 
-cd ../fox
-echo " "
 echo "updating in csl/fox"
+(cd csl/fox &&
 # The following lines may be necessary on some systems?
-rm -f ltmain.sh
-touch ltmain.sh
-$LIBTOOLIZE --force
-if ! autoreconf -i -f -v
-then
-  echo "autoreconf failed in $here/csl/fox"
-  cd $save
-  exit 1
-fi
+rm -f ltmain.sh &&
+touch ltmain.sh &&
+${LIBTOOLIZE} --force && autoreconf -i -f -v) \
+ || { echo "autoreconf failed in $here/csl/fox"; exit 1; }
 
-if test -d ../foxtests
+if test -d csl/foxtests
 then
-  cd ../foxtests
-  echo " "
   echo "updating in csl/foxtests"
-  if ! autoreconf -i -f -v
-  then
-    echo "autoreconf failed in $here/csl/foxtests"
-    cd $save
-    exit 1
-  fi
+  (cd csl/foxtests && autoreconf -i -f -v) || { echo "autoreconf failed in $here/csl/foxtests"; exit $1; }
 fi
 
-cd ../../psl
-echo " "
 echo "updating in psl"
-if ! autoreconf -i -f -v
-then
-  echo "autoreconf failed in $here/psl"
-  cd $save
-  exit 1
-fi
+(cd psl && autoreconf -i -f -v) || { echo "autoreconf failed in psl"; exit 1; }
 
-cd support-packages/xport-2.05
-echo " "
 echo "updating in psl/support-packages/xport-2.05"
-if ! autoreconf -i -f -v
-then
-  echo "autoreconf failed in $here/psl/support-packages/xport-2.05"
-  cd $save
-  exit 1
-fi
+(cd psl/support-packages/xport-2.05 && autoreconf -i -f -v) \
+ || { echo "autoreconf failed in $here/psl/support-packages/xport-2.05"; exit 1; }
 
-cd ../../..
-
+# XXX: What does it do exactly?
 scripts/resetall.sh
 
-cd $save
-exit 0
+exit $?
 
 # end of autogen.sh
