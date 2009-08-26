@@ -1,26 +1,46 @@
 # Makefile for this SIMPLE setup for Reduce building
 
-CC=gcc
-CFLAGS=-m32 -g -DHAVE_CONFIG_H=1 -DEMBEDDED=1
+PROG=	reduce
 
-reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
-		arith06.o arith07.o arith08.o arith09.o arith10.o \
-		arith11.o arith12.o bytes.o char.o \
-		csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
-		eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o gc.o \
-		opnames.o preserve.o print.o restart.o sysfwin.o \
-		termed.o \
-		u01.o u02.o u03.o u04.o u05.o u06.o \
-		u07.o u08.o u09.o u10.o u11.o u12.o
-	$(CC) $(CFLAGS) arith01.o arith02.o arith03.o arith04.o arith05.o \
-	arith06.o arith07.o arith08.o arith09.o arith10.o \
-	arith11.o arith12.o bytes.o char.o \
-	csl.o cslmpi.o cslread.o eval1.o eval2.o eval3.o \
-	eval4.o fasl.o fns1.o fns2.o fns3.o fwin.o gc.o \
-	opnames.o preserve.o print.o restart.o sysfwin.o \
-	termed.o \
-	u01.o u02.o u03.o u04.o u05.o u06.o \
-	u07.o u08.o u09.o u10.o u11.o u12.o \
-	-lm -o reduce
+SRCS=	arith01.c arith02.c arith03.c arith04.c arith05.c \
+	arith06.c arith07.c arith08.c arith09.c arith10.c \
+	arith11.c arith12.c bytes.c char.c \
+	csl.c cslmpi.c cslread.c eval1.c eval2.c eval3.c \
+	eval4.c fasl.c fns1.c fns2.c fns3.c fwin.c gc.c \
+	opnames.c preserve.c print.c restart.c sysfwin.c \
+	termed.c \
+	u01.c u02.c u03.c u04.c u05.c u06.c \
+	u07.c u08.c u09.c u10.c u11.c u12.c
+
+CFLAGS=		-g
+CPPFLAGS=	-DHAVE_CONFIG_H=1 -DEMBEDDED=1
+LDLIBS=		-lm
+
+OBJS=		$(SRCS:.c=.o)
+
+
+.SUFFIXES:	.c .o
+
+.c.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+$(PROG):	$(OBJS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+
+# config.h dependent files:
+fwin.c:		config.h
+termed.c:	config.h
+u01.c:		config.h
+u02.c:		config.h
+u03.c:		config.h
+u04.c:		config.h
+u05.c:		config.h
+u06.c:		config.h
+u07.c:		config.h
+u08.c:		config.h
+u09.c:		config.h
+u10.c:		config.h
+u11.c:		config.h
+u12.c:		config.h
 
 # end of Makefile
