@@ -40,18 +40,18 @@ then
   exit 1
 fi
 
-echo "Updating autoconf scripts in $here"
+echo "Updating autoconf scripts"
 
-autoreconf -i -f -v || { echo "autoreconf failed in $here"; exit 1; }
+autoreconf -i -f -v || { echo "autoreconf failed in source root"; exit 1; }
 
 echo "updating in csl"
 (cd csl && rm -f ltmain.sh && touch ltmain.sh
     && ${LIBTOOLIZE} --force && ./autogen.sh) \
- || { echo "reconfiguring failed in $here/csl"; exit 1; }
+ || { echo "reconfiguring failed in csl"; exit 1; }
 
 echo "updating in csl/cslbase"
 (cd csl/cslbase && autoreconf -i -f -v && autoheader --force) \
- || { echo "autoreconf failed in $here/csl/cslbase"; exit 1; }
+ || { echo "autoreconf failed in csl/cslbase"; exit 1; }
 
 echo "updating in csl/fox"
 (cd csl/fox &&
@@ -59,12 +59,12 @@ echo "updating in csl/fox"
 rm -f ltmain.sh &&
 touch ltmain.sh &&
 ${LIBTOOLIZE} --force && autoreconf -i -f -v) \
- || { echo "autoreconf failed in $here/csl/fox"; exit 1; }
+ || { echo "autoreconf failed in csl/fox"; exit 1; }
 
 if test -d csl/foxtests
 then
   echo "updating in csl/foxtests"
-  (cd csl/foxtests && autoreconf -i -f -v) || { echo "autoreconf failed in $here/csl/foxtests"; exit $1; }
+  (cd csl/foxtests && autoreconf -i -f -v) || { echo "autoreconf failed in csl/foxtests"; exit $1; }
 fi
 
 echo "updating in psl"
@@ -72,7 +72,7 @@ echo "updating in psl"
 
 echo "updating in psl/support-packages/xport-2.05"
 (cd psl/support-packages/xport-2.05 && autoreconf -i -f -v) \
- || { echo "autoreconf failed in $here/psl/support-packages/xport-2.05"; exit 1; }
+ || { echo "autoreconf failed in psl/support-packages/xport-2.05"; exit 1; }
 
 # XXX: What does it do exactly?
 scripts/resetall.sh
