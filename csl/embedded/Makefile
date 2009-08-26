@@ -13,11 +13,12 @@ SRCS=	arith01.c arith02.c arith03.c arith04.c arith05.c \
 	u07.c u08.c u09.c u10.c u11.c u12.c
 
 CFLAGS=		-g
-CPPFLAGS=	-DHAVE_CONFIG_H=1 -DEMBEDDED=1
+CPPFLAGS=	-DHAVE_CONFIG_H=1 -DEMBEDDED=1 $$($(PKGCONFIG) --cflags x11)
 LDLIBS=		-lm
 
 OBJS=		$(SRCS:.c=.o)
 
+PKGCONFIG=	pkg-config
 
 .SUFFIXES:	.c .o
 
