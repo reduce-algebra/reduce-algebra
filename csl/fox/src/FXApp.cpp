@@ -31,7 +31,8 @@
 // "obnoxious advertising clause" while not minding that they oblige me
 // to incorporate something rather similar here!
 
-
+// September 2009 - back-port fix re NET_WM_PING from original information
+// and FOX 1.6.36
 
 #ifdef WIN32
 #if _WIN32_WINNT < 0x0400
@@ -2674,10 +2675,26 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
             se.xclient.window=XDefaultRootWindow((Display*)display);
             se.xclient.data.l[0]=ev.xclient.data.l[0];
             se.xclient.data.l[1]=ev.xclient.data.l[1];
+#ifdef VERSION_BEFORE_ACN_CHANGED_IT
             se.xclient.data.l[2]=0;
             se.xclient.data.l[3]=0;
             se.xclient.data.l[4]=0;
             XSendEvent((Display*)display,se.xclient.window,True,NoEventMask,&se);
+#else
+// There is a comment at standards.freedesktop.org to the effect
+// "Note that some older clients may not preserve data.l[2] through data.l[4]."
+// and I take that to mean that newer clients ought to preserve everything.
+// After having found that I also found
+//    http://article.gmane.org/gmane.comp.lib.fox-toolkit.user/10190
+// which prompted me to look at the call to XSendEvent as well as preserving
+// the additional words of data. If I look in a current FOX 1.6 set of sources
+// this is also there (except that that still puts zeros in words 3 and 4.
+            se.xclient.data.l[2]=ev.xclient.data.l[2];
+            se.xclient.data.l[3]=ev.xclient.data.l[3];
+            se.xclient.data.l[4]=ev.xclient.data.l[4];
+            XSendEvent((Display*)display,se.xclient.window,False,
+                       SubstructureRedirectMask|SubstructureNotifyMask,&se);
+#endif
             }
           }
 
