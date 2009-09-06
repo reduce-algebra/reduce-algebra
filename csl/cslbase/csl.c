@@ -35,6 +35,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+/* Shameless hack: */ extern int terminal_eof_seen;
 
 
 /* Signature: 7677c249 19-Jul-2009 */
@@ -57,7 +58,9 @@
 #include <sys/unistd.h>
 #endif
 
-#ifndef HAVE_FWIN
+#ifdef HAVE_FWIN
+#include "fwin.h"
+#else
 /*
  * During startup on a windowed system if I needed to report an error
  * but the window was minimised I need to restore it...
@@ -948,7 +951,7 @@ static void lisp_main(void)
     }
 }
 
-#ifndef HAVE_FWIN
+#if !defined HAVE_FWIN || defined EMBEDDED
 #ifndef UNDER_CE
 
 CSLbool sigint_must_longjmp = NO;
@@ -1178,6 +1181,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     base_time = read_clock();
     consolidated_time[0] = gc_time = 0.0;
     clock_stack = &consolidated_time[0];
+#ifdef WINDOW_SYSTEM
     use_wimp = YES;
 #ifdef HAVE_FWIN
 /*
@@ -1192,6 +1196,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         }
     }
     fwin_pause_at_end = 1;
+#endif
 #endif
 #ifdef SOCKETS
     sockets_ready = 0;
@@ -1668,7 +1673,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * on did not support Xft.
  */
         case 'h':
+#ifndef EMBEDDED
                 fwin_use_xft = 0;
+#endif
 /*
  * Actually, like the "-w" option, it is TOO LATE to do this here because
  * lower-level parts of fwin may already have adjusted font paths using
@@ -2684,7 +2691,7 @@ static int submain(int argc, char *argv[])
     return 0;
 }
 
-#if HAVE_FWIN
+#if defined HAVE_FWIN && !defined EMBEDDED 
 #define ENTRYPOINT fwin_main
 
 extern int ENTRYPOINT(int argc, char *argv[]);
@@ -2703,6 +2710,12 @@ int main(int argc, char *argv[])
 int ENTRYPOINT(int argc, char *argv[])
 {
     int res;
+#ifdef EMBEDDED
+    if (find_program_directory(argv[0]))
+    {   fprintf(stderr, "Unable to identify program name and directory\n");
+        return 1;
+    }
+#endif
 #ifdef USE_MPI
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -2711,8 +2724,10 @@ int ENTRYPOINT(int argc, char *argv[])
 #endif
 
 #ifdef HAVE_FWIN
+#ifndef EMBEDDED
     strcpy(about_box_title, "About CSL");
     strcpy(about_box_description, "Codemist Standard Lisp");
+#endif
 #endif
 #ifdef __cplusplus
     try { res = submain(argc, argv); }

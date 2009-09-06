@@ -115,15 +115,19 @@ static char time_string[32], space_string[32];
 
 void report_time(int32_t t, int32_t gct)
 {
+#ifndef EMBEDDED
     sprintf(time_string, "%ld.%.2ld+%ld.%.2ld secs  ",
         t/100L, t%100L, gct/100L, gct%100L);
     if ((window_heading & 1) == 0) fwin_report_left(time_string);
+#endif
 }
 
 void report_space(int n, double percent)
 {
+#ifndef EMBEDDED
     sprintf(space_string, "[GC %d]:%.2f%%", n, percent);
     if ((window_heading & 4) == 0) fwin_report_right(space_string);
+#endif
 }
 
 void flush_screen()
@@ -377,7 +381,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 }
 
 
-#if defined HAVE_SYS_TIME_H && !defined WIN32
+#if defined HAVE_SYS_TIME_H && !defined WIN32 && !defined EMBEDDED
 
 /*
  * This is a BSD-style clock facility, possibly giving a resolution of

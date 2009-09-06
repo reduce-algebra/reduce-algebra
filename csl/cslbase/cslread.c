@@ -2099,7 +2099,7 @@ static char tty_buffer[TTYBUF_SIZE];
 static char *tty_pointer;
 #endif
 
-#ifndef HAVE_FWIN
+#if !defined HAVE_FWIN || defined EMBEDDED
 static CSLbool int_nest = NO;
 #endif
 
@@ -2234,7 +2234,7 @@ int char_from_terminal(Lisp_Object dummy)
             else
 #endif /* HAVE_FWIN */
 #endif /* WINDOW_SYSTEM */
-#ifndef HAVE_FWIN
+#if !defined HAVE_FWIN || defined EMBEDDED
 /*
  * Here I either do not have a window system or I have elected not to use it.
  * but note that with fwin I am simplifying things and always do the calls

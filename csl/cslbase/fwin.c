@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 #include <time.h>
 #include <signal.h>
 
-#if HAVE_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #else
 #ifndef _MSC_VER
@@ -124,7 +124,9 @@ extern char *getcwd(char *s, size_t n);
 #include <dirent.h>
 #else
 #ifndef WIN32
+#ifdef HAVE_SYS_DIR_H
 #include <sys/dir.h>
+#endif
 #else
 #include <direct.h>
 #endif
@@ -248,6 +250,7 @@ void consoleWait()
 
 #endif
 
+#ifndef EMBEDDED
 #ifdef PART_OF_FOX
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 #else
@@ -492,6 +495,8 @@ void MS_CDECL sigint_handler(int code)
     return;
 }
 
+#endif /* EMBEDDED */
+
 #ifdef SIGBREAK
 void MS_CDECL sigbreak_handler(int code)
 {
@@ -706,7 +711,8 @@ void fwin_set_prompt(const char *s)
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
 }
 
-void fwin_menus(char **modules, char **switches)
+void fwin_menus(char **modules, char **switches,
+                review_switch_settings_function *f)
 {
 }
 
@@ -1765,6 +1771,9 @@ static void scan_file(int namelength,
 static void exall(int namelength,
                   void (*proc)(const char *name, int why, long int size))
 {
+#ifdef EMBEDDED
+    return;  /* Dummy version here... */
+#else
     DIR *d;
 #ifdef USE_DIRECT_H
     struct direct *dd;
@@ -1811,6 +1820,7 @@ static void exall(int namelength,
 
     filename[rootlen] = 0;
     proc(filename, SCAN_ENDDIR, 0);
+#endif /* EMBEDDED */
 }
 
 #ifndef S_IFMT

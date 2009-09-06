@@ -38,6 +38,7 @@
 /* Signature: 603a33f9 04-Jul-2009 */
 
 #include "headers.h"
+#include "fwin.h"
 
 #ifdef COMMON
 #include "clsyms.h"
@@ -4351,7 +4352,12 @@ int32_t read_action_socket(int32_t op, Lisp_Object f)
     {
 case READ_CLOSE:
         if (stream_file(f) == NULL) op = 0;
-        else op = closesocket((SOCKET)(intptr_t)stream_file(f));
+        else
+#ifdef SOCKETS
+           op = closesocket((SOCKET)(intptr_t)stream_file(f));
+#else
+           /* */;
+#endif
         set_stream_read_fn(f, char_from_illegal);
         set_stream_read_other(f, read_action_illegal);
         set_stream_file(f, NULL);
@@ -4767,6 +4773,7 @@ char saveright[32];
 Lisp_Object Lwindow_heading2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
 #ifdef HAVE_FWIN
+#ifndef EMBEDDED
     int32_t n, bit;
     char *s, txt[32];
     txt[0] = 0;
@@ -4799,6 +4806,7 @@ default:
     }
     if (s == NULL || *s == 0) window_heading &= ~bit;
     else window_heading |= bit;
+#endif
 #endif
     return onevalue(nil);
 }

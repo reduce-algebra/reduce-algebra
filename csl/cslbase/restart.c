@@ -41,6 +41,8 @@
 /* Signature: 7661dab3 05-Jul-2009 */
 
 #include "headers.h"
+#include "fwin.h"
+#include "version.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -2911,6 +2913,9 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
  */
     init = (initfn *)GetProcAddress(a, "init");
 #else
+#ifdef EMBEDDED
+    return 0;  /* Not supported here! */
+#else /* EMBEDDED */
     a = dlopen(objname, RTLD_NOW | RTLD_GLOBAL);
 #ifdef TRACE_NATIVE
     trace_printf("a = %p\n", a);
@@ -2962,6 +2967,7 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
     p[len] = 0;
     record_dynamic_module(p, dll);
     return dll;
+#endif /* EMBEDDED */
 }
 
 int setup_dynamic(setup_type_1 *dll, char *modname,
@@ -3897,6 +3903,7 @@ static void set_up_variables(CSLbool restartp)
                 type_of_header(vechdr(w1)) == TYPE_STRING)
             {
 #ifdef HAVE_FWIN
+#ifndef EMBEDDED
                 int n = length_of_header(vechdr(w1))-CELL;
                 sprintf(about_box_title, "About %.*s",
                    (n > 31-(int)strlen("About ") ?
@@ -3929,14 +3936,17 @@ static void set_up_variables(CSLbool restartp)
                 }
                 else strcpy(about_box_rights_2, "Codemist Ltd");
 #endif
+#endif
             }
             else
             {
 #ifdef HAVE_FWIN
+#ifndef EMBEDDED
                 strcpy(about_box_title, "About REDUCE");
                 strcpy(about_box_description, "REDUCE");
                 strcpy(about_box_rights_1, "A C Hearn/RAND");
                 strcpy(about_box_rights_2, "Codemist Ltd");
+#endif
 #endif
             }
         }
