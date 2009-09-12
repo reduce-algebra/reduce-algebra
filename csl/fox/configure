@@ -2714,20 +2714,27 @@ case $host in
 # declared in a way that is messed up. The result would look ugly for something
 # where the fail-safe response is just to avoid using it, and that is why
 # I redirect stdout and stderr to /dev/null.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
     then
-      { $as_echo "$as_me:$LINENO: \"Macintosh fat binaries via 10.5\"" >&5
-$as_echo "$as_me: \"Macintosh fat binaries via 10.5\"" >&6;}
+      { $as_echo "$as_me:$LINENO: \"Macintosh fat binaries via 10.6\"" >&5
+$as_echo "$as_me: \"Macintosh fat binaries via 10.6\"" >&6;}
       enable_dependency_tracking="no"
     else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
       then
-        { $as_echo "$as_me:$LINENO: \"Macintosh fat binaries via 10.4u\"" >&5
-$as_echo "$as_me: \"Macintosh fat binaries via 10.4u\"" >&6;}
+        { $as_echo "$as_me:$LINENO: \"Macintosh fat binaries via 10.5\"" >&5
+$as_echo "$as_me: \"Macintosh fat binaries via 10.5\"" >&6;}
         enable_dependency_tracking="no"
       else
-        { $as_echo "$as_me:$LINENO: \"Macintosh fat binary creation seems impossible\"" >&5
+        if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+        then
+          { $as_echo "$as_me:$LINENO: \"Macintosh fat binaries via 10.4u\"" >&5
+$as_echo "$as_me: \"Macintosh fat binaries via 10.4u\"" >&6;}
+          enable_dependency_tracking="no"
+        else
+          { $as_echo "$as_me:$LINENO: \"Macintosh fat binary creation seems impossible\"" >&5
 $as_echo "$as_me: \"Macintosh fat binary creation seems impossible\"" >&6;}
+        fi
       fi
     fi
     ;;
@@ -4690,12 +4697,12 @@ $as_echo "$as_me: Checking for ability to build dual arch binaries" >&6;}
 # 32-bit macs. But *NOTE* that in such case dependency tracking using the
 # machanisms that automake usually tries to use will FAIL.
 #
-# First I check if I can use the 10.5 or 10.4u SDK.
+# First I check if I can use the 10.6, 10.5 or 10.4u SDK.
   if test "x$GCC" = "xyes"
   then
     OLDCFLAGS="$CFLAGS"
     sysroot=""
-    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
 
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -4733,9 +4740,9 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  sysroot="/Developer/SDKs/MacOSX10.5.sdk"
-       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-       LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+  sysroot="/Developer/SDKs/MacOSX10.6.sdk"
+       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+       LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.6.Sdk"
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
@@ -4746,6 +4753,58 @@ fi
 rm -rf conftest.dSYM
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
+    if test "x$sysroot" = "x"
+    then
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+      cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+printf("Hello\n");
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+        LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	CFLAGS="$OLDCFLAGS"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+    fi
     if test "x$sysroot" = "x"
     then
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
