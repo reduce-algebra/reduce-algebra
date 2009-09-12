@@ -2519,22 +2519,29 @@ $as_echo "$as_me: Building for Macintosh/Darwin with X" >&6;}
     echo "{   printf(\"Hello\");" >> conftest.c
     echo "    return 0;" >> conftest.c
     echo "}" >> conftest.c
-# First check a path that is best for Leopard (10.5) in December 2007.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
+# First check a path that is best for Snow Leopard (10.6) in September 2009.
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
     then
-      { $as_echo "$as_me:$LINENO: fat binary creation will probably be possible using 10.5" >&5
-$as_echo "$as_me: fat binary creation will probably be possible using 10.5" >&6;}
+      { $as_echo "$as_me:$LINENO: fat binary creation will probably be possible using 10.6" >&5
+$as_echo "$as_me: fat binary creation will probably be possible using 10.6" >&6;}
       enable_dependency_tracking="no"
     else
-# This is path works if I am on Tiger (10.4) in Spring 2007!
-      if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
+      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
       then
-        { $as_echo "$as_me:$LINENO: fat binary creation will probably be possible using 10.4" >&5
-$as_echo "$as_me: fat binary creation will probably be possible using 10.4" >&6;}
+        { $as_echo "$as_me:$LINENO: fat binary creation will probably be possible using 10.5" >&5
+$as_echo "$as_me: fat binary creation will probably be possible using 10.5" >&6;}
         enable_dependency_tracking="no"
       else
-        { $as_echo "$as_me:$LINENO: fat binary creation will probably NOT be possible" >&5
+# This is path works if I am on Tiger (10.4) in Spring 2007!
+        if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 $CFLAGS $LDFLAGS conftest.c -o conftest
+        then
+          { $as_echo "$as_me:$LINENO: fat binary creation will probably be possible using 10.4" >&5
+$as_echo "$as_me: fat binary creation will probably be possible using 10.4" >&6;}
+          enable_dependency_tracking="no"
+        else
+          { $as_echo "$as_me:$LINENO: fat binary creation will probably NOT be possible" >&5
 $as_echo "$as_me: fat binary creation will probably NOT be possible" >&6;}
+        fi
       fi
     fi
     ;;
@@ -3899,10 +3906,10 @@ CFLAGS="$save"
 if test "x$macintosh_build" = "xyes"
 then
   sysroot=""
-  { $as_echo "$as_me:$LINENO: Checking for OSX10.5 framework" >&5
-$as_echo "$as_me: Checking for OSX10.5 framework" >&6;}
+  { $as_echo "$as_me:$LINENO: Checking for OSX10.6 framework" >&5
+$as_echo "$as_me: Checking for OSX10.6 framework" >&6;}
   OLDCFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+  CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
 
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -3940,22 +3947,80 @@ $as_echo "$ac_try_echo") >&5
 	 test "$cross_compiling" = yes ||
 	 $as_test_x conftest$ac_exeext
        }; then
-  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-     { $as_echo "$as_me:$LINENO: MacOS10.5 SDK found" >&5
-$as_echo "$as_me: MacOS10.5 SDK found" >&6;}
-     sysroot="/Developer/SDKs/MacOSX10.5.sdk"
+  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+     { $as_echo "$as_me:$LINENO: MacOS10.6 SDK found" >&5
+$as_echo "$as_me: MacOS10.6 SDK found" >&6;}
+     sysroot="/Developer/SDKs/MacOSX10.6.sdk"
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 	CFLAGS="$OLDCFLAGS"
-     { $as_echo "$as_me:$LINENO: MacOS10.5 SKD NOT found" >&5
+     { $as_echo "$as_me:$LINENO: MacOS10.6 SKD NOT found" >&5
+$as_echo "$as_me: MacOS10.6 SKD NOT found" >&6;}
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+  if test "x$sysroot" = "x"
+  then
+    { $as_echo "$as_me:$LINENO: Checking for OSX10.5 framework" >&5
+$as_echo "$as_me: Checking for OSX10.5 framework" >&6;}
+    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+printf("Hello\n");
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+       { $as_echo "$as_me:$LINENO: MacOS10.5 SDK found" >&5
+$as_echo "$as_me: MacOS10.5 SDK found" >&6;}
+       sysroot="/Developer/SDKs/MacOSX10.5"
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	CFLAGS="$OLDCFLAGS"
+       { $as_echo "$as_me:$LINENO: MacOS10.5 SKD NOT found" >&5
 $as_echo "$as_me: MacOS10.5 SKD NOT found" >&6;}
 fi
 
 rm -rf conftest.dSYM
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
+  fi
   if test "x$sysroot" = "x"
   then
     { $as_echo "$as_me:$LINENO: Checking for OSX10.4u framework" >&5
