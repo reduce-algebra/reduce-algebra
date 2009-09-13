@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXArray.h,v 1.24 2006/01/22 17:57:58 fox Exp $                           *
+* $Id: FXArray.h,v 1.24.2.1 2008/03/25 20:18:43 fox Exp $                           *
 ********************************************************************************/
 #ifndef FXARRAY_H
 #define FXARRAY_H
@@ -69,7 +69,7 @@ public:
   /// Change number of elements to n
   bool no(FXint n){
     if(n!=num){
-      if(n<num){
+      if(0<num-n){
         destructElms(ptr+n,num-n);
         if(!resizeElms(ptr,n)) return false;
         }

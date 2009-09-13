@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXSettings.cpp,v 1.54 2006/03/01 02:15:22 fox Exp $                      *
+* $Id: FXSettings.cpp,v 1.54.2.1 2008/07/28 18:24:09 fox Exp $                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -120,17 +120,18 @@ void FXSettings::deleteData(void* ptr){
 // Read string
 static bool readString(FXFile& file,FXchar *buffer,FXint& bol,FXint& eol,FXint& end){
   register FXint n;
-  while(eol<end && buffer[eol++]!='\n');
-  if(eol>=end){
-    if(bol<end){ memmove(buffer,buffer+bol,end-bol); }
-    end=end-bol;
-    bol=0;
-    eol=end;
-    n=file.readBlock(buffer+end,MAXBUFFER-end);
-    if(n<0) return false;
-    end+=n;
-    while(eol<end && buffer[eol++]!='\n');
+  do{
+    if(eol>=end){
+      if(bol<end){ memmove(buffer,buffer+bol,end-bol); }
+      end=end-bol;
+      bol=0;
+      eol=end;
+      n=file.readBlock(buffer+end,MAXBUFFER-end);
+      if(n<0) return false;
+      end+=n;
+      }
     }
+  while(eol<end && buffer[eol++]!='\n');
   return bol<eol;
   }
 

@@ -24,10 +24,7 @@
 
 // MODIFIED BY A C NORMAN, 2008, merely to fix a 64-address printf. This
 // comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice. Somehow the GPL/LGPL people could be
-// amazingly uptight at the stage that the original BSD license has an
-// "obnoxious advertising clause" while not minding that they oblige me
-// to incorporate something rather similar here!
+// altered with a prominent notice.
 
 
 
@@ -165,7 +162,7 @@ long FXDebugTarget::onMessage(FXObject* sender,FXSelector sel,void* ptr){
   if(sender!=lastsender || sel!=lastsel){
 /*
  * The next line used to print the pointer using format 0x%08lx having
- * cast the pointer to an unsigned long. Well ona 64-bit machine that
+ * cast the pointer to an unsigned long. Well on a 64-bit machine that
  * is a mess, and what is worse some versions of gcc will view the
  * cast as worth an error not just a warning. So I will just print the
  * pointer using %p

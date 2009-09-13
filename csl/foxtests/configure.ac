@@ -635,6 +635,8 @@ fi
 
 if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
 then
+  AC_ARG_WITH(xim,
+    [  --with-xim              Can be used to control use of XIM])
 # I will not even look for Xft if I am building for win32 not X.
 #
 # Furthermore I will not try xft-config if I am cross-compiling. This may

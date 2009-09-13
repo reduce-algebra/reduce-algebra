@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXThread.cpp,v 1.53.2.8 2006/11/08 22:58:28 fox Exp $                    *
+* $Id: FXThread.cpp,v 1.53.2.12 2008/06/18 20:03:46 fox Exp $                   *
 ********************************************************************************/
 #ifdef WIN32
 #if _WIN32_WINNT < 0x0400
@@ -31,10 +31,14 @@
 #include "fxdefs.h"
 #include "FXThread.h"
 #ifndef WIN32
-#ifdef APPLE
-#include <mach/mach_init.h>
-#include <mach/semaphore.h>
-#include <mach/task.h>
+#ifdef __APPLE__
+#ifdef Status
+#undef Status
+#endif
+#ifdef KeyClass
+#undef KeyClass
+#endif
+#include <CoreServices/CoreServices.h>
 #include <pthread.h>
 #else
 #include <pthread.h>
@@ -142,7 +146,7 @@ FXMutex::~FXMutex(){
 /*******************************************************************************/
 
 
-#ifdef APPLE
+#ifdef __APPLE__
 
 
 // Initialize semaphore
@@ -152,7 +156,7 @@ FXSemaphore::FXSemaphore(FXint initial){
   // machine and mail it to: jeroen@fox-toolkit.org!!
   //FXTRACE((150,"sizeof(MPSemaphoreID*)=%d\n",sizeof(MPSemaphoreID*)));
   FXASSERT(sizeof(data)>=sizeof(MPSemaphoreID*));
-  MPCreateSemaphore(2147483647,0,(MPSemaphoreID*)data);
+  MPCreateSemaphore(2147483647,initial,(MPSemaphoreID*)data);
   }
 
 
@@ -245,7 +249,7 @@ void FXCondition::broadcast(){
 
 // Wait for condition indefinitely
 void FXCondition::wait(FXMutex& mtx){
-  pthread_cond_wait((pthread_cond_t*)data,(pthread_mutex_t*)&mtx.data);
+  pthread_cond_wait((pthread_cond_t*)data,(pthread_mutex_t*)mtx.data);
   }
 
 
@@ -255,7 +259,7 @@ FXbool FXCondition::wait(FXMutex& mtx,FXlong nsec){
   struct timespec ts;
   ts.tv_sec=nsec/1000000000;
   ts.tv_nsec=nsec%1000000000;
-x:result=pthread_cond_timedwait((pthread_cond_t*)data,(pthread_mutex_t*)&mtx.data,&ts);
+x:result=pthread_cond_timedwait((pthread_cond_t*)data,(pthread_mutex_t*)mtx.data,&ts);
   if(result==EINTR) goto x;
   return result!=ETIMEDOUT;
   }

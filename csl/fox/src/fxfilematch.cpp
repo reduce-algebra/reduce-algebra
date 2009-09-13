@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxfilematch.cpp,v 1.16 2006/03/01 02:13:22 fox Exp $                     *
+* $Id: fxfilematch.cpp,v 1.16.2.1 2007/09/16 04:31:13 fox Exp $                     *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -123,8 +123,8 @@ static bool domatch(const char *pattern,const char *string,FXuint flags){
           c=FOLD(c);
           if((flags&FILEMATCH_FILE_NAME) && ISPATHSEP(c)) return false;
           if(c=='-' && *p!=']'){
-            ce = *p++;
-            if(ce=='\\' && !(flags&FILEMATCH_NOESCAPE)) c=*p++;
+            c = *p++;
+            if(c=='\\' && !(flags&FILEMATCH_NOESCAPE)) c=*p++;
             if(c=='\0') return false;
             ce=FOLD(c);
             c=*p++;

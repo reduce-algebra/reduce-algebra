@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXRealSlider.cpp,v 1.20.2.1 2006/08/14 12:00:06 fox Exp $                    *
+* $Id: FXRealSlider.cpp,v 1.20.2.2 2007/08/09 00:37:06 fox Exp $                    *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -104,20 +104,27 @@ FXIMPLEMENT(FXRealSlider,FXFrame,FXRealSliderMap,ARRAYNUMBER(FXRealSliderMap))
 // Make a slider
 FXRealSlider::FXRealSlider(){
   flags|=FLAG_ENABLED;
+  range[0]=0.0;
+  range[1]=0.0;
+  pos=0.0;
+  incr=0.01;
+  delta=0.0;
   headpos=0;
+  headsize=0;
+  slotsize=0;
+  slotColor=0;
   dragpoint=0;
   }
 
 
 // Make a slider
-FXRealSlider::FXRealSlider(FXComposite* p,FXObject* tgt,FXSelector sel,FXuint opts,FXint x,FXint y,FXint w,FXint h,FXint pl,FXint pr,FXint pt,FXint pb):
-  FXFrame(p,opts,x,y,w,h,pl,pr,pt,pb){
+FXRealSlider::FXRealSlider(FXComposite* p,FXObject* tgt,FXSelector sel,FXuint opts,FXint x,FXint y,FXint w,FXint h,FXint pl,FXint pr,FXint pt,FXint pb):FXFrame(p,opts,x,y,w,h,pl,pr,pt,pb){
   flags|=FLAG_ENABLED;
-  slotColor=getApp()->getBackColor();
   baseColor=getApp()->getBaseColor();
   hiliteColor=getApp()->getHiliteColor();
   shadowColor=getApp()->getShadowColor();
   borderColor=getApp()->getBorderColor();
+  slotColor=getApp()->getBackColor();
   target=tgt;
   message=sel;
   range[0]=0.0;
@@ -126,9 +133,9 @@ FXRealSlider::FXRealSlider(FXComposite* p,FXObject* tgt,FXSelector sel,FXuint op
   incr=0.01;
   delta=0.0;
   headpos=0;
-  dragpoint=0;
   headsize=(options&REALSLIDER_INSIDE_BAR)?HEADINSIDEBAR:HEADOVERHANGING;
   slotsize=5;
+  dragpoint=0;
   }
 
 

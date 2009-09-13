@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXMDIChild.cpp,v 1.96.2.2 2006/09/28 15:18:08 fox Exp $                      *
+* $Id: FXMDIChild.cpp,v 1.96.2.3 2007/04/10 21:05:07 fox Exp $                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -515,13 +515,14 @@ void FXMDIChild::drawRubberBox(FXint x,FXint y,FXint w,FXint h){
 
 // Draw animation morphing from old to new rectangle
 void FXMDIChild::animateRectangles(FXint ox,FXint oy,FXint ow,FXint oh,FXint nx,FXint ny,FXint nw,FXint nh){
-  if(xid && getApp()->getAnimSpeed()){
+  FXlong pause=getApp()->getAnimSpeed()*1000000L;
+  if(xid && pause){
     FXDCWindow dc(getParent());
     FXint bx,by,bw,bh,s,t;
-    dc.clipChildren(FALSE);
+    dc.clipChildren(false);
     dc.setFunction(BLT_SRC_XOR_DST);
     dc.setForeground(getParent()->getBackColor());
-    FXuint step=1+5000/getApp()->getAnimSpeed();
+    FXuint step=500;
     for(s=0,t=10000; s<=10000; s+=step,t-=step){
       bx=(nx*s+ox*t)/10000;
       by=(ny*s+oy*t)/10000;
@@ -529,10 +530,10 @@ void FXMDIChild::animateRectangles(FXint ox,FXint oy,FXint ow,FXint oh,FXint nx,
       bh=(nh*s+oh*t)/10000;
       if(BORDERWIDTH*2<bw && BORDERWIDTH*2<bh){
         dc.drawHashBox(bx,by,bw,bh,BORDERWIDTH);
-        getApp()->flush(TRUE);
-        FXThread::sleep(10000000);
+        getApp()->flush(true);
+        FXThread::sleep(pause);
         dc.drawHashBox(bx,by,bw,bh,BORDERWIDTH);
-        getApp()->flush(TRUE);
+        getApp()->flush(true);
         }
       }
     }

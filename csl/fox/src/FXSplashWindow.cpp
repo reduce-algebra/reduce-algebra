@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXSplashWindow.cpp,v 1.9.2.1 2006/08/01 18:04:44 fox Exp $                   *
+* $Id: FXSplashWindow.cpp,v 1.9.2.2 2007/07/19 16:53:17 fox Exp $                   *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -212,6 +212,8 @@ void FXSplashWindow::load(FXStream& store){
 
 // Destroy main window
 FXSplashWindow::~FXSplashWindow(){
+  getApp()->removeTimeout(this,ID_DELETE);
+  getApp()->removeTimeout(this,ID_HIDE);
   if(options&SPLASH_OWNS_ICON) delete icon;
   icon=(FXIcon*)-1L;
   }

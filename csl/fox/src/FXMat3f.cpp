@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXMat3f.cpp,v 1.13 2006/01/22 17:58:35 fox Exp $                         *
+* $Id: FXMat3f.cpp,v 1.13.2.1 2007/06/27 19:15:49 fox Exp $                         *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -305,21 +305,6 @@ FXVec2f FXMat3f::operator*(const FXVec2f& v) const {
   register FXfloat x=v.x,y=v.y;
   FXASSERT(m[0][2]==0.0f && m[1][2]==0.0f && m[2][2]==1.0f);
   return FXVec2f(x*m[0][0]+y*m[0][1]+m[0][2], x*m[1][0]+y*m[1][1]+m[1][2]);
-  }
-
-
-// Vector times matrix
-FXVec3f operator*(const FXVec3f& v,const FXMat3f& m){
-  register FXfloat x=v.x,y=v.y,z=v.z;
-  return FXVec3f(x*m[0][0]+y*m[1][0]+z*m[2][0], x*m[0][1]+y*m[1][1]+z*m[2][1], x*m[0][2]+y*m[1][2]+z*m[2][2]);
-  }
-
-
-// Vector times matrix
-FXVec2f operator*(const FXVec2f& v,const FXMat3f& m){
-  register FXfloat x=v.x,y=v.y;
-  FXASSERT(m[0][2]==0.0f && m[1][2]==0.0f && m[2][2]==1.0f);
-  return FXVec2f(x*m[0][0]+y*m[1][0]+m[2][0], x*m[0][1]+y*m[1][1]+m[2][1]);
   }
 
 

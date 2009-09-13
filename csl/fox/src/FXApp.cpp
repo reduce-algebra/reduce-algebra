@@ -21,18 +21,18 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXApp.cpp,v 1.617.2.5 2006/11/20 15:55:18 fox Exp $                          *
+* $Id: FXApp.cpp,v 1.617.2.8 2008/05/08 12:54:16 fox Exp $                          *
 ********************************************************************************/
 
 // MODIFIED BY A C NORMAN, 2008, merely to use WPARAM in some types. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice. Somehow the GPL/LGPL people could be
-// amazingly uptight at the stage that the original BSD license has an
-// "obnoxious advertising clause" while not minding that they oblige me
-// to incorporate something rather similar here!
+// comment is here because LGPL obliges me to mark any file that is
+// altered with a prominent notice.
+
+// A few places have extra trace printing ebnabled by #ifdef TEST to help me
+// debug some bad bahaviour on a Macintosh.
 
 // September 2009 - back-port fix re NET_WM_PING from original information
-// and FOX 1.6.36
+// and FOX 1.6.36, then general merge with FOX 1.3.36
 
 #ifdef WIN32
 #if _WIN32_WINNT < 0x0400
@@ -2675,12 +2675,6 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
             se.xclient.window=XDefaultRootWindow((Display*)display);
             se.xclient.data.l[0]=ev.xclient.data.l[0];
             se.xclient.data.l[1]=ev.xclient.data.l[1];
-#ifdef VERSION_BEFORE_ACN_CHANGED_IT
-            se.xclient.data.l[2]=0;
-            se.xclient.data.l[3]=0;
-            se.xclient.data.l[4]=0;
-            XSendEvent((Display*)display,se.xclient.window,True,NoEventMask,&se);
-#else
 // There is a comment at standards.freedesktop.org to the effect
 // "Note that some older clients may not preserve data.l[2] through data.l[4]."
 // and I take that to mean that newer clients ought to preserve everything.
@@ -2694,7 +2688,6 @@ bool FXApp::dispatchEvent(FXRawEvent& ev){
             se.xclient.data.l[4]=ev.xclient.data.l[4];
             XSendEvent((Display*)display,se.xclient.window,False,
                        SubstructureRedirectMask|SubstructureNotifyMask,&se);
-#endif
             }
           }
 
@@ -4178,6 +4171,7 @@ Alt key seems to repeat.
 
     // Configure (size)
     case WM_SIZE:
+      if(wParam==SIZE_MINIMIZED) return 0;
       event.type=SEL_CONFIGURE;
       event.rect.x=window->getX();
       event.rect.y=window->getY();
@@ -4291,14 +4285,22 @@ Alt key seems to repeat.
         RECT rect;
         //FXTRACE((100,"WM_GETMINMAXINFO ptMaxSize=%d,%d ptMinTrackSize=%d,%d ptMaxTrackSize=%d,%d\n",((MINMAXINFO*)lParam)->ptMaxSize.x,((MINMAXINFO*)lParam)->ptMaxSize.y,((MINMAXINFO*)lParam)->ptMinTrackSize.x,((MINMAXINFO*)lParam)->ptMinTrackSize.y,((MINMAXINFO*)lParam)->ptMaxTrackSize.x,((MINMAXINFO*)lParam)->ptMaxTrackSize.y));
         if(!(((FXTopWindow*)window)->getDecorations()&DECOR_SHRINKABLE)){
-          SetRect(&rect,0,0,window->getDefaultWidth(),window->getDefaultHeight());
-          AdjustWindowRectEx(&rect,GetWindowLong((HWND)hwnd,GWL_STYLE),FALSE,GetWindowLong((HWND)hwnd,GWL_EXSTYLE));
-          ((MINMAXINFO*)lParam)->ptMinTrackSize.x=rect.right-rect.left;
-          ((MINMAXINFO*)lParam)->ptMinTrackSize.y=rect.bottom-rect.top;
+          if(!(((FXTopWindow*)window)->getDecorations()&DECOR_STRETCHABLE)){    // Cannot change at all
+            SetRect(&rect,0,0,window->getWidth(),window->getHeight());
+            AdjustWindowRectEx(&rect,GetWindowLong((HWND)hwnd,GWL_STYLE),false,GetWindowLong((HWND)hwnd,GWL_EXSTYLE));
+            ((MINMAXINFO*)lParam)->ptMinTrackSize.x=((MINMAXINFO*)lParam)->ptMaxTrackSize.x=rect.right-rect.left;
+            ((MINMAXINFO*)lParam)->ptMinTrackSize.y=((MINMAXINFO*)lParam)->ptMaxTrackSize.y=rect.bottom-rect.top;
+            }
+          else{                                                                 // Cannot get smaller than default
+            SetRect(&rect,0,0,window->getDefaultWidth(),window->getDefaultHeight());
+            AdjustWindowRectEx(&rect,GetWindowLong((HWND)hwnd,GWL_STYLE),false,GetWindowLong((HWND)hwnd,GWL_EXSTYLE));
+            ((MINMAXINFO*)lParam)->ptMinTrackSize.x=rect.right-rect.left;
+            ((MINMAXINFO*)lParam)->ptMinTrackSize.y=rect.bottom-rect.top;
+            }
           }
-        if(!(((FXTopWindow*)window)->getDecorations()&DECOR_STRETCHABLE)){
+        else if(!(((FXTopWindow*)window)->getDecorations()&DECOR_STRETCHABLE)){ // Cannot get larger than default
           SetRect(&rect,0,0,window->getDefaultWidth(),window->getDefaultHeight());
-          AdjustWindowRectEx(&rect,GetWindowLong((HWND)hwnd,GWL_STYLE),FALSE,GetWindowLong((HWND)hwnd,GWL_EXSTYLE));
+          AdjustWindowRectEx(&rect,GetWindowLong((HWND)hwnd,GWL_STYLE),false,GetWindowLong((HWND)hwnd,GWL_EXSTYLE));
           ((MINMAXINFO*)lParam)->ptMaxTrackSize.x=rect.right-rect.left;
           ((MINMAXINFO*)lParam)->ptMaxTrackSize.y=rect.bottom-rect.top;
           }

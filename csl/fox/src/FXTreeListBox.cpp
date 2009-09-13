@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXTreeListBox.cpp,v 1.60 2006/01/22 17:58:50 fox Exp $                   *
+* $Id: FXTreeListBox.cpp,v 1.60.2.2 2007/06/07 20:17:57 fox Exp $                   *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -85,6 +85,7 @@ FXDEFMAP(FXTreeListBox) FXTreeListBoxMap[]={
   FXMAPFUNC(SEL_UPDATE,FXTreeListBox::ID_TREE,FXTreeListBox::onTreeUpdate),
   FXMAPFUNC(SEL_CHANGED,FXTreeListBox::ID_TREE,FXTreeListBox::onTreeChanged),
   FXMAPFUNC(SEL_CLICKED,FXTreeListBox::ID_TREE,FXTreeListBox::onTreeClicked),
+  FXMAPFUNC(SEL_COMMAND,FXTreeListBox::ID_TREE,FXTreeListBox::onTreeClicked),
   FXMAPFUNC(SEL_LEFTBUTTONPRESS,FXTreeListBox::ID_FIELD,FXTreeListBox::onFieldButton),
   FXMAPFUNC(SEL_MOUSEWHEEL,FXTreeListBox::ID_FIELD,FXTreeListBox::onMouseWheel),
   };
@@ -186,9 +187,9 @@ void FXTreeListBox::layout(){
 
 
 // Forward clicked message from list to target
-long FXTreeListBox::onTreeClicked(FXObject*,FXSelector,void* ptr){
-  button->handle(this,FXSEL(SEL_COMMAND,ID_UNPOST),NULL);    // Unpost the list
-  if(ptr){
+long FXTreeListBox::onTreeClicked(FXObject*,FXSelector sel,void* ptr){
+  button->handle(this,FXSEL(SEL_COMMAND,ID_UNPOST),NULL);
+  if(FXSELTYPE(sel)==SEL_COMMAND){
     field->setText(tree->getItemText((FXTreeItem*)ptr));
     field->setIcon(tree->getItemClosedIcon((FXTreeItem*)ptr));
     if(target) target->tryHandle(this,FXSEL(SEL_COMMAND,message),ptr);
@@ -436,7 +437,6 @@ FXTreeItem *FXTreeListBox::moveItem(FXTreeItem* other,FXTreeItem* father,FXTreeI
 FXTreeItem* FXTreeListBox::extractItem(FXTreeItem* item){
   register FXTreeItem *currentitem=tree->getCurrentItem();
   register FXTreeItem *result=tree->extractItem(item);
-  tree->removeItem(item);
   if(item==currentitem){
     currentitem=tree->getCurrentItem();
     if(currentitem){

@@ -91,6 +91,9 @@ rm -rf ${RPM_BUILD_ROOT}/usr/fox
 %{_libdir}/libCHART-@FOX_MAJOR_VERSION@.@FOX_MINOR_VERSION@.a
 
 %changelog
+* Thu Sep 01 2009 Arthur Norman <acn1@cam.ac.uk>
+- Remove mention of Adie, shutterbug etc.
+
 * Fri Aug 20 2004 Joshua Weage <joshua.weage@arup.com>
 - Updated to use built-in RPM macros where possible.
 - Sanity check RPM_BUILD_ROOT before deleting it.

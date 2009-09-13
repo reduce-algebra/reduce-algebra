@@ -82,6 +82,7 @@ FXShell::FXShell(FXWindow* own,FXuint opts,FXint x,FXint y,FXint w,FXint h):
 // Create X window
 void FXShell::create(){
   FXint w,h;
+
   // Create this widget and all of its children
   FXComposite::create();
 

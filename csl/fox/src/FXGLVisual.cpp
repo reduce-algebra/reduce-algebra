@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXGLVisual.cpp,v 1.69 2006/01/22 17:58:30 fox Exp $                      *
+* $Id: FXGLVisual.cpp,v 1.69.2.2 2007/02/22 15:45:56 fox Exp $                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -540,7 +540,7 @@ void FXGLVisual::create(){
       int bestvis,dmatch,bestmatch;
       int dred,dgreen,dblue,ddepth,dalpha,dstencil;
       int daccred,daccgreen,daccblue,daccalpha;
-      int nvi,i;
+      int chosen,nvi,i;
 
       // Get some window handle
       hdc=GetDC(GetDesktopWindow());
@@ -559,6 +559,10 @@ void FXGLVisual::create(){
 
         // Get info about this visual
         DescribePixelFormat(hdc,i,sizeof(PIXELFORMATDESCRIPTOR),&pfd);
+
+        // Make sure this visual is valid
+        chosen=ChoosePixelFormat(hdc,&pfd);
+        if(chosen!=i) continue;
 
         // Draw to window is required
         if(!(pfd.dwFlags&PFD_DRAW_TO_WINDOW)) continue;

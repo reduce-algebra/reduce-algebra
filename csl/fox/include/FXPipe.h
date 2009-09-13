@@ -19,10 +19,10 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXPipe.h,v 1.7 2006/01/22 17:58:07 fox Exp $                             *
+* $Id: FXPipe.h,v 1.7.2.1 2007/08/02 21:31:17 fox Exp $                             *
 ********************************************************************************/
 #ifndef FXPIPE_H
-#define FXFILE_H
+#define FXPIPE_H
 
 #ifndef FXIO_H
 #include "FXIO.h"

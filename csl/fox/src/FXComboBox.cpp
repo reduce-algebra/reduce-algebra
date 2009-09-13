@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXComboBox.cpp,v 1.66 2006/01/27 02:07:44 fox Exp $                      *
+* $Id: FXComboBox.cpp,v 1.66.2.2 2007/06/07 20:17:57 fox Exp $                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -91,6 +91,7 @@ FXDEFMAP(FXComboBox) FXComboBoxMap[]={
   FXMAPFUNC(SEL_FOCUS_SELF,0,FXComboBox::onFocusSelf),
   FXMAPFUNC(SEL_UPDATE,FXComboBox::ID_TEXT,FXComboBox::onUpdFmText),
   FXMAPFUNC(SEL_CLICKED,FXComboBox::ID_LIST,FXComboBox::onListClicked),
+  FXMAPFUNC(SEL_COMMAND,FXComboBox::ID_LIST,FXComboBox::onListClicked),
   FXMAPFUNC(SEL_LEFTBUTTONPRESS,FXComboBox::ID_TEXT,FXComboBox::onTextButton),
   FXMAPFUNC(SEL_MOUSEWHEEL,FXComboBox::ID_TEXT,FXComboBox::onMouseWheel),
   FXMAPFUNC(SEL_CHANGED,FXComboBox::ID_TEXT,FXComboBox::onTextChanged),
@@ -212,11 +213,11 @@ long FXComboBox::onFwdToText(FXObject* sender,FXSelector sel,void* ptr){
 
 
 // Forward clicked message from list to target
-long FXComboBox::onListClicked(FXObject*,FXSelector,void* ptr){
-  button->handle(this,FXSEL(SEL_COMMAND,ID_UNPOST),NULL);    // Unpost the list
-  if(0<=((FXint)(FXival)ptr)){
+long FXComboBox::onListClicked(FXObject*,FXSelector sel,void* ptr){
+  button->handle(this,FXSEL(SEL_COMMAND,ID_UNPOST),NULL);
+  if(FXSELTYPE(sel)==SEL_COMMAND){
     field->setText(list->getItemText((FXint)(FXival)ptr));
-    field->selectAll();
+    if(!(options&COMBOBOX_STATIC)) field->selectAll();          // Select if editable
     if(target) target->tryHandle(this,FXSEL(SEL_COMMAND,message),(void*)getText().text());
     }
   return 1;

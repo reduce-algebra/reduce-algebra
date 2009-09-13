@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXGZFileStream.h,v 1.5 2006/01/22 17:58:04 fox Exp $                     *
+* $Id: FXGZFileStream.h,v 1.5.2.1 2007/09/28 16:42:19 fox Exp $                     *
 ********************************************************************************/
 #ifdef HAVE_ZLIB_H
 #ifndef FXGZFILESTREAM_H
@@ -51,6 +51,9 @@ public:
 
   /// Open file stream
   bool open(const FXString& filename,FXStreamDirection save_or_load,FXuval size=8192);
+
+  /// Flush buffer
+  virtual bool flush();
 
   /// Close file stream
   virtual bool close();

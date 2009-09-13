@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXBZFileStream.cpp,v 1.5.2.1 2006/08/03 16:32:10 fox Exp $                   *
+* $Id: FXBZFileStream.cpp,v 1.5.2.2 2007/09/28 16:42:20 fox Exp $                   *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -74,18 +74,20 @@ FXuval FXBZFileStream::writeBuffer(FXuval){
   FXASSERT(begptr<=rdptr);
   FXASSERT(rdptr<=wrptr);
   FXASSERT(wrptr<=endptr);
-  while(rdptr<wrptr){
+  while(rdptr<wrptr || ac==BZ_FINISH || ac==BZ_FLUSH){
     bz->stream.next_in=(char*)rdptr;
     bz->stream.avail_in=wrptr-rdptr;
     bz->stream.next_out=bz->buffer;
     bz->stream.avail_out=BUFFERSIZE;
     bzerror=BZ2_bzCompress(&bz->stream,ac);
 //    if(bzerror!=BZ_OK) break;
-    if(!(bzerror==BZ_RUN_OK || bzerror==BZ_STREAM_END)) break;
+    if(bzerror<0) break;  // break on error condition
     m=bz->stream.next_out-bz->buffer;
     n=file.writeBlock(bz->buffer,m);
     if(n<m) break;
     rdptr=(FXuchar*)bz->stream.next_in;
+    if(bzerror==BZ_STREAM_END) break;  // break from FINISH
+    if(ac==BZ_FLUSH  && bzerror==BZ_RUN_OK) break;  // break from FLUSH
     }
   if(rdptr<wrptr){memmove(begptr,rdptr,wrptr-rdptr);}
   wrptr=begptr+(wrptr-rdptr);
@@ -111,7 +113,7 @@ FXuval FXBZFileStream::readBuffer(FXuval){
 //    bz->stream.avail_in=n;
     if(bz->stream.avail_in<=0){ // get more input if buffer is empty
       n=file.readBlock(bz->buffer,BUFFERSIZE);
-      if(n<=0) break;
+      if(n<0) break;
       bz->stream.next_in=bz->buffer;
       bz->stream.avail_in=n;
       }
@@ -119,7 +121,7 @@ FXuval FXBZFileStream::readBuffer(FXuval){
     bz->stream.avail_out=endptr-wrptr;
     bzerror=BZ2_bzDecompress(&bz->stream);
 //    if(bzerror!=BZ_OK) break;
-    if(!(bzerror==BZ_OK || bzerror==BZ_STREAM_END)) break;
+    if(bzerror<0) break;  // break on error condition
     wrptr=(FXuchar*)bz->stream.next_out;
     if(bzerror==BZ_STREAM_END) break;
     }
@@ -154,6 +156,16 @@ bool FXBZFileStream::open(const FXString& filename,FXStreamDirection save_or_loa
   return false;
   }
 
+
+// Flush buffer
+bool FXBZFileStream::flush(){
+  bool status;
+  int action=ac;
+  if(ac!=BZ_FINISH) ac=BZ_FLUSH;
+  status=FXStream::flush();
+  ac=action;
+  return status;
+  }
 
 // Close file stream
 bool FXBZFileStream::close(){

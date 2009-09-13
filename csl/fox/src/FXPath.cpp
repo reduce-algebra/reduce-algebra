@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXPath.cpp,v 1.20.2.4 2006/08/09 01:55:08 fox Exp $                          *
+* $Id: FXPath.cpp,v 1.20.2.5 2008/03/10 22:06:33 fox Exp $                          *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -392,30 +392,28 @@ FXString FXPath::contract(const FXString& file,const FXString& user,const FXStri
 FXString FXPath::simplify(const FXString& file){
   if(!file.empty()){
     FXString result=file;
-    register FXint p,q,s;
-    p=q=0;
-#ifndef WIN32
-    if(ISPATHSEP(result[q])){
-      result[p++]=PATHSEP;
-      while(ISPATHSEP(result[q])) q++;
-      }
-#else
+    register FXint p=0;
+    register FXint q=0;
+    register FXint s;
+#ifdef WIN32
     if(ISPATHSEP(result[q])){         // UNC
-      result[p++]=PATHSEP;
-      q++;
+      result[p++]=PATHSEP; q++;
       if(ISPATHSEP(result[q])){
         result[p++]=PATHSEP;
         while(ISPATHSEP(result[q])) q++;
         }
       }
     else if(Ascii::isLetter(result[q]) && result[q+1]==':'){
-      result[p++]=result[q++];
-      result[p++]=':';
-      q++;
+      result[p++]=result[q++]; result[p++]=':'; q++;
       if(ISPATHSEP(result[q])){
         result[p++]=PATHSEP;
         while(ISPATHSEP(result[q])) q++;
         }
+      }
+#else
+    if(ISPATHSEP(result[q])){
+      result[p++]=PATHSEP;
+      while(ISPATHSEP(result[q])) q++;
       }
 #endif
     s=p;
@@ -423,23 +421,38 @@ FXString FXPath::simplify(const FXString& file){
       while(result[q] && !ISPATHSEP(result[q])){
         result[p++]=result[q++];
         }
-      if(2<=p && result[p-1]=='.' && ISPATHSEP(result[p-2]) && result[q]==0){
-        p-=1;
+      if(ISPATHSEP(result[q])){
+        result[p++]=PATHSEP;
+        while(ISPATHSEP(result[q])) q++;
         }
-      else if(2<=p && result[p-1]=='.' && ISPATHSEP(result[p-2]) && ISPATHSEP(result[q])){
+      if(2<=p && ISPATHSEP(result[p-2]) && result[p-1]=='.'){   // Case "xxx/."
+        p--;
+        if(s<p) p--;
+        }
+      else if(3<=p && ISPATHSEP(result[p-3]) && result[p-2]=='.' && ISPATHSEP(result[p-1])){    // Case "xxx/./"
         p-=2;
         }
-      else if(3<=p && result[p-1]=='.' && result[p-2]=='.' && ISPATHSEP(result[p-3]) && !(5<=p && result[p-4]=='.' && result[p-5]=='.')){
+      else if(3<=p && ISPATHSEP(result[p-3]) && result[p-2]=='.' && result[p-1]=='.' && !(((6<=p && ISPATHSEP(result[p-6])) || 5==p) && result[p-5]=='.' && result[p-4]=='.')){ // Case "xxx/.."
         p-=2;
-        if(s+2<=p){
-          p-=2;
-          while(s<p && !ISPATHSEP(result[p])) p--;
-          if(p==0) result[p++]='.';
+        if(s<p){                // Pathological case "/.." will become "/"
+          p--;
+          while(s<p && !ISPATHSEP(result[p-1])) p--;
+          if(s<p && ISPATHSEP(result[p-1])) p--;
+          if(p==0){                             // Don't allow empty path
+            result[p++]='.';
+            }
           }
         }
-      if(ISPATHSEP(result[q])){
-        while(ISPATHSEP(result[q])) q++;
-        if(!ISPATHSEP(result[p-1])) result[p++]=PATHSEP;
+      else if(4<=p && ISPATHSEP(result[p-4]) && result[p-3]=='.' && result[p-2]=='.' && ISPATHSEP(result[p-1]) && !(((7<=p && ISPATHSEP(result[p-7])) || 6==p) && result[p-6]=='.' && result[p-5]=='.')){       // Case "xxx/../"
+        p-=3;
+        if(s<p){                // Pathological case "/../" will become "/"
+          p--;
+          while(s<p && !ISPATHSEP(result[p-1])) p--;
+          if(p==0){                             // Don't allow empty path
+            result[p++]='.';
+            result[p++]=PATHSEP;                // Keep trailing "/" around
+            }
+          }
         }
       }
     return result.trunc(p);

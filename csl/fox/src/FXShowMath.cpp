@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 0fc4b886 04-May-2009 */
+/* Signature: 79751cdc 13-Sep-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2276,7 +2276,7 @@ static Box *doFbox(Box *b, Box *opt)
 static Box *doSymb(Box *b, Box *opt)
 {
     if (b == NULL) return NULL;
-    return makeFrameBox(b);      // At PRESENT I maye symb just a boxed number
+    return makeFrameBox(b);      // At PRESENT I make symb just a boxed number
 }
 
 static Box *doFrac(Box *b1, Box *b2)

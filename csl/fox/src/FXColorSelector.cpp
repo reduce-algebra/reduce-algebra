@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXColorSelector.cpp,v 1.74 2006/01/22 17:58:20 fox Exp $                 *
+* $Id: FXColorSelector.cpp,v 1.74.2.1 2009/01/16 01:20:37 fox Exp $                 *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -351,7 +351,7 @@ FXColorSelector::FXColorSelector(FXComposite *p,FXObject* tgt,FXSelector sel,FXu
 
     // Add color names
     for(FXuint i=0; i<fxnumcolornames; i++){
-      list->appendItem(fxcolornames[i].name,fxcolornames[i].color);
+      list->appendItem(tr(fxcolornames[i].name),fxcolornames[i].color);
       }
 
   // Init RGBA

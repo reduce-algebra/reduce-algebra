@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXAccelTable.cpp,v 1.51 2006/01/22 17:58:16 fox Exp $                    *
+* $Id: FXAccelTable.cpp,v 1.51.2.1 2007/03/07 14:30:27 fox Exp $                    *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -441,17 +441,17 @@ FXHotKey parseAccel(const FXString& string){
       }
     }
 
+  // Test if hexadecimal code designator
+  else if(string[pos]=='#'){
+    code=strtoul(&string[pos+1],NULL,16);
+    }
+
   // Test if its a single character accelerator
   else if(Ascii::isPrint(string[pos])){
     if(mods&SHIFTMASK)
       code=Ascii::toUpper(string[pos])+KEY_space-' ';
     else
       code=Ascii::toLower(string[pos])+KEY_space-' ';
-    }
-
-  // Test if hexadecimal code designator
-  else if(string[pos]=='#'){
-    code=strtoul(&string[pos+1],NULL,16);
     }
 
   FXTRACE((110,"parseAccel(%s) = code=%04x mods=%04x\n",string.text(),code,mods));

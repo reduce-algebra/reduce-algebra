@@ -1,0 +1,56 @@
+Log of a fresh try.
+
+Install Solaris 10u7 (x86) with default options. I start it up with the
+Sun Java Desktop, and give myself a 16Gb disc.
+
+Start Firefox and browse to www.blastware.org. Fetch pkgutil_i386.pkg and
+go pkgadd -d *.pkg to install it.
+
+pkgutil -U to update list.  pkgutil -a > pkgs to list them. Now I can grep in
+pkgs to find what I need.
+
+pkgutil -i CSWsudo so that when I make a user I can use sudo to adminster
+things.
+
+Now install CSWsvn (so I can fetch Reduce etc). This fetches a load of
+things that are prerequisites!
+
+CSWossh for ssh etc
+CSWpkgconfig
+CSWlibx11dev
+CSWlibxcbdev
+CSWautomake
+CSWautoconf
+CSWvim
+CSWgmake
+CSWgcc3g++  (reported that postinstall script for gcc3core failed to
+             run properly)
+Try gcc3g++ again. A web search suggests that the bug is a long-standing
+mess up in the packaging and should not actually hurt!
+CSWbison
+CSWflex
+CSWbzip2
+CSWgsed
+
+Now I create a user and arrange that it has a .bashrc and .bash_profile that
+set PATH to /opt/ccs/bin:/usr/ucb/bin:/usr/swf/bin:/usr/bin:/bin:/usr/sbin:
+/sbin:/opt/csw/bin
+
+I can then use subversion to fetch the Reduce files.
+
+When I try scripts/csl-sanity-check.sh all goes OK until I get a load
+of moans re _X_SENTINEL in the file /opt/csw/include/X11/Xlib.h
+
+Web searches find other people having pain of similar styles on a variety
+of platforms, but I have not found a totally authoritative-looking
+explanation. So I put
+   #define _X_SENTINEL(n)
+in towards the top of Xlib.h and that allows things to compile!
+
+
+
+ 
+
+
+
+

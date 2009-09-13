@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXIconSource.cpp,v 1.20 2006/01/22 17:58:32 fox Exp $                    *
+* $Id: FXIconSource.cpp,v 1.20.2.2 2008/01/25 14:00:32 fox Exp $                    *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -198,7 +198,7 @@ FXIcon *FXIconSource::loadIconStream(FXStream& store,const FXString& type) const
     }
 #ifndef CORE_IMAGE_FORMATS
 #ifdef HAVE_JPEG_H
-  else if(comparecase(FXJPGIcon::fileExt,type)==0){
+  else if(comparecase(FXJPGIcon::fileExt,type)==0 || comparecase("jpeg",type)==0){
     icon=new FXJPGIcon(app);
     }
 #endif
@@ -292,7 +292,7 @@ FXImage *FXIconSource::loadImageStream(FXStream& store,const FXString& type) con
     }
 #ifndef CORE_IMAGE_FORMATS
 #ifdef HAVE_JPEG_H
-  else if(comparecase(FXJPGImage::fileExt,type)==0){
+  else if(comparecase(FXJPGImage::fileExt,type)==0 || comparecase("jpeg",type)==0){
     image=new FXJPGImage(app);
     }
 #endif

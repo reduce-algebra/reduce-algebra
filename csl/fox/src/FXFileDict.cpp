@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXFileDict.cpp,v 1.67.2.1 2006/08/02 01:31:08 fox Exp $                      *
+* $Id: FXFileDict.cpp,v 1.67.2.2 2008/03/28 12:26:53 fox Exp $                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -192,7 +192,7 @@ void *FXFileDict::createData(const void* ptr){
   FXchar mininame[ICONNAMELEN];
   FXchar mininameopen[ICONNAMELEN];
   const FXchar *extra;
-  FXuint flags;
+  FXuint flags=0;
   FXFileAssoc *fileassoc;
 
   FXTRACE((300,"FXFileDict: adding association: %s\n",(FXchar*)ptr));

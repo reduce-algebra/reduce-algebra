@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXListBox.cpp,v 1.63.2.1 2006/04/14 01:21:01 fox Exp $                       *
+* $Id: FXListBox.cpp,v 1.63.2.2 2007/06/07 20:17:57 fox Exp $                       *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -75,6 +75,7 @@ FXDEFMAP(FXListBox) FXListBoxMap[]={
   FXMAPFUNC(SEL_FOCUS_DOWN,0,FXListBox::onFocusDown),
   FXMAPFUNC(SEL_UPDATE,FXListBox::ID_LIST,FXListBox::onListUpdate),
   FXMAPFUNC(SEL_CLICKED,FXListBox::ID_LIST,FXListBox::onListClicked),
+  FXMAPFUNC(SEL_COMMAND,FXListBox::ID_LIST,FXListBox::onListClicked),
   FXMAPFUNC(SEL_CHANGED,FXListBox::ID_LIST,FXListBox::onListChanged),
   FXMAPFUNC(SEL_LEFTBUTTONPRESS,FXListBox::ID_FIELD,FXListBox::onFieldButton),
   FXMAPFUNC(SEL_MOUSEWHEEL,FXListBox::ID_FIELD,FXListBox::onMouseWheel),
@@ -213,13 +214,12 @@ long FXListBox::onListChanged(FXObject*,FXSelector,void* ptr){
 
 
 // Forward clicked message from list to target
-long FXListBox::onListClicked(FXObject*,FXSelector,void* ptr){
-  FXint index=(FXint)(FXival)ptr;
-  button->handle(this,FXSEL(SEL_COMMAND,ID_UNPOST),NULL);    // Unpost the list
-  if(0<=index){
-    field->setText(getItemText(index));
-    field->setIcon(getItemIcon(index));
-    if(target) target->tryHandle(this,FXSEL(SEL_COMMAND,message),(void*)(FXival)index);
+long FXListBox::onListClicked(FXObject*,FXSelector sel,void* ptr){
+  button->handle(this,FXSEL(SEL_COMMAND,ID_UNPOST),NULL);
+  if(FXSELTYPE(sel)==SEL_COMMAND){
+    field->setText(getItemText((FXint)(FXival)ptr));
+    field->setIcon(getItemIcon((FXint)(FXival)ptr));
+    if(target) target->tryHandle(this,FXSEL(SEL_COMMAND,message),ptr);
     }
   return 1;
   }

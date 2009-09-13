@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXTable.cpp,v 1.245.2.5 2006/10/16 21:10:48 fox Exp $                        *
+* $Id: FXTable.cpp,v 1.245.2.6 2009/01/17 10:22:51 fox Exp $                        *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -1288,24 +1288,23 @@ FXbool FXTable::isItemCurrent(FXint r,FXint c) const {
 
 // True if item is enabled
 FXbool FXTable::isItemEnabled(FXint r,FXint c) const {
-  if(r<0 || nrows<=r || c<0 || ncols<=c){ fxerror("%s::isItemEnabled: index out of range.\n",getClassName()); }
-  FXTableItem *item=cells[r*ncols+c];
-  return !item || item->isEnabled();
+  return (0<=r && 0<=c && r<nrows && c<ncols && (!cells[r*ncols+c] || cells[r*ncols+c]->isEnabled()));
   }
 
 
 // Enable one item
 FXbool FXTable::enableItem(FXint r,FXint c){
-  if(r<0 || nrows<=r || c<0 || ncols<=c){ fxerror("%s::enableItem: index out of range.\n",getClassName()); }
-  register FXTableItem* item=cells[r*ncols+c];
-  if(item==NULL){
-    cells[r*ncols+c]=item=createItem(FXString::null,NULL,NULL);
-    if(isItemSelected(r,c)) item->setSelected(FALSE);
-    }
-  if(!item->isEnabled()){
-    item->setEnabled(TRUE);
-    updateItem(r,c);
-    return TRUE;
+  if(0<=r && 0<=c && r<nrows && c<ncols){
+    register FXTableItem* item=cells[r*ncols+c];
+    if(item==NULL){
+      cells[r*ncols+c]=item=createItem(FXString::null,NULL,NULL);
+      if(isItemSelected(r,c)) item->setSelected(FALSE);
+      }
+    if(!item->isEnabled()){
+      item->setEnabled(TRUE);
+      updateItem(r,c);
+      return TRUE;
+      }
     }
   return FALSE;
   }
@@ -1313,16 +1312,17 @@ FXbool FXTable::enableItem(FXint r,FXint c){
 
 // Disable one item
 FXbool FXTable::disableItem(FXint r,FXint c){
-  if(r<0 || nrows<=r || c<0 || ncols<=c){ fxerror("%s::disableItem: index out of range.\n",getClassName()); }
-  register FXTableItem* item=cells[r*ncols+c];
-  if(item==NULL){
-    cells[r*ncols+c]=item=createItem(FXString::null,NULL,NULL);
-    if(isItemSelected(r,c)) item->setSelected(FALSE);
-    }
-  if(item->isEnabled()){
-    item->setEnabled(FALSE);
-    updateItem(r,c);
-    return TRUE;
+  if(0<=r && 0<=c && r<nrows && c<ncols){
+    register FXTableItem* item=cells[r*ncols+c];
+    if(item==NULL){
+      cells[r*ncols+c]=item=createItem(FXString::null,NULL,NULL);
+      if(isItemSelected(r,c)) item->setSelected(FALSE);
+      }
+    if(item->isEnabled()){
+      item->setEnabled(FALSE);
+      updateItem(r,c);
+      return TRUE;
+      }
     }
   return FALSE;
   }
@@ -1924,7 +1924,7 @@ void FXTable::acceptInput(FXbool notify){
 
 // Start edit of current cell
 long FXTable::onCmdStartInput(FXObject*,FXSelector,void*){
-  if(isEditable()){
+  if(isEditable() && isItemEnabled(current.row,current.col)){
     startInput(current.row,current.col);
     }
   else{
@@ -1936,7 +1936,7 @@ long FXTable::onCmdStartInput(FXObject*,FXSelector,void*){
 
 // Update start edit
 long FXTable::onUpdStartInput(FXObject* sender,FXSelector,void*){
-  sender->handle(this,(isEditable() && !editor)?FXSEL(SEL_COMMAND,ID_ENABLE):FXSEL(SEL_COMMAND,ID_DISABLE),NULL);
+  sender->handle(this,(isEditable() && isItemEnabled(current.row,current.col) && !editor)?FXSEL(SEL_COMMAND,ID_ENABLE):FXSEL(SEL_COMMAND,ID_DISABLE),NULL);
   return 1;
   }
 

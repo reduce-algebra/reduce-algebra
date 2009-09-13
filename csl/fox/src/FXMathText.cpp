@@ -1,6 +1,8 @@
 // This version started off as just a copy of FXText.cpp patched and changed
 // to support variable-height lines. 
 // This was originally from FOX 1.2.9.
+//          I should compare against FOX 1.6.36 and back-port any
+//          valuable updates!
 //
 // The new material included is sufficient in bulk and sufficiently
 // specialised that it seems improbable that it would ever be accepted back
@@ -29,7 +31,7 @@
 //
 //                                           Arthur Norman, 2004-2008
 
-/* Signature: 40de0c54 04-Jun-2008 */
+/* Signature: 12f0f4ff 13-Sep-2009 */
 
 
 /********************************************************************************

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FX7Segment.cpp,v 1.19 2006/03/16 03:19:10 fox Exp $                      *
+* $Id: FX7Segment.cpp,v 1.19.2.1 2007/08/11 00:50:32 fox Exp $                      *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -267,7 +267,7 @@ long FX7Segment::onCmdSetRealValue(FXObject*,FXSelector,void* ptr){
 
 // Get value as string
 long FX7Segment::onCmdGetStringValue(FXObject*,FXSelector,void* ptr){
-  *((FXint*)ptr)=FXIntVal(label);
+  *((FXString*)ptr)=label;
   return 1;
   }
 

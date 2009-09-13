@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXComposite.cpp,v 1.54.2.1 2006/05/10 13:18:13 fox Exp $                     *
+* $Id: FXComposite.cpp,v 1.54.2.2 2007/04/29 14:31:43 fox Exp $                     *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -261,7 +261,8 @@ long FXComposite::onKeyPress(FXObject* sender,FXSelector sel,void* ptr){
       return handle(this,FXSEL(SEL_FOCUS_NEXT,0),ptr);
     case KEY_Prior:
     case KEY_ISO_Left_Tab:
-    case MKUINT(KEY_Tab,SHIFTMASK):     // Suggested by: chafar@alcances.net
+    case MKUINT(KEY_ISO_Left_Tab,SHIFTMASK): 
+    case MKUINT(KEY_Tab,SHIFTMASK):    
       return handle(this,FXSEL(SEL_FOCUS_PREV,0),ptr);
     case KEY_Up:
     case KEY_KP_Up:

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxutils.cpp,v 1.129.2.3 2006/07/08 14:36:56 fox Exp $                        *
+* $Id: fxutils.cpp,v 1.129.2.4 2008/05/20 16:21:12 fox Exp $                        *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -122,10 +122,10 @@ FXbool fxisconsole(const FXchar *path){
     if(dwBytes!=IMAGE_SIZEOF_FILE_HEADER) goto x;
 
     // Read the optional header of file.
-    if(ReadFile(hImage,&optional_header,IMAGE_SIZEOF_NT_OPTIONAL_HEADER,&dwBytes,NULL)==0) goto x;
+    if(ReadFile(hImage,&optional_header,sizeof(IMAGE_OPTIONAL_HEADER),&dwBytes,NULL)==0) goto x;
 
     // Test bytes read
-    if(dwBytes!=IMAGE_SIZEOF_NT_OPTIONAL_HEADER) goto x;
+    if(dwBytes!=sizeof(IMAGE_OPTIONAL_HEADER)) goto x;
 
     // Switch on systems
     switch(optional_header.Subsystem){

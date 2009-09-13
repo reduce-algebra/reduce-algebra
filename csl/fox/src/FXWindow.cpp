@@ -19,18 +19,8 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXWindow.cpp,v 1.341.2.1 2006/05/10 13:18:13 fox Exp $                       *
+* $Id: FXWindow.cpp,v 1.341.2.3 2009/01/14 10:41:48 fox Exp $                       *
 ********************************************************************************/
-
-// MODIFIED BY A C NORMAN, 2008, merely for FXUint vs HANDLE. This
-// comment is only here because LGPL obliges me to mark any file that is
-// altered with a prominent notice. Somehow the GPL/LGPL people could be
-// amazingly uptight at the stage that the original BSD license has an
-// "obnoxious advertising clause" while not minding that they oblige me
-// to incorporate something rather similar here!
-
-
-
 #include "xincs.h"
 #include "fxver.h"
 #include "fxdefs.h"
@@ -991,6 +981,7 @@ long FXWindow::onFocusSelf(FXObject*,FXSelector,void*){
 void FXWindow::createComposeContext(){
   if(!composeContext){
     composeContext=new FXComposeContext(getApp(),this,0);
+    composeContext->create();
     }
   }
 
@@ -2775,12 +2766,12 @@ bool FXWindow::setDNDData(FXDNDOrigin origin,FXDragType targettype,FXuchar* data
 bool FXWindow::setDNDData(FXDNDOrigin origin,FXDragType targettype,const FXString& string) const {
   FXuchar *data; FXuint size;
   size=string.length();
-  if(FXCALLOC(&data,FXuchar,size+1)){
+  if(FXCALLOC(&data,FXuchar,size+2)){
     memcpy(data,string.text(),size);
 #ifndef WIN32
     setDNDData(origin,targettype,data,size);
 #else
-    setDNDData(origin,targettype,data,size+1);
+    setDNDData(origin,targettype,data,size+2);
 #endif
     return true;
     }
@@ -3069,7 +3060,7 @@ bool FXWindow::handleDrag(FXint x,FXint y,FXDragAction action){
 
 #else
 
-    HANDLE version=0;
+    FXuint version=0;
     FXbool forcepos=FALSE;
     POINT point;
     HWND window;
@@ -3079,7 +3070,7 @@ bool FXWindow::handleDrag(FXint x,FXint y,FXDragAction action){
     point.y=y;
     window=WindowFromPoint(point);      // FIXME wrong for disabled windows
     while(window){
-      version=GetProp(window,(LPCTSTR)MAKELONG(getApp()->xdndAware,0));
+      version=(FXuint)GetProp(window,(LPCTSTR)MAKELONG(getApp()->xdndAware,0));
       if(version) break;
       window=GetParent(window);
       }

@@ -12,7 +12,7 @@ FXIMPLEMENT(FXCP855Codec,FXTextCodec,NULL,0)
 
 
 //// Created by codec tool on 03/25/2005 from: CP855.TXT ////
-const unsigned short forward_data[256]={
+static const unsigned short forward_data[256]={
    0,    1,    2,    3,    4,    5,    6,    7,    8,    9,    10,   11,   12,   13,   14,   15,
    16,   17,   18,   19,   20,   21,   22,   23,   24,   25,   26,   27,   28,   29,   30,   31,
    32,   33,   34,   35,   36,   37,   38,   39,   40,   41,   42,   43,   44,   45,   46,   47,
@@ -32,11 +32,11 @@ const unsigned short forward_data[256]={
   };
 
 
-const unsigned char reverse_plane[17]={
+static const unsigned char reverse_plane[17]={
   0, 10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
   };
 
-const unsigned char reverse_pages[74]={
+static const unsigned char reverse_pages[74]={
   0,  64, 70, 70, 70, 70, 70, 70, 117,165,70, 70, 70, 70, 70, 70,
   70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
   70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
@@ -44,7 +44,7 @@ const unsigned char reverse_pages[74]={
   70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
   };
 
-const unsigned short reverse_block[229]={
+static const unsigned short reverse_block[229]={
   0,   16,  32,  48,  64,  80,  96,  112, 128, 128, 144, 158, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
@@ -62,7 +62,7 @@ const unsigned short reverse_block[229]={
   128, 128, 128, 128, 128,
   };
 
-const unsigned char reverse_data[422]={
+static const unsigned char reverse_data[422]={
    0,    1,    2,    3,    4,    5,    6,    7,    8,    9,    10,   11,   12,   13,   14,   15,
    16,   17,   18,   19,   20,   21,   22,   23,   24,   25,   26,   27,   28,   29,   30,   31,
    32,   33,   34,   35,   36,   37,   38,   39,   40,   41,   42,   43,   44,   45,   46,   47,

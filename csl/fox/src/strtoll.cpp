@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: strtoll.cpp,v 1.9.2.1 2006/06/13 02:25:33 fox Exp $                          *
+* $Id: strtoll.cpp,v 1.9.2.2 2007/11/16 14:50:40 fox Exp $                          *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -182,7 +182,7 @@ FXulong strtoull(const char *nptr,char **endptr,int base){
   if(endptr) *endptr=s;
 
   // Skip spaces
-  while((c=*s++)!='\0' && Ascii::isSpace(c)) s++;
+  while(*s!='\0' && Ascii::isSpace(*s)) s++;
 
   // Process sign
   if(*s=='-'){

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxppmio.cpp,v 1.13.2.1 2006/08/01 18:04:46 fox Exp $                         *
+* $Id: fxppmio.cpp,v 1.13.2.2 2009/01/16 01:20:37 fox Exp $                         *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -124,8 +124,8 @@ bool fxloadPPM(FXStream& store,FXColor*& data,FXint& width,FXint& height){
     case '1':   // ascii bitmap
       for(i=0; i<height; i++){
         for(j=0; j<width; j++,byte<<=1,pp+=4){
-          if((j&7)==0){ byte=getint(store); }
-          g=(byte&0x80)?255:0;
+          byte=getint(store);
+          g=byte?255:0;
           pp[0]=g;
           pp[1]=g;
           pp[2]=g;

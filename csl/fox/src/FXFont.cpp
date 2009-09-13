@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXFont.cpp,v 1.184.2.1 2006/08/01 18:04:37 fox Exp $                         *
+* $Id: FXFont.cpp,v 1.184.2.5 2009/02/07 05:42:01 fox Exp $                         *
 ********************************************************************************/
 
 // Modified June 2008 by A C Norman so that it will build when FC_WIDTH and
@@ -566,6 +566,7 @@ static FXint fcSetWidth2SetWidth(FXint fcSetWidth){
   }
 #endif
 
+
 // From FOX slant to fontconfig slant
 static FXint slant2FcSlant(FXint slant){
   switch(slant){
@@ -617,9 +618,9 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
     FcPatternAddString(pattern,FC_FOUNDRY,(const FcChar8*)wantforge.text());
     }
 
-  // Set point size; work this back to a 75-dpi basis
+  // Set pixel size, based on given screen res and desired point size
   if(wantsize!=0){
-    FcPatternAddDouble(pattern,FC_SIZE,(res*wantsize)/750.0);
+    FcPatternAddDouble(pattern,FC_PIXEL_SIZE,(res*wantsize)/720.0);
     }
 
   // Set font weight
@@ -718,9 +719,9 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
     flags=sc?(flags|FXFont::Scalable):(flags&~FXFont::Scalable);
     }
 
-  // Get point size; work back to deci-points for FOX
-  if(FcPatternGetDouble(p,FC_SIZE,0,&sz)==FcResultMatch){
-    actualSize=(int)((750.0*sz)/res);
+  // Get pixel size and work it back to deci-points using given screen res
+  if(FcPatternGetDouble(p,FC_PIXEL_SIZE,0,&sz)==FcResultMatch){
+    actualSize=(int)((720.0*sz)/res);
     }
 
   // Get charset
@@ -732,7 +733,7 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
 
   // Open font
   font=XftFontOpenPattern(DISPLAY(getApp()),p);
-  xid=(unsigned long)p;
+  xid=(FXID)font;
 
   // Destroy pattern
   FcPatternDestroy(pattern);
@@ -1164,9 +1165,6 @@ void* FXFont::match(const FXString& wantfamily,const FXString& wantforge,FXuint 
         font=XLoadQueryFont(DISPLAY(getApp()),xlfd);
         }
 
-      // Remember font id
-      if(font){ xid=((XFontStruct*)font)->fid; }
-
 /*
       if(font){
         for(b=0; b<((XFontStruct*)font)->n_properties; b++){
@@ -1330,124 +1328,115 @@ void FXFont::create(){
 
 #elif defined(HAVE_XFT_H)       ///// XFT /////
 
-          FXString family=getFamily();
-          FXString foundry=getFoundry();
-          FXint    res;
+      FXString family=getFamily();
+      FXString foundry=getFoundry();
+      FXint    res;
 
-          // Override screen resolution via registry
-          res=getApp()->reg().readUnsignedEntry("SETTINGS","screenres",100);
+      // Override screen resolution via registry
+      res=getApp()->reg().readUnsignedEntry("SETTINGS","screenres",100);
 
-          FXTRACE((150,"%s::create: xft font\n",getClassName()));
+      FXTRACE((150,"%s::create: xft font\n",getClassName()));
 
-          // Try to match with specified family and foundry
-          if(!family.empty()){
-            family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",family.text(),family.text());
-            if(!foundry.empty()){
-              foundry=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",foundry.text(),foundry.text());
-              font=match(family,foundry,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-              }
+      // Try to match with specified family and foundry
+      if(!family.empty()){
+        family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",family.text(),family.text());
+        if(!foundry.empty()){
+          foundry=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",foundry.text(),foundry.text());
+          font=match(family,foundry,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+          }
+        if(!font){
+          font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+          }
+        }
+
+      // Uh-oh, we failed
+      if(!xid){ throw FXFontException("unable to create font"); }
+
+#else                           ///// XLFD /////
+
+      FXString family=getFamily();
+      FXString foundry=getFoundry();
+      FXint    res;
+
+      // Override screen resolution via registry
+      res=getApp()->reg().readUnsignedEntry("SETTINGS","screenres",100);
+
+      FXTRACE((150,"%s::create: xlfd font\n",getClassName()));
+
+      // X11 font specification
+      if(hints&FXFont::X11){
+
+        // Resolve font name
+        actualName=xlfdFont(DISPLAY(getApp()),wantedName);
+
+        // Try load the font
+        font=XLoadQueryFont(DISPLAY(getApp()),actualName.text());
+        }
+
+      // Platform independent specification
+      if(!font){
+
+        // First we try to match with specified family and foundry
+        if(!family.empty()){
+          family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",family.text(),family.text());
+          if(!foundry.empty()){
+            foundry=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",foundry.text(),foundry.text());
+            font=match(family,foundry,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+            }
+          if(!font){
+            font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+            }
+          }
+
+        // Try based on hints
+        if(!font){
+
+          // Try swiss if we want swiss or indicated no preference
+          if((hints&(FXFont::Swiss|FXFont::System)) || !(hints&(FXFont::Decorative|FXFont::Modern|FXFont::Roman|FXFont::Script|FXFont::Swiss|FXFont::System))){
+            family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","helvetica","helvetica");
+            font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
             if(!font){
+              family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","lucida","lucida");
               font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
               }
             }
 
-          // Uh-oh, we failed
-          if(!xid){ throw FXFontException("unable to create font"); }
-
-#else                           ///// XLFD /////
-
-          FXString family=getFamily();
-          FXString foundry=getFoundry();
-          FXint    res;
-
-          // Override screen resolution via registry
-          res=getApp()->reg().readUnsignedEntry("SETTINGS","screenres",100);
-
-          FXTRACE((150,"%s::create: xlfd font\n",getClassName()));
-
-          // X11 font specification
-          if(hints&FXFont::X11){
-
-            // Resolve font name
-            actualName=xlfdFont(DISPLAY(getApp()),wantedName);
-
-            // Try load the font
-            font=XLoadQueryFont(DISPLAY(getApp()),actualName.text());
-            }
-
-          // Platform independent specification
-          if(!font){
-
-            // First we try to match with specified family and foundry
-            if(!family.empty()){
-              family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",family.text(),family.text());
-              if(!foundry.empty()){
-                foundry=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS",foundry.text(),foundry.text());
-                font=match(family,foundry,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                }
-              if(!font){
-                font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                }
-              }
-
-            // Try based on hints
+          // Try roman
+          else if(hints&FXFont::Roman){
+            family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","times","times");
+            font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
             if(!font){
-
-              // Try swiss if we want swiss or indicated no preference
-              if((hints&(FXFont::Swiss|FXFont::System)) || !(hints&(FXFont::Decorative|FXFont::Modern|FXFont::Roman|FXFont::Script|FXFont::Swiss|FXFont::System))){
-                family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","helvetica","helvetica");
-                font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                if(!font){
-                  family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","lucida","lucida");
-                  font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                  }
-                }
-
-              // Try roman
-              else if(hints&FXFont::Roman){
-                family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","times","times");
-                font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                if(!font){
-                  family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","charter","charter");
-                  font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                  }
-                }
-
-              // Try modern
-              else if(hints&FXFont::Modern){
-                family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","courier","courier");
-                font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                if(!font){
-                  family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","lucidatypewriter","lucidatypewriter");
-                  font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                  }
-                }
-
-              // Try decorative
-              else if(hints&FXFont::Decorative){
-                family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","gothic","gothic");
-                font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                }
-
-              // Try anything
-              if(!font){
-                font=match(FXString::null,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
-                }
+              family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","charter","charter");
+              font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
               }
             }
 
-          // If we still don't have a font yet, use fixed font
-          if(!font){
-
-            // Resolve font name
-            actualName="fixed";
-
-            // Try load the font
-            font=XLoadQueryFont(DISPLAY(getApp()),actualName.text());
+          // Try modern
+          else if(hints&FXFont::Modern){
+            family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","courier","courier");
+            font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+            if(!font){
+              family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","lucidatypewriter","lucidatypewriter");
+              font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+              }
             }
 
-          // Uh-oh, we failed
-          if(!xid){ throw FXFontException("unable to create font"); }
+          // Try decorative
+          else if(hints&FXFont::Decorative){
+            family=getApp()->reg().readStringEntry("FONTSUBSTITUTIONS","gothic","gothic");
+            font=match(family,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+            }
+
+          // Try anything
+          if(!font){
+            font=match(FXString::null,FXString::null,wantedSize,wantedWeight,wantedSlant,wantedSetwidth,wantedEncoding,hints,res);
+            }
+
+      // Remember font id
+      if(font){ xid=((XFontStruct*)font)->fid; }
+
+      // Uh-oh, we failed
+      if(!xid){ throw FXFontException("unable to create font"); }
 
 #endif
 
@@ -2010,6 +1999,7 @@ void FXFont::drawText(FXDC* dc,FXint x,FXint y,const FXchar* string,FXuint lengt
   color.color.alpha=FXALPHAVAL(((FXDCWindow*)dc)->fg)*257;
   XftDrawStringUtf8((XftDraw*)((FXDCWindow*)dc)->xftDraw,&color,(XftFont*)((FXDCWindow*)dc)->font->font,x,y,(const FcChar8*)string,length);
   }
+
 #else                           ///// XLFD /////
 
 static FXint utf2db(XChar2b *dst,const FXchar *src,FXint n){
@@ -2195,7 +2185,6 @@ FXbool FXFont::listFonts(FXFontDesc*& fonts,FXuint& numfonts,const FXString& fac
 
 
 // List all fonts that match the passed requirements
-
 FXbool FXFont::listFonts(FXFontDesc*& fonts,FXuint& numfonts,const FXString& face,FXuint wt,FXuint sl,FXuint sw,FXuint en,FXuint h){
   int          encoding,setwidth,weight,slant,size,pitch,scalable,res,i,j;
   FXchar       fullname[256];
@@ -2306,10 +2295,10 @@ FXbool FXFont::listFonts(FXFontDesc*& fonts,FXuint& numfonts,const FXString& fac
               if(pitch==FC_MONO || pitch==FC_CHARCELL) pitch=FXFont::Fixed;
               }
 
-            // Get point size; work back to deci-points for FOX
+            // Pixel size works for both bitmap and scalable fonts
             size=0;
-            if(FcPatternGetDouble(p,FC_SIZE,0,&points)==FcResultMatch){
-              size=(int)((750.0*points)/res);
+            if(FcPatternGetDouble(p,FC_PIXEL_SIZE,0,&points)==FcResultMatch){
+              size=(int)((720.0*points)/res);
               }
 
             // Get scalable flag

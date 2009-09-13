@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXPicker.cpp,v 1.21.2.1 2006/10/19 19:15:19 fox Exp $                        *
+* $Id: FXPicker.cpp,v 1.21.2.2 2008/09/22 20:53:57 fox Exp $                        *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -103,7 +103,6 @@ long FXPicker::onMotion(FXObject*,FXSelector,void* ptr){
 
 // Pressed mouse button
 long FXPicker::onLeftBtnPress(FXObject*,FXSelector,void* ptr){
-  FXEvent* event=(FXEvent*)ptr;
   handle(this,FXSEL(SEL_FOCUS_SELF,0),ptr);
   flags&=~FLAG_TIP;
   if(isEnabled()){
@@ -115,15 +114,6 @@ long FXPicker::onLeftBtnPress(FXObject*,FXSelector,void* ptr){
     else{
       setState(STATE_UP);
       }
-/*      
-    else{
-      ungrab();
-      flags|=FLAG_UPDATE;
-      setState(STATE_UP);
-      FXPoint point(event->root_x,event->root_y);
-      if(target){ target->tryHandle(this,FXSEL(SEL_COMMAND,message),(void*)&point); }
-      }
-*/      
     return 1;
     }
   return 0;

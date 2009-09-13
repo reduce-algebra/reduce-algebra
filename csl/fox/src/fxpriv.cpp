@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: fxpriv.cpp,v 1.47 2006/03/16 04:41:36 fox Exp $                          *
+* $Id: fxpriv.cpp,v 1.47.2.2 2007/06/04 13:09:50 fox Exp $                          *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -599,6 +599,34 @@ void FXApp::dragdropGetTypes(const FXWindow*,FXDragType*& types,FXuint& numtypes
   }
 
 
+/*******************************************************************************/
+
+// When called, grab the true API from the DLL if we can
+static BOOL WINAPI MyGetMonitorInfo(HANDLE monitor,MYMONITORINFO* minfo){
+  HINSTANCE hUser32;
+  PFNGETMONITORINFO gmi;
+  if((hUser32=GetModuleHandleA("USER32")) && (gmi=(PFNGETMONITORINFO)GetProcAddress(hUser32,"GetMonitorInfoA"))){
+    fxGetMonitorInfo=gmi;
+    return fxGetMonitorInfo(monitor,minfo);
+    }
+  return 0;
+  }
+
+
+// When called, grab the true API from the DLL if we can
+static HANDLE WINAPI MyMonitorFromRect(RECT* rect,DWORD flags){
+  HINSTANCE hUser32;
+  PFNMONITORFROMRECT mfr;
+  if((hUser32=GetModuleHandleA("USER32")) && (mfr=(PFNMONITORFROMRECT)GetProcAddress(hUser32,"MonitorFromRect"))){
+    fxMonitorFromRect=mfr;
+    return fxMonitorFromRect(rect,flags);
+    }
+  return NULL;
+  }
+
+
+PFNGETMONITORINFO fxGetMonitorInfo=MyGetMonitorInfo;
+PFNMONITORFROMRECT fxMonitorFromRect=MyMonitorFromRect;
 
 #endif
 

@@ -19,7 +19,7 @@
 * License along with this library; if not, write to the Free Software           *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.    *
 *********************************************************************************
-* $Id: FXTextField.cpp,v 1.171.2.2 2006/08/15 05:03:16 fox Exp $                    *
+* $Id: FXTextField.cpp,v 1.171.2.3 2008/09/22 20:46:59 fox Exp $                    *
 ********************************************************************************/
 #include "xincs.h"
 #include "fxver.h"
@@ -1347,7 +1347,7 @@ long FXTextField::onCmdCursorLeft(FXObject*,FXSelector,void*){
 
 // Check if w is delimiter
 static FXbool isdelimiter(const FXchar *delimiters,FXwchar w){
-  return w<256 && strchr(delimiters,w); // FIXME for w>256
+  return w<128 && strchr(delimiters,w); // FIXME for w>=128
   }
 
 
