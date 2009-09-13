@@ -118,6 +118,8 @@ find . \
        -name powerpc-\* -prune -o \
        -name libedit -prune -o \
        -name libedit-20090111-3.0 -prune -o \
+       -name redten\* -prune -o \
+       -name heirloom\* -prune -o \
        -name reduce-algebra-\* -prune -o    \
        -name autom4te.cache -prune -o   \
        \( \! \( -name \*.bak -o         \

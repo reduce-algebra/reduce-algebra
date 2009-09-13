@@ -94,6 +94,11 @@ AC_ARG_WITH(xft,
                  [Can be used to disable use of XFT. Default is yes]),
   [],
   [with_xft="yes"])
+AC_ARG_WITH(xim,
+  AC_HELP_STRING([--with-xim],
+                 [Can be used to control use of XIM. Default is yes (now)]),
+  [],
+  [with_xft="yes"])
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug],
                  [compile for debugging]),
@@ -251,7 +256,7 @@ then
         CFLAGS="$CFLAGS "
         CXXFLAGS="$CXXFLAGS "
         export CFLAGS CXXFLAGS
-        extras="--with-xft"
+        extras="--with-xft --with-xim"
       fi
       ;;
 #
@@ -268,11 +273,11 @@ then
 #      ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now
-# relying on it.
+# relying on it. Ditto XIM
       CFLAGS="$CFLAGS "
       CXXFLAGS="$CXXFLAGS "
       export CFLAGS CXXFLAGS
-      extras="--with-xft"
+      extras="--with-xft --with-xim"
       ;;
   esac
 
