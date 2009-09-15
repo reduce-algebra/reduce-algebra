@@ -1,0 +1,84 @@
+                             Reduce Projects
+
+
+
+
+
+                                                                September 2009
+
+
+
+
+This is a starting place for people to list Reduce related project ideas.
+It is here both to encourage *everybody* to find a way to contribute and
+because in many universities all sorts of final-year students undertake
+serious project work, and some of the items here could well be suitable.
+
+I hope very much that all Reduce enthusiasts will contribute their own ideas
+to this list. And when a project is attempted that the entry here gets
+updated to refer to the work that is done. Particularly for student projects
+it is likely to be quite reasonable for the same or very similar work to be
+done several times, so the fact that somebody else has indicated that they
+are working on something should not stop you from starting it yourself.
+
+Those who have write access to the Reduce repository on sourceforge should
+consider themselves not just free but actively encouraged to add items to
+this list. Those who do not have the ability to edit this directly may
+email one of the developers or use the mailing list or forum to submit
+information and ideas. I am starting this off as a simple file, but it could
+imaginably move onto the wiki provided there was evidence that that really
+made it more accessible to people.
+
+I am starting this mostly from a CSL-centric position, but others can add
+more ideas that will broaden the scope. When there are enough ideas they
+may need grouping and sorting - I will start off as a simple linear list.
+
+Some of these are serious projects, while some are more modest items of work.
+
+A volunteer keen to maintain this would be welcomed!
+
+
+
+(1) Set up scripts that can go within the Reduce tree that can be used to
+create .rpm and .deb packages for the software, and do something related
+for Windows. There is some stuff that packages a Mac version - get that so it
+is visible in the source tree, can be driven in a way that is compatible with
+the scripts to package for other platforms and so that anybody can use it.
+
+(2) The CSL version has a "fancy" output mode. But the exact spacing that it
+uses between symbols (eg around "+", between a symbol and an exponent) is
+far from perfect. Write code that captures the exact output it generates
+and that captures the same information from LaTeX. Set up an automated
+scheme that compares these and develop a test suite of expressions to be
+displayed. Based on this update the code (in csl/fox/src/FXShowMath.cpp)
+so that Reduce ends up as beautiful as TeX.
+
+(3) At present the CSL version used the FOX GUI toolkit to support its
+windowed interface. This supports Unix and Windows well, but only runs on
+a Macintosh via the X11 server, and Macintosh people may view that as
+almost useless for them. The latest versions of Qt are released under
+the LGPL and run natively on all plausible platforms. What would be involved
+in replacing the FOX-based interface with one based on Qt?
+
+(4) There is a sketch or the start of work within CSL to provide it with
+a "conservative" garbage collector rather than its current precise one.
+Making that change would probably make the whole of the code easier to
+maintain and might make it faster. Continue and complete the work.
+
+(5) CSL has a draft "just-in-time" compiletr from its internal bytecodes to
+x86 machine code. But that is not yet quite stable enough to be used at
+all generally, and there is no x86_64 variant at all. Resolve this
+limitation. Note that the conservative garbage collection task might usefully
+be completed first.
+
+(6) Much of the code that makes up Reduce is fairly old. Automated tools
+to bring its style up to date would be useful, and global analysis tools to
+flush out bugs ditto. Because Reuce source code parses into Lisp and there
+is already a Lisp to Reduce source back-converter there is a good starting
+point for projects in this line.
+
+(7) I have heard reports that Stoutemeyer and Rich report that a carefully
+designed patter-based integration system can outperform code like that
+currently used in Reduce. Investigate and if successful replace the current
+integration code.
+
