@@ -32,7 +32,9 @@
 // debug some bad bahaviour on a Macintosh.
 
 // September 2009 - back-port fix re NET_WM_PING from original information
-// and FOX 1.6.36, then general merge with FOX 1.3.36
+// and FOX 1.6.36, then general merge with FOX 1.3.36. Inclusion of a
+// patch found on a nabble listing from roland65 re xim and composed
+// characters.
 
 #ifdef WIN32
 #if _WIN32_WINNT < 0x0400
@@ -2032,7 +2034,9 @@ bool FXApp::getNextEvent(FXRawEvent& ev,bool blocking){
   XNextEvent((Display*)display,&ev);
 
   // Filter event through input method context, if any
-  if(xim && XFilterEvent(&ev,None)) return false;
+// [ACN] a patch suggested by roland65 re input of composed characters.
+  FXWindow *focuswin = getFocusWindow();
+  if(xim && focuswin && XFilterEvent(&ev,(Window)focuswin->id())) return false;
 
   // Save expose events for later...
   if(ev.xany.type==Expose || ev.xany.type==GraphicsExpose){
