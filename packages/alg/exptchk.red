@@ -45,7 +45,7 @@ symbolic procedure exptchksq u;
 
 symbolic procedure exptchk u;
    if domainp u then u
-    else (if length v<2 then u else exptchk0(u,nil,v)) where v=kernels u;
+    else (if length v<2 then u else exptchk0(u,nil,v)) where v=comm_kernels u;
 
 symbolic procedure exptchk0(u,v,w);
    if null u then nil
@@ -121,6 +121,20 @@ symbolic procedure meldx1(u,v);
     else if eqcar(car v,'expt) and caddar u=caddar car v and cdr u=cdar v
      then car v
     else meldx1(u,cdr v);
+
+symbolic procedure comm_kernels u;
+   % Returns list of commutative kernels in standard form u.
+   comm_kernels1(u,nil);
+
+symbolic procedure comm_kernels1(u,v);
+   % We append to end of list to put kernels in the right order, even
+   % though a cons on the front of the list would be faster.
+   if domainp u then v
+    else comm_kernels1(lc u,
+                       comm_kernels1(red u,
+                                     if x memq v or noncomp x
+                                        then v else append(v,list x)))
+         where x=mvar u;
 
 endmodule;
 
