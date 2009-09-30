@@ -122,7 +122,6 @@ procedure ibalp_qsat!-getoption(opt);
    % option.
    lto_catsoc(opt,ibalp_qsatoptions!*);
 
-% !#if (memq 'psl lispsystem!*)
 !#if t
 
 smacro procedure ibalp_var!-new(id);
@@ -835,6 +834,9 @@ procedure ibalp_qsat(f);
    % in DNF in PQ-SAT.
    begin scalar pair,clausel,varal,readform,qsat,pqsat;
       if null ibalp_qsatoptions!* then ibalp_qsat!-initoptions();
+      f := cl_simpl(f,nil,-1);
+      if rl_tvalp f then
+	 return f;
       qsat := cl_bvarl f;
       pqsat := cl_fvarl f;
       readform := if qsat then cl_matrix (cl_pnf f) else f;
@@ -1820,39 +1822,31 @@ procedure ibalp_getnewwl(clause);
       return wl
    end;
 
-%procedure ibalp_iscnf(formula);
-%   ibalp_atp formula or ibalp_mintermp formula or rl_op formula eq 'or
+procedure ibalp_iscnf(f);
+   ibalp_clausep f or (rl_op f eq 'and and ibalp_clauselp rl_argn f);
 
+procedure ibalp_clauselp(l);
+   null l or (ibalp_clausep car l and ibalp_clauselp cdr l);
 
-procedure ibalp_iscnf(formula);
-   % Check if a formula is in CNF. [formula] is a formula in
-   % Lisp-Prefix. Returns [t] if the formula is in CNF, [nil] else.
-   begin scalar args,ret;
-      if rl_op formula eq 'and then <<
-	 args := rl_argn formula;
-	 ret := t;
-	 while args and ret do <<
-	    if rl_op car args eq 'or then <<
-	       for each a in rl_argn car args do
-		  if not (rl_op a eq 'equal) and
-	       	  not (rl_op a eq 'not) then
-		     ret := nil;
-	    >> else if rl_op car args eq 'equal or
- 	       rl_op car args eq 'not then
-		  ret := t
-	    else ret := nil;
-	    args := cdr args;
-	 >>;
-	 return ret
-      >> else
-	 return nil;
-   end;
+procedure ibalp_clausep(s);
+   ibalp_litp s or (rl_op s eq 'or and ibalp_litlp rl_argn s);
+
+procedure ibalp_litlp(l);
+   null l or (ibalp_litp car l and ibalp_litlp cdr l);
+
+procedure ibalp_litp(s);
+   ibalp_atomp s or (rl_op s eq 'not and ibalp_atomp rl_arg1 s);
+
+procedure ibalp_atomp(s);
+   % We consider true and false to be atomic formulas at this point.
+   rl_tvalp s or (rl_op s eq 'equal and idp ibalp_arg2l s and numberp ibalp_arg2r s);
 
 procedure ibalp_readform(f);
    % Read a formula in cnf. [f] is a formula in cnf in lisp
    % prefix. Returns a pair: [clausel] is the list of clauses; [varal]
    % is the A-List of variables.
    begin scalar pair,clausel,varal,clause; integer count;
+      f := cl_mkstrict(f,'and);
       for each x in rl_argn f do <<
 	 pair := ibalp_readclause(x,varal);
 	 clause := car pair;
@@ -1906,13 +1900,19 @@ procedure ibalp_redclause(clause);
    % clause. Returns [t] if the clause is redundant, [nil] else.
    begin scalar tv,ret;
       tv := ibalp_clause!-getposlit clause;
-      while tv and null ret do <<
-	 if member(car tv,ibalp_clause!-getneglit clause) then
+     while tv and null ret do <<
+	 if ibalp_vmember(car tv,ibalp_clause!-getneglit clause) then
 	    ret := t;
 	 tv := cdr tv
       >>;
       return ret
    end;
+
+procedure ibalp_vmember(v,vl);
+   vl and (ibalp_vequal(v,car vl) or ibalp_vmember(v,cdr vl));
+
+procedure ibalp_vequal(v1,v2);
+   ibalp_var!-getid v1 eq ibalp_var!-getid v2;
 
 procedure ibalp_readclause(c,varal);
    % Read a clause. [c] is a clause in lisp prefix; [varal] is the
@@ -2058,7 +2058,7 @@ procedure ibalp_readclause!-cnf(numclauses,varal,lt);
 		  varal := ibalp_process!-var(clause,varal,tok,1)
 	       >>
       	 >>;
-	 if member(clause,clausel) or ibalp_redclause clause then <<
+	 if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
 	    ibalp_undoclause clause;
 	    count := count + 1
 	 >> else
