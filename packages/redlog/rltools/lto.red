@@ -228,7 +228,7 @@ procedure lto_at2str(s);
    compress('!" . reversip('!" . reversip explode s));
 
 procedure lto_max(l);
-   % List tools maximum of a list. [l] is a list of integers. Rerurns
+   % List tools maximum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
    if null cdr l then car l else max(car l,lto_max cdr l);
 
@@ -237,18 +237,42 @@ procedure lto_setminus(l1,l2);
 
 procedure lto_setequalq(s1,s2);
    % s1 and s2 are lists of identifiers not containing any duplicates.
-   begin scalar a,failed;
-      if not eqn(length s1,length s2) then
-	 return nil;
-      while not failed and s1 do <<
-	 a := car s1;
-	 if not (a memq s2) then
-	    failed := t
-	 else
+   begin scalar c,a1,a2,svs1,svs2; integer n1,n2;
+%%       if not lto_hashequalq(s1,s2) then
+%% 	 return nil;
+      c := t; while c and s1 do <<
+	 a1 := car s1;
+	 if a1 memq s2 then
 	    s1 := cdr s1
+	 else
+	    c := nil
       >>;
-      return not failed
+      return c
    end;
+
+procedure lto_hashequalq(s1,s2);
+   % s1 and s2 are lists of identifiers.
+   begin scalar a1,a2; integer n1,n2;
+      while s1 and s2 do <<
+	 a1 := car s1;
+	 a2 := car s2;
+	 s1 := cdr s1;
+	 s2 := cdr s2;
+	 n1 := n1 #+ lto_hashid a1;
+	 n2 := n2 #+ lto_hashid a2
+      >>;
+      return null s1 and null s2 and (n1 #= n2)
+   end;
+
+!#if (memq 'csl lispsystem!*)
+   procedure lto_hashid(id);
+      sxhash id;
+!#endif
+
+!#if (memq 'psl lispsystem!*)
+   procedure lto_hashid(id);
+      id2int id;
+!#endif
 
 !#if (not (memq 'psl lispsystem!*))
    procedure delq(x,l);
