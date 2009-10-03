@@ -834,9 +834,6 @@ procedure ibalp_qsat(f);
    % in DNF in PQ-SAT.
    begin scalar pair,clausel,varal,readform,qsat,pqsat;
       if null ibalp_qsatoptions!* then ibalp_qsat!-initoptions();
-      f := cl_simpl(f,nil,-1);
-      if rl_tvalp f then
-	 return f;
       qsat := cl_bvarl f;
       pqsat := cl_fvarl f;
       readform := if qsat then cl_matrix (cl_pnf f) else f;
@@ -849,6 +846,10 @@ procedure ibalp_qsat(f);
       pair := ibalp_readform readform;
       clausel := car pair;
       varal := cdr pair;
+      if null clausel then
+	 return 'true;
+      if ibalp_emptyclausep car clausel then
+	 return 'false;
       if qsat and null pqsat then
        	 return ibalp_start!-qsat(clausel,varal,f)
       else if qsat and pqsat then
@@ -933,7 +934,7 @@ procedure ibalp_cdcl(clausel,varal,c,setval,rescount,inc,heur);
 	       ibalp_recalcv varal;
 	       count := count + 1;
 	       ibalp_dimcount clausel;
-	       pair := ibalp_analConf(ec,level,lv,clausel,varal);
+	       pair := ibalp_analconf(ec,level,lv,clausel,varal);
 	       level := car pair;
 	       clausel := cdr pair;
 	       pair := ibalp_dosimpl(clausel,varal);
@@ -1011,7 +1012,7 @@ procedure ibalp_restart(clausel,varal,c,rescount,setval,inc,heur);
       ibalp_cdcl(clausel,varal,c*inc,1-setval,rescount+1,inc,heur)
    >>;
       
-procedure ibalp_analConf(ec,level,lv,clausel,varal);
+procedure ibalp_analconf(ec,level,lv,clausel,varal);
    % Analyse conflict. [ec] is the empty clause; [level] is the
    % current level; [lv] is the last assigned variable; [clausel] is
    % the list of clauses; [varal] is the A-List of variables. Returns
@@ -1049,7 +1050,7 @@ procedure ibalp_simplify(dvar,dval,clause,clausel,varal);
    % the new clauses and the new variables.
    begin scalar var,val;
       if null dvar then <<
-      	 if eqn(length ibalp_clause!-getposlit clause,1) then <<
+      	 if ibalp_lenisone ibalp_clause!-getposlit clause then <<
 	    var := car ibalp_clause!-getposlit clause;
 	    val := 1
       	 >>
@@ -1079,16 +1080,24 @@ procedure ibalp_simplify(dvar,dval,clause,clausel,varal);
       return (clausel . varal)
    end;
 
+procedure ibalp_lenisone(l);
+   l and null cdr l;
+
+procedure ibalp_commonlenisone(l1,l2);
+   % l1 and l2 are lists, which are not both empty.
+   null l1 and ibalp_lenisone l2 or null l2 and ibalp_lenisone l1;
+
 procedure ibalp_hassimple(clausel);
    % Check if a clause list has some literals to simplify. [clausel]
    % is the list of clauses. Returns a clause to simplfy or [nil].
    begin scalar ret,tl;
       tl := clausel;
       while tl and null ret do << 
-      	 if eqn(length ibalp_clause!-getposlit car tl +
-      	    length ibalp_clause!-getneglit car tl,1) then
-	       ret := car tl;
-	 tl := cdr tl;
+	 if ibalp_commonlenisone(
+	    ibalp_clause!-getposlit car tl,ibalp_clause!-getneglit car tl)
+	 then
+	    ret := car tl;
+	 tl := cdr tl
       >>;
       return ret
    end;
@@ -1110,31 +1119,35 @@ procedure ibalp_unitprop(clist,clausel,level);
    % level the reduction is made; [setvar] is the last variable
    % set. Returns a Pair. The first entry is an empty clause if one is
    % derived the second the variable set at last.
-   begin scalar tl,clause,actpos,actneg,var,ec,upl;
-      tl := clist;
+   begin scalar tl,clause,actpos,actneg,var,ec,upl,w;
+      w := tl := clist;
       while tl and null ec do <<
 	 clause := car tl;
 	 if null ibalp_clause!-getsat clause then <<
 	    actpos := ibalp_clause!-getactpos clause;
 	    actneg := ibalp_clause!-getactneg clause;
-	    if eqn(actpos,1) then <<
+	    % Since clause is unit, we know that actpos is 1 and
+	    % actneg is 0 or vice versa.
+	    if actpos #= 1 then <<
 	       var := car ibalp_clause!-getwl clause;
 	       if null ibalp_var!-getval var then <<
 	       	  upl := ibalp_var!-set(var,1,level,clause);
-		  nconc(tl,upl)
+		  nconc(w,upl);
+		  w := upl or w
 	       >>
 	    >> else <<
 	       var := car ibalp_clause!-getwl clause;
 	       if null ibalp_var!-getval var then <<
 	       	  upl := ibalp_var!-set(var,0,level,clause);
-		  nconc(tl,upl)
+		  nconc(w,upl);
+		  w := upl or w
 	       >>
 	    >>
 	 >>;
 	 tl := cdr tl;
 	 ec := ibalp_cec clausel
       >>;
-      return (ec. var)
+      return (ec . var)
    end;
 
 procedure ibalp_initwl(clausel);
@@ -1534,17 +1547,20 @@ procedure ibalp_calcmom(var);
 
 procedure ibalp_cec(clausel);
    % Check empty clauses. [clausel] is the list of clauses. Returns
-   % the first empty clause if there is one (a clause which is false but has
-   % also no unset variables), else [nil].
+   % the first empty clause if there is one (a clause which is false
+   % but has also no unset variables), else [nil].
    if null clausel then
       nil
+   else if ibalp_emptyclausep car clausel then
+      car clausel
    else
-      if null ibalp_clause!-getsat car clausel and
-      eqn(ibalp_clause!-getactpos car clausel,0) and
-      eqn(ibalp_clause!-getactneg car clausel,0) then
-	 car clausel else
-	    ibalp_cec cdr clausel; 
-      
+      ibalp_cec cdr clausel;
+
+procedure ibalp_emptyclausep(clause);
+   null ibalp_clause!-getsat clause and
+      eqn(ibalp_clause!-getactpos clause,0) and
+      eqn(ibalp_clause!-getactneg clause,0);
+
 procedure ibalp_csat(clausel);
    % Check SAT. [clausel] is the list of clauses. Returns [t] if all
    % the clauses are true, else [nil].
@@ -1845,17 +1861,35 @@ procedure ibalp_readform(f);
    % Read a formula in cnf. [f] is a formula in cnf in lisp
    % prefix. Returns a pair: [clausel] is the list of clauses; [varal]
    % is the A-List of variables.
-   begin scalar pair,clausel,varal,clause; integer count;
+   begin scalar pair,clausel,varal,clause,argn,x,c; integer count;
       f := cl_mkstrict(f,'and);
-      for each x in rl_argn f do <<
+      argn := rl_argn f;
+      c := t; while c and argn do <<
+	 x := car argn;
+	 argn := cdr argn;
 	 pair := ibalp_readclause(x,varal);
 	 clause := car pair;
 	 varal := cdr pair;
-	 if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
-	    ibalp_undoclause clause;
-	    count := count + 1
-	 >> else
-	    clausel := car pair . clausel
+	 if clause neq 'true then <<
+	    if ibalp_emptyclausep clause then
+	       c := nil
+	    else
+	       (if ibalp_clmember(clause,clausel) or ibalp_redclause clause then <<
+	       	  ibalp_undoclause clause;
+	       	  count := count + 1
+	       >> else
+	       	  clausel := car pair . clausel)
+	 >>
+      >>;
+      if null c then <<
+      if !*rlverbose then
+      	 ioto_tprin2t {"Detected empty clause"};
+	 return {clause} . nil
+      >>;
+      if null clausel then <<
+      	 if !*rlverbose then
+      	    ioto_tprin2t {"Tautology detected"};
+	 return nil . nil
       >>;
       if !*rlverbose then
       	 ioto_tprin2t {"Deleted redundant clauses: ",count};
@@ -1919,39 +1953,43 @@ procedure ibalp_readclause(c,varal);
    % A-List of variables. Returns a pair: [clause] is the created
    % datastructure for this clause; [varal] is the updated list of
    % variables.
-   begin scalar af,id,val,clause,nc,posids,negids,doit,subval;
-      if rl_op c eq 'or then nc := rl_argn c else nc := {c};
+   begin scalar x,id,val,clause,nc,posids,negids,cnt;
+      nc := rl_argn c;
       clause := ibalp_clause!-new();
-      for each x in nc do <<
-	 doit := nil;
-	 if car x eq 'not then <<
-	    af := rl_arg1 x;
-	    subval := 1;
-	 >> else <<
-	    af := x;
-	    subval := 0;
-	 >>;
-	 id := rl_arg2l af;
-	 if eqn(rl_arg2r af,1-subval) then <<
-	    val := 1;
-	    if null memq(id,posids) then <<  
-	       ibalp_clause!-setactpos(clause,
-		  ibalp_clause!-getactpos clause + 1);
-	       posids := id . posids;
-	       doit := t
+      cnt := t; while cnt and nc do <<
+	 x := car nc;
+	 if x eq 'true then
+	    cnt := nil
+	 else <<
+	    nc := cdr nc;
+	    if x neq 'false then <<
+	       if rl_op x eq 'not then <<
+	       	  id := ibalp_arg2l rl_arg1 x;
+	       	  val := 1 #- ibalp_arg2r rl_arg1 x
+	       >> else <<
+	       	  id := ibalp_arg2l x;
+	       	  val := ibalp_arg2r x
+	       >>;
+	       if val #= 1 then <<
+	       	  if not memq(id,posids) then <<  
+	       	     ibalp_clause!-setactpos(clause,
+		     	ibalp_clause!-getactpos clause + 1);
+	       	     posids := id . posids;
+	       	     varal := ibalp_process!-var(clause,varal,id,1)
+	       	  >>
+	       >> else <<
+	       	  if not memq(id,negids) then <<
+	       	     ibalp_clause!-setactneg(clause,
+		     	ibalp_clause!-getactneg clause + 1);
+	       	     negids := id . negids;
+	       	     varal := ibalp_process!-var(clause,varal,id,0)
+	       	  >>
+	       >>
 	    >>
-	 >> else <<
-	    val := 0;
-	    if null memq(id,negids) then <<  
-	       ibalp_clause!-setactneg(clause,
-		  ibalp_clause!-getactneg clause + 1);
-	       negids := id . negids;
-	       doit := t
-	    >>
-	 >>; 
-	 if doit then
-	    varal := ibalp_process!-var(clause,varal,id,val);
+      	 >>
       >>;
+      if not cnt then
+	 return 'true . varal;
       return (clause . varal)
    end;
 
@@ -2071,9 +2109,10 @@ procedure ibalp_readclause!-cnf(numclauses,varal,lt);
 
 procedure ibalp_process!-var(clause,varal,id,val);
    % Process a variable of the input. [clause] is a clause; [varal] is
-   % the A-List of variables; [id] is an identifier; [val] is the
-   % value of the variable. Returns the new A-List of variables.
+   % the A-List of variables; [id] is a number; [val] is the value of
+   % the variable. Returns the new A-List of variables.
    begin scalar h,var;
+      id := intern compress('!! . explode id);
       if h := atsoc(id,varal) then
 	 var := cdr h
       else <<
