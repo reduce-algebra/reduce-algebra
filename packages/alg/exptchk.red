@@ -38,21 +38,18 @@ symbolic procedure exptchksq u;
    % U is a standard quotient. Result is u with possible expt
    % simplifications.
    if null !*combineexpt then u
-    else (if u=v or denr v=1 then v
-     % else reduce to lowest terms.
-           else multsq(numr v ./1,1 ./denr v))
-          where v = (exptchk numr u ./ exptchk denr u);
+    else multsq(exptchk numr u,invsq exptchk denr u);
 
 symbolic procedure exptchk u;
-   if domainp u then u
-    else (if length v<2 then u else exptchk0(u,nil,v)) where v=comm_kernels u;
+   if domainp u then u ./ 1
+    else (if length v<2 then u ./ 1 else exptchk0(u,nil,v)) where v=comm_kernels u;
 
 symbolic procedure exptchk0(u,v,w);
-   if null u then nil
+   if null u then nil ./ 1
     else if domainp u then exptunwind(u,v)
     else if expttermp(mvar u,w)
-     then addf(exptchk0(lc u,lpow u . v,w),exptchk0(red u,v,w))
-    else addf(multpf(lpow u,exptchk0(lc u,v,w)),exptchk0(red u,v,w));
+     then addsq(exptchk0(lc u,lpow u . v,w),exptchk0(red u,v,w))
+    else addsq(multsq(!*p2f lpow u ./ 1,exptchk0(lc u,v,w)),exptchk0(red u,v,w));
 
 symbolic procedure expttermp(u,v);
    if eqcar(u,'expt) then expttermp1(cadr u,v) else expttermp1(u,v);
@@ -73,9 +70,17 @@ symbolic procedure exptunwind(u,v);
              then <<x := mergex(car v,w);
                     if fixp x then <<n := x*n; v := delete(w,cdr v)>>
                      else v := x . delete(w,cdr v)>>
-            else <<u := multpf(car v, u); v := cdr v>>>>;
-      return multd(n,u)
+            else <<u := multpf(car v, u); v := cdr v>>>>; 
+      u := rm_neg_pow u;
+      return multsq(n ./ 1,u)
    end;
+
+symbolic procedure rm_neg_pow u;
+   if domainp u then u ./ 1
+    else if minusp ldeg u 
+            then addsq(multsq(1 ./ (mvar u .^ (-ldeg u) .* 1 .+ nil),rm_neg_pow lc u),
+                       rm_neg_pow red u)
+          else addsq(multsq(!*p2f lpow u ./ 1,rm_neg_pow lc u),rm_neg_pow red u);
 
 symbolic procedure mergex(u,v);
    if eqcar(car u,'expt)
