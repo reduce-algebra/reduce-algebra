@@ -5,7 +5,7 @@ An experimental REDUCE package for computing with guarded expressions
 
 This package requires the package REDLOG.
 
-GUARDIAN has been described in the following techinal report:
+GUARDIAN has originally been described in the following technical report:
 
 Andreas Dolzmann and Thomas Sturm. Guarded expressions in practice.
 Technical Report MIP-9702, FMI, Universitaet Passau, D-94030 Passau,
@@ -17,6 +17,8 @@ Andreas Dolzmann and Thomas Sturm. Guarded expressions in practice. In
 Wolfgang W. Kuechlin, editor, Proceedings of the 1997 International
 Symposium on Symbolic and Algebraic Computation (ISSAC 97), pages
 376-383, New York, July 1997. ACM, ACM Press.
+
+The file guardian.tex in this directory is essentially the text of MIP-9702.
 
 Switches and Commands:
 
@@ -34,4 +36,4 @@ choices:
    c) gdomode gterm;
 
 
-Andreas Dolzmann and Thomas Sturm
+Thomas Sturm, October 2009
