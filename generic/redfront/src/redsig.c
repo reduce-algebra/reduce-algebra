@@ -175,7 +175,9 @@ const char *sig_identify(int signo) {
   case SIGILL:    return "SIGILL";
   case SIGTRAP:   return "SIGTRAP";
   case SIGABRT:   return "SIGABRT";
+#ifdef SIGEMT
   case SIGEMT:    return "SIGEMT";
+#endif
   case SIGFPE:    return "SIGFPE";
   case SIGKILL:   return "SIGKILL";
   case SIGBUS:    return "SIGBUS";
@@ -197,7 +199,9 @@ const char *sig_identify(int signo) {
   case SIGVTALRM: return "SIGVTALRM";
   case SIGPROF:   return "SIGPROF";
   case SIGWINCH:  return "SIGWINCH";
+#ifdef SIGINFO
   case SIGINFO:   return "SIGINFO";
+#endif
   case SIGUSR1:   return "SIGUSR1";
   case SIGUSR2:   return "SIGUSR2";
   }
