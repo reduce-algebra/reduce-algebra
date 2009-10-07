@@ -235,11 +235,18 @@ procedure lto_max(l);
 procedure lto_setminus(l1,l2);
    for each x in l1 join if not member(x,l2) then {x};
 
+switch rlsetequalqhash;  % keep it local because it is temporary --TS
+on1 'rlsetequalqhash;
+
 procedure lto_setequalq(s1,s2);
    % s1 and s2 are lists of identifiers not containing any duplicates.
-   begin scalar c,a1,a2,svs1,svs2; integer n1,n2;
-%%       if not lto_hashequalq(s1,s2) then
-%% 	 return nil;
+   begin scalar c,a1,a2,svs1,svs2,w; integer n1,n2;
+      w := if !*rlsetequalqhash then
+ 	 lto_hashequalq(s1,s2)
+      else
+	 lto_equallengthp(s1,s2);
+      if not w then
+	 return nil;
       c := t; while c and s1 do <<
 	 a1 := car s1;
 	 if a1 memq s2 then
@@ -263,6 +270,15 @@ procedure lto_hashequalq(s1,s2);
       >>;
       return null s1 and null s2 and (n1 #= n2)
    end;
+
+procedure lto_equallengthp(s1,s2);
+   <<
+      while s1 and s2 do <<
+	 s1 := cdr s1;
+	 s2 := cdr s2
+      >>;
+      null s1 and null s2
+   >>;
 
 !#if (memq 'csl lispsystem!*)
    procedure lto_hashid(id);
