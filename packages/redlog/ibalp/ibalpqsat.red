@@ -2199,9 +2199,9 @@ procedure ibalp_convcnf(clausel,varal,qsat);
    end;
 
 procedure ibalp_var!-mkid(tok);
-   % Turn a number into a identifier. [tok] is a number. Returns a
+   % Turn a number into a identifier. [tok] is a number. Returns an
    % identifier.
-   compress ('v . 'a . 'r . explode tok);
+   intern compress ('v . 'a . 'r . explode tok);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% QSAT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
