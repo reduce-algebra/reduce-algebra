@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 7677c249 19-Jul-2009 */
+/* Signature: 43320985 10-Oct-2009 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1294,12 +1294,117 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     if (strcmp(w, "texmacs") == 0)
                     { }
 /*
- * At present "--help" (and "--dump-source") are detected and processed
- * earlier - but "--help" is let through to here in case I want to generate
- * some more application-specific help... Right now I do not!
+ * "--help" will now try to produce a summary of command-line options. I
+ * bet that anything I write will not really be enough, but here is a first
+ * attempt!
  */
                     if (strcmp(w, "help") == 0)
-                    {   my_exit(0);
+                    {
+/*
+ * A comments here as a horrible warning. For dubious reasons term_printf
+ * can ONLY cope when the output it generates is at most 256 bytes long.
+ * Beyond that there can be an internal buffer overflow. Hence each line
+ * of text here is printed as a separate call. If I was certain that
+ * a vsnprintf function was ALWAYS available the interbal behaviour could
+ * at least be a bit safer...
+ */
+term_printf(
+  "Options:\n");
+term_printf(
+  "-a   do not use. Flips meaning of the Lisp \"batchp\" function.\n");
+term_printf(
+  "-b   do not colour prompts. -bOIP sets colours for output,\n");
+term_printf(
+  "                            input and prompt, using rgbcmyk\n");
+term_printf(
+  "                            for Red, Green, Blue, Cyan etc.\n");
+term_printf(
+  "-c   display something that is not a Copyright statement (because of LGPL).\n");
+term_printf(
+  "-d VVV or  -d VVV=VVV define a Lisp symbol as the system start\n");
+term_printf(
+  "-e   enable some feature that is at present an experiment. Not for users!\n");
+term_printf(
+  "-f or -f nnn  listen on socket 1206 or nnn to run a remote session.\n");
+term_printf(
+  "              This option is not for normal users.\n");
+term_printf(
+  "-g   enable some options that help when debugging. You get backtraces.\n");
+term_printf(
+  "-h   on X windows this may use x-terminal fonts rather than ones\n");
+term_printf(
+  "     used via Xft that live with the application. Not recommended.\n");
+term_printf(
+  "-i <image file> specific the location of the initial image file explicitly\n");
+term_printf(
+  "                You may have multiple image files, seached for modules in\n");
+term_printf(
+  "                the order listed.\n");
+term_printf(
+  "-j   used for depencency tracking. '-j fileuse.dat' notes what files\n");
+term_printf(
+  "     are accessed during this run in the indicated place.\n");
+term_printf(
+  "-k nnnK or -knnnM or -knnnG suggest heap-size to use. Often not needed\n");
+term_printf(
+  "-l logfile   keep transcript of session for you.\n");
+term_printf(
+  "-m   a memory trace option not for ordinary use.\n");
+term_printf(
+  "-n   ignore the restart function in an image file so that the system.\n");
+term_printf(
+  "     starts up in raw Lisp. Sometimes useful if image file is broken.\n");
+term_printf(
+  "-o <image file> specified where newly created compiled  modules and\n");
+term_printf(
+  "     saved heap images should go. Default is in the standard image.\n");
+term_printf(
+  "-p   reserved for a potential profile option.\n");
+term_printf(
+  "-q   tend to be Quiet. see also -v.\n");
+term_printf(
+  "-r nnn or -r nnn,mmm sets initial random seed. Passing 0 means use\n");
+term_printf(
+  "     current time of day and similar nonrepeatable stuff. May be\n");
+term_printf(
+  "     used to force repeatability of code that uses randomness.\n");
+term_printf(
+  "-s   causes compiler to display \"assembly code\".\n");
+term_printf(
+  "-t modulename  prints the timestamp of the given module and exits.\n");
+term_printf(
+  "-u VVV undefines the Lisp symbol VVV at the start of the run.\n");
+term_printf(
+  "-v   runs in a slighly more verbose mode.\n");
+term_printf(
+  "-w   controls if code runs in a window or in console. Also -w+ and -w-\n");
+term_printf(
+  "     can override cases where the system really wants to go one way.\n");
+term_printf(
+  "-x   avoid trapping exceptions so you can use a low-level debugger\n");
+term_printf(
+  "     to sort out errors in the kernel.\n");
+term_printf(
+  "-y   At one stage this enabled Japanese character support. Not now\n");
+term_printf(
+  "     maintained.\n");
+term_printf(
+  "-z   when the code starts up it is just a basic raw Lisp core without\n");
+term_printf(
+  "     even a compiler. Used to bootstrap the system.\n");
+term_printf(
+  "-- filename  redirect output to the given file so it does not appear\n");
+term_printf(
+  "     on the screen.\n");
+term_printf(
+  "--texmacs run in texmacs mode. You must use the plugin from the\n");
+term_printf(
+  "     cslbase/texmacs-plugin directory.\n");
+term_printf(
+  "--<other> reserved for additional extended options.\n");
+term_printf(
+  "--help this output!\n");
+                        my_exit(0);
                     }
                     else
                     {
@@ -1410,11 +1515,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  */
         case 'c':
                 fwin_restore();
-                term_printf("\nCSL was coded by Codemist Ltd, 1988-2008\n");
+                term_printf("\nCSL was coded by Codemist Ltd, 1988-2009\n");
                 term_printf("Distributed under the Modified BSD License\n");
-#ifdef HAVE_LIBFOX
-                term_printf("See also --help and --dump-source\n");
-#endif
+                term_printf("See also --help\n");
                 continue;
 
 /*
