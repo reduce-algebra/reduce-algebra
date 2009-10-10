@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 7724b208 08-Jul-2009 */
+/* Signature: 2f040cc9 10-Oct-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -72,7 +72,7 @@
  * that uses the autoconf tools to create a file "config.h" and when
  * autoconf has reported that the FOX library is available. I require that
  * this represents my updated and extended version of FOX because it will
- * then contain a copt of most of this code. My application can then just
+ * then contain a copy of most of this code. My application can then just
  * start up by transferring control into FOX, passing in information about
  * the callbacks that are needed. The code here is what is needed by
  * CSL...
