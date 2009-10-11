@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 43320985 10-Oct-2009 */
+/* Signature: 7e53df61 11-Oct-2009 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1298,7 +1298,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * bet that anything I write will not really be enough, but here is a first
  * attempt!
  */
-                    if (strcmp(w, "help") == 0)
+                    else if (strcmp(w, "help") == 0)
                     {
 /*
  * A comments here as a horrible warning. For dubious reasons term_printf
