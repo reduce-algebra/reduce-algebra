@@ -35,6 +35,9 @@
 ;; Contributions by Rainer Schoepf flagged ; RS
 ;; Schoepf@goofy.zdv.Uni-Mainz.DE
 
+;; Contributions by Thomas Sturm flagged ; TS
+;; sturm@redlog.eu
+
 
 ;;; Commentary:
 
@@ -231,6 +234,12 @@ Optional `cdr' is a replacement string or nullary function (for structures)."
   :type 'integer
   :group 'reduce-format-display)
 
+(defcustom reduce-indent-line-conservative nil                          ; TS
+  "*If non-nil then subsequent calls of `reduce-indent-line' will not
+  indent additionally."
+  :type 'boolean
+  :group 'reduce-format-display)
+
 (defcustom reduce-comment-region "%% "
   "*String inserted by \\[reduce-comment-region] at start of each line in region."
   :type 'string
@@ -297,6 +306,17 @@ after `reduce-show-proc-delay' seconds of Emacs idle time."
   "*Time in seconds to delay before showing the current procedure name."
   :type 'number
   :group 'reduce-format-display)
+
+;; External variables:
+
+;; Due to improvements of byte compilation around 2003 the compiler
+;; would complain about `make-local-var' on these later on. I left
+;; unchanged another (too late) declaration for `which-func-mode' below,
+;; which appears not to disturb. TS
+
+(defvar which-func-mode)
+(defvar which-func-format)
+(defvar imenu-space-replacement)
 
 ;; Internal variables:
 
@@ -633,9 +653,10 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
 (defun reduce-indent-line (&optional arg)
   "Indent current line as REDUCE code.
 Indents to fixed style determined by current and previous non-blank line.
-Subsequent consecutive calls indent additionally by `reduce-indentation'.
-With argument, indent any additional lines of the same statement
-rigidly together with this one."
+Subsequent consecutive calls indent additionally by `reduce-indentation'
+unless `reduce-indent-line-conservative' is non-nil. With argument,
+indent any additional lines of the same statement rigidly together with
+this one."
   (interactive "*P")			; error if buffer read-only
   (let ((start-marker (point-marker))
 	(indentation (progn (back-to-indentation) (current-column)))
@@ -645,7 +666,8 @@ rigidly together with this one."
 	     (memq last-command
 		   (list 'reduce-indent-line 'indent-for-tab-command
 			 'newline-and-indent
-			 'reindent-then-newline-and-indent)))
+			 'reindent-then-newline-and-indent))
+	     (not reduce-indent-line-conservative))  ; TS
 	(indent-to 0 reduce-indentation)
       (if (< (setq new-indent (reduce-calculate-indent)) indentation)
 	  (delete-horizontal-space))
@@ -2154,7 +2176,8 @@ passing on any prefix argument (in raw form)."
 		 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
 	 '(1 font-lock-keyword-face)
 	 ;; This will probably cause highlighting within comments, see above:
-	 '(2 font-lock-function-name-face t)
+;; 	 '(2 font-lock-function-name-face t)
+ 	 '(2 font-lock-function-name-face)  ; no highlighting in comments; TS
 	 ;; Anchored matches (single line only!):
 	 (list (concat "\\s *"
 		       "\\(" reduce-identifier-regexp "\\)"
@@ -2307,17 +2330,49 @@ passing on any prefix argument (in raw form)."
 ;; Provide a REDUCE font-lock menu, based on font-lock-menu.el by
 ;; Simon Marshall <simon@gnu.ai.mit.edu>.
 
+;; The following is a temporary hack to make things work. It appears
+;; that font-locking is correctly initialized only if
+;; `reduce-font-lock-level' is initialized with with the maximum value
+;; 4. If you try a value of three in the following line, you will find
+;; this as the chosen value in the menu but still see maximum
+;; decoration. Switching then works fine though. I thus had the idea to
+;; run at the end of this file, right before executing the hook,
+;; something like the following:
+;;
+;; (let ((tmp reduce-font-lock-level))
+;;   (reduce-font-lock-change 4)
+;;   (reduce-font-lock-change tmp))
+;;
+;; This, however, produces errors at loading, which indiciate that
+;; things are more complicated, and I do not completely understand the
+;; situation so far. Note that the problems do not origin from my
+;; generalization to alists of the initialization code for
+;; `reduce-font-lock-level' -  at least I hope so! TS
+
+(set (make-local-variable 'font-lock-maximum-decoration) 4)
+
+;; Considerably modified the following procedure to cover also the case
+;; that `font-lock-maximum-decoration' is an alist. TS
+
 (defvar reduce-font-lock-level
-  (if (and (boundp 'font-lock-maximum-decoration)
-	   ;; boundp in case font-lock not loaded
-	   font-lock-maximum-decoration)
-      (let ((max (length reduce-font-lock-keywords)))
-	(if (numberp font-lock-maximum-decoration)
-	    (cond ((< font-lock-maximum-decoration 1) 1)
-		  ((> font-lock-maximum-decoration max) max)
-		  (t font-lock-maximum-decoration))
-	  max))				; t = maximum
-    1))					; nil = minimum
+  ;; boundp in case font-lock not loaded
+  (if (boundp 'font-lock-maximum-decoration)
+      (let ((max (length reduce-font-lock-keywords))
+	    (dec font-lock-maximum-decoration)
+	    w)
+	(if (listp dec)
+	    (setq dec (if (or (setq w (assoc 'reduce-mode dec))
+			      (setq w (assoc t dec)))
+			  (cdr w)
+			nil)))
+	(if dec
+	    (if (numberp dec)
+		(cond ((< dec 1) 1)
+		      ((> dec max) max)
+		      (t dec))
+	      max)				; t = maximum
+	  1))
+	1))					; nil = minimum
 
 (defconst reduce-font-lock-submenu
   '("Syntax Highlighting"
