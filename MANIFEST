@@ -1808,6 +1808,7 @@
 ./doc/misc/sl.bib
 ./doc/misc/sl.pdf
 ./doc/misc/sl.tex
+./doc/projects.txt
 ./doc/util
 ./doc/util/README
 ./doc/util/a4camb.sty
@@ -1827,6 +1828,8 @@
 ./doc/util/reduce.tex
 ./doc/util/sl.bib
 ./generic
+./generic/emacs
+./generic/emacs/reduce-mode.el
 ./generic/libreduce
 ./generic/libreduce/Makefile
 ./generic/libreduce/src
@@ -1850,6 +1853,7 @@
 ./generic/libreduce/src/examples/lrtest.c
 ./generic/libreduce/src/install-sh
 ./generic/libreduce/src/reduce.h
+./generic/nsis-2.45-setup.exe
 ./generic/redfront
 ./generic/redfront/INSTALL
 ./generic/redfront/Makefile
@@ -2351,6 +2355,13 @@
 ./packages/groebner/new1.tex
 ./packages/groebner/pk-groeb.tex
 ./packages/groebner/traverso.red
+./packages/guardian
+./packages/guardian/guardian.red
+./packages/guardian/guardian.tex
+./packages/guardian/guardian.tst
+./packages/guardian/guardian.txt
+./packages/guardian/guardianprint.red
+./packages/guardian/guardianschemes.red
 ./packages/hephys
 ./packages/hephys/cvit.red
 ./packages/hephys/cvit.rlg
@@ -3311,6 +3322,7 @@
 ./scripts/Makefile.safe
 ./scripts/README-BIN
 ./scripts/aclocal.m4
+./scripts/autorun.inf
 ./scripts/checkdeps.sh
 ./scripts/configure
 ./scripts/configure.ac
@@ -3325,6 +3337,7 @@
 ./scripts/installlogs.sh
 ./scripts/make-pristine.sh
 ./scripts/make.sh
+./scripts/makeiso.cmd
 ./scripts/manifest.sh
 ./scripts/newlogs.sh
 ./scripts/nsort.c
@@ -3343,4 +3356,5 @@
 ./scripts/stamp.sh
 ./scripts/untab.c
 ./scripts/untab.sh
+./scripts/windows-installer-script.nsi
 ./xport.pat
