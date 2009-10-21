@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 11473600 21-Oct-2009 */
+/* Signature: 5e38c8c0 21-Oct-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1358,8 +1358,9 @@ static int bracketWidth(char type, int flags, int height, int depth)
 #ifdef WIN32
     int nn = 1;
 // This is a HORRID hack because the Bakoma Truetype versions of the Computer
-// Modern fonts seem to relocate character 0x14 to 0x2219!
-    if ((ss[0] & 0xff) == 0xb7)
+// Modern fonts seem to relocate character 0x14 to 0x2219! Well this possibly
+// applies to just cmmi10 and cmsy10, causing pain for "kappa" and "<=".
+    if ((fnt==FntItalic || fnt==FntSymbol) && (ss[0] & 0xff) == 0xb7)
     {   ss[0] = 0xe2;
         ss[1] = 0x88;
         ss[2] = 0x99;
@@ -2470,6 +2471,7 @@ static Keyword texWords[1<<texWordBits] =
     {"vartheta",   TeXSymbol, FntItalic, 0x23, NULL},
     {"iota",       TeXSymbol, FntItalic, 0x13, NULL},
     {"kappa",      TeXSymbol, FntItalic, 0x14, NULL},
+    {"varkappa",   TeXSymbol, FntItalic, 0x14, NULL},
     {"lambda",     TeXSymbol, FntItalic, 0x15, NULL},
     {"mu",         TeXSymbol, FntItalic, 0x16, NULL},
     {"nu",         TeXSymbol, FntItalic, 0x17, NULL},
@@ -3868,6 +3870,8 @@ void updateOwner(Box *b, int p)
 
 ///////////////////////////////////////////////////////////////////////////
 
+int symbolOrItalic = 0;
+
 #ifdef WIN32
 
 #define setFont1(dc, ff) dc->setFont((FXFont *)ff)
@@ -4021,6 +4025,7 @@ static void paintBracket(FXDC *dc, int type, int flags,
         char cc[1];
         cc[0] = remap(ch);
         setFont1(dc, mathFont[fnt + size]);
+        symbolOrItalic = (fnt == FntItalic || fnt == FntSymbol);
         drawText1(dc, x, y, cc, 1);
         return;
     }
@@ -4222,6 +4227,7 @@ default:
 
     char ss[1];
     setFont1(dc, ff);
+    symbolOrItalic = 0; // Because cmex10
 // Draw the top glyph
     ss[0] = remap(top);
     drawText1(dc, x, y, ss, 1);
@@ -4326,6 +4332,8 @@ case BoxText:
             y -= (bigH + hd)/2;;
         }
         ff = mathFont[t->flags & FontMask];
+        symbolOrItalic = ((t->flags & FontMask) == FntItalic ||
+                          (t->flags & FontMask) == FntSymbol);
         setFont1(dc, ff);
         drawText1(dc, x, y, t->text, t->n);
         if (DEBUGFONT & 1)
