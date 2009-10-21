@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 79751cdc 13-Sep-2009 */
+/* Signature: 11473600 21-Oct-2009 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1357,7 +1357,15 @@ static int bracketWidth(char type, int flags, int height, int depth)
     void *ff = mathFont[fnt + (flags & FontSizeMask)];
 #ifdef WIN32
     int nn = 1;
-    if ((ss[0] & 0xff) >= 0x80)
+// This is a HORRID hack because the Bakoma Truetype versions of the Computer
+// Modern fonts seem to relocate character 0x14 to 0x2219!
+    if ((ss[0] & 0xff) == 0xb7)
+    {   ss[0] = 0xe2;
+        ss[1] = 0x88;
+        ss[2] = 0x99;
+        nn = 3;
+    }
+    else if ((ss[0] & 0xff) >= 0x80)
     {   ss[1] = 0x80 | (ss[0] & 0x3f);
         ss[0] = 0xc0 | ((ss[0] & 0xff) >> 6);
         nn = 2;
@@ -3870,7 +3878,14 @@ static void drawText1(FXDC *dc, int x, int y, const char *ss, int l)
     while (l > 0)
     {   int c = *ss++ & 0xff;
         l--;
-        if (c < 0x80) utfchars[utflength++] = c;
+// This is a HORRID hack because the Bakoma Truetype versions of the Computer
+// Modern fonts seem to relocate character 0x14 to 0x2219!
+        if (c == 0xb7)
+        {   utfchars[utflength++] = 0xe2;
+            utfchars[utflength++] = 0x88;
+            utfchars[utflength++] = 0x99;
+        }
+        else if (c < 0x80) utfchars[utflength++] = c;
         else
         {   utfchars[utflength++] = 0xc0 | (c >> 6);
             utfchars[utflength++] = 0x80 | (c & 0x3f);
