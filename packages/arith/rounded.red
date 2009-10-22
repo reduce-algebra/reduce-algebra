@@ -488,6 +488,58 @@ symbolic procedure rd!:explode u;
 
 initdmode 'rounded;
 
+put('evalf,'psopfn,'evalf0);
+
+procedure evalf0(u);
+   % Return first argument as a float wrt. the current precition even
+   % with off rounded. Optional second argument overrides the current
+   % precision.
+   begin scalar sp,w;
+      if cdr u then
+	 sp := precision0 cdr u;
+      if !*rounded then
+      	 w := aeval car u
+      else <<
+      	 on1 'rounded;
+      	 w := aeval car u;
+      	 off1 'rounded;
+      >>;
+      if cdr u then <<
+	 if cadr u > sp then <<
+	    prin2 "*** required accurracy exceeds current precision (";
+	    prin2 sp;
+	    prin2t ")";
+ 	    prin2t "*** printing with required accurracy ...";
+	    mathprint w;
+	    prin2t "*** finished printing"
+	 >>;
+	 precision0 {sp}
+      >>;
+      return w
+   end;
+
+put('evalnum,'psopfn,'evalnum0);
+
+procedure evalnum0(u);
+   % Return the exact algebraic representation of the first argument
+   % rounded to the current precision. Optional second argument
+   % overrides the current precision.
+   begin scalar sp,w;
+      if cdr u then
+	 sp := precision0 cdr u;
+      if !*rounded then
+      	 w := aeval car u
+      else <<
+      	 on1 'rounded;
+      	 w := aeval car u;
+      	 off1 'rounded;
+      	 w := aeval w
+      >>;
+      if cdr u then
+      	 precision0 {sp};
+      return w
+   end;
+
 endmodule;
 
 end;
