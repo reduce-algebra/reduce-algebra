@@ -323,9 +323,9 @@ algebraic <<
 
  operator clebsch_gordan;
 
- let clebsch_gordan({~j1,~m1},{~j2,~m2},{~j3,~m3}) =>
-        ThreeJSymbol ({~j1,~m1},{~j2,~m2},{~j3,~m3}) *
-        (2*j3+1)^(1/2) * (-1)^(-(j1-j2-m3));
+let clebsch_gordan({~j1,~m1},{~j2,~m2},{~j3,~m3}) =>
+       ThreeJSymbol ({~j1,~m1},{~j2,~m2},{~j3, - ~m3}) *
+       (2*j3+1)^(1/2) * (-1)^(j1-j2+m3);
 
 % The 6 J symbol
 % The naming of the functions follows Landolt-Boernstein
