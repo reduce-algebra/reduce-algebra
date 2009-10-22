@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(mma_rcsid!* mma_copyright!*);
@@ -38,7 +38,8 @@ module mma;
 
 create!-package('(mma),nil);
 
-fluid '(!*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!* mma_wd!*);
+fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
+   mma_wd!*);
 
 mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
 mma_wd!* := "/tmp/";
@@ -56,7 +57,8 @@ rl_mkserv('mma,'(rl_simp),'(reval),'(nil),
 rl_set '(ofsf);
 
 procedure mma_mma(f,fn);
-   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,origoh;
+   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,origoh,ll;
+      ll := linelength(2^(32-5)-1);
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
       scsemic := semic!*;
@@ -75,6 +77,7 @@ procedure mma_mma(f,fn);
 	 % CTRL-C
 	 return nil
       >>;
+      linelength ll;
       return car w
    end;
 
@@ -200,7 +203,8 @@ procedure mma_scprint(u,n);
    >>;
 
 procedure mma_myscprint(flg);
-   copyd('scprint,if flg then 'mma_scprint else 'mma_scprint!-orig);
+   copyd('scprint,if flg then 'mma_scprint else 'mma_scprint!-orig)
+      where !*redefmsg=nil;
 
 endmodule;
 
