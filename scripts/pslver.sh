@@ -95,12 +95,23 @@ EOF
 # How can I distingush macg4 from macg5?
   echo "macg4"
   ;;
-*i386*darwin* | *i686*darwin*)
-  echo "macintel"
+  *darwin*)
+  gcc -x c - -o /tmp/pslver <<EOF
+#include <stdio.h>
+int main()
+{  printf(sizeof(void *)==8 ? "macintel64\n" : "macintel\n");
+   return 0;
+}
+EOF
+  /tmp/pslver
+  rm -f /tmp/pslver
   ;;
-*x86_64*darwin*)
-  echo "macintel64"
-  ;;
+# *i386*darwin* | *i686*darwin*)
+#   echo "macintel"
+#   ;;
+# *x86_64*darwin*)
+#   echo "macintel64"
+#   ;;
 *sgi*)
 # I have a sample here of the sort of thing I might do to
 # discriminate between variants... 
