@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 593d661a 05-Jun-2008 */
+/* Signature: 4a8c08f9 01-Nov-2009 */
 
 
 #ifndef header_tags_h
@@ -274,7 +274,8 @@ typedef intptr_t Lisp_Object;
  * around a Gbyte are being allocated just where in the memory map things
  * are gets jolly uncertain and delicate. Specifically it may depend on the
  * excat version of Linux that you run. It all feels a big misery to me.
- * using that top bit could be held to be a mistake!
+ * using that top bit could be held to be a mistake! However once one moves
+ * to having 64-bit machines as standard it becomes possible to relax again.
  */
 
 #define is_marked_i(w)      (((int)(w) & GC_BIT_I) != 0)
@@ -290,6 +291,7 @@ typedef intptr_t Lisp_Object;
  * 4G space for system, with the lower 3G for user space. Some will let
  * malloc return space above or below the 2G mark in a way that the user can
  * not easily control. Those worried need to move to 64 bit machines soon.
+ * There the mark bit ix 0x8000000000000000.
  */
 
 extern Lisp_Object address_sign;  /* 0, 0x80000000 or 0x8000000000000000 */

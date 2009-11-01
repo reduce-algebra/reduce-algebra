@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 53b468e9 04-Jul-2009 */
+/* Signature: 12134323 01-Nov-2009 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -108,14 +108,14 @@ typedef struct page_map_t
 
 #endif
 
-extern int pages_count,
-           heap_pages_count, vheap_pages_count,
-           bps_pages_count, native_pages_count;
+extern int32_t pages_count,
+               heap_pages_count, vheap_pages_count,
+               bps_pages_count, native_pages_count;
 
-extern int new_heap_pages_count, new_vheap_pages_count,
-           new_bps_pages_count, new_native_pages_count;
+extern int32_t new_heap_pages_count, new_vheap_pages_count,
+               new_bps_pages_count, new_native_pages_count;
 
-extern int native_pages_changed;
+extern int32_t native_pages_changed;
 extern int32_t native_fringe;
 
 extern Lisp_Object *nilsegment, *stacksegment;

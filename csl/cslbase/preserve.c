@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 3fc5978e 04-Jul-2009 */
+/* Signature: 75b2d68e 31-Oct-2009 */
 
 #include "headers.h"
 
@@ -414,29 +414,20 @@ static void clear_entry(directory_entry *d)
 static CSLbool version_moan(int v)
 {
 /*
- * My intent here is to arrange that 64-bit machines can load 32-bit images
- * but I will not support the vice-versa variant on that. The top bit
- * of my "image format version" field will be used to indicate whether the
- * image is a 32 or 64-bit one. That ought only to influence the format
- * of major heap image dumps - general compiled FASL modules ought not to
- * be word-length sensitive.
+ * This code used to check the top bit (ie 0x80) of v to see if the
+ * image was a 32 or 64-bit one, and it moaned it you tried to load
+ * a 64-bit image on a 32-bit system. I am now working towards making
+ * the system cross-load all possible image formats and so I have
+ * removed that filter! Note that until I have completed the rest of the
+ * rework you should expect to see either a disaster or at best a
+ * message about a corrupt image if you provide one made using a different
+ * word width to the machine you are using now.
+ * That ought only to influence the format of major heap image dumps -
+ * general compiled FASL modules ought not to be word-length sensitive.
  */
-    if (!SIXTY_FOUR_BIT && ((v & 0x80) != 0))
-    {   term_printf("+++++ This image file seems to be built for use with a 64-bit\n");
-        term_printf("+++++ version of the software. Please check it by re-installing\n");
-        term_printf("+++++ or re-building.\n");
-        term_printf("+++++ You are at present running in a 32-bit environment.\n");
-        return YES;
-    }
     if ((v & 0x7f) == IMAGE_FORMAT_VERSION) return NO;
+/* This printing of a newline here lookes really odd to me! */
     term_printf("\n");
-    if ((v & 0x7f) == 'd')
-    {   term_printf("+++++ This image file was built for use with the Demonstration\n");
-        term_printf("+++++ version of this software and can not be used with the\n");
-        term_printf("+++++ full product.\n");
-    }
-    else
-    {    }
     return YES;
 }
 
@@ -1392,6 +1383,8 @@ CSLbool Imodulep(char *name, int len, char *datestamp, int32_t *size,
     return YES;
 }
 
+directory *rootDirectory = NULL;
+
 CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
 /*
  * Opens the "InitialImage" file so that it can be loaded. Note that
@@ -1405,9 +1398,9 @@ CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
     int i;
     if (hard == 0) hard = IMAGE_CODE;
     for (i=0; i<number_of_fasl_paths; i++)
-    {   CSLbool bad;
+    {
 /* Initial image files have a checksum at their end */
-        bad = open_input(fasl_files[i], NULL, hard, 0, 1);
+        CSLbool bad = open_input(fasl_files[i], NULL, hard, 0, 1);
 /*
  * The name that I return (for possible display in error messages) will be
  * either that of the file that was opened, or one relating to the last
@@ -1415,6 +1408,8 @@ CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
  */
         n = fasl_files[i]->filename;
          
+        if (hard == IMAGE_CODE) rootDirectory = fasl_files[i];
+
         if (expanded_name != NULL)
         {   if (hard == IMAGE_CODE)
             {   if (!bad)
@@ -1449,8 +1444,7 @@ CSLbool Iopen(char *name, int len, int forinput, char *expanded_name)
  * names a fasl file.  (forinput) specifies the direction of the transfer
  * to set up. Returns YES if something failed.
  * name can be NULL when a module is opened for output, and then output
- * is sent to "InitialImage". I need to worry about 64-bit variants in this
- * general area... 
+ * is sent to "InitialImage".
  * The same is done for input, but it would be more sensible to use
  * IopenRoot() to access the root image.
  */

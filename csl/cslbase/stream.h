@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 31800f5b 12-Jul-2009 */
+/* Signature: 313e7a22 31-Oct-2009 */
 
 #ifndef header_stream_h
 #define header_stream_h 1
@@ -344,7 +344,7 @@ typedef struct directory
 #define D_COMPACT   4
 #define D_PENDING   8
 
-extern directory *fasl_files[MAX_FASL_PATHS];
+extern directory *fasl_files[MAX_FASL_PATHS], *rootDirectory;
 #define PDS_INPUT   0
 #define PDS_OUTPUT  1
 #define PDS_PENDING 2

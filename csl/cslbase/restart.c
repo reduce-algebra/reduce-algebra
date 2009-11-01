@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7661dab3 05-Jul-2009 */
+/* Signature: 744dbd88 01-Nov-2009 */
 
 #include "headers.h"
 
@@ -98,6 +98,7 @@ extern int load_count, load_limit;
 #include "machineid.c"
 
 Lisp_Object address_sign;
+int converting_to_32 = 0, converting_to_64 = 0;
 
 Lisp_Object C_nil;
 Lisp_Object *stackbase;
@@ -214,15 +215,15 @@ void *jit_space,
 unsigned long jit_size;
 #endif
 
-int pages_count,
-    heap_pages_count,
-    vheap_pages_count,
-    bps_pages_count,
-    native_pages_count;
-int new_heap_pages_count,
-    new_vheap_pages_count,
-    new_bps_pages_count,
-    new_native_pages_count;
+int32_t pages_count,
+        heap_pages_count,
+        vheap_pages_count,
+        bps_pages_count,
+        native_pages_count;
+int32_t new_heap_pages_count,
+        new_vheap_pages_count,
+        new_bps_pages_count,
+        new_native_pages_count;
 
 char program_name[64] = {0};
 
@@ -233,7 +234,7 @@ char **loadable_packages = NULL, **switches = NULL;
 #endif
 
 int native_code_tag;
-int native_pages_changed;
+int32_t native_pages_changed;
 int32_t native_fringe;
 int current_fp_rep;
 static int old_fp_rep;
@@ -2158,6 +2159,10 @@ static void warm_setup()
  */
     Lisp_Object nil = C_nil;
     int32_t i;
+/*
+ * NOTE that I have made these variable of type int32_t so that
+ * their size is the same (ie 4) whether I am on a 32 or 64-bit machine
+ */
     Cfread((char *)&heap_pages_count, sizeof(heap_pages_count));
     Cfread((char *)&vheap_pages_count, sizeof(vheap_pages_count));
     Cfread((char *)&bps_pages_count, sizeof(bps_pages_count));
@@ -4616,19 +4621,74 @@ void setup(int restartp, double store_size)
                 }
             }
         }
+/*
+ * Now I need to start worrying about 32 vs 64-bit image files.
+ */
+        converting_to_32 = converting_to_64 = 0;
+        if (SIXTY_FOUR_BIT)
+        {   if ((rootDirectory->h.version & 0x80) == 0)
+                converting_to_64 = 1;
+        }
+        else
+        {   if ((rootDirectory->h.version & 0x80) != 0)
+                converting_to_32 = 1;
+        }
+fprintf(stderr, "->32 = %d  ->64 = %d\n", converting_to_32, converting_to_64);
+fflush(stderr);
         Cfread(junkbuf, 8);
-        Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
+/*
+ * If the heap image had been made on a 64-bit machine but the current
+ * system is running at 32-bits then the region in the file I need to
+ * read here is twice as big as is needed. I must shrink it. I need
+ * some temporary space while I do that. I will use the memory at
+ * pages[0], which is a bit of a cheat, but I have allocated that already
+ * but do not use it until later.
+ */
+        if (converting_to_32)
+        {   int64_t *p = (int64_t *)pages[0];
+            int32_t *q = (int32_t *)BASE;
+            int i;
+/* read twice as much because it should be in 64-bit units */
+            Cfread((char *)p, (2*sizeof(Lisp_Object))*last_nil_offset);
+/*
+ * At present I just truncate the values in all the nil-segment to 32-bits.
+ * I can imagine a further messy case if I ever introduce wide fixnums for
+ * 64-bit machines. In that case I would need to detect when a value here
+ * fell into that category and convert it to a reference to a newly created
+ * bignum. But that should not arise at the moment!
+ */
+            for (i=0; i<last_nil_offset; i++)
+                *q++ = (int32_t)*p++;
+        }
+        else if (converting_to_64)
+        {
+/*
+ * The heap image was made by a 32-bit system but I am a 64-bit one. So
+ * when I read in the nilseg it will need to be expanded out to 64-bit
+ * values. I will sign extend in each case.. that will cope with the
+ * packed representation of Lisp_Objects (because immediate data is
+ * all naturally signed, and pointer data is really only 31 bits wide to
+ * leave room for a GC bit).
+ */
+            int i;
+            Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
+            for (i=sizeof(Lisp_Object)*(last_nil_offset-1); i>=0; i--)
+            {   *(int64_t *)((char *)BASE+2*i) =
+                    (int64_t)*(int32_t *)((char *)(BASE+i));
+            }
+        }
+        else Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
         copy_out_of_nilseg(YES);
 #ifndef COMMON
         qheader(nil) = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;/* BEFORE nil... */
 #endif
-        if ((byteflip & 0xffff0000U) == 0x56780000U)
+        if (((byteflip >> 16) & 0xffffU) == 0x5678U)
         {
             flip_needed = NO;
             old_fp_rep = (int)(byteflip & FP_MASK);
             old_page_bits = (int)((byteflip >> 8) & 0x1f);
         }
-        else if ((byteflip & 0x0000ffffU) == 0x00007856U)
+        else if ((byteflip & 0xffffU) == 0x7856U)
         {
             flip_needed = YES;
             old_fp_rep = (int)(flip_32bits_fn(byteflip) & FP_MASK);
