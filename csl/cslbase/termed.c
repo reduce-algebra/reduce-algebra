@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 47f428ab 07-Nov-2009 */
+/* Signature: 77303b0e 07-Nov-2009 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -776,7 +776,7 @@ int term_setup(int flag, const char *colour)
  * reset_shell_mode() can put things back the way they were.
  */
 #ifdef DEBUG
-    fprintf("can_invert = %d, def_shell = %d\n",
+    fprintf(stderr, "can_invert = %d, def_shell = %d\n",
             term_can_invert, def_shell_mode());
     fflush(stderr);
 #else
