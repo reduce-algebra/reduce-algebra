@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 744dbd88 01-Nov-2009 */
+/* Signature: 16afa4f8 07-Nov-2009 */
 
 #include "headers.h"
 
@@ -4633,8 +4633,16 @@ void setup(int restartp, double store_size)
         {   if ((rootDirectory->h.version & 0x80) != 0)
                 converting_to_32 = 1;
         }
-fprintf(stderr, "->32 = %d  ->64 = %d\n", converting_to_32, converting_to_64);
-fflush(stderr);
+/*
+ * If if image file was made by a 32-bit system but I am now running in
+ * 64-bit mode or vice versa things are tricky and at present will CRASH.
+ *
+ * Temporary alert while I develop code to support width conversion...
+ */
+if (converting_to_32 || converting_to_64)
+{   fprintf(stderr, "->32 = %d  ->64 = %d\n", converting_to_32, converting_to_64);
+    fflush(stderr);
+}
         Cfread(junkbuf, 8);
 /*
  * If the heap image had been made on a 64-bit machine but the current
