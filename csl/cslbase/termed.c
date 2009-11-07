@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 7404f111 18-Jul-2009 */
+/* Signature: 47f428ab 07-Nov-2009 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -750,6 +750,12 @@ int term_setup(int flag, const char *colour)
     errcode = setupterm(s,               /* terminal type */
                         stdout_handle,   /* ie to stdout */
                         &errval);
+#ifdef DEBUG
+    fprintf(stderr, "OK=%d ERR=%d\n", OK, ERR);
+    fprintf(stderr, "Return code from setupterm = %d, errval = %d\n",
+            errcode, errval);
+    fflush(stderr);
+#endif
     if (errcode != OK || errval != 1) return 1;
 
 /*
@@ -769,7 +775,13 @@ int term_setup(int flag, const char *colour)
  * state before I alter any parameters. It saves information so that
  * reset_shell_mode() can put things back the way they were.
  */
+#ifdef DEBUG
+    fprintf("can_invert = %d, def_shell = %d\n",
+            term_can_invert, def_shell_mode());
+    fflush(stderr);
+#else
     def_shell_mode();
+#endif
 /*
  * I guess I am going to suppose here that stdin and stdout are both
  * associated with the SAME terminal. If the computer had two (or more)
