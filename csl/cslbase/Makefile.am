@@ -793,12 +793,24 @@ if windows
 # I also copy a set of gnuplot binaries into this directory.
 # Note that the Gnuplot license permits this, but if I host any of this
 # on Sourceforge then their terms and conditions mean I have to put a
-# set of gnuplot sources in their file release system!
+# set of gnuplot sources in their file release system! Also in the version
+# if this stuff as fetched using subversion there will be directories
+# called ".svn" that should not be copied, so I can not merely use
+# a simple wild-card to copy everything!
 $(GP):
-	$(CP) -r $(CYGSRC)/../support-packages/gnuplot-windows-bin/* .
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/R* .
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/g* .
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/p* .
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/w* .
+	-mkdir -p share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/R* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/8* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/c* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/k* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/p* share/Postscript
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
-	chmod +x wgnuplot.exe
+	chmod +x *gnuplot*.exe
 endif windows
 
 -include bootstrapreduce.dep

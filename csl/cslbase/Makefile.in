@@ -1595,12 +1595,24 @@ reduce.doc/index.html:
 # I also copy a set of gnuplot binaries into this directory.
 # Note that the Gnuplot license permits this, but if I host any of this
 # on Sourceforge then their terms and conditions mean I have to put a
-# set of gnuplot sources in their file release system!
+# set of gnuplot sources in their file release system! Also in the version
+# if this stuff as fetched using subversion there will be directories
+# called ".svn" that should not be copied, so I can not merely use
+# a simple wild-card to copy everything!
 @windows_TRUE@$(GP):
-@windows_TRUE@	$(CP) -r $(CYGSRC)/../support-packages/gnuplot-windows-bin/* .
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/R* .
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/g* .
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/p* .
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/w* .
+@windows_TRUE@	-mkdir -p share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/R* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/8* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/c* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/k* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/p* share/Postscript
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
-@windows_TRUE@	chmod +x wgnuplot.exe
+@windows_TRUE@	chmod +x *gnuplot*.exe
 
 -include bootstrapreduce.dep
 
