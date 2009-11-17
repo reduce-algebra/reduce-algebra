@@ -1,9 +1,5 @@
-Tue Mar  2 01:56:06 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: on list;
+Tue Nov 17 08:57:11 2009 run on win32
+on list;
 
 
 on errcont;
@@ -1308,7 +1304,7 @@ dr(-2)*fer(f,1,2)*bos(kk,0,2);
 on time;
 
 
-Time: 22690 ms  plus GC time: 610 ms
+Time: 3995 ms  plus GC time: 24 ms
 
 showtime;
 
@@ -1371,7 +1367,7 @@ dr(-3)*bos(g,3,1)*bos(ff,3,2);
 
 +bos(g,3,1)*bos(ff,3,2)*dr(-3)
 
-Time: 430 ms  plus GC time: 30 ms
+Time: 78 ms
 
 
 showtime;
@@ -2092,7 +2088,7 @@ d(-1)**3*bos(g,3,1)*bos(ff,3,2);
                              3
 +bos(g,3,1)*bos(ff,3,2)*d(-1)
 
-Time: 3170 ms  plus GC time: 100 ms
+Time: 540 ms  plus GC time: 11 ms
 
 
 showtime;
@@ -9583,10 +9579,6 @@ as5 := fer(f,2,1)*bos(f,0,0)
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 298700 ms, plus GC time: 7170 ms
-
-5: 5: 
-Quitting
-Tue Mar  2 02:01:28 MET 1999
+Time for test: 51084 ms, plus GC time: 319 ms
+@@@@@ Resources used: (51 78 259 1)

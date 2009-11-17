@@ -1,9 +1,5 @@
-Wed Jul 16 11:06:46 MET DST 2003
-REDUCE Development Version, 20-Jun-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: %*******************************************************************%
+Tue Nov 17 08:51:06 2009 run on win32
+%*******************************************************************%
 %                                                                   %
 %                      L I E P D E . T S T                          %
 %                      -------------------                          %
@@ -37,21 +33,11 @@ REDUCE Development Version, 20-Jun-2003 ...
 load crack;
 
 
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
-*** odesolve-specfn* already defined as operator 
-
-*** odesolve-solns* already defined as operator 
-
 
 lisp(depl!*:=nil)$
 
      % clearing of all dependences
-setcrackflags()$
-
-
+%setcrackflags()$
 lisp(print_:=nil)$
 
 
@@ -1280,7 +1266,7 @@ depend v,x,y,z,t;
 on time$
 
 
-Time: 195710 ms  plus GC time: 4120 ms
+Time: 11421 ms  plus GC time: 219 ms
 
 liepde({
 
@@ -1348,35 +1334,35 @@ r(z,y,t,x), f(z,y,t,x), v(z,y,t,x)
 
 
 =============== Initializations
-time for initializations: 860 ms    GC time : 60 ms
+time for initializations: 48 ms    GC time : 0 ms
 
 
 =============== Preconditions for the 1. equation
-time to formulate conditions: 8180 ms    GC time : 200 ms
-CRACK needed :  11550 ms    GC time : 460 ms
+time to formulate conditions: 371 ms    GC time : 0 ms
+CRACK needed :  1048 ms    GC time : 22 ms
 
 
 =============== Preconditions for the 2. equation
 
 
 =============== Preconditions for the 3. equation
-time to formulate conditions: 3070 ms    GC time : 140 ms
-CRACK needed :  3680 ms    GC time : 130 ms
+time to formulate conditions: 172 ms    GC time : 0 ms
+CRACK needed :  335 ms    GC time : 0 ms
 
 
 =============== Full conditions for the 1. equation
-time to formulate conditions: 1440 ms    GC time : 60 ms
-CRACK needed :  21790 ms    GC time : 780 ms
+time to formulate conditions: 78 ms    GC time : 0 ms
+CRACK needed :  1655 ms    GC time : 24 ms
 
 
 =============== Full conditions for the 2. equation
-time to formulate conditions: 570 ms    GC time : 0 ms
-CRACK needed :  1070 ms    GC time : 60 ms
+time to formulate conditions: 31 ms    GC time : 0 ms
+CRACK needed :  92 ms    GC time : 0 ms
 
 
 =============== Full conditions for the 3. equation
-time to formulate conditions: 880 ms    GC time : 0 ms
-CRACK needed :  1170 ms    GC time : 50 ms
+time to formulate conditions: 53 ms    GC time : 0 ms
+CRACK needed :  98 ms    GC time : 0 ms
 
 The symmetries are:
 
@@ -1567,7 +1553,7 @@ eta_v=0
 
   c_221}}
 
-Time: 56140 ms  plus GC time: 2060 ms
+Time: 4248 ms  plus GC time: 57 ms
 
 
 off time$
@@ -2010,10 +1996,6 @@ nodepnd {f,g}$
 
 end$
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 468210 ms, plus GC time: 11520 ms
-
-5: 5: 
-Quitting
-Wed Jul 16 11:24:26 MET DST 2003
+Time for test: 27841 ms, plus GC time: 442 ms
+@@@@@ Resources used: (28 60 557 2)

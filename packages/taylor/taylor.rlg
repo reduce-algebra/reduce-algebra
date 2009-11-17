@@ -1,9 +1,5 @@
-Mon Jun  7 18:22:24 MET DST 1999
-REDUCE 3.7, 15-Apr-1999 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: comment
+Tue Nov 17 08:57:08 2009 run on win32
+comment
         Test and demonstration file for the Taylor expansion package,
         by Rainer M. Schoepf.  Works with version 2.2a (01-Apr-2000);
 
@@ -780,9 +776,7 @@ taylor(tan x/log cos x,x,pi/2,2);
   - (x - ----)   + O(x - ----)
           2               2
 -------------------------------
-             pi - 2*x
-        log(----------)
-                2
+    log(pi - 2*x) - log(2)
 
 
 taylor(log(x^2/(x^2-a)),x,0,3);
@@ -952,9 +946,9 @@ x    + O(x )
 taylor(asinh(1/x),x,0,5);
 
 
-     1                1   2    3    4    5    6      7
-log(---) + (log(2) + ---*x  - ----*x  + ----*x  + O(x ))
-     x                4        32        96
+                       1   2    3    4    5    6      7
+ - log(x) + (log(2) + ---*x  - ----*x  + ----*x  + O(x ))
+                       4        32        96
 
 
 taylor(e**(1/x),x,0,2);
@@ -1363,10 +1357,10 @@ taylor(sin x,x,pi/2,4);
 
 
                                                                    2
-1 + 6.12323399574e-17*(x - 1.57079632679) - 0.5*(x - 1.57079632679)
+1 + 6.12303176911e-17*(x - 1.57079632679) - 0.5*(x - 1.57079632679)
 
                                         3                                      4
- - 1.02053899929e-17*(x - 1.57079632679)  + 0.0416666666667*(x - 1.57079632679)
+ - 1.02050529485e-17*(x - 1.57079632679)  + 0.0416666666667*(x - 1.57079632679)
 
                         5
  + O((x - 1.57079632679) )
@@ -2498,10 +2492,6 @@ comment That's all, folks;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 4800 ms, plus GC time: 160 ms
-
-5: 5: 
-Quitting
-Mon Jun  7 18:22:34 MET DST 1999
+Time for test: 776 ms, plus GC time: 18 ms
+@@@@@ Resources used: (0 2 96 10)

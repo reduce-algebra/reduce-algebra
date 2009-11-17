@@ -1,11 +1,7 @@
-Mon Jan  4 00:04:37 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
+Tue Nov 17 08:53:06 2009 run on win32
 
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
 *** ~ already defined as operator 
-
-3: 3: % Tests of PM.
+% Tests of PM.
 
 % TESTS OF BASIC CONSTRUCTS.
 
@@ -515,9 +511,6 @@ S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 170 ms
-5: 5: 
-Quitting
-Mon Jan  4 00:04:38 MET 1999
+Time for test: 53 ms
+@@@@@ Resources used: (0 0 14 0)

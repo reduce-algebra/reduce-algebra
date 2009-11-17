@@ -1,9 +1,5 @@
-Thu Jan  7 19:23:20 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3:  %Appendix (Testfile).
+Tue Nov 17 08:53:09 2009 run on win32
+ %Appendix (Testfile).
 
  %This appendix is a test file. The symmetry groups for various
  %equations or systems of equations are determined. The variable
@@ -498,10 +494,6 @@ COMM(5,6):= 8*dx(1)*x(1)
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 7990 ms, plus GC time: 130 ms
-
-5: 5: 
-Quitting
-Thu Jan  7 19:23:41 MET 1999
+Time for test: 1160 ms, plus GC time: 22 ms
+@@@@@ Resources used: (0 2 14 0)

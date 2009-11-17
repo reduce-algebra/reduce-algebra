@@ -1,9 +1,5 @@
-Mon Jan  4 00:04:38 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Test file for the REDUCE package QSUM
+Tue Nov 17 08:53:06 2009 run on win32
+% Test file for the REDUCE package QSUM
 %
 % Copyright (c) Wolfram Koepf, Harald Boeing, Konrad-Zuse-Zentrum Berlin, 1997
 %
@@ -295,10 +291,6 @@ qsimpcomb(result-sub(k=k-1,result)-term);
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 4210 ms, plus GC time: 150 ms
-
-5: 5: 
-Quitting
-Mon Jan  4 00:05:23 MET 1999
+Time for test: 815 ms, plus GC time: 37 ms
+@@@@@ Resources used: (1 2 97 1)

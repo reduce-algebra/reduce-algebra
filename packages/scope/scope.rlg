@@ -1,9 +1,5 @@
-Mon Jan  4 00:05:23 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Test SCOPE Package.
+Tue Nov 17 08:53:07 2009 run on win32
+% Test SCOPE Package.
 % ==================
 % NOTE:  The SCOPE, GHORNER, GSTRUCTR and GENTRAN packages must be loaded
 % to run these tests.
@@ -542,11 +538,9 @@ optimize detnexp:=:det(a) out "nexpfile" iname t$
 
 in expfile$
 
-***** End-of-file read in file expfile
 
 in nexpfile$
 
-***** End-of-file read in file nexpfile
 
 on nat$
 
@@ -1037,21 +1031,18 @@ makeopts$
 
 {
     {
-        g21=b+c;
-        g22=c+d;
-        aa[1][1]=g22*g21;
-        aa[1][2]=(g22-3)*(g21+2);
-        g20=b+d;
-        aa[2][1]=g20*(g21-3);
-        aa[2][2]=g21*(g20+4);
+        g17=b+c;
+        g18=c+d;
+        aa[1][1]=g18*g17;
+        aa[1][2]=(g18-3)*(g17+2);
+        g16=b+d;
+        aa[2][1]=g16*(g17-3);
+        aa[2][2]=g17*(g16+4);
     }
 }
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 490 ms
-5: 5: 
-Quitting
-Mon Jan  4 00:05:34 MET 1999
+Time for test: 401 ms, plus GC time: 4 ms
+@@@@@ Resources used: (0 0 29 0)

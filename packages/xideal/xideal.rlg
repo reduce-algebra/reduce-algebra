@@ -1,11 +1,7 @@
-Mon Jan  4 00:00:49 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
+Tue Nov 17 08:52:44 2009 run on win32
 
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
 *** ^ redefined 
-
-3: 3: % Test file for XIDEAL package (Groebner bases for exterior algebra)
+% Test file for XIDEAL package (Groebner bases for exterior algebra)
 
 % Declare EXCALC variables
 
@@ -488,9 +484,6 @@ deglex
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 460 ms
-5: 5: 
-Quitting
-Mon Jan  4 00:00:54 MET 1999
+Time for test: 119 ms
+@@@@@ Resources used: (0 0 13 0)

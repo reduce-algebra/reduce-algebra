@@ -1,13 +1,9 @@
-Wed Oct 22 11:32:12 MET DST 2003
-REDUCE Development Version, 21-Aug-2003 ...
+Tue Nov 17 08:58:08 2009 run on win32
 
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
 *** binomial already defined as operator 
 
 *** ~f already defined as operator 
-
-3: 3: % test file for ztrans package
+% test file for ztrans package
 % 
 operator f;
 
@@ -1517,14 +1513,6 @@ load_package odesolve;
 
 *** airy_bi already defined as operator 
 
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
-*** odesolve-specfn* already defined as operator 
-
-*** odesolve-solns* already defined as operator 
-
 *** ci already defined as operator 
 
 *** si already defined as operator 
@@ -1558,10 +1546,6 @@ result:=preresult where solveresult;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 48270 ms, plus GC time: 2900 ms
-
-5: 5: 
-Quitting
-Wed Oct 22 11:33:33 MET DST 2003
+Time for test: 3393 ms, plus GC time: 63 ms
+@@@@@ Resources used: (4 11 72 2)

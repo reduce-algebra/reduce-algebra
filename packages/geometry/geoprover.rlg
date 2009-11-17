@@ -1,17 +1,9 @@
-Tue Jan 28 10:58:50 CET 2003
-Loading image file :/silo/cons/reduce36/lisp/psl/linux/red/reduce.img 
+Tue Nov 17 08:58:12 2009 run on win32
 
-REDUCE Development Version, 28-Jan-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
  Geoprover  1.3a  Last update  December 30, 2002
-
-3: 3: % GeoProver test file for Reduce, created on Jan 18 2003
+% GeoProver test file for Reduce, created on Jan 18 2003
 load cali,geoprover;
 
-
-(cali geoprover)
 
 off nat;
 
@@ -1121,13 +1113,14 @@ result_:=geo_simplify(geo_eval(con_,sol_));
 result_ := {{0,0},{0,0},{0,0},{0,0}}$
 
 
-
 showtime;
 
 
-Time: 3330 ms  plus GC time: 110 ms
+Time: 916 ms  plus GC time: 48 ms
 
-quit;
 
-Quitting
-Tue Jan 28 10:58:55 CET 2003
+end;
+
+
+Time for test: 948 ms, plus GC time: 65 ms
+@@@@@ Resources used: (2 3 40 0)

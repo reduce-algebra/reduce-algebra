@@ -1,9 +1,5 @@
-Sun Jan  3 23:45:44 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % polydiv.tst  -*- REDUCE -*-
+Tue Nov 17 08:50:18 2009 run on win32
+% polydiv.tst  -*- REDUCE -*-
 
 % Test and demonstration file for enhanced polynomial division
 % file polydiv.red.
@@ -326,9 +322,6 @@ Pseudo-division OK
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 80 ms
-5: 5: 
-Quitting
-Sun Jan  3 23:45:45 MET 1999
+Time for test: 20 ms
+@@@@@ Resources used: (0 0 9 1)

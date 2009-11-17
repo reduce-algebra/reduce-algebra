@@ -1,9 +1,11 @@
+Tue Nov 17 08:53:46 2009 run on win32
+load mathmlom;
 
-REDUCE Development Version,  6-Jun-2000 ...
 
-1: 
 
-2: %  Description: This file contains a long list of examples demonstrating the abilities of
+in "$reduce/packages/mathml/examples.mml";
+
+%  Description: This file contains a long list of examples demonstrating the abilities of
 %               the translator. Most of these examples come straight from the MathML spec. They
 %               were used during the development of the interface and should all be correctly
 %               translated into OpenMath.
@@ -2058,7 +2060,7 @@ mml2om();
 </math>
 
 Intermediate representation: 
-(plus nil (times nil 2 (cos nil x) x) (minus nil (times nil (sin nil x) (power 
+(plus nil (times nil 2 (cos nil x) x) (minus nil (times nil (sin nil x) (power
 nil x 2))))
 
 <OMOBJ>
@@ -3028,9 +3030,9 @@ mml2om();
 </math>
 
 Intermediate representation: 
-(list nil (list nil (eq nil x (root_of nil (plus nil (times nil (exp nil (plus 
+(list nil (list nil (eq nil x (root_of nil (plus nil (times nil (exp nil (plus
 nil !&imaginaryi!; x_)) y) (exp nil (plus nil !&imaginaryi!; x_)) (power nil x_
-(plus nil y 1)) (times nil (int nil (bvar x_ 1) nil (power nil x_ x_)) (power 
+(plus nil y 1)) (times nil (int nil (bvar x_ 1) nil (power nil x_ x_)) (power
 nil y 2)) (times nil (int nil (bvar x_ 1) nil (power nil x_ x_)) y)) x_ tag_2))
 (eq nil z y)))
 
@@ -3262,8 +3264,12 @@ Intermediate representation:
   </OMBIND>
 </OMOBJ>            
 
+end;
 
-3: %  Description: This file contains a long list of examples demonstrating the abilities of
+
+in "$reduce/packages/mathml/examples.om";
+
+%  Description: This file contains a long list of examples demonstrating the abilities of
 %               the translator. Most of these examples come straight from the CDs. They
 %		were used during the development of the interface and should all be correctly
 %		translated into MathML.
@@ -3291,7 +3297,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(plus nil f d (plus nil 1 1.0e+10))
+(plus nil f d (plus nil 1 10000000000.0))
 
 <math>
    <apply><plus/>
@@ -3299,7 +3305,7 @@ Intermediate representation:
       <ci> d </ci>
       <apply><plus/>
          <cn type="integer"> 1 </cn>
-         <cn type="real"> 1.0e+10 </cn>
+         <cn type="real"> 10000000000.0 </cn>
       </apply>
    </apply>
 </math>       
@@ -3491,7 +3497,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(not nil (exists nil (bvar x 1) (bvar y 1) (bvar z 1) (bvar n 1) (and nil (gt 
+(not nil (exists nil (bvar x 1) (bvar y 1) (bvar z 1) (bvar n 1) (and nil (gt
 nil n 2) (eq nil (plus nil (power nil x n) (power nil y n)) (power nil z n)))))
 
 <math>
@@ -3805,7 +3811,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(semantic (limit (o m s   c d = " f a k e c d "   n a m e = " l i m i t " /)) 
+(semantic (limit (o m s   c d = " f a k e c d "   n a m e = " l i m i t " /))
 nil (bvar x 1) (condition (tendsto ((type above)) x 0.0)) (sin nil x))
 
 <math>
@@ -4567,7 +4573,7 @@ om2mml();
 Intermediate representation:
 (not nil (exists nil (bvar c 1) (and nil (in nil (divide nil a c) (semantic (z (
 o m s   c d = " s e t n a m e 1 "   n a m e = " z " /)))) (in nil (divide nil b
-c) (semantic (z (o m s   c d = " s e t n a m e 1 "   n a m e = " z " /)))) (gt 
+c) (semantic (z (o m s   c d = " s e t n a m e 1 "   n a m e = " z " /)))) (gt
 nil c (gcd nil a b)))))
 
 <math>
@@ -5338,7 +5344,7 @@ om2mml();
 
 Intermediate representation:
 (forall nil (bvar x 1) (bvar y 1) (bvar r 1) (bvar a 1) (implies nil (and nil (
-eq nil (times nil r (sin nil a)) y) (eq nil (times nil r (cos nil a)) x)) (eq 
+eq nil (times nil r (sin nil a)) y) (eq nil (times nil r (cos nil a)) x)) (eq
 nil (times nil r (exp nil (times nil a &imaginaryi;))) (plus nil x (times nil y
 &imaginaryi;)))))
 
@@ -5634,7 +5640,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(forall nil (bvar x 1) (bvar y 1) (eq nil y (imaginary nil (plus nil x (times 
+(forall nil (bvar x 1) (bvar y 1) (eq nil y (imaginary nil (plus nil x (times
 nil y &imaginaryi;)))))
 
 <math>
@@ -5687,7 +5693,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(forall nil (bvar x 1) (bvar y 1) (eq nil x (real nil (plus nil x (times nil y 
+(forall nil (bvar x 1) (bvar y 1) (eq nil x (real nil (plus nil x (times nil y
 &imaginaryi;)))))
 
 <math>
@@ -6545,7 +6551,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(eq nil (transpose nil (matrix nil matrixrow ((0 1) (2 3)))) (matrix nil 
+(eq nil (transpose nil (matrix nil matrixrow ((0 1) (2 3)))) (matrix nil
 matrixrow ((0 2) (1 3))))
 
 <math>
@@ -7220,7 +7226,7 @@ om2mml();
 
 Intermediate representation:
 (list nil (list nil (eq nil x (root_of nil (plus nil (minus nil (power nil y x_)
-) (minus nil (times nil (int nil (bvar x_ 1) (power nil x_ x_)) y)) x_ y) x_ 
+) (minus nil (times nil (int nil (bvar x_ 1) (power nil x_ x_)) y)) x_ y) x_
 tag_1)) (eq nil a (plus nil x y))))
 
 <math>
@@ -7379,7 +7385,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(list nil (list nil (eq nil x (root_of nil (plus nil (times nil (exp nil (plus 
+(list nil (list nil (eq nil x (root_of nil (plus nil (times nil (exp nil (plus
 nil &imaginaryi; x_)) y) (exp nil (plus nil &imaginaryi; x_)) (power nil x_ (
 plus nil y 1)) (times nil (int nil (bvar x_ 1) (power nil x_ x_)) (power nil y 2
 )) (times nil (int nil (bvar x_ 1) (power nil x_ x_)) y)) x_ tag_2)) (eq nil z y
@@ -7621,12 +7627,11 @@ Intermediate representation:
    <cn type="rational">4<sep/>2</cn>
 </math> 
 
+end;
 
 
-4: 
-5: 5: 
-6: 
-7: 
-8: 
+end;
 
-Quitting
+
+Time for test: 138 ms
+@@@@@ Resources used: (0 0 344 0)

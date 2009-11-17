@@ -1,9 +1,5 @@
-Mon Jan  4 00:16:15 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: %----------------------------------------------------------------------
+Tue Nov 17 08:58:08 2009 run on win32
+%----------------------------------------------------------------------
 % File:      xcolor.tst
 % Purpose:   Tests for xcolor package.
 % Author:    A.Kryukov
@@ -404,10 +400,6 @@ $
 
 END$
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 800 ms, plus GC time: 30 ms
-
-5: 5: 
-Quitting
-Mon Jan  4 00:16:16 MET 1999
+Time for test: 205 ms
+@@@@@ Resources used: (0 0 20 0)

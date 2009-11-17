@@ -1,9 +1,5 @@
-Tue Oct 21 18:01:24 MET DST 2003
-REDUCE Development Version, 21-Aug-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: %
+Tue Nov 17 08:53:10 2009 run on win32
+%
 %  Testing file for REDUCE Special Functions Package
 %
 %             Chris Cannam, ZIB Berlin
@@ -6789,10 +6785,6 @@ Bessel test complete.
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 90530 ms, plus GC time: 6800 ms
-
-5: 5: 
-Quitting
-Tue Oct 21 18:03:19 MET DST 2003
+Time for test: 5070 ms, plus GC time: 155 ms
+@@@@@ Resources used: (6 20 283 519)

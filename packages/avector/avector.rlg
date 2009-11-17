@@ -1,11 +1,7 @@
-Sun Jan  3 23:50:12 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
+Tue Nov 17 08:50:49 2009 run on win32
 
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
 *** ^ redefined 
-
-3: 3: % Vector test routine
+% Vector test routine
 
 % Author: David Harper (algebra@liverpool.ac.uk)
 %         Computer Algebra Support Officer
@@ -1236,9 +1232,6 @@ deflineint(a,curve,phi,0,2*pi);
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 540 ms
-5: 5: 
-Quitting
-Sun Jan  3 23:50:17 MET 1999
+Time for test: 86 ms, plus GC time: 18 ms
+@@@@@ Resources used: (0 0 35 0)

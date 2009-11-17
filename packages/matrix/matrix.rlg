@@ -1,9 +1,5 @@
-Sun Jan  3 23:46:20 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Miscellaneous matrix tests.
+Tue Nov 17 08:50:22 2009 run on win32
+% Miscellaneous matrix tests.
 
 % Tests of eigenfunction/eigenvalue code.
 
@@ -2200,10 +2196,6 @@ for each n in ws collect m1*n;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 1930 ms, plus GC time: 80 ms
-
-5: 5: 
-Quitting
-Sun Jan  3 23:46:28 MET 1999
+Time for test: 351 ms, plus GC time: 20 ms
+@@@@@ Resources used: (0 1 60 0)

@@ -1,11 +1,5 @@
-Thu Oct 25 15:11:48 CEST 2001
-Loading image file :/opus/cons/reduce/lisp/psl/linux/red/reduce.img 
-REDUCE 3.7, 15-Apr-1999, patched to 29-Aug-2000 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 
-3: 
-4: nc_setup({k,n,NN,KK},{NN*n-n*NN=NN,KK*k-k*KK=KK},left);
+Tue Nov 17 08:52:55 2009 run on win32
+nc_setup({k,n,NN,KK},{NN*n-n*NN=NN,KK*k-k*KK=KK},left);
 
 
 
@@ -267,9 +261,6 @@ nc_cleanup;
 
 end;
 
-5: 5: 5: 5: 5: 5: 5: 5: 5: 
 
-Time for test: 21720 ms,plus GC time: 1900 ms
-
-6: 
-Quitting
+Time for test: 6770 ms, plus GC time: 156 ms
+@@@@@ Resources used: (9 22 6 0)

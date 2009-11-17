@@ -1,12 +1,9 @@
-Wed Jul 16 19:24:30 CST 2003
-Loading image file :/remote/adelphi/dhartley/lib/Reduce/lisp/psl/linux/red/reduce.img 
-REDUCE Development Version, 10-Jul-2003 ...
+Tue Nov 17 08:52:44 2009 run on win32
 
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
 *** ^ redefined 
 
-3: 3: 
++++ depends redefined
+
 
 		  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		  %   Twisting type N solutions of GR   %
@@ -2846,10 +2843,6 @@ clear x,y,z,u,v,w,C,S;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 35710 ms, plus GC time: 2230 ms
-
-5: 5: 
-Quitting
-Wed Jul 16 19:25:06 CST 2003
+Time for test: 8147 ms, plus GC time: 205 ms
+@@@@@ Resources used: (9 19 150 0)

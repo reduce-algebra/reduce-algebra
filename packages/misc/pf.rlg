@@ -1,9 +1,5 @@
-Sun Jan  3 23:51:30 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Tests of the partial fraction module.
+Tue Nov 17 08:51:02 2009 run on win32
+% Tests of the partial fraction module.
 
 % Author: Anthony C. Hearn
 
@@ -130,9 +126,6 @@ pf(((2*w**2+2*h**2*l**2*t**2+2*h**2*l**2*qst**2)*z**2-8*h**2*l**2*qst
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 400 ms
-5: 5: 
-Quitting
-Sun Jan  3 23:51:34 MET 1999
+Time for test: 85 ms, plus GC time: 11 ms
+@@@@@ Resources used: (0 0 3 0)

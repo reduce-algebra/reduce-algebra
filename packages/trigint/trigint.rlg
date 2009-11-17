@@ -1,9 +1,5 @@
-Tue Oct 21 18:03:19 MET DST 2003
-REDUCE Development Version, 21-Aug-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % some test examples for the trigint package. If the input expression is
+Tue Nov 17 08:53:44 2009 run on win32
+% some test examples for the trigint package. If the input expression is
 % free of sin, cos or tan at the moment, then no Weierstrass substitutions
 % will be made, and the standard int operator is called.
 
@@ -122,8 +118,9 @@ trigint(1/(cos(x)-5),x);
 trigint(1/(sqrt(sin(x))),x);
 
 
+
 failed with substitution B: system could not
-				integrate after subs, trying A
+                                integrate after subs, trying A
 
 failed with A: trying C now
 
@@ -144,10 +141,6 @@ trying all possible substitutions
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 8220 ms, plus GC time: 290 ms
-
-5: 5: 
-Quitting
-Tue Oct 21 18:03:36 MET DST 2003
+Time for test: 1129 ms, plus GC time: 32 ms
+@@@@@ Resources used: (1 3 6 434)

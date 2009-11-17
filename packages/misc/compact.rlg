@@ -1,9 +1,5 @@
-Sun Jan  3 23:51:09 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Tests of the COMPACT package.
+Tue Nov 17 08:50:59 2009 run on win32
+% Tests of the COMPACT package.
 
 % Author: Anthony C. Hearn.
 
@@ -342,9 +338,6 @@ a  - 2*a *b  - 2*a *c  + b  - 2*b *c  + c
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 250 ms
-5: 5: 
-Quitting
-Sun Jan  3 23:51:10 MET 1999
+Time for test: 53 ms
+@@@@@ Resources used: (0 0 11 0)

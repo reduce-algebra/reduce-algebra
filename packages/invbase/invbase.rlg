@@ -1,9 +1,5 @@
-Sun Jan  3 23:50:18 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
+Tue Nov 17 08:50:49 2009 run on win32
 
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: 
 % *****  Example 1  *****
 
 g:=invbase{4*x^2 + x*y^2 - z +1/4,
@@ -411,9 +407,6 @@ invtempbasis;
 
 end$
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 270 ms
-5: 5: 
-Quitting
-Sun Jan  3 23:50:19 MET 1999
+Time for test: 46 ms
+@@@@@ Resources used: (0 0 10 1)

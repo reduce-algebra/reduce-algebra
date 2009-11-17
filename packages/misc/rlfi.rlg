@@ -1,9 +1,5 @@
-Mon Jan  4 00:00:41 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: off echo,msg;
+Tue Nov 17 08:52:44 2009 run on win32
+off echo,msg;
 
 \documentstyle{article}
 \begin{document}
@@ -124,9 +120,6 @@ off latex,verbatim;
 \end{verbatim}
 \end{document}
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 180 ms
-5: 5: 
-Quitting
-Mon Jan  4 00:00:48 MET 1999
+Time for test: 36 ms, plus GC time: 23 ms
+@@@@@ Resources used: (0 0 5 0)

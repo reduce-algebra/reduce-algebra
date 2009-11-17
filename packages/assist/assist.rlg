@@ -1,9 +1,5 @@
-Wed Jan 27 19:17:01 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Test of Assist Package version 2.31.
+Tue Nov 17 08:50:38 2009 run on win32
+% Test of Assist Package version 2.31.
 % DATE : 30 August 1996
 % Author: H. Caprasse <hubert.caprasse@ulg.ac.be>
 %load_package assist$
@@ -648,7 +644,9 @@ on errcont;
 ab.4;
 
 
-***** Expression bag(x1,x2,x3) does not have part 4
+*** Expression bag(x1,x2,x3) does not have part 4
+
+0
 
 off errcont;
 
@@ -1018,12 +1016,12 @@ clear a1,a2,a3,a,x,y,z,x1,x2,op$
 mkidnew();
 
 
-g0002
+g0
 
 mkidnew(a);
 
 
-ag0003
+ag1
 
 ;
 
@@ -2484,7 +2482,6 @@ hermat(bb,hbb);
 
 load_package HEPHYS;
 
-*** `isimpa' has not been defined, because it is flagged LOSE
 
 
 % Use of remvector.
@@ -2591,9 +2588,6 @@ clear g,op;
 % showtime;
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 360 ms
-5: 5: 
-Quitting
-Wed Jan 27 19:17:26 MET 1999
+Time for test: 73 ms, plus GC time: 3 ms
+@@@@@ Resources used: (0 0 38 4)

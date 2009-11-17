@@ -1,9 +1,5 @@
-Tue Jun  8 03:51:33 MET DST 1999
-REDUCE 3.7, 15-Apr-1999 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: %       Examples for the algorithmic calculation of formal 
+Tue Nov 17 08:53:32 2009 run on win32
+%       Examples for the algorithmic calculation of formal 
 %       Puiseux, Laurent and power series,
 %
 %       Wolfram Koepf, Freie Universitaet Berlin, Germany
@@ -694,10 +690,6 @@ infsum(( - x   *( - 1) *108 *factorial(k)*x)/(6*46656 *factorial(3*k + 1)
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 77140 ms, plus GC time: 4440 ms
-
-5: 5: 
-Quitting
-Tue Jun  8 03:52:56 MET DST 1999
+Time for test: 12064 ms, plus GC time: 257 ms
+@@@@@ Resources used: (13 34 136 518)

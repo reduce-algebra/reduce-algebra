@@ -1,9 +1,5 @@
-Tue Jun 17 18:04:03 MET DST 2003
-REDUCE Development Version,  4-Jun-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: on mathml;
+Tue Nov 17 08:53:46 2009 run on win32
+on mathml;
 
  % output
 
@@ -121,9 +117,6 @@ x>y
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 20 ms
-5: 5: 
-Quitting
-Tue Jun 17 18:04:08 MET DST 2003
+Time for test: 13 ms
+@@@@@ Resources used: (0 0 2 0)

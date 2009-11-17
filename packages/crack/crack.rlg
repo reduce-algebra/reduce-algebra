@@ -1,17 +1,5 @@
-Wed Jul 16 11:04:36 MET DST 2003
-REDUCE Development Version, 20-Jun-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
-*** odesolve-specfn* already defined as operator 
-
-*** odesolve-solns* already defined as operator 
-
-3: 3: %*******************************************************************%
+Tue Nov 17 08:51:02 2009 run on win32
+%*******************************************************************%
 %                                                                   %
 %                       C R A C K . T S T                           %
 %                       -----------------                           %
@@ -42,9 +30,7 @@ REDUCE Development Version, 20-Jun-2003 ...
 lisp(depl!*:=nil)$
 
            % clearing of all dependencies
-setcrackflags()$
-
-             % use standart flag-setting
+%setcrackflags()$             % use standart flag-setting
 %lisp(print_:=50)$           % if one would want to print expressions 
                              % with up to 50 factors
 lisp(print_:=nil)$
@@ -793,10 +779,6 @@ lisp(depl!*:=nil)$
 
 end$
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 33370 ms, plus GC time: 1190 ms
-
-5: 5: 
-Quitting
-Wed Jul 16 11:05:48 MET DST 2003
+Time for test: 3140 ms, plus GC time: 43 ms
+@@@@@ Resources used: (4 7 129 0)

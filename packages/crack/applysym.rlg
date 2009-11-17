@@ -1,18 +1,6 @@
-Wed Jul 16 11:06:27 MET DST 2003
-REDUCE Development Version, 20-Jun-2003 ...
+Tue Nov 17 08:51:35 2009 run on win32
+load crack,applysym$
 
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: load crack,applysym$
-
-
-*** airy_ai already defined as operator 
-
-*** airy_bi already defined as operator 
-
-*** odesolve-specfn* already defined as operator 
-
-*** odesolve-solns* already defined as operator 
 
 %*******************************************************************%
 %                                                                   %
@@ -50,9 +38,7 @@ load crack;
 lisp(depl!*:=nil)$
 
      % clearing of all dependencies
-setcrackflags()$
-
-
+%setcrackflags()$
 lisp(print_:=nil)$
 
 
@@ -445,10 +431,6 @@ lisp(depl!*:=nil)$
 
 end$
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 24440 ms, plus GC time: 830 ms
-
-5: 5: 
-Quitting
-Wed Jul 16 11:08:27 MET DST 2003
+Time for test: 2280 ms, plus GC time: 108 ms
+@@@@@ Resources used: (2 5 94 0)

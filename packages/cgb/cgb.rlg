@@ -1,28 +1,34 @@
-Fri Jun 30 10:08:14 CEST 2006
+Tue Nov 17 08:53:47 2009 run on win32
+% ----------------------------------------------------------------------
+% $Id: cgb.tst 84 2009-02-07 07:53:22Z thomas-sturm $
+% ----------------------------------------------------------------------
+% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+% ----------------------------------------------------------------------
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+%    * Redistributions of source code must retain the relevant
+%      copyright notice, this list of conditions and the following
+%      disclaimer.
+%    * Redistributions in binary form must reproduce the above
+%      copyright notice, this list of conditions and the following
+%      disclaimer in the documentation and/or other materials provided
+%      with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
 
-REDUCE Development Version, 23-Jun-2006 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % ----------------------------------------------------------------------
-% $Id: cgb.tst,v 1.3 2003/10/12 14:55:24 sturm Exp $
-% ----------------------------------------------------------------------
-% Copyright (c) 1999 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
-% $Log: cgb.tst,v $
-% Revision 1.3  2003/10/12 14:55:24  sturm
-% The bootstrapping technique via remflag('(load!-package),'eval); does
-% not work for CSL. Added corresponding preprocessing directive for now.
-% As a consequence, under CSL "redlog" has to be loaded explicitly when
-% using CGB.
-%
-% Revision 1.2  1999/04/13 21:50:44  sturm
-% Removed echo, and gbverbose settings. There is no gbverbose.
-%
-% Revision 1.1  1999/04/05 08:30:45  dolzmann
-% Copied and overworked Rev. 1.6 of the old cgb version.
-%
-% ----------------------------------------------------------------------
 load_package redlog;
 
 
@@ -81,7 +87,7 @@ gsys {a*x+y,x+b*y};
 
   {a*x + y,x + b*y}},
 
- {a = 0,{a*x + y,x + b*y}}}
+ {a = 0,{x + b*y,y}}}
 
 torder oo;
 
@@ -104,12 +110,12 @@ gsys {a*x+y,x+b*y};
 
   {a*x + y,x + b*y}},
 
- {a = 0,{a*x + y,x + b*y}}}
+ {a = 0,{x + b*y,y}}}
 
 gsys2cgb ws;
 
 
-{x + b*y,a*x + y,(a*b - 1)*y}
+{x + b*y,a*x + y,y,(a*b - 1)*y}
 
 torder oo;
 
@@ -138,7 +144,7 @@ gsys {a*x+y,x-a*y};
 
   {a*x + y,x - a*y}},
 
- {a = 0,{a*x + y,x - a*y}}}
+ {a = 0,{x - a*y,y}}}
 
 on cgbreal;
 
@@ -151,7 +157,7 @@ gsys({a*x+y,x-a*y});
                      2
   {a*x + y,x - a*y,(a  + 1)*y}},
 
- {a = 0,{a*x + y,x - a*y}}}
+ {a = 0,{x - a*y,y}}}
 
 torder oo;
 
@@ -193,7 +199,7 @@ gsys({a*x+b*y,c*x+d*y,(a*d-b*c)*z});
 
  {a*d - b*c <> 0 and a <> 0 and d <> 0 and c = 0,
 
-  {a*x + b*y,c*x + d*y,(a*d - b*c)*z}},
+  {a*x + b*y,d*y,(a*d - b*c)*z}},
 
  {a*d - b*c <> 0 and a <> 0 and c = 0 and d = 0,
 
@@ -201,15 +207,15 @@ gsys({a*x+b*y,c*x+d*y,(a*d-b*c)*z});
 
  {a*d - b*c <> 0 and b <> 0 and c <> 0 and a = 0,
 
-  {a*x + b*y,c*x + d*y,(a*d - b*c)*z}},
+  {c*x + d*y,b*y,(a*d - b*c)*z}},
 
  {a*d - b*c <> 0 and b <> 0 and d <> 0 and a = 0 and c = 0,
 
-  {a*x + b*y,c*x + d*y,(a*d - b*c)*z}},
+  {b*y,d*y,(a*d - b*c)*z}},
 
  {a*d - b*c <> 0 and b <> 0 and a = 0 and c = 0 and d = 0,
 
-  {a*x + b*y,(a*d - b*c)*z}},
+  {b*y,(a*d - b*c)*z}},
 
  {a*d - b*c <> 0 and c <> 0 and a = 0 and b = 0,
 
@@ -217,7 +223,7 @@ gsys({a*x+b*y,c*x+d*y,(a*d-b*c)*z});
 
  {a*d - b*c <> 0 and d <> 0 and a = 0 and b = 0 and c = 0,
 
-  {c*x + d*y,(a*d - b*c)*z}},
+  {d*y,(a*d - b*c)*z}},
 
  {a*d - b*c <> 0 and a = 0 and b = 0 and c = 0 and d = 0,
 
@@ -229,7 +235,7 @@ gsys({a*x+b*y,c*x+d*y,(a*d-b*c)*z});
 
  {a <> 0 and d <> 0 and a*d - b*c = 0 and c = 0,
 
-  {a*x + b*y,c*x + d*y}},
+  {a*x + b*y,d*y}},
 
  {a <> 0 and a*d - b*c = 0 and c = 0 and d = 0,
 
@@ -237,15 +243,15 @@ gsys({a*x+b*y,c*x+d*y,(a*d-b*c)*z});
 
  {b <> 0 and c <> 0 and a*d - b*c = 0 and a = 0,
 
-  {a*x + b*y,c*x + d*y}},
+  {c*x + d*y,b*y}},
 
  {b <> 0 and d <> 0 and a*d - b*c = 0 and a = 0 and c = 0,
 
-  {a*x + b*y,c*x + d*y}},
+  {b*y,d*y}},
 
  {b <> 0 and a*d - b*c = 0 and a = 0 and c = 0 and d = 0,
 
-  {a*x + b*y}},
+  {b*y}},
 
  {c <> 0 and a*d - b*c = 0 and a = 0 and b = 0,
 
@@ -253,7 +259,7 @@ gsys({a*x+b*y,c*x+d*y,(a*d-b*c)*z});
 
  {d <> 0 and a*d - b*c = 0 and a = 0 and b = 0 and c = 0,
 
-  {c*x + d*y}},
+  {d*y}},
 
  {a*d - b*c = 0 and a = 0 and b = 0 and c = 0 and d = 0,
 
@@ -265,6 +271,10 @@ gsys2cgb ws;
 {c*x + d*y,
 
  a*x + b*y,
+
+ b*y,
+
+ d*y,
 
  (a*d - b*c)*y,
 
@@ -297,33 +307,15 @@ gsys({(u1*u2-u1)*x1+u2*x2+y2,(u2-1)*x1+u2*x2+y1,-x2+y0});
 
  {u2 - 1 <> 0 and u2 <> 0 and u1*u2 - u1 = 0,
 
-  {(u1*u2 - u1)*x1 + u2*x2 + y2,
-
-   (u2 - 1)*x1 + u2*x2 + y1,
-
-   (u1*u2 - u1)*x1 + y2 + u2*y0,
-
-   x2 - y0}},
+  {(u2 - 1)*x1 + u2*x2 + y1,u2*x2 + y2,x2 - y0,y2 + u2*y0}},
 
  {u1*u2 - u1 = 0 and u2 - 1 = 0,
 
-  {(u1*u2 - u1)*x1 + u2*x2 + y2,
-
-   (u2 - 1)*x1 + u2*x2 + y1,
-
-   (u1*u2 - u1 - u2 + 1)*x1 + y2 - y1,
-
-   (u2 - 1)*x1 + y1 + u2*y0,
-
-   x2 - y0}},
+  {u2*x2 + y2,u2*x2 + y1,x2 - y0,y2 - y1,y1 + u2*y0}},
 
  {u1*u2 - u1 = 0 and u2 = 0,
 
-  {(u1*u2 - u1)*x1 + u2*x2 + y2,
-
-   (u2 - 1)*x1 + u2*x2 + y1,
-
-   x2 - y0}}}
+  {(u2 - 1)*x1 + u2*x2 + y1,x2 - y0,y2}}}
 
 torder oo;
 
@@ -352,36 +344,21 @@ gsys({v*x*y + x,u*y^2 + x^2});
 
  {u <> 0 and v <> 0 and u*v = 0,
 
-    2      2
-  {x  + u*y ,
-
-       3     3
-   (u*v )*x*y  + u*x,
-
-   v*x*y + x,
-
-          3      2
-   (u*v)*y  + u*y }},
+    2      2                  2
+  {x  + u*y ,v*x*y + x,u*x,u*y }},
 
  {u <> 0 and v = 0,
 
-      2        2
-  {v*x *y - u*y ,
-
-    2      2
-   x  + u*y ,
-
-   v*x*y + x}},
+    2      2      2
+  {x  + u*y ,x,u*y }},
 
  {v <> 0 and u*v = 0 and u = 0,
 
     2      2
   {x  + u*y ,v*x*y + x}},
 
- {u = 0 and v = 0,
-
-    2      2
-  {x  + u*y ,v*x*y + x}}}
+                    2      2
+ {u = 0 and v = 0,{x  + u*y ,x}}}
 
 torder oo;
 
@@ -435,12 +412,12 @@ gsys({a0*x**2 + a1*x + a2,b0*x**2 + b1*x + b2});
        2                   2
  {a0*b2  - a1*b1*b2 + a2*b1  <> 0 and a0 <> 0 and b1 <> 0 and b0 = 0,
 
-               3                          2         2                   2
-  {(a0*b0*b1)*x  - (a0*b0*b2 - a1*b0*b1)*x  - (a0*b2  - a1*b1*b2 + a2*b1 )}},
+        2                   2
+  {a0*b2  - a1*b1*b2 + a2*b1 }},
 
  {a0*b2 - a2*b0 <> 0 and a0 <> 0 and b0 <> 0 and a0*b1 - a1*b0 = 0,
 
-  {(a0*b1 - a1*b0)*x + (a0*b2 - a2*b0)}},
+  {a0*b2 - a2*b0}},
 
  {a0 <> 0 and b0 <> 0 and a0*b1 - a1*b0 = 0 and a0*b2 - a2*b0 = 0,
 
@@ -450,13 +427,10 @@ gsys({a0*x**2 + a1*x + a2,b0*x**2 + b1*x + b2});
                                2                   2
  {a0 <> 0 and b1 <> 0 and a0*b2  - a1*b1*b2 + a2*b1  = 0 and b0 = 0,
 
-       2                 2
-  {a0*x  + a1*x + a2,b0*x  + b1*x + b2}},
-
- {a0 <> 0 and b2 <> 0 and b0 = 0 and b1 = 0,
-
        2
-  {b0*x  + b1*x + b2}},
+  {a0*x  + a1*x + a2,b1*x + b2}},
+
+ {a0 <> 0 and b2 <> 0 and b0 = 0 and b1 = 0,{b2}},
 
  {a0 <> 0 and b0 = 0 and b1 = 0 and b2 = 0,
 
@@ -466,39 +440,32 @@ gsys({a0*x**2 + a1*x + a2,b0*x**2 + b1*x + b2});
     2                   2
  {a1 *b2 - a1*a2*b1 + a2 *b0 <> 0 and a1 <> 0 and b0 <> 0 and a0 = 0,
 
-               3                          2      2                   2
-  {(a0*a1*b0)*x  + (a0*a1*b1 - a0*a2*b0)*x  - (a1 *b2 - a1*a2*b1 + a2 *b0)}},
+     2                   2
+  {a1 *b2 - a1*a2*b1 + a2 *b0}},
 
  {a1*b2 - a2*b1 <> 0 and a1 <> 0 and b1 <> 0 and a0 = 0 and b0 = 0,
 
-                    2
-  {(a0*b1 - a1*b0)*x  - (a1*b2 - a2*b1)}},
+  {a1*b2 - a2*b1}},
 
                                        2                   2
  {a1 <> 0 and b0 <> 0 and a0 = 0 and a1 *b2 - a1*a2*b1 + a2 *b0 = 0,
 
-       2                 2
-  {a0*x  + a1*x + a2,b0*x  + b1*x + b2}},
+       2
+  {b0*x  + b1*x + b2,a1*x + a2}},
 
  {a1 <> 0 and b1 <> 0 and a0 = 0 and a1*b2 - a2*b1 = 0 and b0 = 0,
 
-       2                 2
-  {a0*x  + a1*x + a2,b0*x  + b1*x + b2}},
+  {a1*x + a2,b1*x + b2}},
 
  {a1 <> 0 and b2 <> 0 and a0 = 0 and b0 = 0 and b1 = 0,
 
-       2
-  {b0*x  + b1*x + b2}},
+  {b2}},
 
  {a1 <> 0 and a0 = 0 and b0 = 0 and b1 = 0 and b2 = 0,
 
-       2
-  {a0*x  + a1*x + a2}},
+  {a1*x + a2}},
 
- {a2 <> 0 and a0 = 0 and a1 = 0,
-
-       2
-  {a0*x  + a1*x + a2}},
+ {a2 <> 0 and a0 = 0 and a1 = 0,{a2}},
 
  {b0 <> 0 and a0 = 0 and a1 = 0 and a2 = 0,
 
@@ -507,13 +474,11 @@ gsys({a0*x**2 + a1*x + a2,b0*x**2 + b1*x + b2});
 
  {b1 <> 0 and a0 = 0 and a1 = 0 and a2 = 0 and b0 = 0,
 
-       2
-  {b0*x  + b1*x + b2}},
+  {b1*x + b2}},
 
  {b2 <> 0 and a0 = 0 and a1 = 0 and a2 = 0 and b0 = 0 and b1 = 0,
 
-       2
-  {b0*x  + b1*x + b2}},
+  {b2}},
 
  {a0 = 0 and a1 = 0 and a2 = 0 and b0 = 0 and b1 = 0 and b2 = 0,
 
@@ -567,32 +532,30 @@ gsys({v*x*y + u*x**2 + x,u*y**2 + x**2});
     3       5      2  3   3     5    2  2   2
    u *x + (u *v + u *v )*y  - (u  - u *v )*y ,
 
-     7  2    4  4   4       4  3   3     4  2   2
-   (u *v  + u *v )*y  + (2*u *v )*y  + (u *v )*y }},
+       4  3   3     4  2   2
+   (2*u *v )*y  + (u *v )*y }},
 
  {u <> 0 and v = 0,
 
-          2       3       3    5  4    2  2
-  {(u*v)*x *y + (u *v)*x*y  - u *y  - u *y ,
-
       2
-   u*x  + v*x*y + x,
+  {u*x  + v*x*y + x,
 
     2      2
    x  + u*y ,
 
-                2  2
-   v*x*y + x - u *y }},
+        2  2
+   x - u *y ,
+
+    5  4    2  2
+   u *y  + u *y }},
 
  {v <> 0 and u = 0,
 
-      2              2      2
-  {u*x  + v*x*y + x,x  + u*y }},
+    2      2
+  {x  + u*y ,v*x*y + x}},
 
- {u = 0 and v = 0,
-
-      2              2      2
-  {u*x  + v*x*y + x,x  + u*y }}}
+                    2      2
+ {u = 0 and v = 0,{x  + u*y ,x}}}
 
 torder oo;
 
@@ -616,14 +579,11 @@ gsys {x4 - (a4-a2),x1 + x2 + x3 + x4 + (a1 + a3 + a4),
                          2          2       3
    - 3*a2*a3*a4 - 5*a2*a4  + 2*a3*a4  + 2*a4  <> 0 and a2 - a4 = 0,
 
-                                             2
-  {(a2 - a4)*x2*x3 - (a2 - a4)*x2*x4 + (a1*a2  - a1*a2*a3 - 3*a1*a2*a4
+        2                                  2     3     2          2
+  {a1*a2  - a1*a2*a3 - 3*a1*a2*a4 + 2*a1*a4  - a2  + a2 *a3 + 4*a2 *a4
 
-                2     3     2          2                          2          2
-       + 2*a1*a4  - a2  + a2 *a3 + 4*a2 *a4 - 3*a2*a3*a4 - 5*a2*a4  + 2*a3*a4
-
-             3
-       + 2*a4 )}},
+                          2          2       3
+    - 3*a2*a3*a4 - 5*a2*a4  + 2*a3*a4  + 2*a4 }},
 
  {a2 - a4 <> 0,
 
@@ -656,8 +616,8 @@ gsys {x4 - (a4-a2),x1 + x2 + x3 + x4 + (a1 + a3 + a4),
 
    x1 + x2 + x3 + x4 + (a1 + a3 + a4),
 
-                    2
-   (a2 - a4)*x2 - x3  - (a1 - a2 + a3 + 2*a4)*x3
+        2
+    - x3  - (a1 - a2 + a3 + 2*a4)*x3
 
                                    2                                   2
     + (a1*a2 - a1*a3 - 2*a1*a4 - a2  + a2*a3 + 3*a2*a4 - 2*a3*a4 - 2*a4 ),
@@ -684,22 +644,22 @@ gsys({2*b2*y + 2*a2*x - b2**2 + a2**2,2*b1*y + 2*a1*x - b1**2 + a1**2});
 
    and b2 = 0,
 
-                              2           2        2        2
-  {(2*a1*b2 - 2*a2*b1)*y - (a1 *a2 - a1*a2  + a1*b2  - a2*b1 )}},
+     2           2        2        2
+  {a1 *a2 - a1*a2  + a1*b2  - a2*b1 }},
 
     2        2        2           2
  {a1 *b2 - a2 *b1 - b1 *b2 + b1*b2  <> 0 and b1 <> 0 and b2 <> 0
 
    and a1*b2 - a2*b1 = 0,
 
-                              2        2        2           2
-  {(2*a1*b2 - 2*a2*b1)*x + (a1 *b2 - a2 *b1 - b1 *b2 + b1*b2 )}},
+     2        2        2           2
+  {a1 *b2 - a2 *b1 - b1 *b2 + b1*b2 }},
 
     2     2
  {a1  - b1  <> 0 and a1 = 0 and b1 = 0,
 
-                            2     2
-  {(2*b1)*y + (2*a1)*x + (a1  - b1 )}},
+     2     2
+  {a1  - b1 }},
 
  {a1*b2 - a2*b1 <> 0 and b1 <> 0 and b2 <> 0,
 
@@ -715,59 +675,59 @@ gsys({2*b2*y + 2*a2*x - b2**2 + a2**2,2*b1*y + 2*a1*x - b1**2 + a1**2});
                 2     2
  {a1 <> 0 and a2  - b2  <> 0 and a2 = 0 and b1 = 0 and b2 = 0,
 
-                            2     2
-  {(2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+     2     2
+  {a2  - b2 }},
 
                             2           2        2        2
  {a1 <> 0 and a2 <> 0 and a1 *a2 - a1*a2  + a1*b2  - a2*b1  = 0 and b1 = 0
 
    and b2 = 0,
 
-                            2     2
-  {(2*b1)*y + (2*a1)*x + (a1  - b1 ),
+                 2     2
+  {(2*a1)*x + (a1  - b1 ),
 
-                            2     2
-   (2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+                 2     2
+   (2*a2)*x + (a2  - b2 )}},
 
  {a1 <> 0 and b2 <> 0 and b1 = 0,
 
                             2     2
-  {(2*b1)*y + (2*a1)*x + (a1  - b1 ),
+  {(2*b2)*y + (2*a2)*x + (a2  - b2 ),
 
-                            2     2
-   (2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+                 2     2
+   (2*a1)*x + (a1  - b1 )}},
 
                 2     2
  {a1 <> 0 and a2  - b2  = 0 and a2 = 0 and b1 = 0 and b2 = 0,
 
-                            2     2
-  {(2*b1)*y + (2*a1)*x + (a1  - b1 )}},
+                 2     2
+  {(2*a1)*x + (a1  - b1 )}},
 
     2     2
  {a2  - b2  <> 0 and b1 <> 0 and a2 = 0 and b2 = 0,
 
-                            2     2
-  {(2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+     2     2
+  {a2  - b2 }},
 
     2     2            2     2
  {a2  - b2  <> 0 and a1  - b1  = 0 and a1 = 0 and a2 = 0 and b1 = 0 and b2 = 0,
 
-                            2     2
-  {(2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+     2     2
+  {a2  - b2 }},
 
  {a2 <> 0 and b1 <> 0 and b2 = 0,
 
                             2     2
   {(2*b1)*y + (2*a1)*x + (a1  - b1 ),
 
-                            2     2
-   (2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+                 2     2
+   (2*a2)*x + (a2  - b2 )}},
 
                 2     2
  {a2 <> 0 and a1  - b1  = 0 and a1 = 0 and b1 = 0 and b2 = 0,
 
-                            2     2
-  {(2*b2)*y + (2*a2)*x + (a2  - b2 )}},
+                 2     2
+  {(2*a2)*x + (a2  - b2 )}},
 
                             2        2        2           2
  {b1 <> 0 and b2 <> 0 and a1 *b2 - a2 *b1 - b1 *b2 + b1*b2  = 0
@@ -879,16 +839,11 @@ gsys(sub(v1=0,{f1,f2,f4}));
 
    = 0,
 
-             7            6            5            4           3            2
-  {(220700*v2  - 739148*v2  + 579540*v2  + 179580*v2  - 52080*v2  - 142320*v2
+             8              7              6             5             4
+  {3389663*v2  - 14658420*v2  + 20230730*v2  - 6945060*v2  - 3218385*v2
 
-                                       8              7              6
-     + 1280*v2 - 25472)*u + (3389663*v2  - 14658420*v2  + 20230730*v2
-
-                   5             4            3             2
-       - 6945060*v2  - 3218385*v2  - 497040*v2  + 1656704*v2  - 257280*v2
-
-       + 255872)}},
+               3             2
+    - 497040*v2  + 1656704*v2  - 257280*v2 + 255872}},
 
           7            6            5           4           3           2
  {55175*v2  - 184787*v2  + 144885*v2  + 44895*v2  - 13020*v2  - 35580*v2
@@ -985,13 +940,11 @@ gsys({d*z2 + c*z1 - v,b*z2 + a*z1 - u});
 
   {a*d*z1 - b*c*z1 + b*v - d*u}},
 
- {a*z1 - u <> 0 and b = 0,
-
-  {b*z2 + (a*z1 - u)}},
+ {a*z1 - u <> 0 and b = 0,{a*z1 - u}},
 
  {b <> 0 and c*z1 - v <> 0 and d = 0,
 
-  {d*z2 + (c*z1 - v)}},
+  {c*z1 - v}},
 
  {b <> 0 and d <> 0 and a*d*z1 - b*c*z1 + b*v - d*u = 0,
 
@@ -1003,7 +956,7 @@ gsys({d*z2 + c*z1 - v,b*z2 + a*z1 - u});
 
  {c*z1 - v <> 0 and a*z1 - u = 0 and b = 0 and d = 0,
 
-  {d*z2 + (c*z1 - v)}},
+  {c*z1 - v}},
 
  {d <> 0 and a*z1 - u = 0 and b = 0,
 
@@ -1031,14 +984,13 @@ gsys({x**3*z2 + (x**2+1)*z1,x**2*z2 + x*z1 - 1});
    2
 {{x *z1 + z1 <> 0 and x = 0,
 
-    3        2
-  {x *z2 + (x *z1 + z1)}},
+    2
+  {x *z1 + z1}},
 
                      2
  {x*z1 - 1 <> 0 and x *z1 + z1 = 0 and x = 0,
 
-    2
-  {x *z2 + (x*z1 - 1)}},
+  {x*z1 - 1}},
 
  {x + z1 <> 0 and x <> 0,{x + z1}},
 
@@ -1070,8 +1022,8 @@ gsys({z3 + b*z2 + a*z1 - 1,a*z3 + z2 + b*z1 - 1,b*z3 + a*z2 + z1 - 1});
    3       2
 {{a *z1 - a  - 2*a*b*z1 + a*b + a + z1 - 1 <> 0 and a <> 0 and b = 0,
 
-       2             3       2
-  {(a*b  - b)*z3 - (a *z1 - a  - 2*a*b*z1 + a*b + a + z1 - 1)}},
+    3       2
+  {a *z1 - a  - 2*a*b*z1 + a*b + a + z1 - 1}},
 
    3       2                         3       2                            2
  {a *z1 - a  - 3*a*b*z1 + a*b + a + b *z1 - b  + b + z1 - 1 <> 0 and a - b  <> 0
@@ -1087,20 +1039,19 @@ gsys({z3 + b*z2 + a*z1 - 1,a*z3 + z2 + b*z1 - 1,b*z3 + a*z2 + z1 - 1});
                             2
    and a*b - 1 = 0 and a - b  = 0,
 
-                    2
-  {(a*b - 1)*z2 + (a *z1 - a - b*z1 + 1)}},
+    2
+  {a *z1 - a - b*z1 + 1}},
 
                   3       2
  {2*a*b*z1 - a - b *z1 + b  - b - z1 + 1 <> 0 and b <> 0 and a = 0,
 
-     2      2                        3       2
-  {(a  - a*b )*z3 + (2*a*b*z1 - a - b *z1 + b  - b - z1 + 1)}},
+                   3       2
+  {2*a*b*z1 - a - b *z1 + b  - b - z1 + 1}},
 
                                                           2
  {a*b*z1 - b - z1 + 1 <> 0 and a <> 0 and b <> 0 and a - b  = 0,
 
-         2
-  {(a - b )*z2 - (a*b*z1 - b - z1 + 1)}},
+  { - (a*b*z1 - b - z1 + 1)}},
 
                                                                           2
  {a*b - 1 <> 0 and a <> 0 and b <> 0 and a*b*z1 - b - z1 + 1 = 0 and a - b  = 0,
@@ -1146,9 +1097,9 @@ gsys({z3 + b*z2 + a*z1 - 1,a*z3 + z2 + b*z1 - 1,b*z3 + a*z2 + z1 - 1});
 
   {z3 + b*z2 + (a*z1 - 1),
 
-   b*z3 + a*z2 + (z1 - 1),
+   a*z3 + z2 + (b*z1 - 1),
 
-   a*z3 + z2 + (b*z1 - 1)}},
+   a*z2 + (z1 - 1)}},
 
                              3       2
  {b <> 0 and 2*a*b*z1 - a - b *z1 + b  - b - z1 + 1 = 0 and a = 0,
@@ -1157,15 +1108,13 @@ gsys({z3 + b*z2 + a*z1 - 1,a*z3 + z2 + b*z1 - 1,b*z3 + a*z2 + z1 - 1});
 
    b*z3 + a*z2 + (z1 - 1),
 
-   a*z3 + z2 + (b*z1 - 1)}},
+   z2 + (b*z1 - 1)}},
 
- {z1 - 1 <> 0 and a = 0 and b = 0,
-
-  {b*z3 + a*z2 + (z1 - 1)}},
+ {z1 - 1 <> 0 and a = 0 and b = 0,{z1 - 1}},
 
  {a = 0 and b = 0 and z1 - 1 = 0,
 
-  {z3 + b*z2 + (a*z1 - 1),a*z3 + z2 + (b*z1 - 1)}}}
+  {z3 + b*z2 + (a*z1 - 1),z2 + (b*z1 - 1)}}}
 
 torder oo;
 
@@ -1205,38 +1154,6 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
     - 2*b*w4 + 4*b*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1}},
 
-   3         2           2         2         2
- {a *c*z1 + a *b*c*w1 - a *c*w2 - a *c*w5 + a *c*z1 - 2*a*b*c*w4 + 2*a*b*w5
-
-   - 2*a*b*z1 + 2*a*c*w4 - a*w5 + a*z1 - 2*b*w4 + w4 <> 0 and a*b <> 0
-
-   and a*c - 2*b + 1 <> 0 and a <> 0 and d <> 0 and a*c + 1 = 0
-
-   and a*w3 - 2*a*z1 - d*w4 = 0 and a + d = 0,
-
-     2  2                                     3         2           2
-  {(a *c  - 2*a*b*c + 2*a*c - 2*b + 1)*z3 + (a *c*z1 + a *b*c*w1 - a *c*w2
-
-          2         2
-       - a *c*w5 + a *c*z1 - 2*a*b*c*w4 + 2*a*b*w5 - 2*a*b*z1 + 2*a*c*w4 - a*w5
-
-       + a*z1 - 2*b*w4 + w4)}},
-
-   3         2             2           2         2         2
- {a *z1 + 2*a *b*c*w3 - 4*a *b*c*z1 + a *b*w1 + a *d*z1 - a *w2 - 2*a*b*c*d*w4
-
-   + a*b*d*w1 - 2*a*b*w4 - a*d*w2 + a*w4 - 2*b*d*w4 + d*w4 <> 0 and a*b <> 0
-
-   and a + d <> 0 and a <> 0 and d <> 0 and a*c + 1 = 0,
-
-       2        2                                                       3
-  {(2*a *b*c - a *c + 2*a*b*c*d + 2*a*b - a*c*d - a + 2*b*d - d)*z3 - (a *z1
-
-            2             2           2         2         2
-       + 2*a *b*c*w3 - 4*a *b*c*z1 + a *b*w1 + a *d*z1 - a *w2 - 2*a*b*c*d*w4
-
-       + a*b*d*w1 - 2*a*b*w4 - a*d*w2 + a*w4 - 2*b*d*w4 + d*w4)}},
-
    2  2       2  2       2                                                2
  {a *c *w5 - a *c *z1 + a *c*z1 + a*b*c*w1 - 2*a*b*c*w5 + 2*a*b*c*z1 - a*c *w4
 
@@ -1256,21 +1173,17 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
     + w5 - z1}},
 
-   2           2         2       2
- {a *c*w3 - 2*a *c*z1 + a *w5 - a *z1 - a*c*d*w4 + a*d*w5 - a*d*z1 - a*w4 - d*w4
+   2           2
+ {a *c*d*z1 - a *z1 + a*b*c*d*w1 - 2*a*b*c*w3 + 4*a*b*c*z1 - a*b*w1 - a*c*d*w2
 
-                                                               3
-   <> 0 and a*b <> 0 and a + d <> 0 and a <> 0 and d <> 0 and a *z1
+   + a*w2 + 2*b*w4 + c*d*w4 - w4 <> 0 and a*b <> 0 and a*c*d - a <> 0 and a <> 0
 
-        2             2           2         2         2
-   + 2*a *b*c*w3 - 4*a *b*c*z1 + a *b*w1 + a *d*z1 - a *w2 - 2*a*b*c*d*w4
+   and d <> 0 and a*c + 1 = 0,
 
-   + a*b*d*w1 - 2*a*b*w4 - a*d*w2 + a*w4 - 2*b*d*w4 + d*w4 = 0 and a*c + 1 = 0,
+    2           2
+  {a *c*d*z1 - a *z1 + a*b*c*d*w1 - 2*a*b*c*w3 + 4*a*b*c*z1 - a*b*w1 - a*c*d*w2
 
-     2                           2           2         2       2
-  {(a *c + a*c*d + a + d)*z3 - (a *c*w3 - 2*a *c*z1 + a *w5 - a *z1 - a*c*d*w4
-
-       + a*d*w5 - a*d*z1 - a*w4 - d*w4)}},
+    + a*w2 + 2*b*w4 + c*d*w4 - w4}},
 
    2         2
  {a *c*w5 - a *c*z1 + a*c*d*w5 - a*c*d*z1 - a*c*w3 - a*c*w4 + 2*a*c*z1 + a*w5
@@ -1296,50 +1209,77 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
     - a*z1 + d*w5 - d*z1 - w3 - w4 + 2*z1}},
 
    2
+ {a *z1 + a*b*w1 - 2*a*b*w5 + 2*a*b*z1 - a*w2 + w4 <> 0 and a*b*c <> 0
+
+   and a*b <> 0 and a <> 0 and d <> 0 and a*c*d - a = 0 and a*c + 1 = 0
+
+   and a*w3 - 2*a*z1 - d*w4 = 0,
+
+    2
+  {a *z1 + a*b*w1 - 2*a*b*w5 + 2*a*b*z1 - a*w2 + w4}},
+
+   2
  {a *z1 + a*b*w1 + a*c*w3 - 2*a*c*z1 - a*w2 - 2*b*w3 - 2*b*w4 + 4*b*z1 + w3 + w4
 
    - 2*z1 <> 0 and a*b <> 0 and a <> 0 and d = 0,
 
-                              2
-  {(a*c*d - 2*b*d + d)*z4 - (a *z1 + a*b*w1 + a*c*w3 - 2*a*c*z1 - a*w2 - 2*b*w3
+    2
+  {a *z1 + a*b*w1 + a*c*w3 - 2*a*c*z1 - a*w2 - 2*b*w3 - 2*b*w4 + 4*b*z1 + w3
 
-       - 2*b*w4 + 4*b*z1 + w3 + w4 - 2*z1)}},
+    + w4 - 2*z1}},
 
    2
  {a *z1 + a*b*w1 - a*w2 - 2*b*w4 + w4 <> 0 and a*b <> 0 and a <> 0 and d <> 0
 
-   and a*c - 2*b + 1 = 0 and a*c + 1 = 0 and a*w3 - 2*a*z1 - d*w4 = 0
+   and a*b*c = 0 and a*c*d - a = 0 and a*c + 1 = 0 and a*w3 - 2*a*z1 - d*w4 = 0,
 
-   and a + d = 0,
-
-                          2
-  {(a*c - 2*b + 1)*z3 + (a *z1 + a*b*w1 - a*w2 - 2*b*w4 + w4)}},
+    2
+  {a *z1 + a*b*w1 - a*w2 - 2*b*w4 + w4}},
 
    2
  {a *z1 + a*c*w3 - 2*a*c*z1 + a*d*z1 - a*w2 - c*d*w4 - d*w2 + w3 + w4 - 2*z1
 
    <> 0 and a*c + 1 <> 0 and a <> 0 and d <> 0 and a*b + b*d = 0,
 
-                      2
-  {(a*b + b*d)*z2 + (a *z1 + a*c*w3 - 2*a*c*z1 + a*d*z1 - a*w2 - c*d*w4 - d*w2
-
-       + w3 + w4 - 2*z1)}},
+    2
+  {a *z1 + a*c*w3 - 2*a*c*z1 + a*d*z1 - a*w2 - c*d*w4 - d*w2 + w3 + w4 - 2*z1}},
 
    2
  {a *z1 + a*c*w3 - 2*a*c*z1 - a*w2 + w3 + w4 - 2*z1 <> 0 and a <> 0 and a*b = 0
 
    and d = 0,
 
-  {(a*c*d + d)*z4 - (a*b)*z2
-
-        2
-    - (a *z1 + a*c*w3 - 2*a*c*z1 - a*w2 + w3 + w4 - 2*z1)}},
+    2
+  {a *z1 + a*c*w3 - 2*a*c*z1 - a*w2 + w3 + w4 - 2*z1}},
 
    2
  {a *z1 - a*w2 + w4 <> 0 and a <> 0 and d <> 0 and a*b = 0 and a*c + 1 = 0,
 
-                               2
-  {(a*c + 1)*z3 + (a*b)*z2 + (a *z1 - a*w2 + w4)}},
+    2
+  {a *z1 - a*w2 + w4}},
+
+ {a*b*c <> 0 and a*b <> 0 and a <> 0 and d <> 0
+
+        2
+   and a *z1 + a*b*w1 - 2*a*b*w5 + 2*a*b*z1 - a*w2 + w4 = 0 and a*c*d - a = 0
+
+   and a*c + 1 = 0 and a*w3 - 2*a*z1 - d*w4 = 0,
+
+  {z4 + c*z3 + b*z2 + (a*z1 - w2),
+
+   a*z4 - z3 - w4,
+
+   d*z4 + z3 - (w3 - 2*z1),
+
+   2*z4 + z2 - w1,
+
+   z4 - (w5 - z1),
+
+                    2
+   (2*a*b*c)*z3 + (a *z1 + a*b*w1 - a*w2 - 2*b*w4 + w4),
+
+                2
+   (a*b)*z2 + (a *z1 - a*w2 + w4)}},
 
                                                              3         2
  {a*b + b*d <> 0 and a*c + 1 <> 0 and a <> 0 and d <> 0 and a *c*z1 + a *b*c*w1
@@ -1377,15 +1317,27 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
        + w3 + w4 - 2*z1)}},
 
-                                                             3         2
- {a*b <> 0 and a*c - 2*b + 1 <> 0 and a <> 0 and d <> 0 and a *c*z1 + a *b*c*w1
+ {a*b <> 0 and a*c*d*w5 - a*c*d*z1 - a*c*w3 + 2*a*c*z1 - a*w5 + a*z1 + w4 <> 0
 
-      2         2         2
-   - a *c*w2 - a *c*w5 + a *c*z1 - 2*a*b*c*w4 + 2*a*b*w5 - 2*a*b*z1 + 2*a*c*w4
+                                                 2           2
+   and a*c*d - a <> 0 and a <> 0 and d <> 0 and a *c*d*z1 - a *z1 + a*b*c*d*w1
 
-   - a*w5 + a*z1 - 2*b*w4 + w4 = 0 and a*c + 1 = 0 and a*w3 - 2*a*z1 - d*w4 = 0
+   - 2*a*b*c*w3 + 4*a*b*c*z1 - a*b*w1 - a*c*d*w2 + a*w2 + 2*b*w4 + c*d*w4 - w4
 
-   and a + d = 0,
+   = 0 and a*c + 1 = 0,
+
+  {a*c*d*w5 - a*c*d*z1 - a*c*w3 + 2*a*c*z1 - a*w5 + a*z1 + w4}},
+
+                                                         2           2
+ {a*b <> 0 and a*c*d - a <> 0 and a <> 0 and d <> 0 and a *c*d*z1 - a *z1
+
+   + a*b*c*d*w1 - 2*a*b*c*w3 + 4*a*b*c*z1 - a*b*w1 - a*c*d*w2 + a*w2 + 2*b*w4
+
+   + c*d*w4 - w4 = 0
+
+   and a*c*d*w5 - a*c*d*z1 - a*c*w3 + 2*a*c*z1 - a*w5 + a*z1 + w4 = 0
+
+   and a*c + 1 = 0,
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
@@ -1397,17 +1349,16 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    z4 - (w5 - z1),
 
-                               2
-   (a*c + 1)*z3 + (a*b)*z2 + (a *z1 - a*w2 + w4),
+   (a*c*d - a)*z3 + (a*w3 - 2*a*z1 - d*w4),
 
-                          2
-   (a*c - 2*b + 1)*z3 + (a *z1 + a*b*w1 - a*w2 - 2*b*w4 + w4)}},
+                2
+   (a*b)*z2 + (a *z1 - a*w2 + w4)}},
 
- {a*b <> 0 and a*w3 - 2*a*z1 - d*w4 <> 0 and a <> 0 and d <> 0 and a*c + 1 = 0
+ {a*b <> 0 and a*w3 - 2*a*z1 - d*w4 <> 0 and a <> 0 and d <> 0 and a*c*d - a = 0
 
-   and a + d = 0,
+   and a*c + 1 = 0,
 
-  {(a + d)*z3 - (a*w3 - 2*a*z1 - d*w4)}},
+  {a*w3 - 2*a*z1 - d*w4}},
 
                                                                  2
  {a*b <> 0 and a*w5 - a*z1 - w3 - w4 + 2*z1 <> 0 and a <> 0 and a *z1 + a*b*w1
@@ -1416,42 +1367,12 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and d = 0,
 
-  {d*z4 + (a*w5 - a*z1 - w3 - w4 + 2*z1)}},
-
-                                                     3         2
- {a*b <> 0 and a + d <> 0 and a <> 0 and d <> 0 and a *z1 + 2*a *b*c*w3
-
-        2           2         2         2
-   - 4*a *b*c*z1 + a *b*w1 + a *d*z1 - a *w2 - 2*a*b*c*d*w4 + a*b*d*w1
-
-   - 2*a*b*w4 - a*d*w2 + a*w4 - 2*b*d*w4 + d*w4 = 0 and 
-
-   2           2         2       2
-  a *c*w3 - 2*a *c*z1 + a *w5 - a *z1 - a*c*d*w4 + a*d*w5 - a*d*z1 - a*w4 - d*w4
-
-   = 0 and a*c + 1 = 0,
-
-  {z4 + c*z3 + b*z2 + (a*z1 - w2),
-
-   a*z4 - z3 - w4,
-
-   d*z4 + z3 - (w3 - 2*z1),
-
-   2*z4 + z2 - w1,
-
-   z4 - (w5 - z1),
-
-                               2
-   (a*c + 1)*z3 + (a*b)*z2 + (a *z1 - a*w2 + w4),
-
-   (a + d)*z3 - (a*w3 - 2*a*z1 - d*w4)}},
+  {a*w5 - a*z1 - w3 - w4 + 2*z1}},
 
                                       2
  {a*b <> 0 and a <> 0 and d <> 0 and a *z1 + a*b*w1 - a*w2 - 2*b*w4 + w4 = 0
 
-   and a*c - 2*b + 1 = 0 and a*c + 1 = 0 and a*w3 - 2*a*z1 - d*w4 = 0
-
-   and a + d = 0,
+   and a*b*c = 0 and a*c*d - a = 0 and a*c + 1 = 0 and a*w3 - 2*a*z1 - d*w4 = 0,
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
@@ -1463,10 +1384,10 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    z4 - (w5 - z1),
 
-                               2
-   (a*c + 1)*z3 + (a*b)*z2 + (a *z1 - a*w2 + w4),
+   (a*c)*z3 + (a*w5 - a*z1 - w4),
 
-   z3 - (a*w5 - a*z1 - w4)}},
+                2
+   (a*b)*z2 + (a *z1 - a*w2 + w4)}},
 
                            2
  {a*b <> 0 and a <> 0 and a *z1 + a*b*w1 + a*c*w3 - 2*a*c*z1 - a*w2 - 2*b*w3
@@ -1479,36 +1400,14 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    a*z4 - z3 - w4,
 
-   d*z4 + z3 - (w3 - 2*z1),
-
    2*z4 + z2 - w1,
 
-   (a*c*d + d)*z4 - (a*b)*z2
+   z4 - (w5 - z1),
 
-        2
-    - (a *z1 + a*c*w3 - 2*a*c*z1 - a*w2 + w3 + w4 - 2*z1),
+   z3 - (w3 - 2*z1),
 
-   z4 - (w5 - z1)}},
-
-       2           2
- {a*c*d *z1 + b*c*d *w1 - 2*b*c*d*w3 + 4*b*c*d*z1 - 2*b*d*w5 + 2*b*d*z1 + 2*b*w3
-
-                 2         2         2
-   - 4*b*z1 - c*d *w2 - c*d *w5 + c*d *z1 + 2*c*d*w3 - 4*c*d*z1 + d*w5 - d*z1
-
-   - w3 + 2*z1 <> 0 and a <> 0 and b*d <> 0 and 2*b + c*d - 1 <> 0 and d <> 0
-
-        2
-   and a *z1 - a*w2 + w4 = 0 and a*b = 0 and a*c + 1 = 0 and c*d - 1 = 0,
-
-                     2  2                         2           2
-  {(2*b*c*d - 2*b + c *d  - 2*c*d + 1)*z3 + (a*c*d *z1 + b*c*d *w1 - 2*b*c*d*w3
-
-                                                                 2         2
-       + 4*b*c*d*z1 - 2*b*d*w5 + 2*b*d*z1 + 2*b*w3 - 4*b*z1 - c*d *w2 - c*d *w5
-
-            2
-       + c*d *z1 + 2*c*d*w3 - 4*c*d*z1 + d*w5 - d*z1 - w3 + 2*z1)}},
+                2
+   (a*b)*z2 + (a *z1 + a*c*w3 - 2*a*c*z1 - a*w2 + w3 + w4 - 2*z1)}},
 
  {a*c*d*z1 - a*z1 + b*c*d*w1 - 2*b*c*d*w5 + 2*b*c*d*z1 - b*w1 + 2*b*w5 - 2*b*z1
 
@@ -1538,7 +1437,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and a*b + b*d = 0 and a*c - 2*b + 1 = 0,
 
-  {(a*c - 2*b + 1)*z2 - (a*c*w1 + 2*a*z1 - 2*c*w4 + w1 - 2*w2)}},
+  { - (a*c*w1 + 2*a*z1 - 2*c*w4 + w1 - 2*w2)}},
 
  {a*c*w5 - a*c*z1 + a*z1 - c*w4 - w2 + w5 - z1 <> 0 and a*c + 1 <> 0 and a <> 0
 
@@ -1551,7 +1450,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and a*c - 2*b + 1 = 0 and b = 0,
 
-  {b*z2 + (a*c*w5 - a*c*z1 + a*z1 - c*w4 - w2 + w5 - z1)}},
+  {a*c*w5 - a*c*z1 + a*z1 - c*w4 - w2 + w5 - z1}},
 
                                                                  2  2
  {a*c - 2*b + 1 <> 0 and a*c + 1 <> 0 and a <> 0 and d <> 0 and a *c *w5
@@ -1631,35 +1530,42 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
                                2
    (a*c + 1)*z3 + (a*b)*z2 + (a *z1 - a*w2 + w4)}},
 
+ {a*d*z1 + b*d*w1 - 2*b*d*w5 + 2*b*d*z1 - d*w2 + w3 - 2*z1 <> 0 and a <> 0
+
+                                               2
+   and b*c*d <> 0 and b*d <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0 and a*b = 0
+
+   and a*c + 1 = 0 and c*d - 1 = 0,
+
+  {a*d*z1 + b*d*w1 - 2*b*d*w5 + 2*b*d*z1 - d*w2 + w3 - 2*z1}},
+
  {a*d*z1 + b*d*w1 - 2*b*w3 - 2*b*w4 + 4*b*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1
 
    <> 0 and b*d <> 0 and d <> 0 and a = 0,
 
-  {(2*a*b + a*c*d - a)*z4 + (a*d*z1 + b*d*w1 - 2*b*w3 - 2*b*w4 + 4*b*z1 - c*d*w4
+  {a*d*z1 + b*d*w1 - 2*b*w3 - 2*b*w4 + 4*b*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1}}
 
-       - d*w2 + w3 + w4 - 2*z1)}},
+ ,
 
  {a*d*z1 + b*d*w1 - 2*b*w3 + 4*b*z1 - d*w2 + w3 - 2*z1 <> 0 and a <> 0
 
                                 2
    and b*d <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0 and a*b = 0 and a*c + 1 = 0
 
-   and 2*b + c*d - 1 = 0 and c*d - 1 = 0,
+   and b*c*d = 0 and c*d - 1 = 0,
 
-  {(2*b + c*d - 1)*z3 + (a*d*z1 + b*d*w1 - 2*b*w3 + 4*b*z1 - d*w2 + w3 - 2*z1)}}
-
- ,
+  {a*d*z1 + b*d*w1 - 2*b*w3 + 4*b*z1 - d*w2 + w3 - 2*z1}},
 
  {a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1 <> 0 and d <> 0 and a = 0 and b*d = 0,
 
-  {(a*c*d - a)*z4 + (b*d)*z2 + (a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1)}},
+  {a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1}},
 
                                                             2
  {a*d*z1 - d*w2 + w3 - 2*z1 <> 0 and a <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0
 
    and a*b = 0 and a*c + 1 = 0 and b*d = 0 and c*d - 1 = 0,
 
-  {(c*d - 1)*z3 + (b*d)*z2 + (a*d*z1 - d*w2 + w3 - 2*z1)}},
+  {a*d*z1 - d*w2 + w3 - 2*z1}},
 
  {2*a*z1 - c*d*w1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2 <> 0 and a <> 0 and c*d - 1 <> 0
 
@@ -1668,7 +1574,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and 2*b + c*d - 1 = 0,
 
-  {(2*b + c*d - 1)*z2 + (2*a*z1 - c*d*w1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2)}},
+  {2*a*z1 - c*d*w1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2}},
 
  {2*a*z1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2 <> 0 and a <> 0
 
@@ -1677,7 +1583,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and 2*b - 1 = 0 and d = 0,
 
-  {(2*c*d)*z4 - (2*b - 1)*z2 - (2*a*z1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2)}},
+  {2*a*z1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2}},
 
  {2*a*z1 - 2*c*w4 + w1 - 2*w2 <> 0 and d <> 0
 
@@ -1685,13 +1591,13 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and 2*b - 1 = 0,
 
-  {(2*a*c)*z4 + (2*b - 1)*z2 + (2*a*z1 - 2*c*w4 + w1 - 2*w2)}},
+  {2*a*z1 - 2*c*w4 + w1 - 2*w2}},
 
  {2*a*z1 - 2*c*w4 + w1 - 2*w2 <> 0 and a = 0 and 2*b - 1 = 0 and d = 0
 
    and w3 + w4 - 2*z1 = 0,
 
-  {(2*a*c)*z4 + (2*b - 1)*z2 + (2*a*z1 - 2*c*w4 + w1 - 2*w2)}},
+  {2*a*z1 - 2*c*w4 + w1 - 2*w2}},
 
                                                      2
  {2*a*z1 + w1 - 2*w2 <> 0 and a <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0
@@ -1700,7 +1606,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and 2*b - 1 = 0 and c*d - 1 = 0 and c = 0,
 
-  {(2*c)*z3 + (2*b - 1)*z2 + (2*a*z1 + w1 - 2*w2)}},
+  {2*a*z1 + w1 - 2*w2}},
 
  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1 <> 0 and a <> 0
 
@@ -1709,7 +1615,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and a*b = 0 and d = 0,
 
-  {(c*d)*z4 - (a*z1 + b*w1 - 2*b*w5 + 2*b*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1)}},
+  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1}},
 
  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1 <> 0 and 2*b - 1 <> 0
 
@@ -1717,13 +1623,13 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and b*d = 0,
 
-  {(a*c)*z4 + (a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1)}},
+  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1}},
 
  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1 <> 0 and 2*b - 1 <> 0
 
    and a = 0 and d = 0 and w3 + w4 - 2*z1 = 0,
 
-  {(a*c)*z4 + (a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1)}},
+  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1}},
 
  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - w2 + w5 - z1 <> 0 and a <> 0 and 2*b - 1 <> 0
 
@@ -1732,7 +1638,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and a*d*z1 - d*w2 + w3 - 2*z1 = 0 and b*d = 0 and c*d - 1 = 0 and c = 0,
 
-  {c*z3 + (a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - w2 + w5 - z1)}},
+  {a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - w2 + w5 - z1}},
 
  {a*z1 - c*d*w5 + c*d*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1 <> 0 and a <> 0
 
@@ -1743,18 +1649,14 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    and 2*b + c*d - 1 = 0 and b = 0,
 
-  {b*z2 + (a*z1 - c*d*w5 + c*d*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1)}},
+  {a*z1 - c*d*w5 + c*d*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1}},
 
- {a <> 0 and b*d <> 0 and 2*b + c*d - 1 <> 0 and d <> 0
+                                                     2
+ {a <> 0 and b*c*d <> 0 and b*d <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0
 
-        2                                         2           2
-   and a *z1 - a*w2 + w4 = 0 and a*b = 0 and a*c*d *z1 + b*c*d *w1 - 2*b*c*d*w3
+   and a*b = 0 and a*c + 1 = 0
 
-                                                             2         2
-   + 4*b*c*d*z1 - 2*b*d*w5 + 2*b*d*z1 + 2*b*w3 - 4*b*z1 - c*d *w2 - c*d *w5
-
-        2
-   + c*d *z1 + 2*c*d*w3 - 4*c*d*z1 + d*w5 - d*z1 - w3 + 2*z1 = 0 and a*c + 1 = 0
+   and a*d*z1 + b*d*w1 - 2*b*d*w5 + 2*b*d*z1 - d*w2 + w3 - 2*z1 = 0
 
    and c*d - 1 = 0,
 
@@ -1768,18 +1670,16 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    z4 - (w5 - z1),
 
-   (c*d - 1)*z3 + (b*d)*z2 + (a*d*z1 - d*w2 + w3 - 2*z1),
+   (2*b*c*d)*z3 + (a*d*z1 + b*d*w1 - 2*b*w3 + 4*b*z1 - d*w2 + w3 - 2*z1),
 
-   (2*b + c*d - 1)*z3 + (a*d*z1 + b*d*w1 - 2*b*w3 + 4*b*z1 - d*w2 + w3 - 2*z1)}}
-
- ,
+   (b*d)*z2 + (a*d*z1 - d*w2 + w3 - 2*z1)}},
 
                                       2
  {a <> 0 and b*d <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0 and a*b = 0
 
    and a*c + 1 = 0 and a*d*z1 + b*d*w1 - 2*b*w3 + 4*b*z1 - d*w2 + w3 - 2*z1 = 0
 
-   and 2*b + c*d - 1 = 0 and c*d - 1 = 0,
+   and b*c*d = 0 and c*d - 1 = 0,
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
@@ -1791,9 +1691,9 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    z4 - (w5 - z1),
 
-   (c*d - 1)*z3 + (b*d)*z2 + (a*d*z1 - d*w2 + w3 - 2*z1),
+   (c*d)*z3 + (d*w5 - d*z1 - w3 + 2*z1),
 
-   z3 + (d*w5 - d*z1 - w3 + 2*z1)}},
+   (b*d)*z2 + (a*d*z1 - d*w2 + w3 - 2*z1)}},
 
  {a <> 0 and 2*b + c*d - 1 <> 0 and c*d - 1 <> 0 and d <> 0
 
@@ -1841,7 +1741,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    z4 - (w5 - z1),
 
-   (2*c)*z3 + (2*b - 1)*z2 + (2*a*z1 + w1 - 2*w2)}},
+   (2*b - 1)*z2 + (2*a*z1 + w1 - 2*w2)}},
 
  {a <> 0 and 2*b - 1 <> 0
 
@@ -1856,13 +1756,13 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    a*z4 - z3 - w4,
 
-   d*z4 + z3 - (w3 - 2*z1),
-
    2*z4 + z2 - w1,
 
-   (2*c*d)*z4 - (2*b - 1)*z2 - (2*a*z1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}},
+   z3 - (w3 - 2*z1),
+
+   (2*b - 1)*z2 + (2*a*z1 + 2*c*w3 - 4*c*z1 + w1 - 2*w2)}},
 
                                                      2
  {a <> 0 and b <> 0 and c*d - 1 <> 0 and d <> 0 and a *z1 - a*w2 + w4 = 0
@@ -1944,7 +1844,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    z4 - (w5 - z1),
 
-   c*z3 + b*z2 + (a*z1 - w2 + w5 - z1)}},
+   b*z2 + (a*z1 - w2 + w5 - z1)}},
 
               2
  {a <> 0 and a *z1 + a*c*w3 - 2*a*c*z1 - a*w2 + w3 + w4 - 2*z1 = 0 and a*b = 0
@@ -1955,13 +1855,13 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    a*z4 - z3 - w4,
 
-   d*z4 + z3 - (w3 - 2*z1),
-
    2*z4 + z2 - w1,
 
-   (c*d)*z4 - b*z2 - (a*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}},
+   z3 - (w3 - 2*z1),
+
+   b*z2 + (a*z1 + c*w3 - 2*c*z1 - w2 + w5 - z1)}},
 
  {b*d <> 0 and d*w5 - d*z1 - w3 - w4 + 2*z1 <> 0 and d <> 0 and 
 
@@ -1969,7 +1869,7 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
    = 0 and a = 0,
 
-  {a*z4 + (d*w5 - d*z1 - w3 - w4 + 2*z1)}},
+  {d*w5 - d*z1 - w3 - w4 + 2*z1}},
 
  {b*d <> 0 and d <> 0 and 
 
@@ -1979,15 +1879,15 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
-   a*z4 - z3 - w4,
-
    d*z4 + z3 - (w3 - 2*z1),
 
    2*z4 + z2 - w1,
 
-   (a*c*d - a)*z4 + (b*d)*z2 + (a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}},
+    - z3 - w4,
+
+   (b*d)*z2 + (a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1)}},
 
  {2*b - 1 <> 0 and d <> 0 and a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1 = 0
 
@@ -1997,15 +1897,15 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
-   a*z4 - z3 - w4,
-
    d*z4 + z3 - (w3 - 2*z1),
 
    2*z4 + z2 - w1,
 
-   (2*a*c)*z4 + (2*b - 1)*z2 + (2*a*z1 - 2*c*w4 + w1 - 2*w2),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}},
+    - z3 - w4,
+
+   (2*b - 1)*z2 + (2*a*z1 - 2*c*w4 + w1 - 2*w2)}},
 
  {2*b - 1 <> 0 and a*z1 + b*w1 - 2*b*w5 + 2*b*z1 - c*w4 - w2 + w5 - z1 = 0
 
@@ -2013,15 +1913,15 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
-   a*z4 - z3 - w4,
-
-   d*z4 + z3 - (w3 - 2*z1),
-
    2*z4 + z2 - w1,
 
-   (2*a*c)*z4 + (2*b - 1)*z2 + (2*a*z1 - 2*c*w4 + w1 - 2*w2),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}},
+    - z3 - w4,
+
+   z3 - (w3 - 2*z1),
+
+   (2*b - 1)*z2 + (2*a*z1 - 2*c*w4 + w1 - 2*w2)}},
 
  {d <> 0 and a*d*z1 - c*d*w4 - d*w2 + w3 + w4 - 2*z1 = 0
 
@@ -2029,19 +1929,19 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
-   a*z4 - z3 - w4,
-
    d*z4 + z3 - (w3 - 2*z1),
 
    2*z4 + z2 - w1,
 
-   (a*c)*z4 + b*z2 + (a*z1 - c*w4 - w2 + w5 - z1),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}},
+    - z3 - w4,
+
+   b*z2 + (a*z1 - c*w4 - w2 + w5 - z1)}},
 
  {w3 + w4 - 2*z1 <> 0 and a = 0 and d = 0,
 
-  {(a + d)*z4 - (w3 + w4 - 2*z1)}},
+  {w3 + w4 - 2*z1}},
 
  {2*a*z1 - 2*c*w4 + w1 - 2*w2 = 0 and a = 0 and 2*b - 1 = 0 and d = 0
 
@@ -2049,15 +1949,15 @@ gsys({z4 + c*z3 + b*z2 + a*z1 - w2,2*z4 + z2 - w1,a*z4 - z3 - w4,d*z4 + z3 +
 
   {z4 + c*z3 + b*z2 + (a*z1 - w2),
 
-   a*z4 - z3 - w4,
-
-   d*z4 + z3 - (w3 - 2*z1),
-
    2*z4 + z2 - w1,
 
-   (a*c)*z4 + b*z2 + (a*z1 - c*w4 - w2 + w5 - z1),
+   z4 - (w5 - z1),
 
-   z4 - (w5 - z1)}}}
+    - z3 - w4,
+
+   z3 - (w3 - 2*z1),
+
+   b*z2 + (a*z1 - c*w4 - w2 + w5 - z1)}}}
 
 torder oo;
 
@@ -2116,17 +2016,14 @@ z*y*x-n1});
         2        2
    and a *b - a*b  = 0,
 
-     2        2        2        2        2        2
-  {(a *b - a*b )*x + (a *b - a*b )*y + (a *b - a*b )*z
-
         3        3
-    - (a *b - a*b  + a*n1 - a*n3 - b*n1 + b*n3)}},
+  { - (a *b - a*b  + a*n1 - a*n3 - b*n1 + b*n3)}},
 
    3
  {a  - n1 + n3 <> 0 and a - b = 0 and a = 0,
 
-                    2              2      2       3
-  {a*x*y + a*x*z - a *x + a*y*z - a *y - a *z + (a  - n1 + n3)}},
+    3
+  {a  - n1 + n3}},
 
    2        2
  {a *b - a*b  <> 0 and a - b <> 0,
@@ -2188,23 +2085,17 @@ z*y*x-n1});
         2    2        3    3
     - (a  - b )*z + (a  - b ),
 
-              2     2    2          2        2                 2     2    2
-   (a - b)*x*z  - (a  - b )*x*z + (a *b - a*b )*x + (a - b)*y*z  - (a  - b )*y*z
+              2     2    2                   2     2    2          2    2   2
+   (a - b)*x*z  - (a  - b )*x*z + (a - b)*y*z  - (a  - b )*y*z - (a  - b )*z
 
-        2        2        2    2   2     3    2        2    3
-    + (a *b - a*b )*y - (a  - b )*z  + (a  + a *b - a*b  - b )*z
+        3    2        2    3        3        3
+    + (a  + a *b - a*b  - b )*z - (a *b - a*b  - a*n3 + b*n3),
 
-        3        3
-    - (a *b - a*b  - a*n3 + b*n3),
+            2  2     2    2   2       2    2     2     3    2        2    3
+   (a - b)*y *z  - (a  - b )*y *z - (a  - b )*y*z  + (a  + a *b - a*b  - b )*y*z
 
-            2  2     2    2   2       2        2   2     2    2     2
-   (a - b)*y *z  - (a  - b )*y *z + (a *b - a*b )*y  - (a  - b )*y*z
-
-        3    2        2    3          3        3
-    + (a  + a *b - a*b  - b )*y*z - (a *b - a*b  - a*n3 + b*n3)*y
-
-        2        2   2     3        3
-    + (a *b - a*b )*z  - (a *b - a*b  - a*n3 + b*n3)*z
+        2  2      3                      3        3
+    - (a *b  - a*b  - a*n3 + b*n3)*y - (a *b - a*b  - a*n3 + b*n3)*z
 
         3  2    2  3    2       2
     + (a *b  - a *b  - a *n3 + b *n3)}},
@@ -2307,9 +2198,6 @@ torder oo;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 320 ms
-5: 5: 
-Quitting
-Fri Jun 30 10:08:14 CEST 2006
+Time for test: 442 ms, plus GC time: 42 ms
+@@@@@ Resources used: (0 1 63 0)

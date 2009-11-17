@@ -1,9 +1,5 @@
-Mon Jan  4 00:05:34 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Test file for Sparse Matrices and the Linear Algebra Package for
+Tue Nov 17 08:53:08 2009 run on win32
+% Test file for Sparse Matrices and the Linear Algebra Package for
 % Sparse Matrices.
 
 % Author: Stephen Scowcroft.                    Date: June 1995.
@@ -3617,10 +3613,6 @@ off rounded;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 2770 ms, plus GC time: 200 ms
-
-5: 5: 
-Quitting
-Mon Jan  4 00:05:46 MET 1999
+Time for test: 465 ms, plus GC time: 23 ms
+@@@@@ Resources used: (2 2 41 0)

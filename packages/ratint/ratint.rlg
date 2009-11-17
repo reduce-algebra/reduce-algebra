@@ -1,11 +1,7 @@
-Wed Jan 27 19:54:48 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
+Tue Nov 17 08:53:46 2009 run on win32
 
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
 *** c already defined as operator 
 
-3: 3: 
 exp1:=441*x^7+780*x^6-2861*x^5+4085*x^4+7695*x^3+3713*x^2-43253*x+24500;
 
 
@@ -190,9 +186,6 @@ ratint(1,x^5+1,x);
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 600 ms
-5: 5: 
-Quitting
-Wed Jan 27 19:55:22 MET 1999
+Time for test: 83 ms, plus GC time: 29 ms
+@@@@@ Resources used: (0 0 7 0)

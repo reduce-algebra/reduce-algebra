@@ -1,9 +1,5 @@
-Wed Jun 16 05:17:24 MET DST 1999
-REDUCE 3.7, 15-Apr-1999 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Test file for TrigSimp package
+Tue Nov 17 08:58:03 2009 run on win32
+% Test file for TrigSimp package
 
 %-------------------------TrigSimp--------------------------
 
@@ -155,7 +151,7 @@ cos(6*x + 4*y)
 trigsimp(sqrt(1-cos(2x)));
 
 
-sqrt(2)*sin(x)
+sqrt(2)*abs(sin(x))
 
 trigsimp(sin(x)^20*cos(x)^20, sin);
 
@@ -1407,10 +1403,6 @@ trigfactorize(1 + cos(2x) + 2cos(x)*cosh(x), x/2);
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 25490 ms, plus GC time: 830 ms
-
-5: 5: 
-Quitting
-Wed Jun 16 05:17:53 MET DST 1999
+Time for test: 4027 ms, plus GC time: 60 ms
+@@@@@ Resources used: (5 10 331 4)

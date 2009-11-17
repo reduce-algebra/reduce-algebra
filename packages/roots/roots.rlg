@@ -1,9 +1,5 @@
-Mon Jan  4 00:00:03 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Tests of the root finding package.
+Tue Nov 17 08:52:39 2009 run on win32
+% Tests of the root finding package.
 
 % Author: Stanley L. Kameny (stan_kameny@rand.org)
 
@@ -4381,10 +4377,6 @@ roots bb;
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 33430 ms, plus GC time: 1800 ms
-
-5: 5: 
-Quitting
-Mon Jan  4 00:00:41 MET 1999
+Time for test: 4012 ms, plus GC time: 100 ms
+@@@@@ Resources used: (4 20 282 3)

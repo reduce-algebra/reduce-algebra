@@ -1,9 +1,5 @@
-Sun Jan  3 23:47:50 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Test file for i_solve and r_solve operators.
+Tue Nov 17 08:50:31 2009 run on win32
+% Test file for i_solve and r_solve operators.
 % Author: F.J.Wright@Maths.QMW.ac.uk
 % Version 1.051, 16 Jan 1995
 
@@ -333,9 +329,6 @@ i_solve((x-1)*(x-i), x);
 
 end$
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 150 ms
-5: 5: 
-Quitting
-Sun Jan  3 23:47:53 MET 1999
+Time for test: 26 ms, plus GC time: 5 ms
+@@@@@ Resources used: (0 0 7 8)

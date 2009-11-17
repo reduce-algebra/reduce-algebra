@@ -1,9 +1,5 @@
-Tue Oct 21 17:58:12 MET DST 2003
-REDUCE Development Version, 21-Aug-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Tests of the rataprx package.
+Tue Nov 17 08:58:14 2009 run on win32
+% Tests of the rataprx package.
 
 % Authors: Lisa Temme, Wolfram Koepf (koepf@zib.de)
 
@@ -1103,10 +1099,6 @@ taylor(ws-sin(sqrt(x)),x,0,10);
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 27880 ms, plus GC time: 510 ms
-
-5: 5: 
-Quitting
-Tue Oct 21 17:58:54 MET DST 2003
+Time for test: 1589 ms, plus GC time: 38 ms
+@@@@@ Resources used: (2 3 23 6)

@@ -1,11 +1,5 @@
-Thu May 15 15:25:58 PDT 2003
-Loading image file :/home/hearn/devred/lisp/psl/linux/red/reduce.img 
-
-REDUCE Development Version, 14-May-2003 ...
-
-1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Demonstration of the REDUCE SOLVE package.
+Tue Nov 17 08:50:23 2009 run on win32
+% Demonstration of the REDUCE SOLVE package.
 
 on fullroots;
 
@@ -615,9 +609,9 @@ solve ({e^x - e^(1/2 * x) - 7},{x});
    solve({e^x - x**2},{x});
 
 
-                    - 1
-{x= - 2*lambert_w(------)}
-                    2
+                             - 1
+{x= - 2*lambert_w(-------------------------)}
+                   2*plus_or_minus(tag_14)
 
 
    % Variable inside trigonometrical functions with different forms.
@@ -2488,7 +2482,7 @@ solve({e^(x+y)+sin x,x-y},{x,y});
 
 
                  2*y_
-{{x=y,y=root_of(e     + sin(y_),y_,tag_15)}}
+{{x=y,y=root_of(e     + sin(y_),y_,tag_16)}}
  % no algebraic solution exists.
 
 solve({e^(x+y)-1,x-y**2},{x,y});
@@ -2568,17 +2562,23 @@ solve({e^(x+y+z)-1,x-y**2=1,x**2-z=2},{x,y,z});
 solve(e^(y^4+3y^2+y)-1,y);
 
 
-                         2/3                  1/3  1/3
-{y=(sqrt( - (sqrt(5) + 3)    - 4*(sqrt(5) + 3)   *2    + 2*sqrt(
+                           2/3                   1/3  1/3
+{y=(sqrt( - 3*(sqrt(5) + 3)    - 12*(sqrt(5) + 3)   *2    + 2*sqrt(
 
-                           2/3  2/3                1/3
-            3*(sqrt(5) + 3)   *2    + (sqrt(5) + 3)   *sqrt(5)
+                           2/3  2/3                1/3           1/3  1/6
+            9*(sqrt(5) + 3)   *2    + (sqrt(5) + 3)   *sqrt(15)*3   *3
 
-                              1/3      1/3              1/3     2/3
-             + 7*(sqrt(5) + 3)    + 2*2   *sqrt(5) + 8*2   ) - 2   )
+                              1/3          1/3  1/6                   1/3
+             + 3*(sqrt(5) + 3)   *sqrt(3)*3   *3    + 12*(sqrt(5) + 3)
 
-                    1/3    1/3                  1/6  1/6
-     + (sqrt(5) + 3)    - 2   )/(2*(sqrt(5) + 3)   *2   )}
+                  1/3           1/6      1/3          1/6      1/3   1/3  1/6
+             + 2*6   *sqrt(15)*3    + 6*6   *sqrt(3)*3    + 6*2   )*3   *3
+
+               2/3                 1/3            1/3
+          - 3*2   ) + (sqrt(5) + 3)   *sqrt(3) - 2   *sqrt(3))/(2
+
+                    1/6  1/6
+      *(sqrt(5) + 3)   *2   *sqrt(3))}
 
 
 % Transcendental equations proposed by Roger Germundsson
@@ -2662,21 +2662,21 @@ solve(x^5 - x - 1,x);
 
 
              5
-{x=root_of(x_  - x_ - 1,x_,tag_21)}
+{x=root_of(x_  - x_ - 1,x_,tag_22)}
 
 
 w:=rhs first ws;
 
 
                5
-w := root_of(x_  - x_ - 1,x_,tag_21)
+w := root_of(x_  - x_ - 1,x_,tag_22)
 
 
 w^5;
 
 
           5
-root_of(x_  - x_ - 1,x_,tag_21) + 1
+root_of(x_  - x_ - 1,x_,tag_22) + 1
 
 
 w^5-w;
@@ -2695,7 +2695,7 @@ clear w;
 solve(x-Pi/2 = cos(x+Pi),x);
 
 
-{x=root_of(2*cos(x_) - pi + 2*x_,x_,tag_23)}
+{x=root_of(2*cos(x_) - pi + 2*x_,x_,tag_24)}
 
 
 solve(exp(x^2+x+2)-1,x);
@@ -2750,7 +2750,7 @@ solve(z=log(w)/log(2)+w^2,w);
 
 
                               2
-{w=root_of(log(w_) + log(2)*w_  - log(2)*z,w_,tag_26)}
+{w=root_of(log(w_) + log(2)*w_  - log(2)*z,w_,tag_27)}
 
 
 solve(w*2^(w^2)=5,w);
@@ -2758,14 +2758,14 @@ solve(w*2^(w^2)=5,w);
 
               2
             w_
-{w=root_of(2   *w_ - 5,w_,tag_28)}
+{w=root_of(2   *w_ - 5,w_,tag_29)}
 
 
 solve(log(x/y)=1/y^2*(x+(1/x)),y);
 
 
                 x        2    2
-{y=root_of(log(----)*x*y_  - x  - 1,y_,tag_30)}
+{y=root_of(log(----)*x*y_  - x  - 1,y_,tag_31)}
                 y_
 
 
@@ -2773,7 +2773,7 @@ solve(exp(z)=w*z^(-n),z);
 
 
              n  z_
-{z=root_of(z_ *e   - w,z_,tag_32)}
+{z=root_of(z_ *e   - w,z_,tag_33)}
 
 
 solve(-log(3)+log(2+y/3)/2-log(y/3)/2=(-I)/2*Pi,y);
@@ -2800,7 +2800,7 @@ solve((I+1)*log(x)+(3*I+3)*log(x+3)=7,x);
 {x=root_of(x_ *(x_ + 3)   *x_  + 9*x_ *(x_ + 3)   *x_  + 27*x_ *(x_ + 3)   *x_
 
                    i         3*i       7
-            + 27*x_ *(x_ + 3)   *x_ - e ,x_,tag_34)}
+            + 27*x_ *(x_ + 3)   *x_ - e ,x_,tag_35)}
 
 
 solve(x+sqrt(x)=1,x);
@@ -2825,10 +2825,6 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 66090 ms, plus GC time: 3580 ms
-
-5: 5: 
-Quitting
-Thu May 15 15:27:05 PDT 2003
+Time for test: 5765 ms, plus GC time: 225 ms
+@@@@@ Resources used: (7 16 153 54)

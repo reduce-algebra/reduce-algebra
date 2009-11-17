@@ -1,9 +1,7 @@
-Wed Jan 27 19:44:31 MET 1999
-REDUCE 3.7, 15-Jan-99 ...
+Tue Nov 17 08:53:02 2009 run on win32
 
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*** co already defined as operator 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                      %
 % Examples of calculations of matrix normal forms using the REDUCE     %
 % NORMFORM package.                                                    %
@@ -1272,13 +1270,13 @@ a := [                         ]
     J := first jordan(A);
 
 
-           1            2
-j := mat((---*(sqrt(11*b  + 24*b - 48)*i - (b - 4)),0),
-           2
+                11   2                   1
+j := mat((sqrt(----*b  + 6*b - 12)*i - (---*b - 2),0),
+                4                        2
 
-                1            2
-         (0, - ---*(sqrt(11*b  + 24*b - 48)*i + b - 4)))
-                2
+                      11   2                  1
+         (0, - (sqrt(----*b  + 6*b - 12)*i + ---*b - 2)))
+                      4                       2
 
 
     off arnum;
@@ -1287,10 +1285,6 @@ j := mat((---*(sqrt(11*b  + 24*b - 48)*i - (b - 4)),0),
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 15030 ms, plus GC time: 780 ms
-
-5: 5: 
-Quitting
-Wed Jan 27 19:45:22 MET 1999
+Time for test: 2219 ms, plus GC time: 50 ms
+@@@@@ Resources used: (3 6 3290 1)

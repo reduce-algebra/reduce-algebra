@@ -1,10 +1,5 @@
-Fri Nov  9 09:21:41 CET 2001
-Loading image file :/opus/cons/reduce/lisp/psl/linux/red/reduce.img 
-REDUCE 3.7, 15-Apr-1999, patched to 29-Aug-2000 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: % Examples of use of Groebner code.
+Tue Nov 17 08:52:53 2009 run on win32
+% Examples of use of Groebner code.
 
 % In the Examples 1 - 3 the polynomial ring for the ideal operations
 % (variable sequence, term order mode) is defined globally in advance.
@@ -927,7 +922,7 @@ torder_compile(levelt,mat(
   (0,0,0,0,0,0,1,0,0,0),
   (0,0,0,0,0,0,0,0,1,0)));
 
-*** (levelt): base 16#8346F30, length 10#611 bytes
++++ levelt compiled, 324 + 20 bytes
 
 levelt
 
@@ -1236,9 +1231,6 @@ clear g, gg, trinkspolys, trinksvars$
 
 end;
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
 
-Time for test: 1360 ms, plus GC time: 60 ms
-
-5: 5: 
-Quitting
+Time for test: 643 ms, plus GC time: 48 ms
+@@@@@ Resources used: (0 1 45 0)

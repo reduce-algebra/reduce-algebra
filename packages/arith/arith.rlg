@@ -1,9 +1,5 @@
-Tue Jun  8 03:33:15 MET DST 1999
-REDUCE 3.7, 15-Apr-1999 ...
-
-1: 1: 
-2: 2: 2: 2: 2: 2: 2: 2: 2: 
-3: 3: % Tests of REDUCE Arithmetic.
+Tue Nov 17 08:50:18 2009 run on win32
+% Tests of REDUCE Arithmetic.
 
 % Authors: Anthony C. Hearn and Stanley L. Kameny.
 
@@ -88,13 +84,13 @@ symbolic ws;
 z := sin(pi);
 
 
-z := 1.22464679915e-16
+z := 1.22460635382e-16
 
 
 symbolic ws;
 
 
-(!*sq ((!:rd!: . 1.22465e-16) . 1) t)
+(!*sq ((!:rd!: . 1.2246063538224e-16) . 1) t)
 
 
 % Handling very small quantities.
@@ -502,7 +498,7 @@ asin 2;
 sin ws;
 
 
-2.0 - 1.06057523872e-16*i
+2.0 - 1.06054021205e-16*i
 
 
 acos 2;
@@ -544,7 +540,7 @@ exp ws;
 e**(i*pi);
 
 
- - 1 + 1.22464679915e-16*i
+ - 1 + 1.22460635382e-16*i
 
 
 e**i;
@@ -1479,7 +1475,7 @@ Complex function of two variables:  EXPT, LOGB, ATAN2;
 e**(pi*i);
 
 
- - 1 + 1.22465e-16*i
+ - 1 + 1.22461e-16*i
  % Should be -1 (except for computational error.)
 
 log(1+i);
@@ -1527,7 +1523,7 @@ asin 2;
 sin ws;
 
 
-2.0 - 1.06058e-16*i
+2.0 - 1.06054e-16*i
 
 
 acos 2;
@@ -1587,7 +1583,7 @@ acsc 0.1;
 csc ws;
 
 
-0.1 + 6.09254e-18*i
+0.1 + 6.09234e-18*i
 
 
 sinh(1+i);
@@ -1623,7 +1619,7 @@ atanh 2;
 tanh ws;
 
 
-2.0 + 1.83697e-16*i
+2.0 + 1.83691e-16*i
 
 
 acoth 0.3;
@@ -1635,7 +1631,7 @@ acoth 0.3;
 coth ws;
 
 
-0.3 - 5.57214e-17*i
+0.3 - 5.57196e-17*i
 
 
 asech(1-i);
@@ -2303,7 +2299,7 @@ begin scalar x;
       <<x:=ln(1+i*0.05); write acosh cosh x/x,"  "; terpr(i,5)>>
  end$
 
-1.0  1.0  1.0  1.0  1.0  
+1.0  1.0  0.99999999999999  1.0  1.0  
 1.0  1.0  1.0  1.0  1.0  
 1.0  1.0  1.0  1.0  1.0  
 1.0  1.0  1.0  1.0  1.0  
@@ -2364,7 +2360,7 @@ begin scalar x;
       <<x:=ln(1+i*0.05); write (asech sech x)/x,"  "; terpr(i,5)>>
  end$
 
-1.0  1.0  1.0  1.0  1.0  
+1.0  1.0  0.99999999999999  1.0  1.0  
 1.0  1.0  1.0  1.0  1.0  
 1.0  1.0  1.0  1.0  1.0  
 1.0  1.0  1.0  1.0  1.0  
@@ -2386,11 +2382,6 @@ begin scalar x;
 
 end;
 
-nil
 
-4: 4: 4: 4: 4: 4: 4: 4: 4: 
-
-Time for test: 710 ms
-5: 5: 
-Quitting
-Tue Jun  8 03:33:17 MET DST 1999
+Time for test: 95 ms, plus GC time: 11 ms
+@@@@@ Resources used: (0 0 61 71)
