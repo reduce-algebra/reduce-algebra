@@ -2,8 +2,9 @@
 #
 # This Makefile is a temporary solution.
 #
-# As a quick start just go "make install" and find rfcsl and rfpsl in trunk/bin.
-# 
+# As a quick start just go "make install" and find rfcsl and rfpsl in
+# trunk/bin.
+#
 # Usage Details:
 #
 # make csl:              build redfront for csl. The binary will be located
@@ -33,8 +34,8 @@
 # T. Sturm (sturm@redlog.eu)
 
 BUILD = $(shell ../../scripts/findhost.sh $(shell src/config.guess))
-LIBEDIT_TGZ = libedit-20090111-3.0.tar.gz
 
+LIBEDIT_TGZ = libedit-20090923-3.0.tar.gz
 LIBEDIT = $(shell basename $(LIBEDIT_TGZ) .tar.gz)
 LIBEDIT_BUILD = $(LIBEDIT)/$(BUILD)
 
@@ -45,7 +46,7 @@ all: csl psl
 
 csl: csl/$(BUILD)/redfront
 
-csl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h 
+csl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h
 	cd src; \
 	autoconf; \
 	autoheader
@@ -65,7 +66,7 @@ psl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h
 	../../src/configure --with-psl; \
 	make
 
-libedit/$(BUILD)/include/editline/readline.h: 
+libedit/$(BUILD)/include/editline/readline.h:
 	tar xvf ../../libedit/$(LIBEDIT_TGZ)
 	ln -sf $(LIBEDIT) libedit
 	mkdir -p $(LIBEDIT_BUILD)
