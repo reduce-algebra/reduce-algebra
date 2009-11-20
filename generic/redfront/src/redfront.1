@@ -27,58 +27,243 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 .\" OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-
-.TH "REDFRONT" "1" "21 Oct 2006" "REDFRONT 2.1"
-.SH NAME
-\fBredfront\fR \- REDUCE frontend
-.SH SYNOPSIS
-\fBredfront\fR [-bh] [[\-m] \fInumber\fP[kKmM]]
-.SH DESCRIPTION
-\fBredfront\fR is a terminal-based interactive frontend for the REDUCE
-computer algebra system. It uses the GNU readline(3) to provide
-editing facilities.
-.PP
-This man page only covers \fBredfront\fR. For information on REDUCE
-find its documentation at http://www.reduce-algebra.com/ .
-.SH "COMMANDS"
-.IP \fInumber\fP[kKmM] 14
-For a a PSL-based REDUCE, specify the number of bytes used for the
-Lisp heap. Case insensitive k ("kilo") is expanded to 000, and m
-("mega") is expanded to 000000.
-
+.Dd Nov 3, 2009
+.Os
+.Dt REDFRONT 1
+.Sh NAME
+.Nm redfront , rfcsl, rfpsl
+.Nd REDUCE frontend
+.Sh SYNOPSIS
+.Nm
+.Op Fl bhuvV
+.Op Fl c Ar colorspec
+.Op Oo Fl m Oc Ar bytes Ns Oo kKmM Oc
+.Nm rfcsl
+.Op Fl bhuvV
+.Op Fl c Ar colorspec
+.br
+.Nm rfpsl
+.Op Fl bhuvV
+.Op Fl c Ar colorspec
+.Op Oo Fl m Oc Ar bytes Ns Oo kKmM Oc
+.Sh DESCRIPTION
+.Nm
+is a terminal-based interactive frontend for the
+.Xr reduce 1
+computer algebra system. It uses the
+.Xr editline 3
+library to provide editing facilities.
+.Pp
+This man page only covers
+.Nm Ns Li .
+For information on REDUCE find its documentation at
+http://www.reduce-algebra.com.
+.Pp
+The executable REDUCE to be used by
+.Nm
+is compiled into the program. After proper installation you will find in
+the
+.Pa bin
+directory of your REDUCE tree symbolic links
+.Nm rfcsl
+and/or
+.Nm rfpsl
+for your CSL-based and PSL-based REDUCE, respectively.
+.Pp
+The following options are available:
+.Bl -tag -width indent
+.It Fl b
+Black-and-white mode. That is, do not adjust any terminal colors.
+.It Fl c Ar colorspec
+The format of the
+.Ar colorspec
+string is adopted from the
+.Ev LSCOLOR
+environment variable of
+.Xr ls 1 .
+It is a concatenation of pairs of the format
+.Ar f Ns Ar b ,
+where
+.Ar f
+is the foreground color and
+.Ar b
+is the background color.
+.Pp
+The color designators are as follows:
+.Pp
+.Bl -tag -width 4n -offset indent -compact
+.It Sy a
+black
+.It Sy b
+red
+.It Sy c
+green
+.It Sy d
+brown
+.It Sy e
+blue
+.It Sy f
+magenta
+.It Sy g
+cyan
+.It Sy h
+light grey
+.It Sy A
+bold black, usually shows up as dark grey
+.It Sy B
+bold red
+.It Sy C
+bold green
+.It Sy D
+bold brown, usually shows up as yellow
+.It Sy E
+bold blue
+.It Sy F
+bold magenta
+.It Sy G
+bold cyan
+.It Sy H
+bold light grey; looks like bright white
+.It Sy x
+default foreground or background
+.El
+.Pp
+Note that the above are standard
+\*[Ai]
+colors.
+The actual display may differ
+depending on the color capabilities of the terminal in use.
+.Pp
+The order of the attributes are as follows:
+.Pp
+.Bl -enum -offset indent -compact
+.It
+.Nm
+output,
+.It
+.Xr reduce 1
+output that is not typeset as a mathematical formula,
+.It
+.Xr reduce 1
+prompts,
+.It
+input lines,
+.It
+.Xr reduce 1
+output that is typeset as a mathematical formula. As a rule these are
+the evaluation results in the algebraic mode,
+.It
+debugging output, which appears only when
+.Nm
+is configured and compiled for debugging.
+.El
+.Pp
+Except for the debugging output color the chosen order of the colors is as they
+appear on the screen when starting
+.Nm .
+.Pp
+The default is
+.Qq "fxxxbxbxexgx" ,
+i.e. magenta
+.Nm
+output, general
+.Xr reduce 1
+output in the terminal foreground color, red prompts, red input lines,
+blue mathematical output, and cyan debugging messages, where the
+background is generally the default terminal background.
+.It Fl h
+Print a help message
+.It Oo Fl m Oc Ar bytes Oo kKmM Oc
+[PSL-based REDUCE only] Specify the number of bytes used for the Lisp
+heap. Case insensitive k ("kilo") is expanded to 000, and m ("mega") is
+expanded to 000000.
+.Pp
 On PSL based 64 bit systems, heap sizes less than one million are
 multiplied on the REDUCE side by one million. This happens after the
 expansion of k and m. For instance, 1 = 1m yields 1 MB, and 1k yields
-1000 MB. Consequently, k denotes GB until 1000k, which is again 1 MB.
-At present, this mechanism should be used in order to avoid a possible
-integer overflow in the heap size argument to the underlying binary
-PSL.
-.SH "OPTIONS"
-.IP \-b 5
-Black-and-white mode. That is, do not adjust any terminal colors.
-.IP \-h 5
-Print a short help message
-.IP \-m NUMBER[kKmM] 5
-Pass the heap size as an option instead of as a command.
-.SH "SEE ALSO"
-readline(3).
-.SH "FILES"
-~/.reduce_history stores command history between sessions.
-.SH "AUTHORS"
-Andreas Dolzmann and Thomas Sturm, University of Passau, Germany.
-The project has been derived from an earlier version by Winfried Neun,
-Konrad-Zuse-Zentrum fuer Informationstechnik, Berlin, Germany.
-.SH "BUG REPORTS"
-Please send bug reports and comments to \fIredlog@fmi.uni-passau.de\fP.
-.SH "BUGS"
-For redfront 1 KB is 1000 Bytes in contrast to 1024, 1 MB is 1000 KB,
-and so on.
-
-PSL based REDUCE on 32 bit systems generally do not admit more than
-128m heap size. On some systems (e.g. Mac G4, Solaris) this even
-reduces to 64m. On some architectures the command and the \-m option
-are generally ignored on the REDUCE side. The heap is then set to the
-maximum possible size.
-
-The special treatment of heap size arguments by 64 bit PSL based
-REDUCE should be revised.
+1000 MB. Consequently, k denotes GB until 1000k, which is again 1 MB. At
+present, this mechanism should be used in order to avoid a possible
+integer overflow in the heap size argument to the underlying binary PSL.
+.Pp
+For historical reasons, it is also possible to drop the
+.Fl m
+passing the heap size as a command instead of as an option. This variant
+is deprecated and likely to be removed in the future.
+.It Fl u
+Automatically load the
+.Xr reduce 1
+package
+.Qq utf8
+at startup. This uses unicode characters for the mathematical output.
+Note that the use of
+.Fl u
+requires a UTF-8-capable terminal, which is not checked by
+.Nm .
+.It Fl v | V
+Print a more verbose banner message.
+.El
+.Sh "IMPLEMENTATION NOTES"
+For redfront 1 KB is 1000 Bytes in contrast to 1024 Bytes, 1 MB is 1000
+KB, and so on.
+.Pp
+PSL based REDUCE on 32 bit systems generally does not admit more than
+128m heap size. On some systems (e.g. Mac G4, Solaris) this even reduces
+to 64m. On some architectures the command and the
+.Fl m
+option are generally ignored on the REDUCE side. The heap is then set to
+the maximum possible size.
+.Sh "FILES"
+.Bl -tag -width indent
+.It Pa $HOME/.reduce_history
+stores command history between sessions.
+.It Pa $PWD/.editrc , Pa $HOME/.editrc
+are
+.Xr editline 3
+configuration files, in which global settings as well as particular
+settings for
+.Nm
+can be made. See
+.Xr editrc 5
+for details. At startup
+.Nm
+sources the first one of these that exists.
+.El
+.Sh "SEE ALSO"
+.Xr editline 3
+.Sh EXAMPLES
+The following starts
+.Nm
+for PSL-based
+.Xr reduce 1
+via the corresponding symbolic link with unicode support and 1 GB heap
+on a 64 bit architecture:
+.Pp
+.Dl "rfpsl -u -m 1k"
+.Sh HISTORY
+The first version of
+.Nm
+was derived from an
+.Xr X 7
+interface by C. Cannam and W. Neun. Earlier versions have been realized
+and distributed by W. Neun and by A. Dolzmann and T. Sturm starting in
+1999.
+.Sh "AUTHORS"
+.An T. Sturm
+.Aq sturm@redlog.eu
+.Sh "BUGS"
+Due to limitations of
+.Xr editline 3
+the prompt coloring does not work. The prompt generally receives the
+same color as the input.
+.Pp
+The choice of background colors with
+.Fl c
+is not implemented yet. Nevertheless, choices must be specified in the
+.Ar colorspec
+argument, which are generally treated like
+.Qq x
+at present.
+.Pp
+The PSL heapsize selection policy for 64 bit architectures in contrast
+to 32 bit architectures (necessary to avoid some integer overflows on
+the former) is unintuitive and should probably be hidden via redfront.
