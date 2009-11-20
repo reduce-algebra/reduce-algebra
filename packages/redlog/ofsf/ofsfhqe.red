@@ -1398,7 +1398,10 @@ procedure ofsf_buildgenggsys(gsys);
    % Removes Conditions from branches, which are in a theory. [gsys] is a
    % Groebner System. Returns a Groebner System.
    for each branch in gsys collect
-      {lto_setminus(car branch,ofsf_hqetheo!*),cadr branch};
+      if eqcar(branch,'true) then
+	 branch
+      else
+      	 {lto_setminus(car branch,ofsf_hqetheo!*),cadr branch};
 
 % -----------------------------------------------------------------------------
 % Case of zero-dimensional ideal
