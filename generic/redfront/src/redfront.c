@@ -6,15 +6,15 @@
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-  
+
       * Redistributions of source code must retain the relevant
-        copyright notice, this list of conditions and the following
-        disclaimer.
+   	copyright notice, this list of conditions and the following
+	disclaimer.
       * Redistributions in binary form must reproduce the above
-        copyright notice, this list of conditions and the following
-        disclaimer in the documentation and/or other materials provided
-        with the distribution.
-  
+	copyright notice, this list of conditions and the following
+	disclaimer in the documentation and/or other materials provided
+	with the distribution.
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -39,22 +39,22 @@ int ReduceToMe[2];
 
 int verbose = 0;
 int unicode = 0;
-int color = 1; 
+int color = 1;
 char *memory;
 
 #define DEFAULT_REDFRONTCOLOR MAGENTA /* REDFRONT output */
-#define DEFAULT_NORMALCOLOR BLACK     /* REDUCE terminal output */
+#define DEFAULT_NORMALCOLOR USER      /* REDUCE terminal output */
 #define DEFAULT_PROMPTCOLOR BLACK     /* REDUCE prompt */
-#define DEFAULT_INPUTCOLOR RED        /* REDUCE input line */
+#define DEFAULT_INPUTCOLOR RED	      /* REDUCE input line */
 #define DEFAULT_OUTPUTCOLOR BLUE      /* REDUCE mathprint output */
-#define DEFAULT_DEBUGCOLOR CYAN       /* REDFRONT DEBUG output" */
+#define DEFAULT_DEBUGCOLOR CYAN	      /* REDFRONT DEBUG output" */
 
 int redfrontcolor = DEFAULT_REDFRONTCOLOR; /* REDFRONT output */
-int normalcolor = DEFAULT_NORMALCOLOR;   /* REDUCE terminal output */
-int promptcolor = DEFAULT_PROMPTCOLOR;   /* REDUCE prompt */
-int inputcolor = DEFAULT_INPUTCOLOR;    /* REDUCE input line */
-int outputcolor = DEFAULT_OUTPUTCOLOR;   /* REDUCE mathprint output */
-int debugcolor = DEFAULT_DEBUGCOLOR;    /* REDFRONT DEBUG output */
+int normalcolor = DEFAULT_NORMALCOLOR;	   /* REDUCE terminal output */
+int promptcolor = DEFAULT_PROMPTCOLOR;	   /* REDUCE prompt */
+int inputcolor = DEFAULT_INPUTCOLOR;	   /* REDUCE input line */
+int outputcolor = DEFAULT_OUTPUTCOLOR;	   /* REDUCE mathprint output */
+int debugcolor = DEFAULT_DEBUGCOLOR;	   /* REDFRONT DEBUG output */
 
 void parse_args(int,char **);
 void init_channels(void);
@@ -93,14 +93,14 @@ int main(int argc,char **argv,char **envp) {
     deb_fprintf(stderr,"parent: process alive - fork()=%d\n",reduceProcessID);
 
     parent();
-    
+
   } else {  /* I am the child */
 
     deb_fprintf(stderr,"child: process alive - fork()=%d\n",reduceProcessID);
-    
+
     child(argc,argv,envp);
   }
-  
+
   return -1;
 }
 
@@ -116,7 +116,7 @@ void parse_args(int argc,char **argv) {
 #endif
 
   int errflg=0;
-  
+
   while ((c = getopt(argc, argv, os)) != EOF)
     switch (c) {
     case 'h':
@@ -145,47 +145,77 @@ void parse_args(int argc,char **argv) {
       errflg++;
     }
 
-#ifdef BPSL
-  if (optind == argc - 1) {
-    memory = argv[optind];
-  }
-#endif
-    
   if (errflg) {
     print_usage(argv[0]);
     rf_exit (2);
   }
 
 #ifdef BPSL
+  if (optind < argc - 1) {
+    print_usage(argv[0]);
+    rf_exit (2);
+  }
+  if (optind == argc - 1) {
+    memory = argv[optind];
+  }
   memory = parse_memarg(memory==NULL ? MEMORY : memory,argv[0]);
+#else
+  if (optind != argc) {
+    print_usage(argv[0]);
+    rf_exit (2);
+  }
 #endif
 }
 
 int parse_colarg(char *s) {
+  /* Parse the parameter of -c as a string similar to LSCOLORS
+     documented in the ls manpage. The order is redfrontcolor,
+     normalcolor, promptcolor, inputcolor, outputcolor, debugcolor. The
+     default choice corresponds to "fxxxxxbxexgx". At present,
+     background specifications are ignored and upper case (bold face) is
+     mapped to lower case. */
   int c;
-      
-  c = map_colour(*s++);
-  outputcolor = (c<0) ? DEFAULT_OUTPUTCOLOR : c;
-  if (*s == 0) return 0;
 
   c = map_colour(*s++);
-  inputcolor = (c<0) ? DEFAULT_INPUTCOLOR : c;
+  redfrontcolor = (c<0) ? DEFAULT_REDFRONTCOLOR : c;
   if (*s == 0) return 0;
 
-  c = map_colour(*s++);
-  promptcolor = (c<0) ? DEFAULT_PROMPTCOLOR : c;
+  *s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   normalcolor = (c<0) ? DEFAULT_NORMALCOLOR : c;
   if (*s == 0) return 0;
 
+  *s++;
+  if (*s == 0) return 0;
+
   c = map_colour(*s++);
-  redfrontcolor = (c<0) ? DEFAULT_REDFRONTCOLOR : c;
+  promptcolor = (c<0) ? DEFAULT_PROMPTCOLOR : c;
+  if (*s == 0) return 0;
+
+  *s++;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  inputcolor = (c<0) ? DEFAULT_INPUTCOLOR : c;
+  if (*s == 0) return 0;
+
+  *s++;
+  if (*s == 0) return 0;
+
+  c = map_colour(*s++);
+  outputcolor = (c<0) ? DEFAULT_OUTPUTCOLOR : c;
+  if (*s == 0) return 0;
+
+  *s++;
   if (*s == 0) return 0;
 
   c = map_colour(*s++);
   debugcolor = (c<0) ? DEFAULT_DEBUGCOLOR : c;
+  if (*s == 0) return 0;
+
+  *s++;
   if (*s == 0) return 0;
 
   return 1;
@@ -193,15 +223,15 @@ int parse_colarg(char *s) {
 
 int map_colour(int ch) {
   switch (ch) {
-  case 'k': case 'K':
-  case 'B':           return BLACK;
-  case 'r': case 'R': return RED;
-  case 'g': case 'G': return GREEN;
-  case 'y': case 'Y': return YELLOW;
-  case 'b':           return BLUE;
-  case 'm': case 'M': return MAGENTA;
-  case 'c': case 'C': return CYAN;
-  case 'w': case 'W': return WHITE;
+  case 'a': case 'A': return BLACK;
+  case 'b': case 'B': return RED;
+  case 'c': case 'C': return GREEN;
+  case 'd': case 'D': return YELLOW;
+  case 'e': case 'E': return BLUE;
+  case 'f': case 'F': return MAGENTA;
+  case 'g': case 'G': return CYAN;
+  case 'h': case 'H': return WHITE;
+  case 'x':           return USER;
   default:            return -1;
   }
 }
@@ -210,11 +240,21 @@ char *parse_memarg(char *argstr,char *name) {
 /* Only used for PSL (#ifdef BPSL) */
   char *nargv2;
   char lchar;
-  
-  lchar = tolower(argstr[strlen(argstr)-1]);
+  int i;
 
-  if (isdigit(lchar)) 
-    return argstr;
+  i = strlen(argstr) - 1;
+  lchar = tolower(argstr[i]);
+  if (!isdigit(lchar) && lchar != 'm' && lchar != 'k') {
+    print_usage(name);
+    rf_exit(1);
+  }
+  i--;
+
+  for (; i >= 0; i--)
+    if (!isdigit(argstr[i])) {
+      print_usage(name);
+      rf_exit(1);
+    }
 
   if (lchar == 'm' ) {
     nargv2 = (char *)malloc(strlen(argstr)-1+6+1);
@@ -223,7 +263,7 @@ char *parse_memarg(char *argstr,char *name) {
     sprintf(nargv2,"%s000000",nargv2);
     return nargv2;
   }
-  
+
   if (lchar == 'k' ) {
     nargv2 = (char *)malloc(strlen(argstr)-1+3+1);
     strncpy(nargv2,argstr,strlen(argstr)-1);
@@ -231,39 +271,40 @@ char *parse_memarg(char *argstr,char *name) {
     sprintf(nargv2,"%s000",nargv2);
     return nargv2;
   }
-  print_usage(name);
-  resetcolor();
-  rf_exit(1);
-  return NULL;  // ... to make the compiler happy
+
+  return argstr;
 }
 
 void print_usage(char name[]) {
 #ifdef BPSL
   (void)fprintf(stderr,
-		"usage: %s [-bhvV] [-c COLORSPEC] [[-m] NUMBER[kKmM]]\n",name);
- #else
-  (void)fprintf(stderr,"usage: %s [-bhvV] [-c COLORSPEC]\n",name);
- #endif
+		"usage: %s [-bhuvV] [-c COLORSPEC] [[-m] NUMBER[kKmM]]\n",name);
+#else
+  (void)fprintf(stderr,"usage: %s [-bhuvV] [-c COLORSPEC]\n",name);
+#endif
 }
 
 void print_help(char name[]) {
   int w=color;
-  
+
   color = 0;
   print_banner(1);
   color=w;
 
   fprintf(stderr,"A REDUCE frontend\n\n");
-  
+
   print_usage(name);
 
-  fprintf(stderr,"       -b\t\tblack and white mode\n");
-  fprintf(stderr,"       -c COLORSPEC\tspecify colors for input, output, prompt\n");
+  fprintf(stderr,"       -b\t\tblack and white mode, i.e. do not use ANSI colors\n");
+  fprintf(stderr,"       -c COLORSPEC\tspecify colors for redfront output, normal output,\n");
+  fprintf(stderr,"         \t\tprompt, input, math output, debug output. The default\n");
+  fprintf(stderr,"         \t\tis fxxxxxbxexgx - see LSCOLORS in the ls manpage for\n");
+  fprintf(stderr,"         \t\tdetails\n");
   fprintf(stderr,"       -h\t\tthis help message\n");
 #ifdef BPSL
-  fprintf(stderr,"       -m NUMBER\theap size in bytes\n"); 
+  fprintf(stderr,"       -m NUMBER\theap size in bytes\n");
   fprintf(stderr,"       -m NUMBERk\theap size in kilobytes\n");
-  fprintf(stderr,"       -m NUMBERm\theap size in megabytes\n");  
+  fprintf(stderr,"       -m NUMBERm\theap size in megabytes\n");
 #endif
   fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
   fprintf(stderr,"       -v, -V\t\tverbose\n\n");
@@ -272,7 +313,7 @@ void print_help(char name[]) {
 #ifdef BPSL
   fprintf(stderr,"          %s -c rKbMgC -m 96m -v.\n\n",name);
 #else
-  fprintf(stderr,"          %s -c rKMKbC -v\n\n",name); 
+  fprintf(stderr,"          %s -c xxxxxxbxexgx -v\n\n",name);
 #endif
 
   fprintf(stderr,"There is a manpage available.\n");
@@ -280,7 +321,7 @@ void print_help(char name[]) {
 
 void print_banner(int vb) {
   textcolor(redfrontcolor);
-	
+
   if (vb) {
     int ur=0;
 #ifdef USE_READLINE
@@ -333,14 +374,17 @@ int textcolor(int fg) {
 
   oldcolor = currentcolor;
   currentcolor = fg;
-  textcolor1(0,fg,9);
+  if (fg == 9)
+    resetcolor();
+  else
+    textcolor1(0,fg,9);
   return oldcolor;
 }
 
-void textcolor1(int attr, int fg, int bg) {	
+void textcolor1(int attr, int fg, int bg) {
   if (color && HAVE_COLOR) {
     char command[13];
-    
+
     stextcolor1(command,attr,fg,bg);
     printf("%s", command);
     fflush(stdout);

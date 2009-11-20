@@ -129,3 +129,4 @@ void deb_cleanup(void);
 #define MAGENTA 5
 #define CYAN 6
 #define WHITE 7
+#define USER 9
