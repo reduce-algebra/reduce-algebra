@@ -60,7 +60,11 @@ psl/bpsl -td $STORE -f red/reduce.img <<XXX > buildlogs/$1.blg
 symbolic;
 
 loaded!-modules!* := nil;
-
+% TS: I work around a twisted situation on Windows, which requires a clean
+% solution. I rely on that I am in trunk/pslbuild/<configuration-triplet>:
+if 'dos memq lispsystem!* then
+  loaddirectories!* := "red/" . "psl/" . loaddirectories!*;
+% end TS
 load compiler;
 errorset('(load compat),nil,nil); % PSL compiler support.
 on verboseload;
