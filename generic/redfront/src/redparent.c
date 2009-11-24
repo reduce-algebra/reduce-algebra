@@ -6,7 +6,7 @@
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-  
+
    * Redistributions of source code must retain the relevant
    copyright notice, this list of conditions and the following
    disclaimer.
@@ -14,7 +14,7 @@
    copyright notice, this list of conditions and the following
    disclaimer in the documentation and/or other materials provided
    with the distribution.
-  
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -63,18 +63,18 @@ void read_until_prompt(char *);
 #include <fcntl.h>
 
 void parent(void) {
-  sig_installHandlers(); 
-	
+  sig_installHandlers();
+
 #ifdef HAVE_SETLINEBUF
   setlinebuf(stdout);
 #endif
-  
+
   close(MeToReduce[0]);
   close(ReduceToMe[1]);
 
   deb_fprintf(stderr,"child: MeToReduce[1]= %d, ReduceToMe[0] = %d\n",
 	   MeToReduce[1], ReduceToMe[0]);
-  
+
   atoploop();
 }
 
@@ -82,7 +82,7 @@ void atoploop(void) {
   char der_prompt[50],old_prompt[50];
   char *line = (char *)NULL;
   char *this_command = (char *)NULL;
-  
+
   load_package(unicode ? "redfront,utf8": "redfront");
 
   read_until_first_prompt(der_prompt);
@@ -119,14 +119,14 @@ void atoploop(void) {
 char *load_package(const char *package) {
   char *cmd;
   int len;
-  
+
   len = strlen(package)+strlen("load_package $");
   cmd = (char *)malloc(len + 1);
   sprintf(cmd,"load_package %s$",package);
   send_reduce(cmd);
 
   deb_fprintf(stderr,"parent: sending %s\n",cmd);
-  
+
   return cmd;
 }
 
@@ -138,11 +138,11 @@ void read_until_first_prompt(char der_prompt[]) {
   int pii=0;
   char ch;
   struct strbuf *b=(struct strbuf *)0,*t=(struct strbuf *)0;
-	
+
   textcolor(normalcolor);
-	
+
   while(status != FINISHED) {
-    ncharread = read(ReduceToMe[0],buffer,1000); 
+    ncharread = read(ReduceToMe[0],buffer,1000);
     for (ii=0; ii < ncharread; ii++) {
       ch = buffer[ii];
       if (ch == (char) 0x01 ) {
@@ -159,7 +159,7 @@ void read_until_first_prompt(char der_prompt[]) {
 	  t = addchar(ch,t);
 	}
       } else {	/* (status == FINISHED) */
-	der_prompt[pii] = 0x00; 
+	der_prompt[pii] = 0x00;
       }
     }
   }
@@ -175,7 +175,7 @@ char *read_valid_line(char der_prompt[]) {
   strcpy(orig_prompt,der_prompt);
 
   der_prompt = line_color_prompt(der_prompt);
-	
+
   line = line_read(der_prompt);
 
   if (line)
@@ -186,7 +186,7 @@ char *read_valid_line(char der_prompt[]) {
     if (strcmp(orig_prompt,"?") == 0) {
       line = line_quit("n");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == '>') {
-      line = line_quit("q;");
+      line = line_quit("q");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == ':') {
       line = line_quit("quit;");
     } else if (orig_prompt[strlen(orig_prompt) - 2] == '*') {
@@ -215,7 +215,7 @@ int is_too_long(const char line[]) {
 
 int badline(char line[]) {
   int i=0,n=0;
-	
+
   while (n <= SYSMAXBUFFER && line[i]) {
     if (line[i] == 0x0a)
       n = 0;
@@ -260,7 +260,7 @@ void send_reduce(char line[]) {
   int ii;
 
   deb_fprintf(stderr,"parent: entering send_reduce() ... line=%s\n",line);
-	
+
   if (line == (char *)NULL) {
     ch=0x04;
     write(MeToReduce[1],&ch,1);
@@ -319,11 +319,11 @@ void read_until_prompt(char der_prompt[]){
 	if ((int) ch > 31)
 	  der_prompt[pii++] = ch;
       } else {	/* (status == FINISHED) */
-	der_prompt[pii] = 0x00; 
-      } 
+	der_prompt[pii] = 0x00;
+      }
     }
-    fflush(stdout);	
+    fflush(stdout);
   }
-  
+
   deb_fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
 }
