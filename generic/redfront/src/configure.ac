@@ -48,6 +48,7 @@ AC_PROG_CC
 AS_IF([test "$EXEEXT" = .exe],
   [AC_DEFINE(WIN32,1,[This is some Windows version])
    AC_DEFINE(USE_PIPES,1,[Define as 1 for using pipes instead if sockets])
+   COMEXT=.com
    on_windows=yes],
   [AC_ARG_ENABLE(pipes,
    AC_HELP_STRING([--enable-pipes],
@@ -57,7 +58,8 @@ AS_IF([test "$EXEEXT" = .exe],
    else
       AC_DEFINE(USE_PIPES,1,[Define to 1 for using pipes instead if sockets])
    fi,
-   AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))])
+   AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))
+   COMEXT=""])
 
 dnl I have copied the following Apple stuff from cslbase/configure.ac.
 dnl Since I do not use automake, considerations about depnedency
@@ -143,7 +145,7 @@ if test "x$with_csl" != "xno" ; then
    if test "x$with_psl" != "xno" ; then
       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
    fi
-   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$EXEEXT",
+   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$COMEXT",
       [Define your executable REDUCE (with CSL)])
 elif test "x$with_psl" != "xno" ; then
    if test "x$with_csl" != "xno" ; then
