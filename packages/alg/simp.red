@@ -34,9 +34,9 @@ module simp; % Functions to convert prefix forms into canonical forms.
 fluid '(!*allfac !*div);
 
 fluid '(!*asymp!* !*complex !*exp !*gcd !*ifactor !*keepsqrts !*mcd
-        !*mode !*modular !*notseparate !*numval !*precise !*rationalize
-        !*reduced !*resimp !*sub2 !*uncached alglist!* dmd!* dmode!*
-        varstack!* !*combinelogs !*expandexpt !*msg frlis!* subfg!*
+        !*mode !*modular !*notseparate !*numval !*precise !*precise_complex
+        !*rationalize !*reduced !*resimp !*sub2 !*uncached alglist!* dmd!*
+        dmode!* varstack!* !*combinelogs !*expandexpt !*msg frlis!* subfg!*
         !*norationalgi factorbound!* ncmp!* powlis1!* !*nospurp
         !*ncmp);
 
@@ -394,8 +394,9 @@ symbolic procedure simpexptfctr(u,n);
 symbolic procedure simpexpt11(u,n,flg);
    % Expand exponent to put expression in canonical form.
    begin scalar x;
-      return if domainp denr n
-                or not(car(x := qremf(numr n,denr n)) and cdr x)
+      return if !*precise_complex then simpexpt2(u,n,flg)
+              else if domainp denr n
+                 or not(car(x := qremf(numr n,denr n)) and cdr x)
                then simpexpt2(u,n,flg)
               else multsq(simpexpt1(u,car x ./ 1,flg),
                           simpexpt1(u,cdr x ./ denr n,flg))
@@ -418,7 +419,7 @@ symbolic procedure simpexpt2(u,n,flg);
 %            return y>>;
     m:=numr n;
     if pairp u then <<
-     if car u eq 'expt
+     if car u eq 'expt and null !*precise_complex
       then <<n:=multsq(m:=simp caddr u,n);
              if !*precise
                and numberp numr m and evenp numr m
@@ -435,6 +436,7 @@ symbolic procedure simpexpt2(u,n,flg);
              return x>>
         % For a product under *precise we isolate positive factors.
      else if car u eq 'times and (y:=split!-sign cdr u) and car y
+%             and null !*precise_complex
       then <<x := simpexpt1(retimes append(cadr y,cddr y),n,flg);
              for each z in car y do x := multsq(simpexpt1(z,n,flg),x);
              return x>>
@@ -713,7 +715,7 @@ symbolic procedure mkrootsq(u,n);
    % Value is a standard quotient for U**(1/N).
    if u=1 then !*d2q 1
     else if n=2 and (u= -1 or u= '(minus 1)) then simp 'i
-    else if eqcar(u,'expt) and fixp caddr u
+    else if eqcar(u,'expt) and fixp caddr u and null !*precise_complex
      then exptsq(mkrootsq(cadr u,n),caddr u)
     else begin scalar x,y;
             if fixp u and not minusp u
@@ -761,7 +763,8 @@ symbolic procedure radf(u,n);
       while not domainp u do
      <<y := comfac u;
        if car y
-         then <<x := divide(pdeg car y,n);
+         then <<x := if !*precise_complex then 0 . pdeg car y
+                      else divide(pdeg car y,n);
             if car x neq 0
               then ipart := multf(
                    if evenp car x
@@ -789,11 +792,12 @@ symbolic procedure radf(u,n);
           <<y := lnc x;
                 if y neq 1 then <<x := quotf(x,y); z := multd(y,z)>>>>;
        if x neq 1
-         then <<x := radf1(sqfrf x,n);
+         then <<x := radf1(if !*precise_complex then {x .^ 1} 
+                            else sqfrf x,n);
                 y := car x;
                 if y neq 1 then
-                   <<%if !*precise and evenp n
-                      % then y := !*kk2f {'abs,prepf y};
+                   <<if !*precise and evenp n
+                       then y := !*kk2f {'abs,prepf y};
                      ipart := multf(y,ipart)>>;
                 rpart := append(rpart,cdr x)>>>>;
       if u neq 1
@@ -907,6 +911,10 @@ symbolic procedure nrootn(n,x);
 %      if signn then n := -n;
 %      return r . n
 %   end;
+
+switch precise_complex;
+
+put('precise_complex,'simpfg,'((t nil) (nil (rmsubs))));
 
 % ***** simplification functions for other explicit operators *****
 
