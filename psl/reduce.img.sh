@@ -109,6 +109,20 @@ cd psl
             (getd (quote supersparc)))
        (supersparc)))
 
+(flag '(fancy) 'switch)
+
+(put 'fancy 'simpfg
+  '((t (load fmprint) (fmp!-switch t))
+    (nil (fmp!-switch nil)) ))
+
+% implant graphics mode switch
+
+(setq *fancy nil)
+
+(cond ((not (unboundp 'win-messages))
+      (putv win-messages 3 '(~on '(fancy)))
+      (putv win-messages 4 '(and *fancy (~off '(fancy))))))
+
 (prog nil
    (reclaim)
    (terpri)
