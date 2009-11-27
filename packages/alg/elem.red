@@ -29,8 +29,8 @@ module elem; % Simplification rules for elementary functions.
 %
 
 
-fluid '(!*!*sqrt !*complex !*keepsqrts !*precise !*rounded dmode!*
-        !*elem!-inherit);
+fluid '(!*!*sqrt !*complex !*keepsqrts !*precise !*precise_complex
+        !*rounded dmode!* !*elem!-inherit);
 
 % No references to RPLAC-based functions in this module.
 
@@ -145,9 +145,11 @@ sign_rules :=
      sign( ~x / ~y) =>  sign x * sign y
            when y neq 1 and (numberp sign x or numberp sign y),
 %%   sign( ~x + ~y) =>  sign x when sign x = sign y,
-     sign( ~x ^ ~n) => 1 when fixp (n/2) and lisp(not !*complex),
+     sign( ~x ^ ~n) => 1 when fixp (n/2) and 
+                              lisp(not (!*complex or !*precise_complex)),
      sign( ~x ^ ~n) => sign x^n when fixp n and numberp sign x,
-     sign( ~x ^ ~n) => sign x when fixp n and lisp(not !*complex),
+     sign( ~x ^ ~n) => sign x when fixp n and 
+                                   lisp(not (!*complex or !*precise_complex)),
      sign(sqrt ~a)  => 1 when sign a=1,
      sign( ~a ^ ~x) => 1 when sign a=1 and impart x=0,
 %%   sign(abs ~a)   => 1,
