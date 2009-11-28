@@ -1,4 +1,4 @@
-Fri May 22 19:11:37 2009 run on darwin9.7.0:i386
+Sat Nov 28 12:03:26 2009 run on win32
 % Test only multipliation:
 easy1 := (x1+1***x2)***(x1-1***x2);
 
@@ -24,7 +24,77 @@ lpdoset lpdoweyl(1,x1,x2);
 {-1}
 
 
-% Beals-Kartashova:
+% Not really binomial but caused problems at some point:
+b3 := (a-partial(x1))***(a+partial(x1));
+
+
+                    2    2
+b3 :=  - partial(x1)  + a
+
+lpdofactorize b3;
+
+
+                 2
+{{partial(x1) + a , - partial(x1) + abs(a)}}
+
+
+% Differential binomial formulas:
+bin1 := (a()+partial(x1))***(a()+partial(x1));
+
+
+                   2
+bin1 := partial(x1)  + (2*a_00_ + 2*a_01_*x2 + 2*a_10_*x1) *** partial(x1) + (
+
+        2                                              2   2
+   a_00_  + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1 + a_01_ *x2
+
+                                 2   2
+    + 2*a_01_*a_10_*x1*x2 + a_10_ *x1  + a_10_)
+
+lpdofactorize bin1;
+
+
+{{partial(x1) + (a_00_ + a_01_*x2 + a_10_*x1),partial(x1)
+
+   + (a_00_ + a_01_*x2 + a_10_*x1)}}
+
+bin2 := (a()-partial(x1))***(a()-partial(x1));
+
+
+                   2
+bin2 := partial(x1)  + ( - 2*a_00_ - 2*a_01_*x2 - 2*a_10_*x1) *** partial(x1) + 
+
+      2                                              2   2
+(a_00_  + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1 + a_01_ *x2  + 2*a_01_*a_10_*x1*x2
+
+         2   2
+  + a_10_ *x1  - a_10_)
+
+lpdofactorize bin2;
+
+
+{{partial(x1) + ( - a_00_ - a_01_*x2 - a_10_*x1),
+
+  partial(x1) + ( - a_00_ - a_01_*x2 - a_10_*x1)}}
+
+bin3 := (a()-partial(x1))***(a()+partial(x1));
+
+
+                      2         2
+bin3 :=  - partial(x1)  + (a_00_  + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1
+
+           2   2                              2   2
+    + a_01_ *x2  + 2*a_01_*a_10_*x1*x2 + a_10_ *x1  - a_10_)
+
+lpdofactorize bin3;
+
+
+{{partial(x1) + ( - a_00_ - a_01_*x2 - a_10_*x1),
+
+   - partial(x1) + ( - a_00_ - a_01_*x2 - a_10_*x1)}}
+
+
+% Beals-Kartashova 2005, Section 5.3, special case
 bkf := (partial(x1)+partial(x2)+(a10-a01)/2) ***
    (partial(x1)-partial(x2)+(a10+a01)/2);
 
@@ -40,15 +110,13 @@ bkf := partial(x1)  - partial(x2)  + a10 *** partial(x1) + a01 *** partial(x2)
 lpdofactorize bkf;
 
 
-{{true,
+                                - a01 + a10
+{{partial(x1) + partial(x2) + --------------,partial(x1) - partial(x2)
+                                    2
 
-                                   a01 - a10
-  { - partial(x1) - partial(x2) + -----------,
-                                       2
-
-                                    - a01 - a10
-    - partial(x1) + partial(x2) + --------------}}}
-                                        2
+      a01 + a10
+   + -----------}}
+          2
 
 
 % Ad hoc example:
@@ -65,50 +133,12 @@ sth := partial(x1)  - partial(x2)  + (2*a01 + 2*a10) *** partial(x1)
 lpdofactorize sth;
 
 
-{{true,
+{{partial(x1) + partial(x2) + (a01 + a10),partial(x1) - partial(x2)
 
-  { - partial(x1) - partial(x2) + ( - a01 - a10), - partial(x1) + partial(x2)
-
-    + ( - a01 - a10)}}}
+   + (a01 + a10)}}
 
 
-% Differential binomial formulas:
-bin1 := (a+partial(x1))***(a+partial(x1));
-
-
-                   2                            2
-bin1 := partial(x1)  + (2*a) *** partial(x1) + a
-
-bin2 := (a-partial(x1))***(a-partial(x1));
-
-
-                   2                            2
-bin2 := partial(x1)  - (2*a) *** partial(x1) + a
-
-bin3 := (a-partial(x1))***(a+partial(x1));
-
-
-                      2    2
-bin3 :=  - partial(x1)  + a
-
-lpdofactorize bin1;
-
-
-{{true,{ - partial(x1) - a, - partial(x1) - a}}}
-
-lpdofactorize bin2;
-
-
-{{true,{ - partial(x1) + a, - partial(x1) + a}}}
-
-lpdofactorize bin3;
-
-
-                       2
-{{true,{partial(x1) + a , - partial(x1) + abs(a)}}}
-
-
-% Blumberg:
+% Blumberg 1912:
 p := partial(x1)+x1***partial(x2);
 
 
@@ -152,14 +182,14 @@ d - r***q;
 lpdofactorize(d,a()***partial(x1)+b());
 
 
-                                   2
-{{true,{partial(x1) + 1,partial(x1)  + x1 *** partial(x1) *** partial(x2)
+                             2
+{{partial(x1) + 1,partial(x1)  + x1 *** partial(x1) *** partial(x2)
 
-         + partial(x1) + (x1 + 1) *** partial(x2)}}}
+   + partial(x1) + (x1 + 1) *** partial(x2)}}
 
 
 end;
 
 
-Time for test: 1390 ms, plus GC time: 10 ms
-@@@@@ Resources used: (2 5 15 0)
+Time for test: 1430 ms, plus GC time: 23 ms
+@@@@@ Resources used: (1 7 28 0)
