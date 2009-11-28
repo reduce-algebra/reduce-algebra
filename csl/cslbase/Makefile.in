@@ -1605,11 +1605,11 @@ reduce.doc/index.html:
 @windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/p* .
 @windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/w* .
 @windows_TRUE@	-mkdir -p share/Postscript
-@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/R* share/Postscript
-@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/8* share/Postscript
-@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/c* share/Postscript
-@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/k* share/Postscript
-@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/p* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/R* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/8* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/c* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/k* share/Postscript
+@windows_TRUE@	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/p* share/Postscript
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
 @windows_TRUE@	chmod +x *gnuplot*.exe

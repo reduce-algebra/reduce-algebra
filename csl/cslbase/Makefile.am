@@ -803,11 +803,11 @@ $(GP):
 	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/p* .
 	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/w* .
 	-mkdir -p share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/R* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/8* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/c* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/k* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscrip/p* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/R* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/8* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/c* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/k* share/Postscript
+	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/p* share/Postscript
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
 	chmod +x *gnuplot*.exe
