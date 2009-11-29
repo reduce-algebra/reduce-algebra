@@ -434,8 +434,8 @@ symbolic procedure mksetshare(u,v);
 
 symbolic procedure formsetq(u,vars,mode);
    % formsetq1 and formsetq2 are for handling assignments to lists and
-   % pairs of identifiers in symbolic mode, resp. The original formsetq
-   % has been renamed to formsetq0 but remained unchanged.
+   % pairs of identifiers, resp., in symbolic mode. The original
+   % formsetq has been renamed to formsetq0 but remained unchanged.
    if mode neq 'symbolic then
       formsetq0 (u,vars,mode)
    else if eqcar(cadr u,'list) then
@@ -486,34 +486,37 @@ symbolic procedure formsetq0(u,vars,mode);
    end;
 
 symbolic procedure formsetq1(u,vars,mode);
-   begin scalar gens,li,coll;
-      gens :=  gensym();
-      li  := cdr cadr u;
-      while li do <<
-	 coll := formsetq0 ( list ('setq , car li, list ('first , gens)),
-	    vars,mode) . coll;
-	 coll := list('setq, gens,list('cdr , gens)) . coll;
-	 li := cdr li
-      >>;
-      coll := append('((return resu)) , coll);
-      return('prog . list( gens , 'resu) .
-	 list ('setq , gens ,  caddr u) .
-	 list ('setq , 'resu ,  gens) .
-	 reverse (coll))
+   begin scalar gens,resu,li,coll;
+      gens := gensym();
+      resu := gensym();
+      vars := (gens . 'scalar) . vars;
+      li := cdr cadr u;
+   a: if null li then go b;
+      coll := formsetq0(list('setq, car li, list('car, gens)), vars, mode)
+         . coll;
+      coll := list('setq, gens, list('cdr, gens)) . coll;
+      li := cdr li;
+      go a;
+   b: coll := list('return, resu) . coll;
+      return('prog . list(gens, resu) .
+             formsetq0(list('setq, gens, caddr u), vars, mode) .
+             list('setq, resu, gens) .
+             reversip coll)
    end;
 
 symbolic procedure formsetq2(u,vars,mode);
    begin scalar gens,li,coll;
-      gens :=  gensym();
+      gens := gensym();
+      vars := (gens . 'scalar) . vars;
       li := cdr cadr u;
-      coll := formsetq0 ( list ('setq , car li, list ('car , gens)) ,vars,mode)
-	 . coll;
-      coll := formsetq0 ( list ('setq , cadr li, list ('cdr , gens)) ,vars,mode)
-	 . coll;
-      coll := list( 'return, gens) . coll;
-      return('prog . list( gens) .
-	     list ('setq , gens ,  caddr u) .
-    	     reverse (coll))
+      coll := formsetq0(list('setq, car li, list('car, gens)), vars, mode)
+         . coll;
+      coll := formsetq0(list('setq, cadr li, list('cdr, gens)),vars, mode)
+         . coll;
+      coll := list('return, gens) . coll;
+      return('prog . list gens .
+             formsetq0(list('setq, gens, caddr u), vars, mode) .
+             reversip coll)
    end;
 
 put('setq,'formfn,'formsetq);
