@@ -1,0 +1,50 @@
+ENV=WIN32
+
+PROJ = bpsl
+SRC = bps.c bpsheap.c echo.c file-sta.c float.c misc.c os-hooks.c pslextra.c pwd-fn.c sigs.c unix-io.c datetag.c
+SRC2 = winloop.c winsysdp.c windlg.c winio.c fancy.c psllcall.c
+DOSWIN = c:\psl\kernel\dos386\windows
+
+!include <ntwin32.mak>
+
+all: $(PROJ).exe
+
+# Inference Rules:
+
+.c.obj:
+    $(cc) $(cdebug) $(cflags) /W2 $(cvars) $(cf) $<
+
+main.obj: main.asm
+     masm386 /Ml main main main main
+
+psllw.rbj: psllw.rc psllw.h psllwr.ico psllwp.ico page.cur bee1.ico
+    $(RC) $(RC_FLAGS) $(cvars) -fo $*.tmp -r psllw.rc
+    cvtres -i386 $*.tmp -o psllw.rbj
+    del $*.tmp
+
+winloop.obj: winloop.c winstruc.c psllw.h pcommon.h
+    $(cc) $(cflags) /W2 winloop.c
+
+winsysdp.obj: winsysdp.c winext.h psllw.h pcommon.h
+    $(cc) $(cflags) -DWIN32 /W2 winsysdp.c
+
+winio.obj: winio.c winext.h psllw.h
+    $(cc) $(cflags) /W2 winio.c
+
+
+fancy.obj: fancy.c
+     $(cc) $(cflags) /W2 fancy.c
+
+windlg.obj: windlg.c
+    $(cc) $(cflags) /W2 windlg.c
+
+psllcall.obj: psllcall.c winpipes.c psllcall.h
+    $(cc) $(cflags) /W2 psllcall.c
+#
+#                   -MAP:bpsl.map 
+#
+$(PROJ).exe: $(SRC:.c=.OBJ) main.obj $(SRC2:.c=.OBJ) psllw.rbj
+    $(link)  -SUBSYSTEM:win32s  -MAP:bpsl.map $(guiflags) -out:$(PROJ).exe main.obj  $(SRC:.c=.OBJ) $(SRC2:.c=.OBJ) psllw.rbj  $(guilibs)
+    mkbare
+    psl2redu
+

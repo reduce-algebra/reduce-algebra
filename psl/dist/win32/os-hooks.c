@@ -1,0 +1,245 @@
+/******************************************************************************
+*
+* File:         $PXK/OS-HOOKS.C
+* Description:  OS specific startup and cleanup hooks.
+*               Windows NT, DEC ALpha
+* Author:     
+* Created:      9-Mar-84
+* Modified:    15-Jul-85 10:10:51 (RAM)
+* Mode:         Text
+* Package:
+* Status:       Experimental (Do Not Distribute)
+*
+*
+******************************************************************************
+% (c) Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
+%
+
+%
+
+% (c) Copyright 1982, University of Utah
+
+%
+
+% Redistribution and use in source and binary forms, with or without
+
+% modification, are permitted provided that the following conditions are met:
+%
+
+%
+    * Redistributions of source code must retain the relevant copyright
+
+%      notice, this list of conditions and the following disclaimer.
+
+%
+%    * Redistributions in binary form must reproduce the above copyright
+
+%      notice, this list of conditions and the following disclaimer in the
+
+%      documentation and/or other materials provided with the distribution.
+
+%
+
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+
+% POSSIBILITY OF SUCH DAMAGE.
+
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% 
+* Revisions:
+*
+*
+******************************************************************************
+*/
+//////#ifdef WINPSL
+#include <windows.h>
+//////#endif
+
+#include <stdio.h>
+#include <string.h>
+#include <setjmp.h>
+
+#define _Far16 _far16
+#define INCL_DOSEXCEPTIONS
+#define INCL_BASE
+#define ULONG DWORD
+
+#define ENDCHAR 4
+
+extern HANDLE fe2lisp_read,fe2lisp_write, lisp2fe_read, lisp2fe_write; 
+
+FILE * scriptin; FILE * scriptout;
+int script_mode=0;
+int win_mode=0;
+int pipe_mode=0;
+
+extern int bruch_bruch,psl_callback1;
+
+extern int firstkernel;
+extern char bps[];
+
+#ifndef WINPSL
+int hpipe = 0;
+#endif
+
+#include <excpt.h>
+
+
+jmp_buf mainenv,signalenv;
+
+
+/****************** main ***********************/
+
+
+main(argc,argv)
+
+int argc;
+char *argv[];
+{
+  int val; 
+  char * renv;
+  int i,p;
+
+  for(i=1; i<argc; i++)
+   { 
+     if(0==strcmp(argv[i],"-p"))
+     { sscanf(argv[i+1],"%d",&fe2lisp_read);
+       sscanf(argv[i+2],"%d",&lisp2fe_write);
+       my_popen_slave(0);
+       win_mode = 1;
+       pipe_mode = 1;
+     }
+   }  
+
+  if(((char*)renv=(char*)getenv("reduce")) ==(char*) NULL)
+  {  // create path to %reduce%
+       int l; char*s;
+       char path[100],env[200]="reduce=";
+
+#ifdef WINPSL
+       GetModuleFileName((HMODULE)NULL,path,100L);
+       l=strlen(path);
+       while(l>0 && path[l] != '\\') l--; path[l]='\0';
+       if(s=strstr(path,"\\bin\\")) *s = '\0';
+       strcat(env,path);
+       _putenv(strdup(env));
+#else
+      // printf("\n+=+=+=+ WARNING: variable reduce not set\n");
+#endif
+  }
+ 
+  scriptin = NULL; scriptout = NULL;
+  psl_callback1 = 0;
+  clear_dtabsize();
+  unixinitio(); 
+  bruch_bruch = 0;
+
+  c_signal();   // initizlize Ctrl C
+
+  val=setjmp(mainenv);        /* set non-local return point for exit    */
+
+  if (val == 0)
+/*    try{*/ psl_main(argc,argv); /* }
+         except(EXCEPTION_EXECUTE_HANDLER) 
+          {printf("Error on PSL kernel level\n");};*/
+
+  if (pipe_mode) my_pexit();
+
+  if(scriptin != NULL) fclose(scriptin); 
+  if(scriptout != NULL) fclose(scriptout);
+  
+  exit(val-1);
+ 
+}
+ 
+ 
+close_all()
+{
+   if(scriptout != NULL) fclose(scriptout);
+   scriptout = NULL;
+}
+
+os_startup_hook(argc, argv)
+     int argc;
+     char *argv[];
+{
+  setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
+}
+ 
+os_cleanup_hook()
+{
+longjmp(mainenv,1);
+}
+ 
+
+clear_iob()
+{
+
+}
+ 
+/*
+ *    Some static area must be initialized on hot start.
+ *    There may be other area to be initialized but we have no idea
+ *    to know them.
+ *
+ *    _dtabsize ----_end
+ */
+ 
+ 
+extern char *end;
+/*
+ *     Size of dtabsize is 0x34c bytes.
+ */
+clear_dtabsize()
+{
+ }
+ 
+char * rindex(s,c)
+   /* look for the last occurrence of character c in string s;
+      if found, return pointer to string part, NULL otherwise */
+        char * s; char c;
+        { int i,l; char x;
+          for (i=0; s[i]!='\000'; i++);
+          for (i=i-1; (s[i] !=c) && (i>=0) ; i--);
+          if (i<0) return(NULL); else return(& s[i]);
+        } 
+
+char * index(s,c) 
+   /* look for the first occurrence of character c in string s;
+      if found, return pointer to string part, NULL otherwise */ 
+        char * s; char c; 
+        { int i,l; char x;
+          for (i=0; (s[i] !=c) && (s[i]!='\000') ; i++);
+          if (s[i]=='\000') return(NULL); else return(& s[i]); 
+        } 
+
+bzero (b,length) 
+char * b; int length; 
+{ int i;
+  for (i=0; i<length; i++) b[i]='\000' ; } 
+ 
+
+

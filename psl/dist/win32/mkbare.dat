@@ -1,0 +1,10 @@
+(setq loaddirectories!* '("" "d:\psl\lap\"))
+(copyd '! yield 'whatsup)
+(cond ((not (unboundp 'win-messages))
+          (putv win-messages 3 '(on fanncy))
+          (putv win-messages 4 '(off fancy))))
+
+(savesystem "bare psl" "d:\psl\bin\win32\bpsl" nil)
+
+%i m q
+(exitlisp)

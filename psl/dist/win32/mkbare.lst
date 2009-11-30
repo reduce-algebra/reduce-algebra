@@ -1,0 +1,125 @@
+Setting heap limit as follows:
+Total heap & bps space = 8000000 (7A1200), bps = 20.00, heap = 80.00
+bpssize = 1600000 (186A00), heapsize = 6400000 (61A800)
+About to load LOAD-PSL
+loading constants.b to 457b9c
+ reformatted  constant.b 
+loading compsupport.b to 458170
+ reformatted  compsupp.b 
+loading cons-mkvect.b to 4584a4
+ reformatted  cons-mkv.b 
+loading prop-list.b to 458ea0
+ reformatted  prop-lis.b 
+loading symbol-vals.b to 459610
+ reformatted  symbol-v.b 
+loading type-conver.b to 4598e4
+ reformatted  type-con.b 
+loading easy-sl.b to 45a210
+loading funct-prims.b to 45be30
+ reformatted  funct-pr.b 
+loading fluid-globl.b to 45c19c
+ reformatted  fluid-gl.b 
+loading allocators.b to 45c4c4
+ reformatted  allocato.b 
+loading apply-lap.b to 45cb70
+ reformatted  apply-la.b 
+loading arithwoco.b to 45cef0
+ reformatted  arithwoc.b 
+loading autoload.b to 45ed24
+loading auto-tr.b to 45eef0
+loading backtrace.b to 45ef70
+ reformatted  backtrac.b 
+loading base-io.b to 45f4f4
+loading binding.b to 460170
+loading break.b to 4605e0
+loading carcdr.b to 460d90
+loading catch-throw.b to 4616d4
+ reformatted  catch-th.b 
+loading char-io.b to 461e20
+loading cons-mkvect.b to 462130
+ reformatted  cons-mkv.b 
+loading cont-error.b to 462870
+ reformatted  cont-err.b 
+loading copiers.b to 462a50
+loading static-gc.b to 4630f0
+loading defconst.b to 465dc0
+loading def-smacro.b to 465f24
+ reformatted  def-smac.b 
+loading dskin.b to 4663d0
+loading easy-non-sl.b to 466ba4
+ reformatted  easy-non.b 
+loading equal.b to 468250
+loading eval-apply.b to 468954
+ reformatted  eval-app.b 
+loading eval-when.b to 469470
+ reformatted  eval-whe.b 
+loading explode-com.b to 469500
+ reformatted  explode-.b 
+loading io-extens.b to 469d10
+ reformatted  io-exten.b 
+loading knowntocomp.b to 469d90
+ reformatted  knowntoc.b 
+loading lisp-macros.b to 46a0e0
+ reformatted  lisp-mac.b 
+loading load.b to 46a530
+loading loop-macros.b to 46ad50
+ reformatted  loop-mac.b 
+loading oblist.b to 46b4b4
+loading onoff.b to 46bc94
+loading open-close.b to 46be14
+ reformatted  open-clo.b 
+loading other-io.b to 46c0f0
+loading others-sl.b to 46c3a0
+ reformatted  others-s.b 
+loading printers.b to 46c520
+loading prog-friend.b to 46efa0
+ reformatted  prog-fri.b 
+loading rds-wrs.b to 46f380
+loading read.b to 46f570
+loading sequence.b to 46fc74
+loading sets.b to 471030
+loading string-gen.b to 471450
+ reformatted  string-g.b 
+loading token-scan.b to 471560
+ reformatted  token-sc.b 
+loading top-loop.b to 472e10
+loading vectors.b to 473f60
+loading dumplisp.b to 474390
+loading io-data.b to 4746c4
+loading lap.b to 4746f0
+loading printf.b to 474e44
+loading scan-table.b to 475890
+ reformatted  scan-tab.b 
+loading sys-date.b to 475ad0
+loading sys-extras.b to 475f20
+ reformatted  sys-extr.b 
+loading filestat.b to 477aa0
+loading sys-faslin.b to 477bf0
+ reformatted  sys-fasl.b 
+loading sys-gc.b to 478430
+loading sys-io.b to 478710
+loading timc.b to 478c90
+loading trap.b to 478d30
+loading wfloat-woco.b to 479230
+ reformatted  wfloat-w.b 
+loading write-float.b to 479e40
+ reformatted  write-fl.b 
+loading error-eset.b to 47a7d4
+ reformatted  error-es.b 
+loading error-hand.b to 47aaa0
+ reformatted  error-ha.b 
+loading io-errors.b to 47af34
+ reformatted  io-error.b 
+loading type-error.b to 47b080
+ reformatted  type-err.b 
+loading putd-getd.b to 47b370
+ reformatted  putd-get.b 
+loading 386-nk-sp.b to 47bb80
+ reformatted  386-nk-s.b 
+Portable Standard LISP
+1 lisp> ("" "d:\psl\lap\")
+2 lisp> *** GC 1, 0 ms (0% of 980 ms cpu), 51794 occupied, 1548206 free
+*** Heap compacted to 52670 items (=3%) in 60 ms
+nil
+3 lisp> 3 lisp> 
+Quitting

@@ -1,0 +1,145 @@
+Loading image file :d:\psl\bin\win32\pslcomp.img 
+PSL 4.2 Compiler, 30-Oct-97
+1 lisp> nil
+2 lisp> 2 lisp> t
+3 lisp> 3 lisp> nil
+4 lisp> nil
+5 lisp> nil
+6 lisp>  reformatted  lap-to-a.b 
+ reformatted  lap-to-a.lap 
+ reformatted  d:\psl\lap-to-a.b 
+ reformatted  d:\psl\lap-to-a.lap 
+ reformatted  d:/psl/lap/lap-to-a.b 
+*** loading d:/psl/lap/lap-to-asm.b
+ reformatted  d:/psl/lap/lap-to-a.b 
+*** Function `saveuncompiledexpression' has been redefined
+*** Function `compileuncompiledexpressions' has been redefined
+*** Function `findidnumber' has been redefined
+*** `asmoutlap' has not been defined, because it is flagged LOSE
+*** lap-to-asm loaded
+nil
+7 lisp>  reformatted  winnt-as.b 
+ reformatted  winnt-as.lap 
+ reformatted  d:\psl\winnt-as.b 
+ reformatted  d:\psl\winnt-as.lap 
+ reformatted  d:/psl/lap/winnt-as.b 
+*** loading d:/psl/lap/winnt-asm.b
+ reformatted  d:/psl/lap/winnt-as.b 
+*** Function `asmpseudoprintfloat' has been redefined
+*** Function `codefileheader' has been redefined
+*** Function `codefiletrailer' has been redefined
+*** Function `mcprint' has been redefined
+*** Function `instructionprint' has been redefined
+*** Function `datareserveblock' has been redefined
+*** Function `datareservefunctioncellblock' has been redefined
+*** Function `initializesymboltable' has been redefined
+*** winnt-asm loaded
+nil
+8 lisp> *** Function `*foreignlink' has been redefined
+*foreignlink
+*** Function `operandprintforeignentry' has been redefined
+operandprintforeignentry
+"EXTRN %w:NEAR%n"
+*** Function `datadeclareexternal' has been redefined
+datadeclareexternal
+*** Function `codedeclareexternal' has been redefined
+codedeclareexternal
+nil
+9 lisp> ((mov (reg 2) (reg 5)) (shr (minus -2) (reg 2)) (mov (indexed (reg 2) (
+displacement (reg 1) 0)) (reg al)) (mov (reg 5) (reg 2)) (and (bitmask 30 2) (
+reg 2)) (add (reg 2) (reg 2)) (add -6 (reg 2)) (neg (reg 2)) (xchg (reg 2) (
+reg ecx)) (shr (reg cl) (reg 1)) (and (bitmask 30 2) (reg 1)))
+nil
+10 lisp> 10 lisp> *** Function `fastcallablep' has been redefined
+fastcallablep
+11 lisp> 11 lisp> symval_
+12 lisp> __putw
+13 lisp> __getw
+14 lisp> 14 lisp> t
+15 lisp> 15 lisp>  reformatted  hash-dec.b 
+ reformatted  hash-dec.lap 
+ reformatted  d:\psl\hash-dec.b 
+ reformatted  d:\psl\hash-dec.lap 
+ reformatted  d:/psl/lap/hash-dec.b 
+*** loading d:/psl/lap/hash-decls.b
+ reformatted  d:/psl/lap/hash-dec.b 
+*** hash-decls loaded
+ reformatted  f-string.b 
+ reformatted  f-string.lap 
+ reformatted  d:\psl\f-string.b 
+ reformatted  d:\psl\f-string.lap 
+ reformatted  d:/psl/lap/f-string.b 
+*** loading d:/psl/lap/f-strings.b
+ reformatted  d:/psl/lap/f-string.b 
+ reformatted  s-string.b 
+ reformatted  s-string.lap 
+ reformatted  d:\psl\s-string.b 
+ reformatted  d:\psl\s-string.lap 
+ reformatted  d:/psl/lap/s-string.b 
+*** loading d:/psl/lap/s-strings.b
+ reformatted  d:/psl/lap/s-string.b 
+*** Function `string-length' has been redefined
+*** s-strings loaded
+*** f-strings loaded
+ reformatted  fasl-dec.b 
+ reformatted  fasl-dec.lap 
+ reformatted  d:\psl\fasl-dec.b 
+ reformatted  d:\psl\fasl-dec.lap 
+ reformatted  d:/psl/lap/fasl-dec.b 
+*** loading d:/psl/lap/fasl-decls.b
+ reformatted  d:/psl/lap/fasl-dec.b 
+*** fasl-decls loaded
+nil
+16 lisp> 16 lisp> 16 lisp> 16 lisp> *** Function `continuableerror' has been redefined
+continuableerror
+17 lisp> 17 lisp> ASMOUT: IN files; or type in expressions
+When all done execute ASMEND;
+18 *DEFN lisp> firstkernel19 *DEFN lisp> *** in init-pointers: stack declared fluid
+init-pointers init-fluids &&init-tables1 &&init-tables2 &&symcopy psl_call1 
+&time-control pre-main external_strlen ! yield
+*** Unmatched right parenthesis
+*** Unmatched right parenthesis
+*** Unmatched right parenthesis
+*** Unmatched right parenthesis
+*** Unmatched right parenthesis
+20 *DEFN lisp> console-print-string console-print-number console-newline binaryopenread 
+binaryread binaryreadblock binaryclose21 *DEFN lisp> *** hash-decls already loaded
+*** f-strings already loaded
+*** fluid `kernel-maxsymbols' cannot become global
+initialize-symbol-table faslin-intern intern unchecked-string-intern 
+hash-into-table initialize-new-id hash-function22 *DEFN lisp> *** fasl-decls already loaded
+*** global `symfnc' cannot become fluid
+*** global `symval' cannot become fluid
+*** global `old_symfnc' cannot become fluid
+*** global `old_symval' cannot become fluid
+faslin delbps do-relocation do-relocation-new relocate-word relocate-inf 
+compute-relocation relocate-fast-call local-to-global-id read-id-table 
+putentry faslin-bad-file23 *DEFN lisp> *** global `lastbps' cannot become fluid
+*** global `nextbps' cannot become fluid
+*** global `heaplast' cannot become fluid
+*** global `heaptrapbound' cannot become fluid
+*** global `heapupperbound' cannot become fluid
+*** global `heaptrapped' cannot become fluid
+*** global `nextsymbol' cannot become fluid
+gtbps gtbps-nil-error gtheap real-gtheap get-heap-trap gtid gtwrds 
+gtconststr24 *DEFN lisp> *** f-strings already loaded
+subseq search-string-for-character unchecked-string-equal copystringtofrom 
+cons interrogate modify put unchecked-put atsoc unchecked-setprop 
+unchecked-prop putd code-putd fluid fluid1 stderror *define-constant25 *DEFN lisp> whatsup getpid echoon echooff external_charsininputbuffer 
+flushstdoutputbuffer external_user_homedir_string alterheapsize 
+allocatemorebps get_file_status os_startup_hook os_cleanup_hook 
+external_alarm external_ualarm external_time external_timc external_stat 
+external_link external_unlink external_setenv external_getenv uxfloat uxfix 
+uxassign uxplus2 uxdifference uxtimes2 uxquotient uxgreaterp uxlessp 
+uxwritefloat uxdoubletofloat uxfloattodouble uxsin uxcos uxtan uxasin uxacos 
+uxatan uxsqrt uxexp uxlog uxatan2 external_pwd sun3_sigset sigrelse unexec 
+unixputc unixputs unixputn unixcleario expand_file_name unixopen unixcd 
+unixfread unixfputc unixfgetc unixfgets unixfwrite unixfflush ctime 
+external_system external_exit fopen fclose fseek clearerr getw putw signal 
+sleep ieee_handler ieee_flags setlinebuf profil datetag psll_call 
+unix-profile fread fputc fgetc fgets fwrite fflush26 *DEFN lisp> plantunbound
+*** Unmatched right parenthesis
+plantcodepointer plantlambdalink bittable kernel-fatal-error27 *DEFN lisp> *** global `bpslowerbound' cannot become fluid
+*** global `nextbps' cannot become fluid
+codeaddressp lastkernel28 *DEFN lisp> 28 *DEFN lisp> initcode29 lisp> 
+Quitting
