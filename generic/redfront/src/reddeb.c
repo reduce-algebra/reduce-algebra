@@ -70,7 +70,7 @@ void deb_init(void) {
     }
     semctl(semid,0,SETVAL,1);
   }
-  dbprintf(stderr,"deb: created semaphore %d\n",semid);
+  deb_fprintf(stderr,"deb: created semaphore %d\n",semid);
 }
 
 int deb_mutex(int op) {
@@ -90,11 +90,11 @@ int deb_fprintf(FILE *file,const char *msg,...) {
 
   va_start(ap,msg);
   if (debug && file) {
-    mutex(LOCK);
+    deb_mutex(LOCK);
     oldcolor = textcolor(debugcolor);
     ecode = vfprintf(stdout,msg,ap);
     textcolor(oldcolor);
-    mutex(UNLOCK);
+    deb_mutex(UNLOCK);
   }
   va_end(ap);
   fflush(stderr);
@@ -103,7 +103,7 @@ int deb_fprintf(FILE *file,const char *msg,...) {
 }
 
 void deb_cleanup() {
-  dbprintf(stderr,"deb: about to delete semaphore %d\n",semid);
+  deb_fprintf(stderr,"deb: about to delete semaphore %d\n",semid);
   semctl(semid,0,IPC_RMID,0);
 }
 
