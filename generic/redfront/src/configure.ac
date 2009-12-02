@@ -82,10 +82,10 @@ case $host in *darwin*)
   CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
 
   AC_ARG_ENABLE(universal,
-    AC_HELP_STRING([--disable-universal],
+    AC_HELP_STRING([--enable-universal],
 	[do not build universal binary on Mac OS X]),
     universal="$enableval",
-    universal=yes)
+    universal=no)
 
   AS_IF([test "$universal" = yes],[
    AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
