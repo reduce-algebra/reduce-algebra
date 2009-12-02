@@ -6,7 +6,7 @@
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-  
+
       * Redistributions of source code must retain the relevant
         copyright notice, this list of conditions and the following
         disclaimer.
@@ -14,7 +14,7 @@
         copyright notice, this list of conditions and the following
         disclaimer in the documentation and/or other materials provided
         with the distribution.
-  
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -42,6 +42,7 @@ extern int color;
 #ifdef HAVE_LIBEDIT
 
 #include <filecomplete.h>
+#include <sys/stat.h>
 
 static EditLine *e;
 static History *h;
@@ -52,7 +53,8 @@ void line_init(void);
 char *line_get_prompt(EditLine *);
 char *line_get_rprompt(EditLine *);
 unsigned char line_complete(EditLine *,int);
-static const char *_rl_completion_append_character_function(const char *);
+char *line_filename_completion_function(const char *, int);
+const char *line_append_char_function(const char *);
 unsigned char line_help(EditLine *,int);
 char *line_read(char *);
 char *line_quit(const char *);
@@ -86,28 +88,58 @@ char *line_get_rprompt(EditLine *e) {
 
 unsigned char line_complete(EditLine *ignore,int invoking_key)
 {
-  if (rl_inhibit_completion) {
-    char arr[2];
-    arr[0] = (char)invoking_key;
-    arr[1] = '\0';
-    el_insertstr(e,arr);
-    return (CC_REFRESH);
-  }
-  
-  return fn_complete(e,(CPFunction *)rl_completion_entry_function,
-		     rl_attempted_completion_function,
-		     rl_basic_word_break_characters,rl_special_prefixes,
-		     _rl_completion_append_character_function,
-		     rl_completion_query_items,
-		     &rl_completion_type, &rl_attempted_completion_over,
-		     &rl_point, &rl_end);
+  const LineInfo *li;
+  const char *ctemp;
+
+  li = el_line(e);
+  for (ctemp = li->buffer; ctemp <= li->cursor; ctemp++)
+    if (*ctemp == '"' || strncmp(ctemp,"load",4) == 0)
+      return (unsigned char )fn_complete(e,
+					 line_filename_completion_function,
+					 NULL,
+					 rl_basic_word_break_characters,
+					 NULL,
+					 line_append_char_function,
+					 100,
+					 NULL,
+					 NULL,
+					 NULL,
+					 NULL);
+  return (unsigned char)0;
 }
 
-static const char *_rl_completion_append_character_function(const char *dummy) {
-  static char buf[2];
-  buf[0] = rl_completion_append_character;
-  buf[1] = '\0';
-  return buf;
+char *line_filename_completion_function(const char *text, int state) {
+  char *completion;
+  char *mycompletion;
+
+  completion = fn_filename_completion_function(text,state);
+
+  if (!completion)
+    return completion;
+
+  if (completion[0] == '.' && completion[1] == '/') {
+    mycompletion = (char *)malloc((strlen(completion)-1)*sizeof(char));
+    strcpy(mycompletion,completion+2*sizeof(char));
+    free(completion);
+    return mycompletion;
+  }
+
+  return completion;
+}
+
+const char *line_append_char_function(const char *name) {
+  struct stat stbuf;
+  char *expname = *name == '~' ? fn_tilde_expand(name) : NULL;
+  const char *rs = "";
+
+  if (stat(expname ? expname : name, &stbuf) == -1)
+    goto out;
+  if (S_ISDIR(stbuf.st_mode))
+    rs = "/";
+ out:
+  if (expname)
+    free(expname);
+  return rs;
 }
 
 unsigned char line_help(EditLine *ignore,int invoking_key) {
@@ -130,7 +162,9 @@ char *line_read(char *prompt) {
     free(line);
   textcolor(inputcolor);
   strcpy(line_prompt,prompt);
+  deb_fprintf(stderr,"before el_gets\n");
   ret = el_gets(e,&nchar);
+  deb_fprintf(stderr,"after el_gets\n");
   if (ret && nchar > 0) {
     line = strdup(ret);
     if (line == NULL)
@@ -235,7 +269,7 @@ char *line_quit(const char *quit) {
 char *line_color_prompt(char der_prompt[]) {
   if (color && HAVE_COLOR) {
     char help_prompt[50];
-    
+
     strcpy(help_prompt,der_prompt);
     sprintf(der_prompt,"%c%c[%d;%d;%dm%c%s%c%c[%d;%d;%dm%c",
 	    RL_PROMPT_START_IGNORE,
@@ -267,7 +301,7 @@ void line_init_history(void) {
 void line_add_history(char this_command[]) {
 #ifdef HAVE_HISTORY
   HIST_ENTRY *ph;
-  
+
   if ((this_command != (char *)NULL) && *this_command != 0) {
     while (next_history())
       ;
