@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------
    $Id$
    ---------------------------------------------------------------------
-   Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+   (c) 1999-2009 A. Dolzmann and T. Sturm, 1999-2009 T. Sturm
    ---------------------------------------------------------------------
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -41,6 +41,7 @@ int verbose = 0;
 int unicode = 0;
 int color = 1;
 char *memory;
+int xargstart;
 
 #define DEFAULT_REDFRONTCOLOR MAGENTA /* REDFRONT output */
 #define DEFAULT_NORMALCOLOR USER      /* REDUCE terminal output */
@@ -71,9 +72,9 @@ void resetcolor(void);
 
 int main(int argc,char **argv,char **envp) {
 
-  deb_init();
-
   parse_args(argc,argv);
+
+  deb_init();
 
   print_banner(verbose);
 
@@ -147,23 +148,32 @@ void parse_args(int argc,char **argv) {
 
   if (errflg) {
     print_usage(argv[0]);
-    rf_exit (2);
+    rf_exit(2);
+  }
+
+  if (strcmp(argv[optind - 1],"--") == 0) {  // <options> + "--"
+    xargstart = optind;
+  }
+#ifdef BPSL
+  else if (memory == NULL && optind == argc - 1) {  // <options> + <memarg>
+    memory = argv[optind];
+    xargstart = argc;
+  }
+  else if (memory == NULL &&  // <options> + <memarg> + "--"
+	   optind < argc - 1 && strcmp(argv[optind + 1],"--") == 0) {
+    memory = argv[optind];
+    xargstart = optind + 2;
+  }
+#endif
+  else if (optind == argc) {  // <options>
+    xargstart = argc;
+  } else {
+    print_usage(argv[0]);
+    rf_exit(2);
   }
 
 #ifdef BPSL
-  if (optind < argc - 1) {
-    print_usage(argv[0]);
-    rf_exit (2);
-  }
-  if (optind == argc - 1) {
-    memory = argv[optind];
-  }
   memory = parse_memarg(memory==NULL ? MEMORY : memory,argv[0]);
-#else
-  if (optind != argc) {
-    print_usage(argv[0]);
-    rf_exit (2);
-  }
 #endif
 }
 
