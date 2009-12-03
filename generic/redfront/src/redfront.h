@@ -76,6 +76,12 @@ int line_pre_input(const char *,int);
 #else
 
 #include <readline/readline.h>
+#ifndef RL_PROMPT_START_IGNORE
+#define RL_PROMPT_START_IGNORE '\001'
+#endif
+#ifndef RL_PROMPT_END_IGNORE
+#define RL_PROMPT_END_IGNORE   '\002'
+#endif
 
 #ifdef HAVE_HISTORY
 #include <readline/history.h>
