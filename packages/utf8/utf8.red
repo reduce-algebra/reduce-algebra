@@ -46,12 +46,38 @@ fluid '(lispsystem!* overflowed!* posn!* testing!-width!*);
 !#endif
 
 switch utf8;
+switch utf82d;
+switch utf82dround;
 switch utf8exp;
 switch utf8expall;
 switch utf8diffquot;
 switch utf8pad;
 
+put('utf82dround,'simpfg,'((t (utf82droundon)) (nil (utf82droundoff))));
+
+procedure utf82droundon();
+   <<
+      put('utf8_mat!-top!-l,'utf8,'(1 226 142 155));
+      put('utf8_mat!-mid!-l,'utf8,'(1 226 142 156));
+      put('utf8_mat!-low!-l,'utf8,'(1 226 142 157));
+      put('utf8_mat!-top!-r,'utf8,'(1 226 142 158));
+      put('utf8_mat!-mid!-r,'utf8,'(1 226 142 159));
+      put('utf8_mat!-low!-r,'utf8,'(1 226 142 160))
+   >>;
+
+procedure utf82droundoff();
+   <<
+      put('utf8_mat!-top!-l,'utf8,'(1 226 142 161));
+      put('utf8_mat!-mid!-l,'utf8,'(1 226 142 162));
+      put('utf8_mat!-low!-l,'utf8,'(1 226 142 163));
+      put('utf8_mat!-top!-r,'utf8,'(1 226 142 164));
+      put('utf8_mat!-mid!-r,'utf8,'(1 226 142 165));
+      put('utf8_mat!-low!-r,'utf8,'(1 226 142 166))
+   >>;
+
 on1 'utf8;
+on1 'utf82d;
+on1 'utf82dround;
 off1 'utf8exp;
 on1 'utf8expall;
 on1 'utf8diffquot;
@@ -261,6 +287,8 @@ procedure utf8_pripowpartial(u);
 procedure utf8_priint(u);
    if not !*utf8 then
       'failed
+   else if !*utf82d then
+      intprint u
    else <<
       utf8_prin2!* car u;
       if cdddr u then <<
@@ -276,8 +304,31 @@ procedure utf8_priint(u);
       utf8_prin2!* caddr u
    >>;
 
+procedure intprint u;
+   % Hijacked from mathpr/xprint.red.
+   if not !*nat or !*fort then 'failed
+   else begin
+      scalar m;
+      prin2!* symbol 'int!-mid;
+      m := posn!* - 1;
+      pline!* := (((m . posn!*) . (ycoord!* + 1)) .
+                      symbol 'int!-top) . pline!*;
+      pline!* := (((m . posn!*) . (ycoord!* - 1)) .
+                      symbol 'int!-low) . pline!*;
+      if ycoord!*+1>ymax!* then ymax!* := ycoord!*+1;
+      if ymin!*>ycoord!*-1 then ymin!* := ycoord!*-1;
+      prin2!* " ";
+      maprin cadr u;
+      prin2!* " ";
+      prin2!* symbol 'd;
+      maprin caddr u
+   end;
+
 procedure symbol(s);
-   if !*utf8 then
+   if !*utf8 and !*utf82d then
+      get(s,'utf8_2d!-symbol!-character) or
+      get(s,'utf8_symbol!-character) or get(s,'symbol!-character)
+   else if !*utf8 then
       get(s,'utf8_symbol!-character) or get(s,'symbol!-character)
    else
       get(s,'symbol!-character);
@@ -346,6 +397,12 @@ put('psi,'utf8,'(1 207 136));
 put('omega,'utf8,'(1 207 137));
 
 put('int,'utf8,'(1 226 136 171));
+put('int!-top,'utf8_2d!-symbol!-character,'utf8_int!-top);
+put('utf8_int!-top,'utf8,'(1 226 140 160));
+put('int!-mid,'utf8_2d!-symbol!-character,'utf8_int!-mid);
+put('utf8_int!-mid,'utf8,'(1 226 142 174));
+put('int!-low,'utf8_2d!-symbol!-character,'utf8_int!-low);
+put('utf8_int!-low,'utf8,'(1 226 140 161));
 put('int,'prifn,'utf8_priint);
 put('abs,'prifn,'utf8_priabs);
 
@@ -356,6 +413,13 @@ put('powpartial,'prifn,'utf8_pripowpartial);  % Hack but how else ...?
 put('diff,'prifn,'utf8_pridiff);
 
 put('!*!*!*,'utf8,'(1 226 136 153));
+
+put('mat!-top!-l,'utf8_2d!-symbol!-character,'utf8_mat!-top!-l);
+put('mat!-mid!-l,'utf8_2d!-symbol!-character,'utf8_mat!-mid!-l);
+put('mat!-low!-l,'utf8_2d!-symbol!-character,'utf8_mat!-low!-l);
+put('mat!-top!-r,'utf8_2d!-symbol!-character,'utf8_mat!-top!-r);
+put('mat!-mid!-r,'utf8_2d!-symbol!-character,'utf8_mat!-mid!-r);
+put('mat!-low!-r,'utf8_2d!-symbol!-character,'utf8_mat!-low!-r);
 
 endmodule;  % utf8
 
