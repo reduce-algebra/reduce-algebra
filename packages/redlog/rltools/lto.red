@@ -359,6 +359,35 @@ procedure lto_equallengthp(s1,s2);
       end;
 !#endif
 
+macro procedure pop(l);
+   % A limited pop in the sense of ANSI Common Lisp. Admits only a
+   % single identifier as its argument. A more sophisticated version
+   % would evaluate the properties setqfn or assignop.
+   begin scalar ll;
+      if null cdr l or cddr l then
+         rederr {"pop called with",length cdr l, "arguments instead of 1"};
+      ll := cadr l;
+      if not idp ll then
+         typerr(ll,"identifier");
+      return {'prog,{'a},
+         {'setq,'a,{'car,ll}},
+         {'setq,ll,{'cdr,ll}},
+         {'return,'a}}
+   end;
+
+macro procedure push(l);
+   % A limited push in the sense of ANSI Common Lisp. Admits only a
+   % single identifier as its argument. A more sophisticated version
+   % would evaluate the properties setqfn or assignop.
+   begin scalar ll;
+      if null cdr l or cdddr l then
+         rederr {"push called with",length cdr l, "arguments instead of 2"};
+      ll := caddr l;
+      if not idp ll then
+         typerr(ll,"identifier");
+      return {'setq,ll,{'cons,cadr l,ll}}
+   end;
+
 endmodule;  % [lto]
 
 end;  % of file
