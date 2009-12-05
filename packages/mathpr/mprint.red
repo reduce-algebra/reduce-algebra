@@ -396,6 +396,8 @@ put('infinity, 'symbol!-character, 'infinity);
 
 put('mat!-top!-l, 'symbol!-character, '![);
 put('mat!-top!-r, 'symbol!-character, '!]);
+put('mat!-mid!-l, 'symbol!-character, '![);
+put('mat!-mid!-r, 'symbol!-character, '!]);
 put('mat!-low!-l, 'symbol!-character, '![);
 put('mat!-low!-r, 'symbol!-character, '!]);
 

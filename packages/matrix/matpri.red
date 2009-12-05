@@ -118,8 +118,8 @@ symbolic procedure matpri1(u,x);
                   lbar := symbol 'mat!-low!-l;
                   rbar := symbol 'mat!-low!-r >>
 %               else lbar := rbar := symbol 'vbar;
-                else <<lbar := symbol 'mat!-low!-l;
-                       rbar := symbol 'mat!-low!-r>>;
+                else <<lbar := symbol 'mat!-mid!-l;
+                       rbar := symbol 'mat!-mid!-r>>;
                pl := ((((pos - 2) . (pos - 1)) . h) . rbar) . pl;
                k := (((0 . 1) . h) . lbar) . k >>;
             return (append(pl, k) . pos) . (ymin . ymax) end;
