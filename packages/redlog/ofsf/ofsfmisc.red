@@ -368,7 +368,83 @@ procedure ofsf_rxffn(op);
       'cl_rxffn!-sqrt
    else
       nil;
-   
+
+procedure ofsf_tan2(f);
+   cl_apply2ats(f,function ofsf_tan2at);
+
+procedure ofsf_tan2at(f);
+   ofsf_0mk2(ofsf_op f,numr ofsf_tan2f ofsf_arg2l f);
+
+operator tan2;
+
+procedure tan2(u);
+   mk!*sq quotsq(ofsf_tan2f numr w,ofsf_tan2f denr w) where w=simp u;
+
+procedure ofsf_tan2f(u);
+   % Returns an SQ.
+   if domainp u then
+      !*f2q u
+   else
+      addsq(multsq(ofsf_tan2f lc u,exptsq(ofsf_tan2k mvar u,ldeg u)),
+	    ofsf_tan2f red u);
+
+procedure ofsf_tan2k(k);
+   if eqcar(k,'sin) then
+      simp ofsf_tan2k!-sin k
+   else if eqcar(k,'cos) then
+      simp ofsf_tan2k!-cos k
+   else if eqcar(k,'tan) then
+      simp ofsf_tan2k!-tan k
+   else if eqcar(k,'cot) then
+      simp ofsf_tan2k!-cot k
+   else if eqcar(k,'sec) then
+      simp ofsf_tan2k!-sec k
+   else if eqcar(k,'csc) then
+      simp ofsf_tan2k!-csc k
+   else
+      !*k2q k;
+
+procedure ofsf_tan2k!-sin(k);
+   begin scalar tt;
+      tt := ofsf_mktan2 cadr k;
+      return {'quotient,{'times,2,tt},{'plus,1,{'expt,tt,2}}}
+   end;
+
+procedure ofsf_tan2k!-cos(k);
+   begin scalar tt;
+      tt := ofsf_mktan2 cadr k;
+      return {'quotient,{'difference,1,{'expt,tt,2}},{'plus,1,{'expt,tt,2}}}
+   end;
+
+procedure ofsf_tan2k!-tan(k);
+   begin scalar tt;
+      tt := ofsf_mktan2 cadr k;
+      return {'quotient,{'times,2,tt},{'difference,1,{'expt,tt,2}}}
+   end;
+
+procedure ofsf_tan2k!-cot(k);
+   begin scalar tt;
+      tt := ofsf_mktan2 cadr k;
+      return {'quotient,{'difference,1,{'expt,tt,2}},{'times,2,tt}}
+   end;
+
+procedure ofsf_tan2k!-sec(k);
+   begin scalar tt;
+      tt := ofsf_mktan2 cadr k;
+      return {'quotient,{'plus,1,{'expt,tt,2}},{'difference,1,{'expt,tt,2}}}
+   end;
+
+procedure ofsf_tan2k!-csc(k);
+   begin scalar tt;
+      tt := ofsf_mktan2 cadr k;
+      return {'quotient,{'plus,1,{'expt,tt,2}},{'times,2,tt}}
+   end;
+
+algebraic operator tn;
+
+procedure ofsf_mktan2(phi);
+   {'tan,{'quotient,phi,2}};
+
 endmodule;  % [ofsfmisc]
 
 end;  % of file

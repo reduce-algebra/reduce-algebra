@@ -71,7 +71,7 @@ exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_a2cdl,ofsf_t2cdl,ofsf_subat,ofsf_subalchk,ofsf_eqnrhskernels,
    ofsf_getineq,ofsf_structat,ofsf_ifstructat,ofsf_termmlat,ofsf_multsurep,
    ofsf_cad,ofsf_cadswitches;
-      
+
 imports cl,rltools;
 
 fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
@@ -89,7 +89,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    ofsf_xopt!-nodes!* ofsf_xopt!-delnodes!* ofsf_xopt!-plnodes!*
    ofsf_xopt!-fnodes!* ofsf_xopt!-thcof!* !*rlxoptqe !*rlxopt !*rlxoptsb
    !*rlxoptpl !*rlxoptri !*rlxoptric !*rlxoptrir !*rlxoptses !*rlourdet
-   ofsf_gstv!* !*cgbverbose !*groebopt !*rlhqetfcsplit !*rlhqetfcfullsplit  
+   ofsf_gstv!* !*cgbverbose !*groebopt !*rlhqetfcsplit !*rlhqetfcfullsplit
    !*rlhqetfcfast !*rlhqevb !*rlhqevarsel !*rlhqevarselx !*rlhqedim0
    !*rlhqetheory !*rlhqegbred !*rlhqeconnect !*rlhqestrconst !*rlhqegbdimmin
    !*rlhqegen !*cgbfaithful !*rlqeaprecise !*rlqefilterbounds !*rlpos
@@ -97,7 +97,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*msg);
 
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD
-fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE   
+fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
 
 flag('(ofsf),'rl_package);
 
@@ -117,7 +117,7 @@ put('ofsf,'rl_params,'(
    (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_susipost!* . ofsf_susipost)
    (rl_susitf!* . ofsf_susitf)
-   (rl_susibin!* . ofsf_susibin)   	 
+   (rl_susibin!* . ofsf_susibin)
    (rl_negateat!* . ofsf_negateat)
    (rl_varlat!* . ofsf_varlat)
    (rl_varsubstat!* . ofsf_varsubstat)
@@ -139,7 +139,7 @@ put('ofsf,'rl_params,'(
    (rl_qssubsumep!* . cl_qssusubytab)
    (rl_qstautp!* . cl_qstautp)
    (rl_qssusuat!* . ofsf_qssusuat)
-   (rl_qssimpl!* . cl_qssimpl) 
+   (rl_qssimpl!* . cl_qssimpl)
    (rl_qssiadd!* . ofsf_qssiadd)
    (rl_fctrat!* . ofsf_fctrat)
    (rl_tordp!* . ordp)
@@ -220,14 +220,15 @@ put('ofsf,'rl_services,'(
    (rl_xqea!* . ofsf_xopt!-qea)
    (rl_lthsimpl!* . ofsf_lthsimpl)
    (rl_lthsimpl!* . ofsf_lthsimpl)
-   (rl_quine!* . cl_quine) 
+   (rl_quine!* . cl_quine)
    (rl_cadporder!* . ofsf_cadporder)
    (rl_gcadporder!* . ofsf_gcadporder)
    (rl_cadproj!* . ofsf_cadproj)
    (rl_hqe!* . ofsf_hqe)
    (rl_ghqe!* . ofsf_ghqe)
    (rl_resolve!* . ofsf_resolve)
-   (rl_posresolve!* . ofsf_posresolve)));
+   (rl_posresolve!* . ofsf_posresolve)
+   (rl_tan2!* . ofsf_tan2)));
 
 % Admin
 put('ofsf,'simpfnname,'ofsf_simpfn);
