@@ -96,11 +96,19 @@ struct strbuf {
   struct strbuf *next,*prev;
 };
 
+struct oStrl {
+  char *this;
+  struct oStrl* next;
+};
+
+typedef struct oStrl *strl;
+
 int textcolor(int);
 void resetcolor(void);
 void rf_exit(int);
 
 void parent(void);
+void send_reduce(char *);
 
 void child(int,char **,char **);
 
@@ -112,6 +120,7 @@ char *line_color_prompt(char *);
 void line_cleanup_after_signal(void);
 void line_end_history(void);
 void line_init(void);
+void line_learn_completion(char *);
 void line_end(void);
 
 RETSIGTYPE sig_sigInt(int);
@@ -122,6 +131,8 @@ void sig_killChild(void);
 struct strbuf *addchar(char,struct strbuf *);
 struct strbuf *remtail(struct strbuf *,struct strbuf *);
 void prtbuf(struct strbuf *);
+strl strl_cadd(strl,char *);
+strl strl_delete(strl);
 
 void deb_init(void);
 int deb_fprintf(FILE *,const char *,...);

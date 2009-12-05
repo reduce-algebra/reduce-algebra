@@ -14,7 +14,7 @@ dnl    * Redistributions in binary form must reproduce the above
 dnl      copyright notice, this list of conditions and the following
 dnl      disclaimer in the documentation and/or other materials provided
 dnl      with the distribution.
-dnl 
+dnl
 dnl THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 dnl "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 dnl LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -29,7 +29,7 @@ dnl OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([REDFRONT],[3.0],[sturm@redlog.eu])
+AC_INIT([REDFRONT],[3.1],[sturm@redlog.eu])
 
 abssrcdir=`$srcdir/../../../scripts/here.sh`
 

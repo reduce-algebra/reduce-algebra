@@ -38,6 +38,7 @@ extern int MeToReduce[];
 extern int ReduceToMe[];
 
 extern int debug;
+extern int verbose;
 
 extern int redfrontcolor;
 extern int normalcolor;
@@ -64,13 +65,17 @@ RETSIGTYPE sig_sigGen(int arg) {
   case SIGQUIT:
   case SIGHUP:
   case SIGTERM:
-    textcolor(redfrontcolor);
-    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
+    if (verbose) {
+      textcolor(redfrontcolor);
+      printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
+    }
     rf_exit(0);
   default:
-    textcolor(redfrontcolor);
-    printf("***** REDFRONT exiting on unexpected signal %d (%s)\n",
-	   arg,sig_identify(arg));
+    if (verbose) {
+      textcolor(redfrontcolor);
+      printf("***** REDFRONT exiting on unexpected signal %d (%s)\n",
+	     arg,sig_identify(arg));
+    }
     rf_exit(-1);
   }
 }
@@ -109,19 +114,13 @@ void sig_skipUntilString(int handle,const char string[]) {
 }
 
 RETSIGTYPE sig_sigChld(int arg) {
-  
   deb_fprintf(stderr,"sig_sigChld(): Reduce process terminated\n");
-
   line_end_history();
-
   line_end();
-
-  textcolor(redfrontcolor);
-
-  printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
-
-  resetcolor();
-
+  if (verbose) {
+    textcolor(redfrontcolor);
+    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
+  }
   rf_exit(0);
 }
 

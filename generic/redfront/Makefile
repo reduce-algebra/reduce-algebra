@@ -74,6 +74,12 @@ libedit/$(BUILD)/include/editline/readline.h:
 	../configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	make install
 
+universal:  # EXPERIMENTAL - DO NOT USE!
+	mkdir libedit/universal; \
+	cd libedit/universal; \
+	CFLAGS="-arch i386 -arch x86_64 -arch ppc" ../configure --prefix=$$(pwd) --disable-dependency-tracking; \
+	make install
+
 install: install-csl install-psl
 
 install-csl: csl

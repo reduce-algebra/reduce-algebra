@@ -312,20 +312,18 @@ void print_help(char name[]) {
   fprintf(stderr,"         \t\tdetails\n");
   fprintf(stderr,"       -h\t\tthis help message\n");
 #ifdef BPSL
-  fprintf(stderr,"       -m NUMBER\theap size in bytes\n");
-  fprintf(stderr,"       -m NUMBERk\theap size in kilobytes\n");
-  fprintf(stderr,"       -m NUMBERm\theap size in megabytes\n");
+  fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
 #endif
-  fprintf(stderr,"       -u\t\tuse unicode characters (experimental)\n");
+  fprintf(stderr,"       -u\t\tuse unicode characters\n");
   fprintf(stderr,"       -v, -V\t\tverbose\n\n");
 
-  fprintf(stderr,"Examples: %s -u\n",name);
+  fprintf(stderr,"Examples: %s -uv\n",name);
 #ifdef BPSL
-  fprintf(stderr,"          %s -c rKbMgC -m 96m -v.\n\n",name);
+  fprintf(stderr,"          %s -c xxxxxxbxexgx -m 96m.\n\n",name);
 #else
   fprintf(stderr,"          %s -c xxxxxxbxexgx -v\n\n",name);
 #endif
-
+  fprintf(stderr,"Use TAB for completion of filenames and Reduce switches.\n");
   fprintf(stderr,"There is a manpage available.\n");
 }
 
@@ -342,7 +340,8 @@ void print_banner(int vb) {
 	   PACKAGE_VERSION,
 	   4*ur + 2*USE_PIPES + STATIC,
 	   BUILDTIME);
-    if (unicode) printf("%c%c",0xC2,0xA9); else printf("(C)");
+    //    if (unicode) printf("%c%c",0xC2,0xA9); else printf("(C)");
+    printf("(C)");
     printf(" 1999-2008 A. Dolzmann, 1999-2009 T. Sturm\n");
     printf("Based on earlier projects by C. Cannam and W. Neun\n");
     printf("Reports bugs to <%s>\n\n",PACKAGE_BUGREPORT);

@@ -194,6 +194,35 @@ if redfront_pslp() then <<
 if redfront_pslp() then
    onoff('usermode,car redfront_switches!-this!-sl!*);
 
+% Support for editline completion
+
+procedure redfront_learncolor(c);
+   if stringp c then
+      compress('!" . int2id 5 .
+               reversip('!" . int2id 6 . cdr reversip cdr explode c))
+   else
+      intern compress(int2id 5 . nconc(explode c,{int2id 6}));
+
+if redfront_pslp() then
+   lispeval '(putd 'oblist 'expr
+      '(lambda nil (prog (l) (setq l nil)
+   	       	     	     (mapobl (function (lambda (x) (setq l (cons x l)))))
+	                     (return l))));
+
+procedure redfront_swl();
+   begin scalar swl;
+      swl := for each x in oblist() join if flagp(x,'switch) then {x};
+      return sort(swl,'ordp)
+   end;
+
+procedure redfront_send!-switches();
+   <<
+      for each sw in redfront_swl() do
+	 prin2t redfront_learncolor sw;
+      statcounter := statcounter - 1;
+      nil
+   >>;
+
 onoff('msg,car redfront_switches!*);
 onoff('output,cadr redfront_switches!*);
 

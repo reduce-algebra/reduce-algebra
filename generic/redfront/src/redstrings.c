@@ -65,7 +65,7 @@ void prtbuf(struct strbuf *b) {
 struct strbuf *remtail(struct strbuf *t,struct strbuf *b) {
   while (!bufmatch(t,b))
     b = b->prev;
-  
+
   while (t) {
     t = t->prev;
     b = b-> prev;
@@ -73,7 +73,7 @@ struct strbuf *remtail(struct strbuf *t,struct strbuf *b) {
   }
 
   b->next = (struct strbuf *)0;
-  
+
   return b;
 }
 
@@ -85,4 +85,50 @@ int bufmatch(struct strbuf *t,struct strbuf *b) {
     b = b->prev;
   }
   return 1;
+}
+
+strl strl_new(char *that,strl next) {
+  strl sl;
+  char *this=NULL;
+
+  sl = (strl)malloc(sizeof(struct oStrl));
+  if (that) {
+    this = (char *)malloc((strlen(that)+1)*sizeof(char));
+    strcpy(this,that);
+  }
+  sl->this = this;
+  sl->next = next;
+  return sl;
+};
+
+strl strl_cadd(strl sl,char *entry) {
+  strl scsl,new;
+
+  if (!sl) {
+    new = strl_new(entry,NULL);
+    return new;
+  }
+
+  for (scsl = sl; scsl->next; scsl = scsl->next)
+    if (strcmp(scsl->this,entry) == 0)
+      return sl;
+
+  if (strcmp(scsl->this,entry) != 0) {
+    new = strl_new(entry,NULL);
+    scsl->next = new;
+  }
+
+  return sl;
+}
+
+strl strl_delete(strl sl) {
+  strl old;
+
+  while (sl) {
+    old = sl;
+    sl = sl->next;
+    free(old->this);
+    free(old);
+  }
+  return NULL;
 }
