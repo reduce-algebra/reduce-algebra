@@ -83,7 +83,7 @@ case $host in *darwin*)
 
   AC_ARG_ENABLE(universal,
     AC_HELP_STRING([--enable-universal],
-	[do not build universal binary on Mac OS X]),
+	[build universal binary on Mac OSX]),
     universal="$enableval",
     universal=no)
 
@@ -157,8 +157,8 @@ elif test "x$with_psl" != "xno" ; then
 	[Define your REDUCE image (with PSL)])
    AC_ARG_WITH(td,
 	AC_HELP_STRING([--with-td=BYTES],
-		[the BPSL default memory [[BYTES=128000000]]]),
-	defmem=$withval,defmem=128000000)
+		[the default argument for bpsl -td]),
+	defmem=$withval,defmem=0)
    AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
 	[Define bytes allocated by BPSL (-td argument) as a string])
 else

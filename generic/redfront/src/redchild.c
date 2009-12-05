@@ -109,6 +109,29 @@ void create_call(int argc,char *argv[],char *nargv[]) {
   } else
     close(tempfd);
 
+  if (strcmp(memory,"0") == 0) {
+    char *sixtyfour;
+    int i;
+    /* malloc one more in case the name of bpsl is only 1 char: */
+    sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
+    strcpy(sixtyfour,BPSL);
+    i = strlen(BPSL);
+    while (sixtyfour[i-1] != '/')
+      i--;
+    sixtyfour[i++] = '6';
+    sixtyfour[i++] = '4';
+    sixtyfour[i] = (char)0;
+    deb_fprintf(stderr,"child: checking for %s ... ",sixtyfour);
+    if ((tempfd = open(sixtyfour,O_RDONLY)) != -1) {
+      close(tempfd);
+      deb_fprintf(stderr,"positive\n");
+      memory = "2000";
+    } else {
+      deb_fprintf(stderr,"negative\n");
+      memory = "16000000";
+    }
+  }
+
   nargv[0] = BPSL;
   nargv[1] = "-td";
   nargv[2] = memory;

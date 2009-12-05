@@ -40,7 +40,7 @@ int ReduceToMe[2];
 int verbose = 0;
 int unicode = 0;
 int color = 1;
-char *memory;
+char *memory=NULL;
 int xargstart;
 
 #define DEFAULT_REDFRONTCOLOR MAGENTA /* REDFRONT output */
