@@ -144,7 +144,7 @@ procedure utf8_dots(n);
       	 for each itm in cdr itml do
       	    utf8_channelwritechar(out!*,lisp2char itm)
       >>;
-      
+
    procedure utf8_channelwritechar(channel,char);
       <<
       	 if not wleq(0,channel) and wleq(channel,maxchannels) then
@@ -156,7 +156,7 @@ procedure utf8_dots(n);
       for each itm in cdr itml do
       	 tyo itm;
 !#endif
-	 
+
 procedure utf8_prin2(itm);
    prin2 itm;
 
@@ -276,6 +276,12 @@ procedure utf8_priint(u);
       utf8_prin2!* caddr u
    >>;
 
+procedure symbol(s);
+   if !*utf8 then
+      get(s,'utf8_symbol!-character) or get(s,'symbol!-character)
+   else
+      get(s,'symbol!-character);
+
 put('ex,'utf8,'(1 226 136 131));
 put('all,'utf8,'(1 226 136 128));
 put('not,'utf8,'(2 194 172 32));
@@ -310,6 +316,9 @@ put('infinity,'utf8,'(1 226 136 158));
 put('infty,'utf8,'(1 226 136 158));
 
 put('!*,'utf8,'(1 226 139 133));
+
+put('bar,'utf8_symbol!-character,'utf8_bar);
+put('utf8_bar,'utf8,'(1 226 128 149));
 
 put('alpha,'utf8,'(1 206 177));
 put('beta,'utf8,'(1 206 178));
