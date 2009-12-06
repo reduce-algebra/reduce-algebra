@@ -1,4 +1,4 @@
-% This gets a single REDUCE package compiled and uup to date
+% This gets a single REDUCE package compiled and up to date
 
 symbolic;
 
