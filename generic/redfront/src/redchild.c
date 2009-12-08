@@ -30,6 +30,8 @@
 
 #include "redfront.h"
 
+extern int dist;
+
 extern int MeToReduce[];
 extern int ReduceToMe[];
 
@@ -91,80 +93,76 @@ void create_call(int argc,char *argv[],char *nargv[]) {
 
   deb_fprintf(stderr,"child: entering create_call\n");
 
-#ifdef BPSL
-
-  if ((tempfd = open(BPSL,O_RDONLY)) == -1) {  /* Does not check x */
-    char errstr[1024];
-    sprintf(errstr,"cannot open %s",BPSL);
-    perror(errstr);
-    rf_exit(-1);
-  } else
-    close(tempfd);
-
-  if ((tempfd = open(REDIMG,O_RDONLY)) == -1) {
-    char errstr[1024];
-    sprintf(errstr,"cannot open %s",REDIMG);
-    perror(errstr);
-    rf_exit(-1);
-  } else
-    close(tempfd);
-
-  if (strcmp(memory,"0") == 0) {
-    char *sixtyfour;
-    int i;
-    /* malloc one more in case the name of bpsl is only 1 char: */
-    sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
-    strcpy(sixtyfour,BPSL);
-    i = strlen(BPSL);
-    while (sixtyfour[i-1] != '/')
-      i--;
-    sixtyfour[i++] = '6';
-    sixtyfour[i++] = '4';
-    sixtyfour[i] = (char)0;
-    deb_fprintf(stderr,"child: checking for %s ... ",sixtyfour);
-    if ((tempfd = open(sixtyfour,O_RDONLY)) != -1) {
+  if (dist == PSL) {
+    if ((tempfd = open(BPSL,O_RDONLY)) == -1) {  /* Does not check x */
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",BPSL);
+      perror(errstr);
+      rf_exit(-1);
+    } else
       close(tempfd);
-      deb_fprintf(stderr,"positive\n");
-      memory = "2000";
-    } else {
-      deb_fprintf(stderr,"negative\n");
-      memory = "16000000";
+
+    if ((tempfd = open(REDIMG,O_RDONLY)) == -1) {
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",REDIMG);
+      perror(errstr);
+      rf_exit(-1);
+    } else
+      close(tempfd);
+
+    if (strcmp(memory,"0") == 0) {
+      char *sixtyfour;
+      int i;
+      /* malloc one more in case the name of bpsl is only 1 char: */
+      sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
+      strcpy(sixtyfour,BPSL);
+      i = strlen(BPSL);
+      while (sixtyfour[i-1] != '/')
+	i--;
+      sixtyfour[i++] = '6';
+      sixtyfour[i++] = '4';
+      sixtyfour[i] = (char)0;
+      deb_fprintf(stderr,"child: checking for %s ... ",sixtyfour);
+      if ((tempfd = open(sixtyfour,O_RDONLY)) != -1) {
+	close(tempfd);
+	deb_fprintf(stderr,"positive\n");
+	memory = "2000";
+      } else {
+	deb_fprintf(stderr,"negative\n");
+	memory = "16000000";
+      }
     }
+
+    nargv[0] = BPSL;
+    nargv[1] = "-td";
+    nargv[2] = memory;
+    nargv[3] = "-f";
+    nargv[4] = REDIMG;
+    for (i = xargstart; i < argc; i++)
+      nargv[i - xargstart + 5] = argv[i];
+    nargv[argc - xargstart + 5] = (char *)0;
+  } else {  // dist == CSL
+    if ((tempfd = open(REDUCE,O_RDONLY)) == -1) {  /* Does not check x */
+      char errstr[1024];
+      sprintf(errstr,"cannot open %s",REDUCE);
+      perror(errstr);
+      rf_exit(-1);
+    } else
+      close(tempfd);
+
+    nargv[0] = REDUCE;
+    nargv[1] = "-w";
+    nargv[2] = "-b";
+    if (verbose) {
+      nargv[3] = "-V";
+      xa0 = 4;
+    } else
+      xa0 = 3;
+    for (i = xargstart; i < argc; i++)
+      nargv[i - xargstart + xa0] = argv[i];
+    for (i = xa0; i <= 5; i++)
+      nargv[argc - xargstart + i] = (char *)0;
   }
-
-  nargv[0] = BPSL;
-  nargv[1] = "-td";
-  nargv[2] = memory;
-  nargv[3] = "-f";
-  nargv[4] = REDIMG;
-  for (i = xargstart; i < argc; i++)
-    nargv[i - xargstart + 5] = argv[i];
-  nargv[argc - xargstart + 5] = (char *)0;
-
-#elif defined REDUCE
-
-  if ((tempfd = open(REDUCE,O_RDONLY)) == -1) {  /* Does not check x */
-    char errstr[1024];
-    sprintf(errstr,"cannot open %s",REDUCE);
-    perror(errstr);
-    rf_exit(-1);
-  } else
-    close(tempfd);
-
-  nargv[0] = REDUCE;
-  nargv[1] = "-w";
-  nargv[2] = "-b";
-  if (verbose) {
-    nargv[3] = "-V";
-    xa0 = 4;
-  } else
-    xa0 = 3;
-  for (i = xargstart; i < argc; i++)
-    nargv[i - xargstart + xa0] = argv[i];
-  for (i = xa0; i <= 5; i++)
-    nargv[argc - xargstart + i] = (char *)0;
-
-#endif
 
   for (i = 0; i <= argc - xargstart + 5; i++)
     deb_fprintf(stderr,"child: argv[%d]=%s\n",i,nargv[i]);

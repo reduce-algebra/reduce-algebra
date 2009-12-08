@@ -32,6 +32,8 @@
 
 #define CSL_SIGINT_MSG "+++ Type C to continue, A to abort, X to exit: "
 
+extern int dist;
+
 extern int reduceProcessID;
 
 extern int MeToReduce[];
@@ -132,11 +134,7 @@ RETSIGTYPE sig_sigTstp(int arg) {
 void sig_installHandlers(void) {
   signal(SIGQUIT,sig_sigGen);
   signal(SIGHUP,sig_sigGen);
-#ifdef BPSL
-  signal(SIGINT,sig_sigGen);
-#else
-  signal(SIGINT,SIG_IGN);
-#endif
+  signal(SIGINT,(dist == PSL) ? sig_sigGen : SIG_IGN);
   signal(SIGILL,sig_sigGen);
   signal(SIGTSTP,sig_sigTstp);
 #ifndef LINUX

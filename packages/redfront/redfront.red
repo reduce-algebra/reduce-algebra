@@ -91,7 +91,7 @@ endmodule;  % coloutput;
 module redfront;
 
 fluid '(promptstring!* redfront_switches!* redfront_switches!-this!-sl!*
-   lispsystem!* breaklevel!*);
+   lispsystem!* breaklevel!* input!-libraries output!-library);
 
 redfront_switches!* := {!*msg,!*output};
 
@@ -219,6 +219,56 @@ procedure redfront_send!-switches();
    <<
       for each sw in redfront_swl() do
 	 prin2t redfront_learncolor sw;
+      statcounter := statcounter - 1;
+      nil
+   >>;
+
+procedure redfront_modl();
+   begin scalar libl,l;
+      if redfront_pslp() then
+      	 return nil;
+      libl := input!-libraries;
+      if output!-library then
+	 libl := output!-library . libl;
+      l := for each x in libl join library!-members x;
+      return sort(l,'ordp)
+   end;
+
+procedure redfront_send!-modules();
+   <<
+      for each mod in redfront_modl() do
+	 prin2t redfront_learncolor mod;
+      statcounter := statcounter - 1;
+      nil
+   >>;
+
+procedure redfront_read_package_map(fn);
+   % This is essentially stolen from csl/cslbase/buildreduce.lsp ...
+   begin scalar i,w,e,basel,extral;
+      % Configuration information is held in a file called something like
+      % "package.map".
+      i := fn;
+      i := open(i, 'input);
+      i := rds i;
+      e := !*echo;
+      !*echo := nil;
+      w := read();
+      !*echo := e;
+      i := rds i;
+      close i;
+      basel := for each x in w join
+	 if member('core, cddr x) then
+	    {car x};
+      extral := for each x in w join
+	 if not member('core, cddr x) then
+ 	    {car x};
+      return basel . extral
+   end;
+
+procedure redfront_send!-packages(fn);
+   <<
+      for each pack in cdr redfront_read_package_map fn do
+	 prin2t redfront_learncolor pack;
       statcounter := statcounter - 1;
       nil
    >>;

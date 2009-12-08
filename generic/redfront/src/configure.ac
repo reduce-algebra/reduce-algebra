@@ -29,7 +29,7 @@ dnl OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([REDFRONT],[3.1],[sturm@redlog.eu])
+AC_INIT([Redfront],[3.2],[http://sourceforge.net/forum/forum.php?forum_id=899364])
 
 abssrcdir=`$srcdir/../../../scripts/here.sh`
 
@@ -131,42 +131,56 @@ esac
 
 AC_CONFIG_HEADER(config.h)
 
-AC_ARG_WITH(csl,
-  AC_HELP_STRING([--with-csl], [use the CSL Lisp system]),
-  [],
-  [with_csl="no"])
-
-AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [use the PSL Lisp system]),
-  [],
-  [with_psl="no"])
-
-if test "x$with_csl" != "xno" ; then
-   if test "x$with_psl" != "xno" ; then
-      AC_MSG_ERROR("use only one of --with-csl or --with-psl")
-   fi
-   AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$COMEXT",
-      [Define your executable REDUCE (with CSL)])
-elif test "x$with_psl" != "xno" ; then
-   if test "x$with_csl" != "xno" ; then
-      AC_MSG_ERROR("use only one of --with-csl or --with-psl")
-   fi
-   AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT",
+AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$COMEXT",
+	[Define your executable REDUCE (with CSL)])
+AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT",
 	[Define your executable bpsl (with PSL)])
-   AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
+AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
 	[Define your REDUCE image (with PSL)])
-   AC_ARG_WITH(td,
-	AC_HELP_STRING([--with-td=BYTES],
-		[the default argument for bpsl -td]),
-	defmem=$withval,defmem=0)
-   AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
+AC_ARG_WITH(td,AC_HELP_STRING([--with-td=BYTES],
+	[the default argument for bpsl -td]),defmem=$withval,defmem=0)
+AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
 	[Define bytes allocated by BPSL (-td argument) as a string])
-else
-   AC_MSG_ERROR("use one of --with-csl or --with-psl")
-fi
+
+dnl AC_ARG_WITH(csl,
+dnl   AC_HELP_STRING([--with-csl], [use the CSL Lisp system]),
+dnl   [],
+dnl   [with_csl="no"])
+
+dnl AC_ARG_WITH(psl,
+dnl   AC_HELP_STRING([--with-psl], [use the PSL Lisp system]),
+dnl   [],
+dnl   [with_psl="no"])
+
+dnl if test "x$with_csl" != "xno" ; then
+dnl    if test "x$with_psl" != "xno" ; then
+dnl       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
+dnl    fi
+dnl    AC_DEFINE_UNQUOTED(REDUCE,"$abssrcdir/cslbuild/$RBUILD/csl/reduce$COMEXT",
+dnl       [Define your executable REDUCE (with CSL)])
+dnl elif test "x$with_psl" != "xno" ; then
+dnl    if test "x$with_csl" != "xno" ; then
+dnl       AC_MSG_ERROR("use only one of --with-csl or --with-psl")
+dnl    fi
+dnl    AC_DEFINE_UNQUOTED(BPSL,"$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT",
+dnl 	[Define your executable bpsl (with PSL)])
+dnl    AC_DEFINE_UNQUOTED(REDIMG,"$abssrcdir/pslbuild/$RBUILD/red/reduce.img",
+dnl 	[Define your REDUCE image (with PSL)])
+dnl    AC_ARG_WITH(td,
+dnl 	AC_HELP_STRING([--with-td=BYTES],
+dnl 		[the default argument for bpsl -td]),
+dnl 	defmem=$withval,defmem=0)
+dnl    AC_DEFINE_UNQUOTED(MEMORY,"$defmem",
+dnl 	[Define bytes allocated by BPSL (-td argument) as a string])
+dnl else
+dnl    AC_MSG_ERROR("use one of --with-csl or --with-psl")
+dnl fi
 
 AC_DEFINE_UNQUOTED(REDFRONTROOT,"$abssrcdir/packages/redfront",
 	[Define the location of redfront.red])
+
+AC_DEFINE_UNQUOTED(PACKAGE_MAP,"$abssrcdir/packages/package.map",
+	[Define the location of package.map])
 
 dnl Checks for libraries.
 dnl AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
@@ -255,7 +269,7 @@ AS_IF([test "$editline" = no],
 
 AS_IF([test "$editline" = yes &&
          { test "$on_darwin" != yes || test "$fat_support_available" != yes; }],
-  [ebd=$abssrcdir/generic/redfront/libedit/$RBUILD
+  [ebd=$abssrcdir/generic/redfront/$RBUILD/libedit
    CFLAGS="$CFLAGS -I$ebd/include"
    LDFLAGS="$LDFLAGS -L$ebd/lib"
    if test "X$on_windows" != Xyes && test "X$on_darwin" != Xyes ; then
@@ -289,6 +303,16 @@ else
 AC_DEFINE(LITHIST,1,[Use bash lithist history style])
 fi,
 AC_DEFINE(LITHIST,1,[Use bash lithist history style])
+)
+
+AC_ARG_ENABLE(ignoredups,
+   AC_HELP_STRING([--disable-ignoredups],[do not use ignordups in the sense of bash]),
+if test "$enableval" = no ; then
+AC_DEFINE(IGNOREDUPS,0,[Ignore adjacent duplicate history entries])
+else
+AC_DEFINE(IGNOREDUPS,1,[Ignore adjacent duplicate history entries])
+fi,
+AC_DEFINE(IGNOREDUPS,1,[Ignore adjacent duplicate history entries])
 )
 
 AC_OUTPUT(Makefile)

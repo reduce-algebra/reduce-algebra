@@ -44,7 +44,7 @@
 
 #include <string.h>
 
-#include <errno.h>
+#include <libgen.h>
 
 #include <sys/types.h>
 
@@ -89,6 +89,9 @@ int line_pre_input(const char *,int);
 
 #endif
 
+#define CSL 1
+#define PSL 2
+
 extern int errno;
 
 struct strbuf {
@@ -105,6 +108,7 @@ typedef struct oStrl *strl;
 
 int textcolor(int);
 void resetcolor(void);
+int vbprintf(const char *,...);
 void rf_exit(int);
 
 void parent(void);

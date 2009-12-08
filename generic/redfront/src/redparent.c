@@ -36,6 +36,7 @@
 #define READING_PROMPT 2
 #define FINISHED 0
 
+extern int dist;
 extern int MeToReduce[];
 extern int ReduceToMe[];
 extern int debug;
@@ -55,7 +56,7 @@ char *load_package(const char *);
 void read_until_first_prompt(char *);
 char *read_valid_line(char *);
 int is_too_long(const char *);
-int badline(char *);
+int badline(const char *);
 char *append_line(char *,char *);
 void send_reduce(char *);
 void read_until_prompt(char *);
@@ -93,15 +94,13 @@ void atoploop(void) {
 
   while (1) {
 
-#ifndef BPSL
-    signal(SIGINT,SIG_IGN);
-#endif
+    if (dist == PSL)
+      signal(SIGINT,SIG_IGN);
 
     line = read_valid_line(der_prompt);
 
-#ifndef BPSL
-    signal(SIGINT,sig_sigInt);
-#endif
+    if (dist == PSL)
+      signal(SIGINT,sig_sigInt);
 
     this_command = append_line(this_command,line);
 
@@ -197,25 +196,23 @@ char *read_valid_line(char der_prompt[]) {
       line = line_quit("");
     }
   }
+
+  strcpy(der_prompt,orig_prompt);
+
   return line;
 }
 
 int is_too_long(const char line[]) {
-#ifndef BPSL
-  return 0;
-#else
-  if (badline(line)) {
+  if (dist == PSL && badline(line)) {
     textcolor(redfrontcolor);
     printf("redfront: overlong input line\n");
     textcolor(inputcolor);
     return 1;
   }
-  else
-    return 0;
-#endif
+  return 0;
 }
 
-int badline(char line[]) {
+int badline(const char line[]) {
   int i=0,n=0;
 
   while (n <= SYSMAXBUFFER && line[i]) {
@@ -243,10 +240,17 @@ char *append_line(char *c,char *l) {
   *s = 0;
   if (c != (char *)NULL) {
     strcpy(s,c);
-    if (CMDHIST && LITHIST && lenc != 0 && lenl != 0) {
-      strcat(s,"\x0a");
+    if (CMDHIST  && lenc != 0 && lenl != 0) {
+      if (LITHIST)
+	strcat(s,"\x0a");
+      else {
+	strcat(s," ");
+	while (l && (*l == ' ' || *l == '\t' || l == '\n'))
+	  l++;
+      }
     }
   }
+
   if (l != (char *)NULL)
     strcat(s,l);
 

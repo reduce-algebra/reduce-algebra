@@ -30,6 +30,8 @@
 
 #include "redfront.h"
 
+extern int dist;
+
 extern int redfrontcolor;
 extern int normalcolor;
 extern int promptcolor;
@@ -66,11 +68,14 @@ static char line_break_chars[] = {' ', '\t', '\n', '"', '\\', '\'', '`', '@',
 				  ',', '\0'};
 
 static strl line_switchlist = NULL;
+static strl line_packlist = NULL;
+static strl line_loadlist = NULL;
+static strl line_adhoclist = NULL;
 
 void line_init(void);
 unsigned char _line_learn_completion(EditLine *,int);
 void line_learn_completion(char *);
-void line_learn_until_prompt(char *);
+strl line_learn_until_prompt(char *,const char *);
 char *line_get_prompt(EditLine *);
 char *line_get_rprompt(EditLine *);
 unsigned char line_complete(EditLine *,int);
@@ -80,6 +85,10 @@ unsigned char line_fn_complete(EditLine *,char *(*)(const char *, int),
 char *line_filename_completion_function(const char *, int);
 const char *line_append_char_function(const char *);
 char *line_switch_completion_function(const char *, int);
+char *line_pack_completion_function(const char *, int);
+char *line_load_completion_function(const char *, int);
+char *line_strl_completion_function(const char *, int, strl);
+char *line_adhoc_completion_function(const char *, int);
 const char *line_append_no_char(const char *);
 unsigned char line_help(EditLine *,int);
 char *line_read(char *);
@@ -95,6 +104,7 @@ void line_init(void) {
   e = el_init("redfront",stdin,stdout,stderr);
   el_set(e,EL_SIGNAL,0);
   el_set(e,EL_PROMPT_ESC,line_get_prompt,PROMPT_IGNORE);
+/*   el_set(e,EL_RPROMPT,line_get_rprompt); */
   el_set(e,EL_EDITOR,"emacs");
   el_set(e,EL_BIND,"^R","em-inc-search-prev",NULL);
   el_set(e,EL_ADDFN,"line_complete","ReadLine style completion",line_complete);
@@ -115,12 +125,36 @@ unsigned char _line_learn_completion(EditLine *ignore,int invoking_key) {
 }
 
 void line_learn_completion(char der_prompt[]) {
+  char tmp[1024];
+
+  vbprintf("Redfront learned ");
+
+  sprintf(tmp,"lisp redfront_send!-packages(\"%s\")$",PACKAGE_MAP);
+  line_packlist = strl_delete(line_packlist);
+  send_reduce(tmp);
+  line_packlist = line_learn_until_prompt(der_prompt,"packages");
+
+  if (dist == CSL) {
+    vbprintf(", ");
+    line_loadlist = strl_delete(line_loadlist);
+    send_reduce("lisp redfront_send!-modules()$");
+    line_loadlist = line_learn_until_prompt(der_prompt,"modules");
+  } else
+    line_loadlist = line_packlist;
+
+  vbprintf(", ");
+
   line_switchlist = strl_delete(line_switchlist);
   send_reduce("lisp redfront_send!-switches()$");
-  line_learn_until_prompt(der_prompt);
+  line_switchlist = line_learn_until_prompt(der_prompt,"switches");
+
+  vbprintf("\n");
+
+  line_adhoclist = strl_delete(line_adhoclist);
+  line_adhoclist = strl_cadd(line_adhoclist,"load_package ");
 }
 
-void line_learn_until_prompt(char der_prompt[]){
+strl line_learn_until_prompt(char der_prompt[],const char *what){
   int status=SKIPPING_WHITESPACE;
   char buffer[1000];
   int ncharread;
@@ -130,7 +164,7 @@ void line_learn_until_prompt(char der_prompt[]){
   char current[256];  // I assume that there are no longer switch names for now
   int i;
   int learned=0;
-  int curcol;
+  strl clist=NULL;
 
   deb_fprintf(stderr,
 	      "parent: entering line_learn_until_prompt() ... der_prompt=%s\n",
@@ -150,7 +184,7 @@ void line_learn_until_prompt(char der_prompt[]){
 	status = LEARNING;
       } else if (ch == (char) 0x06) {
 	current[i] = 0;
-	line_switchlist = strl_cadd(line_switchlist,current);
+	clist = strl_cadd(clist,current);
 	learned++;
 	status = SKIPPING_WHITESPACE;
       } else if (status == LEARNING) {
@@ -164,13 +198,11 @@ void line_learn_until_prompt(char der_prompt[]){
     }
   }
 
-  if (verbose) {
-    curcol = textcolor(redfrontcolor);
-    printf("REDFRONT learned %d switches\n",learned);
-    textcolor(curcol);
-  }
+  vbprintf("%d %s",learned,what);
 
-  deb_fprintf(stderr,"parent: ... leaving read_until_prompt()\n");
+  deb_fprintf(stderr,"parent: ... leaving learn_until_prompt()\n");
+
+  return clist;
 }
 
 char *line_get_prompt(EditLine *e) {
@@ -178,34 +210,64 @@ char *line_get_prompt(EditLine *e) {
 }
 
 char *line_get_rprompt(EditLine *e) {
-  return "";
+  return "***";
 }
 
 unsigned char line_complete(EditLine *ignore,int invoking_key)
 {
+  unsigned char hit=0;
   const LineInfo *li;
   const char *ctemp;
 
   li = el_line(e);
 
-  for (ctemp = li->buffer; ctemp <= li->cursor; ctemp++) {
+  for (ctemp = li->cursor; ctemp >= li->buffer; ctemp--) {
 
-    if (*ctemp == '"' || strncmp(ctemp,"load",4) == 0)
-      return line_fn_complete(e,
+    if (strncmp(ctemp,"load_package",12) == 0) {
+      hit = line_fn_complete(e,
+			      line_pack_completion_function,
+			      line_break_chars,
+			      line_append_no_char,
+			      QUERY_ITEMS);
+      break;
+    }
+
+    else if (strncmp(ctemp,"load",4) == 0) {
+      hit = line_fn_complete(e,
+			      line_load_completion_function,
+			      line_break_chars,
+			      line_append_no_char,
+			      QUERY_ITEMS);
+      break;
+    }
+
+    else if (*ctemp == '"') {
+      hit = line_fn_complete(e,
 			      line_filename_completion_function,
 			      line_break_chars,
 			      line_append_char_function,
 			      QUERY_ITEMS);
+      break;
+    }
 
-    if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0)
-      return line_fn_complete(e,
+    else if (strncmp(ctemp,"on",2) == 0 || strncmp(ctemp,"off",3) == 0) {
+      hit = line_fn_complete(e,
 			      line_switch_completion_function,
 			      line_break_chars,
 			      line_append_no_char,
 			      QUERY_ITEMS);
+      break;
+    }
   }
 
-  return (unsigned char)0;
+  if (hit)
+    return hit;
+
+  return line_fn_complete(e,
+			  line_adhoc_completion_function,
+			  line_break_chars,
+			  line_append_no_char,
+			  QUERY_ITEMS);
 }
 
 unsigned char line_fn_complete(EditLine *el,
@@ -261,22 +323,34 @@ const char *line_append_char_function(const char *name) {
 }
 
 char *line_switch_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_switchlist);
+}
+
+char *line_pack_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_packlist);
+}
+
+char *line_load_completion_function(const char *text, int state) {
+  return line_strl_completion_function(text,state,line_loadlist);
+}
+
+char *line_strl_completion_function(const char *text, int state,strl clist) {
   char *res;
   const char *this;
   static char init = 1;
-  static strl switchlist = NULL;
+  static strl clist_current = NULL;
 
   if (init) {
     init = 0;
-    switchlist = line_switchlist;
+    clist_current = clist;
   }
 
-  while (switchlist) {
-    this = switchlist->this;
-    switchlist = switchlist->next;
-    //    printf("\nswitchlist=%d, text=%s, this=%s",switchlist,text,this);
+  while (clist_current) {
+    this = clist_current->this;
+    clist_current = clist_current->next;
+    // printf("\nclist_current=%d, text=%s, this=%s",clist_current,text,this);
     if (strncmp(text,this,strlen(text)) == 0) {
-      //      printf("\nHit!");
+      // printf("\nHit!");
       res = malloc((strlen(this)+1)*sizeof(char));
       strcpy(res,this);
       return res;
@@ -285,6 +359,20 @@ char *line_switch_completion_function(const char *text, int state) {
 
   init = 1;
   return NULL;
+}
+
+char *line_adhoc_completion_function(const char *text, int state) {
+  if (strcmp(text,"") == 0) {
+    /* This is going to happen systematically and frequently when there
+       is no match at the first TAB strike with the other completion
+       functions. So I catch this asap here. */
+    return (char *)0;
+  }
+
+  if (strncmp(text,"load_",5) == 0)
+    return line_strl_completion_function(text,state,line_adhoclist);
+
+  return (char *)0;
 }
 
 unsigned char line_help(EditLine *ignore,int invoking_key) {
@@ -362,6 +450,7 @@ void line_init_history(void) {
   h = history_init();
   el_set(e,EL_HIST,history,h);
   history(h,&ev,H_SETSIZE,HISTFILESIZE);
+  history(h,&ev,H_SETUNIQUE,IGNOREDUPS);
   hname = line_histname();
   history(h,&ev,H_LOAD,hname);
   free(hname);
@@ -370,7 +459,7 @@ void line_init_history(void) {
 
 void line_add_history(char this_command[]) {
 #ifdef HAVE_HISTORY
-  if ((this_command != (char *)NULL) && *this_command != 0) {
+  if (this_command != (char *)NULL && *this_command != 0) {
     history(h,&ev,H_ENTER,this_command);
     free(this_command);
   }

@@ -92,12 +92,12 @@ int deb_fprintf(FILE *file,const char *msg,...) {
   if (debug && file) {
     deb_mutex(LOCK);
     oldcolor = textcolor(debugcolor);
-    ecode = vfprintf(stdout,msg,ap);
+    ecode = vfprintf(file,msg,ap);
     textcolor(oldcolor);
     deb_mutex(UNLOCK);
   }
   va_end(ap);
-  fflush(stderr);
+  fflush(file);
 
   return ecode;
 }

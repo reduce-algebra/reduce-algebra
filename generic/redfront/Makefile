@@ -7,15 +7,9 @@
 #
 # Usage Details:
 #
-# make csl:              build redfront for csl. The binary will be located
-#                        under csl/ in the directory corresponding to your
-#                        architecture
-#
-# make psl:              build redfront for psl. The binary will be located
-#                        under psl/ in the directory corresponding to your
-#                        architecture
-#
-# make =                 make csl psl
+# make =                 make redfront. The binary will be located in the
+#                        redfront subdirectory of the directory corresponding
+#                        to your architecture
 #
 # make install-csl:      create a suitable symbolic link rfcsl in trunk/bin
 #
@@ -37,65 +31,52 @@ BUILD = $(shell ../../scripts/findhost.sh $(shell src/config.guess))
 
 LIBEDIT_TGZ = libedit-20090923-3.0.tar.gz
 LIBEDIT = $(shell basename $(LIBEDIT_TGZ) .tar.gz)
-LIBEDIT_BUILD = $(LIBEDIT)/$(BUILD)
+BUILD_LIBEDIT = $(BUILD)/libedit
 
 .PHONY: all csl psl install install-csl install-psl uninstall uninstall-csl \
 	uninstall-psl clean distclean maintainer-clean echo
 
-all: csl psl
+all: $(BUILD)/redfront/redfront
 
-csl: csl/$(BUILD)/redfront
-
-csl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h
+$(BUILD)/redfront/redfront: $(BUILD)/libedit/include/editline/readline.h
 	cd src; \
 	autoconf; \
 	autoheader
-	mkdir -p csl/$(BUILD); \
-	cd csl/$(BUILD); \
-	../../src/configure --with-csl; \
+	mkdir -p $(BUILD)/redfront; \
+	cd $(BUILD)/redfront; \
+	../../src/configure; \
 	make
 
-psl: psl/$(BUILD)/redfront
-
-psl/$(BUILD)/redfront: libedit/$(BUILD)/include/editline/readline.h
-	cd src; \
-	autoconf; \
-	autoheader
-	mkdir -p psl/$(BUILD); \
-	cd psl/$(BUILD); \
-	../../src/configure --with-psl; \
-	make
-
-libedit/$(BUILD)/include/editline/readline.h:
+$(BUILD)/libedit/include/editline/readline.h:
 	tar xvf ../../libedit/$(LIBEDIT_TGZ)
 	ln -sf $(LIBEDIT) libedit
-	mkdir -p $(LIBEDIT_BUILD)
-	cd $(LIBEDIT_BUILD); \
-	../configure --prefix=$$(pwd) --disable-dependency-tracking; \
+	mkdir -p $(BUILD_LIBEDIT)
+	cd $(BUILD_LIBEDIT); \
+	../../$(LIBEDIT)/configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	make install
 
 universal:  # EXPERIMENTAL - DO NOT USE!
-	mkdir libedit/universal; \
-	cd libedit/universal; \
-	CFLAGS="-arch i386 -arch x86_64 -arch ppc" ../configure --prefix=$$(pwd) --disable-dependency-tracking; \
+	mkdir -p universal/libedit; \
+	cd universal/libedit; \
+	CFLAGS="-arch i386 -arch x86_64 -arch ppc" ../../libedit/configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	make install
 
 install: install-csl install-psl
 
-install-csl: csl
+install-csl: $(BUILD)/redfront/redfront
 	@cd ../../bin && \
 	if test ! -e rfcsl -a ! -h rfcsl; then \
 	   echo "Creating symbolic link ../../bin/rfcsl"; \
-	   ln -s ../generic/redfront/csl/$(BUILD)/redfront rfcsl; \
+	   ln -s ../generic/redfront/$(BUILD)/redfront/redfront rfcsl; \
 	else \
 	   echo "File ../../bin/rfcsl already exists"; \
 	fi
 
-install-psl: psl
+install-psl: $(BUILD)/redfront/redfront
 	@cd ../../bin && \
 	if test ! -e rfpsl -a ! -h rfpsl ; then \
 	   echo "Creating symbolic link ../../bin/rfpsl"; \
-	   ln -s ../generic/redfront/psl/$(BUILD)/redfront rfpsl; \
+	   ln -s ../generic/redfront/$(BUILD)/redfront/redfront rfpsl; \
 	else \
 	   echo "File ../../bin/rfpsl already exists"; \
 	fi
@@ -121,15 +102,15 @@ uninstall-psl:
 	fi
 
 clean:
-	cd csl/$(BUILD) && make clean
-	cd psl/$(BUILD) && make clean
+	cd $(BUILD)/libedit && make clean
+	cd $(BUILD)/redfront && make clean
 
 distclean: uninstall
-	/bin/rm -rf csl psl libedit*
+	/bin/rm -rf $(BUILD) csl psl libedit*
 	cd ../../bin && rm -f rfcsl rfpsl
 
 maintainer-clean: distclean
 	cd src && make -f Makefile.in maintainer-clean
 
 echo:
-	@echo $(LIBEDIT_BUILD)
+	@echo $(BUILD)

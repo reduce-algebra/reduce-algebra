@@ -32,6 +32,8 @@
 
 /* Exportable variables */
 
+int dist=0;
+
 int reduceProcessID;
 
 int MeToReduce[2];
@@ -57,6 +59,7 @@ int inputcolor = DEFAULT_INPUTCOLOR;	   /* REDUCE input line */
 int outputcolor = DEFAULT_OUTPUTCOLOR;	   /* REDUCE mathprint output */
 int debugcolor = DEFAULT_DEBUGCOLOR;	   /* REDFRONT DEBUG output */
 
+int det_dist(char *);
 void parse_args(int,char **);
 void init_channels(void);
 void print_banner(int);
@@ -69,8 +72,12 @@ int textcolor(int);
 void textcolor1(int,int,int);
 void stextcolor1(char *,int,int,int);
 void resetcolor(void);
+int vbprintf(const char *,...);
+void rf_exit(int);
 
 int main(int argc,char **argv,char **envp) {
+
+  dist = det_dist(argv[0]);
 
   parse_args(argc,argv);
 
@@ -105,18 +112,29 @@ int main(int argc,char **argv,char **envp) {
   return -1;
 }
 
+int det_dist(char *argv0) {
+  char *bn;
+
+  bn = (char *)malloc((strlen(argv0)+1)*sizeof(char));
+  strcpy(bn,argv0);
+  bn = basename(bn);
+  free(bn);
+  if (strcmp(bn,"rfpsl") == 0)
+    return PSL;
+  if (strcmp(bn,"rfcsl") == 0)
+    return CSL;
+  else
+    return PSL;
+}
+
 void parse_args(int argc,char **argv) {
   int c;
   extern char *optarg;
   extern int optind;
-
-#ifdef BPSL
-  const char *os="bc:huvVm:";
-#else
-  const char *os="bc:huvV";
-#endif
-
+  const char *os;
   int errflg=0;
+
+  os = (dist == PSL) ? "bc:huvVm:" : "bc:huvV";
 
   while ((c = getopt(argc, argv, os)) != EOF)
     switch (c) {
@@ -137,11 +155,9 @@ void parse_args(int argc,char **argv) {
     case 'V':
       verbose = 1;
       break;
-#ifdef BPSL
     case 'm':
       memory = optarg;
       break;
-#endif
     case '?':
       errflg++;
     }
@@ -151,30 +167,29 @@ void parse_args(int argc,char **argv) {
     rf_exit(2);
   }
 
-  if (strcmp(argv[optind - 1],"--") == 0) {  // <options> + "--"
+  if (strcmp(argv[optind - 1],"--") == 0) {
+    // <options> + "--"
     xargstart = optind;
-  }
-#ifdef BPSL
-  else if (memory == NULL && optind == argc - 1) {  // <options> + <memarg>
+  } else if (dist == PSL && memory == NULL && optind == argc - 1) {
+    // <options> + <memarg>
     memory = argv[optind];
     xargstart = argc;
-  }
-  else if (memory == NULL &&  // <options> + <memarg> + "--"
+  } else if (dist == PSL && memory == NULL &&
 	   optind < argc - 1 && strcmp(argv[optind + 1],"--") == 0) {
+    // <options> + <memarg> + "--"
     memory = argv[optind];
     xargstart = optind + 2;
-  }
-#endif
-  else if (optind == argc) {  // <options>
+  } else if (optind == argc) {
+    // <options>
     xargstart = argc;
   } else {
     print_usage(argv[0]);
     rf_exit(2);
   }
 
-#ifdef BPSL
-  memory = parse_memarg(memory==NULL ? MEMORY : memory,argv[0]);
-#endif
+  if (dist == PSL) {
+    memory = parse_memarg(memory==NULL ? MEMORY : memory,argv[0]);
+  }
 }
 
 int parse_colarg(char *s) {
@@ -247,7 +262,7 @@ int map_colour(int ch) {
 }
 
 char *parse_memarg(char *argstr,char *name) {
-/* Only used for PSL (#ifdef BPSL) */
+  /* Only used for PSL */
   char *nargv2;
   char lchar;
   int i;
@@ -286,12 +301,11 @@ char *parse_memarg(char *argstr,char *name) {
 }
 
 void print_usage(char name[]) {
-#ifdef BPSL
-  (void)fprintf(stderr,
-		"usage: %s [-bhuvV] [-c COLORSPEC] [[-m] NUMBER[kKmM]]\n",name);
-#else
-  (void)fprintf(stderr,"usage: %s [-bhuvV] [-c COLORSPEC]\n",name);
-#endif
+  if (dist == PSL)
+    fprintf(stderr,
+	    "usage: %s [-bhuvV] [-c COLORSPEC] [[-m] NUMBER[kKmM]]\n",name);
+  else
+    fprintf(stderr,"usage: %s [-bhuvV] [-c COLORSPEC]\n",name);
 }
 
 void print_help(char name[]) {
@@ -305,24 +319,27 @@ void print_help(char name[]) {
 
   print_usage(name);
 
-  fprintf(stderr,"       -b\t\tblack and white mode, i.e. do not use ANSI colors\n");
-  fprintf(stderr,"       -c COLORSPEC\tspecify colors for redfront output, normal output,\n");
-  fprintf(stderr,"         \t\tprompt, input, math output, debug output. The default\n");
-  fprintf(stderr,"         \t\tis fxxxxxbxexgx - see LSCOLORS in the ls manpage for\n");
+  fprintf(stderr,"       -b\t\t\
+black and white mode, i.e. do not use ANSI colors\n");
+  fprintf(stderr,"       -c COLORSPEC\t\
+specify colors for redfront output, normal output,\n");
+  fprintf(stderr,"         \t\t\
+prompt, input, math output, debug output. The default\n");
+  fprintf(stderr,"         \t\t\
+is fxxxxxbxexgx - see LSCOLORS in the ls manpage for\n");
   fprintf(stderr,"         \t\tdetails\n");
   fprintf(stderr,"       -h\t\tthis help message\n");
-#ifdef BPSL
-  fprintf(stderr,"       -m NUMBER [kKmM]\tmemory allocation in Bytes [KB|MB]\n");
-#endif
+  if (dist == PSL)
+    fprintf(stderr,"       -m NUMBER [kKmM]\t\
+memory allocation in Bytes [KB|MB]\n");
   fprintf(stderr,"       -u\t\tuse unicode characters\n");
   fprintf(stderr,"       -v, -V\t\tverbose\n\n");
 
   fprintf(stderr,"Examples: %s -uv\n",name);
-#ifdef BPSL
-  fprintf(stderr,"          %s -c xxxxxxbxexgx -m 96m.\n\n",name);
-#else
-  fprintf(stderr,"          %s -c xxxxxxbxexgx -v\n\n",name);
-#endif
+  if (dist == PSL)
+    fprintf(stderr,"          %s -c xxxxxxbxexgx -m 96m.\n\n",name);
+  else
+    fprintf(stderr,"          %s -c xxxxxxbxexgx -v\n\n",name);
   fprintf(stderr,"Use TAB for completion of filenames and Reduce switches.\n");
   fprintf(stderr,"There is a manpage available.\n");
 }
@@ -409,6 +426,23 @@ void resetcolor(void) {
     printf("%c[0m",0x1B);
     fflush(stdout);
   }
+}
+
+int vbprintf(const char *msg,...) {
+  int ecode=0;
+  int oldcolor;
+  va_list ap;
+
+  if (!verbose)
+    return 0;
+
+  va_start(ap,msg);
+  oldcolor = textcolor(redfrontcolor);
+  ecode = vprintf(msg,ap);
+  textcolor(oldcolor);
+  va_end(ap);
+
+  return ecode;
 }
 
 void rf_exit(int ecode) {
