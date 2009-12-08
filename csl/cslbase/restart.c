@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 16afa4f8 07-Nov-2009 */
+/* Signature: 1bf1fded 08-Dec-2009 */
 
 #include "headers.h"
 
@@ -3721,13 +3721,13 @@ static void set_up_variables(CSLbool restartp)
 #endif
     qvalue(macroexpand_hook) = make_symbol("funcall", restartp, Lfuncall1, Lfuncall2, Lfuncalln);
     input_libraries = make_undefined_symbol("input-libraries");
-    qheader(input_libraries)  |= SYM_SPECIAL_FORM;
+    qheader(input_libraries)  |= SYM_SPECIAL_VAR;
     qvalue(input_libraries) = nil;
     for (i=number_of_fasl_paths-1; i>=0; i--)
         qvalue(input_libraries) = cons(SPID_LIBRARY + (((int32_t)i)<<20),
                                        qvalue(input_libraries));
     output_library = make_undefined_symbol("output-library");
-    qheader(output_library)   |= SYM_SPECIAL_FORM;
+    qheader(output_library)   |= SYM_SPECIAL_VAR;
     qvalue(output_library)  = output_directory < 0 ? nil :
                               SPID_LIBRARY + (((int32_t)output_directory)<<20);
 /*
