@@ -113,18 +113,20 @@ int main(int argc,char **argv,char **envp) {
 }
 
 int det_dist(char *argv0) {
-  char *bn;
+  char *fn,*bn;
+  int dist;
 
-  bn = (char *)malloc((strlen(argv0)+1)*sizeof(char));
-  strcpy(bn,argv0);
-  bn = basename(bn);
-  free(bn);
+  fn = (char *)malloc((strlen(argv0)+1)*sizeof(char));
+  strcpy(fn,argv0);
+  bn = basename(fn);
   if (strcmp(bn,"rfpsl") == 0)
-    return PSL;
-  if (strcmp(bn,"rfcsl") == 0)
-    return CSL;
+    dist = PSL;
+  else if (strcmp(bn,"rfcsl") == 0)
+    dist = CSL;
   else
-    return PSL;
+    dist = PSL;
+  free(fn);
+  return dist;
 }
 
 void parse_args(int argc,char **argv) {
