@@ -203,11 +203,13 @@ procedure redfront_learncolor(c);
    else
       intern compress(int2id 5 . nconc(explode c,{int2id 6}));
 
-if redfront_pslp() then
+if redfront_pslp() then <<
    lispeval '(putd 'oblist 'expr
       '(lambda nil (prog (l) (setq l nil)
    	       	     	     (mapobl (function (lambda (x) (setq l (cons x l)))))
 	                     (return l))));
+   compile '(oblist)
+>>;
 
 procedure redfront_swl();
    begin scalar swl;
