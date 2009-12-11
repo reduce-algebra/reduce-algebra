@@ -1592,7 +1592,7 @@ symbolic procedure s!:expand_jump(op, offset);
              high := truncate(arg - low, 256);
 % LOADLIT and LOADFREE are encoded here as sub-types of the BIGCALL opcode.
              expanded := 'BIGCALL .
-               get(car expanded, 's!:longform) + high .
+               (get(car expanded, 's!:longform) + high) .
                low . cddr expanded end
           else expanded := subst(arg, '!*, expanded);
           offset := offset + 1 >>;
