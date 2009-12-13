@@ -1,0 +1,78 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; File:         PU:STRUCT.INITIAL 
+; Description:  File included in NSTRUCT 
+; Author:       
+; Created:      
+; Modified:     28-Aug-84 09:01:01 (Brian Beach)
+; Status:       Experimental (Do Not Distribute) 
+; Mode:         Lisp 
+; Package:      Utilities 
+; Compile to:   none
+;
+; (c) Copyright 1983, Hewlett-Packard Company, see the file
+;            HP_disclaimer at the root of the PSL file tree
+;
+; This file is included in PU:NSTRUCT.LSP
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Revisions:
+;
+; 19 Jan 1984 1450-PST (Brian Beach)
+;   Added standard header.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro defstruct ((name . opts) . slots)
+  (let ((dp (cadr (assq 'default-pointer opts)))
+	(conc-name (cadr (assq 'conc-name opts)))
+	(cons-name (implode (append '(m a k e -) (explodec name)))))
+;    #Q (fset-carefully cons-name '(macro . initial_defstruct-cons))
+;    #M (putprop cons-name 'initial_defstruct-cons 'macro)
+;    PSL change
+	(putd cons-name 'macro (cdr (getd 'initial_defstruct-cons)))
+;    PSL change    1+ ==> add1
+    (do ((i 0 (add1 i))
+	 (l slots (cdr l))
+	 (foo nil (cons (list slot init) foo))
+	 (chars (explodec conc-name))
+	 (slot) (acsor) (init))
+	((null l)
+	 (putprop cons-name foo 'initial_defstruct-inits)
+	 `',name)
+      (cond ((atom (car l))
+	     (setq slot (car l))
+	     (setq init nil))
+	    (t (setq slot (caar l))
+	       (setq init (cadar l))))
+      (setq acsor (implode (append chars (explodec slot))))
+      (putprop acsor dp 'initial_defstruct-dp)
+;      #Q (fset-carefully acsor '(macro . initial_defstruct-ref))
+;      #M (putprop acsor 'initial_defstruct-ref 'macro)
+;      PSL change
+	  (putd acsor 'macro (cdr (getd 'initial_defstruct-ref)))
+      (putprop acsor i 'initial_defstruct-i))))
+
+(defun initial_defstruct-ref (form)
+  (let ((i (get (car form) 'initial_defstruct-i))
+	(p (if (null (cdr form))
+	       (get (car form) 'initial_defstruct-dp)
+	       (cadr form))))
+;     PSL change	incompatible NTH
+    #-Multics `(nth ,p ,(add1 i))
+;    #-Multics `(nth ,i ,p)
+    #+Multics `(car ,(do ((i i (1- i))
+			  (x p `(cdr ,x)))
+			 ((zerop i) x)))
+    ))
+
+(defun initial_defstruct-cons (form)
+  (do ((inits (get (car form) 'initial_defstruct-inits)
+	      (cdr inits))
+       (gen (gensym))
+       (x nil (cons (or (get form (caar inits))
+			(cadar inits))
+		    x)))
+      ((null inits)
+       `(list . ,x))))

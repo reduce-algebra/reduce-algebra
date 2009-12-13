@@ -1,0 +1,8 @@
+rm bpsl_om
+		 
+cc -o bpsl_om -static \
+   -DBPSSIZE=4000000 bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
+   -DLINUX main_om.o dmain_om.o -L/arsenal/claude/lib/Linux\
+   -lOM -lOMconn  -lm  -lc
+
