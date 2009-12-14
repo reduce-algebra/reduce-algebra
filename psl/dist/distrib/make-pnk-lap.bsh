@@ -1,0 +1,70 @@
+##! /bin/csh -fx
+###############################################################################
+#
+# File:         PDIST:MAKE-PNK-LAP
+# Discription:	Make a fasfile and put it in the $pnkl directory. The first
+#		argument is the directory where the source file is located.
+#		The second argument is the name of the file with no extension.
+# Author:       Harold Carr and Leigh Stoller.
+# Created:      08-Oct-86
+# Mode:         Text
+#
+# (c) Copyright 1982, University of Utah
+# %
+# % Redistribution and use in source and binary forms, with or without
+# % modification, are permitted provided that the following conditions are met:
+# %
+# %    * Redistributions of source code must retain the relevant copyright
+# %      notice, this list of conditions and the following disclaimer.
+# %    * Redistributions in binary form must reproduce the above copyright
+# %      notice, this list of conditions and the following disclaimer in the
+# %      documentation and/or other materials provided with the distribution.
+# %
+# % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# % THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# % PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+# % CONTRIBUTORS
+# % BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# % CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# % SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# % INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# % POSSIBILITY OF SUCH DAMAGE.
+#
+
+###############################################################################
+# Revisions
+#
+# 27-Apr-87 (Leigh Stoller)
+#  Turn on fastcar operations when compiling PSL files.
+##############################################################################
+
+pushd $1
+
+$psys/pslcomp << EOF
+% Put the current directory at the end for automated scripts to protect
+%  against name collisions on 14 character filename machines.
+(setq loaddirectories* '("\$pl/" "\$pnkl/" ""))
+(off usermode)
+
+%% For machines that require the carcdr.sl fix for car/cdr of NIL, make sure
+%% we turn on fastcar to ensure optimized code. Since PSL was written with
+%% the assumption that car/car of NIL was illegal, it is not necessary
+%% to generate code to test for this, slowing down all car/cdr operations
+%% in the process. For user code though, it defaults to off for safety.
+(on fastcar)
+(setq *syslisp t)
+%(on pcmac)
+(faslout "\$pnkl/$2")
+(dskin "$1/$2.sl")
+(faslend)
+(exitlisp)
+EOF
+
+#@ pslcompstatus = $status
+popd
+#@ status = $pslcompstatus
+
+# End of file.

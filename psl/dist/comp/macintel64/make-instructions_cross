@@ -1,0 +1,10 @@
+$psys/pslcomp  << EOF
+
+(setq loaddirectories!* (cons "$pl/cross/" loaddirectories!*))
+(load macintel64-cmac)
+(load macintel64-lap)
+
+(load pp)
+(dskin "geninstr.sl")
+(quit)
+EOF
