@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 77303b0e 07-Nov-2009 */
+/* Signature: 76513832 15-Dec-2009 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -449,16 +449,21 @@ static void putp(char *s)
    tputs(s, 1, putpc);
 }
 
+
+#endif
+
+#ifndef WIN32
+
 static struct termios shell_term, prog_term, shell_term_o, prog_term_o;
 
-static void def_shell_mode(void)
+static void my_def_shell_mode(void)
 {
     fflush(stdout);
     tcgetattr(stdin_handle, &shell_term);
     tcgetattr(stdout_handle, &shell_term_o);
 }
 
-static void reset_shell_mode(void)
+static void my_reset_shell_mode(void)
 {
     fflush(stdout);
     tcsetattr(stdin_handle, TCSADRAIN, &shell_term);
@@ -466,38 +471,20 @@ static void reset_shell_mode(void)
     fflush(stdout);
 }
 
-static void def_prog_mode(void)
+static void my_def_prog_mode(void)
 {
     fflush(stdout);
     tcgetattr(stdin_handle, &prog_term);
     tcgetattr(stdout_handle, &prog_term_o);
 }
 
-static void reset_prog_mode(void)
+static void my_reset_prog_mode(void)
 {
     fflush(stdout);
     tcsetattr(stdin_handle, TCSADRAIN, &prog_term);
     tcsetattr(stdout_handle, TCSADRAIN, &prog_term_o);
 }
 
-
-#endif
-
-#ifdef RAW_CYGWIN
-static void reset_shell(void)
-{
-/* This still does not seem to do what I want... */
-    struct termios w;
-    reset_shell_mode();
-    tcgetattr(stdin_handle, &w);
-    w.c_oflag |= OPOST | ONLCR;
-    tcsetattr(stdin_handle, TCSADRAIN, &w);
-    tcgetattr(stdout_handle, &w);
-    w.c_oflag |= OPOST | ONLCR;
-    tcsetattr(stdout_handle, TCSADRAIN, &w);
-}
-#else
-#define reset_shell() reset_shell_mode();
 #endif
 
 /*
@@ -659,12 +646,17 @@ static void record_keys(void)
 #endif
 #endif /* WIN32 */
 
+#ifdef WIN32
+static INPUT_RECORD keyboard_buffer[1];
+#endif
+
 int term_setup(int flag, const char *colour)
 {
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
     term_enabled = 0;
+    keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
     expanded_char_sequence = NULL;
     input_line = (char *)malloc(200);
@@ -773,15 +765,12 @@ int term_setup(int flag, const char *colour)
 /*
  * def_shell_mode() remembers the configuration of my terminal in the
  * state before I alter any parameters. It saves information so that
- * reset_shell_mode() can put things back the way they were.
+ * reset_shell_mode() can put things back the way they were. However
+ * with (at least) Ubuntu 9.10 these functions fail for me. Perhaps because
+ * they want me to be using a full "curses" window, not merely low-level
+ * access. So I provide my own versions with prefix "my_".
  */
-#ifdef DEBUG
-    fprintf(stderr, "can_invert = %d, def_shell = %d\n",
-            term_can_invert, def_shell_mode());
-    fflush(stderr);
-#else
-    def_shell_mode();
-#endif
+    my_def_shell_mode();
 /*
  * I guess I am going to suppose here that stdin and stdout are both
  * associated with the SAME terminal. If the computer had two (or more)
@@ -809,11 +798,11 @@ int term_setup(int flag, const char *colour)
     my_term.c_cc[VTIME] = 0;
 #endif
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
-    def_prog_mode();
+    my_def_prog_mode();
 #ifdef RECORD_KEYS
     record_keys();
 #endif
-    reset_shell();
+    my_reset_shell_mode();
 #endif /* WIN32 */
     term_enabled = 1;
     input_history_init();
@@ -838,7 +827,7 @@ void term_close(void)
     }
 #else
     if (term_enabled)
-    {   reset_shell();
+    {   my_reset_shell_mode();
     }
 #endif
     term_enabled = 0;
@@ -851,10 +840,6 @@ void term_close(void)
         display_line = NULL;
     }
 }
-
-#ifdef WIN32
-static INPUT_RECORD keyboard_buffer[1] = {{0}};
-#endif
 
 /*
  * term_getchar() will block until the user has typed something. I will use
@@ -1302,14 +1287,14 @@ static int line_wrap(int ch, int tab_offset)
 #ifdef WIN32
             SetConsoleMode(stdout_handle, stdout_attributes);
 #else
-            reset_shell();
+            my_reset_shell_mode();
 #endif
             term_putchar('\n');
             fflush(stdout);
 #ifdef WIN32
             SetConsoleMode(stdout_handle, 0);
 #else
-            reset_prog_mode();
+            my_reset_prog_mode();
 #endif
             cursory++;
             max_cursory = cursory;
@@ -2330,7 +2315,7 @@ static void set_normal(void)
     else if (orig_colors) putp(orig_colors);
     else if (set_a_foreground) putp(tparm(set_a_foreground, 0 PAD_TPARM));
     fflush(stdout);
-    reset_shell();
+    my_reset_shell_mode();
 #endif
 }
 
@@ -2348,7 +2333,7 @@ static void set_shell(void)
     else if (orig_colors) putp(orig_colors);
     else if (set_a_foreground) putp(tparm(set_a_foreground, 0 PAD_TPARM));
     fflush(stdout);
-    reset_shell();
+    my_reset_shell_mode();
 #endif
 }
 
@@ -2362,7 +2347,7 @@ static char *term_fancy_getline(void)
 #ifdef WIN32
     SetConsoleMode(stdout_handle, 0);
 #else
-    reset_prog_mode();
+    my_reset_prog_mode();
 #endif
 /*
  * I am going to take strong action to ensure that the prompt appears
