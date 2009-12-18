@@ -1,0 +1,4527 @@
+        .text
+ .long 1
+/ (*ENTRY FIRSTKERNEL EXPR 1)
+ .globl FIRSTKERNEL
+FIRSTKERNEL:
+ ret
+ .long 0
+/ (*ENTRY INIT-POINTERS EXPR 0)
+ .globl MZL0001
+MZL0001:
+ movl SYMVAL+1044,%edi
+ movl %edi,SYMVAL+1072
+ movl SYMVAL+1040,%edi
+ movl %edi,SYMVAL+1076
+ movl $7996,%eax
+ add SYMVAL+1040,%eax
+ movl %eax,SYMVAL+1080
+ movl SYMVAL+1040,%edi
+ movl %edi,SYMVAL+1084
+ movl SYMVAL+1088,%eax
+ movl %eax,SYMVAL+1092
+ ret
+ .long 0
+/ (*ENTRY INIT-FLUIDS EXPR 0)
+ .globl MZL0002
+MZL0002:
+ movl $((30*0x8000000)+128),%eax
+ movl %eax,SYMVAL+1100
+ movl %eax,SYMVAL+1104
+ movl %eax,SYMVAL+1108
+ movl %eax,SYMVAL+1112
+ movl %eax,SYMVAL+1116
+ movl %eax,SYMVAL+1120
+ movl %eax,SYMVAL+1124
+ movl %eax,SYMVAL+1128
+ movl %eax,SYMVAL+1132
+ movl %eax,SYMVAL+1136
+ movl %eax,SYMVAL+1140
+ movl %eax,SYMVAL+1144
+ movl %eax,SYMVAL+1148
+ movl %eax,SYMVAL+1152
+ movl %eax,SYMVAL+1156
+ movl %eax,SYMVAL+1160
+ movl %eax,SYMVAL+1164
+ movl %eax,SYMVAL+1168
+ movl %eax,SYMVAL+1172
+ movl %eax,SYMVAL+1176
+ movl %eax,SYMVAL+1180
+ movl %eax,SYMVAL+1184
+ movl %eax,SYMVAL+1188
+ movl %eax,SYMVAL+1192
+ ret
+ .long 0
+/ (*ENTRY !m!a!i!n EXPR 0)
+_psl_main:
+ .globl _psl_main
+ movl 4(%esp),%edi
+ movl %edi,SYMVAL+1204
+ movl 8(%esp),%edi
+ movl %edi,SYMVAL+1208
+ movl SYMVAL+1204,%eax
+ movl SYMVAL+1208,%ebx
+ movl $27,SYMVAL+1128
+ call *SYMFNC+1212
+ call *SYMFNC+1068
+ movl %esp,%edx
+ shr $5,%edx
+ movl %edx,SYMVAL+1216
+ movl $299,%edi
+ call *SYMFNC+1196
+ call *SYMFNC+1220
+MZL0003:
+ xor %eax,%eax
+ jmp *SYMFNC+1224
+ ret
+/ (*ENTRY EXIT-WITH-STATUS EXPR 1)
+ .globl MZL0004
+MZL0004:
+ push %eax
+ call *SYMFNC+1228
+ pop %eax
+ call *SYMFNC+1232
+ ret
+ .long 0
+/ (*ENTRY INIT-GCARRAY EXPR 0)
+ .globl MZL0005
+MZL0005:
+ movl $((30*0x8000000)+128),%eax
+ ret
+MZL0006:
+ .long 21
+ .byte 65,98,111,117,116,32,116,111,32,108
+ .byte 111,97,100,32,76,79,65,68,45,80,83
+ .byte 76,0,0
+MZL0007:
+ .long 9
+ .byte 108,111,97,100,45,112,115,108,46,98
+ .byte 0,0
+ .long 0
+/ (*ENTRY PRE-MAIN EXPR 0)
+ .globl MZL0008
+MZL0008:
+ call *SYMFNC+1236
+ call *SYMFNC+1240
+ call *SYMFNC+1244
+ movl $((4*0x8000000)+MZL0006),%eax
+ call *SYMFNC+1248
+ call *SYMFNC+1252
+ movl $((4*0x8000000)+MZL0007),%eax
+ call *SYMFNC+1256
+ jmp *SYMFNC+1260
+ .long 1
+/ (*ENTRY CONSOLE-PRINT-STRING EXPR 1)
+ .globl MZL0009
+MZL0009:
+ and $134217727,%eax
+ add $4,%eax
+ jmp *SYMFNC+1264
+ .long 1
+/ (*ENTRY CONSOLE-PRINT-NUMBER EXPR 1)
+ .globl MZL0010
+MZL0010:
+ jmp *SYMFNC+1272
+ .long 0
+/ (*ENTRY CONSOLE-NEWLINE EXPR 0)
+ .globl MZL0011
+MZL0011:
+ movl $10,%eax
+ jmp *SYMFNC+1276
+MZL0012:
+ .long 0
+ .byte 114,0
+MZL0013:
+ .long 34
+ .byte 67,111,117,108,100,110,39,116,32,111
+ .byte 112,101,110,32,98,105,110,97,114,121
+ .byte 32,102,105,108,101,32,102,111,114,32
+ .byte 105,110,112,117,116,0
+ .long 1
+/ (*ENTRY BINARYOPENREAD EXPR 1)
+ .globl BINARYOPENREAD
+BINARYOPENREAD:
+ movl $((4*0x8000000)+MZL0012),%ebx
+ and $134217727,%ebx
+ add $4,%ebx
+ and $134217727,%eax
+ add $4,%eax
+ call *SYMFNC+1284
+ cmpl $0,%eax
+ jne MZL0014
+ movl $((4*0x8000000)+MZL0013),%eax
+ jmp *SYMFNC+1288
+MZL0014:
+ ret
+ .long 1
+/ (*ENTRY BINARYREAD EXPR 1)
+ .globl BINARYREAD
+BINARYREAD:
+ jmp *SYMFNC+1296
+ .long 3
+/ (*ENTRY BINARYREADBLOCK EXPR 3)
+ .globl BINARYREADBLOCK
+BINARYREADBLOCK:
+ movl %ebx,%ebp
+ movl %eax,%edx
+ movl $4,%ebx
+ movl %ebp,%eax
+ jmp *SYMFNC+1304
+ .long 1
+/ (*ENTRY BINARYCLOSE EXPR 1)
+ .globl BINARYCLOSE
+BINARYCLOSE:
+ jmp *SYMFNC+1312
+ .long 0
+/ (*ENTRY INITIALIZE-SYMBOL-TABLE EXPR 0)
+ .globl MZL0015
+MZL0015:
+ movl %eax,-36(%esp)
+ sub $8,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,4(%esp)
+ movl %edi,(%esp)
+ movl $15000,%ebx
+ movl SYMVAL+1316,%eax
+ movl %eax,%edx
+ movl %ebx,%ecx
+MZL0016:
+ cmpl %ecx,%edx
+ jg MZL0017
+ movl %edx,%eax
+ shl $2,%eax
+ add SYMVAL+1320,%eax
+ xor %ebx,%ebx
+ incl %ebx
+ add %edx,%ebx
+ movl %ebx,(%eax)
+ incl %edx
+ jmp MZL0016
+MZL0017:
+ movl SYMVAL+1320,%esi
+ movl $0,60000(%esi)
+ movl $18013,%ebx
+ xor %eax,%eax
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+MZL0018:
+ movl (%esp),%edi
+ cmpl 4(%esp),%edi
+ jg MZL0019
+ xor %ecx,%ecx
+ movl (%esp),%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw %cx,0(%ebx,%eax,1)
+ incl (%esp)
+ jmp MZL0018
+MZL0019:
+ movl SYMVAL+1320,%edi
+ movl 512(%edi),%eax
+ call *SYMFNC+1324
+ movl $128,%ecx
+ movl %eax,%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw %cx,0(%ebx,%eax,1)
+ xor %ebx,%ebx
+ dec %ebx
+ add SYMVAL+1316,%ebx
+ movl $256,%eax
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+MZL0020:
+ movl (%esp),%edi
+ cmpl 4(%esp),%edi
+ jg MZL0021
+ movl (%esp),%eax
+ shl $2,%eax
+ add SYMVAL+1320,%eax
+ movl (%eax),%eax
+ call *SYMFNC+1324
+ movl (%esp),%ecx
+ movl %eax,%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw %cx,0(%ebx,%eax,1)
+ incl (%esp)
+ jmp MZL0020
+MZL0021:
+ movl $((30*0x8000000)+128),%eax
+ movl %eax,SYMVAL+1328
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY FASLIN-INTERN EXPR 1)
+ .globl MZL0022
+MZL0022:
+ movl %eax,-40(%esp)
+ sub $12,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,8(%esp)
+ movl %edi,4(%esp)
+ movl %eax,(%esp)
+ movl %eax,%ebx
+ xor %eax,%eax
+ call *SYMFNC+1336
+ movl %eax,4(%esp)
+ cmpl $((30*0x8000000)+128),%eax
+ jne MZL0023
+ movl (%esp),%eax
+ add $12,%esp
+ jmp *SYMFNC+1340
+MZL0023:
+ movl (%esp),%eax
+ and $134217727,%eax
+ movl (%eax),%eax
+ shl $5,%eax
+ sar $5,%eax
+ movl %eax,8(%esp)
+ cmpl 4(%esp),%eax
+ jle MZL0024
+ xor %ebx,%ebx
+ incl %ebx
+ add 4(%esp),%ebx
+ movl (%esp),%eax
+ and $134217727,%eax
+ add $4,%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ cmpl $0,%eax
+ jne MZL0024
+ incl 4(%esp)
+MZL0024:
+ movl 4(%esp),%edi
+ cmpl 8(%esp),%edi
+ jl MZL0025
+ movl (%esp),%eax
+ jmp MZL0026
+MZL0025:
+ movl (%esp),%ecx
+ and $134217727,%ecx
+ movl (%ecx),%ecx
+ shl $5,%ecx
+ sar $5,%ecx
+ incl %ecx
+ xor %ebx,%ebx
+ incl %ebx
+ add 4(%esp),%ebx
+ movl (%esp),%eax
+ call *SYMFNC+1344
+MZL0026:
+ add $12,%esp
+ jmp *SYMFNC+1340
+ .long 1
+/ (*ENTRY INTERN EXPR 1)
+ .globl INTERN
+INTERN:
+ jmp *SYMFNC+1348
+MZL0027:
+ .long 7
+ .byte 78,101,119,32,105,100,58,32,0,0
+ .long 1
+/ (*ENTRY UNCHECKED-STRING-INTERN EXPR 1)
+ .globl MZL0028
+MZL0028:
+ movl %eax,-52(%esp)
+ sub $24,%esp
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+128),%ebp
+ movl %ebp,%edx
+ movl %ebp,%ecx
+ movl %eax,%ebx
+ and $134217727,%ebx
+ movl (%ebx),%ebx
+ shl $5,%ebx
+ sar $5,%ebx
+ and $134217727,%eax
+ movl %eax,4(%esp)
+ movl %ebx,8(%esp)
+ movl %ecx,12(%esp)
+ movl %edx,16(%esp)
+ movl %ebp,20(%esp)
+ cmpl $0,%ebx
+ jne MZL0029
+ add $4,%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ and $134217727,%eax
+ or $-268435456,%eax
+ jmp MZL0030
+MZL0029:
+ movl (%esp),%eax
+ call *SYMFNC+1324
+ movl %eax,%ebx
+ movl %ebx,12(%esp)
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw 0(%eax,%ebx,1),%ax
+ cwtl
+ shl $16,%eax
+ sar $16,%eax
+ cmpl $0,%eax
+ jle MZL0031
+ movl 12(%esp),%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw 0(%eax,%ebx,1),%ax
+ cwtl
+ shl $16,%eax
+ sar $16,%eax
+ and $134217727,%eax
+ or $-268435456,%eax
+ jmp MZL0030
+MZL0031:
+ movl $((30*0x8000000)+128),%edi
+ cmpl SYMVAL+1328,%edi
+ je MZL0032
+ movl $((4*0x8000000)+MZL0027),%eax
+ call *SYMFNC+1248
+ movl (%esp),%eax
+ call *SYMFNC+1248
+ call *SYMFNC+1252
+MZL0032:
+ call *SYMFNC+1352
+ movl %eax,20(%esp)
+ movl %eax,%ecx
+ movl 12(%esp),%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw %cx,0(%ebx,%eax,1)
+ movl 8(%esp),%eax
+ call *SYMFNC+1356
+ movl %eax,16(%esp)
+ movl 4(%esp),%ebx
+ call *SYMFNC+1360
+ movl 16(%esp),%ebx
+ and $134217727,%ebx
+ or $536870912,%ebx
+ movl 20(%esp),%eax
+ add $24,%esp
+ jmp *SYMFNC+1364
+MZL0030:
+ add $24,%esp
+ ret
+MZL0033:
+ .long 18
+ .byte 72,97,115,104,32,116,97,98,108,101
+ .byte 32,111,118,101,114,102,108,111,119
+ .byte 0
+ .long 1
+/ (*ENTRY HASH-INTO-TABLE EXPR 1)
+ .globl MZL0034
+MZL0034:
+ movl %eax,-44(%esp)
+ sub $16,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %edi,4(%esp)
+ movl %eax,(%esp)
+ call *SYMFNC+1368
+ movl %eax,4(%esp)
+ movl %eax,8(%esp)
+ movl $-1,12(%esp)
+MZL0035:
+ movl 8(%esp),%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw 0(%eax,%ebx,1),%ax
+ cwtl
+ shl $16,%eax
+ sar $16,%eax
+ cmpl $0,%eax
+ jne MZL0036
+ cmpl $-1,12(%esp)
+ je MZL0037
+ movl 12(%esp),%eax
+ jmp MZL0038
+MZL0037:
+ movl 8(%esp),%eax
+MZL0038:
+ jmp MZL0039
+MZL0036:
+ movl 8(%esp),%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw 0(%eax,%ebx,1),%ax
+ cwtl
+ movl %eax,%ebx
+ shl $16,%ebx
+ sar $16,%ebx
+ cmpl $-1,%ebx
+ jne MZL0040
+ cmpl $-1,12(%esp)
+ jne MZL0041
+ movl 8(%esp),%edi
+ movl %edi,12(%esp)
+ jmp MZL0041
+MZL0040:
+ movl 8(%esp),%ebx
+ movl SYMVAL+1048,%eax
+ shl $1,%ebx
+ movw 0(%eax,%ebx,1),%ax
+ cwtl
+ movl (%esp),%ebx
+ shl $16,%eax
+ sar $16,%eax
+ shl $2,%eax
+ add SYMVAL+1320,%eax
+ movl (%eax),%eax
+ call *SYMFNC+1372
+ cmpl $((30*0x8000000)+128),%eax
+ je MZL0041
+ movl 8(%esp),%eax
+ jmp MZL0039
+MZL0041:
+ cmpl $18013,8(%esp)
+ jne MZL0042
+ xor %eax,%eax
+ jmp MZL0043
+MZL0042:
+ xor %eax,%eax
+ incl %eax
+ add 8(%esp),%eax
+MZL0043:
+ movl %eax,8(%esp)
+ cmpl 4(%esp),%eax
+ jne MZL0035
+ movl $((4*0x8000000)+MZL0033),%eax
+ call *SYMFNC+1288
+ jmp MZL0035
+MZL0039:
+ add $16,%esp
+ ret
+ .long 2
+/ (*ENTRY INITIALIZE-NEW-ID EXPR 2)
+ .globl MZL0044
+MZL0044:
+ movl %eax,-36(%esp)
+ sub $8,%esp
+ movl %eax,(%esp)
+ and $134217727,%eax
+ or $-268435456,%eax
+ movl %eax,4(%esp)
+ movl (%esp),%ecx
+ shl $2,%ecx
+ add SYMVAL+1320,%ecx
+ movl %ebx,(%ecx)
+ movl (%esp),%edx
+ shl $2,%edx
+ add SYMVAL+1376,%edx
+ movl $((30*0x8000000)+128),%ebp
+ movl %ebp,(%edx)
+ movl (%esp),%eax
+ shl $2,%eax
+ add SYMVAL+1380,%eax
+ movl %ebp,(%eax)
+ movl (%esp),%eax
+ shl $2,%eax
+ add SYMVAL+1384,%eax
+ movl (%esp),%ebx
+ and $134217727,%ebx
+ or $-402653184,%ebx
+ movl %ebx,(%eax)
+ movl (%esp),%eax
+ call *SYMFNC+1388
+ movl 4(%esp),%eax
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY HASH-FUNCTION EXPR 1)
+ .globl MZL0047
+MZL0047:
+ movl %eax,-48(%esp)
+ sub $20,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %edi,4(%esp)
+ and $134217727,%eax
+ movl %eax,8(%esp)
+ movl (%eax),%eax
+ shl $5,%eax
+ sar $5,%eax
+ movl %eax,(%esp)
+ xor %eax,%eax
+ movl %eax,16(%esp)
+ cmpl $24,(%esp)
+ jle MZL0048
+ movl $24,(%esp)
+MZL0048:
+ movl (%esp),%ebx
+ xor %eax,%eax
+ movl %eax,12(%esp)
+ movl %ebx,4(%esp)
+MZL0049:
+ movl 12(%esp),%edi
+ cmpl 4(%esp),%edi
+ jg MZL0050
+ movl 12(%esp),%ebx
+ movl $4,%eax
+ add 8(%esp),%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ movl $24,%ebx
+ sub 12(%esp),%ebx
+ cmpl $0,%ebx
+ jge MZL0045
+ neg %ebx
+ xchg %ebx,%ecx
+ shr %cl,%eax
+ jmp MZL0046
+MZL0045:
+ xchg %ebx,%ecx
+ shl %cl,%eax
+MZL0046:
+ xchg %ebx,%ecx
+ movl 16(%esp),%edi
+ xor %edi,%eax
+ movl %eax,16(%esp)
+ incl 12(%esp)
+ jmp MZL0049
+MZL0050:
+ movl $18013,%ebx
+ movl 16(%esp),%eax
+ add $20,%esp
+ cltd
+ idiv %ebx
+ movl %edx,%eax
+ ret
+ .long 1
+/ (*ENTRY FASLIN EXPR 1)
+ .globl FASLIN
+FASLIN:
+ movl %eax,-72(%esp)
+ sub $44,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,32(%esp)
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+128),16(%esp)
+ movl $((30*0x8000000)+128),24(%esp)
+ movl $((30*0x8000000)+128),28(%esp)
+ movl $((30*0x8000000)+128),40(%esp)
+ movl $((30*0x8000000)+128),4(%esp)
+ movl $((30*0x8000000)+128),20(%esp)
+ movl $((30*0x8000000)+128),36(%esp)
+ call *SYMFNC+1280
+ movl %eax,8(%esp)
+ call *SYMFNC+1292
+ movl %eax,12(%esp)
+ movl $65535,%ebx
+ and %eax,%ebx
+ cmpl $399,%ebx
+ je MZL0051
+ movl 8(%esp),%eax
+ call *SYMFNC+1308
+ movl (%esp),%eax
+ call *SYMFNC+1392
+ jmp MZL0052
+MZL0051:
+ movl 12(%esp),%eax
+ shr $16,%eax
+ movl %eax,12(%esp)
+ movl 8(%esp),%eax
+ call *SYMFNC+1396
+ movl %eax,16(%esp)
+ movl 8(%esp),%eax
+ call *SYMFNC+1292
+ movl %eax,24(%esp)
+ call *SYMFNC+1400
+ movl %eax,28(%esp)
+ xor %eax,%eax
+ call *SYMFNC+1400
+ movl %eax,36(%esp)
+ movl 8(%esp),%eax
+ call *SYMFNC+1292
+ movl 28(%esp),%ebx
+ add %eax,%ebx
+ movl %ebx,40(%esp)
+ movl 24(%esp),%ecx
+ xor %ebx,%ebx
+ add 28(%esp),%ebx
+ movl 8(%esp),%eax
+ call *SYMFNC+1300
+ movl 8(%esp),%eax
+ call *SYMFNC+1292
+ movl %eax,4(%esp)
+ call *SYMFNC+1404
+ movl %eax,%ebx
+ and $134217727,%ebx
+ or $939524096,%ebx
+ movl %ebx,20(%esp)
+ movl 4(%esp),%ecx
+ and $134217727,%ebx
+ add $4,%ebx
+ movl 8(%esp),%eax
+ call *SYMFNC+1300
+ movl 8(%esp),%eax
+ call *SYMFNC+1308
+ xor %eax,%eax
+ incl %eax
+ and 12(%esp),%eax
+ cmpl $1,%eax
+ jne MZL0053
+ movl 16(%esp),%edx
+ movl 20(%esp),%ecx
+ movl 24(%esp),%ebx
+ movl 28(%esp),%eax
+ call *SYMFNC+1408
+ jmp MZL0054
+MZL0053:
+ movl 16(%esp),%edx
+ movl 20(%esp),%ecx
+ movl 24(%esp),%ebx
+ movl 28(%esp),%eax
+ call *SYMFNC+1412
+MZL0054:
+ movl SYMVAL+1416,%eax
+ movl %eax,32(%esp)
+ movl 28(%esp),%edi
+ movl %edi,SYMVAL+1416
+ movl 40(%esp),%eax
+ call *SYMFNC+1420
+ movl 32(%esp),%edi
+ movl %edi,SYMVAL+1416
+ movl 36(%esp),%ebx
+ movl 40(%esp),%eax
+ call *SYMFNC+1424
+MZL0052:
+ movl $((30*0x8000000)+128),%eax
+ add $44,%esp
+ ret
+ .long 2
+/ (*ENTRY DELBPS EXPR 2)
+ .globl DELBPS
+DELBPS:
+ movl $((30*0x8000000)+128),%eax
+ ret
+ .long 4
+/ (*ENTRY DO-RELOCATION EXPR 4)
+ .globl MZL0055
+MZL0055:
+ movl %eax,-52(%esp)
+ sub $24,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,16(%esp)
+ movl %eax,12(%esp)
+ movl %ecx,4(%esp)
+ movl %edx,8(%esp)
+ movl %ebx,%eax
+ shl $2,%eax
+ xor %ebx,%ebx
+ dec %ebx
+ add %eax,%ebx
+ xor %eax,%eax
+ movl %eax,20(%esp)
+ movl %ebx,(%esp)
+MZL0056:
+ movl 20(%esp),%edi
+ cmpl (%esp),%edi
+ jle MZL0057
+ movl $((30*0x8000000)+128),%eax
+ jmp MZL0058
+MZL0057:
+ movl 20(%esp),%ebx
+ movl 4(%esp),%eax
+ and $134217727,%eax
+ add $4,%eax
+ movl $357,%edi
+ call *SYMFNC+1428
+ movl 12(%esp),%ebx
+ add 20(%esp),%ebx
+ movl %ebx,16(%esp)
+ cmpl $1,%eax
+ je MZL0059
+ cmpl $2,%eax
+ je MZL0060
+ cmpl $3,%eax
+ je MZL0061
+ jmp MZL0062
+MZL0059:
+ movl 8(%esp),%ecx
+ movl 12(%esp),%ebx
+ movl 16(%esp),%eax
+ call *SYMFNC+1432
+ jmp MZL0062
+MZL0061:
+ movl 8(%esp),%ecx
+ movl 12(%esp),%ebx
+ movl 16(%esp),%eax
+ call *SYMFNC+1436
+ jmp MZL0062
+MZL0060:
+ movl 8(%esp),%ecx
+ movl 12(%esp),%ebx
+ movl 16(%esp),%eax
+ call *SYMFNC+1440
+MZL0062:
+ incl 20(%esp)
+ jmp MZL0056
+MZL0058:
+ add $24,%esp
+ ret
+ .long 4
+/ (*ENTRY DO-RELOCATION-NEW EXPR 4)
+ .globl MZL0063
+MZL0063:
+ movl %eax,-52(%esp)
+ sub $24,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,8(%esp)
+ movl %eax,16(%esp)
+ movl %ecx,(%esp)
+ movl %edx,12(%esp)
+ movl $((30*0x8000000)+128),%ecx
+ movl %eax,%ebx
+ xor %eax,%eax
+ movl %eax,4(%esp)
+ movl %ebx,20(%esp)
+ movl (%esp),%ebp
+ and $134217727,%ebp
+ add $4,%ebp
+ movl %ebp,(%esp)
+MZL0064:
+ movl 4(%esp),%ebx
+ movl (%esp),%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ and $255,%eax
+ movl %eax,8(%esp)
+ cmpl $0,%eax
+ jne MZL0065
+ movl $((30*0x8000000)+128),%eax
+ jmp MZL0066
+MZL0065:
+ incl 4(%esp)
+ movl $63,%eax
+ and 8(%esp),%eax
+ add 20(%esp),%eax
+ movl %eax,20(%esp)
+ movl 8(%esp),%ebx
+ shr $6,%ebx
+ movl %ebx,8(%esp)
+ movl %ebx,%eax
+ cmpl $1,%eax
+ je MZL0067
+ cmpl $2,%eax
+ je MZL0068
+ cmpl $3,%eax
+ je MZL0069
+ jmp MZL0064
+MZL0067:
+ movl 12(%esp),%ecx
+ movl 16(%esp),%ebx
+ movl 20(%esp),%eax
+ call *SYMFNC+1432
+ jmp MZL0064
+MZL0069:
+ movl 12(%esp),%ecx
+ movl 16(%esp),%ebx
+ movl 20(%esp),%eax
+ call *SYMFNC+1436
+ jmp MZL0064
+MZL0068:
+ movl 12(%esp),%ecx
+ movl 16(%esp),%ebx
+ movl 20(%esp),%eax
+ call *SYMFNC+1440
+ jmp MZL0064
+MZL0066:
+ add $24,%esp
+ ret
+ .long 3
+/ (*ENTRY RELOCATE-WORD EXPR 3)
+ .globl MZL0070
+MZL0070:
+ movl %eax,-32(%esp)
+ push %ebx
+ push %eax
+ movl (%eax),%ebx
+ and $1073741823,%ebx
+ movl (%eax),%eax
+ shr $30,%eax
+ movl %ecx,%edx
+ movl 4(%esp),%ecx
+ call *SYMFNC+1444
+ movl (%esp),%esi
+ movl %eax,(%esi)
+ add $8,%esp
+ ret
+ .long 3
+/ (*ENTRY RELOCATE-INF EXPR 3)
+ .globl MZL0071
+MZL0071:
+ movl %eax,-32(%esp)
+ push %ebx
+ push %eax
+ movl (%eax),%ebx
+ and $4194303,%ebx
+ movl (%eax),%eax
+ and $12582912,%eax
+ shr $22,%eax
+ movl %ecx,%edx
+ movl 4(%esp),%ecx
+ call *SYMFNC+1444
+ movl (%esp),%esi
+ movl (%esi),%edi
+ and $134217727,%eax
+ and $-134217728,%edi
+ or %eax,%edi
+ movl %edi,(%esi)
+ add $8,%esp
+ ret
+ .long 3
+/ (*ENTRY RELOCATE-RIGHT-HALF EXPR 3)
+ .globl MZL0072
+MZL0072:
+ movl %eax,-32(%esp)
+ push %ebx
+ push %eax
+ movl (%eax),%ebx
+ and $1073676288,%ebx
+ shr $16,%ebx
+ movl (%eax),%eax
+ shr $30,%eax
+ movl %ecx,%edx
+ movl 4(%esp),%ecx
+ call *SYMFNC+1444
+ movl (%esp),%esi
+ movl (%esi),%edi
+ shl $16,%eax
+ and $65535,%edi
+ or %eax,%edi
+ movl %edi,(%esi)
+ add $8,%esp
+ ret
+ .long 4
+/ (*ENTRY COMPUTE-RELOCATION EXPR 4)
+ .globl MZL0073
+MZL0073:
+ movl %eax,-32(%esp)
+ push %ebx
+ cmpl $0,%eax
+ jne MZL0074
+ movl %ecx,%eax
+ add %ebx,%eax
+ jmp MZL0075
+MZL0074:
+ cmpl $2,%eax
+ jne MZL0076
+ cmpl $8150,%ebx
+ jl MZL0077
+ movl $-8156,%eax
+ add %ebx,%eax
+ shl $2,%eax
+ add SYMVAL+1032,%eax
+ jmp MZL0075
+MZL0077:
+ cmpl $2048,%ebx
+ jl MZL0078
+ movl %edx,%ebx
+ movl (%esp),%eax
+ call *SYMFNC+1448
+ shl $2,%eax
+ add SYMVAL+1384,%eax
+ jmp MZL0075
+MZL0078:
+ movl %ebx,%eax
+ shl $2,%eax
+ add SYMVAL+1384,%eax
+ jmp MZL0075
+MZL0076:
+ cmpl $3,%eax
+ jne MZL0079
+ cmpl $2048,%ebx
+ jl MZL0080
+ movl %edx,%ebx
+ movl (%esp),%eax
+ call *SYMFNC+1448
+ movl %eax,(%esp)
+MZL0080:
+ movl (%esp),%eax
+ shl $2,%eax
+ add SYMVAL+1452,%eax
+ jmp MZL0075
+MZL0079:
+ cmpl $1,%eax
+ jne MZL0081
+ cmpl $2048,%ebx
+ jl MZL0082
+ movl %edx,%ebx
+ movl (%esp),%eax
+ add $4,%esp
+ jmp *SYMFNC+1448
+MZL0082:
+ movl %ebx,%eax
+ jmp MZL0075
+MZL0081:
+ movl $((30*0x8000000)+128),%eax
+MZL0075:
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY LOCAL-TO-GLOBAL-ID EXPR 2)
+ .globl MZL0083
+MZL0083:
+ add $-2047,%eax
+ shl $2,%eax
+ movl %ebx,%ecx
+ and $134217727,%ecx
+ add %ecx,%eax
+ movl (%eax),%eax
+ ret
+ .long 1
+/ (*ENTRY READ-ID-TABLE EXPR 1)
+ .globl MZL0084
+MZL0084:
+ movl %eax,-52(%esp)
+ sub $24,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,20(%esp)
+ movl %edi,16(%esp)
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %edi,4(%esp)
+ movl %eax,(%esp)
+ call *SYMFNC+1292
+ movl %eax,4(%esp)
+ incl %eax
+ call *SYMFNC+1404
+ and $134217727,%eax
+ or $939524096,%eax
+ movl %eax,8(%esp)
+ movl 4(%esp),%ebx
+ xor %eax,%eax
+ movl %eax,12(%esp)
+ movl %ebx,16(%esp)
+MZL0085:
+ movl 12(%esp),%edi
+ cmpl 16(%esp),%edi
+ jg MZL0086
+ movl (%esp),%eax
+ call *SYMFNC+1292
+ movl SYMVAL+1036,%esi
+ movl %eax,(%esi)
+ movl $5,%ecx
+ add %eax,%ecx
+ movl %ecx,%ebx
+ shr $30,%ebx
+ add %ebx,%ecx
+ sar $2,%ecx
+ movl $4,%ebx
+ add SYMVAL+1036,%ebx
+ movl (%esp),%eax
+ call *SYMFNC+1300
+ xor %eax,%eax
+ add SYMVAL+1036,%eax
+ and $134217727,%eax
+ or $536870912,%eax
+ call *SYMFNC+1332
+ movl %eax,20(%esp)
+ xor %eax,%eax
+ incl %eax
+ add 12(%esp),%eax
+ shl $2,%eax
+ movl 8(%esp),%ebx
+ and $134217727,%ebx
+ add %ebx,%eax
+ movl 20(%esp),%ecx
+ and $134217727,%ecx
+ movl %ecx,(%eax)
+ incl 12(%esp)
+ jmp MZL0085
+MZL0086:
+ movl 8(%esp),%eax
+ add $24,%esp
+ ret
+ .long 3
+/ (*ENTRY PUTENTRY EXPR 3)
+ .globl PUTENTRY
+PUTENTRY:
+ add SYMVAL+1416,%ecx
+ and $134217727,%ecx
+ or $-1610612736,%ecx
+ movl $364,%edi
+ jmp *SYMFNC+1456
+MZL0087:
+ .long 22
+ .byte 70,105,108,101,32,105,115,32,110,111
+ .byte 116,32,70,65,83,76,32,102,111,114,109
+ .byte 97,116,0
+ .long 1
+/ (*ENTRY FASLIN-BAD-FILE EXPR 1)
+ .globl MZL0088
+MZL0088:
+ movl $((4*0x8000000)+MZL0087),%eax
+ call *SYMFNC+1248
+ jmp *SYMFNC+1252
+MZL0089:
+ .long 30
+ .byte 82,97,110,32,111,117,116,32,111,102
+ .byte 32,98,105,110,97,114,121,32,112,114
+ .byte 111,103,114,97,109,32,115,112,97,99
+ .byte 101,0
+ .long 1
+/ (*ENTRY GTBPS EXPR 1)
+ .globl GTBPS
+GTBPS:
+ movl %eax,-32(%esp)
+ sub $4,%esp
+MZL0090:
+ movl %eax,(%esp)
+ cmpl $((30*0x8000000)+128),%eax
+ jne MZL0091
+ call *SYMFNC+1468
+MZL0091:
+ cmpl $10,(%esp)
+ jle MZL0092
+ movl $15,%eax
+ and SYMVAL+1144,%eax
+ cmpl $0,%eax
+ je MZL0092
+ movl SYMVAL+1144,%ebx
+ shr $4,%ebx
+ shl $4,%ebx
+ add $16,%ebx
+ movl %ebx,SYMVAL+1144
+MZL0092:
+ movl SYMVAL+1144,%eax
+ movl (%esp),%ebx
+ shl $2,%ebx
+ add SYMVAL+1144,%ebx
+ movl %ebx,SYMVAL+1144
+ cmpl SYMVAL+1132,%ebx
+ jle MZL0093
+ movl %eax,SYMVAL+1144
+ movl $((30*0x8000000)+366),%eax
+ call *SYMFNC+1472
+ cmpl $((30*0x8000000)+128),%eax
+ je MZL0094
+ movl (%esp),%eax
+ call *SYMFNC+1464
+ cmpl $((30*0x8000000)+128),%eax
+ je MZL0094
+ movl (%esp),%eax
+ jmp MZL0090
+MZL0094:
+ movl $((4*0x8000000)+MZL0089),%eax
+ add $4,%esp
+ jmp *SYMFNC+1476
+MZL0093:
+ add $4,%esp
+ ret
+MZL0095:
+ .long 21
+ .byte 71,84,66,80,83,32,99,97,108,108,101
+ .byte 100,32,119,105,116,104,32,78,73,76
+ .byte 46,0,0
+ .long 0
+/ (*ENTRY GTBPS-NIL-ERROR EXPR 0)
+ .globl MZL0096
+MZL0096:
+ movl $((4*0x8000000)+MZL0095),%eax
+ jmp *SYMFNC+1476
+ .long 1
+/ (*ENTRY GTHEAP EXPR 1)
+ .globl GTHEAP
+GTHEAP:
+ cmpl $((30*0x8000000)+128),%eax
+ jne MZL0097
+ jmp *SYMFNC+1484
+MZL0097:
+ jmp *SYMFNC+1488
+ .long 1
+/ (*ENTRY REAL-GTHEAP EXPR 1)
+ .globl MZL0098
+MZL0098:
+ movl %eax,%ecx
+ movl SYMVAL+1108,%eax
+ movl %ecx,%ebx
+ shl $2,%ebx
+ add SYMVAL+1108,%ebx
+ movl %ebx,SYMVAL+1108
+ cmpl SYMVAL+1116,%ebx
+ jl MZL0099
+ movl %ecx,%ebx
+ jmp *SYMFNC+1492
+MZL0099:
+ ret
+MZL0100:
+ .long 27
+ .byte 71,97,114,98,97,103,101,32,99,111,108
+ .byte 108,101,99,116,105,111,110,32,114,101
+ .byte 113,117,105,114,101,100,46,0,0
+ .long 1
+/ (*ENTRY GET-HEAP-TRAP EXPR 1)
+ .globl MZL0101
+MZL0101:
+ movl $((4*0x8000000)+MZL0100),%eax
+ jmp *SYMFNC+1288
+MZL0102:
+ .long 18
+ .byte 82,97,110,32,111,117,116,32,111,102
+ .byte 32,73,68,32,115,112,97,99,101,0
+ .long 0
+/ (*ENTRY GTID EXPR 0)
+ .globl GTID
+GTID:
+ cmpl $0,SYMVAL+1316
+ jne MZL0103
+ call *SYMFNC+1496
+ cmpl $0,SYMVAL+1316
+ jne MZL0103
+ movl $((4*0x8000000)+MZL0102),%eax
+ call *SYMFNC+1288
+MZL0103:
+ movl SYMVAL+1316,%eax
+ movl %eax,%ebx
+ shl $2,%ebx
+ add SYMVAL+1320,%ebx
+ movl (%ebx),%edi
+ movl %edi,SYMVAL+1316
+ ret
+ .long 1
+/ (*ENTRY GTWRDS EXPR 1)
+ .globl GTWRDS
+GTWRDS:
+ movl %eax,-32(%esp)
+ push %eax
+ add $2,%eax
+ call *SYMFNC+1480
+ movl (%esp),%ebx
+ and $134217727,%ebx
+ or $-939524096,%ebx
+ movl %ebx,(%eax)
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY GTCONSTSTR EXPR 1)
+ .globl GTCONSTSTR
+GTCONSTSTR:
+ movl %eax,-36(%esp)
+ sub $8,%esp
+ movl %eax,(%esp)
+ add $5,%eax
+ movl %eax,%ebx
+ shr $30,%ebx
+ add %ebx,%eax
+ sar $2,%eax
+ movl %eax,4(%esp)
+ incl %eax
+ call *SYMFNC+1400
+ movl (%esp),%edi
+ movl %edi,(%eax)
+ movl 4(%esp),%ebx
+ shl $2,%ebx
+ add %eax,%ebx
+ movl $0,(%ebx)
+ add $8,%esp
+ ret
+MZL0104:
+ .long 30
+ .byte 83,85,66,83,69,81,32,99,97,108,108
+ .byte 101,100,32,119,105,116,104,32,97,32
+ .byte 110,111,110,45,115,116,114,105,110
+ .byte 103,0
+ .long 3
+/ (*ENTRY SUBSEQ EXPR 3)
+ .globl SUBSEQ
+SUBSEQ:
+ movl %eax,-60(%esp)
+ sub $32,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,28(%esp)
+ movl %edi,24(%esp)
+ movl %edi,20(%esp)
+ movl %edi,16(%esp)
+ movl %edi,12(%esp)
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ movl %ecx,8(%esp)
+ movl %eax,%edi
+ shr $27,%edi
+ cmpl $4,%edi
+ je MZL0105
+ movl $((4*0x8000000)+MZL0104),%eax
+ call *SYMFNC+1288
+MZL0105:
+ xor %eax,%eax
+ dec %eax
+ add 8(%esp),%eax
+ sub 4(%esp),%eax
+ movl %eax,12(%esp)
+ movl (%esp),%eax
+ and $134217727,%eax
+ movl %eax,16(%esp)
+ movl 12(%esp),%eax
+ call *SYMFNC+1500
+ movl %eax,20(%esp)
+ movl 12(%esp),%ebx
+ xor %eax,%eax
+ movl %eax,24(%esp)
+ movl %ebx,28(%esp)
+MZL0106:
+ movl 24(%esp),%edi
+ cmpl 28(%esp),%edi
+ jg MZL0107
+ movl 4(%esp),%ebx
+ add 24(%esp),%ebx
+ movl $4,%eax
+ add 16(%esp),%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ movl %eax,%ecx
+ movl 24(%esp),%ebx
+ movl $4,%eax
+ add 20(%esp),%eax
+ movb %cl,0(%ebx,%eax,1)
+ incl 24(%esp)
+ jmp MZL0106
+MZL0107:
+ movl 20(%esp),%eax
+ and $134217727,%eax
+ or $536870912,%eax
+ add $32,%esp
+ ret
+ .long 2
+/ (*ENTRY SEARCH-STRING-FOR-CHARACTER EXPR 2)
+ .globl MZL0108
+MZL0108:
+ movl %eax,-44(%esp)
+ sub $16,%esp
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ and $134217727,%ebx
+ movl (%ebx),%ebx
+ shl $5,%ebx
+ sar $5,%ebx
+ xor %eax,%eax
+ movl %eax,8(%esp)
+ movl %ebx,12(%esp)
+MZL0109:
+ movl 8(%esp),%edi
+ cmpl 12(%esp),%edi
+ jle MZL0110
+ movl $((30*0x8000000)+128),%eax
+ jmp MZL0111
+MZL0110:
+ movl 8(%esp),%ebx
+ movl 4(%esp),%eax
+ and $134217727,%eax
+ add $4,%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ cmpl (%esp),%eax
+ jne MZL0112
+ movl 8(%esp),%eax
+ jmp MZL0111
+MZL0112:
+ incl 8(%esp)
+ jmp MZL0109
+MZL0111:
+ add $16,%esp
+ ret
+ .long 2
+/ (*ENTRY UNCHECKED-STRING-EQUAL EXPR 2)
+ .globl MZL0113
+MZL0113:
+ movl %eax,-48(%esp)
+ sub $20,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,16(%esp)
+ movl $((30*0x8000000)+128),12(%esp)
+ and $134217727,%eax
+ movl %eax,(%esp)
+ and $134217727,%ebx
+ movl %ebx,4(%esp)
+ movl (%eax),%ecx
+ shl $5,%ecx
+ sar $5,%ecx
+ movl %ecx,8(%esp)
+ movl (%ebx),%edx
+ shl $5,%edx
+ sar $5,%edx
+ cmpl %edx,%ecx
+ je MZL0114
+ movl $((30*0x8000000)+128),%eax
+ jmp MZL0115
+MZL0114:
+ movl $0,12(%esp)
+MZL0116:
+ movl 12(%esp),%edi
+ cmpl 8(%esp),%edi
+ jle MZL0117
+ movl $((30*0x8000000)+84),%eax
+ jmp MZL0115
+MZL0117:
+ movl 12(%esp),%ebx
+ movl $4,%eax
+ add (%esp),%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ movl %eax,16(%esp)
+ movl 12(%esp),%ebx
+ movl $4,%eax
+ add 4(%esp),%eax
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ cmpl 16(%esp),%eax
+ je MZL0118
+ movl $((30*0x8000000)+128),%eax
+ jmp MZL0115
+MZL0118:
+ incl 12(%esp)
+ jmp MZL0116
+MZL0115:
+ add $20,%esp
+ ret
+ .long 2
+/ (*ENTRY COPYSTRINGTOFROM EXPR 2)
+ .globl COPYSTRINGTOFROM
+COPYSTRINGTOFROM:
+ movl %eax,-44(%esp)
+ sub $16,%esp
+ movl %eax,12(%esp)
+ movl %eax,%ecx
+ and $134217727,%ecx
+ movl %ecx,4(%esp)
+ movl %ebx,%edx
+ and $134217727,%edx
+ movl %edx,8(%esp)
+ movl (%edx),%ebp
+ shl $5,%ebp
+ sar $5,%ebp
+ movl %ebp,(%esp)
+ movl (%ecx),%eax
+ shl $5,%eax
+ sar $5,%eax
+ cmpl %ebp,%eax
+ jge MZL0119
+ movl %eax,(%esp)
+MZL0119:
+ movl $5,%eax
+ add (%esp),%eax
+ movl %eax,%ebx
+ shr $30,%ebx
+ add %ebx,%eax
+ sar $2,%eax
+ dec %eax
+ movl %eax,(%esp)
+ movl %eax,%ebx
+ xor %eax,%eax
+ movl %eax,%edx
+ movl %ebx,%ecx
+MZL0120:
+ cmpl %ecx,%edx
+ jg MZL0121
+ xor %eax,%eax
+ incl %eax
+ add %edx,%eax
+ shl $2,%eax
+ add 4(%esp),%eax
+ xor %ebx,%ebx
+ incl %ebx
+ add %edx,%ebx
+ shl $2,%ebx
+ add 8(%esp),%ebx
+ movl (%ebx),%edi
+ movl %edi,(%eax)
+ incl %edx
+ jmp MZL0120
+MZL0121:
+ movl 12(%esp),%eax
+ add $16,%esp
+ ret
+ .long 2
+/ (*ENTRY CONS EXPR 2)
+ .globl CONS
+CONS:
+ movl %eax,-32(%esp)
+ push %ebx
+ push %eax
+ movl $2,%eax
+ call *SYMFNC+1480
+ movl (%esp),%edi
+ movl %edi,(%eax)
+ movl 4(%esp),%edi
+ movl %edi,4(%eax)
+ and $134217727,%eax
+ or $1207959552,%eax
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY INTERROGATE EXPR 1)
+ .globl INTERROGATE
+INTERROGATE:
+ shl $2,%eax
+ add SYMVAL+1384,%eax
+ movl (%eax),%eax
+ ret
+ .long 2
+/ (*ENTRY MODIFY EXPR 2)
+ .globl MODIFY
+MODIFY:
+ shl $2,%eax
+ add SYMVAL+1384,%eax
+ movl %ebx,(%eax)
+ movl %ebx,%eax
+ ret
+ .long 3
+/ (*ENTRY PUT EXPR 3)
+ .globl PUT
+PUT:
+ jmp *SYMFNC+1520
+ .long 3
+/ (*ENTRY UNCHECKED-PUT EXPR 3)
+ .globl MZL0122
+MZL0122:
+ movl %eax,-44(%esp)
+ sub $16,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ movl %ecx,8(%esp)
+ call *SYMFNC+1524
+ movl %eax,12(%esp)
+ movl %eax,%ebx
+ movl 4(%esp),%eax
+ call *SYMFNC+1528
+ cmpl $((30*0x8000000)+128),%eax
+ je MZL0123
+ movl 8(%esp),%edi
+ movl %edi,-1207959548(%eax)
+ jmp MZL0124
+MZL0123:
+ movl 8(%esp),%ebx
+ movl 4(%esp),%eax
+ call *SYMFNC+1504
+ movl 12(%esp),%ebx
+ call *SYMFNC+1504
+ movl %eax,%ebx
+ movl (%esp),%eax
+ call *SYMFNC+1532
+MZL0124:
+ movl 8(%esp),%eax
+ add $16,%esp
+ ret
+ .long 2
+/ (*ENTRY ATSOC EXPR 2)
+ .globl ATSOC
+ATSOC:
+MZL0125:
+ movl %ebx,%edi
+ shr $27,%edi
+ cmpl $9,%edi
+ je MZL0126
+ movl $((30*0x8000000)+128),%eax
+ ret
+MZL0126:
+ movl -1207959552(%ebx),%edi
+ shr $27,%edi
+ cmpl $9,%edi
+ jne MZL0127
+ movl -1207959552(%ebx),%esi
+ cmpl -1207959552(%esi),%eax
+ jne MZL0127
+ movl -1207959552(%ebx),%eax
+ ret
+MZL0127:
+ movl -1207959548(%ebx),%ebx
+ jmp MZL0125
+ .long 2
+/ (*ENTRY UNCHECKED-SETPROP EXPR 2)
+ .globl MZL0128
+MZL0128:
+ and $134217727,%eax
+ shl $2,%eax
+ add SYMVAL+1376,%eax
+ movl %ebx,(%eax)
+ movl %ebx,%eax
+ ret
+ .long 1
+/ (*ENTRY UNCHECKED-PROP EXPR 1)
+ .globl MZL0129
+MZL0129:
+ and $134217727,%eax
+ shl $2,%eax
+ add SYMVAL+1376,%eax
+ movl (%eax),%eax
+ ret
+ .long 3
+/ (*ENTRY PUTD EXPR 3)
+ .globl PUTD
+PUTD:
+ jmp *SYMFNC+1536
+MZL0130:
+ .long 26
+ .byte 66,97,100,32,112,97,114,97,109,101
+ .byte 116,101,114,115,32,116,111,32,67,79
+ .byte 68,69,45,80,85,84,68,0
+ .long 3
+/ (*ENTRY CODE-PUTD EXPR 3)
+ .globl MZL0131
+MZL0131:
+ movl %eax,-40(%esp)
+ sub $12,%esp
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ movl %ecx,8(%esp)
+ movl %eax,%edi
+ shr $27,%edi
+ cmpl $30,%edi
+ jne MZL0132
+ movl %ebx,%edi
+ shr $27,%edi
+ cmpl $30,%edi
+ jne MZL0132
+ movl %ecx,%edi
+ shr $27,%edi
+ cmpl $20,%edi
+ je MZL0133
+MZL0132:
+ movl $((4*0x8000000)+MZL0130),%eax
+ call *SYMFNC+1288
+MZL0133:
+ movl 8(%esp),%ebx
+ and $134217727,%ebx
+ movl (%esp),%eax
+ and $134217727,%eax
+ call *SYMFNC+1548
+ movl 4(%esp),%edi
+ cmpl $((30*0x8000000)+385),%edi
+ je MZL0134
+ movl 4(%esp),%ecx
+ movl $((30*0x8000000)+386),%ebx
+ movl (%esp),%eax
+ add $12,%esp
+ jmp *SYMFNC+1516
+MZL0134:
+ movl $((30*0x8000000)+128),%eax
+ add $12,%esp
+ ret
+ .long 1
+/ (*ENTRY FLUID EXPR 1)
+ .globl FLUID
+FLUID:
+ movl %eax,-40(%esp)
+ sub $12,%esp
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,8(%esp)
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+128),%eax
+ movl (%esp),%edi
+ movl %edi,4(%esp)
+ movl 4(%esp),%edi
+ shr $27,%edi
+ cmpl $9,%edi
+ jne MZL0135
+ movl 4(%esp),%eax
+ movl -1207959552(%eax),%eax
+ jmp MZL0136
+MZL0135:
+ movl $((30*0x8000000)+128),%eax
+MZL0136:
+ movl %eax,8(%esp)
+MZL0137:
+ movl 4(%esp),%edi
+ shr $27,%edi
+ cmpl $9,%edi
+ je MZL0138
+ movl $((30*0x8000000)+128),%eax
+ jmp MZL0139
+MZL0138:
+ movl 8(%esp),%eax
+ call *SYMFNC+1556
+ movl 4(%esp),%eax
+ movl -1207959548(%eax),%eax
+ movl %eax,4(%esp)
+ movl %eax,%edi
+ shr $27,%edi
+ cmpl $9,%edi
+ jne MZL0140
+ movl -1207959552(%eax),%eax
+ jmp MZL0141
+MZL0140:
+ movl $((30*0x8000000)+128),%eax
+MZL0141:
+ movl %eax,8(%esp)
+ jmp MZL0137
+MZL0139:
+ add $12,%esp
+ ret
+ .long 1
+/ (*ENTRY FLUID1 EXPR 1)
+ .globl MZL0142
+MZL0142:
+ movl $((30*0x8000000)+388),%ecx
+ movl $((30*0x8000000)+390),%ebx
+ jmp *SYMFNC+1516
+ .long 1
+/ (*ENTRY STDERROR EXPR 1)
+ .globl STDERROR
+STDERROR:
+ jmp *SYMFNC+1288
+ .long 2
+/ (*ENTRY *DEFINE-CONSTANT EXPR 2)
+ .globl MZL0143
+MZL0143:
+ movl %eax,%ecx
+ and $134217727,%ecx
+ shl $2,%ecx
+ add SYMVAL+1384,%ecx
+ movl %ebx,(%ecx)
+ movl $((30*0x8000000)+84),%ecx
+ movl $((30*0x8000000)+391),%ebx
+ jmp *SYMFNC+1516
+ .long 1
+/ (*ENTRY PLANTUNBOUND EXPR 1)
+ .globl PLANTUNBOUND
+PLANTUNBOUND:
+ add %eax,%eax
+ movl %eax,%esi
+ add %esi,%esi
+ add SYMVAL+1452,%esi
+ movl MZL0144,%edi
+ movl %edi,0(%esi)
+ ret
+ .long 0
+MZL0144:
+ .long UNDEFINEDFUNCTION
+ .long 2
+/ (*ENTRY PLANTCODEPOINTER EXPR 2)
+ .globl PLANTCODEPOINTER
+PLANTCODEPOINTER:
+ add %eax,%eax
+ movl %eax,%esi
+ add %esi,%esi
+ add SYMVAL+1452,%esi
+ movl %ebx,0(%esi)
+ ret
+ .long 1
+/ (*ENTRY PLANTLAMBDALINK EXPR 1)
+ .globl PLANTLAMBDALINK
+PLANTLAMBDALINK:
+ add %eax,%eax
+ movl %eax,%esi
+ add %esi,%esi
+ add SYMVAL+1452,%esi
+ movl MZL0145,%edi
+ movl %edi,0(%esi)
+ ret
+ .long 0
+MZL0145:
+ .long COMPILEDCALLINGINTERPRETED
+ .long 1
+/ (*ENTRY ADDRESSAPPLY0 EXPR 1)
+ .globl MZL0146
+MZL0146:
+ jmp  *%eax
+ .long 2
+/ (*ENTRY BITTABLE EXPR 2)
+ .globl BITTABLE
+BITTABLE:
+ movl %eax,-32(%esp)
+ push %ebx
+ shr $2,%ebx
+ movb 0(%eax,%ebx,1),%al
+ cbtw
+ cwtl
+ movl (%esp),%ebx
+ and $3,%ebx
+ add %ebx,%ebx
+ add $-6,%ebx
+ cmpl $0,%ebx
+ jge MZL0147
+ neg %ebx
+ xchg %ebx,%ecx
+ shr %cl,%eax
+ jmp MZL0148
+MZL0147:
+ xchg %ebx,%ecx
+ shl %cl,%eax
+MZL0148:
+ xchg %ebx,%ecx
+ and $3,%eax
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY UNDEFINEDFUNCTION EXPR 1)
+ .globl UNDEFINEDFUNCTION
+UNDEFINEDFUNCTION:
+ jmp *SYMFNC+1580
+MZL0149:
+ .long 26
+ .byte 85,110,100,101,102,105,110,101,100
+ .byte 32,102,117,110,99,116,105,111,110,32
+ .byte 99,97,108,108,101,100,58,32,0
+ .long 1
+/ (*ENTRY UNDEFINEDFUNCTION-AUX EXPR 1)
+ .globl MZL0150
+MZL0150:
+ push %edi
+ movl $((4*0x8000000)+MZL0149),%eax
+ call *SYMFNC+1248
+ movl SYMVAL+1320,%esi
+ pop %edi
+ shl $2,%edi
+ movl 0(%esi,%edi,1),%eax
+ call *SYMFNC+1248
+ xor %eax,%eax
+ call *SYMFNC+1224
+ ret
+ .long 0
+/ (*ENTRY COMPILEDCALLINGINTERPRETED EXPR 0)
+ .globl COMPILEDCALLINGINTERPRETED
+COMPILEDCALLINGINTERPRETED:
+ and $134217727,%edi
+ or $-268435456,%edi
+ movl %edi,SYMVAL+1588
+ jmp *SYMFNC+1592
+MZL0151:
+ .long 12
+ .byte 70,65,84,65,76,32,69,82,82,79,82,58
+ .byte 32,0
+ .long 1
+/ (*ENTRY KERNEL-FATAL-ERROR EXPR 1)
+ .globl MZL0152
+MZL0152:
+ movl %eax,-32(%esp)
+ push %eax
+ movl $((4*0x8000000)+MZL0151),%eax
+ call *SYMFNC+1248
+ movl (%esp),%eax
+ call *SYMFNC+1248
+ call *SYMFNC+1252
+ xor %eax,%eax
+ dec %eax
+ add $4,%esp
+ jmp *SYMFNC+1224
+ .long 0
+/ (*ENTRY ECHOON EXPR 0)
+ .globl MZL0153
+MZL0153:
+ call _echoon
+ ret
+ .long 0
+/ (*ENTRY ECHOOFF EXPR 0)
+ .globl MZL0154
+MZL0154:
+ call _echooff
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_CHARSININPUTBUFFER EXPR 1)
+ .globl MZL0155
+MZL0155:
+ push %eax
+ call _external_charsininputbuffer
+ add $4,%esp
+ ret
+ .long 0
+/ (*ENTRY FLUSHSTDOUTPUTBUFFER EXPR 0)
+ .globl MZL0156
+MZL0156:
+ call _flushstdoutputbuffer
+ ret
+ .long 0
+/ (*ENTRY EXTERNAL_USER_HOMEDIR_STRING EXPR 0)
+ .globl MZL0157
+MZL0157:
+ call _external_user_homedir_string
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_ANYUSER_HOMEDIR_STRING EXPR 1)
+ .globl MZL0158
+MZL0158:
+ push %eax
+ call _external_anyuser_homedir_string
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY ALTERHEAPSIZE EXPR 1)
+ .globl MZL0159
+MZL0159:
+ push %eax
+ call _alterheapsize
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY ALLOCATEMOREBPS EXPR 1)
+ .globl MZL0160
+MZL0160:
+ push %eax
+ call _allocatemorebps
+ add $4,%esp
+ ret
+ .long 3
+/ (*ENTRY GET_FILE_STATUS EXPR 3)
+ .globl MZL0161
+MZL0161:
+ push %ecx
+ push %ebx
+ push %eax
+ call _get_file_status
+ add $12,%esp
+ ret
+ .long 2
+/ (*ENTRY OS_STARTUP_HOOK EXPR 2)
+ .globl MZL0162
+MZL0162:
+ push %ebx
+ push %eax
+ call _os_startup_hook
+ add $8,%esp
+ ret
+ .long 0
+/ (*ENTRY OS_CLEANUP_HOOK EXPR 0)
+ .globl MZL0163
+MZL0163:
+ call _os_cleanup_hook
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_ALARM EXPR 1)
+ .globl MZL0164
+MZL0164:
+ push %eax
+ call _external_alarm
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY EXTERNAL_UALARM EXPR 2)
+ .globl MZL0165
+MZL0165:
+ push %ebx
+ push %eax
+ call _external_ualarm
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_TIME EXPR 1)
+ .globl MZL0166
+MZL0166:
+ push %eax
+ call _external_time
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_TIMC EXPR 1)
+ .globl MZL0167
+MZL0167:
+ push %eax
+ call _external_timc
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY EXTERNAL_STAT EXPR 2)
+ .globl MZL0168
+MZL0168:
+ push %ebx
+ push %eax
+ call _external_stat
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY EXTERNAL_LINK EXPR 2)
+ .globl MZL0169
+MZL0169:
+ push %ebx
+ push %eax
+ call _external_link
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_UNLINK EXPR 1)
+ .globl MZL0170
+MZL0170:
+ push %eax
+ call _external_unlink
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_STRLEN EXPR 1)
+ .globl MZL0171
+MZL0171:
+ push %eax
+ call _external_strlen
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY EXTERNAL_SETENV EXPR 2)
+ .globl MZL0172
+MZL0172:
+ push %ebx
+ push %eax
+ call _external_setenv
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_GETENV EXPR 1)
+ .globl MZL0173
+MZL0173:
+ push %eax
+ call _external_getenv
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY UXFLOAT EXPR 2)
+ .globl MZL0174
+MZL0174:
+ push %ebx
+ push %eax
+ call _uxfloat
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY UXFIX EXPR 1)
+ .globl MZL0175
+MZL0175:
+ push %eax
+ call _uxfix
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY UXASSIGN EXPR 2)
+ .globl MZL0176
+MZL0176:
+ push %ebx
+ push %eax
+ call _uxassign
+ add $8,%esp
+ ret
+ .long 3
+/ (*ENTRY UXPLUS2 EXPR 3)
+ .globl MZL0177
+MZL0177:
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxplus2
+ add $12,%esp
+ ret
+ .long 3
+/ (*ENTRY UXDIFFERENCE EXPR 3)
+ .globl MZL0178
+MZL0178:
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxdifference
+ add $12,%esp
+ ret
+ .long 3
+/ (*ENTRY UXTIMES2 EXPR 3)
+ .globl MZL0179
+MZL0179:
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxtimes2
+ add $12,%esp
+ ret
+ .long 3
+/ (*ENTRY UXQUOTIENT EXPR 3)
+ .globl MZL0180
+MZL0180:
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxquotient
+ add $12,%esp
+ ret
+ .long 4
+/ (*ENTRY UXGREATERP EXPR 4)
+ .globl MZL0181
+MZL0181:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxgreaterp
+ add $16,%esp
+ ret
+ .long 4
+/ (*ENTRY UXLESSP EXPR 4)
+ .globl MZL0182
+MZL0182:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxlessp
+ add $16,%esp
+ ret
+ .long 3
+/ (*ENTRY UXWRITEFLOAT EXPR 3)
+ .globl MZL0183
+MZL0183:
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxwritefloat
+ add $12,%esp
+ ret
+ .long 2
+/ (*ENTRY UXDOUBLETOFLOAT EXPR 2)
+ .globl MZL0184
+MZL0184:
+ push %ebx
+ push %eax
+ call _uxdoubletofloat
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXFLOATTODOUBLE EXPR 2)
+ .globl MZL0185
+MZL0185:
+ push %ebx
+ push %eax
+ call _uxfloattodouble
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXSIN EXPR 2)
+ .globl MZL0186
+MZL0186:
+ push %ebx
+ push %eax
+ call _uxsin
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXCOS EXPR 2)
+ .globl MZL0187
+MZL0187:
+ push %ebx
+ push %eax
+ call _uxcos
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXTAN EXPR 2)
+ .globl MZL0188
+MZL0188:
+ push %ebx
+ push %eax
+ call _uxtan
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXASIN EXPR 2)
+ .globl MZL0189
+MZL0189:
+ push %ebx
+ push %eax
+ call _uxasin
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXACOS EXPR 2)
+ .globl MZL0190
+MZL0190:
+ push %ebx
+ push %eax
+ call _uxacos
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXATAN EXPR 2)
+ .globl MZL0191
+MZL0191:
+ push %ebx
+ push %eax
+ call _uxatan
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXSQRT EXPR 2)
+ .globl MZL0192
+MZL0192:
+ push %ebx
+ push %eax
+ call _uxsqrt
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXEXP EXPR 2)
+ .globl MZL0193
+MZL0193:
+ push %ebx
+ push %eax
+ call _uxexp
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY UXLOG EXPR 2)
+ .globl MZL0194
+MZL0194:
+ push %ebx
+ push %eax
+ call _uxlog
+ add $8,%esp
+ ret
+ .long 3
+/ (*ENTRY UXATAN2 EXPR 3)
+ .globl MZL0195
+MZL0195:
+ push %ecx
+ push %ebx
+ push %eax
+ call _uxatan2
+ add $12,%esp
+ ret
+ .long 0
+/ (*ENTRY EXTERNAL_PWD EXPR 0)
+ .globl MZL0196
+MZL0196:
+ call _external_pwd
+ ret
+ .long 2
+/ (*ENTRY SUN3_SIGSET EXPR 2)
+ .globl MZL0197
+MZL0197:
+ push %ebx
+ push %eax
+ call _sun3_sigset
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY SUN3_SIGRELSE EXPR 2)
+ .globl MZL0198
+MZL0198:
+ push %ebx
+ push %eax
+ call _sun3_sigrelse
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY SIGRELSE EXPR 2)
+ .globl SIGRELSE
+SIGRELSE:
+ push %ebx
+ push %eax
+ call _sun3_sigrelse
+ add $8,%esp
+ ret
+ .long 4
+/ (*ENTRY UNEXEC EXPR 4)
+ .globl MZL0199
+MZL0199:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _unexec
+ add $16,%esp
+ ret
+ .long 1
+/ (*ENTRY UNIXPUTC EXPR 1)
+ .globl MZL0200
+MZL0200:
+ push %eax
+ call _unixputc
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY UNIXPUTS EXPR 1)
+ .globl MZL0201
+MZL0201:
+ push %eax
+ call _unixputs
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY UNIXPUTN EXPR 1)
+ .globl MZL0202
+MZL0202:
+ push %eax
+ call _unixputn
+ add $4,%esp
+ ret
+ .long 0
+/ (*ENTRY UNIXCLEARIO EXPR 0)
+ .globl MZL0203
+MZL0203:
+ call _unixcleario
+ ret
+ .long 1
+/ (*ENTRY EXPAND_FILE_NAME EXPR 1)
+ .globl MZL0204
+MZL0204:
+ push %eax
+ call _expand_file_name
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY UNIXOPEN EXPR 2)
+ .globl MZL0205
+MZL0205:
+ push %ebx
+ push %eax
+ call _unixopen
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY UNIXCD EXPR 1)
+ .globl MZL0206
+MZL0206:
+ push %eax
+ call _unixcd
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY CTIME EXPR 1)
+ .globl MZL0207
+MZL0207:
+ push %eax
+ call _ctime
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_SYSTEM EXPR 1)
+ .globl MZL0208
+MZL0208:
+ push %eax
+ call _external_system
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY EXTERNAL_EXIT EXPR 1)
+ .globl MZL0209
+MZL0209:
+ push %eax
+ call _external_exit
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY FOPEN EXPR 2)
+ .globl MZL0210
+MZL0210:
+ push %ebx
+ push %eax
+ call _fopen
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY FCLOSE EXPR 1)
+ .globl MZL0211
+MZL0211:
+ push %eax
+ call _fclose
+ add $4,%esp
+ ret
+ .long 4
+/ (*ENTRY FREAD EXPR 4)
+ .globl MZL0212
+MZL0212:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _fread
+ add $16,%esp
+ ret
+ .long 2
+/ (*ENTRY FPUTC EXPR 2)
+ .globl MZL0213
+MZL0213:
+ push %ebx
+ push %eax
+ call _fputc
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY FGETC EXPR 1)
+ .globl MZL0214
+MZL0214:
+ push %eax
+ call _fgetc
+ add $4,%esp
+ ret
+ .long 3
+/ (*ENTRY FGETS EXPR 3)
+ .globl MZL0215
+MZL0215:
+ push %ecx
+ push %ebx
+ push %eax
+ call _fgets
+ add $12,%esp
+ ret
+ .long 4
+/ (*ENTRY FWRITE EXPR 4)
+ .globl MZL0216
+MZL0216:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _fwrite
+ add $16,%esp
+ ret
+ .long 1
+/ (*ENTRY FFLUSH EXPR 1)
+ .globl MZL0217
+MZL0217:
+ push %eax
+ call _fflush
+ add $4,%esp
+ ret
+ .long 3
+/ (*ENTRY FSEEK EXPR 3)
+ .globl MZL0218
+MZL0218:
+ push %ecx
+ push %ebx
+ push %eax
+ call _fseek
+ add $12,%esp
+ ret
+ .long 1
+/ (*ENTRY CLEARERR EXPR 1)
+ .globl MZL0219
+MZL0219:
+ push %eax
+ call _clearerr
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY GETW EXPR 1)
+ .globl MZL0220
+MZL0220:
+ push %eax
+ call _getw
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY PUTW EXPR 2)
+ .globl MZL0221
+MZL0221:
+ push %ebx
+ push %eax
+ call _putw
+ add $8,%esp
+ ret
+ .long 2
+/ (*ENTRY SIGNAL EXPR 2)
+ .globl MZL0222
+MZL0222:
+ push %ebx
+ push %eax
+ call _signal
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY SLEEP EXPR 1)
+ .globl MZL0223
+MZL0223:
+ push %eax
+ call _sleep
+ add $4,%esp
+ ret
+ .long 3
+/ (*ENTRY IEEE_HANDLER EXPR 3)
+ .globl MZL0224
+MZL0224:
+ push %ecx
+ push %ebx
+ push %eax
+ call _ieee_handler
+ add $12,%esp
+ ret
+ .long 4
+/ (*ENTRY IEEE_FLAGS EXPR 4)
+ .globl MZL0225
+MZL0225:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _ieee_flags
+ add $16,%esp
+ ret
+ .long 1
+/ (*ENTRY SETLINEBUF EXPR 1)
+ .globl MZL0226
+MZL0226:
+ push %eax
+ call _setlinebuf
+ add $4,%esp
+ ret
+ .long 2
+/ (*ENTRY POPEN EXPR 2)
+ .globl MZL0227
+MZL0227:
+ push %ebx
+ push %eax
+ call _popen
+ add $8,%esp
+ ret
+ .long 1
+/ (*ENTRY PCLOSE EXPR 1)
+ .globl MZL0228
+MZL0228:
+ push %eax
+ call _pclose
+ add $4,%esp
+ ret
+ .long 4
+/ (*ENTRY UNIX-PROFILE EXPR 4)
+ .globl MZL0229
+MZL0229:
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
+ call _profil
+ add $16,%esp
+ ret
+ .long 1
+/ (*ENTRY CODEADDRESSP EXPR 1)
+ .globl CODEADDRESSP
+CODEADDRESSP:
+ movl %eax,-32(%esp)
+ sub $4,%esp
+ and $134217727,%eax
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+256),%eax
+ call *SYMFNC+1872
+ and $134217727,%eax
+ movl $((30*0x8000000)+84),%eax
+ cmpl (%esp),%eax
+ jle MZL0230
+ add $44,%eax
+MZL0230:
+ cmpl $((30*0x8000000)+128),%eax
+ je MZL0231
+ movl $((30*0x8000000)+466),%eax
+ call *SYMFNC+1872
+ and $134217727,%eax
+ movl $((30*0x8000000)+84),%eax
+ cmpl (%esp),%eax
+ jg MZL0231
+ add $44,%eax
+MZL0231:
+ cmpl $((30*0x8000000)+128),%eax
+ jne MZL0232
+ movl SYMVAL+1136,%eax
+ and $134217727,%eax
+ movl $((30*0x8000000)+84),%eax
+ cmpl (%esp),%eax
+ jle MZL0233
+ add $44,%eax
+MZL0233:
+ cmpl $((30*0x8000000)+128),%eax
+ je MZL0232
+ movl SYMVAL+1144,%eax
+ and $134217727,%eax
+ movl $((30*0x8000000)+84),%eax
+ cmpl (%esp),%eax
+ jg MZL0232
+ add $44,%eax
+MZL0232:
+ add $4,%esp
+ ret
+ .long 1
+/ (*ENTRY LASTKERNEL EXPR 1)
+ .globl LASTKERNEL
+LASTKERNEL:
+ ret
+ .long 0
+/ (*ENTRY INITCODE EXPR 0)
+ .globl INITCODE
+INITCODE:
+ movl $((30*0x8000000)+128),%eax
+ ret
+ .globl SYMVAL
+ .globl SYMPRP
+ .globl SYMNAM
+ .globl MZL0234
+MZL0234:
+ .long 0
+ .byte 0,0
+ .globl MZL0235
+MZL0235:
+ .long 0
+ .byte 1,0
+ .globl MZL0236
+MZL0236:
+ .long 0
+ .byte 2,0
+ .globl MZL0237
+MZL0237:
+ .long 0
+ .byte 3,0
+ .globl MZL0238
+MZL0238:
+ .long 0
+ .byte 4,0
+ .globl MZL0239
+MZL0239:
+ .long 0
+ .byte 5,0
+ .globl MZL0240
+MZL0240:
+ .long 0
+ .byte 6,0
+ .globl MZL0241
+MZL0241:
+ .long 0
+ .byte 7,0
+ .globl MZL0242
+MZL0242:
+ .long 0
+ .byte 8,0
+ .globl MZL0243
+MZL0243:
+ .long 0
+ .byte 9,0
+ .globl MZL0244
+MZL0244:
+ .long 0
+ .byte 10,0
+ .globl MZL0245
+MZL0245:
+ .long 0
+ .byte 11,0
+ .globl MZL0246
+MZL0246:
+ .long 0
+ .byte 12,0
+ .globl MZL0247
+MZL0247:
+ .long 0
+ .byte 13,0
+ .globl MZL0248
+MZL0248:
+ .long 0
+ .byte 14,0
+ .globl MZL0249
+MZL0249:
+ .long 0
+ .byte 15,0
+ .globl MZL0250
+MZL0250:
+ .long 0
+ .byte 16,0
+ .globl MZL0251
+MZL0251:
+ .long 0
+ .byte 17,0
+ .globl MZL0252
+MZL0252:
+ .long 0
+ .byte 18,0
+ .globl MZL0253
+MZL0253:
+ .long 0
+ .byte 19,0
+ .globl MZL0254
+MZL0254:
+ .long 0
+ .byte 20,0
+ .globl MZL0255
+MZL0255:
+ .long 0
+ .byte 21,0
+ .globl MZL0256
+MZL0256:
+ .long 0
+ .byte 22,0
+ .globl MZL0257
+MZL0257:
+ .long 0
+ .byte 23,0
+ .globl MZL0258
+MZL0258:
+ .long 0
+ .byte 24,0
+ .globl MZL0259
+MZL0259:
+ .long 0
+ .byte 25,0
+ .globl MZL0260
+MZL0260:
+ .long 0
+ .byte 26,0
+ .globl MZL0261
+MZL0261:
+ .long 0
+ .byte 27,0
+ .globl MZL0262
+MZL0262:
+ .long 0
+ .byte 28,0
+ .globl MZL0263
+MZL0263:
+ .long 0
+ .byte 29,0
+ .globl MZL0264
+MZL0264:
+ .long 0
+ .byte 30,0
+ .globl MZL0265
+MZL0265:
+ .long 0
+ .byte 31,0
+ .globl MZL0266
+MZL0266:
+ .long 0
+ .byte 32,0
+ .globl MZL0267
+MZL0267:
+ .long 0
+ .byte 33,0
+ .globl MZL0268
+MZL0268:
+ .long 0
+ .byte 34,0
+ .globl MZL0269
+MZL0269:
+ .long 0
+ .byte 35,0
+ .globl MZL0270
+MZL0270:
+ .long 0
+ .byte 36,0
+ .globl MZL0271
+MZL0271:
+ .long 0
+ .byte 37,0
+ .globl MZL0272
+MZL0272:
+ .long 0
+ .byte 38,0
+ .globl MZL0273
+MZL0273:
+ .long 0
+ .byte 39,0
+ .globl MZL0274
+MZL0274:
+ .long 0
+ .byte 40,0
+ .globl MZL0275
+MZL0275:
+ .long 0
+ .byte 41,0
+ .globl MZL0276
+MZL0276:
+ .long 0
+ .byte 42,0
+ .globl MZL0277
+MZL0277:
+ .long 0
+ .byte 43,0
+ .globl MZL0278
+MZL0278:
+ .long 0
+ .byte 44,0
+ .globl MZL0279
+MZL0279:
+ .long 0
+ .byte 45,0
+ .globl MZL0280
+MZL0280:
+ .long 0
+ .byte 46,0
+ .globl MZL0281
+MZL0281:
+ .long 0
+ .byte 47,0
+ .globl MZL0282
+MZL0282:
+ .long 0
+ .byte 48,0
+ .globl MZL0283
+MZL0283:
+ .long 0
+ .byte 49,0
+ .globl MZL0284
+MZL0284:
+ .long 0
+ .byte 50,0
+ .globl MZL0285
+MZL0285:
+ .long 0
+ .byte 51,0
+ .globl MZL0286
+MZL0286:
+ .long 0
+ .byte 52,0
+ .globl MZL0287
+MZL0287:
+ .long 0
+ .byte 53,0
+ .globl MZL0288
+MZL0288:
+ .long 0
+ .byte 54,0
+ .globl MZL0289
+MZL0289:
+ .long 0
+ .byte 55,0
+ .globl MZL0290
+MZL0290:
+ .long 0
+ .byte 56,0
+ .globl MZL0291
+MZL0291:
+ .long 0
+ .byte 57,0
+ .globl MZL0292
+MZL0292:
+ .long 0
+ .byte 58,0
+ .globl MZL0293
+MZL0293:
+ .long 0
+ .byte 59,0
+ .globl MZL0294
+MZL0294:
+ .long 0
+ .byte 60,0
+ .globl MZL0295
+MZL0295:
+ .long 0
+ .byte 61,0
+ .globl MZL0296
+MZL0296:
+ .long 0
+ .byte 62,0
+ .globl MZL0297
+MZL0297:
+ .long 0
+ .byte 63,0
+ .globl MZL0298
+MZL0298:
+ .long 0
+ .byte 64,0
+ .globl MZL0299
+MZL0299:
+ .long 0
+ .byte 65,0
+ .globl MZL0300
+MZL0300:
+ .long 0
+ .byte 66,0
+ .globl MZL0301
+MZL0301:
+ .long 0
+ .byte 67,0
+ .globl MZL0302
+MZL0302:
+ .long 0
+ .byte 68,0
+ .globl MZL0303
+MZL0303:
+ .long 0
+ .byte 69,0
+ .globl MZL0304
+MZL0304:
+ .long 0
+ .byte 70,0
+ .globl MZL0305
+MZL0305:
+ .long 0
+ .byte 71,0
+ .globl MZL0306
+MZL0306:
+ .long 0
+ .byte 72,0
+ .globl MZL0307
+MZL0307:
+ .long 0
+ .byte 73,0
+ .globl MZL0308
+MZL0308:
+ .long 0
+ .byte 74,0
+ .globl MZL0309
+MZL0309:
+ .long 0
+ .byte 75,0
+ .globl MZL0310
+MZL0310:
+ .long 0
+ .byte 76,0
+ .globl MZL0311
+MZL0311:
+ .long 0
+ .byte 77,0
+ .globl MZL0312
+MZL0312:
+ .long 0
+ .byte 78,0
+ .globl MZL0313
+MZL0313:
+ .long 0
+ .byte 79,0
+ .globl MZL0314
+MZL0314:
+ .long 0
+ .byte 80,0
+ .globl MZL0315
+MZL0315:
+ .long 0
+ .byte 81,0
+ .globl MZL0316
+MZL0316:
+ .long 0
+ .byte 82,0
+ .globl MZL0317
+MZL0317:
+ .long 0
+ .byte 83,0
+ .globl MZL0318
+MZL0318:
+ .long 0
+ .byte 84,0
+ .globl MZL0319
+MZL0319:
+ .long 0
+ .byte 85,0
+ .globl MZL0320
+MZL0320:
+ .long 0
+ .byte 86,0
+ .globl MZL0321
+MZL0321:
+ .long 0
+ .byte 87,0
+ .globl MZL0322
+MZL0322:
+ .long 0
+ .byte 88,0
+ .globl MZL0323
+MZL0323:
+ .long 0
+ .byte 89,0
+ .globl MZL0324
+MZL0324:
+ .long 0
+ .byte 90,0
+ .globl MZL0325
+MZL0325:
+ .long 0
+ .byte 91,0
+ .globl MZL0326
+MZL0326:
+ .long 0
+ .byte 92,0
+ .globl MZL0327
+MZL0327:
+ .long 0
+ .byte 93,0
+ .globl MZL0328
+MZL0328:
+ .long 0
+ .byte 94,0
+ .globl MZL0329
+MZL0329:
+ .long 0
+ .byte 95,0
+ .globl MZL0330
+MZL0330:
+ .long 0
+ .byte 96,0
+ .globl MZL0331
+MZL0331:
+ .long 0
+ .byte 97,0
+ .globl MZL0332
+MZL0332:
+ .long 0
+ .byte 98,0
+ .globl MZL0333
+MZL0333:
+ .long 0
+ .byte 99,0
+ .globl MZL0334
+MZL0334:
+ .long 0
+ .byte 100,0
+ .globl MZL0335
+MZL0335:
+ .long 0
+ .byte 101,0
+ .globl MZL0336
+MZL0336:
+ .long 0
+ .byte 102,0
+ .globl MZL0337
+MZL0337:
+ .long 0
+ .byte 103,0
+ .globl MZL0338
+MZL0338:
+ .long 0
+ .byte 104,0
+ .globl MZL0339
+MZL0339:
+ .long 0
+ .byte 105,0
+ .globl MZL0340
+MZL0340:
+ .long 0
+ .byte 106,0
+ .globl MZL0341
+MZL0341:
+ .long 0
+ .byte 107,0
+ .globl MZL0342
+MZL0342:
+ .long 0
+ .byte 108,0
+ .globl MZL0343
+MZL0343:
+ .long 0
+ .byte 109,0
+ .globl MZL0344
+MZL0344:
+ .long 0
+ .byte 110,0
+ .globl MZL0345
+MZL0345:
+ .long 0
+ .byte 111,0
+ .globl MZL0346
+MZL0346:
+ .long 0
+ .byte 112,0
+ .globl MZL0347
+MZL0347:
+ .long 0
+ .byte 113,0
+ .globl MZL0348
+MZL0348:
+ .long 0
+ .byte 114,0
+ .globl MZL0349
+MZL0349:
+ .long 0
+ .byte 115,0
+ .globl MZL0350
+MZL0350:
+ .long 0
+ .byte 116,0
+ .globl MZL0351
+MZL0351:
+ .long 0
+ .byte 117,0
+ .globl MZL0352
+MZL0352:
+ .long 0
+ .byte 118,0
+ .globl MZL0353
+MZL0353:
+ .long 0
+ .byte 119,0
+ .globl MZL0354
+MZL0354:
+ .long 0
+ .byte 120,0
+ .globl MZL0355
+MZL0355:
+ .long 0
+ .byte 121,0
+ .globl MZL0356
+MZL0356:
+ .long 0
+ .byte 122,0
+ .globl MZL0357
+MZL0357:
+ .long 0
+ .byte 123,0
+ .globl MZL0358
+MZL0358:
+ .long 0
+ .byte 124,0
+ .globl MZL0359
+MZL0359:
+ .long 0
+ .byte 125,0
+ .globl MZL0360
+MZL0360:
+ .long 0
+ .byte 126,0
+ .globl MZL0361
+MZL0361:
+ .long 0
+ .byte 127,0
+ .globl MZL0362
+MZL0362:
+ .long 2
+ .byte 78,73,76,0
+ .globl MZL0363
+MZL0363:
+ .long 0
+ .byte -127,0
+ .globl MZL0364
+MZL0364:
+ .long 0
+ .byte -126,0
+ .globl MZL0365
+MZL0365:
+ .long 0
+ .byte -125,0
+ .globl MZL0366
+MZL0366:
+ .long 0
+ .byte -124,0
+ .globl MZL0367
+MZL0367:
+ .long 0
+ .byte -123,0
+ .globl MZL0368
+MZL0368:
+ .long 0
+ .byte -122,0
+ .globl MZL0369
+MZL0369:
+ .long 0
+ .byte -121,0
+ .globl MZL0370
+MZL0370:
+ .long 0
+ .byte -120,0
+ .globl MZL0371
+MZL0371:
+ .long 0
+ .byte -119,0
+ .globl MZL0372
+MZL0372:
+ .long 0
+ .byte -118,0
+ .globl MZL0373
+MZL0373:
+ .long 0
+ .byte -117,0
+ .globl MZL0374
+MZL0374:
+ .long 0
+ .byte -116,0
+ .globl MZL0375
+MZL0375:
+ .long 0
+ .byte -115,0
+ .globl MZL0376
+MZL0376:
+ .long 0
+ .byte -114,0
+ .globl MZL0377
+MZL0377:
+ .long 0
+ .byte -113,0
+ .globl MZL0378
+MZL0378:
+ .long 0
+ .byte -112,0
+ .globl MZL0379
+MZL0379:
+ .long 0
+ .byte -111,0
+ .globl MZL0380
+MZL0380:
+ .long 0
+ .byte -110,0
+ .globl MZL0381
+MZL0381:
+ .long 0
+ .byte -109,0
+ .globl MZL0382
+MZL0382:
+ .long 0
+ .byte -108,0
+ .globl MZL0383
+MZL0383:
+ .long 0
+ .byte -107,0
+ .globl MZL0384
+MZL0384:
+ .long 0
+ .byte -106,0
+ .globl MZL0385
+MZL0385:
+ .long 0
+ .byte -105,0
+ .globl MZL0386
+MZL0386:
+ .long 0
+ .byte -104,0
+ .globl MZL0387
+MZL0387:
+ .long 0
+ .byte -103,0
+ .globl MZL0388
+MZL0388:
+ .long 0
+ .byte -102,0
+ .globl MZL0389
+MZL0389:
+ .long 0
+ .byte -101,0
+ .globl MZL0390
+MZL0390:
+ .long 0
+ .byte -100,0
+ .globl MZL0391
+MZL0391:
+ .long 0
+ .byte -99,0
+ .globl MZL0392
+MZL0392:
+ .long 0
+ .byte -98,0
+ .globl MZL0393
+MZL0393:
+ .long 0
+ .byte -97,0
+ .globl MZL0394
+MZL0394:
+ .long 0
+ .byte -96,0
+ .globl MZL0395
+MZL0395:
+ .long 0
+ .byte -95,0
+ .globl MZL0396
+MZL0396:
+ .long 0
+ .byte -94,0
+ .globl MZL0397
+MZL0397:
+ .long 0
+ .byte -93,0
+ .globl MZL0398
+MZL0398:
+ .long 0
+ .byte -92,0
+ .globl MZL0399
+MZL0399:
+ .long 0
+ .byte -91,0
+ .globl MZL0400
+MZL0400:
+ .long 0
+ .byte -90,0
+ .globl MZL0401
+MZL0401:
+ .long 0
+ .byte -89,0
+ .globl MZL0402
+MZL0402:
+ .long 0
+ .byte -88,0
+ .globl MZL0403
+MZL0403:
+ .long 0
+ .byte -87,0
+ .globl MZL0404
+MZL0404:
+ .long 0
+ .byte -86,0
+ .globl MZL0405
+MZL0405:
+ .long 0
+ .byte -85,0
+ .globl MZL0406
+MZL0406:
+ .long 0
+ .byte -84,0
+ .globl MZL0407
+MZL0407:
+ .long 0
+ .byte -83,0
+ .globl MZL0408
+MZL0408:
+ .long 0
+ .byte -82,0
+ .globl MZL0409
+MZL0409:
+ .long 0
+ .byte -81,0
+ .globl MZL0410
+MZL0410:
+ .long 0
+ .byte -80,0
+ .globl MZL0411
+MZL0411:
+ .long 0
+ .byte -79,0
+ .globl MZL0412
+MZL0412:
+ .long 0
+ .byte -78,0
+ .globl MZL0413
+MZL0413:
+ .long 0
+ .byte -77,0
+ .globl MZL0414
+MZL0414:
+ .long 0
+ .byte -76,0
+ .globl MZL0415
+MZL0415:
+ .long 0
+ .byte -75,0
+ .globl MZL0416
+MZL0416:
+ .long 0
+ .byte -74,0
+ .globl MZL0417
+MZL0417:
+ .long 0
+ .byte -73,0
+ .globl MZL0418
+MZL0418:
+ .long 0
+ .byte -72,0
+ .globl MZL0419
+MZL0419:
+ .long 0
+ .byte -71,0
+ .globl MZL0420
+MZL0420:
+ .long 0
+ .byte -70,0
+ .globl MZL0421
+MZL0421:
+ .long 0
+ .byte -69,0
+ .globl MZL0422
+MZL0422:
+ .long 0
+ .byte -68,0
+ .globl MZL0423
+MZL0423:
+ .long 0
+ .byte -67,0
+ .globl MZL0424
+MZL0424:
+ .long 0
+ .byte -66,0
+ .globl MZL0425
+MZL0425:
+ .long 0
+ .byte -65,0
+ .globl MZL0426
+MZL0426:
+ .long 0
+ .byte -64,0
+ .globl MZL0427
+MZL0427:
+ .long 0
+ .byte -63,0
+ .globl MZL0428
+MZL0428:
+ .long 0
+ .byte -62,0
+ .globl MZL0429
+MZL0429:
+ .long 0
+ .byte -61,0
+ .globl MZL0430
+MZL0430:
+ .long 0
+ .byte -60,0
+ .globl MZL0431
+MZL0431:
+ .long 0
+ .byte -59,0
+ .globl MZL0432
+MZL0432:
+ .long 0
+ .byte -58,0
+ .globl MZL0433
+MZL0433:
+ .long 0
+ .byte -57,0
+ .globl MZL0434
+MZL0434:
+ .long 0
+ .byte -56,0
+ .globl MZL0435
+MZL0435:
+ .long 0
+ .byte -55,0
+ .globl MZL0436
+MZL0436:
+ .long 0
+ .byte -54,0
+ .globl MZL0437
+MZL0437:
+ .long 0
+ .byte -53,0
+ .globl MZL0438
+MZL0438:
+ .long 0
+ .byte -52,0
+ .globl MZL0439
+MZL0439:
+ .long 0
+ .byte -51,0
+ .globl MZL0440
+MZL0440:
+ .long 0
+ .byte -50,0
+ .globl MZL0441
+MZL0441:
+ .long 0
+ .byte -49,0
+ .globl MZL0442
+MZL0442:
+ .long 0
+ .byte -48,0
+ .globl MZL0443
+MZL0443:
+ .long 0
+ .byte -47,0
+ .globl MZL0444
+MZL0444:
+ .long 0
+ .byte -46,0
+ .globl MZL0445
+MZL0445:
+ .long 0
+ .byte -45,0
+ .globl MZL0446
+MZL0446:
+ .long 0
+ .byte -44,0
+ .globl MZL0447
+MZL0447:
+ .long 0
+ .byte -43,0
+ .globl MZL0448
+MZL0448:
+ .long 0
+ .byte -42,0
+ .globl MZL0449
+MZL0449:
+ .long 0
+ .byte -41,0
+ .globl MZL0450
+MZL0450:
+ .long 0
+ .byte -40,0
+ .globl MZL0451
+MZL0451:
+ .long 0
+ .byte -39,0
+ .globl MZL0452
+MZL0452:
+ .long 0
+ .byte -38,0
+ .globl MZL0453
+MZL0453:
+ .long 0
+ .byte -37,0
+ .globl MZL0454
+MZL0454:
+ .long 0
+ .byte -36,0
+ .globl MZL0455
+MZL0455:
+ .long 0
+ .byte -35,0
+ .globl MZL0456
+MZL0456:
+ .long 0
+ .byte -34,0
+ .globl MZL0457
+MZL0457:
+ .long 0
+ .byte -33,0
+ .globl MZL0458
+MZL0458:
+ .long 0
+ .byte -32,0
+ .globl MZL0459
+MZL0459:
+ .long 0
+ .byte -31,0
+ .globl MZL0460
+MZL0460:
+ .long 0
+ .byte -30,0
+ .globl MZL0461
+MZL0461:
+ .long 0
+ .byte -29,0
+ .globl MZL0462
+MZL0462:
+ .long 0
+ .byte -28,0
+ .globl MZL0463
+MZL0463:
+ .long 0
+ .byte -27,0
+ .globl MZL0464
+MZL0464:
+ .long 0
+ .byte -26,0
+ .globl MZL0465
+MZL0465:
+ .long 0
+ .byte -25,0
+ .globl MZL0466
+MZL0466:
+ .long 0
+ .byte -24,0
+ .globl MZL0467
+MZL0467:
+ .long 0
+ .byte -23,0
+ .globl MZL0468
+MZL0468:
+ .long 0
+ .byte -22,0
+ .globl MZL0469
+MZL0469:
+ .long 0
+ .byte -21,0
+ .globl MZL0470
+MZL0470:
+ .long 0
+ .byte -20,0
+ .globl MZL0471
+MZL0471:
+ .long 0
+ .byte -19,0
+ .globl MZL0472
+MZL0472:
+ .long 0
+ .byte -18,0
+ .globl MZL0473
+MZL0473:
+ .long 0
+ .byte -17,0
+ .globl MZL0474
+MZL0474:
+ .long 0
+ .byte -16,0
+ .globl MZL0475
+MZL0475:
+ .long 0
+ .byte -15,0
+ .globl MZL0476
+MZL0476:
+ .long 0
+ .byte -14,0
+ .globl MZL0477
+MZL0477:
+ .long 0
+ .byte -13,0
+ .globl MZL0478
+MZL0478:
+ .long 0
+ .byte -12,0
+ .globl MZL0479
+MZL0479:
+ .long 0
+ .byte -11,0
+ .globl MZL0480
+MZL0480:
+ .long 0
+ .byte -10,0
+ .globl MZL0481
+MZL0481:
+ .long 0
+ .byte -9,0
+ .globl MZL0482
+MZL0482:
+ .long 0
+ .byte -8,0
+ .globl MZL0483
+MZL0483:
+ .long 0
+ .byte -7,0
+ .globl MZL0484
+MZL0484:
+ .long 0
+ .byte -6,0
+ .globl MZL0485
+MZL0485:
+ .long 0
+ .byte -5,0
+ .globl MZL0486
+MZL0486:
+ .long 0
+ .byte -4,0
+ .globl MZL0487
+MZL0487:
+ .long 0
+ .byte -3,0
+ .globl MZL0488
+MZL0488:
+ .long 0
+ .byte -2,0
+ .globl MZL0489
+MZL0489:
+ .long 0
+ .byte -1,0
+ .globl MZL0490
+MZL0490:
+ .long 10
+ .byte 70,73,82,83,84,75,69,82,78,69,76,0
+ .globl MZL0491
+MZL0491:
+ .long 4
+ .byte 83,84,65,67,75,0
+ .globl MZL0492
+MZL0492:
+ .long 12
+ .byte 65,82,71,85,77,69,78,84,66,76,79,67
+ .byte 75,0
+ .globl MZL0493
+MZL0493:
+ .long 10
+ .byte 84,79,75,69,78,66,85,70,70,69,82,0
+ .globl MZL0494
+MZL0494:
+ .long 5
+ .byte 66,78,68,83,84,75,0,0
+ .globl MZL0495
+MZL0495:
+ .long 9
+ .byte 67,65,84,67,72,83,84,65,67,75,0,0
+ .globl MZL0496
+MZL0496:
+ .long 8
+ .byte 72,65,83,72,84,65,66,76,69,0
+ .globl MZL0497
+MZL0497:
+ .long 12
+ .byte 79,78,69,87,79,82,68,66,85,70,70,69
+ .byte 82,0
+ .globl MZL0498
+MZL0498:
+ .long 7
+ .byte 83,65,86,69,65,82,71,67,0,0
+ .globl MZL0499
+MZL0499:
+ .long 7
+ .byte 83,65,86,69,65,82,71,86,0,0
+ .globl MZL0500
+MZL0500:
+ .long 9
+ .byte 68,65,84,69,66,85,70,70,69,82,0,0
+ .globl MZL0501
+MZL0501:
+ .long 12
+ .byte 73,78,73,84,45,80,79,73,78,84,69,82
+ .byte 83,0
+ .globl MZL0502
+MZL0502:
+ .long 12
+ .byte 67,65,84,67,72,83,84,65,67,75,80,84
+ .byte 82,0
+ .globl MZL0503
+MZL0503:
+ .long 15
+ .byte 66,78,68,83,84,75,76,79,87,69,82,66
+ .byte 79,85,78,68,0,0
+ .globl MZL0504
+MZL0504:
+ .long 15
+ .byte 66,78,68,83,84,75,85,80,80,69,82,66
+ .byte 79,85,78,68,0,0
+ .globl MZL0505
+MZL0505:
+ .long 8
+ .byte 66,78,68,83,84,75,80,84,82,0
+ .globl MZL0506
+MZL0506:
+ .long 13
+ .byte 72,69,65,80,76,79,87,69,82,66,79,85
+ .byte 78,68,0,0
+ .globl MZL0507
+MZL0507:
+ .long 3
+ .byte 72,69,65,80,0,0
+ .globl MZL0508
+MZL0508:
+ .long 10
+ .byte 73,78,73,84,45,70,76,85,73,68,83,0
+ .globl MZL0509
+MZL0509:
+ .long 16
+ .byte 71,67,65,82,82,65,89,76,79,87,69,82
+ .byte 66,79,85,78,68,0
+ .globl MZL0510
+MZL0510:
+ .long 16
+ .byte 71,67,65,82,82,65,89,85,80,80,69,82
+ .byte 66,79,85,78,68,0
+ .globl MZL0511
+MZL0511:
+ .long 7
+ .byte 72,69,65,80,76,65,83,84,0,0
+ .globl MZL0512
+MZL0512:
+ .long 10
+ .byte 79,76,68,72,69,65,80,76,65,83,84,0
+ .globl MZL0513
+MZL0513:
+ .long 12
+ .byte 72,69,65,80,84,82,65,80,66,79,85,78
+ .byte 68,0
+ .globl MZL0514
+MZL0514:
+ .long 15
+ .byte 79,76,68,72,69,65,80,84,82,65,80,66
+ .byte 79,85,78,68,0,0
+ .globl MZL0515
+MZL0515:
+ .long 13
+ .byte 72,69,65,80,85,80,80,69,82,66,79,85
+ .byte 78,68,0,0
+ .globl MZL0516
+MZL0516:
+ .long 13
+ .byte 95,73,78,70,66,73,84,76,69,78,71,84
+ .byte 72,95,0,0
+ .globl MZL0517
+MZL0517:
+ .long 6
+ .byte 76,65,83,84,66,80,83,0
+ .globl MZL0518
+MZL0518:
+ .long 12
+ .byte 66,80,83,76,79,87,69,82,66,79,85,78
+ .byte 68,0
+ .globl MZL0519
+MZL0519:
+ .long 18
+ .byte 77,65,73,78,83,84,65,82,84,73,78,73
+ .byte 84,73,65,76,73,90,69,0
+ .globl MZL0520
+MZL0520:
+ .long 6
+ .byte 78,69,88,84,66,80,83,0
+ .globl MZL0521
+MZL0521:
+ .long 16
+ .byte 79,76,68,72,69,65,80,85,80,80,69,82
+ .byte 66,79,85,78,68,0
+ .globl MZL0522
+MZL0522:
+ .long 16
+ .byte 79,76,68,72,69,65,80,76,79,87,69,82
+ .byte 66,79,85,78,68,0
+ .globl MZL0523
+MZL0523:
+ .long 14
+ .byte 83,84,65,67,75,85,80,80,69,82,66,79
+ .byte 85,78,68,0
+ .globl MZL0524
+MZL0524:
+ .long 8
+ .byte 85,78,73,88,83,84,68,73,78,0
+ .globl MZL0525
+MZL0525:
+ .long 9
+ .byte 85,78,73,88,83,84,68,79,85,84,0,0
+ .globl MZL0526
+MZL0526:
+ .long 9
+ .byte 85,78,73,88,83,84,68,69,82,82,0,0
+ .globl MZL0527
+MZL0527:
+ .long 7
+ .byte 85,78,73,88,78,85,76,76,0,0
+ .globl MZL0528
+MZL0528:
+ .long 6
+ .byte 85,78,73,88,69,79,70,0
+ .globl MZL0529
+MZL0529:
+ .long 6
+ .byte 85,78,73,88,84,84,89,0
+ .globl MZL0530
+MZL0530:
+ .long 16
+ .byte 42,42,42,77,85,83,84,45,66,69,45,78
+ .byte 73,76,42,42,42,0
+ .globl MZL0531
+MZL0531:
+ .long 20
+ .byte 42,42,42,77,85,83,84,45,66,69,45,78
+ .byte 73,76,45,84,79,79,42,42,42,0
+ .globl MZL0532
+MZL0532:
+ .long 7
+ .byte 42,70,65,83,84,67,65,82,0,0
+ .globl MZL0533
+MZL0533:
+ .long 11
+ .byte 73,78,73,84,45,71,67,65,82,82,65,89
+ .byte 0,0
+ .globl MZL0534
+MZL0534:
+ .long 3
+ .byte 109,97,105,110,0,0
+ .globl MZL0535
+MZL0535:
+ .long 3
+ .byte 65,82,71,67,0,0
+ .globl MZL0536
+MZL0536:
+ .long 3
+ .byte 65,82,71,86,0,0
+ .globl MZL0537
+MZL0537:
+ .long 14
+ .byte 79,83,95,83,84,65,82,84,85,80,95,72
+ .byte 79,79,75,0
+ .globl MZL0538
+MZL0538:
+ .long 14
+ .byte 83,84,65,67,75,76,79,87,69,82,66,79
+ .byte 85,78,68,0
+ .globl MZL0539
+MZL0539:
+ .long 7
+ .byte 80,82,69,45,77,65,73,78,0,0
+ .globl MZL0540
+MZL0540:
+ .long 15
+ .byte 69,88,73,84,45,87,73,84,72,45,83,84
+ .byte 65,84,85,83,0,0
+ .globl MZL0541
+MZL0541:
+ .long 14
+ .byte 79,83,95,67,76,69,65,78,85,80,95,72
+ .byte 79,79,75,0
+ .globl MZL0542
+MZL0542:
+ .long 12
+ .byte 69,88,84,69,82,78,65,76,95,69,88,73
+ .byte 84,0
+ .globl MZL0543
+MZL0543:
+ .long 10
+ .byte 85,78,73,88,67,76,69,65,82,73,79,0
+ .globl MZL0544
+MZL0544:
+ .long 22
+ .byte 73,78,73,84,73,65,76,73,90,69,45,83
+ .byte 89,77,66,79,76,45,84,65,66,76,69,0
+ .globl MZL0545
+MZL0545:
+ .long 7
+ .byte 73,78,73,84,67,79,68,69,0,0
+ .globl MZL0546
+MZL0546:
+ .long 19
+ .byte 67,79,78,83,79,76,69,45,80,82,73,78
+ .byte 84,45,83,84,82,73,78,71,0,0
+ .globl MZL0547
+MZL0547:
+ .long 14
+ .byte 67,79,78,83,79,76,69,45,78,69,87,76
+ .byte 73,78,69,0
+ .globl MZL0548
+MZL0548:
+ .long 5
+ .byte 70,65,83,76,73,78,0,0
+ .globl MZL0549
+MZL0549:
+ .long 10
+ .byte 76,79,65,68,69,82,45,77,65,73,78,0
+ .globl MZL0550
+MZL0550:
+ .long 7
+ .byte 85,78,73,88,80,85,84,83,0,0
+ .globl MZL0551
+MZL0551:
+ .long 19
+ .byte 67,79,78,83,79,76,69,45,80,82,73,78
+ .byte 84,45,78,85,77,66,69,82,0,0
+ .globl MZL0552
+MZL0552:
+ .long 7
+ .byte 85,78,73,88,80,85,84,78,0,0
+ .globl MZL0553
+MZL0553:
+ .long 7
+ .byte 85,78,73,88,80,85,84,67,0,0
+ .globl MZL0554
+MZL0554:
+ .long 13
+ .byte 66,73,78,65,82,89,79,80,69,78,82,69
+ .byte 65,68,0,0
+ .globl MZL0555
+MZL0555:
+ .long 7
+ .byte 85,78,73,88,79,80,69,78,0,0
+ .globl MZL0556
+MZL0556:
+ .long 17
+ .byte 75,69,82,78,69,76,45,70,65,84,65,76
+ .byte 45,69,82,82,79,82,0,0
+ .globl MZL0557
+MZL0557:
+ .long 9
+ .byte 66,73,78,65,82,89,82,69,65,68,0,0
+ .globl MZL0558
+MZL0558:
+ .long 3
+ .byte 71,69,84,87,0,0
+ .globl MZL0559
+MZL0559:
+ .long 14
+ .byte 66,73,78,65,82,89,82,69,65,68,66,76
+ .byte 79,67,75,0
+ .globl MZL0560
+MZL0560:
+ .long 4
+ .byte 70,82,69,65,68,0
+ .globl MZL0561
+MZL0561:
+ .long 10
+ .byte 66,73,78,65,82,89,67,76,79,83,69,0
+ .globl MZL0562
+MZL0562:
+ .long 5
+ .byte 70,67,76,79,83,69,0,0
+ .globl MZL0563
+MZL0563:
+ .long 9
+ .byte 78,69,88,84,83,89,77,66,79,76,0,0
+ .globl MZL0564
+MZL0564:
+ .long 5
+ .byte 83,89,77,78,65,77,0,0
+ .globl MZL0565
+MZL0565:
+ .long 14
+ .byte 72,65,83,72,45,73,78,84,79,45,84,65
+ .byte 66,76,69,0
+ .globl MZL0566
+MZL0566:
+ .long 11
+ .byte 83,72,79,87,45,78,69,87,45,73,68,83
+ .byte 0,0
+ .globl MZL0567
+MZL0567:
+ .long 12
+ .byte 70,65,83,76,73,78,45,73,78,84,69,82
+ .byte 78,0
+ .globl MZL0568
+MZL0568:
+ .long 26
+ .byte 83,69,65,82,67,72,45,83,84,82,73,78
+ .byte 71,45,70,79,82,45,67,72,65,82,65,67
+ .byte 84,69,82,0
+ .globl MZL0569
+MZL0569:
+ .long 5
+ .byte 73,78,84,69,82,78,0,0
+ .globl MZL0570
+MZL0570:
+ .long 5
+ .byte 83,85,66,83,69,81,0,0
+ .globl MZL0571
+MZL0571:
+ .long 22
+ .byte 85,78,67,72,69,67,75,69,68,45,83,84
+ .byte 82,73,78,71,45,73,78,84,69,82,78,0
+ .globl MZL0572
+MZL0572:
+ .long 3
+ .byte 71,84,73,68,0,0
+ .globl MZL0573
+MZL0573:
+ .long 9
+ .byte 71,84,67,79,78,83,84,83,84,82,0,0
+ .globl MZL0574
+MZL0574:
+ .long 15
+ .byte 67,79,80,89,83,84,82,73,78,71,84,79
+ .byte 70,82,79,77,0,0
+ .globl MZL0575
+MZL0575:
+ .long 16
+ .byte 73,78,73,84,73,65,76,73,90,69,45,78
+ .byte 69,87,45,73,68,0
+ .globl MZL0576
+MZL0576:
+ .long 12
+ .byte 72,65,83,72,45,70,85,78,67,84,73,79
+ .byte 78,0
+ .globl MZL0577
+MZL0577:
+ .long 21
+ .byte 85,78,67,72,69,67,75,69,68,45,83,84
+ .byte 82,73,78,71,45,69,81,85,65,76,0,0
+ .globl MZL0578
+MZL0578:
+ .long 5
+ .byte 83,89,77,80,82,80,0,0
+ .globl MZL0579
+MZL0579:
+ .long 5
+ .byte 83,89,77,71,69,84,0,0
+ .globl MZL0580
+MZL0580:
+ .long 5
+ .byte 83,89,77,86,65,76,0,0
+ .globl MZL0581
+MZL0581:
+ .long 11
+ .byte 80,76,65,78,84,85,78,66,79,85,78,68
+ .byte 0,0
+ .globl MZL0582
+MZL0582:
+ .long 14
+ .byte 70,65,83,76,73,78,45,66,65,68,45,70
+ .byte 73,76,69,0
+ .globl MZL0583
+MZL0583:
+ .long 12
+ .byte 82,69,65,68,45,73,68,45,84,65,66,76
+ .byte 69,0
+ .globl MZL0584
+MZL0584:
+ .long 4
+ .byte 71,84,66,80,83,0
+ .globl MZL0585
+MZL0585:
+ .long 5
+ .byte 71,84,87,82,68,83,0,0
+ .globl MZL0586
+MZL0586:
+ .long 16
+ .byte 68,79,45,82,69,76,79,67,65,84,73,79
+ .byte 78,45,78,69,87,0
+ .globl MZL0587
+MZL0587:
+ .long 12
+ .byte 68,79,45,82,69,76,79,67,65,84,73,79
+ .byte 78,0
+ .globl MZL0588
+MZL0588:
+ .long 13
+ .byte 67,79,68,69,45,66,65,83,69,45,72,65
+ .byte 67,75,0,0
+ .globl MZL0589
+MZL0589:
+ .long 12
+ .byte 65,68,68,82,69,83,83,65,80,80,76,89
+ .byte 48,0
+ .globl MZL0590
+MZL0590:
+ .long 5
+ .byte 68,69,76,66,80,83,0,0
+ .globl MZL0591
+MZL0591:
+ .long 7
+ .byte 66,73,84,84,65,66,76,69,0,0
+ .globl MZL0592
+MZL0592:
+ .long 12
+ .byte 82,69,76,79,67,65,84,69,45,87,79,82
+ .byte 68,0
+ .globl MZL0593
+MZL0593:
+ .long 11
+ .byte 82,69,76,79,67,65,84,69,45,73,78,70
+ .byte 0,0
+ .globl MZL0594
+MZL0594:
+ .long 18
+ .byte 82,69,76,79,67,65,84,69,45,82,73,71
+ .byte 72,84,45,72,65,76,70,0
+ .globl MZL0595
+MZL0595:
+ .long 17
+ .byte 67,79,77,80,85,84,69,45,82,69,76,79
+ .byte 67,65,84,73,79,78,0,0
+ .globl MZL0596
+MZL0596:
+ .long 17
+ .byte 76,79,67,65,76,45,84,79,45,71,76,79
+ .byte 66,65,76,45,73,68,0,0
+ .globl MZL0597
+MZL0597:
+ .long 5
+ .byte 83,89,77,70,78,67,0,0
+ .globl MZL0598
+MZL0598:
+ .long 3
+ .byte 80,85,84,68,0,0
+ .globl MZL0599
+MZL0599:
+ .long 7
+ .byte 80,85,84,69,78,84,82,89,0,0
+ .globl MZL0600
+MZL0600:
+ .long 19
+ .byte 84,82,89,45,79,84,72,69,82,45,66,80
+ .byte 83,45,83,80,65,67,69,83,0,0
+ .globl MZL0601
+MZL0601:
+ .long 14
+ .byte 71,84,66,80,83,45,78,73,76,45,69,82
+ .byte 82,79,82,0
+ .globl MZL0602
+MZL0602:
+ .long 3
+ .byte 71,69,84,68,0,0
+ .globl MZL0603
+MZL0603:
+ .long 7
+ .byte 83,84,68,69,82,82,79,82,0,0
+ .globl MZL0604
+MZL0604:
+ .long 5
+ .byte 71,84,72,69,65,80,0,0
+ .globl MZL0605
+MZL0605:
+ .long 15
+ .byte 75,78,79,87,78,45,70,82,69,69,45,83
+ .byte 80,65,67,69,0,0
+ .globl MZL0606
+MZL0606:
+ .long 10
+ .byte 82,69,65,76,45,71,84,72,69,65,80,0
+ .globl MZL0607
+MZL0607:
+ .long 12
+ .byte 71,69,84,45,72,69,65,80,45,84,82,65
+ .byte 80,0
+ .globl MZL0608
+MZL0608:
+ .long 6
+ .byte 82,69,67,76,65,73,77,0
+ .globl MZL0609
+MZL0609:
+ .long 4
+ .byte 71,84,83,84,82,0
+ .globl MZL0610
+MZL0610:
+ .long 3
+ .byte 67,79,78,83,0,0
+ .globl MZL0611
+MZL0611:
+ .long 10
+ .byte 73,78,84,69,82,82,79,71,65,84,69,0
+ .globl MZL0612
+MZL0612:
+ .long 5
+ .byte 77,79,68,73,70,89,0,0
+ .globl MZL0613
+MZL0613:
+ .long 2
+ .byte 80,85,84,0
+ .globl MZL0614
+MZL0614:
+ .long 12
+ .byte 85,78,67,72,69,67,75,69,68,45,80,85
+ .byte 84,0
+ .globl MZL0615
+MZL0615:
+ .long 13
+ .byte 85,78,67,72,69,67,75,69,68,45,80,82
+ .byte 79,80,0,0
+ .globl MZL0616
+MZL0616:
+ .long 4
+ .byte 65,84,83,79,67,0
+ .globl MZL0617
+MZL0617:
+ .long 16
+ .byte 85,78,67,72,69,67,75,69,68,45,83,69
+ .byte 84,80,82,79,80,0
+ .globl MZL0618
+MZL0618:
+ .long 8
+ .byte 67,79,68,69,45,80,85,84,68,0
+ .globl MZL0619
+MZL0619:
+ .long 3
+ .byte 69,88,80,82,0,0
+ .globl MZL0620
+MZL0620:
+ .long 3
+ .byte 84,89,80,69,0,0
+ .globl MZL0621
+MZL0621:
+ .long 15
+ .byte 80,76,65,78,84,67,79,68,69,80,79,73
+ .byte 78,84,69,82,0,0
+ .globl MZL0622
+MZL0622:
+ .long 4
+ .byte 70,76,85,73,68,0
+ .globl MZL0623
+MZL0623:
+ .long 5
+ .byte 70,76,85,73,68,49,0,0
+ .globl MZL0624
+MZL0624:
+ .long 6
+ .byte 86,65,82,84,89,80,69,0
+ .globl MZL0625
+MZL0625:
+ .long 8
+ .byte 67,79,78,83,84,65,78,84,63,0
+ .globl MZL0626
+MZL0626:
+ .long 15
+ .byte 42,68,69,70,73,78,69,45,67,79,78,83
+ .byte 84,65,78,84,0,0
+ .globl MZL0627
+MZL0627:
+ .long 14
+ .byte 80,76,65,78,84,76,65,77,66,68,65,76
+ .byte 73,78,75,0
+ .globl MZL0628
+MZL0628:
+ .long 16
+ .byte 85,78,68,69,70,73,78,69,68,70,85,78
+ .byte 67,84,73,79,78,0
+ .globl MZL0629
+MZL0629:
+ .long 20
+ .byte 85,78,68,69,70,73,78,69,68,70,85,78
+ .byte 67,84,73,79,78,45,65,85,88,0
+ .globl MZL0630
+MZL0630:
+ .long 25
+ .byte 67,79,77,80,73,76,69,68,67,65,76,76
+ .byte 73,78,71,73,78,84,69,82,80,82,69,84
+ .byte 69,68,0,0
+ .globl MZL0631
+MZL0631:
+ .long 8
+ .byte 67,79,68,69,70,79,82,77,42,0
+ .globl MZL0632
+MZL0632:
+ .long 28
+ .byte 67,79,77,80,73,76,69,68,67,65,76,76
+ .byte 73,78,71,73,78,84,69,82,80,82,69,84
+ .byte 69,68,65,85,88,0
+ .globl MZL0633
+MZL0633:
+ .long 5
+ .byte 69,67,72,79,79,78,0,0
+ .globl MZL0634
+MZL0634:
+ .long 6
+ .byte 69,67,72,79,79,70,70,0
+ .globl MZL0635
+MZL0635:
+ .long 26
+ .byte 69,88,84,69,82,78,65,76,95,67,72,65
+ .byte 82,83,73,78,73,78,80,85,84,66,85,70
+ .byte 70,69,82,0
+ .globl MZL0636
+MZL0636:
+ .long 19
+ .byte 70,76,85,83,72,83,84,68,79,85,84,80
+ .byte 85,84,66,85,70,70,69,82,0,0
+ .globl MZL0637
+MZL0637:
+ .long 27
+ .byte 69,88,84,69,82,78,65,76,95,85,83,69
+ .byte 82,95,72,79,77,69,68,73,82,95,83,84
+ .byte 82,73,78,71,0,0
+ .globl MZL0638
+MZL0638:
+ .long 30
+ .byte 69,88,84,69,82,78,65,76,95,65,78,89
+ .byte 85,83,69,82,95,72,79,77,69,68,73,82
+ .byte 95,83,84,82,73,78,71,0
+ .globl MZL0639
+MZL0639:
+ .long 12
+ .byte 65,76,84,69,82,72,69,65,80,83,73,90
+ .byte 69,0
+ .globl MZL0640
+MZL0640:
+ .long 14
+ .byte 65,76,76,79,67,65,84,69,77,79,82,69
+ .byte 66,80,83,0
+ .globl MZL0641
+MZL0641:
+ .long 14
+ .byte 71,69,84,95,70,73,76,69,95,83,84,65
+ .byte 84,85,83,0
+ .globl MZL0642
+MZL0642:
+ .long 13
+ .byte 69,88,84,69,82,78,65,76,95,65,76,65
+ .byte 82,77,0,0
+ .globl MZL0643
+MZL0643:
+ .long 14
+ .byte 69,88,84,69,82,78,65,76,95,85,65,76
+ .byte 65,82,77,0
+ .globl MZL0644
+MZL0644:
+ .long 12
+ .byte 69,88,84,69,82,78,65,76,95,84,73,77
+ .byte 69,0
+ .globl MZL0645
+MZL0645:
+ .long 12
+ .byte 69,88,84,69,82,78,65,76,95,84,73,77
+ .byte 67,0
+ .globl MZL0646
+MZL0646:
+ .long 12
+ .byte 69,88,84,69,82,78,65,76,95,83,84,65
+ .byte 84,0
+ .globl MZL0647
+MZL0647:
+ .long 12
+ .byte 69,88,84,69,82,78,65,76,95,76,73,78
+ .byte 75,0
+ .globl MZL0648
+MZL0648:
+ .long 14
+ .byte 69,88,84,69,82,78,65,76,95,85,78,76
+ .byte 73,78,75,0
+ .globl MZL0649
+MZL0649:
+ .long 14
+ .byte 69,88,84,69,82,78,65,76,95,83,84,82
+ .byte 76,69,78,0
+ .globl MZL0650
+MZL0650:
+ .long 14
+ .byte 69,88,84,69,82,78,65,76,95,83,69,84
+ .byte 69,78,86,0
+ .globl MZL0651
+MZL0651:
+ .long 14
+ .byte 69,88,84,69,82,78,65,76,95,71,69,84
+ .byte 69,78,86,0
+ .globl MZL0652
+MZL0652:
+ .long 6
+ .byte 85,88,70,76,79,65,84,0
+ .globl MZL0653
+MZL0653:
+ .long 4
+ .byte 85,88,70,73,88,0
+ .globl MZL0654
+MZL0654:
+ .long 7
+ .byte 85,88,65,83,83,73,71,78,0,0
+ .globl MZL0655
+MZL0655:
+ .long 6
+ .byte 85,88,80,76,85,83,50,0
+ .globl MZL0656
+MZL0656:
+ .long 11
+ .byte 85,88,68,73,70,70,69,82,69,78,67,69
+ .byte 0,0
+ .globl MZL0657
+MZL0657:
+ .long 7
+ .byte 85,88,84,73,77,69,83,50,0,0
+ .globl MZL0658
+MZL0658:
+ .long 9
+ .byte 85,88,81,85,79,84,73,69,78,84,0,0
+ .globl MZL0659
+MZL0659:
+ .long 9
+ .byte 85,88,71,82,69,65,84,69,82,80,0,0
+ .globl MZL0660
+MZL0660:
+ .long 6
+ .byte 85,88,76,69,83,83,80,0
+ .globl MZL0661
+MZL0661:
+ .long 11
+ .byte 85,88,87,82,73,84,69,70,76,79,65,84
+ .byte 0,0
+ .globl MZL0662
+MZL0662:
+ .long 14
+ .byte 85,88,68,79,85,66,76,69,84,79,70,76
+ .byte 79,65,84,0
+ .globl MZL0663
+MZL0663:
+ .long 14
+ .byte 85,88,70,76,79,65,84,84,79,68,79,85
+ .byte 66,76,69,0
+ .globl MZL0664
+MZL0664:
+ .long 4
+ .byte 85,88,83,73,78,0
+ .globl MZL0665
+MZL0665:
+ .long 4
+ .byte 85,88,67,79,83,0
+ .globl MZL0666
+MZL0666:
+ .long 4
+ .byte 85,88,84,65,78,0
+ .globl MZL0667
+MZL0667:
+ .long 5
+ .byte 85,88,65,83,73,78,0,0
+ .globl MZL0668
+MZL0668:
+ .long 5
+ .byte 85,88,65,67,79,83,0,0
+ .globl MZL0669
+MZL0669:
+ .long 5
+ .byte 85,88,65,84,65,78,0,0
+ .globl MZL0670
+MZL0670:
+ .long 5
+ .byte 85,88,83,81,82,84,0,0
+ .globl MZL0671
+MZL0671:
+ .long 4
+ .byte 85,88,69,88,80,0
+ .globl MZL0672
+MZL0672:
+ .long 4
+ .byte 85,88,76,79,71,0
+ .globl MZL0673
+MZL0673:
+ .long 6
+ .byte 85,88,65,84,65,78,50,0
+ .globl MZL0674
+MZL0674:
+ .long 11
+ .byte 69,88,84,69,82,78,65,76,95,80,87,68
+ .byte 0,0
+ .globl MZL0675
+MZL0675:
+ .long 10
+ .byte 83,85,78,51,95,83,73,71,83,69,84,0
+ .globl MZL0676
+MZL0676:
+ .long 12
+ .byte 83,85,78,51,95,83,73,71,82,69,76,83
+ .byte 69,0
+ .globl MZL0677
+MZL0677:
+ .long 7
+ .byte 83,73,71,82,69,76,83,69,0,0
+ .globl MZL0678
+MZL0678:
+ .long 5
+ .byte 85,78,69,88,69,67,0,0
+ .globl MZL0679
+MZL0679:
+ .long 15
+ .byte 69,88,80,65,78,68,95,70,73,76,69,95
+ .byte 78,65,77,69,0,0
+ .globl MZL0680
+MZL0680:
+ .long 5
+ .byte 85,78,73,88,67,68,0,0
+ .globl MZL0681
+MZL0681:
+ .long 4
+ .byte 67,84,73,77,69,0
+ .globl MZL0682
+MZL0682:
+ .long 14
+ .byte 69,88,84,69,82,78,65,76,95,83,89,83
+ .byte 84,69,77,0
+ .globl MZL0683
+MZL0683:
+ .long 4
+ .byte 70,79,80,69,78,0
+ .globl MZL0684
+MZL0684:
+ .long 4
+ .byte 70,80,85,84,67,0
+ .globl MZL0685
+MZL0685:
+ .long 4
+ .byte 70,71,69,84,67,0
+ .globl MZL0686
+MZL0686:
+ .long 4
+ .byte 70,71,69,84,83,0
+ .globl MZL0687
+MZL0687:
+ .long 5
+ .byte 70,87,82,73,84,69,0,0
+ .globl MZL0688
+MZL0688:
+ .long 5
+ .byte 70,70,76,85,83,72,0,0
+ .globl MZL0689
+MZL0689:
+ .long 4
+ .byte 70,83,69,69,75,0
+ .globl MZL0690
+MZL0690:
+ .long 7
+ .byte 67,76,69,65,82,69,82,82,0,0
+ .globl MZL0691
+MZL0691:
+ .long 3
+ .byte 80,85,84,87,0,0
+ .globl MZL0692
+MZL0692:
+ .long 5
+ .byte 83,73,71,78,65,76,0,0
+ .globl MZL0693
+MZL0693:
+ .long 4
+ .byte 83,76,69,69,80,0
+ .globl MZL0694
+MZL0694:
+ .long 11
+ .byte 73,69,69,69,95,72,65,78,68,76,69,82
+ .byte 0,0
+ .globl MZL0695
+MZL0695:
+ .long 9
+ .byte 73,69,69,69,95,70,76,65,71,83,0,0
+ .globl MZL0696
+MZL0696:
+ .long 9
+ .byte 83,69,84,76,73,78,69,66,85,70,0,0
+ .globl MZL0697
+MZL0697:
+ .long 4
+ .byte 80,79,80,69,78,0
+ .globl MZL0698
+MZL0698:
+ .long 5
+ .byte 80,67,76,79,83,69,0,0
+ .globl MZL0699
+MZL0699:
+ .long 11
+ .byte 85,78,73,88,45,80,82,79,70,73,76,69
+ .byte 0,0
+ .globl MZL0700
+MZL0700:
+ .long 9
+ .byte 76,65,83,84,75,69,82,78,69,76,0,0
+ .globl MZL0701
+MZL0701:
+ .long 11
+ .byte 67,79,68,69,65,68,68,82,69,83,83,80
+ .byte 0,0
+ .globl MZL0702
+MZL0702:
+ .long 14
+ .byte 71,69,84,70,67,79,68,69,80,79,73,78
+ .byte 84,69,82,0
+ .globl SYMFNC
+ .globl SYMGET

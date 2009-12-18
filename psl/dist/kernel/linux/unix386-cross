@@ -1,0 +1,12 @@
+# /bin/csh
+echo "cross"
+$psys/pslcomp <<EOF
+
+(load if-system)
+(load lap-to-asm)
+(load sun386-asm)
+(dskin "tmp.sl")
+
+
+EOF
+
