@@ -1,0 +1,11 @@
+#!/bin/csh -f
+# Script to load PSL REDUCE. It should be installed in /usr/local/bin,
+# somewhere in your search path.
+setenv reduce /silo/cons/reduce36
+if ($?MACHINE == 0) then
+  setenv MACHINE linux
+endif
+setenv gnuplot $reduce/wutil/$MACHINE
+$reduce/lisp/psl/$MACHINE/psl/bpsl -td 8000000 \
+      -f $reduce/lisp/psl/$MACHINE/red/reduce.img
+
