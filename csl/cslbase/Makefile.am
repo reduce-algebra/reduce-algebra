@@ -540,7 +540,11 @@ termdemo_LIBS=
 # in the same directory as executables.
 #
 
+if windows
 image_files = csl.img reduce.img reduce.doc $(fontsdir) wgnuplot* gnuplot.Copyright
+else !windows
+image_files = csl.img reduce.img reduce.doc $(fontsdir)
+endif !windows
 install-data-local: $(image_files)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
