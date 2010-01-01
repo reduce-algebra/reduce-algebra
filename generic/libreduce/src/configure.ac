@@ -55,6 +55,60 @@ AS_IF([test "$EXEEXT" = .exe],
    fi,
    AC_DEFINE(USE_PIPES,0,[Define to 1 for using pipes instead if sockets]))])
 
+case $host in *darwin*)
+  on_darwin=yes
+  AC_MSG_NOTICE([Building for Macintosh/Darwin])
+  AC_DEFINE(MACINTOSH, [1], [True if we are running on Macintosh])
+#     -fno-common causes C programs to lead to a linker error if you have
+#     declarations of variables in several files. It may thus count as
+#     and extra safety measure.
+#     -no-cpp-precomp was historically useful because some people
+#     found that the Apple pre-processor gave them trouble, so I think it
+#     arranges a slower but possibly safer compilation. It is probably not
+#     needed at all these days.
+  CFLAGS="$CFLAGS -fno-common -no-cpp-precomp"
+  CXXFLAGS="$CXXFLAGS -fno-common -no-cpp-precomp"
+
+  AC_ARG_ENABLE(universal,
+    AC_HELP_STRING([--disable-universal],
+	[do not build universal binary on Mac OSX]),
+    universal="$enableval",
+    universal=yes)
+
+  AS_IF([test "$universal" = yes],[
+   AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
+# If it seems to be supported at all I will go "-arch ppc -arch i386" to
+# build a fat binary that will run on both powerpc and intel-based
+# 32-bit macs.
+   sysroot=""
+   AC_MSG_NOTICE([Checking for OSX10.5 framework])
+   OLDCFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                   [[printf("Hello\n");]])],
+     [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+      AC_MSG_NOTICE([MacOS10.5 SDK found])
+      sysroot="/Developer/SDKs/MacOSX10.5.sdk"],
+     [CFLAGS="$OLDCFLAGS"
+      AC_MSG_NOTICE([MacOS10.5 SKD NOT found])])
+  if test "x$sysroot" = "x"
+  then
+    AC_MSG_NOTICE([Checking for OSX10.4u framework])
+    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                    [[printf("Hello\n");]])],
+      [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+       AC_MSG_NOTICE([MacOS10.4u SDK found])
+       sysroot="/Developer/SDKs/MacOSX10.4u"],
+      [CFLAGS="$OLDCFLAGS"
+       AC_MSG_NOTICE([MacOS10.4u SKD NOT found])])
+  fi
+  AC_SUBST(FAT,"-arch ppc -arch i386 -arch x86_64")
+  AC_MSG_NOTICE([fat_support=$fat_support_available])
+])
+;;
+esac
+
 dnl Checks for libraries.
 AC_CHECK_LIB(socket,socketpair,LIBS="-lsocket $LIBS")
 

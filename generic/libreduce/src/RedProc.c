@@ -166,7 +166,7 @@ void RedProc_child(RedProc process,const char *reduce) {
   dup2(process->meToReduce[0],STDIN_FILENO);
   dup2(process->reduceToMe[1],STDOUT_FILENO);
   
-  nargv[0] = reduce;
+  nargv[0] = (char *)reduce;
   nargv[1] = "-w";
   nargv[2] = (char *)0;
   
@@ -229,12 +229,11 @@ void RedProc_cfprint(FILE *stream,RedProc proc) {
 }
 
 RETSIGTYPE RedProc_SigChld(int arg) {
-  int *status;
+  int status;
   
-  status = (int *)malloc(sizeof(int));
-  
-  fprintf(stderr,"libreduce: receiving SIGCHLD\n");
+  //  fprintf(stderr,"libreduce: receiving SIGCHLD\n");
   if (wait4(process->processId,&status,WNOHANG,NULL) == process->processId) {
+    fprintf(stderr,"libreduce: receiving SIGCHLD\n");
     fprintf(stderr,"libreduce: Reduce has stopped or exited - Quitting\n");
     exit(SIGCHLD);
   }

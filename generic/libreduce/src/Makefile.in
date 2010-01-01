@@ -32,7 +32,9 @@ CC = @CC@ -Wall
 
 LIBS = @LIBS@
 
-CFLAGS = -O3  @DEFS@ -I. -g
+FAT = @FAT@
+
+CFLAGS = $(FAT) @DEFS@ -I. -g
 
 LDFLAGS = @LDFLAGS@
 
@@ -42,10 +44,13 @@ srcdir = @srcdir@
 
 REDUCE = \"$(realpath ../../../bin/redcsl)\"
 
-all: libreduce.a lrtest bench_reduce bench_redlog
+all: libreduce.a RedPy.so lrtest bench_reduce bench_redlog
 
 libreduce.a: $(OBJ)
 	ar rcs libreduce.a $(OBJ)
+
+RedPy.so: $(OBJ) RedPy.o
+	gcc $(FAT) -shared $(OBJ) -lpython2.5 RedPy.o -o RedPy.so
 
 RedProc.o: $(srcdir)/RedProc.c $(srcdir)/reduce.h config.h
 	$(CC) -c $(CFLAGS) -o RedProc.o $(srcdir)/RedProc.c
@@ -55,10 +60,12 @@ RedMsg.o: $(srcdir)/RedMsg.c $(srcdir)/reduce.h config.h
 	$(CC) -c $(CFLAGS) -o RedMsg.o $(srcdir)/RedMsg.c
 StrBuf.o: $(srcdir)/StrBuf.c
 	$(CC) -c $(CFLAGS) -o StrBuf.o $(srcdir)/StrBuf.c
+RedPy.o: $(srcdir)/RedPy.c
+	$(CC) -c $(CFLAGS) -I/usr/include/Python2.5 -o RedPy.o $(srcdir)/RedPy.c
 
 lrtest: $(srcdir)/examples/lrtest.c libreduce.a $(srcdir)/reduce.h
 	mkdir -p examples
-	$(CC) -o examples/lrtest -I$(srcdir) -DREDUCE=$(REDUCE) $(srcdir)/examples/lrtest.c -L. -lreduce
+	$(CC) $(FAT) -o examples/lrtest -I$(srcdir) -DREDUCE=$(REDUCE) $(srcdir)/examples/lrtest.c -L. -lreduce
 
 bench_reduce: $(srcdir)/examples/bench_reduce.c libreduce.a $(srcdir)/reduce.h
 	mkdir -p examples
