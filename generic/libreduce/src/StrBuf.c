@@ -32,8 +32,6 @@
 #include <stdlib.h>
 #include "StrBuf.h"
 
-StrBuf StrBuf_pruneNl(StrBuf);
-
 StrBuf StrBuf_addChar(StrBuf b,char c) {
   /* Add c to b */
   StrBuf new;
@@ -48,12 +46,15 @@ StrBuf StrBuf_addChar(StrBuf b,char c) {
 }
 
 StrBuf StrBuf_pruneNl(StrBuf b) {
+  StrBuf h;
+
   if (b == NULL)
     return NULL;
 
   while (b && b->c == 0x0a) {
+    h = b;
     b = b->prev;
-    free(b->next);
+    free(h);
     if (b)
       b->next = 0;
   }

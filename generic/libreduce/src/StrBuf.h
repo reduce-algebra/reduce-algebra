@@ -37,6 +37,8 @@ typedef struct oStrBuf *StrBuf;
 
 StrBuf StrBuf_addChar(StrBuf,char);
 
+StrBuf StrBuf_pruneNl(StrBuf);
+
 char* StrBuf_string(StrBuf);
 
 StrBuf StrBuf_remTail(StrBuf,StrBuf);
