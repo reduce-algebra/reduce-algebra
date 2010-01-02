@@ -34,7 +34,7 @@ LIBS = @LIBS@
 
 FAT = @FAT@
 
-CFLAGS = $(FAT) @DEFS@ -I. -g
+CFLAGS = $(FAT) @DEFS@ -I. @PYTHON_CPPFLAGS@ -g
 
 LDFLAGS = @LDFLAGS@
 
@@ -47,10 +47,11 @@ REDUCE = \"$(realpath ../../../bin/redcsl)\"
 all: libreduce.a RedPy.so lrtest bench_reduce bench_redlog
 
 libreduce.a: $(OBJ)
+	rm -f libreduce.a
 	ar rcs libreduce.a $(OBJ)
 
 RedPy.so: $(OBJ) RedPy.o
-	gcc $(FAT) -shared $(OBJ) -lpython2.5 RedPy.o -o RedPy.so
+	gcc $(FAT) -shared $(OBJ) @PYTHON_LDFLAGS@ RedPy.o -o RedPy.so
 
 RedProc.o: $(srcdir)/RedProc.c $(srcdir)/reduce.h config.h
 	$(CC) -c $(CFLAGS) -o RedProc.o $(srcdir)/RedProc.c

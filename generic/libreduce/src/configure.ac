@@ -31,6 +31,8 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(RedProc.c)
 
+m4_include(ac_python_devel.m4)
+
 AC_CANONICAL_HOST
 BUILD=`eval "$SHELL $srcdir/../../../scripts/findhost.sh $host $ac_configure_args"`
 AC_MSG_NOTICE([Build platform detected as $BUILD])
@@ -168,5 +170,7 @@ AC_ARG_ENABLE(debug,[  --enable-debug          print debugging information to tt
 if test "$enableval" = yes ; then
 AC_DEFINE(DEBUG,1,[Define this for debug information on signals and files])
 fi)
+
+AC_PYTHON_DEVEL()
 
 AC_OUTPUT(Makefile)
