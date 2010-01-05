@@ -52,7 +52,7 @@ symbolic procedure formproc(u,vars,mode);
         if flagp(name,'lose) and (!*lose or null !*defn)
           then return progn(lprim list(name,
                             "not defined (LOSE flag)"),
-                        nil)
+                        '(quote nil))
          else if !*redeflg!* and getd name
           then lprim list(name,"redefined");
         varlis := cadr u;
