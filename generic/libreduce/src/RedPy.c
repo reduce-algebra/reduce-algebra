@@ -37,7 +37,9 @@ static PyObject *RedPy_ansNew(PyObject *self, PyObject *args) {
 
   if (!PyArg_Parse(args,"(Ks)",&p,&fromPython))
     return NULL;
+  Py_BEGIN_ALLOW_THREADS
   ans = RedAns_new(p,fromPython);
+  Py_END_ALLOW_THREADS
   return Py_BuildValue("{s{sisisssssssssisisi}sK}})",
 		       "data",
 		       "statcounter",ans->statcounter,
