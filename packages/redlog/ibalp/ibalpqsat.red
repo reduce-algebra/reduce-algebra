@@ -39,6 +39,8 @@ module ibalpqsat;
 
 fluid '(ibalp_qsatoptions!* !*rlverbose);
 
+fluid '(donel!*, numcdcl!*, numlocs!*);
+
 procedure my_mkvect(n);
    <<
       ioto_tprin2t {"entering mkvect n=",n};
@@ -185,7 +187,7 @@ smacro procedure ibalp_var!-setlev(var,lev);
 
 smacro procedure ibalp_var!-setreas(var,reas);
    % Set the reason why the variable was set. [var] is a variable;
-   % [reas] is the clause which became union and forced the set or nil
+   % [reas] is the clause which became unit and forced the set or nil
    % if it was a decision.
    cadddr cddddr var := reas;
 
@@ -268,7 +270,7 @@ smacro procedure ibalp_var!-getlev(var);
 
 smacro procedure ibalp_var!-getreas(var);
    % Get the reason why the variable was set. [var] is a variable.
-   % Returns the clause which became union and forced the set or [nil]
+   % Returns the clause which became unit and forced the set or [nil]
    % if a decision was the reason.
    cadddr cddddr var;
 
@@ -519,7 +521,7 @@ smacro procedure ibalp_var!-setlev(var,lev);
 
 smacro procedure ibalp_var!-setreas(var,reas);
    % Set the reason why the variable was set. [var] is a variable;
-   % [reas] is the clause which became union and forced the set or nil
+   % [reas] is the clause which became unit and forced the set or nil
    % if it was a decision.
    putv(var,7,reas);
 
@@ -602,7 +604,7 @@ smacro procedure ibalp_var!-getlev(var);
 
 smacro procedure ibalp_var!-getreas(var);
    % Get the reason why the variable was set. [var] is a variable.
-   % Returns the clause which became union and forced the set or [nil]
+   % Returns the clause which became unit and forced the set or [nil]
    % if a decision was the reason.
    getv(var,7);
 
@@ -798,10 +800,15 @@ procedure ibalp_printclause(clause);
       ioto_tprin2t {"Clause ",poslit," ",neglit," ","SAT: ",sat}
    end;
 
+procedure ibalp_printclauses(clausel);
+   % Helper function to print all clauses.
+   for each c in clausel do
+      ibalp_printclause c;
+
 procedure ibalp_printvaral(varal);
    % Helper function to print the list of variables.
    for each v in varal do
-      ioto_tprin2t {ibalp_var!-getid cdr v};
+      ioto_tprin2t {ibalp_var!-getid cdr v, " ", ibalp_var!-getval cdr v};
 
 procedure ibalp_qsat!-dimacs(input);
    % The main entry point for solving a given .cnf or .qdimacs
@@ -863,6 +870,8 @@ procedure ibalp_start!-sat(clausel,varal);
    % the A-List of variables. Returns [true] if there is a satisfying
    % assignment, [nil] else.
    begin scalar resstart,firstval,inc,heur;
+      if !*rlverbose then
+      	 ioto_tprin2t {"Starting SAT Algorithm"};
       for each v in varal do
 	 ibalp_var!-setmom(cdr v,ibalp_calcmom cdr v);
       resstart := ibalp_qsat!-getoption('res_start);
@@ -877,6 +886,8 @@ procedure ibalp_start!-qsat(clausel,varal,f);
       % is the A-List of variables; [f] is the original
       % formula. Returns [true] if the formula is true, [nil] else.
       begin scalar varal,pair;
+	 if !*rlverbose then
+	    ioto_tprin2t {"Starting QSAT Algorithm"};
    	 pair := ibalp_readquantal(cl_pnf f,varal);
 	 varal := cdr pair;
 	 if eqn(car pair,1) and ibalp_var!-isex cdar varal then
@@ -892,14 +903,24 @@ procedure ibalp_start!-pqsat(clausel,varal,f,pqsat);
       % variables. Returns a condition to the free variables in DNF or
       % true or false.
    begin scalar pair;
+      if !*rlverbose then
+	 ioto_tprin2t {"Starting PQSAT Algorithm with ", length pqsat, " free variables..."};
       pair := ibalp_splitvars(pqsat,varal);
       varal := car pair;
       pqsat := cdr pair;
-      if length pqsat / length varal > 2/3 then
+      donel!* := nil;
+      numcdcl!* := 0;
+      numlocs!* := 0;
+      %if length pqsat / length varal > 2/3 then
+      if nil then 
 	 return cl_qe(f,nil)
       else <<
       	 varal := cdr ibalp_readquantal(cl_pnf f,varal);
       	 pair := ibalp_qsat!-par(pqsat,clausel,varal,nil);
+	 if !*rlverbose then <<
+	    ioto_tprin2t {"Runs of CDCL: ", numcdcl!*};
+	    ioto_tprin2t {"Local Search Successes: ", numlocs!*};
+	 >>;
       	 return ibalp_exres2(car pair,pqsat)
       >>
    end;
@@ -1114,7 +1135,7 @@ procedure ibalp_getupl(clausel);
    end;
 
 procedure ibalp_unitprop(clist,clausel,level);
-   % Unitpropagation. [clist] is a list of clauses with union
+   % Unitpropagation. [clist] is a list of clauses with unit
    % variables; [clausel] ist the list of clauses; [level] is the
    % level the reduction is made; [setvar] is the last variable
    % set. Returns a Pair. The first entry is an empty clause if one is
@@ -1580,7 +1601,7 @@ procedure ibalp_var!-set(var,val,level,reas);
    % [level] is the level the variable is set; [reas] is the reason
    % why the variable is set. Sets the given variable from [nil] to
    % [val] and updates all needed data structures. Returns a pair of
-   % new union clauses.
+   % new unit clauses.
    begin scalar id,sc,upl;
       ibalp_var!-setval(var,val);
       ibalp_var!-setlev(var,level);
@@ -1659,7 +1680,7 @@ procedure ibalp_var!-setq(var,val,level,reas);
    % be set; [varal] is the list of variables; [level] is the level
    % the variable is set; [reas] is the reason why the variable is
    % set. Sets the given variable from [nil] to [val] and updates all
-   % needed data structures. Returns a pair of new union clauses and
+   % needed data structures. Returns a pair of new unit clauses and
    % new conflict clauses.
    begin scalar clause,id,sc,upl,h,ec;
       ibalp_var!-setval(var,val);
@@ -2334,7 +2355,7 @@ procedure ibalp_qsat!-btcase(blevel,bvar,varal,cc,val);
    % level; [bvar] is the backtrack variable; [varal] is the A-List of
    % variables; [cc] is the new learnt clause; [val] indicates if it
    % is a conflict-driven or a SAT-driven backtracking. Returns the
-   % list of new union clauses.
+   % list of new unit clauses.
    begin scalar tval,temp;
       tval := ibalp_var!-getval bvar;
       ibalp_qsat!-backtrack(blevel,varal,val);
@@ -2665,7 +2686,7 @@ procedure ibalp_qsat!-backtrack(level,varal,val);
    >>;
 
 procedure ibalp_qsat!-cdclup(clist,level);
-   % Unitpropagation. [clist] is a list of clauses with union
+   % Unitpropagation. [clist] is a list of clauses with unit
    % variables; [level] is the level the reduction is made; Returns a
    % Pair. The first entry is an empty clause if one is derived the
    % second the variable set at last.
@@ -2794,24 +2815,34 @@ procedure ibalp_readquantal2(formula,varal,quant,level,newvaral);
 
 procedure ibalp_qsat!-par(fvl,clausel,varal,result);
    % The main procedure for parametric Q-SAT. [fvl] is the list of
-   % free variables; [clausel] is the list of clauses; [varal] is the
+   % currently free variables; [clausel] is the list of clauses; [varal] is the
    % A-List of variables; [result] is the current list of
-   % results. Returns a pair of the result and the clauses/variables.
-   begin scalar tv,res,pair,ec,upl;
-      tv := ibalp_getfree fvl;
+   % results; [pqsat] ist the list of free variables. Returns a pair of the 
+   % result and the clauses/variables.
+   begin scalar tv,res,pair,ec,upl,pair2,ec2;
+      tv := ibalp_getfree!-dlcs fvl;
       if null tv then <<
-	 upl := ibalp_qsat!-getupl clausel;
-	 res := ibalp_qsat!-cdcl(clausel,varal,upl,nil);
-	 if car res = {'true} then result := (ibalp_exres fvl) . result;
-	 return (result . (cadr res . cddr res))
+	 if (not member(ibalp_qsat!-calcbin fvl,donel!*)) then <<
+	    upl := ibalp_qsat!-getupl clausel;
+	    res := ibalp_qsat!-cdcl(clausel,varal,upl,nil);
+	    numcdcl!* := numcdcl!* + 1;
+	    donel!* := ibalp_qsat!-calcbin fvl . donel!*; 
+	    if car res = {'true} then <<
+	       result := (ibalp_exres fvl) . result;
+	       result := ibalp_qsat!-localsearch(clausel,varal,length fvl,
+		  fvl,result);
+	    >>;
+	    return (result . (cadr res . cddr res));
+	 >> else 
+	    return (result . (clausel . varal));
       >> else <<
 	 ec := ibalp_var!-setq(tv,1,-42,nil);
 	 if null cdr ec then <<
 	    pair := ibalp_qsat!-par(fvl,clausel,varal,result);
-	    result := car pair;
-	    clausel := cadr pair;
-	    varal := cddr pair;
-	    ibalp_qsat!-dav varal;
+    	    result := car pair;
+    	    clausel := cadr pair;
+    	    varal := cddr pair;
+    	    ibalp_qsat!-dav varal;	
 	 >>;
 	 ibalp_var!-unsetq(tv,1);
 	 ec := ibalp_var!-setq(tv,0,-42,nil);
@@ -2826,6 +2857,86 @@ procedure ibalp_qsat!-par(fvl,clausel,varal,result);
 	 return (result . (clausel . varal))
       >>
    end;
+
+procedure ibalp_qsat!-localsearch(clausel,varal,radius,fvl,result);
+   % Performs a local search with a given radius. [clausel] is the list of
+   % clauses; [varal] is the A-List of variables; [radius] is the radius for
+   % the local search; [fvl] is the list of free variables; [result] ist the 
+   % current result. Returns the new result.
+   begin scalar v,oldl,varl;
+      varl := ibalp_qsat!-getlocvars!-last(fvl,radius);
+      for each v in varl do <<
+	 oldl := ibalp_var!-getval v . oldl;
+	 ibalp_var!-unsetq(v,ibalp_var!-getval v);
+      >>;
+      result := ibalp_qsat!-localsearchrec(clausel,varal,varl,fvl,result);
+      for i := 1:length varl do <<
+	 v := nth(varl,i);
+	 if eqn(nth(oldl,(length oldl) - i + 1),0) then
+	    ibalp_var!-setq(v,0,-42,nil)
+	 else
+	    ibalp_var!-setq(v,1,-42,nil)
+      >>;
+      return result;
+   end;
+	
+procedure ibalp_qsat!-getlocvars!-last(fvl,number);
+   % Get the [number] last free variables for local search.
+   begin scalar l,varl;
+      l := length fvl;
+      for i := l-number+1:l do 
+	    varl := nth(fvl,i) . varl;
+      return varl;
+   end;
+	
+procedure ibalp_qsat!-getlocvars!-rand(fvl,number);
+   % Get [number] random free variables for local search.
+   begin scalar v,r,varl;
+      while not eqn(length varl,number) do <<
+	 r := random length fvl;
+	 v := nth(fvl,r+1);
+	 if (not memq(v,varl)) then
+	    varl := v . varl
+      >>;
+      return varl;
+   end;
+
+procedure ibalp_qsat!-localsearchrec(clausel,varal,selvars,fvl,result);
+   % Recursive helper function of the local search.
+   begin scalar tv,res,pair,ec,upl,pair2;
+      tv := ibalp_getfree selvars;
+      if null tv then <<
+	 if (not member(ibalp_qsat!-calcbin fvl,donel!*)) then <<
+	    donel!* := ibalp_qsat!-calcbin fvl . donel!*; 
+	    numlocs!* := numlocs!* + 1;
+	    result := (ibalp_exres fvl) . result;
+	 >>;
+      >> else <<
+	 ec := ibalp_var!-setq(tv,1,-42,nil);
+	 if null cdr ec then
+	    result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
+	       fvl,result);
+	 ibalp_var!-unsetq(tv,1);
+	 ec := ibalp_var!-setq(tv,0,-42,nil);
+	 if null cdr ec then
+	    result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
+	       fvl,result);
+	 ibalp_var!-unsetq(tv,0);
+      >>;
+      return result;
+   end;
+
+procedure ibalp_qsat!-calcbin(fvl);
+   % Calculate a binary representation of the current assignment to the free
+   % variables in [fvl].
+   if null fvl then 0 else 
+      ibalp_var!-getval car fvl * 2^(length fvl -1) + 
+      ibalp_qsat!-calcbin(cdr fvl);
+
+procedure ibalp_printvars(fvl);
+   % Helper function to print the list of variables.
+   for each v in fvl do
+      ioto_tprin2t {ibalp_var!-getid v, " ", ibalp_var!-getval v};
 
 procedure ibalp_qsat!-getupl(clausel);
    % Get a initial set of unit clauses. [clausel] is the list of
@@ -2871,13 +2982,31 @@ procedure ibalp_exres(vl);
    end;
 
 procedure ibalp_getfree(list);
-   % Get a unassigned variable. [list] is the list of free
+   % Get an unassigned variable. [list] is the list of free
    % varibles. Returns a varialbe or [nil] if there is no unassigned.
    if null list then nil else
       if null ibalp_var!-getval car list then
 	 car list
       else
 	 ibalp_getfree cdr list;
+	
+procedure ibalp_getfree!-dlcs(list);
+   % Get an unassigned variable. [list] is the list of free
+   % varibles (following the DLCS strategy). Returns a varialbe 
+   % or [nil] if there is no unassigned.
+   begin scalar tv,max;
+      tv := ibalp_getfree list;
+      if null tv then return nil;
+      max := ibalp_var!-getnumneg tv + ibalp_var!-getnumpos tv;
+      for each var in list do
+	 if null ibalp_var!-getval var then
+	    if ibalp_var!-getnumneg var +
+	 ibalp_var!-getnumpos var > max then <<
+	    tv := var;
+	    max := ibalp_var!-getnumneg var + ibalp_var!-getnumpos var
+	 >>;
+      return tv;
+   end;
 
 procedure ibalp_splitvars(pqsat,varal);
    % Split variables. [pqsat] is the list of free variables; [varal]
