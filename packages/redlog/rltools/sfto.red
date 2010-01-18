@@ -432,7 +432,7 @@ procedure sfto_sqrtf(f);
    % an SF $g$, such that $g**2=[f]$.
    begin scalar a,c,w,sd,result;
       c := sfto_dcontentf(f);
-      result := fix sqrt c;
+      result := isqrt c;
       if result**2 neq c then
 	 return nil;
       sd := sfto_sqfdecf(f);
