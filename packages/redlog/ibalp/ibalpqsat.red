@@ -138,7 +138,7 @@ smacro procedure ibalp_var!-new(id);
    % set; l[7] is the reason for the variable; l[8] is the number of
    % positive occurences in new added conflict-clauses; l[9] is the
    % number of positive occurences in new added conflict-clauses;
-   % l[10] is the list of watched clauses; l[11] is the MOM-Calc;
+   % l[10] is the list of watched clauses; l[11] is the f-Calc;
    % l[12] is the quantifier of this variable; l[13] is the
    % quantification level of the variable; l[14] is the flipped-flag.
    {id,nil,nil,nil,0,0,-1,nil,0,0,nil,0,nil,0,nil};
@@ -808,7 +808,7 @@ procedure ibalp_printclauses(clausel);
 procedure ibalp_printvaral(varal);
    % Helper function to print the list of variables.
    for each v in varal do
-      ioto_tprin2t {ibalp_var!-getid cdr v, " ", ibalp_var!-getval cdr v};
+      ioto_tprin2t {ibalp_var!-getid cdr v, " ", ibalp_var!-getval cdr v, " ", ibalp_var!-getquant cdr v};
 
 procedure ibalp_qsat!-dimacs(input);
    % The main entry point for solving a given .cnf or .qdimacs
@@ -845,7 +845,7 @@ procedure ibalp_qsat(f);
       pqsat := cl_fvarl f;
       readform := if qsat then cl_matrix (cl_pnf f) else f;
       if not (ibalp_iscnf readform) then <<
-	 readform := ibalp_get3cnf(readform);
+	 %readform := ibalp_get3cnf(readform);
       	 if !*rlverbose then 
       	    ioto_tprin2t "Formula was not in CNF. Using QE";
 	 return cl_qe(f,nil)
@@ -902,12 +902,17 @@ procedure ibalp_start!-pqsat(clausel,varal,f,pqsat);
       % original formula; [pqsat] is the list of free
       % variables. Returns a condition to the free variables in DNF or
       % true or false.
-   begin scalar pair;
+   begin scalar pair,psat;
       if !*rlverbose then
 	 ioto_tprin2t {"Starting PQSAT Algorithm with ", length pqsat, " free variables..."};
+      pair := ibalp_readquantal(cl_pnf f,varal);
+      varal := cdr pair;
       pair := ibalp_splitvars(pqsat,varal);
       varal := car pair;
       pqsat := cdr pair;
+      psat := ibalp_psatp varal;
+      if !*rlverbose and psat then
+	 ioto_tprin2t {"**PSAT Problem"};
       donel!* := nil;
       numcdcl!* := 0;
       numlocs!* := 0;
@@ -916,7 +921,7 @@ procedure ibalp_start!-pqsat(clausel,varal,f,pqsat);
 	 return cl_qe(f,nil)
       else <<
       	 varal := cdr ibalp_readquantal(cl_pnf f,varal);
-      	 pair := ibalp_qsat!-par(pqsat,clausel,varal,nil);
+      	 pair := ibalp_qsat!-par(pqsat,clausel,varal,nil,psat);
 	 if !*rlverbose then <<
 	    ioto_tprin2t {"Runs of CDCL: ", numcdcl!*};
 	    ioto_tprin2t {"Local Search Successes: ", numlocs!*};
@@ -2788,10 +2793,12 @@ procedure ibalp_readquantal(formula,varal);
    begin scalar hl,tl;
       tl := ibalp_readquantal2(formula,varal,rl_op formula,1,nil);
       hl := ibalp_var!-getqlevel cdar tl;
+      for each v in varal do
+	 if null ibalp_var!-getquant cdr v then
+	    tl := v . tl;
       tl := reverse tl;
       return (hl . tl)
    end;
-   
 
 procedure ibalp_readquantal2(formula,varal,quant,level,newvaral);
    % Helper function for reading prenex quantifiers of a
@@ -2813,7 +2820,7 @@ procedure ibalp_readquantal2(formula,varal,quant,level,newvaral);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Parametric QSAT %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-procedure ibalp_qsat!-par(fvl,clausel,varal,result);
+procedure ibalp_qsat!-par(fvl,clausel,varal,result,psat);
    % The main procedure for parametric Q-SAT. [fvl] is the list of
    % currently free variables; [clausel] is the list of clauses; [varal] is the
    % A-List of variables; [result] is the current list of
@@ -2829,8 +2836,9 @@ procedure ibalp_qsat!-par(fvl,clausel,varal,result);
 	    donel!* := ibalp_qsat!-calcbin fvl . donel!*; 
 	    if car res = {'true} then <<
 	       result := (ibalp_exres fvl) . result;
-	       result := ibalp_qsat!-localsearch(clausel,varal,length fvl,
-		  fvl,result);
+	       if psat then
+	       	  result := ibalp_qsat!-localsearch(clausel,varal,length fvl,
+		     fvl,result);
 	    >>;
 	    return (result . (cadr res . cddr res));
 	 >> else 
@@ -2838,7 +2846,7 @@ procedure ibalp_qsat!-par(fvl,clausel,varal,result);
       >> else <<
 	 ec := ibalp_var!-setq(tv,1,-42,nil);
 	 if null cdr ec then <<
-	    pair := ibalp_qsat!-par(fvl,clausel,varal,result);
+	    pair := ibalp_qsat!-par(fvl,clausel,varal,result,psat);
     	    result := car pair;
     	    clausel := cadr pair;
     	    varal := cddr pair;
@@ -2847,7 +2855,7 @@ procedure ibalp_qsat!-par(fvl,clausel,varal,result);
 	 ibalp_var!-unsetq(tv,1);
 	 ec := ibalp_var!-setq(tv,0,-42,nil);
 	 if null cdr ec then <<
-	    pair := ibalp_qsat!-par(fvl,clausel,varal,result);
+	    pair := ibalp_qsat!-par(fvl,clausel,varal,result,psat);
 	    result := car pair;
 	    clausel := cadr pair;
 	    varal := cddr pair;
@@ -2877,7 +2885,7 @@ procedure ibalp_qsat!-localsearch(clausel,varal,radius,fvl,result);
 	 else
 	    ibalp_var!-setq(v,1,-42,nil)
       >>;
-      return result;
+      return result
    end;
 	
 procedure ibalp_qsat!-getlocvars!-last(fvl,number);
@@ -2886,7 +2894,7 @@ procedure ibalp_qsat!-getlocvars!-last(fvl,number);
       l := length fvl;
       for i := l-number+1:l do 
 	    varl := nth(fvl,i) . varl;
-      return varl;
+      return varl
    end;
 	
 procedure ibalp_qsat!-getlocvars!-rand(fvl,number);
@@ -2898,7 +2906,7 @@ procedure ibalp_qsat!-getlocvars!-rand(fvl,number);
 	 if (not memq(v,varl)) then
 	    varl := v . varl
       >>;
-      return varl;
+      return varl
    end;
 
 procedure ibalp_qsat!-localsearchrec(clausel,varal,selvars,fvl,result);
@@ -2906,11 +2914,12 @@ procedure ibalp_qsat!-localsearchrec(clausel,varal,selvars,fvl,result);
    begin scalar tv,res,pair,ec,upl,pair2;
       tv := ibalp_getfree selvars;
       if null tv then <<
-	 if (not member(ibalp_qsat!-calcbin fvl,donel!*)) then <<
+	 if ibalp_csat clausel and 
+	    not member(ibalp_qsat!-calcbin fvl,donel!*) then <<
 	    donel!* := ibalp_qsat!-calcbin fvl . donel!*; 
 	    numlocs!* := numlocs!* + 1;
 	    result := (ibalp_exres fvl) . result;
-	 >>;
+	 >>
       >> else <<
 	 ec := ibalp_var!-setq(tv,1,-42,nil);
 	 if null cdr ec then
@@ -2921,9 +2930,9 @@ procedure ibalp_qsat!-localsearchrec(clausel,varal,selvars,fvl,result);
 	 if null cdr ec then
 	    result := ibalp_qsat!-localsearchrec(clausel,varal,selvars,
 	       fvl,result);
-	 ibalp_var!-unsetq(tv,0);
+	 ibalp_var!-unsetq(tv,0)
       >>;
-      return result;
+      return result
    end;
 
 procedure ibalp_qsat!-calcbin(fvl);
@@ -3006,6 +3015,21 @@ procedure ibalp_getfree!-dlcs(list);
 	    max := ibalp_var!-getnumneg var + ibalp_var!-getnumpos var
 	 >>;
       return tv;
+   end;
+
+procedure ibalp_psatp(varal);
+   % Returns whether a problem is PSAT.
+   %if null varal then 
+   %   t 
+   %else 
+   %   ibalp_var!-isex cdar varal and ibalp_psatp cdr varal;
+   begin scalar ret;
+      ret := t;
+      for each v in varal do <<
+	 if ibalp_var!-isuni cdr v then
+	     ret := nil;
+      >>;
+      return ret;
    end;
 
 procedure ibalp_splitvars(pqsat,varal);
