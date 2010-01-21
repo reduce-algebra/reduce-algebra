@@ -223,7 +223,7 @@ procedure cl_qe1(f,theo,xbvl);
 	 if !*rlqefb and car answer then <<
 	    if not rl_quap rl_op f then <<
 	       if !*rlverbose then
- 		  ioto_tprin2 "++++ No more quantifiers after simplification";
+ 		  ioto_tprin2t "++++ No more quantifiers after simplification";
 	       result := f
 	    >> else <<
 	       if !*rlverbose then
