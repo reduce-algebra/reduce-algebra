@@ -53,6 +53,7 @@ put('sfto_tobey,'simpfg,
 put('sfto_musser,'simpfg,
    '((T (setq !*sfto_tobey nil) (setq !*sfto_yun nil))));
 operator exteuc;
+operator degree;
 
 procedure sfto_dcontentf(u);
    % Standard form tools domain content standard form. [u] is an SF.
@@ -575,7 +576,7 @@ procedure sfto_linwpp(f,vl);
    domainp f or
       (not(mvar f memq vl) and null intersection(kernels lc f,vl) and
 	 sfto_linwpp(red f,vl)) or
-      (mvar f memq vl and ldeg f = 1 and domainp lc f and 
+      (mvar f memq vl and ldeg f = 1 and domainp lc f and
 	 sfto_linwpp(red f,vl));
 
 procedure sfto_varf(f);
@@ -599,6 +600,9 @@ procedure sfto_lmultf(fl);
    % Ordered field standard form list multf. [fl] is a list of SFs.
    % Returns an SF. Result is the product of the SFs in [fl].
    if null fl then 1 else multf(car fl,sfto_lmultf cdr fl);
+
+procedure degree(u);
+   sfto_tdegf numr simp u;
 
 procedure sfto_tdegf(f);
    % Ordered field standard form total degree standard form. [f] is an
