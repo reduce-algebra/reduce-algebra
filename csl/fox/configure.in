@@ -210,32 +210,36 @@ dnl AC_PROG_CC. So here I have a rather grungy set of tests that
 dnl detect when that is liable to be the case
 
 dnl Eventually perhaps I should be 4-way fat - powerpc and intel and also
-dnl both 32-and 64-bit. But for now the Macintosh version is only 32-bit.
+dnl both 32-and 64-bit. But of these I omit ppc64 since it really never
+dnl got off the ground.
 
 case $host in
   *darwin*)
     echo "#include <stdio.h>" > conftest.c
     echo "int main() { printf(\"hello\"); return 0; }" >> conftest.c
-# On the next line gcc will fail if the 10.5 SDK is not available, and in
+# On the next line gcc will fail if the 10.6 SDK is not available, and in
 # such cases it will moan about "no include path in which to search for
 # stdio.h"  and then that the built-in function printf has been implicitly
 # declared in a way that is messed up. The result would look ugly for something
 # where the fail-safe response is just to avoid using it, and that is why
 # I redirect stdout and stderr to /dev/null.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
     then
       AC_MSG_NOTICE("Macintosh fat binaries via 10.6")
       enable_dependency_tracking="no"
+      archflags="-arch ppc -arch i386 -arch x86_64 "
     else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
       then
         AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
         enable_dependency_tracking="no"
+        archflags="-arch ppc -arch i386 -arch x86_64"
       else
         if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
         then
           AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
           enable_dependency_tracking="no"
+          archflags="-arch ppc -arch i386"
         else
           AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
         fi
@@ -258,11 +262,12 @@ case $host_os in
    *darwin*)
 # I MUST do this after AC_PROG_CC. I should perhaps provide a flag to
 # allow people to ask for a single-architecture binary.
-  AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
+  AC_MSG_NOTICE([Checking for ability to build multi-arch binaries])
 # If it seems to be supported at all I will go "-arch ppc -arch i386" to
 # build a fat binary that will run on both powerpc and intel-based
 # 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# machanisms that automake usually tries to use will FAIL.
+# mechanisms that automake usually tries to use will FAIL. If I am running on
+# 10.5 or 10.6 I will also include x86_64.
 #
 # First I check if I can use the 10.6, 10.5 or 10.4u SDK.
   if test "x$GCC" = "xyes"
@@ -298,18 +303,18 @@ case $host_os in
   if test "x$GCC" = "xyes"
   then
     OLDCFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -arch ppc -arch i386"
+    CFLAGS="$CFLAGS $archflags"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                     [[printf("Hello\n");]])],
-      [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
-      LDFLAGS="$LDFLAGS -arch ppc -arch i386"
+      [CXXFLAGS="$CXXFLAGS $archflags"
+      LDFLAGS="$LDFLAGS $archflags"
       fat_support_available="yes"],
       [CFLAGS="$OLDCFLAGS"
       fat_support_available="no"])
   else
     fat_support_available="no"
   fi
-  AC_MSG_NOTICE([fat_support=$fat_support_available])
+  AC_MSG_NOTICE([(Multi-arch binaries) fat_support=$fat_support_available])
   ;;
 esac
 
