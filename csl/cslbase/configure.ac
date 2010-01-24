@@ -353,6 +353,7 @@ case $host in
 # At least maybe MacOS 10.2 may not put X11 headers on the standard include
 # path by default, so I help it out here. In later releases it should be
 # present already, but an extra chance to scan ought not to hurt anybody.
+# Note that 10.2 now counts as seriously archaic.
   CPPFLAGS="$CPPFLAGS -fno-common -no-cpp-precomp -flat_namespace -I/usr/X11R6/include"
   DLL_CFLAGS="$CFLAGS -bundle -undefined suppress"
   AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
@@ -368,24 +369,30 @@ case $host in
 # after I have found myself a C compiler. Since I KNOW I am on MacOSX here
 # I will make the test command-line simple and explicit, not using $CFLAGS
 # or any such.
+  archflags=""
   AC_LANG_CONFTEST(
     [AC_LANG_PROGRAM([], [])])
 # First check a path that is for Snow Leopard (10.6) in September 2009.
-  if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+  if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
   then
     AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
     enable_dependency_tracking="no"
+    archflags="-arch ppc -arch i386 -arch x86_64"
   else
 # This is path works if I am on Leopard (10.5).
-    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
       AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
       enable_dependency_tracking="no"
+      archflags="-arch ppc -arch i386 -arch x86_64"
     else
+# Note that if the best SDK I can find is the 10.4 one I will not even try
+# to build in 64-bit mode.
       if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
       then
         AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
         enable_dependency_tracking="no"
+        archflags="-arch ppc -arch i386"
       else
         AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
         AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
@@ -621,6 +628,9 @@ fi
 # "-m32" switching it to work for 32-bit targets. Trying to use this option
 # other than with gcc in the above situation will be ineffective.
 
+# On a Mac one should not need to use this because multi-arch binaries are
+# built by default.
+
 if test "x$bits32" = "xyes"
 then
   AC_MSG_CHECKING([if -m32 option can be used])
@@ -724,11 +734,14 @@ then
     AC_DEFINE(MAC_FRAMEWORK,[1],[Apple MacOS frameworks available])
   fi
 
-  AC_MSG_NOTICE([Checking for ability to build dual arch binaries])
+  AC_MSG_NOTICE([Checking for ability to build multi-arch binaries])
 # If it seems to be supported at all I will go "-arch ppc -arch i386" to
 # build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# machanisms that automake usually tries to use will FAIL. I work around that
+# 32-bit macs. On 1.5/10.6 I will add "-arch x86_64". Note that I do
+# not cover ppc64 since FULL 64-bit support only arrived with 10.6 and by
+# then ppc support had been dropped.
+# But *NOTE* that in such case dependency tracking using the
+# mcchanisms that automake usually tries to use will FAIL. I work around that
 # by providing a customised version of "depcomp".
 #
 # Also in the Macintosh/Darwin I have had special hand-crafted code to
@@ -775,15 +788,15 @@ then
            AC_MSG_NOTICE([MacOS10.4u SKD NOT found])])
       fi
       OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -arch ppc -arch i386"
+      CFLAGS="$CFLAGS $archflags"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                       [[printf("\n");]])],
-        [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
-         LDFLAGS="$LDFLAGS -arch ppc -arch i386"
+        [CXXFLAGS="$CXXFLAGS $archflags"
+         LDFLAGS="$LDFLAGS $archflags"
          fat_support_available="yes"],
         [CFLAGS="$OLDCFLAGS"
          fat_support_available="no"])
-      AC_MSG_NOTICE([fat_support=$fat_support_available])
+      AC_MSG_NOTICE([(multi-arch binaries) fat_support=$fat_support_available])
     fi
   fi
 fi
@@ -1102,8 +1115,9 @@ AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
 # the sized of the older-style native types such as "long". And for
 # cross compilation and multi-architecture builds it can be delicate to
 # work out the size of types at configure time! But I will do so now and
-# use what I find as a fall-back for when (mostly) intptr_t is not
-# available.
+# use what I find as a fall-back for the unusual case when intptr_t is not
+# available. In that case I use these measurements just once to
+# define my own versions of int32_t etc etc.
 
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(short int)
@@ -1294,7 +1308,14 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.2
+# 10.0  Cheetah  )
+# 10.1  Puma     )
+# 10.2  Jaguar   ) I will not support these at all any more
+# 10.3  Panther  )
+# 10.4  Tiger      Support for this will be dropped soon
+# 10.5  Leopard    Testing here will be at best minimal.
+# 10.6  Snow Leopard
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.4
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
