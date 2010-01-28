@@ -50,11 +50,7 @@ load!-package 'ezgcd;
 
 load!-package 'groebner;  % for torder
 
-if 'psl member lispsystem!* then
-   if filestatus("$reduce/lisp/psl/$MACHINE/red/redlog.b",nil) then
-      load!-package 'redlog;
-
-if 'csl member lispsystem!* then
+if 'csl memq lispsystem!* or 'psl memq lispsystem!* then
    if modulep 'redlog then
       load!-package 'redlog;
 

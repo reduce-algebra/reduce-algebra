@@ -48,17 +48,10 @@ exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    sfto_updecf,sfto_decdegf,sfto_reorder,sfto_groebnerf,sfto_preducef,
    sfto_greducef,sfto_gcdf!*,sfto_gcdf,sfto_sqrtf,sfto_monfp,sfto_sqfpartz,
    sfto_zdeqn,sfto_zdgtn,sfto_zdgen;
-      
+
 imports groebner,groebnr2;
 
-if 'psl member lispsystem!* then <<
-   if filestatus("$reduce/lisp/psl/$MACHINE/red/groebner.b",nil) then
-      load!-package 'groebner;
-   if filestatus("$reduce/lisp/psl/$MACHINE/red/groebnr2.b",nil) then
-      load!-package 'groebnr2;
->>;
-
-if 'csl member lispsystem!* then <<
+if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
    if modulep 'groebner then
       load!-package 'groebner;
    if modulep 'groebnr2 then
