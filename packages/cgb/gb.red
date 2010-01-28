@@ -46,7 +46,7 @@ fluid '(!*gltbasis !*groebopt !*cgbstat !*cgbfullred !*cgbverbose
 
 off1 'cgbstat;
 on1 'cgbfullred;
-on1 'cgbverbose;
+off1 'cgbverbose;
 off1 'cgbcontred;
 off1 'cgbcounthf;
 off1 'cgbcheckg;

@@ -62,7 +62,7 @@ fluid '(!*cgbstat !*cgbfullred !*cgbverbose !*cgbcontred !*cgbgs !*cgbreal
 
 off1 'cgbstat;
 on1 'cgbfullred;
-on1 'cgbverbose;
+off1 'cgbverbose;
 off1 'cgbcontred;
 off1 'cgbgs;
 off1 'cgbreal;
