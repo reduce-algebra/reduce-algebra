@@ -51,12 +51,59 @@ exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
 
 imports groebner,groebnr2;
 
+fluid '(out!*);
+
 if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
    if modulep 'groebner then
       load!-package 'groebner;
    if modulep 'groebnr2 then
       load!-package 'groebnr2
 >>;
+
+procedure meminfo();
+   if memq('psl,lispsystem!*) then
+      meminfopsl()
+   else if memq('csl,lispsystem!*) then
+      meminfocsl();
+
+procedure meminfopsl();
+   begin scalar bit,hs,hsb,cpgcp;
+      if not memq('psl,lispsystem!*) then
+	 return nil;
+      prin2 "               address of nil: 0x";
+      flushbuffer out!*;
+      channelflush out!*;
+      (bit := 4 * unixputn nil) where output=nil;
+      terpri();
+      prin2 "                address range: ";
+      prin2 bit;
+      prin2t " bit";
+      hs := set_heap_size nil;
+      prin2 "                     heapsize: ";
+      prin2 hs;
+      prin2 " Lisp items (";
+      hsb := (if eqn(bit,64) then 8 else 4) * hs;
+      prin2 hsb;
+      prin2t " B)";
+      prin2 "                     GC model: ";
+      cpgcp := getd 'copyfromstaticheap;
+      prin2t if cpgcp then "stop-and-copy" else "mark-and-sweep";
+      if cpgcp then <<
+	 prin2 " memory allocation by 2 heaps: ";
+	 prin2(2*hsb);
+	 prin2t " B"
+      >>
+   end;
+
+procedure meminfocsl();
+   begin scalar bit;
+      if not memq('csl,lispsystem!*) then
+	 return nil;
+      bit := if memq('sixty!-four,lispsystem!*) then 64 else 32;
+      prin2 "address range: ";
+      prin2 bit;
+      prin2t " bit";
+   end;
 
 endmodule;  % [rltools]
 
