@@ -1,0 +1,27 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File:         PC:BARE-PSL.SYM
+% Description:  Fresh cross-compiler (symbol table) database
+% Author:       
+% Created:      
+% Modified:     29-Aug-84 09:06:56 (Brian Beach)
+% Mode:         Text
+% Status:       Experimental (Do Not Distribute)
+% Compile to:   none
+%
+% (c) Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Revisions:
+%
+% 20 Dec 1983 1729-PST (Nancy Kendzierski)
+%  Added header.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+(setq OrderedIDList!* (NCons NIL))
+(setq UncompiledExpressions!* (NCons NIL))
+(setq ToBeCompiledExpressions!* (NCons NIL))
+(setq NextIDNumber!* 256)
