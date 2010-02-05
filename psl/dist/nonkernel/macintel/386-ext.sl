@@ -8,10 +8,9 @@
 % Mode:         Lisp
 % Package:      Kernel
 %
-% (c) Copyright 1990, Konrad-Zuse-Zentrum Berlin, all rights reserved.
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+(compiletime (on echo))
 (remd 'evlis)
 
 (de evlis(u)
@@ -43,3 +42,4 @@
 	  24 25 26 27 28 29 31)   (return u))  % not id or atom
 ) ))
 (wputv symval 16#74 (mkid 16#74))
+

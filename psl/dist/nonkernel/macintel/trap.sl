@@ -9,7 +9,8 @@
 % Package:
 % Status:       Experimental (Do Not Distribute)
 %
-% (c) Copyright 1984, Hewlett-Packard Company, all rights reserved.
+% (c) Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -42,7 +43,8 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber*))
+(fluid '(errornumber* errorcall* sigaddr))
+
 
 (compiletime
  (progn
@@ -64,14 +66,20 @@
        % Return the the function definition for the signal handler.
        `((*entry ,function expr 0)
      ,handler
-     (*move (wconst ,signumber) (reg 1))
-     (*move (reg 1)(fluid errornumber*))
+     (*move (displacement (reg st) 12 ) (reg 1))
+     (*move (displacement (reg 1) 76) (reg 2))
+     (*move (reg 2) (fluid sigaddr))
+     (*move (wconst ,signumber) (reg 2))
+     (*move (reg 2)(fluid errornumber*))
      (*move ,handler (reg 2))
+     (*move  ($fluid errorcall*) (reg 2))
+     (*move (reg 2) (displacement (reg 1) 76))
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*jcall sigunwind))
        )
  
+
    % Return the entry point list. Defined as a cmacro.
    (de *sigcall ()
        *sigcalls*)
@@ -104,13 +112,17 @@
        (*sigcall)
        (*exit 0)))
  
-(de initializeinterrupts ()
+(de initializeinterrupts (nn)
        (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
 				(strbase (strinf "tozero")) 0)
        (ieee_handler (strbase (strinf "set"))
                   (strbase (strinf "common"))
                   (symfnc (id2int 'fpehandler)))
-       (initializeinterrupts-1))
+       (*freset)
+       (initializeinterrupts-1)
+       (unless (eq 17 nn) (sun3_sigset 500)) % Hack! If stated from top-loop, save
+%					       the fp environment.
+)
  
 (lap
  '((!*entry sigunwind expr 0)
@@ -127,12 +139,23 @@
                                            % 1, so the new message is
      (push (reg 1))
      (*link *freset expr 0)
-     (*link initializeinterrupts expr 0) % MK
-     (pop (reg 2))
+     (*move 17 (reg 1))
+     (*link initializeinterrupts expr 1) % MK
+     (pop (reg 1))
+     (*move (fluid sigaddr ) (reg 2))
+     (*call build-trap-message)
+     (*move (reg 1) (reg 2))
+     (*move (reg 1) (fluid sigaddr ))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
-     (*jcall error) 
+     (ret) %%%(*jcall error) 
      ))
+
+(de errortrap () (sun3_sigset 501) (error (wplus2 errornumber* 10000) sigaddr))
+
+% (sun3_sigset 501)  restauriert das FP Environment
+
+(setq errorcall* (wgetv symfnc (id2int 'errortrap)))
 
 (lap '((*entry *freset expr 0)
        (*move 100000 (reg 5))
@@ -171,5 +194,20 @@
       )
       (bldmsg "%w%w" trap-type extra-info)))
  
+(fluid '(code-address* closest-address* closest-symbol*))
+
+(de x-code-address-to-symbol (code-address*)
+  (let ((closest-symbol* ()) (closest-address* 0))
+        (mapobl #'(lambda (symbol)
+                 (when (fcodep symbol)
+                       (let ((address (inf (getfcodepointer symbol))))
+                            (when (and (ileq address code-address*)
+                                       (igreaterp address closest-address*))
+                                  (setq closest-address* address)
+                                  (setq closest-symbol* symbol))))))
+       closest-symbol*))
+
+(de code-address-to-symbol (ad) (x-code-address-to-symbol (inf ad)))
+
 % End of file.
  

@@ -9,7 +9,8 @@
 % Package:      Kernel
 % Status:       Experimental (Do Not Distribute)
 %
-% (c) Copyright 1983, Hewlett-Packard Company, all rights reserved.
+% (c) Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -44,6 +45,7 @@
   (!*entry CodeApply expr 2)           %  CodeApply(CodePointer, ArgList)
      %  code pointer, ready for RTS, but first it is tag stripped, then pushed
   (*field (reg 1) (reg 1) (wconst InfStartingBit) (wconst InfBitLength))
+  (*wor (reg 1) 16#8000000)
   (!*push (reg 1))
   (!*jumpeq (Label L0) (reg  2)  (quote nil))    %  done if no arguments
 
@@ -200,6 +202,7 @@ TooMany
 NotAnID
 	(!*JUMPNOTEQ (Label NotACodePointer) (reg t1) (wconst code-tag))
         (*move (Fluid Codeform*) (reg t1))
+	(*wor (reg t2) 16#8000000)
         (jmp (reg t2))
 
 NotACodePointer
@@ -405,17 +408,21 @@ IllegalFunctionalForm
   loop
     (*jumpeq (label ret) (reg 1) (quote nil))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
+    (*wor (reg 1) 16#8000000)
     (*move (indexed (reg 1) 0) (reg 4))
     (*move (reg 4) (reg 3))
     (*field (reg 3)(reg 3) (wconst tagstartingbit)(wconst tagbitlength))
     (*jumpnoteq (label next) (reg 3)(wconst pair-tag))
     (*move (reg 4) (reg 3))
     (*field (reg 3)(reg 3) (wconst infstartingbit)(wconst infbitlength))
+    (*wor (reg 3) 16#8000000)
     (*move (indexed (reg 3) 0) (reg 5))
     (*jumpnoteq (label next) (reg 5)(reg 2))
+    (*wor (reg 3) 16#8000000)
     (*move (indexed (reg 3) 4) (reg 1))
     (*jump (label ret))
   next
+    (*wor (reg 1) 16#8000000)
     (*move (indexed (reg 1) 4) (reg 1))
     (*jump (label loop))
   no
@@ -435,11 +442,13 @@ IllegalFunctionalForm
   loop
     (*jumpeq (label ret) (reg 1) (quote nil))
     (*field (reg 1)(reg 1) (wconst infstartingbit)(wconst infbitlength))
+    (*wor (reg 1) 16#8000000)
     (*move (indexed (reg 1) 0) (reg 4))
     (*jumpnoteq (label next) (reg 4)(reg 2))
     (*move (quote T) (reg 1))
     (*jump (label ret))
   next
+    (*wor (reg 1) 16#8000000)
     (*move (indexed (reg 1) 4) (reg 1))
     (*jump (label loop))
   no

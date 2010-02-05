@@ -10,8 +10,32 @@
 % Mode:           Lisp
 % Package:        Kernel
 %
-% (c) Copyright 1983,  Hewlett-Packard Company, all rights reserved.
-% Copyright (c) 1982 University of Utah
+% (c) Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
+%
+% (c) Copyright 1982, University of Utah
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -89,21 +113,19 @@
 % are in the kernel, but binaryopenread needs to be redefined
 % here so conterror instead of kernel-fatal-error will be called.
 
-(de binaryopenread (filename) 
-  (prog (f)
-        (setq f 
-              (unixopen (strbase (strinf filename)) 
-                     (strbase openreadflag)))
-        (return (if (weq f 0)
+(de binaryopenread (filename)
+  (let ((f (unixopen (strbase (mkitem fixnum-tag filename))
+                 (strbase (mkitem fixnum-tag openreadflag)))))
+        (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for input" 
                    (binaryopenread filename))
-                  f))))
+                  f)))
 
 (de binaryopenwrite (filename)
   (prog (f)
         (setq f 
-              (unixopen (strbase (strinf filename)) 
-                     (strbase openwriteflag)))
+              (unixopen (strbase (mkitem fixnum-tag filename)) 
+                     (strbase (mkitem fixnum-tag openwriteflag))))
         (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for output" 
                    (binaryopenwrite filename))
@@ -112,8 +134,8 @@
 (de binaryopenappend (filename)
   (prog (f)
         (setq f 
-              (unixopen (strbase (strinf filename)) 
-                     (strbase openappendflag)))
+              (unixopen (strbase (mkitem fixnum-tag filename)) 
+                     (strbase (mkitem fixnum-tag openappendflag))))
         (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for append" 
                    (binaryopenappend filename))
@@ -122,8 +144,8 @@
 (de binaryopenupdate (filename)
   (prog (f)
         (setq f 
-              (unixopen (strbase (strinf filename)) 
-                     (strbase openupdateflag)))
+              (unixopen (strbase (mkitem fixnum-tag filename)) 
+                     (strbase (mkitem fixnum-tag openupdateflag))))
         (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for update" 
                    (binaryopenupdate filename))
@@ -133,13 +155,7 @@
   (putw n channel))
 
 (de binarywriteblock (channel blockbase blocksize)
-  (fwrite blockbase 4 blocksize channel))
+  (fwrite (mkfixn blockbase) 4 blocksize channel))
 
 (de binarypositionfile (channel nastysystemdependentnumber)
   (fseek channel nastysystemdependentnumber 0))
-
-
-
-
-
-
