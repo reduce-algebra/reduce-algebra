@@ -150,6 +150,7 @@ symbolic procedure gitimes!:(u,v);
     (cadr u,cddr u,cadr v,cddr v);
 
 symbolic procedure giquotient!:(u,v);
+% Quotient when the quotient is exact, otherwise zero.
    begin integer r1,i1,r2,i2,d; scalar rr,ii;
      r1 := cadr u; i1 := cddr u;
      r2 := cadr v; i2 := cddr v;
@@ -161,28 +162,33 @@ symbolic procedure giquotient!:(u,v);
    end;
 
 symbolic procedure gidivide!:(u,v);
+% Rounded quotient and corresponding remainder. This rounds to the
+% NEAREST quotient. In some cases there can be several such (eg when
+% dividing by 2) and in that case use resolve the ambiguity by selecting
+% the result closes to zero in real and imaginary parts.
    begin integer r1,i1,r2,i2,d,rr,ir,rq,iq;
      r1 := cadr u; i1 := cddr u;
      r2 := cadr v; i2 := cddr v;
      d := r2*r2+i2*i2;
      rq := r1*r2+i1*i2;
      iq := i1*r2-i2*r1;
-     rq := car divide(2*rq+if rq<0 then -d else d,2*d);
-     iq := car divide(2*iq+if iq<0 then -d else d,2*d);
+     rq := car divide(2*rq+if rq<0 then -d+1 else d-1,2*d);
+     iq := car divide(2*iq+if iq<0 then -d+1 else d-1,2*d);
      rr := r1-(rq*r2-iq*i2);
      ir := i1-(iq*r2+rq*i2);
      return mkgi(rq,iq) . mkgi(rr,ir)
    end;
 
 symbolic procedure giremainder(u,v);
+% Remainder as from gidivide:
    begin integer r1,i1,r2,i2,d,rr,ir,rq,iq;
      r1 := cadr u; i1 := cddr u;
      r2 := cadr v; i2 := cddr v;
      d := r2*r2+i2*i2;
      rq := r1*r2+i1*i2;
      iq := i1*r2-i2*r1;
-     rq := car divide(2*rq+if rq<0 then -d else d,2*d);
-     iq := car divide(2*iq+if iq<0 then -d else d,2*d);
+     rq := car divide(2*rq+if rq<0 then -d+1 else d-1,2*d);
+     iq := car divide(2*iq+if iq<0 then -d+1 else d-1,2*d);
      rr := r1-(rq*r2-iq*i2);
      ir := i1-(iq*r2+rq*i2);
      return '!:gi!: . (rr . ir)
