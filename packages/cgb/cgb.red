@@ -46,6 +46,26 @@ module cgb;
 
 create!-package('(cgb gb dp gbsc),nil);
 
+!#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
+fluid '(!*lower loadextentions!*);
+
+procedure modulep(u);
+   begin scalar found,ld,le,!*lower;
+      !*lower := t;
+      ld := loaddirectories!*;
+      while ld and not found do <<
+	 le := loadextensions!*;
+	 while le and not found do <<
+	    if filep bldmsg("%w%w%w",first ld,u,car first le) then
+	       found := cdr first le;
+	       le := rest le
+	 >>;
+	 ld := rest ld
+      >>;
+      return not null found
+   end;
+!#endif
+
 load!-package 'ezgcd;
 
 load!-package 'groebner;  % for torder
