@@ -195,7 +195,7 @@ procedure dcfsf_qe0(f,theo);
       bl := car w;
       f := cadr w;
       for each blk in bl do
-	 f := cl_simpl(dcfsf_qeblk(f,blk,theo),nil,-1);
+	 f := cl_simpl(dcfsf_qeblk(f,blk,theo),theo,-1);
       return f
    end;
 

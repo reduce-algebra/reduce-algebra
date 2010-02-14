@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(rl_rcsid!* rl_copyright!*);
@@ -73,7 +73,8 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlxoptses,rlxoptrir,rlourdet,rlvmatvb,rlhqetfcsplit,rlhqetfcfullsplit,
    rlhqetfcfast,rlhqevb,rlhqevarsel,rlhqevarselx,rlhqedim0,rlhqetheory,
    rlhqegbred,rlhqeconnect,rlhqestrconst,rlhqegbdimmin,rlresi,rlqeasri,
-   rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry;
+   rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
+   rlsid,rlsiplugtheo;
 
 on1 'rlbrop;
 off1 'rlbnfsm;
@@ -120,8 +121,8 @@ off1 'rladdcond;
 off1 'rlqeqsc;
 off1 'rlqesqsc;
 off1 'rlsusi;
-on1 'rlsusimult;  
-off1 'rlsusigs;   
+on1 'rlsusimult;
+off1 'rlsusigs;
 on1 'rlsusiadd;
 on1  'rlcadfac;
 on1 'rlcaddnfformula;
@@ -181,6 +182,10 @@ off1 'rlsifaco;         % Factorize lhs of ordering inequalities in simplat.
 off1 'rlqelog;          % Hack by TS to look into elimination set generation.
 off1 'rlqeprecise;      % Possibly avoid epsilon and infinity with rlqe.
 off1 'rlqevarseltry;    % Allow rl_varsel to return several variables.
+on1 'rlsid;             % Smart simplification of derivatives in dcfsf.
+on1 'rlsiplugtheo;      % Plug in constant values of variables in the
+			% recursive theory (dcfsf only).
+
 
 put('rlidentify,'simpfg,
    '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));

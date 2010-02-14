@@ -40,7 +40,7 @@ module dcfsf;
 % contains binary relations ['equal], ['neq], ring operations and a
 % binary derivative operator ['d].
 
-create!-package('(dcfsf dcfsfmisc dcfsfqe dcfsfkacem),nil);
+create!-package('(dcfsf dcfsfmisc dcfsfqe dcfsfsism dcfsfkacem),nil);
 
 load!-package 'rltools;
 load!-package 'cl;
@@ -58,7 +58,8 @@ imports rltools,cl,cgb;
 fluid '(!*rlsiatadv !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlgsrad
    !*rlgsred !*rlgsprod !*rlgserf !*rlverbose !*rlsifac !*rlbnfsac !*rlgsvb
    !*rlgsbnf !*rlgsutord !*rlnzden !*rladdcond !*rlqegen !*cgbgen !*cgbreal
-   !*gbverbose dcfsf_gstv!* !*cgbverbose !*groebopt !*nat);
+   !*gbverbose dcfsf_gstv!* !*cgbverbose !*groebopt !*nat !*rlsid
+   !*rlsiplugtheo);
 
 flag('(dcfsf),'rl_package);
 
@@ -69,10 +70,10 @@ put('dcfsf,'rl_params,'(
    (rl_eqnrhskernels!* . dcfsf_eqnrhskernels)
    (rl_ordatp!* . dcfsf_ordatp)
    (rl_simplat1!* . acfsf_simplat1)
-   (rl_smupdknowl!* . acfsf_smupdknowl)
-   (rl_smrmknowl!* . acfsf_smrmknowl)
-   (rl_smcpknowl!* . acfsf_smcpknowl)
-   (rl_smmkatl!* . acfsf_smmkatl)
+   (rl_smupdknowl!* . dcfsf_smupdknowl)
+   (rl_smrmknowl!* . dcfsf_smrmknowl)
+   (rl_smcpknowl!* . dcfsf_smcpknowl)
+   (rl_smmkatl!* . dcfsf_smmkatl)
    (rl_smsimpl!-impl!* . cl_smsimpl!-impl)
    (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1)
    (rl_negateat!* . dcfsf_negateat)
@@ -167,8 +168,18 @@ put('d,'number!-of!-args,2);
 put('d,'simpfn,'dcfsf_simpd);
 precedence d,**;
 
+put('d,'prifn,'dcfsf_prid);
+
 flag('(equal neq d),'spaced);
 flag('(dcfsf_chsimpat),'full);
+
+procedure dcfsf_prid(u);
+   if not !*nat then
+      'failed
+   else <<
+      maprin cadr u;
+      for i:=1:caddr u do prin2!* "'"
+   >>;
 
 procedure dcfsf_simpterm(u);
    % Differentially closed field simp term. [u] is Lisp Prefix. Returns
