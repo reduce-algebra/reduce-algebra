@@ -46,8 +46,10 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_DIRENT_H
 #endif
 
+#ifndef WIN32
 #ifndef HAVE_DLFCN_H
-#error expected to have HAVE_DLFCN_H
+#error expected to have HAVE_DLFCN_H if not on Windows
+#endif
 #endif
 
 #ifndef HAVE_FCNTL_H
@@ -86,12 +88,10 @@ int main(int argc, char *argv[])
 #error expected to have HAVE_INTPTR_T
 #endif
 
-#ifndef HAVE_INTTYPES_H
-#error expected to have HAVE_INTTYPES_H
-#endif
-
+#ifndef WIN32
 #ifndef HAVE_LIBPTHREAD
-#error expected to have HAVE_LIBPTHREAD
+#error expected to have HAVE_LIBPTHREAD when not on WIN32
+#endif
 #endif
 
 #ifndef HAVE_LSTAT_EMPTY_STRING_BUG
@@ -156,10 +156,6 @@ int main(int argc, char *argv[])
 
 #ifndef HAVE_STRDUP
 #error expected to have HAVE_STRDUP
-#endif
-
-#ifndef HAVE_STRINGS_H
-#error expected to have HAVE_STRINGS_H
 #endif
 
 #ifndef HAVE_STRING_H
@@ -232,10 +228,6 @@ int main(int argc, char *argv[])
 
 #ifndef HAVE_VSNPRINTF
 #error expected to have HAVE_VSNPRINTF
-#endif
-
-#ifndef HAVE__BOOL
-#error expected to have HAVE__BOOL
 #endif
 
 #ifndef RETSIGTYPE
