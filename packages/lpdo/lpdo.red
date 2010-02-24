@@ -26,11 +26,13 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 module lpdo;
 % Approximate factorization of linear partial differential operators.
 % Still under development.
+
+if !*utf8 then on1 'utf8exp;
 
 load!-package 'redlog;
 
@@ -39,7 +41,7 @@ rl_set '(reals);
 switch lpdodf,lpdocoeffnorm;
 
 on1 'lpdodf;
-on1 'lpdocoeffnorm;
+off1 'lpdocoeffnorm;
 
 infix lpdotimes;
 flag('(lpdotimes),'spaced);
@@ -81,7 +83,7 @@ put('diff,'lpdo_simpfn,'lpdo_simpdiff);
 
 put('lpdo,'evfn,'lpdo_reval);
 
-put('lpdo,'subfn,'lpdo_subst);
+put('lpdo,'subfn,'lpdo_subst0);
 
 fluid '(lpdopol!* !*rlverbose shapesym!*);
 
@@ -92,7 +94,7 @@ if null lpdopol!* then lpdopol!* := (-1) . nil;
 put('lpdoset,'psopfn,'lpdo_set);
 
 put('lpdoweyl,'psopfn,'lpdo_weyl);
-   
+
 put('lpdorat,'psopfn,'lpdo_rat);
 
 procedure lpdo_set(l);
@@ -122,7 +124,7 @@ procedure lpdo_rat(l);
       den := lpdo_polxpnd1(dsym,cddr l,cadr l,'times,'reval);
       return 'list . {'quotient,num,den} . cddr l
    end;
-      
+
 
 procedure lpdo_templp();
    car lpdopol!* neq -1 and not null cdr lpdopol!*;
@@ -245,7 +247,7 @@ procedure lpdo_preplpdotimes(x);
  	 neg := t;
 	 w := cadr w
       >>;
-      w := if eqn(w,1) then 
+      w := if eqn(w,1) then
 	 lpdo_smkn('lpdotimes,cdr x)
       else
        	 'lpdotimes . w . cdr x;
@@ -509,7 +511,7 @@ procedure lpdo_sub(u,tim1,tim2);
 
 procedure lpdo_exptpt(pt,n);
    begin scalar d,b;
-      b := lpdo_partialbas pt; 
+      b := lpdo_partialbas pt;
       d := lpdo_partialdeg pt * n;
       if eqn(d,0) then rederr {"lpdo_exptpt: degree zero"};
       if eqn(d,1) then return b;
@@ -576,9 +578,12 @@ procedure lpdo_ptl2sym(ptl,y);
       return !*f2q w
    end;
 
+procedure lpdo_subst0(al,d);
+   lpdo_mk!*lpdo lpdo_subst(al,lpdo_simp d);
+
 procedure lpdo_subst(al,d);
    begin scalar w;
-      return lpdo_mk!*lpdo for each dmon in lpdo_simp d join <<
+      return for each dmon in d join <<
 	 w := subsq(car dmon,al);
        	 if numr w then {w . cdr dmon}
       >>
@@ -623,7 +628,7 @@ put('lpdofac,'psopfn,'lpdo_fac!$);
 procedure lpdo_fac!$(l);
    % Generate factorization condition PSOPFN entry point.
    begin scalar w,d,p,q,y,prulel,qrulel;
-      lpdo_argnochk('lpdofac,1,5,l);
+      lpdo_argnochk('lpdofac,1,4,l);
       d := lpdo_simp car l;
       l := cdr l;
       if l then << p := lpdo_simp car l; l := cdr l >> else p := '(p);
@@ -676,7 +681,7 @@ procedure lpdo_faclhsl(d,pp,qq,y);
    end;
 
 procedure lpdo_genfunp(p);
-   pairp p and null cdr p and atom car p;   
+   pairp p and null cdr p and atom car p;
 
 procedure lpdo_facquantify(phi,d,pp,qq,y);
    begin scalar dcl,pcl,qcl,pl,ql,xl,yl,w;
@@ -729,18 +734,19 @@ put('lpdofacx,'psopfn,'lpdo_facx!$);
 procedure lpdo_facx!$(l);
    begin scalar w,d,psi,p,q,y,eps;
       lpdo_argnochk('lpdofacx,1,6,l);
-      d := lpdo_simp car l;
-      l := cdr l;
-      if l then << psi := rl_simp car l; l := cdr l >> else psi := 'true;
-      if l then << p := lpdo_simp car l; l := cdr l >> else p := '(p);
-      if l then << q := lpdo_simp car l; l := cdr l >> else q := '(q);
-      if l then << y := car l; l := cdr l >> else y := 'y;
-      if l then << eps := car l; l := cdr l >> else eps := 'eps;
-      w := lpdo_facx(d,psi,p,q,y,eps);
+      d := lpdo_simp pop l;
+      psi := rl_simp if l then pop l else 'true;
+      p := if l then lpdo_simp pop l else '(p);
+      q := if l then lpdo_simp pop l else '(q);
+      eps := if l then pop l else 'epsilon;
+      y := if l then pop l else 'y;
+      w := lpdo_facx(d,psi,p,q,eps,y);
       return rl_mk!*fof w
    end;
 
-procedure lpdo_facx(d,psi,p,q,y,eps);
+procedure lpdo_facx(d,psi,p,q,eps,y);
+   % [d] is an LPDO, [psi] is formula, [p] and [q] are generic LPDO
+   % templates, [eps] is an identifier, [y] is an identifier.
    begin scalar w;
       if not lpdo_templp() then
  	 rederr "lpdo_fac: use lpdoset to fix delta ring";
@@ -792,8 +798,8 @@ procedure lpdo_coefs(f,v);
 
 procedure lpdo_absleq_old(lhs,eps,y);
    rl_mkn('and,{
-      ofsf_0mk2('leq,addf(negf lhs,negf !*k2f eps)),
-      ofsf_0mk2('leq,addf(lhs,negf !*k2f eps))});
+      ofsf_0mk2('leq,addf(negf lhs,negf numr simp eps)),
+      ofsf_0mk2('leq,addf(lhs,negf numr simp eps))});
 
 put('lpdoptl,'psopfn,'lpdo_ptl!$);
 
@@ -916,7 +922,7 @@ put('lpdofactorize,'psopfn,'lpdo_factorize!$);
 procedure lpdo_factorize!$(l);
    % Factorize PSOPFN entry point.
    <<
-      lpdo_argnochk('lpdofactorize,1,5,l);
+      lpdo_argnochk('lpdofactorize,1,3,l);
       reval {'lpdo_factorize,
 	 car l,
 	 if cdr l then
@@ -954,7 +960,7 @@ algebraic procedure lpdo_factorize(f,p,q);
 	    {}
 	 >>
       >>;
-      if so = {} and faildedp then return failed;
+      if so = {} and failedp then return failed;
       return so
    end;
 
@@ -964,12 +970,15 @@ procedure lpdo_fixsign(p0,q0);
    <<
       p0 := lpdo_simp p0;
       q0 := lpdo_simp q0;
-      if p0 and minusf numr caar p0 then <<
-	 p0 := lpdo_minus p0;
-      	 q0 := lpdo_minus q0
-      >>;
+      p0 . q0 := lpdo_fixsign0(p0,q0);
       {'list,lpdo_mk!*lpdo p0,lpdo_mk!*lpdo q0}
    >>;
+
+procedure lpdo_fixsign0(p0,q0);
+   if p0 and minusf numr caar p0 then
+      lpdo_minus p0 . lpdo_minus q0
+   else
+      p0 . q0;
 
 algebraic procedure lpdoglfac(f);
    lpdogdp(p(),lpdoptl f,1);
@@ -980,29 +989,43 @@ algebraic procedure lpdogofac(f);
 put('lpdofactorizex,'psopfn,'lpdo_factorizex!$);
 
 procedure lpdo_factorizex!$(l);
-   <<
+   begin scalar af,f,psi,p,q,eps;
       lpdo_argnochk('lpdofactorizex,1,5,l);
-      reval {'lpdo_factorizex,
-	 car l,
-	 if cdr l then cadr l else 'true,
-	 if cdr l and cddr l then caddr l else {'lpdoglfac,car l},
-	 if cdr l and cddr l and cdddr l then cadddr l else {'lpdogofac,car l},
-	 if cdr l and cddr l and cdddr l and cddddr l then
- 	    car cddddr l
- 	 else
- 	    'eps}
-   >>;
+      af := pop l;
+      f := lpdo_simp af;
+      psi := if l then rl_simp pop l else 'true;
+      p := if l then lpdo_simp pop l else '(p); %reval {'lpdoglfac,af};
+      q := if l then lpdo_simp pop l else '(q); %reval {'lpdogofac,af};
+      eps := if l then pop l else 'epsilon;
+      return 'list . for each bra in lpdo_factorizex(f,psi,p,q,eps) collect
+	 {'list,
+	    rl_prepfof car bra,
+	    {'list,lpdo_prep caadr bra,lpdo_prep cadadr bra}}
+   end;
 
-algebraic procedure lpdo_factorizex(f,psi,p,q,eps);
-   begin scalar ff,so,p0,q0;%,!*rlverbose;
-      on rlqeaprecise;
-      ff := lpdofacx(f,psi,p,q,'y,eps);
-      so := rlqea ff;
-      return for each bra in so collect <<
-      	 p0 := sub(second bra,p);
-      	 q0 := sub(second bra,q);
-	 {rlsimpl first bra,{p0,q0}}
-      >>
+procedure lpdo_factorizex(f,psi,p,q,eps);
+   begin scalar ff,so,p0,q0,res,w,gamma,al,ww;%,!*rlverbose;
+      on1 'rlqeaprecise;
+      if not lpdo_templp() then
+ 	 rederr "lpdo_fac: use lpdoset to fix delta ring";
+      if lpdo_genfunp p then
+	 p := lpdo_p2pp(p,f);
+      if lpdo_genfunp q then
+	 q := lpdo_p2pp(q,f);
+      ff := lpdo_facx(f,psi,p,q,eps,'y);
+      so := rl_qea(ff,nil);
+      for each bra in so do <<
+	 al := for each eqn in cadr bra collect cadr eqn . caddr eqn;
+      	 p0 := lpdo_subst(al,p);
+      	 q0 := lpdo_subst(al,q);
+	 gamma := car bra;
+	 if gamma neq 'false then <<
+	    ww := lpdo_fixsign0(p0,q0);
+	    w := {gamma,{car ww,cdr ww}};
+	    res := lto_insert(w,res)
+	 >>
+      >>;
+      return reversip res
    end;
 
 procedure lpdo_argnochk(name,mi,ma,argl);

@@ -2,6 +2,7 @@
 \documentclass[a4paper]{article}
 
 \usepackage{amsmath,amssymb}
+\usepackage{enumerate}
 
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
@@ -14,25 +15,25 @@
 \newcommand{\txt}{\textrm}
 \newenvironment{ebnf}{\begin{tabular}{rcll}}{\end{tabular}}
 \newcommand{\ebnfvar}[1]{{\textit{#1}}\ \ }
-\newcommand{\ebnfvara}[1]{$\left\langle \text{\textit{#1}}\right\rangle$\ \ } 
+\newcommand{\ebnfvara}[1]{$\left\langle \text{\textit{#1}}\right\rangle$\ \ }
 \newcommand{\ebnfor}{\txt{\ $|$\ \ }}
 \newcommand{\ebnfterm}[1]{\txt{\textbf{\texttt{#1}}}\ \ }
-\newcommand{\ebnfoption}[1]{\txt{$\left[\;\text{#1}\;\right]$}\ \ } 
+\newcommand{\ebnfoption}[1]{\txt{$\left[\;\text{#1}\;\right]$}\ \ }
 \newcommand{\ebnfmult}[1]{\txt{$\left\{\;\text{#1}\;\right\}$}\ \ }
-\newcommand{\ebnfattrib}[1]{{$\bigl\{$\ {#1}\ $\bigr\}$}\ \ } 
+\newcommand{\ebnfattrib}[1]{{$\bigl\{$\ {#1}\ $\bigr\}$}\ \ }
 
-\newcommand{\ebnfrule}[2]{{#1}&$\ \ \rightarrow\ \ $&{#2}&\\} 
-\newcommand{\ebnfrulev}[2]{{\ebnfvar{#1}}&$\ \ \rightarrow\ \ $&{#2}&\\} 
-\newcommand{\ebnfhalfrule}[1]{&&{\ebnfor {#1}}&\\} 
-\newcommand{\ebnfrulea}[3]{{#1}&$\ \ \rightarrow\ \ $&{#2}&{$\bigl\{$\ {#3}\ $\bigr\}$}\\} 
-\newcommand{\ebnfruleav}[3]{{\ebnfvar{#1}}&$\ \ \rightarrow\ \ $&{#2}&{$\bigl\{$\ {#3}\ $\bigr\}$}\\} 
-\newcommand{\ebnfhalfrulea}[2]{&&{\ebnfor {#1}}&{$\bigl\{$\ {#2}\ $\bigr\}$}\\} 
+\newcommand{\ebnfrule}[2]{{#1}&$\ \ \rightarrow\ \ $&{#2}&\\}
+\newcommand{\ebnfrulev}[2]{{\ebnfvar{#1}}&$\ \ \rightarrow\ \ $&{#2}&\\}
+\newcommand{\ebnfhalfrule}[1]{&&{\ebnfor {#1}}&\\}
+\newcommand{\ebnfrulea}[3]{{#1}&$\ \ \rightarrow\ \ $&{#2}&{$\bigl\{$\ {#3}\ $\bigr\}$}\\}
+\newcommand{\ebnfruleav}[3]{{\ebnfvar{#1}}&$\ \ \rightarrow\ \ $&{#2}&{$\bigl\{$\ {#3}\ $\bigr\}$}\\}
+\newcommand{\ebnfhalfrulea}[2]{&&{\ebnfor {#1}}&{$\bigl\{$\ {#2}\ $\bigr\}$}\\}
 
-\newcommand{\ebnfsinglerulev}[2]{\txt{{\ebnfvar{#1}}$\ \ \rightarrow\ \ ${#2}\\}} 
-\newcommand{\ebnfsinglerule}[2]{\txt{{#1}$\ \ \rightarrow\ \ ${#2}\\}} 
-\newcommand{\ebnfsingleruleav}[3]{\txt{{\ebnfvar{#1}}$\ \ \rightarrow\ \ ${#2}\ \ \ $\bigl\{$\ {#3}\ $\bigr\}$\\}} 
+\newcommand{\ebnfsinglerulev}[2]{\txt{{\ebnfvar{#1}}$\ \ \rightarrow\ \ ${#2}\\}}
+\newcommand{\ebnfsinglerule}[2]{\txt{{#1}$\ \ \rightarrow\ \ ${#2}\\}}
+\newcommand{\ebnfsingleruleav}[3]{\txt{{\ebnfvar{#1}}$\ \ \rightarrow\ \ ${#2}\ \ \ $\bigl\{$\ {#3}\ $\bigr\}$\\}}
 \newcommand{\ebnfsinglerulea}[3]{\txt{{#1}$\ \ \rightarrow\ \ ${#2}\ \
-    \ $\bigl\{$\ {#3}\ $\bigr\}$\\}} 
+    \ $\bigl\{$\ {#3}\ $\bigr\}$\\}}
 
 \begin{document}
 \title{LPDO: Linear Partial Differential Operators}
@@ -46,7 +47,7 @@
 \maketitle
 
 \begin{abstract}
-  
+
 \end{abstract}
 
 \section{Introduction}
@@ -349,11 +350,11 @@ LPDO.
 input: d := a()***partial(x1)***partial(x2)+partial(x3)$
 
 input: s := lpdosym d;
-                        
+
 s := a()*y_x1_*y_x2_
 
 input: lpdosym2dp s;
-                                                               
+
 a() *** partial(x1) *** partial(x2)
 \end{verbatim}
 \end{footnotesize}
@@ -374,7 +375,7 @@ input: p := a()***partial(x1)+b()$
 input: q := c()***partial(x1)+d()***partial(x2)$
 
 input: lpdos(p,q,1);
-                                                               
+
 a()*diff(c(),x1,1)*y_x1_ + a()*diff(d(),x1,1)*y_x2_ + b()*c()*y_x1_
 
  + b()*d()*y_x2_
@@ -385,18 +386,18 @@ a()*diff(c(),x1,1)*y_x1_ + a()*diff(d(),x1,1)*y_x2_ + b()*c()*y_x1_
 \subsection{Factorization}
 
 \subsubsection{\texttt{lpdofactorize}}
-Factorize the argument LPDO $d$. The $F$ must be fixed via
-\texttt{lpdoset}. The result is a list $(A,L)$. $A$ is one of the
-identifiers \texttt{true}, \texttt{false}, where \texttt{true}
-indicates reducibility. $L$ is a list of differential polynomials. In
-case $A=\texttt{true}$, $L$ contains two factors, the first of which
-is linear.
+Factorize the argument LPDO $d$. The ground field $F$ must be fixed via
+\texttt{lpdoset}. The result is a list of lists
+$\{\dots,(A_i,L_i),\dots\}$. $A_i$ is is genrally the identifiers
+\texttt{true}, which indicates reducibility. The respective $L_i$ is a
+list of two differential polynomial factors, the first of which has
+order 1.
 
 \begin{footnotesize}
 \begin{verbatim}
 input: bk := (partial(x)+partial(y)+(a10-a01)/2) ***
        (partial(x)-partial(y)+(a10+a01)/2);
-                                                          
+
                 2             2
 bk := partial(x)  - partial(y)  + a10 *** partial(x) + a01 *** partial(y)
 
@@ -406,7 +407,7 @@ bk := partial(x)  - partial(y)  + a10 *** partial(x) + a01 *** partial(y)
           4
 
 input: lpdoset lpdoweyl(1,x,y);
-                                                    
+
 {#_00_ + #_01_*y + #_10_*x,x,y}
 
 input: lpdofactorize bk;
@@ -422,13 +423,43 @@ input: lpdofactorize bk;
                                       2
 \end{verbatim}
 \end{footnotesize}
+If the result is the empty list, then this guarantees that there is no
+approximate factorization possible. In general it is possible to obtain
+several sample factorizations. Note, however, that the result does not
+provide a complete list of possible factorizations with a left factor of
+order 1 but only at least one such sample factorization in case of
+reducibility.
+
+Furthermore, the procedure might fail due to polynomial degrees
+exceeding certain bounds for the extended quantifier elimination by
+virtual substitution used internally. In this case there is the
+identifier \texttt{failed} returned. This must not be confused with the
+empty list indicating irreducibility as described above.
+
+Besides
+\begin{enumerate}
+\item the LPDO $d$,
+\end{enumerate}
+\texttt{lpdofactorizex} accepts several optional arguments:
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item An LPDO of order 1, which serves as a template for the left
+  (linear) factor. The default is a generic linear LPDO with generic
+  coefficient functions according from the ground field specified via
+  \texttt{lpdoset}. The principle idea is to support the factorization
+  by guessing that certain differential monomials are not present.
+\item An LPDO of order $\operatorname{ord}(d)-1$, which serves as a
+  template for the right factor. Similarly to the previous argument the
+  default is fully generic.
+\end{enumerate}
 
 \subsubsection{\texttt{lpdofac}}
 This is a low-level entry point to the factorization
-\texttt{lpdofactorize}. It generates factorization conditions as a
-quite large first-order formula over the reals. This can be passed to
-extended quantifier elimination. For example, consider \texttt{bk} as
-in the example for \texttt{lpdofactorize} above:
+\texttt{lpdofactorize}. It accepts the same arguments as
+\texttt{lpdofactorize}. It generates factorization conditions as a quite
+large first-order formula over the reals. This can be passed to extended
+quantifier elimination. For example, consider \texttt{bk} as in the
+example for \texttt{lpdofactorize} above:
 
 {\samepage
 \begin{footnotesize}
@@ -443,41 +474,17 @@ input: rlqea faccond;
   {p_00_00_ = -----------,
                    2
 
-   p_00_01_ = 0,
+   p_00_01_ = 0, p_00_10_ = 0, p_01_00_ = -1, p_01_01_ = 0, p_01_10_ = 0,
 
-   p_00_10_ = 0,
-
-   p_01_00_ = -1,
-
-   p_01_01_ = 0,
-
-   p_01_10_ = 0,
-
-   p_10_00_ = -1,
-
-   p_10_01_ = 0,
-
-   p_10_10_ = 0,
+   p_10_00_ = -1, p_10_01_ = 0, p_10_10_ = 0,
 
                 - a01 - a10
    q_00_00_ = --------------,
                     2
 
-   q_00_01_ = 0,
+   q_00_01_ = 0, q_00_10_ = 0, q_01_00_ = 1, q_01_01_ = 0, q_01_10_ = 0,
 
-   q_00_10_ = 0,
-
-   q_01_00_ = 1,
-
-   q_01_01_ = 0,
-
-   q_01_10_ = 0,
-
-   q_10_00_ = -1,
-
-   q_10_01_ = 0,
-
-   q_10_10_ = 0}}}
+   q_10_00_ = -1, q_10_01_ = 0, q_10_10_ = 0}}}
 \end{verbatim}
 \end{footnotesize}
 }
@@ -489,8 +496,96 @@ by \texttt{lpdofactorize}.
 \subsection{Approximate Factorization}
 
 \subsubsection{\texttt{lpdofactorizex}}
+Approximately factorize the argument LPDO $d$. The ground field $F$ must
+be fixed via \texttt{lpdoset}. The result is a list of lists
+$\{\dots,(A_i,L_i),\dots\}$. Each $A_i$ is quantifier-free formula
+possibly containing a variable $\texttt{epsilon}$, which describes the
+precision of corresponding factorization $L_i$. $L_i$ is a list
+containing two factors, the first of which is linear.
+
+\begin{footnotesize}
+\begin{verbatim}
+input: off lpdocoeffnorm$
+
+input: lpdoset lpdoweyl(0,x1,x2)$
+
+input: f2 := partial(x1)***partial(x2) + 1$
+
+input: lpdofactorizex f2;
+
+{{epsilon - 1 >= 0,{partial(x1),partial(x2)}},
+
+ {epsilon - 1 >= 0,{partial(x2),partial(x1)}}}
+\end{verbatim}
+\end{footnotesize}
+If the result is the empty list, then this guarantees that there is no
+approximate factorization possible. In our example we happen to obtain
+two possible factorizations. Note, however, that the result in general
+does not provide a complete list of factorizations with a left factor of
+order 1 but only at least one such sample factorization.
+
+Furthermore, the procedure might fail due to polynomial degrees
+exceeding certain bounds for the extended quantifier elimination by
+virtual substitution used internally. If this happens, the corresponding
+$A_i$ will contain existential quantifiers \texttt{ex}, and $L_i$ will
+be meaningless.\\
+\verb!Da sollte besser ein failed kommen ...!
+
+The first of the two subresults above has the semantics that
+$\partial_{x_1}\partial_{x_2}$ is an approximate factorization of $f_2$
+for all $\varepsilon\geq1$. Formally,
+$||f_2-\partial_{x_1}\partial_{x_2}||\leq\varepsilon$ for all
+$\varepsilon\geq1$, which is equivalent to
+$||f_2-\partial_{x_1}\partial_{x_2}||\leq1$. That is, $1$ is an upper
+bound for the approximation error over $\R^2$. Where there are two
+possible choices for the seminorm $||\cdot||$:
+\begin{enumerate}[(a)]
+\item ...
+\item ...
+\end{enumerate}
+\verb!explain switch lpdocoeffnorm ...!
+
+Besides
+\begin{enumerate}
+\item the LPDO $d$,
+\end{enumerate}
+\texttt{lpdofactorizex} accepts several optional arguments:
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item A Boolean combination $\psi$ of equations, negated equations, and
+  (possibly strict) ordering constraints. This $\psi$ describes a
+  (semialgebraic) region over which to factorize approximately. The
+  default is \texttt{true} specifying the entire $\R^n$. It is possible
+  to choose $\psi$ parametrically. Then the parameters will in general
+  occur in the conditions $A_i$ in the result.
+\item[3., 4.] An LPDO of order 1, which serves as a template for the left
+  (linear) factor, and an LPDO of order $\operatorname{ord}(d)-1$, which
+  serves as a template for the right factor. See the documentation of
+  \texttt{lpdofactorize} for defaults and details.
+\item[5.] A bound $\varepsilon$ for describing the desired precision for
+  approximate factorization. The default is the symbol \texttt{epsilon},
+  i.e., a symbolic choice such that the optimal choice (with respect to
+  parameters in $\psi$) is obtained during factorization. It is possible
+  to fix $\varepsilon\in\Q$. This does, however, not considerably
+  simplify the factorization process in most cases.
+\end{enumerate}
+
+\begin{footnotesize}
+\begin{verbatim}
+input: f3 := partial(x1) *** partial(x2) + x1$
+
+input: psi1 := 0<=x1<=1 and 0<=x2<=1$
+
+input: lpdofactorizex(f3,psi1,a()***partial(x1),b()***partial(x2));
+
+{{epsilon - 1 >= 0,{partial(x1),partial(x2)}}}
+\end{verbatim}
+\end{footnotesize}
 
 \subsubsection{\texttt{lpdofacx}}
+This is a low-level entry point to the factorization
+\texttt{lpdofactorizex}. It is analogous to \texttt{lpdofac} for
+\texttt{lpdofactorize}; see the documentation there for details.
 
 \subsubsection{\texttt{lpdohrect}}
 
