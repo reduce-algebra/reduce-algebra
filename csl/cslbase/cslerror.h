@@ -36,7 +36,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5d5f6757 24-May-2008 */
+/* Signature: 1873508c 28-Feb-2010 */
 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
@@ -63,6 +63,10 @@ extern Lisp_Object aerror1(char *s, Lisp_Object a);
 extern Lisp_Object aerror2(char *s, Lisp_Object a, Lisp_Object b);
 extern void MS_CDECL fatal_error(int code, ...);
 
+/*
+ * Since miscflags is treated as a set of bits the issue of whether it
+ * is signed or not will never arise!
+ */
 #define GC_MESSAGES   0x01
 #define FASL_MESSAGES 0x02
 #define VERBOSE_MSGS  0x04
@@ -113,7 +117,7 @@ extern void MS_CDECL fatal_error(int code, ...);
 #define err_stack_overflow       31
 #define err_top_bit              32
 #define err_mem_spans_zero       33
-#define err_registration         34
+#define err_no_longer_used       34      /* available for re-use */
 #define err_no_tempdir           35
     
 #ifdef INCLUDE_ERROR_STRING_TABLE
@@ -153,7 +157,7 @@ static char *error_message_table[] =
     "stack overflow",
     "top bit of address has unexpected value",
     "memory block spans the zero address",
-    "registration code corrupt or invalid",
+    "this error code available for re-use",
     "unable to find a directory for temporary files",
     "dummy final error message"
 };
