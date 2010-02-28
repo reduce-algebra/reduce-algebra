@@ -32,6 +32,12 @@
 %%
 
 
+(dm df (u !&optional env) (prog (g w) (setq g (gensym)) (setq w (list (quote 
+list) (quote (quote let!*)) (list (quote list) (list (quote list) (mkquote (
+caaddr u)) (list (quote mkquote) (list (quote cdr) g)))) (list (quote cons) (
+quote (quote progn)) (mkquote (cdddr u))))) (return (list (quote dm) (cadr u)
+(list g (quote !&optional) (gensym)) w))))
+
 (de oem!-supervisor nil (print (eval (read))))
 
 (de break!-loop (a) (prog (prompt ifile ofile u v) (setq ifile (rds 
