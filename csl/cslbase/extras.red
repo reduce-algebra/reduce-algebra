@@ -1,20 +1,66 @@
-% extras.red                      Copyright Codemist Ltd 2004-2007
+% extras.red                      Copyright Codemist Ltd 2004-2009
 %
 % Additional useful functions to have in a Lisp environment.
 %
 
 
 %
-% This code may be used and modified, and redistributed in binary
-% or source form, subject to the "CCL Public License", which should
-% accompany it. This license is a variant on the BSD license, and thus
-% permits use of code derived from this in either open and commercial
-% projects: but it does require that updates to this code be made
-% available back to the originators of the package.
-% Before merging other code in with this or linking this code
-% with other packages or libraries please check that the license terms
-% of the other material are compatible with those of this.
 %
+%/**************************************************************************
+% * Copyright (C) 2009, Codemist Ltd.                     A C Norman       *
+% *                                                                        *
+% * Redistribution and use in source and binary forms, with or without     *
+% * modification, are permitted provided that the following conditions are *
+% * met:                                                                   *
+% *                                                                        *
+% *     * Redistributions of source code must retain the relevant          *
+% *       copyright notice, this list of conditions and the following      *
+% *       disclaimer.                                                      *
+% *     * Redistributions in binary form must reproduce the above          *
+% *       copyright notice, this list of conditions and the following      *
+% *       disclaimer in the documentation and/or other materials provided  *
+% *       with the distribution.                                           *
+% *                                                                        *
+% * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+% * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+% * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+% * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+% * COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+% * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+% * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+% * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+% * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+% * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+% * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+% * DAMAGE.                                                                *
+% *************************************************************************/
+%
+%
+
+% CSL does not support user-defined special forms! So
+%    (df name (u) body)
+% will get mapped to a macro as roughly
+%    (dm name (g)
+%       `(let* ((u '@(cdr g)))
+%           (progn @,body)))
+%
+% For example      (df quote (u) (car u))
+% map map onto something such that macroexpanding (quote XX) gives
+%                  (let* ((g '(XX)))
+%                        (car g))       [g is a fresh gensym]
+
+symbolic macro procedure df(u, !&optional, env);
+  begin
+    scalar g, w;
+    g := gensym();
+    w := list('list,
+              ''let!*,
+              list('list, list('list,
+                               mkquote caaddr u,
+                               list('mkquote, list('cdr, g)))), 
+              list('cons, ''progn, mkquote cdddr u));
+    return list('dm, cadr u, list(g, '!&optional, gensym()), w);
+  end;
 
 % The following small function is just used for testing the CSL OEM
 % interface code...
