@@ -43,7 +43,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 50336b6e 24-May-2008 */
+/* Signature: 493a37ef 24-Jan-2010 */
 
 
 #ifndef header_machine_h
@@ -94,51 +94,6 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
-
-/*
- * #ifdef __APPLE__
- *
- * Apple and MacOS provide a special challenge for me. It is possible to
- * compile code with a command such as
- *    gcc -arch ppc -archppc64 -archi386 ...
- * and by so doing create a two or three-way fat binary. This situation is
- * excellent, HOWEVER it causes real trouble for autoconf in any cases
- * where the results could be system-sensitive! A case where this is
- * unambiguously true relates to the size of data. So I put in some
- * old-fashioned manual treatment that will, I hope, override any values
- * found by autoconf in the relevent areas.
- *
- * Well ACTUALLY I hope and believe that Apple provides <stdint.h> and
- * so the macros set up where will never get inspected!
- *
- * Well these days they seem to have stdint.h in the kit, and so I will
- * comment this out!
- *
- *
- * #undef SIZEOF_SHORT_INT
- * #undef SIZEOF_INT
- * #undef SIZEOF_LONG
- * #undef SIZEOF_LONG_LONG
- * #undef SIZEOF_VOID_P
- * 
- * #if defined __x86_64__ || defined __ppc64__
- * #define SIZEOF_SHORT_INT  2
- * #define SIZEOF_INT        4
- * #define SIZEOF_LONG       4
- * #define SIZEOF_LONG_LONG  8
- * #define SIZEOF_VOID_P     8
- * #elif defined __i386__ ||  defined __ppc__
- * #undef SIZEOF_SHORT_INT   2
- * #undef SIZEOF_INT         4
- * #undef SIZEOF_LONG        4
- * #undef SIZEOF_LONG_LONG   8
- * #undef SIZEOF_VOID_P      4
- * #else
- * #error "Unknown architecture on a machine that says it is __APPLE__"
- * #endif
- *
- * #endif  __APPLE__
- */
 
 /*
  * Now it appears that some systems provide types with names like
