@@ -2,26 +2,47 @@
                       =======================
 
 
+(I bet that much of this will get out of data soon, but this version has
+ been reviewed in February 2010)
+
+
 The code tries to be in fairly conservative C, but in quite a lot
 of places it depends on "the spirit of C" rather than the letter of
 the language standards.
 
-"machine.h" contains a catalogue of systems and compilers that the
-code has AT SOME STAGE been at least tested once on. At present the
-most tested configurations are
-   Windows, Watcom C 11.5
-   Linux x86, gcc
-and other cases may well have glitches remaining. But I hope that the long
-list of tested cases will give encouragement that the code is respectably
-portable. Only the Windows version (using The Microsoft Foundation Classes)
-has a currently-supported windowed interface: other versions use a command-
-line style. Both Mac and X have at times experimenented with the "StdWin"
-application framework but the code here does not guarantee to work with it
-still or well.
+The code here is supposed to be buildable using any 32- or 64-bit C
+compiler on almost any reasonable computer. Normal building requires
+that you can install (or if necessary build from source) the GNU autoconf
+tools and a "sh" shell. By far the most testing has been done using
+gcc. The platforms most tested have been 32-bit Windows (building using
+the cygwin shell and tools, but using the "-mno-cygwin" so that native
+Windows binaries are build), 64- and 32-bit Linux running on x86/x86_64,
+and MacOSX (Snow Leopard).
+
+Less substantial testing is done from time to time on Solaris x86,
+FreeBSD x86 and MacOSX ppc. In the past and as a demonstration of portability
+customised versions of this have been coaxed into running on a Linksys
+router with a mips CPU and an HP Ipaq 4700 with an ARM CPU. Some minor
+testing of support for 64-bit big endian machines has used the Hercules
+emulator for IBM mainframes.
+
+Further back in the past the code built and was used on SGI, HP, VAX,
+DEC Alpha and Acorn computers, and using C compilers from Norcroft. Watcom
+and Microsoft.
+
+The GUI code at present relies on the FOX GUI toolkit, and that can be built
+for X11 and for Windows. It runs on a Mac only by using the X11 sub-system.
 
 I have adopted an indentation and code layout style that I like. I am aware
 that it is not the default one supported my emacs etc, but I have been using
-it for a long while and feel very set in my ways.
+it for a long while and feel very set in my ways. You mnay find it described
+as the Allman, ANSI or "emacs/bsd" style, and it was (close to) the default
+used in some versions of Visual Studio. Sometimes I reduce wasted page
+space by using the style that Wikipedia calls "Horstman". My personal views
+really date back to the late 1960s and the layout style for BCPL code that I
+became accustomed to then, and hence predate C and hence all the authors
+whose names have become associated with C layout styles! So really I probably
+want to call my laout the "Martin Richards" style.
 
 This Lisp uses an agressive garbage collector that MUST be able to identify
 all root pointers reliably. C local variables are not marked by the GC, and
@@ -32,11 +53,16 @@ GC safe are ones that take a significant time to get used to. They are not
 coder-friendly. If you breach them then the code may work most of the time
 but fail later in a messy way. I can only say "you have been warned"!
 
+At some stage I MAY implement a conservtive mostly-copying garbage collector
+but that will be a fairly disruptive re-write for all storage management. If
+I ever do manage that then I can remove very many uses of push() and pop()
+and things may be smaller, faster and more reliable.
+
 This Lisp needs to control error recovery and general unwinding. Thus any
 function call that could possibly fail MUST be followed by a test to
 see if it did. In some cases this will need to do pop() operations (which are
 NOT automatically balanced across procedure calls: the programmer has to
-take full responsibility for matchiing push and pops). See the code for
+take full responsibility for matching push and pops). See the code for
 examples of what is needed. Again this is not coder-friendly and errors in
 applying the conventions can have delayed and unpleasant effect. Again "you
 have been warned"
@@ -47,7 +73,7 @@ is a singleton. Failure to do this can mess up error recovery or the
 garbage collector.
 
 The above three issues lead to significantly ugly and delicate code. They
-are easy for somebody whos is not neurotic enough to overlook. The
+are easy for somebody who is not neurotic enough to overlook. The
 trouble that they can lead to will often be deferred, only showing up
 occasionally on garbage collection or when recovering from an unrelated
 exception. This situation where errors can go undetected for a long while
@@ -79,7 +105,11 @@ been developed and was basically working. It was not designed as a
 development environment. This means that in some respects it is
 inflexible! For instance there is a Lisp to C compiler, but it is
 configured so that the generated C is statically linked into the Lisp.
-The Lisp does not have very clever windowed interfaces, browsers etc.
+The Lisp does not have very clever windowed interfaces, browsers etc., but
+the GUI supported via a separate GUI toolbox mat still be better than
+nothing. Actually in many ways I find the extent to which this Lisp can
+check for bad activity and produce aq half-plausible backtrace means that
+it is not that bad as a development platform.
 
 The Lisp compiler has its master version coded in RLISP (an Algol-like
 surface syntax for Lisp, popularised by the REDUCE algebra system). A
@@ -129,6 +159,11 @@ Line-length overflow checking for printing of big numbers implemented.
 
 binary printing for numbers, and case fold up as well as down, supported.
 
+modules ("fasl files") within heap images are portable across byte ordering
+and machine word-length. Main heap images created on a 64-bit machine
+should now be loadable on 32-bit machines, but conversion in the other
+direction is not yet implemented.
+
 -------------------------------------------------------------------------------
 
 DATA REPRESENTATION
@@ -146,7 +181,7 @@ the same sign (but this can be either + or -).  Many objects in memory have
 a header word at their start that indicates their length and gives more
 details about their type.  The encoding of object lengths means that the
 largest possible single object in CSL would be 4 Mbytes long. Also CSL
-memory is allocated in chunks (typically 256 Kbytes) and that puts another,
+memory is allocated in chunks (typically 4 Mbytes) and that puts another,
 usually more severe, limit on maximum object size. This may matter for
 arrays and bignums.
 
@@ -193,10 +228,12 @@ Data that could be in the heap or on the stack decodes further:
 
 The remaining 24 bits of the word are available for data.  The BPS and
 literal vector handles in this case are for a segmented memory
-implementation, and the 24 bit address has its top 10 bits identifying
-a page number, then 14 bits giving a WORD offset into the associated
-page, which can thus be up to 64 Kbytes large. Or more depending on
-PAGE_BITS.  Literal vectors done this way are not used at present.
+implementation, and the 24 bit address has its top bits identifying
+a page number, then more bits giving a WORD offset into the associated
+page.  Literal vectors done this way are not used at present, and I may need
+to re-use the tag pattern at present allocated to them to allow for
+loading a 32-bit heap image's BPS data on a 64-bit machine.
+
 For Standard Lisp only 8 bits of character information is needed - the
 remaining bits are there to support font etc information in a Common
 Lisp world.
@@ -659,4 +696,5 @@ int MS_CDECL main(int argc, char *argv[])
 ...............................end
 
 
-Arthur Norman.    2002
+Arthur Norman.    2002, updated 2010.
+
