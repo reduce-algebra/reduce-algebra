@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 0c0c2a97 03-Apr-2009 */
+/* Signature: 488f85a8 24-Feb-2010 */
 
 #include "headers.h"
 
@@ -1678,11 +1678,21 @@ Lisp_Object getvector(int tag, int type, int32_t size)
 /*
  * There is a real NASTY here - it is quite possible that I ought to implement
  * a scheme whereby large vectors can be allocated as a series of chunks so as
- * to avoid the current absolute limit on size.  Remember that the page size
- * is about 64 Kbytes for small machines but on larger ones I can have bigger
- * pages (typically 256K) and hence bigger vectors.
+ * to avoid the current absolute limit on size.  At one stage I used a page
+ * size of just 64K on small machines, and for embedded applications that
+ * may still be sensible. But MOSTLY I now have 4Mb pages. But as discussed
+ * in restart.c I need to limit the size of a vector to HALF the page
+ * size of I am later on going to reload on a 64-bit machine, so here I
+ * have a rather odd test that tries to enforce this on "standard" machines
+ * but not on truly tiny ones. The specific judgement applied here is
+ * that if the page size is at least 2M and I am on a 32--bit machine I will
+ * use at most half the page. RTo be specific about the consequences, it means
+ * that I can have an array of length up to about 512K not 1M in that case.
  */
-        if (alloc_size > CSL_PAGE_SIZE - 32)
+        if (alloc_size >
+            ((CSL_PAGE_SIZE>2000000 &&
+              !SIXTY_FOUR_BIT) ? CSL_PAGE_SIZE/2 - 32 :
+                                 CSL_PAGE_SIZE - 32))
             return aerror("vector request too big");
         if (alloc_size > free)
 

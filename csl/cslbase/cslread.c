@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 55466499 09-Jun-2008 */
+/* Signature: 54c9c42d 28-Feb-2010 */
 
 #include "headers.h"
 
@@ -370,9 +370,13 @@ static uint32_t hash_lisp_string_with_length(Lisp_Object s, int32_t n)
 {
 /*
  * I start off the hash calculation with something that depends on the
- * length of the string n.
+ * length of the string n. Hmmm - I want hash values to end up the same
+ * on 32 and 64-bit machines and the length I pass down here includes the
+ * length of the string header, so I adjust for that. The way I do that here
+ * preserves the hash values that I historically used on 32-bit machines
+ * and so 32-bit image files should remain valid.
  */
-    uint32_t hh = 0x01000000 + n;
+    uint32_t hh = 0x01000000 + n - CELL + 4;
     uint32_t *b = (uint32_t *)((char *)s + (CELL-TAG_VECTOR));
     char *b1;
     while (n >= CELL+4)  /* Do as much as is possible word at a time */
@@ -1516,7 +1520,7 @@ Lisp_Object MS_CDECL Lgensym(Lisp_Object nil, int nargs, ...)
     stackcheck0(0);
     nil = C_nil;
 #ifdef COMMON
-    sprintf(genname, "G%lu", (long unsigned)gensym_ser++);
+    sprintf(genname, "G%lu", (long unsigned)(uint32_t)gensym_ser++);
     pn = make_string(genname);
     errexit();
     push(pn);
@@ -1574,7 +1578,8 @@ Lisp_Object Lgensym1(Lisp_Object nil, Lisp_Object a)
     len = length_of_header(vechdr(genbase)) - CELL;
     if (len > 60) len = 60;     /* Unpublished truncation of the string */
     sprintf(genname, "%.*s%lu", (int)len,
-            (char *)genbase + (CELL-TAG_VECTOR), (long unsigned)gensym_ser++);
+            (char *)genbase + (CELL-TAG_VECTOR),
+            (long unsigned)(uint32_t)gensym_ser++);
     stack[0] = make_string(genname);
     errexitn(1);
 #endif
@@ -1910,7 +1915,7 @@ static Lisp_Object Lextern(Lisp_Object nil,
         Lisp_Object v = packint_(package);
         int32_t used = int_of_fixnum(packvint_(package));
         if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;
+        else used = 16384*used;   /* /* /* @@@@ ???? */
 /*
  * I will shrink a hash table if a sequence of remob-style operations,
  * which will especially include the case where a symbol ceases to be
@@ -1922,7 +1927,7 @@ static Lisp_Object Lextern(Lisp_Object nil,
  * cause it to shrink (but it will rehash and hence tidy it up). Hence
  * every remob on such a table will cause it to be re-hashed.
  */
-        if ((int32_t)n < used && used>INIT_OBVECI_SIZE+CELL)
+        if ((int32_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck3(0, sym, package, v);
             push2(sym, package);
             v = rehash(v, packvint_(package), -1);
@@ -2028,7 +2033,7 @@ Lisp_Object Lunintern_2(Lisp_Object nil, Lisp_Object sym, Lisp_Object pp)
         int32_t used = int_of_fixnum(packvint_(package));
         if (used == 1) used = length_of_header(vechdr(v));
         else used = 16384*used;
-        if ((int32_t)n < used && used>INIT_OBVECI_SIZE+CELL)
+        if ((int32_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
             v = rehash(v, packvint_(package), -1);
@@ -2047,7 +2052,7 @@ Lisp_Object Lunintern_2(Lisp_Object nil, Lisp_Object sym, Lisp_Object pp)
         int32_t used = int_of_fixnum(packvext_(package));
         if (used == 1) used = length_of_header(vechdr(v));
         else used = 16384*used;
-        if ((int32_t)n < used && used>INIT_OBVECX_SIZE+CELL)
+        if ((int32_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
             v = rehash(v, packvext_(package), -1);

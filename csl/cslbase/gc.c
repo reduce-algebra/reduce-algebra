@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0d879599 05-Jul-2009 */
+/* Signature: 561779f0 24-Feb-2010 */
 
 #include "headers.h"
 
@@ -80,7 +80,7 @@
 #endif /* SOCKETS */
 
 int gc_number = 0;
-CSLbool gc_method_is_copying;     /* YES if copying, NO if sliding */
+CSLbool gc_method_is_copying = 0;     /* YES if copying, NO if sliding */
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
              big_numbers, box_floats, bytestreams, other_mem,
@@ -1099,6 +1099,10 @@ static int fold_cons_heap(void)
          *bottom_low = (char *)quadword_align_up((intptr_t)bottom_page);
     char *top_start = top_low + CSL_PAGE_SIZE,
          *bottom_start = bottom_low + CSL_PAGE_SIZE;
+/*
+ * BEWARE if the lengths here ,ight be marked to indicate a double-sized
+ * page.
+ */
     char *top_fringe = top_low + car32(top_low),
          *bottom_fringe = bottom_low + car32(bottom_low);
     if (bottom_fringe != (char *)fringe)
@@ -2251,6 +2255,10 @@ static void tidy_fringes(void)
          *vl = (char *)vheaplimit,
          *cl = (char *)codelimit;
     int32_t len = (int32_t)(fr - (hl - SPARE));
+/*
+ * If I used the top bit of this location to save info that a page
+ * was double-size then I just clobbered that information here!
+ */
     car32(hl - SPARE) = len;
     len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
     car32(vl - (CSL_PAGE_SIZE - 8)) = (Lisp_Object)len;

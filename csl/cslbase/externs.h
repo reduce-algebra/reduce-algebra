@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 12134323 01-Nov-2009 */
+/* Signature: 5e7037d0 28-Feb-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -379,7 +379,7 @@ extern Lisp_Object C_nil;
 
 #define nil_as_base
 
-extern uint32_t byteflip;
+extern intptr_t byteflip;
 
 extern Lisp_Object codefringe;
 extern Lisp_Object volatile codelimit;
@@ -392,12 +392,12 @@ extern Lisp_Object volatile heaplimit;
 extern Lisp_Object volatile vheaplimit;
 extern Lisp_Object vfringe;
 
-extern int32_t nwork;
+extern intptr_t nwork;
 
-extern int32_t exit_reason;
-extern int32_t exit_count;
-extern uint32_t gensym_ser, print_precision, miscflags;
-extern int32_t current_modulus, fastget_size, package_bits;
+extern intptr_t exit_reason;
+extern intptr_t exit_count;
+extern intptr_t gensym_ser, print_precision, miscflags;
+extern intptr_t current_modulus, fastget_size, package_bits;
 
 extern Lisp_Object lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern Lisp_Object quote_symbol, function_symbol, comma_symbol;
@@ -523,7 +523,7 @@ extern Lisp_Object user_base_9;
 
 #define nil_as_base  Lisp_Object nil = C_nil;
 
-#define byteflip              (*(uint32_t *)&BASE[12])
+#define byteflip              BASE[12]
 #define codefringe            BASE[13]
 #define codelimit             (*(Lisp_Object volatile *)&BASE[14])
 /*
@@ -546,16 +546,17 @@ extern Lisp_Object * volatile stacklimit;
 #define heaplimit             (*(Lisp_Object volatile *)&BASE[19])
 #define vheaplimit            (*(Lisp_Object volatile *)&BASE[20])
 #define vfringe               BASE[21]
-#define miscflags             (*(uint32_t *)&BASE[22])
 
-#define nwork                 (*(int32_t *)&BASE[24])
-#define exit_reason           (*(int32_t *)&BASE[25])
-#define exit_count            (*(int32_t *)&BASE[26])
-#define gensym_ser            (*(uint32_t *)&BASE[27])
-#define print_precision       (*(uint32_t *)&BASE[28])
-#define current_modulus       (*(int32_t *)&BASE[29])
-#define fastget_size          (*(int32_t *)&BASE[30])
-#define package_bits          (*(int32_t *)&BASE[31])
+#define miscflags             BASE[22]
+
+#define nwork                 BASE[24]
+#define exit_reason           BASE[25]
+#define exit_count            BASE[26]
+#define gensym_ser            BASE[27]
+#define print_precision       BASE[28]
+#define current_modulus       BASE[29]
+#define fastget_size          BASE[30]
+#define package_bits          BASE[31]
 /* offsets 32-49 spare at present */
 
 /* Offset 50 used for EQ hash table list    */
@@ -768,6 +769,7 @@ extern int native_code_tag;
 extern char *standard_directory;
 
 extern int gc_number;
+extern CSLbool gc_method_is_copying;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2
@@ -888,16 +890,6 @@ extern char *CSLtmpnam(char *suffix, int32_t suffixlen);
 extern int Cmkdir(char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
-/*
- * I will allow myself 192 bytes to store registration information.
- * In my initial implementation I will only use a fraction of that
- * but it seems safer to design the structure with extra room for potential
- * enhancements. I will keep a version code in the data so that I can update
- * my methods but still preserve upwards compatibility when I do that.
- */
-#define REGISTRATION_SIZE     192
-#define REGISTRATION_VERSION  "r1.0"
-extern unsigned char registration_data[REGISTRATION_SIZE];
 extern void CSL_MD5_Init(void);
 extern void CSL_MD5_Update(unsigned char *data, int len);
 extern void CSL_MD5_Final(unsigned char *md);

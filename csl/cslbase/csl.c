@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 7e53df61 11-Oct-2009 */
+/* Signature: 099e7321 28-Feb-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -913,7 +913,7 @@ static void lisp_main(void)
  * people who do not care too much what I do here is probably acceptable!
  */
                     CSL_MD5_Init();
-                    CSL_MD5_Update((unsigned char *)errcode(err_registration), 32);
+                    CSL_MD5_Update((unsigned char *)"Initial State", 13);
                     IreInit();
                     setup(cold_start ? 0 : 1, 0.0);
                     exit_tag = exit_value = nil;
@@ -1220,23 +1220,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     batch_flag = NO;
     load_count = 0;
     load_limit = 0x7fffffff;
-    {   char *s = REGISTRATION_VERSION;
-#define hexval(c) ('0'<=c && c<='9' ? c - '0' : c - 'a' + 10)
-#define gx() (s+=2, hexval(s[-1]) + 16*hexval(s[-2]))
-        unsigned char *p = registration_data;
-        memset(registration_data, 0, sizeof(REGISTRATION_SIZE));
-        while (*s != 0) *p++ = *s++;
-#ifdef REG1
-        s = REG1;
-        while (*s != 0) *p++ = gx();
-#endif
-#ifdef REG2
-        s = REG2;
-        while (*s != 0) *p++ = gx();
-#endif
-        CSL_MD5_Init();
-        CSL_MD5_Update((unsigned char *)errcode(err_registration), 32);
-    }
+
+    CSL_MD5_Init();
+    CSL_MD5_Update((unsigned char *)"Initial State", 13);
 #ifdef MEMORY_TRACE
     car_counter = 0x7fffffff;
     car_low = 0;
@@ -2343,7 +2329,7 @@ term_printf(
 
 /*
  * Now dynamic code detects the floating point representation that is in use.
- * I thougt/hoped that doing it this way would be safer than relying on having
+ * I thought/hoped that doing it this way would be safer than relying on having
  * pre-defined symbols that tracked the machine architecture.
  */
         {   union fpch { double d; unsigned char c[8]; } d;
@@ -2360,6 +2346,18 @@ term_printf(
             d.d = 1.0/7.0;
             switch ((d.c[1] << 8) | d.c[2])
             {
+/*
+ * At one stage I detected (on of the) VAX representations and the one used
+ * by the IBM s60/s370. These days I am only going to recognise cases that
+ * use IEEE layout. Even with that the example machines noted here reveal
+ * that evenb though IEEE explains what bits should be in the floating point
+ * value different manufacturers pack the words and bytes in a variety of
+ * ways! Well the mere shuffling of bytes is something I can deal with. If I
+ * really needed to make image files portable to old-style IBM mainframes
+ * or on a xArch machine set up to use hexadecimal floating point mode then
+ * what I have gere would moan. But if I just override the moan I will
+ * be able to build images and reload them on that particular machine.
+ */
         case 0x2449:    current_fp_rep = 0;
                         break;           /* Intel, MIPS */
         case 0x49c2:    current_fp_rep = FP_WORD_ORDER;

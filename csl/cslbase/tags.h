@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4a8c08f9 01-Nov-2009 */
+/* Signature: 39aad9e5 28-Feb-2010 */
 
 
 #ifndef header_tags_h
@@ -425,6 +425,14 @@ extern unsigned long int car_low, car_high;
 
 #define car32(p) (*(int32_t *)(p))
 
+/*
+ * cdr32(p) reads the next 32-bit word after that used by car32(p), and
+ * is used in related circumstances where I explicitly wish to work using
+ * just 32-bit values..
+ */
+
+#define cdr32(p) (*(int32_t *)(p))[1])
+
 typedef Lisp_Object Special_Form(Lisp_Object, Lisp_Object);
 
 typedef Lisp_Object one_args(Lisp_Object, Lisp_Object);
@@ -700,7 +708,7 @@ typedef uintptr_t Header;
 #define is_header(x) (((int)(x) & 0x30) != 0)     /* valid if is_odds() */
 #define is_char(x)   (((int)(x) & ODDS_MASK) == TAG_CHAR)
 #define is_bps(x)    (((int)(x) & ODDS_MASK) == TAG_BPS)
-#define is_hashtab(x)(((int)(x) & ODDS_MASK) == TAG_HASHTAB)
+/* #define is_hashtab(x)(((int)(x) & ODDS_MASK) == TAG_HASHTAB) not used */
 #define is_spid(x)   (((int)(x) & ODDS_MASK) == TAG_SPID)
 #define is_library(x)(((int)(x) & 0xffff)    == SPID_LIBRARY)
 #define library_number(x) (((x) >> 20) & 0xfff)
@@ -750,7 +758,8 @@ typedef uintptr_t Header;
  * am on a 32-bit machine. If PAGE_BITS is 22 (my current default on
  * most systems) this will be up to 16 pages each holding 4 Mbytes.
  * Given the compactness of the bytecode format the limit seems generous
- * enough at present!
+ * enough at present! One thing to note here is that the packed address
+ * in a BPS reference goes to the data not to the header that preceeds it.
  */
 #define data_of_bps(v) \
   ((char *)(doubleword_align_up((intptr_t) \

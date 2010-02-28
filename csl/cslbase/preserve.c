@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 75b2d68e 31-Oct-2009 */
+/* Signature: 448faebd 28-Feb-2010 */
 
 #include "headers.h"
 
@@ -548,8 +548,6 @@ directory *open_pds(char *name, int mode)
         d->f = f;
         strncpy(d->filename, expanded, DIRNAME_LENGTH);
         d->filename[DIRNAME_LENGTH-1] = 0;
-        if (fwrite(registration_data, REGISTRATION_SIZE, 1, f) != 1)
-            return make_empty_directory(expanded);
         setbits32(d->h.eof, (int32_t)ftell(f));
         return d;
     }
@@ -603,8 +601,6 @@ static int unpending(directory *d)
     if (fwrite(&d->h, sizeof(directory_header), 1, f) != 1)
         return YES;
     if (fwrite(&d->d[0], sizeof(directory_entry), (size_t)n, f) != (size_t)n)
-        return YES;
-    if (fwrite(registration_data, REGISTRATION_SIZE, 1, f) != 1)
         return YES;
     setbits32(d->h.eof, (int32_t)ftell(f));
     return NO;
@@ -914,7 +910,7 @@ static directory *enlarge_directory(int current_size)
         sort_directory(d1);
         first = &d1->d[0];
         firstpos = bits32(&first->D_position);
-        if (firstpos >= newpos + REGISTRATION_SIZE) break;
+        if (firstpos >= newpos) break;
 /*
  * Here I need to copy a module up to the end of the file to make room
  * for the enlarged directory
@@ -949,7 +945,6 @@ static directory *enlarge_directory(int current_size)
         setbits32(d1->h.eof, eofpos);
     }
     fseek(d1->f, newpos, SEEK_SET);
-    fwrite(registration_data, REGISTRATION_SIZE, 1, d1->f);
     d1 = (directory *)realloc((void *)d1, newsize);
     if (d1 == NULL) return NULL;
     d1->h.dirsize = (unsigned char)(n & 0xff);
@@ -1412,20 +1407,7 @@ CSLbool IopenRoot(char *expanded_name, int hard, int sixtyfour)
 
         if (expanded_name != NULL)
         {   if (hard == IMAGE_CODE)
-            {   if (!bad)
-                {   long int pos = ftell(binary_read_file);
-                    directory *d = fasl_files[i];
-                    unsigned char rr[REGISTRATION_SIZE];
-                    int nn = get_dirsize(d->h) * sizeof(directory_entry);
-                    nn += sizeof(directory_header);
-                    fseek(binary_read_file, (long int)nn, SEEK_SET);
-                    fread(rr, REGISTRATION_SIZE,
-                          1, binary_read_file);
-                    if (memcmp(rr, REGISTRATION_VERSION, 4) == 0)
-                        memcpy(registration_data, rr, REGISTRATION_SIZE);
-                    fseek(binary_read_file, pos, SEEK_SET);
-                }
-                sprintf(expanded_name, "%s(InitialImage)", n);
+            {   sprintf(expanded_name, "%s(InitialImage)", n);
             }
             else if (hard == BANNER_CODE)
                 sprintf(expanded_name, "%s(InitialImage)", n);
@@ -1977,8 +1959,7 @@ CSLbool finished_with(int j)
         d->h.updated |= D_UPDATED;
         sort_directory(d);
         hwm = sizeof(directory_header) +
-              get_dirsize(d->h)*(long int)sizeof(directory_entry) +
-              REGISTRATION_SIZE;
+              get_dirsize(d->h)*(long int)sizeof(directory_entry);
         for (i=0; i<get_dirused(d->h); i++)
         {   long int pos = bits32(&d->d[i].D_position);
             if (pos != hwm)

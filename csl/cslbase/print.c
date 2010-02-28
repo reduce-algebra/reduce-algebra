@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 603a33f9 04-Jul-2009 */
+/* Signature: 2bcee306 24-Jan-2010 */
 
 #include "headers.h"
 
@@ -1802,7 +1802,7 @@ static Lisp_Object Lprint_precision(Lisp_Object nil, Lisp_Object a)
     if (a == nil) return onevalue(fixnum_of_int(old));
     if (!is_fixnum(a)) return aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
-    if (print_precision > 16)
+    if (print_precision > 16 | print_precision < 1)
         print_precision = 15;
     return onevalue(fixnum_of_int(old));
 }
