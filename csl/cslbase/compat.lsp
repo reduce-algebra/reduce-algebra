@@ -180,6 +180,11 @@ loop  (cond ((atom l) (return nil))
 		((eq type 'subr) (symbol!-set!-definition a b))
                 ((and (eq type 'macro) (eqcar b 'lambda))
                    (eval (list!* 'dm a (cdr b))))
+% CSL does not really support user-defined special forms and so at some
+% stage I will make "df" a macro that makes some attempt to simulate the
+% desired behaviour using a macro.
+                ((and (eq type 'fexpr) (eqcar b 'lambda))
+                   (eval (list!* 'df a (cdr b))))
                 (t (error "Bad type ~S in putd" type)))
              a))))))
 
