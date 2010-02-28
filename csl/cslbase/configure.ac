@@ -39,7 +39,7 @@
 # change that. These are the things I note above as "special flags"
 
 # Specify the name of this "application" and a version number
-AC_INIT([CSL],[6.03])
+AC_INIT([CSL],[6.04])
 AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 
