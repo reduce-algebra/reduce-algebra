@@ -118,6 +118,8 @@ symbolic procedure readprogn;
 
 put('!*lsqbkt!*,'stat,'readprogn);
 
+flag ('(!*lsqbkt!*),'go);
+
 flag('(!*rsqbkt!*),'delim);
 
 flag('(!*rsqbkt!*),'nodel);
