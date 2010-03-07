@@ -1020,7 +1020,7 @@ AC_CHECK_LIB(rt, clock_nanosleep)
 
 AC_CHECK_LIB(pthread, pthread_create)
 
-if test "x$with_fox" = "xno"
+if test "x$with_fox" != "xno"
 then
   LIBS="$XLIBS $LIBS"
 fi
