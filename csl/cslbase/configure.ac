@@ -855,7 +855,7 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
-if test "x$with_fox" = "xno"
+if test "x$with_fox" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
   then
