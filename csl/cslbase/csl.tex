@@ -73,7 +73,7 @@ CSL and Reduce use image files to keep both initial heap images and
 say xxx, then an image file xxx.img is used. But to support greater
 generality {\ttfamily -i} introduces a new image, {\ttfamily -i-} indicates
 the default one and a sequence of such directives list image files that are
-searche din the order given. These are read-only. The similar option
+searched in the order given. These are read-only. The similar option
 {\ttfamily -o} equally introduces image files that are scanned for input, but
 that can also be used for output. Normally there would only be one
 {\ttfamily -o} directive.
@@ -189,48 +189,6 @@ definitions rather rapidly. The files {\ttfamily compat.lsp},
 {\ttfamily extras.lsp} and {\ttfamily compiler.lsp} have Lisp source for the
 main things I use, and once they are loaded the Lisp compiler can be used
 to compile itself.
-\subsection{\ttfamily --dump-source}
-The linked executable of CSL may include some libraries that were licensed
-under the Lesser GNU Public License version 2.1. Even if the linking had
-been dynamic it would be necessary for the binary package that a user would
-need in order to use CSL to contain a binary copy of the relevant library, and
-when a copy of such a binary is provided to another it must be accompanied with
-at least an offer of provision of the associated source code. The LGPL
-asserts that if is not necessary to force the source code onto any recipient,
-but there are two reasons why that seems to me to be the only viable way to
-ensure license compliance in a manner that is at all convenient:
-\begin{itemize}
-\item If a binary is distributed without accompanying source then you have to
-commit to being able to provide the source corresponding to that exact version
-(neither earlier nor later) to the person who receieved the file if they ask for
-it at a time up to some years in the future. Maintaining confidence that I can
-track alterations and guarantee to deliver an exact version as required seems
-to me in conflict with wishing to ship snapshots, trial versions and generally
-behave in a flexible manner.
-\item If an individual fetches any material, binary or source, associated with
-this project I would like them to be able to pass it on to others. If they
-fetch just a binary then they can not pass that on unless they commit to
-providing its associated source. For LGPL material they can not rely on the
-source being available from me as an upstream supplier. Now some will say that
-the issue of what that individual does is their own responsibility, but is is
-mine to ensure that they know what they may and may not do, and I do not want
-to have to explain that stuff they receive from me can not be passed on to
-their friends without them taking special extra steps ``to preserve freedom''.
-\end{itemize}
-
-Because of these constraints and to satisfy my own view about what ``freedom''
-is I therefore arrange that the ``minimal sources'' as envisaged in the LGPL
-are formed into an archive which is included as a resource within the CSL or
-Reduce executable. If the executable is run from a command line with the
-{\ttfamily --dump-source} option (which can be followed by a file-name where
-things should be places) it writes this archive to a file. Anybody can then
-unpack it using standard tools and find both detailed license terms and all
-the C-coded source they could possibly require.
-
-This adds about 3 megabytes to the size of each executable, but is the best
-way I have identified of meeting LGPL requirements while preserving the freedom
-of all users to distribute and redistribute unmodified binaries without any
-constrains that they might fail to understand or adhere to.
 \subsection{\ttfamily --help}
 It is probably obvious what this option does! But in particular it displays
 and explantion of the {\ttfamily --dump-source} option, and hence should

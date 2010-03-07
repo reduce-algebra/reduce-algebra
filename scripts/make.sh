@@ -85,12 +85,15 @@ for l in csl psl
 do
   for h in $host
   do
-    for hx in $h $h-debug $h-m32 $h-m32-debug $h-m64 $h-m64-debug
+    for hx in $h $h-debug $h-m32 $h-m32-debug $h-m64 $h-m64-debug \
+              $h-nogui $h-nogui-debug $h-m32-nogui $h-m32-nogui-debug \
+              $h-m64-nogui $h-m64-nogui-debug
     do
       if test -f ${l}build/$hx/Makefile
       then
         echo About to build in ${l}build/$hx
         cd ${l}build/$hx
+        echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
         $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
         cd ../..
       fi

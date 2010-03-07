@@ -740,9 +740,9 @@ with_psl
 with_build
 with_m32
 with_m64
+with_fox
 with_cygwin
 with_mingw
-with_fox
 with_fox_pending
 enable_debug
 enable_conservative
@@ -1401,9 +1401,9 @@ Optional Packages:
   --with-build            specify host-name to use when logging
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
+  --with-fox=DIR          FOX installation location
   --with-cygwin           Force use of raw cywgin (note cygwin license)
   --with-mingw=DIR        MingW installation location
-  --with-fox=DIR          FOX installation location
   --with-fox-pending      do not check dir from --with-fox
   --with-xft              Can be used to disable use of XFT. Default is yes
 
@@ -3264,6 +3264,17 @@ then
 fi
 
 
+# Check whether --with-fox was given.
+if test "${with_fox+set}" = set; then :
+  withval=$with_fox;
+else
+  with_fox="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: --with-fox=$with_fox" >&5
+$as_echo "$as_me: --with-fox=$with_fox" >&6;}
+
+
 
 
 
@@ -3447,7 +3458,10 @@ $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+    if test "x$with_fox" = "xno"
+    then
+      LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+    fi
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
@@ -3827,7 +3841,10 @@ done
 test -n "$SED" || SED="sed"
 
   fi
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  if test "x$with_fox" = "xno"
+  then
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  fi
   XLIBS="-lXext -lX11"
   DLL_CFLAGS="$CFLAGS -shared"
 
@@ -3940,9 +3957,11 @@ $as_echo "#define UNIX 1" >>confdefs.h
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$with_fox" = "xno"
   then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/X11R6/lib64" >&5
+    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/X11R6/lib64" >&5
 $as_echo_n "checking for /usr/X11R6/lib64... " >&6; }
 if test "${ac_cv_file__usr_X11R6_lib64+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -3963,10 +3982,11 @@ else
   XLL=lib
 fi
 
-  else
-    XLL=lib
+    else
+      XLL=lib
+    fi
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL -pthread"
   fi
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL -pthread"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"
   ;;
@@ -3990,9 +4010,11 @@ $as_echo "#define UNIX 1" >>confdefs.h
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$with_fox" = "xno"
   then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/X11R6/lib64" >&5
+    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/X11R6/lib64" >&5
 $as_echo_n "checking for /usr/X11R6/lib64... " >&6; }
 if test "${ac_cv_file__usr_X11R6_lib64+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -4013,10 +4035,11 @@ else
   XLL=lib
 fi
 
-  else
-    XLL=lib
+    else
+      XLL=lib
+    fi
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   fi
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"
   ;;
@@ -4211,17 +4234,6 @@ test -n "$SED" || SED="sed"
 
 fi
 
-
-
-# Check whether --with-fox was given.
-if test "${with_fox+set}" = set; then :
-  withval=$with_fox;
-else
-  with_fox="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: --with-fox=$with_fox" >&5
-$as_echo "$as_me: --with-fox=$with_fox" >&6;}
 
 
 # Check whether --with-fox-pending was given.
@@ -7615,8 +7627,10 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
+if test "x$with_fox" = "xno"
 then
+  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
+  then
 # I will not even look for Xft if I am building for win32 not X.
 #
 # Furthermore I will not try xft-config if I am cross-compiling. This may
@@ -7629,9 +7643,9 @@ else
   with_xft="yes"
 fi
 
-  if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
-  then
-    for ac_prog in xft-config
+    if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
+    then
+      for ac_prog in xft-config
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -7678,15 +7692,15 @@ fi
 done
 test -n "$XFT_CONFIG" || XFT_CONFIG="no"
 
-    if test "$XFT_CONFIG" != "no"
-    then
+      if test "$XFT_CONFIG" != "no"
+      then
 # I will add to CFLAGS and XLIBS if xft-config is found
-      xft_cflags=`$XFT_CONFIG --cflags`
-      CFLAGS="$CFLAGS $xft_cflags"
-      CXXFLAGS="$CXXFLAGS $xft_cflags"
-      CPPFLAGS="$CPPFLAGS $xft_cflags"
-      xft_libs=`$XFT_CONFIG --libs`
-      XLIBS="$XLIBS $xft_libs"
+        xft_cflags=`$XFT_CONFIG --cflags`
+        CFLAGS="$CFLAGS $xft_cflags"
+        CXXFLAGS="$CXXFLAGS $xft_cflags"
+        CPPFLAGS="$CPPFLAGS $xft_cflags"
+        xft_libs=`$XFT_CONFIG --libs`
+        XLIBS="$XLIBS $xft_libs"
 # NB that xft-config hands back some stuff that I might believe should
 # perhaps be in LDFLAGS not LIBS, but never mind! Also done this way we
 # may get some libraries mentioned more than once in LIBS - I hope that
@@ -7694,13 +7708,13 @@ test -n "$XFT_CONFIG" || XFT_CONFIG="no"
 
 $as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: xft-config found, so Xft should be available" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: xft-config found, so Xft should be available" >&5
 $as_echo "$as_me: xft-config found, so Xft should be available" >&6;}
-    else
+      else
 # here xft-config is NOT present, but it may be that xft headers and
 # libraries are nevertheless available. I will look for freetype-config
 # which may also help me...
-      for ac_prog in freetype-config
+        for ac_prog in freetype-config
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -7747,19 +7761,19 @@ fi
 done
 test -n "$FREETYPE_CONFIG" || FREETYPE_CONFIG="no"
 
-      if test "$FREETYPE_CONFIG" != "no"
-      then
+        if test "$FREETYPE_CONFIG" != "no"
+        then
 # I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
 # will then leave them there even if then Xft is not found. That is perhaps
 # slightly untidy.
-        freetype_cflags=`$FREETYPE_CONFIG --cflags`
-        CFLAGS="$CFLAGS $freetype_cflags"
-        CXXFLAGS="$CXXFLAGS $freetype_cflags"
-        CPPFLAGS="$CPPFLAGS $freetype_cflags"
-        freetype_libs=`$FREETYPE_CONFIG --libs`
-        XLIBS="$XLIBS $freetype_libs"
-        xft_found="yes"
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FcConfigCreate in -lfontconfig" >&5
+          freetype_cflags=`$FREETYPE_CONFIG --cflags`
+          CFLAGS="$CFLAGS $freetype_cflags"
+          CXXFLAGS="$CXXFLAGS $freetype_cflags"
+          CPPFLAGS="$CPPFLAGS $freetype_cflags"
+          freetype_libs=`$FREETYPE_CONFIG --libs`
+          XLIBS="$XLIBS $freetype_libs"
+          xft_found="yes"
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FcConfigCreate in -lfontconfig" >&5
 $as_echo_n "checking for FcConfigCreate in -lfontconfig... " >&6; }
 if test "${ac_cv_lib_fontconfig_FcConfigCreate+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -7804,7 +7818,7 @@ _ACEOF
 
 fi
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XftFontOpen in -lXft" >&5
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XftFontOpen in -lXft" >&5
 $as_echo_n "checking for XftFontOpen in -lXft... " >&6; }
 if test "${ac_cv_lib_Xft_XftFontOpen+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -8120,13 +8134,14 @@ else
 fi
 
 
-        if test "$xft_found" = "yes"
-        then
+          if test "$xft_found" = "yes"
+          then
 
 $as_echo "#define HAVE_LIBXFT 1" >>confdefs.h
 
-          { $as_echo "$as_me:${as_lineno-$LINENO}: freetype-config found, and Xft should be available" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: freetype-config found, and Xft should be available" >&5
 $as_echo "$as_me: freetype-config found, and Xft should be available" >&6;}
+          fi
         fi
       fi
     fi
@@ -8388,7 +8403,10 @@ _ACEOF
 fi
 
 
-LIBS="$XLIBS $LIBS"
+if test "x$with_fox" = "xno"
+then
+  LIBS="$XLIBS $LIBS"
+fi
 
 # I want to support some flavour of direct screen addressing.
 # On Windows I use the Console API.

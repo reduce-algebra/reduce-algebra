@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 561779f0 24-Feb-2010 */
+/* Signature: 63c2cced 28-Feb-2010 */
 
 #include "headers.h"
 
@@ -1697,12 +1697,16 @@ static void copy(Lisp_Object *p)
                         rr = cf - alloc_size;
                         codefringe = (Lisp_Object)rr;
 /*
- * See comments in fns2.c for the curious packing here!
+ * See comments in fns2.c for the curious packing here! Note that I carefully
+ * ensure that I compute everything as a uint32_t before I turn it into a
+ * Header, and as a result the top half of the Header will always be
+ * zero if I am on a 64-bit system.
  */
-                        *(Header *)d = *p = TAG_BPS +
-                           (((intptr_t)((rr + CELL) - (cl - 8)) &
+                        *(Header *)d = *p = (Header)(uint32_t)(TAG_BPS +
+                           (((uint32_t)((rr + CELL) - (cl - 8)) &
                              (PAGE_POWER_OF_TWO-4)) << 6) +
-                           (((intptr_t)(new_bps_pages_count-1))<<(PAGE_BITS+6));
+                           (((uint32_t)
+                             (new_bps_pages_count-1))<<(PAGE_BITS+6)));
                         /* Wow! How obscure!! */
                         *(Header *)rr = h;
                         memcpy(rr+CELL, d+CELL, alloc_size-CELL);

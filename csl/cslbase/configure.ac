@@ -161,6 +161,13 @@ then
   bits64="yes"
 fi
 
+AC_ARG_WITH(fox,
+  AC_HELP_STRING([--with-fox=DIR],
+                 [FOX installation location]),
+  [],
+  [with_fox="no"])
+AC_MSG_NOTICE([--with-fox=$with_fox])
+
 
 
 AC_SUBST(MAKE)
@@ -234,7 +241,10 @@ case $host in
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+    if test "x$with_fox" = "xno"
+    then
+      LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+    fi
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
@@ -328,7 +338,10 @@ case $host in
   then
     AC_PATH_PROGS(SED, [gsed sed], sed, [/usr/sfw/bin:$PATH])
   fi
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  if test "x$with_fox" = "xno"
+  then
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  fi
   XLIBS="-lXext -lX11"
   DLL_CFLAGS="$CFLAGS -shared"
   AC_DEFINE(SOLARIS, [1], [True if we are running on Solaris])
@@ -417,13 +430,16 @@ case $host in
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$with_fox" = "xno"
   then
-    AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
-  else
-    XLL=lib
+    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    then
+      AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
+    else
+      XLL=lib
+    fi
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL -pthread"
   fi
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL -pthread"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"
   ;;
@@ -443,13 +459,16 @@ case $host in
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+  if test "x$with_fox" = "xno"
   then
-    AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
-  else
-    XLL=lib
+    if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
+    then
+      AC_CHECK_FILE([/usr/X11R6/lib64],[XLL=lib64],[XLL=lib])
+    else
+      XLL=lib
+    fi
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   fi
-  LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"
   ;;
@@ -476,13 +495,6 @@ then
   AC_CHECK_PROGS(SED,[gsed sed],[sed])
 fi
 
-
-AC_ARG_WITH(fox,
-  AC_HELP_STRING([--with-fox=DIR],
-                 [FOX installation location]),
-  [],
-  [with_fox="no"])
-AC_MSG_NOTICE([--with-fox=$with_fox])
 
 AC_ARG_WITH(fox-pending,
   AC_HELP_STRING([--with-fox-pending],
@@ -843,61 +855,64 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
-if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
+if test "x$with_fox" = "xno"
 then
+  if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
+  then
 # I will not even look for Xft if I am building for win32 not X.
 #
 # Furthermore I will not try xft-config if I am cross-compiling. This may
 # be a mess if I ever try to cross compile towards a machine that needs it.
-  AC_ARG_WITH(xft,
-    AC_HELP_STRING([--with-xft],
-                   [Can be used to disable use of XFT. Default is yes]),
-    [],
-    [with_xft="yes"])
-  if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
-  then
-    AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
-      [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH])
-    if test "$XFT_CONFIG" != "no"
+    AC_ARG_WITH(xft,
+      AC_HELP_STRING([--with-xft],
+                     [Can be used to disable use of XFT. Default is yes]),
+      [],
+      [with_xft="yes"])
+    if test "x$with_xft" != "xno" && test "x$cross_compiling" != "xyes"
     then
+      AC_PATH_PROGS(XFT_CONFIG, xft-config, [no],
+        [/usr/local/bin:/usr/X11R6/bin:/usr/sfw/bin:/usr/csw/bin:$PATH])
+      if test "$XFT_CONFIG" != "no"
+      then
 # I will add to CFLAGS and XLIBS if xft-config is found
-      xft_cflags=`$XFT_CONFIG --cflags`
-      CFLAGS="$CFLAGS $xft_cflags"
-      CXXFLAGS="$CXXFLAGS $xft_cflags"
-      CPPFLAGS="$CPPFLAGS $xft_cflags"
-      xft_libs=`$XFT_CONFIG --libs`
-      XLIBS="$XLIBS $xft_libs"
+        xft_cflags=`$XFT_CONFIG --cflags`
+        CFLAGS="$CFLAGS $xft_cflags"
+        CXXFLAGS="$CXXFLAGS $xft_cflags"
+        CPPFLAGS="$CPPFLAGS $xft_cflags"
+        xft_libs=`$XFT_CONFIG --libs`
+        XLIBS="$XLIBS $xft_libs"
 # NB that xft-config hands back some stuff that I might believe should
 # perhaps be in LDFLAGS not LIBS, but never mind! Also done this way we
 # may get some libraries mentioned more than once in LIBS - I hope that
 # will not cause pain.
-      AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
-      AC_MSG_NOTICE([xft-config found, so Xft should be available])
-    else
+        AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+        AC_MSG_NOTICE([xft-config found, so Xft should be available])
+      else
 # here xft-config is NOT present, but it may be that xft headers and
 # libraries are nevertheless available. I will look for freetype-config
 # which may also help me...
-      AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
-        [/usr/local/bin:/usr/sfw/bin:$PATH])
-      if test "$FREETYPE_CONFIG" != "no"
-      then
+        AC_PATH_PROGS(FREETYPE_CONFIG, freetype-config, [no],
+          [/usr/local/bin:/usr/sfw/bin:$PATH])
+        if test "$FREETYPE_CONFIG" != "no"
+        then
 # I will add to CFLAGS and XLIBS if freetype-config is found, an in fact I
 # will then leave them there even if then Xft is not found. That is perhaps
 # slightly untidy.
-        freetype_cflags=`$FREETYPE_CONFIG --cflags`
-        CFLAGS="$CFLAGS $freetype_cflags"
-        CXXFLAGS="$CXXFLAGS $freetype_cflags"
-        CPPFLAGS="$CPPFLAGS $freetype_cflags"
-        freetype_libs=`$FREETYPE_CONFIG --libs`
-        XLIBS="$XLIBS $freetype_libs"
-        xft_found="yes"
-        AC_CHECK_LIB(fontconfig, FcConfigCreate)
-        AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
-        AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
-        if test "$xft_found" = "yes"
-        then
-          AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
-          AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+          freetype_cflags=`$FREETYPE_CONFIG --cflags`
+          CFLAGS="$CFLAGS $freetype_cflags"
+          CXXFLAGS="$CXXFLAGS $freetype_cflags"
+          CPPFLAGS="$CPPFLAGS $freetype_cflags"
+          freetype_libs=`$FREETYPE_CONFIG --libs`
+          XLIBS="$XLIBS $freetype_libs"
+          xft_found="yes"
+          AC_CHECK_LIB(fontconfig, FcConfigCreate)
+          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+          AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
+          if test "$xft_found" = "yes"
+          then
+            AC_DEFINE(HAVE_LIBXFT, [1], [True Xft is available])
+            AC_MSG_NOTICE([freetype-config found, and Xft should be available])
+          fi
         fi
       fi
     fi
@@ -1005,7 +1020,10 @@ AC_CHECK_LIB(rt, clock_nanosleep)
 
 AC_CHECK_LIB(pthread, pthread_create)
 
-LIBS="$XLIBS $LIBS"
+if test "x$with_fox" = "xno"
+then
+  LIBS="$XLIBS $LIBS"
+fi
 
 # I want to support some flavour of direct screen addressing. 
 # On Windows I use the Console API. 

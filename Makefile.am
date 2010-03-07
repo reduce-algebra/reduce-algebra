@@ -3,11 +3,16 @@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
+if fox
 .PHONY:	all fox
+else
+.PHONY: all
+endif
 
 # As at present set up this Makefile.am imagines that in a CSL build
 # directory there are two sub-directories, csl and fox, and it is
-# necessary to delegate make to each of them.
+# necessary to delegate make to each of them. Well if a GUI is not needed
+# then the fox sub-dircetory is not used.
 #
 # For PSL it supposes that there will be a build directory called
 # psl to delegate to.
@@ -16,7 +21,11 @@ AM_MAKEFLAGS=$(MFLAGS) $(MYFLAGS)
 
 if csl
 LISPDIR=csl
+if fox
 FOXDEP=include/fox-1.6/fxver.h
+else
+FOXDEP=
+endif
 else
 if psl
 LISPDIR=psl
@@ -38,9 +47,11 @@ all:	$(FOXDEP)
 
 
 if csl
+if fox
 fox $(FOXDEP):
 	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
 	@cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+endif
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the

@@ -305,8 +305,14 @@ RM = rm
 # applications might otherwise receive a file-name starting "/cygdrive/x/.."
 # and not understand it.
 @cygpath_TRUE@CYGSRC = $(shell cygpath -m $(srcdir))
+@fox_FALSE@@windows_TRUE@COMEXT = .exe
+
+# On Windows if I have a GUI (here signalled by the use of Fox) I will want
+# the main version of my code to be an .exe file but I will also want a
+# .com version to be a console application. If I only have command-line
+# versions it is easiest to make everything .exe
+@fox_TRUE@@windows_TRUE@COMEXT = .com
 @windows_FALSE@COMEXT = 
-@windows_TRUE@COMEXT = .com
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
@@ -389,8 +395,8 @@ AM_CPPFLAGS = -Dfontsdir=reduce.fonts
 @windows_TRUE@REDUCECOMDEF = local-reducecom.def
 @windows_FALSE@CONAP = 
 
-# For a build on Windows I want to add an icon into each binary, via
-# a resource-file. I also want linking to be in "windows-subsystem-mode",
+# For a build on Windows with a GUI I want to add an icon into each binary,
+# via a resource-file. I also want linking to be in "windows-subsystem-mode",
 # but I also want matching ".com" files to be created to be console
 # mode versions.
 @windows_TRUE@CONAP = -Wl,--subsystem,console

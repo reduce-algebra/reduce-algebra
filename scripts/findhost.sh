@@ -118,6 +118,7 @@ fi
 debug=
 m32=
 m64=
+nogui=
 original=$host
 
 # The decoding here is NOT PERFECT and will not be fully compatible with
@@ -159,9 +160,15 @@ do
     m64=-m64
     m32=
     ;;
+  --without-fox)
+    nogui=-nogui
+    ;;
+  --with-fox=no)
+    nogui=-nogui
+    ;;
   esac
 done
 
-echo $host$m32$m64$debug
+echo $host$m32$m64$nogui$debug
 
 exit 0

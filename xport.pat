@@ -5,10 +5,13 @@
 
 Master=panamint scp://acn1@codemist.dyndns.org:/c/projects/reduce-algebra/trunk
 Master=local    ftp://acn1:?@192.168.1.10/trunk
+Master=gauguin  scp://acn1@gauguin.trin.cam.ac.uk:reduce-algebra/trunk
 
 Omit cslbuild pslbuild generic temp
 Omit autom4te.cache **/autom4te.cache .svn **/.svn
 Omit **.bak **~ **.log
+
+Omit psl
 
 Binary **/configure configure **bpsl* **schau
 Executable **/configure configure **bpsl* **schau

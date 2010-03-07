@@ -7,8 +7,12 @@ Copyright 2009 Jim Michaels, Joost Verburg
 ;mostly modified by Jim Michaels June Sept 25, 2009
 
 ;--------------------------------
-;Include Modern UI
 
+	RequestExecutionLevel admin ;for windows vista/7.  I think this is necessary for this installer only because we write into HKLM and because we expect to write into $PROGRAMFILES
+	;for some reason, this does not work in .onInit
+	;Reduce application does not have a manifest I don't think.  It was not built with Microsoft Visual Studio.
+
+;Include Modern UI
 	!include "MUI2.nsh"
 
 	
@@ -61,9 +65,13 @@ Function .onInit
 
 
 
-	SetShellVarContext all
+	SetShellVarContext all ;all users
 	
+  
+;	!insertmacro MUI_LANGDLL_DISPLAY ;required I think for multiple languages
 FunctionEnd
+
+
 
 
 ;--------------------------------
@@ -254,8 +262,8 @@ Section "Reduce Computer Algebra System (CAS) 20090226" Sec_gui
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\reduce-GUI-mode.lnk" 	"$INSTDIR\reduce.exe"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\manual.lnk" 			"$INSTDIR\reduce.doc\index.html"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\license.lnk" 			"$INSTDIR\license.htm"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\redlog.lnk" 			"$INSTDIR\redlog.pdf"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\standard-lisp-manual.lnk" 				"$INSTDIR\sl.pdf"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\redlog.lnk" 			"$INSTDIR\reduce.doc\redlog.pdf"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\standard-lisp-manual.lnk" 				"$INSTDIR\reduce.doc\sl.pdf"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\readme-fonts.lnk" 		"$INSTDIR\reduce.fonts\README"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\readme-BaKoMa.lnk" 	"$INSTDIR\reduce.fonts\README.BaKoMa"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\readme-cmps-fonts.lnk"	"$INSTDIR\reduce.fonts\README.cmps-fonts"
@@ -269,7 +277,7 @@ SectionEnd
 ;Descriptions
 
   ;Language strings
-  LangString DESC_Sec_gui ${LANG_ENGLISH} "Reduce Compurer Algrbra System (CAS), DOS command-line and GUI version(Windows). 32-bit. 9x/me/nt/2000/2003/xp/ may work in vista/7."
+  LangString DESC_Sec_gui ${LANG_ENGLISH} "Reduce Compurer Algebra System (CAS), DOS command-line and GUI version(Windows). 32-bit. 9x/me/nt/2000/2003/xp/ may work in vista/7."
 
   ;Assign language strings to sections. 
   ;makes checkboxes in the installer page in this order.
@@ -455,4 +463,3 @@ exitlupe:
 	RMDir /r /REBOOTOK '$INSTDIR'
 	RMDir /r /REBOOTOK "$SMPROGRAMS\$StartMenuFolder"
 SectionEnd
- 	  	 

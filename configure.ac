@@ -83,7 +83,7 @@ AC_ARG_WITH(fox,
   AC_HELP_STRING([--with-fox=DIR],
                  [FOX installation location]),
   [],
-  [with_fox="no"])
+  [with_fox="yes"])
 AC_ARG_WITH(fox-pending,
   AC_HELP_STRING([--with-fox-pending],
                  [do not check dir from --with-fox]),
@@ -217,18 +217,27 @@ then
   mkdir -p csl
   cd csl
 
-  AC_MSG_NOTICE([$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build])
-  eval "$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build"
+  if test "x$with_fox" != "xno"
+  then
+    AC_MSG_NOTICE([$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build])
+    eval "$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build"
+  else
+    AC_MSG_NOTICE([$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-build=$build])
+    eval "$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-build=$build"
+  fi
 
   cd $builddir
 
-  AC_MSG_NOTICE([About to configure FOX])
-  mkdir -p fox/src
-  cd fox
+  if test "x$with_fox" != "xno"
+  then
+    AC_MSG_NOTICE([About to configure FOX])
+    mkdir -p fox/src
+    cd fox
 
-  # The Makefile that comes with FOX seems to require these GIF files
-  # in the build directory.
-  cp $abssrcdir/csl/fox/src/*.gif src
+    # The Makefile that comes with FOX seems to require these GIF files
+    # in the build directory.
+    cp $abssrcdir/csl/fox/src/*.gif src
+  fi
 
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin], [Use raw cygwin so link with cygwin1.dll (GPL)]),
@@ -312,29 +321,31 @@ then
   AC_MSG_NOTICE([CFLAGS=$CFLAGS])
   AC_MSG_NOTICE([CXXFLAGS=$CXXFLAGS])
   AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
-  AC_MSG_NOTICE([$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
-          CPPFLAGS="$CPPFLAGS" CFLAGS="$CFLAGS" \
-          CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" \
-          --enable-release --with-opengl=no \
-          --disable-jpeg --disable-zlib --disable-bz2lib \
-          --disable-png --disable-tiff --prefix=$builddir $extras])
-  eval "$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
-          CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-          --enable-release --with-opengl=no \
-          --disable-jpeg --disable-zlib --disable-bz2lib \
-          --disable-png --disable-tiff --prefix=$builddir $extras"
-
-  cd $builddir
-
-  if test -d $abssrcdir/csl/foxtests
+  if test "x$with_fox" != "xno"
   then
-    AC_MSG_NOTICE([About to configure FOX tests])
-    mkdir -p foxtests
-    cd foxtests
+    AC_MSG_NOTICE([$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
+            CPPFLAGS="$CPPFLAGS" CFLAGS="$CFLAGS" \
+            CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" \
+            --enable-release --with-opengl=no \
+            --disable-jpeg --disable-zlib --disable-bz2lib \
+            --disable-png --disable-tiff --prefix=$builddir $extras])
+    eval "$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
+            CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+            --enable-release --with-opengl=no \
+            --disable-jpeg --disable-zlib --disable-bz2lib \
+            --disable-png --disable-tiff --prefix=$builddir $extras"
+    cd $builddir
 
-    AC_MSG_NOTICE([$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes $extras])
-    eval "$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes $extras"
+    if test -d $abssrcdir/csl/foxtests
+    then
+      AC_MSG_NOTICE([About to configure FOX tests])
+      mkdir -p foxtests
+      cd foxtests
+
+      AC_MSG_NOTICE([$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes $extras])
+      eval "$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes $extras"
+    fi
 
     cd $builddir
   fi
@@ -347,6 +358,7 @@ fi
 AM_CONDITIONAL(csl, test "x$with_csl" != "xno")
 AM_CONDITIONAL(psl, test "x$with_psl" != "xno")
 AM_CONDITIONAL(cslpsl, test "x$with_csl" != "xno" && test "x$with_psl" != "xno")
+AM_CONDITIONAL(fox, test "x$with_fox" != "xno")
 
 AC_MSG_NOTICE([final output from top level configuration])
 

@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 448faebd 28-Feb-2010 */
+/* Signature: 2e11f391 01-Mar-2010 */
 
 #include "headers.h"
 
@@ -415,7 +415,7 @@ static CSLbool version_moan(int v)
 {
 /*
  * This code used to check the top bit (ie 0x80) of v to see if the
- * image was a 32 or 64-bit one, and it moaned it you tried to load
+ * image was a 32 or 64-bit one, and it moaned if you tried to load
  * a 64-bit image on a 32-bit system. I am now working towards making
  * the system cross-load all possible image formats and so I have
  * removed that filter! Note that until I have completed the rest of the

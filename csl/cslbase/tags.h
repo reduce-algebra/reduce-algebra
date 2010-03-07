@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 39aad9e5 28-Feb-2010 */
+/* Signature: 3e516f0c 28-Feb-2010 */
 
 
 #ifndef header_tags_h
@@ -760,15 +760,31 @@ typedef uintptr_t Header;
  * Given the compactness of the bytecode format the limit seems generous
  * enough at present! One thing to note here is that the packed address
  * in a BPS reference goes to the data not to the header that preceeds it.
+ * If I am on a 64-bit machine I may need to have a way to refer to an
+ * address in the top half of an oversized page. But I only ever need to do
+ * that if I am on a 64-bit system and in that case I have all the top
+ * 32-bits of the word available. There is a slight initial cause for
+ * concern because when things are initially expanded to 64 bits it is
+ * using sign-extension, so the top half of the item could be either
+ * all zeros or all ones. But if I am careful when I create all BPS
+ * pointers and when I adjust them after loading an image I can set a
+ * bit in the top half of the word if necessary. I very much hope that
+ * good optimising compilers will note whether SIXTY_FOUR_BIT is true
+ * or false and optimise what is written here as a dynamic test into
+ * reasonable code.
  */
-#define data_of_bps(v) \
-  ((char *)(doubleword_align_up((intptr_t) \
-             bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) + \
+#define data_of_bps(v)                                        \
+  ((char *)(doubleword_align_up((intptr_t)                    \
+               bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) +   \
+            (SIXTY_FOUR_BIT ?                                 \
+               (intptr_t)((((uint64_t)(v))>>(32-PAGE_BITS)) & \
+                          PAGE_POWER_OF_TWO) :                \
+               0) +                                           \
             (((v) >> 6) & (PAGE_POWER_OF_TWO-4))))
 
 
 typedef int32_t junk;      /* Unused 4-byte field for structures (for padding) */
-typedef intptr_t junkxx;    /* Unused cell-sized field for structures */
+typedef intptr_t junkxx;   /* Unused cell-sized field for structures */
 
 typedef struct Symbol_Head
 {

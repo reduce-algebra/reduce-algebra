@@ -27,8 +27,16 @@ else
 CYGSRC = $(srcdir)
 endif
 
+# On Windows if I have a GUI (here signalled by the use of Fox) I will want
+# the main version of my code to be an .exe file but I will also want a
+# .com version to be a console application. If I only have command-line
+# versions it is easiest to make everything .exe
 if windows
+if fox
 COMEXT=.com
+else
+COMEXT=.exe
+endif
 else
 COMEXT=
 endif
@@ -182,8 +190,8 @@ BOOTSTRAPREDUCEEXEDEF = local-bootstrapreduceexe.def
 REDUCEEXEDEF = local-reduceexe.def
 REDUCECOMDEF = local-reducecom.def
 
-# For a build on Windows I want to add an icon into each binary, via
-# a resource-file. I also want linking to be in "windows-subsystem-mode",
+# For a build on Windows with a GUI I want to add an icon into each binary,
+# via a resource-file. I also want linking to be in "windows-subsystem-mode",
 # but I also want matching ".com" files to be created to be console
 # mode versions.
 

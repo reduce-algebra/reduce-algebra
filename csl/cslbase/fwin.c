@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 2f040cc9 10-Oct-2009 */
+/* Signature: 670f42ee 07-Mar-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -65,6 +65,8 @@
 
 #include "fwin.h"
 
+
+extern int fwin_main(int argc, char *argv[]);
 
 #ifdef HAVE_LIBFOX
 /*
@@ -77,8 +79,6 @@
  * the callbacks that are needed. The code here is what is needed by
  * CSL...
  */
-
-extern int fwin_main(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
@@ -152,8 +152,6 @@ extern char *getcwd(char *s, size_t n);
 
 #include "termed.h"
 
-#ifdef PART_OF_FOX
-
 /*
  * The next few are not exactly useful if FOX is not available
  * and hence this code will run in line-mode only. However it is
@@ -179,8 +177,6 @@ char about_box_rights_1[40]    = "Author info";
 char about_box_rights_2[40]    = "Additional author";
 char about_box_rights_3[40]    = "This software uses the FOX Toolkit";
 char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
-
-#endif /* PART_OF_FOX */
 
 /*
  * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
@@ -219,19 +215,6 @@ int fwin_use_xft = 0;
 
 int fwin_pause_at_end = 0;
 
-/* Here is where things get started... */
-
-static long long int read8(FILE *f)
-{
-    long long int r = 0LL;
-    int i;
-    for (i=0; i<8; i++)
-    {   int w = getc(f) & 0xff;
-        r |= (((long long)w) << (8*i));
-    }
-    return r;
-}
-
 #ifdef WIN32
 
 void consoleWait()
@@ -248,7 +231,7 @@ void consoleWait()
 
 #endif
 
-#ifdef PART_OF_FOX
+#if defined PART_OF_FOX || defined CSL
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 #else
 int main(int argc, char *argv[])
@@ -706,7 +689,8 @@ void fwin_set_prompt(const char *s)
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
 }
 
-void fwin_menus(char **modules, char **switches)
+extern void fwin_menus(char **modules, char **switches,
+                       review_switch_settings_function *f)
 {
 }
 
