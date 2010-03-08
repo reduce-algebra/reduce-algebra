@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 4fbe3dbf 10-Jun-2008 */
+/* Signature: 3c2f83af 08-Mar-2010 */
 
 #include "headers.h"
 
@@ -1329,7 +1329,7 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
         save_io_base    = io_base,    save_errors_base  = errors_base;
     int save_time_limit = time_limit, save_space_limit  = space_limit,
         save_io_limit   = io_limit,   save_errors_limit = errors_limit;
-    int r0, r1, r2, r3;
+    int r0=0, r1=0, r2=0, r3=0;
 #ifndef __cplusplus
     jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
