@@ -9,7 +9,10 @@ shift
 shift
 case "x$OS" in
 xWindows_NT)
-  for hx in "x86_64-pc-windows" "x86_64-pc-windows-debug" "i686-pc-windows" "i686-pc-windows-debug"
+  for hx in "x86_64-pc-windows" "x86_64-pc-windows-debug" \
+            "i686-pc-windows" "i686-pc-windows-debug" \
+            "x86_64-pc-windows-nogui" "x86_64-pc-windows-nogui-debug" \
+            "i686-pc-windows-nogui" "i686-pc-windows-nogui-debug"
   do
     if test -x $here/../cslbuild/$hx/csl/$ap.com
     then
@@ -28,7 +31,9 @@ xWindows_NT)
 *)
   host0=`$here/../config.guess`
   host=`$here/findhost.sh $host0`
-  for hx in "" "-debug" "-m32" "-m32-debug" "-m64" "-m64-debug"
+  for hx in "" "-debug" "-m32" "-m32-debug" "-m64" "-m64-debug" \
+            "-nogui" "-nogui-debug" "-m32-nogui" "-m32-nogui-debug" \
+            "-m64-nogui" "-m64-nogui-debug"
   do
     if test -x $here/../cslbuild/$host$hx/csl/$ap
     then
