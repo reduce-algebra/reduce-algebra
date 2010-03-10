@@ -586,6 +586,13 @@ procedure rl_a2s!-varl(l);
       return w
    end;
 
+procedure rl_a2s!-var(u);
+   begin scalar w;
+      w := reval u;
+      if not idp w then typerr(w,"variable");
+      return w
+   end;
+
 procedure rl_a2s!-number(n);
    % Algebraic to symbolic number.
    begin

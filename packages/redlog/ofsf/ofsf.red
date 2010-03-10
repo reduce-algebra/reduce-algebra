@@ -158,6 +158,7 @@ put('ofsf,'rl_params,'(
    (rl_multsurep!* . ofsf_multsurep)
    (rl_specelim!* . ofsf_specelim)
    (rl_fbqe!* . ofsf_fbqe)
+   (rl_mkequation!* . ofsf_mkequation)
    (rl_rxffn!* . ofsf_rxffn)));
 
 % Services
@@ -173,6 +174,7 @@ put('ofsf,'rl_services,'(
    (rl_dnf!* . ofsf_dnf)
    (rl_all!* . cl_all)
    (rl_ex!* . cl_ex)
+   (rl_ex2!* . cl_ex2)
    (rl_atnum!* . cl_atnum)
    (rl_qnum!* . cl_qnum)
    (rl_tab!* . cl_tab)
@@ -395,6 +397,14 @@ procedure ofsf_mkstrict(r);
    % Ordered field standard form make strict. [r] is an ordering
    % relation. Returns the strict part of [r].
    if r eq 'leq then 'lessp else if r eq 'geq then 'greaterp else r;
+
+procedure ofsf_mkequation(lhs,rhs);
+   begin scalar w;
+      w := subtrsq(simp lhs,simp rhs);
+      if !*rlposden or !*rlnzden or domainp denr w then
+   	 return ofsf_0mk2('equal,numr w);
+      rederr {"ofsf_mkequation: parametric denominator in",w}
+   end;
 
 endmodule;  % [ofsf]
 

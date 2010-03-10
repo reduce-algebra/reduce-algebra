@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cl_misc_rcsid!* cl_misc_copyright!*);
@@ -66,7 +66,7 @@ procedure cl_apply2ats1(f,client,clpl);
       if rl_boolp op then
     	 return rl_mkn(op,for each subf in rl_argn f collect
 	    cl_apply2ats1(subf,client,clpl));
-      % [f] is an atomic formula.     
+      % [f] is an atomic formula.
       return apply(client,f . clpl)
    end;
 
@@ -139,7 +139,7 @@ procedure cl_prenexp(f);
       >>;
       return cl_qnum f = 0
    end;
-   
+
 %DS
 % <MULTIPLICITY LIST> ::= (..., (<S-EXPRESSION> . <OCCURRENCES>), ...)
 % <OCCURRENCES> ::= <INTEGER>
@@ -503,6 +503,39 @@ procedure cl_atl2b(atl);
    if null atl then
       'false  % caveat: smkn would give true!
    else rl_smkn('and,atl);
+
+operator ex2;
+
+procedure ex2(vars,f);
+   <<
+      vars := if eqcar(vars,'list) then cdr vars else {vars};
+      rl_mk!*fof cl_ex21(vars,rl_simp f)
+   >>;
+
+procedure cl_ex2(f,pl);
+   begin scalar fvl,bvl,vl;
+      fvl . bvl := rl_varl f;
+      vl := lto_setminus(fvl,pl);
+      return cl_ex21(vl,f)
+   end;
+
+procedure cl_ex21(vl,f);
+   begin scalar w,fvl,bvl,vl,ql,sl,eqs,res;
+      fvl . bvl := rl_varl f;
+      for each v in vl do <<
+	 w := v;
+	 repeat w := mkid(w,'!#) until not memq(w,fvl) and not memq(w,bvl);
+	 ql := w . ql;
+	 sl := (v . w) . sl;
+	 eqs := rl_mkequation(v,w) . eqs
+      >>;
+      ql := nconc(ql,reversip vl);
+      eqs := rl_mk1('not,rl_smkn('and,reversip eqs));
+      res := rl_mkn('and,{f,cl_subfof(sl,f),eqs});
+      for each q in ql do
+	 res := rl_mkq('ex,q,res);
+      return res
+   end;
 
 endmodule;  % [clmisc]
 

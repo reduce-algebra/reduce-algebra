@@ -66,6 +66,8 @@ rl_mkserv('dnf,'(rl_simp),nil,nil,'rl_mk!*fof,T);
 
 rl_mkserv('ex,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
 
+rl_mkserv('ex2,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
+
 rl_mkserv('all,'(rl_simp),'(rl_a2s!-varl),'((list)),'rl_mk!*fof,T);
 
 rl_mkserv('posgqe,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
@@ -223,6 +225,8 @@ rl_mkserv('posresolve,'(rl_simp),nil,nil,'rl_mk!*fof,T);
 
 rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,T);
 
+rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,T);
+
 % Black box scheduler.
 
 rl_mkbb('rl_simplat1,2);
@@ -346,6 +350,8 @@ rl_mkbb('rl_prepat,1);
 rl_mkbb('rl_simpat,1);
 
 rl_mkbb('rl_rxffn,1);
+
+rl_mkbb('rl_mkequation,2);
 
 endmodule;  % [rlsched]
 
