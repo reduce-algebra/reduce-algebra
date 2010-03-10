@@ -97,12 +97,16 @@ procedure ofsf_gsd(f,atl);
    end;
 
 procedure ofsf_gsd1(f,atl);
+   % This is to mind !*rlpos at the end.
+   cl_simpl(ofsf_gsd2(f,atl),atl,-1);
+
+procedure ofsf_gsd2(f,atl);
    % Ordered field standard form groebner simplification via
    % disjunctive normal form. [f] is an formula; [atl] is a list of
    % atomic formulas, which are considered to describe a theory. An
    % formula equivalent to [f] or ['inctheo] is returned. The
    % returned formula is somehow simpler than [f].
-   begin scalar phi,!*rlsiexpla;  % Hack, but otherwise phi is not a bnf!
+   begin scalar phi,!*rlpos,!*rlsiexpla;  % Hack, but otherwise phi is not a bnf!
       if !*rlgsbnf then <<
       	 if !*rlgsvb then ioto_prin2 "[DNF";
       	 phi := cl_simpl(cl_nnfnot cl_dnf f,atl,-1);
@@ -114,7 +118,7 @@ procedure ofsf_gsd1(f,atl);
    	 return cl_nnfnot phi;
       phi := ofsf_gssimplify0(phi,atl);
       if phi eq 'inctheo then return 'inctheo;
-      return cl_simpl(cl_nnfnot phi,atl,-1)
+      return cl_nnfnot phi
    end;
 
 procedure ofsf_gsn(f,atl);
