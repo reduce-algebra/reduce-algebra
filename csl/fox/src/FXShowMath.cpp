@@ -2684,6 +2684,9 @@ static Keyword texWords[1<<texWordBits] =
     {"natural",          TeXSymbol, FntItalic, 0x5c, NULL},
     {"sharp",            TeXSymbol, FntItalic, 0x5b, NULL},
     {"backslash",        TeXSymbol, FntSymbol, 0x6e, NULL},
+    {"textbackslash",    TeXSymbol, FntSymbol, 0x6e, NULL},
+    {"textasciicircum",  TeXSymbol, FntRoman,  0x5e, NULL},
+    {"textasciitilde",   TeXSymbol, FntRoman,  0x7e, NULL},
     {"partial",          TeXSymbol, FntItalic, 0x40, NULL},
     {"infty",            TeXSymbol, FntSymbol, 0x31, NULL},
 //  {"Box",              TeXSymbol, FntSymbol, 0x00, NULL},  // msam 0x04
