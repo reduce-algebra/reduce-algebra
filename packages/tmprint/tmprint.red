@@ -210,13 +210,13 @@ switch list,ratpri,revpri,nosplit;
 fluid '(
       fancy!-switch!-on!*
       fancy!-switch!-off!*
-          !*fancy!-mode
-          fancy!-pos!*
-          fancy!-line!*
-          fancy!-page!*
-          fancy!-bstack!*
-          !*fancy_tex
-          !*fancy!-lower    % control of conversion to lower case
+      !*fancy!-mode
+      fancy!-pos!*
+      fancy!-line!*
+      fancy!-page!*
+      fancy!-bstack!*
+      !*fancy_tex
+      !*fancy!-lower    % control of conversion to lower case
       );
 
 switch fancy_tex; % output TEX equivalent.
@@ -754,27 +754,95 @@ symbolic procedure fancy!-print!-function!-arguments u;
             '!(,'!));
 
 symbolic procedure fancy!-maprint!-atom(l,p);
+% This should be where any atomic entity provided by the user gets
+% treated. The "ordinarily special" cases are
+%   (a) Things like the names "alpha", "beta", "geq", "partial-df" and
+%       a whole bunch more that have a fancy!-special!-symbol property
+%       indicating that they stand for some special character.
+%   (b) vectors, which get displayed as eg [1,2,3,4]
+%   (c) negative numbers in cases where they should be rendered in
+%       parentheses to avoid ambiguity in the output.
+% In the original code here all other cases where merely delegated to
+% fancy!-prin2!*.
+%
+% There are however some "less ordinary" special cases that arise when
+% material from the user clashes with TeX. I am at present aware of
+% five cases of oddity:
+%   (1) Strings: If the user puts a string in the input it ought to end
+%                up rendered literally come what may. At present it tends
+%                to get transcrioned to the TeX stream unaltered, and if the
+%                string has TeX special characters in it the result can be
+%                odd!
+%   (2) Names with special characters within. For instance "abc!%def" leads
+%                to TeX that says "\mathrm{abc%def}" and the "%" there is
+%                treated as a comment marker, leading to disaster.
+%   (3) Names that alias a TeX directive. Eg "on revpri; (1+!\big)^3;". This
+%                case can include explicit cases that could be held to
+%                be deliberate such as !\alpha, but the fancy!-special!-symbol
+%                scheme ought to make that unnecessary.
+%   (4) Names (or strings) containing characters outside the LaTeX fonts that
+%                are used by default. Mostly these will be special LaTeX
+%                control characters, but e.g. if a user could get a "pounds
+%                sterling" character into a name...
+%   (5) All the follow-on joys that go beyond just (4) and correspond to
+%       "Internationalisation"!
+% I view all of these as illustrating the fact that interfacing between the
+% core of Reduce and its front-end using a textual interface like this is
+% unsatisfactory, even though it has been a good place-holder and a path of
+% least resistance. The problems noted here only escalate if you imagine
+% delevloping the graphical front-end to support cut and (particularly)
+% paste operations where the same sorts of textual conversion would need to
+% be done but consistently and in the other direction. It also makes the
+% issue about who takes responsibility for line breaks a muddled one.
+%
+% Going via LaTeX is not automatically or comfortably 1:1, it loses structural
+% information and it adds the inefficiency of the conversion done here which
+% feeds instantly into a TeX parser that tries to reconstruct a box-structure
+% that could be closely related to a Lisp prefix form.
+%
+% So in the long term I would really like to discard this and go directly
+% from the Reduce internal form to a box-structure that can be used for
+% layout and rendering.
  fancy!-level
   begin scalar x;
-     if(x:=get(l,'fancy!-special!-symbol))
-           then fancy!-special!-symbol(x,
+     if (x:=get(l,'fancy!-special!-symbol)) then
+         fancy!-special!-symbol(x,
                 get(l,'fancy!-special!-symbol!-size) or 2)
-     else
-     if vectorp l then
-       <<fancy!-prin2!*("[",0);
+     else if vectorp l then <<
+         fancy!-prin2!*("[",0);
          l:=for i:=0:upbv l collect getv(l,i);
          x:=fancy!-inprint(",",0,l);
          fancy!-prin2!*("]",0);
-        return x>>
-     else
-     if not numberp l or (not (l<0) or p<=get('minus,'infix))
+         return x >>
+     else if stringp l then <<
+         fancy!-line!* := '!\mathrm!{ . fancy!-line!*;
+         for each c in explodec l do fancy!-tex!-character c;
+         fancy!-line!* := '!} . fancy!-line!* >>
+     else if not numberp l or (not (l<0) or p<=get('minus,'infix))
          then fancy!-prin2!*(l,'index)
-     else
-     fancy!-in!-brackets(
-          {'fancy!-prin2!*,mkquote l,t}, '!(,'!));
-     return if testing!-width!* and overflowed!* then 'failed
-              else nil;
+     else fancy!-in!-brackets({'fancy!-prin2!*,mkquote l,t}, '!(,'!));
+     return (if testing!-width!* and overflowed!* then 'failed else nil);
   end;
+
+symbolic procedure fancy!-tex!-character c;
+% This arranges to print something even if it is a funny character as
+% far as TeX is concerned. I display a tab as two spaces, and a newline
+% as $eol$ and rather hope that neither ever arises. I also need to check
+% that my TeX parser can handle all these...
+  if c = '!# or
+     c = '!$ or
+     c = '!% or
+     c = '!& or
+     c = '!_ or
+     c = '!{ or
+     c = '!} then fancy!-line!* := c . '!\ . fancy!-line!*
+  else if c = '!~ then fancy!-line!* := '!{!\textasciitilde!} . fancy!-line!*
+  else if c = '!^ then fancy!-line!* := '!{!\textasciicircum!} . fancy!-line!*
+  else if c = '!\ then fancy!-line!* := '!{!\textbackslash!} . fancy!-line!*
+  else if c = blank   then fancy!-line!* := '!~ . fancy!-line!*
+  else if c = tab     then fancy!-line!* := '!~ . '!~ . fancy!-line!*
+  else if c = !$eol!$ then fancy!-line!* := '!\!$eol!\!$ . fancy!-line!*
+  else fancy!-line!* := c . fancy!-line!*;
 
 put('print_indexed,'psopfn,'(lambda(u)(flag u 'print!-indexed)));
 
