@@ -803,6 +803,15 @@ symbolic procedure fancy!-maprint!-atom(l,p);
 % So in the long term I would really like to discard this and go directly
 % from the Reduce internal form to a box-structure that can be used for
 % layout and rendering.
+%
+% If an identifier contains one of the TeX special characters (other than
+% underscore) I will just display it as in \mathrm{} context. Doing so will
+% override any detection of trailing digits that could otherwise end up
+% displayed as subscripts.
+%
+% I suspect that I really want to render strings in the cmtt fixed-pitch font,
+% but at present I am not confident that Reduce always makes a careful enough
+% distinction about what it provides as string and what as symbol data here.
  fancy!-level
   begin scalar x;
      if (x:=get(l,'fancy!-special!-symbol)) then
@@ -814,7 +823,7 @@ symbolic procedure fancy!-maprint!-atom(l,p);
          x:=fancy!-inprint(",",0,l);
          fancy!-prin2!*("]",0);
          return x >>
-     else if stringp l then <<
+     else if stringp l or (idp l and contains!-tex!-special l) then <<
          fancy!-line!* := '!\mathrm!{ . fancy!-line!*;
          for each c in explodec l do fancy!-tex!-character c;
          fancy!-line!* := '!} . fancy!-line!* >>
@@ -823,6 +832,22 @@ symbolic procedure fancy!-maprint!-atom(l,p);
      else fancy!-in!-brackets({'fancy!-prin2!*,mkquote l,t}, '!(,'!));
      return (if testing!-width!* and overflowed!* then 'failed else nil);
   end;
+
+symbolic procedure contains!-tex!-special x;
+% Checks if an identifier contains any character that could "upset" TeX
+% in its name. Note that as a special case I do NOT count underscore as
+% special here!
+  begin
+    scalar u;
+    u:= (if !*fancy!-lower then explode2lc x
+         else explode2 x);
+top:if null u then return nil
+    else if memq(car u, '(!# !$ !% !& !{ !} !~ !^ !\)) or
+            car u eq blank or car u eq tab or car u eq !$eol!$ then return t;
+    u := cdr u;
+    go to top
+  end;
+
 
 symbolic procedure fancy!-tex!-character c;
 % This arranges to print something even if it is a funny character as
