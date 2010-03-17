@@ -61,6 +61,8 @@ AC_CONFIG_FILES(Makefile)
 
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
+AC_DEFINE(NILSEG_EXTERNS, [1], [Makes use of a debugger easier, I hope.])
+
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
                   [Try to cross-build using 64-bit mingw]),

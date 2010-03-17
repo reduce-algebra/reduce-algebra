@@ -3053,6 +3053,10 @@ $as_echo "#define CSL 1" >>confdefs.h
 
 
 
+$as_echo "#define NILSEG_EXTERNS 1" >>confdefs.h
+
+
+
 # Check whether --with-mingw64 was given.
 if test "${with_mingw64+set}" = set; then :
   withval=$with_mingw64;

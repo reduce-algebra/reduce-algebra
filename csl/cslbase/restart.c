@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 23665f6b 07-Mar-2010 */
+/* Signature: 30545ab9 17-Mar-2010 */
 
 #include "headers.h"
 
@@ -282,15 +282,16 @@ Lisp_Object lisp_trace_output, lisp_debug_io, lisp_query_io;
 Lisp_Object prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 Lisp_Object expr_symbol, fexpr_symbol, macro_symbol;
 Lisp_Object cl_symbols, active_stream, current_module;
-Lisp_Object features_symbol, lisp_package, sys_hash_table;
+Lisp_Object native_defs, features_symbol, lisp_package, sys_hash_table;
 Lisp_Object help_index, cfunarg, lex_words, get_counts, fastget_names;
 Lisp_Object input_libraries, output_library, current_file, break_function;
 Lisp_Object standard_output, standard_input, debug_io;
 Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
+Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
 Lisp_Object gchook, resources, callstack;
-Lisp_Object hankaku_symbol;
 Lisp_Object workbase[51];
+
 
 #endif
 
@@ -937,11 +938,11 @@ static void adjust(Lisp_Object *cp)
  */
 
 #define expand_to_64(x) \
-    (flip_needed ? flip_bytes((Lisp_Object)(int32_t)flip_32(x)) : \
-     ((Lisp_Object)(int32_t)(x)))
+    (flip_needed ? (Lisp_Object)flip_64bits((int64_t)(int32_t)flip_32bits(x)) : \
+     ((Lisp_Object)(int64_t)(int32_t)(x)))
 
 #define shrink_to_32(x) \
-    (flip_needed ? flip_32((int32_t)flip_bytes(x)) : \
+    (flip_needed ? (Lisp_Object)flip_32bits((int32_t)flip_64bits(x)) : \
      (Lisp_Object)(x))
 
 static void adjust_consheap(void)
@@ -1011,7 +1012,7 @@ static void adjust_consheap(void)
  * left with something safe. Well the gaps should in fact never get inspected
  * and so leaving mess in them ought to be OK - but of I look forward to
  * a future potential conservative garbage collectoe that may change at
- * last slightly, so I will try to be tidy here.
+ * least slightly, so I will try to be tidy here.
  */
             fr = low + len;
             while (fr < start)
@@ -1027,8 +1028,7 @@ static void adjust_consheap(void)
         fringe = (Lisp_Object)fr;
         heaplimit = (Lisp_Object)(low + SPARE);
         while (fr < start)
-        {
-            adjust((Lisp_Object *)fr);
+        {   adjust((Lisp_Object *)fr);
             fr += sizeof(Lisp_Object);
         }
     }
@@ -1375,7 +1375,8 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  * to bad if it is generated in a way that could conflict with use of a
  * windowed application.
  */
-            printf("p=%p Header = %.16llx = %.8x (%d)\n", p, *(int64_t *)p, h, is_symbol_header(h));
+            printf("p=%p Header = %.16llx = %.8x (is_sym=%d)\n",
+                    p, *(int64_t *)p, h, is_symbol_header(h));
             printf("Length = %d\n", length_of_header(h));
             for(i=-32; i<=32; i+=4)
             {    if (i == 0) printf("\n%p: ", p);
@@ -1418,7 +1419,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  * tagged as a vector of 8 bit bytes this does not matter.
  */
                 *(Lisp_Object *)(p+symhdr_length) =
-                    make_padder(symhdr_length);
+                    flip_32(make_padder(symhdr_length));
 #ifdef DEBUG_WIDTH
                 for (i=0; i<80; i+=4)
                 {   printf("%.8x ", *(int32_t *)(p+i));
@@ -1457,6 +1458,14 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  * world there will never be a padding word at the end of a vector.
  */
                 len = doubleword_align_up(length_of_header(h));
+#ifdef DEBUG_WIDTH
+                printf("Shrinking vec to 32 bits:\n");
+                for (i=0; i<len; i+=4)
+                {   printf("%.8x ", *(int32_t *)(p+i));
+                    if (((i/4) % 8) == 7) printf("\n");
+                }
+                printf("\n");
+#endif
                 newp = (int32_t *)p;
                 oldp = (int64_t *)p;
                 for (i=8; i<len; i+=8)
@@ -1469,7 +1478,8 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  */
                 h1 = (h & 0x3ff) | ((((char *)newp)-p+4)<<10);
 #ifdef DEBUG_WIDTH
-                printf("new object length = %d\n", ((char *)newp)-p+4);
+                printf("new object length = %d, h=%.8x\n",
+                       ((char *)newp)-p+4, h1);
 #endif
                 *(Lisp_Object *)p = flip_32(h1); /* write back header */
                 if ((4 & (intptr_t)newp) == 0)
@@ -1482,7 +1492,15 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  */
                 newp++;
                 if (p != (char *)newp)
-                    *newp = make_padder(p - (char *)newp);
+                    *newp = flip_32(make_padder(p - (char *)newp));
+#ifdef DEBUG_WIDTH
+                printf("AFTER shrinking vec to 32 bits:\n");
+                for (i=0; i<len; i+=4)
+                {   printf("%.8x ", *(int32_t *)(p-len+i));
+                    if (((i/4) % 8) == 7) printf("\n");
+                }
+                printf("\n");
+#endif
                 break;
         case TYPE_STRING:
 #ifdef DEBUG_WIDTH
@@ -1548,7 +1566,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 #endif
 /* Test if the vector has shrunk in memory - if so insert padding */
                 if (len != doubleword_align_up(length_of_header(h)-4))
-                    *(int32_t *)(p + len - 8) = make_padder(8);
+                    *(int32_t *)(p + len - 8) = flip_32(make_padder(8));
 #ifdef DEBUG_WIDTH
                 for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
 #endif
@@ -1688,7 +1706,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
  */
                 newp++;
                 if (p != (char *)newp)
-                    *newp = make_padder(p - (char *)newp);
+                    *newp = flip_32(make_padder(p - (char *)newp));
                 break;
         case TYPE_STRING:
 #ifdef DEBUG_WIDTH
@@ -1754,7 +1772,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
 #endif
 /* Test if the vector has shrunk in memory - if so insert padding */
                 if (len != doubleword_align_up(length_of_header(h)-4))
-                    *(int32_t *)(p + len - 8) = make_padder(8);
+                    *(int32_t *)(p + len - 8) = flip_32(make_padder(8));
 #ifdef DEBUG_WIDTH
                 for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
 #endif
@@ -1786,7 +1804,7 @@ static void adjust_vecheap(void)
         char *fr;
         int i;
 #ifdef DEBUG_WIDTH
-        printf("len = %d = %x (%d)\n", len, len, car32(low));
+        printf("len = %d = %x (%d:%.8x)\n", len, len, car32(low), car32(low));
         for (i=0; i<4*32; i+=4)
         {   printf("%.8x ", *(int32_t *)(low+i));
             if ((i/4)%8 == 7) printf("\n");
@@ -3168,14 +3186,36 @@ static void warm_setup()
     memory_comment(12);  /* remainder of setup */
 #endif
 #endif
+/*
+ * An explanation is needed here. Hash tables can be really odd things in
+ * that if they are keyed on the EQ test they are based on memory addresses
+ * that objects lie at. So the garbage collector has to do magic things with
+ * them! I therefore keep a list of all hash tables, but it must not be
+ * processed in a naive way. I keep it in a variable that is NOT in the range
+ * of places where the garbage collector normally looks. But when it comes
+ * to preserve and restart I need to save the information, so I have the two
+ * lists I need saved in the nilseg under the aliass eq_hash_table_list and
+ * equal_hash_table_list. As soon as I can I extract them and put them
+ * back in the magic special places they need to live.
+ */
     eq_hash_tables = eq_hash_table_list;
     equal_hash_tables = equal_hash_table_list;
     eq_hash_table_list = equal_hash_table_list = nil;
     {   Lisp_Object qq;
         for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
+        {   if (!is_vector(qcar(qq)))
+            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
+                exit(4);
+            }
             rehash_this_table(qcar(qq));
+        }
         for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
+        {   if (!is_vector(qcar(qq)))
+            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
+                exit(4);
+            }
             rehash_this_table(qcar(qq));
+        }
     }
 
 /*
@@ -5516,7 +5556,6 @@ void setup(int restartp, double store_size)
  */
         {   Ihandle save;
             char b[64];
-            int i;
             Icontext(&save);
 #define BANNER_CODE (-1002)
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
@@ -5587,7 +5626,6 @@ void setup(int restartp, double store_size)
         if (converting_to_32)
         {   int64_t *p = (int64_t *)pages[0];
             int32_t *q = (int32_t *)BASE;
-            int i;
 /* read twice as much because it should be in 64-bit units */
             Cfread((char *)p, (2*sizeof(Lisp_Object))*last_nil_offset);
 /*
@@ -5646,7 +5684,6 @@ void setup(int restartp, double store_size)
  * from the top bit of h. That is because later on I will turn that back
  * into sssssssshgfedcba.
  */
-            int i;
             Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
 /*
  * Copying from the top downwards avoids clobbering stuff here. As with the
@@ -5660,9 +5697,9 @@ void setup(int restartp, double store_size)
  * if I have byte-flipped they will be in the wrong position. I will cope with
  * that later when I flip them.
  */
-            for (i=sizeof(Lisp_Object)*(last_nil_offset-1); i>=0; i--)
-            {   *(int64_t *)((char *)BASE+2*i) =
-                    (int64_t)*(int32_t *)((char *)(BASE+i));
+            for (i=last_nil_offset-1; i>=0; i--)
+            {   *(int64_t *)((char *)BASE+8*i) =
+                    (int64_t)*(int32_t *)((char *)BASE+4*i);
             }
         }
         else Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
@@ -5834,7 +5871,7 @@ void copy_into_nilseg(int fg)
     }
 /*
  * Entries 50 and 51 are used for chains of hash tables, and so get
- * very special individual treatment.
+ * very special individual treatment. See comments elsewhere.
  */
     BASE[52]     = current_package;
     BASE[53]     = B_reg;
@@ -5906,7 +5943,9 @@ void copy_into_nilseg(int fg)
     BASE[131]    = lisp_standard_output;
     BASE[132]    = lisp_standard_input;
     BASE[133]    = lisp_debug_io;
-    BASE[134]    = lisp_6]    = lisp_terminal_io;
+    BASE[134]    = lisp_error_output;
+    BASE[135]    = lisp_query_io;
+    BASE[136]    = lisp_terminal_io;
     BASE[137]    = lisp_trace_output;
     BASE[138]    = standard_output;
     BASE[139]    = standard_input;

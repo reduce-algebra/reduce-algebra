@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 5e7037d0 28-Feb-2010 */
+/* Signature: 4c6560d5 16-Mar-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -374,7 +374,13 @@ extern Lisp_Object C_nil;
  * choice of whether this option should be enabled or not will be pretty
  * marginal and should really be sorted out by building once with
  * NILSEG_EXTERNS and once without, and comparing the performance of the
- * two resulting systems.
+ * two resulting systems. Since I believe the performance effects will
+ * be small and I expect use of a debugger to be easier if all the key
+ * variables are available as external symbols that is what I will make
+ * my default right now. I can imagine that if at some stage I move to
+ * more creation of native code that the references relative to NIL provide
+ * easier code to generate and less effort needing to relocate it, so I may
+ * then switch back.
  */
 
 #define nil_as_base
