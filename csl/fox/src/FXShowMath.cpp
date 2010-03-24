@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 5e38c8c0 21-Oct-2009 */
+/* Signature: 56964ff9 17-Mar-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

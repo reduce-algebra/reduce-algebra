@@ -243,7 +243,7 @@ case $host in
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
-    if test "x$with_fox" = "xno"
+    if test "x$with_fox" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     fi
@@ -340,7 +340,7 @@ case $host in
   then
     AC_PATH_PROGS(SED, [gsed sed], sed, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$with_fox" = "xno"
+  if test "x$with_fox" != "xno"
   then
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
   fi
@@ -432,7 +432,7 @@ case $host in
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$with_fox" = "xno"
+  if test "x$with_fox" != "xno"
   then
     if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
     then
@@ -440,8 +440,9 @@ case $host in
     else
       XLL=lib
     fi
-    LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL -pthread"
+    LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   fi
+  LDFLAGS="$LDFLAGS -pthread"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"
   ;;
@@ -461,7 +462,7 @@ case $host in
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$with_fox" = "xno"
+  if test "x$with_fox" != "xno"
   then
     if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
     then
@@ -1081,17 +1082,19 @@ then
 fi
 
 # Some platforms appear to require the Xcursor library. The next line
-# should arrange that it gets scanned if it is available. This test
-# does not make a lot of sense on Windows, but in that case it will
-# just harmlessly fail. And sometimes (especially for static linking)
-# a Xrender library is needed too... However Solarix 10 x86 seems to
-# misdetect Xrender when in 64-bit mode so I fudge that away here.
+# should arrange that it gets scanned if it is available.
+# It is obviously irrelevant on Windows and if no GUI is required,
+# However Solarix 10 x86 seems to misdetect Xrender when in
+# 64-bit mode so I fudge that away here.
 
-if test "x$solaris" != "xyes"
+if test "x$with_fox" != "xno" &&
+   test "x$solaris" != "xyes" &&
+   (test "x$windows_build" != "xyes" ||
+     test "x$with_cygwin" = "xyes")
 then
   AC_SEARCH_LIBS(XRenderCreateCursor, Xrender)
   AC_SEARCH_LIBS(XcursorImageCreate, Xcursor)
-  AC_SEARCH_LIBS(XRRQueryVersion, Xrandr) 
+  AC_SEARCH_LIBS(XRRQueryVersion, Xrandr)
 fi
 
 # Checks for header files.

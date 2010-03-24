@@ -13,7 +13,8 @@ Omit **.bak **~ **.log
 
 Omit psl
 
-Binary **/configure configure **bpsl* **schau
-Executable **/configure configure **bpsl* **schau
+Binary  **/configure configure **bpsl* **schau **.pl **.parser **.properties
+Executable **/configure configure **bpsl* **schau **.pl **.parser
 
+Binary **/bst2groovy **/exbib **/exbibutil **/exindex **/showfmt
 

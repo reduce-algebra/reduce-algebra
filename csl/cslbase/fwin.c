@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 670f42ee 07-Mar-2010 */
+/* Signature: 1efa1d42 20-Mar-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -130,9 +130,16 @@ extern char *getcwd(char *s, size_t n);
 #endif
 #endif /* HAVE_DIRENT_H */
 
-#ifndef WIN32
-#include <X11/Xlib.h>
-#endif /* WIN32 */
+/*
+ * I used to have this to give me X11 headers - but (a) if I am building
+ * without FOX I do not have a GUI at all and so they are not needed and
+ * (b) they conflict with the Mac-specific headers that follow. Specifically
+ * I have pain with "Cursor" being a name-clash.
+ *
+ * #ifndef WIN32
+ * #include <X11/Xlib.h>
+ * #endif
+ */
 
 #if defined MACINTOSH && defined MAC_FRAMEWORK
 /*

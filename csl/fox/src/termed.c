@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 76513832 15-Dec-2009 */
+/* Signature: 3fa4d4a9 18-Mar-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -742,12 +742,6 @@ int term_setup(int flag, const char *colour)
     errcode = setupterm(s,               /* terminal type */
                         stdout_handle,   /* ie to stdout */
                         &errval);
-#ifdef DEBUG
-    fprintf(stderr, "OK=%d ERR=%d\n", OK, ERR);
-    fprintf(stderr, "Return code from setupterm = %d, errval = %d\n",
-            errcode, errval);
-    fflush(stderr);
-#endif
     if (errcode != OK || errval != 1) return 1;
 
 /*
@@ -2276,7 +2270,11 @@ static void term_switch_menu(void)
 /****************************************************************************/
 
 #if defined SOLARIS && SIZEOF_VOID_P==8
-/* This is pretty horrible! Sorry. */
+/*
+ * This is pretty horrible! Sorry. It should be the only place where
+ * I make a pre-processor-time judgement based on the width of a data-type.
+ * Note that it only happens on Solaris. Can I think of a neater solution?
+ */
 #define PAD_TPARM ,0,0,0,0,0,0,0,0
 #else
 #define PAD_TPARM
