@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 58952148 04-Jul-2009 */
+/* Signature: 1f7f01fc 24-Mar-2010 */
 
 #include "headers.h"
 
@@ -1344,8 +1344,8 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * proper tagging, and (code & 3) holds an offset.
  */
     ppc = (unsigned char *)data_of_bps(code);
-    ppc = ppc + ((int32_t)code & 3);
-    codevec = (Lisp_Object)(((int32_t)code & ~3) + 2);
+    ppc = ppc + (code & 3);
+    codevec = (code & ~3) + 2;
 /*
  * I am careful to reload stack from C_stack after any
  * function call, to allow that the garbage collector may relocate the
