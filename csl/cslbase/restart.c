@@ -1,4 +1,4 @@
-/*  restart.c                       Copyright (C) 1989-2008 Codemist Ltd */
+/*  restart.c                       Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * Code needed to start off Lisp when no initial heap image is available,
@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 30545ab9 17-Mar-2010 */
+/* Signature: 339bea8a 24-Mar-2010 */
 
 #include "headers.h"
 
@@ -879,6 +879,7 @@ static void adjust(Lisp_Object *cp)
  * that compiler optimisation should be being done, and so on 32-bit
  * machines the extra work should be removed totally... at least of the
  * compiler is up to scratch.
+ * Note that TAG_CONS=0 so merely doubling the offset field here is OK.
  */
         if (SIXTY_FOUR_BIT && converting_to_64) p *= 2;
         *cp = (Lisp_Object)((char *)quadword_align_up(h) + p);
@@ -921,7 +922,8 @@ static void adjust(Lisp_Object *cp)
     else
     {   intptr_t h = (intptr_t)vheap_pages[(p>>PAGE_BITS) & PAGE_MASK];
         p &= OFFSET_MASK;
-        if (SIXTY_FOUR_BIT && converting_to_64) p *= 2;
+/* Here I must double the offset but preserve the tag information */
+        if (SIXTY_FOUR_BIT && converting_to_64) p += (p & ~TAG_BITS);
         *cp = (Lisp_Object)((char *)doubleword_align_up(h) + p);
     }
 }
@@ -930,10 +932,10 @@ static void adjust(Lisp_Object *cp)
  * expand_to_64() must take a 32-bit value that is in potentially flipped
  * byte order and convert it into a (potentially byte flipped) 64-bit value
  * by sign extending it. So the cast to int32_t here is to ensure that it is
- * signed so that the case to (Lisp_Object) sign extends (this is vital for
+ * signed so that the cast to int64_t sign extends (this is vital for
  * fixnums). Similarly shrink_to_32 must understand that it is working on
  * possibly flipped values.
- * Observe that if byte-flipping is not called for things become a little
+ * Observe that if byte-flipping is not required then things become a little
  * easier and hence faster, so I specialize on that case.
  */
 
@@ -979,8 +981,8 @@ static void adjust_consheap(void)
  * here I will need to reflect that the items stored have not yet had
  * any byte-order corrections applied.
  */
-            char *oldp = low + CSL_PAGE_SIZE - 8;
-            char *newp = low + 2*CSL_PAGE_SIZE - 16;
+            char *oldp = low + CSL_PAGE_SIZE;
+            char *newp = low + 2*CSL_PAGE_SIZE;
             fr = low + len;
 /*
  * The "-8" and "-16" above reflect the size of Cons cells in the new and
@@ -990,12 +992,12 @@ static void adjust_consheap(void)
  * exactly twice the offset from the start of page that it originally had.
  */
             while (oldp >= fr)
-            {   *(Lisp_Object *)newp = expand_to_64(*(int32_t *)oldp);
-                oldp -= 4;
+            {   oldp -= 4;
                 newp -= 8;
                 *(Lisp_Object *)newp = expand_to_64(*(int32_t *)oldp);
                 oldp -= 4;
                 newp -= 8;
+                *(Lisp_Object *)newp = expand_to_64(*(int32_t *)oldp);
             }
 /*
  * Done! By copying from the top downwards I will never overwrite what I
@@ -1012,7 +1014,9 @@ static void adjust_consheap(void)
  * left with something safe. Well the gaps should in fact never get inspected
  * and so leaving mess in them ought to be OK - but of I look forward to
  * a future potential conservative garbage collectoe that may change at
- * least slightly, so I will try to be tidy here.
+ * least slightly, so I will try to be tidy here. The bit-pattern I use
+ * to fill, 0x01000001 remains unchanged when byte-flipped and denotes
+ * a fixnum either way.
  */
             fr = low + len;
             while (fr < start)
@@ -1027,10 +1031,32 @@ static void adjust_consheap(void)
         fr = low + len;
         fringe = (Lisp_Object)fr;
         heaplimit = (Lisp_Object)(low + SPARE);
+#ifdef DEBUG_WIDTH
+{   int32_t *w = (int32_t *)fringe;
+    printf("Consheap\n");
+    while ((char *)w < start)
+    {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
+               w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
+        w += 4;
+    }
+    printf("\n");
+}
+#endif
         while (fr < start)
         {   adjust((Lisp_Object *)fr);
             fr += sizeof(Lisp_Object);
         }
+#ifdef DEBUG_WIDTH
+{   int32_t *w = (int32_t *)fringe;
+    printf("Adjusted Consheap\n");
+    while ((char *)w < start)
+    {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
+               w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
+        w += 4;
+    }
+    printf("\n");
+}
+#endif
     }
 }
 
@@ -1375,9 +1401,9 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  * to bad if it is generated in a way that could conflict with use of a
  * windowed application.
  */
-            printf("p=%p Header = %.16llx = %.8x (is_sym=%d)\n",
-                    p, *(int64_t *)p, h, is_symbol_header(h));
-            printf("Length = %d\n", length_of_header(h));
+            printf("p=%p Header = %.16llx = %.16llx (is_sym=%d)\n",
+                    p, *(long long *)p, (long long)h, (int)is_symbol_header(h));
+            printf("Length = %d\n", (int)length_of_header(h));
             for(i=-32; i<=32; i+=4)
             {    if (i == 0) printf("\n%p: ", p);
                  printf("%.8x ", *(int32_t *)(p+i));
@@ -1479,7 +1505,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
                 h1 = (h & 0x3ff) | ((((char *)newp)-p+4)<<10);
 #ifdef DEBUG_WIDTH
                 printf("new object length = %d, h=%.8x\n",
-                       ((char *)newp)-p+4, h1);
+                       (int)(((char *)newp)-p+4), (int)h1);
 #endif
                 *(Lisp_Object *)p = flip_32(h1); /* write back header */
                 if ((4 & (intptr_t)newp) == 0)
@@ -1557,12 +1583,12 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
  * 64-bit header indicated.
  */
 #ifdef DEBUG_WIDTH
-                printf("h=%.8x h1=%.8x\n", h, h - (4<<10));
+                printf("h=%.8x h1=%.8x\n", (int)h, (int)h - (4<<10));
 #endif
                 *(Lisp_Object *)p = flip_32(h - (4<<10)); /* write back header */
 #ifdef DEBUG_WIDTH
                 printf("move on after binary stuff by %d\n", len);
-                printf("len=%d len-4=%d\n", len, doubleword_align_up(length_of_header(h)-4));
+                printf("len=%d len-4=%d\n", (int)len, (int)doubleword_align_up(length_of_header(h)-4));
 #endif
 /* Test if the vector has shrunk in memory - if so insert padding */
                 if (len != doubleword_align_up(length_of_header(h)-4))
@@ -1583,7 +1609,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 
 /*
  * In what follows low will point to the 64-bit vector to be filled in
- * and olow to the 32-bit one being copied. fr is the frings in the
+ * and olow to the 32-bit one being copied. fr is the fringe in the
  * 64-bit world. Much of the logic here is closely related to that in
  * shrink_vecheap_page. If SIXTY_FOUR_BIT could be a compile-time
  * constant I could use #ifdef to avoid compiling one or the other
@@ -1593,14 +1619,12 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 
 static void expand_vecheap_page(char *low, char *olow, char *fr)
 {
-#ifdef WRITTEN
-
     if (SIXTY_FOUR_BIT)
     {
         int64_t *newp = (int64_t *)low;  /* specific widths used here */
         int32_t *oldp = (int32_t *)olow;
         int i, len;
-        while ((char *)oldp < fr)
+        while ((char *)newp < fr)
         {
 /* Fetch header as a 32-bit value, widen to 64-bit */
             Header h = (Header)flip_32(*oldp), h1;
@@ -1612,12 +1636,12 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
  * to bad if it is generated in a way that could conflict with use of a
  * windowed application.
  */
-            printf("oldp=%p Header = %.16llx (%d)\n", oldp, h, is_symbol_header(h));
+            printf("oldp=%p Header = %.16llx (%d)\n", oldp, (long long)h, (int)is_symbol_header(h));
             printf("Length = %d\n", (int)length_of_header(h));
             for(i=-32; i<=32; i+=4)
             {    if (i == 0) printf("\n%p: ", oldp);
                  printf("%.8x ", *(int32_t *)(((char *)oldp)+i));
-                 if (i==0) printf("\n");
+                 if (i == 0) printf("\n");
             }
             printf("\n");
             fflush(stdout);
@@ -1636,7 +1660,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
                 }
                 printf("\n");
 #endif
-                *(Lisp_Object *)newp = flip_64(h); /* write back header */
+                *newp = flip_64(h); /* write back header */
 /*
  * I do not know if I police it anywhere, but if one tried to mix images from
  * COMMON and plain mode the result would be a crash, if only because symbols
@@ -1645,13 +1669,11 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
  * a symbol lives in.
  */
                 for (i=1; i<(symhdr_length/8); i++)
-                {   ((Lisp_Object *)newp)[i] =
-                        expand_to_64(((int32_t *)oldp)[i]);
+                {   newp[i] = expand_to_64(oldp[i]);
                 }
-                oldp = (int32_t *)((char *)oldp + symhdr_length);
-                newp = (int64_t *)((char *)newp + 2*symhdr_length);
+                oldp = (int32_t *)((char *)oldp + symhdr_length/2);
+                newp = (int64_t *)((char *)newp + symhdr_length);
             }
-/* @@@ maybe done to here @@@ */
             else switch (type_of_header(h))
             {
 /*
@@ -1677,40 +1699,35 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
         case TYPE_STREAM:
 /*      case TYPE_LITVEC: */
 /*
- * "len" will be the length of the old 64-bit version, and in the 64-bit
- * world there will never be a padding word at the end of a vector.
+ * "len" will be the length of the old 32-bit version, and the data in
+ * memory may have a padder word after that. However the 64-bit version I
+ * copy this into never needs a padder word as part of the vector itself,
+ * but to preserve layout it may need one after it. Note that for all
+ * these sorts of vector the length should already be a multiple of 4. I
+ * remind myself of that because strings (for instance) can have odd lengths
+ * recorded in the header.
  */
-                len = doubleword_align_up(length_of_header(h));
-                newp = (int32_t *)p;
-                oldp = (int64_t *)p;
-                for (i=8; i<len; i+=8)
-                {   ++newp;
-                    ++oldp;
-                    *newp = shrink_to_32(*oldp);
+                len = length_of_header(h);
+                *newp++ = flip_64((h & 0x3ff) + (len<<11)); /* double length */
+                oldp++;
+                for (i=4; i<len; i+=4)
+                {   *newp++ = expand_to_64(*oldp);
+                    oldp++;
                 }
 /*
- * Now the length needed in the new header will be (newp-p+4)
+ * Now if the 32-bit vector has a length that corresponded to an even
+ * number of cells of data (so with the header that makes an odd number
+ * in all) I need to skip over the padder word in the 32-bit space and
+ * write in something safe in the 64-bit one.
  */
-                h1 = (h & 0x3ff) | ((((char *)newp)-p+4)<<10);
-#ifdef DEBUG_WIDTH
-                printf("new object length = %d\n", ((char *)newp)-p+4);
-#endif
-                *(Lisp_Object *)p = flip_32(h1); /* write back header */
-                if ((4 & (intptr_t)newp) == 0)
-                    *++newp = SPID_NIL; /* fill to doubleword */
-                p += len;
-/*
- * Now I must put in a padding object if needed to fill any gap left.
- * There would be no gap if the original vector had length zero, otherwise
- * I put in something that looks like a vector of bytes or like BPS.
- */
-                newp++;
-                if (p != (char *)newp)
-                    *newp = flip_32(make_padder(p - (char *)newp));
+                if ((len & 4) != 0)
+                {   *newp++ = flip_64(make_padder(8));
+                    oldp++;
+                }
                 break;
         case TYPE_STRING:
 #ifdef DEBUG_WIDTH
-                printf("String: %p: \"%s\"\n", p, ((char *)p)+2*CELL);
+                printf("String: %p: \"%s\"\n", oldp, ((char *)oldp)+4);
 #endif
         case TYPE_BIGNUM:
         case TYPE_VEC32:
@@ -1734,49 +1751,63 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
         case TYPE_DOUBLE_FLOAT:
         case TYPE_FLOAT32:
         case TYPE_FLOAT64:
-                len = doubleword_align_up(length_of_header(h));
-/* I copy all the stuff that will go into the 32-bit version */
-#ifdef DEBUG_WIDTH
-                for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
-#endif
-                for (i=4; i<len-4; i+=4)
-                    *(uint32_t *)(p+i) =
-                        *(uint32_t *)(p+i+4);
 /*
- * These all shrink by one word because their header word has become
- * 4 bytes rather than 8 bytes wide. This certainly means that there is
- * a 32-bit word beyond the stuff that I copy that I can and should fill
- * with zero. Sometimes this will end up counting as part of the new
- * 32-bit representation, sometimes it will be part of a gap left over.
- * If I were very keen I could put in a zero as required when it is the
- * word used to round up a vector size of an even number of words, and
- * make_padder(8) when it represents a gap between real items.
+ * The effects of alignment and passing here are distinctly odd. A 32-bit
+ * item can be in one of two forms
+ *      || header | d0 || d1 | - ||          length 4 mod 8
+ * or   || header | d0 || d1 | d2 ||         length 8 mod 8
+ * where the double vertical bars denote doubleword boundaries and the "-"
+ * is padder data.
+ *
+ * In the 64-bit world these two cases map onto
+ *      || h e a d e r || d0 | d1 ||
+ * and  || h e a d e r || d0 | d1 || d2 | - ||
+ * in each case a dummy item must be places after to fill up space to where
+ * the next new item will fall. Well actually there is a special case
+ *      || header | d0 ||
+ * ->   || h e a d e r || d0 | - ||
+ * does not need that filler.
+ * An item in the 32-bit world may sometimes only partly fill its final
+ * 32-bit word. In this part of the code I can copy data as raw 32-bit
+ * values - any byte-order adjustments get done later.
  */
-                *(uint32_t *)(p+len-4) = 0;
-#ifdef DEBUG_WIDTH
-                for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
-#endif
+                len = word_align_up(length_of_header(h));
 /*
- * Here I write the header word back into memory shortening things by
- * 4 bytes because the header has changed from a 64 to a 32-bit value.
- * But I then expect to find the next item the distance on that the
- * 64-bit header indicated.
+ * The vector increases in size of 4 bytes because the header-word is
+ * twice as wide.
  */
+                *newp++ = flip_64(h + (4<<10));
+                oldp++;
+/* Now newp, oldp point at the raw data. Copy it down */
+                for (i=4; i<len; i+=4)
+                {   *((int32_t *)newp) = *oldp;
+                    newp = (int64_t *)(((char *)newp)+4);
+                    oldp++;
+                }
+/*
+ * Sometimes I need to pad out the new version to be a whole number of
+ * doublewords.
+ */
+                if ((len & 4) == 0)
+                {   *((int32_t *)newp) = 0;
+                    newp = (int64_t *)(((char *)newp)+4);
+                }
+                else oldp++;
+/*
+ * Now I have oldp and newp both doubleword aligned again. In many
+ * cases I now need to insert a dummy header at newp so that items in the
+ * new space all end up at twice the address they had in the old.
+ */
+                len = 2*doubleword_align_up(len) -
+                      doubleword_align_up(len+4);
+/* len is now the amount of gap to fill */
+                if (len != 0)
+                {   *newp = flip_64(make_padder(len));
+                    newp = (int64_t *)(((char *)newp) + len);
+                }
 #ifdef DEBUG_WIDTH
-                printf("h=%.8x h1=%.8x\n", h, h - (4<<10));
+                for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(newp+len+i)); printf("\n");
 #endif
-                *(Lisp_Object *)p = flip_32(h - (4<<10)); /* write back header */
-#ifdef DEBUG_WIDTH
-                printf("move on after binary stuff by %d\n", len);
-                printf("len=%d len-4=%d\n", len, doubleword_align_up(length_of_header(h)-4));
-#endif
-/* Test if the vector has shrunk in memory - if so insert padding */
-                if (len != doubleword_align_up(length_of_header(h)-4))
-                    *(int32_t *)(p + len - 8) = flip_32(make_padder(8));
-#ifdef DEBUG_WIDTH
-                for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
-#endif
-                p += len;
                 break;
     default:
                 printf("Unrecognized type info in vector header %.8x\n", (int32_t)h);
@@ -1785,10 +1816,6 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
             }
         }
     }
-
-#endif /* WRITTEN */
-
-
 }
 
 
@@ -1839,14 +1866,13 @@ static void adjust_vecheap(void)
  * low+CSL_PAGE_SIZE+len and it gets written back to low+2*len. So since
  * len is at worst CSL_PAGE_SIZE-8 I will not trip over myself - just.
  */
-            expand_vecheap_page(low, low+CSL_PAGE_SIZE-16, fr);
+            expand_vecheap_page(low, low+CSL_PAGE_SIZE-8, fr);
 /*
  * Well in principle I know how to do this. The actual data is at present in
  * the top half of a double-sized page and I need to copy it down towards
  * the bottom sign-extended each Lisp_Object and (for tidiness) putting in
  * padding when items had been full of binary stuff that did not expand.
  */
-            my_exit(4);
         }
         else if (converting_to_32) shrink_vecheap_page_to_32(low, fr);
 /*
@@ -2011,12 +2037,7 @@ static void adjust_bpsheap(void)
  * machine, ONLY because all the header words in it get larger. The data
  * in it is all bytes so remains unaltered.
  */
-        if (SIXTY_FOUR_BIT && converting_to_64)
-        {   len *= 2;
-            printf("Conversion from 32 to 64-bits not done yet\n");
-            fflush(stdout);
-            my_exit(4);
-        }
+        if (SIXTY_FOUR_BIT && converting_to_64) len *= 2;
         car32(low) = len;
         fr = low + len;
         codefringe = (Lisp_Object)fr;
@@ -2032,6 +2053,50 @@ static void adjust_bpsheap(void)
 #ifndef ENVIRONMENT_VECTORS_IN_BPS_HEAP
         if (!converting_to_32 && !converting_to_64 && !flip_needed) continue;
 #endif
+        if (SIXTY_FOUR_BIT && converting_to_64)
+        {   char *oldfr = (low + (fr - low)/2 + CSL_PAGE_SIZE);
+/*
+ * Here I will just move the data from where it had to be in the 32-bit world
+ * to where it will end up in a 64-bit one. I will leave it in whatever byte
+ * order it is in to start with (and that makes the sign extension process
+ * a bit odd!). I do things this way so that the subsequent pass can correct
+ * for byte-order without worrying about much need to move things.
+ */
+            while (oldfr < low + 2*CSL_PAGE_SIZE)
+            {   Header h = (Header)flip_32(*(uint32_t *)oldfr);
+                int32_t len, len32, len64, gap;
+                len = length_of_header(h); /* 32 bit hdr + actual data */
+/*
+ * Now establish the amount of space that will be used in both 32 and 64
+ * bit layouts and the size of any padding that will be called for.
+ */
+                len32 = doubleword_align_up(len);
+                len64 = doubleword_align_up(len + 4);
+                gap = 2*len32 - len64;
+printf("orig at %p, new at %p: h=%.8x len=%d l32=%d l64=%d gap=%d\n",
+       oldfr, fr, (int)h, len, len32, len64, gap);
+                *(int64_t *)fr = flip_64(h + (4<<10)); /* write new header */
+/*
+ * Now copy the data down as raw 32-bit words with no byte-flipping.
+ * This will NOT be sufficient if I were ever to implement the
+ * ENVIRONMENT_VECTORS_IN_BPS_HEAP idea, because in that case my lengths
+ * as suggested above will be wrong and I would need to sign-extend all the
+ * 32-bit data in the old vector into 64-bit values in the new. I am NOT
+ * going to do that for now.
+ */
+                for (i=4; i<len; i+=4)
+                {   *(int32_t *)(fr + i + 4) = *(int32_t *)(oldfr + i);
+                }
+                if (gap != 0)
+                    *(int64_t *)(fr + len64) = flip_64(make_padder(gap));
+                oldfr += len32;
+                fr += 2*len32;
+            }
+/* And put fr back where it is needed for what follows... */
+            fr = (char *)codefringe;
+        }
+printf("done expansion - now fix it up\n");
+
         while (fr < low + (converting_to_64 ? 2*CSL_PAGE_SIZE : CSL_PAGE_SIZE))
         {   Header h;
             int32_t len, llen;
@@ -2054,7 +2119,7 @@ static void adjust_bpsheap(void)
 #ifdef DEBUG_WIDTH
                 printf("BPS item length %d\n", len);
 #endif
-                if (converting_to_32)
+                if (!SIXTY_FOUR_BIT && converting_to_32)
                 {   for (i=4; i<llen-4; i+=4)
                         *(int32_t *)(fr+i) = *(int32_t *)(fr+i+4);
                     *(int32_t *)(fr+llen-4) = 0;
@@ -3103,7 +3168,6 @@ static void warm_setup()
         bps_pages[i] = allocate_page();
         p = doubleword_align_up((intptr_t)bps_pages[i]);
 /* Same issue as for Vheap pages */
-/* ???? maybe - maybe not!!! @@@ */
         if (converting_to_64)
         {   Cfread(CSL_PAGE_SIZE+(char *)p, CSL_PAGE_SIZE);
             car32(p) = car32(CSL_PAGE_SIZE+(char *)p);
@@ -5683,8 +5747,10 @@ void setup(int restartp, double store_size)
  * flipping bytes it will need to turn into abcdefghssssssss where s comes
  * from the top bit of h. That is because later on I will turn that back
  * into sssssssshgfedcba.
+ * Note also that the amount I read will be based on 32-bit data not 64
+ * hence the odd-looking "/2" in the next line.
  */
-            Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
+            Cfread((char *)BASE, (sizeof(Lisp_Object)/2)*last_nil_offset);
 /*
  * Copying from the top downwards avoids clobbering stuff here. As with the
  * conversion in the other direction I coull have extra work to do if I
@@ -5692,25 +5758,40 @@ void setup(int restartp, double store_size)
  * 64-bits but not 32 and convert them into bignums...
  */
 /*
- * Items 24-31 here are taken from the 32-bit image and merely cast to
- * 64-bits. This will put the 4 bytes in the low part of the 64-bit int and
- * if I have byte-flipped they will be in the wrong position. I will cope with
- * that later when I flip them.
+ * Beware here that I want to sign extend data but it may at present be
+ * in the wrong byte order for the current machine - but to know that I
+ * must first establish if flipping is required!
  */
+            i = ((int32_t *)BASE)[12]; /* 32-bit value of byteflip */
+printf("termp_byteflip = %.8x\n", i);
+            if (((i >> 16) & 0xffffU) == 0x5678U) flip_needed = NO;
+            else if ((i & 0xffffU) == 0x7856U) flip_needed = YES;
+            else
+            {   term_printf("\n+++ The checkpoint file is corrupt\n");
+                my_exit(EXIT_FAILURE);
+            }
             for (i=last_nil_offset-1; i>=0; i--)
             {   *(int64_t *)((char *)BASE+8*i) =
-                    (int64_t)*(int32_t *)((char *)BASE+4*i);
+                    expand_to_64(*(int32_t *)((char *)BASE+4*i));
             }
         }
         else Cfread((char *)BASE, sizeof(Lisp_Object)*last_nil_offset);
         copy_out_of_nilseg(YES);
-if (converting_to_64)
-{   printf("Converting to 64 not finished yet\n");
-    exit(0);
-}
 #ifndef COMMON
         qheader(nil) = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;/* BEFORE nil... */
 #endif
+/*
+ * Now the value in byteflip is really a 32-bit value saved an intptr_t,
+ * and if my bytes are in a funny order because the 64-bit values had been
+ * saved on a machine with the other byte-order it may be that the 32-bits
+ * that I want are in fact in the top half of the 64-bit word. So if I am on
+ * a 64-bit machine I adjust for that. I do not take the mere fact of the
+ * low half being zero as full evidence that I am flipped, since I would
+ * like to check for the 0x5678 pattern as an extra consistency check.
+ */
+        if (SIXTY_FOUR_BIT)
+        {   if ((byteflip & 0x7fffffff) == 0) byteflip >>= 32;
+        }
         if (((byteflip >> 16) & 0xffffU) == 0x5678U)
         {
             flip_needed = NO;
@@ -5842,7 +5923,7 @@ void copy_into_nilseg(int fg)
 #ifdef NILSEG_EXTERNS
     int i;
     if (fg)     /* move non list bases too */
-    {   *(uint32_t *)&BASE[12]                 = byteflip;
+    {   BASE[12]                                 = byteflip;
         BASE[13]                                 = codefringe;
         *(Lisp_Object volatile *)&BASE[14]       = codelimit;
 /*
