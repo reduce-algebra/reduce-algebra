@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3e516f0c 28-Feb-2010 */
+/* Signature: 349bca5a 17-Mar-2010 */
 
 
 #ifndef header_tags_h
@@ -788,7 +788,6 @@ typedef intptr_t junkxx;   /* Unused cell-sized field for structures */
 
 typedef struct Symbol_Head
 {
-    Header header;      /* Standard format header for vector types */
 /*
  * TAG_SYMBOL has the value 4, so on a 32-bit system a pointer
  * to a symbol points at the second word of it, ie the value cell. The
@@ -798,19 +797,29 @@ typedef struct Symbol_Head
  * where (car nil) and (cdr nil) must both be legal and yield nil. This
  * can be handled by tagging NIL as a CONS not a SYMBOL in the Common Lisp
  * case. But then when NIL is used as a SYMBOL all the offsets will be
- * wrong... In 32-bit mode this makes 
+ * wrong... So really any punning about CAR of a symbol should not be
+ * used - the code should always behave properly and use eg qvalue().
+ * Note that when I look at it today I am worried about the symalign macro
+ * for use in 64-bit mode with the Common Lisp variety. I am not certain it
+ * has ever been tested and it really looks delicate and possibly broken. 
  *
  * BEWARE!
  */
-    Lisp_Object value;  /* Global or special value cell */
-    Lisp_Object env;    /* Extra stuff to help function cell */
-    intptr_t function1;     /* Executable code always (just 1 arg) */
-    intptr_t function2;     /* Executable code always (just 2 args) */
-    intptr_t functionn;     /* Executable code always (0, or >= 3 args) */
+    Header header;      /* Standard format header for vector types */
+    Lisp_Object value;   /* Global or special value cell */
+
+    Lisp_Object env;     /* Extra stuff to help function cell */
+    intptr_t function1;  /* Executable code always (just 1 arg) */
+
+    intptr_t function2;  /* Executable code always (just 2 args) */
+    intptr_t functionn;  /* Executable code always (0, or >= 3 args) */
+
     Lisp_Object pname;   /* A string (always) */
     Lisp_Object plist;   /* A list */
+
     Lisp_Object fastgets;/* to speed up flagp and get */
     uintptr_t count;     /* for statistics */
+
 #ifdef COMMON
     Lisp_Object package;/* Home package - a package object */
 /*
@@ -1037,6 +1046,8 @@ typedef struct Single_Float
 #define long_float_val(v)       (*(double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 #endif
+
+#define word_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 3) & (-4)))
 
 #define doubleword_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 7) & (-8)))
 #define doubleword_align_down(n) ((Lisp_Object)((intptr_t)(n) & (-8)))
