@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 339bea8a 24-Mar-2010 */
+/* Signature: 75717d4e 24-Mar-2010 */
 
 #include "headers.h"
 
@@ -2073,8 +2073,6 @@ static void adjust_bpsheap(void)
                 len32 = doubleword_align_up(len);
                 len64 = doubleword_align_up(len + 4);
                 gap = 2*len32 - len64;
-printf("orig at %p, new at %p: h=%.8x len=%d l32=%d l64=%d gap=%d\n",
-       oldfr, fr, (int)h, len, len32, len64, gap);
                 *(int64_t *)fr = flip_64(h + (4<<10)); /* write new header */
 /*
  * Now copy the data down as raw 32-bit words with no byte-flipping.
@@ -2095,7 +2093,6 @@ printf("orig at %p, new at %p: h=%.8x len=%d l32=%d l64=%d gap=%d\n",
 /* And put fr back where it is needed for what follows... */
             fr = (char *)codefringe;
         }
-printf("done expansion - now fix it up\n");
 
         while (fr < low + (converting_to_64 ? 2*CSL_PAGE_SIZE : CSL_PAGE_SIZE))
         {   Header h;
@@ -5674,10 +5671,16 @@ void setup(int restartp, double store_size)
  * should never appear unless you are loading a "different word width" image
  * and in that case I want you to have been warned that there may be glitches.
  */
+#ifdef DEBUG
+/*
+ * If I am debugging a brief indication that I need to re-size the heap
+ * is probably justifiable.
+ */
         if (converting_to_32 || converting_to_64)
-        {   fprintf(stderr, "->32 = %d  ->64 = %d\n", converting_to_32, converting_to_64);
+        {   printf("->32 = %d  ->64 = %d\n", converting_to_32, converting_to_64);
             fflush(stderr);
         }
+#endif
         Cfread(junkbuf, 8);
 /*
  * If the heap image had been made on a 64-bit machine but the current
@@ -5763,7 +5766,6 @@ void setup(int restartp, double store_size)
  * must first establish if flipping is required!
  */
             i = ((int32_t *)BASE)[12]; /* 32-bit value of byteflip */
-printf("termp_byteflip = %.8x\n", i);
             if (((i >> 16) & 0xffffU) == 0x5678U) flip_needed = NO;
             else if ((i & 0xffffU) == 0x7856U) flip_needed = YES;
             else
