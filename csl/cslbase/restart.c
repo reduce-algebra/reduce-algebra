@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 75717d4e 24-Mar-2010 */
+/* Signature: 40bce67c 27-Mar-2010 */
 
 #include "headers.h"
 
@@ -1032,30 +1032,30 @@ static void adjust_consheap(void)
         fringe = (Lisp_Object)fr;
         heaplimit = (Lisp_Object)(low + SPARE);
 #ifdef DEBUG_WIDTH
-{   int32_t *w = (int32_t *)fringe;
-    printf("Consheap\n");
-    while ((char *)w < start)
-    {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
-               w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
-        w += 4;
-    }
-    printf("\n");
-}
+        {   int32_t *w = (int32_t *)fringe;
+            printf("Consheap\n");
+            while ((char *)w < start)
+            {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
+                       w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
+                w += 4;
+            }
+            printf("\n");
+        }
 #endif
         while (fr < start)
         {   adjust((Lisp_Object *)fr);
             fr += sizeof(Lisp_Object);
         }
 #ifdef DEBUG_WIDTH
-{   int32_t *w = (int32_t *)fringe;
-    printf("Adjusted Consheap\n");
-    while ((char *)w < start)
-    {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
-               w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
-        w += 4;
-    }
-    printf("\n");
-}
+        {   int32_t *w = (int32_t *)fringe;
+            printf("Adjusted Consheap\n");
+            while ((char *)w < start)
+            {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
+                       w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
+                w += 4;
+            }
+            printf("\n");
+        }
 #endif
     }
 }
@@ -2134,6 +2134,23 @@ static void adjust_bpsheap(void)
             }
             fr += llen;
         }
+    }
+/*
+ * Now the code that allocates fresh binary code space (eg for the compiler
+ * or for loading pre-compiled modules) does not know about oversized
+ * pages of the form that can arise when I convert a 32 bit image to make it
+ * work in a 64-bit world. The effect is that I would run into trouble if
+ * I allocated a new bit of code space and it lived in the upper half of
+ * such a page. Specifically the bit marking it as belonging in the top
+ * half-space could be missed off to very bad effect, including crashes within
+ * the garbage collector. So if necessary I allocate a big padder block of
+ * BPS here so that all subsequent allocations end up in the lower (and hence
+ * standrard( part of the page. I prefer to do this here rather than to spread
+ * support for double-sized pages into other parts of the code.
+ */
+    if (SIXTY_FOUR_BIT && converting_to_64)
+    {   intptr_t w = codefringe - codelimit - CSL_PAGE_SIZE - 0x100;
+        if (w > 0) getcodevector(TYPE_BPS, w);
     }
 }
 
