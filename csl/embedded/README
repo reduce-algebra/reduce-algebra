@@ -14,5 +14,10 @@ exectly the same as the ones in cslbase. Just this set has a ready-build
 reduce.img file, a set of u01,c to u12.c, and its own private and vey
 simple Makefile
 
-
                                              Arthur Norman.   July 2009
+
+This version has now fallen behind and is out of date with respect to the
+main set of files, so I need to merge in changes soon!
+
+                                                              March 2010
+

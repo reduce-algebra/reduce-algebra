@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 63c2cced 28-Feb-2010 */
+/* Signature: 1fe43b90 24-Mar-2010 */
 
 #include "headers.h"
 
@@ -1700,7 +1700,10 @@ static void copy(Lisp_Object *p)
  * See comments in fns2.c for the curious packing here! Note that I carefully
  * ensure that I compute everything as a uint32_t before I turn it into a
  * Header, and as a result the top half of the Header will always be
- * zero if I am on a 64-bit system.
+ * zero if I am on a 64-bit system. This should be proper for a reference
+ * into a new page, but remember that I put a non-zero value in the top
+ * half of a 64-bit word when expanding a 32-bit heap image for use of a
+ * 64-bit machine via the use of double-sized pages.
  */
                         *(Header *)d = *p = (Header)(uint32_t)(TAG_BPS +
                            (((uint32_t)((rr + CELL) - (cl - 8)) &

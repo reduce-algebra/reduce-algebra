@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 2bcee306 24-Jan-2010 */
+/* Signature: 5bfd3d6a 27-Mar-2010 */
 
 #include "headers.h"
 
@@ -4773,7 +4773,7 @@ Lisp_Object Lwindow_heading2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     if (is_fixnum(b)) n = int_of_fixnum(b);
     else n = 2;  /* default to setting the right section */
     if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
-    {   int32_t l = length_of_header(vechdr(a));
+    {   int32_t l = length_of_header(vechdr(a)) - CELL;
         if (l > 30) l = 30;
         memcpy(txt, &celt(a, 0), l);
         txt[l] = 0;

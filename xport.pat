@@ -11,7 +11,7 @@ Omit cslbuild pslbuild generic temp
 Omit autom4te.cache **/autom4te.cache .svn **/.svn
 Omit **.bak **~ **.log
 
-Omit psl
+Omit psl displaytex
 
 Binary  **/configure configure **bpsl* **schau **.pl **.parser **.properties
 Executable **/configure configure **bpsl* **schau **.pl **.parser

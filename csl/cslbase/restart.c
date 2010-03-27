@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 40bce67c 27-Mar-2010 */
+/* Signature: 0b4c0360 27-Mar-2010 */
 
 #include "headers.h"
 
@@ -2419,7 +2419,7 @@ void *my_malloc(size_t n)
 #endif
 }
 
-static char *big_chunk_start, *big_chunk_end;
+char *big_chunk_start, *big_chunk_end;
 
 #ifdef EXPLICIT_FREE_AT_END_OF_RUN
 

@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 099e7321 28-Feb-2010 */
+/* Signature: 638d1fa3 27-Mar-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -744,7 +744,7 @@ CSLbool ignore_restart_fn = NO;
 static void lisp_main(void)
 {
     Lisp_Object nil;
-    
+    int i;    
 #ifndef __cplusplus
 /*
  * The setjmp here is to provide a long-stop for untrapped
@@ -900,12 +900,60 @@ static void lisp_main(void)
                             }
                         }
                     }
+/*
+ * This puts all recorded heap pages back in the main pool, but there is
+ * as of March 2010 a concern in the case that an initial heap image came
+ * from a 32-bit machine and I am now running on a 64-bit one. That concerns
+ * both extra pages allocated at the first startup to give the effect of
+ * temporarily double-sized pages (there is a space leak there that may
+ * lose all those pages!) and the expectation there that pages in the map
+ * are neatly contiguous in memory (and when returned to the pool here that
+ * expectation usually fails). Oh dear!
+ * As a rather grungy recovery what I will do is to recycle all of the
+ * pages that are NOT in the contiguous chunk and then re-create a neat
+ * map of contiguous space from the bits that are. So first I must remove
+ * any contiguous pages from the list of ones marked as free...
+ */
+                    for (i=0; i<pages_count; i++)
+                    {   char *w = (char *)pages[i];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            continue;
+/*
+ * Here the page shown as free is one in the contiguous block. Move in
+ * the final page to fill the gap here and try again.
+ */
+                        pages[i] = pages[--pages_count];
+                        i--;
+                    }
+/*
+ * Next recycle all the non-contiguous pages that have been in use.
+ */
                     while (vheap_pages_count != 0)
-                        pages[pages_count++] = vheap_pages[--vheap_pages_count];
+                    {   char *w = (char *)vheap_pages[--vheap_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
                     while (heap_pages_count != 0)
-                        pages[pages_count++] = heap_pages[--heap_pages_count];
+                    {   char *w = (char *)heap_pages[--heap_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
                     while (bps_pages_count != 0)
-                        pages[pages_count++] = bps_pages[--bps_pages_count];
+                    {   char *w = (char *)bps_pages[--bps_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
+/*
+ * Finally rebuild a contiguous block of pages from the wholesale block.
+ */
+                    {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
+                        char *w1 = w + CSL_PAGE_SIZE + 16;
+                        while (w1 <= big_chunk_end)
+                        {   pages[pages_count++] = w;
+                            w = w1;
+                            w1 = w + CSL_PAGE_SIZE + 16;
+                        }
+                    }
 /*
  * When I call restart-csl I will leave the random number generator where it
  * was. Anybody who wants to reset if either to a freshly randomised
