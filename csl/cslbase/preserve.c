@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 2e11f391 01-Mar-2010 */
+/* Signature: 0e4f0a5c 22-Apr-2010 */
 
 #include "headers.h"
 
@@ -2499,7 +2499,7 @@ void preserve_native_code(void)
     IcloseOutput(1);
 }
 
-void preserve(char *banner)
+void preserve(char *banner, int len)
 {
     int32_t i;
     CSLbool int_flag = NO;
@@ -2552,8 +2552,9 @@ void preserve(char *banner)
     {   char msg[128];
         time_t t0 = time(0);
         for (i=0; i<128; i++) msg[i] = ' ';
-        if (banner[0] == 0) msg[0] = 0;
-        else sprintf(msg, "%.60s", banner);
+        if (len > 60) len = 60; /* truncate if necessary */
+        if (len == 0 || banner[0] == 0) msg[0] = 0;
+        else sprintf(msg, "%.*s", len, banner);
 /* 26 bytes starting from byte 64 shows the time of the dump */
         sprintf(msg+64, "%.25s\n", ctime(&t0));
 /* 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks */

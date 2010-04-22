@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 3479a12d 28-Feb-2010 */
+/* Signature: 4fd19903 22-Apr-2010 */
 
 #include "headers.h"
 
@@ -2051,6 +2051,7 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     char filename[LONGEST_LEGAL_FILENAME];
     CSLbool failed = 0;
     char *msg = "";
+    int len = 0;
 #ifdef SOCKETS
 /*
  * Security measure - deny checkpoint to remote users
@@ -2064,7 +2065,9 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     if (failed) return aerror("checkpoint");
     if (is_vector(banner) &&
         type_of_header(vechdr(banner)) == TYPE_STRING)
-        msg = &celt(banner, 0);
+    {   msg = &celt(banner, 0);
+        len = length_of_header(vechdr(banner)) - CELL;
+    }
 /*
  * Note, with some degree of nervousness, that things on the C stack will
  * be updated by the garbage collection that happens during the processing
@@ -2074,7 +2077,7 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
  * around so all is still OK, I hope!
  */
     push5(codevec, litvec, catch_tags, faslvec, faslgensyms);
-    preserve(msg);
+    preserve(msg, len);
     nil = C_nil;
     if (exception_pending()) failed = 1, flip_exception();
     adjust_all();

@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7686177d 27-Mar-2010 */
+/* Signature: 14f006b3 22-Apr-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -1023,7 +1023,7 @@ extern Lisp_Object nreverse(Lisp_Object a);
 extern FILE        *open_file(char *filename, char *original_name,
                               size_t n, char *dirn, FILE *old_file);
 extern Lisp_Object plus2(Lisp_Object a, Lisp_Object b);
-extern void        preserve(char *msg);
+extern void        preserve(char *msg, int len);
 extern void        preserve_native_code(void);
 extern void        relocate_native_function(unsigned char *bps);
 extern Lisp_Object prin(Lisp_Object u);

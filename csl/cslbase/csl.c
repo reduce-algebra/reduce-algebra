@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 638d1fa3 27-Mar-2010 */
+/* Signature: 2885b05f 22-Apr-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -828,12 +828,15 @@ static void lisp_main(void)
                     return_code = (int)int_of_fixnum(exit_value);
                 else if (exit_tag == fixnum_of_int(1)) /* "preserve" */
                 {   char *msg = "";
+                    int len = 0;
                     return_code = EXIT_SUCCESS;
                     compression_worth_while = 128;
                     if (is_vector(exit_value) &&
                         type_of_header(vechdr(exit_value)) == TYPE_STRING)
-                        msg = &celt(exit_value, 0);
-                    preserve(msg);
+                    {   msg = &celt(exit_value, 0);
+                        len = (int)(length_of_header(vechdr(exit_value)) - CELL);
+                    }
+                    preserve(msg, len);
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
