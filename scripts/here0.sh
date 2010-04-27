@@ -28,4 +28,13 @@ case $a in
   fi
   ;;
 esac
+while test -h "$c"; do
+  lt=`ls -l "$c" | sed 's/.*->[ ]\+//'`
+  if echo "$lt" | grep -q '^/'; then
+    c="$lt"
+  else
+    dir=`dirname "$c"`
+    c="$dir/$lt"
+  fi
+done
 here=`echo $c | sed -e 's+/[^/]*$++;s+/[^/]*$++'`
