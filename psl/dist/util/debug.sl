@@ -1,3 +1,4 @@
+(load inum)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PU:DEBUG.SL 
@@ -232,6 +233,7 @@
   -printxcount*          % Used by PRINTX for making up names for EQ structures
   -setqvars*             % Used by trst to list variables to be traced
   -trindent*             % Current level of indentation of trace output
+  *trststep              % stop after printing an assignment
   -visited*))            % for PRINTX
 	
 (global
@@ -291,6 +293,7 @@
 
 % Let TRST know about the behaviour of some common FEXPRs
 
+(flag '(trststep) 'switch)    % for Reduce
 (flag                                   % common FEXPRs which never pass back an unEVALed argument
   '(and 
   list 
@@ -1293,7 +1296,8 @@ again
   (-prin2 -nam) 
   (-prin2 " := ") 
   (apply trprinter* (list -val)) 
-  (-exitpri -state)))
+  (-exitpri -state)
+  (when !*trststep (yesp "Continue "))))
 
 
 (de -mktrst (u) 
