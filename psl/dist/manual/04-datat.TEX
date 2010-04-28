@@ -1,0 +1,571 @@
+\section{Data Types}
+
+\subsection{Data Types and Structures Supported in PSL}
+
+\subsubsection{Data Types}
+
+In  contrast  to many programming languages, type declarations
+are not needed in PSL.  Data objects contain  information  about
+their  type.   Some functions, like equal, are "generic" in that
+the result they return depends on the types of the arguments.
+
+\begin{verbatim}
+1 lisp> (equal "sextuped" "sextuped")
+T
+2 lisp> (equal [bencolin beef] [bencolin beef])
+T
+\end{verbatim}
+For the purposes of input and output, an appropriate notation is
+used for each type of data object used in  PSL.    For  example,
+double  quotes  are  used to delimit the characters of a string.
+For a full discussion on syntax see Chapter 12.
+
+The basic data types supported in PSL and a  brief  indication
+of their representations are described below.
+
+\begin{Ventry}{\bf code-pointer}
+\item [{\bf integer}]  The  integers  are   also called  "fixed" numbers.
+            The magnitude of integers is essentially unrestricted if
+            the "big number" module, {\bf zbig}, is loaded. The notation for
+            integers is  a  sequence  of digits in an appropriate
+												radix (radix 10 is the default, which can be overridden
+           	by a radi prefix, such as 2\#, 8\#, 16\# etc). There are
+												three internal representations of integers, chosen  to
+            suit the implementation:
+
+\item [{\bf inum}] 	A signed number fitting into info.
+                       Inums do not require dynamic storage
+                       and are represented in the same form
+                      as machine integers. 
+
+\item [{\bf fixnum}] 	A full-word signed integer,
+                       allocated in the heap.
+
+\item [{\bf bignum}]   A signed integer of arbitrary precision,
+			allocated as a vector of
+                       system integers. These integers may be not
+                       integers for PSL, because they do not fit into info.
+			Beware. Bignums are currently not
+                       installed  by  default, to use them
+                       load the ZBIG module. 
+
+\item [{\bf float}]    A floating point number, allocated in the heap.
+			The precision of floats
+			is determined solely by the implementation. 
+			Usually, the floating numbers are equivalent
+			to system 'doubles', (64 bits).
+			The notation for a float is a sequence of digits
+			with the addition of  a  single floating  point
+			( . ) and an optional exponent
+			(E \verb+<+integer\verb+>+).
+			(No  spaces  may  occur between the point and
+			the  digits). Radix 10 is used for representing
+			the  mantissa  and  the  exponent  of floating
+			point numbers.
+
+\item [{\bf id}]       An identifier (or id) is an item whose info field
+			points to a  five-item  structure  containing  the
+			print  name,  property  cell, value cell, function
+			cell, and  package  cell. This structure is contained
+			in the id space. The notation for an id is  its 
+			print  name,  an  alphanumeric  character sequence.
+			One always refers to a particular id by giving its
+			print name.   When  presented  with  an appropriate
+			print name, the PSL reader will find a unique  id 
+			to  associate with it.  See Chapters 4 and 12 for 
+			more  information  on  ids  and  their syntax.
+			The ids t and nil are considered special in that 
+			it  is  not  possible  for  the  user  to redefine
+			their value cells.
+
+\item [{\bf pair}]     A  primitive two-item structure  which has a  left
+			and  right part.  A notation  called  dot-notation
+			is used, with the form:
+			($<$left-part$>$   .  $<$right-part$>$). 
+			The $<$left-part$>$ is  known  as the car  portion 
+			and  the  $<$right-part$>$  as  the  cdr portion. 
+			The parts may be any item.  (Spaces  are used  to
+			resolve  ambiguity  with  floats;  see Chapter 12).
+
+\item [{\bf vector }]  A primitive uniform structure of items; an integer
+			index is used  to  access  random  values  in  the
+			structure.    The  individual elements of a vector
+			may be any item.  Access to vectors is by means of
+			functions for indexing, sub-vector extraction  and
+			concatenation,  defined  in  Section  7.1.  In the
+			notation for vectors, the elements of a vector are
+			surrounded by square brackets:
+			[item-0 item-1 ... item-n]. 
+
+\item [{\bf string}]   A  packed  vector  (or byte vector) of characters;
+			the elements are small integers  representing the
+			ASCII  codes  for  the characters (usually inums).
+			The  elements  may  be   accessed   by   indexing,
+			substring  and concatenation functions, defined in
+			Chapter 6.  String notation consists of  a  series
+			of  characters  enclosed  in  double quotes, as in
+			"THIS IS A  STRING".    A  quote  is  included  by
+			doubling  it, as in "HE SAID, ""LISP""".  A string
+			may be input across  the  end  of  a  line  but  a
+			warning   will   be   given   unless   the  switch
+			{\bf  eolinstringok}\index{eolinstringok}
+			\index{*eolinstringok} is non-nil (see Chapter 12).
+
+\item [{\bf w-vector}] A vector of machine-sized words, used to implement
+			such  things  as  fixnums,  bignums,  etc. The
+			elements  are  not considered to be items, and are
+			not examined by the garbage collector.
+
+\item [{\bf byte-vector}]   A vector of bytes.  Internally  a  byte-vector  is
+              the   same   as   a  string,  but  it  is  printed
+              differently as a vector  of  integers  instead  of
+              characters.
+
+\item [{\bf code-pointer}] This  item  is used to refer to the entry point of
+              compiled functions (exprs, fexprs, macros,  etc.),
+              permitting   compiled  functions  to  be  renamed,
+              passed around anonymously, etc.  New code-pointers
+              are  created  by  the  loader  (lap,   fasl)   and
+              associated  functions.   They can be printed;  the
+              printing function prints the number  of  arguments
+              expected  as  well  as the entry point.  The value
+              appears in the convention  of  the  implementation
+              (e.g.  \#$<$Code  A  N$>$,  where  A  is  the number of
+              arguments and N is the entry point).
+\end{Ventry}
+
+\subsubsection{Other Notational Conventions}
+
+Certain functional arguments can be any of a number of  types.
+For  convenience,  we  give these commonly used sets a name.  We
+refer to these sets as "classes" of primitive data  types.    In
+addition  to the types described above and the names for classes
+of types given below, we use the following  conventions  in  the
+manual.   \{XXX, YYY\} indicates that either data type XXX or data
+type YYY will do.  \{XXX\}-\{YYY\} indicates that any object of type
+XXX can be used except those of type YYY; in this case, YYY is a
+subset of XXX.  For example,  \{integer,  float\}  indicates  that
+either an integer or a float is acceptable; \{any\}-\{vector\} means
+any type except a vector.
+
+\begin{Ventry}{\bf None Returned}
+\item [{\bf any}]          Any  of  the  types  given  above. S-expression is
+              another term for any.  All PSL entities have  some
+              value unless an error occurs during evaluation.
+
+\item [{\bf atom }]         The class {any}-{pair}.
+
+\item [{\bf boolean}]       The class of global  variables {t, nil}, or  their
+              respective    values,    {t,   nil}.  (See Section
+              4.6).
+
+\item [{\bf character}]  Integers in the range of 0 to 255 without 128
+		representing ASCII character codes. 
+		These are distinct from single-character ids.
+
+\item [{\bf constant}]      The class  of  {integer,  float,  string,  vector,
+              code-pointer}.    A  constant  evaluates to itself
+              (see the definition of eval in Chapter 11).
+
+\item [{\bf extra-boolean}] Any value  in the  system.    Anything  that    is
+              not nil has the boolean interpretation t.
+
+\item [{\bf ftype}]         The  set  of  ids (expr, fexpr, macro, and nexpr),
+              which represent definable  function  types.    The
+              ftype  is only an attribute of identifiers, and is
+              not  associated  with   either   executable   code
+              code-pointers or lambda expressions.
+
+\item [{\bf io-channel}]    A  small  integer  representing an io channel (see
+              Chapter  12   for   a   complete   discussion   of
+              io-channels).
+
+\item [{\bf number}]       The class of {integer, float}.
+
+\item [{\bf x-vector}]      Any   kind  of  vector;  i.e.  a  string,  vector,
+              w-vector, or word.
+
+\item [{\bf Undefined}]     An implementation-dependent value returned by some
+              low-level functions;  i.e.  the  user  should  not
+              depend on this value.
+
+\item [{\bf None Returned}] A  notational convenience used to indicate control
+              functions that  do  not  return  directly  to  the
+              calling  point,  and  hence  do not return a value
+              (for example, see the function go in Chapter 8).
+\end{Ventry}
+
+\subsubsection{Structures}
+
+ Structures are  entities  created  using  pairs.    Lists  are
+structures  very  commonly  required as parameters to functions.
+If a list of homogeneous entities is  required  by  a  function,
+this class is denoted by xxx-list, in which xxx is the name of a
+class  of  primitives  or  structures.  Thus a list of ids is an
+id-list, a list of integers is an integer-list, and so on.
+
+\begin{Ventry}{\bf function}
+\item [{\bf list}]          A list   is  recursively   defined  as  
+nil    or
+              the  pair   (any . list).    A  special   notation
+              called list-notation is used to  represent  lists.
+              List-notation eliminates the extra parentheses and
+              dots  required  by  dot-notation,  as  illustrated
+              below.   List-notation  and  dot-notation  may  be
+              mixed, as shown in the second example.
+\end{Ventry}
+              \begin{verbatim}
+              DOT NOTATION                    LIST NOTATION
+              (A . (B . (C . NIL)))             (A B C)
+              ((A . (B)) . C)                   ((A B) . C)
+              \end{verbatim}
+
+              Note:  ()  is an alternate input representation of
+              nil.
+
+\begin{Ventry}{\bf function}
+\item [{\bf a-list}]        An a-list, or association list, is a list in
+which
+              each element is a pair, the car part being  a  key
+              associated with the value in the cdr part.
+
+\item [{\bf form}]          A  form  is an S-expression (any) which is
+legally
+              acceptable to eval; that is, it  is  syntactically
+              and  semantically  accepted  by the interpreter or
+              the compiler. 
+
+\item [{\bf lambda}]       A lambda expression must be of the following form,
+              the square brackets are used to indicate  zero  or
+              more occurances of an expression.
+
+              \begin{verbatim}
+              (LAMBDA <parameters> [<form>])
+              \end{verbatim}
+              The expression \verb+<parameters>+ is a list of ids which
+              represents  the formal parameters or the body (the
+              sequence of \verb+<form>+s). The evaluation of the body
+              takes place as if the \verb+<form>+s were enclosed within
+              a  progn.    
+
+\item [{\bf function}]      A  lambda  expression  or  a   code-pointer,  
+the
+              function  type  is assumed to be expr.  This means
+              that the arguments will be evaluated, and that the
+              number of arguments must agree with the number  of
+              parameters.
+\end{Ventry}
+
+\subsection{Predicates Useful with Data Types}
+
+Most  functions  in  this  Section  return  t if the condition
+defined is met and nil if it is  not.    Exceptions  are  noted.
+Defined are type-checking functions and elementary comparisons.
+
+\subsubsection{Functions for Testing Equality}
+
+  Functions  for  testing  equality are listed below.  For other
+functions comparing arithmetic values see Chapter 3.
+
+
+\de{eq}{(eq U:any V:any): boolean}{ open-compiled expr}
+{    Returns t if U points to  the same object as V, i.e. if they
+    are identical items.    Eq  is  not  a  reliable  comparison
+    between  numeric  arguments.    This function should only be
+    used in special circumstances.  Normally, equality should be
+    tested with equal, described below.
+}
+
+\de{eqn}{(eqn U:any V:any): boolean}{expr}
+{    Returns t if U and V  are eq or if U  and V are numbers  and
+    have the same value and type.
+}
+
+\de{equal}{(equal U:any V:any): boolean}{expr}
+{    Returns  t  if  U  and  V  are  the  same.   A usually valid
+    heuristic is that if two objects look the  same  if  printed
+    with   the  function  print,  they  are  equal.    Equal  is
+    open-compiled as eq if one argument is known to be an atom.
+}
+\begin{verbatim}
+    (de equal (u v)
+      (cond ((and (pairp u) (pairp v))
+             (and (equal (car u) (car v))
+                  (equal (cdr u) (cdr v))))
+            ((and (stringp u) (stringp v))
+             (string= u v))
+            ((and (vectorp u) (vectorp v))
+             (vector-equal u v))
+            (t (eqn u v))))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (setq x '(lisa) y x)
+    (LISA)
+    2 lisp> (eq x y)
+    T
+    3 lisp> (eq x '(lisa))
+    NIL
+    4 lisp> (equal x '(lisa))
+    T
+    5 lisp> (eq 1.0 1.0)
+    NIL
+    6 lisp> (eqn 1.0 1.0)
+    T
+    7 lisp> (equal 0 0.0)
+    NIL
+\end{verbatim}
+\de{neq}{(neq U:any V:any): boolean}{macro}
+{    (not (equal U V)).  }
+
+\de{ne}{(ne U:any V:any): boolean}{open-compiled expr}
+{    (not (eq U V)).  }
+
+\de{eqstr}{(eqstr U:any V:any): boolean }{expr}
+{    Compare two strings, for exact  (case  sensitive)  equality.
+    The  function  string-equal (which is defined in the STRINGS
+    module), is not sensitive to case.  Eqstr returns t if U and
+    V are eq or if U and V are equal strings.  }
+
+\de{eqcar}{(eqcar U:any V:any): boolean}{expr}
+{    Tests whether (eq (car U) V)).  If the first argument is not
+    a pair, eqcar returns nil.  }
+
+\subsubsection{Predicates for Testing the Type of an Object}
+
+\de{atom}{(atom U:any): boolean}{open-compiled expr}
+{    Returns t if U is not a pair.
+}
+
+\de{codep}{(codep U:any): boolean}{open-compiled expr}
+{    Returns t if U is a code-pointer.
+}
+\de{constantp}{(constantp U:any): boolean}{expr}
+{    Returns t if U is a constant (that is, neither a pair nor an
+    id).  Note that vectors are considered constants.
+}
+\de{fixp}{(fixp U:any): boolean}{open-compiled expr}
+{    Returns t if U is an  integer.    If  BIG  is  loaded,  this
+    function also returns t for bignums.
+}
+\de{floatp}{(floatp U:any): boolean}{open-compiled expr}
+{    Returns t if U is a float.
+}
+\de{idp}{(idp U:any): boolean}{open-compiled expr}
+{    Returns t if U is an id.
+}
+\de{null}{(null U:any): boolean}{open-compiled expr}
+{    Returns  t    if  U    is  nil.  This  is exactly  the  same
+    function as  not, defined  in Section   2.2.3.   Both    are
+    available  solely  to  increase  readability.
+}
+\de{numberp}{(numberp U:any): boolean}{open-compiled expr}
+{    Returns t if U is a number (integer or float).
+}
+\de{pairp}{(pairp U:any): boolean}{open-compiled expr}
+{    Returns t if U is a pair.
+}
+\de{stringp}{(stringp U:any): boolean}{open-compiled expr}
+{    Returns t if U is a string.
+}
+\de{vectorp}{(vectorp U:any): boolean}{open-compiled expr}
+{    Returns t if U is a vector.
+}
+\subsubsection{Boolean Functions}
+
+Boolean  functions  return  nil for false; anything non-nil is
+taken to be true, although a conventional  way  of  representing
+truth  is  as  t.   Note  that t always evaluates to itself, its
+value cannot be redefined.  Nil may also be represented  as  ().
+As  a  matter  of  style, () should be used to refer to an empty
+list.  The Boolean functions and, or, and not can be applied  to
+an  object  of any type.  And and or may also be used as control
+structures (see Section 8.2 for more information).
+
+\noindent
+Since  PSL  treats  any  value   which   is   non-nil   as   a
+representation  for  true, there is no clear distinction between
+an arbitrary function and a  boolean  function.    However,  the
+three  functions  presented  here  are by far the most useful in
+constructing more complex tests from simple predicates.
+
+
+\de{not}{(not U:any): boolean}{open-compiled expr}
+{    Returns t  if U  is  nil.  This   is  exactly    the    same
+    function  as  null,  defined  in  Section  2.2.2.   Both are
+    available solely to increase readability.
+}
+
+\de{and}{(and [U:form]): extra-boolean}{open-compiled fexpr}
+{    And evaluates each U until a value of nil is  found  or  the
+    end  of  the    list is encountered.  If  a non-nil value is
+    the last value, it is returned; otherwise nil  is  returned.
+    Note  that and called with zero arguments returns t.  In the
+    example which follows  and  is  used  to  select  the  first
+    element of a list, if the call on pairp returns nil then car
+    will not be applied.
+}
+\begin{verbatim}
+    1 lisp> ((lambda (p) (and (pairp p) (car p)))  '(robin))
+    robin
+\end{verbatim}
+\de{or}{(or [U:form]): extra-boolean}{open-compiled fexpr}
+{    U is any number of expressions  which are evaluated in order
+    of  their  appearance.  If one is found to be non-nil, it is
+    returned as the value of  or.    If  all  are  nil,  nil  is
+    returned.  Note that if or is called with zero arguments, it
+    returns nil.  The following function defines a predicate for
+    numbers.
+}
+\begin{verbatim}
+    (de number-p (n)
+      (or (fixp n) (floatp n)))
+\end{verbatim}
+\subsection{Converting Data Types}
+
+The following functions are used in converting data items from
+one  type  to  another.   They are grouped according to the type
+returned.  Numeric types may be converted using  functions  such
+as fix and float, described in Section 3.2.
+
+
+\de{intern}{(intern U:{id,string}): id}{expr}
+{    Returns an identifier from the symbol table (also called the
+    id-hash-table).   When  the  PSL  reader reads a sequence of
+    characters which notate an id, it will apply intern  to  the
+    string of characters.  Therefore, it generally does not make
+    sense  to  apply  intern  to  an id.  Intern will search the
+    symbol table for an id whose print name matches U.   If  the
+    search  is  successful  then  the  matching  id is returned.
+    Otherwise a new id will be entered into the symbol table and
+    a reference to it will be returned.  If U has more than  the
+    maximum    number    of    characters   permitted   by   the
+    implementation, an error will be signalled.
+}
+\begin{verbatim}
+    ***** Too many characters to INTERN
+\end{verbatim}
+    The id which is returned from an application of intern to  a
+    string  will  have  the  string  as  its  print  name.  Most
+    identifiers have lowercase print names (even though you  may
+    type  in  lower case letters), but interning "ABC" yields an
+    id with a lower case print name.
+
+\begin{verbatim}
+    1 lisp> (eq (intern "abc") 'abc)
+    NIL
+\end{verbatim}
+    The maximum number of characters in any token is system dependent,
+around 5000 can be expected to be allowed.
+
+
+\de{newid}{(newid S:string): id}{expr}
+{    Allocates a new identifier and sets its print  name  to  the
+    string  S.   The identifier is not added to the symbol table
+    (an identifier which does not appear in the symbol table  is
+    said to be uninterned).  The string is not copied.
+}
+\begin{verbatim}
+    1 lisp> (setq new (newid "NEWONE"))
+    NEWONE
+    2 lisp> (eq new 'newone)
+    nil
+\end{verbatim}
+    If  one  refers  directly  to  an  identifier  (for  example
+    'newone), the reader will apply  intern  to  the  string  of
+    characters  it  has  read  ("NEWONE").   In the example, the
+    identifier created by the call on newid  is  different  from
+    the one created by the reader when it read 'newone.
+
+\de{int2id}{(int2id I:integer): id}{expr}
+{    Converts  an integer to an id; this refers to the I'th id in
+    the id space. Since  0  ...  255  correspond  to  ASCII
+    characters,  int2id  with an argument in this range converts
+    an ASCII code to the corresponding single character id.
+    The id NIL is always found by {\tt (int2id 128)}.  }
+
+\de{id2int}{(id2int D:id): integer}{expr}
+{    Returns the id space position of D as a LISP integer.  }
+
+\de{id2string}{(id2string D:id): string}{expr}
+{    Get name from id space.  Id2string returns the print name of
+    its  argument  as  a  string.    This  is  not  a  copy,  so
+    destructive  operations  should  not  be  performed  on  the
+    result.    PSL  uses  an  escape  convention  for   notating
+    identifiers which contain special characters.  Any character
+    which  follows  the  character  !  is  considered  to  be an
+    alphabetic character.   In  the  example,  notice  that  the
+    character ! does not appear in the result.  }
+\begin{verbatim}
+    1 lisp> (id2string 'is-!%)
+    "is-%"
+\end{verbatim}
+\de{string2list}{(string2list S:string): inum-list}{expr}
+{    Creates  a  list  of length  (add1 (size S)), converting the
+    ASCII characters into small integers.
+}
+\begin{verbatim}
+    1 lisp> (string2list "STRING")
+    (83 84 82 73 78 71)
+\end{verbatim}
+
+\de{list2string}{(list2string L:inum-list): string}{expr}
+{    Allocates a string of the same size as L, and converts small
+    integers into characters according to their ASCII code.   An
+    integer  outside  the  range  of 0 ... 127 will result in an
+    error.
+}
+\begin{verbatim}
+***** An attempt was made to do LISP2CHAR on `N' which is not a character
+
+    1 lisp> (list2string '(83 84 82 73 78 71))
+    "STRING"
+\end{verbatim}
+\de{string}{(string [I:inum]): string}{nexpr}
+{    Creates  and  returns  a string containing each of the small
+    integers
+}
+\begin{verbatim}
+    1 lisp> (string 83 84 82 73 78 71)
+    "STRING"
+\end{verbatim}
+\de{vector}{(vector [U:any]): vector}{nexpr}
+{    Creates and returns a vector containing all the Us given.
+}
+\begin{verbatim}
+    1 lisp> (vector 83 84 82 73 78 71)
+    [83 84 82 73 78 71]
+\end{verbatim}
+\de{vector2string}{(vector2string V:vector): string}{expr}
+{    Pack the small integers in the vector into a string  of  the
+    same  size,  using the integers as ASCII values.  An integer
+    outside the range of 0 ... 255 will result in an error.
+}
+\begin{verbatim}
+    1 lisp> (vector2string [83 84 82 73 78 71])
+    "STRING"
+\end{verbatim}
+\de{string2vector}{(string2vector S:string): vector}{expr}
+{    Unpack the string into a vector  of  the  same  size.    The
+    elements  of the vector are small integers, representing the
+    ASCII values of the characters in S.
+}
+\begin{verbatim}
+    1 lisp> (string2vector "VECTOR")
+    [V E C T O R]
+\end{verbatim}
+\de{vector2list}{(vector2list V:vector): list}{expr}
+{    Create a list of the same size as V, the elements are copied
+    in a left to right order.
+}
+\begin{verbatim}
+    1 lisp> (vector2list [L I S T])
+    (L I S T)
+\end{verbatim}
+\de{list2vector}{(list2vector L:list): vector}{expr}
+{    Copy the elements of the list into  a  vector  of  the  same
+    size.
+}
+\begin{verbatim}
+    1 lisp> (list2vector '(V E C T O R))
+    [V E C T O R]
+\end{verbatim}

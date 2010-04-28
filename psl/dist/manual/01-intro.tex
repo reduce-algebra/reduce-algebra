@@ -1,0 +1,203 @@
+
+
+\chapter*{Introduction}
+
+\section{Opening Remarks}
+
+ This document describes PSL (Portable Standard Lisp \footnote{
+"LSP"  backwards!}),  a portable, "small" and fast LISP developed 
+originally at the University  of  Utah and the Hewlett-Packard Company.
+The present version of PSL is supported by the Konrad--Zuse-Zentrum Berlin. 
+PSL is upward-compatible with Standard Lisp 
+\footnote{J. B. Marti, A. C. Hearn, M. L. Griss, C. Griss: 
+The Standard Lisp Report}.  In most cases,
+Standard Lisp did not commit itself to  specific  implementation
+details  (since it was to be compatible with a portion of "most"
+LISPs).  PSL is more specific and provides many  more  functions
+than described in that report.
+
+The goals of PSL include:
+\begin{itemize}
+\item Providing implementation tools for LISP that can be used to
+     implement   a   variety  of  LISP-like  systems,  including
+     mini-Lisps embedded in  other  language  systems.
+\item Effectively  supporting the algebra system on a
+     number of machines.
+\item Studying  the  utility of a LISP-based systems language for
+     other applications (such as CAGD or VLSI design)  in  which
+     Lisp code provides efficiency comparable to that of C or
+     BCPL,  yet  enjoys  the interactive program development and
+     debugging environment of LISP.
+\end{itemize}
+
+\section{Scope of the Manual}
+
+This manual is intended to describe the syntax, semantics, and
+implementation of PSL.  While  we  have  attempted  to  make  it
+comprehensive,  it  is  not  intended for use as a primer.  Some
+prior exposure to LISP will prove to be very helpful. 
+
+\subsection{Typographic Conventions within the Manual}
+
+A large portion of this manual is devoted  to  descriptions
+of the functions that make up PSL.  For each function there is a
+prototypical  header  line.    Each  argument  is  given a name,
+followed by the type of argument expected.   If  more  than  one
+type  is  allowed  then  the choices will be enclosed within the
+brackets \{, and \}.  For example, the following  header  shows  a
+function  named  vector-fetch  which accepts two arguments.  The
+first V, is a vector, the second I, is an  integer.    The  term
+expr  refers  to  a  type  of function.
+
+\de{vector-fetch}{(vector-fetch V:vector I:integer): any}{expr}
+{The value returned is the i'th element of the vector V.}\\
+\\
+
+\noindent
+Within compiled code, some function calls are  replaced  by  a
+sequence of instructions whose execution is equivalent to a call
+on the function.  Functions of this type will have a note saying
+open-compiled next to the function type.
+
+\noindent
+Some  functions  accept an arbitrary number of arguments.  The
+header for these functions shows a single argument  enclosed  in
+square  brackets,  indicating  that  zero or more occurrences of
+that argument are allowed.\\
+
+%\noindent
+\de{and}{(and [U:form]): extra-boolean}{fexpr}
+{And is a function which accepts zero or more arguments each of
+which may be any form.}
+
+\noindent
+In  some  cases,  LISP  code  is   given   in   the   function
+documentation  as the function's definition.  This code is given
+to clarify the semantics of the function, it is not  a  copy  of
+the actual PSL definition.
+
+
+
+\section{Hints on Using the PSL System}
+
+The following sub-sections collect a few  miscellaneous  notes
+that  are further expanded on elsewhere.  They are provided here
+simply to get you started.
+
+
+\subsection{Loading Optional Modules}
+
+Certain modules are not present in the "kernel" or  "bare-psl"
+system,  but  can  be loaded as options.  Some of these optional
+modules will be  automatically  loaded  when  first  referenced.
+Other  modules may be explicitly loaded by the user, or included
+by the installer when building the PSL  core  image.    Optional
+modules can be loaded by executing the following.
+
+\begin{verbatim}
+(load modulename)
+\end{verbatim}
+When a module is loaded its name is added to a list referenced
+by  the global variable options*.  The modules which make up the
+BARE-PSL kernel are not included in this list.   An  application
+of load will be aborted if the argument is found in the options*
+list.    If  it  is necessary to load a module a second time use
+reload, do not attempt to alter the value of options*.
+
+\subsection{Error and Warning Messages}
+
+Many functions  detect  and  signal  appropriate  errors ;  
+in  many cases, an error message is
+printed.  The error conditions are given as part of a function's
+definition in the manual.  An error message is preceded by  five
+stars (*); a warning message is preceded by three.  For example,
+most  primitive  functions check the type of their arguments and
+display an error message if an argument is incorrect.  The  type
+mismatch  error  mentions  the  function  in which the error was
+detected, gives the expected type, and prints the  actual  value
+passed.
+
+\begin{verbatim}
+1 lisp> (car "STR")
+***** An attempt was made to do CAR on `"STR"', which is not a pair
+\end{verbatim}
+The  switch {\bf usermode}\index{*usermode}\index{usermode}
+is used to distinguish between functions
+which comprise PSL and functions defined by the user.  When  the
+value  of  this  switch  is t then the name of each user defined
+function is flagged {\bf user}. When a function is about to be
+defined, if *usermode is t, there is another function associated
+with  the  name,  and  the  name  is  not  flagged lose then the
+following prompt will be displayed.
+\begin{verbatim}
+Do you really want to redefine the system function `NAME'?
+\end{verbatim}
+\noindent
+You are expected to respond with \verb+YES+, \verb+Y+, 
+\verb+NO+, \verb+N+,  or \verb+B+. A response  of \verb+B+ will 
+result  in a break loop (see Chapter 16). After quitting the
+break loop you should respond  with  \verb+YES+, \verb+Y+, 
+\verb+NO+, or \verb+N+ (see yesp in Chapter 15).  Unless you
+consider yourself an  expert  it is dangerous to give an
+affirmative response.  It is best to simply give your function a
+different name.
+\noindent
+If the switch {\bf redefmsg}\index{redefmsg}\index{*redefmsg}
+is set to t then whenever a function
+is redefined the message
+
+\begin{verbatim}
+*** Function `NAME' has been redefined
+\end{verbatim}
+will be printed.
+
+\noindent
+If  an identifier is flagged LOSE\index{lose} then it cannot be
+assigned a functional definition.
+
+\begin{verbatim}
+*** `NAME' has not been defined, because it is flagged LOSE
+\end{verbatim}
+
+\section{Switches and Globals}
+
+Generally, the name of an identifier which represents a switch
+will start with a "*".  For example, *redefmsg \index{*redefmsg}
+and *usermode are
+switches.  The value of a switch is modified with the  functions
+on  and  off.  Note that in the example below, the prefix "*" is
+omitted when using on and off.
+
+\begin{verbatim}
+1 lisp> (on redefmsg)
+nil
+2 lisp> *redefmsg
+t
+\end{verbatim}
+The name of an identifier which represents a  global  ends  with
+"*".  options* is an example of a global.
+
+\section{Compilation Versus Interpretation}
+
+  PSL  uses  both compiled and interpreted code.  If compiled, a
+function usually executes faster and is smaller.  However, there
+are some semantic differences of which the user should be aware.
+For example, some recursive functions  are  made  non-recursive,
+and   certain  functions  are  open-compiled.    A  call  to  an
+open-compiled function is replaced, on compilation, by a  series
+of  online  instructions  instead  of  just being a reference to
+another function.  Functions compiled open may not  do  as  much
+type checking.
+
+\begin{verbatim}
+1 lisp> (de list-first (p) (car p))
+list-first
+2 lisp> (list-first "STR")
+***** An attempt was made to do CAR on `"STR', which is not a pair 
+3 lisp> (compile '(list-first))
+nil
+4 lisp> (list-first "STR")
+#<Unknown f7000002>
+\end{verbatim}
+To  avoid  this the user would have to add code which checks the
+type of P before car is applied.

@@ -1,0 +1,1338 @@
+\chapter*{Flow of Control}
+
+\section{Introduction}
+
+  In a PSL program the flow of control is described primarily by
+function  application.   A function may call any number of other
+functions, including itself.  This allows complex operations  to
+be  described  by  a  number  of  small functions, each of which
+implements a simple operation.   In  addition,  PSL  provides  a
+number of other control constructs.
+
+\subsection{Conditionals}
+
+\subsubsection{Conds and Ifs}
+
+
+\de{cond}{(cond [U:form-list]): any}{open-compiled fexpr}\\
+
+{    A  typical  application  of  cond is shown below, the square
+    brackets are used to indicate zero of more occurances of  an
+    expression.
+}\\
+
+\begin{verbatim}
+    (COND ([(<predicate> [<action>])]))
+\end{verbatim}
+   	The first form in each clause is treated as a predicate; the
+    remaining  (zero  or more) forms are treated as if they were
+    enclosed  within  a  progn.    The  evaluation  proceeds  by
+    sequentially evaluating the predicates in the order of their
+    appearance until one evaluates to a non-nil value.  Then the
+    remaining  forms  in this clause are evaluated and the value
+    of the last form is returned as the result.    If  only  the
+    predicate  appears,  then its value (if non-nil) becomes the
+    value returned.  If no predicate is non-nil then the  result
+    is  nil.    The following definition demonstrates the use of
+    cond.\\
+
+\begin{verbatim}
+    (de size (data)
+      (cond ((pairp data) (length data))
+            ((stringp data) (string-length data))
+            ((vectorp data) (vector-size data))
+            (t 'unknown)))
+\end{verbatim}
+%\begin{verbatim}
+    This function will compute the length of lists  strings
+ 			and vectors.
+			 
+ The following macros are defined in the USEFUL module.
+
+
+\de{if}{(if E:form S0:form [S:form]): any}{macro}
+{    The form S0 is evaluated if the test E is non-nil, otherwise
+    the  remaining  forms S are evaluated, the value of the last
+    is returned.  If is a macro to simplify  the  writing  of  a
+    common  form of cond in which there are only two clauses and
+    the antecedent of the second is t.}
+
+The expression
+\begin{verbatim}
+    (if (minusp number) 'negative 'positive)
+\end{verbatim}
+    is preferred over
+\begin{verbatim}
+    (cond ((minusp number) 'negative)
+            (t 'positive))
+\end{verbatim}
+    Notice that  a  single  form  is  evaluated  when  the  test
+    expression  E  is  non-nil  but  there  may be any number of
+    expressions evaluated when the value of E is nil.
+
+  Related macros for common cond forms are when and unless.
+
+
+\de{when}{(when E:form [S:form]): any}{macro}
+{    When the value of the test expression E is non-nil the forms
+    S are evaluated.  The value of the last form is returned  as
+    the  result.    The result is nil if the test expresson E is
+    nil.}
+
+\de{unless}{(unless E:form [U:form]): any}{macro}
+{   If the value of E is nil then the  forms  S  are  evaluated.
+    The result is nil if the test expression E is non-nil.}
+  		The boolean functions and and or (see Chapter 2), may be used
+				as conditional forms.  For example an expression like
+\begin{verbatim}
+
+(and (pairp x) (eq (car x) 'a))
+
+\end{verbatim}
+which relies upon the order of the evaluation of  the  arguments
+is  often  used.  If and had evaluated the second argument first
+an error may have been generated.  However,  the  arguments  are
+always evaluated from left to right.  Or may be used to retrieve
+a value as in the function definition below.
+\begin{verbatim}
+(de dispatch (data arguments)
+	(apply (or (get data 'function) default-function)
+		arguments))
+\end{verbatim}
+  In  this example the function which is applied is either found
+on the property list of the data or it is a default.  In reading
+such an expression one considers an  argument  to  be  preferred
+over  anything  which  follows  it.   Note that the use of these
+functions as conditionals may yield  code  which  is  confusing.
+For example the code
+\begin{verbatim}
+
+(setq x (and y 3))
+
+\end{verbatim}
+will  set  x  to  3  if  y  is  bound to a value other than nil,
+otherwise x will be set to nil.   It  is  recommended  that  the
+following be used instead.
+\begin{verbatim}
+(setq x (if y 3 nil))
+\end{verbatim}
+  The  following  version of if is defined in the module {\bf if}. It
+is upward compatible with the if  macro  defined  above. This
+version  will  accept the keywords then, else, and elseif. If a
+keyword appears immediately after the conditional expression of
+the if then the expression is taken to be in keyword form.
+
+\de{if}{(if $<$expr$>$ [then $<$expr$>$ ... ][$<$elseif-part$>$ ...
+][else $<$expr$>$ ... ]):\\
+any}    {expr}
+
+    {This  is  not  the  same  notation used generally in the PSL
+    manual.  Square brackets enclose parts  optionally  present.
+    The  ellipses  indicate  arbitrary additional repetitions of
+    the thing appearing just before them.  The  elseif-part  may
+    be one of two forms.\\
+$<$elseif-part$>$ = else if $<$expr$>$ [then $<$expr$>$ ... ]\\
+$<$elseif-part$>$ = else if $<$expr$>$ [then $<$expr$>$ ... ]
+}
+
+\section{Case and Selectq Statements}
+
+  Case  is  a  form  of  conditional  in  which a "key" value is
+compared  against  a  set  of  values  in  order  to  choose   a
+corresponding set of forms to evaluate.  The "key" value must be
+an  integer.    This  is a restricted cond, and therefore can be
+compiled into more efficient code.  The  compiler  expends  some
+effort  to  examine  special  cases  (for  example  compact  vs.
+non-compact sets of cases and short vs. long sets of cases).
+
+
+\de{case}{(case I:form [U:case-clause]): any}{open-compiled fexpr}
+{    Case selects a case-clause (one of the U's),    to  evaluate
+    based  on  the value of I.  The expression I should evaluate
+    to an integer.  Each clause has  the  form  (case-expression
+    form),  where  the  case-expression has one of the following
+    forms.}
+
+%\begin{TABELLE***}
+\begin{tabular}{ll}
+    nil & the default case\\
+
+    (i1 i2 ... in) & where each ik is an integer\\
+
+    ((range low high)) & where low and high are integers and low
+                  is less \\
+														& than or equal to high\\
+%\end{TABELLE***}
+\end{tabular}\\
+
+
+The following example illustrates the use of case
+
+\begin{verbatim}
+    (case i ((1) (print "first"))
+            ((2 3) (print "second"))
+            (((range 4 10)) (print "third"))
+            (nil (print "fourth")))
+\end{verbatim}
+
+\de{selectq}{(selectq I:form [U:selectq-clause]): any}{macro}
+{    This  function  selects  an action based on the value of the
+    "key" I.  Each  selectq-clause  is  of  the  form  (key-part
+    [action]).  The key-part is a list of keys, t, or otherwise.
+    If  there is only one key in a key-part it may be written in
+    place of a list containing it, provided that the key is  not
+    a list, nil, t, or otherwise.
+
+    After  I is evaluated, it is compared against the members of
+    each key-part in turn.  If the key is eq to  any  member  of
+    the  key-part  then each of the forms in that selectq-clause
+    are evaluated.  The value of the last form of  the  list  is
+    the value of the selectq.  If a selectq-clause with key-part
+    t  or  otherwise is reached, its forms are evaluated without
+    further testing.  A t or otherwise clause should be the last
+    clause.  If no clause is satisfied then nil is returned.
+}
+
+\begin{verbatim}
+    (selectq (car w)
+      ((nil) nil)
+      (end (print 'done) 'end)
+      ((0 1 2 3 4 5 6 7 8 9) 'digit)
+      (otherwise 'other))
+\end{verbatim}
+\section{Sequencing Evaluation}
+
+  These functions  provide  for  explicit control    sequencing,
+and    the  definition  of  blocks  altering  the scope of local
+variables.
+
+
+\de{let}{(let A:list [B:form]): any}{macro}
+{    The general form follows, the square brackets  are  used  to
+    indicate zero or more occurances of an expression.
+}
+\begin{verbatim}
+    (LET ([(<var> <value>)]) [<body>])
+\end{verbatim}
+    The  $<$value$>$s  are  evaluated (in an unspecified order), and
+    then the $<$var$>$s are  bound  to  these  values. The  body,
+    consisting  of the $<$body$>$ forms, is evaluated in a left to
+    right order. The value returned is the result of the last
+    body  form  or  nil  if  the  body  is empty.  Note that the
+    $<$value$>$s are evaluated in the outer environment, before  the
+    $<$var$>$s are bound.\\
+
+    This function is equivalent to
+
+\begin{verbatim}
+    ((lambda ([<var>]) [<body>]) [<value>])
+\end{verbatim}
+    The let-style is attractive since it places the $<$var$>$s close
+    to   their  binding  forms  ($<$value$>$s),  thereby  increasing
+    readability.\\
+
+There are two shorthand formats for ($<$var$>$ $<$value$>$). One
+is ($<var>$) and the other is just $<var>$.   Both  of  these  mean
+bind  $<var>$  to  nil. As  a rule of style, you should use ($<var>$ nil)
+if you mean to use the value  of  $<var>$  without
+assigning  it  it first, and just ($<var>$) or $<var>$ if you do
+not care what $<var>$ gets bound to.\\
+
+The following expression returns the middle element of a vector.
+
+\begin{verbatim}
+    (let ((n (vector-size vector)))
+      (unless (zerop n)
+        (vector-fetch vector (add1 (/ n 2)))))
+\end{verbatim}
+
+\de{let*}{(let* A:list [B:form]): any}{macro}
+{    Let*  is  just like let except that it makes the assignments
+    sequentially.  That is, the first binding is made before the
+    value for the second one is computed.    The  example  below
+    illustrates the difference between let and let*.
+}
+\begin{verbatim}
+    1 lisp> (setq front 'red back 'orange)
+    orange
+    2 lisp> (let ((front 'blue) (back front))  back)
+    red
+    3 lisp> (let* ((front 'blue) (back front))  back)
+    blue
+\end{verbatim}
+
+\de{progn}{(progn [U:form]): any}{open-compiled fexpr}
+{    U  is a set of  expressions which are executed sequentially.
+    The value returned is the value of the last expression.
+}
+
+\de{prog2}{(prog2 A:form B:form): any}{open-compiled expr}
+{    Returns the value of the second argument B.  Note that prog2
+    expects only two arguments.
+}
+
+\de{prog1}{(prog1 [U:form]): any}{macro}
+{    Prog1 is a function defined in the USEFUL  package.    Prog1
+    evaluates  its  arguments  in order, like progn, but returns
+    the value of the first.
+}
+
+\de{prog}{(prog VARS:id-list [PROGRAM:{id,form}]): any open-compiled fexpr}{}
+{    VARS is a list of ids which are considered fluid if the prog
+    is interpreted and local if compiled (see the "Variables and
+    Bindings" Section, 9.2).  The prog's variables are allocated
+    space when the prog form is  applied,  and  are  deallocated
+    when  the prog is exited.  Prog variables are initialized to
+    nil.  The program is a set of expressions to be evaluated in
+    order of their appearance in the prog function.  An id which
+    appears at the top level of the program are labels which can
+    be referred by go.  The value returned by the prog  function
+    is determined by a return function or nil if the prog "falls
+    through".
+}
+\begin{verbatim}
+    (de sum-up (seq)
+       (prog (sum)
+         (setq sum 0)
+        loop
+         (when (null seq) (return sum))
+         (when (numberp (first seq))
+           (setq sum (plus sum (first seq)))
+           (setq seq (rest seq))
+           (go loop))))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (sum-up '(1 3 5))
+    9
+    2 lisp> (sum-up '(a))
+    nil
+\end{verbatim}
+  There  are  restrictions  as to where the control functions go
+and return may be placed.   The  functions  go  and  return  are
+intended  to  be  used  within a prog.  This is so that they may
+have only locally determinable  effects.    Unfortunately  these
+restrictions  are not consistent across compiled and interpreted
+code.  It is recommended that if a non-local  exit  is  required
+then use catch and throw (see section 8.5).
+
+  In  interpreted  code,  upon encountering a return a search is
+made for the latest instance of an entrance to a prog.   If  the
+search  is  successful  then  the  evaluation  of  that  prog is
+considered complete, the  value  returned  is  the  argument  to
+return.  If the search for a prog fails then the message
+
+\begin{verbatim}
+***** RETURN attempted outside the scope of a PROG
+\end{verbatim}
+is  displayed.    The treatment of return is much different when
+the code is compiled.  A return may appear outside the scope  of
+a prog.  For example, the compiler will compile the sequence
+
+\begin{verbatim}
+(if (not (numberp x)) (return 'unknown))
+(compute x))
+\end{verbatim}
+as if it were were enclosed within a prog.
+
+\begin{verbatim}
+(prog ()
+  (if (not (numberp x)) (return 'unknown))
+  (return (compute x))))
+\end{verbatim}
+  Upon  reaching  a  go within interpreted code a search is made
+for the latest entrance to a prog.  If this search is successful
+then a second search is made  for  a  label  which  matches  the
+argument  to  go.  The failure of either search is an error.  If
+the first search fails then
+
+\begin{verbatim}
+***** GO attempted outside the scope of a PROG
+\end{verbatim}
+is printed.  The message
+
+\begin{verbatim}
+***** `LABEL' is not a label within the current scope
+\end{verbatim}
+is printed if the second search fails.   When  a  prog  form  is
+compiled  the  compiler  expects to be able to resolve all label
+references.  Thus every go must appear within a  prog  otherwise
+the following error message is printed.
+
+\begin{verbatim}
+***** FORM invalid go
+\end{verbatim}
+In  addition, the argument to a go must refer to a label defined
+inside the prog which contains that go.  The message
+
+\begin{verbatim}
+***** Compiler bug: missing label LABEL
+\end{verbatim}
+is printed to indicate when this second restriction is not met.
+
+
+\de{go}{(go LABEL:id): None Returned}{open-compiled fexpr}
+{    Go alters the normal flow of control within a prog function.
+    The next statement of a prog function  to  be  evaluated  is
+    immediately preceded by label.
+}
+
+\de{return}{(return U:form): None Returned}{open-compiled expr}
+{    Within  a  prog,  return terminates the evaluation of a prog
+    and returns U as the value of the prog.
+}
+\subsection{Iteration}
+
+\de{while}{(while E:form [S:form]): nil}{macro}
+{    This is a commonly used construct for  indefinite  iteration
+    in  PSL.    E is evaluated; if non-nil the S's are evaluated
+    from left to right and then the process is repeated.   If  E
+    evaluates to nil the while returns nil.  Exit may be used to
+    terminate the while and to return a value.  Next may be used
+    to terminate the current iteration.
+}
+
+\de{repeat}{(repeat [S:form] E:form): nil}{macro}
+{    The  S's  are  evaluated  left  to  right,  and  then  E  is
+    evaluated.  This  is  repeated  until  the  value  of  E  is
+    non-nil,  at  which point repeat returns nil.  Next and exit
+    may be used in the S's to branch to the next iteration of  a
+    repeat or to terminate one and possibly return a value.
+}
+
+\de{next}{(next): None Returned}{open-compiled, restricted macro}
+{    This  terminates  the  current iteration of the most closely
+    surrounding  while  or  repeat,  and  causes  the  next   to
+    commence.    Both  while  and repeat are macros which expand
+    into prog's and next is essentially a go.  The  restrictions
+    on  the  placement  of  next are similar to those of go, see
+    section 8.3 for details.
+}
+
+\de{exit}{(exit [U:form]): None Returned}{open-compiled,restricted macro}
+{    The U's are  evaluated  left  to  right,  the  most  closely
+    surrounding  while or repeat is terminated, and the value of
+    the last U is returned.  With no argument nil  is  returned.
+    Both  while  and  repeat are macros which expand into prog's
+    and  exit is essentially a return.  The restrictions on  the
+    placement  of  exit  are  similar  to  those  of return, see
+    section 8.3 for details.
+}
+  The following function defintion is intended to illustrate the
+use of repeat and while.  The function will  return  a  list  of
+prime  numbers  which  are less than or equal to the argument N,
+which is assumed to be greater than one.
+
+\begin{verbatim}
+  (de primes (n)
+    (let ((result (list 2))
+          (number 3)
+          (pointer)
+         (prime))
+      (while (<= number n)
+        (setq pointer result)
+        (setq prime t)
+        (repeat
+          (when (zerop (remainder number (first pointer)))
+            (setq prime nil))
+          (setq pointer (rest pointer))
+          (or (null pointer) (not prime)))
+        (when prime (setq result (aconc result number)))
+        (incr number))
+      (cons 1 result)))
+\end{verbatim}
+\subsubsection{For}
+
+  A simple for construct is available in the basic  PSL  system;
+an extended version is defined in the USEFUL package.  The basic
+PSL  for  provides  only the iterator FROM and the action clause
+DO.  PSL users should use the extended version, described here:
+
+
+\de{for}{(for [S:form]): any}{macro}
+{    Each argument to for is  a  one  of  the  clauses  described
+    below.    If  an  argument  is  not a clause then one of the
+    following continuable errors will occur.
+}
+\begin{verbatim}
+    ***** For clauses may not be atomic: `SYMBOL'
+\end{verbatim}
+\begin{verbatim}
+    ***** Unknown for clause operator: `LIST'
+\end{verbatim}
+    A clause is a list, its first element is an identifier,  the
+    remaining  elements are arguments.  A clause may introduce a
+    local variable, specify a return value, or specify when  the
+    iteration should cease.
+
+    The first few clauses are used to introduce local variables.
+    Some  of  these  clauses also provide the means to stop loop
+    iteration.
+
+
+\begin{verbatim}
+    (in <variable> <list> <function>)
+\end{verbatim}
+      The variable $<$variable$>$ is set to successive elements of
+						$<$list$>$.  The
+      argument $<$function$>$ is optional. If present, it may be either the
+      name of a function or a lambda expression.  The function is applied to
+      the extracted element before it is assigned to $<$variable$>$.  Once
+						the
+      argument $<$list$>$ is exhausted the iteration will stop. The only
+      argument which will be evaluated is $<$list$>$.
+
+\begin{verbatim}
+      1 lisp> (for (in v '(0 1) add1)
+                   (do (print v)))
+      1
+      2
+      nil
+\end{verbatim}
+
+\begin{verbatim}
+    (on <variable> <list>)
+\end{verbatim}
+      The variable $<$variable$>$ is set to successive cdrs of $<$list$>$. 
+						The
+      first value assigned to $<$variable$>$ is $<$list$>$. Once the
+						$<$list$>$ is
+      exhausted the iteration will stop. The only argument which will be
+      evaluated is $<$list$>$.
+
+
+\begin{verbatim}
+      1 lisp> (for (on v '(0 1))
+                   (do (print v)))
+      (0 1)
+      (1)
+      nil
+\end{verbatim}
+
+\begin{verbatim}
+    (from <variable> <initial> <final> <step>)
+\end{verbatim}
+      The variable $<$variable$>$ is set to $<$initial$>$ for the first
+						iteration
+      of the loop.  The value of $<$variable$>$ will be incremented by
+						$<$step$>$
+      before each following iteration.  Once the value of $<$variable$>$ is
+      larger than $<$final$>$ the iteration will stop.  Both $<$initial$>$
+						and
+      $<$step$>$ are optional, the default values for each is 1.  The
+						argument
+      $<$final$>$ is optional, in which case the iteration must be stopped
+      by another clause.  Each argument except for $<$variable$>$ will be
+      evaluated once, before the first iteration.  To specify $<$step$>$
+      without $<$initial$>$ and $<$final$>$, or $<$final$>$ with
+						$<$initial$>$ omitted
+      place nil in the slot to be omitted.
+
+
+\begin{verbatim}
+      1 lisp> (for (from v 1 5 2)
+                   (do (print v)))
+      1
+      3
+      5
+\end{verbatim}
+
+\begin{verbatim}
+    (FOR <variable> <initial> <next>)
+\end{verbatim}
+      At the outset of the first iteration, the variable $<$variable$>$ will
+      be set to the evaluation of $<$initial$>$.  Prior to subsequent
+						iterations,
+      the expression $<$next$>$ will be evaluated and assigned to
+						$<$variable$>$.
+
+
+\begin{verbatim}
+      1 lisp> (for (for v 1 (add1 v))
+                   (until (> v 3))
+                   (do (print v)))
+
+      1
+      2
+      3
+      nil
+\end{verbatim}
+
+\begin{verbatim}
+    (with [<variable-form>])
+\end{verbatim}
+      Each argument $<$variable-form$>$ is either $<$variable$>$ or
+      ($<$variable$>$ $<$initial$>$). The square brackets are used to
+						indicate
+      zero or more occurances of $<$variable-form$>$.  If the first form is
+      used then the variable will be set to nil prior to the first
+      iteration.  With the second form the variable will be set to the
+      value of $<$initial$>$.
+ 
+\begin{verbatim}
+    (do [<form>])
+\end{verbatim}
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$.  Each expression $<$form$>$ is evaluated during each
+						iteration.
+      They are evaluated in the order of their appearance.  You may use
+      return within a $<$form$>$, it will cause an immediate exit from the
+      for.
+
+    There are two clauses which  allow  for  the  evaluation  of
+    expressions  before  the first iteration, and after the last
+    iteration.
+
+\begin{verbatim}
+    (initially [<form>])
+\end{verbatim}
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$. Once the iteration variables have been bound to their
+						values each expression $<$form$>$ will be evaluated. They are
+						evaluated in the order of their appearance.
+						
+\begin{verbatim}
+    (finally [<form>])
+\end{verbatim}
+
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$.  After the final iteration each expression $<$form$>$ will
+						be
+      evaluated.  They are evaluated in the order of their appearance.  The
+      use of the clauses always and never (described below), may
+      prevent evaluation of the arguments to this clause.  There are clauses
+      which specify a return value, if none of them are used then the value
+      of the last $<$form$>$ will be the value of the for.
+
+
+\begin{verbatim}
+      1 lisp> (for (from v 1 3)
+                   (finally v))
+      4
+      nil
+      2 lisp> (for (for v 1 (add1 v))
+                   (always (< v 3))
+                   (finally v))
+      nil
+\end{verbatim}
+
+    The next few clauses  are  used  to  build  a  value  to  be
+    returned  from  for  Except  for  the  returns and returning
+    clauses, a second argument  is  used  in  these  clauses  to
+    specify  that  instead  of  returning  the result it will be
+    stored as the value of this second  argument.    This  means
+    that  the  second  argument should be an identifier, it will
+    not be evaluated.
+
+\begin{verbatim}
+    1 lisp> (for (in v '(0 1))
+                 (collect (add1 v)))
+    (1 2)
+    2 lisp> (for (in v '(0 1))
+                 (collect (add1 v) result))
+    nil
+    3 lisp> result
+    (1 2)
+\end{verbatim}
+    If more than one return value is implied then an error  will
+    result
+
+\begin{verbatim}
+    1 lisp> (for (in v '(0 1))
+                 (collect v)
+                 (adjoin v))
+    ***** For loops may only return one value
+\end{verbatim}
+\begin{verbatim}
+    (returns [<form>])
+\end{verbatim}
+      Prior to returning from the for each $<$form$>$ is evaluated.  The
+      order of evalution is left to right.  The value of the last $<$form$>$
+						is returned as the value of the for.A synonym for returns is
+      returning.
+      
+\begin{verbatim}
+    (collect <form> <variable>)
+\end{verbatim}
+      This clause is used to build a list.  During each iteration the value
+      of $<$form$>$ is added at the end of the list. The use of the
+						optional argument $<$variable$>$ is described above.
+      
+\begin{verbatim}
+      1 lisp> (for (on v '(one two))
+                   (collect v))
+      ((one two) (two))
+\end{verbatim}
+
+\begin{verbatim}
+    (ADJOIN <form> <variable>)
+    (ADJOINQ <form> <variable>)
+\end{verbatim}
+      These clauses are similar to collect.  The difference is that the
+      value of $<$form$>$ is only added to the list if it is not
+						already an element. To detemine membership in the list adjoin
+						uses member, adjoinq uses memq. The use of the optional
+						argument $<$variable$>$ is described above.
+                                         
+                                                          
+\begin{verbatim}
+      1 lisp> (for (in i '("one" "one"))
+                   (adjoin i one)
+                   (adjoinq i two))
+      nil
+      2 lisp> one
+      ("one")
+      3 lisp> two
+      ("one" "one")
+\end{verbatim}
+
+\begin{verbatim}
+    (JOIN <form> <variable>)
+    (CONC <form> <variable>)
+\end{verbatim}
+      These clauses are similar to collect.  The difference is that the
+      value of $<$form$>$ is appended (nonc is used with the conc
+      clause), to the end of the list.  The use of the optional argument
+      $<$variable$>$ is described above.
+
+\begin{verbatim}
+      1 lisp> (for (on v '(one two))
+                   (join v))
+      (one two two)
+\end{verbatim}
+
+
+      You should be careful with conc.  In the example, if conc were
+      used in place of join the computation would never terminate.
+
+\begin{verbatim}
+    (UNION <form> <variable>)
+    (UNIONQ <form> <variable>)
+\end{verbatim}
+      These clauses are used to build a set.  During each iteration the
+      union of $<$form$>$ and the set being constructed is computed.  Set
+      membership is determined with equal for union, and eq
+      for unionq.  The use of the optional argument $<$variable$>$ is
+      described above.
+
+\begin{verbatim}
+      1 lisp> (for (in v '((0 2) (0 1 2 3) (0)))
+                   (unionq v))
+      (3 2 1 0)
+\end{verbatim}
+
+\begin{verbatim}
+    (INTERSECTION <form> <variable>)
+    (INTERSECTIONQ <form> <variable>)
+\end{verbatim}
+      These clauses are similar to union and unionq.  The difference
+      is that the intersection of sets in constructed instead of the union.
+      The use of the optional argument $<$variable$>$ is described above.
+
+\begin{verbatim}
+      1 lisp> (for (in v '((0 2) (0 1 2 3) (0)))
+                   (intersectionq v))
+      (0)
+\end{verbatim}
+
+\begin{verbatim}
+    (COUNT <form> <variable>)
+\end{verbatim}
+      Returns the number of times $<$form$>$ evaluates to a nonnil value.
+      The use of the optional argument $<$variable$>$ is described above.
+
+
+\begin{verbatim}
+      1 lisp> (for (in v '(0 1 2))
+                   (count (zerop (remainder v 2))))
+      2
+\end{verbatim}
+
+\begin{verbatim}
+    (SUM <form> <variable>)
+\end{verbatim}      
+
+						Returns the sum of each evaluation of $<$form$>$. The use of the optional
+      argument $<$variable$>$ is described above.
+
+
+\begin{verbatim}
+      1 lisp> (for (in v '(2 3 4))
+                   (sum v))
+      9
+\end{verbatim}
+
+\begin{verbatim}
+    (PRODUCT <form> <variable>)
+\end{verbatim}
+      
+					Returns the product of each evaluation of $<$form$>$. The use of the
+					optional argument $<$variable$>$ is described above.
+ 
+\begin{verbatim}
+      1 lisp> (for (in v '(2 3 4))
+                   (product v))
+      24
+\end{verbatim}
+
+\begin{verbatim}
+    (MAXIMIZE <form> <variable>)
+\end{verbatim}
+      Returns the maximum value of $<$form$>$. The use of the optional 
+						argument $<$variable$>$ is described above.
+
+\begin{verbatim}
+      1 lisp> (for (in v '(1 2 3))
+                   (maximize v))
+      3
+\end{verbatim}
+
+\begin{verbatim}
+    (MINIMIZE <form> <variable>)
+\end{verbatim}
+      Returns the minimum value of $<$form$>$. The use of the optional 
+						argument $<$variable$>$ is described above.
+ 
+\begin{verbatim}
+      1 lisp> (for (in v '(1 2 3))
+                   (minimize v))
+      1
+\end{verbatim}
+
+\begin{verbatim}
+    (MAXIMAL <value> <test> <variable>)
+    (MINIMAL <value> <test> <variable>)
+\end{verbatim}
+      These clauses are generalizations of the clauses maximize and
+      minimize.  Maximal determines the greatest value of $<$test$>$
+      over all of the loop iterations. The corresponding value of
+						$<$value$>$
+      is returned. As a particular case it is possible to return the
+      value of an iteration variable for which some function attains a
+      maximum value. The functions used for comparisons are greaterp
+      and lessp. The use of the optional argument $<$variable$>$ is
+      described above.
+
+\begin{verbatim}
+      1 lisp> (for (in v '(2 -2))
+                   (minimal v (- (expt v 2) (* 7 v))))
+      2
+\end{verbatim}
+
+    The remaining clauses are used to control loop iteration.
+
+\begin{verbatim}
+    (ALWAYS [<form>])
+\end{verbatim}
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$.  If there is more than one form then the clause is
+						equivalent
+      to (ALWAYS (and [$<$form$>$])). This clause is used to specify a
+						return
+      value,  t is returned if each $<$form$>$ is non-nil during each
+      iteration.  If one of the $<$form$>$s evaluates to nil then the for
+      is terminated and nil is returned, this means that arguments of
+      any finally clause will not be evaluated.
+
+\begin{verbatim}
+      1 lisp> (for (in v '(1 0 2))
+                   (always (> v 0))
+                   (do (print v)))
+      1
+      nil
+
+    (never [<form>])
+\end{verbatim}
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$. If there is more than one form then the clause is
+						equivalent
+      to (NEVER (or [$<$form$>$])).  Equivalent to (ALWAYS (not [$<$form$>$])).
+
+\begin{verbatim}
+    (THEREIS <form>)
+\end{verbatim}
+
+
+      If the argument $<$form$>$ evaluates to a non-nil value then the for
+      is terminated, the value of $<$form$>$ is the return value.
+
+\begin{verbatim}
+      1 lisp> (for (in v '(-1 0 2))
+                   (thereis (and (zerop v) v))
+                   (do (print v)))
+      -1
+      0
+\end{verbatim}
+
+\begin{verbatim}
+    (WHILE [<form>])
+\end{verbatim}
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$.  If there is more than one form then the clause is equivalent
+      to (WHILE (and [$<$form$>$])).  Loop iteration stops if any $<$form$>$ evaluates
+      to nil.
+
+
+\begin{verbatim}
+      1 lisp> (for (from v 2 nil -1)
+                   (while (> v 0))
+                   (collect (sqrt v))
+                   (finally (print v)))
+      0
+      (1.41421 1.0)
+\end{verbatim}
+
+\begin{verbatim}
+    (UNTIL [<form>])
+\end{verbatim}
+      The square brackets are used to indicate zero or more occurances of
+      $<$form$>$.  If there is more than one form then the clause is
+      equivalent to (UNTIL (or [$<$form$>$])).  Loop iteration stops if any
+      $<$form$>$ evaluates to a non nil value.
+
+\begin{verbatim}
+    (WHEN <form>)
+      Jump to the next iteration if the value of <form> is nil.
+\end{verbatim}
+
+\begin{verbatim}
+      1 lisp> (for (in v '(-2 2))
+                   (when (> v 0))
+                   (do (print (sqrt v))))
+      1.41421
+      nil
+\end{verbatim}
+
+\begin{verbatim}
+    (UNLESS <form>)
+\end{verbatim}
+      Jump to the next iteration if the value of $<$form$>$ is non-nil.
+
+  The  evaluation  of a for expression follows a specific order,
+irregardless of the order in which you place clauses.
+
+
+\begin{enumerate}
+\item  Bind loop variables to their initial values.  Each  of  the
+     expressions  which  represent  initial  values is evaluated
+     before the variables are bound.
+\item  If an initially clause is present, evaluate its arguments.
+\item  Check for termination.   A  terminating  condition  may  be
+     specified  by  an  in,  on,  from,  while,  until, thereis,
+     always, or never clause.  Satisfaction of a condition  will
+     force control to step 4 (unless the condition was specified
+     by always or never).
+\item  If  present,  check  when  and  unless  clauses.    If  any
+     condition is not satisfied then evaluate  the  body.    The
+     body  is  constructed from the clauses do, collect, adjoin,
+     adjoinq,   join,   conc,   union,   unionq,   intersection,
+     intersectionq,  count,  sum,  product,  maximize, minimize,
+     maximal, and minimal.  Continue at step 3.
+\item  If an finally clause is present,  evaluate  its  arguments.
+     Return  the  value of the last argument unless a returns or
+     returning clause  is  present.   Otherwise  evaluate  their
+     arguments, return the value of the last.
+\end{enumerate}
+
+
+\de{for*}{(for* [S:form]): any}{macro}
+{    Identical  to  for except that variable bindings and updates
+    are done sequentially instead of in parallel
+}
+\subsection{Mapping Functions}
+
+  The mapping  functions long  familiar  to  LISP    programmers
+are  present  in  PSL.    However,    we  believe  that the  for
+construct described above or the simpler foreach described below
+is generally more useful, since it  obviates the usual necessity
+of  constructing  a  lambda  expression,  and  is    often  more
+transparent.    Mapping  functions  with more than two arguments
+are not currently  supported.   Note  however    that    several
+lists    may   be iterated along with for, and with considerably
+more  generality.  For example:
+
+\begin{verbatim}
+(let ((i 0))
+  (mapcar l (function (lambda (x)
+                        (setq i (add1 i))
+                        (cons i x)))))
+\end{verbatim}
+may be expressed more transparently as
+
+\begin{verbatim}
+(for (in x l) (from i 1) (collect (cons i x)))
+\end{verbatim}
+  To augment the simpler for  loop  present  in  basic  PSL  the
+following list iterator has been provided:
+
+
+\de{foreach}{(foreach U:any): any}{macro}
+{    This   macro  is  essentially  equivalent  to  the  the  map
+    functions as follows:
+}
+
+    Possible forms are:
+    Setting x to successive elements of u:
+\begin{verbatim}
+    (foreach x in u do (foo x)) --> (mapc u 'foo)
+    (foreach x in u collect (foo x))--> (mapcar u 'foo)
+    (foreach x in u conc (foo x))       --> (mapcan u 'foo)
+    (foreach x in u join (foo x))       --> (mapcan u 'foo)
+\end{verbatim}
+    Setting x to successive cdrs of u:
+\begin{verbatim}
+    (foreach x on u do (foo x)) --> (map u 'foo)
+    (foreach x on u collect (foo x))--> (maplist u 'foo)
+    (foreach x on u conc (foo x))       --> (mapcon u 'foo)
+    (foreach x on u join (foo x))       --> (mapcon u 'foo)
+\end{verbatim}
+    Within the context of for the JOIN is used to append successive values.
+    However, inside foreach successive values are concatenated together.
+
+\begin{verbatim}
+    1 lisp> (setq x '(a b c) y (1 2 3))
+    (1 2 3)
+    2 lisp> (for (in u '(x y)) (join (eval u)))
+    (A B C 1 2 3)
+    3 lisp> x
+    (A B C)
+    4 lisp> (foreach u in '(x y) join (eval u))
+    (A B C 1 2 3)
+    5 lisp> x
+    (A B C 1 2 3)
+\end{verbatim}
+
+\de{map}{(map X:list FN:function): nil}{expr}
+{    Applies FN to successive  cdrs of X.  The first value passed
+    to FN is X, unless X is nil.
+}
+\begin{verbatim}
+    1 lisp> (map '(one two) #'print)
+    (one two)
+    (two)
+    nil
+\end{verbatim}
+
+\de{mapc}{(mapc X:list FN:function): nil}{expr}
+{    FN is applied to successive  elements  of  list  X,  nil  is
+    returned.
+}
+\begin{verbatim}
+    1 lisp> (mapc '(one two) #'print)
+    one
+    two
+    nil
+\end{verbatim}
+
+\de{mapcar}{(mapcar X:list FN:function): list}{expr}
+{    Similar  to  mapc  except that the return value is a list of
+    the results of each applicaton of FN.
+}
+\begin{verbatim}
+    1 lisp> (map '((one) (two)) #'(lambda (i) i))
+    (one two)
+\end{verbatim}
+
+\de{mapcan}{(mapcan X:list FN:function): list}{expr}
+{    Similar to mapcar except that the values returned by FN  are
+    nconced  together  instead  of  being  listed together.  The
+    argument X may be modified to construct the result.
+}
+\begin{verbatim}
+    1 lisp> (setq this '((one) (two)))
+    ((one) (two))
+    2 lisp> (mapcan this #'(lambda (i) i))
+    (one two)
+    3 lisp> this
+    ((one two) (two))
+\end{verbatim}
+
+\de{maplist}{(maplist X:list FN:function): list}{expr}
+{    Similar to map except that the return value is a list of the
+    results of each application of FN.
+}
+\begin{verbatim}
+    1 lisp> (maplist '(one two) #'(lambda (i) i))
+    ((one two) (two))
+\end{verbatim}
+
+\de{mapcon}{(mapcon X:list FN:function): list}{expr}
+{    Similar to maplist except that the values returned by FN are
+    nconced together instead of being listed together.
+}
+\begin{verbatim}
+    1 lisp> (setq this '(one two))
+    (one two)
+    2 lisp> (mapcon this #'(lambda (i) (copy i)))
+    (one two two)
+\end{verbatim}
+    Note that the nconc happens as the mapping process proceeds,
+    not afterward.  Therefore the result  is  not  the  same  as
+    nconcing  the  results  of  a  maplist.  Consider what would
+    occur if
+
+\begin{verbatim}
+    (mapcon this #'(lambda (i) i))
+\end{verbatim}
+    had been used in the example above.  Mapcon would apply  its
+    second  argument  to  its  first  argument  giving a partial
+    result of (one two).  Notice  that  the  first  argument  to
+    mapcon is eq to this partial result.  Now mapcon applies its
+    second  argument  to  (two),  the cdr of its first argument.
+    The partial result becomes (one  two  two).    However,  the
+    first argument to mapcon has been modified because nconc was
+    used  to  build  the partial result.  The value of the first
+    argument is now (one two two).  The computation  will  never
+    terminate,   the length of the first argument to mapcon will
+    continue to grow.
+
+\subsubsection{Do}
+
+
+\de{do}{(do A:list B:list [S:form]): any}{macro}
+{    The general form follows, the square brackets  are  used  to
+    indicate zero or more occurances of an expression.
+}
+\begin{verbatim}
+    (DO ([<var-form>]) (<exit-test> [<result>]) [<body>])
+\end{verbatim}
+    A $<$var-form$>$ is either an id or a list of the form
+
+\begin{verbatim}
+    (<var> <initial> <next>)
+\end{verbatim}
+    
+There are four basic steps in the evaluation of a do form.
+%\begin{verbatim}
+\begin{enumerate}
+\item  .....
+\item  If  $<$exit-test$>$  evaluates  to  a  non-nil  value   the
+         $<$result$>$  forms  are  evaluated  and  the do is exited,
+         unbinding the local variables.  The value of  a  do  is
+         the  value  of  the  last  $<$result$>$ unless there are no
+         $<$result$>$ forms, in which case nil is returned.
+%\end{verbatim}
+%\begin{verbatim}
+\item The body of the do, consisting of the $<$body$>$ forms,  is
+         evaluated in left to right order.
+%\end{verbatim}
+ %\begin{verbatim}
+\item       The  $<$next$>$ forms are evaluated in parallel, the values
+         are assigned to the corresponding  $<$var$>$s  rather  than
+         being  bound.    Once  this  is  complete  the  process
+         continues at step 2.
+\end{enumerate}
+
+    If $<$next$>$ is omitted, the value of the  corresponding  $<$var$>$
+    is  left  unchanged  during  step  4.  If both $<$initial$>$ and
+    $<$next$>$ are omitted or if the $<$var-form$>$ is an  id  then  the
+    variable is bound to nil in step 1 and left unchanged during
+    step 4.
+
+    The  function  definition  below  illustrates the use of do.
+    This function will reverse the order of elements in a list.
+
+\begin{verbatim}
+    (de reverse (sequence)
+      (do ((local sequence (rest local))
+           (result nil (cons (first local) result)))
+          ((null local) result)))
+\end{verbatim}
+
+\de{do*}{(do* A:list B:list [C:form]): any}{macro}
+{    Do* is like do, except the variable bindings  and  updatings
+    are done sequentially instead of in parallel.  The following
+    is a definition of assoc using do*.
+}
+\begin{verbatim}
+    (de assoc (item a-list)
+      (do* ((local a-list (rest local))
+            (pair (first local) (first local)))
+           ((or (null local)
+                (equal item (first pair)))
+            local)))
+\end{verbatim}
+    If do had been used, evaluation of the $<$initial$>$ form (first
+    local)  would have resulted in an error.  Either local would
+    be unbound or  the  value  of  local  from  the  surrounding
+    environment would have been used.
+
+
+\de{do-loop}{(do-loop A:list B:list C:list [S:form]): any}{macro}
+{    Do-loop  is  like  do,  except  that  it takes an additional
+    argument, a prologue.  The general form follows, the  square
+    brackets  are used to indicate zero or more occurances of an
+    expression.
+}
+\begin{verbatim}
+      (DO-LOOP ([<var-form>]) ([<first>]) 
+               (<exit-test>[<result>]) [<body>]) 
+\end{verbatim}
+
+    This is executed just like the corresponding do, except that
+    after the initial bindings are established, but  before  the
+    exit test is first evaluated, the prologue forms, consisting
+    of  the  $<$first$>$  forms,  are  evaluated  in a left to right
+    order.  Note that all of the  $<$first$>$  forms  are  evaluated
+    exactly once, assuming that none of the $<$first$>$ forms causes
+    an error.
+
+
+\de{do-loop*}{(do-loop* A:list B:list C:list [S:form]): any}{macro}
+{    Do-loop* does the variable bindings and updates sequentially
+    instead of in parallel.
+}
+\section{Non-Local Exits}
+
+   The   functions   catch   and   throw  are  very  useful  for
+discontinuing a computation.  As return provides for local exit,
+this pair of functions provide for non-local exit.  They  should
+not,   however,   be   used   indiscriminately.     The  lexical
+restrictions on their more local counterparts  ensure  that  the
+flow  of control can be ascertained by looking at a single piece
+of code.  With catch and throw, control may  be  passed  to  and
+from totally unrelated pieces of code.
+
+
+\de{catch}{(catch TAG:id [FORM:form]): any}{Open-Compiled fexpr}
+{    Catch  evaluates  TAG  to establish a name for this catcher,
+    called the catch-tag, and then evaluates  the  FORM's  in  a
+    protected  environment.   If  during this evaluation a throw
+    occurs with a tag that is the  same  as  the  catch-tag  (as
+    defined  by  the function eq), catch immediately returns the
+    result of the form given  as  the  second  argument  to  the
+    throw.      If  no throw occurs, the results returned by the
+    last FORM are returned as  the  result  of  the  catch.    A
+    catch-tag  of  nil is considered special, it serves to match
+    any catch-tag specified by throw.
+}
+
+\de{throw}{(throw TAG:id VALUE:any): None Returned}{expr}
+{    Throw evaluates TAG to produce  a  catch-tag  and  evaluates
+    VALUE to produce a result value.  At this point, an error is
+    signalled  if  there  is  no  active  catch  with  the  same
+    catch-tag (as determined by the function  eq).    Otherwise,
+    control  is  passed  to  the most recent such catch, and the
+    results of evaluating VALUE become the results of the catch.
+}
+    
+				In the process of transferring control  to  the  catch,  all
+    intervening constructs are exited.  Exiting a construct that
+    binds variables has the effect of unbinding those variables.
+
+throwsignal* [Initially: nil]                             global
+    This  fluid  variable  is  set  to  t  if  the  most  recent
+    invocation of Catch was thrown to.  throwsignal*  is set  to
+    nil  upon  a normal exit from a catch and to t upon a normal
+    exit from a throw.
+
+throwtag* [Initially: nil]                                global
+    This fluid variable is set to  the  catch-tag  of  the  most
+    recent throw
+
+  The catch, throw pair supply a construct which allows for some
+control over the evaluation of an expression.  Exceptions can be
+detected during the evaluation of the expression and appropriate
+action can be taken.  The functions which follow define a simple
+parser.    The  parse  is  done inside a catch.  If there are no
+errors then the result of the parse is returned.  When an  error
+arises  the  computation  is  aborted  with a call on throw.  An
+error message is printed prior to aborting the parse.
+
+\begin{verbatim}
+(de parse (*buffer*)
+  (catch 'parse-error (list 's (parse-np) (parse-vp))))
+
+(de parse-np ()
+  (if (memq (car *buffer*) '(a an the))
+    `(np (det ,(pop *buffer*)) (n ,(pop *buffer*)))
+    (parse-error "Bad word in noun phrase: %w%n")))
+
+(de parse-vp ()
+  (if (memq (car *buffer*) '(sings talks))
+    `(vp (v ,(pop *buffer*)))
+    (parse-error "Not a verb: %w%n")))
+
+
+(de parse-error (format-string)
+  (throw 'parse-error (printf format-string (car *buffer*))))
+\end{verbatim}
+\begin{verbatim}
+1 lisp> (parse '(the bird sings))
+(S (NP (DET THE) (N BIRD)) (VP (V SINGS)))
+2 lisp> (parse '(the bird eats))
+Not a verb: eats
+nil
+3 lisp> (parse '(it is small))
+Bad word in noun phrase: it
+nil
+\end{verbatim}
+  The following macros are provided to aid in the use  of  catch
+and  throw  with  a nil catch-tag, by examining throwsignal* and
+throwtag*:
+
+
+\de{catch-all}{(catch-all HANDLER:function [FORM:form]): any}{macro}
+{    Has the same semantics as  catch  except  that  all  throws,
+    independent  of catch-tag, will be caught.  The HANDLER must
+    be a function of two arguments.   If  a  throw  occurs,  the
+    HANDLER will be called on the catch-tag and the value passed
+    by  the  throw.    The  HANDLER may itself issue a throw, in
+    which case the catch-all acts as a filter.
+}
+
+\de{unwind-all}{(unwind-all HANDLER:function [FORM:form]): any}{macro}
+{    This function is very similar to catch-all.  However, if  no
+    throw occurs the HANDLER will be called on nil and the value
+    returned.
+}
+
+\de{unwind-protect}{(unwind-protect FORM:form [CLEANUPFORM:form]): any}{macro}
+{    The FORM is evaluated and, regardless of how it is exited (a
+    normal  return,  throw,  or error), the CLEANUPFORMs will be
+    evaluated.  One common use of unwind-protect  is  to  ensure
+    that a file will be closed after processing.
+}
+\begin{verbatim}
+    (setq channel (open file ....))
+    (unwind-protect (process-file)
+                (close channel))
+\end{verbatim}
+    This  primitive  can be used to implement arbitrary kinds of
+    state-binding without fear that an unusual return (an  error
+    or throw), will violate the binding.
+
+\begin{verbatim}
+    (defmacro bind ((name value) . body)
+      (let ((old-value (gensym)))
+        `(let ((,old-value ,name))
+           (unwind-protect
+        (progn (setq ,name ,value)
+               ,@body)
+        (setq ,name ,old-value)))))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (setq number 5)
+    5
+    2 lisp> (bind (number 2) (print number) (/ number 0))
+    2
+    ***** Attempt to divide by zero in Quotient
+    3 lisp> number
+    5
+\end{verbatim}
+  Note:  Certain  special  tags  are used in the PSL system, and
+should not be interfered with casually:\\
+
+\begin{tabular}{ll}
+
+\$error\$ &       Used by error and errorset which  are\\  
+&																implemented in terms of catch and throw,\\
+&               	(see Chapter 16).\\
+
+
+\$unwind-protect\$ & A special  catch-tag placed to ensure\\ 
+&																		 that all throws pause at the \\
+&              				 unwind-protect "mark".\\
+
+
+\$prog\$ &        Used to communicate between interpreted progs, gos.\\
+\end{tabular}

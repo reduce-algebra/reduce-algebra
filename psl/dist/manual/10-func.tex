@@ -1,0 +1,995 @@
+\chapter*{Function Definition and Binding}
+
+\section{Function Definition in PSL}
+
+Functions in PSL are global entities.  To  avoid
+function-variable  naming  clashes,  the  Standard  LISP  Report
+required  that  no  variable  have  the same name as a function.
+There is no conflict in PSL, as separate function cells and
+value cells are used.
+
+  The  first  major  section  in  this  chapter describes how to
+define new  functions;  the  second  describes  the  binding  of
+variables  in PSL.  The final section presents binding functions
+useful in building new interpreter functions.
+
+\subsection{Function Types}
+
+  Eval-type functions are those called with evaluated arguments.
+NoEval  functions  are  called   with   unevaluated   arguments.
+Spread-type   functions   have   their  arguments  passed  in  a
+one-to-one  correspondence   with   their   formal   parameters.
+NoSpread functions receive their arguments as a single list.
+
+There are four function types implemented in PSL:\\
+
+\begin{tabular}{lp{12.5cm}}
+
+expr & An Eval, Spread function, with a maximum number of  arguments. The 
+maximum   depends  upon  the
+              implementation.    In  referring  to  the   formal
+              parameters we mean their values.  Each function of
+              this   type  should  always  be  called  with  the
+              expected number of parameters, as indicated in the
+              function definition.\\
+
+fexpr &         A NoEval, NoSpread function.  There is no limit on
+              the number of arguments.    In  referring  to  the
+              formal   parameters   we   mean   the  unevaluated
+              arguments, collected as a single list, and  passed
+              as a single formal parameter to the function body.\\
+
+nexpr &         An  Eval,  NoSpread  function.   Each call on this
+              kind of function may present a different number of
+              arguments, which are evaluated, collected  into  a
+              list,  and  passed  in  to  the function body as a
+              single formal parameter.\\
+
+macro &         The macro  is  a  function  which  creates  a  new
+              S-expression    for   subsequent   evaluation   or
+              compilation.  There is no limit to the  number  of
+              arguments  a  macro may have.  The descriptions of
+              the  eval  and  expand  functions  in  Chapter  11
+              provide precise details.\\
+\end{tabular}
+\subsection{Notes on Code Pointers}
+
+  A  code-pointer  may  be  displayed  by the print functions or
+expanded by explode.  The value appears in the convention of the
+implementation e.g. (\#$<$Code:A N$>$,  where  A  is  the  number  of
+arguments of the function, and N is the function's entry point).
+A  code-pointer may not be created by compress.  (See Chapter 12
+for descriptions of explode and  compress.)    The  code-pointer
+associated with a compiled function may be retrieved by getd and
+is valid as long as PSL is in execution. Normally a code-pointer
+is  stored using putd.  It may be checked for equivalence by eq.
+The value may be checked for being a code-pointer by  the  codep
+function.
+
+\subsection{Functions Useful in Function Definition}
+
+  In  PSL,  ids  have  a  function cell that usually contains an
+executable instruction which either JUMPs directly to the  entry
+point  of a compiled function or executes a CALL to an auxiliary
+routine that handles interpreted functions, undefined functions,
+or other special services (such as auto-loading functions, etc).
+The user can pass anonymous function objects around either as  a
+code-pointer,  which  is a tagged object referring to a compiled
+code block, or a lambda expression, representing an  interpreted
+function.
+
+
+\de{putd}{(putd Fname:id TYPE:ftype BODY:\\
+{lambda,code-pointer}):id}{expr}  
+{    
+Creates  a function with name Fname and type TYPE, with body
+    as the function definition.  If successful, putd returns the
+    name of the defined function.
+}
+
+    If the body is a lambda there  are  two  possible  outcomes.
+    When  the  switch comp is set to t the body will be compiled
+    and a special instruction to jump to the start of  the  code
+    is  placed in the function cell.  If the switch *comp is set
+    to nil then the body is saved on the property list under the
+    indicator *lambdalink and a call to an interpreter  function
+\begin{verbatim}
+    (lambdalink) is placed in the function cell.
+\end{verbatim}
+    If  the body is a code-pointer then a special instruction to
+    jump to the start of the code  is  placed  in  the  function
+    cell.
+
+    The  Type is recorded on the property list of Fname if it is
+    not an expr.
+
+    After using putd on Fname, getd will  return  a  pair  which
+    specifies the type and the body of the definition.
+
+  The following switches are useful when defining functions.
+
+\variable{*redefmsg}{[Initially: t]}{switch}
+{If *redefmsg is not nil, the message
+%%\begin{verbatim}
+
+    {\tt *** Function `FOO' has been redefined}
+
+%%\end{verbatim}
+    is printed whenever a function is redefined.
+}
+
+\variable{*usermode}{(Initially: t)}{switch}
+{ Controls   action  on  redefinition  of  a  function.    All
+    functions defined when *usermode  is  t  are  flagged  USER.
+    Functions  which  are  flagged USER can be redefined freely.
+    If an attempt is made to redefine a function  which  is  not
+    flagged USER, the query
+
+%%\begin{verbatim}
+     {\tt Do you really want to redefine the system function FOO?}
+%%\end{verbatim}
+
+    is  made,  requiring  a  Y,  N,  YES,  NO, or B response.  B
+    starts the break loop, so that one can change the setting of
+    *usermode.  After exiting the break loop, one must answer Y,
+    Yes, N, or No (See yesp in Chapter 12).    If  *usermode  is
+    nil,   all  functions  can  be  redefined  freely,  and  all
+    functions defined    have  the  USER  flag  removed.    This
+    provides some protection from redefining system functions.
+}
+
+\variable{*comp}{[Initially: nil]}{switch}
+{
+    The  value  of *comp controls  whether or not putd  compiles
+    the  function before  defining it.   If  *comp  is  nil  the
+    function  is  defined  as  a lambda expression.  If *comp is
+    non-nil,  the  function  is  first  compiled.    Compilation
+    produces  certain changes in the semantics of functions, see
+    Chapter 19 for information.
+}
+
+\de{getd}{(getd U:any): {nil, pair}}{expr}
+{    If U is not the name of a defined function, nil is returned.
+    otherwise
+    ({expr, fexpr, macro, nexpr} . {code-pointer, lambda})    is
+    returned.
+}
+
+\de{copyd}{(copyd NEW:id OLD:id): NEW:id}{expr}
+{    Normally  the  function body and type of NEW become the same
+    as those of OLD.  However, if the switch *comp is set  to  t
+    and  the body of OLD is not compiled then NEW will be set to
+    the compiled version of the body of OLD.  If  no  definition
+    exists for OLD an error:
+}
+\begin{verbatim}
+    ***** OLD has no definition in COPYD
+\end{verbatim}
+    is given.  NEW is returned.
+
+
+\de{remd}{(remd U:id): {nil, pair}}{expr}
+{    Removes the  function  named  U  from  the  set  of  defined
+    functions.    Returns the (ftype . function) pair or nil, as
+    does getd.  If the function type is not  expr  then  it  was
+    recorded on the property list when the function was defined.
+    In  such  cases  this  function removes the type information
+    from the property list.
+}
+\subsection{Function Definition in LISP Syntax}
+
+  The functions de, df, dn, dm, and ds are used in PSL to define
+functions and  macros.    The  functions  are  compiled  if  the
+compiler is loaded and the switch comp is set to t.
+
+\de{de}{(de Fname:id PARAMS:id-list [FN:form]): id}{macro}
+{    Defines  the  function named Fname, of type expr.  The forms
+    FN are  made  into  a  lambda  expression  with  the  formal
+    parameter  list  PARAMS, and this is used as the body of the
+    function.
+
+    Previous definitions of the function are lost.  The name  of
+    the defined function, Fname, is returned.
+
+    The   COMMON   module  defines  the  macro  DeFun  which  is
+    equivalent to de.
+}
+
+\de{df}{(df Fname:id PARAM:id-list [FN:form]): id}{macro}
+{    Defines the function named Fname, of type fexpr.  The  forms
+    FN  are  made  into  a  lambda  expression  with  the formal
+    parameter list PARAM, and this is used as the  body  of  the
+    function.    The  parameter  list  should  only  contain one
+    parameter.
+
+    Previous definitions of the function are lost.  The name  of
+    the defined function, Fname, is returned.
+}
+
+\de{dn}{(dn Fname:id PARAM:id-list [FN:form]): id}{macro}
+{    Defines  the function named Fname, of type nexpr.  The forms
+    FN are  made  into  a  lambda  expression  with  the  formal
+    parameter  list  PARAM,  and this is used as the body of the
+    function.   The  parameter  list  should  only  contain  one
+    parameter.
+
+    Previous  definitions of the function are lost.  The name of
+    the defined function, Fname, is returned.
+}
+
+\de{dm}{(dm Mname:id PARAM:id-list [FN:form]): id}{macro}
+{    Defines the function named Fname, of type macro.  The  forms
+    FN  are  made  into  a  lambda  expression  with  the formal
+    parameter list PARAM, and this is used as the  body  of  the
+    function.    The  parameter  list  should  only  contain one
+    parameter.
+
+    Previous definitions of the function are lost.  The name  of
+    the defined function, Fname, is returned.
+}
+
+    The function list can be defined as follows
+\begin{verbatim}
+    (dm list (a)
+      (if (< (length a) 2) ()
+        (cons 'cons
+              (cons (second a)
+                    (ncons (cons 'list (rest (rest a))))))))
+\end{verbatim}
+    Now  consider  what  occurs during the evaluation of (list 1
+    2).  The list (list 1 2) is passed to the list  macro  which
+    returns  (cons  1  (list  2))  for  further evaluation.  The
+    evaluator will call the list macro again for (list 2).  This
+    second call on  the  macro  will  return  (cons  2  (list)).
+    Finally,  (list)  is transformed into nil by a third call on
+    the list macro and the entire process will  terminate  after
+    evaluating  (cons  1  (cons  2  nil)).    Notice the lack of
+    distinction between program and data    The  data  structure
+    representation  of  the  function  call  is  passed  to  the
+    function as its parameter.
+
+
+\de{ds}{(ds Sname:id PARAMS:id-list [FN:form]): id}{macro}
+{    Defines the function named Sname of type macro.  The  syntax
+    of  ds  is  similar  to  that  of  de except that a macro is
+    defined instead of an expr. 
+}
+
+ Perhaps the  behavior  of  this
+    function  is best described with an example.  The evaluation
+    of
+
+\begin{verbatim}
+    (ds first (x) (car x))
+\end{verbatim}
+    will generate an expression similar to
+
+\begin{verbatim}
+    (dm first (a)
+      (prog (x)
+            (setq a (cdr a))
+            (setq x (car a))
+            (return (list 'car x))))
+\end{verbatim}
+    which  is  then  evaluated.    A  sequence   of   assignment
+    statements  are  created to initialize each parameter to its
+    corresponding argument.  Each id within the body FN which is
+    not in the parameter list is quoted.  It is an error to call
+    a macro defined  this  way  with  more  arguments  than  are
+    specified by the parameter list.  An error of this type will
+    cause the message
+
+\begin{verbatim}
+    ***** Argument mismatch in SMacro expansion
+\end{verbatim}
+    to be printed.  When a call is made without enough arguments
+    the additional parameters are set to nil.
+
+  The following macro utilities are in the {\bf useful} module.
+
+\de{defmacro}{(defmacro A:id B:form [C:form]): id}{macro}
+{    Defmacro  is a useful tool for defining macros.  The form of
+    an application of defmacro is given below,  square  brackets
+    are   used  to  indicate  zero  or  more  occurances  of  an
+    expression.
+}
+\begin{verbatim}
+    (DEFMACRO <name> <pattern> [<form>])
+\end{verbatim}
+    The pattern is an list, each element is either an  id  or  a
+    pair.    All  of  the ids in the pattern are local variables
+    which may be used freely in the body (the  <form>s).    When
+    the  macro  is called the pattern is matched against the cdr
+    of the macro call, binding the ids of the pattern  to  their
+    corresponding  parts  of  the  call.    Once  the binding is
+    complete the body is evaluated, the result is the  value  of
+    the  last form.  Defmacro is often used with backquote.  The
+    following examples illustrate the  use  of  defmacro.    The
+    first is intended to provide a contrast with ds.
+
+\begin{verbatim}
+    (defmacro car (s)
+      `(car ,s))
+\end{verbatim}
+\begin{verbatim}
+    (defmacro nth (s i)
+      (if (onep i)
+        `(car ,s)
+        `(nth (cdr ,s) ,(sub1 i))))
+\end{verbatim}
+
+\de{deflambda}{(deflambda name:id PARAMS:id-list [FN:form]): id}{macro}
+{    Defines  the  function named name, of type macro.  Deflambda
+    is similar to ds except that the body of the  definition  is
+    enclosed   within  a  lambda  expression.    The  number  of
+    parameters of the lambda  expression  is  the  same  as  the
+    number  specified by PARAMS.  When the macro is applied each
+    of the  arguments  are  evaluated  and  then  bound  to  the
+    parameters  of  the lambda expression.  Finally, the body of
+    the lambda  is  evaluated.    Note  that  each  argument  is
+    evaluated  once.    This  may not be true had the macro been
+    defined using ds.  The following  example  illustrates  when
+    deflambda  should  be used in place of ds.  The expansion of
+    the first  version  of  Check  contains  two  occurances  of
+    (long-calculation  n),  where  the  expansion  of the second
+    version only contains one.
+}
+\begin{verbatim}
+    (ds check (any)
+      (when (> any 0) (compute any)))
+
+    (deflambda check (any)
+      (when (> any 0) (compute any)))
+
+    (check (long-calculation n))
+
+    (when (> (long-calculation n) 0)    % Expansion of the first
+      (compute (long-calculation n)))   % version of check
+
+    ((lambda (any)                      % Expansion of the second
+       (when (> any 0)                  % version of check
+         (compute any)))
+     (long-calculation n))
+\end{verbatim}
+
+\subsection{BackQuote}
+
+
+\de{backquote}{(backquote A:form): form}{macro}
+{    Backquote is the function name for ` (accent grave).    With
+    some printers it may be difficult to distinguish between the
+    quote  and accent grave characters.  For this reason, in the
+    examples which  follow  'expression  is  written  as  (quote
+    expression).  You must load USEFUL to define backquote.
+}
+    In  the  previous section the function list was defined as a
+    macro.
+
+\begin{verbatim}
+    (dm list (a)
+      (if (< (length a) 2)
+        ()
+        (cons (quote cons)
+              (cons (second a)
+                    (ncons (cons (quote list)(rest (rest a))))
+    ))))
+\end{verbatim}
+    The  body  of this definition is somewhat difficult to read.
+    An abbreviated syntax was developed to aid both  the  writer
+    and the reader.  The notation, called "backquote" (`), works
+    as  an  "anti-quote".    Unquoted forms within its scope are
+    assumed to be constants.  To indicate that a form should  be
+    evaluated,  one  should  prefix  the  form with a comma (,).
+    Consider the redefinition of the macro list.
+
+\begin{verbatim}
+    (dm list (a)
+      (if (< (length a) 2)
+        ()
+        `(cons ,(second a)
+               ,(cons (quote list) (rest (rest a))))))
+\end{verbatim}
+    While this is  an  improvement,  the  explicit  construction
+    ,(cons  (quote  list)  (rest  (rest  a)))  clutters  up  the
+    appearance.  The application of cons is  there  to  indicate
+    that  we  want to combine the result of (rest (rest a)) with
+    the identifier list.  The form ,(list (rest (rest  a))  will
+    not  give this effect, instead it would create a list of two
+    elements.  The at-sign (@) is used in conjunction  with  the
+    comma  to  mean  "splice-in"  rather  than  "cons-in".  This
+    results in the following defintion.
+
+\begin{verbatim}
+    (dm list (a)
+      (if (< (length a) 2)
+        ()
+        `(cons ,(second a) (list ,@(rest (rest a))))))
+\end{verbatim}
+
+\de{unquote}{(unquote A:any): Undefined}{fexpr}
+{    Function name for comma ,.  It is  an  error  to  eval  this
+    function; it should occur only inside a backquote.
+}
+
+\de{unquotel}{(unquotel A:any): Undefined}{fexpr}
+{    Function  name  for comma-atsign ,@.  It is an error to eval
+    this function; it should only occur inside a backquote.
+}
+  The two examples which follow are similar  definitions  of  an
+arithmetic  if  form.   There are four arguments: a test form, a
+negative form, a zero form, and a positive form.    One  of  the
+last  three forms is chosen to be evaluated according to whether
+the test form is positive, negative, or zero. The first uses the
+traditional dm while the second  uses  defmacro  and  backquote.
+Clearly  the second is much simpler.  To clarify printer output,
+there are no occurances of the accent  grave  character  in  the
+first  definition  and the second definition does not contain an
+occurance of the quote character.
+
+\begin{verbatim}
+(dm number-if (calling-form)
+  (list 'let
+        '((var (gensym)))
+        (list 'let
+              (list (list 'var (nth calling-form 2)))
+              (list 'cond
+                    (list (list 'minusp 'var)
+                          (nth calling-form 3))
+                    (list (list 'zerop 'var)
+                          (nth calling-form 4))
+                    (list t (nth calling-form 5))))))
+ 
+(defmacro number-if (test minus-form zero-form plus-form)
+  (let ((var (gensym)))
+    `(let ((,var ,test))
+       (cond ((minusp ,var) ,minus-form)
+             ((zerop ,var) ,zero-form)
+             (t ,plus-form)))))
+\end{verbatim}
+
+\subsection{MacroExpand}
+
+
+\de{macroexpand}{(macroexpand A:form [B:id]): form}{macro}
+{    Macroexpand  is  a   useful   tool   for   debugging   macro
+    definitions.   If  given  one argument, macroexpand  expands
+    all the macros in that form.   Often  one  wishes  for  more
+    control  over this process.  For example, if a macro expands
+    into a let, we may not wish to see the let  itself  expanded
+    to  a lambda expression.  Therefore additional arguments may
+    be given to macroexpand.  If these are supplied, they should
+    be the  names  of  macros,  and  only  those  specified  are
+    expanded.
+}
+
+\subsubsection{Low Level Function Definition Primitives}
+
+  The  following functions are used especially by putd and Getd,
+defined above in Section 9.1.3, and by eval and  apply,  defined
+in Chapter 11.
+
+
+\de{funboundp}{(funboundp U:id): boolean}{expr}
+{    Tests  whether there is a definition in the function cell of
+    U; returns nil if so, t if not.
+
+    Note:  The functional value of an identifier which does  not
+    define  a  function is actually a call on undefinedfunction.
+    The  evaluation  of  undefinedfunction  will  result  in   a
+    continuable error.
+}
+
+
+\de{fboundp}{(fboundp U:id): boolean}{macro}
+{    Equivalent to (not (funboundp U)), the function funboundp is
+    described above.
+}
+
+\de{flambdalinkp}{(flambdalinkp U:id): boolean}{expr}
+{    Tests whether U is an interpreted function;  return t if so,
+    nil  if  not.  This  is  done  by  checking  for the special
+    code-address of the lambdalink  function,  which  calls  the
+    interpreter.
+}
+
+\de{fcodep}{(fcodep U:id): boolean}{expr}
+{    Tests  whether  U  is a compiled function;  returns t if so,
+    nil if not.
+}
+
+\de{makefunbound}{(makefunbound U:id): nil}{expr}
+{    Makes U an undefined function by planting a special call  to
+    the  function, undefinedfunction, in the function cell of U.
+    See   funboundp   above   for   more    information    about
+    undefinedfunction.
+}
+
+\de{makeflambdalink}{(makeflambdalink U:id): nil}{expr}
+{    Makes  U  an interpreted function by planting a special call
+    to an interpreter support function (lambdalink) function  in
+    the function cell of U.
+}
+
+\de{makefcode}{(makefcode U:id C:code-pointer): nil}{expr}
+{    Makes  U  a  compiled function by planting a special JUMP to
+    the code-address associated with C.
+}
+
+\de{getfcodepointer}{(getfcodepointer U:id): code-pointer}{expr}
+{    Gets the code-pointer for U.
+}
+
+\de{code-number-of-arguments}{(code-number-of-arguments C:code-pointer): 
+\{nil,integer\}}{expr}
+{    Some compiled functions have the argument number they expect
+    stored in association with the code-pointer C. This integer,
+    or nil is returned.
+}
+\subsection{Function Type Predicates}
+
+  \de{exprp}{(exprp U:any): boolean}{expr}
+{    Test if U is a code-pointer, lambda form, or an id with expr
+    definition.
+}
+
+\de{fexprp}{(fexprp U:any): boolean}{expr}
+{    Test if U is an id with fexpr definition.
+}
+
+\de{nexprp}{(nexprp U:any): boolean}{expr}
+{    Test if U is an id with nexpr definition.
+}
+
+\de{macrop}{(macrop U:any): boolean}{expr}
+{    Test if U is an id with macro definition.
+}
+
+\section{Wrappers}
+
+  Once  a  function  has  been  defined,  one  may want it to do
+something a  little  different,  or  just  a  little  bit  more.
+Breaking  and  tracing  functions  for debugging purposes can be
+thought of in this way.  Having a function  keep  track  of  the
+time  spent in its execution can also be thought of in this way.
+The Wrappers module provides a convenient  facility  to  support
+this.
+
+  When  a  function is wrapped, its name becomes a reference for
+two different function definitions.  In PSL it  is  possible  to
+create  distinct  identifiers  which  have  the  same name.  The
+original name of the function is associated with a new  function
+called  the  wrapper.  In general a wrapper does additional work
+before and/or after  applying  the  original  definition.    The
+original  definition is associated with an identifier whose name
+is identical with the original name but which is  not  interned.
+Application  of  getd  to  the  original  name  will  return the
+original  definition.  Since  a  wrapper  is  identified  by  an
+indicator  on  the  property list of its name getd knows when to
+look elsewhere for the original function  definition,  and  putd
+knows to alter the original definition, not the wrapper.
+
+  Typically  a  wrapper  may  be  added  to a function and later
+removed.  A function potentially may be wrapped up  inside  more
+than one wrapper at the same time.  It is possible to redefine a
+wrapped function but if the order or number of formal parameters
+is  changed  then  it  will  be necessary to unwrap all wrappers
+first.
+
+\subsection{Notes on Writing Wrappers}
+
+  This section describes guidelines for writing wrappers.
+
+  If a wrapper is put on a function that is used either directly
+or indirectly by the wrapper  body  an  infinite  recursion  may
+result.   Functions used by the PSL interpreter are particularly
+susceptible to this problem.    We  require  a  means  to  avoid
+infinite  recursion.   In general it is not easy to restrict the
+set of functions which can be called indirectly by  a  piece  of
+code.   Many  PSL  system  functions use other system functions.
+Furthermore, a modification  to  the  system  may  change  these
+relationships.    Some  system  functions call functions through
+functional variables or functional  values  stored  on  property
+lists.  This means that some of the relationships between system
+functions change over time.
+
+  Instead  of  avoiding recursion introduced by wrappers, we can
+detect and recover from  it.   Wrapper  bypasses  do  this.    A
+wrapper  bypass  is implemented through a fluid variable, called
+the controlling variable for  that  wrapper.    On  entry  to  a
+wrapper,  the  value  of  the controlling variable is checked. A
+non-nil value implies that a previous invocation of this wrapper
+has not been completed.   To  avoid  a  recursive  call  on  the
+wrapper,  a  call on the wrapped function replaces evaluation of
+the wrapper.
+
+  If the value of the controlling variable is nil the wrapper is
+evaluated.  During evaluation of  the  wrapper  the  controlling
+variable  is  set  to  t  except  during  the application of the
+wrapped function, at which point it should be set to nil.
+
+  Syntactically,  wrapper  bodies  of  the  following  form  are
+supported:
+
+\begin{verbatim}
+(lambda <args>
+  (cond (<var> <wrapped-fn-call>)
+        (t (prog (<var> <id>*)
+             (setq <var> t)
+             <call-expr>*))))
+ 
+<call-expr> ::= <expr>
+                | (<call-expr>*)
+                | (setq <var> nil) <setq-and-wrapped-fn-call> (setq <var> t)
+ 
+<setq-and-wrapped-fn-call> ::=
+               | <wrapped-fn-call>
+               | (setq <id> <wrapped-fn-call>)
+ 
+<wrapped-fn-call> ::= (wrapped-function <expr>*)
+                  | (funcall 'wrapped-function <expr>*)
+
+<var> ::= <id>
+<id> is any PSL identifier <expr> is any PSL s-expression.
+\end{verbatim}
+
+The  controlling variable of the wrapper is $<var>$. It must be
+a fluid variable whose top level value is nil.
+
+The notation is BNF with the addition of the regular
+expression "*" operator. This operator is used to indicate zero
+or more repetitions of an item.
+
+  Note  that setf is not supported in place of setq.  You should
+not use apply in place of funcall or let in place of prog.   You
+can  eliminate  redundant  instances of (setq $<var>$ t) and (setq
+$<var>$ nil).  For example, if a \verb+<wrapped-fn-call>+ appears at the
+beginning of a prog then the
+form \verb+(setq <var> nil)+ can be
+omitted.
+
+\subsection{Exported Functions}
+
+
+\de{wrap}{(wrap name:id wtype:id BODY:list COMPILE?:boolean): id}{expr}
+{    Wrap creates a wrapper.  name is the name of the function to
+    be wrapped.  wtype is an id  which  identifies  the  wrapper
+    type, it must be a member of the list wrapper-standard-order
+    (documented below).  BODY is a list which should be a lambda
+    expression.
+}
+    Wrap  redefines  the functional value of name.  The original
+    function is renamed.  The print representation of  this  new
+    name is identical to name but the identifiers are distinct.
+
+    When  BODY is a lambda expression (you are encouraged to use
+    a lambda expression for this argument), then the new name of
+    the function which is being wrapped is substituted for  each
+    occurance   of   wrapper-function.    The   result  of  this
+    substitution becomes the definition of the wrapper.
+
+    When BODY is not a lambda expression a different  method  is
+    used  to  create  the  wrapper.    BODY is embedded within a
+    lambda expression which has the same number of arguments  as
+    the  function which is being wrapped.  Each occurance of the
+    form (wrapped-invocation), is replaced by an application  of
+    the wrapped function.
+
+    If COMPILE? is t then the wrapper will be compiled.
+
+    The  wrappers  package permits a function to have any number
+    of wrappers of any permitted type.   For  a  given  type  of
+    wrapper,  a new wrapper always encloses preexisting wrappers
+    of that type.  However, you are  advised  against  depending
+    upon this ordering.
+
+
+\de{remove-wrapper}{(remove-wrapper name:id TYPE:id): boolean}{expr}
+{    Removes a wrapper of type TYPE from the identifier name.  If
+    name  does  not  have a wrapper of this type then the return
+    value will be nil, otherwise t is returned.
+}
+
+\de{wrapped?}{(wrapped? name:id): boolean}{expr}
+{    Returns t if there is at least one wrapper on name.
+}
+
+\de{wrapper-of-type?}{(wrapper-of-type? name:id TYPE:id): {name:id nil}}{expr}
+{    Searches for a wrapper of the given type on name.   name  is
+    returned if a wrapper is found, otherwise nil is returned.
+}
+
+\de{wrapper-types}{(wrapper-types name:id): list}{expr}
+{    Returns  a  list of all the types of all the wrappers around
+    the function named name.
+}
+
+\de{function-lambda-list}{(function-lambda-list FN:{id, code-pointer, lambda}): 
+list}{expr}
+{    Returns a list suitable for use as the formal parameter list
+    of a wrapper for  that  function.      If  the  function  is
+    interpreted,   the   argument  list  of  the  definition  is
+    returned.  If the actual argument  list  is  not  available,
+    names for the arguments are invented.  If FN is not a lambda
+    expression, code-pointer, or identifier then it is an error.
+}
+\begin{verbatim}
+***** FN is not a function.
+\end{verbatim}
+    It  is  also  an error if FN is an identifier which does not
+    have a functional value.
+
+%\begin{verbatim}
+{\tt ***** FN is not defined as a function.}
+%\end{verbatim}
+
+\de{function-basic-definition}{(function-basic-definition
+name:id): name:id}{expr}
+{    Returns the basic definition of name, whether or not  a  set
+    or  wrappers is associated with it.  Note that getd and putd
+    operate on this basic definition.  If you wish to redefine a
+    wrapped  function  and  the  number  or  order   of   formal
+    parameters  will  change it is necessary to first unwrap all
+    wrappers first.  Applications of the wrapped function within
+    the wrapper will not be updated when the wrapped function is
+    redefined.
+}
+
+\variable{wrapper-standard-order}{[Initially: (trace break meter)]
+}{global} 
+{
+    Only wrapper types which are members of this list are  legal
+    arguments  to  primitive functions that operate on wrappers.
+    The wrappers of  each  function  are  nested  so  that  each
+    wrapper  type appears earlier in wrapper-standard-order than
+    the type of any wrapper it encloses.
+    Wrap wraps according to this  ordering,  but  changing  this
+    list  does not cause the ordering of existing wrappers to be
+    changed.
+}
+
+\subsection{Examples}
+
+  Assume that foo is a commonly called function  whose  argument
+is a large data structure.  You have found that foo is sometimes
+called  with  an argument of nil and would like to cause a break
+when this situation arises so that you can discover where foo is
+being called from.
+
+  Since foo is a commonly used function a break on each entry to
+foo is unsatisfactory.  A trace of each entry and  exit  is  not
+sufficient  --    it  doesn't  tell  you  who  called foo in the
+critical case.  The  solution  is  to  wrap  foo  is  an  advice
+wrapper.    Such  a  wrapper  will print a backtrace and enter a
+continuable break loop when an argument of nil is discovered.
+
+  First, load the {\bf break-trace} module.  This will result  in  the
+{\bf wrappers} module  being loaded and the breaktrace function being
+defined (see Chapter 17 for  more  information  on  breaktrace).
+The wrapper-type advice is added as the innermost wrapper on the
+ordered  list  referenced by wrapper-standard-order (assuming it
+is not already on the list).
+
+\begin{verbatim}
+  (load break-trace)               % loads wrappers & 
+                                     breakpoint function
+  (if (not member 'advice wrapper-standard-order) then
+    (setf wrapper-standard-order
+          (append wrapper-standard-order '(advice))))
+
+  (de debug-foo ()
+    (wrap
+     'foo                          % function to wrap
+     'advice                       % wrapper type
+     `(lambda (x)                  % wrapper body generator
+        (cond ((null x)
+               (backtrace)
+               (breakpoint "Foo (x=nil)")))
+        (wrapped-function x))
+     nil))                          % don't compile 
+                                    % the wrapper body
+\end{verbatim}
+  The  above  will  work fine as long as foo is an expr which is
+not used by the interpreter or by the {\bf wrappers} module itself.
+In the more general case, the function debug-foo must have three
+changes:
+
+
+\begin{enumerate}
+\item  If   foo   is   not   an  expr,  then  all  occurrences  of
+     (wrapped-function $<args>$)  must  be  replaced  by  (funcall
+     'wrapped-function $<args>$).
+\item  If  foo  is  used  by  the PSL interpreter, by the {\tt wrappers}
+     module, or by expression in the wrapper body then  it  will
+     be  necessary  to  know  when  foo  is  called  during  the
+     evaluation of foo's wrapper.  This will allow you to bypass
+     evaluation of the wrapper, you can simply apply the wrapped
+     function.  Otherwise an infinite  recursion  could  result.
+     The  definition  below  uses  the  fluid variable (called a
+     controlling  variable)  in-foo-wrapper?  to  achieve   this
+     effect.
+\item  If  foo  is  possibly used within the interpreter, then the
+     wrapper  must  be  compiled.  This  means  that   if   (not
+     (interpretive-wrapper-ok?  'foo)), then the fourth argument
+     to the function wrap must be t,  or  wrap  will  signal  an
+     error.
+\end{enumerate}
+
+  The revised definition of debug-foo follows.
+\begin{verbatim}
+
+(fluid  '(in-foo-wrapper?))     % necessary initializations of 
+  (setq in-foo-wrapper? nil)      % the controlling  variable
+(change 2)
+\end{verbatim}
+\begin{verbatim}
+  (de debug-foo ()
+    (wrap
+     'foo
+     'advice
+     `(lambda (x)
+        (cond (in-foo-wrapper?                  % change 2
+               (funcall 'wrapped-function x))   % change 1
+              (t
+               (prog (in-foo-wrapper?)
+                 (setq in-foo-wrapper? t)
+                 (cond ((null x)
+                        (backtrace)
+                        (breakpoint "Foo (x=nil)")))
+                 (setq in-foo-wrapper? nil)
+                 (return
+                  (funcall 'wrapped-function x) % change 1
+                 ))))
+     (not (interpretive-wrapper-ok? 'foo))))    % change 3
+\end{verbatim}
+  The  function  break-on-condition  will  cause  entry  into  a
+continuable break loop just before the function fn is applied if
+the result of evaluating the form bound to bool-expr is non-nil.
+A sample call might be (break-on-condition 'foo '(eq x 2)).
+
+\begin{verbatim}
+(setf in-wrapper? nil)
+(fluid '(in-wrapper?))
+
+(de break-on-condition (fn bool-expr)
+    % First, get the parameter-list of the function.
+  (let ((parameter-list (function-lambda-list fn)))
+    (wrap
+     fn
+     'advice
+     `(lambda ,parameter-list
+        (cond (in-wrapper?   
+                (funcall 'wrapped-function ,@parameter-list))
+              (t
+               (prog (in-wrapper?)
+                 (setq in-wrapper? t)
+                 (cond (,bool-expr
+                        (breakpoint "In %p, condition %p=%p"
+                          ',fn  ',bool-expr ,bool-expr)))
+                        (setq in-wrapper? nil)
+                        (return
+                         (funcall 'wrapped-function
+                                  ,@parameter-list))
+                 ))))
+     (not (interpretive-wrapper-ok? fn))
+     )
+   ))
+\end{verbatim}
+\section{Variables and Bindings}
+
+  Variables in PSL are ids, and associated  values  are  usually
+stored  in  and  retrieved  from  the value cell of this id.  If
+variables appear as  parameters  in  lambda  expressions  or  in
+prog's,  the  contents  of the value cell are saved on a binding
+stack.  A new value or nil is stored in the value cell  and  the
+computation  proceeds.   On exit from the lambda or prog the old
+value is restored.  This is called the "shallow  binding"  model
+of  LISP.    It  is chosen to permit compiled code to do binding
+efficiently.   For  even  more  efficiency,  compiled  code  may
+eliminate the variable names and simply keep values in registers
+or a stack.  The scope of a variable is the range over which the
+variable has a defined value.  There are three different binding
+mechanisms in PSL.\\
+
+\begin{tabular}{lp{11.0cm}}
+Local Binding & Only  compiled  functions  bind variables locally.
+              Local variables  occur  as  formal  parameters  in
+              lambda  expressions  and  as  prog form variables.
+              The binding  occurs  as  a  lambda  expression  is
+              evaluated  or  as  a  prog  form is executed.  The
+              scope of a local  variable  is  the  body  of  the
+              function in which it is defined.\\
+
+Fluid Binding & Fluid  variables are global in scope but may occur
+              as formal parameters or prog form variables.    In
+              interpreted  functions,  all formal parameters and
+              local  variables  are  considered  to  have  fluid
+              binding   until   changed   to  local  binding  by
+              compilation.  A variable can be treated as a fluid
+              only by declaration.  If fluid variables are  used
+              as parameters or locals they are rebound in such a
+              way  that  the  previous  binding may be restored.
+              All references  to  fluid  variables  are  to  the
+              currently active binding.  Access to the values is
+              by name, going to the value cell.\\
+
+Global Binding & In  theory  global variables may never be used as
+              parameters  in  lambda  expressions  or  as   prog
+              variables.   This  restriction  is not enforced in
+              PSL.    You  are  encouraged  not  to  declare  an
+              identifier  global if it is used as a parameter in
+              a lambda expression or prog.  For more information
+              see the Section  Fluid  and  Global  Declarations,
+              Chapter 19.\\
+%\end{TABELLE***)
+\end{tabular}
+\subsection{Binding Type Declaration}
+
+
+\de{fluid}{(fluid IDLIST:id-list): nil}{expr}
+{    The   ids in IDLIST are declared as fluid type variables. An
+    id which has not been previously declared is initialized  to
+    nil.    Variables  in  IDLIST  already  declared  fluid  are
+    ignored.  It is an error to attempt to change the type of  a
+    variable from global to fluid.
+}
+
+%\begin{verbatim}
+    {\tt***** ID cannot be changed to FLUID}
+%\end{verbatim}
+
+\de{global}{(global IDLIST:id-list): nil}{expr}
+{    The ids of IDLIST are declared global type variables.  If an
+    id  has  not  been previously declared, it is initialized to
+    nil.  Variables which have already been declared global  are
+    ignored.   Attempting to change the type of an id from fluid
+    to global will result in an error.\\
+
+%\begin{verbatim}
+    {\tt***** ID cannot be changed to GLOBAL}
+%\end{verbatim}
+}
+
+\de{unfluid}{(unfluid IDLIST:id-list): nil}{expr}
+{    The variables in IDLIST which have been  declared  as  fluid
+    are  no  longer  considered  fluid.    Other  variables  are
+    ignored.
+}
+\subsection{Binding Type Predicates}
+
+\de{fluidp}{(fluidp U:id): boolean}{expr}
+{    If U has been declared fluid then t is  returned,  otherwise
+    nil is returned.
+}
+
+\de{globalp}{(globalp U:id): boolean}{expr}
+{    If  U has been declared global then t is returned, otherwise
+    nil is returned.
+}
+
+\de{unboundp}{(unboundp U:id): boolean}{expr}
+{    If U does not have a value then t is returned, otherwise nil
+    is returned.
+}
+\section{User Binding Functions}
+
+  The following functions  are  available  to  build  one's  own
+interpreter  functions  that  use  the  built-in  Fluid  binding
+mechanism, and interact well with the automatic  unbinding  that
+takes place during  Throw and Error calls.
+
+
+\de{unbindn}{(unbindn N:integer): Undefined}{expr}
+{    Used  in  user-defined  interpreter functions (like prog) to
+    restore previous bindings to the last N values bound.
+}
+
+\de{lbind1}{(lbind1 IDname:id VALUETOBIND:any): Undefined}{expr}
+{   	Support for lambda-like  binding.    The  current  value  of
+    IDname   is  saved  on  the  binding  stack;  the  value  of
+    VALUETOBIND is then bound to IDname.
+}
+
+\de{pbind1}{(pbind1 IDname:id): Undefined}{expr}
+{   	Support for prog.  Binds nil to IDname after saving value on
+    the binding stack.  Essentially (lbind1 IDname nil).
+}

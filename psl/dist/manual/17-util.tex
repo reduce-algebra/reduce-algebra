@@ -1,0 +1,68 @@
+\chapter*{Miscellaneous Utilities}
+
+\section{Simulating a Stack}
+
+  The  following  macros  are  in  the USEFUL package.  They are
+convenient for adding and deleting things from  the  head  of  a
+list.
+
+
+\de{push}{(push ITM:any STK:list): any}{macro}
+{
+(push item stack) is equivalent to\\
+(setf stack (cons item stack))
+}
+
+\de{pop}{(pop STK:list): any}{macro}
+{
+(pop stack) does (setf stack (cdr stack)) and returns the item 
+popped off stack. An additional argument may be supplied to Pop, in which 
+case it is a variable which is SetQ'd to the popped value.
+}
+
+\section{Ring Buffers}
+
+  The code-address-to-symbol function takes an integer argument,
+and attempts to find out what function that address is  in.   If
+the  address  does not map to any function, the name of the most
+recently loaded function is returned.
+
+\de{code-address-to-symbol}{(code-address-to-symbol ADDRESS:integer): id}{expr}
+{}
+  for example:
+
+\begin{verbatim}
+(code-address-to-symbol 16#38393)
+\end{verbatim}
+  This function is available by evaluating (load addr2id).
+
+\section{Word Vector Operations}
+
+  These functions are defined in \$pu/vector-fix.sl
+  resp the vector-fix module.
+
+
+\de{mkwords}{(mkwords N:integer): vector}{expr}
+{    Allocates a vector of N words with all elements  initialized
+    to zero.
+}
+
+\de{truncatevector}{(truncatevector V:vector I:integer): vector}{expr}
+{    Truncates V to I elements.
+}
+
+\de{truncatewords}{(truncatewords V:words I:integer): vector}{expr}
+{    Truncates V to I elements.
+}
+
+\de{getwords}{(getwords WRD:words I:integer): any}{expr}
+{    Retrieves the I'th entry of WRD.
+}
+
+\de{putwords}{(putwords WRD:words I:integer VAL:any): any}{expr}
+{    Store VAL at I'th position of WRD.
+}
+
+\de{upbw}{(upbw V:words): integer}{expr}
+{    Returns the upper limit of words V.
+}

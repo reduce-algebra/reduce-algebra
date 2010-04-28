@@ -1,0 +1,769 @@
+\begin{theindex}
+
+  \item $<$, 15
+  \item $<<$, 17
+  \item $<=$, 15
+  \item $>$, 15
+  \item $>=$, 15
+  \item $>>$, 17
+  \item $\ast $, 16
+  \item $\mid $, 17
+  \item $\sim $, 16
+  \item $\sim =$, 16
+  \item $\wedge $, 17
+  \item *backtrace (switch), 150
+  \item *break (switch), 150
+  \item *comp (switch), 95
+  \item *compressing, 128
+  \item *compressing (switch), 130
+  \item *crefsummary (switch), 178
+  \item *echo (switch), 133
+  \item *emsgp (fluid), 149
+  \item *eolinstringok, 5
+  \item *eolinstringok (switch), 129
+  \item *fast-evectors (switch), 169
+  \item *fast-integers, 14
+  \item *fast-integers (switch), 169
+  \item *fast-strings (switch), 169
+  \item *fast-vectors (switch), 169
+  \item *gc (switch), 175
+  \item *in, 117
+  \item *nolinke (switch), 170
+  \item *ord (switch), 171
+  \item *out, 117
+  \item *output (switch), 145
+  \item *pcmac (switch), 171
+  \item *pgwd (switch), 171
+  \item *plap (switch), 171
+  \item *printloadnames, 131
+  \item *printloadnames (switch), 133
+  \item *pwrds (switch), 171
+  \item *r2i (switch), 170
+  \item *raise (switch), 130
+  \item *redefmsg, 3
+  \item *redefmsg (switch), 94
+  \item *time (switch), 145
+  \item *usermode, 3, 42
+  \item *usermode (switch), 95
+  \item *verboseload, 131
+  \item *verboseload (switch), 133
+  \item +, 16
+  \item --, 16
+  \item /, 16
+  \item //, 16
+  \item /=, 15
+  \item =, 15
+  \item =$>$, 197, 199
+  \item \&, 16
+
+  \indexspace
+
+  \item abandonpipe, 212
+  \item abs, 17
+  \item aconc, 49
+  \item acos, 25
+  \item acosd, 25
+  \item acot, 25
+  \item acotd, 25
+  \item acsc, 26
+  \item acscd, 26
+  \item add1, 17
+  \item adjoin, 50
+  \item adjoinq, 50
+  \item allocate-string, 62
+  \item alphanumericp, 60
+  \item alphap, 59
+  \item and, 2, 10
+  \item ans, 145
+  \item append, 49
+  \item apply, 114
+  \item asec, 25
+  \item asecd, 26
+  \item asin, 24
+  \item asind, 24
+  \item ass, 55
+  \item assoc, 55
+  \item atan, 25
+  \item atan2, 25
+  \item atan2d, 25
+  \item atand, 25
+  \item atom, 9
+  \item atsoc, 55
+
+  \indexspace
+
+  \item backquote, 98
+  \item binaryclose, 140
+  \item binaryopenappend, 140
+  \item binaryopenread, 140
+  \item binaryopenupdate, 140
+  \item binaryopenwrite, 140
+  \item binarypositionfile, 141
+  \item binaryread, 140
+  \item binaryreadblock, 141
+  \item binarywrite, 141
+  \item binarywriteblock, 141
+  \item bldmsg, 135
+  \item bothcasep, 59
+  \item bothtimes, 169
+  \item br, 156
+  \item break, 155
+  \item breakin* (global), 135, 152
+  \item breaklevel* (global), 150
+  \item breakout* (global), 135, 152
+
+  \indexspace
+
+  \item c, 128
+  \item car, 44
+  \item case, 73
+  \item catch, 90
+  \item catch-all, 91
+  \item cd, 211
+  \item cdr, 44
+  \item ceiling, 21
+  \item channeleject, 124
+  \item channellinelength, 125
+  \item channellposn, 124
+  \item channelposn, 124
+  \item channelprin1, 120
+  \item channelprin2, 121
+  \item channelprin2t, 123
+  \item channelprinc, 123
+  \item channelprint, 121
+  \item channelprintf, 122
+  \item channelread, 125
+  \item channelreadch, 127
+  \item channelreadchar, 127
+  \item channelreadline, 128
+  \item channelreadtoken, 128
+  \item channelreadtokenwithhooks, 128
+  \item channelspaces, 121
+  \item channeltab, 122
+  \item channelterpri, 121
+  \item channelunreadchar, 127
+  \item channelwritechar, 123
+  \item char, 57
+  \item char$<$, 60
+  \item char$>$, 60
+  \item char-bits, 60
+  \item char-code, 60
+  \item char-downcase, 61
+  \item char-equal, 60
+  \item char-font, 60
+  \item char-greaterp, 60
+  \item char-int, 61
+  \item char-lessp, 60
+  \item char-upcase, 61
+  \item char=, 60
+  \item character, 61
+  \item close, 131
+  \item code-address-to-symbol, 159
+  \item code-char, 61
+  \item code-number-of-arguments, 101
+  \item codeapply, 115
+  \item codeevalapply, 115
+  \item codep, 9
+  \item commentoutcode, 169
+  \item compd, 163
+  \item compile, 163
+  \item compile-file, 162
+  \item compile-file-aux, 162
+  \item compiletime, 169
+  \item compress, 136
+  \item concat, 209
+  \item cond, 71
+  \item cons, 44
+  \item const, 168
+  \item constant?, 166
+  \item constantp, 9
+  \item conterror, 148
+  \item continuableerror, 148
+  \item copy, 45
+  \item copyd, 95
+  \item copyscantable, 139
+  \item copystring, 62
+  \item copystringtofrom, 62
+  \item copyvector, 206
+  \item copyvectortofrom, 206
+  \item cos, 23
+  \item cosd, 24
+  \item cot, 24
+  \item cotd, 24
+  \item csc, 24
+  \item cscd, 24
+  \item currentreadmacroindicator* (global), 130
+  \item currentscantable* (global), 130
+
+  \indexspace
+
+  \item date, 174
+  \item date-and-time, 175
+  \item de, 96
+  \item declare-flavor, 200
+  \item decr, 17
+  \item defconst, 168
+  \item defflavor, 193
+  \item define-constant, 166
+  \item deflambda, 98
+  \item deflist, 33
+  \item defmacro, 97
+  \item deformat, 188
+  \item degreestodms, 23
+  \item degreestoradians, 22
+  \item del, 52
+  \item delasc, 53
+  \item delascip, 53
+  \item delatq, 53
+  \item delatqip, 53
+  \item delete, 52
+  \item deletip, 52
+  \item delq, 52
+  \item delqip, 53
+  \item desetq, 36
+  \item df, 96
+  \item difference, 18
+  \item digit-char, 61
+  \item digitp, 60
+  \item divide, 18
+  \item dm, 96
+  \item dmstodegrees, 23
+  \item dmstoradians, 23
+  \item dn, 96
+  \item do, 88
+  \item do*, 89
+  \item do-loop, 89
+  \item do-loop*, 89
+  \item ds, 97
+  \item dskin, 133
+  \item dumplisp, 174
+
+  \indexspace
+
+  \item eject, 124
+  \item emsg* (global), 150
+  \item eolinstringok, 5
+  \item eq, 8
+  \item eqcar, 9
+  \item eqn, 8
+  \item eqstr, 9
+  \item equal, 8
+  \item error, 147
+  \item errorform* (global), 150
+  \item errorprintf, 123
+  \item errorset, 149
+  \item errout* (global), 135
+  \item errprin, 123
+  \item errset, 149
+  \item ev-send, 199
+  \item eval, 42, 111
+  \item evlis, 114
+  \item evprogn, 115
+  \item exit, 78
+  \item exitlisp, 173
+  \item exitwithstatus, 173
+  \item exp, 26
+  \item expand, 116
+  \item explode, 136
+  \item explode2, 136
+  \item exprp, 101
+  \item expt, 18
+
+  \indexspace
+
+  \item factorial, 27
+  \item faslin, 134
+  \item fatalerror, 148
+  \item fboundp, 101
+  \item fcodep, 101
+  \item fexprp, 102
+  \item filep, 130
+  \item findprefix, 32
+  \item findsuffix, 32
+  \item first, 47
+  \item fix, 14
+  \item fixp, 9
+  \item flag, 35
+  \item flag1, 35
+  \item flagp, 35
+  \item flambdalinkp, 101
+  \item flatsize, 136
+  \item flatsize2, 136
+  \item flavor-defined?, 199
+  \item float, 14
+  \item floatp, 9
+  \item floor, 22
+  \item fluid, 108
+  \item fluidp, 109
+  \item for, 78
+  \item for*, 85
+  \item foreach, 86
+  \item fourth, 47
+  \item free-bps, 175
+  \item funboundp, 100
+  \item funcall, 114
+  \item function, 116
+  \item function-basic-definition, 105
+  \item function-lambda-list, 104
+
+  \indexspace
+
+  \item garbage collection, 175
+  \item gcknt* (global), 176
+  \item gctime* (global), 175
+  \item gensym, 31
+  \item geq, 19
+  \item get, 33
+  \item getd, 95
+  \item getfcodepointer, 101
+  \item gethostid, 215
+  \item getpid, 215
+  \item getv, 207
+  \item getwords, 160
+  \item global, 108
+  \item globalp, 109
+  \item gmergesort, 54
+  \item go, 77
+  \item graphicp, 59
+  \item greaterp, 20
+  \item gsort, 54
+
+  \indexspace
+
+  \item hist, 145
+  \item historycount* (global), 145
+  \item historylist* (global), 145
+
+  \indexspace
+
+  \item id2int, 12
+  \item id2string, 12
+  \item idapply, 115
+  \item idp, 9
+  \item idsort, 54
+  \item if, 72, 73
+  \item if\_system, 171
+  \item ignore, 42
+  \item ignoredinbacktrace* (global), 151
+  \item implode, 136
+  \item imports, 132
+  \item in* (global), 134
+  \item incr, 18
+  \item independentdetachshm, 213
+  \item indx, 208
+  \item init file, 174
+  \item init-file-string, 174
+  \item initforms* (global), 145
+  \item inp, 145
+  \item input--case, 29
+  \item instantiate-flavor, 197
+  \item int-char, 61
+  \item int2id, 12
+  \item intern, 11
+  \item interngensym):, 31
+  \item internp, 32
+  \item interpreterfunctions* (global), 151
+  \item intersection, 51
+  \item intersectionq, 51
+
+  \indexspace
+
+  \item kernel-fns (global), 183
+  \item known-free-space, 175
+
+  \indexspace
+
+  \item land, 21
+  \item lapin, 134
+  \item lastcar, 47
+  \item lastpair, 47
+  \item lbind1, 109
+  \item lconc, 50
+  \item length, 48
+  \item leq, 20
+  \item lessp, 20
+  \item let, 74
+  \item let*, 75
+  \item lexpr-send, 198
+  \item lexpr-send-1, 198
+  \item lexpr-send-1-if-handles, 199
+  \item lexpr-send-if-handles, 198
+  \item linelength, 124
+  \item lispbanner* (global), 173
+  \item lispscantable* (global), 139
+  \item list, 49
+  \item list2set, 51
+  \item list2setq, 51
+  \item list2string, 12
+  \item list2vector, 13
+  \item lnot, 21
+  \item load, 131
+  \item loaddirectories*  (global), 132
+  \item loadextensions* (global), 132
+  \item loadtime, 169
+  \item log, 26
+  \item log10, 26
+  \item log2, 26
+  \item lor, 21
+  \item lose, 3, 42
+  \item lowercasep, 59
+  \item lposn, 124
+  \item lshift, 21
+  \item lxor, 21
+
+  \indexspace
+
+  \item macroexpand, 100
+  \item macrop, 102
+  \item main, 146
+  \item make-bytes, 208
+  \item make-instance, 196
+  \item make-string, 62
+  \item make-vector, 205
+  \item make-words, 208
+  \item makefcode, 101
+  \item makeflambdalink, 101
+  \item makefunbound, 101
+  \item makeunbound, 39
+  \item map, 86
+  \item mapc, 87
+  \item mapcan, 87
+  \item mapcar, 87
+  \item mapcon, 87
+  \item maplist, 87
+  \item mapobl, 32
+  \item max, 20
+  \item max2, 20
+  \item maxbreaklevel* (global), 150
+  \item member, 48
+  \item memq, 48
+  \item min, 20
+  \item min2, 20
+  \item minus, 18
+  \item minusp, 20
+  \item mkquote, 116
+  \item mkstring, 62
+  \item mkvect, 205
+  \item mkwords, 159
+  \item mod, 22
+
+  \indexspace
+
+  \item nconc, 49
+  \item ncons, 45
+  \item ne, 9
+  \item neq, 9
+  \item newid, 11, 32
+  \item nexprp, 102
+  \item next, 77
+  \item nil (global), 41
+  \item nolist* (global), 178
+  \item noncharactererror, 153
+  \item noniderror, 153
+  \item nonintegererror, 153
+  \item nonlisterror, 153
+  \item nonnumbererror, 153
+  \item nonpairerror, 153
+  \item nonpositiveintegererror, 153
+  \item nonsequenceerror, 154
+  \item nonstringerror, 154
+  \item nonvectorerror, 154
+  \item nonwordserror, 153, 154
+  \item not, 10
+  \item nstring-capitalize, 66
+  \item nstring-downcase, 66
+  \item nstring-upcase, 66
+  \item nth, 47
+  \item null, 10
+  \item numberp, 10
+
+  \indexspace
+
+  \item object-fns (global), 183
+  \item object-get-handler, 200
+  \item object-type, 199
+  \item objects-version):, 201
+  \item off, 40
+  \item on, 40
+  \item onep, 20
+  \item open, 130
+  \item options* (global), 132
+  \item or, 11
+  \item out* (global), 135
+  \item output--case, 30
+  \item outputbase* (global), 124
+
+  \indexspace
+
+  \item pair, 55
+  \item pairp, 10
+  \item pbind1, 109
+  \item pipe-open, 212
+  \item plus, 18
+  \item plus2, 18
+  \item pnth, 48
+  \item pop, 159
+  \item posn, 124
+  \item pp-file, 185
+  \item pp-object, 185
+  \item prettyprint, 123
+  \item prin1, 120
+  \item prin2, 120
+  \item prin2l, 123
+  \item prin2t, 123
+  \item princ, 123
+  \item prinlength (global), 125
+  \item prinlevel (global), 125
+  \item print, 121
+  \item printf, 122
+  \item printscantable, 139
+  \item prog, 75
+  \item prog1, 75
+  \item prog2, 75
+  \item progn, 75
+  \item promptstring* (global), 129
+  \item prop, 35
+  \item psetf, 39
+  \item psetq, 36
+  \item push, 159
+  \item put, 33
+  \item putd, 94
+  \item putdiphthong, 139
+  \item putv, 207
+  \item putwords, 160
+  \item pwd, 211
+
+  \indexspace
+
+  \item quit, 173
+  \item quote, 115
+  \item quotient, 19
+
+  \indexspace
+
+  \item radianstodegrees, 23
+  \item radianstodms, 23
+  \item random, 26
+  \item randomseed (global), 26
+  \item rangeerror, 152
+  \item ratom, 128
+  \item rds, 134
+  \item read, 125
+  \item read-init-file, 174
+  \item readch, 127
+  \item readchar, 127
+  \item readfromshm, 214
+  \item readline, 128
+  \item recip, 19
+  \item reclaim, 175
+  \item record-macro-usage, 183
+  \item record-usage, 182
+  \item redefmsg, 3
+  \item redo, 145
+  \item reload, 132
+  \item remainder, 19
+  \item remd, 95
+  \item remflag, 35
+  \item remflag1, 35
+  \item remob, 31
+  \item remove-wrapper, 104
+  \item remprop, 33
+  \item rempropl, 33
+  \item repeat, 77
+  \item reset, 174
+  \item rest, 47
+  \item return, 77
+  \item reverse, 53
+  \item reversip, 53
+  \item robustexpand, 116
+  \item round, 22
+  \item rplaca, 46
+  \item rplacd, 46
+  \item rplachar, 66
+  \item rplacw, 46
+
+  \indexspace
+
+  \item sassoc, 55
+  \item savesystem, 173
+  \item scanalyze, 181
+  \item scanalyze-file, 180
+  \item scanalyze-form, 180
+  \item sec, 24
+  \item secd, 24
+  \item second, 47
+  \item selectq, 74
+  \item send, 198
+  \item send-if-handles, 198
+  \item set, 36
+  \item setf, 37
+  \item setindx, 208
+  \item setprop, 36
+  \item setq, 36
+  \item setsub, 209
+  \item setsubseq, 209
+  \item setup-some-xref-actions, 183
+  \item shm-open, 213
+  \item sin, 23
+  \item sind, 23
+  \item size, 208
+  \item socketflushbuffer, 213
+  \item socketopen, 213
+  \item spaces, 121
+  \item specialclosefunction*  (global), 137
+  \item specialrdsaction* (global), 135
+  \item specialreadfunction* (global), 137
+  \item specialwritefunction* (global), 138
+  \item specialwrsaction* (global), 135
+  \item sqrt, 26
+  \item standard-charp, 59
+  \item stderror, 152
+  \item stdin* (global), 135
+  \item stdout* (global), 135
+  \item string, 12, 62
+  \item string$<$, 64
+  \item string$<$=, 64
+  \item string$<>$, 64
+  \item string$>$, 64
+  \item string$>$=, 64
+  \item string-capitalize, 66
+  \item string-charp, 59
+  \item string-concat, 65
+  \item string-downcase, 66
+  \item string-empty?, 63
+  \item string-equal, 64
+  \item string-fetch, 63
+  \item string-greaterp, 64
+  \item string-left-trim, 65
+  \item string-length, 63, 66
+  \item string-lessp, 64
+  \item string-not-equal, 65
+  \item string-not-greaterp, 64
+  \item string-not-lessp, 64
+  \item string-read, 69
+  \item string-repeat, 65
+  \item string-right-trim, 65
+  \item string-search, 67
+  \item string-search-equal, 68
+  \item string-search-from, 68
+  \item string-search-from-equal, 68
+  \item string-store, 63
+  \item string-to-list, 66
+  \item string-to-vector, 66
+  \item string-trim, 65
+  \item string-upcase, 66
+  \item string-upper-bound, 63
+  \item string2list, 12
+  \item string2vector, 13
+  \item string=, 63
+  \item stringgensym, 31
+  \item stringp, 10
+  \item sub, 209
+  \item sub1, 19
+  \item subla, 56
+  \item sublis, 56
+  \item subseq, 209
+  \item subst, 56
+  \item substip, 56
+  \item substring, 65
+  \item substring-equal, 67
+  \item substring=, 67
+  \item system, 211
+
+  \indexspace
+
+  \item t (global), 41
+  \item tab, 121
+  \item tan, 24
+  \item tand, 24
+  \item tconc, 50
+  \item template, 189
+  \item terpri, 121
+  \item third, 47
+  \item throw, 90
+  \item time, 174, 175
+  \item times, 19
+  \item times2, 19
+  \item toktype*, 128
+  \item toploop, 144
+  \item toploopeval* (global), 144
+  \item toplooplevel* (global), 144
+  \item toploopname* (global), 144
+  \item toploopread* (global), 144
+  \item totalcopy, 209
+  \item tr, 155
+  \item trace, 155
+  \item transfersign, 22
+  \item trst, 156
+  \item truncatevector, 160
+  \item truncatewords, 160
+  \item twritetoshm, 214
+  \item typeerror, 153
+
+  \indexspace
+
+  \item unbindn, 109
+  \item unboundp, 39, 109
+  \item unbr, 156
+  \item undeclare-flavor, 200
+  \item unfluid, 108
+  \item union, 50
+  \item unionq, 51
+  \item unless, 72
+  \item unquote, 99
+  \item unquotel, 99
+  \item unreadchar, 127
+  \item untr, 156
+  \item unwind-all, 91
+  \item unwind-protect, 91
+  \item upbv, 208
+  \item upbw, 160
+  \item uppercasep, 59
+  \item usagetypeerror, 153
+  \item useful-fns (global), 183
+  \item user, 42
+  \item user-homedir-string, 174
+  \item usermode, 3
+
+  \indexspace
+
+  \item valuecell, 39
+  \item vector, 13, 206
+  \item vector-empty?, 207
+  \item vector-fetch, 2, 207
+  \item vector-size, 207
+  \item vector-store, 207
+  \item vector-upper-bound, 207
+  \item vector2list, 13
+  \item vector2string, 13
+  \item vectorp, 10
+
+  \indexspace
+
+  \item when, 72
+  \item while, 77
+  \item with-input-from-string, 68
+  \item with-output-to-string, 69
+  \item wrap, 103
+  \item wrapped?, 104
+  \item wrapper-of-type?, 104
+  \item wrapper-standard-order (global), 105
+  \item wrapper-types, 104
+  \item writechar, 123
+  \item wrs, 134
+
+  \indexspace
+
+  \item xcons, 45
+  \item xref-assert, 182
+  \item xref-assert-list, 182
+
+  \indexspace
+
+  \item yesp, 129
+
+  \indexspace
+
+  \item zerop, 20
+
+\end{theindex}

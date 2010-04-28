@@ -1,0 +1,283 @@
+%\begin{verbatim}
+%(c) Copyright 1985 Hewlett-Packard Company, all rights reserved.
+%\end{verbatim}
+
+\chapter*{Vectors and Such}
+
+\section{Vectors}
+
+  A  vector  is a structured entity in which random elements may
+be accessed with an integer  index.    A  vector  has  a  single
+dimension.  Its maximum size is determined by the implementation
+and  available  space.    A  vector  is denoted by enclosing its
+elements within square brackets.
+\begin{verbatim}
+[10 TEN]
+[COLORS (RED BLUE)]
+\end{verbatim}
+
+
+\subsubsection{Built-in Vector Creation and Copying Functions}
+
+\de{mkvect}{(mkvect UPLIM:integer): vector}{expr}
+{    Defines  and  allocates space for a vector with (add1 UPLIM)
+    elements  accessed  as  0  ...  UPLIM.    Each  element   is
+    initialized  to  nil.    If  UPLIM is -1, an empty vector is
+    returned.  An error occurs if UPLIM is less than  -1  or  if
+    the  amount of available memory is insufficient for a vector
+    of this size.
+}
+\begin{verbatim}
+    ***** A vector of size UPLIM cannot be allocated
+\end{verbatim}
+
+\de{make-vector}{(make-vector UPLIM:integer INITVAL:any): vector}{expr}
+{    Similar to mkvect, except that each element  is  initialized
+    to  INITVAL.   Note the difference between this function and
+    make-string,  (see  the  section  on  creating  and  copying
+    strings  in  Chapter  6).  This function creates a vector of
+    (add1 UPLIM) elements where make-string creates a string  of
+    UPLIM characters.
+}
+
+%\vspace{0.3cm}
+    The  vector  created  by  this  function  will contain (add1
+    UPLIM) references to INTVAL as opposed to creating a copy of
+    UPLIM for each entry.
+
+\begin{verbatim}
+    1 lisp> (setq array (make-vector 1 (make-vector 1 0)))
+    [[0 0] [0 0]]
+    2 lisp> (vector-store (vector-fetch array 0) 0 1)
+    1
+    3 lisp> array
+    [[1 0] [1 0]]
+\end{verbatim}
+
+\de{vector}{(vector [ARGS:any]): vector}{nexpr}
+{    Create vector of elements from the list ARGS.  The  size  of
+    the  vector  will  be equal to the number of elements in the
+    list ARGS.  Each element of the vector is initialized to the
+    corresponding element from ARGS
+}
+
+\de{copyvectortofrom}{(copyvectortofrom NEW:vector OLD:vector):\\ 
+				NEW:vector}{expr}
+{    The elements of NEW are set to the corresponding elements of
+    OLD The elements are not copied.
+}
+\begin{verbatim}
+    1 lisp> (setq a [[1 2 3]])
+    [[1 2 3]]
+    2 lisp> (setq b [0])
+    [0]
+    3 lisp> (copyvectortofrom b a)
+    [[1 2 3]]
+    4 lisp> (eq (getv a 0) (getv b 0))
+    t
+\end{verbatim}
+\de{copyvector}{(copyvector V:vector): vector}{expr}
+{    Create a new vector, with the elements initalized  from  the
+    corresponding  elements  of  V.    The elements of V are not
+    copied.
+}
+\begin{verbatim}
+    1 lisp> (setq a "A STRING")
+    "A STRING"
+    2 lisp> (setq b (vector a))
+    ["A STRING"]
+    3 lisp> (setq c (copyvector b))
+    ["A STRING"]
+    4 lisp> (eq (getv b 0) (getv c 0))
+    t
+\end{verbatim}
+\subsection{About the Basic Operations on Vectors}
+
+  The functionality provided here overlaps what is  provided  in
+some  other  ways.  The functions provided here have well-chosen
+names and definitions, they provide  the  option  of  generating
+efficient  code,  and  they  are  consistent  with  the esthetic
+preferences of our community.
+
+\subsection{The Operations}
+
+  This section documents functions in the library module {\bf slow-vectors}
+. There is another library module called {\bf fast-vectors}. The 
+fast-vectors module provides alternate definitions for these
+functions. When the switch fast-vectors is non-nil the compiler will use
+these alternate definitions to produce effiecient code. However, 
+there will not be any verification that arguments are of correct type
+(in addition, it is assumed that numeric arguments are within a proper 
+range). If invalid arguments are used, then at best your code will not
+generate correct results, you may actually damage the PSL system.    
+There are two side effects to loading fast-vectors. The slow-vectors 
+module will be loaded and the switch fast-vectors will be set 
+to t.
+
+
+\de{vector-fetch}{(vector-fetch V:vector I:integer): any}{expr}
+{    Accesses an element of a PSL vector.  Vector  indexes  start
+    with  0.  The thing stored in that position of the vector is
+    returned.
+}
+
+\de{vector-store}{(vector-store V:vector I:integer X:any): None Returned}{expr}
+{    Stores into a PSL vector.  Vector indexes start with 0.
+}
+
+\de{vector-size}{(vector-size V:vector): integer}{expr}
+{    Returns the number of elements  in  a  PSL  vector.    Since
+    indexes  start with index 0, the size is one larger than the
+    greatest legal index.  See also just below.
+}
+
+\de{vector-upper-bound}{(vector-upper-bound V:vector): integer}{expr}
+{    Returns the greatest legal index for  accessing  or  storing
+    into a PSL vector.  See also just above.
+}
+
+\de{vector-empty?}{(vector-empty? V:vector): boolean}{expr}
+{    True  if  the  vector  has  no  elements  (its  size  is 0),
+    otherwise NIL.
+}
+\subsection{Built-in Operations on Vectors}
+
+These predate the fast-vectors (f-vector) and slow-vectors (s-vector)
+library modules.
+
+
+\de{getv}{(getv V:vector INDEX:integer): any}{expr}
+{    Returns  the    value   stored  at  position  INDEX  of  the
+    vector V.  The type mismatch error may   occur.    An  error
+    occurs  if    the  INDEX  does not lie within 0 ... (upbv V)
+    inclusive:
+}
+\begin{verbatim}
+    ***** INDEX subscript is out of range
+\end{verbatim}
+
+\de{putv}{(putv V:vector INDEX:integer VALUE:any): any}{expr}
+{    Stores VALUE in the vector V at  position  INDEX,  VALUE  is
+    returned.    A  type mismatch error will occur if V is not a
+    vector.  If INDEX is either negative or greater  than  (upbv
+    V) then an error occurs.
+}
+\begin{verbatim}
+    ***** Subscript `INDEX' in PutV is out of range
+\end{verbatim}
+
+\de{upbv}{(upbv U:any): {nil, integer}}{expr}
+{    Returns  the upper limit of U if U is a vector, or nil if it
+    is not.
+}
+\section{Word Vectors}
+
+  Word-vectors or w-vectors are vector-like structures, in which
+each element is a "word" sized, untagged entity.   This  can  be
+thought of as a special case of fixnum vector, in which the tags
+have been removed.
+
+\de{make-words}{(make-words UPLIM:integer INITVAL:integer):\\ 
+word-vector}{expr}
+{    Defines  and  allocates  space  for a Word-Vector with\\ 
+     (add1 UPLIM) elements, each initialized to INITVAL.
+}
+
+\de{make-bytes}{(make-bytes UPLIM:integer INITVAL:integer):\\ 
+byte-vector}{expr}
+{    Defines and allocates space for  a  byte-vector  with\\
+     (add1 UPLIM) elements, each initialized to INITVAL.
+}
+\section{General X-Vector Operations}
+
+  An   x-vector   is   either  a  vector,  string,  word-vector,
+or  byte-vector.    Each  may   have   several
+elements,  accessed  by  an integer index.  A valid index for an
+x-vector X is from 0 to (size X).  Thus an x-vector X will  have
+(add1 (size X)) elements. The functions described in this
+section may also be applied to lists.
+
+\de{size}{(size X:x-vector): integer}{expr}
+{    Returns the size of x-vector X, the size is the index of the
+    last element.
+}
+
+\de{indx}{(indx X:x-vector I:integer): any}{expr}
+{    Access the I'th element of an x-vector.  An error occurs  if
+    I is either negative or exceeds the size of X.
+}
+\begin{verbatim}
+    ***** Index `I' out of range for X in INDX
+\end{verbatim}
+
+\de{setindx}{(setindx X:x-vector I:integer A:any): any}{expr}
+{    Define  A  to  be  the I'th element of X.  If the index I is
+    outside the range of X then it is an error (see indx  for  a
+    description of the message).
+}
+
+\de{sub}{(sub X:x-vector B:integer S:integer): x-vector}{expr}
+{    Extract  a subrange of an x-vector, starting at B, producing
+    a new x-vector of size S.  Note that an x-vector of  size  0
+    has one entry.
+}
+
+\de{setsub}{(setsub X:x-vector I1:integer S:integer Y:x-vector):\\ 
+x-vector}{expr}
+{    
+    Store  subrange  of  Y  of  size  S  into  X starting at I1.
+    Returns Y.
+}
+
+\de{subseq}{(subseq X:x-vector LO:integer HI:integer): x-vector}{expr}
+{    Returns  an  x-vector  whose  size  is  (sub1  (-  HI  LO)),
+    beginning  with  the  element  of X with index LO.  In other
+    words, returns the subsequence  of  X  starting  at  LO  and
+    ending just before HI.
+}
+\begin{verbatim}
+    1 lisp> (setq a '[0 1 2 3 4 5 6])
+    [0 1 2 3 4 5 6]
+    2 lisp> (subseq a 4 6)
+    [4 5]
+\end{verbatim}
+
+\de{setsubseq}{(setsubseq Y:x-vector):Y:x-vector}{expr}
+{                                                  
+    The  size  of  Y  must be (sub1 (- HI LO)) and Y must be the
+    same type of x-vector as X.  Elements LO through  (sub1  HI)
+    in X are replaced by the elements of Y.  Y is returned and X
+    is changed destructively.
+}
+
+\begin{verbatim}
+    1 lisp> (setq a "0123456")
+    "0123456"
+    2 lisp> (setsubseq a 3 7 "ABCD")
+    "ABCD"
+    3 lisp> A
+    "012ABCD"
+\end{verbatim}
+
+\de{concat}{(concat X:x-vector Y:x-vector): x-vector}{expr}
+{    Concatenate  2  x-vectors.    Currently they must be of same
+    type.
+}
+
+\de{totalcopy}{(totalcopy S:any): any}{expr}
+{    Returns a unique copy of  the  entire  structure,  i.e.,  it
+    copies   everything   for   which  storage  is  allocated  -
+    everything but  inums  and  ids.    Like  copy  (Chapter  5)
+    totalcopy  will  not  terminate  when  applied  to  circular
+    structures.
+}
+\begin{verbatim}
+    1 lisp> (setq x '("ONE" 2)
+    1 lisp>       y (totalcopy x)
+    1 lisp>       z (copy x))
+    ("ONE" 2)
+    2 lisp> (eq (first x) (first y))
+    NIL
+    3 lisp> (eq (first x) (first z))
+    T
+\end{verbatim}

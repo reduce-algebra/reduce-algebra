@@ -1,0 +1,701 @@
+\chapter*{Characters and Strings}
+
+\section{Characters}
+
+  In  PSL  a  character is its ASCII code representation.  Using
+numeric codes to represent characters leads  to  programs  which
+are  difficult  to  read.    You  are  encouraged to use char to
+represent characters.
+
+
+\de{char}{(char U:id): integer}{macro}
+{    This macro is part of the USEFUL module.    The  char  macro
+    returns  the  ASCII  code  which  corresponds  to the single
+    character passed as an argument.  Char will  accept  alias's
+    for  characters.    An  alias  is  established by defining a
+    charconst property on the property list of the alias.    The
+    value  of  this  property  should  be  the ASCII code of the
+    character which is being aliased.  The following alias's are
+    defined when the {\bf useful} package is loaded.
+}
+
+\vspace{0.5cm}
+ \begin{center}
+\begin{tabular}{ll}
+    NULL\\
+    BELL\\
+    BACKSPACE\\
+    TAB\\
+    LF &         line feed\\
+    EOL &        end of line\\
+    FF &         form feed\\
+    CR &         carriage return\\
+    EOF &        end of file\\
+    ESCAPE &     may be abbreviated ESC\\
+    SPACE &      an alias is BLANK\\
+    RUBOUT &     may be abbreviated RUB\\
+    DELETE &     may be abbreviated DEL \\
+%\end TABELLE***
+\end{tabular}
+\end{center}
+\vspace{0.5cm}    
+				By default, the PSL reader converts  upper  case  alphabetic
+    characters to lower case.  This default is controlled by the
+    value  of the switch raise. A value of t indicates that the
+    conversion should be done. Assuming  raise  is  t, the
+    expression (char  a) refers to the character "a". The
+    character "A" is referenced by (char !A). The "!" is used as an
+    escape character, see chapter 12 for  more  information.  The
+    application of lower is said to modify the character.  Lower is not
+    a defined  function  but it  does  have  the  attribute 
+    char-prefix-function  on its property list.  The value of this 
+    property  is  a  function which  will modify the ASCII code of its
+    argument. Modifiers are control and meta (the modifier cntrl is an
+    abbreviation  for  control). The following example is a simplified
+    definition of char.
+
+\begin{verbatim}
+    (defmacro char (u)
+      (cond ((idp u) (or (get u 'charconst)
+                         (id2int u)))
+            ((digit-char u))
+            ((and (pairp u)
+                  (get (first u) 'char-prefix-function))
+             (list (get (first u) 'char-prefix-function)
+                   (list 'char (second u))))))
+\end{verbatim}
+    Notice that the digits have to be treated as a special case.
+    The  PSL reader converts a digit to a reference to a numeric
+    constant.  The definition of the alias space is
+
+\begin{verbatim}
+    (put 'space 'charconst 32)
+\end{verbatim}
+
+    If the type of the argument to char is not correct then  the
+    warning
+
+\begin{verbatim}
+    *** Unknown character constant `FORM'
+\end{verbatim}
+    is printed and the result will be zero.\\
+
+    The  USEFUL  package  also  defines the read macro \#. Read
+				macros are explained in detail in  chapter  12. When  the
+    reader encounters \#, char is applied to the next character. 
+				If  this next character is a lower case alphabetic character
+    then it will be converted to upper case if the switch  raise
+    is set to t.  If this next character is a read macro then it
+    will  be  applied.   Such  a  read  macro  should  return an
+    expression which is acceptable to char.
+
+\begin{verbatim}
+    1 lisp> #\a
+    65
+    2 lisp> #\`(a b c)
+    *** Unknown character constant: `(BACKQUOTE (A B C))'
+    0
+\end{verbatim}
+\subsubsection{Common LISP Functions on Characters}
+
+  The following functions are available by loading  the  library
+module {\bf chars}.
+
+  Common  LISP  provides  a  character  data type in which every
+character object has three attributes:  code,  bits,  and  font.
+The  bits  attribute  allows extra flags to be associated with a
+character.  The font attribute permits a  specification  of  the
+style  of  the  glyphs  (such as italics).  PSL does not support
+nonzero bit and font attributes.  Because of this, some  of  the
+Common  LISP  character functions described below have no affect
+or are not very useful as implemented in PSL.  They are  present
+for compatibility.
+
+  An  argument to any of the following functions should make use
+of char or one of the two read  macros  $\#/$  and 
+$\#\backslash$.    Since  a character in PSL is represented as its
+ASCII code it is possible to give a numeric argument to these
+functions.  However, the use of  numbers  makes  the  code 
+difficult  to  read and much less transportable.  The read macro
+$\#\backslash$ is described in the discussion of char above.  The
+read macro \#/ returns the ASCII code of  the next  character. 
+In contrast to
+$\#\backslash$, the switch raise is ignored and if the next character is a read
+macro it is not applied.
+
+\begin{verbatim}
+1 lisp> (eq (char (lower a)) #/a)
+T
+2 lisp> (eq (char (lower a)) #\a)
+NIL
+3 lisp> #/`
+96
+4 lisp> #\`
+*** Unknown character constant: `(BACKQUOTE !^Z)'
+0
+\end{verbatim}
+
+\de{standard-charp}{(standard-charp C:character): boolean}{expr}
+{    Returns t if the argument is one of the  95  ASCII  printing
+    characters.
+}
+\begin{verbatim}
+    1 lisp> (standard-charp (char a))
+    T
+    2 lisp> (standard-charp (char (control a)))
+    NIL
+\end{verbatim}
+
+\de{graphicp}{(graphicp C:character): boolean}{expr}
+{    Returns  t  if C is a printable character and nil otherwise.
+    Control and formatting characters are considered to  be  not
+    printable.  The space character is a printable character.
+}
+
+\de{string-charp}{(string-charp C:character): boolean}{expr}
+{    Returns  t  if  C is a character that can be an element of a
+    string.  Any character  that  satisfies  standard-charp  and
+    graphicp also satisfies string-charp.
+}
+
+\de{alphap}{(alphap C:character): boolean}{expr}
+{    Returns  t  if  C  is  an alphabetic character.  Liter is an
+    equivalent function.
+}
+
+\de{uppercasep}{(uppercasep C:character): boolean}{expr}
+{    Returns t if C is an upper case letter.
+}
+
+\de{lowercasep}{(lowercasep C:character): boolean}{expr}
+{    Returns t if C is a lower case letter.
+}
+
+\de{bothcasep}{(bothcasep C:character): boolean}{expr}
+{    In PSL this function is the same as alphap.
+}
+
+\de{digitp}{(digitp C:character): boolean}{expr}
+{    Returns t if C is a  digit  character  (optional  radix  not
+    supported).  An equivalent function is digit
+}
+
+\de{alphanumericp}{(alphanumericp C:character): boolean}{expr}
+{    Returns t if C is a digit or an alphabetic.
+}
+
+\de{char=}{(char= C1:character C2:character): boolean}{expr}
+{    Returns t if C1 and C2 are the same in all three attributes.
+}
+
+\de{char-equal}{(char-equal C1:character C2:character): boolean}{expr}
+{    Returns  t  if  C1 and C2 are similar.  Differences in case,
+    bits, or font are ignored by this function.
+}
+
+\de{char$<$}{(char$<$ C1:character  C2:character): boolean}{expr}
+{    Returns t if C1 is strictly less than C2. }
+
+\de{char$>$}{(char$>$ C1:character C2:character): boolean}{expr}
+{    Returns t if C1 is strictly greater than C2. }
+
+\de{char-lessp}{(char-lessp C1:character C2:character): boolean}{expr}
+{    Like char$<$ but ignores differences in case, fonts, and bits. }
+
+\de{char-greaterp}{(char-greaterp C1:character C2:character): boolean}{expr}
+{    Like char$>$ but ignores differences in case, fonts, and
+bits. }
+
+\de{char-code}{(char-code C:character): character}{expr}
+{    Returns the code attribute of C.  In PSL this function is an
+    identity function.
+}
+
+\de{char-bits}{(char-bits C:character): integer}{expr}
+{    Returns the bits attribute of C, which is always 0 in PSL.  }
+
+\de{char-font}{(char-font C:character): integer}{expr}
+{    Returns the font attribute of C, which is always 0 in PSL.  }
+
+\de{code-char}{(code-char I:integer): {character,nil}}{expr}
+{    The purpose of this function is to be able  to  construct  a
+    character  by  specifying the code, bits, and font.  Because
+    bits and font attributes are not used in PSL,  code-char  is
+    an identity function.
+}
+
+\de{character}{(character C:{character, string, id}): character}{expr}
+{    Attempts  to  coerce  C  to  be  a  character.    If  C is a
+    character, C is returned.  If C is a string, then the  first
+    character  of the string is returned.  If C is a symbol, the
+    first character of the print name of the symbol is returned.
+    Otherwise an error occurs.}
+\begin{verbatim}
+    ***** `FORM' cannot be coerced to a character
+\end{verbatim}
+\de{char-upcase}{(char-upcase C:character): character}{expr}
+{    If (lowercasep C) is true, then char-upcase returns the code
+    of the upper case of C.  Otherwise it returns the code of C.
+}
+
+\de{char-downcase}{(char-downcase C:character): character}{expr}
+{    If (uppercasep C) is true, then  char-downcase  returns  the
+    code  of the lower case of C.  Otherwise it returns the code
+    of C.
+}
+
+\de{digit-char}{(digit-char N:fixnum): integer}{expr}
+{    If N corresponds to a single digit then the character  which
+    represents  that digit is returned.  The Common LISP version
+    will  accept  an  optional  radix  argument,  this  function
+    assumes  a  radix  of  ten.    If N does not correspond to a
+    single digit then nil is returned.
+}
+
+\de{char-int}{(char-int C:character): integer}{expr}
+{    Converts  character  to  integer.    This  is  the  identity
+    operation in PSL.
+}
+
+\de{int-char}{(int-char I:integer): character}{expr}
+{    Converts  integer  to  character.    This  is  the  identity
+    operation in PSL.
+}
+\section{Strings}
+
+\subsection{String Creation and Copying}
+
+  The  following  are  built-in  string  creation  and   copying
+functions:
+
+
+\de{allocate-string}{(allocate-string SIZE:integer): string}{expr}
+{    Constructs  and  returns a string with SIZE characters.  The
+    contents of the string are not initialized.
+}
+
+\de{make-string}{(make-string SIZE:integer INITVAL:integer): string}{expr}
+{    Constructs and returns a string with  SIZE characters,  each
+    initialized to the ASCII code INITVAL.
+}
+
+\de{mkstring}{(mkstring UPLIM:integer INITVAL:integer): string}{expr}
+{    An  old form of make-string.  Returns a string of characters
+    all initialized to INITVAL, with upper  bound  UPLIM.    The
+    returned string contains a total of (add1 UPLIM) characters.
+}
+
+\de{string}{(string [ARGS:integer]): string}{nexpr}
+{    Create string of elements from  a list of ARGS.
+}
+\begin{verbatim}
+    1 lisp> (string 65 66 67)
+    "ABC"
+\end{verbatim}
+
+\de{copystringtofrom}{(copystringtofrom NEW:string OLD:string): NEW:string}{expr}
+{    Copy  all  characters from old  into new.  This function  is
+    destructive.
+}
+
+\de{copystring}{(copystring S:string): string}{expr}
+{    Copy to new string, allocating space.
+}
+\subsection{About the Basic String Operations}
+
+  The representation of strings  is  very  similar  to  that  of
+vectors.   Due to this similarity, there are functions which may
+be  applied  to  either  data  type.    Such  functions  provide
+primitive  operations  on  strings.    PSL  provides  many other
+functions specific to  strings  which  are  defined  in  various
+library modules.
+
+\subsection{The Operations}
+
+  This   section  documents  functions  in  the  library  module
+{\bf slow-strings (s-strings)}. There is another library module called
+{\bf fast-strings (f-strings)}. The fast-strings module provides alternate
+definitions for these functions.  When the  switch  fast-strings
+is  non-nil the compiler will use these alternate definitions to
+produce  efficient  code.    However,  there  will  not  be  any
+verification that arguments are of correct type (in addition, it
+is  assumed  that  numeric arguments are within a proper range).
+If invalid arguments are used, then at best your code  will  not
+generate  correct  results,  you  may  actually  damage  the PSL
+system.  There are two side  effects  to  loading  {\bf fast-strings}
+The {\bf slow-strings}  module   will  be  loaded  and  the  switch
+fast-strings will be set to t.  For more information on the
+switch fast-strings see Chapter 19.
+
+
+\de{string-fetch}{(string-fetch S:string I:integer): any}{expr}
+{    Accesses  an  element  of  a  PSL  string.  Indexes are zero
+    based.  The ASCII character stored in that position  of  the
+    string is returned.
+}
+
+    Characters are represented by inums.  You should not rely on
+    this  when  you  write  code.    Such  code cannot be easily
+    transported to other systems where either  the  encoding  is
+    different or where characters are a seperate data type.
+
+
+\de{string-store}{(string-store S:string I:integer X:char): None Returned}{expr}
+{    Stores into a PSL string.  String indexes start with 0.
+}
+
+\de{string-length}{(string-length S:string): integer}{expr}
+{    Returns  the  number  of  elements  in  a PSL string.  Since
+    indexes start with index 0, the size is one larger than  the
+    greatest   legal   index.      Compare  this  function  with
+    string-upper-bound, documented below.
+}
+
+\de{string-upper-bound}{(string-upper-bound S:string): integer}{expr}
+{    Returns the greatest legal index for  accessing  or  storing
+    into   a   PSL   string.      Compare   this  function  with
+    string-length, documented above.
+}
+
+\de{string-empty?}{(string-empty? S:string): boolean}{expr}
+{    True if  the  string  has  no  elements  (its  size  is  0),
+    otherwise nil.
+}
+
+\section{Common LISP String Functions}
+
+  A  Common LISP compatible package of string functions has been
+implemented in PSL, obtained by loading the {\bf strings} module.
+This  section  describes the  {\bf strings}  module, including a few
+functions in it that are not Common LISP functions.
+
+\subsection{String comparison:}
+
+\de{string=}{(string= S1:string S2:string): boolean}{expr}
+{    Compares two strings S1 and S2, case sensitive.
+}
+
+\de{string-equal}{(string-equal S1:string S2:string): boolean}{expr}
+{    Compare two strings S1 and S2, ignoring case, bits and font.
+}					
+  
+The following string comparison functions  are  extra-boolean.
+If  the  comparison  results  in  a value of t, the index of the
+first character position at which the strings fail to  match  is
+returned.    The  result  can  also be thought of as the longest
+common prefix of the two strings.
+
+\de{string$<$}{(string$<$ S1:string S2:string): extra-boolean}{expr}
+{    Lexicographic comparison of strings.  Case sensitive.
+}
+
+\de{string$>$}{(string$>$ S1:string S2:string): extra-boolean}{expr}
+{    Lexicographic comparison of strings.  Case sensitive.
+}
+
+\de{string$<$=}{(string$<$= S1:string S2:string):
+extra-boolean}{expr} {    Lexicographic comparison of strings. 
+Case sensitive. }
+
+\de{string$>$=}{(string$>$= S1:string S2:string):
+extra-boolean}{expr} {    Lexicographic comparison of strings. 
+Case sensitive. }
+
+\DE{string$<>$}{(string$<>$ S1:string S2:string):
+extra-boolean}{expr} {    Lexicographic comparison of strings. 
+Case  sensitive.    In
+    Common LISP the function is named string/=.
+}
+
+\DE{string-lessp}{(string-lessp S1:string S2:string): extra-boolean}{expr}
+{    Lexicographic  comparison  of strings.  Case differences are ignored.
+}
+
+\DE{string-greaterp}{(string-greaterp S1:string S2:string): extra-boolean}
+{expr}
+{    Lexicographic comparison of strings.  Case  differences  are ignored.
+}
+
+\DE{string-not-greaterp}
+{(string-not-greaterp S1:string S2:string): extra-boolean}{expr}
+{    Lexicographic  comparison  of strings.  Case differences are ignored.
+}
+
+\de{string-not-lessp}{(string-not-lessp S1:string S2:string): extra-boolean }
+{expr}
+{    Lexicographic comparison of strings.  Case  differences  are ignored.
+}
+
+\de{string-not-equal}
+{(string-not-equal S1:string S2:string): extra-boolean}{expr}
+{    Lexicographic  comparison  of strings.  Case differences are ignored.
+}
+		
+\subsection{String Concatenation:}
+
+\de{string-concat}{(string-concat [S:string]): string}{macro}
+{    Concatenates all of  its  string  arguments,  returning  the
+    newly created string.  Not in Common LISP.
+}
+
+\de{string-repeat}{(string-repeat S:string I:integer): string}{expr}
+{  Appends copy of S to itself total of I-1 times.  Not in Common LISP.
+}\\
+
+\subsection{Transformation of Strings:}
+
+\de{substring}{(substring S:string LO:integer  HI:integer):
+string}{expr} {    Same as subseq, but the first argument  must  be 
+a  string.
+    Returns a substring of S of size (sub1 (- HI LO)), beginning
+    with the element with index LO.  Not in Common LISP.
+}
+
+\DE{string-trim}{(string-trim BAG:\{list, string\} S:string): string}{expr}
+{    Remove  leading and trailing characters in BAG from a string
+    S.
+}
+\begin{verbatim}
+    1 lisp> (string-trim "ABC" "AABAXYZCB")
+    "XYZ"
+    2 lisp> (string-trim (list (char a)
+    2 lisp>                    (char b)
+    2 lisp>                    (char c))
+    2 lisp>              "AABAXYZCB")
+    "XYZ"
+    3 lisp> (string-trim '(65 66 67) "ABCBAVXZCC")
+    "VXZ"
+\end{verbatim}
+
+\DE{string-left-trim}{(string-left-trim BAG:\{list, string\} S:string): string}
+{expr}
+{    Remove leading characters from string.
+}
+
+\de{string-right-trim}{(string-right-trim BAG:\{list, string\} S:string): string}
+{expr}
+{    Remove trailing characters from string.
+}
+
+\de{string-upcase}{(string-upcase S:string): string}{expr}
+{    Copy and raise all alphabetic characters in string.
+}
+
+\de{nstring-upcase}{(nstring-upcase S:string): string}{expr}
+{    Destructively raise all alphabetic characters in string.
+}
+
+\de{string-downcase}{(string-downcase S:string): string}{expr}
+{    Copy and lower all alphabetic characters in string.
+}
+
+\de{nstring-downcase}{(nstring-downcase S:string): string}{expr}
+{    Destructively lower all alphabetic characters in string.
+}
+
+\de{string-capitalize}{(string-capitalize S:string): string}{expr}
+{    Copy and raise first letter of all words  in  string;  other
+    letters in lower case.
+}
+
+\de{nstring-capitalize}{(nstring-capitalize S:string): string}{expr}
+{    Destructively raise first letter of all words; other letters
+    in lower case.
+}\\
+
+\subsection{Type Conversion:}
+
+\de{string-to-list}{(string-to-list S:string): list}{expr}
+{    Unpack string characters into a list.  Not in Common LISP.
+}
+
+\de{string-to-vector}{(string-to-vector S:string): vector}{expr}
+{    Unpack string characters into a vector.  Not in Common LISP.
+}\\
+
+\subsection{Other:}
+
+\de{string-length}{(string-length S:string): integer}{expr}
+{    Last  index of a string, plus one.  Not in Common LISP.  Use
+    string-size.
+}
+
+\de{rplachar}{(rplachar S:string I:integer  C:character): character}{expr}
+{    Store a character C in a string S at position I.
+}
+
+\subsection{Substring Comparison}
+
+  The library module STRING-SEARCH provides efficient  functions
+for comparing a string against a substring of another string.
+
+\de{substring=}{(substring= S1:string S2:string START:integer):
+boolean}{expr} { Returns true if there is a substring of S2
+starting at START and string= to S1, otherwise returns nil. }
+
+    Similar to
+
+\begin{verbatim}
+(string= S1 (substring S2 START (+ START (string-length S1))))
+\end{verbatim}
+    but  note  that  this returns nil (no error is signalled) if
+    there are fewer than
+
+\begin{verbatim}
+    (string-length S1)
+\end{verbatim}
+    characters from position START through the end of S2.
+
+\DE{substring-equal}
+{(substring-equal S1:string S2:string START:integer): boolean}{expr}
+{   
+    Returns true if there is a substring of S2 starting at START
+    and string-equal to S1, otherwise returns nil.
+}
+
+Similar to
+
+\begin{verbatim}
+(string-equal S1 (substring S2 START (+ START (string-length S1))))
+\end{verbatim}
+    but note that this returns nil (no error  is  signalled)  if
+    there are fewer than
+
+\begin{verbatim}
+(string-length S1)
+\end{verbatim}
+    characters from position START through the end of S2.
+
+\subsection{Searching for Strings}
+
+The library module {\bf str-search} provides functions for
+searching for a string within another string.   These  functions
+are efficiently implemented.
+
+  The  two  strings  involved  in these searching operations are
+referred to as the "domain" and the "target".   These  functions
+search  for  an  occurrence  of  the  "target" string within the
+"domain" string.
+
+  The operations for string searching return the  index  of  the
+leftmost  character  in  the  first  matching part of the domain
+string that is found, starting from the left.  If  no  match  is
+found, nil is returned.
+
+\DE{string-search}{(string-search TARG:string DOM:string):\{integer,
+nil\}}{expr} 
+{Searches  for  the  leftmost occurrence of the target
+in the domain. This function is case-sensitive. If  passed  two
+strings, Common LISP "search" will give the same results.
+}
+
+\DE{string-search-from}{(string-search-from TARG:string DOM:string
+START:integer):\\
+\{integer, nil\}}{expr} {
+    Like  string-search,  but  the  search effectively starts at
+    index START in the domain.
+}
+
+\DE{string-search-equal}{(string-search-equal TARG:string
+DOM:string):\{integer, nil\}}{expr}
+{   Like  string-search  except   that   the   comparisons   are
+    case-insensitive.  }
+
+\DE{string-search-from-equal}
+{(string-search-from-equal TA:string D:string ST:integer):\\
+\{integer, nil\}}
+{expr}
+{ Like  string-search-from  except  that  the  comparisons are
+    case-insensitive.
+}
+
+\subsection{Reading and Writing Strings}
+
+  The library module {\bf str-input} provides  some  facilities  to
+support  taking  input  from  strings.  Among other things, this
+permits  a  user  to  obtain   a   number   from   its   printed
+representation using the PSL number parser.
+
+
+\de{with-input-from-string}{(with-input-from-string HEADER:list
+[BODY:form]):any}{macro} 
+{    The argument HEADER should be a two element list. \\
+The first element should be an identifier, the second a string.
+{\tt ($<channel> <string>$)}.
+    The argument $<string>$ is treated as if it were the text of a
+    file.    The argument $<channel>$ is bound to an input channel
+    which is opened  to  give  access  to  $<string>$.   Once  the
+    channel  has  been  opened, each form BODY is evaluated (the
+    forms are evaluated in a  left  to  right  order).    It  is
+    expected  that  these forms will be used to read and process
+    input from  $<string>$.    The  value  of  the  last  form  is
+    returned.  Once the application of with-input-from-string is
+    complete the input channel will be closed.
+}
+
+\begin{verbatim}
+    (de string-to-words (string)
+      (with-input-from-string
+        (channel string)
+        (do ((result nil (aconc result item))
+             (item (channelread channel) (channelread channel)))
+            ((eq item $eof$) result))))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (string-to-words "DOCUMENTATION IS FUN")
+    (DOCUMENTATION IS FUN)
+\end{verbatim}
+
+\de{string-read}{(string-read STR:string): any}{expr}
+{    Reads  one  s-expression  from the string STR.  The function
+    channelread is used to  do  this.    Note  that  it  is  not
+    necessary   to   terminate   the  string  with  a  delimiter
+    character.  An end of file character is also  considered  to
+    be a delimiter character.
+}
+\begin{verbatim}
+    1 lisp> (string-read "TOKEN")
+    TOKEN
+    2 lisp> (string-read "TWO TOKENS")
+    TWO
+\end{verbatim}
+    Notice  that  characters  beyond  the first s-expression are
+    ignored.    This   function   is   defined   in   terms   of
+    with-input-from-string.
+
+\begin{verbatim}
+    (de string-read (string)
+      (with-input-from-string
+        (ch string)
+        (channelread ch)))
+\end{verbatim}
+  The  library  module {\bf string-output} provides a facility for
+writing to strings.  The function bldmsg provides the capability
+to construct a string using  formatting  directives.    However,
+complicated  strings  can  be  constructed more easily using the
+macro with-output-to-string. For example, longer strings can  be
+constructed  by  including the channellinelength function; items
+can be printed to the string  incrementally  (in  a  stream-like
+fashion) from a loop
+
+
+\de{with-output-to-string}
+{(with-output-to-string HEADER:list [BODY:form]): string}{macro}
+{    The argument HEADER should be a two element list.  The first
+    element  should be an identifier.  The second element can be
+    either a string or nil (in  which  case  a  default  initial
+    string  is  allocated) -- in either case, the initial string
+    is extened as necessary.
+}
+    The written  string  is  return  as  a  result  (this  is  a
+    substring  copy  of  the  string  used  for  writing).   For
+    example,
+\begin{verbatim}
+    (setf row
+      (with-output-to-string (wchan nil)
+        (channellinelength wchan 350)
+        (for (in tab '(0 100 200 300))
+         (in str '("A" "B" "C" "D"))
+         (do (channelprintf wchan "%t%w" tab str))
+         )))
+\end{verbatim}

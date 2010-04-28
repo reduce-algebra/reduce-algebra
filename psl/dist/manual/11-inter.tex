@@ -1,0 +1,339 @@
+%\begin{verbatim}
+\chapter*{The Interpreter}
+
+\section{Evaluator Functions Eval and Apply}
+
+  The   evaluator  is  responsible  for  the  execution  of  PSL
+programs. The evaluator is available to  the  user  through  the
+function  eval.   This function gives the operational semantics,
+or meaning, to the programming constructs found in  PSL.    With
+eval  we  have  the ability to evaluate constructed expressions.
+The ability to evaluate  lists  which  have  the  appearance  of
+expressions highlights the program data duality of LISP.
+
+  Apply   represents   the  piece  of  the  evaluator  which  is
+responsible for invoking functions.    Any  list  which  is  not
+quoted  is  taken to be a function application by the evaluator.
+Apply  provides  the  user  with  a  tool  to  explicity  invoke
+functions.
+
+  In  eval, apply and the support functions which follow, errors
+are continuable.  When an error occurs the user is permitted  to
+correct  the  offending  expression  or perhaps define a missing
+function (see Chapter 16 for more information).  If  the  number
+of  arguments  to  a  function  is  not  equal  to the number of
+parameters specified by the definition then the error
+
+\begin{verbatim}
+***** Argument number mismatch
+\end{verbatim}
+occurs.  If there is an id in the function position of  a  form,
+and there is no function definition associated with it, an error
+occurs and the message
+
+\begin{verbatim}
+***** `NAME' is an undefined function
+\end{verbatim}
+is  printed.  If the function position is not occupied by an id,
+lambda expression or code-pointer then it is an error and one of
+the following is printed.
+
+\begin{verbatim}
+***** Ill-formed expression in EVAL `FORM'
+\end{verbatim}
+\begin{verbatim}
+***** Ill-formed expression `FORM'
+\end{verbatim}
+The first message is displayed when the error is detected within
+eval.
+
+\de{eval}{(eval U:form): any}{expr}
+{    The value of the form U  is  computed.    Since  eval  is  a
+    function  of  type expr it will receive its argument already
+    evaluated. Since it will then evaluate the argument  itself,
+    it  may  seem  as  though the evaluation is done twice.  The
+    argument U cannot access local variables.
+}
+    
+As a basis for discussion, an approximation to the actual
+definition of eval is given.
+
+\begin{verbatim}
+    (de eval (e)
+      (cond ((is-constant e) (denote e))
+            ((idp e) (valuecell e))
+            (t (let ((fun (first e))
+                     (args (rest e)))
+                 (cond ((and (idp fun)
+                             (not (funboundp fun)))
+                        (selectq (first (getd fun))
+                          (expr (apply fun (evlis args)))
+                          (fexpr (apply fun (list args)))
+                          (nexpr   
+                            (apply fun 
+                                   (list (evlis  args))))
+                          (macro 
+                            (eval (apply fun (list e))))))
+                       ((or (codep fun)
+                            (is-lambda fun))
+                        (apply fun (evlis args)))
+                       (t (error)))))))
+\end{verbatim}
+    Eval  first  determines  if  its  argument  is  a  constant.
+    Examples  of  constants  are  numbers,  strings, vectors and
+    quoted expressions.  For the most part, the function  denote
+    will  simply  return its argument.  However, if the constant
+    is a quoted expression then the expression  is  returned  as
+    value.
+
+\begin{verbatim}
+    1 lisp> (eval "STRING")
+    "STRING"
+    2 lisp> (eval (mkquote '(one)))
+    (ONE)
+\end{verbatim}
+    An  identifier  is  considered  a variable.  In such a case,
+    eval  returns  the  contents  of  the  value  cell  of   the
+    identifier.  Of course things are not quite all that simple.
+    This  raises  a  conceptual  issue  about  when  to find the
+    values.  The issue is one of scoping rules.   Scoping  rules
+    come  into  play when functions are defined.  In particular,
+    this involves free variables (those variables which are  not
+    parameters  of  the  definition).    One  approach is static
+    scoping.  This strategy locates the values of free variables
+    at the time the function is defined.    PSL  uses  a  second
+    approach  called  dynamic scoping.  Using this approach, the
+    values of  free  variables  are  not  determined  until  the
+    function is applied.
+
+\begin{verbatim}
+    1 lisp> (setq number 0)
+    0
+    2 lisp> (de bar () (foo) (add1 number))
+    BAR
+    3 lisp> (de foo () (setq number 1))
+    FOO
+    % When bar was defined the value of number was 0,
+    %	during the evaluation
+    % of bar the application of foo changed the value 
+    %	of number to 1. If
+    % static scoping were being used then the result
+    %	would be 1 instead of 2.
+    4 lisp> (bar)
+    2
+\end{verbatim}
+    The  PSL  environment (the values associated with variables)
+    will typically change during evaluation.  When a function is
+    applied, the  variables  specified  by  its  definition  are
+    associated  with  the  arguments  of  the application.  As a
+    result, the value of each variable has changed.    As  noted
+    above,  the  value of a variable is found in its value cell.
+    However, the definition and access of  values  depends  upon
+    the  binding strategy being used by the implementation.  Two
+    common techniques are shallow binding (used in  the  current
+    implementation  of  PSL), and deep binding.  In a deep bound
+    system the environment is defined by a table  of  names  and
+    values.  Each time a variable is set to a value, an entry is
+    added  to the table.  To locate the value of a variable this
+    table must be searched.  When there are multiple definitions
+    for a given variable within this table,  the  convention  is
+    adopted  that  it  is  always  the  latest  value  which  is
+    retrieved.  With this strategy we can easily restore an  old
+    value,  by simply removing the current value from the table.
+    With shallow binding, the value of a variable is  positioned
+    with  the  id  which  represents the variable.  In this case
+    there is no need to search for a value.    It  is  known  to
+    always  be  in  a  fixed location, the value cell of the id.
+    This  second  technique  makes  finding  values  much   more
+    efficient,  but  it is much more difficult now to keep track
+    of previous values.\\
+
+    If the expression being evaluated is neither a constant or a
+    variable it is assumed to be a  function  application  form.
+    When  we  apply  the function definition to the arguments we
+    associate  the  parameters  of  the  definition   with   the
+    arguments.    This  process of association is called binding
+    and simulates substitution.  Within the new environment  the
+    body  of  the  function  is  evaluated.    Notice  we do not
+    explicitly substitute the values for  the  variables  in  an
+    expression.
+
+    % Assume that THIS does not have a value, during the evaluation of the
+    % body of the lambda expression the value of THIS will be defined to be 0.
+\begin{verbatim}
+    1 lisp> (eval '((lambda (this) (add1 this)) 0))
+    1
+    % If an expression is neither a constant or
+    %	a variable then it is assumed
+    % to be a function application form.
+    2 lisp> (eval '(one))
+    ***** `ONE' is an undefined function
+\end{verbatim}
+    Eval  first  looks  at  the function position, making sure a
+    function definition is available.  The manner in  which  the
+    function  is  applied depends upon the type of the function.
+    For both exprs and nexprs the arguments are evaluated  in  a
+    left  to  right  order  by the function evlis.  Since nexprs
+    expect a single argument, the arguments are gathered into  a
+    list.   The arguments to an fexpr are not evaluated but they
+    are gathered into a list.  The remaining  function  type  to
+    consider  is macro.  The entire function application form is
+    passed to macros.  The result of applying the macro is  then
+    evaluated.
+
+
+\de{apply}{(apply FUN:{id, function} ARGS:any-list): any}{expr}
+{    Applies the function FUN to the list of arguments ARGS.  The
+    following is an approximation of the real code.
+}
+\begin{verbatim}
+    (de apply (fun args)
+      (cond ((and (idp fun) (not (funboundp fun)))
+             (if (fcodep fun)
+               (codeapply (getfcodepointer fun) args)
+               (lambdaapply (get fun '*lambdalink) args)))
+            ((codep fun) (codeapply fun args))
+            ((is-lambda fun) (lambdaapply fun args))
+            (t (error))))
+\end{verbatim}
+    Apply   uses   the   additional   functions   codeapply  and
+    lambdaapply to actually evaluate the body of  the  function.
+    The  arguments  in ARGS are not evaluated (for example, by a
+    call on evlis).  This may seem odd since  the  type  of  the
+    function  may  be  expr  or  nexpr.   Apply assumes that the
+    arguments are in the form required for binding to the formal
+    parameters of FUN.  Getcodepointer returns the  code-pointer
+    associated  with an id.  The body of a function which is not
+    compiled is found on the property list of  its  name,  under
+    the *lambdalink indicator.
+
+\begin{verbatim}
+    1 lisp> (setq fn 'add1)
+    ADD1
+    2 lisp> (de fn (a) (sub1 a))
+    FN
+    3 lisp> (apply fn '(1))
+    2
+    4 lisp> (apply 'fn '(1))
+    0
+    5 lisp> (apply 'cons '((add1 2) 3))
+    ((add1 2) . 3)     % NOT (3 . 3)
+\end{verbatim}
+
+\de{funcall}{(funcall FUN:{id, function} [ARGUMENT:any]): any}{macro}
+{    Equivalent  to  (apply  FUN (list ARGUMENT1 ... ARGUMENTN)).
+    This function is defined in the USEFUL module.
+}
+\section{Support Functions for Eval and Apply}
+
+\de{evlis}{(evlis U:any-list): any-list}{expr}
+{    Evlis evaluates each element of U  The list  of  results  is
+    returned.
+}
+\begin{verbatim}
+    (de evlis (p)
+      (if (not (pairp p))
+        ()
+        (cons (eval (first u))
+              (evlis (rest u)))))
+\end{verbatim}
+
+\de{idapply}{(idapply FN:id U:any-list): any}{expr}
+{    Applies  the  function referenced by FN to the argument list
+    U.  An equivalent form would be (apply FN U).   The  use  of
+    idapply  is  more  efficient.    If FN is not an id it is an
+    error and the message
+}
+\begin{verbatim}
+    ***** Ill-formed function expression
+\end{verbatim}
+    is printed.
+
+\de{codeapply}{(codeapply FN:code-pointer U:any-list): any}{expr}
+{    The body of compiled function referenced by FN  is  executed
+    with arguments in U.  }
+
+\de{codeevalapply}{(codeevalapply FN:code-pointer U:any-list): any}{expr}
+{    (codeevalapply  FN  U)  is  essentially (codeapply FN (evlis
+    U)).  The difference between the two is that  the  first  is
+    more efficient than the second.  }
+
+\de{evprogn}{(evprogn U:form-list): any}{expr}
+{    The  forms in U are evaluated in a left to right order.  The
+    value of the last is returned.  This  function  is  used  in
+    situations  where  an  application of progn is implied.  For
+    example, the definition of  many  functions  consists  of  a
+    sequence  of  expressions.  Each expression is evaluated and
+    the value of the last is returned, without  having  to  wrap
+    the definition inside a progn.}
+\begin{verbatim}
+    (de evprogn (u)
+      (if (pairp u)
+        (progn (while (pairp (cdr u))
+                 (eval (car u))
+                 (setq u (cdr u)))
+               (eval (car u)))
+        nil))
+\end{verbatim}
+\section{Special Evaluator Functions, Quote and Function}
+
+\de{quote}{(quote U:any): any}{fexpr}
+{    Quote  is  used  to distinguish a constant s-expression from
+    one which is to be evaluated.  The return value is U.  Since
+    quote is an fexpr U is never evaluated.  }
+
+\de{mkquote}{(mkquote U:any): list}{expr}
+{    Returns the result of (list 'quote U).  }
+
+\de{function}{(function FN:function): function}{fexpr}
+{    Function is similar to quote, except that its argument is a
+    reference to a function. FN is either the name of a
+    function, a lambda expression, or a code-pointer. It is not
+    correct to use  quote  to  suppress  the  evaluation  of  an
+    expression  which  represents  a  function. The misuse of
+    function can effect the way in which code is compiled, in
+    particular, application of the mapping functions  (see
+    Chapter ??? for more information).
+}
+    Use of the read macro \#' will result in  an  application  of
+    function.  For example, if the reader encounters  \#'fun  the
+    expression (FUNCTION FUN) will be returned. This read macro
+    is part of the {\tt useful} package.
+
+\section{Support Functions for Macro Evaluation}
+
+\de{expand}{(expand L:list FN:function): list}{expr}
+{    Expand is a convenient way  to  expand  a  certain  type  of
+    macro.   PSL  supports  functions like plus which accept any
+    number of arguments.  The macro plus is actually defined  in
+    terms of the binary operator plus2.  For example,
+}
+\begin{verbatim}
+    (plus 1 2 3)
+\end{verbatim}
+    expands into
+
+\begin{verbatim}
+    (plus2 1 (plus2 2 3))
+\end{verbatim}
+    FN  should  be a function which accepts two arguments, and L
+    should be a list of values which are  acceptable  to  FN  as
+    arguments.
+
+\begin{verbatim}
+    (de expand (l fn)
+      (cond ((not (pairp l)) l)
+            ((not (pairp (cdr l))) (car l))
+            (t (list fn (car l) (expand (cdr l) fn)))))
+
+    1 lisp> (dm plus (a) (expand (rest a) 'plus2))
+    plus
+    2 lisp> (macroexpand '(plus 1 2 3))
+    (plus2 1 (plus2 2 3))
+\end{verbatim}
+
+\de{robustexpand}{(robustexpand L: list  FN: function
+ EMPTYCASE: form): list}{expr}      
+{    If the list L is empty then EMPTYCASE is evaluated,
+    otherwise the result of (expand L FN) is returned.
+}

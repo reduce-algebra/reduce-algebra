@@ -1,0 +1,174 @@
+Addendum to the PSL 3.4 and REDUCE 3.3 Documentation
+for the Unix based workstation versions distributed by 
+Konrad-Zuse-Zentrum Berlin
+
+
+
+At Konrad-Zuse-Zentrum Berlin (ZIB) the implementation of Portable
+Standard LISP (PSL), originally developed at the University of Utah
+was refined and enlarged for the SUN 3 and SUN 4 workstations
+running SunOs.
+New Versions for SUN386i (SunOs) and the Mips based systems 
+(Silicon Graphics Iris (IRIX) and Digital Equipment DEC 3100
+(Ultrix)) have been developed following the same guidelines. 
+Descriptions of the modifications have not yet been incorporated 
+into the User and Installation guides for PSL or REDUCE.
+The differences and new features are described below. 
+
+
+
+
+
+
+
+
+
+
+
+Please address further question, comments or problem reports to 
+
+             Konrad-Zuse-Zentrum
+             Abteilung SYMBOLIK
+             Heilbronner Str 10
+             D-1000 Berlin 31
+             Fed. Rep. of Germany
+
+
+
+or (preferably) via email to     melenk@sc.zib-berlin.dbp.de
+
+
+
+
+
+The Portable Common LISP subset (PCLS) developed at University of Utah
+is not yet supported.
+ 
+
+
+The storage for LISP items (heap) is handled dynamically, i.e. the heap
+is enlarged automatically when the number of free items is less than a
+critical level. The user may also enlarge the heap space by a command.
+The action to enlarge the heap by rebuilding the binary files, as decribed
+in the Users manual is no longer needed.
+
+Enlarging the heap via user command is done :
+
+        PSL                               REDUCE
+
+   (set-heap-size nnnn)             symbolic set!-heap!-size nnnn;
+
+
+where nnnn is the new number of heap items. The function returns nnnn, if
+the memory size was enlarged and NIL if the request was denied, e.g. when
+the system did not allocate more memory for the user process.
+The heap space cannot be shrinked.
+If nnnn is equal to NIL, the present size of heap is returned, i.e:             
+
+
+        PSL                               REDUCE
+
+   (set-heap-size NIL)             symbolic set!-heap!-size NIL;
+
+
+The actual heap size is also printed at garbage collection, if the switch
+gc is on, e.g. by      (on gc)  or   on gc;    .       
+The garbage collection statistics displays the gc cpu time percentage.
+If this percentage is relatively high, one should try to
+enlarge heap as described above. The automatic enlargement is driven by
+two global variables (amounts of items) :
+Heap!-warn!-level (default 30000) and heapenlarge!* (default: 250000).
+
+If the number of free LISP items is less than Heap!-warn!-level, the PSL
+or REDUCE system tries to enlarge the heap size by heapenlarge!* items.
+         
+
+
+The limits for the user virtual address space in either PSL or REDUCE
+is (at the moment):
+
+         SUN 3               16 MByte
+         SUN 386i           128 MByte
+         SUN 4              128 MByte 
+         Mips Systems       256 MByte
+
+Since all systems use a two space copying garbage collector, one LISP 
+item costs 8 byte of memory and the maximum amount of heap items varies 
+between approx 1,5 M (Sun 3) and approx 30 M (Mips).   
+
+
+In some rare cases a "Binding stack overflow" can occur. 
+Normally this is due to a problem formulation which involves infinte
+recursion. For very big problems, a correct problem may exhaust the binding
+stack space, in this case the user may increase the size of the 
+Binding stack by: (default is 2000)
+
+        PSL                               REDUCE
+ 
+   (set-bndstk-size nnnn)       symbolic set!-bndstk!-size nnnn;
+ 
+
+
+The arithmetic and specially the infinite precision arithmetic for PSL
+and REDUCE was dramatically improved. This software benefits from the
+usage of hardware specific instructions for double precision arithmetic
+(if such instructions are provided by the processor).
+The load module is called nbig30, which is loaded into REDUCE by the 
+usual build procedure and should be used in PSL instead of nbig.
+  
+The floating point coprocessors of the systems are used for all
+floating point calculations. 
+
+
+
+At the moment the overflow of the system stack is not handled gently.
+An overflow causes a 'Illegal Instruction' trap and a core dump (if
+not prevented by setting a limit to core files). We hope that later
+versions of PSL (and partially of Operating systems) 
+will have an improved handling for that.
+
+
+For issueing commands to the operating system the "sytem" interface
+has been defined previously, e.g.
+
+
+   (system "ls")              or              system "ls";
+
+
+will list the names of the files in the current working directory.
+The system command uses the system call "system" which creates a new
+(Bourne) shell to process the command enclosed in the string.
+Some operating system command are useful only is they are issued
+in the same shell as the running REDUCE or PSL run, e.g.
+
+
+    (system "cd hugo")        or              system "cd hugo";
+
+
+will NOT change the current directory for the next REDUCE or PSL
+commands. To provide the user with such "built-in" system calls a
+number of Unix commands are available in REDUCE or PSL, e.g.
+
+
+    (cd "hugo")               or              symbolic cd "hugo";
+
+
+will change the current directory for the next REDUCE or PSL commands,
+if "hugo" is a valid directory name. 
+The most widely used "built-in" commands available in this version are:
+ 
+   (cd  "dirname")                         symbolic cd  "dirname";           
+   (getenv "string")             or           symbolic getenv "string";            (setenv "string" "string")           symbolic setenv("string","string");
+ 
+
+The code generated by the PSL compiler can be inspected by loading
+the utility disassemble (not yet for SUN386i) and calling the
+function (disassemble '<functionname>) afterwards. 
+
+
+
+Some other utilities have been created in the process of porting the
+software and for performance measurements. They are not of primary
+interest for the user.  
+
+

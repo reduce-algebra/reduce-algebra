@@ -1,0 +1,367 @@
+\documentstyle[11pt]{article}
+% Pass group opnote title page and macros.  % Global definitions
+\def\opnumber#1{\number\yearonly -#1}
+\def\opnote#1{\gdef\opheader
+     {\xiipt Utah PASS Project OpNote \opnumber{#1}\hfill\today
+      \markright{\today\hfill PASS Opnote \opnumber{#1}\hfill}}}
+\def\mpr#1{\gdef\opheader
+     {\xiipt Utah PASS Project Progress Report \opnumber{#1}\hfill\today
+      \markright{\today\hfill PASS Progress \opnumber{#1}\hfill}}}
+\def\title#1{\gdef\Xtitle{#1}}
+\def\author#1{\gdef\Xauthor{#1}}
+\gdef\opheader{}
+\gdef\Xtitle{}
+\gdef\Xauthor{}
+
+\def\endtitlepage{\eject}
+
+\def\maketitle{
+\begin{titlepage}
+%
+\newcount\yearonly
+\yearonly=\year
+\advance\yearonly by-1900
+
+% reset certain absurd settings for the title page.
+\topmargin -12pt \headsep 0pt \headheight 0pt
+
+\setcounter{page}{0}
+\noindent\opheader
+\vskip 1.25in
+\begin{center}
+{\xivpt\bf \Xtitle \par}
+\vfil
+{\xivpt\bf \Xauthor \par}
+\vfil
+
+
+% \begin{picture}(52,80)
+% \put(0,0){\line(0,1){80}}        % left side
+% \put(50,0){\line(0,1){65}}       % right side
+% \put(0,0){\line(1,0){50}}        % bottom
+% \put(0,80){\line(1,0){30}}       % top
+% \put(30,65){\line(0,1){15}}      % left dent
+% \put(30,65){\line(1,0){20}}       % bottom dent
+% \put(10,45){\xpt(\( \textstyle\rm pass\))}  % pass  name
+% \put(20,55){\(\textstyle \star\)}       % star
+% \end{picture}
+
+\setlength{\unitlength}{0.01in}
+\begin{picture}(100,100)
+
+\put (0,0){\line(1,2){60}}
+\put (0,0){\line(1,0){120}}
+\put (60,120){\line(1,-2){60}}
+\put (18,0){\makebox(84,36){P A S S}}
+\put (18,36){\line(1,0){84}}
+\put (36,36){\makebox(48,36){( :- )}}
+\put (36,72){\line(1,0){48}}
+
+\put (56,72){\framebox(9,10){}}
+\put (60,86){\line(2,1){14.2}}
+\put (60,86){\line(-2,1){14.2}}
+\put (60,99){\line(-2,-1){14.2}}
+\put (60,99){\line(2,-1){14.2}}
+\put (60,93){\circle*{4}}
+
+\put (20,0){\oval(20,20)[b]}
+\put (100,0){\oval(20,20)[b]}
+
+\end{picture}
+\vfil
+Utah Portable Artificial Intelligence Support Systems Project\\
+Computer Science Department\\
+University of Utah\\
+Salt Lake City, Utah 84112\\
+\vfil
+Copyright \copyright \number\year, Utah Pass Project\\
+\end{center}
+\bigskip
+{\xpt Work supported in part by the Hewlett Packard
+Corporation, the Schlumberger Palo Alto Laboratory for A.I. Research,
+the National
+Science foundation Under Grant Number MCS81-21750 and the
+Defense Advanced Research Projects Agency under contract number
+DAAK11-84-K-0017.}
+
+\end{titlepage}
+% \protect\topmargin 0pt \headsep 35pt \headheight 12pt 
+\setcounter{footnote}{0}}
+
+\headheight 14pt
+\textwidth 5.75in
+\oddsidemargin 0.50in
+\pagestyle{myheadings}
+\title{PSL 3.4 - PCLS 2.1 Under Unix}
+
+\author{Harold Carr and Leigh Stoller}
+
+\opnote{07}
+
+\begin{document}
+
+\maketitle
+\nonstopmode
+
+\section{Abstract}
+
+This document is for users of PSL/PCLS under Unix (System V or
+Berkeley).  All or none of the features described here may or may not
+exist in any particular implementation of PSL under UNIX.
+
+\section{PSL init files}
+
+When {\tt psl} starts up it will attempt to read and evaluate a file named
+{\tt .pslrc} from your home directory.  Similarly, {\tt pslcomp} will use a
+{\tt .pslcomprc} init file, and {\tt pcls} will use a {\tt .pclsrc} init file.
+
+\section{UNIX specifc PSL procedures}
+
+Following are some PSL procedures available in the Unix version of PSL.
+
+\def \thing #1#2#3#4 {{\noindent {\tt(#1): #2} \hfill {\it #3}}
+                      \begin{itemize}\item[] #4
+                      \end{itemize}}
+
+\thing{cd S:string}{boolean}{expr}{Sets the current working directory to be
+the value of string.  Returns {\tt t} if it is successful, otherwise
+{\tt nil}.}
+
+\thing{channelflush CHNL:inum}{(inum,0)}{expr}{Flush the existing channel
+CHNL so that all characters that have not actually been written
+to the channel are done so.}
+
+\thing{charsininputbuffer}{integer}{expr}{Returns the number of input
+characters waiting in the input buffer. The input buffer is that
+channel normally associated with {\tt stdin}.}
+
+\thing{echooff}{any}{expr}{Enters tty character input mode. This is the
+equivalent of {\em raw} mode. No more characters will be displayed on
+the terminal until the procedure {\tt echoon} is called.}
+
+\thing{echoon}{any}{expr}{Resumes tty line input mode. This is the
+equivalent of {\em cooked} mode. Characters will be displayed normally
+on the terminal.}
+
+\thing{exitlisp}{Undefined}{expr}{Equivalent to {\tt quit}
+(Refer to {\tt quit}).}
+
+\thing{exit-with-status N:number}{Undefined}{expr}{Exit from PSL,
+returning the integer {\tt N} to the caller. This operation
+eventually calls the C library routine {\tt exit}}.
+
+\thing{filestatus FILENAME:string DOSTRINGS:string}{(list, nil)}{expr}{
+Return system dependent information about the file FILENAME. The values
+returned are user, group, mode, size, creation time, access time, and
+modification time. The DOSTRINGS argument is a flag that turns
+on conversion of the information to string representation. If {\tt nil},
+the information is returned in a system dependent manner.}
+
+\thing{flushstdoutputbuffer}{any}{expr}{Flush the standard output buffer
+so that any characters that have not been written, are done so. The
+buffer flushed is the one usually associated with {\tt stdout}. This
+operation only works when the terminal is in {\tt cooked} mode (see
+{\tt echoon}).}
+
+\thing{getenv S:string}{(string, nil)}{expr}{Getenv searches the environment
+for a string of the form S=value and returns the value if such a
+string is present, otherwise {\tt nil} is returned. This is equivalent, but
+not identical to the Unix operation of the same name.}
+
+\thing{getstartupname}{string}{expr}{Return the absolute path of the file
+that PSL was started from.}
+
+\thing{getunixargs}{(vector, nil)}{expr}{The arguments supplied on the
+command line to the PSL executable are placed in the vector stored in
+the PSL variable {\tt unixargs*}. The vector is a vector of strings.}
+
+\thing{importforeignstring S:string}{string}{expr}{This procedure is used
+convert a C string to a Lisp string. Given the address of C string S,
+the string is copied into the PSL heap, tagged appropriately, and
+returned.}
+
+\thing{init-file-string NAME:string}{string}{expr}{Construct a string
+containing the name of an initialization file in the user's home
+directory. The name of the file is constructed by prepending a ``.''
+to NAME, and appending ``rc'' to NAME. For example, if the value of
+NAME was ``psl'', the initialization filename constructed would be
+``.pslrc''.}
+
+\thing{named-user-homedir NAME:string}{string}{expr}{Return the home
+directory path of the user named NAME.}
+
+\thing{pwd}{string}{expr}{Determine the current working directory and
+return the value as a string.}
+
+\thing{quit}{Undefined}{expr}{Exit from PSL, returning to the caller.
+If PSL is in a break loop, a non-zero status is returned.}
+
+\thing{setenv VAR:string VAL:string}{any}{expr}{Setenv searches the
+environment for a string of the form VAR=value and if it is not found,
+a string of the form VAR=VAL is added to the environment.  If it is
+found, VAR=value is overwritten so that it is equal to VAR=VAL. This
+is equivalent, but not identical to the Unix operation of the same
+name.}
+
+\thing{system S:string}{string}{expr}{Executes S in a sub shell.
+Returns the exit status of the shell.}
+
+\thing{unix-time}{integer}{expr}{Returns the number of seconds since
+some arbitrary point. For most Unix systems, this is January 1, 1970.}
+
+\thing{unlink FILENAME:string}{any}{expr}{Remove the file FILENAME (works
+similar to {\tt rm}).}
+
+\thing{user-homedir-string}{string}{expr}{Return the home directory
+path of the user running PSL.}
+
+
+\section{Loading C code into PSL}
+
+\thing{oload LOADSPECS:string}{boolean}{expr}{\ }
+
+{\tt oload} provides a mechanism for linking Unix {\tt .o} and {\tt
+.a} files into a running PSL.  The single argument to {\tt oload} is a
+string containing arguments for the Unix {\tt ld} loader, separated by
+blanks.  File names ending in {\tt .o} are compiled relocatable code
+files.  {\tt .a} files are {\tt ar} load libraries, which are assumed
+to contain a set of {\tt .o} files, all of which are to be loaded.
+Other loader arguments should follow, specifying whatever libraries
+are necessary to satisfy all external references from the {\tt .o} and
+{\tt .a} files mentioned.  Library specs are in the form {\tt -lfoo}
+to search {\tt libfoo.a} on {\tt /lib}, {\tt /usr/lib}, {\tt
+/usr/local/lib}, etc.  {\tt -lc} searchs the C library.
+
+{\tt oload} performs an ``incremental'' ({\tt -A} flag) load.  Symbols
+which are already known in the running PSL will be linked to the
+existing addresses.
+
+If LOADSPECS is {\tt nil}, an attempt is made to re-load from an
+existing {\tt .oload.out} file.  This can only be done if the {\tt
+bps} and {\tt warray} base addresses are exactly the same as they were
+on the previously done, full OLOAD.  An error message results if these
+addresses are different.  This is meant to facilitate rapidly
+repeating an OLOAD at startup time, and is probably useful only to a
+PSL system expert.
+
+Alternately, a customized version of PSL may be saved by the {\tt
+savesystem} procedure, after first performing OLOADs and loading PSL
+code which interfaces to the OLOADed code.
+
+{\tt oload} returns a status code of {\tt t} if it succeeds, or {\tt
+nil} if not.
+
+\subsection{Calling oloaded procedures}
+
+All entry points and global data objects loaded by {\tt oload} are
+made known to the PSL system.  C procedures may be called from
+compiled code only, and are flagged {\tt foreignfunction} by {\tt
+oload}.  Data areas are flagged {\tt foreigndata}, with a property
+containing a pair of the data location and size in bytes for use by
+interface code.
+
+Foreign procedure calls may be compiled into FASL files, in which case
+the C procedure names must be flagged {\tt foreignfunction} at compile
+time in order to get the proper calling sequence.
+
+The names of OLOADed C procedures within PSL are the ``true'' names,
+which have an underscore ({\tt \_}) prefixed to the C name.  This makes
+it easy to make a compiled ``pass through'' interface procedure which
+gives the same name within PSL as the C names.  For example, your PSL
+definition might look like this:
+\begin{verbatim}
+        (flag '(_foo) 'foreignfunction)
+
+        (de foo (x)
+          (_foo x))
+\end{verbatim}
+while your C program might read:
+\begin{verbatim}
+        foo(x)
+        int x;
+        {
+            printf("%d\n%", x);
+            return(30);
+        }
+\end{verbatim}
+Note that the C language version of foo must be all lower case, and
+does not start with an underscore (the underscore is added by the C
+compiler).
+
+Procedures which take integer arguments can be called directly, due to
+PSL's ``invisible tagging'' of integers.  These ``invisibly tagged''
+integers are known as the {\tt inum} datatype in PSL.  They are a
+maximum of 27 bits in the Vax implementation of PSL, 24 bits on 68K
+versions.  Similarly, integer return values in the same range may be
+passed directly back from the C procedures.
+
+It is possible to pass other data types (such as floating point
+numbers and structs) between C and PSL.  The file {\tt
+\$pxu/l2cdatacon.sl} contains the conversion procedures that make this
+possible.
+
+Note that, currently, foreign procedure calls may have no more than
+five arguments.  This restrictions may be circumvented by putting
+arguments in work areas and passing the address of the work area as an
+argument to an intermediate C ``kludge procedure'' which unpacks the
+real arguments and passes them on to the target C procedure.
+
+If work areas are needed in interface code, as when arrays must be
+passed to the C code, use a PSL variable to hold the address of a word
+block acquired via {\tt gtwarray} (for static arrays) or {\tt gtwrds}
+(for dynamic blocks in the heap).  Pass the array's base address (the
+number returned by {\tt gtwarray} or {\tt gtwrds}) to the C procedure
+as the pointer argument.  When the C procedure returns the PSL array
+will contain the data filled in by the C procedure.
+
+\subsection{C calling PSL}
+
+It is possible for C to call PSL.  First {\tt oload} the object file
+{\tt \$pl/c2l.o}.  Then see the source file {\tt \$pxu/c2l.c} for
+details on C procedures calling PSL procedures.  This file also allows
+C to access and set the values of PSL {\tt global} and {\tt fluid} variables.
+
+\subsection{Oload Internals}
+
+{\tt oload} invokes the Unix {\tt ld} loader through a C shell script to
+convert the relocatable code in {\tt .o} files into absolute form, then
+reads the absolute form into space allocated within the {\tt bps} area of
+PSL.  The text segment goes at the low end of {\tt bps}, and the data and
+bss segments go at the high end, following the {\tt bps} storage allocation
+conventions of the PSL compiler.
+
+Since an incremental ({\tt -A}) load is done, {\tt oload} needs a
+filename path to the executable file containing the loader symbol
+table of the previous load.  The variable {\tt symbolfilename*} tells
+both {\tt oload} and the {\tt savesystem} and {\tt dumplisp}
+procedures the filename string to use.  (Since {\tt oload} reads the
+executable file, it should be publicly readable.)
+
+When PSL is built, {\tt symbolfilename*} is set to the
+name of the PSL kernel upon which the PSL is built.
+
+{\tt symbolfilename*} is set to {\tt .oload.out} by {\tt oload}, so
+that successive loads will accumulate a loader symbol table, and so
+that the C procedure {\tt unexec}, called by {\tt dumpsystem}, will
+get the right symbol table in the saved PSL.  (It may be useful to
+know that the initial value of {\tt symbolfilename*} is saved in
+the PSL variable {\tt startupname*}.)
+
+A number of work files are created on the current directory by the
+oload script, with file names that begin {\tt .oload}.  Some of these may
+be quite large.  It is a good idea to remove those files if you do not
+intend to repeat the load exactly.
+
+\subsection{Using Oload in PCLS}
+
+You must be in the {\tt psl} package to use {\tt oload} within PCLS.
+Switch to the {\tt psl} package and use {\tt oload} there:
+\begin{verbatim}
+        (in-package 'psl :use nil}
+        (load oload)
+        (oload "foo -lc")
+\end{verbatim}
+The OLOADed procedures will live in the {\tt psl} package.
+
+\end{document}
+

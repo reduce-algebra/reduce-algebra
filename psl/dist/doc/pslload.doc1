@@ -1,0 +1,340 @@
+         Concept for a PSL mini loader
+         -----------------------------
+ 
+Purpose
+-------
+ 
+From PSL 3.2 to PSL 3.4 the kernel concept was modified such that
+the true kernel contains a minimal runtime environment with LISP 
+specific
+   - memory manager (allocators)
+   - id manager (intern)
+   - loader (faslin)
+   - system interfaces (various external functions, e.g. I/O).
+ 
+This kernel is typically written partially in LISP, in LAP and in
+a host language (in most cases C). The LISP sources are converted
+into an executable module via an intermediate assembly step
+("asmout"). 
+ 
+Once started, the mini kernel loads the nonkernel modules (so
+getting the LISP montoring and interpreting facilities) and
+then conserves itself as an executable image in the appropriate
+system dependent file format. This process is called SAVESYSTEM
+or UNEXEC.
+ 
+This concept has following disadvantages:
+ 
+   - Experience has shown that computer manufacturers
+     use different assembly languages even if they use the same
+     processor. 
+ 
+   - some assemblers do not process all transformations on the
+     addresses which an actual mapping of PSL require as
+     symbolic expressions.
+
+   - The generation of assembly code is an intermediate operation
+     only; in principle it is needed only once and is of no more
+     use later.
+
+   - The UNEXEC file format is different from one system to the
+     other - even from one UNIX to the other. The traditional
+     technique, to copy the complete binary to a file including
+     all library parts and dynamic system tables relies on the 
+     assumption, that the system tolerates that. The reinitialization
+     of a saved image usually is no legal system interface operation.
+ 
+   - For non virtual systems the unexec must regain relocatibility 
+     of code and data which is not supported in the current model.
+ 
+   - PSl must be a main program for the operting system; the 
+     invocation as a subprogram is nearly impossible.
+ 
+   - the linking of additional modules in foreign languages to
+     an existing PSL (OLOAD) is extremely system dependent and
+     is not based on a guaranteed interface funtion.
+
+We therefore propose a further separation of the PSL kernel
+into two parts:
+ 
+   PSLL: absolute loader
+   RK: relative PSL kernel
+ 
+where PSLL 
+   - allocates memory portions for the different segments of PSL
+     (the ID tables,BPS, heap, stacks, ...)
+   - is capable of loading and relocating a program image without
+     further knowledge of its internal structure, based on a
+     PSL specific file format,
+   - offers the system interface externals, which are accessed
+     via an (easily extendible) address table
+ 
+while RK is 
+   - the LISP specific kernel part (ALLOC, INTERN, FASLIN ...), in
+     other words the classical kerlel written in LISP and LAP.
+   - especially it able to load PSL modules in FASL format.
+ 
+In contrast to the PSL3.4 model The RK is no longer generated via
+the assembler and system linker to a system loadable file, but
+it is compiled in faslout style with the one difference, that the 
+id-references are processed in the kernel style. The fasl 
+information together with the ID tables then is converted 
+to the PSLL format for later loading by PSLL. So there is no 
+more dependece from the system assembly syntax and system file format.
+ 
+PSLL format is used for the UNEXEC too: one simply conserves the
+memory portions of the living PSL together with its relocation
+information. This type of image is only processor dependent;
+once generated for one processor type an image can be used with
+any machine based on that processor, if an appropriate
+absolute loader is available.
+ 
+The PSLL itself can be written in a system independent style, e.g.
+as a C program, or it can be a piece of assembly code.
+So once a PSL implementation is done for one processor, its
+embedding into an operating system for the same processor
+only requires the recompilation (or in bad cases rewriting)
+of the PSLL program.
+ 
+PSLL file format
+--------------
+ 
+The basic idea of the PSLL file format is, that it origins from
+a pervious run, so being initially relocated to a former address
+scheme already.
+
+For the UNEXEC process this is the easiest to produce (just copy
+existing data segments to a file), and for the kernel it is simple 
+to achieve by using the address scheme of the generating parent.
+So basically relocation here means conversion of an ancient
+address scheme to an actual one.
+ 
+A living PSL consists of a set of segments in memory. PSLL creates these
+segments e.g. by invoking corresponding services of its host operating
+system and fills the information into them. Each segment is 
+described by an segment control block which is set of 32bit integers:
+ 
+   segment_CB:
+     long name       distinguishes the segment from others;
+                     reseved names are:
+                       0    the table of segment_CB's
+                       1    connect table for external calls
+                       2    the stack
+                       3    segment with start address
+                    The name is unique; two different segments
+                    will have distinct values here.
+ 
+     long basis     number of the ID which has the address of the
+                    segment as value at runtime
+    
+     long type       describes the usage of the segment:
+                       1    executable
+             
+     long size      the space to be allocated (in bytes).
+ 
+     long low       the actual start address of the segment in memory.
+                    In the file: the start address from the parent
+                    image
+                                
+     long high      the actual upper bound of the segment
+     
+The complete PSLL file has the following structure:
+ 
+     long file_mag  magic number , a random number created at
+                    kernel compile time
+ 
+     long file_data date of file creation (packed binary)
+ 
+     <block-0>
+     <block-1>      the information blocks of the image
+     <block-2>
+      ... 
+ 
+   Each block consists of
+ 
+   block_head:
+     long name      the name of the segment where the block is
+                    to be copied into
+ 
+     long rel       relative address for the data in that segment;                
+                    file_arel + file_alen <= segment_size
+
+     long len       the actual length of the data for that block 
+ 
+     long rtype     the relocation style for this block
+                       0:     no relocation at all
+                      -1:    complete itemwise AAR relocation
+                      -2:    complete AAR relocation for jump
+                             instructions
+                      -3     complete wordwise AAR relocation
+                      n >0:  relocation with table type <n>
+                       1:    AAR relocation with table; 1 bit
+                             corresponds to a byte address
+                             (start address of a 4 byte word)
+                       4:    AAR relocation with table; 1 bit
+                             corresponds to a multiple of 4 bytes
+ 
+      <data of the block>  with >file_alen< bytes
+
+    if a relocation table is necessary:
+      <block head> of the relocation table with name "-1"
+      <relocation table>  
+                     
+                   The relocation table is a scratch information
+                   only; once processed, it can be removed
+                   from memory. 
+                     
+ 
+By convention the first block in the file is the complete 
+>segment_table<, such that the file structure describes itself.
+An empty block marks the end of the file.
+ 
+Relocation
+----------
+ 
+For the moment only one relocation method is defined which is 
+sufficient for processors of the MC68xxx and i80x86 types with
+PSL based on absolue 24/27 bit addresses. Other processors
+may need different or additional relocation patterns, but the 
+principle system architecture is not affected by that.
+ 
+AAR - Absolute Address Relocation:
+   The INF part of a 4-byte word points to an address >x<.
+   The loader determines, to which segment this x belongs; it
+   adjusts the address by subtracting the difference between
+   old and actual starting address of that segment from x.
+ 
+This AAR relocation is invoked
+ 
+   - for the complete wordwise relocation (all words are
+     relocated in that style),
+ 
+   - for the complete instruction wise relocation of the
+     SYMFNC vector (all address parts of the jump oinstructions
+     are relocated in that style),
+ 
+   - for the type-1-table. A Table of type 1 contains for
+     each byte address one bit; if the bit is 1, the word
+     beginning at that address has to be relocated.
+ 
+   - for the type-2-table. A table of type 2 contains for
+     each 4-byte-word one bit; if the bit is 1, the word
+     with that number has to be relocated.
+ 
+Description of segments for PSL
+----------------------------
+ 
+segments in PSL are
+ 
+   the segment table (no relocation)
+ 
+   external function table (no data in file, no relocation)
+ 
+   the start address (one word only, "complete relocation")
+ 
+   BPS (one data block for both, upper and lower BPS,
+          both with table-1 relocation)
+ 
+   BPS bit table
+
+   SYMFNC (complete relocation wordwise or jump-instruction-wise)
+ 
+   SYMNAM (complete relocation)
+ 
+   SYMVAL (relocation table-2)
+ 
+   SYMPROP (relocation Table-2)
+ 
+   HEAP (relocation table-2)
+ 
+   and the other kernel structures.
+
+In order to maintain the UNEXEC ability, the BPS relocation table is
+member of the file twice, once as scratch appendix for the BPS (for
+the actual relocation) and once as separate segment for later update.
+If UNEXEC is no longer needed, this table can be removed too
+and that memory can be used for other purposes (e.g. as extension of
+heap/BPS). 
+ 
+Modification:
+ 
+If it is guaranteed, that subsequent executions of PSLL can
+reestablish the same address layout (sbrk-compatibility), the
+dynmaic maintenance of the relocation tables is superfluous;
+saved images can be loaded without relocation. This will be the
+case in most UNIX systems.
+
+UNEXEC history
+--------------
+ 
+When a PSL is started from a previous UNEXEC (which might be
+an initial kernel as well), typically
+   
+  - New parts are added to the low BPS (which is never
+    updated in place after its initial writing),
+  - the high BPS is updated
+  - all other segments are modified in place.
+ 
+When a new UNEXEC is invoked, all relocation information of loaded
+modules has to be preserved. Therefore we maintain the are 5 as 
+additional PSL structure. All other relocation tables can
+be generated at UNEXEC time in the style of the garbage collector
+marking phase. This UNEXEC program can be written in LISP completely
+as PSL has access to its complete memory structure.
+ 
+Cooperation of LISP and C parts
+-------------------------------
+ 
+All segments have a name associated with them, which is an ID in the
+PSL sense. The loader copies the start address of that segment into the
+value cell of that ID; so they behave like the classical kernel-structures,
+and the kernel structures are mapped to individual segments.
+Among these the segment-description forms an segment itself, such that the
+complete structure is fully self documented and shared.
+ 
+During kernel compilation a C source file is generated which is cited
+in the PSLL source  as a header file. This source file establishes the
+following connections:
+ 
+ - the PSL system constants (e.g. TAGBITLENGTH,...) are made available via
+   preprocessor statements (#define ...)
+
+ - a table is generated which contains an entry for each external function
+   declared in the kernel. The calls to these external fucntions are
+   resoveld relative to this table (here we use a modfied foreign-entry
+   protocol with one more reference level).
+ 
+ - the external variables remain PSL symval- references, as they are
+   when the kernel is generated by the assembler; we have indirected 
+   the C accesses to these variables (there are only a very few of 
+   them!) via an additional pointer level (one more "*"); the
+   header file contains a piece of code, which calculates the symval
+   addresses of these variables and puts them into the C pointers;
+   so these variables are shared at runtime. 
+ 
+So the complete kernel generation requires
+ 
+  system independent:
+ - the LISP kernel compilation ("kernelout")
+ - the compilation of the nonkernel modules
+ 
+  system dependent:
+ - a subsequent C compilation of PSLL including the header file
+ - a linkage of PSLL which links the loader with the local library
+ - a run of that program loading the nonkernel with a final savesystem.
+
+Appendix 1: The 80386 processor
+===============================
+ 
+For the 80386 processor the above scheme is implemented in the
+following manner:
+ 
+The PSL kernel and other ojects (e.g. REDUCE) are generated as
+binaries using absolute 32 bit addressing (like with SUN386i
+systems). For systems which operate in segmented mode
+(e.g. MS-DOS), the AL program and all its services (e.g.
+C subroutines) are written corresponding to the operating
+system conventions; at the interface level between AL and the 
+running PSL (that is on invocation and when calling external
+functions via table in segment 0) AL has to conserve and change
+the mode of operation in an appropriate manner.

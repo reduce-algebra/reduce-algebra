@@ -1,0 +1,423 @@
+\begin{verbatim}
+(c) Copyright 1985 Hewlett-Packard Company, all rights reserved.
+\end{verbatim}
+
+\section{Common Lisp Compatibility}
+
+   12.1. Introduction                                       12:8
+   12.2. Functions and Macros                              12:19
+
+\subsection{Introduction}
+
+  PSL  provides  a  limited  set  of  Common  Lisp compatibility
+functions and macros.  These are based on an  early  version  of
+the  Common Lisp manual, and are not necessarily up to date with
+respect to the recent manual by Guy Steele  (Common  Lisp    The
+Language,  Digital  Press  1984).  Some things defined in Common
+Lisp as functions are in fact implemented here as macros.   When
+in  doubt,  consult  the Common Lisp manual and the source files
+PU:CLTRANS.SL, PU:COMMON.SL or PU:CLCOMP1.SL.
+
+\subsection{Functions and Macros}
+
+  The following table lists the Common Lisp functions and macros
+provided,  and  how  each  has  been  implemented.   Those  with
+descriptions  have  a  direct  analog in PSL (although note that
+many are implemented here as macros, whereas Common Lisp defines
+them  as  functions);  others  have   a   less   straightforward
+implementation.   Where  no description is given, see the Common
+Lisp manual.
+
+
+\de{1+}{(1+ U:number): number}{macro}
+{    The Common Lisp name for the PSL function add1,  implemented
+    as a macro.
+}
+
+\de{1-}{(1- U:number): number}{macro}
+{    The  Common Lisp name for the PSL function sub1, implemented
+    as a macro.
+}
+
+\de{arrayp}{(arrayp U:any): boolean}{macro}
+{    The  Common  Lisp  name  for  the  PSL   function   vectorp,
+    implemented as a macro.
+}
+
+\de{ash}{(ash N:integer K:integer): integer}{macro}
+{    The   Common   Lisp   name  for  the  PSL  function  lshift,
+    implemented as a macro.
+}
+
+\de{assq}{(assq R1:any R2:any): any}{macro}
+{    The Common Lisp name for the PSL function atsoc, implemented
+    as a macro.
+}
+
+\de{boundp}{(boundp U:id): boolean}{macro}
+{    Equivalent to (not (unboundp U)).
+}
+
+\de{butlast}{(butlast U:list): list}{expr}
+{}
+
+\de{buttail}{(buttail U:list V:list): list}{expr}
+{}
+
+\de{cerror}{(cerror S:string E:string): nil}{macro}
+{}
+
+\de{char}{(char S:string I:integer): character}{macro}
+{}
+
+\de{characterp}{(characterp U:any): boolean}{macro}
+{    The Common Lisp name for the PSL function fixp,  implemented
+    as a macro.
+}
+
+\de{cl-delete}{(cl-delete U:any L:list): list}{expr}
+{    Delete in Common Lisp.
+}
+
+\de{comment}{(comment COMMENT:string): nil}{macro}
+{}
+
+\de{consp}{(consp U:any): boolean}{macro}
+{    The Common Lisp name for the PSL function pairp, implemented
+    as a macro.
+}
+
+\de{copyalist}{(copyalist U:list): list}{expr}
+{}
+
+\de{copylist}{(copylist U:list): list}{expr}
+{}
+
+\de{copyseq}{(copyseq S:sequence): sequence}{expr}
+{}
+
+\de{copytree}{(copytree X:any): any}{macro}
+{    The  Common Lisp name for the PSL function copy, implemented
+    as a macro.
+}
+
+\de{decf}{(decf U:form [Xi:number]): number}{macro}
+{    The Common Lisp name for the PSL macro decr.
+}
+
+\de{declare}{(declare [U:id]): nil}{macro}
+{    The Common Lisp special form declare does nothing in PSL.
+}
+
+\de{defprop}{(defprop S:id V:any IND:indicator): any}{macro}
+{}
+
+\de{defun}{(defun FNAME:id PARAM:id-list [FN:form]):}{macro}
+{    The Common Lisp name for the PSL macro de.
+}
+
+\de{defvar}{(defvar U:id V:any): any}{macro}
+{}
+
+\de{delete-duplicates}{(delete-duplicates U:list): list}{expr}
+{}
+
+\de{dolist}{(dolist V:any U:form): any}{macro}
+{}
+
+\de{dotimes}{(dotimes HEADER:list BODY:form): any}{macro}
+{}
+
+\de{elt}{(elt X:x-vector I:integer): any}{macro}
+{    The Common Lisp name for the PSL function indx,  implemented
+    as a macro.
+}
+
+\de{endp}{(endp L:list): boolean}{expr}
+{}
+
+\de{eql}{(eql U:any V:any): boolean}{macro}
+{    The  Common  Lisp name for the PSL function eqn, implemented
+    as a macro.
+}
+
+\de{equalp}{(equalp U:any V:any): boolean}{macro}
+{    The Common Lisp name for the PSL function equal, implemented
+    as a macro.
+}
+
+\de{eval-when}{(eval-when WHEN:{'compile,'load,'eval} [U:form]): any}{macro}
+{}
+
+\de{evenp}{(evenp N:number): boolean}{expr}
+{}
+
+\de{explodec}{(explodec U:{atom}-{vector}): id-list}{macro}
+{    The  Common  Lisp  name  for  the  PSL  function   explode2,
+    implemented as a macro.
+}
+
+\de{fboundp}{(fboundp U:id): boolean}{macro}
+{}
+
+\de{flatc}{(flatc U:any): integer}{macro}
+{    The  Common  Lisp  name  for  the  PSL  function  flatsize2,
+    implemented as a macro.
+}
+
+\de{format}{(format OUT-CHANNEL:integer FORMAT-STRING:string [ARGS:any]):}{}
+{    {nil, string}                                           expr
+    The out-channel  must  refer  to  a  PSL  channel  that  was
+    previously  opened  for output.  Normally, the characters in
+    format-string are simply output to  the  out-channel.    Any
+    tilde  (~)  characters  in  format-string are interpreted as
+    formatting directives.  The character  following  the  tilde
+    determines  what  kind  of  formatting  is to be done.  Each
+    formatting directive is matched up  with  the  corresponding
+    argument from args.  Up to 12 args are supported.
+}
+    If  out-channel  is nil, then format will return a formatted
+    string, instead of outputting it to a channel.
+
+  Listed below are the currently supported format directives:
+
+~a            Performs a channelprin2 of the argument.
+
+~s            Performs a channelprin1 of the argument.
+
+~x            Outputs the argument as a hexidecimal integer.
+
+~d            Outputs the argument as a decimal integer.
+
+~o            Outputs the argument as an octal integer.
+
+~b            Outputs the argument as a binary integer.
+
+~~            Outputs a tilde.
+
+~!%           Terminates the current output line  and  begins  a
+\begin{verbatim}
+              new one.
+\end{verbatim}
+~&            Does  the  same action as ~!% except that when the
+\begin{verbatim}
+              output channel is already at the  beginning  of  a
+              line this directive does nothing.
+\end{verbatim}
+
+
+\de{fset}{(fset U:id F:form): id}{macro}
+{}
+
+\de{fsymeval}{(fsymeval U:id): any}{macro}
+{}
+
+\de{functionp}{(functionp U:any): boolean}{expr}
+{}
+
+\de{get-pname}{(get-pname ID:id): string}{macro}
+{    The  Common  Lisp  name  for  the  PSL  function  id2string,
+    implemented as a macro.
+}
+
+\de{getpr}{(getpr U:id IND:id): any}{macro}
+{    The Common Lisp name for the PSL function  get,  implemented
+    as a macro.
+}
+
+\de{incf}{(incf U:form [Xi:number]): number}{macro}
+{    The Common Lisp name for the PSL macro incr.
+}
+
+\de{integerp}{(integerp U:any): boolean}{macro}
+{    The  Common Lisp name for the PSL function fixp, implemented
+    as a macro.
+}
+
+\de{internedp}{(internedp U:{id,string}): boolean}{macro}
+{    The  Common  Lisp  name  for  the  PSL   function   internp,
+    implemented as a macro.
+}
+
+\de{last}{(last L:pair): any}{macro}
+{    The   Common  Lisp  name  for  the  PSL  function  lastpair,
+    implemented as a macro.
+}
+
+\de{list-length}{(list-length X:any): integer}{macro}
+{    The  Common  Lisp  name  for  the   PSL   function   length,
+    implemented as a macro.
+}
+
+\de{listp}{(listp U:any): boolean}{expr}
+{}
+
+\de{locally}{(locally [U:id]): nil}{macro}
+{    The Common Lisp macro locally does nothing in PSL.
+}
+
+\de{logand}{(logand [N:integer]): {0,1}}{macro}
+{}
+
+\de{logior}{(logior [N:integer]): {0,1}}{macro}
+{}
+
+\de{lognot}{(lognot [U:integer]): integer}{macro}
+{    The  Common Lisp name for the PSL function lnot, implemented
+    as a macro.
+}
+
+\de{logxor}{(logxor [N:number]): {0,1}}{macro}
+{}
+
+\de{macro}{(macro MNAME:id PARAMS:id-list [FN:form]): id}{macro}
+{    The Common Lisp name for the PSL macro dm.
+}
+
+\de{macro-p}{(macro-p U:any): boolean}{macro}
+{}
+
+\de{make-symbol}{(make-symbol S:string): id}{macro}
+{    The Common Lisp name for the PSL function newid, implemented
+    as a macro.
+}
+
+\de{mapl}{(mapl X:list FN:function): nil}{macro}
+{    The Common Lisp name for the PSL function  map,  implemented
+    as a macro.
+}
+
+\de{nbutlast}{(nbutlast U:list): list}{expr}
+{}
+
+\de{nreconc}{(nreconc U:list V:list): list}{expr}
+{}
+
+\de{nreverse}{(nreverse U:list): list}{macro}
+{    The   Common  Lisp  name  for  the  PSL  function  reversip,
+    implemented as a macro.
+}
+
+\de{nsubst}{(nsubst U:any V:any W:any): any}{macro}
+{    The  Common  Lisp  name  for  the  PSL   function   substip,
+    implemented as a macro.
+}
+
+\de{nthcdr}{(nthcdr N:integer U:list): list}{expr}
+{}
+
+\de{oddp}{(oddp U:any): boolean}{expr}
+{}
+
+\de{parilis}{(parilis U:list V:list): a-list}{macro}
+{    The  Common Lisp name for the PSL function pair, implemented
+    as a macro.
+}
+
+\de{peek-char}{(peek-char PEEK-TYPE:{t,nil,any-character} [CHAN:channel]):}{}
+{    character                                               expr
+}
+
+\de{plist}{(plist U:id): any}{macro}
+{    The Common Lisp name for the PSL function prop,  implemented
+    as a macro.
+}
+
+\de{plusp}{(plusp U:any): boolean}{expr}
+{}
+
+\de{prog*}{(prog* VARS:id-list [PROGRAM:{id,form}]): any}{macro}
+{    The Common Lisp name for the PSL fexpr prog.
+}
+
+\de{prog2}{(prog2 U:form V:form [W:form]): any}{macro}
+{}
+
+\de{progv}{(progv SYMBOLS:list VALUES:list U:form [V:form]): any}{macro}
+{    Only works when compiled.
+}
+
+\de{putpr}{(putpr U:id IND:id PROP:any): any}{macro}
+{    The  Common  Lisp name for the PSL function put, implemented
+    as a macro.
+}
+
+\de{putprop}{(putprop SYMBOL:id VALUE:any IND:id): any}{macro}
+{}
+
+\de{read-char}{(read-char [CHAN:channel]): character}{macro}
+{}
+
+\de{read-from-string}{(read-from-string STR:string): any}{macro}
+{}
+
+\de{read-line}{(read-line [CHAN:channel]): string}{expr}
+{}
+
+\de{rempr}{(rempr U:id IND:id): any}{macro}
+{    The  Common  Lisp  name  for  the  PSL   function   remprop,
+    implemented as a macro.
+}
+
+\de{revappend}{(revappend X:list Y:list): list}{expr}
+{}
+
+\de{samepnamep}{(samepnamep X:id Y:id): boolean}{expr}
+{}
+
+\de{selectq}{(selectq ON:form BODY:s-forms): any}{macro}
+{}
+
+\de{setelt}{(setelt X:x-vector I:integer A:any): any}{macro}
+{    The   Common   Lisp  name  for  the  PSL  function  setindx,
+    implemented as a macro.
+}
+
+\de{special}{(special [U:id]): nil}{macro}
+{}
+
+\de{special-form-p}{(special-form-p U:any): boolean}{macro}
+{}
+
+\de{subrp}{(subrp U:any): boolean}{macro}
+{    The Common Lisp name for the PSL function codep, implemented
+    as a macro.
+}
+
+\de{symbolp}{(symbolp U:any): boolean}{macro}
+{    The Common Lisp name for the PSL function  idp,  implemented
+    as a macro.
+}
+
+\de{symeval}{(symeval U:id): any}{macro}
+{    The  Common  Lisp  name  for  the  PSL  function  valuecell,
+    implemented as a macro.
+}
+
+\de{tree-equal}{(tree-equal X:{id,list} Y:{id,list}): boolean}{expr}
+{}
+
+\de{unread-char}{(unread-char C:character): nil}{macro}
+{}
+
+\de{unspecial}{(unspecial [U:id]): nil}{macro}
+{}
+
+\de{vref}{(vref V:vector INDEX:integer): any}{macro}
+{    The Common Lisp name for the PSL function getv,  implemented
+    as a macro.
+}
+
+\de{vset}{(vset V:vector INDEX:integer VALUE:any): any}{macro}
+{    The  Common Lisp name for the PSL function putv, implemented
+    as a macro.
+}
+
+\de{with-open-file}{(with-open-file HEADER:list [U:form]): any}{macro}
+{}
+
+\de{write-char}{(write-char C:character [CHAN:channel]): character}{macro}
+{}
+
+\de{write-string}{(write-string ITM:any): any}{expr}
+{}

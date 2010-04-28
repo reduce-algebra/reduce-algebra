@@ -1,0 +1,184 @@
+\documentstyle[11pt]{article}
+% Pass group opnote title page and macros.
+% Global definitions 
+\def\opnumber#1{\number\yearonly -#1}
+\def\opnote#1{\gdef\opheader
+     {\xiipt Utah PASS Project OpNote \opnumber{#1}\hfill\today
+      \markright{\today\hfill PASS Opnote \opnumber{#1}\hfill}}}
+\def\mpr#1{\gdef\opheader
+     {\xiipt Utah PASS Project Progress Report \opnumber{#1}\hfill\today
+      \markright{\today\hfill PASS Progress \opnumber{#1}\hfill}}}
+\def\title#1{\gdef\Xtitle{#1}}
+\def\author#1{\gdef\Xauthor{#1}}
+\gdef\opheader{}
+\gdef\Xtitle{}
+\gdef\Xauthor{}
+
+\def\endtitlepage{\eject}
+
+\def\maketitle{
+\begin{titlepage}
+%
+\newcount\yearonly
+\yearonly=\year
+\advance\yearonly by-1900
+
+% reset certain absurd settings for the title page.
+\topmargin -12pt \headsep 0pt \headheight 0pt
+
+\setcounter{page}{0}
+\noindent\opheader
+\vskip 1.25in
+\begin{center}
+{\xivpt\bf \Xtitle \par}
+\vfil
+{\xivpt\bf \Xauthor \par}
+\vfil
+
+
+% \begin{picture}(52,80)
+% \put(0,0){\line(0,1){80}}        % left side
+% \put(50,0){\line(0,1){65}}       % right side
+% \put(0,0){\line(1,0){50}}        % bottom
+% \put(0,80){\line(1,0){30}}       % top
+% \put(30,65){\line(0,1){15}}      % left dent
+% \put(30,65){\line(1,0){20}}       % bottom dent
+% \put(10,45){\xpt(\( \textstyle\rm pass\))}  % pass  name
+% \put(20,55){\(\textstyle \star\)}       % star
+% \end{picture}
+
+\setlength{\unitlength}{0.01in}
+\begin{picture}(100,100)
+
+\put (0,0){\line(1,2){60}}
+\put (0,0){\line(1,0){120}}
+\put (60,120){\line(1,-2){60}}
+\put (18,0){\makebox(84,36){P A S S}}
+\put (18,36){\line(1,0){84}}
+\put (36,36){\makebox(48,36){( :- )}}
+\put (36,72){\line(1,0){48}}
+
+\put (56,72){\framebox(9,10){}}
+\put (60,86){\line(2,1){14.2}}
+\put (60,86){\line(-2,1){14.2}}
+\put (60,99){\line(-2,-1){14.2}}
+\put (60,99){\line(2,-1){14.2}}
+\put (60,93){\circle*{4}}
+
+\put (20,0){\oval(20,20)[b]}
+\put (100,0){\oval(20,20)[b]}
+
+\end{picture}
+\vfil
+Utah Portable Artificial Intelligence Support Systems Project\\
+Computer Science Department\\
+University of Utah\\
+Salt Lake City, Utah 84112\\
+\vfil
+Copyright \copyright \number\year, Utah Pass Project\\
+\end{center}
+\bigskip
+{\xpt Work supported in part by the Hewlett Packard
+Corporation, the Schlumberger Palo Alto Laboratory for A.I. Research,
+the National
+Science foundation Under Grant Number MCS81-21750 and the
+Defense Advanced Research Projects Agency under contract number
+DAAK11-84-K-0017.}
+
+\end{titlepage}
+% \protect\topmargin 0pt \headsep 35pt \headheight 12pt 
+\setcounter{footnote}{0}}
+
+\headheight 14pt
+\textwidth 5.75in
+\oddsidemargin 0.50in
+\pagestyle{myheadings}
+\title{Addendum to the PSL 3.4 Manual}
+
+\author{Harold Carr and Leigh Stoller}
+
+\opnote{07}
+
+\begin{document}
+
+\maketitle
+\nonstopmode
+
+\section{Abstract}
+
+This document describes the differences between PSL 3.4, as
+described in the USERS MANUAL, and PSL Version 3.4, the version that
+is delivered on the tape.  This errata sheet follows the structure of
+the PSL manual.
+
+\section{Renamed Load Modules}
+
+The manual mentions ``load modules'' in many of the chapters.  Some of
+the modules have been renamed.  Here is a map of the renamed modules:
+
+\begin{description}
+
+\item[codetemplate] is now {\tt c-template}
+
+\item[string-search] is now {\tt str-search}
+
+\item[string-input] is now {\tt str-input}
+
+\item[numeric-operators] is now {\tt numeric-ops}
+
+\item[fast-strings] is now {\tt f-strings}
+
+\item[slow-strings] is now {\tt s-strings}
+
+\item[read1-macros] is now {\tt read1macros}
+
+\item[read2-macros] is now {\tt read2macros}
+
+\item[fast-evectors] is now {\tt f-evectors}
+
+\item[fast-vectors] is now {\tt f-vectors}
+
+\item[obj-instance] is now {\tt objinstance}
+
+\item[rlisp-parser] is now {\tt rlispparser}
+
+\item[rlisp-support] is now {\tt rlisp-sup}
+
+\item[slow-vectors] is now {\tt s-vectors}
+
+\item[syslisp-syntax] is now {\tt syslisp-syn}
+
+\item[get-command-args] is now {\tt get-options}
+
+\end{description}
+
+\section{Chapter 9, Section 9.2.  Wrappers}
+
+Wrappers have been removed from the system.
+
+\section{Chapter 12, Section 12.8.  About I/O Channels}
+
+The variables {\tt in*} and {\tt out*} are now {\tt fluid} variables,
+rather than {\tt global} variables.
+
+\section{Chapter 13.  Input and Output Streams}
+
+Input and output streams have been removed from the system.
+
+\section{Chapter 14.  Pathnames}
+
+Pathnames have been removed from the system.
+
+\section{Chapter 17.  Debugging Tools}
+
+The debugging tools described in the 3.4 manual are not supported.
+The chapter on the PSL 3.2 debug package, which is supported, is included
+in the documentation.
+
+\section{Chapter 21.  Packages}
+
+Packages have been removed from the system.
+
+\end{document}
+
+

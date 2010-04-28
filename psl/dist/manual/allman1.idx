@@ -1,0 +1,707 @@
+\indexentry{vector-fetch}{2}
+\indexentry{and}{2}
+\indexentry{*usermode}{3}
+\indexentry{usermode}{3}
+\indexentry{redefmsg}{3}
+\indexentry{*redefmsg}{3}
+\indexentry{lose}{3}
+\indexentry{*redefmsg}{3}
+\indexentry{eolinstringok}{5}
+\indexentry{*eolinstringok}{5}
+\indexentry{eq}{8}
+\indexentry{eqn}{8}
+\indexentry{equal}{8}
+\indexentry{neq}{9}
+\indexentry{ne}{9}
+\indexentry{eqstr}{9}
+\indexentry{eqcar}{9}
+\indexentry{atom}{9}
+\indexentry{codep}{9}
+\indexentry{constantp}{9}
+\indexentry{fixp}{9}
+\indexentry{floatp}{9}
+\indexentry{idp}{9}
+\indexentry{null}{10}
+\indexentry{numberp}{10}
+\indexentry{pairp}{10}
+\indexentry{stringp}{10}
+\indexentry{vectorp}{10}
+\indexentry{not}{10}
+\indexentry{and}{10}
+\indexentry{or}{11}
+\indexentry{intern}{11}
+\indexentry{newid}{11}
+\indexentry{int2id}{12}
+\indexentry{id2int}{12}
+\indexentry{id2string}{12}
+\indexentry{string2list}{12}
+\indexentry{list2string}{12}
+\indexentry{string}{12}
+\indexentry{vector}{13}
+\indexentry{vector2string}{13}
+\indexentry{string2vector}{13}
+\indexentry{vector2list}{13}
+\indexentry{list2vector}{13}
+\indexentry{fix}{14}
+\indexentry{float}{14}
+\indexentry{*fast-integers}{14}
+\indexentry{=}{15}
+\indexentry{/=}{15}
+\indexentry{$<$}{15}
+\indexentry{$>$}{15}
+\indexentry{$<=$}{15}
+\indexentry{$>=$}{15}
+\indexentry{+}{16}
+\indexentry{--}{16}
+\indexentry{$\ast $}{16}
+\indexentry{/}{16}
+\indexentry{$\sim =$}{16}
+\indexentry{//}{16}
+\indexentry{$\sim $}{16}
+\indexentry{\&}{16}
+\indexentry{$\mid $}{17}
+\indexentry{$\wedge $}{17}
+\indexentry{$<<$}{17}
+\indexentry{$>>$}{17}
+\indexentry{abs}{17}
+\indexentry{add1}{17}
+\indexentry{decr}{17}
+\indexentry{difference}{18}
+\indexentry{divide}{18}
+\indexentry{expt}{18}
+\indexentry{incr}{18}
+\indexentry{minus}{18}
+\indexentry{plus}{18}
+\indexentry{plus2}{18}
+\indexentry{quotient}{19}
+\indexentry{recip}{19}
+\indexentry{remainder}{19}
+\indexentry{sub1}{19}
+\indexentry{times}{19}
+\indexentry{times2}{19}
+\indexentry{geq}{19}
+\indexentry{greaterp}{20}
+\indexentry{leq}{20}
+\indexentry{lessp}{20}
+\indexentry{max}{20}
+\indexentry{max2}{20}
+\indexentry{min}{20}
+\indexentry{min2}{20}
+\indexentry{minusp}{20}
+\indexentry{onep}{20}
+\indexentry{zerop}{20}
+\indexentry{land}{21}
+\indexentry{lor}{21}
+\indexentry{lnot}{21}
+\indexentry{lxor}{21}
+\indexentry{lshift}{21}
+\indexentry{ceiling}{21}
+\indexentry{floor}{22}
+\indexentry{round}{22}
+\indexentry{transfersign}{22}
+\indexentry{mod}{22}
+\indexentry{degreestoradians}{22}
+\indexentry{radianstodegrees}{23}
+\indexentry{radianstodms}{23}
+\indexentry{dmstoradians}{23}
+\indexentry{degreestodms}{23}
+\indexentry{dmstodegrees}{23}
+\indexentry{sin}{23}
+\indexentry{sind}{23}
+\indexentry{cos}{23}
+\indexentry{cosd}{24}
+\indexentry{tan}{24}
+\indexentry{tand}{24}
+\indexentry{cot}{24}
+\indexentry{cotd}{24}
+\indexentry{sec}{24}
+\indexentry{secd}{24}
+\indexentry{csc}{24}
+\indexentry{cscd}{24}
+\indexentry{asin}{24}
+\indexentry{asind}{24}
+\indexentry{acos}{25}
+\indexentry{acosd}{25}
+\indexentry{atan}{25}
+\indexentry{atand}{25}
+\indexentry{atan2}{25}
+\indexentry{atan2d}{25}
+\indexentry{acot}{25}
+\indexentry{acotd}{25}
+\indexentry{asec}{25}
+\indexentry{asecd}{26}
+\indexentry{acsc}{26}
+\indexentry{acscd}{26}
+\indexentry{sqrt}{26}
+\indexentry{exp}{26}
+\indexentry{log}{26}
+\indexentry{log2}{26}
+\indexentry{log10}{26}
+\indexentry{random}{26}
+\indexentry{randomseed (global)}{26}
+\indexentry{factorial}{27}
+\indexentry{input--case}{29}
+\indexentry{output--case}{30}
+\indexentry{gensym}{31}
+\indexentry{interngensym):}{31}
+\indexentry{stringgensym}{31}
+\indexentry{remob}{31}
+\indexentry{newid}{32}
+\indexentry{internp}{32}
+\indexentry{mapobl}{32}
+\indexentry{findprefix}{32}
+\indexentry{findsuffix}{32}
+\indexentry{put}{33}
+\indexentry{get}{33}
+\indexentry{deflist}{33}
+\indexentry{remprop}{33}
+\indexentry{rempropl}{33}
+\indexentry{flag}{35}
+\indexentry{flagp}{35}
+\indexentry{remflag}{35}
+\indexentry{flag1}{35}
+\indexentry{remflag1}{35}
+\indexentry{prop}{35}
+\indexentry{setprop}{36}
+\indexentry{setq}{36}
+\indexentry{set}{36}
+\indexentry{desetq}{36}
+\indexentry{psetq}{36}
+\indexentry{setf}{37}
+\indexentry{psetf}{39}
+\indexentry{makeunbound}{39}
+\indexentry{valuecell}{39}
+\indexentry{unboundp}{39}
+\indexentry{on}{40}
+\indexentry{off}{40}
+\indexentry{nil (global)}{41}
+\indexentry{t (global)}{41}
+\indexentry{eval}{42}
+\indexentry{ignore}{42}
+\indexentry{lose}{42}
+\indexentry{user}{42}
+\indexentry{*usermode}{42}
+\indexentry{cons}{44}
+\indexentry{car}{44}
+\indexentry{cdr}{44}
+\indexentry{ncons}{45}
+\indexentry{xcons}{45}
+\indexentry{copy}{45}
+\indexentry{rplaca}{46}
+\indexentry{rplacd}{46}
+\indexentry{rplacw}{46}
+\indexentry{first}{47}
+\indexentry{second}{47}
+\indexentry{third}{47}
+\indexentry{fourth}{47}
+\indexentry{rest}{47}
+\indexentry{lastpair}{47}
+\indexentry{lastcar}{47}
+\indexentry{nth}{47}
+\indexentry{pnth}{48}
+\indexentry{member}{48}
+\indexentry{memq}{48}
+\indexentry{length}{48}
+\indexentry{list}{49}
+\indexentry{append}{49}
+\indexentry{nconc}{49}
+\indexentry{aconc}{49}
+\indexentry{lconc}{50}
+\indexentry{tconc}{50}
+\indexentry{adjoin}{50}
+\indexentry{adjoinq}{50}
+\indexentry{union}{50}
+\indexentry{unionq}{51}
+\indexentry{intersection}{51}
+\indexentry{intersectionq}{51}
+\indexentry{list2set}{51}
+\indexentry{list2setq}{51}
+\indexentry{delete}{52}
+\indexentry{del}{52}
+\indexentry{deletip}{52}
+\indexentry{delq}{52}
+\indexentry{delqip}{53}
+\indexentry{delasc}{53}
+\indexentry{delascip}{53}
+\indexentry{delatq}{53}
+\indexentry{delatqip}{53}
+\indexentry{reverse}{53}
+\indexentry{reversip}{53}
+\indexentry{gsort}{54}
+\indexentry{gmergesort}{54}
+\indexentry{idsort}{54}
+\indexentry{assoc}{55}
+\indexentry{atsoc}{55}
+\indexentry{ass}{55}
+\indexentry{sassoc}{55}
+\indexentry{pair}{55}
+\indexentry{subst}{56}
+\indexentry{substip}{56}
+\indexentry{sublis}{56}
+\indexentry{subla}{56}
+\indexentry{char}{57}
+\indexentry{standard-charp}{59}
+\indexentry{graphicp}{59}
+\indexentry{string-charp}{59}
+\indexentry{alphap}{59}
+\indexentry{uppercasep}{59}
+\indexentry{lowercasep}{59}
+\indexentry{bothcasep}{59}
+\indexentry{digitp}{60}
+\indexentry{alphanumericp}{60}
+\indexentry{char=}{60}
+\indexentry{char-equal}{60}
+\indexentry{char$<$}{60}
+\indexentry{char$>$}{60}
+\indexentry{char-lessp}{60}
+\indexentry{char-greaterp}{60}
+\indexentry{char-code}{60}
+\indexentry{char-bits}{60}
+\indexentry{char-font}{60}
+\indexentry{code-char}{61}
+\indexentry{character}{61}
+\indexentry{char-upcase}{61}
+\indexentry{char-downcase}{61}
+\indexentry{digit-char}{61}
+\indexentry{char-int}{61}
+\indexentry{int-char}{61}
+\indexentry{allocate-string}{62}
+\indexentry{make-string}{62}
+\indexentry{mkstring}{62}
+\indexentry{string}{62}
+\indexentry{copystringtofrom}{62}
+\indexentry{copystring}{62}
+\indexentry{string-fetch}{63}
+\indexentry{string-store}{63}
+\indexentry{string-length}{63}
+\indexentry{string-upper-bound}{63}
+\indexentry{string-empty?}{63}
+\indexentry{string=}{63}
+\indexentry{string-equal}{64}
+\indexentry{string$<$}{64}
+\indexentry{string$>$}{64}
+\indexentry{string$<$=}{64}
+\indexentry{string$>$=}{64}
+\indexentry{string$<>$}{64}
+\indexentry{string-lessp}{64}
+\indexentry{string-greaterp}{64}
+\indexentry{string-not-greaterp}{64}
+\indexentry{string-not-lessp}{64}
+\indexentry{string-not-equal}{65}
+\indexentry{string-concat}{65}
+\indexentry{string-repeat}{65}
+\indexentry{substring}{65}
+\indexentry{string-trim}{65}
+\indexentry{string-left-trim}{65}
+\indexentry{string-right-trim}{65}
+\indexentry{string-upcase}{66}
+\indexentry{nstring-upcase}{66}
+\indexentry{string-downcase}{66}
+\indexentry{nstring-downcase}{66}
+\indexentry{string-capitalize}{66}
+\indexentry{nstring-capitalize}{66}
+\indexentry{string-to-list}{66}
+\indexentry{string-to-vector}{66}
+\indexentry{string-length}{66}
+\indexentry{rplachar}{66}
+\indexentry{substring=}{67}
+\indexentry{substring-equal}{67}
+\indexentry{string-search}{67}
+\indexentry{string-search-from}{68}
+\indexentry{string-search-equal}{68}
+\indexentry{string-search-from-equal}{68}
+\indexentry{with-input-from-string}{68}
+\indexentry{string-read}{69}
+\indexentry{with-output-to-string}{69}
+\indexentry{cond}{71}
+\indexentry{if}{72}
+\indexentry{when}{72}
+\indexentry{unless}{72}
+\indexentry{if}{73}
+\indexentry{case}{73}
+\indexentry{selectq}{74}
+\indexentry{let}{74}
+\indexentry{let*}{75}
+\indexentry{progn}{75}
+\indexentry{prog2}{75}
+\indexentry{prog1}{75}
+\indexentry{prog}{75}
+\indexentry{go}{77}
+\indexentry{return}{77}
+\indexentry{while}{77}
+\indexentry{repeat}{77}
+\indexentry{next}{77}
+\indexentry{exit}{78}
+\indexentry{for}{78}
+\indexentry{for*}{85}
+\indexentry{foreach}{86}
+\indexentry{map}{86}
+\indexentry{mapc}{87}
+\indexentry{mapcar}{87}
+\indexentry{mapcan}{87}
+\indexentry{maplist}{87}
+\indexentry{mapcon}{87}
+\indexentry{do}{88}
+\indexentry{do*}{89}
+\indexentry{do-loop}{89}
+\indexentry{do-loop*}{89}
+\indexentry{catch}{90}
+\indexentry{throw}{90}
+\indexentry{catch-all}{91}
+\indexentry{unwind-all}{91}
+\indexentry{unwind-protect}{91}
+\indexentry{putd}{94}
+\indexentry{*redefmsg (switch)}{94}
+\indexentry{*usermode (switch)}{95}
+\indexentry{*comp (switch)}{95}
+\indexentry{getd}{95}
+\indexentry{copyd}{95}
+\indexentry{remd}{95}
+\indexentry{de}{96}
+\indexentry{df}{96}
+\indexentry{dn}{96}
+\indexentry{dm}{96}
+\indexentry{ds}{97}
+\indexentry{defmacro}{97}
+\indexentry{deflambda}{98}
+\indexentry{backquote}{98}
+\indexentry{unquote}{99}
+\indexentry{unquotel}{99}
+\indexentry{macroexpand}{100}
+\indexentry{funboundp}{100}
+\indexentry{fboundp}{101}
+\indexentry{flambdalinkp}{101}
+\indexentry{fcodep}{101}
+\indexentry{makefunbound}{101}
+\indexentry{makeflambdalink}{101}
+\indexentry{makefcode}{101}
+\indexentry{getfcodepointer}{101}
+\indexentry{code-number-of-arguments}{101}
+\indexentry{exprp}{101}
+\indexentry{fexprp}{102}
+\indexentry{nexprp}{102}
+\indexentry{macrop}{102}
+\indexentry{wrap}{103}
+\indexentry{remove-wrapper}{104}
+\indexentry{wrapped?}{104}
+\indexentry{wrapper-of-type?}{104}
+\indexentry{wrapper-types}{104}
+\indexentry{function-lambda-list}{104}
+\indexentry{function-basic-definition}{105}
+\indexentry{wrapper-standard-order (global)}{105}
+\indexentry{fluid}{108}
+\indexentry{global}{108}
+\indexentry{unfluid}{108}
+\indexentry{fluidp}{109}
+\indexentry{globalp}{109}
+\indexentry{unboundp}{109}
+\indexentry{unbindn}{109}
+\indexentry{lbind1}{109}
+\indexentry{pbind1}{109}
+\indexentry{eval}{111}
+\indexentry{apply}{114}
+\indexentry{funcall}{114}
+\indexentry{evlis}{114}
+\indexentry{idapply}{115}
+\indexentry{codeapply}{115}
+\indexentry{codeevalapply}{115}
+\indexentry{evprogn}{115}
+\indexentry{quote}{115}
+\indexentry{mkquote}{116}
+\indexentry{function}{116}
+\indexentry{expand}{116}
+\indexentry{robustexpand}{116}
+\indexentry{*in}{117}
+\indexentry{*out}{117}
+\indexentry{prin1}{120}
+\indexentry{channelprin1}{120}
+\indexentry{prin2}{120}
+\indexentry{channelprin2}{121}
+\indexentry{print}{121}
+\indexentry{channelprint}{121}
+\indexentry{terpri}{121}
+\indexentry{channelterpri}{121}
+\indexentry{spaces}{121}
+\indexentry{channelspaces}{121}
+\indexentry{tab}{121}
+\indexentry{channeltab}{122}
+\indexentry{printf}{122}
+\indexentry{channelprintf}{122}
+\indexentry{prettyprint}{123}
+\indexentry{writechar}{123}
+\indexentry{channelwritechar}{123}
+\indexentry{prin2l}{123}
+\indexentry{prin2t}{123}
+\indexentry{channelprin2t}{123}
+\indexentry{princ}{123}
+\indexentry{channelprinc}{123}
+\indexentry{errprin}{123}
+\indexentry{errorprintf}{123}
+\indexentry{eject}{124}
+\indexentry{channeleject}{124}
+\indexentry{outputbase* (global)}{124}
+\indexentry{posn}{124}
+\indexentry{channelposn}{124}
+\indexentry{lposn}{124}
+\indexentry{channellposn}{124}
+\indexentry{linelength}{124}
+\indexentry{channellinelength}{125}
+\indexentry{prinlevel (global)}{125}
+\indexentry{prinlength (global)}{125}
+\indexentry{read}{125}
+\indexentry{channelread}{125}
+\indexentry{readchar}{127}
+\indexentry{channelreadchar}{127}
+\indexentry{readch}{127}
+\indexentry{channelreadch}{127}
+\indexentry{unreadchar}{127}
+\indexentry{channelunreadchar}{127}
+\indexentry{channelreadtoken}{128}
+\indexentry{*compressing}{128}
+\indexentry{toktype*}{128}
+\indexentry{ratom}{128}
+\indexentry{channelreadtokenwithhooks}{128}
+\indexentry{c}{128}
+\indexentry{readline}{128}
+\indexentry{channelreadline}{128}
+\indexentry{yesp}{129}
+\indexentry{promptstring* (global)}{129}
+\indexentry{*eolinstringok (switch)}{129}
+\indexentry{*raise (switch)}{130}
+\indexentry{*compressing (switch)}{130}
+\indexentry{currentscantable* (global)}{130}
+\indexentry{currentreadmacroindicator* (global)}{130}
+\indexentry{open}{130}
+\indexentry{filep}{130}
+\indexentry{close}{131}
+\indexentry{load}{131}
+\indexentry{*verboseload}{131}
+\indexentry{*printloadnames}{131}
+\indexentry{reload}{132}
+\indexentry{imports}{132}
+\indexentry{loaddirectories*  (global)}{132}
+\indexentry{loadextensions* (global)}{132}
+\indexentry{options* (global)}{132}
+\indexentry{*verboseload (switch)}{133}
+\indexentry{*printloadnames (switch)}{133}
+\indexentry{*echo (switch)}{133}
+\indexentry{dskin}{133}
+\indexentry{lapin}{134}
+\indexentry{faslin}{134}
+\indexentry{rds}{134}
+\indexentry{wrs}{134}
+\indexentry{in* (global)}{134}
+\indexentry{out* (global)}{135}
+\indexentry{stdin* (global)}{135}
+\indexentry{stdout* (global)}{135}
+\indexentry{breakin* (global)}{135}
+\indexentry{breakout* (global)}{135}
+\indexentry{errout* (global)}{135}
+\indexentry{specialrdsaction* (global)}{135}
+\indexentry{specialwrsaction* (global)}{135}
+\indexentry{bldmsg}{135}
+\indexentry{flatsize}{136}
+\indexentry{flatsize2}{136}
+\indexentry{explode}{136}
+\indexentry{explode2}{136}
+\indexentry{compress}{136}
+\indexentry{implode}{136}
+\indexentry{specialclosefunction*  (global)}{137}
+\indexentry{specialreadfunction* (global)}{137}
+\indexentry{specialwritefunction* (global)}{138}
+\indexentry{lispscantable* (global)}{139}
+\indexentry{printscantable}{139}
+\indexentry{copyscantable}{139}
+\indexentry{putdiphthong}{139}
+\indexentry{binaryopenread}{140}
+\indexentry{binaryopenwrite}{140}
+\indexentry{binaryopenappend}{140}
+\indexentry{binaryopenupdate}{140}
+\indexentry{binaryclose}{140}
+\indexentry{binaryread}{140}
+\indexentry{binaryreadblock}{141}
+\indexentry{binarywrite}{141}
+\indexentry{binarywriteblock}{141}
+\indexentry{binarypositionfile}{141}
+\indexentry{toploop}{144}
+\indexentry{toploopread* (global)}{144}
+\indexentry{toploopeval* (global)}{144}
+\indexentry{toploopname* (global)}{144}
+\indexentry{toplooplevel* (global)}{144}
+\indexentry{initforms* (global)}{145}
+\indexentry{*output (switch)}{145}
+\indexentry{*time (switch)}{145}
+\indexentry{hist}{145}
+\indexentry{inp}{145}
+\indexentry{redo}{145}
+\indexentry{ans}{145}
+\indexentry{historycount* (global)}{145}
+\indexentry{historylist* (global)}{145}
+\indexentry{main}{146}
+\indexentry{error}{147}
+\indexentry{continuableerror}{148}
+\indexentry{conterror}{148}
+\indexentry{fatalerror}{148}
+\indexentry{errset}{149}
+\indexentry{errorset}{149}
+\indexentry{*emsgp (fluid)}{149}
+\indexentry{emsg* (global)}{150}
+\indexentry{*backtrace (switch)}{150}
+\indexentry{*break (switch)}{150}
+\indexentry{breaklevel* (global)}{150}
+\indexentry{maxbreaklevel* (global)}{150}
+\indexentry{errorform* (global)}{150}
+\indexentry{ignoredinbacktrace* (global)}{151}
+\indexentry{interpreterfunctions* (global)}{151}
+\indexentry{breakin* (global)}{152}
+\indexentry{breakout* (global)}{152}
+\indexentry{rangeerror}{152}
+\indexentry{stderror}{152}
+\indexentry{typeerror}{153}
+\indexentry{usagetypeerror}{153}
+\indexentry{nonwordserror}{153}
+\indexentry{nonpairerror}{153}
+\indexentry{nonlisterror}{153}
+\indexentry{noniderror}{153}
+\indexentry{nonnumbererror}{153}
+\indexentry{nonintegererror}{153}
+\indexentry{nonpositiveintegererror}{153}
+\indexentry{noncharactererror}{153}
+\indexentry{nonstringerror}{154}
+\indexentry{nonvectorerror}{154}
+\indexentry{nonwordserror}{154}
+\indexentry{nonsequenceerror}{154}
+\indexentry{trace}{155}
+\indexentry{break}{155}
+\indexentry{tr}{155}
+\indexentry{trst}{156}
+\indexentry{br}{156}
+\indexentry{untr}{156}
+\indexentry{unbr}{156}
+\indexentry{push}{159}
+\indexentry{pop}{159}
+\indexentry{code-address-to-symbol}{159}
+\indexentry{mkwords}{159}
+\indexentry{truncatevector}{160}
+\indexentry{truncatewords}{160}
+\indexentry{getwords}{160}
+\indexentry{putwords}{160}
+\indexentry{upbw}{160}
+\indexentry{compile-file}{162}
+\indexentry{compile-file-aux}{162}
+\indexentry{compd}{163}
+\indexentry{compile}{163}
+\indexentry{define-constant}{166}
+\indexentry{constant?}{166}
+\indexentry{defconst}{168}
+\indexentry{const}{168}
+\indexentry{commentoutcode}{169}
+\indexentry{compiletime}{169}
+\indexentry{bothtimes}{169}
+\indexentry{loadtime}{169}
+\indexentry{*fast-vectors (switch)}{169}
+\indexentry{*fast-evectors (switch)}{169}
+\indexentry{*fast-strings (switch)}{169}
+\indexentry{*fast-integers (switch)}{169}
+\indexentry{*r2i (switch)}{170}
+\indexentry{*nolinke (switch)}{170}
+\indexentry{*ord (switch)}{171}
+\indexentry{*plap (switch)}{171}
+\indexentry{*pgwd (switch)}{171}
+\indexentry{*pcmac (switch)}{171}
+\indexentry{*pwrds (switch)}{171}
+\indexentry{if\_system}{171}
+\indexentry{quit}{173}
+\indexentry{exitlisp}{173}
+\indexentry{exitwithstatus}{173}
+\indexentry{savesystem}{173}
+\indexentry{lispbanner* (global)}{173}
+\indexentry{dumplisp}{174}
+\indexentry{user-homedir-string}{174}
+\indexentry{init-file-string}{174}
+\indexentry{read-init-file}{174}
+\indexentry{init file}{174}
+\indexentry{reset}{174}
+\indexentry{time}{174}
+\indexentry{date}{174}
+\indexentry{date-and-time}{175}
+\indexentry{time}{175}
+\indexentry{reclaim}{175}
+\indexentry{known-free-space}{175}
+\indexentry{free-bps}{175}
+\indexentry{*gc (switch)}{175}
+\indexentry{garbage collection}{175}
+\indexentry{gctime* (global)}{175}
+\indexentry{gcknt* (global)}{176}
+\indexentry{*crefsummary (switch)}{178}
+\indexentry{nolist* (global)}{178}
+\indexentry{scanalyze-file}{180}
+\indexentry{scanalyze-form}{180}
+\indexentry{scanalyze}{181}
+\indexentry{xref-assert}{182}
+\indexentry{xref-assert-list}{182}
+\indexentry{record-usage}{182}
+\indexentry{record-macro-usage}{183}
+\indexentry{setup-some-xref-actions}{183}
+\indexentry{kernel-fns (global)}{183}
+\indexentry{useful-fns (global)}{183}
+\indexentry{object-fns (global)}{183}
+\indexentry{pp-file}{185}
+\indexentry{pp-object}{185}
+\indexentry{deformat}{188}
+\indexentry{template}{189}
+\indexentry{defflavor}{193}
+\indexentry{make-instance}{196}
+\indexentry{instantiate-flavor}{197}
+\indexentry{=$>$}{197}
+\indexentry{send}{198}
+\indexentry{send-if-handles}{198}
+\indexentry{lexpr-send}{198}
+\indexentry{lexpr-send-if-handles}{198}
+\indexentry{lexpr-send-1}{198}
+\indexentry{lexpr-send-1-if-handles}{199}
+\indexentry{ev-send}{199}
+\indexentry{=$>$}{199}
+\indexentry{object-type}{199}
+\indexentry{flavor-defined?}{199}
+\indexentry{declare-flavor}{200}
+\indexentry{undeclare-flavor}{200}
+\indexentry{object-get-handler}{200}
+\indexentry{objects-version):}{201}
+\indexentry{mkvect}{205}
+\indexentry{make-vector}{205}
+\indexentry{vector}{206}
+\indexentry{copyvectortofrom}{206}
+\indexentry{copyvector}{206}
+\indexentry{vector-fetch}{207}
+\indexentry{vector-store}{207}
+\indexentry{vector-size}{207}
+\indexentry{vector-upper-bound}{207}
+\indexentry{vector-empty?}{207}
+\indexentry{getv}{207}
+\indexentry{putv}{207}
+\indexentry{upbv}{208}
+\indexentry{make-words}{208}
+\indexentry{make-bytes}{208}
+\indexentry{size}{208}
+\indexentry{indx}{208}
+\indexentry{setindx}{208}
+\indexentry{sub}{209}
+\indexentry{setsub}{209}
+\indexentry{subseq}{209}
+\indexentry{setsubseq}{209}
+\indexentry{concat}{209}
+\indexentry{totalcopy}{209}
+\indexentry{system}{211}
+\indexentry{pwd}{211}
+\indexentry{cd}{211}
+\indexentry{pipe-open}{212}
+\indexentry{abandonpipe}{212}
+\indexentry{socketopen}{213}
+\indexentry{socketflushbuffer}{213}
+\indexentry{shm-open}{213}
+\indexentry{independentdetachshm}{213}
+\indexentry{readfromshm}{214}
+\indexentry{twritetoshm}{214}
+\indexentry{getpid}{215}
+\indexentry{gethostid}{215}

@@ -1,0 +1,474 @@
+\chapter*{Cross Reference Tools}
+
+\section{Introduction}
+
+  This chapter describes tools which build cross references, and
+which aid in  analyzing  LISP  code  for  building  other  cross
+reference - like tools.
+
+\subsection{RCREF - Cross Reference Generator for PSL Files}
+
+{\bf rcref} is a Standard LISP program for processing a set of PSL
+function definitions to produce:
+
+\begin{enumerate}
+\item  A "Summary" showing:
+\begin{itemize}
+
+ \item       A list of files processed.
+
+
+\item        A list of "entry points" (functions  which  are    not
+          called or are called only by themselves).
+
+\item A list of undefined  functions  (functions  called but
+          not defined in this set of functions).
+
+\item         A list of variables that were used non-locally but
+not
+          declared GLOBAL or FLUID before their use.
+
+\item        A list of variables that were declared GLOBAL but used
+          as FLUIDs (i.e. bound in a function).
+
+ \item        A  list  of  FLUID  variables that were not bound in
+a
+          function so that one  might  consider  declaring  them
+          GLOBALs.
+
+ \item        A list of all GLOBAL variables present.
+
+ \item        A list of all FLUID variables present.
+
+\item         A list of all functions present.
+\end{itemize}
+
+\item     A "global variable usage" table, showing for each
+non-local variable:
+\begin{itemize}
+
+\item          Functions in which it is used as a declared
+										FLUID or GLOBAL.
+  
+\item         Functions in which it is used but not declared
+          before.
+
+\item          Functions in which it is bound.
+
+\item         Functions in which it is changed by setq.
+\end{itemize}
+\item   A "function usage" table showing for each function:
+
+\begin{itemize}
+\item         Where it is defined.
+
+\item        Functions which call this function.
+
+\item         Functions called by it.
+
+ \item        Non-local variables used.
+\end{itemize}
+\end{enumerate}
+   The  output  is alphabetized on the first seven characters of
+each function name.
+
+   RCREF   also  checks  that  functions  are  called  with  the
+correct number of arguments.
+
+\subsection{Restrictions}
+
+  Algebraic  procedures  in   Reduce  are  treated  as  if  they
+were symbolic,  so that algebraic constructs  actually appear as
+calls to symbolic functions, such as aeval.
+
+  RCREF adds the eval flag to some  functions,  so  it  probably
+cannot coexist with the compiler in a core image.
+
+  SYSLisp procedures are not correctly analyzed.
+
+\subsection{Usage}
+
+  RCREF  should  be  used in PSL:RLisp.  To make a file FILE.CRF
+which is a cross  reference  listing  for  files  FILE1.EX1  and
+FILE2.EX2  do the following in RLisp:
+
+LOAD RCREF;       % RCREF is now autoloading, so this may be omitted.
+
+OUT "file.crf";   % later, CREFOUT ... \\
+ON CREF; \\
+IN "file1.ex1","file2.ex2"; \\
+OFF CREF; \\
+   SHUT "file.crf".  % later CREFEND \\
+
+To  process  more files, more IN statements may be added, or the
+IN statement may be changed to include more files.
+
+\subsection{Options}
+
+\variable{*crefsummary}{[Initially:NIL]}{switch}                          
+
+{    If the switch CREFSUMMARY is ON then only the summary (see 1
+    above) is produced.}
+
+  Functions with the flag NOLIST are  not  examined  or  output.
+Initially, all PSL functions are so flagged.  (In fact, they are
+kept on a list NOLIST!*, so if you wish to see references to ALL
+functions,  then  CREF  should  be first loaded with the command
+LOAD RCREF, and this variable then set to NIL).  (RCREF  is  now
+autoloading.)
+
+\variable{nolist*}{[Initially: the following list]}{global}
+{}
+(and
+cond
+list
+max
+min
+or
+plus
+prog
+prog2
+progn
+times
+lambda
+abs
+add1
+append
+apply
+assoc
+atom car cdr caar
+cadr cdar cddr
+caaar caadr cadar
+caddr cdaar
+cdadr
+cddar
+cdddr
+caaaar
+caaadr
+caadar
+caaddr
+cadaar
+cadadr
+caddar
+cadddr
+cdaaar
+cdaadr
+cdadar
+cdaddr
+cddaar
+cddadr
+cdddar
+cddddr
+close
+codep
+compress cons 
+constantp de deflist delete df difference digit divide 
+dm eject
+eq eqn equal error errorset eval evlis expand explode 
+expt fix fixp
+flag flagp float floatp fluid  fluidp function densym 
+get getd  
+getv global globalp go greaterp idp intern length 
+lessp linelength
+liter lposn map map mapc mapcan mapcar mapcon  
+maplist max2 member 
+memq minus minusp min2 mkvect nconc not  
+null numberp onep
+open pagelength pair pairp plus2 posn 
+princ print prin1 prin2
+prog2 put putd putv quote quotient rds read readch 
+remainder remd 
+remflag remob remprop return reverse rplaca  
+rplacd sassoc set  
+setq stringp sublis subst sub1  terpri times2 
+unfluid upbv vectorp 
+wrs zerop)
+
+  It should also be remembered that in RLisp any  macros    with
+the  flag  EXPAND or, if FORCE is on, without the flag NOEXPAND,
+are expanded  before  the  definition    is    seen    by    the
+cross-reference  program,    so  this  flag  can also be used to
+select those macros you require expanded and those you  do  not.
+The use of ON FORCE; is highly recommended for CREF.
+
+\section{Scanalyzer}
+
+\subsection{Introduction}
+
+  The  scanalyzer  module is a tool for analyzing PSL functions,
+expressions, and source files.  It makes it easy to analyze  PSL
+code   and   to  write  preprocessors  for  PSL.    It  supports
+preprocessing of PSL code in much the way that macroexpand does,
+but is more flexible and extensible.  The scanalyzer understands
+the various PSL function types, including macros, and  has  some
+understanding  of  each  of  the  PSL special forms.  Scanalyzer
+lives in SCANALYZER.SL, some support functions
+(including scanalyze-file) live in XREF-SUPPORT.SL.
+
+  Apologies  to John Brunner, author of "Stand on Zanzibar", for
+the name of this facility.
+
+\subsection{Philosophy}
+
+  The meaning of a piece of LISP code can depend a great deal on
+the context in which it is compiled  or  evaluated.    Virtually
+everything   in  a  LISP  system  can  change  dynamically,  and
+analyzing the  meaning  of  code  in  the  right  context  is  a
+significant problem.
+
+  This  facility  focuses  on analysis of code that is compiled,
+and it does so for two reasons.  One is that most large  systems
+written  in  PSL run compiled.  The other is that once LISP code
+is compiled, the meaning of the object code is much more  static
+than the meaning of the corresponding interpretive code.
+
+  Reliable system operation depends on modules being compiled in
+an  environment that is known and fixed as much as possible.  To
+do this, we compile each module with a compiler that is  started
+afresh. After  one module has been compiled we do not compile
+other modules with the same compiler.
+
+  To precisely analyze a module, we can start a compiler.  To it
+we add the  analysis  facility,  which  should  not  change  the
+compilation  context. We then analyze the module, just as we
+would compile it. The analysis facility must be sensitive  to
+the same contextual information that the compiler is.
+
+  Many   modules  have  some  side-effects  on  the  context  of
+compilation -- defining a macro is just one of the  things  that
+affects  compilation  context. To be sure that a module is
+analyzed in the right context, the analysis should have the same
+side-effects on compilation context as the compilation would
+have.
+
+\subsection{Functions}
+
+\de{scanalyze-file}{(scanalyze-file INPUT-FILE:{string,
+pathname}\\ 
+OUTPUT-FILE:{string, pathname}):
+string}                 {expr}
+{    Applies  the  function  scanalyze-form  (defined  in section
+    2.3.3) to every form in input-file.  Scanalyze-file  assumes
+    that  information  accumulates  in the list xref-assertions.
+    After all the forms have been analyzed, scanalyze-file dumps
+    all the assertions into output-file as a list (reversing the
+    list first).  The assertion ($<input-file>$ IS-SOURCE-FILE) is
+    added to the front of the assertion list.
+    
+				File  name  defaulting:  As  its  arguments   scanalyze-file
+    accepts  both  filename  strings and pathnames.  In any case
+    the output-file argument is defaulted  from  the  input-file
+    argument.  Any missing components of the name in output-file
+    are  defaulted using the function merge-pathname-defaults to
+    be the same as in  input-file,  except  for  the  file  type
+(suffix). If that is not specified in output-file it is set to
+".XD", which is the tentative standard for Xref-Databases.
+
+    For  example,  in  the  call  (scanalyze-file   "pk:load.sl"
+    "mydir:"), the output filename generated is "mydir:load.xd".
+    In   the   call   (scanalyze-file  "\#5:/pslroot/foo/test.sl"
+    "mydir:test-out.dat",  the  output  filename  generated   is
+    "mydir:test-out.dat".
+}
+
+\de{scanalyze-form}{(scanalyze-form FORM:form): form}{expr}
+{    This expects an s-expression as its argument and analyzes it
+    as  a top-level form in a source file.  By recognizing which
+    forms would be evaluated at compile-time, load-time,  or  at
+    both  times, this keeps the context for analysis the same as
+    the context would be for  compilation.    Those  forms  that
+    would be compiled are passed to the function Scanalyze.}
+
+    Scanalyze-Form   recognizes   forms   such   as  compiletime
+    bothtimes, and loadtime.  It evaluates each  at  compiletime
+    if  the  compiler  would  and  analyzes each if the compiler
+    would compile it.  Actually, it recognizes  the  IGNORE  and
+    EVAL flags used internally by the compiler.  This means that
+    if analysis is started in the same context as a compilation,
+    during  analysis  macros are defined in the same way in both
+    cases, as are wconsts, if systems expand the same  way,  the
+    same  "compiletime-loaded" modules are loaded, etc..  In PSL
+    this means that the analysis context  very  closely  matches
+    the compilation context.
+
+\de{scanalyze}{(scanalyze FORM:form ENV:form): form}{expr}
+{    Analyzes   the   given  form  (s-expression)  in  the  given
+    environment.  The value  returned  depends  on  whether  the
+    caller  has  set  up  values  for  functional  variables  or
+    properties that this function  is  sensitive  to.    If  the
+    caller  has  set  up  no special actions, the value returned
+    should be the  same  that  the  function  MACROEXPAND  would
+    return.
+}
+\subsection{Environment Arguments}
+
+  The  caller  can  set  up  special  actions  that  are  in two
+categories.   These  are  "analysis  hooks"  and  "preprocessing
+hooks".
+
+  The  ENV  arguments  to  various  things are environments.  An
+environment is currently a list of "frames".  Each  frame  is  a
+list  of  2  elements.   The first identifies the type of frame,
+currently always 'LOCALS.  The second  is  the  "contents",  for
+locals a list of the local variable names.
+
+\subsection{Analysis Hooks}
+
+  The scanalyzer defines a number of variables that the user may
+give functional values to. Some support the user of this module
+in  analyzing  code. Others provide the means to preprocess or
+transform code. The hooks are functional variables  of 2  args
+(expression and environment) to attach an analysis function to.
+Each of these must either be NIL or a list of functions. The
+first three of these hooks are called before any preprocessing
+or expansion of the form is done; the last is called after all
+preprocessing and expansion of a form is complete. Scan-Macro-Hooks
+Called before each macro is expanded. Scan-Fn-Hooks Called  before
+descending into any expr to analyze it. Scan-Non-Pair-Hooks Called
+with each non-pair examined.
+
+After-Expansion-Hooks Called with each fully expanded
+    expression. Not applied to forms such as macro
+    calls, because they are expanded further before
+    being returned.
+
+
+\subsection{Properties}
+
+  These are checked respectively before and after an expression
+has been expanded. After expansion means that the call has been
+expanded until it is not a macro call, and all subexpressions
+have been expanded also.  If the car of an expression is an id
+that has the appropriate property, each member of the list that
+is the property value will be funcalled. These properties are
+checked at the same points where the scan-xxx hooks are checked.
+Thus it is of no use to give a macro a post-expand-scanners
+property. The properties are:
+   
+			- Pre-Expand-Scanners
+
+   - Post-Expand-Scanners
+
+  Pre-expand-scanners take precedence over scan-macro-hooks and
+scan-fn-hooks.
+
+\subsection{Information Made Available By Scanalyzer}
+
+Current-Function This has the name of the current function where
+that can be determined. Forms such as DE and DEFUN that expand into
+calls on PUTD with constant function names cause this to be rebound
+inside analysis of the function body argument.
+
+Current-Top-Level-Form Contains the argument that was passed to
+the call on scanalyze-form currently being executed.
+
+Top-Level-Code? Is T for expressions not nested in any invocation of
+the function FUNCTION. Expressions for which this variable is T are
+known to be performed at initialization time.
+
+
+\subsection{Expansion And Preprocessing Hooks}
+
+Special-Expander Should  be a functional variable of 2 arguments
+when set to a non-NIL value. If it is, and if the similar functional
+value of expand-specially? is non-NIL, the special-expander function
+will be used to expand the form.
+
+Expand-Specially? If non-NIL, we use special-expander to expand the
+form. Non-Pair-Expander Either NIL or a functional value of 2
+arguments used to expand expressions that are "atomic".
+
+
+  If any function or macro, etc.has an Expr-Expander property,
+its value must be a 2 argument function that scans and expands
+expressions whose first element is that id. This module
+provides several such functions so that built-in special forms
+can be analyzed.
+
+  Special-Expander and Non-Pair-Expander have first priority.
+Then comes any Expr-Expander property. Then normal processing
+by type of function.
+
+\subsection{Cross Reference Support}
+
+  The  fluid  xref-assertions  holds the assertions generated by
+xref-assert and  xref-assert-list,  dumped  out  to  a  file  by
+scanalyze-file.
+
+
+\de{xref-assert}{(xref-assert A:assertion): assertion}{expr}
+{}
+\de{xref-assert-list}{(xref-assert-list L:list): assertion-list}{expr}
+{}
+  These functions add the single assertion or list of assertions
+to xref-assertions.
+
+
+\de{record-usage}{(record-usage EXPR:form ENV:form): nil}{expr}
+{    Suitable  as  a  function to be applied to each (non-atomic)
+    expression  and  subexpression  being  analyzed.     It   is
+    especially  suitable as an after-expansion hook.  Except for
+    various special cases described below, record-usage makes an
+    assertion for each expression that is a function call.   The
+    assertion is of the form, ($<$fn1$>$ CALLS $<$fn2$>$) where
+				$<$fn2$>$ is the function being called (car of
+    the expression). $<$Fn1$>$ is the current-function, or if 
+    that is NIL, it is the current-file.
+}
+
+  Record-usage ignores non-pair expressions. Expressions that
+are pairs (function calls) are checked for an openfn or opencode
+property, which would imply that they are compiled in-line. No
+assertion is  made for these or for expressions where the
+function part (car) is not an id.
+
+  If the function being called has a usage-asserter property,
+the value of that property is funcalled to make whatever
+assertions it will. Otherwise if the function is flagged
+dont-record-usage, no assertion is made.
+
+
+\de{record-macro-usage}{(record-macro-usage EXPR:form ENV:form): 
+nil}{expr}
+{    record-macro-usage is  like  record-usage,  but  it  is  for
+    macros  and  cmacros.    This  function  is  suitable  as  a
+    scan-macro hook.  The assertions generated by this  function
+    in  the  usual  case  are  ($<$fn1$>$ USES-MACRO $<$macro$>$)
+    or for cmacros, ($<$fn1$>$ USES-CMACRO $<$cmacro$>$).
+}
+
+\de{setup-some-xref-actions}{(setup-some-xref-actions): t}{expr}
+{    The programmer who likes some  of  the  facilities  in  this
+    module,  but  doesn't want everything here can just load the
+    module.  If you want to  use  the  facilities  and  defaults
+    available in the module, call this function.  In addition to
+    setting  up  record-usage and record-macro-usage as analysis
+    hooks, it flags some sets of functions as not  having  their
+    usage  recorded.    It  also  sets  up  some  special  usage
+    asserters for certain functions.
+}
+
+  The value of each of these variables is a list of functions (or 
+macros  or  both).  The "setup" function, above,  flags each
+function on each of these lists as dont- record-usage.
+
+\variable{kernel-fns}{[Initially: A list of all defined\\
+functions in a PSL kernel.]}{global}
+
+\variable{useful-fns}{[Initially: A list of frequently-used functions\\
+and macros defined in the USEFUL library module.]}{global}
+
+\variable{object-fns}{[Initially: A list of frequently-used functions\\
+and macros in the OBJECTS module.]}{global}
+{}
+The following are special usage asserters for certain
+functions and macros. See the source code for details.\\
+
+   - Load-Usage-Asserter
+
+   - Imports-Usage-Asserter
+
+   - Send-Usage-Asserter
+
+   - Defmethod-Usage-Asserter
+

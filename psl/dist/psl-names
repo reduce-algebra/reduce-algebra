@@ -1,0 +1,67 @@
+###############################################################################
+#
+# File:         PSL:PSL-NAMES
+# Description:  This file has machine independent and machine specific env
+#               names.  The machine specific parts all start with PX.
+# Author:       Harold Carr & Leigh Stoller
+# Created:      
+# Modified:     
+# Mode:         
+# Package:      
+# Status:       Experimental (Do Not Distribute)
+#
+# (c) Copyright 1987, University of Utah, all rights reserved.
+#
+###############################################################################
+#
+# Revisions:
+#
+# Mar 18 1987 (Harold Carr & Leigh Stoller)
+#  Moved the machine-dependent names to xxx-names.
+# Dec 21 1986 (Leigh Stoller)
+#  cl variable should reference $proot, not ~psl.
+# Dec  6 1986 (Leigh Stoller)
+#  Changed proot from /v/misc/psl3.4 to /v/misc/psl.
+#
+###############################################################################
+
+# Define the variables for easy access to psl sub-directories
+# This file must be edited to reflect local installation choices of
+# the root of the psl directory structure, proot
+# and any other directories that by local convention are moved
+# from subtrees of $proot to other locations.
+
+# All of these variables are set in the environment, so they are accessible
+# from within scripts and PSL itself as dollarsign-variables "$var".
+# Since the environment is inherited, it is only necessary to source psl-names
+# once in your .login file, rather than in the .cshrc for every c-shell.
+
+setenv proot /silo/cons/verkaufpsl
+
+setenv psl $proot/dist          # Top of PSL tree.
+# setenv cl $proot/pclsdist     # Top of PCLS tree.
+
+setenv psys $proot/bin/$MACHINE # All PSL executables go here.
+
+setenv pl $psl/lap/$MACHINE     # Loadable files
+
+setenv plcl $proot/local        # Put site specific source files here.
+setenv pll  $plcl/lap/$MACHINE  # Lap directory for local stuff.
+
+setenv pk $psl/kernel		# Machine-independent kernel sources
+setenv pxk $psl/kernel/$MACHINE # Machine specific kernel sources
+
+setenv pnk $psl/nonkernel	# Machine-independent non-kernel
+setenv pxnk $psl/nonkernel/$MACHINE  # Machine specific non-kernel
+setenv pnkl $psl/nonkernel/$MACHINE/lap  # Non-Kernel binaries
+
+setenv pc $psl/comp		# Machine-independent compiler sources
+setenv pxc $psl/comp/$MACHINE	# Machine specific compiler sources
+
+setenv pu $psl/util		# Machine-independent utility programs
+setenv pxu $psl/util/$MACHINE	# Machine specific utility program sources
+
+setenv pdist $psl/distrib	# Distribution support
+setenv pxdist $psl/distrib/$MACHINE # Distribution support, Machine specific
+
+# End of file.

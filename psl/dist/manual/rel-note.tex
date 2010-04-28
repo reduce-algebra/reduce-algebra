@@ -1,0 +1,637 @@
+\documentstyle[11pt]{report}
+
+\begin{document}
+
+\title{PSL 3.4 Release Notes}
+
+\author{Herbert Melenk, Winfried Neun}
+
+\section{Introduction}
+
+This document was derived to a large extent from 
+"Unix PSL 3.4 Release Notes" by Shebs and ? 
+(Opnote # 1987) Utah PASS Project, University of Utah.
+
+Portable Standard Lisp (PSL) 3.4 runs on a wide variety of platform,e.g.
+
+DEC Vax (under Ultrix or VMS), 
+HP Series 9000 (300/400 and 700/800) HP-UX, 
+SPARC and SUN 3 systems (Sun OS or Solaris), 
+MIPS based systems (e.g. DECstation, CDC 4000 series, SGI Iris, Stardent), 
+IBM RS/6000, 
+IBM (and compatible) mainframe computers under MVS/XA and VM/XA, 
+Fujitsu (Siemens) S400 systems under UXP/M
+Intel 386 or 486 based systems under MS-DOS, OS/2, Windows/NT and various
+Unixes
+MC 88000 systems (e.g. Data General AViiON)
+Cray X/Y computers running UNICOS,
+NeXT systems
+DEC Alpha systems under OSF/1 and OpenVMS
+Convex systems  
+Intel i860 based systems
+
+PSL as a dialect of LISP is mainly used as a delivery vehicle for 
+applications like e.g. the computer algebra system REDUCE.
+
+The COMMON LISP subset implementation 'PCLS' from the University of Utah 
+is currently not supported.
+
+Although this document is written for a Unix environment, it applies to 
+the VMS, MVS and DOS versions too, since the latter PSL versions
+use the same conventions for the operating system interface routines.
+The handling of the distribution tape and starting PSL is of course 
+system specific and different for the various platforms 
+and distribution media too. Please read the
+note "Installation of PSL 3.4" which accompanies these Release notes
+for the necessary steps to undump the distribution tapes (diskettes).
+
+Most people running PSL will not be interested in all of
+the files, and probably will not want to have them all on line.  Only
+the executable programs, {\tt psl-names} and the files residing on the
+sub-directory {\tt dist/lap} (described below) must be on line to use
+PSL.  Any other files may be deleted after the system is installed.
+The full distribution tape should be retained if you plan to delete
+files after installation.  
+
+\section{DISCLAIMER}
+
+Please be aware that this is a research system, not a program product, 
+and some of the files and documentation are not quite complete; 
+we may also have forgotten some files, or sent incorrect versions.  
+We are releasing this version to you at this time to enhance our 
+collaborative research.
+
+For these reasons please:
+
+\begin{itemize}
+
+\item Make a note of ANY problems, concerns, suggestions you have, 
+and send this information to us to aid in improving the system and 
+this distribution mechanism.
+
+\item Please do not REDISTRIBUTE any of these files, listings or 
+machine readable form to anyone.
+
+\end{itemize}
+
+\section{CONTENTS OF THE TAPE}
+
+Attached to this note is a listing of the files on the tape, produced
+as the tape was built.  There is no list of files for diskette
+distributions though.
+The tape (or diskettes) contains the following files and directories
+(directories are indicated by {\tt */}). Some of the directories
+might be empty, but are included for compatibility with the full
+system. The c-shell variables (\$ variables) referencing these
+directories are indicated by {\tt [\$*]}.  Some of the directories
+mention {\tt MACHINE}, which refers to the specific machine.  
+
+\vskip 12pt
+\noindent
+EXECUTABLES: {\tt \$proot/bin/} (the bin directory is {\tt \$psys})
+
+\begin{description}
+
+\item[{\tt bare-psl}:] The smallest executable used mostly for
+building other executables. 
+
+\item[{\tt psl}:] {\tt bare-psl} with several modules loaded (see your
+installer or look at the {\tt psl} variable {\tt options*} to see which
+modules are loaded.
+
+\item[{\tt pslcomp}:] {\tt psl} with the compiler loaded.
+
+\end{description}
+
+\noindent
+SHELL SCRIPTS: {\tt \$proot/dist/} 
+
+\begin{description}
+
+
+\item[{\tt psl-names}:]
+A file to be {\tt source}ed to define environment variables (such as
+{\tt \$pu} for {\tt util/}, {\tt \$pl} for {\tt lap/}, etc.) to aid in
+accessing the various PSL sub-directories.
+On a VMS system the equivalent file pslnames.com must be run a procedure 
+e.g. started in your login.ini file.
+\end{description}
+
+\item[{\tt oload}:]
+A C shell script to to permit {\tt .o} files to be dynamically loaded.  
+(This does not exist on all systems. We strongly recommend NOT to use
+oload.)
+
+\noindent
+DIRECTORIES: {\tt \$proot/dist/} 
+
+\begin{description}
+
+\item[{\tt lap/}:]
+PSL binary ({\tt *.b}) files.  Contains binary files needed to
+rebuild the executables plus binary files for optional loadable
+modules.  PSL binary files are sometimes referred to as FASL (fast
+loading) files.  [{\tt \$pl}]
+
+\item[{\tt kernel/}:]
+Machine-independent kernel sources. [{\tt \$pk}]
+
+\item[{\tt kernel/MACHINE/}:]
+Machine-specific kernel sources and object files. [{\tt \$pxk}]
+
+\item[{\tt nonkernel/}:]
+Files which are part of a standard {\tt bare-psl}, but not
+compiled in the kernel build. [{\tt \$pnk}]
+
+\item[{\tt nonkernel/MACHINE/}:]
+Machine-specific files which are part of a standard {\tt bare-psl}, but
+not compiled in the kernel build. [{\tt \$pxnk}]
+
+\item[{\tt comp/}:]
+Machine-independent compiler sources. [{\tt \$pc}]
+
+\item[{\tt comp/MACHINE/}:]
+Machine-specific compiler sources. [{\tt \$pxc}]
+
+\item[{\tt util/}:]
+Sources for machine-independent utilities. [{\tt \$pu}]
+
+\item[{\tt util/MACHINE/}:]
+Sources for machine-specific utilities. [{\tt \$pxu}]
+
+\item[{\tt distrib/}:]
+Scripts to help build and maintain the machine-independent parts of
+PSL. [{\tt \$pdist}]
+
+\item[{\tt distrib/MACHINE/}:]
+Scripts to help build and maintain the machine-specific parts of PSL.
+[{\tt \$pdist}]
+
+\item[{\tt lpt/}:]
+The PSL manual in printable form (has overprinting and underlining).
+
+\item[{\tt doc/}:]
+Versions of this document and the addendum to the PSL manual.  We keep
+the source texts and printable versions in postscript ({\tt .ps}) and
+laserjet format ({\tt .jep}).
+
+\end{description}
+
+\bigskip
+
+
+\section{A SUGGESTION TO SYSTEM MANAGERS}
+
+PSL has a large heap (of which only half may be used at any
+given time if the copying garbage collector is being used, 
+rather than the compacting collector).  
+The default size of a running PSL core image is roughly 4.5 megabytes.  
+Because of this, it is recommended
+that your system be configured with at least 32 megabytes of swap
+space.  If this is too great a burden on your system, see the section
+on rebuilding the kernel for instructions on creating a version with 
+a smaller heap.
+
+If a large number of people wish to run PSL simultaneously, either
+the swap space will have to be increased, or a smaller PSL should be built.
+
+\section{READING THE TAPE}
+
+This information depends very much on your specific combination of
+operating system and distribution media. Please find a separate note 
+on undumping the distirbution tape attached to this note.
+
+Unless absolutely essential, we recommend that you use exactly the same
+directory structure as we do (relative to the root of the PSL tree),
+even though the system is set up to be installed according to local
+conventions.
+
+\section{INSTALLING PSL}
+
+\subsection{Update the Root Location}
+
+After reading the tape, you need to customize the files to reflect the
+root location of PSL.  This can be accomplished with
+{\tt newroot.csh}.  It takes one argument which is the fully rooted
+path of the PSL root directory.  {\tt newroot.csh} will replace the root
+in {\tt psl-names} and all of the makefiles.  For example,
+
+\begin{verbatim}
+        ./dist/distrib/newroot.csh /v/misc/psl
+\end{verbatim}
+
+\subsection{Adding the PSL Environment}
+
+Your {\tt .cshrc} file should be edited to {\tt source} the new
+{\tt psl-names}, and set up your search path.  If you have previously
+installed a version of PSL, you should at this time make sure that
+your {\tt .cshrc} refers to this NEW {\tt psl-names}.
+
+To do this, insert the lines 
+\begin{verbatim}
+        source $~psl/dist/psl-names          # or equivalent
+        set path=(. $psys /usr/bin /bin ...) # plus any others
+\end{verbatim}
+into your {\tt .cshrc} file at an appropriate point.
+
+Now do
+\begin{verbatim}
+        source ~/.cshrc
+\end{verbatim}
+to set all paths to that of the new PSL.
+
+\subsection{Make links to executables}
+
+Do:
+
+\begin{verbatim}
+        make install
+\end{verbatim}
+
+to make symbolic links from your standard system directory to the
+executables in {\tt \$psys}.  The default is {\tt /usr/site/bin/}.
+This makes it unnecessary for users of PSL to put {\tt \$psys} in the
+search path variables of their {\tt .login} files before they can use
+PSL.  (For users on System V Unix or Apollos, this step does not work.
+Users must put {\tt \$psys} on their search path.)  This default is
+defined in {\tt \$psl/Makefile} as the {\tt DESTDIR} variable.  PSL
+users must still {\tt source psl-names} to use PSL if they intend to
+load modules from the {\tt lap/} directory or use {\tt oload} to load
+{\tt .o files}.
+
+\subsection{Delete unneeded directories}
+
+Only the {\tt lap/} subdirectory and the {\tt \$psl/psl-names} and
+{\tt \$xxx-names} files are  necessary for running PSL
+programs.  If you do not wish to keep the source files on-line, you
+may delete any other files after successfully testing PSL, and
+rebuilding any modules or binaries that you need to change.  But DO
+retain the distribution tape!  Many users of PSL find that on-line
+sources are useful tutorial and reference material, and we once again
+recommend that you retain the file structure as distributed.
+
+\subsection{Announce the system}
+
+You should only announce the system if there are users who are going
+to use PSL directly. Here is how to do it:
+
+Send out a message to all those interested in using PSL.  The file
+{\tt \$psl/doc/bboard.msg} is a suggested start.  In particular, make
+sure that you inform people of the exact path needed to place a
+{\tt source .../psl-names} in their {\tt .login} file, if they desire, since
+{\tt psl-names} facilitates reference to the PSL source directories.
+
+Edit as you see fit, but please REMIND people not to re-distribute the PSL
+system and sources. Note the [.....] blocks in which you are to insert
+the name of some person responsible to answer questions.
+
+You may also want to set the directory protection and limit access only to
+those that you feel should have access at this time.
+
+\section{REBUILDING PSL LOADABLE MODULES}
+
+All of the utilities, are kept as binary FASL files (with extensions
+{\tt .b}) on the {\tt lap/} subdirectory.  After modifying a utility source
+file just connect to {\tt \$pu} and do {\tt make}.  This will
+automatically detect which files need to be recompiled.  Once
+recompiled it will place the binary version(s) on {\tt \$pl}, the
+directory from which the executables obtain loadable modules.
+
+\subsection{Using Pslcomp}
+
+{\tt pslcomp} can be used to compile a file, regardless of whether it is
+listed in one of the makefiles.  Connect to the directory where the
+sources for file {\tt XXX} reside.  Do
+\begin{verbatim}
+       pslcomp  XXX
+\end{verbatim}
+This will compile the file {\tt XXX}, placing the binary (.b) file is
+placed in the directory to which you are connected.  {\tt pslcomp}
+knows about {\tt .sl} and {\tt .l} extensions.
+
+\section{REBUILDING THE SYSTEM}
+
+It is not necessary to rebuild the system after reading the tape.  The
+executables should run on your system.  PSL determines the location of
+its tree (necessary for finding the {\tt lap/} directory, the {\tt
+oload} script, etc.) by checking the environment variables.  That is
+why a user must source {\tt psl-names} to use PSL.  If you do need to
+rebuild the system then this section explains the necessary steps.
+
+To rebuild the system, you must have read the entire contents of the
+tape.  If you have then change your
+working directory to {\tt \$psl}, and do:
+\begin{verbatim}
+        make
+\end{verbatim}
+
+This will connect to several subdirectories of {\tt \$psl} and run
+make in those directories.  These ``recursive'' makes will:
+
+\begin{itemize}
+
+\item Recompile C system interface routines used in the kernel.
+
+\item Recompile any out-of-date PSL system source files, putting their
+binary versions on {\tt \$pl} (none of the PSL source files should be
+out-of-date after first reading a tape).
+
+\item Rebuild {\tt bare-psl}, {\tt psl}, and {\tt pslcomp}, placing
+them on {\tt \$psys}.
+
+\end{itemize}
+
+\section{REBUILDING THE PSL KERNEL}
+
+A running {\tt xxx-cross} and {\tt pslcomp} are required to rebuild
+the kernel, since the entire system is written in PSL itself.  The
+kernel modules are compiled to assembly code ({\tt as}) using {\tt
+xxx-cross}.  They are then linked using the system loader {\tt ld}.
+After that, the rest of the system is compiled to {\tt .b} files,
+which are loaded into the kernel to produce the executables.  You can
+modify any file in the PSL tree.  Then connect to {\tt \$psl} and do
+{\tt make}.  This will recompile any modified files and rebuild the
+executables.
+
+\subsection{Cleanup}
+
+{\tt cd \$psl; make cleanup} will remove log files, editor backup files, and
+backup copies of the executables.
+
+\subsection{Building PSL with different static sizes}
+
+PSL uses static sizes for Binary Program Space (BPS), whereas the heap
+size is adjustable.
+The BPS holds compiled code (both {\tt oload}ed C code and Lisp code),
+while the heap contains dynamic Lisp data.
+
+To determine how much bps space is left call {\tt (free-bps)}.  The
+result is in words, so multiply by 4 to get total bytes left.  The
+amount of available heap space can be determined by first running the
+garbage collector to compact memory and then calling {\tt gtheap}
+with a {\tt nil} argument: {\tt (gtheap nil)}.  This also returns the
+number of words, so multiply by 4 to get bytes.  The following shows
+an example of this:
+
+\begin{verbatim}
+PSL 3.4,  8-Sep-91
+1 lisp> (free-bps)
+216013
+2 lisp> (reclaim)
+*** Garbage collection starting
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+NIL
+3 lisp> (gtheap nil)
+396538
+4 lisp> 
+\end{verbatim}
+
+In order to change the amount of BPS space, do the following:
+
+\begin{enumerate}
+
+\item Connect to the {\tt \$pxk} directory.
+
+\item Edit {\tt Makefile} and change the value of the variable
+{\tt BPSSIZE}.  This is the number of bytes. {\it It must be a
+multiple of four.}
+
+\item Connect to the {\tt \$psl} directory.
+
+\item Run ``{\tt make resize}''.
+
+\end{enumerate}
+
+\noindent For example:
+
+\begin{verbatim}
+% cd $pxk
+% vi Makefile ... make changes to this file
+% cd $psl
+% make resize
+\end{verbatim}
+
+In order to change the amount of Heap space, you must do the
+following:
+
+\begin{enumerate}
+
+\item If your system uses ``images'', i.e. all non UNIX systems and
+Unix versions where a file {\tt \$psys/.imago} exists, you can simply add
+or modify the memory size uses in the startup file {\tt \$psys/psl}
+e.g. if you want to run PSL with 800000 Bytes total system size:
+
+\begin{verbatim}
+#! /bin/csh -f
+$psys/bpsl -f $psys/psl.img -td 8000000
+\end{verbatim}
+
+Under VMS, you can simply start PSL with  \$psl -td 8000000  .
+
+
+\item If your system does not use images, you can set the heap size
+by using the command set-heap-size, e.g.
+
+\begin{verbatim}
+(set-heap-size 8000000)
+\end{verbatim}
+
+If set-heap-size returns its argument the additional memory was allocated. 
+
+\section{FUTURE UPDATES}
+
+It is currently envisioned that future updates will be complete
+releases.  It is therefore suggested that you
+
+\begin{itemize}
+
+\item Retain this distribution tape in case you may have to compare files.
+
+\item Do not make any changes on these distributed directories. If you must
+make your own bug fixes, it is suggested that you put the changed
+files on some other directories, such as {\tt \$proot/local}, etc.  We
+will not send any files on these directories, so that you can compare
+your local versions with our newer ones.
+
+\end{itemize}
+
+\section{BUG REPORTS}
+
+If you wish, you can send bug reports, suggestions, fixes, etc. to us.
+If you have Internet access, you can send email to {\tt
+neun@sc.ZIB-Berlin.de}.  For those with BITNET access, use {\tt
+neun@sc.ZIB-Berlin.dbp.de}.
+
+\section{PSL init files}
+
+When {\tt psl} starts up it will attempt to read and evaluate a file named
+{\tt .pslrc} ({\tt PSL.INI} under VMS) from your home directory.  
+Similarly, {\tt pslcomp} will use a
+{\tt .pslcomprc} ({\tt PSLCOMP.INI) init file.
+
+\section{UNIX specific PSL procedures}
+
+Following are some PSL procedures available in all UNIX versions of PSL.
+Most of them are available in all versions of PSL.
+
+\def \thing #1#2#3#4 {{\noindent {\tt(#1): #2} \hfill {\it #3}}
+                      \begin{itemize}\item[] #4
+                      \end{itemize}}
+
+\thing{cd S:string}{boolean}{expr}{Sets the current working directory to be
+the value of string.  Returns {\tt t} if it is successful, otherwise
+{\tt nil}.}
+
+\thing{channelflush CHNL:inum}{(inum,0)}{expr}{Flush the existing channel
+CHNL so that all characters that have not actually been written
+to the channel are done so.}
+
+\thing{exitlisp}{Undefined}{expr}{Equivalent to {\tt quit}
+(Refer to {\tt quit}).}
+
+\thing{exit-with-status N:number}{Undefined}{expr}{Exit from PSL,
+returning the integer {\tt N} to the caller. This operation
+eventually calls the C library routine {\tt exit}}.
+
+\thing{filestatus FILENAME:string DOSTRINGS:string}{(list, nil)}{expr}{
+Return system dependent information about the file FILENAME. The values
+returned are user, group, mode, size, creation time, access time, and
+modification time. The DOSTRINGS argument is a flag that turns
+on conversion of the information to string representation. If {\tt nil},
+the information is returned in a system dependent manner.}
+
+\thing{flushstdoutputbuffer}{any}{expr}{Flush the standard output buffer
+so that any characters that have not been written, are done so. The
+buffer flushed is the one usually associated with {\tt stdout}. This
+operation only works when the terminal is in {\tt cooked} mode (see
+{\tt echoon}).}
+
+\thing{getenv S:string}{(string, nil)}{expr}{Getenv searches the environment
+for a string of the form S=value and returns the value if such a
+string is present, otherwise {\tt nil} is returned. This is equivalent, but
+not identical to the Unix operation of the same name.}
+
+\thing{getstartupname}{string}{expr}{Return the absolute path of the file
+that PSL was started from.}
+
+\thing{getunixargs}{(vector, nil)}{expr}{The arguments supplied on the
+command line to the PSL executable are placed in the vector stored in
+the PSL variable {\tt unixargs*}. The vector is a vector of strings.}
+
+\thing{init-file-string NAME:string}{string}{expr}{Construct a string
+containing the name of an initialization file in the user's home
+directory. The name of the file is constructed by prepending a ``.''
+to NAME, and appending ``rc'' to NAME. For example, if the value of
+NAME was ``psl'', the initialization filename constructed would be
+``.pslrc''.}
+
+\thing{named-user-homedir NAME:string}{string}{expr}{Return the home
+directory path of the user named NAME.}
+
+\thing{pwd}{string}{expr}{Determine the current working directory and
+return the value as a string.}
+\section{Abstract}
+
+\thing{quit}{Undefined}{expr}{Exit from PSL, returning to the caller.
+If PSL is in a break loop, a non-zero status is returned.}
+
+\thing{setenv VAR:string VAL:string}{any}{expr}{Setenv searches the
+environment for a string of the form VAR=value and if it is not found,
+a string of the form VAR=VAL is added to the environment.  If it is
+found, VAR=value is overwritten so that it is equal to VAR=VAL. This
+is equivalent, but not identical to the Unix operation of the same
+name.}
+
+\thing{system S:string}{string}{expr}{Executes S in a sub (Bourne) shell.
+Returns the exit status of the shell.}
+
+\thing{unix-time}{integer}{expr}{Returns the number of seconds since
+some arbitrary point. For most Unix systems, this is January 1, 1970.}
+
+\thing{unlink FILENAME:string}{any}{expr}{Remove the file FILENAME (works
+similar to {\tt rm}).}
+
+\thing{user-homedir-string}{string}{expr}{Return the home directory
+path of the user running PSL.}
+
+
+         SUN 3               16 MByte
+         SUN 386i           128 MByte
+         SUN 4              128 MByte 
+         Mips Systems       256 MByte
+
+Since all systems use a two space copying garbage collector, one LISP 
+item costs 8 byte of memory and the maximum amount of heap items varies 
+between approx 1,5 M (Sun 3) and approx 30 M (Mips).   
+
+
+In some rare cases a "Binding stack overflow" can occur. 
+Normally this is due to a problem formulation which involves infinte
+recursion. For very big problems, a correct problem may exhaust the binding
+stack space, in this case the user may increase the size of the 
+Binding stack by: (default is 2000)
+
+        PSL                               REDUCE
+ 
+   (set-bndstk-size nnnn)       symbolic set!-bndstk!-size nnnn;
+ 
+
+
+The arithmetic and specially the infinite precision arithmetic for PSL
+and REDUCE was dramatically improved. This software benefits from the
+usage of hardware specific instructions for double precision arithmetic
+(if such instructions are provided by the processor).
+The load module is called nbig30, which is loaded into REDUCE by the 
+usual build procedure and should be used in PSL instead of nbig.
+  
+The floating point coprocessors of the systems are used for all
+floating point calculations. 
+
+
+
+At the moment the overflow of the system stack is not handled gently.
+An overflow causes a 'Illegal Instruction' trap and a core dump (if
+not prevented by setting a limit to core files). We hope that later
+versions of PSL (and partially of Operating systems) 
+will have an improved handling for that.
+
+
+For issueing commands to the operating system the "sytem" interface
+has been defined previously, e.g.
+
+
+   (system "ls")              or              system "ls";
+
+
+will list the names of the files in the current working directory.
+The system command uses the system call "system" which creates a new
+(Bourne) shell to process the command enclosed in the string.
+Some operating system command are useful only is they are issued
+in the same shell as the running REDUCE or PSL run, e.g.
+
+
+    (system "cd hugo")        or              system "cd hugo";
+
+
+will NOT change the current directory for the next REDUCE or PSL
+commands. To provide the user with such "built-in" system calls a
+number of Unix commands are available in REDUCE or PSL, e.g.
+
+
+    (cd "hugo")               or              symbolic cd "hugo";
+
+
+will change the current directory for the next REDUCE or PSL commands,
+if "hugo" is a valid directory name. 
+The most widely used "built-in" commands available in this version are:
+ 
+   (cd  "dirname")                         symbolic cd  "dirname";           
+   (getenv "string")             or           symbolic getenv "string";            (setenv "string" "string")           symbolic setenv("string","string");
+ 
+
+The code generated by the PSL compiler can be inspected by loading
+the utility disassemble (not yet for SUN386i) and calling the
+function 
+
+\end{document}
+

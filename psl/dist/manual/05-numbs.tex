@@ -1,0 +1,632 @@
+\section{Numbers and Arithmetic Functions}
+
+Most  of  the  arithmetic  functions  in PSL expect numbers as
+arguments.    In all  cases an error occurs  if the parameter to
+an arithmetic function is not a number:
+
+\begin{verbatim}
+*****  Non-numeric argument in arithmetic
+\end{verbatim}
+Exceptions to the rule are noted.\\
+
+\noindent
+The underlying machine arithmetic requires  parameters  to  be
+either all integers or all floats.  If a function receives mixed
+types  of  arguments,  integers  are  converted to floats before
+arithmetic operations are performed.  The range of numbers which
+can  be  represented  by  an  integer  is  different  than  that
+represented   by  a  float.    Because  of  this  difference,  a
+conversion is not always possible; an  unsuccessful  attempt  to
+convert may cause an error to be signalled.
+
+\noindent
+The {\bf mathlib} package contains some useful mathematical functions. 
+
+\subsection{Big Integers}
+
+  Loading  the  ZBIG \footnote{ZIB version of big integers, the
+optimal version for the particular architecture }
+  module  redefines  the   basic   arithmetic
+operations,   including   the   logical  operations,  to  permit
+arbitrary precision (or "bignum") integer operations.
+
+\subsection{Conversion Between Integers and Floats}
+
+  The conversions mentioned above can be done explicitly by  the
+following  functions.   Other functions which alter types can be
+found in Section 2.3.
+
+
+\de{fix}{(fix U:number): integer}{expr}
+{    Returns the integer which corresponds to the truncated value
+    of U.  The result of conversion must retain all  significant
+    portions of U.  If U is an integer it is returned unchanged.
+}
+\begin{verbatim}
+    1 lisp> (fix 2.1)
+    2
+    2 lisp> (fix -2.1)
+    -2
+\end{verbatim}
+
+\de{float}{(float U:number): float}{expr}
+{    The  float  corresponding  to the value of the argument U is
+    returned.  Some  of  the  least  significant  digits  of  an
+    integer  may be lost due to the implementation of float.  If
+    U a float then it will be returned unchanged.  If U  is  too
+    large to represent in float an error occurs.
+}
+\begin{verbatim}
+    ***** Argument to FLOAT is too large
+\end{verbatim}
+\subsection{Arithmetic Operators}
+
+ This section describes arithmetic functions in the library
+module {\bf numeric-ops}. The names of these functions are
+based upon mathematical notation.
+
+\noindent
+There  is  a  switch  called  {\bf fast-integers} 
+\index{*fast-integers}whose value has an
+effect on the compilation of forms which contain applications of
+the functions described here.  The  documentation  assumes  that
+the  switch  fast-integers  is nil.  When this switch is non-nil
+the  compiler  will  generate  code  which  is  very  efficient.
+However,    it  is  assumed  that  arguments and results will be
+integers in the inum range.  If this assumption is violated then
+at best your code will not generate  correct  results,  you  may
+actually  damage  the  PSL system. 
+
+\subsubsection{Common LISP operators}
+
+
+\de{=}{(= X:number Y:number): boolean}{expr}
+{    Numeric Equal.  True if the two arguments are numbers of the
+    same type and same value.  Unlike the Common LISP  operator,
+    no  type  coercion  is done, no error is signalled if one or
+    both arguments are non-numeric, and only two  arguments  are
+    permitted.    Instead,  it  is  merely incorrect to supply a
+    non-numeric argument.
+}
+
+\de{/=}{(/= X:number Y:number): boolean}{expr}
+{    Numeric Not Equal.  Nil if X and Y are numbers of equal type
+    and value; t if X and Y  are  numbers  of  unequal  type  or
+    value.  It is incorrect to supply a non-numeric argument.
+}
+
+\de{$<$}{($<$ X:number Y:number): boolean}{expr}
+{    Numeric  Less Than.  True if X is less than Y, regardless of
+    type.  An error is  signalled  if  either  argument  is  not
+    numeric.  }
+
+\de{$>$}{($>$ X:number Y:number): boolean}{expr}
+{    Numeric  Greater  Than.    True  if  X  is  greater  than Y,
+    regardless of  type.    An  error  is  signalled  if  either
+    argument is not numeric.
+}
+
+\de{$<=$}{($<=$ X:number Y:number): boolean}{expr}
+{    Numeric Less Than or Equal.  True if X is less than or equal
+    to  Y, regardless of numeric type.  An error is signalled if
+    either argument is not numeric.
+}
+
+\de{$>=$}{($>=$ X:number Y:number): boolean}{expr}
+{    Numeric Greater Than or Equal.  True if X is greater than or
+    equal to Y,  regardless  of  numeric  type.    An  error  is
+    signalled if either argument is not numeric.
+}
+
+\de{+}{(+ [N:number]): number}{macro}
+{    Numeric  Addition.  The value returned is the sum of all the
+    arguments.  The arguments may be of any numeric  type.    An
+    error  is  signalled  if  any  argument  is not numeric.  If
+    supplied no arguments, the value is 0.
+}
+
+\de{--}{(-- N:number [N:number]): number}{macro}
+{    Numeric Minus  or  Subtraction.    If  given  one  argument,
+    returns  the  negative of that argument.  If given more than
+    one argument, returns the result of successively subtracting
+    succeeding arguments from the first argument.    Signals  an
+    error  if  no  arguments  are supplied or if any argument is
+    non-numeric.
+}
+
+\de{$\ast$}{($\ast$ [N:number]): number}{macro}
+{    Numeric Multiplication.  The value returned is  the  product
+    of  all  the arguments.  The arguments may be of any numeric
+    type.  An error is signalled if any argument is not numeric.
+    If supplied no arguments, the value is 1.
+}
+
+\de{/}{(/ N:number [N:number]): number}{macro}
+{    Numeric Reciprocal or Division.    If  given  one  argument,
+    returns the reciprocal of that argument.  If given more than
+    one  argument,  returns  the result of successively dividing
+    succeeding arguments from the first argument.    Signals  an
+    error  if  no  arguments  are supplied or if any argument is
+    non-numeric.
+}
+\subsubsection{Additional Operators}
+
+
+\de{$\sim =$}{($\sim =$ X:number Y:number): number}{expr}
+{    Numeric Not Equal.  Same as /=.
+}
+
+\de{//}{(// X:integer Y:integer): integer}{expr}
+{    Integer Remainder.  Same as remainder.
+}
+
+\de{$\sim$}{($\sim$ X:integer): integer}{expr}
+{    Integer Bitwise Logical Not.  Same as lnot.
+}
+
+\de{\&}{(\& X:integer Y:integer): integer}{expr}
+{    Integer Bitwise Logical And.  Same as land.
+}
+
+\de{$\mid$}{($|$ X:integer Y:integer): integer}{expr}
+{    Integer Bitwise Logical Or.  Same as lor.
+}
+
+\de{$\wedge$}{($\wedge$ X:integer Y:integer): integer}{expr}
+{    Integer Bitwise Logical Xor.  Same as lxor.
+}
+
+\de{$<<$}{($<<$ X:integer Y:integer): integer}{expr}
+{    Integer Bitwise Logical Left Shift.  Same as lshift.
+}
+
+\de{$>>$}{($>>$ X:integer Y:integer): integer}{expr}
+{    Integer Bitwise Logical Right Shift. Same as (lshift  X
+    (minus Y)).
+}
+\subsection{Arithmetic Functions}
+
+  The  functions  described  below handle arithmetic operations.
+Please note  the  remarks  at  the  beginning  of  this  Chapter
+regarding the mixing of argument types.
+
+
+\de{abs}{(abs U:number): number}{expr}
+{    Returns the absolute value of its argument.
+}
+
+\de{add1}{(add1 U:number): number}{expr}
+{    Returns  the value of U plus 1; the returned value is of the
+    same type as U (integer or float).
+}
+
+\de{decr}{(decr U:form [Xi:number]): number}{macro}
+{    This function is defined in the {\bf useful} module. With only
+    one argument, this is equivalent to
+}
+\begin{verbatim}
+    (setf u (sub1 u))
+\end{verbatim}
+    With multiple arguments, it is equivalent to
+
+\begin{verbatim}
+    (setf u (difference u (plus x1 ... xn)))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (setq y '(1 5 7))
+    (1 5 7)
+    2 lisp> (decr (car y))
+    0
+    3 lisp> y
+    (0 5 7)
+    4 lisp> (decr (cadr y) 3 4)
+    -2
+    5 lisp> y
+    (0 -2 7)
+\end{verbatim}
+\de{difference}{(difference U:number V:number): number}{expr}
+{    The value of U - V is returned.
+}
+
+\de{divide}{(divide U:number V:number): pair}{expr}
+{    The  pair  (quotient  .  remainder)  is  returned, as if the
+    quotient part was computed by the quotient function and  the
+    remainder  by  the  remainder  function.  An error occurs if
+    division by zero is attempted:
+}
+\begin{verbatim}
+    ***** Attempt to divide by 0 in Divide
+\end{verbatim}
+
+\de{expt}{(expt U:number V:integer): number}{expr}
+{    Returns U raised to the V power.  A float U  to  an  integer
+    power   V  does  not  have  V  changed  to  a  float  before
+    exponentiation.
+}
+
+\de{incr}{(incr U:form [Xi:number]): number}{macro}
+{    Part of the {\bf useful} package. With only one argument,
+	this is equivalent to
+}
+\begin{verbatim}
+    (setf u (add1 u))
+\end{verbatim}
+    With multiple arguments it is equivalent to
+\begin{verbatim}
+    (setf u (plus u x1 ... xn))
+\end{verbatim}
+\de{minus}{(minus U:number): number}{expr}
+{    Returns -U.
+}
+
+\de{plus}{(plus [U:number]): number}{macro}
+{    Forms the sum of all its arguments.  Plus may be called with
+    only  one  argument.   In this case it returns its argument.
+    If plus is called with no arguments, it returns zero.
+}
+
+\de{plus2}{(plus2 U:number V:number): number}{expr}
+{    Returns the sum of U and V.  }
+
+\de{quotient}{(quotient U:number V:number): number}{expr}
+{    The quotient of U divided by V is returned.  Division of two
+    positive or two negative integers is conventional.  If  both
+    U  and  V  are integers and exactly one of them is negative,
+    the value  returned  is  truncated  toward  0.    If  either
+    argument  is  a  float,  a  float is returned which is exact
+    within the implemented precision of floats.  An error occurs
+    if division by zero is attempted:
+}
+\begin{verbatim}
+    ***** Attempt to divide by 0 in QUOTIENT
+\end{verbatim}
+\de{recip}{(recip U:number): float}{expr}
+{    Recip converts U to a float if necessary, and then finds the
+    inverse using the function quotient.  }
+
+\de{remainder}{(remainder U:integer V:integer): integer}{expr}
+{    (- U (* V (fix (/ U (float V))))) }
+\begin{verbatim}
+    (remainder 13 4)    =  1
+    (remainder -13 4)   = -1
+    (remainder 13 -4)   =  1
+    (remainder -13 -4)  = -1
+\end{verbatim}
+\de{sub1}{(sub1 U:number): number}{expr}
+{    Returns the value of U minus 1.  If U is a float, the  value
+    returned is U minus 1.0.  }
+
+\de{times}{(times [U:number]): number}{macro}
+{    Returns  the  product  of  all  its arguments.  Times may be
+    called with only one argument.  In this case it returns  the
+    value  of  its  argument.    If  times  is  called  with  no
+    arguments, it returns 1.  }
+
+\de{times2}{(times2 U:number V:number): number}{expr}
+{    Returns the product of U and V.
+}
+\subsection{Functions for Numeric Comparison}
+
+  The following functions compare the values of their arguments.
+Functions which test for equality and inequality are  documented
+in Section 2.2.1.
+
+
+\de{geq}{(geq U:any V:any): boolean}{expr}
+{    Equivalent to (>= U V).  }
+
+\de{greaterp}{(greaterp U:number V:number): boolean}{expr}
+{    Equivalent to (> U V).  }
+
+\de{leq}{(leq U:number V:number): boolean}{expr}
+{    Equivalent to (<= U V).  }
+
+\de{lessp}{(lessp U:number V:number): boolean}{expr}
+{    Equivalent to (< U V).  }
+
+\de{max}{(max [U:number]): number}{macro}
+{    Returns  the  largest  of the values in U (numeric maximum).
+    If two or more  values are the same, the first is returned.  }
+
+\de{max2}{(max2 U:number V:number): number}{expr}
+{    Returns the larger of U and V.  If U and V are of  the  same
+    value, U is returned (U and  V might be of different types).  }
+
+\de{min}{(min [U:number]): number}{macro}
+{    Returns  the smallest (numeric minimum), of the values in U.
+    If two or more  values are the same, the first of  these  is
+    returned.  }
+
+\de{min2}{(min2 U:number V:number): number}{expr}
+{    Returns  the  smaller of its arguments.  If U and V are  the
+    same value,  U is  returned  (U  and    V  might    be    of
+    different types).  }
+
+\de{minusp}{(minusp U:any): boolean}{expr}
+{    Returns  t  if  U  is  a number and less than 0.  The return
+    value is nil if U is not a number, or if  U  is  a  positive
+    number.  }
+
+\de{onep}{(onep U:any): boolean}{expr}
+{    Returns  t if  U is a  number and  has the value  1 or  1.0.
+    Returns nil otherwise.  }
+
+\de{zerop}{(zerop U:any): boolean}{expr}
+{    Returns t if  U is a  number and  has the value  0 or   0.0.
+    Returns nil otherwise.  }
+
+\subsection{Bit Operations}
+
+  The  functions described in this section operate on the binary
+representation of the integers given as arguments.  The returned
+value is an integer.
+
+
+\de{land}{(land U:integer V:integer): integer}{expr}
+{    Bitwise  or  logical  and.    Each  bit  of  the  result  is
+    independently  determined from the corresponding bits of the
+    operands.  }
+
+\de{lor}{(lor U:integer V:integer): integer}{expr}
+{    Bitwise  or  logical  or.    Each  bit  of  the  result   is
+    independently  determined  from  corresponding  bits  of the
+    operands.  This is an inclusive or, the value of (lor  1  1)
+    is 1. }
+
+\de{lnot}{(lnot U:integer): integer}{expr}
+{    Logical  not.    Defined  as  (-  -U 1) so that it works for
+    bignums as if they were 2's complement.  }
+
+\de{lxor}{(lxor U:integer V:integer): integer}{expr}
+{    Bitwise or logical exclusive or, the value of (lxor 1 1)  is
+    0.   Each bit of the result is independently determined from
+    the corresponding bits of the operands.  }
+
+\de{lshift}{(lshift N:integer K:integer): integer}{expr}
+{    Shifts N to the left by K bits.  The effect  is  similar  to
+    multiplying  by  2  to  the  K  power.   Negative values are
+    acceptable for K, and cause a  right  shift  (in  the  usual
+    manner).   Lshift is a logical shift, so right shifts do not
+    resemble division by a power of 2.  }
+
+\subsection{Various Mathematical Functions}
+
+The optionally loadable {\bf mathlib} module  defines  several
+commonly used mathematical functions.  Some effort has been made
+to  be  compatible with Common Lisp.  When reading the examples,
+note that the precision of the results  depend  on  the  machine
+being used.
+
+
+\de{ceiling}{(ceiling X:number): integer}{expr}
+{    Returns  the  smallest  integer  greater than or equal to X.
+    For example: }
+\begin{verbatim}
+    1 lisp> (ceiling 2.1)
+    3
+    2 lisp> (ceiling -2.1)
+    -2
+\end{verbatim}
+\de{floor}{(floor X:number): integer}{expr}
+{    Returns the largest integer less than or equal to X.   (Note
+    that this differs from the fix function.)
+}
+\begin{verbatim}
+    1 lisp> (floor 2.1)
+    2
+    2 lisp> (floor -2.1)
+    -3
+    3 lisp> (fix -2.1)
+    -2
+\end{verbatim}
+\de{round}{(round X:number): integer}{expr}
+{    Returns the nearest integer to X.  If the fractional part of
+    X is 0.5 then the smaller integer is returned.
+}
+\begin{verbatim}
+    (de round (x)
+      (if (fixp x) x (floor (plus x 0.5))))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (round 2.5)
+    3
+    2 lisp> (round -2.5)
+    -2
+\end{verbatim}
+\de{transfersign}{(transfersign S:number VAL:number): number}{expr}
+{    Transfers the sign of S to VAL.
+}
+\begin{verbatim}
+    (de transfersign (s val)
+      (if (>= s 0) (abs val) (minus (abs val))))
+\end{verbatim}
+\de{mod}{(mod M:integer N:integer): integer}{expr}
+{    (- U (* V (floor (/ U (float V)))))
+}
+\begin{verbatim}
+    (mod 13 4)    =  1
+    (mod -13 4)   =  3
+    (mod 13 -4)   = -3
+    (mod -13 -4)  = -1
+\end{verbatim}
+\de{degreestoradians}{(degreestoradians X:number): number}{expr}
+{    Returns an angle in radians given an angle in degrees.
+}
+\begin{verbatim}
+    1 lisp> (degreestoradians 180)
+    3.1415926
+\end{verbatim}
+\de{radianstodegrees}{(radianstodegrees X:number): number}{expr}
+{    Returns an angle in degrees given an angle in radians.
+}
+\begin{verbatim}
+    1 lisp> (radianstodegrees 3.1415926)
+    180.0
+\end{verbatim}
+\de{radianstodms}{(radianstodms X:number): list}{expr}
+{    Given  an  angle  X  in  radians,  returns  a  list of three
+    integers, which represent the degrees, minutes, and seconds.  }
+\begin{verbatim}
+    1 lisp> (radianstodms 1.0)
+    (57 17 45)
+\end{verbatim}
+\de{dmstoradians}{(dmstoradians Degs:number Mins:number Secs:number): number}{expr}
+{    Returns  an  angle  in  radians,   given   three   arguments
+    representing an angle in degrees minutes and seconds.  }
+\begin{verbatim}
+    1 lisp> (dmstoradians 57 17 45)
+    1.0000009
+    2 lisp> (dmstoradians 180 0 0)
+    3.1415926
+\end{verbatim}
+\de{degreestodms}{(degreestodms X:number): list}{expr}
+{    Given  an  angle  X  in  degrees,  returns  a  list of three
+    integers giving the angle in (Degrees  Minutes  Seconds).  }
+
+\de{dmstodegrees}{(dmstodegrees Degs:number Mins:number Secs:number): number}{expr}
+{    Returns  an  angle  in  degrees,   given   three   arguments
+    representing an angle in degrees minutes and seconds.  }
+
+\de{sin}{(sin X:number): number}{expr}
+{    Returns the sine of X, an angle in radians.  }
+
+\de{sind}{(sind X:number): number}{expr}
+{    Returns the sine of X, an angle in degrees.  }
+
+\de{cos}{(cos X:number): number}{expr}
+{    Returns the cosine of X, an angle in radians.  }
+
+\de{cosd}{(cosd X:number): number}{expr}
+{    Returns the cosine of X, an angle in degrees.  }
+
+\de{tan}{(tan X:number): number}{expr}
+{    Returns the tangent of X, an angle in radians.  }
+
+\de{tand}{(tand X:number): number}{expr}
+{    Returns the tangent of X, an angle in degrees.  }
+
+\de{cot}{(cot X:number): number}{expr}
+{    Returns the cotangent of X, an angle in radians.  }
+
+\de{cotd}{(cotd X:number): number}{expr}
+{    Returns the cotangent of X, an angle in degrees.  }
+
+\de{sec}{(sec X:number): number}{expr}
+{    Returns the secant of X, an angle in radians.  }
+
+\de{secd}{(secd X:number): number}{expr}
+{    Returns the secant of X, an angle in degrees.  }
+
+\de{csc}{(csc X:number): number}{expr}
+{    Returns the cosecant of X, an angle in radians.  }
+
+\de{cscd}{(cscd X:number): number}{expr}
+{    Returns the cosecant of X, an angle in degrees.  }
+
+\de{asin}{(asin X:number): number}{expr}
+{    Returns the arc sine, as an angle in radians, of X.  }
+\begin{verbatim}
+    (eqn (sin (asin X)) X)
+\end{verbatim}
+\de{asind}{(asind X:number): number}{expr}
+{    Returns the arc sine, as an angle in degrees, of X.  }
+
+\de{acos}{(acos X:number): number}{expr}
+{    Returns the arc cosine, as an angle in radians, of X.  }
+\begin{verbatim}
+    (eqn (cos (acos X)) X)
+\end{verbatim}
+\de{acosd}{(acosd X:number): number}{expr}
+{    Returns the arc cosine, as an angle in degrees, of X.  }
+
+\de{atan}{(atan X:number): number}{expr}
+{    Returns the arc tangent, as an angle in radians, of X.  }
+\begin{verbatim}
+    (eqn (tan (atan X)) X)
+\end{verbatim}
+\de{atand}{(atand X:number): number}{expr}
+{    Returns the arc tangent, as an angle in degrees, of X.  }
+
+\de{atan2}{(atan2 Y:number X:number): number}{expr}
+{    Returns  an  angle  in  radians  corresponding  to the angle
+    between the X axis and the vector [X Y].  Note that Y is the
+    first argument.
+}
+\begin{verbatim}
+    1 lisp> (atan2 0 -1)
+    3.1415927
+\end{verbatim}
+\de{atan2d}{(atan2d Y:number X:number): number}{expr}
+{    Returns an angle  in  degrees  corresponding  to  the  angle
+    between the X axis and the vector [X Y].
+}
+\begin{verbatim}
+    1 lisp> (atan2d -1 1)
+    315.0
+\end{verbatim}
+\de{acot}{(acot X:number): number}{expr}
+{    Returns the arc cotangent, as an angle in radians, of X.  }
+\begin{verbatim}
+    (eqn (cot (acot X)) X)
+\end{verbatim}
+
+\de{acotd}{(acotd X:number): number}{expr}
+{    Returns the arc cotangent, as an angle in degrees, of X.  }
+
+\de{asec}{(asec X:number): number}{expr}
+{    Returns the arc secant, as an angle in radians, of X.  }
+\begin{verbatim}
+    (eqn (sec (asec X)) X)
+\end{verbatim}
+\de{asecd}{(asecd X:number): number}{expr}
+{    Returns the arc secant, as an angle in degrees, of X.  }
+
+\de{acsc}{(acsc X:number): number}{expr}
+{    Returns the arc cosecant, as an angle in radians, of X.  }
+\begin{verbatim}
+    (eqn (csc (acsc X)) X)
+\end{verbatim}
+\de{acscd}{(acscd X:number): number}{expr}
+{    Returns the arc cosecant, as an angle in degrees, of X.  }
+
+\de{sqrt}{(sqrt X:number): number}{expr}
+{    Returns the square root of X.  }
+
+\de{exp}{(exp X:number): number}{expr}
+{    Returns the exponential of X.  }
+
+\de{log}{(log X:number): number}{expr}
+{    Returns the natural (base e) logarithm of X.  note that (log
+    (log (exp X)) is equal to X.  }
+
+\de{log2}{(log2 X:number): number}{expr}
+{    Returns the base two logarithm of X.  }
+
+\de{log10}{(log10 X:number): number}{expr}
+{    Returns the base ten logarithm of X.  }
+
+\de{random}{(random N:integer): integer}{expr}
+{    Returns  a  pseudo-random number uniformly selected from the
+    range 0 ... (sub1 N).  }
+
+The random number generator uses a linear congruential method.    
+
+\variable{randomseed}{Initially: set from time}{global}
+{
+To  get a reproducible sequence of random numbers
+    you should assign one (or some other small  number)  to  the
+    fluid variable randomseed.  }
+
+\de{factorial}{(factorial N:integer): integer}{expr}
+{    The factorial function is defined as follows
+}
+\begin{verbatim}
+      1. The factorial of 0 is 1.
+\end{verbatim}
+\begin{verbatim}
+      2. The factorial of N is N times the factorial of N-1.
+\end{verbatim}
+\begin{verbatim}
+    (de factorial (n)
+      (if (zerop n) 1 (* n (factorial (sub1 n)))))
+\end{verbatim}

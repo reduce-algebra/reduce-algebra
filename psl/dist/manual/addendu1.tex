@@ -1,0 +1,805 @@
+\ifx\undefined\selectfont
+
+\documentstyle[11pt,reduce,twoside]{article}
+
+\newcommand{\dotitlepage}{%
+  \vspace*{\fill}
+  \nopagebreak
+  \begin{center}
+    \Huge
+    PSL 4.2\\
+    \huge
+    Installation Guide and\\
+    Addendum to the PSL\\
+    User's Manual\\[40mm]
+    \LARGE
+    Winfried Neun\\[80mm]
+    \Large
+    Konrad-Zuse-Zentrum Berlin 1995
+  \end{center}
+}
+
+\newcommand{\VERYLARGE}{\Huge}
+
+\else
+\documentstyle[11pt,epsfig,reduce,nfltxsym,twoside]{article}
+\makeatletter
+
+\define@nomathsize{70}
+\define@nomathsize{40}
+
+\makeatother
+
+\renewcommand{\encodingdefault}{T1}
+\renewcommand{\familydefault}{ptm}
+\renewcommand{\rmdefault}{ptm}
+\renewcommand{\sfdefault}{phv}
+\renewcommand{\ttdefault}{pcr}
+\renewcommand{\bfdefault}{b}
+
+\newcommand{\dotitlepage}{%
+  \vspace*{\fill}
+  \nopagebreak
+  \begin{center}
+    \fontsize{70}{75pt}\selectfont
+    PSL 4.2\\
+    \fontsize{40}{65pt}\selectfont
+    Installation Guide and\\
+    Addendum to the\\
+    PSL User's Manual\\[40mm]
+    \LARGE
+    Winfried Neun\\[45mm]
+    \mbox{\epsfig{file=ziblogo.eps,width=21mm}}\\[10mm]
+    \Large
+    Konrad-Zuse-Zentrum Berlin 1995
+  \end{center}
+}
+
+\newcommand{\VERYLARGE}{\fontsize{40}{65pt}\selectfont}
+
+\fi
+
+\def\xr{{\tt XR}}
+
+\makeatother
+
+\setlength{\oddsidemargin}{5mm}
+\setlength{\evensidemargin}{-5mm}
+\setlength{\textwidth}{159.2mm}
+\setlength{\textheight}{235mm}
+\addtolength{\topmargin}{-18mm}
+
+\date{}
+\sloppy
+
+\parindent 0pt
+\parskip 6pt
+\pagestyle{empty}
+\setlength{\topsep}{0.5\baselineskip}  % above and below environments
+\setlength{\itemsep}{\topsep}
+\setlength{\abovedisplayskip}{\topsep}  % for "long" equations
+\setlength{\belowdisplayskip}{\topsep}
+
+\renewcommand{\arraystretch}{1.3}
+
+\begin{document}
+\pagestyle{empty}
+\begin{titlepage}
+   \dotitlepage
+\end{titlepage}
+
+\vspace*{1cm}
+\begin{center}
+\VERYLARGE
+{\bf PSL 4.2} Installation \\
+Guide and Addendum to\\
+the PSL User's Manual\\
+\normalsize
+\vspace*{.5cm}
+{\large by} \\[0.3cm]
+{\Large Winfried Neun}\\
+{\large ZIB} \\
+{\large D-10711 Berlin-Wilmersdorf} \\[0.3cm]
+{\large Federal Republic of Germany} \\[0.5cm]
+{\large email: neun@sc.ZIB-Berlin.de} \\[0.3cm]
+{\large October 1995}\\[0.5cm]
+\vfill
+\newpage
+\end{center}
+\section{Abstract}
+This document
+contains instructions for the installation of PSL 4.2 on UNIX systems 
+and it summarizes the differences between PSL 4.2, as
+described in the USERS MANUAL plus the Addendum by Stoller and Carr
+from the University of Utah (Utah Pass Opnote 07, 1987)
+and PSL Version 4.2 distributed by the
+Konrad-Zuse-Zentrum Berlin (ZIB), the version that
+is delivered on the tape (or diskettes).  
+
+\section{Introduction}
+
+Since its earlier versions starting in the 80's, Portable Standard LISP 
+has undergone several changes. 
+
+PSL was developed for mainframe systems
+e.g. of /370 and Vax type running proprietary operating systems of the  
+manufacturers. Today most PSL versions run on workstations with RISC processors
+running a Unix type operating system. 
+
+Today PSL is mostly used a deliverly vehicle for LISP based systems, e.g.
+the computer algebra system REDUCE and not as a LISP dialect of its own 
+right.
+
+The support and maintainance for PSL is mostly done at ZIB in Berlin.
+
+Recently, the internal representation of identifiers was changed in order
+to support a 256 character set and case sensitivity. This causes a
+binary incomptibility of .b files with older versions such as PSL 3.4.
+
+This document describes the changes and newer developments for PSL
+done at ZIB in order to improve performance and to work with new
+application types such as parallel processing.
+
+\section{Installation}
+
+This section gives instructions for the Installation of PSL 4.2 on
+your UNIX system. It does not apply for other operating systems such
+as VMS, MVS, DOS etc, and it does not apply for distribution on
+diskettes (e.g. all PC systems, IBM RS/6000, NeXT). Please read
+special instructions (below) for the system mentioned above.
+
+The Installation procedure described below uses {\tt csh} syntax.
+If you don't have csh installed on your system, please change the
+commands accordingly.
+
+PSL is stored as a single file tree with two directories on the
+top level, called bin and dist, where the later contains all sources
+and some more binary files.
+
+The installation is relatively simple.
+
+\subsection{Reading the tape}
+
+The tape contains a compressed file tree. Please cd to the directory
+where you want to store the files (called PSL root directory later on)
+and enter 
+
+\begin{verbatim}
+dd if=/dev/tape ibs=51200 | uncompress | tar -xf -
+\end{verbatim}
+
+Please replace /dev/tape in the above command with the correct
+name of your tape drive.
+
+\subsection{Reading the tape for IBM RS/6000}
+
+The PSL file tree for the IBM RS/6000 is configured in the same way as for
+other Unix type workstations. The installation needs an additional
+step.
+
+The installation procedure described below assumes that you use the
+C-Shell. If you use different shells please change commands accordingly.
+
+To read the tape, make a directory with a name like .../psl, cd to that
+directory, and do, after putting the tape into the drive, 
+
+\begin{verbatim}
+     tar -xf /dev/rfd0
+\end{verbatim}
+
+You first need to install a syscall into the AIX system. 
+{\bf In order to do this, YOU NEED SUPER USER PRIVILEGE.}
+To install the syscall, do
+ 
+\begin{verbatim}
+   su
+   cd ./dist/kernel/ibmrs/syscall
+   ./install
+   ./installsysc
+   exit
+\end{verbatim}
+
+The script install compiles and installs the required system call.
+The script installsysc in the same directory installs the system call only.
+With any reboot of the system it is mandatory to run installsysc in the
+directory ./dist/kernel/ibmrs/syscall.
+It is suggested that this is included into the AIX boot files. The sources
+of the syscall can be found in ./dist/kernel/ibmrs/syscall  too.
+
+\subsection{Reading Diskettes for LINUX 386}
+
+The PSL file tree for LINUX is compressed on to 3 diskettes for
+distribution. The 3 diskettes require about 4 megabytes of disk space to
+dump.  However, you must then rebuild the binary files for your machine
+before you can do anything. Instructions on doing this are given below.
+If the files for your machine are built, the file tree then requires
+about 30 megabytes during the build (but less when complete).
+
+To read the diskettes, make a directory with a name like .../psl, cd to that
+directory, and do, after putting DISK \# 1 into the floppy disk reader,
+
+\begin{verbatim}
+     tar -xf /dev/fd0H1440
+     install_psl
+\end{verbatim}
+
+The script install\_psl prompts for the other disks and will uncompress the
+files.
+
+If there is an incompatibility between the delivered exeutable and
+your Linux version, or when you upgrade your Linux version
+and {\small PSL} becomes inoperable, you must recompile the
+executable $bpsl$:
+\begin{verbatim}
+    cd $pxk/linux
+    cclnk
+\end{verbatim}
+After this step you should rebuild the image files using the
+scripts in \verb+$psl/distrib+.
+
+\subsection{Customizing Makefiles and scripts}
+
+In the next step the system must get knowledge about the PSL root directory
+and the machine architecture. The correct name for the architecture in the
+PSL file tree can be found in the table below.  
+\begin{verbatim}
+
+        Machine        Operating system      PSL MACHINE name 
+        
+        CDC 4xxx        EP/IX                   mips_cdc     ++
+        Convex Cxxxx                            convex       ++
+        Convex SPP                              convex_spp
+        Cray 1, X-MP    UNICOS                  crayxmp
+        Cray Y-MP       UNICOS                  crayymp
+        Cray C90        UNICOS                  crayymp
+        Crat T3D        UNICOS                  cray_t3d
+        DECStation      ULTRIX                  Mips_dec
+        DEC Alpha       OSF/1                   Alpha
+        DEC VAX         ULTRIX                  vax
+        DG AViiON       DG-UX                   88k-aviion    ++
+        HP9000/300 400  HP-UX                   bobcat        ++
+        HP9000/700      HP-UX                   Snake
+        HP9000/800      HP-UX                   spectrum      ++
+        IBM RS/6000     Aix                     Ibmrs	
+        IBM SP2         * not yet available *
+        Intel 386 +     Linux                   Linux
+        SGI Iris/Indigo Irix                    Mips_iris
+        Sun 3           SunOS                   sun           ++
+        Sparc           SunOS (Solaris1.x)      Sun4
+        Sparc           Solaris (2.x)           Solaris
+
+++ This version may be not supported in future version.
+        
+\end{verbatim}
+
+The script dist/distrib/newroot.csh will modify various Makefiles and
+scripts, especially dist/psl-names. It must be started with the
+PSL root directory and MACHINE name as parameter, e.g. for a Sparc under
+SUNOS:
+
+\begin{verbatim}
+dist/distrib/newroot.csh `pwd` Sun4
+\end{verbatim}
+
+After that the file dist/psl-names contains the settings for the  
+PSL specific environment variables such as \$psys. It must be
+read in by the PSL user to insure correct operation,e.g. for a
+Sparc machine under SunOS:
+
+\begin{verbatim}
+setenv MACHINE Sun4
+source <PSL root directory>/dist/psl-names
+\end{verbatim}
+
+This installation is designed for usage with multiple machine types,
+it saves disk space by sharing the PSL code (.sl files).
+The vaariable  {\bf MACHINE} is used to specify the machine type.
+If you install a single version of PSL it may be useful to
+replace {\bf MACHINE} by the correct value in the file
+$<PSL root directory>$/dist/psl-names. In this case the
+user does not need to specify the MACHINE environment variable.
+
+To test the installation, you can try the following commands which
+are supposed to run without error message:
+
+\begin{verbatim}   
+$psys/psl
+(load inum)
+(quit)
+\end{verbatim}   
+
+If you change files, e.g. when you receive a bug fix, please 
+put the file into the correct place , cd to the directory \$psl and
+simply say {\tt make}. This will compile the file (and maybe some
+files which depend on this), and produce new binaries.
+
+\subsection{Printing Documentation}
+
+The documentation for PSL (User's Manual and some more documents)
+can be found in the directories 
+dist/doc and dist/lpt (in {\LaTeX} or plain ASCII print format)
+
+\section{New unexec procedure, Image model}
+
+PSL's former unexec model (Savesystem) was to produce executables
+in the sense of the operating system (mostly a.out files). 
+This has led into maintainance 
+problems with various new file formats (e.g. ELF, COFF) and dynamic
+loading. Influenced by the model developed for the PSL on Personal
+Computers, for all new PSL versions for new architectures the
+so called {\bf image model} is used. This simply means that
+the command {\tt savesystem} does not write an executable file but
+it puts all the LISP data into a file such that the information
+can be reloaded afterwards. The reload is done by the program
+{\tt \$pxk/bpsl} when the -f parameter is used.
+The dumpfiles names get the suffix {\tt .img}, e.g. the command
+
+\begin{verbatim}
+(savesystem "Banner" "dir/file" initform)
+\end{verbatim}
+
+produces a file {\tt dir/file.img} which can be restarted by
+issueing the command
+
+\begin{verbatim}
+$pxk/bpsl -f dir/file.img
+\end{verbatim}
+
+The LISP data written to the file are: 
+{\tt SYMVAL, SYMPRP, SYMFNC, SYMNAM and SYMGET, hashtable}  and 
+the allocated parts of {\tt bps and heap.} 
+This reduces the amount of disk storage used drastically.
+
+To insure proper reloading, the program bpsl can be used for reloading
+of images only if these were written from its own core image.
+A check for this
+is provided using a datetag scheme which must be the same in bpsl
+and image file. The error message {\bf Cant start image with this bpsl}
+means that the check was not successful and you have to produce a new
+image file. This normally happens when the file bpsl is rebuild.
+
+In very rare cases after dramatic changes in the environment (generally
+speaking), you may get the message {\bf Cant relocate the image}.
+In this case, please try to rebuild the images. If this fails
+(it should not), please try
+
+\begin{verbatim}
+$pxk/bpsl -f dir/file.img -g 1000000
+\end{verbatim}
+
+If this works properly, you may try to reduce the g value.
+In any case please send a note the the author of this document.
+
+\def \thing #1#2#3#4 {{\noindent {\tt(#1): #2} \hfill {\it #3}}
+                      \begin{itemize}\item[] #4
+                      \end{itemize}}
+
+\section{Dynamic configuration of Heap Size and Binding Stack}           
+
+The PSL workspaces {\tt Heap and Bindingstack}
+can be enlarged at run time. This is often necessary for
+programs that allocate a lot dynamic storage (heap)
+or use variable
+binding intensively. 
+
+If heap space gets low, the garbage collector tries to
+increase heap size automatically. This is a reaction to an
+emergency situation though and it is tried after many garbage
+collections.  Moreover, depending on the history of the PSL session,
+the system may find itself unable to allocate the requested memory causing
+an LISP error condition. A manual increase of heap size 
+is much better for overall performance.
+
+The Binding stack is not enlarged automatically, because
+in case of on infinite loop the PSL memory would blow up
+and it would take a very long time until the user would
+see a problem (if at all).
+
+Two functions have been added to PSL
+for handling heap and binding stack size:
+
+\thing{set-heap-size N:Integer or NIL}{Integer or NIL}{expr}{If called
+with NIL it returns the number of LISP items in heap.
+If called with a number (which is counted in items and should be
+bigger that the current size in items) PSL tries to allocate the
+memory. If successful, the argument is returned, if not, NIL is 
+returned.}
+
+\thing{set-bndstk-size N:Integer or NIL}{Integer or NIL}{expr}{If called with NIL
+it returns the number of LISP items in bndstk.
+If called with a number (which is counted in items and should be
+bigger that the current size in items) PSL tries to allocate the
+memory. If successful, the argument is returned, if not, NIL is
+returned.}
+
+\section{Size of Address Space}
+
+The tradition PSL model is {\tt high tagged}, i.e. a tag which describes
+the data type is stored in the high bits of a LISP item. In most cases
+the number of bits used for tagging is 5, which limits the address space
+to bitsperword - 5 bits. This has not been a problem for a long time
+for the widely used 32 bit microprocessor architectures, 
+since the swap space available was much less that this number. E.g
+on a Sparc system you can use about 100 MB LISP workspace, about 7000000 
+LISP items.
+
+For the time being the 64 bit microprocessors do not suffer from this
+limitation. A {\tt low tagged} version of PSL is under development
+already since 1990.
+
+\section{Arbitrary Precision Integer Support}
+
+The efficient support of Arbitrary Precision Integers ("Bignums")
+is crucial for a computer algebra system. This version of PSL tries to
+exploit the given machine hardware as far as possible, e.g. using double
+size multiplication and division in hardware where available. Because of
+the different processor architectures the optimal internal representation 
+of bignums may vary between workstations even with same number 
+of bits per word. 
+
+The PSL manual mentions the modules ``big'' and ``nbig'' which are
+written in the true spirit of portable software but these are unfortunately
+not very efficient. We recommend to use the load module
+{\bf zbig} instead. In all versions this load module contains 
+the bignum version which we have found to be optimal.
+
+\section{Monitoring of Performance}
+
+\subsection{SPY (Unix only)}
+
+The Unix profil system call provides a facility to get information 
+about the cpu consumption in a LISP program. A simple interface was
+build to be able to turn profiling on and off and to map the results
+on to the LISP address space. For details, please refer to the source
+code in \verb+$pxu/spy.sl+.
+\\
+
+\thing{spywhole N:Integer}{void}{expr}{Turns on profiling for the
+whole bps space. N must be a power of 2, defining the grain for the
+profil call. Typical values are 4 and 8.
+Returns {\tt nil}.}
+
+\thing{spyprint}{void}{expr}{Turns off the profiler.
+Prints profiler information
+after mapping it to the LISP address space, i.e  the names of
+LISP functions are printed together with their relative cpu consumption.
+The variable \&spyminimum\& defines the cutoff
+for spyprint, i.e. functions with less than \&spyminimum\& ticks will
+not be printed.
+Returns {\tt nil}.}
+
+\thing{spyon fwa lwa tslice bucketsize power}{void}{expr}{This is a complete
+interface for the profil call. Allocates
+Warray space for the Unix profiler and turns on profiling. fwa and lwa are the
+addresses of the first and last word of code memory which should be
+inspected, tslice is the timeslice and not suported on most Unix systems.
+It is a parameter for compatibility reasons.
+Bucketsize must be a power of 2 and power is the base 2 logarithm of
+bucketsize.  Typical values are 4 or 8 for bucketsize and 2 or 3 for
+power resp.  Returns {\tt nil}.}
+
+\thing{spyoff}{void}{expr}{Turns off profiling using the Unix
+profil system call.  Returns {\tt nil}.}
+
+Example:
+\begin{verbatim}
+(load spy zbig)
+
+NIL
+
+(spywhole 4)
+
+NIL
+
+(null (setq aa(expt 3000 10000)))
+
+NIL
+
+(spyprint)  % This was done on a SUN4 PSL
+
+	214       39.5%     BPLUSA2
+	204       37.7%     INITCODE
+	67        12.3%     WTIMESDOUBLE
+	15        2.7%      COPYFROMONESTATICHEAP
+	12        2.2%      XXCOPYFROMSTACK
+	12        2.2%      SET_HEAP_SIZE
+NIL
+\end{verbatim}
+
+It is easy to see that the command \verb+(null (setq aa(expt 3000 10000)))+
+leads to a lot of bignum computations. The spyprint output proves that.
+Please note that \verb+INITCODE+ sums up all the functions that belong
+to PSL's C runtime support. In this case the high percentage is due
+to the fact that the SPARC implementation performs integer multiply and
+divide in software i.e. in non LISP code.
+
+\subsection{Qualified timing}           
+
+Qualified counting is used to measure the cpu time spend between
+call and return from a function, not necessarily spend within the 
+body of the function. It gives an overview about the costs that
+a call of particular function causes. The sum shown as result may
+be bigger that 100 percent, if a function and its callee are both
+measured or if gc time is accumulated.
+\\
+
+\thing{qualtime S:list}{void}{macro}{Starts qualified timing for the
+list of functions contained in list.  Returns {\tt nil}.}
+
+\thing{print!-qualtime}{void}{expr}{Prints the accumulated timings
+and number of calls for all functions. Resets counters.  Returns {\tt nil}.}
+
+Example:
+
+\begin{verbatim}
+(load qualified-timing zbig)
+(off usermode)
+
+(qualtime gtpos times2)
+
+ (null (setq aa(expt 3000 10000))) % this will be measured
+
+(print-qualtime)
+ *********** Qualified Timing **************
+ **** Overall Cpu time :  5083  *****
+
+ *** TIMES2                    * calls : 18        * time : 5797  * % 114
+ *** GTPOS                     * calls : 5560      * time : 935   * % 18
+
+\end{verbatim}
+
+\subsection{Qualified counting}
+
+For our own applications it had turned out to be useful to know the
+callers of a function especially when the function is called very,
+very often, e.g. basic routines like generic arithmetic. To 
+provide this a module qualified counting was generated using a similar
+syntax like qualified timing.
+\\
+
+\thing{qualcount S:list}{void}{macro}{Starts qualified counting for the
+list of functions contained in list.  Returns {\tt nil}.}
+
+\thing{print!-qualcount}{void}{expr}{Prints the accumulated call
+counting and the callers for all functions. Resets counters.  
+Printing will be suppressed if the number of calls is less than
+\*bordervalue\* (default = 20)
+Returns {\tt nil}.}
+
+\thing{reset!-qualcount}{void}{expr}{Resets the accumulated call
+counting and the callers for all functions. 
+Returns {\tt nil}.}
+
+Example:
+
+\begin{verbatim}
+ (load qualified-counting)
+ (off usermode)
+
+ (qualcount faslin intern)
+*** Function `G0003' has been redefined
+*** Function `FASLIN' has been redefined
+*** Function `G0025' has been redefined
+*** Function `INTERN' has been redefined
+
+ (load nbig30) % this will be counted
+
+(print-qualcount)
+************* calls for function FASLIN *************
+
+************* calls for function INTERN *************
+
+number of calls : 306 from READ-ID-TABLE
+\end{verbatim}
+
+
+\section{Compiler Modifications}
+
+In order to optimize the code generation for the RISC processors which
+(in most cases) have a concept of delayed branches a speciaal optimization
+phase for the PSL compiler was build to fill the delay slots. This 
+new compiler phase is called {\bf lapopt} it collects several optimizations
+which work on the generated stream of instructions 
+(the lap code). This  optimization phase is enabled by default,
+it is controled by the switch {\bf lapopt}, and it can be turned off and on by
+\begin{verbatim}
+(on lapopt)    and  (off lapopt)
+\end{verbatim}
+
+A sample of optimized code can be found in the following section
+on disassemble.
+
+\section{Disassembler}
+
+For most implementations of PSL a disassembler for compiled functions
+is available which gives insight into the 'real' code. It is a tool
+for code optimization only and not meant to give insight for the
+'normal' LISP user.  \\
+Example:
+\begin{verbatim}
+(load disassemble)
+NIL
+(disassemble 'get)
+( ** Function  GET  at 16#36110)
+
+00036110    9DE3BFA0    save       r14,-x'60,r14
+00036114    3B3E0000    sethi      -x'20000,r29
+00036118    21360002    sethi      -x'9FFFE,r16             Alloc 2
+0003611C    A2100002    or         r0,r2,r17                (frame 1)
+00036120    9930601B    srl        r1,x'1B,r12
+00036124    80A3201E    subcc      r12,x'1E,r0
+00036128    32800007    bne,a      L0003
+0003612C    82100006    or         r0,r6,r1
+00036130    9930A01B    srl        r2,x'1B,r12
+00036134    80A3201E    subcc      r12,x'1E,r0
+00036138    22800005    be,a       L0004
+0003613C    88100006    or         r0,r6,r4
+00036140    82100006    or         r0,r6,r1
+                    L0003:
+00036144    81C7E008    jmpl       r31+8,r0
+00036148    81E82000    restore    r0,0,r0
+
+              ... etc ...
+\end{verbatim}
+
+\section{More unsupported software}
+
+A few parts of the PSL system or applications are no longer useful
+or cant be supported.
+
+\subsection{Oload not supported}
+
+We discontinue the support of OLOAD, which allows on some versions 
+to link in external routines into PSL at run time using the system loader. 
+As alternative we recommend the usage of shared memory (see below).
+An example how to use an shared memory based oload substitute is under 
+development.
+
+\subsection{Portable Common Lisp Subset (PCLS) not supported}
+
+If you want Common LISP , please use Common LISP.
+
+\section{Shared Memory Interface (Unix only)}
+
+The PSL shared memory interface provides all function for
+operating with shared memory regions and semaphores
+(See e.g. Unix man pages for shmop,shmget,shmctl,semop,semctl,semget etc.)
+The definitions of these man pages are used in the paragraph.
+Using the memory address map mechanism described below,it
+is easy to write one's own shared memory application.
+
+In the rest of this paragraph we describe a simple model
+implementation of a 'pipe' using shared memory and a semaphore.
+This code is contained in the file \$pu/shmem.sl.
+\\
+
+\thing{shm!-open S:pair M:Mode}{any}{expr}{If S = 0 a new shared
+memory area is allocated. Otherwise S is expected to be a dotted pair
+of shmid and semid of an existing shared memory. Legal modes are
+{\bf input\_create, output\_create, input and output}.
+A list consisting of channelnumber shmid and semid is returned.}
+
+\thing{independentdetachshm C:channel}{any}{expr}{Detaches the
+shared memory region used by C, closes the channel.}
+
+\thing{readfromshm C:channel}{any}{expr}{Waits until
+the shared memory region is readable, reads an expression and 
+resets the mode to writable. Returns the expression.}
+
+\thing{writetoshm C:channel E:expression}{list}{expr}{Waits until
+the shared memory region is writeable, prints the expression
+using prin2. Returns the value of prin2.}
+
+
+The following C program works together with the PSL part
+such that it prints the messages read from shared memory
+when they are ready for printing. It must be started with
+two paramemters, namely the shmid and the semid to synchronize
+with the PSL part.
+
+\begin{verbatim}
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+struct sembuf ;
+
+struct sembuf sembu;
+struct sembuf *sembuptr;
+
+main (argc,argv)
+     int argc;
+     char *argv[];
+
+{ int sema , shmemid;
+  char * shmaddress;
+
+  sembuptr = &sembu;
+
+  sscanf(argv[1],"%d",&shmemid);
+  sscanf(argv[2],"%d",&sema);
+
+  /* open shared memory */
+
+ printf("the data is : %d %d\n",shmemid,sema);
+  shmaddress = shmat(shmemid,0,0);
+
+  while (1)
+  { waitsema(sema) ; /* wait for a 0 */
+    printf("the message is : %s \n",shmaddress +4);
+    setsema (sema,2) ; /* ok, eaten */
+  }
+}
+
+setsema (sema,val)
+int sema,val;
+{ semctl(sema,0,SETVAL,val); }
+
+waitsema (sema)
+
+int sema;
+{ 
+  sembu.sem_num =0; sembu.sem_op = 0; sembu.sem_flg =0;
+
+  semop (sema, sembuptr , 1);
+}
+\end{verbatim}
+
+\section{Socket interface (Unix only)}
+
+to be added....
+
+\section{Pipe Interface (Unix only)}
+
+The Pipe interface establishes a pipe as a PSL channel from which
+(or to which) normal PSL read/write operations can be used.
+Pipes are specially useful to supply data to other processes, e.g.
+REDUCE uses it to send data to a plot program.
+\\
+
+\thing{pipe!-open S:string M:Mode}{integer}{expr}{Starts a process and
+executes the command in <string>. The mode must be either Input or Output.
+Returns a channel.}
+
+Pipes are closed with a normal close call. This will kill the process
+that has been started. If this process should survive, you have to use
+abandonpipe.
+\\
+
+\thing{abandonpipe channel}{void}{expr}{Closes channel without killing
+the process started by pipe!-open. Returns {\tt nil}.}
+                                               
+Example:
+\begin{verbatim}
+(load pipes)
+(setq chn (pipe!-open "uname"))
+(channelread chn)
+(close chn)
+\end{verbatim}
+
+\section{Mapping of LISP Addresses to C addresses}
+
+This paragraph applies for some architectures only, e.g. 
+the {\tt IBM/RS, HP PA-Risc and MIPS} where the system architecture
+uses 'high' bits in the addresses which conflict with the
+PSL tagging mechanism.(See the paragraph on the Size of the
+Address space above).  The consequence of this is that using the 
+inf operation
+for calculating the C equivalent from a LISP address does not
+work here. The easiest way (without explaining the reason)
+of mapping for the architectures is:
+
+\begin{tabular}{rl}
+	IBM/RS&(mkstr item) \\
+	HP PA-Risc&(mkvec item)\\
+	Mips&(wshift (inf item) 2)
+\end{tabular}
+
+On Convex systems the 'high' bit is the leftmost one. Therefore the
+tag bits start at bit 1 and the inf range is limited by 26 bits.
+The inf operation works as expected.
+
+\end{document}
+

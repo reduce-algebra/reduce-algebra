@@ -1,0 +1,736 @@
+
+\chapter*{Compiler}
+
+
+\section{Introduction}
+
+  The evaluation of an expression which has been compiled may be
+different  from interpretation. Some of the more important
+differences are listed here. Subsequent  sections  of  this
+chapter will discuss these differences in more detail.
+
+  The  application  of  a  macro  is  replaced by its expansion.
+Therefore, the definition of the macro  must  preceed  its  use.
+Since the call on the macro has been replaced, a redefinition of
+the  macro  will  have  not  have  an  effect on the compiled
+expression.
+
+  A constant expression  is  replaced  by  its value (see  the
+section Constant Declaration for more information)
+
+  There are some functions which are defined in two ways. One of
+these  versions  will reduce the execution time by not verifying
+that the arguments are of  correct  type.  Which function is
+called  from  the  compiled  code  is  based upon the value of a
+switch.  If the  switch  is  non-nil  then  the  faster  version
+replaces  the  slower  one.  Note that an instance of the faster
+version is not replaced by the slower one when the switch is set
+to nil (see the section Switches that Control the  Compiler  for
+more information).
+
+  An  attempt is made to convert recursive control structures to
+iterative ones.
+
+\section{Compiling Files}
+
+It is best to compile files using {\tt pslcomp}, a minimal version
+of PSL capable of compiling files. The successful compilation of
+a  file  should not depend upon optional modules which have been
+loaded.  On some computer systems the names of the files  to  be
+compiled  can  be listed as command line arguments. When PSLCOMP
+is brought up the following banner is displayed.
+
+Portable Standard Lisp Compiler\\
+Usage: PSLCOMP source-file ...
+
+If an error occurs, the message
+\begin{verbatim}
+***** Error during compilation of NAME
+\end{verbatim}
+is printed and the compilation is aborted.
+
+
+\de{compile-file}{(compile-file FILE:string): \{t, nil, abort\}}{expr}
+{    This function is used to compile files.  A  binary  file  is
+    created  with  the  same  name  except that the file type is
+    changed to {\bf b}. Beware, it is possible to overwrite the source
+    file if the operating system truncates file names (this  can
+    be  avoided  by using compile-file-aux, described below). If
+    the file name is without a suffix then {\bf sl} is assumed. This
+    function  will  return  t if the compilation was successful,
+    abort if after an error was signalled the user  aborted  the
+    compilation,  or  nil if the source file was not found. When
+    the source file cannot be found the message
+}
+\begin{verbatim}
+    ***** Unable to find source file for: FILE
+\end{verbatim}
+    will be printed. Prior to the compilation the message
+
+\begin{verbatim}
+    ----- Compiling SOURCE-FILE to BINARY-FILE
+\end{verbatim}
+    is displayed. In addition, one of the following two messages
+    will be printed when compilation has stopped.
+
+\begin{verbatim}
+    ----- Compilation of NAME completed
+
+    ----- Compilation of NAME aborted
+\end{verbatim}
+
+\de{compile-file-aux}{(compile-file-aux SOURCE:string BINARY:string):\\
+\{t, nil, abort\}}{expr}
+{    
+    Since this function  is  used  by  compile-file  to  compile
+    files, most of the comments concerning compile-file apply to
+    compile-file-aux.   Although one application of compile-file
+    may be used to compile a number of files, with this function
+    only one file can be  compiled.    The  advantage  of  using
+    compile-file-aux  is  that  the  name  of the binary file is
+    given explicitly.
+}
+
+  During the compilation of a file, if an atomic  expression  is
+read at the top level the
+
+\begin{verbatim}
+*** Warning: non-list form ignored: ATOM
+\end{verbatim}
+will  be  displayed  and  the expression will be ignored. A list
+whose first element is not atomic is saved  for  insertion  into
+the an initialization function which is added to the binary file
+by   the   compiler  (its  name  is  **fasl**initcode**).    The
+processing of a list whose first element is  an  id  depends  in
+large part upon values found on the property list of the id. The
+EVAL  flag  will cause the expression to be evaluated, using the
+current binding of toploopeval*, and compiled. The expression is
+only evaluated, again using the current binding of toploopeval*,
+if the id is flagged IGNORE. All other expressions are compiled.
+Compilation will modify  the  environment,  in  particular,  all
+macro definitions are installed. Note that although defflavor is
+a  macro  it does not create a macro definition. It will however
+modify the property list of the flavor name.
+
+  As expressions are processed a list of expressions  is  built.
+When  a  function  definition  is made an application of putd is
+added to the list. Other expressions which are  intended  to  be
+evaluated  at  load  time  were  also  added.  This  sequence of
+instructions, which preserves the  order  in  which  expressions
+were  read,  is  compiled  as  the  body  of  the initialization
+function (named **fasl**initcode**).
+
+\subsection{Order of Functions for Compilation}
+
+  Functions whose type is not expr must be defined before  their
+use in a compiled function, since the type of a function affects
+how  it's  application  will  be  treated  by  the compiler. The
+application of a macro is  replaced  by  the  expansion  of  the
+macro.  For  functions  whose  type  is fexpr it is necessary to
+gather the unevaluated arguments into a list. Calling a function
+which is an nexpr requires that the arguments be  evaluated  and
+gathered  into  a  list.  When the compiler cannot determine the
+type of a function, because it has not been defined, it  assumes
+that  the  type  of  the  function  is expr. Note that it is not
+possible to define a recursive function, whose type is not expr,
+without first defining a dummy version.
+
+\section{Compiling Functions into Memory}
+
+  Functions can be compiled directly into memory by  turning  on
+the  switch  comp,  by evaluating (on comp). This compilation is
+accomplished in part by a call on the function compd from within
+the function putd.
+
+
+\de{compd}{(compd NAME:id TYPE:ftype BODY:lambda): NAME:id}{expr}
+{    The function compd is analogous to the  function  putd.  }
+
+  Once  comp  is  set  to  t subsequent function definitions are
+automatically compiled and a message of the form
+
+\begin{verbatim}
+*** (NAME): base <number>, length <number> bytes
+\end{verbatim}
+is displayed. Unfortunately this information is  of  little  use
+unless  one  happens  to  be  doing something like debugging the
+compiler.
+
+
+\de{compile}{(compile NAMES:id-list): any}{expr}
+{    This function is used to compile resident functions.  It  is
+    possible  to compile a function which is being traced. There
+    are two warning messages which may be printed.
+}
+\begin{verbatim}
+    *** NAME already compiled
+\end{verbatim}
+    This  indicates  that  the  function  associated  with   the
+    function  name is already compiled.  If there is no function
+    definition associated  with  the  name  then  the  following
+    message will be displayed.
+
+\begin{verbatim}
+    *** No definition for NAME
+\end{verbatim}
+
+\section{Compiler Errors and Warnings}
+
+  In  addition  to the error messages mentioned in this chapter,
+the following error messages may be displayed. In  general,  the
+five  star  prefix  is  used  for error messages, the three star
+prefix for warnings.  The display of  warning  messages  can  be
+suppressed by evaluating (off msg).
+
+\begin{verbatim}
+***** Too many arguments N
+\end{verbatim}
+The  restriction  on the number of arguments is based in part on
+the fact that arguments to  compiled  functions  are  passed  in
+general  purpose  registers rather than directly on a stack. The
+compiler  will  generate  code  for  the  offending  definition.
+Although the code appears to be correct, attempting to apply the
+function will result in error.
+
+\begin{verbatim}
+***** Attempt to compile non-lambda expression FORM
+\end{verbatim}
+This  error  occurs  within the context of a call on compd, when
+the expression is not a valid lambda expression.
+
+\begin{verbatim}
+*** NAME has not been defined, because it is flagged LOSE
+\end{verbatim}
+If a function name is flagged LOSE then it cannot be  redefined.
+Attempting  to  compile an interpretive definition is considered
+redefinition in this context.
+
+\begin{verbatim}
+***** Ill-formed function expression FORM
+\end{verbatim}
+
+The offending expression is an instance of function application.
+This message will appear if the function is atomic  and  not  an
+id,  or  if  the  function is a list which is not a valid lambda
+expression.
+
+\begin{verbatim}
+***** Odd number of arguments to SETQ FORM
+\end{verbatim}
+
+The number of arguments passed to a SETQ must be even.
+
+\begin{verbatim}
+***** Incorrect number of arguments to NAME
+\end{verbatim}
+
+The  number  of  arguments  passed  to  either  apply,  idapply,
+codeapply, cons, go, or return was not correct.
+
+\section{Differences between Compiled and Interpreted Code}
+
+  In  the process of compilation, many functions are Open-Coded,
+and hence cannot be redefined or traced in  the  compiled  code.
+Such  functions  are  noted  to be Open-Coded in the manual. The
+call on the function is replaced by a sequence  of  instructions
+which  make up the body of the function. This trick gives faster
+execution, but it requires more space. A  call  on  a  macro  is
+another  instance of open coding. A PSL program usually consists
+of a large number  of  relatively  small  functions.  Calling  a
+function requires manipulation of a parameter stack for variable
+binding  and  a  control  stack for return information. The time
+spent inside a function may be small compared to the time  spent
+maintaining  the stacks.  Some commonly used PSL functions which
+are open-coded are and, or, apply, idapply,  codeapply,  return,
+go, cons, cond, case, prog, progn, and prog2.
+
+  Unless  variables  are  declared,  or detected, to be fluid or
+global they are compiled as local variables. This  causes  their
+names  to  disappear, and so they are not visible on the binding
+stack. In addition these variables  will  not  be  available  to
+functions called in the dynamic scope of the function containing
+their binding.
+
+  The compiler attempts to do the following conversions\\
+
+%\TABELLE***
+\begin{tabular}{lp{9.0cm}}
+
+    (function  (lambda  ...))    $->$ &   the lambda expression is
+     compiled into a gensymed name.
+    If the functional form of  one  of  the  mapping  functions
+     (map,   mapc,  maplist,  mapcar,  mapcon,  and  mapcan)  is
+     explicitly tagged function then the call is open coded.\\
+
+    (setq na va nb vb ...)  $->$ & (setq na va), (setq nb vb) ...\\
+
+ (nth sequence n)  $->$ & (car sequence)  if  n = 1,\\
+&                         (cadr sequence)  if  n = 2,\\
+&                       (caddr sequence)  if  n = 3,\\
+&                       (cadddr sequence)  if  n = 4\\
+
+    (pnth sequence n)  $->$ &  (identity sequence)  if  n = 1,\\
+&                           (cdr sequence)  if  n = 2,\\
+&                           (cddr sequence)  if  n = 3,\\
+&                           (cdddr sequence)  if  n = 4,\\
+&                           (cddddr sequence)  if  n = 5\\
+\end{tabular}
+
+    The  following  transformations  are  made  when  the  list
+     function  is applied to less than six arguments. When there
+     are more that five arguments the  compiler  uses  the  cons
+     expansion for additional arguments.\\
+
+\begin{tabular}{lp{6.0cm}}
+     (list a)  $->$  & (ncons a)\\
+     (list a b)  $->$ &  (list2 a b)\\
+     (list a b c)  $->$ & (list3 a b c)\\
+     (list a b c d)  $->$ &  (list4 a b c d)\\
+     (list a b c d e)  $->$ &  (list5 a b c d e)\\
+
+    (apply (function foo) ...)  $->$ &  (foo ...)\\
+
+    (assoc ...)  $->$  & (atsoc ...)\\
+\end{tabular}
+
+    If  the  last clause within a cond expression is not of the
+
+     form (t ...) then  the  compiler  will  add  the  additinal
+     clause (t nil).\\
+
+\begin{tabular}{lp{6.0cm}}
+    (difference n 1)  $->$ &  (sub1 n)\\
+
+    (equal ...)  $->$ &  (eq ...)\\
+
+    (geq ...)  $->$ & (not (lessp ...))\\
+
+    (intern (compress ...))  $->$ &  (implode ...)\\
+
+    (intern (gensym ...))  $->$ &  (interngensym ...)\\
+
+    (leq ...)  $->$ &  (not (greaterp ...))\\
+
+    (lessp n 0)  $->$ &  (minusp n)\\
+
+    (member ...)  $->$ &  (memq ...)\\
+
+    (neq ...)  $->$ &  (not (equal ...))\\
+
+    (not ...)  $->$ &  (null ...)\\
+
+    (plus2 n 1)  $->$ &  (add1 n)\\
+
+    (null (eq ...))  $->$ &  (neq ...)\\
+
+    (null (atom ...))  $->$ &  (pairp ...)\\
+%\end TABELLE***
+\end{tabular}
+
+\vspace{0.5cm}
+  Prior  to  the  application of some functions, such as car and
+cdr, there is no verification that the types  of  the  arguments
+are correct.
+
+  Since  compiled  calls  on  macros,  fexprs,  and  nexprs  are
+different from  the  default  exprs,  these  functions  must  be
+defined,  or declared, before compiling the code that uses them.
+While fexprs and nexprs may be subsequently  redefined,  as  new
+functions  of the same type, macros are executed by the compiler
+to get  the  replacement  form,  which  is  then  compiled.  The
+interpreter  would  pick  up  the  most recent definition of any
+function, and so functions can switch type as well as body.
+
+  Constants which appear in code that is to be compiled  may  be
+collapsed.  For  example,  the  following  code  references  two
+distinct strings which happen to contain  the  same  characters.
+The compiled code will only reference one string.
+
+\begin{verbatim}
+  (de fubar ()
+    (let ((this "foo")
+          (that "foo"))
+    (eq this that))
+
+1 lisp> (foo)
+nil
+2 lisp> (compile '(foo))
+nil
+3 lisp> (foo)
+t
+\end{verbatim}
+  As  noted  below,  the  switches  *r2i  and *nolinke may cause
+function calls to be replaced by  jumps.  This  means  that  the
+backtrace   of  compiled  functions  may  differ  from  that  of
+interpreted functions. In addition  a  sequence  of  interpreted
+function calls could consume stack space while compiled function
+calls might not.
+
+
+\section{Constant Declaration}
+
+
+\de{define-constant}{(define-constant NAME:id VALUE:any): any}{macro}
+{    The identifier NAME is declared a constant and its valuecell
+    is set to VALUE.  This provides a means  for  informing  the
+    compiler that the value of an id is constant.  If a constant
+    id  is  used  in such a way that during evaluation its value
+    would be accessed the compiler can then simply  replace  the
+    id  by its value. It is possible to use an id which has been
+    declared a constant as a local variable within a prog or  as
+    a parameter name.  It is possible to redefine the value of a
+    constant.
+}
+
+    Request to set constant NAME to a different value.
+
+
+\de{constant?}{(constant? NAME:id): boolean}{expr}
+{    Returns  t  if  NAME  has  been  declared  a  constant  with
+    define-constant, otherwise nil.
+}
+
+  The compiler attempts to replace function applications by  the
+corresponding  value  whenever  each  of the arguments is either
+constant or an application which may be replaced by  its  value.
+The  following  is a list of all functions whose application may
+be evaluated during compilation.  Clearly  some  functions  like
+cons cannot be evaluated at compile time.
+
+\begin{verbatim}
+// /= < << <= = > >= >> ^ | ~ ~=
+\end{verbatim}
+
+abs aconc acos acosd acot acotd acsc acscd add1
+alphanumbericp alphap asec asecd asin asind ass
+assoc atan atan2 atan2d atand atom atsoc\\
+ 
+bldmsg bothcasep\\
+
+car cdr ceiling char-downcase char-equal char-font char-
+greaterp char-int char-lessp char-upcase char$<$ char= char$>$ 
+constantp cos cosd cot cotd csc cscd\\
+
+degreestodms degreestoradians difference digit digit-char
+digitp divide dmstodegrees dmstoradians\\
+
+eq eqcar eqn eqstr equal expt\\
+
+factorial fix fixp float floatp floor\\
+
+geq getv\\
+
+land lastcar lastpair length leq lessp list lnot log log10
+log2 lor lowercasep lshift lxor\\
+
+max2 member memq min2 minus minusp mkquote mod\\
+
+ne neq not nth null\\
+
+onep\\
+
+pairp plus2 pnth\\
+
+radianstodegrees radianstodms recip remainder rest reserse 
+round\\
+
+sec secd sin sind size sqrt string-not-greaterp string-not-
+lessp string-repeat string-search string-search-equal string-
+search-from-string-search-from-equal string-size string-trim 
+string-upcase string-upper-bound string$<$ string$<$=
+string$<$$>$  string= string$>$ string$>$= stringp sub sub1
+substring-equal  substring=\\
+
+tan tand times2\\
+
+upbv uppercasep\\
+
+vector-empty? vector-fetch vector-size vector-upper-bound
+vector2l ist vector 2string vectorp\\
+
+There is another facility in PSL for defining constants.  You
+are  encouraged  to  use  the  function  define-constant. The
+following two functions are documented here for completeness.
+
+
+\de{defconst}{(defconst [U:id V:any]): undefined}{macro}
+{    Defconst  provides  for  the  definition and use of symbolic
+    constants.  Each U is defined to represent the corresponding
+    value V.  The value V is stored on the property list  of  U,
+    not  in  the valuecell.  The macro const is used to retrieve
+    the value.
+}
+
+\de{const}{(const U:id): any}{macro}
+{    Const gives access to the  value  defined  by  the  function
+    defconst.  The value will be evaluated.
+}
+\begin{verbatim}
+    1 lisp> (defconst foo (add1 2))
+    (add1 2)
+    2 lisp> (const foo)
+    3
+\end{verbatim}
+\section{Fluid and Global Declarations}
+
+  Fluid  and  global  declarations  must  be  used  to  indicate
+variables that are to be used as non-local variables in compiled
+code. The values associated with local variables are stored on a
+stack. If a variable has been declared global or fluid then  the
+compiled  code  will  instead  access  the  value  cell  of that
+variable. In addition the content of the value cells of  special
+variables  being  used  as  formal parameters must be preserved.
+The compiler currently defaults variables bound in a  particular
+function  to local. Note that local variables exist as anonymous
+stack locations, therefore called functions cannot see them.  An
+undeclared  non-local variable is declared fluid by the compiler
+with the warning:
+
+\begin{verbatim}
+*** NAME declared fluid
+\end{verbatim}
+The appearance of this message may indicate an additional error.
+If a previous function used this name in the parameter list then
+it may have  to  be  recompiled.   The  local  variable  in  the
+previous function will not refer to the same variable as the one
+recently  declared  fluid, even though the names are the same in
+the source code listing.
+
+  Previous documentation has given users the impression that  it
+is  illegal  to bind an id which has been declared global.  This
+is not true, an attempt to bind a global variable will cause the
+following message to be displayed.
+
+\begin{verbatim}
+*** Illegal to bind global VARIABLE but binding anyway
+\end{verbatim}
+The lack of distinction between global and fluid in PSL  appears
+to  be  due to the fact that shallow binding is employed in PSL.
+In a deep bound system one has to search down a binding stack to
+locate the value of a fluid id, which  could  get  expensive.  A
+global  declaration  within  a deep bound system would allow the
+interpreter to assume that the value of an  id  is  in  a  fixed
+location.  Of course in a shallow bound system the value of a id
+is always found in the value cell of that id.
+
+\section{Control Over the Time When Something is Done}
+
+  Which expressions are evaluated during compilation only, which
+are written to the file to be evaluated at load time, and  which
+do  both  can be controlled by the EVAL and IGNORE properties of
+function names. In addition, the following functions may also be
+used.
+
+
+\de{commentoutcode}{(commentoutcode U:form): nil}{macro}
+{        Comment out a single expression.
+}
+
+\de{compiletime}{(compiletime U:form): nil}{expr}
+{    Evaluate the expression U at compile time only.
+}
+
+\de{bothtimes}{(bothtimes U:form): U:form}{expr}
+{    Evaluate the expression U at  both  compile  time  and  load
+    time.
+}
+
+\de{loadtime}{(loadtime U:form): U:form}{expr}
+{    Evaluate the expression at load time only.
+}
+\section{Switches That Control the Compiler}
+
+  The compilation process is controlled by a number of switches.
+In addition to comp there are the following switches.
+
+\variable{*fast-vectors}{[Initially: t]}{switch}
+{}
+
+\variable{*fast-evectors}{[Initially: t]}{switch}
+{}
+
+\variable{*fast-strings}{[Initially: nil]}{switch}
+{}
+
+\variable{*fast-integers}{[Initially: nil]}{switch}
+{
+    There  are some functions which are defined in two ways. One
+    of these versions will reduce  the  execution  time  by  not
+    verifying  that  the arguments are of correct type. The name
+    of the slower version will have  two  properties,  FAST-FLAG
+    and  FAST-FUNCTION.  The  FAST-FLAG  property  references  a
+    switch whose value determines which function will be  called
+    from  compiled  code.  An instance of the slower function is
+    replaced by the faster one when the switch is set to  t.  Of
+    course, to make this conversion the compiler has to know the
+    name of the faster function.  This name is referenced by the
+    FAST-FUNCTION property.
+}
+
+    The property list of the function vector-fetch looks something like
+
+\begin{verbatim}
+(... (fast-flag . *fast-vectors) (fast-function . igetv) ...)
+\end{verbatim}
+    The expression (vector-fetch vector index) will be replaced by the
+    expression (igetv vector index) if the switch *fast-vectors is set
+    to t.
+
+\variable{*r2i}{[Initially: t]}{switch}
+{
+    If  non-nil, recursive calls are converted to jumps whenever
+    possible. The effect of this is that tracing  this  function
+    will  not  show  the  recursive  calls  since they have been
+    eliminated.  The  function  RECURSIVE-FACTORIAL  contains  a
+    recursive  call which can be converted to a jump. The result
+    of compiling RECURSIVE-FACTORIAL is almost identical to that
+    of compiling ITERATIVE-FACTORIAL when r2i is non-nil.
+}
+\begin{verbatim}
+    (de factorial (n)  (iterative-factorial (1 n)))
+\end{verbatim}
+\begin{verbatim}
+    (de recursive-factorial (accumulator count)
+      (if (<= count 1)
+         accumulator
+         (recursive-factorial (* accumulator count)
+                              (sub1 count))))
+\end{verbatim}
+\begin{verbatim}
+     (de iterative-factorial (accumulator count)
+      (prog ()
+       loop
+         (when (<= count 1) (return accumulator))
+         (setf accumulator (* accumulator count))
+         (decr count)
+         (go loop)))
+\end{verbatim}
+\variable{*nolinke}{[Initially: nil]}{switch}
+{
+    If nil, when the last form to be  evaluated  is  a  function
+    call  then  the  compiler will generate an instruction which
+    will perform  two  actions  during  evaluation.    Prior  to
+    jumping to the entry point of the function being called, the
+    space  allocated  on the stack for local variable storage is
+    reclaimed. Although the amount of  space  reclaimed  may  be
+    small, this does provide the called function with more stack
+    space.  In  contrast,  when this switch is non-nil a pair of
+    instructions would be used, a call on the function  followed
+    by  an  exit.  In this case the stack space is not reclaimed
+    until the exit.
+}
+
+\variable{*ord}{[Initially: nil]}{switch}
+{
+    If non-nil, the compiler is forced to  generate  code  which
+    evaluates  arguments  of  a function call in a left to right
+    order. It  is  possible  to  generate  code  which  is  more
+    effecient  when  this  switch  is  set to nil. Arguments are
+    currently passed  in  registers.  As  the  calling  function
+    computes  each  argument  the result is stored on the stack.
+    References to constants  need  not  be  generated  and  then
+    pushed  onto  the stack, the other arguments can be compiled
+    first,  then  just  before  the  function  is   called   the
+    appropriate  register is loaded with the constant. A similar
+    argument can  be  made  for  variable  references.  However,
+    allowing for side effects we must be sure that the postponed
+    value would be the same as that fetched at the proper time.
+}
+
+\variable{*plap}{[Initially: nil]}{switch}
+{
+    If  non-nil,  the portable intermediate code produced by the
+    compiler is printed. This is useful for  examining  compiler
+    output prior to assembly, in particular it can be helpful in
+    debugging macros.
+}
+
+\variable{*pgwd}{[Initially: nil]}{switch}
+{
+    If  non-nil,  the  actual  assembly  language  mnemonics are
+    displayed. This flag is useful for examining the code  which
+    is     generated    for    the    initialization    function
+    **fasl**initcode**.
+}
+
+\variable{*pcmac}{[Initially: nil]}{switch}
+{
+    If non-nil, both the  portable  intermediate  code  and  the
+    assembly  mnemonics  are displayed.  After each intermediate
+    instruction the assembly mnemonic is shown.
+}
+
+\variable{*pwrds}{[Initially: t]}{switch}
+{
+    If non-nil, the address and size of compiled  functions  are
+    displayed as they are defined.
+}
+
+\section{Conditional Compilation}
+
+
+\de{if\_system}{(if\_system SYS-NAME:id TRUE-CASE:any\\ 
+FALSE-CASE:any): any}{macro}
+{    This  is  a  conditional macro for choosing system dependent
+    code during compilation.  The expression for the false  case
+    defaults to nil if it is ommited. The id must be a member of
+    the  list whose name is system\_list*. An example of its use
+    follows.
+}
+
+\begin{verbatim}
+    (if_system  tops20  (setq buildfileformat* "PL:%W"))
+\end{verbatim}
+\section{Implementation Details}
+
+  The output from the compiler is a list of instructions in  the
+order  which  they will be executed. Each instruction is a list,
+an operation followed by as many items as are required  by  that
+operation.  The  compiled code may be executed by simulating the
+actions of the machine on each element of the sequence.  In  the
+interest  of efficiency, the compiler ouput is translated into a
+sequence of actual machine instructions. An area of memory
+(which  is  not  garbage collected), is allocated to  receive
+the processed compiler  output.  This  area  is   called  the 
+Binary Program  Space  or  BPS.  The function  lap translates
+the output from the compiler into machine  instructions.
+
+  The functions faslout, faslend,  and  faslabort  are  used  by
+Compile-file-aux  to  compile files.  It should not be necessary
+for  you  to  used  these  functions,  they  are  included   for
+completeness.  Evaluation of
+
+\begin{verbatim}
+(faslout name)
+\end{verbatim}
+will cause the message
+
+FASLOUT: (DSKIN files) or type in expressions\\
+When all done execute (FASLEND)
+
+to  be displayed.  Subsequent expressions, typed in or read from
+files, are not processed in the normal  fashion.  The  following
+piece of code demonstrates how this feature is implemented.
+
+\begin{verbatim}
+  (de toploop
+      ...
+    (cond ((not *defn) (top-loop-eval-and-print input-value))
+          (dfprint* (funcall dfprint* input-value))
+          (t (prettyprint input-value)))
+      ... )
+\end{verbatim}
+  When  the  switch  *defn is nil the input is evaluated and the
+result is  printed.   Setting  *defn  to  t  and  associating  a
+function with the global dfprint* allows for the redefinition of
+what is meant by evaluating the input and printing the result of
+that  evaluation.  It  the  function  bound to dfprint* which is
+responsible for the compilation  of  expressions.    Faslend  is
+provided  to discontinue compilation, faslabort is used to abort
+the compilation.  The only context in which the  application  of
+these  functions  makes  sense  is when a previous invocation of
+faslout has not been terminated.
+
+\begin{verbatim}
+***** FASLEND not within FASLOUT
+\end{verbatim}

@@ -1,0 +1,819 @@
+\chapter*{Identifiers}
+
+\section{Introduction}
+
+Ids  or identifiers can be used in a number of different ways.
+Every id has a name, called its print name.  Given  an  id,  one
+can  obtain its name in the form of a string.  Conversely, given
+the name of an id as a string one can obtain the id itself.\\
+
+
+\noindent
+Ids have a component called the  property  list.    This  list
+consists  of  pairs  and ids.  A pair contains two elements, the
+first is the name of the  property,  the  second  is  the  value
+associated  with  that  property.    An  id on the property list
+represents a flag.\\
+
+
+\noindent
+Each id also references a package, see Chapter [packages]  for
+more information on the package system.\\
+
+
+\noindent
+In PSL an id can be used simultaneously as a variable and as a
+name for a function.  Aside from the functions described in this
+chapter,  there  are  additional  functions for dealing with the
+values associated with an id.\\
+
+
+\noindent
+An id can be referenced simply by writing its name. If the
+name  consists  only of uppercase alphabetic characters, digits,
+or a subset of the special characters (listed below), and if the
+name of the id cannot be mistaken for a number,  then the id can
+be notated by the sequence of characters in its name.
+\begin{center}
+\begin{verbatim}
+$+ - $ & * / : ; | < = > ? ^ _ { } ~ @$
+\end{verbatim}
+\end{center}
+\noindent
+An id may have uppercase letters, lowercase letters, or both  in
+its  print  name. The  PSL reader normally (i.e. version 4.2 and
+above) converts uppercase
+letters to the corresponding lowercase letters when reading ids.
+Therefore, most of the time case makes  no  difference  when
+notating ids. 
+
+The conversion of letters is controlled by the functions 
+{\bf input-case} and {\bf output-case}.
+
+
+\DE{input--case}{(input-case modus): modus}{expr}
+{    If modus equals lower, characters on input are converted to the
+corresponding lowercase characters. If modus equals raise, characters
+are raised during input. A modus NIL leaves characters unchanged.
+The former modus is returned. The default is {\tt lower}.
+}
+
+\DE{output--case}{(output-case modus): modus}{expr}
+{    If modus equals lower, characters on output are converted to the
+corresponding lowercase characters. If modus equals raise, characters
+are raised during output. A modus NIL leaves characters unchanged.
+The former modus is returned. The default is NIL.
+}
+
+
+Ids are kept in a table  which  is  called  the
+symbol table (or id-hash-table).  Two ids are considered
+different if their corresponding print names are different.  For
+example, the id whose name is "that" is different  from  the  id
+whose  name is "THAT". The ids which name PSL functions have
+lowercase names. The reason you can type such names with
+uppercase letters  is  that  the reader is converting
+uppercase letters to lowercase by default.
+
+\begin{verbatim}
+1 lisp> (Add1 2)
+3
+2 lisp> (input-case nil)
+lower
+3 lisp> (Add1 2)
+***** `!Add1' is an undefined function
+\end{verbatim}
+\noindent  
+If the user tries to use a PSL function name for a function he
+is defining a warning message appears.
+
+\begin{verbatim}
+Do you really want to redefine the system function `NAME'? 
+(Y or N)
+\end{verbatim}
+
+\noindent
+If the user responds "Y", his definition  replaces  the  current
+definition.    (See  Chapter  9  for a description of the switch
+*usermode which controls the printing of this message).\\
+
+\noindent
+There is an escape convention for notating an  id  whose  name
+contains special characters.  Any character which follows a ! is
+considered  to  be  an  ordinary  character.    In  addition  to
+lowercase  letters,  the  following  characters  are  considered
+special:
+\begin{verbatim}
+! " % ' ( ) . [ ] ` , # |
+\end{verbatim}
+If  it  is  not  clear  from  the  printed  output,  this set of
+characters includes both quote and accent grave.  Note  that  if
+any  character  wthin  a  name is preceded by a !, then the name
+will not be interpreted as a number.\\
+
+\begin{tabular}{ll}
+SUSAN &  \% three ways to notate the same id\\
+susan\\
+SuSan\\
++\$ &     \% an id without alphabetic characters\\
+1+ &    \% an id whose first character is a digit\\
++1 &     \% this is a number\\
+\verb/x^2+y^2/ & \% an id which looks like an expression\\
+!9 &     \% the id whose name is "9", not the number 9\\
+\end{tabular}
+
+\section{Identifiers and the Id Hash Table}
+
+The method used by PSL to retrieve  information  about  an  id
+makes  use  of  a  symbol  table.    PSL uses a technique called
+hashing to implement this table (id hash table is  another  name
+for the symbol table).\\
+
+\noindent
+The  process  of putting an id into the symbol table is called
+interning.  The  PSL  reader  interns  ids  as  they  are  read.
+Consider  what  happens  after  the  name of an id is read.  The
+symbol table is examined to see if  it  contains  an  identifier
+with the same name.  If there is a match then a reference to the
+matching  id is returned.  Otherwise, a new id is created, it is
+added to the symbol table, and a reference to it is returned.
+
+\subsection{Identifier Functions}
+
+The following functions deal with identifiers and  the  symbol
+table.
+
+
+\de{gensym}{(gensym): id}{expr}
+{    An  id  is  created  which is not interned.  Since it is not
+    interned it is not eq to any other id.  The  id  is  derived
+    from  a  string  of the form "G0000".  The numeric suffix is
+    incremented upon each call to gensym.
+}
+
+\de{interngensym):}{(interngensym): id}{expr}
+{    Similar to gensym but returns an interned id.
+}
+
+\de{stringgensym}{(stringgensym string):}{expr}
+{    Similar to gensym but returns a string of the  form  "L0000"
+    instead of an id.
+}
+
+\de{remob}{(remob U:id): id}{expr}
+{    If  U  has  been  interned  in  the  symbol table then it is
+    removed.  The values associated with U will not be affected.
+    U is returned.  It is not possible to remove from the symbol
+    table  an  identifier  whose  name  consists  of  a   single
+    character.
+}
+\begin{verbatim}
+1 lisp> (setq what (intern "THIS"))
+THIS
+2 lisp> (set what "SOMETHING")
+"SOMETHING"
+3 lisp>  % Remove the id whose name is "THIS".
+3 lisp> (remob what)
+THIS
+4 lisp>  % Although the id whose name is "THIS"
+has been removed from
+4 lisp>  
+% the symbol table, it remains in 
+%existance and its value %	cell
+4 lisp>  % is still defined as "SOMETHING".
+4 lisp> (eval what)
+"SOMETHING"
+\end{verbatim}
+
+\de{newid}{(newid U:string): id}{expr}
+{    Creates  an  uninterned  identifier with the specified name.
+    The string is used as the print name without  being  copied.
+    See  section  2.3  for  the  full definition.  This function
+    makes it possible to create a number of distinct  ids  which
+    have the same name.  To illustrate the use of this function,
+    the   implementation   of  a  package  system  (see  Chapter
+    [packages]), requires a function like newid.
+}
+
+\de{internp}{(internp U:{id,string}): boolean}{expr}
+{    Returns t if U is interned.
+}
+
+\de{mapobl}{(mapobl FNAME:function): Undefined}{expr}
+{    Mapobl applies function FNAME to  each  interned  id.    The
+    following  expression  will  print  each id which is flagged
+    global.  Note that there should be only one formal parameter
+    to FNAME.
+}
+\begin{verbatim}
+(mapobl '(lambda (item) (if (flagp item 'global)
+(print item))))
+\end{verbatim}
+\subsubsection{Find}
+
+These functions take a string or id as an argument,  and  scan
+the  symbol table to collect a list of ids whose names contain a
+prefix or suffix which matches the argument.    These  functions
+are defined in the library module {\bf find}.
+
+
+\de{findprefix}{(findprefix KEY:{id, string}): id-list}{expr}
+{    Each  interned id whose name contains a prefix which matches
+    the KEY is  added  to  the  result.    The  ids  are  sorted
+    alphabetically.  The expression
+}
+\begin{verbatim}
+    (findprefix '*)
+\end{verbatim}
+    will  return  a  list  of all of the interned ids whose name
+    begins with *.
+
+
+\de{findsuffix}{(findsuffix KEY:{id, string}): id-list}{expr}
+{    Each interned id whose name contains a suffix which  matches
+    the  KEY  is  added  to  the  result.    The  ids are sorted
+    alphabetically.  The expression
+}
+\begin{verbatim}
+    (findsuffix "STRING")
+\end{verbatim}
+    will return a list of all of the  interned  ids  whose  name
+    ends with STRING.
+
+\section{Property List Functions}
+
+A  property  list  is  used  to  associate an id with a set of
+entities;  those  entities  are  called  flags  if   their   use
+associates a boolean value with the id, and properties if the id
+is to be associated with an arbitrary attribute.
+
+
+\de{put}{(put U:id IND:id PROP:any): any}{expr}
+{    The  indicator  IND with the property PROP is placed on  the
+    property list of U.  If the action of put occurs, the  value
+    of  PROP is returned.  If either U or IND are not ids then a
+    type mismatch error occurs.
+}
+\begin{verbatim}
+    ***** An attempt was made to do PUT on `U', which is not  
+    an identifier
+\end{verbatim}
+    The  definition  of  a  property  will  cause  the  previous
+    definition to be lost.
+
+\de{get}{(get U:id IND:id): any}{expr}
+{    Returns the  property associated with indicator IND from the
+    property list of U.  If U does not have indicator  IND,  nil
+    is returned.  Get returns nil if U is not an id.
+}
+
+\de{deflist}{(deflist U:list IND:id): list}{expr}
+{    U  is  a  list  in which each element is a two-element list:
+    (ID:id PROP:any).  Each id in U has the indicator  IND  with
+    property  PROP  placed  on its property list by the function
+    put function.  The value of deflist is a list of  the  first
+    elements of each two-element list.
+}
+\begin{verbatim}
+    1 lisp> (deflist '((plus2 'two)
+                       (plus 'many))
+                     'no-operands)
+    (plus2 plus)
+    2 lisp> (get 'plus 'no-operands)
+    many
+\end{verbatim}
+
+\de{remprop}{(remprop U:id IND:id): any}{expr}
+{    Removes  the  property  with indicator IND from the property
+    list of U.  Returns the removed property or nil if there was
+    no such indicator.
+}
+
+\de{rempropl}{(rempropl U:id-list IND:id): nil}{expr}
+{    Removes the property IND from all of the ids in U.
+}
+
+\noindent
+The following example is intended to illustrate  the  idea  of
+data  driven  programming.  We define a function called simplify
+which will  simplify  symbolic  algebraic  expressions.    These
+expressions  are  represented as lists.  To begin, there will be
+only  one  operator  (plus),  and  operands  may  be   integers,
+variables  or  an application of plus.  Prefix notation is used.
+The addition of variable x and 3 would be represented as (plus x
+3).  The first version of simplify will certainly do the job.
+
+\begin{verbatim}
+(de simplify (expression)
+  (cond ((atom expression) expression)
+        ((eq (first expression 'plus)
+             (add-simplify expression))
+        (t expression)))
+\end{verbatim}
+However, as we  add  operands  it  will  become  necessary  to
+redefine  simplify.   A better approach is to allow the operator
+to specify the information on how to simplify the expression.
+
+\begin{verbatim}
+(de simplify (expression)
+  (cond ((atom expression) expression)
+        (t (apply (get (first expression) 'simplify)
+                  (ncons expression)))))
+\end{verbatim}
+\begin{verbatim}
+(put 'plus 'simplify 'add-simplify)
+\end{verbatim}
+This version will not have to be rewritten when a new operator
+is added.  For example, if the operator times is added  then  we
+only  need to define a function called times-simplify and attach
+its name to the property  list  of  times  under  the  indicator
+simplify.    We  can  design  add-simplify in a similar fashion.
+Using this approach we will be able to accomodate numbers  other
+than integers.
+
+\begin{verbatim}
+  (de add-simplify (expression)
+    (let ((left (second expression))
+          (right (third expression)))
+      (cond ((zerop left) right)
+            ((zerop right) left)
+            ((and (numberp left)(numberp right))
+             (let ((new (common-type left right)))
+               (apply (get (data-type (first  new))'add-op) new)))
+            (t (list (first expression)
+                     (simplify left)
+                     (simplify right))))))
+\end{verbatim}
+\begin{verbatim}
+(put 'integer 'add-op 'plus2)
+\end{verbatim}
+\begin{verbatim}
+1 lisp> (simplify '(plus (plus 1 8) (plus x 0)))
+(plus 9 X)
+\end{verbatim}
+
+\subsection{Functions for Flagging Ids}
+
+\de{flag}{(flag U:id-list V:id): nil}{expr}
+{    Flag flags each id in U with V; that is, the effect of  flag
+    is  that  for  each  id X in U, (flagp X V) has the value t.
+    Both V and all of the elements of U must be identifiers or a
+    type mismatch error occurs.  The id V  will  appear  on  the
+    property  list  of  each  id in U.  However, flags cannot be
+    accessed, placed on, or removed from  property  lists  using
+    the  normal  property  list functions get, put, and remprop.
+    Note that if an error occurs during execution of flag,  then
+    some  of  the ids in U may be flagged with V, and others may
+    not be.  The statement below causes  the  flag  Lose  to  be
+    placed on the property lists of the ids x and y.
+}
+\begin{verbatim}
+    (flag '(x y) 'lose)
+\end{verbatim}
+\de{flagp}{(flagp U:id V:id): boolean}{expr}
+{    Returns  t  if  U has been flagged with V; otherwise returns
+    nil.  Returns NIL if either U or V is not an id.
+}
+
+\de{remflag}{(remflag U:id-list V:id): nil}{expr}
+{    Removes the flag V from the property list of each member  of
+    the list U.  Both V and all the elements of U must be ids or
+    the type mismatch error occurs.
+}
+
+\de{flag1}{(flag1 U:id V:any): Undefined}{expr}
+{    The  identifier  U  is flagged V.  The effect is to add V to
+    the property list of U.
+}
+
+\de{remflag1}{(remflag1 U:id V:any): Undefined}{expr}
+{    The identifier U is no longer flagged V.  The effect  is  to
+    removed V from the property list of U.
+}
+\subsection{Direct Access to the Property Cell}
+
+  Use  of  the  following functions can destroy the integrity of
+the property list.  Since PSL uses properties at  a  low  level,
+care should be taken in the use of these functions.
+
+
+\de{prop}{(prop U:id): any}{expr}
+{    Returns the property list of U.
+}
+
+\de{setprop}{(setprop U:id L:any): L:any}{expr}
+{    Store item L as the property list of U.
+}
+\section{Value Cell Functions}
+
+The contents of the value cell of an id is usually accessed by
+eval (Chapter 11) or valuecell (below) and changed by setq, setf
+or sometimes set.
+
+\de{setq}{(setq [VARIABLE:id VALUE:any]): any}{fexpr}
+{    The value of each VARIABLE is set to the corresponding value
+    of  VALUE.   Each argument VALUE is evaluated, each argument
+    VARIABLE is not evaluated.  It is not true that
+}
+\begin{verbatim}
+    (setq variable value)
+\end{verbatim}
+    is equivalent to
+
+\begin{verbatim}
+    (set 'variable value)
+\end{verbatim}
+
+				Where setq may be used to set any type of  variable  (fluid,
+    global or local) the function set is restricted to fluid and
+    global variables.
+
+
+\de{set}{(set EXP:id VALUE:any): any}{expr}
+{    Set  is  used  to  define the value cell of fluid and global
+    identifiers.  An error occurs if EXP does not evaluate to an
+    identifier.
+}
+\begin{verbatim}
+    ***** An attempt was made to do SET on `EXP', which  is  not
+    an identifier
+\end{verbatim}
+%\newpage
+    If EXP evaluates to t or nil an error occurs.
+\begin{verbatim}
+    ***** Cannot change T or NIL
+\end{verbatim}
+\de{desetq}{(desetq U:any V:any): V:any}{macro}
+{    This  function  is  part of the USEFUL package.  Desetq is a
+    destructuring setq.  That is, the first argument is  a  list
+    whose  elements are ids.  The value of each id is set to the
+    corresponding element in the second argument.  For  example,
+    evaluation of}
+\begin{verbatim}
+    (desetq (A (B) . C) '((1) (2) (3) 4))
+\end{verbatim}
+    defines  the  value of A to be (1), B to be 2, and C to ((3)
+    4).
+
+\de{psetq}{(psetq [VARIABLE:id VALUE:any]): Undefined}{macro}
+{    This function is defined in the USEFUL package.    Psetq  is
+    very  similar  to  setq.   The difference is that with psetq
+    each VALUE is evaluated before any assignment is made.}
+\begin{verbatim}
+    1 lisp> (setq a 'same  b a)
+    SAME
+    2 lisp> (eq a b)
+    T
+    3 lisp> (psetq a 'other  b a)
+    OTHER
+    4 lisp> (eq a b)
+    NIL
+\end{verbatim}
+
+\de{setf}{(setf [LHS:form RHS:any]): RHS:any}{macro}
+{    The ability to assign values to ids allows us  to  think  of
+    ids  as  variables.    We  can  generalize  this  notion  of
+    variable.  For example, a  list  can  be  thought  of  as  a
+    collection   of   anonymous  variables.  Usually  there  are
+    seperate access  and  update  functions  for  each  kind  of
+    generalized variable.  For example the function cdr accesses
+    the cdr of a pair, the function rplacd updates it.  However,
+    we  can think of a call on an access function as a reference
+    to a storage location.  Just as we consider the  mention  of
+    an  id  to  be  a  reference to its value, (cdr pair) can be
+    thought of as the name for the cdr for  some  pair.   Rather
+    than  having  to  remember  two  functions  for each kind of
+    generalized variable (rplacd corresponds  to  cdr),  we  can
+    adopt  a uniform syntax for updating storage locations using
+    the setf macro.
+}\\
+
+\noindent
+    The application of setf can take on any one of the following
+    forms:\\
+
+{\tt (setf id data)}
+\qquad expands into\qquad
+{\tt (setq id data)}
+
+{\tt(setf (eval form) data)}
+\qquad  expands into\qquad
+{\tt (set form data)}\\
+
+The same effect is obtained by substituting value in
+place of eval.\\
+
+{\tt (setf (car pair) data)}
+\qquad expands into\qquad
+{\tt (rplaca pair data)}
+
+{\tt (setf (cdr pair) data)}
+\qquad expands into\qquad
+{\tt (rplacd pair data)}
+
+{\tt (setf (getv vector index) data)}
+\qquad expands into\qquad\\ 
+		\qquad	\qquad	{\tt (putv vector index data)}
+
+{\tt (setf (indx form index) data)}
+\qquad expands into\qquad\\ 
+ \qquad  \qquad  {\tt (setindx form index data)}
+
+{\tt (setf (sub form start size) data)}
+\qquad expands into\qquad\\ 
+	\qquad	\qquad {\tt (setsub form start size data)}
+
+{\tt (setf (nth pair index) data)}
+\qquad expands into an expression similar to\qquad\\ 
+		\qquad \qquad	{\tt (rplaca (pnth pair index) data)}\\
+
+
+If the first argument to setf is a macro then it will be expanded
+    before setf is.  For example, if first is defined as\\
+
+{\tt (ds first (p) (car p))} then\\
+
+{\tt (setf (first p) data)}
+\qquad is equivalent to\qquad
+{\tt (setf (car p) data)}\\
+
+\noindent
+The USEFUL module contains an expanded version of setf.  The
+    basic definition of setf is  not  consistent  with  that  of
+    setq.    The  value  returned from an application of setq is
+    always the value assigned. For example, the expression\\
+
+
+{\tt (setf (car '(a b)) 'd)}
+\qquad expands into\qquad
+{\tt (rplaca '(a b) 'd)}\\
+
+\noindent
+    The value returned after evaluating this  second  expression
+    is  (d  b).  The extended version of setf will always return
+    the value assigned.\\
+
+\noindent
+    An application of the extended version of setf  will  accept
+    the additional following forms:\\
+
+
+\noindent
+{\tt (setf (cons left right) pair)}
+\qquad will expand into an expression similar to \\
+ \qquad {\tt (progn (setf left (car pair)) (setf right (cdr pair)))}\\
+
+{\tt (setf (cXYr pair) data)}
+\qquad expands into an expression similar to\qquad\\
+	\qquad	\qquad			{\tt (rplacX (cYr pair) data)}\\
+
+
+where X is either a or d and Y is either a, d, aa, ...,
+or ddd\\
+
+{\tt (setf (flagp id name) data)}
+\qquad expands into an expression similar to\qquad\\ 
+	\qquad	\qquad			{\tt (flag (list id) name)}, if data is non-nil otherwise\\
+	\qquad	\qquad			{\tt (remflag (list id) name)}
+
+{\tt (setf (get id name) data)}
+\qquad expands into\qquad
+{\tt (put id name data)}
+
+{\tt (setf (getd name) data)}
+\qquad expands into an expression similar to\qquad\\ 
+	\qquad	\qquad			{\tt (putd name (car data) (cdr data))}\\
+
+
+This expansion assumes that data is similar to an expression which
+would be returned by a call on getd. If data is a code-pointer
+or a lambda expression then 'expr is used in place of (car data).\\
+
+
+{\tt (setf (lastcar pair) data)}
+\qquad expands into an expression similar to\qquad\\ 
+	\qquad	\qquad			{\tt (rplaca (lastpair pair) data).}
+
+{\tt (setf (list a b c ...) pair)}\\
+\qquad the expansion of this expression is very similar to the expansion
+of\qquad\\
+	\qquad	\qquad			{\tt (desetq (a b c ...) pair)}
+
+{\tt (setf (pnth pair index) data)}
+\qquad expands into an expression similar to\qquad\\
+	\qquad	\qquad		 {\tt (rplacd (pnth pair (sub1 index)) data)}
+
+{\tt (setf (vector al bl cl ...) [ar br cr ...])}\\
+\qquad expands into an expression similar to\\
+\qquad	\qquad	{\tt (progn (setf al ar)(setf bl br)(setf cl cr)...)}
+
+The setf function is extensible to permit additional operators on the left
+hand side. If there is an assign-op property on the property list of the
+operator then the value of that property (either a lambda expression or
+the name of a function) is used to build the expansion of the macro.
+The effect is similar to
+\begin{verbatim}
+    (apply (get op 'assign-op) (append (cdr lhs) (list rhs)))
+\end{verbatim}
+    The  property  setf-expand  is searched for when their is no
+    assign-op property.  If there is such a property  its  value
+    is  applied to the two arguments passed to setf.  The effect
+    is similar to
+\begin{verbatim}
+    (apply op (list lhs rhs))
+\end{verbatim}
+    If the left hand side operator is flagged as setf-safe, then
+    it is assumed that the expansion of the macro will yeild  an
+    expression  which  will  return  the value of the right hand
+    side.  Otherwise the expansion will take one  of  the  forms
+    listed  below.    Within the second expansion, references to
+    RHS are replaced with references to VAR.  The second form is
+    used when RHS is a list, the assumption  being  that  it  is
+    effecient to evaluate an application only once.
+
+\begin{verbatim}
+    (progn expansion rhs)
+
+    (let ((var rhs))
+      expansion
+      var)
+\end{verbatim}
+\de{psetf}{(psetf [LHS:form RHS:any]): Undefined}{macro}
+{    This  function  is  defined in the USEFUL package.  Psetf is
+    very similar to setf.  The difference  is  that  with  psetf
+    each RHS is evaluated before any assignment is made.
+}
+
+\de{makeunbound}{(makeunbound U:id): Undefined}{expr}
+{    U  is  made an unbound identifier, that is to say it will no
+    longer have a value.  This function  should  be  applied  to
+    fluid identifiers only.
+}
+
+\de{valuecell}{(valuecell U:id): any}{expr}
+{    Safe access to the value cell of an id.  If U is not an id a
+    type  mismatch  error  occurs.    If  U is an unbound id, an
+    unbound id error occurs.  Otherwise the current value  of  U
+    is  returned.    This  function  should  be applied to fluid
+    identifiers only.
+}
+
+\de{unboundp}{(unboundp U:id): boolean}{expr}
+{    Returns t is U is unbound.  This function should be  applied
+    to fluid identifiers only.
+}
+\section{System Global Variables, Switches and Other "Hooks"}
+
+\subsection{Introduction}
+
+  A number of global variables provide global control of the PSL
+system,  or  reference  values  which  are  constant  throughout
+execution.   Certain  options  are   controlled   by   switches,
+variables  which  have a value of either t or nil.  For example,
+the value of *verboseload controls the display of messages  when
+files  are loaded.  The values of other global variables are not
+restricted to be boolean.  For example, the value of outputbase*
+is the radix  in  which  numbers  are  printed.   PSL  uses  the
+convention that the name of a global variables which is a switch
+begins  with  "*".  The names of other global variables end with
+"*".  
+
+\subsection{Setting Switches}
+
+Strictly   speaking,   NAME   is  a  switch  and  *NAME  is  a
+corresponding global variable that assumes a value of t  or  nil.
+Both  NAME  and  *NAME  are  loosely  referred  to  as  switches
+elsewhere in the manual.\\
+
+\noindent
+The functions on and off functions  are  used  to  change  the
+values  of  the  identifiers  associated  with  switches.   Some
+switches contain an s-expression on their property  lists  under
+the  indicator  simpfg \footnote{The name simpfg comes from its
+introduction in the Reduce algebra system, where it was used  to
+specify  various  simplifications  to  be  performed  as various
+switches were turned on or off.}.  The s-expression has the form
+of a cond list:
+
+\begin{verbatim}
+((t (action-for-on)) (nil (action-for-off)))
+\end{verbatim}
+If the  simpfg  indicator  is  present,  then  the  on  and  off
+functions   also   evaluate   the   appropriate  action  in  the
+s-expression.
+
+
+\de{on}{(on [U:id]): Undefined}{macro}
+{    For each switch U, the associated identifier *U  is  set  to
+    nil.   If  the  clause (t (action-for-on) is found under the
+    indicator simpfg on U then the expression action-for-on will
+    be evaluated.
+}
+
+\de{off}{(off [U:id]): Undefined}{macro}
+{    For each switch U, the associated identifier *U  is  set  to
+    nil.  If the clause (nil (action-for-off) is found under the
+    indicator  simpfg  on  U  then the expression action-for-off
+    will be evaluated.
+}
+  The  switch  fast-integers  is  used  by  the  compiler   when
+arithmetic  expressions  are compiled.  There are definitions of
+numeric  operators  which  do  not  check  the  types  of  their
+arguments in order to reduce execution time.  Evaluation of
+
+\begin{verbatim}
+(get 'fast-integers 'simpfg)
+\end{verbatim}
+returns
+
+\begin{verbatim}
+((t (enable-fast-numeric-operators))
+ (nil (disable-fast-numeric-operators))))
+\end{verbatim}
+Evaluation  of  (on fast-integers) will result in *fast-integers
+being   set   to   t   and    evalution    of    the    function
+enable-fast-numeric-operators.
+
+\subsection{Special Global Variables}
+
+\variable{nil}{[Initially: nil]}{global}
+{
+    A  special global variable whose value cannot be modified by
+    set or setq.
+}
+
+\variable{t}{[Initially: t]}{global}
+{
+    A special global variable whose value cannot be modified  by
+    set or setq.
+}
+
+\subsection{Special Put Indicators}
+
+  Some  actions search the property list of relevant ids for the
+following indicators.
+
+\begin{Ventry}{\bf code-pointer}
+\item [{\bf breakfunction}] Associates a function to be 
+              run with an  id typed
+              in  a break loop (see Chapter 16).  For example, q
+              is used to exit from a  break  loop  and  (get 'q
+              'breakfunction) returns breakquit.
+
+\item [{\bf type}] PSL  uses  the property type to indicate whether
+														a function is a fexpr, macro, or  nexpr.    If  this
+              property  is absent, expr is assumed. For example,
+              (get 'and 'type) returns fexpr.
+
+\item [{\bf vartype}] PSL uses the property vartype to indicate 
+whether
+              an identifier is of type global or fluid.
+\begin {verbatim}
+         1 lisp > (fluid '(mary))
+         nil
+         2 lisp > (get 'mary 'vartype)
+         fluid 
+\end{verbatim}
+
+\item[{\bf *lambdalink}]   The  interpreter  looks  under  *lambdalink  for a
+              lambda  expression  when  a  compiled   definition
+              cannot be found.
+\begin {verbatim}
+         1 lisp > (de list-first (p) (car p))
+         list-first
+         2 lisp > (get 'list-first '*lambdalink)
+         (lambda (p) (car p))
+\end{verbatim}
+\end{Ventry}
+
+\noindent
+The  compiler and loader use a number of other indicators, see
+Chapter 19.
+
+\subsection{Special Flag Indicators}
+
+%\TABELLE***
+\begin{Ventry}{\bf eval, ignore}
+\item [{\bf eval, ignore}]  These flags are  used  primarily  to 
+control  the
+              evaluation  of expressions during compilation (for
+              more information see Chapter 19).
+              \index{eval}\index{ignore}
+
+\item [{\bf lose}]          The function putd is used  to 
+associate  function
+              definitions  with ids.  Its application is aborted
+              if the id has been flagged lose.
+              \index{lose}
+\begin{verbatim}
+*** `NAME' has not been defined, because it is flagged LOSE
+\end{verbatim}
+
+\item [{\bf user}]          If  *usermode is t, when a function is
+defined its
+              name will be  flagged  user.    This  is  used  to
+              distinguish  user  defined  functions  from system
+              functions (see Chapter 9 for more information).
+              \index{user}\index{*usermode}
+%\end{TABELLE***}
+\end{Ventry}

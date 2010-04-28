@@ -1,0 +1,870 @@
+\documentstyle[11pt]{article}
+% Pass group opnote title page and macros.
+% Global definitions 
+\def\opnumber#1{\number\yearonly -#1}
+\def\opnote#1{\gdef\opheader
+     {\xiipt Utah PASS Project OpNote \opnumber{#1}\hfill\today
+      \markright{\today\hfill PASS Opnote \opnumber{#1}\hfill}}}
+\def\mpr#1{\gdef\opheader
+     {\xiipt Utah PASS Project Progress Report \opnumber{#1}\hfill\today
+      \markright{\today\hfill PASS Progress \opnumber{#1}\hfill}}}
+\def\title#1{\gdef\Xtitle{#1}}
+\def\author#1{\gdef\Xauthor{#1}}
+\gdef\opheader{}
+\gdef\Xtitle{}
+\gdef\Xauthor{}
+
+\def\endtitlepage{\eject}
+
+\def\maketitle{
+\begin{titlepage}
+%
+\newcount\yearonly
+\yearonly=\year
+\advance\yearonly by-1900
+
+% reset certain absurd settings for the title page.
+\topmargin -12pt \headsep 0pt \headheight 0pt
+
+\setcounter{page}{0}
+\noindent\opheader
+\vskip 1.25in
+\begin{center}
+{\xivpt\bf \Xtitle \par}
+\vfil
+{\xivpt\bf \Xauthor \par}
+\vfil
+
+
+% \begin{picture}(52,80)
+% \put(0,0){\line(0,1){80}}        % left side
+% \put(50,0){\line(0,1){65}}       % right side
+% \put(0,0){\line(1,0){50}}        % bottom
+% \put(0,80){\line(1,0){30}}       % top
+% \put(30,65){\line(0,1){15}}      % left dent
+% \put(30,65){\line(1,0){20}}       % bottom dent
+% \put(10,45){\xpt(\( \textstyle\rm pass\))}  % pass  name
+% \put(20,55){\(\textstyle \star\)}       % star
+% \end{picture}
+
+\setlength{\unitlength}{0.01in}
+\begin{picture}(100,100)
+
+\put (0,0){\line(1,2){60}}
+\put (0,0){\line(1,0){120}}
+\put (60,120){\line(1,-2){60}}
+\put (18,0){\makebox(84,36){P A S S}}
+\put (18,36){\line(1,0){84}}
+\put (36,36){\makebox(48,36){( :- )}}
+\put (36,72){\line(1,0){48}}
+
+\put (56,72){\framebox(9,10){}}
+\put (60,86){\line(2,1){14.2}}
+\put (60,86){\line(-2,1){14.2}}
+\put (60,99){\line(-2,-1){14.2}}
+\put (60,99){\line(2,-1){14.2}}
+\put (60,93){\circle*{4}}
+
+\put (20,0){\oval(20,20)[b]}
+\put (100,0){\oval(20,20)[b]}
+
+\end{picture}
+\vfil
+Utah Portable Artificial Intelligence Support Systems Project\\
+Computer Science Department\\
+University of Utah\\
+Salt Lake City, Utah 84112\\
+\vfil
+Copyright \copyright \number\year, Utah Pass Project\\
+\end{center}
+\bigskip
+{\xpt Work supported in part by the Hewlett Packard
+Corporation, the Schlumberger Palo Alto Laboratory for A.I. Research,
+the National
+Science foundation Under Grant Number MCS81-21750 and the
+Defense Advanced Research Projects Agency under contract number
+DAAK11-84-K-0017.}
+
+\end{titlepage}
+% \protect\topmargin 0pt \headsep 35pt \headheight 12pt 
+\setcounter{footnote}{0}}
+
+\headheight 14pt
+\textwidth 5.75in
+\oddsidemargin 0.50in
+\pagestyle{myheadings}
+\title{UNIX PSL 3.4/PCLS 2.1 Release Notes}
+
+\author{Harold Carr, Leigh Stoller, \\
+        Stan Shebs, Robert Kessler}
+
+\opnote{07}
+
+\begin{document}
+
+\maketitle
+\nonstopmode
+
+\section{Introduction}
+
+Portable Standard Lisp (PSL) 3.4 runs on Vax BSD Unix, Apollo DOMAIN
+SR 9.5 and above, HP Series 9000 HP-UX, HP Integrated Personal
+Computer, SUN BSD (except SUN 4), Iris BSD, Gould BSD, and MacIntosh
+Plus.
+
+Portable Common Lisp Subset (PCLS) 2.1 is a subset of Common Lisp
+built on top of the PSL 3.4 kernel on the machines listed above.
+
+PSL is a delivery vehicle for the REDUCE Computer Algebra System, the
+ALPHA-1 Spline-based Geometric Modeling System, and an implementation
+base for PCLS.  Users are encouraged to write applications in
+PCLS, since PSL as an independent dialect of Lisp is no longer
+supported.  Only enough of PSL to build the above applications is
+supported (see the addendum to the PSL Manual).
+
+The attached TAR format tape contains the files needed to use and
+maintain the Unix PSL/PCLS systems.  Although PSL/PCLS is available for
+many machines, the attached tape only contains files and directories
+corresponding to your particular system, including sources and scripts
+to permit a complete rebuild of all parts of the language.  The PCLS
+portion of the tape does contain some files for other machines, but
+these are few in number and should not affect anything.
+
+Most people running PSL/PCLS under Unix will not be interested in all of
+the files, and probably will not want to have them all on line.  Only
+the executable programs, {\tt psl-names}, {\tt xxx-names}, and the
+files residing on the
+sub-directory {\tt dist/lap} (described below) must be on line to use
+PSL.  Any other files may be deleted after the system is installed.
+The full distribution tape should be retained if you plan to delete
+files after installation.  PCLS Level 3 does not need any files
+whatsoever, while PCLS Level 2 requires the directory {\tt
+pclsdist/lap} once it has been built.
+
+\section{DISCLAIMER}
+
+Please be aware that this is a research system, not a program product,
+and some of the files and documentation are not quite complete; we may
+also have forgotten some files, or sent incorrect versions.  We are
+releasing this version to you at this time to enhance our
+collaborative research.
+
+For these reasons please:
+
+\begin{itemize}
+
+\item Make a note of ANY problems, concerns, suggestions you have, and
+send this information to us to aid in improving the system and this
+distribution mechanism.
+
+\item Please do not REDISTRIBUTE any of these files, listings or machine
+readable form to anyone.
+
+\end{itemize}
+
+\section{CONTENTS OF THE TAPE}
+
+Attached to this note is a listing of the files on the tape, produced
+as the tape was built. The tape was written by changing the working
+directory to the root of the PSL directory {\tt \$proot} ({\tt
+/v/misc/psl} at Utah), using {\tt cd}.  The subdirectories {\tt dist}
+and {\tt pclsdist} are written using {\tt tar} to write the tape as a
+set of files and directories relative to the {\tt \$proot} node.  Note
+that {\tt \$proot} is a {\em C shell} variable, established by {\tt setenv}
+in the {\tt psl-names} file, described below.
+
+The tape contains the following files and directories
+(directories are indicated by {\tt */}). Some of the directories
+might be empty, but are included for compatibility with the full
+system. The c-shell variables (\$ variables) referencing these
+directories are indicated by {\tt [\$*]}.  Some of the directories
+mention {\tt MACHINE}, which refers to the specific machine.  For
+example on a Vax, it is {\tt vax}, Sun it is {\tt sun}, etc.
+
+\vskip 12pt
+\noindent
+EXECUTABLES: {\tt \$proot/bin/} (the bin directory is {\tt \$psys})
+
+\begin{description}
+
+\item[{\tt bare-psl}:] The smallest executable used mostly for
+building other executables. 
+
+\item[{\tt psl}:] {\tt bare-psl} with several modules loaded (see your
+installer or look at the {\tt psl} variable {\tt options*} to see which
+modules are loaded.
+
+\item[{\tt pslcomp}:] {\tt psl} with the compiler loaded.
+
+\item[{\tt pclslev2}:]
+Level 2 PCLS, contains a PSL-sized (i.e. small) subset of Common Lisp.
+Selected PCLS level 3 modules may be loaded into this executable.
+{\tt pclslev2} is not always present but may be built if necessary.
+
+\item[{\tt pcls}:]
+Level 3 PCLS, contains a large subset of Common Lisp.  This is the
+recommended one for users.
+
+\item[{\tt pclscomp}:]
+Invokes Level 3 PCLS to compile a single file - useful with
+{\tt make} and other Unix tools.
+
+\end{description}
+
+\noindent
+SHELL SCRIPTS: {\tt \$proot/dist/} 
+
+\begin{description}
+
+\item[{\tt oload}:]
+A C shell script to to permit {\tt .o} files to be dynamically loaded.  (This
+does not exist on all systems.)
+
+\item[{\tt psl-names}:]
+A file to be {\tt source}ed to define environment variables (such as
+{\tt \$pu} for {\tt util/}, {\tt \$pl} for {\tt lap/}, etc.) to aid in
+accessing the various PSL sub-directories.
+
+\item[{\tt xxx-names}:]
+The machine-dependent portion of {\tt psl-names}, {\tt source}ed by
+{\tt psl-names}.
+
+\end{description}
+
+\noindent
+DIRECTORIES: {\tt \$proot/dist/} 
+
+\begin{description}
+
+\item[{\tt lap/}:]
+PSL binary ({\tt *.b}) files.  Contains binary files needed to
+rebuild the executables plus binary files for optional loadable
+modules.  PSL binary files are sometimes referred to as FASL (fast
+loading) files.  [{\tt \$pl}]
+
+\item[{\tt kernel/}:]
+Machine-independent kernel sources. [{\tt \$pk}]
+
+\item[{\tt kernel/MACHINE/}:]
+Machine-specific kernel sources and object files. [{\tt \$pxk}]
+
+\item[{\tt nonkernel/}:]
+Files which are part of a standard {\tt bare-psl}, but not
+compiled in the kernel build. [{\tt \$pnk}]
+
+\item[{\tt nonkernel/MACHINE/}:]
+Machine-specific files which are part of a standard {\tt bare-psl}, but
+not compiled in the kernel build. [{\tt \$pxnk}]
+
+\item[{\tt comp/}:]
+Machine-independent compiler sources. [{\tt \$pc}]
+
+\item[{\tt comp/MACHINE/}:]
+Machine-specific compiler sources. [{\tt \$pxc}]
+
+\item[{\tt util/}:]
+Sources for machine-independent utilities. [{\tt \$pu}]
+
+\item[{\tt util/MACHINE/}:]
+Sources for machine-specific utilities. [{\tt \$pxu}]
+
+\item[{\tt distrib/}:]
+Scripts to help build and maintain the machine-independent parts of
+PSL. [{\tt \$pdist}]
+
+\item[{\tt distrib/MACHINE/}:]
+Scripts to help build and maintain the machine-specific parts of PSL.
+[{\tt \$pdist}]
+
+\item[{\tt lpt/}:]
+The PSL manual in printable form (has overprinting and underlining).
+
+\item[{\tt doc/}:]
+Versions of this document and the addendum to the PSL manual.  We keep
+the source texts and printable versions in postscript ({\tt .ps}) and
+laserjet format ({\tt .jep}).
+
+\end{description}
+
+The {\tt pclsdist} subdirectory has a similar organization.
+\bigskip
+
+\noindent
+SHELL SCRIPTS: {\tt \$proot/pclsdist/} 
+
+\begin{description}
+
+\item[{\tt pcls-names}:]
+Sets up csh variable names that PCLS will need.  This file
+{\it must} be sourced {\it before} building PCLS.  Also, {\tt
+\$psl/psl-names} must be sourced before sourcing {\tt pcls-names}
+since {\tt pcls-names} picks up the root of the tree from {\tt psl-names}.
+
+\end{description}
+
+\noindent
+MISCELLANEOUS: {\tt \$proot/pclsdist/} 
+
+\begin{description}
+
+\item[{\tt config.cl}:]
+This file contains information relevant to your site and
+should be edited appropriately. (see below)
+
+\item[{\tt Makefile}:]
+Has actions for creating and manipulating PCLS files.
+
+\item[{\tt makepcls2.cl}:]
+Lisp code that constructs Level 2 PCLS.
+
+\item[{\tt makepcls3.cl}:]
+Lisp code that constructs Level 3 PCLS.
+
+\end{description}
+
+\noindent
+DIRECTORIES: {\tt \$proot/pclsdist/} 
+
+\begin{description}
+
+\item[{\tt kernel/}:]
+Source code to reconfigure PSL into a ``bare pcls'' (also known
+as ``cucumber''). [{\tt \$cuke}]
+
+\item[{\tt level2/}:]
+Source code to build a reasonably-sized PCLS.  [{\tt \$cl2}]
+
+\item[{\tt level3/}:]
+Source code for full PCLS.  [{\tt \$cl3}]
+
+\item[{\tt comp/}:]
+Source code for the frontend optimizer.  This translates Common Lisp
+code into PSL code. [{\tt \$clc}]
+
+\item[{\tt util/}:]
+Useful things not part of the Common Lisp standard.  [{\tt \$clu}]
+
+\item[{\tt lap/}:]
+Compiled code, for both utilities and Level 3 modules.  [{\tt \$cll}]
+
+\item[{\tt doc/}:]
+Human-readable information about PCLS.
+
+\item[{\tt test/}:]
+Test suite for the PCLS implementation.
+
+\item[{\tt bmark/}:]
+Gabriel benchmarks sources and some results.
+
+\end{description}
+
+\section{A SUGGESTION TO SYSTEM MANAGERS}
+
+PSL and PCLS have a large heap (of which only half may be used at any
+given time if the copying garbage collector is being used, rather than
+the compacting collector).  The default size of a running PSL core
+image is roughly 4.5 megabytes.  Because of this, it is recommended
+that your system be configured with at least 32 megabytes of swap
+space.  If this is too great a burden on your system, see the section
+on rebuilding the kernel for instructions on creating a version with a
+smaller heap.
+
+If a large number of people wish to run PSL or PCLS simultaneously, either
+the swap space will have to be increased, or a smaller PSL should be built.
+
+\section{READING THE TAPE}
+
+\begin{enumerate}
+
+\item The first step is to set up the PSL directory.
+
+\item Then the contents of the tape is read into subtrees of the PSL
+directory structure.
+
+\item Finally certain files are customized for local directory conventions
+and the system installed by running a script to set the root of the
+PSL tree.
+
+\end{enumerate}
+
+\subsection{Set up the PSL/PCLS directory structure}
+
+Unless absolutely essential, we recommend that you use exactly the same
+directory structure as we do (relative to the root of the PSL tree),
+even though the system is set up to be installed according to local
+conventions.
+
+We connect the entire PSL directory structure to the node {\tt
+/v/misc/psl}, which we refer to as {\tt \$proot}.  The tape will be
+read into the subdirectories {\tt \$proot/bin} {\tt \$proot/dist}
+and {\tt \$proot/pclsdist}.  We refer to {\tt \$proot/dist} as {\tt
+\$psl} below.  By only referring to {\tt
+\$proot} or using
+relative path names, local versions of PSL can be built on (say)
+{\tt \$proot/local-version}, and older distributions retained as
+{\tt \$proot/old-dist}, etc.
+
+If possible, it is a good idea to have the {\tt \$proot} directory defined
+as a ``login'', so that {\tt \verb|~|psl} may be used to reference {\tt
+\$proot}, before any
+c-shell (\$) variables have been defined. This will make it easier for users to
+place appropriate references in their {\tt .login} and {\tt .cshrc} files.
+This also improves control over source code, since protections can be
+set so that only maintainers with the password can modify things.
+
+\subsection{Read the tape}
+
+Change your working directory to the directory which will be the root
+of this PSL distribution ({\tt /v/misc/psl} at Utah), called {\tt
+\$proot}.  Use the command
+\begin{verbatim}
+        cd ~psl
+\end{verbatim}
+or equivalent.
+
+Mount the tape and give
+the command:
+\begin{verbatim}
+        tar x
+\end{verbatim}
+This will retrieve all the files on the tape, into appropriate
+sub-directories of {\tt \$proot}
+
+If you do not wish to retrieve all the files on the tape,
+but only a subset (listed below), then do:
+\begin{verbatim}
+        tar x ./dist/distrib/read-tape.csh ./dist/xxx-names
+\end{verbatim}
+then run the script
+\begin{verbatim}
+        ./dist/distrib/read-tape.csh
+\end{verbatim}
+
+It is possible to pass two arguments to the {\tt read-tape.csh} script.  The
+first optional argument specifies what portions of the system you are
+going to read.  It defaults to the entire PSL/PCLS tree.  The second
+optional argument is the name of the device to read from (it defaults
+to {\tt /dev/rmt8}).
+
+Legal first arguments are:
+
+\begin{description}
+\item[psl]
+Read the entire PSL tree (source plus binaries).
+Disk space required\footnote{Disk space requirements are for a Vax.  Other
+systems may require more or less space.}: 18 megabytes.
+
+\item[psl+pcls-executables+resize]
+Read the PSL and PCLS executables plus enough of the system to change
+the sizes of internal structures (i.e., heap, bps, symbol table,
+etc.).  Disk space required: 23 megabytes.
+
+\item[psl-executables+resize]
+Read the PSL executables plus enough of the system to change
+the sizes of internal structures (i.e., heap, bps, symbol table,
+etc.).  Disk space required: 14 megabytes.
+
+\item[psl+pcls-executables]
+Read the PSL and PCLS executables only.  Disk space required: 8.5 megabytes.
+
+\item[pcls-executables]
+Read the PCLS executables only.  Disk space required: 2.5 megabytes.
+
+\item[psl-executables]
+Read the PSL executables only.  Disk space required: 6 megabytes.
+
+\item[all]
+Read the entire PSL and PCLS trees (source plus binaries).  Disk space
+required: 27 megabytes.
+
+\end{description}
+
+\section{INSTALLING PSL}
+
+\subsection{Update the Root Location}
+
+After reading the tape, you need to customize the files to reflect the
+root location of PSL.  This can be accomplished with
+{\tt newroot.csh}.  It takes one argument which is the fully rooted
+path of the PSL root directory.  {\tt newroot.csh} will replace the root
+in {\tt psl-names} and all of the makefiles.  For example,
+
+\begin{verbatim}
+        ./dist/distrib/newroot.csh /v/misc/psl
+\end{verbatim}
+
+\subsection{Adding the PSL Environment}
+
+Your {\tt .cshrc} file should be edited to {\tt source} the new
+{\tt psl-names}, and set up your search path.  If you have previously
+installed a version of PSL, you should at this time make sure that
+your {\tt .cshrc} refers to this NEW {\tt psl-names}.
+
+To do this, insert the lines 
+\begin{verbatim}
+        source $~psl/dist/psl-names          # or equivalent
+        set path=(. $psys /usr/bin /bin ...) # plus any others
+\end{verbatim}
+into your {\tt .cshrc} file at an appropriate point.
+
+Now do
+\begin{verbatim}
+        source ~/.cshrc
+\end{verbatim}
+to set all paths to that of the new PSL.
+
+\subsection{Make links to executables}
+
+Do:
+
+\begin{verbatim}
+        make install
+\end{verbatim}
+
+to make symbolic links from your standard system directory to the
+executables in {\tt \$psys}.  The default is {\tt /usr/site/bin/}.
+This makes it unnecessary for users of PSL to put {\tt \$psys} in the
+search path variables of their {\tt .login} files before they can use
+PSL.  (For users on System V Unix or Apollos, this step does not work.
+Users must put {\tt \$psys} on their search path.)  This default is
+defined in {\tt \$psl/Makefile} as the {\tt DESTDIR} variable.  PSL
+users must still {\tt source psl-names} to use PSL if they intend to
+load modules from the {\tt lap/} directory or use {\tt oload} to load
+{\tt .o files}.
+
+\subsection{Delete unneeded directories}
+
+Only the {\tt lap/} subdirectory and the {\tt \$psl/psl-names} and
+{\tt \$xxx-names} files are  necessary for running PSL
+programs.  If you do not wish to keep the source files on-line, you
+may delete any other files after successfully testing PSL, and
+rebuilding any modules or binaries that you need to change.  But DO
+retain the distribution tape!  Many users of PSL find that on-line
+sources are useful tutorial and reference material, and we once again
+recommend that you retain the file structure as distributed.
+
+\subsection{Announce the system}
+
+You should only announce the system if there are users who are going
+to use PSL directly, rather than PCLS.  We suggest only announcing
+PCLS as discussed below.  However, if you do need to announce PSL here
+is how to do it:
+
+Send out a message to all those interested in using PSL.  The file
+{\tt \$psl/doc/bboard.msg} is a suggested start.  In particular, make
+sure that you inform people of the exact path needed to place a
+{\tt source .../psl-names} in their {\tt .login} file, if they desire, since
+{\tt psl-names} facilitates reference to the PSL source directories.
+
+Edit as you see fit, but please REMIND people not to re-distribute the PSL
+system and sources. Note the [.....] blocks in which you are to insert
+the name of some person responsible to answer questions.
+
+You may also want to set the directory protection and limit access only to
+those that you feel should have access at this time.
+
+\section{INSTALLING PCLS}
+
+Once PSL is built and running, you may go on to the construction of PCLS.
+Many of the details are parallel to those for PSL. Remember, these
+steps are only applicable if you have read in the entire PCLS tree
+from the distribution tape. If you have only the binaries in {\tt \$psys},
+then you can skip this section entirely.
+
+To build a PCLS system follow these steps:
+
+\begin{itemize}
+\item Source {\tt pcls-names}.
+
+\item Edit the configuration file {\tt \$cl/config.cl}.
+
+\item Create PCLS executables.
+
+\item Link the executables to places where users can find them.
+
+\item Clean up unwanted directories.
+
+\item Announce the system.
+
+\end{itemize}
+
+\subsection{Source pcls-names}
+
+Edit your {\tt .cshrc} file to {\tt source pcls-names}.  This step is
+essential during construction.  It is not necessary for a user to {\tt
+source pcls-names} to use PCLS, unless they plan to use {\tt
+pclslev2}.  In that case, users will also {\tt source pcls-names} to
+define these names in their own {\tt .cshrc} files, since they are
+used during the process of loading modules.
+
+\subsection{Edit the configuration file}
+
+The file {\tt \$cl/config.cl} contains site-specific information, and may
+be edited to reflect facts about your own site.  As distributed, the
+site-specific procedures are correct only for the University of Utah CS
+Dept.  The file contains instructions about how to modify it
+correctly.  We recommend you be at least slightly familiar with Common
+Lisp before trying; fortunately, these procedures are not critical, and
+PCLS can actually be used without modifying {\tt config.cl}.
+
+\subsection{Make PCLS Executables}
+
+Connect to the directory {\tt \$cl}, and give the command {\tt make
+executables}, which will build executables {\tt pclslev2} and {\tt
+pcls}.
+
+\subsection{Make Links to Executables}
+
+Edit and run the script {\tt \$cl/install-pcls} to make symbolic links
+from a standard system directory to the executables in {\tt \$cl}. (For
+users on System V Unix, this step does not work.  Users must put {\tt
+\$psys} on their search path.)  The default is {\tt /usr/site/bin},
+although for many sites either {\tt /usr/local/bin} or {\tt
+/usr/local} will be appropriate.  This step is optional, but if done,
+users will not need to take any special measures to access PCLS.
+
+\subsection{Delete Unneeded Files}
+
+No files are necessary to run Level 3 PCLS - compiler and environment
+are built in.  The directory {\tt \$cl/lap} contains modules that
+Level 2 PCLS may load.  You may delete any other files as desired -
+{\tt \$cl/Makefile} provides several kinds of deletion for common
+situations.  {\tt make clean} removes log files and some intermediate
+executables, while {\tt make stripped} removes everything but the
+executables and loadable modules.
+
+\subsection{Announce PCLS}
+
+Send out a message to all those interested in using PCLS.  The file
+{\tt \$cl/doc/bboard.msg} is a suggested start.  Edit as you see fit,
+but be sure to insert a name into the [...] blocks, preferably of
+someone who will answer questions.
+
+\subsection{Modifying PCLS}
+
+PCLS can be totally rebuilt by switching to {\tt \$cl}, saying {\tt
+make flush} (which removes all but the sources), then {\tt make all}.
+Remember to source {\tt pcls-names} before trying to rebuild any part
+of the system.
+Rebuilding all of PCLS takes somewhat over an hour on a Vax 750, so it's
+generally a good idea to put it in the background.  For a variety of
+reasons, the PCLS makefiles and actions are not linked across
+directories as much as one might like.  When rebuilding a part of
+PCLS, you may have to do some manual dependency tracking.  The first
+action in {\tt \$cl/Makefile} lists the major dependencies - compiler
+stuff depends on {\tt bare-pcls}, level 2 depends on compiler, etc.
+You will have to go to the appropriate directory and and do a make
+there, then switch to the next appropriate directory, do another make,
+etc.  This has some advantages; if {\tt bare-pcls} gets a small hack,
+it may not be necessary to recompile levels 2 and 3, and you can go
+directly to reconstructing {\tt pclslev2} and {\tt pcls}.  There may
+be a problem in that {\tt make} may not believe that certain
+directories require recompiling, in those cases, the makefile should
+have a {\tt force} action.  {\tt touch}ing files also works.
+
+\subsection{Resizing PCLS}
+
+If you want to change the sizes of internal structures in PCLS (such
+as the heap and bps) you will need to first read the section on
+resizing PSL.  Once PSL has been resized then connect to {\tt \$cl},
+source {\tt pcls-names}, then do {\tt make resize}.
+
+\section{REBUILDING PSL LOADABLE MODULES}
+
+All of the utilities, are kept as binary FASL files (with extensions
+{\tt .b}) on the {\tt lap/} subdirectory.  After modifying a utility source
+file just connect to {\tt \$pu} and do {\tt make}.  This will
+automatically detect which files need to be recompiled.  Once
+recompiled it will place the binary version(s) on {\tt \$pl}, the
+directory from which the executables obtain loadable modules.
+
+\subsection{Using Pslcomp}
+
+{\tt pslcomp} can be used to compile a file, regardless of whether it is
+listed in one of the makefiles.  Connect to the directory where the
+sources for file {\tt XXX} reside.  Do
+\begin{verbatim}
+       pslcomp  XXX
+\end{verbatim}
+This will compile the file {\tt XXX}, placing the binary (.b) file is
+placed in the directory to which you are connected.  {\tt pslcomp}
+knows about {\tt .sl} and {\tt .l} extensions.
+
+\section{REBUILDING THE SYSTEM}
+
+It is not necessary to rebuild the system after reading the tape.  The
+executables should run on your system.  PSL determines the location of
+its tree (necessary for finding the {\tt lap/} directory, the {\tt
+oload} script, etc.) by checking the environment variables.  That is
+why a user must source {\tt psl-names} to use PSL.  If you do need to
+rebuild the system then this section explains the necessary steps.
+
+To rebuild the system, you must have read the entire contents of the
+tape.  If you have then change your
+working directory to {\tt \$psl}, and do:
+\begin{verbatim}
+        make
+\end{verbatim}
+
+This will connect to several subdirectories of {\tt \$psl} and run
+make in those directories.  These ``recursive'' makes will:
+
+\begin{itemize}
+
+\item Recompile C system interface routines used in the kernel.
+
+\item Recompile any out-of-date PSL system source files, putting their
+binary versions on {\tt \$pl} (none of the PSL source files should be
+out-of-date after first reading a tape).
+
+\item Rebuild {\tt bare-psl}, {\tt psl}, and {\tt pslcomp}, placing
+them on {\tt \$psys}.
+
+\end{itemize}
+
+\section{REBUILDING THE PSL KERNEL}
+
+A running {\tt xxx-cross} and {\tt pslcomp} are required to rebuild
+the kernel, since the entire system is written in PSL itself.  The
+kernel modules are compiled to assembly code ({\tt as}) using {\tt
+xxx-cross}.  They are then linked using the system loader {\tt ld}.
+After that, the rest of the system is compiled to {\tt .b} files,
+which are loaded into the kernel to produce the executables.  You can
+modify any file in the PSL tree.  Then connect to {\tt \$psl} and do
+{\tt make}.  This will recompile any modified files and rebuild the
+executables.
+
+\subsection{Cleanup}
+
+{\tt cd \$psl; make cleanup} will remove log files, editor backup files, and
+backup copies of the executables.
+
+\subsection{Building PSL with different static sizes}
+
+PSL uses static sizes for Binary Program Space (BPS) and the Heap.
+The BPS holds compiled code (both {\tt oload}ed C code and Lisp code),
+while the heap contains dynamic Lisp data.
+
+To determine how much bps space is left call {\tt (free-bps)}.  The
+result is in words, so multiply by 4 to get total bytes left.  The
+amount of available heap space can be determined by first running the
+garbage collector to compact memory and then calling {\tt gtheap}
+with a {\tt nil} argument: {\tt (gtheap nil)}.  This also returns the
+number of words, so multiply by 4 to get bytes.  The following shows
+an example of this:
+
+\begin{verbatim}
+PSL 3.4,  8-Sep-87
+1 lisp> (free-bps)
+216013
+2 lisp> (reclaim)
+*** Garbage collection starting
+*** GC 5: time 1564 ms, 490 recovered, 396558 free
+NIL
+3 lisp> (gtheap nil)
+396538
+4 lisp> 
+\end{verbatim}
+
+In order to change the amount of BPS space, do the following:
+
+\begin{enumerate}
+
+\item Connect to the {\tt \$pxk} directory.
+
+\item Edit {\tt Makefile} and change the value of the variable
+{\tt BPSSIZE}.  This is the number of bytes. {\it It must be a
+multiple of four.}
+
+\item Connect to the {\tt \$psl} directory.
+
+\item Run ``{\tt make resize}''.
+
+\end{enumerate}
+
+\noindent For example:
+
+\begin{verbatim}
+% cd $pxk
+% vi Makefile ... make changes to this file
+% cd $psl
+% make resize
+\end{verbatim}
+
+In order to change the amount of Heap space, you must do the
+following:
+
+\begin{enumerate}
+
+\item Connect to the {\tt \$pdist} directory.
+
+\item Edit the {\tt make-bare-psl}, {\tt make-psl} and {\tt make-pslcomp}
+scripts to change the value of the {\tt -td} argument in the
+invocation of the call to {\tt bpsl}.  The value that is given is the
+total space to be allocated in bytes, including bps, heap, and other
+miscellaneous areas.  So, the value that you should provide is the sum
+of the BPS size, two times the amount of heap that you want, and some
+extra space.  The reason that you need to use two times the heap size
+amount is that PSL uses a copying collector, which requires double the
+heap space.  Thus, suppose that we want to allocate a heap of
+1,000,000 bytes, and a BPS space of 500,000.  Then you should allocate
+2,500,000 to the {\tt -td} argument to {\tt bpsl} in the scripts
+mentioned above.
+
+\item Connect to the {\tt \$psl} directory.
+
+\item Run {\tt make resize}.
+
+\end{enumerate}
+
+\noindent For example:
+
+\begin{verbatim}
+% cd $pdist
+% vi make-bare-psl ... make changes here
+% vi make-psl      ... make changes here
+  ...
+% cd $psl
+% make resize
+\end{verbatim}
+
+\subsection{System modification for European installations}
+
+The {\tt (Time)} procedure gives results in milliseconds.  If you have 50hz
+AC current this will return 1/850ths instead, unless a modification is
+made to the file {\tt \$pxnk/timc.sl}.  A constant 17 must be changed
+to a 20 as noted in a comment in that file.  This will not affect any
+other part of the system, so if you are not interested in timings you
+need not make this change.
+
+\section{Differences between Berkeley Unix Versions}
+
+In theory, there are no visible differences between 4.2 and 4.3, nor
+between those and Ultrix.  We would like to hear about any situations
+for which this is not true.
+
+\section{FUTURE UPDATES}
+
+It is currently envisioned that future updates will be complete
+releases.  It is therefore suggested that you
+
+\begin{itemize}
+
+\item Retain this distribution tape in case you may have to compare files.
+
+\item Do not make any changes on these distributed directories. If you must
+make your own bug fixes, it is suggested that you put the changed
+files on some other directories, such as {\tt \$proot/local}, etc.  We
+will not send any files on these directories, so that you can compare
+your local versions with our newer ones.
+
+\end{itemize}
+
+\section{BUG REPORTS}
+
+If you wish, you can send bug reports, suggestions, fixes, etc. to us.
+If you have Arpanet access, you can send email to {\tt
+psl-bugs@orion.utah.edu}.  For those with USENET access, use {\tt
+utah-cs!utah-orion!psl-bugs}.
+
+\end{document}

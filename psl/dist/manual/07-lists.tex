@@ -1,0 +1,777 @@
+
+\chapter*{List Structure}
+
+\section{Introduction to Lists and Pairs}
+
+  The  pair  is  a  fundamental PSL data type, and is one of the
+major attractions of LISP programming.  A  pair  consists  of  a
+two-item  structure.  In PSL the first element is called the car
+and  the  second  the  cdr;  in  other   LISPs,   the   physical
+relationship  of the parts may be different.  An illustration of
+the tree structure is given below as a box diagram; the car  and
+the cdr are each represented as a portion of the box.
+
+\begin{verbatim}
+                -----------------
+                || Car  | Cdr  ||
+                -----------------
+\end{verbatim}
+As  an  example,  a  tree    written  as  ((A . B) . (C . D)) in
+dot-notation is drawn below as a box diagram.
+
+\begin{verbatim}
+                -----------------
+                ||   /  |  \   ||
+                ----/-------\----
+                   /         \
+     -----------------       -----------------
+     ||  A   |   B  ||       ||  C   |   D  ||
+     -----------------       -----------------
+\end{verbatim}
+  The box diagrams are  tedious  to  draw,  so  dot-notation  is
+normally  used.  Note that a space is left on each side of the .
+to ensure that pairs are not confused with floats.
+
+  A list is a special case of a dotted pair structure.   A  list
+is either
+
+
+\begin{enumerate}
+\item  NIL
+\item  A dotted pair whose car is an expression and whose cdr is a
+     list.
+\end{enumerate}
+List  notation  in  general  is  a  lot  easier to read than the
+equivalent dotted pair notation.
+
+\begin{verbatim}
+(A . NIL)               = (A)
+(A . B)                 = (A . B)
+(NIL . NIL)             = (NIL)
+(A . (B . NIL))         = (A B)
+((A . NIL) . NIL)       = ((A))
+((A . NIL) . (B . NIL)) = ((A) B)
+(A . (B . C))           = (A B . C)
+\end{verbatim}
+  The following is  an  algorithm  for  writing  a  dotted  pair
+structure in list notation.
+
+
+\begin{enumerate}
+\item  Set  a  pointer  Q  to  the  beginning  of  the dotted pair
+     structure and write a left parenthesis.
+\item  Write the list notation for the data structure  pointed  to
+     by the car of Q and reset Q to the cdr of Q.
+\item  If   Q  is  now  the  null  pointer,  then  write  a  right
+     parenthesis; otherwise, write a space, and if Q is an atom,
+     write a period, a space, Q's name, and a right parenthesis;
+     otherwise write a space and go to step 2.
+\end{enumerate}
+
+\section{Basic Functions on Pairs}
+
+The  following  are  elementary  functions  on  pairs. All
+functions  in  this  Chapter  which  require pairs as parameters
+signal a type mismatch error if the parameter  given  is  not  a
+pair.
+
+
+\de{cons}{(cons U:any V:any): pair}{expr}
+{    Returns a pair which is not eq to anything else and has U as
+    its car part and  V as its cdr part.
+}
+
+\de{car}{(car U:pair): any}{open-compiled expr}
+{    The  left  part  of  the  pair  U  is  returned.   Note that
+    applications  of  car  are   open   compiled,   a   compiled
+    application  of  car  will not verify that its argument is a
+    pair.  The function SafeCar may be used  in  place  of  car.
+    The  definitions  of  these two functions are identical, the
+    difference  between  them  is  that  safecar  is  not   open
+    compiled.    For interpreted applications, the car of nil is
+    nil and if U is something other  that  a  pair  or  nil  the
+    following error will result.
+}
+\begin{verbatim}
+*****  An attempt was made to do CAR on `U', which is not a pair
+\end{verbatim}
+
+\de{cdr}{(cdr U:pair): any}{open-compiled expr}
+{    The left part  of  the  pair  U  is  returned.    Note  that
+    applications   of   cdr   are   open  compiled,  a  compiled
+    application of cdr will not verify that its  argument  is  a
+    pair.    The  function  SafeCdr may be used in place of cdr.
+    The definitions of these two functions  are  identical,  the
+    difference   between  them  is  that  safecdr  is  not  open
+    compiled.  For interpreted applications, the cdr of  nil  is
+    nil  and  if  U  is  something  other that a pair or nil the
+    following error will result.
+}
+\begin{verbatim}
+***** An attempt was made to do CDR on `U', which is not a pair
+\end{verbatim}
+  The composites of car and cdr are supported up to four levels.
+
+\begin{verbatim}
+              Car                             Cdr
+      Caar            Cdar            Cadr            Cddr
+  Caaar  Cdaar    Cadar  Cddar    Caadr  Cdadr    Caddr  Cdddr
+ Caaaar  Cadaar  Caadar  Caddar  Caaadr  Cadadr  Caaddr  Cadddr
+ Cdaaar  Cddaar  Cdadar  Cdddar  Cdaadr  Cddadr  Cdaddr  Cddddr
+\end{verbatim}
+    These  are all exprs of one argument.  Applications of these
+    functions are generally open compiled.  An example of  their
+    use  is that (cddar p) is equivalent to (cdr (cdr (car p))).
+    For interpreted applications, a type mismatch  error  occurs
+    if the argument does not possess the specified component.
+
+As  an  alternative  to  employing  chains  of  car and cdr to
+obscure depths, particularly in extracting elements of  a  list,
+consider  the use of the functions first, second, third, fourth,
+rest, nth, and pnth.
+
+
+\de{ncons}{(ncons U:any): pair}{expr}
+{    Equivalent to (cons u nil).
+}
+
+\de{xcons}{(xcons LEFT:any RIGHT:any): pair}{expr}
+{    Equivalent to (cons RIGHT LEFT), this function is useful for
+    generating efficient list building code for the compiler.
+}
+
+\de{copy}{(copy X:any): any}{expr}
+{    This function returns a copy of  X.    While  each  pair  is
+    copied,  atomic  elements  (for  example  ids,  strings, and
+    vectors) are not.  See totalcopy in section 7.5.  Note  that
+    copy  is recursive and will not terminate if its argument is
+    a circular list.
+}
+\begin{verbatim}
+    (de copy (u)
+      (if (pairp u)
+        (cons (copy (car u)) (copy (cdr u)))
+        u))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (setq p '("AKU" (charlie)))
+    ("AKU" (CHARLIE))
+    2 lisp> (setq q (copy p))
+    ("AKU" (CHARLIE))
+    3 lisp> (eq p q)
+    NIL
+    4 lisp> (eq (first p) (first q))
+    T
+    5 lisp> (eq (third p) (third q))
+    NIL
+\end{verbatim}
+  See Chapter 6 for other relevant functions.\\
+
+\noindent
+The following functions are known as "destructive"  functions,
+because  they  change  the  structure of the pair given as their
+argument, and consequently change the structure  of  any  object
+containing the pair.  They are frequently used to make code more
+efficient.    For  example  append  will copy its first argument
+whereas nconc will not.  These functions are also used to  build
+structures  which share sub-structure.  It is possible to create
+self referential structures with  these  functions.    This  can
+create havoc with normal printing and list traversal functions.
+
+
+\de{rplaca}{(rplaca U:pair V:any): pair}{open-compiled expr}
+{    The  car of the pair U is replaced by V, the modified pair U
+    is returned.  A type mismatch error occurs if  U  is  not  a
+    pair
+}
+\begin{verbatim}
+    1 lisp> (setq fruit '(orange apple))
+    (ORANGE APPLE)
+    2 lisp> (setq food (cons 'cheese fruit))
+    (CHEESE ORANGE APPLE)
+    3 lisp> (rplaca fruit 'peach)
+    (PEACH APPLE)
+    4 lisp> food
+    (CHEESE PEACH APPLE)
+\end{verbatim}
+
+\de{rplacd}{(rplacd U:pair V:any): pair}{open-compiled expr}
+{    The  cdr of the pair U is replaced by V, the modified pair U
+    is returned.  A type mismatch error occurs if  U  is  not  a
+    pair.
+}
+\begin{verbatim}
+    1 lisp> (setq pair '(left))
+    (LEFT)
+    2 lisp> (progn (rplacd pair 'right) pair)
+    (LEFT . RIGHT)
+\end{verbatim}
+
+\de{rplacw}{(rplacw A:pair B:pair): pair}{expr}
+{    Replaces  the whole pair:  the car of A is replaced with the
+    car of B, and the cdr of A with the cdr of B.  The  modified
+    pair A is returned.
+}
+\section{Functions for Manipulating Lists}
+
+The  following functions are meant for the special pairs which
+are lists, as described in Section 5.1.  An  argument  which  is
+not  a  list could give unexpected results.  For example, length
+is used to determine the number of top level elements in a list.
+
+\begin{verbatim}
+1 lisp> (length '(a b c))
+3
+2 lisp> (length '(a b . c))
+2
+\end{verbatim}
+\subsubsection{Selecting List Elements}
+
+
+\de{first}{(first L:pair): any}{macro}
+{    A synonym for car.
+}
+
+\de{second}{(second L:pair): any}{macro}
+{    A synonym for cadr.
+}
+
+\de{third}{(third L:pair): any}{macro}
+{    A synonym for caddr.
+}
+
+\de{fourth}{(fourth L:pair): any}{macro}
+{    A synonym for cadddr.
+}
+
+\de{rest}{(rest L:pair): any}{macro}
+{    A synonym for cdr.
+}
+
+\de{lastpair}{(lastpair L:pair): any}{expr}
+{    Returns the last pair of a L.   It is often useful to  think
+    of  this  as  a  pointer  to  the  last element for use with
+    destructive functions such as rplaca.  If L is  not  a  pair
+    then a type mismatch error occurs.
+}
+\begin{verbatim}
+    (de lastpair (l)
+      (if (or (atom l) (atom (cdr l)))
+        l
+        (lastpair (cdr l))))
+\end{verbatim}
+
+\de{lastcar}{(lastcar L:pair): any}{expr}
+{    Returns  the  last  element  of the pair L.  A type mismatch
+    error results if L is not a pair.
+}
+\begin{verbatim}
+    (de lastcar (l)
+      (if (atom l) l (car (lastpair l))))
+\end{verbatim}
+
+\de{nth}{(nth L:pair N:integer): any}{expr}
+{    Returns the Nth element of the list L.  If L  is  atomic  or
+    contains  fewer  than  N  elements,  an  out  of range error
+    occurs.
+}
+\begin{verbatim}
+    (de nth (l n)
+      (cond ((null l) (range-error))
+            ((onep n) (first l))
+            (t (nth (rest l) (sub1 n)))))
+\end{verbatim}
+    Note that this definition  is  not  compatible  with  Common
+    LISP.  The Common LISP definition reverses the arguments and
+    defines the car of a list to be the "zeroth" element.
+
+
+\de{pnth}{(pnth L:list N:integer): any}{expr}
+{    Returns  a list starting with the nth element of the list L.
+    Note that the result is a pointer to the nth element of L, a
+    destructive function like rplaca can be used to  modify  the
+    structure  of  L.    If L is atomic or contains fewer than N
+    elements,  an out of range error occurs.
+}
+\begin{verbatim}
+    (de pnth (l n)
+      (cond ((onep n) l)
+            ((not (pairp l)) (range-error))
+            (t (pnth (rest l) (sub1 n)))))
+\end{verbatim}
+\subsection{Membership and Length of Lists}
+
+
+\de{member}{(member A:any L:list): extra-boolean}{expr}
+{    Returns nil if A is not equal to some top level  element  of
+    the  list  L;  otherwise it returns the remainder of L whose
+    first element is equal to A.
+}
+\begin{verbatim}
+    (de member (a l)
+      (cond ((not (pairp l)) nil)
+            ((equal a (car l)) l)
+            (t (member a (cdr l)))))
+\end{verbatim}
+
+\de{memq}{(memq A:any B:list): extra-boolean}{expr}
+{    The same as member except that eq  is  used  for  comparison
+    instead of equal. Note that the value returned by either
+				member or memq is eq to the  portion  of  the list which begins
+				with A. Thus a function like rplaca may be used to alter A.
+}
+\begin{verbatim}
+1 lisp> (setq sequence '(1 3 3))
+(1 3 3)
+2 lisp> (rplaca (memq 3 sequence) 2)
+(2 3)
+3 lisp> sequence
+(1 2 3)
+\end{verbatim}
+
+\de{length}{(length X:any): integer}{expr}
+{    The top level length of the list X is returned.
+}
+\begin{verbatim}
+    (de length (l)
+      (if (atom l) 0 (add1 (length (cdr l)))))
+\end{verbatim}
+\subsubsection{Constructing, Appending, and Concatenating Lists}
+
+
+\de{list}{(list [U:any]): list}{fexpr}
+{    Construct a list of the arguments.
+}
+\begin{verbatim}
+    1 lisp> (list (car '(left . right)) (list 'next))
+    (LEFT (NEXT))
+\end{verbatim}
+
+\de{append}{(append U:list V:list): list}{expr}
+{    Returns a constructed  list in which  the last element  of U
+    is followed by the first element  of  V.    The  list  U  is
+    copied, but V is not.
+}
+\begin{verbatim}
+    (de append (u v)
+      (cond ((not (pairp u)) v)
+            (t (cons (first u) (append (rest u) v)))))
+\end{verbatim}
+
+\de{nconc}{(nconc U:list V:list): list}{expr}
+{    Destructive version of append, the cdr of the last pair of U
+    is  modified to reference V.  While append creates a copy of
+    U, nconc uses U itself in constructing the result.
+}
+\begin{verbatim}
+    (de nconc (u v)
+      (if (not (pairp u))
+        v
+        (rplacd (lastpair u) v)))
+\end{verbatim}
+\begin{verbatim}
+    1 lisp> (setq a '(swan))
+    (SWAN)
+    3 lisp> (nconc a '(giles))
+    (SWAN GILES)
+    4 lisp> a
+    (SWAN GILES)
+\end{verbatim}
+
+\de{aconc}{(aconc U:list V:any): list}{expr}
+{    Destructively adds element V to the tail of list U.
+}
+\begin{verbatim}
+    1 lisp> (setq a '(phillips))
+    (PHILLIPS)
+    2 lisp> (progn (aconc a 'posner) a)
+    (PHILLIPS POSNER)
+\end{verbatim}
+
+\de{lconc}{(lconc PTR:list LST:list): list}{expr}
+{    Effectively nconc, but avoids scanning from the front to the
+    end of the first list by maintaining a pointer.   PTR  is  a
+    pair  whose  car is a list L and whose cdr is a reference to
+    the last pair of L.  The value returned is the updated  pair
+    PTR.
+}
+\begin{verbatim}
+    (progn (rplacd (cdr ptr) lst)
+           (rplacd ptr (lastpair lst)))
+\end{verbatim}
+    This  function  is  useful  for  building lists from left to
+    right, PTR should be initialized to (nil . nil)  before  the
+    first call on lconc.
+
+
+\de{tconc}{(tconc PTR:list ELM:any): list}{expr}
+{    Effectively aconc, but avoids scanning from the front to the
+    end  of  the  first list by maintaining a pointer.  PTR is a
+    pair whose car is a list L and whose cdr is a  reference  to
+    the  last pair of L.  The value returned is the updated pair
+    PTR.
+}
+\begin{verbatim}
+    (progn (setq elm (ncons elm))
+           (rplacd (cdr ptr) elm)
+           (rplacd ptr elm))
+\end{verbatim}
+    This function is useful for  building  lists  from  left  to
+    right.   PTR should be initialized to (nil . nil) before the
+    first call on tconc.
+
+\subsubsection{Lists as Sets}
+
+A set is a list in which each element occurs only once.  Since
+the order of elements in a set does not matter, these  functions
+may not preserve order.
+
+
+\de{adjoin}{(adjoin ELEMENT:any SET:list): list}{expr}
+{    Add Element to SET if it is not already a member.
+}
+\begin{verbatim}
+    (de adjoin (elm set)
+      (if (member elm set) set (cons elm set)))
+\end{verbatim}
+    Recall that member uses equal to test for equality.
+
+
+\de{adjoinq}{(adjoinq ELEMENT:any SET:list): list}{expr}
+{    Similar  to  adjoin  except  that eq is used to test for set
+    membership.
+}
+
+\de{union}{(union X:list Y:list): list}{expr}
+{    Returns the union of sets X and Y.
+}
+\begin{verbatim}
+    (de union (x y)
+      (if (not (pairp x))
+        y
+        (union (rest x)
+               (if (member (first x) y)
+                 y
+                 (cons (first x) y)))))
+\end{verbatim}
+    Notice that the two arguments to union  are  assumed  to  be
+    sets,  if  either  contains  duplicates  then the result may
+    contain duplicates as well.
+
+\begin{verbatim}
+    1 lisp> (union '(1 2 2) '(3))
+    (2 1 3)
+    2 lisp> (union '(3) '(1 2 2))
+    (3 1 2 2)
+\end{verbatim}
+
+\de{unionq}{(unionq X:list Y:list): list}{expr}
+{    Similar to union except that eq is  used  to  test  for  set
+    membership.
+}
+
+\de{intersection}{(intersection U:list V:list): list}{expr}
+{    Returns the intersection of sets U and V.
+}
+\begin{verbatim}
+    (de intersection (u v)
+      (cond ((not (pairp u)) nil)
+            ((member (car u) v)
+             (cons (car u)
+                   (intersection (cdr u) (delete (car u) v))))
+            (t (intersection (cdr u) v))))
+\end{verbatim}
+    Notice that the two arguments to intersection are assumed to
+    be  sets,  if either contains duplicates then the result may
+    contain duplicates as well.
+
+\begin{verbatim}
+    1 lisp> (intersection '(1 2) '(2))
+    (2)
+    2 lisp> (intersection '(2 2) '(1 2 2))
+    (2 2)
+\end{verbatim}
+
+\de{intersectionq}{(intersectionq U:list V:list): list}{expr}
+{    Similar to intersection except that eq is used to  test  for
+    set membership.
+}
+
+\de{list2set}{(list2set SET:list): list}{expr}
+{    Remove  redundant  elements  from the top level of SET using
+    equal.
+}
+
+\de{list2setq}{(list2setq SET:list): list}{expr}
+{    Remove redundant elements from the top level  of  SET  using
+    eq.
+}
+\subsection{Deleting Elements of Lists}
+
+Note  that  the  functions  suffixed  by IP will destructively
+modify the list from which elements are being deleted.   If  you
+use  such  a  function do not rely on the result being eq to the
+argument.  The value returned will  have  all  of  the  elements
+removed,    but  the  modifications  which have been made to the
+argument may not reflect  this.    In  particular,  the  leading
+elements  which  are equal to the element being deleted will not
+be spliced out of the list.
+
+\begin{verbatim}
+1 lisp> (setq this '(a b c))
+(a b c)
+2 lisp> (deletip 'a this)
+(b c)
+3 lisp> this
+(a b c)
+2 lisp> (reversip this)
+(c b a)
+3 lisp> this
+(a)
+\end{verbatim}
+
+\de{delete}{(delete U:any V:list): list}{expr}
+{    Returns V with the first top level occurrence of  U  removed
+    from  it.  Equal is used for comparing elements.  The result
+    consists of a copy of the portion of U  which  comes  before
+    the  deleted element, and the portion of U which follows the
+    deleted element.
+}
+\begin{verbatim}
+    (de delete (u v)
+      (cond ((not (pairp v)) v)
+            ((equal (car v) u) (cdr v))
+            (t (cons (car v) (delete u (cdr v))))))
+\end{verbatim}
+
+\de{del}{(del F:function U:any V:list): list}{expr}
+{    Generalized  delete  function  with  F  as  the   comparison
+    function.
+}
+\begin{verbatim}
+    1 lisp> (del '(lambda (i e) (> i e)) 0 '(-2 3 -1))
+    (-2 -1)
+\end{verbatim}
+
+\de{deletip}{(deletip U:any V:list): list}{expr}
+{    The destructive version of delete,  V may be modified.
+}
+
+\de{delq}{(delq U:any V:list): list}{expr}
+{    Returns  V  with the first top level occurrence of U removed
+    from it.  Eq is used for comparing  elements.    The  result
+    consists  of  a  copy of the portion of U which comes before
+    the deleted element, and the portion of U which follows  the
+    deleted element.
+}
+
+\de{delqip}{(delqip U:any V:list): list}{expr}
+{    The destructive version of delq,  V may be modified.
+}
+
+\de{delasc}{(delasc U:any V:a-list): a-list}{expr}
+{    Returns  V  with the first top level occurrence of (U . ANY)
+    removed from it.  Equal is used for comparisons.  The result
+    consists of a copy of the portion of U  which  comes  before
+    the  deleted element, and the portion of U which follows the
+    deleted element.
+}
+
+\de{delascip}{(delascip U:any V:a-list): a-list}{expr}
+{    The destructive version of delasc,  V may be modified.
+}
+
+\de{delatq}{(delatq U:any V:a-list): a-list}{expr}
+{    Returns V with the first top level occurrence of (U  .  ANY)
+    removed  from  it.   Eq is used for comparisons.  The result
+    consists of a copy of the portion of U  which  comes  before
+    the  deleted element, and the portion of U which follows the
+    deleted element.
+}
+
+\de{delatqip}{(delatqip U:any V:a-list): a-list}{expr}
+{    The destructive version of delatq,  V may be modified.
+}
+\subsection{List Reversal}
+
+
+\de{reverse}{(reverse U:list): list}{expr}
+{    Returns a copy of the top level of U in reverse order.
+}
+
+\begin{verbatim}
+    (de reverse (l)
+      (do ((result nil (cons (car pointer) result))
+           (pointer l (cdr pointer)))
+          ((not (pairp pointer)) result)))
+\end{verbatim}
+
+\de{reversip}{(reversip U:list): list}{expr}
+{    The destructive version of reverse.   The  argument  may  be
+    destructively  modified  to  produce  the result.  Note also
+    that the result may not be eq to the argument.
+}
+
+\begin{verbatim}
+    (de reversip (l)
+      (prog (next result)
+            (while (pairp l)
+              (setq next (cdr l))
+              (setq result (rplacd l result))
+              (setq l next))
+            (return result)))
+\end{verbatim}
+\subsection{Functions for Sorting}
+
+The {\bf gsort} module provides functions for sorting lists.  Some
+of the functions take a comparison function as an argument.  The
+comparison function takes two arguments and should return nil if
+the  second  argument should come before the first in the sorted
+result.  A lambda  expression  is  acceptable  as  a  comparison
+function.    Note  that since sorting requires many comparisons,
+and thus many calls on the comparison function, the sort will be
+much faster if the comparison function is compiled.
+
+
+\de{gsort}{(gsort TABLE:list LEQ-FN:{id,function}): list}{expr}
+{    Returns a sorted list.  LEQ-FN is  the  comparison  function
+    used  to determine the sorting order.  The original TABLE is
+    unchanged.  Gsort uses a stable sorting algorithm.  In other
+    words, if X appears before Y in TABLE  then  X  will  appear
+    before Y in the result unless X and Y are out of order.
+}
+
+\de{gmergesort}{(gmergesort TABLE:list LEQ-FN:{id,function}): list}{expr}
+{    The  destructive version of gsort, this function is somewhat
+    faster than gsort.  Note  that  you  should  use  the  value
+    returned  by  the  function,  don't  depend  on the modified
+    argument to give the right answer.
+}
+
+\de{idsort}{(idsort TABLE:list): list}{expr}
+{    Returns a list of the ids in TABLE, sorted into alphabetical
+    order.  The  original  list  is  unchanged.    Case  is  not
+    significant in determining the alphabetical order.
+}
+\begin{verbatim}
+1 lisp> (setq x '(3 8 -7 2 1 5))
+(3 8 -7 2 1 5)
+2 lisp>     % sort from smallest to largest
+2 lisp> (gsort x 'leq)
+(-7 1 2 3 5 8)
+3 lisp>     % sort from largest to smallest
+3 lisp> (gmergesort x 'geq)
+(8 5 3 2 1 -7)
+4 lisp>     % note that the value of x has been modified
+4 lisp> x
+(3 2 1 -7)
+5 lisp> (idsort '(the quick brown fox jumped over the lazy dog))
+(brown dog fox jumped lazy over quick the the)
+\end{verbatim}
+\section{Functions for Building and Searching A-Lists}
+
+\de{assoc}{(assoc U:any V:a-list): {pair, nil}}{expr}
+{    If  U  occurs as the car portion of an element of the a-list
+    V, the pair in which  U occurred is returned, otherwise  nil
+    is  returned.    The  function  equal  is  used  to test for
+    equality.  As illustrated below, it is  possible  to  update
+    the table that was the second argument to assoc by using the
+    function rplacd on the result.
+}
+\begin{verbatim}
+    (de assoc (u v)
+      (cond ((not (pairp v)) nil)
+            ((and (pairp (car v)) (equal u (caar v))) (car v))
+            (t (assoc u (cdr v)))))
+
+    1 lisp> (setq table '((oranges . 4) (apples . 2)))
+    ((oranges . 4) (apples . 2))
+
+    2 lisp> (rplacd (assoc 'apples table) 0)
+    (apples . 0)
+
+    3 lisp> table
+    ((oranges . 4) (apples . 0))
+\end{verbatim}
+
+\de{atsoc}{(atsoc R1:any R2:any): any}{expr}
+{    Similar to assoc except that eq is used to make comparisons.
+}
+
+\de{ass}{(ass F:function U:any V:a-list): {pair, nil}}{expr}
+{    Ass  is  a  generalized assoc function.  F is the comparison
+    function.
+}
+
+\de{sassoc}{(sassoc U:any V:a-list FN:function): any}{expr}
+{    Searches the a-list V for  an occurrence of U.  If  U is not
+    in the a-list, the evaluation of function  FN  is  returned.
+    Note that FN should be a function with no formal parameters.
+}
+\begin{verbatim}
+    (de sassoc (u v fn)
+      (cond ((not (pairp v)) (apply fn nil))
+            ((and (pairp (car v)) (equal u (caar v))) (car v))
+            (t (sassoc u (cdr v) fn))))
+\end{verbatim}
+
+\de{pair}{(pair U:list V:list): a-list}{expr}
+{    U  and  V are lists which  must have an identical number  of
+    elements.  If not, an error occurs.  Returned is a  list  in
+    which    each  element is a pair, the  car of the pair being
+    from U  and  the  cdr  being  the   corresponding    element
+    from V.
+}
+\begin{verbatim}
+    (de pair (u v)
+      (cond ((and (pairp u) (pairp v))
+             (cons (cons (car u) (car v)) (pair (cdr u) (cdr v))))
+            ((or (pairp u) (pairp v))
+             (length-error))
+            (t nil)))
+\end{verbatim}
+\section{Substitutions}
+
+
+\de{subst}{(subst U:any V:any W:any): any}{expr}
+{    Returns the  result of  substituting U  for all  occurrences
+    of  V  in W.   Copies all of  W which is not replaced  by U.
+    The  test  used   is  equal.
+}
+\begin{verbatim}
+    (de subst (u v w)
+      (cond ((null w) nil)
+            ((equal v w) u)
+            ((not (pairp w)) w)
+            (t (cons (subst u v (car w)) (subst u v (cdr w))))))
+\end{verbatim}
+
+\de{substip}{(substip U:any V:any W:any): any}{expr}
+{    Destructive subst.
+}
+
+\de{sublis}{(sublis X:a-list Y:any): any}{expr}
+{    This performs  a  series  of  substs  in  parallel.      The
+    value  returned  is  the  result of  substituting the cdr of
+    each  element of the a-list  X for every  occurrence of  the
+    car  part    of  that element in Y.  Sublis is not quite the
+    correct function  for  arbitrary  code  substitutions.    As
+    illustrated  below, substitutions may enter places you might
+    wish they did not.
+}
+\begin{verbatim}
+    (de sublis (x y)
+      (if (not (pairp x))
+        y
+        (let ((u (assoc y x)))
+          (cond ((pairp u) (cdr u))
+                ((not (pairp y)) y)
+                (t (cons (sublis x (car y)) (sublis x (cdr y))))))))
+
+    1 lisp> (sublis '((x . 100)) '(list 'x 'is x))
+    (list (quote 100) (quote is) 100)
+\end{verbatim}
+
+\de{subla}{(subla U:a-list V:any): any}{expr}
+{    Eq version of sublis;  replaces atoms only.
+}

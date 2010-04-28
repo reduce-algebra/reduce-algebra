@@ -1,0 +1,84 @@
+\hoffset -.5cm
+\voffset 2cm
+%\documentstyle[12pt]{book}
+%\pagestyle{empty}
+\parindent=0pt
+\addtolength{\topmargin}{-2cm}
+\addtolength{\textheight}{1cm}
+%\addtolength{\textwidth}{2cm}
+%\setlength{\parskip}{2mm}
+%\begin{document}
+%\special{postscriptfile ziblogo.ps}
+\thispagestyle{empty}
+%\vspace*{.5cm}
+\begin{center}
+{\Large \bf The PSL Users Manual}\\[.5cm]
+{\large Version 4.2}\\[1.0cm]
+by \\[1.0cm]
+{\bf Herbert Melenk} \  and \ {\bf Winfried Neun} \\[.5cm] 
+{\normalsize
+Konrad--Zuse--Zentrum f\"ur Informationstechnik Berlin\\
+Division of Symbolic Computing\\
+Takustrasse 7\\
+D--14195 Berlin-Dahlem\\[0.5cm]
+URL: http://www.zib.de\\[1.1cm]
+based on earlier Versions\\[.5cm]
+by\\[.5cm]
+The Utah Symbolic Computation Group\\
+Department of Computer Science\\
+University of Utah\\
+Salt Lake City, Utah 84112\\[.5cm]
+and\\[.5cm]
+Hewlett-Packard Company\\
+Computer Research Center}
+\end{center}
+%\vfill
+%\vspace*{2mm}
+\begin{quote}
+{\footnotesize
+\begin{tabular}{llll}
+Copyright & \copyright & 1997 & Konrad--Zuse--Zentrum Berlin \\
+& & & University of Utah \\
+& & & Hewlett--Packard Company \\
+& & & All rights reserved.
+\end{tabular}
+}
+\end{quote}
+\vspace*{.5cm}
+\begin{quote}
+{\footnotesize Registered system holders may reproduce all or any part of
+this publication for internal purposes, provided that the source of the
+material is clearly acknowledged, and the copyright notice is retained.}
+\end{quote}
+\hrule
+\vspace*{3mm}
+(M 3004.02)
+
+%\end{document}
+
+
+\pagestyle{empty}
+\newpage
+\begin{center}
+{ABSTRACT}\\[4mm]
+\end{center}
+\begin{quote}
+
+This manual describes the primitive data structures, facilities and
+functions present in the Portable Standard LISP
+(PSL)  system.    It  describes  the  implementation details and
+functions of interest to a PSL programmer.  Except for  a  small
+number  of  hand-coded  routines  for I/O and efficient function
+calling,  PSL  is  written   entirely   in   itself,   using   a
+machine-oriented  mode  of PSL, called SYSLisp, to perform word,
+byte, and efficient  integer  and  string  operations.   PSL  is
+compiled  by  an enhanced version of the Portable LISP Compiler,
+and currently runs on many platforms, from personal computers up
+to super computers.
+\end{quote}
+
+\newpage
+\tableofcontents
+\newpage
+\setcounter{page}{0}
+\pagestyle{headings}

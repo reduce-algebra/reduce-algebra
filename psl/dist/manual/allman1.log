@@ -1,0 +1,3557 @@
+This is TeX, Version 3.14159 (C version 6.1) (format=latex 97.3.17)  8 MAR 1998 19:12
+**allman1
+(allman1.tex
+LaTeX2e <1996/12/01> patch level 1
+Babel <v3.6h> and hyphenation patterns for american, german, loaded.
+(/usr/lib/teTeX/texmf/tex/latex/base/latex209.def
+File: latex209.def 1996/05/21 v0.51 Standard LaTeX file
+
+Entering LaTeX 2.09 compatibility mode.
+\footheight=\dimen102
+\@maxsep=\dimen103
+\@dblmaxsep=\dimen104
+\@cla=\count79
+\@clb=\count80
+\mscount=\count81
+(/usr/lib/teTeX/texmf/tex/latex/base/tracefnt.sty
+Package: tracefnt 1996/07/26 v3.0i Standard LaTeX package (font tracing)
+\tracingfonts=\count82
+LaTeX Info: Redefining \selectfont on input line 139.
+)
+\symbold=\mathgroup4
+\symsans=\mathgroup5
+\symtypewriter=\mathgroup6
+\symitalic=\mathgroup7
+\symsmallcaps=\mathgroup8
+\symslanted=\mathgroup9
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 306.
+LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 307.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 308.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 314.
+LaTeX Info: Redefining \em on input line 324.
+
+(/usr/lib/teTeX/texmf/tex/latex/base/latexsym.sty
+Package: latexsym 1996/11/20 v2.2d Standard LaTeX package (lasy symbols)
+\symlasy=\mathgroup10
+LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
+(Font)                  U/lasy/m/n --> U/lasy/b/n on input line 85.
+)
+LaTeX Font Info:    Redeclaring math delimiter \lgroup on input line 388.
+LaTeX Font Info:    Redeclaring math delimiter \rgroup on input line 390.
+LaTeX Font Info:    Redeclaring math delimiter \bracevert on input line 392.
+
+(/usr/lib/teTeX/texmf/tex/latex/config/latex209.cfg
+(/usr/lib/teTeX/texmf/tex/latex/tools/rawfonts.sty
+Compatibility mode: package `' requested, but `rawfonts' provided.
+Package: rawfonts 1994/05/08 Low-level LaTeX 2.09 font compatibility
+
+(/usr/lib/teTeX/texmf/tex/latex/tools/somedefs.sty
+Package: somedefs 1994/06/01 Toolkit for optional definitions
+)
+LaTeX Font Info:    Try loading font information for U+lasy on input line 36.
+
+(/usr/lib/teTeX/texmf/tex/latex/base/ulasy.fd
+File: ulasy.fd 1996/11/20 v2.2dLaTeX symbol font definitions
+))))
+(/usr/lib/teTeX/texmf/tex/latex/base/book.cls
+Document Class: book 1996/10/31 v1.3u Standard LaTeX document class
+(/usr/lib/teTeX/texmf/tex/latex/base/bk12.clo
+File: bk12.clo 1996/10/31 v1.3u Standard LaTeX file (size option)
+)
+\c@part=\count83
+\c@chapter=\count84
+\c@section=\count85
+\c@subsection=\count86
+\c@subsubsection=\count87
+\c@paragraph=\count88
+\c@subparagraph=\count89
+\c@figure=\count90
+\c@table=\count91
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+Compatibility mode: definition of \rm ignored.
+Compatibility mode: definition of \sf ignored.
+Compatibility mode: definition of \tt ignored.
+Compatibility mode: definition of \bf ignored.
+Compatibility mode: definition of \it ignored.
+Compatibility mode: definition of \sl ignored.
+Compatibility mode: definition of \sc ignored.
+LaTeX Info: Redefining \cal on input line 636.
+LaTeX Info: Redefining \mit on input line 637.
+\bibindent=\dimen105
+) (a4Camb.sty
+Page Layout 'a4' -- version of 9 Jun 1986.
+) (/usr/lib/teTeX/texmf/tex/latex/base/makeidx.sty
+Package: makeidx 1995/04/19 v1.0j Standard LaTeX package
+)
+(/usr/lib/teTeX/texmf/tex/latex/psnfss/times.sty
+Package: times 1995/08/16 5.2 Times PSNFSS2e package
+)
+\@indexfile=\write3
+
+Writing index file allman1.idx
+(allman1.aux)
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 12.
+ (/usr/lib/teTeX/texmf/tex/latex/psnfss/ot1ptm.fd
+File: OT1ptm.fd 1996/01/28 Fontinst v1.504 font definitions for OT1/ptm.
+) (MUSTER
+\argwidth=\skip43
+\dewidth=\skip44
+)
+(TITLEPAG.TEX
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <17.28> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 15.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 18.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 39.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 39.
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 40.
+ (/usr/lib/teTeX/texmf/tex/latex/psnfss/omsptm.fd
+File: OMSptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 40.
+ [1
+
+] [2]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <24.88> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 81.
+
+(allman1.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 1.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 1.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 1.
+ [3
+
+] [4] [5] [6])
+\tf@toc=\write4
+ [7]) (01-intro.tex [0
+
+]
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 21.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 40.
+
+Underfull \hbox (badness 10000) in paragraph at lines 53--55
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 53--55
+
+ []
+
+[1]
+Underfull \hbox (badness 10000) in paragraph at lines 62--67
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 71--72
+
+ []
+
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 97.
+(/usr/lib/teTeX/texmf/tex/latex/psnfss/ot1pcr.fd
+File: OT1pcr.fd 1996/01/28 Fontinst v1.504 font definitions for OT1/pcr.
+) [2]
+Overfull \hbox (55.60846pt too wide) in paragraph at lines 123--123
+[]\OT1/pcr/m/n/12 ***** An attempt was made to do CAR on `"STR"', which is not 
+a pair[] 
+ []
+
+[3]
+Overfull \hbox (48.40846pt too wide) in paragraph at lines 201--201
+[]\OT1/pcr/m/n/12 ***** An attempt was made to do CAR on `"STR', which is not a
+ pair[] 
+ []
+
+) (04-datat.TEX
+Overfull \hbox (5.51627pt too wide) in paragraph at lines 7--11
+\OT1/ptm/m/n/12 Data ob-jects con-tain in-for-ma-tion about their type. Some fu
+nc-tions, like equal, are "generic"
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 27
+\OT1/ptm/b/n/12 integer
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 36
+\OT1/ptm/b/n/12 inum
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 41
+\OT1/ptm/b/n/12 fixnum
+ []
+
+[4]
+Underfull \hbox (badness 10000) detected at line 44
+\OT1/ptm/b/n/12 bignum
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 52
+\OT1/ptm/b/n/12 float
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 66
+\OT1/ptm/b/n/12 id
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 81
+\OT1/ptm/b/n/12 pair
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 90
+\OT1/ptm/b/n/12 vector 
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 100
+\OT1/ptm/b/n/12 string
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 114
+\OT1/ptm/b/n/12 w-vector
+ []
+
+
+Overfull \hbox (4.62291pt too wide) in paragraph at lines 114--118
+[]\OT1/ptm/m/n/12 A vec-tor of machine-sized words, used to im-ple-ment such th
+ings as fixnums,
+ []
+
+[5]
+Underfull \hbox (badness 10000) detected at line 119
+\OT1/ptm/b/n/12 byte-vector
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 152
+\OT1/ptm/b/n/12 any
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 156
+\OT1/ptm/b/n/12 atom 
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 158
+\OT1/ptm/b/n/12 boolean
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 162
+\OT1/ptm/b/n/12 character
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 166
+\OT1/ptm/b/n/12 constant
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 170
+\OT1/ptm/b/n/12 extra-boolean
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 173
+\OT1/ptm/b/n/12 ftype
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 179
+\OT1/ptm/b/n/12 io-channel
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 183
+\OT1/ptm/b/n/12 number
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 185
+\OT1/ptm/b/n/12 x-vector
+ []
+
+[6]
+Underfull \hbox (badness 10000) detected at line 188
+\OT1/ptm/b/n/12 Undefined
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 208
+\OT1/ptm/b/n/12 list
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 227
+\OT1/ptm/b/n/12 a-list
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 232
+\OT1/ptm/b/n/12 form
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 238
+\OT1/ptm/b/n/12 lambda
+ []
+
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 277--278
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 282--283
+
+ []
+
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 318--319
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 321--322
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 327--328
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 331--332
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 337--338
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 341--373
+
+ []
+
+[9]
+Underfull \hbox (badness 10000) in paragraph at lines 396--397
+
+ []
+
+
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 410--410
+[]    \OT1/pcr/m/n/12 1 lisp> ((lambda (p) (and (pairp p) (car p)))  '(robin))[
+] 
+ []
+
+[10]
+Underfull \hbox (badness 10000) in paragraph at lines 484--485
+
+ []
+
+[11]
+Underfull \hbox (badness 10000) in paragraph at lines 487--488
+
+ []
+
+
+Overfull \hbox (98.80844pt too wide) in paragraph at lines 522--522
+[]\OT1/pcr/m/n/12 ***** An attempt was made to do LISP2CHAR on `N' which is not
+ a character[] 
+ []
+
+[12]) (05-numbs.tex
+Underfull \hbox (badness 10000) in paragraph at lines 10--11
+
+ []
+
+[13] [14]
+Underfull \hbox (badness 10000) in paragraph at lines 90--91
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 96--97
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 101--102
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 107--108
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 119--120
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 126--127
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [15]
+Underfull \hbox (badness 10000) in paragraph at lines 135--136
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 142--143
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 157--158
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 161--162
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 165--166
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 169--170
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 173--174
+
+ []
+
+
+Underfull \vbox (badness 1383) has occurred while \output is active []
+
+ [16]
+Underfull \hbox (badness 10000) in paragraph at lines 177--178
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 181--182
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 186--187
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 201--202
+
+ []
+
+[17]
+Underfull \hbox (badness 10000) in paragraph at lines 229--230
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 260--261
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 266--267
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 269--270
+
+ []
+
+[18]
+Underfull \hbox (badness 10000) in paragraph at lines 285--286
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 297--298
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 303--304
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 307--308
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 316--317
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 319--320
+
+ []
+
+[19]
+Underfull \hbox (badness 10000) in paragraph at lines 322--323
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 325--326
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 329--330
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 333--334
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 338--339
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 343--344
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 348--349
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 352--353
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 356--357
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [20]
+Underfull \hbox (badness 10000) in paragraph at lines 368--369
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 374--375
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 378--379
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 383--384
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 390--391
+
+ []
+
+[21] [22]
+Underfull \hbox (badness 10000) in paragraph at lines 484--485
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 488--489
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 491--492
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 494--495
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 497--498
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 500--501
+
+ []
+
+[23]
+Underfull \hbox (badness 10000) in paragraph at lines 503--504
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 506--507
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 509--510
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 512--513
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 515--516
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 518--519
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 521--522
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 524--525
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 532--533
+
+ []
+
+[24]
+Underfull \hbox (badness 10000) in paragraph at lines 540--541
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 548--549
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 574--575
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 582--583
+
+ []
+
+[25]
+Underfull \hbox (badness 10000) in paragraph at lines 590--591
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 593--594
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 596--597
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 600--601
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 603--604
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 606--607
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 610--611
+
+ []
+
+[26]
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 628--628
+[]      \OT1/pcr/m/n/12 2. The factorial of N is N times the factorial of N-1.[
+] 
+ []
+
+) (06-ids.tex [27] [28
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 5--9
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 11--17
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 19--22
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24--29
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 59--60
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 66--67
+
+ []
+
+[29]
+Underfull \hbox (badness 10000) in paragraph at lines 95--99
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 109--113
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 127--131
+
+ []
+
+[30]
+Underfull \hbox (badness 10000) in paragraph at lines 152--153
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 156--157
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 161--162
+
+ []
+
+[31]
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 200--201
+
+ []
+
+[32]
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 260--260
+[]    \OT1/pcr/m/n/12 ***** An attempt was made to do PUT on `U', which is not[
+] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 268--269
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 290--291
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 294--295
+
+ []
+
+[33]
+Overfull \hbox (48.40846pt too wide) in paragraph at lines 346--346
+[]               \OT1/pcr/m/n/12 (apply (get (data-type (first  new))'add-op) n
+ew)))[] 
+ []
+
+[34]
+Underfull \hbox (badness 10000) in paragraph at lines 376--377
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 382--383
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 387--388
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 392--393
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 402--403
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 406--407
+
+ []
+
+[35]
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 440--440
+[]    \OT1/pcr/m/n/12 ***** An attempt was made to do SET on `EXP', which  is  
+not[] 
+ []
+
+[36]
+Underfull \hbox (badness 10000) in paragraph at lines 489--490
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 491--494
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 499--502
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 503--505
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 526--529
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 531--533
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 534--535
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 536--539
+
+ []
+
+[37]
+Underfull \hbox (badness 10000) in paragraph at lines 540--545
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 547--550
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 551--555
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 556--559
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 561--565
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 566--569
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 571--573
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 583--586
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 588--591
+
+ []
+
+
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 617--617
+[]    \OT1/pcr/m/n/12 (apply (get op 'assign-op) (append (cdr lhs) (list rhs)))
+[] 
+ []
+
+[38]
+Underfull \hbox (badness 10000) in paragraph at lines 645--646
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 651--652
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 659--660
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 664--665
+
+ []
+
+
+Overfull \hbox (9.14449pt too wide) in paragraph at lines 665--665
+[]\OT1/ptm/b/n/17.28 System Global Vari-ables, Switches and Other "Hooks" 
+ []
+
+[39]
+Underfull \hbox (badness 10000) in paragraph at lines 683--687
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 711--712
+
+ []
+
+[40]
+Underfull \hbox (badness 10000) detected at line 763
+\OT1/ptm/b/n/12 type
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 768
+\OT1/ptm/b/n/12 vartype
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 803
+\OT1/ptm/b/n/12 lose
+ []
+
+[41]
+Overfull \hbox (62.69508pt too wide) in paragraph at lines 810--810
+ []\OT1/pcr/m/n/12 *** `NAME' has not been defined, because it is flagged LOSE[
+] 
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 812
+\OT1/ptm/b/n/12 user
+ []
+
+) (07-lists.tex [42] [43
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 82--83
+
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 97--97
+[]\OT1/pcr/m/n/12 *****  An attempt was made to do CAR on `U', which is not a p
+air[] 
+ []
+
+
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 112--112
+[]\OT1/pcr/m/n/12 ***** An attempt was made to do CDR on `U', which is not a pa
+ir[] 
+ []
+
+
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 121--121
+[]  \OT1/pcr/m/n/12 Caaar  Cdaar    Cadar  Cddar    Caadr  Cdadr    Caddr  Cddd
+r[] 
+ []
+
+
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 121--121
+[] \OT1/pcr/m/n/12 Caaaar  Cadaar  Caadar  Caddar  Caaadr  Cadadr  Caaddr  Cadd
+dr[] 
+ []
+
+
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 121--121
+[] \OT1/pcr/m/n/12 Cdaaar  Cddaar  Cdadar  Cdddar  Cdaadr  Cddadr  Cdaddr  Cddd
+dr[] 
+ []
+
+[44]
+Underfull \hbox (badness 10000) in paragraph at lines 136--137
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 141--142
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 168--169
+
+ []
+
+[45]
+Underfull \hbox (badness 10000) in paragraph at lines 214--215
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 233--234
+
+ []
+
+[46]
+Underfull \hbox (badness 10000) in paragraph at lines 237--238
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 241--242
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 249--250
+
+ []
+
+[47] [48] [49]
+Underfull \hbox (badness 10000) in paragraph at lines 443--444
+
+ []
+
+[50]
+Underfull \hbox (badness 10000) in paragraph at lines 471--472
+
+ []
+
+
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 483--483
+[]                   \OT1/pcr/m/n/12 (intersection (cdr u) (delete (car u) v)))
+)[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 498--499
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 503--504
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 508--509
+
+ []
+
+[51]
+Underfull \hbox (badness 10000) in paragraph at lines 558--559
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 566--567
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 570--571
+
+ []
+
+[52]
+Underfull \hbox (badness 10000) in paragraph at lines 578--579
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 582--583
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 590--591
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 594--595
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 600--601
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 613--614
+
+ []
+
+[53]
+Underfull \hbox (badness 10000) in paragraph at lines 642--643
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 649--650
+
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 670--670
+[]\OT1/pcr/m/n/12 5 lisp> (idsort '(the quick brown fox jumped over the lazy do
+g))[] 
+ []
+
+[54]
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 695--695
+[]            \OT1/pcr/m/n/12 ((and (pairp (car v)) (equal u (caar v))) (car v)
+)[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 699--700
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 704--705
+
+ []
+
+
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 716--716
+[]            \OT1/pcr/m/n/12 ((and (pairp (car v)) (equal u (caar v))) (car v)
+)[] 
+ []
+
+[55]
+Overfull \hbox (48.40846pt too wide) in paragraph at lines 732--732
+[]             \OT1/pcr/m/n/12 (cons (cons (car u) (car v)) (pair (cdr u) (cdr 
+v))))[] 
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 747--747
+[]            \OT1/pcr/m/n/12 (t (cons (subst u v (car w)) (subst u v (cdr w)))
+)))[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 751--752
+
+ []
+
+
+Overfull \hbox (62.80846pt too wide) in paragraph at lines 773--773
+[]                \OT1/pcr/m/n/12 (t (cons (sublis x (car y)) (sublis x (cdr y)
+)))))))[] 
+ []
+
+) (08-strs.tex
+Underfull \hbox (badness 10000) in paragraph at lines 777--1
+
+ []
+
+[56]
+Underfull \hbox (badness 10000) in paragraph at lines 20--21
+
+ []
+
+[57
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 81--82
+
+ []
+
+[58]
+Underfull \hbox (badness 10000) in paragraph at lines 153--154
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 159--160
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 164--165
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 168--169
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 172--173
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 176--177
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 181--182
+
+ []
+
+[59]
+Underfull \hbox (badness 10000) in paragraph at lines 185--186
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 189--190
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 194--195
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 197--198
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 200--201
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 203--204
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 207--208
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 212--213
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 215--216
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 218--219
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 225--226
+
+ []
+
+
+Underfull \vbox (badness 2343) has occurred while \output is active []
+
+ [60]
+Underfull \hbox (badness 10000) in paragraph at lines 239--240
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 253--254
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 258--259
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 263--264
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 275--276
+
+ []
+
+[61]
+Underfull \hbox (badness 10000) in paragraph at lines 280--281
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 286--287
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 299--300
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 303--304
+
+ []
+
+[62]
+Underfull \hbox (badness 10000) in paragraph at lines 335--336
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 345--346
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 352--353
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 358--359
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 363--364
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 376--377
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 380--381
+
+ []
+
+[63]
+Underfull \hbox (badness 10000) in paragraph at lines 390--391
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 394--395
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 398--399
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 402--403
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 408--409
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 412--413
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 417--418
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 422--423
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 427--428
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 432--433
+
+ []
+
+
+Underfull \vbox (badness 7186) has occurred while \output is active []
+
+ [64]
+Underfull \hbox (badness 10000) in paragraph at lines 439--440
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 443--444
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 452--453
+
+ []
+
+LaTeX Font Warning: Font shape `OMS/ptm/bx/n' undefined
+(Font)              using `OMS/ptm/m/n' instead
+(Font)              for symbol `textbraceleft' on input line 457.
+LaTeX Font Info:    Font shape `OMS/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 457.
+
+Underfull \hbox (badness 10000) in paragraph at lines 473--474
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 478--479
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 482--483
+
+ []
+
+[65]
+Underfull \hbox (badness 10000) in paragraph at lines 486--487
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 490--491
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 494--495
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 499--500
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 504--505
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 510--511
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 514--515
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 521--522
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 525--526
+
+ []
+
+
+Overfull \hbox (0.14035pt too wide) in paragraph at lines 529--531
+\OT1/ptm/m/n/12 The li-brary mod-ule STRING-SEARCH pro-vides ef-fi-cient func-t
+ions for com-par-ing a string
+ []
+
+[66]
+Underfull \hbox (badness 10000) in paragraph at lines 534--535
+
+ []
+
+
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 540--540
+[]\OT1/pcr/m/n/12 (string= S1 (substring S2 START (+ START (string-length S1)))
+)[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 554--555
+
+ []
+
+
+Overfull \hbox (55.60846pt too wide) in paragraph at lines 560--560
+[]\OT1/pcr/m/n/12 (string-equal S1 (substring S2 START (+ START (string-length 
+S1))))[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 590--591
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 597--598
+
+ []
+
+[67]
+Underfull \hbox (badness 10000) in paragraph at lines 602--603
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 610--611
+
+ []
+
+
+Underfull \hbox (badness 1024) in paragraph at lines 634--634
+\OT1/ptm/m/n/12 The first el-e-ment should be an iden-ti-fier, the sec-ond a st
+ring. \OT1/pcr/m/n/12 ($\OML/cmm/m/it/12 <
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 634--635
+
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 643--643
+[]             \OT1/pcr/m/n/12 (item (channelread channel) (channelread channel
+)))[] 
+ []
+
+
+Underfull \vbox (badness 1742) has occurred while \output is active []
+
+ [68])
+(09-ctrl.tex [69] [70
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 17--17
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17--18
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 19--23
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 27--38
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 58--59
+
+ []
+
+[71]
+Underfull \hbox (badness 10000) in paragraph at lines 80--81
+
+ []
+
+[72]
+Underfull \hbox (badness 10000) in paragraph at lines 154--155
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 157--167
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 194--195
+
+ []
+
+[73]
+Underfull \hbox (badness 10000) in paragraph at lines 217--224
+
+ []
+
+
+Overfull \hbox (8.8669pt too wide) in paragraph at lines 230--233
+\OT1/ptm/m/n/12 The let-style is at-trac-tive since it places the $\OML/cmm/m/i
+t/12 <$\OT1/ptm/m/n/12 var$\OML/cmm/m/it/12 >$\OT1/ptm/m/n/12 s close to their 
+bind-ing forms ($\OML/cmm/m/it/12 <$\OT1/ptm/m/n/12 value$\OML/cmm/m/it/12 >$\O
+T1/ptm/m/n/12 s),
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 230--233
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 234--240
+
+ []
+
+[74]
+Underfull \hbox (badness 10000) in paragraph at lines 267--268
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 272--273
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 278--279
+
+ []
+
+[75] [76]
+Underfull \hbox (badness 10000) in paragraph at lines 377--378
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 382--383
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 392--393
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 400--401
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 409--410
+
+ []
+
+[77]
+Overfull \hbox (6.90118pt too wide) in paragraph at lines 475--483
+\OT1/ptm/m/n/12 The vari-able $\OML/cmm/m/it/12 <$\OT1/ptm/m/n/12 variable$\OML
+/cmm/m/it/12 >$ \OT1/ptm/m/n/12 is set to suc-ces-sive el-e-ments of $\OML/cmm/
+m/it/12 <$\OT1/ptm/m/n/12 list$\OML/cmm/m/it/12 >$\OT1/ptm/m/n/12 . The ar-gu-m
+ent $\OML/cmm/m/it/12 <$\OT1/ptm/m/n/12 function$\OML/cmm/m/it/12 >$
+ []
+
+[78] [79] [80] [81]
+Overfull \hbox (14.68834pt too wide) in paragraph at lines 754--756
+[]\OT1/ptm/m/n/12 Returns the sum of each eval-u-a-tion of $\OML/cmm/m/it/12 <$
+\OT1/ptm/m/n/12 form$\OML/cmm/m/it/12 >$\OT1/ptm/m/n/12 . The use of the op-tio
+nal ar-gu-ment $\OML/cmm/m/it/12 <$\OT1/ptm/m/n/12 variable$\OML/cmm/m/it/12 >$
+
+ []
+
+[82] [83]
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 895--895
+[]      \OT1/pcr/m/n/12 Jump to the next iteration if the value of <form> is ni
+l.[] 
+ []
+
+[84]
+Underfull \hbox (badness 10000) in paragraph at lines 940--941
+
+ []
+
+[85]
+Underfull \hbox (badness 10000) in paragraph at lines 971--972
+
+ []
+
+[86] [87] [88]
+Underfull \hbox (badness 10000) in paragraph at lines 1183--1184
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1207--1208
+
+ []
+
+[89]
+Underfull \hbox (badness 10000) in paragraph at lines 1216--1217
+
+ []
+
+[90]
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 1258--1258
+[]  \OT1/pcr/m/n/12 (throw 'parse-error (printf format-string (car *buffer*))))
+[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1281--1282
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1287--1288
+
+ []
+
+[91]
+Underfull \hbox (badness 10000) in paragraph at lines 1322--1324
+
+ []
+
+) (10-func.tex [92]
+Underfull \hbox (badness 10000) in paragraph at lines 24--25
+
+ []
+
+[93
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 88--89
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 139--139
+[]\OT1/pcr/m/n/12 Do you really want to redefine the system function
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [94]
+Underfull \hbox (badness 10000) in paragraph at lines 156--157
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 178--179
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
+
+ []
+
+[95]
+Underfull \hbox (badness 10000) in paragraph at lines 207--208
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 218--219
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 229--230
+
+ []
+
+
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 238--238
+[]                    \OT1/pcr/m/n/12 (ncons (cons 'list (rest (rest a))))))))[
+] 
+ []
+
+[96]
+Underfull \hbox (badness 10000) in paragraph at lines 256--257
+
+ []
+
+[97]
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 353--353
+[]    \OT1/pcr/m/n/12 (when (> (long-calculation n) 0)    % Expansion of the fi
+rst[] 
+ []
+
+
+Overfull \hbox (41.20847pt too wide) in paragraph at lines 353--353
+[]    \OT1/pcr/m/n/12 ((lambda (any)                      % Expansion of the se
+cond[] 
+ []
+
+[98]
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 376--376
+[]                    \OT1/pcr/m/n/12 (ncons (cons (quote list)(rest (rest a)))
+)[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 412--413
+
+ []
+
+[99]
+Underfull \hbox (badness 10000) in paragraph at lines 463--464
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 480--481
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 486--487
+
+ []
+
+
+Underfull \vbox (badness 2302) has occurred while \output is active []
+
+ [100]
+Underfull \hbox (badness 10000) in paragraph at lines 493--494
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 498--499
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 505--506
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 511--512
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 516--517
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 520--521
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 527--528
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 533--534
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 537--538
+
+ []
+
+[101]
+Underfull \hbox (badness 10000) in paragraph at lines 541--542
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 545--546
+
+ []
+
+[102]
+Overfull \hbox (120.40843pt too wide) in paragraph at lines 633--633
+[]                \OT1/pcr/m/n/12 | (setq <var> nil) <setq-and-wrapped-fn-call>
+ (setq <var> t)[] 
+ []
+
+[103]
+Underfull \hbox (badness 10000) in paragraph at lines 690--691
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 694--695
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 699--700
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 704--705
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 735--736
+
+ []
+
+
+Underfull \vbox (badness 1661) has occurred while \output is active []
+
+ [104]
+[105]
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 823--823
+[]\OT1/pcr/m/n/12 (fluid  '(in-foo-wrapper?))     % necessary initializations o
+f[] 
+ []
+
+
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 823--823
+[]  \OT1/pcr/m/n/12 (setq in-foo-wrapper? nil)      % the controlling  variable
+[] 
+ []
+
+[106]
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 876--876
+[]                \OT1/pcr/m/n/12 (funcall 'wrapped-function ,@parameter-list))
+[] 
+ []
+
+
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 876--876
+[]                        \OT1/pcr/m/n/12 (breakpoint "In %p, condition %p=%p"[
+] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 879--892
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [107]
+Underfull \hbox (badness 10000) in paragraph at lines 934--935
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 950--950
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 950--951
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 956--957
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 962--963
+
+ []
+
+
+Underfull \vbox (badness 2884) has occurred while \output is active []
+
+ [108]
+Underfull \hbox (badness 10000) in paragraph at lines 967--968
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 972--973
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 984--985
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 990--991
+
+ []
+
+) (11-inter.tex
+Underfull \hbox (badness 10000) in paragraph at lines 995--2
+
+ []
+
+[109] [110
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 56--57
+
+ []
+
+[111] [112]
+Underfull \hbox (badness 10000) in paragraph at lines 125--150
+
+ []
+
+[113]
+Underfull \hbox (badness 10000) in paragraph at lines 226--227
+
+ []
+
+[114]
+Underfull \hbox (badness 10000) in paragraph at lines 254--255
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 259--260
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 283--284
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 286--287
+
+ []
+
+[115]) (12-io.tex
+Underfull \hbox (badness 10000) in paragraph at lines 339--1
+
+ []
+
+[116] [117
+
+] [118] [119]
+Underfull \hbox (badness 10000) in paragraph at lines 212--213
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 218--219
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 221--222
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 228--229
+
+ []
+
+[120]
+Underfull \hbox (badness 10000) in paragraph at lines 241--242
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 246--247
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 250--251
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 258--259
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 261--262
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 265--266
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 268--269
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 271--272
+
+ []
+
+[121]
+Underfull \hbox (badness 10000) in paragraph at lines 281--282
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 290--291
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 338--339
+
+ []
+
+[122]
+Underfull \hbox (badness 10000) in paragraph at lines 343--356
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 362--363
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 365--383
+
+ []
+
+[123]
+Underfull \hbox (badness 10000) in paragraph at lines 385--389
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 408--409
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 413--414
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 416--417
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 419--420
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 422--423
+
+ []
+
+[124] [125]
+Underfull \hbox (badness 10000) in paragraph at lines 486--494
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 495--514
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 546--547
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [126]
+Underfull \hbox (badness 10000) in paragraph at lines 565--566
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 570--571
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 573--574
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 584--585
+
+ []
+
+
+Overfull \hbox (0.15286pt too wide) in paragraph at lines 588--591
+\OT1/ptm/m/n/12 The func-tions de-scribed here per-tain to the to-ken scan-ner 
+and reader. Glob-als and switches
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 602--603
+
+ []
+
+[127]
+Underfull \hbox (badness 10000) in paragraph at lines 630--631
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 640--641
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 645--651
+
+ []
+
+[128]
+Underfull \hbox (badness 10000) in paragraph at lines 702--703
+
+ []
+
+[129]
+Underfull \hbox (badness 10000) in paragraph at lines 758--759
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 776--777
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 785--786
+
+ []
+
+[130]
+Underfull \hbox (badness 10000) in paragraph at lines 825--826
+
+ []
+
+[131]
+Overfull \hbox (41.20847pt too wide) in paragraph at lines 852--852
+[]  \OT1/pcr/m/n/12 *** Warning: Load of FILE previously requested, but incompl
+ete.[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 870--871
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 878--879
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 893--893
+
+ []
+
+[132]
+Underfull \hbox (badness 10000) in paragraph at lines 944--945
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 946--947
+
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 962--962
+[]             \OT1/pcr/m/n/12 (funcall toploopprint* (funcall toploopeval* for
+m))[] 
+ []
+
+[133]
+Underfull \hbox (badness 10000) in paragraph at lines 982--983
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 995--996
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1006--1007
+
+ []
+
+
+Underfull \vbox (badness 1067) has occurred while \output is active []
+
+ [134]
+Overfull \hbox (19.60847pt too wide) in paragraph at lines 1082--1082
+[]\OT1/pcr/m/n/12 ***** Buffer overflow while constructing error message: FORMA
+T[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1084--1085
+
+ []
+
+
+Underfull \vbox (badness 1701) has occurred while \output is active []
+
+ [135]
+Underfull \hbox (badness 10000) in paragraph at lines 1087--1088
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1105--1106
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1122--1123
+
+ []
+
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 1130.
+[136] [137] [138]
+Underfull \hbox (badness 10000) in paragraph at lines 1301--1302
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1307--1308
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1312--1313
+
+ []
+
+
+Underfull \vbox (badness 3364) has occurred while \output is active []
+
+ [139]
+Underfull \hbox (badness 10000) in paragraph at lines 1333--1334
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1338--1339
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1343--1344
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1348--1349
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1351--1352
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1355--1356
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1362--1363
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [140]
+Underfull \hbox (badness 10000) in paragraph at lines 1365--1366
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1374--1375
+
+ []
+
+) (13-topl.tex
+Underfull \hbox (badness 10000) in paragraph at lines 1379--1
+
+ []
+
+[141] [142
+
+] [143]
+Underfull \hbox (badness 10000) in paragraph at lines 95--96
+
+ []
+
+
+Underfull \vbox (badness 7133) has occurred while \output is active []
+
+ [144]
+Underfull \hbox (badness 10000) in paragraph at lines 155--156
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 163--164
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 167--168
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 171--172
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [145]
+Overfull \hbox (48.40846pt too wide) in paragraph at lines 205--205
+[]    \OT1/pcr/m/n/12 (toploop 'read 'print 'eval "lisp" "Portable Standard LIS
+P")))[] 
+ []
+
+) (14-err.tex
+Underfull \hbox (badness 10000) in paragraph at lines 214--1
+
+ []
+
+[146]
+Underfull \hbox (badness 10000) in paragraph at lines 30--31
+
+ []
+
+[147
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 67--68
+
+ []
+
+LaTeX Font Info:    Try loading font information for OMS+pcr on input line 92.
+(/usr/lib/teTeX/texmf/tex/latex/psnfss/omspcr.fd
+File: OMSpcr.fd 
+)
+LaTeX Font Info:    Font shape `OMS/pcr/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 92.
+
+Underfull \hbox (badness 10000) in paragraph at lines 92--92
+\OT1/pcr/m/n/12 (errornumber formatstring \OMS/cmsy/m/n/12 f\OT1/pcr/m/n/12 arg
+uments to printf\OMS/cmsy/m/n/12 g
+ []
+
+[148]
+Underfull \hbox (badness 10000) in paragraph at lines 129--130
+
+ []
+
+[149]
+Underfull \hbox (badness 10000) in paragraph at lines 251--259
+
+ []
+
+[150]
+Underfull \hbox (badness 10000) in paragraph at lines 260--261
+
+ []
+
+
+Overfull \hbox (6.21513pt too wide) in paragraph at lines 262--299
+[][] 
+ []
+
+[151]
+Underfull \hbox (badness 10000) in paragraph at lines 382--382
+\OT1/pcr/m/n/12 (bldmsg "Index %r out of range for %p in %p" INDEX
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 382--383
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 387--388
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 395--395
+\OT1/pcr/m/n/12 "An attempt was made to do %p on %r, which is not
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 395--396
+
+ []
+
+[152]
+Underfull \hbox (badness 10000) in paragraph at lines 405--405
+[]\OT1/pcr/m/n/10.95 "An attempt was made to use %r as %w in %p, where %w is
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 405--406
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 411--412
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 417--418
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 423--424
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 429--430
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 435--436
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 441--442
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 447--448
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 453--454
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 459--460
+
+ []
+
+[153]
+Underfull \hbox (badness 10000) in paragraph at lines 465--466
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 469--470
+
+ []
+
+) (15-debug.tex
+Underfull \hbox (badness 10000) in paragraph at lines 473--1
+
+ []
+
+[154]
+Underfull \hbox (badness 10000) in paragraph at lines 48--49
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 61--62
+
+ []
+
+
+Underfull \vbox (badness 2318) has occurred while \output is active []
+
+ [155
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 71--72
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 80--81
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 88--89
+
+ []
+
+[156] [157]
+Overfull \hbox (3.46506pt too wide) in paragraph at lines 170--175
+[]\OT1/ptm/m/n/12 Tracing a macro will hap-pen at macroex-pand time. The value 
+re-turned will be the macroex-
+ []
+
+) (17-util.tex [158]
+Underfull \hbox (badness 10000) in paragraph at lines 14--15
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 21--22
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 48--49
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 52--53
+
+ []
+
+[159
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 56--57
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 60--61
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 64--65
+
+ []
+
+)
+Underfull \hbox (badness 10000) in paragraph at lines 68--47
+
+ []
+
+(18-comp.tex [160]
+Underfull \vbox (badness 2027) has occurred while \output is active []
+
+ [161
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 92--93
+
+ []
+
+[162]
+Underfull \hbox (badness 10000) in paragraph at lines 147--148
+
+ []
+
+[163]
+Overfull \hbox (3.96046pt too wide) in paragraph at lines 230--230
+[]\OT1/ptm/b/n/17.28 Differences be-tween Com-piled and In-ter-preted Code 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 254--255
+
+ []
+
+[164]
+Underfull \hbox (badness 10000) in paragraph at lines 279--283
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 298--300
+
+ []
+
+[165]
+Underfull \hbox (badness 10000) in paragraph at lines 383--384
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 391--392
+
+ []
+
+[166]
+Underfull \hbox (badness 10000) in paragraph at lines 404--407
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 408--409
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 410--413
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 414--416
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 417--418
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 419--420
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 421--422
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 423--425
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 426--427
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 428--429
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 430--431
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 432--433
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 434--436
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 437--443
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--445
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 446--447
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 448--450
+
+ []
+
+[167]
+Underfull \hbox (badness 10000) in paragraph at lines 462--463
+
+ []
+
+[168]
+Underfull \hbox (badness 10000) in paragraph at lines 527--528
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 531--532
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 536--537
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 540--541
+
+ []
+
+[169]
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 574--574
+[]\OT1/pcr/m/n/12 (... (fast-flag . *fast-vectors) (fast-function . igetv) ...)
+[] 
+ []
+
+[170]
+Underfull \hbox (badness 10000) in paragraph at lines 679--680
+
+ []
+
+
+Underfull \vbox (badness 1939) has occurred while \output is active []
+
+ [171]
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 722--722
+[]    \OT1/pcr/m/n/12 (cond ((not *defn) (top-loop-eval-and-print input-value))
+[] 
+ []
+
+) (27-misc.tex [172]
+Underfull \hbox (badness 10000) in paragraph at lines 6--7
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 9--10
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 13--14
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 26--27
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 43--44
+
+ []
+
+[173
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 58--59
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 63--64
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 83--84
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 86--87
+
+ []
+
+[174]
+Underfull \hbox (badness 10000) in paragraph at lines 116--117
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 119--120
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 123--124
+
+ []
+
+
+Overfull \hbox (106.00844pt too wide) in paragraph at lines 138--138
+[]    \OT1/pcr/m/n/12 *** GC 1:  8-Nov-97 15:49:54, 50 ms (50 %), 218 recovered
+, 260679 free[] 
+ []
+
+) (41-xref.tex
+Underfull \hbox (badness 10000) in paragraph at lines 158--1
+
+ []
+
+[175] [176] [177
+
+] [178] [179]
+Underfull \hbox (badness 10000) in paragraph at lines 272--273
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 280--281
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 302--303
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [180]
+[181]
+Underfull \hbox (badness 10000) in paragraph at lines 417--418
+
+ []
+
+[182]
+Underfull \hbox (badness 10000) in paragraph at lines 438--439
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 449--450
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 457--466
+
+ []
+
+) (50-pret.tex [183] [184
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 39--40
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 49--50
+
+ []
+
+[185]
+Underfull \hbox (badness 10000) in paragraph at lines 83--97
+
+ []
+
+[186] [187]
+Underfull \hbox (badness 10000) in paragraph at lines 251--252
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 259--260
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [188]
+[189]
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 340--340
+[]            \OT1/pcr/m/n/12 (cons (if (null (second item)) '!(!) (second item
+))[] 
+ []
+
+) (32-obj.tex [190]
+Overfull \hbox (8.45712pt too wide) in paragraph at lines 45--52
+\OT1/ptm/m/n/12 REAL-PART and IMAGINARY-PART. The men-tion of the in-stance var
+i-able IMAGINARY-
+ []
+
+[191
+
+] [192]
+Underfull \hbox (badness 10000) in paragraph at lines 172--173
+
+ []
+
+[193]
+Overfull \hbox (14.6365pt too wide) in paragraph at lines 220--223
+\OT1/ptm/m/n/12 An empty list of vari-ables is taken as mean-ing all vari-ables
+ rather than none, so (GETTABLE-
+ []
+
+
+Overfull \hbox (0.4753pt too wide) in paragraph at lines 224--226
+[]\OT1/ptm/m/n/12 Initable in-stance vari-ables may be ini-tial-ized us-ing op-
+tions to make-instance or instantiate-
+ []
+
+[194]
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 311--311
+[]\OT1/pcr/m/n/12 <expression1> <expression2>...): list                  macro[
+] 
+ []
+
+[195]
+Underfull \hbox (badness 10000) in paragraph at lines 338--341
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 376--377
+
+ []
+
+[196]
+Underfull \hbox (badness 10000) in paragraph at lines 439--440
+
+ []
+
+
+Overfull \hbox (41.20847pt too wide) in paragraph at lines 446--446
+[]          \OT1/pcr/m/n/12 (list  'real-part  (sin  30) 'imaginary-part (cos 3
+0)))[] 
+ []
+
+[197]
+Underfull \hbox (badness 10000) in paragraph at lines 484--485
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 500--501
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 515--516
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 535--536
+
+ []
+
+[198]
+Underfull \hbox (badness 10000) in paragraph at lines 542--543
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 555--556
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 573--574
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 580--581
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 585--586
+
+ []
+
+[199]
+Underfull \hbox (badness 10000) in paragraph at lines 597--598
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 642--646
+
+ []
+
+[200]
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 656--656
+[]           \OT1/pcr/m/n/12 (do (idapply func-name (list arg1 arg2 ... argn)))
+[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 672--673
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 676--685
+
+ []
+
+[201]
+Overfull \hbox (62.80846pt too wide) in paragraph at lines 758--758
+[]  \OT1/pcr/m/n/12 (geometric-object)    % A flavor with one parent, geometric
+-object[] 
+ []
+
+[202] [203]
+Overfull \hbox (3.7067pt too wide) in paragraph at lines 882--886
+[]\OT1/pcr/m/n/12 <flavor-name>$<method-name>\OT1/ptm/m/n/12 . Such func-tion n
+ames show up in back-trace print-
+ []
+
+) (34-vect.tex [204]
+Underfull \hbox (badness 10000) in paragraph at lines 41--42
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 62--63
+
+ []
+
+[205
+
+] [206]
+Underfull \hbox (badness 10000) in paragraph at lines 122--123
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 126--127
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 132--133
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 137--138
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 142--143
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 172--173
+
+ []
+
+[207]
+Underfull \hbox (badness 10000) in paragraph at lines 184--185
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 190--191
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 203--204
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 217--218
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 223--224
+
+ []
+
+[208]
+Underfull \hbox (badness 10000) in paragraph at lines 230--231
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 251--252
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 265--266
+
+ []
+
+[209]) (51-osc.tex [210]
+Underfull \hbox (badness 10000) in paragraph at lines 9--10
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24--25
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 31--32
+
+ []
+
+[211
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 64--65
+
+ []
+
+[212]
+Underfull \hbox (badness 10000) in paragraph at lines 111--112
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 127--131
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 136--137
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 139--140
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 143--144
+
+ []
+
+
+Underfull \vbox (badness 8094) has occurred while \output is active []
+
+ [213]
+Underfull \hbox (badness 10000) in paragraph at lines 147--148
+
+ []
+
+[214]
+Underfull \hbox (badness 10000) in paragraph at lines 224--225
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 229--230
+
+ []
+
+) (52-forei.tex [215] [216
+
+]) (53-prof.tex [217] [218
+
+]) (55-cmdl.tex [219]
+[220
+
+]) (57-memo.tex [221] [222
+
+]) (addendum.tex [223] [224
+
+] [225] [226]
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 Machine        Operating system      PSL MACHINE name
+[] 
+ []
+
+
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 CDC 4xxx        EP/IX                   mips_cdc     
+++[] 
+ []
+
+
+Overfull \hbox (26.80847pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 Convex Cxxxx                            convex       
+++[] 
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 DG AViiON       DG-UX                   88k-aviion   
+ ++[] 
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 HP9000/300 400  HP-UX                   bobcat       
+ ++[] 
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 HP9000/800      HP-UX                   spectrum     
+ ++[] 
+ []
+
+
+Overfull \hbox (12.40848pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 IBM SP2         (the RS/6000 version happens to work)
+[] 
+ []
+
+
+Overfull \hbox (5.20848pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 SGI Iris/Indigo Irix64                  Mips_iris_64[
+] 
+ []
+
+
+Overfull \hbox (34.00847pt too wide) in paragraph at lines 160--160
+[]        \OT1/pcr/m/n/12 Sun 3           SunOS                   sun          
+ ++[] 
+ []
+
+[227] [228] [229]
+Underfull \hbox (badness 10000) in paragraph at lines 337--343
+
+ []
+
+[230]
+Underfull \hbox (badness 10000) in paragraph at lines 405--412
+
+ []
+
+[231]
+Overfull \hbox (98.80844pt too wide) in paragraph at lines 436--436
+[] \OT1/pcr/m/n/12 *** TIMES2                    * calls : 18        * time : 5
+797  * % 114[] 
+ []
+
+
+Overfull \hbox (91.60844pt too wide) in paragraph at lines 436--436
+[] \OT1/pcr/m/n/12 *** GTPOS                     * calls : 5560      * time : 9
+35   * % 18[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 440--446
+
+ []
+
+[232]
+Overfull \hbox (55.60846pt too wide) in paragraph at lines 530--530
+[]\OT1/pcr/m/n/12 00036118    21360002    sethi      -x'9FFFE,r16             A
+lloc 2[] 
+ []
+
+
+Overfull \hbox (70.00845pt too wide) in paragraph at lines 530--530
+[]\OT1/pcr/m/n/12 0003611C    A2100002    or         r0,r2,r17                (
+frame 1)[] 
+ []
+
+[233]
+Overfull \hbox (39.02013pt too wide) in paragraph at lines 551--557
+\OT1/ptm/m/n/12 re-gions and semaphores (See e.g. Unix man pages for shmop,shmg
+et,shmctl,semop,semctl,semget
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 558--562
+
+ []
+
+[234] [235]
+Underfull \hbox (badness 10000) in paragraph at lines 643--648
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 653--657
+
+ []
+
+) (allman1.ind [236] [237] [238
+
+] [239]
+Overfull \hbox (1.08257pt too wide) in paragraph at lines 195--196
+[]\OT1/ptm/m/n/12 currentreadmacroindicator* (global), 130 
+ []
+
+[240] [241] [242] [243] [244] [245]) (allman1.aux)
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+ ) 
+Here is how much of TeX's memory you used:
+ 894 strings out of 10906
+ 8881 string characters out of 71620
+ 52911 words of memory out of 262141
+ 3583 multiletter control sequences out of 9500
+ 33664 words of font info for 112 fonts, out of 150000 for 255
+ 14 hyphenation exceptions out of 607
+ 25i,11n,21p,321b,395s stack positions out of 300i,40n,60p,3000b,4000s
+
+Output written on allman1.dvi (253 pages, 627892 bytes).

@@ -1,0 +1,213 @@
+\chapter*{Debugging Tools}
+
+\section{The Debug Module}
+
+\index{trace}\index{break}
+ {\bf debug} is a loadable  option.   This module provides a
+basic debugging tool which provides a breakpoint  function,  and
+functions   for  breaking  and  tracing  functions  and  methods
+selected by the user.  debug is loaded automatically if one of the
+functions tr, trst or br is called.
+
+\subsection{Overview of Functionality}
+
+  The function breakpoint allows the user to  set  a  breakpoint
+anywhere  within  his  code.   Whenever a breakpoint is called a
+continuable break loop is entered.   This  allows  the  user  to
+examine  or  modify  variables,  view  a backtrace, and continue
+execution.
+
+  Tracing gives a record of the sequence of calls made to a  set
+of  functions  specified by the user.  When a traced function is
+entered a message is printed giving the function name, level  of
+recursion,  and  values  of  any  arguments.  Upon function exit
+another message is printed, giving the  value  returned  by  the
+function.
+
+  Breaking a function means that the system enters a continuable
+break  loop  both before and after evaluation of the body of the
+function.  Within the break loop the user may inspect and change
+values of parameters and non-local variables, and then  continue
+execution.   A break on entry occurs after the function's formal
+parameters have been bound to the actual  arguments  but  before
+any  of the forms in the function body have been evaluated.  The
+break on exit occurs after the body of the broken  function  has
+been evaluated.
+
+\subsection{Using Break and Trace}
+
+
+\de{tr}{(tr [NAME: id]): list}{macro}
+{    If  no  arguments  are  given  then a list is returned which
+    indicates  which  functions  are  currently  being   traced.
+    Otherwise,  each  argument  is  treated  as a reference to a
+    function, and if  possible,  the  function  is  set  up  for
+    tracing.    The   list  which  is  returned  represents  the
+    functions which have been added  to  the  set  of  functions
+    being  traced.   
+}
+
+\de{trst}{(trst [NAME: id]): list}{macro}
+{    If  no  arguments  are  given  then a list is returned which
+    indicates  which  functions  are  currently  being   traced.
+    Otherwise,  each  argument  is  treated  as a reference to a
+    function, and if  possible,  the  function  is  set  up  for
+    tracing.    The   list  which  is  returned  represents  the
+    functions which have been added  to  the  set  of  functions
+    being  traced. Trst can be used only for functions which are
+    not compiled. Additionally to the entry and exit messages,
+    for each $setq$ assignment inside the function the variable name
+    and the value are printed.
+}
+
+\de{br}{(br [NAME: id, method-specification]): list}{macro}
+{    If  no  arguments  are  given  then a list is returned which
+    indicates which functions are currently broken.     NAME is
+    treated as a reference to a function, and if  possible,  the
+    function  is set up for breaking.  Subsequent arguments will
+    be processed.  The list which  is  returned  represents  the
+    functions  which  have  been  added  to  the  set  of broken
+    functions.  
+}
+
+\de{untr}{(untr [NAME:id]): list}{macro}
+{    If no arguments are given then tracing is removed  for  each
+    traced  function.   NAME  is  treated  as  a  reference to a
+    function, and if possible,  tracing  is  disabled  for  this
+    function.  Subsequent arguments will be processed.  The list
+    which  is  returned  contains the names of the functions for
+    which tracing has been removed.    
+}
+
+\de{unbr}{(unbr [NAME:id,]): list}{macro}
+{    If no arguments are given then breaking is  turned  off  for
+    each  broken  function.  NAME is treated as a reference to a
+    function, and if possible, breaking  is  disabled  for  this
+    function.   The list which is returned contains the names of
+    the functions for which breaking  has  been  removed.    
+}
+
+
+\subsection{Sample Session}
+
+
+  Trace  and break printout goes to the standard output channel.
+Because multiple nested calls are usually shown, indentation and
+vertical bars are used to line  up  function  entry  and  return
+messages for the same function.
+
+\begin{verbatim}
+(de add3 (a1 a2 a3)
+  (+ a1 (add2 a2 a3)))
+\end{verbatim}
+\begin{verbatim}
+(de add2 (a1 a2)
+  (+ a1 a2))
+\end{verbatim}
+\begin{verbatim}
+(de fact (n)
+  (cond ((zerop n) 1)
+        (t (times n (fact (sub1 n))))))
+\end{verbatim}
+\begin{verbatim}
+1 lisp> (br add3)
+In a break, t prints backTrace; c Continues; 
+q Quits a level; a Aborts to top.
+(ADD3)
+2 lisp> (tr 'add3)
+***** (QUOTE ADD3) is not a valid method-specification.
+NIL
+3 lisp> (tr add3 add2)
+(ADD2 ADD3)
+4 lisp> (add3 5 6 7)
+ADD3 entry:
+|     A1: 5
+|     A2: 6
+|     A3: 7
+|  ADD3 entry BREAK:
+|  NMODE Break loop
+5 lisp break (1)> c     % Continue
+|  |  ADD2 entry:
+|  |  |     A1: 6
+|  |  |     A2: 7
+|  |  ADD2 value = 13
+|  ADD3 exit BREAK, value = 18:
+|  NMODE Break loop
+6 lisp break (1)> c
+ADD4 value = 18
+18
+\end{verbatim}
+\begin{verbatim}
+1 lisp> (tr fact)
+(FACT)
+2 lisp> (fact 4)
+FACT entry:
+|     N: 4
+|  FACT reentry (# 2):     
+|  |        % (# 2) represents the depth of recursion
+|  |     N: 3
+|  |  FACT reentry (# 3):
+|  |  |     N: 2
+|  |  |  FACT reentry (# 4):
+|  |  |  |     N: 1
+|  |  |  |  FACT reentry (# 5):
+|  |  |  |  |     N: 0
+|  |  |  |  FACT value (# 5) = 1
+|  |  |  FACT value (# 4) = 1
+|  |  FACT value (# 3) = 2
+|  FACT value (# 2) = 6
+FACT value = 24
+24
+3 lisp> (trace)
+(FACT ADD2 ADD3 ADD4)
+4 lisp> (untrace)
+(ADD4 ADD3 ADD2 FACT)
+5 lisp> (restr)
+T
+\end{verbatim}
+
+
+  Tracing  a  macro  will happen at macroexpand time.  The value
+returned will be the  macroexpanded  form,  and  thus  is  quite
+useful  in  determining  if  your macro expanded properly.  Note
+that when code  is  complied  the  application  of  a  macro  is
+expanded and this expansion replaces the the application.
+
+\begin{verbatim}
+1 lisp> (trace plus)
+(PLUS)
+2 lisp> (plus 2 9 -3 7 8)
+PLUS entry:
+|     ARG1 :(PLUS 2 9 -3 7 ...)
+PLUS value = (PLUS2 2 (PLUS2 9 (PLUS2 -3 (PLUS2 7 8))))
+23
+\end{verbatim}
+\begin{verbatim}
+(de fact (n)
+  (cond ((zerop n) 1)
+        (t (breakpoint "Fact; n<>0 branch of cond, n=%p" n)
+           (times n (fact (sub1 n))))))
+\end{verbatim}
+\begin{verbatim}
+1 lisp> (fact 2)
+User Breakpoint: Fact; n<>0 branch of cond, n=2
+NMODE Break loop
+2 lisp break (1)> c
+User Breakpoint: Fact; n<>0 branch of cond, n=1
+NMODE Break loop
+3 lisp break (1)> c
+2
+\end{verbatim}
+
+\subsection{Redefining a Broken or Traced Function}
+
+  The  basic  definition of a function is the definition without
+any of the break or tracing side effects.  This basic definition
+may be accessed by the function getd.  The basic definition  may
+also be redefined by using the function putd without interfering
+with the break/trace side effects, as long as the parameter list
+stays  the same.  If you intend to change the number or order of
+parameters you should first remove the break/trace wrappers from
+it with untrace and/or unbr.
+
+

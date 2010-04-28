@@ -1,0 +1,1379 @@
+\chapter*{Input and Output}
+
+\section{Introduction}
+
+One category of input and output in LISP is "symbolic" I/O.
+This allows a user to print or read possibly complex LISP
+objects with one or a few calls on standard functions. PSL also
+has powerful general-purpose I/O.
+
+Input from multiple sources and output to multiple destinations
+can be done in PSL all  at  the  same  time.  PSL
+provides  I/O  functions  with explicit specification of sources
+and destinations for I/O.  On the other hand for convenience  it
+is often desirable to let the source or destination be implicit.
+PSL  provides  the  full set of I/O operations through functions
+with an implicit source or destination.
+
+  The functions with and without an explicit channel  designator
+argument  are  described together in this chapter.  In each case
+calling the function with the implicit source or destination  is
+the  same  as calling the version with explicit channel argument
+and supplying the value of the  variable  in*  or  out*  as  the
+channel.
+
+  The  current input or output channel can be changed by setting
+or rebinding the variables {\bf in*}  or {\bf out*}.  
+\index{*in}\index{*out}  Historically,  the
+functions  rds and wrs have been used for this and they are also
+available along with their special features.
+
+\subsection{Organization of this Chapter}
+
+  We first discuss  the  syntax  used  for  symbolic  input  and
+output.    The   syntax   described  applies  to  PSL  programs,
+interactive typein, format of data in data files, and to  output
+by PSL programs except when special formatting is used.
+
+  Functions  for  printing  and  reading  follow.  All (textual)
+input and output functions are discussed.   Next  is  open,  for
+setting  up input and output with files, plus related functions.
+A great deal of user input/output programming can be done  using
+just  a  subset  of  the  functions  described  in  these  first
+sections.
+
+  PSL includes functions that load program modules  and  execute
+command  files.    They  are  essential  to building of software
+systems even if the system itself does no  I/O.    Functions  of
+this type are described next.
+
+  The  section on I/O channels discusses some features available
+for switching the current output from channel  to  channel,  and
+documents  some  fluid  variables  used in directing some of the
+system's input and output.
+
+  Functions in the next section actually operate on objects such
+as lists and strings!  Since I/O functions scan input and format
+output, and since it is possible to read  from  or  print  to  a
+string, I/O functions can be useful for building strings and for
+scanning them.  Some built-in functions are described.
+
+  The  last  two sections describe mechanisms that make possible
+some sophisticated uses of the PSL I/O system.    One  describes
+the  mechanism in PSL that permits writing to a string or taking
+input from the  text  buffer  of  a  text  editor.    The  other
+discusses   the  tables  used  by  the  PSL  scanner,  which  is
+modifiable.
+
+\section{Printed Representation of LISP Objects}
+
+  Most of this section  is  devoted  to  the  representation  of
+tokens.   In addition to tokens there are composite objects with
+printed representations: lists and vectors.  We briefly  discuss
+their printed formats first.
+\begin{verbatim}
+"(" expression expression  . . . ")"
+"(" expression expression . . . "." expression)
+"[" expression expression . . . "]"
+\end{verbatim}
+
+  Of  these  the  first  two are for lists.  Where possible, the
+first notation is preferred and the  printing  routines  use  it
+except  when  the  second  form  is  needed.  The second form is
+required when the cdr of a pair is neither nil nor another pair.
+The third notation is for vectors.  For example:
+
+\begin{verbatim}
+(A . (B . C)) % An s-expression
+(A B . C)     % Same value, list notation
+(A B C)       % An ordinary list
+[A B C]       % A vector
+\end{verbatim}
+  The following standards for representing tokens are used:
+\begin{itemize}
+\item An id normally consists of uppercase  letters  and  digits.
+     The first character can be a digit when the first non-digit
+     character  is  a  plus  sign, minus sign, or a letter other
+     than "E" or "B".  We exclude lowercase letters because  the
+     PSL  reader  will  normally  convert  lowercase  letters to
+     uppercase.  Although the user may  use  lowercase  letters,
+     the  interpreter  only  sees uppercase.  This conversion is
+     controlled by the value of the switch *raise,  a  value  of
+     nil  will suppress this conversion.  In addition to letters
+     and  numbers,  the  following  characters  are   considered
+     alphabetic for the purpose of notating symbols.
+
+\begin{verbatim}
+     + - $ & * / : ; | < = > ? ^ _ ~ @
+\end{verbatim}
+     There is an escape convention for notating an id whose name
+     contains  special  characters.    In  addition to lowercase
+     letters the following characters are considered special.
+\begin{verbatim}
+     ! " % ' ( ) . [ ] ` , # |
+
+     JULIE     % three ways to notate the same symbol
+     julie
+     JuLie
+     +$
+     1+
+     +1        % this is a number, not an id
+     x^2+y^2   % a single symbol
+\end{verbatim}
+\item Strings begin with a  double  quote  (")  and  include  all
+     characters  up to a closing  double quote.  A  double quote
+     can  be included in  a string by  doubling it.    An  empty
+     string,  consisting    of only the  enclosing quote  marks,
+     is allowed.   The characters  of  a string are not affected
+     by the value of the *raise.  Examples:
+\begin{verbatim}
+     "This is a string"
+     "This is a ""string"""
+     ""
+\end{verbatim}
+\item Integers begin with a digit, optionally preceded by a +  or
+     - sign, and consist only of digits.  The global input radix
+     is 10; there is no way to change this.  However, numbers of
+     different  radices may be read by the following convention.
+     A decimal number from 2 to 36 followed by a sharp sign (\#),
+     causes the digits (and possibly letters) that follow to  be
+     read in the radix of the number preceding the \#. [Footnote:
+     Octal  numbers  can  also  be written as a string of digits
+     followed by the letter "B".] Thus  63  may  be  entered  as
+     8\#77,  or  255  as 16\#ff or 16\#FF.  The output radix can be
+     changed, by setting outputbase*.  If outputbase* is not 10,
+     the  printed  integer  appears  with   appropriate   radix.
+     Leading  zeros are suppressed and a minus sign precedes the
+     digits if the integer is negative.  Examples:
+\begin{verbatim}
+         100
+         +5234
+         -8#44 (equal to -36)
+\end{verbatim}
+
+\item Floats have a period and/or a letter "e" or  "E"  in  them.
+     Any of the following are read as floats.  The value appears
+     in  the format [-]n.nn...nnE[-]mm  if the magnitude  of the
+     number is    too    large  or    small  to    display    in
+     [-]nnnn.nnnn    format.      The    crossover    point   is
+     determined  by  the implementation.  In BNF,  floats    are
+     recognized by the grammar:
+\begin{verbatim}
+      <base>       ::= <unsigned-integer>.|
+                       .<unsigned-integer>|
+                       <unsigned-integer>.
+                      	<unsigned-integer>
+      <ebase>      ::= <base>|<unsigned-integer>
+      <unsigned-float> ::= <base>|
+                           <ebase>e<unsigned-integer>|
+                           <ebase>e-<unsigned-integer>|
+                           <ebase>e+<unsigned-integer>|
+                           <ebase>E<unsigned-integer>|
+                           <ebase>E-<unsigned-integer>|
+                           <ebase>E+<unsigned-integer>
+      <float>          ::= <unsigned-float>|
+                           +<unsigned-float>|
+                           -<unsigned-float>
+\end{verbatim}
+     That is:
+\begin{verbatim}
+         [+|-][nnn][.]nnn{e|E}[+|-]nnn
+
+         nnn.
+         .nnn
+         nnn.nnn
+\end{verbatim}
+     Examples:
+\begin{verbatim}
+         1e6
+         .2
+         2.
+         2.0
+         -1.25E-9
+\end{verbatim}
+
+\item Code-pointers  cannot  be read directly, but can be printed
+     and   constructed.      Currently   printed    as   
+\begin{verbatim}     
+    #<Code argument-count hexadecimal-address>.
+\end{verbatim}
+\item Anything  else is printed as \#$<$Unknown:nnnn$>$, where nnnn is
+     the hexadecimal value found in the argument register.  Such
+     items are not legal LISP entities  and  may  cause  garbage
+     collector  errors  if  they  are  found  in the heap.  They
+     cannot be read in.
+\end{itemize}
+
+\section{Functions for Printing}
+
+\subsection{Basic Printing}
+
+\de{prin1}{(prin1 ITM:any): ITM:any}{expr}
+{}
+
+\de{channelprin1}{(channelprin1 CHAN:io-channel ITM:any): ITM:any}{expr}
+{    Channelprin1  is  the  basic   printing   function.      For
+    well-formed,  non-circular  structures,  the  result  can be
+    parsed by the function read.
+}
+
+\de{prin2}{(prin2 ITM:any): ITM:any}{expr}
+{}
+
+\de{channelprin2}{(channelprin2 CHAN:io-channel ITM:any): ITM:any}{expr}
+{    Channelprin2 is similar to channelprin1, except that strings
+    are printed without the  surrounding  double  quotes,    and
+    delimiters  within  ids  are  not  preceded  by  the  escape
+    character.
+}
+  
+		The following example illustrates the difference between prin1
+and prin2.
+
+\begin{verbatim}
+ARGUMENT     PRIN1        PRIN2
+
+A!%WORD      A!%WORD      A%WORD
+"STRING"     "STRING"     STRING
+\end{verbatim}
+
+\de{print}{(print U:any): U:any}{expr}
+{}
+
+\de{channelprint}{(channelprint CHAN:io-channel U:any): U:any}{expr}
+{    Display U using channelprin1 and  then  terminate  the  line
+    using channelterpri.
+}
+\subsection{Whitespace Printing Functions}
+
+\de{terpri}{(terpri): nil}{expr}
+{}
+
+\de{channelterpri}{(channelterpri CHAN:io-channel): nil}{expr}
+{    Write  an  end  of line character.  The number of characters
+    output on the current line  (that  which  is  referenced  by
+    channelposn),  is defined to be zero and the number of lines
+    output on the current page  (that  which  is  referenced  by
+    channelposn), is incremented.
+}
+
+\de{spaces}{(spaces N:integer): nil}{expr}
+{}
+
+\de{channelspaces}{(channelspaces CHAN:io-channel N:integer): nil}{expr}
+{    N spaces are written.
+}
+
+\de{tab}{(tab N:integer): nil}{expr}
+{}
+
+\de{channeltab}{(channeltab CHAN:io-channel N:integer): nil}{expr}
+{    Move to column N }
+
+{\tt(channelspaces ch (- N (channelposn ch)))}
+
+    If  the position on the current output line is past column N
+    then channelterpri is called before moving to column N.
+
+\subsection{Formatted Printing}
+
+\de{printf}{(printf FORMAT:string [ARGS:any]): nil}{expr}
+{}
+
+\de{channelprintf}{(channelprintf CHAN:io-channel FORMAT:string [ARGS:any]):nil}{expr}  
+{   Channelprintf is a simple routine  for formatted  printing.
+    The  FORMAT  is a string.  The characters of this string are
+    printed unless a % is encountered.  The character  following
+    a  % is interpreted as a formatting directive and is used to
+    interpret and print the other  arguments  to  channelprintf.
+    The following format characters are currently supported.
+}
+
+\begin{tabular}{lp{11.0cm}}
+\%b & The next argument is assumed to be an integer, it is passed to spaces.\\
+\%c & The next argument should be a single character,
+   it is printed by	a call on writechar.\\
+\%d & Print the next argument as a decimal integer.\\
+\%e & The  next  argument  is evaluated by a call on eval.\\
+\%f & Print an end-of-line character if not  
+ at  the  beginning  of  the output line 
+  (does not use a matching argument).\\
+\%l & Print the next argument using print2l, 
+this is the same as \%w except that lists
+ are  printed without  the  top  level
+  pair of parenthesis.
+		The empty list is printed as a blank.\\
+\%n & Print end-of-line character
+	(does  not  use  a matching argument).\\
+\%o & Print the next argument as an 
+	octal integer.\\
+\%p & Print the next argument using prin1.\\
+\%p & Print the next argument using prin1.\\
+\%r & Print  the  next  argument  using errprin, the
+   result  is  the  same  as  \%p  except  that  a
+   surrounding pair of quotes are also printed.\\
+\%s & The  next  argument is assumed to be a string,
+   the surrounding double quotes are not printed.\\
+\%t & The next argument is assumed to be an integer,
+   it is passed to tab.\\
+\%w & Print the next argument using prin2.\\
+\%x & Print  the  next  argument  as  a  hexadecimal
+   integer.\\
+\end{tabular}
+    
+    If  the character following \% is not either one of the above
+    or another \%, it  causes an error.  Thus, to include a \%  in
+    the format to be printed, use \%.
+
+    There  is  no checking for correspondence between the number
+    of arguments that FORMAT expects and the number given.    If
+    the  number  given  is  less  than  the number in the FORMAT
+    string, garbage will be inserted for the missing  arguments.
+    If the number given is greater than the number in the FORMAT
+    string, then the extra ones are ignored.
+
+
+\de{prettyprint}{(prettyprint U:form): U:form}{expr}
+{    Prettyprints U.
+}
+
+\subsection{The Fundamental Printing Function}
+
+\de{writechar}{(writechar CH:character): character}{expr}
+{}
+\de{channelwritechar}{(channelwritechar CHANNEL:io-channel\\ 
+CH:character): character}{expr}
+{    
+    Write one character to the device specified by CHANNEL.  All
+    output  is defined in terms of this function.  The number of
+    characters  output  on  the  current  line  (that  which  is
+    referenced  by  channelposn), and the number of lines output
+    on  the  current  page  (that   which   is   referenced   by
+    channellposn),  are  updated.   Each  channel  specifies  an
+    output function,  it is this function  that  is  applied  to
+    CHANNEL and CH to actually write the character.
+}
+
+\subsection{Additional Printing Functions}
+
+\de{prin2l}{(prin2l L:any): {L:any, nil}}{expr}
+{    Prin2,  except  that a list is printed without the top level
+    parentheses.  If L is a pair then the return value  is  nil,
+    otherwise the return value will be L.  }
+
+\de{prin2t}{(prin2t X:any): any}{expr}
+{}
+\de{channelprin2t}{(channelprin2t CHAN:io-channel X:any): any}{expr}
+{    Output   X   using  channelprin2  and  terminate  line  with
+    channelterpri.
+}
+\de{princ}{(princ ITM:any): ITM:any}{expr}
+{}
+\de{channelprinc}{(channelprinc CHAN:io-channel ITM:any): ITM:any}{expr}
+{    Same function as channelprin2.
+}
+\de{errprin}{(errprin U:any): None Returned}{expr}
+{    Prin1 with special quotes to highlight U.
+}
+\de{errorprintf}{(errorprintf FORMAT:string [ARGS:any]): nil}{expr}
+{    Errorprintf is similar to  printf, except  that  errout*  is
+    used  in  place  of  the  currently selected output channel.
+    Channelterpri is called before and  after  printing  if  the
+    line position is greater than zero.  }
+
+\de{eject}{(eject): nil}{expr}
+{}
+\de{channeleject}{(channeleject CHAN:io-channel): nil}{expr}
+{    Skip to top of next output page.
+}
+
+\subsection{Printing Status and Mode}
+
+  For  information  on directing various kinds of output see the
+section on channels.
+
+\variable{outputbase*}{[Initially: 10]} {global}
+{    This fluid can be set to control the radix in which integers
+    are printed out.  If the radix is not 10, the radix is given
+    before a sharp sign.  }
+\begin{verbatim}
+    1 lisp> 16
+    16
+    2 lisp> (setq outputbase* 8)
+    8#10
+    3 lisp> 16
+    8#20
+\end{verbatim}
+\de{posn}{(posn): integer}{expr}
+{}
+
+\de{channelposn}{(channelposn CHAN:io-channel): integer}{expr}
+{    Returns number of characters output on the current  line  of
+    this channel.
+}
+
+\de{lposn}{(lposn): integer}{expr}
+{}
+
+\de{channellposn}{(channellposn CHAN:io-channel): integer}{expr}
+{    Returns number of lines output on this page of this channel.  }
+
+\de{linelength}{(linelength LEN:\{integer, nil\}): integer}{expr}
+{}
+
+\de{channellinelength}{(channellinelength CHAN:io-channel
+ LEN: \{integer, nil\}): integer}{expr}
+{   For  each  channel  there  is a restriction on the length of
+    output lines.  If LEN is nil then the value returned will be
+    the current maximum length.  If LEN is  an  integer  greater
+    than  zero then it will become the new maximum.  However, if
+    the argument is zero there will be no  restrictions  on  the
+    size of the output lines.  The following example illustrates
+    how  this  length  is  used.  PSL uses a similar function to
+    apply output functions like prin1.}
+\begin{verbatim}
+    (de check-line-length (length ch fn token)
+      (when (and (> (+ (channelposn ch) length)
+                    (channellinelength ch nil))
+                 (> (channellinelength ch nil) 0))
+        (channelwritechar ch (char eol)))
+      (idapply fn (list ch token)))
+\end{verbatim}
+The fluid variables PrinLevel and PrinLength allow the user to
+control how deep the printer will print and how many elements at
+a given level the printer  will  print.    This  is  useful  for
+objects  which  are  very large or deep.  These variables affect
+the functions prin1, prin2, princ, print, and  printf  (and  the
+corresponding Channel functions).
+
+\variable{prinlevel}{[Initially: nil]}{global}
+{   Controls how many levels deep a nested data object will print. 
+  If PrinLevel is nil, then no control is exercised.  Otherwise the
+  value should be an integer. An object to be printed is at   
+ level 0.  
+}
+
+\variable{prinlength}{[Initially: nil]}{global}
+{
+  Controls how many elements at a given level are printed.   A
+  value  of nil indicates that there be no limit to the number
+  of components printed.  Otherwise the  value  of  PrinLength
+  should be an integer.
+}
+
+\section{Functions for Reading}
+
+\subsection{Reading S-Expressions}
+\de{read}{(read): any}{expr}
+
+\de{channelread}{(channelread CHAN:io-channel): any}{expr}
+{
+    Reads  and  returns the next S-expression from input channel
+    CHAN.  Valid input forms are: vector-notation, dot-notation,
+    list-notation,   numbers,    strings,    and    identifiers.
+    Identifiers are interned (see the intern function in Chapter
+    4),  unless  the  fluid  variable  *compressing  is non-nil.
+    Channelread returns the value of the global  variable \$eof\$
+    when  the  end  of  the  currently selected input channel is
+    reached.
+}
+\begin{verbatim}
+    (de channelread (ch)
+      (let ((currentscantable* lispscantable*)
+            (currentreadmacroindicator* 'lispreadmacro))
+        (channelreadtokenwithhooks ch)))
+\end{verbatim}
+    Channelread  uses  the  function  channelreadtokenwithhooks.
+    Tokens  are  scanned  within  the  context of the scan table
+    bound  to  lispscantable*.   The  scan  table  is  used   to
+    recognize  special  character types, for example, delimiters
+    like (, ), and space.  The read macro mechanism is  used  to
+    parse s-expressions (see section 12.4.5 for more information
+    on read macros).  PSL uses a number of read macros which are
+    described below.\\
+
+\begin{tabular}{lp{12.0cm}}
+    ( &             S-expressions  are  gathered into a list until
+                  the matching right parenthesis is read.   Both
+                  list  and dot notation are recognized.  A pair
+                  or list is returned.\\
+    ) &             If a right parenthesis is read and a  matching
+                  left  parenthesis had not been previously read
+                  then it will be ignored.\\
+    $[$ &       S-expressions are gathered into a vector until
+                  a matching right bracket is read.  A vector is
+                  returned.\\
+    '        &      The next  s-expression  read  is  quoted,  the
+                  result is of the form (QUOTE S-EXPRESSION).\\
+    (char eof) &    If  an  end  of file character is read while a
+                  list or vector is being constructed  then  the
+                  following error will occur.
+                  *****  Unexpected EOF while reading on channel.\\
+    `N' &	Otherwise the value of $eof$ is returned.\\
+\end{tabular}\\
+
+    The following read macros are defined in the {\tt useful} module.
+
+\begin{tabular}{lp{11.0cm}}
+    \#\' &            this is like the quote mark ' but it  is  used
+                  for  function  instead  of quote.  For example
+                  \#'name reads as (FUNCTION NAME).\\
+    \#/ &            this returns the numeric form of the following
+                  character  read  without  raising  it.     For
+                  example \#/a is 97 while \#/A is 65.\\
+    \#$\backslash$ & This  is  a read macro for char (see Chapter 6
+                  for more information).  Note that the argument
+                  will be raised  if  *raise  is  non-nil.   For
+                  example, \#$\backslash$a = \#$\backslash$A = 65.\\
+    \#. &            This  causes  the  following  expression to be
+                  evaluated at read time.  For  example,  `(1  2
+                  \#.(plus 1 2) 4) reads as (1 2 3 4).\\
+    \#+ &            The  next  two  expressions  are read.  If the
+                  first is a system name which  is  the  current
+                  system then the second expression is returned.
+                  Otherwise  another  expression  is read and it
+                  becomes the value returned.\\
+    \#- &            The next two expressions are  read.    If  the
+                  first  is  a  system  name  which  is  not the
+                  current system then the second  expression  is
+                  returned.    Otherwise  another  expression is
+                  read and it becomes the value returned.\\
+\end{tabular}
+
+\subsection{Reading Single Characters}
+
+\de{readchar}{(readchar): character}{expr}
+{}
+
+\de{channelreadchar}{(channelreadchar CHANNEL:io-channel):
+character}{expr} {    
+Reads one character (an integer) from CHANNEL. All input is
+    defined in terms of this function.  If CHANNEL is  not  open
+    or  is  open  for  writing  only, an error is generated.  If
+    there is a non-zero value in the  backup  buffer  associated
+    with  CHANNEL,  the  buffer is emptied (set to zero) and the
+    value returned.  Otherwise, the reading function  associated
+    with  CHANNEL  is  called  with CHANNEL as argument, and the
+    value it returns is returned by channelreadchar.}
+\begin{verbatim}
+    ***** Channel not open
+\end{verbatim}
+\begin{verbatim}
+    ***** Channel open for write only
+\end{verbatim}
+\de{readch}{(readch): id}{expr}
+{}
+
+\de{channelreadch}{(channelreadch CHAN:io-channel): id}{expr}
+{    Like channelreadchar, but returns the id for  the  character
+    rather than its ASCII code.
+}
+
+\de{unreadchar}{(unreadchar CH:character): Undefined}{expr}
+{}
+
+\de{channelunreadchar}{(channelunreadchar CHAN:io-channel
+CH:character): Undefined}{expr}
+{   
+    The  input  backup  function.  Ch is deposited in the backup
+    buffer associated with Chan.  This function should  be  only
+    called  after  channelreadchar  is  called,  and  before any
+    intervening input operations, since it is used by the  token
+    scanner.   The unread buffer only holds one character, so it
+    is generally useless to unread more than one character.
+}
+
+\subsection{Reading Tokens}
+
+  The functions described here pertain to the token scanner  and
+reader.   Globals  and  switches  used  by  these  functions are
+defined at the end of this section.
+
+\de{channelreadtoken}{(channelreadtoken CHANNEL:io-channel): 
+\{id, number, string\}}{expr}
+{    
+    This is the basic PSL token scanner.  The value returned  is
+    an  item  corresponding  to  the  next  token from the input
+    stream.    An  id  will  be  interned  unless   the   switch
+    {\bf *compressing}\index{*compressing} is  non-nil. 
+    If *compressing is t then the
+    print name of the id is passed to  newid,  otherwise  it  is
+    passed  to  intern.  
+}
+
+ 	The global variable toktype* \index{toktype*} is set as
+    follows.
+
+\begin{tabular}{ll}
+    0 &             if the token is an ordinary id,\\
+
+    1 &            if the token is a string,\\
+
+    2 &             if the token is a number, or\\
+
+    3 &             if the token is an unescaped delimiter such as\\
+      &            "(", but not "!(" In this last case, the value\\
+      &            returned is the id whose  print  name  is  the\\
+      &            same as the delimiter.\\
+\end{tabular}
+
+The precise behavior of this function depends on two fluid
+variables:
+
+    Currentscantable* is bound to  a  vector  known  as  a  scan
+                  table.  Described below. 
+
+    Currentreadmacroindicator* is bound to an id known as a read
+                  macro indicator.  Described below.
+
+\de{ratom}{(ratom): \{id, number, string\}}{expr}
+{    Reads a token from the current input channel.  }
+
+\de{channelreadtokenwithhooks}{(channelreadtokenwithhooks CHANNEL:io-channel):\\
+any}{expr}
+{    This   function  reads  a  token  and  performs  any  action
+    specified if the token is marked as a read macro  under  the
+    current  indicator.   Read  uses  this  function internally.
+    Uses the variable  currentreadmacroindicator*
+    {\index currentreadmacroindicator*} to  determine
+    the current indicator.
+}
+
+\subsection{Reading Entire Lines}
+
+\de{readline}{(readline): string}{expr}
+{ Same as (channelreadline in*)}
+\de{channelreadline}{(channelreadline CHANNEL:io-channel): string}{expr}
+{    A  string is returned which contains each character from the
+    current position of the scanner to the next  end-of-line  or
+    end-of-file character.
+}
+
+\subsection{Read Macros}
+
+  At  the  top  level  of  PSL,  an  expression  is  read, it is
+evaluated, and then the result is printed.  Normally a macro  is
+expanded  during evaluation.  The read macro is a different type
+of macro, it is expanded during the reading  phase.    When  the
+reader  encounters  a  read  macro  character,  the the macro is
+executed and the result is inserted in place of the  read  macro
+character.
+
+  A  read  macro  must be a function of two arguments, the first
+should represent a IO  channel,  the  second  a  character.    A
+character  which  represents  a read macro must be set to one of
+two types in the scan table.  It may be either a delimiter or  a
+diphthong.    Diphthong  corresponds  to  double  character read
+macros, delimiter to single character read macros.  In addition,
+the id which corresponds to the  character must have a reference
+to the name of the  function  on  its  property  list.    For  a
+diphthong  the  indicator must be lispdiphthong, for a delimiter
+it must be lispreadmacro.
+
+  The quote macro may be defined  as  follows.    Note  that  we
+cannot  use 'form in place of (quote form) until we have defined
+the read macro.
+
+\begin{verbatim}
+(de doquote (channel ch)
+  (list (quote quote) (channelread channel)))
+\end{verbatim}
+\begin{verbatim}
+(put (quote !') (quote lispreadmacro)(function doquote))
+\end{verbatim}
+\begin{verbatim}
+(putv lispscantable* (char !') delimiter)
+\end{verbatim}
+  This says that when a single quote is read, PSL should replace
+it with a list consisting of quote and the  next  expression  in
+the  input (obtained by an explicit call to channelread).  Since
+defining a character as a read macro makes it difficult  to  use
+the character in a normal way, read macros should not be letters
+or digits.
+
+\subsection{Terminal Interaction}
+
+\de{yesp}{(yesp MESSAGE:string): boolean}{expr}
+{    If the user responds y or yes, yesp returns a non-nil value.
+    A  response  of  n  or  no results in a value of nil.  It is
+    possible to enter a break loop by responding with b.   After
+    quitting  the  break loop, one must still respond y, yes, n,
+    or no.
+}
+
+\subsection{Input Status and Mode}
+
+\variable{promptstring*}{ [Initially: "x lisp$>$"]}{global}
+{
+    Displayed as a prompt when any  input  is  taken  from  TTY.
+    Prompts  should  therefore not be directly printed.  Instead
+    the value should be bound to promptstring*.
+}
+
+\variable{*eolinstringok}{[Initially: nil]}{switch}
+{
+    If *eolinstringok is non-nil, the warning message
+
+{\tt *** String continued over end-of-line }\\
+    is suppressed.
+}
+
+\variable{*raise}{ [Initially: t]}{switch}
+{
+    If *raise is  non-nil,  all  characters    input  for    ids
+    through  PSL input  functions are raised  to upper case.  If
+    *raise is nil, characters are input  as is.    A  string  is
+    unaffected by *raise.
+}
+
+\variable{*compressing}{[Initially: nil] }{switch}
+{
+    If  *compressing  is  non-nil,  channelreadtoken  and  other
+    functions that call it do not intern ids.
+}
+
+\variable{currentscantable*}{[Initially: NIL]}{global}
+{ This variable is set to lispscantable* by the function read }
+
+\variable{currentreadmacroindicator*}{ [Initially: NIL ]}{global}
+{
+    The  function  read  binds  this  variable  to   the   value
+    LISPREADMACRO.   Its  value  determines  the  property  list
+    indicator used in looking up read  macros.    The  user  may
+    define  a  set  of  read macros using some new indicator and
+    rebind this variable.  Ordinary read macros may be added  by
+    putting properties on ids under the LISPREADMACRO indicator.
+}
+
+\section{File System Interface: Open and Close}
+
+\de{open}{(open {\small FILENAME:string ACCESSTYPE:id):
+CHANNEL:io-channel}}{expr}
+{    If  AccessType  is eq to input or output, an attempt is made
+    to access  the  system-dependent  FILENAME  for  reading  or
+    writing.    If  the  attempt  is  unsuccessful,  an error is
+    generated;  otherwise  a  free  channel  is   returned   and
+    initialized  to  the  default  conditions  for ordinary file
+    input or output.
+}
+    
+				If none of these conditions hold, a file is  not  available,
+    or there are no free channels, an error is generated.
+
+\begin{verbatim}
+    ***** Unknown access type
+    ***** Improperly set-up special IO open call
+    ***** File not found
+    ***** No free channels
+\end{verbatim}
+    If  AccessType is eq to SPECIAL, no file is opened.  Instead
+    the channel is initialized as  a  generalized  input  and/or
+    output stream.  See below.
+
+\de{filep}{(filep NAME:string): boolean}{expr}
+{    This  function will return t if file NAME can be opened, and
+    nil if not, e.g. if it does not exist.
+}
+
+\de{close}{(close CHANNEL:io-channel): io-channel}{expr}
+{    The closing function associated with CHANNEL is called, with
+    CHANNEL as its argument.  If it is illegal to close CHANNEL,
+    if CHANNEL is not open, or if CHANNEL is associated  with  a
+    file  and the file cannot be closed by the operating system,
+    this function  generates an error.   Otherwise,  CHANNEL  is
+    marked as free and is returned.
+}
+
+Here  is a simple example of input from a particular file with
+output sent to the current output channel.  This function  reads
+forms  from  the  file MYFILE.DAT and prints out all those whose
+				car is eq to  its  parameter.    Using  unwind-protect,  we  are
+				assured  that  the channel (and the file), will be closed in all
+				cases, including errors.
+
+\begin{verbatim}
+  (de filter-my-file (x)
+    (let ((chan (open "MYFILE.DAT" 'input))
+          form)
+      (unwind-protect
+        (while (neq (setq form (channelread chan))
+                    $eof$)
+               (if (and (pairp form) (eq (car form) x))
+                 (print form)))
+        (close chan))))
+\end{verbatim}
+
+\section{Loading Modules}
+
+Two convenient procedures are available for loading  modules.
+Various facilities described  in this manual are actually in
+loadable modules and their documentation notes that they must be
+loaded.  Loadable modules typically exist as FASL files .B
+files see the section on the compiler for information on
+producing FASL files.
+
+\de{load}{(load [FILE:\{string, id\}]): nil}{macro}
+{    For each argument FILE, an  attempt  is  made  to  locate  a
+    corresponding  file.   If  a  file  is found then it will be
+    loaded by a call on an appropriate function.   A  full  file
+    name is constructed by using the directory specifications in
+    loaddirectories* and the extensions in loadextensions*.  The
+    strings  from  each  list are used in a left to right order,
+    for a given string from loaddirectories* each extension from
+    loadextensions*   is   used.  More   information   about
+    loaddirectories* and loadextensions* can be found below.
+}
+
+While the file is being loaded *usermode will be set to nil.
+If a file cannot be found the call on load will be aborted.
+
+\begin{verbatim}
+    ***** `FILE' load module not found
+\end{verbatim}
+    If either *verboseload or *printloadnames is non-nil then
+    \index{*verboseload}\index{*printloadnames}
+
+\begin{verbatim}
+    *** loading FULL-NAME
+\end{verbatim}
+    is  printed just prior to loading the file.  Once a file has
+    been loaded the message
+
+\begin{verbatim}
+    *** FILE loaded
+\end{verbatim}
+    will  be  printed  if  the  *verboseload  is  non-nil.    In
+    addition,  the  name FILE is added to the list referenced by
+    options*.  If an attempt is made to load a  file  which  has
+    been partially loaded then
+
+\begin{verbatim}
+  *** Warning: Load of FILE previously requested, but incomplete.
+\end{verbatim}
+    will be printed.  If FILE is found to be  in  options*  then
+    the attempt to load FILE will be ignored.
+
+\begin{verbatim}
+    *** FILE already loaded
+\end{verbatim}
+    Note  that memq is used to determine if FILE is in options*.
+    Therefore when you use string arguments for  loading  files,
+    although  identical  names for ids refer to the same object,
+    identical names for strings refer to different objects.
+
+
+\de{reload}{(reload [FILE:\{string,id\}]): nil}{macro}
+{    Reload is very similar to load. The difference  between  the
+    two  is that for each name FILE, the first occurance of FILE
+    in options* will be removed before attempting  to  load  the
+    file.
+}
+
+\de{imports}{(imports FILES:list): nil}{expr}
+{    This  function  is also used to load modules.  If imports is
+    invoked as another module is being loaded, then the  modules
+    specified  by  FILES will not be loaded until the loading of
+    the current  module  is  complete.    Otherwise  imports  is
+    identical to load.
+}
+
+\variable{loaddirectories* }{[Initially: list]}{global}
+{ References  a list of strings to append to the front of
+file names passed as arguments to load, reload, and imports. }
+
+\variable{loadextensions*}{[Initially: association-list]}{global}
+{
+   References the a-list {\tt ((".b" . faslin) (".lap" . lapin)) }    
+				
+The car of  each  pair  is  a  string  which  represents  an
+extension  to  append to the end of the file names passed as
+arguments to load, reload,  and  imports.    The  cdr  is  a
+function  appropriate  for  loading  a  file of a particular
+extension.  For example, a file  whose  extension  is  B  is
+loaded with the function faslin.  }
+
+\variable{options*}{[Initially: nil]}{global}
+{
+    Once  a  file  corresponding  to  an argument FILE to either
+    load, reload, or imports has been loaded, FILE will be added
+    to the list referenced by options*.  An attempt  to  load  a
+    file  by applying load or imports will be aborted if FILE is
+    found in options*.  Reload removes the  first  occurance  of
+    FILE from options* before passing its argument to load.
+}
+
+\variable{*verboseload}{[Initially: nil]}{switch}
+{
+    If non-nil, a message is displayed when a request is made to
+    load  a  file  which has already been loaded, when a file is
+    about to be loaded, and  when  the  loading  of  a  file  is
+    complete.      Since  *redefmsg  is  set  to  the  value  of
+    *verboseload, a non-nil value  will also cause a message  to
+    be printed whenever a function is redefined during a load.
+}
+
+\variable{*printloadnames}{[Initially: nil]}{switch}
+{
+    If  non-nil, a message is printed when a file is about to be
+    loaded.
+}
+
+\section{Reading Files into PSL}
+
+The following procedures are used to read complete files  into
+PSL,  by  first calling open, and then processing each top level
+form in the file.  The effect is similar to what would happen if
+the file were typed into PSL.  File  names  are  represented  by
+strings.    File  names may be given using full system dependent
+file name conventions.
+
+\variable{*echo}{[Initially: nil]}{switch}
+{
+    The switch echo is used to control  the  echoing  of  input.
+    When  (on  echo) is placed in an input file, the contents of
+    the file are echoed on the standard output  device.    Dskin
+    does not change the value of *echo, so one may say (on echo)
+    before calling dskin, and the input will be echoed.
+}
+
+\de{dskin}{(dskin NAME:string): {nil, abort}}{expr}
+{    The contents of the file are processed as if they were typed
+    in.    If  the  processing of the file is aborted the return
+    value will be the identifier abort and the  following  error
+    message will be printed.
+}
+
+{\tt   ***** DSKIN of `NAME' aborted after N form(s) }\\
+
+A  count  of  each  top  level  form  is  kept  as  they are
+processed, which is the value N in the error message.   Once
+in*  has been bound to the channel which represents the open
+file, each form is processed by a function  similar  to  the
+one below.
+
+\begin{verbatim}
+  (de dskin-step ()
+    (let ((form (funcall toploopread*)))
+      (cond ((eq form $eof$) 'eof)
+            ((not *defn)
+             (funcall toploopprint* (funcall toploopeval* form))
+            (dfprint* (funcall dfprint* form))
+            (t (prettyprint form)))))
+\end{verbatim}
+    
+Note  that  the  functions  used for reading, evaluating and
+    printing are the same as those used in toploop (see  Chapter
+    15  for more information).  If dfprint* has a value (and the
+    switch *defn is non-nil), then it will  be  applied  to  the
+    expression  instead  of  applying  the  functions  bound  to
+    toploopeval* and toploopprint*.  If dfprint* does not have a
+    value (and the switch *defn is  nil),  then  the  expression
+    will be simply be printed by a call on prettyprint.
+
+    Dskin  is  flagged  ignore.   This means that when a file is
+    compiled, a top level application of dskin will be evaluated
+    but not compiled.   For  more  information  about  the  flag
+    ignore see Chapter 19.
+
+\de{lapin}{(lapin NAME:string): \{nil, abort\}}{expr}
+{    Almost  identical  to  dskin. The  difference is that the
+    function bound to toploopprint* is not applied.  In general,
+    this means that the results of evaluation are not printed.
+}
+
+    Note that lapin is not flagged ignore as is dskin. This
+    means  that a top level application of lapin is compiled but
+    not evaluated.  For more information on how the flags ignore
+    and eval effect compilation see Chapter 19.
+
+\de{faslin}{(faslin FILENAME:string): nil}{expr}
+{    This is an efficient binary read loop, which fetches blocks
+    of  code,  constants  and  compactly  stored ids. It uses a
+    bit-table to relocate code and to identify special
+    LISP-oriented constructs.  FILENAME must be a complete file
+    name.
+}
+
+\section{About I/O Channels}
+
+\de{rds}{(rds {CHANNEL:io-channel, nil}): io-channel}{expr}
+{    Rds sets in* to the value of its argument, and  returns  the
+    previous value of in*.  In addition, if specialrdsaction* is
+    non-nil,  it  should  be a function of 2 arguments, which is
+    called with the old channel as its first  argument  and  the
+    new channel as its second argument.  (rds nil) does the same
+    as (rds stdin*).
+}
+
+\de{wrs}{(wrs {CHANNEL:io-channel, nil}): io-channel}{expr}
+{    Wrs  sets  out* to the value of its argument and returns the
+    previous value of out*.  In addition,  if  specialwrsaction*
+    is non-nil, it should be a function of 2 arguments, which is
+    called  with  the  old channel as its first argument and the
+    new channel as its second argument.  (wrs nil) does the same
+    as (wrs stdout*).
+}
+  Global variables containing  information  about  channels  are
+listed below.
+
+\variable{in*}{[Initially: 0]}{global}
+{
+    Contains  the  currently selected input channel.  May be set
+    or rebound by the user.  This is  changed  by  the  function
+    rds.
+}
+
+\variable{out*}{[Initially: 1]}{global}
+{
+    Contains  the currently selected output channel.  May be set
+    or rebound by the user.  This is  changed  by  the  function
+    wrs.
+}
+
+\variable{stdin*}{ [Initially: 0]}{global}
+{
+    The  standard  input  channel  (but not in the Unix sense of
+    standard input).  Channel 0 is ordinarily the  terminal  and
+    this variable is not intended to be set or rebound.
+}
+
+\variable{stdout*}{[Initially: 1]}{global}
+{
+    The  standard  output channel.  Like channel 0, channel 1 is
+    ordinarily always the terminal, and  this  variable  is  not
+    intended to be set or rebound.
+}
+
+\variable{breakin*}{[Initially: nil]}{global}
+{
+    The  channel  from  which the break loop gets its input.  It
+    has been set to default  to  stdin*,  but  may  have  to  be
+    changed on some systems with buffered-IO.
+}
+
+\variable{breakout*}{[Initially: nil]}{global}
+{
+    The  channel  to  which the break loop sends its output.  It
+    has been set to default to  stdout*,  but  may  have  to  be
+    changed on some systems with buffered-IO.
+}
+
+\variable{errout*}{[Initially: 1]}{global}
+{
+    The channel used by the errorprintf.
+}
+
+\variable{specialrdsaction*}{[Initially: nil]}{global}{}
+
+\variable{specialwrsaction*}{[Initially: nil]}{global}{}
+
+\section{I/O to and from Lists and Strings}
+
+\de{bldmsg}{(bldmsg FORMAT:string, [ARGS:any]): string}{expr}
+{    Printf to string.  This can be used as a very convenient way
+    of  obtaining  the  printed  representation of an object for
+    further  analysis.   In  many  cases  it  is  also  a   very
+    convenient  way  of  constructing a needed string.  An error
+    will occur on overflow.  Overflow occurs when the length  of
+    the result exceeds the value of maxtokensize.
+}
+\begin{verbatim}
+***** Buffer overflow while constructing error message: FORMAT
+\end{verbatim}
+\de{flatsize}{(flatsize U:any): integer}{expr}
+{    Character length of prin1 S-expression.  }
+
+\de{flatsize2}{(flatsize2 U:any): integer}{expr}
+{    Prin2 version of flatsize.  }
+
+\de{explode}{(explode U:any): id-list}{expr}
+{    Explode takes the constituent characters of an  S-expression
+    and forms a list of single character ids.  It is implemented
+    via  the  function  channelprin1,  with a list rather than a
+    file or terminal as destination.   Returned  is  a  list  of
+    interned  characters representing the characters required to
+    print the value of U.
+}
+\begin{verbatim}
+    1 lisp> (explode 'foo)
+    (f O O)
+    2 lisp> (explode '(a . b))
+    (!( a !  !. !  b !))
+\end{verbatim}
+
+\de{explode2}{(explode2 U:{atom}-{vector}): id-list}{expr}
+{    Prin2 version of explode.  }
+
+\de{compress}{(compress U:id-list): {atom}-{vector}}{expr}
+{    U is a list of single character identifiers which  is  built
+    into  a PSL  entity and returned.   Recognized are  numbers,
+    strings,  and  identifiers  with    the   escape   character
+    prefixing    special characters.  The formats of these items
+    appear in the "Primitive Data Types" Section, Section 2.1.2.
+    Identifiers are not interned on the id-hash-table.  Function
+    pointers may not be compressed.   If  an  entity  cannot  be
+    parsed out of U or characters are left over after parsing an
+    error occurs: }
+\begin{verbatim}
+    ***** Poorly formed atom in COMPRESS
+\end{verbatim}
+\de{implode}{(implode U:id-list): atom}{expr}
+{    Compress with ids interned.
+}
+
+\section{Generalized Input/Output Streams}
+
+  All  input  and  output  functions are implemented in terms of
+operations on "channels".  A channel is  just  a  small  integer
+\footnote{ The   range   of  channel  numbers  is  from  0  to
+MaxChannels, where MaxChannels is a  system-dependent  constant,
+currently  31,  defined  in  the module {\bf io-decls}} which has 3
+functions and some other information associated with  it.    The
+three functions are:
+
+\begin{enumerate}
+\item   A  reading  function,  which is called with the channel as
+     its argument and returns the integer  ASCII  value  of  the
+     next  character of the input stream.  If the channel is for
+     writing only, this function is writeonlychannel.    If  the
+     channel   has   not   been   opened,   this   function   is
+     channelnotopen.  The reading function  is  responsible  for
+     echoing characters if the flag *echo is non-nil.  It should
+     use  the  function writechar to echo the character.  It may
+     not be appropriate for a read function to echo  characters.
+     For  example,  the  "disk"  reading  function does echoing,
+     while the reader used to implement  the  compress  function
+     does not.
+
+The  read function must also be concerned with the
+handling of ends of "files" (actually, ends of 
+channels) and ends of lines.  It should return the
+ASCII code for an end of  file character (system
+dependent) when reaching the end of a channel. It
+should return the ASCII code for a line  feed 
+character  to indicate an end of line (or "newline").
+This may require that the ASCII code for carriage
+return  be ignored when read, not returned.
+ 
+\item A writing function, which is called with the channel as its
+first argument and the integer ASCII value of the
+character to  write  as  its  second argument.  If
+the channel is for reading only, this function is
+readonlychannel. If the channel has not been
+opened, this function is channelnotopen.
+
+  
+\item	A closing function, which is called with the channel as its
+argument and performs any action necessary for the 
+graceful termination of input and/or output operations 
+to that channel. If the channel is not open, this 
+function is channelnotopen.
+\end{enumerate}
+
+  The other information associated with a channel  includes  the
+current  position in the output line (used by posn), the maximum
+line  length  allowed  (used  by  linelength  and  the  printing
+functions),  the  single  character input backup buffer (used by
+the token scanner), and other system-dependent information.
+
+  Ordinarily, the user need not be aware  of  the  existence  of
+this  mechanism. However,  because  of  its generality, it is
+possible to implement operations other than  just  reading  from
+and  writing  to  files  using  it. In  particular,  the LISP
+functions explode and compress are performed  by  writing  to  a
+list  and reading from a list, respectively (on channels 3 and 4
+respectively).
+
+\subsection{Using the "Special" Form of Open}
+
+  If Open is called with AccessType eq to SPECIAL and the global
+variables   specialreadfunction*,   specialwritefunction*,   and
+specialclosefunction*  are  bound to ids, then a free channel is
+returned and its associated functions are set to the  values  of
+these  variables.    Other non system-dependent status is set to
+default  conditions,  which  can  later  be  overridden.     The
+functions  readonlychannel and writeonlychannel are available as
+error handlers.  The parameter Filename is used only if an error
+occurs.
+
+  The following globals  are  used  by  the  functions  in  this
+section.
+
+\variable{specialclosefunction* }{[Initially: nil]}{global}{}
+\variable{specialreadfunction*}{[Initially: nil]}{global}{}
+\variable{specialwritefunction*}{[Initially: nil]}{global}{}
+
+\section{Scan Table Internals}
+		
+The  scan  table controls the behaviour of the reader.  It can
+be modified to extend the syntax of PSL or to aid the writing of
+other parsers.  This table contains information about the syntax
+of each character.   It  is  possible  to  have  several  tables
+describing  different syntaxes and to switch from one to another
+by binding the variable lispscantable*.
+
+	The table is a vector of 129 entries,  indexed  by  0  through
+128.   The first 128 entries correspond to ASCII character code.
+Each entry contains an integer between 0 and 21. The meaning  of
+these numbers is given below.
+
+\begin{tabular}{lp{13.0cm}}
+0 \ldots 9 & DIGIT: indicates the character is a digit  and gives the 
+                   	corresponding numeric value.\\
+10 &       LETTER: indicates the character is alphabetic.\\
+11 &       DELIMITER: indicates the character is a delimiter, the first
+                    character of a diphthong should not be classified as
+                    a delimiter.\\
+12 &       COMMENT: indicates the character begins a comment, terminated
+                  by an end of line.\\
+13 &       DIPHTHONG: indicates the character is a delimiter which may be
+																						the
+                    starting character of a diphthong.  A diphthong is a
+                    two character sequence read as one token.\\
+14 &       IDESCAPE: indicates that the character is an escape character, this
+                   character is used within id names to reference a character
+                   which is not a digit or alphabetic.\\
+15 &       STRINGQUOTE: indicates that the character is used to delimit strings.\\
+16 &       PACKAGE: indicates that the character is used to introduce explicit
+                  package names.\\
+17 &       IGNORE: indicates that the character is to be ignored.\\
+18 &       MINUS: indicates that the character represents a minus sign.\\
+19 &       PLUS: indicates that the character represents a plus sign.\\
+20 &       DECIMAL: indicates that the character represents a decimal point.\\
+21 &       IDSURROUND: indicates that the character is to act for identifiers
+                     as a string quote for strings.\\
+%\end{TABELLE***}
+\end{tabular}
+
+\vspace{0.5cm}
+It  may  be  tedious to insert an idescape character (!), before
+every delimiter character in the name of an id.  By setting  the
+type  of  a character (for example |), to idsurround this can be
+avoided.  Every character between the vertical bars is taken  as
+part  of  the  ids name, as if ! were written before each.  Note
+that !! corresponds to ! and !| to |.
+% establish | as the character to surround the name of ids
+\begin{verbatim}
+  (PUTV LISPSCANTABLE* (CHAR '|) IDSURROUND)
+
+|"|     % the same as !"
+|dave|  % the name of the id is dave not DAVE
+|!|!!|  % the name is |!, the same effect is gotten
+        % by writing !|!!
+\end{verbatim}
+\variable{lispscantable*}{[Initially: as described below]}{global}
+{
+    Lispscantable* associates a type with each character.  It is
+    a vector of 129 entries.  The type  for  a  character  C  is
+    stored  at  index  (CHAR  C).    The  table below lists each
+    character under its type.  The 128'th entry is the diphthong
+    indicator, LISPDIPHTHONG.
+}
+
+\begin{verbatim}
+    DIGIT        0 through 9
+    LETTER       a through z, A through Z, #, $, &, *, /,
+                 @, ;, :, <, >, =, ^, _, {, }, |, ~, ?,
+                 ^A through ^H, ^K, ^N through ^Y, ^\,^],
+                 ^^, ^_, rubout
+    DELIMITER    (, ), ', `, ^Z, [, ]
+    COMMENT      %
+    DIPHTHONG    ,
+    IDESCAPE     !
+    STRINGQUOTE  "
+    PACKAGE      \
+    IGNORE       null, tab, line-feed, ^L,
+                 carriage-return	and space
+    MINUS        -
+    PLUS         +
+    DECIMAL      .
+\end{verbatim}
+
+\section{Scan Table Utility Functions}
+
+The following functions are provided to manage scan tables, in
+the {\bf read-utils} module.
+
+\de{printscantable}{(printscantable TABLE:vector): nil}{expr}
+{    Prints the entire scantable,  gives  the  0 ... 127  entries
+    with  the  name  of  the  character  class.  Also prints the
+    indicator used for diphthongs.
+}
+
+\de{copyscantable}{(copyscantable OLDTABLE:\{vector, nil\}): vector}{expr}
+{    Copies the existing scantable (or currentscantable* if given
+    nil).  The 128'th entry (the diphthong  indicator),  of  the
+    copy is set to the result of a call on gensym.
+}
+
+\de{putdiphthong}{(putdiphthong TABLE:vector D1:id ID2:id DIP:id): nil}{expr}
+{    Installs  DIP  as  the name of the diphthong Id1 followed by
+    ID2 in the given scan table.
+}
+
+\section{Binary I/O Functions}
+
+Binary input and output are necessary to provide an efficient access to
+large files e.g. for loading or generating binary files (e.g. faslin
+or faslout) or for
+communication with other
+processors e.g. graphics or database processors.
+Another important application is the connection between two or more
+PSL processors on incompatible platforms.
+In the following descriptions HANDLE means something system specific
+which in many cases should better not be interpreted by the LISP
+evaluator. One can very well think of HANDLE as a FILE* object
+belonging to the world of C's I/O library.
+The results of a binary read function is usually not
+meant for LISP evaluation, either.
+
+\de{binaryopenread}{(binaryopenread FILENAME:string): HANDLE}{expr}
+{opens the file FILENAME for reading. If the file cannot be opened,
+an error message {\tt Couldn't open binary file for input} will be shown,
+an error condition is raised.}
+
+\de{binaryopenwrite}{(binaryopenwrite FILENAME:string): HANDLE}{expr}
+{opens the file FILENAME for writing. If the file cannot be opened,
+an error message {\tt Couldn't open binary file for output} will be shown,
+an error condition is raised.}
+
+\de{binaryopenappend}{(binaryopenappend FILENAME:string): HANDLE}{expr}
+{opens the file FILENAME in append mode. If the file cannot be opened,
+an error message {\tt Couldn't open binary file for append} will be shown,
+an error condition is raised.}
+
+\de{binaryopenupdate}{(binaryopenupdate FILENAME:string): HANDLE}{expr}
+{opens the file FILENAME for update. If the file cannot be opened,
+an error message {\tt Couldn't open binary file for update} will be shown,
+an error condition is raised.}
+
+\de{binaryclose}{(binaryclose Filepointer:handle):NIL}{expr}
+{Closes the file referenced by filepointer}
+
+\de{binaryread}{(binaryread CHANNEL:handle): any}{expr}
+{reads one LISP item from file channel and returns it as value. There is
+no way to distinguish error conditions from normal return values.}
+
+\de{binaryreadblock}{(binaryreadblock CHANNEL:handle ADDR:int SIZE:int): int}
+{expr}
+{reads SIZE LISP items from the file into an array pointed to by ADDR.
+The number of actually read items is returned,
+indicating error or end-of-file if the returned
+value is less than the number of items requested.}
+
+\de{binarywrite}{(binarywrite CHANNEL:handle WORD:any): NIL}{expr}
+{writes one LISP item in WORD to file channel.}
+
+\de{binarywriteblock}{(binarywriteblock Filepointer:handle ADDR:int SIZE:int):
+NIL}
+{expr}
+{writes SIZE LISP items from the an array pointed to by ADDR to the file
+referenced by Filepointer.
+The number of actually written items is returned,
+indicating error if the returned value is less than the number of
+items requested.}
+
+\de{binarypositionfile}{(binarypositionfile CHANNEL:handle, SPECIAL:int): any}{expr}
+{this corresponds to C's fseek operation. The special value (the address)
+as well as the
+return value is system dependent, please investigate.}

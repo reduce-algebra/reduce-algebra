@@ -1,0 +1,230 @@
+\chapter*{Operating System Contacts}
+
+\section{Calling the Command Shell}
+
+The function system can be used to execute a system command.
+
+\de{system}{(system COMMAND:string):undefined }{expr}
+{ starts a (system specific) command interpreter and passes the
+command to the interpreter.}
+
+E.g. unter the UNIX operating system a Bourne shell is started and
+COMMAND is interpreted following the conventions of this shell.
+Of course it is possible to use e.g.
+\begin{verbatim}
+(system "bash")
+\end{verbatim}
+
+
+\section{The Working Directory}
+
+The current working directory can be read by
+
+\de{pwd}{(pwd):STRING}{expr}
+{returns the current working directory in system specific format.}
+
+The current working directory can be set by
+
+\de{cd}{(cd DIR:string):BOOLEAN}{expr}
+{sets the current working directory to DIR after expanding the
+filename according to the rules of the operating system. If this operation
+is not sucessful, the value Nil is returned.}
+
+\section{Invoking Pipes}
+
+Pipes are known to almost all the operating systems where PSL is implemented
+for. It usually comes in two flavours, named pipes and anonymous pipes.
+PSL uses the anonymous pipes for unidirectional communication.
+One standard operation is the connection to the Gnuplot graphics system
+from the REDUCE computer algebra system.
+In the following we describe the pipes operation in PSL under Unix and
+Windows.
+
+\subsection{Pipes under Unix}
+
+The pipe interface can be made available by loading the module {\bf pipes}.
+
+\de{pipe-open}{(pipe-open CMD:string MODE:id):Channel}{expr}
+
+{The Unix system tries to create the process defined by CMD using the
+usual Unix mechanisms like pathes etc.
+Depending on the MODE either the stdin or the stdout is connected to
+the PSL program during the evaluation. The resulting LISP I/O file
+is returned such that in subsequent read or write operation to this file
+the command input or output is used. MODE needs to be either {\tt input}
+or {\tt output}.}
+
+A pipe can be used as a normal LISP file. A close operation on the file
+will terminate the process. If the user wants to keep the process alive,
+instead
+of close the following function has to be used:
+
+\de{abandonpipe}{(abandonpipe Channel):undefined}{expr}
+{ This closes the pipe created by pipe-open, but the process will remain
+active.}
+
+Examples:
+\begin{verbatim}
+
+(load pipes)
+(setq mail (pipe-open "mail hugo@zib.de" 'output))
+(wrs mail)
+(prin2 "This is the result of (expt 10 100) ") 
+(prin2t (expt 10 100))
+(wrs nil)
+(close mail)
+
+(load pipes)
+(setq unix (pipe-open "uname -s" 'input))
+(rds unix)
+(setq variant (read))
+(rds nil)
+(close unix)
+\end{verbatim}
+
+\subsection{Pipes under MS/DOS}
+
+The pipe interface can be made available by loading the module {\bf pipes}.
+
+\subsection{Pipes under MS Windows}
+
+The pipe interface can be made available by loading the module {\bf w-pipes}.
+
+\section{Socket Interface (Unix only)}
+
+The socket interface allows the PSL system to communiate through 
+Unix socket as if they were normal LISP I/O channels.
+This can be used to write
+server or client processes in PSL easily. The module {\tt pslsocket}
+has be be loaded in advance.
+
+\DE{socketopen}{(socketopen HOST:(string or 0) SNumB:integer):
+pair of LISP channels}{expr}
+{If HOST is 0 (the server mode) the PSL system waits until a BIND request
+is received on the socket SNumB. Otherwise HOST is interpreted as a string
+(the client mode)
+and a computer with this name is sought on the net. If the name could be
+resolved successfully, a BIND
+request is send to this computer with the socketnumber SNumB.
+If the operation worked o.k., a pair is returned consisting of
+two LISP channels, the CAR for input and the CDR for output, each of these
+can be used like LISP channels furtheron.}
+
+\DE{socketflushbuffer}{(socketflushbuffer C:channel):any}{expr}
+{Sends the characters hanging around in the buffer via the socket
+associated with the LISP channel.}
+
+\section{Shared Memory Interface (Unix only)}
+
+The PSL shared memory interface provides all function for
+operating with shared memory regions and semaphores
+(See e.g. Unix man pages for shmop, shmget, shmctl, semop, semctl,
+semget etc.)
+The definitions of these man pages are used in the paragraph.
+Using the memory address map mechanism described below,it
+is easy to write one's own shared memory application.
+
+In the rest of this paragraph we describe a simple model
+implementation of a 'pipe' using shared memory and a semaphore.
+This code is contained in the file \$pu/shmem.sl.
+\\
+
+\de{shm-open}{(shm-open S:pair M:Mode):any}{expr}{If S = 0, a new shared
+memory area is allocated. Otherwise S is expected to be a dotted pair
+of shmid and semid of an existing shared memory. Legal modes are
+{\bf input\_create, output\_create, input and output}.
+A list consisting of channelnumber shmid and semid is returned.}
+
+\de{independentdetachshm}{(independentdetachshm C:channel): any}{expr}
+{Detaches the shared memory region used by C, closes the channel.}
+
+\de{readfromshm}{(readfromshm C:channel):any}{expr}{Waits until
+the shared memory region is readable, reads an expression and 
+resets the mode to writable. Returns the expression.}
+
+\de{twritetoshm}{(writetoshm C:channel E:expression):list}{expr}
+{Waits until the shared memory region is writeable, prints the expression
+using prin2. Returns the value of prin2.}
+
+
+The following C program works together with the PSL part
+such that it prints the messages read from shared memory
+when they are ready for printing. It must be started with
+two paramemters, namely the shmid and the semid to synchronize
+with the PSL part.
+
+\begin{verbatim}
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+struct sembuf ;
+
+struct sembuf sembu;
+struct sembuf *sembuptr;
+
+main (argc,argv)
+     int argc;
+     char *argv[];
+
+{ int sema , shmemid;
+  char * shmaddress;
+
+  sembuptr = &sembu;
+
+  sscanf(argv[1],"%d",&shmemid);
+  sscanf(argv[2],"%d",&sema);
+
+  /* open shared memory */
+
+ printf("the data is : %d %d\n",shmemid,sema);
+  shmaddress = shmat(shmemid,0,0);
+
+  while (1)
+  { waitsema(sema) ; /* wait for a 0 */
+    printf("the message is : %s \n",shmaddress +4);
+    setsema (sema,2) ; /* ok, eaten */
+  }
+}
+
+setsema (sema,val)
+int sema,val;
+{ semctl(sema,0,SETVAL,val); }
+
+waitsema (sema)
+
+int sema;
+{ 
+  sembu.sem_num =0; sembu.sem_op = 0; sembu.sem_flg =0;
+
+  semop (sema, sembuptr , 1);
+}
+\end{verbatim}
+
+\section{Miscellaneous Features}
+
+It is a design goal to reduce the number of system calls
+which have to be linked in to the kernel to a minimum.
+The necessary information can be read elsewhere, e.g. through a pipe.
+For some example, see the chapter on pipes above.
+
+Nevertheless, some system calls have be be linked in, because they 
+handle process specific information which is not available to a spawned
+process.
+
+The follwoing two system calls can be used to create unique file names.
+
+\de{getpid}{(getpid):Integer}{expr}
+{Returns the system specific number
+under which the PSL process is registered in the currently running system.
+If PSL is running under the control of a GUI,
+this number corresponds to the PSL process, not the GUI process,
+}
+
+\de{gethostid}{(gethostid):any}{expr}{The system and hardware
+dependent word (say), which identifies the processor is returned.
+It is normally a good idea to store this word in a place where the
+garbage collector will not come along, e.g. in a WARRAY.}
+

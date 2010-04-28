@@ -1,0 +1,340 @@
+\chapter*{Prettyprinting}
+
+\section{Introduction}
+
+  To access the prettyprinter described in this chapter you must
+load the module PP.
+
+  A  prettyprinter  takes  as  input  a stream of characters and
+prints them with aethetically appropriate indentations and  line
+breaks.  For example
+
+\begin{verbatim}
+(if (vectorp data) (vector-size data) (if (stringp data)
+    (string-length data) (length data)))
+\end{verbatim}
+\begin{verbatim}
+(if (vectorp data)
+  (vector-size data)
+  (if (stringp data)
+    (string-length data)
+    (length data)))
+\end{verbatim}
+\section{Prettyprinting Files and Data}
+
+  The  width  of  an output line is defined by default to be 75.
+You can modify this by passing the desired width to the function
+line-width.
+
+
+\de{pp-file}{(pp-file SOURCE:string DESTINATION:string):\\ 
+undefined}{expr}
+{    This function is used to prettyprint the contents of one
+    file  into  another.  There must be two arguments, the first
+    is a string representing the source file name, the second is
+    a string representing the destination file name.  The  first
+    argument  to  top  level applications of de, df, dm, ds, dn,
+    defmethod, defflavor, and defmacro is printed once the  form
+    has been written to the file.
+}
+
+\de{pp-object}{(pp-object E:form): undefined}{fexpr}
+{    This  function  will  prettyprint  the  PSL  data  object E.
+    Pp-object will also accept  two  optional  arguments.    The
+    output may be directed to a file by including a string which
+    represents  the file name.  Indentation is specified with an
+    integer.  Both of these optional arguments must be  preceded
+    by  special  identifiers, :indent for indentation, :sink for
+    redirection of output.
+}
+\section{Formats}
+
+  Suppose  we  define  the  following  data  structure  (in  the
+discussion  which  follows  it will be assumed that the selector
+functions form, root, and suffix have been defined).
+
+\begin{verbatim}
+(NAMED-FORM <form> <root> <suffix>)
+\end{verbatim}
+Furthermore, we would like
+
+\begin{verbatim}
+(named-form (+ left right) argument 1)
+\end{verbatim}
+to be printed in the form:
+\begin{verbatim}
+argument1: (+ left right)
+\end{verbatim}
+The format definition which follows could  be  used  to  specify
+that  named-forms  should  be  printed  out  in  the  above way.
+Deformat  will  convert  everything  which  follows  its  second
+argument into a formatting function.  In the example below, this
+formatting  function will be used to format lists which have the
+identifer named-form as their first element.  When such  a  list
+is  passed  to  it,  the  function  creates a sequence of format
+instructions, specifying what should be printed corresponding to
+the list.
+
+\begin{verbatim}
+(deformat (named-form) (item)
+  (template '({ * * ":" [i 1 2] * }) (root item) 
+  (suffix item) (form item)))
+\end{verbatim}
+The  function  template  creates  a   sequence   of   formatting
+instructions  for its arguments based on directions specified by
+the template (the first argument).  The template in this example
+can be understood as follows: The  {  and  }  specify  that  the
+components  between  them  should be treated as a single logical
+unit when they are printed and that an outer pair of parentheses
+should  be  printed.    The  three  *'s  show  where  the  three
+components  of  the  data  structure should be printed.  The ":"
+specifies that a colon should be printed after the  suffix.  The
+vector  [I  1  2]  corresponds  to a conditional line break.  If
+there is sufficient room for the form then  a  single  space  is
+printed (this is specified by the second element of the vector).
+Otherwise  a line break followed by an indentation of two spaces
+is inserted.\\
+
+
+  A template may consist of the following symbols:
+%\TABELLE***
+%\begin{tabular}{lp{9.0cm}}
+\begin{itemize}
+
+\item The prettyprinter will break onto different  lines  as 
+      few logical blocks as possible. The left angle bracket
+						($<$),denotes the beginning of a block, the right angle
+						bracket ($>$), denotes the end of a block. It is assumed 
+						that these brackets balance.
+
+\item Left  and right braces ({ and }) are also to define 
+						logical blocks which should be printed within a pair 
+						of parentheses.
+
+\item There are two different types of blanks, the terms
+      consistent and inconsistent  are  used  to  describe them.
+      Note  that  blanks  may only appear within a logical block.
+     	If each blank within a block is consistent  and  the  block
+     	will  not  fit  on  the  current  line  of output then each
+     	sub-block of the block will be placed on  a  new  line,  if
+     	each  blank  is  inconsistent then new lines will be forced
+     	only when it is necessary.  For example, the  first  result
+     	will  occur  if  the blanks are inconsistent, the second if
+     	they are consistent.
+%\end{tabular}
+\end{itemize}
+
+\begin{verbatim}
+     												(one two three
+      											four)
+
+     												(one
+      											two
+      											three
+      											four) 
+\end{verbatim}
+
+    In general if a block will not fit  on  the  current
+     line  of output then each consistent blank corresponds to a
+     new line, inconsistent blanks will print as  spaces  unless
+     it  is necessary to force a new line. There is a length and
+     an offset associated with each blank, if a blank is treated
+     as a space then the length represents the number of  spaces
+     which  will be printed. If a blank is treated as a break to
+     a new line then the offset is used for indentation  on  the
+     new  line.  Indentation  is from the horizontal position of
+     the first character of the innermost logical  block.    For
+     example,
+
+\begin{verbatim}
+     (template '({ * { (* [c 1 1]) } })
+               '(function (arg-one arg-two)))
+\end{verbatim}
+
+     will result in
+
+\begin{verbatim}
+     (function (arg-one
+                arg-two))
+\end{verbatim}
+
+     assuming  that  it is necessary to force a line break.  The
+     consistent blank within the call the template specifies  an
+     offset  of  one.    The  first  character  of the innermost
+     logical block is the  second  left  parenthesis,  from  its
+     position  the  printer indented a single space.  A blank is
+     represented by a vector, the first entry should  be  either
+     an  I  or  C,  these  characters  designate the type of the
+     blank, I for inconsistent and C for consistent. The  second
+     entry  is  a  positive integer which represents length, and
+     the third is a positive integer  representing  indentation.
+     The  algorithm expects to find a blank after each occurence
+     of a right angle bracket, if the formats  which  have  been
+     provided do not follow this convention then an inconsistent
+     blank  with  length and offset set to zero will be inserted
+     after the right angle bracket.
+\begin{itemize}
+\item An asterisk (*) is used to make a recursive call on
+     dispatch. Dispatch is responsible for applying the
+     appropriate formatting function to an expression
+
+\item Strings, the text of the string is included in the output.
+
+\item A sublist of format symbols may also appear within the list
+     of  format  symbols.   This  list  may  contain  blanks  or
+     asterisks  and  is  used repetitively until a corresponding
+     list of expressions is exhausted.
+%\end TABELLE***
+\end{itemize}
+
+\section{Dispatch}
+
+\begin{verbatim}
+  (de dispatch (item depth)
+    (cond ((instance item)
+           (apply (find-instance-template item)
+                  (list item depth)))
+          ((atom item)
+           (apply (find-atom-template item)
+                  (list item depth)))
+          ((> depth *maxdepth*) (add-tokens "#"))
+          ((has-template item)
+           (apply (get-template item)
+                  (list item (add1 depth))))
+          (t (default-template item (add1 depth)))))))
+\end{verbatim}
+  It is useful to know how this  function  associates  a  format
+function with an expression. If the expression is an instance of
+a  flavor  then  the  dispatch function will search for a format
+function associated with the name  of  the  flavor.   For  other
+atomic  expressions,  the  type  is  used  to  locate  a  format
+function.  Currently there are  format  functions  for  vectors,
+strings,   numbers,  code-pointers  and  identifiers.    If  the
+expression is a list and the first element of this  list  is  an
+identifier  then  an  attempt  is made to find a format function
+associated with the identifier. Before resorting to a default  a
+check  is  made  for  function  application for which there is a
+separate default format function.
+
+  Function application is recognized when the first  element  of
+the  list  is a lambda expression, an application of getd to the
+first element returns a non-nil value, or the first  element  is
+an id which is a member of a global list named *function\_names*.
+This  list of function names is useful for prettyprinting a file
+since a file will normally contain a number of  applications  of
+functions   defined   within   the   file  itself.    The  fexpr
+add-functions accepts any number of function names and adds then
+to *function\_names*.
+
+
+  With respect to lists, any  sub-expression  below  a  maximum
+depth  is printed as \verb$`#'$.  Once the maximum length of a list
+has been reached the display  of  the  remaining  elements  will 
+be `...'.    The maximum depth (initially 10) and length (initially
+25) can be modified with the functions new-depth and new-length.
+
+\section{Specifying Formats}
+
+
+\de{deformat}{(deformat NAME:pair PARAM:id-list [BODY:forms]):
+nil}{fexpr} 
+{    
+Deformat  is  used  to  define  format  functions 
+for   PSL
+    expressions.    The   car  of  NAME  should  be  a  list  of
+    identifiers (it may also be a single  identifier),  the  cdr
+    should   be   nil  for  atomic  expressions  or  an  integer
+    representing a minimal length for lists.  PARAM  is  a  list
+    containing  a  single  id,  when the format function is used
+    PARAM will be  bound  to  the  expression  being  formatted.
+    Formats are defined by calls on template (described below).
+}
+
+\de{template}{(template FORMAT:list [COMPONENT:form]): any}{macro}
+{    FORMAT  is a list of format symbols (described above).  Each
+    COMPONENT should correspond to a call on  dispatch  (*),  in
+    FORMAT.   If a sub-list of format symbols in included within
+    FORMAT  then  there  must  be  a   corresponding   list   of
+    components.
+}
+
+  This   first   example   illustrates   a   format  for  quoted
+expressions.  For example, 'ANY  instead  of  (QUOTE  ANY).    A
+minimal  length  of  two is given, since the list (QUOTE) should
+not be printed as '.  The argument to quote is  formatted  by  a
+separate call on dispatch.
+
+\begin{verbatim}
+(deformat (quote . 2) (item)
+  (template '("'" *) (second item)))
+\end{verbatim}
+  The  elements  of  a  vector  should be enclosed within square
+brackets.  Since the length of  vectors  will  vary  a  list  of
+format  symbols  is  supplied  to  be used repetitively for each
+element.  This list will be matched against a corresponding list
+of components, (vector2list item).  Each element is formatted by
+a  recursive  call  on  dispatch.   Elements  are  separated  by
+inconsistent blanks, therefore if the entire vector does not fit
+on a single line the ouput will be something like
+\begin{verbatim}
+[one two three
+ four]
+
+(deformat (vector) (item)
+  (template '(< "[" (* [i 1 1]) "]" >) (vector2list item)))
+\end{verbatim}
+Given the expression (setq n-one v-one n-two v-two)
+
+\begin{verbatim}
+(setq n-one v-one
+      n-two v-two)
+\end{verbatim}
+is preferred over
+
+\begin{verbatim}
+(setq n-one v-one n-two
+ v-two)
+\end{verbatim}
+  The following can be used to obtain the preferred output.
+
+\begin{verbatim}
+(deformat ((set setq) . 3) (item)
+  (template '({ * " " < (* [i 1 1] * [c 1 0]) > })
+            (first item) (rest item)))
+\end{verbatim}
+The first form of ouput is obtained by using inconsistent blanks
+after  the  names  (n-one and n-two) and consistent blanks after
+the values (v-one and v-two).  When this expression will not fit
+on a single line the consistent blanks will correspond  to  line
+breaks and unless a value is too large to fit on an output line,
+the  inconsistent  blanks  will  correspond to spaces.  The zero
+offset associated with the consistent blanks corresponds to  the
+block of names and values.  This is why the names line up within
+a column.  If the inner logical brackets were omitted the output
+would look something like
+
+\begin{verbatim}
+(setq n-one v-one
+ n-two v-two)
+\end{verbatim}
+assuming  that  the  expression  would not fit on a single line.
+Notice that the format for a single pair  (name  and  value)  is
+used repetitively.
+
+  A  format function may contain more than one call on template.
+The two functions below are equivalent.
+
+\begin{verbatim}
+(deformat (lambda . 3) (item)
+  (template '({ * [i 1 1]) (first item))
+  (if (null (second item))
+    (template '("()" [c 1 1] (* [c 1 1]) })
+              (rest (rest item)))
+    (template '((* [c 1 1]) }) (rest item))))
+
+(deformat (lambda . 3) (item)
+  (template '({ * [i 1 1] (* [c 1 1]) })
+            (first item)
+            (cons (if (null (second item)) '!(!) (second item))
+                  (rest (rest item)))))
+\end{verbatim}

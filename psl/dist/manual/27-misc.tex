@@ -1,0 +1,158 @@
+\chapter*{Miscellaneous Useful Features}
+
+\section{Exiting PSL}
+
+\de{quit}{(quit): Undefined}{expr}
+{    Return  from  LISP  and  terminate  the PSL process.  }
+
+\de{exitlisp}{(exitlisp): Undefined}{expr}
+{  Return  from  LISP  and  terminate  the PSL process.  }
+
+\de{exitwithstatus}{(exitwithstatus STATUS:integer): Undefined}{expr}
+{  Return  from  LISP  and  terminate  the PSL process.
+   STATUS is passed to the calling command shell as return value.  }
+
+\section{Saving an Executable PSL}
+
+\DE{savesystem}{(savesystem MSG:string FILE:string FORMS:form-list):\\
+Undefined}{expr} {    
+    This records the welcome message (after attaching a date) in
+    the  global variable lispbanner* used by standardlisp's call
+    on toploop, and then calls  dumplisp  to  compact  the  core
+    image  and  write  it  out as a machine dependent executable
+    file with the name FILE.  FILE should have  the  appropriate
+    extension  for  an  executable  file.   Savesystem also sets
+    *usermode to t.
+}
+
+    The forms in the list FORMS will be evaluated when  the  new
+    core image is started.  For example
+
+\begin{verbatim}
+    (savesystem "PSL 4.2" "PSL" '((read-init-file "psl")))
+\end{verbatim}
+\variable{lispbanner*}{[Initially: ]}{global}
+{
+    Records  the  welcome  message given by a call to savesystem
+    from PSL.  Also contains  the date, given  by  the  function
+    date.  }
+
+\de{dumplisp}{(dumplisp FILE:string): Undefined}{expr}
+{    The  core  image  is written as an executable file, with the
+    name FILE. Better use the function savesystem.
+}
+\section{Init Files}
+
+Init files are available to make it easier for the user to
+customize PSL to his/her own needs.  When psl or pslcomp
+is  executed, if a file .pslrc or .pslcomprc on UNIX boxes
+or psl.rc or pslcomp.rc on DOS or Windows systems
+is on the users home directory, it will be read and evaluated.
+
+The remainder of this section describes functions defined in
+the module {\bf init-file}. These functions can be used to implement
+init files. 
+
+\de{user-homedir-string}{(user-homedir-string): string}{expr}
+{    Returns a full pathname for the user's home directory.
+}
+
+\de{init-file-string}{(init-file-string progname:string): string}{expr}
+{    Returns  the  full  pathname of the user's init file for the
+    program progname.
+}
+
+\de{read-init-file}{(read-init-file progname:string): nil}{expr}
+{   
+   \index{init file}
+    Reads and evaluates the init  file  with  name  progname.
+    Read-init-file  calls  init-file-string   with   argument
+    progname. Under UNIX the initfilename is concatenated from
+    "." progname and "rc", such that a typical initfilename is
+    .pslrc for psl
+}
+\begin{verbatim}
+    (read-init-file "psl")
+\end{verbatim}
+
+\section{Miscellaneous Functions}
+
+
+\de{reset}{(reset): Undefined}{expr}
+{    Return to the top level of PSL, unwind-protect forms  get  a
+    chance to run.  }
+
+\de{time}{(time): integer}{expr}
+{    CPU time in milliseconds since login time.  }
+
+\de{date}{(date): string}{expr}
+{    The date in the form "day-month-year" }
+\begin{verbatim}
+    1 lisp> (date)
+    "21-Jan-1997"
+\end{verbatim}
+
+\de{date-and-time}{(date-and-time): string}{expr}
+{   \index{time}
+     A  string  is returned which describes the date, followed by
+    the time.  The string is of the form
+}
+    "day-month-year hours:minutes:seconds"
+
+\begin{verbatim}
+    1 lisp> (date-and-time)
+    "21-Jan-1997 17:04:14"
+\end{verbatim}
+\section{Garbage Collection}
+
+
+\de{reclaim}{(reclaim): nil}{expr}
+{    Reclaim is the user level call  to  the  garbage  collector.
+    Active  data  in  the heap is made contiguous and all tagged
+    pointers into the heap from active local stack  frames,  the
+    binding stack and the symbol table are relocated.  If *gc is
+    t,  prints  some  statistics.  Increments gcknt* and updates
+    gctime*.
+}
+
+\de{known-free-space}{(known-free-space): integer}{expr}
+{    Returns the number of items available in the heap.  }
+
+\de{free-bps}{(free-bps): integer}{expr}
+{    Returns the number of items available  in  the  BPS  (Binary
+    Program Space).  }
+
+\variable{*gc}{[Initially: t]}{switch}
+{
+    \index{garbage collection}
+    *Gc  controls  the printing  of garbage  collector messages.
+    If nil no indication  of  garbage  collection  occurs.    If
+    non-nil various messages will be displayed.
+}
+
+\begin{verbatim}
+    1 lisp> (reclaim)
+    *** Gargabe collection starting
+    *** GC 1:  8-Nov-97 15:49:54, 50 ms (50 %), 218 recovered, 260679 free
+    nil
+\end{verbatim}
+    As  the example shows, the amount of time (in milliseconds),
+    required to do the garbage collection, the number  of  items
+    recovered, and the number of items available in the heap are
+    displayed.  The first number which follows GC represents the
+    value of gcknt*. The inclusion of the date into the message
+    has been found useful
+    for calculations which take extremely long.
+
+\variable{gctime*}{[Initially: 0]}{global}
+{
+    The   total   time   (in   milliseconds)  spent  in  garbage
+    collection.  When the garbage collector is invoked, the time
+    spent performing the collection is added  to  the  value  of
+    gctime* }
+
+\variable{gcknt*}{[Initially: 0]}{global}
+{
+    Records  the  number of times that the garbage collector has
+    been invoked.  Gcknt* may  be  reset  to  another  value  to
+ 			record counts incrementally, as desired.}

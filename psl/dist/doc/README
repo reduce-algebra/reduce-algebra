@@ -1,0 +1,18 @@
+
+This directory contains documents pertaining to the current release
+of PSL 3.4. There are several types of files, distinguished by their
+extension:
+
+.tex: A file that can be run through the text formatting program, LaTeX.
+
+.dvi: The device independent file that is the result of running LaTeX on
+      a .tex file.
+
+.jep: A file that has been converted from its .dvi version so that it
+      can be printed on a HP Laserjet Plus.
+
+.ps: A file that has been converted from its .dvi version so that it
+      can be printed on an Apple Laserwriter.
+
+
+

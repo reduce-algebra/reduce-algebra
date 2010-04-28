@@ -1,0 +1,888 @@
+\chapter*{The Objects Module}
+
+\section{Introduction}
+
+The {\bf objects} module provides simple support for object-oriented
+programming in PSL. It is based on the "flavors" facility of
+the LISP machine, which is the source of its terminology. The
+LISP  Machine  Manual contains a much longer introduction to the
+idea of object oriented programming, generic operations, and the
+flavors facility in particular.  This discussion briefly  covers
+the  basics  of  using  objects  to  give you an idea of what is
+involved; then it explains the details.
+
+\subsection{Terminology}
+
+  An object datatype is known as a flavor.  It can be thought of
+in two parts:
+
+
+\begin{enumerate}
+\item  A template that defines the characteristics of the flavor.
+\item  A set of operations that can be performed on the flavor.
+\end{enumerate}
+The template that defines the characteristics  of  a  flavor  is
+known  as  the  flavor  definition.   It is created by the macro
+defflavor.  Each operation that can be performed on an object is
+known as a method definition.  They are  created  by  the  macro
+defmethod.   Invoking  an  operation  on  an  object is known as
+sending an object a message.  A created object of a given flavor
+is known as an instance of that flavor.
+
+  Example of a flavor definition is:
+
+\begin{verbatim}
+(defflavor complex-number
+           (real-part
+            (imaginary-part 0.0)
+            )
+           ()
+           gettable-instance-variables
+           initable-instance-variables
+           )
+\end{verbatim}
+
+A flavor definition specifies the fields, or in our terminology,
+the  instance variables, that each object of that flavor  is  to
+have.    In  the  example  above,  the  instance  variables  are
+REAL-PART and  IMAGINARY-PART.   The  mention  of  the  instance
+variable  IMAGINARY-PART indicated that by default the imaginary
+part of a complex number will be initialized to 0.0. There is no
+default initialization for REAL-PART.
+
+  Instance variables may be strictly part of the  implementation
+of a flavor, totally invisible to users.  Typically though, some
+of  the  instance  variables are directly visible in some way to
+the user of the object. The flavor definition may specify
+"initable-instance-variables", "gettable-instance-variables",
+and "settable-instance-variables".  These options mean that  the
+instance variables specified are able to be initialized
+(initable), able to be accessed by name (gettable), and 
+able to be assigned and accessed (settable). None, some of, 
+or all of the instance variables may be specified in each  
+option. In the example above, both REAL-PART and IMAGINARY-
+PART may be initialized and may be accessed by name.
+
+  With the objects package the  programmer  completely  controls
+what  operations  are  to  be done on objects of each flavor, so
+this is a  true  object-oriented  programming  facility.   Also,
+operations on flavored objects are generic.  This means that the
+operations  can  be  done on an object of any flavor, as long as
+the operations are defined for that flavor of object.  The  same
+operation  can  be  defined  for  many flavors; and whenever the
+operation is invoked, what is actually done will depend  on  the
+flavor of the object it is being done to.
+
+  To see the power of generic operations, consider the following
+example:
+
+  Say  we    wish  to  write  a scanner that reads a sequence of
+characters out of some object and processes them.  It  does  not
+need  to  assume  that the characters are coming from a file, or
+even from an I/O channel.
+
+  Suppose the scanner gets a character by invoking the
+GET-CHARACTER operation. In this case any object of a flavor with
+a GET-CHARACTER operation can be passed to the scanner, and the
+GET-CHARACTER operation defined for that object's flavor will
+performed  to fetch the character. This means that the scanner can
+get  characters from a string, or from a text editor's buffer, or
+from  any object at all that provides a GET-CHARACTER operation.
+The  scanner is automatically general.
+
+\section{Creating Objects}
+
+  The function make-instance provides a convenient way to create
+objects of any flavor.  The flavor of the object to  be  created
+and  the initializations to be done are given as parameters in a
+way that is fully independent of the internal representation  of
+the object.
+
+\subsection{Methods}
+
+  The  function  "=$>$", whose name is intended to suggest the
+sending of a message to an object, is usually used to invoke  
+a method.
+
+Examples:
+
+\begin{verbatim}
+(=> my-object zap)
+(=> thing1 set-location 2.0 3.4)
+\end{verbatim}
+
+The  first  argument  to  =$>$  is  the  object being operated on:
+my-object and thing1 in the examples.  The  second  argument  is
+the name of the method to be invoked: zap and set-location.  The
+method  name  is  not  evaluated.   Any further arguments become
+arguments to  the  method,  and  are  evaluated.   (There  is  a
+function  send which is just like =$>$ except that the method name
+argument is evaluated just like everything else.)
+
+  Once an object is created, all operations on it are  performed
+by  methods  defined for its flavor.  The flavor definition also
+defines some methods.  For each "gettable" instance variable,  a
+method  of  the  same name is defined which returns the value of
+that instance variable.  For  "settable"  instance  variables  a
+method  named  "set-$<$variable  name$>$" is defined. Given a new
+value, this method sets the instance variable to have that value.
+
+\subsection{Protection of Objects}
+
+  Most LISP's, and PSL in particular, leave open the possibility
+for  the  user  to  perform  illicit operations on LISP objects.
+Instances of a flavor are represented as ordinary  LISP  objects
+(evectors  at  present),  so  in  a sense it is quite easy to do
+illicit  operations  on  them:  just  operate  directly  on  its
+representation (do evector operations).
+
+  On the other hand, there are major practical pitfalls in doing
+this.    The  representation of a flavor of objects is generated
+automatically, and there  is  no  guarantee  that  a  particular
+flavor  definition will result in a particular representation of
+the objects.  There is also no guarantee that the representation
+of a flavor will remain the same over time.  It is  likely  that
+at  some  point  evectors  will  no  longer  even be used as the
+representation.
+
+  In addition, using the objects package is quite convenient, so
+the temptation to operate on the  underlying  representation  is
+reduced.    For debugging, one can even define a couple of extra
+methods "on the fly" if need be.
+
+\section{Reference Information}
+
+\subsection{Loading Objects}
+
+{\bf Note: This file defines both macros and ordinary LISP 
+functions. It must be loaded before any of these 
+functions are used.} The recommended way of doing
+this is to  put the expression: (BothTimes (load objects)) at the
+beginning   of your source file. This will cause the package to be
+loaded   at both compile and load time.
+
+\subsection{Flavor Definition}
+
+  Flavors  are  defined  by using the macro defflavor This macro
+has the form:
+
+\de{defflavor}{(defflavor flavor-name (var1 var2 ...) 
+			(inheritance-flavor-list)\\ 
+   option1 option2 ...):list}{ macro}
+{}
+
+    flavor-name is the name of the flavor being defined.
+    var1 var2 ... are the  instance  variables  of  the  flavor.
+    Each must be a symbol that is the name of the variable, or a
+    list  of  two elements.  The list form must have the name of
+    the instance variable  (id)  as  its  first  element  and  a
+    default  initialization form as its second argument.  Do not
+    use names like "IF" or "WHILE" for instance variables:  they
+    are  translated freely within method bodies (see defmethod).
+    The translation process is not very smart.  For example,  it
+    doesn't  distinguish  between  formal  parameters to methods
+    with the same name as instance variables.   For  safety,  if
+    formal  parameters  are found that match instance variables,
+    an  error  message  is  issued.   Although  the  translation
+    process  isn't  smart, it at least understands the nature of
+    quote.
+
+    The inheritance-flavor-list must be a list of one element or
+    the empty list.  When the empty list, it specifies  that  no
+    inheritance   is   used  in  defining  this  flavor  (for  a
+    description of inheritance, see section 10.3).  When  a  one
+    element list, the element must be the name of another flavor
+    to  inherit  from.  This other flavor must have already been
+    compiled or loaded or an error message will be issued.
+
+    option1 option2 ... are the options that effect the instance
+    variables and methods of  the  flavor.   Recognized  options
+    are:
+
+\begin{verbatim}
+   (INITABLE-INSTANCE-VARIABLES var1 var2 ...)
+   (GETTABLE-INSTANCE-VARIABLES var1 var2 ...)
+   (SETTABLE-INSTANCE-VARIABLES var1 var2 ...)
+   (FAST-ACCESS-FOR-METHODS method1 method2 ...)
+\end{verbatim}
+%\begin{verbatim}
+\begin{tabbing}
+   \=INITABLE-INSTANCE-VARIABLES  \quad\=[make all instance
+variables\\
+																																\>\>INITABLE]\\
+   \>GETTABLE-INSTANCE-VARIABLES  \>[make all instance variables\\
+																																\>\>GETTABLE]\\
+   \>SETTABLE-INSTANCE-VARIABLES  \>[make all instance variables\\
+																																\>\>SETTABLE]\\
+   \>FAST-ACCESS-FOR-METHODS      \>[access all methods fast]
+\end{tabbing}
+%\end{verbatim}
+    An empty list of variables is taken as meaning all variables
+    rather   than   none,  so  (GETTABLE-INSTANCE-VARIABLES)  is
+    equivalent to GETTABLE-INSTANCE-VARIABLES.
+
+    Initable instance variables may be initialized using options
+    to make-instance or instantiate-flavor. See below.
+
+    For each gettable instance variable a  method  of  the  same
+    name  is  generated  to  access  the  instance variable.  If
+    instance variable LOCATION is gettable, one can  invoke  (=$>$
+    $<$object$>$ LOCATION).
+
+    For  each  settable instance variable a method with the name
+    SET-$<$name$>$ is generated. If instance variable LOCATION is
+    settable,   one   can   invoke   (=$>$  $<$object$>$  SET-LOCATION
+    $<$expression$>$).  Settable instance variables are always  also
+    gettable  and  initable  by implication.  If this feature is
+    not desired, define a method such as  SET-LOCATION  directly
+    rather than declaring the instance variable to be settable.
+
+    FAST-ACCESS-FOR-METHODS  is used to speed up message sending
+    for a select set of  methods.   Methods  specified  in  this
+    option  are  accessed  by  a  different  means then "normal"
+    methods.  This option should only be used when:
+
+\begin{itemize}
+\item It is known that message sending speed is critical.
+\item A select set of methods of a flavor  are  known  to  be
+         called  very  frequently  compared  to  the rest of the
+         methods of that flavor.
+\end{itemize}
+
+    The order methods are specified with this option  determines
+    the order they are accessed (speed of method lookup).  Thus,
+    the first method specified will be accessed the quickest and
+    the  last  method  specified the slowest.  If no methods are
+    given (the second form  above),  the  objects  package  will
+    decide  on  its  own order.  Specifying no methods should be
+    used only if a flavor has a few  methods  (i.e.,  less  then
+    10).  If any of the methods specified are not methods of the
+    flavor, a warning message will be issued and fast access for
+    it will be ignored.
+
+    As  an  example,  consider  the flavor TUNAFISH which has 70
+    methods.  It is determined that much time is  spent  calling
+    five  low level TUNAFISH methods whose names are A, B, C, D,
+    and E.  Specifying:
+
+\begin{verbatim}
+         (FAST-ACCESS-FOR-METHODS A B C D E)
+\end{verbatim}
+
+    in the flavor definition of TUNAFISH will cause method A  to
+    be  accessed  faster then any other method, B to be accessed
+    slower then A, C slower then B, D slower then C, and finally
+    E the slowest of the five methods.  The remaining 65 methods
+    of TUNAFISH will be accessed as slow or slower then E.
+
+    As its value, defflavor returns a list of the form:
+
+\begin{verbatim}
+         (flavor <flavor-name>)
+\end{verbatim}
+    Where $<$flavor-name$>$ is the name of the flavor being defined.
+  Examples of Flavor Definition
+
+\begin{verbatim}
+  (defflavor complex-number
+           (real-part imaginary-part)
+           ()
+           gettable-instance-variables
+           initable-instance-variables
+           )
+
+  (defflavor complex-number
+           ((real-part 0.0)
+            (imaginary-part 0.0)
+            )
+           (number)
+           gettable-instance-variables
+           (settable-instance-variables real-part)
+           )
+\end{verbatim}
+\subsection{Method Definition}
+
+  As you  may  recall,  methods  are  defined  using  the  macro
+defmethod.  It has the form:
+
+\begin{verbatim}
+(defmethod (flavor-name method-name) ([arg1 arg2 ...])
+<expression1> <expression2>...): list                  macro
+\end{verbatim}
+    flavor-name is the name of the flavor a method is begin
+    defined for. It must be an id.
+
+    method-name is the name of this method. It must also be an
+    id.
+
+    arg1 arg2 ... are the arguments of the method. There may be
+    zero or more and they must all be ids.
+
+    $<$expression1$>$  $<$expression2$>$... make up the body of the
+    method. This body can refer to any instance variable of the
+    flavor by using the name just  like  an  ordinary  variable.
+    They  can  also  set  them  using  setf.  All occurrences of
+    instance variables (except within evectors or quoted  lists)
+    are translated to an invocation of the form (EGETV SELF n).
+
+    The  body  of a method can also freely use SELF like it were
+    another instance variable.  SELF is bound to the object that
+    the method applies to.  SELF may not be setqed or setfed.
+
+    The value returned by defmethod is a list of the form:
+
+\begin{verbatim}
+         (method <flavor-name> <method-name>)
+\end{verbatim}
+
+    Where $<$flavor-name$>$ and $<$method-name$>$ are simply the names
+				of the flavor being defined and method being defined
+    respectively.\\
+
+  Examples of Method Definition:
+
+\begin{verbatim}
+  (defmethod (complex-number real-part) () real-part)
+
+  (defmethod (complex-number set-real-part) (new-real-part)
+  (setf real-part new-real-part))
+
+  (defmethod (toaster plug-into) (socket)
+  (setf plugged-into socket)
+  (=> socket assert-as-plugged-in self))
+\end{verbatim}
+\subsection{Object Creation}
+
+  The most common way instances of a flavor are  created  is  by
+using the function make-instance.  It has the form:
+
+
+\de{make-instance}{(make-instance flavor-name:id
+ [initialization-sequence]):\\
+flavored object}{expr}
+{
+    make-instance  takes  as  arguments  a  flavor  name  and an
+    optional initialization sequence.
+
+    Flavor-name must  be  an  id  that  represents  an  existing
+    flavor.
+
+    The   optional   initialization-sequence,   when  specified,
+    consists of alternating pairs of instance variable names and
+    corresponding  initial  values.   Note  that  the   instance
+    variable names are quoted, in the example above, because all
+    the arguments are evaluated. make-instance returns an object
+    that is "initialized."
+}
+
+  Examples of make-instance
+
+\begin{verbatim}
+            (make-instance 'complex-number)
+            (make-instance 'complex-number 'real-part 0.0 
+	                                   'imaginary-part 1.0)
+\end{verbatim}
+  An object returned by make-instance is initialized as follows:
+
+  First, all instance variables with initialization specified in
+the  call  to  make-instance are initialized to the value given.
+After this the objects DEFAULT-INIT  method  is  envoked. This
+method  is constructed by the flavor definition (defflavor).
+It initializes any instance variables not specified in the 
+call to make-instance but having default initializations 
+specified in the flavor definition. It then sets all remaining
+uninitialized instance variables to the value *UNBOUND*. The 
+default initialization and initialization to *UNBOUND* is 
+performed by the DEFAULT-INIT method.
+
+  If a method named INIT is defined for this flavor  of  object,
+it  is  invoked  automatically  after  the  initializations just
+discussed.  The INIT method is passed, as its  one  argument,  a
+list  of  alternating  variable  names and initial values.  This
+list is the result of evaluating the  initializations  given  to
+make-instance.  For example, if we call:
+
+\begin{verbatim}
+(make-instance 'complex-number 'real-part (sin 30)
+                                'imaginary-part (cos 30))
+\end{verbatim}
+then the argument to the INIT method (if any) would be
+
+\begin{verbatim}
+  (real-part .5 imaginary-part .866).
+\end{verbatim}
+  The  INIT method may do anything desired to set up the desired
+initial state of the object.
+
+  At present, this  value  passed  to  the  INIT  method  is  of
+virtually  no  use to the INIT method since the values have been
+stored into the instance variables  already.    In  the  future,
+though,  the  objects package may be extended to permit keywords
+other  than  names  of  instance  variables   to   be   in   the
+initialization part of calls to make-instance.  If this is done,
+INIT methods will be able to use the information by scanning the
+argument.
+
+  For  details on how initialization is done when inheritance is
+in effect, see Using Inheritance, section 10.3.
+
+  Another less common way to create an object is through the use
+of the function instantiate-flavor.  It has the form:
+
+\DE{instantiate-flavor}{(instantiate-flavor flavor name:any
+ [U:list]):\\flavored object}{expr}
+{   
+    This  is  the  same  as  make-instance,  except   that   the
+    initialization  list  is  provided  as  a  single,  required
+    argument. The list must be a  list  of  alternating  keyword
+    names and initial values.
+}
+
+    Example:
+
+\begin{verbatim}
+  (instantiate-flavor 'complex-number
+          (list  'real-part  (sin  30) 'imaginary-part (cos 30)))
+\end{verbatim}
+
+\subsection{Message Sending}
+
+  There are several ways to invoke a method:
+
+\de{=$>$}{(=$>$ object:object method:id): any}{expr}
+{}
+    Examples:
+
+\begin{verbatim}
+    (=> r real-part)
+\end{verbatim}
+\begin{verbatim}
+    (=> r set-real-part 1.0)
+\end{verbatim}
+    The message name is not quoted. Arguments to the method are
+    supplied as arguments to =$>$. In these examples, r is the
+    object, real-part and set-real-part are the methods, and 1.0
+    is the argument to the set-real-part method.
+
+\de{send}{(send object:object method:id): any}{expr}
+{}
+    Examples:
+\begin{verbatim}
+    (send r 'real-part)
+\end{verbatim}
+\begin{verbatim}
+    (send r 'set-real-part 1.0)
+\end{verbatim}
+   
+ The  meanings  of  these  two  examples  are the same as the
+    meanings of the previous two.  Only the syntax is different:
+    the message name is quoted.
+
+\de{send-if-handles}{(send-if-handles object:object method:id 
+[U:any]): any}{expr}
+{    Conditionally Send a Message
+}
+
+    Examples:
+\begin{verbatim}
+    (send-if-handles r 'real-part)
+\end{verbatim}
+\begin{verbatim}
+    (send-if-handles r 'set-real-part 1.0)
+\end{verbatim}
+    
+SEND-IF-HANDLES is like SEND,  except  that  if  the  object
+    defines  no  method  to  handle  the  message,  no  error is
+    reported and NIL is returned.
+
+\DE{lexpr-send}{(lexpr-send object:object method:id [U:any] V:list):any}{expr}
+{    Send a message (explicit "Rest" Argument List)
+}
+    
+				Examples:
+\begin{verbatim}
+    (lexpr-send foo 'bar a b c (list x y))
+\end{verbatim}
+    
+The last argument to LEXPR-SEND is a list of  the  remaining
+    arguments.
+
+\DE{lexpr-send-if-handles}{(lexpr-send-if-handles object:any\\ 
+method:id [U:any] V:list):any}{expr}
+{                                                      
+    This  is  the  same  as  LEXPR-SEND, except that no error is
+    reported if the object fails to handle the message.
+}
+
+\DE{lexpr-send-1}{(lexpr-send-1 object:object method:id V:list):any}{expr}
+{    Send a Message (Explicit Argument List)
+}
+    Examples:
+\begin{verbatim}
+    (lexpr-send-1 r 'real-part nil)
+\end{verbatim}
+\begin{verbatim}
+    (lexpr-send-1 r 'set-real-part (list 1.0))
+\end{verbatim}
+    
+Note that the message name is quoted and that  the  argument
+    list is passed as a single argument to LEXPR-SEND-1.
+
+\de{lexpr-send-1-if-handles}{(lexpr-send-1-if-handles object:any\\ 
+method:any V:list): any}{expr}
+{   This  is  the  same as LEXPR-SEND-1, except that no error is
+    reported if the object fails to handle the message.
+}
+
+\de{ev-send}{(ev-send object:any method:any V:list): any}{expr}
+{    EV-SEND is just like LEXPR-SEND-1, except that it is an EXPR
+    instead of a MACRO.  Its sole purpose is to  be  used  as  a
+    run-time   function  object,  for  example,  as  a  function
+    argument to a function.
+}
+\subsection{Printing Objects}
+
+  Objects can print out according to their flavor.  If a  flavor
+has  a  channelprin  method,  that method will be used by prin1,
+prin2, etc. to print objects of that flavor.
+
+\de{=$>$}{(=$>$ any CHANNELPRIN channel level prin1?): any}{method}
+{    A channelprin method must accept three arguments: a  channel
+    (currently  a  small  integer); either nil or a number which
+    will indicate the current level  of  nesting  within  lists,
+    vectors, or other objects; and a boolean which will indicate
+    whether prin1- or prin2-style printing is being done.
+}
+
+    Ordinarily, an object should print in the form \#$<$flavor info
+    ...   $>$. If the level of printing is not nil, printing of
+    lists, vectors, objects, etc. within the channelprin  method
+    should be done with prinlevel bound to 1 less than its value
+    at the time of entry to the method.
+
+\subsection{Useful Functions on Objects}
+
+\de{object-type}{(object-type U:any): {id, NIL}}{expr}
+{
+    The  object-type  function  returns  the type (an id) of the
+    specified object, or nil, if the argument is not an  object.
+    At present this function cannot be guaranteed to distinguish
+    between  objects  created  by  the objects package and other
+    LISP entities, but  the  only  possible  confusion  is  with
+    vectors or evectors.
+}
+
+
+\de{flavor-defined?}{(flavor-defined? flavor-name:id): {t, nil}}{expr}
+{
+    Returns  t  if  flavor-name  is  a currently defined flavor.
+    Returns nil otherwise.
+}
+
+\de{declare-flavor}{(declare-flavor $<flavor name> <var1> <var2>$...):\\ 
+undefined}{macro}
+{ 
+}
+
+\de{undeclare-flavor}{(undeclare-flavor $<var1> <var2>$...): undefined}{macro}
+{
+{\tt  *** Read these warnings carefully! ***}
+
+  This facility can reduce the overhead of invoking  methods  on
+particular  variables,  but  it should be used sparingly.  It is
+not well integrated with the rest of  the  language.    At  some
+point a proper declaration facility is expected and then it will
+be  possible  to  make  declarations  about  objects,  integers,
+vectors, etc., all in a uniform and clean way.
+}
+
+The declare-flavor macro allows you to declare that a specific
+symbol is bound to an object of a specific flavor.  This  allows
+the  flavors  implementation  to  eliminate  the run-time method
+lookup normally  associated  with  sending  a  message  to  that
+variable,  which  can  result  in  an appreciable improvement in
+execution speed.  This feature is motivated solely by efficiency
+considerations and should be used  ONLY  where  the  performance
+improvement is critical.
+
+  Details:  if  you  declare  the  variable  X to be bound to an
+object of flavor FOO, then {\bf within the context of the declaration}
+(see below), expressions of the form ($=>$ X GORP ...) or
+(SEND X 'GORP ...) will be replaced by function invocations of the form
+(FOO GORP X ...). Note that there is no  check made that the
+flavor FOO actually contains a method GORP.If it does not, then a 
+run-time error "Invocation of undefined function FOO"GORP" will be
+reported.
+  
+WARNING:  The  declare-flavor  feature  is  not presently well
+integrated with the compiler. Currently,  the  declare-flavor
+macro  may  be used only as a top-level form, like the PSL FLUID
+declaration.  It takes effect for all code evaluated or compiled
+henceforth.  Thus, if you should later compile a different  file
+in  the  same compiler, the declaration will still be in effect!
+{\bf this is a dangerous crock, so be careful!}  To
+avoid problems, I recommend  that  declare-flavor  be used only for
+uniquely-named variables. The effect of a declare-flavor can be
+undone  by an undeclare-flavor, which  also  may  be used only as a
+top-level form. Therefore, it is good practice to bracket  your code in
+the  source  file  with  a  declare-flavor  and  a corresponding
+undeclare-flavor.
+
+\begin{verbatim}
+  *** Did you read the above warnings??? ***
+\end{verbatim}
+
+\de{object-get-handler}{(object-get-handler object:object method-name:id): id}{expr}
+{}
+    Note that the use of object-get-handler is not  recommended.
+    It should only be used in the most critical places where the
+    time  to  perform  a normal message send is too slow and the
+    declare-flavor facility cannot be used.
+
+    Given  an  object  and  a  method-name,   object-get-handler
+    returns  the  name  of  the  function  that  implements this
+    method.  It is used to repetitively send the  same  message.
+    For example:\\
+
+\begin{verbatim}
+       (let
+           ((func-name (object-get-handler obj 'banana)))
+       ...
+           (for
+           ...
+           (do (idapply func-name (list arg1 arg2 ... argn)))
+           )
+       )
+\end{verbatim}
+    This is equivalent to sending the message:
+
+\begin{verbatim}
+         (=> obj banana arg1 arg2 ... argn)
+\end{verbatim}
+    inside  the  for but the lookup of the function name for the
+    message send is only performed once.
+
+\subsubsection{Miscellaneous Functions}
+
+\de{objects-version):}{(objects-version): NIL}{expr}
+{
+    This function prints a date used to check the version of the
+    objects package in use.  When bugs are reported, the version
+    date should be given.  Older versions of the objects package
+    did not have this function defined.}
+
+\section{Using Inheritance}
+
+  Inheritance is a mechanism that allows a flavor to be  defined
+in  terms  of  other flavors.  This allows objects to be created
+that are specializations or generalizations  of  other  objects.
+The object package supports what is called single inheritance --
+only  one  flavor  can be inherited from by another flavor.  The
+flavor being inherited, however, could have inherited  from  one
+other  flavor,  and  so on.  Note that the LISP machine supports
+multiple  inheritance  allowing  more  than  one  flavor  to  be
+inherited from at a time.\\
+
+  The best way to explain single inheritance is through an example:\\
+Suppose we have defined the flavor mother and then define the flavor daughter in
+which we specified the inheritance-flavor-list to be mother. The inheriting
+process causes daughter to contain all the instance variables as well as
+the methods that were defined for mother. That is,a daughter object can
+deal with any of the instance variables and receive any of the messages
+defined for flavor mother without having to recreate them.
+
+We refer to flavor mother as the parent of flavor daughter,  and
+daughter  as  a  child of mother.  daughter, in turn, can be the
+parent of other flavors.    Each  child  inherits  the  instance
+variables and methods of its parent, its parent's parent, and so
+on.
+
+  When  inheriting instance variables, a child flavor has as its
+instance variables the  union  of  all  those  defined  for  its
+parents and those specifically defined for the new flavor.  As a
+result,  it  would  not  make  sense  to  give a child flavor an
+instance variable with the same  name  as  one  in  one  of  its
+parent's.   For  this  reason,  duplicate instance variables are
+flagged as an error.
+
+  Inheriting methods, however, is different.  It is possible  to
+define a method in a child flavor with the same name as a method
+in  one  of the parents.  The effect is to override the parent's
+method with the child's method, as far as the  child  flavor  is
+concerned.  In other words, when sending a message to an object,
+the method executed is the first one found by searching backward
+from  it through its parents.  First the methods defined for the
+child flavor are searched, then the  child's  parent's  methods,
+and so on until one is found.
+
+  As  an  example  of  overriding  methods,  the  following code
+defines a flavor geometric-object.  Then, a new flavor square is
+created with geometric-object as its parent.  Finally, a  flavor
+colored-square is created with square as its parent.
+
+\begin{verbatim}
+(defflavor geometric-object
+  (name
+   size)
+  ()                    % A flavor with no parents
+  )
+
+(defmethod (geometric-object display) ()
+  (printf "%w is %w units big" name size))
+
+(defmethod (geometric-object set-name) (new-name)
+  (setf name new-name))
+
+(defflavor square
+  (side-length)
+  (geometric-object)    % A flavor with one parent, geometric-object
+  )
+
+% Overriding for square the inherited method display
+
+(defmethod (square display) ()
+  (printf "%w is a square, %w units long on all sides" name
+          side-length))
+
+(defmethod (square new-length) (length)
+  (setf side-length length)
+  (setf size (* length length)))
+
+(defflavor colored-square
+  (color)
+  (square)
+  )
+
+(defmethod (colored-square get-color) ()
+  color)
+\end{verbatim}
+After  the  definitions,  flavor colored-square has the instance
+variables:
+
+\begin{verbatim}
+        color
+        side-length
+        name
+        size
+\end{verbatim}
+and has the methods:
+\begin {itemize}
+%\begin{verbatim}
+\item   get-color (as defined for flavor colored-square)
+\item        new-length (as defined for flavor square)
+\item        display (as defined for flavor square)
+\item        set-name (as defined for flavor geometric-object)
+%\end{verbatim}
+\end {itemize}
+
+\subsection{Warning on Inheritance Usage}
+
+  The Common lisp objects package will be incompatible with  the
+existing objects package as far as inheritance is concerned.  In
+Common  lisp,  an inherited instance variable cannot be accessed
+by simply referring to  it  within  a  method.   Also,  the  way
+variables are initialized is quite different.
+
+  To  access  inherited  instance  variables,  you  must  do the
+equivalent of sending the object a message to get  the  instance
+variable's  value.   For  example,  referring  to  the  instance
+variable banana in a method for the flavor fruit,   a  reference
+to  banana  in  PSL  becomes  something like (=$>$ self banana) in
+Common lisp.  When you reference inherited instance variables in
+PSL and performance is important, you should clearly mark  them.
+If  performance  is  not  an issue,  make the instance variables
+gettable and refer to them by their method.  This  also  applies
+to settable instance variables.
+
+  Uses  of  the  INIT method may also have to be changed because
+the new objects package  performs  object  initialization  in  a
+different way.  Avoid  the INIT method if you can,  if you can't
+mark it for change for Common lisp objects.
+
+  In this way, transition to Common lisp will be much easier.
+
+\subsection{Using SELF and MYSELF with Inheritance}
+
+  Suppose  an  additional  method   was   defined   for   flavor
+geometric-object:
+
+\begin{verbatim}
+  (defmethod (geometric-object display-me) ()
+  (=> self display))
+\end{verbatim}
+  Now  suppose a display-me message is sent to an object of type
+square.  Which method for the message 'display' should  be  used
+by  display-me?   Should it look up the method in the context of
+the flavor where the method was  defined  (geometric-object)  or
+the  context  of  the  flavor that received the original message
+(square)? The answer is to provide a new symbol, MYSELF. MYSELF means
+to look up messages in the context of the object that received
+the original message. SELF looks up methods in the context of
+the flavor it is defined in. If display-me was rewritten as:
+
+\begin{verbatim}
+(defmethod (geometric-object display-me) ()
+  (=> self display)
+  (=> myself display))
+\end{verbatim}
+and  sent  to an object of flavor square, then the first display
+would be that defined in geometric-object, and the second  would
+be  the  one  defined for square.  If the display-me message was
+sent to an object of flavor geometric-object,  self  and  myself
+would be identical.
+
+\subsection{Inheritance and Initialization}
+
+  You  may  have  noticed that there is ambiguity in the order a
+newly  created  object  is  initialized  when  the  object  uses
+inheritance.    When  inheritance  is  used,  initialization  is
+performed as describe above with the following additions:
+
+  When  the  son  flavor's  (i.e.,  the  flavor  given  in   the
+make-instance or instantiate-flavor call) DEFAULT-INIT method is
+executed,   the  first  thing  it  does  is  call  its  father's
+DEFAULT-INIT method.  The second thing it does  is  execute  its
+father's INIT method, if it exists.
+
+  Notice  that  if  the  father  flavor  used  inheritance,  its
+DEFAULT-INIT  method  would   first   call   its   grandfather's
+DEFAULT-INIT  and INIT methods, and so on.
+
+\subsection{Making Changes to Inherited Code}
+
+  The  inheritance scheme used in this facility is static -- all
+of the work is done at compile-time.  This has some implications
+for compiling object definitions that use inheritance:
+
+\begin{itemize}
+\item All of the parents of a flavor must be loaded  or  compiled
+     before  compiling  the new child's definitions.  If this is
+     not the case, an error message will be issued.
+\item If a change is made  to  a  parent  flavor,  including  the
+     addition  of  a  new method or changing instance variables,
+     all of the children will have to be recompiled to  use  it.
+     You  do  not have to recompile the children, however, if an
+     existing method of a parent is redefined.
+\end{itemize}
+
+\section{Debugging Information}
+
+  Any object may  be  displayed  symbolically  by  invoking  the
+method  DESCRIBE,  e.g. ($=>$ x describe). This method prints the
+name of each instance variable and its value, using the ordinary
+LISP printing routines.   Flavored  objects  are  liable  to  be
+complex and deeply nested or even circular.  This makes it often
+a  good idea to set PRINLEVEL to a small integer before printing
+structures containing objects to control the amount of output.
+
+  When printed by the standard LISP printing routines, "flavored
+objects" appear as evectors whose zeroth element is the name  of
+the flavor.
+
+  For  each  method  defined,  there  is  a  corresponding  LISP
+function named\\
+ \verb+<flavor-name>$<method-name>+. Such function names
+show up in backtrace printouts.
+
+  It is permissible to define new methods on the fly for debugging
+purposes.

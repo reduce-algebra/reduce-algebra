@@ -1,0 +1,214 @@
+\chapter*{Top Level Loop}
+
+
+\section{Introduction}
+
+  Normally   one   interacts   with   PSL   through  a  toplevel
+read-eval-print loop, it is the highest  level  of  control  and
+consists  of an endless loop that reads an expression, evaluates
+it, and prints the result.  One has an effect on  the  state  of
+PSL  by  invoking actions that have side effects.  This toplevel
+loop will catch all throws (this includes errors).
+
+\section{The General Purpose Top Loop Function}
+
+  The user interacts with PSL through toploop.  The  purpose  of
+this loop is to read expressions typed at the terminal, evaluate
+them,   and  type  the  result  back  on  the  terminal.    Such
+expressions may be entered to see what value they return  or  to
+produce a side-effect on the global environment.
+
+An expression which has a side effect on the global environment
+\begin{verbatim}
+  (setq base 10)
+\end{verbatim}
+Another example of a side effect, the definition of a function
+\begin{verbatim}
+  (de square (n) (* n n))
+\end{verbatim}
+Evaluation, just to see what value the expression returns
+\begin{verbatim}
+  (square 2)
+\end{verbatim}
+A  close  approximation to the behavior of this loop is given by
+the following functional description:
+
+\begin{verbatim}
+(de toploop (toploopread*
+             toploopeval*
+             toploopprint*)
+  (while t
+    (funcall toploopprint*
+             (funcall toploppeval*
+                      (funcall toploopread*)))))
+\end{verbatim}
+The actual toploop of PSL is  somewhat  more  complex  than  the
+simple one defined here because it provides a few extra features
+(these  are  described  below).  The important point is that the
+primitives required for writing such a loop are all available to
+the user.
+
+  Syntactically correct expressions have a well defined  mapping
+into  PSL  data structures, read accomplishes this mapping.  For
+example, linear list notation is  converted  into  the  internal
+tree  structure  representation,  strings  are  stored in a more
+efficient non-list form, and numbers are internalized to a  form
+compatible  with  the  arithmetic unit of the machine.  The most
+primitive piece of read is the scanner.  This routine recognizes
+characters special to PSL.  For example, space, (, and ).    The
+scanner   is   also   responsible   for  building  the  internal
+representation of identifiers.   The  scanner  must  make  every
+reference  to  a  particular  id  point  to  the  same  internal
+structure.  This is accomplished at the time an id  is  created.
+The  character sequence is compared against sequences which have
+already been converted into ids.   This  comparison  employs  an
+efficient  search  technique  so  that  not every id is compared
+(currently a hash algorithm is used).
+
+  The eval function is responsible for the  evaluation  of  data
+structures  interpreted  as  programs.   A through discussion of
+this can be found in Chapter 11.
+
+  Print displays data structures in a way which could  later  be
+typed  back  in  to  read.    Some of the more interesting print
+routines do prettyprinting.  That is,  they  format  the  output
+using  conventions  based  on  the  structural  nesting  of  the
+expressions.
+
+  Giving the user the power to invoke  all  of  these  operation
+from  his  code is a very powerful feature of LISP which sets it
+apart from most other languages.
+
+\de{toploop}{(toploop {\small TOPLOOPREAD*:function TOPLOOPPRINT*:function\\
+TOPLOOPEVAL*:function TOPLOOPNAME*:string WELCOMEBANNER:string)}: nil}{expr}
+{
+    This function is called to establish a new  Top  Loop.    It
+    prints  the WELCOMEBANNER and then invokes a Read-Eval-Print
+    loop,  using  the   functions   defined   by   TOPLOOPREAD*,
+    TOPLOOPEVAL*,   and   TOPLOOPPRINT*.    Since  each  of  the
+    parameters to toploop is  fluid  they  may  be  examined  or
+    changed.    Timing  and  history mechanisms are provided.  A
+    prompt is constructed by  prefixing  TOPLOOPNAME*  with  the
+    history  count.   As a convention, the name is followed by a
+    number of right angle brackets ($>$), to indicate the depth of
+    toploop invocations.
+}
+
+\variable{toploopread*}{[Initially: nil]}{global}
+{
+    When toploop is called this id is bound to the function used
+    for reading.
+}
+
+\variable{toploopeval*}{[Initially: nil]}{global}
+{
+    When toploop is called this id  is  bound  to  the  function
+    which evaluates input.
+}
+
+\variable{toploopname*}{[Initially: string]}{global}
+{
+    Bound to a string (currently "lisp"), which will be part  of
+    the prompt for input.
+}
+
+\variable{toplooplevel*}{[Initially: 0]}{global}
+{
+    Depth of top loop invocations.
+}
+
+\variable{initforms*}{[Initially: nil]}{global}
+{
+    A  list  of  forms  to  be  evaluated  at startup, (prior to
+    calling main).  The forms are evaluated in a left  to  right
+    order,  once the last form is evaluated initforms* is set to
+    nil.
+}
+
+\variable{*output}{[Initially: T]}{switch}
+{
+    If non-nil, the result of  evaluating  top  level  forms  is
+    printed.
+}
+
+\variable{*time}{[Initially: nil]}{switch}
+{
+    If non-nil, a step evaluation time is printed after each top
+    level form is processed within toploop.
+}
+
+\de{hist}{(hist [N:integer]): nil}{nexpr}
+{    Hist  is  called  with 0, 1 or 2 integers, which control how
+    much history is to be printed out:
+
+\begin{center}
+\begin{tabular}{ll}
+    (hist) & Display full history.\\
+
+    (hist n m) & Display history from n to m.\\
+
+    (hist n) & Display history from n to present.\\
+
+    (hist -n) & Display last n entries.\\
+\end{tabular}
+\end{center}
+}
+
+  The following functions permit the user to access and resubmit
+previous expressions, and to re-examine previous results.
+
+
+\de{inp}{(inp N:integer): any}{expr}
+{    Return N'th input at this level.
+}
+
+\de{redo}{(redo N:integer): any}{expr}
+{    Reevaluate N'th input.
+}
+
+\de{ans}{(ans N:integer): any}{expr}
+{    Return N'th result.
+}
+
+\variable{historycount*}{[Initially: 0]}{global}
+{
+    The number of entries which have been read so far.
+}
+
+\variable{historylist*}{[Initially: nil]}{global}
+{
+    A list of pairs, the first element of each  pair  represents
+    an  input  form,  the second is the result of evaluating the
+    frst.  Note that the top level  evaluation  of  historylist*
+    will result in a circular list.
+}
+
+\section{Changing the Default Top Level Function}
+
+  As  PSL starts up, it first sets the stack pointer and various
+other variables, and then calls the function main inside a catch
+form.
+
+\begin{verbatim}
+(catch 'reset (main))
+\end{verbatim}
+By default, main calls standardlisp.
+
+\begin{verbatim}
+(de main ()
+  (funcall 'standardlisp))
+
+(de standardlisp ()
+  (let ((currentreadmacroindicator* 'lispreadmacro)
+        (currentscantable* lispscantable*))
+    (toploop 'read 'print 'eval "lisp" "Portable Standard LISP")))
+\end{verbatim}
+  In order to have a saved PSL come up in a different top  loop,
+the function Main should be appropriately redefined by the user.
+
+
+\de{main}{(main): Undefined}{expr}
+{    An  initialization  function which is called after the stack
+    is set.  Its redefinition allows  the  user  to  change  the
+    default top loop.
+}
