@@ -1,0 +1,21 @@
+#! /bin/bash
+
+pslver=`../scripts/pslver.sh`
+
+if test $pslver = "amd64" ;then
+    pslver=AMD64
+  fi
+
+csh dist/distrib/newroot.csh `pwd` $pslver
+
+export MACHINE=$pslver
+
+. dist/psl-names.bash
+
+echo PARAMS: $MACHINE at $proot
+
+cd dist
+
+make
+
+

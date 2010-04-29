@@ -9,6 +9,9 @@ set newroot = $1
 sed -e "s,\(setenv.*proot\) .*,\1 $newroot," $newroot/dist/psl-names > newnames
 mv -f newnames $newroot/dist/psl-names
 
+sed -e "s,\(export.*proot\)=.*,\1=$newroot," $newroot/dist/psl-names.bash > newnames
+mv -f newnames $newroot/dist/psl-names.bash
+
 setenv MACHINE $2
 source $newroot/dist/psl-names
 

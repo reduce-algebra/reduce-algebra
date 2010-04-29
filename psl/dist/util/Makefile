@@ -39,7 +39,7 @@
 # 
 ###############################################################################
 
-PROOT	= /newsilo/silo/cons/verkaufpsl
+PROOT	= /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

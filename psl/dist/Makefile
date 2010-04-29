@@ -14,7 +14,7 @@
 # The next line is the only thing that needs to be changed between
 # machines/directories.
 
-PROOT   = /silo/cons/verkaufpsl
+PROOT   = /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
@@ -31,7 +31,7 @@ PDIST   = $(PSL)/distrib
 PXDIST  = $(PDIST)/$(MACHINE)
 PL      = $(PSL)/lap/$(MACHINE)
 
-PROGRAMS = bare-psl psl pslcomp oload
+PROGRAMS = bare-psl psl pslcomp 
 
 all: bfiles pnkl utilities compiler bpsl make-bare-psl make-psl make-pslcomp
 	echo "PSL binaries rebuilt"
