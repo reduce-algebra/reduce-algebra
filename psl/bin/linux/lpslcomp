@@ -1,0 +1,3 @@
+#local pslcomp
+
+/user/cons/psl/bin/bpsl -f /user/cons/psl/bin/pslcomp.img -td 9000000

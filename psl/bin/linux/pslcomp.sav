@@ -1,0 +1,2 @@
+#$pxk/bpsl -td 9000000 -f $psys/pslcomp.img 
+$psys/bpsl.sav -td 9000000 -f $psys/pslcomp.img.sav
