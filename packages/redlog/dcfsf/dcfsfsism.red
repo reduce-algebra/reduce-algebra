@@ -110,7 +110,7 @@ procedure dcfsf_smupdknowl(op,atl,knowl,n);
    end;
 
 procedure dcfsf_plugtheo(atl,knowl);
-   begin scalar !*rlsiexpl,!*rlsiexpla,subinfo,entry,a,natl,w;
+   begin scalar !*rlsiexpla,subinfo,entry,a,natl,w;
       subinfo := for each ir in knowl join <<
 	 w := dcfsf_sderlev car ir;
 	 if w then <<
@@ -122,13 +122,18 @@ procedure dcfsf_plugtheo(atl,knowl);
       while atl do <<
 	 a := pop atl;
 	 a := dcfsf_plugtheo1(a,subinfo);
-	 a := rl_simplat1(a,nil);
+	 a := rl_simplat1(a,'and);
 	 if a eq 'false then <<
 	    natl := 'false;
 	    atl := nil
 	 >> else if a neq 'true then
-	    natl := a . natl
+	    if rl_op a eq 'and then
+	       natl := nconc(reverse rl_argn a,natl)
+	    else
+	       natl := a . natl
       >>;
+      if natl eq 'false then
+ 	 return natl;
       return reversip natl
    end;
 
