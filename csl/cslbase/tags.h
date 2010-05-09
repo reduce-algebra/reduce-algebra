@@ -50,7 +50,7 @@
  * at least as best I can manage.
  */
 
-#ifndef HAVE_INT32_T
+#if !defined HAVE_STDINT_H || !defined HAVE_INT32_T
 #error This system needs a 32-bit integer type.
 #endif
 

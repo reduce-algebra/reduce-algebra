@@ -53,6 +53,10 @@
 #include <time.h>
 #include <stdarg.h>
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 #ifndef UNDER_CE
 #include <signal.h>
 #endif

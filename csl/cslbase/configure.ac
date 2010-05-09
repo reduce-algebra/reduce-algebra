@@ -1098,11 +1098,14 @@ then
 fi
 
 # Checks for header files.
-AC_FUNC_ALLOCA
 AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
 
-AC_CHECK_HEADER([stdint.h], [stdint_header=y], [stdint_header=n])
+AC_CHECK_HEADER([stdint.h],
+                [stdint_header=y
+                 AC_DEFINE(HAVE_STDINT_H, 1)],
+                [stdint_header=n])
+AC_MSG_NOTICE([stdint_header=$stdint_header])
 
 AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
@@ -1147,8 +1150,9 @@ AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
 # Note that if <stdint.h> is available, which should really almost always
 # be the case now, I do NOT do anything here.
 
-if test "x$stdint_header" = "x0"
+if test "x$stdint_header" != "xy"
 then
+  AC_MSG_NOTICE([Falling back to finding datatype sizes at configure time.])
   AC_CHECK_SIZEOF(void *)
   AC_CHECK_SIZEOF(short int)
   AC_CHECK_SIZEOF(int)
