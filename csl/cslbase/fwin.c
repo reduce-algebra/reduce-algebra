@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 72441176 09-May-2010 */
+/* Signature: 375fd5d3 09-May-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2155,7 +2155,6 @@ char *get_truename(char *filename, char *old, size_t n)
                 return NULL;
             }
             strcpy(dir, temp);
-            free(temp);
             strcat(dir, fn);
             free(fn);
             return dir;

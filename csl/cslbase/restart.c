@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7f8fd61f 09-May-2010 */
+/* Signature: 16dbe686 09-May-2010 */
 
 #include "headers.h"
 
@@ -5819,7 +5819,8 @@ void setup(int restartp, double store_size)
  * like to check for the 0x5678 pattern as an extra consistency check.
  */
         if (SIXTY_FOUR_BIT)
-        {   if ((byteflip & 0x7fffffff) == 0) byteflip >>= 32;
+        {   if ((byteflip & 0x7fffffff) == 0)
+                byteflip = (Lisp_Object)((int64_t)byteflip >> 32);
         }
         if (((byteflip >> 16) & 0xffffU) == 0x5678U)
         {
