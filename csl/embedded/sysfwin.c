@@ -1,4 +1,4 @@
-/* sysfwin. c                      Copyright (C) 1989-2008 Codemist Ltd */
+/* sysfwin. c                      Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * System specific code. My objective is that this will subsume and replace
@@ -20,7 +20,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 63bcce37 01-Jul-2009 */
+/* Signature: 709db3f8 09-May-2010 */
 
 #include "headers.h"
 
@@ -139,12 +139,18 @@ void pause_for_user()
 {
 }
 
+int terminal_eof_seen = 0;
+
 int wimpget(char *buf)
 {
     int c, n=0;
     ensure_screen();
     while (n < 255)
-    {   c = fwin_getchar();
+    {   if (terminal_eof_seen) c = EOF;
+        else
+        {   c = fwin_getchar();
+            if (c == EOF || c == (0x1f & 'D')) terminal_eof_seen = 1;
+        }
         if (c == (0x1f & 'C') ||           /* ^C - quiet : quit      */
             c == (0x1f & 'G')) return 0;   /* ^G - noisy : interrupt */
         if (c == EOF) c = 0x1f & 'D';

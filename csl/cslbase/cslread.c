@@ -1,11 +1,11 @@
-/* cslread.c                        Copyright (C) 1990-2008 Codemist Ltd */
+/* cslread.c                        Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * Reading and symbol-table support.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 54c9c42d 28-Feb-2010 */
+/* Signature: 2c0ed08d 09-May-2010 */
 
 #include "headers.h"
 
@@ -2104,7 +2104,7 @@ static char tty_buffer[TTYBUF_SIZE];
 static char *tty_pointer;
 #endif
 
-#ifndef HAVE_FWIN
+#if !defined HAVE_FWIN || defined EMBEDDED
 static CSLbool int_nest = NO;
 #endif
 
@@ -2239,7 +2239,7 @@ int char_from_terminal(Lisp_Object dummy)
             else
 #endif /* HAVE_FWIN */
 #endif /* WINDOW_SYSTEM */
-#ifndef HAVE_FWIN
+#if !defined HAVE_FWIN || defined EMBEDDED
 /*
  * Here I either do not have a window system or I have elected not to use it.
  * but note that with fwin I am simplifying things and always do the calls
@@ -4783,4 +4783,4 @@ setup_type const read_setup[] =
     {NULL,                      0, 0, 0}
 };
 
-/* end of read.c */
+/* end of cslread.c */

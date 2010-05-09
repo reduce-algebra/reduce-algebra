@@ -8,7 +8,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 0b4c0360 27-Mar-2010 */
+/* Signature: 7f8fd61f 09-May-2010 */
 
 #include "headers.h"
 
@@ -3957,6 +3957,9 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
  */
     init = (initfn *)GetProcAddress(a, "init");
 #else
+#ifdef EMBEDDED
+    return 0;
+#else
     a = dlopen(objname, RTLD_NOW | RTLD_GLOBAL);
 #ifdef TRACE_NATIVE
     trace_printf("a = %p\n", a);
@@ -4008,6 +4011,7 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
     p[len] = 0;
     record_dynamic_module(p, dll);
     return dll;
+#endif /* EMBEDDED */
 }
 
 int setup_dynamic(setup_type_1 *dll, char *modname,
@@ -4807,8 +4811,11 @@ static void set_up_variables(CSLbool restartp)
         while ((*p1++ = toupper(*p2++)) != 0);
         *p1 = 0;
         w = cons(make_keyword(opsys), nil);
-#ifdef WIN64
+#if defined WIN64 || defined __WIN64__ || defined WIN32
         w = cons(make_keyword("WIN32"), w);
+#endif
+#if defined WIN64 || defined __WIN64__
+        w = cons(make_keyword("WIN64"), w);
 #endif
         w = acons(make_keyword("LINKER"),
                   make_undefined_symbol(linker_type), w);
@@ -4822,7 +4829,7 @@ static void set_up_variables(CSLbool restartp)
         Lisp_Object n = make_undefined_symbol("lispsystem*");
         Lisp_Object w = cons(make_keyword(OPSYS), nil), w1;
         int ii;
-#ifdef WIN64
+#if defined WIN64 || defined __WIN64__ || defined WIN32
 /*
  * In the WIN64 case I will ALSO tell the user than I am "win32". This is
  * a curious thing to do maybe, but is because historically win32 may have
@@ -4830,6 +4837,9 @@ static void set_up_variables(CSLbool restartp)
  * compatible extension so all win32 options ought still to be available.
  */
         w = cons(make_keyword("win32"), w);
+#endif
+#if defined WIN64 || defined __WIN64__
+        w = cons(make_keyword("win64"), w);
 #endif
         qheader(n) |= SYM_SPECIAL_VAR;
         w = acons(make_keyword("linker"),
@@ -4942,7 +4952,7 @@ static void set_up_variables(CSLbool restartp)
             if (is_vector(w1) && 
                 type_of_header(vechdr(w1)) == TYPE_STRING)
             {
-#ifdef HAVE_FWIN
+#if defined HAVE_FWIN && !defined EMBEDDED
                 int n = length_of_header(vechdr(w1))-CELL;
                 sprintf(about_box_title, "About %.*s",
                    (n > 31-(int)strlen("About ") ?

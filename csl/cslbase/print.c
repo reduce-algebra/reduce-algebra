@@ -1,11 +1,11 @@
-/*  print.c                           Copyright (C) 1990-2008 Codemist Ltd */
+/*  print.c                           Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * Printing, plus some file-related operations.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5bfd3d6a 27-Mar-2010 */
+/* Signature: 071e311c 09-May-2010 */
 
 #include "headers.h"
 
@@ -4351,7 +4351,12 @@ int32_t read_action_socket(int32_t op, Lisp_Object f)
     {
 case READ_CLOSE:
         if (stream_file(f) == NULL) op = 0;
-        else op = closesocket((SOCKET)(intptr_t)stream_file(f));
+        else
+#ifdef SOCKETS
+            op = closesocket((SOCKET)(intptr_t)stream_file(f));
+#else
+            op = 0;
+#endif
         set_stream_read_fn(f, char_from_illegal);
         set_stream_read_other(f, read_action_illegal);
         set_stream_file(f, NULL);
@@ -4766,7 +4771,7 @@ char saveright[32];
 
 Lisp_Object Lwindow_heading2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
-#ifdef HAVE_FWIN
+#if defined HAVE_FWIN && !defined EMBEDDED
     int32_t n, bit;
     char *s, txt[32];
     txt[0] = 0;

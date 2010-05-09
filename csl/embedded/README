@@ -21,3 +21,9 @@ main set of files, so I need to merge in changes soon!
 
                                                               March 2010
 
+Files brought up to date and a Makefile.x64 provided that works (for me)
+using the cgywin-hosted version of mingw64. Note that these days the single
+image file (reduce.img) should work whether the code is built in 32 or
+64-bit mode.
+
+                                                              May 2010

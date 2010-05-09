@@ -36,15 +36,11 @@
 
 
 
-/* Signature: 2e0d089f 05-Jan-2009 */
+/* Signature: 1f7f01fc 24-Mar-2010 */
 
 #include "headers.h"
 
-#if defined DEMO_MODE || defined DEMO_BUILD
-#include "demobyte.h"    /* Alternate bytecode mapping used by demo version */
-#else
 #include "bytes.h"
-#endif
 
 /*
  * I put all the code that handles property lists in this file since then
@@ -994,9 +990,7 @@ extern int profile_count_mode;
 
 #define OPCOUNT	(profile_count_mode ? 1 : opcodes)
 
-#if !defined DEMO_MODE && !defined DEMO_BUILD
 #include "opnames.c"
-#endif
 
 static int32_t total = 0, frequencies[256];
 
@@ -1015,10 +1009,6 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
     i = 0;
     trace_printf("bytecode statistics not available\n");
 #else
-#if defined DEMO_MODE || defined DEMO_BUILD
-    i = 0;
-    trace_printf("bytecode statistics not available in demo version\n");
-#else
     trace_printf("\nFrequencies of each bytecode (%ld total)", total);
     if (total == 0) total = 1;
     for (i=0; i<256; i++)
@@ -1028,7 +1018,6 @@ Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...)
                  100.0*(double)frequencies[i]/(double)total);
     }
     trace_printf("\n");
-#endif
 #endif
 
 #ifdef RECORD_GET
@@ -1355,8 +1344,8 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * proper tagging, and (code & 3) holds an offset.
  */
     ppc = (unsigned char *)data_of_bps(code);
-    ppc = ppc + ((int32_t)code & 3);
-    codevec = (Lisp_Object)(((int32_t)code & ~3) + 2);
+    ppc = ppc + (code & 3);
+    codevec = (code & ~3) + 2;
 /*
  * I am careful to reload stack from C_stack after any
  * function call, to allow that the garbage collector may relocate the

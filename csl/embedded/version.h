@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 69a98d91 24-May-2008 */
+/* Signature: 712f356a 28-Feb-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -50,7 +50,7 @@
  */
 
 #ifndef VERSION
-#define VERSION     "6.03"
+#define VERSION     "6.04"
 #endif
 
 #endif /* header_version_h */

@@ -38,12 +38,13 @@
 
 
 
-/* Signature: 7f781434 18-Aug-2008 */
+/* Signature: 313e7a22 28-Feb-2010 */
 
 #ifndef header_stream_h
 #define header_stream_h 1
 
 extern FILE *non_terminal_input;
+extern int terminal_pushed;
 
 typedef int character_reader(void); /* used only with procedural IO */
 typedef int character_writer(int);  /* ditto */
@@ -248,11 +249,7 @@ extern character_writer *procedural_output;
  * sub-structure packed within a file.
  */
 
-#if defined DEMO_BUILD || defined DEMO_MODE
-#define IMAGE_FORMAT_VERSION       'd'
-#else
 #define IMAGE_FORMAT_VERSION       '4'
-#endif
 
 #define DIRECTORY_SIZE              8    /* Initial directory size */
 
@@ -274,7 +271,6 @@ typedef struct directory_entry
     char data[44];
 /*
     char newline;                * Makes file easier to read as a text file! *
-                                 * but also used to indicate encryption      *
     char name[12];               * blank padded to 12 characters             *
                                  * but with special rules for root image etc *
     char date[24];
@@ -313,20 +309,7 @@ typedef struct directory_entry
  * to interpret when looked at with a simple text editor. But then
  * it turned out that the C value `\n' was not the same on all computers,
  * and so I used a literal hex value 0x0a instead, expecting it to
- * be the same as '\n' on "most" systems. Yet later I wanted a backwards-
- * compatible way to extend directory entries to indicate that some files
- * are stored encrypted. The route follows is that unencrypted files
- * have NEWLINE_CHAR in the D_newline position, while values ('\n' + n)
- * indicate files encrypted with key number n. Note that if I try to
- * read an encrypted sub-file but my key is wrong I will just get garbage
- * bytes back, so all code that handles files from the image will need
- * to be prepared to respond tolerably gracefully to such a situation.
- * I already have a CRC check at the end of every sub-file, but often
- * that will be too late, and anyway I may need to review that to ensure that
- * it actually checksums the plain-text not the cipher text.
- *
- * Well probably encrypted sub-files are going away now so the above is
- * close to irrelevant!
+ * be the same as '\n' on "most" systems.
  */
 
 typedef struct directory
@@ -361,7 +344,7 @@ typedef struct directory
 #define D_COMPACT   4
 #define D_PENDING   8
 
-extern directory *fasl_files[MAX_FASL_PATHS];
+extern directory *fasl_files[MAX_FASL_PATHS], *rootDirectory;
 #define PDS_INPUT   0
 #define PDS_OUTPUT  1
 #define PDS_PENDING 2

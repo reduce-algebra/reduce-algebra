@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2008
+ * "fwin.c"                                 Copyright A C Norman 2003-2010
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 20c5ad56 01-Jul-2009 */
+/* Signature: 72441176 09-May-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -66,19 +66,19 @@
 #include "fwin.h"
 
 
+extern int fwin_main(int argc, char *argv[]);
+
 #ifdef HAVE_LIBFOX
 /*
  * This case will apply when I am compiling this as part of an application
  * that uses the autoconf tools to create a file "config.h" and when
  * autoconf has reported that the FOX library is available. I require that
  * this represents my updated and extended version of FOX because it will
- * then contain a copt of most of this code. My application can then just
+ * then contain a copy of most of this code. My application can then just
  * start up by transferring control into FOX, passing in information about
  * the callbacks that are needed. The code here is what is needed by
  * CSL...
  */
-
-extern int fwin_main(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
@@ -120,21 +120,28 @@ extern char *getcwd(char *s, size_t n);
 #include <sys/types.h>
 #include <errno.h>
 
+#ifndef EMBEDDED
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #else
 #ifndef WIN32
-#ifdef HAVE_SYS_DIR_H
 #include <sys/dir.h>
-#endif
 #else
 #include <direct.h>
 #endif
 #endif /* HAVE_DIRENT_H */
+#endif
 
-#ifndef WIN32
-#include <X11/Xlib.h>
-#endif /* WIN32 */
+/*
+ * I used to have this to give me X11 headers - but (a) if I am building
+ * without FOX I do not have a GUI at all and so they are not needed and
+ * (b) they conflict with the Mac-specific headers that follow. Specifically
+ * I have pain with "Cursor" being a name-clash.
+ *
+ * #ifndef WIN32
+ * #include <X11/Xlib.h>
+ * #endif
+ */
 
 #if defined MACINTOSH && defined MAC_FRAMEWORK
 /*
@@ -153,8 +160,6 @@ extern char *getcwd(char *s, size_t n);
 #endif /* Microsoft C */
 
 #include "termed.h"
-
-#ifdef PART_OF_FOX
 
 /*
  * The next few are not exactly useful if FOX is not available
@@ -181,8 +186,6 @@ char about_box_rights_1[40]    = "Author info";
 char about_box_rights_2[40]    = "Additional author";
 char about_box_rights_3[40]    = "This software uses the FOX Toolkit";
 char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
-
-#endif /* PART_OF_FOX */
 
 /*
  * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
@@ -221,23 +224,25 @@ int fwin_use_xft = 0;
 
 int fwin_pause_at_end = 0;
 
-/* Here is where things get started... */
+#ifdef WIN32
 
-static long long int read8(FILE *f)
+void consoleWait()
 {
-    long long int r = 0LL;
-    int i;
-    for (i=0; i<8; i++)
-    {   int w = getc(f) & 0xff;
-        r |= (((long long)w) << (8*i));
-    }
-    return r;
+/*
+ * If the console had to be created specially to view this information
+ * it is probable that it will close as soon as the program closes, and so
+ * to give at least a minimal chance for the user to inspect it I will
+ * put in a delay here.
+ */
+    clock_t c0 = clock() + 5*CLOCKS_PER_SEC;
+    while (clock() < c0);
 }
 
+#endif
 
 #ifndef EMBEDDED
 
-#ifdef PART_OF_FOX
+#if defined PART_OF_FOX || defined CSL
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 #else
 int main(int argc, char *argv[])
@@ -285,7 +290,7 @@ int main(int argc, char *argv[])
  */
     windowed = 1;
 #ifdef WIN32
-/* I have tried various messy Windows API cals here to get this right.
+/* I have tried various messy Windows API calls here to get this right.
  * But so far I find that the cases that apply to me are
  *    (a) windows command prompt : normal case
  *    (b) windows command prompt : stdin redirected via "<" on command line
@@ -365,7 +370,7 @@ int main(int argc, char *argv[])
  * and identifies itself as type DISK. The the case of launching the code
  * by double-clicking on the .exe file the handle is probably invalid, but
  * GetFileType returns FILE_TYPE_UNKNOWN. The end effect is that I can
- * detect cases where input has bene redirected in a way that appears to
+ * detect cases where input has been redirected in a way that appears to
  * work in both cases.  Note that if a user wants to launch an application
  * via a pipe then they should EITHER launch the ".com" version or (better)
  * explictly provide a "-w" flag to indicate that the application should
@@ -425,6 +430,23 @@ int main(int argc, char *argv[])
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
+#ifdef WIN32
+/*
+ * If I am running under Windows and I have set command line options
+ * that tell me to run in a console then I will create one if one does
+ * not already exist.
+ */
+    if (windowed == 0)
+    {   int consoleCreated = AllocConsole();
+        if (consoleCreated)
+        {   freopen("CONIN$", "r", stdin);
+            freopen("CONOUT$", "w", stdout);
+            freopen("CONOUT$", "w", stderr);
+/* I will also pause for 5 seconds at the end... */
+            atexit(consoleWait);
+        }
+    }
+#endif /* WIN32 */
 #else /* PART_OF_FOX */
 /* If the FOX toolkit is not available there is no point in
  * looking for a command-line option that controls whether to use it!
@@ -680,9 +702,8 @@ void fwin_set_prompt(const char *s)
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
 }
 
-
-void fwin_menus(char **modules, char **switches,
-                review_switch_settings_function *f)
+extern void fwin_menus(char **modules, char **switches,
+                       review_switch_settings_function *f)
 {
 }
 
@@ -1602,6 +1623,9 @@ static void exall(int namelength,
  * to process each one it finds.
  */
 {
+#ifdef EMBEDDED
+    return; /* Dummy version here */
+#else
     WIN32_FIND_DATA found;
     int rootlen = namelength, first = n_found_files;
     HANDLE hSearch = FindFirstFile(filename, &found);
@@ -1659,6 +1683,7 @@ static void exall(int namelength,
                   found_files[n_found_files].nFileSizeLow);
     }
     return;
+#endif /* EMBEDDED */
 }
 
 void scan_directory(const char *dir,
@@ -1742,7 +1767,7 @@ static void exall(int namelength,
                   void (*proc)(const char *name, int why, long int size))
 {
 #ifdef EMBEDDED
-    return;  /* Dummy version here... */
+    return; /* Dummy version here */
 #else
     DIR *d;
 #ifdef USE_DIRECT_H

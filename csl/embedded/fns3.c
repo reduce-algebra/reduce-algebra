@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 124475ef 24-May-2008 */
+/* Signature: 49faffbc 24-Feb-2010 */
 
 #include "headers.h"
 
@@ -290,9 +290,15 @@ static Lisp_Object get_hash_vector(int32_t n)
  * and the lower level vectors each sized at around 1/8 of a CSL page. The
  * modest chunk size is intended to limit the packing lossage I will see at
  * page boundaries. HASH_CHUNK_SIZE is the size (in bytes) used for data in
- * each such hash chunk.
+ * each such hash chunk. But "reasonably small" hash tables will be
+ * kept as ordinary vectors, so I must ensure that they are a size that
+ * could survive conversion between 32 and 64-bit images. To that effect
+ * I have just changes the limit there to CSL_PAGE_SIZE/3. So some old
+ * 32-bit images could hypothetically contain saves hash tables of size
+ * just close to CAL_PAGE_SIZE/2 (the previous cut off) that would not be
+ * re-loadable on a 64-bit system. 
  */
-    if (n > CSL_PAGE_SIZE/2)   /* A fairly arbitrary cut-off */
+    if (n > CSL_PAGE_SIZE/3)   /* A fairly arbitrary cut-off */
     {   int32_t chunks = (n + HASH_CHUNK_SIZE - 1)/HASH_CHUNK_SIZE;
         int32_t i;
         v = getvector_init(CELL*(chunks+3), nil);

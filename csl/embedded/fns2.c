@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5db20543 17-Dec-2008 */
+/* Signature: 4fd19903 22-Apr-2010 */
 
 #include "headers.h"
 
@@ -79,11 +79,15 @@ Lisp_Object getcodevector(int type, int32_t size)
  * codelimit is always 8 bytes above the base of the code-page. The
  * address I need to return for a code-vector points (in a packed way)
  * to the first byte of actual byte data, ie CELL bytes above the start
- * of the data-structure. Oh joy!
+ * of the data-structure. Oh joy! Furthermore note that I go via the
+ * type uint32_t so that if I am on a 64-bit system I know that the
+ * top half of the object will contain just zero. This is to leave me scope
+ * to use that when reloading a 32-bit image on a 64-bit system...
  */
-        return TAG_BPS +
-           (((int32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
-           (((int32_t)(bps_pages_count-1))<<(PAGE_BITS+6)); /* Wow! Obscure!! */
+        return (Lisp_Object)(uint32_t)(TAG_BPS +
+           (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
+           (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
+/* Wow! Obscure!! */
     }
 }
 
@@ -2047,6 +2051,7 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     char filename[LONGEST_LEGAL_FILENAME];
     CSLbool failed = 0;
     char *msg = "";
+    int len = 0;
 #ifdef SOCKETS
 /*
  * Security measure - deny checkpoint to remote users
@@ -2060,7 +2065,9 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     if (failed) return aerror("checkpoint");
     if (is_vector(banner) &&
         type_of_header(vechdr(banner)) == TYPE_STRING)
-        msg = &celt(banner, 0);
+    {   msg = &celt(banner, 0);
+        len = length_of_header(vechdr(banner)) - CELL;
+    }
 /*
  * Note, with some degree of nervousness, that things on the C stack will
  * be updated by the garbage collection that happens during the processing
@@ -2070,7 +2077,7 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
  * around so all is still OK, I hope!
  */
     push5(codevec, litvec, catch_tags, faslvec, faslgensyms);
-    preserve(msg);
+    preserve(msg, len);
     nil = C_nil;
     if (exception_pending()) failed = 1, flip_exception();
     adjust_all();

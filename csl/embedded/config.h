@@ -208,21 +208,6 @@
 /* Unusual but within ANSI spec */
 /* #undef SIGNED_SHIFTS_ARE_LOGICAL */
 
-/* The size of `int', as computed by sizeof. */
-#define SIZEOF_INT 4
-
-/* The size of `long', as computed by sizeof. */
-#define SIZEOF_LONG 4
-
-/* The size of `long long', as computed by sizeof. */
-#define SIZEOF_LONG_LONG 8
-
-/* The size of `short int', as computed by sizeof. */
-#define SIZEOF_SHORT_INT 2
-
-/* The size of `void *', as computed by sizeof. */
-#define SIZEOF_VOID_P 4
-
 /* Version number of package */
 #define VERSION "6.03"
 

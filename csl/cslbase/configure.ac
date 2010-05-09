@@ -1102,8 +1102,10 @@ AC_FUNC_ALLOCA
 AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
 
+AC_CHECK_HEADER([stdint.h], [stdint_header=y], [stdint_header=n])
+
 AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
-AC_CHECK_HEADERS([stddef.h stdlib.h string.h stdint.h])
+AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/shm.h sys/ipc.h signal.h])
@@ -1141,13 +1143,18 @@ AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
 # use what I find as a fall-back for the unusual case when intptr_t is not
 # available. In that case I use these measurements just once to
 # define my own versions of int32_t etc etc.
+#
+# Note that if <stdint.h> is available, which should really almost always
+# be the case now, I do NOT do anything here.
 
-AC_CHECK_SIZEOF(void *)
-AC_CHECK_SIZEOF(short int)
-AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(long)
-AC_CHECK_SIZEOF(long long)
-AC_C_BIGENDIAN
+if test "x$stdint_header" = "x0"
+then
+  AC_CHECK_SIZEOF(void *)
+  AC_CHECK_SIZEOF(short int)
+  AC_CHECK_SIZEOF(int)
+  AC_CHECK_SIZEOF(long)
+  AC_CHECK_SIZEOF(long long)
+fi
 
 AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
 

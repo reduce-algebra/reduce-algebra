@@ -1,4 +1,4 @@
-/* machine.h                       Copyright (C) 1990-2008 Codemist Ltd */
+/* machine.h                       Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * This was ONCE a place where all system-specific options were detected
@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -43,7 +43,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 493a37ef 24-Jan-2010 */
+/* Signature: 08a5c1f8 09-May-2010 */
 
 
 #ifndef header_machine_h
@@ -70,7 +70,7 @@
 
 
 #ifdef WIN32
-#  ifdef WIN64
+#  if defined WIN64 || defined __WIN64__
 #     define OPSYS           "win64"
 #     define IMPNAME         "win64"
 #  else
@@ -92,9 +92,10 @@
 #endif
 
 #ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
 
+#include <stdint.h>
+
+#else /* HAVE_STDINT_H */
 /*
  * Now it appears that some systems provide types with names like
  * u_int32_t where I count uint32_t as more standard. I will adapt
@@ -189,6 +190,7 @@ typedef uint64_t uintptr_t;
 #define HAVE_UINTPTR_T 1
 #endif
 
+#endif /* HAVE_STDINT_H */
 /*
  * With luck that will have regularised the situation with regard to
  * integer types!

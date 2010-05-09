@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 36b4d379 24-May-2008 */
+/* Signature: 6e75b9b5 28-Feb-2010 */
 
 #ifndef header_read_h
 #define header_read_h 1
@@ -110,8 +110,9 @@ extern Lisp_Object read_from_vector(char *v);
 #endif
 extern char prompt_string[MAX_PROMPT_LENGTH];
 
-#define INIT_OBVECI_SIZE      16384
-#define INIT_OBVECX_SIZE      16384
+/* These two are now specified in LispObject units not bytes */
+#define INIT_OBVECI_SIZE      4096
+#define INIT_OBVECX_SIZE      4096
 
 #endif /* header_read_h */
 

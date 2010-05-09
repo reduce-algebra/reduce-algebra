@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 79338bd3 04-Jan-2009 */
+/* Signature: 14f006b3 22-Apr-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -108,14 +108,14 @@ typedef struct page_map_t
 
 #endif
 
-extern int pages_count,
-           heap_pages_count, vheap_pages_count,
-           bps_pages_count, native_pages_count;
+extern int32_t pages_count,
+               heap_pages_count, vheap_pages_count,
+               bps_pages_count, native_pages_count;
 
-extern int new_heap_pages_count, new_vheap_pages_count,
-           new_bps_pages_count, new_native_pages_count;
+extern int32_t new_heap_pages_count, new_vheap_pages_count,
+               new_bps_pages_count, new_native_pages_count;
 
-extern int native_pages_changed;
+extern int32_t native_pages_changed;
 extern int32_t native_fringe;
 
 extern Lisp_Object *nilsegment, *stacksegment;
@@ -123,6 +123,8 @@ extern Lisp_Object *stackbase;
 extern int32_t stack_segsize;  /* measured in units of one CSL page */
 extern Lisp_Object *C_stack;
 #define stack C_stack
+
+extern char *big_chunk_start, *big_chunk_end;
 
 #ifdef CONSERVATIVE
 extern Lisp_Object *C_stackbase, *C_stacktop;
@@ -374,12 +376,18 @@ extern Lisp_Object C_nil;
  * choice of whether this option should be enabled or not will be pretty
  * marginal and should really be sorted out by building once with
  * NILSEG_EXTERNS and once without, and comparing the performance of the
- * two resulting systems.
+ * two resulting systems. Since I believe the performance effects will
+ * be small and I expect use of a debugger to be easier if all the key
+ * variables are available as external symbols that is what I will make
+ * my default right now. I can imagine that if at some stage I move to
+ * more creation of native code that the references relative to NIL provide
+ * easier code to generate and less effort needing to relocate it, so I may
+ * then switch back.
  */
 
 #define nil_as_base
 
-extern uint32_t byteflip;
+extern intptr_t byteflip;
 
 extern Lisp_Object codefringe;
 extern Lisp_Object volatile codelimit;
@@ -392,12 +400,12 @@ extern Lisp_Object volatile heaplimit;
 extern Lisp_Object volatile vheaplimit;
 extern Lisp_Object vfringe;
 
-extern int32_t nwork;
+extern intptr_t nwork;
 
-extern int32_t exit_reason;
-extern int32_t exit_count;
-extern uint32_t gensym_ser, print_precision, miscflags;
-extern int32_t current_modulus, fastget_size, package_bits;
+extern intptr_t exit_reason;
+extern intptr_t exit_count;
+extern intptr_t gensym_ser, print_precision, miscflags;
+extern intptr_t current_modulus, fastget_size, package_bits;
 
 extern Lisp_Object lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern Lisp_Object quote_symbol, function_symbol, comma_symbol;
@@ -523,7 +531,7 @@ extern Lisp_Object user_base_9;
 
 #define nil_as_base  Lisp_Object nil = C_nil;
 
-#define byteflip              (*(uint32_t *)&BASE[12])
+#define byteflip              BASE[12]
 #define codefringe            BASE[13]
 #define codelimit             (*(Lisp_Object volatile *)&BASE[14])
 /*
@@ -546,16 +554,17 @@ extern Lisp_Object * volatile stacklimit;
 #define heaplimit             (*(Lisp_Object volatile *)&BASE[19])
 #define vheaplimit            (*(Lisp_Object volatile *)&BASE[20])
 #define vfringe               BASE[21]
-#define miscflags             (*(uint32_t *)&BASE[22])
 
-#define nwork                 (*(int32_t *)&BASE[24])
-#define exit_reason           (*(int32_t *)&BASE[25])
-#define exit_count            (*(int32_t *)&BASE[26])
-#define gensym_ser            (*(uint32_t *)&BASE[27])
-#define print_precision       (*(uint32_t *)&BASE[28])
-#define current_modulus       (*(int32_t *)&BASE[29])
-#define fastget_size          (*(int32_t *)&BASE[30])
-#define package_bits          (*(int32_t *)&BASE[31])
+#define miscflags             BASE[22]
+
+#define nwork                 BASE[24]
+#define exit_reason           BASE[25]
+#define exit_count            BASE[26]
+#define gensym_ser            BASE[27]
+#define print_precision       BASE[28]
+#define current_modulus       BASE[29]
+#define fastget_size          BASE[30]
+#define package_bits          BASE[31]
 /* offsets 32-49 spare at present */
 
 /* Offset 50 used for EQ hash table list    */
@@ -768,6 +777,7 @@ extern int native_code_tag;
 extern char *standard_directory;
 
 extern int gc_number;
+extern CSLbool gc_method_is_copying;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2
@@ -888,16 +898,6 @@ extern char *CSLtmpnam(char *suffix, int32_t suffixlen);
 extern int Cmkdir(char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
-/*
- * I will allow myself 192 bytes to store registration information.
- * In my initial implementation I will only use a fraction of that
- * but it seems safer to design the structure with extra room for potential
- * enhancements. I will keep a version code in the data so that I can update
- * my methods but still preserve upwards compatibility when I do that.
- */
-#define REGISTRATION_SIZE     192
-#define REGISTRATION_VERSION  "r1.0"
-extern unsigned char registration_data[REGISTRATION_SIZE];
 extern void CSL_MD5_Init(void);
 extern void CSL_MD5_Update(unsigned char *data, int len);
 extern void CSL_MD5_Final(unsigned char *md);
@@ -906,31 +906,6 @@ extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
 extern void checksum(Lisp_Object a);
 extern unsigned char unpredictable[256];
 extern void inject_randomness(int n);
-/*
- * crypt_init() seeds the encryption engine that I used, and then
- * crypt_get_block() gets a chunk of the sequence, which I can XOR with
- * text to mess it up.
- */
-extern void crypt_init(char *key);
-#define CRYPT_BLOCK 128
-extern void crypt_get_block(unsigned char result[CRYPT_BLOCK]);
-/*
- * crypt_active is -ve if none is in use, otherwise it is a key identifier
- * (to allow for possibly multiple keys). crypt_buffer & crypt_count are
- * things filled in by crypt_get_block(). The encryption stuff here is just
- * for protection of the software, and the code that does somewhat more
- * serious encryption to create the keys used with this stream cipher live
- * elsewhere. The crypto technology in CSL is only used on image files, ie
- * chunks of compiled code etc, and no provision has been made to use it
- * on user data-files. I can store up to CRYPT_KEYS different keys with
- * a CSL system and have different modules protected by different ones of
- * them.
- */
-#define CRYPT_KEYS 10
-extern char *crypt_keys[CRYPT_KEYS];
-extern int crypt_active;
-extern unsigned char *crypt_buffer;
-extern int crypt_count;
 
 extern void ensure_screen(void);
 extern int window_heading;
@@ -1048,7 +1023,7 @@ extern Lisp_Object nreverse(Lisp_Object a);
 extern FILE        *open_file(char *filename, char *original_name,
                               size_t n, char *dirn, FILE *old_file);
 extern Lisp_Object plus2(Lisp_Object a, Lisp_Object b);
-extern void        preserve(char *msg);
+extern void        preserve(char *msg, int len);
 extern void        preserve_native_code(void);
 extern void        relocate_native_function(unsigned char *bps);
 extern Lisp_Object prin(Lisp_Object u);
@@ -1089,13 +1064,6 @@ extern Lisp_Object times2(Lisp_Object a, Lisp_Object b);
 extern int32_t       thirty_two_bits(Lisp_Object a);
 #ifdef HAVE_INT64_T
 extern int64_t       sixty_four_bits(Lisp_Object a);
-#endif
-
-#if defined DEMO_MODE || defined DEMO_BUILD
-extern void give_up();
-#endif
-#ifdef DEMO_BUILD
-extern int32_t demo_key1, demo_key2;
 #endif
 
 /*

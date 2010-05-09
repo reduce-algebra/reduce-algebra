@@ -1,11 +1,11 @@
-/*  print.c                           Copyright (C) 1990-2008 Codemist Ltd */
+/*  print.c                           Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * Printing, plus some file-related operations.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 52bd7b94 01-Jul-2009 */
+/* Signature: 071e311c 09-May-2010 */
 
 #include "headers.h"
 
@@ -950,7 +950,7 @@ Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
     Lisp_Object r;
     char tempdir[LONGEST_LEGAL_FILENAME];
 #ifdef WIN32
-    long len = GetTempPath(LONGEST_LEGAL_FILENAME, tempdir);
+    DWORD len = GetTempPath(LONGEST_LEGAL_FILENAME, tempdir);
     argcheck(nargs, 0, "tmpnam");
     if (len <= 0) return onevalue(nil);
     s = tempnam(tempdir, "CSL_t");
@@ -990,7 +990,7 @@ char *CSLtmpnam(char *suffix, int32_t suffixlen)
     char tt[32];
     char *s;
 #ifdef WIN32
-    long len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
+    DWORD len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
     if (len <= 0) return NULL;
 /*
  * I want to avoid name clashes fairly often, so I will use the current
@@ -1802,7 +1802,7 @@ static Lisp_Object Lprint_precision(Lisp_Object nil, Lisp_Object a)
     if (a == nil) return onevalue(fixnum_of_int(old));
     if (!is_fixnum(a)) return aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
-    if (print_precision > 16)
+    if (print_precision > 16 | print_precision < 1)
         print_precision = 15;
     return onevalue(fixnum_of_int(old));
 }
@@ -2011,13 +2011,8 @@ case TAG_ODDS:
  * expect that.
  */
                 outprefix(NO, 2);
-#if defined DEMO_MODE || defined DEMO_BUILD
-                putc_stream('?', active_stream);
-                putc_stream('?', active_stream);
-#else
                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                 putc_stream(hexdig[ch & 0xf], active_stream);
-#endif
             }
             popv(1);
             putc_stream(']', active_stream);
@@ -4358,9 +4353,9 @@ case READ_CLOSE:
         if (stream_file(f) == NULL) op = 0;
         else
 #ifdef SOCKETS
-           op = closesocket((SOCKET)(intptr_t)stream_file(f));
+            op = closesocket((SOCKET)(intptr_t)stream_file(f));
 #else
-           /* */;
+            op = 0;
 #endif
         set_stream_read_fn(f, char_from_illegal);
         set_stream_read_other(f, read_action_illegal);
@@ -4776,15 +4771,14 @@ char saveright[32];
 
 Lisp_Object Lwindow_heading2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
-#ifdef HAVE_FWIN
-#ifndef EMBEDDED
+#if defined HAVE_FWIN && !defined EMBEDDED
     int32_t n, bit;
     char *s, txt[32];
     txt[0] = 0;
     if (is_fixnum(b)) n = int_of_fixnum(b);
     else n = 2;  /* default to setting the right section */
     if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_STRING)
-    {   int32_t l = length_of_header(vechdr(a));
+    {   int32_t l = length_of_header(vechdr(a)) - CELL;
         if (l > 30) l = 30;
         memcpy(txt, &celt(a, 0), l);
         txt[l] = 0;
@@ -4810,7 +4804,6 @@ default:
     }
     if (s == NULL || *s == 0) window_heading &= ~bit;
     else window_heading |= bit;
-#endif
 #endif
     return onevalue(nil);
 }

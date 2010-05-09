@@ -1,5 +1,5 @@
 /*
- * "fwin.c"                                 Copyright A C Norman 2003-2008
+ * "fwin.c"                                 Copyright A C Norman 2003-2010
  *
  *
  * Window interface for old-fashioned C applications. Intended to
@@ -13,7 +13,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 1efa1d42 20-Mar-2010 */
+/* Signature: 72441176 09-May-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -120,6 +120,7 @@ extern char *getcwd(char *s, size_t n);
 #include <sys/types.h>
 #include <errno.h>
 
+#ifndef EMBEDDED
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #else
@@ -129,6 +130,7 @@ extern char *getcwd(char *s, size_t n);
 #include <direct.h>
 #endif
 #endif /* HAVE_DIRENT_H */
+#endif
 
 /*
  * I used to have this to give me X11 headers - but (a) if I am building
@@ -237,6 +239,8 @@ void consoleWait()
 }
 
 #endif
+
+#ifndef EMBEDDED
 
 #if defined PART_OF_FOX || defined CSL
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
@@ -481,6 +485,8 @@ void MS_CDECL sigint_handler(int code)
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
 }
+
+#endif /* EMBEDDED */
 
 #ifdef SIGBREAK
 void MS_CDECL sigbreak_handler(int code)
@@ -1617,6 +1623,9 @@ static void exall(int namelength,
  * to process each one it finds.
  */
 {
+#ifdef EMBEDDED
+    return; /* Dummy version here */
+#else
     WIN32_FIND_DATA found;
     int rootlen = namelength, first = n_found_files;
     HANDLE hSearch = FindFirstFile(filename, &found);
@@ -1674,6 +1683,7 @@ static void exall(int namelength,
                   found_files[n_found_files].nFileSizeLow);
     }
     return;
+#endif /* EMBEDDED */
 }
 
 void scan_directory(const char *dir,
@@ -1756,6 +1766,9 @@ static void scan_file(int namelength,
 static void exall(int namelength,
                   void (*proc)(const char *name, int why, long int size))
 {
+#ifdef EMBEDDED
+    return; /* Dummy version here */
+#else
     DIR *d;
 #ifdef USE_DIRECT_H
     struct direct *dd;
@@ -1802,6 +1815,7 @@ static void exall(int namelength,
 
     filename[rootlen] = 0;
     proc(filename, SCAN_ENDDIR, 0);
+#endif /* EMBEDDED */
 }
 
 #ifndef S_IFMT

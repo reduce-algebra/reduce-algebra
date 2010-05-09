@@ -1,7 +1,7 @@
-/* termed.c                          Copyright (C) 2004-2008 Codemist Ltd */
+/* termed.c                          Copyright (C) 2004-2010 Codemist Ltd */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 3fa4d4a9 18-Mar-2010 */
+/* Signature: 793be449 09-May-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -2269,17 +2269,6 @@ static void term_switch_menu(void)
 
 /****************************************************************************/
 
-#if defined SOLARIS && SIZEOF_VOID_P==8
-/*
- * This is pretty horrible! Sorry. It should be the only place where
- * I make a pre-processor-time judgement based on the width of a data-type.
- * Note that it only happens on Solaris. Can I think of a neater solution?
- */
-#define PAD_TPARM ,0,0,0,0,0,0,0,0
-#else
-#define PAD_TPARM
-#endif
-
 
 static void set_fg(int n)
 {
@@ -2294,8 +2283,18 @@ static void set_fg(int n)
 #else
     if (*term_colour == 0) return;
     fflush(stdout);
-    if (set_a_foreground) putp(tparm(set_a_foreground, n PAD_TPARM));
-    else if (set_foreground) putp(tparm(set_foreground, n PAD_TPARM));
+#ifdef SOLARIS
+    if (sizeof(void *) == 8)
+    {   if (set_a_foreground)
+            putp(tparm(set_a_foreground, n,0,0,0,0,0,0,0,0));
+        else if (set_foreground)
+            putp(tparm(set_foreground, n,0,0,0,0,0,0,0,0));
+    }
+    else
+#endif
+    {   if (set_a_foreground) putp(tparm(set_a_foreground, n));
+        else if (set_foreground) putp(tparm(set_foreground, n));
+    }
 #endif
 }
 
@@ -2311,7 +2310,15 @@ static void set_normal(void)
     if (*term_colour == 0) /* nothing */;
     else if (orig_pair) putp(orig_pair);
     else if (orig_colors) putp(orig_colors);
-    else if (set_a_foreground) putp(tparm(set_a_foreground, 0 PAD_TPARM));
+    else if (set_a_foreground)
+    {
+#ifdef SOLARIS
+        if (sizeof(void *) == 8)
+            putp(tparm(set_a_foreground, 0,0,0,0,0,0,0,0,0));
+        else
+#endif
+            putp(tparm(set_a_foreground, 0));
+    }
     fflush(stdout);
     my_reset_shell_mode();
 #endif
@@ -2329,7 +2336,15 @@ static void set_shell(void)
     if (*term_colour == 0) /* nothing */;
     else if (orig_pair) putp(orig_pair);
     else if (orig_colors) putp(orig_colors);
-    else if (set_a_foreground) putp(tparm(set_a_foreground, 0 PAD_TPARM));
+    else if (set_a_foreground)
+    {
+#ifdef SOLARIS
+        if (sizeof(void *)==8)
+            putp(tparm(set_a_foreground, 0,0,0,0,0,0,0,0,0));
+        else
+#endif
+            putp(tparm(set_a_foreground, 0));
+    }
     fflush(stdout);
     my_reset_shell_mode();
 #endif

@@ -1,4 +1,4 @@
-/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2008 */
+/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2010 */
 
 /*
  * Garbage collection.
@@ -43,7 +43,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0acdd662 01-Sep-2008 */
+/* Signature: 323d4f71 09-May-2010 */
 
 #include "headers.h"
 
@@ -80,7 +80,7 @@
 #endif /* SOCKETS */
 
 int gc_number = 0;
-CSLbool gc_method_is_copying;     /* YES if copying, NO if sliding */
+CSLbool gc_method_is_copying = 0;     /* YES if copying, NO if sliding */
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
              big_numbers, box_floats, bytestreams, other_mem,
@@ -1099,6 +1099,10 @@ static int fold_cons_heap(void)
          *bottom_low = (char *)quadword_align_up((intptr_t)bottom_page);
     char *top_start = top_low + CSL_PAGE_SIZE,
          *bottom_start = bottom_low + CSL_PAGE_SIZE;
+/*
+ * BEWARE if the lengths here might be marked to indicate a double-sized
+ * page.
+ */
     char *top_fringe = top_low + car32(top_low),
          *bottom_fringe = bottom_low + car32(bottom_low);
     if (bottom_fringe != (char *)fringe)
@@ -1693,12 +1697,19 @@ static void copy(Lisp_Object *p)
                         rr = cf - alloc_size;
                         codefringe = (Lisp_Object)rr;
 /*
- * See comments in fns2.c for the curious packing here!
+ * See comments in fns2.c for the curious packing here! Note that I carefully
+ * ensure that I compute everything as a uint32_t before I turn it into a
+ * Header, and as a result the top half of the Header will always be
+ * zero if I am on a 64-bit system. This should be proper for a reference
+ * into a new page, but remember that I put a non-zero value in the top
+ * half of a 64-bit word when expanding a 32-bit heap image for use of a
+ * 64-bit machine via the use of double-sized pages.
  */
-                        *(Header *)d = *p = TAG_BPS +
-                           (((intptr_t)((rr + CELL) - (cl - 8)) &
+                        *(Header *)d = *p = (Header)(uint32_t)(TAG_BPS +
+                           (((uint32_t)((rr + CELL) - (cl - 8)) &
                              (PAGE_POWER_OF_TWO-4)) << 6) +
-                           (((intptr_t)(new_bps_pages_count-1))<<(PAGE_BITS+6));
+                           (((uint32_t)
+                             (new_bps_pages_count-1))<<(PAGE_BITS+6)));
                         /* Wow! How obscure!! */
                         *(Header *)rr = h;
                         memcpy(rr+CELL, d+CELL, alloc_size-CELL);
@@ -2251,6 +2262,10 @@ static void tidy_fringes(void)
          *vl = (char *)vheaplimit,
          *cl = (char *)codelimit;
     int32_t len = (int32_t)(fr - (hl - SPARE));
+/*
+ * If I used the top bit of this location to save info that a page
+ * was double-size then I just clobbered that information here!
+ */
     car32(hl - SPARE) = len;
     len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
     car32(vl - (CSL_PAGE_SIZE - 8)) = (Lisp_Object)len;
@@ -2283,52 +2298,6 @@ static void lose_dead_hashtables(void)
         else p = &qcdr(q);
     }
 }
-
-#ifdef DEMO_MODE
-
-/*
- * This is now a historical relic! But I leave it in for entertainment of
- * a sort - at least for now.
- */
-
-extern CSLbool terminal_pushed;
-
-void give_up()
-{
-    Lisp_Object nil;
-#define m(s) err_printf(s)
-m("\n+++ DEMONSTRATION VERSION OF REDUCE - RESOURCE LIMIT EXCEEDED +++\n");
-m("This version of REDUCE has been provided for testing and\n");
-m("demonstration purposes.  It has a built-in cut-out that will\n");
-m("terminate processing after a time that should be sufficient for\n");
-m("various small tests to run, but which will probably stop it\n");
-m("from being useful as a serious tool.  You are permitted to copy\n");
-m("the demonstration version and pass it on to friends subject to\n");
-m("not changing it, and in particular neither changing the various\n");
-m("messages it prints nor attempting to circumvent the time-out\n");
-m("mechanism.  Full versions of REDUCE are available to run on a\n");
-m("wide range of types of computer, and a machine-readable file\n");
-m("listing suppliers was provided with the documentation that goes\n");
-m("with this version.  Some suppliers are:\n");
-m("  Codemist Ltd, Alta, Horsecombe Vale, Combe Down, Bath BA2 5QR,\n");
-m("    England.  Phone and fax +44-225-837430,\n");
-m("    http://www.codemist.co.uk\n");
-m("  Winfried Neun, Konrad-Zuse-Zentrum fuer Informationstechnik Berlin\n");
-m("    Heilbronner Str. 10, D 10711 Berlin-Wilmersdorf, GERMANY\n");
-m("    Phone: +44-30-89604-195  Fax +49-30-89604-125.\n");
-m("  (Codemist provided this version, the ZIB differs slightly)\n");
-m("<Close window/type RETURN to exit>\n");
-#undef m
-    nil = C_nil;
-    prompt_thing = CHAR_EOF;    /* Disables the prompt */
-    ensure_screen();
-    terminal_pushed = NOT_CHAR;
-    tty_count = 0;
-    char_from_terminal(0);      /* intended to delay until a char is typed */
-    my_exit(EXIT_FAILURE);
-}
-
-#endif /* DEMO_MODE */
 
 #ifdef HAVE_FWIN
 
@@ -2620,7 +2589,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 	    interrupt_pending = NO;
 	    pop_clock();
             time_now = (int)consolidated_time[0];
-            if ((time_limit >= 0 && time_now > time_limit) !!
+            if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
                 return resource_exceeded();
 	    return interrupted(p);

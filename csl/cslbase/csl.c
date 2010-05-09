@@ -1,4 +1,4 @@
-/*  csl.c                            Copyright (C) 1989-2008 Codemist Ltd */
+/*  csl.c                            Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 2885b05f 22-Apr-2010 */
+/* Signature: 626ff121 09-May-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -84,7 +84,7 @@ static int char_to_socket(int c);
 CSLbool symbol_protect_flag = YES;
 CSLbool warn_about_protected_symbols = NO;
 
-#ifdef WINDOW_SYSTEM
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
 CSLbool use_wimp;
 #endif
 
@@ -283,7 +283,7 @@ Lisp_Object interrupted(Lisp_Object p)
 #ifdef HAVE_FWIN
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
 #else
-#ifdef WINDOW_SYSTEM
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
     if (!use_wimp)
 #endif
 #endif
@@ -999,7 +999,7 @@ static void lisp_main(void)
     }
 }
 
-#ifndef HAVE_FWIN
+#if !defined HAVE_FWIN || defined EMBEDDED
 #ifndef UNDER_CE
 
 CSLbool sigint_must_longjmp = NO;
@@ -1229,7 +1229,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     base_time = read_clock();
     consolidated_time[0] = gc_time = 0.0;
     clock_stack = &consolidated_time[0];
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
     use_wimp = YES;
+#endif
 #ifdef HAVE_FWIN
 /*
  * On fwin the "-w" flag should disable all attempts at use of the wimp.
@@ -1237,10 +1239,12 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     for (i=1; i<argc; i++)
     {   char *opt = argv[i];
         if (opt == NULL) continue;
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
         if (opt[0] == '-' && tolower(opt[1] == 'w'))
         {   use_wimp = !use_wimp;
             break;
         }
+#endif
     }
     fwin_pause_at_end = 1;
 #endif
@@ -1552,7 +1556,7 @@ term_printf(
  */
         case 'c':
                 fwin_restore();
-                term_printf("\nCSL was coded by Codemist Ltd, 1988-2009\n");
+                term_printf("\nCSL was coded by Codemist Ltd, 1988-2010\n");
                 term_printf("Distributed under the Modified BSD License\n");
                 term_printf("See also --help\n");
                 continue;
@@ -2645,14 +2649,18 @@ static void cslaction(void)
         }
         else
 #endif
+#ifdef WINDOW_SYSTEM
         terminal_eof_seen = 0;
+#endif
         if (number_of_input_files == 0) lisp_main();
         else
         {   int i;
             for (i=0; i<number_of_input_files; i++)
             {   if (strcmp(files_to_read[i], "-") == 0)
                 {   non_terminal_input = NULL;
+#ifdef WINDOW_SYSTEM
                     terminal_eof_seen = 0;   
+#endif
                     lisp_main();
                 }
                 else
@@ -2836,7 +2844,7 @@ static int submain(int argc, char *argv[])
     return 0;
 }
 
-#if HAVE_FWIN
+#if defined HAVE_FWIN && !defined EMBEDDED
 #define ENTRYPOINT fwin_main
 
 extern int ENTRYPOINT(int argc, char *argv[]);
@@ -2855,6 +2863,12 @@ int main(int argc, char *argv[])
 int ENTRYPOINT(int argc, char *argv[])
 {
     int res;
+#ifdef EMBEDDED
+    if (find_program_directory(argv[0]))
+    {   fprintf(stderr, "Unable to identify program name and directory\n");
+        return 1;
+    }
+#endif
 #ifdef USE_MPI
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);

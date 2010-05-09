@@ -1,4 +1,4 @@
-/* machine.h                       Copyright (C) 1990-2008 Codemist Ltd */
+/* machine.h                       Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * This was ONCE a place where all system-specific options were detected
@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -43,7 +43,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 149d8609 01-Jul-2009 */
+/* Signature: 08a5c1f8 09-May-2010 */
 
 
 #ifndef header_machine_h
@@ -56,9 +56,7 @@
  * 
  */
 #if !defined UNDER_CE && ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
-#ifndef EMBEDDED
 #define SOCKETS                  1
-#endif
 #endif
 
 
@@ -72,7 +70,7 @@
 
 
 #ifdef WIN32
-#  ifdef WIN64
+#  if defined WIN64 || defined __WIN64__
 #     define OPSYS           "win64"
 #     define IMPNAME         "win64"
 #  else
@@ -94,54 +92,10 @@
 #endif
 
 #ifdef HAVE_STDINT_H
+
 #include <stdint.h>
-#endif
 
-/*
- * #ifdef __APPLE__
- *
- * Apple and MacOS provide a special challenge for me. It is possible to
- * compile code with a command such as
- *    gcc -arch ppc -archppc64 -archi386 ...
- * and by so doing create a two or three-way fat binary. This situation is
- * excellent, HOWEVER it causes real trouble for autoconf in any cases
- * where the results could be system-sensitive! A case where this is
- * unambiguously true relates to the size of data. So I put in some
- * old-fashioned manual treatment that will, I hope, override any values
- * found by autoconf in the relevent areas.
- *
- * Well ACTUALLY I hope and believe that Apple provides <stdint.h> and
- * so the macros set up where will never get inspected!
- *
- * Well these days they seem to have stdint.h in the kit, and so I will
- * comment this out!
- *
- *
- * #undef SIZEOF_SHORT_INT
- * #undef SIZEOF_INT
- * #undef SIZEOF_LONG
- * #undef SIZEOF_LONG_LONG
- * #undef SIZEOF_VOID_P
- * 
- * #if defined __x86_64__ || defined __ppc64__
- * #define SIZEOF_SHORT_INT  2
- * #define SIZEOF_INT        4
- * #define SIZEOF_LONG       4
- * #define SIZEOF_LONG_LONG  8
- * #define SIZEOF_VOID_P     8
- * #elif defined __i386__ ||  defined __ppc__
- * #undef SIZEOF_SHORT_INT   2
- * #undef SIZEOF_INT         4
- * #undef SIZEOF_LONG        4
- * #undef SIZEOF_LONG_LONG   8
- * #undef SIZEOF_VOID_P      4
- * #else
- * #error "Unknown architecture on a machine that says it is __APPLE__"
- * #endif
- *
- * #endif  __APPLE__
- */
-
+#else /* HAVE_STDINT_H */
 /*
  * Now it appears that some systems provide types with names like
  * u_int32_t where I count uint32_t as more standard. I will adapt
@@ -236,6 +190,7 @@ typedef uint64_t uintptr_t;
 #define HAVE_UINTPTR_T 1
 #endif
 
+#endif /* HAVE_STDINT_H */
 /*
  * With luck that will have regularised the situation with regard to
  * integer types!

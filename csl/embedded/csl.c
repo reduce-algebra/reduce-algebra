@@ -1,4 +1,4 @@
-/*  csl.c                            Copyright (C) 1989-2008 Codemist Ltd */
+/*  csl.c                            Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 3a5e71d7 01-Jul-2009 */
+/* Signature: 626ff121 09-May-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -84,7 +84,7 @@ static int char_to_socket(int c);
 CSLbool symbol_protect_flag = YES;
 CSLbool warn_about_protected_symbols = NO;
 
-#ifdef WINDOW_SYSTEM
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
 CSLbool use_wimp;
 #endif
 
@@ -283,7 +283,7 @@ Lisp_Object interrupted(Lisp_Object p)
 #ifdef HAVE_FWIN
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
 #else
-#ifdef WINDOW_SYSTEM
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
     if (!use_wimp)
 #endif
 #endif
@@ -744,7 +744,7 @@ CSLbool ignore_restart_fn = NO;
 static void lisp_main(void)
 {
     Lisp_Object nil;
-    
+    int i;    
 #ifndef __cplusplus
 /*
  * The setjmp here is to provide a long-stop for untrapped
@@ -770,6 +770,7 @@ static void lisp_main(void)
         if (!setjmp(this_level))
 #endif
         {   nil = C_nil;
+            terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
 /*
@@ -827,12 +828,15 @@ static void lisp_main(void)
                     return_code = (int)int_of_fixnum(exit_value);
                 else if (exit_tag == fixnum_of_int(1)) /* "preserve" */
                 {   char *msg = "";
+                    int len = 0;
                     return_code = EXIT_SUCCESS;
                     compression_worth_while = 128;
                     if (is_vector(exit_value) &&
                         type_of_header(vechdr(exit_value)) == TYPE_STRING)
-                        msg = &celt(exit_value, 0);
-                    preserve(msg);
+                    {   msg = &celt(exit_value, 0);
+                        len = (int)(length_of_header(vechdr(exit_value)) - CELL);
+                    }
+                    preserve(msg, len);
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
@@ -899,12 +903,60 @@ static void lisp_main(void)
                             }
                         }
                     }
+/*
+ * This puts all recorded heap pages back in the main pool, but there is
+ * as of March 2010 a concern in the case that an initial heap image came
+ * from a 32-bit machine and I am now running on a 64-bit one. That concerns
+ * both extra pages allocated at the first startup to give the effect of
+ * temporarily double-sized pages (there is a space leak there that may
+ * lose all those pages!) and the expectation there that pages in the map
+ * are neatly contiguous in memory (and when returned to the pool here that
+ * expectation usually fails). Oh dear!
+ * As a rather grungy recovery what I will do is to recycle all of the
+ * pages that are NOT in the contiguous chunk and then re-create a neat
+ * map of contiguous space from the bits that are. So first I must remove
+ * any contiguous pages from the list of ones marked as free...
+ */
+                    for (i=0; i<pages_count; i++)
+                    {   char *w = (char *)pages[i];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            continue;
+/*
+ * Here the page shown as free is one in the contiguous block. Move in
+ * the final page to fill the gap here and try again.
+ */
+                        pages[i] = pages[--pages_count];
+                        i--;
+                    }
+/*
+ * Next recycle all the non-contiguous pages that have been in use.
+ */
                     while (vheap_pages_count != 0)
-                        pages[pages_count++] = vheap_pages[--vheap_pages_count];
+                    {   char *w = (char *)vheap_pages[--vheap_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
                     while (heap_pages_count != 0)
-                        pages[pages_count++] = heap_pages[--heap_pages_count];
+                    {   char *w = (char *)heap_pages[--heap_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
                     while (bps_pages_count != 0)
-                        pages[pages_count++] = bps_pages[--bps_pages_count];
+                    {   char *w = (char *)bps_pages[--bps_pages_count];
+                        if (!(w > big_chunk_start && w <= big_chunk_end))
+                            pages[pages_count++] = w;
+                    }
+/*
+ * Finally rebuild a contiguous block of pages from the wholesale block.
+ */
+                    {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
+                        char *w1 = w + CSL_PAGE_SIZE + 16;
+                        while (w1 <= big_chunk_end)
+                        {   pages[pages_count++] = w;
+                            w = w1;
+                            w1 = w + CSL_PAGE_SIZE + 16;
+                        }
+                    }
 /*
  * When I call restart-csl I will leave the random number generator where it
  * was. Anybody who wants to reset if either to a freshly randomised
@@ -912,7 +964,7 @@ static void lisp_main(void)
  * people who do not care too much what I do here is probably acceptable!
  */
                     CSL_MD5_Init();
-                    CSL_MD5_Update((unsigned char *)errcode(err_registration), 32);
+                    CSL_MD5_Update((unsigned char *)"Initial State", 13);
                     IreInit();
                     setup(cold_start ? 0 : 1, 0.0);
                     exit_tag = exit_value = nil;
@@ -1177,8 +1229,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     base_time = read_clock();
     consolidated_time[0] = gc_time = 0.0;
     clock_stack = &consolidated_time[0];
-#ifdef WINDOW_SYSTEM
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
     use_wimp = YES;
+#endif
 #ifdef HAVE_FWIN
 /*
  * On fwin the "-w" flag should disable all attempts at use of the wimp.
@@ -1186,13 +1239,14 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     for (i=1; i<argc; i++)
     {   char *opt = argv[i];
         if (opt == NULL) continue;
+#if defined WINDOW_SYSTEM && !defined EMBEDDED
         if (opt[0] == '-' && tolower(opt[1] == 'w'))
         {   use_wimp = !use_wimp;
             break;
         }
+#endif
     }
     fwin_pause_at_end = 1;
-#endif
 #endif
 #ifdef SOCKETS
     sockets_ready = 0;
@@ -1221,23 +1275,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     batch_flag = NO;
     load_count = 0;
     load_limit = 0x7fffffff;
-    {   char *s = REGISTRATION_VERSION;
-#define hexval(c) ('0'<=c && c<='9' ? c - '0' : c - 'a' + 10)
-#define gx() (s+=2, hexval(s[-1]) + 16*hexval(s[-2]))
-        unsigned char *p = registration_data;
-        memset(registration_data, 0, sizeof(REGISTRATION_SIZE));
-        while (*s != 0) *p++ = *s++;
-#ifdef REG1
-        s = REG1;
-        while (*s != 0) *p++ = gx();
-#endif
-#ifdef REG2
-        s = REG2;
-        while (*s != 0) *p++ = gx();
-#endif
-        CSL_MD5_Init();
-        CSL_MD5_Update((unsigned char *)errcode(err_registration), 32);
-    }
+
+    CSL_MD5_Init();
+    CSL_MD5_Update((unsigned char *)"Initial State", 13);
 #ifdef MEMORY_TRACE
     car_counter = 0x7fffffff;
     car_low = 0;
@@ -1253,7 +1293,13 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * here as a matter of security.
  */
         if (opt == NULL || *opt == 0) continue;
-        if (opt[0] == '-')
+/*
+ * Note that I do not treat an isolated "-" as introducing an "option".
+ * Instead it is treated as a file-name and it indicates the "standard"
+ * input. There may be amusing consequences for using this several times
+ * in one call, but I hope it will make sense in several sane cases.
+ */
+        if (opt[0] == '-' && opt[1] != 0)
         {   char *w;
             int c1 = opt[1], c2 = opt[2];
             if (isupper(c1)) c1 = tolower(c1);
@@ -1289,12 +1335,117 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     if (strcmp(w, "texmacs") == 0)
                     { }
 /*
- * At present "--help" (and "--dump-source") are detected and processed
- * earlier - but "--help" is let through to here in case I want to generate
- * some more application-specific help... Right now I do not!
+ * "--help" will now try to produce a summary of command-line options. I
+ * bet that anything I write will not really be enough, but here is a first
+ * attempt!
  */
-                    if (strcmp(w, "help") == 0)
-                    {   my_exit(0);
+                    else if (strcmp(w, "help") == 0)
+                    {
+/*
+ * A comments here as a horrible warning. For dubious reasons term_printf
+ * can ONLY cope when the output it generates is at most 256 bytes long.
+ * Beyond that there can be an internal buffer overflow. Hence each line
+ * of text here is printed as a separate call. If I was certain that
+ * a vsnprintf function was ALWAYS available the interbal behaviour could
+ * at least be a bit safer...
+ */
+term_printf(
+  "Options:\n");
+term_printf(
+  "-a   do not use. Flips meaning of the Lisp \"batchp\" function.\n");
+term_printf(
+  "-b   do not colour prompts. -bOIP sets colours for output,\n");
+term_printf(
+  "                            input and prompt, using rgbcmyk\n");
+term_printf(
+  "                            for Red, Green, Blue, Cyan etc.\n");
+term_printf(
+  "-c   display something that is not a Copyright statement (because of LGPL).\n");
+term_printf(
+  "-d VVV or  -d VVV=VVV define a Lisp symbol as the system start\n");
+term_printf(
+  "-e   enable some feature that is at present an experiment. Not for users!\n");
+term_printf(
+  "-f or -f nnn  listen on socket 1206 or nnn to run a remote session.\n");
+term_printf(
+  "              This option is not for normal users.\n");
+term_printf(
+  "-g   enable some options that help when debugging. You get backtraces.\n");
+term_printf(
+  "-h   on X windows this may use x-terminal fonts rather than ones\n");
+term_printf(
+  "     used via Xft that live with the application. Not recommended.\n");
+term_printf(
+  "-i <image file> specific the location of the initial image file explicitly\n");
+term_printf(
+  "                You may have multiple image files, seached for modules in\n");
+term_printf(
+  "                the order listed.\n");
+term_printf(
+  "-j   used for depencency tracking. '-j fileuse.dat' notes what files\n");
+term_printf(
+  "     are accessed during this run in the indicated place.\n");
+term_printf(
+  "-k nnnK or -knnnM or -knnnG suggest heap-size to use. Often not needed\n");
+term_printf(
+  "-l logfile   keep transcript of session for you.\n");
+term_printf(
+  "-m   a memory trace option not for ordinary use.\n");
+term_printf(
+  "-n   ignore the restart function in an image file so that the system.\n");
+term_printf(
+  "     starts up in raw Lisp. Sometimes useful if image file is broken.\n");
+term_printf(
+  "-o <image file> specified where newly created compiled  modules and\n");
+term_printf(
+  "     saved heap images should go. Default is in the standard image.\n");
+term_printf(
+  "-p   reserved for a potential profile option.\n");
+term_printf(
+  "-q   tend to be Quiet. see also -v.\n");
+term_printf(
+  "-r nnn or -r nnn,mmm sets initial random seed. Passing 0 means use\n");
+term_printf(
+  "     current time of day and similar nonrepeatable stuff. May be\n");
+term_printf(
+  "     used to force repeatability of code that uses randomness.\n");
+term_printf(
+  "-s   causes compiler to display \"assembly code\".\n");
+term_printf(
+  "-t modulename  prints the timestamp of the given module and exits.\n");
+term_printf(
+  "-u VVV undefines the Lisp symbol VVV at the start of the run.\n");
+term_printf(
+  "-v   runs in a slighly more verbose mode.\n");
+term_printf(
+  "-w   controls if code runs in a window or in console. Also -w+ and -w-\n");
+term_printf(
+  "     can override cases where the system really wants to go one way.\n");
+term_printf(
+  "-x   avoid trapping exceptions so you can use a low-level debugger\n");
+term_printf(
+  "     to sort out errors in the kernel.\n");
+term_printf(
+  "-y   At one stage this enabled Japanese character support. Not now\n");
+term_printf(
+  "     maintained.\n");
+term_printf(
+  "-z   when the code starts up it is just a basic raw Lisp core without\n");
+term_printf(
+  "     even a compiler. Used to bootstrap the system.\n");
+term_printf(
+  "-- filename  redirect output to the given file so it does not appear\n");
+term_printf(
+  "     on the screen.\n");
+term_printf(
+  "--texmacs run in texmacs mode. You must use the plugin from the\n");
+term_printf(
+  "     cslbase/texmacs-plugin directory.\n");
+term_printf(
+  "--<other> reserved for additional extended options.\n");
+term_printf(
+  "--help this output!\n");
+                        my_exit(0);
                     }
                     else
                     {
@@ -1405,11 +1556,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  */
         case 'c':
                 fwin_restore();
-                term_printf("\nCSL was coded by Codemist Ltd, 1988-2008\n");
+                term_printf("\nCSL was coded by Codemist Ltd, 1988-2010\n");
                 term_printf("Distributed under the Modified BSD License\n");
-#ifdef HAVE_LIBFOX
-                term_printf("See also --help and --dump-source\n");
-#endif
+                term_printf("See also --help\n");
                 continue;
 
 /*
@@ -1432,7 +1581,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 }
                 continue;
 
-#ifndef DEMO_MODE
 /*
  *                      -E
  * This option is for an EXPERIMENT.  It may do different things in different
@@ -1448,9 +1596,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 if (sscanf(w, "%d", &load_limit) != 1)
                     load_limit = 0x7fffffff;
                 continue;
-#endif
 
-#ifndef DEMO_MODE
 #ifdef SOCKETS
         case 'f':
 /*
@@ -1635,7 +1781,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  */
                 continue;
 #endif
-#endif /* DEMO_MODE */
 
 /*
  *                      -G
@@ -1682,7 +1827,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * The case -I- indicated the "standard" file associated with this
  * executable binary.  Several images can be given.
  */
-#ifndef DEMO_MODE
         case 'i':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1696,13 +1840,12 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     term_printf("Too many \"-I/-O\" requests: ignored\n");
                 }
                 continue;
-#endif
 
 /*
  * -J enabled the "track dependencies" hack that I have. Every time
  * that a file is opened for reading it records the file-name concerned
  * and at the end of everything it dumps a record of all the distinct
- * files to the named placem as in "-J fileuse.dat"
+ * files to the named place, as in "-J fileuse.dat"
  */
         case 'j':
                 if (c2 != 0) w = &opt[2];
@@ -1725,7 +1868,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  *             -K200M or just -K200 indicates that many megabytes
  *             -K1.6G               indicates that many gigabytes
  */
-#ifndef DEMO_MODE
         case 'k':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1800,7 +1942,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     }
                 }
                 continue;
-#endif
 
 /*
  * -L <logfile> arranges that a transcript of the standard output is
@@ -1836,7 +1977,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 }
                 continue;
 
-#ifndef DEMO_MODE
 #ifdef MEMORY_TRACE
 /*
  * If MEMORY_TRACE is set up then I can cause an exception by providing
@@ -1858,7 +1998,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 }
                 continue;
 #endif
-#endif
 
 /*
  * -N tells CSL that even if the image being loaded contains a restart-
@@ -1869,16 +2008,13 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * test and diagnose the trouble at the Lisp level. Ordinary users are
  * NOT expected to want to know about this!
  */
-#ifndef DEMO_MODE
         case 'n':               /* Ignore restart function (-N) */
                 ignore_restart_fn = YES;
                 continue;
-#endif
 
 /*
  * -O <file>  specifies an image file for output (via FASLOUT or PRESERVE).
  */
-#ifndef DEMO_MODE
         case 'o':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
@@ -1894,7 +2030,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     term_printf("Too many \"-I/-O\" requests: ignored\n");
                 }
                 continue;
-#endif
 
 /*
  * -P is reserved for profile options.
@@ -1904,11 +2039,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * Please implement something for your favourite system here... what I would
  * like would be a call to monitor() or some such...
  */
-#ifndef DEMO_MODE
                 fwin_restore();
                 term_printf("Unimplemented option \"-%c\"\n", c1);
                 continue;
-#endif
 
 /*
  * -Q selects "quiet" mode.  See -V for the converse.
@@ -1971,14 +2104,12 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  *             generated here goes to the default output unit, which in
  *             some cases is just the screen.
  */
-#ifndef DEMO_MODE
         case 't':
                 if (c2 != 0) w = &opt[2];
                 else if (i != argc) w = argv[++i];
                 else break; /* Illegal at end of command-line */
                 module_enquiry = w;
                 continue;
-#endif
 
 /*
  * -U name     undefines the symbol <name> at the start of the run
@@ -1999,7 +2130,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 /*
  * -V selects "verbose" options at the start of the run
  */
-#ifndef DEMO_MODE
         case 'v':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
 /*
@@ -2015,7 +2145,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                     term_printf("Too many requests: \"-V\" ignored\n");
                 }
                 continue;
-#endif
     
 #ifdef WINDOW_SYSTEM
 /*
@@ -2043,11 +2172,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * maybe!  Only those who have access to the source code can make
  * good use of the -X option, so it is only described here!
  */
-#ifndef DEMO_MODE
         case 'x':
                 segvtrap = NO;
                 continue;
-#endif
 /*
  * -Y  sets the variable !*hankaku , which causes the lisp reader convert
  * a Zenkaku code to Hankaku one when read. I leave this option decoded
@@ -2056,7 +2183,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * This was part of the Internationalisation effort for CSL but I repeat
  * that it is no longer supported.
  */
-#ifndef DEMO_MODE
         case 'y':
                 if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                     symbols_to_define[number_of_symbols_to_define] =
@@ -2065,18 +2191,15 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 else
                     term_printf("Too many requests: \"-Y\" ignored\n");
                 continue;
-#endif
 
 /*
  * -Z tells CSL that it should not load an initial heap image, but should
  * run in "cold start" mode.  This is only intended to be useful for
  * system builders.
  */
-#ifndef DEMO_MODE
         case 'z':               /* Cold start option -z */
                 restartp = NO;
                 continue;
-#endif
 
         default:
                 fwin_restore();
@@ -2261,7 +2384,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 
 /*
  * Now dynamic code detects the floating point representation that is in use.
- * I thougt/hoped that doing it this way would be safer than relying on having
+ * I thought/hoped that doing it this way would be safer than relying on having
  * pre-defined symbols that tracked the machine architecture.
  */
         {   union fpch { double d; unsigned char c[8]; } d;
@@ -2278,6 +2401,18 @@ void cslstart(int argc, char *argv[], character_writer *wout)
             d.d = 1.0/7.0;
             switch ((d.c[1] << 8) | d.c[2])
             {
+/*
+ * At one stage I detected (on of the) VAX representations and the one used
+ * by the IBM s60/s370. These days I am only going to recognise cases that
+ * use IEEE layout. Even with that the example machines noted here reveal
+ * that evenb though IEEE explains what bits should be in the floating point
+ * value different manufacturers pack the words and bytes in a variety of
+ * ways! Well the mere shuffling of bytes is something I can deal with. If I
+ * really needed to make image files portable to old-style IBM mainframes
+ * or on a xArch machine set up to use hexadecimal floating point mode then
+ * what I have gere would moan. But if I just override the moan I will
+ * be able to build images and reload them on that particular machine.
+ */
         case 0x2449:    current_fp_rep = 0;
                         break;           /* Intel, MIPS */
         case 0x49c2:    current_fp_rep = FP_WORD_ORDER;
@@ -2299,11 +2434,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * Up until the time I call setup() I may only use term_printf for
  * output, because the other relevant streams will not have been set up.
  */
-#ifdef DEMO_MODE
-        setup(7, 0.0);   /* Force warm start, flag as demo mode */
-#else
         setup(restartp ? 3 : 2, store_size);
-#endif
 /*
  * I need to set the NOISY flag after doing setup to avoid it getting
  * reloaded from a heap image
@@ -2518,24 +2649,36 @@ static void cslaction(void)
         }
         else
 #endif
+#ifdef WINDOW_SYSTEM
+        terminal_eof_seen = 0;
+#endif
         if (number_of_input_files == 0) lisp_main();
         else
         {   int i;
             for (i=0; i<number_of_input_files; i++)
-            {   char filename[LONGEST_LEGAL_FILENAME];
-                FILE *f = open_file(filename, files_to_read[i],
-                                            strlen(files_to_read[i]), "r", NULL);
-                if (f == NULL)
-                    err_printf("\n+++ Could not read file \"%s\"\n",
-                               files_to_read[i]);
-                else
-                {   if (init_flags & INIT_VERBOSE)
-                        term_printf("\n+++ About to read file \"%s\"\n",
-                                    files_to_read[i]);
-                    report_file(filename);
-                    non_terminal_input = f;
+            {   if (strcmp(files_to_read[i], "-") == 0)
+                {   non_terminal_input = NULL;
+#ifdef WINDOW_SYSTEM
+                    terminal_eof_seen = 0;   
+#endif
                     lisp_main();
-                    fclose(f);
+                }
+                else
+                {   char filename[LONGEST_LEGAL_FILENAME];
+                    FILE *f = open_file(filename, files_to_read[i],
+                                                strlen(files_to_read[i]), "r", NULL);
+                    if (f == NULL)
+                        err_printf("\n+++ Could not read file \"%s\"\n",
+                                   files_to_read[i]);
+                    else
+                    {   if (init_flags & INIT_VERBOSE)
+                            term_printf("\n+++ About to read file \"%s\"\n",
+                                        files_to_read[i]);
+                        report_file(filename);
+                        non_terminal_input = f;
+                        lisp_main();
+                        fclose(f);
+                    }
                 }
             }
         }
@@ -2701,7 +2844,7 @@ static int submain(int argc, char *argv[])
     return 0;
 }
 
-#if defined HAVE_FWIN && !defined EMBEDDED 
+#if defined HAVE_FWIN && !defined EMBEDDED
 #define ENTRYPOINT fwin_main
 
 extern int ENTRYPOINT(int argc, char *argv[]);
@@ -2734,10 +2877,8 @@ int ENTRYPOINT(int argc, char *argv[])
 #endif
 
 #ifdef HAVE_FWIN
-#ifndef EMBEDDED
     strcpy(about_box_title, "About CSL");
     strcpy(about_box_description, "Codemist Standard Lisp");
-#endif
 #endif
 #ifdef __cplusplus
     try { res = submain(argc, argv); }

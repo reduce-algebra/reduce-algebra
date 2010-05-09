@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 593d661a 05-Jun-2008 */
+/* Signature: 349bca5a 17-Mar-2010 */
 
 
 #ifndef header_tags_h
@@ -274,7 +274,8 @@ typedef intptr_t Lisp_Object;
  * around a Gbyte are being allocated just where in the memory map things
  * are gets jolly uncertain and delicate. Specifically it may depend on the
  * excat version of Linux that you run. It all feels a big misery to me.
- * using that top bit could be held to be a mistake!
+ * using that top bit could be held to be a mistake! However once one moves
+ * to having 64-bit machines as standard it becomes possible to relax again.
  */
 
 #define is_marked_i(w)      (((int)(w) & GC_BIT_I) != 0)
@@ -290,6 +291,7 @@ typedef intptr_t Lisp_Object;
  * 4G space for system, with the lower 3G for user space. Some will let
  * malloc return space above or below the 2G mark in a way that the user can
  * not easily control. Those worried need to move to 64 bit machines soon.
+ * There the mark bit ix 0x8000000000000000.
  */
 
 extern Lisp_Object address_sign;  /* 0, 0x80000000 or 0x8000000000000000 */
@@ -422,6 +424,14 @@ extern unsigned long int car_low, car_high;
  */
 
 #define car32(p) (*(int32_t *)(p))
+
+/*
+ * cdr32(p) reads the next 32-bit word after that used by car32(p), and
+ * is used in related circumstances where I explicitly wish to work using
+ * just 32-bit values..
+ */
+
+#define cdr32(p) (*(int32_t *)(p))[1])
 
 typedef Lisp_Object Special_Form(Lisp_Object, Lisp_Object);
 
@@ -698,7 +708,7 @@ typedef uintptr_t Header;
 #define is_header(x) (((int)(x) & 0x30) != 0)     /* valid if is_odds() */
 #define is_char(x)   (((int)(x) & ODDS_MASK) == TAG_CHAR)
 #define is_bps(x)    (((int)(x) & ODDS_MASK) == TAG_BPS)
-#define is_hashtab(x)(((int)(x) & ODDS_MASK) == TAG_HASHTAB)
+/* #define is_hashtab(x)(((int)(x) & ODDS_MASK) == TAG_HASHTAB) not used */
 #define is_spid(x)   (((int)(x) & ODDS_MASK) == TAG_SPID)
 #define is_library(x)(((int)(x) & 0xffff)    == SPID_LIBRARY)
 #define library_number(x) (((x) >> 20) & 0xfff)
@@ -748,20 +758,36 @@ typedef uintptr_t Header;
  * am on a 32-bit machine. If PAGE_BITS is 22 (my current default on
  * most systems) this will be up to 16 pages each holding 4 Mbytes.
  * Given the compactness of the bytecode format the limit seems generous
- * enough at present!
+ * enough at present! One thing to note here is that the packed address
+ * in a BPS reference goes to the data not to the header that preceeds it.
+ * If I am on a 64-bit machine I may need to have a way to refer to an
+ * address in the top half of an oversized page. But I only ever need to do
+ * that if I am on a 64-bit system and in that case I have all the top
+ * 32-bits of the word available. There is a slight initial cause for
+ * concern because when things are initially expanded to 64 bits it is
+ * using sign-extension, so the top half of the item could be either
+ * all zeros or all ones. But if I am careful when I create all BPS
+ * pointers and when I adjust them after loading an image I can set a
+ * bit in the top half of the word if necessary. I very much hope that
+ * good optimising compilers will note whether SIXTY_FOUR_BIT is true
+ * or false and optimise what is written here as a dynamic test into
+ * reasonable code.
  */
-#define data_of_bps(v) \
-  ((char *)(doubleword_align_up((intptr_t) \
-             bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) + \
+#define data_of_bps(v)                                        \
+  ((char *)(doubleword_align_up((intptr_t)                    \
+               bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) +   \
+            (SIXTY_FOUR_BIT ?                                 \
+               (intptr_t)((((uint64_t)(v))>>(32-PAGE_BITS)) & \
+                          PAGE_POWER_OF_TWO) :                \
+               0) +                                           \
             (((v) >> 6) & (PAGE_POWER_OF_TWO-4))))
 
 
 typedef int32_t junk;      /* Unused 4-byte field for structures (for padding) */
-typedef intptr_t junkxx;    /* Unused cell-sized field for structures */
+typedef intptr_t junkxx;   /* Unused cell-sized field for structures */
 
 typedef struct Symbol_Head
 {
-    Header header;      /* Standard format header for vector types */
 /*
  * TAG_SYMBOL has the value 4, so on a 32-bit system a pointer
  * to a symbol points at the second word of it, ie the value cell. The
@@ -771,19 +797,29 @@ typedef struct Symbol_Head
  * where (car nil) and (cdr nil) must both be legal and yield nil. This
  * can be handled by tagging NIL as a CONS not a SYMBOL in the Common Lisp
  * case. But then when NIL is used as a SYMBOL all the offsets will be
- * wrong... In 32-bit mode this makes 
+ * wrong... So really any punning about CAR of a symbol should not be
+ * used - the code should always behave properly and use eg qvalue().
+ * Note that when I look at it today I am worried about the symalign macro
+ * for use in 64-bit mode with the Common Lisp variety. I am not certain it
+ * has ever been tested and it really looks delicate and possibly broken. 
  *
  * BEWARE!
  */
-    Lisp_Object value;  /* Global or special value cell */
-    Lisp_Object env;    /* Extra stuff to help function cell */
-    intptr_t function1;     /* Executable code always (just 1 arg) */
-    intptr_t function2;     /* Executable code always (just 2 args) */
-    intptr_t functionn;     /* Executable code always (0, or >= 3 args) */
+    Header header;      /* Standard format header for vector types */
+    Lisp_Object value;   /* Global or special value cell */
+
+    Lisp_Object env;     /* Extra stuff to help function cell */
+    intptr_t function1;  /* Executable code always (just 1 arg) */
+
+    intptr_t function2;  /* Executable code always (just 2 args) */
+    intptr_t functionn;  /* Executable code always (0, or >= 3 args) */
+
     Lisp_Object pname;   /* A string (always) */
     Lisp_Object plist;   /* A list */
+
     Lisp_Object fastgets;/* to speed up flagp and get */
     uintptr_t count;     /* for statistics */
+
 #ifdef COMMON
     Lisp_Object package;/* Home package - a package object */
 /*
@@ -1010,6 +1046,8 @@ typedef struct Single_Float
 #define long_float_val(v)       (*(double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 #endif
+
+#define word_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 3) & (-4)))
 
 #define doubleword_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 7) & (-8)))
 #define doubleword_align_down(n) ((Lisp_Object)((intptr_t)(n) & (-8)))

@@ -1,4 +1,4 @@
-/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2008 */
+/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2010 */
 
 /*
  * Garbage collection.
@@ -43,7 +43,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1fe43b90 24-Mar-2010 */
+/* Signature: 323d4f71 09-May-2010 */
 
 #include "headers.h"
 
@@ -1100,7 +1100,7 @@ static int fold_cons_heap(void)
     char *top_start = top_low + CSL_PAGE_SIZE,
          *bottom_start = bottom_low + CSL_PAGE_SIZE;
 /*
- * BEWARE if the lengths here ,ight be marked to indicate a double-sized
+ * BEWARE if the lengths here might be marked to indicate a double-sized
  * page.
  */
     char *top_fringe = top_low + car32(top_low),

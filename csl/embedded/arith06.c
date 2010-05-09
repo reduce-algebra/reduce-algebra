@@ -35,7 +35,7 @@
  *************************************************************************/
 
 
-/* Signature: 29eba962 24-May-2008 */
+/* Signature: 46797271 04-Jul-2009 */
 
 #include "headers.h"
 
@@ -1783,18 +1783,6 @@ static Lisp_Object Llogor2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2)
     return Lboolfn(env, 2, a1, a2);
 }
 
-static Lisp_Object MS_CDECL Ldemo_mode(Lisp_Object nil, int nargs, ...)
-{
-    argcheck(nargs, 0, "demo-mode");
-#ifdef DEMO_BUILD
-/*  if (qfn1(compiler_symbol) == undefined1) */
-    {   Csrand(demo_key1, demo_key2);
-        return onevalue(lisp_true);
-    }
-#endif
-    return onevalue(nil);
-}
-
 setup_type const arith06_setup[] =
 {
     {"ash",                     too_few_2, Lash, wrong_no_2},
@@ -1825,7 +1813,6 @@ setup_type const arith06_setup[] =
     {"zerop",                   Lzerop, too_many_1, wrong_no_1},
     {"md5",                     Lmd5, too_many_1, wrong_no_1},
     {"md60",                    Lmd60, too_many_1, wrong_no_1},
-    {"demo-mode",               wrong_no_0a, wrong_no_0b, Ldemo_mode},
 #ifdef COMMON
     {"*",                       Lidentity, Ltimes2, Ltimes},
     {"+",                       Lidentity, Lplus2, Lplus},

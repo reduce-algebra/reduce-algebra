@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u06.c Machine generated C code */
 
-/* Signature: 00000000 21-Jun-2009 */
+/* Signature: 00000000 22-Apr-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,6 +235,7 @@ extern unsigned long int car_low, car_high;
 #define qcdr(p) (((Cons_Cell *) (p))->cdr)
 #endif 
 #define car32(p) (*(int32_t *)(p))
+#define cdr32(p) (*(int32_t *)(p))[1])
 typedef Lisp_Object Special_Form(Lisp_Object, Lisp_Object);
 typedef Lisp_Object one_args(Lisp_Object, Lisp_Object);
 typedef Lisp_Object two_args(Lisp_Object, Lisp_Object, Lisp_Object);
@@ -389,7 +390,6 @@ typedef uintptr_t Header;
 #define is_header(x) (((int)(x) & 0x30) != 0)     
 #define is_char(x)   (((int)(x) & ODDS_MASK) == TAG_CHAR)
 #define is_bps(x)    (((int)(x) & ODDS_MASK) == TAG_BPS)
-#define is_hashtab(x)(((int)(x) & ODDS_MASK) == TAG_HASHTAB)
 #define is_spid(x)   (((int)(x) & ODDS_MASK) == TAG_SPID)
 #define is_library(x)(((int)(x) & 0xffff)    == SPID_LIBRARY)
 #define library_number(x) (((x) >> 20) & 0xfff)
@@ -406,20 +406,24 @@ typedef uintptr_t Header;
     
 #define CHAR_EOF pack_char(0, 0xff, 4)
  
-#define data_of_bps(v) \
-  ((char *)(doubleword_align_up((intptr_t) \
-             bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) + \
+#define data_of_bps(v)                                        \
+  ((char *)(doubleword_align_up((intptr_t)                    \
+               bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) +   \
+            (SIXTY_FOUR_BIT ?                                 \
+               (intptr_t)((((uint64_t)(v))>>(32-PAGE_BITS)) & \
+                          PAGE_POWER_OF_TWO) :                \
+               0) +                                           \
             (((v) >> 6) & (PAGE_POWER_OF_TWO-4))))
 typedef int32_t junk;      
-typedef intptr_t junkxx;    
+typedef intptr_t junkxx;   
 typedef struct Symbol_Head
 {
     Header header;      
-    Lisp_Object value;  
-    Lisp_Object env;    
-    intptr_t function1;     
-    intptr_t function2;     
-    intptr_t functionn;     
+    Lisp_Object value;   
+    Lisp_Object env;     
+    intptr_t function1;  
+    intptr_t function2;  
+    intptr_t functionn;  
     Lisp_Object pname;   
     Lisp_Object plist;   
     Lisp_Object fastgets;
@@ -549,6 +553,7 @@ typedef struct Single_Float
 #define long_float_val(v)       (*(double *)((char *)(v) + \
                                    (8-TAG_BOXFLOAT)))
 #endif
+#define word_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 3) & (-4)))
 #define doubleword_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 7) & (-8)))
 #define doubleword_align_down(n) ((Lisp_Object)((intptr_t)(n) & (-8)))
 #define quadword_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 15) & (-16)))
@@ -627,7 +632,7 @@ extern void MS_CDECL fatal_error(int code, ...);
 #define err_stack_overflow       31
 #define err_top_bit              32
 #define err_mem_spans_zero       33
-#define err_registration         34
+#define err_no_longer_used       34      
 #define err_no_tempdir           35
     
 #ifdef INCLUDE_ERROR_STRING_TABLE
@@ -667,7 +672,7 @@ static char *error_message_table[] =
     "stack overflow",
     "top bit of address has unexpected value",
     "memory block spans the zero address",
-    "registration code corrupt or invalid",
+    "this error code available for re-use",
     "unable to find a directory for temporary files",
     "dummy final error message"
 };
@@ -721,18 +726,19 @@ typedef struct page_map_t
     int type;
 } page_map_t;
 #endif
-extern int pages_count,
-           heap_pages_count, vheap_pages_count,
-           bps_pages_count, native_pages_count;
-extern int new_heap_pages_count, new_vheap_pages_count,
-           new_bps_pages_count, new_native_pages_count;
-extern int native_pages_changed;
+extern int32_t pages_count,
+               heap_pages_count, vheap_pages_count,
+               bps_pages_count, native_pages_count;
+extern int32_t new_heap_pages_count, new_vheap_pages_count,
+               new_bps_pages_count, new_native_pages_count;
+extern int32_t native_pages_changed;
 extern int32_t native_fringe;
 extern Lisp_Object *nilsegment, *stacksegment;
 extern Lisp_Object *stackbase;
 extern int32_t stack_segsize;  
 extern Lisp_Object *C_stack;
 #define stack C_stack
+extern char *big_chunk_start, *big_chunk_end;
 #ifdef CONSERVATIVE
 extern Lisp_Object *C_stackbase, *C_stacktop;
 #endif
@@ -889,7 +895,7 @@ extern Lisp_Object C_nil;
 #endif
 #ifdef NILSEG_EXTERNS
 #define nil_as_base
-extern uint32_t byteflip;
+extern intptr_t byteflip;
 extern Lisp_Object codefringe;
 extern Lisp_Object volatile codelimit;
 extern Lisp_Object * volatile stacklimit;
@@ -897,11 +903,11 @@ extern Lisp_Object fringe;
 extern Lisp_Object volatile heaplimit;
 extern Lisp_Object volatile vheaplimit;
 extern Lisp_Object vfringe;
-extern int32_t nwork;
-extern int32_t exit_reason;
-extern int32_t exit_count;
-extern uint32_t gensym_ser, print_precision, miscflags;
-extern int32_t current_modulus, fastget_size, package_bits;
+extern intptr_t nwork;
+extern intptr_t exit_reason;
+extern intptr_t exit_count;
+extern intptr_t gensym_ser, print_precision, miscflags;
+extern intptr_t current_modulus, fastget_size, package_bits;
 extern Lisp_Object lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern Lisp_Object quote_symbol, function_symbol, comma_symbol;
 extern Lisp_Object comma_at_symbol, cons_symbol, eval_symbol;
@@ -1016,7 +1022,7 @@ extern Lisp_Object user_base_9;
 #define work_50             workbase[50]
 #else 
 #define nil_as_base  Lisp_Object nil = C_nil;
-#define byteflip              (*(uint32_t *)&BASE[12])
+#define byteflip              BASE[12]
 #define codefringe            BASE[13]
 #define codelimit             (*(Lisp_Object volatile *)&BASE[14])
 extern Lisp_Object * volatile stacklimit;
@@ -1024,15 +1030,15 @@ extern Lisp_Object * volatile stacklimit;
 #define heaplimit             (*(Lisp_Object volatile *)&BASE[19])
 #define vheaplimit            (*(Lisp_Object volatile *)&BASE[20])
 #define vfringe               BASE[21]
-#define miscflags             (*(uint32_t *)&BASE[22])
-#define nwork                 (*(int32_t *)&BASE[24])
-#define exit_reason           (*(int32_t *)&BASE[25])
-#define exit_count            (*(int32_t *)&BASE[26])
-#define gensym_ser            (*(uint32_t *)&BASE[27])
-#define print_precision       (*(uint32_t *)&BASE[28])
-#define current_modulus       (*(int32_t *)&BASE[29])
-#define fastget_size          (*(int32_t *)&BASE[30])
-#define package_bits          (*(int32_t *)&BASE[31])
+#define miscflags             BASE[22]
+#define nwork                 BASE[24]
+#define exit_reason           BASE[25]
+#define exit_count            BASE[26]
+#define gensym_ser            BASE[27]
+#define print_precision       BASE[28]
+#define current_modulus       BASE[29]
+#define fastget_size          BASE[30]
+#define package_bits          BASE[31]
 #define current_package       BASE[52]
 #define B_reg                 BASE[53]
 #define codevec               BASE[54]
@@ -1194,6 +1200,7 @@ extern int number_of_input_files,
 extern int native_code_tag;
 extern char *standard_directory;
 extern int gc_number;
+extern CSLbool gc_method_is_copying;
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2
 #define INIT_EXPANDABLE 4
@@ -1285,9 +1292,6 @@ extern long int Ioutsize(void);
 extern char *CSLtmpnam(char *suffix, int32_t suffixlen);
 extern int Cmkdir(char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
-#define REGISTRATION_SIZE     192
-#define REGISTRATION_VERSION  "r1.0"
-extern unsigned char registration_data[REGISTRATION_SIZE];
 extern void CSL_MD5_Init(void);
 extern void CSL_MD5_Update(unsigned char *data, int len);
 extern void CSL_MD5_Final(unsigned char *md);
@@ -1296,14 +1300,6 @@ extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
 extern void checksum(Lisp_Object a);
 extern unsigned char unpredictable[256];
 extern void inject_randomness(int n);
-extern void crypt_init(char *key);
-#define CRYPT_BLOCK 128
-extern void crypt_get_block(unsigned char result[CRYPT_BLOCK]);
-#define CRYPT_KEYS 10
-extern char *crypt_keys[CRYPT_KEYS];
-extern int crypt_active;
-extern unsigned char *crypt_buffer;
-extern int crypt_count;
 extern void ensure_screen(void);
 extern int window_heading;
 extern void my_exit(int n);
@@ -1411,7 +1407,7 @@ extern Lisp_Object nreverse(Lisp_Object a);
 extern FILE        *open_file(char *filename, char *original_name,
                               size_t n, char *dirn, FILE *old_file);
 extern Lisp_Object plus2(Lisp_Object a, Lisp_Object b);
-extern void        preserve(char *msg);
+extern void        preserve(char *msg, int len);
 extern void        preserve_native_code(void);
 extern void        relocate_native_function(unsigned char *bps);
 extern Lisp_Object prin(Lisp_Object u);
@@ -1452,12 +1448,6 @@ extern Lisp_Object times2(Lisp_Object a, Lisp_Object b);
 extern int32_t       thirty_two_bits(Lisp_Object a);
 #ifdef HAVE_INT64_T
 extern int64_t       sixty_four_bits(Lisp_Object a);
-#endif
-#if defined DEMO_MODE || defined DEMO_BUILD
-extern void give_up();
-#endif
-#ifdef DEMO_BUILD
-extern int32_t demo_key1, demo_key2;
 #endif
 #ifdef COMMON
 #define onevalue(r)   (exit_count=1, (r))
