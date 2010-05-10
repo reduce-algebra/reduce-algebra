@@ -144,6 +144,8 @@ dependencies := makelist {}; % dependencies removed by pde2eds
 
 flag('(pullback_maps dependencies),'share);
 
+remprop('indexlist,'vartype);   % WN indexlist may not be fluid
+				% it is a function in contact.red
 % Macros used throughout
 
 
