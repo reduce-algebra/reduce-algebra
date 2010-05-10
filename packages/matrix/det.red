@@ -140,6 +140,9 @@ symbolic procedure bareiss!-det u;
    bu := if length bu = n then (lc car bu ./ cdr nu) else (nil ./ 1);
    setkorder ok;
    if temp then <<asymplis!* := car temp; wtl!* := cdr temp>>;
+   if getd 'remob then foreach vv in v do remob vv; %% WN
+		%% PSL suffers from a potential lack of IDs after
+                %% many det computations
    return resimp bu
    end;
 
