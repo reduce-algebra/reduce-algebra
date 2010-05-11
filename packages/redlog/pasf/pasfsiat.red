@@ -156,10 +156,25 @@ procedure pasf_mr(atf);
    % formula. Returns a modulo free formula equivalent to [atf]. For
    % non-congruences nothing can be done.
    if not rl_tvalp atf and pasf_congp atf and domainp pasf_m atf then
-      pasf_0mk2(pasf_op atf,remf(pasf_arg2l atf,pasf_m atf))
+      pasf_0mk2(pasf_op atf,pasf_premf(pasf_arg2l atf,pasf_m atf))
    else
       % For non-congruences nothing can be done
       atf;
+
+procedure pasf_premf(f,m);
+   % Positive remainder.
+   pasf_premf1(remf(f,m),m);
+
+procedure pasf_premf1(r,m);
+   begin scalar c,v,d,rr;
+      if domainp r then
+	 return if minusf r then addf(r,m) else r;
+      c := pasf_premf1(lc r,m);
+      v := !*k2f mvar r;
+      d := ldeg r;
+      rr := pasf_premf1(red r,m);
+      return addf(multf(c,exptf(v,d)),rr)
+   end;
 
 procedure pasf_ceeq(atf);
    % Presburger arithmetic standard form content elimination (CE) for
