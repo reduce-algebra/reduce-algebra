@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,13 +26,13 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(pasf_rcsid!* pasf_copyright!*);
    pasf_rcsid!* := "$Id$";
    pasf_copyright!* :=
-      "Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm"
+      "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm"
 >>;
 
 module pasf;
@@ -41,7 +41,7 @@ module pasf;
 % relations (operators) are [equal], [neq], [leq], [geq], [lessp],
 % [greaterp]. Ternary relations are [cong] and [ncong].
 
-create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat 
+create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
    pasfqe pasfsism pasfopt),nil);
 
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*utf8);
@@ -180,7 +180,8 @@ put('pasf,'rl_services,'(
    (rl_stex!* . pasf_stex)
    (rl_expanda!* . pasf_expanda)
    (rl_zsimpl!* . pasf_zsimpl)
-   (rl_resolve!* . cl_resolve)));
+   (rl_resolve!* . cl_resolve)
+   (rl_depth!* . cl_depth)));
 
 % Administration definitions
 put('pasf,'simpfnname,'pasf_simpfn);
@@ -343,7 +344,7 @@ procedure pasf_fancy!-pricong!-fm(l);
       maprin cadddr l;
       fancy!-prin2 ")"
    >>;
-   
+
 procedure pasf_verbosep();
    % Presburger arithmetic standard form verbose switch. Returns t iff the
    % main switch rlverbose is on and the switch rlpasfvb is on.
@@ -367,9 +368,9 @@ procedure pasf_resimpat(atf);
    % Presburger arithmetic standard form resimp atomic formula. [atf] is a
    % PASF atomic formula. Returns the atomic formula [atf] with resimplified
    % terms.
-   pasf_mk2(if pasf_congp atf then 
+   pasf_mk2(if pasf_congp atf then
       (pasf_opn atf . numr resimp !*f2q pasf_m atf)
-   else 
+   else
       pasf_op atf,
       numr resimp !*f2q pasf_arg2l atf, numr resimp !*f2q pasf_arg2r atf);
 
@@ -495,10 +496,10 @@ procedure pasf_uprap1(f,bvarl);
 	    s := s or pasf_uprap1(arg,bvarl);
 	 return s
       >>;
-      if rl_quap rl_op f then 
+      if rl_quap rl_op f then
 	 return pasf_uprap1(rl_mat f,rl_var f . bvarl);
       if rl_bquap rl_op f then
-	 return (pasf_uprap1(rl_mat f,rl_var f . bvarl) or 
+	 return (pasf_uprap1(rl_mat f,rl_var f . bvarl) or
 	    pasf_uprap1(rl_b f,bvarl));
       % Atomic formulas
       return if pasf_congp f then
