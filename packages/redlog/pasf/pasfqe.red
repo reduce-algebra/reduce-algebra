@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,14 +26,14 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(pasf_qe_rcsid!* pasf_qe_copyright!*);
    pasf_qe_rcsid!* :=
       "$Id$";
    pasf_qe_copyright!* :=
-      "Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm"
+      "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm"
 >>;
 
 module pasfqe;
@@ -43,33 +43,33 @@ module pasfqe;
 % ---- Quantifier elimination control ----------------------------------------
 
 procedure pasf_qe(phi,theo);
-   % Presburger arithmetic standard form quantifier elimination. [phi] is a
-   % formula; [theo] is an explicit theory. Returns a strictly quantifier-free
-   % formula equivalent to [phi].
+   % Presburger arithmetic standard form quantifier elimination. [phi]
+   % is a formula; [theo] is an explicit theory. Returns a strictly
+   % quantifier-free formula equivalent to [phi].
    if null pasf_uprap phi then
       pasf_expand pasf_gqe(phi,theo,nil,simp 1)
    else
       rederr{"Only weak quantifier elimination possible"};
 
 procedure pasf_wqe(phi,theo);
-   % Presburger arithmetic standard form weak quantifier elimination. [phi] is
-   % a formula; [theo] is an explicit theory. Returns a weakly quantifier-free
-   % formula equivalent to [phi].
+   % Presburger arithmetic standard form weak quantifier elimination.
+   % [phi] is a formula; [theo] is an explicit theory. Returns a weakly
+   % quantifier-free formula equivalent to [phi].
    pasf_gqe(phi,theo,nil,simp 1);
 
 procedure pasf_qea(phi,theo);
    % Presburger arithmetic standard form quantifier elimination with
-   % answers. [phi] is a formula; [theo] is an explicit theory. Returns an
-   % answer to the quantifier elimination.
+   % answers. [phi] is a formula; [theo] is an explicit theory. Returns
+   % an answer to the quantifier elimination.
    if null pasf_uprap phi then
       pasf_expanda(pasf_wqea(phi,theo),phi)
    else
       rederr{"Only weak quantifier elimination possible"};
 
 procedure pasf_wqea(phi,theo);
-   % Presburger arithmetic standard form weak quantifier elimination with
-   % answers. [phi] is a formula; [theo] is an explicit theory. Returns an
-   % answer to the quantifier elimination.
+   % Presburger arithmetic standard form weak quantifier elimination
+   % with answers. [phi] is a formula; [theo] is an explicit theory.
+   % Returns an answer to the quantifier elimination.
    begin scalar res,ret;
       res := pasf_gqe(phi,theo,t,simp 1);
       for each r in res do
@@ -81,8 +81,9 @@ procedure pasf_wqea(phi,theo);
 
 procedure pasf_pqe(phi,p,theo);
    % Presburger arithmetic standard form probabilistic weak quantifier
-   % elimination. [phi] is a formula; [theo] is an explicit theory; [p] is a
-   % probability for PQE. Returns a $p$-equivalent quantifier-free formula.
+   % elimination. [phi] is a formula; [theo] is an explicit theory; [p]
+   % is a probability for PQE. Returns a $p$-equivalent quantifier-free
+   % formula.
    if null pasf_uprap phi then
       pasf_gqe(phi,theo,nil,p)
    else
@@ -99,10 +100,10 @@ procedure pasf_pqea(phi,p,theo);
       rederr{"Probabilistic quantifier elimination impossible"};
 
 procedure pasf_pqea1(phi,theo,p);
-   % Presburger arithmetic standard form probabilistic quantifier elimination
-   % with answers subprocedure. [phi] is a formula; [theo] is an explicit
-   % theory; [p] is a probability for PQE. Returns an answer to the
-   % probabilistic quantifier elimination.
+   % Presburger arithmetic standard form probabilistic quantifier
+   % elimination with answers subprocedure. [phi] is a formula; [theo]
+   % is an explicit theory; [p] is a probability for PQE. Returns an
+   % answer to the probabilistic quantifier elimination.
    begin scalar res,ret;
       res := pasf_gqe(phi,theo,t,p);
       for each r in res do
@@ -113,12 +114,13 @@ procedure pasf_pqea1(phi,theo,p);
    end;
 
 procedure pasf_gqe(phi,theo,answ,p);
-   % Presburger arithmetic standard form generic compute a quantifier-free
-   % formula equivalent. [phi] is a formula; [theo] is the explicit theory;
-   % [answ] should be set to nil iff no answers are required; [p] is the
-   % probability for PQE. Returns a quantifier-free formula $\psi$ equivalent
-   % to $\phi$ if [answ] is nil and a pair $(\psi . a)$ where $a$ is an answer
-   % for the last quantifier block otherwise.
+   % Presburger arithmetic standard form generic compute a
+   % quantifier-free formula equivalent. [phi] is a formula; [theo] is
+   % the explicit theory; [answ] should be set to nil iff no answers are
+   % required; [p] is the probability for PQE. Returns a quantifier-free
+   % formula $\psi$ equivalent to $\phi$ if [answ] is nil and a pair
+   % $(\psi . a)$ where $a$ is an answer for the last quantifier block
+   % otherwise.
    begin scalar rslt,pt,retn,tmp,bl,tl;
       if !*rlverbose then ioto_tprin2 "++++ Entering pasf_qe";
       % Tests for correct UPrA form.
@@ -133,7 +135,7 @@ procedure pasf_gqe(phi,theo,answ,p);
       else
       	 pasf_pnf phi;
       % Determining the problem type for answers
-      if rl_op rslt eq 'ex or phi then pt := 'existential 
+      if rl_op rslt eq 'ex or phi then pt := 'existential
       else if rl_op rslt eq 'all or phi then pt := 'universal
       % For now user has to specify the formula with a non-bounded quantifier
       % in front to get answers
@@ -143,7 +145,7 @@ procedure pasf_gqe(phi,theo,answ,p);
       if answ and rl_tvalp rslt then
 	 rslt := {answ_new(rslt,nil,nil)};
       % The last step is always simplified via input theory
-      if answ then << 
+      if answ then <<
 	 for each an in rslt do <<
 	    tmp :=  cl_simpl(answ_f an,theo,-1);
 	    bl := answ_bl an;
@@ -161,15 +163,15 @@ procedure pasf_gqe(phi,theo,answ,p);
    end;
 
 procedure pasf_inplaceqe(phi,theo,answ,p);
-   % Presburger arithmetic standard form inplace quantifier elimination. [phi]
-   % is a formula; [theo] is a theory; [answ] is the answer flag, [p] is the
-   % probability for PQE. Returns a quantifier-free equivalent or an answer
-   % according to answ flag.
+   % Presburger arithmetic standard form inplace quantifier elimination.
+   % [phi] is a formula; [theo] is a theory; [answ] is the answer flag,
+   % [p] is the probability for PQE. Returns a quantifier-free
+   % equivalent or an answer according to answ flag.
    begin scalar res;
       res := pasf_inplaceqe1(phi,theo,p);
       if cdr res then
-      % The outter-most block is eliminated explicitly
-	 return pasf_qeblock(cadr res,cddr res,car res,theo,
+      	 % The outermost block is eliminated explicitly
+      	 return pasf_qeblock(cadr res,cddr res,car res,theo,
 	    if answ then answ_new('true,nil,nil) else nil,p);
       return car res
    end;
@@ -183,7 +185,7 @@ procedure pasf_inplaceqe1(phi,theo,p);
       % this procedure with are not the outter-most
       if rl_bquap rl_op phi then <<
 	 tmp := pasf_inplaceqe1(rl_mat phi,theo,p);
-	 if cdr tmp then 
+	 if cdr tmp then
 	    % A normal quantifier block has ended by outter bounded quantifier
 	    f := pasf_qeblock(cadr tmp,cddr tmp,car tmp,theo,nil,p)
 	 else
@@ -192,9 +194,9 @@ procedure pasf_inplaceqe1(phi,theo,p);
       >>;
       if rl_quap rl_op phi then <<
 	 tmp := pasf_inplaceqe1(rl_mat phi,theo,p);
-	 return if cdr tmp then 
+	 return if cdr tmp then
  	    (if cadr tmp neq rl_op phi then
-	       (pasf_qeblock(cadr tmp,cddr tmp,car tmp,theo,nil,p) . 
+	       (pasf_qeblock(cadr tmp,cddr tmp,car tmp,theo,nil,p) .
 	       	  (rl_op phi . {rl_var phi}))
 	    else
 	       (car tmp . (cadr tmp . (rl_var phi . cddr tmp))))
@@ -208,11 +210,12 @@ procedure pasf_inplaceqe1(phi,theo,p);
 
 procedure pasf_qeblock(theta,varl,psi,theo,answ,p);
    % Presburger arithmetic standrd form eliminate a block of
-   % quantifiers. [theta] if the quantifier type; [varl] is a list of bounded
-   % variables by the quantifier; [psi] is the matrix of the formula; [theo]
-   % is the current theory; [answ] should be set to nil if no answers are
-   % required; [p] is the probability for PQE. Returns an equivalent
-   % quantifier-free formula or a pair $(\psi . a)$ where $a$ is an answer.
+   % quantifiers. [theta] if the quantifier type; [varl] is a list of
+   % bounded variables by the quantifier; [psi] is the matrix of the
+   % formula; [theo] is the current theory; [answ] should be set to nil
+   % if no answers are required; [p] is the probability for PQE. Returns
+   % an equivalent quantifier-free formula or a pair $(\psi . a)$ where
+   % $a$ is an answer.
    begin scalar res;integer dpth,vlv;
       if !*rlverbose then <<
 	 ioto_tprin2 {"---- ",theta . reverse varl};
@@ -224,7 +227,7 @@ procedure pasf_qeblock(theta,varl,psi,theo,answ,p);
 	    ioto_prin2t {" [BFS: depth ",dpth,"]"}
       >>;
       if theta eq 'ex then
-      	 res := pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p) 
+      	 res := pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p)
       else <<
 	 % Handling of the all operator
       	 res := pasf_qeexblock(varl,cl_nnfnot psi,dpth,vlv,theo,answ,p);
@@ -239,11 +242,12 @@ procedure pasf_qeblock(theta,varl,psi,theo,answ,p);
 
 procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
    % Presburger arithmetic standrd form eliminate a block of existential
-   % quantifiers. [varl] are the bounded variables; [psi] is the matrix of the
-   % formula; [dpth] ist the recursion depth; [vlv] is a list of variables;
-   % [theo] is a theory; [answ] is nil if no answers are required; [p] is the
-   % probability for PQE. Returns an equivalent quantifier-free formula or a
-   % pair $(\psi . a)$ where $a$ is an answer.
+   % quantifiers. [varl] are the bounded variables; [psi] is the matrix
+   % of the formula; [dpth] ist the recursion depth; [vlv] is a list of
+   % variables; [theo] is a theory; [answ] is nil if no answers are
+   % required; [p] is the probability for PQE. Returns an equivalent
+   % quantifier-free formula or a pair $(\psi . a)$ where $a$ is an
+   % answer.
    begin scalar co,cvl,w,coe,f,newj,v,ans; integer c,delc,oldcol,count;
       cvl := varl;
       if rl_op psi eq 'or then
@@ -284,7 +288,7 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
 	       delc := delc + oldcol + length ans - cl_colength(co)
 	 >> else <<
 	    if answ then
-	       for each an in ans do 
+	       for each an in ans do
 		  newj := lto_insert(cl_coan an,newj)
 	    else
 	       for each an in ans do newj := lto_insert(cl_cof an,newj)
@@ -299,12 +303,13 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
    end;
 
 procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
-   % Presburger arithmetic standard form eliminate an existential quantifier
-   % in front of a quantifier free formula. [psi] is a formula; [x] is the
-   % quantified variable; [theo] is the current theory; [answ] is an ANSW
-   % structure; [cvlm] is the variable list; [p] is the probability for
-   % PQE. Returns a pair $(a . p) . theo'$ where $a=t$ and $p$ is a list of
-   % container elements and $theo'$ a theory.
+   % Presburger arithmetic standard form eliminate an existential
+   % quantifier in front of a quantifier free formula. [psi] is a
+   % formula; [x] is the quantified variable; [theo] is the current
+   % theory; [answ] is an ANSW structure; [cvlm] is the variable list;
+   % [p] is the probability for PQE. Returns a pair $(a . p) . theo'$
+   % where $a=t$ and $p$ is a list of container elements and $theo'$ a
+   % theory.
    begin scalar eset,dec,f,res,pcc,tmp;
       % PNF must be applied because of guards added during the substitution
       psi := pasf_pnf psi;
@@ -312,12 +317,12 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
       	 % The formula does not contain the quantified variable
 	 if !*rlverbose then ioto_prin2 "*";
 	 return {cl_mkcoel(cvlm,psi,answ_new(psi,nil,
-	    if answ then 
+	    if answ then
 	       pasf_mk2('equal,numr simp x,simp 0) . answ_tl answ else nil),nil)}
       >>;
       if !*rlverbose then ioto_prin2 "e";
       % Computing a gauss decomposition of the input formula
-      dec := if !*rlpasfgauss then 
+      dec := if !*rlpasfgauss then
 	 pasf_gaussdec(psi,x,theo)
       else
 	 (nil . psi);
@@ -338,9 +343,9 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
       res := append(
 	 % Substitution of points from non gauss formulas
 	 if null eset and f neq 'false then {answ_new(f,nil,
-	    if answ then 
+	    if answ then
 	       pasf_mk2('equal,numr simp x,simp 0) . answ_tl answ else nil)} else
-	    for each elimpt in eset collect 
+	    for each elimpt in eset collect
 	       pasf_vs(if !*rlpasfsc then <<
 		  tmp := pasf_condense(f,elimpt_pos elimpt);
 		  pcc := pcc + cdr tmp;
@@ -353,16 +358,16 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
 	       pcc := pcc + cdr tmp;
 	       car tmp
 	    >> else psi,x,elimpt));
-      if !*rlverbose and pcc > 0 then << 
+      if !*rlverbose and pcc > 0 then <<
 	 ioto_prin2 "c";
-	 ioto_prin2 pcc 
+	 ioto_prin2 pcc
       >>;
       % Simplifying the results
       res := for each rs in res collect
-	 answ_new(if !*rlpasfsimplify then 
+	 answ_new(if !*rlpasfsimplify then
 	    cl_simpl(answ_f rs,theo,-1) else answ_f rs,answ_bl rs,answ_tl rs);
       % Answers represent directly the output disjunction
-      return for each an in res collect 
+      return for each an in res collect
 	 cl_mkcoel(cvlm,answ_f an,answ_backsubst(an,answ),nil)
    end;
 
@@ -370,8 +375,8 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
 
 procedure pasf_vs(f,x,elimpt);
    % Presburger arithmetic standard form virtual substitution. [f] is a
-   % positive quantifier-free formula; [x] is a variable; [elimptl] is an
-   % ELIMPT. Returns a list of ANSW structures.
+   % positive quantifier-free formula; [x] is a variable; [elimptl] is
+   % an ELIMPT. Returns a list of ANSW structures.
    begin scalar res,tf,bvl,sf;
       % Creating the formula to substitute
       sf := cl_apply2ats1(f,'pasf_vsubstatf,
@@ -393,17 +398,17 @@ procedure pasf_vs(f,x,elimpt);
 
 procedure pasf_vsubstatf(atf,x,n_j,a_j,unif);
    % Presburger arithmetic standard form virtual stubstitution in atomic
-   % formula. [atf] is an atomic formula; [x] is the eliminated variable;
-   % [n_j] is a substitution parameter; [a_j] is a substitution parameter;
-   % [unif] is a flag that is t iff the formula represents cauchy
-   % bounds. Returns the substituted atomic formula.
+   % formula. [atf] is an atomic formula; [x] is the eliminated
+   % variable; [n_j] is a substitution parameter; [a_j] is a
+   % substitution parameter; [unif] is a flag that is t iff the formula
+   % represents cauchy bounds. Returns the substituted atomic formula.
    begin scalar n_i,a_i,dc,d,degr;
       % Decomposing the atomic formula
       dc := repr_atfnew(atf,x,nil);
       % Highest degree of the polynomial
       degr := repr_ldeg dc;
       % Constrained substitution if univariate formula
-      if degr > 1 and not unif then 
+      if degr > 1 and not unif then
 	 return pasf_vsubstcatf(atf,x,n_j,a_j);
       if degr <= 1 then <<
       	 n_i := repr_n dc;
@@ -419,14 +424,14 @@ procedure pasf_vsubstatf(atf,x,n_j,a_j,unif);
 	    (if d memq '(pdef psdef) then
 	       pasf_0mk2(repr_op dc,addf(multf(n_i,a_j), negf multf(n_j,a_i)))
       	    else if d memq '(ndef nsdef) then
-	       pasf_0mk2(anegrel repr_op dc,addf(multf(n_i,a_j), 
+	       pasf_0mk2(anegrel repr_op dc,addf(multf(n_i,a_j),
 	       	  negf multf(negf n_j,a_i)))
 	    else if d eq 'indef then
 	       % For inequalities with indefinite denominator the denominator
 	       % must be made positive
-      	       pasf_0mk2(repr_op dc,addf(multf(multf(n_i,n_j),a_j), 
+      	       pasf_0mk2(repr_op dc,addf(multf(multf(n_i,n_j),a_j),
 	       	  negf multf(multf(n_j,n_j),a_i))))
-      	 else 
+      	 else
 	    pasf_0mk2(repr_op dc,addf(multf(n_i,a_j), negf multf(n_j,a_i)))
       >> else <<
 	 % Trivial substitution
@@ -435,10 +440,11 @@ procedure pasf_vsubstatf(atf,x,n_j,a_j,unif);
    end;
 
 procedure pasf_vsubstcatf(atf,x,n_j,a_j);
-   % Presburger arithmetic standard form constrained virtual stubstitution in
-   % a univariate nonlinear atomic formula. [atf] is an atomic formula; [x] is
-   % the eliminated variable; [n_j] is the test point nominator; [a_j] is the
-   % test point denominator. Returns a formula.
+   % Presburger arithmetic standard form constrained virtual
+   % stubstitution in a univariate nonlinear atomic formula. [atf] is an
+   % atomic formula; [x] is the eliminated variable; [n_j] is the test
+   % point nominator; [a_j] is the test point denominator. Returns a
+   % formula.
    begin scalar cl,cb,cbadd,lcoeff;
       %if pasf_congp atf then
       %rederr{"For now no congruences with univariate polynomials allowed"};
@@ -452,7 +458,7 @@ procedure pasf_vsubstcatf(atf,x,n_j,a_j);
 	       pasf_0mk2(pasf_op atf,car lcoeff)}),
 	       rl_smkn('and,{pasf_0mk2('geq,addf(a_j,negf cbadd)),
 		  pasf_0mk2(pasf_op atf,car lcoeff)})});
-      if !*rlqesubi then 
+      if !*rlqesubi then
 	 return rl_smkn('or,
 	    {rl_smkn('and,{pasf_0mk2('leq,addf(a_j,cbadd)),
 	    pasf_qesubiat(atf,x,'minf)}),
@@ -467,22 +473,22 @@ procedure pasf_vsubstcatf(atf,x,n_j,a_j);
    end;
 
 procedure pasf_qesubi(f,v,inf);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % infinite element. [bvl] is a list of variables, [theo] is the
-   % current theory; [f] is a quantifier-free formula; [v] is a
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute infinite element. [bvl] is a list of variables, [theo]
+   % is the current theory; [f] is a quantifier-free formula; [v] is a
    % variable; [inf] is one of ['minf], ['pinf] which stand for
    % $-\infty$ and $\infty$ resp. Returns a pair $(\Theta' . \phi)$
    % where $\Theta'$ is a theory and $\phi$ is a quantifier-free
-   % formula. $\phi$ is equivalent to $[f]([v]/[inf])$ under the
-   % theory $[th] \cup \Theta'$. $\Theta' is currently always [nil].
+   % formula. $\phi$ is equivalent to $[f]([v]/[inf])$ under the theory
+   % $[th] \cup \Theta'$. $\Theta' is currently always [nil].
    cl_apply2ats1(f,'pasf_qesubiat,{v,inf});
 
 procedure pasf_qesubiat(atf,v,inf);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % infinite element into atomic formula. [atf] is an atomic formula;
-   % [v] is a variable; [inf] is one of ['minf], ['pinf] which stand for
-   % $-\infty$ and $\infty$ resp. Returns a quantifier-free formula
-   % equivalent to $[atf]([v]/[inf])$.
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute infinite element into atomic formula. [atf] is an atomic
+   % formula; [v] is a variable; [inf] is one of ['minf], ['pinf] which
+   % stand for $-\infty$ and $\infty$ resp. Returns a quantifier-free
+   % formula equivalent to $[atf]([v]/[inf])$.
    begin scalar op,lhs;
       if not (v memq pasf_varlat atf) then return atf;
       op := pasf_op atf;
@@ -494,10 +500,10 @@ procedure pasf_qesubiat(atf,v,inf);
    end;
 
 procedure pasf_qesubtranseq(op,lhs,v);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % transcendental element with equality relation. [op] is one of
-   % ['equal], ['neq]; [lhs] is an SF; [v] is a variable. Returns a
-   % quantifier-free formula equivalent to $[r]([lhs],0)([v]/\alpha)$
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute transcendental element with equality relation. [op] is
+   % one of ['equal], ['neq]; [lhs] is an SF; [v] is a variable. Returns
+   % a quantifier-free formula equivalent to $[r]([lhs],0)([v]/\alpha)$
    % for any transcendental $\alpha$.
    if op eq 'equal then
       pasf_qesubtransequal(lhs,v)
@@ -505,17 +511,17 @@ procedure pasf_qesubtranseq(op,lhs,v);
       cl_nnfnot pasf_qesubtransequal(lhs,v);
 
 procedure pasf_qesubtransequal(lhs,v);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % transcendental element into equation. [lhs] is an SF; [v] is a
-   % variable. Returns a quantifier-free formula equivalent to
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute transcendental element into equation. [lhs] is an SF;
+   % [v] is a variable. Returns a quantifier-free formula equivalent to
    % $[lhs]([v]/\alpha)=0$ for any transcendental $\alpha$.
    pasf_qesubtransequal1(sfto_reorder(lhs,v),v);
 
 procedure pasf_qesubtransequal1(lhs,v);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % transcendental element into equation. [lhs] is an SF reordered
-   % wrt. [v]; [v] is a variable. Returns a quantifier-free formula
-   % equivalent to $[lhs]([v]/\alpha)=0$ for any transcendental
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute transcendental element into equation. [lhs] is an SF
+   % reordered wrt. [v]; [v] is a variable. Returns a quantifier-free
+   % formula equivalent to $[lhs]([v]/\alpha)=0$ for any transcendental
    % $\alpha$.
    begin scalar cl;
       while not domainp lhs and mvar lhs eq v do <<
@@ -527,19 +533,19 @@ procedure pasf_qesubtransequal1(lhs,v);
    end;
 
 procedure pasf_qesubiord(op,f,v,inf);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % infinite element with ordering relation. [op] is an ordering
-   % relation. [f] is an SF; [v] is a variable; [inf] is one of
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute infinite element with ordering relation. [op] is an
+   % ordering relation. [f] is an SF; [v] is a variable; [inf] is one of
    % ['minf], ['pinf] which stand for $-\infty$ and $\infty$ resp.
    % Returns a quantifier-free formula equivalent to
    % $[op]([lhs]([v]/[inf]),0)$.
    pasf_qesubiord1(op,sfto_reorder(f,v),v,inf);
 
 procedure pasf_qesubiord1(op,f,v,inf);
-   % Presburger arithmetic standard form quantifier elimination substitute
-   % infinite element with ordering relation subroutine. [op] is an
-   % ordering relation. [f] is an SF, which is reordered wrt. [v]; [v]
-   % is a variable; [inf] is one of ['minf], ['pinf] which stand for
+   % Presburger arithmetic standard form quantifier elimination
+   % substitute infinite element with ordering relation subroutine. [op]
+   % is an ordering relation. [f] is an SF, which is reordered wrt. [v];
+   % [v] is a variable; [inf] is one of ['minf], ['pinf] which stand for
    % $-\infty$ and $\infty$ resp. Returns a quantifier-free formula
    % equivalent to $[op]([lhs]([v]/[inf]),0)$.
    begin scalar an;
@@ -558,10 +564,11 @@ procedure pasf_qesubiord1(op,f,v,inf);
 
 procedure pasf_condense(f,pl);
    % Presburger arithmetic standard form condensing operator. [f] is a
-   % positive quantifier-free formula; [pl] is a list of tree positions of
-   % formulas to condense. Returns a pair $(f' . c)$ where $f'$ results from
-   % [f] by replacing each subformula, that is not conjunctively associated to
-   % [pl], with false and $c$ is the total amount of condensed subtrees.
+   % positive quantifier-free formula; [pl] is a list of tree positions
+   % of formulas to condense. Returns a pair $(f' . c)$ where $f'$
+   % results from [f] by replacing each subformula, that is not
+   % conjunctively associated to [pl], with false and $c$ is the total
+   % amount of condensed subtrees.
    begin scalar r,c,tmp,cm;
       % We have found the formula producing the resulting test point
       if null pl then return (f . 0);
@@ -570,17 +577,17 @@ procedure pasf_condense(f,pl);
       if rl_op f eq 'or then <<
 	 c := 0;
 	 for each sf in rl_argn f do <<
-	    if c = car pl then 
+	    if c = car pl then
 	       r := pasf_condense(sf,cdr pl);
 	    c := c + 1
 	 >>;
-	 if c = 0 then 
+	 if c = 0 then
 	    rederr{"Bug in pasf_condense, reference leads to nothing"};
 	 return (car r . (cdr r + c - 1))
       >>;
-      % In conjunctions we proceed with condensing on the way to the formula,
-      % that produced the testpoint, without replacing anything on the current
-      % level
+      % In conjunctions we proceed with condensing on the way to the
+      % formula, that produced the testpoint, without replacing anything
+      % on the current level
       if rl_op f eq 'and then <<
 	 c := 0;
 	 cm := 0;
@@ -588,17 +595,18 @@ procedure pasf_condense(f,pl);
 	    if c = car pl then <<
 	       tmp := pasf_condense(sf,cdr pl);
 	       r := (car tmp) . r;
-	       cm := cdr tmp 
+	       cm := cdr tmp
 	    >> else
 	       r := sf . r;
 	    c := c + 1
 	 >>;
 	 return (rl_smkn('and,r) . cm)
       >>;
-      % Note: Universal bounded quantifiers stay as they are even if one tries
-      % to condense something inside such a quantifier. It could make sence to
-      % raise an error, if one tries to do so, but this implementation avoids
-      % condensing of universal bounded quantifiers with other tools
+      % Note: Universal bounded quantifiers stay as they are even if one
+      % tries to condense something inside such a quantifier. It could
+      % make sence to raise an error, if one tries to do so, but this
+      % implementation avoids condensing of universal bounded
+      % quantifiers with other tools
       if rl_op f eq 'bex then <<
 	 tmp := pasf_condense(rl_mat f,cdr pl);
 	 return (rl_mkbq(rl_op f,rl_var f,rl_b f,car tmp) . cdr tmp)
@@ -609,43 +617,49 @@ procedure pasf_condense(f,pl);
 % ---- Elimination set computation -------------------------------------------
 
 procedure pasf_elimset(f,x,theo,p);
-   % Presburger arithmetic standard form elimination set computation. [f] is a
-   % forumla; [x] is a variable; [theo] is a theory; [p] is the probability
-   % for PQE. Returns an ELIMPT list.
+   % Presburger arithmetic standard form elimination set computation.
+   % [f] is a forumla; [x] is a variable; [theo] is a theory; [p] is the
+   % probability for PQE. Returns an ELIMPT list.
    begin scalar reprl,reprls,m,tempm,pdp,rl,res,vl,tz,toc;
       % Probabilistic mode is on
       if !*rlverbose and p neq simp 1 then ioto_prin2 "p";
       reprls := pasf_rep(f,x);
-      % Creating all new variables. This prevents running out of variables
-      vl := for i := 1 : length fdec_bvl car reprls + 1 collect 
+      % Create all new variables. This prevents running out of variables:
+      vl := for i := 1 : length fdec_bvl car reprls + 1 collect
 	 pasf_newvar(nil);
-      if !*rlverbose and length cdr reprls > 1 then << 
+      if !*rlverbose and length cdr reprls > 1 then <<
 	 ioto_prin2 "s";
 	 ioto_prin2 length cdr reprls
       >>;
       for each reprl in cdr reprls do <<
-      	 % Computing the approximation for the moduli period
+      	 % Compute the approximation for the moduli period:
       	 m := 1;
 	 rl := nil;
 	 toc := t;
       	 for each repr in reprl do
-	    % Only representants containing the quantified variable concerned
+	    % Only representants containing the quantified variable
+	    % concerned:
       	    if repr_n repr then <<
-               if pairp repr_op repr and 
+               if pairp repr_op repr and
  	       	  car repr_op repr memq '(cong ncong) then <<
 		     % Getting the modulus
 		     tempm := cdr repr_op repr;
 		     pdp := pasf_pdp tempm;
-		     % For definite moduli no approximation needed
-		     m := if pdp eq 'pdef then lcm(m,tempm)
-		     else if pdp eq 'ndef then lcm(m,negf tempm)
+		     m := if pdp eq 'pdef then
+		     	% For definite moduli no approximation needed
+			lcm(m,tempm)
+		     else if pdp eq 'ndef then
+			lcm(m,negf tempm)
+		     else if pdp eq 'psdef then
 			% For semidefinite moduli just adding 1
-		     else if pdp eq 'psdef then lcm(m,addf(tempm,1))
-		     else if pdp eq 'nsdef then lcm(m,addf(negf tempm,1))
-			% Approximating the modulus by it's square plus 1
-		     else lcm(m,addf(multf(tempm,tempm),1));
-		     % Adding the congruence to the representant list if it
-		     % can turn to zero
+ 			lcm(m,addf(tempm,1))
+		     else if pdp eq 'nsdef then
+			% Approximate the modulus by it's square plus 1
+ 			lcm(m,addf(negf tempm,1))
+		     else
+ 			lcm(m,addf(multf(tempm,tempm),1));
+		     % Add the congruence to the representant list if it
+		     % can become zero:
 		     if not (pdp memq '(pdef ndef)) then <<
 			toc := t;
 			rl := repr . rl
@@ -657,32 +671,32 @@ procedure pasf_elimset(f,x,theo,p);
       >>;
       tz := length res;
       res := if !*rlpasfconf then pasf_conflate res else res;
-      if !*rlverbose and !*rlpasfconf and tz-length res > 0 then << 
+      if !*rlverbose and !*rlpasfconf and tz-length res > 0 then <<
 	 ioto_prin2 "t";
 	 ioto_prin2 (tz-length res)
       >>;
       if null res then rederr{"error in elimination set creation"};
-      % Adding the zero-case only in case of uniform input and non-univariate
-      % formula
-      return if pasf_uprap f and not pasf_univnlfp(f,x) then 
-	 elimpt_new(nil,'true,nil,1,nil,nil) . res 
+      % Add the zero case only in case of uniform input and
+      % non-univariate formula:
+      return if pasf_uprap f and not pasf_univnlfp(f,x) then
+	 elimpt_new(nil,'true,nil,1,nil,nil) . res
       else res
    end;
 
 procedure pasf_testpt(b,l,m,vl,toc,p);
-   % Presburger arithmetic standard form elimination test points. [b] is a
-   % list of bound/bound variable pairs; [l] is the list of representants that
-   % will be used for test point generation; [m] is a congruence period
-   % approximation, which can be not positive definite only in case of generic
-   % elimination; [vl] is a list of new varibles; [toc] is a flag that signals
-   % if the congruence case has to be added; [p] is the probability for
-   % PQE. Returns an ELIMSET.
+   % Presburger arithmetic standard form elimination test points. [b] is
+   % a list of bound/bound variable pairs; [l] is the list of
+   % representants that will be used for test point generation; [m] is a
+   % congruence period approximation, which can be not positive definite
+   % only in case of generic elimination; [vl] is a list of new
+   % varibles; [toc] is a flag that signals if the congruence case has
+   % to be added; [p] is the probability for PQE. Returns an ELIMSET.
    begin scalar v,res,cp,nsv,rnd,rng,n;
       v := car vl;
       nsv := numr simp v;
       % The congruences case
-      res := if null l or null toc then 
-	 if p neq simp 1 then 
+      res := if null l or null toc then
+	 if p neq simp 1 then
 	    pasf_testptpqe(nil,0,1,0,m,p,nil)
          else
 	    {elimpt_new(nil,'true,numr simp v,1,
@@ -728,10 +742,11 @@ procedure pasf_testpt(b,l,m,vl,toc,p);
 
 procedure pasf_testptpqe(pos,nom,den,a,b,p,g);
    % Presburger arithmetic standard form elimination test points for
-   % pqe. [pos] is the position of the formula; [nom] is the numerator term;
-   % [den] is the denominator; [a] is the lower interval boundary; [b] is the
-   % upper interval boundary; [p] is the probability for PQE; [g] is nil iff
-   % there are no guards to create. Returns a probabilistic elimination set.
+   % pqe. [pos] is the position of the formula; [nom] is the numerator
+   % term; [den] is the denominator; [a] is the lower interval boundary;
+   % [b] is the upper interval boundary; [p] is the probability for PQE;
+   % [g] is nil iff there are no guards to create. Returns a
+   % probabilistic elimination set.
    if !*rlpqeold then
 	pasf_testptpqeold(pos,nom,den,a,b,p,g)
    else
@@ -739,21 +754,21 @@ procedure pasf_testptpqe(pos,nom,den,a,b,p,g);
 
 procedure pasf_testptpqenew(pos,nom,den,a,b,p,g);
    % Presburger arithmetic standard form elimination test points for
-   % pqe. [pos] is the position of the formula; [nom] is the numerator term;
-   % [den] is the denominator; [a] is the lower interval boundary; [b] is the
-   % upper interval boundary; [p] is the probability for PQE; [g] is nil iff
-   % there are no guards to create. Returns an ELIMSET which comes from the 
-   % substitution of a random test term.
+   % pqe. [pos] is the position of the formula; [nom] is the numerator
+   % term; [den] is the denominator; [a] is the lower interval boundary;
+   % [b] is the upper interval boundary; [p] is the probability for PQE;
+   % [g] is nil iff there are no guards to create. Returns an ELIMSET
+   % which comes from the substitution of a random test term.
    begin scalar n,r,res;
 	 r := pasf_mkrndf(b,pasf_newvar('false));
 	 res := {elimpt_new(pos,
-	    if g then 
+	    if g then
 	       rl_smkn('and,{pasf_0mk2('neq,den),
 	    	  pasf_0mk2(('cong . den),addf(nom,r))})
 	    else
 	       'true,addf(nom,r),den,nil,nil),
 	 elimpt_new(pos,
-	    if g then 
+	    if g then
 	       rl_smkn('and,{pasf_0mk2('neq,den),
 	    	  pasf_0mk2(('cong . den),addf(nom,negf r))})
 	    else
@@ -763,18 +778,18 @@ procedure pasf_testptpqenew(pos,nom,den,a,b,p,g);
 
 procedure pasf_testptpqeold(pos,nom,den,a,b,p,g);
    % Presburger arithmetic standard form elimination test points for
-   % pqe. [pos] is the position of the formula; [nom] is the numerator term;
-   % [den] is the denominator; [a] is the lower interval boundary; [b] is the
-   % upper interval boundary; [p] is the probability for PQE; [g] is nil iff
-   % there are no guards to create. Returns an ELIMSET which contains random
-   % points from the range $[t+a,t+b]$ such that each term is hit with
-   % probability [p].
+   % pqe. [pos] is the position of the formula; [nom] is the numerator
+   % term; [den] is the denominator; [a] is the lower interval boundary;
+   % [b] is the upper interval boundary; [p] is the probability for PQE;
+   % [g] is nil iff there are no guards to create. Returns an ELIMSET
+   % which contains random points from the range $[t+a,t+b]$ such that
+   % each term is hit with probability [p].
    begin scalar n,rnd,res;
       n := max2(ceiling(ln(1.0-numr p*1.0/denr p)/ln(1.0-1.0/(b-a+1))-1),1);
       for i := 1 : n do <<
 	 rnd := numr simp (random(b-a+1)+a);
 	 res := elimpt_new(pos,
-	    if g then 
+	    if g then
 	       rl_smkn('and,{pasf_0mk2('neq,den),
 	    	  pasf_0mk2(('cong . den),addf(nom,rnd))})
 	    else
@@ -784,12 +799,12 @@ procedure pasf_testptpqeold(pos,nom,den,a,b,p,g);
    end;
 
 procedure pasf_substb(b,term,v,m,n_j,vl);
-   % Presburger arithmetic standard form bound substitution. [b] is a list of
-   % bound/bound variable pairs; [term] is the term of linear combinations of
-   % bounded variables in b; [m] is an approximation of all moduli; [n_j] is
-   % the coefficient of the representant; [vl] is a list of new
-   % variables. Returns a list of bounds where $v$ runs in some range about
-   % all values of [term] in [b].
+   % Presburger arithmetic standard form bound substitution. [b] is a
+   % list of bound/bound variable pairs; [term] is the term of linear
+   % combinations of bounded variables in b; [m] is an approximation of
+   % all moduli; [n_j] is the coefficient of the representant; [vl] is a
+   % list of new variables. Returns a list of bounds where $v$ runs in
+   % some range about all values of [term] in [b].
    begin scalar nb,nv,nt1,nt2,res,sb,nbb,tmp,pdp;
       % Collecting all variables for substitution
       for each bnd in b do <<
@@ -830,14 +845,15 @@ procedure pasf_substb(b,term,v,m,n_j,vl);
 	    {pasf_mkrng(addf(numr simp v,negf term),negf nt1,nt1),
       	       pasf_mkrng(addf(numr simp v,negf term),negf nt2,nt2)});
       return ((res . v) . reverse nb)
-   end; 
+   end;
 
 procedure pasf_bapprox(b,term,v,l,n_j);
-   % Presburger arithmetic standard form bound approximation. [b] is a list of
-   % bound/bound variable pairs; [term] is the term of linear combinations of
-   % bounded variables in [b]; [l] is the lcm of all nonzero coefficients;
-   % [n_j] is the coefficient of the representant. Returns a new bound in [v]
-   % where [v] runs in some range about all values of [term] in [b].
+   % Presburger arithmetic standard form bound approximation. [b] is a
+   % list of bound/bound variable pairs; [term] is the term of linear
+   % combinations of bounded variables in [b]; [l] is the lcm of all
+   % nonzero coefficients; [n_j] is the coefficient of the representant.
+   % Returns a new bound in [v] where [v] runs in some range about all
+   % values of [term] in [b].
    begin scalar tmin,tmax,tmp,flag,tpool,tnpool,res,fvl;
       % For now only the real non uniform case
       if null domainp l then return nil;
@@ -848,7 +864,7 @@ procedure pasf_bapprox(b,term,v,l,n_j);
       for each bnd in b do <<
 	 fvl := cl_fvarl car bnd;
 	 if length fvl > 1 then flag := t;
-	 if length fvl = 1 and car fvl neq cdr bnd then 
+	 if length fvl = 1 and car fvl neq cdr bnd then
 	    rederror{"bug in bound approximation"};
 	 if null flag then <<
 	    tmp := pasf_brng(car bnd,cdr bnd);
@@ -871,15 +887,15 @@ procedure pasf_bapprox(b,term,v,l,n_j);
       >>;
       if n_j < 0 then n_j := -n_j;
       if l < 0 then l := -l;
-      res := pasf_mkrng(numr simp v, 
+      res := pasf_mkrng(numr simp v,
 	 addf(tmin,negf multf(n_j,l)),
 	 addf(tmax,multf(n_j,l)));
       return {(res . v)}
    end;
 
 procedure pasf_conflate(elsl);
-   % Presburger arithmetic standard form conflation of elimination
-   % sets. [elsl] is a list of test points. Returns a conflated elimination
+   % Presburger arithmetic standard form conflation of elimination sets.
+   % [elsl] is a list of test points. Returns a conflated elimination
    % set.
    begin scalar tmp,res;
       while elsl do <<
@@ -898,38 +914,52 @@ procedure pasf_conflate1(elsl,els1);
       for each els2 in elsl do <<
 	 if (elimpt_nom els1 = elimpt_nom els2) and
 	 (elimpt_den els1 = elimpt_den els2) and
-	 (elimpt_guard els1 = elimpt_guard els2) and 
+	 (elimpt_guard els1 = elimpt_guard els2) and
 	 (elimpt_unif els1 = elimpt_unif els2) then <<
 	    rev1 := elimpt_bvl els1;
 	    rev2 := elimpt_bvl els2;
 	    els1 := elimpt_new(elimpt_cpos(els1,els2),
 	       elimpt_guard els1,elimpt_nom els1,elimpt_den els1,
-	       % Note: This part uses the special form of the elimination 
-	       % set of the QE-method (refer to the diploma thesis of lasaruk)
+	       % Note: This part uses the special form of the
+	       % elimination set of the QE-method (refer to Lasaruk's
+	       % diploma thesis)
 	       if rev1 and rev2 then
-		  ((rl_mkn('or,{caar rev1,caar rev2}) . 
+		  ((pasf_ssmk2('or,caar rev1,caar rev2) .
 		     cdar rev1) . cdr rev1)
-	       else if rev1 then rev1 
+	       else if rev1 then rev1
 	       else rev2,elimpt_unif els1)
 	 >> else r := els2 . r
       >>;
       return (els1 . r)
    end;
 
+procedure pasf_ssmk2(op,a1,a2);
+    if a1 = a2 then
+       a1
+    else
+      if rl_op a1 eq op and rl_op a2 eq op then
+      rl_mkn(op,append(rl_argn a1,rl_argn a2))
+   else if rl_op a1 eq op then
+      rl_mkn(op,a2 . rl_argn a1)
+   else if rl_op a2 eq op then
+      rl_mkn(op,a1 . rl_argn a2)
+   else
+      rl_mkn(op,{a1,a2});
+
 % ---- Representant computation ---------------------------------------------
 
 procedure pasf_rep(f,x);
-   % Presburger arithmetic standard form search for representants. [f] is a
-   % weak quantifier-free formula in PNF; [x] is the eliminated
+   % Presburger arithmetic standard form search for representants. [f]
+   % is a weak quantifier-free formula in PNF; [x] is the eliminated
    % variable. Returns a pair of a FDEC structure and a list of REPR
    % structures.
    begin scalar fdec,ball;
-      % Computing the matrix and the list of bounded variables
+      % Compute the matrix and the list of bounded variables:
       fdec := fdec_new(f,x);
       for each b in fdec_bopl fdec do if b eq 'ball then ball := t;
-      % Doing structural elimination only in existential problems. This
-      % specially avoids condensing of formulas with universal bounded
-      % quantifiers
+      % Perform structural elimination only in existential problems.
+      % This specially avoids condensing of formulas with universal
+      % bounded quantifiers:
       return if !*rlpasfses and null ball then
 	 (fdec . pasf_ses(fdec_mat fdec,x,fdec_pos fdec,fdec_bvl fdec))
       else
@@ -939,11 +969,12 @@ procedure pasf_rep(f,x);
 procedure pasf_rep1(f,x,pos,bvl);
    % Presburger arithmetic standard form search for representants
    % subprocedure. [f] a strong quantifier-free formula; [x] is the
-   % eliminatied variable; [pos] is the current position inside the formula;
-   % [bvar] is the list of bounded variables. Returns the elimindation data.
+   % eliminatied variable; [pos] is the current position inside the
+   % formula; [bvar] is the list of bounded variables. Returns the
+   % elimindation data.
    begin scalar n,res;
       % Note: pos is reserved for future implementation of positional
-      % condensing
+      % condensing.
       n := 0;
       if rl_bquap rl_op f or rl_bquap rl_op f then
       	 % Input formula should be strong quantifier-free
@@ -964,10 +995,10 @@ procedure pasf_rep1(f,x,pos,bvl);
 
 procedure pasf_ses(f,x,pos,bvl);
    % Presburger arithmetic standard form search for representants with
-   % structural elimination sets. [f] a strong quantifier-free formula; [x] is
-   % the eliminatied variable; [pos] is the current position inside the
-   % formula; [bvar] is the list of bounded variables. Returns the
-   % elimindation data.
+   % structural elimination sets. [f] a strong quantifier-free formula;
+   % [x] is the eliminatied variable; [pos] is the current position
+   % inside the formula; [bvar] is the list of bounded variables.
+   % Returns the elimindation data.
    begin scalar n,res,tmp,lmax,smax;
       n := 0;
       if rl_quap rl_op f or rl_bquap rl_op f then
@@ -986,7 +1017,7 @@ procedure pasf_ses(f,x,pos,bvl);
 	    n := n+1
 	 >>;
 	 return for each esl in smax collect
-	    append(esl,for each r in res collect 
+	    append(esl,for each r in res collect
 	       repr_setpos(r,repr_pos car esl))
       >>;
       if rl_op f eq 'or then <<
@@ -1006,11 +1037,11 @@ procedure pasf_ses(f,x,pos,bvl);
 
 procedure pasf_gaussdec(f,x,theo);
    % Presburger arithmetic standard form gauss decomposition. [f] is a
-   % positive weakly quantifier-free formula; [x] is a variable; [theo] is a
-   % theory. Returns a pair $(l . \psi)$ where $l$ is a list of $(p . es)$
-   % where $p$ is the position of a gauss formula in $f$ and $es$ is it's
-   % elimination set and $\psi$ is the formula resulting from $f$ by replacing
-   % every gauss formula by false.
+   % positive weakly quantifier-free formula; [x] is a variable; [theo]
+   % is a theory. Returns a pair $(l . \psi)$ where $l$ is a list of $(p
+   % . es)$ where $p$ is the position of a gauss formula in $f$ and $es$
+   % is it's elimination set and $\psi$ is the formula resulting from
+   % $f$ by replacing every gauss formula by false.
    begin scalar r,fdec,f,opl,stp,vl;
       % Note : Using the fact the formula is in PNF
       fdec := fdec_new(f,x);
@@ -1018,7 +1049,7 @@ procedure pasf_gaussdec(f,x,theo);
       if pasf_univnlfp(fdec_mat fdec,x) then return (nil . f);
       opl := fdec_bopl fdec;
       % Cancelling gauss elimination for universal bounded quantifiers
-      for each op in opl do 
+      for each op in opl do
 	 if op eq 'ball then stp := t;
       if stp then return (nil . f);
       % Creating new variables
@@ -1033,16 +1064,17 @@ procedure pasf_gaussdec(f,x,theo);
    end;
 
 procedure pasf_gaussdec1(f,x,theo,pos,bvar,vl);
-   % Presburger arithmetic standard form gauss decomposition subprocedure.
-   % [f] is a formula; [x] is a variable; [theo] is a theory; [pos] is a
-   % position; [bvar] is a list of bounded variable and bound pairs; [vl] is
-   % the new variable list. Returns list $\{flg , l , \psi\}$ where $flg$ is
-   % t iff the formula is a gauss formula, $l$ is a list of $(p . es)$ where
-   % $p$ is the position of a gauss formula in [f] and $es$ is it's
-   % elimination set and $\psi$ is the formula resulting from [f] by replacing
-   % every gauss formula by 'false.
+   % Presburger arithmetic standard form gauss decomposition
+   % subprocedure. [f] is a formula; [x] is a variable; [theo] is a
+   % theory; [pos] is a position; [bvar] is a list of bounded variable
+   % and bound pairs; [vl] is the new variable list. Returns list $\{flg
+   % , l , \psi\}$ where $flg$ is t iff the formula is a gauss formula,
+   % $l$ is a list of $(p . es)$ where $p$ is the position of a gauss
+   % formula in [f] and $es$ is it's elimination set and $\psi$ is the
+   % formula resulting from [f] by replacing every gauss formula by
+   % 'false.
    begin scalar c,tmp,r;
-      if f eq 'false then 
+      if f eq 'false then
 	 return{t,nil,f};
       if f eq 'true then
 	 return{nil,nil,f};
@@ -1050,15 +1082,15 @@ procedure pasf_gaussdec1(f,x,theo,pos,bvar,vl);
  	 % It is sufficient to find one gauss argument
 	 c := 0;
 	 % Internal datastructure {a,b,c}. First element is t iff a
-	 % gauss-formula was found. The second is a list of ELIMPT of nested
-	 % gauss formulas till now. The third is the formula without gauss
-	 % formulas inside
+	 % gauss-formula was found. The second is a list of ELIMPT of
+	 % nested gauss formulas till now. The third is the formula
+	 % without gauss formulas inside
 	 tmp := {nil,nil,nil};
 	 for each sf in rl_argn f do <<
 	    % Among gauss subformulas we choose the elimination set with a
 	    % corresponding heuristic
 	    r := pasf_gaussdec1(sf,x,theo,append(pos,{c}),bvar,vl);
-	    if car r then 
+	    if car r then
 	       % Found a new gauss subformula
 	       tmp := {t,pasf_gaussesord(cadr tmp,cadr r),'false}
 	    else if null car tmp then
@@ -1068,7 +1100,7 @@ procedure pasf_gaussdec1(f,x,theo,pos,bvar,vl);
 	    % Note: Non-gauss subformulas are ignored if one is already found
 	    c := c + 1
 	 >>;
-	 if car tmp then 
+	 if car tmp then
 	    % This formula is a gauss formula
 	    return tmp
 	 else
@@ -1080,11 +1112,11 @@ procedure pasf_gaussdec1(f,x,theo,pos,bvar,vl);
 	 tmp := {t,nil,nil};
 	 for each sf in rl_argn f do <<
 	    r := pasf_gaussdec1(sf,x,theo,append(pos,{c}),bvar,vl);
-	    if car r then 
+	    if car r then
 	       % Found a new gauss subformula
 	       tmp := {car tmp,append(cadr tmp,cadr r),caddr r . caddr tmp}
 	    else
-	       tmp := {nil,append(cadr tmp,cadr r),caddr r . caddr tmp}; 
+	       tmp := {nil,append(cadr tmp,cadr r),caddr r . caddr tmp};
 	    c := c + 1
  	 >>;
 	 if car tmp then
@@ -1096,8 +1128,8 @@ procedure pasf_gaussdec1(f,x,theo,pos,bvar,vl);
       % There are no bounded quantifiers inside the pnf matrix
       if rl_bquap rl_op f then rederr{"Bug in gauss decomposition"};
       % Gauss atomic formulas are only equations
-      if pasf_atfp f then 
- 	 if pasf_opn f eq 'equal then 
+      if pasf_atfp f then
+ 	 if pasf_opn f eq 'equal then
 	    return pasf_gaussdec2(f,x,bvar,pos,vl)
 	 else
  	    return {nil,nil,f};
@@ -1108,11 +1140,12 @@ procedure pasf_gaussdec1(f,x,theo,pos,bvar,vl);
    end;
 
 procedure pasf_gaussdec2(atf,x,bvar,pos,vl);
-   % Presburger arithmetic standard form gauss decomposition subprocedure for
-   % the treatment of gauss-equations. [bvar] is a list of bounded variables;
-   % [x] is the eliminated variable; [atf] is an atomic gauss equation; [pos]
-   % is the position of this gauss formula; [vl] is the new variable
-   % list. Returns the gauss decomposition of the atomic formula.
+   % Presburger arithmetic standard form gauss decomposition
+   % subprocedure for the treatment of gauss-equations. [bvar] is a list
+   % of bounded variables; [x] is the eliminated variable; [atf] is an
+   % atomic gauss equation; [pos] is the position of this gauss formula;
+   % [vl] is the new variable list. Returns the gauss decomposition of
+   % the atomic formula.
    begin scalar repr,a_i,b;
       repr := repr_atfbnew(atf,x,pos,bvar);
       a_i := repr_r repr;
@@ -1134,14 +1167,14 @@ procedure pasf_gaussdec2(atf,x,bvar,pos,vl);
    end;
 
 procedure pasf_gaussesord(a,b);
-   % Presburger arithmetic standard form gauss elimination set ordering. [a]
-   % and [b] are lists of ELIMPT. Returns one of [a] or [b] according to the
-   % length of the elimination sets term form.
+   % Presburger arithmetic standard form gauss elimination set ordering.
+   % [a] and [b] are lists of ELIMPT. Returns one of [a] or [b]
+   % according to the length of the elimination sets term form.
    begin
-      if null a and b then return b 
-      else if null a and null b then return nil 
-      else if a and null b then return a 
-      else if length cdar b < length cdar a then return b 
+      if null a and b then return b
+      else if null a and null b then return nil
+      else if a and null b then return a
+      else if length cdar b < length cdar a then return b
       else if length cdar b > length cdar a then return a;
       % Now the only case is the equality of lengths
       return b
