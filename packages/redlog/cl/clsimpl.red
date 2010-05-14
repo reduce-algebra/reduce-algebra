@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,13 +26,13 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cl_simpl_rcsid!* cl_simpl_copyright!*);
    cl_simpl_rcsid!* :=
       "$Id$";
-   cl_simpl_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
+   cl_simpl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module clsimpl;
@@ -115,7 +115,7 @@ procedure cl_simpl1(f,knowl,n,sop);
       >>;
       if rl_bquap op then <<
 	 if !*rlsism then knowl := rl_smrmknowl(knowl,rl_var f);
-       	 return cl_simplbq(f,knowl,n) 
+       	 return cl_simplbq(f,knowl,n)
       >>;
       if op eq 'impl then
 	 return cl_smsimpl!-imprep(rl_arg2l f,rl_arg2r f,knowl,n);
@@ -150,9 +150,9 @@ procedure cl_simplbq(f,knowl,n);
       % Context-dependent bound simplification
       b := rl_simplb(rl_b f,rl_var f);
       % Bound's information to knowledge
-      if !*rlsism then 
+      if !*rlsism then
 	 knowl := rl_smupdknowl('and,rl_b2atl(b,rl_var f),knowl,n);
-      % Matrix simplification detects trivial cases 
+      % Matrix simplification detects trivial cases
       mtx := cl_simpl1(rl_mat f,knowl,n-1,rl_op f);
       f := cl_simpltb(rl_op f,rl_var f,b,mtx);
       % Moving formulas to bound
@@ -180,7 +180,7 @@ procedure cl_simpltb(op,var,b,mtx);
       if not(var memq rl_fvarl mtx) and rl_bsatp(b,var) then return mtx;
       % Bound is an equation. Note: Should be only relevant if rlsism is off
       bfvl := cl_fvarl b;
-      if rl_op b eq 'equal and null cdr bfvl and eqcar(bfvl,var) then 
+      if rl_op b eq 'equal and null cdr bfvl and eqcar(bfvl,var) then
 	 % Note: using a context speciefic bound simplifier one can do more
       	 return cl_subfof({var . car rl_b2terml(b,var)},mtx);
       % Nothing was done
@@ -193,7 +193,7 @@ procedure cl_simplstrb(op,var,b,mtx);
    % [op] is the operator; [var] is the variable. Returns a simplified
    % equivalent formula.
    begin scalar neg,st,lv,vfl;
-      if cl_atfp mtx and length cl_fvarl mtx = 1 and 
+      if cl_atfp mtx and length cl_fvarl mtx = 1 and
 	 car cl_fvarl mtx eq var and not pasf_univnlfp(mtx,var) then <<
 	 if op eq 'ball then <<
 	    b := rl_simplb(rl_smkn('and,rl_mkn('not,{mtx}) . {b}),var);
@@ -211,9 +211,9 @@ procedure cl_simplstrb(op,var,b,mtx);
       if neg then <<
 	 for each arg in rl_argn mtx do  <<
 	    vfl := cl_fvarl arg;
-	    if length vfl = 1 and car vfl eq var and cl_atfp arg and 
+	    if length vfl = 1 and car vfl eq var and cl_atfp arg and
 	       not pasf_univnlfp(arg,var) then
-	       st := (if neg eq 'negate then rl_mkn('not,{arg}) else arg) . st 
+	       st := (if neg eq 'negate then rl_mkn('not,{arg}) else arg) . st
 	    else
 	       lv := arg . lv;
 	 >>;
@@ -222,7 +222,7 @@ procedure cl_simplstrb(op,var,b,mtx);
 	 b := rl_simplb(rl_smkn('and,b . st),var);
 	 % Note: different semantics if the list of formulas left in matrix is
 	 % empty. For bex the matrix is true and for ball false
-	 mtx := if lv then 
+	 mtx := if lv then
 	    rl_smkn(rl_op mtx,lv)
 	 else if op eq 'ball then 'false else 'true;
 	 % Now the formula is maybe trivial
@@ -685,7 +685,7 @@ procedure cl_susiupdknowl1(op,at,knowl,n);
    if op eq 'and then
       cl_susiupdknowl2((at . n),knowl,n)
    else % We know [op eq 'or]
-      cl_susiupdknowl2(((rl_negateat at) . n),knowl,n); 
+      cl_susiupdknowl2(((rl_negateat at) . n),knowl,n);
 
 procedure cl_susiupdknowl2(lat,knowl,n);
    % Common logic susi update knowledge subroutine. [lat] is a LAT;
@@ -693,7 +693,7 @@ procedure cl_susiupdknowl2(lat,knowl,n);
    % Destructively updates [knowl] wrt. [lat].
    begin scalar a,w,sck,ignflg,delflg,addl,term;
       sck := knowl;
-      term := nil;  
+      term := nil;
       for each nlat in knowl do
 	 if lat = nlat then term := 't;
       if term then return knowl;
@@ -739,13 +739,13 @@ procedure cl_susiinter(prg,knowl,a);
    begin scalar addl,ignflg,delflg;
       for each p in prg do
 %	 if car p eq 'delete or car p eq 'ignore then
-      	 if car p eq 'ignore then	 
+      	 if car p eq 'ignore then
 	    if cdr p then <<
 	       ignflg := T;
 	       addl := cdr p . addl;
 	    >>
 	    else
-	       cdr a := 'ignore	 
+	       cdr a := 'ignore
       	 else if car p eq 'delete then
 	    if cdr p then
 	       delflg := T
