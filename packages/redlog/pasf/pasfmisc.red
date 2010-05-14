@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, and T. Sturm
+% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,14 +26,14 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(pasf_misc_rcsid!* pasf_misc_copyright!*);
    pasf_misc_rcsid!* :=
       "$Id$";
    pasf_misc_copyright!* :=
-      "Copyright (c) 1995-2009 by A. Dolzmann, A. Seidl, and T. Sturm"
+      "(c) 1995-2009 by A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm"
 >>;
 
 module pasfmisc;
@@ -149,7 +149,7 @@ procedure pasf_bsatp(f,var);
       % Looking for one argument in the DNF without a congruence
       argn := if rl_op f eq 'or then rl_argn f else {f};
       while argn and null r do <<
-	 argna := if rl_op car argn eq 'and then 
+	 argna := if rl_op car argn eq 'and then
 	    rl_argn car argn else {car argn};
 	 flg := nil;
  	 while argna and not flg do <<
@@ -157,7 +157,7 @@ procedure pasf_bsatp(f,var);
 	    argna := cdr argna
 	 >>;
 	 % Found a constituent without congruences
-	 if null flg and not iv_empty pasf_qff2ivl car argn then 
+	 if null flg and not iv_empty pasf_qff2ivl car argn then
 	    r := t;
 	 argn := cdr argn
       >>;
@@ -188,7 +188,7 @@ procedure pasf_simplb(f,var);
       if rl_tvalp f then return f;
       % If the bound is parametric or contains univariate formulas only normal
       % simplification is done
-      if length cl_fvarl f > 1 or pasf_univnlfp(f,var) then 
+      if length cl_fvarl f > 1 or pasf_univnlfp(f,var) then
 	 return f;
       % Looking for one argument in the DNF without a congruence
       argn := if rl_op f eq 'or then rl_argn f else {f};
@@ -213,7 +213,7 @@ procedure pasf_b2terml(b,var);
    % $\{1,2,3,10\}$).
    begin scalar ivl;
       % Term list for uniform bounds not possible
-      if length cl_fvarl b > 1 then 
+      if length cl_fvarl b > 1 then
 	 rederr{"pasf_b2terml called with a parametric bound"};
       % Note: imprudent use of this code is extremely space- and time-critical
       ivl := pasf_qff2ivl b;
@@ -234,9 +234,9 @@ procedure pasf_rmax(rng1,rng2);
 procedure pasf_brng(b,var);
    % Presburger arithmetic standard form bound range. [b] is a bound; [var] is
    % the bound variable. Returns a pair of minimal and maximal bound values.
-   begin scalar tmp,bmax;      
+   begin scalar tmp,bmax;
       % Range approximation for uniform bounds is not possible
-      if length cl_fvarl b > 1 then 
+      if length cl_fvarl b > 1 then
 	 rederr{"pasf_brng called with parametric bound"};
       tmp := cl_simpl(pasf_dnf b,nil,-1);
       if tmp eq 'false then
@@ -393,7 +393,7 @@ procedure pasf_subat(al,f);
       >>;
       nlhs := subf(pasf_arg2l f,al);
       if not domainp denr nlhs then
-	 rederr "pasf_subat: parametric denominator after substitution"; 
+	 rederr "pasf_subat: parametric denominator after substitution";
       return pasf_0mk2(pasf_op f,numr nlhs)
    end;
 
@@ -424,13 +424,13 @@ procedure pasf_floor(nom,den);
       else
       	 numr simp
 	    if remainder(nom,den) = 0 then
-      	       nom / den	   
+      	       nom / den
 	    % The value is not negative
 	    else if nom*den > 0 then
 	       nom / den
 	    else
 	       nom / den - 1
-   else 
+   else
       rederr{"pasf_floor: not a domain valued sf in input",nom,den};
 
 procedure pasf_ceil(nom,den);
@@ -476,7 +476,7 @@ procedure pasf_termmlat(atf);
    % formula. [atf] is an atomic formula. Returns the multiplicity list of all
    % non-zero terms in [atf].
    if pasf_arg2l atf then {(pasf_arg2l atf . 1)};
-            
+
 procedure pasf_max(a,b);
    % Presburger arithmetic standard form maximum of two constant expressions
    % in $\mathbb{Z} \cup \{ \infty, -\infty \}$. [a] is a constant expression;
@@ -551,7 +551,7 @@ procedure pasf_exprng1(f);
       if rl_tvalp f then
  	 return f;
       op := rl_op f;
-      if rl_boolp op then 
+      if rl_boolp op then
 	 return rl_smkn(op,for each arg in rl_argn f collect pasf_exprng1 arg);
       if rl_quap op then
       	 return rl_mkq(op,rl_var f,pasf_exprng1 rl_mat f);
@@ -563,7 +563,7 @@ procedure pasf_exprng1(f);
 	    op,rl_var f,rl_b f,rl_mat f,'or,'false,'true);
       return f
    end;
-      
+
 procedure pasf_exprng1!-gand(op,v,b,m,gand,gtrue,gfalse);
    begin scalar w,matj,terml,j,c,resl;
       w := cl_fvarl b;
@@ -593,7 +593,7 @@ procedure pasf_exprng2(f);
    % quantifier is expanded.
    begin scalar terml,evaltype,matr,tmp,res;
       if rl_tvalp f then return f;
-      if rl_boolp rl_op f then 
+      if rl_boolp rl_op f then
 	 return rl_smkn(rl_op f,for each sf in rl_argn f collect
 	    cl_simpl(pasf_exprng2 sf,nil,-1));
       if rl_bquap rl_op f then <<
@@ -610,7 +610,7 @@ procedure pasf_exprng2(f);
 	    rederr {"Expanding a parametric bounded formula is impossible"};
 	 terml := pasf_b2terml(rl_b f,rl_var f);
 	 matr := pasf_exprng2 rl_mat f;
-	 if !*rlverbose then 
+	 if !*rlverbose then
 	    ioto_tprin2t {"---- (",rl_op f," ",rl_var f,")"};
 	 res := {};
 	 for each j in terml collect <<
@@ -761,7 +761,7 @@ procedure pasf_pdp(term);
    begin scalar c,r;
       if domainp term then
 	 return (if null term then 'indef
-      	 else if term < 0 then 'ndef 
+      	 else if term < 0 then 'ndef
       	 else if term > 0 then 'pdef
       	 else 'indef);
       if evenp ldeg term then <<
@@ -843,9 +843,9 @@ procedure pasf_cauchybndcl(cl);
 
 procedure pasf_coeflst(p,x);
    % Presburgr arithmetic standard form coefficient list. [p] is a polynomial
-   % expression; [x] is a variable. Returns a list of pairs of coefficients; 
+   % expression; [x] is a variable. Returns a list of pairs of coefficients;
    % the car is a standard form; the cdr is a positive number. The cars are
-   % the coefficients of [p] as a polynomial in [x] and the cdrs are the 
+   % the coefficients of [p] as a polynomial in [x] and the cdrs are the
    % corresponding degrees. We guarantee the list is sorted by degrees
    % starting with the highest one.
    begin scalar oldkord,nexpr,res;
@@ -858,7 +858,7 @@ procedure pasf_coeflst(p,x);
       setkorder oldkord;
       return reversip ((negf nexpr . 0) . res)
    end;
-   
+
 % ---- Structure definitions and accessor methods ----------------------------
 
 % REPR is a datastructure that represents the decomposition of an atomic
@@ -875,7 +875,7 @@ procedure repr_new(pos,op,cl,tn);
    % new REPR structure.
    {pos,op,cl,tn,if null cl then
       rederr{"repr_new : invalid coefficient list"}
-   else 
+   else
       cdar cl};
 
 procedure repr_eq(repr1,repr2);
@@ -904,7 +904,7 @@ procedure repr_ldeg(repr);
    % Presburger arithmetic standard form REPR accessor. [repr] is a REPR
    % structure. Returns the leading degree of the corresponding formula.
    car cddddr repr;
-   
+
 procedure repr_n(repr);
    % Presburger arithmetic standard form REPR accessor. [repr] is a REPR
    % structure. Returns the leading coefficient.
@@ -949,7 +949,7 @@ procedure repr_atfnew(atf,x,pos);
       if minusf caar cl then <<
 	 % Note : multiplication of the modulus by -1 does not change the
 	 % semantics
-	 op := if pasf_congp atf then 
+	 op := if pasf_congp atf then
 	    (pasf_anegrel car op . cdr op)
 	 else
 	    pasf_anegrel op;
@@ -1121,17 +1121,17 @@ procedure answ_backsubst(answ1,answ2);
    % equations in [answ1] are substituted into [answ2] and the formula of the
    % old answer is replaced by the new one.
    begin scalar res,sub,var;
-      if null answ2 and answ1 then 
-	 return answ1 
+      if null answ2 and answ1 then
+	 return answ1
       else if null answ1 then rederr{"incorrect ANSW structure"};
-      sub := {(prepf pasf_arg2l caaddr answ1 . 
+      sub := {(prepf pasf_arg2l caaddr answ1 .
 	 prepsq pasf_arg2r caaddr answ1)};
       res := for each eqn in caddr answ2 collect
 	 pasf_mk2('equal,pasf_arg2l eqn,subsq(pasf_arg2r eqn,sub));
       return {car answ1,append(cadr answ1,cadr answ2),
 	 (caaddr answ1) . res}
    end;
-      
+
 % IV structure defines a simple representation of finite interval joints and
 % provides some operations on that structure such as merge and cut. A
 % procedure to map quantifier free formulas in one variable to IV's is also
@@ -1368,7 +1368,7 @@ procedure pasf_stexf(u,al);
       w := pasf_stexk(mvar u,al);
       return addf(multf(c,exptf(car w,ldeg u)),r) . cdr w
    end;
-      
+
 procedure pasf_stexk(k,al);
    begin scalar w;
       if idp k then
