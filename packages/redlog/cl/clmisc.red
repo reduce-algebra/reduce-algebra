@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@ lisp <<
    fluid '(cl_misc_rcsid!* cl_misc_copyright!*);
    cl_misc_rcsid!* :=
       "$Id$";
-   cl_misc_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
+   cl_misc_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module clmisc;
@@ -128,6 +128,23 @@ procedure cl_qnum(f);
       % [f] is an atomic formula.
       return 0
    end;
+
+procedure cl_depth(f);
+   % Depth. [f] is a formula returns a non-negative number. The result
+   % is the depth of [f], i.e., the deepest level of nesting of boolean
+   % subformulas.
+   if rl_tvalp f or cl_atfp f then
+      0
+   else if rl_quap rl_op f or rl_bquap rl_op f then
+      1 + cl_depth rl_mat f
+   else if rl_op f eq 'not then
+      1 + cl_depth rl_arg1 f
+   else if rl_extbp rl_op f then
+      1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f)
+   else if rl_basbp rl_op f then
+      1 + lto_max for each sf in rl_argn f collect cl_depth sf
+   else
+      rederr {"cl_depth: unknown operator ",rl_op f};
 
 procedure cl_prenexp(f);
    % Prenex predicate. [f] is a formula. Returns a truth value.

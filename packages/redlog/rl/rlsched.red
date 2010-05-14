@@ -227,6 +227,10 @@ rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,T);
 
 rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,T);
 
+rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,T);
+
+rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,T);
+
 % Black box scheduler.
 
 rl_mkbb('rl_simplat1,2);
