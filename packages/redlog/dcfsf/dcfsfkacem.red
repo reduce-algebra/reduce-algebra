@@ -53,7 +53,7 @@ on1 'dqegradord;
 on1 'dqeoptqelim;
 on1 'dqeoptsimp;
 
-algebraic (for all x,n let df(x d n,x)=0);
+algebraic (for all x,n let df(d(x,n),x)=0);
 
 % part 2
 
