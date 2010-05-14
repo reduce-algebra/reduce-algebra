@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,12 +26,12 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(dcfsf_rcsid!* dcfsf_copyright!*);
    dcfsf_rcsid!* := "$Id$";
-   dcfsf_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
+   dcfsf_copyright!* := "(c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm"
 >>;
 
 module dcfsf;
@@ -139,6 +139,8 @@ put('dcfsf,'rl_services,'(
    (rl_decdeg1!* . acfsf_decdeg1)
    (rl_surep!* . cl_surep)
    (rl_qe!* . dcfsf_qe)
+   (rl_1equation!* . dcfsf_1equation)
+   (rl_enf!* . dcfsf_enf)
    (rl_qeipo!* . cl_qeipo)
    (rl_siaddatl!* . cl_siaddatl)));
 
@@ -163,10 +165,10 @@ put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
 newtok '((!< !>) neq);
 
-algebraic infix d;
+algebraic operator d;
 put('d,'number!-of!-args,2);
 put('d,'simpfn,'dcfsf_simpd);
-precedence d,**;
+%precedence d,**;
 
 put('d,'prifn,'dcfsf_prid);
 
