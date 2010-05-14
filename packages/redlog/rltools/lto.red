@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,16 +26,18 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(lto_rcsid!* lto_copyright!*);
    lto_rcsid!* := "$Id$";
-   lto_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
+   lto_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module lto;
 % List tools.
+
+operator setminus;
 
 procedure lto_insert(x,l);
    % List tools insert. [x] is any S-expression, [l] is a list. Conses
@@ -120,7 +122,7 @@ procedure lto_alinsert(key,val,al);
       cdr w := val . cdr w;
       return al
    end;
-   
+
 procedure lto_lengthp(l,n,compp);
    % List tools length predicate. [l] is a list, [n] is a number and [compp]
    % is a function comparing two numbers. Returns [compp](length [l],[n]).
@@ -231,6 +233,14 @@ procedure lto_max(l);
    % List tools maximum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
    if null cdr l then car l else max(car l,lto_max cdr l);
+
+procedure lto_min(l);
+   % List tools minimum of a list. [l] is a list of integers. Returns
+   % the maximum of [l].
+   if null cdr l then car l else min(car l,lto_max cdr l);
+
+procedure setminus(l1,l2);
+   'list . lto_setminus(cdr l1,cdr l2);
 
 procedure lto_setminus(l1,l2);
    for each x in l1 join if not member(x,l2) then {x};
@@ -387,6 +397,11 @@ macro procedure push(l);
          typerr(ll,"identifier");
       return {'setq,ll,{'cons,cadr l,ll}}
    end;
+
+procedure lto_lengthgeq(l,n);
+   % Length greater than or equal. [l] is a list; [n] is a non-negative
+   % number. Returns bool.
+   eqn(n,0) or (l and lto_lengthgeq(cdr l,n-1));
 
 endmodule;  % [lto]
 

@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,12 +26,12 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(sfto_rcsid!* sfto_copyright!*);
    sfto_rcsid!* := "$Id$";
-   sfto_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
+   sfto_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module sfto;
@@ -54,6 +54,7 @@ put('sfto_musser,'simpfg,
    '((T (setq !*sfto_tobey nil) (setq !*sfto_yun nil))));
 operator exteuc;
 operator degree;
+operator coefficients;
 
 procedure sfto_dcontentf(u);
    % Standard form tools domain content standard form. [u] is an SF.
@@ -564,7 +565,7 @@ procedure sfto_linp(f,vl);
 
 procedure sfto_linp1(f,vl,oc);
    domainp f or
-      (not(mvar f memq vl) and not(mvar f memq oc) and 
+      (not(mvar f memq vl) and not(mvar f memq oc) and
 	 sfto_linp1(lc f,vl,oc) and sfto_linp1(red f,vl,oc)) or
       (mvar f memq vl and not(mvar f memq oc) and ldeg f = 1 and
 	 sfto_linp1(lc f,vl,mvar f . oc) and sfto_linp1(red f,vl,oc));
@@ -622,6 +623,23 @@ procedure sfto_tdegf(f);
 	 return w;
       return td
    end;
+
+procedure coefficients(f,vl);
+   'list . for each c in sfto_allcoeffs(numr simp f,cdr vl) collect
+      prepf c;
+
+procedure sfto_allcoeffs(f,vl);
+   sfto_allcoeffs1({f},vl);
+
+procedure sfto_allcoeffs1(l,vl);
+   if null vl then
+      l
+   else
+      sfto_allcoeffs1(for each f in l join
+	 sfto_coefs(sfto_reorder(f,car vl),car vl),cdr vl);
+
+procedure sfto_coefs(f,v);
+   if not domainp f and mvar f eq v then coeffs f else {f};
 
 endmodule;  % [sfto]
 
