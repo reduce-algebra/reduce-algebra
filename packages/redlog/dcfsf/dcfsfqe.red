@@ -29,7 +29,7 @@
 %
 
 lisp <<
-   fluid '(dcfsfqe_rcsid!* dcfsfqe_copyright!*);
+   fluid '(dcfsf_qe_rcsid!* dcfsf_qe_copyright!*);
    dcfsf_qe_rcsid!* :=
       "$Id$";
    dcfsf_qe_copyright!* := "(c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm"
