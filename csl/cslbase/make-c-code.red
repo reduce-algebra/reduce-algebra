@@ -401,7 +401,7 @@ while fnames do begin
 % achieve, and so on a temporary basis I will disable use of files
 % beyond u12 until I have got everything stable so that compilation
 % of more that that does not give trouble.
-   if not everything and car fname = "u12" then <<
+   if not everything and car fnames = "u12" then <<
       count := count + 1;
       how_many := 0 >>;
    fnames := cdr fnames
