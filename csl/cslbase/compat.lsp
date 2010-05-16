@@ -19,7 +19,7 @@
 (remflag '(geq leq neq logand logor logxor leftshift princ printc
 	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
 	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn printprompt pair) 'lose)
+	subla gcdn printprompt pair putc) 'lose)
 
 (symbol!-make!-fastget 32)
 (symbol!-make!-fastget 'noncom 0)  % built into the kernel
@@ -188,6 +188,8 @@ loop  (cond ((atom l) (return nil))
                 (t (error "Bad type ~S in putd" type)))
              a))))))
 
+% A version of this in rlisp/rsupport.red tries to compile the
+% odd sort of definition involved, but I will not!
 (de putc (a b c)
    (put a b c))
 
@@ -468,7 +470,7 @@ top   (cond ((minusp n) (return r)))
 (flag '(geq leq neq logand logor logxor leftshift princ printc
 	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
 	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn printprompt pair) 'lose)
+	subla gcdn printprompt pair putc) 'lose)
 
 % end of compat.lsp
 
