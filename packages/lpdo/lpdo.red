@@ -32,6 +32,8 @@ module lpdo;
 % Approximate factorization of linear partial differential operators.
 % Still under development.
 
+fluid '(!*utf8);
+
 if !*utf8 then on1 'utf8exp;
 
 load!-package 'redlog;
