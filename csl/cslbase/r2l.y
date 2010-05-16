@@ -25,7 +25,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -96,10 +96,13 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include <stdint.h>
 /*
- * The next line is a bit of a cop-out!
+ * The next line is a bit of a cop-out! It was use din times before I could
+ * rely on stdint.h
+ *
+ * typedef long int intptr_t;
  */
-typedef long int intptr_t;
 
 intptr_t *heap;
 int heapfringe = 0;
@@ -118,7 +121,7 @@ int common;
 static char *rights_message[] =
 {
 "%",
-"% Copyright (C) 2008, following the master REDUCE source files.          *",
+"% Copyright (C) 2010, following the master REDUCE source files.          *",
 "%                                                                        *",
 "% Redistribution and use in source and binary forms, with or without     *",
 "% modification, are permitted provided that the following conditions are *",
