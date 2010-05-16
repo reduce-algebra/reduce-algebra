@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 2c0ed08d 09-May-2010 */
+/* Signature: 72b67f21 13-May-2010 */
 
 #include "headers.h"
 
@@ -2254,7 +2254,11 @@ int char_from_terminal(Lisp_Object dummy)
 #ifdef __cplusplus
                 try
 #else
+#ifdef USE_SIGALTSTACK
+                if (!sigsetjmp(sigint_buf, -1))
+#else
                 if (!setjmp(sigint_buf))
+#endif
 #endif
                 {   while (tty_count<TTYBUF_SIZE && !interrupt_pending)
                     {   int c;
@@ -3795,7 +3799,11 @@ void read_eval_print(int noisy)
 {
     Lisp_Object nil = C_nil, *save = stack;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+#else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
+#endif
 #endif
     push2(codevec, litvec);
     for (;;)        /* Loop for each s-expression found */
@@ -3808,7 +3816,11 @@ void read_eval_print(int noisy)
 #ifdef __cplusplus
         try
 #else
+#ifdef USE_SIGALTSTACK
+        if (!sigsetjmp(this_level, -1))
+#else
         if (!setjmp(this_level))
+#endif
 #endif
         {
 #ifndef __cplusplus
@@ -3830,7 +3842,17 @@ void read_eval_print(int noisy)
             stack = save;
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
             if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
             if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -3891,7 +3913,11 @@ void read_eval_print(int noisy)
 #ifdef __cplusplus
         try
 #else
+#ifdef USE_SIGALTSTACK
+        if (!sigsetjmp(this_level, -1))
+#else
         if (!setjmp(this_level))
+#endif
 #endif
         {
             u = eval(u, nil);
@@ -3963,7 +3989,17 @@ void read_eval_print(int noisy)
             stack = save;
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
             if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
             if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif

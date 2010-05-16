@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 626ff121 09-May-2010 */
+/* Signature: 50e98865 13-May-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -685,7 +685,11 @@ static void report_dependencies()
 }
 
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+static sigjmp_buf my_exit_buffer;
+#else
 static jmp_buf my_exit_buffer;
+#endif
 static volatile int my_return_code = 0;
 #endif
 
@@ -723,7 +727,11 @@ void my_exit(int n)
  * is not fully settled!
  */
     my_return_code = n;
+#ifdef USE_SIGALTSTACK
+    siglongjmp(my_exit_buffer, 1);
+#else
     longjmp(my_exit_buffer, 1);
+#endif
 #endif
 #else
 #if defined(WIN32) && defined(NAG)
@@ -741,16 +749,41 @@ CSLbool segvtrap = YES;
 CSLbool batch_flag = NO;
 CSLbool ignore_restart_fn = NO;
 
+#ifdef USE_SIGALTSTACK
+
+static unsigned char signal_stack_block[SIGSTKSZ];
+
+stack_t signal_stack;
+
+#endif
+
 static void lisp_main(void)
 {
     Lisp_Object nil;
-    int i;    
+    int i;
+#ifdef USE_SIGALTSTACK
+/*
+ * If I get a SIGSEGV that is caused by a stack overflow then I am in
+ * a world of pain because the regular stack does not have space to run my
+ * exception handler. So where I can I will arrange that the exception
+ * handler runs in its own small stack. This may itself lead to pain,
+ * but perhaps less?
+ */
+    signal_stack.ss_sp = (void *)signal_stack_block;
+    signal_stack.ss_size = SIGSTKSZ;
+    signal_stack.ss_flags = 0;
+    sigaltstack(&signal_stack, (stack_t *)0);
+#endif
 #ifndef __cplusplus
 /*
  * The setjmp here is to provide a long-stop for untrapped
  * floating point exceptions.
  */
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level, *save_level = errorset_buffer;
+#else
     jmp_buf this_level, *save_level = errorset_buffer;
+#endif
 #endif
     tty_count = 0;
     while (YES)
@@ -767,7 +800,11 @@ static void lisp_main(void)
 #ifdef __cplusplus
         try
 #else
+#ifdef USE_SIGALTSTACK
+        if (!sigsetjmp(this_level, -1))
+#else
         if (!setjmp(this_level))
+#endif
 #endif
         {   nil = C_nil;
             terminal_pushed = NOT_CHAR;
@@ -811,7 +848,17 @@ static void lisp_main(void)
             flip_exception();
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
             if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
             if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -1004,7 +1051,11 @@ static void lisp_main(void)
 
 CSLbool sigint_must_longjmp = NO;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+sigjmp_buf sigint_buf;
+#else
 jmp_buf sigint_buf;
+#endif
 #endif
 
 void sigint_handler(int code)
@@ -1030,7 +1081,11 @@ void sigint_handler(int code)
 #ifdef __cplusplus
         throw((int *)0);
 #else
+#ifdef USE_SIGALTSTACK
+        siglongjmp(sigint_buf, 1);
+#else
         longjmp(sigint_buf, 1);
+#endif
 #endif
     }
 /*
@@ -1500,7 +1555,11 @@ term_printf(
                         throw EXIT_FAILURE;
 #else
                         my_return_code = EXIT_FAILURE;
+#ifdef USE_SIGALTSTACK
+                        siglongjmp(my_exit_buffer, 1);
+#else
                         longjmp(my_exit_buffer, 1);
+#endif
 #endif
 #else
                         exit(EXIT_FAILURE);
@@ -2620,10 +2679,18 @@ static void cslaction(void)
     errorset_msg = NULL;
     try
 #else
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level;
+#else
     jmp_buf this_level;
+#endif
     errorset_buffer = &this_level;
     errorset_msg = NULL;
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(this_level, -1))
+#else
     if (!setjmp(this_level))
+#endif
 #endif
     {
 #ifndef UNDER_CE
@@ -2884,7 +2951,11 @@ int ENTRYPOINT(int argc, char *argv[])
     try { res = submain(argc, argv); }
     catch(int r) { res = r; }
 #else
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(my_exit_buffer, -1)) res = submain(argc, argv);
+#else
     if (!setjmp(my_exit_buffer)) res = submain(argc, argv);
+#endif
     else res = my_return_code;
 #endif
 #ifdef USE_MPI

@@ -6,7 +6,7 @@
 % version of REDUCE or a full and optimised one.
 %
 % The behaviour is determined by whether the version of CSL used to
-% run it has a full complement of functions in the modules u01.c to u12.c.
+% run it has a full complement of functions in the modules u01.c to u60.c.
 %
 %
 %           bootstrapreduce -z buildreduce.lsp -D@srcdir=<DIR>
@@ -19,7 +19,7 @@
 %
 %           reduce -z buildreduce.lsp -D@srcdir=<DIR>
 %
-% Here the files u01.c to u12.c and u01.lsp to u12.lsp must already
+% Here the files u01.c to u60.c and u01.lsp to u60.lsp must already
 % have been created, and that the reduce executable has them compiled in.
 % The REDUCE source files that are compiled *MUST* be the same as those used
 % to create this C code.
@@ -65,7 +65,56 @@
    (rdf "$srcdir/../../cslbuild/generated-c/u09.lsp")
    (rdf "$srcdir/../../cslbuild/generated-c/u10.lsp")
    (rdf "$srcdir/../../cslbuild/generated-c/u11.lsp")
-   (rdf "$srcdir/../../cslbuild/generated-c/u12.lsp")    )))
+   (rdf "$srcdir/../../cslbuild/generated-c/u12.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u13.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u14.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u15.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u16.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u17.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u18.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u19.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u20.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u21.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u22.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u23.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u24.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u25.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u26.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u27.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u28.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u29.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u30.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u31.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u32.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u33.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u34.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u35.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u36.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u37.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u38.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u39.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u40.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u41.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u42.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u43.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u44.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u45.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u46.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u47.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u48.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u49.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u50.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u51.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u52.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u53.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u54.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u55.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u56.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u57.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u58.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u59.lsp")
+   (rdf "$srcdir/../../cslbuild/generated-c/u60.lsp")
+    )))
 
 (rdf "$srcdir/fastgets.lsp")
 (rdf "$srcdir/compat.lsp")
@@ -432,7 +481,7 @@ faslout 'user;
 
 %
 % The "user" module is only useful when building a full system, since
-% in the bootstrap the files u01.lsp to u12.lsp will probably not exist
+% in the bootstrap the files u01.lsp to u60.lsp will probably not exist
 % and it is CERTAIN that they are not useful.
 %
 
@@ -470,6 +519,54 @@ rdf "$srcdir/../../cslbuild/generated-c/u09.lsp"$
 rdf "$srcdir/../../cslbuild/generated-c/u10.lsp"$
 rdf "$srcdir/../../cslbuild/generated-c/u11.lsp"$
 rdf "$srcdir/../../cslbuild/generated-c/u12.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u13.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u14.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u15.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u16.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u17.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u18.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u19.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u20.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u21.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u22.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u23.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u24.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u25.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u26.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u27.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u28.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u29.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u30.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u31.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u32.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u33.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u34.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u35.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u36.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u37.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u38.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u39.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u40.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u41.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u42.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u43.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u44.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u45.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u46.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u47.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u48.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u49.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u50.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u51.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u52.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u53.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u54.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u55.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u56.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u57.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u58.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u59.lsp"$
+rdf "$srcdir/../../cslbuild/generated-c/u60.lsp"$
 
 
 faslend;

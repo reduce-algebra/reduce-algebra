@@ -1,4 +1,4 @@
-/* externs.h                            Copyright (C) Codemist 1989-2008 */
+/* externs.h                            Copyright (C) Codemist 1989-2010 */
 
 /*
  *   Main batch of extern declarations.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 14f006b3 22-Apr-2010 */
+/* Signature: 5bf904dc 15-May-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -1176,9 +1176,20 @@ extern setup_type const
        funcs1_setup[], funcs2_setup[], funcs3_setup[], print_setup[],
        read_setup[], mpi_setup[];
 extern setup_type const
-       u01_setup[], u02_setup[], u03_setup[], u04_setup[],
-       u05_setup[], u06_setup[], u07_setup[], u08_setup[],
-       u09_setup[], u10_setup[], u11_setup[], u12_setup[];
+                    u01_setup[], u02_setup[], u03_setup[], u04_setup[],
+       u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],
+       u10_setup[], u11_setup[], u12_setup[], u13_setup[], u14_setup[],
+       u15_setup[], u16_setup[], u17_setup[], u18_setup[], u19_setup[],
+       u20_setup[], u21_setup[], u22_setup[], u23_setup[], u24_setup[],
+       u25_setup[], u26_setup[], u27_setup[], u28_setup[], u29_setup[],
+       u30_setup[], u31_setup[], u32_setup[], u33_setup[], u34_setup[],
+       u35_setup[], u36_setup[], u37_setup[], u38_setup[], u39_setup[],
+       u40_setup[], u41_setup[], u42_setup[], u43_setup[], u44_setup[],
+       u45_setup[], u46_setup[], u47_setup[], u48_setup[], u49_setup[],
+       u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
+       u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
+       u60_setup[];
+
 #ifdef NAG
 extern setup_type const nag_setup[], asp_setup[];
 extern setup_type const socket_setup[], xdr_setup[], grep_setup[];

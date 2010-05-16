@@ -1,11 +1,11 @@
-/*  fns2.c                          Copyright (C) 1989-2008 Codemist Ltd */
+/*  fns2.c                          Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * Basic functions part 2.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4fd19903 22-Apr-2010 */
+/* Signature: 684682e6 16-May-2010 */
 
 #include "headers.h"
 
@@ -467,7 +467,7 @@ Lisp_Object Lsymbol_argcode(Lisp_Object nil, Lisp_Object a)
 /*
  * The job of this function is to put back information as retrieved by
  * symbol-argcode. It is used in part of the support for native compilation
- * via C code... Note that it doe snot interact with any JIT stuff since the
+ * via C code... Note that it does not interact with any JIT stuff since the
  * two compilation strategies are complementary and I do not expect that I
  * will every use both at once.
  */
@@ -981,6 +981,16 @@ static CSLbool restore_fn_cell(Lisp_Object a, char *name,
     return YES;
 }
 
+/*
+ * This gets calle dby the compiler if it is asked to compile something
+ * into a fasl file where that thing has a definition as C code. In such a
+ * case what it puts into the fasl file is a call to this to instate the
+ * version coded in C. If a LOT of stuff has bene turning into C this could
+ * become a bottleneck - and in such a case I should make a table of C
+ * entrypoints as a hash table or something sorted for use with binary
+ * search!
+ */
+
 static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
 {
     char *name;
@@ -993,6 +1003,10 @@ static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
     errexit();
     name = (char *)&celt(pn, 0);
     len = length_of_header(vechdr(pn)) - 4;
+/*
+ * This is a potential time-sink in that it does a linear scan of all the
+ * definitions in the tables that are in u01.c to u60.c.
+ */
     if (restore_fn_cell(a, name, len, u01_setup) ||
         restore_fn_cell(a, name, len, u02_setup) ||
         restore_fn_cell(a, name, len, u03_setup) ||
@@ -1004,7 +1018,55 @@ static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
         restore_fn_cell(a, name, len, u09_setup) ||
         restore_fn_cell(a, name, len, u10_setup) ||
         restore_fn_cell(a, name, len, u11_setup) ||
-        restore_fn_cell(a, name, len, u12_setup))
+        restore_fn_cell(a, name, len, u12_setup) ||
+        restore_fn_cell(a, name, len, u13_setup) ||
+        restore_fn_cell(a, name, len, u14_setup) ||
+        restore_fn_cell(a, name, len, u15_setup) ||
+        restore_fn_cell(a, name, len, u16_setup) ||
+        restore_fn_cell(a, name, len, u17_setup) ||
+        restore_fn_cell(a, name, len, u18_setup) ||
+        restore_fn_cell(a, name, len, u19_setup) ||
+        restore_fn_cell(a, name, len, u20_setup) ||
+        restore_fn_cell(a, name, len, u21_setup) ||
+        restore_fn_cell(a, name, len, u22_setup) ||
+        restore_fn_cell(a, name, len, u23_setup) ||
+        restore_fn_cell(a, name, len, u24_setup) ||
+        restore_fn_cell(a, name, len, u25_setup) ||
+        restore_fn_cell(a, name, len, u26_setup) ||
+        restore_fn_cell(a, name, len, u27_setup) ||
+        restore_fn_cell(a, name, len, u28_setup) ||
+        restore_fn_cell(a, name, len, u29_setup) ||
+        restore_fn_cell(a, name, len, u30_setup) ||
+        restore_fn_cell(a, name, len, u31_setup) ||
+        restore_fn_cell(a, name, len, u32_setup) ||
+        restore_fn_cell(a, name, len, u33_setup) ||
+        restore_fn_cell(a, name, len, u34_setup) ||
+        restore_fn_cell(a, name, len, u35_setup) ||
+        restore_fn_cell(a, name, len, u36_setup) ||
+        restore_fn_cell(a, name, len, u37_setup) ||
+        restore_fn_cell(a, name, len, u38_setup) ||
+        restore_fn_cell(a, name, len, u39_setup) ||
+        restore_fn_cell(a, name, len, u40_setup) ||
+        restore_fn_cell(a, name, len, u41_setup) ||
+        restore_fn_cell(a, name, len, u42_setup) ||
+        restore_fn_cell(a, name, len, u43_setup) ||
+        restore_fn_cell(a, name, len, u44_setup) ||
+        restore_fn_cell(a, name, len, u45_setup) ||
+        restore_fn_cell(a, name, len, u46_setup) ||
+        restore_fn_cell(a, name, len, u47_setup) ||
+        restore_fn_cell(a, name, len, u48_setup) ||
+        restore_fn_cell(a, name, len, u49_setup) ||
+        restore_fn_cell(a, name, len, u50_setup) ||
+        restore_fn_cell(a, name, len, u51_setup) ||
+        restore_fn_cell(a, name, len, u52_setup) ||
+        restore_fn_cell(a, name, len, u53_setup) ||
+        restore_fn_cell(a, name, len, u54_setup) ||
+        restore_fn_cell(a, name, len, u55_setup) ||
+        restore_fn_cell(a, name, len, u56_setup) ||
+        restore_fn_cell(a, name, len, u57_setup) ||
+        restore_fn_cell(a, name, len, u58_setup) ||
+        restore_fn_cell(a, name, len, u59_setup) ||
+        restore_fn_cell(a, name, len, u60_setup))
     {   Lisp_Object env;
         push(a);
 #ifdef COMMON

@@ -1,4 +1,4 @@
-/*  eval3.c                          Copyright (C) 1991-2008 Codemist Ltd */
+/*  eval3.c                          Copyright (C) 1991-2010 Codemist Ltd */
 
 /*
  * Interpreter (part 3).
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 3c2f83af 08-Mar-2010 */
+/* Signature: 3d6d1704 13-May-2010 */
 
 #include "headers.h"
 
@@ -1064,13 +1064,22 @@ static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
  */
 
 #ifndef __cplusplus
+#ifdef UISE_SIGALTSTACK
+sigjmp_buf *errorset_buffer;
+#else
 jmp_buf *errorset_buffer;
+#endif
 #endif
 char *errorset_msg;
 static char signal_msg[32];
 
 void MS_CDECL low_level_signal_handler(int code)
 {
+/*
+ * Observe, if you will, that in the case of a SIGSEGV this function does
+ * not use a significant amount of stack end ends up just doing a
+ * (sig)longjmp.
+ */
     Lisp_Object nil;
     ignore_exception();
     if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
@@ -1104,7 +1113,11 @@ case SIGILL:
 #ifdef __cplusplus
     throw "low_level_signal_handler";
 #else
+#ifdef USE_SIGATLSTACK
+    siglongjmp(*errorset_buffer, 1);
+#else
     longjmp(*errorset_buffer, 1);
+#endif
 #endif
 }
 
@@ -1154,7 +1167,7 @@ void unwind_stack(Lisp_Object *entry_stack, CSLbool findcatch)
  * setjmp. This separation is because a beta version of a C compiler I was
  * using had trouble when both va_args and setjmp were used together, and
  * that version of gcc failed with an internal error! While that state
- * will get fixed it was still concenient as a short term measure and
+ * will get fixed it was still convenient as a short term measure and
  * harmless longer term to do things this way!
  */
 
@@ -1164,7 +1177,11 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
     Lisp_Object nil = C_nil, r;
     uint32_t flags = miscflags;
 #ifndef __cplusplus
+#ifdef SIGALTSTACK
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+#else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
+#endif
 #endif
     Lisp_Object *save;
     if (fg1 != nil) miscflags |= HEADLINE_FLAG;
@@ -1176,7 +1193,11 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #ifdef __cplusplus
     try
 #else
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(this_level, -1))
+#else
     if (!setjmp(this_level))
+#endif
 #endif
     {
 #ifndef __cplusplus
@@ -1233,7 +1254,17 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #endif
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
-        if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
+            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
         if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -1331,7 +1362,11 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
         save_io_limit   = io_limit,   save_errors_limit = errors_limit;
     int r0=0, r1=0, r2=0, r3=0;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+#else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
+#endif
 #endif
     Lisp_Object *save;
     push2(codevec, litvec);
@@ -1355,7 +1390,11 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
 #ifdef __cplusplus
     try
 #else
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(this_level, -1))
+#else
     if (!setjmp(this_level))
+#endif
 #endif
     {
 #ifndef __cplusplus
@@ -1497,7 +1536,17 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
 #endif
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
-        if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
+            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
         if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif

@@ -49,7 +49,7 @@ endif !fox
 
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-                  termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT)
+	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT)
 
 if mac_framework
 all-local:	make-clickable csl.img reduce.img
@@ -107,19 +107,69 @@ endif !jit
 
 gensrc=$(srcdir)/../../cslbuild/generated-c
 
-generated_sources = $(gensrc)/u01.c $(gensrc)/u02.c \
-		$(gensrc)/u03.c $(gensrc)/u04.c \
-		$(gensrc)/u05.c $(gensrc)/u06.c \
-		$(gensrc)/u07.c $(gensrc)/u08.c \
-		$(gensrc)/u09.c $(gensrc)/u10.c \
-		$(gensrc)/u11.c $(gensrc)/u12.c
+generated_sources =             $(gensrc)/u01.c \
+		$(gensrc)/u02.c $(gensrc)/u03.c \
+		$(gensrc)/u04.c $(gensrc)/u05.c \
+		$(gensrc)/u06.c $(gensrc)/u07.c \
+		$(gensrc)/u08.c $(gensrc)/u09.c \
+		$(gensrc)/u10.c $(gensrc)/u11.c \
+		$(gensrc)/u12.c $(gensrc)/u13.c \
+		$(gensrc)/u14.c $(gensrc)/u15.c \
+		$(gensrc)/u16.c $(gensrc)/u17.c \
+		$(gensrc)/u18.c $(gensrc)/u19.c \
+		$(gensrc)/u20.c $(gensrc)/u21.c \
+		$(gensrc)/u22.c $(gensrc)/u23.c \
+		$(gensrc)/u24.c $(gensrc)/u25.c \
+		$(gensrc)/u26.c $(gensrc)/u27.c \
+		$(gensrc)/u28.c $(gensrc)/u29.c \
+		$(gensrc)/u30.c $(gensrc)/u31.c \
+		$(gensrc)/u32.c $(gensrc)/u33.c \
+		$(gensrc)/u34.c $(gensrc)/u35.c \
+		$(gensrc)/u36.c $(gensrc)/u37.c \
+		$(gensrc)/u38.c $(gensrc)/u39.c \
+		$(gensrc)/u40.c $(gensrc)/u41.c \
+		$(gensrc)/u42.c $(gensrc)/u43.c \
+		$(gensrc)/u44.c $(gensrc)/u45.c \
+		$(gensrc)/u46.c $(gensrc)/u47.c \
+		$(gensrc)/u48.c $(gensrc)/u49.c \
+		$(gensrc)/u50.c $(gensrc)/u51.c \
+		$(gensrc)/u52.c $(gensrc)/u53.c \
+		$(gensrc)/u54.c $(gensrc)/u55.c \
+		$(gensrc)/u56.c $(gensrc)/u57.c \
+		$(gensrc)/u58.c $(gensrc)/u59.c \
+		$(gensrc)/u60.c
 
-generated_lisp = $(gensrc)/u01.lsp $(gensrc)/u02.lsp \
-		$(gensrc)/u03.lsp $(gensrc)/u04.lsp \
-		$(gensrc)/u05.lsp $(gensrc)/u06.lsp \
-		$(gensrc)/u07.lsp $(gensrc)/u08.lsp \
-		$(gensrc)/u09.lsp $(gensrc)/u10.lsp \
-		$(gensrc)/u11.lsp $(gensrc)/u12.lsp
+generated_lisp =                  $(gensrc)/u01.lsp \
+		$(gensrc)/u02.lsp $(gensrc)/u03.lsp \
+		$(gensrc)/u04.lsp $(gensrc)/u05.lsp \
+		$(gensrc)/u06.lsp $(gensrc)/u07.lsp \
+		$(gensrc)/u08.lsp $(gensrc)/u09.lsp \
+		$(gensrc)/u10.lsp $(gensrc)/u11.lsp \
+		$(gensrc)/u12.lsp $(gensrc)/u13.lsp \
+		$(gensrc)/u14.lsp $(gensrc)/u15.lsp \
+		$(gensrc)/u16.lsp $(gensrc)/u17.lsp \
+		$(gensrc)/u18.lsp $(gensrc)/u19.lsp \
+		$(gensrc)/u20.lsp $(gensrc)/u21.lsp \
+		$(gensrc)/u22.lsp $(gensrc)/u23.lsp \
+		$(gensrc)/u24.lsp $(gensrc)/u25.lsp \
+		$(gensrc)/u26.lsp $(gensrc)/u27.lsp \
+		$(gensrc)/u28.lsp $(gensrc)/u29.lsp \
+		$(gensrc)/u30.lsp $(gensrc)/u31.lsp \
+		$(gensrc)/u32.lsp $(gensrc)/u33.lsp \
+		$(gensrc)/u34.lsp $(gensrc)/u35.lsp \
+		$(gensrc)/u36.lsp $(gensrc)/u37.lsp \
+		$(gensrc)/u38.lsp $(gensrc)/u39.lsp \
+		$(gensrc)/u40.lsp $(gensrc)/u41.lsp \
+		$(gensrc)/u42.lsp $(gensrc)/u43.lsp \
+		$(gensrc)/u44.lsp $(gensrc)/u45.lsp \
+		$(gensrc)/u46.lsp $(gensrc)/u47.lsp \
+		$(gensrc)/u48.lsp $(gensrc)/u49.lsp \
+		$(gensrc)/u50.lsp $(gensrc)/u51.lsp \
+		$(gensrc)/u52.lsp $(gensrc)/u53.lsp \
+		$(gensrc)/u54.lsp $(gensrc)/u55.lsp \
+		$(gensrc)/u56.lsp $(gensrc)/u57.lsp \
+		$(gensrc)/u58.lsp $(gensrc)/u59.lsp \
+		$(gensrc)/u60.lsp
 
 csl_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
 		$(jit_sources) bytes.c stubs.c
@@ -653,6 +703,11 @@ endif !windows
 #    make c-code                  Create files u*.c and u*.lsp
 #                                 out of hot-spot parts of REDUCE.
 #                                 (should happen automatically)
+#  [ make full-c-code             Creates u*.c etc but trying to compile
+#                                 pretty much everything into C. This leads
+#                                 to a huge executable and may put undue
+#                                 stress on C compilers. Mainly for use
+#                                 as an experiment ]
 #=============================================================================
 # Note that only the steps from here downwards are usually needed
 #
@@ -873,6 +928,18 @@ else !canrun
 	echo Can not generate C code on this platfrom
 endif !canrun
 
+# full-c-code is a target only activated manually.
+
+full-c-code:	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
+if canrun
+	mkdir -p buildlogs
+	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+		-D@destdir=$(CYGSRC)/../../cslbuild -Dfull_c_code \
+		-- buildlogs/full-c-code.log
+else !canrun
+	echo Can not generate C code on this platfrom
+endif !canrun
+
 testslow:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs
@@ -994,12 +1061,5 @@ ARCHIVE=reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
-#save:	all
-#	echo Save files from this build
-#	echo MAKE=$(MAKE)
-#	$(srcdir)/save-objs.sh $(srcdir) $(OBJEXT) $(FOXLIB) -f $(srcfiles)
-#	$(srcdir)/save-files.sh $(BUILD) $(binfiles)
-#	$(srcdir)/save-relink.sh $(BUILD) $(binfiles)
-#	./relink.sh
 
 # end of Makefile

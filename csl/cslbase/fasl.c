@@ -1,11 +1,11 @@
-/*  fasl.c                          Copyright (C) 1990-2008 Codemist Ltd */
+/*  fasl.c                          Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * Binary file support for faster loading of precompiled code etc.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 58e1f78b 04-Jul-2009 */
+/* Signature: 65e98c36 14-May-2010 */
 
 #include "headers.h"
 
@@ -1648,7 +1648,7 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
  * too old-fashioned and slow by pretty well everybody! Gosh how machines
  * change during the life-time of a piece of software!
  * (March 2001) "early 386" bug hah. Gosh that was slow by today's standards.
- * (August 2008) !!!!!!!
+ * (May 2010) !!!!!!!
  */
             while (k != 3) k++, Iputc(F_NIL);
             Iputc(F_END);

@@ -1112,7 +1112,7 @@ AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/shm.h sys/ipc.h signal.h])
-AC_CHECK_HEADERS([sys/sysctl.h syscall.h sched.h])
+AC_CHECK_HEADERS([setjmp.h sys/sysctl.h syscall.h sched.h])
 
 AC_CHECK_TYPES([cpu_set_t], [], [],
    [#ifdef HAVE_SCHED_H
@@ -1170,10 +1170,7 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_LSTAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
-# AC_FUNC_MALLOC       this seems unduly fussy?
 AC_FUNC_MEMCMP
-# AC_FUNC_MKTIME       causes a hang in on some systems!
-# AC_FUNC_REALLOC
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
@@ -1184,6 +1181,17 @@ AC_CHECK_FUNCS([memmove memset mkdir pow rmdir socket sqrt strchr strdup])
 AC_CHECK_FUNCS([strrchr strstr utime popen])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname])
+AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
+# sigsetjmp will be a macro not a function, and so the various predefined
+# tests are not very good at detecting it. So I have a custom test here.
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <setjmp.h>]],
+                                [[static sigjmp_buf env;
+                                  int main(int argc, char *argv())
+                                  { sigsetjmp(env, 0); return 0; }]])],
+  [AC_MSG_NOTICE(sigsetjmp appears to be available)
+   AC_DEFINE(HAVE_SIGSETJMP, [1], [sigsetjmp present])],
+  [])
+
 
 # The next bit tests if I can compile and then run programs. It will
 # naturally detect any case where I am cross-compiling, such as a case

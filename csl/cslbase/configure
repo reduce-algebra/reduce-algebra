@@ -9091,7 +9091,7 @@ fi
 
 done
 
-for ac_header in sys/sysctl.h syscall.h sched.h
+for ac_header in setjmp.h sys/sysctl.h syscall.h sched.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -10036,7 +10036,6 @@ esac
 
 fi
 
-# AC_FUNC_MALLOC       this seems unduly fussy?
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working memcmp" >&5
 $as_echo_n "checking for working memcmp... " >&6; }
 if test "${ac_cv_func_memcmp_working+set}" = set; then :
@@ -10099,8 +10098,6 @@ test $ac_cv_func_memcmp_working = no && case " $LIBOBJS " in
 esac
 
 
-# AC_FUNC_MKTIME       causes a hang in on some systems!
-# AC_FUNC_REALLOC
 if test "${ac_cv_func_setvbuf_reversed+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -10340,6 +10337,44 @@ _ACEOF
 
 fi
 done
+
+for ac_func in siglongjmp sigaltstack sigaction
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+# sigsetjmp will be a macro not a function, and so the various predefined
+# tests are not very good at detecting it. So I have a custom test here.
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <setjmp.h>
+int
+main ()
+{
+static sigjmp_buf env;
+                                  int main(int argc, char *argv())
+                                  { sigsetjmp(env, 0); return 0; }
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: sigsetjmp appears to be available" >&5
+$as_echo "$as_me: sigsetjmp appears to be available" >&6;}
+
+$as_echo "#define HAVE_SIGSETJMP 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 
 
 # The next bit tests if I can compile and then run programs. It will

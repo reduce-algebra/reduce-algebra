@@ -1,3 +1,34 @@
+% make-c-code.red
+
+%**************************************************************************
+%* Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+%*                                                                        *
+%* Redistribution and use in source and binary forms, with or without     *
+%* modification, are permitted provided that the following conditions are *
+%* met:                                                                   *
+%*                                                                        *
+%*     * Redistributions of source code must retain the relevant          *
+%*       copyright notice, this list of conditions and the following      *
+%*       disclaimer.                                                      *
+%*     * Redistributions in binary form must reproduce the above          *
+%*       copyright notice, this list of conditions and the following      *
+%*       disclaimer in the documentation and/or other materials provided  *
+%*       with the distribution.                                           *
+%*                                                                        *
+%* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+%* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+%* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+%* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+%* COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+%* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+%* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+%* OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+%* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+%* TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+%* THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+%* DAMAGE.                                                                *
+%*************************************************************************/
+
 
 on echo;
 
@@ -9,6 +40,11 @@ on echo;
 % The functions to be compiled are extracted from a file "profile.dat"
 % that was created by "profile.red".
 %
+% If full_c_code is defined then rather than paying much attention
+% to profile.dat it attempts to compile everything into C! Note that
+% this capability causes BUGS to surface at present (I will remove this
+% comment when I believe I have got past that state!) so it is just
+% for hackers and experimenters.
 
 symbolic;
 
@@ -39,19 +75,48 @@ symbolic;
 % causes upset when compiled into C.  Of course in release quality code I
 % hope there are no such cases!
 
-global '(fnames size_per_file force_count how_many);
+global '(fnames size_per_file force_count how_many everything);
 
-fnames := '("u01" "u02" "u03" "u04" "u05"
-            "u06" "u07" "u08" "u09" "u10"
-            "u11" "u12");
+if boundp 'full_c_code then everything := t
+else everything := nil;
 
-size_per_file := 7000;
+fnames := '(      "u01" "u02" "u03" "u04"
+            "u05" "u06" "u07" "u08" "u09"
+            "u10" "u11" "u12" "u13" "u14"
+            "u15" "u16" "u17" "u18" "u19"
+            "u20" "u21" "u22" "u23" "u24"
+            "u25" "u26" "u27" "u28" "u29"
+            "u30" "u31" "u32" "u33" "u34"
+            "u35" "u36" "u37" "u38" "u39"
+            "u40" "u41" "u42" "u43" "u44"
+            "u45" "u46" "u47" "u48" "u49"
+            "u50" "u51" "u52" "u53" "u54"
+            "u55" "u56" "u57" "u58" "u59"
+            "u60"
+);
+
+if everything then size_per_file := 60000
+else size_per_file := 7000;
 
 force_count := 350;
 
 if not boundp 'how_many then how_many := 1000000
 else << how_many := compress explodec how_many;
         if not numberp how_many then how_many := 1000000 >>;
+
+global '(omitted);
+
+% At any stage there may be some things that I must not even try to compile
+% into C because of bugs or limitations. I can list them here.
+
+omitted := '(
+    s!:prinl0               % uses unwind-protect
+    compile!-file!*         % &optional
+    s!:compile!-file!*      % &optional
+    fetch!-url              % &optional
+    begin                   % bootstrapping problems
+    module                  % bootstrapping problems
+    );
 
 
 
@@ -107,7 +172,7 @@ load!-module 'remake;
 % seems a modest cost.
 
 % Note that parts of the above may apply if the sources of REDUCE are
-% changed inANY manner (not just a special patches file) but the C code
+% changed in ANY manner (not just a special patches file) but the C code
 % is not re-created.
 
 fluid '(w_reduce requests);
@@ -140,9 +205,11 @@ read_profile_data "$destdir/profile.dat";
 
 on echo;
 
+if not everything then <<
+
 % As a fairly shameless hack I am going to insist on compiling ALL the
 % things that the "alg" test uses. That is because this one test
-% fiel has been used for many years to give a single performance
+% file has been used for many years to give a single performance
 % figure for REDUCE.  In fact it is not too bad to pay lots of
 % attention to it since it exercises the basic core algebra and so what is
 % good for it is good for quite a lot of everybody else. However by
@@ -177,7 +244,7 @@ symbolic procedure membercar(a, l);
 fg := t;
 while fg do <<
    fg := nil;
-   for each x on requests do 
+   for each x on requests do
      if car x then <<
        if k := assoc(caaar x, w_reduce) then <<
           if not (cadr k = cadaar x) then <<
@@ -202,6 +269,9 @@ while fg do <<
 for each n in w_reduce do put(car n, 'load!-source, cdr n);
 
 w_reduce := for each n in w_reduce collect car n$
+
+% Discard things that give trouble...
+for each x in omitted do w_reduce := delete(x, w_reduce);
 
 for each m in library!-members() do load!-source m;
 
@@ -259,6 +329,38 @@ while w do <<
            prin car w; princ ": root is "; print p >>;
    w := cdr w >>;
 
+>>;
+
+if everything then <<
+
+% load!-source being true causes a !*savedef to be loaded for every function
+% in the module. Without it a definition only gets picked up if a load!-source
+% property has been set on the name.
+
+load!-source := t;
+for each m in library!-members() do load!-source m;
+
+% Hah but I really want the core versions of anything that might get redefined
+% to be the one left - so I will re-load all the core modules!
+for each m in loaded!-modules!* do load!-source m;
+
+w_reduce := nil;
+
+for each x in oblist() do
+   if get(x, '!*savedef) and not memq(x, omitted) then
+       w_reduce := x . w_reduce;
+
+w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seeme neat.
+
+>>;
+
+<<
+printc "Top 20 things to compile are...";
+p := w_reduce;
+for i := 1:20 do if p then <<
+   print car p;
+   p := cdr p >>
+>>;
 
 verbos nil;
 global '(rprifn!*);
@@ -294,6 +396,14 @@ while fnames do begin
             count := count + 1;
             w_reduce := cdr w_reduce >> >> end;
    eval '(c!-end);
+% In making a transition from having just files u01.c to u12.c to
+% having 60 files I want to start with as much compatibility as I can
+% achieve, and so on a temporary basis I will disable use of files
+% beyond u12 until I have got everything stable so that compilation
+% of more that that does not give trouble.
+   if not everything and car fname = "u12" then <<
+      count := count + 1;
+      how_many := 0 >>;
    fnames := cdr fnames
    end;
 
