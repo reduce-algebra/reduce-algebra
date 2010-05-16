@@ -6,17 +6,35 @@
 %                                                        A C Norman
 %
 
-%
-% This code may be used and modified, and redistributed in binary
-% or source form, subject to the "CCL Public License", which should
-% accompany it. This license is a variant on the BSD license, and thus
-% permits use of code derived from this in either open and commercial
-% projects: but it does require that updates to this code be made
-% available back to the originators of the package.
-% Before merging other code in with this or linking this code
-% with other packages or libraries please check that the license terms
-% of the other material are compatible with those of this.
-%
+%%
+%% Copyright (C) 2010, following the master REDUCE source files.          *
+%%                                                                        *
+%% Redistribution and use in source and binary forms, with or without     *
+%% modification, are permitted provided that the following conditions are *
+%% met:                                                                   *
+%%                                                                        *
+%%     * Redistributions of source code must retain the relevant          *
+%%       copyright notice, this list of conditions and the following      *
+%%       disclaimer.                                                      *
+%%     * Redistributions in binary form must reproduce the above          *
+%%       copyright notice, this list of conditions and the following      *
+%%       disclaimer in the documentation and/or other materials provided  *
+%%       with the distribution.                                           *
+%%                                                                        *
+%% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+%% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+%% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+%% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE         *
+%% COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,   *
+%% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,   *
+%% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS  *
+%% OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
+%% ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
+%% TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
+%% THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+%% DAMAGE.                                                                *
+%%
+
 
 symbolic;
 
@@ -45,6 +63,7 @@ symbolic procedure c!:printf1(fmt, args);
 %               %c       as prin, but do not generate the sequence
 %                        "*/" as part of the output (!)
 %               %t       do a ttab()
+%               %<       ensure at least 2 free chars on line
 %               %v       print a variable.... magic for this compiler
 %               \n       do a terpri()
 %               \q       princ '!" to display quote marks
@@ -73,6 +92,8 @@ symbolic procedure c!:printf1(fmt, args);
          else if c = '!c or c = '!C then c!:safeprin a
          else if c = '!a or c = '!A then prin a
          else if c = '!t or c = '!T then ttab a
+         else if c = '!< then <<
+            if posn() > 70 then terpri() >>
          else princ a;
          if args then args := cdr args;
          fmt := cdr fmt >>
@@ -571,7 +592,7 @@ symbolic procedure c!:cfndef(current_procedure,
     c!:reset_gensyms();
     wrs C_file;
     linelength 200;
-    c!:printf("\n\n/* Code for %a */\n\n", current_procedure);
+    c!:printf("\n\n/* Code for %a %<*/\n\n", current_procedure);
 
     c!:find_literal current_procedure; % For benefit of backtraces
 %
@@ -844,9 +865,9 @@ princ "C file = "; print name;
     O_file := wrs C_file;
     defnames := nil;
     if hdrnow then
-        c!:printf("\n/* Module: %s %tMachine generated C code */\n\n", setupname, 25)
-    else c!:printf("\n/* %s.c %tMachine generated C code */\n\n", name, 25);
-    c!:printf("/* Signature: 00000000 %s */\n\n", d);
+        c!:printf("\n/* Module: %s %tMachine generated C code %<*/\n\n", setupname, 25)
+    else c!:printf("\n/* %s.c %tMachine generated C code %<*/\n\n", name, 25);
+    c!:printf("/* Signature: 00000000 %s %<*/\n\n", d);
     c!:printf "#include <stdio.h>\n";
     c!:printf "#include <stdlib.h>\n";
     c!:printf "#include <string.h>\n";
@@ -943,7 +964,7 @@ procedure C!-end1 create_lfile;
                      '!  . append(explodec c2, '!  . explodec c1));
     c!:printf("    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n",
               Setup_name, checksum);
-    c!:printf "/* end of generated code */\n";
+    c!:printf "%</* end of generated code %<*/\n";
     close C_file;
     if create_lfile then <<
 !#if common!-lisp!-mode
@@ -1122,7 +1143,7 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
                args := g . args >>
             else args := a . args;
           if depth neq 0 then c!:printf("        popv(%s);\n", depth);
-          c!:printf("        fn = elt(env, %s); /* %c */\n",
+          c!:printf("        fn = elt(env, %s); %</* %c %<*/\n",
                     c!:find_literal cadar why, cadar why);
           if nargs = 1 then c!:printf("        return (*qfn1(fn))(qenv(fn)")
           else if nargs = 2 then c!:printf("        return (*qfn2(fn))(qenv(fn)")
@@ -1161,14 +1182,14 @@ symbolic procedure c!:pmovr(op, r1, r2, r3, depth);
 put('movr, 'c!:opcode_printer, function c!:pmovr);
 
 symbolic procedure c!:pmovk(op, r1, r2, r3, depth);
-   c!:printf("    %v = elt(env, %s); /* %c */\n", r1, r3, r2);
+   c!:printf("    %v = elt(env, %s); %</* %c %<*/\n", r1, r3, r2);
 
 put('movk, 'c!:opcode_printer, function c!:pmovk);
 
 symbolic procedure c!:pmovk1(op, r1, r2, r3, depth);
    if null r3 then c!:printf("    %v = nil;\n", r1)
    else if r3 = 't then c!:printf("    %v = lisp_true;\n", r1)
-   else c!:printf("    %v = (Lisp_Object)%s; /* %c */\n", r1, 16*r3+1, r3);
+   else c!:printf("    %v = (Lisp_Object)%s; %</* %c %<*/\n", r1, 16*r3+1, r3);
 
 put('movk1, 'c!:opcode_printer, function c!:pmovk1);
 flag('(movk1), 'c!:uses_nil);  % Well it does SOMETIMES
@@ -1180,17 +1201,17 @@ symbolic procedure c!:preloadenv(op, r1, r2, r3, depth);
 put('reloadenv, 'c!:opcode_printer, function c!:preloadenv);
 
 symbolic procedure c!:pldrglob(op, r1, r2, r3, depth);
-   c!:printf("    %v = qvalue(elt(env, %s)); /* %c */\n", r1, r3, r2);
+   c!:printf("    %v = qvalue(elt(env, %s)); %</* %c %<*/\n", r1, r3, r2);
 
 put('ldrglob, 'c!:opcode_printer, function c!:pldrglob);
 
 symbolic procedure c!:pstrglob(op, r1, r2, r3, depth);
-   c!:printf("    qvalue(elt(env, %s)) = %v; /* %c */\n", r3, r1, r2);
+   c!:printf("    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n", r3, r1, r2);
 
 put('strglob, 'c!:opcode_printer, function c!:pstrglob);
 
 symbolic procedure c!:pnilglob(op, r1, r2, r3, depth);
-   c!:printf("    qvalue(elt(env, %s)) = nil; /* %c */\n", r3, r2);
+   c!:printf("    qvalue(elt(env, %s)) = nil; %</* %c %<*/\n", r3, r2);
 
 put('nilglob, 'c!:opcode_printer, function c!:pnilglob);
 flag('(nilglob), 'c!:uses_nil);
@@ -1206,7 +1227,7 @@ symbolic procedure c!:pfastget(op, r1, r2, r3, depth);
  <<
    c!:printf("    if (!symbolp(%v)) %v = nil;\n", r2, r1);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
-   c!:printf("           if (%v != nil) { %v = elt(%v, %s); /* %c */\n",
+   c!:printf("           if (%v != nil) { %v = elt(%v, %s); %</* %c %<*/\n",
                                        r1, r1, r1, car r3, cdr r3);
    c!:printf("#ifdef RECORD_GET\n");
    c!:printf("             if (%v != SPID_NOPROP)\n", r1);
@@ -1226,7 +1247,7 @@ symbolic procedure c!:pfastflag(op, r1, r2, r3, depth);
  <<
    c!:printf("    if (!symbolp(%v)) %v = nil;\n", r2, r1);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
-   c!:printf("           if (%v != nil) { %v = elt(%v, %s); /* %c */\n",
+   c!:printf("           if (%v != nil) { %v = elt(%v, %s); %</* %c %<*/\n",
                                        r1, r1, r1, car r3, cdr r3);
    c!:printf("#ifdef RECORD_GET\n");
    c!:printf("             if (%v == SPID_NOPROP)\n", r1);
@@ -1501,7 +1522,7 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
     else begin
        scalar nargs;
        nargs := length r2;
-       c!:printf("    fn = elt(env, %s); /* %c */\n",
+       c!:printf("    fn = elt(env, %s); %</* %c %<*/\n",
               c!:find_literal car r3, car r3);
        if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(qenv(fn)", r1)
        else if nargs = 2 then c!:printf("    %v = (*qfn2(fn))(qenv(fn)", r1)
@@ -1836,7 +1857,7 @@ symbolic procedure c!:allocate_registers rl;
          poss := c!:my_gensym();
          allocation := append(allocation, list poss) >>
       else poss := car poss;
-%     c!:printf("/* Allocate %s to %s, to miss %s */\n",
+%     c!:printf("%</* Allocate %s to %s, to miss %s %<*/\n",
 %               r, poss, get(r, 'c!:clash));
       put(r, 'c!:chosen, poss)
     end;
@@ -2015,7 +2036,7 @@ symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
     else c!:printf("    CSL_IGNORE(env);\n");
     n := 0;
     if stacks then <<
-       c!:printf "/* space for vars preserved across procedure calls */\n";
+       c!:printf "%</* space for vars preserved across procedure calls %<*/\n";
        for each v in stacks do <<
           put(v, 'c!:location, n);
           n := n+1 >>;
@@ -2032,16 +2053,16 @@ symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
     if reloadenv then <<
        reloadenv := n;
        n := n + 1 >>;
-    if env then c!:printf "/* copy arguments values to proper place */\n";
+    if env then c!:printf "%</* copy arguments values to proper place %<*/\n";
     for each v in env do
       if flagp(cdr v, 'c!:live_across_call) then
          c!:printf("    stack[%s] = %s;\n",
                -get(get(cdr v, 'c!:chosen), 'c!:location), cdr v)
       else c!:printf("    %s = %s;\n", get(cdr v, 'c!:chosen), cdr v);
-    c!:printf "/* end of prologue */\n";
+    c!:printf "%</* end of prologue %<*/\n";
     c!:display_flowgraph(startpoint, n, t);
     if error_labels then <<
-       c!:printf "/* error exit handlers */\n";
+       c!:printf "%</* error exit handlers %<*/\n";
        for each x in error_labels do <<
           c!:printf("%s:\n", cdr x);
           c!:print_error_return(caar x, cadar x, caddar x) >> >>;
@@ -2055,7 +2076,7 @@ symbolic procedure c!:print_error_return(why, env, depth);
     if null why then <<
 % One could imagine generating backtrace entries here...
        for each v in env do
-          c!:printf("    qvalue(elt(env, %s)) = %v; /* %c */\n",
+          c!:printf("    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n",
                  c!:find_literal car v, get(cdr v, 'c!:chosen), car v);
        if depth neq 0 then c!:printf("    popv(%s);\n", depth);
        c!:printf "    return nil;\n" >>

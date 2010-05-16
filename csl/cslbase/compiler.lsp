@@ -2948,8 +2948,9 @@ princ "stack[") (princ (minus (get a (quote c!:location)))) (princ "]"))) (t
 (princ a)))) (t (cond ((or (equal c (quote !c)) (equal c (quote !C))) (
 c!:safeprin a)) (t (cond ((or (equal c (quote !a)) (equal c (quote !A))) (
 prin a)) (t (cond ((or (equal c (quote !t)) (equal c (quote !T))) (ttab a)) (
-t (princ a))))))))) (cond (args (setq args (cdr args)))) (setq fmt (cdr fmt))
-)) (t (princ c)))))))) (go lab1212))))
+t (cond ((equal c (quote !<)) (progn (cond ((greaterp (posn) 70) (terpri)))))
+(t (princ a))))))))))) (cond (args (setq args (cdr args)))) (setq fmt (cdr 
+fmt)))) (t (princ c)))))))) (go lab1212))))
 
 (de c!:safeprin (x) (prog (a b) (setq a (explode x)) (prog nil lab1213 (cond 
 ((null a) (return nil))) (progn (cond ((and (eqcar a (quote !/)) b) (princ 
@@ -3187,7 +3188,7 @@ does_call blockstack proglabs args body) (setq args (car argsbody)) (setq
 body (cdr argsbody)) (cond ((atom body) (setq body nil)) (t (cond ((atom (cdr
 body)) (setq body (car body))) (t (setq body (cons (quote progn) body)))))) 
 (c!:reset_gensyms) (wrs C_file) (linelength 200) (c!:printf 
-"\n\n/* Code for %a */\n\n" current_procedure) (c!:find_literal 
+"\n\n/* Code for %a %<*/\n\n" current_procedure) (c!:find_literal 
 current_procedure) (cond (!*r2i (setq body (s!:r2i current_procedure args 
 body)))) (setq current_args args) (prog (var1237) (setq var1237 args) lab1236
 (cond ((null var1237) (return nil))) (prog (v) (setq v (car var1237)) (cond 
@@ -3305,16 +3306,16 @@ quote !-) d)) (setq o (cdddr (cdddr (cddddr o)))) (setq w o) (setq o (cdddr o
 )) (setq d (cons (caddr o) (cons (cadr o) (cons (car o) d)))) (setq d (
 compress (cons (quote !") (cons (cadr w) (cons (car w) (cons (quote !-) d))))
 )) (setq O_file (wrs C_file)) (setq defnames nil) (cond (hdrnow (c!:printf 
-"\n/* Module: %s %tMachine generated C code */\n\n" setupname 25)) (t (
-c!:printf "\n/* %s.c %tMachine generated C code */\n\n" name 25))) (c!:printf
-"/* Signature: 00000000 %s */\n\n" d) (c!:printf "#include <stdio.h>\n") (
-c!:printf "#include <stdlib.h>\n") (c!:printf "#include <string.h>\n") (
-c!:printf "#include <ctype.h>\n") (c!:printf "#include <stdarg.h>\n") (
-c!:printf "#include <time.h>\n") (c!:printf "#ifndef _cplusplus\n") (
-c!:printf "#include <setjmp.h>\n") (c!:printf "#endif\n\n") (cond (hdrnow (
-print!-config!-header)) (t (c!:printf "#include \qconfig.h\q\n\n"))) (
-print!-csl!-headers) (cond (hdrnow (c!:print!-init))) (wrs O_file) (return 
-nil)))
+"\n/* Module: %s %tMachine generated C code %<*/\n\n" setupname 25)) (t (
+c!:printf "\n/* %s.c %tMachine generated C code %<*/\n\n" name 25))) (
+c!:printf "/* Signature: 00000000 %s %<*/\n\n" d) (c!:printf 
+"#include <stdio.h>\n") (c!:printf "#include <stdlib.h>\n") (c!:printf 
+"#include <string.h>\n") (c!:printf "#include <ctype.h>\n") (c!:printf 
+"#include <stdarg.h>\n") (c!:printf "#include <time.h>\n") (c!:printf 
+"#ifndef _cplusplus\n") (c!:printf "#include <setjmp.h>\n") (c!:printf 
+"#endif\n\n") (cond (hdrnow (print!-config!-header)) (t (c!:printf 
+"#include \qconfig.h\q\n\n"))) (print!-csl!-headers) (cond (hdrnow (
+c!:print!-init))) (wrs O_file) (return nil)))
 
 (de c!:print!-init nil (progn (c!:printf "\n") (c!:printf 
 "Lisp_Object *C_nilp;\n") (c!:printf "Lisp_Object **C_stackp;\n") (c!:printf 
@@ -3350,7 +3351,7 @@ c1)) (c!:printf "    {\q%s\q, %t%s, %t%s, %t%s%s, %t%s, %t%s},\n" name 24 f1
 explodec c3) (cons (quote ! ) (append (explodec c2) (cons (quote ! ) (
 explodec c1))))))) (c!:printf 
 "    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n" Setup_name checksum) 
-(c!:printf "/* end of generated code */\n") (close C_file) (cond (
+(c!:printf "%</* end of generated code %<*/\n") (close C_file) (cond (
 create_lfile (progn (setq L_file (open L_file (quote output))) (wrs L_file) (
 linelength 72) (terpri) (princ "% ") (princ Setup_name) (princ ".lsp") (ttab 
 20) (princ "Machine generated Lisp") (terpri) (terpri) (princ "(c!:install ")
@@ -3418,8 +3419,8 @@ car var1263)) (cond ((flagp a (quote c!:live_across_call)) (progn (setq g (
 c!:my_gensym)) (c!:printf "        Lisp_Object %s = %v;\n" g a) (setq args (
 cons g args)))) (t (setq args (cons a args))))) (setq var1263 (cdr var1263)) 
 (go lab1262)) (cond ((neq depth 0) (c!:printf "        popv(%s);\n" depth))) 
-(c!:printf "        fn = elt(env, %s); /* %c */\n" (c!:find_literal (cadar 
-why)) (cadar why)) (cond ((equal nargs 1) (c!:printf 
+(c!:printf "        fn = elt(env, %s); %</* %c %<*/\n" (c!:find_literal (
+cadar why)) (cadar why)) (cond ((equal nargs 1) (c!:printf 
 "        return (*qfn1(fn))(qenv(fn)")) (t (cond ((equal nargs 2) (c!:printf 
 "        return (*qfn2(fn))(qenv(fn)")) (t (c!:printf 
 "        return (*qfnn(fn))(qenv(fn), %s" nargs))))) (prog (var1265) (setq 
@@ -3444,14 +3445,14 @@ atom (cadr where_to)) (c!:display_flowgraph (cadr where_to) depth nil)))))
 (put (quote movr) (quote c!:opcode_printer) (function c!:pmovr))
 
 (de c!:pmovk (op r1 r2 r3 depth) (c!:printf 
-"    %v = elt(env, %s); /* %c */\n" r1 r3 r2))
+"    %v = elt(env, %s); %</* %c %<*/\n" r1 r3 r2))
 
 (put (quote movk) (quote c!:opcode_printer) (function c!:pmovk))
 
 (de c!:pmovk1 (op r1 r2 r3 depth) (cond ((null r3) (c!:printf 
 "    %v = nil;\n" r1)) (t (cond ((equal r3 (quote t)) (c!:printf 
 "    %v = lisp_true;\n" r1)) (t (c!:printf 
-"    %v = (Lisp_Object)%s; /* %c */\n" r1 (plus (times 16 r3) 1) r3))))))
+"    %v = (Lisp_Object)%s; %</* %c %<*/\n" r1 (plus (times 16 r3) 1) r3))))))
 
 (put (quote movk1) (quote c!:opcode_printer) (function c!:pmovk1))
 
@@ -3463,17 +3464,17 @@ minus reloadenv)))
 (put (quote reloadenv) (quote c!:opcode_printer) (function c!:preloadenv))
 
 (de c!:pldrglob (op r1 r2 r3 depth) (c!:printf 
-"    %v = qvalue(elt(env, %s)); /* %c */\n" r1 r3 r2))
+"    %v = qvalue(elt(env, %s)); %</* %c %<*/\n" r1 r3 r2))
 
 (put (quote ldrglob) (quote c!:opcode_printer) (function c!:pldrglob))
 
 (de c!:pstrglob (op r1 r2 r3 depth) (c!:printf 
-"    qvalue(elt(env, %s)) = %v; /* %c */\n" r3 r1 r2))
+"    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n" r3 r1 r2))
 
 (put (quote strglob) (quote c!:opcode_printer) (function c!:pstrglob))
 
 (de c!:pnilglob (op r1 r2 r3 depth) (c!:printf 
-"    qvalue(elt(env, %s)) = nil; /* %c */\n" r3 r2))
+"    qvalue(elt(env, %s)) = nil; %</* %c %<*/\n" r3 r2))
 
 (put (quote nilglob) (quote c!:opcode_printer) (function c!:pnilglob))
 
@@ -3491,8 +3492,8 @@ minus reloadenv)))
 (de c!:pfastget (op r1 r2 r3 depth) (progn (c!:printf 
 "    if (!symbolp(%v)) %v = nil;\n" r2 r1) (c!:printf 
 "    else { %v = qfastgets(%v);\n" r1 r2) (c!:printf 
-"           if (%v != nil) { %v = elt(%v, %s); /* %c */\n" r1 r1 r1 (car r3) 
-(cdr r3)) (c!:printf "#ifdef RECORD_GET\n") (c!:printf 
+"           if (%v != nil) { %v = elt(%v, %s); %</* %c %<*/\n" r1 r1 r1 (car 
+r3) (cdr r3)) (c!:printf "#ifdef RECORD_GET\n") (c!:printf 
 "             if (%v != SPID_NOPROP)\n" r1) (c!:printf 
 "                record_get(elt(fastget_names, %s), 1);\n" (car r3)) (
 c!:printf "             else record_get(elt(fastget_names, %s), 0),\n" (car 
@@ -3509,8 +3510,8 @@ c!:printf "#else\n") (c!:printf
 (de c!:pfastflag (op r1 r2 r3 depth) (progn (c!:printf 
 "    if (!symbolp(%v)) %v = nil;\n" r2 r1) (c!:printf 
 "    else { %v = qfastgets(%v);\n" r1 r2) (c!:printf 
-"           if (%v != nil) { %v = elt(%v, %s); /* %c */\n" r1 r1 r1 (car r3) 
-(cdr r3)) (c!:printf "#ifdef RECORD_GET\n") (c!:printf 
+"           if (%v != nil) { %v = elt(%v, %s); %</* %c %<*/\n" r1 r1 r1 (car 
+r3) (cdr r3)) (c!:printf "#ifdef RECORD_GET\n") (c!:printf 
 "             if (%v == SPID_NOPROP)\n" r1) (c!:printf 
 "                record_get(elt(fastget_names, %s), 0),\n" (car r3)) (
 c!:printf "                %v = nil;\n" r1) (c!:printf 
@@ -3732,8 +3733,8 @@ r2) 3)) (c!:printf ", %s" (length r2)))) (prog (var1273) (setq var1273 r2)
 lab1272 (cond ((null var1273) (return nil))) (prog (a) (setq a (car var1273))
 (c!:printf ", %v" a)) (setq var1273 (cdr var1273)) (go lab1272)) (c!:printf 
 ");\n"))) (t (prog (nargs) (setq nargs (length r2)) (c!:printf 
-"    fn = elt(env, %s); /* %c */\n" (c!:find_literal (car r3)) (car r3)) (
-cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(qenv(fn)" r1)) (t (
+"    fn = elt(env, %s); %</* %c %<*/\n" (c!:find_literal (car r3)) (car r3)) 
+(cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(qenv(fn)" r1)) (t (
 cond ((equal nargs 2) (c!:printf "    %v = (*qfn2(fn))(qenv(fn)" r1)) (t (
 c!:printf "    %v = (*qfnn(fn))(qenv(fn), %s" r1 nargs))))) (prog (var1275) (
 setq var1275 r2) lab1274 (cond ((null var1275) (return nil))) (prog (a) (setq
@@ -4069,42 +4070,42 @@ pop) (reverse args)) (c!:printf "        nil = C_nil;\n") (c!:printf
 "        if (exception_pending()) return nil;\n") (c!:printf "    }\n")))) (
 cond (reloadenv (c!:printf "    push(env);\n")) (t (c!:printf 
 "    CSL_IGNORE(env);\n"))) (setq n 0) (cond (stacks (progn (c!:printf 
-"/* space for vars preserved across procedure calls */\n") (prog (var1337) (
-setq var1337 stacks) lab1336 (cond ((null var1337) (return nil))) (prog (v) (
-setq v (car var1337)) (progn (put v (quote c!:location) n) (setq n (plus n 1)
-))) (setq var1337 (cdr var1337)) (go lab1336)) (setq w n) (prog nil lab1338 (
-cond ((null (geq w 5)) (return nil))) (progn (c!:printf 
+"%</* space for vars preserved across procedure calls %<*/\n") (prog (var1337
+) (setq var1337 stacks) lab1336 (cond ((null var1337) (return nil))) (prog (v
+) (setq v (car var1337)) (progn (put v (quote c!:location) n) (setq n (plus n
+1)))) (setq var1337 (cdr var1337)) (go lab1336)) (setq w n) (prog nil 
+lab1338 (cond ((null (geq w 5)) (return nil))) (progn (c!:printf 
 "    push5(nil, nil, nil, nil, nil);\n") (setq w (difference w 5))) (go 
 lab1338)) (cond ((neq w 0) (progn (cond ((equal w 1) (c!:printf 
 "    push(nil);\n")) (t (progn (c!:printf "    push%s(nil" w) (prog (i) (setq
 i 2) lab1339 (cond ((minusp (times 1 (difference w i))) (return nil))) (
 c!:printf ", nil") (setq i (plus i 1)) (go lab1339)) (c!:printf ");\n")))))))
 ))) (cond (reloadenv (progn (setq reloadenv n) (setq n (plus n 1))))) (cond (
-env (c!:printf "/* copy arguments values to proper place */\n"))) (prog (
+env (c!:printf "%</* copy arguments values to proper place %<*/\n"))) (prog (
 var1341) (setq var1341 env) lab1340 (cond ((null var1341) (return nil))) (
 prog (v) (setq v (car var1341)) (cond ((flagp (cdr v) (quote 
 c!:live_across_call)) (c!:printf "    stack[%s] = %s;\n" (minus (get (get (
 cdr v) (quote c!:chosen)) (quote c!:location))) (cdr v))) (t (c!:printf 
 "    %s = %s;\n" (get (cdr v) (quote c!:chosen)) (cdr v))))) (setq var1341 (
-cdr var1341)) (go lab1340)) (c!:printf "/* end of prologue */\n") (
+cdr var1341)) (go lab1340)) (c!:printf "%</* end of prologue %<*/\n") (
 c!:display_flowgraph startpoint n t) (cond (error_labels (progn (c!:printf 
-"/* error exit handlers */\n") (prog (var1343) (setq var1343 error_labels) 
-lab1342 (cond ((null var1343) (return nil))) (prog (x) (setq x (car var1343))
-(progn (c!:printf "%s:\n" (cdr x)) (c!:print_error_return (caar x) (cadar x)
-(caddar x)))) (setq var1343 (cdr var1343)) (go lab1342))))) (remflag 
+"%</* error exit handlers %<*/\n") (prog (var1343) (setq var1343 error_labels
+) lab1342 (cond ((null var1343) (return nil))) (prog (x) (setq x (car var1343
+)) (progn (c!:printf "%s:\n" (cdr x)) (c!:print_error_return (caar x) (cadar 
+x) (caddar x)))) (setq var1343 (cdr var1343)) (go lab1342))))) (remflag 
 all_blocks (quote c!:visited))))
 
 (de c!:print_error_return (why env depth) (prog nil (cond ((and reloadenv env
 ) (c!:printf "    env = stack[%s];\n" (minus reloadenv)))) (cond ((null why) 
 (progn (prog (var1345) (setq var1345 env) lab1344 (cond ((null var1345) (
 return nil))) (prog (v) (setq v (car var1345)) (c!:printf 
-"    qvalue(elt(env, %s)) = %v; /* %c */\n" (c!:find_literal (car v)) (get (
-cdr v) (quote c!:chosen)) (car v))) (setq var1345 (cdr var1345)) (go lab1344)
-) (cond ((neq depth 0) (c!:printf "    popv(%s);\n" depth))) (c!:printf 
-"    return nil;\n"))) (t (cond ((flagp (cadr why) (quote c!:live_across_call
-)) (progn (c!:printf "    {   Lisp_Object res = %v;\n" (cadr why)) (prog (
-var1347) (setq var1347 env) lab1346 (cond ((null var1347) (return nil))) (
-prog (v) (setq v (car var1347)) (c!:printf 
+"    qvalue(elt(env, %s)) = %v; %</* %c %<*/\n" (c!:find_literal (car v)) (
+get (cdr v) (quote c!:chosen)) (car v))) (setq var1345 (cdr var1345)) (go 
+lab1344)) (cond ((neq depth 0) (c!:printf "    popv(%s);\n" depth))) (
+c!:printf "    return nil;\n"))) (t (cond ((flagp (cadr why) (quote 
+c!:live_across_call)) (progn (c!:printf "    {   Lisp_Object res = %v;\n" (
+cadr why)) (prog (var1347) (setq var1347 env) lab1346 (cond ((null var1347) (
+return nil))) (prog (v) (setq v (car var1347)) (c!:printf 
 "        qvalue(elt(env, %s)) = %v;\n" (c!:find_literal (car v)) (get (cdr v)
 (quote c!:chosen)))) (setq var1347 (cdr var1347)) (go lab1346)) (cond ((neq 
 depth 0) (c!:printf "        popv(%s);\n" depth))) (c!:printf 
