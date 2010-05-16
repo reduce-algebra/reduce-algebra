@@ -12,6 +12,7 @@ Omit autom4te.cache **/autom4te.cache .svn **/.svn
 Omit **.bak **~ **.log
 
 Omit psl displaytex
+Omit csl/embedded/*.o csl/embedded/reduce csl/embedded/reduce.exe
 
 Binary  **/configure configure **bpsl* **schau **.pl **.parser **.properties
 Executable **/configure configure **bpsl* **schau **.pl **.parser
