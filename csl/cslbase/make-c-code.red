@@ -116,6 +116,7 @@ omitted := '(
     fetch!-url              % &optional
     begin                   % bootstrapping problems
     module                  % bootstrapping problems
+    module!-to!-file        % bootstrapping problems
     );
 
 
