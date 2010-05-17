@@ -117,6 +117,8 @@ omitted := '(
     begin                   % bootstrapping problems
     module                  % bootstrapping problems
     module!-to!-file        % bootstrapping problems
+    module2!-to!-file       % bootstrapping problems
+    olderfaslp              % bootstrapping problems
     );
 
 
