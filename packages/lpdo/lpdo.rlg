@@ -1,18 +1,18 @@
-Sat Nov 28 12:03:26 2009 run on win32
+Thu May 20 09:30:18 2010 run on darwin10.3.0:x86_64
 % Test only multipliation:
-easy1 := (x1+1***x2)***(x1-1***x2);
+easy1 := (x1+1*x2)*(x1-1*x2);
 
 
            2     2
 easy1 := x1  - x2
 
-easy2 := (a()***partial(x1)+b())***(c()***partial(x1)+d());
+easy2 := (a()*partial(x1)+b())*(c()*partial(x1)+d());
 
 
-                                  2
-easy2 := (a()*c()) *** partial(x1)
+                              2
+easy2 := (a()*c())*partial(x1)
 
- + (a()*d() + a()*diff(c(),x1,1) + b()*c()) *** partial(x1)
+ + (a()*d() + a()*diff(c(),x1,1) + b()*c())*partial(x1)
 
  + (a()*diff(d(),x1,1) + b()*d())
 
@@ -25,7 +25,7 @@ lpdoset lpdoweyl(1,x1,x2);
 
 
 % Not really binomial but caused problems at some point:
-b3 := (a-partial(x1))***(a+partial(x1));
+b3 := (a-partial(x1))*(a+partial(x1));
 
 
                     2    2
@@ -39,17 +39,17 @@ lpdofactorize b3;
 
 
 % Differential binomial formulas:
-bin1 := (a()+partial(x1))***(a()+partial(x1));
+bin1 := (a()+partial(x1))*(a()+partial(x1));
 
 
-                   2
-bin1 := partial(x1)  + (2*a_00_ + 2*a_01_*x2 + 2*a_10_*x1) *** partial(x1) + (
+                   2                                                           2
+bin1 := partial(x1)  + (2*a_00_ + 2*a_01_*x2 + 2*a_10_*x1)*partial(x1) + (a_00_
 
-        2                                              2   2
-   a_00_  + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1 + a_01_ *x2
+                                                 2   2
+    + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1 + a_01_ *x2  + 2*a_01_*a_10_*x1*x2
 
-                                 2   2
-    + 2*a_01_*a_10_*x1*x2 + a_10_ *x1  + a_10_)
+           2   2
+    + a_10_ *x1  + a_10_)
 
 lpdofactorize bin1;
 
@@ -58,17 +58,17 @@ lpdofactorize bin1;
 
    + (a_00_ + a_01_*x2 + a_10_*x1)}}
 
-bin2 := (a()-partial(x1))***(a()-partial(x1));
+bin2 := (a()-partial(x1))*(a()-partial(x1));
 
 
                    2
-bin2 := partial(x1)  + ( - 2*a_00_ - 2*a_01_*x2 - 2*a_10_*x1) *** partial(x1) + 
+bin2 := partial(x1)  + ( - 2*a_00_ - 2*a_01_*x2 - 2*a_10_*x1)*partial(x1) + (
 
-      2                                              2   2
-(a_00_  + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1 + a_01_ *x2  + 2*a_01_*a_10_*x1*x2
+        2                                              2   2
+   a_00_  + 2*a_00_*a_01_*x2 + 2*a_00_*a_10_*x1 + a_01_ *x2
 
-         2   2
-  + a_10_ *x1  - a_10_)
+                                 2   2
+    + 2*a_01_*a_10_*x1*x2 + a_10_ *x1  - a_10_)
 
 lpdofactorize bin2;
 
@@ -77,7 +77,7 @@ lpdofactorize bin2;
 
   partial(x1) + ( - a_00_ - a_01_*x2 - a_10_*x1)}}
 
-bin3 := (a()-partial(x1))***(a()+partial(x1));
+bin3 := (a()-partial(x1))*(a()+partial(x1));
 
 
                       2         2
@@ -95,12 +95,12 @@ lpdofactorize bin3;
 
 
 % Beals-Kartashova 2005, Section 5.3, special case
-bkf := (partial(x1)+partial(x2)+(a10-a01)/2) ***
+bkf := (partial(x1)+partial(x2)+(a10-a01)/2) *
    (partial(x1)-partial(x2)+(a10+a01)/2);
 
 
                   2              2
-bkf := partial(x1)  - partial(x2)  + a10 *** partial(x1) + a01 *** partial(x2)
+bkf := partial(x1)  - partial(x2)  + a10*partial(x1) + a01*partial(x2)
 
           2      2
      - a01  + a10
@@ -120,12 +120,12 @@ lpdofactorize bkf;
 
 
 % Ad hoc example:
-sth := (partial(x1)+partial(x2)+(a10+a01)) ***
+sth := (partial(x1)+partial(x2)+(a10+a01)) *
    (partial(x1)-partial(x2)+(a10+a01));
 
 
                   2              2
-sth := partial(x1)  - partial(x2)  + (2*a01 + 2*a10) *** partial(x1)
+sth := partial(x1)  - partial(x2)  + (2*a01 + 2*a10)*partial(x1)
 
        2                  2
  + (a01  + 2*a01*a10 + a10 )
@@ -139,57 +139,55 @@ lpdofactorize sth;
 
 
 % Blumberg 1912:
-p := partial(x1)+x1***partial(x2);
+p := partial(x1)+x1*partial(x2);
 
 
-p := partial(x1) + x1 *** partial(x2)
+p := partial(x1) + x1*partial(x2)
 
 q := partial(x1)+1;
 
 
 q := partial(x1) + 1
 
-r := partial(x1)^2+x1***partial(x1)***partial(x2)+partial(x1)+
-   (2+x1)***partial(x2);
+r := partial(x1)^2+x1*partial(x1)*partial(x2)+partial(x1)+
+   (2+x1)*partial(x2);
 
 
-                2
-r := partial(x1)  + x1 *** partial(x1) *** partial(x2) + partial(x1)
+r := 
 
- + (x1 + 2) *** partial(x2)
+           2
+partial(x1)  + x1*partial(x1)*partial(x2) + partial(x1) + (x1 + 2)*partial(x2)
 
-d := partial(x1)^3+x1***partial(x1)^2***partial(x2)+2***partial(x1)^2+
-   2***(x1+1)***partial(x1)***partial(x2)+(x1+2)***partial(x2)+partial(x1);
-
-
-                3                     2                                    2
-d := partial(x1)  + x1 *** partial(x1)  *** partial(x2) + 2 *** partial(x1)
-
- + (2*x1 + 2) *** partial(x1) *** partial(x2) + partial(x1)
-
- + (x1 + 2) *** partial(x2)
-
-d - q***q***p;
+d := partial(x1)^3+x1*partial(x1)^2*partial(x2)+2*partial(x1)^2+
+   2*(x1+1)*partial(x1)*partial(x2)+(x1+2)*partial(x2)+partial(x1);
 
 
-0
+                3                 2                            2
+d := partial(x1)  + x1*partial(x1) *partial(x2) + 2*partial(x1)
 
-d - r***q;
+ + (2*x1 + 2)*partial(x1)*partial(x2) + partial(x1) + (x1 + 2)*partial(x2)
+
+d - q*q*p;
 
 
 0
 
-lpdofactorize(d,a()***partial(x1)+b());
+d - r*q;
+
+
+0
+
+lpdofactorize(d,a()*partial(x1)+b());
 
 
                              2
-{{partial(x1) + 1,partial(x1)  + x1 *** partial(x1) *** partial(x2)
+{{partial(x1) + 1,partial(x1)  + x1*partial(x1)*partial(x2) + partial(x1)
 
-   + partial(x1) + (x1 + 1) *** partial(x2)}}
+   + (x1 + 1)*partial(x2)}}
 
 
 end;
 
 
-Time for test: 1430 ms, plus GC time: 23 ms
+Time for test: 1010 ms, plus GC time: 20 ms
 @@@@@ Resources used: (1 7 28 0)
