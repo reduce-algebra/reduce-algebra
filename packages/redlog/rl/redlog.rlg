@@ -1,34 +1,4 @@
-Tue Nov 17 08:53:47 2009 run on win32
-% ----------------------------------------------------------------------
-% $Id: redlog.tst 76 2009-02-06 07:22:03Z thomas-sturm $
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions
-% are met:
-%
-%    * Redistributions of source code must retain the relevant
-%      copyright notice, this list of conditions and the following
-%      disclaimer.
-%    * Redistributions in binary form must reproduce the above
-%      copyright notice, this list of conditions and the following
-%      disclaimer in the documentation and/or other materials provided
-%      with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
-
+Thu May 20 07:50:29 2010 run on darwin10.3.0:x86_64
 on rlverbose;
 
 
@@ -54,7 +24,7 @@ rlset();
  and b - c > 0 and 3*c - 5 < 0
 
 
-% For loop actions.
+% For-loop actions.
 g := for i:=1:6 mkor
    for j := 1:6 mkand
       mkid(a,i) <= mkid(a,j);
@@ -141,7 +111,7 @@ e(0)] [3e(0)] [3e(0)] [2e(24)] [3e(0)] [3e(0)] [3e(0)] [2e(24)] [3e(0)] [3e(0)]
 [3e(0)] [2e(24)] [3e(0)] [3e(0)] [3e(0)] [2e(24)] [3e(0)] [3e(0)] [3e(0)] [3e(0)
 ] [DEL:25/116]
 +++ Final simplification ... 0 -> 0
-Realtime: 1 s
+Realtime: 0 s
 
 true
 
@@ -495,81 +465,14 @@ rlqea ex(x,m*x+b=0);
                 m
 
 
-% from Marc van Dongen. Finding the first feasible solution for the 
-% solution of systems of linear diophantine inequalities.
-dong := {
-  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
-  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
-  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
-  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
-  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
-  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
-     X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
-
-
-dong := {x229 + 3*x259 + 4*x261 + 3*x262 + 2*x263 + x269 + 2*x270 + 3*x271
-
-          + 4*x272 + 5*x273 = 2,
-
-         x229 + 7*x259 + 11*x261 + 8*x262 + 5*x263 + 3*x269 + 6*x270 + 9*x271
-
-          + 12*x272 + 15*x273 = 4,
-
-         2*x259 + 5*x261 + 4*x262 + 3*x263 + 3*x268 + 4*x269 + 5*x270 + 6*x271
-
-          + 7*x272 + 8*x273 = 1,
-
-         2*x229 + x262 + 2*x263 + 5*x268 + 4*x269 + 3*x270 + 2*x271 + x272 = 1,
-
-         3*x229 + x259 + x262 + 2*x263 + 4*x268 + 3*x269 + 2*x270 + x271 - x273
-
-          = 2,
-
-         x229 + x259 + 2*x261 + 2*x262 + 2*x263 + 3*x268 + 3*x269 + 3*x270
-
-          + 3*x271 + 3*x272 + 3*x273 = 1,
-
-         x229 + x259 + x261 + x262 + x263 + x268 + x269 + x270 + x271 + x272
-
-          + x273 = 1}
-
-sol := rlopt(dong,0);
-
-
-sol := {0,
-
-        {{x229
-
-               - x262 - 2*x263 - 5*x268 - 4*x269 - 3*x270 - 2*x271 - x272 + 1
-           = -----------------------------------------------------------------,
-                                             2
-
-          x259 = (x262 + 2*x263 + 7*x268 + 6*x269 + 5*x270 + 4*x271 + 3*x272
-
-              + 2*x273 + 1)/2,
-
-          x261 =  - x262 - x263 - 2*x268 - 2*x269 - 2*x270 - 2*x271 - 2*x272
-
-           - 2*x273}}}
-
-
 % Substitution
-sub(first second sol,for each atf in dong mkand atf);
-
-
-true and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0
-
-rlsimpl ws;
-
-
-true
-
 sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x>a));
 
 
 a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a - a0 > 0)
 
 
+% Boolean normal forms.
 f1 := x=0 and b>=0;
 
 
@@ -586,7 +489,6 @@ f := f1 or f2;
 f := (x = 0 and b >= 0) or a = 0
 
 
-% Boolean normal forms.
 rlcnf f;
 
 
@@ -738,238 +640,6 @@ part(rlatl walter,1,1);
 
 x
 
-
-% Optimizer
-sc50b!-t := -1*vCOL00004$
-
-
-
-sc50b!-c := {
-vCOL00001 >= 0,vCOL00002 >= 0,vCOL00003 >= 0,vCOL00004 >= 0,vCOL00005 >= 0,
-vCOL00006 >= 0,vCOL00007 >= 0,vCOL00008 >= 0,vCOL00009 >= 0,vCOL00010 >= 0,
-vCOL00011 >= 0,vCOL00012 >= 0,vCOL00013 >= 0,vCOL00014 >= 0,vCOL00015 >= 0,
-vCOL00016 >= 0,vCOL00017 >= 0,vCOL00018 >= 0,vCOL00019 >= 0,vCOL00020 >= 0,
-vCOL00021 >= 0,vCOL00022 >= 0,vCOL00023 >= 0,vCOL00024 >= 0,vCOL00025 >= 0,
-vCOL00026 >= 0,vCOL00027 >= 0,vCOL00028 >= 0,vCOL00029 >= 0,vCOL00030 >= 0,
-vCOL00031 >= 0,vCOL00032 >= 0,vCOL00033 >= 0,vCOL00034 >= 0,vCOL00035 >= 0,
-vCOL00036 >= 0,vCOL00037 >= 0,vCOL00038 >= 0,vCOL00039 >= 0,vCOL00040 >= 0,
-vCOL00041 >= 0,vCOL00042 >= 0,vCOL00043 >= 0,vCOL00044 >= 0,vCOL00045 >= 0,
-vCOL00046 >= 0,vCOL00047 >= 0,vCOL00048 >= 0,
-3*vCOL00001+(3*vCOL00002)+(3*vCOL00003) <= 300,
-1*vCOL00004+(-1*vCOL00005) = 0,
--1*vCOL00001+(1*vCOL00006) = 0,
--1*vCOL00002+(1*vCOL00007) = 0,
--1*vCOL00003+(1*vCOL00008) = 0,
--1*vCOL00006+(1*vCOL00009) <= 0,
--1*vCOL00007+(1*vCOL00010) <= 0,
--1*vCOL00008+(1*vCOL00011) <= 0,
--1*vCOL00009+(3*vCOL00012)+(3*vCOL00013)+(3*vCOL00014) <= 300,
-0.400000*vCOL00005+(-1*vCOL00010) <= 0,
-0.600000*vCOL00005+(-1*vCOL00011) <= 0,
-1.100000*vCOL00004+(-1*vCOL00015) = 0,
-1*vCOL00005+(1*vCOL00015)+(-1*vCOL00016) = 0,
--1*vCOL00006+(-1*vCOL00012)+(1*vCOL00017) = 0,
--1*vCOL00007+(-1*vCOL00013)+(1*vCOL00018) = 0,
--1*vCOL00008+(-1*vCOL00014)+(1*vCOL00019) = 0,
--1*vCOL00017+(1*vCOL00020) <= 0,
--1*vCOL00018+(1*vCOL00021) <= 0,
--1*vCOL00019+(1*vCOL00022) <= 0,
--1*vCOL00020+(3*vCOL00023)+(3*vCOL00024)+(3*vCOL00025) <= 300,
-0.400000*vCOL00016+(-1*vCOL00021) <= 0,
-0.600000*vCOL00016+(-1*vCOL00022) <= 0,
-1.100000*vCOL00015+(-1*vCOL00026) = 0,
-1*vCOL00016+(1*vCOL00026)+(-1*vCOL00027) = 0,
--1*vCOL00017+(-1*vCOL00023)+(1*vCOL00028) = 0,
--1*vCOL00018+(-1*vCOL00024)+(1*vCOL00029) = 0,
--1*vCOL00019+(-1*vCOL00025)+(1*vCOL00030) = 0,
--1*vCOL00028+(1*vCOL00031) <= 0,
--1*vCOL00029+(1*vCOL00032) <= 0,
--1*vCOL00030+(1*vCOL00033) <= 0,
--1*vCOL00031+(3*vCOL00034)+(3*vCOL00035)+(3*vCOL00036) <= 300,
-0.400000*vCOL00027+(-1*vCOL00032) <= 0,
-0.600000*vCOL00027+(-1*vCOL00033) <= 0,
-1.100000*vCOL00026+(-1*vCOL00037) = 0,
-1*vCOL00027+(1*vCOL00037)+(-1*vCOL00038) = 0,
--1*vCOL00028+(-1*vCOL00034)+(1*vCOL00039) = 0,
--1*vCOL00029+(-1*vCOL00035)+(1*vCOL00040) = 0,
--1*vCOL00030+(-1*vCOL00036)+(1*vCOL00041) = 0,
--1*vCOL00039+(1*vCOL00042) <= 0,
--1*vCOL00040+(1*vCOL00043) <= 0,
--1*vCOL00041+(1*vCOL00044) <= 0,
--1*vCOL00042+(3*vCOL00045)+(3*vCOL00046)+(3*vCOL00047) <= 300,
-0.400000*vCOL00038+(-1*vCOL00043) <= 0,
-0.600000*vCOL00038+(-1*vCOL00044) <= 0,
-1.100000*vCOL00037+(-1*vCOL00048) = 0,
--0.700000*vCOL00045+(0.300000*vCOL00046)+(0.300000*vCOL00047) <= 0,
--1*vCOL00046+(0.400000*vCOL00048) <= 0,
--1*vCOL00047+(0.600000*vCOL00048) <= 0}$
-
-
-
-rlopt(sc50b!-c,sc50b!-t);
-
-
-{-70,
-
- {{vcol00001 = 30,
-
-   vcol00002 = 28,
-
-   vcol00003 = 42,
-
-   vcol00004 = 70,
-
-   vcol00005 = 70,
-
-   vcol00006 = 30,
-
-   vcol00007 = 28,
-
-   vcol00008 = 42,
-
-   vcol00009 = 30,
-
-   vcol00010 = 28,
-
-   vcol00011 = 42,
-
-   vcol00012 = 33,
-
-                154
-   vcol00013 = -----,
-                 5
-
-                231
-   vcol00014 = -----,
-                 5
-
-   vcol00015 = 77,
-
-   vcol00016 = 147,
-
-   vcol00017 = 63,
-
-                294
-   vcol00018 = -----,
-                 5
-
-                441
-   vcol00019 = -----,
-                 5
-
-   vcol00020 = 63,
-
-                294
-   vcol00021 = -----,
-                 5
-
-                441
-   vcol00022 = -----,
-                 5
-
-                363
-   vcol00023 = -----,
-                10
-
-                847
-   vcol00024 = -----,
-                25
-
-                2541
-   vcol00025 = ------,
-                 50
-
-                847
-   vcol00026 = -----,
-                10
-
-                2317
-   vcol00027 = ------,
-                 10
-
-                993
-   vcol00028 = -----,
-                10
-
-                2317
-   vcol00029 = ------,
-                 25
-
-                6951
-   vcol00030 = ------,
-                 50
-
-                993
-   vcol00031 = -----,
-                10
-
-                2317
-   vcol00032 = ------,
-                 25
-
-                6951
-   vcol00033 = ------,
-                 50
-
-                3993
-   vcol00034 = ------,
-                100
-
-                9317
-   vcol00035 = ------,
-                250
-
-                27951
-   vcol00036 = -------,
-                 500
-
-                9317
-   vcol00037 = ------,
-                100
-
-                32487
-   vcol00038 = -------,
-                 100
-
-                13923
-   vcol00039 = -------,
-                 100
-
-                32487
-   vcol00040 = -------,
-                 250
-
-                97461
-   vcol00041 = -------,
-                 500
-
-                13923
-   vcol00042 = -------,
-                 100
-
-                32487
-   vcol00043 = -------,
-                 250
-
-                97461
-   vcol00044 = -------,
-                 500
-
-                43923
-   vcol00045 = -------,
-                1000
-
-                102487
-   vcol00046 = --------,
-                 2500
-
-                307461
-   vcol00047 = --------,
-                 5000
-
-                102487
-   vcol00048 = --------}}}
-                 1000
 
 
 % QE by partial CAD:
@@ -1299,5 +969,5 @@ b = 0 or m <> 0
 end;
 
 
-Time for test: 4484 ms, plus GC time: 118 ms
-@@@@@ Resources used: (6 11 52 0)
+Time for test: 1950 ms, plus GC time: 40 ms
+@@@@@ Resources used: (2 11 36 0)

@@ -1,20 +1,122 @@
+Thu May 20 07:50:31 2010 run on darwin10.3.0:x86_64
 load_package redlog;
+
+
 rlset ofsf;
+
+
+{}
+
 off rlverbose;
+
+
 
 % all the qe and variants
 phi := ex(x,a*x^2+b*x+c=0)$
 
+
+
 rlqe phi;
+
+
+(a = 0 and b = 0 and c = 0) or (a = 0 and b <> 0)
+
+              2
+ or (4*a*c - b  <= 0 and a <> 0)
+
 rlgqe phi;
+
+
+                   2
+{{a <> 0},4*a*c - b  <= 0}
+
 rlqea phi;
+
+
+{{a = 0 and b = 0 and c = 0,{x = infinity1}},
+
+           2
+ {4*a*c - b  <= 0 and a <> 0,
+
+                            2
+         - sqrt( - 4*a*c + b ) - b
+  {x = ----------------------------}},
+                   2*a
+
+           2
+ {4*a*c - b  <= 0 and a <> 0,
+
+                         2
+        sqrt( - 4*a*c + b ) - b
+  {x = -------------------------}},
+                  2*a
+
+                          - c
+ {a = 0 and b <> 0,{x = ------}}}
+                          b
+
 rlgqea phi;
+
+
+{{a <> 0},
+
+            2
+ {{4*a*c - b  <= 0,
+
+                             2
+          - sqrt( - 4*a*c + b ) - b
+   {x = ----------------------------}},
+                    2*a
+
+            2
+  {4*a*c - b  <= 0,
+
+                          2
+         sqrt( - 4*a*c + b ) - b
+   {x = -------------------------}}}}
+                   2*a
+
 rlposqe phi;
+
+
+false
+
 rlposqea phi;
+
+
+{{false,{}}}
+
 rlcad phi;
+
+
+          2                                         2
+(4*a*c - b  = 0 and b <> 0 and c <> 0) or (4*a*c - b  = 0 and b = 0 and c = 0)
+
+              2                                        2
+ or (4*a*c - b  < 0 and b = 0 and c <> 0) or (4*a*c - b  < 0 and b <> 0)
+
 rlgcad phi;
+
+
+                   2
+{{a <> 0},4*a*c - b  <= 0}
+
 rlhqe phi;
+
+
+                   2            2                 2
+(a <> 0 and not(2*a  - 2*a*c + b  = 0 or 4*a*c - b  > 0)) or (a = 0 and b <> 0)
+
+ or (a = 0 and b = 0 and c = 0)
+
 rlghqe phi;
+
+
+{a <> 0,
+
+        2            2                  2
+ not(2*a  - 2*a*c + b  = 0 or (4*a*c - b  > 0 and a <> 0))}
+
 
 %%% Test rlqe (xopt-qe)
 mtp2 := ex(x11,ex(x12,ex(x13,ex(x21,ex(x22,ex(x23,ex(x31,ex(x32,ex(x33,
@@ -24,8 +126,16 @@ x11+x21+x31=b1 and x12+x22+x32=b2 and x13+x23+x33=b3 and
 0 leq x21 and 0 leq x22 and 0 leq x23 and
 0 leq x31 and 0 leq x32 and 0 leq x33
 )))))))))$
+
+
 rlqe mtp2$
+
+
 rlatnum ws;
+
+
+36
+
 
 %%% Test rlqe (linear)
 rp2 := ex(x1,ex(x2,ex(y1,ex(y2,ex(d2,all(u,all(v,((a > 0 and b > 0 and
@@ -47,7 +157,31 @@ false)) and (( - u <= 0 and - a + u < 0) and ( - v <= 0 and - b + v < 0)
 impl false or ( - u + x1 <= 0 and - d1 + u - x1 < 0) and ( - v + y1 <= 0
 and - d1 + v - y1 < 0) or ( - u + x2 <= 0 and - d2 + u - x2 < 0) and ( -
 v + y2 <= 0 and - d2 + v - y2 < 0)))))))))$
+
+
 rp2sol := rlqe rp2;
+
+
+rp2sol := (a - b + d1 = 0 and a - b = 0 and a - d1 > 0 and a > 0 and b - d1 > 0
+
+ and b > 0 and d1 > 0) or (a - b + d1 = 0 and a - d1 = 0 and a > 0
+
+ and b - d1 = 0 and b - 2*d1 > 0 and b > 0 and d1 > 0) or (a - b + d1 <= 0
+
+ and a - b = 0 and a - d1 > 0 and a > 0 and b > 0 and d1 > 0) or (
+
+a - b + d1 <= 0 and a - b = 0 and a - d1 > 0 and a > 0 and b - d1 >= 0 and b > 0
+
+ and d1 > 0 and (a - b + d1 = 0 or b - d1 = 0)) or (a - b - d1 > 0 and a - b = 0
+
+ and a > 0 and b + d1 < 0 and b - d1 > 0 and b > 0 and d1 > 0) or (
+
+a - b - d1 = 0 and a - d1 >= 0 and a - 2*d1 > 0 and a > 0 and b - d1 = 0
+
+ and b > 0 and d1 > 0) or (a - b + d1 = 0 and a - d1 = 0 and a > 0
+
+ and b - d1 >= 0 and b - 2*d1 > 0 and b > 0 and d1 > 0)
+
 
 %%% Test rlqe (DFS)
 
@@ -62,13 +196,26 @@ p9 := rlall((for i:=1:9 mkand
    mkid(x,i+1)>=0 and mkid(x,i+2)=mkid(x,i+1)-mkid(x,i) or
    mkid(x,i+1)<0 and mkid(x,i+2)=-mkid(x,i+1)-mkid(x,i))
       impl x1=x10 and x2=x11)$
+
+
 rlqe p9;
+
+
+true
+
 
 %%% Test rlqe nonlinear and fallback
 
 % Hoon Hong, talk at the University of Passau, 20 Dec 2005.
 hong := all(x,ex(y,x**2+x*y+b>0 and x+a*y**2+b<=0))$
+
+
 rlqe hong;
+
+
+              2
+a < 0 and 16*b  + 36*b + 27 > 0 and b > 0
+
 
 % Highly non-linear, varseltry, massive factorization, precise qe:
 gatermann := ex(vv3,ex(vv2,ex(vv1,vv3 > 0 and vv2 > 0 and vv1 > 0 and
@@ -89,9 +236,19 @@ k43*k64**2 + 2*k43*k64*k65 + k43*k65**2 + k64**2*k65 + k64*k65**2 = 0)
 and ((((( - k21 < 0 and - k46 < 0) and - k64 < 0) and - k34 < 0) and -
 k43 < 0) and - k56 < 0) and - k65 < 0)))$
 
+
+
 on rlqevarseltry,rlsifaco,rlqeprecise;
+
+
 rlqe rlex gatermann;
+
+
+true
+
 off rlqevarseltry,rlsifaco,rlqeprecise;
+
+
 
 % Positive qe:
 % Examples from
@@ -113,7 +270,13 @@ and 6561*alpha**2*vv1**2*vv3**16 + 81*alpha*delta*theta*vv1*vv3 **17 +
 + theta*vv3**9 + theta = 0) and - theta < 0) and - gamma0 < 0) and - mu
 < 0) and - delta < 0 and - alpha < 0)))$
 
+
+
 rlposqe rlex ab2007_hopf_n_9;
+
+
+true
+
 
 %%% Test rlcad
 
@@ -129,60 +292,512 @@ wilk := ex(x,8388608*x**20 + 1761607681*x**19 + 172931153920*x**18 +
 107969196810523545855590400*x**3 + 115794329499468438700032000 *x**2 +
 73425049924762651852800000*x + 20408661249006627717120000 = 0
 and -20<=x<=-10)$
+
+
 rlcad wilk;
+
+
+false
+
 
 % Convexity of unit square
 as5v := all({x1,y1,x2,y2},(0<x1<1 and 0<y1<1 and 0<x2<1 and 0<y2<1) impl
 all(l, (0<l and l<1) impl (0<x1+l*(-x1+x2)<1 and 0<y1+l*(-y1+y2)<1)))$
+
+
 rlcad as5v;
+
+
+true
+
 
 % Consistency
 con := ex({z,x,y},x**2+y**2+z**2<1 and x**2+(y+z-2)**2<1)$
+
+
 rlcad con;
+
+
+true
+
 
 % Condition on quartic polynomial being positive semidefinite.
 quartic := all(x,x**4+p*x**2+q*x+r>=0)$
+
+
 quarticneg := not quartic$
+
+
 on rlcadfulldimonly;
+
+
 rlcad quarticneg;
+
+
+     4        3  2        2  2          2         4        3
+(16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  < 0
+
+        3       2            3              2            3      2
+ and 8*p  + 27*q  > 0 and 2*p  - 8*p*r + 9*q  > 0 and 2*p  + 9*q  > 0 and p > 0)
+
+         4        3  2        2  2          2         4        3
+ or (16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  < 0
+
+        3       2            3              2            3      2
+ and 8*p  + 27*q  > 0 and 2*p  - 8*p*r + 9*q  > 0 and 2*p  + 9*q  > 0 and p = 0
+
+                     4        3  2        2  2          2         4        3
+ and q <> 0) or (16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  < 0
+
+        3       2            3              2            3      2
+ and 8*p  + 27*q  = 0 and 2*p  - 8*p*r + 9*q  = 0 and 2*p  + 9*q  = 0 and p = 0
+
+                    4        3  2        2  2          2         4        3
+ and q = 0) or (16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  < 0
+
+        3       2            3      2
+ and 8*p  + 27*q  > 0 and 2*p  + 9*q  > 0 and p < 0 and q <> 0) or (
+
+    4        3  2        2  2          2         4        3
+16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  < 0
+
+        3       2            3              2             3      2
+ and 8*p  + 27*q  = 0 and 2*p  - 8*p*r + 9*q  <> 0 and 2*p  + 9*q  > 0 and p < 0
+
+                     4        3  2        2  2          2         4        3
+ and q <> 0) or (16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  = 0
+
+        3       2            3              2            3      2
+ and 8*p  + 27*q  = 0 and 2*p  - 8*p*r + 9*q  = 0 and 2*p  + 9*q  > 0 and p < 0
+
+                     4        3  2        2  2          2         4        3
+ and q <> 0) or (16*p *r - 4*p *q  - 128*p *r  + 144*p*q *r - 27*q  + 256*r  < 0
+
+        3       2            3              2
+ and 8*p  + 27*q  < 0 and 2*p  - 8*p*r + 9*q  >= 0 and p < 0 and q <> 0) or (
+
+   3       2            3              2            3      2
+8*p  + 27*q  < 0 and 2*p  - 8*p*r + 9*q  < 0 and 2*p  + 9*q  >= 0 and p < 0
+
+                   3       2            3              2            3      2
+ and q > 0) or (8*p  + 27*q  < 0 and 2*p  - 8*p*r + 9*q  < 0 and 2*p  + 9*q  < 0
+
+ and p < 0 and q >= 0)
+
+        3       2            3              2
+ or (8*p  + 27*q  < 0 and 2*p  - 8*p*r + 9*q  < 0 and p < 0 and q < 0)
+
 off rlcadfulldimonly;
+
+
 
 % Solotareff's problem (cubic) [Ho92] (in [CJ98], p. 211)
 solo2 := ex({x,y},1<=4*a<=7 and -3<=4*b<=3 and -1<=x<=0 and 0<=y<=1 and
    3*x**2-2*x-a=0 and x**3-x**2-a*x=2*b-a+2 and 3*y**2-2*y-a=0 and
       y**3-y**2-a*y=a-2)$
+
+
 rlcad solo2;
+
+
+    3       2                            3       2
+16*a  - 32*a  + 520*a - 1379 < 0 and 16*a  - 32*a  + 88*a - 35 > 0
+
+      3      2                       2
+ and a  - 2*a  + 18*a*b + 19*a - 27*b  - 56*b - 29 = 0 and a - b - 2 < 0
+
+ and a - 2*b - 2 < 0 and a - 1 = 0 and 4*b + 3 > 0 and 4*b - 3 < 0
+
 
 %%% Test rlgcad
 
 % x-axis ellipse problem
 ell := all({x,y},b**2*(x-c)**2+a**2*y**2-a**2*b**2=0 impl x**2+y**2-1 <=0);
+
+
+                        2  2    2  2    2  2      2        2  2
+ell := all x all y ( - a *b  + a *y  + b *c  - 2*b *c*x + b *x  = 0
+
+       2    2
+ impl x  + y  - 1 <= 0)
+
 ellgqf := rlgcad ell;
+
+
+ellgqf := {{a + b <> 0,
+
+            a - b <> 0,
+
+            a <> 0,
+
+            b <> 0},
+
+             2  2    2    4    2  2    2              2              2
+           (a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  < 0
+
+            and a + b > 0 and a - b < 0 and a + c + 1 = 0 and a - c - 1 > 0
+
+                                               2  2    2    4    2  2    2
+            and a - 1 >= 0 and b - 1 > 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  > 0 and a - b  > 0 and a + b > 0 and a - b > 0
+
+            and a + c + 1 = 0 and a - c - 1 > 0 and a - 1 > 0 and b + 1 < 0) or 
+
+             2  2    2    4    2  2    2              2              2
+           (a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  < 0
+
+            and a + b < 0 and a - b > 0 and a + c + 1 = 0 and a - c - 1 > 0
+
+                                               2  2    2    4    2  2    2
+            and a - 1 >= 0 and b + 1 < 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  > 0 and a - b  > 0 and a + b > 0 and a - b > 0
+
+            and a + c - 1 = 0 and a - c - 1 = 0 and a - 1 = 0 and b - 1 < 0
+
+                            2  2    2    4    2  2    2              2
+            and b > 0) or (a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0
+
+                     2
+            and a - b  > 0 and a + b > 0 and a - b > 0 and a + c + 1 = 0
+
+            and a - c - 1 > 0 and a - 1 = 0 and b - 1 < 0 and b > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a + b > 0 and a - b > 0 and a + c - 1 = 0 and a - c - 1 = 0
+
+            and a - 1 = 0 and b + 1 > 0 and b < 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a + b > 0 and a - b > 0 and a + c + 1 = 0 and a - c - 1 > 0
+
+            and a - 1 = 0 and b + 1 > 0 and b < 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a + b > 0 and a - b > 0 and a + c - 1 = 0 and a - c + 1 > 0
+
+            and a - c - 1 < 0 and a - 1 < 0 and a > 0 and b - 1 < 0 and b > 0) 
+
+                2  2    2    4    2  2    2              2              2
+           or (a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a + b > 0 and a - b > 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+            and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+                                          2  2    2    4    2  2    2
+            and b - 1 < 0 and b > 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  > 0 and a - b  > 0 and a + b > 0 and a - b > 0
+
+            and a + c + 1 > 0 and a + c - 1 < 0 and a - c - 1 = 0 and a - 1 < 0
+
+            and a > 0 and b - 1 < 0 and b > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a + b > 0 and a - b > 0 and a + c + 1 = 0 and a - c - 1 > 0
+
+            and a - 1 < 0 and a > 0 and b - 1 < 0 and b > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a - b > 0 and a + c - 1 = 0 and a - c + 1 > 0 and a - c - 1 < 0
+
+            and a - 1 < 0 and a > 0 and b + 1 > 0 and b < 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+            and a + b > 0 and a - b > 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+            and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+                                          2  2    2    4    2  2    2
+            and b + 1 > 0 and b < 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  > 0 and a - b  > 0 and a - b > 0 and a + c + 1 > 0
+
+            and a + c - 1 < 0 and a - c - 1 = 0 and a - 1 < 0 and a > 0
+
+                                          2  2    2    4    2  2    2
+            and b + 1 > 0 and b < 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  > 0 and a - b  > 0 and a - b > 0 and a + c + 1 = 0
+
+            and a - c - 1 > 0 and a - 1 < 0 and a > 0 and b + 1 > 0 and b < 0) 
+
+                    2              2
+           or (a + b  > 0 and a - b  > 0 and a + b < 0 and a - b > 0
+
+            and a + c + 1 > 0 and a + c - 1 < 0 and a - c + 1 > 0
+
+            and a - c - 1 < 0 and a - 1 < 0 and a > 0 and b + 1 > 0 and b < 0) 
+
+                2  2    2    4    2  2    2              2              2
+           or (a *b  - a  - b  - b *c  + b  = 0 and a + b  > 0 and a - b  < 0
+
+            and a + b < 0 and a - b > 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+            and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+                                2  2    2    4    2  2    2              2
+            and b + 1 = 0) or (a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0
+
+                     2
+            and a - b  < 0 and a + b < 0 and a - b < 0 and a + c + 1 > 0
+
+            and a + c - 1 < 0 and a - c + 1 = 0 and a + 1 > 0 and a < 0
+
+                                          2  2    2    4    2  2    2
+            and b - 1 < 0 and b > 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  < 0 and a - b  < 0 and a + b < 0 and a - b < 0
+
+            and a + c + 1 > 0 and a + c - 1 < 0 and a - c + 1 > 0
+
+            and a - c - 1 < 0 and a + 1 > 0 and a < 0 and b - 1 < 0 and b > 0) 
+
+                2  2    2    4    2  2    2              2              2
+           or (a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 = 0 and a - c + 1 > 0
+
+            and a - c - 1 < 0 and a + 1 > 0 and a < 0 and b - 1 < 0 and b > 0) 
+
+                2  2    2    4    2  2    2              2              2
+           or (a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 < 0 and a - c - 1 = 0
+
+            and a + 1 > 0 and a < 0 and b - 1 < 0 and b > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a + c + 1 > 0 and a + c - 1 < 0 and a - c + 1 = 0
+
+            and a + 1 > 0 and a < 0 and b + 1 > 0 and b < 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+            and a - c + 1 > 0 and a - c - 1 < 0 and a + 1 > 0 and a < 0
+
+                                          2  2    2    4    2  2    2
+            and b + 1 > 0 and b < 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  < 0 and a - b  < 0 and a + b < 0 and a + c + 1 = 0
+
+            and a - c + 1 > 0 and a - c - 1 < 0 and a + 1 > 0 and a < 0
+
+                                          2  2    2    4    2  2    2
+            and b + 1 > 0 and b < 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  < 0 and a - b  < 0 and a + b < 0 and a + c + 1 < 0
+
+            and a - c - 1 = 0 and a + 1 > 0 and a < 0 and b + 1 > 0 and b < 0) 
+
+                    2              2
+           or (a + b  < 0 and a - b  < 0 and a + b < 0 and a - b > 0
+
+            and a + c + 1 > 0 and a + c - 1 < 0 and a - c + 1 > 0
+
+            and a - c - 1 < 0 and a + 1 > 0 and a < 0 and b + 1 > 0 and b < 0) 
+
+                2  2    2    4    2  2    2              2              2
+           or (a *b  - a  - b  - b *c  + b  = 0 and a + b  > 0 and a - b  < 0
+
+            and a + b < 0 and a - b > 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+            and a - c + 1 > 0 and a - c - 1 < 0 and a + 1 > 0 and a < 0
+
+                                2  2    2    4    2  2    2              2
+            and b + 1 = 0) or (a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0
+
+                     2
+            and a - b  < 0 and a + b > 0 and a - b < 0 and a + c + 1 < 0
+
+            and a - c - 1 = 0 and a + 1 <= 0 and b - 1 > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 = 0 and a - c + 1 = 0
+
+            and a + 1 = 0 and b - 1 < 0 and b > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 < 0 and a - c - 1 = 0
+
+            and a + 1 = 0 and b - 1 < 0 and b > 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 = 0 and a - c + 1 = 0
+
+            and a + 1 = 0 and b + 1 > 0 and b < 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  < 0 and a - b  < 0
+
+            and a + b < 0 and a - b < 0 and a + c + 1 < 0 and a - c - 1 = 0
+
+            and a + 1 = 0 and b + 1 > 0 and b < 0) or (
+
+            2  2    2    4    2  2    2              2              2
+           a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  < 0
+
+            and a + b < 0 and a - b > 0 and a + c + 1 < 0 and a - c - 1 = 0
+
+                                              2  2    2    4    2  2    2
+            and a + 1 = 0 and b + 1 < 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                     2              2
+            and a + b  > 0 and a - b  < 0 and a + b < 0 and a + c + 1 < 0
+
+            and a - c - 1 = 0 and a + 1 < 0 and b + 1 < 0)}
+
 
 % x-axis ellipse problem variant (refined formula) [Ho92]
 cc := x**2+y**2-1$
+
+
 ee := b**2*(x-c)**2+a**2*y**2-a**2*b**2$
+
+
 ellv := all({x,y},0<a<=1 and 0<b<=1 and 0<=c<=1-a and
    ((c-a<x<c+a and ee=0) impl cc <= 0))$
+
+
 ellvgqf := rlgcad ellv;
+
+
+ellvgqf := {{a + b <> 0,
+
+             a - b <> 0,
+
+             a <> 0,
+
+             b <> 0},
+
+              2  2    2    4    2  2    2              2              2
+            (a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+             and a + b > 0 and a - b > 0 and a + c - 1 = 0 and a - c - 1 = 0
+
+             and a - 1 = 0 and b - 1 < 0 and b > 0 and c = 0) or (
+
+             2  2    2    4    2  2    2              2              2
+            a *b  - a  - b  - b *c  + b  = 0 and a + b  > 0 and a - b  < 0
+
+             and a + b > 0 and a - b < 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+             and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+                                           2  2    2    4    2  2    2
+             and b - 1 = 0 and c = 0) or (a *b  - a  - b  - b *c  + b  < 0
+
+                      2              2
+             and a + b  > 0 and a - b  > 0 and a + b > 0 and a + c - 1 = 0
+
+             and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+             and b - 1 < 0 and b > 0 and c > 0) or (
+
+             2  2    2    4    2  2    2               2              2
+            a *b  - a  - b  - b *c  + b  <= 0 and a + b  > 0 and a - b  > 0
+
+             and a + b > 0 and a - b < 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+             and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+             and b - 1 < 0 and b > 0 and c > 0) or (
+
+             2  2    2    4    2  2    2              2              2
+            a *b  - a  - b  - b *c  + b  > 0 and a + b  > 0 and a - b  > 0
+
+             and a + b > 0 and a - b < 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+             and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+             and b - 1 < 0 and b > 0 and c >= 0) or (
+
+             2  2    2    4    2  2    2              2              2
+            a *b  - a  - b  - b *c  + b  < 0 and a + b  > 0 and a - b  > 0
+
+             and a + b > 0 and a - b > 0 and a + c + 1 > 0 and a + c - 1 < 0
+
+             and a - c + 1 > 0 and a - c - 1 < 0 and a - 1 < 0 and a > 0
+
+             and b - 1 < 0 and b > 0 and c >= 0)}
+
 
 % Steiner--Lehmus Theorem
 h1 := u2>=0 and x1>=0$
+
+
 h2 := r^2=1+x1^2=u1^2+(u2-x1)^2$
+
+
 h3 := x2<=0 and r^2=(x2-x1)^2$
+
+
 h4 := u1*x2+u2*x3-x2*x3=0$
+
+
 h5 := x4<=1 and (x4-1)^2=(u1-1)^2+u2^2$
+
+
 h6 := (x4-x5)^2+x6^2=(u1-x5)^2+(u2-x6)^2 and u1*x6-u2*x5-u2+x6=0$
+
+
 h7 := (-1-u1)^2+u2^2<2^2$
+
+
 h := h1 and h2 and h3 and h4 and h5 and h6 and h7$
+
+
 g := (u1-x3)^2+u2^2<(x5-1)^2+x6^2$
+
+
 sl9 := all({x6,x5,x4,x3,x2,x1,r},h impl g)$
+
+
 sol := rlgqe sl9$
+
+
 
 %%% Test rlgsn
 
 % Result of the rectangle problem from testing rlqe above.
 rlgsn rp2sol;
+
+
+false
+
 
 % There is a list of formulas containing 125 lines starting here.
 % Forward-search for $ to get to the end of this list.
@@ -623,15 +1238,43 @@ and i2 = 0 and 9*n - 380*q >= 0 and q - 40 <= 0 and q >= 0 and 400*q + 9
  >= 0 and 9*td - 20050 <= 0 and q - 40 <= 0 and q >= 0 and 400*q + 9*td
 - 20050 >= 0 and (2*p1 - 7 < 0 and 80*i2 + 250*p1 + 2*q - 577 = 0 or 2*
 p1 - 7 >= 0)}$
+
+
 for each ex in testseries collect {rlatnum ex,rlatnum rlgsn ex};
+
+
+{{710,164},{94,40},{292,333},{157,146}}
+
 
 %%% Test rlitab
 
 % Result of the rectangle problem from testing rlqe above.
 rlitab rp2sol;
 
+
+(d1 > 0 and ((b > 0 and ((a > 0 and ((b - d1 > 0 and (
+
+(a - b + d1 <= 0 and a - b = 0 and a - d1 > 0)
+
+ or (a - b + d1 = 0 and a - b = 0 and a - d1 > 0)
+
+ or (a - b - d1 > 0 and a - b = 0 and b + d1 < 0)
+
+ or (a - b + d1 = 0 and a - d1 = 0 and b - 2*d1 > 0))) or (b - d1 = 0 and (
+
+(a - b + d1 <= 0 and a - b = 0 and a - d1 > 0)
+
+ or (a - b - d1 = 0 and a - d1 >= 0 and a - 2*d1 > 0)
+
+ or (a - b + d1 = 0 and a - d1 = 0 and b - 2*d1 > 0)))
+
+ or (b - d1 < 0 and (a - b + d1 <= 0 and a - b = 0 and a - d1 > 0))))))))
+
+
 % Optimizer
 sc50b!-t := -1*vCOL00004$
+
+
 
 sc50b!-c := {
 vCOL00001 >= 0,vCOL00002 >= 0,vCOL00003 >= 0,vCOL00004 >= 0,vCOL00005 >= 0,
@@ -693,7 +1336,173 @@ vCOL00046 >= 0,vCOL00047 >= 0,vCOL00048 >= 0,
 -1*vCOL00046+(0.400000*vCOL00048) <= 0,
 -1*vCOL00047+(0.600000*vCOL00048) <= 0}$
 
+
+
 rlopt(sc50b!-c,sc50b!-t);
+
+
+{-70,
+
+ {{vcol00001 = 30,
+
+   vcol00002 = 28,
+
+   vcol00003 = 42,
+
+   vcol00004 = 70,
+
+   vcol00005 = 70,
+
+   vcol00006 = 30,
+
+   vcol00007 = 28,
+
+   vcol00008 = 42,
+
+   vcol00009 = 30,
+
+   vcol00010 = 28,
+
+   vcol00011 = 42,
+
+   vcol00012 = 33,
+
+                154
+   vcol00013 = -----,
+                 5
+
+                231
+   vcol00014 = -----,
+                 5
+
+   vcol00015 = 77,
+
+   vcol00016 = 147,
+
+   vcol00017 = 63,
+
+                294
+   vcol00018 = -----,
+                 5
+
+                441
+   vcol00019 = -----,
+                 5
+
+   vcol00020 = 63,
+
+                294
+   vcol00021 = -----,
+                 5
+
+                441
+   vcol00022 = -----,
+                 5
+
+                363
+   vcol00023 = -----,
+                10
+
+                847
+   vcol00024 = -----,
+                25
+
+                2541
+   vcol00025 = ------,
+                 50
+
+                847
+   vcol00026 = -----,
+                10
+
+                2317
+   vcol00027 = ------,
+                 10
+
+                993
+   vcol00028 = -----,
+                10
+
+                2317
+   vcol00029 = ------,
+                 25
+
+                6951
+   vcol00030 = ------,
+                 50
+
+                993
+   vcol00031 = -----,
+                10
+
+                2317
+   vcol00032 = ------,
+                 25
+
+                6951
+   vcol00033 = ------,
+                 50
+
+                3993
+   vcol00034 = ------,
+                100
+
+                9317
+   vcol00035 = ------,
+                250
+
+                27951
+   vcol00036 = -------,
+                 500
+
+                9317
+   vcol00037 = ------,
+                100
+
+                32487
+   vcol00038 = -------,
+                 100
+
+                13923
+   vcol00039 = -------,
+                 100
+
+                32487
+   vcol00040 = -------,
+                 250
+
+                97461
+   vcol00041 = -------,
+                 500
+
+                13923
+   vcol00042 = -------,
+                 100
+
+                32487
+   vcol00043 = -------,
+                 250
+
+                97461
+   vcol00044 = -------,
+                 500
+
+                43923
+   vcol00045 = -------,
+                1000
+
+                102487
+   vcol00046 = --------,
+                 2500
+
+                307461
+   vcol00047 = --------,
+                 5000
+
+                102487
+   vcol00048 = --------}}}
+                 1000
+
 
 % from Marc van Dongen. Finding the first feasible solution for the
 % solution of systems of linear diophantine inequalities.
@@ -705,10 +1514,68 @@ dong := {
   X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
   X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
      X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1};
+
+
+dong := {x229 + 3*x259 + 4*x261 + 3*x262 + 2*x263 + x269 + 2*x270 + 3*x271
+
+          + 4*x272 + 5*x273 = 2,
+
+         x229 + 7*x259 + 11*x261 + 8*x262 + 5*x263 + 3*x269 + 6*x270 + 9*x271
+
+          + 12*x272 + 15*x273 = 4,
+
+         2*x259 + 5*x261 + 4*x262 + 3*x263 + 3*x268 + 4*x269 + 5*x270 + 6*x271
+
+          + 7*x272 + 8*x273 = 1,
+
+         2*x229 + x262 + 2*x263 + 5*x268 + 4*x269 + 3*x270 + 2*x271 + x272 = 1,
+
+         3*x229 + x259 + x262 + 2*x263 + 4*x268 + 3*x269 + 2*x270 + x271 - x273
+
+          = 2,
+
+         x229 + x259 + 2*x261 + 2*x262 + 2*x263 + 3*x268 + 3*x269 + 3*x270
+
+          + 3*x271 + 3*x272 + 3*x273 = 1,
+
+         x229 + x259 + x261 + x262 + x263 + x268 + x269 + x270 + x271 + x272
+
+          + x273 = 1}
+
 sol := rlopt(dong,0);
+
+
+sol := {0,
+
+        {{x229
+
+               - x262 - 2*x263 - 5*x268 - 4*x269 - 3*x270 - 2*x271 - x272 + 1
+           = -----------------------------------------------------------------,
+                                             2
+
+          x259 = (x262 + 2*x263 + 7*x268 + 6*x269 + 5*x270 + 4*x271 + 3*x272
+
+              + 2*x273 + 1)/2,
+
+          x261 =  - x262 - x263 - 2*x268 - 2*x269 - 2*x270 - 2*x271 - 2*x272
+
+           - 2*x273}}}
+
 
 % Substitution
 sub(first second sol,for each atf in dong mkand atf);
+
+
+true and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0 and 0 = 0
+
 rlsimpl ws;
 
+
+true
+
+
 end;
+
+
+Time for test: 22350 ms, plus GC time: 370 ms
+@@@@@ Resources used: (23 185 172 0)
