@@ -1,4 +1,4 @@
-Thu May 20 09:30:18 2010 run on darwin10.3.0:x86_64
+Thu May 20 11:47:42 2010 run on darwin10.3.0:x86_64
 % Test only multipliation:
 easy1 := (x1+1*x2)*(x1-1*x2);
 
@@ -186,8 +186,39 @@ lpdofactorize(d,a()*partial(x1)+b());
    + (x1 + 1)*partial(x2)}}
 
 
+% Approximate factorisations:
+
+% Blumberg 1912:
+lpdofactorizex(r,-1<x1<1 and -1<x2<1,q,p);
+
+
+{{epsilon - 1 >= 0,{partial(x1) + 1,partial(x1)}}}
+
+
+sol1 := lpdofactorizex(r,-1<x1<1 and -1<x2<1,q,partial(x1)+a()*partial(x2),1);
+
+
+sol1 := {{true,{partial(x1) + 1,partial(x1) + (2*x1)*partial(x2)}}}
+
+r - first second first sol1 * second second first sol1;
+
+
+ - x1*partial(x1)*partial(x2) - x1*partial(x2)
+
+
+sol2 := lpdofactorizex(r,-2<x1<2 and -2<x2<2,q,partial(x1)+a()*partial(x2),1);
+
+
+sol2 := {{true,{partial(x1) + 1,partial(x1) + x1*partial(x2)}}}
+
+r - first second first sol2 * second second first sol2;
+
+
+partial(x2)
+
+
 end;
 
 
-Time for test: 1010 ms, plus GC time: 20 ms
-@@@@@ Resources used: (1 7 28 0)
+Time for test: 9120 ms, plus GC time: 110 ms
+@@@@@ Resources used: (9 35 105 0)

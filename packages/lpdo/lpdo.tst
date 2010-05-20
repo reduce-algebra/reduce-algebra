@@ -38,4 +38,15 @@ d - q*q*p;
 d - r*q;
 lpdofactorize(d,a()*partial(x1)+b());
 
+% Approximate factorisations:
+
+% Blumberg 1912:
+lpdofactorizex(r,-1<x1<1 and -1<x2<1,q,p);
+
+sol1 := lpdofactorizex(r,-1<x1<1 and -1<x2<1,q,partial(x1)+a()*partial(x2),1);
+r - first second first sol1 * second second first sol1;
+
+sol2 := lpdofactorizex(r,-2<x1<2 and -2<x2<2,q,partial(x1)+a()*partial(x2),1);
+r - first second first sol2 * second second first sol2;
+
 end;
