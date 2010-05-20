@@ -43,7 +43,7 @@ rl_set '(reals);
 switch lpdodf,lpdocoeffnorm;
 
 on1 'lpdodf;
-off1 'lpdocoeffnorm;
+on1 'lpdocoeffnorm;
 
 infix lpdotimes;
 flag('(lpdotimes),'spaced);
@@ -71,7 +71,8 @@ put('lpdotimes,'rtypefn,'quotelpdo);
 put('lpdotimes,'lpdo_simpfn,'lpdo_simplpdotimes);
 
 put('times,'rtypefn,'getrtypeor);
-put('times,'lpdo_simpfn,'lpdo_simptimes);
+%put('times,'lpdo_simpfn,'lpdo_simptimes);
+put('times,'lpdo_simpfn,'lpdo_simplpdotimes);
 
 put('abs,'lpdo_simpfn,'lpdo_simpabs);
 
@@ -250,9 +251,11 @@ procedure lpdo_preplpdotimes(x);
 	 w := cadr w
       >>;
       w := if eqn(w,1) then
-	 lpdo_smkn('lpdotimes,cdr x)
+	 lpdo_smkn('times,cdr x)
+%	 lpdo_smkn('lpdotimes,cdr x)
       else
-       	 'lpdotimes . w . cdr x;
+       	 'times . w . cdr x;
+%   	 'lpdotimes . w . cdr x;
       if neg then
 	 w := {'minus,w};
       return w
@@ -765,7 +768,7 @@ procedure lpdo_facx(d,psi,p,q,eps,y);
 	    for each lhs in lpdo_faclhsl(d,p,q,y) collect <<
 	       if not domainp denr lhs then
 	    	  lprim {"dropping denominator in equation:",prepf denr lhs};
-	       lpdo_absleq_old(numr lhs,eps,y)
+	       lpdo_absleq_lasaruk(numr lhs,eps,y)
 	    >>;
       w := rl_mk2('impl,psi,rl_smkn('and,w));
       return lpdo_facquantify(w,d,p,q,y)
@@ -774,8 +777,17 @@ procedure lpdo_facx(d,psi,p,q,eps,y);
 procedure lpdo_absleq(lhs,eps,y);
    rl_smkn('and,for each f in lpdo_allcoeffs(lhs,lpdo_ylist(lhs,y)) collect
       rl_mkn('and,{
-	 ofsf_0mk2('leq,addf(negf f,negf !*k2f eps)),
-	 ofsf_0mk2('leq,addf(f,negf !*k2f eps))}));
+	 ofsf_0mk2('leq,addf(negf f,negf numr simp eps)),
+	 ofsf_0mk2('leq,addf(f,negf numr simp eps))}));
+
+procedure lpdo_absleq_lasaruk(lhs,eps,y);
+   begin scalar s;
+      for each f in lpdo_allcoeffs(lhs,lpdo_ylist(lhs,y)) do
+	 s := addf(s,f);
+      return rl_mkn('and,{
+	 ofsf_0mk2('leq,addf(negf s,negf numr simp eps)),
+	 ofsf_0mk2('leq,addf(s,negf numr simp eps))})
+   end;
 
 procedure lpdo_allcoeffs(f,vl);
    lpdo_allcoeffs1({f},vl);
