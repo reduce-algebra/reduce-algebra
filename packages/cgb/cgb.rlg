@@ -1,38 +1,4 @@
-Tue Nov 17 08:53:47 2009 run on win32
-% ----------------------------------------------------------------------
-% $Id: cgb.tst 84 2009-02-07 07:53:22Z thomas-sturm $
-% ----------------------------------------------------------------------
-% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions
-% are met:
-%
-%    * Redistributions of source code must retain the relevant
-%      copyright notice, this list of conditions and the following
-%      disclaimer.
-%    * Redistributions in binary form must reproduce the above
-%      copyright notice, this list of conditions and the following
-%      disclaimer in the documentation and/or other materials provided
-%      with the distribution.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-% A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-% OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-% SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-% LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-% THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
-
-load_package redlog;
-
-
-
+Thu May 20 09:12:58 2010 run on darwin10.3.0:x86_64
 % Examples taken from the manual:
 
 % 1 Introduction
@@ -369,7 +335,7 @@ torder oo;
 % The folllowing three examples are taken from
 % Weispfenning, Comprehensive Groebner Bases,
 % J. Symbolic Computation (1992) 14, 1-29
-   
+
 % Weispfenning's Example 7.1
 oo := torder({x},lex);
 
@@ -2199,5 +2165,5 @@ torder oo;
 end;
 
 
-Time for test: 442 ms, plus GC time: 42 ms
-@@@@@ Resources used: (0 1 63 0)
+Time for test: 200 ms, plus GC time: 20 ms
+@@@@@ Resources used: (0 1 60 0)
