@@ -53,6 +53,8 @@ newtok '((!* !* !*) lpdotimes) where !*msg=nil;
 
 put('!*lpdo,'rtypefn,'quotelpdo);
 put('!*lpdo,'prifn,'lpdo_pri!*lpdo);
+put('!*lpdo,'fancy!-prifn,'lpdo_pri!*lpdo);
+put('!*lpdo,'fancy!-setprifn,'lpdo_setpri!*lpdo);
 put('!*lpdo,'lpdo_simpfn,'lpdo_simp!*lpdo);
 
 put('plus,'rtypefn,'getrtypeor);
@@ -79,14 +81,18 @@ put('abs,'lpdo_simpfn,'lpdo_simpabs);
 put('quotient,'lpdo_simpfn,'lpdo_simpquotient);
 
 put('partial,'rtypefn,'quotelpdo);
+if rl_texmacsp() then <<
+   put('partial,'fancy!-functionsymbol,"\partial ");
+   put('partial,'fancy!-prifn,'lpdo_fancy!-pripartial)
+>>;
 put('partial,'lpdo_simpfn,'lpdo_simppartial);
 
 put('diff,'simpfn,'lpdo_simpdiff1);
 put('diff,'lpdo_simpfn,'lpdo_simpdiff);
 
 put('lpdo,'evfn,'lpdo_reval);
-
 put('lpdo,'subfn,'lpdo_subst0);
+put('lpdo,'tag,'!*lpdo);
 
 fluid '(lpdopol!* !*rlverbose shapesym!*);
 
@@ -137,6 +143,21 @@ procedure quotelpdo(x);
 
 procedure lpdo_pri!*lpdo(u);
    maprin lpdo_prep cadr u;
+
+procedure lpdo_setpri!*lpdo(x,u);
+   <<
+      fancy!-maprint(x,0);
+      fancy!-prin2!*(":=",4);
+      lpdo_pri!*lpdo u
+   >>;
+
+procedure lpdo_fancy!-pripartial(u);
+   if null !*nat then
+      'failed
+   else <<
+      fancy!-prefix!-operator car u;
+      fancy!-maprint!-atom(cadr u,0)
+   >>;
 
 procedure lpdo_reval(u,v);
    if v then lpdo_prep lpdo_simp u else lpdo_mk!*lpdo lpdo_simp u;
