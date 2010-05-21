@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(qqe_ofsf_rcsid!* qqe_ofsf_copyright!*);
@@ -49,7 +49,7 @@ flag('(qqe_ofsf),'rl_package);
 
 % Parameters
 put('qqe_ofsf,'rl_params,'(
-   (rl_prepat!* . qqe_ofsf_prepat) 
+   (rl_prepat!* . qqe_ofsf_prepat)
    (rl_simpat!* . qqe_ofsf_simpat)
    (rl_subat!* . qqe_ofsf_subat) %% to do
    (rl_subalchk!* . qqe_ofsf_subalchk) %% to do
@@ -65,7 +65,7 @@ put('qqe_ofsf,'rl_params,'(
    (rl_smsimpl!-equiv1!* . cl_smsimpl!-equiv1) % to check
 %%   (rl_susipost!* . ofsf_susipost) % susi will not be needed (?)
 %%   (rl_susitf!* . ofsf_susitf) %!!!
-%%   (rl_susibin!* . ofsf_susibin)   	 
+%%   (rl_susibin!* . ofsf_susibin)
    (rl_negateat!* . qqe_ofsf_negateat)
    (rl_varlat!* . qqe_ofsf_varlat)
    (rl_varsubstat!* . qqe_ofsf_varsubstat)
@@ -87,7 +87,7 @@ put('qqe_ofsf,'rl_params,'(
    (rl_qssubsumep!* . cl_qssusubytab)
    (rl_qstautp!* . cl_qstautp)
    (rl_qssusuat!* . ofsf_qssusuat)
-   (rl_qssimpl!* . cl_qssimpl) 
+   (rl_qssimpl!* . cl_qssimpl)
    (rl_qssiadd!* . ofsf_qssiadd)
    (rl_fctrat!* . qqe_ofsf_fctrat) % to do
    (rl_tordp!* . ordp)
@@ -116,7 +116,7 @@ put('qqe_ofsf,'rl_services,'(
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
    (rl_pnf!* . cl_pnf)
-   (rl_cnf!* . cl_cnf)   % was before ofsf_cnf : but ofsf_sacat has to be 
+   (rl_cnf!* . cl_cnf)   % was before ofsf_cnf : but ofsf_sacat has to be
                          % modified first
    (rl_dnf!* . cl_dnf)   % same here
    (rl_all!* . cl_all)
@@ -163,54 +163,50 @@ put('qqe_ofsf,'rl_services,'(
    (rl_xqea!* . ofsf_xopt!-qea)
    (rl_lthsimpl!* . ofsf_lthsimpl) %% belongs to qe
    (rl_lthsimpl!* . ofsf_lthsimpl)
-   (rl_quine!* . cl_quine) 
+   (rl_quine!* . cl_quine)
 %%   (rl_cadporder!* . ofsf_cadporder)
 %%   (rl_gcadporder!* . ofsf_gcadporder)
 %%   (rl_cadproj!* . ofsf_cadproj)
    (rl_hqe!* . ofsf_hqe)
    (rl_ghqe!* . ofsf_ghqe)));
 
-algebraic infix equal; 
+%algebraic infix equal;
 put('equal,'rl_prepfn,'ofsf_prepat);
 put('equal,'rl_simpfn,'qqe_ofsf_chsimpat);
-put('equal,'number!-of!-args,2);
+%put('equal,'number!-of!-args,2);
 put('equal,'rtypefn,'quotelog);
-remprop('equal,'psopfn); % temporary - to make arg check, also important  
+remprop('equal,'psopfn); % temporary - to make arg check, also important
                          % in rlsimp1!!!
 
-%% algebraic infix equal;
-%% put('equal,'ofsf_simpfn,'ofsf_chsimpat);
-%% put('equal,'number!-of!-args,2);
-
-algebraic infix neq; 
+%algebraic infix neq;
 put('neq,'rl_prepfn,'ofsf_prepat);
 put('neq, 'rl_simpfn, 'qqe_ofsf_chsimpat);
-put('neq,'number!-of!-args,2);
+%put('neq,'number!-of!-args,2);
 put('neq,'rtypefn,'quotelog);
-newtok '((!< !>) neq);
+newtok '((!< !>) neq) where !*msg=nil;
 
-algebraic infix leq;
+%algebraic infix leq;
 put('leq,'rl_prepfn,'ofsf_prepat);
 put('leq,'rl_simpfn,'qqe_ofsf_chsimpat);
-put('leq,'number!-of!-args,2);
+%put('leq,'number!-of!-args,2);
 put('leq,'rtypefn,'quotelog);
 
-algebraic infix geq;
+%algebraic infix geq;
 put('geq,'rl_prepfn,'ofsf_prepat);
 put('geq,'rl_simpfn,'qqe_ofsf_chsimpat);
-put('geq,'number!-of!-args,2);
+%put('geq,'number!-of!-args,2);
 put('geq,'rtypefn,'quotelog);
 
-algebraic infix lessp;
+%algebraic infix lessp;
 put('lessp,'rl_prepfn,'ofsf_prepat);
 put('lessp,'rl_simpfn,'qqe_ofsf_chsimpat);
-put('lessp,'number!-of!-args,2);
+%put('lessp,'number!-of!-args,2);
 put('lessp,'rtypefn,'quotelog);
 
-algebraic infix greaterp;
+%algebraic infix greaterp;
 put('greaterp,'rl_prepfn,'ofsf_prepat);
 put('greaterp,'rl_simpfn,'qqe_ofsf_chsimpat);
-put('greaterp,'number!-of!-args,2);
+%put('greaterp,'number!-of!-args,2);
 put('greaterp,'rtypefn,'quotelog);
 
 put('qequal,'infix,31);
@@ -249,7 +245,7 @@ procedure qqe_ofsf_chsimpat1(u);
 
 procedure qqe_ofsf_simpat(u);
    begin
-      qqe_ofsf_chsimpterm qqe_arg2l u; 
+      qqe_ofsf_chsimpterm qqe_arg2l u;
       qqe_ofsf_chsimpterm qqe_arg2r u;
       qqe_arg!-check u;
       if qqe_op u memq '(qequal qneq) then return qqe_simpat u
@@ -262,8 +258,8 @@ procedure qqe_ofsf_chsimpterm(term);
       else <<
          x := cdr term;
          while x do <<
-            if pairp car x and qqe_op car x eq 'expt and 
-               pairp qqe_arg2l car x 
+            if pairp car x and qqe_op car x eq 'expt and
+               pairp qqe_arg2l car x
                and qqe_op qqe_arg2l car x memq '(ltail rtail) then
                   car x := qqe_chsimpterm car x
             else if pairp car x then qqe_ofsf_chsimpterm car x;
@@ -297,7 +293,7 @@ procedure qqe_ofsf_anegrel(r);
    % QQE Ordered field standard form algebraically negate relation. [r] is
    % a relation. Returns a relation $R$ such that $R(-t,0)$ is
    % equivalent to $[r](t,0)$ for a term $t$.
-   cdr atsoc(r,'((qequal . qequal) (qneq . qneq))) or ofsf_anegrl r; 
+   cdr atsoc(r,'((qequal . qequal) (qneq . qneq))) or ofsf_anegrl r;
 
 procedure qqe_ofsf_clnegrel(r,flg);
    % QQE Ordered field standard form conditionally logically negate
@@ -322,9 +318,9 @@ procedure qqe_ofsf_negateat(f);
    ofsf_mkn(qqe_ofsf_lnegrel qqe_op f,ofsf_argn f);
 
 procedure qqe_ofsf_varsubstat(atf,new,old);
-   % QQE ordered field standard form substitute variable for variable 
-   % in atomic formula. [atf] is an atomic formula; [new] and [old] 
-   % are variables. Returns an atomic formula equivalent to [atf] 
+   % QQE ordered field standard form substitute variable for variable
+   % in atomic formula. [atf] is an atomic formula; [new] and [old]
+   % are variables. Returns an atomic formula equivalent to [atf]
    % where [old] is substituted with [new].
    if qqe_rqopp qqe_op atf then qqe_varsubstat(atf, new,old)
    else ofsf_varsubstat(atf,new,old);
@@ -335,13 +331,13 @@ procedure qqe_ofsf_varlterm(term, list);
    % should be done with dfs...i think here is no better wrapping
    % possible.
    begin scalar list;
-     
+
       if (atom term) and idp term and not(term eq 'qepsilon)
       then list := lto_insertq(term, list)
-  
-      else if not atom term then 
+
+      else if not atom term then
          for each x in cdr term do list := qqe_ofsf_varlterm(x, list);
-      
+
       return list;
    end;
 
@@ -351,15 +347,15 @@ procedure qqe_ofsf_ordatp(a1,a2);
    % [a2] are atomic formulas. Returns [t] iff [a1] is less than [a2].
 %%    begin scalar op_a1, op_a2;
 %%       op_a1 := qqe_op a1; op_a2 := qqe_op a2;
-%%       if qqe_rqopp op_a1 and qqe_rqopp op_a2 
+%%       if qqe_rqopp op_a1 and qqe_rqopp op_a2
 %%       then
 %%       <<
 %%          if cdr a1 neq cdr a2 then ordp(cdr a1,cdr a2)
 %%          else if op_a1 eq 'qequal then return t
 %%          else return nil;
-%%       >> 
+%%       >>
 %%          % else %mixed case!!!
-%%       else if qqe_op a1 and not qqe_op a2 then 
+%%       else if qqe_op a1 and not qqe_op a2 then
 %%          << prin2t "special case"; return ofsf_ordatp(a1,a2);>>
 %%       else if qqe_op a2 and not qqe_op a1 then
 %%          << prin2t "special case"; return ofsf_ordatp(a1,a2);>>
@@ -370,8 +366,8 @@ procedure qqe_ofsf_ordatp(a1,a2);
 procedure qqe_ofsf_varlat(atform);
    % later
    % begin scalar lhs, rhs;
-   union(qqe_ofsf_varlterm(qqe_arg2l at,nil), 
-      qqe_ofsf_varlterm(qqe_arg2r at, nil)) 
+   union(qqe_ofsf_varlterm(qqe_arg2l at,nil),
+      qqe_ofsf_varlterm(qqe_arg2r at, nil))
          where at=qqe_ofsf_prepat atform;
 
 %ENDCS Ab hier, besser richtige Wrapper schreiben
@@ -470,7 +466,7 @@ procedure qqe_ofsf_smmkatl!-and(oldknowl,newknowl,n);
 	 return qqe_ofsf_irl2atl('and,newknowl,n);
       return for each ir in newknowl join <<
 	 w := atsoc(car ir,oldknowl);
-	 if null w then qqe_ofsf_ir2atl('and,ir,n) else 
+	 if null w then qqe_ofsf_ir2atl('and,ir,n) else
             qqe_ofsf_smmkatl!-and1(w,ir,n)
       >>;
    end;
@@ -512,7 +508,7 @@ procedure qqe_ofsf_smmkatl!-or(oldknowl,newknowl,n);
    begin scalar w;
       return for each ir in newknowl join <<
 	 w := atsoc(car ir,oldknowl);
-	 if null w then qqe_ofsf_ir2atl('or,ir,n) 
+	 if null w then qqe_ofsf_ir2atl('or,ir,n)
          else qqe_ofsf_smmkatl!-or1(w,ir,n)
       >>;
    end;
@@ -586,7 +582,7 @@ procedure qqe_ofsf_entry2at(op,entry,parasq);
       cl_identifyat qqe_ofsf_entry2at1(op,entry,parasq)
    else
       qqe_ofsf_entry2at1(op,entry,parasq);
-      
+
 procedure qqe_ofsf_entry2at1(op,entry,parasq);
    ofsf_0mk2(qqe_ofsf_clnegrel(car entry,op eq 'and),numr addsq(parasq,cdr entry));
 
@@ -596,7 +592,7 @@ procedure qqe_ofsf_mk2(op,lhs,rhs);
    % later
    qqe_mk2(op,lhs,rhs);
 
-procedure qqe_ofsf_qe(f);
+procedure qqe_ofsf_qe(f,theo);
    % QQE ordered field standard form quantifier elimination.
    begin
       return qqe_qe(f);
