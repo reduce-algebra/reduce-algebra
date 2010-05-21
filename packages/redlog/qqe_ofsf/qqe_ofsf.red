@@ -73,6 +73,7 @@ put('qqe_ofsf,'rl_params,'(
    (rl_elimset!*. ofsf_elimset)
    (rl_trygauss!* . cl_trygauss)
    (rl_varsel!* . ofsf_varsel) % belongs to qe - !?
+   (rl_betterp!* . cl_betterp)
    (rl_subsumption!* . ofsf_subsumption) % bnf function maybe ok
    (rl_bnfsimpl!* . cl_bnfsimpl)
    (rl_sacat!* . cl_sacat)   % was before ofsf_sacat : to be modified still
