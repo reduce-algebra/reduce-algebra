@@ -143,7 +143,7 @@
  (ibalp         "redlog/ibalp"          test                 csl psl)
  (pasf          "redlog/pasf"           test                 csl psl)
  (qqe           "redlog/qqe"                                 csl psl)
- (qqe_ofsf      "redlog/qqe_ofsf"                            csl psl)
+ (qqe_ofsf      "redlog/qqe_ofsf"       test                 csl psl)
  (mri           "redlog/mri"                                 csl psl)
  (mri_ofsf      "redlog/mri"                                 csl psl)
  (mri_pasf      "redlog/mri"                                 csl psl)
