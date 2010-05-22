@@ -2487,11 +2487,12 @@ full-c-code:	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
 
 testslow:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p testlogs
-@canrun_TRUE@	$(srcdir)/../util/testslow.sh $(srcdir)
-@canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v $(CYGSRC)/testall.red \
+@canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- testlogs/testbootstrap.log
-
+@canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/checkall.red \
+@canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
+@canrun_TRUE@		-- testlogs/checkslow.log
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
 testall:	reduce.img

@@ -943,13 +943,12 @@ endif !canrun
 testslow:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs
-	$(srcdir)/../util/testslow.sh $(srcdir)
-	./bootstrapreduce$(EXEEXT) -v $(CYGSRC)/testall.red \
+	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/testbootstrap.log
-
-
-
+	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/checkall.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-- testlogs/checkslow.log
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
