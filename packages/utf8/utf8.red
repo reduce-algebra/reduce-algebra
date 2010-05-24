@@ -39,7 +39,7 @@ module utf8;
 
 create!-package('(utf8),nil);
 
-fluid '(lispsystem!* overflowed!* posn!* testing!-width!*);
+fluid '(lispsystem!* overflowed!* posn!* testing!-width!* !*nat);
 
 !#if (memq 'psl lispsystem!*)
    fluid '(maxchannels writefunction out!*);
@@ -333,14 +333,6 @@ procedure symbol(s);
    else
       get(s,'symbol!-character);
 
-procedure utf8_prid(u);
-   if not !*utf8 then
-      'failed
-   else <<
-      maprin cadr u;
-      for i:=1:caddr u do prin2!* "'"
-   >>;
-
 put('ex,'utf8,'(1 226 136 131));
 put('all,'utf8,'(1 226 136 128));
 put('not,'utf8,'(2 194 172 32));
@@ -417,8 +409,6 @@ put('abs,'prifn,'utf8_priabs);
 put('partial,'utf8,'(1 226 136 130));
 put('partial,'prifn,'utf8_pripartial);
 put('powpartial,'prifn,'utf8_pripowpartial);  % Hack but how else ...?
-
-put('d,'prifn,'utf8_prid);
 
 put('diff,'prifn,'utf8_pridiff);
 
