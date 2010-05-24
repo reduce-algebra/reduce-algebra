@@ -46,6 +46,7 @@ create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
 
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*utf8);
 
+load!-package 'redlog;
 load!-package 'cl;
 load!-package 'rltools;
 imports rltools,cl;
@@ -238,6 +239,98 @@ put('ncong,'fancy!-prifn,'pasf_fancy!-pricong);
 algebraic operator rnd;
 put('rnd,'simpfn,'pasf_simprnd);
 put('rnd,'number!-of!-args,2);
+
+smacro procedure pasf_op(atf);
+   % Presburger arithmetic standard form operator. [atf] is an atomic formula
+   % $r(t_1,t_2)$ or $r(t_1,t_2,m)$. Returns $r$ or in case of a congruence
+   % the pair $(r . m)$.
+   car atf;
+
+smacro procedure pasf_opp(op);
+   % Presburger arithmetic standard form operator predicate. [op] is an
+   % expression. Returns t iff the name of [op] is a legal operator or
+   % relation name. Hardly ever used.
+   op memq '(equal neq lessp leq greaterp geq) or
+      (pairp op and car op memq '(cong ncong));
+
+smacro procedure pasf_m(atf);
+   % Presburger arithmetic standard form modulus operator. [atf] is an atomic
+   % formula $t_1 \equiv_m t_2$. Returns $m$.
+   cdar atf;
+
+smacro procedure pasf_arg2l(atf);
+   % Presburger arithmetic standard form left hand side argument. [atf] is an
+   % atomic formula $r(t_1,t_2)$. Returns $t_1$.
+   cadr atf;
+
+smacro procedure pasf_arg2r(atf);
+   % Presburger arithmetic standard form right hand side argument. [atf] is an
+   % atomic formula $r(t_1,t_2)$. Returns $t_2$.
+   caddr atf;
+
+smacro procedure pasf_mk2(op,lhs,rhs);
+   % Presburger arithmetic standard form make atomic formula. [op] is an
+   % operator; [lhs] is the left handside term; [rhs] is the right handside
+   % term. Returns the atomic formula $[op]([lhs],[rhs])$.
+   {op,lhs,rhs};
+
+smacro procedure pasf_0mk2(op,lhs);
+   % Presburger arithmetic standard form make zero right hand atomic
+   % formula. [op] is an operator; [lhs] is a term. Returns the atomic formula
+   % $[op]([lhs],0)$.
+   {op,lhs,nil};
+
+smacro procedure pasf_opn(atf);
+   % Presburger arithmetic standard form operator name. [atf] is an
+   % atomic formula $r(t_1,t_2)$ or $r(t_1,t_2,m)$. Returns $r$. Used
+   % heavily.
+   if rl_tvalp atf then
+      atf
+   else if pairp car atf then
+      caar atf
+   else
+      car atf;
+
+smacro procedure pasf_atfp(f);
+   % Presburger arithmetic standard form atomic formula predicate. [f] is a
+   % formula. Returns t iff [f] has a legal relation name.
+   (pasf_opn f) memq '(equal neq leq geq lessp greaterp
+      cong ncong);
+
+smacro procedure pasf_congopp(op);
+   op memq '(cong ncong);
+
+smacro procedure pasf_equopp(op);
+   op memq '(equal neq);
+
+smacro procedure pasf_congp(atf);
+   % Presburger arithmetic standard form congruence atomic formula
+   % predicate. [atf] is an atomic formula. Returns t iff the operator
+   % is 'cong or 'ncong.
+   pairp atf and pairp car atf and pasf_congopp caar atf;
+
+procedure pasf_mkop(op,m);
+   % Presburger arithmetic standard form make operator. [op] is an operator;
+   % [m] is an optional modulus. Returns $op$ if the operator is not 'cong or
+   % 'ncong and $([op] . [m])$ otherwise.
+   if op memq '(cong ncong) then
+      (op . if null m then
+	 % User should use equations instead of congruences modulo 0
+      	 rederr{"Modulo 0 congruence created"}
+      else
+	 m)
+   else
+      op;
+
+procedure pasf_mkrng(v,lb,ub);
+   % Presburger arithmetic standard form make interval range formula. [v] is a
+   % variable; [lb] is a lower bound; [ub] is an upper bound. Returns the
+   % formula $[lb] \leq [v] \leq [ub]$.
+   if lb eq ub then
+      pasf_0mk2('equal,addf(v,negf lb))
+   else rl_mkn('and,{
+      pasf_0mk2('geq,addf(v,negf lb)),
+      pasf_0mk2('leq,addf(v,negf ub))});
 
 procedure pasf_simprnd(u);
    % [u] is Lisp Prefix. Returns an SQ.
@@ -508,16 +601,6 @@ procedure pasf_uprap1(f,bvarl);
 	 pasf_termp(pasf_arg2l f,bvarl)
    end;
 
-procedure pasf_opn(atf);
-   % Presburger arithmetic standard form operator name. [atf] is an atomic
-   % formula $r(t_1,t_2)$ or $r(t_1,t_2,m)$. Returns $r$.
-   if rl_tvalp atf then
-      atf
-   else if pairp car atf then
-      caar atf
-   else
-      car atf;
-
 procedure pasf_univnlfp(f,x);
    % Presburger arithmetic standard form univariate nonlinear formula
    % predicate. [f] is a formula; [x] is a variable. Returns t iff [f] is a
@@ -541,81 +624,6 @@ procedure pasf_univnlp(atf,x);
       setkorder oldord;
       return res;
    end;
-
-procedure pasf_op(atf);
-   % Presburger arithmetic standard form operator. [atf] is an atomic formula
-   % $r(t_1,t_2)$ or $r(t_1,t_2,m)$. Returns $r$ or in case of a congruence
-   % the pair $(r . m)$.
-   car atf;
-
-procedure pasf_opp(op);
-   % Presburger arithmetic standard form operator predicate. [op] is an
-   % expression. Returns t iff the name of [op] is a legal operator or
-   % relation name.
-   op memq '(lessp leq equal neq geq greaterp) or
-      (pairp op and car op memq '(cong ncong));
-
-procedure pasf_mkop(op,m);
-   % Presburger arithmetic standard form make operator. [op] is an operator;
-   % [m] is an optional modulus. Returns $op$ if the operator is not 'cong or
-   % 'ncong and $([op] . [m])$ otherwise.
-   if op memq '(cong ncong) then
-      (op . if null m then
-	 % User should use equations instead of congruences modulo 0
-      	 rederr{"Modulo 0 congruence created"}
-      else
-	 m)
-   else
-      op;
-
-procedure pasf_atfp(f);
-   % Presburger arithmetic standard form atomic formula predicate. [f] is a
-   % formula. Returns t iff [f] has a legal relation name.
-   (pasf_opn f) memq '(equal neq leq geq lessp greaterp
-      cong ncong);
-
-procedure pasf_congp(atf);
-   % Presburger arithmetic standard form congruence atomic formula
-   % predicate. [atf] is an atomic formula. Returns t iff the operator is
-   % 'cong or 'ncong.
-   pasf_opn(atf) memq '(cong ncong);
-
-procedure pasf_m(atf);
-   % Presburger arithmetic standard form modulus operator. [atf] is an atomic
-   % formula $t_1 \equiv_m t_2$. Returns $m$.
-   cdar atf;
-
-procedure pasf_arg2l(atf);
-   % Presburger arithmetic standard form left hand side argument. [atf] is an
-   % atomic formula $r(t_1,t_2)$. Returns $t_1$.
-   cadr atf;
-
-procedure pasf_arg2r(atf);
-   % Presburger arithmetic standard form right hand side argument. [atf] is an
-   % atomic formula $r(t_1,t_2)$. Returns $t_2$.
-   caddr atf;
-
-procedure pasf_mk2(op,lhs,rhs);
-   % Presburger arithmetic standard form make atomic formula. [op] is an
-   % operator; [lhs] is the left handside term; [rhs] is the right handside
-   % term. Returns the atomic formula $[op]([lhs],[rhs])$.
-   {op,lhs,rhs};
-
-procedure pasf_0mk2(op,lhs);
-   % Presburger arithmetic standard form make zero right hand atomic
-   % formula. [op] is an operator; [lhs] is a term. Returns the atomic formula
-   % $[op]([lhs],0)$.
-   {op,lhs,nil};
-
-procedure pasf_mkrng(v,lb,ub);
-   % Presburger arithmetic standard form make interval range formula. [v] is a
-   % variable; [lb] is a lower bound; [ub] is an upper bound. Returns the
-   % formula $[lb] \leq [v] \leq [ub]$.
-   if lb eq ub then
-      pasf_0mk2('equal,addf(v,negf lb))
-   else rl_mkn('and,{
-      pasf_0mk2('geq,addf(v,negf lb)),
-      pasf_0mk2('leq,addf(v,negf ub))});
 
 endmodule; % [pasf]
 
