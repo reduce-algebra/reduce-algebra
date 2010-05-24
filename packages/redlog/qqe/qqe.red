@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(qqe_rcsid!* qqe_copyright!*);
@@ -35,22 +35,23 @@ lisp <<
 >>;
 
 module qqe;
-% Quantorelimination for queues. Main module. Algorithms on formulas 
-% in the two-sorted logic consisting of basic and queue sort. 
+% Quantorelimination for queues. Main module. Algorithms on formulas
+% in the two-sorted logic consisting of basic and queue sort.
 % The language contains additional binary functions ['ladd], ['radd],
-% as well as unary functions ['lhead], ['rhead], ['ltail], ['rtail]. 
+% as well as unary functions ['lhead], ['rhead], ['ltail], ['rtail].
 % Additional binary logic operators are ['qequal] and ['qneq].
 
 create!-package('(qqe qqetrans qqemisc qqesism qqeqe qqesiat qqeqemisc),nil);
 
 load!-package 'rltools;
+load!-package 'redlog;
 % load!-package 'qqe_ofsf;
 
 exports qqe_chsimpat;
 
 imports cl,rltools;
 
-fluid '(qqe_marked!-ids!-rollback!* qqe_qadd!-location!* 
+fluid '(qqe_marked!-ids!-rollback!* qqe_qadd!-location!*
    qqe_elimb!* qqe_debug!* !*rlsism);
 
 flag('(qqe),'rl_package);
@@ -60,7 +61,7 @@ put('qqe,'rl_enter,'qqe_enter);
 put ('qqe,'simpfnname, 'rl_simpfn);
 
 %% put('qqe,'rl_prepat,'qqe_prepat);
-%% put('qqe,'rl_resimpat,'qqe_resimpat); 
+%% put('qqe,'rl_resimpat,'qqe_resimpat);
 put('qqe,'rl_lengthat,'qqe_lengthat);
 
 put('qqe,'rl_prepterm,'qqe_prepterm);
@@ -107,7 +108,7 @@ algebraic operator ltail;
 put('ladd,'qqe_number!-of!-args,1);
 
 flag('(qqe_chsimpat),'full);
-!*rlsism := nil;  
+!*rlsism := nil;
 %else failure in simplifier cl_simpl  -> context switch
 
 procedure qqe_enter(argl);
@@ -197,11 +198,11 @@ procedure qqe_chsimpterm(term);
    begin
       if atom term then term
       else if qqe_op term eq 'expt then term := qqe_chsimpterm1(term)
-      else if qqe_op term memq '(ltail rtail) then 
+      else if qqe_op term memq '(ltail rtail) then
          cadr term := qqe_chsimpterm(cadr term)
-      else if qqe_op term memq '(ladd radd) then 
+      else if qqe_op term memq '(ladd radd) then
          caddr term := qqe_chsimpterm(caddr term)
-      else if qqe_op term memq '(lhead rhead) then 
+      else if qqe_op term memq '(lhead rhead) then
          cadr term := qqe_chsimpterm(cadr term);
       return term;
    end;
@@ -266,8 +267,8 @@ procedure qqe_rqopp(op);
    % type arguments.
    op memq '(qequal qneq);
 
-% should be replaced later in favour of dynamic application to 
-% different basic theories, for example: 
+% should be replaced later in favour of dynamic application to
+% different basic theories, for example:
 % if rlset = ofsf then qqe_rbopp -> ofsf_opp
 procedure qqe_rbopp(op);
    % qqe relation basic type operator predicate. [op] is an
@@ -277,19 +278,19 @@ procedure qqe_rbopp(op);
 
 % obsolete
 %% procedure qqe_luopp(op);
-%%    % qqe logic unary operator 
+%%    % qqe logic unary operator
 %%    op = 'neg;
 
 procedure qqe_ropp(op);
    % qqe relation operator predicate. [op] is an
    % S-expression. Returns [nil] if op is not a relation.
    qqe_rqopp op or qqe_rbopp op;
-   
+
 procedure qqe_qopp(op);
    % qqe queue operator predicate. [op] is an
-   % S-expression. Returns [nil] if op is not a function of queue type.    
+   % S-expression. Returns [nil] if op is not a function of queue type.
    op memq '(radd ladd lhead rhead ltail rtail);
-    
+
 procedure qqe_qopheadp(op);
    % qqe queue operator lhead or rhead predicate. [op] is an
    % S-expression. Returns [nil] if op is not lhead or rhead.
@@ -303,25 +304,25 @@ procedure qqe_arg!-check(u);
        if qqe_rqopp op then qqe_arg!-check!-lq!-rq u
 
        else if qqe_rbopp op then qqe_arg!-check!-lb!-rb u
-          
-       else if qqe_qopheadp op or qqe_qoptailp op 
+
+       else if qqe_qopheadp op or qqe_qoptailp op
        then << if not qqe_arg!-check!-q cadr u then <<
           qqe_arg!-check!-marked!-ids!-rollback();
           typerr(u,"some arguments are not of queue type");
        >>;
        >>
-          
+
        else if qqe_qopaddp op then qqe_arg!-check!-lb!-rq u
-          
+
        else % plus, minus, etc.
-       % <<  
+       % <<
           for each x in cdr u do
              if not qqe_arg!-check!-b x then <<
                 qqe_arg!-check!-marked!-ids!-rollback();
                 typerr(u,"some arguments are not of basic type");
              >>;
-          
-%%           if not qqe_arg!-check!-b lhs then 
+
+%%           if not qqe_arg!-check!-b lhs then
 %%           <<
 %%              qqe_arg!-check!-marked!-ids!-rollback();
 %%              typerr(u,"binary op with basic type args");
@@ -331,15 +332,15 @@ procedure qqe_arg!-check(u);
 %%              qqe_arg!-check!-marked!-ids!-rollback();
 %%              typerr(u,"binary op with basic type args");
 %%           >>;
-%% 
+%%
 %%        >> where lhs=cadr u, rhs=if cddr u then caddr u else nil;
 
     >> where op=car u;
-  
+
 
 procedure qqe_arg!-check!-lb!-rq(u);
-   % qqe argument check lhs basic rhs queue type. 
-   % [u] is an S-expression. 
+   % qqe argument check lhs basic rhs queue type.
+   % [u] is an S-expression.
    % Checks for lhs and rhs of a function
    % recursivly if arguments are of correct type else error msg.
    begin scalar lhs, rhs;
@@ -348,7 +349,7 @@ procedure qqe_arg!-check!-lb!-rq(u);
       if not qqe_arg!-check!-q rhs then
       <<
          qqe_arg!-check!-marked!-ids!-rollback();
-         typerr(u,"type conflict: arguments don't fit 
+         typerr(u,"type conflict: arguments don't fit
             binary op with lhs basic type and rhs queue type");
       >>;
 
@@ -363,8 +364,8 @@ procedure qqe_arg!-check!-lb!-rq(u);
    end;
 
 procedure qqe_arg!-check!-lq!-rq(u);
-   % qqe argument check lhs queue rhs queue type. 
-   % [u] is an S-expression. 
+   % qqe argument check lhs queue rhs queue type.
+   % [u] is an S-expression.
    % Checks for lhs and rhs of a function
    % recursivly if arguments are of correct type else error msg.
    begin scalar lhs, rhs;
@@ -373,7 +374,7 @@ procedure qqe_arg!-check!-lq!-rq(u);
        if not qqe_arg!-check!-q lhs then
        <<
           qqe_arg!-check!-marked!-ids!-rollback();
-          typerr(u,"type conflict: arguments don't fit 
+          typerr(u,"type conflict: arguments don't fit
              binary op with queue type args");
        >>;
 
@@ -387,8 +388,8 @@ procedure qqe_arg!-check!-lq!-rq(u);
    end;
 
 procedure qqe_arg!-check!-q(u);
-   % qqe argument check queue type. 
-   % [u] is an S-expression. 
+   % qqe argument check queue type.
+   % [u] is an S-expression.
    % Checks for argument of a function
    % recursivly if arguments are of correct type else error msg.
    begin
@@ -396,7 +397,7 @@ procedure qqe_arg!-check!-q(u);
       else if atom u and not numberp u then
       <<
          if qqe_btidp u then return nil
-         else if qqe_nytidp u then 
+         else if qqe_nytidp u then
          <<
             qqe_qtid u;
             qqe_add2rollbackids u;
@@ -404,7 +405,7 @@ procedure qqe_arg!-check!-q(u);
          >>
          else return t;
       >>
-      else if not numberp u then 
+      else if not numberp u then
       <<
          qqe_arg!-check u;
          return t;
@@ -412,16 +413,16 @@ procedure qqe_arg!-check!-q(u);
    end;
 
 procedure qqe_arg!-check!-b(u);
-   % qqe argument check basic type. 
-   % [u] is an S-expression. 
+   % qqe argument check basic type.
+   % [u] is an S-expression.
    % Checks for argument of a function
    % recursivly if arguments are of correct type else error msg.
-   begin  
+   begin
       if not qqe_id!-nyt!-branchb u then return nil
-      else if atom u and not numberp u then 
+      else if atom u and not numberp u then
       <<
-         if qqe_qtidp u then return nil 
-         else if qqe_nytidp u then 
+         if qqe_qtidp u then return nil
+         else if qqe_nytidp u then
          <<
             qqe_btid u;
             qqe_add2rollbackids u;
@@ -429,7 +430,7 @@ procedure qqe_arg!-check!-b(u);
          >>
          else return t;
       >>
-      else if not atom u then 
+      else if not atom u then
       <<
          qqe_arg!-check u;
          return t;
@@ -438,8 +439,8 @@ procedure qqe_arg!-check!-b(u);
    end;
 
 procedure qqe_arg!-check!-lb!-rb(u);
-   % qqe argument check lhs basic rhs basic type. 
-   % [u] is an S-expression. 
+   % qqe argument check lhs basic rhs basic type.
+   % [u] is an S-expression.
    % Checks for lhs and rhs of a function
    % recursivly if arguments are of correct type else error msg.
    begin scalar lhs, rhs;
@@ -456,49 +457,49 @@ procedure qqe_arg!-check!-lb!-rb(u);
        if not qqe_arg!-check!-b rhs then
        <<
           qqe_arg!-check!-marked!-ids!-rollback();
-          typerr(u,"type conflict: arguments don't fit 
+          typerr(u,"type conflict: arguments don't fit
              binary op with basic type args");
        >>;
    end;
-    
+
 procedure qqe_qoptailp(op);
     % qqe queue operator rtail or ltail. [op] is a
     % S-expression. Returns [nil] if op is not rtail or ltail.
     if op memq '(rtail ltail) then t;
-    
+
 procedure qqe_qopaddp(op);
    % qqe queue operator ladd or radd. [op] is a
     % S-expression. Returns [nil] if op is not ladd or radd.
     if op memq '(ladd radd) then t;
-    
+
 procedure qqe_id!-nyt!-branchq(u);
-    % qqe identifier not yet typed branch queue type. checks if the 
+    % qqe identifier not yet typed branch queue type. checks if the
     % argument u is of type queue or not yet typed.
     % Returns [nil] if argument is of type basic.
     if atom u then (qqe_qtidp u or qqe_nytidp u)
-    else (qqe_qopaddp car u or qqe_qoptailp car u); 
-   
+    else (qqe_qopaddp car u or qqe_qoptailp car u);
+
 procedure qqe_id!-nyt!-branchb(u);
-   % qqe identifier not yet typed branch basic type. checks if the 
+   % qqe identifier not yet typed branch basic type. checks if the
    % argument u is of type basic or not yet typed.
    % Returns [nil] if argument is of type queue.
    if atom u then (qqe_btidp u or qqe_nytidp u)
    else not(qqe_qopaddp car u or qqe_qoptailp car u);
-   
+
 procedure qqe_btid(u);
-    % qqe basic type identifier. [u] is atom.    
-    % Set idtype on basic type. Error msg if idtype of u 
+    % qqe basic type identifier. [u] is atom.
+    % Set idtype on basic type. Error msg if idtype of u
     % is queue.
     % if qqe_qtidp u then typerr(u, "is queue type.")
-    %    else 
+    %    else
     put(u,'idtype,'bt);
 
 procedure qqe_qtid(u);
     % qqe queue type identifier. [u] is atom.
-    % Set idtype on queue type. Error msg if idtype of u 
+    % Set idtype on queue type. Error msg if idtype of u
     % is basic.
     % if qqe_btidp u then typerr(u, "is basic type")
-    %    else 
+    %    else
     put(u,'idtype,'qt);
 
 procedure qqe_niltid(u);
@@ -506,22 +507,22 @@ procedure qqe_niltid(u);
    % Set idtype on nil. Needed for rollback of typed identifiers
    % while processing incorrect formula.
    put(u,'idtype,nil);
-    
+
 procedure qqe_btidp(u);
-    % qqe basic type identifier predicate. [u] is atom. 
+    % qqe basic type identifier predicate. [u] is atom.
     % Returns [idtype] of u. Return [nil] if idtype is not yet set.
     get(u,'idtype) = 'bt;
 
 procedure qqe_qtidp(u);
-    % qqe queue type identifier predicate. [u] is atom. 
+    % qqe queue type identifier predicate. [u] is atom.
     % Returns [idtype] of u. Return [nil] if idtype is not yet set.
-    get(u,'idtype) = 'qt; 
+    get(u,'idtype) = 'qt;
 
 procedure qqe_nytidp(u);
-   % qqe queue not yet set type identifier predicate. [u] is atom. 
+   % qqe queue not yet set type identifier predicate. [u] is atom.
    % Returns [true] if idtype is not set, [nil] if idtype is set.
    get(u, 'idtype) = nil;
-    
+
 procedure qqe_fancy!-priqequal(l);
    % qqe standard form texmacs print a queue equality. [l] is a
    % lisp prefix. Returns 'failed iff printing failed.
@@ -534,7 +535,7 @@ procedure qqe_fancy!-priqequal!-texmacs(l);
    if null !*nat then 'failed
    else <<
       maprin cadr l; %lhs
-      % other options: 
+      % other options:
       % fancy!-prin2 "\mathop = \limits_{q}";
       % fancy!-prin2 "\circeq"; etc.
       fancy!-prin2 "\leftrightharpoons";
@@ -542,7 +543,7 @@ procedure qqe_fancy!-priqequal!-texmacs(l);
       fancy!-prin2 " ";
       maprin caddr l; %rhs
    >>;
-      
+
 procedure qqe_fancy!-priqneq(l);
    % qqe standard form texmacs print a queue not equality. [l] is a
    % lisp prefix. Returns 'failed iff printing failed.
@@ -577,7 +578,7 @@ procedure qqe_arg!-check!-marked!-ids!-rollback();
 
 procedure qqe_add2rollbackids(u);
    % qqe add to rollback identifiers list. [u] is an atom.
-   % Add variables being typed while processing a given formula with 
+   % Add variables being typed while processing a given formula with
    % qqe_check_args to the list qqe_marked!-ids!-rollback!*.
    qqe_marked!-ids!-rollback!* := u . qqe_marked!-ids!-rollback!*;
 

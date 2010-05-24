@@ -42,6 +42,7 @@ module cl;
 create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv),nil);
 
 load!-package 'rltools;
+load!-package 'redlog;
 
 exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_sitheo,cl_ordp,cl_smcpknowl,cl_smrmknowl,cl_smupdknowl,cl_smmkatl,

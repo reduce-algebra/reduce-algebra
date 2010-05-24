@@ -70,8 +70,8 @@ load!-package 'ezgcd;
 
 load!-package 'groebner;  % for torder
 
-if 'csl memq lispsystem!* or 'psl memq lispsystem!* then
-   if modulep 'redlog then
+%if 'csl memq lispsystem!* or 'psl memq lispsystem!* then
+%   if modulep 'redlog then
       load!-package 'redlog;
 
 switch cgbstat,cgbfullred,cgbverbose,cgbcontred,cgbgs,cgbreal,
