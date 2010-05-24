@@ -373,7 +373,7 @@ procedure rl_fancybound1(v,a);
 	 c := lc w;
       if car a memq '(leq lessp) and c = 1 then
       	 return 'ub . {car a,v,prepf negf red w};
-      if pasf_op a memq '(leq lessp) and c = -1 then
+      if car a memq '(leq lessp) and c = -1 then
       	 return 'lb . {car a,prepf red w,v}
    end;
 
