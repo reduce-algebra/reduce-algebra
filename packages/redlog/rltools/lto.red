@@ -403,6 +403,24 @@ procedure lto_lengthgeq(l,n);
    % number. Returns bool.
    eqn(n,0) or (l and lto_lengthgeq(cdr l,n-1));
 
+procedure lto_cartprod(s);
+   % Cartesian product. [s] is a list $(s_1,...,s_n)$ of lists. Returns
+   % $s_1 \times ... \times s_n$ as a list of $n$-element lists. The
+   % empty set and singletons are their own cartesian product.
+   if null s or null cdr s then s else lto_cartprod1 s;
+
+procedure lto_cartprod1(s);
+   % Cartesian product. [s] is a list $(s_1,...,s_n)$ of lists with $n
+   % \geq 2$. Returns $s_1 \times ... \times s_n$ as a list of
+   % $n$-element lists.
+   begin scalar w;
+      if null cdr s then
+      	 return for each m in car s collect {m};
+      w := lto_cartprod1 cdr s;
+      return for each m in car s join
+      	 for each y in w collect m . y
+   end;
+
 endmodule;  % [lto]
 
 end;  % of file

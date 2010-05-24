@@ -192,7 +192,7 @@ procedure cl_strict!-gdnf1(f,gor);
 	 % Computing the cartesian product of the conjunctive lists is
 	 % now equivalent to an application of the law of
 	 % distributivity, though the result is not flat yet.
-	 noopgdnf := cl_bnf!-cartprod noop;
+	 noopgdnf := lto_cartprod noop;
 	 % Switch back to our normal representation.
 	 return rl_mkn(gor,for each gconj in noopgdnf collect
 	    rl_mkn(gand,for each x in gconj join append(x,nil)))
@@ -224,25 +224,6 @@ procedure cl_unstrict(sgdnf,gor);
    rl_smkn(gor,for each conj in rl_argn sgdnf collect
       % A unary g-and does not have a cddr, ignore it.
       if cdr rl_argn conj then conj else car rl_argn conj);
-
-procedure cl_bnf!-cartprod(s);
-   % Common logic boolean normal form cartesian product. [s] is a list
-   % $(s_1,...,s_n)$ of lists. Returns $s_1 \times ... \times s_n$ as
-   % a list of $n$-element lists. The empty set and singletons are
-   % their own cartesian product.
-   if null s or null cdr s then s else cl_bnf!-cartprod1 s;
-
-procedure cl_bnf!-cartprod1(s);
-   % Common logic boolean normal form cartesian product. [s] is a list
-   % $(s_1,...,s_n)$ of lists with $n \geq 2$. Returns $s_1 \times ...
-   % \times s_n$ as a list of $n$-element lists.
-   begin scalar w;
-      if null cdr s then
-      	 return for each m in car s collect {m};
-      w := cl_bnf!-cartprod1 cdr s;
-      return for each m in car s join
-      	 for each y in w collect m . y
-   end;
 
 procedure cl_bnfsimpl(sgdnf,gor);
    % Common logic boolean normal form simplification. [sgdnf] is an
