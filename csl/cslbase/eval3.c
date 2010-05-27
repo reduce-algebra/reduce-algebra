@@ -697,7 +697,7 @@ static Lisp_Object setq_fn(Lisp_Object args, Lisp_Object env)
     while (consp(args))
     {   var = qcar(args);
         if (!is_symbol(var) || var == nil || var == lisp_true)
-            return aerror("setq (bad variable)");
+            return aerror1("setq (bad variable)", var);
         args = qcdr(args);
         if (consp(args))
         {   push3(args, env, var);
@@ -751,7 +751,7 @@ static Lisp_Object noisy_setq_fn(Lisp_Object args, Lisp_Object env)
     while (consp(args))
     {   var = qcar(args);
         if (!is_symbol(var) || var == nil || var == lisp_true)
-            return aerror("setq (bad variable)");
+            return aerror1("noisy-setq (bad variable)", var);
         args = qcdr(args);
         if (consp(args))
         {   push3(args, env, var);
