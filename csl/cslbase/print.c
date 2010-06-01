@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 071e311c 09-May-2010 */
+/* Signature: 3094adb7 01-Jun-2010 */
 
 #include "headers.h"
 
@@ -1802,7 +1802,7 @@ static Lisp_Object Lprint_precision(Lisp_Object nil, Lisp_Object a)
     if (a == nil) return onevalue(fixnum_of_int(old));
     if (!is_fixnum(a)) return aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
-    if (print_precision > 16 | print_precision < 1)
+    if (print_precision > 16 || print_precision < 1)
         print_precision = 15;
     return onevalue(fixnum_of_int(old));
 }
@@ -3576,6 +3576,58 @@ Lisp_Object Llengthc(Lisp_Object nil, Lisp_Object a)
 }
 
 
+Lisp_Object Ldebug_print(Lisp_Object nil, Lisp_Object a)
+{
+    Lisp_Object stream = qvalue(standard_output);
+    Header h;
+    int i, len;
+    char *p;
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
+    if (!is_stream(stream)) stream = lisp_terminal_io;
+    if (symbolp(a))
+    {   a = get_pname(a);
+        errexit();
+    }
+    if (!is_vector(a)) return Lprint(nil, a);
+    h = vechdr(a);
+    if (type_of_header(h) != TYPE_STRING) return Lprint(nil, a);
+    len = length_of_header(h) - CELL;
+    p = &celt(a, 0);
+    for (i=0; i<len; i++)
+    {   push(a);
+        putc_stream(p[i], stream);
+        pop(a);
+        errexit();
+        p = &celt(a, 0);
+    }
+    push(a);
+    putc_stream(':', stream);
+    pop(a);
+    errexit();
+    p = &celt(a, 0);
+    for (;i<doubleword_align_up(len+CELL)-CELL; i++)
+    {   int c = p[i] & 0xff;
+        push(a);
+        if (c >= 0x80)
+        {   putc_stream('+', stream);
+            c &= 0x7f;
+            errexitn(1);
+        }
+        if (c < 0x20)
+        {   putc_stream('^', stream);
+            c += 0x40;
+            errexitn(1);
+        }
+        putc_stream(c, stream);
+        pop(a);
+        errexit();
+        p = &celt(a, 0);
+    }
+    putc_stream('\n', stream);
+    errexit();
+    return onevalue(nil);
+}
+
 Lisp_Object Lprint(Lisp_Object nil, Lisp_Object a)
 {
     Lisp_Object stream = qvalue(standard_output);
@@ -4884,6 +4936,7 @@ setup_type const print_setup[] =
     {"print-csl-headers",       wrong_no_na, wrong_no_nb, Lprint_csl_headers},
     {"print-imports",           wrong_no_na, wrong_no_nb, Lprint_imports},
     {"math-display",            Lmath_display, too_many_1, wrong_no_1},
+    {"debug-print",             Ldebug_print, too_many_1, wrong_no_1},
 #ifdef COMMON
     {"charpos",                 Lposn_1, wrong_no_nb, Lposn},
     {"finish-output",           Lflush1, wrong_no_nb, Lflush},
