@@ -923,6 +923,7 @@ if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild \
+		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
 else !canrun
 	echo Can not generate C code on this platfrom
@@ -935,6 +936,7 @@ if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild -Dfull_c_code \
+		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
 else !canrun
 	echo Can not generate C code on this platfrom
@@ -945,7 +947,7 @@ if canrun
 	mkdir -p testlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
-		-- testlogs/testbootstrap.log
+		-- testlogs/testslow.log
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/checkslow.log

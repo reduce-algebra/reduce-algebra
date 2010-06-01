@@ -2473,6 +2473,7 @@ c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(srcdir)/../
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 @canrun_TRUE@		-D@destdir=$(CYGSRC)/../../cslbuild \
+@canrun_TRUE@		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 @canrun_TRUE@		-- buildlogs/c-code.log
 @canrun_FALSE@	echo Can not generate C code on this platfrom
 
@@ -2482,6 +2483,7 @@ full-c-code:	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 @canrun_TRUE@		-D@destdir=$(CYGSRC)/../../cslbuild -Dfull_c_code \
+@canrun_TRUE@		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 @canrun_TRUE@		-- buildlogs/full-c-code.log
 @canrun_FALSE@	echo Can not generate C code on this platfrom
 
@@ -2489,7 +2491,7 @@ testslow:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
-@canrun_TRUE@		-- testlogs/testbootstrap.log
+@canrun_TRUE@		-- testlogs/testslow.log
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/checkall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- testlogs/checkslow.log
