@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 50e98865 13-May-2010 */
+/* Signature: 78d49a7c 01-Jun-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -999,7 +999,8 @@ static void lisp_main(void)
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE + 16;
                         while (w1 <= big_chunk_end)
-                        {   pages[pages_count++] = w;
+                        {   if (w != stacksegment)
+                                pages[pages_count++] = w;
                             w = w1;
                             w1 = w + CSL_PAGE_SIZE + 16;
                         }
