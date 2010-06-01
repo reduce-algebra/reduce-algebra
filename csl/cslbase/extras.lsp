@@ -3,7 +3,7 @@
 
 
 %%
-%% Copyright (C) 2008, following the master REDUCE source files.          *
+%% Copyright (C) 2010, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
