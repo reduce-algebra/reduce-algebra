@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 001067e8 16-May-2010 */
+/* Signature: 1ba5de89 01-Jun-2010 */
 
 #include "headers.h"
 
@@ -2184,7 +2184,7 @@ void adjust_all(void)
     adjust_bpsheap();
 }
 
-static void *allocate_page(void)
+static void *allocate_page(char *why)
 {
     if (pages_count == 0) fatal_error(err_no_store);
     return pages[--pages_count];
@@ -2553,7 +2553,6 @@ static void init_heap_segments(double store_size)
     new_bps_pages = (void **)my_malloc_2(MAX_BPS_PAGES*sizeof(void *));
     new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
     pair_c = (unsigned char *)my_malloc_2(CODESIZE);
-
 /*
  * Sets up codebuffer for jit functions
  */
@@ -2741,7 +2740,7 @@ static void init_heap_segments(double store_size)
             if (stacksegment == NULL)
                 fatal_error(err_no_store);
         }
-        stacksegment = (Lisp_Object *)pages[--pages_count];
+        else stacksegment = (Lisp_Object *)pages[--pages_count];
     }
     else
     {
@@ -3190,8 +3189,8 @@ static void warm_setup()
     for (i=0; i<vheap_pages_count; i++)
     {   intptr_t p;
 /* When I want to make the page double size I do TWO allocations here. */
-        if (converting_to_64) allocate_page();
-        vheap_pages[i] = allocate_page();
+        if (converting_to_64) allocate_page("vheap 64-bit padder");
+        vheap_pages[i] = allocate_page("vheap reload");
         p = doubleword_align_up((intptr_t)vheap_pages[i]);
 /*
  * Vheap pages that need expanding to 64-bits will most easily by copied
@@ -3217,8 +3216,8 @@ static void warm_setup()
     for (i=0; i<heap_pages_count; i++)
     {   intptr_t p;
 /* When I want to make the page double size I do TWO allocations here. */
-        if (converting_to_64) allocate_page();
-        heap_pages[i] = allocate_page();
+        if (converting_to_64) allocate_page("heap 64-bit padder");
+        heap_pages[i] = allocate_page("heap reload");
         p = quadword_align_up((intptr_t)heap_pages[i]);
         Cfread((char *)p, CSL_PAGE_SIZE);
     }
@@ -3234,8 +3233,8 @@ static void warm_setup()
     for (i=0; i<bps_pages_count; i++)
     {   intptr_t p;
 /* When I want to make the page double size I do TWO allocations here. */
-        if (converting_to_64) allocate_page();
-        bps_pages[i] = allocate_page();
+        if (converting_to_64) allocate_page("bps 64-bit padder");
+        bps_pages[i] = allocate_page("bps reload");
         p = doubleword_align_up((intptr_t)bps_pages[i]);
 /* Same issue as for Vheap pages */
         if (converting_to_64)
@@ -3430,7 +3429,7 @@ static void warm_setup()
                     }
                     else pages[pages_count++] = page;
                 }
-                native_pages[i] = allocate_page();
+                native_pages[i] = allocate_page("native code");
                 p = (intptr_t)native_pages[i];
                 p = doubleword_align_up(p);
                 fread_count = 0;
@@ -4400,11 +4399,11 @@ static void cold_setup()
 {
     Lisp_Object nil = C_nil;
     void *p;
-    p = vheap_pages[vheap_pages_count++] = allocate_page();
+    p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
     vfringe = (Lisp_Object)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (Lisp_Object)((char *)vfringe + (CSL_PAGE_SIZE - 16));
 
-    p = heap_pages[heap_pages_count++] = allocate_page();
+    p = heap_pages[heap_pages_count++] = allocate_page("heap cold setup");
     heaplimit = quadword_align_up((intptr_t)p);
     fringe = (Lisp_Object)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (Lisp_Object)((char *)heaplimit + SPARE);
@@ -5753,7 +5752,6 @@ void get_user_files_checksum(unsigned char *b)
     get_checksum(u60_setup);
     CSL_MD5_Final(b);
 }
-
 
 void setup(int restartp, double store_size)
 {
