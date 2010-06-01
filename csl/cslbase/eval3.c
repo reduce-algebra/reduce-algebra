@@ -1184,8 +1184,8 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #endif
 #endif
     Lisp_Object *save;
-    if (fg1 != nil) miscflags |= HEADLINE_FLAG;
-    if (fg2 != nil) miscflags |= MESSAGES_FLAG;
+    if (always_noisy || fg1 != nil) miscflags |= HEADLINE_FLAG;
+    if (always_noisy || fg2 != nil) miscflags |= MESSAGES_FLAG;
     push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
@@ -1297,10 +1297,8 @@ Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
         if (nargs >= 3) fg2 = va_arg(a, Lisp_Object);
     }
     va_end(a);
-    miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
-    if (always_noisy)     /* debug aid on "-g" */
-    {   fg1 = fg2 = lisp_true;
-    }
+    if (always_noisy) fg1 = fg2 = lisp_true;
+    else  miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
     return errorset3(env, form, fg1, fg2);
 }
 

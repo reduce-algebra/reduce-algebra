@@ -1420,7 +1420,7 @@ Lisp_Object MS_CDECL Lerror0(Lisp_Object nil, int nargs, ...)
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
-    miscflags &= ~(MESSAGES_FLAG | HEADLINE_FLAG);
+    if (!always_noisy) miscflags &= ~(MESSAGES_FLAG | HEADLINE_FLAG);
     exit_reason = UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
