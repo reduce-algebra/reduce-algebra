@@ -88,11 +88,11 @@
 (set!-autoload 'c_out        'compiler)
 
 
-% My choice for a Lisp system is to enable full compilation (including
+% My choice for a Lisp system is to enable full compilation (but NOT
 % into DLL form) by default.
 
 (setq !*comp t)
-(setq !*native_code t)
+(setq !*native_code nil)
 
 (setq !@cslbase (setq !@srcdir (symbol!-value (gensym))))
 
