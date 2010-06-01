@@ -59,7 +59,19 @@ end;
 
 s!:opcodelist := nil;
 
+fluid '(s!:env_alist);
+
 symbolic procedure s!:vecof l;
+  begin
+    scalar w;
+    w := assoc(l, s!:env_alist);
+    if w then return cdr w;
+    w := s!:vecof1 l;
+    s!:env_alist := (l . w) . s!:env_alist;
+    return w
+  end;
+
+symbolic procedure s!:vecof1 l;
   begin
     scalar v, n;
     v := mkvect sub1 length l;
@@ -4857,7 +4869,7 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
            s!:current_size, s!:current_procedure, s!:current_exitlab,
            s!:current_proglabels, s!:other_defs, local_decs, s!:has_closure,
            s!:local_macros, s!:recent_literals, s!:a_reg_values, w1, w2,
-           s!:current_count, checksum;
+           s!:current_count, s!:env_alist, checksum;
 % If there is a lexical environment present I will set the checksum to 0
 % and thus prevent any native compilation (for now at least)
     if s!:lexical_env then checksum := 0
@@ -4967,7 +4979,18 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
 % things, so one can afford to do so while for in-store compilation it
 % could make sense to preserve sharing (or not) between literal lists in
 % the code being compiled.
-    env := mkhash(10, (if s!:faslmod_name then 2 else 1), 1.5) .
+%   env := mkhash(10, (if s!:faslmod_name then 2 else 1), 1.5) .
+%          reverse args;
+%
+% On further thought maybe code that has been constructed so its behaviour
+% depends on the level of sharing of literals is pretty bad and also in fact
+% uncommon, and making in-core and FASL compilation behave the same way is
+% a good idea, so I am altering this (May 2010) to use an EQUAL check always.
+% This should also mean that string literals end up shared, and that the
+% order items end up in a literal vector does not depend on memory addresses
+% and hence becomes consistent from platform to platform and run to run.
+%
+    env := mkhash(10, 2, 1.5) .
            reverse args;
     puthash(name, car env, 10000000 . nil);
     w := s!:residual_local_decs(local_decs, w);
@@ -5039,7 +5062,8 @@ symbolic procedure s!:compile2(name, nargs, nopts,
     for each v in args do <<
        env := 0 . env;
        penv := env . penv >>;
-    env := mkhash(10, (if s!:faslmod_name then 2 else 1), 1.5) . env;
+%   env := mkhash(10, (if s!:faslmod_name then 2 else 1), 1.5) . env;
+    env := mkhash(10, 2, 1.5) . env;
     puthash(name, car env, 10000000 . nil);
     penv := reversip penv;
 % I make the list of optional args as long as the complete arg list - with

@@ -3,7 +3,7 @@
 
 
 %%
-%% Copyright (C) 2008, following the master REDUCE source files.          *
+%% Copyright (C) 2010, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -75,8 +75,14 @@ put v (quote s!:opcode) n) (setq n (plus n 1)))) (setq var1001 (cdr var1001))
 
 (setq s!:opcodelist nil)
 
-(de s!:vecof (l) (prog (v n) (setq v (mkvect (sub1 (length l)))) (setq n 0) (
-prog (var1003) (setq var1003 l) lab1002 (cond ((null var1003) (return nil))) 
+(fluid (quote (s!:env_alist)))
+
+(de s!:vecof (l) (prog (w) (setq w (assoc l s!:env_alist)) (cond (w (return (
+cdr w)))) (setq w (s!:vecof1 l)) (setq s!:env_alist (cons (cons l w) 
+s!:env_alist)) (return w)))
+
+(de s!:vecof1 (l) (prog (v n) (setq v (mkvect (sub1 (length l)))) (setq n 0) 
+(prog (var1003) (setq var1003 l) lab1002 (cond ((null var1003) (return nil)))
 (prog (x) (setq x (car var1003)) (progn (putv v n x) (setq n (plus n 1)))) (
 setq var1003 (cdr var1003)) (go lab1002)) (return v)))
 
@@ -2424,53 +2430,53 @@ s!:any_fluid (cdr l)))))))
 restarg svars nargs nopts env fluids s!:current_function s!:current_label 
 s!:current_block s!:current_size s!:current_procedure s!:current_exitlab 
 s!:current_proglabels s!:other_defs local_decs s!:has_closure s!:local_macros
-s!:recent_literals s!:a_reg_values w1 w2 s!:current_count checksum) (cond (
-s!:lexical_env (setq checksum 0)) (t (setq checksum (md60 (cons name (cons 
-args body)))))) (setq s!:current_function name) (setq s!:current_count 0) (
-cond (!*where_defined!* (progn (setq w name) (puthash w !*where_defined!* (
-where!-was!-that))))) (setq body (s!:find_local_decs body)) (setq local_decs 
-(car body)) (setq body (cdr body)) (cond ((atom body) (setq body nil)) (t (
-cond ((null (cdr body)) (setq body (car body))) (t (setq body (cons (quote 
-progn) body)))))) (setq nargs (setq nopts 0)) (prog nil lab1153 (cond ((null 
-(and args (not (eqcar args (quote !&optional))) (not (eqcar args (quote 
-!&rest))))) (return nil))) (progn (cond ((or (equal (car args) (quote !&key))
-(equal (car args) (quote !&aux))) (error 0 "&key/&aux"))) (setq aargs (cons 
-(car args) aargs)) (setq nargs (plus nargs 1)) (setq args (cdr args))) (go 
-lab1153)) (cond ((eqcar args (quote !&optional)) (progn (setq args (cdr args)
-) (prog nil lab1155 (cond ((null (and args (not (eqcar args (quote !&rest))))
-) (return nil))) (progn (cond ((or (equal (car args) (quote !&key)) (equal (
-car args) (quote !&aux))) (error 0 "&key/&aux"))) (setq w (car args)) (prog 
-nil lab1154 (cond ((null (and (not (atom w)) (or (atom (cdr w)) (equal (cdr w
-) (quote (nil)))))) (return nil))) (setq w (car w)) (go lab1154)) (setq args 
-(cdr args)) (setq oargs (cons w oargs)) (setq nopts (plus nopts 1)) (cond ((
-atom w) (setq aargs (cons w aargs))) (t (progn (setq oinit t) (setq aargs (
-cons (car w) aargs)) (cond ((not (atom (cddr w))) (setq svars (cons (caddr w)
-svars)))))))) (go lab1155))))) (cond ((eqcar args (quote !&rest)) (progn (
-setq w (cadr args)) (setq aargs (cons w aargs)) (setq restarg w) (setq args (
-cddr args)) (cond (args (error 0 "&rest arg not at end")))))) (setq args (
-reverse aargs)) (setq oargs (reverse oargs)) (prog (var1157) (setq var1157 (
-append svars args)) lab1156 (cond ((null var1157) (return nil))) (prog (v) (
-setq v (car var1157)) (progn (cond ((globalp v) (progn (cond (!*pwrds (progn 
-(cond ((neq (posn) 0) (terpri))) (princ "+++++ global ") (prin v) (princ 
-" converted to fluid") (terpri)))) (unglobal (list v)) (fluid (list v))))))) 
-(setq var1157 (cdr var1157)) (go lab1156)) (cond (oinit (return (s!:compile2 
-name nargs nopts args oargs restarg body local_decs checksum)))) (setq w nil)
-(prog (var1159) (setq var1159 args) lab1158 (cond ((null var1159) (return 
-nil))) (prog (v) (setq v (car var1159)) (setq w (s!:instate_local_decs v 
-local_decs w))) (setq var1159 (cdr var1159)) (go lab1158)) (cond ((and !*r2i 
-(null oargs) (null restarg)) (setq body (s!:r2i name args body)))) (prog (v) 
-(setq v args) lab1160 (cond ((null v) (return nil))) (progn (cond ((fluidp (
-car v)) (prog (g) (setq g (gensym)) (setq fluids (cons (cons (car v) g) 
-fluids)) (rplaca v g))))) (setq v (cdr v)) (go lab1160)) (cond (fluids (progn
-(setq body (list (list (quote return) body))) (prog (var1162) (setq var1162 
-fluids) lab1161 (cond ((null var1162) (return nil))) (prog (v) (setq v (car 
-var1162)) (setq body (cons (list (quote setq) (car v) (cdr v)) body))) (setq 
-var1162 (cdr var1162)) (go lab1161)) (setq body (cons (quote prog) (cons (
-prog (var1164 var1165) (setq var1164 fluids) lab1163 (cond ((null var1164) (
-return (reversip var1165)))) (prog (v) (setq v (car var1164)) (setq var1165 (
-cons (car v) var1165))) (setq var1164 (cdr var1164)) (go lab1163)) body))))))
-(setq env (cons (mkhash 10 (cond (s!:faslmod_name 2) (t 1)) 1.5) (reverse 
-args))) (puthash name (car env) (cons 10000000 nil)) (setq w (
+s!:recent_literals s!:a_reg_values w1 w2 s!:current_count s!:env_alist 
+checksum) (cond (s!:lexical_env (setq checksum 0)) (t (setq checksum (md60 (
+cons name (cons args body)))))) (setq s!:current_function name) (setq 
+s!:current_count 0) (cond (!*where_defined!* (progn (setq w name) (puthash w 
+!*where_defined!* (where!-was!-that))))) (setq body (s!:find_local_decs body)
+) (setq local_decs (car body)) (setq body (cdr body)) (cond ((atom body) (
+setq body nil)) (t (cond ((null (cdr body)) (setq body (car body))) (t (setq 
+body (cons (quote progn) body)))))) (setq nargs (setq nopts 0)) (prog nil 
+lab1153 (cond ((null (and args (not (eqcar args (quote !&optional))) (not (
+eqcar args (quote !&rest))))) (return nil))) (progn (cond ((or (equal (car 
+args) (quote !&key)) (equal (car args) (quote !&aux))) (error 0 "&key/&aux"))
+) (setq aargs (cons (car args) aargs)) (setq nargs (plus nargs 1)) (setq args
+(cdr args))) (go lab1153)) (cond ((eqcar args (quote !&optional)) (progn (
+setq args (cdr args)) (prog nil lab1155 (cond ((null (and args (not (eqcar 
+args (quote !&rest))))) (return nil))) (progn (cond ((or (equal (car args) (
+quote !&key)) (equal (car args) (quote !&aux))) (error 0 "&key/&aux"))) (setq
+w (car args)) (prog nil lab1154 (cond ((null (and (not (atom w)) (or (atom (
+cdr w)) (equal (cdr w) (quote (nil)))))) (return nil))) (setq w (car w)) (go 
+lab1154)) (setq args (cdr args)) (setq oargs (cons w oargs)) (setq nopts (
+plus nopts 1)) (cond ((atom w) (setq aargs (cons w aargs))) (t (progn (setq 
+oinit t) (setq aargs (cons (car w) aargs)) (cond ((not (atom (cddr w))) (setq
+svars (cons (caddr w) svars)))))))) (go lab1155))))) (cond ((eqcar args (
+quote !&rest)) (progn (setq w (cadr args)) (setq aargs (cons w aargs)) (setq 
+restarg w) (setq args (cddr args)) (cond (args (error 0 
+"&rest arg not at end")))))) (setq args (reverse aargs)) (setq oargs (reverse
+oargs)) (prog (var1157) (setq var1157 (append svars args)) lab1156 (cond ((
+null var1157) (return nil))) (prog (v) (setq v (car var1157)) (progn (cond ((
+globalp v) (progn (cond (!*pwrds (progn (cond ((neq (posn) 0) (terpri))) (
+princ "+++++ global ") (prin v) (princ " converted to fluid") (terpri)))) (
+unglobal (list v)) (fluid (list v))))))) (setq var1157 (cdr var1157)) (go 
+lab1156)) (cond (oinit (return (s!:compile2 name nargs nopts args oargs 
+restarg body local_decs checksum)))) (setq w nil) (prog (var1159) (setq 
+var1159 args) lab1158 (cond ((null var1159) (return nil))) (prog (v) (setq v 
+(car var1159)) (setq w (s!:instate_local_decs v local_decs w))) (setq var1159
+(cdr var1159)) (go lab1158)) (cond ((and !*r2i (null oargs) (null restarg)) 
+(setq body (s!:r2i name args body)))) (prog (v) (setq v args) lab1160 (cond (
+(null v) (return nil))) (progn (cond ((fluidp (car v)) (prog (g) (setq g (
+gensym)) (setq fluids (cons (cons (car v) g) fluids)) (rplaca v g))))) (setq 
+v (cdr v)) (go lab1160)) (cond (fluids (progn (setq body (list (list (quote 
+return) body))) (prog (var1162) (setq var1162 fluids) lab1161 (cond ((null 
+var1162) (return nil))) (prog (v) (setq v (car var1162)) (setq body (cons (
+list (quote setq) (car v) (cdr v)) body))) (setq var1162 (cdr var1162)) (go 
+lab1161)) (setq body (cons (quote prog) (cons (prog (var1164 var1165) (setq 
+var1164 fluids) lab1163 (cond ((null var1164) (return (reversip var1165)))) (
+prog (v) (setq v (car var1164)) (setq var1165 (cons (car v) var1165))) (setq 
+var1164 (cdr var1164)) (go lab1163)) body)))))) (setq env (cons (mkhash 10 2 
+1.5) (reverse args))) (puthash name (car env) (cons 10000000 nil)) (setq w (
 s!:residual_local_decs local_decs w)) (s!:start_procedure nargs nopts restarg
 ) (setq w1 body) more (cond ((atom w1) nil) (t (cond ((and (equal (car w1) (
 quote block)) (equal (length w1) 3)) (progn (setq w1 (caddr w1)) (go more))) 
@@ -2496,34 +2502,34 @@ checksum))) s!:other_defs))))
 ) (prog (fluids env penv g v init atend w) (prog (var1167) (setq var1167 args
 ) lab1166 (cond ((null var1167) (return nil))) (prog (v) (setq v (car var1167
 )) (progn (setq env (cons 0 env)) (setq penv (cons env penv)))) (setq var1167
-(cdr var1167)) (go lab1166)) (setq env (cons (mkhash 10 (cond (
-s!:faslmod_name 2) (t 1)) 1.5) env)) (puthash name (car env) (cons 10000000 
-nil)) (setq penv (reversip penv)) (cond (restarg (setq oargs (append oargs (
-quote (0)))))) (prog (i) (setq i 1) lab1168 (cond ((minusp (times 1 (
-difference nargs i))) (return nil))) (setq oargs (cons 0 oargs)) (setq i (
-plus i 1)) (go lab1168)) (s!:start_procedure nargs nopts restarg) (prog nil 
-lab1169 (cond ((null args) (return nil))) (progn (setq v (car args)) (setq 
-init (car oargs)) (cond ((equal init 0) (progn (setq w (s!:instate_local_decs
-v local_decs w)) (cond ((fluidp v) (progn (setq g (gensym)) (rplaca (car 
-penv) g) (s!:outopcode1lit (quote FREEBIND) (s!:vecof (list v)) env) (rplacd 
-env (cons 3 (cons 0 (cons 0 (cdr env))))) (setq atend (cons (quote FREERSTR) 
-atend)) (s!:comval (list (quote setq) v g) env 2))) (t (rplaca (car penv) v))
-))) (t (prog (ival sp l1 l2) (cond ((not (atom init)) (progn (setq init (cdr 
-init)) (setq ival (car init)) (cond ((not (atom (cdr init))) (setq sp (cadr 
-init))))))) (setq l1 (gensym)) (setq g (gensym)) (rplaca (car penv) g) (cond 
-((and (null ival) (null sp)) (s!:comval (list (quote setq) g (list (quote 
-spid!-to!-nil) g)) env 1)) (t (progn (s!:jumpif nil (list (quote is!-spid) g)
-env l1) (s!:comval (list (quote setq) g ival) env 1) (cond (sp (progn (cond 
-((fluidp sp) (progn (s!:outopcode1lit (quote FREEBIND) (s!:vecof (list sp)) 
-env) (s!:outjump (quote JUMP) (setq l2 (gensym))) (s!:set_label l1) (
-s!:outopcode1lit (quote FREEBIND) (s!:vecof (list sp)) env) (rplacd env (cons
-3 (cons 0 (cons 0 (cdr env))))) (s!:comval (list (quote setq) sp t) env 1) (
-s!:set_label l2) (setq atend (cons (quote FREERSTR) atend)))) (t (progn (
-s!:outopcode0 (quote PUSHNIL) (quote (PUSHNIL))) (s!:outjump (quote JUMP) (
-setq l2 (gensym))) (s!:set_label l1) (s!:loadliteral t env) (s!:outopcode0 (
-quote PUSH) (quote (PUSH))) (s!:set_label l2) (rplacd env (cons sp (cdr env))
-) (setq atend (cons (quote LOSE) atend))))))) (t (s!:set_label l1)))))) (setq
-w (s!:instate_local_decs v local_decs w)) (cond ((fluidp v) (progn (
+(cdr var1167)) (go lab1166)) (setq env (cons (mkhash 10 2 1.5) env)) (
+puthash name (car env) (cons 10000000 nil)) (setq penv (reversip penv)) (cond
+(restarg (setq oargs (append oargs (quote (0)))))) (prog (i) (setq i 1) 
+lab1168 (cond ((minusp (times 1 (difference nargs i))) (return nil))) (setq 
+oargs (cons 0 oargs)) (setq i (plus i 1)) (go lab1168)) (s!:start_procedure 
+nargs nopts restarg) (prog nil lab1169 (cond ((null args) (return nil))) (
+progn (setq v (car args)) (setq init (car oargs)) (cond ((equal init 0) (
+progn (setq w (s!:instate_local_decs v local_decs w)) (cond ((fluidp v) (
+progn (setq g (gensym)) (rplaca (car penv) g) (s!:outopcode1lit (quote 
+FREEBIND) (s!:vecof (list v)) env) (rplacd env (cons 3 (cons 0 (cons 0 (cdr 
+env))))) (setq atend (cons (quote FREERSTR) atend)) (s!:comval (list (quote 
+setq) v g) env 2))) (t (rplaca (car penv) v))))) (t (prog (ival sp l1 l2) (
+cond ((not (atom init)) (progn (setq init (cdr init)) (setq ival (car init)) 
+(cond ((not (atom (cdr init))) (setq sp (cadr init))))))) (setq l1 (gensym)) 
+(setq g (gensym)) (rplaca (car penv) g) (cond ((and (null ival) (null sp)) (
+s!:comval (list (quote setq) g (list (quote spid!-to!-nil) g)) env 1)) (t (
+progn (s!:jumpif nil (list (quote is!-spid) g) env l1) (s!:comval (list (
+quote setq) g ival) env 1) (cond (sp (progn (cond ((fluidp sp) (progn (
+s!:outopcode1lit (quote FREEBIND) (s!:vecof (list sp)) env) (s!:outjump (
+quote JUMP) (setq l2 (gensym))) (s!:set_label l1) (s!:outopcode1lit (quote 
+FREEBIND) (s!:vecof (list sp)) env) (rplacd env (cons 3 (cons 0 (cons 0 (cdr 
+env))))) (s!:comval (list (quote setq) sp t) env 1) (s!:set_label l2) (setq 
+atend (cons (quote FREERSTR) atend)))) (t (progn (s!:outopcode0 (quote 
+PUSHNIL) (quote (PUSHNIL))) (s!:outjump (quote JUMP) (setq l2 (gensym))) (
+s!:set_label l1) (s!:loadliteral t env) (s!:outopcode0 (quote PUSH) (quote (
+PUSH))) (s!:set_label l2) (rplacd env (cons sp (cdr env))) (setq atend (cons 
+(quote LOSE) atend))))))) (t (s!:set_label l1)))))) (setq w (
+s!:instate_local_decs v local_decs w)) (cond ((fluidp v) (progn (
 s!:outopcode1lit (quote FREEBIND) (s!:vecof (list v)) env) (rplacd env (cons 
 3 (cons 0 (cons 0 (cdr env))))) (s!:comval (list (quote setq) v g) env 1) (
 setq atend (cons (quote FREERSTR) atend)))) (t (rplaca (car penv) v)))))) (
