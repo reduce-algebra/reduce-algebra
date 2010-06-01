@@ -476,33 +476,10 @@ case F_DOT:
             r = getvector(TAG_VECTOR, TYPE_STRING, CELL+operand);
             errexit();
             {   char *s = (char *)r - TAG_VECTOR + CELL;
-                int l = operand & 7;
-                if (SIXTY_FOUR_BIT)
-                {   switch (l)
-                    {
-                case 1:
-                case 2:
-                case 3: *(int32_t *)(s + operand - l) = 0; 
-                case 4:
-                case 5:
-                case 6:
-                case 7: *(int32_t *)(s + operand - l + 4) = 0;     
-                case 0: break;
-                    }
-                }
-                else
-                {   switch (l)
-                    {
-                case 5:
-                case 6:
-                case 7: *(int32_t *)(s + operand - l + 8) = 0;
-                case 0:
-                case 1:
-                case 2:
-                case 3: *(int32_t *)(s + operand - l + 4) = 0;
-                case 4: break;
-                    }
-                }
+                int l = doubleword_align_up(operand+CELL);
+                if (l >= 16) *(int32_t *)(s - CELL + l - 8) = 0; 
+                if (!SIXTY_FOUR_BIT || l >= 16)
+                    *(int32_t *)(s - CELL + l - 4) = 0;     
                 if (Iread(s, operand) != operand)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += operand;
