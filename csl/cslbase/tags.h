@@ -1,4 +1,4 @@
-/* tags.h                               Copyright (C) Codemist 1990-2008 */
+/* tags.h                               Copyright (C) Codemist 1990-2010 */
 
 /*
  *   Data-structure and tag bit definitions, also common C macros
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 20a0439d 13-May-2010 */
+/* Signature: 5dab8414 01-Jun-2010 */
 
 
 #ifndef header_tags_h
@@ -1052,9 +1052,12 @@ typedef struct Single_Float
 #define doubleword_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 7) & (-8)))
 #define doubleword_align_down(n) ((Lisp_Object)((intptr_t)(n) & (-8)))
 
+#define object_align_up(n) ((Lisp_Object)(((intptr_t)(n) + \
+                            sizeof(Lisp_Object) - 1) & (-sizeof(Lisp_Object))))
+
 /*
  * For the benefit of 64-bit architectures I will make the big blocks
- * of memory that I allocate from 128-bit aligned. This may help me at
+ * of memory that I use 128-bit aligned. This may help me at
  * one delicate place in the garbage collector!
  */
 #define quadword_align_up(n) ((Lisp_Object)(((intptr_t)(n) + 15) & (-16)))
