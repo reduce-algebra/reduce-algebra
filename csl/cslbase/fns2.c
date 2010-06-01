@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 43c4f4ee 01-Jun-2010 */
+/* Signature: 682b3ae1 01-Jun-2010 */
 
 #include "headers.h"
 
@@ -2780,10 +2780,10 @@ static CSLbool vec_equal(Lisp_Object a, Lisp_Object b)
  * This used to check all the way up to the end of the final doubleword
  * that the vector was padded to. This means that it was VITAL that any
  * vector needed any final padding word put in a definite and good state.
- * Checking only the words that matter is jusr marginally quicker and
+ * Checking only the words that matter is just marginally quicker and
  * will fail less often if I do not pad properly!
  */
-    l = (int32_t)object_align_up(length_of_header(ha));
+    l = (int32_t)word_align_up(length_of_header(ha));
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
             if (*((uint32_t *)((char *)a + l - TAG_VECTOR)) !=
