@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:38 2009 run on win32
+Wed Jun 02 09:32:57 2010 run on win32
 % Test of algebraic number package.
 
 defpoly sqrt2**2-2;
@@ -37,7 +37,7 @@ off gcd;
 sqrt(x**2-2*sqrt2*x*y+2*y**2);
 
 
-x - sqrt2*y
+abs(x - sqrt2*y)
 
 
 off arnum;
@@ -224,9 +224,11 @@ sqrt5;
 sqrt(x**2+2*(sqrt5-cbrt3)*x+5-2*sqrt5*cbrt3+cbrt3**2);
 
 
-     240     5     54     4    4000    3    2340    2    21595        13650
-x + ------*a1  + ------*a1  - ------*a1  - ------*a1  + -------*a1 - -------
-     8243         8243         8243         8243         8243         8243
+         240     5     54     4    4000    3    2340    2    21595        13650
+abs(x + ------*a1  + ------*a1  - ------*a1  - ------*a1  + -------*a1 - -------
+         8243         8243         8243         8243         8243         8243
+
+)
 
 
 on rationalize;
@@ -423,5 +425,5 @@ factorize(x**3-3);
 end;
 
 
-Time for test: 139 ms, plus GC time: 13 ms
-@@@@@ Resources used: (0 0 9 0)
+Time for test: 61 ms, plus GC time: 3 ms
+@@@@@ Resources used: (0 0 10 0)
