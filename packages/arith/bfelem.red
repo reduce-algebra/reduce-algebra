@@ -143,7 +143,14 @@ if not fixp k or k <= 0 then bflerrmsg '!:pi
  else
     begin integer k3,s,ss,m,n,x,test;  scalar u;
           u := get!:const('!:pi, k);
-          if u neq "NOT FOUND" then return u;
+% The original version of this code used the string "NOT FOUND" as the
+% marker value that get!;const could return. An effect of that was two
+% very minor uglinesses. Firstly there will have been multiple copies of
+% the string using up space, and secondly it relied on NEQ being the
+% converse of EQUAL not EQ and that that then checked string contents.
+% By using a symbol 'not_found there will be a very very minor improvement
+% in both speed and code clarity! 
+          if u neq 'not_found then return u;
           ss := n := 2 ** (k3 := k + 3) / 5;
           x := -5 ** 2;
           m := 1;
@@ -168,7 +175,7 @@ symbolic procedure !:bigpi k;
 if not fixp k or k <= 0 then bflerrmsg '!:bigpi
  else begin integer k7, n;  scalar dcut, half, x, y, u, v;
           u := get!:const('!:pi, k);
-          if u neq "NOT FOUND" then return u;
+          if u neq 'not_found then return u;
           k7 := k + 7;
           half := bfhalf!*;    %JBM
           dcut := make!:ibf(2, - k7);
@@ -199,7 +206,7 @@ symbolic procedure !:e k;
 if not fixp k or k <= 0 then bflerrmsg '!:e
  else begin integer k7, ans, m, n;  scalar u;
           u := get!:const('!:e, k);
-          if u neq "NOT FOUND" then return u;
+          if u neq 'not_found then return u;
           k7 := k + 7;
           m := 1;
           n := lshift (1, k7); % 2**k7
@@ -218,7 +225,7 @@ symbolic procedure !:e0625(k);
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:e0625, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := exp!:(!:bf!-0!.0625, k);    %JBM
   save!:const('!:e0625, u);
   return u;
@@ -230,7 +237,7 @@ symbolic procedure !:log2 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:log2, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := log!:(bftwo!*, k);
   save!:const('!:log2, u);
   return u;
@@ -242,7 +249,7 @@ symbolic procedure !:log3 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:log3, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := log!:(bfthree!*, k);
   save!:const('!:log3, u);
   return u;
@@ -254,7 +261,7 @@ symbolic procedure !:log5 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:log5, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := log!:(bffive!*, k);
   save!:const('!:log5, u);
   return u;
@@ -266,7 +273,7 @@ symbolic procedure !:log10 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:log10,  k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := log!:(bften!*, k);
   save!:const('!:log10, u);
   return u;
@@ -278,7 +285,7 @@ symbolic procedure !:logpi k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:logpi, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := log!:(!:pi(k + 2), k);
   save!:const('!:logpi, u);
   return u
@@ -290,7 +297,7 @@ symbolic procedure !:sqrt2(k);
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:sqrt2, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := sqrt!:(bftwo!*, k);
   save!:const('!:sqrt2, u);
   return u;
@@ -302,7 +309,7 @@ symbolic procedure !:sqrt3(k);
 % K is a positive integer.
 begin scalar u;
   u:=get!:const('!:sqrt3, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := sqrt!:(bfthree!*, k);
   save!:const('!:sqrt3, u);
   return u;
@@ -314,7 +321,7 @@ symbolic procedure !:sqrt5 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:sqrt5, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := sqrt!:(bffive!*, k);
   save!:const('!:sqrt5, u);
   return u;
@@ -326,7 +333,7 @@ symbolic procedure !:sqrt10 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:sqrt10, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := sqrt!:(bften!*, k);
   save!:const('!:sqrt10, u);
   return u;
@@ -338,7 +345,7 @@ symbolic procedure !:sqrtpi k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:sqrtpi, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := sqrt!:(!:pi(k + 2), k);
   save!:const('!:sqrtpi, u);
   return u;
@@ -350,7 +357,7 @@ symbolic procedure !:sqrte k;
 % K is a positive integer.
 begin scalar u;
   u:=get!:const('!:sqrte, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := sqrt!:(!:e(k + 2), k);
   save!:const('!:sqrte, u);
   return u;
@@ -362,7 +369,7 @@ symbolic procedure !:cbrt2 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:cbrt2, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := cbrt!:(bftwo!*, k);
   save!:const('!:cbrt2, u);
   return u;
@@ -374,7 +381,7 @@ symbolic procedure !:cbrt3 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:cbrt3, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := cbrt!:(bfthree!*, k);
   save!:const('!:cbrt3, u);
   return u;
@@ -386,7 +393,7 @@ symbolic procedure !:cbrt5 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:cbrt5, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := cbrt!:(bffive!*, k);
   save!:const('!:cbrt5, u);
   return u;
@@ -398,7 +405,7 @@ symbolic procedure !:cbrt10 k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:cbrt10, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := cbrt!:(bften!*, k);
   save!:const('!:cbrt10, u);
   return u;
@@ -410,7 +417,7 @@ symbolic procedure !:cbrtpi k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:cbrtpi, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := cbrt!:(!:pi(k + 2), k);
   save!:const('!:cbrtpi, u);
   return u;
@@ -422,7 +429,7 @@ symbolic procedure !:cbrte k;
 % K is a positive integer.
 begin scalar u;
   u := get!:const('!:cbrte, k);
-  if u neq "NOT FOUND" then return u;
+  if u neq 'not_found then return u;
   u := cbrt!:(!:e(k + 2), k);
   save!:const('!:cbrte, u);
   return u;
@@ -438,13 +445,13 @@ symbolic procedure get!:const(cnst, k);
 % This function returns the value of constant CNST
 %      of the precision K, if it was calculated
 %      previously with, at least, the precision K,
-%      else it returns "NOT FOUND".
+%      else it returns 'not_found.
 % CNST is the name of the constant (to be quoted).
 % K is a positive integer.
   if atom cnst and fixp k and k > 0 then
     begin scalar u;
           u := get(cnst, 'save!:c);
-          if null u or car u < k then return "NOT FOUND"
+          if null u or car u < k then return 'not_found
            else if car u = k then return cdr u
                              else return round!:mt(cdr u, k);
     end
