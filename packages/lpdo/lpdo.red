@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2008-2009 Thomas Sturm
+% Copyright (c) 2008-2010 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -37,6 +37,7 @@ fluid '(!*utf8);
 if !*utf8 then on1 'utf8exp;
 
 load!-package 'redlog;
+load!-package 'ofsf;
 
 rl_set '(reals);
 
