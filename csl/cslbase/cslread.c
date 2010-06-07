@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 72b67f21 13-May-2010 */
+/* Signature: 6c31dd94 07-Jun-2010 */
 
 #include "headers.h"
 
@@ -910,18 +910,27 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  */
     if (grow > 0)
     {   if (number_of_chunks == 1)
-        {   h = length_of_header(vechdr(v)) - CELL;
-            if (h > 20480)
-            {   h = 16384;
+        {
+/*
+ * Here I am going to allow the hash table size to double until trying to
+ * double it again would go beyond the proper size that vectors are limited
+ * to by the page size I use.
+ */
+            int32_t ll = (CSL_PAGE_SIZE-40)/16;
+/* round size limit down to a pwer of 2 */
+            for (i=0; ll!=1; i++) ll >>= 1;
+            for (; i!=0; i--) ll <<= 1;
+            h = length_of_header(vechdr(v)) - CELL;
+            if (h >= ll)
+            {   h = ll;
                 number_of_chunks = 3;
             }
             else h = 2*h;
         }
-        else number_of_chunks++;
+        else number_of_chunks = (3*number_of_chunks + 1)/2;
 /*
- * NB the linear growth of the hash table from this point on gives
- * bad performance for very large symbol tables due to excessive need
- * for rehashing.
+ * The hash table will use 1, 3, 5, 8, 12, 18, 27, 41, 62, 93, 140, 210
+ * chunks.
  */
     }
     else if (grow < 0)
