@@ -300,6 +300,9 @@ top (cond ((null a) (return (reversip r))))
      (print (list 'symerr u v))
      (error 'failure)))
 
+(global '(!*full!-oblist))
+
+(setq !*full!-oblist nil)
 
 (de s!:oblist (v r)
    (prog (n a)
@@ -315,7 +318,11 @@ top   (cond ((minusp n) (return r)))
 % about that... if so it would be very easy to remove the tests here and
 % end up listing everything. Eg some symbols exist and are used as property-
 % names (via PUT and GET) but are not used for anything else...
-	       (or (symbol!-function a)
+%
+% Well, the flag !*full!-oblist can be set to force inclusion of
+% everything!
+	       (or !*full!-oblist
+                   (symbol!-function a)
 		   (macro!-function a)
 		   (special!-form!-p a)
 		   (fluidp a)
