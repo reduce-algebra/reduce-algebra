@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 6c31dd94 07-Jun-2010 */
+/* Signature: 406bb32c 08-Jun-2010 */
 
 #include "headers.h"
 
@@ -892,6 +892,8 @@ static CSLbool add_to_hash(Lisp_Object s, Lisp_Object vector, uint32_t hash)
 
 static int32_t number_of_chunks;
 
+#define CHUNK_SIZE (CELL*(PAGE_POWER_OF_TWO/32))
+
 static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
 {
 /*
@@ -900,13 +902,14 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  * table size down will have enough space for the number of active items
  * present. grow=0 leaves the table size alone but still rehashes.
  */
-    int32_t h = 16384, i;
+    int32_t h = CHUNK_SIZE, i;
     Lisp_Object new_obvec, nil;
     number_of_chunks = int_of_fixnum(chunks);
 /*
  * Now I decide how to format the new structure.  To grow, If I had a single
  * vector at present I try to double its size.  If that would give something
- * with over 40Kbytes I go to 48K, formatted as three chunks each of 16K.
+ * too big I rearrange as multiple blocks in a chain, trying to roughly
+ * increase by a factor of 1.5 each time.
  */
     if (grow > 0)
     {   if (number_of_chunks == 1)
@@ -914,12 +917,20 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
 /*
  * Here I am going to allow the hash table size to double until trying to
  * double it again would go beyond the proper size that vectors are limited
- * to by the page size I use.
+ * to by the page size I use. The limit size ll I establish here first
+ * MUST be within the size permitted for a vector. To allow 32- and 64-
+ * bit images to be compatible I also want it to correspond to the same
+ * number of entries in the table in either case. The size I select is
+ * such that on a 32-bit machine each table is about 1/8 of the page size
+ * and on a 64-bit one each is about 1/4. With 4 Mbyte pages this makes
+ * each table hold 128K items - a feature of this is that Reduce will
+ * generally not go into the overflow mechanism! By making the table size
+ * 1/4 of my allocation page size I will end up fitting 3 tables per page
+ * and leaving just the final quarter to be fille dup otherwise. If I
+ * went further and used yet larger hash table segments I could suffer
+ * much more badly because of fragmentation. 
  */
-            int32_t ll = (CSL_PAGE_SIZE-40)/16;
-/* round size limit down to a pwer of 2 */
-            for (i=0; ll!=1; i++) ll >>= 1;
-            for (; i!=0; i--) ll <<= 1;
+            int32_t ll = CHUNK_SIZE;
             h = length_of_header(vechdr(v)) - CELL;
             if (h >= ll)
             {   h = ll;
@@ -929,8 +940,10 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
         }
         else number_of_chunks = (3*number_of_chunks + 1)/2;
 /*
- * The hash table will use 1, 3, 5, 8, 12, 18, 27, 41, 62, 93, 140, 210
- * chunks.
+ * The hash table will use 1, 3, 5, 8, 12, 18, 27, 41, 62, 93, 140, 210...
+ * chunks. This geometric growth should lead to the cost of rehashing
+ * ending up as a roughly constant factor of hash table access while
+ * avoiding utterly undue waste of space.
  */
     }
     else if (grow < 0)
@@ -942,10 +955,18 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  */
             if (h > 64) h = h / 2;
         }
-        else if (number_of_chunks <= 3)
-        {   h = 32768;
+        else if (number_of_chunks <= 2)
+        {   h = CHUNK_SIZE;
             number_of_chunks = 1;
         }
+/*
+ * While I expand the hash table in a geometric progression I will
+ * only shrink it linearly (at least for now) since I think I believe that
+ * shrinking will not happen often, and if there had been one temporary
+ * huge growth I might predict the possibility of another one soon. The
+ * effect of shrinking slowly is that space is wasted but speed is if
+ * anything improved.
+ */
         else number_of_chunks--;
     }
     nil = C_nil;
@@ -1018,8 +1039,8 @@ static Lisp_Object add_to_externals(Lisp_Object s,
     Lisp_Object v = packext_(p);
     Lisp_Object nil = C_nil;
     int32_t used = int_of_fixnum(packvext_(p));
-    if (used == 1) used = length_of_header(vechdr(v));
-    else used = 16384*used;
+    if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+    else used = CHUNK_SIZE*used;
 /*
  * n is (16*sym_count+1)             [Lisp fixnum for sym_count]
  * used = CELL*(spaces+1)
@@ -1079,8 +1100,8 @@ static Lisp_Object add_to_internals(Lisp_Object s,
     Lisp_Object v = packint_(p);
     Lisp_Object nil = C_nil;
     int32_t used = int_of_fixnum(packvint_(p));
-    if (used == 1) used = length_of_header(vechdr(v));
-    else used = 16384*used;
+    if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+    else used = CHUNK_SIZE*used;
 try_again:
     if (CELL*(uint32_t)n >= 10u*used)
     {   stackcheck3(0, s, p, v);
@@ -1923,8 +1944,8 @@ static Lisp_Object Lextern(Lisp_Object nil,
     {   Lisp_Object n = packnint_(package);
         Lisp_Object v = packint_(package);
         int32_t used = int_of_fixnum(packvint_(package));
-        if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;   /* /* /* @@@@ ???? */
+        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        else used = CHUNK_SIZE*used;
 /*
  * I will shrink a hash table if a sequence of remob-style operations,
  * which will especially include the case where a symbol ceases to be
@@ -2040,8 +2061,8 @@ Lisp_Object Lunintern_2(Lisp_Object nil, Lisp_Object sym, Lisp_Object pp)
     {   Lisp_Object n = packnint_(package);
         Lisp_Object v = packint_(package);
         int32_t used = int_of_fixnum(packvint_(package));
-        if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;
+        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        else used = CHUNK_SIZE*used;
         if ((int32_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
@@ -2059,8 +2080,8 @@ Lisp_Object Lunintern_2(Lisp_Object nil, Lisp_Object sym, Lisp_Object pp)
     {   Lisp_Object n = packnext_(package);
         Lisp_Object v = packext_(package);
         int32_t used = int_of_fixnum(packvext_(package));
-        if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;
+        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        else used = CHUNK_SIZE*used;
         if ((int32_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
