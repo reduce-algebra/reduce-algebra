@@ -656,6 +656,20 @@ symbolic procedure concat(u,v);
 
 symbolic procedure dated!-gensym u; dated!-name u;
 
+% The following is intended to run the test on a single package.
+% In due course I will improve it so it also checks the output,
+% but even as it is I find it useful to be able to say
+%        test_package solve;
+% to test the solve package (etc).
+
+symbolic procedure test_package m;
+ << load!-module 'remake;
+    test_a_package list m;
+    0 >>; % because test_a_package restarts Reduce the result here should
+          % never actually end up being delivered.
+
+flag('(test_package), 'opfn);
+
 endmodule;
 
 end;
