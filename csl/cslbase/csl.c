@@ -999,12 +999,20 @@ static void lisp_main(void)
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE + 16;
                         while (w1 <= big_chunk_end)
-                        {   if (w != stacksegment)
+                        {   if (w != (char *)stacksegment)
                                 pages[pages_count++] = w;
                             w = w1;
                             w1 = w + CSL_PAGE_SIZE + 16;
                         }
                     }
+/*
+ * Well I have been having some pain that I do not understand - so here
+ * I will zero out memory to try to make everything as repeatable as I can.
+ * Well if I put in a pattern of 0x55 then that may prompt visible disasters
+ * if any are due?
+ */
+                    for (i=0; i<pages_count; i++)
+                        memset(pages[i], 0x55, CSL_PAGE_SIZE+16);
 /*
  * When I call restart-csl I will leave the random number generator where it
  * was. Anybody who wants to reset if either to a freshly randomised

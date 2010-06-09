@@ -7,7 +7,8 @@
 #
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
-#   --with-mingw64    Cross build using 64-bit mingw
+#   --with-mingw64    Cross build using 64-bit mingw. I use the the
+                      compiler from http://tdm-gcc.tdragon.net/
 #   --with-cygwin     Build native cygwin X11 based system, 
 #                     Please note cygwin licensing issues, which do not
 #                     have any adverse effects so long as you retain BSD
@@ -78,13 +79,13 @@ fi
 
 if test "x$mingw64" = "xyes"
 then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-pc-mingw32-gcc])
-   host="x86_64-pc-mingw32"
-   ac_tool_prefix="x86_64-pc-mingw32-"
+   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32])
+   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-w64-mingw32-gcc])
+   host="x86_64-w64-mingw32"
+   ac_tool_prefix="x86_64-w64-mingw32-"
    cross_compiling=yes
-   STRIP="x86_64-pc-mingw32-strip"
-   AR="x86_64-pc-mingw32-ar"
+   STRIP="x86_64-w64-mingw32-strip"
+   AR="x86_64-w64-mingw32-ar"
 fi
 
 AC_ARG_WITH(csl,
@@ -131,7 +132,7 @@ AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
 
 if test "x$mingw64" = "xyes"
 then
-   foxdir="x86_64-pc-mingw32"
+   foxdir="x86_64-w64-mingw32"
 else
    foxdir="$host"
 fi
@@ -198,7 +199,7 @@ then
   win64="yes"
 else
 case $host in
-*-*-cygwin* | x86_64-pc-mingw32)
+*-*-cygwin* | x86_64-w64-mingw32)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
@@ -973,7 +974,7 @@ AC_MSG_RESULT([$enable_static])
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-pc-mingw32-gcc"
+if test "x$CC" = "xx86_64-w64-mingw32-gcc"
 then
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
   win64="yes"
@@ -1291,7 +1292,7 @@ else
 # modified GNU-style triple, as in i686-pc-linux. So if the
 # user says --with-fox=/homes/myself/foxplace and the build is for
 # Windows-64 the location inspected will end up
-# /homes/myself/foxplace/x86_64-pc-windows64. Etc etc.
+# /homes/myself/foxplace/x86_64-w64-windows64. Etc etc.
 
 # Only look for FOX 1.6. That is because at present the changes
 # introduced since then are not important to me but the additional licensing
@@ -1340,7 +1341,7 @@ fi
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-pc-mingw32-gcc"
+  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
   then
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
   else

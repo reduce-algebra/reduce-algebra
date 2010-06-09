@@ -982,10 +982,10 @@ static CSLbool restore_fn_cell(Lisp_Object a, char *name,
 }
 
 /*
- * This gets calle dby the compiler if it is asked to compile something
+ * This gets called by the compiler if it is asked to compile something
  * into a fasl file where that thing has a definition as C code. In such a
  * case what it puts into the fasl file is a call to this to instate the
- * version coded in C. If a LOT of stuff has bene turning into C this could
+ * version coded in C. If a LOT of stuff has been turning into C this could
  * become a bottleneck - and in such a case I should make a table of C
  * entrypoints as a hash table or something sorted for use with binary
  * search!
