@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 1ba5de89 01-Jun-2010 */
+/* Signature: 21184670 09-Jun-2010 */
 
 #include "headers.h"
 
@@ -6105,14 +6105,16 @@ void setup(int restartp, double store_size)
         }
     }
     {
-      int32_t w = 0;
+        int32_t w = 0;
 /*
  * The total store allocated is that used plus that free, including the
- * page set aside for the Lisp stack.
+ * page set aside for the Lisp stack. I had better report this in Kbytes
+ * which should then be sort of OK up to a total of 4000 Gbytes before the
+ * unsigned long overflows on me.
  */
         if (init_flags & INIT_VERBOSE)
-            term_printf("Memory allocation: %ld bytes\n",
-                                         (long)CSL_PAGE_SIZE*(pages_count+w+1));
+            term_printf("Memory allocation: %lu Kbytes\n",
+                    ((unsigned long)(CSL_PAGE_SIZE/1000))*(pages_count+w+1));
     }
 #ifdef MEMORY_TRACE
 #ifndef CHECK_ONLY
