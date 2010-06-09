@@ -90,7 +90,7 @@ fi
 
 dnl "--with-mingw64" is what I will be trying from now on to build for
 dnl 64-bit windows. It requires a (cross) compiler called
-dnl x86_64-pc-mingw32-g++ to be available. I will in due course
+dnl x86_64-w64-mingw32-g++ to be available. I will in due course
 dnl retire the older option "--with-xp64" that used the Microsoft
 dnl command-line compiler from their DDK.
 
@@ -109,13 +109,13 @@ WSOCK="wsock32"
 
 if test "x$mingw64" = "xyes"
 then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-pc-mingw32-gcc])
-   host="x86_64-pc-mingw32"
-   ac_tool_prefix="x86_64-pc-mingw32-"
+   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32])
+   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-w64-mingw32-gcc])
+   host="x86_64-w64-mingw32"
+   ac_tool_prefix="x86_64-w64-mingw32-"
    cross_compiling=yes
-   STRIP="x86_64-pc-mingw32-strip"
-   AR="x86_64-pc-mingw32-ar"
+   STRIP="x86_64-w64-mingw32-strip"
+   AR="x86_64-w64-mingw32-ar"
 fi
 
 dnl The "--with-xp64" flag is a distinct cheat! If the Microsoft Compilers

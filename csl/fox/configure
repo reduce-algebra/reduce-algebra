@@ -2821,15 +2821,15 @@ WSOCK="wsock32"
 
 if test "x$mingw64" = "xyes"
 then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32" >&5
-$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32" >&6;}
-   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-pc-mingw32-gcc" >&5
-$as_echo "$as_me: and requires cross-compilation tools such as x86_64-pc-mingw32-gcc" >&6;}
-   host="x86_64-pc-mingw32"
-   ac_tool_prefix="x86_64-pc-mingw32-"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&5
+$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&6;}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&5
+$as_echo "$as_me: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&6;}
+   host="x86_64-w64-mingw32"
+   ac_tool_prefix="x86_64-w64-mingw32-"
    cross_compiling=yes
-   STRIP="x86_64-pc-mingw32-strip"
-   AR="x86_64-pc-mingw32-ar"
+   STRIP="x86_64-w64-mingw32-strip"
+   AR="x86_64-w64-mingw32-ar"
 fi
 
 
