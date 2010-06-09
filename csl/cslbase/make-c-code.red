@@ -40,6 +40,10 @@ on echo;
 % The functions to be compiled are extracted from a file "profile.dat"
 % that was created by "profile.red".
 %
+% I will also allow for a file "unprofile.dat" that can be used to provide
+% extra help with modules where the module maintainer is unable to provide
+% test cases thar generate reliable profile date.
+%
 % If full_c_code is defined then rather than paying much attention
 % to profile.dat it attempts to compile everything into C! Note that
 % this capability causes BUGS to surface at present (I will remove this
@@ -95,16 +99,33 @@ fnames := '(      "u01" "u02" "u03" "u04"
             "u60"
 );
 
-if everything then size_per_file := 60000
+if boundp 'size_per_file and
+   numberp (cx := compress explodec size_per_file) and
+   cx > 100 and cx < 200000 then size_per_file := cx
+else if everything then size_per_file := 60000
 else size_per_file := 7000;
+
+<< terpri(); princ "size_per_file = "; print size_per_file; nil >>;
 
 force_count := 350;
 
-if not boundp 'how_many then how_many := 1000000
-else << how_many := compress explodec how_many;
-        if not numberp how_many then how_many := 1000000 >>;
+% You may well ask "what is it with the number 667 here". Well that sets
+% a default number of functions to be compiled into C that matches the
+% number I used historically, and hence it provides a safe level of
+% continuity. You may experiment with
+%     make c-code how_many=nnnn
+% but at the time this comment was inserted bugs arise for large values
+% of nnnn, so until those have been tracked down and removed this rather
+% odd default will apply. Observe lower down lists of functions to omit
+% from translation - that is part of the process of bug hunting!
 
-global '(omitted);
+if not boundp 'how_many then how_many := 667
+else << how_many := compress explodec how_many;
+        if not numberp how_many then how_many := 667 >>;
+
+<< terpri(); princ "how_many = "; print how_many; nil >>;
+
+global '(omitted at_end);
 
 % At any stage there may be some things that I must not even try to compile
 % into C because of bugs or limitations. I can list them here.
@@ -119,8 +140,30 @@ omitted := '(
     module!-to!-file        % bootstrapping problems
     module2!-to!-file       % bootstrapping problems
     olderfaslp              % bootstrapping problems
+    package!-remake
+    package!-remake2
+    update!-fasl2
+    upd!-fasl1
+    prinl
+    s!:prinl1
+    s!:prinl2
+    printl
+    princl
+    printcl
+    ps!:evaluate!-next      % unknown issue
+    unify                   % unknown issue
+    afactor                 % unknown issue
+    sroot1                  % unknown issue
+    cl_sitheo               % unknown issue
+    taysimpsq!*             % unknown issue but can cause utter collapse!
+    invbase!*               % unknown issue
+    simp!-prop
+    invlex
+    typerr                  % multiply defined in alg/intro, rlisp/lpri, scope/coddec
     );
 
+at_end := '(
+    );
 
 
 on comp;
@@ -192,8 +235,9 @@ symbolic procedure read_profile_data file;
     if not errorp(w0 := errorset(list('open, file, ''input), nil, nil)) then <<
       w0 := rds car w0;
       while not errorp (w1 := errorset('(read), nil, nil)) and
-            not eqcar(w1, !$eof!$) do
+            not eqcar(w1, !$eof!$) do <<
         requests := car w1 . requests;
+        princ "Use data for "; print caar w1 >>;
 % The data structure read in here will be of the form
 %    ((module-name f-name1 f_name2 ...) (module-name ...) ...)
 % where within each module the requested functions have been listed in
@@ -205,6 +249,7 @@ symbolic procedure read_profile_data file;
 off echo;
 
 read_profile_data "$destdir/profile.dat";
+read_profile_data "$destdir/unprofile.dat";
 
 on echo;
 
@@ -275,6 +320,11 @@ w_reduce := for each n in w_reduce collect car n$
 
 % Discard things that give trouble...
 for each x in omitted do w_reduce := delete(x, w_reduce);
+
+% Compile some specific things last. This will be useful when I want to
+% force-compile some function while I am testing this procedure.
+
+w_reduce := append(w_reduce, at_end)$
 
 for each m in library!-members() do load!-source m;
 
@@ -399,14 +449,6 @@ while fnames do begin
             count := count + 1;
             w_reduce := cdr w_reduce >> >> end;
    eval '(c!-end);
-% In making a transition from having just files u01.c to u12.c to
-% having 60 files I want to start with as much compatibility as I can
-% achieve, and so on a temporary basis I will disable use of files
-% beyond u12 until I have got everything stable so that compilation
-% of more that that does not give trouble.
-   if not everything and car fnames = "u12" then <<
-      count := count + 1;
-      how_many := 0 >>;
    fnames := cdr fnames
    end;
 
