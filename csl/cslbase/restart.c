@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 21184670 09-Jun-2010 */
+/* Signature: 7d01621a 09-Jun-2010 */
 
 #include "headers.h"
 
@@ -2405,10 +2405,9 @@ void *my_malloc(size_t n)
     n = quadword_align_up(n);
     inject_randomness((int)(intptr_t)r);
     if (!SIXTY_FOUR_BIT) p[1] = 0;
-    ((void **)p)[0] = r;          /* base address for free() */
-    p[2] = n;                     /* only permit 32-bit size */
-    p[3] = 0x5555aaaa;
-    p[4] = 0x12345678;            /* Marker words for security */
+    *(void **)(p) = r;                 /* base address for free() */
+    *(int64_t *)(&p[2]) = (int64_t)n;  /* allow for 64-bit size */
+    p[4] = 0x12345678;                 /* Marker words for security */
     p[5] = 0x3456789a;
     p[6] = 0x12345678;
     p[7] = 0x3456789a;
@@ -2435,7 +2434,8 @@ static void my_free(void *r)
     int32_t *p, *q, n;
     *(free_hook)(r);
 #else /* NO_WORRY... */
-    int32_t *p, *q, n;
+    int32_t *p, *q;
+    size_t n;
     char *rr = (char *)r;
 /*
  * I will not free it if the pointer is strictly inside the single big
@@ -2443,7 +2443,7 @@ static void my_free(void *r)
  */
     if (rr > big_chunk_start && rr <= big_chunk_end) return;
     p = (int32_t *)r - 8;
-    n = p[2];
+    n = (size_t)*(int64_t *)(&p[2]);
     if (p[4] != 0x12345678 ||
         p[5] != 0x3456789a)
     {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
