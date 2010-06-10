@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 323d4f71 09-May-2010 */
+/* Signature: 488e0aa9 10-Jun-2010 */
 
 #include "headers.h"
 
@@ -2184,13 +2184,18 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
  * I wonder about the next test - memory would only really be full
  * if there was enough LIVE data to fill all the available free pages,
  * but what is tested here is based on the possibility that all the
- * active pages are totally full.
+ * active pages are totally full. I scale up the vector page counts by
+ * a factor of 1.5 because fragmentation might behave differently in the
+ * old and new spaces so if there are some large vectors they may leave
+ * nasty gaps at the end of a page.
  */
         full = (pages_count <=
-                 heap_pages_count + vheap_pages_count +
-                 bps_pages_count + native_pages_count);
+                 heap_pages_count +
+                 (3*(vheap_pages_count +
+                     bps_pages_count +
+                     native_pages_count) + 1)/2);
     else
-        full = (pages_count == 0);
+        full = (pages_count <= 1);
     if (fringe <= heaplimit)
     {   if (full) return NO;
         p = pages[--pages_count];
@@ -3045,10 +3050,17 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     report_at_end(nil);
 /*
  * I will make the next garbage collection a copying one if the heap is
- * at most 25% full, or a sliding one if it is more full than that.
+ * at most 25% full, or a sliding one if it is more full than that. And
+ * I take a conservative view with regard to the possibility that
+ * when copying big vectors I can need to leave pages partly empty.
+ * Eg consider copying a number of vectors each of which is just over
+ * 1/3 of the size of a page. The first two fit in a new page, but the third
+ * will then not, so I abandon the rest of that page and start a fresh one.
  */
     gc_method_is_copying = (pages_count >
-                 3*(heap_pages_count + vheap_pages_count + bps_pages_count));
+                 3*(heap_pages_count +
+                         (3*(vheap_pages_count + bps_pages_count +
+                             native_pages_count))/2));
     if (stop_after_gc)
     {
 #ifdef MEMORY_TRACE

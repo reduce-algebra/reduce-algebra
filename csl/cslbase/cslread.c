@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 406bb32c 08-Jun-2010 */
+/* Signature: 1edf041c 10-Jun-2010 */
 
 #include "headers.h"
 
@@ -873,6 +873,11 @@ static CSLbool add_to_hash(Lisp_Object s, Lisp_Object vector, uint32_t hash)
  * number.  Furthermore I might replace the (perhaps expensive) remaindering
  * operations by (perhaps cheap) bitwise "AND" when I reduce my hash value
  * to the right range to be an index into the table.
+ *
+ * I might make a few remarks here about sizes. Each hash table segment
+ * may have 128K cells. hash is a 32-bit value, so hash>>10 is a 22-bit
+ * value (ie up to 4M). So all the bits that might end up in the step I
+ * take are available.
  */
     int32_t step = 1 | ((hash >> 10) & (size - 1));
     int32_t probes = 0;
@@ -1038,7 +1043,14 @@ static Lisp_Object add_to_externals(Lisp_Object s,
     Lisp_Object n = packnext_(p);
     Lisp_Object v = packext_(p);
     Lisp_Object nil = C_nil;
-    int32_t used = int_of_fixnum(packvext_(p));
+    uint32_t used = int_of_fixnum(packvext_(p));
+/*
+ * I guess the next line would overflow when around 4G ends up used just
+ * in symbol hash table. This can only possibly be approached on a 64-bit
+ * machine and I think that would happen when there were about 300 million
+ * symbols. For now at least I view that as beyond plausibility. Maybe in a
+ * few years it will seem routine!
+ */
     if (used == 1) used = length_of_header(vechdr(v)) - CELL;
     else used = CHUNK_SIZE*used;
 /*
@@ -1046,15 +1058,14 @@ static Lisp_Object add_to_externals(Lisp_Object s,
  * used = CELL*(spaces+1)
  * The effect is that I trigger a re-hash if the table reaches 62%
  * loading.  For small vectors when I re-hash I will double the
- * table size, for large ones I will add another 16Kbytes (i.e. 4K
- * table entries on a 32-bit machine).  The effect will be that small
- * packages will often be fairly lightly loaded (down to 31% just after
- * an expansion) while very large ones will be kept close to the 62% mark.
- * If I start off all tables with size that is a power of 2 that state
- * will persist.
+ * table size, for large ones I will roughly multipoly the amount of
+ * allocated space by 1.5.
+ * The effect will be that small packages will often be fairly lightly
+ * loaded (down to 31% just after an expansion) while very large ones will
+ * be kept at least a bit closer to the 62% mark.
  */
 try_again:
-    if (CELL*(uint32_t)n >= 10u*used)
+    if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvext_(p), 1);
@@ -1063,6 +1074,7 @@ try_again:
         packext_(p) = v;
         packvext_(p) = fixnum_of_int(number_of_chunks);
     }
+    if (n == 0xfffffff1) return aerror("too many symbols"); /* long stop */
     packnext_(p) = n + (1<<4);      /* increment as a Lisp fixnum */
     {   int32_t nv = int_of_fixnum(packvext_(p));
         if (nv == 1) add_to_hash(s, v, hash);
@@ -1079,11 +1091,18 @@ try_again:
  * careful.  To avoid the possibility I make add_to_hash() report any
  * trouble and if I have difficulty I go back and re-enlarge the tables.
  * This is not guaranteed safe, but I will be VERY unlucky if it ever bites
- * me!
+ * me! Specifically it can provoke early expansion of the hash table
+ * so that clustering leads to ending up with a lighter loading on the
+ * whole table. It wastes space but should in the end be safe.
+ *
+ * For HUGE tables the current segmented scheme is parhaps not very
+ * satisfactory and I may need to move to a model that represents a single
+ * large table in multiple hunks. Indeed for HUGE tables the fact that I
+ * only compute a 32-bit hash value could be unsatisfactory too.
  */
             while (nv-- != 0) v = qcdr(v);
             if (!add_to_hash(s, qcar(v), hash))
-            {   n = used = 0;
+            {   used = 0;   /* so table will be expanded */
                 goto try_again;
             }
         }
@@ -1099,11 +1118,11 @@ static Lisp_Object add_to_internals(Lisp_Object s,
     Lisp_Object n = packnint_(p);
     Lisp_Object v = packint_(p);
     Lisp_Object nil = C_nil;
-    int32_t used = int_of_fixnum(packvint_(p));
+    uint32_t used = int_of_fixnum(packvint_(p));
     if (used == 1) used = length_of_header(vechdr(v)) - CELL;
     else used = CHUNK_SIZE*used;
 try_again:
-    if (CELL*(uint32_t)n >= 10u*used)
+    if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvint_(p), 1);
@@ -1112,6 +1131,7 @@ try_again:
         packint_(p) = v;
         packvint_(p) = fixnum_of_int(number_of_chunks);
     }
+    if (n == 0xfffffff1) return aerror("too many symbols"); /* long stop */
     packnint_(p) = (Lisp_Object)((int32_t)n + (1<<4));
                     /* increment as a Lisp fixnum */
     {   int32_t nv = int_of_fixnum(packvint_(p));
@@ -1120,7 +1140,7 @@ try_again:
         {   nv = (hash ^ (hash >> 16)) % nv;
             while (nv-- != 0) v = qcdr(v);
             if (!add_to_hash(s, qcar(v), hash))
-            {   n = used = 0;
+            {   used = 0;
                 goto try_again;
             }
         }
@@ -1131,7 +1151,7 @@ try_again:
 static CSLbool rehash_pending = NO;
 
 static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
-                          Lisp_Object v, Lisp_Object nv, int32_t hash)
+                          Lisp_Object v, Lisp_Object nv, uint32_t hash)
 /*
  * Searches a hash table for a symbol with name matching the given string,
  * and NOTE that the string passed down here is to be treated as having
@@ -1157,7 +1177,7 @@ static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
 {
     Header h;
     int32_t size;
-    int32_t i = int_of_fixnum(nv), step, n;
+    uint32_t i = int_of_fixnum(nv), step, n;
     if (i != 1)
     {   i = (hash ^ (hash >> 16)) % i; /* Segmented - find correct segment */
         while (i-- != 0) v = qcdr(v);
@@ -1453,7 +1473,7 @@ static CSLbool remob(Lisp_Object sym, Lisp_Object v, Lisp_Object nv)
     Lisp_Object str = qpname(sym);
     Header h;
     uint32_t hash;
-    int32_t i = int_of_fixnum(nv), size, step, n;
+    uint32_t i = int_of_fixnum(nv), size, step, n;
     if (qheader(sym) & SYM_ANY_GENSYM) return NO; /* gensym case is easy! */
 #ifdef COMMON
 /* If not in any package it has no home & is not available */

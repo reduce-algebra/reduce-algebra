@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7d01621a 09-Jun-2010 */
+/* Signature: 15521040 10-Jun-2010 */
 
 #include "headers.h"
 
@@ -3169,14 +3169,14 @@ static void warm_setup()
  * Now I have at least just enough pages to load op the heap image. Well I
  * really hope I have a fair amount in hand or else garbage collection will
  * be a pain! But at least we can get started. Depending on how full memory
- * looks I will select the type for the first garbage collection. Hmmm there
- * is a potential issue about native_pages, but right now those are never
- * activated, so all I need to do is to remind myself that when and if they
- * are and especially if they become subject to garbage collection I need to
- * review some details around here.
+ * looks I will select the type for the first garbage collection. See
+ * comments in gc.c for further thoughts about this.
  */
     gc_method_is_copying = (pages_count >
-                 3*(heap_pages_count + vheap_pages_count + bps_pages_count));
+                 3*(heap_pages_count +
+                      (3*(vheap_pages_count +
+                          bps_pages_count +
+                          native_pages_count))/2));
 #endif
     {   char dummy[16];
         Cfread(dummy, 8);
