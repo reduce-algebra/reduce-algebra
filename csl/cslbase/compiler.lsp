@@ -2954,9 +2954,9 @@ princ "stack[") (princ (minus (get a (quote c!:location)))) (princ "]"))) (t
 (princ a)))) (t (cond ((or (equal c (quote !c)) (equal c (quote !C))) (
 c!:safeprin a)) (t (cond ((or (equal c (quote !a)) (equal c (quote !A))) (
 prin a)) (t (cond ((or (equal c (quote !t)) (equal c (quote !T))) (ttab a)) (
-t (cond ((equal c (quote !<)) (progn (cond ((greaterp (posn) 70) (terpri)))))
-(t (princ a))))))))))) (cond (args (setq args (cdr args)))) (setq fmt (cdr 
-fmt)))) (t (princ c)))))))) (go lab1212))))
+t (cond ((equal c (quote !<)) (progn (setq args (cons nil args)) (cond ((
+greaterp (posn) 70) (terpri))))) (t (princ a))))))))))) (cond (args (setq 
+args (cdr args)))) (setq fmt (cdr fmt)))) (t (princ c)))))))) (go lab1212))))
 
 (de c!:safeprin (x) (prog (a b) (setq a (explode x)) (prog nil lab1213 (cond 
 ((null a) (return nil))) (progn (cond ((and (eqcar a (quote !/)) b) (princ 

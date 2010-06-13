@@ -93,6 +93,7 @@ symbolic procedure c!:printf1(fmt, args);
          else if c = '!a or c = '!A then prin a
          else if c = '!t or c = '!T then ttab a
          else if c = '!< then <<
+            args := nil . args; % dummy so in effect no arg is used.
             if posn() > 70 then terpri() >>
          else princ a;
          if args then args := cdr args;
