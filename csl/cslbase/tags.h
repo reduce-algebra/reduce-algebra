@@ -92,12 +92,12 @@ typedef int                 CSLbool;
 #define CSL_PAGE_SIZE           (PAGE_POWER_OF_TWO - 256U)
 
 /*
- * On 64-bit systems I will limit myself to 20 Gbyte, while on 32-bit
+ * On 64-bit systems I will limit myself to 150 Gbyte, while on 32-bit
  * ones the limit is around 2 Gbyte and in reality will usually be
  * rather less than that.
  */
 #ifndef MAX_HEAPSIZE
-#  define MAX_HEAPSIZE       (SIXTY_FOUR_BIT ? 20480 : 2048)
+#  define MAX_HEAPSIZE       (SIXTY_FOUR_BIT ? 153600 : 2048)
 #endif /* MAX_HEAPSIZE */
 
 #ifndef MAX_BPSSIZE
