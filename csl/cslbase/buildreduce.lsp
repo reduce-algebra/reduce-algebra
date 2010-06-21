@@ -30,7 +30,7 @@
 
 (window!-heading "basic CSL")
 
-(setq !*savedef (lessp (cdr (assoc 'c!-code lispsystem!*)) 20))
+(setq !*savedef (zerop (cdr (assoc 'c!-code lispsystem!*))))
 (make!-special '!*native_code)
 (setq !*native_code nil)
 
@@ -1506,7 +1506,7 @@ build_reduce_modules reduce_base_modules;
 
 symbolic restart!-csl nil;
 
-(setq !*savedef (lessp (cdr (assoc 'c!-code lispsystem!*)) 20))
+(setq !*savedef (zerop (cdr (assoc 'c!-code lispsystem!*))))
 (make!-special '!*native_code)
 (setq !*native_code nil)
 

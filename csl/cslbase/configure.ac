@@ -14,6 +14,8 @@
 #                     have any adverse effects so long as you retain BSD
 #                     licensing here. But if you included CSL in a closed
 #                     product (as BSD permits) think about this!
+#   --with-smallpage  build in way that may be better for small embedded
+#                     machines.
 #   --enable-debug    Switch on debugging.
 #
 #
@@ -170,8 +172,6 @@ AC_ARG_WITH(fox,
   [],
   [with_fox="no"])
 AC_MSG_NOTICE([--with-fox=$with_fox])
-
-
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
@@ -978,6 +978,21 @@ if test "x$CC" = "xx86_64-w64-mingw32-gcc"
 then
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
   win64="yes"
+fi
+
+AC_ARG_WITH(smallpage,
+   AC_HELP_STRING([--with-smallpage],
+                  [Use smaller block of memory to suit tiny computers]),
+   [],
+   [with_smallpage="no"])
+
+if test "x$with_smallpage" != "xno"
+then
+# Using 19 bits here causes allocation in pages each of which is 512Kbytes,
+# rather than the default 4M pages. A key limitation this introduces is that
+# any Lisp vector may then be at most 128K items long. I hope that not many
+# people will worry abou that.
+  CFLAGS="$CFLAGS -DPAGE_BITS=19"
 fi
 
 if test "x$GCC" = "xyes"

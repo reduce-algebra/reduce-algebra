@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 040d07a6 24-May-2008 */
+/* Signature: 47c51eaa 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -602,7 +602,9 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
  * This will have to look for (declare (special ...)).
  * compiler-let forces all of its bindings to be locally special. In
  * CSL mode I do not support local declarations, which simplifies and
- * speeds things up here.
+ * speeds things up here. Well to be more precise, I support DECLARE in
+ * the COmpiler, but in the interpreter in non-Common mode every variable
+ * is SPECIAL.
  */
 {
     Lisp_Object nil = C_nil;
@@ -829,7 +831,6 @@ static Lisp_Object cond_fn(Lisp_Object args, Lisp_Object env)
     return onevalue(nil);
 }
 
-#ifdef COMMON
 
 Lisp_Object declare_fn(Lisp_Object args, Lisp_Object env)
 /*
@@ -839,7 +840,8 @@ Lisp_Object declare_fn(Lisp_Object args, Lisp_Object env)
  * probably be better to arrange that (declare ...) never got evaluated
  * and then I could raise an error if this bit of code got activated.
  * Indeed (declare ...) probably does not ever get evaluated - still
- * a no-op here seems the safest bet.
+ * a no-op here seems the safest bet. And in CSL mode this allows one to
+ * have left DECLAREs in there for the benefit of the compiler.
  */
 {
     Lisp_Object nil = C_nil;
@@ -848,7 +850,6 @@ Lisp_Object declare_fn(Lisp_Object args, Lisp_Object env)
     return onevalue(nil);
 }
 
-#endif
 
 #define flagged_lose(v) \
     ((fv = qfastgets(v)) != nil && elt(fv, 1) != SPID_NOPROP)
@@ -1335,10 +1336,10 @@ setup_type const eval2_setup[] =
 /* DE and DM are used as low level primitives in the Common Lisp bootstrap */
     {"de",                      defun_fn, bad_special2, bad_specialn},
     {"dm",                      defmacro_fn, bad_special2, bad_specialn},
+    {"declare",                 declare_fn, bad_special2, bad_specialn},
 #ifdef COMMON
     {"block",                   block_fn, bad_special2, bad_specialn},
     {"compiler-let",            compiler_let_fn, bad_special2, bad_specialn},
-    {"declare",                 declare_fn, bad_special2, bad_specialn},
     {"flet",                    flet_fn, bad_special2, bad_specialn},
     {"labels",                  labels_fn, bad_special2, bad_specialn},
     {"let",                     let_fn, bad_special2, bad_specialn},

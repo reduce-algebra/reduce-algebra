@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 30df697e 10-Jun-2010 */
+/* Signature: 0ad36a52 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -370,66 +370,6 @@ static Lisp_Object prog_fn(Lisp_Object args, Lisp_Object env)
 #undef args
 #undef my_tag
 }
-
-#ifdef COMMON
-/*-- 
- *-- At one time I though I might implement PROG* in the kernel here, but
- *-- now it seems at least as reasonable to implement it is a Lisp-coded
- *-- macro that expands to BLOCK, LET* and TAGBODY, thus meaning that the
- *-- code that was supposed to be provided here is pretty-well irrelevant.
- *--
- *-- static Lisp_Object progstar_fn(Lisp_Object args, Lisp_Object env)
- *-- /*
- *--  * /* At present this is WRONG in that it is just a copy of prog_fn,
- *--  * so it awaits re-work to make the bindings happen in serial rather
- *--  * than parallel..
- *--  *  /
- *-- {
- *--     Lisp_Object p, nil = C_nil;
- *--     if (!consp(args) || !consp(qcdr(args))) return onevalue(nil);
- *--     stackcheck2(0, args, env);
- *--     push3(nil, args, env);
- *-- #define env    stack[0]
- *-- #define args   stack[-1]
- *-- #define my_tag stack[-2]
- *-- /*
- *--  * I need to augment the (lexical) environment with a null block
- *--  * tag so that (return ..) will work as required. See block_fn for
- *--  * further elaboration since (block ..) is the main way of introducing
- *--  * new block tags.
- *--  * /
- *--     my_tag = cons(fixnum_of_int(0), nil);
- *--     errexitn(3);
- *--     env = cons(my_tag, env);
- *--     errexitn(3);
- *--     p = let_fn_1(qcar(args), qcdr(args), env, BODY_PROG);
- *--     nil = C_nil;
- *--     if (exception_pending())
- *--     {   flip_exception(); /* Temp restore it * /
- *--         qcar(my_tag) = fixnum_of_int(2); /* Invalidate * /
- *--         if (exit_reason == UNWIND_RETURN && exit_tag == my_tag)
- *--         {   exit_reason = UNWIND_NULL;    /* not strictly needed - but tidy * /
- *--             popv(3);
- *--             return exit_value;
- *--         }
- *--         if ((exit_reason & UNWIND_ERROR) != 0)
- *--         {   err_printf("\nEvaluating: ");
- *--             loop_print_error(qcar(args));
- *--         }
- *--         flip_exception(); /* re-instate exit condition * /
- *--         popv(3);
- *--         return nil;
- *--     }
- *--     popv(3);
- *--     return onevalue(nil);
- *-- #undef env
- *-- #undef args
- *-- #undef my_tag
- *-- }
- *--
- */
-
-#endif
 
 Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env)
 {
@@ -1614,8 +1554,12 @@ setup_type const eval3_setup[] =
     {"prog",                    prog_fn, bad_special2, bad_specialn},
     {"prog1",                   prog1_fn, bad_special2, bad_specialn},
     {"prog2",                   prog2_fn, bad_special2, bad_specialn},
-/*  {"progn",                   progn_fn, bad_special2, bad_specialn}, */
-/*  {"quote",                   quote_fn, bad_special2, bad_specialn}, */
+/*
+ * progn and quote are initialised in restart.c so do not need
+ * to me included here - I put them in as comments as a reminder.
+ *  {"progn",                   progn_fn, bad_special2, bad_specialn},
+ *  {"quote",                   quote_fn, bad_special2, bad_specialn},
+ */
     {"return",                  return_fn, bad_special2, bad_specialn},
     {"setq",                    setq_fn, bad_special2, bad_specialn},
     {"noisy-setq",              noisy_setq_fn, bad_special2, bad_specialn},
@@ -1628,7 +1572,6 @@ setup_type const eval3_setup[] =
     {"macrolet",                macrolet_fn, bad_special2, bad_specialn},
     {"multiple-value-call",     mv_call_fn, bad_special2, bad_specialn},
     {"multiple-value-prog1",    mv_prog1_fn, bad_special2, bad_specialn},
-/*--{"prog*",                   progstar_fn, bad_special2, bad_specialn}, */
     {"progv",                   progv_fn, bad_special2, bad_specialn},
     {"return-from",             return_from_fn, bad_special2, bad_specialn},
     {"the",                     the_fn, bad_special2, bad_specialn},

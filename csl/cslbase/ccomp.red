@@ -1,4 +1,4 @@
-% "ccomp.red"                 Copyright 1991-2007,  Codemist Ltd
+% "ccomp.red"                 Copyright 1991-2010,  Codemist Ltd
 %
 % Compiler that turns Lisp code into C in a way that fits in
 % with the conventions used with CSL/CCL
@@ -348,7 +348,7 @@ symbolic procedure c!:cval_inner(x, env);
 % atoms and embedded lambda expressions need their own treatment.
     if atom x then return c!:catom(x, env)
     else if eqcar(car x, 'lambda) then
-       return c!:clambda(cadar x, 'progn . cddar x, cdr x, env)
+       return c!:clambda(cadar x, cddar x, cdr x, env)
 % a c!:code property gives direct control over compilation
     else if helper := get(car x, 'c!:code) then
        return funcall(helper, x, env)
@@ -377,10 +377,25 @@ symbolic procedure c!:cval(x, env);
   end;
 
 symbolic procedure c!:clambda(bvl, body, args, env);
+% This is for ((lambda bvl body) args) and it will need to deal with
+% local declarations at the head of body. On this call body is a list of
+% forms.
   begin
-    scalar w, fluids, env1;
+    scalar w, w1, fluids, env1, decs;
     env1 := car env;
     w := for each a in args collect c!:cval(a, env);
+    w1 := s!:find_local_decs(body, nil);
+    localdecs := car w1 . localdecs;
+    w1 := cdr w1;
+% Tidy up so that body is a single expression.
+    if null w1 then body := nil
+    else if null cdr w1 then body := car w1
+    else body := 'progn . w1;
+    for each x in bvl do
+       if not fluidp x and not globalp x and
+          c!:local_fluidp(x, localdecs) then <<
+          make!-special x;
+          decs := x . decs >>;
     for each v in bvl do <<
        if globalp v then begin scalar oo;
            oo := wrs nil;
@@ -404,6 +419,8 @@ symbolic procedure c!:clambda(bvl, body, args, env);
     w := c!:cval(body, env);
     for each v in fluids do
        c!:outop('strglob, cdr v, car v, c!:find_literal car v);
+    unfluid decs;
+    localdecs := cdr localdecs;
     return w
   end;
 
@@ -430,12 +447,26 @@ symbolic procedure c!:catom(x, env);
   begin
     scalar v, w;
     v := c!:newreg();
-    if idp x and (w := c!:locally_bound(x, env)) then
+% I may need to think harder here about things that are both locally
+% bound AND fluid. But when I bind a fluid I put a dummy name onto env
+% and use that as a place to save the old value of the fluid, so I believe
+% I may be safe. Well not quite I guess. How about
+%     (prog (a)                              % a local variable
+%        (prog (a) (declare (special a))  % hah this one os fluid!
+%              reference "a" here...
+% and related messes. So note that the outer binding means that a is
+% locally bound but the inner binding means that a fluid binding must
+% be used.
+    if idp x and (fluidp x or globalp x) then
+        c!:outop('ldrglob, v, x, c!:find_literal x)
+    else if idp x and (w := c!:locally_bound(x, env)) then
        c!:outop('movr, v, nil, cdr w)
     else if null x or x = 't or c!:small_number x then
        c!:outop('movk1, v, nil, x)
     else if not idp x or flagp(x, 'c!:constant) then
        c!:outop('movk, v, x, c!:find_literal x)
+% If a variable that is referenced is not locally bound then it is treated
+% as being fluid/global without comment.
     else c!:outop('ldrglob, v, x, c!:find_literal x);
     return v
   end;
@@ -565,15 +596,52 @@ symbolic procedure c!:ccall1(fn, args, env);
       
 fluid '(restart_label reloadenv does_call current_c_name);
 
+% Reminder: s!:find_local_decs(body, isprog) returns (L . B') where
+% L is a list of local declarations and B' is the body with any
+% initial DECLARE and string-comments removed. The body passed in and
+% the result returned are both lists of forms.
+
+
+symbolic procedure c!:local_fluidp1(v, decs);
+  decs and ((eqcar(car decs, 'special) and memq(v, cdar decs)) or
+            c!:local_fluidp1(v, cdr decs));
+
+symbolic procedure c!:local_fluidp(v, decs);
+  decs and (c!:local_fluidp1(v, car decs) or
+            c!:local_fluidp(v, cdr decs));
+
 %
 % The "proper" recipe here arranges that functions that expect over 2 args use
 % the "va_arg" mechanism to pick up ALL their args.  This would be pretty
 % heavy-handed, and at least on a lot of machines it does not seem to
 % be necessary.  I will duck it for a while more at least. BUT NOTE THAT THE
-% CODE I GENERATE HERE IS AT LEAST OFFICIALLY INCORRECT.
+% CODE I GENERATE HERE IS AT LEAST OFFICIALLY INCORRECT. If at some stage I
+% find a computer where the implementation of va_args is truly incompatible
+% with that for known numbers of arguments I will need to adjust things
+% here. Yuk.
 %
+% Just so I know, the code at presently generated tends to go
+%
+%  Lisp_Object f(Lisp_Object env, int nargs, Lisp_Object a1, Lisp_Object a2,
+%                Lisp_Object a3, ...)
+%  { // use a1, a2 and a3 as arguments
+% and note that it does put the "..." there!
+%
+% What it maybe ought to be is
+%
+%  Lisp_Object f(Lisp_Object env, int nargs, ...)
+%  {   Lisp_Object a1, a2, a3;
+%      va_list aa;
+%      va_start(aa, nargs);
+%      argcheck(nargs, 3, "f");
+%      a1 = va_arg(aa, Lisp_Object);
+%      a2 = va_arg(aa, Lisp_Object);
+%      a3 = va_arg(aa, Lisp_Object);
+%     va_end(aa);
+%
+% Hmm that is not actually that hard to arrange! Remind me to do it some time!
 
-fluid '(proglabs blockstack);
+fluid '(proglabs blockstack localdecs);
 
 symbolic procedure c!:cfndef(current_procedure,
                              current_c_name, argsbody, checksum);
@@ -581,12 +649,25 @@ symbolic procedure c!:cfndef(current_procedure,
     scalar env, n, w, current_args, current_block, restart_label,
            current_contents, all_blocks, entrypoint, exitpoint, args1,
            registers, stacklocs, literal_vector, reloadenv, does_call,
-           blockstack, proglabs, args, body;
+           blockstack, proglabs, args, body, localdecs;
     args := car argsbody;
     body := cdr argsbody;
+% If there is a (DECLARE (SPECIAL ...)) extract it here, aned leave a body
+% that is without it.
+    w := s!:find_local_decs(body, nil);
+    body := cdr w;
     if atom body then body := nil
     else if atom cdr body then body := car body
     else body := 'progn . body;
+    localdecs := list car w;
+% I expect localdecs to be a list a bit like
+%  ( ((special a b) (special c d) ...) ...)
+% and hypothetically it could have entries that were not tagged as
+% SPECIAL in it.
+%
+% The next line prints it to check.
+%   if localdecs then << princ "localdecs = "; print localdecs >>; % @@@
+%
 % Normally comment out the next line... It just shows what I am having to
 % compile and may be useful when debugging.
 %   print list(current_procedure, current_c_name, args, body);
@@ -597,13 +678,12 @@ symbolic procedure c!:cfndef(current_procedure,
 
     c!:find_literal current_procedure; % For benefit of backtraces
 %
-% cope with fluid vars in an argument list by mapping the definition
+% cope with fluid vars in an argument list by expanding the definition
 %    (de f (a B C d) body)     B and C fluid
-% onto
+% into
 %    (de f (a x y c) (prog (B C) (setq B x) (setq C y) (return body)))
 % so that the fluids get bound by PROG.
 %
-    if !*r2i then body := s!:r2i(current_procedure, args, body);
     current_args := args;
     for each v in args do
        if v = '!&optional or v = '!&rest then
@@ -616,11 +696,12 @@ symbolic procedure c!:cfndef(current_procedure,
           unglobal list v;
           fluid list v;
           n := (v . c!:my_gensym()) . n end
-       else if fluidp v then n := (v . c!:my_gensym()) . n;
-% Local fluid/special declarations are not coped with here... as in
-% (DECLARE (SPECIAL ...)) at the head of the body.
+       else if fluidp v or c!:local_fluidp(v, localdecs) then
+          n := (v . c!:my_gensym()) . n;
+    if !*r2i then body := s!:r2i(current_procedure, args, body);
     restart_label := c!:my_gensym();
     body := list('c!:private_tagbody, restart_label, body);
+% This bit sets up the PROG block for binding fluid arguments. 
     if n then <<
        body := list list('return, body);
        args := subla(n, args);
@@ -633,6 +714,8 @@ symbolic procedure c!:cfndef(current_procedure,
     if null args or length args >= 3 then c!:printf(", int nargs");
     n := t;
     env := nil;
+
+% Hah - here is where I will change things to use va_args for >= 3 args.
     for each x in args do begin
        scalar aa;
        c!:printf ",";
@@ -645,6 +728,11 @@ symbolic procedure c!:cfndef(current_procedure,
        c!:printf(" Lisp_Object %s", aa) end;
     if null args or length args >= 3 then c!:printf(", ...");
     c!:printf(")\n{\n");
+
+% Now I would need to do va_arg calls to declare the args and init them...
+% Except that I must do that within optimise_flowgraph after all possible
+% declarations have been generated.
+
     c!:startblock (entrypoint := c!:my_gensym());
     exitpoint := current_block;
     c!:endblock('goto, list list c!:cval(body, env . nil));
@@ -826,6 +914,11 @@ symbolic procedure c!:concat(a, b);
 symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
   begin
     scalar o, d, w;
+    reset!-gensym 0;   % Makes output more consistent
+!#if common!-lisp!-mode
+    my_gensym_counter := 0;
+!#endif
+    registers := available := used := nil;
 % File_name will be the undecorated name as a string when hdrnow is false,
     File_name := list!-to!-string explodec name;
     Setup_name := explodec setupname;
@@ -2308,6 +2401,8 @@ symbolic procedure c!:expand!-let(vl, b);
       if atom v then << vars := v . vars; vals := nil . vals >>
       else if atom cdr v then << vars := car v . vars; vals := nil . vals >>
       else << vars := car v . vars; vals := cadr v . vals >>;
+% if there is any DECLARE it will be at the start of b and the code that
+% deals with LAMBDA will cope with it.
     return ('lambda . vars . b) . vals
   end;
 
@@ -2483,9 +2578,21 @@ put('or, 'c!:code, function c!:cor);
 
 symbolic procedure c!:cprog(u, env);
   begin
-    scalar w, w1, bvl, local_proglabs, progret, progexit, fluids, env1;
+    scalar w, w1, bvl, local_proglabs, progret, progexit,
+           fluids, env1, body, decs;
     env1 := car env;
     bvl := cadr u;
+    w := s!:find_local_decs(cddr u, t);
+    body := cdr w;
+    localdecs := car w . localdecs;
+% Anything DECLAREd special that is not already fluid or global
+% gets uprated now. decs ends up a list of things that had their status
+% changed.
+    for each v in bvl do <<
+       if not globalp v and not fluidp v and
+          c!:local_fluidp(v, localdecs) then <<
+          make!-special v;
+          decs := v . decs >> >>;
     for each v in bvl do <<
        if globalp v then begin scalar oo;
           oo := wrs nil;
@@ -2494,6 +2601,7 @@ symbolic procedure c!:cprog(u, env);
           wrs oo;
           unglobal list v;
           fluid list v end;
+% Note I need to update local_decs
        if fluidp v then <<
           fluids := (v . c!:newreg()) . fluids;
           flag(list cdar fluids, 'c!:live_across_call); % silly if not
@@ -2505,7 +2613,7 @@ symbolic procedure c!:cprog(u, env);
           c!:outop('movk1, cdar env1, nil, nil) >> >>;
     if fluids then c!:outop('fluidbind, nil, nil, fluids);
     env := env1 . append(fluids, cdr env);
-    u := cddr u;
+    u := body;
     progret := c!:newreg();
     progexit := c!:my_gensym();
     blockstack := (nil . progret . progexit) . blockstack;
@@ -2531,6 +2639,8 @@ symbolic procedure c!:cprog(u, env);
       c!:outop('strglob, cdr v, car v, c!:find_literal car v);
     blockstack := cdr blockstack;
     proglabs := cdr proglabs;
+    unfluid decs;               % reset effect of DECLARE
+    localdecs := cdr localdecs;
     return progret
   end;
 
@@ -3251,6 +3361,20 @@ symbolic procedure c!:ctestequal(x, env, d1, d2);
   end;
 
 put('equal, 'c!:ctest, function c!:ctestequal);
+
+symbolic procedure c!:ctestneq(x, env, d1, d2);
+  begin
+    scalar a1, a2, r;
+    a1 := s!:improve cadr x;
+    a2 := s!:improve caddr x;
+    if a1 = nil then return c!:cjumpif(a2, env, d1, d2)
+    else if a2 = nil then return c!:cjumpif(a1, env, d1, d2);
+    r := c!:pareval(list(a1, a2), env);
+    c!:endblock((if c!:eqvalid a1 or c!:eqvalid a2 then 'ifeq else 'ifequal) .
+                  r, list(d2, d1))
+  end;
+
+put('neq, 'c!:ctest, function c!:ctestneq);
 
 symbolic procedure c!:ctestilessp(x, env, d1, d2);
   begin

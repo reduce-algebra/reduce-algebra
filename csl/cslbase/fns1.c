@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 173c968d 10-Jun-2010 */
+/* Signature: 4d9b2256 13-Jun-2010 */
 
 #include "headers.h"
 
@@ -1686,14 +1686,17 @@ Lisp_Object getvector(int tag, int type, int32_t size)
  * have a rather odd test that tries to enforce this on "standard" machines
  * but not on truly tiny ones. The specific judgement applied here is
  * that if the page size is at least 2M and I am on a 32--bit machine I will
- * use at most half the page. RTo be specific about the consequences, it means
- * that I can have an array of length up to about 512K not 1M in that case.
+ * use at most half the page. To be specific about the consequences, it means
+ * that I can have an array of length up to about 512K cells not 1M in
+ * that case. If I ask for someting too bif I will report the request size
+ * as if it has been for a vector of lisp items.
  */
         if (alloc_size >
             ((CSL_PAGE_SIZE>2000000 &&
               !SIXTY_FOUR_BIT) ? CSL_PAGE_SIZE/2 - 32 :
                                  CSL_PAGE_SIZE - 32))
-            return aerror("vector request too big");
+            return aerror1("vector request too big",
+                           fixnum_of_int(alloc_size/CELL-1));
         if (alloc_size > free)
 
         {   char msg[40];

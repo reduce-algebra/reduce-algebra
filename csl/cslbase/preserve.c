@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 0e4f0a5c 22-Apr-2010 */
+/* Signature: 2ab6bba2 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -2085,6 +2085,9 @@ int32_t Iread(void *buff, int32_t size)
 /*
  * This version is going to be slower but is an alternative to the
  * block-at-a-time reading code...
+ * [June 2010: hmmm I presumably put this in because of a bug of some
+ *  sort at some stage, but I can not remember when or exactly why. I
+ * ought to revisit it at some stage...]
  */
     unsigned char *p = (unsigned char *)buff;
     int nread = 0;

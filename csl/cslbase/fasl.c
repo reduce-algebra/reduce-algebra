@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 40f408ab 10-Jun-2010 */
+/* Signature: 49ffab25 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -484,6 +484,7 @@ case F_DOT:
                     return aerror("FASL file corrupted");
                 fasl_byte_count += operand;
             }
+            validate_string(r);
             return r;
 
     case F_BP3:                 /* n + 768 bytes of BPS */
@@ -1285,6 +1286,7 @@ Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
         IcloseInput(NO);
         Irestore_context(save);
         info = make_string(b);
+        validate_string(info);
         errexit();
         return onevalue(info);
     }

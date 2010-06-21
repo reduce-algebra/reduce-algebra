@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 17e546f3 10-Jun-2010 */
+/* Signature: 5ec15f29 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -3054,6 +3054,12 @@ Lisp_Object Lneq(Lisp_Object nil,
 #ifdef COMMON
     r = cl_equal(a, b);
 #else
+/*
+ * Note that "equal" here is a macro that expands to something that
+ * checks the EQ case in-line, so there is no merit in putting
+ *   if (a == b) return onevalue(nil);
+ * first.
+ */
     r = equal(a, b);
 #endif
     return onevalue(Lispify_predicate(!r));

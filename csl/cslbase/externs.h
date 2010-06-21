@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 5bf904dc 15-May-2010 */
+/* Signature: 30275d73 21-Jun-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -402,7 +402,6 @@ extern Lisp_Object vfringe;
 
 extern intptr_t nwork;
 
-extern intptr_t exit_reason;
 extern intptr_t exit_count;
 extern intptr_t gensym_ser, print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
@@ -444,9 +443,10 @@ extern Lisp_Object all_packages, package_symbol, internal_symbol;
 extern Lisp_Object external_symbol, inherited_symbol;
 extern Lisp_Object key_key, allow_other_keys, aux_key;
 extern Lisp_Object format_symbol;
-extern Lisp_Object expand_def_symbol, allow_key_key, declare_symbol;
-extern Lisp_Object special_symbol;
+extern Lisp_Object expand_def_symbol, allow_key_key;
 #endif
+
+extern Lisp_Object declare_symbol, special_symbol;
 
 #ifdef OPENMATH
 extern Lisp_Object MS_CDECL om_openFileDev(Lisp_Object env, int nargs, ...);
@@ -558,7 +558,7 @@ extern Lisp_Object * volatile stacklimit;
 #define miscflags             BASE[22]
 
 #define nwork                 BASE[24]
-#define exit_reason           BASE[25]
+/* #define exit_reason           BASE[25] */
 #define exit_count            BASE[26]
 #define gensym_ser            BASE[27]
 #define print_precision       BASE[28]
@@ -735,9 +735,17 @@ extern Lisp_Object volatile saveheaplimit;
 extern Lisp_Object volatile savevheaplimit;
 extern char *exit_charvec;
 
+/*
+ * There is no reason to preserve this across restarts etc so making it a
+ * simple C variable makes it easier for me to initialise it early.
+ */
+extern int exit_reason;
+
 #ifdef DEBUG
 extern int trace_all;
 #endif
+
+extern int garbage_collection_permitted;
 
 #define MAX_INPUT_FILES         40  /* limit on command-line length */
 #define MAX_SYMBOLS_TO_DEFINE   40
@@ -1064,6 +1072,13 @@ extern Lisp_Object times2(Lisp_Object a, Lisp_Object b);
 extern int32_t       thirty_two_bits(Lisp_Object a);
 #ifdef HAVE_INT64_T
 extern int64_t       sixty_four_bits(Lisp_Object a);
+#endif
+
+#ifdef DEBUG
+extern void validate_string_fn(Lisp_Object a, char *f, int l);
+#define validate_string(a) validate_string_fn(a, __FILE__, __LINE__)
+#else
+#define validate_string(a) 0
 #endif
 
 /*

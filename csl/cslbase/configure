@@ -750,6 +750,7 @@ enable_dependency_tracking
 with_xft
 enable_jit
 enable_static
+with_smallpage
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1405,6 +1406,7 @@ Optional Packages:
   --with-mingw=DIR        MingW installation location
   --with-fox-pending      do not check dir from --with-fox
   --with-xft              Can be used to disable use of XFT. Default is yes
+  --with-smallpage        Use smaller block of memory to suit tiny computers
 
 Some influential environment variables:
   CC          C compiler command
@@ -3276,8 +3278,6 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: --with-fox=$with_fox" >&5
 $as_echo "$as_me: --with-fox=$with_fox" >&6;}
-
-
 
 
 
@@ -8229,6 +8229,24 @@ then
 $as_echo "#define WIN64 1" >>confdefs.h
 
   win64="yes"
+fi
+
+
+# Check whether --with-smallpage was given.
+if test "${with_smallpage+set}" = set; then :
+  withval=$with_smallpage;
+else
+  with_smallpage="no"
+fi
+
+
+if test "x$with_smallpage" != "xno"
+then
+# Using 19 bits here causes allocation in pages each of which is 512Kbytes,
+# rather than the default 4M pages. A key limitation this introduces is that
+# any Lisp vector may then be at most 128K items long. I hope that not many
+# people will worry abou that.
+  CFLAGS="$CFLAGS -DPAGE_BITS=19"
 fi
 
 if test "x$GCC" = "xyes"

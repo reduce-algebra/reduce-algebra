@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 488e0aa9 10-Jun-2010 */
+/* Signature: 7ac7bc78 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -2481,6 +2481,8 @@ Lisp_Object use_gchook(Lisp_Object p, Lisp_Object arg)
     return onevalue(p);
 }
 
+int garbage_collection_permitted = 0;
+
 Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 {
     intptr_t i;
@@ -2626,6 +2628,19 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     memory_comment(4);
 #endif /* CHECK_ONLY */
 #endif /* MEMORY_TRACE */
+
+/*
+ * There are parts of the code in setup/restart where perhaps things are not
+ * yet in a consistent state and so any attempt at garbage collection could
+ * cause chaos. So during them I set a flag that I test here! Since this
+ * should never be triggered I am happy to leave it in state where the only
+ * sane way to respond to it is to run under a debugger and set breakpoints.
+ */
+    if (!garbage_collection_permitted)
+    {   fprintf(stderr,
+            "\n+++ Garbage collection attempt when not permitted\n");
+        my_exit(EXIT_FAILURE);    /* totally drastic... */
+    }
 
     push(p);
 

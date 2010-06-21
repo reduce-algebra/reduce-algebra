@@ -125,7 +125,7 @@ else << how_many := compress explodec how_many;
 
 << terpri(); princ "how_many = "; print how_many; nil >>;
 
-global '(omitted at_end);
+global '(omitted at_start at_end);
 
 % At any stage there may be some things that I must not even try to compile
 % into C because of bugs or limitations. I can list them here.
@@ -135,31 +135,9 @@ omitted := '(
     compile!-file!*         % &optional
     s!:compile!-file!*      % &optional
     fetch!-url              % &optional
-    begin                   % bootstrapping problems
-    module                  % bootstrapping problems
-    module!-to!-file        % bootstrapping problems
-    module2!-to!-file       % bootstrapping problems
-    olderfaslp              % bootstrapping problems
-    package!-remake
-    package!-remake2
-    update!-fasl2
-    upd!-fasl1
-    prinl
-    s!:prinl1
-    s!:prinl2
-    printl
-    princl
-    printcl
-    ps!:evaluate!-next      % unknown issue
-    unify                   % unknown issue
-    afactor                 % unknown issue
-    sroot1                  % unknown issue
-    cl_sitheo               % unknown issue
-    taysimpsq!*             % unknown issue but can cause utter collapse!
-    invbase!*               % unknown issue
-    simp!-prop
-    invlex
-    typerr                  % multiply defined in alg/intro, rlisp/lpri, scope/coddec
+    );
+
+at_start := '(
     );
 
 at_end := '(
@@ -321,68 +299,23 @@ w_reduce := for each n in w_reduce collect car n$
 % Discard things that give trouble...
 for each x in omitted do w_reduce := delete(x, w_reduce);
 
-% Compile some specific things last. This will be useful when I want to
-% force-compile some function while I am testing this procedure.
+% Compile some specific things first and others last. The ability to
+% override the normal priority order may be useful when I want to
+% force-compile some functions for testing purposes.
 
-w_reduce := append(w_reduce, at_end)$
+for each x in append(at_start, at_end) do <<
+   prin x; princ " "; print get(x, '!*savedef) >>;
+
+w_reduce := append(at_start, append(nreverse w_reduce, at_end))$
 
 for each m in library!-members() do load!-source m;
 
-% Now deal with patches...
+% Up through Reduce 3.8 there was a mechanism for distributing patches
+% that could be installed to correct or upgrade a base version. In the
+% Open Source model it seems way easiest for people to fetch or build
+% a full new image, and so I am not going to deal with patches any more.
 
-load!-source := t;
-if modulep 'patches then patch!-functions := load!-source 'patches
-else patch!-functions := nil;
-
-
-% Some of the functions just collected are not patches for bits of REDUCE
-% but are the code that installs the patches. I do not worry too much
-% about that here.
-% Now I will scan down w_reduce (the list of all things to be compiled into C)
-% and if that contains an entry either f1 or f1_123456789 and there is
-% an entry f2_abcdef in the list of patch-functions then I will
-% insert f2_abcdef into the list of things to be compiled into C just
-% next to plain f2 or f2_123456789.
-%
-% The way I do this will often set up a few false-matches but the cost of
-% them is just that some unimportant things will get compiled into C.
-
-
-global '(tag!-chars);
-
-tag!-chars := explodec "0123456789abcdefghijklmnopqrstuvwxyz";
-
-symbolic procedure trim!-suffix name;
-  begin
-    scalar w;
-    w := reverse explode name;
-    if eqcar(w, '!_) then w := cdr w;
-    if null w or not member(car w, tag!-chars) then return nil;
-    w := cdr w;
-    while w and member(car w, tag!-chars) do w := cdr w;
-    if not eqcar(w, '!_) then return nil;
-    w := cdr w;
-    if null w then return nil
-    else return compress reverse w
-  end;
-
-w := w_reduce$
-w_reduce := nil;
-
-while w do <<
-   w_reduce := car w . w_reduce;
-   p := trim!-suffix car w;
-   for each n in patch!-functions do
-     if not (n = car w) and
-        p and
-        not (n member w_reduce) and
-        p = trim!-suffix n then <<
-           w_reduce := n . w_reduce;
-           princ "+++ Also C-compile "; prin n; princ " as match for ";
-           prin car w; princ ": root is "; print p >>;
-   w := cdr w >>;
-
->>;
+ >>;
 
 if everything then <<
 
@@ -403,7 +336,7 @@ for each x in oblist() do
    if get(x, '!*savedef) and not memq(x, omitted) then
        w_reduce := x . w_reduce;
 
-w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seeme neat.
+w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seems neat.
 
 >>;
 

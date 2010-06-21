@@ -1931,9 +1931,26 @@ symbolic procedure s!:residual_local_decs(d, w);
 symbolic procedure s!:cancel_local_decs w;
    unfluid w;
 
-symbolic procedure s!:find_local_decs body;
+symbolic procedure s!:find_local_decs(body, isprog);
   begin
     scalar w, local_decs;
+% In my conversion from rlisp I wish to insert (DECLARE (SPECIAL ...))
+% clauses. In the case of PROG all is well and I can insert the declaration
+% at the start of the PROG block. For function definitions and free-standing
+% uses of LAMBDA I cound do the same and rely on the "implied-progn" feature
+% that I can support at the Lisp level. But there is a chance that other
+% parts of REDUCE that analyse or manipulate code may still think in
+% the old-fashioned style where you write (eg)
+%    (de name (args) body)
+% and body must be a single form. To cope with that I will, in that case,
+% map onto
+%    (de name (args) (progn (declare ...) original-body))
+% where in normal Lisp terms that DECLARE is a bit hidden. But fairly
+% simple code here can find it... If I have a form such as
+% the above where there is exactly one item forming the body and it is
+% a PROGN I uprate it to use an implied PROGN.
+    if not isprog and body and null cdr body and eqcar(car body, 'progn) then
+        body := cdar body;
     while body and (eqcar(car body, 'declare) or stringp car body) do <<
        if stringp car body then w := car body . w
        else local_decs := append(local_decs, cdar body);
@@ -1955,7 +1972,7 @@ symbolic procedure s!:comlambda(bvl, body, args, env, context);
   begin
     scalar s, nbvl, fluids, fl1, w, local_decs;
     nbvl := s := cdr env;
-    body := s!:find_local_decs body;
+    body := s!:find_local_decs(body, nil);
     local_decs := car body; body := cdr body;
     if atom body then body := nil
     else if atom cdr body then body := car body
@@ -2844,7 +2861,7 @@ symbolic procedure s!:outlose n;
 symbolic procedure s!:comprog(x, env, context);
   begin
     scalar labs, s, bvl, fluids, n, body, local_decs, w;
-    body := s!:find_local_decs cddr x;
+    body := s!:find_local_decs(cddr x, t);
     local_decs := car body; body := cdr body;
     n := 0;
     for each v in cadr x do w := s!:instate_local_decs(v, local_decs, w);
@@ -2875,7 +2892,7 @@ symbolic procedure s!:comprog(x, env, context);
        rplacd(env, (2 + length fluids) . cdr env);
        if context = 0 then context := 1 end;
 % use gensyms as internal names for the labels in this block
-    for each a in cddr x do
+    for each a in body do
        if atom a then <<
           if atsoc(a, labs) then <<
              if not null a then <<
@@ -2889,7 +2906,7 @@ symbolic procedure s!:comprog(x, env, context);
     s!:current_proglabels := labs . s!:current_proglabels;
     w := s!:residual_local_decs(local_decs, w);
 % handle the body of the prog
-    for each a in cddr x do
+    for each a in body do
        if not atom a then s!:comval(a, env, context+4)
        else begin
           scalar d;
@@ -2965,7 +2982,7 @@ put('progv, 's!:compfn, function s!:comprogv);
 symbolic procedure s!:comprog!*(x, env, context);
   begin
     scalar local_decs;
-    local_decs := s!:find_local_decs cddr x;
+    local_decs := s!:find_local_decs(cddr x, t);
 % Macroexpand as per CLTL trying to migrate declarations to the right place
     x := list('block, nil,
            list('let!*, cadr x,
@@ -3113,7 +3130,7 @@ symbolic procedure s!:expand_let!*(vl, local_decs, b);
 symbolic procedure s!:comlet!*(x, env, context);
   begin
     scalar b;
-    b := s!:find_local_decs cddr x;
+    b := s!:find_local_decs(cddr x, nil);
     return s!:comval(s!:expand_let!*(cadr x, car b, cdr b),
                      env, context)
   end;
@@ -4884,7 +4901,7 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
         w := name;
 !#endif
         puthash(w, !*where_defined!*, where!-was!-that()) >>;
-    body := s!:find_local_decs body;
+    body := s!:find_local_decs(body, nil);
     local_decs := car body; body := cdr body;
     if atom body then body := nil
     else if null cdr body then body := car body

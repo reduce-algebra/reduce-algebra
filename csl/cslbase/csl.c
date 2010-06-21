@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 53dc6717 10-Jun-2010 */
+/* Signature: 61367501 21-Jun-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1005,14 +1005,6 @@ static void lisp_main(void)
                             w1 = w + CSL_PAGE_SIZE + 16;
                         }
                     }
-/*
- * Well I have been having some pain that I do not understand - so here
- * I will zero out memory to try to make everything as repeatable as I can.
- * Well if I put in a pattern of 0x55 then that may prompt visible disasters
- * if any are due?
- */
-                    for (i=0; i<pages_count; i++)
-                        memset(pages[i], 0x55, CSL_PAGE_SIZE+16);
 /*
  * When I call restart-csl I will leave the random number generator where it
  * was. Anybody who wants to reset if either to a freshly randomised

@@ -1,3 +1,5 @@
+#define TRACE_NATIVE 1
+
 /*  restart.c                       Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
@@ -38,7 +40,7 @@
 
 
 
-/* Signature: 15521040 10-Jun-2010 */
+/* Signature: 4db9f4f7 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -272,8 +274,9 @@ Lisp_Object format_symbol;
 #endif
 Lisp_Object progn_symbol;
 #ifdef COMMON
-Lisp_Object expand_def_symbol, allow_key_key, declare_symbol, special_symbol;
+Lisp_Object expand_def_symbol, allow_key_key;
 #endif
+Lisp_Object declare_symbol, special_symbol;
 Lisp_Object lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 Lisp_Object codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
 Lisp_Object compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
@@ -2640,7 +2643,7 @@ static void init_heap_segments(double store_size)
  * (a) Building for an HP Ipaq 4700 PDA
  * (b) Building to run on a Linksys router (!)
  */
-#if defined UNDER_CE || PAGE_BITS == 18
+#if defined UNDER_CE || PAGE_BITS < 20
         free_space = 16000000;
 #endif
         request = (intptr_t)store_size;
@@ -2854,10 +2857,7 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     c3 = int_of_fixnum(lc3);
     sname = &celt(name, 0);
     len = length_of_header(vechdr(name)) - CELL;
-/*
- *  trace_printf("+++ Checking %.*s  %d %d %d\n",
- *               (int)len, sname, c1, c2, c3); 
- */
+  
                    p = find_checksum(sname, len, u01_setup);
     if (p == NULL) p = find_checksum(sname, len, u02_setup);
     if (p == NULL) p = find_checksum(sname, len, u03_setup);
@@ -2919,6 +2919,7 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     if (p == NULL) p = find_checksum(sname, len, u59_setup);
     if (p == NULL) p = find_checksum(sname, len, u60_setup);
     if (p == NULL) return aerror1("check-c-code", name);
+
     if (sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
         return aerror("check-c-code");
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
@@ -3988,17 +3989,30 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
 #endif
     a = LoadLibrary(objname);
     if (a == 0)
-    {   DWORD err = GetLastError();
-        char errbuf[80];
+    {   DWORD err = GetLastError(), err1;
+        LPTSTR errbuf = NULL;
 /*
  * If I let Windows pop up its message box I still seem to get more info
  * than FormatMessage presents me with... Specifically if the module I tried
  * to load refused to because of a symbol that it needed to load, the
  * pop up tells me the name of that symbol.
  */
-        err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
-                            NULL, err, 0, errbuf, 80, NULL);
-        if (err != 0) trace_printf("%s", errbuf);
+        err1 = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                             FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                             FORMAT_MESSAGE_IGNORE_INSERTS,
+                             NULL,
+                             err,
+                             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                             (LPTSTR)&errbuf,
+                             0,
+                             NULL);
+        if (err1 == 0 || errbuf==NULL)
+            trace_printf("FormatMessage on code %d failed with %d\n",
+                         (int)err, (int)GetLastError());
+        else
+        {   trace_printf("%s", errbuf);
+            LocalFree(errbuf);
+        }
     }
     SetErrorMode(ww);
 #ifdef TRACE_NATIVE
@@ -4430,6 +4444,16 @@ static void cold_setup()
     eq_hash_tables = equal_hash_tables = nil;
 
     current_package = nil;
+/*
+ * The code here is generally coded on the supposition that there will NEVER
+ * be a garbage collection here, so all the "fun" about push/pop and errexit
+ * tests can be omitted. That makes this code much cleaner! It means that
+ * during a cold start that there is enough space (well for a COLD start that
+ * hardly likely to be an issue!) and in a warm start that none of the
+ * calls that make strings or symbols etc here trigger a genuine garbage
+ * collection - that can probably be assured by ensuring that on restart there
+ * is at least a little bit of space in hand.
+ */
     qvalue(nil) = getvector_init(sizeof(Package), nil);
 #ifdef COMMON
     qpackage(nil) = qvalue(nil);    /* For sake of restart code */
@@ -4524,7 +4548,7 @@ static void cold_setup()
     opt_key             = make_undefined_symbol("&optional");
     rest_key            = make_undefined_symbol("&rest");
 #ifdef COMMON
-    key_key             = make_undefined_symbol("&key");
+    key_key      fined_symbol("&key");
     allow_other_keys    = make_undefined_symbol("&allow-other-keys");
     aux_key             = make_undefined_symbol("&aux");
 #endif
@@ -4567,7 +4591,6 @@ static void cold_setup()
 #endif
     gensym_base         = make_string("G");
 #ifdef COMMON
-    special_symbol      = make_undefined_symbol("special");
     expand_def_symbol   = make_undefined_symbol("expand-definer");
     format_symbol       = make_undefined_symbol("format");
     string_char_sym     = make_undefined_symbol("string-char");
@@ -4717,10 +4740,9 @@ void set_up_functions(CSLbool restartp)
     qheader(quote_symbol)   |= SYM_SPECIAL_FORM;
     progn_symbol             = make_symbol("progn", restartp, progn_fn, bad_special2, bad_specialn);
     qheader(progn_symbol)   |= SYM_SPECIAL_FORM;
-#ifdef COMMON
     declare_symbol           = make_symbol("declare", restartp, declare_fn, bad_special2, bad_specialn);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
-#endif
+    special_symbol           = make_undefined_symbol("special");
     cons_symbol              = make_symbol("cons", restartp, too_few_2, Lcons, wrong_no_2);
     eval_symbol              = make_symbol("eval", restartp, Leval, too_many_1, wrong_no_1);
     loadsource_symbol        = make_symbol("load-source", restartp, Lload_source, too_many_1, wrong_no_1);
@@ -5758,6 +5780,7 @@ void setup(int restartp, double store_size)
     int i;
     Lisp_Object nil;
     if (restartp & 2) init_heap_segments(store_size);
+    garbage_collection_permitted = 0;
     nil = C_nil;
 #ifdef TIDY_UP_MEMORY_AT_START
 /*
@@ -6126,6 +6149,7 @@ void setup(int restartp, double store_size)
         if (n > 1)
             term_printf("There are %d processors available\n", n);
     }
+    garbage_collection_permitted = 1;
     return;
 }
 
@@ -6155,7 +6179,7 @@ void copy_into_nilseg(int fg)
         BASE[22]                             = miscflags;
 
         BASE[24]                             = nwork;
-        BASE[25]                             = exit_reason;
+/*      BASE[25]                             = exit_reason; */
         BASE[26]                             = exit_count;
         BASE[27]                             = gensym_ser;
         BASE[28]                             = print_precision;
@@ -6273,9 +6297,13 @@ void copy_into_nilseg(int fg)
     BASE[179]    = format_symbol;
     BASE[180]    = expand_def_symbol;
     BASE[181]    = allow_key_key;
+#endif
+/*
+ * I USED to support these only in Common Lisp mode but now I find I need
+ * them even in Standard Lisp mode...
+ */
     BASE[182]    = declare_symbol;
     BASE[183]    = special_symbol;
-#endif
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -6320,7 +6348,7 @@ void copy_out_of_nilseg(int fg)
         miscflags        = BASE[22];
 
         nwork            = BASE[24];
-        exit_reason      = BASE[25];
+/*      exit_reason      = BASE[25]; */
         exit_count       = BASE[26];
         gensym_ser       = BASE[27];
         print_precision  = BASE[28];
@@ -6436,10 +6464,11 @@ void copy_out_of_nilseg(int fg)
     format_symbol         = BASE[179];
     expand_def_symbol     = BASE[180];
     allow_key_key         = BASE[181];
-    declare_symbol        = BASE[182];
-    special_symbol        = BASE[183];
 
 #endif
+
+    declare_symbol        = BASE[182];
+    special_symbol        = BASE[183];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

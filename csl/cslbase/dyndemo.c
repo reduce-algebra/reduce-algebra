@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6cfc8de7 24-May-2008 */
+/* Signature: 7d98a70b 21-Jun-2010 */
 
 #include "config.h"
 
@@ -100,7 +100,8 @@ int main(int argc, char *argv[])
     {   DWORD err = GetLastError();
         char errbuf[80];
         printf("Error code %ld = %lx\n", (long)err, (long)err);
-        err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+        err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                            FORMAT_MESSAGE_IGNORE_INSERTS,
                             NULL, err, 0, errbuf, 80, NULL);
         if (err != 0) printf("%s", errbuf);
         return 0;

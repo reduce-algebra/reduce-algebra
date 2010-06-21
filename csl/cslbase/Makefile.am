@@ -865,16 +865,16 @@ if windows
 # called ".svn" that should not be copied, so I can not merely use
 # a simple wild-card to copy everything!
 $(GP):
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/R* .
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/g* .
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/p* .
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/w* .
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
 	-mkdir -p share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/R* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/8* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/c* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/k* share/Postscript
-	$(CP) $(CYGSRC)/../support-packages/gnuplot-windows-bin/share/Postscript/p* share/Postscript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/R* share/Postscript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/8* share/Postscript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/c* share/Postscript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/k* share/Postscript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/p* share/Postscript
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
 	chmod +x *gnuplot*.exe

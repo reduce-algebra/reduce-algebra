@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1edf041c 10-Jun-2010 */
+/* Signature: 40e8f4ac 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -118,7 +118,29 @@ Lisp_Object make_string(const char *b)
         if (k != 0) *(int32_t *)(s + k) = 0;
     }
     memcpy(s + CELL, b, (size_t)n);
+    validate_string(r);
     return r;
+}
+
+void validate_string_fn(Lisp_Object s, char *file, int line)
+{
+    if (is_vector(s) &&
+        type_of_header(vechdr(s)) == TYPE_STRING)
+    {   int len = length_of_header(vechdr(s));
+        int len1 = doubleword_align_up(len);
+        while (len < len1)
+        {   if (celt(s, len-CELL) != 0)
+            {   fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
+                fflush(stderr);
+                *(int *)(Lisp_Object)(-1) = 0x55555555; /* I hope this aborts */
+            }
+            len++;
+        }
+        return;
+    }       
+    fprintf(stderr, "\n+++ Not even a string at %s %d\n", file, line);
+    fflush(stderr);
+    *(int *)(Lisp_Object)(-1) = 0x55555555; /* I hope this aborts */
 }
 
 static Lisp_Object copy_string(Lisp_Object str, int32_t n)
@@ -149,6 +171,7 @@ static Lisp_Object copy_string(Lisp_Object str, int32_t n)
         if (k != 0) *(int32_t *)(s + k) = 0;
     }
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
+    validate_string(r);
     return r;
 }
 
@@ -1013,6 +1036,7 @@ try_again:
             s = elt(vv, h);
             if (is_fixnum(s)) continue;
             p = qpname(s);
+            validate_string(p);
             hash = hash_lisp_string(p);
             if (number_of_chunks != 1)
             {   int32_t i = (hash ^ (hash >> 16)) % number_of_chunks;
@@ -1201,6 +1225,7 @@ static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
         }
         if (w != fixnum_of_int(1))
         {   pn = qpname(w);
+            validate_string(pn);
 /* v comes out of a package so has a proper pname */
             if (memcmp((char *)str + (CELL-TAG_VECTOR),
                        (char *)pn + (CELL-TAG_VECTOR),
@@ -1253,6 +1278,8 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
         if (exception_pending()) return 0;
     }
 #endif
+    validate_string(pn1);
+    validate_string(pn2);
     l1 = length_of_header(vechdr(pn1)) - CELL;
     l2 = length_of_header(vechdr(pn2)) - CELL;
     c = memcmp((char *)pn1 + (CELL-TAG_VECTOR),
@@ -1475,6 +1502,7 @@ static CSLbool remob(Lisp_Object sym, Lisp_Object v, Lisp_Object nv)
     uint32_t hash;
     uint32_t i = int_of_fixnum(nv), size, step, n;
     if (qheader(sym) & SYM_ANY_GENSYM) return NO; /* gensym case is easy! */
+    validate_string(str);
 #ifdef COMMON
 /* If not in any package it has no home & is not available */
     qheader(sym) &= ~SYM_EXTERN_IN_HOME & ~(0xffffffff<<SYM_IN_PKG_SHIFT);
@@ -1542,6 +1570,7 @@ static Lisp_Object Lmake_symbol(Lisp_Object nil, Lisp_Object str)
     pop(str);
     qheader(s) = TAG_ODDS+TYPE_SYMBOL;
     qvalue(s) = unset_var;
+    if (is_vector(str)) validate_string(str);
     qpname(s) = str;
     qplist(s) = nil;
     qfastgets(s) = nil;
@@ -1706,6 +1735,20 @@ static Lisp_Object Lgensymp(Lisp_Object nil, Lisp_Object a)
         (qheader(a) & SYM_CODEPTR) == 0 &&
         (qheader(a) & SYM_ANY_GENSYM) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
+}
+
+/*
+ * Normally gensyms are displayed as G0, G1, ... in sequence.
+ * After (reset!=gensym 1234) thet go on from G1234.
+ * The function returns the previous gensym counter. So (reset!-gensym nil)
+ * will read that but not reset the sequence.
+ */
+
+static Lisp_Object Lreset_gensym(Lisp_Object nil, Lisp_Object a)
+{
+    Lisp_Object n = 0, old = gensym_ser;
+    if (is_fixnum(a) && a >= 0) gensym_ser = int_of_fixnum(a) & 0x7fffffff;
+    return fixnum_of_int(old);
 }
 
 Lisp_Object iintern(Lisp_Object str, int32_t h, Lisp_Object p, int str_is_ok)
@@ -4137,7 +4180,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #else
                 trace_printf("\nReading module ");
 #endif
-                loop_print_trace(file); trace_printf("\n");
+                prin_to_trace(file); trace_printf("\n");
             }
             Lload_module(nil, stack[0]);
             errexitn(3);
@@ -4148,7 +4191,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #else
                 trace_printf("\nRead module ");
 #endif
-                loop_print_trace(stack[0]); trace_printf("\n");
+                prin_to_trace(stack[0]); trace_printf("\n");
             }
             popv(3);
 #ifdef COMMON
@@ -4182,9 +4225,9 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
         if (verbose)
         {   file = stack[0];
 #ifdef COMMON
-            trace_printf("\n;; Loading "); loop_print_trace(file); trace_printf("\n");
+            trace_printf("\n;; Loading "); prin_to_trace(file); trace_printf("\n");
 #else
-            trace_printf("\nReading "); loop_print_trace(file); trace_printf("\n");
+            trace_printf("\nReading "); prin_to_trace(file); trace_printf("\n");
 #endif
         }
         errexitn(3);
@@ -4201,7 +4244,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #else
             trace_printf("\nFinished reading ");
 #endif
-            loop_print_trace(stack[0]);
+            prin_to_trace(stack[0]);
             trace_printf(" (bad)\n");
         }
         if (stack[0] != nil)
@@ -4223,7 +4266,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
         trace_printf("\nRead ");
 #endif
     }
-    loop_print_trace(stack[0]);
+    prin_to_trace(stack[0]);
     trace_printf("\n");
     if (stack[0] != nil)
     {
@@ -4335,6 +4378,7 @@ static Lisp_Object MS_CDECL Lspool0(Lisp_Object nil, int nargs, ...)
 
 #ifdef COMMON
 
+/* The following two must be powers of 2 */
 #define STARTING_SIZE_X 32
 #define STARTING_SIZE_I 32
 
@@ -4346,21 +4390,32 @@ Lisp_Object make_package(Lisp_Object name)
  */
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object p = getvector_init(sizeof(Package), nil), w;
+    Lisp_Object p, w;
+    push(name);
+    p = getvector_init(sizeof(Package), nil);
+    pop(name);
     errexit();
     packhdr_(p) = TYPE_STRUCTURE + (packhdr_(p) & ~header_mask);
     packid_(p) = package_symbol;
     packname_(p) = name;
-    packext_(p) = getvector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
+    push(p);
+    w = getvector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
+    pop(p);
     errexit();
-    packint_(p) = getvector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
+    packext_(p) = w;
+    push(p);
+    w = getvector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
+    pop(p);
     errexit();
+    packint_(p) = w;
     packflags_(p) = fixnum_of_int(++package_bits);
     packvext_(p) = fixnum_of_int(1);
     packvint_(p) = fixnum_of_int(1);
     packnext_(p) = fixnum_of_int(0);
     packnint_(p) = fixnum_of_int(0);
+    push(p);
     w = cons(p, all_packages);
+    pop(p);
     errexit();
     all_packages = w;
     return onevalue(p);
@@ -4825,6 +4880,7 @@ setup_type const read_setup[] =
     {"gensym1",                 Lgensym1, too_many_1, wrong_no_1},
     {"gensym2",                 Lgensym2, too_many_1, wrong_no_1},
     {"gensymp",                 Lgensymp, too_many_1, wrong_no_1},
+    {"reset-gensym",            Lreset_gensym, too_many_1, wrong_no_1},
     {"getenv",                  Lgetenv, too_many_1, wrong_no_1},
     {"orderp",                  too_few_2, Lorderp, wrong_no_2},
     {"rdf",                     Lrdf1, Lrdf2, Lrdfn},

@@ -1,5 +1,5 @@
 The following functions on at least some Linux systems insist that the
-same versin of glibc is available at run time as when linking EVEN WHEN
+same version of glibc is available at run time as when linking EVEN WHEN
 STATIC LINKING IS USED. This seems to make a pretty fundamental mockery
 of the idea of static linking.
 
