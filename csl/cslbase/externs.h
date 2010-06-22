@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 30275d73 21-Jun-2010 */
+/* Signature: 45eae151 22-Jun-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -739,7 +739,7 @@ extern char *exit_charvec;
  * There is no reason to preserve this across restarts etc so making it a
  * simple C variable makes it easier for me to initialise it early.
  */
-extern int exit_reason;
+extern intptr_t exit_reason;
 
 #ifdef DEBUG
 extern int trace_all;
