@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 45bf91de 21-Jun-2010 */
+/* Signature: 4cf235ef 23-Jun-2010 */
 
 #include "headers.h"
 
@@ -2089,7 +2089,9 @@ case TAG_VECTOR:
 #ifdef COMMON
                             else if (ch == '\\') slen += 2;
 #endif
+#ifdef COMMON
                             else if (iscntrl(ch)) slen += 3;
+#endif
                             else slen += 1;
                         }
                         slen += 2;
@@ -2124,12 +2126,14 @@ case TAG_VECTOR:
                                 putc_stream('"', active_stream);
                             }
 #endif
+#ifdef COMMON
                             else if (iscntrl(ch))
                             {   putc_stream('\\', active_stream);
                                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                                 putc_stream(hexdig[ch & 0xf], active_stream);
                             }
                             else
+#endif
                             {
                                 if (escaped_printing & escape_fold_down)
                                     ch = tolower(ch);
