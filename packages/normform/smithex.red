@@ -452,6 +452,10 @@ symbolic procedure all_integer_entries_test(mat1);
          then off int_test;
       >>;
     >>;
+% Note that this is one of the very very few places in Reduce where
+% a string with an embedded newline is used. I will leave it in so that
+% it continues to test behaviour in that situation. But elsewhere people
+% will have used two calls to prin2t rather than one!
     if !*int_test then prin2t
     "*** WARNING: all matrix entries are integers.
     If calculations in Z(the integers) are required, use smithex_int.";
