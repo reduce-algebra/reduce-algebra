@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4cf235ef 23-Jun-2010 */
+/* Signature: 5d4dce6d 25-Jun-2010 */
 
 #include "headers.h"
 
@@ -2090,6 +2090,13 @@ case TAG_VECTOR:
                             else if (ch == '\\') slen += 2;
 #endif
 #ifdef COMMON
+/*
+ * I now guard this with "#ifdef COMMON". It is associated with displaying
+ * control characters within strings as escapes, as in a newline within a
+ * string being printed as \0a. Unless the code that reads strings back in
+ * understands the same conventions this is a mistake, and the Standard Lisp
+ * reader (and the readre in Reduce) do not...
+ */
                             else if (iscntrl(ch)) slen += 3;
 #endif
                             else slen += 1;
@@ -2099,7 +2106,8 @@ case TAG_VECTOR:
                     else slen = len;
                     outprefix(blankp, slen);
 /*
- * I will write out the fast, easy, common case here
+ * I will write out the fast, easy, common case here, ie "princ" where
+ * I do not have to do anything special with odd characters.
  */
                     if (!(escaped_printing &
                              (escape_yes | escape_fold_down |
@@ -2110,32 +2118,40 @@ case TAG_VECTOR:
                         }
                     }
                     else
-                    {   if (escaped_printing & escape_yes) putc_stream('"', active_stream);
+                    {   if (escaped_printing & escape_yes)
+                            putc_stream('"', active_stream);
                         for (k = 0; k < len; k++)
                         {   int ch = celt(stack[0], k);
                             static char *hexdig = "0123456789abcdef";
 #ifdef COMMON
+/*
+ * In Common Lisp mode I do something special with '"' and '\', and
+ * any control characters get mapped onto an escape sequence. If I ever
+ * moved to proper support for Unicode I would have significant extra work
+ * to do here.
+ */
                             if ((escaped_printing & escape_yes) &&
                                  (ch == '"' || ch == '\\'))
                             {   putc_stream('\\', active_stream);
                                 putc_stream(ch, active_stream);
                             }
-#else
-                            if ((escaped_printing & escape_yes) && ch == '"')
-                            {   putc_stream('"', active_stream);
-                                putc_stream('"', active_stream);
-                            }
-#endif
-#ifdef COMMON
                             else if (iscntrl(ch))
                             {   putc_stream('\\', active_stream);
                                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                                 putc_stream(hexdig[ch & 0xf], active_stream);
                             }
-                            else
+#else
+/*
+ * In Standard Lisp mode when I get a '"'  I print two doublequote. And that
+ * will be the only special case!
+ */
+                            if ((escaped_printing & escape_yes) && ch == '"')
+                            {   putc_stream('"', active_stream);
+                                putc_stream('"', active_stream);
+                            }
 #endif
-                            {
-                                if (escaped_printing & escape_fold_down)
+                            else
+                            {   if (escaped_printing & escape_fold_down)
                                     ch = tolower(ch);
                                 else if (escaped_printing & escape_fold_up)
                                     ch = toupper(ch);
