@@ -90,7 +90,8 @@ symbolic procedure mergex(u,v);
                     else if caddar u=caddar v and cdr u=cdr v
                then mksp({'expt,{'times,cadar u,cadar v},caddar u},cdr u)
                     else rederr 'foo
-           else mergey(cadar u,caddar u,car v,cdr u,cdr v)
+%           else mergey(cadar u,caddar u,car v,cdr u,cdr v)
+           else mergey(cadar u,caddar u,1,cdr u,cdr v)
     else if eqcar(car v,'expt) then mergey(car u,1,caddar v,cdr u,cdr v)
     else rederr {'mergex,u,v};
 
