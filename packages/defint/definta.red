@@ -1509,15 +1509,18 @@ symbolic procedure coefintg(u1,u2,u3);
        addsq(multsq(ccgf u1,(1-gl u2) . 1),
              multsq(ccgf u2,(1-gk u2) . 1)))))$
 
+% The procedure name "delta" had been changed to "defint_delta" to avoid
+% clashed with the cantens package.
+
 symbolic procedure deltagg(u1,u2,u3);
   list(
-     append( delta(car redpar1(ga u2,gn u2), gk u2),
+     append( defint_delta(car redpar1(ga u2,gn u2), gk u2),
       append(
-        delta( difflist( listmin gb u1, addsq(u3,'(-1 . 1))), gl u2),
-        delta( cdr redpar1(ga u2,gn u2), gk u2))),
-     append( delta(car redpar1(gb u2,gm u2), gk u2),
-      append(delta( difflist(listmin ga u1,addsq(u3,'(-1 . 1))),gl u2),
-        delta( cdr redpar1(gb u2,gm u2), gk u2))))$
+        defint_delta( difflist( listmin gb u1, addsq(u3,'(-1 . 1))), gl u2),
+        defint_delta( cdr redpar1(ga u2,gn u2), gk u2))),
+     append( defint_delta(car redpar1(gb u2,gm u2), gk u2),
+      append(defint_delta( difflist(listmin ga u1,addsq(u3,'(-1 . 1))),gl u2),
+        defint_delta( cdr redpar1(gb u2,gm u2), gk u2))))$
 
 symbolic procedure redpargf(u);
  begin scalar v1,v2;
@@ -1573,13 +1576,13 @@ lb1: a1:=caar x;a3:=car a1;
   x:=cdar x;go to lb1;
 end$
 
-symbolic procedure delta(u,n);
+symbolic procedure defint_delta(u,n);
   % u -- list of sq.
   % n -- number.
   if null u then nil else
     append(if n=1 then list car u else
              delta0(quotsq(car u,simp!* n),n,n)
-          ,delta(cdr u,n))$
+          ,defint_delta(cdr u,n))$
 
 symbolic procedure delta0(u,n,k);
   % u -- SQ.
