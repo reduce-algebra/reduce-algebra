@@ -69,7 +69,7 @@ begin scalar answer, result;
    answer:=answer* 2/(1+u^2);
    result:=int(answer,u);
    result:=sub({u=tan(var/2)},result);
-   result:=result+k(result,var,pi)*floor((var-pi)/(2*pi));
+   result:=result+trigint_k(result,var,pi)*floor((var-pi)/(2*pi));
    return result;
 end;
 
@@ -77,7 +77,7 @@ expr procedure apply_b(exp,var);
 begin scalar answer, result;
   answer:=sub_b(exp,var); answer:=answer*2/(1+u^2);
   result:=int(answer,u); result:= sub({u=tan(var/2+pi/4)}, result);
-  result:=result+k(result,var,pi/2)*floor((var-pi/2)/(2*pi));
+  result:=result+trigint_k(result,var,pi/2)*floor((var-pi/2)/(2*pi));
 return result;
 end;
 
@@ -85,7 +85,7 @@ expr procedure apply_c(exp, var);
 begin scalar answer, result;
  answer:=sub_c(exp,var); answer:= answer*(-2/(1+u^2));
  result:=int(answer,u); result:=sub({u=1/(tan(var/2))},result);
- result:=result+k(result,var,0)*floor(var/(2*pi));
+ result:=result+trigint_k(result,var,0)*floor(var/(2*pi));
  return result;
 end;
 
@@ -94,7 +94,7 @@ begin scalar answer, result;
   answer:=sub_d(exp,var);
   answer:=answer*(1/(1+u^2));
   result:=int(answer,u); result:= sub({u=tan(var)},result);
-  result:=result+k(result,var,pi/2)*floor((var-pi/2)/pi);
+  result:=result+trigint_k(result,var,pi/2)*floor((var-pi/2)/pi);
 return result;
 end;
 
@@ -126,7 +126,7 @@ end;
 
 % procedure to evaluate K
 
-expr procedure k(exp,var,val);
+expr procedure trigint_k(exp,var,val);
 limit!-(exp,var,val)-limit!+(exp,var,val);
 
 % two routines to see if we have either unevaluated limits or ints in our
@@ -159,7 +159,7 @@ end;
 expr procedure fail_b(exp,var);
 begin scalar temp;
      temp:=apply_b(exp,var);
-     %temp:=temp+k(temp,var,pi/2)*floor((var-pi/2)/(2*pi));
+     %temp:=temp+trigint_k(temp,var,pi/2)*floor((var-pi/2)/(2*pi));
      if(uneval_lim(temp)) then return t else
      <<
      if(uneval_int(temp)) then return t else return nil;
@@ -169,7 +169,7 @@ end;
 expr procedure fail_c(exp,var);
 begin scalar temp;
     temp:=apply_c(exp,var);
-    %temp:=temp+k(temp,var,0)*floor(var/(pi));
+    %temp:=temp+trigint_k(temp,var,0)*floor(var/(pi));
     if(uneval_lim(temp)) then return t else
     <<
       if(uneval_int(temp)) then return t else return nil;
@@ -179,7 +179,7 @@ end;
 expr procedure fail_d(exp,var);
   begin scalar temp;
         temp:=apply_d(exp,var);
-        %temp:=temp+k(temp,var,pi/2)*floor((var-pi/2)/pi);
+        %temp:=temp+trigint_k(temp,var,pi/2)*floor((var-pi/2)/pi);
   if(uneval_lim(temp)) then return t else
    <<
      if(uneval_int(temp)) then return t else return nil;
@@ -212,7 +212,7 @@ on usetaylor;
 if freeof(exp,sin(var)) then % we use substitution (a)
    <<
      answer:=apply_a(exp,var);
-     %answer:=answer+k(answer,var,pi)*floor((var-pi)/(2*pi));
+     %answer:=answer+trigint_k(answer,var,pi)*floor((var-pi)/(2*pi));
      if(fail(answer)) then % system can't evaluate after subs
      <<
        if(lisp !*tracetrig) then

@@ -24,7 +24,7 @@ module linalg;   % The Linear Algebra package.
 %   char_poly        cholesky       coeff_matrix      column_dim       %
 %   companion        copy_into      diagonal          extend           %
 %   get_columns      get_rows       gram_schmidt      hermitian_tp     %
-%   hessian          hilbert        jacobian          jordan_block     %
+%   hessian          hilbert        mat_jacobian      jordan_block     %
 %   lu_decom         make_identity  matrix_augment    matrixp          %
 %   matrix_stack     minor          mult_column       mult_row         %
 %   pivot            pseudo_inverse random_matrix     remove_columns   %
@@ -1935,9 +1935,9 @@ flag('(pivot,rows_pivot),'opfn);
 
 
 
-symbolic procedure jacobian(exp_list,var_list);
+symbolic procedure mat_jacobian(exp_list,var_list);
   %
-  % jacobian(exp,var) computes the Jacobian matrix of exp w.r.t. var.
+  % mat_jacobian(exp,var) computes the Jacobian matrix of exp w.r.t. var.
   % The (i,j)'th entry is diff(nth(exp,i),nth(var,j)).
   %
   begin
@@ -1945,11 +1945,11 @@ symbolic procedure jacobian(exp_list,var_list);
     integer i,j,rowdim,coldim;
     if atom exp_list then exp_list := {exp_list}
      else if car exp_list neq 'list then rederr
-     "Error in jacobian(first argument): expressions must be in a list."
+     "Error in mat_jacobian(first argument): expressions must be in a list."
       else exp_list := cdr exp_list;
     if atom var_list then var_list := {var_list}
      else if car var_list neq 'list then rederr
-      "Error in jacobian(second argument): variables must be in a list."
+      "Error in mat_jacobian(second argument): variables must be in a list."
       else var_list := cdr var_list;
     rowdim := length exp_list;
     coldim := length var_list;
@@ -1966,7 +1966,7 @@ symbolic procedure jacobian(exp_list,var_list);
     return jac;
   end;
 
-flag('(jacobian),'opfn);
+flag('(mat_jacobian),'opfn);
 
 
 
