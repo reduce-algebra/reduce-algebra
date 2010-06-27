@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:54 2009 run on win32
+Sun Jun 27 08:18:34 2010 run on win32
 if lisp !*rounded then rounded_was_on := t 
  else rounded_was_on := nil;
 
@@ -924,7 +924,10 @@ hilbert(3,y+x);
 
 
 
-jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z});
+% NOTE WELL. The function tested here used to be called just "jacobian"
+% however us of that name was in conflict with another Reduce package so
+% now it is called mat_jacobian.
+mat_jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z});
 
 
 [      3                 ]
@@ -2207,5 +2210,5 @@ if not rounded_was_on then off rounded;
 END;
 
 
-Time for test: 278 ms
-@@@@@ Resources used: (0 0 56 9)
+Time for test: 879 ms
+@@@@@ Resources used: (0 1 56 9)

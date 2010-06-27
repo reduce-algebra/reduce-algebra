@@ -104,7 +104,10 @@ hessian(poly1,{w,x,y,z});
 hilbert(4,1);
 hilbert(3,y+x);
 
-jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z});
+% NOTE WELL. The function tested here used to be called just "jacobian"
+% however us of that name was in conflict with another Reduce package so
+% now it is called mat_jacobian.
+mat_jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z});
 
 jordan_block(x,5);
 
