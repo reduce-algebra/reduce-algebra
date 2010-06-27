@@ -78,9 +78,9 @@ switch trpm;
 
 put('m,'psopfn,'mx);
 
-symbolic procedure mx u; m1(reval car u,reval cadr u);
+symbolic procedure mx u; pm_m1(reval car u,reval cadr u);
 
-symbolic procedure m1(exp, temp);
+symbolic procedure pm_m1(exp, temp);
    begin scalar substitution, mmatch, count, freevars;
       count := 0;
       freevars := idsort union(findnewvars temp,nil);
@@ -374,12 +374,12 @@ if null rulelist or not atom caar rulelist then rule . rulelist
 
 symbolic procedure superset(temp1,temp2);
    begin scalar mmatch;
-      mmatch := m1(temp2,temp1);
+      mmatch := pm_m1(temp2,temp1);
       return(
          if null mmatch then nil
          else if mmatch eq 't then 'equal
          else if not bound2gen(cdr mmatch) then t
-         else if null (mmatch := m1(temp1,temp1)) then  t
+         else if null (mmatch := pm_m1(temp1,temp1)) then  t
          else 'equal)
    end;
 
