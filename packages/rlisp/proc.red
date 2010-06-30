@@ -43,7 +43,7 @@ symbolic procedure mkprogn(u,v);
    if eqcar(v,'progn) then 'progn . u . cdr v else list('progn,u,v);
 
 symbolic procedure formproc(u,vars,mode);
-   begin scalar body,fname!*,name,type,varlis,x,y;
+   begin scalar body,fname!*,name,type,varlis,x,y,fl;
         u := cdr u;
         name := fname!* := car u;
         if cadr u then mode := cadr u;   % overwrite previous mode
@@ -56,11 +56,28 @@ symbolic procedure formproc(u,vars,mode);
          else if !*redeflg!* and getd name
           then lprim list(name,"redefined");
         varlis := cadr u;
-        u := caddr u;
-        x := if eqcar(u,'rblock) then cadr u else nil;
+!#if (memq 'csl lispsystem!*)
+   l:   if null varlis then go to x;
+        if fluidp car varlis or globalp car varlis then
+          fl := car varlis . fl;
+        varlis := cdr varlis;
+        go to l;
+   x:   varlis := cadr u;
+!#endif
+        body := caddr u;
+        x := if eqcar(body,'rblock) then cadr body else nil;
         y := pairxvars(varlis,x,vars,mode);
-        if x then u := car u . rplaca!*(cdr u,cdr y);
-        body:= form1(u,car y,mode);   % FORMC here would add REVAL.
+        if x then body := car body . rplaca!*(cdr body,cdr y);
+        body:= form1(body,car y,mode);   % FORMC here would add REVAL.
+!#if (memq 'csl lispsystem!*)
+% Note the non-Common way in which the DECLARE sits within a PROGN here.
+% Furthermore I only insert DECLARE for sort-of ordinary functions.
+% Specifically this will not include "smacro procedure"...
+        if fl and type memq '(expr fexpr macro) then
+         body:=list('progn,
+                    list('declare, 'special . fl),
+                    body);
+!#endif
         if !*nosmacros and type eq 'smacro then type := 'expr;
         if not(type eq 'smacro) and get(name,'smacro)
           then lprim list("SMACRO",name,"redefined");

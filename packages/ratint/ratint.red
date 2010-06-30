@@ -109,7 +109,7 @@ end;
 %off factor;
 % input is polynomials a and b, in variable var
 on rational;
-%expr procedure u(exp,var);
+%expr procedure ratint_u(exp,var);
 %lcof(exp,var);
 
 expr procedure norm(exp,var);
@@ -134,12 +134,12 @@ while(d neq 0) do
     c:=d; c1:=d1; c2:=d2;
     d:=r; d1:=r1; d2:=r2;
   >>;
-s:=c1/(u(a,var)*u(c,var));
-b:=c2/(u(b,var)*u(c,var));
+s:=c1/(ratint_u(a,var)*ratint_u(c,var));
+b:=c2/(ratint_u(b,var)*ratint_u(c,var));
 return({s,b});
 end;
 
-expr procedure u(exp,var);
+expr procedure ratint_u(exp,var);
 if(numberp(exp)) then exp else
 lcof(exp,var);
 
@@ -424,11 +424,11 @@ gamma:=alpha;
 %a:=gamma*a;
 
 %u1:=n(u1,x);
-u1:=phi(u1,x,p); write "u1 is ", u1;
+u1:=ratint_phi(u1,x,p); write "u1 is ", u1;
 
 off modular;
-w1:=phi(alpha*w1,x,p); off modular;% write "w1 is ", w1;
-%w1:=phi(alpha*w1,x,p); off modular;% write "w1 is ",w1;
+w1:=ratint_phi(alpha*w1,x,p); off modular;% write "w1 is ", w1;
+%w1:=ratint_phi(alpha*w1,x,p); off modular;% write "w1 is ",w1;
 
 eea_result:=gcd_ex(u1,w1,x);
 
@@ -450,13 +450,13 @@ while(ef neq 0 and modulus<2*B*gamma) do
     <<
 
        c:=ef/modulus;% write "c is ", c; off modular;
-      sigma_tilde:=phi(s*c,x,p); off modular;
-      tau_tilde:=phi(tt*c,x,p); off modular;
+      sigma_tilde:=ratint_phi(s*c,x,p); off modular;
+      tau_tilde:=ratint_phi(tt*c,x,p); off modular;
       %
        re:=pseudorem(sigma_tilde,w1,x);
 
       r:=part(re,1)/part(re,2); quo:=part(re,3)/part(re,2);
-     sigma:=re; tau:=phi(tau_tilde+quo*u1,x,p); off modular;
+     sigma:=re; tau:=ratint_phi(tau_tilde+quo*u1,x,p); off modular;
       % update the factors and compute the error
       u:=u+tau*modulus;  w:=w+sigma*modulus;
      % write "u is ",u; write "w is ",w; write "ef is ", ef;
@@ -522,13 +522,13 @@ end;
 %polydi(x^2+(7/6)*x+(1/3),2*x+(7/6),-(4425/2)*x-(5525/4),x);
 
 % -------------------------------------------------------------------------
-expr procedure phi(exp,var,p);
+expr procedure ratint_phi(exp,var,p);
  begin scalar prime;
  prime:=p;
  if(primep p) then << on modular;
                       setmod p;
                       exp:=exp mod p;% off modular;
-                   >> else rederr "p sahould be prime";
+                   >> else rederr "p should be prime";
  return exp;
  end;
 

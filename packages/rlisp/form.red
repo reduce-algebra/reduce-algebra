@@ -51,8 +51,31 @@ symbolic procedure formcond1(u,vars,mode);
 
 put('cond,'formfn,'formcond);
 
+
+
+
+% See formprog for commentary.
+% NOTE that this can create a LAMBDA with a PROGN, as
+% in (lambda (q) (progn 
+%                  (declare (special q))
+%                  original_body)
+% which hides the DECLARE within a PROGN. This is so that there
+% remains just one item in the body.
+
 symbolic procedure formlamb(u,vars,mode);
-   list('lambda,cadr u,form1(caddr u,pairvars(cadr u,vars,mode),mode));
+   begin scalar v, b, fl;
+      v := cadr u;
+      b := list form1(caddr u, pairvars(v,vars,mode),mode);
+!#if (memq 'csl lispsystem!*)
+l:    if null v then go to x;
+      if fluidp car v or globalp car v then fl := car v . fl;
+      v := cdr v;
+      go to l;
+x:    if fl then b := list('declare, 'special . fl) . b;
+      v := cadr u;
+!#endif
+      return 'lambda . v . b;
+   end;
 
 put('lambda,'formfn,'formlamb);
 
@@ -296,8 +319,14 @@ symbolic procedure !*!*a2s(u,vars);
     % Expressions involving "random" cannot be cached.
     % We need smember rather than smemq in case the "random" is
     % in a quoted expression.
+!#if (memq 'csl lispsystem!*)
+    else if smember('random,u) then
+     list(list('lambda,'(!*uncached),
+       list('progn, '(declare (special !*uncached)), list(!*!*a2sfn,u))),t)
+!#else
     else if smember('random,u) then
      list(list('lambda,'(!*uncached),list(!*!*a2sfn,u)),t)
+!#endif
     else list(!*!*a2sfn,u);
 
 symbolic procedure !*!*s2a(u,vars); u;

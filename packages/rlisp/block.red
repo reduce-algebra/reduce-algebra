@@ -137,10 +137,31 @@ symbolic procedure symbvarlst(vars,body,mode);
       go to a
    end;
 
+symbolic procedure make_prog_declares(v, b);
+   begin
+!#if (memq 'csl lispsystem!*)
+% This detects any bound variables that are fluid (or global) at the
+% time I process this code and adds in a DECLARE to remind us about
+% that fact.
+     scalar w, r;
+     w := v;
+  l: if null w then go to x;
+     if fluidp car w or globalp car w then r := car w . r;
+     w := cdr w;
+     go to l;
+  x: if r then b := list('declare, 'special . r) . b;
+!#endif
+     return ('prog . v . b)
+   end;
+
 symbolic procedure formblock(u,vars,mode);
-   progn(symbvarlst(cadr u,cddr u,mode),
-         'prog . append(initprogvars cadr u,
-                        formprog1(cddr u,append(cadr u,vars),mode)));
+   begin scalar w;
+     symbvarlst(cadr u,cddr u,mode); % Merely report on any unused vars
+     w := initprogvars cadr u;
+     return make_prog_declares(car w,
+                      append(cdr w,
+                             formprog1(cddr u,append(cadr u,vars),mode)));
+   end;
 
 symbolic procedure initprogvars u;
    begin scalar x,y,z;
@@ -154,7 +175,8 @@ symbolic procedure initprogvars u;
    end;
 
 symbolic procedure formprog(u,vars,mode);
-   'prog . cadr u . formprog1(cddr u,pairvars(cadr u,vars,mode),mode);
+   make_prog_declares(cadr u, formprog1(cddr u,pairvars(cadr u,vars,mode),mode));
+
 
 symbolic procedure formprog1(u,vars,mode);
    if null u then nil
@@ -173,6 +195,7 @@ put('prog,'formfn,'formprog);
 
 put('begin,'stat,'blockstat);
 
+flag('(declare), 'noform);
 
 % ***** Return Statement *****
 

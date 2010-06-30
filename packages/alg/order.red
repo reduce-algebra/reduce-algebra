@@ -54,6 +54,19 @@ symbolic procedure ordn u;
 symbolic procedure ord2(u,v);
    if ordp(u,v) then list(u,v) else list(v,u);
 
+
+
+!#if (not (memq 'csl lispsystem!*))
+
+% A version of ordp is provided built-in to CSL and the version there
+% is intended to behave just the way that this does. Now until recently I
+% had used a LOSE flag to make that the version that got used. However both
+% helphy/noncom2 and spde/spde redefine ordp - and if I use a LOSE flag
+% then their redefinitions get discarded as well as this one. Hence I am
+% moving to the ugly and somwhat unsatisfactory use of !#if. A better
+% resolution will be to arrange that neither hephys nor spde redefine
+% this function!
+
 symbolic procedure ordp(u,v);
    % Returns TRUE if U ordered ahead or equal to V, NIL otherwise.
    % An expression with more structure at a given level is ordered
@@ -79,6 +92,8 @@ symbolic procedure ordp(u,v);
      then if flagp(car v,'noncom) then ordp(car u, car v) else t
     else if flagp(car v,'noncom) then nil
     else ordp(car u,car v);
+
+!#endif
 
 symbolic procedure ordpl(u,v);
    % Returns TRUE if list U ordered ahead or equal to V, NIL otherwise.

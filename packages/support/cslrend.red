@@ -312,7 +312,7 @@ this purpose are as follows;
 
 flag('(iplus itimes iplus2 itimes2 iadd1 isub1 iminus iminusp
        idifference iquotient iremainder ilessp igreaterp ileq igeq
-       izerop ionep), 'lose);
+       izerop ionep apply1 apply2 apply3), 'lose);
 
 Comment There are also a number of system constants required for each
 implementation. In systems that don't support inums, the equivalent
@@ -626,10 +626,14 @@ flag('(mkquote spaces subla boundp error1),'lose);
 flag('(union intersection), 'lose);
 
 flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot
-%      safe!-fp!-pl safe!-fp!-pl0
     ), 'lose);
 
-flag('(threevectorp ordp), 'lose);
+% I USED to flag ordp as LOSE, but there are three different definitions in
+% different places within Reduce and the LOSE mechanism is not quite
+% refined enough to allow for the single one of them that has a version
+% built into CSL directly.
+
+flag('(threevectorp), 'lose);
 
 deflist('((imports rlis)),'stat);
 

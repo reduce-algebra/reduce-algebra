@@ -221,8 +221,8 @@ symbolic procedure calc_exgcd(poly1,poly2,x);
       >>;
 
       gcd := reval norm(c,x);
-      s1  := reval{'quotient,c1,{'times,unit(poly1,x),unit(c,x)}};
-      t1  := reval{'quotient,c2,{'times,unit(poly2,x),unit(c,x)}};
+      s1  := reval{'quotient,c1,{'times,normform_unit(poly1,x),normform_unit(c,x)}};
+      t1  := reval{'quotient,c2,{'times,normform_unit(poly2,x),normform_unit(c,x)}};
 
     return {gcd,s1,t1};
     >>;
@@ -241,7 +241,7 @@ symbolic procedure norm(poly,x);
 
 
 
-symbolic procedure unit(poly,x);
+symbolic procedure normform_unit(poly,x);
   begin
     scalar unit1;
     if poly = 0 then unit1 := 1
