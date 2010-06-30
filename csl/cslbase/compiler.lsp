@@ -3306,9 +3306,8 @@ c!:ccompilesupervisor) (princ "End of file ") (print u) (close (rds w)))) (t
 (progn (princ "Failed to open file ") (print u)))))) (t (cond ((eqcar u (
 quote de)) (progn (setq u (cdr u)) (setq checksum (md60 u)) (setq defnames (
 cons (list (car u) (c!:inv_name (car u)) (length (cadr u)) checksum) defnames
-)) (cond ((neq (posn) 0) (terpri))) (princ "Compiling ") (prin (caar defnames
-)) (princ " ... ") (c!:cfndef (caar defnames) (cadar defnames) (cdr u) 
-checksum) (terpri))))))))
+)) (princ "Compiling ") (prin (caar defnames)) (princ " ... ") (c!:cfndef (
+caar defnames) (cadar defnames) (cdr u) checksum) (terpri))))))))
 
 (fluid (quote (!*defn dfprint!* dfprintsave)))
 

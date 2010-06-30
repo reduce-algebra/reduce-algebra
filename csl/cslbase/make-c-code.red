@@ -42,7 +42,7 @@ on echo;
 %
 % I will also allow for a file "unprofile.dat" that can be used to provide
 % extra help with modules where the module maintainer is unable to provide
-% test cases thar generate reliable profile date.
+% test cases that generate reliable profile date.
 %
 % If full_c_code is defined then rather than paying much attention
 % to profile.dat it attempts to compile everything into C! Note that
@@ -65,7 +65,15 @@ symbolic;
 %                file of generated C being in the range 120 to 150 Kbytes.
 %
 %   force_count  indicates how many functions from alg.tst statistics should
-%                be included before anything else.
+%                be included before anything else. The idea for this is
+%                rooted in old days when alg.tst was *THE* Reduce test and
+%                overall performance was often judged solely on how well
+%                it ran. I will now make the value of force_count rather
+%                small so as not to perturb more globally rational profile-
+%                based judgements! But in fact most of the things that are
+%                heavily used in alg.tst are used elswehere. I suspect that
+%                these days the only exceptions will be the high energy
+%                physics stuff. 
 %
 
 %
@@ -107,7 +115,15 @@ else size_per_file := 7000;
 
 << terpri(); princ "size_per_file = "; print size_per_file; nil >>;
 
-force_count := 350;
+% At the time of writing these are the top 5 functions used by alg.tst
+%
+%  (noncomp 363494365036146324 11 285540)
+%  (simpcar 1247942846384282646 7 167232)
+%  (reval 607148151428708743 8 186615)
+%  (terminalp 570814658694331872 12 229779)
+%  (delcp 2216652391477548477 8 131682)
+
+force_count := 5;
 
 % You may well ask "what is it with the number 667 here". Well that sets
 % a default number of functions to be compiled into C that matches the
@@ -132,11 +148,45 @@ global '(omitted at_start at_end);
 
 omitted := '(
     s!:prinl0               % uses unwind-protect
+    prinl                   % Ha ha - this being turned into C makes it seem
+                            % available before it really is!
+
     compile!-file!*         % &optional
     s!:compile!-file!*      % &optional
     fetch!-url              % &optional
+
+    begin                   % bootstrapping issue
+    module2!-to!-file       % ditto
+    olderfaslp              % ditto (some time I will investigate and
+                            % maybe fix these "bootstrapping" issues...
+    package!-remake2        % ditto
+    update!-fasl2           % ditto
+    upd!-fasl1              % ditto
+    update_prompt           % ditto
+
+    linelength              % horrid use of copyd etc in tmprint.red
+    setpchar                % horrid use of copyd.. also in tmprint.red
+    ordp                    % redefined in helphy/noncom2 and spde/spde
+    unit                    % name conflict.
+
+    pasf_bapprox            % Unknown issue! Maybe bug in ccomp.red?
+
+    typerr                  % typerr and symerr are defined in makereduce.lsp
+    symerr                  % but there are slightly versions elsewhere.
     );
 
+% There is a bit of a mess-up if something that has been given an autoload
+% stub gets compiled into C so I will try to identify any such and mark
+% them as unsuitable for compilation.
+
+for each x in oblist() do
+ if eqcar(d := getd(x), 'expr) and
+    consp cdr d and consp cddr d and consp cdddr d then <<
+   d := cadddr d;
+   if eqcar(d, 'progn) and cdr d and eqcar(cadr d, 'load!-package) then <<
+      princ "+++ "; prin x; printc " looks like an autoload stub. Omit here";
+      omitted := x . omitted >> >>;
+   
 at_start := '(
     );
 
@@ -319,6 +369,7 @@ for each m in library!-members() do load!-source m;
 
 if everything then <<
 
+
 % load!-source being true causes a !*savedef to be loaded for every function
 % in the module. Without it a definition only gets picked up if a load!-source
 % property has been set on the name.
@@ -337,6 +388,11 @@ for each x in oblist() do
        w_reduce := x . w_reduce;
 
 w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seems neat.
+
+for each x in at_start do w_reduce := delete(x, w_reduce);
+for each x in at_end do w_reduce := delete(x, w_reduce);
+
+w_reduce := append(at_start, append(w_reduce, at_end));
 
 >>;
 
@@ -377,9 +433,11 @@ while fnames do begin
       else <<
          bulk := listsize(defn, bulk);
          if bulk < size_per_file then <<
+            count := count+1;
+            princ count;
+            princ ": ";
             c!:ccmpout1 ('de . name . cdr defn);
             how_many := how_many - 1;
-            count := count + 1;
             w_reduce := cdr w_reduce >> >> end;
    eval '(c!-end);
    fnames := cdr fnames
@@ -388,6 +446,8 @@ while fnames do begin
 terpri();
 printc "*** End of compilation from REDUCE into C ***";
 terpri();
+
+total := count;
 
 bulk := 0;
 % I list the next 50 functions that WOULD get selected - just for interest.
@@ -400,11 +460,13 @@ else while bulk < 50 and w_reduce do
         w_reduce := cdr w_reduce >>
      else <<
         bulk := bulk+1;
+        princ (count := count+1);
+        princ ": ";
         print name;
         w_reduce := cdr w_reduce >> end;
 
 terpri();
-prin count; printc " functions compiled into C";
+prin total; printc " functions compiled into C";
 
 nil >>;
 

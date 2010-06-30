@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5ec15f29 21-Jun-2010 */
+/* Signature: 668653c7 25-Jun-2010 */
 
 #include "headers.h"
 
@@ -238,11 +238,41 @@ static CSLbool interpreter_entry(Lisp_Object a)
 
 #endif
 
+static char *c_fn1(one_args *p, setup_type const s[])
+{
+    int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].one == p) return s[i].name;
+    return NULL;
+}
+
+static char *c_fn2(two_args *p, setup_type const s[])
+{
+    int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].two == p) return s[i].name;
+    return NULL;
+}
+
+static char *c_fnn(n_args *p, setup_type const s[])
+{
+    int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].n == p) return s[i].name;
+    return NULL;
+}
+
 static char *show_fn1(one_args *p)
 {
     int i;
+    char *r;
     for (i=0; entries_table1[i].s!=NULL; i++)
         if (entries_table1[i].p == p) return entries_table1[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn1(p, setup_tables[i])) != NULL) return r;
+/* There are more entries in setup_tables after the first NULL! */
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn1(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -250,8 +280,13 @@ static char *show_fn1(one_args *p)
 static char *show_fn2(two_args *p)
 {
     int i;
+    char *r;
     for (i=0; entries_table2[i].s!=NULL; i++)
         if (entries_table2[i].p == p) return entries_table2[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn2(p, setup_tables[i])) != NULL) return r;
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn2(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -259,15 +294,23 @@ static char *show_fn2(two_args *p)
 static char *show_fnn(n_args *p)
 {
     int i;
+    char *r;
     for (i=0; entries_tablen[i].s!=NULL; i++)
         if (entries_tablen[i].p == p) return entries_tablen[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fnn(p, setup_tables[i])) != NULL) return r;
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fnn(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
 Lisp_Object Lsymbol_fn_cell(Lisp_Object nil, Lisp_Object a)
 /*
- * For debugging...
+ * For debugging... This looks in the 3 function cells that any symbol
+ * has and attempts to display the name of the function there. There are
+ * enough tables for me to find the names of MANY things, but I do not
+ * guarantee everything.
  */
 {
     char *s1, *s2, *sn;
@@ -995,6 +1038,7 @@ static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
 {
     char *name;
     int32_t len;
+    int i;
     Lisp_Object pn;
     if (!symbolp(a)) return aerror1("restore-c-code", a);
     push(a);
@@ -1002,84 +1046,27 @@ static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
     pop(a);
     errexit();
     name = (char *)&celt(pn, 0);
-    len = length_of_header(vechdr(pn)) - 4;
+    len = length_of_header(vechdr(pn)) - CELL;
 /*
  * This is a potential time-sink in that it does a linear scan of all the
  * definitions in the tables that are in u01.c to u60.c.
  */
-    if (restore_fn_cell(a, name, len, u01_setup) ||
-        restore_fn_cell(a, name, len, u02_setup) ||
-        restore_fn_cell(a, name, len, u03_setup) ||
-        restore_fn_cell(a, name, len, u04_setup) ||
-        restore_fn_cell(a, name, len, u05_setup) ||
-        restore_fn_cell(a, name, len, u06_setup) ||
-        restore_fn_cell(a, name, len, u07_setup) ||
-        restore_fn_cell(a, name, len, u08_setup) ||
-        restore_fn_cell(a, name, len, u09_setup) ||
-        restore_fn_cell(a, name, len, u10_setup) ||
-        restore_fn_cell(a, name, len, u11_setup) ||
-        restore_fn_cell(a, name, len, u12_setup) ||
-        restore_fn_cell(a, name, len, u13_setup) ||
-        restore_fn_cell(a, name, len, u14_setup) ||
-        restore_fn_cell(a, name, len, u15_setup) ||
-        restore_fn_cell(a, name, len, u16_setup) ||
-        restore_fn_cell(a, name, len, u17_setup) ||
-        restore_fn_cell(a, name, len, u18_setup) ||
-        restore_fn_cell(a, name, len, u19_setup) ||
-        restore_fn_cell(a, name, len, u20_setup) ||
-        restore_fn_cell(a, name, len, u21_setup) ||
-        restore_fn_cell(a, name, len, u22_setup) ||
-        restore_fn_cell(a, name, len, u23_setup) ||
-        restore_fn_cell(a, name, len, u24_setup) ||
-        restore_fn_cell(a, name, len, u25_setup) ||
-        restore_fn_cell(a, name, len, u26_setup) ||
-        restore_fn_cell(a, name, len, u27_setup) ||
-        restore_fn_cell(a, name, len, u28_setup) ||
-        restore_fn_cell(a, name, len, u29_setup) ||
-        restore_fn_cell(a, name, len, u30_setup) ||
-        restore_fn_cell(a, name, len, u31_setup) ||
-        restore_fn_cell(a, name, len, u32_setup) ||
-        restore_fn_cell(a, name, len, u33_setup) ||
-        restore_fn_cell(a, name, len, u34_setup) ||
-        restore_fn_cell(a, name, len, u35_setup) ||
-        restore_fn_cell(a, name, len, u36_setup) ||
-        restore_fn_cell(a, name, len, u37_setup) ||
-        restore_fn_cell(a, name, len, u38_setup) ||
-        restore_fn_cell(a, name, len, u39_setup) ||
-        restore_fn_cell(a, name, len, u40_setup) ||
-        restore_fn_cell(a, name, len, u41_setup) ||
-        restore_fn_cell(a, name, len, u42_setup) ||
-        restore_fn_cell(a, name, len, u43_setup) ||
-        restore_fn_cell(a, name, len, u44_setup) ||
-        restore_fn_cell(a, name, len, u45_setup) ||
-        restore_fn_cell(a, name, len, u46_setup) ||
-        restore_fn_cell(a, name, len, u47_setup) ||
-        restore_fn_cell(a, name, len, u48_setup) ||
-        restore_fn_cell(a, name, len, u49_setup) ||
-        restore_fn_cell(a, name, len, u50_setup) ||
-        restore_fn_cell(a, name, len, u51_setup) ||
-        restore_fn_cell(a, name, len, u52_setup) ||
-        restore_fn_cell(a, name, len, u53_setup) ||
-        restore_fn_cell(a, name, len, u54_setup) ||
-        restore_fn_cell(a, name, len, u55_setup) ||
-        restore_fn_cell(a, name, len, u56_setup) ||
-        restore_fn_cell(a, name, len, u57_setup) ||
-        restore_fn_cell(a, name, len, u58_setup) ||
-        restore_fn_cell(a, name, len, u59_setup) ||
-        restore_fn_cell(a, name, len, u60_setup))
-    {   Lisp_Object env;
-        push(a);
+    for (i=0; setup_tables[i]!=NULL; i++)
+    {   if (restore_fn_cell(a, name, len, setup_tables[i]))
+        {   Lisp_Object env;
+            push(a);
 #ifdef COMMON
-        env = get(a, funarg, nil);
+            env = get(a, funarg, nil);
 #else
-        env = get(a, funarg);
+            env = get(a, funarg);
 #endif
-        pop(a);
-        errexit();
-        qenv(a) = env;
-        return onevalue(a);
+            pop(a);
+            errexit();
+            qenv(a) = env;
+            return onevalue(a);
+        }
     }
-    else return onevalue(nil);
+    return onevalue(nil);
 }
 
 Lisp_Object Lsymbol_set_definition(Lisp_Object nil,
@@ -2794,7 +2781,7 @@ static CSLbool vec_equal(Lisp_Object a, Lisp_Object b)
     {   if (is_mixed_header(ha))
         {   while (l > 16)
             {   uint32_t ea = *((uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
-                           eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
+                         eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
                 if (ea != eb) return NO;
                 l -= 4;
             }

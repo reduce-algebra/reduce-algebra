@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 40e8f4ac 21-Jun-2010 */
+/* Signature: 390ad1fb 30-Jun-2010 */
 
 #include "headers.h"
 
@@ -1294,9 +1294,8 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
  * of ordp().  This is the REDUCE 3.6/3.7 version - it will need re-work
  * if REDUCE is altered.  Note the curious situation that symbols are
  * alphabetically ordered, EXCEPT that "nil" comes before everything else!
- * (NB for 3.6 this is as provided in a patch file rather than the original
- * release. The places with *** represent updates since 3.6 and the initial
- * version of 3.6)
+ *
+ *
  *
  *  symbolic procedure ordp(u,v);
  *     if null u then null v
@@ -1309,19 +1308,17 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
  *                    else numberp v
  *             else nil
  *      else if atom v then t
- *      else if car u=car v then %%% ordp(cdr u,cdr v)
- ***          ordpl(cdr u, cdr v)                          *** 8 Feb 1999
- ***          %% flagp(car u,'noncom) or ordpl(cdr u,cdr v)   ***
+ *      else if car u=car v then ordpl(cdr u, cdr v)                          *** 8 Feb 1999
  *      else if flagp(car u,'noncom)
  *       then if flagp(car v,'noncom) then ordp(car u,car v) else t
  *      else if flagp(car v,'noncom) then nil
  *      else ordp(car u,car v);
  *
- ***  symbolic procedure ordpl(u,v)
- ***     if atom u then ordp(u,v)
- ***      else if atom v then t
- ***      else if car u=car v then ordpl(cdr u,cdr v)
- ***      else ordp(car u, car v);
+ *  symbolic procedure ordpl(u,v)
+ *     if atom u then ordp(u,v)
+ *      else if atom v then t
+ *      else if car u=car v then ordpl(cdr u,cdr v)
+ *      else ordp(car u, car v);
  *
  */
 

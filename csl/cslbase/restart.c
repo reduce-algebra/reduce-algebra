@@ -40,7 +40,7 @@
 
 
 
-/* Signature: 4db9f4f7 21-Jun-2010 */
+/* Signature: 7ccc322b 30-Jun-2010 */
 
 #include "headers.h"
 
@@ -2823,6 +2823,33 @@ static char *find_checksum(char *name, int32_t len, const setup_type *p)
     else return NULL;
 }
 
+setup_type const *setup_tables[] =
+{
+               u01_setup, u02_setup, u03_setup, u04_setup,
+    u05_setup, u06_setup, u07_setup, u08_setup, u09_setup,
+    u10_setup, u11_setup, u12_setup, u13_setup, u14_setup,
+    u15_setup, u16_setup, u17_setup, u18_setup, u19_setup,
+    u20_setup, u21_setup, u22_setup, u23_setup, u24_setup,
+    u25_setup, u26_setup, u27_setup, u28_setup, u29_setup,
+    u30_setup, u31_setup, u32_setup, u33_setup, u34_setup,
+    u35_setup, u36_setup, u37_setup, u38_setup, u39_setup,
+    u40_setup, u41_setup, u42_setup, u43_setup, u44_setup,
+    u45_setup, u46_setup, u47_setup, u48_setup, u49_setup,
+    u50_setup, u51_setup, u52_setup, u53_setup, u54_setup,
+    u55_setup, u56_setup, u57_setup, u58_setup, u59_setup,
+    u60_setup,
+/*
+ * I also include the kernel setup tables, but I put a NULL in this
+ * table so it is easy to see where they start.
+ */
+    NULL,
+    arith06_setup, arith08_setup, arith10_setup, arith12_setup,
+    char_setup, eval1_setup, eval2_setup, eval3_setup,
+    funcs1_setup, funcs2_setup, funcs3_setup, print_setup,
+    read_setup, mpi_setup,
+    NULL
+};
+
 /*
  * If C code is to be instated (via c!:install calls in u01.lsp etc) there
  * needs to be a verification that the file u01.c and the file u01.lsp (etc)
@@ -2840,6 +2867,7 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     va_list a;
     char *p;
     char *sname;
+    int i;
     argcheck(nargs, 4, "check-c-code");
     va_start(a, nargs);
     name = va_arg(a, Lisp_Object);
@@ -2858,66 +2886,10 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     sname = &celt(name, 0);
     len = length_of_header(vechdr(name)) - CELL;
   
-                   p = find_checksum(sname, len, u01_setup);
-    if (p == NULL) p = find_checksum(sname, len, u02_setup);
-    if (p == NULL) p = find_checksum(sname, len, u03_setup);
-    if (p == NULL) p = find_checksum(sname, len, u04_setup);
-    if (p == NULL) p = find_checksum(sname, len, u05_setup);
-    if (p == NULL) p = find_checksum(sname, len, u06_setup);
-    if (p == NULL) p = find_checksum(sname, len, u07_setup);
-    if (p == NULL) p = find_checksum(sname, len, u08_setup);
-    if (p == NULL) p = find_checksum(sname, len, u09_setup);
-    if (p == NULL) p = find_checksum(sname, len, u10_setup);
-    if (p == NULL) p = find_checksum(sname, len, u11_setup);
-    if (p == NULL) p = find_checksum(sname, len, u12_setup);
-    if (p == NULL) p = find_checksum(sname, len, u13_setup);
-    if (p == NULL) p = find_checksum(sname, len, u14_setup);
-    if (p == NULL) p = find_checksum(sname, len, u15_setup);
-    if (p == NULL) p = find_checksum(sname, len, u16_setup);
-    if (p == NULL) p = find_checksum(sname, len, u17_setup);
-    if (p == NULL) p = find_checksum(sname, len, u18_setup);
-    if (p == NULL) p = find_checksum(sname, len, u19_setup);
-    if (p == NULL) p = find_checksum(sname, len, u20_setup);
-    if (p == NULL) p = find_checksum(sname, len, u21_setup);
-    if (p == NULL) p = find_checksum(sname, len, u22_setup);
-    if (p == NULL) p = find_checksum(sname, len, u23_setup);
-    if (p == NULL) p = find_checksum(sname, len, u24_setup);
-    if (p == NULL) p = find_checksum(sname, len, u25_setup);
-    if (p == NULL) p = find_checksum(sname, len, u26_setup);
-    if (p == NULL) p = find_checksum(sname, len, u27_setup);
-    if (p == NULL) p = find_checksum(sname, len, u28_setup);
-    if (p == NULL) p = find_checksum(sname, len, u29_setup);
-    if (p == NULL) p = find_checksum(sname, len, u30_setup);
-    if (p == NULL) p = find_checksum(sname, len, u31_setup);
-    if (p == NULL) p = find_checksum(sname, len, u32_setup);
-    if (p == NULL) p = find_checksum(sname, len, u33_setup);
-    if (p == NULL) p = find_checksum(sname, len, u34_setup);
-    if (p == NULL) p = find_checksum(sname, len, u35_setup);
-    if (p == NULL) p = find_checksum(sname, len, u36_setup);
-    if (p == NULL) p = find_checksum(sname, len, u37_setup);
-    if (p == NULL) p = find_checksum(sname, len, u38_setup);
-    if (p == NULL) p = find_checksum(sname, len, u39_setup);
-    if (p == NULL) p = find_checksum(sname, len, u40_setup);
-    if (p == NULL) p = find_checksum(sname, len, u41_setup);
-    if (p == NULL) p = find_checksum(sname, len, u42_setup);
-    if (p == NULL) p = find_checksum(sname, len, u43_setup);
-    if (p == NULL) p = find_checksum(sname, len, u44_setup);
-    if (p == NULL) p = find_checksum(sname, len, u45_setup);
-    if (p == NULL) p = find_checksum(sname, len, u46_setup);
-    if (p == NULL) p = find_checksum(sname, len, u47_setup);
-    if (p == NULL) p = find_checksum(sname, len, u48_setup);
-    if (p == NULL) p = find_checksum(sname, len, u49_setup);
-    if (p == NULL) p = find_checksum(sname, len, u50_setup);
-    if (p == NULL) p = find_checksum(sname, len, u51_setup);
-    if (p == NULL) p = find_checksum(sname, len, u52_setup);
-    if (p == NULL) p = find_checksum(sname, len, u53_setup);
-    if (p == NULL) p = find_checksum(sname, len, u54_setup);
-    if (p == NULL) p = find_checksum(sname, len, u55_setup);
-    if (p == NULL) p = find_checksum(sname, len, u56_setup);
-    if (p == NULL) p = find_checksum(sname, len, u57_setup);
-    if (p == NULL) p = find_checksum(sname, len, u58_setup);
-    if (p == NULL) p = find_checksum(sname, len, u59_setup);
-    if (p == NULL) p = find_checksum(sname, len, u60_setup);
+    p = NULL;
+    for (i=0; setup_tables[i]!=NULL; i++)
+    {   if ((p = find_checksum(sname, len, setup_tables[i])) != NULL) break;
+    }
     if (p == NULL) return aerror1("check-c-code", name);
 
     if (sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
@@ -4026,9 +3998,6 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
  */
     init = (initfn *)GetProcAddress(a, "init");
 #else
-#ifdef EMBEDDED
-    return 0;
-#else
     a = dlopen(objname, RTLD_NOW | RTLD_GLOBAL);
 #ifdef TRACE_NATIVE
     trace_printf("a = %p\n", a);
@@ -4080,7 +4049,6 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
     p[len] = 0;
     record_dynamic_module(p, dll);
     return dll;
-#endif /* EMBEDDED */
 }
 
 int setup_dynamic(setup_type_1 *dll, char *modname,
@@ -4780,66 +4748,8 @@ void set_up_functions(CSLbool restartp)
  * Although almost everything is mappeed into upper case in a Common Lisp
  * world I will preserve the case of symbols defined un u01 to u60.
  */
-    create_symbols(u01_setup, restartp | 2);
-    create_symbols(u02_setup, restartp | 2);
-    create_symbols(u03_setup, restartp | 2);
-    create_symbols(u04_setup, restartp | 2);
-    create_symbols(u05_setup, restartp | 2);
-    create_symbols(u06_setup, restartp | 2);
-    create_symbols(u07_setup, restartp | 2);
-    create_symbols(u08_setup, restartp | 2);
-    create_symbols(u09_setup, restartp | 2);
-    create_symbols(u10_setup, restartp | 2);
-    create_symbols(u11_setup, restartp | 2);
-    create_symbols(u12_setup, restartp | 2);
-    create_symbols(u13_setup, restartp | 2);
-    create_symbols(u14_setup, restartp | 2);
-    create_symbols(u15_setup, restartp | 2);
-    create_symbols(u16_setup, restartp | 2);
-    create_symbols(u17_setup, restartp | 2);
-    create_symbols(u18_setup, restartp | 2);
-    create_symbols(u19_setup, restartp | 2);
-    create_symbols(u20_setup, restartp | 2);
-    create_symbols(u21_setup, restartp | 2);
-    create_symbols(u22_setup, restartp | 2);
-    create_symbols(u23_setup, restartp | 2);
-    create_symbols(u24_setup, restartp | 2);
-    create_symbols(u25_setup, restartp | 2);
-    create_symbols(u26_setup, restartp | 2);
-    create_symbols(u27_setup, restartp | 2);
-    create_symbols(u28_setup, restartp | 2);
-    create_symbols(u29_setup, restartp | 2);
-    create_symbols(u30_setup, restartp | 2);
-    create_symbols(u31_setup, restartp | 2);
-    create_symbols(u32_setup, restartp | 2);
-    create_symbols(u33_setup, restartp | 2);
-    create_symbols(u34_setup, restartp | 2);
-    create_symbols(u35_setup, restartp | 2);
-    create_symbols(u36_setup, restartp | 2);
-    create_symbols(u37_setup, restartp | 2);
-    create_symbols(u38_setup, restartp | 2);
-    create_symbols(u39_setup, restartp | 2);
-    create_symbols(u40_setup, restartp | 2);
-    create_symbols(u41_setup, restartp | 2);
-    create_symbols(u42_setup, restartp | 2);
-    create_symbols(u43_setup, restartp | 2);
-    create_symbols(u44_setup, restartp | 2);
-    create_symbols(u45_setup, restartp | 2);
-    create_symbols(u46_setup, restartp | 2);
-    create_symbols(u47_setup, restartp | 2);
-    create_symbols(u48_setup, restartp | 2);
-    create_symbols(u49_setup, restartp | 2);
-    create_symbols(u50_setup, restartp | 2);
-    create_symbols(u51_setup, restartp | 2);
-    create_symbols(u52_setup, restartp | 2);
-    create_symbols(u53_setup, restartp | 2);
-    create_symbols(u54_setup, restartp | 2);
-    create_symbols(u55_setup, restartp | 2);
-    create_symbols(u56_setup, restartp | 2);
-    create_symbols(u57_setup, restartp | 2);
-    create_symbols(u58_setup, restartp | 2);
-    create_symbols(u59_setup, restartp | 2);
-    create_symbols(u60_setup, restartp | 2);
+    for (i=0; setup_tables[i]!=NULL; i++)
+        create_symbols(setup_tables[i], restartp | 2);
 
 #ifdef NAG
     create_symbols(asp_setup, restartp);
@@ -4977,37 +4887,7 @@ static void set_up_variables(CSLbool restartp)
         w = acons(make_keyword("compiler-command"), w1, w);
 #endif
         defined_symbols = 0;
-                                  count_symbols(u01_setup);
-        count_symbols(u02_setup); count_symbols(u03_setup);
-        count_symbols(u04_setup); count_symbols(u05_setup);
-        count_symbols(u06_setup); count_symbols(u07_setup);
-        count_symbols(u08_setup); count_symbols(u09_setup);
-        count_symbols(u10_setup); count_symbols(u11_setup);
-        count_symbols(u12_setup); count_symbols(u13_setup);
-        count_symbols(u14_setup); count_symbols(u15_setup);
-        count_symbols(u16_setup); count_symbols(u17_setup);
-        count_symbols(u18_setup); count_symbols(u19_setup);
-        count_symbols(u20_setup); count_symbols(u21_setup);
-        count_symbols(u22_setup); count_symbols(u23_setup);
-        count_symbols(u24_setup); count_symbols(u25_setup);
-        count_symbols(u26_setup); count_symbols(u27_setup);
-        count_symbols(u28_setup); count_symbols(u29_setup);
-        count_symbols(u30_setup); count_symbols(u31_setup);
-        count_symbols(u32_setup); count_symbols(u33_setup);
-        count_symbols(u34_setup); count_symbols(u35_setup);
-        count_symbols(u36_setup); count_symbols(u37_setup);
-        count_symbols(u38_setup); count_symbols(u39_setup);
-        count_symbols(u40_setup); count_symbols(u41_setup);
-        count_symbols(u42_setup); count_symbols(u43_setup);
-        count_symbols(u44_setup); count_symbols(u45_setup);
-        count_symbols(u46_setup); count_symbols(u47_setup);
-        count_symbols(u48_setup); count_symbols(u49_setup);
-        count_symbols(u50_setup); count_symbols(u51_setup);
-        count_symbols(u52_setup); count_symbols(u53_setup);
-        count_symbols(u54_setup); count_symbols(u55_setup);
-        count_symbols(u56_setup); count_symbols(u57_setup);
-        count_symbols(u58_setup); count_symbols(u59_setup);
-        count_symbols(u60_setup);
+        for (i=0; setup_tables[i]!=NULL; i++) count_symbols(setup_tables[i]);
 #ifdef COMMON
 /*
  * A gratuitous misery here is the need to make COMMON words
@@ -5711,67 +5591,10 @@ static void get_checksum(const setup_type *p)
 
 void get_user_files_checksum(unsigned char *b)
 {
+    int i;
     CSL_MD5_Init();
-    get_checksum(u01_setup);
-    get_checksum(u02_setup);
-    get_checksum(u03_setup);
-    get_checksum(u04_setup);
-    get_checksum(u05_setup);
-    get_checksum(u06_setup);
-    get_checksum(u07_setup);
-    get_checksum(u08_setup);
-    get_checksum(u09_setup);
-    get_checksum(u10_setup);
-    get_checksum(u11_setup);
-    get_checksum(u12_setup);
-    get_checksum(u13_setup);
-    get_checksum(u14_setup);
-    get_checksum(u15_setup);
-    get_checksum(u16_setup);
-    get_checksum(u17_setup);
-    get_checksum(u18_setup);
-    get_checksum(u19_setup);
-    get_checksum(u20_setup);
-    get_checksum(u21_setup);
-    get_checksum(u22_setup);
-    get_checksum(u23_setup);
-    get_checksum(u24_setup);
-    get_checksum(u25_setup);
-    get_checksum(u26_setup);
-    get_checksum(u27_setup);
-    get_checksum(u28_setup);
-    get_checksum(u29_setup);
-    get_checksum(u30_setup);
-    get_checksum(u31_setup);
-    get_checksum(u32_setup);
-    get_checksum(u33_setup);
-    get_checksum(u34_setup);
-    get_checksum(u35_setup);
-    get_checksum(u36_setup);
-    get_checksum(u37_setup);
-    get_checksum(u38_setup);
-    get_checksum(u39_setup);
-    get_checksum(u40_setup);
-    get_checksum(u41_setup);
-    get_checksum(u42_setup);
-    get_checksum(u43_setup);
-    get_checksum(u44_setup);
-    get_checksum(u45_setup);
-    get_checksum(u46_setup);
-    get_checksum(u47_setup);
-    get_checksum(u48_setup);
-    get_checksum(u49_setup);
-    get_checksum(u50_setup);
-    get_checksum(u51_setup);
-    get_checksum(u52_setup);
-    get_checksum(u53_setup);
-    get_checksum(u54_setup);
-    get_checksum(u55_setup);
-    get_checksum(u56_setup);
-    get_checksum(u57_setup);
-    get_checksum(u58_setup);
-    get_checksum(u59_setup);
-    get_checksum(u60_setup);
+    for (i=0; setup_tables[i]!=NULL; i++)
+        get_checksum(setup_tables[i]);
     CSL_MD5_Final(b);
 }
 

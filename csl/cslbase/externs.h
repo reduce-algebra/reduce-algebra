@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 45eae151 22-Jun-2010 */
+/* Signature: 27ba980f 25-Jun-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -1204,6 +1204,8 @@ extern setup_type const
        u50_setup[], u51_setup[], u52_setup[], u53_setup[], u54_setup[],
        u55_setup[], u56_setup[], u57_setup[], u58_setup[], u59_setup[],
        u60_setup[];
+
+extern setup_type const *setup_tables[];
 
 #ifdef NAG
 extern setup_type const nag_setup[], asp_setup[];

@@ -892,7 +892,7 @@ symbolic procedure c!:ccmpout1a u;
 !#else
         defnames := list(car u, c!:inv_name car u, length cadr u, checksum) . defnames;
 !#endif
-        if posn() neq 0 then terpri();
+%       if posn() neq 0 then terpri();
         princ "Compiling "; prin caar defnames; princ " ... ";
         c!:cfndef(caar defnames, cadar defnames, cdr u, checksum);
 !#if common!-lisp!-mode

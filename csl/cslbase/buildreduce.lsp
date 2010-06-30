@@ -1228,23 +1228,37 @@ symbolic procedure file_compare(f1, f2, name);
     prin name;
     ttab 17;
     if zerop t1 then princ "     ---"
-    else << prinright(t1, 8); ttab 30; prinright(gt1, 8) >>;
+    else << prinright(t1, 8);
+% Tag the time with an asterisk if it will not participate in the
+% eventual overall timing report.
+            if t1<=200 then princ "*";
+            ttab 30; prinright(gt1, 8) >>;
     ttab 40;
     if zerop t2 then princ "     ---"
-    else << prinright(t2, 9); ttab 50; prinright(gt2, 8) >>;
+    else << prinright(t2, 9);
+            if t2<=200 then princ "*";
+            ttab 50; prinright(gt2, 8) >>;
     ttab 60;
     if zerop t1 or zerop t2 then princ "     ***       ***"
     else begin
-       scalar r1, gr1;
+       scalar r1, gr1, w;
        r1 := float t1 / float t2;
        gr1 := float (t1+gt1)/float (t2+gt2);
 % I will only use tests where the time taken was over 200ms in my eventual
 % composite summary of timings, since measurement accuracy can leave the
 % really short tests pretty meaningless.
        if t1 > 200 and t2 > 200 then <<
-          time_ratio := time_ratio * r1;
-          gc_time_ratio := gc_time_ratio * gr1;
-          log_count := log_count + 1 >>;
+% But I will go further than that and give less weight to any test whose time
+% is under 1 second, so that the cut-off is gradual rather than abrupt.
+          w := min(t1, t2);
+% This means that if w (the smaller time) = 200 then then 
+% the test does not contribute to the average, while if w>=1000
+% it contributes fully.
+          if w < 1000.0 then w := (w - 200.0)/800.0
+          else w := 1.0;
+          time_ratio := time_ratio * expt(r1, w);
+          gc_time_ratio := gc_time_ratio * expt(gr1, w);
+          log_count := log_count + w >>;
        princ r1;
        ttab 70;
        princ gr1;
@@ -1372,7 +1386,7 @@ symbolic procedure check_a_package;
     terpri();
     oll := linelength 100;
     printc "=== Comparison results ===";
-    time_ratio := gc_time_ratio := 1.0; log_count := 0;
+    time_ratio := gc_time_ratio := 1.0; log_count := 0.0;
     for each packge in names do <<
        terpri();
        princ "CHECKING: "; print packge;

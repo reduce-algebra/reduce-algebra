@@ -295,10 +295,12 @@ top (cond ((null a) (return (reversip r))))
 
 (setq crbuf!* (list !$eol!$))    % may not be necessary
 
-(de symerr (u v)
-  (progn (terpri)
-     (print (list 'symerr u v))
-     (error 'failure)))
+% Since this should never get called I will just not define it here!
+
+%(de symerr (u v)
+%  (progn (terpri)
+%     (print (list 'symerr u v))
+%     (error 'failure)))
 
 (global '(!*full!-oblist))
 

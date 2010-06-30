@@ -30,6 +30,12 @@
 % here... then later on see (*)
 %
 
+
+(de symerr (u v)
+  (progn (terpri)
+     (print (list 'symerr u v))
+     (error 'failure)))
+
 % Standard LISP equivalent of BOOT.RED.
 
 (fluid '(!*blockp !*mode))
