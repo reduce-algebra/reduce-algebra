@@ -31,7 +31,7 @@
 //
 //                                           Arthur Norman, 2004-2010
 
-/* Signature: 4286ce03 07-Jul-2010 */
+/* Signature: 61fb9bb0 07-Jul-2010 */
 
 
 /********************************************************************************
@@ -116,7 +116,7 @@
   - Space for maths is made by (ab)using the existing scheme where
     a line of text can end up wrapped to form several rows.
   - mouse identification within maths is not yet addressed AT ALL.
-  - a Maths line that (say) needs the spaec of 4 rows will be
+  - a Maths line that (say) needs the space of 4 rows will be
     represented as
         0x02 0x02 0x02 0x02 <data> 0x05 '\n'
     and each 0x02 is treated as starting a "row". Any draw operation

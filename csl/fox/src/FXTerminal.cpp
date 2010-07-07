@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 0444ae52 07-Jul-2010 */
+/* Signature: 273194ec 07-Jul-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1267,8 +1267,12 @@ long FXTerminal::onCmdCopySelText(FXObject *, FXSelector, void *)
             }
             else
             {   char *p = clipbuffer;
+                int ignore = 0;
                 for (i=selstartpos; i<selendpos; i++)
                 {   char ch = getChar(i);
+                    if (ch == 0x05) continue;
+                    if (ch == 0x02) { ignore = 4; continue; }
+                    if (ignore > 0) { ignore--; continue; }
                     *p++ = ch;
                 }
             }
