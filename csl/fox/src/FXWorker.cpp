@@ -1,5 +1,5 @@
 //
-// "FXWorker.cpp"                          Copyright A C Norman 2003-2008
+// "FXWorker.cpp"                          Copyright A C Norman 2003-2010
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -7,7 +7,7 @@
 // always believe that running them under emacs is best!
 
 /******************************************************************************
-* Copyright (C) 2003-8 by Arthur Norman, Codemist Ltd.   All Rights Reserved.   *
+* Copyright (C) 2003-10 by Arthur Norman, Codemist Ltd.  All Rights Reserved.   *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 7dced379 26-Jan-2009 */
+/* Signature: 0f810654 07-Jul-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -380,6 +380,8 @@ int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
                                 (FXObject *)text, FXTerminal::ID_CUT_SEL_X);
     new FXMenuCommand(editMenu, "C&opy", NULL,
                                 (FXObject *)text, FXTerminal::ID_COPY_SEL_X);
+    new FXMenuCommand(editMenu, "Copy &Text", NULL,
+                                (FXObject *)text, FXTerminal::ID_COPY_SEL_TEXT_X);
     new FXMenuCommand(editMenu, "&Paste\tCtl-V", NULL,
                                 (FXObject *)text, FXTerminal::ID_PASTE_SEL_X);
     new FXMenuCommand(editMenu, "&Reinput\tCtl-^\tReinput", NULL,

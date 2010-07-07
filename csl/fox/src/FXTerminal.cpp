@@ -1,5 +1,5 @@
 //
-// "FXTerminal.cpp"                         Copyright A C Norman 2003-2008
+// "FXTerminal.cpp"                         Copyright A C Norman 2003-2010
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -8,7 +8,7 @@
 //
 
 /******************************************************************************
-* Copyright (C) 2003-8 by Arthur Norman, Codemist Ltd.   All Rights Reserved. *
+* Copyright (C) 2003-10 by Arthur Norman, Codemist Ltd.  All Rights Reserved. *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -47,7 +47,7 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 2015cdb8 13-Jul-2009 */
+/* Signature: 0444ae52 07-Jul-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -171,6 +171,8 @@ FXDEFMAP(FXTerminal) FXTerminalMap[] =
     FXMAPFUNC(SEL_COMMAND,      FXMathText::ID_PASTE_MIDDLE, FXTerminal::onCmdPasteMiddle),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_COPY_SEL_X, FXTerminal::onCmdCopySel),
     FXMAPFUNC(SEL_COMMAND,      FXMathText::ID_COPY_SEL, FXTerminal::onCmdCopySel),
+    FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_COPY_SEL_TEXT_X, FXTerminal::onCmdCopySelText),
+    FXMAPFUNC(SEL_COMMAND,      FXMathText::ID_COPY_SEL_TEXT, FXTerminal::onCmdCopySelText),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_REINPUT, FXTerminal::onCmdReinput),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_CLEAR, FXTerminal::onCmdClear),
     FXMAPFUNC(SEL_COMMAND,      FXTerminal::ID_REDRAW, FXTerminal::onCmdRedraw),
@@ -1238,6 +1240,37 @@ long FXTerminal::onCmdCopySel(FXObject *, FXSelector, void *)
                     p += strlen(prEnd);
                 }
                 strcpy(p, clipEnd);
+            }
+        }
+    }
+    return 1;
+}
+
+
+// Copy as Text
+long FXTerminal::onCmdCopySelText(FXObject *, FXSelector, void *)
+{
+// I will do minimal changes to the HTML-style COPY to get a plain version
+    FXDragType types[2];
+    if (selstartpos < selendpos)
+    {   types[0]=stringType;
+        types[1]=textType;
+        if (acquireClipboard(types, 2))
+        {
+            int style = 0, i;
+            cliplength = selendpos - selstartpos;
+            FXFREE(&clipbuffer);
+            FXCALLOC(&clipbuffer, FXchar, cliplength+1);
+            if (!clipbuffer)
+            {   fxwarning("%s::onCmdCopySelText: out of memory\n",getClassName());
+                cliplength=0;
+            }
+            else
+            {   char *p = clipbuffer;
+                for (i=selstartpos; i<selendpos; i++)
+                {   char ch = getChar(i);
+                    *p++ = ch;
+                }
             }
         }
     }

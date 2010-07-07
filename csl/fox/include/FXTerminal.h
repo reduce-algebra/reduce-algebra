@@ -3,7 +3,7 @@
 *   T e x t   w i n d o w   t h a t   a l l o w s   s i m p l e   I / O       *
 *                                                                             *
 *******************************************************************************
-* Copyright (C) 2003-8 by Arthur Norman, Codemist Ltd.  All Rights Reserved.  *
+* Copyright (C) 2003-10 by Arthur Norman, Codemist Ltd. All Rights Reserved.  *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -45,7 +45,7 @@
 #ifndef FXTERMINAL_H
 #define FXTERMINAL_H
 
-/* Signature: 729d7fff 13-Jul-2009 */
+/* Signature: 0c4a475b 07-Jul-2010 */
 
 #include "FXMathText.h"
 
@@ -204,6 +204,7 @@ public:
   long onCmdPasteSel(FXObject *c, FXSelector s, void *ptr);
   long onCmdPasteMiddle(FXObject *c, FXSelector s, void *ptr);
   long onCmdCopySel(FXObject *c, FXSelector s, void *ptr);
+  long onCmdCopySelText(FXObject *c, FXSelector s, void *ptr);
   long onCmdReinput(FXObject *c, FXSelector s, void *ptr);
   long onCmdClear(FXObject *c, FXSelector s, void *ptr);
   long onCmdRedraw(FXObject *c, FXSelector s, void *ptr);
@@ -320,6 +321,7 @@ public:
     ID_CUT_SEL_X,     // NB exists in FXMathText but here I will want to...
     ID_PASTE_SEL_X,   // adjust the cursor position as I go.
     ID_COPY_SEL_X,
+    ID_COPY_SEL_TEXT_X,
     ID_REINPUT,
 //  ID_SELECT_ALL,    // done by the underlying FXMathText
     ID_CLEAR,

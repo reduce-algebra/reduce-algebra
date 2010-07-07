@@ -29,9 +29,9 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 //
-//                                           Arthur Norman, 2004-2008
+//                                           Arthur Norman, 2004-2010
 
-/* Signature: 12f0f4ff 13-Sep-2009 */
+/* Signature: 4286ce03 07-Jul-2010 */
 
 
 /********************************************************************************
@@ -274,6 +274,7 @@ FXDEFMAP(FXMathText) FXMathTextMap[]={
   FXMAPFUNC(SEL_UPDATE,FXMathText::ID_CURSOR_COLUMN,FXMathText::onUpdCursorColumn),
   FXMAPFUNC(SEL_UPDATE,FXMathText::ID_CUT_SEL,FXMathText::onUpdHaveSelection),
   FXMAPFUNC(SEL_UPDATE,FXMathText::ID_COPY_SEL,FXMathText::onUpdHaveSelection),
+  FXMAPFUNC(SEL_UPDATE,FXMathText::ID_COPY_SEL_TEXT,FXMathText::onUpdHaveSelection),
   FXMAPFUNC(SEL_UPDATE,FXMathText::ID_PASTE_SEL,FXMathText::onUpdYes),
   FXMAPFUNC(SEL_UPDATE,FXMathText::ID_DELETE_SEL,FXMathText::onUpdHaveSelection),
   FXMAPFUNC(SEL_UPDATE,FXMathText::ID_SELECT_ALL,FXMathText::onUpdSelectAll),
@@ -308,6 +309,7 @@ FXDEFMAP(FXMathText) FXMathTextMap[]={
   FXMAPFUNC(SEL_COMMAND,FXMathText::ID_INSERT_TAB,FXMathText::onCmdInsertTab),
   FXMAPFUNC(SEL_COMMAND,FXMathText::ID_CUT_SEL,FXMathText::onCmdCutSel),
   FXMAPFUNC(SEL_COMMAND,FXMathText::ID_COPY_SEL,FXMathText::onCmdCopySel),
+  FXMAPFUNC(SEL_COMMAND,FXMathText::ID_COPY_SEL_TEXT,FXMathText::onCmdCopySelText),
   FXMAPFUNC(SEL_COMMAND,FXMathText::ID_DELETE_SEL,FXMathText::onCmdDeleteSel),
   FXMAPFUNC(SEL_COMMAND,FXMathText::ID_PASTE_SEL,FXMathText::onCmdPasteSel),
   FXMAPFUNC(SEL_COMMAND,FXMathText::ID_PASTE_MIDDLE,FXMathText::onCmdPasteMiddle),
@@ -3475,6 +3477,29 @@ long FXMathText::onCmdCutSel(FXObject*,FXSelector,void*){
 // @@@@@ copying maths?
 
 long FXMathText::onCmdCopySel(FXObject*,FXSelector,void*){
+  FXDragType types[2];
+  if(selstartpos<selendpos){
+    types[0]=stringType;
+    types[1]=textType;
+    if(acquireClipboard(types,2)){
+      FXFREE(&clipbuffer);
+      FXASSERT(selstartpos<=selendpos);
+      cliplength=selendpos-selstartpos;
+      FXCALLOC(&clipbuffer,FXchar,cliplength+1);
+      if(!clipbuffer){
+        fxwarning("%s::onCmdCopySel: out of memory\n",getClassName());
+        cliplength=0;
+        }
+      else{
+        extractText(clipbuffer,selstartpos,cliplength);
+        }
+      }
+    }
+  return 1;
+  }
+
+
+long FXMathText::onCmdCopySelText(FXObject*,FXSelector,void*){
   FXDragType types[2];
   if(selstartpos<selendpos){
     types[0]=stringType;

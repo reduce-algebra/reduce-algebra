@@ -25,9 +25,9 @@
 
 
 
-// A C Norman, 2008
+// A C Norman, 2010
 
-/* Signature: 254946b9 04-Jun-2008 */
+/* Signature: 5809d5fd 07-Jul-2010 */
 
 
 /********************************************************************************
@@ -346,6 +346,7 @@ public:
   // Manipulation Selection
   long onCmdCutSel(FXObject*,FXSelector,void*);
   long onCmdCopySel(FXObject*,FXSelector,void*);
+  long onCmdCopySelText(FXObject*,FXSelector,void*);
   long onCmdPasteSel(FXObject*,FXSelector,void*);
   long onCmdDeleteSel(FXObject*,FXSelector,void*);
   long onCmdChangeCase(FXObject*,FXSelector,void*);
@@ -406,6 +407,7 @@ public:
     ID_INSERT_TAB,
     ID_CUT_SEL,
     ID_COPY_SEL,
+    ID_COPY_SEL_TEXT,
     ID_DELETE_SEL,
     ID_PASTE_SEL,
     ID_PASTE_MIDDLE,
