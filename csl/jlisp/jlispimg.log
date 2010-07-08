@@ -1,0 +1,2464 @@
+File exists already
+Can write to file OK
+f = java.io.RandomAccessFile@1f671b
+index read
+Jlisp 0.93a ... 5/11/02 4:33 PM
+restart mode in read eval print loop null null null
+
+%
+% Create fasl files for compiler, ccomp and extras and build a CSL
+% checkpoint image for a system that includes them.
+%
+% Run this using
+%           csl -z build0.lsp -l build0.log
+%
+
+
+(verbos 3)
+Value: 1
+
+
+(rdf "$cslbase/compat.lsp")
+restart mode in read eval print loop null null null
+
+
+
+% This file defines functions and variables needed to make REDUCE
+% and the underlying CSL system compatible. it should
+% be loaded as the first file whenever REDUCE services are required.
+
+(setpchar "> ")
+Value: ""
+
+
+(remflag '(geq leq neq logand logor logxor leftshift princ printc
+	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
+	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
+	subla gcdn printprompt pair) 'lose)
+Value: nil
+
+
+(symbol!-make!-fastget 32)
+Value: nil
+
+(symbol!-make!-fastget 'noncom 0)
+Value: nil
+  % built into the kernel
+(symbol!-make!-fastget 'lose   1)
+Value: nil
+
+
+(flag '(raise lower echo comp plap pgwd pwrds savedef) 'switch)
+Value: nil
+
+
+(make!-special '!*echo)
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: t
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: t
+
+Value: nil
+
+Value: nil
+
+Value: 1.0e-12
+
+Value: nil
+
+Value: rplacw
+
+Value: expand
+
+Value: plus
+
+Value: times
+
+Value: mapcar
+
+Value: maplist
+
+Value: mapcan
+
+Value: mapcon
+
+Value: mapc
+
+Value: map
+
+Value: copy
+
+Value: sassoc
+
+Value: rassoc
+
+Value: lastcar
+
+Value: open
+
+Value: binopen
+
+Value: pipe!-open
+
+Value: putd
+
+Value: nil
+
+Value: putc
+
+Value: traceset1
+
+Value: untraceset1
+
+Value: traceset
+
+Value: untraceset
+
+Value: deflist
+
+Value: global
+
+Value: fluid
+
+Value: unglobal
+
+Value: unfluid
+
+Value: nil
+
+Value: printprompt
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: t
+
+Value: carcheck
+
+Value: nil
+
+Value: (\xa)
+
+Value: symerr
+
+Value: s!:oblist
+
+Value: s!:oblist1
+
+Value: oblist
+
+Value: s!:make!-psetq!-vars
+
+Value: s!:make!-psetq!-bindings
+
+Value: s!:make!-psetq!-assignments
+
+Value: psetq
+
+Value: s!:do!-bindings
+
+Value: s!:do!-endtest
+
+Value: s!:do!-result
+
+Value: s!:do!-updates
+
+Value: s!:expand!-do
+
+Value: do
+
+Value: do!*
+
+Value: s!:expand!-dolist
+
+Value: dolist
+
+Value: s!:expand!-dotimes
+
+Value: dotimes
+
+Value: nil
++++ end of reading $cslbase/compat.lsp
+
+Value: nil
+
+restart mode in read eval print loop null null null
+
+Value: oem!-supervisor
+
+Value: break!-loop
+
+Value: nil
+
+Value: 0
+
+Value: s!:stamp
+
+Value: dated!-name
+
+Value: hashtagged!-name
+
+Value: nil
+
+Value: sort
+
+Value: stable!-sort
+
+Value: sortip
+
+Value: stable!-sortip
+
+Value: nil
+
+Value: nil
+
+Value: #<HashTable>
+
+Value: s!:prinl0
+
+Value: s!:prinl1
+
+Value: s!:prinl2
+
+Value: printl
+
+Value: printcl
+
+Value: princl
+
+Value: prinl
+
+Value: s!:format
+
+Value: format
+
+Value: nil
+
+Value: nil
+
+Value: t
+
+Value: t
+
+Value: 5
+
+Value: prettyprint
+
+Value: superprintm
+
+Value: superprinm
+
+Value: (lambda nil (car stack))
+
+Value: (lambda (frm) (car frm))
+
+Value: (lambda (frm) (cadr frm))
+
+Value: (lambda (frm) (caddr frm))
+
+Value: (lambda (frm) (cdddr frm))
+
+Value: (lambda (frm val) (rplaca (cdr frm) val))
+
+Value: (lambda (frm val) (rplaca (cddr frm) val))
+
+Value: (lambda (frm val) (rplacd (cddr frm) val))
+
+Value: (lambda (n) (list n nil 0))
+
+Value: (lambda (char) (numberp (car char)))
+
+Value: s!:prindent
+
+Value: s!:explodes
+
+Value: s!:prvector
+
+Value: s!:putblank
+
+Value: s!:endlist
+
+Value: s!:finishpending
+
+Value: s!:quotep
+
+Value: prog
+
+Value: 1
+
+Value: 1
+
+Value: 1
+
+Value: 1
+
+Value: 1
+
+Value: 1
+
+Value: 2
+
+Value: 2
+
+Value: 2
+
+Value: 2
+
+Value: 2
+
+Value: 4
+
+Value: s!:putch
+
+Value: s!:overflow
+
+Value: !(
+
+Value: ![
+
+Value: !)
+
+Value: !]
+
+Value: fetch!-url
++++ end of reading $cslbase/extras.lsp
+
+Value: nil
+
+restart mode in read eval print loop null null null
+
+Value: nil
+
+Value: (loadloc loadloc0 loadloc1 loadloc2 loadloc3 loadloc4 loadloc5 loadloc6
+loadloc7 loadloc8 loadloc9 loadloc10 loadloc11 loc0loc1 loc1loc2 loc2loc3
+loc1loc0 loc2loc1 loc3loc2 vnil loadlit loadlit1 loadlit2 loadlit3 loadlit4
+loadlit5 loadlit6 loadlit7 loadfree loadfree1 loadfree2 loadfree3 loadfree4
+storeloc storeloc0 storeloc1 storeloc2 storeloc3 storeloc4 storeloc5 storeloc6
+storeloc7 storefree storefree1 storefree2 storefree3 loadlex storelex closure
+carloc0 carloc1 carloc2 carloc3 carloc4 carloc5 carloc6 carloc7 carloc8 carloc9
+carloc10 carloc11 cdrloc0 cdrloc1 cdrloc2 cdrloc3 cdrloc4 cdrloc5 caarloc0
+caarloc1 caarloc2 caarloc3 call0 call1 call2 call2r call3 calln call0_0 call0_1
+call0_2 call0_3 call1_0 call1_1 call1_2 call1_3 call1_4 call1_5 call2_0 call2_1
+call2_2 call2_3 call2_4 builtin0 builtin1 builtin2 builtin2r builtin3 apply1
+apply2 apply3 apply4 jcall jcalln jump jump_b jump_l jump_bl jumpnil jumpnil_b
+jumpnil_l jumpnil_bl jumpt jumpt_b jumpt_l jumpt_bl jumpatom jumpatom_b
+jumpatom_l jumpatom_bl jumpnatom jumpnatom_b jumpnatom_l jumpnatom_bl jumpeq
+jumpeq_b jumpeq_l jumpeq_bl jumpne jumpne_b jumpne_l jumpne_bl jumpequal
+jumpequal_b jumpequal_l jumpequal_bl jumpnequal jumpnequal_b jumpnequal_l
+jumpnequal_bl jumpl0nil jumpl0t jumpl1nil jumpl1t jumpl2nil jumpl2t jumpl3nil
+jumpl3t jumpl4nil jumpl4t jumpst0nil jumpst0t jumpst1nil jumpst1t jumpst2nil
+jumpst2t jumpl0atom jumpl0natom jumpl1atom jumpl1natom jumpl2atom jumpl2natom
+jumpl3atom jumpl3natom jumpfree1nil jumpfree1t jumpfree2nil jumpfree2t
+jumpfree3nil jumpfree3t jumpfree4nil jumpfree4t jumpfreenil jumpfreet jumplit1eq
+jumplit1ne jumplit2eq jumplit2ne jumplit3eq jumplit3ne jumplit4eq jumplit4ne
+jumpliteq jumplitne jumpb1nil jumpb1t jumpb2nil jumpb2t jumpflagp jumpnflagp
+jumpeqcar jumpneqcar catch catch_b catch_l catch_bl uncatch throw protect
+unprotect pvbind pvrestore freebind freerstr exit nilexit loc0exit loc1exit
+loc2exit push pushnil pushnil2 pushnil3 pushnils pop lose lose2 lose3 loses swop
+eq eqcar equal numberp car cdr caar cadr cdar cddr cons ncons xcons acons length
+list2 list2star list3 plus2 add1 difference sub1 times2 greaterp lessp flagp get
+litget getv qgetv qgetvn bigstack bigcall icase fastget spare1 spare2)
+
+Value: nil
+
+Value: (256 opcodes allocated)
+
+Value: nil
+
+Value: s!:vecof
+
+Value: nil
+
+Value: s!:prinhex1
+
+Value: s!:prinhex2
+
+Value: s!:prinhex4
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: t
+
+Value: nil
+
+Value: s!:start_procedure
+
+Value: s!:set_label
+
+Value: s!:outjump
+
+Value: s!:outexit
+
+Value: nil
+
+Value: s!:outopcode0
+
+Value: s!:outopcode1
+
+Value: (loadlit loadfree call0 call1 litget jumpliteq jumplitne jumpliteq!*
+jumplitne!* jumpfreet jumpfreenil)
+
+Value: s!:record_literal
+
+Value: s!:record_literal_for_jump
+
+Value: s!:outopcode1lit
+
+Value: s!:outopcode2
+
+Value: s!:outopcode2lit
+
+Value: s!:outlexref
+
+Value: ((1 . 7) . [!- loadlit1 loadlit2 loadlit3 loadlit4 loadlit5 loadlit6
+loadlit7])
+
+Value: ((1 . 4) . [!- loadfree1 loadfree2 loadfree3 loadfree4])
+
+Value: ((1 . 3) . [!- storefree1 storefree2 storefree3])
+
+Value: ((0 . 3) . [call0_0 call0_1 call0_2 call0_3])
+
+Value: ((0 . 5) . [call1_0 call1_1 call1_2 call1_3 call1_4 call1_5])
+
+Value: ((0 . 4) . [call2_0 call2_1 call2_2 call2_3 call2_4])
+
+Value: ((1 . 4) . [!- jumpfree1t jumpfree2t jumpfree3t jumpfree4t])
+
+Value: ((1 . 4) . [!- jumpfree1nil jumpfree2nil jumpfree3nil jumpfree4nil])
+
+Value: ((1 . 4) . [!- jumplit1eq jumplit2eq jumplit3eq jumplit4eq])
+
+Value: ((1 . 4) . [!- jumplit1ne jumplit2ne jumplit3ne jumplit4ne])
+
+Value: ((1 . 4) . [!- jumplit1eq jumplit2eq jumplit3eq jumplit4eq])
+
+Value: ((1 . 4) . [!- jumplit1ne jumplit2ne jumplit3ne jumplit4ne])
+
+Value: 0
+
+Value: 16
+
+Value: 32
+
+Value: 48
+
+Value: 64
+
+Value: 80
+
+Value: 96
+
+Value: 112
+
+Value: 128
+
+Value: 144
+
+Value: 160
+
+Value: 176
+
+Value: 192
+
+Value: 208
+
+Value: 224
+
+Value: 240
+
+Value: s!:literal_order
+
+Value: s!:resolve_literals
+
+Value: s!:only_loadlit
+
+Value: s!:too_many_literals
+
+Value: nil
+
+Value: s!:endprocedure
+
+Value: s!:add_pending
+
+Value: s!:invent_exit
+
+Value: s!:destination_label
+
+Value: s!:remlose
+
+Value: (0 . 0)
+
+Value: (0 . 1)
+
+Value: (0 . 2)
+
+Value: (0 . 3)
+
+Value: (1 . 0)
+
+Value: (1 . 1)
+
+Value: (1 . 2)
+
+Value: (1 . 3)
+
+Value: (1 . 4)
+
+Value: (1 . 5)
+
+Value: (2 . 0)
+
+Value: (2 . 1)
+
+Value: (2 . 2)
+
+Value: (2 . 3)
+
+Value: (2 . 4)
+
+Value: s!:remcall
+
+Value: s!:is_lose_and_exit
+
+Value: s!:try_tail_1
+
+Value: s!:try_tailcall
+
+Value: s!:tidy_exits_1
+
+Value: s!:tidy_exits
+
+Value: s!:tidy_flowgraph
+
+Value: (jumpnil jumpt jumpatom jumpnatom jumpeq jumpne jumpequal jumpnequal
+jumpl0nil jumpl0t jumpl1nil jumpl1t jumpl2nil jumpl2t jumpl3nil jumpl3t
+jumpl4nil jumpl4t jumpl0atom jumpl0natom jumpl1atom jumpl1natom jumpl2atom
+jumpl2natom jumpl3atom jumpl3natom jumpst0nil jumpst0t jumpst1nil jumpst1t
+jumpst2nil jumpst2t jumpfree1nil jumpfree1t jumpfree2nil jumpfree2t jumpfree3nil
+jumpfree3t jumpfree4nil jumpfree4t jumpfreenil jumpfreet jumplit1eq jumplit1ne
+jumplit2eq jumplit2ne jumplit3eq jumplit3ne jumplit4eq jumplit4ne jumpliteq
+jumplitne jumpliteq!* jumplitne!* jumpb1nil jumpb1t jumpb2nil jumpb2t jumpflagp
+jumpnflagp jumpeqcar jumpneqcar)
+
+Value: s!:negate_jump
+
+Value: s!:resolve_labels
+
+Value: s!:plant_basic_block
+
+Value: s!:plant_bytes
+
+Value: s!:plant_exit_code
+
+Value: (jumpl0nil jumpl0t jumpl1nil jumpl1t jumpl2nil jumpl2t jumpl3nil jumpl3t
+jumpl4nil jumpl4t jumpl0atom jumpl0natom jumpl1atom jumpl1natom jumpl2atom
+jumpl2natom jumpl3atom jumpl3natom jumpst0nil jumpst0t jumpst1nil jumpst1t
+jumpst2nil jumpst2t jumpfree1nil jumpfree1t jumpfree2nil jumpfree2t jumpfree3nil
+jumpfree3t jumpfree4nil jumpfree4t jumpfreenil jumpfreet jumplit1eq jumplit1ne
+jumplit2eq jumplit2ne jumplit3eq jumplit3ne jumplit4eq jumplit4ne jumpliteq
+jumplitne jumpliteq!* jumplitne!* jumpb1nil jumpb1t jumpb2nil jumpb2t jumpflagp
+jumpnflagp jumpeqcar jumpneqcar)
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: s!:expand_jump
+
+Value: s!:comval
+
+Value: s!:comspecform
+
+Value: nil
+
+Value: s!:improve
+
+Value: s!:imp_minus
+
+Value: s!:imp_minus
+
+Value: s!:imp_minus
+
+Value: s!:imp_times
+
+Value: s!:imp_times
+
+Value: s!:imp_itimes
+
+Value: s!:imp_itimes
+
+Value: s!:imp_difference
+
+Value: s!:imp_difference
+
+Value: s!:imp_idifference
+
+Value: s!:imp_idifference
+
+Value: s!:alwayseasy
+
+Value: s!:alwayseasy
+
+Value: s!:alwayseasy
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easyifarg
+
+Value: s!:easygetv
+
+Value: s!:easygetv
+
+Value: s!:easyqgetv
+
+Value: s!:easyqgetv
+
+Value: s!:iseasy
+
+Value: s!:instate_local_decs
+
+Value: s!:residual_local_decs
+
+Value: s!:cancel_local_decs
+
+Value: s!:find_local_decs
+
+Value: s!:comlambda
+
+Value: s!:loadliteral
+
+Value: s!:comquote
+
+Value: s!:comquote
+
+Value: nil
+
+Value: s!:comfunction
+
+Value: s!:comfunction
+
+Value: s!:should_be_fluid
+
+Value: s!:find_lexical
+
+Value: nil
+
+Value: [loadloc0 loadloc1 loadloc2 loadloc3 loadloc4 loadloc5 loadloc6 loadloc7
+loadloc8 loadloc9 loadloc10 loadloc11]
+
+Value: s!:comatom
+
+Value: nil
+
+Value: s!:islocal
+
+Value: s!:load2
+
+Value: nil
+
+Value: [carloc0 carloc1 carloc2 carloc3 carloc4 carloc5 carloc6 carloc7 carloc8
+carloc9 carloc10 carloc11]
+
+Value: [cdrloc0 cdrloc1 cdrloc2 cdrloc3 cdrloc4 cdrloc5]
+
+Value: [caarloc0 caarloc1 caarloc2 caarloc3]
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: s!:comcall
+
+Value: s!:ad_name
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr3
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comcarcdr4
+
+Value: s!:comgetv
+
+Value: s!:comgetv
+
+Value: s!:comqgetv
+
+Value: s!:comqgetv
+
+Value: s!:comget
+
+Value: s!:comget
+
+Value: s!:comflagp
+
+Value: s!:comflagp
+
+Value: s!:complus
+
+Value: s!:complus
+
+Value: s!:comtimes
+
+Value: s!:comtimes
+
+Value: s!:comiplus
+
+Value: s!:comiplus
+
+Value: s!:comitimes
+
+Value: s!:comitimes
+
+Value: s!:complus2
+
+Value: s!:complus2
+
+Value: s!:comdifference
+
+Value: s!:comdifference
+
+Value: s!:comiplus2
+
+Value: s!:comiplus2
+
+Value: s!:comidifference
+
+Value: s!:comidifference
+
+Value: s!:comtimes2
+
+Value: s!:comtimes2
+
+Value: s!:comtimes2
+
+Value: s!:comminus
+
+Value: s!:comminus
+
+Value: s!:comminusp
+
+Value: s!:comminusp
+
+Value: s!:comlessp
+
+Value: s!:comlessp
+
+Value: s!:comiminusp
+
+Value: s!:comiminusp
+
+Value: s!:comilessp
+
+Value: s!:comilessp
+
+Value: s!:comprogn
+
+Value: s!:comprogn
+
+Value: s!:comprog1
+
+Value: s!:comprog1
+
+Value: s!:comprog2
+
+Value: s!:comprog2
+
+Value: s!:outstack
+
+Value: s!:outlose
+
+Value: s!:comprog
+
+Value: s!:comprog
+
+Value: s!:comtagbody
+
+Value: s!:comtagbody
+
+Value: s!:comblock
+
+Value: s!:comblock
+
+Value: s!:comcatch
+
+Value: s!:comcatch
+
+Value: s!:comthrow
+
+Value: s!:comthrow
+
+Value: s!:comunwind!-protect
+
+Value: s!:comunwind!-protect
+
+Value: s!:comdeclare
+
+Value: s!:comdeclare
+
+Value: s!:expand_let
+
+Value: s!:comlet
+
+Value: s!:comlet
+
+Value: s!:expand_let!*
+
+Value: s!:comlet!*
+
+Value: s!:comlet!*
+
+Value: s!:restore_stack
+
+Value: s!:comgo
+
+Value: s!:comgo
+
+Value: s!:comreturn!-from
+
+Value: s!:comreturn!-from
+
+Value: s!:comreturn
+
+Value: s!:comreturn
+
+Value: nil
+
+Value: [jumpl0t jumpl1t jumpl2t jumpl3t jumpl4t]
+
+Value: [jumpl0nil jumpl1nil jumpl2nil jumpl3nil jumpl4nil]
+
+Value: [jumpl0atom jumpl1atom jumpl2atom jumpl3atom]
+
+Value: [jumpl0natom jumpl1natom jumpl2natom jumpl3natom]
+
+Value: s!:jumpif
+
+Value: s!:testnot
+
+Value: s!:testnot
+
+Value: s!:testnot
+
+Value: s!:testatom
+
+Value: s!:testatom
+
+Value: s!:testconsp
+
+Value: s!:testconsp
+
+Value: s!:comcond
+
+Value: s!:comcond
+
+Value: s!:comif
+
+Value: s!:comif
+
+Value: s!:comwhen
+
+Value: s!:comwhen
+
+Value: s!:comunless
+
+Value: s!:comunless
+
+Value: s!:comicase
+
+Value: s!:comicase
+
+Value: 181
+
+Value: 182
+
+Value: s!:jumpliteql
+
+Value: s!:casebranch
+
+Value: s!:comcase
+
+Value: s!:comcase
+
+Value: nil
+
+Value: s!:comeval!-when
+
+Value: s!:comeval!-when
+
+Value: s!:comthe
+
+Value: s!:comthe
+
+Value: s!:comand
+
+Value: s!:comand
+
+Value: s!:comor
+
+Value: s!:comor
+
+Value: s!:combool
+
+Value: s!:combool
+
+Value: s!:combool
+
+Value: s!:testeq
+
+Value: s!:testeq1
+
+Value: s!:testeq
+
+Value: s!:testequal
+
+Value: s!:testequal
+
+Value: s!:testequal
+
+Value: s!:testneq
+
+Value: s!:testneq
+
+Value: s!:testeqcar
+
+Value: s!:testeqcar
+
+Value: s!:testflagp
+
+Value: s!:testflagp
+
+Value: nil
+
+Value: [storeloc0 storeloc1 storeloc2 storeloc3 storeloc4 storeloc5 storeloc6
+storeloc7]
+
+Value: s!:comsetq
+
+Value: s!:comsetq
+
+Value: s!:comsetq
+
+Value: s!:comlist
+
+Value: s!:comlist
+
+Value: s!:comlist!*
+
+Value: s!:comlist!*
+
+Value: s!:comcons
+
+Value: s!:comcons
+
+Value: s!:comapply
+
+Value: s!:comapply
+
+Value: s!:imp_funcall
+
+Value: s!:imp_funcall
+
+Value: s!:eval_to_eq_safe
+
+Value: s!:eval_to_eq_unsafe
+
+Value: nil
+
+Value: nil
+
+Value: s!:list_all_eq_safe
+
+Value: s!:eval_to_list_all_eq_safe
+
+Value: s!:eval_to_eq_unsafe
+
+Value: s!:list_some_eq_unsafe
+
+Value: s!:eval_to_list_some_eq_unsafe
+
+Value: s!:eval_to_car_eq_safe
+
+Value: s!:eval_to_car_eq_unsafe
+
+Value: s!:alist_eq_safe
+
+Value: s!:eval_to_alist_eq_safe
+
+Value: s!:alist_eq_unsafe
+
+Value: s!:eval_to_alist_eq_unsafe
+
+Value: s!:comequal
+
+Value: s!:comequal
+
+Value: s!:comeq
+
+Value: s!:comeq
+
+Value: s!:comeqcar
+
+Value: s!:comeqcar
+
+Value: s!:comsublis
+
+Value: s!:comsublis
+
+Value: s!:comsubla
+
+Value: s!:comsubla
+
+Value: s!:comassoc
+
+Value: s!:comassoc
+
+Value: s!:comassoc
+
+Value: s!:comatsoc
+
+Value: s!:comatsoc
+
+Value: s!:commember
+
+Value: s!:commember
+
+Value: s!:commember
+
+Value: s!:commemq
+
+Value: s!:commemq
+
+Value: s!:comdelete
+
+Value: s!:comdelete
+
+Value: s!:comdeleq
+
+Value: s!:comdeleq
+
+Value: s!:commap
+
+Value: s!:commap
+
+Value: s!:commap
+
+Value: s!:commap
+
+Value: s!:commap
+
+Value: s!:commap
+
+Value: s!:commap
+
+Value: s!:nilargs
+
+Value: s!:subargs
+
+Value: nil
+
+Value: clear_source_database
+
+Value: load_source_database
+
+Value: save_source_database
+
+Value: display_source_database
+
+Value: s!:compile1
+
+Value: s!:compile2
+
+Value: compile!-all
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Value: s!:fasl_supervisor
+
+Value: s!:fslout0
+
+Value: s!:fslout1
+
+Value: s!:fslout2
+
+Value: faslend
+
+Value: endstat
+
+Value: faslout
+
+Value: rlis
+
+Value: s!:c_supervisor
+
+Value: s!:cout0
+
+Value: s!:cout1
+
+Value: nil
+
+Value: c_end
+
+Value: endstat
+
+Value: c_out
+
+Value: rlis
+
+Value: s!:compile!-file!*
+
+Value: compile!-file!*
+
+Value: compd
+
+Value: s!:compile0
+
+Value: s!:fully_macroexpand_list
+
+Value: s!:fully_macroexpand
+
+Value: s!:expandfunction
+
+Value: s!:expandflet
+
+Value: s!:expandlabels
+
+Value: s!:expandmacrolet
+
+Value: s!:expandprog
+
+Value: s!:expandtagbody
+
+Value: s!:expandprogv
+
+Value: s!:expandblock
+
+Value: s!:expanddeclare
+
+Value: s!:expandlet
+
+Value: s!:expandlet!*
+
+Value: s!:expandgo
+
+Value: s!:expandreturn!-from
+
+Value: s!:expandcond
+
+Value: s!:expandcase
+
+Value: s!:expandeval!-when
+
+Value: s!:expandthe
+
+Value: s!:expandmv!-call
+
+Value: s!:expandfunction
+
+Value: s!:expandflet
+
+Value: s!:expandlabels
+
+Value: s!:expandmacrolet
+
+Value: s!:expandprog
+
+Value: s!:expandtagbody
+
+Value: s!:expandprogv
+
+Value: s!:expandblock
+
+Value: s!:expanddeclare
+
+Value: s!:expandlet
+
+Value: s!:expandlet!*
+
+Value: s!:expandgo
+
+Value: s!:expandreturn!-from
+
+Value: s!:expandcond
+
+Value: s!:expandcase
+
+Value: s!:expandeval!-when
+
+Value: s!:expandthe
+
+Value: s!:expandmv!-call
+
+Value: compile
++++ end of reading $cslbase/compiler.lsp
+
+Value: nil
+
+Value: nil
++++ s!:improve compiled, 23 + 12 bytes
++++ s!:literal_order compiled, 17 + 4 bytes
++++ s!:comval compiled, 100 + 40 bytes
++++ s!:outopcode0 compiled, 29 + 32 bytes
++++ s!:plant_basic_block compiled, 125 + 56 bytes
++++ s!:remlose compiled, 66 + 32 bytes
++++ s!:islocal compiled, 37 + 16 bytes
++++ s!:is_lose_and_exit compiled, 56 + 20 bytes
++++ s!:comatom compiled, 188 + 120 bytes
++++ s!:destination_label compiled, 50 + 16 bytes
++++ s!:record_literal compiled, 48 + 32 bytes
++++ s!:resolve_labels compiled, 118 + 32 bytes
++++ s!:expand_jump compiled, 224 + 96 bytes
++++ s!:outopcode1lit compiled, 36 + 40 bytes
++++ stable!-sortip compiled, 129 + 4 bytes
++++ s!:iseasy compiled, 18 + 12 bytes
++++ s!:outjump compiled, 84 + 48 bytes
++++ s!:add_pending compiled, 31 + 12 bytes
++++ s!:comcall compiled, 560 + 260 bytes
++++ s!:resolve_literals compiled, 231 + 60 bytes
+Compile: binopen
++++ binopen compiled, 46 + 48 bytes
+Compile: break!-loop
++++ break!-loop compiled, 112 + 68 bytes
+Compile: c_end
++++ c_end compiled, 17 + 28 bytes
+Compile: c_out
++++ c_out compiled, 68 + 68 bytes
+Compile: carcheck
++++ carcheck compiled, 12 + 8 bytes
+Compile: clear_source_database
++++ clear_source_database compiled, 9 + 24 bytes
+Compile: compd
++++ compd compiled, 31 + 32 bytes
+Compile: compile
++++ compile compiled, 31 + 16 bytes
+Compile: compile!-all
++++ compile!-all compiled, 57 + 40 bytes
+Compile: compile!-file!*
++++ compile!-file!* compiled, 10 + 12 bytes
+Compile: copy
++++ copy compiled, 11 + 4 bytes
+Compile: dated!-name
++++ dated!-name compiled, 28 + 24 bytes
+Compile: deflist
++++ deflist compiled, 22 + 8 bytes
+Compile: display_source_database
++++ display_source_database compiled, 38 + 24 bytes
+Compile: do
++++ do_a3bcjyzbmod2!- compiled, 6 + 16 bytes
+Compile: do!*
++++ do!*_dqgk8a49g114!- compiled, 6 + 16 bytes
+Compile: dolist
++++ dolist_gn2odhdrfq11 compiled, 6 + 8 bytes
+Compile: dotimes
++++ dotimes_7l01qd2xljs3!- compiled, 6 + 8 bytes
+Compile: expand
++++ expand compiled, 14 + 4 bytes
+Compile: faslend
++++ faslend compiled, 18 + 28 bytes
+Compile: faslout
++++ faslout compiled, 68 + 68 bytes
+Compile: fetch!-url
++++ fetch!-url compiled, 67 + 36 bytes
+Compile: fluid
++++ fluid compiled, 18 + 4 bytes
+Compile: format
++++ format_ybynmlqqtsy1!- compiled, 15 + 12 bytes
+Compile: global
++++ global compiled, 18 + 4 bytes
+Compile: hashtagged!-name
++++ hashtagged!-name compiled, 16 + 20 bytes
+Compile: lastcar
++++ lastcar compiled, 11 + 4 bytes
+Compile: load_source_database
++++ load_source_database compiled, 31 + 24 bytes
+Compile: map
++++ map compiled, 9 + 4 bytes
+Compile: mapc
++++ mapc compiled, 10 + 4 bytes
+Compile: mapcan
++++ mapcan compiled, 14 + 4 bytes
+Compile: mapcar
++++ mapcar compiled, 17 + 4 bytes
+Compile: mapcon
++++ mapcon compiled, 13 + 4 bytes
+Compile: maplist
++++ maplist compiled, 16 + 4 bytes
+Compile: oblist
++++ !*package!* declared fluid
++++ oblist compiled, 8 + 24 bytes
+Compile: oem!-supervisor
++++ oem!-supervisor compiled, 7 + 4 bytes
+Compile: open
++++ open compiled, 40 + 44 bytes
+Compile: pipe!-open
++++ pipe!-open compiled, 24 + 32 bytes
+Compile: prettyprint
++++ prettyprint compiled, 8 + 8 bytes
+Compile: princl
++++ princl compiled, 4 + 12 bytes
+Compile: prinl
++++ prinl compiled, 4 + 12 bytes
+Compile: printcl
++++ printcl compiled, 5 + 8 bytes
+Compile: printl
++++ printl compiled, 5 + 8 bytes
+Compile: printprompt
++++ printprompt compiled, 1 + 4 bytes
+Compile: psetq
++++ psetq_52f6jfooyyd2 compiled, 18 + 20 bytes
+Compile: putc
++++ putc compiled as link to put
+Compile: putd
++++ putd compiled, 94 + 60 bytes
+Compile: rassoc
++++ rassoc compiled, 14 + 4 bytes
+Compile: rplacw
++++ rplacw compiled, 9 + 4 bytes
+Compile: s!:ad_name
++++ s!:ad_name compiled, 25 + 24 bytes
+Compile: s!:alist_eq_safe
++++ s!:alist_eq_safe compiled, 24 + 12 bytes
+Compile: s!:alist_eq_unsafe
++++ s!:alist_eq_unsafe compiled, 33 + 12 bytes
+Compile: s!:alwayseasy
++++ s!:alwayseasy compiled, 2 + 8 bytes
+Compile: s!:c_supervisor
++++ s!:c_supervisor compiled, 106 + 56 bytes
+Compile: s!:cancel_local_decs
++++ s!:cancel_local_decs compiled as link to unfluid
+Compile: s!:casebranch
++++ s!:casebranch compiled, 253 + 108 bytes
+Compile: s!:comand
++++ s!:comand compiled, 30 + 28 bytes
+Compile: s!:comapply
++++ s!:comapply compiled, 91 + 44 bytes
+Compile: s!:comassoc
++++ s!:comassoc compiled, 39 + 32 bytes
+Compile: s!:comatsoc
++++ s!:comatsoc compiled, 50 + 44 bytes
+Compile: s!:comblock
++++ s!:comblock compiled, 25 + 24 bytes
+Compile: s!:combool
++++ s!:combool compiled, 51 + 28 bytes
+Compile: s!:comcarcdr3
++++ s!:comcarcdr3 compiled, 31 + 24 bytes
+Compile: s!:comcarcdr4
++++ s!:comcarcdr4 compiled, 24 + 12 bytes
+Compile: s!:comcase
++++ s!:comcase compiled, 366 + 96 bytes
+Compile: s!:comcatch
++++ s!:comcatch compiled, 49 + 52 bytes
+Compile: s!:comcond
++++ s!:comcond compiled, 88 + 48 bytes
+Compile: s!:comcons
++++ s!:comcons compiled, 112 + 44 bytes
+Compile: s!:comdeclare
++++ s!:comdeclare compiled, 14 + 16 bytes
+Compile: s!:comdeleq
++++ s!:comdeleq compiled, 50 + 44 bytes
+Compile: s!:comdelete
++++ s!:comdelete compiled, 27 + 28 bytes
+Compile: s!:comdifference
++++ s!:comdifference compiled, 77 + 40 bytes
+Compile: s!:comeq
++++ s!:comeq compiled, 50 + 36 bytes
+Compile: s!:comeqcar
++++ s!:comeqcar compiled, 37 + 32 bytes
+Compile: s!:comequal
++++ s!:comequal compiled, 22 + 16 bytes
+Compile: s!:comeval!-when
++++ s!:comeval!-when compiled, 44 + 28 bytes
+Compile: s!:comflagp
++++ s!:comflagp compiled, 53 + 40 bytes
+Compile: s!:comfunction
++++ s!:comfunction compiled, 157 + 112 bytes
+Compile: s!:comget
++++ s!:comget compiled, 93 + 64 bytes
+Compile: s!:comgetv
++++ s!:comgetv compiled, 14 + 20 bytes
+Compile: s!:comgo
++++ s!:comgo compiled, 64 + 40 bytes
+Compile: s!:comicase
++++ s!:comicase compiled, 83 + 32 bytes
+Compile: s!:comidifference
++++ s!:comidifference compiled, 54 + 32 bytes
+Compile: s!:comif
++++ s!:comif compiled, 55 + 36 bytes
+Compile: s!:comilessp
++++ s!:comilessp compiled, 26 + 24 bytes
+Compile: s!:comiminusp
++++ s!:comiminusp compiled, 21 + 24 bytes
+Compile: s!:comiplus
++++ s!:comiplus compiled, 7 + 16 bytes
+Compile: s!:comiplus2
++++ s!:comiplus2 compiled, 66 + 32 bytes
+Compile: s!:comitimes
++++ s!:comitimes compiled, 7 + 16 bytes
+Compile: s!:comlambda
++++ s!:comlambda compiled, 243 + 96 bytes
+Compile: s!:comlessp
++++ s!:comlessp compiled, 26 + 24 bytes
+Compile: s!:comlet
++++ s!:comlet compiled, 11 + 16 bytes
+Compile: s!:comlet!*
++++ s!:comlet!* compiled, 16 + 16 bytes
+Compile: s!:comlist
++++ s!:comlist compiled, 74 + 32 bytes
+Compile: s!:comlist!*
++++ s!:comlist!* compiled, 72 + 24 bytes
+Compile: s!:commap
++++ s!:commap compiled, 305 + 124 bytes
+Compile: s!:commember
++++ s!:commember compiled, 27 + 28 bytes
+Compile: s!:commemq
++++ s!:commemq compiled, 50 + 44 bytes
+Compile: s!:comminus
++++ s!:comminus compiled, 34 + 20 bytes
+Compile: s!:comminusp
++++ s!:comminusp compiled, 21 + 24 bytes
+Compile: s!:comor
++++ s!:comor compiled, 30 + 28 bytes
+Compile: s!:compile!-file!*
++++ s!:compile!-file!* compiled, 126 + 64 bytes
+Compile: s!:compile0
++++ s!:compile0 compiled, 233 + 88 bytes
+Compile: s!:compile1
++++ s!:compile1 compiled, 904 + 228 bytes
+Compile: s!:compile2
++++ s!:compile2 compiled, 498 + 168 bytes
+Compile: s!:complus
++++ s!:complus compiled, 7 + 16 bytes
+Compile: s!:complus2
++++ s!:complus2 compiled, 86 + 36 bytes
+Compile: s!:comprog
++++ s!:comprog compiled, 340 + 128 bytes
+Compile: s!:comprog1
++++ s!:comprog1 compiled, 65 + 40 bytes
+Compile: s!:comprog2
++++ s!:comprog2 compiled, 31 + 20 bytes
+Compile: s!:comprogn
++++ s!:comprogn compiled, 40 + 16 bytes
+Compile: s!:comqgetv
++++ s!:comqgetv compiled, 37 + 32 bytes
+Compile: s!:comquote
++++ s!:comquote compiled, 11 + 12 bytes
+Compile: s!:comreturn
++++ s!:comreturn compiled, 9 + 12 bytes
+Compile: s!:comreturn!-from
++++ s!:comreturn!-from compiled, 58 + 44 bytes
+Compile: s!:comsetq
++++ s!:comsetq compiled, 221 + 132 bytes
+Compile: s!:comspecform
++++ s!:comspecform compiled, 7 + 16 bytes
+Compile: s!:comsubla
++++ s!:comsubla compiled, 37 + 36 bytes
+Compile: s!:comsublis
++++ s!:comsublis compiled, 17 + 20 bytes
+Compile: s!:comtagbody
++++ s!:comtagbody compiled, 115 + 40 bytes
+Compile: s!:comthe
++++ s!:comthe compiled, 6 + 8 bytes
+Compile: s!:comthrow
++++ s!:comthrow compiled, 33 + 36 bytes
+Compile: s!:comtimes
++++ s!:comtimes compiled, 7 + 16 bytes
+Compile: s!:comtimes2
++++ s!:comtimes2 compiled, 74 + 28 bytes
+Compile: s!:comunless
++++ s!:comunless compiled, 13 + 16 bytes
+Compile: s!:comunwind!-protect
++++ s!:comunwind!-protect compiled, 68 + 64 bytes
+Compile: s!:comwhen
++++ s!:comwhen compiled, 41 + 40 bytes
+Compile: s!:cout0
++++ s!:cout0 compiled, 4 + 8 bytes
+Compile: s!:cout1
++++ s!:cout1 compiled, 419 + 160 bytes
+Compile: s!:do!-bindings
++++ s!:do!-bindings compiled, 34 + 4 bytes
+Compile: s!:do!-endtest
++++ s!:do!-endtest compiled, 5 + 4 bytes
+Compile: s!:do!-result
++++ s!:do!-result compiled, 5 + 4 bytes
+Compile: s!:do!-updates
++++ s!:do!-updates compiled, 25 + 4 bytes
+Compile: s!:easygetv
++++ s!:easygetv compiled, 25 + 20 bytes
+Compile: s!:easyifarg
++++ s!:easyifarg compiled, 16 + 8 bytes
+Compile: s!:easyqgetv
++++ s!:easyqgetv compiled, 22 + 16 bytes
+Compile: s!:endlist
++++ s!:endlist compiled, 5 + 8 bytes
+Compile: s!:endprocedure
++++ s!:endprocedure compiled, 219 + 108 bytes
+Compile: s!:eval_to_alist_eq_safe
++++ s!:eval_to_alist_eq_safe compiled, 52 + 24 bytes
+Compile: s!:eval_to_alist_eq_unsafe
++++ s!:eval_to_alist_eq_unsafe compiled, 47 + 28 bytes
+Compile: s!:eval_to_car_eq_safe
++++ s!:eval_to_car_eq_safe compiled, 21 + 20 bytes
+Compile: s!:eval_to_car_eq_unsafe
++++ s!:eval_to_car_eq_unsafe compiled, 21 + 20 bytes
+Compile: s!:eval_to_eq_safe
++++ s!:eval_to_eq_safe compiled, 48 + 20 bytes
+Compile: s!:eval_to_eq_unsafe
++++ s!:eval_to_eq_unsafe compiled, 43 + 16 bytes
+Compile: s!:eval_to_list_all_eq_safe
++++ s!:eval_to_list_all_eq_safe compiled, 52 + 24 bytes
+Compile: s!:eval_to_list_some_eq_unsafe
++++ s!:eval_to_list_some_eq_unsafe compiled, 47 + 24 bytes
+Compile: s!:expand!-do
++++ s!:expand!-do compiled, 116 + 44 bytes
+Compile: s!:expand!-dolist
++++ s!:expand!-dolist compiled, 90 + 44 bytes
+Compile: s!:expand!-dotimes
++++ s!:expand!-dotimes compiled, 94 + 48 bytes
+Compile: s!:expand_let
++++ s!:expand_let compiled, 55 + 8 bytes
+Compile: s!:expand_let!*
++++ s!:expand_let!* compiled, 109 + 20 bytes
+Compile: s!:expandblock
++++ s!:expandblock compiled, 10 + 8 bytes
+Compile: s!:expandcase
++++ s!:expandcase compiled, 43 + 8 bytes
+Compile: s!:expandcond
++++ s!:expandcond compiled, 39 + 8 bytes
+Compile: s!:expanddeclare
++++ s!:expanddeclare compiled, 1 + 4 bytes
+Compile: s!:expandeval!-when
++++ s!:expandeval!-when compiled, 10 + 8 bytes
+Compile: s!:expandflet
++++ s!:expandflet compiled, 4 + 12 bytes
+Compile: s!:expandfunction
++++ s!:expandfunction compiled, 1 + 4 bytes
+Compile: s!:expandgo
++++ s!:expandgo compiled, 1 + 4 bytes
+Compile: s!:expandlabels
++++ s!:expandlabels compiled, 4 + 12 bytes
+Compile: s!:expandlet
++++ s!:expandlet compiled, 46 + 8 bytes
+Compile: s!:expandlet!*
++++ s!:expandlet!* compiled as link to s:expandlet
+Compile: s!:expandmacrolet
++++ s!:expandmacrolet compiled, 4 + 12 bytes
+Compile: s!:expandmv!-call
++++ s!:expandmv!-call compiled, 10 + 8 bytes
+Compile: s!:expandprog
++++ s!:expandprog compiled, 10 + 8 bytes
+Compile: s!:expandprogv
++++ s!:expandprogv compiled, 14 + 8 bytes
+Compile: s!:expandreturn!-from
++++ s!:expandreturn!-from compiled, 10 + 8 bytes
+Compile: s!:expandtagbody
++++ s!:expandtagbody compiled as link to s:fully_macroexpand_list
+Compile: s!:expandthe
++++ s!:expandthe compiled, 10 + 8 bytes
+Compile: s!:explodes
++++ s!:explodes compiled as link to explode
+Compile: s!:fasl_supervisor
++++ s!:fasl_supervisor compiled, 106 + 56 bytes
+Compile: s!:find_lexical
++++ s!:find_lexical compiled, 34 + 8 bytes
+Compile: s!:find_local_decs
++++ s!:find_local_decs compiled, 46 + 8 bytes
+Compile: s!:finishpending
++++ s!:finishpending compiled, 48 + 24 bytes
+Compile: s!:format
++++ s!:format compiled, 231 + 44 bytes
+Compile: s!:fslout0
++++ s!:fslout0 compiled, 4 + 8 bytes
+Compile: s!:fslout1
++++ s!:fslout1 compiled, 473 + 192 bytes
+Compile: s!:fslout2
++++ s!:fslout2 compiled, 61 + 44 bytes
+Compile: s!:fully_macroexpand
++++ s!:fully_macroexpand compiled, 60 + 24 bytes
+Compile: s!:fully_macroexpand_list
++++ s!:fully_macroexpand_list compiled, 32 + 8 bytes
+Compile: s!:imp_difference
++++ s!:imp_difference compiled, 28 + 20 bytes
+Compile: s!:imp_funcall
++++ s!:imp_funcall compiled, 61 + 48 bytes
+Compile: s!:imp_idifference
++++ s!:imp_idifference compiled, 28 + 20 bytes
+Compile: s!:imp_itimes
++++ s!:imp_itimes compiled, 86 + 28 bytes
+Compile: s!:imp_minus
++++ s!:imp_minus compiled, 57 + 24 bytes
+Compile: s!:imp_times
++++ s!:imp_times compiled, 86 + 28 bytes
+Compile: s!:instate_local_decs
++++ s!:instate_local_decs compiled, 44 + 16 bytes
+Compile: s!:invent_exit
++++ s!:invent_exit compiled, 37 + 12 bytes
+Compile: s!:jumpif
++++ s!:jumpif compiled, 324 + 144 bytes
+Compile: s!:jumpliteql
++++ s!:jumpliteql compiled, 55 + 68 bytes
+Compile: s!:list_all_eq_safe
++++ s!:list_all_eq_safe compiled, 18 + 8 bytes
+Compile: s!:list_some_eq_unsafe
++++ s!:list_some_eq_unsafe compiled, 14 + 12 bytes
+Compile: s!:load2
++++ s!:load2 compiled, 196 + 92 bytes
+Compile: s!:loadliteral
++++ s!:loadliteral compiled, 27 + 32 bytes
+Compile: s!:make!-psetq!-assignments
++++ s!:make!-psetq!-assignments compiled, 16 + 8 bytes
+Compile: s!:make!-psetq!-bindings
++++ s!:make!-psetq!-bindings compiled, 15 + 4 bytes
+Compile: s!:make!-psetq!-vars
++++ s!:make!-psetq!-vars compiled, 17 + 16 bytes
+Compile: s!:negate_jump
++++ s!:negate_jump compiled, 13 + 8 bytes
+Compile: s!:nilargs
++++ s!:nilargs compiled, 17 + 12 bytes
+Compile: s!:oblist
++++ s!:oblist compiled, 52 + 16 bytes
+Compile: s!:oblist1
++++ s!:oblist1 compiled, 17 + 8 bytes
+Compile: s!:only_loadlit
++++ s!:only_loadlit compiled, 18 + 12 bytes
+Compile: s!:outexit
++++ s!:outexit compiled, 46 + 32 bytes
+Compile: s!:outlexref
++++ s!:outlexref compiled, 141 + 84 bytes
+Compile: s!:outlose
++++ s!:outlose compiled, 145 + 64 bytes
+Compile: s!:outopcode1
++++ s!:outopcode1 compiled, 34 + 36 bytes
+Compile: s!:outopcode2
++++ s!:outopcode2 compiled, 38 + 36 bytes
+Compile: s!:outopcode2lit
++++ s!:outopcode2lit compiled, 42 + 40 bytes
+Compile: s!:outstack
++++ s!:outstack compiled, 145 + 64 bytes
+Compile: s!:overflow
++++ s!:overflow compiled, 319 + 124 bytes
+Compile: s!:plant_bytes
++++ s!:plant_bytes compiled, 146 + 60 bytes
+Compile: s!:plant_exit_code
++++ s!:plant_exit_code compiled, 146 + 48 bytes
+Compile: s!:prindent
++++ s!:prindent compiled, 333 + 144 bytes
+Compile: s!:prinhex1
++++ s!:prinhex1 compiled, 9 + 16 bytes
+Compile: s!:prinhex2
++++ s!:prinhex2 compiled, 7 + 16 bytes
+Compile: s!:prinhex4
++++ s!:prinhex4 compiled, 7 + 16 bytes
+Compile: s!:prinl0
++++ s!:prinl0 compiled, 30 + 40 bytes
+Compile: s!:prinl1
++++ s!:prinl1 compiled, 124 + 44 bytes
+Compile: s!:prinl2
++++ s!:prinl2 compiled, 314 + 92 bytes
+Compile: s!:prvector
++++ s!:prvector compiled, 73 + 48 bytes
+Compile: s!:putblank
++++ s!:putblank compiled, 28 + 20 bytes
+Compile: s!:putch
++++ s!:putch compiled, 66 + 52 bytes
+Compile: s!:quotep
++++ s!:quotep compiled, 26 + 16 bytes
+Compile: s!:record_literal_for_jump
++++ s!:record_literal_for_jump compiled, 51 + 32 bytes
+Compile: s!:remcall
++++ s!:remcall compiled, 221 + 84 bytes
+Compile: s!:residual_local_decs
++++ s!:residual_local_decs compiled, 54 + 16 bytes
+Compile: s!:restore_stack
++++ s!:restore_stack compiled, 128 + 80 bytes
+Compile: s!:set_label
++++ s!:set_label compiled, 50 + 36 bytes
+Compile: s!:should_be_fluid
++++ s!:should_be_fluid compiled, 33 + 32 bytes
+Compile: s!:stamp
++++ s!:stamp compiled, 33 + 24 bytes
+Compile: s!:start_procedure
++++ s!:start_procedure compiled, 53 + 52 bytes
+Compile: s!:subargs
++++ s!:subargs compiled, 18 + 12 bytes
+Compile: s!:testatom
++++ s!:testatom compiled, 41 + 40 bytes
+Compile: s!:testconsp
++++ s!:testconsp compiled, 41 + 40 bytes
+Compile: s!:testeq
++++ s!:testeq compiled, 224 + 100 bytes
+Compile: s!:testeq1
++++ s!:testeq1 compiled, 171 + 68 bytes
+Compile: s!:testeqcar
++++ s!:testeqcar compiled, 146 + 112 bytes
+Compile: s!:testequal
++++ s!:testequal compiled, 108 + 44 bytes
+Compile: s!:testflagp
++++ s!:testflagp compiled, 98 + 84 bytes
+Compile: s!:testneq
++++ s!:testneq compiled, 11 + 16 bytes
+Compile: s!:testnot
++++ s!:testnot compiled, 10 + 12 bytes
+Compile: s!:tidy_exits
++++ s!:tidy_exits compiled, 34 + 8 bytes
+Compile: s!:tidy_exits_1
++++ s!:tidy_exits_1 compiled, 140 + 52 bytes
+Compile: s!:tidy_flowgraph
++++ s!:tidy_flowgraph compiled, 329 + 44 bytes
+Compile: s!:too_many_literals
++++ s!:too_many_literals compiled, 203 + 56 bytes
+Compile: s!:try_tail_1
++++ s!:try_tail_1 compiled, 202 + 88 bytes
+Compile: s!:try_tailcall
++++ s!:try_tailcall compiled, 34 + 8 bytes
+Compile: s!:vecof
++++ s!:vecof compiled, 32 + 8 bytes
+Compile: sassoc
++++ sassoc compiled, 18 + 4 bytes
+Compile: save_source_database
++++ save_source_database compiled, 46 + 28 bytes
+Compile: sort
++++ sort compiled, 7 + 8 bytes
+Compile: sortip
++++ sortip compiled as link to stable-sortip
+Compile: stable!-sort
++++ stable!-sort compiled, 7 + 8 bytes
+Compile: superprinm
++++ superprinm compiled, 105 + 92 bytes
+Compile: superprintm
++++ superprintm compiled, 12 + 16 bytes
+Compile: symerr
++++ symerr compiled, 12 + 12 bytes
+Compile: traceset
++++ traceset compiled, 12 + 8 bytes
+Compile: traceset1
++++ traceset1 compiled, 46 + 44 bytes
+Compile: unfluid
++++ unfluid compiled, 10 + 4 bytes
+Compile: unglobal
++++ unglobal compiled, 10 + 4 bytes
+Compile: untraceset
++++ untraceset compiled, 12 + 8 bytes
+Compile: untraceset1
++++ untraceset1 compiled, 46 + 44 bytes
+
+Value: nil
+
+Value: nil
+
+FASLOUT compat: IN files;  or type in expressions
+When all done, execute FASLEND;
+Image member compat.fasl being created
+Seeking to 0
+Found the end
+p=0 n = 18 mD = 18
+
+Reading file "$cslbase/compat.lsp"
++++ rplacw compiled, 9 + 4 bytes
++++ expand compiled, 14 + 4 bytes
++++ plus_j9own6whrwf compiled, 6 + 12 bytes
++++ times_ligyn1lr1wl1!- compiled, 6 + 12 bytes
++++ mapcar compiled, 17 + 4 bytes
++++ maplist compiled, 16 + 4 bytes
++++ mapcan compiled, 14 + 4 bytes
++++ mapcon compiled, 13 + 4 bytes
++++ mapc compiled, 10 + 4 bytes
++++ map compiled, 9 + 4 bytes
++++ copy compiled, 11 + 4 bytes
++++ sassoc compiled, 18 + 4 bytes
++++ rassoc compiled, 14 + 4 bytes
++++ lastcar compiled, 11 + 4 bytes
++++ open compiled, 40 + 44 bytes
++++ binopen compiled, 46 + 48 bytes
++++ pipe!-open compiled, 24 + 32 bytes
++++ putd compiled, 94 + 60 bytes
++++ putc compiled as link to put
++++ traceset1 compiled, 46 + 44 bytes
++++ untraceset1 compiled, 46 + 44 bytes
++++ traceset compiled, 12 + 8 bytes
++++ untraceset compiled, 12 + 8 bytes
++++ deflist compiled, 22 + 8 bytes
++++ global compiled, 18 + 4 bytes
++++ fluid compiled, 18 + 4 bytes
++++ unglobal compiled, 10 + 4 bytes
++++ unfluid compiled, 10 + 4 bytes
++++ printprompt compiled, 1 + 4 bytes
++++ carcheck compiled, 12 + 8 bytes
++++ symerr compiled, 12 + 12 bytes
++++ s!:oblist compiled, 52 + 16 bytes
++++ s!:oblist1 compiled, 17 + 8 bytes
++++ oblist compiled, 8 + 24 bytes
++++ s!:make!-psetq!-vars compiled, 17 + 16 bytes
++++ s!:make!-psetq!-bindings compiled, 15 + 4 bytes
++++ s!:make!-psetq!-assignments compiled, 16 + 8 bytes
++++ psetq_wcqiypruk4k3!- compiled, 20 + 20 bytes
++++ s!:do!-bindings compiled, 34 + 4 bytes
++++ s!:do!-endtest compiled, 5 + 4 bytes
++++ s!:do!-result compiled, 5 + 4 bytes
++++ s!:do!-updates compiled, 25 + 4 bytes
++++ s!:expand!-do compiled, 116 + 44 bytes
++++ do_h5d0q197map2 compiled, 8 + 16 bytes
++++ do!*_ne7a546bgcg compiled, 8 + 16 bytes
++++ s!:expand!-dolist compiled, 90 + 44 bytes
++++ dolist_unc2yg8igbr!- compiled, 8 + 8 bytes
++++ s!:expand!-dotimes compiled, 94 + 48 bytes
++++ dotimes_iinvkdmb4aq3!- compiled, 8 + 8 bytes
+End of file "$cslbase/compat.lsp"
+
+Reading file "$cslbase/extras.lsp"
++++ oem!-supervisor compiled, 7 + 4 bytes
++++ break!-loop compiled, 112 + 68 bytes
++++ s!:stamp compiled, 33 + 24 bytes
++++ dated!-name compiled, 28 + 24 bytes
++++ hashtagged!-name compiled, 16 + 20 bytes
++++ sort compiled, 7 + 8 bytes
++++ stable!-sort compiled, 7 + 8 bytes
++++ sortip compiled as link to stable-sortip
++++ stable!-sortip compiled, 129 + 4 bytes
++++ s!:prinl0 compiled, 30 + 40 bytes
++++ s!:prinl1 compiled, 124 + 44 bytes
++++ s!:prinl2 compiled, 314 + 92 bytes
++++ printl compiled, 5 + 8 bytes
++++ printcl compiled, 5 + 8 bytes
++++ princl compiled, 4 + 12 bytes
++++ prinl compiled, 4 + 12 bytes
++++ s!:format compiled, 231 + 44 bytes
++++ format_9n7n6pcgv9g!- compiled, 17 + 12 bytes
++++ prettyprint compiled, 8 + 8 bytes
++++ superprintm compiled, 12 + 16 bytes
++++ superprinm compiled, 105 + 92 bytes
++++ s!:prindent compiled, 333 + 144 bytes
++++ s!:explodes compiled as link to explode
++++ s!:prvector compiled, 73 + 48 bytes
++++ s!:putblank compiled, 28 + 20 bytes
++++ s!:endlist compiled, 5 + 8 bytes
++++ s!:finishpending compiled, 48 + 24 bytes
++++ s!:quotep compiled, 26 + 16 bytes
++++ s!:putch compiled, 66 + 52 bytes
++++ s!:overflow compiled, 319 + 124 bytes
++++ fetch!-url compiled, 67 + 36 bytes
+End of file "$cslbase/extras.lsp"
+at close member: length = 6469 memberData = 18
++++ FASLEND compat.fasl
+
+Value: nil
+
+FASLOUT compiler: IN files;  or type in expressions
+When all done, execute FASLEND;
+Image member compiler.fasl being created
+Seeking to 0
+Found the end
+p=0 n = 48 mD = 48
+
+Reading file "$cslbase/compiler.lsp"
++++ s!:vecof compiled, 32 + 8 bytes
++++ s!:prinhex1 compiled, 9 + 16 bytes
++++ s!:prinhex2 compiled, 7 + 16 bytes
++++ s!:prinhex4 compiled, 7 + 16 bytes
++++ s!:start_procedure compiled, 53 + 52 bytes
++++ s!:set_label compiled, 50 + 36 bytes
++++ s!:outjump compiled, 84 + 48 bytes
++++ s!:outexit compiled, 46 + 32 bytes
++++ s!:outopcode0 compiled, 29 + 32 bytes
++++ s!:outopcode1 compiled, 34 + 36 bytes
++++ s!:record_literal compiled, 48 + 32 bytes
++++ s!:record_literal_for_jump compiled, 51 + 32 bytes
++++ s!:outopcode1lit compiled, 36 + 40 bytes
++++ s!:outopcode2 compiled, 38 + 36 bytes
++++ s!:outopcode2lit compiled, 42 + 40 bytes
++++ s!:outlexref compiled, 141 + 84 bytes
++++ s!:literal_order compiled, 17 + 4 bytes
++++ s!:resolve_literals compiled, 231 + 60 bytes
++++ s!:only_loadlit compiled, 18 + 12 bytes
++++ s!:too_many_literals compiled, 203 + 56 bytes
++++ s!:endprocedure compiled, 219 + 108 bytes
++++ s!:add_pending compiled, 31 + 12 bytes
++++ s!:invent_exit compiled, 37 + 12 bytes
++++ s!:destination_label compiled, 50 + 16 bytes
++++ s!:remlose compiled, 66 + 32 bytes
++++ s!:remcall compiled, 221 + 84 bytes
++++ s!:is_lose_and_exit compiled, 56 + 20 bytes
++++ s!:try_tail_1 compiled, 202 + 88 bytes
++++ s!:try_tailcall compiled, 34 + 8 bytes
++++ s!:tidy_exits_1 compiled, 140 + 52 bytes
++++ s!:tidy_exits compiled, 34 + 8 bytes
++++ s!:tidy_flowgraph compiled, 329 + 44 bytes
++++ s!:negate_jump compiled, 13 + 8 bytes
++++ s!:resolve_labels compiled, 118 + 32 bytes
++++ s!:plant_basic_block compiled, 125 + 56 bytes
++++ s!:plant_bytes compiled, 146 + 60 bytes
++++ s!:plant_exit_code compiled, 146 + 48 bytes
++++ s!:expand_jump compiled, 224 + 96 bytes
++++ s!:comval compiled, 100 + 40 bytes
++++ s!:comspecform compiled, 7 + 16 bytes
++++ s!:improve compiled, 23 + 12 bytes
++++ s!:imp_minus compiled, 57 + 24 bytes
++++ s!:imp_times compiled, 86 + 28 bytes
++++ s!:imp_itimes compiled, 86 + 28 bytes
++++ s!:imp_difference compiled, 28 + 20 bytes
++++ s!:imp_idifference compiled, 28 + 20 bytes
++++ s!:alwayseasy compiled, 2 + 8 bytes
++++ s!:easyifarg compiled, 16 + 8 bytes
++++ s!:easygetv compiled, 25 + 20 bytes
++++ s!:easyqgetv compiled, 22 + 16 bytes
++++ s!:iseasy compiled, 18 + 12 bytes
++++ s!:instate_local_decs compiled, 44 + 16 bytes
++++ s!:residual_local_decs compiled, 54 + 16 bytes
++++ s!:cancel_local_decs compiled as link to unfluid
++++ s!:find_local_decs compiled, 46 + 8 bytes
++++ s!:comlambda compiled, 243 + 96 bytes
++++ s!:loadliteral compiled, 27 + 32 bytes
++++ s!:comquote compiled, 11 + 12 bytes
++++ s!:comfunction compiled, 157 + 112 bytes
++++ s!:should_be_fluid compiled, 33 + 32 bytes
++++ s!:find_lexical compiled, 34 + 8 bytes
++++ s!:comatom compiled, 188 + 120 bytes
++++ s!:islocal compiled, 37 + 16 bytes
++++ s!:load2 compiled, 196 + 92 bytes
++++ s!:comcall compiled, 560 + 260 bytes
++++ s!:ad_name compiled, 25 + 24 bytes
++++ s!:comcarcdr3 compiled, 31 + 24 bytes
++++ s!:comcarcdr4 compiled, 24 + 12 bytes
++++ s!:comgetv compiled, 14 + 20 bytes
++++ s!:comqgetv compiled, 37 + 32 bytes
++++ s!:comget compiled, 93 + 64 bytes
++++ s!:comflagp compiled, 53 + 40 bytes
++++ s!:complus compiled, 7 + 16 bytes
++++ s!:comtimes compiled, 7 + 16 bytes
++++ s!:comiplus compiled, 7 + 16 bytes
++++ s!:comitimes compiled, 7 + 16 bytes
++++ s!:complus2 compiled, 86 + 36 bytes
++++ s!:comdifference compiled, 77 + 40 bytes
++++ s!:comiplus2 compiled, 66 + 32 bytes
++++ s!:comidifference compiled, 54 + 32 bytes
++++ s!:comtimes2 compiled, 74 + 28 bytes
++++ s!:comminus compiled, 34 + 20 bytes
++++ s!:comminusp compiled, 21 + 24 bytes
++++ s!:comlessp compiled, 26 + 24 bytes
++++ s!:comiminusp compiled, 21 + 24 bytes
++++ s!:comilessp compiled, 26 + 24 bytes
++++ s!:comprogn compiled, 40 + 16 bytes
++++ s!:comprog1 compiled, 65 + 40 bytes
++++ s!:comprog2 compiled, 31 + 20 bytes
++++ s!:outstack compiled, 145 + 64 bytes
++++ s!:outlose compiled, 145 + 64 bytes
++++ s!:comprog compiled, 340 + 128 bytes
++++ s!:comtagbody compiled, 115 + 40 bytes
++++ s!:comblock compiled, 25 + 24 bytes
++++ s!:comcatch compiled, 49 + 52 bytes
++++ s!:comthrow compiled, 33 + 36 bytes
++++ s!:comunwind!-protect compiled, 68 + 64 bytes
++++ s!:comdeclare compiled, 14 + 16 bytes
++++ s!:expand_let compiled, 55 + 8 bytes
++++ s!:comlet compiled, 11 + 16 bytes
++++ s!:expand_let!* compiled, 109 + 20 bytes
++++ s!:comlet!* compiled, 16 + 16 bytes
++++ s!:restore_stack compiled, 128 + 80 bytes
++++ s!:comgo compiled, 64 + 40 bytes
++++ s!:comreturn!-from compiled, 58 + 44 bytes
++++ s!:comreturn compiled, 9 + 12 bytes
++++ s!:jumpif compiled, 324 + 144 bytes
++++ s!:testnot compiled, 10 + 12 bytes
++++ s!:testatom compiled, 41 + 40 bytes
++++ s!:testconsp compiled, 41 + 40 bytes
++++ s!:comcond compiled, 88 + 48 bytes
++++ s!:comif compiled, 55 + 36 bytes
++++ s!:comwhen compiled, 41 + 40 bytes
++++ s!:comunless compiled, 13 + 16 bytes
++++ s!:comicase compiled, 83 + 32 bytes
++++ s!:jumpliteql compiled, 55 + 68 bytes
++++ s!:casebranch compiled, 253 + 108 bytes
++++ s!:comcase compiled, 366 + 96 bytes
++++ s!:comeval!-when compiled, 44 + 28 bytes
++++ s!:comthe compiled, 6 + 8 bytes
++++ s!:comand compiled, 30 + 28 bytes
++++ s!:comor compiled, 30 + 28 bytes
++++ s!:combool compiled, 51 + 28 bytes
++++ s!:testeq compiled, 224 + 100 bytes
++++ s!:testeq1 compiled, 171 + 68 bytes
++++ s!:testequal compiled, 108 + 44 bytes
++++ s!:testneq compiled, 11 + 16 bytes
++++ s!:testeqcar compiled, 146 + 112 bytes
++++ s!:testflagp compiled, 98 + 84 bytes
++++ s!:comsetq compiled, 221 + 132 bytes
++++ s!:comlist compiled, 74 + 32 bytes
++++ s!:comlist!* compiled, 72 + 24 bytes
++++ s!:comcons compiled, 112 + 44 bytes
++++ s!:comapply compiled, 91 + 44 bytes
++++ s!:imp_funcall compiled, 61 + 48 bytes
++++ s!:eval_to_eq_safe compiled, 48 + 20 bytes
++++ s!:eval_to_eq_unsafe compiled, 53 + 20 bytes
++++ s!:list_all_eq_safe compiled, 18 + 8 bytes
++++ s!:eval_to_list_all_eq_safe compiled, 52 + 24 bytes
++++ s!:eval_to_eq_unsafe compiled, 43 + 16 bytes
++++ s!:list_some_eq_unsafe compiled, 14 + 12 bytes
++++ s!:eval_to_list_some_eq_unsafe compiled, 47 + 24 bytes
++++ s!:eval_to_car_eq_safe compiled, 21 + 20 bytes
++++ s!:eval_to_car_eq_unsafe compiled, 21 + 20 bytes
++++ s!:alist_eq_safe compiled, 24 + 12 bytes
++++ s!:eval_to_alist_eq_safe compiled, 52 + 24 bytes
++++ s!:alist_eq_unsafe compiled, 33 + 12 bytes
++++ s!:eval_to_alist_eq_unsafe compiled, 47 + 28 bytes
++++ s!:comequal compiled, 22 + 16 bytes
++++ s!:comeq compiled, 50 + 36 bytes
++++ s!:comeqcar compiled, 37 + 32 bytes
++++ s!:comsublis compiled, 17 + 20 bytes
++++ s!:comsubla compiled, 37 + 36 bytes
++++ s!:comassoc compiled, 39 + 32 bytes
++++ s!:comatsoc compiled, 50 + 44 bytes
++++ s!:commember compiled, 27 + 28 bytes
++++ s!:commemq compiled, 50 + 44 bytes
++++ s!:comdelete compiled, 27 + 28 bytes
++++ s!:comdeleq compiled, 50 + 44 bytes
++++ s!:commap compiled, 305 + 124 bytes
++++ s!:nilargs compiled, 17 + 12 bytes
++++ s!:subargs compiled, 18 + 12 bytes
++++ clear_source_database compiled, 9 + 24 bytes
++++ load_source_database compiled, 31 + 24 bytes
++++ save_source_database compiled, 46 + 28 bytes
++++ display_source_database compiled, 38 + 24 bytes
++++ s!:compile1 compiled, 904 + 228 bytes
++++ s!:compile2 compiled, 498 + 168 bytes
++++ compile!-all compiled, 57 + 40 bytes
++++ s!:fasl_supervisor compiled, 106 + 56 bytes
++++ s!:fslout0 compiled, 4 + 8 bytes
++++ s!:fslout1 compiled, 473 + 192 bytes
++++ s!:fslout2 compiled, 61 + 44 bytes
++++ faslend compiled, 18 + 28 bytes
++++ faslout compiled, 68 + 68 bytes
++++ s!:c_supervisor compiled, 106 + 56 bytes
++++ s!:cout0 compiled, 4 + 8 bytes
++++ s!:cout1 compiled, 419 + 160 bytes
++++ c_end compiled, 17 + 28 bytes
++++ c_out compiled, 68 + 68 bytes
++++ s!:compile!-file!* compiled, 126 + 64 bytes
++++ compile!-file!* compiled, 10 + 12 bytes
++++ compd compiled, 31 + 32 bytes
++++ s!:compile0 compiled, 233 + 88 bytes
++++ s!:fully_macroexpand_list compiled, 32 + 8 bytes
++++ s!:fully_macroexpand compiled, 60 + 24 bytes
++++ s!:expandfunction compiled, 1 + 4 bytes
++++ s!:expandflet compiled, 4 + 12 bytes
++++ s!:expandlabels compiled, 4 + 12 bytes
++++ s!:expandmacrolet compiled, 4 + 12 bytes
++++ s!:expandprog compiled, 10 + 8 bytes
++++ s!:expandtagbody compiled as link to s:fully_macroexpand_list
++++ s!:expandprogv compiled, 14 + 8 bytes
++++ s!:expandblock compiled, 10 + 8 bytes
++++ s!:expanddeclare compiled, 1 + 4 bytes
++++ s!:expandlet compiled, 46 + 8 bytes
++++ s!:expandlet!* compiled as link to s:expandlet
++++ s!:expandgo compiled, 1 + 4 bytes
++++ s!:expandreturn!-from compiled, 10 + 8 bytes
++++ s!:expandcond compiled, 39 + 8 bytes
++++ s!:expandcase compiled, 43 + 8 bytes
++++ s!:expandeval!-when compiled, 10 + 8 bytes
++++ s!:expandthe compiled, 10 + 8 bytes
++++ s!:expandmv!-call compiled, 10 + 8 bytes
++++ compile compiled, 31 + 16 bytes
+End of file "$cslbase/compiler.lsp"
+at close member: length = 25263 memberData = 48
++++ FASLEND compiler.fasl
+
+Value: nil
+
+FASLOUT ccomp: IN files;  or type in expressions
+When all done, execute FASLEND;
+Image member ccomp.fasl being created
+Seeking to 0
+Found the end
+p=0 n = 75 mD = 75
+
+Reading file "$cslbase/ccomp.lsp"
++++ c!:printf_7bjia5tuv6j compiled, 13 + 12 bytes
++++ c!:printf1 compiled, 160 + 76 bytes
++++ c!:cspecform compiled, 7 + 16 bytes
++++ c!:reset_gensyms compiled, 100 + 60 bytes
++++ c!:my_gensym compiled, 40 + 24 bytes
++++ c!:newreg compiled, 7 + 12 bytes
++++ c!:startblock compiled, 5 + 12 bytes
++++ c!:outop compiled, 15 + 12 bytes
++++ c!:endblock compiled, 31 + 32 bytes
++++ c!:cval_inner compiled, 70 + 44 bytes
++++ c!:cval compiled, 20 + 24 bytes
++++ c!:clambda compiled, 211 + 68 bytes
++++ c!:locally_bound compiled, 5 + 4 bytes
++++ c!:find_literal compiled, 27 + 12 bytes
++++ c!:catom compiled, 82 + 52 bytes
++++ c!:cjumpif compiled, 65 + 44 bytes
++++ c!:ccall compiled as link to c:ccall1
++++ c!:has_calls compiled, 7 + 12 bytes
++++ c!:has_calls_1 compiled, 77 + 32 bytes
++++ c!:can_reach compiled, 23 + 20 bytes
++++ c!:any_can_reach compiled, 14 + 12 bytes
++++ c!:pareval compiled, 147 + 28 bytes
++++ c!:ccall1 compiled, 64 + 32 bytes
++++ c!:cfndef compiled, 490 + 216 bytes
++++ c!:ccompilesupervisor compiled, 87 + 52 bytes
++++ c!:inv_name compiled, 68 + 24 bytes
++++ c!:ccmpout1 compiled, 20 + 16 bytes
++++ c!:ccmpout1a compiled, 168 + 84 bytes
++++ c!:concat compiled, 18 + 12 bytes
++++ c!:ccompilestart compiled, 176 + 120 bytes
++++ c!-end compiled, 320 + 184 bytes
++++ c!-compile compiled, 41 + 52 bytes
++++ c!:print_opcode compiled, 42 + 12 bytes
++++ c!:print_exit_condition compiled, 554 + 180 bytes
++++ c!:pmovr compiled, 8 + 12 bytes
++++ c!:pmovk compiled, 9 + 12 bytes
++++ c!:pmovk1 compiled, 32 + 28 bytes
++++ c!:preloadenv compiled, 9 + 16 bytes
++++ c!:pldrglob compiled, 9 + 12 bytes
++++ c!:pstrglob compiled, 10 + 12 bytes
++++ c!:pnilglob compiled, 7 + 12 bytes
++++ c!:pnull compiled, 8 + 12 bytes
++++ c!:pfastget compiled, 74 + 56 bytes
++++ c!:pfastflag compiled, 82 + 60 bytes
++++ c!:pcar compiled, 26 + 32 bytes
++++ c!:pcdr compiled, 26 + 32 bytes
++++ c!:pqcar compiled, 8 + 12 bytes
++++ c!:pqcdr compiled, 8 + 12 bytes
++++ c!:patom compiled, 8 + 12 bytes
++++ c!:pnumberp compiled, 8 + 12 bytes
++++ c!:pfixp compiled, 8 + 12 bytes
++++ c!:piminusp compiled, 8 + 12 bytes
++++ c!:pilessp compiled, 9 + 12 bytes
++++ c!:pigreaterp compiled, 9 + 12 bytes
++++ c!:piminus compiled, 8 + 12 bytes
++++ c!:piadd1 compiled, 8 + 12 bytes
++++ c!:pisub1 compiled, 8 + 12 bytes
++++ c!:piplus2 compiled, 9 + 12 bytes
++++ c!:pidifference compiled, 9 + 12 bytes
++++ c!:pitimes2 compiled, 9 + 12 bytes
++++ c!:pmodular_plus compiled, 20 + 24 bytes
++++ c!:pmodular_difference compiled, 20 + 24 bytes
++++ c!:pmodular_minus compiled, 20 + 24 bytes
++++ c!:passoc compiled, 9 + 12 bytes
++++ c!:patsoc compiled, 9 + 12 bytes
++++ c!:pmember compiled, 9 + 12 bytes
++++ c!:pmemq compiled, 9 + 12 bytes
++++ c!:pget compiled, 9 + 12 bytes
++++ c!:pqgetv compiled, 12 + 16 bytes
++++ c!:pqputv compiled, 13 + 16 bytes
++++ c!:peq compiled, 9 + 12 bytes
++++ c!:pequal compiled, 15 + 12 bytes
++++ c!:pfluidbind compiled, 2 + 4 bytes
++++ c!:pcall compiled, 314 + 128 bytes
++++ c!:pgoto compiled, 40 + 32 bytes
++++ c!:pifnull compiled, 6 + 12 bytes
++++ c!:pifatom compiled, 6 + 12 bytes
++++ c!:pifsymbol compiled, 6 + 12 bytes
++++ c!:pifnumber compiled, 6 + 12 bytes
++++ c!:pifizerop compiled, 6 + 12 bytes
++++ c!:pifeq compiled, 8 + 12 bytes
++++ c!:pifequal compiled, 14 + 12 bytes
++++ c!:pifilessp compiled, 8 + 12 bytes
++++ c!:pifigreaterp compiled, 8 + 12 bytes
++++ c!:display_flowgraph compiled, 101 + 60 bytes
++++ c!:branch_chain compiled, 165 + 40 bytes
++++ c!:one_operand compiled, 16 + 24 bytes
++++ c!:two_operands compiled, 21 + 28 bytes
++++ c!:live_variable_analysis compiled, 390 + 144 bytes
++++ c!:insert1 compiled, 8 + 4 bytes
++++ c!:clash compiled, 37 + 16 bytes
++++ c!:build_clash_matrix compiled, 223 + 84 bytes
++++ c!:allocate_registers compiled, 129 + 24 bytes
++++ c!:remove_nops compiled, 220 + 56 bytes
++++ c!:find_error_label compiled, 22 + 12 bytes
++++ c!:assign compiled, 28 + 20 bytes
++++ c!:insert_tailcall compiled, 175 + 68 bytes
++++ c!:does_return compiled, 71 + 28 bytes
++++ c!:pushpop compiled, 72 + 40 bytes
++++ c!:optimise_flowgraph compiled, 519 + 256 bytes
++++ c!:print_error_return compiled, 205 + 92 bytes
++++ c!:cand compiled, 45 + 20 bytes
++++ c!:ccatch compiled, 4 + 16 bytes
++++ c!:ccompile_let compiled, 4 + 16 bytes
++++ c!:ccond compiled, 105 + 52 bytes
++++ c!:cdeclare compiled, 4 + 16 bytes
++++ c!:cde compiled, 4 + 16 bytes
++++ c!:cdefun compiled, 4 + 16 bytes
++++ c!:ceval_when compiled, 4 + 16 bytes
++++ c!:cflet compiled, 4 + 16 bytes
++++ c!:cfunction compiled, 47 + 48 bytes
++++ c!:cgo compiled, 32 + 28 bytes
++++ c!:cif compiled, 68 + 40 bytes
++++ c!:clabels compiled, 4 + 16 bytes
++++ c!:expand!-let compiled, 66 + 16 bytes
++++ c!:clet compiled, 8 + 12 bytes
++++ c!:expand!-let!* compiled, 43 + 20 bytes
++++ c!:clet!* compiled, 8 + 12 bytes
++++ c!:clist compiled, 70 + 32 bytes
++++ c!:clist!* compiled, 29 + 12 bytes
++++ c!:ccons compiled, 92 + 44 bytes
++++ c!:cget compiled, 54 + 40 bytes
++++ c!:cflag compiled, 54 + 40 bytes
++++ c!:cgetv compiled, 14 + 20 bytes
++++ c!:cputv compiled, 14 + 20 bytes
++++ c!:cqputv compiled, 19 + 16 bytes
++++ c!:cmacrolet compiled, 4 + 16 bytes
++++ c!:cmultiple_value_call compiled, 4 + 16 bytes
++++ c!:cmultiple_value_prog1 compiled, 4 + 16 bytes
++++ c!:cor compiled, 63 + 40 bytes
++++ c!:cprog compiled, 301 + 100 bytes
++++ c!:cprog!* compiled, 4 + 16 bytes
++++ c!:cprog1 compiled, 31 + 28 bytes
++++ c!:cprog2 compiled, 39 + 28 bytes
++++ c!:cprogn compiled, 25 + 12 bytes
++++ c!:cprogv compiled, 4 + 16 bytes
++++ c!:cquote compiled, 40 + 32 bytes
++++ c!:creturn compiled, 32 + 36 bytes
++++ c!:csetq compiled, 63 + 52 bytes
++++ c!:cprivate_tagbody compiled, 73 + 24 bytes
++++ c!:cthe compiled, 5 + 8 bytes
++++ c!:cthrow compiled, 4 + 16 bytes
++++ c!:cunless compiled, 65 + 48 bytes
++++ c!:cunwind_protect compiled, 4 + 16 bytes
++++ c!:cwhen compiled, 65 + 48 bytes
++++ c!:expand_map compiled, 260 + 116 bytes
++++ c!:expand_carcdr compiled, 38 + 16 bytes
++++ c!:builtin_one compiled, 17 + 16 bytes
++++ c!:builtin_two compiled, 25 + 16 bytes
++++ c!:narg compiled, 9 + 16 bytes
++++ c!:cplus2 compiled, 73 + 36 bytes
++++ c!:ciplus2 compiled, 70 + 36 bytes
++++ c!:cdifference compiled, 66 + 40 bytes
++++ c!:cidifference compiled, 63 + 40 bytes
++++ c!:ctimes2 compiled, 75 + 32 bytes
++++ c!:citimes2 compiled, 72 + 32 bytes
++++ c!:cminus compiled, 30 + 20 bytes
++++ c!:ceq compiled, 45 + 32 bytes
++++ c!:cequal compiled, 56 + 40 bytes
++++ c!:is_fixnum compiled, 17 + 12 bytes
++++ c!:certainlyatom compiled, 30 + 16 bytes
++++ c!:atomlist1 compiled, 18 + 8 bytes
++++ c!:atomlist compiled, 52 + 24 bytes
++++ c!:atomcar compiled, 21 + 20 bytes
++++ c!:atomkeys1 compiled, 24 + 16 bytes
++++ c!:atomkeys compiled, 52 + 24 bytes
++++ c!:comsublis compiled, 10 + 12 bytes
++++ c!:comassoc compiled, 15 + 16 bytes
++++ c!:commember compiled, 15 + 16 bytes
++++ c!:comdelete compiled, 15 + 16 bytes
++++ c!:ctestif compiled, 33 + 16 bytes
++++ c!:ctestnull compiled, 9 + 8 bytes
++++ c!:ctestatom compiled, 15 + 16 bytes
++++ c!:ctestconsp compiled, 15 + 16 bytes
++++ c!:ctestsymbol compiled, 15 + 16 bytes
++++ c!:ctestnumberp compiled, 15 + 16 bytes
++++ c!:ctestizerop compiled, 15 + 16 bytes
++++ c!:ctesteq compiled, 44 + 20 bytes
++++ c!:ctesteqcar compiled, 48 + 36 bytes
++++ c!:small_number compiled, 17 + 12 bytes
++++ c!:eqvalid compiled, 26 + 24 bytes
++++ c!:ctestequal compiled, 59 + 32 bytes
++++ c!:ctestilessp compiled, 19 + 16 bytes
++++ c!:ctestigreaterp compiled, 19 + 16 bytes
++++ c!:ctestand compiled, 33 + 24 bytes
++++ c!:ctestor compiled, 33 + 24 bytes
+End of file "$cslbase/ccomp.lsp"
+at close member: length = 18511 memberData = 75
++++ FASLEND ccomp.fasl
+
+Value: nil
+
+Value: nil
+
+Value: nil
+
+Restart Lisp...
+restart mode null null null
+Jlisp 0.93a ... 5/11/02 4:33 PM
+restart mode in read eval print loop null null null
+
+
+(load!-module 'compat)Fasl-loading "compat.fasl"
+
+Value: nil
+
+Value: nil
+
+Value: compile
+
+Value: compile!-all
+
+Value: faslout
+
+Value: c_out
+
+Value: t
+Image member HeapImage being created
+Seeking to 0
+Found the end
+p=0 n = 101 mD = 101
+
+Image written
+at close member: length = 11709 memberData = 101
+End of Lisp run after 23.99 seconds
