@@ -45,7 +45,9 @@
 #ifdef WIN32
 #include <windows.h>
 #else
+#ifndef EMBEDDED
 #include <dlfcn.h>
+#endif
 #endif
 
 #ifdef HAVE_UNISTD_H

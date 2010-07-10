@@ -39,6 +39,8 @@ module gentens;
 
 lisp remflag(list 'minus,'intfn);
 
+fluid '(ycoord!* ymax!* ymin!* obrkp!*);
+
 global '(dimex!* sgn!*  signat!* spaces!* numindxl!* pair_id_num!*) ;
 
 

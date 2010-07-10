@@ -30,6 +30,8 @@ module dfpart;  % support of generic differentiation.
 
 create!-package('(dfpart),'(contrib misc));
 
+fluid '(ycoord!* ymin!*);
+
 put('dfp,'simpfn,'simpdfp);
 
 symbolic procedure simpdfp u;

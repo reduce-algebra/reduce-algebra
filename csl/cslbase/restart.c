@@ -1,5 +1,3 @@
-#define TRACE_NATIVE 1
-
 /*  restart.c                       Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
@@ -40,7 +38,7 @@
 
 
 
-/* Signature: 7ccc322b 30-Jun-2010 */
+/* Signature: 7298636b 10-Jul-2010 */
 
 #include "headers.h"
 
@@ -4381,6 +4379,7 @@ static void cold_setup()
 {
     Lisp_Object nil = C_nil;
     void *p;
+    int i;
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
     vfringe = (Lisp_Object)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (Lisp_Object)((char *)vfringe + (CSL_PAGE_SIZE - 16));
@@ -4401,7 +4400,17 @@ static void cold_setup()
     ifnn(nil) = (intptr_t)undefinedn;
     qheader(nil) = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;
     qvalue(nil) = nil;
+/*
+ * When I am debugging CSL I can validate the heap, for instance whenever
+ * I allocate vector. The call to make_string here does that, and so I MUST
+ * have a tidy world in place here.
+ */
+    qpname(nil) = nil;
+    for (i=first_nil_offset; i<last_nil_offset; i++)
+         BASE[i] = nil;
+    eq_hash_tables = equal_hash_tables = nil;
 #ifdef COMMON
+    qpackage(nil) = nil;
     qpname(nil) = make_string("NIL");
 #else
     qpname(nil) = make_string("nil");
@@ -5959,8 +5968,12 @@ void setup(int restartp, double store_size)
  * unsigned long overflows on me.
  */
         if (init_flags & INIT_VERBOSE)
-            term_printf("Memory allocation: %lu Kbytes\n",
-                    ((unsigned long)(CSL_PAGE_SIZE/1000))*(pages_count+w+1));
+        {   unsigned long m =
+                ((unsigned long)(CSL_PAGE_SIZE/1000))*(pages_count+w+1);
+            if (m > 4000)
+                term_printf("Memory allocation: %lu Mbytes\n", m/1000);
+            else term_printf("Memory allocation: %lu Kbytes\n", m);
+        }
     }
 #ifdef MEMORY_TRACE
 #ifndef CHECK_ONLY
@@ -5972,6 +5985,10 @@ void setup(int restartp, double store_size)
         if (n > 1)
             term_printf("There are %d processors available\n", n);
     }
+#ifdef DEBUG
+    copy_into_nilseg(NO);
+    validate_all("restarting", __LINE__, __FILE__);
+#endif
     garbage_collection_permitted = 1;
     return;
 }

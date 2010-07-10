@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 27ba980f 25-Jun-2010 */
+/* Signature: 065b2feb 10-Jul-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -1062,6 +1062,10 @@ extern Lisp_Object rational(Lisp_Object a);
 extern void        read_eval_print(int noisy);
 extern Lisp_Object reclaim(Lisp_Object value_to_return, char *why,
                            int stg_class, intptr_t size);
+#ifdef DEBUG
+extern void validate_all(char *why, int line, char *file);
+extern int check_env(Lisp_Object env);
+#endif
 extern CSLbool do_not_kill_native_code;
 extern void        set_fns(Lisp_Object sym, one_args *f1,
                                             two_args *f2, n_args *fn);

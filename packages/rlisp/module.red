@@ -32,13 +32,13 @@
 % WARNING. This code is loaded quite early in the process of
 % bootstrapping. As a result it has to be written such that it
 % will work properly with the cut-down bootstrap version of the
-% RLISP parser. Various consructions such as <<...>> are not
+% RLISP parser. Various constructions such as <<...>> are not
 % available....
 %
 
 fluid '(!*backtrace !*mode !*faslp);
 
-global '(exportslist!* importslist!* loaded!-packages!* loaded!_modules!*
+global '(exportslist!* importslist!* loaded!-packages!* loaded!-modules!*
          mode!-list!*);
 
 !*mode := 'symbolic;   % initial value.

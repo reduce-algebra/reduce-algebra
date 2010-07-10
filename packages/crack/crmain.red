@@ -1792,6 +1792,11 @@ begin scalar pdes,l,l1,q,vli$
   return l$
 end$
 
+% ACN can not see ANY place where GB_REDUCE gets set, and so is perhaps
+% confused by the test that is made on it here...
+
+fluid '(GB_REDUCE);
+
 symbolic procedure alg_groebner(arglist)$
 begin scalar pdes,forg,sol,n,result,l1$
   pdes:=car arglist$

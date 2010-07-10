@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4d9b2256 13-Jun-2010 */
+/* Signature: 730f50c0 10-Jul-2010 */
 
 #include "headers.h"
 
@@ -1647,6 +1647,10 @@ Lisp_Object Lcodep(Lisp_Object nil, Lisp_Object a)
     else return onevalue(nil);
 }
 
+#ifdef DEBUG
+static int validate_count = 0;
+#endif
+
 Lisp_Object getvector(int tag, int type, int32_t size)
 {
 /*
@@ -1661,8 +1665,16 @@ Lisp_Object getvector(int tag, int type, int32_t size)
  * that now!]
  */
     Lisp_Object nil = C_nil;
-#ifdef CHECK_FOR_CORRUPT_HEAP
-    validate_all();
+#ifdef DEBUG
+/*
+ * If I do a full validation every time I allocate a vector that REALLY
+ * hits performance, so I will do it occasionally. The 1 in 500 indicated
+ * at present is a pretty random choice of frequency!
+ */
+    if ((++validate_count) % 500 == 0)
+    {   copy_into_nilseg(NO);
+        validate_all("getvector", __LINE__, __FILE__);
+    }
 #endif
     for (;;)
     {   char *r = (char *)vfringe;

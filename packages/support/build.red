@@ -63,6 +63,8 @@ symbolic procedure string!-downcase u;
       go to a;
    end;
 
+fluid '(charassoc!*);
+
 symbolic procedure red!-char!-downcase u;
    begin scalar x;
       x := atsoc(u,charassoc!*);

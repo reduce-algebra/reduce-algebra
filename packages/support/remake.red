@@ -103,7 +103,7 @@ symbolic procedure package!-remake2(u,v);
 %     if !*crefchk then update!-cref2(u . v);
       update!-fasl2(u . v);
       evload list u;
-      loaded!-modules := union(loaded!-modules!*, list u);
+      loaded!-modules!* := union(loaded!-modules!*, list u);
       y := get(u,'package);
       if y then y := cdr y;
       for each j in y do

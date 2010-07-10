@@ -19,7 +19,7 @@
 (remflag '(geq leq neq logand logor logxor leftshift princ printc
 	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
 	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn printprompt pair putc) 'lose)
+	subla gcdn lcmn printprompt pair putc) 'lose)
 
 (symbol!-make!-fastget 32)
 (symbol!-make!-fastget 'noncom 0)  % built into the kernel
@@ -479,7 +479,7 @@ top   (cond ((minusp n) (return r)))
 (flag '(geq leq neq logand logor logxor leftshift princ printc
 	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
 	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn printprompt pair putc) 'lose)
+	subla gcdn lcmn printprompt pair putc) 'lose)
 
 % end of compat.lsp
 

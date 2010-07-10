@@ -74,56 +74,72 @@ AC_ARG_WITH(cygwin,
                  [Force use of raw cywgin (note GPL)]),
   [],
   [with_cygwin="no"])
+
 AC_ARG_WITH(mingw,
   AC_HELP_STRING([--with-mingw[=DIR]],
                  [MingW installation location]),
   mingw_location="$withval",
   mingw_location="")
+
 AC_ARG_WITH(fox,
   AC_HELP_STRING([--with-fox=DIR],
-                 [FOX installation location]),
+                 [FOX installation location, or disable use of FOX]),
   [],
   [with_fox="yes"])
+
 AC_ARG_WITH(fox-pending,
   AC_HELP_STRING([--with-fox-pending],
                  [do not check dir from --with-fox]),
   [],
   [with_fox_pending="no"])
+
 AC_ARG_WITH(xft,
   AC_HELP_STRING([--with-xft],
                  [Can be used to disable use of XFT. Default is yes]),
   [],
   [with_xft="yes"])
+
 AC_ARG_WITH(xim,
   AC_HELP_STRING([--with-xim],
                  [Can be used to control use of XIM. Default is yes (now)]),
   [],
   [with_xft="yes"])
+
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug],
                  [compile for debugging]),
   [],
   [enable_debug="no"])
+
 AC_ARG_ENABLE(conservative,
   AC_HELP_STRING([--enable-conservative],
                  [garbage collect option]),
   [],
   [enable_conservative="no"])
+
 AC_ARG_ENABLE(test,
   AC_HELP_STRING([--enable-test],
                  [testing-mode version]),
   [],
   [enable_test="no"])
+
 AC_ARG_ENABLE(jit,
   AC_HELP_STRING([--enable-jit],
                  [build in experimental JIT]),
   [],
   [enable_jit="no"])
+
 AC_ARG_ENABLE(static,
   AC_HELP_STRING([--enable-static],
                  [link it all statically]),
   [],
   [enable_static="no"])
+
+AC_ARG_WITH(smallpage,
+  AC_HELP_STRING([--with-smallpage],
+                 [Use 256K pages rather than 4M ones]),
+  [],
+  [with_smallpage="no"])
 
 ###########################################################################
 

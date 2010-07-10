@@ -138,7 +138,7 @@ do
     host=$original
     ;;
   --with-mingw64*)
-    host=x86_64-pc-windows
+    host=x86_64-win64-windows
     ;;
   --with-cygwin=no)
     host=$original
@@ -166,9 +166,13 @@ do
   --with-fox=no)
     nogui=-nogui
     ;;
+  --with-smallpage*)
+# At present the small page size is 19-bits/512Kbytes
+    smallpage=-page19
+    ;;
   esac
 done
 
-echo $host$m32$m64$nogui$debug
+echo $host$m32$m64$nogui$smallpage$debug
 
 exit 0

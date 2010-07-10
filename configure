@@ -658,6 +658,7 @@ enable_conservative
 enable_test
 enable_jit
 enable_static
+with_smallpage
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1298,11 +1299,12 @@ Optional Packages:
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-mingw=DIR        MingW installation location
-  --with-fox=DIR          FOX installation location
+  --with-fox=DIR          FOX installation location, or disable use of FOX
   --with-fox-pending      do not check dir from --with-fox
   --with-xft              Can be used to disable use of XFT. Default is yes
   --with-xim              Can be used to control use of XIM. Default is yes
                           (now)
+  --with-smallpage        Use 256K pages rather than 4M ones
   --with-cygwin           Use raw cygwin so link with cygwin1.dll (GPL)
   --with-m32              Pass "-m32" to C compiler
   --with-m64              Pass "-m64" to C compiler
@@ -1929,12 +1931,14 @@ else
 fi
 
 
+
 # Check whether --with-mingw was given.
 if test "${with_mingw+set}" = set; then :
   withval=$with_mingw; mingw_location="$withval"
 else
   mingw_location=""
 fi
+
 
 
 # Check whether --with-fox was given.
@@ -1945,12 +1949,14 @@ else
 fi
 
 
+
 # Check whether --with-fox-pending was given.
 if test "${with_fox_pending+set}" = set; then :
   withval=$with_fox_pending;
 else
   with_fox_pending="no"
 fi
+
 
 
 # Check whether --with-xft was given.
@@ -1961,12 +1967,14 @@ else
 fi
 
 
+
 # Check whether --with-xim was given.
 if test "${with_xim+set}" = set; then :
   withval=$with_xim;
 else
   with_xft="yes"
 fi
+
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
@@ -1975,12 +1983,14 @@ else
   enable_debug="no"
 fi
 
+
 # Check whether --enable-conservative was given.
 if test "${enable_conservative+set}" = set; then :
   enableval=$enable_conservative;
 else
   enable_conservative="no"
 fi
+
 
 # Check whether --enable-test was given.
 if test "${enable_test+set}" = set; then :
@@ -1989,6 +1999,7 @@ else
   enable_test="no"
 fi
 
+
 # Check whether --enable-jit was given.
 if test "${enable_jit+set}" = set; then :
   enableval=$enable_jit;
@@ -1996,11 +2007,21 @@ else
   enable_jit="no"
 fi
 
+
 # Check whether --enable-static was given.
 if test "${enable_static+set}" = set; then :
   enableval=$enable_static;
 else
   enable_static="no"
+fi
+
+
+
+# Check whether --with-smallpage was given.
+if test "${with_smallpage+set}" = set; then :
+  withval=$with_smallpage;
+else
+  with_smallpage="no"
 fi
 
 

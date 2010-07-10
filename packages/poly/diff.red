@@ -30,9 +30,9 @@ module diff; % Differentiation package.
 %
 
 
-fluid '(!*depend frlis!* powlis!* subfg!* wtl!*);
+fluid '(!*depend frlis!* powlis!* subfg!* wtl!* depl!*);
 
-fluid '(!*allowdfint !*dfint);
+fluid '(!*allowdfint !*dfint !*intflag!*);
 
 global '(mcond!*);
 

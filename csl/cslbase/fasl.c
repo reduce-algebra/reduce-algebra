@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 49ffab25 21-Jun-2010 */
+/* Signature: 39067c71 10-Jul-2010 */
 
 #include "headers.h"
 
@@ -1508,6 +1508,10 @@ static Lisp_Object load_module(Lisp_Object nil, Lisp_Object file,
     {   flip_exception();
         return nil;
     }
+#ifdef DEBUG
+    copy_into_nilseg(NO);
+    validate_all("end of fast-load", __LINE__, __FILE__);
+#endif
     return onevalue(file);
 }
 

@@ -2161,7 +2161,7 @@ symbolic procedure fancy!-texbox u;
          if u then contents := car u >>;
       if not numberp height then height:=0;
       if not numberp depth then depth:=0;
-      if height=0 and depth=0 and null content then height:=10;
+      if height=0 and depth=0 and null contents then height:=10;
       fancy!-prin2 "\fbox{";
       if height neq 0 or depth neq 0 then << % insert a rule
          fancy!-line!* := "\rule" . fancy!-line!*;

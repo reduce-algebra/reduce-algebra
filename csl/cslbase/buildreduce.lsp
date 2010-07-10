@@ -455,6 +455,8 @@ rds(xxx := open("$reduce/packages/support/build.red",'input));
 
 (load!-package!-sources 'rlisp 'rlisp)
 
+(load!-package!-sources 'smacros 'support)
+
 (load!-package!-sources rend_file 'support)
 
 (load!-package!-sources 'poly 'poly)
@@ -485,6 +487,9 @@ faslout 'user;
 % and it is CERTAIN that they are not useful.
 %
 
+if modulep 'cslcompat then load!-module 'cslcompat;
+
+
 symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
   begin
     scalar v, n;
@@ -505,7 +510,6 @@ symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
     put(name, 'funarg, v);
     return name;
   end;
-
 
 rdf "$srcdir/../../cslbuild/generated-c/u01.lsp"$
 rdf "$srcdir/../../cslbuild/generated-c/u02.lsp"$
@@ -568,6 +572,7 @@ rdf "$srcdir/../../cslbuild/generated-c/u58.lsp"$
 rdf "$srcdir/../../cslbuild/generated-c/u59.lsp"$
 rdf "$srcdir/../../cslbuild/generated-c/u60.lsp"$
 
+if modulep 'smacros then load!-module 'smacros;
 
 faslend;
 !#endif
@@ -655,10 +660,11 @@ symbolic procedure build_reduce_modules names;
         window!-heading  "Recompilation complete" >>;
 !#if !*savedef
     if null names then restart!-csl 'begin
+    else restart!-csl('(remake build_reduce_modules), names)
 !#else
     if null names then restart!-csl '(user begin)
-!#endif
     else restart!-csl('(remake build_reduce_modules), names)
+!#endif
   end;
 
 symbolic procedure test_a_package names;
@@ -1459,6 +1465,7 @@ faslend;
 % 
 % faslend;
 
+
 load!-module 'remake;
 
 << initreduce();
@@ -1479,6 +1486,8 @@ package!-remake2(prolog_file,'support);
 package!-remake2(rend_file,'support);
 
 package!-remake2('entry,'support);
+
+package!-remake2('smacros,'support);
 
 package!-remake2('remake,'support);
 
@@ -1542,13 +1551,15 @@ symbolic restart!-csl nil;
 % if there is a version newer than the one I load up here. Note that
 % if there had not been a "patches.red" file I will not have a module to load
 % here.
-
-(cond
-   ((modulep 'patches) (load!-module 'patches)))
+%
+% (cond
+%    ((modulep 'patches) (load!-module 'patches)))
 
 (load!-package 'rlisp)
 
 (load!-package 'cslrend)
+
+(load!-package 'smacros)
 
 (load!-package 'poly)
 

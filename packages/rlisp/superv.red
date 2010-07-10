@@ -43,6 +43,7 @@ fluid '(!*debug
         !*reduce4
         !*slin
         !*time
+        !*rlisp88
         dfprint!*
         errmsg!*
         lispsystem!*

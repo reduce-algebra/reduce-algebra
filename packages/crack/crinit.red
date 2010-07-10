@@ -557,6 +557,9 @@ begin
 end$
 
 % The following procedure is PSL specific and has to be COMPILED!
+
+fluid '(datebuffer);
+
 symbolic procedure random_init()$
 <<external_time(datebuffer)$
   random_new_seed(wand(wgetv(datebuffer,0),65535))

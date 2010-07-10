@@ -37,6 +37,9 @@ create!-package('(reset),'(contrib misc));
 % things that cause a gradual loss of space.  It would be relatively
 % easy to make it interactive, so allowing for selective resetting.
 
+fluid '(!*asterisk !*dfprint !*fortupper !*horner 
+        !*list !*noarg !*nosplit !*ratpri !*revpri);
+
 symbolic procedure resetreduce;
  begin
   scalar mode,statno,comm;

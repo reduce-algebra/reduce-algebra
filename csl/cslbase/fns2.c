@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 668653c7 25-Jun-2010 */
+/* Signature: 44590fa5 10-Jul-2010 */
 
 #include "headers.h"
 
@@ -48,6 +48,10 @@
 #include "sockhdr.h"
 #endif
 
+#ifdef DEBUG
+static int validate_count = 0;
+#endif
+
 Lisp_Object getcodevector(int type, int32_t size)
 {
 /*
@@ -57,8 +61,15 @@ Lisp_Object getcodevector(int type, int32_t size)
  * This obtains space in the BPS area
  */
     Lisp_Object nil = C_nil;
-#ifdef CHECK_FOR_CORRUPT_HEAP
-    validate_all();
+#ifdef DEBUG
+/*
+ * See comment in fns1 to the effect that doing a full validation every
+ * time leads to a VERY BAD performance hit.
+ */
+    if ((++validate_count) % 100 == 0)
+    {   copy_into_nilseg(NO);
+        validate_all("getcodevector", __LINE__, __FILE__);
+    }
 #endif
     for (;;)
     {   int32_t alloc_size = (int32_t)doubleword_align_up(size);

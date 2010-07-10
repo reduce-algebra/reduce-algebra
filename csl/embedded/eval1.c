@@ -1812,7 +1812,8 @@ Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
     defined HAVE_SHMGET && \
     defined HAVE_SHMAT && \
     defined HAVE_SHMDT && \
-    defined HAVE_SHMCTL
+    defined HAVE_SHMCTL && \
+    !defined EMBEDDED
 
 #include <sys/types.h>
 #include <sys/stat.h>

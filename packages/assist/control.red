@@ -24,6 +24,8 @@ module control;
 %
 
 
+fluid '(!*revpri);
+
 global '(!:flaglis !:proplis indices!*);
 
 switch distribute;

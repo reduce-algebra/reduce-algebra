@@ -125,19 +125,20 @@ else size_per_file := 7000;
 
 force_count := 5;
 
-% You may well ask "what is it with the number 667 here". Well that sets
+% You may well ask "what is it with the number 3500 here". Well that sets
 % a default number of functions to be compiled into C that matches the
 % number I used historically, and hence it provides a safe level of
 % continuity. You may experiment with
 %     make c-code how_many=nnnn
-% but at the time this comment was inserted bugs arise for large values
-% of nnnn, so until those have been tracked down and removed this rather
-% odd default will apply. Observe lower down lists of functions to omit
-% from translation - that is part of the process of bug hunting!
+% and do so either to see how the speed/space tradeoff goes or because you
+% are ocncerned about a possible bug in the Lisp to C compilation step. My
+% current measurements suggest that 3500 gives reasonable trade off for
+% build of the executable vs. performance. However for use with an embedded
+% system with limited memort I might suggest say 500.
 
-if not boundp 'how_many then how_many := 667
+if not boundp 'how_many then how_many := 3500
 else << how_many := compress explodec how_many;
-        if not numberp how_many then how_many := 667 >>;
+        if not numberp how_many then how_many := 3500 >>;
 
 << terpri(); princ "how_many = "; print how_many; nil >>;
 
@@ -173,6 +174,9 @@ omitted := '(
 
     typerr                  % typerr and symerr are defined in makereduce.lsp
     symerr                  % but there are slightly versions elsewhere.
+
+    fluid                   % the env cells of these get out of step during..
+    global                  % a bootstrap build if they are compiled here.
     );
 
 % There is a bit of a mess-up if something that has been given an autoload
@@ -427,8 +431,13 @@ while fnames do begin
    while bulk < size_per_file and w_reduce and how_many > 0 do begin
       scalar name, defn;
       name := car w_reduce;
-      if null (defn := get(name, '!*savedef)) then <<
-         princ "+++ "; prin name; printc ": no saved definition found";
+      if get(name, 'smacro) then <<
+         princ "+++ "; prin name;
+         printc " is an SMACRO so do not compile here";
+         w_reduce := cdr w_reduce >>
+      else if null (defn := get(name, '!*savedef)) then <<
+         princ "+++ "; prin name;
+         printc ": no saved definition found";
          w_reduce := cdr w_reduce >>
       else <<
          bulk := listsize(defn, bulk);
