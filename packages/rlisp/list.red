@@ -42,12 +42,26 @@ symbolic procedure quotelist u; 'list;
 
 % Parsing interface.
 
+symbolic procedure nconc2 (u,v);
+  %. Destructive version of Append returning pointer to tail
+  begin scalar w;
+    if atom u then return v;
+    w := u;
+    while pairp cdr w do w := cdr w;
+        rplacd (w,v);
+        return w;
+  end;
+
+% using nconc2 here to allow for very long lists to be read
+% nconc would always search the end of the list from the top
+
 symbolic procedure xreadlist;
    % Expects a list of expressions enclosed by {, }.
    % Used to allow expressions separated by ; - treated these as progn.
-   begin scalar cursym,delim,lst;
+   begin scalar cursym,delim,lst,lst2;
         if scan() eq '!*rcbkt!* then <<scan(); return list 'list>>;
-    a:      lst := aconc(lst,xread1 'group);
+    a:  if null lst then << lst := lst2  := aconc(lst,xread1 'group)>>
+        else lst2 := nconc2 (lst2,list(xread1 ' group));;
         cursym := cursym!*;
         if cursym eq '!*semicol!*
           then symerr("Syntax error: semicolon in list",nil)
