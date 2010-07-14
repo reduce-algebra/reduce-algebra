@@ -623,9 +623,15 @@ put('getv,'setqfn,'(lambda (v i x) (putv v i x)));
 put('igetv,'setqfn,'(lambda (v i x) (iputv v i x)));
 
 symbolic procedure formfunc(u,vars,mode);
-   if idp cadr u then if getrmacro cadr u
-     then rerror('rlisp,14,list("Macro",cadr u,"Used as Function"))
-        else list('function,cadr u)
+% ACN has changed this so that it only moans if the thing used with
+% FUNCTION is a real macro. If it is an SMACRO that is now allowed. This
+% is because I want to have functions that are defined BOTH as regular
+% functions (eg for use as envisaged here) and ALSO as SMACROs so that
+% direct use of them is expanded in-line.
+   if idp cadr u then
+     if eqcar(getd cadr u, 'macro) then
+        rerror('rlisp,14,list("Macro",cadr u,"Used as Function"))
+     else list('function,cadr u)
     else list('function,form1(cadr u,vars,mode));
 
 put('function,'formfn,'formfunc);
