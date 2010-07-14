@@ -248,6 +248,19 @@ symbolic procedure condox u;
 
 put('cond,pretoprinf,'condox);
 
+symbolic procedure ifox u;
+  begin
+% Common Lisp stype IF.
+    scalar p, a, b;
+    p := car u;
+    u := cdr u;
+    if u then << a := car u; u := cdr u >>;
+    if u then << b := car u; u := cdr u >>;
+    condox list(list(p, a), list(t, b))
+  end;
+
+put('if,pretoprinf,'ifox);
+
 symbolic procedure blockox u;
    begin
       omark '(m u);
