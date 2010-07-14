@@ -431,11 +431,7 @@ while fnames do begin
    while bulk < size_per_file and w_reduce and how_many > 0 do begin
       scalar name, defn;
       name := car w_reduce;
-      if get(name, 'smacro) then <<
-         princ "+++ "; prin name;
-         printc " is an SMACRO so do not compile here";
-         w_reduce := cdr w_reduce >>
-      else if null (defn := get(name, '!*savedef)) then <<
+      if null (defn := get(name, '!*savedef)) then <<
          princ "+++ "; prin name;
          printc ": no saved definition found";
          w_reduce := cdr w_reduce >>

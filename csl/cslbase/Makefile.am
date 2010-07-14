@@ -942,6 +942,17 @@ else !canrun
 	echo Can not generate C code on this platfrom
 endif !canrun
 
+smacros smacros.red:	bootstrapreduce.img
+if canrun
+	mkdir -p buildlogs
+	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-smacros.red \
+		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
+		-L buildlogs/smacros.log
+	echo You may now copy smacros.red to trunk/packages/support
+else !canrun
+	echo Can not generate smacros.red on this platfrom
+endif !canrun
+
 testslow:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs

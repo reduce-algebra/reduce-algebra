@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 44590fa5 10-Jul-2010 */
+/* Signature: 00fd2196 11-Jul-2010 */
 
 #include "headers.h"
 
@@ -724,7 +724,11 @@ Lisp_Object Lsymbol_make_fastget1(Lisp_Object nil, Lisp_Object a)
     if (!is_fixnum(a) ||
         (n = int_of_fixnum(a)) < 0 ||
         (n > MAX_FASTGET_SIZE)) return aerror1("symbol-make-fastget", a);
-    term_printf("+++ Fastget size was %d, now %d\n", n1, n);
+/*
+ * At one time I felt that a message here was helpful. Now I view it
+ * as unnecessary, so I am commenting it out.
+ */
+/*  term_printf("+++ Fastget size was %d, now %d\n", n1, n); */
     fastget_size = n;
     return onevalue(fixnum_of_int(n1));
 }
@@ -740,10 +744,12 @@ Lisp_Object Lsymbol_make_fastget(Lisp_Object nil, Lisp_Object a, Lisp_Object n)
     {   n1 = int_of_fixnum(n);
         if (n1 < -1 || n1 >= fastget_size)
             return aerror1("symbol-make-fastget", n);
-        trace_printf("+++ Use fastget slot %d for ", n1);
-        loop_print_trace(a);
-        errexit();
-        trace_printf("\n");
+/*
+ *      trace_printf("+++ Use fastget slot %d for ", n1);
+ *      loop_print_trace(a);
+ *      errexit();
+ *      trace_printf("\n");
+ */
         if (p != 0) elt(fastget_names, p-1) = SPID_NOPROP;
         q = (n1 + 1) & 0x3f;
         h = (h & ~SYM_FASTGET_MASK) | (q << SYM_FASTGET_SHIFT);

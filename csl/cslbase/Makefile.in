@@ -2487,6 +2487,14 @@ full-c-code:	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
 @canrun_TRUE@		-- buildlogs/full-c-code.log
 @canrun_FALSE@	echo Can not generate C code on this platfrom
 
+smacros smacros.red:	bootstrapreduce.img
+@canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-smacros.red \
+@canrun_TRUE@		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
+@canrun_TRUE@		-L buildlogs/smacros.log
+@canrun_TRUE@	echo You may now copy smacros.red to trunk/packages/support
+@canrun_FALSE@	echo Can not generate smacros.red on this platfrom
+
 testslow:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p testlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \

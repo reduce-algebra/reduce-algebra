@@ -5320,8 +5320,17 @@ symbolic procedure s!:fslout1(u, loadonly);
         else if flagp(car u, 'lose) then <<
             princ "+++ "; prin car u;
             printc " not compiled (LOSE flag)" >>
-        else for each p in s!:compile1(car u, cadr u, cddr u, nil) do 
-            s!:fslout2(p, u) >>
+        else <<
+            if w := get(car u, 'c!-version) then <<
+                princ "+++ "; prin car u;
+                princ " reports C version with checksum ";
+                print w;
+                print "+++ differing from this version:";
+                w := car u . cadr u . s!:fully_macroexpand_list cddr u;
+                princ "::: "; prettyprint w;
+                princ "+++ which has checksum "; print md60 w >>;
+            for each p in s!:compile1(car u, cadr u, cddr u, nil) do 
+                s!:fslout2(p, u) >> >>
     else if eqcar(u, 'dm) or eqcar(u, 'defmacro) then begin
         scalar g;
         g := hashtagged!-name(cadr u, cddr u);

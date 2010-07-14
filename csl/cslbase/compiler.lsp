@@ -2600,26 +2600,31 @@ cadr u) (s!:fully_macroexpand_list (cddr u))))))) (progn (princ "+++ ") (prin
 (car u)) (printc " not compiled (C version available)") (write!-module (list
 (quote restore!-c!-code) (mkquote (car u)))))) (t (cond ((flagp (car u) (
 quote lose)) (progn (princ "+++ ") (prin (car u)) (printc 
-" not compiled (LOSE flag)"))) (t (prog (var1177) (setq var1177 (s!:compile1 
-(car u) (cadr u) (cddr u) nil)) lab1176 (cond ((null var1177) (return nil))) 
-(prog (p) (setq p (car var1177)) (s!:fslout2 p u)) (setq var1177 (cdr var1177
-)) (go lab1176)))))))) (t (cond ((or (eqcar u (quote dm)) (eqcar u (quote 
-defmacro))) (prog (g) (setq g (hashtagged!-name (cadr u) (cddr u))) (setq u (
-cdr u)) (cond ((flagp (car u) (quote lose)) (progn (princ "+++ ") (prin (car 
-u)) (printc " not compiled (LOSE flag)") (return nil)))) (setq w (cadr u)) (
-cond ((and w (null (cdr w))) (setq w (cons (car w) (cons (quote !&optional) (
-cons (gensym) nil)))))) (prog (var1179) (setq var1179 (s!:compile1 g w (cddr 
-u) nil)) lab1178 (cond ((null var1179) (return nil))) (prog (p) (setq p (car 
-var1179)) (s!:fslout2 p u)) (setq var1179 (cdr var1179)) (go lab1178)) (
-write!-module (list (quote dm) (car u) (quote (u !&optional e)) (list g (
-quote u) (quote e)))))) (t (cond ((eqcar u (quote putd)) (prog (a1 a2 a3) (
-setq a1 (cadr u)) (setq a2 (caddr u)) (setq a3 (cadddr u)) (cond ((and (eqcar
-a1 (quote quote)) (or (equal a2 (quote (quote expr))) (equal a2 (quote (
-quote macro)))) (or (eqcar a3 (quote quote)) (eqcar a3 (quote function))) (
-eqcar (cadr a3) (quote lambda))) (progn (setq a1 (cadr a1)) (setq a2 (cadr a2
-)) (setq a3 (cadr a3)) (setq u (cons (cond ((equal a2 (quote expr)) (quote de
-)) (t (quote dm))) (cons a1 (cdr a3)))) (s!:fslout1 u loadonly))) (t (
-write!-module u))))) (t (cond ((and (not (eqcar u (quote faslend))) (not (
+" not compiled (LOSE flag)"))) (t (progn (cond ((setq w (get (car u) (quote 
+c!-version))) (progn (princ "+++ ") (prin (car u)) (princ 
+" reports C version with checksum ") (print w) (print 
+"+++ differing from this version:") (setq w (cons (car u) (cons (cadr u) (
+s!:fully_macroexpand_list (cddr u))))) (princ "::: ") (prettyprint w) (princ 
+"+++ which has checksum ") (print (md60 w))))) (prog (var1177) (setq var1177 
+(s!:compile1 (car u) (cadr u) (cddr u) nil)) lab1176 (cond ((null var1177) (
+return nil))) (prog (p) (setq p (car var1177)) (s!:fslout2 p u)) (setq 
+var1177 (cdr var1177)) (go lab1176))))))))) (t (cond ((or (eqcar u (quote dm)
+) (eqcar u (quote defmacro))) (prog (g) (setq g (hashtagged!-name (cadr u) (
+cddr u))) (setq u (cdr u)) (cond ((flagp (car u) (quote lose)) (progn (princ 
+"+++ ") (prin (car u)) (printc " not compiled (LOSE flag)") (return nil)))) (
+setq w (cadr u)) (cond ((and w (null (cdr w))) (setq w (cons (car w) (cons (
+quote !&optional) (cons (gensym) nil)))))) (prog (var1179) (setq var1179 (
+s!:compile1 g w (cddr u) nil)) lab1178 (cond ((null var1179) (return nil))) (
+prog (p) (setq p (car var1179)) (s!:fslout2 p u)) (setq var1179 (cdr var1179)
+) (go lab1178)) (write!-module (list (quote dm) (car u) (quote (u !&optional 
+e)) (list g (quote u) (quote e)))))) (t (cond ((eqcar u (quote putd)) (prog (
+a1 a2 a3) (setq a1 (cadr u)) (setq a2 (caddr u)) (setq a3 (cadddr u)) (cond (
+(and (eqcar a1 (quote quote)) (or (equal a2 (quote (quote expr))) (equal a2 (
+quote (quote macro)))) (or (eqcar a3 (quote quote)) (eqcar a3 (quote function
+))) (eqcar (cadr a3) (quote lambda))) (progn (setq a1 (cadr a1)) (setq a2 (
+cadr a2)) (setq a3 (cadr a3)) (setq u (cons (cond ((equal a2 (quote expr)) (
+quote de)) (t (quote dm))) (cons a1 (cdr a3)))) (s!:fslout1 u loadonly))) (t 
+(write!-module u))))) (t (cond ((and (not (eqcar u (quote faslend))) (not (
 eqcar u (quote carcheck)))) (write!-module u)))))))))))))))
 
 (de s!:fslout2 (p u) (prog (name nargs code env w) (setq name (car p)) (setq 
