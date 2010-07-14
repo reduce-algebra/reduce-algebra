@@ -48,7 +48,7 @@ symbolic procedure simpmin u;
 
 flag('(max min),'listargp);
 
-symbolic smacro procedure difflist(u,v);
+symbolic smacro procedure maxmin_difflist(u,v);
  for each uu in u collect reval list('difference,uu ,v);
 
 
@@ -74,7 +74,7 @@ symbolic procedure S_simpmaxmin(maxmin, relation, u,rec);
       if cdr arglist then
         if length cdr arglist >= 1 and
            not eqcar(prepsq(mval :=S_simpmaxmin(maxmin,relation,
-                        difflist(arglist,car arglist),T)),maxmin)
+                        maxmin_difflist(arglist,car arglist),T)),maxmin)
            then return addsq(mval,simp!* car arglist)
            else return !*kk2f(maxmin . !*trim arglist) ./ 1;
       % Otherwise just return the single (extreme) value:
