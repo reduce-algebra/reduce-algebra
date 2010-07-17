@@ -1,0 +1,116 @@
+Sat Jul 17 20:38:06 2010 run on darwin10.4.0:x86_64
+on assertcheck;
+
+
+
+symbolic;
+
+
+nil
+
+
+typedef any;
+*** type any is not checked 
+
+
+
+nil
+
+typedef number checked by numberp;
+
+
+numberp
+
+typedef sf checked by sfpx;
+
+
+sfpx
+
+typedef sq checked by sqp;
+
+
+sqp
+
+
+procedure hugo(x1,x2);
+   x2;
+*** local variable x1 in procedure hugo not used 
+
+
+
+hugo
+
+
+assert hugo: (number,any) -> number;
+
++++ hugo compiled, 14 + 24 bytes
+
+(hugo)
+
+
+hugo(0,0);
+
+
+*** assertion hugo: (number,any) -> number violated by result nil 
+
+0
+
+hugo('x,0);
+
+
+*** assertion hugo: (number,any) -> number violated by arg1 x 
+
+*** assertion hugo: (number,any) -> number violated by result (hugo 2 1 3) 
+
+0
+
+hugo(0,'x);
+
+
+*** assertion hugo: (number,any) -> number violated by result (hugo 3 2 4) 
+
+x
+
+
+assert addf: (sf,sf) -> sf;
+
++++ addf compiled, 14 + 20 bytes
+
+(addf)
+
+assert addsq: (sq,sq) -> sq;
+
++++ addsq compiled, 14 + 20 bytes
+
+(addsq)
+
+
+addsq(simp 'x,numr simp 'x);
+
+
+*** assertion addsq: (sq,sq) -> sq violated by arg2 (((x . 1) . 1)) 
+
+*** assertion addf: (sf,sf) -> sf violated by arg2 ((x . 1) . 1) 
+
+*** assertion addsq: (sq,sq) -> sq violated by result nil 
+
+(((x . 1) . 1))
+
+
+algebraic;
+
+
+
+assert_analyze();
+
+function           #calls               #bad calls    #assertion violations
+addf                    1                        1                        1
+addsq                   1                        1                        2
+hugo                    3                        3                        4
+
+
+end;
+
+
+Time for test: 1 ms, plus GC time: 10 ms
+@@@@@ Resources used: (0 0 3 0)
