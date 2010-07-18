@@ -98,9 +98,9 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
 	 scargtypel := cdr scargtypel
       >>;
       res := apply(origfn,argl);
-      if (cfn := get(restype,'assert_checkfn)) and not apply(cfn,{w}) then <<
+      if (cfn := get(restype,'assert_checkfn)) and not apply(cfn,{res}) then <<
 	 bad := t;
-	 assert_error(fn,argtypel,restype,0,restype,w)
+	 assert_error(fn,argtypel,restype,0,restype,res)
       >>;
       if !*assertstatistics and bad then <<
       	 w := cdr atsoc(fn,assertstatistics!*);
