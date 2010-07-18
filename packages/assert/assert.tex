@@ -212,9 +212,14 @@ sqp
 (((y . -1) . -1))
 
 9* assert_analyze()$
+------------------------------------------------------------------------
 function          #calls              #bad calls   #assertion violations
+------------------------------------------------------------------------
 addsq                  2                       1                       2
 negsq                  2                       1                       2
+------------------------------------------------------------------------
+sum                    4                       2                       4
+------------------------------------------------------------------------
 \end{verbatim}
   \end{small}
   \caption{An interactive sample session.\label{FIG:sample}}
@@ -235,32 +240,33 @@ toggled by the switch \texttt{assertstatistics}, which is on by default.
 The encapsulating functions introduced with assertions are automatically
 compiled.
 
-% sturm@lennier[~/Desktop] time redpsl < taylor.tst > taylor.log 
+% sturm@lennier[~/Desktop] time redpsl < taylor.tst > /dev/null
 
-% real	0m0.778s
-% user	0m0.587s
-% sys	0m0.185s
-% sturm@lennier[~/Desktop] time redcsl < taylor.tst > taylor.log 
+% real	0m0.798s
+% user	0m0.584s
+% sys	0m0.166s
+% sturm@lennier[~/Desktop] time redcsl < taylor.tst > /dev/null
 
-% real	0m2.074s
-% user	0m1.904s
-% sys	0m0.145s
-% sturm@lennier[~/Desktop] time redpsl < taylor.tst > taylor.log 
+% real	0m1.975s
+% user	0m1.808s
+% sys	0m0.143s
+% sturm@lennier[~/Desktop] time redpsl < taylor.tst > /dev/null
 
-% real	0m0.453s
-% user	0m0.318s
-% sys	0m0.126s
-% sturm@lennier[~/Desktop] time redcsl < taylor.tst > taylor.log 
-
-% real	0m0.622s
-% user	0m0.494s
+% real	0m0.442s
+% user	0m0.316s
 % sys	0m0.122s
+% sturm@lennier[~/Desktop] time redcsl < taylor.tst > /dev/null
+
+% real	0m0.610s
+% user	0m0.491s
+% sys	0m0.115s
 
 We have experimentally checked assertions on the standard quotient
 arithmetic \texttt{addsq}, \texttt{multsq}, \texttt{quotsq},
 \texttt{invsq}, \texttt{negsq} for the test file \texttt{taylor.tst} of
-the TAYLOR package. For CSL we observe a slowdown of factor 3.3, and for
-PSL we observe a slowdown of factor 1.7 in this particular example.
+the TAYLOR package. For CSL we observe a slowdown of factor 3.2, and for
+PSL we observe a slowdown of factor 1.8 in this particular example,
+where there are 323\,750 function calls checked altogether.
 
 The ASSERT package is considered an analysis and debugging tool.
 Production system should as a rule not run with dynamic assertion

@@ -167,18 +167,31 @@ put('typedef,'stat,'assert_typedefstat);
 operator assert_analyze;
 
 procedure assert_analyze();
-   begin scalar headline;
-      headline := '(function . (!#calls  !#bad! calls !#assertion! violations));
+   begin scalar headline,footline; integer s1,s2,s3;
       assertstatistics!* := sort(assertstatistics!*,
-	 function(lambda x,y; ordp(car x,car y)));
-      for each pr in headline . assertstatistics!* do <<
-	 prin2 car pr;
-	 for i := length explode car pr + length explode2 cadr pr : 24 do prin2 " ";
-	 prin2 cadr pr;
-	 for i := length explode2 caddr pr : 24 do prin2 " ";
-	 prin2 caddr pr;
-	 for i := length explode2 cadddr pr : 24 do prin2 " ";
-	 prin2t cadddr pr
+	 function(lambda x,y; ordp(car y,car x)));
+      for each pr in assertstatistics!* do <<
+	 s1 := s1 + cadr pr;
+	 s2 := s2 + caddr pr;
+	 s3 := s3 + cadddr pr
+      >>;
+      headline := '(function . (!#calls  !#bad! calls !#assertion! violations));
+      footline := 'SUM . {s1,s2,s3};
+      assertstatistics!* := nil . headline . nil .
+	 reversip(nil . footline . nil . assertstatistics!*);
+      for each pr in assertstatistics!* do <<
+	 if pr then <<
+	    prin2 car pr;
+	    for i := length explode car pr + length explode2 cadr pr : 23 do prin2 " ";
+	    prin2 cadr pr;
+	    for i := length explode2 caddr pr : 23 do prin2 " ";
+	    prin2 caddr pr;
+	    for i := length explode2 cadddr pr : 23 do prin2 " ";
+	    prin2t cadddr pr
+	 >> else <<
+	    for i := 1:72 do prin2 "-";
+	    terpri()
+	 >>
       >>;
       assertstatistics!* := nil
    end;
