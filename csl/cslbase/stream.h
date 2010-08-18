@@ -38,16 +38,13 @@
 
 
 
-/* Signature: 313e7a22 28-Feb-2010 */
+/* Signature: 37c32ea5 16-Aug-2010 */
 
 #ifndef header_stream_h
 #define header_stream_h 1
 
 extern FILE *non_terminal_input;
 extern int terminal_pushed;
-
-typedef int character_reader(void); /* used only with procedural IO */
-typedef int character_writer(int);  /* ditto */
 
 typedef int character_stream_reader(Lisp_Object);
 typedef int character_stream_writer(int, Lisp_Object);

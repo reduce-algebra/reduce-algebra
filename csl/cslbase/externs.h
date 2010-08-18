@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 065b2feb 10-Jul-2010 */
+/* Signature: 449c2ba7 16-Aug-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -435,7 +435,7 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem;
 
 #ifdef COMMON
 extern Lisp_Object keyword_package;
@@ -665,6 +665,8 @@ extern Lisp_Object * volatile stacklimit;
 #define gchook                BASE[153]
 #define resources             BASE[154]
 #define callstack             BASE[155]
+#define procstack             BASE[156]
+#define procmem               BASE[157]
 
 #ifdef COMMON
 #define keyword_package       BASE[170]
@@ -740,6 +742,8 @@ extern char *exit_charvec;
  * simple C variable makes it easier for me to initialise it early.
  */
 extern intptr_t exit_reason;
+
+extern int procstackp;
 
 #ifdef DEBUG
 extern int trace_all;

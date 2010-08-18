@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3b2a8663 12-May-2010 */
+/* Signature: 2903263c 16-Aug-2010 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -90,6 +90,7 @@
 #include "syscsl.h"
 #include "arith.h"
 #include "entries.h"
+#include "proc.h"
 #include "stream.h"
 #include "cslread.h"
 

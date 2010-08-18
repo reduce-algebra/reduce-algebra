@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7298636b 10-Jul-2010 */
+/* Signature: 5a46e9ce 16-Aug-2010 */
 
 #include "headers.h"
 
@@ -290,7 +290,7 @@ Lisp_Object standard_output, standard_input, debug_io;
 Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-Lisp_Object gchook, resources, callstack;
+Lisp_Object gchook, resources, callstack, procstack, procmem;
 Lisp_Object workbase[51];
 
 
@@ -366,6 +366,8 @@ int current_fp_rep;
 static int old_fp_rep;
 static CSLbool flip_needed;
 static int old_page_bits;
+
+int procstackp;
 
 /*
  * The next function is handed a page
@@ -4689,6 +4691,9 @@ static void cold_setup()
     inject_randomness((int)clock());
     set_up_functions(0);
     set_up_variables(0);
+    procstack = nil;
+    procmem = getvector_init(CELL*100, nil); /* 0 to 99 */
+    procstackp = 0;
 }
 
 void set_up_functions(CSLbool restartp)
@@ -6123,6 +6128,8 @@ void copy_into_nilseg(int fg)
     BASE[153]    = gchook;
     BASE[154]    = resources;
     BASE[155]    = callstack;
+    BASE[156]    = procstack;
+    BASE[157]    = procmem;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
@@ -6289,6 +6296,8 @@ void copy_out_of_nilseg(int fg)
     gchook                = BASE[153];
     resources             = BASE[154];
     callstack             = BASE[155];
+    procstack             = BASE[156];
+    procmem               = BASE[157];
 
 #ifdef COMMON
 

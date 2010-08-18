@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 61367501 21-Jun-2010 */
+/* Signature: 65ea4062 18-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -2966,6 +2966,430 @@ int ENTRYPOINT(int argc, char *argv[])
 }
 
 #endif /* NO_STARTUP_CODE */
+
+/*
+ * And here are some functions that may help use Reduce, as an alternative
+ * to the very general escape that execute_lisp_function provides... If
+ * these return an integer it will genarlly be zero for success and non-
+ * zero for failure.
+ */
+
+/*
+ * Expressions are entered in Reverse Polish Notation, This call clears
+ * the stack. It is probably only wanted if there has been an error
+ * of some sort.
+ */
+
+int PROC_clear_stack()
+{
+    procstack = C_nil;
+    return 0;       /* can never fail! */
+}
+
+/*
+ * The RPN stack is used to build a prefix-form expression for
+ * evaluation. This code creates a Lisp symbol and pushes it.
+ */
+
+int PROC_push_symbol(const char *name)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    w = make_undefined_symbol(name);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to make the symbol */
+    }
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * Push an integer, whihc should fit within the constraints of a
+ * 28-bit fixnum.
+ */
+
+int PROC_push_small_integer(int32_t n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+/*
+ * The code here does not check if the number is in range... Tough! Add
+ * that check yourself if you are feeling cautious!
+ */
+    w = fixnum_of_int((Lisp_Object)n);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * To make an expression
+ *    (f a1 a2 a3)
+ * you go
+ *       push(a1)
+ *       push(a2)
+ *       push(a3)
+ *       make_function_call(3, "f")
+ */
+
+int PROC_make_function_call(const char *name, int n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    while (n > 0)
+    {   if (procstack == nil) return 1; /* Not enough args available */
+        w = cons(qcar(procstack), w);
+        nil = C_nil;
+        if (exception_pending())
+        {   flip_exception();
+            return 2;  /* Failed to push onto stack */
+        }
+        n--;
+    }
+    push(w);
+    w1 = make_undefined_symbol(name);
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Failed to create function name */
+    }
+    w = cons(w1, w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 4;  /* Failed to cons on function name */
+    }
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 5;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * Take the top item on the stack and save it in location n (0 <= n <= 99).
+ */
+
+int PROC_save(int n)
+{
+    Lisp_Object nil = C_nil;
+    if (n < 0 || n > 99) return 1; /* index out of range */
+    if (procstack == nil) return 2; /* Nothing available to save */
+    elt(procmem, n) = qcar(procstack);
+    procstack = qcdr(procstack);
+    return 0;
+}
+
+/*
+ * Push onto the stack the value saved at location n. See PROC_save.
+ */
+
+int PROC_load(int n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (n < 0 || n > 99) return 1; /* index out of range */
+    w = elt(procmem, n);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * Duplicate the top item on the stack.
+ */
+
+int PROC_dup()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* no item to duplicate */
+    w = qcar(procstack);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+int PROC_pop()
+{
+    Lisp_Object nil = C_nil;
+    if (procstack == nil) return 1; /* stack is empty */
+    procstack = qcdr(procstack);
+    return 0;
+}
+
+/*
+ * Replaces the top item on the stack with a simplified version of
+ * itself. For experts on Reduce internals I note that this wraps
+ * the simplified form up in a prefix-like "!*sq" wrapper so it can
+ * still be used in a prefix context.
+ */
+
+int PROC_simplify()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* stack is empty */
+    w = make_undefined_symbol("simp");
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed find "simp" */
+    }
+    w = Lapply1(nil, w, qcar(procstack));
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Call to simp failed */
+    }
+    push(w);
+    w1 = make_undefined_symbol("mk!*sq");
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 4;  /* Failed to find "mk!*sq" */
+    }
+    w = Lapply1(nil, w1, w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 5;  /* Call to mk!*sq failed */
+    }
+    qcar(procstack) = w;
+    return 0;
+}
+
+static Lisp_Object PROC_standardise_printed_form(Lisp_Object w)
+{
+    Lisp_Object nil = C_nil, w1;
+    if (consp(w))
+    {   push(qcdr(w));
+        w1 = PROC_standardise_printed_form(qcar(w));
+        pop(w);
+        errexit();
+        push(w1);
+        w =  PROC_standardise_printed_form(w);
+        pop(w1);
+        errexit();
+        return cons(w1, w);
+    }
+/*
+ * Now w is atomic. There are two interesting cases - an unprinted gensym
+ * and a bignum.
+ */
+    if (symbolp(w))
+    {   push(w);
+        get_pname(w); /* allocates gensym name if needed. Otherwise cheap! */
+        pop(w);
+        errexit();
+        return w;
+    }
+    else if (is_numbers(w) && is_bignum(w))
+    {   w = Lexplode(nil, w);        /* Bignum to list of digits */
+        errexit();
+        w = Llist_to_string(nil, w); /* list to string */
+        errexit();
+        return w;
+    }
+    else return w;
+}
+
+/*
+ * Replaces the top item on the stack with version that is in
+ * a simple prefix form. This prefix form should be viewed as
+ * unsuitable for inclusion in any further expression.
+ */
+
+int PROC_make_printable()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* stack is empty */
+/*
+ * I want to use "simp" again so that I can then use prepsq!
+ */
+    w = make_undefined_symbol("simp");
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed find "simp" */
+    }
+    w = Lapply1(nil, w, qcar(procstack));
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Call to simp failed */
+    }
+    push(w);
+    w1 = make_undefined_symbol("prepsq");
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 4;  /* Failed to find "prepsq" */
+    }
+    w = Lapply1(nil, w1, w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 5;  /* Call to prepsq failed */
+    }
+/*
+ * There are going to be two things I do next. One is to ensure that
+ * all gensyms have print-names, the other is to convert bignums into
+ * strings. Both of these could be viewed as mildly obscure!
+ */
+    w = PROC_standardise_printed_form(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 6;  /* standardise_printed_form failed */
+    }
+    qcar(procstack) = w;
+    return 0;
+}
+
+PROC_handle PROC_get_value()
+{
+    Lisp_Object w;
+    if (procstack == C_nil) w = fixnum_of_int(0);
+    else
+    {   w = qcar(procstack);
+        procstack = qcdr(procstack);
+    }
+    return (PROC_handle)w;
+}
+
+/*
+ * return true if the expression is atomic.
+ */
+
+int PROC_atom(PROC_handle p)
+{
+    return !consp((Lisp_Object)p);
+}
+
+/*
+ * Return true if it is a small integer.
+ */
+
+int PROC_fixnum(PROC_handle p)
+{
+    return is_fixnum((Lisp_Object)p);
+}
+
+/*
+ * Return true if it is a symbol.
+ */
+
+int PROC_symbol(PROC_handle p)
+{
+    return symbolp((Lisp_Object)p);
+}
+
+/*
+ * Given that it is a small integer return the integer value
+ */
+
+int32_t PROC_intval(PROC_handle p)
+{
+    return (int32_t)int_of_fixnum((Lisp_Object)p);
+}
+
+/*
+ * Given that it is a symbol, return a string that is its name. Note
+ * that this must not be too long, and that the value returned is in
+ * a static buffer. Note that this would crash if the item was a
+ * "gensym" that had not been printed before, and so I take care to
+ * sort that out in PROC_make_printable.
+ * Hmmm the name-length restriction here is ugly _ will wait and see how
+ * long it is before somebody falls foul of it!
+ */
+
+static char PROC_name[64];
+
+char *PROC_symname(PROC_handle p)
+{
+    Lisp_Object w = (Lisp_Object)p;
+    int n;
+    w = qpname(w);
+    n = length_of_header(vechdr(w)) - CELL;
+    if (n > sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    strncpy(PROC_name, &celt(w, 0), n);
+    PROC_name[n] = 0;
+    return &PROC_name[0];
+}
+
+/*
+ * First and rest allow list traversal.
+ */
+
+PROC_handle PROC_first(PROC_handle p)
+{
+    return (PROC_handle)qcar((Lisp_Object)p);
+}
+
+PROC_handle PROC_rest(PROC_handle p)
+{
+    return (PROC_handle)qcdr((Lisp_Object)p);
+}
+
 
 /* End of csl.c */
 
