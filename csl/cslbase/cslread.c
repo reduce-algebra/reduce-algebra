@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 390ad1fb 30-Jun-2010 */
+/* Signature: 48641898 18-Aug-2010 */
 
 #include "headers.h"
 
@@ -2335,6 +2335,8 @@ int char_from_terminal(Lisp_Object dummy)
  * but note that with fwin I am simplifying things and always do the calls
  * as if windowing was going on even when it is not!
  */
+            fflush(stdout);
+            fflush(stderr);
             for (;;) /* The while loop is so I can restart after ^C */
             {
 /*
