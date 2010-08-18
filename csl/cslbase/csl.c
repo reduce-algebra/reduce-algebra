@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 65ea4062 18-Aug-2010 */
+/* Signature: 51680069 18-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -2982,7 +2982,8 @@ int ENTRYPOINT(int argc, char *argv[])
 
 int PROC_clear_stack()
 {
-    procstack = C_nil;
+    Lisp_Object nil = C_nil;
+    procstack = nil;
     return 0;       /* can never fail! */
 }
 
@@ -3307,6 +3308,7 @@ int PROC_make_printable()
 
 PROC_handle PROC_get_value()
 {
+    Lisp_Object nil = C_nil;
     Lisp_Object w;
     if (procstack == C_nil) w = fixnum_of_int(0);
     else

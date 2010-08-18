@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 28833938 18-Aug-2010 */
+/* Signature: 48641898 18-Aug-2010 */
 
 #include "headers.h"
 
@@ -118,7 +118,29 @@ Lisp_Object make_string(const char *b)
         if (k != 0) *(int32_t *)(s + k) = 0;
     }
     memcpy(s + CELL, b, (size_t)n);
+    validate_string(r);
     return r;
+}
+
+void validate_string_fn(Lisp_Object s, char *file, int line)
+{
+    if (is_vector(s) &&
+        type_of_header(vechdr(s)) == TYPE_STRING)
+    {   int len = length_of_header(vechdr(s));
+        int len1 = doubleword_align_up(len);
+        while (len < len1)
+        {   if (celt(s, len-CELL) != 0)
+            {   fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
+                fflush(stderr);
+                *(int *)(Lisp_Object)(-1) = 0x55555555; /* I hope this aborts */
+            }
+            len++;
+        }
+        return;
+    }       
+    fprintf(stderr, "\n+++ Not even a string at %s %d\n", file, line);
+    fflush(stderr);
+    *(int *)(Lisp_Object)(-1) = 0x55555555; /* I hope this aborts */
 }
 
 static Lisp_Object copy_string(Lisp_Object str, int32_t n)
@@ -149,6 +171,7 @@ static Lisp_Object copy_string(Lisp_Object str, int32_t n)
         if (k != 0) *(int32_t *)(s + k) = 0;
     }
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
+    validate_string(r);
     return r;
 }
 
@@ -873,6 +896,11 @@ static CSLbool add_to_hash(Lisp_Object s, Lisp_Object vector, uint32_t hash)
  * number.  Furthermore I might replace the (perhaps expensive) remaindering
  * operations by (perhaps cheap) bitwise "AND" when I reduce my hash value
  * to the right range to be an index into the table.
+ *
+ * I might make a few remarks here about sizes. Each hash table segment
+ * may have 128K cells. hash is a 32-bit value, so hash>>10 is a 22-bit
+ * value (ie up to 4M). So all the bits that might end up in the step I
+ * take are available.
  */
     int32_t step = 1 | ((hash >> 10) & (size - 1));
     int32_t probes = 0;
@@ -892,6 +920,8 @@ static CSLbool add_to_hash(Lisp_Object s, Lisp_Object vector, uint32_t hash)
 
 static int32_t number_of_chunks;
 
+#define CHUNK_SIZE (CELL*(PAGE_POWER_OF_TWO/32))
+
 static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
 {
 /*
@@ -900,28 +930,48 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  * table size down will have enough space for the number of active items
  * present. grow=0 leaves the table size alone but still rehashes.
  */
-    int32_t h = 16384, i;
+    int32_t h = CHUNK_SIZE, i;
     Lisp_Object new_obvec, nil;
     number_of_chunks = int_of_fixnum(chunks);
 /*
  * Now I decide how to format the new structure.  To grow, If I had a single
  * vector at present I try to double its size.  If that would give something
- * with over 40Kbytes I go to 48K, formatted as three chunks each of 16K.
+ * too big I rearrange as multiple blocks in a chain, trying to roughly
+ * increase by a factor of 1.5 each time.
  */
     if (grow > 0)
     {   if (number_of_chunks == 1)
-        {   h = length_of_header(vechdr(v)) - CELL;
-            if (h > 20480)
-            {   h = 16384;
+        {
+/*
+ * Here I am going to allow the hash table size to double until trying to
+ * double it again would go beyond the proper size that vectors are limited
+ * to by the page size I use. The limit size ll I establish here first
+ * MUST be within the size permitted for a vector. To allow 32- and 64-
+ * bit images to be compatible I also want it to correspond to the same
+ * number of entries in the table in either case. The size I select is
+ * such that on a 32-bit machine each table is about 1/8 of the page size
+ * and on a 64-bit one each is about 1/4. With 4 Mbyte pages this makes
+ * each table hold 128K items - a feature of this is that Reduce will
+ * generally not go into the overflow mechanism! By making the table size
+ * 1/4 of my allocation page size I will end up fitting 3 tables per page
+ * and leaving just the final quarter to be fille dup otherwise. If I
+ * went further and used yet larger hash table segments I could suffer
+ * much more badly because of fragmentation. 
+ */
+            int32_t ll = CHUNK_SIZE;
+            h = length_of_header(vechdr(v)) - CELL;
+            if (h >= ll)
+            {   h = ll;
                 number_of_chunks = 3;
             }
             else h = 2*h;
         }
-        else number_of_chunks++;
+        else number_of_chunks = (3*number_of_chunks + 1)/2;
 /*
- * NB the linear growth of the hash table from this point on gives
- * bad performance for very large symbol tables due to excessive need
- * for rehashing.
+ * The hash table will use 1, 3, 5, 8, 12, 18, 27, 41, 62, 93, 140, 210...
+ * chunks. This geometric growth should lead to the cost of rehashing
+ * ending up as a roughly constant factor of hash table access while
+ * avoiding utterly undue waste of space.
  */
     }
     else if (grow < 0)
@@ -933,10 +983,18 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  */
             if (h > 64) h = h / 2;
         }
-        else if (number_of_chunks <= 3)
-        {   h = 32768;
+        else if (number_of_chunks <= 2)
+        {   h = CHUNK_SIZE;
             number_of_chunks = 1;
         }
+/*
+ * While I expand the hash table in a geometric progression I will
+ * only shrink it linearly (at least for now) since I think I believe that
+ * shrinking will not happen often, and if there had been one temporary
+ * huge growth I might predict the possibility of another one soon. The
+ * effect of shrinking slowly is that space is wasted but speed is if
+ * anything improved.
+ */
         else number_of_chunks--;
     }
     nil = C_nil;
@@ -978,6 +1036,7 @@ try_again:
             s = elt(vv, h);
             if (is_fixnum(s)) continue;
             p = qpname(s);
+            validate_string(p);
             hash = hash_lisp_string(p);
             if (number_of_chunks != 1)
             {   int32_t i = (hash ^ (hash >> 16)) % number_of_chunks;
@@ -1008,23 +1067,29 @@ static Lisp_Object add_to_externals(Lisp_Object s,
     Lisp_Object n = packnext_(p);
     Lisp_Object v = packext_(p);
     Lisp_Object nil = C_nil;
-    int32_t used = int_of_fixnum(packvext_(p));
-    if (used == 1) used = length_of_header(vechdr(v));
-    else used = 16384*used;
+    uint32_t used = int_of_fixnum(packvext_(p));
+/*
+ * I guess the next line would overflow when around 4G ends up used just
+ * in symbol hash table. This can only possibly be approached on a 64-bit
+ * machine and I think that would happen when there were about 300 million
+ * symbols. For now at least I view that as beyond plausibility. Maybe in a
+ * few years it will seem routine!
+ */
+    if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+    else used = CHUNK_SIZE*used;
 /*
  * n is (16*sym_count+1)             [Lisp fixnum for sym_count]
  * used = CELL*(spaces+1)
  * The effect is that I trigger a re-hash if the table reaches 62%
  * loading.  For small vectors when I re-hash I will double the
- * table size, for large ones I will add another 16Kbytes (i.e. 4K
- * table entries on a 32-bit machine).  The effect will be that small
- * packages will often be fairly lightly loaded (down to 31% just after
- * an expansion) while very large ones will be kept close to the 62% mark.
- * If I start off all tables with size that is a power of 2 that state
- * will persist.
+ * table size, for large ones I will roughly multipoly the amount of
+ * allocated space by 1.5.
+ * The effect will be that small packages will often be fairly lightly
+ * loaded (down to 31% just after an expansion) while very large ones will
+ * be kept at least a bit closer to the 62% mark.
  */
 try_again:
-    if (CELL*(uint32_t)n >= 10u*used)
+    if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvext_(p), 1);
@@ -1033,6 +1098,7 @@ try_again:
         packext_(p) = v;
         packvext_(p) = fixnum_of_int(number_of_chunks);
     }
+    if (n == 0xfffffff1) return aerror("too many symbols"); /* long stop */
     packnext_(p) = n + (1<<4);      /* increment as a Lisp fixnum */
     {   int32_t nv = int_of_fixnum(packvext_(p));
         if (nv == 1) add_to_hash(s, v, hash);
@@ -1049,11 +1115,18 @@ try_again:
  * careful.  To avoid the possibility I make add_to_hash() report any
  * trouble and if I have difficulty I go back and re-enlarge the tables.
  * This is not guaranteed safe, but I will be VERY unlucky if it ever bites
- * me!
+ * me! Specifically it can provoke early expansion of the hash table
+ * so that clustering leads to ending up with a lighter loading on the
+ * whole table. It wastes space but should in the end be safe.
+ *
+ * For HUGE tables the current segmented scheme is parhaps not very
+ * satisfactory and I may need to move to a model that represents a single
+ * large table in multiple hunks. Indeed for HUGE tables the fact that I
+ * only compute a 32-bit hash value could be unsatisfactory too.
  */
             while (nv-- != 0) v = qcdr(v);
             if (!add_to_hash(s, qcar(v), hash))
-            {   n = used = 0;
+            {   used = 0;   /* so table will be expanded */
                 goto try_again;
             }
         }
@@ -1069,11 +1142,11 @@ static Lisp_Object add_to_internals(Lisp_Object s,
     Lisp_Object n = packnint_(p);
     Lisp_Object v = packint_(p);
     Lisp_Object nil = C_nil;
-    int32_t used = int_of_fixnum(packvint_(p));
-    if (used == 1) used = length_of_header(vechdr(v));
-    else used = 16384*used;
+    uint32_t used = int_of_fixnum(packvint_(p));
+    if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+    else used = CHUNK_SIZE*used;
 try_again:
-    if (CELL*(uint32_t)n >= 10u*used)
+    if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvint_(p), 1);
@@ -1082,6 +1155,7 @@ try_again:
         packint_(p) = v;
         packvint_(p) = fixnum_of_int(number_of_chunks);
     }
+    if (n == 0xfffffff1) return aerror("too many symbols"); /* long stop */
     packnint_(p) = (Lisp_Object)((int32_t)n + (1<<4));
                     /* increment as a Lisp fixnum */
     {   int32_t nv = int_of_fixnum(packvint_(p));
@@ -1090,7 +1164,7 @@ try_again:
         {   nv = (hash ^ (hash >> 16)) % nv;
             while (nv-- != 0) v = qcdr(v);
             if (!add_to_hash(s, qcar(v), hash))
-            {   n = used = 0;
+            {   used = 0;
                 goto try_again;
             }
         }
@@ -1101,7 +1175,7 @@ try_again:
 static CSLbool rehash_pending = NO;
 
 static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
-                          Lisp_Object v, Lisp_Object nv, int32_t hash)
+                          Lisp_Object v, Lisp_Object nv, uint32_t hash)
 /*
  * Searches a hash table for a symbol with name matching the given string,
  * and NOTE that the string passed down here is to be treated as having
@@ -1127,7 +1201,7 @@ static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
 {
     Header h;
     int32_t size;
-    int32_t i = int_of_fixnum(nv), step, n;
+    uint32_t i = int_of_fixnum(nv), step, n;
     if (i != 1)
     {   i = (hash ^ (hash >> 16)) % i; /* Segmented - find correct segment */
         while (i-- != 0) v = qcdr(v);
@@ -1151,6 +1225,7 @@ static Lisp_Object lookup(Lisp_Object str, int32_t strsize,
         }
         if (w != fixnum_of_int(1))
         {   pn = qpname(w);
+            validate_string(pn);
 /* v comes out of a package so has a proper pname */
             if (memcmp((char *)str + (CELL-TAG_VECTOR),
                        (char *)pn + (CELL-TAG_VECTOR),
@@ -1203,6 +1278,8 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
         if (exception_pending()) return 0;
     }
 #endif
+    validate_string(pn1);
+    validate_string(pn2);
     l1 = length_of_header(vechdr(pn1)) - CELL;
     l2 = length_of_header(vechdr(pn2)) - CELL;
     c = memcmp((char *)pn1 + (CELL-TAG_VECTOR),
@@ -1217,9 +1294,8 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
  * of ordp().  This is the REDUCE 3.6/3.7 version - it will need re-work
  * if REDUCE is altered.  Note the curious situation that symbols are
  * alphabetically ordered, EXCEPT that "nil" comes before everything else!
- * (NB for 3.6 this is as provided in a patch file rather than the original
- * release. The places with *** represent updates since 3.6 and the initial
- * version of 3.6)
+ *
+ *
  *
  *  symbolic procedure ordp(u,v);
  *     if null u then null v
@@ -1232,19 +1308,17 @@ static int ordersymbol(Lisp_Object v1, Lisp_Object v2)
  *                    else numberp v
  *             else nil
  *      else if atom v then t
- *      else if car u=car v then %%% ordp(cdr u,cdr v)
- ***          ordpl(cdr u, cdr v)                          *** 8 Feb 1999
- ***          %% flagp(car u,'noncom) or ordpl(cdr u,cdr v)   ***
+ *      else if car u=car v then ordpl(cdr u, cdr v)                          *** 8 Feb 1999
  *      else if flagp(car u,'noncom)
  *       then if flagp(car v,'noncom) then ordp(car u,car v) else t
  *      else if flagp(car v,'noncom) then nil
  *      else ordp(car u,car v);
  *
- ***  symbolic procedure ordpl(u,v)
- ***     if atom u then ordp(u,v)
- ***      else if atom v then t
- ***      else if car u=car v then ordpl(cdr u,cdr v)
- ***      else ordp(car u, car v);
+ *  symbolic procedure ordpl(u,v)
+ *     if atom u then ordp(u,v)
+ *      else if atom v then t
+ *      else if car u=car v then ordpl(cdr u,cdr v)
+ *      else ordp(car u, car v);
  *
  */
 
@@ -1423,8 +1497,9 @@ static CSLbool remob(Lisp_Object sym, Lisp_Object v, Lisp_Object nv)
     Lisp_Object str = qpname(sym);
     Header h;
     uint32_t hash;
-    int32_t i = int_of_fixnum(nv), size, step, n;
+    uint32_t i = int_of_fixnum(nv), size, step, n;
     if (qheader(sym) & SYM_ANY_GENSYM) return NO; /* gensym case is easy! */
+    validate_string(str);
 #ifdef COMMON
 /* If not in any package it has no home & is not available */
     qheader(sym) &= ~SYM_EXTERN_IN_HOME & ~(0xffffffff<<SYM_IN_PKG_SHIFT);
@@ -1492,6 +1567,7 @@ static Lisp_Object Lmake_symbol(Lisp_Object nil, Lisp_Object str)
     pop(str);
     qheader(s) = TAG_ODDS+TYPE_SYMBOL;
     qvalue(s) = unset_var;
+    if (is_vector(str)) validate_string(str);
     qpname(s) = str;
     qplist(s) = nil;
     qfastgets(s) = nil;
@@ -1656,6 +1732,20 @@ static Lisp_Object Lgensymp(Lisp_Object nil, Lisp_Object a)
         (qheader(a) & SYM_CODEPTR) == 0 &&
         (qheader(a) & SYM_ANY_GENSYM) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
+}
+
+/*
+ * Normally gensyms are displayed as G0, G1, ... in sequence.
+ * After (reset!=gensym 1234) thet go on from G1234.
+ * The function returns the previous gensym counter. So (reset!-gensym nil)
+ * will read that but not reset the sequence.
+ */
+
+static Lisp_Object Lreset_gensym(Lisp_Object nil, Lisp_Object a)
+{
+    Lisp_Object n = 0, old = gensym_ser;
+    if (is_fixnum(a) && a >= 0) gensym_ser = int_of_fixnum(a) & 0x7fffffff;
+    return fixnum_of_int(old);
 }
 
 Lisp_Object iintern(Lisp_Object str, int32_t h, Lisp_Object p, int str_is_ok)
@@ -1914,8 +2004,8 @@ static Lisp_Object Lextern(Lisp_Object nil,
     {   Lisp_Object n = packnint_(package);
         Lisp_Object v = packint_(package);
         int32_t used = int_of_fixnum(packvint_(package));
-        if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;   /* /* /* @@@@ ???? */
+        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        else used = CHUNK_SIZE*used;
 /*
  * I will shrink a hash table if a sequence of remob-style operations,
  * which will especially include the case where a symbol ceases to be
@@ -2031,8 +2121,8 @@ Lisp_Object Lunintern_2(Lisp_Object nil, Lisp_Object sym, Lisp_Object pp)
     {   Lisp_Object n = packnint_(package);
         Lisp_Object v = packint_(package);
         int32_t used = int_of_fixnum(packvint_(package));
-        if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;
+        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        else used = CHUNK_SIZE*used;
         if ((int32_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
@@ -2050,8 +2140,8 @@ Lisp_Object Lunintern_2(Lisp_Object nil, Lisp_Object sym, Lisp_Object pp)
     {   Lisp_Object n = packnext_(package);
         Lisp_Object v = packext_(package);
         int32_t used = int_of_fixnum(packvext_(package));
-        if (used == 1) used = length_of_header(vechdr(v));
-        else used = 16384*used;
+        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        else used = CHUNK_SIZE*used;
         if ((int32_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
@@ -2256,7 +2346,11 @@ int char_from_terminal(Lisp_Object dummy)
 #ifdef __cplusplus
                 try
 #else
+#ifdef USE_SIGALTSTACK
+                if (!sigsetjmp(sigint_buf, -1))
+#else
                 if (!setjmp(sigint_buf))
+#endif
 #endif
                 {   while (tty_count<TTYBUF_SIZE && !interrupt_pending)
                     {   int c;
@@ -3797,7 +3891,11 @@ void read_eval_print(int noisy)
 {
     Lisp_Object nil = C_nil, *save = stack;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+#else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
+#endif
 #endif
     push2(codevec, litvec);
     for (;;)        /* Loop for each s-expression found */
@@ -3810,7 +3908,11 @@ void read_eval_print(int noisy)
 #ifdef __cplusplus
         try
 #else
+#ifdef USE_SIGALTSTACK
+        if (!sigsetjmp(this_level, -1))
+#else
         if (!setjmp(this_level))
+#endif
 #endif
         {
 #ifndef __cplusplus
@@ -3832,7 +3934,17 @@ void read_eval_print(int noisy)
             stack = save;
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
             if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
             if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -3893,7 +4005,11 @@ void read_eval_print(int noisy)
 #ifdef __cplusplus
         try
 #else
+#ifdef USE_SIGALTSTACK
+        if (!sigsetjmp(this_level, -1))
+#else
         if (!setjmp(this_level))
+#endif
 #endif
         {
             u = eval(u, nil);
@@ -3965,7 +4081,17 @@ void read_eval_print(int noisy)
             stack = save;
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
             if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
             if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -4053,7 +4179,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #else
                 trace_printf("\nReading module ");
 #endif
-                loop_print_trace(file); trace_printf("\n");
+                prin_to_trace(file); trace_printf("\n");
             }
             Lload_module(nil, stack[0]);
             errexitn(3);
@@ -4064,7 +4190,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #else
                 trace_printf("\nRead module ");
 #endif
-                loop_print_trace(stack[0]); trace_printf("\n");
+                prin_to_trace(stack[0]); trace_printf("\n");
             }
             popv(3);
 #ifdef COMMON
@@ -4098,9 +4224,9 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
         if (verbose)
         {   file = stack[0];
 #ifdef COMMON
-            trace_printf("\n;; Loading "); loop_print_trace(file); trace_printf("\n");
+            trace_printf("\n;; Loading "); prin_to_trace(file); trace_printf("\n");
 #else
-            trace_printf("\nReading "); loop_print_trace(file); trace_printf("\n");
+            trace_printf("\nReading "); prin_to_trace(file); trace_printf("\n");
 #endif
         }
         errexitn(3);
@@ -4117,7 +4243,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #else
             trace_printf("\nFinished reading ");
 #endif
-            loop_print_trace(stack[0]);
+            prin_to_trace(stack[0]);
             trace_printf(" (bad)\n");
         }
         if (stack[0] != nil)
@@ -4139,7 +4265,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
         trace_printf("\nRead ");
 #endif
     }
-    loop_print_trace(stack[0]);
+    prin_to_trace(stack[0]);
     trace_printf("\n");
     if (stack[0] != nil)
     {
@@ -4251,6 +4377,7 @@ static Lisp_Object MS_CDECL Lspool0(Lisp_Object nil, int nargs, ...)
 
 #ifdef COMMON
 
+/* The following two must be powers of 2 */
 #define STARTING_SIZE_X 32
 #define STARTING_SIZE_I 32
 
@@ -4262,21 +4389,32 @@ Lisp_Object make_package(Lisp_Object name)
  */
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object p = getvector_init(sizeof(Package), nil), w;
+    Lisp_Object p, w;
+    push(name);
+    p = getvector_init(sizeof(Package), nil);
+    pop(name);
     errexit();
     packhdr_(p) = TYPE_STRUCTURE + (packhdr_(p) & ~header_mask);
     packid_(p) = package_symbol;
     packname_(p) = name;
-    packext_(p) = getvector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
+    push(p);
+    w = getvector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
+    pop(p);
     errexit();
-    packint_(p) = getvector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
+    packext_(p) = w;
+    push(p);
+    w = getvector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
+    pop(p);
     errexit();
+    packint_(p) = w;
     packflags_(p) = fixnum_of_int(++package_bits);
     packvext_(p) = fixnum_of_int(1);
     packvint_(p) = fixnum_of_int(1);
     packnext_(p) = fixnum_of_int(0);
     packnint_(p) = fixnum_of_int(0);
+    push(p);
     w = cons(p, all_packages);
+    pop(p);
     errexit();
     all_packages = w;
     return onevalue(p);
@@ -4741,6 +4879,7 @@ setup_type const read_setup[] =
     {"gensym1",                 Lgensym1, too_many_1, wrong_no_1},
     {"gensym2",                 Lgensym2, too_many_1, wrong_no_1},
     {"gensymp",                 Lgensymp, too_many_1, wrong_no_1},
+    {"reset-gensym",            Lreset_gensym, too_many_1, wrong_no_1},
     {"getenv",                  Lgetenv, too_many_1, wrong_no_1},
     {"orderp",                  too_few_2, Lorderp, wrong_no_2},
     {"rdf",                     Lrdf1, Lrdf2, Lrdfn},

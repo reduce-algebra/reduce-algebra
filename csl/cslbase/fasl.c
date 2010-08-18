@@ -35,14 +35,16 @@
 
 
 
-/* Signature: 39067c71 10-Jul-2010 */
+/* Signature: 745049cb 18-Aug-2010 */
 
 #include "headers.h"
 
 #ifdef WIN32
 #include <windows.h>
 #else
+#ifndef EMBEDDED
 #include <dlfcn.h>
+#endif
 #endif
 
 #ifdef SOCKETS

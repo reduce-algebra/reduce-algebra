@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 16dbe686 09-May-2010 */
+/* Signature: 0ebe04d3 18-Aug-2010 */
 
 #include "headers.h"
 
@@ -235,6 +235,7 @@ Lisp_Object *stacksegment;
 int32_t stack_segsize = 1;
 
 char *exit_charvec = NULL;
+intptr_t exit_reason;
 
 #ifdef NILSEG_EXTERNS
 
@@ -246,7 +247,6 @@ Lisp_Object volatile heaplimit;
 Lisp_Object volatile vheaplimit;
 Lisp_Object vfringe;
 intptr_t nwork;
-intptr_t exit_reason;
 intptr_t exit_count;
 intptr_t gensym_ser, print_precision, miscflags;
 intptr_t current_modulus, fastget_size, package_bits;
@@ -274,8 +274,9 @@ Lisp_Object format_symbol;
 #endif
 Lisp_Object progn_symbol;
 #ifdef COMMON
-Lisp_Object expand_def_symbol, allow_key_key, declare_symbol, special_symbol;
+Lisp_Object expand_def_symbol, allow_key_key;
 #endif
+Lisp_Object declare_symbol, special_symbol;
 Lisp_Object lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 Lisp_Object codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
 Lisp_Object compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
@@ -291,7 +292,7 @@ Lisp_Object standard_output, standard_input, debug_io;
 Lisp_Object error_output, query_io, terminal_io, trace_output, fasl_stream;
 Lisp_Object native_code, native_symbol, traceprint_symbol, loadsource_symbol;
 Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-Lisp_Object gchook, resources, callstack;
+Lisp_Object gchook, resources, callstack, procstack, procmem;
 Lisp_Object workbase[51];
 
 
@@ -367,6 +368,8 @@ int current_fp_rep;
 static int old_fp_rep;
 static CSLbool flip_needed;
 static int old_page_bits;
+
+int procstackp;
 
 /*
  * The next function is handed a page
@@ -2186,7 +2189,7 @@ void adjust_all(void)
     adjust_bpsheap();
 }
 
-static void *allocate_page(void)
+static void *allocate_page(char *why)
 {
     if (pages_count == 0) fatal_error(err_no_store);
     return pages[--pages_count];
@@ -2407,9 +2410,8 @@ void *my_malloc(size_t n)
     n = quadword_align_up(n);
     inject_randomness((int)(intptr_t)r);
     if (!SIXTY_FOUR_BIT) p[1] = 0;
-    ((void **)p)[0] = r;          /* base address for free() */
-    p[2] = n;                     /* only permit 32-bit size */
-    p[3] = 0x5555aaaa;
+    *(void **)(p) = r;                 /* base address for free() */
+    *(int64_t *)(&p[2]) = (int64_t)n;  /* allow for 64-bit size */
     p[4] = 0x12345678;            /* Marker words for security */
     p[5] = 0x3456789a;
     p[6] = 0x12345678;
@@ -2437,7 +2439,8 @@ static void my_free(void *r)
     int32_t *p, *q, n;
     *(free_hook)(r);
 #else /* NO_WORRY... */
-    int32_t *p, *q, n;
+    int32_t *p, *q;
+    size_t n;
     char *rr = (char *)r;
 /*
  * I will not free it if the pointer is strictly inside the single big
@@ -2445,7 +2448,7 @@ static void my_free(void *r)
  */
     if (rr > big_chunk_start && rr <= big_chunk_end) return;
     p = (int32_t *)r - 8;
-    n = p[2];
+    n = (size_t)*(int64_t *)(&p[2]);
     if (p[4] != 0x12345678 ||
         p[5] != 0x3456789a)
     {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
@@ -2555,7 +2558,6 @@ static void init_heap_segments(double store_size)
     new_bps_pages = (void **)my_malloc_2(MAX_BPS_PAGES*sizeof(void *));
     new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
     pair_c = (unsigned char *)my_malloc_2(CODESIZE);
-
 /*
  * Sets up codebuffer for jit functions
  */
@@ -2643,7 +2645,7 @@ static void init_heap_segments(double store_size)
  * (a) Building for an HP Ipaq 4700 PDA
  * (b) Building to run on a Linksys router (!)
  */
-#if defined UNDER_CE || PAGE_BITS == 18
+#if defined UNDER_CE || PAGE_BITS < 20
         free_space = 16000000;
 #endif
         request = (intptr_t)store_size;
@@ -2743,7 +2745,7 @@ static void init_heap_segments(double store_size)
             if (stacksegment == NULL)
                 fatal_error(err_no_store);
         }
-        stacksegment = (Lisp_Object *)pages[--pages_count];
+        else stacksegment = (Lisp_Object *)pages[--pages_count];
     }
     else
     {
@@ -2823,6 +2825,41 @@ static char *find_checksum(char *name, int32_t len, const setup_type *p)
     else return NULL;
 }
 
+setup_type const *setup_tables[] =
+{
+               u01_setup, u02_setup, u03_setup, u04_setup,
+    u05_setup, u06_setup, u07_setup, u08_setup, u09_setup,
+    u10_setup, u11_setup, u12_setup, u13_setup, u14_setup,
+    u15_setup, u16_setup, u17_setup, u18_setup, u19_setup,
+    u20_setup, u21_setup, u22_setup, u23_setup, u24_setup,
+    u25_setup, u26_setup, u27_setup, u28_setup, u29_setup,
+    u30_setup, u31_setup, u32_setup, u33_setup, u34_setup,
+    u35_setup, u36_setup, u37_setup, u38_setup, u39_setup,
+    u40_setup, u41_setup, u42_setup, u43_setup, u44_setup,
+    u45_setup, u46_setup, u47_setup, u48_setup, u49_setup,
+    u50_setup, u51_setup, u52_setup, u53_setup, u54_setup,
+    u55_setup, u56_setup, u57_setup, u58_setup, u59_setup,
+    u60_setup,
+/*
+ * I also include the kernel setup tables, but I put a NULL in this
+ * table so it is easy to see where they start.
+ */
+    NULL,
+    arith06_setup, arith08_setup, arith10_setup, arith12_setup,
+    char_setup, eval1_setup, eval2_setup, eval3_setup,
+    funcs1_setup, funcs2_setup, funcs3_setup, print_setup,
+    read_setup, mpi_setup,
+    NULL
+};
+
+/*
+ * If C code is to be instated (via c!:install calls in u01.lsp etc) there
+ * needs to be a verification that the file u01.c and the file u01.lsp (etc)
+ * are in step. So once for each such file this does the check. It should
+ * only happen when the system is being built and ought not to be a bit
+ * performance issue.
+ */
+
 static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
 {
     Lisp_Object name, lc1, lc2, lc3;
@@ -2832,6 +2869,7 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     va_list a;
     char *p;
     char *sname;
+    int i;
     argcheck(nargs, 4, "check-c-code");
     va_start(a, nargs);
     name = va_arg(a, Lisp_Object);
@@ -2849,23 +2887,13 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     c3 = int_of_fixnum(lc3);
     sname = &celt(name, 0);
     len = length_of_header(vechdr(name)) - CELL;
-/*
- *  trace_printf("+++ Checking %.*s  %d %d %d\n",
- *               (int)len, sname, c1, c2, c3); 
- */
-                   p = find_checksum(sname, len, u01_setup);
-    if (p == NULL) p = find_checksum(sname, len, u02_setup);
-    if (p == NULL) p = find_checksum(sname, len, u03_setup);
-    if (p == NULL) p = find_checksum(sname, len, u04_setup);
-    if (p == NULL) p = find_checksum(sname, len, u05_setup);
-    if (p == NULL) p = find_checksum(sname, len, u06_setup);
-    if (p == NULL) p = find_checksum(sname, len, u07_setup);
-    if (p == NULL) p = find_checksum(sname, len, u08_setup);
-    if (p == NULL) p = find_checksum(sname, len, u09_setup);
-    if (p == NULL) p = find_checksum(sname, len, u10_setup);
-    if (p == NULL) p = find_checksum(sname, len, u11_setup);
-    if (p == NULL) p = find_checksum(sname, len, u12_setup);
+  
+    p = NULL;
+    for (i=0; setup_tables[i]!=NULL; i++)
+    {   if ((p = find_checksum(sname, len, setup_tables[i])) != NULL) break;
+    }
     if (p == NULL) return aerror1("check-c-code", name);
+
     if (sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
         return aerror("check-c-code");
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
@@ -3116,14 +3144,14 @@ static void warm_setup()
  * Now I have at least just enough pages to load op the heap image. Well I
  * really hope I have a fair amount in hand or else garbage collection will
  * be a pain! But at least we can get started. Depending on how full memory
- * looks I will select the type for the first garbage collection. Hmmm there
- * is a potential issue about native_pages, but right now those are never
- * activated, so all I need to do is to remind myself that when and if they
- * are and especially if they become subject to garbage collection I need to
- * review some details around here.
+ * looks I will select the type for the first garbage collection. See
+ * comments in gc.c for further thoughts about this.
  */
     gc_method_is_copying = (pages_count >
-                 3*(heap_pages_count + vheap_pages_count + bps_pages_count));
+                 3*(heap_pages_count +
+                      (3*(vheap_pages_count +
+                          bps_pages_count +
+                          native_pages_count))/2));
 #endif
     {   char dummy[16];
         Cfread(dummy, 8);
@@ -3136,8 +3164,8 @@ static void warm_setup()
     for (i=0; i<vheap_pages_count; i++)
     {   intptr_t p;
 /* When I want to make the page double size I do TWO allocations here. */
-        if (converting_to_64) allocate_page();
-        vheap_pages[i] = allocate_page();
+        if (converting_to_64) allocate_page("vheap 64-bit padder");
+        vheap_pages[i] = allocate_page("vheap reload");
         p = doubleword_align_up((intptr_t)vheap_pages[i]);
 /*
  * Vheap pages that need expanding to 64-bits will most easily by copied
@@ -3163,8 +3191,8 @@ static void warm_setup()
     for (i=0; i<heap_pages_count; i++)
     {   intptr_t p;
 /* When I want to make the page double size I do TWO allocations here. */
-        if (converting_to_64) allocate_page();
-        heap_pages[i] = allocate_page();
+        if (converting_to_64) allocate_page("heap 64-bit padder");
+        heap_pages[i] = allocate_page("heap reload");
         p = quadword_align_up((intptr_t)heap_pages[i]);
         Cfread((char *)p, CSL_PAGE_SIZE);
     }
@@ -3180,8 +3208,8 @@ static void warm_setup()
     for (i=0; i<bps_pages_count; i++)
     {   intptr_t p;
 /* When I want to make the page double size I do TWO allocations here. */
-        if (converting_to_64) allocate_page();
-        bps_pages[i] = allocate_page();
+        if (converting_to_64) allocate_page("bps 64-bit padder");
+        bps_pages[i] = allocate_page("bps reload");
         p = doubleword_align_up((intptr_t)bps_pages[i]);
 /* Same issue as for Vheap pages */
         if (converting_to_64)
@@ -3376,7 +3404,7 @@ static void warm_setup()
                     }
                     else pages[pages_count++] = page;
                 }
-                native_pages[i] = allocate_page();
+                native_pages[i] = allocate_page("native code");
                 p = (intptr_t)native_pages[i];
                 p = doubleword_align_up(p);
                 fread_count = 0;
@@ -3935,17 +3963,30 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
 #endif
     a = LoadLibrary(objname);
     if (a == 0)
-    {   DWORD err = GetLastError();
-        char errbuf[80];
+    {   DWORD err = GetLastError(), err1;
+        LPTSTR errbuf = NULL;
 /*
  * If I let Windows pop up its message box I still seem to get more info
  * than FormatMessage presents me with... Specifically if the module I tried
  * to load refused to because of a symbol that it needed to load, the
  * pop up tells me the name of that symbol.
  */
-        err = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
-                            NULL, err, 0, errbuf, 80, NULL);
-        if (err != 0) trace_printf("%s", errbuf);
+        err1 = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                             FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                             FORMAT_MESSAGE_IGNORE_INSERTS,
+                             NULL,
+                             err,
+                             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                             (LPTSTR)&errbuf,
+                             0,
+                             NULL);
+        if (err1 == 0 || errbuf==NULL)
+            trace_printf("FormatMessage on code %d failed with %d\n",
+                         (int)err, (int)GetLastError());
+        else
+        {   trace_printf("%s", errbuf);
+            LocalFree(errbuf);
+        }
     }
     SetErrorMode(ww);
 #ifdef TRACE_NATIVE
@@ -4346,11 +4387,12 @@ static void cold_setup()
 {
     Lisp_Object nil = C_nil;
     void *p;
-    p = vheap_pages[vheap_pages_count++] = allocate_page();
+    int i;
+    p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
     vfringe = (Lisp_Object)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (Lisp_Object)((char *)vfringe + (CSL_PAGE_SIZE - 16));
 
-    p = heap_pages[heap_pages_count++] = allocate_page();
+    p = heap_pages[heap_pages_count++] = allocate_page("heap cold setup");
     heaplimit = quadword_align_up((intptr_t)p);
     fringe = (Lisp_Object)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (Lisp_Object)((char *)heaplimit + SPARE);
@@ -4366,7 +4408,17 @@ static void cold_setup()
     ifnn(nil) = (intptr_t)undefinedn;
     qheader(nil) = TAG_ODDS+TYPE_SYMBOL+SYM_SPECIAL_VAR;
     qvalue(nil) = nil;
+/*
+ * When I am debugging CSL I can validate the heap, for instance whenever
+ * I allocate vector. The call to make_string here does that, and so I MUST
+ * have a tidy world in place here.
+ */
+    qpname(nil) = nil;
+    for (i=first_nil_offset; i<last_nil_offset; i++)
+         BASE[i] = nil;
+    eq_hash_tables = equal_hash_tables = nil;
 #ifdef COMMON
+    qpackage(nil) = nil;
     qpname(nil) = make_string("NIL");
 #else
     qpname(nil) = make_string("nil");
@@ -4377,6 +4429,16 @@ static void cold_setup()
     eq_hash_tables = equal_hash_tables = nil;
 
     current_package = nil;
+/*
+ * The code here is generally coded on the supposition that there will NEVER
+ * be a garbage collection here, so all the "fun" about push/pop and errexit
+ * tests can be omitted. That makes this code much cleaner! It means that
+ * during a cold start that there is enough space (well for a COLD start that
+ * hardly likely to be an issue!) and in a warm start that none of the
+ * calls that make strings or symbols etc here trigger a genuine garbage
+ * collection - that can probably be assured by ensuring that on restart there
+ * is at least a little bit of space in hand.
+ */
     qvalue(nil) = getvector_init(sizeof(Package), nil);
 #ifdef COMMON
     qpackage(nil) = qvalue(nil);    /* For sake of restart code */
@@ -4514,7 +4576,6 @@ static void cold_setup()
 #endif
     gensym_base         = make_string("G");
 #ifdef COMMON
-    special_symbol      = make_undefined_symbol("special");
     expand_def_symbol   = make_undefined_symbol("expand-definer");
     format_symbol       = make_undefined_symbol("format");
     string_char_sym     = make_undefined_symbol("string-char");
@@ -4636,6 +4697,9 @@ static void cold_setup()
     inject_randomness((int)clock());
     set_up_functions(0);
     set_up_variables(0);
+    procstack = nil;
+    procmem = getvector_init(CELL*100, nil); /* 0 to 99 */
+    procstackp = 0;
 }
 
 void set_up_functions(CSLbool restartp)
@@ -4664,10 +4728,9 @@ void set_up_functions(CSLbool restartp)
     qheader(quote_symbol)   |= SYM_SPECIAL_FORM;
     progn_symbol             = make_symbol("progn", restartp, progn_fn, bad_special2, bad_specialn);
     qheader(progn_symbol)   |= SYM_SPECIAL_FORM;
-#ifdef COMMON
     declare_symbol           = make_symbol("declare", restartp, declare_fn, bad_special2, bad_specialn);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
-#endif
+    special_symbol           = make_undefined_symbol("special");
     cons_symbol              = make_symbol("cons", restartp, too_few_2, Lcons, wrong_no_2);
     eval_symbol              = make_symbol("eval", restartp, Leval, too_many_1, wrong_no_1);
     loadsource_symbol        = make_symbol("load-source", restartp, Lload_source, too_many_1, wrong_no_1);
@@ -4703,20 +4766,10 @@ void set_up_functions(CSLbool restartp)
     create_symbols(mpi_setup, restartp);
 /*
  * Although almost everything is mappeed into upper case in a Common Lisp
- * world I will preserve the case of symbols defined un u01 to u12.
+ * world I will preserve the case of symbols defined in u01 to u60.
  */
-    create_symbols(u01_setup, restartp | 2);
-    create_symbols(u02_setup, restartp | 2);
-    create_symbols(u03_setup, restartp | 2);
-    create_symbols(u04_setup, restartp | 2);
-    create_symbols(u05_setup, restartp | 2);
-    create_symbols(u06_setup, restartp | 2);
-    create_symbols(u07_setup, restartp | 2);
-    create_symbols(u08_setup, restartp | 2);
-    create_symbols(u09_setup, restartp | 2);
-    create_symbols(u10_setup, restartp | 2);
-    create_symbols(u11_setup, restartp | 2);
-    create_symbols(u12_setup, restartp | 2);
+    for (i=0; setup_tables[i]!=NULL; i++)
+        create_symbols(setup_tables[i], restartp | 2);
 
 #ifdef NAG
     create_symbols(asp_setup, restartp);
@@ -4795,7 +4848,7 @@ static void set_up_variables(CSLbool restartp)
  *       help                     help mechanism provided within Lisp
  *       debug                    Lisp built with debug options
  *       (native . number)        native code tag
- *       (c-code . number)        u01.c through u12.c define n functions
+ *       (c-code . number)        u01.c through u60.c define n functions
  *       sixty-four               64-bit address version
  *       texmacs                  "--texmacs" option on command line
  *
@@ -4854,12 +4907,7 @@ static void set_up_variables(CSLbool restartp)
         w = acons(make_keyword("compiler-command"), w1, w);
 #endif
         defined_symbols = 0;
-        count_symbols(u01_setup); count_symbols(u02_setup);
-        count_symbols(u03_setup); count_symbols(u04_setup);
-        count_symbols(u05_setup); count_symbols(u06_setup);
-        count_symbols(u07_setup); count_symbols(u08_setup);
-        count_symbols(u09_setup); count_symbols(u10_setup);
-        count_symbols(u11_setup); count_symbols(u12_setup);
+        for (i=0; setup_tables[i]!=NULL; i++) count_symbols(setup_tables[i]);
 #ifdef COMMON
 /*
  * A gratuitous misery here is the need to make COMMON words
@@ -5546,6 +5594,12 @@ void inject_randomness(int n)
     }
 }
 
+/*
+ * Used to ensure that an image file matches up with the C code compiled
+ * into the main executable. The linear search here for the place the
+ * checksum lives is a bit crummy. But the total cost is linear in the
+ * number of things that have been compiled into C.
+ */
 static void get_checksum(const setup_type *p)
 {
     while (p->name!=NULL) p++;
@@ -5557,28 +5611,19 @@ static void get_checksum(const setup_type *p)
 
 void get_user_files_checksum(unsigned char *b)
 {
+    int i;
     CSL_MD5_Init();
-    get_checksum(u01_setup);
-    get_checksum(u02_setup);
-    get_checksum(u03_setup);
-    get_checksum(u04_setup);
-    get_checksum(u05_setup);
-    get_checksum(u06_setup);
-    get_checksum(u07_setup);
-    get_checksum(u08_setup);
-    get_checksum(u09_setup);
-    get_checksum(u10_setup);
-    get_checksum(u11_setup);
-    get_checksum(u12_setup);
+    for (i=0; setup_tables[i]!=NULL; i++)
+        get_checksum(setup_tables[i]);
     CSL_MD5_Final(b);
 }
-
 
 void setup(int restartp, double store_size)
 {
     int i;
     Lisp_Object nil;
     if (restartp & 2) init_heap_segments(store_size);
+    garbage_collection_permitted = 0;
     nil = C_nil;
 #ifdef TIDY_UP_MEMORY_AT_START
 /*
@@ -5929,11 +5974,17 @@ void setup(int restartp, double store_size)
       int32_t w = 0;
 /*
  * The total store allocated is that used plus that free, including the
- * page set aside for the Lisp stack.
+ * page set aside for the Lisp stack. I had better report this in Kbytes
+ * which should then be sort of OK up to a total of 4000 Gbytes before the
+ * unsigned long overflows on me.
  */
         if (init_flags & INIT_VERBOSE)
-            term_printf("Memory allocation: %ld bytes\n",
-                                         (long)CSL_PAGE_SIZE*(pages_count+w+1));
+        {   unsigned long m =
+                ((unsigned long)(CSL_PAGE_SIZE/1000))*(pages_count+w+1);
+            if (m > 4000)
+                term_printf("Memory allocation: %lu Mbytes\n", m/1000);
+            else term_printf("Memory allocation: %lu Kbytes\n", m);
+        }
     }
 #ifdef MEMORY_TRACE
 #ifndef CHECK_ONLY
@@ -5945,6 +5996,11 @@ void setup(int restartp, double store_size)
         if (n > 1)
             term_printf("There are %d processors available\n", n);
     }
+#ifdef DEBUG
+    copy_into_nilseg(NO);
+    validate_all("restarting", __LINE__, __FILE__);
+#endif
+    garbage_collection_permitted = 1;
     return;
 }
 
@@ -5974,7 +6030,7 @@ void copy_into_nilseg(int fg)
         BASE[22]                             = miscflags;
 
         BASE[24]                             = nwork;
-        BASE[25]                             = exit_reason;
+/*      BASE[25]                             = exit_reason; */
         BASE[26]                             = exit_count;
         BASE[27]                             = gensym_ser;
         BASE[28]                             = print_precision;
@@ -6078,6 +6134,8 @@ void copy_into_nilseg(int fg)
     BASE[153]    = gchook;
     BASE[154]    = resources;
     BASE[155]    = callstack;
+    BASE[156]    = procstack;
+    BASE[157]    = procmem;
 
 #ifdef COMMON
     BASE[170]    = keyword_package;
@@ -6092,9 +6150,13 @@ void copy_into_nilseg(int fg)
     BASE[179]    = format_symbol;
     BASE[180]    = expand_def_symbol;
     BASE[181]    = allow_key_key;
+#endif
+/*
+ * I USED to support these only in Common Lisp mode but now I find I need
+ * them even in Standard Lisp mode...
+ */
     BASE[182]    = declare_symbol;
     BASE[183]    = special_symbol;
-#endif
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -6139,7 +6201,7 @@ void copy_out_of_nilseg(int fg)
         miscflags        = BASE[22];
 
         nwork            = BASE[24];
-        exit_reason      = BASE[25];
+/*      exit_reason      = BASE[25]; */
         exit_count       = BASE[26];
         gensym_ser       = BASE[27];
         print_precision  = BASE[28];
@@ -6240,6 +6302,8 @@ void copy_out_of_nilseg(int fg)
     gchook                = BASE[153];
     resources             = BASE[154];
     callstack             = BASE[155];
+    procstack             = BASE[156];
+    procmem               = BASE[157];
 
 #ifdef COMMON
 
@@ -6255,10 +6319,11 @@ void copy_out_of_nilseg(int fg)
     format_symbol         = BASE[179];
     expand_def_symbol     = BASE[180];
     allow_key_key         = BASE[181];
-    declare_symbol        = BASE[182];
-    special_symbol        = BASE[183];
 
 #endif
+
+    declare_symbol        = BASE[182];
+    special_symbol        = BASE[183];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

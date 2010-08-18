@@ -1,11 +1,11 @@
-/*  eval1.c                          Copyright (C) 1989-2008 Codemist Ltd */
+/*  eval1.c                          Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * Interpreter (part 1).
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1a755aeb 24-May-2008 */
+/* Signature: 63a6fea7 12-May-2010 */
 
 #include "headers.h"
 
@@ -1791,7 +1791,7 @@ Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
  *      Tasks run this way should probably avoid all input and output
  *      operations.
  *
- *      If the computer on which CSL has been built does not supprt "fork"
+ *      If the computer on which CSL has been built does not support "fork"
  *      and the shared memory operations required here the parallel function
  *      will just always report an error.
  *
@@ -1812,8 +1812,7 @@ Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
     defined HAVE_SHMGET && \
     defined HAVE_SHMAT && \
     defined HAVE_SHMDT && \
-    defined HAVE_SHMCTL && \
-    !defined EMBEDDED
+    defined HAVE_SHMCTL
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1821,7 +1820,6 @@ Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...)
 #include <sys/wait.h>
 #include <sys/shm.h>
 #include <sys/ipc.h>
-#include <signal.h>
 #include <errno.h>
 
 #define PARSIZE 2048

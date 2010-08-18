@@ -1,11 +1,11 @@
-/*  fns2.c                          Copyright (C) 1989-2008 Codemist Ltd */
+/*  fns2.c                          Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * Basic functions part 2.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4fd19903 22-Apr-2010 */
+/* Signature: 00fd2196 11-Jul-2010 */
 
 #include "headers.h"
 
@@ -48,6 +48,10 @@
 #include "sockhdr.h"
 #endif
 
+#ifdef DEBUG
+static int validate_count = 0;
+#endif
+
 Lisp_Object getcodevector(int type, int32_t size)
 {
 /*
@@ -57,8 +61,15 @@ Lisp_Object getcodevector(int type, int32_t size)
  * This obtains space in the BPS area
  */
     Lisp_Object nil = C_nil;
-#ifdef CHECK_FOR_CORRUPT_HEAP
-    validate_all();
+#ifdef DEBUG
+/*
+ * See comment in fns1 to the effect that doing a full validation every
+ * time leads to a VERY BAD performance hit.
+ */
+    if ((++validate_count) % 100 == 0)
+    {   copy_into_nilseg(NO);
+        validate_all("getcodevector", __LINE__, __FILE__);
+    }
 #endif
     for (;;)
     {   int32_t alloc_size = (int32_t)doubleword_align_up(size);
@@ -238,11 +249,41 @@ static CSLbool interpreter_entry(Lisp_Object a)
 
 #endif
 
+static char *c_fn1(one_args *p, setup_type const s[])
+{
+    int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].one == p) return s[i].name;
+    return NULL;
+}
+
+static char *c_fn2(two_args *p, setup_type const s[])
+{
+    int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].two == p) return s[i].name;
+    return NULL;
+}
+
+static char *c_fnn(n_args *p, setup_type const s[])
+{
+    int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].n == p) return s[i].name;
+    return NULL;
+}
+
 static char *show_fn1(one_args *p)
 {
     int i;
+    char *r;
     for (i=0; entries_table1[i].s!=NULL; i++)
         if (entries_table1[i].p == p) return entries_table1[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn1(p, setup_tables[i])) != NULL) return r;
+/* There are more entries in setup_tables after the first NULL! */
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn1(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -250,8 +291,13 @@ static char *show_fn1(one_args *p)
 static char *show_fn2(two_args *p)
 {
     int i;
+    char *r;
     for (i=0; entries_table2[i].s!=NULL; i++)
         if (entries_table2[i].p == p) return entries_table2[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn2(p, setup_tables[i])) != NULL) return r;
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn2(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
@@ -259,15 +305,23 @@ static char *show_fn2(two_args *p)
 static char *show_fnn(n_args *p)
 {
     int i;
+    char *r;
     for (i=0; entries_tablen[i].s!=NULL; i++)
         if (entries_tablen[i].p == p) return entries_tablen[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fnn(p, setup_tables[i])) != NULL) return r;
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fnn(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
 Lisp_Object Lsymbol_fn_cell(Lisp_Object nil, Lisp_Object a)
 /*
- * For debugging...
+ * For debugging... This looks in the 3 function cells that any symbol
+ * has and attempts to display the name of the function there. There are
+ * enough tables for me to find the names of MANY things, but I do not
+ * guarantee everything.
  */
 {
     char *s1, *s2, *sn;
@@ -467,7 +521,7 @@ Lisp_Object Lsymbol_argcode(Lisp_Object nil, Lisp_Object a)
 /*
  * The job of this function is to put back information as retrieved by
  * symbol-argcode. It is used in part of the support for native compilation
- * via C code... Note that it doe snot interact with any JIT stuff since the
+ * via C code... Note that it does not interact with any JIT stuff since the
  * two compilation strategies are complementary and I do not expect that I
  * will every use both at once.
  */
@@ -670,7 +724,11 @@ Lisp_Object Lsymbol_make_fastget1(Lisp_Object nil, Lisp_Object a)
     if (!is_fixnum(a) ||
         (n = int_of_fixnum(a)) < 0 ||
         (n > MAX_FASTGET_SIZE)) return aerror1("symbol-make-fastget", a);
-    term_printf("+++ Fastget size was %d, now %d\n", n1, n);
+/*
+ * At one time I felt that a message here was helpful. Now I view it
+ * as unnecessary, so I am commenting it out.
+ */
+/*  term_printf("+++ Fastget size was %d, now %d\n", n1, n); */
     fastget_size = n;
     return onevalue(fixnum_of_int(n1));
 }
@@ -686,10 +744,12 @@ Lisp_Object Lsymbol_make_fastget(Lisp_Object nil, Lisp_Object a, Lisp_Object n)
     {   n1 = int_of_fixnum(n);
         if (n1 < -1 || n1 >= fastget_size)
             return aerror1("symbol-make-fastget", n);
-        trace_printf("+++ Use fastget slot %d for ", n1);
-        loop_print_trace(a);
-        errexit();
-        trace_printf("\n");
+/*
+ *      trace_printf("+++ Use fastget slot %d for ", n1);
+ *      loop_print_trace(a);
+ *      errexit();
+ *      trace_printf("\n");
+ */
         if (p != 0) elt(fastget_names, p-1) = SPID_NOPROP;
         q = (n1 + 1) & 0x3f;
         h = (h & ~SYM_FASTGET_MASK) | (q << SYM_FASTGET_SHIFT);
@@ -981,10 +1041,21 @@ static CSLbool restore_fn_cell(Lisp_Object a, char *name,
     return YES;
 }
 
+/*
+ * This gets called by the compiler if it is asked to compile something
+ * into a fasl file where that thing has a definition as C code. In such a
+ * case what it puts into the fasl file is a call to this to instate the
+ * version coded in C. If a LOT of stuff has been turning into C this could
+ * become a bottleneck - and in such a case I should make a table of C
+ * entrypoints as a hash table or something sorted for use with binary
+ * search!
+ */
+
 static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
 {
     char *name;
     int32_t len;
+    int i;
     Lisp_Object pn;
     if (!symbolp(a)) return aerror1("restore-c-code", a);
     push(a);
@@ -992,32 +1063,27 @@ static Lisp_Object Lrestore_c_code(Lisp_Object nil, Lisp_Object a)
     pop(a);
     errexit();
     name = (char *)&celt(pn, 0);
-    len = length_of_header(vechdr(pn)) - 4;
-    if (restore_fn_cell(a, name, len, u01_setup) ||
-        restore_fn_cell(a, name, len, u02_setup) ||
-        restore_fn_cell(a, name, len, u03_setup) ||
-        restore_fn_cell(a, name, len, u04_setup) ||
-        restore_fn_cell(a, name, len, u05_setup) ||
-        restore_fn_cell(a, name, len, u06_setup) ||
-        restore_fn_cell(a, name, len, u07_setup) ||
-        restore_fn_cell(a, name, len, u08_setup) ||
-        restore_fn_cell(a, name, len, u09_setup) ||
-        restore_fn_cell(a, name, len, u10_setup) ||
-        restore_fn_cell(a, name, len, u11_setup) ||
-        restore_fn_cell(a, name, len, u12_setup))
-    {   Lisp_Object env;
-        push(a);
+    len = length_of_header(vechdr(pn)) - CELL;
+/*
+ * This is a potential time-sink in that it does a linear scan of all the
+ * definitions in the tables that are in u01.c to u60.c.
+ */
+    for (i=0; setup_tables[i]!=NULL; i++)
+    {   if (restore_fn_cell(a, name, len, setup_tables[i]))
+        {   Lisp_Object env;
+            push(a);
 #ifdef COMMON
-        env = get(a, funarg, nil);
+            env = get(a, funarg, nil);
 #else
-        env = get(a, funarg);
+            env = get(a, funarg);
 #endif
-        pop(a);
-        errexit();
-        qenv(a) = env;
-        return onevalue(a);
+            pop(a);
+            errexit();
+            qenv(a) = env;
+            return onevalue(a);
+        }
     }
-    else return onevalue(nil);
+    return onevalue(nil);
 }
 
 Lisp_Object Lsymbol_set_definition(Lisp_Object nil,
@@ -2714,7 +2780,14 @@ static CSLbool vec_equal(Lisp_Object a, Lisp_Object b)
     Header ha = vechdr(a), hb = vechdr(b);
     int32_t l;
     if (ha != hb) return NO;
-    l = (int32_t)doubleword_align_up(length_of_header(ha));
+/*
+ * This used to check all the way up to the end of the final doubleword
+ * that the vector was padded to. This means that it was VITAL that any
+ * vector needed any final padding word put in a definite and good state.
+ * Checking only the words that matter is just marginally quicker and
+ * will fail less often if I do not pad properly!
+ */
+    l = (int32_t)word_align_up(length_of_header(ha));
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
             if (*((uint32_t *)((char *)a + l - TAG_VECTOR)) !=
@@ -2725,7 +2798,7 @@ static CSLbool vec_equal(Lisp_Object a, Lisp_Object b)
     {   if (is_mixed_header(ha))
         {   while (l > 16)
             {   uint32_t ea = *((uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
-                           eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
+                         eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
                 if (ea != eb) return NO;
                 l -= 4;
             }
@@ -2985,6 +3058,12 @@ Lisp_Object Lneq(Lisp_Object nil,
 #ifdef COMMON
     r = cl_equal(a, b);
 #else
+/*
+ * Note that "equal" here is a macro that expands to something that
+ * checks the EQ case in-line, so there is no merit in putting
+ *   if (a == b) return onevalue(nil);
+ * first.
+ */
     r = equal(a, b);
 #endif
     return onevalue(Lispify_predicate(!r));

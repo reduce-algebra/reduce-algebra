@@ -9,6 +9,9 @@
 /* True to tell sources that this build is part of CSL */
 #undef CSL
 
+/* True if this is with no GUI and aimed at embedded use */
+#undef EMBEDDED
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 

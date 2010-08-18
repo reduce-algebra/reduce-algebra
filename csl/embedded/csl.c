@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 626ff121 09-May-2010 */
+/* Signature: 51680069 18-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -685,7 +685,11 @@ static void report_dependencies()
 }
 
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+static sigjmp_buf my_exit_buffer;
+#else
 static jmp_buf my_exit_buffer;
+#endif
 static volatile int my_return_code = 0;
 #endif
 
@@ -723,7 +727,11 @@ void my_exit(int n)
  * is not fully settled!
  */
     my_return_code = n;
+#ifdef USE_SIGALTSTACK
+    siglongjmp(my_exit_buffer, 1);
+#else
     longjmp(my_exit_buffer, 1);
+#endif
 #endif
 #else
 #if defined(WIN32) && defined(NAG)
@@ -741,16 +749,41 @@ CSLbool segvtrap = YES;
 CSLbool batch_flag = NO;
 CSLbool ignore_restart_fn = NO;
 
+#ifdef USE_SIGALTSTACK
+
+static unsigned char signal_stack_block[SIGSTKSZ];
+
+stack_t signal_stack;
+
+#endif
+
 static void lisp_main(void)
 {
     Lisp_Object nil;
-    int i;    
+    int i;
+#ifdef USE_SIGALTSTACK
+/*
+ * If I get a SIGSEGV that is caused by a stack overflow then I am in
+ * a world of pain because the regular stack does not have space to run my
+ * exception handler. So where I can I will arrange that the exception
+ * handler runs in its own small stack. This may itself lead to pain,
+ * but perhaps less?
+ */
+    signal_stack.ss_sp = (void *)signal_stack_block;
+    signal_stack.ss_size = SIGSTKSZ;
+    signal_stack.ss_flags = 0;
+    sigaltstack(&signal_stack, (stack_t *)0);
+#endif
 #ifndef __cplusplus
 /*
  * The setjmp here is to provide a long-stop for untrapped
  * floating point exceptions.
  */
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level, *save_level = errorset_buffer;
+#else
     jmp_buf this_level, *save_level = errorset_buffer;
+#endif
 #endif
     tty_count = 0;
     while (YES)
@@ -767,7 +800,11 @@ static void lisp_main(void)
 #ifdef __cplusplus
         try
 #else
+#ifdef USE_SIGALTSTACK
+        if (!sigsetjmp(this_level, -1))
+#else
         if (!setjmp(this_level))
+#endif
 #endif
         {   nil = C_nil;
             terminal_pushed = NOT_CHAR;
@@ -811,7 +848,17 @@ static void lisp_main(void)
             flip_exception();
 #ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
             if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
             if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -952,7 +999,8 @@ static void lisp_main(void)
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE + 16;
                         while (w1 <= big_chunk_end)
-                        {   pages[pages_count++] = w;
+                        {   if (w != (char *)stacksegment)
+                                pages[pages_count++] = w;
                             w = w1;
                             w1 = w + CSL_PAGE_SIZE + 16;
                         }
@@ -1004,7 +1052,11 @@ static void lisp_main(void)
 
 CSLbool sigint_must_longjmp = NO;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+sigjmp_buf sigint_buf;
+#else
 jmp_buf sigint_buf;
+#endif
 #endif
 
 void sigint_handler(int code)
@@ -1030,7 +1082,11 @@ void sigint_handler(int code)
 #ifdef __cplusplus
         throw((int *)0);
 #else
+#ifdef USE_SIGALTSTACK
+        siglongjmp(sigint_buf, 1);
+#else
         longjmp(sigint_buf, 1);
+#endif
 #endif
     }
 /*
@@ -1500,7 +1556,11 @@ term_printf(
                         throw EXIT_FAILURE;
 #else
                         my_return_code = EXIT_FAILURE;
+#ifdef USE_SIGALTSTACK
+                        siglongjmp(my_exit_buffer, 1);
+#else
                         longjmp(my_exit_buffer, 1);
+#endif
 #endif
 #else
                         exit(EXIT_FAILURE);
@@ -2620,10 +2680,18 @@ static void cslaction(void)
     errorset_msg = NULL;
     try
 #else
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level;
+#else
     jmp_buf this_level;
+#endif
     errorset_buffer = &this_level;
     errorset_msg = NULL;
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(this_level, -1))
+#else
     if (!setjmp(this_level))
+#endif
 #endif
     {
 #ifndef UNDER_CE
@@ -2884,7 +2952,11 @@ int ENTRYPOINT(int argc, char *argv[])
     try { res = submain(argc, argv); }
     catch(int r) { res = r; }
 #else
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(my_exit_buffer, -1)) res = submain(argc, argv);
+#else
     if (!setjmp(my_exit_buffer)) res = submain(argc, argv);
+#endif
     else res = my_return_code;
 #endif
 #ifdef USE_MPI
@@ -2894,6 +2966,432 @@ int ENTRYPOINT(int argc, char *argv[])
 }
 
 #endif /* NO_STARTUP_CODE */
+
+/*
+ * And here are some functions that may help use Reduce, as an alternative
+ * to the very general escape that execute_lisp_function provides... If
+ * these return an integer it will genarlly be zero for success and non-
+ * zero for failure.
+ */
+
+/*
+ * Expressions are entered in Reverse Polish Notation, This call clears
+ * the stack. It is probably only wanted if there has been an error
+ * of some sort.
+ */
+
+int PROC_clear_stack()
+{
+    Lisp_Object nil = C_nil;
+    procstack = nil;
+    return 0;       /* can never fail! */
+}
+
+/*
+ * The RPN stack is used to build a prefix-form expression for
+ * evaluation. This code creates a Lisp symbol and pushes it.
+ */
+
+int PROC_push_symbol(const char *name)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    w = make_undefined_symbol(name);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to make the symbol */
+    }
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * Push an integer, whihc should fit within the constraints of a
+ * 28-bit fixnum.
+ */
+
+int PROC_push_small_integer(int32_t n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+/*
+ * The code here does not check if the number is in range... Tough! Add
+ * that check yourself if you are feeling cautious!
+ */
+    w = fixnum_of_int((Lisp_Object)n);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * To make an expression
+ *    (f a1 a2 a3)
+ * you go
+ *       push(a1)
+ *       push(a2)
+ *       push(a3)
+ *       make_function_call(3, "f")
+ */
+
+int PROC_make_function_call(const char *name, int n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    while (n > 0)
+    {   if (procstack == nil) return 1; /* Not enough args available */
+        w = cons(qcar(procstack), w);
+        nil = C_nil;
+        if (exception_pending())
+        {   flip_exception();
+            return 2;  /* Failed to push onto stack */
+        }
+        n--;
+    }
+    push(w);
+    w1 = make_undefined_symbol(name);
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Failed to create function name */
+    }
+    w = cons(w1, w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 4;  /* Failed to cons on function name */
+    }
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 5;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * Take the top item on the stack and save it in location n (0 <= n <= 99).
+ */
+
+int PROC_save(int n)
+{
+    Lisp_Object nil = C_nil;
+    if (n < 0 || n > 99) return 1; /* index out of range */
+    if (procstack == nil) return 2; /* Nothing available to save */
+    elt(procmem, n) = qcar(procstack);
+    procstack = qcdr(procstack);
+    return 0;
+}
+
+/*
+ * Push onto the stack the value saved at location n. See PROC_save.
+ */
+
+int PROC_load(int n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (n < 0 || n > 99) return 1; /* index out of range */
+    w = elt(procmem, n);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+/*
+ * Duplicate the top item on the stack.
+ */
+
+int PROC_dup()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* no item to duplicate */
+    w = qcar(procstack);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+int PROC_pop()
+{
+    Lisp_Object nil = C_nil;
+    if (procstack == nil) return 1; /* stack is empty */
+    procstack = qcdr(procstack);
+    return 0;
+}
+
+/*
+ * Replaces the top item on the stack with a simplified version of
+ * itself. For experts on Reduce internals I note that this wraps
+ * the simplified form up in a prefix-like "!*sq" wrapper so it can
+ * still be used in a prefix context.
+ */
+
+int PROC_simplify()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* stack is empty */
+    w = make_undefined_symbol("simp");
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed find "simp" */
+    }
+    w = Lapply1(nil, w, qcar(procstack));
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Call to simp failed */
+    }
+    push(w);
+    w1 = make_undefined_symbol("mk!*sq");
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 4;  /* Failed to find "mk!*sq" */
+    }
+    w = Lapply1(nil, w1, w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 5;  /* Call to mk!*sq failed */
+    }
+    qcar(procstack) = w;
+    return 0;
+}
+
+static Lisp_Object PROC_standardise_printed_form(Lisp_Object w)
+{
+    Lisp_Object nil = C_nil, w1;
+    if (consp(w))
+    {   push(qcdr(w));
+        w1 = PROC_standardise_printed_form(qcar(w));
+        pop(w);
+        errexit();
+        push(w1);
+        w =  PROC_standardise_printed_form(w);
+        pop(w1);
+        errexit();
+        return cons(w1, w);
+    }
+/*
+ * Now w is atomic. There are two interesting cases - an unprinted gensym
+ * and a bignum.
+ */
+    if (symbolp(w))
+    {   push(w);
+        get_pname(w); /* allocates gensym name if needed. Otherwise cheap! */
+        pop(w);
+        errexit();
+        return w;
+    }
+    else if (is_numbers(w) && is_bignum(w))
+    {   w = Lexplode(nil, w);        /* Bignum to list of digits */
+        errexit();
+        w = Llist_to_string(nil, w); /* list to string */
+        errexit();
+        return w;
+    }
+    else return w;
+}
+
+/*
+ * Replaces the top item on the stack with version that is in
+ * a simple prefix form. This prefix form should be viewed as
+ * unsuitable for inclusion in any further expression.
+ */
+
+int PROC_make_printable()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* stack is empty */
+/*
+ * I want to use "simp" again so that I can then use prepsq!
+ */
+    w = make_undefined_symbol("simp");
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed find "simp" */
+    }
+    w = Lapply1(nil, w, qcar(procstack));
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Call to simp failed */
+    }
+    push(w);
+    w1 = make_undefined_symbol("prepsq");
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 4;  /* Failed to find "prepsq" */
+    }
+    w = Lapply1(nil, w1, w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 5;  /* Call to prepsq failed */
+    }
+/*
+ * There are going to be two things I do next. One is to ensure that
+ * all gensyms have print-names, the other is to convert bignums into
+ * strings. Both of these could be viewed as mildly obscure!
+ */
+    w = PROC_standardise_printed_form(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 6;  /* standardise_printed_form failed */
+    }
+    qcar(procstack) = w;
+    return 0;
+}
+
+PROC_handle PROC_get_value()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w;
+    if (procstack == C_nil) w = fixnum_of_int(0);
+    else
+    {   w = qcar(procstack);
+        procstack = qcdr(procstack);
+    }
+    return (PROC_handle)w;
+}
+
+/*
+ * return true if the expression is atomic.
+ */
+
+int PROC_atom(PROC_handle p)
+{
+    return !consp((Lisp_Object)p);
+}
+
+/*
+ * Return true if it is a small integer.
+ */
+
+int PROC_fixnum(PROC_handle p)
+{
+    return is_fixnum((Lisp_Object)p);
+}
+
+/*
+ * Return true if it is a symbol.
+ */
+
+int PROC_symbol(PROC_handle p)
+{
+    return symbolp((Lisp_Object)p);
+}
+
+/*
+ * Given that it is a small integer return the integer value
+ */
+
+int32_t PROC_intval(PROC_handle p)
+{
+    return (int32_t)int_of_fixnum((Lisp_Object)p);
+}
+
+/*
+ * Given that it is a symbol, return a string that is its name. Note
+ * that this must not be too long, and that the value returned is in
+ * a static buffer. Note that this would crash if the item was a
+ * "gensym" that had not been printed before, and so I take care to
+ * sort that out in PROC_make_printable.
+ * Hmmm the name-length restriction here is ugly _ will wait and see how
+ * long it is before somebody falls foul of it!
+ */
+
+static char PROC_name[64];
+
+char *PROC_symname(PROC_handle p)
+{
+    Lisp_Object w = (Lisp_Object)p;
+    int n;
+    w = qpname(w);
+    n = length_of_header(vechdr(w)) - CELL;
+    if (n > sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    strncpy(PROC_name, &celt(w, 0), n);
+    PROC_name[n] = 0;
+    return &PROC_name[0];
+}
+
+/*
+ * First and rest allow list traversal.
+ */
+
+PROC_handle PROC_first(PROC_handle p)
+{
+    return (PROC_handle)qcar((Lisp_Object)p);
+}
+
+PROC_handle PROC_rest(PROC_handle p)
+{
+    return (PROC_handle)qcdr((Lisp_Object)p);
+}
+
 
 /* End of csl.c */
 

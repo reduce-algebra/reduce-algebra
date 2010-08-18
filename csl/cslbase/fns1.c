@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 730f50c0 10-Jul-2010 */
+/* Signature: 3c078181 18-Aug-2010 */
 
 #include "headers.h"
 
@@ -1697,7 +1697,7 @@ Lisp_Object getvector(int tag, int type, int32_t size)
  * size of I am later on going to reload on a 64-bit machine, so here I
  * have a rather odd test that tries to enforce this on "standard" machines
  * but not on truly tiny ones. The specific judgement applied here is
- * that if the page size is at least 2M and I am on a 32--bit machine I will
+ * that if the page size is at least 2M and I am on a 32-bit machine I will
  * use at most half the page. To be specific about the consequences, it means
  * that I can have an array of length up to about 512K cells not 1M in
  * that case. If I ask for someting too bif I will report the request size

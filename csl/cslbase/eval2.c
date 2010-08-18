@@ -1,11 +1,11 @@
-/*  eval2.c                          Copyright (C) 1989-2008 Codemist Ltd */
+/*  eval2.c                          Copyright (C) 1989-2010 Codemist Ltd */
 
 /*
  * Interpreter (part 2).  apply & some special forms
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 47c51eaa 21-Jun-2010 */
+/* Signature: 41465c90 18-Aug-2010 */
 
 #include "headers.h"
 
@@ -603,7 +603,7 @@ Lisp_Object let_fn_1(Lisp_Object bvl, Lisp_Object body,
  * compiler-let forces all of its bindings to be locally special. In
  * CSL mode I do not support local declarations, which simplifies and
  * speeds things up here. Well to be more precise, I support DECLARE in
- * the COmpiler, but in the interpreter in non-Common mode every variable
+ * the Compiler, but in the interpreter in non-Common mode every variable
  * is SPECIAL.
  */
 {

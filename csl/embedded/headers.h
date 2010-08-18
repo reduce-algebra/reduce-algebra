@@ -1,4 +1,4 @@
-/* headers.h                       Copyright (C) 2005-2008 Codemist Ltd */
+/* headers.h                       Copyright (C) 2005-2010 Codemist Ltd */
 
 #ifndef header_headers_h
 #define header_headers_h 1
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 19ae4f8f 24-May-2008 */
+/* Signature: 2903263c 16-Aug-2010 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -42,6 +42,17 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+/*
+ * I will check a number of things before I try to use sigaltstack()
+ */
+#if defined HAVE_SIGNAL_H && defined HAVE_SETJMP_H
+#if defined HAVE_SIGSETJMP && defined HAVE_SIGLONGJMP
+#if defined HAVE_SIGACTION && defined HAVE_SIGALTSTACK
+#define USE_SIGALTSTACK 1
+#endif
+#endif
 #endif
 
 #include <stdio.h>
@@ -53,7 +64,18 @@
 #include <time.h>
 #include <stdarg.h>
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 #ifndef UNDER_CE
+/*
+ * The test for UNDER_CE is a little odd here, but when I once compiled a
+ * version of this to run under Windows CE on an Ipaq I could not have
+ * signal handling there hence this. One mighht have expected me to say
+ * #ifdef HAVE_SIGNAL_H but maybe the file existed in the world where I
+ * cross-built for CE and that led to pain? I now forget.
+ */
 #include <signal.h>
 #endif
 
@@ -68,32 +90,13 @@
 #include "syscsl.h"
 #include "arith.h"
 #include "entries.h"
+#include "proc.h"
 #include "stream.h"
 #include "cslread.h"
 
 #ifdef HAVE_FWIN
 #include "fwin.h"
 #endif
-
-#if 0
-
-/*
- * This hack relates to the mingw-w64 compiler. Up to around cvs revision
- * 352, dated around 17 April 2008, the C runtime had trouble calling the
- * Microsoft implementatons of setjmp and longjmp. The gcc intrinsics
- * mapped onto here have their own problems, but could hold the fort
- * for a while. I intend to remove this trace of history once the 64-bit
- * mingw has stabilised just a bit more.
- */
-
-#if !defined MICROSOFT_C && defined WIN64
-#undef setjmp
-#undef longjmp
-#define setjmp  __builtin_setjmp
-#define longjmp __builtin_longjmp
-#endif
-
-#endif /* 0 */
 
 #endif /* this header included already */
 

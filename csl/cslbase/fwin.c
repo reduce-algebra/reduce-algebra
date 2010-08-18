@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 375fd5d3 09-May-2010 */
+/* Signature: 3b3c4a5f 18-Aug-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1481,6 +1481,14 @@ int Cmkdir(char *s)
 
 #include <utime.h>
 
+#ifdef EMBEDDED
+#ifdef __ARM_EABI__
+
+void utime(const char *s, struct utimbuf *t);
+
+#endif
+#endif
+
 void set_filedate(char *name, unsigned long int datestamp,
                               unsigned long int filetype)
 {
@@ -2322,5 +2330,80 @@ int get_users_home_directory(char *b, int len)
 #endif /* USE_GETUID */
 
 #endif /* HAVE_LIBFOX */
+
+#ifdef EMBEDDED
+#ifdef __ARM_EABI__
+
+int rmdir(const char *s)
+{
+    return 0;
+}
+
+char *getcwd(char *s, size_t n)
+{
+    return ".";
+}
+
+int chdir(const char *s)
+{
+    return 0;
+}
+
+uid_t getuid()
+{
+    return 100;
+}
+
+struct passwd *getpwuid(int x)
+{
+    return NULL;
+}
+
+void utime(const char *s, struct utimbuf *t)
+{
+}
+
+int ftruncate(int a, long b)
+{
+    return 0;
+}
+
+int lstat(char *n, struct stat b)
+{
+    return 0;
+}
+
+uid_t geteuid()
+{
+    return 0;
+}
+
+gid_t getegid()
+{
+    return 0;
+}
+
+int mkdir(const char *d, mode_t m)
+{
+}
+
+FILE *popen(const char *s, const char *d)
+{
+    return NULL;
+}
+
+int pclose(FILE *f)
+{
+    return 0;
+}
+
+int readlink(const char *name, char *b, size_t n)
+{
+    return 0;
+}
+
+
+#endif
+#endif
 
 /* end of fwin.c */

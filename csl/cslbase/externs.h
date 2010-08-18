@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 449c2ba7 16-Aug-2010 */
+/* Signature: 15993f50 18-Aug-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -681,10 +681,10 @@ extern Lisp_Object * volatile stacklimit;
 #define format_symbol         BASE[179]
 #define expand_def_symbol     BASE[180]
 #define allow_key_key         BASE[181]
-#define declare_symbol        BASE[182]
-#define special_symbol        BASE[183]
 #endif
 
+#define declare_symbol        BASE[182]
+#define special_symbol        BASE[183]
 
 /*
  * The next are intended for use by people building custom versions

@@ -38,14 +38,16 @@
 
 
 
-/* Signature: 5a46e9ce 16-Aug-2010 */
+/* Signature: 0ebe04d3 18-Aug-2010 */
 
 #include "headers.h"
 
 #ifdef WIN32
 #include <windows.h>
 #else
+#ifndef EMBEDDED
 #include <dlfcn.h>
+#endif
 #endif
 
 #ifdef HAVE_UNISTD_H
@@ -233,6 +235,7 @@ Lisp_Object *stacksegment;
 int32_t stack_segsize = 1;
 
 char *exit_charvec = NULL;
+intptr_t exit_reason;
 
 #ifdef NILSEG_EXTERNS
 
@@ -244,7 +247,6 @@ Lisp_Object volatile heaplimit;
 Lisp_Object volatile vheaplimit;
 Lisp_Object vfringe;
 intptr_t nwork;
-intptr_t exit_reason;
 intptr_t exit_count;
 intptr_t gensym_ser, print_precision, miscflags;
 intptr_t current_modulus, fastget_size, package_bits;
@@ -2410,7 +2412,7 @@ void *my_malloc(size_t n)
     if (!SIXTY_FOUR_BIT) p[1] = 0;
     *(void **)(p) = r;                 /* base address for free() */
     *(int64_t *)(&p[2]) = (int64_t)n;  /* allow for 64-bit size */
-    p[4] = 0x12345678;                 /* Marker words for security */
+    p[4] = 0x12345678;            /* Marker words for security */
     p[5] = 0x3456789a;
     p[6] = 0x12345678;
     p[7] = 0x3456789a;
@@ -3998,6 +4000,9 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
  */
     init = (initfn *)GetProcAddress(a, "init");
 #else
+#ifdef EMBEDDED
+    return 0;
+#else
     a = dlopen(objname, RTLD_NOW | RTLD_GLOBAL);
 #ifdef TRACE_NATIVE
     trace_printf("a = %p\n", a);
@@ -4049,6 +4054,7 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
     p[len] = 0;
     record_dynamic_module(p, dll);
     return dll;
+#endif /* EMBEDDED */
 }
 
 int setup_dynamic(setup_type_1 *dll, char *modname,
@@ -4527,7 +4533,7 @@ static void cold_setup()
     opt_key             = make_undefined_symbol("&optional");
     rest_key            = make_undefined_symbol("&rest");
 #ifdef COMMON
-    key_key      fined_symbol("&key");
+    key_key             = make_undefined_symbol("&key");
     allow_other_keys    = make_undefined_symbol("&allow-other-keys");
     aux_key             = make_undefined_symbol("&aux");
 #endif
@@ -4760,7 +4766,7 @@ void set_up_functions(CSLbool restartp)
     create_symbols(mpi_setup, restartp);
 /*
  * Although almost everything is mappeed into upper case in a Common Lisp
- * world I will preserve the case of symbols defined un u01 to u60.
+ * world I will preserve the case of symbols defined in u01 to u60.
  */
     for (i=0; setup_tables[i]!=NULL; i++)
         create_symbols(setup_tables[i], restartp | 2);
@@ -5965,7 +5971,7 @@ void setup(int restartp, double store_size)
         }
     }
     {
-        int32_t w = 0;
+      int32_t w = 0;
 /*
  * The total store allocated is that used plus that free, including the
  * page set aside for the Lisp stack. I had better report this in Kbytes

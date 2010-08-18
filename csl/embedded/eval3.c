@@ -1,4 +1,4 @@
-/*  eval3.c                          Copyright (C) 1991-2008 Codemist Ltd */
+/*  eval3.c                          Copyright (C) 1991-2010 Codemist Ltd */
 
 /*
  * Interpreter (part 3).
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 3c2f83af 08-Mar-2010 */
+/* Signature: 0ad36a52 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -371,66 +371,6 @@ static Lisp_Object prog_fn(Lisp_Object args, Lisp_Object env)
 #undef my_tag
 }
 
-#ifdef COMMON
-/*-- 
- *-- At one time I though I might implement PROG* in the kernel here, but
- *-- now it seems at least as reasonable to implement it is a Lisp-coded
- *-- macro that expands to BLOCK, LET* and TAGBODY, thus meaning that the
- *-- code that was supposed to be provided here is pretty-well irrelevant.
- *--
- *-- static Lisp_Object progstar_fn(Lisp_Object args, Lisp_Object env)
- *-- /*
- *--  * /* At present this is WRONG in that it is just a copy of prog_fn,
- *--  * so it awaits re-work to make the bindings happen in serial rather
- *--  * than parallel..
- *--  *  /
- *-- {
- *--     Lisp_Object p, nil = C_nil;
- *--     if (!consp(args) || !consp(qcdr(args))) return onevalue(nil);
- *--     stackcheck2(0, args, env);
- *--     push3(nil, args, env);
- *-- #define env    stack[0]
- *-- #define args   stack[-1]
- *-- #define my_tag stack[-2]
- *-- /*
- *--  * I need to augment the (lexical) environment with a null block
- *--  * tag so that (return ..) will work as required. See block_fn for
- *--  * further elaboration since (block ..) is the main way of introducing
- *--  * new block tags.
- *--  * /
- *--     my_tag = cons(fixnum_of_int(0), nil);
- *--     errexitn(3);
- *--     env = cons(my_tag, env);
- *--     errexitn(3);
- *--     p = let_fn_1(qcar(args), qcdr(args), env, BODY_PROG);
- *--     nil = C_nil;
- *--     if (exception_pending())
- *--     {   flip_exception(); /* Temp restore it * /
- *--         qcar(my_tag) = fixnum_of_int(2); /* Invalidate * /
- *--         if (exit_reason == UNWIND_RETURN && exit_tag == my_tag)
- *--         {   exit_reason = UNWIND_NULL;    /* not strictly needed - but tidy * /
- *--             popv(3);
- *--             return exit_value;
- *--         }
- *--         if ((exit_reason & UNWIND_ERROR) != 0)
- *--         {   err_printf("\nEvaluating: ");
- *--             loop_print_error(qcar(args));
- *--         }
- *--         flip_exception(); /* re-instate exit condition * /
- *--         popv(3);
- *--         return nil;
- *--     }
- *--     popv(3);
- *--     return onevalue(nil);
- *-- #undef env
- *-- #undef args
- *-- #undef my_tag
- *-- }
- *--
- */
-
-#endif
-
 Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env)
 {
     Lisp_Object f, nil = C_nil;
@@ -697,7 +637,7 @@ static Lisp_Object setq_fn(Lisp_Object args, Lisp_Object env)
     while (consp(args))
     {   var = qcar(args);
         if (!is_symbol(var) || var == nil || var == lisp_true)
-            return aerror("setq (bad variable)");
+            return aerror1("setq (bad variable)", var);
         args = qcdr(args);
         if (consp(args))
         {   push3(args, env, var);
@@ -751,7 +691,7 @@ static Lisp_Object noisy_setq_fn(Lisp_Object args, Lisp_Object env)
     while (consp(args))
     {   var = qcar(args);
         if (!is_symbol(var) || var == nil || var == lisp_true)
-            return aerror("setq (bad variable)");
+            return aerror1("noisy-setq (bad variable)", var);
         args = qcdr(args);
         if (consp(args))
         {   push3(args, env, var);
@@ -1064,13 +1004,22 @@ static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
  */
 
 #ifndef __cplusplus
+#ifdef UISE_SIGALTSTACK
+sigjmp_buf *errorset_buffer;
+#else
 jmp_buf *errorset_buffer;
+#endif
 #endif
 char *errorset_msg;
 static char signal_msg[32];
 
 void MS_CDECL low_level_signal_handler(int code)
 {
+/*
+ * Observe, if you will, that in the case of a SIGSEGV this function does
+ * not use a significant amount of stack end ends up just doing a
+ * (sig)longjmp.
+ */
     Lisp_Object nil;
     ignore_exception();
     if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
@@ -1104,7 +1053,11 @@ case SIGILL:
 #ifdef __cplusplus
     throw "low_level_signal_handler";
 #else
+#ifdef USE_SIGATLSTACK
+    siglongjmp(*errorset_buffer, 1);
+#else
     longjmp(*errorset_buffer, 1);
+#endif
 #endif
 }
 
@@ -1154,7 +1107,7 @@ void unwind_stack(Lisp_Object *entry_stack, CSLbool findcatch)
  * setjmp. This separation is because a beta version of a C compiler I was
  * using had trouble when both va_args and setjmp were used together, and
  * that version of gcc failed with an internal error! While that state
- * will get fixed it was still concenient as a short term measure and
+ * will get fixed it was still convenient as a short term measure and
  * harmless longer term to do things this way!
  */
 
@@ -1164,11 +1117,15 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
     Lisp_Object nil = C_nil, r;
     uint32_t flags = miscflags;
 #ifndef __cplusplus
+#ifdef SIGALTSTACK
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+#else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
+#endif
     Lisp_Object *save;
-    if (fg1 != nil) miscflags |= HEADLINE_FLAG;
-    if (fg2 != nil) miscflags |= MESSAGES_FLAG;
+    if (always_noisy || fg1 != nil) miscflags |= HEADLINE_FLAG;
+    if (always_noisy || fg2 != nil) miscflags |= MESSAGES_FLAG;
     push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
@@ -1176,7 +1133,11 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #ifdef __cplusplus
     try
 #else
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(this_level, -1))
+#else
     if (!setjmp(this_level))
+#endif
 #endif
     {
 #ifndef __cplusplus
@@ -1233,7 +1194,17 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #endif
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
-        if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
+            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
         if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -1266,10 +1237,8 @@ Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
         if (nargs >= 3) fg2 = va_arg(a, Lisp_Object);
     }
     va_end(a);
-    miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
-    if (always_noisy)     /* debug aid on "-g" */
-    {   fg1 = fg2 = lisp_true;
-    }
+    if (always_noisy) fg1 = fg2 = lisp_true;
+    else  miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
     return errorset3(env, form, fg1, fg2);
 }
 
@@ -1331,7 +1300,11 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
         save_io_limit   = io_limit,   save_errors_limit = errors_limit;
     int r0=0, r1=0, r2=0, r3=0;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+#else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
+#endif
 #endif
     Lisp_Object *save;
     push2(codevec, litvec);
@@ -1355,7 +1328,11 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
 #ifdef __cplusplus
     try
 #else
+#ifdef USE_SIGALTSTACK
+    if (!sigsetjmp(this_level, -1))
+#else
     if (!setjmp(this_level))
+#endif
 #endif
     {
 #ifndef __cplusplus
@@ -1497,7 +1474,17 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
 #endif
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
-        if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#ifdef USE_SIGALTSTACK
+/* SIGSEGV will be handled on the alternative stack */
+            {   struct sigaction sa;
+                sa.sa_handler = low_level_signal_handler;
+                sigemptyset(&sa.sa_mask);
+                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
+                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
+            }
+#else
+            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
+#endif
 #ifdef SIGBUS
         if (segvtrap) signal(SIGBUS, low_level_signal_handler);
 #endif
@@ -1567,8 +1554,12 @@ setup_type const eval3_setup[] =
     {"prog",                    prog_fn, bad_special2, bad_specialn},
     {"prog1",                   prog1_fn, bad_special2, bad_specialn},
     {"prog2",                   prog2_fn, bad_special2, bad_specialn},
-/*  {"progn",                   progn_fn, bad_special2, bad_specialn}, */
-/*  {"quote",                   quote_fn, bad_special2, bad_specialn}, */
+/*
+ * progn and quote are initialised in restart.c so do not need
+ * to me included here - I put them in as comments as a reminder.
+ *  {"progn",                   progn_fn, bad_special2, bad_specialn},
+ *  {"quote",                   quote_fn, bad_special2, bad_specialn},
+ */
     {"return",                  return_fn, bad_special2, bad_specialn},
     {"setq",                    setq_fn, bad_special2, bad_specialn},
     {"noisy-setq",              noisy_setq_fn, bad_special2, bad_specialn},
@@ -1581,7 +1572,6 @@ setup_type const eval3_setup[] =
     {"macrolet",                macrolet_fn, bad_special2, bad_specialn},
     {"multiple-value-call",     mv_call_fn, bad_special2, bad_specialn},
     {"multiple-value-prog1",    mv_prog1_fn, bad_special2, bad_specialn},
-/*--{"prog*",                   progstar_fn, bad_special2, bad_specialn}, */
     {"progv",                   progv_fn, bad_special2, bad_specialn},
     {"return-from",             return_from_fn, bad_special2, bad_specialn},
     {"the",                     the_fn, bad_special2, bad_specialn},

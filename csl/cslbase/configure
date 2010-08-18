@@ -746,6 +746,7 @@ with_fox_pending
 enable_debug
 enable_conservative
 enable_test
+enable_embedded
 enable_dependency_tracking
 with_xft
 enable_jit
@@ -1387,6 +1388,7 @@ Optional Features:
   --enable-debug          compile for debugging
   --enable-conservative   garbage collect option
   --enable-test           testing-mode version
+  --enable-embedded       embedded-mode version
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --enable-jit            build in experimental JIT
@@ -4339,6 +4341,26 @@ if test "x$enable_test" = "xyes"
 then
 
 $as_echo "#define TEST 1" >>confdefs.h
+
+fi
+
+# Want to build "embedded" variant?
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for embedded" >&5
+$as_echo_n "checking for embedded... " >&6; }
+# Check whether --enable-embedded was given.
+if test "${enable_embedded+set}" = set; then :
+  enableval=$enable_embedded;
+else
+  enable_embedded="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_embedded" >&5
+$as_echo "$enable_embedded" >&6; }
+
+if test "x$enable_embedded" = "xyes"
+then
+
+$as_echo "#define EMBEDDED 1" >>confdefs.h
 
 fi
 

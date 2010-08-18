@@ -1,11 +1,11 @@
-/*  fasl.c                          Copyright (C) 1990-2008 Codemist Ltd */
+/*  fasl.c                          Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
  * Binary file support for faster loading of precompiled code etc.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 58e1f78b 04-Jul-2009 */
+/* Signature: 745049cb 18-Aug-2010 */
 
 #include "headers.h"
 
@@ -478,37 +478,15 @@ case F_DOT:
             r = getvector(TAG_VECTOR, TYPE_STRING, CELL+operand);
             errexit();
             {   char *s = (char *)r - TAG_VECTOR + CELL;
-                int l = operand & 7;
-                if (SIXTY_FOUR_BIT)
-                {   switch (l)
-                    {
-                case 1:
-                case 2:
-                case 3: *(int32_t *)(s + operand - l) = 0; 
-                case 4:
-                case 5:
-                case 6:
-                case 7: *(int32_t *)(s + operand - l + 4) = 0;     
-                case 0: break;
-                    }
-                }
-                else
-                {   switch (l)
-                    {
-                case 5:
-                case 6:
-                case 7: *(int32_t *)(s + operand - l + 8) = 0;
-                case 0:
-                case 1:
-                case 2:
-                case 3: *(int32_t *)(s + operand - l + 4) = 0;
-                case 4: break;
-                    }
-                }
+                int l = doubleword_align_up(operand+CELL);
+                if (l >= 16) *(int32_t *)(s - CELL + l - 8) = 0; 
+                if (!SIXTY_FOUR_BIT || l >= 16)
+                    *(int32_t *)(s - CELL + l - 4) = 0;     
                 if (Iread(s, operand) != operand)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += operand;
             }
+            validate_string(r);
             return r;
 
     case F_BP3:                 /* n + 768 bytes of BPS */
@@ -1310,6 +1288,7 @@ Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
         IcloseInput(NO);
         Irestore_context(save);
         info = make_string(b);
+        validate_string(info);
         errexit();
         return onevalue(info);
     }
@@ -1531,6 +1510,10 @@ static Lisp_Object load_module(Lisp_Object nil, Lisp_Object file,
     {   flip_exception();
         return nil;
     }
+#ifdef DEBUG
+    copy_into_nilseg(NO);
+    validate_all("end of fast-load", __LINE__, __FILE__);
+#endif
     return onevalue(file);
 }
 
@@ -1650,7 +1633,7 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
  * too old-fashioned and slow by pretty well everybody! Gosh how machines
  * change during the life-time of a piece of software!
  * (March 2001) "early 386" bug hah. Gosh that was slow by today's standards.
- * (August 2008) !!!!!!!
+ * (May 2010) !!!!!!!
  */
             while (k != 3) k++, Iputc(F_NIL);
             Iputc(F_END);

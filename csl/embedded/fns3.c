@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 49faffbc 24-Feb-2010 */
+/* Signature: 0b4b77aa 21-Jun-2010 */
 
 #include "headers.h"
 
@@ -2275,9 +2275,9 @@ case 148:   p = (char *)&aux_key;               break;
 case 149:   p = (char *)&format_symbol;         break;
 case 150:   p = (char *)&expand_def_symbol;     break;
 case 151:   p = (char *)&allow_key_key;         break;
+#endif
 case 152:   p = (char *)&declare_symbol;        break;
 case 153:   p = (char *)&special_symbol;        break;
-#endif
     }
 #else /* NILSEG_EXTERNS */
     if (n >= 160) switch (n)

@@ -23,6 +23,9 @@
 #   --enable-test     predefine a symbol TEST used to protect
 #                     temporary or unfinished code deleopments.
 #   --enable-jit      another experimental and incomplete extension.
+#   --enable-embedded well the EMBEDDED option is intended for use via
+#                     a heavily cleaned up minimalist build system, but
+#                     for testing purposes I allow a build here.
 
 #
 # Note that building for 64-bit windows is at present to be considered
@@ -579,6 +582,20 @@ AC_MSG_RESULT([$enable_test])
 if test "x$enable_test" = "xyes"
 then
   AC_DEFINE(TEST, [1], [True if this is an experimental testing mode variant])
+fi
+
+# Want to build "embedded" variant?
+AC_MSG_CHECKING(for embedded)
+AC_ARG_ENABLE(embedded,
+  AC_HELP_STRING([--enable-embedded],
+                 [embedded-mode version]),
+  [],
+  [enable_embedded="no"])
+AC_MSG_RESULT([$enable_embedded])
+
+if test "x$enable_embedded" = "xyes"
+then
+  AC_DEFINE(EMBEDDED, [1], [True if this is with no GUI and aimed at embedded use])
 fi
 
 if test "x$x86" = "xyes"

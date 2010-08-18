@@ -71,9 +71,291 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 323d4f71 09-May-2010 */
+/* Signature: 3ef41f25 10-Jul-2010 */
 
 #include "headers.h"
+
+#ifdef DEBUG
+
+/*
+ * The purpose of this code is to traverse the active data in the heap
+ * checking that the structure is correct. It is for use when hunting
+ * bugs that have led to memory corruption. It is only built if DEBUG
+ * is defined, and so is not present in a production version. Because of
+ * that I feel entitles to make it a bit profligate in memory use and
+ * stack use. It will use bitmaps to record which bits of data have been
+ * visited, and simple recursion in its traverse.
+ */
+
+
+/*
+ * The scheme here will FAIL if invoked early on when a 32-bit image
+ * has been re-loaded on a 64-bit platform, because in that situation
+ * there can be some souble-sized pages used. This really needs to be
+ * resolved, but since the code here is merely for debugging purposes
+ * I will consider that case later on when I run into trouble with it.
+ */
+
+
+/*
+ * p is a (reference to a) cons cell. Verify it is within a
+ * cons heap-page, set a mark bit for it and return 1 if it had
+ * already been marked.
+ */
+
+static int32_t heap_map[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
+
+static int bitmap_mark_cons(Lisp_Object p)
+{
+    int32_t i;
+    Lisp_Object nil = C_nil;
+    if (!consp(p))
+    {   term_printf("\n%p is not a cons pointer\n", (void *)p);
+        ensure_screen();
+        abort();
+    }
+    for (i=0; i<heap_pages_count; i++)
+    {   void *page = heap_pages[i];
+        char *base = (char *)quadword_align_up((intptr_t)page);
+        if ((intptr_t)base <= (intptr_t)p &&
+             (intptr_t)p <= (intptr_t)(base+CSL_PAGE_SIZE))
+        {   unsigned int offset = ((unsigned int)((char *)p - base)) >> 3;
+            int b = offset%32, w = offset/32;
+            int32_t m = 1 << b;
+            int32_t r = heap_map[i][w];
+            heap_map[i][w] |= m;
+            return (r & m) != 0;
+        }
+    }
+    term_printf("\nCons address %p not found in heap\n", (void *)p);
+    term_printf("nil = %p\n", (void *)nil);
+    term_printf("Heap: %d\n", heap_pages_count);
+    for (i=0; i<heap_pages_count; i++)
+        term_printf("%d:  %p\n", i, (void *)heap_pages[i]);
+    term_printf("VecHeap: %d\n", vheap_pages_count);
+    for (i=0; i<vheap_pages_count; i++)
+        term_printf("%d:  %p\n", i, (void *)vheap_pages[i]);
+    term_printf("BpsHeap: %d\n", bps_pages_count);
+    for (i=0; i<bps_pages_count; i++)
+        term_printf("%d:  %p\n", i, (void *)bps_pages[i]);
+    ensure_screen();
+    abort();
+    return 1;
+}
+
+/*
+ * p is a reference to something in the vector heap. Verify it is within a
+ * vector heap-page, set a mark bit for it and return 1 if it had
+ * already been marked.
+ */
+
+static int32_t vecheap_map[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
+
+static int bitmap_mark_vec(Lisp_Object p)
+{
+    int32_t i;
+    char *info = "unknown";
+    Lisp_Object nil = C_nil;
+/*
+ * Check that the object is corectly tagged. Note that NIL must be
+ * handled specially since althout it is (sort of) a symbol it does not
+ * live in any of the vheap_pages.
+ */
+    if (!is_symbol(p) &&
+        !is_numbers(p) &&
+        !is_vector(p) &&
+        !is_bfloat(p))
+    {   term_printf("\n%p is not a vector pointer\n", (void *)p);
+        ensure_screen();
+        abort();
+    }
+    {   Lisp_Object x = p;
+        if (is_symbol(x)) x = qpname(x);
+        if (is_vector(x) && type_of_header(vechdr(x)) == TYPE_STRING)
+            info = &celt(x, 0);
+        else if (is_symbol(p)) info = "unnamed symbol";
+        else if (is_vector(x)) info = "vector";
+        else if (is_numbers(x)) info = "numbers";
+        else if (is_bfloat(x)) info = "boxed float";
+        else info = "huh???";
+    }
+    for (i=0; i<vheap_pages_count; i++)
+    {   void *page = vheap_pages[i];
+        char *base = (char *)quadword_align_up((intptr_t)page);
+        if ((intptr_t)base <= (intptr_t)(p & ~TAG_BITS) &&
+             (intptr_t)p <= (intptr_t)(base+CSL_PAGE_SIZE))
+        {   unsigned int offset =
+                ((unsigned int)((char *)(p & ~TAG_BITS) - base)) >> 3;
+            int b = offset%32, w = offset/32;
+            int32_t m = 1 << b;
+            int32_t r = heap_map[i][w];
+            heap_map[i][w] |= m;
+            return (r & m) != 0;
+        }
+    }
+    term_printf("\nVector address %p not found in heap\n", (void *)p);
+    term_printf("nil = %p\n", (void *)nil);
+    term_printf("Heap: %d\n", heap_pages_count);
+    for (i=0; i<heap_pages_count; i++)
+        term_printf("%d:  %p\n", i, (void *)heap_pages[i]);
+    term_printf("VecHeap: %d\n", vheap_pages_count);
+    for (i=0; i<vheap_pages_count; i++)
+        term_printf("%d:  %p\n", i, (void *)vheap_pages[i]);
+    term_printf("BpsHeap: %d\n", bps_pages_count);
+    for (i=0; i<bps_pages_count; i++)
+        term_printf("%d:  %p\n", i, (void *)bps_pages[i]);
+    ensure_screen();
+    abort();
+    return 1;
+}
+
+/*
+ * Note that BPS items are stored as a sort of handle that encodes the
+ * page number and the offset, so I do not need to do elaborate searches
+ * to validate them. If I was keen I would take a BPS handle and decode it
+ * and check that what it referred to at least gave some impression of
+ * being as expected - specifically I could check that there was a BPS
+ * header just before it. But I do not do that yet!
+ */
+
+
+/*
+ * The next procedure is given a Lisp_Object and it checks that it is
+ * at least vaguely sensible, It similarly inspects all items reachable
+ * from that object.
+ */
+
+static void validate(Lisp_Object p)
+{
+    Lisp_Object nil = C_nil;
+    char *info = "unknown";
+    Header h = 0;
+    intptr_t i = 0;
+    if (p == nil) return;
+    if (p == 0)
+    {   term_printf("NULL item found\n");
+        ensure_screen();
+        abort();
+    }
+/*
+ * The code here is going to be simply recursive so that if any problem
+ * is detected I have maximum information on the stack about where it
+ * came from.
+ */
+    if (is_immed_or_cons(p))
+    {   if (!is_cons(p)) return;
+        info = "cons cell";
+        if (bitmap_mark_cons(p)) return;
+        validate(qcar(p));
+        validate(qcdr(p));
+        return;
+    }
+/* here we have a vector of some sort */
+    switch ((int)p & TAG_BITS)
+    {
+default:            /* The case-list is exhaustive! */
+case TAG_CONS:      /* Already processed */
+case TAG_FIXNUM:    /* Invalid here */
+case TAG_ODDS:      /* Invalid here */
+#ifdef COMMON
+case TAG_SFLOAT:    /* Invalid here */
+#endif /* COMMON */
+        term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
+        ensure_screen();
+        abort();
+
+case TAG_SYMBOL:
+        info = "symbol";
+        if (is_vector(qpname(p)) &&
+            type_of_header(vechdr(qpname(p))) == TYPE_STRING)
+            info = &celt(qpname(p), 0);
+        if (bitmap_mark_vec(p)) return;
+        validate(qvalue(p));
+        validate(qenv(p));
+        validate(qpname(p));
+#ifdef COMMON
+        validate(qpackage(p));
+#endif /* COMMON */
+        validate(qplist(p));
+        return;
+
+case TAG_NUMBERS:
+        info = "numbers";
+        if (bitmap_mark_vec(p)) return;
+        h = numhdr(p);
+        if (is_bignum_header(h)) return;
+#ifdef COMMON
+        validate(real_part(p));
+        validate(imag_part(p));
+        return;
+#else /* COMMON */
+        term_printf("Bad numeric type found %.8lx\n", (long)h);
+        ensure_screen();
+        abort();
+        return;
+#endif /* COMMON */
+
+case TAG_BOXFLOAT:
+        info = "boxfloat";
+        if (bitmap_mark_vec(p)) return;
+        return;
+
+case TAG_VECTOR:
+        info = "vector";
+        if (bitmap_mark_vec(p)) return;
+        h = vechdr(p);
+        if (vector_holds_binary(h)) return;  /* strings & bitvecs */
+        info = "lispvector";
+        i = (intptr_t)doubleword_align_up(length_of_header(h));
+        if (is_mixed_header(h)) 
+            i = 4*CELL;  /* Only use first few pointers */
+        while (i >= 2*CELL)
+        {   i -= CELL;
+            validate(*(Lisp_Object *)((char *)p - TAG_VECTOR + i));
+        }
+        return;
+    }
+}
+
+void validate_all(char *why, int line, char *file)
+{
+    Lisp_Object *sp = NULL;
+    Lisp_Object nil = C_nil;
+    int i;
+    term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
+    memset(heap_map, 0, sizeof(heap_map));
+    memset(vecheap_map, 0, sizeof(vecheap_map));
+/*
+ * The list bases to check from are
+ * (a) nil    [NB: validate(nil) would be ineffective],
+ * (b) the special ones addressed relative to nil,
+ * (c) everything on the Lisp stack,
+ * (d) the package structure,
+ */
+    validate(qplist(nil));
+    validate(qpname(nil));
+    validate(qfastgets(nil));
+
+    for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i]);
+    for (sp=stack; sp>(Lisp_Object *)stackbase; sp--) validate(*sp);
+    validate(eq_hash_tables);
+    validate(equal_hash_tables);
+    term_printf("Validation complete\n");
+}
+
+
+
+int check_env(Lisp_Object env)
+{
+/*
+ * Return 1 if environment call of something compiled into C looks bad.
+ */
+    if (env == 0 ||
+        !is_vector(env)) return 1;
+    return 0;
+}
+
+#endif /* DEBUG: the validate code */
 
 #ifdef SOCKETS
 #include "sockhdr.h"
@@ -2184,13 +2466,18 @@ static CSLbool reset_limit_registers(intptr_t vheap_need,
  * I wonder about the next test - memory would only really be full
  * if there was enough LIVE data to fill all the available free pages,
  * but what is tested here is based on the possibility that all the
- * active pages are totally full.
+ * active pages are totally full. I scale up the vector page counts by
+ * a factor of 1.5 because fragmentation might behave differently in the
+ * old and new spaces so if there are some large vectors they may leave
+ * nasty gaps at the end of a page.
  */
         full = (pages_count <=
-                 heap_pages_count + vheap_pages_count +
-                 bps_pages_count + native_pages_count);
+                 heap_pages_count +
+                 (3*(vheap_pages_count +
+                     bps_pages_count +
+                     native_pages_count) + 1)/2);
     else
-        full = (pages_count == 0);
+        full = (pages_count <= 1);
     if (fringe <= heaplimit)
     {   if (full) return NO;
         p = pages[--pages_count];
@@ -2476,6 +2763,8 @@ Lisp_Object use_gchook(Lisp_Object p, Lisp_Object arg)
     return onevalue(p);
 }
 
+int garbage_collection_permitted = 0;
+
 Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 {
     intptr_t i;
@@ -2622,6 +2911,19 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #endif /* CHECK_ONLY */
 #endif /* MEMORY_TRACE */
 
+/*
+ * There are parts of the code in setup/restart where perhaps things are not
+ * yet in a consistent state and so any attempt at garbage collection could
+ * cause chaos. So during them I set a flag that I test here! Since this
+ * should never be triggered I am happy to leave it in state where the only
+ * sane way to respond to it is to run under a debugger and set breakpoints.
+ */
+    if (!garbage_collection_permitted)
+    {   fprintf(stderr,
+            "\n+++ Garbage collection attempt when not permitted\n");
+        my_exit(EXIT_FAILURE);    /* totally drastic... */
+    }
+
     push(p);
 
     gc_number++;
@@ -2695,6 +2997,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #endif /* CONSERVATIVE */
 
     copy_into_nilseg(NO);
+#ifdef DEBUG
+    validate_all("gc start", __LINE__, __FILE__);
+#endif
 
     cons_cells = symbol_heads = strings = user_vectors =
              big_numbers = box_floats = bytestreams = other_mem =
@@ -2949,6 +3254,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     gc_time += pop_clock();
     t3 = base_time;
 
+#ifdef DEBUG
+    validate_all("gc end", __LINE__, __FILE__);
+#endif
     copy_out_of_nilseg(NO);
 
     if ((verbos_flag & 5) == 5)
@@ -3045,10 +3353,17 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     report_at_end(nil);
 /*
  * I will make the next garbage collection a copying one if the heap is
- * at most 25% full, or a sliding one if it is more full than that.
+ * at most 25% full, or a sliding one if it is more full than that. And
+ * I take a conservative view with regard to the possibility that
+ * when copying big vectors I can need to leave pages partly empty.
+ * Eg consider copying a number of vectors each of which is just over
+ * 1/3 of the size of a page. The first two fit in a new page, but the third
+ * will then not, so I abandon the rest of that page and start a fresh one.
  */
     gc_method_is_copying = (pages_count >
-                 3*(heap_pages_count + vheap_pages_count + bps_pages_count));
+                 3*(heap_pages_count +
+                         (3*(vheap_pages_count + bps_pages_count +
+                             native_pages_count))/2));
     if (stop_after_gc)
     {
 #ifdef MEMORY_TRACE

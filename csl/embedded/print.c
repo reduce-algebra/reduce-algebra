@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 071e311c 09-May-2010 */
+/* Signature: 5d4dce6d 25-Jun-2010 */
 
 #include "headers.h"
 
@@ -1802,7 +1802,7 @@ static Lisp_Object Lprint_precision(Lisp_Object nil, Lisp_Object a)
     if (a == nil) return onevalue(fixnum_of_int(old));
     if (!is_fixnum(a)) return aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
-    if (print_precision > 16 | print_precision < 1)
+    if (print_precision > 16 || print_precision < 1)
         print_precision = 15;
     return onevalue(fixnum_of_int(old));
 }
@@ -2089,7 +2089,16 @@ case TAG_VECTOR:
 #ifdef COMMON
                             else if (ch == '\\') slen += 2;
 #endif
+#ifdef COMMON
+/*
+ * I now guard this with "#ifdef COMMON". It is associated with displaying
+ * control characters within strings as escapes, as in a newline within a
+ * string being printed as \0a. Unless the code that reads strings back in
+ * understands the same conventions this is a mistake, and the Standard Lisp
+ * reader (and the readre in Reduce) do not...
+ */
                             else if (iscntrl(ch)) slen += 3;
+#endif
                             else slen += 1;
                         }
                         slen += 2;
@@ -2097,7 +2106,8 @@ case TAG_VECTOR:
                     else slen = len;
                     outprefix(blankp, slen);
 /*
- * I will write out the fast, easy, common case here
+ * I will write out the fast, easy, common case here, ie "princ" where
+ * I do not have to do anything special with odd characters.
  */
                     if (!(escaped_printing &
                              (escape_yes | escape_fold_down |
@@ -2108,30 +2118,40 @@ case TAG_VECTOR:
                         }
                     }
                     else
-                    {   if (escaped_printing & escape_yes) putc_stream('"', active_stream);
+                    {   if (escaped_printing & escape_yes)
+                            putc_stream('"', active_stream);
                         for (k = 0; k < len; k++)
                         {   int ch = celt(stack[0], k);
                             static char *hexdig = "0123456789abcdef";
 #ifdef COMMON
+/*
+ * In Common Lisp mode I do something special with '"' and '\', and
+ * any control characters get mapped onto an escape sequence. If I ever
+ * moved to proper support for Unicode I would have significant extra work
+ * to do here.
+ */
                             if ((escaped_printing & escape_yes) &&
                                  (ch == '"' || ch == '\\'))
                             {   putc_stream('\\', active_stream);
                                 putc_stream(ch, active_stream);
                             }
-#else
-                            if ((escaped_printing & escape_yes) && ch == '"')
-                            {   putc_stream('"', active_stream);
-                                putc_stream('"', active_stream);
-                            }
-#endif
                             else if (iscntrl(ch))
                             {   putc_stream('\\', active_stream);
                                 putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
                                 putc_stream(hexdig[ch & 0xf], active_stream);
                             }
+#else
+/*
+ * In Standard Lisp mode when I get a '"'  I print two doublequote. And that
+ * will be the only special case!
+ */
+                            if ((escaped_printing & escape_yes) && ch == '"')
+                            {   putc_stream('"', active_stream);
+                                putc_stream('"', active_stream);
+                            }
+#endif
                             else
-                            {
-                                if (escaped_printing & escape_fold_down)
+                            {   if (escaped_printing & escape_fold_down)
                                     ch = tolower(ch);
                                 else if (escaped_printing & escape_fold_up)
                                     ch = toupper(ch);
@@ -2928,8 +2948,18 @@ void loop_print_stdout(Lisp_Object o)
     one_args *f;
     Lisp_Object lp = qvalue(traceprint_symbol);
     if (lp == nil || lp == unset_var) lp = prinl_symbol;
+/*
+ * There is a potential delicacy around here if and when prinl gets compiled
+ * into C. At the very start of a run when CSL does a cold start it could
+ * have a definition but its vector-of-literals might not have been loaded.
+ * If it gets called at that stage there could be a disaster, So as a small
+ * amount of extra protection only relevant to me when I build initial images
+ * based on a could-start I will try to avoid calling it then and fall back
+ * to using the simpler version of prin.
+ */
     if (!is_symbol(lp) ||
-        (f = qfn1(lp)) == undefined1) prin_to_stdout(o);
+        (f = qfn1(lp)) == undefined1 ||
+         !is_vector(qenv(lp))) prin_to_stdout(o);
     else
     {   CSLbool bad = NO;
         Lisp_Object env = qenv(lp);
@@ -3575,6 +3605,58 @@ Lisp_Object Llengthc(Lisp_Object nil, Lisp_Object a)
     return onevalue(fixnum_of_int(stream_char_pos(lisp_work_stream)));
 }
 
+
+Lisp_Object Ldebug_print(Lisp_Object nil, Lisp_Object a)
+{
+    Lisp_Object stream = qvalue(standard_output);
+    Header h;
+    int i, len;
+    char *p;
+    if (!is_stream(stream)) stream = qvalue(terminal_io);
+    if (!is_stream(stream)) stream = lisp_terminal_io;
+    if (symbolp(a))
+    {   a = get_pname(a);
+        errexit();
+    }
+    if (!is_vector(a)) return Lprint(nil, a);
+    h = vechdr(a);
+    if (type_of_header(h) != TYPE_STRING) return Lprint(nil, a);
+    len = length_of_header(h) - CELL;
+    p = &celt(a, 0);
+    for (i=0; i<len; i++)
+    {   push(a);
+        putc_stream(p[i], stream);
+        pop(a);
+        errexit();
+        p = &celt(a, 0);
+    }
+    push(a);
+    putc_stream(':', stream);
+    pop(a);
+    errexit();
+    p = &celt(a, 0);
+    for (;i<doubleword_align_up(len+CELL)-CELL; i++)
+    {   int c = p[i] & 0xff;
+        push(a);
+        if (c >= 0x80)
+        {   putc_stream('+', stream);
+            c &= 0x7f;
+            errexitn(1);
+        }
+        if (c < 0x20)
+        {   putc_stream('^', stream);
+            c += 0x40;
+            errexitn(1);
+        }
+        putc_stream(c, stream);
+        pop(a);
+        errexit();
+        p = &celt(a, 0);
+    }
+    putc_stream('\n', stream);
+    errexit();
+    return onevalue(nil);
+}
 
 Lisp_Object Lprint(Lisp_Object nil, Lisp_Object a)
 {
@@ -4884,6 +4966,7 @@ setup_type const print_setup[] =
     {"print-csl-headers",       wrong_no_na, wrong_no_nb, Lprint_csl_headers},
     {"print-imports",           wrong_no_na, wrong_no_nb, Lprint_imports},
     {"math-display",            Lmath_display, too_many_1, wrong_no_1},
+    {"debug-print",             Ldebug_print, too_many_1, wrong_no_1},
 #ifdef COMMON
     {"charpos",                 Lposn_1, wrong_no_nb, Lposn},
     {"finish-output",           Lflush1, wrong_no_nb, Lflush},

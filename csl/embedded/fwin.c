@@ -1,4 +1,3 @@
-
 /*
  * "fwin.c"                                 Copyright A C Norman 2003-2010
  *
@@ -55,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 375fd5d3 09-May-2010 */
+/* Signature: 3b3c4a5f 18-Aug-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2406,6 +2405,5 @@ int readlink(const char *name, char *b, size_t n)
 
 #endif
 #endif
-
 
 /* end of fwin.c */
