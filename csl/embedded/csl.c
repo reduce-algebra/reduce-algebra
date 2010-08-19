@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 51680069 18-Aug-2010 */
+/* Signature: 03eb1d2e 19-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -686,11 +686,11 @@ static void report_dependencies()
 
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK
-static sigjmp_buf my_exit_buffer;
+sigjmp_buf my_exit_buffer;
 #else
-static jmp_buf my_exit_buffer;
+jmp_buf my_exit_buffer;
 #endif
-static volatile int my_return_code = 0;
+volatile int my_return_code = 0;
 #endif
 
 void my_exit(int n)
@@ -2813,6 +2813,36 @@ int cslfinish(character_writer *w)
     return return_code;
 }
 
+int execute_lisp_function(char *fname,
+                          character_reader *r,
+                          character_writer *w)
+{
+    Lisp_Object nil;
+    Lisp_Object ff;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    ff = make_undefined_symbol(fname);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to make the symbol */
+    }
+    procedural_input = r;
+    procedural_output = w;
+    Lapply0(nil, ff);
+    ensure_screen();
+    procedural_input = NULL;
+    procedural_output = NULL;
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failure during evaluation */
+    }
+    return 0;
+}
+
 /*
  * People who want to use this in an embedded context can predefine
  * NO_STARTUP_CODE and provide their own entrypoint...
@@ -2844,35 +2874,6 @@ int cslfinish(character_writer *w)
  *     cslfinish(writer);           Tidies up ready to stop.
  */
  
-int execute_lisp_function(char *fname,
-    character_reader *r, character_writer *w)
-{
-    Lisp_Object nil;
-    Lisp_Object ff;
-#ifdef CONSERVATIVE
-    volatile Lisp_Object sp;
-    C_stackbase = (Lisp_Object *)&sp;
-#endif
-    ff = make_undefined_symbol(fname);
-    nil = C_nil;
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  /* Failed to make the symbol */
-    }
-    procedural_input = r;
-    procedural_output = w;
-    Lapply0(nil, ff);
-    ensure_screen();
-    procedural_input = NULL;
-    procedural_output = NULL;
-    nil = C_nil;
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  /* Failure during evaluation */
-    }
-    return 0;
-}
-
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
 
 static char ibuff[100], obuff[100];
@@ -3051,7 +3052,7 @@ int PROC_push_small_integer(int32_t n)
  *       push(a1)
  *       push(a2)
  *       push(a3)
- *       make_function_call(3, "f")
+ *       make_function_call("f", 3)
  */
 
 int PROC_make_function_call(const char *name, int n)
@@ -3070,6 +3071,7 @@ int PROC_make_function_call(const char *name, int n)
         {   flip_exception();
             return 2;  /* Failed to push onto stack */
         }
+        procstack = qcdr(procstack);
         n--;
     }
     push(w);
@@ -3195,7 +3197,7 @@ int PROC_simplify()
         return 3;  /* Call to simp failed */
     }
     push(w);
-    w1 = make_undefined_symbol("mk!*sq");
+    w1 = make_undefined_symbol("mk*sq");
     pop(w);
     nil = C_nil;
     if (exception_pending())
@@ -3328,6 +3330,15 @@ int PROC_atom(PROC_handle p)
 }
 
 /*
+ * return true if the expression is NIL.
+ */
+
+int PROC_null(PROC_handle p)
+{
+    return ((Lisp_Object)p) == C_nil;
+}
+
+/*
  * Return true if it is a small integer.
  */
 
@@ -3349,7 +3360,7 @@ int PROC_symbol(PROC_handle p)
  * Given that it is a small integer return the integer value
  */
 
-int32_t PROC_intval(PROC_handle p)
+int32_t PROC_integer_value(PROC_handle p)
 {
     return (int32_t)int_of_fixnum((Lisp_Object)p);
 }
@@ -3366,7 +3377,7 @@ int32_t PROC_intval(PROC_handle p)
 
 static char PROC_name[64];
 
-char *PROC_symname(PROC_handle p)
+char *PROC_symbol_name(PROC_handle p)
 {
     Lisp_Object w = (Lisp_Object)p;
     int n;
