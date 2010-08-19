@@ -53,7 +53,7 @@ imports groebner,groebnr2;
 
 load!-package 'assert;
 
-on1 'assertcheck;
+off 'assertcheck;
 
 fluid '(out!*);
 
