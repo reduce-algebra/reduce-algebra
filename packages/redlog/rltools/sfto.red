@@ -56,11 +56,27 @@ operator exteuc;
 operator degree;
 operator coefficients;
 
+typedef any;
+typedef sf checked by sfpx;
+typedef sf!* checked by sfpx!*;
+typedef domain checked by domainp;
+typedef id checked by idp;
+typedef pair checked by pairp;
+typedef list checked by listp;
+typedef alist checked by alistp;
+typedef kernel checked by assert_kernelp;
+typedef boolean checked by booleanp;
+typedef extra!-boolean;
+typedef am_list checked by am_listp;
+typedef am_poly checked by am_polyp;
+
 procedure sfto_dcontentf(u);
    % Standard form tools domain content standard form. [u] is an SF.
    % Returns a domain element, which is the (non-negatice) content of
    % [u] as a multivariate polynomial over the current domain.
    sfto_dcontentf1(u,nil);
+
+assert sfto_dcontentf: (sf) -> domain;
 
 procedure sfto_dcontentf1(u,g);
    % Standard form tools domain content standard form subroutine. [u]
@@ -73,12 +89,16 @@ procedure sfto_dcontentf1(u,g);
    else
       sfto_dcontentf1(red u,sfto_dcontentf1(lc u,g));
 
+assert sfto_dcontentf1: (sf,domain) -> domain;
+
 procedure sfto_dprpartf(u);
    % Standard form tools domain primitive part standard form. [u] is
    % an SF. Returns an SF which is the primitive part of [u] as a
    % multivariate polynomial over the current domain. The sign of the
    % head coefficient in this primitive part is positive.
    sfto_dprpartf1(u,sfto_dcontentf u);
+
+assert sfto_dprpartf: (sf) -> sf;
 
 procedure sfto_dprpartksf(u);
    % Standard form tools domain primitive part standard form keep
@@ -88,12 +108,16 @@ procedure sfto_dprpartksf(u);
    % [u].
    quotf(u,sfto_dcontentf u);
 
+assert sfto_dprpartksf: (sf) -> sf;
+
 procedure sfto_dprpartf1(u,c);
    % Standard form tools domain primitive part standard form
    % subroutine. [u] and [c] are SF's. Returns an SF which is the
    % primitive part of [u] as a multivariate polynomial over the
    % current domain.
    (if minusf w then negf w else w) where w = quotf(u,c);
+
+assert sfto_dprpartf1: (sf,sf) -> sf;
 
 procedure sfto_sqfpartf(u);
    % Standard form tools square-free part. [u] is a non-zero SF.
@@ -106,11 +130,15 @@ procedure sfto_sqfpartf(u);
       return multf(sfto_sqfpartf(c),quotf(pp,sfto_gcdf!*(pp,diff(pp,mvar u))))
    end;
 
+assert sfto_sqfpartf: (sf!*) -> sf!*;
+
 procedure sfto_ucontentf(u);
    % Standard form tools univariate content standard form. [u] is an
    % SF. Returns the content of [u] as a univariate polynomial in its
    % [mvar] over the polynomial ring in all other contained variables.
    if domainp u then u else sfto_ucontentf1(u,mvar u);
+
+assert sfto_ucontentf: (sf) -> sf;
 
 procedure sfto_ucontentf1(u,v);
    % Standard form tools univariate content standard form subroutine.
@@ -120,12 +148,16 @@ procedure sfto_ucontentf1(u,v);
    if domainp u or mvar u neq v then u else
       sfto_gcdf!*(lc u,sfto_ucontentf1(red u,v));
 
+assert sfto_ucontentf1: (sf,kernel) -> sf;
+
 procedure sfto_uprpartf(u);
    % Standard form tools univariate primitive part. [u] is an SF.
    % Returns the primitive part of [u] as a univariate polynomial in
    % its [mvar] over the polynomial ring in all other contained
    % variables.
    quotf(u,sfto_ucontentf u);
+
+assert sfto_uprpartf: (sf) -> sf;
 
 procedure sfto_tsqsumf(u);
    % Standard form tools trivial square sum standard form. [u] is an
@@ -139,8 +171,12 @@ procedure sfto_tsqsumf(u);
    else
       evenp ldeg u and sfto_tsqsumf lc u and sfto_tsqsumf red u;
 
+assert sfto_tsqsumf: (sf) -> id;
+
 procedure sfto_tsqsum!$(argl);
    sfto_tsqsumf(numr simp car argl);
+
+assert sfto_tsqsum!$: (list) -> id;
 
 procedure sfto_sqfdecf(u);
    % Standard form tools multivariate square-free decomposition
@@ -158,6 +194,8 @@ procedure sfto_sqfdecf(u);
       return sfto_sqdmerge(sfto_sqfdecf(c),sfto_usqfdecf(pp))
    end;
 
+assert sfto_sqfdecf: (sf) -> alist;
+
 procedure sfto_sqfdec!$(argl);
    % Standard form tools square free decomposition. [argl] is an
    % argument list. Returns an AM list of AM lists of the form
@@ -168,6 +206,8 @@ procedure sfto_sqfdec!$(argl);
       	 if (w := prepf car x) neq 1 then {{'list,w,cdr x}}
    end;
 
+assert sfto_sqfdec!$: (list) -> am_list;
+
 procedure sfto_usqfdecf(u);
    if !*sfto_yun then
       sfto_yun!-usqfdecf u
@@ -177,6 +217,8 @@ procedure sfto_usqfdecf(u);
       sfto_tobey!-usqfdecf u
    else
       rederr {"sfto_usqfdecf: select a decomposition method"};
+
+assert sfto_usqfdecf: (sf) -> alist;
 
 procedure sfto_yun!-usqfdecf(p);
    % Standard form tools univariate square-free decomposition after
@@ -201,6 +243,8 @@ procedure sfto_yun!-usqfdecf(p);
       return reversip l
    end;
 
+assert sfto_yun!-usqfdecf: (sf) -> alist;
+
 procedure sfto_musser!-usqfdecf(u);
    % Standard form tools univariate square-free decomposition after
    % Musser. [p] is a an SF that is viewed a univariate Polynomial in
@@ -223,6 +267,8 @@ procedure sfto_musser!-usqfdecf(u);
       l := (sqfp . (n := n+1)) . l;
       return reversip l
    end;
+
+assert sfto_musser!-usqfdecf: (sf) -> alist;
 
 procedure sfto_tobey!-usqfdecf(u);
    % Standard form tools univariate square-free decomposition after
@@ -247,6 +293,8 @@ procedure sfto_tobey!-usqfdecf(u);
       return reversip l
    end;
 
+assert sfto_tobey!-usqfdecf: (sf) -> alist;
+
 procedure sfto_sqdmerge(l1,l2);
    % Standard form tools square-free decomposition merge
    begin scalar l;
@@ -259,6 +307,8 @@ procedure sfto_sqdmerge(l1,l2);
       if l2 then l := nconc(l,l2);
       return l
    end;
+
+assert sfto_sqdmerge: (alist,alist) -> alist;
 
 procedure sfto_pdecf(u);
    % Standard form tools multivariate parity decomposition. [u] is an
@@ -277,6 +327,8 @@ procedure sfto_pdecf(u);
       return multf(car dpdc,car dpdpp) . multf(cdr dpdc,cdr dpdpp)
    end;
 
+assert sfto_pdecf: (sf) -> pair;
+
 procedure sfto_updecf(u);
    if !*sfto_yun then
       sfto_yun!-updecf u
@@ -284,6 +336,8 @@ procedure sfto_updecf(u);
       sfto_musser!-updecf u
    else
       rederr {"sfto_updecf: select a decomposition method"};
+
+assert sfto_updecf: (sf) -> pair;
 
 procedure sfto_yun!-updecf(p);
    begin scalar !*gcd,x,g,c,d,w,l,od;
@@ -302,6 +356,8 @@ procedure sfto_yun!-updecf(p);
       >> until domainp c;
       return l
    end;
+
+assert sfto_yun!-updecf: (sf) -> pair;
 
 procedure sfto_musser!-updecf(u);
    begin scalar !*gcd,od,v,u1,sqfp,sqfp1,l;
@@ -328,15 +384,21 @@ procedure sfto_musser!-updecf(u);
       return l
    end;
 
+assert sfto_musser!-updecf: (sf) -> pair;
+
 procedure sfto_pdec!$(argl);
    {'list,prepf car w,prepf cdr w}
       where w=sfto_pdecf numr simp car argl;
+
+assert sfto_pdec!$: (list) -> am_list;
 
 procedure sfto_decdegf(u,k,n);
    % Standard form tools decrement degree standard form. [u] is an SF;
    % [k] is a variable; [n] is an integer. Returns an SF. Replace each
    % occurence of $[k]^d$ by $k^(d/n)$.
    reorder sfto_decdegf1(sfto_reorder(u,k),k,n);
+
+assert sfto_decdegf: (sf,kernel,number) -> sf;
 
 procedure sfto_decdegf1(u,k,n);
    % Standard form tools decrement degree standard form. [u] is an SF
@@ -346,6 +408,8 @@ procedure sfto_decdegf1(u,k,n);
       u
    else
       mvar u .** (ldeg u / n) .* lc u .+ sfto_decdegf1(red u,k,n);
+
+assert sfto_decdegf1: (any,kernel,number) -> any;
 
 procedure sfto_reorder(u,v);
    % Standard form tools reorder. [u] is an SF; [v] is a kernel.
@@ -357,6 +421,8 @@ procedure sfto_reorder(u,v);
       return u
    end;
 
+assert sfto_reorder: (sf,kernel) -> any;
+
 procedure sfto_groebnerf(l);
    % Standard form tools Groebner calculation standard form. [l] is a
    % list of SF's. Returns a list of SF's. The returned list is the
@@ -367,6 +433,8 @@ procedure sfto_groebnerf(l);
       return for each x in cdr w collect
 	 numr simp x
    end;
+
+assert sfto_groebnerf: (list) -> list;
 
 procedure sfto_preducef(f,gl);
    % Standard form tools polynomial reduction standard form. [f] is an
@@ -380,6 +448,8 @@ procedure sfto_preducef(f,gl);
       numr simp preduceeval {
 	 prepf f,'list . for each sf in gl collect prepf sf};
 
+assert sfto_preducef: (sf,list) -> sf;
+
 procedure sfto_greducef(f,gl);
    % Standard form tools polynomial reduction standard form. [f] is an
    % SF and [gl] a list of SF's. Returns the SF [f] reduced wrt. a
@@ -392,6 +462,8 @@ procedure sfto_greducef(f,gl);
       numr simp greduceeval {
 	 prepf f,'list . for each sf in gl collect prepf sf};
 
+assert sfto_greducef: (sf,list) -> sf;
+
 procedure sfto_gcdf!*(f,g);
    % Standard form tools greatest common divisor of standard forms.
    % [f] and [g] are SF's. Returns an SF, the GCD of [f] and [g].
@@ -400,6 +472,8 @@ procedure sfto_gcdf!*(f,g);
    % variables of a degree greater than 2 is greater than 1, then use
    % [ezgcd].
    sfto_gcdf(f,g) where !*gcd=T;
+
+assert sfto_gcdf!*: (sf,sf) -> sf;
 
 procedure sfto_gcdf(f,g);
    % Standard form tools greatest common divisor of standard forms.
@@ -416,6 +490,8 @@ procedure sfto_gcdf(f,g);
    else
       ezgcdf(f,g);
 
+assert sfto_gcdf: (sf,sf) -> sf;
+
 procedure sfto_davp(f,badv);
    % Standard form tools Davenport predicate. [f] is an SF; [v] is a
    % kernel or [nil]. Returns Boolean. [T] means [gcdf] can be used.
@@ -428,6 +504,8 @@ procedure sfto_davp(f,badv);
 	 sfto_davp(lc f,mvar f) and sfto_davp(red f,mvar f)
    else
       sfto_davp(lc f,badv) and sfto_davp(red f,badv);
+
+assert sfto_davp: (sf,kernel) -> boolean;
 
 procedure sfto_sqrtf(f);
    % Standard form tools square root standard form. Returns [nil] or
@@ -452,11 +530,15 @@ procedure sfto_sqrtf(f);
 	 return result
    end;
 
+assert sfto_sqrtf: (sf) -> extra!-boolean;
+
 procedure sfto_monfp(sf);
    % Standard form tools monomial predicate. [f] is an SF. Returns an
    % SF. Check if [sf] is of the form $a x_1 \dots x_n$ for a domain
    % element $a$ and kernels $x_i$.
    domainp sf or (null red sf and sfto_monfp lc sf);
+
+assert sfto_monfp: (sf) -> sf;
 
 procedure sfto_sqfpartz(z);
    % Standard form tools square free part of an integer. [z] is an
@@ -464,12 +546,16 @@ procedure sfto_sqfpartz(z);
    % Returns $\prod \{p_i\}$.
    sfto_zdgen(z,0);
 
+assert sfto_sqfpartz: (number) -> number;
+
 procedure sfto_zdeqn(z,n);
    % Standard form tools z decomposition equal n. [z] is an integer
-   % with prime decomposition $p_1^{e_1}\cdots p_n^{e_n}$; [n] is a
+   % with prime decomposition $p_1^{e_1}\cdots p_m^{e_m}$; [n] is a
    % positive integer. Returns $\prod \{p_i:e_i=n\}$.
    for each x in zfactor z product
       if cdr x = n then car x else 1;
+
+assert sfto_zdeqn: (number,number) -> number;
 
 procedure sfto_zdgtn(z,n);
    % Standard form tools z decomposition greater than n. [z] is an
@@ -478,6 +564,8 @@ procedure sfto_zdgtn(z,n);
    for each x in zfactor z product
       if cdr x > n then car x else 1;
 
+assert sfto_zdgtn: (number,number) -> number;
+
 procedure sfto_zdgen(z,n);
    % Standard form tools z decomposition greater than or equal to n.
    % [z] is an integer with prime decomposition $p_1^{e_1}\cdots
@@ -485,6 +573,8 @@ procedure sfto_zdgen(z,n);
    % \{p_i:e_i\geq n\}$.
    for each x in zfactor z product
       if cdr x >= n then car x else 1;
+
+assert sfto_zdgen: (number,number) -> number;
 
 procedure sfto_exteucf(a,b);
    % Standard form tools extended Euclidean Algorithm for polynomials.
@@ -518,6 +608,8 @@ procedure sfto_exteucf(a,b);
       return {resimp !*f2q a,resimp !*f2q s,resimp !*f2q tt}
    end;
 
+assert sfto_exteucf: (sf,sf) -> list;
+
 procedure exteuc(a,b);
    begin scalar af,bf,ka,kb;
       af := numr simp a;
@@ -529,6 +621,8 @@ procedure exteuc(a,b);
 	 rederr "non-univariate input polynomial";
       return 'list . for each x in sfto_exteucf(af,bf) collect prepsq x
    end;
+
+assert exteuc: (am_poly,am_poly) -> am_list;
 
 procedure sfto_exteucd(a,b);
    % Standard form tools extended Euclidean Algorithm for domain
@@ -558,10 +652,14 @@ procedure sfto_exteucd(a,b);
       return {a,s,tt}
    end;
 
+assert sfto_exteucd: (number,number) -> list;
+
 procedure sfto_linp(f,vl);
    % Standard form tools linear predicate. [f] is a SF; [vl] is a list
    % of variables. Returns Bool. Returns [T] if [f] is linear in [vl].
    sfto_linp1(f,vl,nil);
+
+assert sfto_linp: (sf,list) -> boolean;
 
 procedure sfto_linp1(f,vl,oc);
    domainp f or
@@ -570,23 +668,29 @@ procedure sfto_linp1(f,vl,oc);
       (mvar f memq vl and not(mvar f memq oc) and ldeg f = 1 and
 	 sfto_linp1(lc f,vl,mvar f . oc) and sfto_linp1(red f,vl,oc));
 
+assert sfto_linp1: (sf,list,list) -> boolean;
+
 procedure sfto_linwpp(f,vl);
-   % Standard form tools linear and weak parametric predicate. [f] is
-   % a SF; [vl] is a list of variables. Returns Bool. Returns [T] if
-   % [f] is linear and weak parametric in [vl].
+   % Standard form tools linear and weakly parametric predicate. [f] is
+   % a SF; [vl] is a list of variables. Returns Bool. Returns [T] if [f]
+   % is linear and weakly parametric in [vl].
    domainp f or
       (not(mvar f memq vl) and null intersection(kernels lc f,vl) and
 	 sfto_linwpp(red f,vl)) or
       (mvar f memq vl and ldeg f = 1 and domainp lc f and
 	 sfto_linwpp(red f,vl));
 
+assert sfto_linwpp: (sf,list) -> boolean;
+
 procedure sfto_varf(f);
    % Variable form. [f] is an SF. Returns [nil] or an identifier. If
    % [f] is a variable then return the corresponding kernel else
-   % return nil. In contrast to sfto_varf, this function rerturn also
+   % return nil. In contrast to sfto_idvarf, this function rerturn also
    % non-atomic kernels.
    if not domainp f and null red f and eqn(lc f,1) and eqn(ldeg f,1) then
       mvar f;
+
+assert sfto_varf: (sf) -> extra!-boolean;
 
 procedure sfto_idvarf(f);
    % Identifier variable form. [f] is an SF. Returns [nil] or an
@@ -597,17 +701,23 @@ procedure sfto_idvarf(f);
    then
       mvar f;
 
+assert sfto_idvarf: (sf) -> extra!-boolean;
+
 procedure sfto_lmultf(fl);
    % Ordered field standard form list multf. [fl] is a list of SFs.
    % Returns an SF. Result is the product of the SFs in [fl].
    if null fl then 1 else multf(car fl,sfto_lmultf cdr fl);
 
+assert sfto_lmultf: (list) -> sf;
+
 procedure degree(u);
    sfto_tdegf numr simp u;
 
+assert degree: (am_poly) -> number;
+
 procedure sfto_tdegf(f);
    % Ordered field standard form total degree standard form. [f] is an
-   % SF. Returns an SF. The result is the total degree of [f].
+   % SF. Returns a number. The result is the total degree of [f].
    begin scalar w,x; integer td;
       if domainp f then
       	 return 0;
@@ -624,12 +734,18 @@ procedure sfto_tdegf(f);
       return td
    end;
 
+assert sfto_tdegf: (sf) -> number;
+
 procedure coefficients(f,vl);
    'list . for each c in sfto_allcoeffs(numr simp f,cdr vl) collect
       prepf c;
 
+assert coefficients: (am_poly,am_list) -> am_list;
+
 procedure sfto_allcoeffs(f,vl);
    sfto_allcoeffs1({f},vl);
+
+assert sfto_allcoeffs: (sf,list) -> list;
 
 procedure sfto_allcoeffs1(l,vl);
    if null vl then
@@ -638,8 +754,12 @@ procedure sfto_allcoeffs1(l,vl);
       sfto_allcoeffs1(for each f in l join
 	 sfto_coefs(sfto_reorder(f,car vl),car vl),cdr vl);
 
+assert sfto_allcoeffs1: (list,list) -> list;
+
 procedure sfto_coefs(f,v);
    if not domainp f and mvar f eq v then coeffs f else {f};
+
+assert sfto_coefs: (sf,kernel) -> list;
 
 endmodule;  % [sfto]
 
