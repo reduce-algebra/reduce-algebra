@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u59.c Machine generated C code */
 
-/* Signature: 00000000 13-Aug-2010 */
+/* Signature: 00000000 20-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -939,7 +939,7 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem;
 #ifdef COMMON
 extern Lisp_Object keyword_package;
 extern Lisp_Object all_packages, package_symbol, internal_symbol;
@@ -1130,6 +1130,8 @@ extern Lisp_Object * volatile stacklimit;
 #define gchook                BASE[153]
 #define resources             BASE[154]
 #define callstack             BASE[155]
+#define procstack             BASE[156]
+#define procmem               BASE[157]
 #ifdef COMMON
 #define keyword_package       BASE[170]
 #define all_packages          BASE[171]
@@ -1143,9 +1145,9 @@ extern Lisp_Object * volatile stacklimit;
 #define format_symbol         BASE[179]
 #define expand_def_symbol     BASE[180]
 #define allow_key_key         BASE[181]
+#endif
 #define declare_symbol        BASE[182]
 #define special_symbol        BASE[183]
-#endif
 extern Lisp_Object user_base_0, user_base_1, user_base_2;
 extern Lisp_Object user_base_3, user_base_4, user_base_5;
 extern Lisp_Object user_base_6, user_base_7, user_base_8;
@@ -1170,6 +1172,7 @@ extern Lisp_Object volatile saveheaplimit;
 extern Lisp_Object volatile savevheaplimit;
 extern char *exit_charvec;
 extern intptr_t exit_reason;
+extern int procstackp;
 #ifdef DEBUG
 extern int trace_all;
 #endif
@@ -1317,7 +1320,13 @@ extern CSLbool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+extern sigjmp_buf *errorset_buffer;
+extern sigjmp_buf my_exit_buffer;
+#else
 extern jmp_buf *errorset_buffer;
+extern jmp_buf my_exit_buffer;
+#endif
 #endif
 extern char *errorset_msg;
 extern int errorset_code;
@@ -6584,7 +6593,7 @@ v161:
 v351:
     stack[-3] = v342;
     v343 = stack[-9];
-    v342 = elt(env, 4); /* lambda_l73kh2_12 */
+    v342 = elt(env, 4); /* lambda_l7fvk7_12 */
     fn = elt(env, 16); /* sort */
     v342 = (*qfn2(fn))(qenv(fn), v343, v342);
     nil = C_nil;
@@ -6637,7 +6646,7 @@ v354:
 
 v353:
     v343 = stack[-6];
-    v342 = elt(env, 5); /* lambda_l73kh2_13 */
+    v342 = elt(env, 5); /* lambda_l7fvk7_13 */
     fn = elt(env, 16); /* sort */
     v342 = (*qfn2(fn))(qenv(fn), v343, v342);
     nil = C_nil;
@@ -6645,7 +6654,7 @@ v353:
     env = stack[-12];
     stack[-6] = v342;
     v343 = stack[-7];
-    v342 = elt(env, 6); /* lambda_l73kh2_14 */
+    v342 = elt(env, 6); /* lambda_l7fvk7_14 */
     fn = elt(env, 17); /* ad_signsort */
     v342 = (*qfn2(fn))(qenv(fn), v343, v342);
     nil = C_nil;
@@ -6996,9 +7005,9 @@ v346:
 
 
 
-/* Code for lambda_l73kh2_14 */
+/* Code for lambda_l7fvk7_14 */
 
-static Lisp_Object CC_lambda_l73kh2_14(Lisp_Object env,
+static Lisp_Object CC_lambda_l7fvk7_14(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -7006,7 +7015,7 @@ static Lisp_Object CC_lambda_l73kh2_14(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l73kh2_14");
+    if (check_env(env)) return aerror("env for lambda_l7fvk7_14");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7023,9 +7032,9 @@ static Lisp_Object CC_lambda_l73kh2_14(Lisp_Object env,
 
 
 
-/* Code for lambda_l73kh2_13 */
+/* Code for lambda_l7fvk7_13 */
 
-static Lisp_Object CC_lambda_l73kh2_13(Lisp_Object env,
+static Lisp_Object CC_lambda_l7fvk7_13(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -7033,7 +7042,7 @@ static Lisp_Object CC_lambda_l73kh2_13(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l73kh2_13");
+    if (check_env(env)) return aerror("env for lambda_l7fvk7_13");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7050,9 +7059,9 @@ static Lisp_Object CC_lambda_l73kh2_13(Lisp_Object env,
 
 
 
-/* Code for lambda_l73kh2_12 */
+/* Code for lambda_l7fvk7_12 */
 
-static Lisp_Object CC_lambda_l73kh2_12(Lisp_Object env,
+static Lisp_Object CC_lambda_l7fvk7_12(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -7060,7 +7069,7 @@ static Lisp_Object CC_lambda_l73kh2_12(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l73kh2_12");
+    if (check_env(env)) return aerror("env for lambda_l7fvk7_12");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7120,10 +7129,10 @@ setup_type const u59_setup[] =
     {"evalsubset_eq",           too_few_2,      CC_evalsubset_eq,wrong_no_2},
     {"mk_spec_atlas",           too_few_2,      CC_mk_spec_atlas,wrong_no_2},
     {"dv_skelprod",             too_few_2,      CC_dv_skelprod,wrong_no_2},
-    {"lambda_l73kh2_14",        too_few_2,      CC_lambda_l73kh2_14,wrong_no_2},
-    {"lambda_l73kh2_13",        too_few_2,      CC_lambda_l73kh2_13,wrong_no_2},
-    {"lambda_l73kh2_12",        too_few_2,      CC_lambda_l73kh2_12,wrong_no_2},
-    {NULL, (one_args *)"u59", (two_args *)"5332 6492964 7977429", 0}
+    {"lambda_l7fvk7_14",        too_few_2,      CC_lambda_l7fvk7_14,wrong_no_2},
+    {"lambda_l7fvk7_13",        too_few_2,      CC_lambda_l7fvk7_13,wrong_no_2},
+    {"lambda_l7fvk7_12",        too_few_2,      CC_lambda_l7fvk7_12,wrong_no_2},
+    {NULL, (one_args *)"u59", (two_args *)"13154 3427922 5443811", 0}
 };
 
 /* end of generated code */

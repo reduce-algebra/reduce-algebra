@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u14.c Machine generated C code */
 
-/* Signature: 00000000 13-Aug-2010 */
+/* Signature: 00000000 20-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -939,7 +939,7 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem;
 #ifdef COMMON
 extern Lisp_Object keyword_package;
 extern Lisp_Object all_packages, package_symbol, internal_symbol;
@@ -1130,6 +1130,8 @@ extern Lisp_Object * volatile stacklimit;
 #define gchook                BASE[153]
 #define resources             BASE[154]
 #define callstack             BASE[155]
+#define procstack             BASE[156]
+#define procmem               BASE[157]
 #ifdef COMMON
 #define keyword_package       BASE[170]
 #define all_packages          BASE[171]
@@ -1143,9 +1145,9 @@ extern Lisp_Object * volatile stacklimit;
 #define format_symbol         BASE[179]
 #define expand_def_symbol     BASE[180]
 #define allow_key_key         BASE[181]
+#endif
 #define declare_symbol        BASE[182]
 #define special_symbol        BASE[183]
-#endif
 extern Lisp_Object user_base_0, user_base_1, user_base_2;
 extern Lisp_Object user_base_3, user_base_4, user_base_5;
 extern Lisp_Object user_base_6, user_base_7, user_base_8;
@@ -1170,6 +1172,7 @@ extern Lisp_Object volatile saveheaplimit;
 extern Lisp_Object volatile savevheaplimit;
 extern char *exit_charvec;
 extern intptr_t exit_reason;
+extern int procstackp;
 #ifdef DEBUG
 extern int trace_all;
 #endif
@@ -1317,7 +1320,13 @@ extern CSLbool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+extern sigjmp_buf *errorset_buffer;
+extern sigjmp_buf my_exit_buffer;
+#else
 extern jmp_buf *errorset_buffer;
+extern jmp_buf my_exit_buffer;
+#endif
 #endif
 extern char *errorset_msg;
 extern int errorset_code;
@@ -3993,7 +4002,7 @@ v197:
     env = stack[-11];
     if (v193 == nil) goto v198;
     v194 = stack[-6];
-    v193 = elt(env, 2); /* lambda_l73kgv_1 */
+    v193 = elt(env, 2); /* lambda_l7fvjw_1 */
     fn = elt(env, 4); /* sort */
     v193 = (*qfn2(fn))(qenv(fn), v194, v193);
     nil = C_nil;
@@ -4228,16 +4237,16 @@ v196:
 
 
 
-/* Code for lambda_l73kgv_1 */
+/* Code for lambda_l7fvjw_1 */
 
-static Lisp_Object CC_lambda_l73kgv_1(Lisp_Object env,
+static Lisp_Object CC_lambda_l7fvjw_1(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v19)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v103, v145;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l73kgv_1");
+    if (check_env(env)) return aerror("env for lambda_l7fvjw_1");
 #endif
     if (stack >= stacklimit)
     {
@@ -7770,7 +7779,7 @@ setup_type const u14_setup[] =
     {"mv2sf1",                  wrong_no_na,    wrong_no_nb,   (n_args *)CC_mv2sf1},
     {"mo_lcm",                  too_few_2,      CC_mo_lcm,     wrong_no_2},
     {"pa_coinc_split",          too_few_2,      CC_pa_coinc_split,wrong_no_2},
-    {"lambda_l73kgv_1",         too_few_2,      CC_lambda_l73kgv_1,wrong_no_2},
+    {"lambda_l7fvjw_1",         too_few_2,      CC_lambda_l7fvjw_1,wrong_no_2},
     {"invbf",                   CC_invbf,       too_many_1,    wrong_no_1},
     {"mkcr",                    too_few_2,      CC_mkcr,       wrong_no_2},
     {"lto_hashequalq",          too_few_2,      CC_lto_hashequalq,wrong_no_2},
@@ -7809,7 +7818,7 @@ setup_type const u14_setup[] =
     {"inttovec1",               too_few_2,      CC_inttovec1,  wrong_no_2},
     {"rd:plus",                 too_few_2,      CC_rdTplus,    wrong_no_2},
     {"nfactorial",              CC_nfactorial,  too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u14", (two_args *)"3233 7052254 5806480", 0}
+    {NULL, (one_args *)"u14", (two_args *)"12759 5321412 9171625", 0}
 };
 
 /* end of generated code */

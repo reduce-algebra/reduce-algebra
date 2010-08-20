@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 46ca9ab5 18-Aug-2010 */
+/* Signature: 1a97ed4e 19-Aug-2010 */
 
 
 /*
@@ -106,7 +106,8 @@ extern int cslfinish(character_writer *wr);
  */
 
 extern int execute_lisp_function(char *fname,
-                                  character_reader *rd, character_writer *wr);
+                                 character_reader *r,
+                                 character_writer *w);
 
 
 /*
@@ -122,12 +123,12 @@ extern int execute_lisp_function(char *fname,
  * Example:
  *  Task:   differentiate (x+1)^2 with respect to x
  *  Method: clear_stack();
- *          load_symbol("x");
- *          load_integer(1)
+ *          push_symbol("x");
+ *          push_small_integer(1);
  *          make_function_call("plus",2);   function plus has 2 arguments.
- *          load_integer(2);
- *          make_function_call("expt",2)
- *          load_symbol("x");
+ *          push_small_integer(2);
+ *          make_function_call("expt",2);
+ *          push_symbol("x");
  *          make_function_call("df",2);     "df" is for differentiate.
  *                                          To use this you need to learn
  *                                          the named Reduce uses for all
@@ -135,6 +136,7 @@ extern int execute_lisp_function(char *fname,
  *          simplify();                     up until now the form built
  *                                          has been just the prefix form
  *                                          (expt (plus x 1) 2).
+ *          dup();                          because save will pop the stack
  *          save(1);                        save in "memory number 1".
  *          make_printable();               the simplified form is in
  *                                          a Reduce internal representation,
@@ -247,6 +249,7 @@ extern PROC_handle PROC_get_value();
  */
 
 extern int PROC_atom(PROC_handle p);
+extern int PROC_null(PROC_handle p);
 extern int PROC_fixnum(PROC_handle p);
 extern int PROC_symbol(PROC_handle p);
 
@@ -272,6 +275,15 @@ extern PROC_handle PROC_rest(PROC_handle p);
 
 extern int32_t PROC_integer_value(PROC_handle p);
 extern char *PROC_symbol_name(PROC_handle p);
+
+#ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+extern sigjmp_buf my_exit_buffer;
+#else
+extern jmp_buf my_exit_buffer;
+#endif
+#endif
+extern volatile int my_return_code;
 
 #endif /* header_proc_h */
 

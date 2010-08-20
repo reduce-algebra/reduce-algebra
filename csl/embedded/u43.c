@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u43.c Machine generated C code */
 
-/* Signature: 00000000 13-Aug-2010 */
+/* Signature: 00000000 20-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -939,7 +939,7 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem;
 #ifdef COMMON
 extern Lisp_Object keyword_package;
 extern Lisp_Object all_packages, package_symbol, internal_symbol;
@@ -1130,6 +1130,8 @@ extern Lisp_Object * volatile stacklimit;
 #define gchook                BASE[153]
 #define resources             BASE[154]
 #define callstack             BASE[155]
+#define procstack             BASE[156]
+#define procmem               BASE[157]
 #ifdef COMMON
 #define keyword_package       BASE[170]
 #define all_packages          BASE[171]
@@ -1143,9 +1145,9 @@ extern Lisp_Object * volatile stacklimit;
 #define format_symbol         BASE[179]
 #define expand_def_symbol     BASE[180]
 #define allow_key_key         BASE[181]
+#endif
 #define declare_symbol        BASE[182]
 #define special_symbol        BASE[183]
-#endif
 extern Lisp_Object user_base_0, user_base_1, user_base_2;
 extern Lisp_Object user_base_3, user_base_4, user_base_5;
 extern Lisp_Object user_base_6, user_base_7, user_base_8;
@@ -1170,6 +1172,7 @@ extern Lisp_Object volatile saveheaplimit;
 extern Lisp_Object volatile savevheaplimit;
 extern char *exit_charvec;
 extern intptr_t exit_reason;
+extern int procstackp;
 #ifdef DEBUG
 extern int trace_all;
 #endif
@@ -1317,7 +1320,13 @@ extern CSLbool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+extern sigjmp_buf *errorset_buffer;
+extern sigjmp_buf my_exit_buffer;
+#else
 extern jmp_buf *errorset_buffer;
+extern jmp_buf my_exit_buffer;
+#endif
 #endif
 extern char *errorset_msg;
 extern int errorset_code;
@@ -4534,7 +4543,7 @@ static Lisp_Object CC_randpoly(Lisp_Object env,
     stack[-15] = nil;
     stack[-12] = nil;
     stack[-7] = nil;
-    v261 = elt(env, 1); /* lambda_l73kh0_11 */
+    v261 = elt(env, 1); /* lambda_l7fvk3_11 */
     stack[-13] = v261;
     v261 = (Lisp_Object)81; /* 5 */
     stack[-10] = v261;
@@ -5326,17 +5335,17 @@ v266:
 
 
 
-/* Code for lambda_l73kh0_11 */
+/* Code for lambda_l7fvk3_11 */
 
-static Lisp_Object MS_CDECL CC_lambda_l73kh0_11(Lisp_Object env, int nargs, ...)
+static Lisp_Object MS_CDECL CC_lambda_l7fvk3_11(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v90, v85;
     Lisp_Object fn;
     CSL_IGNORE(nil);
-    argcheck(nargs, 0, "lambda_l73kh0_11");
+    argcheck(nargs, 0, "lambda_l7fvk3_11");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l73kh0_11");
+    if (check_env(env)) return aerror("env for lambda_l7fvk3_11");
 #endif
     if (stack >= stacklimit)
     {
@@ -7178,7 +7187,7 @@ setup_type const u43_setup[] =
     {"dm-lt",                   too_few_2,      CC_dmKlt,      wrong_no_2},
     {"exdfp0",                  CC_exdfp0,      too_many_1,    wrong_no_1},
     {"randpoly",                CC_randpoly,    too_many_1,    wrong_no_1},
-    {"lambda_l73kh0_11",        wrong_no_na,    wrong_no_nb,   (n_args *)CC_lambda_l73kh0_11},
+    {"lambda_l7fvk3_11",        wrong_no_na,    wrong_no_nb,   (n_args *)CC_lambda_l7fvk3_11},
     {"noncom1",                 CC_noncom1,     too_many_1,    wrong_no_1},
     {"split-wrt-variables",     wrong_no_na,    wrong_no_nb,   (n_args *)CC_splitKwrtKvariables},
     {"groeb_updatepl",          wrong_no_na,    wrong_no_nb,   (n_args *)CC_groeb_updatepl},
@@ -7195,7 +7204,7 @@ setup_type const u43_setup[] =
     {"bassoc",                  too_few_2,      CC_bassoc,     wrong_no_2},
     {"quotfexf*1",              too_few_2,      CC_quotfexfH1, wrong_no_2},
     {"bc_power",                too_few_2,      CC_bc_power,   wrong_no_2},
-    {NULL, (one_args *)"u43", (two_args *)"9543 5783623 9442950", 0}
+    {NULL, (one_args *)"u43", (two_args *)"460 3342080 1651564", 0}
 };
 
 /* end of generated code */

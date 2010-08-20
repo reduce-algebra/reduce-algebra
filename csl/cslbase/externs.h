@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 15993f50 18-Aug-2010 */
+/* Signature: 35142bac 19-Aug-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -934,7 +934,13 @@ extern CSLbool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+extern sigjmp_buf *errorset_buffer;
+extern sigjmp_buf my_exit_buffer;
+#else
 extern jmp_buf *errorset_buffer;
+extern jmp_buf my_exit_buffer;
+#endif
 #endif
 extern char *errorset_msg;
 extern int errorset_code;

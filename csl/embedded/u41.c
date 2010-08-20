@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u41.c Machine generated C code */
 
-/* Signature: 00000000 13-Aug-2010 */
+/* Signature: 00000000 20-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -939,7 +939,7 @@ extern Lisp_Object trace_output, fasl_stream;
 extern Lisp_Object native_code, native_symbol, traceprint_symbol;
 extern Lisp_Object loadsource_symbol;
 extern Lisp_Object hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
-extern Lisp_Object gchook, resources, callstack;
+extern Lisp_Object gchook, resources, callstack, procstack, procmem;
 #ifdef COMMON
 extern Lisp_Object keyword_package;
 extern Lisp_Object all_packages, package_symbol, internal_symbol;
@@ -1130,6 +1130,8 @@ extern Lisp_Object * volatile stacklimit;
 #define gchook                BASE[153]
 #define resources             BASE[154]
 #define callstack             BASE[155]
+#define procstack             BASE[156]
+#define procmem               BASE[157]
 #ifdef COMMON
 #define keyword_package       BASE[170]
 #define all_packages          BASE[171]
@@ -1143,9 +1145,9 @@ extern Lisp_Object * volatile stacklimit;
 #define format_symbol         BASE[179]
 #define expand_def_symbol     BASE[180]
 #define allow_key_key         BASE[181]
+#endif
 #define declare_symbol        BASE[182]
 #define special_symbol        BASE[183]
-#endif
 extern Lisp_Object user_base_0, user_base_1, user_base_2;
 extern Lisp_Object user_base_3, user_base_4, user_base_5;
 extern Lisp_Object user_base_6, user_base_7, user_base_8;
@@ -1170,6 +1172,7 @@ extern Lisp_Object volatile saveheaplimit;
 extern Lisp_Object volatile savevheaplimit;
 extern char *exit_charvec;
 extern intptr_t exit_reason;
+extern int procstackp;
 #ifdef DEBUG
 extern int trace_all;
 #endif
@@ -1317,7 +1320,13 @@ extern CSLbool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick(void);
 extern int current_fp_rep;
 #ifndef __cplusplus
+#ifdef USE_SIGALTSTACK
+extern sigjmp_buf *errorset_buffer;
+extern sigjmp_buf my_exit_buffer;
+#else
 extern jmp_buf *errorset_buffer;
+extern jmp_buf my_exit_buffer;
+#endif
 #endif
 extern char *errorset_msg;
 extern int errorset_code;
@@ -4674,7 +4683,7 @@ v39:
 
 v141:
     v63 = stack[-5];
-    v182 = elt(env, 2); /* lambda_l73kgz_10 */
+    v182 = elt(env, 2); /* lambda_l7fvk3_10 */
     fn = elt(env, 4); /* sort */
     v182 = (*qfn2(fn))(qenv(fn), v63, v182);
     nil = C_nil;
@@ -4738,9 +4747,9 @@ v61:
 
 
 
-/* Code for lambda_l73kgz_10 */
+/* Code for lambda_l7fvk3_10 */
 
-static Lisp_Object CC_lambda_l73kgz_10(Lisp_Object env,
+static Lisp_Object CC_lambda_l7fvk3_10(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -4748,7 +4757,7 @@ static Lisp_Object CC_lambda_l73kgz_10(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l73kgz_10");
+    if (check_env(env)) return aerror("env for lambda_l7fvk3_10");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7399,7 +7408,7 @@ setup_type const u41_setup[] =
     {"lengthreval",             CC_lengthreval, too_many_1,    wrong_no_1},
     {"depend1",                 wrong_no_na,    wrong_no_nb,   (n_args *)CC_depend1},
     {"pst_partition",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_pst_partition},
-    {"lambda_l73kgz_10",        too_few_2,      CC_lambda_l73kgz_10,wrong_no_2},
+    {"lambda_l7fvk3_10",        too_few_2,      CC_lambda_l7fvk3_10,wrong_no_2},
     {"general-minus-mod-p",     CC_generalKminusKmodKp,too_many_1,wrong_no_1},
     {"ofsf_simplat1",           too_few_2,      CC_ofsf_simplat1,wrong_no_2},
     {"multtaylorsq",            too_few_2,      CC_multtaylorsq,wrong_no_2},
@@ -7429,7 +7438,7 @@ setup_type const u41_setup[] =
     {"mod/",                    too_few_2,      CC_modV,       wrong_no_2},
     {"lowestdeg",               wrong_no_na,    wrong_no_nb,   (n_args *)CC_lowestdeg},
     {"allbkern",                CC_allbkern,    too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u41", (two_args *)"9171 9023468 6321745", 0}
+    {NULL, (one_args *)"u41", (two_args *)"8898 1664040 714932", 0}
 };
 
 /* end of generated code */
