@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 48641898 18-Aug-2010 */
+/* Signature: 6082f884 20-Aug-2010 */
 
 #include "headers.h"
 
@@ -91,7 +91,7 @@ int first_char(Lisp_Object ch)
 static int curchar = NOT_CHAR;
 FILE *non_terminal_input;
 
-static int boffop;
+int boffop;
 #define boffo_char(i) ucelt(boffo, i)
 
 
@@ -2998,7 +2998,7 @@ static Lisp_Object backquote_expander(Lisp_Object a)
 
 static CSLbool read_failure;
 
-static void packbyte(int c)
+void packbyte(int c)
 {
     Lisp_Object nil = C_nil;
     int32_t boffo_size = length_of_header(vechdr(boffo));
