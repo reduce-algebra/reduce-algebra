@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5a833279 20-Aug-2010 */
+/* Signature: 4c2942e7 20-Aug-2010 */
 
 
 /*
@@ -197,14 +197,25 @@ extern int PROC_clear_stack();
 extern int PROC_push_symbol(const char *name);
 
 /*
+ *    stack = the-string . stack;
+ */
+
+extern int PROC_push_string(const char *data);
+
+/*
  *    stack = n . stack;
- * (I expect to provide a push_big_integer that will take a string
- *  argument and convert it to a number to push, as in
- *      PROC_push_big_integer("12345678901234567890");
- *  but that is not implemented in release 1 of this code)
+ * Small integers may be up to 28-bits of (signed) data, while
+ * big integers can be almost any size and are denoted here by strings.
+ * Eg:  PROC_push_small_integer(134217727);    largest positive small num
+ *      PROC_push_small_integer(-134217728);   extreme negative case 
+ *      PROC_push_big_integer("-12345678901234567890");
  */
 
 extern int PROC_push_small_integer(int32_t n);
+
+extern int PROC_push_big_integer(const char *n);
+
+extern int PROC_push_floating(double n);
 
 /*
  * Takes n items from the top of the stack and uses them as arguments
@@ -263,7 +274,7 @@ extern int PROC_make_printable();
 
 /*
  * Return a handle to the top item on the stack, and pop the stack. This
- * will normally be called immediatly after a call to PROC_make_printable.
+ * will normally be called immediately after a call to PROC_make_printable.
  * the stack is popped because I view the "printable" version as unsuitable
  * for further use.
  */
@@ -279,6 +290,8 @@ extern PROC_handle PROC_get_value();
 extern int PROC_atom(PROC_handle p);
 extern int PROC_null(PROC_handle p);
 extern int PROC_fixnum(PROC_handle p);
+extern int PROC_floatnum(PROC_handle p);
+extern int PROC_string(PROC_handle p);
 extern int PROC_symbol(PROC_handle p);
 
 /*
@@ -302,7 +315,38 @@ extern PROC_handle PROC_rest(PROC_handle p);
  */
 
 extern int32_t PROC_integer_value(PROC_handle p);
-extern char *PROC_symbol_name(PROC_handle p);
+extern double PROC_floating_value(PROC_handle p);
+extern const char *PROC_symbol_name(PROC_handle p);
+extern const char *PROC_string_data(PROC_handle p);
+
+/*
+ * I also provide some calls that support a sort of ultimate cop-out in
+ * that they maye it possible to call Lisp code directly rather than
+ * just invoking the Reduce simplifier. They also allow one to get back a
+ * raw Lisp result which will have had gensym-names solidified but which
+ * is otherwise unaltered. Note that the way this is achieved means that
+ * things will FAIL if the Lisp result were to be a cyclic structure!
+ */
+
+
+/*
+ * Replace the top item on the stack with whatever is obtained by using
+ * the Lisp EVAL operation on it. Note that this is not intended for
+ * casual use - if there is any functionality that you need PLEASE ask
+ * me to put in a cleaner abstraction to support it.
+ */
+
+extern int PROC_lisp_eval();
+
+/*
+ * Return a handle to the top item on the stack, and pop the stack.
+ * The value here will be a RAW LISP structure and NOT at all necessarily
+ * anything neat.
+ */
+
+extern PROC_handle PROC_get_raw_value();
+
+
 
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK

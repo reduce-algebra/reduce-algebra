@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 35142bac 19-Aug-2010 */
+/* Signature: 1d605e16 20-Aug-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -760,6 +760,9 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+
+extern int boffop;
+extern void packbyte(int c);
 
 #ifndef COMMON
 #ifdef HAVE_FWIN

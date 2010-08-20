@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 0a02bc40 20-Aug-2010 */
+/* Signature: 392b2b38 20-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1264,6 +1264,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 #ifdef CONSERVATIVE
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
+#endif
+#ifdef EMBEDDED
+    fwin_set_lookup(look_in_lisp_variable);
 #endif
     always_noisy = NO;
     stack_segsize = 1;
@@ -3086,8 +3089,43 @@ int PROC_push_symbol(const char *name)
     return 0;
 }
 
+ 
 /*
- * Push an integer, whihc should fit within the constraints of a
+ *    stack = the-string . stack;
+ */
+
+int PROC_push_string(const char *data)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    w = make_string(data);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to make the string */
+    }
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+ 
+/*
+ * Return a handle to the top item on the stack, and pop the stack.
+ * The value here will be a RAW LISP structure and NOT at all necessarily
+ * anything neat.
+ */
+
+/*
+ * Push an integer, which should fit within the constraints of a
  * 28-bit fixnum.
  */
 
@@ -3099,11 +3137,76 @@ int PROC_push_small_integer(int32_t n)
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
 #endif
-/*
- * The code here does not check if the number is in range... Tough! Add
- * that check yourself if you are feeling cautious!
- */
-    w = fixnum_of_int((Lisp_Object)n);
+    if (n > 0x07ffffff || n < -0x08000000)
+    {   w = make_one_word_bignum(n);
+        nil = C_nil;
+        if (exception_pending())
+        {   flip_exception();
+            return 1;  /* Failed to create number */
+        }
+    }
+    else w = fixnum_of_int((Lisp_Object)n);
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+int PROC_push_big_integer(const char *n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+    int len = 0;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+/* Here I need to parse a C string to obtain a Lisp number. */
+    boffop = 0;
+    while (*n != 0)
+    {   packbyte(*n++);
+        len++;
+        nil = C_nil;
+        if (exception_pending())
+        {   flip_exception();
+            return 1;  /* boffo trouble */
+        }
+    }
+    w = intern(len, 0);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* conversion to number */
+    }
+    w = cons(w, procstack);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Failed to push onto stack */
+    }
+    procstack = w;
+    return 0;
+}
+
+int PROC_push_floating(double n)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+/* Here I have to construct a Lisp (boxed) float */
+    w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to create the float */
+    }
     w = cons(w, procstack);
     nil = C_nil;
     if (exception_pending())
@@ -3283,6 +3386,57 @@ int PROC_simplify()
     return 0;
 }
 
+/*
+ * Replace the top item on the stack with whatever is obtained by using
+ * the Lisp EVAL operatio on it. Note that this is not intended for
+ * casual use - if there is any functionality that you need PLEASE ask
+ * me to put in a cleaner abstraction to support it.
+ */
+
+static void PROC_standardise_gensyms(Lisp_Object w)
+{
+    Lisp_Object nil = C_nil;
+    if (consp(w))
+    {   push(qcdr(w));
+        PROC_standardise_gensyms(qcar(w));
+        pop(w);
+        errexitv();
+        PROC_standardise_gensyms(w);
+        return;
+    }
+/*
+ * Now w is atomic. The only case that concerns me is if it is a gensym.
+ */
+    if (symbolp(w)) get_pname(w); /* allocates gensym name if needed. */
+}
+
+int PROC_lisp_eval()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    if (procstack == nil) return 1; /* stack is empty */
+    w = Ceval(qcar(procstack), nil);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Evaluation failed */
+    }
+    push(w);
+    PROC_standardise_gensyms(w);
+    pop(w);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* gensym patchup failed */
+    }
+    qcar(procstack) = w;
+    return 0;
+}
+
 static Lisp_Object PROC_standardise_printed_form(Lisp_Object w)
 {
     Lisp_Object nil = C_nil, w1;
@@ -3389,6 +3543,18 @@ PROC_handle PROC_get_value()
     return (PROC_handle)w;
 }
 
+PROC_handle PROC_get_raw_value()
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w;
+    if (procstack == C_nil) w = nil;
+    else
+    {   w = qcar(procstack);
+        procstack = qcdr(procstack);
+    }
+    return (PROC_handle)w;
+}
+
 /*
  * return true if the expression is atomic.
  */
@@ -3416,6 +3582,21 @@ int PROC_fixnum(PROC_handle p)
     return is_fixnum((Lisp_Object)p);
 }
 
+int PROC_string(PROC_handle p)
+{
+    return is_vector((Lisp_Object)p) &&
+           type_of_header(vechdr((Lisp_Object)p)) == TYPE_STRING;
+}
+
+int PROC_floatnum(PROC_handle p)
+{
+/*
+ * I ignore the "sfloat" representation that would be relevant in Common
+ * Lisp mode. It is not used with Reduce.
+ */
+    return is_bfloat((Lisp_Object)p);
+}
+
 /*
  * Return true if it is a symbol.
  */
@@ -3434,6 +3615,11 @@ int32_t PROC_integer_value(PROC_handle p)
     return (int32_t)int_of_fixnum((Lisp_Object)p);
 }
 
+double PROC_floating_value(PROC_handle p)
+{
+    return double_float_val((Lisp_Object)p);
+}
+
 /*
  * Given that it is a symbol, return a string that is its name. Note
  * that this must not be too long, and that the value returned is in
@@ -3444,14 +3630,29 @@ int32_t PROC_integer_value(PROC_handle p)
  * long it is before somebody falls foul of it!
  */
 
-static char PROC_name[64];
+static char PROC_name[256];
 
-char *PROC_symbol_name(PROC_handle p)
+const char *PROC_symbol_name(PROC_handle p)
 {
     Lisp_Object w = (Lisp_Object)p;
     int n;
     w = qpname(w);
     n = length_of_header(vechdr(w)) - CELL;
+    if (n > sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
+    strncpy(PROC_name, &celt(w, 0), n);
+    PROC_name[n] = 0;
+    return &PROC_name[0];
+}
+
+const char *PROC_string_data(PROC_handle p)
+{
+    Lisp_Object w = (Lisp_Object)p;
+    int n;
+    n = length_of_header(vechdr(w)) - CELL;
+/*
+ * NOTE that I truncate long strings here. Boo Hiss! This may make a mess
+ * of dealing with big numbers, so in due course I will need to fix it!
+ */
     if (n > sizeof(PROC_name)-1) n = sizeof(PROC_name)-1;
     strncpy(PROC_name, &celt(w, 0), n);
     PROC_name[n] = 0;
