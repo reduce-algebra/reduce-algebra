@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 03eb1d2e 19-Aug-2010 */
+/* Signature: 0a02bc40 20-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -2974,6 +2974,75 @@ int ENTRYPOINT(int argc, char *argv[])
  * these return an integer it will genarlly be zero for success and non-
  * zero for failure.
  */
+
+int PROC_load_package(char *name)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    w1 = make_undefined_symbol("load-package");
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to make the load-package */
+    }
+    push(w1);
+    w = make_undefined_symbol(name);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to make name */
+    }
+    pop(w1);
+    Lapply1(nil, w1, w); 
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Failed to load the package */
+    }
+    return 0;
+}
+
+int PROC_set_switch(char *name, int val)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object w = nil, w1 = nil;
+#ifdef CONSERVATIVE
+    volatile Lisp_Object sp;
+    C_stackbase = (Lisp_Object *)&sp;
+#endif
+    w1 = make_undefined_symbol("onoff");
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 1;  /* Failed to make the onoff */
+    }
+    push(w1);
+    w = make_undefined_symbol(name);
+    pop(w1);
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 2;  /* Failed to make name */
+    }
+    Lapply2(nil, 3, w1, w, val == 0 ? nil : lisp_true); 
+    nil = C_nil;
+    if (exception_pending())
+    {   flip_exception();
+        return 3;  /* Failed to set the switch */
+    }
+    return 0;
+}
+
+int PROC_gc_messages(int n)
+{
+    Lisp_Object nil = C_nil;
+    Lverbos(nil, fixnum_of_int(n)); /* can not fail */
+    return 0;
+}
 
 /*
  * Expressions are entered in Reverse Polish Notation, This call clears

@@ -1,4 +1,4 @@
-/*  embedcsl.c                         Copyright (C) 2010 Codemist Ltd */
+/*  driver.c                            Copyright (C) 2010 Codemist Ltd */
 
 
 /**************************************************************************
@@ -32,15 +32,17 @@
 
 
 
-/* Signature: 0b57f866 20-Aug-2010 */
+/* Signature: 06bdfd1f 20-Aug-2010 */
 
 /*
- * This is just the same as csl.c with som estartup code removed so that
- * a separate file (eg driver.c) can use it.
+ * This is code that starts up Reduce and exercises it using a
+ * procedurtal rather than textual interface.
  */
 
 #include <stdio.h>
 #include <setjmp.h>
+#include <string.h>
+#include <stdint.h>
 
 #include "proc.h"
 
@@ -97,12 +99,65 @@ static void display(PROC_handle p)
 }
     
 
+/*
+ * I check return codes and if one of the calls into Reduce reports
+ * trouble I pass the code back with the line number on which it was
+ * provoked packed in. You may have some better idea about what to do
+ * with any failures.
+ */
+
+#define E(x) if (rc=(x)) return (rc*1000000 + __LINE__)
+
+int testcase()
+{
+    PROC_handle p;
+    int rc;
+    E(PROC_gc_messages(0));      /* No messages from garbage collector etc */
+    E(PROC_set_switch("int", 0));/* Running in "batch" mode, so do not even
+                                  * attempt to make any interactive queries
+                                  * about anything.
+                                  */
+    E(PROC_load_package("int")); /* "int" would in fact autoload, but this
+                                  * demonstrates how to load it manually.
+                                  */
+
+    E(PROC_clear_stack());
+
+    E(PROC_push_small_integer(1));               /* 1 */
+    E(PROC_push_symbol("x"));                    /* x */
+    E(PROC_push_small_integer(6));               /* 6 */
+    E(PROC_make_function_call("expt",2));        /* x^6 */
+    E(PROC_push_small_integer(1));               /* 1 */
+    E(PROC_make_function_call("difference",2));  /* x^6-1 */
+    E(PROC_make_function_call("quotient",2));    /* 1/(x^6-1) */
+
+    E(PROC_push_symbol("x"));
+    E(PROC_make_function_call("int",2));
+
+    E(PROC_simplify());
+
+    E(PROC_dup());
+    E(PROC_save(1)); /* note that SAVE pops the item off the stack */
+
+    E(PROC_make_printable());
+    p = PROC_get_value();
+    display(p);
+
+    E(PROC_load(1));
+    E(PROC_push_symbol("x"));
+    E(PROC_make_function_call("df",2));  /* To differentiate it */
+    E(PROC_simplify());
+    E(PROC_make_printable());
+    display(PROC_get_value());           /* with luck this is 1/(x^6-1) */
+    return 0;
+}
+
 extern const char *programDir;
 
 static int submain(int argc, char *argv[])
 {
     char imageName[256], *nargv[4];
-    PROC_handle p;
+    int rc;
 
     sprintf(imageName, "%s/reduce.img", programDir);
     nargv[0] = argv[0];
@@ -114,28 +169,8 @@ static int submain(int argc, char *argv[])
     execute_lisp_function("oem-supervisor", iget, iput);
     printf("Buffered output is <%s>\n", obuff);
 
-    PROC_clear_stack();
+    if ((rc = testcase()) != 0) printf("Return code = %d\n", rc);
 
-    PROC_push_small_integer(1);               /* 1 */
-    PROC_push_symbol("x");                    /* x */
-    PROC_push_small_integer(6);               /* 6 */
-    PROC_make_function_call("expt",2);        /* x^6 */
-    PROC_push_small_integer(1);               /* 1 */
-    PROC_make_function_call("difference",2);  /* x^6-1 */
-    PROC_make_function_call("quotient",2);    /* 1/(x^6-1) */
-
-    PROC_push_symbol("x");
-    PROC_make_function_call("int",2);
-
-    PROC_simplify();
-
-    PROC_dup();
-    PROC_save(1); /* note that SAVE pops the item off the stack */
-
-    PROC_make_printable();
-
-    p = PROC_get_value();
-    display(p);
 
     my_exit(cslfinish(NULL));
     return 0;

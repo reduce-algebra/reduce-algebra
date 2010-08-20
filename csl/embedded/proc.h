@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1a97ed4e 19-Aug-2010 */
+/* Signature: 5a833279 20-Aug-2010 */
 
 
 /*
@@ -156,6 +156,34 @@ extern int execute_lisp_function(char *fname,
  * well sorted.
  */
 
+
+/*
+ * Load a Reduce "package".
+ */
+
+int PROC_load_package(char *name);
+
+/*
+ * Set of clear a Reduce switch. As on "on expandlogs;"
+ * which you do via PROC_set_switch("expandlogs", 1);
+ * Use 0 to switch something off and 1 to switch it on.
+ */
+
+int PROC_set_switch(char *name, int val);
+
+/*
+ * Set level of garbage collector noise. This might often be a bit irrelevant,
+ * but
+ *    0    no messages at all
+ *    +1   messages whenever garbage collection happens
+ *    +2   messages whenever a module of code is loaded
+ *    +4   extra details in the garbage collector messages
+ * Note that if an ALWAYS_NOISY option (probably set as a side effect
+ * of the debugging command line option "-g") is in play then any
+ * call here has +1 and +2 forced active.
+ */
+
+int PROC_gc_messages(int n);
 
 /*
  *    stack = nil;
