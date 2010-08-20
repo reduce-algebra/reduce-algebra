@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 59c42a68 20-Aug-2010 */
+/* Signature: 392b2b38 20-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1264,6 +1264,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 #ifdef CONSERVATIVE
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
+#endif
+#ifdef EMBEDDED
+    fwin_set_lookup(look_in_lisp_variable);
 #endif
     always_noisy = NO;
     stack_segsize = 1;

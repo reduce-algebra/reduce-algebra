@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 3b3c4a5f 18-Aug-2010 */
+/* Signature: 7d16abe5 20-Aug-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1632,6 +1632,7 @@ static void exall(int namelength,
  */
 {
 #ifdef EMBEDDED
+    printf("exall function called - but not implemented here\n");
     return; /* Dummy version here */
 #else
     WIN32_FIND_DATA found;
@@ -1775,6 +1776,7 @@ static void exall(int namelength,
                   void (*proc)(const char *name, int why, long int size))
 {
 #ifdef EMBEDDED
+    printf("exall function called - but not implemented here\n");
     return; /* Dummy version here */
 #else
     DIR *d;

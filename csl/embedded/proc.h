@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5a833279 20-Aug-2010 */
+/* Signature: 4c2942e7 20-Aug-2010 */
 
 
 /*
@@ -331,7 +331,7 @@ extern const char *PROC_string_data(PROC_handle p);
 
 /*
  * Replace the top item on the stack with whatever is obtained by using
- * the Lisp EVAL operatio on it. Note that this is not intended for
+ * the Lisp EVAL operation on it. Note that this is not intended for
  * casual use - if there is any functionality that you need PLEASE ask
  * me to put in a cleaner abstraction to support it.
  */
