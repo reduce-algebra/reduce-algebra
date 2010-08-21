@@ -86,7 +86,7 @@ static Lisp_Object make_power_of_two(int32_t x)
     else if (x < 61) return make_two_word_bignum(((int32_t)1) << (x-31), 0);
     else if ((x % 31) == 30)
          return make_n_word_bignum(0, 0x40000000, 0, (x/31)-2);
-    else return make_n_word_bignum(((int32_t)1) << (x % 31), 0, 0, (x/31)-3);
+    else return make_n_word_bignum(((int32_t)1) << (x % 31), 0, 0, (x/31)-2);
 }
 
 static Lisp_Object make_fix_or_big2(int32_t a1, uint32_t a2)
