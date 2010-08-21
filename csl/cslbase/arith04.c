@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 3f3fa250 24-May-2008 */
+/* Signature: 54bc9ed1 21-Aug-2010 */
 
 #include "headers.h"
 
@@ -56,17 +56,19 @@ Lisp_Object make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, int32_t n)
 /*
  * This make a bignum with n words of data and digits a1, a2, a3 and
  * then n zeros.  Will only be called with n>=0 and a1, a2, a3 already
- * correctly structured to make a valid bignum.
+ * correctly structured to make a valid bignum. NOTE that the number n
+ * as passed is the number of zero words to be inserted before the 3
+ * words at the end!
  */
 {
     int32_t i;
-    Lisp_Object w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n), nil;
+    Lisp_Object w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12), nil;
     errexit();
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a3;
     bignum_digits(w)[n+1] = a2;
     bignum_digits(w)[n+2] = a1;
-    if ((n & 1) != 0) bignum_digits(w)[n+3] = 0;
+    if ((n & 1) != (SIXTY_FOUR_BIT ? 1 : 0)) bignum_digits(w)[n+3] = 0;
     return w;
 }
 
