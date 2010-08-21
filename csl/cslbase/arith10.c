@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 7cdf7290 21-Aug-2010 */
+/* Signature: 081e1c1d 21-Aug-2010 */
 
 
 #include "headers.h"
@@ -1304,7 +1304,7 @@ static Lisp_Object Ltrigfn(unsigned int which_one, Lisp_Object a)
 #else
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
-    if (which_one > 45) return aerror("trigfn internal error");
+    if (which_one > 46) return aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
     {
 case TAG_FIXNUM:
