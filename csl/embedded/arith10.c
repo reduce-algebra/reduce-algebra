@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 3c8673e0 24-May-2008 */
+/* Signature: 081e1c1d 21-Aug-2010 */
 
 
 #include "headers.h"
@@ -823,6 +823,24 @@ static double MS_CDECL ilog10(double a)
     else return 0.0;
 }
 
+#define CSL_log2 0.693147180559945309417
+
+static double MS_CDECL rlog2(double a)
+{
+    if (a > 0.0)
+    {   int x;
+        a = frexp(a, &x);
+        return log(a)/CSL_log2 + (double)x;
+    }
+    else return 0.0;
+}
+
+static double MS_CDECL ilog2(double a)
+{
+    if (a <= 0) return 1.0;
+    else return 0.0;
+}
+
 static double MS_CDECL rsec(double a)
 {
     a = cos(a);
@@ -1111,6 +1129,12 @@ static Complex MS_CDECL clog10(Complex a)
 }
 
 
+static Complex MS_CDECL clog2(Complex a)
+{
+    return a;
+}
+
+
 static Complex MS_CDECL csec(Complex a)
 {
     return a;
@@ -1209,7 +1233,8 @@ static trigfn_record const trig_functions[] =
     {rsqrt,  isqrt,  csqrt},  /* sqrt   42 square root */
     {tan,    0,      ctan},   /* tan    43 tangent, rads */
     {rtand,  0,      ctand},  /* tand   44 tangent, degs */
-    {tanh,   0,      ctanh}   /* tanh   45 hyperbolic tangent */
+    {tanh,   0,      ctanh},  /* tanh   45 hyperbolic tangent */
+    {rlog2,  ilog2,  clog2}   /* log2   46 log to base 2 */
 };
 
 #else
@@ -1260,7 +1285,8 @@ static trigfn_record const trig_functions[] =
     {rsqrt,  isqrt},   /* sqrt   42 square root */
     {tan,    0},       /* tan    43 tangent, rads */
     {rtand,  0},       /* tand   44 tangent, degs */
-    {tanh,   0}        /* tanh   45 hyperbolic tangent */
+    {tanh,   0},       /* tanh   45 hyperbolic tangent */
+    {rlog2,  ilog2}    /* log2   46 log to base 2 */
 };
 
 #endif
@@ -1278,7 +1304,7 @@ static Lisp_Object Ltrigfn(unsigned int which_one, Lisp_Object a)
 #else
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
-    if (which_one > 45) return aerror("trigfn internal error");
+    if (which_one > 46) return aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
     {
 case TAG_FIXNUM:
@@ -2090,6 +2116,12 @@ Lisp_Object Llog10(Lisp_Object nil, Lisp_Object a)
     return Ltrigfn(35, a);
 }
 
+Lisp_Object Llog2(Lisp_Object nil, Lisp_Object a)
+{
+    CSL_IGNORE(nil);
+    return Ltrigfn(46, a);
+}
+
 Lisp_Object Lsec(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -2187,6 +2219,7 @@ setup_type const arith10_setup[] =
     {"hypot",                   too_few_2, Lhypot, wrong_no_2},
     {"ln",                      Lln, too_many_1, wrong_no_1},
     {"log",                     Lln, Llog_2, wrong_no_2},
+    {"log2",                    Llog2, too_many_1, wrong_no_2},
     {"log10",                   Llog10, too_many_1, wrong_no_1},
     {"sec",                     Lsec, too_many_1, wrong_no_1},
     {"secd",                    Lsecd, too_many_1, wrong_no_1},
