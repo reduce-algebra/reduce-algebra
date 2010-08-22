@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u21.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -4894,7 +4896,7 @@ static Lisp_Object CC_ad_numsort(Lisp_Object env,
     v90 = v0;
 /* end of prologue */
     v91 = v90;
-    v90 = elt(env, 1); /* lambda_l7fvjy_4 */
+    v90 = elt(env, 1); /* lambda_l7iptc_4 */
     {
         fn = elt(env, 2); /* sort */
         return (*qfn2(fn))(qenv(fn), v91, v90);
@@ -4903,16 +4905,16 @@ static Lisp_Object CC_ad_numsort(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvjy_4 */
+/* Code for lambda_l7iptc_4 */
 
-static Lisp_Object CC_lambda_l7fvjy_4(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptc_4(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v91, v23;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvjy_4");
+    if (check_env(env)) return aerror("env for lambda_l7iptc_4");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7441,7 +7443,7 @@ setup_type const u21_setup[] =
     {"lastcar",                 CC_lastcar,     too_many_1,    wrong_no_1},
     {"red_tailred",             too_few_2,      CC_red_tailred,wrong_no_2},
     {"ad_numsort",              CC_ad_numsort,  too_many_1,    wrong_no_1},
-    {"lambda_l7fvjy_4",         too_few_2,      CC_lambda_l7fvjy_4,wrong_no_2},
+    {"lambda_l7iptc_4",         too_few_2,      CC_lambda_l7iptc_4,wrong_no_2},
     {":expt",                   too_few_2,      CC_Texpt,      wrong_no_2},
     {"diff-over-k-mod-p",       wrong_no_na,    wrong_no_nb,   (n_args *)CC_diffKoverKkKmodKp},
     {"fac-merge",               too_few_2,      CC_facKmerge,  wrong_no_2},
@@ -7462,7 +7464,7 @@ setup_type const u21_setup[] =
     {"ps:minusp:",              CC_psTminuspT,  too_many_1,    wrong_no_1},
     {"getphystypeor",           CC_getphystypeor,too_many_1,   wrong_no_1},
     {"red_topred",              too_few_2,      CC_red_topred, wrong_no_2},
-    {NULL, (one_args *)"u21", (two_args *)"142 6429268 1383110", 0}
+    {NULL, (one_args *)"u21", (two_args *)"18385 5715053 983618", 0}
 };
 
 /* end of generated code */

@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4c2942e7 20-Aug-2010 */
+/* Signature: 545be01d 22-Aug-2010 */
 
 
 /*
@@ -156,6 +156,17 @@ extern int execute_lisp_function(char *fname,
  * well sorted.
  */
 
+
+/*
+ * After having called cslstart() you can set the I/O callback functions
+ * using this. If you set one or both to NULL this indicates use of
+ * stdin/stdout as per usual rather than an callback, otherwise whenever
+ * anybody wants to read or write they use these procedures. It is then
+ * your responsibility to cope with whatever text gets exchanged!
+ */
+
+extern int PROC_set_callbacks(character_reader *r,
+                              character_writer *w);
 
 /*
  * Load a Reduce "package".

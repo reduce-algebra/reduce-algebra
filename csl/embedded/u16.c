@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u16.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -6517,7 +6519,7 @@ static Lisp_Object CC_xxsort(Lisp_Object env,
     v90 = v0;
 /* end of prologue */
     v97 = v90;
-    v90 = elt(env, 1); /* lambda_l7fvjw_2 */
+    v90 = elt(env, 1); /* lambda_l7iptb_2 */
     {
         fn = elt(env, 2); /* sort */
         return (*qfn2(fn))(qenv(fn), v97, v90);
@@ -6526,9 +6528,9 @@ static Lisp_Object CC_xxsort(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvjw_2 */
+/* Code for lambda_l7iptb_2 */
 
-static Lisp_Object CC_lambda_l7fvjw_2(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptb_2(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -6536,7 +6538,7 @@ static Lisp_Object CC_lambda_l7fvjw_2(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvjw_2");
+    if (check_env(env)) return aerror("env for lambda_l7iptb_2");
 #endif
     if (stack >= stacklimit)
     {
@@ -7971,7 +7973,7 @@ setup_type const u16_setup[] =
     {"splitlist:",              too_few_2,      CC_splitlistT, wrong_no_2},
     {"reduce-degree-mod-p",     too_few_2,      CC_reduceKdegreeKmodKp,wrong_no_2},
     {"xxsort",                  CC_xxsort,      too_many_1,    wrong_no_1},
-    {"lambda_l7fvjw_2",         too_few_2,      CC_lambda_l7fvjw_2,wrong_no_2},
+    {"lambda_l7iptb_2",         too_few_2,      CC_lambda_l7iptb_2,wrong_no_2},
     {"expnd1",                  CC_expnd1,      too_many_1,    wrong_no_1},
     {"ibalp_readclause",        too_few_2,      CC_ibalp_readclause,wrong_no_2},
     {"aex_mk",                  wrong_no_na,    wrong_no_nb,   (n_args *)CC_aex_mk},
@@ -7988,7 +7990,7 @@ setup_type const u16_setup[] =
     {"ofsf_smmkatl",            wrong_no_na,    wrong_no_nb,   (n_args *)CC_ofsf_smmkatl},
     {"cl_apply2ats",            too_few_2,      CC_cl_apply2ats,wrong_no_2},
     {"get_char_value",          too_few_2,      CC_get_char_value,wrong_no_2},
-    {NULL, (one_args *)"u16", (two_args *)"12900 7372942 5692327", 0}
+    {NULL, (one_args *)"u16", (two_args *)"17293 5388820 9528743", 0}
 };
 
 /* end of generated code */

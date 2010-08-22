@@ -32,7 +32,7 @@
 
 
 
-/* Signature: 06bdfd1f 20-Aug-2010 */
+/* Signature: 1cc87404 22-Aug-2010 */
 
 /*
  * This is code that starts up Reduce and exercises it using a
@@ -47,14 +47,15 @@
 #include "proc.h"
 
 
-static char ibuff[100], obuff[100];
+static char ibuff[100], obuff[10000];
 static int ibufp = 0, obufp = 0;
 
 static int iget(void)
 {
-    int c = ibuff[ibufp++];
+    int c = ibuff[ibufp];
     if (c == 0) return EOF;
-    else return c;
+    ibufp++;
+    return c;
 }
 
 static int iput(int c)
@@ -112,7 +113,12 @@ int testcase()
 {
     PROC_handle p;
     int rc;
-    E(PROC_gc_messages(0));      /* No messages from garbage collector etc */
+/*
+ * I enable GC messages here because I want there to be something
+ * sent back via the writer callback. Most people would probably
+ * explicitly switch gc messages off here!
+ */
+    E(PROC_gc_messages(7));      /* Messages from garbage collector etc */
     E(PROC_set_switch("int", 0));/* Running in "batch" mode, so do not even
                                   * attempt to make any interactive queries
                                   * about anything.
@@ -156,23 +162,33 @@ extern const char *programDir;
 
 static int submain(int argc, char *argv[])
 {
-    char imageName[256], *nargv[4];
+    char imageName[256], *nargv[5];
     int rc;
 
     sprintf(imageName, "%s/reduce.img", programDir);
     nargv[0] = argv[0];
     nargv[1] = "-i";
     nargv[2] = imageName;
-    nargv[3] = NULL;
-    cslstart(3, nargv, NULL);
+    nargv[3] = "-v";
+    nargv[4] = NULL;
+    obufp = 0;
+    cslstart(4, nargv, iput);
+    printf("\nBuffered output is <%s>\n\n", obuff);
+
     strcpy(ibuff, "(print '(a b c d))");
     execute_lisp_function("oem-supervisor", iget, iput);
-    printf("Buffered output is <%s>\n", obuff);
+    printf("\nBuffered output is <%s>\n\n", obuff);
+
+    ibufp = obufp = 0;
+    ibuff[0] = 0;
+    PROC_set_callbacks(iget, iput);
 
     if ((rc = testcase()) != 0) printf("Return code = %d\n", rc);
 
+    rc = cslfinish(iput);
+    printf("\nBuffered output is <%s>\n\n", obuff);
 
-    my_exit(cslfinish(NULL));
+    my_exit(rc);   /* does a longjmp on exit_buffer */
     return 0;
 }
 
@@ -187,9 +203,10 @@ int main(int argc, char *argv[])
 
     if (!setjmp(my_exit_buffer)) res = submain(argc, argv);
     else res = my_return_code;
+    printf("Return code = %d\n", res);
     return res;
 }
 
 
-/* End of embedcsl.c */
+/* End of driver.c */
 

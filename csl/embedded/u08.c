@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u08.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;

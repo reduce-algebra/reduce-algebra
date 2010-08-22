@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1d483323 21-Aug-2010 */
+/* Signature: 4e04c032 22-Aug-2010 */
 
 #include "headers.h"
 
@@ -390,9 +390,13 @@ static Lisp_Object Ldecode_float(Lisp_Object nil, Lisp_Object a)
         a = make_boxfloat(d, type_of_header(flthdr(a)));
     pop(sign);
     errexit();
+#ifdef COMMON
     mv_2 = fixnum_of_int(x);
     mv_3 = sign;
     return nvalues(a, 3);
+#else
+    return list3(sign, fixnum_of_int(x), a);
+#endif
 }
 
 /*
@@ -605,11 +609,12 @@ static Lisp_Object Linteger_decode_float(Lisp_Object nil, Lisp_Object a)
     if (d == 0.0)
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(0);
-        mv_3 = fixnum_of_int(1);
-        nvalues(a, 3);
+        mv_3 = fixnum_of_int(d<0 ? -1 : 1);
+        nvalues(fixnum_of_int(0), 3);
     }
 #else
-        return list3(a, fixnum_of_int(0), fixnum_of_int(1));
+        return list3(fixnum_of_int(0), fixnum_of_int(0),
+                     fixnum_of_int(d<0 ? -1 : 1));
 #endif
     if (d < 0.0) d = -d, neg = 1;
     d = frexp(d, &x);

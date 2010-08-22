@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u39.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -4084,7 +4086,7 @@ v134:
 
 v97:
     v127 = stack[-1];
-    v126 = elt(env, 3); /* lambda_l7fvk2_9 */
+    v126 = elt(env, 3); /* lambda_l7iptg_9 */
     fn = elt(env, 4); /* sort */
     v126 = (*qfn2(fn))(qenv(fn), v127, v126);
     nil = C_nil;
@@ -4307,16 +4309,16 @@ v128:
 
 
 
-/* Code for lambda_l7fvk2_9 */
+/* Code for lambda_l7iptg_9 */
 
-static Lisp_Object CC_lambda_l7fvk2_9(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptg_9(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v6)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v72, v23;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk2_9");
+    if (check_env(env)) return aerror("env for lambda_l7iptg_9");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7240,7 +7242,7 @@ setup_type const u39_setup[] =
     {"hdiff",                   too_few_2,      CC_hdiff,      wrong_no_2},
     {"sep_tens_from_other",     CC_sep_tens_from_other,too_many_1,wrong_no_1},
     {"sc_repkern",              too_few_2,      CC_sc_repkern, wrong_no_2},
-    {"lambda_l7fvk2_9",         too_few_2,      CC_lambda_l7fvk2_9,wrong_no_2},
+    {"lambda_l7iptg_9",         too_few_2,      CC_lambda_l7iptg_9,wrong_no_2},
     {"general-difference-mod-p",too_few_2,      CC_generalKdifferenceKmodKp,wrong_no_2},
     {"cl_simpl1",               wrong_no_na,    wrong_no_nb,   (n_args *)CC_cl_simpl1},
     {"girationalize:",          CC_girationalizeT,too_many_1,  wrong_no_1},
@@ -7268,7 +7270,7 @@ setup_type const u39_setup[] =
     {"all_index_lst",           CC_all_index_lst,too_many_1,   wrong_no_1},
     {"baglistp",                CC_baglistp,    too_many_1,    wrong_no_1},
     {"*sf2exb",                 too_few_2,      CC_Hsf2exb,    wrong_no_2},
-    {NULL, (one_args *)"u39", (two_args *)"2087 2632225 7250181", 0}
+    {NULL, (one_args *)"u39", (two_args *)"9783 7899715 5156935", 0}
 };
 
 /* end of generated code */

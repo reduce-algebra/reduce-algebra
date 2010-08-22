@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u23.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -5841,7 +5843,7 @@ static Lisp_Object CC_simpKpropKcondense(Lisp_Object env,
 /* end of prologue */
     stack[-2] = nil;
     v248 = stack[-3];
-    v189 = elt(env, 1); /* lambda_l7fvjy_5 */
+    v189 = elt(env, 1); /* lambda_l7iptd_5 */
     fn = elt(env, 3); /* sort */
     v189 = (*qfn2(fn))(qenv(fn), v248, v189);
     nil = C_nil;
@@ -5914,16 +5916,16 @@ v249:
 
 
 
-/* Code for lambda_l7fvjy_5 */
+/* Code for lambda_l7iptd_5 */
 
-static Lisp_Object CC_lambda_l7fvjy_5(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptd_5(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v223;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvjy_5");
+    if (check_env(env)) return aerror("env for lambda_l7iptd_5");
 #endif
     if (stack >= stacklimit)
     {
@@ -7200,7 +7202,7 @@ setup_type const u23_setup[] =
     {"liennewstruc",            wrong_no_na,    wrong_no_nb,   (n_args *)CC_liennewstruc},
     {"mv-pow->",                too_few_2,      CC_mvKpowKS,   wrong_no_2},
     {"simp-prop-condense",      CC_simpKpropKcondense,too_many_1,wrong_no_1},
-    {"lambda_l7fvjy_5",         too_few_2,      CC_lambda_l7fvjy_5,wrong_no_2},
+    {"lambda_l7iptd_5",         too_few_2,      CC_lambda_l7iptd_5,wrong_no_2},
     {"split_cov_cont_ids",      CC_split_cov_cont_ids,too_many_1,wrong_no_1},
     {"quotfail-in-vector",      wrong_no_na,    wrong_no_nb,   (n_args *)CC_quotfailKinKvector},
     {"reduce-mod-eigf",         too_few_2,      CC_reduceKmodKeigf,wrong_no_2},
@@ -7219,7 +7221,7 @@ setup_type const u23_setup[] =
     {"fs:prin",                 CC_fsTprin,     too_many_1,    wrong_no_1},
     {"st_ad_numsorttree",       CC_st_ad_numsorttree,too_many_1,wrong_no_1},
     {"cl_identifyonoff",        CC_cl_identifyonoff,too_many_1,wrong_no_1},
-    {NULL, (one_args *)"u23", (two_args *)"17383 9549112 1257773", 0}
+    {NULL, (one_args *)"u23", (two_args *)"9246 7955669 3475885", 0}
 };
 
 /* end of generated code */

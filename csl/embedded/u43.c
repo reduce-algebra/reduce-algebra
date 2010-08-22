@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u43.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -4543,7 +4545,7 @@ static Lisp_Object CC_randpoly(Lisp_Object env,
     stack[-15] = nil;
     stack[-12] = nil;
     stack[-7] = nil;
-    v261 = elt(env, 1); /* lambda_l7fvk3_11 */
+    v261 = elt(env, 1); /* lambda_l7ipth_11 */
     stack[-13] = v261;
     v261 = (Lisp_Object)81; /* 5 */
     stack[-10] = v261;
@@ -5335,17 +5337,17 @@ v266:
 
 
 
-/* Code for lambda_l7fvk3_11 */
+/* Code for lambda_l7ipth_11 */
 
-static Lisp_Object MS_CDECL CC_lambda_l7fvk3_11(Lisp_Object env, int nargs, ...)
+static Lisp_Object MS_CDECL CC_lambda_l7ipth_11(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v90, v85;
     Lisp_Object fn;
     CSL_IGNORE(nil);
-    argcheck(nargs, 0, "lambda_l7fvk3_11");
+    argcheck(nargs, 0, "lambda_l7ipth_11");
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk3_11");
+    if (check_env(env)) return aerror("env for lambda_l7ipth_11");
 #endif
     if (stack >= stacklimit)
     {
@@ -7187,7 +7189,7 @@ setup_type const u43_setup[] =
     {"dm-lt",                   too_few_2,      CC_dmKlt,      wrong_no_2},
     {"exdfp0",                  CC_exdfp0,      too_many_1,    wrong_no_1},
     {"randpoly",                CC_randpoly,    too_many_1,    wrong_no_1},
-    {"lambda_l7fvk3_11",        wrong_no_na,    wrong_no_nb,   (n_args *)CC_lambda_l7fvk3_11},
+    {"lambda_l7ipth_11",        wrong_no_na,    wrong_no_nb,   (n_args *)CC_lambda_l7ipth_11},
     {"noncom1",                 CC_noncom1,     too_many_1,    wrong_no_1},
     {"split-wrt-variables",     wrong_no_na,    wrong_no_nb,   (n_args *)CC_splitKwrtKvariables},
     {"groeb_updatepl",          wrong_no_na,    wrong_no_nb,   (n_args *)CC_groeb_updatepl},
@@ -7204,7 +7206,7 @@ setup_type const u43_setup[] =
     {"bassoc",                  too_few_2,      CC_bassoc,     wrong_no_2},
     {"quotfexf*1",              too_few_2,      CC_quotfexfH1, wrong_no_2},
     {"bc_power",                too_few_2,      CC_bc_power,   wrong_no_2},
-    {NULL, (one_args *)"u43", (two_args *)"460 3342080 1651564", 0}
+    {NULL, (one_args *)"u43", (two_args *)"1507 4556937 4672674", 0}
 };
 
 /* end of generated code */

@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u30.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -4238,7 +4240,7 @@ v34:
 
 v71:
     v14 = v202;
-    v104 = elt(env, 4); /* lambda_l7fvk0_6 */
+    v104 = elt(env, 4); /* lambda_l7ipte_6 */
     fn = elt(env, 7); /* sort */
     v104 = (*qfn2(fn))(qenv(fn), v14, v104);
     nil = C_nil;
@@ -4283,7 +4285,7 @@ v147:
 
 v15:
     v14 = v202;
-    v104 = elt(env, 5); /* lambda_l7fvk0_7 */
+    v104 = elt(env, 5); /* lambda_l7ipte_7 */
     fn = elt(env, 7); /* sort */
     v104 = (*qfn2(fn))(qenv(fn), v14, v104);
     nil = C_nil;
@@ -4351,9 +4353,9 @@ v203:
 
 
 
-/* Code for lambda_l7fvk0_7 */
+/* Code for lambda_l7ipte_7 */
 
-static Lisp_Object CC_lambda_l7fvk0_7(Lisp_Object env,
+static Lisp_Object CC_lambda_l7ipte_7(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -4361,7 +4363,7 @@ static Lisp_Object CC_lambda_l7fvk0_7(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk0_7");
+    if (check_env(env)) return aerror("env for lambda_l7ipte_7");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -4380,9 +4382,9 @@ static Lisp_Object CC_lambda_l7fvk0_7(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvk0_6 */
+/* Code for lambda_l7ipte_6 */
 
-static Lisp_Object CC_lambda_l7fvk0_6(Lisp_Object env,
+static Lisp_Object CC_lambda_l7ipte_6(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -4390,7 +4392,7 @@ static Lisp_Object CC_lambda_l7fvk0_6(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk0_6");
+    if (check_env(env)) return aerror("env for lambda_l7ipte_6");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7740,8 +7742,8 @@ setup_type const u30_setup[] =
     {"find_triangl_coeff",      wrong_no_na,    wrong_no_nb,   (n_args *)CC_find_triangl_coeff},
     {"fs:onep:",                CC_fsTonepT,    too_many_1,    wrong_no_1},
     {"simp-prop-dist",          CC_simpKpropKdist,too_many_1,  wrong_no_1},
-    {"lambda_l7fvk0_7",         too_few_2,      CC_lambda_l7fvk0_7,wrong_no_2},
-    {"lambda_l7fvk0_6",         too_few_2,      CC_lambda_l7fvk0_6,wrong_no_2},
+    {"lambda_l7ipte_7",         too_few_2,      CC_lambda_l7ipte_7,wrong_no_2},
+    {"lambda_l7ipte_6",         too_few_2,      CC_lambda_l7ipte_6,wrong_no_2},
     {"inormmat",                CC_inormmat,    too_many_1,    wrong_no_1},
     {"evalgreaterp",            too_few_2,      CC_evalgreaterp,wrong_no_2},
     {"noncomfree",              CC_noncomfree,  too_many_1,    wrong_no_1},
@@ -7786,7 +7788,7 @@ setup_type const u30_setup[] =
     {"mk_dummy_ids",            CC_mk_dummy_ids,too_many_1,    wrong_no_1},
     {"mchsarg",                 wrong_no_na,    wrong_no_nb,   (n_args *)CC_mchsarg},
     {"cquotegex",               CC_cquotegex,   too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u30", (two_args *)"12839 5492768 5424734", 0}
+    {NULL, (one_args *)"u30", (two_args *)"10194 7295922 5339276", 0}
 };
 
 /* end of generated code */

@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 392b2b38 20-Aug-2010 */
+/* Signature: 1f6f408d 22-Aug-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -2977,6 +2977,23 @@ int ENTRYPOINT(int argc, char *argv[])
  * these return an integer it will genarlly be zero for success and non-
  * zero for failure.
  */
+
+/*
+ * After having called cslstart() you can set the I/O callback functions
+ * using this. If you set one or both to NULL this indicates use of
+ * stdin/stdout as per usual rather than an callback, otherwise whenever
+ * anybody wants to read or write they use these procedures. It is then
+ * your responsibility to cope with whatever text gets exchanged!
+ */
+
+int PROC_set_callbacks(character_reader *r,
+                       character_writer *w)
+{
+    Lisp_Object nil;
+    procedural_input = r;
+    procedural_output = w;
+    return 0;   /* can never report failure */
+}
 
 int PROC_load_package(char *name)
 {

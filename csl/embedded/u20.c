@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u20.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -5494,7 +5496,7 @@ static Lisp_Object CC_numlist_ordp(Lisp_Object env,
 /* end of prologue */
     v213 = v186;
     v186 = v92;
-    v92 = elt(env, 1); /* lambda_l7fvjx_3 */
+    v92 = elt(env, 1); /* lambda_l7iptc_3 */
     {
         fn = elt(env, 2); /* cons_ordp */
         return (*qfnn(fn))(qenv(fn), 3, v213, v186, v92);
@@ -5503,16 +5505,16 @@ static Lisp_Object CC_numlist_ordp(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvjx_3 */
+/* Code for lambda_l7iptc_3 */
 
-static Lisp_Object CC_lambda_l7fvjx_3(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptc_3(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v87, v172;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvjx_3");
+    if (check_env(env)) return aerror("env for lambda_l7iptc_3");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7622,7 +7624,7 @@ setup_type const u20_setup[] =
     {"bas_newnumber",           too_few_2,      CC_bas_newnumber,wrong_no_2},
     {"pcdiv",                   too_few_2,      CC_pcdiv,      wrong_no_2},
     {"numlist_ordp",            too_few_2,      CC_numlist_ordp,wrong_no_2},
-    {"lambda_l7fvjx_3",         too_few_2,      CC_lambda_l7fvjx_3,wrong_no_2},
+    {"lambda_l7iptc_3",         too_few_2,      CC_lambda_l7iptc_3,wrong_no_2},
     {"get-free-form",           CC_getKfreeKform,too_many_1,   wrong_no_1},
     {"simpexpt11",              wrong_no_na,    wrong_no_nb,   (n_args *)CC_simpexpt11},
     {"matrixrowom",             CC_matrixrowom, too_many_1,    wrong_no_1},
@@ -7649,7 +7651,7 @@ setup_type const u20_setup[] =
     {"fortexp",                 CC_fortexp,     too_many_1,    wrong_no_1},
     {"nzero",                   CC_nzero,       too_many_1,    wrong_no_1},
     {"tensorp",                 CC_tensorp,     too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u20", (two_args *)"3599 5681255 4368621", 0}
+    {NULL, (one_args *)"u20", (two_args *)"8167 206742 7768752", 0}
 };
 
 /* end of generated code */

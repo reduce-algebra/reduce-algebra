@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u31.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -3928,7 +3930,7 @@ static Lisp_Object CC_num_signsort(Lisp_Object env,
     v31 = v0;
 /* end of prologue */
     v231 = v31;
-    v31 = elt(env, 1); /* lambda_l7fvk0_8 */
+    v31 = elt(env, 1); /* lambda_l7ipte_8 */
     {
         fn = elt(env, 2); /* ad_signsort */
         return (*qfn2(fn))(qenv(fn), v231, v31);
@@ -3937,16 +3939,16 @@ static Lisp_Object CC_num_signsort(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvk0_8 */
+/* Code for lambda_l7ipte_8 */
 
-static Lisp_Object CC_lambda_l7fvk0_8(Lisp_Object env,
+static Lisp_Object CC_lambda_l7ipte_8(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v231, v235;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk0_8");
+    if (check_env(env)) return aerror("env for lambda_l7ipte_8");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7646,7 +7648,7 @@ setup_type const u31_setup[] =
     {"fs:prepfn:",              CC_fsTprepfnT,  too_many_1,    wrong_no_1},
     {"mkindxlist",              CC_mkindxlist,  too_many_1,    wrong_no_1},
     {"num_signsort",            CC_num_signsort,too_many_1,    wrong_no_1},
-    {"lambda_l7fvk0_8",         too_few_2,      CC_lambda_l7fvk0_8,wrong_no_2},
+    {"lambda_l7ipte_8",         too_few_2,      CC_lambda_l7ipte_8,wrong_no_2},
     {"split-further",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_splitKfurther},
     {"mkrootsql",               too_few_2,      CC_mkrootsql,  wrong_no_2},
     {"totalcompareconstants",   too_few_2,      CC_totalcompareconstants,wrong_no_2},
@@ -7688,7 +7690,7 @@ setup_type const u31_setup[] =
     {"cgp_lbc",                 CC_cgp_lbc,     too_many_1,    wrong_no_1},
     {"cols2rows2",              too_few_2,      CC_cols2rows2, wrong_no_2},
     {"findnthroot",             CC_findnthroot, too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u31", (two_args *)"114 8254488 4513490", 0}
+    {NULL, (one_args *)"u31", (two_args *)"10731 1641573 9125266", 0}
 };
 
 /* end of generated code */

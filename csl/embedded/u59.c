@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u59.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -6593,7 +6595,7 @@ v161:
 v351:
     stack[-3] = v342;
     v343 = stack[-9];
-    v342 = elt(env, 4); /* lambda_l7fvk7_12 */
+    v342 = elt(env, 4); /* lambda_l7iptk_12 */
     fn = elt(env, 16); /* sort */
     v342 = (*qfn2(fn))(qenv(fn), v343, v342);
     nil = C_nil;
@@ -6646,7 +6648,7 @@ v354:
 
 v353:
     v343 = stack[-6];
-    v342 = elt(env, 5); /* lambda_l7fvk7_13 */
+    v342 = elt(env, 5); /* lambda_l7iptk_13 */
     fn = elt(env, 16); /* sort */
     v342 = (*qfn2(fn))(qenv(fn), v343, v342);
     nil = C_nil;
@@ -6654,7 +6656,7 @@ v353:
     env = stack[-12];
     stack[-6] = v342;
     v343 = stack[-7];
-    v342 = elt(env, 6); /* lambda_l7fvk7_14 */
+    v342 = elt(env, 6); /* lambda_l7iptk_14 */
     fn = elt(env, 17); /* ad_signsort */
     v342 = (*qfn2(fn))(qenv(fn), v343, v342);
     nil = C_nil;
@@ -7005,9 +7007,9 @@ v346:
 
 
 
-/* Code for lambda_l7fvk7_14 */
+/* Code for lambda_l7iptk_14 */
 
-static Lisp_Object CC_lambda_l7fvk7_14(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptk_14(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -7015,7 +7017,7 @@ static Lisp_Object CC_lambda_l7fvk7_14(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk7_14");
+    if (check_env(env)) return aerror("env for lambda_l7iptk_14");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7032,9 +7034,9 @@ static Lisp_Object CC_lambda_l7fvk7_14(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvk7_13 */
+/* Code for lambda_l7iptk_13 */
 
-static Lisp_Object CC_lambda_l7fvk7_13(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptk_13(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -7042,7 +7044,7 @@ static Lisp_Object CC_lambda_l7fvk7_13(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk7_13");
+    if (check_env(env)) return aerror("env for lambda_l7iptk_13");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7059,9 +7061,9 @@ static Lisp_Object CC_lambda_l7fvk7_13(Lisp_Object env,
 
 
 
-/* Code for lambda_l7fvk7_12 */
+/* Code for lambda_l7iptk_12 */
 
-static Lisp_Object CC_lambda_l7fvk7_12(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptk_12(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -7069,7 +7071,7 @@ static Lisp_Object CC_lambda_l7fvk7_12(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk7_12");
+    if (check_env(env)) return aerror("env for lambda_l7iptk_12");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7129,10 +7131,10 @@ setup_type const u59_setup[] =
     {"evalsubset_eq",           too_few_2,      CC_evalsubset_eq,wrong_no_2},
     {"mk_spec_atlas",           too_few_2,      CC_mk_spec_atlas,wrong_no_2},
     {"dv_skelprod",             too_few_2,      CC_dv_skelprod,wrong_no_2},
-    {"lambda_l7fvk7_14",        too_few_2,      CC_lambda_l7fvk7_14,wrong_no_2},
-    {"lambda_l7fvk7_13",        too_few_2,      CC_lambda_l7fvk7_13,wrong_no_2},
-    {"lambda_l7fvk7_12",        too_few_2,      CC_lambda_l7fvk7_12,wrong_no_2},
-    {NULL, (one_args *)"u59", (two_args *)"13154 3427922 5443811", 0}
+    {"lambda_l7iptk_14",        too_few_2,      CC_lambda_l7iptk_14,wrong_no_2},
+    {"lambda_l7iptk_13",        too_few_2,      CC_lambda_l7iptk_13,wrong_no_2},
+    {"lambda_l7iptk_12",        too_few_2,      CC_lambda_l7iptk_12,wrong_no_2},
+    {NULL, (one_args *)"u59", (two_args *)"20296 9662921 3934125", 0}
 };
 
 /* end of generated code */

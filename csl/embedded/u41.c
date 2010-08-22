@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u41.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -4683,7 +4685,7 @@ v39:
 
 v141:
     v63 = stack[-5];
-    v182 = elt(env, 2); /* lambda_l7fvk3_10 */
+    v182 = elt(env, 2); /* lambda_l7iptg_10 */
     fn = elt(env, 4); /* sort */
     v182 = (*qfn2(fn))(qenv(fn), v63, v182);
     nil = C_nil;
@@ -4747,9 +4749,9 @@ v61:
 
 
 
-/* Code for lambda_l7fvk3_10 */
+/* Code for lambda_l7iptg_10 */
 
-static Lisp_Object CC_lambda_l7fvk3_10(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptg_10(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -4757,7 +4759,7 @@ static Lisp_Object CC_lambda_l7fvk3_10(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvk3_10");
+    if (check_env(env)) return aerror("env for lambda_l7iptg_10");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7408,7 +7410,7 @@ setup_type const u41_setup[] =
     {"lengthreval",             CC_lengthreval, too_many_1,    wrong_no_1},
     {"depend1",                 wrong_no_na,    wrong_no_nb,   (n_args *)CC_depend1},
     {"pst_partition",           wrong_no_na,    wrong_no_nb,   (n_args *)CC_pst_partition},
-    {"lambda_l7fvk3_10",        too_few_2,      CC_lambda_l7fvk3_10,wrong_no_2},
+    {"lambda_l7iptg_10",        too_few_2,      CC_lambda_l7iptg_10,wrong_no_2},
     {"general-minus-mod-p",     CC_generalKminusKmodKp,too_many_1,wrong_no_1},
     {"ofsf_simplat1",           too_few_2,      CC_ofsf_simplat1,wrong_no_2},
     {"multtaylorsq",            too_few_2,      CC_multtaylorsq,wrong_no_2},
@@ -7438,7 +7440,7 @@ setup_type const u41_setup[] =
     {"mod/",                    too_few_2,      CC_modV,       wrong_no_2},
     {"lowestdeg",               wrong_no_na,    wrong_no_nb,   (n_args *)CC_lowestdeg},
     {"allbkern",                CC_allbkern,    too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u41", (two_args *)"8898 1664040 714932", 0}
+    {NULL, (one_args *)"u41", (two_args *)"3596 8868629 9253726", 0}
 };
 
 /* end of generated code */

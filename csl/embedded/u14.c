@@ -1,7 +1,7 @@
 
 /* $destdir/generated-c\u14.c Machine generated C code */
 
-/* Signature: 00000000 20-Aug-2010 */
+/* Signature: 00000000 21-Aug-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1185,6 +1185,8 @@ extern char *files_to_read[MAX_INPUT_FILES],
      *fasl_paths[MAX_FASL_PATHS];
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
+extern int boffop;
+extern void packbyte(int c);
 #ifndef COMMON
 #ifdef HAVE_FWIN
 extern char **loadable_packages;
@@ -4002,7 +4004,7 @@ v197:
     env = stack[-11];
     if (v193 == nil) goto v198;
     v194 = stack[-6];
-    v193 = elt(env, 2); /* lambda_l7fvjw_1 */
+    v193 = elt(env, 2); /* lambda_l7iptb_1 */
     fn = elt(env, 4); /* sort */
     v193 = (*qfn2(fn))(qenv(fn), v194, v193);
     nil = C_nil;
@@ -4237,16 +4239,16 @@ v196:
 
 
 
-/* Code for lambda_l7fvjw_1 */
+/* Code for lambda_l7iptb_1 */
 
-static Lisp_Object CC_lambda_l7fvjw_1(Lisp_Object env,
+static Lisp_Object CC_lambda_l7iptb_1(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v19)
 {
     Lisp_Object nil = C_nil;
     Lisp_Object v103, v145;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l7fvjw_1");
+    if (check_env(env)) return aerror("env for lambda_l7iptb_1");
 #endif
     if (stack >= stacklimit)
     {
@@ -7779,7 +7781,7 @@ setup_type const u14_setup[] =
     {"mv2sf1",                  wrong_no_na,    wrong_no_nb,   (n_args *)CC_mv2sf1},
     {"mo_lcm",                  too_few_2,      CC_mo_lcm,     wrong_no_2},
     {"pa_coinc_split",          too_few_2,      CC_pa_coinc_split,wrong_no_2},
-    {"lambda_l7fvjw_1",         too_few_2,      CC_lambda_l7fvjw_1,wrong_no_2},
+    {"lambda_l7iptb_1",         too_few_2,      CC_lambda_l7iptb_1,wrong_no_2},
     {"invbf",                   CC_invbf,       too_many_1,    wrong_no_1},
     {"mkcr",                    too_few_2,      CC_mkcr,       wrong_no_2},
     {"lto_hashequalq",          too_few_2,      CC_lto_hashequalq,wrong_no_2},
@@ -7818,7 +7820,7 @@ setup_type const u14_setup[] =
     {"inttovec1",               too_few_2,      CC_inttovec1,  wrong_no_2},
     {"rd:plus",                 too_few_2,      CC_rdTplus,    wrong_no_2},
     {"nfactorial",              CC_nfactorial,  too_many_1,    wrong_no_1},
-    {NULL, (one_args *)"u14", (two_args *)"12759 5321412 9171625", 0}
+    {NULL, (one_args *)"u14", (two_args *)"10557 9268029 5122303", 0}
 };
 
 /* end of generated code */
