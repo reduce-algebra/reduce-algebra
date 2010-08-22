@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3ef41f25 10-Jul-2010 */
+/* Signature: 5c8c041c 22-Aug-2010 */
 
 #include "headers.h"
 
@@ -91,7 +91,7 @@
 /*
  * The scheme here will FAIL if invoked early on when a 32-bit image
  * has been re-loaded on a 64-bit platform, because in that situation
- * there can be some souble-sized pages used. This really needs to be
+ * there can be some double-sized pages used. This really needs to be
  * resolved, but since the code here is merely for debugging purposes
  * I will consider that case later on when I run into trouble with it.
  */
