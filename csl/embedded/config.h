@@ -24,7 +24,7 @@
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
-/* #undef HAVE_DIRENT_H
+/* #undef HAVE_DIRENT_H */
 
 /* Define to 1 if you have the `fork' function. */
 /* #undef HAVE_FORK */
