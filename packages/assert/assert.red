@@ -38,46 +38,49 @@ module assert;
 
 create!-package('(assert assertcheckfn),nil);
 
-global '(exlist);
+global '(assert_functionl!* exlist !*comp);
 
 fluid '(!*assertcheck !*assertstatistics assertstatistics!* lispsystem!*);
 
-switch assertcheck,assertbreak,assertstatistics;
+switch assert,assertbreak,assertstatistics;
 
-off1 'assertcheck;
+% The switch assert is a hook to make all stats introduced here return
+% nil thus turning them into comments. Note that even when it is on,
+% typedefs and assertions only modify property lists but do not change
+% the behaviour of the system unless assert_install or
+% assert_install_all is used. I thus switch it on by default for now.
+on1 'assert;
+
 off1 'assertbreak;
 on1 'assertstatistics;
 
-macro procedure assert_check(l);
-   begin scalar f,origfn,progn,argl,w,w1,w2,w3,w4,w5; integer n;
-      f := cadr l;
-      if not eqcar(getd f,'expr) then <<
-	 lprim {f,"is not an expr procedure - ignoring assert"};
-	    return nil
-      >>;
-      n := length cdr caddr l;
-      if (w := get(f,'number!-of!-args)) and not eqn(w,n) then
-	 rederr {"bad number of args in ",l};
-      origfn := get(f,'assert_origfn);
-      if not origfn then  <<
-	 origfn := intern gensym();
-	 progn := {'copyd,mkquote origfn,mkquote f} . progn;
-      	 progn := {'put,mkquote f,''assert_origfn,mkquote origfn} . progn
-      >>;
-      argl := for i := 1:n collect mkid('a,i);
-      w1 := mkquote f;
-      w2 := mkquote origfn;
-      w3 := 'list . argl;
-      w4 := 'list . for each fn in cdr caddr l collect mkquote fn;
-      w5 := mkquote cadddr l;
-      progn := {'de,f,argl,{'assert_check1,w1,w2,w3,w4,w5}} . progn;
-      if 'psl memq lispsystem!* then
-      	 progn := {'compile,mkquote {f}} . progn
-      else if 'csl memq lispsystem!* then
-      	 progn := {'compile,mkquote f} . progn;
-      progn := 'progn . reversip progn;
-      return progn
-   end;
+%% macro procedure assert_check(l);
+%%    begin scalar f,origfn,progn,argl,w,w1,w2,w3,w4,w5,de,msg,code; integer n;
+%%       f := cadr l;
+%%       n := length cdr caddr l;
+%%       if (w := get(f,'number!-of!-args)) and not eqn(w,n) then
+%% 	 rederr {"bad number of args in ",l};
+%%       origfn := get(f,'assert_origfn);
+%%       if not origfn then  <<
+%% 	 origfn := intern gensym();
+%% 	 progn := {'copyd,mkquote origfn,mkquote f} . progn;
+%%       	 progn := {'put,mkquote f,''assert_origfn,mkquote origfn} . progn
+%%       >>;
+%%       argl := for i := 1:n collect mkid('a,i);
+%%       w1 := mkquote f;
+%%       w2 := mkquote origfn;
+%%       w3 := 'list . argl;
+%%       w4 := 'list . for each fn in cdr caddr l collect mkquote fn;
+%%       w5 := mkquote cadddr l;
+%%       de := {'de,f,argl,{'assert_check1,w1,w2,w3,w4,w5}};
+%%       progn := {{'lambda,'(!*comp),de},t} . progn;
+%%       progn := 'progn . reversip progn;
+%%       msg := {'list,mkquote f,"is not an expr procedure - ignoring assert"};
+%%       code := {'cond,
+%% 	 {{'not,{'eqcar,{'getd,mkquote f},''expr}},{'lprim,msg}},
+%% 	 {t,progn}};
+%%       return code
+%%    end;
 
 procedure assert_check1(fn,origfn,argl,argtypel,restype);
    begin scalar cfn,w,res,scargtypel,bad; integer n;
@@ -182,7 +185,7 @@ procedure assert_analyze();
       for each pr in assertstatistics!* do <<
 	 if pr then <<
 	    prin2 car pr;
-	    for i := length explode car pr + length explode2 cadr pr : 23 do prin2 " ";
+	    for i := length explode2 car pr + length explode2 cadr pr : 23 do prin2 " ";
 	    prin2 cadr pr;
 	    for i := length explode2 caddr pr : 23 do prin2 " ";
 	    prin2 caddr pr;
@@ -196,7 +199,48 @@ procedure assert_analyze();
       assertstatistics!* := nil
    end;
 
+%% procedure assert_stat();
+%%    begin scalar fn,argtypel,restype;
+%%       fn := scan();
+%%       if scan() neq '!*colon!* then
+%% 	 rederr {"expecting ':' in assert but found",cursym!*};
+%%       argtypel := assert_stat1();
+%%       if scan() neq 'difference or scan() neq 'greaterp then
+%% 	 rederr {"expecting '->' in assert but found",cursym!*};
+%%       restype := scan();
+%%       if not flagp(scan(),'delim) then
+%% 	 rederr {"expecting end of assert but found",cursym!*};
+%%       if not !*assertcheck then
+%% 	 return nil;
+%%       return {'assert_check,fn,'list . argtypel,restype}
+%%    end;
+
 procedure assert_stat();
+   begin scalar l,fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w4,w5;
+      integer i;
+      l := assert_stat!-parse();
+      if not !*assertcheck then
+ 	    return nil;
+      fnx := explode car l;
+      assertfn := intern compress nconc(explode 'assert!:,fnx);
+      noassertfn := intern compress nconc(explode 'noassert!:,fnx);
+      argl := for each x in cadr l collect mkid('a,i := i + 1);
+      w1 := mkquote car l;
+      w2 := mkquote noassertfn;
+      w3 := 'list . argl;
+      w4 := 'list . for each fn in cadr l collect mkquote fn;
+      w5 := mkquote caddr l;
+      progn := {'de,assertfn,argl,{'assert_check1,w1,w2,w3,w4,w5}} . progn;
+      progn := {'put,w1,''assert_assertfn,mkquote assertfn} . progn;
+      progn := {'put,w1,''assert_noassertfn,w2} . progn;
+      progn := {'put,w1,''assert_installed,nil} . progn;
+      progn := {'cond,{
+	 {'not,{'member,w1,'assert_functionl!*}},
+	 {'setq,'assert_functionl!*,{'cons,w1,'assert_functionl!*}}}} . progn;
+      return 'progn . reversip progn
+   end;
+
+procedure assert_stat!-parse();
    begin scalar fn,argtypel,restype;
       fn := scan();
       if scan() neq '!*colon!* then
@@ -207,9 +251,7 @@ procedure assert_stat();
       restype := scan();
       if not flagp(scan(),'delim) then
 	 rederr {"expecting end of assert but found",cursym!*};
-      if not !*assertcheck then
-	 return nil;
-      return {'assert_check,fn,'list . argtypel,restype}
+      return {fn,argtypel,restype}
    end;
 
 procedure assert_stat1();
@@ -226,6 +268,47 @@ procedure assert_stat1();
    end;
 
 put('assert,'stat,'assert_stat);
+
+procedure assert_install(fnl);
+   if !*assertcheck then
+      for each fn in fnl do assert_install1 fn;
+
+put('assert_install,'stat,'rlis);
+
+procedure assert_install1(fn);
+   if get(fn,'assert_installed) then
+      lprim {"assert already installed for",fn}
+   else <<
+      copyd(get(fn,'assert_noassertfn),fn);
+      copyd(fn,get(fn,'assert_assertfn));
+      put(fn,'assert_installed,t)
+   >>;
+
+procedure assert_uninstall(fnl);
+   if !*assertcheck then
+      for each fn in fnl do assert_uninstall1 fn;
+
+put('assert_uninstall,'stat,'rlis);
+
+procedure assert_uninstall1(fn);
+   if not get(fn,'assert_installed) then
+      lprim {"assert not installed for",fn}
+   else <<
+      copyd(fn,get(fn,'assert_noassertfn));
+      put(fn,'assert_installed,nil)
+   >>;
+
+procedure assert_install_all();
+   if !*assertcheck then
+      assert_install assert_functionl!*;
+
+put('assert_install_all,'stat,'endstat);
+
+procedure assert_uninstall_all();
+   if !*assertcheck then
+      assert_uninstall assert_functionl!*;
+
+put('assert_uninstall_all,'stat,'endstat);
 
 endmodule;
 

@@ -1,8 +1,4 @@
-Sun Jul 18 13:48:47 2010 run on darwin10.4.0:x86_64
-on assertcheck;
-
-
-
+Mon Aug 23 18:30:41 2010 run on darwin10.4.0:x86_64
 symbolic;
 
 
@@ -43,9 +39,14 @@ hugo
 
 assert hugo: (number,any) -> number;
 
-+++ hugo compiled, 14 + 24 bytes
 
 (hugo)
+
+
+assert_install hugo;
+
+
+nil
 
 
 hugo(0,0);
@@ -70,15 +71,19 @@ x
 
 assert addf: (sf,sf) -> sf;
 
-+++ addf compiled, 14 + 20 bytes
 
-(addf)
+(addf hugo)
 
 assert addsq: (sq,sq) -> sq;
 
-+++ addsq compiled, 14 + 20 bytes
 
-(addsq)
+(addsq addf hugo)
+
+
+assert_install addf,addsq;
+
+
+nil
 
 
 addsq(simp 'x,numr simp 'x);
@@ -112,8 +117,12 @@ sum                    5                       4                       6
 ------------------------------------------------------------------------
 
 
+assert_uninstall_all;
+
+
+
 end;
 
 
-Time for test: 1 ms, plus GC time: 10 ms
+Time for test: 1 ms
 @@@@@ Resources used: (0 0 3 0)

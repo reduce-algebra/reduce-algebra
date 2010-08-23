@@ -87,8 +87,28 @@ procedure assert_kernelp(u);
       return atsoc(u,w)
    end;
 
+procedure sfpx!*(u);
+   % non-zero standard form predicate (extended).
+   u and sfpx u;
+
 procedure sqp(q);
    pairp q and sfpx numr q and sfpx denr q;
+
+procedure alistp(l);
+   not l or pairp car l and alistp cdr l;
+
+procedure booleanp(u);
+   u eq t or u eq nil;
+
+procedure am_listp(u);
+   listp u and eqcar(u,'list);
+
+procedure am_polyp(u);
+   domainp u or idp u or
+      pairp u and (assert_polyopp car u or car u eq '!*sq and denr cadr u eq 1);
+
+procedure assert_polyopp(op);
+   op memq '(plus difference minus times expt);
 
 endmodule;
 
