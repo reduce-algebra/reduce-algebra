@@ -53,8 +53,6 @@ imports groebner,groebnr2;
 
 load!-package 'assert;
 
-off 'assertcheck;
-
 fluid '(out!*);
 
 !#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
