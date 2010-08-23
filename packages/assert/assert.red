@@ -40,7 +40,7 @@ create!-package('(assert assertcheckfn),nil);
 
 global '(assert_functionl!* exlist !*comp);
 
-fluid '(!*assertcheck !*assertstatistics assertstatistics!* lispsystem!*);
+fluid '(!*assert !*assertstatistics assertstatistics!* lispsystem!*);
 
 switch assert,assertbreak,assertstatistics;
 
@@ -148,7 +148,7 @@ procedure assert_typedefstat();
       type := scan();
       scan();
       if flagp(cursym!*,'delim) then <<
-	 if not !*assertcheck then
+	 if not !*assert then
 	    return nil;
 	 if !*msg then lprim {"type",type,"is not checked"};
       	 return nil
@@ -160,7 +160,7 @@ procedure assert_typedefstat();
       cfn := scan();
       if not flagp(scan(),'delim) then
 	 rederr {"expecting end of typedef but found",cursym!*};
-      if not !*assertcheck then
+      if not !*assert then
 	 return nil;
       return {'put,mkquote type,''assert_checkfn,mkquote cfn}
    end;
@@ -219,7 +219,7 @@ procedure assert_stat();
    begin scalar l,fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w4,w5;
       integer i;
       l := assert_stat!-parse();
-      if not !*assertcheck then
+      if not !*assert then
  	    return nil;
       fnx := explode car l;
       assertfn := intern compress nconc(explode 'assert!:,fnx);
@@ -270,7 +270,7 @@ procedure assert_stat1();
 put('assert,'stat,'assert_stat);
 
 procedure assert_install(fnl);
-   if !*assertcheck then
+   if !*assert then
       for each fn in fnl do assert_install1 fn;
 
 put('assert_install,'stat,'rlis);
@@ -278,6 +278,8 @@ put('assert_install,'stat,'rlis);
 procedure assert_install1(fn);
    if get(fn,'assert_installed) then
       lprim {"assert already installed for",fn}
+   else if not eqcar(getd fn,'expr) then
+      lprim {fn,"is not an expr procedure - ignoring assert"}
    else <<
       copyd(get(fn,'assert_noassertfn),fn);
       copyd(fn,get(fn,'assert_assertfn));
@@ -285,7 +287,7 @@ procedure assert_install1(fn);
    >>;
 
 procedure assert_uninstall(fnl);
-   if !*assertcheck then
+   if !*assert then
       for each fn in fnl do assert_uninstall1 fn;
 
 put('assert_uninstall,'stat,'rlis);
@@ -299,13 +301,13 @@ procedure assert_uninstall1(fn);
    >>;
 
 procedure assert_install_all();
-   if !*assertcheck then
+   if !*assert then
       assert_install assert_functionl!*;
 
 put('assert_install_all,'stat,'endstat);
 
 procedure assert_uninstall_all();
-   if !*assertcheck then
+   if !*assert then
       assert_uninstall assert_functionl!*;
 
 put('assert_uninstall_all,'stat,'endstat);
