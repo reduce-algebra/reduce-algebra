@@ -2105,6 +2105,8 @@ passing on any prefix argument (in raw form)."
 	       "for\\(\\s *\\(all\\|each\\)\\)?" "step"
 	       "in" "on" "off" "comment" "write"
 	       "let"			; "where" "when" ???
+	       "assert_install" "assert_install_all"
+	       "assert_uninstall" "assert_uninstall_all"
 
 	       ;; Lisp keywords used frequently in REDUCE:
 	       "lambda"  "function"
@@ -2147,6 +2149,24 @@ passing on any prefix argument (in raw form)."
 	 ;; '(2 font-lock-function-name-face t) ; highlights within comments
 	 '(3 font-lock-function-name-face)
 	 )
+   '("\\(assert\\)\\s +\\([^:]*\\)"
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face))
+   '("assert\\s +[^(]*(\\([^)]*\\)"
+     (1 font-lock-type-face))
+   (list (concat "assert\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
+	 '(1 font-lock-type-face))
+   (list (concat "\\(typedef\\)\\s *\\("
+		 reduce-identifier-regexp
+		 "\\)")
+	 '(1 font-lock-keyword-face)
+	 '(2 font-lock-type-face))
+   (list (concat "typedef\\s *.*"
+		 "\\s *\\(checked\\s *by\\)\\s *\\("
+		 reduce-identifier-regexp
+		 "\\)")
+	 '(1 font-lock-keyword-face)
+	 '(2 font-lock-function-name-face))
    ;; Type declarations:
 ;   '("[^!][^_]\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
    '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
@@ -2234,6 +2254,24 @@ passing on any prefix argument (in raw form)."
 		 "\\(" reduce-identifier-regexp "\\)")
 	 '(1 font-lock-keyword-face)
 	 '(2 font-lock-constant-face))	; was font-lock-reference-face
+   '("\\(assert\\)\\s +\\([^:]*\\)"
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face))
+   '("assert\\s +[^(]*(\\([^)]*\\)"
+     (1 font-lock-type-face))
+   (list (concat "assert\\s +.*->\\s *\\(" reduce-identifier-regexp "\\)")
+	 '(1 font-lock-type-face))
+   (list (concat "\\(typedef\\)\\s *\\("
+		 reduce-identifier-regexp
+		 "\\)")
+	 '(1 font-lock-keyword-face)
+	 '(2 font-lock-type-face))
+   (list (concat "typedef\\s *.*"
+		 "\\s *\\(checked\\s *by\\)\\s *\\("
+		 reduce-identifier-regexp
+		 "\\)")
+	 '(1 font-lock-keyword-face)
+	 '(2 font-lock-function-name-face))
    ;; Type declarations:
    '("\\<\\(fluid\\|global\\)\\>\\s *'(\\(.*\\))"
      (1 font-lock-type-face)
