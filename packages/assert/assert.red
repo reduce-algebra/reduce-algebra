@@ -83,6 +83,15 @@ on1 'assertstatistics;
 %%    end;
 
 procedure assert_check1(fn,origfn,argl,argtypel,restype);
+   % This is the wrapper code executed when an insertion is installed.
+   % fn is the name of the original function; origfn is an identifier
+   % having the original function as its function value; argl is the
+   % list of arguments passed; argtypel is a list of types asserted for
+   % the arguments in argl; restype is the type asserted for the result
+   % of the function call. Depending on the swith !*assertstatistics,
+   % there is statictical information added to the fluid
+   % assertstatistics!*, which is output and deleted when calling
+   % assert_analyze().
    begin scalar cfn,w,res,scargtypel,bad; integer n;
       if !*assertstatistics then <<
       	 w := atsoc(fn,assertstatistics!*);
@@ -94,7 +103,9 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
       scargtypel := argtypel;
       for each a in argl do <<
 	 n := n + 1;
-	 if (cfn := get(car scargtypel,'assert_checkfn)) and not apply(cfn,{a}) then <<
+	 if (cfn := get(car scargtypel,'assert_checkfn))
+ 	    and not apply(cfn,{a})
+ 	 then <<
 	    bad := t;
 	    assert_error(fn,argtypel,restype,n,car scargtypel,a)
 	 >>;
@@ -113,6 +124,17 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
    end;
 
 procedure assert_error(fn,argtypel,restype,typeno,type,arg);
+   % Subroutine of assert_check1 called in case of an assertion
+   % violation. fn is the name of the original function; argtypel is a
+   % list of types asserted for the arguments of the function call;
+   % restype is the type asserted for the result of the function call;
+   % typeno is an integer denoting which argument has violated an
+   % assertion, where 0 stands for the result; type is the asserted type
+   % for arg; arg is the argument violating an assertion. Depending on
+   % the switch !*assertbreak, either the computation is interrupted
+   % with a rederr or computation continues and the error
+   % message is printed as a warning. In the latter case lprim is used,
+   % which is controlled by the switch !*msg.
    begin scalar w,msg;
       if !*assertstatistics then <<
       	 w := cdr atsoc(fn,assertstatistics!*);
@@ -120,11 +142,12 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
       >>;
       msg := if eqn(typeno,0) then
 %	 {"result of",fn,"invalid as",type,":",arg}
-	 {"assertion",assert_format(fn,argtypel,restype),"violated by result",arg}
+	 {"assertion",assert_format(fn,argtypel,restype),
+	    "violated by result",arg}
       else
 %	 {"argument",typeno,"of",fn,"invalid as",type,":",arg};
-	 {"assertion",assert_format(fn,argtypel,restype),"violated by",
-	    mkid('arg,typeno),arg};
+	 {"assertion",assert_format(fn,argtypel,restype),
+	    "violated by",mkid('arg,typeno),arg};
       if !*assertbreak then
 	 rederr msg
       else
@@ -132,6 +155,10 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
    end;
 
 procedure assert_format(fn,argtypel,restype);
+   % fn is the original function name; argtypel is the list of types
+   % asserted for the arguments; restype is the type asserted for the
+   % result. Reconstructs the assertion as a identifier for printing in
+   % diagnostic messages.
    begin scalar ass;
       ass := explode restype;
       ass := '!! . '!) . '!! . '! . '!! . '!- . '!! . '!> . '!! . '! . ass;
@@ -144,6 +171,8 @@ procedure assert_format(fn,argtypel,restype);
    end;
 
 procedure assert_typedefstat();
+   % The parser for typedef. Returns a form that stores the type
+   % checking function on the property list of the type.
    begin scalar type,cfn;
       type := scan();
       scan();
@@ -170,6 +199,8 @@ put('typedef,'stat,'assert_typedefstat);
 operator assert_analyze;
 
 procedure assert_analyze();
+   % Print and delete the statistical information collected in the fluid
+   % assertstatistics!*. This works in both algebraic and symbolic mode.
    begin scalar headline,footline; integer s1,s2,s3;
       assertstatistics!* := sort(assertstatistics!*,
 	 function(lambda x,y; ordp(car y,car x)));
@@ -185,7 +216,8 @@ procedure assert_analyze();
       for each pr in assertstatistics!* do <<
 	 if pr then <<
 	    prin2 car pr;
-	    for i := length explode2 car pr + length explode2 cadr pr : 23 do prin2 " ";
+	    for i := length explode2 car pr + length explode2 cadr pr : 23 do
+ 	       prin2 " ";
 	    prin2 cadr pr;
 	    for i := length explode2 caddr pr : 23 do prin2 " ";
 	    prin2 caddr pr;
@@ -216,6 +248,10 @@ procedure assert_analyze();
 %%    end;
 
 procedure assert_stat();
+   % The parser for assert. Returns forms that define a suitable wrapper
+   % function, store relevant information on the property list of the
+   % original function, and add the original function to the global list
+   % assert_functionl!*.
    begin scalar l,fnx,progn,assertfn,noassertfn,argl,w1,w2,w3,w4,w4,w5;
       integer i;
       l := assert_stat!-parse();
@@ -241,6 +277,7 @@ procedure assert_stat();
    end;
 
 procedure assert_stat!-parse();
+   % Subroutine of assert_stat(). This is the actual paring code.
    begin scalar fn,argtypel,restype;
       fn := scan();
       if scan() neq '!*colon!* then
@@ -255,6 +292,8 @@ procedure assert_stat!-parse();
    end;
 
 procedure assert_stat1();
+   % Subroutine of assert_stat!-parse. Parses the tuple of argument
+   % types left of the arrow.
    begin scalar argtypel;
       if scan() neq '!*lpar!* then
 	 rederr {"expecting '(' in assert but found",cursym!*};
@@ -270,12 +309,18 @@ procedure assert_stat1();
 put('assert,'stat,'assert_stat);
 
 procedure assert_install(fnl);
+   % This is parsed as stat rlis, i.e., it takes a comma-separated list
+   % fnl of arbirary length of arguments w/o parentesis. fnl is list of
+   % identifiers that are functions for which an existing assertion is
+   % installed.
    if !*assert then
       for each fn in fnl do assert_install1 fn;
 
 put('assert_install,'stat,'rlis);
 
 procedure assert_install1(fn);
+   % fn is an identifier that is a single function for which an existing
+   % assertion is installed.
    if get(fn,'assert_installed) then
       lprim {"assert already installed for",fn}
    else if not eqcar(getd fn,'expr) then
@@ -287,12 +332,18 @@ procedure assert_install1(fn);
    >>;
 
 procedure assert_uninstall(fnl);
+   % This is parsed as stat rlis, i.e., it takes a comma-separated list
+   % fnl of arbirary length of arguments w/o parentesis. fnl is list of
+   % identifiers that are functions for which an installed assertion is
+   % uninstalled.
    if !*assert then
       for each fn in fnl do assert_uninstall1 fn;
 
 put('assert_uninstall,'stat,'rlis);
 
 procedure assert_uninstall1(fn);
+   % fn is an identifier that is a single function for which an
+   % installed assertion is uninstalled.
    if not get(fn,'assert_installed) then
       lprim {"assert not installed for",fn}
    else <<
@@ -301,17 +352,25 @@ procedure assert_uninstall1(fn);
    >>;
 
 procedure assert_install_all();
+   % This is parsed as stat endstat, i.e., it takes no arguments but
+   % also no empty pair of parenthesis. Installs assertions for the
+   % functions in the global list assert_functionl!* of all functions
+   % for which there are assertions defined.
    if !*assert then
       assert_install assert_functionl!*;
 
 put('assert_install_all,'stat,'endstat);
 
 procedure assert_uninstall_all();
+   % This is parsed as stat endstat, i.e., it takes no arguments but
+   % also no empty pair of parenthesis. Uninstalls assertions for the
+   % functions in the global list assert_functionl!* of all functions
+   % for which ther are assertions defined.
    if !*assert then
       assert_uninstall assert_functionl!*;
 
 put('assert_uninstall_all,'stat,'endstat);
 
-endmodule;
+endmodule;  % assert
 
 end;  % of file
