@@ -213,6 +213,8 @@ procedure exptpri(x,y);
 
 procedure utf8_exptpri(x,p);
    begin scalar q,expo,w;
+      if not !*nat then
+      	 return 'failed;
       if null !*utf8exp or not numberp caddr x then
       	 return exptpri_orig(x,p);
       expo := explode caddr x;
