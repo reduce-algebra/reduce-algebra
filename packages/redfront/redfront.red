@@ -204,6 +204,7 @@ procedure redfront_learncolor(c);
       intern compress(int2id 5 . nconc(explode c,{int2id 6}));
 
 if redfront_pslp() then <<
+   fluid '(l);
    lispeval '(putd 'oblist 'expr
       '(lambda nil (prog (l) (setq l nil)
    	       	     	     (mapobl (function (lambda (x) (setq l (cons x l)))))
