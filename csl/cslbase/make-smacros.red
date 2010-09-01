@@ -75,6 +75,180 @@ omit := '(
   prepsqxx    % I do not understand this one
   setpchar    % evil redefinition in terms of itself!
   simpminus   % I do not understand this one
+
+% The next things listed are functions where there seem to be at least
+% two defintions. This does not include anything that has its definition
+% overwritten using copyd or putd.
+
+  add2resultbuf
+  altitude
+  ashift
+  circle
+  deg
+  depend
+  depends
+  diffp
+  domainp
+  exptpri
+  fancy!-binomial
+  fancy!-condpri
+  fancy!-flush
+  fancy!-hypergeometric
+  fancy!-inprint1
+  fancy!-inprint2
+  fancy!-intpri
+  fancy!-limpri
+  fancy!-lower!-digits1
+  fancy!-maprin0
+  fancy!-maprint!-atom
+  fancy!-matpri2
+  fancy!-meijerg
+  fancy!-out!-header
+  fancy!-out!-item
+  fancy!-out!-trailer
+  fancy!-output
+  fancy!-prin2!*
+  fancy!-sub
+  fancy!-tex
+  flatten
+  getrtype
+  getrtype1
+  getrtype2
+  getrtypecadr
+  limit
+  line
+  lineint
+  lshift
+  maprint
+  maxi
+  median
+  midpoint
+  multf
+  multfnc
+  newton
+  nodepend
+  noncom
+  normbf
+  onoff
+  ordop
+  ordp
+  ordpa
+  other_cc_point
+  other_cl_point
+  p3_angle
+  pedalpoint
+  polynomqqq
+  prin2!*
+  rcons
+  reordop
+  scprint
+  select!-eval
+  subs3f1
+  subsetp
+  superprinm
+  superprintm
+  symbol
+  texlet
+  ttttype_ratpoly
+  type_ratpoly
+  varpoint
+  vectoradd
+  vectorplus
+
+% Some more things that give trouble...
+  packages_to_load   % use as smacro messes up 'eval property, or lack thereof
+
+% Functions that must not be compiled into C or turned into SMACROs
+% because their definitions are moved or changed dynamically.
+
+  gentran                  % scope/codgen.red
+  gentran_delaydecs        % scope/codgen.red
+
+% any autoload entrypoint  % support/entries.red
+                           % Body is (progn (load!-package ..) ..)
+
+  oldreclaim               % crack/crutil.red
+  !%reclaim
+  reclaim
+
+  quotientx                % dipoly/bcoeff.red
+
+  excalcputform            % eds/edspatch.red
+
+  groebspolynom            % groebner/hggroeb.red
+  true!-groebspolynom
+
+  lr_add2resultbuff        % libreduce/libreduce.red
+  add2resultbuff
+  setpchar
+  setpchar!-orig
+  setpchar!-csl
+  setpchar!-csl
+  lr_compute!-prompt!-string
+  compute!-prompt!-string
+  yesp
+  lr_yesp!-orig
+  lr_yesp!-psl
+  break_prompt
+  lr_break_prompt
+
+  ODESolve!-old!-subsublis % odesolve/odenon1.red
+  subsublis
+  ODESolve!-subsublis
+
+
+  plot!-exec               % plot/gnuintfc.red
+  explodec                 % plot/gnupldrv.red
+
+  simpexpt                 % qsum/qsum.red
+  original_simpexpt
+  new_simpexpt
+
+  olderfaslp_orig          % rd/rd.red
+  olderfaslp
+
+  redfront_setpchar!-orig  %redfront/redfront.red
+  setpchar
+  redfront_setpchar!-csl
+  redfront_setpchar!-psl
+  yesp
+  redfront_yesp!-psl
+  redfront_compute!-prompt!-string
+  compute!-prompt!-string
+  redfront_break_prompt
+  break_prompt
+
+  for                      % rlisp88/rlisp88.red
+  oldrepeat*
+  repeat
+  oldwhile!*
+  while
+
+  linelength               % tmprint/tmprint.red
+  linelength!-orig
+  tm_setpchar!-orig
+  setpchar
+  tm_setpchar!-csl
+  tm_setpchar!-psl
+  yesp
+  tm_yesp!-orig
+  tm_compute!-prompt!-string!-orig
+  compute!-prompt!-string
+  break_prompt
+  tm_break_prompt
+
+  prin2!*_orig             % utf8/utf8.red
+  prin2!*
+  scprint_orig
+  scprint
+  exptpri_orig
+  exptpri
+  intprint
+
+  scprint                 % redlog/mma/mma.red
+  mma_scprint!-orig
+
+
   );
 
 << terpri();
@@ -269,12 +443,17 @@ for each xx on fns1 do <<
    x := car xx;
    d := get(x, '!*savedef);
    if null d then d := get(x, 'smacro);
-   if eqcar(d, 'lambda) and
-      not atom cdr d and
-      not memq(x, omit) and
-      not smemq('declare, d) and
-      not does_any_setq(cddr d, cadr d) and
-      not smemq(x, d) then <<
+   if eqcar(d, 'lambda) and      % must be a real function
+      not atom cdr d and         % ... properly formatted
+      not memq(x, omit) and      % Not on list of explicit exclusions
+      not smemq('declare, d) and % No DECLARE of fluids
+      not smemq('aeval, d) and   % No algebraic mode
+      not smemq('forall, d) and  % Some confusion with rprint?
+      not smemq('load!-package, d) and
+                                 % Not an autoload stub
+      not (not atom cdr d and does_any_setq(cddr d, cadr d)) and
+                                 % Assigns to its argument
+      not smemq(x, d) then <<    % Calls itself
 % Really I need a topological sort here so that if one small function
 % depends on another the order in which smacros are introduced makes
 % sense. OK so I do that! And if I find a pair of smacros so that each
