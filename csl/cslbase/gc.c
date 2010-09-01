@@ -103,7 +103,9 @@
  * already been marked.
  */
 
-static int32_t heap_map[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
+#define MAP_SIZE (((size_t)MAX_PAGES)*((size_t)((CSL_PAGE_SIZE+255)/256)))
+
+static int32_t (*heap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
 
 static int bitmap_mark_cons(Lisp_Object p)
 {
@@ -122,8 +124,8 @@ static int bitmap_mark_cons(Lisp_Object p)
         {   unsigned int offset = ((unsigned int)((char *)p - base)) >> 3;
             int b = offset%32, w = offset/32;
             int32_t m = 1 << b;
-            int32_t r = heap_map[i][w];
-            heap_map[i][w] |= m;
+            int32_t r = (*heap_map)[i][w];
+            (*heap_map)[i][w] |= m;
             return (r & m) != 0;
         }
     }
@@ -149,12 +151,17 @@ static int bitmap_mark_cons(Lisp_Object p)
  * already been marked.
  */
 
-static int32_t vecheap_map[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
+static int32_t (*vecheap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
 
 static int bitmap_mark_vec(Lisp_Object p)
 {
     int32_t i;
-    char *info = "unknown";
+/*
+ * The variable "info" is set here but never then used, Its purpose is
+ * to be available for a debugger to inspect at a breakpoint. I make it
+ * volatile to decrease the chances of an optimiser removing it!
+ */
+    char * volatile info = "unknown";
     Lisp_Object nil = C_nil;
 /*
  * Check that the object is corectly tagged. Note that NIL must be
@@ -188,8 +195,8 @@ static int bitmap_mark_vec(Lisp_Object p)
                 ((unsigned int)((char *)(p & ~TAG_BITS) - base)) >> 3;
             int b = offset%32, w = offset/32;
             int32_t m = 1 << b;
-            int32_t r = heap_map[i][w];
-            heap_map[i][w] |= m;
+            int32_t r = (*vecheap_map)[i][w];
+            (*vecheap_map)[i][w] |= m;
             return (r & m) != 0;
         }
     }
@@ -228,7 +235,7 @@ static int bitmap_mark_vec(Lisp_Object p)
 static void validate(Lisp_Object p)
 {
     Lisp_Object nil = C_nil;
-    char *info = "unknown";
+    char * volatile info = "unknown";
     Header h = 0;
     intptr_t i = 0;
     if (p == nil) return;
@@ -323,6 +330,18 @@ void validate_all(char *why, int line, char *file)
     Lisp_Object nil = C_nil;
     int i;
     term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
+    if (heap_map == NULL)
+    {   if ((heap_map = malloc(MAP_SIZE)) == NULL)
+        {   term_printf("Unable to allocate space for heap map\n");
+             return;
+        }
+    }
+    if (vecheap_map == NULL)
+    {   if ((vecheap_map = malloc(MAP_SIZE)) == NULL)
+        {   term_printf("Unable to allocate space for vecheap map\n");
+             return;
+        }
+    }
     memset(heap_map, 0, sizeof(heap_map));
     memset(vecheap_map, 0, sizeof(vecheap_map));
 /*
