@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 6082f884 20-Aug-2010 */
+/* Signature: 655547f0 01-Sep-2010 */
 
 #include "headers.h"
 
@@ -103,20 +103,12 @@ Lisp_Object make_string(const char *b)
     int32_t n = strlen(b);
     Lisp_Object r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
     char *s = (char *)r - TAG_VECTOR;
-    int32_t k = (n + 3) & ~(int32_t)7;
+    int32_t k = doubleword_align_up(CELL+n);
     Lisp_Object nil;
     errexit();
 /* Here I go to some trouble to zero out the last doubleword of the vector */
-    if (SIXTY_FOUR_BIT)
-    {   if (k != 0)
-        {   *(int32_t *)(s + k + 4) = 0;
-            *(int32_t *)(s + k) = 0;
-        }
-    }
-    else
-    {   *(int32_t *)(s + k + 4) = 0;
-        if (k != 0) *(int32_t *)(s + k) = 0;
-    }
+    *(int32_t *)(s + k - 4) = 0;
+    if (k != 8) *(int32_t *)(s + k - 8) = 0;
     memcpy(s + CELL, b, (size_t)n);
     validate_string(r);
     return r;
@@ -130,7 +122,13 @@ void validate_string_fn(Lisp_Object s, char *file, int line)
         int len1 = doubleword_align_up(len);
         while (len < len1)
         {   if (celt(s, len-CELL) != 0)
-            {   fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
+            {   char *p = (char *)(s - TAG_VECTOR);
+                int i;
+                fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
+                for (i=0; i<len1; i++)
+                {   fprintf(stderr, "%p: %.2x   (%c)\n", p, *p, *p);
+                    p++;
+                }
                 fflush(stderr);
                 *(int *)(Lisp_Object)(-1) = 0x55555555; /* I hope this aborts */
             }
@@ -157,19 +155,11 @@ static Lisp_Object copy_string(Lisp_Object str, int32_t n)
     r = getvector(TAG_VECTOR, TYPE_STRING, CELL+n);
     pop(str);
     s = (char *)r - TAG_VECTOR;
-    k = (n + 3) & ~(int32_t)7;
+    k = doubleword_align_up(CELL+n);
     errexit();
 /* Here I go to some trouble to zero out the last doubleword of the vector */
-    if (SIXTY_FOUR_BIT)
-    {   if (k != 0)
-        {   *(int32_t *)(s + k + 4) = 0;
-            *(int32_t *)(s + k) = 0;
-        }
-    }
-    else
-    {   *(int32_t *)(s + k + 4) = 0;
-        if (k != 0) *(int32_t *)(s + k) = 0;
-    }
+    *(int32_t *)(s + k - 4) = 0;
+    if (k != 8) *(int32_t *)(s + k - 8) = 0;
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
     validate_string(r);
     return r;
@@ -1082,14 +1072,15 @@ static Lisp_Object add_to_externals(Lisp_Object s,
  * used = CELL*(spaces+1)
  * The effect is that I trigger a re-hash if the table reaches 62%
  * loading.  For small vectors when I re-hash I will double the
- * table size, for large ones I will roughly multipoly the amount of
+ * table size, for large ones I will roughly multiply the amount of
  * allocated space by 1.5.
  * The effect will be that small packages will often be fairly lightly
  * loaded (down to 31% just after an expansion) while very large ones will
  * be kept at least a bit closer to the 62% mark.
  */
 try_again:
-    if ((uint32_t)n/10u > used/CELL)
+/*  if ((uint32_t)n/10u > used/CELL) */
+    if ((uint32_t)n/8u > used/CELL)    /* have just 50% loading */
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvext_(p), 1);
@@ -1146,7 +1137,8 @@ static Lisp_Object add_to_internals(Lisp_Object s,
     if (used == 1) used = length_of_header(vechdr(v)) - CELL;
     else used = CHUNK_SIZE*used;
 try_again:
-    if ((uint32_t)n/10u > used/CELL)
+/*  if ((uint32_t)n/10u > used/CELL) */
+    if ((uint32_t)n/8u > used/CELL)   /* Just 50% loading */
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvint_(p), 1);
