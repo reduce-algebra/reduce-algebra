@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 1d605e16 20-Aug-2010 */
+/* Signature: 30e56ebe 02-Sep-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -793,6 +793,7 @@ extern char *standard_directory;
 
 extern int gc_number;
 extern CSLbool gc_method_is_copying;
+extern int force_reclaim_method;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2

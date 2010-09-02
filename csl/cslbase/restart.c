@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 0ebe04d3 18-Aug-2010 */
+/* Signature: 7f33d070 02-Sep-2010 */
 
 #include "headers.h"
 
@@ -2537,6 +2537,17 @@ static void *my_malloc_2(size_t n)
     return (void *)r;
 }
 
+static Lisp_Object Lreclaim_method(Lisp_Object nil, Lisp_Object a)
+{
+    if (a == nil)
+        return onevalue(gc_method_is_copying ? lisp_true : nil);
+    if (!is_fixnum(a)) return aerror1("reclaim-method", a);
+    force_reclaim_method = int_of_fixnum(a);
+    if (force_reclaim_method < 0) gc_method_is_copying = 0;    
+    else if (force_reclaim_method > 0) gc_method_is_copying = 1;
+    return onevalue(a);
+}
+
 static void init_heap_segments(double store_size)
 /*
  * This function just makes nil and the pool of page-frames available.
@@ -2938,6 +2949,7 @@ static setup_type const restart_setup[] =
     {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {"reclaim",                 Lgc, too_many_1, Lgc0},
 #endif
+    {"reclaim-method",          Lreclaim_method, too_many_1, wrong_no_1},
     {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
     {NULL,                      0, 0, 0}
 };

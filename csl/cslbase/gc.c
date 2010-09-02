@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5c8c041c 22-Aug-2010 */
+/* Signature: 5bf3c6d8 02-Sep-2010 */
 
 #include "headers.h"
 
@@ -97,6 +97,9 @@
  */
 
 
+static char *validate_why, *validate_file;
+static int validate_line;
+
 /*
  * p is a (reference to a) cons cell. Verify it is within a
  * cons heap-page, set a mark bit for it and return 1 if it had
@@ -113,6 +116,8 @@ static int bitmap_mark_cons(Lisp_Object p)
     Lisp_Object nil = C_nil;
     if (!consp(p))
     {   term_printf("\n%p is not a cons pointer\n", (void *)p);
+        term_printf("Validation for %s at line %d of file %s\n",
+                    validate_why, validate_line, validate_file);
         ensure_screen();
         abort();
     }
@@ -130,6 +135,8 @@ static int bitmap_mark_cons(Lisp_Object p)
         }
     }
     term_printf("\nCons address %p not found in heap\n", (void *)p);
+    term_printf("Validation for %s at line %d of file %s\n",
+                validate_why, validate_line, validate_file);
     term_printf("nil = %p\n", (void *)nil);
     term_printf("Heap: %d\n", heap_pages_count);
     for (i=0; i<heap_pages_count; i++)
@@ -156,12 +163,7 @@ static int32_t (*vecheap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
 static int bitmap_mark_vec(Lisp_Object p)
 {
     int32_t i;
-/*
- * The variable "info" is set here but never then used, Its purpose is
- * to be available for a debugger to inspect at a breakpoint. I make it
- * volatile to decrease the chances of an optimiser removing it!
- */
-    char * volatile info = "unknown";
+    char *info = "unknown";
     Lisp_Object nil = C_nil;
 /*
  * Check that the object is corectly tagged. Note that NIL must be
@@ -173,6 +175,8 @@ static int bitmap_mark_vec(Lisp_Object p)
         !is_vector(p) &&
         !is_bfloat(p))
     {   term_printf("\n%p is not a vector pointer\n", (void *)p);
+        term_printf("Validation for %s at line %d of file %s\n",
+                    validate_why, validate_line, validate_file);
         ensure_screen();
         abort();
     }
@@ -201,6 +205,9 @@ static int bitmap_mark_vec(Lisp_Object p)
         }
     }
     term_printf("\nVector address %p not found in heap\n", (void *)p);
+    term_printf("Validation for %s at line %d of file %s\n",
+                validate_why, validate_line, validate_file);
+    term_printf("info = %s\n", info);
     term_printf("nil = %p\n", (void *)nil);
     term_printf("Heap: %d\n", heap_pages_count);
     for (i=0; i<heap_pages_count; i++)
@@ -235,12 +242,14 @@ static int bitmap_mark_vec(Lisp_Object p)
 static void validate(Lisp_Object p)
 {
     Lisp_Object nil = C_nil;
-    char * volatile info = "unknown";
+    char *info = "unknown";
     Header h = 0;
     intptr_t i = 0;
     if (p == nil) return;
     if (p == 0)
     {   term_printf("NULL item found\n");
+        term_printf("Validation for %s at line %d of file %s\n",
+                    validate_why, validate_line, validate_file);
         ensure_screen();
         abort();
     }
@@ -268,6 +277,8 @@ case TAG_ODDS:      /* Invalid here */
 case TAG_SFLOAT:    /* Invalid here */
 #endif /* COMMON */
         term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
+        term_printf("Validation for %s at line %d of file %s\n",
+                    validate_why, validate_line, validate_file);
         ensure_screen();
         abort();
 
@@ -297,6 +308,8 @@ case TAG_NUMBERS:
         return;
 #else /* COMMON */
         term_printf("Bad numeric type found %.8lx\n", (long)h);
+        term_printf("Validation for %s at line %d of file %s\n",
+                    validate_why, validate_line, validate_file);
         ensure_screen();
         abort();
         return;
@@ -329,17 +342,20 @@ void validate_all(char *why, int line, char *file)
     Lisp_Object *sp = NULL;
     Lisp_Object nil = C_nil;
     int i;
-    term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
+    validate_why = why;
+    validate_line = line;
+    validate_file = file;   /* In case a diagnostic is needed */
+/*  term_printf("Validate heap for %s at line %d of %s\n", why, line, file); */
     if (heap_map == NULL)
     {   if ((heap_map = malloc(MAP_SIZE)) == NULL)
         {   term_printf("Unable to allocate space for heap map\n");
-             return;
+            return;
         }
     }
     if (vecheap_map == NULL)
     {   if ((vecheap_map = malloc(MAP_SIZE)) == NULL)
         {   term_printf("Unable to allocate space for vecheap map\n");
-             return;
+            return;
         }
     }
     memset(heap_map, 0, sizeof(heap_map));
@@ -359,7 +375,7 @@ void validate_all(char *why, int line, char *file)
     for (sp=stack; sp>(Lisp_Object *)stackbase; sp--) validate(*sp);
     validate(eq_hash_tables);
     validate(equal_hash_tables);
-    term_printf("Validation complete\n");
+/*  term_printf("Validation complete\n"); */
 }
 
 
@@ -382,6 +398,7 @@ int check_env(Lisp_Object env)
 
 int gc_number = 0;
 CSLbool gc_method_is_copying = 0;     /* YES if copying, NO if sliding */
+int force_reclaim_method = 0;
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
              big_numbers, box_floats, bytestreams, other_mem,
@@ -2794,6 +2811,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #ifdef DEBUG_GC
     term_printf("Start of a garbage collection %d\n", gc_number);
 #endif /* DEBUG_GC */
+#ifdef DEBUG
+    validate_all("start of gc", __LINE__, __FILE__);
+#endif
 #ifdef CONSERVATIVE
 /*
  * How do I know that all callee-save registers are on the stack by the
@@ -2875,12 +2895,18 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
                 return resource_exceeded();
+#ifdef DEBUG
+            validate_all("end of gc", __LINE__, __FILE__);
+#endif
             return onevalue(p);
         }
         else if (async_type == NOISY_INTERRUPT)
             miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
         else miscflags &= ~MESSAGES_FLAG;
         async_type = QUERY_INTERRUPT;     /* accepted! */
+#ifdef DEBUG
+        validate_all("end of gc", __LINE__, __FILE__);
+#endif
         return interrupted(p);
     }
     else
@@ -2896,6 +2922,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 	    tidy_fringes();
 	    interrupt_pending = NO;
 	    pop_clock();
+#ifdef DEBUG
+            validate_all("end of gc", __LINE__, __FILE__);
+#endif
             time_now = (int)consolidated_time[0];
             if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
@@ -2909,6 +2938,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             reset_limit_registers(vheap_need, bps_need, native_need, YES))
         {   already_in_gc = NO;
             pop_clock();
+#ifdef DEBUG
+            validate_all("end of gc", __LINE__, __FILE__);
+#endif
             if (space_limit >= 0 && space_now > space_limit)
                 return resource_exceeded();
             return use_gchook(p, nil); /* Soft GC */
@@ -2946,6 +2978,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     push(p);
 
     gc_number++;
+#ifdef DEBUG
+    validate_all("continuation of gc", __LINE__, __FILE__);
+#endif
 
 #ifdef WINDOW_SYSTEM
 /*
@@ -2969,6 +3004,10 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             trace_printf(
         "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
                  (long)gc_number, why, t/100, t%100, gct/100, gct%100);
+#ifdef DEBUG
+            trace_printf("GC method: %s\n",
+                         gc_method_is_copying ? "copying" : "sliding");
+#endif
         }
     }
 #else /* WINDOW_SYSTEM */
@@ -2990,6 +3029,10 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         trace_printf(
          "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
          (long)gc_number, why, t/100, t%100, gct/100, gct%100);
+#ifdef DEBUG
+         trace_printf("GC method: %s\n",
+                      gc_method_is_copying ? "copying" : "sliding");
+#endif
     }
 #endif /* WINDOW_SYSTEM */
 /*
@@ -3370,6 +3413,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     }
 #endif /* MEMORY_TRACE */
     report_at_end(nil);
+#ifdef DEBUG
+    validate_all("end of gc", __LINE__, __FILE__);
+#endif
 /*
  * I will make the next garbage collection a copying one if the heap is
  * at most 25% full, or a sliding one if it is more full than that. And
@@ -3383,6 +3429,8 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
                  3*(heap_pages_count +
                          (3*(vheap_pages_count + bps_pages_count +
                              native_pages_count))/2));
+    if (force_reclaim_method < 0) gc_method_is_copying = 0;
+    else if (force_reclaim_method > 0) gc_method_is_copying = 1;
     if (stop_after_gc)
     {
 #ifdef MEMORY_TRACE
