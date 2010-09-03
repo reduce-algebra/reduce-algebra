@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2903263c 16-Aug-2010 */
+/* Signature: 5f636542 03-Sep-2010 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -66,6 +66,35 @@
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
+
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+/*
+ * If <inttypes.h> is not available I will try some things that probably
+ * work on the most common gcc systems but which may need more work on
+ * other platforms.
+ */
+#if defined __x86_64 || (defined __SIZEOF_PTRDIFF_T__ && __SIZEOF_PTRDIFF_T__ == 8)
+#define PRIdPTR "lld"
+#define PRIuPTR "llu"
+#define PRIxPTR "llx"
+#else
+#define PRIdPTR "d"
+#define PRIuPTR "u"
+#define PRIxPTR "x"
+#endif
+#endif
+
+#ifdef WIN64
+/* The mingw64 build that I use seems to get messed up by inttypes.h */
+#undef PRIdPTR
+#undef PRIuPTR
+#undef PRIxPTR
+#define PRIdPTR "lld"
+#define PRIuPTR "llu"
+#define PRIxPTR "llx"
 #endif
 
 #ifndef UNDER_CE

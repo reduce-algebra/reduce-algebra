@@ -9061,6 +9061,19 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: stdint_header=$stdint_header" >&5
 $as_echo "$as_me: stdint_header=$stdint_header" >&6;}
 
+ac_fn_c_check_header_mongrel "$LINENO" "inttypes.h" "ac_cv_header_inttypes_h" "$ac_includes_default"
+if test "x$ac_cv_header_inttypes_h" = x""yes; then :
+  inttypes_header=y
+                 $as_echo "#define HAVE_INTTYPES_H 1" >>confdefs.h
+
+else
+  inttypes_header=n
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: inttypes_header=$inttypes_header" >&5
+$as_echo "$as_me: inttypes_header=$inttypes_header" >&6;}
+
 for ac_header in fcntl.h float.h malloc.h memory.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`

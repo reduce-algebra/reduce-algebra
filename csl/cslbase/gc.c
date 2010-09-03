@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5bf3c6d8 02-Sep-2010 */
+/* Signature: 27890780 03-Sep-2010 */
 
 #include "headers.h"
 
@@ -3340,23 +3340,16 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 /* (verbos 5) causes a display breaking down how space is used */
     if ((verbos_flag & 5) == 5)
     {   trace_printf(
-            "cons_cells=%d, symbol_heads=%d, strings=%d, user_vectors=%d\n",
+            "cons_cells=%" PRIdPTR ", symbol_heads=%" PRIdPTR ", strings=%" PRIdPTR ", user_vectors=%" PRIdPTR "\n",
              cons_cells, symbol_heads, strings, user_vectors-litvecs-getvecs);
         trace_printf(
-            "bignums=%d, floats=%d, bytestreams=%d, other=%d, litvecs=%d\n",
+            "bignums=%" PRIdPTR ", floats=%" PRIdPTR ", bytestreams=%" PRIdPTR ", other=%" PRIdPTR ", litvecs=%d\n",
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
-        trace_printf("getvecs=%d\n", getvecs);
+        trace_printf("getvecs=%" PRIdPTR "\n", getvecs);
     }
 
     pop(p);
 
-    if (!reset_limit_registers(vheap_need, bps_need, native_need, NO))
-    {   if (stack < stacklimit || stacklimit != stackbase)
-        {   report_at_end(nil);
-            term_printf("\n+++ No space left at all\n");
-            my_exit(EXIT_FAILURE);    /* totally drastic... */
-        }
-    }
 #ifndef MEMORY_TRACE
 /*
  * Here I grab more memory (if I am allowed to).
@@ -3412,6 +3405,13 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         }
     }
 #endif /* MEMORY_TRACE */
+    if (!reset_limit_registers(vheap_need, bps_need, native_need, NO))
+    {   if (stack < stacklimit || stacklimit != stackbase)
+        {   report_at_end(nil);
+            term_printf("\n+++ No space left at all\n");
+            my_exit(EXIT_FAILURE);    /* totally drastic... */
+        }
+    }
     report_at_end(nil);
 #ifdef DEBUG
     validate_all("end of gc", __LINE__, __FILE__);

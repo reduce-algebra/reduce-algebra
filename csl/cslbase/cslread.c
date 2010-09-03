@@ -1,3 +1,4 @@
+#define DEBUG 1
 /* cslread.c                        Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
@@ -35,7 +36,7 @@
 
 
 
-/* Signature: 655547f0 01-Sep-2010 */
+/* Signature: 5e455668 03-Sep-2010 */
 
 #include "headers.h"
 
@@ -930,7 +931,12 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  * increase by a factor of 1.5 each time.
  */
     if (grow > 0)
-    {   if (number_of_chunks == 1)
+    {
+#ifdef DEBUG
+        term_printf("Grow hash from %d chunks\n", number_of_chunks);
+        ensure_screen();
+#endif
+        if (number_of_chunks == 1)
         {
 /*
  * Here I am going to allow the hash table size to double until trying to
@@ -944,7 +950,7 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
  * each table hold 128K items - a feature of this is that Reduce will
  * generally not go into the overflow mechanism! By making the table size
  * 1/4 of my allocation page size I will end up fitting 3 tables per page
- * and leaving just the final quarter to be fille dup otherwise. If I
+ * and leaving just the final quarter to be filled up otherwise. If I
  * went further and used yet larger hash table segments I could suffer
  * much more badly because of fragmentation. 
  */
@@ -952,7 +958,11 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
             h = length_of_header(vechdr(v)) - CELL;
             if (h >= ll)
             {   h = ll;
+#ifdef DEBUG
+                number_of_chunks = 500;
+#else
                 number_of_chunks = 3;
+#endif
             }
             else h = 2*h;
         }
@@ -989,6 +999,10 @@ static Lisp_Object rehash(Lisp_Object v, Lisp_Object chunks, int grow)
     }
     nil = C_nil;
     stackcheck1(0, v);
+#ifdef DEBUG
+    term_printf("... to %d chunks\n", number_of_chunks);
+    ensure_screen();
+#endif
     push(v);
 try_again:
     if (number_of_chunks == 1)
@@ -1046,6 +1060,11 @@ try_again:
         }
     }
     popv(1);
+#ifdef DEBUG
+    term_printf("Rehashing done\n");
+    ensure_screen();
+#endif
+
     return new_obvec;
 }
 
@@ -1079,8 +1098,7 @@ static Lisp_Object add_to_externals(Lisp_Object s,
  * be kept at least a bit closer to the 62% mark.
  */
 try_again:
-/*  if ((uint32_t)n/10u > used/CELL) */
-    if ((uint32_t)n/8u > used/CELL)    /* have just 50% loading */
+    if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvext_(p), 1);
@@ -1137,8 +1155,7 @@ static Lisp_Object add_to_internals(Lisp_Object s,
     if (used == 1) used = length_of_header(vechdr(v)) - CELL;
     else used = CHUNK_SIZE*used;
 try_again:
-/*  if ((uint32_t)n/10u > used/CELL) */
-    if ((uint32_t)n/8u > used/CELL)   /* Just 50% loading */
+    if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
         v = rehash(v, packvint_(p), 1);

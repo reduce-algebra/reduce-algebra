@@ -1140,6 +1140,12 @@ AC_CHECK_HEADER([stdint.h],
                 [stdint_header=n])
 AC_MSG_NOTICE([stdint_header=$stdint_header])
 
+AC_CHECK_HEADER([inttypes.h],
+                [inttypes_header=y
+                 AC_DEFINE(HAVE_INTTYPES_H, 1)],
+                [inttypes_header=n])
+AC_MSG_NOTICE([inttypes_header=$inttypes_header])
+
 AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])

@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7f33d070 02-Sep-2010 */
+/* Signature: 5071e888 03-Sep-2010 */
 
 #include "headers.h"
 
@@ -854,8 +854,11 @@ void convert_fp_rep(void *p, int old_rep, int new_rep, int type)
     {   f[0] = flip_32bits(f[0]);
         if (type >= 2) f[1] = flip_32bits(f[1]);
     }
-    return;
+   return;
 }
+
+#define PAGE_MASK               ((((uint32_t)1) << (32-PAGE_BITS)) - 1)
+#define OFFSET_MASK             ((((uint32_t)1) << PAGE_BITS) - 1)
 
 static void adjust(Lisp_Object *cp)
 /*
@@ -869,7 +872,18 @@ static void adjust(Lisp_Object *cp)
  */
     if  (p == SPID_NIL || p == 0) *cp = nil;
     else if (is_cons(p))
-    {   intptr_t h = (intptr_t)heap_pages[(p>>PAGE_BITS) & PAGE_MASK];
+    {
+/*
+ * The next line arranges to use JUST the low 32-bits of the item in the
+ * saved heap image. That means that if I have a heap image created on a
+ * 32-bit system and try to reload it on a 64-bit one there is no worry
+ * about whether I sign extended to move from 32 to 64-bits. But it also
+ * means that an image is limited to around 4 Gbytes. If at some stage
+ * somebody tried to use PRESERVE etc to take snapshots of a huge job on
+ * a 64-bit machine this will cause pain. So at some stage I need to
+ * re-think it.
+ */
+        intptr_t h = (intptr_t)heap_pages[(p>>PAGE_BITS) & PAGE_MASK];
 /* If I am expanding a 32-bit image onto a 64-bit computer then I will
  * have allocated double-sized pages (on a temporary basis) and placed
  * all items at exactly twice their original offset from the page

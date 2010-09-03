@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 1f7f01fc 24-Mar-2010 */
+/* Signature: 3b34084c 03-Sep-2010 */
 
 #include "headers.h"
 
@@ -1297,9 +1297,19 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * been going on! Note that the executable code here does not use this
  * variable at all: it is JUST so that I have a simple "char *" variable
  * that a symbolic debugger can inspect to find my function name without
- * me having to mess about too much.
+ * me having to mess about too much. I make this "volatile" in the hope that
+ * that will prevent any compiler from optimising it out of existence!
  */
-    char *ffname = &celt(qpname(elt(lit, 0)), 0);  /* DEBUG */
+    Lisp_Object volatile ffsym = elt(lit, 0);
+    char * volatile ffname = &celt(qpname(ffsym), 0);  /* DEBUG */
+    if (*ffname == 0)
+    {   fprintf(stderr, "\nffname empty - system corrupted?\n");
+        fflush(stderr);
+        ensure_screen();
+        *((int *)(-1)) = 0x55555555; /* Collapse! */
+        abort(); 
+    }
+    CSL_IGNORE(ffsym);
     CSL_IGNORE(ffname);
 #endif
 

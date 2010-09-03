@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 15430d5c 21-Jun-2010 */
+/* Signature: 0abc0e96 03-Sep-2010 */
 
 
 #ifndef header_tags_h
@@ -120,9 +120,6 @@ typedef int                 CSLbool;
 #endif
 
 #define MAX_NATIVE_PAGES        MAX_BPS_PAGES
-
-#define PAGE_MASK               ((((uint32_t)1) << (32-PAGE_BITS)) - 1)
-#define OFFSET_MASK             ((((uint32_t)1) << PAGE_BITS) - 1)
 
 #define CSL_IGNORE(x)           (x = x)
 

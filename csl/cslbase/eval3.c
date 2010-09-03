@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 0ad36a52 21-Jun-2010 */
+/* Signature: 2731d45e 03-Sep-2010 */
 
 #include "headers.h"
 
@@ -1284,21 +1284,21 @@ Lisp_Object Lerrorset2(Lisp_Object nil, Lisp_Object form, Lisp_Object ffg1)
  * note that resources have expired.
  */
 
-int time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
-int time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
-int time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
+int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
+int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
+int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
 
 static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
                              Lisp_Object ltime, Lisp_Object lspace,
                              Lisp_Object lio, Lisp_Object lerrors)
 {
     Lisp_Object nil = C_nil, r;
-    int lltime, llspace, llio, llerrors;
-    int save_time_base  = time_base,  save_space_base   = space_base,
-        save_io_base    = io_base,    save_errors_base  = errors_base;
-    int save_time_limit = time_limit, save_space_limit  = space_limit,
-        save_io_limit   = io_limit,   save_errors_limit = errors_limit;
-    int r0=0, r1=0, r2=0, r3=0;
+    int64_t lltime, llspace, llio, llerrors;
+    int64_t save_time_base  = time_base,  save_space_base   = space_base,
+            save_io_base    = io_base,    save_errors_base  = errors_base;
+    int64_t save_time_limit = time_limit, save_space_limit  = space_limit,
+            save_io_limit   = io_limit,   save_errors_limit = errors_limit;
+    int64_t r0=0, r1=0, r2=0, r3=0;
 #ifndef __cplusplus
 #ifdef USE_SIGALTSTACK
     sigjmp_buf this_level, *saved_buffer = errorset_buffer;
@@ -1313,6 +1313,7 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
     errorset_msg = NULL;
 /*
  * Here I need to do something that actually sets up the limits!
+ * I only allow limits that are up to 31-bits...
  */
     lltime = thirty_two_bits(ltime); /* .. or zero if not an integer */
     llspace = thirty_two_bits(lspace);

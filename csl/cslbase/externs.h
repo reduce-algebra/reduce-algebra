@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 30e56ebe 02-Sep-2010 */
+/* Signature: 35ce39c9 03-Sep-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -1252,9 +1252,9 @@ extern Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env);
  * file.
  */
 extern Lisp_Object resource_exceeded();
-extern int time_base,  space_base,  io_base,  errors_base;
-extern int time_now,   space_now,   io_now,   errors_now;
-extern int time_limit, space_limit, io_limit, errors_limit;
+extern int64_t time_base,  space_base,  io_base,  errors_base;
+extern int64_t time_now,   space_now,   io_now,   errors_now;
+extern int64_t time_limit, space_limit, io_limit, errors_limit;
 
 /* 
  * Flags used to toggle the protection or otherwise of symbols, and 
