@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 5071e888 03-Sep-2010 */
+/* Signature: 5f878d0f 07-Sep-2010 */
 
 #include "headers.h"
 
@@ -2748,7 +2748,15 @@ static void init_heap_segments(double store_size)
  * is the base of the double-page. This feels close to cheating!
  */
                 while (pages_count < free_space)
-                {   void *page = (void *)&pool[pages_count*(CSL_PAGE_SIZE+16)];
+                {   void *page =
+/*
+ * Ha Ha - for some long while I had a buf whereby I missed out the cast
+ * to size_t here and as a result if you asked for over 4G of memory
+ * there was an integer overflow in the subscript calculation leading to
+ * reasonably obscure disaster.
+ */
+                           (void *)&pool[pages_count*
+                                         (size_t)(CSL_PAGE_SIZE+16)];
                     pages[pages_count++] = page;
                 }
             }
