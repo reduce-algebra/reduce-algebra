@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 3c078181 18-Aug-2010 */
+/* Signature: 5db2bd32 08-Sep-2010 */
 
 #include "headers.h"
 
@@ -1493,7 +1493,7 @@ Lisp_Object Lsymbol_globalp(Lisp_Object nil, Lisp_Object a)
 Lisp_Object Lboundp(Lisp_Object nil, Lisp_Object a)
 {
     if (!symbolp(a)) return onevalue(nil);
-#ifndef COMMON
+#if !defined COMMON && 0
 /*
  * In COMMON Lisp it seems that this is intended to just check if the
  * value cell in a shallow-bound implementation contains some marker value
@@ -1501,6 +1501,12 @@ Lisp_Object Lboundp(Lisp_Object nil, Lisp_Object a)
  * that have not been declared fluid are unbound.  Seems to me like a
  * classical mix-up between the concept of binding and of having some
  * particular value...  Oh well.
+ *
+ * (September 2010) I just changed that so that a name that is not fluid
+ * but that has been given a value (using SET or SETQ I expect) is counted
+ * as "bound". This probably matches what PSL does and this function is
+ * also probably used by few enough people that this will not lead to
+ * too many bugs even though it is an incompatible change in behavior.
  */
     else if ((qheader(a) & SYM_SPECIAL_VAR) == 0) return onevalue(nil);
 #endif
