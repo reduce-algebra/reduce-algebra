@@ -7,16 +7,10 @@ module Taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2001 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2010 by Rainer M. Schoepf, all rights reserved.
 %
 %
-%  Error reports please to: Rainer Schoepf
-%                           Zentrum fuer Datenverarbeitung
-%                            der Universitaet Mainz
-%                           Anselm-Franz-von-Bentzel-Weg 12
-%                           D-55099 Mainz
-%                           Germany
-%                   Email:  <Schoepf@Uni-Mainz.DE>
+%  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
 %
 %
 % Redistribution and use in source and binary forms, with or without
@@ -85,6 +79,10 @@ module Taylor;
 %       Revision history
 %
 %*****************************************************************
+%
+% 21-Aug-2010    2.2c
+%   Create taylor's own fkern function, instead of manipulating
+%   the klist!* directly
 %
 % 08-Jun-2001    2.2b
 %   Bind !*precise to nil in simptaylor, to avoid problems with SQRT
@@ -872,6 +870,7 @@ fluid  '(Taylor!:version        % version number
          Taylor!:date!*         % release date
          TaylorPrintTerms       % Number of terms to be printed
          !*tayexpanding!*
+         !*tayinternal!*
          !*tayrestart!*
          !*taylorkeeporiginal   % \
          !*taylorautoexpand     %  \
@@ -924,6 +923,10 @@ TaylorPrintTerms := 5;         % Only this nubmer of non-zero terms
 %!*verboseload := nil;         % set if loading info should be printed
 !*tayexpanding!* := nil;       % set by taylorexpand to indicate that
                                % expansion is in progress.
+!*tayinternal!* := nil;        % set while doing internal computations,
+                               % to indicate that some normal REDUCE 
+                               % operations should not be done (like
+                               % making kernels unique and storing them.
 !*tayrestart!* := nil;         % set by Taylor!-error!* if expansion is
                                % in progress to indicate that the error
                                % might disappear if the order is

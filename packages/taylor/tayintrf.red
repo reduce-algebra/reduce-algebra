@@ -63,7 +63,7 @@ imports
         prepTaylor!*;
 
 
-fluid '(!*backtrace !*precise !*taylorkeeporiginal !*taylorautocombine
+fluid '(!*backtrace !*precise !*tayinternal!* !*taylorkeeporiginal !*taylorautocombine
         frlis!* subfg!*);
 
 global '(mul!*);
@@ -73,6 +73,26 @@ comment The following statement forces all expressions to be
         unfortunately, this is not always sufficient;
 
 put ('taylorautocombine, 'simpfg, '((t (rmsubs))));
+
+
+comment Interface to the fkern mechanism that makes kernels unique and 
+        stores them in the klist property;
+
+symbolic procedure tayfkern u;
+  begin scalar x,y;
+    if !*tayinternal!* then return u;
+    % rest of code borrowed from fkern
+    y := get('taylor!*,'klist);
+    x := assoc(u,y);
+    if null x
+      then <<x := list(u,nil);
+             y := ordad(x,y);
+             kprops!* := union('(taylor!*),kprops!*);
+             put('taylor!*,'klist,y)>>;
+    return x
+  end;
+
+put('taylor!*, 'fkernfn, 'tayfkern);
 
 
 symbolic procedure simptaylor u;
