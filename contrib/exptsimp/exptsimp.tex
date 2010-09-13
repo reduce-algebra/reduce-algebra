@@ -1,0 +1,37 @@
+\documentstyle[11pt,reduce]{article}
+\newcommand{\MACSYMA}{{\sf MACSYMA}}
+\newcommand{\MAPLE}{{\sf MAPLE}}
+\newcommand{\Mathematica}{{\sf Mathematica}}
+\newcommand{\PSL}{{\sf PSL}}
+\title{Simplification of expressions \\
+       involving exponentials and surds}
+\date{}
+\author{Rainer Sch\"opf\\
+        Konrad-Zuse-Zentrum f\"ur Informationstechnik Berlin\\
+        Heilbronner Str.\ 10\\
+        W-1000 Berlin 31\\
+        Federal Republic of Germany\\
+        Email: Schoepf@sc.ZIB-Berlin.de}
+\begin{document}
+\maketitle
+
+This short note describes a new \REDUCE{} operator that tries to
+simplify expressions that contain exponentials and surds. It does this
+by applying algebraic relations between these.
+
+The operator is `\verb+EXPTSIMP+'\index{EXPTSIMP operator}. Usage is
+
+\noindent {\tt EXPTSIMP}(EXP:{\em exprn}):{\em exprn}
+
+The result is an equivalent expression.
+
+\noindent {\em Method.} The basic idea is to replace every surd or
+exponential by a variable and add a equations defining the variable.
+For the resulting polynomial system is the Groebner basis is then
+calculated, and the surds and exponentials are substituted back into
+the result, leading to a possibly simpler expression.  Due to this
+method, no assumptions about a specific choice of branches are made,
+with the exception that multiple occurences of the same surd always
+denote the same branch.
+
+\end{document}

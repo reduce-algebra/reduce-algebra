@@ -1,0 +1,100 @@
+comment Test file for exptsimp.red...load this first;
+
+
+pp := b^(2/3) * b^(7/9);
+
+
+       13/9
+pp := b
+
+
+exptsimp pp;
+
+
+ 4/9
+b   *b
+
+
+exptsimp ((5 + 2 * sqrt(6)) / (sqrt(3) + sqrt(2)));
+
+
+sqrt(3) + sqrt(2)
+
+
+comment Some examples from the book by Davenport, Tournier & Tournier,
+        page 77;
+
+
+exptsimp ((x+sqrt(x^2-1))/(sqrt((x+1)/2)  + sqrt((x-1)/2)));
+
+
+ sqrt(2)*(sqrt(x - 1) + sqrt(x + 1))
+-------------------------------------
+                  2
+
+
+z := 112 + 70 * sqrt 2 + sqrt 5 * (46 + 34 sqrt 2);
+
+
+z := 2*(17*sqrt(10) + 23*sqrt(5) + 35*sqrt(2) + 56)
+
+
+n := 5 + 4 * sqrt 2 + sqrt (5) * (3 + sqrt 2);
+
+
+n := sqrt(10) + 3*sqrt(5) + 4*sqrt(2) + 5
+
+
+exptsimp (z/n);
+
+
+sqrt(10) + 3*sqrt(5) + 4*sqrt(2) + 5
+
+
+z1 := (32/5)^(1/5) - (27/5)^(1/5) ;
+
+
+           3/5
+        - 3    + 2
+z1 := -------------
+           1/5
+          5
+
+
+n1 := (1/25)^(1/5) + (3/25)^(1/5) - (9/25)^(1/5);
+
+
+           2/5    1/5
+        - 3    + 3    + 1
+n1 := --------------------
+               2/5
+              5
+
+
+exptsimp (z1/n1);
+
+
+  1/5   4/5      3/5    2/5      1/5
+ 5   *(3    - 2*3    - 3    + 2*3    + 1)
+------------------------------------------
+                    5
+
+
+exptsimp (ws/n1);
+
+
+  3/5      2/5    1/5
+ 5   *( - 3    + 3    + 1)
+---------------------------
+             5
+
+
+exptsimp (e**(x**2/2) / e**(x**2/3));
+
+
+  2
+ x /6
+e
+
+
+end;
