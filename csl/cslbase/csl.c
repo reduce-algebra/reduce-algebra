@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 1f6f408d 22-Aug-2010 */
+/* Signature: 113b4772 15-Sep-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1982,12 +1982,15 @@ term_printf(
                         if (store_size < 32000.0) store_size = 32000.0;
 #endif
 /*
- * At present I limit even 64-bit systems to 50 Gbytes.
- * ... and 32-bit systems to 1.9 Gbytes.
+ * At present I limit even 64-bit systems to 500 Gbytes. I do not guarantee
+ * that things will behave sensibly if you approach that ...
+ * ... and 32-bit systems to 2.0 Gbytes because I need to have all my
+ * addresses having the same sign bit, so 2G is an ABSOLUTE limit to my heap
+ * size on a 32-bit machine.
  */
                         if ((!SIXTY_FOUR_BIT &&
-                             (store_size > 1.9*1024.0*1024.0)) ||
-                            (store_size > 50*1024.0*1024.0))
+                             (store_size > 2.0*1024.0*1024.0)) ||
+                            (store_size > 500.0*1024.0*1024.0))
                         {
                             fwin_restore();
                             term_printf(
