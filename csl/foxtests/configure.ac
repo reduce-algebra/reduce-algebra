@@ -22,9 +22,10 @@
 # installed.
 # I use the Mingw-w64 tool-chain (see the sourceforge project).
 # I have used that either from Linux or from cygwin (on Vista-64) with
-# the compiler called x86_64-pc-mingw32-gcc, but the build under
+# the compiler called x86_64-w64-mingw32-gcc, but the build under
 # cygwin on Vista is the only one where I can build image files.
-# I have had success with snapshots dated 20080425 or later.
+# I have had success with snapshots dated 20080425 or later. But the current
+# testing has been adjusted to work with a version fetched in September 2010
 #
 
 
@@ -57,13 +58,13 @@ fi
 
 if test "x$mingw64" = "xyes"
 then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-pc-mingw32-gcc])
-   host="x86_64-pc-mingw32"
-   ac_tool_prefix="x86_64-pc-mingw32-"
+   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32])
+   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-w64-mingw32-gcc])
+   host="x86_64-w64-mingw32"
+   ac_tool_prefix="x86_64-w64-mingw32-"
    cross_compiling=yes
-   STRIP="x86_64-pc-mingw32-strip"
-   AR="x86_64-pc-mingw32-ar"
+   STRIP="x86_64-w64-mingw32-strip"
+   AR="x86_64-w64-mingw32-ar"
 fi
 
 # What host am I on?
@@ -79,7 +80,7 @@ AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
 
 if test "x$mingw64" = "xyes"
 then
-   foxdir="x86_64-pc-mingw32"
+   foxdir="x86_64-w64-mingw32"
 else
    foxdir="$host"
 fi
@@ -131,14 +132,14 @@ then
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-  LDFLAGS="$LDFLAGS -e _mainCRTStartup"
+# LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   DLL_CFLAGS="$CFLAGS -shared"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
 else
 case $host in
-*-*-cygwin* | x86_64-pc-mingw32)
+*-*-cygwin* | x86_64-w64-mingw32)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     [  --with-cygwin           Force use of raw cywgin (note GPL)],
@@ -725,7 +726,7 @@ AC_PROG_LN_S
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-pc-mingw32-gcc"
+if test "x$CC" = "xx86_64-w64-mingw32-gcc"
 then
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
 fi
@@ -917,7 +918,7 @@ else
 # modified GNU-style triple, as in i686-pc-linux. So if the
 # user says --with-fox=/homes/myself/foxplace and the build is for
 # Windows-64 the location inspected will end up
-# /homes/myself/foxplace/x86_64-pc-windows64. Etc etc.
+# /homes/myself/foxplace/x86_64-w64-windows64. Etc etc.
 
 # Only look for FOX 1.6. That is because at present the changes
 # introduced since then are not important to me but the additional licensing
@@ -961,7 +962,7 @@ fi
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-pc-mingw32-gcc"
+  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
   then
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
   else

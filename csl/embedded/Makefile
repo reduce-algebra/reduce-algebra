@@ -1,7 +1,7 @@
 # Makefile for this SIMPLE setup for Reduce building
 
 CC=gcc
-CFLAGS=-m32 -O2 -DHAVE_CONFIG_H=1 -DEMBEDDED=1
+CFLAGS=-m32 -O2 -DHAVE_CONFIG_H=1 -DEMBEDDED=1 -pg
 
 all:	reduce
 
@@ -29,7 +29,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 	u31.o u32.o u33.o u34.o u35.o u36.o u37.o u38.o u39.o u40.o \
 	u41.o u42.o u43.o u44.o u45.o u46.o u47.o u48.o u49.o u50.o \
 	u51.o u52.o u53.o u54.o u55.o u56.o u57.o u58.o u59.o u60.o \
-	-lm -o reduce
+	-pg -lm -o reduce
 
 # Create the reduce.img file
 
