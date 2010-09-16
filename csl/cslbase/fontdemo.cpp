@@ -16,7 +16,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -65,9 +65,6 @@ int main(int argc, char *argv[])
 
 #else
 
-#include "fx.h"	
-#include "fwin.h"
-
 #ifndef fontsdir
 #define fontsdir reduce.fonts
 #endif
@@ -85,6 +82,7 @@ int main(int argc, char *argv[])
 
 #ifdef WIN32
 
+#undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <wingdi.h>
@@ -115,13 +113,11 @@ static XftFont *ftFont = NULL;
 #include <string.h>
 #include <ctype.h>
 
-namespace FX {
+#include "fx.h"	
+#include "fwin.h"
 
-extern "C" {
 
 extern int main(int argc,char *argv[]);
-
-}
 
 static FXFont *ff = NULL;
 
@@ -159,7 +155,7 @@ FXIMPLEMENT(FontWindow,FXMainWindow,FontWindowMap,ARRAYNUMBER(FontWindowMap))
 
 
 FontWindow::FontWindow(FXApp *a)
-          :FXMainWindow(a,"Font Application",NULL,NULL,DECOR_ALL,0,0,1100,800)
+          :FXMainWindow(a,"Font Application",NULL,NULL,DECOR_ALL,100,100,1100,800)
 {
     canvas=new FXCanvas(this,this,ID_CANVAS,
         FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|
@@ -172,6 +168,7 @@ FontWindow::~FontWindow()
 // I find that attempts to unload windows fonts take me into a world
 // of pain, so I leave them to be automatically discarded when the
 // application closes. This is really rather grungy!
+    printf("Could destroy the window here\n");
 }
 
 void FontWindow::create()
@@ -248,7 +245,7 @@ static localFonts fontNames[] =
 #ifdef WIN32
 
 // With Windows 95 and 98 (and who can remember about ME) the
-// AddFontResourceEx function I wanted was not available,
+// AddFontResOUrceEx function I wanted was not available,
 // Thus I could not sensibly link in calls to it in any hard way. To
 // try to support old operating systems I loaded the gdi32 library
 // and checked for this function using dynamic loading access methods.
@@ -270,7 +267,8 @@ static localFonts fontNames[] =
 #define FR_NOT_ENUM  0x20
 #endif
 
-#define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM)
+/* #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM) */
+#define PRIVATE_FONT FR_PRIVATE
 
 static int fontNeeded = 0;
 
@@ -342,7 +340,6 @@ int main(int argc,char *argv[])
     find_program_directory(argv[0]);
 
     FontWindow *w = new FontWindow(&application);
-    application.create();
 
 #ifdef HAVE_LIBXFT
 #endif
@@ -498,10 +495,10 @@ int main(int argc,char *argv[])
     if (ff == NULL) printf("Font could not be created\n");
     else ff->create();
 
+    application.create();
     return application.run();
 }
 
-}
 
 #endif /* HAVE_LIBFOX */
 

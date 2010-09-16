@@ -1,11 +1,11 @@
 /*
- * showmathdemo.cpp                          Copyright (C) Codemist Ltd 2008
+ * showmathdemo.cpp                         Copyright (C) Codemist Ltd 2010
  *
  * Demonstrate display of mathematical formulae...
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 200, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -54,11 +54,6 @@ int main(int argc, char *argv[])
 
 #else
 
-#include "fx.h"	
-#include "fwin.h"
-
-#include "FXShowMath.h"
-
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
@@ -71,9 +66,10 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-namespace FX {
+#include "fx.h"	
+#include "fwin.h"
 
-extern "C" {
+#include "FXShowMath.h"
 
 extern int main(int argc,char *argv[]);
 
@@ -89,8 +85,6 @@ extern FcConfig     *config;
 extern XftFont      *ftFont;
 
 #endif
-}
-
 
 // At least for testing purposes I will extract the LaTeX-like stuff
 // from a string...
@@ -142,7 +136,7 @@ FXIMPLEMENT(MathWindow,FXMainWindow,MathWindowMap,ARRAYNUMBER(MathWindowMap))
 
 
 MathWindow::MathWindow(FXApp *a)
-          :FXMainWindow(a,"Font Application",NULL,NULL,DECOR_ALL,0,0,550,600)
+          :FXMainWindow(a,"ShowMathDemo",NULL,NULL,DECOR_ALL,100,100,550,600)
 {
     canvas=new FXCanvas(this,this,ID_CANVAS,
         FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|
@@ -314,7 +308,6 @@ int main(int argc,char *argv[])
 }
 
 
-}
 
 #endif /* HAVE_LIBFOX */
 

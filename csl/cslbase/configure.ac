@@ -194,7 +194,9 @@ then
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-  LDFLAGS="$LDFLAGS -e _mainCRTStartup"
+# The next line USED to be needed with an earlier draft release of the
+# 64-bit compiler, but now if it is included things FAIL.
+# LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   DLL_CFLAGS="$CFLAGS -shared"
   windows_build="yes"
   exeext="yes"
