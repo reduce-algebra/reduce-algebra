@@ -49,13 +49,13 @@ host=`scripts/findhost.sh $host`
 echo Current machine tag is $host
 
 # As a special concession I will see if we have a 64-bit (cross) compiler
-# installed and called x86_64-pc-mingw32-gcc. If so I will consider all
+# installed and called x86_64-win64-mingw32-gcc. If so I will consider all
 # the possible cross-builds using it for 64-bit windows as well as all
 # the normal builds native on this platform.
 
-if { x86_64-pc-mingw32-gcc scripts/hello.c -o hello.exe ; } 2> /dev/null
+if { x86_64-win64-mingw32-gcc scripts/hello.c -o hello.exe ; } 2> /dev/null
 then
-  host="$host x86_64-pc-windows"
+  host="$host x86_64-win64-windows"
 fi
 
 rm -f hello.exe

@@ -33,7 +33,7 @@
 # installed.
 # I use the Mingw-w64 tool-chain (see the sourceforge project).
 # I have used that either from Linux or from cygwin (on Vista-64) with
-# the compiler called x86_64-pc-mingw32-gcc, but the build under
+# the compiler called x86_64-win64-mingw32-gcc, but the build under
 # cygwin on Vista is the only one where I can build image files.
 # I have had success with snapshots dated 20080425 or later.
 #

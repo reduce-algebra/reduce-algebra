@@ -74,13 +74,13 @@ fi
 
 if test "x$mingw64" = "xyes"
 then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-pc-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-pc-mingw32-gcc])
-   host="x86_64-pc-mingw32"
-   ac_tool_prefix="x86_64-pc-mingw32-"
+   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-win64-mingw32])
+   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-win64-mingw32-gcc])
+   host="x86_64-win64-mingw32"
+   ac_tool_prefix="x86_64-win64-mingw32-"
    cross_compiling=yes
-   STRIP="x86_64-pc-mingw32-strip"
-   AR="x86_64-pc-mingw32-ar"
+   STRIP="x86_64-win64-mingw32-strip"
+   AR="x86_64-win64-mingw32-ar"
 fi
 
 # What host am I on?
@@ -122,7 +122,7 @@ then
   X_BASE_LIBS=""
 else
 case $host in
-*-*-cygwin* | x86_64-pc-mingw32)
+*-*-cygwin* | x86_64-win64-mingw32)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
@@ -624,7 +624,7 @@ fi
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-pc-mingw32-gcc"
+if test "x$CC" = "xx86_64-win64-mingw32-gcc"
 then
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
 fi
@@ -861,7 +861,7 @@ AC_MSG_NOTICE([Can Run Executables = $can_run_executables])
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-pc-mingw32-gcc"
+  if test "x$CC" = "xx86_64-win64-mingw32-gcc"
   then
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
   else

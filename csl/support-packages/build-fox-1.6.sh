@@ -310,7 +310,7 @@ then
   machine="$arch"
 elif test $mingw64 = "yes"
 then
-  machine="x86_64-pc-mingw32"
+  machine="x86_64-win64-mingw32"
 elif test $xp64 = "yes"
 then
   machine="x86_64-pc-windows64"

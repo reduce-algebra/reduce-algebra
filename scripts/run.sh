@@ -9,9 +9,9 @@ shift
 shift
 case "x$OS" in
 xWindows_NT)
-  for hx in "x86_64-pc-windows" "x86_64-pc-windows-debug" \
+  for hx in "x86_64-win64-windows" "x86_64-win64-windows-debug" \
             "i686-pc-windows" "i686-pc-windows-debug" \
-            "x86_64-pc-windows-nogui" "x86_64-pc-windows-nogui-debug" \
+            "x86_64-win64-windows-nogui" "x86_64-win64-windows-nogui-debug" \
             "i686-pc-windows-nogui" "i686-pc-windows-nogui-debug"
   do
     if test -x $here/../cslbuild/$hx/csl/$ap.com

@@ -11,14 +11,14 @@ to be able to compile both CSL itself and the FOX toolkit on which it depends.
        Note that mingw/msys is not supported.
    GNU make (other versions of "make" are not liable to work), autoconf
        and automake.
-   For CSL you need a C/C++ development context and libtool. On Windows you
+   For CSL you need a C/C++ development context. On Windows you
        need the "mingw" compiler variants from cygwin while on other systems
        you need X11 and other development capability, including Xft,
        fontconfig, (n)curses, Posix threads. For building for 64-bit windows
        you should check http://sourceforge.net/projects/mingw-w64/ and ensure
-       you have cross-tools with a name such as x88_64-pc-mingw32-gcc (and
-       all associated tools, libraries and utilities). You may need special
-       tricks to mediate between cywgin and windows-style path names.
+       you have cross-tools with a name such as x88_64-win64-mingw32-gcc (and
+       all associated tools, libraries and utilities). Please use the
+       cygwin hostable versions that use Unix-style path-names.
 
 If you try to build REDUCE but one of the programming tools or development
 libraries that is required is not available then there is no guarantee that
@@ -101,7 +101,7 @@ and for sub-variant build options an a single architecture. The nature of
 the computer on which building is performed is detected automatically and
 all binaries and all logs are placed in directories whose names include
 that. Thus files might be make in a directory with such as
-         pslbuild/x86_64-pc-opensuse-11.0
+         pslbuild/x86_64-unknown-opensuse-11.0
      OR  cslbuild/i686-pc-windows
 Part of the purpose of this is so that in a case where a user's file-space is
 on a network file-server of some sort and they connect to that using a variety
@@ -118,9 +118,13 @@ There are a number of optional ways in which configuration may be customised:
    On an architecture that is basically 64-bit (mostly 64-bit Linux) this
    arranges to compile 32-bit binaries. As in "gcc -m32".
          ./configure --with-csl --with-mingw64
-   Provided a cross compiler x86_64-pc-mingw32-gcc is available (plus all
+   Provided a cross compiler x86_64-win64-mingw32-gcc is available (plus all
    associated tools - see the site at sourceforge where that compiler
    is being developed) this EXPERIMENTALLY build a 64-bit Windows system.
+   As of September 2010 the MinGW64 toolchain from sourceforge seems pretty
+   stable. Note that you NEED to use the version that hosts on Cygwin
+   not the one for Msys, since the gnu autotools etc do not play prettily
+   with Windows-style file-names and paths.
          ./configure --with-csl --with-cygwin
    Normally the CSL build on a Windows platform builds a normal native Windows
    binary using "mingw32". "--with-cygwin" causes it to build a "cygwin"
@@ -182,7 +186,7 @@ is the main one used for rebuilding the system.
 
 
 
-A C Norman. July 2008. Updated Jan 2009
+A C Norman. July 2008. Updated Jan 2009, September 2010
 
 
 
