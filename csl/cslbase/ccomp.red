@@ -260,32 +260,32 @@ symbolic procedure c!:valid_specform x;
 %  put('when,                   'c!:valid, function c!:valid_specform) 
    >>;
 
-fluid '(current_procedure current_args current_block current_contents
-        all_blocks registers stacklocs);
+fluid '(c!:current_procedure c!:current_args c!:current_block c!:current_contents
+        c!:all_blocks c!:registers c!:stacklocs);
 
-fluid '(available used);
+fluid '(c!:available c!:used);
 
-available := used := nil;
+c!:available := c!:used := nil;
 
 symbolic procedure c!:reset_gensyms();
- << remflag(used, 'c!:live_across_call);
-    remflag(used, 'c!:visited);
-    while used do <<
-      remprop(car used, 'c!:contents);
-      remprop(car used, 'c!:why);
-      remprop(car used, 'c!:where_to);
-      remprop(car used, 'c!:count);
-      remprop(car used, 'c!:live);
-      remprop(car used, 'c!:clash);
-      remprop(car used, 'c!:chosen);
-      remprop(car used, 'c!:location);
-      if plist car used then begin
+ << remflag(c!:used, 'c!:live_across_call);
+    remflag(c!:used, 'c!:visited);
+    while c!:used do <<
+      remprop(car c!:used, 'c!:contents);
+      remprop(car c!:used, 'c!:why);
+      remprop(car c!:used, 'c!:where_to);
+      remprop(car c!:used, 'c!:count);
+      remprop(car c!:used, 'c!:live);
+      remprop(car c!:used, 'c!:clash);
+      remprop(car c!:used, 'c!:chosen);
+      remprop(car c!:used, 'c!:location);
+      if plist car c!:used then begin
          scalar o; o := wrs nil;
-         princ "+++++ "; prin car used; princ " ";
-         prin plist car used; terpri();
+         princ "+++++ "; prin car c!:used; princ " ";
+         prin plist car c!:used; terpri();
          wrs o end;
-      available := car used . available;
-      used := cdr used >> >>;
+      c!:available := car c!:used . c!:available;
+      c!:used := cdr c!:used >> >>;
 
 !#if common!-lisp!-mode
 
@@ -297,14 +297,14 @@ my_gensym_counter := 0;
 symbolic procedure c!:my_gensym();
   begin
     scalar w;
-    if available then << w := car available; available := cdr available >>
+    if c!:available then << w := car c!:available; c!:available := cdr c!:available >>
 !#if common!-lisp!-mode
     else w := compress1
        ('!v . explodec (my_gensym_counter := my_gensym_counter + 1));
 !#else
     else w := gensym1 "v";
 !#endif
-    used := w . used;
+    c!:used := w . c!:used;
     if plist w then << princ "????? "; prin w; princ " => "; prin plist w; terpri() >>;
     return w
   end;
@@ -313,28 +313,28 @@ symbolic procedure c!:newreg();
   begin
     scalar r;
     r := c!:my_gensym();
-    registers := r . registers;
+    c!:registers := r . c!:registers;
     return r
   end;
 
 symbolic procedure c!:startblock s;
- << current_block := s;
-    current_contents := nil
+ << c!:current_block := s;
+    c!:current_contents := nil
  >>;
 
 symbolic procedure c!:outop(a,b,c,d);
-  if current_block then
-     current_contents := list(a,b,c,d) . current_contents;
+  if c!:current_block then
+     c!:current_contents := list(a,b,c,d) . c!:current_contents;
 
 symbolic procedure c!:endblock(why, where_to);
-  if current_block then <<
+  if c!:current_block then <<
 % Note that the operations within a block are in reversed order.
-    put(current_block, 'c!:contents, current_contents);
-    put(current_block, 'c!:why, why);
-    put(current_block, 'c!:where_to, where_to);
-    all_blocks := current_block . all_blocks;
-    current_contents := nil;
-    current_block := nil >>;
+    put(c!:current_block, 'c!:contents, c!:current_contents);
+    put(c!:current_block, 'c!:why, why);
+    put(c!:current_block, 'c!:where_to, where_to);
+    c!:all_blocks := c!:current_block . c!:all_blocks;
+    c!:current_contents := nil;
+    c!:current_block := nil >>;
 
 %
 % Now for a general driver for compilation
@@ -371,7 +371,7 @@ symbolic procedure c!:cval(x, env);
   begin
      scalar r;
      r := c!:cval_inner(x, env);
-     if r and not member!*!*(r, registers) then
+     if r and not member!*!*(r, c!:registers) then
         error(0, list(r, "not a register", x));
      return r
   end;
@@ -485,30 +485,30 @@ symbolic procedure c!:cjumpif(x, env, d1, d2);
        c!:endblock(list('ifnull, r), list(d2, d1)) >>
   end;
 
-fluid '(current);
+fluid '(c!:current);
 
 symbolic procedure c!:ccall(fn, args, env);
   c!:ccall1(fn, args, env);
 
-fluid '(visited);
+fluid '(c!:visited);
 
 symbolic procedure c!:has_calls(a, b);
   begin
-    scalar visited;
+    scalar c!:visited;
     return c!:has_calls_1(a, b)
   end;
 
 symbolic procedure c!:has_calls_1(a, b);
 % true if there is a path from node a to node b that has a call instruction
 % on the way.
-  if a = b or not atom a or memq(a, visited) then nil
+  if a = b or not atom a or memq(a, c!:visited) then nil
   else begin
     scalar has_call;
-    visited := a . visited;
+    c!:visited := a . c!:visited;
     for each z in get(a, 'c!:contents) do
        if eqcar(z, 'call) then has_call := t;
     if has_call then return
-       begin scalar visited;
+       begin scalar c!:visited;
        return c!:can_reach(a, b) end;
     for each d in get(a, 'c!:where_to) do
        if c!:has_calls_1(d, b) then has_call := t;
@@ -517,9 +517,9 @@ symbolic procedure c!:has_calls_1(a, b);
 
 symbolic procedure c!:can_reach(a, b);
   if a = b then t
-  else if not atom a or memq(a, visited) then nil
+  else if not atom a or memq(a, c!:visited) then nil
   else <<
-    visited := a . visited;
+    c!:visited := a . c!:visited;
     c!:any_can_reach(get(a, 'c!:where_to), b) >>;
 
 symbolic procedure c!:any_can_reach(l, b);
@@ -594,7 +594,7 @@ symbolic procedure c!:ccall1(fn, args, env);
     return val
   end;
       
-fluid '(restart_label reloadenv does_call current_c_name);
+fluid '(restart_label reloadenv does_call c!:current_c_name);
 
 % Reminder: s!:find_local_decs(body, isprog) returns (L . B') where
 % L is a list of local declarations and B' is the body with any
@@ -643,12 +643,12 @@ symbolic procedure c!:local_fluidp(v, decs);
 
 fluid '(proglabs blockstack localdecs);
 
-symbolic procedure c!:cfndef(current_procedure,
-                             current_c_name, argsbody, checksum);
+symbolic procedure c!:cfndef(c!:current_procedure,
+                             c!:current_c_name, argsbody, checksum);
   begin
-    scalar env, n, w, current_args, current_block, restart_label,
-           current_contents, all_blocks, entrypoint, exitpoint, args1,
-           registers, stacklocs, literal_vector, reloadenv, does_call,
+    scalar env, n, w, c!:current_args, c!:current_block, restart_label,
+           c!:current_contents, c!:all_blocks, entrypoint, exitpoint, args1,
+           c!:registers, c!:stacklocs, literal_vector, reloadenv, does_call,
            blockstack, proglabs, args, body, localdecs;
     args := car argsbody;
     body := cdr argsbody;
@@ -670,13 +670,13 @@ symbolic procedure c!:cfndef(current_procedure,
 %
 % Normally comment out the next line... It just shows what I am having to
 % compile and may be useful when debugging.
-%   print list(current_procedure, current_c_name, args, body);
+%   print list(c!:current_procedure, c!:current_c_name, args, body);
     c!:reset_gensyms();
     wrs C_file;
     linelength 200;
-    c!:printf("\n\n/* Code for %a %<*/\n\n", current_procedure);
+    c!:printf("\n\n/* Code for %a %<*/\n\n", c!:current_procedure);
 
-    c!:find_literal current_procedure; % For benefit of backtraces
+    c!:find_literal c!:current_procedure; % For benefit of backtraces
 %
 % cope with fluid vars in an argument list by expanding the definition
 %    (de f (a B C d) body)     B and C fluid
@@ -684,7 +684,7 @@ symbolic procedure c!:cfndef(current_procedure,
 %    (de f (a x y c) (prog (B C) (setq B x) (setq C y) (return body)))
 % so that the fluids get bound by PROG.
 %
-    current_args := args;
+    c!:current_args := args;
     for each v in args do
        if v = '!&optional or v = '!&rest then
           error(0, "&optional and &rest not supported by this compiler (yet)")
@@ -698,7 +698,7 @@ symbolic procedure c!:cfndef(current_procedure,
           n := (v . c!:my_gensym()) . n end
        else if fluidp v or c!:local_fluidp(v, localdecs) then
           n := (v . c!:my_gensym()) . n;
-    if !*r2i then body := s!:r2i(current_procedure, args, body);
+    if !*r2i then body := s!:r2i(c!:current_procedure, args, body);
     restart_label := c!:my_gensym();
     body := list('c!:private_tagbody, restart_label, body);
 % This bit sets up the PROG block for binding fluid arguments. 
@@ -710,7 +710,7 @@ symbolic procedure c!:cfndef(current_procedure,
        body := 'prog . (for each v in reverse n collect car v) . body >>;
     c!:printf "static Lisp_Object ";
     if null args or length args >= 3 then c!:printf("MS_CDECL ");
-    c!:printf("%s(Lisp_Object env", current_c_name);
+    c!:printf("%s(Lisp_Object env", c!:current_c_name);
     if null args or length args >= 3 then c!:printf(", int nargs");
     n := t;
     env := nil;
@@ -723,7 +723,7 @@ symbolic procedure c!:cfndef(current_procedure,
        else n := t;
        aa := c!:my_gensym();
        env := (x . aa) . env;
-       registers := aa . registers;
+       c!:registers := aa . c!:registers;
        args1 := aa . args1;
        c!:printf(" Lisp_Object %s", aa) end;
     if null args or length args >= 3 then c!:printf(", ...");
@@ -734,16 +734,16 @@ symbolic procedure c!:cfndef(current_procedure,
 % declarations have been generated.
 
     c!:startblock (entrypoint := c!:my_gensym());
-    exitpoint := current_block;
+    exitpoint := c!:current_block;
     c!:endblock('goto, list list c!:cval(body, env . nil));
 
-    c!:optimise_flowgraph(entrypoint, all_blocks, env,
-                        length args . current_procedure, args1);
+    c!:optimise_flowgraph(entrypoint, c!:all_blocks, env,
+                        length args . c!:current_procedure, args1);
 
     c!:printf("}\n\n");
     wrs O_file;
 
-    L_contents := (current_procedure . literal_vector . checksum) .
+    L_contents := (c!:current_procedure . literal_vector . checksum) .
                   L_contents;
     return nil
   end;
@@ -839,7 +839,7 @@ symbolic procedure c!:inv_name n;
 !#endif
   end;
 
-fluid '(defnames pending_functions);
+fluid '(c!:defnames pending_functions);
 
 symbolic procedure c!:ccmpout1 u;
   begin
@@ -888,13 +888,13 @@ symbolic procedure c!:ccmpout1a u;
                         '!@ . '!@ . append(explodec symbol!-name car u,
                         append(explodec "@@Builtin", '(!")))));
         w := intern w;
-        defnames := list(car u, c!:inv_name car u, length cadr u, w, checksum) . defnames;
+        c!:defnames := list(car u, c!:inv_name car u, length cadr u, w, checksum) . c!:defnames;
 !#else
-        defnames := list(car u, c!:inv_name car u, length cadr u, checksum) . defnames;
+        c!:defnames := list(car u, c!:inv_name car u, length cadr u, checksum) . c!:defnames;
 !#endif
 %       if posn() neq 0 then terpri();
-        princ "Compiling "; prin caar defnames; princ " ... ";
-        c!:cfndef(caar defnames, cadar defnames, cdr u, checksum);
+        princ "Compiling "; prin caar c!:defnames; princ " ... ";
+        c!:cfndef(caar c!:defnames, cadar c!:defnames, cdr u, checksum);
 !#if common!-lisp!-mode
         L_contents := (w . car L_contents) . cdr L_contents;
 !#endif
@@ -918,7 +918,7 @@ symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
 !#if common!-lisp!-mode
     my_gensym_counter := 0;
 !#endif
-    registers := available := used := nil;
+    c!:registers := c!:available := c!:used := nil;
 % File_name will be the undecorated name as a string when hdrnow is false,
     File_name := list!-to!-string explodec name;
     Setup_name := explodec setupname;
@@ -957,7 +957,7 @@ princ "C file = "; print name;
     d := compress('!" . cadr w . car w . '!- . d);
 !#endif
     O_file := wrs C_file;
-    defnames := nil;
+    c!:defnames := nil;
     if hdrnow then
         c!:printf("\n/* Module: %s %tMachine generated C code %<*/\n\n", setupname, 25)
     else c!:printf("\n/* %s.c %tMachine generated C code %<*/\n\n", name, 25);
@@ -1017,18 +1017,18 @@ procedure C!-end1 create_lfile;
     if create_lfile then
        c!:printf("\n\nsetup_type const %s_setup[] =\n{\n", Setup_name)
     else c!:printf("\n\nsetup_type_1 const %s_setup[] =\n{\n", Setup_name);
-    defnames := reverse defnames;
-    while defnames do begin
+    c!:defnames := reverse c!:defnames;
+    while c!:defnames do begin
        scalar name, nargs, f1, f2, cast, fn;
 !#if common!-lisp!-mode
-       name := cadddr car defnames;
-       checksum := cadddr cdar defnames;
+       name := cadddr car c!:defnames;
+       checksum := cadddr cdar c!:defnames;
 !#else
-       name := caar defnames;
-       checksum := cadddr car defnames;
+       name := caar c!:defnames;
+       checksum := cadddr car c!:defnames;
 !#endif
-       f1 := cadar defnames;
-       nargs := caddar defnames;
+       f1 := cadar c!:defnames;
+       nargs := caddar c!:defnames;
        cast := "(n_args *)";
        if nargs = 1 then <<
           f2 := '!t!o!o_!m!a!n!y_1; cast := ""; fn := '!w!r!o!n!g_!n!o_1 >>
@@ -1048,7 +1048,7 @@ procedure C!-end1 create_lfile;
           c!:printf("    {\q%s\q, %t%s, %t%s, %t%s%s, %t%s, %t%s},\n",
                     name, 24, f1, 40, f2, 52, cast, fn, 64, c1, 76, c2)
        end;
-       defnames := cdr defnames end;
+       c!:defnames := cdr c!:defnames end;
     c3 := checksum := md60 L_contents;
     c1 := remainder(c3, 10000000);
     c3 := c3 / 10000000;
@@ -1597,14 +1597,14 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
           c!:printf("%v", car r2);
           for each a in cdr r2 do c!:printf(", %v", a) >>;
        c!:printf(");\n") >>
-    else if car r3 = current_procedure then <<
+    else if car r3 = c!:current_procedure then <<
 % Things could go sour here if a function tried to call itself but with the
 % wrong number of args. And this happens at one place in the REDUCE source
 % code (I hope it will be fixed soon!). I will patch things up here by
 % discarding any excess args or padding with NIL if not enough had been
 % written.
-       r2 := c!:fix_nargs(r2, current_args);
-       c!:printf("    %v = %s(env", r1, current_c_name);
+       r2 := c!:fix_nargs(r2, c!:current_args);
+       c!:printf("    %v = %s(env", r1, c!:current_c_name);
        if null r2 or length r2 >= 3 then c!:printf(", %s", length r2);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>
@@ -1720,7 +1720,7 @@ symbolic procedure c!:display_flowgraph(s, depth, dropping_through);
     else c!:print_exit_condition(why, where_to, depth);
   end;
 
-fluid '(startpoint);
+fluid '(c!:startpoint);
 
 symbolic procedure c!:branch_chain(s, count);
   begin
@@ -1794,12 +1794,12 @@ flag('(ldrglob strglob nilglob movk call), 'c!:read_env);
 
 fluid '(fn_used nil_used nilbase_used);
 
-symbolic procedure c!:live_variable_analysis all_blocks;
+symbolic procedure c!:live_variable_analysis c!:all_blocks;
   begin
     scalar changed, z;
     repeat <<
       changed := nil;
-      for each b in all_blocks do
+      for each b in c!:all_blocks do
         begin
           scalar w, live;
           for each x in get(b, 'c!:where_to) do
@@ -1815,7 +1815,7 @@ symbolic procedure c!:live_variable_analysis all_blocks;
                   not flagp(cadar w, 'c!:direct_entrypoint))) then
                  nil_used := t;
              if eqcar(car w, 'call) and
-                not (cadar w = current_procedure) and
+                not (cadar w = c!:current_procedure) and
                 not get(cadar w, 'c!:direct_entrypoint) and
                 not get(cadar w, 'c!:c_entrypoint) then <<
                     fn_used := t; live := union('(env), live) >> >>;
@@ -1843,7 +1843,7 @@ symbolic procedure c!:live_variable_analysis all_blocks;
                     flagp(car r3, 'c!:c_entrypoint) or
                     get(car r3, 'c!:direct_predicate) then nil_used := t;
                  does_call := t;
-                 if not eqcar(r3, current_procedure) and
+                 if not eqcar(r3, c!:current_procedure) and
                     not get(car r3, 'c!:direct_entrypoint) and
                     not get(car r3, 'c!:c_entrypoint) then fn_used := t;
                  if not flagp(car r3, 'c!:no_errors) then
@@ -1860,11 +1860,11 @@ symbolic procedure c!:live_variable_analysis all_blocks;
             changed := t >>
         end
     >> until not changed;
-    z := registers;
-    registers := stacklocs := nil;
+    z := c!:registers;
+    c!:registers := c!:stacklocs := nil;
     for each r in z do
-       if flagp(r, 'c!:live_across_call) then stacklocs := r . stacklocs
-       else registers := r . registers
+       if flagp(r, 'c!:live_across_call) then c!:stacklocs := r . c!:stacklocs
+       else c!:registers := r . c!:registers
   end;
 
 symbolic procedure c!:insert1(a, b);
@@ -1876,9 +1876,9 @@ symbolic procedure c!:clash(a, b);
     put(a, 'c!:clash, c!:insert1(b, get(a, 'c!:clash)));
     put(b, 'c!:clash, c!:insert1(a, get(b, 'c!:clash))) >>;
 
-symbolic procedure c!:build_clash_matrix all_blocks;
+symbolic procedure c!:build_clash_matrix c!:all_blocks;
   begin
-    for each b in all_blocks do
+    for each b in c!:all_blocks do
       begin
         scalar live, w;
         for each x in get(b, 'c!:where_to) do
@@ -1919,10 +1919,10 @@ symbolic procedure c!:build_clash_matrix all_blocks;
       end;
 % The next few lines are for debugging...
 %%-    c!:printf "Scratch registers:\n";
-%%-    for each r in registers do
+%%-    for each r in c!:registers do
 %%-        c!:printf("%s clashes: %s\n", r, get(r, 'c!:clash));
 %%-    c!:printf "Stack items:\n";
-%%-    for each r in stacklocs do
+%%-    for each r in c!:stacklocs do
 %%-        c!:printf("%s clashes: %s\n", r, get(r, 'c!:clash));
     return nil
   end;
@@ -1958,9 +1958,9 @@ symbolic procedure c!:allocate_registers rl;
     return allocation
   end;
         
-symbolic procedure c!:remove_nops all_blocks;
+symbolic procedure c!:remove_nops c!:all_blocks;
 % Remove no-operation instructions, and map registers to reflect allocation
-  for each b in all_blocks do
+  for each b in c!:all_blocks do
     begin
       scalar r;
       for each s in get(b, 'c!:contents) do
@@ -1984,16 +1984,16 @@ symbolic procedure c!:remove_nops all_blocks;
                 car r . for each v in cdr r collect get(v, 'c!:chosen))
     end;
 
-fluid '(error_labels);
+fluid '(c!:error_labels);
 
 symbolic procedure c!:find_error_label(why, env, depth);
   begin
     scalar w, z;
     z := list(why, env, depth);
-    w := assoc!*!*(z, error_labels);
+    w := assoc!*!*(z, c!:error_labels);
     if null w then <<
        w := z . c!:my_gensym();
-       error_labels := w . error_labels >>;
+       c!:error_labels := w . c!:error_labels >>;
     return cdr w
   end;
 
@@ -2022,8 +2022,8 @@ symbolic procedure c!:insert_tailcall b;
       else res := w := nil >>;
     if null res then return nil;
     if c!:does_return(res, why, dest) then
-       if car cadddr fcall = current_procedure then <<
-          for each p in pair(current_args, caddr fcall) do
+       if car cadddr fcall = c!:current_procedure then <<
+          for each p in pair(c!:current_args, caddr fcall) do
              contents := c!:assign(car p, cdr p, contents);
           put(b, 'c!:contents, contents);
           put(b, 'c!:why, 'goto);
@@ -2074,29 +2074,29 @@ symbolic procedure c!:pushpop(op, v);
           c!:printf(");\n") >> >>
   end;
 
-symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
+symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                                           env, argch, args);
   begin
-    scalar w, n, locs, stacks, error_labels, fn_used, nil_used, nilbase_used;
+    scalar w, n, locs, stacks, c!:error_labels, fn_used, nil_used, nilbase_used;
 !#if common!-lisp!-mode
     nilbase_used := t;  % For onevalue(xxx) at least 
 !#endif
-    for each b in all_blocks do c!:insert_tailcall b;
-    startpoint := c!:branch_chain(startpoint, nil);
-    remflag(all_blocks, 'c!:visited);
-    c!:live_variable_analysis all_blocks;
-    c!:build_clash_matrix all_blocks;
-    if error_labels and env then reloadenv := t;
+    for each b in c!:all_blocks do c!:insert_tailcall b;
+    c!:startpoint := c!:branch_chain(c!:startpoint, nil);
+    remflag(c!:all_blocks, 'c!:visited);
+    c!:live_variable_analysis c!:all_blocks;
+    c!:build_clash_matrix c!:all_blocks;
+    if c!:error_labels and env then reloadenv := t;
     for each u in env do
       for each v in env do c!:clash(cdr u, cdr v); % keep all args distinct
-    locs := c!:allocate_registers registers;
-    stacks := c!:allocate_registers stacklocs;
+    locs := c!:allocate_registers c!:registers;
+    stacks := c!:allocate_registers c!:stacklocs;
     flag(stacks, 'c!:live_across_call);
-    c!:remove_nops all_blocks;
-    startpoint := c!:branch_chain(startpoint, nil); % after tailcall insertion
-    remflag(all_blocks, 'c!:visited);
-    startpoint := c!:branch_chain(startpoint, t); % ... AGAIN to tidy up
-    remflag(all_blocks, 'c!:visited);
+    c!:remove_nops c!:all_blocks;
+    c!:startpoint := c!:branch_chain(c!:startpoint, nil); % after tailcall insertion
+    remflag(c!:all_blocks, 'c!:visited);
+    c!:startpoint := c!:branch_chain(c!:startpoint, t); % ... AGAIN to tidy up
+    remflag(c!:all_blocks, 'c!:visited);
     if does_call then nil_used := t;
     if nil_used then c!:printf "    Lisp_Object nil = C_nil;\n"
     else if nilbase_used then c!:printf "    nil_as_base\n";
@@ -2158,13 +2158,13 @@ symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
                -get(get(cdr v, 'c!:chosen), 'c!:location), cdr v)
       else c!:printf("    %s = %s;\n", get(cdr v, 'c!:chosen), cdr v);
     c!:printf "%</* end of prologue %<*/\n";
-    c!:display_flowgraph(startpoint, n, t);
-    if error_labels then <<
+    c!:display_flowgraph(c!:startpoint, n, t);
+    if c!:error_labels then <<
        c!:printf "%</* error exit handlers %<*/\n";
-       for each x in error_labels do <<
+       for each x in c!:error_labels do <<
           c!:printf("%s:\n", cdr x);
           c!:print_error_return(caar x, cadar x, caddar x) >> >>;
-    remflag(all_blocks, 'c!:visited);
+    remflag(c!:all_blocks, 'c!:visited);
   end;
 
 symbolic procedure c!:print_error_return(why, env, depth);
@@ -2804,7 +2804,7 @@ symbolic procedure c!:cprivate_tagbody(u, env);
     c!:startblock car u;
 % This seems to be the proper place to capture the internal names associated
 % with argument-vars that must be reset if a tail-call is mapped into a loop.
-    current_args := for each v in current_args collect begin
+    c!:current_args := for each v in c!:current_args collect begin
        scalar z;
        z := assoc!*!*(v, car env);
        return if z then cdr z else v end;
