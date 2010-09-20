@@ -234,9 +234,9 @@ FILE *my_popen(char *command, char *direction)
         if (command[i] == 0) break;
     }
 /*
- * The MESS of #ifdef stuff here and a fe wplaces lower down will in due
+ * The MESS of #ifdef stuff here and a few places lower down will in due
  * course (I hope) be rationalised by arranging that the autoconfigure tools
- * set flags saing what names for functions should be used. But at present
+ * set flags saying what names for functions should be used. But at present
  * I want to retain support for non-autoconfigure building and I have an
  * ugly set of tests based on the identity of the compiler being used or
  * some similar predefined macro.
