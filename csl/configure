@@ -3158,15 +3158,15 @@ fi
 
 if test "x$mingw64" = "xyes"
 then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-win64-mingw32" >&5
-$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-win64-mingw32" >&6;}
-   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-win64-mingw32-gcc" >&5
-$as_echo "$as_me: and requires cross-compilation tools such as x86_64-win64-mingw32-gcc" >&6;}
-   host="x86_64-win64-mingw32"
-   ac_tool_prefix="x86_64-win64-mingw32-"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&5
+$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&6;}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&5
+$as_echo "$as_me: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&6;}
+   host="x86_64-w64-mingw32"
+   ac_tool_prefix="x86_64-w64-mingw32-"
    cross_compiling=yes
-   STRIP="x86_64-win64-mingw32-strip"
-   AR="x86_64-win64-mingw32-ar"
+   STRIP="x86_64-w64-mingw32-strip"
+   AR="x86_64-w64-mingw32-ar"
 fi
 
 # What host am I on?
@@ -3288,7 +3288,7 @@ $as_echo "#define WIN64 1" >>confdefs.h
   X_BASE_LIBS=""
 else
 case $host in
-*-*-cygwin* | x86_64-win64-mingw32)
+*-*-cygwin* | x86_64-w64-mingw32)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
 
@@ -8053,7 +8053,7 @@ fi
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-win64-mingw32-gcc"
+if test "x$CC" = "xx86_64-w64-mingw32-gcc"
 then
 
 $as_echo "#define WIN64 1" >>confdefs.h
@@ -10734,7 +10734,7 @@ $as_echo "$as_me: Can Run Executables = $can_run_executables" >&6;}
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-win64-mingw32-gcc"
+  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
   then
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
   else

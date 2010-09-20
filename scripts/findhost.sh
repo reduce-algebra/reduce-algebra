@@ -138,7 +138,7 @@ do
     host=$original
     ;;
   --with-mingw64*)
-    host=x86_64-win64-windows
+    host=x86_64-w64-windows
     ;;
   --with-cygwin=no)
     host=$original

@@ -170,7 +170,10 @@ omitted := '(
     ordp                    % redefined in helphy/noncom2 and spde/spde
     unit                    % name conflict.
 
-    pasf_bapprox            % Unknown issue! Maybe bug in ccomp.red?
+    pasf_bapprox            % Unknown issue!
+    divdm                   %
+    gck2                    %
+    !:recip                 %
 
     typerr                  % typerr and symerr are defined in makereduce.lsp
     symerr                  % but there are slightly versions elsewhere.

@@ -16,9 +16,14 @@ to be able to compile both CSL itself and the FOX toolkit on which it depends.
        you need X11 and other development capability, including Xft,
        fontconfig, (n)curses, Posix threads. For building for 64-bit windows
        you should check http://sourceforge.net/projects/mingw-w64/ and ensure
-       you have cross-tools with a name such as x88_64-win64-mingw32-gcc (and
+       you have cross-tools with a name such as x88_64-w64-mingw32-gcc (and
        all associated tools, libraries and utilities). Please use the
        cygwin hostable versions that use Unix-style path-names.
+       NEWS: September 2010. The cygwin installer can now install a set
+       of 64-bit MinGW compilers for you, and the scripts etc here will
+       now assume that these are the ones you use. This makes it MUCH easier
+       for everybody to support 64-bit windows, so Thank You to both the
+       MinGW64 team and to cygwin for incorporating in via their distribution.
 
 If you try to build REDUCE but one of the programming tools or development
 libraries that is required is not available then there is no guarantee that
@@ -114,9 +119,12 @@ There are a number of optional ways in which configuration may be customised:
          ./configure --with-csl --enable-debug
    Enable "gcc -g" compilation of the C parts of CSL so that gdb can be
    used to debug things.
+
          ./configure --with-csl --with-m32
    On an architecture that is basically 64-bit (mostly 64-bit Linux) this
-   arranges to compile 32-bit binaries. As in "gcc -m32".
+   arranges to compile 32-bit binaries. As in "gcc -m32". Similarly
+   "--with-m64" exists.
+ 
          ./configure --with-csl --with-mingw64
    Provided a cross compiler x86_64-win64-mingw32-gcc is available (plus all
    associated tools - see the site at sourceforge where that compiler
@@ -124,13 +132,18 @@ There are a number of optional ways in which configuration may be customised:
    As of September 2010 the MinGW64 toolchain from sourceforge seems pretty
    stable. Note that you NEED to use the version that hosts on Cygwin
    not the one for Msys, since the gnu autotools etc do not play prettily
-   with Windows-style file-names and paths.
+   with Windows-style file-names and paths. Swee the note at the top to the
+   effect that this toolchain can now be installed as part of your cygwin
+   setup so you do not have to download it from sourceforge and install it
+   yourself! 
+
          ./configure --with-csl --with-cygwin
    Normally the CSL build on a Windows platform builds a normal native Windows
    binary using "mingw32". "--with-cygwin" causes it to build a "cygwin"
    system that expects to use X-windows rather than a native Windows GUI,
    and that links in the cygwin1.dll library which imposes some additional
    license constraints.
+
          ./configure --with-psl --with-m32
    As "--with-m32" for CSL, this used 32-bit PSL even if you are in a
    64-bit-capable environment.
