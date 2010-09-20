@@ -53,6 +53,14 @@
 % how_big controls the size of function I will be willing to expand
 % in-line
 
+% The exact set of smacros that this code picks out seems to be pretty
+% sensitive - eg to what happens to have been defined as an smacro in the
+% image file used to run it. I probably suggest making a version of
+% bootstrapreduce based on smacros0.red (ie no EXTRA smacros) and using
+% that when running this script - at last that should give consistent
+% results. The oddities may arise in part because when there are extra
+% smacros that causes some functions to expand, and hence cease to be
+% candidates for in-lining.
 
 symbolic;
 
@@ -75,6 +83,9 @@ omit := '(
   prepsqxx    % I do not understand this one
   setpchar    % evil redefinition in terms of itself!
   simpminus   % I do not understand this one
+  rplacw      % I suspect performance may not be helped, rplac is dangerous.
+  setcar      % Disaster when expanded textually ...
+  setcdr      % ... eg setcdr(x, cddr x) -> <<rplacd(x,cddr x); cddr x>> oops.
 
 % The next things listed are functions where there seem to be at least
 % two defintions. This does not include anything that has its definition
