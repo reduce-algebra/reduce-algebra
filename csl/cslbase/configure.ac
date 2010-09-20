@@ -33,10 +33,11 @@
 # installed.
 # I use the Mingw-w64 tool-chain (see the sourceforge project).
 # I have used that either from Linux or from cygwin (on Vista-64) with
-# the compiler called x86_64-win64-mingw32-gcc, but the build under
+# the compiler called x86_64-w64-mingw32-gcc, but the build under
 # cygwin on Vista is the only one where I can build image files.
 # I have had success with snapshots dated 20080425 or later.
-#
+# But now that the (cross) compilers are available via the cygwin
+# installer I am going to standardise on the versions available there.
 
 
 # FOX gets built in a directory whose name is based on the platform

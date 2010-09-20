@@ -714,6 +714,7 @@ endif !windows
 #    make reduce                final compilation of most of REDUCE
 #    make reduce.img            build final image file
 #    make testall               runs test files, output to log directory
+# OR make test which=modulename
 #    (make checkall             creates logs/checkall.log & logs/times.log
 #                               (done anyway by testall))
 #
@@ -975,6 +976,26 @@ if canrun
 	./reduce$(COMEXT) -v -w $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/checkall.log
+else !canrun
+	echo Can not run tests on this platfrom
+endif !canrun
+
+testslow1:	bootstrapreduce.img
+if canrun
+	mkdir -p testlogs
+	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-- testlogs/test$(which).log -Dwhich=$(which)
+else !canrun
+	echo Can not run tests on this platfrom
+endif !canrun
+
+test1:	reduce.img
+if canrun
+	mkdir -p testlogs
+	./reduce$(COMEXT) -v -w $(CYGSRC)/testall.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-- testlogs/test$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
