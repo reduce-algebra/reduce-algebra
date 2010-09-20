@@ -2410,14 +2410,14 @@ bootstraprecompile:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
-@canrun_TRUE@		-- buildlogs/$(which).log -Dwhich=$(which)
+@canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
 @canrun_FALSE@	echo Can not build images on this platfrom
 
 recompile:	reduce.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./reduce$(COMEXT) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
-@canrun_TRUE@		-- buildlogs/$(which).log -Dwhich=$(which)
+@canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
 @canrun_FALSE@	echo Can not build images on this platfrom
 
 # Copy HTML help files in a directory reduce.doc

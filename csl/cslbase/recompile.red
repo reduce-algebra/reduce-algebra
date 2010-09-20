@@ -17,7 +17,7 @@ if boundp 'which and which and not (which = "") then <<
    mods := compress explodec which;
    if member(mods, reduce_base_modules) or
       member(mods, reduce_extra_modules) then build_reduce_modules list mods
-   else error(0, list("unknown module to recompile", module)) >>
+   else error(0, list("unknown module to recompile", mods)) >>
 else <<
    terpri();
    printc "Must specify which module should be recompiled, eg";

@@ -852,7 +852,7 @@ if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
-		-- buildlogs/$(which).log -Dwhich=$(which)
+		-l buildlogs/$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
@@ -862,7 +862,7 @@ if canrun
 	mkdir -p buildlogs
 	./reduce$(COMEXT) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
-		-- buildlogs/$(which).log -Dwhich=$(which)
+		-l buildlogs/$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
