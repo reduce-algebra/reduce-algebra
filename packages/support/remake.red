@@ -32,6 +32,7 @@ fluid '(!*break
         !*cref
         !*crefchk
         !*faslp
+        !*forcecompile
         !*int
         !*loadall
         !*usermode
@@ -64,7 +65,7 @@ symbolic procedure update!-cref x;
    begin scalar y,z;
       y := concat2("$rcref/",concat2(mkfil car x,".crf"));
       z := module2!-to!-file(car x,get(cdr x,'path));
-      if olderfaslp(y,z)
+      if olderfaslp(y,z) or !*forcecompile
         then <<terpri();
                terpri();
                if errorp errorset!*(list('upd!-cref1,mkquote car x,
@@ -118,7 +119,7 @@ symbolic procedure update!-fasl2 x;
         then y := concat2("$fasl/", concat2(mkfil car x, ".b"))
        else y := car x;
       z := module2!-to!-file(car x,cdr x);
-      if olderfaslp(y,z)
+      if olderfaslp(y,z) or !*forcecompile
         then <<terpri();
                terpri();
                if errorp errorset!*(list('upd!-fasl1,mkquote car x,

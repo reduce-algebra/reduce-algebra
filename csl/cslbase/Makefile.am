@@ -847,6 +847,26 @@ else !canrun
 	echo Can not build reduce.img on this platform
 endif !canrun
 
+bootstraprecompile:	bootstrapreduce.img
+if canrun
+	mkdir -p buildlogs
+	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-- buildlogs/$(which).log -Dwhich=$(which)
+else !canrun
+	echo Can not build images on this platfrom
+endif !canrun
+
+recompile:	reduce.img
+if canrun
+	mkdir -p buildlogs
+	./reduce$(COMEXT) -v -w $(CYGSRC)/recompile.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-- buildlogs/$(which).log -Dwhich=$(which)
+else !canrun
+	echo Can not build images on this platfrom
+endif !canrun
+
 # Copy HTML help files in a directory reduce.doc
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
