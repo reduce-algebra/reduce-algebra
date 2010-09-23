@@ -32,7 +32,6 @@
 import sys
 
 from PySide.QtCore import Qt
-from PySide.QtCore import QString
 from PySide.QtCore import SIGNAL
 
 from PySide.QtGui import QTextEdit
@@ -138,7 +137,7 @@ class QtReduceWorksheet(QTextEdit):
         if output['result']:
             ReduceBlockFormat.labelBlock(cursor,1)
             outp = output['result']
-            outp = QString.fromUtf8(outp)
+            outp = outp.decode('utf-8')
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"blue")
             cursor.insertHtml(outp)
