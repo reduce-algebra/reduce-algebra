@@ -1,0 +1,125 @@
+Measuring the effect of compilation into C and use of smacros
+on the performance of the CSL version of Reduce.
+
+September 2010
+
+
+This table shows timing information collected on 64-bit Linux. It is based
+on running the full set of Reduce tests and varying the number of functions
+compiled into C and the number of small functions turned into smacros and
+hence compiled in-line. The functions selected for compilation into C are
+in each case chosen based on a figure of merit. This favours small functions
+that are heavily used. The smacros are selected as small functions, but when
+different numbers are used the choice is that the firts so many in alphabetic
+order from the lsit of candidates get used.
+
+The figures show that compiling lots of things into C can speed things up by
+a factor of around 2.5. Reading across each ros shows hos much different the
+introduction of smacros has - ie in the various cases between 3 and 6%. At
+this level the accuracy of timing should be viewed as a little uncertain,
+but from the consistency in the table it is clear there is an improvement
+made.
+
+The final row and final column are labelled "1000" but in fact refer to
+a slightly smaller number set by limits set in the build sequences that are
+intended to limit bulk.
+
+
+                               smacros
+           0      5      10    20     50     100    200    500    1000
+c   0     1.29   1.29   1.29   1.29   1.29   1.29   1.28   1.27   1.25
+-   5     1.27   1.27   1.27   1.27   1.27   1.27   1.26   1.24   1.23
+c   10    1.25   1.26   1.25   1.25   1.25   1.25   1.24   1.22   1.21
+o   20    1.24   1.25   1.25   1.24   1.24   1.23   1.23   1.21   1.19
+d   50    1.16   1.16   1.16   1.16   1.16   1.15   1.15   1.12   1.09
+e   100   1.06   1.07   1.07   1.06   1.05   1.04   1.05   1.0    0.999
+    200   0.912  0.914  0.912  0.911  0.904  0.90 2 0.887  0.89   0.873
+    500   0.677  0.678  0.676  0.68   0.672  0.67 1 0.664  0.645  0.635
+    1000  0.501  0.502  0.502  0.498  0.509  0.50 6 0.509  0.487  0.485 
+
+
+The script that follows was used to collect that above data. It may be
+a useful prototype if somebody wants to collect similar sorts of
+measurement, and it might be fun to run it if at some stage any
+substantial rearrangement of the code gets made.
+
+==============
+#! /bin/bash -v
+
+# The intent of this script is to support testing how much difference
+# to overall performance is made by introducing larger or smaller numbers
+# of smacros (ie in-line compilation of small functions) and how much
+# difference is made compiling different numbers of things into C.
+#
+# If it is called as
+#    perf.sh S C
+# with two arguments (which should be numeric) it runs a test with S
+# smacros and C functions compiled into C. If not given any arguments
+# it will run for over 24 hours on many machines, collecting information
+# for a range of combinations.
+#
+# In each case output is left is a directory log-S-C (where S and C stand
+# for numbers). Within that directory there will be all the detailed test
+# log files in case really careful checking is needed. But there are also
+# some summary files
+#    time.log     shows wallclock time for the complete test
+#    times.log    shows CPU time broken down by the individual tests
+#    checkall.log compares output from this run with reference logs.
+
+
+if test "x$1" = "x"
+then
+  s="0 5 10 20 50 100 200 500 1000"
+else
+  s=$1
+fi
+
+if test "x$2" = "x"
+then
+  c="0 5 10 20 50 100 200 500 1000"
+else
+  c=$2
+fi
+
+echo smacros count: $s
+echo c-coded functions count: $c
+
+for smacs in $s
+do
+  for cdefs in $c
+  do
+    echo testing with $smacs $cdefs
+# I will first create a bootstrapreduce that does not have any extra
+# smacros at all. 
+    cp ../../../packages/support/smacros0.red ../../../packages/support/smacros.red
+    make bootstrapreduce.img
+# I use that to create a set of smacros to be used in this test. It is
+# important for consistency that this is done using an image that starts off
+# in a pristine state.
+    make smacros how_many=$smacs
+# Install the freshly created smacros. You may wish to put things back in
+# your favourite state at the end of this test!
+    cp smacros.red ../../../packages/support
+# Now so that the C code generated is fair I will run a profile on using an
+# image that has this new selection of smacros.
+    make profile > /dev/null 2>&1
+# Using the results of the profiling, compile some stuff into C.
+    make c-code how_many=$cdefs > /dev/null 2>&1
+# Build the Reduce image that will be the one I want to test.
+    make reduce.img > /dev/null 2>&1
+# Run all the tests, recording the wall-clock time the test run takes.
+    (time make testall 1>testall.log 2>&1) 2>time.log
+# Move log files to where they will be recoverable after all tests have run.
+    mv testall.log testlogs
+    mv time.log testlogs
+    mv testlogs log-$smacs-$cdefs
+    echo Done $smacs-$cdefs
+    cat log-$smacs-$cdefs/time.log
+
+  done
+done
+
+echo all tests complete
+
+
+========================
