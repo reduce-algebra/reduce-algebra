@@ -1,0 +1,9 @@
+The files in this "contrib" directory may be historical, or incomplete
+or work-in-progress or so small and sp[ecialised that they do not
+(yet?) deserve to become part of the full system. But they may be
+useful starting points for somebody, and in some cases they may get
+revived or completed. We will accept code or code fragments to put here
+with much less fuss and almost not testing, while packages to go in the
+main body at least need to build and have some sort of test case that
+works most of the time.
+
