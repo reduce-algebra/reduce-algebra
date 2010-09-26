@@ -823,8 +823,14 @@ if canrun
 		-o ./reduce.img \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
+# I copy an image into $(gensrc) with a view to keeping a copy thare that
+# is up to date with my lastest build.
+	cp reduce.img $(gensrc)
 else !canrun
-	echo Can not build reduce.img on this platform
+	echo Can not build reduce.img on this platform.
+	echo Copying from $(gensrc)
+	rm -rf reduce.img
+	cp $(gensrc)/reduce.img .
 endif !canrun
 
 # This is a temporary target "reduce.dir" to create the image as a directory
@@ -845,6 +851,9 @@ if canrun
 		-j reduce.dep
 else !canrun
 	echo Can not build reduce.img on this platform
+	echo Copying from $(gensrc)
+	rm -rf reduce.img
+	cp $(gensrc)/reduce.img .
 endif !canrun
 
 bootstraprecompile:	bootstrapreduce.img
@@ -890,12 +899,12 @@ $(GP):
 	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
 	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/p* .
 	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/w* .
-	-mkdir -p share/Postscript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/R* share/Postscript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/8* share/Postscript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/c* share/Postscript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/k* share/Postscript
-	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Postscript/p* share/Postscript
+	-mkdir -p share/PostScript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/R* share/PostScript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/8* share/PostScript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/c* share/PostScript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/k* share/PostScript
+	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/share/Post*/p* share/PostScript
 # I view it as most unwelcome that I need the "chmod" here, but if I have
 # gcc/g++ on my path and available I will suppose I can have chmod too.
 	chmod +x *gnuplot*.exe
@@ -914,8 +923,12 @@ if canrun
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) \
 		-- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
+	cp bootstrapreduce.img $(gensrc)
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
+	echo Copying from $(gensrc)
+	rm -rf bootstrapreduce.img
+	cp $(gensrc)/bootstrapreduce.img .
 endif !canrun
 
 profile:	bootstrapreduce.img
@@ -925,38 +938,40 @@ if canrun
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) \
 		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
-	-cp $(srcdir)/../../cslbuild/profile.dat $(srcdir)/../../cslbuild/profile.dat.old
-	mv profile.dat $(srcdir)/../../cslbuild
+	-cp $(gensrc)/profile.dat $(gensrc)/profile.dat.old
+	mv profile.dat $(gensrc)
 else !canrun
 	echo Can not profile on this platform
 endif !canrun
 
 prof-inst:	profile.dat
-	$(CP) profile.dat $(srcdir)/../../cslbuild
+	$(CP) profile.dat $(gensrc)
 	-$(RM) -f profile.dat
 
-$(srcdir)/../../cslbuild/profile.dat:
-	-mkdir -p $(srcdir)/../../cslbuild
-	$(CP) $(srcdir)/../profile.dat $(srcdir)/../../cslbuild
+$(gensrc)/profile.dat:
+	-mkdir -p $(gensrc)
+	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
-c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
+c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGSRC)/../../cslbuild \
+		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
 else !canrun
 	echo Can not generate C code on this platfrom
+	echo Touching existing files to adjust datestamps
+	touch $(gensrc)/*
 endif !canrun
 
 # full-c-code is a target only activated manually.
 
-full-c-code:	bootstrapreduce.img $(srcdir)/../../cslbuild/profile.dat
+full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGSRC)/../../cslbuild -Dfull_c_code \
+		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c -Dfull_c_code \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
 else !canrun
@@ -1052,8 +1067,12 @@ if canrun
 		-D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
+	cp csl.img $(gensrc)
 else !canrun
 	echo Can not create csl.img on this platfrom
+	echo Copying from $(gensrc)
+	rm -rf csl.img
+	cp $(gensrc)/csl.img .
 endif !canrun
 
 

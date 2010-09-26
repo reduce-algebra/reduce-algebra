@@ -34,7 +34,7 @@
  *************************************************************************/
 
 
-/* Signature: 025f6bb0 31-May-2008 */
+/* Signature: 01ccfb29 26-Sep-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

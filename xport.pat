@@ -3,8 +3,7 @@
 # where he is checking things. It is probably not relevant to anybody else,
 # but life is made much easier for ACN if it is visible here!
 
-Master=panamint scp://acn1@codemist.dyndns.org:/c/projects/reduce-algebra/trunk
-Master=local    ftp://acn1:?@192.168.1.10/trunk
+Master=panamint scp://acn1@codemist.dyndns.org:/d/projects/reduce-algebra/trunk
 Master=gauguin  scp://acn1@gauguin.trin.cam.ac.uk:reduce-algebra/trunk
 
 Omit cslbuild pslbuild generic temp

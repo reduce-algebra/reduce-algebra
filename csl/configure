@@ -1355,10 +1355,11 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-mingw64          Try to cross-build using 64-bit mingw
+  --with-mingw64          Should behave like --host=x86_64-w64-mingw32
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
-  --with-cygwin           Force use of raw cywgin (note GPL)
+  --with-cygwin           Force use of raw cywgin (note license consequences
+                          please)
   --with-xft              Can be used to disable use of XFT. Default is yes
 
 Some influential environment variables:
@@ -3271,8 +3272,8 @@ then
 fi
 
 
-if test "x$mingw64" = "xyes"
-then
+case $host in
+x86_64-w64-*)
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
@@ -3282,13 +3283,11 @@ $as_echo "#define WIN64 1" >>confdefs.h
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-  LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
-else
-case $host in
-*-*-cygwin* | x86_64-w64-mingw32)
+  ;;
+*-*-cygwin*)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
 
@@ -3325,7 +3324,7 @@ $as_echo "#define WIN32 1" >>confdefs.h
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -e _mainCRTStartup"
+    LDFLAGS="$LDFLAGS -mno-cygwin "
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
   fi
   windows_build="yes"
@@ -3796,7 +3795,6 @@ fi
   XLIBS="-lXext -lX11"
   ;;
 esac
-fi
 
 if test "x$MAKE" = "x"
 then
@@ -8053,12 +8051,13 @@ fi
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-then
+case $CC in
+x86_64-w64-*)
 
 $as_echo "#define WIN64 1" >>confdefs.h
 
-fi
+  ;;
+esac
 
 if test "x$GCC" = "xyes"
 then
@@ -10734,12 +10733,14 @@ $as_echo "$as_me: Can Run Executables = $can_run_executables" >&6;}
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-  then
+  case $CC in
+  x86_64-w64-*)
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-  else
+    ;;
+  *)
     LIBS="$LIBS -lcomctl32 -lgdi32 -lws2_32 -lwsock32 -lwinspool -lmpr"
-  fi
+    ;;
+  esac
 fi
 
 if test "x$macintosh_build" = "xyes"

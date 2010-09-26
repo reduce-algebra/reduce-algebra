@@ -56,93 +56,6 @@ AR = ar
 ARFLAGS = cru
 libFOX_1_6_a_AR = $(AR) $(ARFLAGS)
 libFOX_1_6_a_LIBADD =
-am__libFOX_1_6_a_SOURCES_DIST = FX88591Codec.cpp FX88592Codec.cpp \
-	FX88593Codec.cpp FX88594Codec.cpp FX88595Codec.cpp \
-	FX88596Codec.cpp FX88597Codec.cpp FX88598Codec.cpp \
-	FX88599Codec.cpp FX885910Codec.cpp FX885911Codec.cpp \
-	FX885913Codec.cpp FX885914Codec.cpp FX885915Codec.cpp \
-	FX885916Codec.cpp FXCP437Codec.cpp FXCP850Codec.cpp \
-	FXCP852Codec.cpp FXCP855Codec.cpp FXCP856Codec.cpp \
-	FXCP857Codec.cpp FXCP860Codec.cpp FXCP861Codec.cpp \
-	FXCP862Codec.cpp FXCP863Codec.cpp FXCP864Codec.cpp \
-	FXCP865Codec.cpp FXCP866Codec.cpp FXCP869Codec.cpp \
-	FXCP874Codec.cpp FXCP1250Codec.cpp FXCP1251Codec.cpp \
-	FXCP1252Codec.cpp FXCP1253Codec.cpp FXCP1254Codec.cpp \
-	FXCP1255Codec.cpp FXCP1256Codec.cpp FXCP1257Codec.cpp \
-	FXCP1258Codec.cpp FXKOI8RCodec.cpp FXUTF8Codec.cpp \
-	FXUTF16Codec.cpp FXUTF32Codec.cpp FXDCNativePrinter.cpp \
-	FXPostscriptFont.cpp FXTerminal.cpp fwin.c termed.c \
-	FXWorker.cpp FXShowMath.cpp FXMathText.cpp FX4Splitter.cpp \
-	FX7Segment.cpp FXAccelTable.cpp FXApp.cpp FXArrowButton.cpp \
-	FXBMPIcon.cpp FXBMPImage.cpp FXBitmap.cpp FXBitmapFrame.cpp \
-	FXBitmapView.cpp FXButton.cpp FXBZFileStream.cpp \
-	FXCURCursor.cpp FXCanvas.cpp FXCheckButton.cpp FXChoiceBox.cpp \
-	FXColorBar.cpp FXColorDialog.cpp FXColorList.cpp \
-	FXColorNames.cpp FXColorRing.cpp FXColorSelector.cpp \
-	FXColorWell.cpp FXColorWheel.cpp FXComboBox.cpp \
-	FXComposeContext.cpp FXComposite.cpp FXCursor.cpp \
-	FXDataTarget.cpp FXDate.cpp FXDC.cpp FXDCPrint.cpp \
-	FXDCWindow.cpp FXDLL.cpp FXDebugTarget.cpp FXDelegator.cpp \
-	FXDial.cpp FXDialogBox.cpp FXDict.cpp FXDir.cpp FXDirBox.cpp \
-	FXDirDialog.cpp FXDirList.cpp FXDirSelector.cpp FXDockBar.cpp \
-	FXDockSite.cpp FXDockHandler.cpp FXDockTitle.cpp \
-	FXDocument.cpp FXDragCorner.cpp FXDrawable.cpp FXDriveBox.cpp \
-	FXException.cpp FXExpression.cpp FXExtentd.cpp FXExtentf.cpp \
-	FXFile.cpp FXFileDialog.cpp FXFileDict.cpp FXFileList.cpp \
-	FXFileSelector.cpp FXFileStream.cpp FXFoldingList.cpp \
-	FXFont.cpp FXFontDialog.cpp FXFontSelector.cpp FXFrame.cpp \
-	FXGIFCursor.cpp FXGIFIcon.cpp FXGIFImage.cpp FXGLCanvas.cpp \
-	FXGLCone.cpp FXGLContext.cpp FXGLCube.cpp FXGLCylinder.cpp \
-	FXGLObject.cpp FXGLShape.cpp FXGLSphere.cpp \
-	FXGLTriangleMesh.cpp FXGLViewer.cpp FXGLVisual.cpp \
-	FXGradientBar.cpp FXGroupBox.cpp FXGUISignal.cpp \
-	FXGZFileStream.cpp FXHash.cpp FXHeader.cpp \
-	FXHorizontalFrame.cpp FXICOIcon.cpp FXICOImage.cpp \
-	FXIFFIcon.cpp FXIFFImage.cpp FXIO.cpp FXIcon.cpp \
-	FXIconDict.cpp FXIconList.cpp FXIconSource.cpp FXId.cpp \
-	FXImage.cpp FXImageFrame.cpp FXImageView.cpp FXInputDialog.cpp \
-	FXJPGIcon.cpp FXJPGImage.cpp FXKnob.cpp FXLabel.cpp FXList.cpp \
-	FXListBox.cpp FXMDIButton.cpp FXMDIChild.cpp FXMDIClient.cpp \
-	FXMainWindow.cpp FXMat3d.cpp FXMat4d.cpp FXMat3f.cpp \
-	FXMat4f.cpp FXMatrix.cpp FXMemMap.cpp FXMemoryStream.cpp \
-	FXMenuBar.cpp FXMenuButton.cpp FXMenuCaption.cpp \
-	FXMenuCascade.cpp FXMenuCheck.cpp FXMenuRadio.cpp \
-	FXMenuCommand.cpp FXMenuPane.cpp FXMenuSeparator.cpp \
-	FXMenuTitle.cpp FXMessageBox.cpp FXObject.cpp FXObjectList.cpp \
-	FXOptionMenu.cpp FXPCXIcon.cpp FXPCXImage.cpp FXPNGIcon.cpp \
-	FXPNGImage.cpp FXPPMIcon.cpp FXPPMImage.cpp FXPacker.cpp \
-	FXPath.cpp FXPicker.cpp FXPipe.cpp FXPopup.cpp FXPoint.cpp \
-	FXPrintDialog.cpp FXProgressBar.cpp FXProgressDialog.cpp \
-	FXQuatd.cpp FXQuatf.cpp FXRASIcon.cpp FXRASImage.cpp \
-	FXRGBIcon.cpp FXRGBImage.cpp FXRadioButton.cpp FXRangef.cpp \
-	FXRanged.cpp FXRealSlider.cpp FXRealSpinner.cpp \
-	FXRecentFiles.cpp FXRectangle.cpp FXRegion.cpp FXRegistry.cpp \
-	FXReplaceDialog.cpp FXRex.cpp FXRootWindow.cpp FXRuler.cpp \
-	FXRulerView.cpp FXScrollArea.cpp FXScrollBar.cpp \
-	FXScrollPane.cpp FXScrollWindow.cpp FXSearchDialog.cpp \
-	FXSeparator.cpp FXSettings.cpp FXShell.cpp FXShutter.cpp \
-	FXSize.cpp FXSlider.cpp FXSocket.cpp FXSpinner.cpp \
-	FXSpheref.cpp FXSphered.cpp FXSplashWindow.cpp FXSplitter.cpp \
-	FXSpring.cpp FXStat.cpp FXStatusBar.cpp FXStatusLine.cpp \
-	FXStream.cpp FXString.cpp FXStringDict.cpp FXSwitcher.cpp \
-	FXSystem.cpp FXTGAIcon.cpp FXTGAImage.cpp FXTIFIcon.cpp \
-	FXTIFImage.cpp FXTabBar.cpp FXTabBook.cpp FXTabItem.cpp \
-	FXTable.cpp FXText.cpp FXTextCodec.cpp FXTextField.cpp \
-	FXThread.cpp FXToggleButton.cpp FXToolBar.cpp \
-	FXToolBarGrip.cpp FXToolBarShell.cpp FXToolBarTab.cpp \
-	FXToolTip.cpp FXTopWindow.cpp FXTranslator.cpp FXTreeList.cpp \
-	FXTreeListBox.cpp FXTriStateButton.cpp FXUndoList.cpp \
-	FXURL.cpp FXVec2d.cpp FXVec2f.cpp FXVec3d.cpp FXVec3f.cpp \
-	FXVec4d.cpp FXVec4f.cpp FXVerticalFrame.cpp FXVisual.cpp \
-	FXWindow.cpp FXWizard.cpp FXXBMIcon.cpp FXXBMImage.cpp \
-	FXXPMIcon.cpp FXXPMImage.cpp fxascii.cpp fxbmpio.cpp \
-	fxfilematch.cpp fxgifio.cpp fxicoio.cpp fxiffio.cpp \
-	fxjpegio.cpp fxkeyboard.cpp fxkeysym.cpp fxparsegeometry.cpp \
-	fxpcxio.cpp fxpngio.cpp fxppmio.cpp fxpriv.cpp fxpsio.cpp \
-	fxfsquantize.cpp fxezquantize.cpp fxwuquantize.cpp fxrasio.cpp \
-	fxrgbio.cpp fxtargaio.cpp fxtifio.cpp fxunicode.cpp \
-	fxutils.cpp fxxbmio.cpp fxxpmio.cpp icons.cpp strtoll.cpp \
-	vsscanf.cpp icons.h jitter.h version.rc version.rc.in fxpriv.h
 am__objects_1 = FX88591Codec.$(OBJEXT) FX88592Codec.$(OBJEXT) \
 	FX88593Codec.$(OBJEXT) FX88594Codec.$(OBJEXT) \
 	FX88595Codec.$(OBJEXT) FX88596Codec.$(OBJEXT) \
@@ -165,150 +78,114 @@ am__objects_1 = FX88591Codec.$(OBJEXT) FX88592Codec.$(OBJEXT) \
 	FXCP1258Codec.$(OBJEXT) FXKOI8RCodec.$(OBJEXT) \
 	FXUTF8Codec.$(OBJEXT) FXUTF16Codec.$(OBJEXT) \
 	FXUTF32Codec.$(OBJEXT)
-@msvcxp64_FALSE@am_libFOX_1_6_a_OBJECTS = $(am__objects_1) \
-@msvcxp64_FALSE@	FXDCNativePrinter.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPostscriptFont.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTerminal.$(OBJEXT) fwin.$(OBJEXT) \
-@msvcxp64_FALSE@	termed.$(OBJEXT) FXWorker.$(OBJEXT) \
-@msvcxp64_FALSE@	FXShowMath.$(OBJEXT) FXMathText.$(OBJEXT) \
-@msvcxp64_FALSE@	FX4Splitter.$(OBJEXT) FX7Segment.$(OBJEXT) \
-@msvcxp64_FALSE@	FXAccelTable.$(OBJEXT) FXApp.$(OBJEXT) \
-@msvcxp64_FALSE@	FXArrowButton.$(OBJEXT) FXBMPIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXBMPImage.$(OBJEXT) FXBitmap.$(OBJEXT) \
-@msvcxp64_FALSE@	FXBitmapFrame.$(OBJEXT) FXBitmapView.$(OBJEXT) \
-@msvcxp64_FALSE@	FXButton.$(OBJEXT) FXBZFileStream.$(OBJEXT) \
-@msvcxp64_FALSE@	FXCURCursor.$(OBJEXT) FXCanvas.$(OBJEXT) \
-@msvcxp64_FALSE@	FXCheckButton.$(OBJEXT) FXChoiceBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXColorBar.$(OBJEXT) FXColorDialog.$(OBJEXT) \
-@msvcxp64_FALSE@	FXColorList.$(OBJEXT) FXColorNames.$(OBJEXT) \
-@msvcxp64_FALSE@	FXColorRing.$(OBJEXT) \
-@msvcxp64_FALSE@	FXColorSelector.$(OBJEXT) \
-@msvcxp64_FALSE@	FXColorWell.$(OBJEXT) FXColorWheel.$(OBJEXT) \
-@msvcxp64_FALSE@	FXComboBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXComposeContext.$(OBJEXT) \
-@msvcxp64_FALSE@	FXComposite.$(OBJEXT) FXCursor.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDataTarget.$(OBJEXT) FXDate.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDC.$(OBJEXT) FXDCPrint.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDCWindow.$(OBJEXT) FXDLL.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDebugTarget.$(OBJEXT) FXDelegator.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDial.$(OBJEXT) FXDialogBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDict.$(OBJEXT) FXDir.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDirBox.$(OBJEXT) FXDirDialog.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDirList.$(OBJEXT) FXDirSelector.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDockBar.$(OBJEXT) FXDockSite.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDockHandler.$(OBJEXT) FXDockTitle.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDocument.$(OBJEXT) FXDragCorner.$(OBJEXT) \
-@msvcxp64_FALSE@	FXDrawable.$(OBJEXT) FXDriveBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXException.$(OBJEXT) FXExpression.$(OBJEXT) \
-@msvcxp64_FALSE@	FXExtentd.$(OBJEXT) FXExtentf.$(OBJEXT) \
-@msvcxp64_FALSE@	FXFile.$(OBJEXT) FXFileDialog.$(OBJEXT) \
-@msvcxp64_FALSE@	FXFileDict.$(OBJEXT) FXFileList.$(OBJEXT) \
-@msvcxp64_FALSE@	FXFileSelector.$(OBJEXT) \
-@msvcxp64_FALSE@	FXFileStream.$(OBJEXT) FXFoldingList.$(OBJEXT) \
-@msvcxp64_FALSE@	FXFont.$(OBJEXT) FXFontDialog.$(OBJEXT) \
-@msvcxp64_FALSE@	FXFontSelector.$(OBJEXT) FXFrame.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGIFCursor.$(OBJEXT) FXGIFIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGIFImage.$(OBJEXT) FXGLCanvas.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGLCone.$(OBJEXT) FXGLContext.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGLCube.$(OBJEXT) FXGLCylinder.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGLObject.$(OBJEXT) FXGLShape.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGLSphere.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGLTriangleMesh.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGLViewer.$(OBJEXT) FXGLVisual.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGradientBar.$(OBJEXT) FXGroupBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXGUISignal.$(OBJEXT) FXGZFileStream.$(OBJEXT) \
-@msvcxp64_FALSE@	FXHash.$(OBJEXT) FXHeader.$(OBJEXT) \
-@msvcxp64_FALSE@	FXHorizontalFrame.$(OBJEXT) \
-@msvcxp64_FALSE@	FXICOIcon.$(OBJEXT) FXICOImage.$(OBJEXT) \
-@msvcxp64_FALSE@	FXIFFIcon.$(OBJEXT) FXIFFImage.$(OBJEXT) \
-@msvcxp64_FALSE@	FXIO.$(OBJEXT) FXIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXIconDict.$(OBJEXT) FXIconList.$(OBJEXT) \
-@msvcxp64_FALSE@	FXIconSource.$(OBJEXT) FXId.$(OBJEXT) \
-@msvcxp64_FALSE@	FXImage.$(OBJEXT) FXImageFrame.$(OBJEXT) \
-@msvcxp64_FALSE@	FXImageView.$(OBJEXT) FXInputDialog.$(OBJEXT) \
-@msvcxp64_FALSE@	FXJPGIcon.$(OBJEXT) FXJPGImage.$(OBJEXT) \
-@msvcxp64_FALSE@	FXKnob.$(OBJEXT) FXLabel.$(OBJEXT) \
-@msvcxp64_FALSE@	FXList.$(OBJEXT) FXListBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMDIButton.$(OBJEXT) FXMDIChild.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMDIClient.$(OBJEXT) FXMainWindow.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMat3d.$(OBJEXT) FXMat4d.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMat3f.$(OBJEXT) FXMat4f.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMatrix.$(OBJEXT) FXMemMap.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMemoryStream.$(OBJEXT) FXMenuBar.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMenuButton.$(OBJEXT) FXMenuCaption.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMenuCascade.$(OBJEXT) FXMenuCheck.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMenuRadio.$(OBJEXT) FXMenuCommand.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMenuPane.$(OBJEXT) FXMenuSeparator.$(OBJEXT) \
-@msvcxp64_FALSE@	FXMenuTitle.$(OBJEXT) FXMessageBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXObject.$(OBJEXT) FXObjectList.$(OBJEXT) \
-@msvcxp64_FALSE@	FXOptionMenu.$(OBJEXT) FXPCXIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPCXImage.$(OBJEXT) FXPNGIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPNGImage.$(OBJEXT) FXPPMIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPPMImage.$(OBJEXT) FXPacker.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPath.$(OBJEXT) FXPicker.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPipe.$(OBJEXT) FXPopup.$(OBJEXT) \
-@msvcxp64_FALSE@	FXPoint.$(OBJEXT) FXPrintDialog.$(OBJEXT) \
-@msvcxp64_FALSE@	FXProgressBar.$(OBJEXT) \
-@msvcxp64_FALSE@	FXProgressDialog.$(OBJEXT) FXQuatd.$(OBJEXT) \
-@msvcxp64_FALSE@	FXQuatf.$(OBJEXT) FXRASIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRASImage.$(OBJEXT) FXRGBIcon.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRGBImage.$(OBJEXT) FXRadioButton.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRangef.$(OBJEXT) FXRanged.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRealSlider.$(OBJEXT) FXRealSpinner.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRecentFiles.$(OBJEXT) FXRectangle.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRegion.$(OBJEXT) FXRegistry.$(OBJEXT) \
-@msvcxp64_FALSE@	FXReplaceDialog.$(OBJEXT) FXRex.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRootWindow.$(OBJEXT) FXRuler.$(OBJEXT) \
-@msvcxp64_FALSE@	FXRulerView.$(OBJEXT) FXScrollArea.$(OBJEXT) \
-@msvcxp64_FALSE@	FXScrollBar.$(OBJEXT) FXScrollPane.$(OBJEXT) \
-@msvcxp64_FALSE@	FXScrollWindow.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSearchDialog.$(OBJEXT) FXSeparator.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSettings.$(OBJEXT) FXShell.$(OBJEXT) \
-@msvcxp64_FALSE@	FXShutter.$(OBJEXT) FXSize.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSlider.$(OBJEXT) FXSocket.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSpinner.$(OBJEXT) FXSpheref.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSphered.$(OBJEXT) FXSplashWindow.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSplitter.$(OBJEXT) FXSpring.$(OBJEXT) \
-@msvcxp64_FALSE@	FXStat.$(OBJEXT) FXStatusBar.$(OBJEXT) \
-@msvcxp64_FALSE@	FXStatusLine.$(OBJEXT) FXStream.$(OBJEXT) \
-@msvcxp64_FALSE@	FXString.$(OBJEXT) FXStringDict.$(OBJEXT) \
-@msvcxp64_FALSE@	FXSwitcher.$(OBJEXT) FXSystem.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTGAIcon.$(OBJEXT) FXTGAImage.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTIFIcon.$(OBJEXT) FXTIFImage.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTabBar.$(OBJEXT) FXTabBook.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTabItem.$(OBJEXT) FXTable.$(OBJEXT) \
-@msvcxp64_FALSE@	FXText.$(OBJEXT) FXTextCodec.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTextField.$(OBJEXT) FXThread.$(OBJEXT) \
-@msvcxp64_FALSE@	FXToggleButton.$(OBJEXT) FXToolBar.$(OBJEXT) \
-@msvcxp64_FALSE@	FXToolBarGrip.$(OBJEXT) \
-@msvcxp64_FALSE@	FXToolBarShell.$(OBJEXT) \
-@msvcxp64_FALSE@	FXToolBarTab.$(OBJEXT) FXToolTip.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTopWindow.$(OBJEXT) FXTranslator.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTreeList.$(OBJEXT) FXTreeListBox.$(OBJEXT) \
-@msvcxp64_FALSE@	FXTriStateButton.$(OBJEXT) \
-@msvcxp64_FALSE@	FXUndoList.$(OBJEXT) FXURL.$(OBJEXT) \
-@msvcxp64_FALSE@	FXVec2d.$(OBJEXT) FXVec2f.$(OBJEXT) \
-@msvcxp64_FALSE@	FXVec3d.$(OBJEXT) FXVec3f.$(OBJEXT) \
-@msvcxp64_FALSE@	FXVec4d.$(OBJEXT) FXVec4f.$(OBJEXT) \
-@msvcxp64_FALSE@	FXVerticalFrame.$(OBJEXT) FXVisual.$(OBJEXT) \
-@msvcxp64_FALSE@	FXWindow.$(OBJEXT) FXWizard.$(OBJEXT) \
-@msvcxp64_FALSE@	FXXBMIcon.$(OBJEXT) FXXBMImage.$(OBJEXT) \
-@msvcxp64_FALSE@	FXXPMIcon.$(OBJEXT) FXXPMImage.$(OBJEXT) \
-@msvcxp64_FALSE@	fxascii.$(OBJEXT) fxbmpio.$(OBJEXT) \
-@msvcxp64_FALSE@	fxfilematch.$(OBJEXT) fxgifio.$(OBJEXT) \
-@msvcxp64_FALSE@	fxicoio.$(OBJEXT) fxiffio.$(OBJEXT) \
-@msvcxp64_FALSE@	fxjpegio.$(OBJEXT) fxkeyboard.$(OBJEXT) \
-@msvcxp64_FALSE@	fxkeysym.$(OBJEXT) fxparsegeometry.$(OBJEXT) \
-@msvcxp64_FALSE@	fxpcxio.$(OBJEXT) fxpngio.$(OBJEXT) \
-@msvcxp64_FALSE@	fxppmio.$(OBJEXT) fxpriv.$(OBJEXT) \
-@msvcxp64_FALSE@	fxpsio.$(OBJEXT) fxfsquantize.$(OBJEXT) \
-@msvcxp64_FALSE@	fxezquantize.$(OBJEXT) fxwuquantize.$(OBJEXT) \
-@msvcxp64_FALSE@	fxrasio.$(OBJEXT) fxrgbio.$(OBJEXT) \
-@msvcxp64_FALSE@	fxtargaio.$(OBJEXT) fxtifio.$(OBJEXT) \
-@msvcxp64_FALSE@	fxunicode.$(OBJEXT) fxutils.$(OBJEXT) \
-@msvcxp64_FALSE@	fxxbmio.$(OBJEXT) fxxpmio.$(OBJEXT) \
-@msvcxp64_FALSE@	icons.$(OBJEXT) strtoll.$(OBJEXT) \
-@msvcxp64_FALSE@	vsscanf.$(OBJEXT)
+am_libFOX_1_6_a_OBJECTS = $(am__objects_1) FXDCNativePrinter.$(OBJEXT) \
+	FXPostscriptFont.$(OBJEXT) FXTerminal.$(OBJEXT) fwin.$(OBJEXT) \
+	termed.$(OBJEXT) FXWorker.$(OBJEXT) FXShowMath.$(OBJEXT) \
+	FXMathText.$(OBJEXT) FX4Splitter.$(OBJEXT) \
+	FX7Segment.$(OBJEXT) FXAccelTable.$(OBJEXT) FXApp.$(OBJEXT) \
+	FXArrowButton.$(OBJEXT) FXBMPIcon.$(OBJEXT) \
+	FXBMPImage.$(OBJEXT) FXBitmap.$(OBJEXT) \
+	FXBitmapFrame.$(OBJEXT) FXBitmapView.$(OBJEXT) \
+	FXButton.$(OBJEXT) FXBZFileStream.$(OBJEXT) \
+	FXCURCursor.$(OBJEXT) FXCanvas.$(OBJEXT) \
+	FXCheckButton.$(OBJEXT) FXChoiceBox.$(OBJEXT) \
+	FXColorBar.$(OBJEXT) FXColorDialog.$(OBJEXT) \
+	FXColorList.$(OBJEXT) FXColorNames.$(OBJEXT) \
+	FXColorRing.$(OBJEXT) FXColorSelector.$(OBJEXT) \
+	FXColorWell.$(OBJEXT) FXColorWheel.$(OBJEXT) \
+	FXComboBox.$(OBJEXT) FXComposeContext.$(OBJEXT) \
+	FXComposite.$(OBJEXT) FXCursor.$(OBJEXT) \
+	FXDataTarget.$(OBJEXT) FXDate.$(OBJEXT) FXDC.$(OBJEXT) \
+	FXDCPrint.$(OBJEXT) FXDCWindow.$(OBJEXT) FXDLL.$(OBJEXT) \
+	FXDebugTarget.$(OBJEXT) FXDelegator.$(OBJEXT) FXDial.$(OBJEXT) \
+	FXDialogBox.$(OBJEXT) FXDict.$(OBJEXT) FXDir.$(OBJEXT) \
+	FXDirBox.$(OBJEXT) FXDirDialog.$(OBJEXT) FXDirList.$(OBJEXT) \
+	FXDirSelector.$(OBJEXT) FXDockBar.$(OBJEXT) \
+	FXDockSite.$(OBJEXT) FXDockHandler.$(OBJEXT) \
+	FXDockTitle.$(OBJEXT) FXDocument.$(OBJEXT) \
+	FXDragCorner.$(OBJEXT) FXDrawable.$(OBJEXT) \
+	FXDriveBox.$(OBJEXT) FXException.$(OBJEXT) \
+	FXExpression.$(OBJEXT) FXExtentd.$(OBJEXT) FXExtentf.$(OBJEXT) \
+	FXFile.$(OBJEXT) FXFileDialog.$(OBJEXT) FXFileDict.$(OBJEXT) \
+	FXFileList.$(OBJEXT) FXFileSelector.$(OBJEXT) \
+	FXFileStream.$(OBJEXT) FXFoldingList.$(OBJEXT) \
+	FXFont.$(OBJEXT) FXFontDialog.$(OBJEXT) \
+	FXFontSelector.$(OBJEXT) FXFrame.$(OBJEXT) \
+	FXGIFCursor.$(OBJEXT) FXGIFIcon.$(OBJEXT) FXGIFImage.$(OBJEXT) \
+	FXGLCanvas.$(OBJEXT) FXGLCone.$(OBJEXT) FXGLContext.$(OBJEXT) \
+	FXGLCube.$(OBJEXT) FXGLCylinder.$(OBJEXT) FXGLObject.$(OBJEXT) \
+	FXGLShape.$(OBJEXT) FXGLSphere.$(OBJEXT) \
+	FXGLTriangleMesh.$(OBJEXT) FXGLViewer.$(OBJEXT) \
+	FXGLVisual.$(OBJEXT) FXGradientBar.$(OBJEXT) \
+	FXGroupBox.$(OBJEXT) FXGUISignal.$(OBJEXT) \
+	FXGZFileStream.$(OBJEXT) FXHash.$(OBJEXT) FXHeader.$(OBJEXT) \
+	FXHorizontalFrame.$(OBJEXT) FXICOIcon.$(OBJEXT) \
+	FXICOImage.$(OBJEXT) FXIFFIcon.$(OBJEXT) FXIFFImage.$(OBJEXT) \
+	FXIO.$(OBJEXT) FXIcon.$(OBJEXT) FXIconDict.$(OBJEXT) \
+	FXIconList.$(OBJEXT) FXIconSource.$(OBJEXT) FXId.$(OBJEXT) \
+	FXImage.$(OBJEXT) FXImageFrame.$(OBJEXT) FXImageView.$(OBJEXT) \
+	FXInputDialog.$(OBJEXT) FXJPGIcon.$(OBJEXT) \
+	FXJPGImage.$(OBJEXT) FXKnob.$(OBJEXT) FXLabel.$(OBJEXT) \
+	FXList.$(OBJEXT) FXListBox.$(OBJEXT) FXMDIButton.$(OBJEXT) \
+	FXMDIChild.$(OBJEXT) FXMDIClient.$(OBJEXT) \
+	FXMainWindow.$(OBJEXT) FXMat3d.$(OBJEXT) FXMat4d.$(OBJEXT) \
+	FXMat3f.$(OBJEXT) FXMat4f.$(OBJEXT) FXMatrix.$(OBJEXT) \
+	FXMemMap.$(OBJEXT) FXMemoryStream.$(OBJEXT) \
+	FXMenuBar.$(OBJEXT) FXMenuButton.$(OBJEXT) \
+	FXMenuCaption.$(OBJEXT) FXMenuCascade.$(OBJEXT) \
+	FXMenuCheck.$(OBJEXT) FXMenuRadio.$(OBJEXT) \
+	FXMenuCommand.$(OBJEXT) FXMenuPane.$(OBJEXT) \
+	FXMenuSeparator.$(OBJEXT) FXMenuTitle.$(OBJEXT) \
+	FXMessageBox.$(OBJEXT) FXObject.$(OBJEXT) \
+	FXObjectList.$(OBJEXT) FXOptionMenu.$(OBJEXT) \
+	FXPCXIcon.$(OBJEXT) FXPCXImage.$(OBJEXT) FXPNGIcon.$(OBJEXT) \
+	FXPNGImage.$(OBJEXT) FXPPMIcon.$(OBJEXT) FXPPMImage.$(OBJEXT) \
+	FXPacker.$(OBJEXT) FXPath.$(OBJEXT) FXPicker.$(OBJEXT) \
+	FXPipe.$(OBJEXT) FXPopup.$(OBJEXT) FXPoint.$(OBJEXT) \
+	FXPrintDialog.$(OBJEXT) FXProgressBar.$(OBJEXT) \
+	FXProgressDialog.$(OBJEXT) FXQuatd.$(OBJEXT) FXQuatf.$(OBJEXT) \
+	FXRASIcon.$(OBJEXT) FXRASImage.$(OBJEXT) FXRGBIcon.$(OBJEXT) \
+	FXRGBImage.$(OBJEXT) FXRadioButton.$(OBJEXT) \
+	FXRangef.$(OBJEXT) FXRanged.$(OBJEXT) FXRealSlider.$(OBJEXT) \
+	FXRealSpinner.$(OBJEXT) FXRecentFiles.$(OBJEXT) \
+	FXRectangle.$(OBJEXT) FXRegion.$(OBJEXT) FXRegistry.$(OBJEXT) \
+	FXReplaceDialog.$(OBJEXT) FXRex.$(OBJEXT) \
+	FXRootWindow.$(OBJEXT) FXRuler.$(OBJEXT) FXRulerView.$(OBJEXT) \
+	FXScrollArea.$(OBJEXT) FXScrollBar.$(OBJEXT) \
+	FXScrollPane.$(OBJEXT) FXScrollWindow.$(OBJEXT) \
+	FXSearchDialog.$(OBJEXT) FXSeparator.$(OBJEXT) \
+	FXSettings.$(OBJEXT) FXShell.$(OBJEXT) FXShutter.$(OBJEXT) \
+	FXSize.$(OBJEXT) FXSlider.$(OBJEXT) FXSocket.$(OBJEXT) \
+	FXSpinner.$(OBJEXT) FXSpheref.$(OBJEXT) FXSphered.$(OBJEXT) \
+	FXSplashWindow.$(OBJEXT) FXSplitter.$(OBJEXT) \
+	FXSpring.$(OBJEXT) FXStat.$(OBJEXT) FXStatusBar.$(OBJEXT) \
+	FXStatusLine.$(OBJEXT) FXStream.$(OBJEXT) FXString.$(OBJEXT) \
+	FXStringDict.$(OBJEXT) FXSwitcher.$(OBJEXT) FXSystem.$(OBJEXT) \
+	FXTGAIcon.$(OBJEXT) FXTGAImage.$(OBJEXT) FXTIFIcon.$(OBJEXT) \
+	FXTIFImage.$(OBJEXT) FXTabBar.$(OBJEXT) FXTabBook.$(OBJEXT) \
+	FXTabItem.$(OBJEXT) FXTable.$(OBJEXT) FXText.$(OBJEXT) \
+	FXTextCodec.$(OBJEXT) FXTextField.$(OBJEXT) FXThread.$(OBJEXT) \
+	FXToggleButton.$(OBJEXT) FXToolBar.$(OBJEXT) \
+	FXToolBarGrip.$(OBJEXT) FXToolBarShell.$(OBJEXT) \
+	FXToolBarTab.$(OBJEXT) FXToolTip.$(OBJEXT) \
+	FXTopWindow.$(OBJEXT) FXTranslator.$(OBJEXT) \
+	FXTreeList.$(OBJEXT) FXTreeListBox.$(OBJEXT) \
+	FXTriStateButton.$(OBJEXT) FXUndoList.$(OBJEXT) \
+	FXURL.$(OBJEXT) FXVec2d.$(OBJEXT) FXVec2f.$(OBJEXT) \
+	FXVec3d.$(OBJEXT) FXVec3f.$(OBJEXT) FXVec4d.$(OBJEXT) \
+	FXVec4f.$(OBJEXT) FXVerticalFrame.$(OBJEXT) FXVisual.$(OBJEXT) \
+	FXWindow.$(OBJEXT) FXWizard.$(OBJEXT) FXXBMIcon.$(OBJEXT) \
+	FXXBMImage.$(OBJEXT) FXXPMIcon.$(OBJEXT) FXXPMImage.$(OBJEXT) \
+	fxascii.$(OBJEXT) fxbmpio.$(OBJEXT) fxfilematch.$(OBJEXT) \
+	fxgifio.$(OBJEXT) fxicoio.$(OBJEXT) fxiffio.$(OBJEXT) \
+	fxjpegio.$(OBJEXT) fxkeyboard.$(OBJEXT) fxkeysym.$(OBJEXT) \
+	fxparsegeometry.$(OBJEXT) fxpcxio.$(OBJEXT) fxpngio.$(OBJEXT) \
+	fxppmio.$(OBJEXT) fxpriv.$(OBJEXT) fxpsio.$(OBJEXT) \
+	fxfsquantize.$(OBJEXT) fxezquantize.$(OBJEXT) \
+	fxwuquantize.$(OBJEXT) fxrasio.$(OBJEXT) fxrgbio.$(OBJEXT) \
+	fxtargaio.$(OBJEXT) fxtifio.$(OBJEXT) fxunicode.$(OBJEXT) \
+	fxutils.$(OBJEXT) fxxbmio.$(OBJEXT) fxxpmio.$(OBJEXT) \
+	icons.$(OBJEXT) strtoll.$(OBJEXT) vsscanf.$(OBJEXT)
 libFOX_1_6_a_OBJECTS = $(am_libFOX_1_6_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -323,7 +200,7 @@ CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(libFOX_1_6_a_SOURCES)
-DIST_SOURCES = $(am__libFOX_1_6_a_SOURCES_DIST)
+DIST_SOURCES = $(libFOX_1_6_a_SOURCES)
 DATA = $(noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -449,17 +326,8 @@ AM_CXXFLAGS = @CXXFLAGS@ @X_CFLAGS@
 INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include
 RESWRAP = $(top_builddir)/utils/reswrap$(EXEEXT)
 SUFFIXES = .gif .bmp
-@msvcxp64_FALSE@noinst_DATA = 
-
-# For a (cross-) build for Windows-64 (and possibly at some stage to build
-# using the command line Microsoft compilers for 32-bit windows using the
-# cygwin version of bash as a shell) I want to create libFOX-1.6.lib rather
-# then libFOX-1.6.la. The automake/autoconf seems not to really understand
-# the ".lib" suffix, and so in that case I will do the build and the
-# install essentially manually.
-@msvcxp64_TRUE@noinst_DATA = libFOX-1.6.lib
-@msvcxp64_FALSE@lib_LIBRARIES = libFOX-1.6.a
-@msvcxp64_TRUE@lib_LIBRARIES = 
+noinst_DATA = 
+lib_LIBRARIES = libFOX-1.6.a
 # The next line may have been useful when this was an LTLIBRARY but hurts
 # when it is a regular library!
 # libFOX_1_6_a_LIBADD = $(X_LIBS) $(X_BASE_LIBS) $(X_EXTRA_LIBS) $(GL_LIBS)
@@ -623,608 +491,283 @@ FXUTF8Codec.cpp \
 FXUTF16Codec.cpp \
 FXUTF32Codec.cpp
 
-@msvcxp64_TRUE@CODECS64 = \
-@msvcxp64_TRUE@FX88591Codec.obj \
-@msvcxp64_TRUE@FX88592Codec.obj \
-@msvcxp64_TRUE@FX88593Codec.obj \
-@msvcxp64_TRUE@FX88594Codec.obj \
-@msvcxp64_TRUE@FX88595Codec.obj \
-@msvcxp64_TRUE@FX88596Codec.obj \
-@msvcxp64_TRUE@FX88597Codec.obj \
-@msvcxp64_TRUE@FX88598Codec.obj \
-@msvcxp64_TRUE@FX88599Codec.obj \
-@msvcxp64_TRUE@FX885910Codec.obj \
-@msvcxp64_TRUE@FX885911Codec.obj \
-@msvcxp64_TRUE@FX885913Codec.obj \
-@msvcxp64_TRUE@FX885914Codec.obj \
-@msvcxp64_TRUE@FX885915Codec.obj \
-@msvcxp64_TRUE@FX885916Codec.obj \
-@msvcxp64_TRUE@FXCP437Codec.obj \
-@msvcxp64_TRUE@FXCP850Codec.obj \
-@msvcxp64_TRUE@FXCP852Codec.obj \
-@msvcxp64_TRUE@FXCP855Codec.obj \
-@msvcxp64_TRUE@FXCP856Codec.obj \
-@msvcxp64_TRUE@FXCP857Codec.obj \
-@msvcxp64_TRUE@FXCP860Codec.obj \
-@msvcxp64_TRUE@FXCP861Codec.obj \
-@msvcxp64_TRUE@FXCP862Codec.obj \
-@msvcxp64_TRUE@FXCP863Codec.obj \
-@msvcxp64_TRUE@FXCP864Codec.obj \
-@msvcxp64_TRUE@FXCP865Codec.obj \
-@msvcxp64_TRUE@FXCP866Codec.obj \
-@msvcxp64_TRUE@FXCP869Codec.obj \
-@msvcxp64_TRUE@FXCP874Codec.obj \
-@msvcxp64_TRUE@FXCP1250Codec.obj \
-@msvcxp64_TRUE@FXCP1251Codec.obj \
-@msvcxp64_TRUE@FXCP1252Codec.obj \
-@msvcxp64_TRUE@FXCP1253Codec.obj \
-@msvcxp64_TRUE@FXCP1254Codec.obj \
-@msvcxp64_TRUE@FXCP1255Codec.obj \
-@msvcxp64_TRUE@FXCP1256Codec.obj \
-@msvcxp64_TRUE@FXCP1257Codec.obj \
-@msvcxp64_TRUE@FXCP1258Codec.obj \
-@msvcxp64_TRUE@FXKOI8RCodec.obj \
-@msvcxp64_TRUE@FXUTF8Codec.obj \
-@msvcxp64_TRUE@FXUTF16Codec.obj \
-@msvcxp64_TRUE@FXUTF32Codec.obj
-
-@msvcxp64_TRUE@srcs1 = \
-@msvcxp64_TRUE@$(CODECS64) \
-@msvcxp64_TRUE@FXDCNativePrinter.obj \
-@msvcxp64_TRUE@FXMathText.obj \
-@msvcxp64_TRUE@FXPostscriptFont.obj \
-@msvcxp64_TRUE@FXShowMath.obj \
-@msvcxp64_TRUE@FXTerminal.obj \
-@msvcxp64_TRUE@fwin.obj \
-@msvcxp64_TRUE@termed.obj \
-@msvcxp64_TRUE@FXWorker.obj \
-@msvcxp64_TRUE@FX4Splitter.obj \
-@msvcxp64_TRUE@FX7Segment.obj \
-@msvcxp64_TRUE@FXAccelTable.obj \
-@msvcxp64_TRUE@FXApp.obj \
-@msvcxp64_TRUE@FXArrowButton.obj \
-@msvcxp64_TRUE@FXBMPIcon.obj \
-@msvcxp64_TRUE@FXBMPImage.obj \
-@msvcxp64_TRUE@FXBitmap.obj \
-@msvcxp64_TRUE@FXBitmapFrame.obj \
-@msvcxp64_TRUE@FXBitmapView.obj \
-@msvcxp64_TRUE@FXButton.obj \
-@msvcxp64_TRUE@FXBZFileStream.obj \
-@msvcxp64_TRUE@FXCURCursor.obj \
-@msvcxp64_TRUE@FXCanvas.obj \
-@msvcxp64_TRUE@FXCheckButton.obj \
-@msvcxp64_TRUE@FXChoiceBox.obj \
-@msvcxp64_TRUE@FXColorBar.obj \
-@msvcxp64_TRUE@FXColorDialog.obj \
-@msvcxp64_TRUE@FXColorList.obj \
-@msvcxp64_TRUE@FXColorNames.obj \
-@msvcxp64_TRUE@FXColorRing.obj \
-@msvcxp64_TRUE@FXColorSelector.obj \
-@msvcxp64_TRUE@FXColorWell.obj \
-@msvcxp64_TRUE@FXColorWheel.obj \
-@msvcxp64_TRUE@FXComboBox.obj \
-@msvcxp64_TRUE@FXComposeContext.obj \
-@msvcxp64_TRUE@FXComposite.obj \
-@msvcxp64_TRUE@FXCursor.obj \
-@msvcxp64_TRUE@FXDataTarget.obj \
-@msvcxp64_TRUE@FXDate.obj \
-@msvcxp64_TRUE@FXDC.obj \
-@msvcxp64_TRUE@FXDCPrint.obj \
-@msvcxp64_TRUE@FXDCWindow.obj \
-@msvcxp64_TRUE@FXDLL.obj \
-@msvcxp64_TRUE@FXDebugTarget.obj \
-@msvcxp64_TRUE@FXDelegator.obj \
-@msvcxp64_TRUE@FXDial.obj \
-@msvcxp64_TRUE@FXDialogBox.obj \
-@msvcxp64_TRUE@FXDict.obj \
-@msvcxp64_TRUE@FXDir.obj \
-@msvcxp64_TRUE@FXDirBox.obj \
-@msvcxp64_TRUE@FXDirDialog.obj \
-@msvcxp64_TRUE@FXDirList.obj \
-@msvcxp64_TRUE@FXDirSelector.obj \
-@msvcxp64_TRUE@FXDockBar.obj \
-@msvcxp64_TRUE@FXDockSite.obj \
-@msvcxp64_TRUE@FXDockHandler.obj \
-@msvcxp64_TRUE@FXDockTitle.obj \
-@msvcxp64_TRUE@FXDocument.obj \
-@msvcxp64_TRUE@FXDragCorner.obj \
-@msvcxp64_TRUE@FXDrawable.obj \
-@msvcxp64_TRUE@FXDriveBox.obj \
-@msvcxp64_TRUE@FXException.obj \
-@msvcxp64_TRUE@FXExpression.obj \
-@msvcxp64_TRUE@FXExtentd.obj \
-@msvcxp64_TRUE@FXExtentf.obj \
-@msvcxp64_TRUE@FXFile.obj \
-@msvcxp64_TRUE@FXFileDialog.obj \
-@msvcxp64_TRUE@FXFileDict.obj \
-@msvcxp64_TRUE@FXFileList.obj \
-@msvcxp64_TRUE@FXFileSelector.obj \
-@msvcxp64_TRUE@FXFileStream.obj \
-@msvcxp64_TRUE@FXFoldingList.obj \
-@msvcxp64_TRUE@FXFont.obj \
-@msvcxp64_TRUE@FXFontDialog.obj \
-@msvcxp64_TRUE@FXFontSelector.obj \
-@msvcxp64_TRUE@FXFrame.obj \
-@msvcxp64_TRUE@FXGIFCursor.obj \
-@msvcxp64_TRUE@FXGIFIcon.obj \
-@msvcxp64_TRUE@FXGIFImage.obj \
-@msvcxp64_TRUE@FXGLCanvas.obj \
-@msvcxp64_TRUE@FXGLCone.obj \
-@msvcxp64_TRUE@FXGLContext.obj \
-@msvcxp64_TRUE@FXGLCube.obj \
-@msvcxp64_TRUE@FXGLCylinder.obj \
-@msvcxp64_TRUE@FXGLObject.obj \
-@msvcxp64_TRUE@FXGLShape.obj \
-@msvcxp64_TRUE@FXGLSphere.obj \
-@msvcxp64_TRUE@FXGLTriangleMesh.obj \
-@msvcxp64_TRUE@FXGLViewer.obj \
-@msvcxp64_TRUE@FXGLVisual.obj \
-@msvcxp64_TRUE@FXGradientBar.obj \
-@msvcxp64_TRUE@FXGroupBox.obj \
-@msvcxp64_TRUE@FXGUISignal.obj \
-@msvcxp64_TRUE@FXGZFileStream.obj \
-@msvcxp64_TRUE@FXHash.obj \
-@msvcxp64_TRUE@FXHeader.obj \
-@msvcxp64_TRUE@FXHorizontalFrame.obj \
-@msvcxp64_TRUE@FXICOIcon.obj \
-@msvcxp64_TRUE@FXICOImage.obj \
-@msvcxp64_TRUE@FXIFFIcon.obj \
-@msvcxp64_TRUE@FXIFFImage.obj \
-@msvcxp64_TRUE@FXIO.obj \
-@msvcxp64_TRUE@FXIcon.obj \
-@msvcxp64_TRUE@FXIconDict.obj \
-@msvcxp64_TRUE@FXIconList.obj \
-@msvcxp64_TRUE@FXIconSource.obj \
-@msvcxp64_TRUE@FXId.obj \
-@msvcxp64_TRUE@FXImage.obj \
-@msvcxp64_TRUE@FXImageFrame.obj \
-@msvcxp64_TRUE@FXImageView.obj \
-@msvcxp64_TRUE@FXInputDialog.obj \
-@msvcxp64_TRUE@FXJPGIcon.obj \
-@msvcxp64_TRUE@FXJPGImage.obj \
-@msvcxp64_TRUE@FXKnob.obj \
-@msvcxp64_TRUE@FXLabel.obj \
-@msvcxp64_TRUE@FXList.obj \
-@msvcxp64_TRUE@FXListBox.obj \
-@msvcxp64_TRUE@FXMDIButton.obj \
-@msvcxp64_TRUE@FXMDIChild.obj \
-@msvcxp64_TRUE@FXMDIClient.obj \
-@msvcxp64_TRUE@FXMainWindow.obj \
-@msvcxp64_TRUE@FXMat3d.obj \
-@msvcxp64_TRUE@FXMat4d.obj \
-@msvcxp64_TRUE@FXMat3f.obj \
-@msvcxp64_TRUE@FXMat4f.obj \
-@msvcxp64_TRUE@FXMatrix.obj \
-@msvcxp64_TRUE@FXMemMap.obj \
-@msvcxp64_TRUE@FXMemoryStream.obj \
-@msvcxp64_TRUE@FXMenuBar.obj \
-@msvcxp64_TRUE@FXMenuButton.obj \
-@msvcxp64_TRUE@FXMenuCaption.obj \
-@msvcxp64_TRUE@FXMenuCascade.obj \
-@msvcxp64_TRUE@FXMenuCheck.obj \
-@msvcxp64_TRUE@FXMenuRadio.obj \
-@msvcxp64_TRUE@FXMenuCommand.obj \
-@msvcxp64_TRUE@FXMenuPane.obj \
-@msvcxp64_TRUE@FXMenuSeparator.obj \
-@msvcxp64_TRUE@FXMenuTitle.obj \
-@msvcxp64_TRUE@FXMessageBox.obj \
-@msvcxp64_TRUE@FXObject.obj \
-@msvcxp64_TRUE@FXObjectList.obj \
-@msvcxp64_TRUE@FXOptionMenu.obj \
-@msvcxp64_TRUE@FXPCXIcon.obj \
-@msvcxp64_TRUE@FXPCXImage.obj \
-@msvcxp64_TRUE@FXPNGIcon.obj \
-@msvcxp64_TRUE@FXPNGImage.obj \
-@msvcxp64_TRUE@FXPPMIcon.obj \
-@msvcxp64_TRUE@FXPPMImage.obj \
-@msvcxp64_TRUE@FXPacker.obj \
-@msvcxp64_TRUE@FXPath.obj \
-@msvcxp64_TRUE@FXPicker.obj \
-@msvcxp64_TRUE@FXPipe.obj  \
-@msvcxp64_TRUE@FXPopup.obj \
-@msvcxp64_TRUE@FXPoint.obj \
-@msvcxp64_TRUE@FXPrintDialog.obj \
-@msvcxp64_TRUE@FXProgressBar.obj \
-@msvcxp64_TRUE@FXProgressDialog.obj \
-@msvcxp64_TRUE@FXQuatd.obj \
-@msvcxp64_TRUE@FXQuatf.obj \
-@msvcxp64_TRUE@FXRASIcon.obj \
-@msvcxp64_TRUE@FXRASImage.obj \
-@msvcxp64_TRUE@FXRGBIcon.obj \
-@msvcxp64_TRUE@FXRGBImage.obj \
-@msvcxp64_TRUE@FXRadioButton.obj \
-@msvcxp64_TRUE@FXRangef.obj \
-@msvcxp64_TRUE@FXRanged.obj \
-@msvcxp64_TRUE@FXRealSlider.obj \
-@msvcxp64_TRUE@FXRealSpinner.obj \
-@msvcxp64_TRUE@FXRecentFiles.obj \
-@msvcxp64_TRUE@FXRectangle.obj \
-@msvcxp64_TRUE@FXRegion.obj \
-@msvcxp64_TRUE@FXRegistry.obj \
-@msvcxp64_TRUE@FXReplaceDialog.obj \
-@msvcxp64_TRUE@FXRex.obj \
-@msvcxp64_TRUE@FXRootWindow.obj \
-@msvcxp64_TRUE@FXRuler.obj \
-@msvcxp64_TRUE@FXRulerView.obj \
-@msvcxp64_TRUE@FXScrollArea.obj \
-@msvcxp64_TRUE@FXScrollBar.obj \
-@msvcxp64_TRUE@FXScrollPane.obj \
-@msvcxp64_TRUE@FXScrollWindow.obj \
-@msvcxp64_TRUE@FXSearchDialog.obj \
-@msvcxp64_TRUE@FXSeparator.obj \
-@msvcxp64_TRUE@FXSettings.obj \
-@msvcxp64_TRUE@FXShell.obj \
-@msvcxp64_TRUE@FXShutter.obj \
-@msvcxp64_TRUE@FXSize.obj \
-@msvcxp64_TRUE@FXSlider.obj \
-@msvcxp64_TRUE@FXSocket.obj \
-@msvcxp64_TRUE@FXSpinner.obj \
-@msvcxp64_TRUE@FXSpheref.obj \
-@msvcxp64_TRUE@FXSphered.obj \
-@msvcxp64_TRUE@FXSplashWindow.obj \
-@msvcxp64_TRUE@FXSplitter.obj \
-@msvcxp64_TRUE@FXSpring.obj \
-@msvcxp64_TRUE@FXStat.obj \
-@msvcxp64_TRUE@FXStatusBar.obj \
-@msvcxp64_TRUE@FXStatusLine.obj \
-@msvcxp64_TRUE@FXStream.obj \
-@msvcxp64_TRUE@FXString.obj \
-@msvcxp64_TRUE@FXStringDict.obj \
-@msvcxp64_TRUE@FXSwitcher.obj \
-@msvcxp64_TRUE@FXSystem.obj \
-@msvcxp64_TRUE@FXTGAIcon.obj \
-@msvcxp64_TRUE@FXTGAImage.obj \
-@msvcxp64_TRUE@FXTIFIcon.obj \
-@msvcxp64_TRUE@FXTIFImage.obj \
-@msvcxp64_TRUE@FXTabBar.obj \
-@msvcxp64_TRUE@FXTabBook.obj \
-@msvcxp64_TRUE@FXTabItem.obj \
-@msvcxp64_TRUE@FXTable.obj \
-@msvcxp64_TRUE@FXText.obj \
-@msvcxp64_TRUE@FXTextCodec.obj \
-@msvcxp64_TRUE@FXTextField.obj \
-@msvcxp64_TRUE@FXThread.obj \
-@msvcxp64_TRUE@FXToggleButton.obj \
-@msvcxp64_TRUE@FXToolBar.obj \
-@msvcxp64_TRUE@FXToolBarGrip.obj \
-@msvcxp64_TRUE@FXToolBarShell.obj \
-@msvcxp64_TRUE@FXToolBarTab.obj \
-@msvcxp64_TRUE@FXToolTip.obj \
-@msvcxp64_TRUE@FXTopWindow.obj \
-@msvcxp64_TRUE@FXTranslator.obj \
-@msvcxp64_TRUE@FXTreeList.obj \
-@msvcxp64_TRUE@FXTreeListBox.obj \
-@msvcxp64_TRUE@FXTriStateButton.obj \
-@msvcxp64_TRUE@FXUndoList.obj \
-@msvcxp64_TRUE@FXURL.obj \
-@msvcxp64_TRUE@FXVec2d.obj \
-@msvcxp64_TRUE@FXVec2f.obj \
-@msvcxp64_TRUE@FXVec3d.obj \
-@msvcxp64_TRUE@FXVec3f.obj \
-@msvcxp64_TRUE@FXVec4d.obj \
-@msvcxp64_TRUE@FXVec4f.obj \
-@msvcxp64_TRUE@FXVerticalFrame.obj \
-@msvcxp64_TRUE@FXVisual.obj \
-@msvcxp64_TRUE@FXWindow.obj \
-@msvcxp64_TRUE@FXWizard.obj \
-@msvcxp64_TRUE@FXXBMIcon.obj \
-@msvcxp64_TRUE@FXXBMImage.obj \
-@msvcxp64_TRUE@FXXPMIcon.obj \
-@msvcxp64_TRUE@FXXPMImage.obj \
-@msvcxp64_TRUE@fxascii.obj \
-@msvcxp64_TRUE@fxbmpio.obj \
-@msvcxp64_TRUE@fxfilematch.obj \
-@msvcxp64_TRUE@fxgifio.obj \
-@msvcxp64_TRUE@fxicoio.obj \
-@msvcxp64_TRUE@fxiffio.obj \
-@msvcxp64_TRUE@fxjpegio.obj \
-@msvcxp64_TRUE@fxkeyboard.obj \
-@msvcxp64_TRUE@fxkeysym.obj \
-@msvcxp64_TRUE@fxparsegeometry.obj \
-@msvcxp64_TRUE@fxpcxio.obj \
-@msvcxp64_TRUE@fxpngio.obj \
-@msvcxp64_TRUE@fxppmio.obj \
-@msvcxp64_TRUE@fxpriv.obj \
-@msvcxp64_TRUE@fxpsio.obj \
-@msvcxp64_TRUE@fxfsquantize.obj \
-@msvcxp64_TRUE@fxezquantize.obj \
-@msvcxp64_TRUE@fxwuquantize.obj \
-@msvcxp64_TRUE@fxrasio.obj \
-@msvcxp64_TRUE@fxrgbio.obj \
-@msvcxp64_TRUE@fxtargaio.obj \
-@msvcxp64_TRUE@fxtifio.obj \
-@msvcxp64_TRUE@fxunicode.obj \
-@msvcxp64_TRUE@fxutils.obj \
-@msvcxp64_TRUE@fxxbmio.obj \
-@msvcxp64_TRUE@fxxpmio.obj \
-@msvcxp64_TRUE@icons.obj \
-@msvcxp64_TRUE@strtoll.obj \
-@msvcxp64_TRUE@vsscanf.obj
-
-@msvcxp64_TRUE@hdrrc = icons.h \
-@msvcxp64_TRUE@jitter.h \
-@msvcxp64_TRUE@version.rc \
-@msvcxp64_TRUE@version.rc.in \
-@msvcxp64_TRUE@fxpriv.h 
-
-@msvcxp64_TRUE@srcs = $(srcs1) $(hdrrc) $(CURSORS) $(ICONS)
-@msvcxp64_FALSE@libFOX_1_6_a_SOURCES = \
-@msvcxp64_FALSE@$(CODECS) \
-@msvcxp64_FALSE@FXDCNativePrinter.cpp \
-@msvcxp64_FALSE@FXPostscriptFont.cpp \
-@msvcxp64_FALSE@FXTerminal.cpp \
-@msvcxp64_FALSE@fwin.c \
-@msvcxp64_FALSE@termed.c \
-@msvcxp64_FALSE@FXWorker.cpp \
-@msvcxp64_FALSE@FXShowMath.cpp \
-@msvcxp64_FALSE@FXMathText.cpp \
-@msvcxp64_FALSE@FX4Splitter.cpp \
-@msvcxp64_FALSE@FX7Segment.cpp \
-@msvcxp64_FALSE@FXAccelTable.cpp \
-@msvcxp64_FALSE@FXApp.cpp \
-@msvcxp64_FALSE@FXArrowButton.cpp \
-@msvcxp64_FALSE@FXBMPIcon.cpp \
-@msvcxp64_FALSE@FXBMPImage.cpp \
-@msvcxp64_FALSE@FXBitmap.cpp \
-@msvcxp64_FALSE@FXBitmapFrame.cpp \
-@msvcxp64_FALSE@FXBitmapView.cpp \
-@msvcxp64_FALSE@FXButton.cpp \
-@msvcxp64_FALSE@FXBZFileStream.cpp \
-@msvcxp64_FALSE@FXCURCursor.cpp \
-@msvcxp64_FALSE@FXCanvas.cpp \
-@msvcxp64_FALSE@FXCheckButton.cpp \
-@msvcxp64_FALSE@FXChoiceBox.cpp \
-@msvcxp64_FALSE@FXColorBar.cpp \
-@msvcxp64_FALSE@FXColorDialog.cpp \
-@msvcxp64_FALSE@FXColorList.cpp \
-@msvcxp64_FALSE@FXColorNames.cpp \
-@msvcxp64_FALSE@FXColorRing.cpp \
-@msvcxp64_FALSE@FXColorSelector.cpp \
-@msvcxp64_FALSE@FXColorWell.cpp \
-@msvcxp64_FALSE@FXColorWheel.cpp \
-@msvcxp64_FALSE@FXComboBox.cpp \
-@msvcxp64_FALSE@FXComposeContext.cpp \
-@msvcxp64_FALSE@FXComposite.cpp \
-@msvcxp64_FALSE@FXCursor.cpp \
-@msvcxp64_FALSE@FXDataTarget.cpp \
-@msvcxp64_FALSE@FXDate.cpp \
-@msvcxp64_FALSE@FXDC.cpp \
-@msvcxp64_FALSE@FXDCPrint.cpp \
-@msvcxp64_FALSE@FXDCWindow.cpp \
-@msvcxp64_FALSE@FXDLL.cpp \
-@msvcxp64_FALSE@FXDebugTarget.cpp \
-@msvcxp64_FALSE@FXDelegator.cpp \
-@msvcxp64_FALSE@FXDial.cpp \
-@msvcxp64_FALSE@FXDialogBox.cpp \
-@msvcxp64_FALSE@FXDict.cpp \
-@msvcxp64_FALSE@FXDir.cpp \
-@msvcxp64_FALSE@FXDirBox.cpp \
-@msvcxp64_FALSE@FXDirDialog.cpp \
-@msvcxp64_FALSE@FXDirList.cpp \
-@msvcxp64_FALSE@FXDirSelector.cpp \
-@msvcxp64_FALSE@FXDockBar.cpp \
-@msvcxp64_FALSE@FXDockSite.cpp \
-@msvcxp64_FALSE@FXDockHandler.cpp \
-@msvcxp64_FALSE@FXDockTitle.cpp \
-@msvcxp64_FALSE@FXDocument.cpp \
-@msvcxp64_FALSE@FXDragCorner.cpp \
-@msvcxp64_FALSE@FXDrawable.cpp \
-@msvcxp64_FALSE@FXDriveBox.cpp \
-@msvcxp64_FALSE@FXException.cpp \
-@msvcxp64_FALSE@FXExpression.cpp \
-@msvcxp64_FALSE@FXExtentd.cpp \
-@msvcxp64_FALSE@FXExtentf.cpp \
-@msvcxp64_FALSE@FXFile.cpp \
-@msvcxp64_FALSE@FXFileDialog.cpp \
-@msvcxp64_FALSE@FXFileDict.cpp \
-@msvcxp64_FALSE@FXFileList.cpp \
-@msvcxp64_FALSE@FXFileSelector.cpp \
-@msvcxp64_FALSE@FXFileStream.cpp \
-@msvcxp64_FALSE@FXFoldingList.cpp \
-@msvcxp64_FALSE@FXFont.cpp \
-@msvcxp64_FALSE@FXFontDialog.cpp \
-@msvcxp64_FALSE@FXFontSelector.cpp \
-@msvcxp64_FALSE@FXFrame.cpp \
-@msvcxp64_FALSE@FXGIFCursor.cpp \
-@msvcxp64_FALSE@FXGIFIcon.cpp \
-@msvcxp64_FALSE@FXGIFImage.cpp \
-@msvcxp64_FALSE@FXGLCanvas.cpp \
-@msvcxp64_FALSE@FXGLCone.cpp \
-@msvcxp64_FALSE@FXGLContext.cpp \
-@msvcxp64_FALSE@FXGLCube.cpp \
-@msvcxp64_FALSE@FXGLCylinder.cpp \
-@msvcxp64_FALSE@FXGLObject.cpp \
-@msvcxp64_FALSE@FXGLShape.cpp \
-@msvcxp64_FALSE@FXGLSphere.cpp \
-@msvcxp64_FALSE@FXGLTriangleMesh.cpp \
-@msvcxp64_FALSE@FXGLViewer.cpp \
-@msvcxp64_FALSE@FXGLVisual.cpp \
-@msvcxp64_FALSE@FXGradientBar.cpp \
-@msvcxp64_FALSE@FXGroupBox.cpp \
-@msvcxp64_FALSE@FXGUISignal.cpp \
-@msvcxp64_FALSE@FXGZFileStream.cpp \
-@msvcxp64_FALSE@FXHash.cpp \
-@msvcxp64_FALSE@FXHeader.cpp \
-@msvcxp64_FALSE@FXHorizontalFrame.cpp \
-@msvcxp64_FALSE@FXICOIcon.cpp \
-@msvcxp64_FALSE@FXICOImage.cpp \
-@msvcxp64_FALSE@FXIFFIcon.cpp \
-@msvcxp64_FALSE@FXIFFImage.cpp \
-@msvcxp64_FALSE@FXIO.cpp \
-@msvcxp64_FALSE@FXIcon.cpp \
-@msvcxp64_FALSE@FXIconDict.cpp \
-@msvcxp64_FALSE@FXIconList.cpp \
-@msvcxp64_FALSE@FXIconSource.cpp \
-@msvcxp64_FALSE@FXId.cpp \
-@msvcxp64_FALSE@FXImage.cpp \
-@msvcxp64_FALSE@FXImageFrame.cpp \
-@msvcxp64_FALSE@FXImageView.cpp \
-@msvcxp64_FALSE@FXInputDialog.cpp \
-@msvcxp64_FALSE@FXJPGIcon.cpp \
-@msvcxp64_FALSE@FXJPGImage.cpp \
-@msvcxp64_FALSE@FXKnob.cpp \
-@msvcxp64_FALSE@FXLabel.cpp \
-@msvcxp64_FALSE@FXList.cpp \
-@msvcxp64_FALSE@FXListBox.cpp \
-@msvcxp64_FALSE@FXMDIButton.cpp \
-@msvcxp64_FALSE@FXMDIChild.cpp \
-@msvcxp64_FALSE@FXMDIClient.cpp \
-@msvcxp64_FALSE@FXMainWindow.cpp \
-@msvcxp64_FALSE@FXMat3d.cpp \
-@msvcxp64_FALSE@FXMat4d.cpp \
-@msvcxp64_FALSE@FXMat3f.cpp \
-@msvcxp64_FALSE@FXMat4f.cpp \
-@msvcxp64_FALSE@FXMatrix.cpp \
-@msvcxp64_FALSE@FXMemMap.cpp \
-@msvcxp64_FALSE@FXMemoryStream.cpp \
-@msvcxp64_FALSE@FXMenuBar.cpp \
-@msvcxp64_FALSE@FXMenuButton.cpp \
-@msvcxp64_FALSE@FXMenuCaption.cpp \
-@msvcxp64_FALSE@FXMenuCascade.cpp \
-@msvcxp64_FALSE@FXMenuCheck.cpp \
-@msvcxp64_FALSE@FXMenuRadio.cpp \
-@msvcxp64_FALSE@FXMenuCommand.cpp \
-@msvcxp64_FALSE@FXMenuPane.cpp \
-@msvcxp64_FALSE@FXMenuSeparator.cpp \
-@msvcxp64_FALSE@FXMenuTitle.cpp \
-@msvcxp64_FALSE@FXMessageBox.cpp \
-@msvcxp64_FALSE@FXObject.cpp \
-@msvcxp64_FALSE@FXObjectList.cpp \
-@msvcxp64_FALSE@FXOptionMenu.cpp \
-@msvcxp64_FALSE@FXPCXIcon.cpp \
-@msvcxp64_FALSE@FXPCXImage.cpp \
-@msvcxp64_FALSE@FXPNGIcon.cpp \
-@msvcxp64_FALSE@FXPNGImage.cpp \
-@msvcxp64_FALSE@FXPPMIcon.cpp \
-@msvcxp64_FALSE@FXPPMImage.cpp \
-@msvcxp64_FALSE@FXPacker.cpp \
-@msvcxp64_FALSE@FXPath.cpp \
-@msvcxp64_FALSE@FXPicker.cpp \
-@msvcxp64_FALSE@FXPipe.cpp  \
-@msvcxp64_FALSE@FXPopup.cpp \
-@msvcxp64_FALSE@FXPoint.cpp \
-@msvcxp64_FALSE@FXPrintDialog.cpp \
-@msvcxp64_FALSE@FXProgressBar.cpp \
-@msvcxp64_FALSE@FXProgressDialog.cpp \
-@msvcxp64_FALSE@FXQuatd.cpp \
-@msvcxp64_FALSE@FXQuatf.cpp \
-@msvcxp64_FALSE@FXRASIcon.cpp \
-@msvcxp64_FALSE@FXRASImage.cpp \
-@msvcxp64_FALSE@FXRGBIcon.cpp \
-@msvcxp64_FALSE@FXRGBImage.cpp \
-@msvcxp64_FALSE@FXRadioButton.cpp \
-@msvcxp64_FALSE@FXRangef.cpp \
-@msvcxp64_FALSE@FXRanged.cpp \
-@msvcxp64_FALSE@FXRealSlider.cpp \
-@msvcxp64_FALSE@FXRealSpinner.cpp \
-@msvcxp64_FALSE@FXRecentFiles.cpp \
-@msvcxp64_FALSE@FXRectangle.cpp \
-@msvcxp64_FALSE@FXRegion.cpp \
-@msvcxp64_FALSE@FXRegistry.cpp \
-@msvcxp64_FALSE@FXReplaceDialog.cpp \
-@msvcxp64_FALSE@FXRex.cpp \
-@msvcxp64_FALSE@FXRootWindow.cpp \
-@msvcxp64_FALSE@FXRuler.cpp \
-@msvcxp64_FALSE@FXRulerView.cpp \
-@msvcxp64_FALSE@FXScrollArea.cpp \
-@msvcxp64_FALSE@FXScrollBar.cpp \
-@msvcxp64_FALSE@FXScrollPane.cpp \
-@msvcxp64_FALSE@FXScrollWindow.cpp \
-@msvcxp64_FALSE@FXSearchDialog.cpp \
-@msvcxp64_FALSE@FXSeparator.cpp \
-@msvcxp64_FALSE@FXSettings.cpp \
-@msvcxp64_FALSE@FXShell.cpp \
-@msvcxp64_FALSE@FXShutter.cpp \
-@msvcxp64_FALSE@FXSize.cpp \
-@msvcxp64_FALSE@FXSlider.cpp \
-@msvcxp64_FALSE@FXSocket.cpp \
-@msvcxp64_FALSE@FXSpinner.cpp \
-@msvcxp64_FALSE@FXSpheref.cpp \
-@msvcxp64_FALSE@FXSphered.cpp \
-@msvcxp64_FALSE@FXSplashWindow.cpp \
-@msvcxp64_FALSE@FXSplitter.cpp \
-@msvcxp64_FALSE@FXSpring.cpp \
-@msvcxp64_FALSE@FXStat.cpp \
-@msvcxp64_FALSE@FXStatusBar.cpp \
-@msvcxp64_FALSE@FXStatusLine.cpp \
-@msvcxp64_FALSE@FXStream.cpp \
-@msvcxp64_FALSE@FXString.cpp \
-@msvcxp64_FALSE@FXStringDict.cpp \
-@msvcxp64_FALSE@FXSwitcher.cpp \
-@msvcxp64_FALSE@FXSystem.cpp \
-@msvcxp64_FALSE@FXTGAIcon.cpp \
-@msvcxp64_FALSE@FXTGAImage.cpp \
-@msvcxp64_FALSE@FXTIFIcon.cpp \
-@msvcxp64_FALSE@FXTIFImage.cpp \
-@msvcxp64_FALSE@FXTabBar.cpp \
-@msvcxp64_FALSE@FXTabBook.cpp \
-@msvcxp64_FALSE@FXTabItem.cpp \
-@msvcxp64_FALSE@FXTable.cpp \
-@msvcxp64_FALSE@FXText.cpp \
-@msvcxp64_FALSE@FXTextCodec.cpp \
-@msvcxp64_FALSE@FXTextField.cpp \
-@msvcxp64_FALSE@FXThread.cpp \
-@msvcxp64_FALSE@FXToggleButton.cpp \
-@msvcxp64_FALSE@FXToolBar.cpp \
-@msvcxp64_FALSE@FXToolBarGrip.cpp \
-@msvcxp64_FALSE@FXToolBarShell.cpp \
-@msvcxp64_FALSE@FXToolBarTab.cpp \
-@msvcxp64_FALSE@FXToolTip.cpp \
-@msvcxp64_FALSE@FXTopWindow.cpp \
-@msvcxp64_FALSE@FXTranslator.cpp \
-@msvcxp64_FALSE@FXTreeList.cpp \
-@msvcxp64_FALSE@FXTreeListBox.cpp \
-@msvcxp64_FALSE@FXTriStateButton.cpp \
-@msvcxp64_FALSE@FXUndoList.cpp \
-@msvcxp64_FALSE@FXURL.cpp \
-@msvcxp64_FALSE@FXVec2d.cpp \
-@msvcxp64_FALSE@FXVec2f.cpp \
-@msvcxp64_FALSE@FXVec3d.cpp \
-@msvcxp64_FALSE@FXVec3f.cpp \
-@msvcxp64_FALSE@FXVec4d.cpp \
-@msvcxp64_FALSE@FXVec4f.cpp \
-@msvcxp64_FALSE@FXVerticalFrame.cpp \
-@msvcxp64_FALSE@FXVisual.cpp \
-@msvcxp64_FALSE@FXWindow.cpp \
-@msvcxp64_FALSE@FXWizard.cpp \
-@msvcxp64_FALSE@FXXBMIcon.cpp \
-@msvcxp64_FALSE@FXXBMImage.cpp \
-@msvcxp64_FALSE@FXXPMIcon.cpp \
-@msvcxp64_FALSE@FXXPMImage.cpp \
-@msvcxp64_FALSE@fxascii.cpp \
-@msvcxp64_FALSE@fxbmpio.cpp \
-@msvcxp64_FALSE@fxfilematch.cpp \
-@msvcxp64_FALSE@fxgifio.cpp \
-@msvcxp64_FALSE@fxicoio.cpp \
-@msvcxp64_FALSE@fxiffio.cpp \
-@msvcxp64_FALSE@fxjpegio.cpp \
-@msvcxp64_FALSE@fxkeyboard.cpp \
-@msvcxp64_FALSE@fxkeysym.cpp \
-@msvcxp64_FALSE@fxparsegeometry.cpp \
-@msvcxp64_FALSE@fxpcxio.cpp \
-@msvcxp64_FALSE@fxpngio.cpp \
-@msvcxp64_FALSE@fxppmio.cpp \
-@msvcxp64_FALSE@fxpriv.cpp \
-@msvcxp64_FALSE@fxpsio.cpp \
-@msvcxp64_FALSE@fxfsquantize.cpp \
-@msvcxp64_FALSE@fxezquantize.cpp \
-@msvcxp64_FALSE@fxwuquantize.cpp \
-@msvcxp64_FALSE@fxrasio.cpp \
-@msvcxp64_FALSE@fxrgbio.cpp \
-@msvcxp64_FALSE@fxtargaio.cpp \
-@msvcxp64_FALSE@fxtifio.cpp \
-@msvcxp64_FALSE@fxunicode.cpp \
-@msvcxp64_FALSE@fxutils.cpp \
-@msvcxp64_FALSE@fxxbmio.cpp \
-@msvcxp64_FALSE@fxxpmio.cpp \
-@msvcxp64_FALSE@icons.cpp \
-@msvcxp64_FALSE@strtoll.cpp \
-@msvcxp64_FALSE@vsscanf.cpp \
-@msvcxp64_FALSE@icons.h \
-@msvcxp64_FALSE@jitter.h \
-@msvcxp64_FALSE@version.rc \
-@msvcxp64_FALSE@version.rc.in \
-@msvcxp64_FALSE@fxpriv.h 
+libFOX_1_6_a_SOURCES = \
+$(CODECS) \
+FXDCNativePrinter.cpp \
+FXPostscriptFont.cpp \
+FXTerminal.cpp \
+fwin.c \
+termed.c \
+FXWorker.cpp \
+FXShowMath.cpp \
+FXMathText.cpp \
+FX4Splitter.cpp \
+FX7Segment.cpp \
+FXAccelTable.cpp \
+FXApp.cpp \
+FXArrowButton.cpp \
+FXBMPIcon.cpp \
+FXBMPImage.cpp \
+FXBitmap.cpp \
+FXBitmapFrame.cpp \
+FXBitmapView.cpp \
+FXButton.cpp \
+FXBZFileStream.cpp \
+FXCURCursor.cpp \
+FXCanvas.cpp \
+FXCheckButton.cpp \
+FXChoiceBox.cpp \
+FXColorBar.cpp \
+FXColorDialog.cpp \
+FXColorList.cpp \
+FXColorNames.cpp \
+FXColorRing.cpp \
+FXColorSelector.cpp \
+FXColorWell.cpp \
+FXColorWheel.cpp \
+FXComboBox.cpp \
+FXComposeContext.cpp \
+FXComposite.cpp \
+FXCursor.cpp \
+FXDataTarget.cpp \
+FXDate.cpp \
+FXDC.cpp \
+FXDCPrint.cpp \
+FXDCWindow.cpp \
+FXDLL.cpp \
+FXDebugTarget.cpp \
+FXDelegator.cpp \
+FXDial.cpp \
+FXDialogBox.cpp \
+FXDict.cpp \
+FXDir.cpp \
+FXDirBox.cpp \
+FXDirDialog.cpp \
+FXDirList.cpp \
+FXDirSelector.cpp \
+FXDockBar.cpp \
+FXDockSite.cpp \
+FXDockHandler.cpp \
+FXDockTitle.cpp \
+FXDocument.cpp \
+FXDragCorner.cpp \
+FXDrawable.cpp \
+FXDriveBox.cpp \
+FXException.cpp \
+FXExpression.cpp \
+FXExtentd.cpp \
+FXExtentf.cpp \
+FXFile.cpp \
+FXFileDialog.cpp \
+FXFileDict.cpp \
+FXFileList.cpp \
+FXFileSelector.cpp \
+FXFileStream.cpp \
+FXFoldingList.cpp \
+FXFont.cpp \
+FXFontDialog.cpp \
+FXFontSelector.cpp \
+FXFrame.cpp \
+FXGIFCursor.cpp \
+FXGIFIcon.cpp \
+FXGIFImage.cpp \
+FXGLCanvas.cpp \
+FXGLCone.cpp \
+FXGLContext.cpp \
+FXGLCube.cpp \
+FXGLCylinder.cpp \
+FXGLObject.cpp \
+FXGLShape.cpp \
+FXGLSphere.cpp \
+FXGLTriangleMesh.cpp \
+FXGLViewer.cpp \
+FXGLVisual.cpp \
+FXGradientBar.cpp \
+FXGroupBox.cpp \
+FXGUISignal.cpp \
+FXGZFileStream.cpp \
+FXHash.cpp \
+FXHeader.cpp \
+FXHorizontalFrame.cpp \
+FXICOIcon.cpp \
+FXICOImage.cpp \
+FXIFFIcon.cpp \
+FXIFFImage.cpp \
+FXIO.cpp \
+FXIcon.cpp \
+FXIconDict.cpp \
+FXIconList.cpp \
+FXIconSource.cpp \
+FXId.cpp \
+FXImage.cpp \
+FXImageFrame.cpp \
+FXImageView.cpp \
+FXInputDialog.cpp \
+FXJPGIcon.cpp \
+FXJPGImage.cpp \
+FXKnob.cpp \
+FXLabel.cpp \
+FXList.cpp \
+FXListBox.cpp \
+FXMDIButton.cpp \
+FXMDIChild.cpp \
+FXMDIClient.cpp \
+FXMainWindow.cpp \
+FXMat3d.cpp \
+FXMat4d.cpp \
+FXMat3f.cpp \
+FXMat4f.cpp \
+FXMatrix.cpp \
+FXMemMap.cpp \
+FXMemoryStream.cpp \
+FXMenuBar.cpp \
+FXMenuButton.cpp \
+FXMenuCaption.cpp \
+FXMenuCascade.cpp \
+FXMenuCheck.cpp \
+FXMenuRadio.cpp \
+FXMenuCommand.cpp \
+FXMenuPane.cpp \
+FXMenuSeparator.cpp \
+FXMenuTitle.cpp \
+FXMessageBox.cpp \
+FXObject.cpp \
+FXObjectList.cpp \
+FXOptionMenu.cpp \
+FXPCXIcon.cpp \
+FXPCXImage.cpp \
+FXPNGIcon.cpp \
+FXPNGImage.cpp \
+FXPPMIcon.cpp \
+FXPPMImage.cpp \
+FXPacker.cpp \
+FXPath.cpp \
+FXPicker.cpp \
+FXPipe.cpp  \
+FXPopup.cpp \
+FXPoint.cpp \
+FXPrintDialog.cpp \
+FXProgressBar.cpp \
+FXProgressDialog.cpp \
+FXQuatd.cpp \
+FXQuatf.cpp \
+FXRASIcon.cpp \
+FXRASImage.cpp \
+FXRGBIcon.cpp \
+FXRGBImage.cpp \
+FXRadioButton.cpp \
+FXRangef.cpp \
+FXRanged.cpp \
+FXRealSlider.cpp \
+FXRealSpinner.cpp \
+FXRecentFiles.cpp \
+FXRectangle.cpp \
+FXRegion.cpp \
+FXRegistry.cpp \
+FXReplaceDialog.cpp \
+FXRex.cpp \
+FXRootWindow.cpp \
+FXRuler.cpp \
+FXRulerView.cpp \
+FXScrollArea.cpp \
+FXScrollBar.cpp \
+FXScrollPane.cpp \
+FXScrollWindow.cpp \
+FXSearchDialog.cpp \
+FXSeparator.cpp \
+FXSettings.cpp \
+FXShell.cpp \
+FXShutter.cpp \
+FXSize.cpp \
+FXSlider.cpp \
+FXSocket.cpp \
+FXSpinner.cpp \
+FXSpheref.cpp \
+FXSphered.cpp \
+FXSplashWindow.cpp \
+FXSplitter.cpp \
+FXSpring.cpp \
+FXStat.cpp \
+FXStatusBar.cpp \
+FXStatusLine.cpp \
+FXStream.cpp \
+FXString.cpp \
+FXStringDict.cpp \
+FXSwitcher.cpp \
+FXSystem.cpp \
+FXTGAIcon.cpp \
+FXTGAImage.cpp \
+FXTIFIcon.cpp \
+FXTIFImage.cpp \
+FXTabBar.cpp \
+FXTabBook.cpp \
+FXTabItem.cpp \
+FXTable.cpp \
+FXText.cpp \
+FXTextCodec.cpp \
+FXTextField.cpp \
+FXThread.cpp \
+FXToggleButton.cpp \
+FXToolBar.cpp \
+FXToolBarGrip.cpp \
+FXToolBarShell.cpp \
+FXToolBarTab.cpp \
+FXToolTip.cpp \
+FXTopWindow.cpp \
+FXTranslator.cpp \
+FXTreeList.cpp \
+FXTreeListBox.cpp \
+FXTriStateButton.cpp \
+FXUndoList.cpp \
+FXURL.cpp \
+FXVec2d.cpp \
+FXVec2f.cpp \
+FXVec3d.cpp \
+FXVec3f.cpp \
+FXVec4d.cpp \
+FXVec4f.cpp \
+FXVerticalFrame.cpp \
+FXVisual.cpp \
+FXWindow.cpp \
+FXWizard.cpp \
+FXXBMIcon.cpp \
+FXXBMImage.cpp \
+FXXPMIcon.cpp \
+FXXPMImage.cpp \
+fxascii.cpp \
+fxbmpio.cpp \
+fxfilematch.cpp \
+fxgifio.cpp \
+fxicoio.cpp \
+fxiffio.cpp \
+fxjpegio.cpp \
+fxkeyboard.cpp \
+fxkeysym.cpp \
+fxparsegeometry.cpp \
+fxpcxio.cpp \
+fxpngio.cpp \
+fxppmio.cpp \
+fxpriv.cpp \
+fxpsio.cpp \
+fxfsquantize.cpp \
+fxezquantize.cpp \
+fxwuquantize.cpp \
+fxrasio.cpp \
+fxrgbio.cpp \
+fxtargaio.cpp \
+fxtifio.cpp \
+fxunicode.cpp \
+fxutils.cpp \
+fxxbmio.cpp \
+fxxpmio.cpp \
+icons.cpp \
+strtoll.cpp \
+vsscanf.cpp \
+icons.h \
+jitter.h \
+version.rc \
+version.rc.in \
+fxpriv.h 
 
 EXTRA_DIST = Makefile.bc \
              Makefile.bc.resp \
@@ -1642,7 +1185,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
 
-@msvcxp64_FALSE@.cpp.obj:
+.cpp.obj:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -1753,7 +1296,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@msvcxp64_FALSE@install-data-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libLIBRARIES mostlyclean-am
@@ -1776,7 +1318,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am:
 
 install-dvi: install-dvi-am
 
@@ -1829,24 +1371,15 @@ uninstall-am: uninstall-libLIBRARIES
 	clean-libLIBRARIES ctags distclean distclean-compile \
 	distclean-generic distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libLIBRARIES install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-libLIBRARIES
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLIBRARIES install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-libLIBRARIES
 
-
-@msvcxp64_TRUE@.cpp.obj:
-@msvcxp64_TRUE@	$(CXXCOMPILE) -c `cygpath -w $<`
-
-@msvcxp64_TRUE@libFOX-1.6.lib:	$(srcs)
-@msvcxp64_TRUE@	lib /out:libFOX-1.6.lib $(srcs1)
-
-@msvcxp64_TRUE@install-data-local:	libFOX-1.6.lib
-@msvcxp64_TRUE@	cp libFOX-1.6.lib $(DESTDIR)$(libdir)/libFOX-1.6.lib"
 
 FXApp.$(OBJEXT):	icons.h
 

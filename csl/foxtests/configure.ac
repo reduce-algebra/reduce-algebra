@@ -10,23 +10,11 @@
 #
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
-#   --with-mingw64    Cross build using 64-bit mingw
 #   --with-cygwin     Build native cygwin X11 based system.
 #   --enable-debug    Switch on debugging.
 #
 #
 
-#
-# Note that building for 64-bit windows is at present to be considered
-# experimental. I am testing using Vista Home Premium 64-bit with SP1
-# installed.
-# I use the Mingw-w64 tool-chain (see the sourceforge project).
-# I have used that either from Linux or from cygwin (on Vista-64) with
-# the compiler called x86_64-w64-mingw32-gcc, but the build under
-# cygwin on Vista is the only one where I can build image files.
-# I have had success with snapshots dated 20080425 or later. But the current
-# testing has been adjusted to work with a version fetched in September 2010
-#
 
 
 # FOX gets built in a directory whose name is based on the platform
@@ -46,27 +34,6 @@ AC_PREREQ(2.57)
 AC_CONFIG_SRCDIR(scribble.cpp)
 AC_CONFIG_FILES(Makefile)
 
-AC_ARG_WITH(mingw64,
-   [  --with-mingw64          Try to cross-build using 64-bit mingw])
-
-if test "x$with_mingw64" = "xyes"
-then
-   mingw64="yes"
-else
-   mingw64="no"
-fi
-
-if test "x$mingw64" = "xyes"
-then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-w64-mingw32-gcc])
-   host="x86_64-w64-mingw32"
-   ac_tool_prefix="x86_64-w64-mingw32-"
-   cross_compiling=yes
-   STRIP="x86_64-w64-mingw32-strip"
-   AR="x86_64-w64-mingw32-ar"
-fi
-
 # What host am I on?
 AC_CANONICAL_HOST()
 
@@ -78,12 +45,7 @@ AC_DEFINE_UNQUOTED(HOST_CPU,"$host_cpu",[Name of CPU])
 AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
 AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
 
-if test "x$mingw64" = "xyes"
-then
-   foxdir="x86_64-w64-mingw32"
-else
-   foxdir="$host"
-fi
+foxdir="$host"
 
 # The next line may be of use when building on a 64-bit system that uses
 # gcc. It forces "-m32" into CFLAGS etc.
@@ -125,20 +87,18 @@ then
   AC_CHECK_TOOL(WINDRES, windres, windres)
 fi
 
-if test "x$mingw64" = "xyes"
-then
+case $host in
+x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
   AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-# LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   DLL_CFLAGS="$CFLAGS -shared"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
-else
-case $host in
+  ;;
 *-*-cygwin* | x86_64-w64-mingw32)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
@@ -147,17 +107,6 @@ case $host in
   x86="yes"
   if test "x$really_use_cygwin" = "xyes"
   then
-# If you go "--with-cygwin" in the call to configure then I will build
-# in native cygwin mode, and not use the "-mno-cywgin" flag. As a consequence
-# some GPL libraries will be linked with your application. That would mean
-# that if you "distributed" the resulting combined or derived work (even
-# to a friend or within your organisation) then the recipient would, under
-# the GPL, have the right to obtain all source and the to distribute it
-# further under the GPL.
-# For these FOX test programs this is no new problem, since the test
-# programs themselves are subject to the GPL (version 2). I would tend to
-# suggest that you do not distribute any binaries built here anyway.
-#
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
@@ -176,7 +125,7 @@ case $host in
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -e _mainCRTStartup"
+    LDFLAGS="$LDFLAGS -mno-cygwin "
     if test "x$mingw_location" != "x"
     then
       CPPFLAGS="$CPPFLAGS -I$mingw_location/include"
@@ -346,7 +295,6 @@ case $host in
   XLIBS="-lXext -lX11"
   ;;
 esac
-fi
 
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
@@ -726,10 +674,11 @@ AC_PROG_LN_S
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-then
+case $CC in
+x86_64-w64-*)
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
-fi
+  ;;
+esac
 
 if test "x$GCC" = "xyes"
 then
@@ -962,17 +911,19 @@ fi
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-  then
+  case $CC in
+  x86_64-w64-*)
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-  else
+    ;;
+  *)
     LIBS="$LIBS -lcomctl32 -lgdi32 -lws2_32 -lwsock32 -lwinspool -lmpr"
-  fi
+    ;;
+  esac
 fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.2
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.4
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi

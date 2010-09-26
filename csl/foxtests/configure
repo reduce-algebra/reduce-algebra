@@ -704,7 +704,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_mingw64
 with_m32
 with_m64
 with_csl
@@ -1359,7 +1358,6 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-mingw64          Try to cross-build using 64-bit mingw
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-csl              Use the CSL Lisp system
@@ -3008,33 +3006,6 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 ac_config_files="$ac_config_files Makefile"
 
 
-
-# Check whether --with-mingw64 was given.
-if test "${with_mingw64+set}" = set; then :
-  withval=$with_mingw64;
-fi
-
-
-if test "x$with_mingw64" = "xyes"
-then
-   mingw64="yes"
-else
-   mingw64="no"
-fi
-
-if test "x$mingw64" = "xyes"
-then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&5
-$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&6;}
-   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&5
-$as_echo "$as_me: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&6;}
-   host="x86_64-w64-mingw32"
-   ac_tool_prefix="x86_64-w64-mingw32-"
-   cross_compiling=yes
-   STRIP="x86_64-w64-mingw32-strip"
-   AR="x86_64-w64-mingw32-ar"
-fi
-
 # What host am I on?
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
@@ -3128,12 +3099,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-if test "x$mingw64" = "xyes"
-then
-   foxdir="x86_64-w64-mingw32"
-else
-   foxdir="$host"
-fi
+foxdir="$host"
 
 # The next line may be of use when building on a 64-bit system that uses
 # gcc. It forces "-m32" into CFLAGS etc.
@@ -3284,8 +3250,8 @@ fi
 
 fi
 
-if test "x$mingw64" = "xyes"
-then
+case $host in
+x86_64-w64-*)
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
@@ -3295,13 +3261,11 @@ $as_echo "#define WIN64 1" >>confdefs.h
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-# LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   DLL_CFLAGS="$CFLAGS -shared"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
-else
-case $host in
+  ;;
 *-*-cygwin* | x86_64-w64-mingw32)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
@@ -3314,17 +3278,6 @@ fi
   x86="yes"
   if test "x$really_use_cygwin" = "xyes"
   then
-# If you go "--with-cygwin" in the call to configure then I will build
-# in native cygwin mode, and not use the "-mno-cywgin" flag. As a consequence
-# some GPL libraries will be linked with your application. That would mean
-# that if you "distributed" the resulting combined or derived work (even
-# to a friend or within your organisation) then the recipient would, under
-# the GPL, have the right to obtain all source and the to distribute it
-# further under the GPL.
-# For these FOX test programs this is no new problem, since the test
-# programs themselves are subject to the GPL (version 2). I would tend to
-# suggest that you do not distribute any binaries built here anyway.
-#
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
@@ -3349,7 +3302,7 @@ $as_echo "#define WIN32 1" >>confdefs.h
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -e _mainCRTStartup"
+    LDFLAGS="$LDFLAGS -mno-cygwin "
     if test "x$mingw_location" != "x"
     then
       CPPFLAGS="$CPPFLAGS -I$mingw_location/include"
@@ -3864,7 +3817,6 @@ fi
   XLIBS="-lXext -lX11"
   ;;
 esac
-fi
 
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
@@ -7805,12 +7757,13 @@ fi
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-then
+case $CC in
+x86_64-w64-*)
 
 $as_echo "#define WIN64 1" >>confdefs.h
 
-fi
+  ;;
+esac
 
 if test "x$GCC" = "xyes"
 then
@@ -10103,17 +10056,19 @@ fi
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-  then
+  case $CC in
+  x86_64-w64-*)
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-  else
+    ;;
+  *)
     LIBS="$LIBS -lcomctl32 -lgdi32 -lws2_32 -lwsock32 -lwinspool -lmpr"
-  fi
+    ;;
+  esac
 fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.2
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.4
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi

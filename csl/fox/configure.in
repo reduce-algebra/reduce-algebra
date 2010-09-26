@@ -88,70 +88,16 @@ if test "x$enable_test" = "xyes"; then
    AC_DEFINE(TEST)
 fi
 
-dnl "--with-mingw64" is what I will be trying from now on to build for
-dnl 64-bit windows. It requires a (cross) compiler called
-dnl x86_64-w64-mingw32-g++ to be available. I will in due course
-dnl retire the older option "--with-xp64" that used the Microsoft
-dnl command-line compiler from their DDK.
-
-AC_ARG_WITH(mingw64,
-   [  --with-mingw64          Try to cross-build using 64-bit mingw])
-
-if test "x$with_mingw64" = "xyes"
-then
-   mingw64="yes"
-else
-   mingw64="no"
-fi
-
 FASTMATH=" -ffast-math "
 WSOCK="wsock32"
 
-if test "x$mingw64" = "xyes"
-then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-w64-mingw32-gcc])
-   host="x86_64-w64-mingw32"
-   ac_tool_prefix="x86_64-w64-mingw32-"
-   cross_compiling=yes
-   STRIP="x86_64-w64-mingw32-strip"
-   AR="x86_64-w64-mingw32-ar"
-fi
+case $host in
+x86_64-w64-*)
+  mingw64="yes"
+  ;;
+esac
 
-dnl The "--with-xp64" flag is a distinct cheat! If the Microsoft Compilers
-dnl and libraries have been set up so that the command "cl" runs a C
-dnl compiler that targets Windows XP (64 bit) [this will sometimes be
-dnl run as a cross compiler hosted on an older release of Windows, and
-dnl increasingly a native compiler on XP-64 itself] but we are nevertheless
-dnl running under a "bash" shell (eg as provided by the cygwin environment)
-dnl then this will cross-build a 64-bit Windows version of the FOX library.
-dnl One hassle with this is that the "autoconf" conventions for cross
-dnl compilation do not fit this totally well, and when the cygwin shell
-dnl runs on real Windows-64 autoconf does not detect the build machine
-dnl automatically, so I FAKE the build alias and force the cross_compilation
-dnl option explicitly. This is now being replaced by --with-ming64
-
-AC_ARG_WITH(xp64, [  --with-xp64            cross build for 64-bit windows])
-
-AM_CONDITIONAL(xp64, test "x$with_xp64" = "xyes" || test "x$mingw64" = "xyes")
-AM_CONDITIONAL(msvcxp64, test "x$with_xp64" = "xyes" && test "x$mingw64" != "xyes")
-
-if test "x$with_xp64" = "xyes"; then
-   AC_MSG_WARN(--with-xp64 selected: enabling hacked cross compile)
-   build="i686-pc-windows"
-   build_alias="i686-pc-windows"
-   cross_compiling="yes"
-   CC=cl
-   CXX=cl
-   CPP="cl /E"
-   CFLAGS="$CFLAGS /Wp64 /EHsc /GR -D_WIN64=1"
-   CXXFLAGS="$CXXFLAGS /Wp64 /EHsc /GR -D_WIN64=1"
-dnl /Wp64 warns on 64-bit portability issues
-dnl /EHsc is to do with exception handling, /GR is RTTI
-dnl The _WIN64 define is used by FOX sources to detect this case.
-   LIBS="$LIBS bufferoverflowU.lib"
-dnl The Microsoft SDK compilers need the above library explicitly specified
-fi
+AM_CONDITIONAL(xp64, test "x$mingw64" = "xyes")
 
 
 AC_CANONICAL_HOST()
@@ -176,10 +122,9 @@ case $host_os in
    *solaris*) solaris="yes";;
 esac
 
-if test "x$with_xp64" = "xyes" || test "x$with_mingw64" = "xyes"; then
+if test "x$mingw64" = "xyes"; then
 dnl MINGW32 is used here to say "compiling to be linked with the
-dnl Microsoft libraries, not for a Unix-like world", and xp64 is that
-dnl even though it uses the Microsoft compiler not gcc.
+dnl Microsoft libraries, not for a Unix-like world".
   MINGW32="yes"
 fi
 
@@ -363,16 +308,10 @@ AC_DEFINE(WIN32)
 AC_DEFINE(WIN64)
 AC_DEFINE(_WIN64)
 LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-elif test "x$with_xp64" = "xyes"; then
-AC_DEFINE(WIN32)
-dnl At present with the windows-64 build I seem to need to include
-dnl all these explicitly.
-LIBS="${LIBS} comctl32.lib shell32.lib advapi32.lib gdi32.lib"
-LIBS="${LIBS} ${WSOCK}.lib winspool.lib mpr.lib user32.lib"
 elif test "x$MINGW32" = "xyes" ; then
 AC_DEFINE(WIN32)
 LIBS="${LIBS} -lcomctl32 -l${WSOCK} -lws2_32 -lwinspool -lmpr"
-LDFLAGS="${LDFLAGS} -mwindows -e _mainCRTStartup"
+LDFLAGS="${LDFLAGS} -mwindows "
 if test "x$with_mingw32" != "x" ; then
 CPPFLAGS="${CPPFLAGS} -I$with_mingw32/include"
 LIBS="${LIBS} -L$with_mingw32/lib"

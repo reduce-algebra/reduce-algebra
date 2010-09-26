@@ -429,7 +429,7 @@ while fnames do begin
    scalar name, bulk;
    name := car fnames;
    princ "About to create "; printc name;
-   c!:ccompilestart(name, name, "$destdir/generated-c", nil);
+   c!:ccompilestart(name, name, "$destdir", nil);
    bulk := 0;
    while bulk < size_per_file and w_reduce and how_many > 0 do begin
       scalar name, defn;

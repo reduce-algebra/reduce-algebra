@@ -48,18 +48,6 @@ host=`scripts/findhost.sh $host`
 
 echo Current machine tag is $host
 
-# As a special concession I will see if we have a 64-bit (cross) compiler
-# installed and called x86_64-w64-mingw32-gcc. If so I will consider all
-# the possible cross-builds using it for 64-bit windows as well as all
-# the normal builds native on this platform.
-
-if { x86_64-w64-mingw32-gcc scripts/hello.c -o hello.exe ; } 2> /dev/null
-then
-  host="$host x86_64-w64-windows"
-fi
-
-rm -f hello.exe
-
 # I REALLY want to use GNU make, so here is some stuff to try to
 # find a version. The "/usr/sfw" location is used on Solaris, while
 # "/usr/local" is a plausible place to look in case a user has built and
@@ -81,24 +69,21 @@ then
   export MAKE
 fi
 
-for l in csl psl
+# I expect directoties with two "-" characters in their names in the
+# cslbuild or pslbuild directories to be named as host triples. But
+# even then I will only try to build in them if there is a "Makefile"
+# present.
+
+for l in cslbuild/*-*-* psl/*-*-*
 do
-  for h in $host
-  do
-    for hx in $h $h-debug $h-m32 $h-m32-debug $h-m64 $h-m64-debug \
-              $h-nogui $h-nogui-debug $h-m32-nogui $h-m32-nogui-debug \
-              $h-m64-nogui $h-m64-nogui-debug
-    do
-      if test -f ${l}build/$hx/Makefile
-      then
-        echo About to build in ${l}build/$hx
-        cd ${l}build/$hx
-        echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-        $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-        cd ../..
-      fi
-    done
-  done
+   if test -f ${l}/Makefile
+   then
+     echo About to build in ${l}
+     cd ${l}
+     echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+     $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+     cd ../..
+   fi
 done
 
 exit 0

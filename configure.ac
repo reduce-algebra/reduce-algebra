@@ -3,7 +3,8 @@ AC_INIT([REDUCE], [20080421], [acn1@cam.ac.uk])
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
 # to /bin/bash (or perhaps the user's login shell?). Anyway that hurts
-# config.guess on Solaris....
+# config.guess on Solaris.... so I will force matters so that I use
+# plan vanilla /bin/sh henceforth. So BEWARE and do not use bash extensions!
 if test -x /bin/sh
 then
   SHELL=/bin/sh
@@ -53,7 +54,7 @@ fi
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
-                  [Try to cross-build using 64-bit mingw]),
+                  [Shorthand to force --host=x86_64-w64-mingw32]),
    [],
    [with_mingw64="no"])
 
@@ -71,7 +72,7 @@ AC_ARG_WITH(m64,
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin (note GPL)]),
+                 [Force use of raw cywgin (note licensing consequences please)]),
   [],
   [with_cygwin="no"])
 
@@ -143,6 +144,19 @@ AC_ARG_WITH(smallpage,
 
 ###########################################################################
 
+# This following is both a shorthand and a fudge to preserve a historical
+# way I did things. If you say "--with-mingw64" to this top-level
+# configure script it pretends you had asked for cross compilation using
+# the standard idiom --host-x86_64-w64-mingw32. Doing things this way here
+# means that the lower-level configure scripts just need to understand
+# about cross compilation and should not look for --with-mingw64 as such.
+
+if test "x$with_mingw64" != "xno"
+then
+  host="x86_64-w64-mingw32"
+  ac_configure_args="$ac_configure_args --host=$host"
+fi
+
 # Now I want to know if the current directory is the same as $srcdir. At
 # one stage I checked that by looking to see if $srcdir was ".". That was OK
 # for direct calls of the form "./configure" where the "." as in "./" was
@@ -181,14 +195,12 @@ case $inplace in
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
 # local version of the profile.
-    if ! test -f $abssrcdir/cslbuild/profile.dat
-    then
-      cp -p $abssrcdir/csl/profile.dat $abssrcdir/cslbuild
-    fi
-    if ! test -d $abssrcdir/cslbuild/csl-c
+    if ! test -d $abssrcdir/cslbuild/generated-c ||
+       ! test -f $abssrcdir/cslbuild/generated-c/profile.dat
     then
       rm -rf $abssrcdir/cslbuild/generated-c
       mkdir -p $abssrcdir/cslbuild/generated-c
+      cp -r $abssrcdir/csl/generated-c $abssrcdir/cslbuild
     fi
     cd $abssrcdir/cslbuild/$build 
     eval "$SHELL $abssrcdir/configure $ac_configure_args --with-build=$build"

@@ -7,8 +7,6 @@
 #
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
-#   --with-mingw64    Cross build using 64-bit mingw. I use the the
-                      compiler from http://tdm-gcc.tdragon.net/
 #   --with-cygwin     Build native cygwin X11 based system, 
 #                     Please note cygwin licensing issues, which do not
 #                     have any adverse effects so long as you retain BSD
@@ -27,17 +25,10 @@
 #                     a heavily cleaned up minimalist build system, but
 #                     for testing purposes I allow a build here.
 
-#
-# Note that building for 64-bit windows is at present to be considered
-# experimental. I am testing using Vista Home Premium 64-bit with SP1
-# installed.
-# I use the Mingw-w64 tool-chain (see the sourceforge project).
-# I have used that either from Linux or from cygwin (on Vista-64) with
-# the compiler called x86_64-w64-mingw32-gcc, but the build under
-# cygwin on Vista is the only one where I can build image files.
-# I have had success with snapshots dated 20080425 or later.
-# But now that the (cross) compilers are available via the cygwin
-# installer I am going to standardise on the versions available there.
+#   --host=<triplet>  cross compile for that host.
+# Eg if I have installed the 64-bit mingw compilers that cygwin supports
+# I can go  --host=x86_64-w64-mingw32  and build everything.
+# 
 
 
 # FOX gets built in a directory whose name is based on the platform
@@ -69,30 +60,6 @@ AC_CONFIG_FILES(Makefile)
 AC_DEFINE(CSL, [1], [True to tell sources that this build is part of CSL])
 
 AC_DEFINE(NILSEG_EXTERNS, [1], [Makes use of a debugger easier, I hope.])
-
-AC_ARG_WITH(mingw64,
-   AC_HELP_STRING([--with-mingw64],
-                  [Try to cross-build using 64-bit mingw]),
-   [],
-   [with_mingw64="no"])
-
-if test "x$with_mingw64" = "xyes"
-then
-   mingw64="yes"
-else
-   mingw64="no"
-fi
-
-if test "x$mingw64" = "xyes"
-then
-   AC_MSG_NOTICE([You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32])
-   AC_MSG_NOTICE([and requires cross-compilation tools such as x86_64-w64-mingw32-gcc])
-   host="x86_64-w64-mingw32"
-   ac_tool_prefix="x86_64-w64-mingw32-"
-   cross_compiling=yes
-   STRIP="x86_64-w64-mingw32-strip"
-   AR="x86_64-w64-mingw32-ar"
-fi
 
 AC_ARG_WITH(csl,
   AC_HELP_STRING([--with-csl], [Use the CSL Lisp system]),
@@ -135,13 +102,6 @@ AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
 AC_DEFINE_UNQUOTED(HOST_CPU,"$host_cpu",[Name of CPU])
 AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
 AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
-
-if test "x$mingw64" = "xyes"
-then
-   foxdir="x86_64-w64-mingw32"
-else
-   foxdir="$host"
-fi
 
 # The next line may be of use when building on a 64-bit system that uses
 # gcc. It forces "-m32" into CFLAGS etc.
@@ -188,24 +148,20 @@ then
   AC_CHECK_TOOL(WINDRES, windres, windres)
 fi
 
-if test "x$mingw64" = "xyes"
-then
+case $host in
+x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
   AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-# The next line USED to be needed with an earlier draft release of the
-# 64-bit compiler, but now if it is included things FAIL.
-# LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   DLL_CFLAGS="$CFLAGS -shared"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
   win64="yes"
-else
-case $host in
-*-*-cygwin* | x86_64-w64-mingw32)
+  ;;
+*-*-cygwin*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
@@ -295,7 +251,7 @@ case $host in
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -e _mainCRTStartup"
+    LDFLAGS="$LDFLAGS -mno-cygwin "
     if test "x$mingw_location" != "x"
     then
       CPPFLAGS="$CPPFLAGS -I$mingw_location/include"
@@ -483,7 +439,6 @@ case $host in
   XLIBS="-lXext -lX11"
   ;;
 esac
-fi
 
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
@@ -994,11 +949,11 @@ AC_MSG_RESULT([$enable_static])
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-then
+case $CC in
+x86_64-w64-*)
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
-  win64="yes"
-fi
+  ;;
+esac
 
 AC_ARG_WITH(smallpage,
    AC_HELP_STRING([--with-smallpage],
@@ -1235,21 +1190,17 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <setjmp.h>]],
   [])
 
 
-# The next bit tests if I can compile and then run programs. It will
-# naturally detect any case where I am cross-compiling, such as a case
-# where I am building Windows-64 code on a Windows-32 platform. The fact
-# that one tiny simple program compiles and runs here will not guarantee
-# that all more complicated programs would actually run - eg the extent
-# of cross-building could relate to linking against libraries for a
-# different version of the operating system, and the CORE libraries might
-# be compatible but more elaborate ones not...
+# The next bit tests if I can compile and then run programs.
+# This information is used in the Makefiles when I appear to be
+# cross compiling but neverthless the executables I generate can
+# be run. This notably arises when I am building a 64-bit windows
+# application using x86_64-w64-mingw32-gcc and my computer is
+# running 64-bit windows. If I used the same toolchain but was on
+# 32-bit windows the more normal cross-compilation restrictions would
+# apply. When I am NOT able to run the "proper" executables I would like
+# to I will expect that plain use of "gcc utility.c -o utility" can be
+# used to create working utility programs when I need that.
 
-# Further if I am in a "--with-mingw64" world I will be tagged as cross
-# compiling however if I am hosted on a 64-bit Windows I can run
-# executables. By good fortune I do not do much with the result of
-# this test! Now If I am in --with-mingw64 state I might appear to be
-# cross compiling but the cross-compiled code can in fact be run locally,
-# so I want a more enthusiastic test than automake give me by default!
 
 save_cross=cross_compiling
 cross_compiling=no
@@ -1382,12 +1333,14 @@ fi
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-  then
+  case $CC in
+  x86_64-w64-*)
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-  else
+    ;;
+  *)
     LIBS="$LIBS -lcomctl32 -lgdi32 -lws2_32 -lwsock32 -lwinspool -lmpr"
-  fi
+    ;;
+  esac
 fi
 
 if test "x$macintosh_build" = "xyes"

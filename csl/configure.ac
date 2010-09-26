@@ -61,7 +61,7 @@ fi
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
-                  [Try to cross-build using 64-bit mingw]),
+                  [Should behave like --host=x86_64-w64-mingw32]),
    [],
    [with_mingw64="no"])
 
@@ -109,24 +109,22 @@ then
 fi
 
 
-if test "x$mingw64" = "xyes"
-then
+case $host in
+x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
   AC_DEFINE(WIN64, [1], [True if we are running on 64-bit Windows])
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-  LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
-else
-case $host in
-*-*-cygwin* | x86_64-w64-mingw32)
+  ;;
+*-*-cygwin*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
-                   [Force use of raw cywgin (note GPL)]),
+                   [Force use of raw cywgin (note license consequences please)]),
     [],
     [with_cygwin="no"])
   if test "x$with_cywgin" = "xyes"
@@ -149,7 +147,7 @@ case $host in
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -e _mainCRTStartup"
+    LDFLAGS="$LDFLAGS -mno-cygwin "
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
   fi
   windows_build="yes"
@@ -275,7 +273,6 @@ case $host in
   XLIBS="-lXext -lX11"
   ;;
 esac
-fi
 
 if test "x$MAKE" = "x"
 then
@@ -624,10 +621,11 @@ fi
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-then
+case $CC in
+x86_64-w64-*)
   AC_DEFINE(WIN64, [1], [True if we are running on Windows (64 bit)])
-fi
+  ;;
+esac
 
 if test "x$GCC" = "xyes"
 then
@@ -861,12 +859,14 @@ AC_MSG_NOTICE([Can Run Executables = $can_run_executables])
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-  then
+  case $CC in
+  x86_64-w64-*)
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-  else
+    ;;
+  *)
     LIBS="$LIBS -lcomctl32 -lgdi32 -lws2_32 -lwsock32 -lwinspool -lmpr"
-  fi
+    ;;
+  esac
 fi
 
 if test "x$macintosh_build" = "xyes"

@@ -643,8 +643,6 @@ build_os
 build_vendor
 build_cpu
 build
-msvcxp64_FALSE
-msvcxp64_TRUE
 xp64_FALSE
 xp64_TRUE
 LT_AGE
@@ -722,8 +720,6 @@ with_csl
 with_psl
 with_build
 enable_test
-with_mingw64
-with_xp64
 with_mingw32
 enable_dependency_tracking
 with_x
@@ -1403,8 +1399,6 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
-  --with-mingw64          Try to cross-build using 64-bit mingw
-  --with-xp64            cross build for 64-bit windows
   --with-mingw32=DIR    MingW32 installation location
   --with-x                use the X Window System
   --with-xft              enable Xft support
@@ -2809,46 +2803,16 @@ if test "x$enable_test" = "xyes"; then
 
 fi
 
-
-
-# Check whether --with-mingw64 was given.
-if test "${with_mingw64+set}" = set; then :
-  withval=$with_mingw64;
-fi
-
-
-if test "x$with_mingw64" = "xyes"
-then
-   mingw64="yes"
-else
-   mingw64="no"
-fi
-
 FASTMATH=" -ffast-math "
 WSOCK="wsock32"
 
-if test "x$mingw64" = "xyes"
-then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&5
-$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&6;}
-   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&5
-$as_echo "$as_me: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&6;}
-   host="x86_64-w64-mingw32"
-   ac_tool_prefix="x86_64-w64-mingw32-"
-   cross_compiling=yes
-   STRIP="x86_64-w64-mingw32-strip"
-   AR="x86_64-w64-mingw32-ar"
-fi
+case $host in
+x86_64-w64-*)
+  mingw64="yes"
+  ;;
+esac
 
-
-
-# Check whether --with-xp64 was given.
-if test "${with_xp64+set}" = set; then :
-  withval=$with_xp64;
-fi
-
-
- if test "x$with_xp64" = "xyes" || test "x$mingw64" = "xyes"; then
+ if test "x$mingw64" = "xyes"; then
   xp64_TRUE=
   xp64_FALSE='#'
 else
@@ -2856,28 +2820,6 @@ else
   xp64_FALSE=
 fi
 
- if test "x$with_xp64" = "xyes" && test "x$mingw64" != "xyes"; then
-  msvcxp64_TRUE=
-  msvcxp64_FALSE='#'
-else
-  msvcxp64_TRUE='#'
-  msvcxp64_FALSE=
-fi
-
-
-if test "x$with_xp64" = "xyes"; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-xp64 selected: enabling hacked cross compile" >&5
-$as_echo "$as_me: WARNING: --with-xp64 selected: enabling hacked cross compile" >&2;}
-   build="i686-pc-windows"
-   build_alias="i686-pc-windows"
-   cross_compiling="yes"
-   CC=cl
-   CXX=cl
-   CPP="cl /E"
-   CFLAGS="$CFLAGS /Wp64 /EHsc /GR -D_WIN64=1"
-   CXXFLAGS="$CXXFLAGS /Wp64 /EHsc /GR -D_WIN64=1"
-   LIBS="$LIBS bufferoverflowU.lib"
-fi
 
 
 # Make sure we can run config.sub.
@@ -2971,7 +2913,7 @@ case $host_os in
    *solaris*) solaris="yes";;
 esac
 
-if test "x$with_xp64" = "xyes" || test "x$with_mingw64" = "xyes"; then
+if test "x$mingw64" = "xyes"; then
   MINGW32="yes"
 fi
 
@@ -6465,16 +6407,11 @@ $as_echo "#define WIN64 1" >>confdefs.h
 $as_echo "#define _WIN64 1" >>confdefs.h
 
 LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-elif test "x$with_xp64" = "xyes"; then
-$as_echo "#define WIN32 1" >>confdefs.h
-
-LIBS="${LIBS} comctl32.lib shell32.lib advapi32.lib gdi32.lib"
-LIBS="${LIBS} ${WSOCK}.lib winspool.lib mpr.lib user32.lib"
 elif test "x$MINGW32" = "xyes" ; then
 $as_echo "#define WIN32 1" >>confdefs.h
 
 LIBS="${LIBS} -lcomctl32 -l${WSOCK} -lws2_32 -lwinspool -lmpr"
-LDFLAGS="${LDFLAGS} -mwindows -e _mainCRTStartup"
+LDFLAGS="${LDFLAGS} -mwindows "
 if test "x$with_mingw32" != "x" ; then
 CPPFLAGS="${CPPFLAGS} -I$with_mingw32/include"
 LIBS="${LIBS} -L$with_mingw32/lib"
@@ -8350,10 +8287,6 @@ LTLIBOBJS=$ac_ltlibobjs
 
 if test -z "${xp64_TRUE}" && test -z "${xp64_FALSE}"; then
   as_fn_error $? "conditional \"xp64\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${msvcxp64_TRUE}" && test -z "${msvcxp64_FALSE}"; then
-  as_fn_error $? "conditional \"msvcxp64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${cygwinshell_TRUE}" && test -z "${cygwinshell_FALSE}"; then

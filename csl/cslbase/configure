@@ -733,7 +733,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_mingw64
 with_csl
 with_psl
 with_build
@@ -1398,7 +1397,6 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-mingw64          Try to cross-build using 64-bit mingw
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            specify host-name to use when logging
@@ -3068,35 +3066,6 @@ $as_echo "#define NILSEG_EXTERNS 1" >>confdefs.h
 
 
 
-# Check whether --with-mingw64 was given.
-if test "${with_mingw64+set}" = set; then :
-  withval=$with_mingw64;
-else
-  with_mingw64="no"
-fi
-
-
-if test "x$with_mingw64" = "xyes"
-then
-   mingw64="yes"
-else
-   mingw64="no"
-fi
-
-if test "x$mingw64" = "xyes"
-then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&5
-$as_echo "$as_me: You have selected --with-mingw64. This is much like --host=x86_64-w64-mingw32" >&6;}
-   { $as_echo "$as_me:${as_lineno-$LINENO}: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&5
-$as_echo "$as_me: and requires cross-compilation tools such as x86_64-w64-mingw32-gcc" >&6;}
-   host="x86_64-w64-mingw32"
-   ac_tool_prefix="x86_64-w64-mingw32-"
-   cross_compiling=yes
-   STRIP="x86_64-w64-mingw32-strip"
-   AR="x86_64-w64-mingw32-ar"
-fi
-
-
 # Check whether --with-csl was given.
 if test "${with_csl+set}" = set; then :
   withval=$with_csl;
@@ -3237,13 +3206,6 @@ cat >>confdefs.h <<_ACEOF
 #define HOST_OS "$host_os"
 _ACEOF
 
-
-if test "x$mingw64" = "xyes"
-then
-   foxdir="x86_64-w64-mingw32"
-else
-   foxdir="$host"
-fi
 
 # The next line may be of use when building on a 64-bit system that uses
 # gcc. It forces "-m32" into CFLAGS etc.
@@ -3391,8 +3353,8 @@ fi
 
 fi
 
-if test "x$mingw64" = "xyes"
-then
+case $host in
+x86_64-w64-*)
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
@@ -3402,17 +3364,13 @@ $as_echo "#define WIN64 1" >>confdefs.h
   CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
-# The next line USED to be needed with an earlier draft release of the
-# 64-bit compiler, but now if it is included things FAIL.
-# LDFLAGS="$LDFLAGS -e _mainCRTStartup"
   DLL_CFLAGS="$CFLAGS -shared"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
   win64="yes"
-else
-case $host in
-*-*-cygwin* | x86_64-w64-mingw32)
+  ;;
+*-*-cygwin*)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
 
@@ -3527,7 +3485,7 @@ $as_echo "#define WIN32 1" >>confdefs.h
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -e _mainCRTStartup"
+    LDFLAGS="$LDFLAGS -mno-cygwin "
     if test "x$mingw_location" != "x"
     then
       CPPFLAGS="$CPPFLAGS -I$mingw_location/include"
@@ -4060,7 +4018,6 @@ fi
   XLIBS="-lXext -lX11"
   ;;
 esac
-fi
 
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
@@ -8253,13 +8210,13 @@ $as_echo "$enable_static" >&6; }
 LOWOPT="-O0"
 HIGHOPT="-O2"
 
-if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-then
+case $CC in
+x86_64-w64-*)
 
 $as_echo "#define WIN64 1" >>confdefs.h
 
-  win64="yes"
-fi
+  ;;
+esac
 
 
 # Check whether --with-smallpage was given.
@@ -10416,21 +10373,17 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 
 
-# The next bit tests if I can compile and then run programs. It will
-# naturally detect any case where I am cross-compiling, such as a case
-# where I am building Windows-64 code on a Windows-32 platform. The fact
-# that one tiny simple program compiles and runs here will not guarantee
-# that all more complicated programs would actually run - eg the extent
-# of cross-building could relate to linking against libraries for a
-# different version of the operating system, and the CORE libraries might
-# be compatible but more elaborate ones not...
+# The next bit tests if I can compile and then run programs.
+# This information is used in the Makefiles when I appear to be
+# cross compiling but neverthless the executables I generate can
+# be run. This notably arises when I am building a 64-bit windows
+# application using x86_64-w64-mingw32-gcc and my computer is
+# running 64-bit windows. If I used the same toolchain but was on
+# 32-bit windows the more normal cross-compilation restrictions would
+# apply. When I am NOT able to run the "proper" executables I would like
+# to I will expect that plain use of "gcc utility.c -o utility" can be
+# used to create working utility programs when I need that.
 
-# Further if I am in a "--with-mingw64" world I will be tagged as cross
-# compiling however if I am hosted on a 64-bit Windows I can run
-# executables. By good fortune I do not do much with the result of
-# this test! Now If I am in --with-mingw64 state I might appear to be
-# cross compiling but the cross-compiled code can in fact be run locally,
-# so I want a more enthusiastic test than automake give me by default!
 
 save_cross=cross_compiling
 cross_compiling=no
@@ -10632,12 +10585,14 @@ fi
 
 if test "x$windows_build" = "xyes"
 then
-  if test "x$CC" = "xx86_64-w64-mingw32-gcc"
-  then
+  case $CC in
+  x86_64-w64-*)
     LIBS="$LIBS -ladvapi32 -lshell32 -lcomctl32 -lgdi32 -lws2_32 -lmswsock -lwinspool -lmpr -luser32"
-  else
+    ;;
+  *)
     LIBS="$LIBS -lcomctl32 -lgdi32 -lws2_32 -lwsock32 -lwinspool -lmpr"
-  fi
+    ;;
+  esac
 fi
 
 if test "x$macintosh_build" = "xyes"
