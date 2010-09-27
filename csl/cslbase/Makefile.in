@@ -2033,9 +2033,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 @mac_framework_TRUE@all-local:	make-clickable csl.img reduce.img
 @cygwin_TRUE@@mac_framework_FALSE@all-local:	report-dlls csl.img reduce.img
-@canrun_TRUE@@cygwin_FALSE@@mac_framework_FALSE@all-local:	csl.img reduce.img
-# If I am cross-building I will not be able to create the image files.
-@canrun_FALSE@@cygwin_FALSE@@mac_framework_FALSE@all-local:
+@cygwin_FALSE@@mac_framework_FALSE@all-local:	csl.img reduce.img
 
 # Even on Windows I will try to use commands "cp" and "rm", and in general
 # I will expect the user to have established a path which includes the

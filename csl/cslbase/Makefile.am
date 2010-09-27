@@ -57,12 +57,7 @@ else !mac_framework
 if cygwin
 all-local:	report-dlls csl.img reduce.img
 else !cygwin
-if canrun
 all-local:	csl.img reduce.img
-else !canrun
-# If I am cross-building I will not be able to create the image files.
-all-local:
-endif !canrun
 endif !cygwin
 endif !mac_framework
 
