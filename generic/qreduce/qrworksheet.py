@@ -141,23 +141,23 @@ class QtReduceWorksheet(QTextEdit):
         print "before compute(command)"
         output = self.compute(command)
 
-    def __renderOutput(self,reduce):
+    def __renderOutput(self,computation):
         here = self.textCursor().position()
         cursor = self.textCursor()
         block = cursor.block()
         nextblock = self.__getNextBlock(cursor,[1,2,3])
-        if reduce.error:
+        if computation.error:
             ReduceBlockFormat.labelBlock(cursor,3)
-            outp = reduce.errorText
+            outp = computation.errorText
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"black")
             cursor.insertHtml(outp)
             cursor.setPosition(here)
             self.setTextCursor(cursor)
             return
-        if reduce.result:
+        if computation.result:
             ReduceBlockFormat.labelBlock(cursor,1)
-            outp = reduce.result
+            outp = computation.result
             outp = outp.decode('utf-8')
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"blue")
@@ -260,10 +260,10 @@ class QtReduceWorksheet(QTextEdit):
     def cursorPositionChangedHandler(self):
         self.parent.statusBar().clearMessage()
 
-    def newReduceResultHandler(self,reduce):
-        print "catching newReduceResult", reduce.statCounter
+    def newReduceResultHandler(self,computation):
+        print "catching newReduceResult", computation.statCounter
         if not self.reduce.silent:
-            self.__renderOutput(reduce)
+            self.__renderOutput(computation)
         self.setReadOnly(False)
 
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 

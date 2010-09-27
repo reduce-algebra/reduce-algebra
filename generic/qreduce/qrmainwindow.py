@@ -261,14 +261,6 @@ class QtReduceMainWindow(QMainWindow):
 
     def __createWorksheet(self):
         self.worksheet = QtReduceWorksheet(self)
-#	self.connect(self.worksheet.reduce,SIGNAL("newReduceResult()"),
-#                     self.worksheet.newReduceResultHandler)
-      	# self.connect(self.worksheet,SIGNAL("fileNameChanged()"),self.setTitle)
-	# self.connect(self.worksheet,SIGNAL("textChanged()"),
-        #              self.worksheet.textChangedHandler)
-	# self.connect(self.worksheet,SIGNAL("cursorPositionChanged()"),
-        #              self.worksheet.cursorPositionChangedHandler)
-        # self.worksheet.compute('$',True)
 
     def setTitle(self,message,modified):
         print "in setTitle", message, modified
@@ -326,13 +318,13 @@ class QtReduceStatusBar(QStatusBar):
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)
 
-    def newReduceResultHandler(self,reduce):
-        self.__updateStatus(reduce.evaluating)
-        self.__updateTime(reduce.accTime,reduce.accGcTime)
-        self.__updateMode(reduce.symbolic)        
+    def newReduceResultHandler(self,computation):
+        self.__updateStatus(computation.evaluating)
+        self.__updateTime(computation.accTime,computation.accGcTime)
+        self.__updateMode(computation.symbolic)        
 
-    def newReduceComputationHandler(self,reduce):
-        self.__updateStatus(reduce.evaluating)
+    def newReduceComputationHandler(self,computation):
+        self.__updateStatus(computation.evaluating)
     
     def __updateMode(self,symbolic):
         if symbolic != self.symbolic:

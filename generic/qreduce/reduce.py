@@ -32,11 +32,13 @@
 
 from PySide.QtCore import QThread
 from PySide.QtCore import Signal
+from PySide.QtCore import QObject
 
 from RedPy import procNew, procDelete, ansNew, ansDelete
 
 
 class Reduce(QThread):
+    # currently only works with 'object' type, not with 'ReduceComputation' 
     newReduceComputation = Signal(object)
     newReduceResult = Signal(object)
 
@@ -44,26 +46,15 @@ class Reduce(QThread):
         QThread.__init__(self)
         self.parent = parent
         self.process = procNew(reduce)
-        self.statCounter = 0
-        self.symbolic = False
-        self.result = None
-        self.nextPrompt = None
-        self.time = 0
-        self.gcTime = 0
-        self.accTime = 0
-        self.accGcTime = 0
-        self.errorText = None
-        self.error = False
-        self.evaluating = False
-
+        self.computation = ReduceComputation()
+        
     def __del__(self):
-#        print "in Reduce.__del__"
         procDelete(self.process)
 
     def compute(self,c,silent=False):
-        self.evaluating = True
-        print "emitting newReduceComputation"
-        self.newReduceComputation.emit(self)
+        print "computing...."
+        self.computation.evaluating = True
+        self.newReduceComputation.emit(self.computation)
         self.wait()
         self.currentCommand = c
         self.silent = silent
@@ -74,15 +65,15 @@ class Reduce(QThread):
         a = ansNew(self.process,c)
         ansDelete(a['handle'])
         self.__processAnswer(a['data'])
-        self.evaluating = False
-        print "emitting newReduceResult", self.statCounter, "for command", c
-        self.newReduceResult.emit(self)
+        self.computation.evaluating = False
+        print "emitting newReduceResult", self.computation
+        self.newReduceResult.emit(self.computation)
 
     def __processAnswer(self,a):
-        self.statCounter = a['statcounter']
-        self.symbolic = a['symbolic']
-        self.result = a['result']
-        self.nextPrompt = a['nextpompt']
+        self.computation.statCounter = a['statcounter']
+        self.computation.symbolic = a['symbolic']
+        self.computation.result = a['result']
+        self.computation.nextPrompt = a['nextpompt']
         if a['error']:
             s = a['pretext'] or ''
             if s.find('Time:') != -1:
@@ -95,11 +86,39 @@ class Reduce(QThread):
                 for ss in l[:-1]:
                     s += ss
                 s = s.strip()
-            self.errorText = s
+            self.computation.errorText = s
         if a['time'] != -1:
-            self.time = a['time']
-            self.accTime += self.time
+            self.computation.time = a['time']
+            self.computation.accTime += self.computation.time
         if a['gctime'] != -1:
-            self.gcTime = a['gctime']
-            self.accGcTime += self.gcTime
-        self.error = a['error']
+            self.computation.gcTime = a['gctime']
+            self.computation.accGcTime += self.computation.gcTime
+        self.computation.error = a['error']
+
+
+class ReduceComputation(QObject):
+    
+    def __init__(self):
+        self.statCounter = 0
+        self.symbolic = False
+        self.result = None
+        self.nextPrompt = None
+        self.time = 0
+        self.gcTime = 0
+        self.accTime = 0
+        self.accGcTime = 0
+        self.errorText = None
+        self.error = False
+        self.evaluating = False
+
+    def __repr__(self):
+        string = "[----\n\tReduce Computation " + str(self.statCounter)
+        string += "\n\tSymbolic:\t" + str(self.symbolic)
+        string += "\n\tResult:\t\t" + str(self.result)
+        string += "\n\tNext Prompt:\t" + str(self.nextPrompt)
+        string += "\n\tTime:\t\t" + str(self.time)
+        string += "\n\tGC Time:\t" + str(self.gcTime)
+        string += "\n\tError Text:\t" + str(self.errorText)
+        string += "\n\tError:\t\t" + str(self.error)
+        string += "\n\tEvaluating:\t" + str(self.evaluating) + "\n----]"
+        return string
