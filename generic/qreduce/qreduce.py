@@ -30,10 +30,10 @@
 #
 
 import sys
-from PySide import QtCore, QtGui
+from PySide.QtGui import QApplication
 from qrmainwindow import QtReduceMainWindow
 
-app = QtGui.QApplication(sys.argv)
+app = QApplication(sys.argv)
 app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
 mainwindow = QtReduceMainWindow()
 sys.exit(app.exec_())

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
@@ -30,22 +31,39 @@
 #
 
 from PySide.QtCore import QThread
-from PySide.QtCore import SIGNAL
+from PySide.QtCore import Signal
 
 from RedPy import procNew, procDelete, ansNew, ansDelete
 
+
 class Reduce(QThread):
-    def __init__(self,reduce='/Users/sturm/reduce/SourceForge/reduce-algebra/trunk/bin/redpsl'):
+    newReduceComputation = Signal(object)
+    newReduceResult = Signal(object)
+
+    def __init__(self,parent=None,reduce='../../bin/redpsl'):
         QThread.__init__(self)
+        self.parent = parent
         self.process = procNew(reduce)
+        self.statCounter = 0
+        self.symbolic = False
+        self.result = None
+        self.nextPrompt = None
         self.time = 0
         self.gcTime = 0
+        self.accTime = 0
+        self.accGcTime = 0
+        self.errorText = None
+        self.error = False
+        self.evaluating = False
 
     def __del__(self):
 #        print "in Reduce.__del__"
         procDelete(self.process)
 
     def compute(self,c,silent=False):
+        self.evaluating = True
+        print "emitting newReduceComputation"
+        self.newReduceComputation.emit(self)
         self.wait()
         self.currentCommand = c
         self.silent = silent
@@ -55,7 +73,16 @@ class Reduce(QThread):
         c = self.currentCommand
         a = ansNew(self.process,c)
         ansDelete(a['handle'])
-        a = a['data']
+        self.__processAnswer(a['data'])
+        self.evaluating = False
+        print "emitting newReduceResult", self.statCounter, "for command", c
+        self.newReduceResult.emit(self)
+
+    def __processAnswer(self,a):
+        self.statCounter = a['statcounter']
+        self.symbolic = a['symbolic']
+        self.result = a['result']
+        self.nextPrompt = a['nextpompt']
         if a['error']:
             s = a['pretext'] or ''
             if s.find('Time:') != -1:
@@ -68,9 +95,11 @@ class Reduce(QThread):
                 for ss in l[:-1]:
                     s += ss
                 s = s.strip()
-            a['errortext'] = s
+            self.errorText = s
         if a['time'] != -1:
-            self.time += a['time']
+            self.time = a['time']
+            self.accTime += self.time
         if a['gctime'] != -1:
-            self.gcTime += a['gctime']
-        self.emit(SIGNAL("newReduceResult()"),a)
+            self.gcTime = a['gctime']
+            self.accGcTime += self.gcTime
+        self.error = a['error']

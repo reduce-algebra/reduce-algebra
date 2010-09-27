@@ -31,8 +31,12 @@
 
 import sys
 
+from types import StringType
+from types import IntType
+
 from PySide.QtCore import Qt
-from PySide.QtCore import SIGNAL
+from PySide.QtCore import Signal
+from PySide.QtCore import QObject
 
 from PySide.QtGui import QTextEdit
 from PySide.QtGui import QFont
@@ -47,17 +51,31 @@ from qrformats import ReduceCharFormat
 from qrxml import ReduceXmlReader
 from qrxml import ReduceXmlWriter
 
+from types import DictType
+from types import StringType
+from types import IntType
+
+
 class QtReduceWorksheet(QTextEdit):
     fileName = ''
     modified = False
-    symbolic = None
+    fileNameChanged = Signal(StringType,IntType)
+
 
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
+#        Qt.qRegisterMetaType(DictType)
         self.parent = parent
+        self.__initSignals()
         self.__initReduce()
         self.__initFont()
         self.__initFirstBlock()
+
+    def __initSignals(self):
+        self.textChanged.connect(self.textChangedHandler,
+                                 type=Qt.DirectConnection)
+        self.cursorPositionChanged.connect(self.cursorPositionChangedHandler,
+                                           type=Qt.DirectConnection)
 
     def __initFont(self):
         self.setupFont(14)
@@ -72,8 +90,10 @@ class QtReduceWorksheet(QTextEdit):
         font.setItalic(False)
         self.setFont(font)
 
+
     def __initReduce(self):
-        self.reduce = Reduce()
+        print "in __initReduce"
+        self.reduce = Reduce(self)
         self.compute("load_package utf8;",True)
         self.compute("on utf8;",True)
         self.compute("on utf8exp;",True)
@@ -83,7 +103,6 @@ class QtReduceWorksheet(QTextEdit):
         self.compute("lisp if 'psl memq lispsystem!* then remd 'break;",True)
 
     def compute(self,c,silent=False):
-        self.parent.reduceStatus.setText(" Evaluating")
         self.setReadOnly(True)
         self.reduce.compute(c,silent)
 
@@ -115,28 +134,30 @@ class QtReduceWorksheet(QTextEdit):
     def __keyPressEvent0Return(self,ev):
         cursor = self.textCursor()
         block = cursor.block()
-        command = block.text().simplified().__str__().strip()
+#        command = block.text().simplified().__str__().strip()
+        command = block.text().__str__().strip()
         if command != '' and not command[-1] in [';','$']:
             command += ';'
+        print "before compute(command)"
         output = self.compute(command)
 
-    def __renderOutput(self,output):
+    def __renderOutput(self,reduce):
         here = self.textCursor().position()
         cursor = self.textCursor()
         block = cursor.block()
         nextblock = self.__getNextBlock(cursor,[1,2,3])
-        if output['error']:
+        if reduce.error:
             ReduceBlockFormat.labelBlock(cursor,3)
-            outp = output['errortext']
+            outp = reduce.errorText
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"black")
             cursor.insertHtml(outp)
             cursor.setPosition(here)
             self.setTextCursor(cursor)
             return
-        if output['result']:
+        if reduce.result:
             ReduceBlockFormat.labelBlock(cursor,1)
-            outp = output['result']
+            outp = reduce.result
             outp = outp.decode('utf-8')
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"blue")
@@ -208,8 +229,8 @@ class QtReduceWorksheet(QTextEdit):
             return False
         self.modified = False
         self.fileName = tempFileName
-        self.emit(SIGNAL("fileNameChanged()"),self.fileName,0)
-        self.parent.statusBar.showMessage("Read " + self.fileName)
+        self.fileNameChanged.emit(self.fileName,0)
+        self.parent.statusBar().showMessage("Read " + self.fileName)
         self.ensureCursorVisible()
         return True
 
@@ -226,40 +247,24 @@ class QtReduceWorksheet(QTextEdit):
             return False
         self.modified = False
         self.fileName = tempFileName
-        self.emit(SIGNAL("fileNameChanged()"),self.fileName,0)
-        self.parent.statusBar.showMessage("Wrote " + self.fileName)
+        self.fileNameChanged.emit(self.fileName,0)
+        self.parent.statusBar().showMessage("Wrote " + self.fileName)
         return True
 
     def textChangedHandler(self):
+        print "in textChangedHandler", self.modified
         if not self.modified:
             self.modified = True
             self.parent.setTitle(self.fileName,1)
 
     def cursorPositionChangedHandler(self):
-        self.parent.statusBar.clearMessage()
+        self.parent.statusBar().clearMessage()
 
-    def newReduceResultHandler(self,a):
+    def newReduceResultHandler(self,reduce):
+        print "catching newReduceResult", reduce.statCounter
         if not self.reduce.silent:
-            self.__renderOutput(a)
-        self.__statusUpdateMode(a)
-        self.__statusUpdateTime()
-        self.__statusUpdateStatus()
+            self.__renderOutput(reduce)
         self.setReadOnly(False)
-
-    def __statusUpdateMode(self,a):
-        if a['symbolic'] != self.symbolic:
-            self.symbolic = a['symbolic']
-            if a['symbolic']:
-                self.parent.reduceMode.setText('Mode: Symbolic')
-            else:
-                self.parent.reduceMode.setText('Mode: Algebraic')
-
-    def __statusUpdateTime(self):
-        timeStr = "%.2f s" % (float(self.reduce.time + self.reduce.gcTime)/1000)
-        self.parent.reduceTime.setText("Time: " + timeStr)
-
-    def __statusUpdateStatus(self):
-        self.parent.reduceStatus.setText(" Ready")
 
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 
 # [GCC 4.2.1 (Apple Inc. build 5646)] on darwin

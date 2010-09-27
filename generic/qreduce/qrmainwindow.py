@@ -35,8 +35,10 @@ import os
 from PySide.QtCore import Qt
 from PySide.QtCore import SIGNAL
 from PySide.QtCore import SLOT
+from PySide.QtCore import Signal
 
 from PySide.QtGui import QMainWindow
+from PySide.QtGui import QStatusBar
 from PySide.QtGui import QFont
 from PySide.QtGui import QLabel
 from PySide.QtGui import QFontMetrics
@@ -46,6 +48,7 @@ from PySide.QtGui import QKeySequence
 from PySide.QtGui import QFileDialog
 
 from qrworksheet import QtReduceWorksheet
+from reduce import Reduce
 
 class QtReduceMainWindow(QMainWindow):
     sheets = [];
@@ -53,13 +56,16 @@ class QtReduceMainWindow(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setUnifiedTitleAndToolBarOnMac(1)
-        self.__initStatusBar()
+        self.setStatusBar(QtReduceStatusBar(parent))
         self.__createMenus()
         self.__createActions()
         self.__createWorksheet()
-        self.__setWidthByFont(82)
+        self.__initSignals()
+        self.__setWidthByFont(83)
         self.__setHeightByFont(24)
+        print "before setTitle"
         self.setTitle(self.worksheet.fileName,0)
+        self.worksheet.modified = 0
         self.setCentralWidget(self.worksheet)
         self.show()
         self.raise_()
@@ -68,6 +74,32 @@ class QtReduceMainWindow(QMainWindow):
 #         setupEditMenu();
 #         setupToolBar();
 #         setupWorksheets();
+
+    def __initSignals(self):
+        self.worksheet.reduce.newReduceResult.connect(
+            self.worksheet.newReduceResultHandler,
+            type=Qt.DirectConnection)
+        self.worksheet.reduce.newReduceResult.connect(
+            self.statusBar().newReduceResultHandler,
+            type=Qt.DirectConnection)
+        self.worksheet.reduce.newReduceComputation.connect(
+            self.statusBar().newReduceComputationHandler,
+            type=Qt.DirectConnection)
+        self.worksheet.fileNameChanged.connect(
+            self.setTitle,
+            type=Qt.DirectConnection)
+        
+    def __createMenus(self):
+        self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
+        self.viewMenu = self.menuBar().addMenu(self.tr("&View"))
+        self.develMenu = self.menuBar().addMenu(self.tr("Develop"))
+        self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
+
+    def __createActions(self):
+        self.__createFileActions()
+        self.__createViewActions()
+        self.__createDevelActions()
+        self.__createHelpActions()
 
     def __setWidthByFont(self,n,adaptHeight=False):
         oldWidth = self.width()
@@ -81,35 +113,6 @@ class QtReduceMainWindow(QMainWindow):
         height = n * QFontMetrics(self.worksheet.font()).height()
         self.resize(1,height)
 
-    def __initStatusBar(self):
-        self.statusBar = self.statusBar()
-        font = QFont()
-        font.setPixelSize(10)
-        self.statusBar.setFont(font)
-        self.reduceMode = QLabel()
-        self.reduceMode.setFixedWidth(QFontMetrics(font).width('Mode: Algebraic'))
-        self.reduceMode.setFont(font)
-        self.statusBar.addPermanentWidget(self.reduceMode)
-        self.reduceTime = QLabel()
-        self.reduceTime.setFont(font)
-        self.statusBar.addPermanentWidget(self.reduceTime)
-        self.reduceStatus = QLabel()
-        self.reduceStatus.setFont(font)
-        self.reduceStatus.setText(" Initialising")
-        self.statusBar.addWidget(self.reduceStatus)
-
-    def __createMenus(self):
-        self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
-        self.viewMenu = self.menuBar().addMenu(self.tr("&View"))
-        self.develMenu = self.menuBar().addMenu(self.tr("Develop"))
-        self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
-
-    def __createActions(self):
-        self.__createFileActions()
-        self.__createViewActions()
-        self.__createDevelActions()
-        self.__createHelpActions()
-
     def __createHelpActions(self):
         self.aboutAct = QAction(self.tr("&About"), self)
         self.helpMenu.addAction(self.aboutAct)
@@ -117,21 +120,29 @@ class QtReduceMainWindow(QMainWindow):
 
     def about(self):
         QMessageBox.about(self, self.tr("About QReduce"),self.tr(
-                '<center><h3>QReduce 0.2</h3>'
-                '<p>&copy; 2009-2010 Thomas Sturm</center>'
-                '<p>Redistribution and use in source and binary forms, with '
+                '<center>'
+                '<h3>QReduce 0.2</h3>'
+                '<p>&copy; 2009-2010 Thomas Sturm'
+                '</center>'
+                'A worksheet-based GUI for the computer algebra system Reduce.'
+                '<p>'
+                '<small>'
+                '<hr>'
+                '<strong>License: </strong>'
+                'Redistribution and use in source and binary forms, with '
                 'or without modification, are permitted provided that the '
-                'following conditions are met:'
-                '<ul>'
-                '<li>Redistributions of source code must retain the relevant '
+                'following conditions are met: '
+                '(a) Redistributions of source code must retain the relevant '
                 'copyright notice, this list of conditions and the following '
-                'disclaimer.'
-                '<li>Redistributions in binary form must reproduce the above '
+                'disclaimer. '
+                '(b) Redistributions in binary form must reproduce the above '
                 'copyright notice, this list of conditions and the following '
                 'disclaimer in the documentation and/or other materials '
                 'provided with the distribution. '
-                '</ul>'
-                '<hr><small><strong>Disclaimer:</strong> '
+                '</small>'
+                '<p>'
+                '<small>'
+                '<strong>Disclaimer:</strong> '
                 'This software is provided by the copyright holders and '
                 'contributors "as is" and any express or implied warranties, '
                 'including, but not limited to, the implied warranties of '
@@ -145,7 +156,7 @@ class QtReduceMainWindow(QMainWindow):
                 'contract, strict liability, or tort (including negligence or '
                 'otherwise) arising in any way out of the use of this '
                 'software, even if advised of the possibility of such damage.'
-                '</small><hr>'))
+                '</small>'))
 
     def __createFileActions(self):
         self.openAct = QAction(self.tr("&Open..."), self)
@@ -226,15 +237,15 @@ class QtReduceMainWindow(QMainWindow):
 
     def zoomIn(self):
         self.worksheet.setupFont(self.worksheet.font().pixelSize()+1)
-        self.__setWidthByFont(82,True)
+        self.__setWidthByFont(83,True)
 
     def zoomOut(self):
         self.worksheet.setupFont(max(self.worksheet.font().pixelSize()-1,8))
-        self.__setWidthByFont(82,True)
+        self.__setWidthByFont(83,True)
 
     def zoomDef(self):
         self.worksheet.setupFont(14)
-        self.__setWidthByFont(82,True)
+        self.__setWidthByFont(83,True)
 
     def __createDevelActions(self):
         self.testAct = QAction(self.tr("Test"), self)
@@ -250,19 +261,21 @@ class QtReduceMainWindow(QMainWindow):
 
     def __createWorksheet(self):
         self.worksheet = QtReduceWorksheet(self)
-	self.connect(self.worksheet,SIGNAL("fileNameChanged()"),self.setTitle)
-	self.connect(self.worksheet,SIGNAL("textChanged()"),
-                     self.worksheet.textChangedHandler)
-	self.connect(self.worksheet,SIGNAL("cursorPositionChanged()"),
-                     self.worksheet.cursorPositionChangedHandler)
-	self.connect(self.worksheet.reduce,SIGNAL("newReduceResult()"),
-                     self.worksheet.newReduceResultHandler)
-        self.worksheet.compute('$',True)
+#	self.connect(self.worksheet.reduce,SIGNAL("newReduceResult()"),
+#                     self.worksheet.newReduceResultHandler)
+      	# self.connect(self.worksheet,SIGNAL("fileNameChanged()"),self.setTitle)
+	# self.connect(self.worksheet,SIGNAL("textChanged()"),
+        #              self.worksheet.textChangedHandler)
+	# self.connect(self.worksheet,SIGNAL("cursorPositionChanged()"),
+        #              self.worksheet.cursorPositionChangedHandler)
+        # self.worksheet.compute('$',True)
 
     def setTitle(self,message,modified):
+        print "in setTitle", message, modified
         msg = message.split('/')[-1] or 'untitled'
         if modified:
             msg = '*' + msg + '*'
+        print "msg=", msg
         self.setWindowTitle(msg)
 
     def closeEvent(self,ev):
@@ -291,3 +304,50 @@ class QtReduceMainWindow(QMainWindow):
                                 QMessageBox.StandardButton.Save)
         diag.setWindowModality(Qt.WindowModal)
         return diag.exec_()
+
+
+class QtReduceStatusBar(QStatusBar):
+    
+    def __init__(self,parent=None):
+        QStatusBar.__init__(self,parent)
+        self.symbolic = None
+        font = QFont()
+        font.setPixelSize(10)
+        self.setFont(font)
+        self.reduceMode = QLabel()
+        self.reduceMode.setFixedWidth(QFontMetrics(font).width('Mode: Algebraic'))
+        self.reduceMode.setFont(font)
+        self.reduceTime = QLabel()
+        self.reduceTime.setFont(font)
+        self.reduceStatus = QLabel()
+        self.reduceStatus.setFont(font)
+        self.reduceStatus.setText(" Initialising")
+        self.addPermanentWidget(self.reduceMode)
+        self.addPermanentWidget(self.reduceTime)
+        self.addWidget(self.reduceStatus)
+
+    def newReduceResultHandler(self,reduce):
+        self.__updateStatus(reduce.evaluating)
+        self.__updateTime(reduce.accTime,reduce.accGcTime)
+        self.__updateMode(reduce.symbolic)        
+
+    def newReduceComputationHandler(self,reduce):
+        self.__updateStatus(reduce.evaluating)
+    
+    def __updateMode(self,symbolic):
+        if symbolic != self.symbolic:
+            self.symbolic = symbolic
+            if self.symbolic:
+                self.reduceMode.setText('Mode: Symbolic')
+            else:
+                self.reduceMode.setText('Mode: Algebraic')
+
+    def __updateTime(self,time,gcTime):
+        timeStr = "%.2f s" % (float(time + gcTime)/1000)
+        self.reduceTime.setText("Time: " + timeStr)
+
+    def __updateStatus(self,evaluating):
+        if evaluating:
+            self.reduceStatus.setText(" Evaluating")
+        else:
+            self.reduceStatus.setText(" Ready")
