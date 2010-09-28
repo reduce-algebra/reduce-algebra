@@ -35,6 +35,8 @@ from PySide.QtGui import QTextBlockFormat
 from PySide.QtGui import QColor
 from PySide.QtGui import qRgb
 from PySide.QtGui import QTextCharFormat
+from PySide.QtGui import QTextBlockUserData
+
 
 class ReduceBlockFormat(QTextBlockFormat):
     gray = QColor(qRgb(230,230,230))
@@ -58,6 +60,11 @@ class ReduceBlockFormat(QTextBlockFormat):
     def labelBlock(cursor,label):
 #        print "set ", cursor.block(), label
         cursor.block().setUserState(label)
+        data = QReduceBlockData(4711)
+        print "created"
+        block = cursor.block()
+        block.setUserData(data)
+        print cursor.block().getUserData().message
         cursor.setBlockCharFormat(ReduceCharFormat(label))
         cursor.setBlockFormat(ReduceBlockFormat(label))
 
@@ -77,3 +84,10 @@ class ReduceCharFormat(QTextCharFormat):
             self.setForeground(self.gray)
         if type == 3:
             self.setForeground(Qt.black)
+
+
+class QReduceBlockData(QTextBlockUserData):
+
+    def __init__(self,n):
+        self.message = "Hallo" + str(n)
+

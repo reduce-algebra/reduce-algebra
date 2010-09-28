@@ -266,6 +266,7 @@ class QtReduceWorksheet(QTextEdit):
             self.__renderOutput(computation)
         self.setReadOnly(False)
 
+
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 
 # [GCC 4.2.1 (Apple Inc. build 5646)] on darwin
 # Type "help", "copyright", "credits" or "license" for more information.
