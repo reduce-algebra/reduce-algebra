@@ -88,7 +88,7 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheet.fileNameChanged.connect(
             self.setTitle,
             type=Qt.DirectConnection)
-        
+
     def __createMenus(self):
         self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
         self.viewMenu = self.menuBar().addMenu(self.tr("&View"))
@@ -122,7 +122,7 @@ class QtReduceMainWindow(QMainWindow):
         QMessageBox.about(self, self.tr("About QReduce"),self.tr(
                 '<center>'
                 '<h3>QReduce 0.2</h3>'
-                '<p>&copy; 2009-2010 Thomas Sturm'
+                '<p>&copy; 2009-2010 T. Sturm, 2010 C. Zengler'
                 '</center>'
                 'A worksheet-based GUI for the computer algebra system Reduce.'
                 '<p>'
@@ -298,7 +298,7 @@ class QtReduceMainWindow(QMainWindow):
 
 
 class QtReduceStatusBar(QStatusBar):
-    
+
     def __init__(self,parent=None):
         QStatusBar.__init__(self,parent)
         self.symbolic = None
@@ -320,11 +320,11 @@ class QtReduceStatusBar(QStatusBar):
     def newReduceResultHandler(self,computation):
         self.__updateStatus(computation.evaluating)
         self.__updateTime(computation.accTime,computation.accGcTime)
-        self.__updateMode(computation.symbolic)        
+        self.__updateMode(computation.symbolic)
 
     def newReduceComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
-    
+
     def __updateMode(self,symbolic):
         if symbolic != self.symbolic:
             self.symbolic = symbolic
