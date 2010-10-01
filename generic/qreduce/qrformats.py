@@ -60,11 +60,6 @@ class ReduceBlockFormat(QTextBlockFormat):
     def labelBlock(cursor,label):
 #        print "set ", cursor.block(), label
         cursor.block().setUserState(label)
-        data = QReduceBlockData(4711)
-        print "created"
-        block = cursor.block()
-        block.setUserData(data)
-        print cursor.block().getUserData().message
         cursor.setBlockCharFormat(ReduceCharFormat(label))
         cursor.setBlockFormat(ReduceBlockFormat(label))
 
@@ -89,5 +84,8 @@ class ReduceCharFormat(QTextCharFormat):
 class QReduceBlockData(QTextBlockUserData):
 
     def __init__(self,n):
+        QTextBlockUserData.__init__(self)
         self.message = "Hallo" + str(n)
 
+    def __del__(self):
+        self.message = None
