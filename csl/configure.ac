@@ -26,7 +26,7 @@ fi
 # not really verify that 2.61 is still sufficient!
 AC_PREREQ(2.61)
 
-AC_CONFIG_SRCDIR(profile.dat)
+AC_CONFIG_SRCDIR(window.c)
 AC_CONFIG_FILES([Makefile])
 
 

@@ -554,7 +554,7 @@ PACKAGE_STRING='CSLCONFIGTEST 1.0'
 PACKAGE_BUGREPORT=''
 PACKAGE_URL=''
 
-ac_unique_file="profile.dat"
+ac_unique_file="window.c"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
