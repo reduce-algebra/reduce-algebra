@@ -186,9 +186,10 @@ class QtReduceMainWindow(QMainWindow):
         print path
         filter = self.tr("Reduce Worksheets (*.rws)")
         fileName = QFileDialog.getOpenFileName(None,title,path,filter)
+        fileName = str(fileName[0])
         if fileName == '':
             return
-        if not fileName.endsWith(".rws"):
+        if not fileName.endswith(".rws"):
             fileName += ".rws"
         self.worksheet.open(fileName)
 
@@ -207,17 +208,15 @@ class QtReduceMainWindow(QMainWindow):
 #                                        "", self.tr("Reduce Worksheets (*.rws)"),
 #                                        None,QFileDialog.DontUseNativeDialog)
         fileName = diag.getSaveFileName(None,title,path,filter)
+        diag = None
+        fileName = str(fileName[0])
+        print "fileName=",fileName
         if fileName == '':
             return
-        if not fileName.endsWith(".rws"):
-            fileName += ".rws"
-        self.worksheet.open(fileName)
-        self.activateWindow()
-        if fileName == '':
-            return
-        if not fileName.endsWith(".rws"):
+        if not fileName.endswith(".rws"):
             fileName += ".rws"
         self.worksheet.save(fileName)
+        self.activateWindow()
 
     def __createViewActions(self):
         self.zoomInAct = QAction(self.tr("&Zoom In"), self)
