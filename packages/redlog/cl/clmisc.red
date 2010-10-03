@@ -98,7 +98,7 @@ procedure cl_apply2ats2(f,client,clpl,sop);
 procedure cl_atnum(f);
    % Common logic atomic formula nummber. [f] is a formula. Returns
    % the number of atomic formulas in [f] counting multiplicities.
-   begin scalar op;
+   begin scalar op,w;
       op := rl_op f;
       if rl_boolp op then
  	 return for each subf in rl_argn f sum
@@ -108,6 +108,8 @@ procedure cl_atnum(f);
       if rl_bquap op then
 	 return (cl_atnum(rl_mat f) + cl_atnum(rl_b f));
       if rl_tvalp op then return 0;
+      if (w := rl_external(op,'cl_atnum)) then
+	 return apply(w,{f});
       % [f] is an atomic formula.
       return 1
    end;
@@ -133,18 +135,21 @@ procedure cl_depth(f);
    % Depth. [f] is a formula returns a non-negative number. The result
    % is the depth of [f], i.e., the deepest level of nesting of boolean
    % subformulas.
-   if rl_tvalp f or cl_atfp f then
-      0
-   else if rl_quap rl_op f or rl_bquap rl_op f then
-      1 + cl_depth rl_mat f
-   else if rl_op f eq 'not then
-      1 + cl_depth rl_arg1 f
-   else if rl_extbp rl_op f then
-      1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f)
-   else if rl_basbp rl_op f then
-      1 + lto_max for each sf in rl_argn f collect cl_depth sf
-   else
-      rederr {"cl_depth: unknown operator ",rl_op f};
+   begin scalar w;
+      if rl_basbp rl_op f then
+      	 return 1 + lto_max for each sf in rl_argn f collect cl_depth sf;
+      if rl_quap rl_op f or rl_bquap rl_op f then
+      	 return 1 + cl_depth rl_mat f;
+      if rl_op f eq 'not then
+      	 return 1 + cl_depth rl_arg1 f;
+      if rl_extbp rl_op f then
+      	 return 1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f);
+      if rl_tvalp f or cl_atfp f then
+      	 return 0;
+      if (w := rl_external(rl_op f,'cl_depth)) then
+      	 return apply(w,{f});
+      rederr {"cl_depth: unknown operator ",rl_op f}
+   end;
 
 procedure cl_prenexp(f);
    % Prenex predicate. [f] is a formula. Returns a truth value.

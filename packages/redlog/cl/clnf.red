@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cl_nf_rcsid!* cl_nf_copyright!*);
@@ -116,7 +116,7 @@ procedure cl_pnf(phi);
    % changes in the result is minimal among all formulas that can be
    % obtained from [phi] by moving quantifiers to the outside.
    cl_pnf1 rl_nnf phi;
-   
+
 procedure cl_pnf1(phi);
    % Common logic prenex normal form subroutine. [phi] is a positive
    % formula that does not contain any extended boolean operator.
@@ -132,7 +132,7 @@ procedure cl_pnf1(phi);
    >> where erg=cl_pnf2(cl_rename!-vars(phi));
 
 procedure cl_pnf2(phi);
-   begin scalar op;
+   begin scalar op,w;
       op := rl_op phi;
       if rl_quap op then
  	 return cl_pnf2!-quantifier(phi);
@@ -140,6 +140,8 @@ procedure cl_pnf2(phi);
  	 return cl_pnf2!-junctor(phi);
       if rl_tvalp op then
  	 return {phi};
+      if (w := rl_external(op,'cl_pnf2)) then
+	 return apply(w,{phi});
       if rl_cxp op then
  	 rederr{"cl_pnf2():",op,"invalid as operator"};
       return {phi}
@@ -275,7 +277,7 @@ procedure cl_varl(f);
    % occurring boundly in [f]. Both lists are sorted wrt. the current
    % kernel order [ordp].
    (sort(car w,'ordp) . sort(cdr w,'ordp)) where w = cl_varl1 f;
-   
+
 procedure cl_varl1(f);
    % Common logic variable lists. [f] is a formula. Returns a pair
    % $(V_f . V_b)$ of variable lists. $V_f$ contains the variables
@@ -311,7 +313,7 @@ procedure cl_varl2(f,freevl,cboundvl,boundvl);
    end;
 
 procedure cl_rename!-vars1(f,vl);
-   begin scalar op,h,w,newid; 
+   begin scalar op,h,w,newid;
       op := rl_op f;
       if rl_boolp op then
     	 return rl_mkn(op,for each x in cdr f collect <<
@@ -329,14 +331,14 @@ procedure cl_rename!-vars1(f,vl);
                car vl := lto_insertq(newid,car vl);
 	       return rl_mkq(op,newid,cl_apply2ats1(
 		  h,'rl_varsubstat,{newid,car w})) . vl
-      	    >>;      
+      	    >>;
 	    return rl_mkq(op,rl_var f,h) . vl
       >>;
-      % /LASARUK   
+      % /LASARUK
       if rl_bquap op then <<
       	 << h := car rnv; vl := cdr rnv >>
  	    where rnv=cl_rename!-vars1(rl_mat f,vl);
-	    if (w := assoc(rl_var f,cdr vl)) then <<	   
+	    if (w := assoc(rl_var f,cdr vl)) then <<
 	       repeat <<
 		  newid := mkid(car w,cdr w);
 		  cdr w := cdr w + 1
@@ -348,7 +350,7 @@ procedure cl_rename!-vars1(f,vl);
       	    >>;
 	    return rl_mkbq(op,rl_var f,rl_b f, h) . vl
       >>;
-      % /LASARUK 
+      % /LASARUK
       % [f] is a truth value or an atomic formula.
       return f . vl;
    end;
@@ -399,7 +401,7 @@ procedure cl_apnf1(var,phi);
 	 if occurl then <<
 	    nf := if cdr occurl then
 	       rl_mkq('ex,var,rl_mkn('and,reversip occurl))
-	    else 
+	    else
 	       cl_apnf1(var,car occurl);
 	    noccurl := nf . noccurl
 	 >>;

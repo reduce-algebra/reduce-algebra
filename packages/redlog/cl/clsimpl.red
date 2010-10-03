@@ -123,6 +123,8 @@ procedure cl_simpl1(f,knowl,n,sop);
 	 return cl_smsimpl!-imprep(rl_arg2r f,rl_arg2l f,knowl,n);
       if op eq 'equiv then
 	 return cl_smsimpl!-equiv(rl_arg2l f,rl_arg2r f,knowl,n);
+      if (w := rl_external(op,'cl_simpl)) then
+	 return apply(w,{f});
       w := cl_simplat(f,sop);
       if !*rlsism then <<
 	 op := rl_op w;

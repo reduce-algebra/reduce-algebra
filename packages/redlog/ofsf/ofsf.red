@@ -230,7 +230,13 @@ put('ofsf,'rl_services,'(
    (rl_ghqe!* . ofsf_ghqe)
    (rl_resolve!* . ofsf_resolve)
    (rl_posresolve!* . ofsf_posresolve)
-   (rl_tan2!* . ofsf_tan2)));
+   (rl_tan2!* . ofsf_tan2)
+   (rl_straightify!* . cl_straightify)
+   (sl_straightify!* . cl_sstraightify)
+   (sl_simpl!* . cl_ssimpl)
+   (sl_atnum!* . cl_satnum)
+   (sl_pnf!* . cl_spnf)
+   (sl_unstraightify!* . sl_unstraightify)));
 
 % Admin
 put('ofsf,'simpfnname,'ofsf_simpfn);

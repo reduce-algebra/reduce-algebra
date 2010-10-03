@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cl_rcsid!* cl_copyright!*);
@@ -39,10 +39,13 @@ module cl;
 % contains context independent code possibly addressing some black
 % boxes.
 
-create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv),nil);
+create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv clsl),nil);
 
 load!-package 'rltools;
 load!-package 'redlog;
+
+load!-package 'assert;
+off1 'assert;
 
 exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_sitheo,cl_ordp,cl_smcpknowl,cl_smrmknowl,cl_smupdknowl,cl_smmkatl,
@@ -64,7 +67,7 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlsiidem !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
    !*rlqegen !*rlbnfsac !*rltabib !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
    !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
-   !*rlqeaprecise);
+   !*rlqeaprecise !*slat);
 
 procedure cl_atfp(x);
    % Common logic atomic formula predicate. [x] is a formula. Returns

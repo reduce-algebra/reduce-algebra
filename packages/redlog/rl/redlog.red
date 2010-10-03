@@ -37,7 +37,7 @@ lisp <<
 module redlog;
 % Reduce logic component.
 
-create!-package('(redlog rlami rlsched rlcont rlhelp),nil);
+create!-package('(redlog rlami rlsched rlcont rlhelp rlsl),nil);
 
 load!-package 'rltools;  % rlhelp needs ioto.
 
@@ -194,6 +194,18 @@ put('rlidentify,'simpfg,
 
 procedure quotelog(x); 'logical;
 
+procedure rl_getrtypecar(x);
+   if eqcar(x,'true) or eqcar(x,'false) then
+      'logical
+   else
+      (if w eq 'equation then 'logical else w) where w=getrtypecar x;
+
+procedure rl_getrtypecadr(x);
+   if cadr x eq 'true or cadr x eq 'false then
+      'logical
+   else
+      (if w eq 'equation then 'logical else w) where w=getrtype cadr x;
+
 procedure rl_texmacsp();
    get('tmprint,'package);
 
@@ -209,7 +221,7 @@ put('!*fof,'fancy!-setprifn,'rl_setprint!*fof);
 put('!*fof,'rtypefn,'quotelog);
 put('!*fof,'rl_simpfn,'rl_simp!*fof);
 
-put('and,'rtypefn,'quotelog);
+put('and,'rtypefn,'rl_getrtypecar);
 put('and,'rl_simpfn,'rl_simpbop);
 put('and,'rl_prepfn,'rl_prepbop);
 put('and,'pprifn,'rl_ppriop);
@@ -217,7 +229,7 @@ put('and,'fancy!-pprifn,'rl_fancy!-ppriop);
 if rl_texmacsp() then
    put('and,'fancy!-infix!-symbol,"\,\wedge\, ");
 
-put('or,'rtypefn,'quotelog);
+put('or,'rtypefn,'rl_getrtypecar);
 put('or,'rl_simpfn,'rl_simpbop);
 put('or,'rl_prepfn,'rl_prepbop);
 put('or,'pprifn,'rl_ppriop);
@@ -225,12 +237,12 @@ put('or,'fancy!-pprifn,'rl_fancy!-ppriop);
 if rl_texmacsp() then
    put('or,'fancy!-infix!-symbol,"\,\vee\, ");
 
-put('not,'rtypefn,'quotelog);
+put('not,'rtypefn,'rl_getrtypecar);
 put('not,'rl_simpfn,'rl_simpbop);
 put('not,'rl_prepfn,'rl_prepbop);
 
 algebraic infix impl;
-put('impl,'rtypefn,'quotelog);
+put('impl,'rtypefn,'rl_getrtypecar);
 put('impl,'rl_simpfn,'rl_simpbop);
 put('impl,'rl_prepfn,'rl_prepbop);
 put('impl,'number!-of!-args,2);
@@ -241,7 +253,7 @@ else
    put('impl,'fancy!-infix!-symbol,222);
 
 algebraic infix repl;
-put('repl,'rtypefn,'quotelog);
+put('repl,'rtypefn,'rl_getrtypecar);
 put('repl,'rl_simpfn,'rl_simpbop);
 put('repl,'rl_prepfn,'rl_prepbop);
 put('repl,'number!-of!-args,2);
@@ -252,7 +264,7 @@ else
    put('repl,'fancy!-infix!-symbol,220);
 
 algebraic infix equiv;
-put('equiv,'rtypefn,'quotelog);
+put('equiv,'rtypefn,'rl_getrtypecar);
 put('equiv,'rl_simpfn,'rl_simpbop);
 put('equiv,'rl_prepfn,'rl_prepbop);
 put('equiv,'number!-of!-args,2);
@@ -269,7 +281,7 @@ precedence repl,equiv;
 precedence impl,repl;
 flag('(true false),'reserved);
 
-put('ex,'rtypefn,'quotelog);
+put('ex,'rtypefn,'rl_getrtypecadr);
 put('ex,'rl_simpfn,'rl_simpq);
 put('ex,'number!-of!-args,2);
 put('ex,'prifn,'rl_priq);
@@ -280,7 +292,7 @@ if rl_texmacsp() then
 else
    put('ex,'fancy!-functionsymbol,36);
 
-put('all,'rtypefn,'quotelog);
+put('all,'rtypefn,'rl_getrtypecadr);
 put('all,'rl_simpfn,'rl_simpq);
 put('all,'number!-of!-args,2);
 put('all,'prifn,'rl_priq);
@@ -354,8 +366,12 @@ macro procedure rl_mkbb(lst);
 
 macro procedure rl_mkserv(argl);
    begin
-      scalar bname,evalfnl,oevalfnl,odefl,resconv,amp,len,
+      scalar aprefix,sprefix,bname,evalfnl,oevalfnl,odefl,resconv,amp,len,
 	 args,sm,smv,prgn,am,psval;
+      sprefix := reversip explode nth(argl,1);
+      while not eqcar(sprefix,'!_) do sprefix := cdr sprefix;
+      aprefix := reverse cdr sprefix;
+      sprefix := reversip sprefix;
       bname := eval nth(argl,2);
       evalfnl := eval nth(argl,3);
       oevalfnl := eval nth(argl,4);
@@ -364,14 +380,14 @@ macro procedure rl_mkserv(argl);
       amp := eval nth(argl,7);
       len := length evalfnl + length oevalfnl;
       args := for i := 1:len collect mkid('a,i);
-      sm := intern compress append('(!r !l !_),explode bname);
+      sm := intern compress append(sprefix,explode bname);
       smv := intern compress nconc(explode sm,'(!! !*));
       prgn := {'setq,'rl_servl!*,{'cons,mkquote smv,'rl_servl!*}} . prgn;
       prgn := {'put,mkquote sm,''number!-of!-args,len} . prgn;
       prgn := {'de,sm,args,{'apply,smv,'list . args}} . prgn;
       prgn := {'fluid,mkquote {smv}} . prgn;
       if amp then <<
-      	 am := intern compress append('(!r !l),explode bname);
+      	 am := intern compress append(aprefix,explode bname);
       	 psval := intern compress nconc(explode sm,'(!! !$));
 	 prgn := {'put,mkquote am,''psopfn,mkquote psval} . prgn;
 	 prgn := {'put,mkquote psval,''number!-of!-args,1} . prgn;
@@ -381,6 +397,18 @@ macro procedure rl_mkserv(argl);
       >>;
       return 'progn . prgn
    end;
+
+copyd('sl_mkserv,'rl_mkserv);
+
+procedure rl_alias(new,old);
+   put(intern compress append('(!r !l),explode new),
+      'psopfn,
+      get(intern compress append('(!r !l),explode old),'psopfn));
+
+procedure sl_alias(new,old);
+   put(intern compress append('(!s !l),explode new),
+      'psopfn,
+      get(intern compress append('(!s !l),explode old),'psopfn));
 
 smacro procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level
@@ -520,9 +548,33 @@ smacro procedure rl_tvalp(x);
    % Returns non-[nil] iff [x] is one of ['true], ['false].
    x eq 'true or x eq 'false;
 
+smacro procedure rl_externalp(x);
+   get(x,'rl_external);
+
 smacro procedure rl_cxp(x);
    % Reduce logic complex, i.e., non-atomic, operator predicate.
-   rl_tvalp x or rl_boolp x or rl_quap x or rl_bquap x;
+   rl_tvalp x or rl_boolp x or rl_quap x or rl_bquap x or rl_externalp x;
+
+procedure rl_external(x,f);
+   begin scalar w;
+      w := get(x,'rl_external);
+      if w then <<
+	 w := atsoc(f,w);
+      	 if w then
+	    return cdr w
+      >>
+   end;
+
+procedure rl_mkexternal(x,f,xf);
+   begin scalar al,w;
+      al := get(x,'rl_external);
+      w := atsoc(f,al);
+      if w then
+	 cdr w := xf
+      else
+	 al := (f . xf) . al;
+      return put(x,'rl_external,al)
+   end;
 
 endmodule;  % [redlog]
 

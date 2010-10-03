@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(rl_ami_rcsid!* rl_ami_copyright!*);
@@ -75,7 +75,7 @@ procedure rl_prepfof(f);
 
 procedure rl_prepfof1(f);
    % [prep] first-order formula with bounded quantifers subroutine.
-   begin scalar op;
+   begin scalar op,w;
       op := rl_op f;
       if rl_tvalp op then
  	 return op;
@@ -83,8 +83,10 @@ procedure rl_prepfof1(f);
 	 return {op,rl_var f,rl_prepfof1 rl_mat f};
       if rl_bquap op then
 	 return {op,rl_var f,rl_prepfof1 rl_b f,rl_prepfof1 rl_mat f};
-      if rl_cxp op then
+      if rl_boolp op then
 	 return op . for each x in rl_argn f collect rl_prepfof1 x;
+      if (w := rl_external(op,'rl_prepfof1)) then
+	 return apply(w,{f});
       % [f] is atomic.
       return apply(get(car rl_cid!*,'rl_prepat),{f})
    end;
@@ -95,7 +97,7 @@ procedure rl_cleanup(u,v);
 procedure rl_simpa(u);
    % simp an answer structure
    for each a in cdr reval u collect
-      {rl_simp cadr a, 
+      {rl_simp cadr a,
 	 for each b in cdaddr a collect
 	    rl_simp b, cdr cadddr a};
 
@@ -133,7 +135,7 @@ procedure rl_simpatom(u);
       if numberp u then typerr({"number",u},"logical");
       if stringp u then typerr({"string",u},"logical");
       if (w := rl_gettype(u)) then <<
-	 if w eq 'logical or w eq 'equation or w eq 'scalar then
+	 if w memq '(logical equation scalar slprog) then
 	    return rl_simp1 cadr get(u,'avalue);
 	 typerr({w,u},"logical")
       >>;
@@ -178,11 +180,11 @@ procedure rl_simpbq(f);
       wf := rl_simp1 cadddr f;
       % Test, wether the bounded quantifier has a finite solution set.
       % rl_bsatp fails per definition if that is not the case.
-      rl_bsatp(wb,x);      
+      rl_bsatp(wb,x);
       flag({x},'used!*);
       return rl_mkbq(car f,x,wb,wf)
    end;
-      
+
 procedure rl_qvarchk(v);
    % Syntax-check quantified variable.
    if null v then
@@ -227,8 +229,10 @@ procedure rl_resimp(u);
  	    typerr({w,rl_var u},"quantified variable");
       	 return rl_mkbq(op,rl_var u,rl_resimp rl_b u,rl_resimp rl_mat u)
       >>;
-      if rl_cxp op then
+      if rl_boolp op then
 	 return rl_mkn(op,for each x in rl_argn u collect rl_resimp x);
+      if (w := rl_external(op,'rl_resimp)) then
+	 return apply(w,{u});
       return apply(get(car rl_cid!*,'rl_resimpat),{u})
    end;
 
@@ -397,7 +401,7 @@ procedure rl_fancybound!-try!-abs(f);
 	 return {r1,{'minus,{'abs,prepf absf l1}},v,{'abs,prepf absf u1}};
       return f
    end;
-      
+
 procedure rl_ppriop(f,n);
    if null !*nat or null !*rlbrop or eqn(n,0) then
       'failed
@@ -460,7 +464,7 @@ symbolic procedure rl_fancy!-prib(v,f);
       maprin f
    >>;
 
-symbolic procedure rl_fancy!-prib1(fl);  
+symbolic procedure rl_fancy!-prib1(fl);
    if cdr fl then <<
       fancy!-prin2 "\stackrel";
       fancy!-prin2 "{";
@@ -469,7 +473,7 @@ symbolic procedure rl_fancy!-prib1(fl);
       fancy!-prin2 "}";
       fancy!-prin2 "{";
       rl_fancy!-prib1 cdr fl;
-      fancy!-prin2 "}";      
+      fancy!-prin2 "}";
    >> else <<
       fancy!-prin2 "\stackrel";
       fancy!-prin2 "{";
@@ -477,7 +481,7 @@ symbolic procedure rl_fancy!-prib1(fl);
       maprin car fl;
       fancy!-prin2 "}";
       fancy!-prin2 "{";
-      fancy!-prin2 "}";      
+      fancy!-prin2 "}";
 %      fancy!-prin2 "\normalsize{}";
 %      maprin car fl
    >>;
@@ -661,7 +665,7 @@ procedure rl_s2a!-wqea(res);
       rederr "inconsistent theory"
    else
       'list . for each x in res collect
- 	 {'list,rl_mk!*fof car x,'list . 
+ 	 {'list,rl_mk!*fof car x,'list .
 	    for each f in cadr x collect
 	       rl_mk!*fof f,'list . caddr x};
 
@@ -781,7 +785,7 @@ procedure rl_a2s!-string(s);
       typerr(s,"string")
    else
       s;
-      
+
 procedure rl_s2a!-ghqe(l);
    % Generic elimination result for algebraic mode. [l] is a lis of
    % the form $(theo res)$. Returns a list of the form $(theo res)$,
