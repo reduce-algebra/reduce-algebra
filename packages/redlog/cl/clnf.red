@@ -316,7 +316,7 @@ procedure cl_rename!-vars1(f,vl);
    begin scalar op,h,w,newid;
       op := rl_op f;
       if rl_boolp op then
-    	 return rl_mkn(op,for each x in cdr f collect <<
+    	 return rl_mkn(op,for each x in rl_argn f collect <<
       	    vl := cdr rnv;
       	    car rnv
     	 >> where rnv=cl_rename!-vars1(x,vl)) . vl;

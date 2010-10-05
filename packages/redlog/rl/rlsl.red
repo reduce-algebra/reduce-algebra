@@ -36,8 +36,7 @@ lisp <<
 
 module rlsl;
 
-global '(sl_slvc!* sl_maxline!*);
-if not sl_slvc!* then sl_slvc!* := 0;
+global '(sl_maxline!*);
 sl_maxline!* := 100;
 
 switch slat;
@@ -79,33 +78,8 @@ put('!*fof,'sl_simpfn,'sl_simp!*fof);
 
 flag('(sl_simpbop sl_simpq sl_simpat),'full);
 
-algebraic operator slv;
-put('slv,'prifn,'sl_prislv);
-put('slv,'rl_simpfn,'sl_simpslv);
-
-flag('(sl_simpslv),'full);
-
-rl_mkexternal('slv,'cl_simpl,function(lambda x; x));  % HACK
-rl_mkexternal('slv,'cl_atnum,function(lambda x; 0));
-rl_mkexternal('slv,'cl_depth,function(lambda x; 0));
-rl_mkexternal('slv,'cl_pnf2,function(lambda x; {x}));
-rl_mkexternal('slv,'rl_resimp,function(lambda x; x));
-rl_mkexternal('slv,'rl_prepfof1,function(lambda x; x));
-
 procedure quoteslprog(u);
    'slprog;
-
-procedure slv_mk(n);
-   {'slv,n};
-
-procedure slv_n(slv);
-   cadr slv;
-
-procedure slv_new();
-   slv_mk(sl_slvc!* := sl_slvc!* + 1);
-
-procedure sl_simpslv(u);
-   u;
 
 procedure sll_mk(rhs);
    {'sll,slv_new(),rhs};
@@ -128,21 +102,21 @@ procedure sl_pri(u);
    begin scalar lst;
       prin2!* "begin";
       terpri!* t;
-      u := reverse cdr reval u;
+      u := reverse sl_simp u;
       if u then <<
       	 lst := pop u;
       	 u := reversip u;
       	 for each line in u do <<
 	    prin2!* "   ";
-	    maprin line;
+	    maprin sl_prepsll line;
 	    terpri!* t
       	 >>;
       	 prin2!* "   ";
 	 maprin if !*sllast or rl_atnum sll_rhs lst < sl_maxline!* then
- 	    lst
+	    sl_prepsll lst
  	 else
- 	    {car lst,cadr lst,lto_sconcat {
-	       "[",lto_at2str rl_atnum caddr lst," atomic formulas]"}};
+ 	    {'setsl,rl_prepfof1 sll_lhs lst,lto_sconcat {
+	       "[",lto_at2str rl_atnum sll_rhs lst," atomic formulas]"}};
 	 terpri!* t
       >>;
       prin2!* "end"
@@ -158,7 +132,10 @@ procedure sl_reval(u,v);
 procedure sl_prep(slp);
    % [slp] is an SLPROG. Returns Lisp prefix of [slp].
    'slp . for each sl in slp collect
-      {'setsl,sll_lhs sl,rl_prepfof1 sll_rhs sl};
+      sl_prepsll sl;
+
+procedure sl_prepsll(sl);
+   {'setsl,rl_prepfof1 sll_lhs sl,rl_prepfof1 sll_rhs sl};
 
 procedure sl_mk!*slp(u);
    % [slp] make psueo Lisp prefix. [slp] is an SLPROG. Returns pseudo Lisp
@@ -206,7 +183,7 @@ procedure sl_simpatom(u);
 procedure sl_simpslp(u);
    sl_reduce for each line in u collect
       % TODO: Check if variable is already bound, etc.!
-      sll_mkx(cadr line,rl_simp caddr line);
+      sll_mkx(slv_simp cadr line,rl_simp caddr line);
 
 procedure rl_simpslp(u);
    sl_unstraightify sl_simp u;
@@ -254,18 +231,12 @@ procedure sl_renum(slp);
 
 procedure sl_renum1(slp,slv0);
    begin scalar al;
-      slp := sl_apply2slv(slp,function sl_negslv,nil);
+      slp := sl_apply2slv(slp,function slv_neg,nil);
       slv0 := slv0 - 1;
       al := for each line in slp collect
 	 sll_lhs line . slv_mk(slv0 := slv0 + 1);
-      return sl_apply2slv(slp,function sl_subslv,{al})
+      return sl_apply2slv(slp,function slv_sub,{al})
    end;
-
-procedure sl_subslv(slv,al);
-   (if w then cdr w else slv) where w=assoc(slv,al);
-
-procedure sl_negslv(slv);
-   slv_mk(-slv_n slv);
 
 procedure sl_apply2slv(slp,cl,clpl);
    for each l in slp collect
@@ -304,7 +275,7 @@ procedure sl_reduce1(slp);
 	    sal := (sll_lhs l . v) . sal
 	 >> else
 	    tslp := l . tslp;
-      return sl_apply2slv(reversip tslp,function sl_subslv,{sal})
+      return sl_apply2slv(reversip tslp,function slv_sub,{sal})
    end;
 
 procedure sl_reduce2(slp);
@@ -318,7 +289,7 @@ procedure sl_reduce2(slp);
 	    lal := (sll_rhs l . sll_lhs l) . lal;
 	    {l}
 	 >>;
-      return sl_apply2slv(tslp,function sl_subslv,{sal})
+      return sl_apply2slv(tslp,function slv_sub,{sal})
    end;
 
 procedure sl_reduce3(slp);
@@ -332,7 +303,7 @@ procedure sl_reduce3(slp);
 	 else
 	    sal := (sll_lhs l . sll_rhs l) . sal
       >>;
-      return sl_apply2slv(reversip tslp,function sl_subslv,{sal})
+      return sl_apply2slv(reversip tslp,function slv_sub,{sal})
    end;
 
 procedure sl_twicep(slp,slv);
@@ -378,13 +349,6 @@ procedure sl_twicep1(f,slv,c);
       return c
    end;
 
-procedure sl_prislv(u);
-   <<
-      prin2!* "#";
-      prin2!* cadr u;
-      prin2!* "#"
-   >>;
-
 procedure sl_simp!*slp(u);
    % Simp [!*slp] operator. [u] is of the form [(tag,s,!*sqvar!*)] where
    % [tag] is a context tag [s] is an SLPROG.
@@ -421,12 +385,12 @@ procedure sl_unstraightify1(slp,cdp);
       for each rslp on slp do <<
 	 l := car rslp;
 	 if cdr rslp and apply(cdp,{sll_rhs l}) then <<
-	    w := rl_apply2slv(sll_rhs l,function sl_subslv,{sal});
+	    w := rl_apply2slv(sll_rhs l,function slv_sub,{sal});
 	    sal := (sll_lhs l . w) . sal
       	 >> else
 	    tslp := l . tslp
       >>;
-      slp := sl_apply2slv(reversip tslp,function sl_subslv,{sal});
+      slp := sl_apply2slv(reversip tslp,function slv_sub,{sal});
       return sl_reduce slp
    end;
 

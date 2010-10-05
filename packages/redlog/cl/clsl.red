@@ -223,14 +223,14 @@ assert cl_ccollect: (slp,formula) -> alist;
 procedure cl_ccollect1(sth,cand,cd);
    % Recursive subroutine of cl_ccollect for one single SL. [sth] is a
    % formula or an SL.
-   begin integer sd;
+   begin integer sd,argl;
       if eqcar(sth,'sll) or rl_boolp rl_op sth then
-      	 return for each sub in cdr sth join <<
+      	 return for each sub in sth_argl sth join <<
 %      	    sd := cl_slldepth sub;
 %	    if eqn(sd,cd) and sub = cand then
 	    if sub = cand then
 	       {sub . sth}
-	    else % if sd >= cd then
+	    else %if sd >= cd then
 	       cl_ccollect1(sub,cand,cd)
       	 >>
       else if rl_quap rl_op sth then
@@ -242,6 +242,9 @@ procedure cl_ccollect1(sth,cand,cd);
    end;
 
 assert cl_ccollect: (any,formula) -> alist;
+
+procedure sth_argl(sth);
+   if eqcar(sth,'sll) then cdr sth else rl_argn sth;
 
 procedure cl_spnf(slp);
    begin scalar tslp,lst;

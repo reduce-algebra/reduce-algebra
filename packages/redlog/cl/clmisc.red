@@ -136,14 +136,18 @@ procedure cl_depth(f);
    % is the depth of [f], i.e., the deepest level of nesting of boolean
    % subformulas.
    begin scalar w;
+      if (w := rl_get(f,'cl_depth)) then
+	 return w;
       if rl_basbp rl_op f then
-      	 return 1 + lto_max for each sf in rl_argn f collect cl_depth sf;
+      	 return rl_put(f,'cl_depth,
+	    1 + lto_max for each sf in rl_argn f collect cl_depth sf);
       if rl_quap rl_op f or rl_bquap rl_op f then
-      	 return 1 + cl_depth rl_mat f;
+      	 return rl_put(f,'cl_depth,1 + cl_depth rl_mat f);
       if rl_op f eq 'not then
-      	 return 1 + cl_depth rl_arg1 f;
+      	 return rl_put(f,'cl_depth,1 + cl_depth rl_arg1 f);
       if rl_extbp rl_op f then
-      	 return 1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f);
+      	 return rl_put(f,'cl_depth,
+	    1 + max(cl_depth rl_arg2l f,cl_depth rl_arg2r f));
       if rl_tvalp f or cl_atfp f then
       	 return 0;
       if (w := rl_external(rl_op f,'cl_depth)) then

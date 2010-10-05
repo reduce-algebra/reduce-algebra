@@ -231,6 +231,7 @@ put('ofsf,'rl_services,'(
    (rl_resolve!* . ofsf_resolve)
    (rl_posresolve!* . ofsf_posresolve)
    (rl_tan2!* . ofsf_tan2)
+   (rl_depth!* . cl_depth)
    (rl_straightify!* . cl_straightify)
    (sl_straightify!* . cl_sstraightify)
    (sl_simpl!* . cl_ssimpl)
