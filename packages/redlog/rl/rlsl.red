@@ -52,6 +52,7 @@ put('slprog,'lengthfn,'sl_length);
 put('slp,'rtypefn,'quoteslprog);
 put('slp,'sl_simpfn,'sl_simpslp);
 put('slp,'rl_simpfn,'rl_simpslp);
+put('slp,'prifn,'sl_pri);
 
 algebraic infix setsl;
 flag('(setsl),'spaced);
@@ -60,7 +61,7 @@ newtok '((!: !: !=) setsl) where !*msg=nil;
 put('!*slp,'rtypefn,'quoteslprog);
 put('!*slp,'sl_simpfn,'sl_simp!*slp);
 put('!*slp,'rl_simpfn,'rl_simp!*slp);
-put('!*slp,'prifn,'sl_pri);
+put('!*slp,'prifn,'sl_print!*slp);
 
 put('not,'sl_simpfn,'sl_simpbop);
 put('and,'sl_simpfn,'sl_simpbop);
@@ -100,6 +101,8 @@ procedure sl_length(u);
 
 procedure sl_pri(u);
    begin scalar lst;
+      if not !*nat then
+	 return 'failed;
       prin2!* "begin";
       terpri!* t;
       u := reverse sl_simp u;
@@ -121,6 +124,9 @@ procedure sl_pri(u);
       >>;
       prin2!* "end"
    end;
+
+procedure sl_print!*slp(u);
+   maprin reval u;
 
 procedure sl_reval(u,v);
    % SLP [reval]. [u] is an SLPROG in some mixed pseudo Lisp prefix form

@@ -85,7 +85,9 @@ procedure slv_neg(slv);
    slv_mk(-slv_n slv);
 
 procedure slv_pri(u);
-   <<
+   if not !*nat then
+      'failed
+   else <<
       prin2!* "#";
       prin2!* cadr u;
       prin2!* "#"
@@ -97,6 +99,7 @@ rl_mkexternal('slv,'cl_depth,function(lambda x; 0));
 rl_mkexternal('slv,'cl_pnf2,function(lambda x; {x}));
 rl_mkexternal('slv,'rl_resimp,function(lambda x; x));
 rl_mkexternal('slv,'rl_prepfof1,'slv_prep);
+rl_mkexternal('slv,'cl_dcollect1,function(lambda f,n; nil));
 
 endmodule;  % rlslv
 

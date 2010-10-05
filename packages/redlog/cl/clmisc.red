@@ -563,6 +563,32 @@ procedure cl_ex21(vl,f);
       return res
    end;
 
+procedure cl_replace(f,sal);
+   % Replace. [f] is a formula. Returns a formula. Replaces all
+   % occurrences of subformulas in [f] according to [sal].
+   if sal then cl_replace1(f,sal) else f;
+
+procedure cl_replace1(f,sal);
+   % Replace. [f] is a formula. Returns a formula. Replaces all
+   % occurrences of subformulas in [f] according to [sal].
+   begin scalar w,op;
+      if (w := assoc(f,sal)) then
+	 return cdr w;
+      op := rl_op f;
+      if rl_tvalp op then
+ 	 return f;
+      if rl_quap op then
+    	 return rl_mkq(op,rl_var f,cl_replace(rl_mat f,sal));
+      if rl_bquap op then
+    	 return rl_mkbq(op,rl_var f,cl_replace(rl_b f,sal),
+	    cl_replace(rl_mat f,sal));
+      if rl_boolp op then
+    	 return rl_mkn(op,for each subf in rl_argn f collect
+	    cl_replace(subf,sal));
+      % [f] is an atomic formula or external.
+      return f
+   end;
+
 endmodule;  % [clmisc]
 
 end;  % of file
