@@ -126,7 +126,7 @@ class QtReduceMainWindow(QMainWindow):
                 '</center>'
                 'A worksheet-based GUI for the computer algebra system Reduce.'
                 '<p>'
-                '<small>'
+                '<font size="-3">'
                 '<hr>'
                 '<strong>License: </strong>'
                 'Redistribution and use in source and binary forms, with '
@@ -139,9 +139,9 @@ class QtReduceMainWindow(QMainWindow):
                 'copyright notice, this list of conditions and the following '
                 'disclaimer in the documentation and/or other materials '
                 'provided with the distribution. '
-                '</small>'
+                '</font>'
                 '<p>'
-                '<small>'
+                '<font size="-3">'
                 '<strong>Disclaimer:</strong> '
                 'This software is provided by the copyright holders and '
                 'contributors "as is" and any express or implied warranties, '
@@ -156,7 +156,7 @@ class QtReduceMainWindow(QMainWindow):
                 'contract, strict liability, or tort (including negligence or '
                 'otherwise) arising in any way out of the use of this '
                 'software, even if advised of the possibility of such damage.'
-                '</small>'))
+                '</font>'))
 
     def __createFileActions(self):
         self.openAct = QAction(self.tr("&Open..."), self)
@@ -203,12 +203,7 @@ class QtReduceMainWindow(QMainWindow):
         title = self.tr("Save Reduce Worksheet")
         path = os.path.dirname(os.path.abspath(self.worksheet.fileName.__str__()))
         filter = self.tr("Reduce Worksheets (*.rws)")
-        diag = QFileDialog()
-#        fileName = diag.getSaveFileName(self,self.tr("Save File"),
-#                                        "", self.tr("Reduce Worksheets (*.rws)"),
-#                                        None,QFileDialog.DontUseNativeDialog)
-        fileName = diag.getSaveFileName(None,title,path,filter)
-        diag = None
+        fileName = QFileDialog.getSaveFileName(self,title,path,filter)
         fileName = str(fileName[0])
         print "fileName=",fileName
         if fileName == '':
@@ -287,9 +282,9 @@ class QtReduceMainWindow(QMainWindow):
     def __savediag(self):
         diag = QMessageBox(self)
         msg = '<b>Do you want to save the changes in your worksheet "'
-        msg += self.worksheet.fileName.split('/')[-1] or 'untitled'
-        msg += '"?</b><p><small>Otherwise they will get lost.</small>'
-        diag.setInformativeText(msg)
+        msg += self.worksheet.fileName.split('/')[-1] or 'untitled' + '"?</b><p>'
+        msg += '<font size="-1">Otherwise they will get lost.</font>'
+        diag.setText(msg)
         diag.setStandardButtons(QMessageBox.StandardButton.Discard |
                                 QMessageBox.StandardButton.Cancel |
                                 QMessageBox.StandardButton.Save)
