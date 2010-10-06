@@ -63,20 +63,20 @@ class ReduceBlockFormat(QTextBlockFormat):
         cursor.setBlockCharFormat(ReduceCharFormat(label))
         cursor.setBlockFormat(ReduceBlockFormat(label))
 
+
 class ReduceCharFormat(QTextCharFormat):
-    red = QColor(qRgb(204,0,0))
-    blue = QColor(qRgb(0,0,0xcc))
-    gray = QColor(qRgb(0xa0,0xa0,0xa0))
+    RED = QColor(qRgb(204,0,0))
+    BLUE = QColor(qRgb(0,0,0xcc))
+    GRAY = QColor(qRgb(0xa0,0xa0,0xa0))
 
     def __init__(self,type):
         QTextCharFormat.__init__(self)
-
         if type == 0:
-            self.setForeground(self.red)
+            self.setForeground(ReduceCharFormat.RED)
         if type == 1:
-            self.setForeground(self.blue)
+            self.setForeground(ReduceCharFormat.BLUE)
         if type == 2:
-            self.setForeground(self.gray)
+            self.setForeground(ReduceCharFormat.GRAY)
         if type == 3:
             self.setForeground(Qt.black)
 
