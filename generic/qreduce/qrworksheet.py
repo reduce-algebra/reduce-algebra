@@ -111,10 +111,9 @@ class QtReduceWorksheet(QTextEdit):
         self.setReadOnly(False)
 
     def newReduceResultHandler(self,rc):
-        self.newResult.emit(rc)
         print "catching newReduceResult", rc.statCounter
-        if not self.reduce.silent:
-            self.__renderOutput(rc)
+        self.newResult.emit(rc)
+        self.__renderOutput(rc)
 
     def newReduceComputationHandler(self,rc):
         self.newComputation.emit(rc)
