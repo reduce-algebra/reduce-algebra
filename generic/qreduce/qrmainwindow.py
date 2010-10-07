@@ -33,12 +33,11 @@ import sys
 import os
 
 from PySide.QtCore import Qt
-from PySide.QtCore import SIGNAL
-from PySide.QtCore import SLOT
 from PySide.QtCore import Signal
 
 from PySide.QtGui import QMainWindow
 from PySide.QtGui import QStatusBar
+from PySide.QtGui import QMenuBar
 from PySide.QtGui import QFont
 from PySide.QtGui import QLabel
 from PySide.QtGui import QFontMetrics
@@ -57,10 +56,9 @@ class QtReduceMainWindow(QMainWindow):
         QMainWindow.__init__(self, parent)
         self.setUnifiedTitleAndToolBarOnMac(1)
         self.setStatusBar(QtReduceStatusBar(parent))
-        self.__createMenus()
-        self.__createActions()
+        self.setMenuBar(QtReduceMenuBar(self,parent))
         self.__createWorksheet()
-        self.__initSignals()
+        self.__initStatusBarSignals()
         self.__setWidthByFont(83)
         self.__setHeightByFont(24)
         print "before setTitle"
@@ -75,7 +73,7 @@ class QtReduceMainWindow(QMainWindow):
 #         setupToolBar();
 #         setupWorksheets();
 
-    def __initSignals(self):
+    def __initStatusBarSignals(self):
         self.worksheet.reduce.newReduceResult.connect(
             self.worksheet.newReduceResultHandler,
             type=Qt.DirectConnection)
@@ -89,18 +87,6 @@ class QtReduceMainWindow(QMainWindow):
             self.setTitle,
             type=Qt.DirectConnection)
 
-    def __createMenus(self):
-        self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
-        self.viewMenu = self.menuBar().addMenu(self.tr("&View"))
-        self.develMenu = self.menuBar().addMenu(self.tr("Develop"))
-        self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
-
-    def __createActions(self):
-        self.__createFileActions()
-        self.__createViewActions()
-        self.__createDevelActions()
-        self.__createHelpActions()
-
     def __setWidthByFont(self,n,adaptHeight=False):
         oldWidth = self.width()
         width = n * QFontMetrics(self.worksheet.font()).width('m')
@@ -113,11 +99,63 @@ class QtReduceMainWindow(QMainWindow):
         height = n * QFontMetrics(self.worksheet.font()).height()
         self.resize(1,height)
 
-    def __createHelpActions(self):
-        self.aboutAct = QAction(self.tr("&About"), self)
-        self.helpMenu.addAction(self.aboutAct)
-        self.connect(self.aboutAct, SIGNAL("triggered()"), self.about)
+    # File Actions
+    def open(self):
+        title = self.tr("Open Reduce Worksheet")
+        fn = self.worksheet.fileName.__str__()
+        print fn
+        if fn == '':
+            fn = '$HOME'
+        print fn
+        path = os.path.dirname(os.path.abspath(fn))
+        print path
+        filter = self.tr("Reduce Worksheets (*.rws)")
+        fileName = QFileDialog.getOpenFileName(None,title,path,filter)
+        fileName = str(fileName[0])
+        if fileName == '':
+            return
+        if not fileName.endswith(".rws"):
+            fileName += ".rws"
+        self.worksheet.open(fileName)
 
+    def save(self):
+        if self.worksheet.fileName == '':
+            self.saveAs()
+        else:
+            self.worksheet.save('')
+
+    def saveAs(self):
+        title = self.tr("Save Reduce Worksheet")
+        path = os.path.dirname(os.path.abspath(self.worksheet.fileName.__str__()))
+        filter = self.tr("Reduce Worksheets (*.rws)")
+        fileName = QFileDialog.getSaveFileName(self,title,path,filter)
+        fileName = str(fileName[0])
+        print "fileName=",fileName
+        if fileName == '':
+            return
+        if not fileName.endswith(".rws"):
+            fileName += ".rws"
+        self.worksheet.save(fileName)
+        self.activateWindow()
+
+    # View Actions
+    def zoomIn(self):
+        self.worksheet.setupFont(self.worksheet.font().pixelSize()+1)
+        self.__setWidthByFont(83,True)
+
+    def zoomOut(self):
+        self.worksheet.setupFont(max(self.worksheet.font().pixelSize()-1,8))
+        self.__setWidthByFont(83,True)
+
+    def zoomDef(self):
+        self.worksheet.setupFont(14)
+        self.__setWidthByFont(83,True)
+
+    # Development Actions
+    def test(self):
+        self.worksheet.zoomIn(10)
+
+    # Help Actions
     def about(self):
         QMessageBox.about(self, self.tr("About QReduce"),self.tr(
                 '<center>'
@@ -158,98 +196,7 @@ class QtReduceMainWindow(QMainWindow):
                 'software, even if advised of the possibility of such damage.'
                 '</font>'))
 
-    def __createFileActions(self):
-        self.openAct = QAction(self.tr("&Open..."), self)
-        self.openAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_O))
-        self.fileMenu.addAction(self.openAct)
-        self.connect(self.openAct, SIGNAL("triggered()"), self.open)
-
-        self.saveAct = QAction(self.tr("&Save"), self)
-        self.saveAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_S))
-        self.fileMenu.addAction(self.saveAct)
-        self.connect(self.saveAct, SIGNAL("triggered()"), self.save)
-
-        self.saveAsAct = QAction(self.tr("Save As..."), self)
-        self.saveAsAct.setShortcut(
-            QKeySequence(Qt.ShiftModifier|Qt.ControlModifier|Qt.Key_S))
-        self.fileMenu.addAction(self.saveAsAct)
-        self.connect(self.saveAsAct, SIGNAL("triggered()"), self.saveAs)
-
-    def open(self):
-        title = self.tr("Open Reduce Worksheet")
-        fn = self.worksheet.fileName.__str__()
-        print fn
-        if fn == '':
-            fn = '$HOME'
-        print fn
-        path = os.path.dirname(os.path.abspath(fn))
-        print path
-        filter = self.tr("Reduce Worksheets (*.rws)")
-        fileName = QFileDialog.getOpenFileName(None,title,path,filter)
-        fileName = str(fileName[0])
-        if fileName == '':
-            return
-        if not fileName.endswith(".rws"):
-            fileName += ".rws"
-        self.worksheet.open(fileName)
-
-    def save(self):
-        if self.worksheet.fileName == '':
-            self.saveAs()
-        else:
-            self.worksheet.save('')
-
-    def saveAs(self):
-        title = self.tr("Save Reduce Worksheet")
-        path = os.path.dirname(os.path.abspath(self.worksheet.fileName.__str__()))
-        filter = self.tr("Reduce Worksheets (*.rws)")
-        fileName = QFileDialog.getSaveFileName(self,title,path,filter)
-        fileName = str(fileName[0])
-        print "fileName=",fileName
-        if fileName == '':
-            return
-        if not fileName.endswith(".rws"):
-            fileName += ".rws"
-        self.worksheet.save(fileName)
-        self.activateWindow()
-
-    def __createViewActions(self):
-        self.zoomInAct = QAction(self.tr("&Zoom In"), self)
-        self.zoomInAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Plus))
-        self.viewMenu.addAction(self.zoomInAct)
-        self.connect(self.zoomInAct, SIGNAL("triggered()"), self.zoomIn)
-
-        self.zoomOutAct = QAction(self.tr("&Zoom Out"), self)
-        self.zoomOutAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Minus))
-        self.viewMenu.addAction(self.zoomOutAct)
-        self.connect(self.zoomOutAct, SIGNAL("triggered()"), self.zoomOut)
-
-        self.zoomDefAct = QAction(self.tr("&Zoom Default"), self)
-        self.zoomDefAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Equal))
-        self.viewMenu.addAction(self.zoomDefAct)
-        self.connect(self.zoomDefAct, SIGNAL("triggered()"), self.zoomDef)
-
-    def zoomIn(self):
-        self.worksheet.setupFont(self.worksheet.font().pixelSize()+1)
-        self.__setWidthByFont(83,True)
-
-    def zoomOut(self):
-        self.worksheet.setupFont(max(self.worksheet.font().pixelSize()-1,8))
-        self.__setWidthByFont(83,True)
-
-    def zoomDef(self):
-        self.worksheet.setupFont(14)
-        self.__setWidthByFont(83,True)
-
-    def __createDevelActions(self):
-        self.testAct = QAction(self.tr("Test"), self)
-        self.testAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_T))
-        self.develMenu.addAction(self.testAct)
-        self.connect(self.testAct, SIGNAL("triggered()"), self.test)
-
-    def test(self):
-        self.worksheet.zoomIn(10)
-
+    
     def showMessage(self,message):
 	self.statusBar.showMessage(message,0)
 
@@ -337,3 +284,68 @@ class QtReduceStatusBar(QStatusBar):
             self.reduceStatus.setText(" Evaluating")
         else:
             self.reduceStatus.setText(" Ready")
+
+
+class QtReduceMenuBar(QMenuBar):
+
+    def __init__(self,mainWindow,parent=None):
+        QMenuBar.__init__(self,parent)
+        self.main = mainWindow
+        self.__createMenus()
+        self.__createActions()
+
+    def __createMenus(self):
+        self.fileMenu = self.addMenu(self.tr("&File"))
+        self.viewMenu = self.addMenu(self.tr("&View"))
+        self.develMenu = self.addMenu(self.tr("Develop"))
+        self.helpMenu = self.addMenu(self.tr("&Help"))
+
+    def __createActions(self):
+        self.__createFileActions()
+        self.__createViewActions()
+        self.__createDevelActions()
+        self.__createHelpActions()
+
+    def __createFileActions(self):
+        self.openAct = QAction(self.tr("&Open..."), self)
+        self.openAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_O))
+        self.fileMenu.addAction(self.openAct)
+        self.openAct.triggered.connect(self.main.open,type=Qt.DirectConnection)
+
+        self.saveAct = QAction(self.tr("&Save"), self)
+        self.saveAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_S))
+        self.fileMenu.addAction(self.saveAct)
+        self.saveAct.triggered.connect(self.main.save,type=Qt.DirectConnection)
+
+        self.saveAsAct = QAction(self.tr("Save As..."), self)
+        self.saveAsAct.setShortcut(
+            QKeySequence(Qt.ShiftModifier|Qt.ControlModifier|Qt.Key_S))
+        self.fileMenu.addAction(self.saveAsAct)
+        self.saveAsAct.triggered.connect(self.main.saveAs,type=Qt.DirectConnection)
+
+    def __createViewActions(self):
+        self.zoomInAct = QAction(self.tr("&Zoom In"), self)
+        self.zoomInAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Plus))
+        self.viewMenu.addAction(self.zoomInAct)
+        self.zoomInAct.triggered.connect(self.main.zoomIn,type=Qt.DirectConnection)
+
+        self.zoomOutAct = QAction(self.tr("&Zoom Out"), self)
+        self.zoomOutAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Minus))
+        self.viewMenu.addAction(self.zoomOutAct)
+        self.zoomOutAct.triggered.connect(self.main.zoomOut,type=Qt.DirectConnection)
+
+        self.zoomDefAct = QAction(self.tr("&Zoom Default"), self)
+        self.zoomDefAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Equal))
+        self.viewMenu.addAction(self.zoomDefAct)
+        self.zoomDefAct.triggered.connect(self.main.zoomDef,type=Qt.DirectConnection)
+
+    def __createDevelActions(self):
+        self.testAct = QAction(self.tr("Test"), self)
+        self.testAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_T))
+        self.develMenu.addAction(self.testAct)
+        self.testAct.triggered.connect(self.main.test,type=Qt.DirectConnection)
+
+    def __createHelpActions(self):
+        self.aboutAct = QAction(self.tr("&About"), self)
+        self.helpMenu.addAction(self.aboutAct)
+        self.aboutAct.triggered.connect(self.main.about,type=Qt.DirectConnection)
