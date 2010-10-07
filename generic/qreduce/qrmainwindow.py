@@ -57,7 +57,9 @@ class QtReduceMainWindow(QMainWindow):
         self.setUnifiedTitleAndToolBarOnMac(1)
         self.setStatusBar(QtReduceStatusBar(parent))
         self.setMenuBar(QtReduceMenuBar(self,parent))
+        self.statusBar().reduceStatus.setText(" Initialising")
         self.__createWorksheet()
+        self.statusBar().reduceStatus.setText(" Ready")
         self.__initStatusBarSignals()
         self.__setWidthByFont(83)
         self.__setHeightByFont(24)
@@ -74,15 +76,22 @@ class QtReduceMainWindow(QMainWindow):
 #         setupWorksheets();
 
     def __initStatusBarSignals(self):
-        self.worksheet.reduce.newReduceResult.connect(
-            self.worksheet.newReduceResultHandler,
-            type=Qt.DirectConnection)
-        self.worksheet.reduce.newReduceResult.connect(
+        self.worksheet.newResult.connect(
             self.statusBar().newReduceResultHandler,
             type=Qt.DirectConnection)
-        self.worksheet.reduce.newReduceComputation.connect(
+        self.worksheet.newComputation.connect(
             self.statusBar().newReduceComputationHandler,
             type=Qt.DirectConnection)
+        print "got here"
+        #self.worksheet.reduce.newReduceResult.connect(
+        #    self.worksheet.newReduceResultHandler,
+        #    type=Qt.DirectConnection)
+        #self.worksheet.reduce.newReduceResult.connect(
+        #    self.statusBar().newReduceResultHandler,
+        #    type=Qt.DirectConnection)
+        #self.worksheet.reduce.newReduceComputation.connect(
+        #    self.statusBar().newReduceComputationHandler,
+        #    type=Qt.DirectConnection)
         self.worksheet.fileNameChanged.connect(
             self.setTitle,
             type=Qt.DirectConnection)
@@ -254,7 +263,6 @@ class QtReduceStatusBar(QStatusBar):
         self.reduceTime.setFont(font)
         self.reduceStatus = QLabel()
         self.reduceStatus.setFont(font)
-        self.reduceStatus.setText(" Initialising")
         self.addPermanentWidget(self.reduceMode)
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)

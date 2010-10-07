@@ -60,11 +60,11 @@ class QtReduceWorksheet(QTextEdit):
     fileName = ''
     modified = False
     fileNameChanged = Signal(StringType,IntType)
-
+    newComputation = Signal(object)
+    newResult = Signal(object)
 
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
-#        Qt.qRegisterMetaType(DictType)
         self.parent = parent
         self.__initSignals()
         self.__initReduce()
@@ -83,17 +83,20 @@ class QtReduceWorksheet(QTextEdit):
     def setupFont(self,pt):
         font = self.font()
         font.setFamily('Courier')
-        font.setFixedPitch(1)
+        font.setFixedPitch(True)
         font.setKerning(0)
         font.setPixelSize(pt)
         font.setWeight(QFont.Normal)
         font.setItalic(False)
         self.setFont(font)
 
-
     def __initReduce(self):
         print "in __initReduce"
         self.reduce = Reduce(self)
+        self.reduce.newResult.connect(self.newReduceResultHandler,
+                                      type=Qt.DirectConnection)
+        self.reduce.newComputation.connect(self.newReduceComputationHandler,
+                                           type=Qt.DirectConnection)
         self.compute("load_package utf8;",True)
         self.compute("on utf8;",True)
         self.compute("on utf8exp;",True)
@@ -105,8 +108,19 @@ class QtReduceWorksheet(QTextEdit):
     def compute(self,c,silent=False):
         self.setReadOnly(True)
         self.reduce.compute(c,silent)
+        self.setReadOnly(False)
+
+    def newReduceResultHandler(self,rc):
+        self.newResult.emit(rc)
+        print "catching newReduceResult", rc.statCounter
+        if not self.reduce.silent:
+            self.__renderOutput(rc)
+
+    def newReduceComputationHandler(self,rc):
+        self.newComputation.emit(rc)
 
     def __initFirstBlock(self):
+        print "initFirstBlock"
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.Start)
         ReduceBlockFormat.labelBlock(cursor,0)
@@ -259,13 +273,7 @@ class QtReduceWorksheet(QTextEdit):
 
     def cursorPositionChangedHandler(self):
         self.parent.statusBar().clearMessage()
-
-    def newReduceResultHandler(self,computation):
-        print "catching newReduceResult", computation.statCounter
-        if not self.reduce.silent:
-            self.__renderOutput(computation)
-        self.setReadOnly(False)
-
+       
 
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 
 # [GCC 4.2.1 (Apple Inc. build 5646)] on darwin

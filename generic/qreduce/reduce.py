@@ -39,9 +39,9 @@ from RedPy import procNew, procDelete, ansNew, ansDelete
 
 class Reduce(QThread):
     # currently only works with 'object' type, not with 'ReduceComputation' 
-    newReduceComputation = Signal(object)
-    newReduceResult = Signal(object)
-
+    newComputation = Signal(object)
+    newResult = Signal(object)
+    
     def __init__(self,parent=None,reduce='../../bin/redpsl'):
         QThread.__init__(self)
         self.parent = parent
@@ -54,7 +54,8 @@ class Reduce(QThread):
     def compute(self,c,silent=False):
         print "computing...."
         self.computation.evaluating = True
-        self.newReduceComputation.emit(self.computation)
+        if not silent:
+            self.newComputation.emit(self.computation)
         self.wait()
         self.currentCommand = c
         self.silent = silent
@@ -66,8 +67,12 @@ class Reduce(QThread):
         ansDelete(a['handle'])
         self.__processAnswer(a['data'])
         self.computation.evaluating = False
-        print "emitting newReduceResult", self.computation
-        self.newReduceResult.emit(self.computation)
+        if not self.silent:
+            print "emitting newReduceResult", self.computation
+            self.newResult.emit(self.computation)
+        else:
+            if self.computation.error:
+                print "There was a problem initializing Reduce: ", self.computation
 
     def __processAnswer(self,a):
         self.computation.statCounter = a['statcounter']
