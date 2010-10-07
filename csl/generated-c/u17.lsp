@@ -1,7 +1,41 @@
 
 % u17.lsp           Machine generated Lisp
 
-(c!:install "u17" 3823 8074283 5896406)
+(c!:install "u17" 15806 5494228 6430508)
+
+(c!:install 'simpatom '(simpatom nil !:rd!: dmode!* !:mod!:
+current!-modulus convert i2d "String" "identifier" share idvalfn
+!*numval constant lispapply !*backtrace scalar typerr eval simp mksq
+errorset !*d2q getrtype fl2bf) 1188814423318592778)
+
+(c!:install 'nonlnrsys '(nonlnrsys nil nonlnr) 752485407072696924)
+
+(c!:install 'cl_simpl '(cl_simpl !*rlsism nil inctheo and false
+cl_sitheo rl_smupdknowl cl_simpl1) 223841921215303609)
+
+(c!:install 'simpg3 '(simpg3 g3 simpcv) 2740668184409933)
+
+(c!:install 'remove!-free!-vars!* '(remove!-free!-vars!* t
+!*!*noremove!*!* remove!-free!-vars) 207734612737065001)
+
+(c!:install 'evaluatecoeffts '(evaluatecoeffts nil indexlist valuecoefft
+!*multf addf) 794591683598288264)
+
+(c!:install 'expnd1 '(expnd1 exptf multf addf) 2081688685545235425)
+
+(c!:install 'ibalp_lenisone '(ibalp_lenisone nil) 509341193799918985)
+
+(c!:install 'numpoly_ldeg '(numpoly_ldeg numpoly_nullp) 
+1898963168831507800)
+
+(c!:install 'om2mml '(om2mml t "Intermediate representation:" om2ir
+terpri!* ir2mml) 787896593084350663)
+
+(c!:install 'revalx '(revalx nil prepf1 replus reval) 906675932798363755
+)
+
+(c!:install 'dipcondense '(dipcondense dipevlist!* nil evcompless!?
+setcar setcdr) 348690643617595044)
 
 (c!:install '!*wedgepf2pf '(!*wedgepf2pf mkuwedge nreverse) 
 759972719618937260)
@@ -25,6 +59,11 @@ update!-pline oprin indexpower) 243472115781483630)
 
 (c!:install 'reduce_pv0 '(reduce_pv0 nil pv_den lcm pv_multc pv_add) 
 1756504408065633562)
+
+(c!:install 'simpiden '(simpiden !:rn!: !:rd!: list nil !*sq t odd
+nonzero ncmp!* subfg!* linear symmetric antisymmetric even aeval mksq
+prepsqxx formlnr simp opmtch ordn negf minusf repeats permp valuechk) 
+2106336709871877139)
 
 (c!:install 'rl_csimpl '(rl_csimpl !*rlsimpl rl_simpl nil getd) 
 520934790743523296)
@@ -74,6 +113,8 @@ multiply!-by!-constant!-mod!-p) 235898759529247698)
 
 (c!:install 'gitimes!: '(gitimes!: !:gi!:) 844551676560942149)
 
+(c!:install 'mkpartitions1 '(mkpartitions1) 336453036083815684)
+
 (c!:install 'ofsf_clnegrel '(ofsf_clnegrel ofsf_lnegrel) 
 1495032427540284046)
 
@@ -92,51 +133,6 @@ errmsg!* !*protfg terpri!* lprie printty lpriw) 1227917480290319652)
 aex_ctx aex_mk) 1135898223018262912)
 
 (c!:install 'tobvarir '(tobvarir bvar) 90795249890908902)
-
-(c!:install 'ps!:evaluate!-next '(ps!:evaluate!-next ps ps!:erule
-ps!:getv ps!:expression apply prepsqxx simp!* ps!:set!-term) 
-1451468694344642539)
-
-(c!:install 'lid '(lid) 1048228651616277337)
-
-(c!:install 'indord2 '(indord2 indordp) 1618021129309535199)
-
-(c!:install 'quotfail1 '(quotfail1 polyzero quotf errorf) 
-941730650520050538)
-
-(c!:install 'my_freeof '(my_freeof nil depl!* smember freeofdepl) 
-921718580149925090)
-
-(c!:install 'physopsm!* '(physopsm!* rvalue psimpfn opmtch
-physopfunction physoparith physopfn "invalid call of " " with args: "
-" has been flagged Physopfunction" " but is not defined" physopmapping
-prog physopp physopaeval opmtch!* hasonephysop apply reval3
-areallphysops rederr2 !*physopp!* mk!*sq aeval physopprog) 
-1156152042253016303)
-
-(c!:install 'setk '(setk evalargfn rtype matrix setk0 revlis) 
-1991935475192031166)
-
-(c!:install 'mv!-domainlist '(mv!-domainlist nreverse) 
-296190814143791910)
-
-(c!:install 'addgt '(addgt ordering lex plus eval) 1701930144718944906)
-
-(c!:install 'st_consolidate '(st_consolidate nil t !*) 
-704199119824727847)
-
-(c!:install 'arplus!: '(arplus!: dmode!* !*exp t !:ar!: addf) 
-142261442931697279)
-
-(c!:install 'reverse!-num '(reverse!-num ilog2 reverse!-num1) 
-893954207581207090)
-
-(c!:install 'mksq '(mksq subfg!* wtl!* k!* !*nosubs avalue used!*
-asymplis!* nil powlis!* (expt sqrt) t !*sub2 mksqsubfn kvalue !*resubs
-fkern getpower multsq simp exptsq) 714770496093400635)
-
-(c!:install 'sq2sstm '(sq2sstm sq2sscfpl mapins mkzl) 459413381349231833
-)
 
 
 % End of generated Lisp code

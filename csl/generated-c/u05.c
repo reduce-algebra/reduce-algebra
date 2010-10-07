@@ -1,7 +1,7 @@
 
 /* $destdir\u05.c        Machine generated C code */
 
-/* Signature: 00000000 26-Sep-2010 */
+/* Signature: 00000000 07-Oct-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2465,7 +2465,7 @@ static Lisp_Object MS_CDECL CC_assert_analyze(Lisp_Object env, int nargs, ...)
     v76 = (Lisp_Object)1; /* 0 */
     stack[-2] = v76;
     v77 = qvalue(elt(env, 1)); /* assertstatistics!* */
-    v76 = elt(env, 2); /* lambda_l9cw2s_1 */
+    v76 = elt(env, 2); /* lambda_l9xqtq_1 */
     fn = elt(env, 8); /* sort */
     v76 = (*qfn2(fn))(qenv(fn), v77, v76);
     nil = C_nil;
@@ -2790,9 +2790,9 @@ v78:
 
 
 
-/* Code for lambda_l9cw2s_1 */
+/* Code for lambda_l9xqtq_1 */
 
-static Lisp_Object CC_lambda_l9cw2s_1(Lisp_Object env,
+static Lisp_Object CC_lambda_l9xqtq_1(Lisp_Object env,
                          Lisp_Object v0, Lisp_Object v1)
 {
     Lisp_Object nil = C_nil;
@@ -2800,7 +2800,7 @@ static Lisp_Object CC_lambda_l9cw2s_1(Lisp_Object env,
     Lisp_Object fn;
     CSL_IGNORE(nil);
 #ifdef DEBUG
-    if (check_env(env)) return aerror("env for lambda_l9cw2s_1");
+    if (check_env(env)) return aerror("env for lambda_l9xqtq_1");
 #endif
     CSL_IGNORE(env);
 /* copy arguments values to proper place */
@@ -7775,7 +7775,7 @@ setup_type const u05_setup[] =
     {"layout-formula",          wrong_no_na,    wrong_no_nb,   (n_args *)CC_layoutKformula},
     {"repeatsp",                CC_repeatsp,    too_many_1,    wrong_no_1},
     {"assert_analyze",          wrong_no_na,    wrong_no_nb,   (n_args *)CC_assert_analyze},
-    {"lambda_l9cw2s_1",         too_few_2,      CC_lambda_l9cw2s_1,wrong_no_2},
+    {"lambda_l9xqtq_1",         too_few_2,      CC_lambda_l9xqtq_1,wrong_no_2},
     {"simpplus",                CC_simpplus,    too_many_1,    wrong_no_1},
     {"mo_compare",              too_few_2,      CC_mo_compare, wrong_no_2},
     {"pv_sort",                 CC_pv_sort,     too_many_1,    wrong_no_1},
@@ -7837,7 +7837,7 @@ setup_type const u05_setup[] =
     {"testred",                 CC_testred,     too_many_1,    wrong_no_1},
     {"mknwedge",                CC_mknwedge,    too_many_1,    wrong_no_1},
     {"smemqlp",                 too_few_2,      CC_smemqlp,    wrong_no_2},
-    {NULL, (one_args *)"u05", (two_args *)"17281 2619668 6944010", 0}
+    {NULL, (one_args *)"u05", (two_args *)"4103 6859962 5130685", 0}
 };
 
 /* end of generated code */

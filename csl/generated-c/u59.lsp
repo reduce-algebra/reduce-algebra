@@ -1,7 +1,63 @@
 
 % u59.lsp           Machine generated Lisp
 
-(c!:install "u59" 8388 4617476 9436901)
+(c!:install "u59" 19806 603918 2196224)
+
+(c!:install 'invlex '(invlex list !*protfg
+"Argument to invlex not a list" nil equal difference invsysvars!* lex
+ordering gg plus gv prepf reval gvarlis readsys invlex!* !*di2q sqform
+lprie) 2050640579603357244)
+
+(c!:install 'pst_reduce '(pst_reduce nil pst_termnodep upbve pst_subpst
+setdiff) 545065434440314409)
+
+(c!:install 'nbglp '(nbglp nil t bglp!:!: baglistp) 2029067606823227088)
+
+(c!:install 'basic!-kern1 '(basic!-kern1 nil algebraic!-function simp
+allbkern) 1456972291673204133)
+
+(c!:install 'square!-free!-mod!-p '(square!-free!-mod!-p
+derivative!-mod!-p gcd!-mod!-p) 1793212767385351113)
+
+(c!:install 'bfexplode0x '(bfexplode0x t !:lower!-sci!: !:upper!-sci!:
+!0 nil !- !*fullprec nlist) 998990698576726181)
+
+(c!:install 'split_non_linear_form '(split_non_linear_form nil
+split_non_linear_f) 217814701749651358)
+
+(c!:install 'wu '(wu wuvarlist!* nil !*trwu "trivial CHS" (1)
+"with initial "
+"which we discard, as the initial is a member of the CHS"
+"*** Something awry: the initial is a member of the polset" t
+"--------------------------------------------------------"
+"Final result:" "Ascending set" minusf negf union wusort chrstrem
+wuconstantp multf prin2!* xprinf2 terpri!* prin2t!*) 1976088969780218905
+)
+
+(c!:install 'kern!-list '(kern!-list nil kernels1 depend!-p) 
+654720358622187891)
+
+(c!:install 'qqe_length!-graph!-neighbor!-edge '(
+qqe_length!-graph!-neighbor!-edge) 652696437433131980)
+
+(c!:install 'tryfactorf '(tryfactorf nil failed atomlis quadthroughf
+quotf linethroughf) 1231530457399166361)
+
+(c!:install 'subeval0 '(subeval0 nil equal sublist!* sub !*protfg
+"SUB requires at least 2 arguments" !*evallhseqp list equalopr
+"Syntax error:" "invalid" t reval fkern getpower mk!*sq lprie getrtype
+!*a2kwoweight msgpri aeval subeval1) 898728748055308729)
+
+(c!:install 'groebinvokecritb '(groebinvokecritb nil bcount!*
+buchvevdivides!? vevlcm) 766198175719359926)
+
+(c!:install 'vdptdeg '(vdptdeg vevtdeg vdpred max) 430102835426818768)
+
+(c!:install 'basisvectorp '(basisvectorp nil basisvectorl!*) 
+1903553830478285501)
+
+(c!:install 'mk_simpl_map_ '(mk_simpl_map_ nil mk_simpl_map_1) 
+2206035015493724696)
 
 (c!:install 'rappend '(rappend append list "list" argnochk reval
 getrtype typerr) 1509445515969905011)
@@ -29,88 +85,6 @@ pa_vect2list upbve) 1822321577279861184)
 mkempspmat lprie letmtr3) 1185052448505301301)
 
 (c!:install 'compex '(compex nil constrexp) 1849987873918220578)
-
-(c!:install 'multsm '(multsm nil multsq) 1679888803457872187)
-
-(c!:install 'binomial '(binomial !_binomialn !_binomialb !_binomialk nil
-) 866840025378657258)
-
-(c!:install 'redexpp '(redexpp !*redarithexpops!* !*redlogexpops!*
-!*redreswds!*) 365146733599614018)
-
-(c!:install 'polyp '(polyp t expt plus minus times quotient df nil
-depl!* my_freeof smember) 738235477849771421)
-
-(c!:install 'formclear1 '(formclear1 list nil share form1) 
-639130403771559653)
-
-(c!:install 'remred '(remred gg nil t dd) 1612372540937689531)
-
-(c!:install 'qqe_qadd!-inside!-at '(qqe_qadd!-inside!-at t nil rl_prepat
-qqe_arg2l qqe_arg2r qqe_qadd!-inside) 184965526275803037)
-
-(c!:install 'pasf_ordrelp '(pasf_ordrelp (equal neq leq lessp geq
-greaterp cong ncong)) 424400131077055788)
-
-(c!:install 'ratpoly_xtothen '(ratpoly_xtothen ratpoly_fromatom
-ratpoly_mult) 760934499651719406)
-
-(c!:install 'mkop '(mkop "Local variable" "operator" operator !*msg nil
-"***" "already defined as operator" (fluid global procedure scalar)
-simpfn simpiden gettype typerr lpriw) 2205947085662294154)
-
-(c!:install 'simp!:ps!: '(simp!:ps!: simp!:ps1) 2025566615156754466)
-
-(c!:install 'leqgrt '(leqgrt nil) 607695238952874440)
-
-(c!:install 'transferrow '(transferrow codmat maxvar plus nil times
-transferrow1 transferrow2) 1446010489490009659)
-
-(c!:install 'weak_xautoreduce1 '(weak_xautoreduce1 nil weak_xreduce
-xnormalise xval xdiv) 2118348560454091679)
-
-(c!:install 'partitinnerprod '(partitinnerprod partitop innerprodpf) 
-8883592435385114)
-
-(c!:install 'find_bubles1_coeff '(find_bubles1_coeff find_bubles1) 
-881233567543193387)
-
-(c!:install 'clogf '(clogf nil log kernels1 setdiff setkorder reorder
-clogf1) 602201085288055662)
-
-(c!:install 'coeffrow '(coeffrow nil nreverse) 88253415721988576)
-
-(c!:install 'frlp '(frlp frlis!* nil) 1213576744569851735)
-
-(c!:install 'canonical '(canonical !*distribute nil distribute !*sq
-simp!* on distri_pol dv_canon_monomial addf) 1038876709939238318)
-
-(c!:install 'mult!.comp!.tp!. '(mult!.comp!.tp!. nil
-get!-min!-degreelist tayexp!-difference tayexp!-min2 tayexp!-plus2 nlist
-) 1821341179306404308)
-
-(c!:install 'qqe_length!-graph!-remove!-mark '(
-qqe_length!-graph!-remove!-mark nil) 377600596588172727)
-
-(c!:install 'sfto_dprpartksf '(sfto_dprpartksf sfto_dcontentf quotf) 
-944517047698581519)
-
-(c!:install 'find!-expts '(find!-expts sqrt expt (quotient 1 2) quotient
-g lcm) 1947339142952068520)
-
-(c!:install 'inszzzr '(inszzzr dm!-plus zeropp nreverse) 
-1499206400902837886)
-
-(c!:install 'dsimptimes '(dsimptimes t "CATASTROPHIC ERROR *****" " "
-nil
-"Please report output and input listing on the sourceforge bug tracker"
-errmsg!* !*protfg dsimp mappend lastpair terpri!* lprie printty lpriw) 
-713436516242005894)
-
-(c!:install '!:pi '(!:pi "Invalid argument to" not_found nil !:rd!:
-get!:const round!:mt save!:const error) 1065030639748549291)
-
-(c!:install 'dif '(dif nil !` !! t reval) 216576395192862295)
 
 
 % End of generated Lisp code

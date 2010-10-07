@@ -1,7 +1,17 @@
 
 % u22.lsp           Machine generated Lisp
 
-(c!:install "u22" 15267 4292573 4580198)
+(c!:install "u22" 5005 4938750 7156399)
+
+(c!:install 'quotof '(quotof nil minus "Wrong number of arguments to"
+lcx errmsg!* !*protfg ordop fkern getpower lprie raddf quotofd) 
+1490484656848467821)
+
+(c!:install 'ilog2 '(ilog2 " invalid for " nil error) 967642275976074788
+)
+
+(c!:install 'difbf '(difbf !:rd!: !:bprec!: msd inorm) 
+345830682491230969)
 
 (c!:install 'drnconv '(drnconv dmd!*) 740056196876944919)
 
@@ -39,6 +49,11 @@ nil ps!:getv) 2201923963613956526)
 
 (c!:install 'rnprep!: '(rnprep!: nil quotient prepf1 replus) 
 1167301686715916297)
+
+(c!:install 'super_der_simp '(super_der_simp variables (ext) ext
+even_dimension nil odd_dimension simpiden reval simp!* split_form
+even_action super_product_sq multf invsq multsq odd_action addsq negf
+split_ext pnth) 1985636992735999807)
 
 (c!:install 'ofsf_entry2at1 '(ofsf_entry2at1 and nil ofsf_clnegrel addsq
 ) 839944857403023036)
@@ -130,32 +145,6 @@ revlis_without_mode revlis nreverse) 2122889097865007208)
 (c!:install 'red_topredbe '(red_topredbe " reduce " nil bas_dpoly
 cali_trace dp_print dp_lmon bas_dpecart red_divtestbe red_subst) 
 530877830775228608)
-
-(c!:install 'nf '(nf gg nil redtails gv tred "r e d u c t i o n :  " "/"
-stars "*" reductions nforms zeros dless dd gcdf!* cdiv pcmult dquot
-pdmult pdif gcdout) 2157405568089705302)
-
-(c!:install 'safe!-modrecip '(safe!-modrecip !*msg !*protfg nil t
-!:mod!: general!-modular!-reciprocal erfg!* errorset) 
-2035323403680681014)
-
-(c!:install 'use!-berlekamp '(use!-berlekamp dpoly nil poly!-vector
-current!-modulus remainder!-in!-vector find!-null!-space
-times!-in!-vector) 1197715551137212609)
-
-(c!:install 'mconv1 '(mconv1 drnconv nreverse) 2059428427758218317)
-
-(c!:install 'prepreform1 '(prepreform1 dname nil t (plus difference
-minus times quotient) simpfn !*sq simp!* sqhorner!* prepsq!*) 
-94445052129448998)
-
-(c!:install 'negind '(negind nil) 369439999097960237)
-
-(c!:install 'cl_fvarl1 '(cl_fvarl1 cl_varl1) 1605419124039901549)
-
-(c!:install 'cl_pnf2 '(cl_pnf2 ex all or and true false not impl repl
-equiv bex ball !*protfg "cl_pnf2():" "invalid as operator" lprie
-cl_pnf2!-junctor cl_pnf2!-quantifier) 1411037352827600829)
 
 
 % End of generated Lisp code

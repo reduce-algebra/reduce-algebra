@@ -1,7 +1,23 @@
 
 % u33.lsp           Machine generated Lisp
 
-(c!:install "u33" 20228 3425425 4896602)
+(c!:install "u33" 2449 1488952 1453363)
+
+(c!:install 'weak_xreduce1 '(weak_xreduce1 nil !*trxmod "   " first
+wedge " +" last xval xdiv mknwedge wedgepf invsq multsq negf multpfsq
+addpf subs2pf eval assgnpri preppf) 1066956229329639137)
+
+(c!:install 'mkprec '(mkprec fixedpreclis!* preclis!* nil infix op unary
+nary) 799177604596311052)
+
+(c!:install 'ev!-denom2 '(ev!-denom2 ev!-edgeloop) 1706203607518988845)
+
+(c!:install 'mv!-compact2 '(mv!-compact2 nil equiv!-coeffs
+mv!-domainlist reduce mv!-domainlist!-!- mv!-coeff!-replace mv!-!+) 
+2225783091513746606)
+
+(c!:install 'redall '(redall gg nil shortway thirdway t gv path " ==> "
+" --> " conds bv ljet nf ord dd insert) 1820476589387220259)
 
 (c!:install 'ofsf_qesubqat '(ofsf_qesubqat prepf !*rlqelocal equal neq
 geq nil ofsf_varlat sqform subf ofsf_qesubqat!-local ofsf_surep
@@ -99,38 +115,6 @@ prinpopargs round!:mt csl_normbf bfprin0 fl2bf) 527246278222689775)
 
 (c!:install 'diff_vertex '(diff_vertex !_0edge nreverse) 
 2218999908786884302)
-
-(c!:install 'applsmacro '(applsmacro "Argument mismatch for SMACRO"
-errmsg!* !*protfg nil g lambda lprie no!-side!-effect!-listp
-one!-entry!-listp subla!-q no!-side!-effectp one!-entryp pair) 
-370065968314790365)
-
-(c!:install 'mk_dummy_ids '(mk_dummy_ids dummy reserved dummy_id!*
-intersection clean_numid union) 847533562057394808)
-
-(c!:install 'makeqn!-maybe '(makeqn!-maybe equal) 1556924750241945412)
-
-(c!:install 'noncomfree '(noncomfree nil) 1017094101632879336)
-
-(c!:install 'containerom '(containerom "<OMA>" t vectorml vector
-valid_om!* set multiset multiset1 nil "vector" "<OMS cd=""" """ name="""
-"""/>" "</OMA>" printout indent!* multiom) 148016569882732357)
-
-(c!:install 'ldf!-dep!-var '(ldf!-dep!-var nil depl!* ldt!-tvar makeset)
- 799932098294362677)
-
-(c!:install 'findhr '(findhr headhisto codhisto nil psi npsi codmat
-maxvar rcoccup) 911043184694409564)
-
-(c!:install 'suchp '(suchp nil such!-that) 2237043806669000480)
-
-(c!:install 'evequal '(evequal t (0) nil) 162531075110848313)
-
-(c!:install '!:log10 '(!:log10 not_found bften!* get!:const log!:
-save!:const) 815825420359911240)
-
-(c!:install 'getphystypeexpt '(getphystypeexpt nil scalar getphystypecar
-) 115394872068527622)
 
 
 % End of generated Lisp code

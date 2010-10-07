@@ -1,7 +1,40 @@
 
 % u30.lsp           Machine generated Lisp
 
-(c!:install "u30" 19661 8045168 3301462)
+(c!:install "u30" 3551 9689844 9643999)
+
+(c!:install 'xreadlist '(xreadlist !*rcbkt!* list group cursym!*
+!*semicol!* "Syntax error: semicolon in list" nil !*comma!*
+"Syntax error: invalid comma in list" scan xread1 nconc2 symerr) 
+993011652238714471)
+
+(c!:install 'toolongexpp '(toolongexpp maxexpprintlen!* numprintlen) 
+1304998923951448279)
+
+(c!:install 'calc_coeff '(calc_coeff calc_world) 2014568002817880426)
+
+(c!:install 'vunion '(vunion) 1188605127457061104)
+
+(c!:install 'procstat1 '(procstat1 erfg!* fname!* t cursym!* procedure
+expr !*reduce4 (xread (quote proc)) nil !*backtrace (procedure operator)
+"procedure" "invalid as parameter list" "procedure name" read_param_list
+!*colon!* fnc eof!* !*semicol!* (xread t) (symerr (quote procedure) t)
+errorset scan typerr read_type getd gettype idlistp lprie) 
+2099769312149419033)
+
+(c!:install 'equiv!-coeffs '(equiv!-coeffs mv!-pow!-!> nreverse nzeros) 
+1331851324197063902)
+
+(c!:install 'red_tailreddriver '(red_tailreddriver nil bas_dpoly
+red!=hidelt red!=recover) 1779029486679368671)
+
+(c!:install 'xnsiz '(xnsiz log2of10 xnsiz1 ceiling) 1938943646278424154)
+
+(c!:install 'component_action '(component_action nil ext_mult multsq
+addsq) 578290300667736136)
+
+(c!:install 'ofsf_at2ir '(ofsf_at2ir nil negf addf sfto_dcontentf quotf
+invsq multsq) 63613550627078222)
 
 (c!:install 'testord '(testord t nil) 295419463470875117)
 
@@ -80,11 +113,6 @@ wtl!* ordl!* factors!* outputhandler!* maprin overflowed!* nil "(" ")"
 " / " prin2!* xprinf2 sqhorner!* prepsq!* prepreform1 maprint) 
 2086940714127063626)
 
-(c!:install 'simpiden '(simpiden !:rn!: !:rd!: list nil !*sq t odd
-nonzero ncmp!* subfg!* linear symmetric antisymmetric even aeval mksq
-prepsqxx formlnr simp opmtch ordn negf minusf repeats permp valuechk) 
-2106336709871877139)
-
 (c!:install 'skp_ordp '(skp_ordp atom_compare cons_ordp) 
 1955200832874693131)
 
@@ -112,15 +140,6 @@ prepsqxx formlnr simp opmtch ordn negf minusf repeats permp valuechk)
 (c!:install 'apply_e '(apply_e nil !*protfg
 "randpoly expons function must return an integer" apply lprie) 
 102389148492678740)
-
-(c!:install 'lispcodeexp '(lispcodeexp e exp 1.0 (!:rd!: !:cr!: !:crn!:
-!:gi!:) irena!-constants expt (quotient 1 2) sqrt !:rd!: (1 . 2)
-quotient nil t recip !*period difference plus minus !*lisparithexpops!*
-!*lisplogexpops!* realrat check!-for!-irena!-constants) 
-248820326542923296)
-
-(c!:install 'ofsf_negateat '(ofsf_negateat ofsf_lnegrel) 
-1853243829346918467)
 
 
 % End of generated Lisp code

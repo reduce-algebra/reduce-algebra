@@ -1,7 +1,7 @@
 
 % u09.lsp           Machine generated Lisp
 
-(c!:install "u09" 2467 6897774 7673697)
+(c!:install "u09" 6405 4428495 1911208)
 
 (c!:install 'pneg '(pneg nil cneg) 1093098300173118493)
 
@@ -41,6 +41,9 @@ checktag) 937649894869895081)
 
 (c!:install 'adddummy1a '(adddummy1a pappl_pv insert_pv) 
 1105585321030946226)
+
+(c!:install 'processcarpartitie1 '(processcarpartitie1 processpartitie1)
+ 1621080777247057227)
 
 (c!:install 'ofsf_varlat '(ofsf_varlat nil kernels1) 1773346802278292340
 )
@@ -124,6 +127,10 @@ errmsg!* !*protfg avalue lprie getel1) 144009899339842507)
 (c!:install 'c!:extadd '(c!:extadd c!:ordexp addf nreverse) 
 1996405572950108285)
 
+(c!:install 'split_f '(split_f "SPLIT_F: expression not linear w.r.t."
+list nil t get_first_kernel multf update_kc_list msgpri addf) 
+1686252993858126732)
+
 (c!:install 'revv0 '(revv0) 2264064029634840230)
 
 (c!:install 'rl_gettype '(rl_gettype avalue rtype) 1792825115883707683)
@@ -157,22 +164,14 @@ readch1 rread1) 1591289604880069709)
 (c!:install 'horner!-rule '(horner!-rule evaluate!-in!-order !*d2n) 
 1008346651469743991)
 
+(c!:install 'processpartitie1 '(processpartitie1 times ext graadlijst
+avalue pnth processcarpartitie1 ordn) 754480117805647734)
+
 (c!:install 'ofsf_smwcpknowl '(ofsf_smwcpknowl !*rlsusi cl_susicpknowl
 ofsf_smcpknowl) 172017522939197164)
 
 (c!:install 'color1 '(color1 qg nil g3 "Invalid structure of c0-graph."
 times removeg split3gv cerror addsq) 2046778740904804643)
-
-(c!:install 'exchk1 '(exchk1 expt times simp!* simpexpon1 addsq assoc2
-sqchk exchk2) 1142470071386621866)
-
-(c!:install 'rl_simpat '(rl_simpat rl_simpat!* apply) 
-1072579263991075396)
-
-(c!:install 'naryrd '(naryrd mathml) 1312667547952411945)
-
-(c!:install 'ps!:expression '(ps!:expression !:ps!: dname ps!:getv) 
-2142240046654939788)
 
 
 % End of generated Lisp code

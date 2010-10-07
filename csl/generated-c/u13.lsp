@@ -1,13 +1,19 @@
 
 % u13.lsp           Machine generated Lisp
 
-(c!:install "u13" 12093 1749442 718204)
+(c!:install "u13" 14854 5416727 1480983)
 
-(c!:install 'pa_coinc_split '(pa_coinc_split nil lambda_l9cw2t_2 upbve
+(c!:install 'all_edge '(all_edge nreverse) 962943690998207321)
+
+(c!:install 'red_better '(red_better bas_dplen) 1664735070248066575)
+
+(c!:install 'pv_times3 '(pv_times3 pappend) 30758553039306401)
+
+(c!:install 'pa_coinc_split '(pa_coinc_split nil lambda_l9xqtr_2 upbve
 sort) 1101798385830790966)
 
-(c!:install 'lambda_l9cw2t_2 '(lambda_l9cw2t_2 t nil) 
-2286773092730150862)
+(c!:install 'lambda_l9xqtr_2 '(lambda_l9xqtr_2 t nil) 963503688032479451
+)
 
 (c!:install 'modquotient!: '(modquotient!: general!-modular!-reciprocal
 general!-modular!-times !*modular2f) 2021983611340879705)
@@ -152,11 +158,6 @@ liedf) ifdegree xvarlistp mknwedge) 2005551136663904052)
 
 (c!:install 'quotdd '(quotdd nil i2d quotient dcombine) 
 1912772863482661394)
-
-(c!:install 'assert_error '(assert_error !*assertstatistics
-assertstatistics!* "assertion" "violated by result" "violated by" arg
-!*assertbreak !*protfg !*msg nil "***" setcar assert_format lprie lpriw
-mkid) 1217826911983139398)
 
 
 % End of generated Lisp code

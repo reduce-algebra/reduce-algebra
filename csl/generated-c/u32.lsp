@@ -1,7 +1,37 @@
 
 % u32.lsp           Machine generated Lisp
 
-(c!:install "u32" 1225 8005883 5597124)
+(c!:install "u32" 21063 2984727 6017251)
+
+(c!:install 'afactor '(afactor afactorvar !*noextend !*sqfree t
+!*trfield "We must factorise the following over: " listofnewsqrts nil
+" " "factorizes as " xprinf2 terpri!* algfactor printsf prin2!*) 
+76515843932775689)
+
+(c!:install 'cl_bnfsimpl '(cl_bnfsimpl !*rlbnfsac cl_sac) 
+1992113928242124091)
+
+(c!:install 'aex_neg '(aex_neg aex_ex ratpoly_neg aex_ctx aex_lcnttag
+aex_reducedtag aex_mk) 1174822798357898366)
+
+(c!:install 'listrd '(listrd atts (o r d e r) (t y p e != l i s t !$)
+list (l e x i c o g r a p h i c) sortlist lexog (n u m e r i c) numer
+pred search_att stats_getargs aeval) 1692397018972136340)
+
+(c!:install 'plusrd '(plusrd nil mathml alg_plus) 353584120376949198)
+
+(c!:install 'bfminus '(bfminus !:rd!:) 2300797808060861388)
+
+(c!:install 'findoptrow '(findoptrow codmat maxvar nil roccup1 newnjsi
+newjsi roccup2 pnthxzz testpr) 1202453468727223011)
+
+(c!:install 'critical_element '(critical_element) 2159678942939411618)
+
+(c!:install 'gfftimes '(gfftimes) 1640488325434087132)
+
+(c!:install 'reval3 '(reval3 simp mk!*sq) 1149247316266272062)
+
+(c!:install 'deletez1 '(deletez1 nreverse) 899786910001843474)
 
 (c!:install 'splitup '(splitup nil) 465365084042934263)
 
@@ -130,22 +160,6 @@ expand!-imrepart repartf impartf setkorder reorder subs2)
 (c!:install 'subs2p '(subs2p simp exptsq multsq) 2175334098728109586)
 
 (c!:install 'vdp2a '(vdp2a dip2a) 1570776988462219321)
-
-(c!:install 'weak_xreduce1 '(weak_xreduce1 nil !*trxmod "   " first
-wedge " +" last xval xdiv mknwedge wedgepf invsq multsq negf multpfsq
-addpf subs2pf eval assgnpri preppf) 1066956229329639137)
-
-(c!:install 'mkprec '(mkprec fixedpreclis!* preclis!* nil infix op unary
-nary) 799177604596311052)
-
-(c!:install 'ev!-denom2 '(ev!-denom2 ev!-edgeloop) 1706203607518988845)
-
-(c!:install 'mv!-compact2 '(mv!-compact2 nil equiv!-coeffs
-mv!-domainlist reduce mv!-domainlist!-!- mv!-coeff!-replace mv!-!+) 
-2225783091513746606)
-
-(c!:install 'redall '(redall gg nil shortway thirdway t gv path " ==> "
-" --> " conds bv ljet nf ord dd insert) 1820476589387220259)
 
 
 % End of generated Lisp code

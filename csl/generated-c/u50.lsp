@@ -1,7 +1,51 @@
 
 % u50.lsp           Machine generated Lisp
 
-(c!:install "u50" 12423 3349670 436439)
+(c!:install "u50" 19027 9089719 7779755)
+
+(c!:install 'multtaylor1 '(multtaylor1 nil add!-degrees exceeds!-order
+min2!-order multsq addsq enter!-sorted subs2!* lastpair) 
+1829104462584184038)
+
+(c!:install 'mk!+mat!+mult!+vec '(mk!+mat!+mult!+vec nil
+mk!+real!+inner!+product) 1600566079284537765)
+
+(c!:install 'qqe_dfs '(qqe_dfs t nil) 1731708426373422810)
+
+(c!:install 'cl_dnf '(cl_dnf or nil cl_gdnf0 rl_simpl) 
+1348279569221171778)
+
+(c!:install 'vdelete '(vdelete nreverse) 1364860348438815528)
+
+(c!:install 'dvfsf_smcpknowl '(dvfsf_smcpknowl !*rlsusi cl_susicpknowl
+cl_smcpknowl) 1389738360695934741)
+
+(c!:install 'unary '(unary "<apply>" "<" "/>" indent "</apply>" printout
+expression) 34163873161993361)
+
+(c!:install 'powmtch '(powmtch nil) 1211941034865087075)
+
+(c!:install 'pm!:gensym '(pm!:gensym !? !_ pm!:gensym!-count!*) 
+1295132655396871498)
+
+(c!:install 'xnormalise '(xnormalise nil invsq multpfsq) 
+1861699741257379840)
+
+(c!:install 'evalset_eq '(evalset_eq set_eq equal evalsetbool apply) 
+1152963132903555802)
+
+(c!:install 'iscale '(iscale) 1567378906517906507)
+
+(c!:install 'ev!-tades '(ev!-tades ndim!* binc nreverse) 
+859080957225118841)
+
+(c!:install 'degree!-order '(degree!-order t nil) 1484440485878999285)
+
+(c!:install 'listsub '(listsub list nil subeval1) 1919986579647309406)
+
+(c!:install 'bc_from_a '(bc_from_a simp!* bc!=simp) 824472216916119813)
+
+(c!:install 'algebnp '(algebnp nil !:ar!: t) 1007795163310331030)
 
 (c!:install 'modroots2 '(modroots2 nil (-1 0 1) t modroots3 modroots4) 
 1868084021990693538)
@@ -74,32 +118,6 @@ minusf oprin !:minus prin2!* xprinp xprinf2) 1055087141885356027)
 current!-modulus nreverse) 2207502095540440664)
 
 (c!:install 'ratplusm '(ratplusm) 1924127416921279095)
-
-(c!:install 'nrootnn '(nrootnn t !*primelist!* nil mcfactor!* irootn) 
-1198445807803353498)
-
-(c!:install 'vp2df '(vp2df sqrt vp1 vp2 mulpower) 2268022609591072297)
-
-(c!:install 'multtaylor!* '(multtaylor!* taylor!* !*taylorkeeporiginal
-nil multtaylor1 replace!-next multsq) 846950273893691823)
-
-(c!:install 'mk!+inner!+mat '(mk!+inner!+mat nil !*protfg
-"incorrect input in mkinnermat" simp matrix!+p lprie) 
-1627358067971198785)
-
-(c!:install 'makevar '(makevar) 1235060389738614657)
-
-(c!:install 'ofsf_simpat '(ofsf_simpat !*rlnzden !*rlposden
-"atomic formula" nil !*rladdcond (lessp leq greaterp geq) and greaterp
-neq simp typerr negf addsq multf) 1605122878239090247)
-
-(c!:install 'repr_new '(repr_new !*protfg
-"repr_new : invalid coefficient list" lprie) 1539416981401029104)
-
-(c!:install 'bc_minus!? '(bc_minus!? minusf) 1952517193192629692)
-
-(c!:install 'updkorder '(updkorder kord!* nil alglist!*) 
-467378026450231291)
 
 
 % End of generated Lisp code

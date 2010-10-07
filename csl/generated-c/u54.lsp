@@ -1,7 +1,35 @@
 
 % u54.lsp           Machine generated Lisp
 
-(c!:install "u54" 9594 48372 7970838)
+(c!:install "u54" 21232 7536252 4100143)
+
+(c!:install 'com43 '(com43 liemat bb ff algebraic l_z nil cc minus det
+quotient plus times comcom0 comcom1 comcom3 matrix aeval arrayfn setk
+evalneq evalequal clear aeval!*) 1199864247135900346)
+
+(c!:install 'dp_from_a '(dp_from_a list mat "dpoly" "dpoly operator"
+dp!=fn dp!=fnpow nil typerr apply dp!=a2dpatom) 1654239452200921320)
+
+(c!:install 'out_of_range '(out_of_range signat!* nil t flattens1
+extract_numid) 1140869009616282554)
+
+(c!:install 'try!-all!-constants '(try!-all!-constants nil
+number!-needed current!-modulus split!-further) 332395174585977833)
+
+(c!:install 'setmod '(setmod dmode!* (!:mod!:) field current!-modulus
+"modulus" reval primep set!-general!-modulus typerr) 1161630347691157718
+)
+
+(c!:install 'x!*!*p!-w '(x!*!*p!-w general!-difference!-mod!-p) 
+1083688349456741350)
+
+(c!:install 'ratleqp '(ratleqp ratdif) 2229277315578477880)
+
+(c!:install 'horner!-rule!-in!-order!-mod!-p '(
+horner!-rule!-in!-order!-mod!-p evaluate!-in!-order!-mod!-p !*d2n) 
+421784425375436902)
+
+(c!:install 'convprec '(convprec convchk) 194273680008027209)
 
 (c!:install '!*addsq '(!*addsq nil addf gcdf quotf !*multf minusf negf) 
 1765611115389057262)
@@ -50,60 +78,11 @@ st_consolidate st_extract_symcells1 listp upbve sc_repkern)
 
 (c!:install 'flatten '(flatten nreverse) 2068086728564921560)
 
+(c!:install 'equations_used '(equations_used cur_eq_set!* total_used) 
+1671667230452354471)
+
 (c!:install 'cl_atnum '(cl_atnum or and not impl repl equiv ex all bex
 ball true false) 68834369735622166)
-
-(c!:install 'matpri1 '(matpri1 !*fort "MAT" nil only t !*nat spare!*
-orig!* mat!-top!-l mat!-top!-r mat!-low!-l mat!-low!-r mat!-mid!-l
-mat!-mid!-r outputhandler!* maprin overflowed!* setq posn!* ycoord!*
-pline!* ymax!* ymin!* assgnpri terpri!* layout!-formula max
-update!-pline min symbol oprin maprint matpri2) 1339966197232532024)
-
-(c!:install 'iv_new '(iv_new) 1120989220244112093)
-
-(c!:install 'cgp_cp '(cgp_cp cgp_hp cgp_rp cgp_sugar cgp_number cgp_ci
-cgp_mk) 1471488992311093818)
-
-(c!:install 'math_ml_printer '(math_ml_printer !*both t nil
-outputhandler!* maprin overflowed!* terpri found_mat_int found_mat_compl
-indent consts_compl consts_mat_compl consts_int consts_mat_int found_int
-found_compl flagg !*web "<EMBED TYPE=""text/mathml"" MMLDATA="""
-"<math>" setq prepf mat list !*sq "</math>" """ HEIGHT=300 WIDTH=500>"
-"<EMBED TYPE=""text/mathml"" MMLDATA="" " " "" HEIGHT=300 WIDTH=500>"
-terpri!* printout expression close_forall sqform arbitrary_c matrixml
-!*a2k listml issq setqml maprint) 1706249329365758374)
-
-(c!:install 'subscriptedvarp2 '(subscriptedvarp2 nil symtabget) 
-50800334019104316)
-
-(c!:install 'nestminusp!: '(nestminusp!: nil simp minusf) 
-522441789077365634)
-
-(c!:install 'latexprin '(latexprin tex maprintla) 1604588845428437609)
-
-(c!:install 'cvt5 '(cvt5 round!:mt equal!:) 2202979197306591367)
-
-(c!:install 'rungekuttastep '(rungekuttastep list!-evaluate !:plus
-scal!*list list!+list !:!:quotient) 1370953207703641161)
-
-(c!:install 'makeanewindex '(makeanewindex idx mkid isanindex
-putanewindex) 1698543156323035876)
-
-(c!:install 'ext_edges '(ext_edges !_0edge delete_edge nreverse) 
-1173162142448093871)
-
-(c!:install 'generic!-sub '(generic!-sub dfp list dfp!-sub) 
-1855280535076220756)
-
-(c!:install 'dp_2a '(dp_2a dp!=2a dp!=replus) 1942462629911320347)
-
-(c!:install 'boolean!-eval1 '(boolean!-eval1 sq!* boolean nil prespsq
-boolean!-eval2 simp!-prop prepf1 replus) 626793035051624300)
-
-(c!:install 'invbase '(invbase list !*protfg
-"Argument to invbase not a list" nil equal difference invsysvars!* gg
-plus gv prepf reval gvarlis readsys invbase!* !*di2q sqform lprie) 
-781842550580990478)
 
 
 % End of generated Lisp code

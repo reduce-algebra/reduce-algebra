@@ -1,7 +1,7 @@
 
 /* $destdir\u02.c        Machine generated C code */
 
-/* Signature: 00000000 26-Sep-2010 */
+/* Signature: 00000000 07-Oct-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3524,32 +3524,6 @@ v63:
 
 
 
-/* Code for aeval */
-
-static Lisp_Object CC_aeval(Lisp_Object env,
-                         Lisp_Object v0)
-{
-    Lisp_Object nil = C_nil;
-    Lisp_Object v100, v47;
-    Lisp_Object fn;
-    CSL_IGNORE(nil);
-#ifdef DEBUG
-    if (check_env(env)) return aerror("env for aeval");
-#endif
-    CSL_IGNORE(env);
-/* copy arguments values to proper place */
-    v100 = v0;
-/* end of prologue */
-    v47 = v100;
-    v100 = qvalue(elt(env, 1)); /* nil */
-    {
-        fn = elt(env, 2); /* reval1 */
-        return (*qfn2(fn))(qenv(fn), v47, v100);
-    }
-}
-
-
-
 /* Code for chundexp */
 
 static Lisp_Object CC_chundexp(Lisp_Object env,
@@ -4421,6 +4395,57 @@ v1:
 /* error exit handlers */
 v140:
     popv(5);
+    return nil;
+}
+
+
+
+/* Code for split_form */
+
+static Lisp_Object CC_split_form(Lisp_Object env,
+                         Lisp_Object v0, Lisp_Object v7)
+{
+    Lisp_Object nil = C_nil;
+    Lisp_Object v14, v15;
+    Lisp_Object fn;
+    CSL_IGNORE(nil);
+#ifdef DEBUG
+    if (check_env(env)) return aerror("env for split_form");
+#endif
+    if (stack >= stacklimit)
+    {
+        push2(v7,v0);
+        env = reclaim(env, "stack", GC_STACK, 0);
+        pop2(v0,v7);
+        nil = C_nil;
+        if (exception_pending()) return nil;
+    }
+    push(env);
+/* space for vars preserved across procedure calls */
+    push3(nil, nil, nil);
+/* copy arguments values to proper place */
+    v14 = v7;
+    v15 = v0;
+/* end of prologue */
+    stack[-2] = v15;
+    stack[-1] = v14;
+    stack[0] = (Lisp_Object)17; /* 1 */
+    v14 = qvalue(elt(env, 1)); /* nil */
+    v14 = ncons(v14);
+    nil = C_nil;
+    if (exception_pending()) goto v30;
+    env = stack[-3];
+    {
+        Lisp_Object v21 = stack[-2];
+        Lisp_Object v22 = stack[-1];
+        Lisp_Object v49 = stack[0];
+        popv(4);
+        fn = elt(env, 2); /* split_f */
+        return (*qfnn(fn))(qenv(fn), 4, v21, v22, v49, v14);
+    }
+/* error exit handlers */
+v30:
+    popv(4);
     return nil;
 }
 
@@ -7955,7 +7980,6 @@ setup_type const u02_setup[] =
     {"mval",                    CC_mval,        too_many_1,    wrong_no_1},
     {"bcprod",                  too_few_2,      CC_bcprod,     wrong_no_2},
     {"sublistp",                too_few_2,      CC_sublistp,   wrong_no_2},
-    {"aeval",                   CC_aeval,       too_many_1,    wrong_no_1},
     {"chundexp",                CC_chundexp,    too_many_1,    wrong_no_1},
     {":times",                  too_few_2,      CC_Ttimes,     wrong_no_2},
     {"listsum",                 CC_listsum,     too_many_1,    wrong_no_1},
@@ -7968,6 +7992,7 @@ setup_type const u02_setup[] =
     {"*i2mod",                  CC_Hi2mod,      too_many_1,    wrong_no_1},
     {"general-modular-plus",    too_few_2,      CC_generalKmodularKplus,wrong_no_2},
     {"remainder-in-vector",     wrong_no_na,    wrong_no_nb,   (n_args *)CC_remainderKinKvector},
+    {"split_form",              too_few_2,      CC_split_form, wrong_no_2},
     {"ofsf_posdefp",            CC_ofsf_posdefp,too_many_1,    wrong_no_1},
     {"mcharg",                  wrong_no_na,    wrong_no_nb,   (n_args *)CC_mcharg},
     {"multsq",                  too_few_2,      CC_multsq,     wrong_no_2},
@@ -8015,7 +8040,7 @@ setup_type const u02_setup[] =
     {"dless",                   too_few_2,      CC_dless,      wrong_no_2},
     {"hasonevector",            CC_hasonevector,too_many_1,    wrong_no_1},
     {"sieve_pv",                too_few_2,      CC_sieve_pv,   wrong_no_2},
-    {NULL, (one_args *)"u02", (two_args *)"22107 1316565 4383159", 0}
+    {NULL, (one_args *)"u02", (two_args *)"12739 9420600 5513158", 0}
 };
 
 /* end of generated code */

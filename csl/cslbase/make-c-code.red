@@ -174,6 +174,7 @@ omitted := '(
     divdm                   %
     gck2                    %
     !:recip                 %
+    cr!:minus               %
 
     typerr                  % typerr and symerr are defined in makereduce.lsp
     symerr                  % but there are slightly versions elsewhere.

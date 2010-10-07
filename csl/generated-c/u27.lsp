@@ -1,7 +1,54 @@
 
 % u27.lsp           Machine generated Lisp
 
-(c!:install "u27" 9993 4354925 9965833)
+(c!:install "u27" 18683 9037141 1874948)
+
+(c!:install 'greatertype '(greatertype optlang!* fortran conversion t
+nil eval typerror) 2246511074214735828)
+
+(c!:install 'dipsum '(dipsum nil t evcomp setcdr bcsum bczero!?) 
+1587349300512045823)
+
+(c!:install 'vevstrictlydivides!? '(vevstrictlydivides!? nil vevmtest!?)
+ 900986280397584821)
+
+(c!:install 'evload '(evload nil) 885680099367003359)
+
+(c!:install 'getphystypecar '(getphystypecar nil getphystype) 
+549554832887196808)
+
+(c!:install 'no!-side!-effectp '(no!-side!-effectp nil quote t
+nosideeffects no!-side!-effect!-listp) 423548783291882208)
+
+(c!:install 'mo_zero '(mo_zero nil mo!=deglist) 1754197720832196820)
+
+(c!:install 'list_is_all_free '(list_is_all_free t nil nodum_varp) 
+1879709920781780796)
+
+(c!:install 'reduce!-eival!-powers '(reduce!-eival!-powers
+reduce!-eival!-powers1) 1004571763845761581)
+
+(c!:install 'give!*position '(give!*position nil t !*protfg
+"error in give position" pnth lprie) 381621414382355143)
+
+(c!:install 'pasf_subfof '(pasf_subfof pasf_subfof1 cl_apply2ats1) 
+910716725275690030)
+
+(c!:install 'lambdaom '(lambdaom "<OMBIND>" t
+"<OMS cd=""fns1"" name=""lambda""/>" "<OMBVAR>" nil "</OMBVAR>"
+"</OMBIND>" printout indent!* objectom) 847063321728976000)
+
+(c!:install 'vdpilcomb1 '(vdpilcomb1 !*gsugar dipilcomb1 dip2vdp gsugar
+vevtdeg max gsetsugar) 1626248016293304348)
+
+(c!:install 'module '(module !*mode mode!-list!* nil alglist!* symbolic)
+ 1050345486515428562)
+
+(c!:install 'list!-evaluate '(list!-evaluate nil evaluate) 
+146310651518289509)
+
+(c!:install 'ezgcdf1 '(ezgcdf1 factor!-level gcdlist poly!-abs) 
+1090411191736042162)
 
 (c!:install 'ratfunpri1 '(ratfunpri1 spare!* nil posn!* t orig!*
 ycoord!* pline!* ymin!* ymax!* bar quotient infix p!*!* "(" minus ")"
@@ -115,35 +162,6 @@ red_topredbe red_tailreddriver) 823666990266976705)
 horner!-rule!-in!-order!-mod!-p !*d2n) 1971267847906715886)
 
 (c!:install 'rl_nnf '(rl_nnf rl_nnf!* apply) 446074326825499106)
-
-(c!:install 'valuecoefft '(valuecoefft "Valuecoefft - no value" nil
-interr) 1862258819620248440)
-
-(c!:install 'qqe_eta!-in!-term1 '(qqe_eta!-in!-term1 qepsilon t nil
-qqe_simplterm qqe_op) 913073649869870035)
-
-(c!:install 'lambdavar '(lambdavar) 1816750194888957620)
-
-(c!:install 'domainvalchk '(domainvalchk dmode!* nil mk!*sq valuechk) 
-902646238426271914)
-
-(c!:install 'doublep '(doublep !:rd!: nil) 620829993394421821)
-
-(c!:install 's!-nextarg '(s!-nextarg !*udebug nil comb i upb (null!-fn)
-acontract op mcontract null!-fn expand identity uprint initcomb getcomb
-mval) 426507077737351493)
-
-(c!:install 'evinvlexcomp '(evinvlexcomp (0) evlexcomp) 
-596768119650033722)
-
-(c!:install 'dipprodin '(dipprodin dipzero dipprodin1 dipsum) 
-1256463770200100544)
-
-(c!:install 'exdff0 '(exdff0 nil multsqpf exdfp0 multpfsq addpf) 
-131303458675894461)
-
-(c!:install 'applysetop '(applysetop nil list setvalued "set" setdiff
-reval delete!-dups make!-set typerr aeval) 445657864416251660)
 
 
 % End of generated Lisp code

@@ -1,7 +1,54 @@
 
 % u44.lsp           Machine generated Lisp
 
-(c!:install "u44" 8959 1031929 2985290)
+(c!:install "u44" 21445 1479647 3936109)
+
+(c!:install 'sep_tens_from_other '(sep_tens_from_other nil translate1
+fullcopy setcar tensorp no_dum_varp multf) 1817790483172146138)
+
+(c!:install 'mk_character '(mk_character nil get_group_in get!*elements
+get_rep_matrix_in mk!+trace) 1955802577686070231)
+
+(c!:install 'limitom '(limitom "<OMA>" t
+"<OMS cd=""limit1"" name=""limit""/>" lowlimit
+"<OMS cd=""limit1"" name=""null""/>" condition
+"<OMS cd=""limit1"" name=""" """/>" limit nil "</OMA>" printout indent!*
+objectom lambdaom) 1344416317226606586)
+
+(c!:install 'make!-ps '(make!-ps tps tag !*sqvar!* ps!:putv) 
+1795175176455646077)
+
+(c!:install 'get_num_part '(get_num_part !:rd!: !:dn!: minus expt bf2flr
+nreverse rdwrap2 rdwrap!-expt) 1851619515349251964)
+
+(c!:install 'dipdivmon '(dipdivmon evdif bcquot nreverse) 
+962496865233140562)
+
+(c!:install 'f2dip2 '(f2dip2 dipvars!* nil evinsert f2dip1 multsq) 
+1569227529010812268)
+
+(c!:install 'mkunarywedge '(mkunarywedge nreverse) 1420236313369027851)
+
+(c!:install 'drop_rl_with '(drop_rl_with rl_with) 1010796222788682242)
+
+(c!:install 'dfp!-rule!-found '(dfp!-rule!-found dfp) 654195579491768280
+)
+
+(c!:install 'hdiff '(hdiff nil hdiffterm fs!:plus) 756962608936026106)
+
+(c!:install 'mo_deletecomp '(mo_deletecomp nil mo!=deglist) 
+488984179924039477)
+
+(c!:install 'rl_qe '(rl_qe rl_qe!* apply) 2119139235169957556)
+
+(c!:install 'addcoeffs '(addcoeffs nil smallest!-increment
+common!-increment makecoeffpairs multsq addsq) 1424128364073273772)
+
+(c!:install 'pasf_pnf '(pasf_pnf rl_nnf pasf_pnf1) 519862379900335075)
+
+(c!:install 'pdiffvars '(pdiffvars ind pnth) 667144658730022747)
+
+(c!:install 'fac!-part '(fac!-part) 1726151874481469971)
 
 (c!:install 'addns '(addns ordp nreverse addsq) 564154211775859928)
 
@@ -81,43 +128,6 @@ errmsg!* !*protfg nil frasc!* "Substitution for" "not allowed" t !*sq!*
 frlis!* mcond!* "Unmatched free variable(s)" hold erfg!* getel immediate
 getrtype lprie apply prepsq!* smemql setdiff reval let3 eval msgpri) 
 760327206980992261)
-
-(c!:install 'matcheq '(matcheq nil t !*exp (plus difference) diff eval
-matchlinear) 183697433477401843)
-
-(c!:install 'listquotient '(listquotient quotient) 690478911433164218)
-
-(c!:install 'subs2chkex '(subs2chkex nil subs2chk) 2211717899948846592)
-
-(c!:install '!*sq2fourier '(!*sq2fourier nil cos fourier tag
-fs!:make!-nullangle) 1279989235566875546)
-
-(c!:install 'mo_zero!? '(mo_zero!? mo!=zero) 1043937610632098126)
-
-(c!:install 'pst_partition '(pst_partition nil lambda_l9cw2y_11 pst_d
-sort) 1076655640577242005)
-
-(c!:install 'lambda_l9cw2y_11 '(lambda_l9cw2y_11 numlist_ordp) 
-987890528715809668)
-
-(c!:install 'bagp '(bagp nil bag) 931840254298206391)
-
-(c!:install 'coeffs!-to!-form '(coeffs!-to!-form nil coeffs!-to!-form1) 
-2154444125061801480)
-
-(c!:install '!*invsq '(!*invsq sqrtflag invsq sqrt2top) 
-2255265109286973045)
-
-(c!:install 'cl_simpl1 '(cl_simpl1 true false or and not ex all !*rlsism
-bex ball impl repl equiv !*protfg "cl_simpl1(): unknown operator"
-cl_simplat rl_smcpknowl rl_smupdknowl rl_smmkatl cl_smsimpl!-junct lprie
-cl_smsimpl!-equiv cl_smsimpl!-imprep rl_smrmknowl cl_simplbq cl_fvarl
-cl_atfp rl_negateat cl_negate!-invol cl_flip) 1117047519781590168)
-
-(c!:install 'cgp_greenp '(cgp_greenp cgp_rp) 660355733405320712)
-
-(c!:install 'csymbolrd '(csymbolrd nil fnrd stats_getargs) 
-2269378548414956256)
 
 
 % End of generated Lisp code

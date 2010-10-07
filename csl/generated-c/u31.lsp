@@ -1,7 +1,19 @@
 
 % u31.lsp           Machine generated Lisp
 
-(c!:install "u31" 6175 4073162 7391074)
+(c!:install "u31" 10881 2072699 6057341)
+
+(c!:install 'lispcodeexp '(lispcodeexp e exp 1.0 (!:rd!: !:cr!: !:crn!:
+!:gi!:) irena!-constants expt (quotient 1 2) sqrt !:rd!: (1 . 2)
+quotient nil t recip !*period difference plus minus !*lisparithexpops!*
+!*lisplogexpops!* realrat check!-for!-irena!-constants) 
+248820326542923296)
+
+(c!:install 'ext_mult '(ext_mult nil ext merge_lists !*a2k) 
+1357734741389787800)
+
+(c!:install 'ofsf_negateat '(ofsf_negateat ofsf_lnegrel) 
+1853243829346918467)
 
 (c!:install 'simpexpt1 '(simpexpt1 !*allfac !*div t e log nil
 "0**0 formed" errmsg!* !*protfg "Zero divisor" !*mcd expt simp simp!*
@@ -85,13 +97,12 @@ rblock (expr fexpr macro) progn declare special !*nosmacros smacro expr
 (c!:install 'fs!:minusp '(fs!:minusp nil minusf) 739057131223260109)
 
 (c!:install 'simp!-prop!-dist '(simp!-prop!-dist plus nil times
-lambda_l9cw2v_7 lambda_l9cw2v_8 simp!-prop!-order sort) 
+lambda_l9xqtt_7 lambda_l9xqtt_8 simp!-prop!-order sort) 
 1095684814096341442)
 
-(c!:install 'lambda_l9cw2v_8 '(lambda_l9cw2v_8 ordp) 672316688144434723)
+(c!:install 'lambda_l9xqtt_8 '(lambda_l9xqtt_8 ordp) 88068223360532377)
 
-(c!:install 'lambda_l9cw2v_7 '(lambda_l9cw2v_7 ordp) 1555892305785910908
-)
+(c!:install 'lambda_l9xqtt_7 '(lambda_l9xqtt_7 ordp) 423572580248153816)
 
 (c!:install 'fd2q '(fd2q !:ar!: !:rn!: multsq addsq) 406644773050167646)
 
@@ -102,36 +113,6 @@ general!-reduce!-mod!-p msolve!-poly) 713679881779365119)
 1830196976569058051)
 
 (c!:install 'get!-height '(get!-height max) 1029792171186381553)
-
-(c!:install 'afactor '(afactor afactorvar !*noextend !*sqfree t
-!*trfield "We must factorise the following over: " listofnewsqrts nil
-" " "factorizes as " xprinf2 terpri!* algfactor printsf prin2!*) 
-76515843932775689)
-
-(c!:install 'cl_bnfsimpl '(cl_bnfsimpl !*rlbnfsac cl_sac) 
-1992113928242124091)
-
-(c!:install 'aex_neg '(aex_neg aex_ex ratpoly_neg aex_ctx aex_lcnttag
-aex_reducedtag aex_mk) 1174822798357898366)
-
-(c!:install 'listrd '(listrd atts (o r d e r) (t y p e != l i s t !$)
-list (l e x i c o g r a p h i c) sortlist lexog (n u m e r i c) numer
-pred search_att stats_getargs aeval) 1692397018972136340)
-
-(c!:install 'plusrd '(plusrd nil mathml alg_plus) 353584120376949198)
-
-(c!:install 'bfminus '(bfminus !:rd!:) 2300797808060861388)
-
-(c!:install 'findoptrow '(findoptrow codmat maxvar nil roccup1 newnjsi
-newjsi roccup2 pnthxzz testpr) 1202453468727223011)
-
-(c!:install 'critical_element '(critical_element) 2159678942939411618)
-
-(c!:install 'gfftimes '(gfftimes) 1640488325434087132)
-
-(c!:install 'reval3 '(reval3 simp mk!*sq) 1149247316266272062)
-
-(c!:install 'deletez1 '(deletez1 nreverse) 899786910001843474)
 
 
 % End of generated Lisp code

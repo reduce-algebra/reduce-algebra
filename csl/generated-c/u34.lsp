@@ -1,7 +1,39 @@
 
 % u34.lsp           Machine generated Lisp
 
-(c!:install "u34" 6420 5705079 4772961)
+(c!:install "u34" 16222 4708733 4560351)
+
+(c!:install 'applsmacro '(applsmacro "Argument mismatch for SMACRO"
+errmsg!* !*protfg nil g lambda lprie no!-side!-effect!-listp
+one!-entry!-listp subla!-q no!-side!-effectp one!-entryp pair) 
+370065968314790365)
+
+(c!:install 'mk_dummy_ids '(mk_dummy_ids dummy reserved dummy_id!*
+intersection clean_numid union) 847533562057394808)
+
+(c!:install 'makeqn!-maybe '(makeqn!-maybe equal) 1556924750241945412)
+
+(c!:install 'noncomfree '(noncomfree nil) 1017094101632879336)
+
+(c!:install 'containerom '(containerom "<OMA>" t vectorml vector
+valid_om!* set multiset multiset1 nil "vector" "<OMS cd=""" """ name="""
+"""/>" "</OMA>" printout indent!* multiom) 148016569882732357)
+
+(c!:install 'ldf!-dep!-var '(ldf!-dep!-var nil depl!* ldt!-tvar makeset)
+ 799932098294362677)
+
+(c!:install 'findhr '(findhr headhisto codhisto nil psi npsi codmat
+maxvar rcoccup) 911043184694409564)
+
+(c!:install 'suchp '(suchp nil such!-that) 2237043806669000480)
+
+(c!:install 'evequal '(evequal t (0) nil) 162531075110848313)
+
+(c!:install '!:log10 '(!:log10 not_found bften!* get!:const log!:
+save!:const) 815825420359911240)
+
+(c!:install 'getphystypeexpt '(getphystypeexpt nil scalar getphystypecar
+) 115394872068527622)
 
 (c!:install 'calc_coeffmap_ '(calc_coeffmap_ times calc_map_ calc_coeff)
  1350162953997605550)
@@ -117,45 +149,6 @@ groebsavelterm) 1261549700825633896)
 
 (c!:install 'mkforttab '(mkforttab forttab fortcurrind!*) 
 194199250556763354)
-
-(c!:install 'rsubla '(rsubla rassoc) 504172043835697671)
-
-(c!:install 's_world_names '(s_world_names nil) 1168661674861478598)
-
-(c!:install 'fs!:timescoeff '(fs!:timescoeff nil (nil . 1)
-"zero in times" multsq) 794959122063901398)
-
-(c!:install 'f2df '(f2df zlist nil vp2df multdf plusdf multdfconst
-dfconst) 621814081401293085)
-
-(c!:install 'nlist '(nlist nreverse) 1249502943675459321)
-
-(c!:install 'pasf_smordtable1 '(pasf_smordtable1 ((lessp (lessp 1) (leq
-1) (equal false) (neq 1) (geq false) (greaterp false) (cong nil) (ncong
-nil)) (leq (lessp 1) (leq 1) (equal false) (neq 1) (geq false) (greaterp
-false) (cong nil) (ncong nil)) (equal (lessp 1) (leq 1) (equal false) (
-neq 1) (geq false) (greaterp false) (cong nil) (ncong nil)) (neq (lessp
-nil) (leq nil) (equal 2) (neq nil) (geq 2) (greaterp 2) (cong nil) (
-ncong nil)) (geq (lessp nil) (leq nil) (equal 2) (neq nil) (geq 2) (
-greaterp 2) (cong nil) (ncong nil)) (greaterp (lessp nil) (leq nil) (
-equal 2) (neq nil) (geq 2) (greaterp 2) (cong nil) (ncong nil)))) 
-185979928637441614)
-
-(c!:install 'dvfsf_simplat1 '(dvfsf_simplat1 equal neq dvfsf_op
-dvfsf_arg2l dvfsf_arg2r dvfsf_saval dvfsf_safield) 1670469349425221783)
-
-(c!:install 'bvarom '(bvarom bvar objectom) 200324488163534067)
-
-(c!:install 'ps!:arg!-values '(ps!:arg!-values nil !:ps!: dname
-ps!:value) 1777542839821814982)
-
-(c!:install 'copy_vect '(copy_vect nil) 344705152448121258)
-
-(c!:install 'findhc '(findhc njsi nil jsi codmat maxvar) 
-844450326142870279)
-
-(c!:install 'calc_den_tar '(calc_den_tar denlist constimes) 
-2091616914098872757)
 
 
 % End of generated Lisp code

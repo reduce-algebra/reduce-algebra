@@ -1,7 +1,39 @@
 
 % u36.lsp           Machine generated Lisp
 
-(c!:install "u36" 22958 1576545 7612191)
+(c!:install "u36" 14319 7827343 7998665)
+
+(c!:install 'asymmetrize!-inds '(asymmetrize!-inds nil pnth repeats
+indordln permp flatindl pair indordn) 644106903589522906)
+
+(c!:install 's_noparents '(s_noparents has_parents nreverse) 
+1736511321414976285)
+
+(c!:install 'negex '(negex negf nreverse) 201606356876881323)
+
+(c!:install 'cali!=min '(cali!=min listtest) 93920314015462691)
+
+(c!:install 'num_signsort '(num_signsort lambda_l9xqtt_9 ad_signsort) 
+757875927762053059)
+
+(c!:install 'lambda_l9xqtt_9 '(lambda_l9xqtt_9) 511532340986111040)
+
+(c!:install 'balance_mod '(balance_mod) 688586339938142847)
+
+(c!:install 'simpquot '(simpquot "0/0 formed" errmsg!* !*protfg
+"Zero divisor" dmode!* (!:rd!: !:cr!:) onep nil !*modular simp divd
+simprecip multsq lprie) 14027313670374544)
+
+(c!:install 'findnthroot '(findnthroot nil) 2258808513418775196)
+
+(c!:install 'pasf_anegateat '(pasf_anegateat true false (cong ncong)
+pasf_anegrel pasf_mkop negf) 772954739155271814)
+
+(c!:install 'aex_subrp '(aex_subrp nil aex_ex ratpoly_sub aex_ctx aex_mk
+) 1810880925111071424)
+
+(c!:install 'minusrd '(minusrd mathml alg_difference lex alg_minus) 
+2301888107495825101)
 
 (c!:install 'multup '(multup nil multf) 111691206550811764)
 
@@ -128,35 +160,6 @@ sqfrfactorfn !*factor field units factorfn nil factor!-prim!-sqfree!-f
 multf lnc !:recip multd sqfrf) 1638367506324976759)
 
 (c!:install 'matrixelems '(matrixelems nreverse) 1876489317128356490)
-
-(c!:install 'scar '(scar nil) 879810916916862698)
-
-(c!:install 'spmatlength '(spmatlength avalue sparsemat "Matrix"
-"not set" errmsg!* !*protfg list lprie) 1472349740147020770)
-
-(c!:install 'sroot1 '(sroot1 freevars substitution rpt inf nil !*trpm
-"Trying rule  " "against      " t "producing    " "failed" findnewvars
-union newenv rprint amatch embed!-null!-fn restorenv) 
-1759312512298631650)
-
-(c!:install 'precision1 '(precision1 !!rdprec !*sqvar!* nil t alglist!*
-!*roundbf minprec!# !:prec!: !:print!-prec!: log2of10 !:bprec!: !:rd!:
-epsqrt!* rd!-tolerance!* cr!-tolerance!* !!flprec !*!*roundbf ceiling
-max) 1644364635382985625)
-
-(c!:install 'r2oreaction '(r2oreaction nil times expt difference plus
-aeval reval) 2080895214560535967)
-
-(c!:install 'cvitimes2 '(cvitimes2 times) 1452841355575771990)
-
-(c!:install 'mapcarcar '(mapcarcar nil) 1961800589062147231)
-
-(c!:install 'reduce!-weights '(reduce!-weights t red!-weight
-mv!-domainlist!-!+ red!-weight!-less!-p mv!-domainlist!-!-) 
-786043418525449664)
-
-(c!:install 'dv_skel2factor '(dv_skel2factor nil st_ad_numsorttree
-st_flatten dv_ind2var dv_skel2factor1) 999692465356004088)
 
 
 % End of generated Lisp code

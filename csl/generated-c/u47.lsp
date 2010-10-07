@@ -1,7 +1,34 @@
 
 % u47.lsp           Machine generated Lisp
 
-(c!:install "u47" 12980 8430001 9496435)
+(c!:install "u47" 8876 8869089 201263)
+
+(c!:install 'formoptimize1 '(formoptimize1 (!:rd!: !:cr!: !:crn!: !:dn!:
+) !:int!: eval sq2pre aeval (lsetq rsetq lrsetq) (lsetq lrsetq) nil (
+rsetq lrsetq) setq list constp chopchop decimal2internal form1 listp) 
+818450415012562679)
+
+(c!:install 'xregister_wedge_pair '(xregister_wedge_pair nil) 
+12739249104810489)
+
+(c!:install 'denlist '(denlist ev!-denom3 ev!-denom2 nreverse) 
+1646173507292959327)
+
+(c!:install 'red_redpol '(red_redpol !*red_total red_prepare
+red_totalred red_extract red_topred) 241057342807054455)
+
+(c!:install 'gi '(gi gg nil class) 1990331895582739349)
+
+(c!:install 'dv_skelsplit1 '(dv_skelsplit1 nil !* copy lastpair) 
+1525414552319530384)
+
+(c!:install 'addfactors '(addfactors nil times prepf1 replus retimes) 
+1438631186929184962)
+
+(c!:install 'rule!-list '(rule!-list nil frasc!* mcond!* t avalue list
+"rule list" equal !*msg "***" "Please use => instead of = in rules"
+replaceby "rule" when algebraic typerr remove!-free!-vars
+remove!-free!-vars!* formbool rule!* lpriw) 1983491062097872713)
 
 (c!:install 'repr_n '(repr_n !*protfg "repr_n : invalid REPR structure"
 nil lprie) 293223112993306215)
@@ -51,26 +78,6 @@ reduce!-mod!-p!* modroots2 modp) 1050950286806908222)
 2117093187722594511)
 
 (c!:install 'cl_comember '(cl_comember) 2212126685437670155)
-
-(c!:install 'opfchk!! '(opfchk!! integer t !:rn!: !*numval dmode!* (
-!:rd!: !:cr!:) !:rd!: nil simprn simparg simprd !*complex list expt
-!:cr!: "is not defined as complex function" errmsg!* !*protfg apply
-!*backtrace i2d revlis simpcr lprie errorset) 2233828875048501830)
-
-(c!:install 'vp1 '(vp1 "Var not in z-list after all" vp2 nreverse interr
-) 837320831737607815)
-
-(c!:install 'exceeds!-order!-variant '(exceeds!-order!-variant nil
-tayexp!-plus2 tayexp!-greaterp) 281437532664161638)
-
-(c!:install 'ps!:expt!-erule '(ps!:expt!-erule ps quotient nil ps!:order
-ps!:evaluate multsq invsq addsq prepsqxx simpexpt) 444289017905284672)
-
-(c!:install 'dipcontenti1 '(dipcontenti1 vbcgcd dipcontevmin bcone!?) 
-821378543249485162)
-
-(c!:install 'remove_root_item '(remove_root_item nil setcar setcdr) 
-1330967292679213183)
 
 
 % End of generated Lisp code

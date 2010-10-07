@@ -1,7 +1,36 @@
 
 % u37.lsp           Machine generated Lisp
 
-(c!:install "u37" 10678 7654664 2711926)
+(c!:install "u37" 10654 6462122 8287896)
+
+(c!:install 'scar '(scar nil) 879810916916862698)
+
+(c!:install 'spmatlength '(spmatlength avalue sparsemat "Matrix"
+"not set" errmsg!* !*protfg list lprie) 1472349740147020770)
+
+(c!:install 'sroot1 '(sroot1 freevars substitution rpt inf nil !*trpm
+"Trying rule  " "against      " t "producing    " "failed" findnewvars
+union newenv rprint amatch embed!-null!-fn restorenv) 
+1759312512298631650)
+
+(c!:install 'precision1 '(precision1 !!rdprec !*sqvar!* nil t alglist!*
+!*roundbf minprec!# !:prec!: !:print!-prec!: log2of10 !:bprec!: !:rd!:
+epsqrt!* rd!-tolerance!* cr!-tolerance!* !!flprec !*!*roundbf ceiling
+max) 1644364635382985625)
+
+(c!:install 'r2oreaction '(r2oreaction nil times expt difference plus
+aeval reval) 2080895214560535967)
+
+(c!:install 'cvitimes2 '(cvitimes2 times) 1452841355575771990)
+
+(c!:install 'mapcarcar '(mapcarcar nil) 1961800589062147231)
+
+(c!:install 'reduce!-weights '(reduce!-weights t red!-weight
+mv!-domainlist!-!+ red!-weight!-less!-p mv!-domainlist!-!-) 
+786043418525449664)
+
+(c!:install 'dv_skel2factor '(dv_skel2factor nil st_ad_numsorttree
+st_flatten dv_ind2var dv_skel2factor1) 999692465356004088)
 
 (c!:install 'tidysqrtf '(tidysqrtf i (sqrt -1) sqrt nil fkern getpower
 simp exptsq multsq tidysqrt addsq) 2253948877862260502)
@@ -87,35 +116,6 @@ mkrootsql !*d2q) 447351031222923455)
 
 (c!:install 'get!-min!-degreelist '(get!-min!-degreelist nil
 taymindegreel tayexp!-plus2 confusion) 1827370259021826586)
-
-(c!:install 'equal!+matrices!+p '(equal!+matrices!+p nil !*complex t
-same!+dim!+squared!+p mk!+scal!+mult!+mat mk!+mat!+plus!+mat
-mk!+conjugate!+sq multsq addsq change!+sq!+to!+algnull) 
-1663448286731126958)
-
-(c!:install 'depend!-sq '(depend!-sq depend!-f) 2159828792898315865)
-
-(c!:install 'cl_susimkatl '(cl_susimkatl nil true false and inctheo or
-lastpair rl_susipost rl_negateat rl_susitf cl_cflip) 1062448888738517780
-)
-
-(c!:install 'simpu '(simpu u ordn fkern getpower) 929178515445321429)
-
-(c!:install 'dm!-gt '(dm!-gt minusp dm!-difference) 438145348376686147)
-
-(c!:install 'diplmon2sq '(diplmon2sq dipvars!* dipev2f multsq) 
-1392065166392277660)
-
-(c!:install 'rlval '(rlval !:rd!: nil !:bprec!: r2flbf ncoeffs plus!:
-inorm) 622709519266630454)
-
-(c!:install 'rassoc '(rassoc nil) 262355675409862461)
-
-(c!:install 'defined_all_edge '(defined_all_edge nil t def_edge
-p_def_edge rep_edge_prop_) 548807897588405305)
-
-(c!:install 'quotofd '(quotofd mkrn int!-equiv!-chk nreverse
-lowest!-terms) 2102623346851057237)
 
 
 % End of generated Lisp code

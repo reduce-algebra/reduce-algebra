@@ -1,7 +1,59 @@
 
 % u55.lsp           Machine generated Lisp
 
-(c!:install "u55" 10098 3483970 8957382)
+(c!:install "u55" 3291 2692063 6913847)
+
+(c!:install 'matpri1 '(matpri1 !*fort "MAT" nil only t !*nat spare!*
+orig!* mat!-top!-l mat!-top!-r mat!-low!-l mat!-low!-r mat!-mid!-l
+mat!-mid!-r outputhandler!* maprin overflowed!* setq posn!* ycoord!*
+pline!* ymax!* ymin!* assgnpri terpri!* layout!-formula max
+update!-pline min symbol oprin maprint matpri2) 1339966197232532024)
+
+(c!:install 'iv_new '(iv_new) 1120989220244112093)
+
+(c!:install 'cgp_cp '(cgp_cp cgp_hp cgp_rp cgp_sugar cgp_number cgp_ci
+cgp_mk) 1471488992311093818)
+
+(c!:install 'math_ml_printer '(math_ml_printer !*both t nil
+outputhandler!* maprin overflowed!* terpri found_mat_int found_mat_compl
+indent consts_compl consts_mat_compl consts_int consts_mat_int found_int
+found_compl flagg !*web "<EMBED TYPE=""text/mathml"" MMLDATA="""
+"<math>" setq prepf mat list !*sq "</math>" """ HEIGHT=300 WIDTH=500>"
+"<EMBED TYPE=""text/mathml"" MMLDATA="" " " "" HEIGHT=300 WIDTH=500>"
+terpri!* printout expression close_forall sqform arbitrary_c matrixml
+!*a2k listml issq setqml maprint) 1706249329365758374)
+
+(c!:install 'subscriptedvarp2 '(subscriptedvarp2 nil symtabget) 
+50800334019104316)
+
+(c!:install 'nestminusp!: '(nestminusp!: nil simp minusf) 
+522441789077365634)
+
+(c!:install 'latexprin '(latexprin tex maprintla) 1604588845428437609)
+
+(c!:install 'cvt5 '(cvt5 round!:mt equal!:) 2202979197306591367)
+
+(c!:install 'rungekuttastep '(rungekuttastep list!-evaluate !:plus
+scal!*list list!+list !:!:quotient) 1370953207703641161)
+
+(c!:install 'makeanewindex '(makeanewindex idx mkid isanindex
+putanewindex) 1698543156323035876)
+
+(c!:install 'ext_edges '(ext_edges !_0edge delete_edge nreverse) 
+1173162142448093871)
+
+(c!:install 'generic!-sub '(generic!-sub dfp list dfp!-sub) 
+1855280535076220756)
+
+(c!:install 'dp_2a '(dp_2a dp!=2a dp!=replus) 1942462629911320347)
+
+(c!:install 'boolean!-eval1 '(boolean!-eval1 sq!* boolean nil prespsq
+boolean!-eval2 simp!-prop prepf1 replus) 626793035051624300)
+
+(c!:install 'invbase '(invbase list !*protfg
+"Argument to invbase not a list" nil equal difference invsysvars!* gg
+plus gv prepf reval gvarlis readsys invbase!* !*di2q sqform lprie) 
+781842550580990478)
 
 (c!:install 'cdr_sort '(cdr_sort nil apply) 1244154779197742000)
 
@@ -39,6 +91,9 @@ calc_map_tar reval) 2284455873659044462)
 (c!:install 'legendre!-symbol '(legendre!-symbol general!-modular!-expt)
  2147372502581689754)
 
+(c!:install 'split_non_linear_f '(split_non_linear_f multf
+update_kc_list addf) 1657986989020349055)
+
 (c!:install 'ofsf_chsimpat '(ofsf_chsimpat nil and true false
 ofsf_chsimpat1 ofsf_simpat) 774394157452924966)
 
@@ -55,79 +110,6 @@ get_rep_matrix_in get!+mat!+entry) 747791780811522238)
 2158918692371943930)
 
 (c!:install 'dip_condense '(dip_condense) 790889441607630821)
-
-(c!:install 'relationrd '(relationrd (quote eq) equal (quote lt) lessp (
-quote gt) greaterp (quote subset) (quote prsubset) (quote geq) geq (
-quote leq) leq t false stats_getargs prsubsetrd subsetrd) 
-20752685500375651)
-
-(c!:install 'ps!:onep!: '(ps!:onep!: ps!:value) 966238059345888167)
-
-(c!:install 'groebsaveltermbc '(groebsaveltermbc nil glterms vbc2a
-constant_exprp simp fctrf prepf1 replus) 722476814102006469)
-
-(c!:install 'coeff_sortl '(coeff_sortl coeff_ordn coeff_sortl1) 
-1964819241413104547)
-
-(c!:install 'i2fourier '(i2fourier dmode!* !:fs!: !*d2fourier) 
-1066969958216887551)
-
-(c!:install 'addfd '(addfd ordp addd nreverse) 1694071374349011879)
-
-(c!:install 'ggvars3 '(ggvars3 ggvars2) 522684439995123279)
-
-(c!:install 'ofsf_sminsert '(ofsf_sminsert false true nil ofsf_sminsert1
-setcdr) 1727033817576091008)
-
-(c!:install 'yetunknowntypeeval '(yetunknowntypeeval
-eval!-yetunknowntypeexpr reval1) 747948359262086540)
-
-(c!:install 'makefunc '(makefunc nil texpatt indexvar ((apply makeexcinx
-)) ((f) !\!( (l !,) !\!)) texuby f apply x y t z r l m makemat makearg
-mktag texexplode) 1090838738406582178)
-
-(c!:install 'mkbin '(mkbin) 948100678985762811)
-
-(c!:install 'termlst1 '(termlst1 nil expt e simp!* multsq addsq multf) 
-219519910297821759)
-
-(c!:install 'ev_dif '(ev_dif nil) 1421512964176455387)
-
-(c!:install 'cl_subandcut '(cl_subandcut nil keep1 keep2 failed rl_sacat
-cl_trycut rl_ordatp cl_sacatl) 640641962622463644)
-
-(c!:install 'mappend '(mappend nil) 861079961371352628)
-
-(c!:install 'r2omat '(r2omat matrix inputmat outputmat nil apply pnth
-r2findindex setmatelem) 1973572432090374853)
-
-(c!:install 'expt!-separate '(expt!-separate expt plus nil depends
-expt!-separate1) 929530519776104900)
-
-(c!:install 'bassoc '(bassoc nil) 910206002810747589)
-
-(c!:install 'clear '(clear !*sqvar!* nil t alglist!* clear1 !*backtrace
-frasc!* mcond!* errorset) 1727514721750912352)
-
-(c!:install 'simptensor '(simptensor list t nil bloc_diagonal
-partic_tens generic simpdelt symmetric antisymmetric symtree splitlist!:
-extract_vars setdiff reval revalind mkindxlist split_cov_cont_ids
-num_ids_range mk_dummy_ids verify_tens_ids ordn cont_before_cov mksq
-affinep repeats permp!: negf symtree_zerop) 1672721186229648140)
-
-(c!:install 'fix_or_str '(fix_or_str) 187885900038197544)
-
-(c!:install 'ar!-augment '(ar!-augment nreverse) 1049519234734713962)
-
-(c!:install 'sch '(sch !*strm mltr!# nil sgn1 schplus) 
-389839591446957996)
-
-(c!:install '!?a2bf '(!?a2bf !:rd!: nil !:dn!:) 271174221934987019)
-
-(c!:install 'dependsl '(dependsl nil depends) 1232439686879466242)
-
-(c!:install 'mk_relation_mat '(mk_relation_mat nil get!+row!+nr
-mk!+unit!+mat get_mat mk!+mat!+mult!+mat) 1164944140005604110)
 
 
 % End of generated Lisp code

@@ -1,17 +1,37 @@
 
 % u48.lsp           Machine generated Lisp
 
-(c!:install "u48" 3067 3981533 4007910)
+(c!:install "u48" 13727 4100654 1626915)
 
-(c!:install 'randpoly '(randpoly lambda_l9cw2y_12 sparse wtl!* list t
+(c!:install 'opfchk!! '(opfchk!! integer t !:rn!: !*numval dmode!* (
+!:rd!: !:cr!:) !:rd!: nil simprn simparg simprd !*complex list expt
+!:cr!: "is not defined as complex function" errmsg!* !*protfg apply
+!*backtrace i2d revlis simpcr lprie errorset) 2233828875048501830)
+
+(c!:install 'vp1 '(vp1 "Var not in z-list after all" vp2 nreverse interr
+) 837320831737607815)
+
+(c!:install 'exceeds!-order!-variant '(exceeds!-order!-variant nil
+tayexp!-plus2 tayexp!-greaterp) 281437532664161638)
+
+(c!:install 'ps!:expt!-erule '(ps!:expt!-erule ps quotient nil ps!:order
+ps!:evaluate multsq invsq addsq prepsqxx simpexpt) 444289017905284672)
+
+(c!:install 'dipcontenti1 '(dipcontenti1 vbcgcd dipcontevmin bcone!?) 
+821378543249485162)
+
+(c!:install 'remove_root_item '(remove_root_item nil setcar setcdr) 
+1330967292679213183)
+
+(c!:install 'randpoly '(randpoly lambda_l9xqtv_12 sparse wtl!* list t
 nil equalopr g equal dense coeffs expons (degree deg maxdeg) (ord mindeg
 ) terms "optional randpoly argument" revlis !*eqn2a simp!* kernp
 functionp typerr natnump apply mksq multsq addsq mk!*sq subeval
 rand!-mons!-dense apply_e !*kp2q rand!-mons!-sparse) 1817191405658801184
 )
 
-(c!:install 'lambda_l9cw2y_12 '(lambda_l9cw2y_12 random) 
-21048619852208809)
+(c!:install 'lambda_l9xqtv_12 '(lambda_l9xqtv_12 random) 
+751505179396902813)
 
 (c!:install 'chksymmetries!&subst '(chksymmetries!&subst nil
 chksymmetries!&sub1) 1700494600459241268)
@@ -95,34 +115,6 @@ degree!-in!-variable make!-univariate!-image!-mod!-p)
 (c!:install 'subeval1 '(subeval1 nil subfn
 "No substitution defined for type" errmsg!* !*protfg t !*sub2 getrtype
 lprie simp subsq subs2 mk!*sq) 366128386720963758)
-
-(c!:install 'red!=recover '(red!=recover nil bas_rep mo_comp bas_nr
-red!=hide dp_neworder bas_make1) 529827288013441176)
-
-(c!:install 'formclear '(formclear clear formclear1) 178664885272145638)
-
-(c!:install 'general!-negate!-term '(general!-negate!-term
-general!-minus!-mod!-p) 450923593234793085)
-
-(c!:install 'glsoleig '(glsoleig nil negf multf) 1405951657791942658)
-
-(c!:install 'gd_newtype '(gd_newtype gec geg nil ger) 243269055669436911
-)
-
-(c!:install 'sqfrf '(sqfrf !*gcd !*msg t !*rounded rational !*ezgcd
-dmode!* field nil rounded failed "CATASTROPHIC ERROR *****"
-"sqfrf failure" " "
-"Please report output and input listing on the sourceforge bug tracker"
-errmsg!* !*protfg on resimp diff gcdf quotf lnc !:recip multd degr
-rassoc multf rootxf terpri!* lprie printty lpriw) 1582313776221284978)
-
-(c!:install 'acfsf_0mk2 '(acfsf_0mk2 nil) 1367688769343188831)
-
-(c!:install 'tidysqrt '(tidysqrt nil tidysqrtf invsq multsq) 
-1496738360046693267)
-
-(c!:install 'xpwrlcmp '(xpwrlcmp expt sqrt getdenom getdenomx lcm) 
-2280473160855004936)
 
 
 % End of generated Lisp code

@@ -2653,9 +2653,6 @@ symbolic smacro procedure !*rd2cr u;
 symbolic smacro procedure cr2i!*; mkcr(rdzero!*(),rdtwo!*());
 
 
-symbolic smacro procedure cr!:minus u; gf2cr!: gfminus crprcd u;
-
-
 symbolic smacro procedure cr!:prep u; 
    crprep1 cons(rd!:prep cons('!:rd!:,cadr u),rd!:prep cons('!:rd!:,cddr u));
 

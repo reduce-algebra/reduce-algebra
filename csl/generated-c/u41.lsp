@@ -1,7 +1,73 @@
 
 % u41.lsp           Machine generated Lisp
 
-(c!:install "u41" 2940 6386154 4878656)
+(c!:install "u41" 10765 3225925 1648619)
+
+(c!:install 'simpx1 '(simpx1 !*minus!* quotient expt i frlis!* !*mcd
+!*notseparate !*keepsqrts sqrt simpfn minus plus !*expandexpt nil times
+used!* (minus 1) difference (quotient 1 2) simp simpexpt multsq negf
+mksq invsq exptsq simp!* simprad smemqlp) 1354271110975166437)
+
+(c!:install 'repartf '(repartf i kord!* cmpxfn i2d reorder multf addf
+int!-equiv!-chk) 389295172707976004)
+
+(c!:install 'pasf_negateat '(pasf_negateat true false (cong ncong)
+pasf_lnegrel pasf_mkop) 862615999108377115)
+
+(c!:install 'ratpoly_sub '(ratpoly_sub subsq) 1347226534847476962)
+
+(c!:install 'vdp_getprop '(vdp_getprop nil vdp_plist) 
+1067002742013599513)
+
+(c!:install 'impartsq '(impartsq splitcomplex multsq negf addsq invsq) 
+596103046315186594)
+
+(c!:install 'transferrow1 '(transferrow1 codmat maxvar nil) 
+1243056662242331832)
+
+(c!:install 'simpwedge '(simpwedge partitwedge !*pf2sq) 
+1857253920508819625)
+
+(c!:install 'ratmean '(ratmean t ratplusm) 1787390382530983542)
+
+(c!:install 'endofstmtp '(endofstmtp cursym!* (!*semicol!* !*rsqbkt!*
+end) t) 397904642039557830)
+
+(c!:install 'lndepends '(lndepends nil ndepends) 1225443434999479660)
+
+(c!:install 'mk_binding '(mk_binding nil can_be_proved edge_bind) 
+1788381954959702787)
+
+(c!:install 'compactf1 '(compactf1 intersection compactf11) 
+1704580020154585377)
+
+(c!:install 'baglistp '(baglistp nil list bag) 835211907114966485)
+
+(c!:install 'proper!-simpsqrt '(proper!-simpsqrt
+"Wrong number of arguments to" errmsg!* !*protfg lprie simpsqrti) 
+1308982032054441444)
+
+(c!:install 'ofsf_irl2atl '(ofsf_irl2atl nil ofsf_ir2atl lastpair) 
+1999193066804717430)
+
+(c!:install 'impartf '(impartf i kord!* nil cmpxfn i2d reorder multf
+addf int!-equiv!-chk) 2278501076622548544)
+
+(c!:install 'pasf_lnegrel '(pasf_lnegrel equal neq leq greaterp lessp
+geq cong ncong !*protfg "pasf_lnegrel: unknown operator" lprie) 
+2127020843521872625)
+
+(c!:install 'transposerd '(transposerd tp mathml aeval lex) 
+496835918222788161)
+
+(c!:install 'reprod '(reprod nil multf) 1826523432229424942)
+
+(c!:install 'ps!:term!-rthpow '(ps!:term!-rthpow nil ps!:get!-term
+ps!:last!-term ps!:set!-rthpow ps!:evaluate) 1240446208172047398)
+
+(c!:install 'ldf!-deg '(ldf!-deg nil degreef maxl) 957798043712076978)
+
+(c!:install 'subs2pf '(subs2pf resimp subs2) 933368354982045597)
 
 (c!:install 'preproc1 '(preproc1 !:rd!: !:dn!: !*sq prepf procedure
 !*params!* !*getdecs (real integer) nil deftype!* declare (subroutine
@@ -56,55 +122,6 @@ prlist sacar appends) 1804886274542769911)
 
 (c!:install 'vdpcleanup '(vdpcleanup nil dipevlist!*) 502938669518610163
 )
-
-(c!:install 'quotient!: '(quotient!: !:rd!:) 977030079220885757)
-
-(c!:install 'fctinsert '(fctinsert depl!* smember fctlength fctins) 
-155568015107922272)
-
-(c!:install 'mk!-contract!-coeff '(mk!-contract!-coeff ndim!* mk!-numr
-constimes) 1135268375385356144)
-
-(c!:install 'pa_vect2list '(pa_vect2list nil upbve ordn) 
-1315450921329836366)
-
-(c!:install 'general!-modular!-difference '(general!-modular!-difference
-current!-modulus) 1894751750856803824)
-
-(c!:install 'eval!-yetunknowntypeexpr '(eval!-yetunknowntypeexpr avalue
-!*sq dname !:dn!: psopfn yetunknowntype nil getrtype) 
-2192235611564320392)
-
-(c!:install 'evalleq '(evalleq evalgreaterp) 1431629446096259862)
-
-(c!:install 'subdf '(subdf nil subf subs2q !*multf plusdf) 
-437265242019459876)
-
-(c!:install 'gigcd!: '(gigcd!: fqa giremainder) 865955804724606229)
-
-(c!:install 'rl_multsurep '(rl_multsurep rl_multsurep!* apply) 
-1139375910711850019)
-
-(c!:install 'matrixir '(matrixir matrixcolumn nil matrixrow matrix lex
-omobjs matrixelems) 767209611411938491)
-
-(c!:install 'diford '(diford lengthn) 137269086515083911)
-
-(c!:install 'sprow_dim '(sprow_dim !*fast_la !*protfg
-"Error in sprow_dim: input should be a matrix." matrixp lprie
-spmatlength) 1002833468951326463)
-
-(c!:install 'implicitdec '(implicitdec nil !*decs!* symtabget isimplicit
-firstmatch implicittype) 522579618059515775)
-
-(c!:install 'groebmakepair '(groebmakepair !*gsugar vevlcm gsugar vevdif
-vevtdeg max) 4704970316871433)
-
-(c!:install 'xpartitsq '(xpartitsq nil xexptpf cancel wedgepf addpf
-xvarp xpartitk multpfsq) 884620906707846084)
-
-(c!:install 'rand!-mons!-dense '(rand!-mons!-dense nil mksq max multf
-lastpair) 3519816536075209)
 
 
 % End of generated Lisp code

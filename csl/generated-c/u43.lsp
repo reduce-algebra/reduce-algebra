@@ -1,7 +1,20 @@
 
 % u43.lsp           Machine generated Lisp
 
-(c!:install "u43" 15673 7222126 9272179)
+(c!:install "u43" 13149 8443808 2373030)
+
+(c!:install 'xpartitk '(xpartitk (wedge partdf) memqcar reval xpartitop)
+ 1300154515677181746)
+
+(c!:install 'preproc '(preproc preproc1) 93797400033213538)
+
+(c!:install 'gcdlist '(gcdlist nil "Term content division failed"
+powers1 mapcarcar gcdld numeric!-content vintersection gcddd fkern
+getpower multf quotfail1 gcdlist1 poly!-abs) 2162228522692832422)
+
+(c!:install 'pnth!* '(pnth!* nil) 1551218952711738533)
+
+(c!:install 'ev!-poles '(ev!-poles nil) 1524007276866817366)
 
 (c!:install 'liendimcom '(liendimcom lie_dim difference nil lie_cc lie_p
 lie_q plus quotient times lie_help lie_s lientrans lie_kk!* lie_tt aeval
@@ -56,6 +69,9 @@ evzero!? evtdeg vdpputprop) 1561328366091331221)
 (c!:install 'random!-teeny!-prime '(random!-teeny!-prime all nil
 teeny!-primes next!-random!-number) 616399460522839583)
 
+(c!:install 'find_active_components '(find_active_components depl!* nil
+update_components) 1944434546717719313)
+
 (c!:install 'qqe_simplqneq '(qqe_simplqneq qequal nil true false qneq
 qqe_mk2 qqe_simplqequal qqe_arg2l qqe_arg2r) 618633530376510163)
 
@@ -84,53 +100,6 @@ physopsim!* getphystype rederr2 physop2sq addsq mk!*sq)
 
 (c!:install 'red_prepare '(red_prepare bas_nr bas_dpoly bas_rep
 dp_from_ei dp_sum bas_make1) 896904987365054911)
-
-(c!:install 'sep_tens_from_other '(sep_tens_from_other nil translate1
-fullcopy setcar tensorp no_dum_varp multf) 1817790483172146138)
-
-(c!:install 'mk_character '(mk_character nil get_group_in get!*elements
-get_rep_matrix_in mk!+trace) 1955802577686070231)
-
-(c!:install 'limitom '(limitom "<OMA>" t
-"<OMS cd=""limit1"" name=""limit""/>" lowlimit
-"<OMS cd=""limit1"" name=""null""/>" condition
-"<OMS cd=""limit1"" name=""" """/>" limit nil "</OMA>" printout indent!*
-objectom lambdaom) 1344416317226606586)
-
-(c!:install 'make!-ps '(make!-ps tps tag !*sqvar!* ps!:putv) 
-1795175176455646077)
-
-(c!:install 'get_num_part '(get_num_part !:rd!: !:dn!: minus expt bf2flr
-nreverse rdwrap2 rdwrap!-expt) 1851619515349251964)
-
-(c!:install 'dipdivmon '(dipdivmon evdif bcquot nreverse) 
-962496865233140562)
-
-(c!:install 'f2dip2 '(f2dip2 dipvars!* nil evinsert f2dip1 multsq) 
-1569227529010812268)
-
-(c!:install 'mkunarywedge '(mkunarywedge nreverse) 1420236313369027851)
-
-(c!:install 'drop_rl_with '(drop_rl_with rl_with) 1010796222788682242)
-
-(c!:install 'dfp!-rule!-found '(dfp!-rule!-found dfp) 654195579491768280
-)
-
-(c!:install 'hdiff '(hdiff nil hdiffterm fs!:plus) 756962608936026106)
-
-(c!:install 'mo_deletecomp '(mo_deletecomp nil mo!=deglist) 
-488984179924039477)
-
-(c!:install 'rl_qe '(rl_qe rl_qe!* apply) 2119139235169957556)
-
-(c!:install 'addcoeffs '(addcoeffs nil smallest!-increment
-common!-increment makecoeffpairs multsq addsq) 1424128364073273772)
-
-(c!:install 'pasf_pnf '(pasf_pnf rl_nnf pasf_pnf1) 519862379900335075)
-
-(c!:install 'pdiffvars '(pdiffvars ind pnth) 667144658730022747)
-
-(c!:install 'fac!-part '(fac!-part) 1726151874481469971)
 
 
 % End of generated Lisp code

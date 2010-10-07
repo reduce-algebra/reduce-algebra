@@ -1,7 +1,55 @@
 
 % u40.lsp           Machine generated Lisp
 
-(c!:install "u40" 18643 3893845 27900)
+(c!:install "u40" 21428 8383409 3238869)
+
+(c!:install 'makecoeffpairs1 '(makecoeffpairs1 ((nil)) nil tayexp!-minus
+makecoeffpairshom lastpair) 1976336402385581849)
+
+(c!:install 'repr_a '(repr_a addf) 1638631510567401438)
+
+(c!:install 'ofsf_sacrel!-and '(ofsf_sacrel!-and ((lessp (lessp . keep)
+(leq . keep2) (equal . drop) (neq . keep2) (geq . drop) (greaterp . drop
+)) (leq (lessp . keep1) (leq . keep) (equal . keep1) (neq . lessp) (geq
+. equal) (greaterp . drop)) (equal (lessp . drop) (leq . keep2) (equal .
+keep) (neq . drop) (geq . keep2) (greaterp . drop)) (neq (lessp . keep1)
+(leq . lessp) (equal . drop) (neq . keep) (geq . greaterp) (greaterp .
+keep1)) (geq (lessp . drop) (leq . equal) (equal . keep1) (neq .
+greaterp) (geq . keep) (greaterp . keep1)) (greaterp (lessp . drop) (leq
+. drop) (equal . drop) (neq . keep2) (geq . keep2) (greaterp . keep)))) 
+1788034428219295700)
+
+(c!:install 'prsubsetrd '(prsubsetrd t nil prsubset reval alg_prsubset
+eval_list_sets) 2142277342577447761)
+
+(c!:install 'spmatsm!* '(spmatsm!* sparsemat nil spmatsm matsm!*1) 
+1097875971497327075)
+
+(c!:install 'vdpmember '(vdpmember nil vdpequal) 1209094377289579372)
+
+(c!:install 'dipcontenti '(dipcontenti !*groebrm nil dipcontenti1) 
+1720690646852099713)
+
+(c!:install 'gf2bf '(gf2bf !:rd!: nreverse fl2bf csl_normbf read!:num) 
+1544609287247496246)
+
+(c!:install 'addnew '(addnew gv bv t ljet insert) 2297693145060026274)
+
+(c!:install 'rl_qefsolset '(rl_qefsolset rl_qefsolset!* apply) 
+2044364883179931557)
+
+(c!:install 'sfto_yun!-updecf '(sfto_yun!-updecf !*gcd t diff sfto_gcdf
+quotf negf addf multf setcar setcdr) 1512703944541331907)
+
+(c!:install 'checkexp '(checkexp expt preptayexp) 94998611029562197)
+
+(c!:install 'rule!* '(rule!* frasc!* t mcond!* old newrule!* rtype
+props!* avalue nil expt asymplis!* updoldrules rule) 2082266342390209512
+)
+
+(c!:install 'qqe_simplbtat '(qqe_simplbtat neq false true nil equal
+rl_prepat qqe_op qqe_arg2l qqe_eta!-in!-term qqe_arg2r rl_simpat) 
+1597516727760877248)
 
 (c!:install 'pasf_floor '(pasf_floor nil !*protfg
 "pasf_floor: not a domain valued sf in input" simp lprie) 
@@ -27,6 +75,9 @@ flatindl pair indordn) 898556759184753154)
 (c!:install 'eval_uni_poly '(eval_uni_poly nil) 1983392336052449364)
 
 (c!:install 'domainp_list '(domainp_list nil) 480969053917566483)
+
+(c!:install 'update_components '(update_components nil) 
+1023550167711174905)
 
 (c!:install 'rl_fvarl '(rl_fvarl rl_fvarl!* apply) 2117932121094826014)
 
@@ -73,73 +124,9 @@ bas_dpoly dp_lmon mo_lcm mo_equal!?) 1144267455034939872)
 
 (c!:install 'max!-degree '(max!-degree) 714165779836490033)
 
+(c!:install 'list_assoc '(list_assoc) 659243672373770321)
+
 (c!:install 'lto_insert '(lto_insert) 1833896451968246408)
-
-(c!:install 'simpx1 '(simpx1 !*minus!* quotient expt i frlis!* !*mcd
-!*notseparate !*keepsqrts sqrt simpfn minus plus !*expandexpt nil times
-used!* (minus 1) difference (quotient 1 2) simp simpexpt multsq negf
-mksq invsq exptsq simp!* simprad smemqlp) 1354271110975166437)
-
-(c!:install 'repartf '(repartf i kord!* cmpxfn i2d reorder multf addf
-int!-equiv!-chk) 389295172707976004)
-
-(c!:install 'pasf_negateat '(pasf_negateat true false (cong ncong)
-pasf_lnegrel pasf_mkop) 862615999108377115)
-
-(c!:install 'ratpoly_sub '(ratpoly_sub subsq) 1347226534847476962)
-
-(c!:install 'vdp_getprop '(vdp_getprop nil vdp_plist) 
-1067002742013599513)
-
-(c!:install 'impartsq '(impartsq splitcomplex multsq negf addsq invsq) 
-596103046315186594)
-
-(c!:install 'transferrow1 '(transferrow1 codmat maxvar nil) 
-1243056662242331832)
-
-(c!:install 'simpwedge '(simpwedge partitwedge !*pf2sq) 
-1857253920508819625)
-
-(c!:install 'ratmean '(ratmean t ratplusm) 1787390382530983542)
-
-(c!:install 'endofstmtp '(endofstmtp cursym!* (!*semicol!* !*rsqbkt!*
-end) t) 397904642039557830)
-
-(c!:install 'lndepends '(lndepends nil ndepends) 1225443434999479660)
-
-(c!:install 'mk_binding '(mk_binding nil can_be_proved edge_bind) 
-1788381954959702787)
-
-(c!:install 'compactf1 '(compactf1 intersection compactf11) 
-1704580020154585377)
-
-(c!:install 'baglistp '(baglistp nil list bag) 835211907114966485)
-
-(c!:install 'proper!-simpsqrt '(proper!-simpsqrt
-"Wrong number of arguments to" errmsg!* !*protfg lprie simpsqrti) 
-1308982032054441444)
-
-(c!:install 'ofsf_irl2atl '(ofsf_irl2atl nil ofsf_ir2atl lastpair) 
-1999193066804717430)
-
-(c!:install 'impartf '(impartf i kord!* nil cmpxfn i2d reorder multf
-addf int!-equiv!-chk) 2278501076622548544)
-
-(c!:install 'pasf_lnegrel '(pasf_lnegrel equal neq leq greaterp lessp
-geq cong ncong !*protfg "pasf_lnegrel: unknown operator" lprie) 
-2127020843521872625)
-
-(c!:install 'transposerd '(transposerd tp mathml aeval lex) 
-496835918222788161)
-
-(c!:install 'reprod '(reprod nil multf) 1826523432229424942)
-
-(c!:install 'ps!:term!-rthpow '(ps!:term!-rthpow nil ps!:get!-term
-ps!:last!-term ps!:set!-rthpow ps!:evaluate) 1240446208172047398)
-
-(c!:install 'ldf!-deg '(ldf!-deg nil degreef maxl) 957798043712076978)
-
-(c!:install 'subs2pf '(subs2pf resimp subs2) 933368354982045597)
 
 
 % End of generated Lisp code

@@ -86,6 +86,7 @@ omit := '(
   rplacw      % I suspect performance may not be helped, rplac is dangerous.
   setcar      % Disaster when expanded textually ...
   setcdr      % ... eg setcdr(x, cddr x) -> <<rplacd(x,cddr x); cddr x>> oops.
+  cr!:minus   % ???
 
 % The next things listed are functions where there seem to be at least
 % two defintions. This does not include anything that has its definition

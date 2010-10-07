@@ -1,7 +1,36 @@
 
 % u28.lsp           Machine generated Lisp
 
-(c!:install "u28" 5144 700014 2569178)
+(c!:install "u28" 5302 3729660 4800081)
+
+(c!:install 'valuecoefft '(valuecoefft "Valuecoefft - no value" nil
+interr) 1862258819620248440)
+
+(c!:install 'qqe_eta!-in!-term1 '(qqe_eta!-in!-term1 qepsilon t nil
+qqe_simplterm qqe_op) 913073649869870035)
+
+(c!:install 'lambdavar '(lambdavar) 1816750194888957620)
+
+(c!:install 'domainvalchk '(domainvalchk dmode!* nil mk!*sq valuechk) 
+902646238426271914)
+
+(c!:install 'doublep '(doublep !:rd!: nil) 620829993394421821)
+
+(c!:install 's!-nextarg '(s!-nextarg !*udebug nil comb i upb (null!-fn)
+acontract op mcontract null!-fn expand identity uprint initcomb getcomb
+mval) 426507077737351493)
+
+(c!:install 'evinvlexcomp '(evinvlexcomp (0) evlexcomp) 
+596768119650033722)
+
+(c!:install 'dipprodin '(dipprodin dipzero dipprodin1 dipsum) 
+1256463770200100544)
+
+(c!:install 'exdff0 '(exdff0 nil multsqpf exdfp0 multpfsq addpf) 
+131303458675894461)
+
+(c!:install 'applysetop '(applysetop nil list setvalued "set" setdiff
+reval delete!-dups make!-set typerr aeval) 445657864416251660)
 
 (c!:install 'rd!:difference '(rd!:difference nil !*!*roundbf !:rd!: yy!!
 difference !*backtrace safe!-fp!-plus convprc2 difbf rdzchk errorset
@@ -21,10 +50,10 @@ procedure global fluid parm parameter rtype getd) 858000679744201335)
 (c!:install 'xremf '(xremf nil termsf ordop multf addf qremf negf qremd)
  44634656572827489)
 
-(c!:install 'maxfrom1 '(maxfrom1 pnth max) 1516144382999101071)
+(c!:install 'even_action_term '(even_action_term multf even_action_pow
+even_action_sf addsq) 1074635601340228748)
 
-(c!:install 'cancel '(cancel !*mcd mk!*sq simpexpt multsq) 
-309303107998986780)
+(c!:install 'maxfrom1 '(maxfrom1 pnth max) 1516144382999101071)
 
 (c!:install 'mk!+scal!+mult!+mat '(mk!+scal!+mult!+mat !*protfg
 "no matrix in add" nil t !*sub2 matrix!+p lprie multsq subs2) 
@@ -95,33 +124,6 @@ linelist!* nil curline!* ifl!* ipl!* contl!* !*protfg
 2294306641027330071)
 
 (c!:install 'sf2mv '(sf2mv nil sf2mv1) 1916858523531313086)
-
-(c!:install 'red!=hide '(red!=hide nil mo_neg mo_times_ei) 
-1353001482227838864)
-
-(c!:install 'clean_numid '(clean_numid !*id2num nreverse) 
-1717281175596201174)
-
-(c!:install 'orddf '(orddf "Orddf = case" "Orddf v longer than u"
-"Orddf u longer than v" t nil exptcompare interr) 952177831840430535)
-
-(c!:install 'mk!+mat!+plus!+mat '(mk!+mat!+plus!+mat !*protfg
-"no matrix in add" "wrong dimensions in add" nil t !*sub2 matrix!+p
-lprie get!+col!+nr get!+row!+nr get!+mat!+entry addsq subs2) 
-1178716058700273594)
-
-(c!:install 'semanticml '(semanticml "<apply>" t "<fn>" nil "<semantic>"
-"<ci><mo>" "</mo></ci>" "<annotation-xml encoding=""OpenMath"">" "<" ">"
-"</annotation-xml>" "</semantic>" "</fn>" "</apply>" printout indent!*
-list2string multi_elem) 1926055915815397762)
-
-(c!:install 'alg_plus '(alg_plus plus aeval) 54209013442699845)
-
-(c!:install 'crn!:zerop '(crn!:zerop nil) 636778042702425602)
-
-(c!:install 'findelem2 '(findelem2 sparsemat) 1135676704874816883)
-
-(c!:install 'size_of_matrix '(size_of_matrix) 2182410183307985568)
 
 
 % End of generated Lisp code

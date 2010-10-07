@@ -1,7 +1,56 @@
 
 % u24.lsp           Machine generated Lisp
 
-(c!:install "u24" 10692 6424872 1409422)
+(c!:install "u24" 21983 4608150 2039761)
+
+(c!:install 'cl_apply2ats1 '(cl_apply2ats1 true false ex all bex ball or
+and not impl repl equiv nil apply) 1318739775687357999)
+
+(c!:install 'aex_freeids '(aex_freeids aex_ex ratpoly_idl aex_ctx
+ctx_idl lto_setminus) 1606546440930328381)
+
+(c!:install 'ps!:value '(ps!:value !:ps!: dname ps!:getv) 
+1539966128666975632)
+
+(c!:install 'rootextractsq '(rootextractsq subs2q rootextractf) 
+464564755223330139)
+
+(c!:install 'getdec '(getdec nil symtabget implicitdec) 
+1713246512318603024)
+
+(c!:install 'groebsavelterm '(groebsavelterm !*groelterms
+groebsaveltermbc) 2019868696966292276)
+
+(c!:install 'coordp '(coordp coord!*) 214463969463078503)
+
+(c!:install 'l!-subst '(l!-subst nreverse) 1627928267960162687)
+
+(c!:install 'comm1 '(comm1 end cursym!* !*semicol!* (end else then until
+!*rpar!* !*rsqbkt!*) nil !*msg "***" "END-COMMENT NO LONGER SUPPORTED" t
+scan lpriw) 2033750439767753010)
+
+(c!:install 'dfprintfn '(dfprintfn !*nat !*fort !*dfprint failed !!df!!
+nil layout!-formula putpline) 1964666450204102206)
+
+(c!:install 'ratn '(ratn !:rn!: "Illegal domain in :ar:" errmsg!*
+!*protfg lprie) 1276262470793563230)
+
+(c!:install 'subsublis '(subsublis sqrt expt (quotient 1 2) nil subfunc
+dname !*sq prepf sqform) 998907077058509465)
+
+(c!:install 'wureducedp '(wureducedp nil wuconstantp deginvar) 
+1278404179191695381)
+
+(c!:install 'ratpoly_quot '(ratpoly_quot invsq multsq) 
+1024522726372507177)
+
+(c!:install 'cgp_mk '(cgp_mk cgp) 1967345575831606739)
+
+(c!:install 'unaryir '(unaryir atts name cd find encodeir) 
+1468500154940379226)
+
+(c!:install 'ps!:depvar '(ps!:depvar !:ps!: dname nil ps!:getv) 
+1399665155818124329)
 
 (c!:install 'matsm1 '(matsm1 !*div mat matmapfn matrix nil
 "Apply called with non-id arg" errmsg!* !*protfg "Matrix mismatch" !*exp
@@ -55,44 +104,6 @@ comfac quotf minusf negf factor!-prim!-f multf) 2269762059051336256)
 
 (c!:install 'aex_boundids '(aex_boundids aex_ids aex_ctx ctx_idl
 intersection) 1546298377561641709)
-
-(c!:install 'cnrd '(cnrd nil atts type base char constant (real integer)
-based_integer string (rational complex!-cartesian complex!-polar)
-rational complex!-cartesian complex_cartesian complex!-polar
-complex_polar find lex compress!* seprd) 841234198987013074)
-
-(c!:install 'gcd2 '(gcd2) 2066153566096260810)
-
-(c!:install 'intrdsortin '(intrdsortin !:difference !:minusp nreverse) 
-1417026782805208781)
-
-(c!:install 'smemberl '(smemberl smember nreverse) 802462184438546337)
-
-(c!:install 'dummyp '(dummyp nil g_dvnames g_dvbase upbve ad_splitname) 
-1059291590851201157)
-
-(c!:install 'reverse!-num1 '(reverse!-num1 reverse!-num!-table!*) 
-86803501734507297)
-
-(c!:install 'sgn1 '(sgn1) 150348700130995625)
-
-(c!:install 'horner!-rule!-for!-one!-var '(horner!-rule!-for!-one!-var
-nil multf addf) 52957983471049377)
-
-(c!:install 'cl_identifyonoff '(cl_identifyonoff nil cl_identify!-atl!*)
- 111440064799115096)
-
-(c!:install 'multdfconst '(multdfconst multsq subs2q nreverse) 
-2098672999481205651)
-
-(c!:install 'expnd '(expnd !*really_off_exp !*sub2 expnd1 subs2f) 
-2190090991291775704)
-
-(c!:install 'cl_susiupdknowl2 '(cl_susiupdknowl2 nil false t rl_susibin
-cl_susiinter) 1249729706054352220)
-
-(c!:install 'expvec2a '(expvec2a dipvars!* expvec2a1) 
-1624584766474604635)
 
 
 % End of generated Lisp code

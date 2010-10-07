@@ -1,7 +1,26 @@
 
 % u20.lsp           Machine generated Lisp
 
-(c!:install "u20" 5659 1498583 7199532)
+(c!:install "u20" 5123 2977624 1515325)
+
+(c!:install 'assert_stat '(assert_stat !*assert nil assert!: noassert!:
+a list de assert_check1 put (quote assert_assertfn) (quote
+assert_noassertfn) (quote assert_installed) cond not member
+assert_functionl!* setq cons progn assert_stat!-parse mkid) 
+1954186389394689638)
+
+(c!:install 'mo_lcm '(mo_lcm nil mo!=shorten mo!=deglist) 
+1332165419211319976)
+
+(c!:install 'inprint '(inprint times !*nat !*asterisk times2 infix prtch
+" " plus !*revpri alt not setq tag setprifn prifn pprifn inbrackets "("
+")" !*nosplit testing!-width!* nil (setq !*comma!*) minus getrtype
+prinfit oprin maprint prin2!*) 2126947002721244886)
+
+(c!:install 'numlist_ordp '(numlist_ordp lambda_l9xqts_4 cons_ordp) 
+829179638730125395)
+
+(c!:install 'lambda_l9xqts_4 '(lambda_l9xqts_4) 1956932879724434979)
 
 (c!:install 'mod_eval_uni_poly '(mod_eval_uni_poly nil current!-modulus
 mod!# general!-modular!-expt general!-modular!-plus) 1347813697251999815
@@ -113,32 +132,6 @@ ibalp_getnewwl) 2106243944618608321)
 (c!:install 'general!-evaluate!-mod!-p '(general!-evaluate!-mod!-p nil
 "Variable=NIL in GENERAL-EVALUATE-MOD-P" adjoin!-term
 general!-horner!-rule!-mod!-p errorf) 1980905549695426232)
-
-(c!:install 'cl_qb '(cl_qb ex all nil) 572864694906074195)
-
-(c!:install 'ofsf_ordatp '(ofsf_ordatp ordp ofsf_ordrelp) 
-1656702307649018192)
-
-(c!:install 'naryom '(naryom var variance valid_om!* multiset nil
-"<OMA>" indent "<OMS cd=""" """ name=""" """>" "</OMA>" printout multiom
-) 1708830407962136241)
-
-(c!:install 'ft!:zerop '(ft!:zerop !:prec!: nil) 734794199516223409)
-
-(c!:install 'gvarlis1 '(gvarlis1 gvar1 union) 2052926511947502399)
-
-(c!:install 'assert_typedefstat '(assert_typedefstat cursym!* delim
-!*assert nil !*msg "***" "type" "is not checked" checked !*protfg
-"expecting 'checked by' in typedef but found" by
-"expecting 'by' in typedef but found"
-"expecting end of typedef but found" put (quote assert_checkfn) scan
-lpriw lprie) 1052151046627044234)
-
-(c!:install 'fs!:prin1 '(fs!:prin1 t (1 . 1) "(" ")" "[" nil "-" "+"
-fourier!-name!* "]" "1" prin2!* sqprint fs!:null!-angle) 
-82415677036588739)
-
-(c!:install 'dpmat_coldegs '(dpmat_coldegs pnth) 1324398620588824637)
 
 
 % End of generated Lisp code

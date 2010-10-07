@@ -1,7 +1,7 @@
 
 % u05.lsp           Machine generated Lisp
 
-(c!:install "u05" 17281 2619668 6944010)
+(c!:install "u05" 4103 6859962 5130685)
 
 (c!:install 'layout!-formula '(layout!-formula ycoord!* ymin!* ymax!*
 posn!* pline!* testing!-width!* overflowed!* nil orig!* t inbrackets "("
@@ -10,10 +10,10 @@ posn!* pline!* testing!-width!* overflowed!* nil orig!* t inbrackets "("
 (c!:install 'repeatsp '(repeatsp nil) 1088315556521374433)
 
 (c!:install 'assert_analyze '(assert_analyze assertstatistics!*
-lambda_l9cw2s_1 nil (function !#calls !#bad! calls
+lambda_l9xqtq_1 nil (function !#calls !#bad! calls
 !#assertion! violations) sum " " "-" sort) 1981515460151596941)
 
-(c!:install 'lambda_l9cw2s_1 '(lambda_l9cw2s_1 ordp) 864441468604894397)
+(c!:install 'lambda_l9xqtq_1 '(lambda_l9xqtq_1 ordp) 939354031740344136)
 
 (c!:install 'simpplus '(simpplus nil ckpreci!# simp addsq) 
 1717362319506698544)

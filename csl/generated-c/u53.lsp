@@ -1,7 +1,30 @@
 
 % u53.lsp           Machine generated Lisp
 
-(c!:install "u53" 462 1584900 832576)
+(c!:install "u53" 12274 4103797 6954033)
+
+(c!:install 'st_ad_numsorttree1 '(st_ad_numsorttree1 !* nil !+
+numlist_ordp !- cdr_signsort lastpair ad_numsort cdr_sort) 
+1124270650941605903)
+
+(c!:install 'quotfail '(quotfail polyzero "UNEXPECTED DIVISION FAILURE"
+quotf errorf) 1594334677508816826)
+
+(c!:install 'rl_nnfnot '(rl_nnfnot rl_nnfnot!* apply) 
+2143004410271401474)
+
+(c!:install 'ratpoly_subrat1 '(ratpoly_subrat1 nil !*rlanuexdebug prepf
+"***** ratpoly_subrat: faulty calculation" coeffs multsq addsq invsq
+sqform subsq ratpoly_minus ratpoly_nullp) 460596265655662216)
+
+(c!:install 'exdfpf '(exdfpf nil exdfk multpfsq exdf0 wedgepf2
+mkuniquewedge addpf) 184208791114024624)
+
+(c!:install 'mkset '(mkset getrlist delete!-dups make!-set) 
+1551515755559882789)
+
+(c!:install 'monicmember '(monicmember gg nil t monic) 
+1647981067385176291)
 
 (c!:install 'dependsp '(dependsp t nil !*sq taylorvariable depends
 taylorp involvesq) 1102186475683222)
@@ -42,34 +65,6 @@ rhsaliases constp subscriptedvarp ireval introduce!-alias)
 read!:num) 280727001721894892)
 
 (c!:install 'listnoeval '(listnoeval avalue) 2287920498345312298)
-
-(c!:install 'com43 '(com43 liemat bb ff algebraic l_z nil cc minus det
-quotient plus times comcom0 comcom1 comcom3 matrix aeval arrayfn setk
-evalneq evalequal clear aeval!*) 1199864247135900346)
-
-(c!:install 'dp_from_a '(dp_from_a list mat "dpoly" "dpoly operator"
-dp!=fn dp!=fnpow nil typerr apply dp!=a2dpatom) 1654239452200921320)
-
-(c!:install 'out_of_range '(out_of_range signat!* nil t flattens1
-extract_numid) 1140869009616282554)
-
-(c!:install 'try!-all!-constants '(try!-all!-constants nil
-number!-needed current!-modulus split!-further) 332395174585977833)
-
-(c!:install 'setmod '(setmod dmode!* (!:mod!:) field current!-modulus
-"modulus" reval primep set!-general!-modulus typerr) 1161630347691157718
-)
-
-(c!:install 'x!*!*p!-w '(x!*!*p!-w general!-difference!-mod!-p) 
-1083688349456741350)
-
-(c!:install 'ratleqp '(ratleqp ratdif) 2229277315578477880)
-
-(c!:install 'horner!-rule!-in!-order!-mod!-p '(
-horner!-rule!-in!-order!-mod!-p evaluate!-in!-order!-mod!-p !*d2n) 
-421784425375436902)
-
-(c!:install 'convprec '(convprec convchk) 194273680008027209)
 
 
 % End of generated Lisp code

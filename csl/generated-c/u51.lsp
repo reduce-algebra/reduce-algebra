@@ -1,7 +1,33 @@
 
 % u51.lsp           Machine generated Lisp
 
-(c!:install "u51" 4981 5497265 8665825)
+(c!:install "u51" 19301 4239559 3489231)
+
+(c!:install 'nrootnn '(nrootnn t !*primelist!* nil mcfactor!* irootn) 
+1198445807803353498)
+
+(c!:install 'vp2df '(vp2df sqrt vp1 vp2 mulpower) 2268022609591072297)
+
+(c!:install 'multtaylor!* '(multtaylor!* taylor!* !*taylorkeeporiginal
+nil multtaylor1 replace!-next multsq) 846950273893691823)
+
+(c!:install 'mk!+inner!+mat '(mk!+inner!+mat nil !*protfg
+"incorrect input in mkinnermat" simp matrix!+p lprie) 
+1627358067971198785)
+
+(c!:install 'makevar '(makevar) 1235060389738614657)
+
+(c!:install 'ofsf_simpat '(ofsf_simpat !*rlnzden !*rlposden
+"atomic formula" nil !*rladdcond (lessp leq greaterp geq) and greaterp
+neq simp typerr negf addsq multf) 1605122878239090247)
+
+(c!:install 'repr_new '(repr_new !*protfg
+"repr_new : invalid coefficient list" lprie) 1539416981401029104)
+
+(c!:install 'bc_minus!? '(bc_minus!? minusf) 1952517193192629692)
+
+(c!:install 'updkorder '(updkorder kord!* nil alglist!*) 
+467378026450231291)
 
 (c!:install 'groebsimpcontnormalform '(groebsimpcontnormalform
 !*groebprot quotient gsugar vdpsimpcont gsetsugar vbc2a reval
@@ -49,6 +75,10 @@ csl_normbf difbf) 957316695396579656)
 
 (c!:install 'mk!-coeff1 '(mk!-coeff1 times nil getroad factorial eval) 
 1979013040514387375)
+
+(c!:install 'put!-kvalue '(put!-kvalue !*sq nil
+"improperly defined in terms of itself" t kvalue sf_member msgpri
+smember) 1854160564681890636)
 
 (c!:install 'ofsf_chsimpat1 '(ofsf_chsimpat1 (lessp leq equal neq geq
 greaterp) lastcar) 2119393351172406100)
@@ -131,25 +161,6 @@ polyzero horner!-rule!-for!-one!-var !*d2n) 1392158257754706136)
 
 (c!:install 'conjsq '(conjsq i impartsq repartsq simp multsq negf addsq)
  1758286165707462241)
-
-(c!:install 'quotfx1 '(quotfx1 !*protfg "exact division failed" t ordop
-quotkx lprie lt!* cutf1 multf negf addf rnconc quotfdx) 
-1680406462435018631)
-
-(c!:install 'ps!:plus!-erule '(ps!:plus!-erule nil ps!:evaluate addsq) 
-1906503583027259512)
-
-(c!:install 'arprep!: '(arprep!: !*reexpress nil express!-in!-arvars
-prepf1 replus) 223930117464278769)
-
-(c!:install 'fast_augment_columns '(fast_augment_columns mat nil pnth
-fast_unchecked_getmatelem) 2268142704528352111)
-
-(c!:install 'mkuniquewedge1 '(mkuniquewedge1 wedgemtch!* wedge wedgemtch
-partitop mkupf) 882086248870702565)
-
-(c!:install 'deflate1c '(deflate1c nil (0.0 . 0.0) ncoeffs gftimesn
-gfplusn) 2004921422377790956)
 
 
 % End of generated Lisp code

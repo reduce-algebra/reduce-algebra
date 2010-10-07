@@ -1,7 +1,7 @@
 
 % u01.lsp           Machine generated Lisp
 
-(c!:install "u01" 1117 1518193 3699146)
+(c!:install "u01" 4563 2310284 7685734)
 
 (c!:install 'reval '(reval t reval1) 607148151428708743)
 
@@ -13,6 +13,8 @@
 (c!:install '!*d2q '(!*d2q nil !:zerop) 637035353559099761)
 
 (c!:install 'getrtypeor '(getrtypeor nil getrtype) 62732981189452306)
+
+(c!:install 'smember '(smember t nil) 1662287129480311788)
 
 (c!:install 'quotf '(quotf t !*exp quotf1) 985572180358968177)
 
@@ -44,8 +46,6 @@ noncomlistp) 1902586927742074833)
 
 (c!:install 'noncomfp1 '(noncomfp1 nil !*ncmp noncomp1) 
 1151148336314595257)
-
-(c!:install 'smember '(smember t nil) 1662287129480311788)
 
 (c!:install 'prepf '(prepf nil prepf1 replus) 738641199737096263)
 
@@ -187,6 +187,8 @@ reval multd) 7816986856649403)
 
 (c!:install 'multiply!-by!-constant!-mod!-p '(
 multiply!-by!-constant!-mod!-p nil adjoin!-term) 1860229763733566770)
+
+(c!:install 'aeval '(aeval nil reval1) 932102353927124216)
 
 (c!:install 'rl_smupdknowl '(rl_smupdknowl rl_smupdknowl!* apply) 
 1514965686459320827)

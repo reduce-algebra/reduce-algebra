@@ -1,7 +1,45 @@
 
 % u25.lsp           Machine generated Lisp
 
-(c!:install "u25" 2297 8217442 475308)
+(c!:install "u25" 30 3588000 7130486)
+
+(c!:install 'cnrd '(cnrd nil atts type base char constant (real integer)
+based_integer string (rational complex!-cartesian complex!-polar)
+rational complex!-cartesian complex_cartesian complex!-polar
+complex_polar find lex compress!* seprd) 841234198987013074)
+
+(c!:install 'gcd2 '(gcd2) 2066153566096260810)
+
+(c!:install 'intrdsortin '(intrdsortin !:difference !:minusp nreverse) 
+1417026782805208781)
+
+(c!:install 'smemberl '(smemberl smember nreverse) 802462184438546337)
+
+(c!:install 'dummyp '(dummyp nil g_dvnames g_dvbase upbve ad_splitname) 
+1059291590851201157)
+
+(c!:install 'reverse!-num1 '(reverse!-num1 reverse!-num!-table!*) 
+86803501734507297)
+
+(c!:install 'sgn1 '(sgn1) 150348700130995625)
+
+(c!:install 'horner!-rule!-for!-one!-var '(horner!-rule!-for!-one!-var
+nil multf addf) 52957983471049377)
+
+(c!:install 'cl_identifyonoff '(cl_identifyonoff nil cl_identify!-atl!*)
+ 111440064799115096)
+
+(c!:install 'multdfconst '(multdfconst multsq subs2q nreverse) 
+2098672999481205651)
+
+(c!:install 'expnd '(expnd !*really_off_exp !*sub2 expnd1 subs2f) 
+2190090991291775704)
+
+(c!:install 'cl_susiupdknowl2 '(cl_susiupdknowl2 nil false t rl_susibin
+cl_susiinter) 1249729706054352220)
+
+(c!:install 'expvec2a '(expvec2a dipvars!* expvec2a1) 
+1624584766474604635)
 
 (c!:install 'divide!-by!-power!-of!-ten '(divide!-by!-power!-of!-ten
 "Invalid argument to" bften!* nil !:bprec!: !:rd!: error divide!:
@@ -51,10 +89,10 @@ bas_dpoly dp_lc bas_rep bc_inv bc_prod bc_fi dp_lmon mo_diff dp_times_bc
 dp_times_bcmo dp_diff cali_trace dp_print bas_nr bas_make1 bc_gcd
 bc_divmod) 361221532838411975)
 
-(c!:install 'simp!-prop!-condense '(simp!-prop!-condense lambda_l9cw2v_6
+(c!:install 'simp!-prop!-condense '(simp!-prop!-condense lambda_l9xqts_6
 nil sort subsetp ordn) 1204953500892987875)
 
-(c!:install 'lambda_l9cw2v_6 '(lambda_l9cw2v_6) 803385207003369131)
+(c!:install 'lambda_l9xqts_6 '(lambda_l9xqts_6) 2129505418459596898)
 
 (c!:install '!:expt '(!:expt "0/0 formed" errmsg!* !*protfg nil field
 expt i2d times !:recip mkratnum lprie) 2025956589000676467)
@@ -118,47 +156,6 @@ tayexp!-difference tayexp!-times2 tayexp!-minusp tayexp!-plus2 lastpair)
 1846892949360526956)
 
 (c!:install 'derad '(derad ordp nreverse) 1360178742516480715)
-
-(c!:install 'sptransmat '(sptransmat spm nil matlength mkempspmat
-letmtr3 aeval) 2188579528924535419)
-
-(c!:install 'amatch '(amatch r p nil !*semantic equal mval unify suchp
-resume) 973893012029380763)
-
-(c!:install 'multiply!-by!-power!-of!-ten '(multiply!-by!-power!-of!-ten
-"Invalid argument to" bften!* nil !:rd!: !:bprec!: error csl_normbf
-cut!:mt) 1889270234149592440)
-
-(c!:install '!*pf2sq '(!*pf2sq nil multsq addsq) 2140059947359199017)
-
-(c!:install 'replace1_parents '(replace1_parents replace2_parents) 
-1779060672907265546)
-
-(c!:install 'pairxvars '(pairxvars scalar infix stat
-"Invalid parameter:" nil symerr) 1167310948086381031)
-
-(c!:install 'mv!-pow!-!> '(mv!-pow!-!> nil) 1988202688155873078)
-
-(c!:install 'quotpri '(quotpri !*ratpri !*nat !*fort !*list !*mcd failed
-dmode!* ratmode nil ratfunpri1) 89630365146683561)
-
-(c!:install 'mo_equal!? '(mo_equal!? mo!=shorten) 1835715994617049114)
-
-(c!:install 'ratdif '(ratdif nil ratminus ratplusm) 1605943186866839187)
-
-(c!:install 'termorder '(termorder listsum termorder1) 
-795736760738790293)
-
-(c!:install 'offexpchk '(offexpchk !*really_off_exp frlis!*
-freevarinexptchk mkprod canprod) 1358505097838405137)
-
-(c!:install 'qqe_prepat '(qqe_prepat) 2259049661138438197)
-
-(c!:install 'homogp '(homogp nil t lastnondomain listsum) 
-1495487913162529188)
-
-(c!:install 'ev_revgradlexcomp '(ev_revgradlexcomp ev_tdeg ev_invlexcomp
-) 644064281930326932)
 
 
 % End of generated Lisp code

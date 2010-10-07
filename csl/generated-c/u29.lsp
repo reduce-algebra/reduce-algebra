@@ -1,7 +1,34 @@
 
 % u29.lsp           Machine generated Lisp
 
-(c!:install "u29" 14572 266668 8811301)
+(c!:install "u29" 17457 5135420 309567)
+
+(c!:install 'red!=hide '(red!=hide nil mo_neg mo_times_ei) 
+1353001482227838864)
+
+(c!:install 'clean_numid '(clean_numid !*id2num nreverse) 
+1717281175596201174)
+
+(c!:install 'orddf '(orddf "Orddf = case" "Orddf v longer than u"
+"Orddf u longer than v" t nil exptcompare interr) 952177831840430535)
+
+(c!:install 'mk!+mat!+plus!+mat '(mk!+mat!+plus!+mat !*protfg
+"no matrix in add" "wrong dimensions in add" nil t !*sub2 matrix!+p
+lprie get!+col!+nr get!+row!+nr get!+mat!+entry addsq subs2) 
+1178716058700273594)
+
+(c!:install 'semanticml '(semanticml "<apply>" t "<fn>" nil "<semantic>"
+"<ci><mo>" "</mo></ci>" "<annotation-xml encoding=""OpenMath"">" "<" ">"
+"</annotation-xml>" "</semantic>" "</fn>" "</apply>" printout indent!*
+list2string multi_elem) 1926055915815397762)
+
+(c!:install 'alg_plus '(alg_plus plus aeval) 54209013442699845)
+
+(c!:install 'crn!:zerop '(crn!:zerop nil) 636778042702425602)
+
+(c!:install 'findelem2 '(findelem2 sparsemat) 1135676704874816883)
+
+(c!:install 'size_of_matrix '(size_of_matrix) 2182410183307985568)
 
 (c!:install 'memqcar '(memqcar nil) 1306819724006551365)
 
@@ -94,6 +121,9 @@ removeindices) 1173454290266369814)
 (c!:install 'extadd '(extadd nil ordexp setcdr addf) 1322127586396427239
 )
 
+(c!:install 'processpartitie1list1 '(processpartitie1list1 nil
+processpartitie1) 1987873843577365443)
+
 (c!:install 'omatpir '(omatpir (!/ o m a t p) nil lex omsir omobj
 checktag) 802697970492598096)
 
@@ -112,36 +142,6 @@ checktag) 802697970492598096)
 
 (c!:install 'specrd!:plus '(specrd!:plus minus !:rd!: add_minus
 rd!:difference rd!:plus) 1019714941130992481)
-
-(c!:install 'xreadlist '(xreadlist !*rcbkt!* list group cursym!*
-!*semicol!* "Syntax error: semicolon in list" nil !*comma!*
-"Syntax error: invalid comma in list" scan xread1 nconc2 symerr) 
-993011652238714471)
-
-(c!:install 'toolongexpp '(toolongexpp maxexpprintlen!* numprintlen) 
-1304998923951448279)
-
-(c!:install 'calc_coeff '(calc_coeff calc_world) 2014568002817880426)
-
-(c!:install 'vunion '(vunion) 1188605127457061104)
-
-(c!:install 'procstat1 '(procstat1 erfg!* fname!* t cursym!* procedure
-expr !*reduce4 (xread (quote proc)) nil !*backtrace (procedure operator)
-"procedure" "invalid as parameter list" "procedure name" read_param_list
-!*colon!* fnc eof!* !*semicol!* (xread t) (symerr (quote procedure) t)
-errorset scan typerr read_type getd gettype idlistp lprie) 
-2099769312149419033)
-
-(c!:install 'equiv!-coeffs '(equiv!-coeffs mv!-pow!-!> nreverse nzeros) 
-1331851324197063902)
-
-(c!:install 'red_tailreddriver '(red_tailreddriver nil bas_dpoly
-red!=hidelt red!=recover) 1779029486679368671)
-
-(c!:install 'xnsiz '(xnsiz log2of10 xnsiz1 ceiling) 1938943646278424154)
-
-(c!:install 'ofsf_at2ir '(ofsf_at2ir nil negf addf sfto_dcontentf quotf
-invsq multsq) 63613550627078222)
 
 
 % End of generated Lisp code

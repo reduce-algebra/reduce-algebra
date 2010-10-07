@@ -1,7 +1,7 @@
 
 % u12.lsp           Machine generated Lisp
 
-(c!:install "u12" 17708 6470225 9024478)
+(c!:install "u12" 734 446102 3238597)
 
 (c!:install 'gcdf2 '(gcdf2 asymplis!* !*gcd nil !*ncmp num!-exponents
 kernord setkorder reorder noncomp1 gcdfnc ordop comfac gcdf1 quotf1 gcdk
@@ -54,6 +54,9 @@ mo_vdivides!?) 714855455564249474)
 
 (c!:install 'artimes!: '(artimes!: dmode!* !*exp t !:ar!: multf
 reducepowers) 1655466896828740719)
+
+(c!:install 'split_ext '(split_ext ext nil split_form cancel) 
+1634992850694145839)
 
 (c!:install 'removeg1 '(removeg1 n!*!*2!-1 "Free edge" "in vertex"
 su_order nil "Invalid structure of c-graph" times removev multsq finde
@@ -115,12 +118,6 @@ encodeir apply) 1635123881268886875)
 
 (c!:install 'scal!*list '(scal!*list !:times nreverse) 
 1787744418256739952)
-
-(c!:install 'all_edge '(all_edge nreverse) 962943690998207321)
-
-(c!:install 'red_better '(red_better bas_dplen) 1664735070248066575)
-
-(c!:install 'pv_times3 '(pv_times3 pappend) 30758553039306401)
 
 
 % End of generated Lisp code

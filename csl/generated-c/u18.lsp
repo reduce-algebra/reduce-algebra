@@ -1,7 +1,48 @@
 
 % u18.lsp           Machine generated Lisp
 
-(c!:install "u18" 2787 3283905 8345543)
+(c!:install "u18" 13003 7168992 8639580)
+
+(c!:install 'ps!:evaluate!-next '(ps!:evaluate!-next ps ps!:erule
+ps!:getv ps!:expression apply prepsqxx simp!* ps!:set!-term) 
+1451468694344642539)
+
+(c!:install 'lid '(lid) 1048228651616277337)
+
+(c!:install 'indord2 '(indord2 indordp) 1618021129309535199)
+
+(c!:install 'quotfail1 '(quotfail1 polyzero quotf errorf) 
+941730650520050538)
+
+(c!:install 'my_freeof '(my_freeof nil depl!* smember freeofdepl) 
+921718580149925090)
+
+(c!:install 'physopsm!* '(physopsm!* rvalue psimpfn opmtch
+physopfunction physoparith physopfn "invalid call of " " with args: "
+" has been flagged Physopfunction" " but is not defined" physopmapping
+prog physopp physopaeval opmtch!* hasonephysop apply reval3
+areallphysops rederr2 !*physopp!* mk!*sq aeval physopprog) 
+1156152042253016303)
+
+(c!:install 'setk '(setk evalargfn rtype matrix setk0 revlis) 
+1991935475192031166)
+
+(c!:install 'mv!-domainlist '(mv!-domainlist nreverse) 
+296190814143791910)
+
+(c!:install 'addgt '(addgt ordering lex plus eval) 1701930144718944906)
+
+(c!:install 'st_consolidate '(st_consolidate nil t !*) 
+704199119824727847)
+
+(c!:install 'arplus!: '(arplus!: dmode!* !*exp t !:ar!: addf) 
+142261442931697279)
+
+(c!:install 'reverse!-num '(reverse!-num ilog2 reverse!-num1) 
+893954207581207090)
+
+(c!:install 'sq2sstm '(sq2sstm sq2sscfpl mapins mkzl) 459413381349231833
+)
 
 (c!:install 'ibalp_readclause '(ibalp_readclause nil t true false not
 ibalp_arg2l ibalp_arg2r setcar ibalp_process!-var) 240057145803309605)
@@ -90,37 +131,6 @@ getrtype eval!-yetunknowntypeexpr typerr setkorder simp reorder kernp
 (c!:install 'cl_smsimpl!-junct '(cl_smsimpl!-junct !*rlsism nil false
 and rl_smcpknowl cl_cflip cl_atfp cl_simplat rl_smupdknowl
 cl_smsimpl!-junct1 cl_gand!-col) 153514135111174187)
-
-(c!:install 'ibalp_renewwl '(ibalp_renewwl nil ibalp_getnewwl setcar) 
-696587307402434281)
-
-(c!:install 'ev_lexcomp '(ev_lexcomp) 727744011498745821)
-
-(c!:install 'getsetvars '(getsetvars (setel setk) setq getsetvarlis
-nreverse) 100136917484174534)
-
-(c!:install 'nextcomb '(nextcomb i nil initcomb) 1185417246500391149)
-
-(c!:install 'setdmode '(setdmode dname complex!-rational dmode!* complex
-rational complex!-rounded rounded tag "Domain mode error:"
-"is not a domain mode" errmsg!* !*protfg package!-name !*complex lprie
-load!-package setdmode1 setcmpxmode onoff) 979325550509247944)
-
-(c!:install 'groebcplistsortin '(groebcplistsortin groebcplistsortin1) 
-2299871156397294862)
-
-(c!:install 'rd!:times '(rd!:times nil !*!*roundbf !:rd!: yy!! times2
-!*backtrace safe!-fp!-times convprc2 csl_timbf errorset rndbfon fl2bf
-csl_normbf read!:num) 2364201904390444)
-
-(c!:install 'fortranname '(fortranname !*notfortranfuns!* !*stdout!*
-"*** WARNING: " " is not an intrinsic Fortran function" nil !*double
-!*doublename!* !*fortranname!* stringtoatom) 1501128138852990662)
-
-(c!:install 'powers3 '(powers3) 1017798920793788229)
-
-(c!:install 'assert_uninstall '(assert_uninstall !*assert nil
-assert_uninstall1) 2001029654612123388)
 
 
 % End of generated Lisp code

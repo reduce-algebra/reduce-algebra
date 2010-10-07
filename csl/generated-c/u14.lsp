@@ -1,7 +1,12 @@
 
 % u14.lsp           Machine generated Lisp
 
-(c!:install "u14" 2767 8412160 3195035)
+(c!:install "u14" 9030 3050505 9003275)
+
+(c!:install 'assert_error '(assert_error !*assertstatistics
+assertstatistics!* "assertion" "violated by result" "violated by" arg
+!*assertbreak !*protfg !*msg nil "***" setcar assert_format lprie lpriw
+mkid) 1217826911983139398)
 
 (c!:install 'getmatelem '(getmatelem "matrix element" avalue matrix
 "matrix" mat "Matrix" "not set" errmsg!* !*protfg "positive integer"
@@ -151,9 +156,6 @@ comm1) 1915054391883670845)
 
 (c!:install 'sfto_ucontentf '(sfto_ucontentf sfto_ucontentf1) 
 1520555230224091218)
-
-(c!:install 'qremf '(qremf !*exp t nil ordop multf addf negf qremd) 
-1274910425088367413)
 
 
 % End of generated Lisp code

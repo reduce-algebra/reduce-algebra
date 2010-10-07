@@ -1,7 +1,33 @@
 
 % u21.lsp           Machine generated Lisp
 
-(c!:install "u21" 14418 8843123 8663382)
+(c!:install "u21" 20783 1526207 1815847)
+
+(c!:install 'cl_qb '(cl_qb ex all nil) 572864694906074195)
+
+(c!:install 'ofsf_ordatp '(ofsf_ordatp ordp ofsf_ordrelp) 
+1656702307649018192)
+
+(c!:install 'naryom '(naryom var variance valid_om!* multiset nil
+"<OMA>" indent "<OMS cd=""" """ name=""" """>" "</OMA>" printout multiom
+) 1708830407962136241)
+
+(c!:install 'ft!:zerop '(ft!:zerop !:prec!: nil) 734794199516223409)
+
+(c!:install 'gvarlis1 '(gvarlis1 gvar1 union) 2052926511947502399)
+
+(c!:install 'assert_typedefstat '(assert_typedefstat cursym!* delim
+!*assert nil !*msg "***" "type" "is not checked" checked !*protfg
+"expecting 'checked by' in typedef but found" by
+"expecting 'by' in typedef but found"
+"expecting end of typedef but found" put (quote assert_checkfn) scan
+lpriw lprie) 1052151046627044234)
+
+(c!:install 'fs!:prin1 '(fs!:prin1 t (1 . 1) "(" ")" "[" nil "-" "+"
+fourier!-name!* "]" "1" prin2!* sqprint fs!:null!-angle) 
+82415677036588739)
+
+(c!:install 'dpmat_coldegs '(dpmat_coldegs pnth) 1324398620588824637)
 
 (c!:install 'subs3t '(subs3t nil mchfg!* !*match t subfg!* !*val !*ncmp
 !*mcd "CATASTROPHIC ERROR *****" " "
@@ -41,10 +67,10 @@ no!-side!-effectp) 850758379198238797)
 (c!:install 'no_dum_varp '(no_dum_varp list t nil splitlist!:) 
 790731282011564070)
 
-(c!:install 'ad_numsort '(ad_numsort lambda_l9cw2u_5 sort) 
+(c!:install 'ad_numsort '(ad_numsort lambda_l9xqts_5 sort) 
 402327177911246617)
 
-(c!:install 'lambda_l9cw2u_5 '(lambda_l9cw2u_5) 1700828410020601199)
+(c!:install 'lambda_l9xqts_5 '(lambda_l9xqts_5) 493022775592118529)
 
 (c!:install 'cl_identifyat '(cl_identifyat true false cl_identify!-atl!*
 ) 1244281581504794146)
@@ -149,16 +175,6 @@ ptoken dnform symerr rrdls) 1970893658339179510)
 
 (c!:install 'fs!:null!-angle '(fs!:null!-angle t nil) 719579677013657348
 )
-
-(c!:install 'quotof '(quotof nil minus "Wrong number of arguments to"
-lcx errmsg!* !*protfg ordop fkern getpower lprie raddf quotofd) 
-1490484656848467821)
-
-(c!:install 'ilog2 '(ilog2 " invalid for " nil error) 967642275976074788
-)
-
-(c!:install 'difbf '(difbf !:rd!: !:bprec!: msd inorm) 
-345830682491230969)
 
 
 % End of generated Lisp code

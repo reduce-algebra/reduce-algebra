@@ -1,7 +1,7 @@
 
 % u02.lsp           Machine generated Lisp
 
-(c!:install "u02" 22107 1316565 4383159)
+(c!:install "u02" 12739 9420600 5513158)
 
 (c!:install 'rnequiv '(rnequiv nil) 1927291157366348290)
 
@@ -52,8 +52,6 @@ bccheckz) 1764208962516752031)
 
 (c!:install 'sublistp '(sublistp nil) 863520763849214863)
 
-(c!:install 'aeval '(aeval nil reval1) 932102353927124216)
-
 (c!:install 'chundexp '(chundexp !_ !\) 1827555952049308924)
 
 (c!:install '!:times '(!:times nil times dcombine) 603444015858783716)
@@ -83,6 +81,8 @@ current!-modulus) 1176804135381338572)
 
 (c!:install 'remainder!-in!-vector '(remainder!-in!-vector
 "ATTEMPT TO DIVIDE BY ZERO" nil errorf) 744903400461801080)
+
+(c!:install 'split_form '(split_form nil split_f) 1817300659168704585)
 
 (c!:install 'ofsf_posdefp '(ofsf_posdefp !*rlpos ofsf_posdefp!-pos
 sfto_tsqsumf) 1236087242496565195)

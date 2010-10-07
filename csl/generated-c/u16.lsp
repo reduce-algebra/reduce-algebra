@@ -1,7 +1,23 @@
 
 % u16.lsp           Machine generated Lisp
 
-(c!:install "u16" 19684 9558673 9582555)
+(c!:install "u16" 13643 622798 751914)
+
+(c!:install 'assert_uninstall1 '(assert_uninstall1 assert_installed
+!*msg nil "***" "assert not installed for" assert_noassertfn copyd lpriw
+) 1658696494492217906)
+
+(c!:install 'bc_zero!? '(bc_zero!? t !*hardzerotest nil prepf1 replus
+simp bc!=simp) 2198977520959886411)
+
+(c!:install 'general!-expt!-mod!-p '(general!-expt!-mod!-p
+general!-times!-mod!-p) 925104491993927905)
+
+(c!:install 'multfnc '(multfnc nil !*ncmp t !*!*processed multf mkspm
+addf noncomp1) 1109841671515010250)
+
+(c!:install 'qqe_ofsf_varlterm '(qqe_ofsf_varlterm qepsilon nil
+lto_insertq) 1078044558906077840)
 
 (c!:install 'rl_simp1 '(rl_simp1 rl_cid!* !*protfg "select a context"
 rl_simpfn full simpfnname psopfn opfn nil prepfn2 "predicate"
@@ -40,6 +56,10 @@ adjoin!-term general!-modular!-number) 1968359542445258714)
 nil exact!-quotient!-flag ordop adjoin!-term xquotient!-mod!-p
 multiply!-by!-constant!-mod!-p errorf) 2148964276931621310)
 
+(c!:install 'mksq '(mksq subfg!* wtl!* k!* !*nosubs avalue used!*
+asymplis!* nil powlis!* (expt sqrt) t !*sub2 mksqsubfn kvalue !*resubs
+fkern getpower multsq simp exptsq) 714770496093400635)
+
 (c!:install 'ofsf_smmkatl '(ofsf_smmkatl and ofsf_smmkatl!-or
 ofsf_smmkatl!-and) 2131233955413420777)
 
@@ -49,11 +69,11 @@ ofsf_smmkatl!-and) 2131233955413420777)
 (c!:install 'qqe_eta!-in!-term '(qqe_eta!-in!-term nil (lhead rhead)
 qqe_op qqe_eta!-in!-term1) 1010925352600965668)
 
-(c!:install 'lx2xx '(lx2xx lambda_l9cw2t_3 lastnondomain delet sort) 
+(c!:install 'lx2xx '(lx2xx lambda_l9xqtr_3 lastnondomain delet sort) 
 454250922078895036)
 
-(c!:install 'lambda_l9cw2t_3 '(lambda_l9cw2t_3 termorder) 
-197862892563995749)
+(c!:install 'lambda_l9xqtr_3 '(lambda_l9xqtr_3 termorder) 
+1950119253996402588)
 
 (c!:install 'ibalp_initwl '(ibalp_initwl nil setcar) 79720393803908056)
 
@@ -107,40 +127,6 @@ ofsf_sacrel) 2175544231868185487)
 "expecting '(' in assert but found" cursym!* !*comma!* !*rpar!*
 "expecting ',' or ')' in assert but found" nil scan lprie) 
 579391387210897922)
-
-(c!:install 'simpatom '(simpatom nil !:rd!: dmode!* !:mod!:
-current!-modulus convert i2d "String" "identifier" share idvalfn
-!*numval constant lispapply !*backtrace scalar typerr eval simp mksq
-errorset !*d2q getrtype fl2bf) 1188814423318592778)
-
-(c!:install 'nonlnrsys '(nonlnrsys nil nonlnr) 752485407072696924)
-
-(c!:install 'cl_simpl '(cl_simpl !*rlsism nil inctheo and false
-cl_sitheo rl_smupdknowl cl_simpl1) 223841921215303609)
-
-(c!:install 'simpg3 '(simpg3 g3 simpcv) 2740668184409933)
-
-(c!:install 'remove!-free!-vars!* '(remove!-free!-vars!* t
-!*!*noremove!*!* remove!-free!-vars) 207734612737065001)
-
-(c!:install 'evaluatecoeffts '(evaluatecoeffts nil indexlist valuecoefft
-!*multf addf) 794591683598288264)
-
-(c!:install 'expnd1 '(expnd1 exptf multf addf) 2081688685545235425)
-
-(c!:install 'ibalp_lenisone '(ibalp_lenisone nil) 509341193799918985)
-
-(c!:install 'numpoly_ldeg '(numpoly_ldeg numpoly_nullp) 
-1898963168831507800)
-
-(c!:install 'om2mml '(om2mml t "Intermediate representation:" om2ir
-terpri!* ir2mml) 787896593084350663)
-
-(c!:install 'revalx '(revalx nil prepf1 replus reval) 906675932798363755
-)
-
-(c!:install 'dipcondense '(dipcondense dipevlist!* nil evcompless!?
-setcar setcdr) 348690643617595044)
 
 
 % End of generated Lisp code

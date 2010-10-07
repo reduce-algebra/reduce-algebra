@@ -1,7 +1,38 @@
 
 % u19.lsp           Machine generated Lisp
 
-(c!:install "u19" 2491 2906649 2770577)
+(c!:install "u19" 21617 9869526 9866983)
+
+(c!:install 'ibalp_renewwl '(ibalp_renewwl nil ibalp_getnewwl setcar) 
+696587307402434281)
+
+(c!:install 'ev_lexcomp '(ev_lexcomp) 727744011498745821)
+
+(c!:install 'getsetvars '(getsetvars (setel setk) setq getsetvarlis
+nreverse) 100136917484174534)
+
+(c!:install 'nextcomb '(nextcomb i nil initcomb) 1185417246500391149)
+
+(c!:install 'setdmode '(setdmode dname complex!-rational dmode!* complex
+rational complex!-rounded rounded tag "Domain mode error:"
+"is not a domain mode" errmsg!* !*protfg package!-name !*complex lprie
+load!-package setdmode1 setcmpxmode onoff) 979325550509247944)
+
+(c!:install 'groebcplistsortin '(groebcplistsortin groebcplistsortin1) 
+2299871156397294862)
+
+(c!:install 'rd!:times '(rd!:times nil !*!*roundbf !:rd!: yy!! times2
+!*backtrace safe!-fp!-times convprc2 csl_timbf errorset rndbfon fl2bf
+csl_normbf read!:num) 2364201904390444)
+
+(c!:install 'fortranname '(fortranname !*notfortranfuns!* !*stdout!*
+"*** WARNING: " " is not an intrinsic Fortran function" nil !*double
+!*doublename!* !*fortranname!* stringtoatom) 1501128138852990662)
+
+(c!:install 'powers3 '(powers3) 1017798920793788229)
+
+(c!:install 'assert_uninstall '(assert_uninstall !*assert nil
+assert_uninstall1) 2001029654612123388)
 
 (c!:install 'repeats '(repeats nreverse) 1935793202905244089)
 
@@ -94,25 +125,6 @@ worderp wedgef deg!*form multf addf wedgepf2) 1468019601521927329)
 antisymmetric t minus isanindex isavarindex physopsm!* prepsqxx opmtch!*
 scalopp tensopp pnth ordn repeats permp vecopp listp putanewindex!*) 
 1901523415195500506)
-
-(c!:install 'assert_stat '(assert_stat !*assert nil assert!: noassert!:
-a list de assert_check1 put (quote assert_assertfn) (quote
-assert_noassertfn) (quote assert_installed) cond not member
-assert_functionl!* setq cons progn assert_stat!-parse mkid) 
-1954186389394689638)
-
-(c!:install 'mo_lcm '(mo_lcm nil mo!=shorten mo!=deglist) 
-1332165419211319976)
-
-(c!:install 'inprint '(inprint times !*nat !*asterisk times2 infix prtch
-" " plus !*revpri alt not setq tag setprifn prifn pprifn inbrackets "("
-")" !*nosplit testing!-width!* nil (setq !*comma!*) minus getrtype
-prinfit oprin maprint prin2!*) 2126947002721244886)
-
-(c!:install 'numlist_ordp '(numlist_ordp lambda_l9cw2u_4 cons_ordp) 
-829179638730125395)
-
-(c!:install 'lambda_l9cw2u_4 '(lambda_l9cw2u_4) 1008079122864870951)
 
 
 % End of generated Lisp code

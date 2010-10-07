@@ -1,7 +1,26 @@
 
 % u52.lsp           Machine generated Lisp
 
-(c!:install "u52" 14790 3434836 2814222)
+(c!:install "u52" 22315 3659185 9169944)
+
+(c!:install 'quotfx1 '(quotfx1 !*protfg "exact division failed" t ordop
+quotkx lprie lt!* cutf1 multf negf addf rnconc quotfdx) 
+1680406462435018631)
+
+(c!:install 'ps!:plus!-erule '(ps!:plus!-erule nil ps!:evaluate addsq) 
+1906503583027259512)
+
+(c!:install 'arprep!: '(arprep!: !*reexpress nil express!-in!-arvars
+prepf1 replus) 223930117464278769)
+
+(c!:install 'fast_augment_columns '(fast_augment_columns mat nil pnth
+fast_unchecked_getmatelem) 2268142704528352111)
+
+(c!:install 'mkuniquewedge1 '(mkuniquewedge1 wedgemtch!* wedge wedgemtch
+partitop mkupf) 882086248870702565)
+
+(c!:install 'deflate1c '(deflate1c nil (0.0 . 0.0) ncoeffs gftimesn
+gfplusn) 2004921422377790956)
 
 (c!:install 'sin!: '(sin!: "Invalid argument to" bfz!* !:rd!: !!scls
 !:bf!-0!.25 bfone!* !!sclc nil msd !:pi greaterp!: difference!: cut!:mt
@@ -58,29 +77,6 @@ addsq partdft) 1367082714225540413)
 (c!:install 'simpdfp '(simpdfp frlis!* dfp list nil generic_function t (
 list) dfp_commute kord!* ordp "generic differential" typerr reval sort
 mksq dfp!-normalize simp simpdf) 2069797180365068344)
-
-(c!:install 'st_ad_numsorttree1 '(st_ad_numsorttree1 !* nil !+
-numlist_ordp !- cdr_signsort lastpair ad_numsort cdr_sort) 
-1124270650941605903)
-
-(c!:install 'quotfail '(quotfail polyzero "UNEXPECTED DIVISION FAILURE"
-quotf errorf) 1594334677508816826)
-
-(c!:install 'rl_nnfnot '(rl_nnfnot rl_nnfnot!* apply) 
-2143004410271401474)
-
-(c!:install 'ratpoly_subrat1 '(ratpoly_subrat1 nil !*rlanuexdebug prepf
-"***** ratpoly_subrat: faulty calculation" coeffs multsq addsq invsq
-sqform subsq ratpoly_minus ratpoly_nullp) 460596265655662216)
-
-(c!:install 'exdfpf '(exdfpf nil exdfk multpfsq exdf0 wedgepf2
-mkuniquewedge addpf) 184208791114024624)
-
-(c!:install 'mkset '(mkset getrlist delete!-dups make!-set) 
-1551515755559882789)
-
-(c!:install 'monicmember '(monicmember gg nil t monic) 
-1647981067385176291)
 
 
 % End of generated Lisp code

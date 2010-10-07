@@ -1,7 +1,36 @@
 
 % u38.lsp           Machine generated Lisp
 
-(c!:install "u38" 11091 4412127 740057)
+(c!:install "u38" 40 1631338 4083644)
+
+(c!:install 'equal!+matrices!+p '(equal!+matrices!+p nil !*complex t
+same!+dim!+squared!+p mk!+scal!+mult!+mat mk!+mat!+plus!+mat
+mk!+conjugate!+sq multsq addsq change!+sq!+to!+algnull) 
+1663448286731126958)
+
+(c!:install 'depend!-sq '(depend!-sq depend!-f) 2159828792898315865)
+
+(c!:install 'cl_susimkatl '(cl_susimkatl nil true false and inctheo or
+lastpair rl_susipost rl_negateat rl_susitf cl_cflip) 1062448888738517780
+)
+
+(c!:install 'simpu '(simpu u ordn fkern getpower) 929178515445321429)
+
+(c!:install 'dm!-gt '(dm!-gt minusp dm!-difference) 438145348376686147)
+
+(c!:install 'diplmon2sq '(diplmon2sq dipvars!* dipev2f multsq) 
+1392065166392277660)
+
+(c!:install 'rlval '(rlval !:rd!: nil !:bprec!: r2flbf ncoeffs plus!:
+inorm) 622709519266630454)
+
+(c!:install 'rassoc '(rassoc nil) 262355675409862461)
+
+(c!:install 'defined_all_edge '(defined_all_edge nil t def_edge
+p_def_edge rep_edge_prop_) 548807897588405305)
+
+(c!:install 'quotofd '(quotofd mkrn int!-equiv!-chk nreverse
+lowest!-terms) 2102623346851057237)
 
 (c!:install 'fs!:subang '(fs!:subang nil make!-term fs!:plus) 
 1492927922054381838)
@@ -70,6 +99,9 @@ mo_equal!?) 298373132505465550)
 
 (c!:install 'taylorp '(taylorp nil taylor) 625880954467416559)
 
+(c!:install 'even_action_pow '(even_action_pow nil component_action
+multsq find_active_components diffp addsq) 39966624644770320)
+
 (c!:install 'ofsf_ir2atl '(ofsf_ir2atl nil lastpair ofsf_entry2at) 
 1131218204190771270)
 
@@ -106,41 +138,6 @@ multdf) 583927729980129668)
 1617505365660957407)
 
 (c!:install 'sfto_lmultf '(sfto_lmultf multf) 2215707978777102378)
-
-(c!:install 'pasf_smordtable2 '(pasf_smordtable2 ((lessp (lessp 2) (leq
-2) (equal 2) (neq nil) (geq nil) (greaterp nil) (cong nil) (ncong nil))
-(leq (lessp 2) (leq 2) (equal 2) (neq nil) (geq nil) (greaterp nil) (
-cong nil) (ncong nil)) (equal (lessp false) (leq false) (equal false) (
-neq 1) (geq 1) (greaterp 1) (cong nil) (ncong nil)) (neq (lessp 2) (leq
-2) (equal 2) (neq nil) (geq nil) (greaterp nil) (cong nil) (ncong nil))
-(geq (lessp false) (leq false) (equal false) (neq 1) (geq 1) (greaterp 1
-) (cong nil) (ncong nil)) (greaterp (lessp false) (leq false) (equal
-false) (neq 1) (geq 1) (greaterp 1) (cong nil) (ncong nil)))) 
-239562974591753651)
-
-(c!:install 'symbolsrd '(symbolsrd nil char (b v a r) "" "<bvar>" (l o w
-l i m i t) (i n t e r v a l) (c o n d i t i o n) lex errorml mathml2
-conditionrd intervalrd lowupperlimitrd bvarrd) 2162071335957120699)
-
-(c!:install 'ps!:find!-order '(ps!:find!-order ps nil !:ps!: dname
-"Unexpected form in ps!:find!-order" errmsg!* !*protfg ps!:expression
-ps!:find!-order1 ps!:order ps!:unknown!-order lprie) 1201364407923078215
-)
-
-(c!:install 'setprev '(setprev codmat maxvar) 1867212738336538648)
-
-(c!:install 'make_wedge_pair '(make_wedge_pair !*twosided xtruncate!*
-nil wedge_pair xval xlcm overall_factor mknwedge xdegreecheck) 
-2162037655764430130)
-
-(c!:install 'physopsubs '(physopsubs alglist!* nil physoplist!* rtype
-simpfn simpiden (dot) physopfn dot !*nosq physop physop2sq subs2
-prepsqxx mk!*sq) 2050192195268264526)
-
-(c!:install 'simp!-prop!-form '(simp!-prop!-form (nil) !'true nil
-not_prop!* not !'and !'or) 1199753847969374186)
-
-(c!:install 'lesspcar '(lesspcar) 486420850439597881)
 
 
 % End of generated Lisp code

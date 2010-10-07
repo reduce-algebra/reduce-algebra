@@ -1,7 +1,42 @@
 
 % u39.lsp           Machine generated Lisp
 
-(c!:install "u39" 11501 8724812 8251453)
+(c!:install "u39" 13717 2379989 1144820)
+
+(c!:install 'pasf_smordtable2 '(pasf_smordtable2 ((lessp (lessp 2) (leq
+2) (equal 2) (neq nil) (geq nil) (greaterp nil) (cong nil) (ncong nil))
+(leq (lessp 2) (leq 2) (equal 2) (neq nil) (geq nil) (greaterp nil) (
+cong nil) (ncong nil)) (equal (lessp false) (leq false) (equal false) (
+neq 1) (geq 1) (greaterp 1) (cong nil) (ncong nil)) (neq (lessp 2) (leq
+2) (equal 2) (neq nil) (geq nil) (greaterp nil) (cong nil) (ncong nil))
+(geq (lessp false) (leq false) (equal false) (neq 1) (geq 1) (greaterp 1
+) (cong nil) (ncong nil)) (greaterp (lessp false) (leq false) (equal
+false) (neq 1) (geq 1) (greaterp 1) (cong nil) (ncong nil)))) 
+239562974591753651)
+
+(c!:install 'symbolsrd '(symbolsrd nil char (b v a r) "" "<bvar>" (l o w
+l i m i t) (i n t e r v a l) (c o n d i t i o n) lex errorml mathml2
+conditionrd intervalrd lowupperlimitrd bvarrd) 2162071335957120699)
+
+(c!:install 'ps!:find!-order '(ps!:find!-order ps nil !:ps!: dname
+"Unexpected form in ps!:find!-order" errmsg!* !*protfg ps!:expression
+ps!:find!-order1 ps!:order ps!:unknown!-order lprie) 1201364407923078215
+)
+
+(c!:install 'setprev '(setprev codmat maxvar) 1867212738336538648)
+
+(c!:install 'make_wedge_pair '(make_wedge_pair !*twosided xtruncate!*
+nil wedge_pair xval xlcm overall_factor mknwedge xdegreecheck) 
+2162037655764430130)
+
+(c!:install 'physopsubs '(physopsubs alglist!* nil physoplist!* rtype
+simpfn simpiden (dot) physopfn dot !*nosq physop physop2sq subs2
+prepsqxx mk!*sq) 2050192195268264526)
+
+(c!:install 'simp!-prop!-form '(simp!-prop!-form (nil) !'true nil
+not_prop!* not !'and !'or) 1199753847969374186)
+
+(c!:install 'lesspcar '(lesspcar) 486420850439597881)
 
 (c!:install 'rdzchk '(rdzchk 0.0 !!fleps1 !:rd!: rd!-tolerance!* bfz!*
 greaterp!:) 2275374067509601221)
@@ -92,54 +127,6 @@ geq !*protfg "ofsf_lnegrel: unknown operator " lprie) 705221924815545552
 
 (c!:install '!*multsq '(!*multsq nil !*multf gcdf quotf minusf negf) 
 1704676033662157132)
-
-(c!:install 'makecoeffpairs1 '(makecoeffpairs1 ((nil)) nil tayexp!-minus
-makecoeffpairshom lastpair) 1976336402385581849)
-
-(c!:install 'repr_a '(repr_a addf) 1638631510567401438)
-
-(c!:install 'ofsf_sacrel!-and '(ofsf_sacrel!-and ((lessp (lessp . keep)
-(leq . keep2) (equal . drop) (neq . keep2) (geq . drop) (greaterp . drop
-)) (leq (lessp . keep1) (leq . keep) (equal . keep1) (neq . lessp) (geq
-. equal) (greaterp . drop)) (equal (lessp . drop) (leq . keep2) (equal .
-keep) (neq . drop) (geq . keep2) (greaterp . drop)) (neq (lessp . keep1)
-(leq . lessp) (equal . drop) (neq . keep) (geq . greaterp) (greaterp .
-keep1)) (geq (lessp . drop) (leq . equal) (equal . keep1) (neq .
-greaterp) (geq . keep) (greaterp . keep1)) (greaterp (lessp . drop) (leq
-. drop) (equal . drop) (neq . keep2) (geq . keep2) (greaterp . keep)))) 
-1788034428219295700)
-
-(c!:install 'prsubsetrd '(prsubsetrd t nil prsubset reval alg_prsubset
-eval_list_sets) 2142277342577447761)
-
-(c!:install 'spmatsm!* '(spmatsm!* sparsemat nil spmatsm matsm!*1) 
-1097875971497327075)
-
-(c!:install 'vdpmember '(vdpmember nil vdpequal) 1209094377289579372)
-
-(c!:install 'dipcontenti '(dipcontenti !*groebrm nil dipcontenti1) 
-1720690646852099713)
-
-(c!:install 'gf2bf '(gf2bf !:rd!: nreverse fl2bf csl_normbf read!:num) 
-1544609287247496246)
-
-(c!:install 'addnew '(addnew gv bv t ljet insert) 2297693145060026274)
-
-(c!:install 'rl_qefsolset '(rl_qefsolset rl_qefsolset!* apply) 
-2044364883179931557)
-
-(c!:install 'sfto_yun!-updecf '(sfto_yun!-updecf !*gcd t diff sfto_gcdf
-quotf negf addf multf setcar setcdr) 1512703944541331907)
-
-(c!:install 'checkexp '(checkexp expt preptayexp) 94998611029562197)
-
-(c!:install 'rule!* '(rule!* frasc!* t mcond!* old newrule!* rtype
-props!* avalue nil expt asymplis!* updoldrules rule) 2082266342390209512
-)
-
-(c!:install 'qqe_simplbtat '(qqe_simplbtat neq false true nil equal
-rl_prepat qqe_op qqe_arg2l qqe_eta!-in!-term qqe_arg2r rl_simpat) 
-1597516727760877248)
 
 
 % End of generated Lisp code

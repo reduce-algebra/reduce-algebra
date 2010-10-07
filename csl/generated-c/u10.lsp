@@ -1,7 +1,18 @@
 
 % u10.lsp           Machine generated Lisp
 
-(c!:install "u10" 9123 9047910 7676709)
+(c!:install "u10" 22970 9542535 8502087)
+
+(c!:install 'exchk1 '(exchk1 expt times simp!* simpexpon1 addsq assoc2
+sqchk exchk2) 1142470071386621866)
+
+(c!:install 'rl_simpat '(rl_simpat rl_simpat!* apply) 
+1072579263991075396)
+
+(c!:install 'naryrd '(naryrd mathml) 1312667547952411945)
+
+(c!:install 'ps!:expression '(ps!:expression !:ps!: dname ps!:getv) 
+2142240046654939788)
 
 (c!:install 'flatindxl '(flatindxl nil minus) 1994311323824406189)
 

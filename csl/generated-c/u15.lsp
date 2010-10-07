@@ -1,7 +1,10 @@
 
 % u15.lsp           Machine generated Lisp
 
-(c!:install "u15" 18123 1442180 4470703)
+(c!:install "u15" 18670 6192638 2947865)
+
+(c!:install 'qremf '(qremf !*exp t nil ordop multf addf negf qremd) 
+1274910425088367413)
 
 (c!:install 'intexprlisp '(intexprlisp nil intexprnp) 
 1735549111687725702)
@@ -149,6 +152,8 @@ general!-modular!-reciprocal general!-modular!-times fkern getpower
 general!-times!-term!-mod!-p general!-plus!-mod!-p
 general!-multiply!-by!-constant!-mod!-p) 1208840092257189241)
 
+(c!:install 'simp!*sq '(simp!*sq !*resimp resimp1) 1205945128704894914)
+
 (c!:install 'findremainder '(findremainder nil wupseudodivide) 
 405066793970175807)
 
@@ -213,22 +218,6 @@ gentranlang!* fortran !*posn!* fprin2) 1147431734925183082)
 
 (c!:install 'invp '(invp unit inverse (comm anticomm) quotient) 
 1194048734702535011)
-
-(c!:install 'assert_uninstall1 '(assert_uninstall1 assert_installed
-!*msg nil "***" "assert not installed for" assert_noassertfn copyd lpriw
-) 1658696494492217906)
-
-(c!:install 'bc_zero!? '(bc_zero!? t !*hardzerotest nil prepf1 replus
-simp bc!=simp) 2198977520959886411)
-
-(c!:install 'general!-expt!-mod!-p '(general!-expt!-mod!-p
-general!-times!-mod!-p) 925104491993927905)
-
-(c!:install 'multfnc '(multfnc nil !*ncmp t !*!*processed multf mkspm
-addf noncomp1) 1109841671515010250)
-
-(c!:install 'qqe_ofsf_varlterm '(qqe_ofsf_varlterm qepsilon nil
-lto_insertq) 1078044558906077840)
 
 
 % End of generated Lisp code

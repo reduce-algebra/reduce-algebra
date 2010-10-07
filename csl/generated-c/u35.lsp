@@ -1,7 +1,46 @@
 
 % u35.lsp           Machine generated Lisp
 
-(c!:install "u35" 111 9592072 5241356)
+(c!:install "u35" 4941 4657502 4876500)
+
+(c!:install 'rsubla '(rsubla rassoc) 504172043835697671)
+
+(c!:install 's_world_names '(s_world_names nil) 1168661674861478598)
+
+(c!:install 'fs!:timescoeff '(fs!:timescoeff nil (nil . 1)
+"zero in times" multsq) 794959122063901398)
+
+(c!:install 'f2df '(f2df zlist nil vp2df multdf plusdf multdfconst
+dfconst) 621814081401293085)
+
+(c!:install 'nlist '(nlist nreverse) 1249502943675459321)
+
+(c!:install 'pasf_smordtable1 '(pasf_smordtable1 ((lessp (lessp 1) (leq
+1) (equal false) (neq 1) (geq false) (greaterp false) (cong nil) (ncong
+nil)) (leq (lessp 1) (leq 1) (equal false) (neq 1) (geq false) (greaterp
+false) (cong nil) (ncong nil)) (equal (lessp 1) (leq 1) (equal false) (
+neq 1) (geq false) (greaterp false) (cong nil) (ncong nil)) (neq (lessp
+nil) (leq nil) (equal 2) (neq nil) (geq 2) (greaterp 2) (cong nil) (
+ncong nil)) (geq (lessp nil) (leq nil) (equal 2) (neq nil) (geq 2) (
+greaterp 2) (cong nil) (ncong nil)) (greaterp (lessp nil) (leq nil) (
+equal 2) (neq nil) (geq 2) (greaterp 2) (cong nil) (ncong nil)))) 
+185979928637441614)
+
+(c!:install 'dvfsf_simplat1 '(dvfsf_simplat1 equal neq dvfsf_op
+dvfsf_arg2l dvfsf_arg2r dvfsf_saval dvfsf_safield) 1670469349425221783)
+
+(c!:install 'bvarom '(bvarom bvar objectom) 200324488163534067)
+
+(c!:install 'ps!:arg!-values '(ps!:arg!-values nil !:ps!: dname
+ps!:value) 1777542839821814982)
+
+(c!:install 'copy_vect '(copy_vect nil) 344705152448121258)
+
+(c!:install 'findhc '(findhc njsi nil jsi codmat maxvar) 
+844450326142870279)
+
+(c!:install 'calc_den_tar '(calc_den_tar denlist constimes) 
+2091616914098872757)
 
 (c!:install 'setmatelem '(setmatelem "matrix element" avalue matrix
 "matrix" mat "Matrix" "not set" errmsg!* !*protfg "positive integer"
@@ -98,38 +137,6 @@ alglist!* !*mode lprie) 1834968348403537436)
 (c!:install 'gfstorval '(gfstorval !*xnlist) 735094570403008647)
 
 (c!:install 'natnump '(natnump nil) 837708986667196379)
-
-(c!:install 'asymmetrize!-inds '(asymmetrize!-inds nil pnth repeats
-indordln permp flatindl pair indordn) 644106903589522906)
-
-(c!:install 's_noparents '(s_noparents has_parents nreverse) 
-1736511321414976285)
-
-(c!:install 'negex '(negex negf nreverse) 201606356876881323)
-
-(c!:install 'cali!=min '(cali!=min listtest) 93920314015462691)
-
-(c!:install 'num_signsort '(num_signsort lambda_l9cw2w_9 ad_signsort) 
-757875927762053059)
-
-(c!:install 'lambda_l9cw2w_9 '(lambda_l9cw2w_9) 1888895477677786603)
-
-(c!:install 'balance_mod '(balance_mod) 688586339938142847)
-
-(c!:install 'simpquot '(simpquot "0/0 formed" errmsg!* !*protfg
-"Zero divisor" dmode!* (!:rd!: !:cr!:) onep nil !*modular simp divd
-simprecip multsq lprie) 14027313670374544)
-
-(c!:install 'findnthroot '(findnthroot nil) 2258808513418775196)
-
-(c!:install 'pasf_anegateat '(pasf_anegateat true false (cong ncong)
-pasf_anegrel pasf_mkop negf) 772954739155271814)
-
-(c!:install 'aex_subrp '(aex_subrp nil aex_ex ratpoly_sub aex_ctx aex_mk
-) 1810880925111071424)
-
-(c!:install 'minusrd '(minusrd mathml alg_difference lex alg_minus) 
-2301888107495825101)
 
 
 % End of generated Lisp code

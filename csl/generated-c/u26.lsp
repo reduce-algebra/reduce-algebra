@@ -1,7 +1,51 @@
 
 % u26.lsp           Machine generated Lisp
 
-(c!:install "u26" 9967 4575807 1510975)
+(c!:install "u26" 13788 7253495 1633206)
+
+(c!:install 'sptransmat '(sptransmat spm nil matlength mkempspmat
+letmtr3 aeval) 2188579528924535419)
+
+(c!:install 'amatch '(amatch r p nil !*semantic equal mval unify suchp
+resume) 973893012029380763)
+
+(c!:install 'multiply!-by!-power!-of!-ten '(multiply!-by!-power!-of!-ten
+"Invalid argument to" bften!* nil !:rd!: !:bprec!: error csl_normbf
+cut!:mt) 1889270234149592440)
+
+(c!:install '!*pf2sq '(!*pf2sq nil multsq addsq) 2140059947359199017)
+
+(c!:install 'replace1_parents '(replace1_parents replace2_parents) 
+1779060672907265546)
+
+(c!:install 'pairxvars '(pairxvars scalar infix stat
+"Invalid parameter:" nil symerr) 1167310948086381031)
+
+(c!:install 'mv!-pow!-!> '(mv!-pow!-!> nil) 1988202688155873078)
+
+(c!:install 'quotpri '(quotpri !*ratpri !*nat !*fort !*list !*mcd failed
+dmode!* ratmode nil ratfunpri1) 89630365146683561)
+
+(c!:install 'mo_equal!? '(mo_equal!? mo!=shorten) 1835715994617049114)
+
+(c!:install 'ratdif '(ratdif nil ratminus ratplusm) 1605943186866839187)
+
+(c!:install 'termorder '(termorder listsum termorder1) 
+795736760738790293)
+
+(c!:install 'even_action_sf '(even_action_sf nil even_action_term addsq)
+ 1824923948319438346)
+
+(c!:install 'offexpchk '(offexpchk !*really_off_exp frlis!*
+freevarinexptchk mkprod canprod) 1358505097838405137)
+
+(c!:install 'qqe_prepat '(qqe_prepat) 2259049661138438197)
+
+(c!:install 'homogp '(homogp nil t lastnondomain listsum) 
+1495487913162529188)
+
+(c!:install 'ev_revgradlexcomp '(ev_revgradlexcomp ev_tdeg ev_invlexcomp
+) 644064281930326932)
 
 (c!:install 'rewrite '(rewrite nil letmtr3 findrow) 679995828981096607)
 
@@ -93,53 +137,6 @@ qqe_arg!-check!-marked!-ids!-rollback typerr) 643944702103756031)
 
 (c!:install 'transmat1 '(transmat1 spm nil avalue sparse rtype aeval
 matlength mkempspmat letmtr3) 233311624740548825)
-
-(c!:install 'greatertype '(greatertype optlang!* fortran conversion t
-nil eval typerror) 2246511074214735828)
-
-(c!:install 'dipsum '(dipsum nil t evcomp setcdr bcsum bczero!?) 
-1587349300512045823)
-
-(c!:install 'vevstrictlydivides!? '(vevstrictlydivides!? nil vevmtest!?)
- 900986280397584821)
-
-(c!:install 'evload '(evload nil) 885680099367003359)
-
-(c!:install 'getphystypecar '(getphystypecar nil getphystype) 
-549554832887196808)
-
-(c!:install 'no!-side!-effectp '(no!-side!-effectp nil quote t
-nosideeffects no!-side!-effect!-listp) 423548783291882208)
-
-(c!:install 'mo_zero '(mo_zero nil mo!=deglist) 1754197720832196820)
-
-(c!:install 'list_is_all_free '(list_is_all_free t nil nodum_varp) 
-1879709920781780796)
-
-(c!:install 'reduce!-eival!-powers '(reduce!-eival!-powers
-reduce!-eival!-powers1) 1004571763845761581)
-
-(c!:install 'give!*position '(give!*position nil t !*protfg
-"error in give position" pnth lprie) 381621414382355143)
-
-(c!:install 'pasf_subfof '(pasf_subfof pasf_subfof1 cl_apply2ats1) 
-910716725275690030)
-
-(c!:install 'lambdaom '(lambdaom "<OMBIND>" t
-"<OMS cd=""fns1"" name=""lambda""/>" "<OMBVAR>" nil "</OMBVAR>"
-"</OMBIND>" printout indent!* objectom) 847063321728976000)
-
-(c!:install 'vdpilcomb1 '(vdpilcomb1 !*gsugar dipilcomb1 dip2vdp gsugar
-vevtdeg max gsetsugar) 1626248016293304348)
-
-(c!:install 'module '(module !*mode mode!-list!* nil alglist!* symbolic)
- 1050345486515428562)
-
-(c!:install 'list!-evaluate '(list!-evaluate nil evaluate) 
-146310651518289509)
-
-(c!:install 'ezgcdf1 '(ezgcdf1 factor!-level gcdlist poly!-abs) 
-1090411191736042162)
 
 
 % End of generated Lisp code

@@ -1,7 +1,7 @@
 
 % u11.lsp           Machine generated Lisp
 
-(c!:install "u11" 20794 3602637 5267791)
+(c!:install "u11" 20597 2634217 298511)
 
 (c!:install 'matsm!*1 '(matsm!*1 mat nil !*nosq !*sub2 subs2!* prepsqxx
 mk!*sq) 1037048502258201157)
@@ -36,6 +36,9 @@ errmsg!* !*protfg lprie simp negf) 1999141388476553005)
 (c!:install 'b!:ordexn '(b!:ordexn nil) 720152045961082850)
 
 (c!:install 'tr_write '(tr_write !*trsolve nil) 240870562347370954)
+
+(c!:install 'cancel '(cancel !*mcd mk!*sq simpexpt multsq) 
+309303107998986780)
 
 (c!:install 'cl_varl2 '(cl_varl2 true false or and not impl repl equiv
 nil ex all bex ball rl_varlat lto_insertq delq) 1101555127072638993)

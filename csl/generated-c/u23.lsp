@@ -1,7 +1,33 @@
 
 % u23.lsp           Machine generated Lisp
 
-(c!:install "u23" 17602 9163494 2866693)
+(c!:install "u23" 13570 783260 210770)
+
+(c!:install 'nf '(nf gg nil redtails gv tred "r e d u c t i o n :  " "/"
+stars "*" reductions nforms zeros dless dd gcdf!* cdiv pcmult dquot
+pdmult pdif gcdout) 2157405568089705302)
+
+(c!:install 'safe!-modrecip '(safe!-modrecip !*msg !*protfg nil t
+!:mod!: general!-modular!-reciprocal erfg!* errorset) 
+2035323403680681014)
+
+(c!:install 'use!-berlekamp '(use!-berlekamp dpoly nil poly!-vector
+current!-modulus remainder!-in!-vector find!-null!-space
+times!-in!-vector) 1197715551137212609)
+
+(c!:install 'mconv1 '(mconv1 drnconv nreverse) 2059428427758218317)
+
+(c!:install 'prepreform1 '(prepreform1 dname nil t (plus difference
+minus times quotient) simpfn !*sq simp!* sqhorner!* prepsq!*) 
+94445052129448998)
+
+(c!:install 'negind '(negind nil) 369439999097960237)
+
+(c!:install 'cl_fvarl1 '(cl_fvarl1 cl_varl1) 1605419124039901549)
+
+(c!:install 'cl_pnf2 '(cl_pnf2 ex all or and true false not impl repl
+equiv bex ball !*protfg "cl_pnf2():" "invalid as operator" lprie
+cl_pnf2!-junctor cl_pnf2!-quantifier) 1411037352827600829)
 
 (c!:install 'cgp_ci '(cgp_ci pnth) 1417452260434873922)
 
@@ -42,8 +68,6 @@ errorset lprie) 153885205196854038)
 (c!:install 'exptsq '(exptsq " 0**0 formed" errmsg!* !*protfg !*exp nil
 "Zero divisor" mk!*sq simpexpt kernp mksq multf canonsq lprie !:expt
 exptf multsq mksfpf) 333412501170456628)
-
-(c!:install 'simp!*sq '(simp!*sq !*resimp resimp1) 1205945128704894914)
 
 (c!:install 'checku '(checku nil) 1987823232057252175)
 
@@ -101,55 +125,6 @@ exptf1 !:expt) 591928022192124079)
 
 (c!:install 'mk!+unit!+mat '(mk!+unit!+mat gen!+can!+bas) 
 216115980400862047)
-
-(c!:install 'cl_apply2ats1 '(cl_apply2ats1 true false ex all bex ball or
-and not impl repl equiv nil apply) 1318739775687357999)
-
-(c!:install 'aex_freeids '(aex_freeids aex_ex ratpoly_idl aex_ctx
-ctx_idl lto_setminus) 1606546440930328381)
-
-(c!:install 'ps!:value '(ps!:value !:ps!: dname ps!:getv) 
-1539966128666975632)
-
-(c!:install 'rootextractsq '(rootextractsq subs2q rootextractf) 
-464564755223330139)
-
-(c!:install 'getdec '(getdec nil symtabget implicitdec) 
-1713246512318603024)
-
-(c!:install 'groebsavelterm '(groebsavelterm !*groelterms
-groebsaveltermbc) 2019868696966292276)
-
-(c!:install 'coordp '(coordp coord!*) 214463969463078503)
-
-(c!:install 'l!-subst '(l!-subst nreverse) 1627928267960162687)
-
-(c!:install 'comm1 '(comm1 end cursym!* !*semicol!* (end else then until
-!*rpar!* !*rsqbkt!*) nil !*msg "***" "END-COMMENT NO LONGER SUPPORTED" t
-scan lpriw) 2033750439767753010)
-
-(c!:install 'dfprintfn '(dfprintfn !*nat !*fort !*dfprint failed !!df!!
-nil layout!-formula putpline) 1964666450204102206)
-
-(c!:install 'ratn '(ratn !:rn!: "Illegal domain in :ar:" errmsg!*
-!*protfg lprie) 1276262470793563230)
-
-(c!:install 'subsublis '(subsublis sqrt expt (quotient 1 2) nil subfunc
-dname !*sq prepf sqform) 998907077058509465)
-
-(c!:install 'wureducedp '(wureducedp nil wuconstantp deginvar) 
-1278404179191695381)
-
-(c!:install 'ratpoly_quot '(ratpoly_quot invsq multsq) 
-1024522726372507177)
-
-(c!:install 'cgp_mk '(cgp_mk cgp) 1967345575831606739)
-
-(c!:install 'unaryir '(unaryir atts name cd find encodeir) 
-1468500154940379226)
-
-(c!:install 'ps!:depvar '(ps!:depvar !:ps!: dname nil ps!:getv) 
-1399665155818124329)
 
 
 % End of generated Lisp code
