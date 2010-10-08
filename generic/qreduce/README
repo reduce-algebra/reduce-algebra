@@ -1,0 +1,18 @@
+This is a Qt-based worksheet GUI for Reduce UNDER DEVELOPMENT. For a
+PREVIEW on Linux proceed as follows:
+
+1. Get a matching PySide binary package following the instructions
+   here: http://developer.qt.nokia.com/wiki/PySideDownloads/
+
+2. Go to ../libreduce, and say "make". This will create there a new
+   directory <dir> based on your exact machine and OS type.
+
+3. Return here, and say "ln -s ../libreduce/<dir>/RedPy.so".
+
+4. Say "./qreduce.py".
+
+This also works on Mac OSX, but there you have to explicitly install
+in addition Qt 4.7. Note that currently the program not at all ready
+for production use.
+
+T. Sturm, C. Zengler
