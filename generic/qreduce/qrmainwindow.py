@@ -61,6 +61,7 @@ class QtReduceMainWindow(QMainWindow):
         self.__createWorksheet()
         self.statusBar().reduceStatus.setText(" Ready")
         self.__initStatusBarSignals()
+        self.__initMenuBarSignals()
         self.__setWidthByFont(83)
         self.__setHeightByFont(24)
         print "before setTitle"
@@ -77,10 +78,10 @@ class QtReduceMainWindow(QMainWindow):
 
     def __initStatusBarSignals(self):
         self.worksheet.newResult.connect(
-            self.statusBar().newReduceResultHandler,
+            self.statusBar().newResultHandler,
             type=Qt.DirectConnection)
         self.worksheet.newComputation.connect(
-            self.statusBar().newReduceComputationHandler,
+            self.statusBar().newComputationHandler,
             type=Qt.DirectConnection)
         print "got here"
         #self.worksheet.reduce.newReduceResult.connect(
@@ -96,6 +97,14 @@ class QtReduceMainWindow(QMainWindow):
             self.setTitle,
             type=Qt.DirectConnection)
 
+    def __initMenuBarSignals(self):
+        self.worksheet.newResult.connect(
+            self.menuBar().newResultHandler,
+            type=Qt.DirectConnection)
+        self.worksheet.newComputation.connect(
+            self.menuBar().newComputationHandler,
+            type=Qt.DirectConnection)
+       
     def __setWidthByFont(self,n,adaptHeight=False):
         oldWidth = self.width()
         width = n * QFontMetrics(self.worksheet.font()).width('m')
@@ -247,6 +256,10 @@ class QtReduceMainWindow(QMainWindow):
         diag.setWindowModality(Qt.WindowModal)
         return diag.exec_()
 
+    def abortEvaluation(self):
+        print "in abortEvaluation()"
+        self.worksheet.abortEvaluation()
+
 
 class QtReduceStatusBar(QStatusBar):
 
@@ -267,12 +280,12 @@ class QtReduceStatusBar(QStatusBar):
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)
 
-    def newReduceResultHandler(self,computation):
+    def newResultHandler(self,computation):
         self.__updateStatus(computation.evaluating)
         self.__updateTime(computation.accTime,computation.accGcTime)
         self.__updateMode(computation.symbolic)
 
-    def newReduceComputationHandler(self,computation):
+    def newComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
 
     def __updateMode(self,symbolic):
@@ -302,15 +315,23 @@ class QtReduceMenuBar(QMenuBar):
         self.__createMenus()
         self.__createActions()
 
+    def newComputationHandler(self,rc):
+        self.abortAct.setEnabled(True)
+        
+    def newResultHandler(self,rc):
+        self.abortAct.setEnabled(False)
+
     def __createMenus(self):
         self.fileMenu = self.addMenu(self.tr("&File"))
         self.viewMenu = self.addMenu(self.tr("&View"))
+        self.evaluationMenu = self.addMenu(self.tr("&Evaluation"))
         self.develMenu = self.addMenu(self.tr("Develop"))
         self.helpMenu = self.addMenu(self.tr("&Help"))
 
     def __createActions(self):
         self.__createFileActions()
         self.__createViewActions()
+        self.__createEvaluationActions()
         self.__createDevelActions()
         self.__createHelpActions()
 
@@ -346,6 +367,13 @@ class QtReduceMenuBar(QMenuBar):
         self.zoomDefAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Equal))
         self.viewMenu.addAction(self.zoomDefAct)
         self.zoomDefAct.triggered.connect(self.main.zoomDef,type=Qt.DirectConnection)
+
+    def __createEvaluationActions(self):
+        self.abortAct = QAction(self.tr("&Abort Evaluation"), self)
+        self.abortAct.setEnabled(False)
+        self.abortAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_C))
+        self.evaluationMenu.addAction(self.abortAct)
+        self.abortAct.triggered.connect(self.main.abortEvaluation,type=Qt.DirectConnection)
 
     def __createDevelActions(self):
         self.testAct = QAction(self.tr("Test"), self)

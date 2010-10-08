@@ -272,6 +272,9 @@ class QtReduceWorksheet(QTextEdit):
 
     def cursorPositionChangedHandler(self):
         self.parent.statusBar().clearMessage()
+
+    def abortEvaluation(self):
+        self.reduce.abortEvaluation()
        
 
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 

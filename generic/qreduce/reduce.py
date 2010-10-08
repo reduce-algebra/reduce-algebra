@@ -30,6 +30,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from os import system
+
 from PySide.QtCore import QThread
 from PySide.QtCore import Signal
 from PySide.QtCore import QObject
@@ -46,6 +48,8 @@ class Reduce(QThread):
         QThread.__init__(self)
         self.parent = parent
         self.process = procNew(reduce)
+        self.processId = self.process['processId']
+        self.process = self.process['handle']
         self.computation = ReduceComputation()
         
     def __del__(self):
@@ -100,6 +104,8 @@ class Reduce(QThread):
             self.computation.accGcTime += self.computation.gcTime
         self.computation.error = a['error']
 
+    def abortEvaluation(self):
+        system('/bin/kill -SIGINT ' + str(self.processId))
 
 class ReduceComputation(QObject):
     

@@ -17,7 +17,11 @@ static PyObject *RedPy_procNew(PyObject *self, PyObject *args) {
   p = RedProc_new(fromPython);
   RedMsg_cfprintf(debugfile,"after new: %lld",p);
   RedProc_cfprint(debugfile,p);
-  tmp = Py_BuildValue("K",p);
+  tmp = Py_BuildValue("{sKsK}}",
+		      "processId",
+		      p->processId,
+		      "handle",
+		      p);
   return tmp;
 }
 
