@@ -77,11 +77,11 @@ class QtReduceMainWindow(QMainWindow):
 #         setupWorksheets();
 
     def __initStatusBarSignals(self):
-        self.worksheet.newResult.connect(
-            self.statusBar().newResultHandler,
+        self.worksheet.endComputation.connect(
+            self.statusBar().endComputationHandler,
             type=Qt.DirectConnection)
-        self.worksheet.newComputation.connect(
-            self.statusBar().newComputationHandler,
+        self.worksheet.startComputation.connect(
+            self.statusBar().startComputationHandler,
             type=Qt.DirectConnection)
         print "got here"
         #self.worksheet.reduce.newReduceResult.connect(
@@ -98,11 +98,11 @@ class QtReduceMainWindow(QMainWindow):
             type=Qt.DirectConnection)
 
     def __initMenuBarSignals(self):
-        self.worksheet.newResult.connect(
-            self.menuBar().newResultHandler,
+        self.worksheet.endComputation.connect(
+            self.menuBar().endComputationHandler,
             type=Qt.DirectConnection)
-        self.worksheet.newComputation.connect(
-            self.menuBar().newComputationHandler,
+        self.worksheet.startComputation.connect(
+            self.menuBar().startComputationHandler,
             type=Qt.DirectConnection)
        
     def __setWidthByFont(self,n,adaptHeight=False):
@@ -280,12 +280,12 @@ class QtReduceStatusBar(QStatusBar):
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)
 
-    def newResultHandler(self,computation):
+    def endComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
         self.__updateTime(computation.accTime,computation.accGcTime)
         self.__updateMode(computation.symbolic)
 
-    def newComputationHandler(self,computation):
+    def startComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
 
     def __updateMode(self,symbolic):
@@ -315,10 +315,10 @@ class QtReduceMenuBar(QMenuBar):
         self.__createMenus()
         self.__createActions()
 
-    def newComputationHandler(self,rc):
+    def startComputationHandler(self,rc):
         self.abortAct.setEnabled(True)
         
-    def newResultHandler(self,rc):
+    def endComputationHandler(self,rc):
         self.abortAct.setEnabled(False)
 
     def __createMenus(self):

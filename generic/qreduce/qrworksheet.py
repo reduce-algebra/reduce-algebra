@@ -60,8 +60,8 @@ class QtReduceWorksheet(QTextEdit):
     fileName = ''
     modified = False
     fileNameChanged = Signal(StringType,IntType)
-    newComputation = Signal(object)
-    newResult = Signal(object)
+    startComputation = Signal(object)
+    endComputation = Signal(object)
 
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
@@ -93,9 +93,9 @@ class QtReduceWorksheet(QTextEdit):
     def __initReduce(self):
         print "in __initReduce"
         self.reduce = Reduce(self)
-        self.reduce.newResult.connect(self.newReduceResultHandler,
+        self.reduce.endComputation.connect(self.endComputationHandler,
                                       type=Qt.DirectConnection)
-        self.reduce.newComputation.connect(self.newReduceComputationHandler,
+        self.reduce.startComputation.connect(self.startComputationHandler,
                                            type=Qt.DirectConnection)
         self.compute("load_package utf8;",True)
         self.compute("on utf8;",True)
@@ -106,17 +106,18 @@ class QtReduceWorksheet(QTextEdit):
         self.compute("lisp if 'psl memq lispsystem!* then remd 'break;",True)
 
     def compute(self,c,silent=False):
-        self.setReadOnly(True)
         self.reduce.compute(c,silent)
-        self.setReadOnly(False)
-
-    def newReduceResultHandler(self,rc):
+ 
+    def startComputationHandler(self,rc):
+        self.__startComputationCursor = self.textCursor()
+        self.setReadOnly(True)
+        self.startComputation.emit(rc)
+       
+    def endComputationHandler(self,rc):
         print "catching newReduceResult", rc.statCounter
-        self.newResult.emit(rc)
-        self.__renderOutput(rc)
-
-    def newReduceComputationHandler(self,rc):
-        self.newComputation.emit(rc)
+        self.__renderOutput(rc,self.__startComputationCursor)
+        self.setReadOnly(False)
+        self.endComputation.emit(rc)
 
     def __initFirstBlock(self):
         print "initFirstBlock"
@@ -154,9 +155,10 @@ class QtReduceWorksheet(QTextEdit):
         print "before compute(command)"
         output = self.compute(command)
 
-    def __renderOutput(self,computation):
-        here = self.textCursor().position()
-        cursor = self.textCursor()
+    def __renderOutput(self,computation,cursor=None):
+        if not cursor:
+            cursor = self.textCursor()
+        here = cursor.position()
         block = cursor.block()
         nextblock = self.__getNextBlock(cursor,[1,2,3])
         if computation.error:
