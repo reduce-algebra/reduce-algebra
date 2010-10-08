@@ -97,25 +97,23 @@ class QtReduceWorksheet(QTextEdit):
                                       type=Qt.DirectConnection)
         self.reduce.startComputation.connect(self.startComputationHandler,
                                            type=Qt.DirectConnection)
-        self.compute("load_package utf8;",True)
-        self.compute("on utf8;",True)
-        self.compute("on utf8exp;",True)
-        self.compute("off utf82d;",True)
-        self.compute("on utf8pad;",True)
-        self.compute('lisp procedure lr_aprint(u); mathprint u;',True)
-        self.compute("lisp if 'psl memq lispsystem!* then remd 'break;",True)
+
+    def initialize(self):
+        self.reduce.initialize()
 
     def compute(self,c,silent=False):
         self.reduce.compute(c,silent)
  
     def startComputationHandler(self,rc):
+        print "catching command ", rc.currentCommand 
         self.__startComputationCursor = self.textCursor()
         self.setReadOnly(True)
         self.startComputation.emit(rc)
        
     def endComputationHandler(self,rc):
         print "catching newReduceResult", rc.statCounter
-        self.__renderOutput(rc,self.__startComputationCursor)
+        if not rc.silent:
+            self.__renderOutput(rc,self.__startComputationCursor)
         self.setReadOnly(False)
         self.endComputation.emit(rc)
 

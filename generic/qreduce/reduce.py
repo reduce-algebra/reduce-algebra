@@ -55,28 +55,33 @@ class Reduce(QThread):
     def __del__(self):
         procDelete(self.process)
 
+    def initialize(self):
+        self.compute("load_package utf8;",True)
+        self.compute("on utf8;",True)
+        self.compute("on utf8exp;",True)
+        self.compute("off utf82d;",True)
+        self.compute("on utf8pad;",True)
+        self.compute('lisp procedure lr_aprint(u); mathprint u;',True)
+        self.compute("lisp if 'psl memq lispsystem!* then remd 'break;",True)
+        
     def compute(self,c,silent=False):
-        print "computing...."
-        self.computation.evaluating = True
-        if not silent:
-            self.startComputation.emit(self.computation)
         self.wait()
-        self.currentCommand = c
-        self.silent = silent
+        print "computing ", c
+        self.computation.evaluating = True
+        self.computation.silent = silent
+        self.computation.currentCommand = c
+        self.startComputation.emit(self.computation)
         self.start()
 
     def run(self):
-        c = self.currentCommand
+        c = self.computation.currentCommand
+        print "we compute ", c
         a = ansNew(self.process,c)
         ansDelete(a['handle'])
         self.__processAnswer(a['data'])
         self.computation.evaluating = False
-        if not self.silent:
-            print "emitting newReduceResult", self.computation
-            self.endComputation.emit(self.computation)
-        else:
-            if self.computation.error:
-                print "There was a problem initializing Reduce: ", self.computation
+        print "emitting newReduceResult", self.computation
+        self.endComputation.emit(self.computation)
 
     def __processAnswer(self,a):
         self.computation.statCounter = a['statcounter']
@@ -111,6 +116,7 @@ class ReduceComputation(QObject):
     
     def __init__(self):
         self.statCounter = 0
+        self.currentCommand = None
         self.symbolic = False
         self.result = None
         self.nextPrompt = None
@@ -121,9 +127,11 @@ class ReduceComputation(QObject):
         self.errorText = None
         self.error = False
         self.evaluating = False
+        self.silent = False
 
     def __repr__(self):
         string = "[----\n\tReduce Computation " + str(self.statCounter)
+        string += "\n\tCommand:\t" + str(self.currentCommand)
         string += "\n\tSymbolic:\t" + str(self.symbolic)
         string += "\n\tResult:\t\t" + str(self.result)
         string += "\n\tNext Prompt:\t" + str(self.nextPrompt)
@@ -131,5 +139,6 @@ class ReduceComputation(QObject):
         string += "\n\tGC Time:\t" + str(self.gcTime)
         string += "\n\tError Text:\t" + str(self.errorText)
         string += "\n\tError:\t\t" + str(self.error)
+        string += "\n\tSilent:\t" + str(self.silent)
         string += "\n\tEvaluating:\t" + str(self.evaluating) + "\n----]"
         return string

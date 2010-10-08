@@ -57,11 +57,10 @@ class QtReduceMainWindow(QMainWindow):
         self.setUnifiedTitleAndToolBarOnMac(1)
         self.setStatusBar(QtReduceStatusBar(parent))
         self.setMenuBar(QtReduceMenuBar(self,parent))
-        self.statusBar().reduceStatus.setText(" Initialising")
-        self.__createWorksheet()
-        self.statusBar().reduceStatus.setText(" Ready")
+        self.worksheet = QtReduceWorksheet(self)
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
+        self.worksheet.initialize()
         self.__setWidthByFont(83)
         self.__setHeightByFont(24)
         print "before setTitle"
@@ -216,10 +215,7 @@ class QtReduceMainWindow(QMainWindow):
 
     
     def showMessage(self,message):
-	self.statusBar.showMessage(message,0)
-
-    def __createWorksheet(self):
-        self.worksheet = QtReduceWorksheet(self)
+	self.statusBar.showMessage(message,0)    
 
     def setTitle(self,message,modified):
         print "in setTitle", message, modified
@@ -279,6 +275,7 @@ class QtReduceStatusBar(QStatusBar):
         self.addPermanentWidget(self.reduceMode)
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)
+        self.reduceStatus.setText("Initializing ...")
 
     def endComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
