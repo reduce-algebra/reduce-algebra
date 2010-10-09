@@ -2084,12 +2084,16 @@ echo in-place build attempt = $inplace
 # CSL you may be able to create multiple versions (eg debugging and
 # non-debugging) on the same machine, and the binaries will get created in
 # separate sub-directories.
+
 if test "x$with_psl" != "xno"
 then
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
 else
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Will build in the $build subdirectory" >&5
+$as_echo "$as_me: Will build in the $build subdirectory" >&6;}
 
 case $inplace in
   yes)
@@ -2130,7 +2134,7 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/pslbuild/$build" >&6;}
     fi
     cd $abssrcdir/pslbuild/$build
 # This passes down any configure arguments to the PSL-specific configuration
-' but at present I do not expect any to be relevant.
+# but at present I do not expect any to be relevant.
     eval "$SHELL $abssrcdir/psl/configure $ac_configure_args --with-build=$build"
     cd $abssrcdir
   fi
@@ -2145,6 +2149,8 @@ esac
 
 # This is where the main bit of this script starts.
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: with_csl=$with_csl with_psl=$with_psl" >&5
+$as_echo "$as_me: with_csl=$with_csl with_psl=$with_psl" >&6;}
 
 
 

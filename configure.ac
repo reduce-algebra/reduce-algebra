@@ -191,12 +191,15 @@ echo in-place build attempt = $inplace
 # CSL you may be able to create multiple versions (eg debugging and
 # non-debugging) on the same machine, and the binaries will get created in
 # separate sub-directories.
+
 if test "x$with_psl" != "xno"
 then
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
 else
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 fi
+
+AC_MSG_NOTICE([Will build in the $build subdirectory])
 
 case $inplace in
   yes)
@@ -235,7 +238,7 @@ case $inplace in
     fi
     cd $abssrcdir/pslbuild/$build
 # This passes down any configure arguments to the PSL-specific configuration
-' but at present I do not expect any to be relevant.
+# but at present I do not expect any to be relevant.
     eval "$SHELL $abssrcdir/psl/configure $ac_configure_args --with-build=$build"
     cd $abssrcdir
   fi
@@ -249,6 +252,7 @@ esac
 
 # This is where the main bit of this script starts.
 
+AC_MSG_NOTICE([with_csl=$with_csl with_psl=$with_psl])
 
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
