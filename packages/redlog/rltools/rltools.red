@@ -90,7 +90,7 @@ procedure meminfo();
       meminfocsl();
 
 procedure meminfopsl();
-   begin scalar bit,hs,hsb,cpgcp;
+   begin scalar bit,hs,hsb,cpgcp,w;
       if not memq('psl,lispsystem!*) then
 	 return nil;
       prin2 "               address of nil: 0x";
@@ -102,19 +102,38 @@ procedure meminfopsl();
       prin2 bit;
       prin2t " bit";
       hs := set_heap_size nil;
+      prin2 "           binding stack size: ";
+      prin2 bndstksize;
+      prin2t " Lisp items";
       prin2 "                     heapsize: ";
-      prin2 hs;
-      prin2 " Lisp items (";
+      prin2 meminfocomma(hs,'!,);
+      prin2 " Lisp items";
       hsb := (if eqn(bit,64) then 8 else 4) * hs;
-      prin2 hsb;
-      prin2t " B)";
+      w := meminfoscale hsb;
+      prin2 "                               ";
+      prin2 car w;
+      prin2 " ";
+      prin2t cdr w;
+      w := meminfoiscale hsb;
+      prin2 "                               ";
+      prin2 car w;
+      prin2 " ";
+      prin2t cdr w;
       prin2 "                     GC model: ";
       cpgcp := getd 'copyfromstaticheap;
       prin2t if cpgcp then "stop-and-copy" else "mark-and-sweep";
       if cpgcp then <<
+	 hsb := 2 * hsb;
 	 prin2 " memory allocation by 2 heaps: ";
-	 prin2(2*hsb);
-	 prin2t " B"
+      	 w := meminfoscale hsb;
+      	 prin2 car w;
+      	 prin2 " ";
+      	 prin2t cdr w;
+      	 w := meminfoiscale hsb;
+      	 prin2 "                               ";
+      	 prin2 car w;
+      	 prin2 " ";
+      	 prin2t cdr w;
       >>
    end;
 
@@ -126,6 +145,40 @@ procedure meminfocsl();
       prin2 "address range: ";
       prin2 bit;
       prin2t " bit";
+   end;
+
+procedure meminfoscale(n);
+   if n >= 10^9 then
+      (float(n)/10^9) . "GB"
+   else if n >= 10^6 then
+      (float(n)/10^6) . "MB"
+   else if n >= 10^3 then
+      (float(n)/10^3) . "kB"
+   else
+      n . "B";
+
+procedure meminfoiscale(n);
+   if n >= 2^30 then
+      (float(n)/2^30) . "GiB"
+   else if n >= 2^20 then
+      (float(n)/2^20) . "MiB"
+   else if n >= 2^10 then
+      (float(n)/2^10) . "kiB"
+   else
+      n . "B";
+
+procedure meminfocomma(n,comma);
+   begin scalar l; integer c;
+      l := '(!");
+      for each d on reversip explode n do <<
+	 l := car d . l;
+	 c := c+1;
+	 if cdr d and eqn(c,3) then <<
+	    c := 0;
+	    l := comma . l
+	 >>
+      >>;
+      return compress('!" . l)
    end;
 
 endmodule;  % [rltools]
