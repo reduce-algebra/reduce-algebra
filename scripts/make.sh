@@ -69,12 +69,12 @@ then
   export MAKE
 fi
 
-# I expect directoties with two "-" characters in their names in the
+# I expect directories with two "-" characters in their names in the
 # cslbuild or pslbuild directories to be named as host triples. But
 # even then I will only try to build in them if there is a "Makefile"
 # present.
 
-for l in cslbuild/*-*-* psl/*-*-*
+for l in cslbuild/*-*-* pslbuild/*-*-*
 do
    if test -f ${l}/Makefile
    then
