@@ -46,6 +46,15 @@ then
     [you must specify either --with-csl or --with-psl to select a Lisp])
 fi
 
+if test "x$with_psl" != "xno" && test "x$with_csl" != "xno"
+then
+  AC_MSG_ERROR(
+    [If you want to build both CSL and PSL versions then you will
+need to run the configure script twice, once with --with-csl and any
+other relevent options and once with --with-psl and any relevant PSL
+options. After that you may use "make" and both systems should be made.])
+fi
+
 ############################################################################
 #
 # Modern versions of the autoconf tools seems to moan dreadfully if you pass
@@ -54,91 +63,91 @@ fi
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
-                  [Shorthand to force --host=x86_64-w64-mingw32]),
+                  [Shorthand to force --host=x86_64-w64-mingw32. CSL only]),
    [],
    [with_mingw64="no"])
 
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
-                  [Force 32-bit model even on 64-bit gcc]),
+                  [Force 32-bit model even on 64-bit gcc. CSL only]),
    [],
    [with_m32="no"])
 
 AC_ARG_WITH(m64,
    AC_HELP_STRING([--with-m64],
-                  [Force 64-bit model even if 32-bit is default]),
+                  [Force 64-bit model even if 32-bit is default. CSL only]),
    [],
    [with_m64="no"])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin (note licensing consequences please)]),
+                 [Force use of raw cywgin (note licensing consequences please). CSL only]),
   [],
   [with_cygwin="no"])
 
 AC_ARG_WITH(mingw,
   AC_HELP_STRING([--with-mingw[=DIR]],
-                 [MingW installation location]),
+                 [MingW installation location. CSL only]),
   mingw_location="$withval",
   mingw_location="")
 
 AC_ARG_WITH(fox,
   AC_HELP_STRING([--with-fox=DIR],
-                 [FOX installation location, or disable use of FOX]),
+                 [FOX installation location, or disable use of FOX. CSL only]),
   [],
   [with_fox="yes"])
 
 AC_ARG_WITH(fox-pending,
   AC_HELP_STRING([--with-fox-pending],
-                 [do not check dir from --with-fox]),
+                 [do not check dir from --with-fox. CSL only]),
   [],
   [with_fox_pending="no"])
 
 AC_ARG_WITH(xft,
   AC_HELP_STRING([--with-xft],
-                 [Can be used to disable use of XFT. Default is yes]),
+                 [Can be used to disable use of XFT. Default is yes. CSL only]),
   [],
   [with_xft="yes"])
 
 AC_ARG_WITH(xim,
   AC_HELP_STRING([--with-xim],
-                 [Can be used to control use of XIM. Default is yes (now)]),
+                 [Can be used to control use of XIM. Default is yes (now). CSL only]),
   [],
   [with_xft="yes"])
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug],
-                 [compile for debugging]),
+                 [compile for debugging. CSL only]),
   [],
   [enable_debug="no"])
 
 AC_ARG_ENABLE(conservative,
   AC_HELP_STRING([--enable-conservative],
-                 [garbage collect option]),
+                 [garbage collect option. CSL only]),
   [],
   [enable_conservative="no"])
 
 AC_ARG_ENABLE(test,
   AC_HELP_STRING([--enable-test],
-                 [testing-mode version]),
+                 [testing-mode version. CSL only]),
   [],
   [enable_test="no"])
 
 AC_ARG_ENABLE(jit,
   AC_HELP_STRING([--enable-jit],
-                 [build in experimental JIT]),
+                 [build in experimental JIT. CSL only]),
   [],
   [enable_jit="no"])
 
 AC_ARG_ENABLE(static,
   AC_HELP_STRING([--enable-static],
-                 [link it all statically]),
+                 [link it all statically. CSL only]),
   [],
   [enable_static="no"])
 
 AC_ARG_WITH(smallpage,
   AC_HELP_STRING([--with-smallpage],
-                 [Use 256K pages rather than 4M ones]),
+                 [Use 256K pages rather than 4M ones. CSL only]),
   [],
   [with_smallpage="no"])
 
@@ -175,8 +184,19 @@ fi
 
 echo in-place build attempt = $inplace
 
-# I have a fairly elaborate scheme to select a directory to use.
-build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
+# I have a fairly elaborate scheme to select a directory to use. At present
+# for PSL there are no relevant extra configure parameters, so I will not
+# pass anthing down even if something has been specified! Thus PSL will get
+# built in a simple directory named after the operating system while for
+# CSL you may be able to create multiple versions (eg debugging and
+# non-debugging) on the same machine, and the binaries will get created in
+# separate sub-directories.
+if test "x$with_psl" != "xno"
+then
+  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+else
+  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
+fi
 
 case $inplace in
   yes)
@@ -214,6 +234,8 @@ case $inplace in
       mkdir -p $abssrcdir/pslbuild/$build
     fi
     cd $abssrcdir/pslbuild/$build
+# This passes down any configure arguments to the PSL-specific configuration
+' but at present I do not expect any to be relevant.
     eval "$SHELL $abssrcdir/psl/configure $ac_configure_args --with-build=$build"
     cd $abssrcdir
   fi
@@ -267,11 +289,6 @@ then
     cp $abssrcdir/csl/fox/src/*.gif src
   fi
 
-  AC_ARG_WITH(cygwin,
-    AC_HELP_STRING([--with-cygwin], [Use raw cygwin so link with cygwin1.dll (GPL)]),
-    [],
-    [with_cygwin="no"])
-
   extras=
 
   case $host in
@@ -317,15 +334,6 @@ then
       extras="--with-xft --with-xim"
       ;;
   esac
-
-  AC_ARG_WITH(m32,
-    AC_HELP_STRING([--with-m32], [Pass "-m32" to C compiler]),
-    [],
-    [with_m32="no"])
-  AC_ARG_WITH(m64,
-    AC_HELP_STRING([--with-m64], [Pass "-m64" to C compiler]),
-    [],
-    [with_m64="no"])
 
   if test "x$with_m32" != "xno"
   then

@@ -1283,11 +1283,11 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-debug          compile for debugging
-  --enable-conservative   garbage collect option
-  --enable-test           testing-mode version
-  --enable-jit            build in experimental JIT
-  --enable-static         link it all statically
+  --enable-debug          compile for debugging. CSL only
+  --enable-conservative   garbage collect option. CSL only
+  --enable-test           testing-mode version. CSL only
+  --enable-jit            build in experimental JIT. CSL only
+  --enable-static         link it all statically. CSL only
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1295,21 +1295,22 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
-  --with-mingw64          Shorthand to force --host=x86_64-w64-mingw32
-  --with-m32              Force 32-bit model even on 64-bit gcc
-  --with-m64              Force 64-bit model even if 32-bit is default
+  --with-mingw64          Shorthand to force --host=x86_64-w64-mingw32. CSL
+                          only
+  --with-m32              Force 32-bit model even on 64-bit gcc. CSL only
+  --with-m64              Force 64-bit model even if 32-bit is default. CSL
+                          only
   --with-cygwin           Force use of raw cywgin (note licensing consequences
-                          please)
-  --with-mingw=DIR        MingW installation location
-  --with-fox=DIR          FOX installation location, or disable use of FOX
-  --with-fox-pending      do not check dir from --with-fox
-  --with-xft              Can be used to disable use of XFT. Default is yes
+                          please). CSL only
+  --with-mingw=DIR        MingW installation location. CSL only
+  --with-fox=DIR          FOX installation location, or disable use of FOX.
+                          CSL only
+  --with-fox-pending      do not check dir from --with-fox. CSL only
+  --with-xft              Can be used to disable use of XFT. Default is yes.
+                          CSL only
   --with-xim              Can be used to control use of XIM. Default is yes
-                          (now)
-  --with-smallpage        Use 256K pages rather than 4M ones
-  --with-cygwin           Use raw cygwin so link with cygwin1.dll (GPL)
-  --with-m32              Pass "-m32" to C compiler
-  --with-m64              Pass "-m64" to C compiler
+                          (now). CSL only
+  --with-smallpage        Use 256K pages rather than 4M ones. CSL only
 
 Report bugs to <acn1@cam.ac.uk>.
 _ACEOF
@@ -1899,6 +1900,14 @@ then
   as_fn_error $? "you must specify either --with-csl or --with-psl to select a Lisp" "$LINENO" 5
 fi
 
+if test "x$with_psl" != "xno" && test "x$with_csl" != "xno"
+then
+  as_fn_error $? "If you want to build both CSL and PSL versions then you will
+need to run the configure script twice, once with --with-csl and any
+other relevent options and once with --with-psl and any relevant PSL
+options. After that you may use \"make\" and both systems should be made." "$LINENO" 5
+fi
+
 ############################################################################
 #
 # Modern versions of the autoconf tools seems to moan dreadfully if you pass
@@ -2068,8 +2077,19 @@ fi
 
 echo in-place build attempt = $inplace
 
-# I have a fairly elaborate scheme to select a directory to use.
-build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
+# I have a fairly elaborate scheme to select a directory to use. At present
+# for PSL there are no relevant extra configure parameters, so I will not
+# pass anthing down even if something has been specified! Thus PSL will get
+# built in a simple directory named after the operating system while for
+# CSL you may be able to create multiple versions (eg debugging and
+# non-debugging) on the same machine, and the binaries will get created in
+# separate sub-directories.
+if test "x$with_psl" != "xno"
+then
+  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+else
+  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
+fi
 
 case $inplace in
   yes)
@@ -2109,6 +2129,8 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/pslbuild/$build" >&6;}
       mkdir -p $abssrcdir/pslbuild/$build
     fi
     cd $abssrcdir/pslbuild/$build
+# This passes down any configure arguments to the PSL-specific configuration
+' but at present I do not expect any to be relevant.
     eval "$SHELL $abssrcdir/psl/configure $ac_configure_args --with-build=$build"
     cd $abssrcdir
   fi
@@ -2618,15 +2640,6 @@ $as_echo "$as_me: About to configure FOX" >&6;}
     cp $abssrcdir/csl/fox/src/*.gif src
   fi
 
-
-# Check whether --with-cygwin was given.
-if test "${with_cygwin+set}" = set; then :
-  withval=$with_cygwin;
-else
-  with_cygwin="no"
-fi
-
-
   extras=
 
   case $host in
@@ -2674,23 +2687,6 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       extras="--with-xft --with-xim"
       ;;
   esac
-
-
-# Check whether --with-m32 was given.
-if test "${with_m32+set}" = set; then :
-  withval=$with_m32;
-else
-  with_m32="no"
-fi
-
-
-# Check whether --with-m64 was given.
-if test "${with_m64+set}" = set; then :
-  withval=$with_m64;
-else
-  with_m64="no"
-fi
-
 
   if test "x$with_m32" != "xno"
   then

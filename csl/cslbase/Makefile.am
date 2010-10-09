@@ -1110,21 +1110,30 @@ binfiles+=csl$(COMEXT)
 endif windows
 
 save:	all
-	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
+if win64
+NAME=windows64
+else !win64
+if windows
+NAME=windows32
+else !windows
+NAME=$(BUILD)
+endif !windows
+endif !win64
+	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
 if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
-	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
-	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(BUILD)-$(shell date +%Y%m%d)
-	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce-$(BUILD)-$(shell date +%Y%m%d)
-ARCHIVE=reduce-windows-$(shell date +%Y%m%d).zip
+	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
+	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
+ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).zip
 else !windows
-	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
-	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
-	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
-	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(BUILD)-$(shell date +%Y%m%d)
-	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce-$(BUILD)-$(shell date +%Y%m%d)
-ARCHIVE=reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 
+	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
+	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
+	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
+ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 

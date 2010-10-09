@@ -597,8 +597,11 @@ srcfiles = $(mainsrc) $(csl_SOURCES)
 mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
 	reduce$(EXEEXT) $(am__append_1)
 binfiles = $(mainbin) csl$(EXEEXT) $(am__append_2)
-@windows_FALSE@ARCHIVE = reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 
-@windows_TRUE@ARCHIVE = reduce-windows-$(shell date +%Y%m%d).zip
+@win64_FALSE@@windows_FALSE@NAME = $(BUILD)
+@win64_FALSE@@windows_TRUE@NAME = windows32
+@win64_TRUE@NAME = windows64
+@windows_FALSE@ARCHIVE = reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
+@windows_TRUE@ARCHIVE = reduce-$(NAME)-$(shell date +%Y%m%d).zip
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -2590,17 +2593,17 @@ csl.img:	csl$(COMEXT) $(csldep)
 @canrun_FALSE@	cp $(gensrc)/csl.img .
 
 save:	all
-	echo ARCHITECTURE=$(ARCHITECTURE)  BUILD=$(BUILD)
+	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
 @windows_TRUE@	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
-@windows_TRUE@	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_TRUE@	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_TRUE@	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_TRUE@	zip -r reduce-windows-$(shell date +%Y%m%d).zip reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_FALSE@	-rm -f reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2
-@windows_FALSE@	-rm -rf reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_FALSE@	mkdir reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_FALSE@	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(BUILD)-$(shell date +%Y%m%d)
-@windows_FALSE@	tar cvfj reduce-$(BUILD)-$(shell date +%Y%m%d).tar.bz2 reduce-$(BUILD)-$(shell date +%Y%m%d)
+@windows_TRUE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_TRUE@	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_TRUE@	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_TRUE@	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
+@windows_FALSE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
 # end of Makefile
