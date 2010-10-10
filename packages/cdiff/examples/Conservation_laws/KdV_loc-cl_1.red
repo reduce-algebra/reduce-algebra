@@ -3,14 +3,8 @@
 % one should already have conservation laws in the form
 % fx=... ft=... possibly depending on constants c.
 % Raffaele Vitolo, 30 May 2010
-
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/tools21.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/supervf.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/integrator.red1"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/afk"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/losop"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/heho"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/polynom"$
+% In order to work with the examples, load first CDIFF with the command
+% load_package cdiff;
 
 super_vectorfield(ddx,{x,t,u,u1,u2,u3,u4,u5,u6,u7,
 u8,u9,u10,u11,u12,u13,u14,u15,u16,u17},

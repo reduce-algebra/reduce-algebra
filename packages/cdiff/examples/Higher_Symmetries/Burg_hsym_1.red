@@ -1,15 +1,7 @@
 % Raffaele Vitolo, 09/10/09
 % This is the computation for (higher) symmetries of Burgers
-
-% The following code loads the 7 packages which constitute the cdiff set.
-
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/tools21.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/supervf.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/integrator.red1"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/afk"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/losop"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/heho"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/polynom"$
+% In order to work with the examples, load first CDIFF with the command
+% load_package cdiff;
 
 % The following instructions initialize the total derivatives. The first
 % string is the name of the vector field,

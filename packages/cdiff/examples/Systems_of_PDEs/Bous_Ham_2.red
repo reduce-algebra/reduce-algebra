@@ -1,14 +1,8 @@
 % Hamiltonian structures for Boussinesq equation
 % Degree of the components Fdu+Gdv: [F]=1,[G]=0
 % Raffaele Vitolo, 2 June 2010
-
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/tools21.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/supervf.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/integrator.red1"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/afk"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/losop"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/heho"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/cdiff/polynom"$
+% In order to work with the examples, load first CDIFF with the command
+% load_package cdiff;
 
 super_vectorfield(ddx,{x,t,u,v,u1,v1,u2,v2,u3,v3,u4,v4,u5,v5,u6,v6,u7,
 v7,u8,v8,u9,v9,u10,v10,u11,v11,u12,v12,u13,v13,u14,v14,u15,v15,u16,v16,u17,v17},

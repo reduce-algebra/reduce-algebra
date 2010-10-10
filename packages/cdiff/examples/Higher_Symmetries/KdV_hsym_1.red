@@ -2,14 +2,9 @@
 % This is the computation for symmetries of KdV
 % Note that here [x]=-1, hence [u]=2 and [t]=-3.
 % ansatz: deg(sym) <=5
+% In order to work with the examples, load first CDIFF with the command
+% load_package cdiff;
 
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/tools21.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/supervf.red"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/integrator.red1"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/afk"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/losop"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/heho"$
-in "/home/vitolo/Lavoro/Work/Reduce/packages/GKPR/polynom"$
 
 super_vectorfield(ddx,{x,t,u,u1,u2,u3,u4,u5,u6,u7,
 u8,u9,u10,u11,u12,u13,u14,u15,u16,u17},
