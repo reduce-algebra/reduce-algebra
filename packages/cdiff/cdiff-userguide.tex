@@ -184,19 +184,21 @@ for computations in geometry of PDEs}
 \subjclass[2000]{37K05}
 
 \begin{abstract}
-  We describe \cdiff, a set of symbolic computation packages devoted to
-  computations in the geometry of Differential Equations (DEs, for short) and
+  We describe \cdiff, a symbolic computation package for
+  the geometry of Differential Equations (DEs, for short) and
   developed by P. Gragert, P.H.M. Kersten, G. Post and G. Roelofs at the
   University of Twente, The Netherlands.
 
-  These packages are distributed on the Geometry of Differential Equations web
-  site \url{http://gdeq.org} (GDEQ for short). We start from an installation
-  guide for Linux and Windows. Then we focus on concrete usage recipes for the
-  computation of higher symmetries, conservation laws, Hamiltonian and
-  recursion operators for polynomial differential equations. All programs
-  discussed here are shipped together with this manual and can be found at the
-  GDEQ website. The mathematical theory on which computations are based can be
-  found in refs.~\cite{Many,KKV}.
+  The package is part of the official \reduce distribution at Sourceforge
+  \cite{red}, but it is also distributed on the Geometry of Differential
+  Equations web site \url{http://gdeq.org} (GDEQ for short).
+
+  We start from an installation guide for Linux and Windows. Then we focus on
+  concrete usage recipes for the computation of higher symmetries, conservation
+  laws, Hamiltonian and recursion operators for polynomial differential
+  equations. All programs discussed here are shipped together with this manual
+  and can be found at the GDEQ website. The mathematical theory on which
+  computations are based can be found in refs.~\cite{Many,KKV}.
 \end{abstract}
 
 \maketitle
@@ -210,19 +212,21 @@ Netherlands.
 
 Initially, the development of the \cdiff packages was started by Gragert and
 Kersten for symmetry computations in DEs, then they have been partly rewritten
-and extended by Roelofs and Post. The \cdiff packages consist of 7 files, but
-only the main three files are documented \cite{svec,integ,tools}. The \cdiff
-packages, as well as a copy of the documentation (including this manual) and
-several example programs, can be found in the Geometry of Differential
-Equations (GDEQ for short) web site \cite{gdeq}. The name of the packages,
-\cdiff, comes from the fact that the package is aimed at defining differential
-operators in total derivatives and do computations involving them.  Such
-operators are called \emph{$\mathcal{C}$-differential operators} (see
-\cite{Many}).
+and extended by Roelofs and Post. The \cdiff packages consist of 3 program
+files plus a utility file; only the main three files are documented
+\cite{svec,integ,tools}. The \cdiff packages, as well as a copy of the
+documentation (including this manual) and several example programs, can be
+found both at Sourceforge in the sources of \reduce \cite{red} and in the
+Geometry of Differential Equations (GDEQ for short) web site \cite{gdeq}. The
+name of the packages, \cdiff, comes from the fact that the package is aimed at
+defining differential operators in total derivatives and do computations
+involving them.  Such operators are called \emph{$\mathcal{C}$-differential
+  operators} (see \cite{Many}).
 
 The main motivation for writing this manual was that \reduce 3.8 recently became
 free software, and can be downloaded here \cite{red}. For this reason, we are
-able to make our computations accessible to a wider public. The readers are
+able to make our computations accessible to a wider public, also thanks to the
+inclusion of \cdiff in the official \reduce distribution. The readers are
 warmly invited to send questions, comments, etc., both on the computations and
 on the technical aspects of installation and configuration of \reduce, to the
 author of the present manual.
@@ -230,8 +234,8 @@ author of the present manual.
 \textbf{Acknowledgements.} My warmest thanks are for Paul H.M. Kersten, who
 explained to me how to use the \cdiff packages for several computations of
 interest in the Geometry of Differential Equations. I also would like to thank
-A.M. Verbovetsky for constant support and stimulating discussions which led me
-to write this text.
+I.S. Krasil'shchik and A.M. Verbovetsky for constant support and stimulating
+discussions which led me to write this text.
 
 \section{Installation}
 
@@ -239,10 +243,6 @@ In order to use \cdiff packages you should be able to write \reduce programs
 using \cdiff and run them in the \reduce interactive shell. So, you need two
 programs: \reduce and a text editor which is preferably oriented to program
 development.
-
-We stress that most of the technical difficulties related to installation and
-configuration are related with the lack of a \reduce installer (nor in Linux
-neither in Windows!).
 
 \subsection{Installation of \reduce}
 \label{sec:installation-reduce}
@@ -266,30 +266,28 @@ Reduce (Free CSL version), 14-Apr-09 ...
 
 1:
 \end{verbatim}
-At the prompt \texttt{1:} write \texttt{in "program.red";}. Of course, if the
-program file \texttt{program.red} \emph{is not} in the place where the \reduce
-executable is, you should indicate the full path of the program, and this
-depends on your system. In Linux, assuming that you are the user
-\texttt{vitolo} and your program is in the subdirectory
-\texttt{reduce/computations} of your home directory, you have something like
+
+Assume that you wrote the program \texttt{program.red}, using \cdiff macros.
+The program must contain the line
 \begin{verbatim}
-  in "/home/vitolo/Reduce/computations/program.red";
+load_package cdiff;
 \end{verbatim}
-In Windows, assuming that you are the user
-\texttt{vitolo} and your program is in the subdirectory
-\texttt{Reduce$\backslash$computations} of the Desktop folder, you would write
+just before the first macro from the package \cdiff.
+Then you may run the program with the following instruction at the \reduce
+prompt:
 \begin{verbatim}
-  in "C:\Documents and Settings\vitolo\Desktop\Reduce
-\computations\program.red";
-\end{verbatim}
+1: in "program.red";
+ \end{verbatim}
+Note that in what follows we will omit the prompt in \reduce commands.
+
+Of course, if the program file \texttt{program.red} \emph{is not} in the place
+where the \reduce executable is, you should indicate the full path of the
+program, and this depends on your system.
 Remember that each time you run \reduce the path at the \reduce prompt is always
 the path of the \reduce executable, unless you use an absolute path as
 above. However, if you start \reduce with the graphical interface (see below)
 you can always use the leftmost menu item \texttt{File>Open\dots} in order to
 avoid to write down the whole absolute path.
-
-From now on, we will assume the above user and locations of programs when
-giving examples involving paths on Linux and Windows.
 
 \subsection{Installation of an editor for writing \reduce programs}
 \label{sec:inst-reduce-ide}
@@ -367,37 +365,8 @@ are some conventions that I adopted on writing programs which use \cdiff.
 \item More specific information, like the date and more details on the
   computation done in each version, are included as comment lines at the very
   beginning of each file.
-\item At the beginning of each \cdiff file it is needed to specify the path to
-  \cdiff files. We assume that the \cdiff packages are inside the subfolder
-  \texttt{Reduce/packages/cdiff}.  The following lines are mandatory (note that
-  we must use absolute paths because in general your program will not be in the
-  same folder as \cdiff packages, and there is no command for changing the path
-  inside the \reduce command shell!):
-  \begin{itemize}
-  \item in Linux:
-\begin{verbatim}
-  in "/home/vitolo/Reduce/packages/cdiff/tools21.red"$
-  in "/home/vitolo/Reduce/packages/cdiff/supervf.red"$
-  in "/home/vitolo/Reduce/packages/cdiff/integrator.red1"$
-  in "/home/vitolo/Reduce/packages/cdiff/afk"$
-  in "/home/vitolo/Reduce/packages/cdiff/losop"$
-  in "/home/vitolo/Reduce/packages/cdiff/heho"$
-  in "/home/vitolo/Reduce/packages/cdiff/polynom"$
-\end{verbatim}
-   \item in Windows:
-\begin{verbatim}
-  in "C:\Documents and Settings\vitolo\Desktop
-                        \Reduce\packages\cdiff\tools21.red"$
-  in "C:\Documents and Settings\...\cdiff\supervf.red"$
-  in "C:\Documents and Settings\...\cdiff\integrator.red1"$
-  in "C:\Documents and Settings\...\cdiff\afk"$
-  in "C:\Documents and Settings\...\cdiff\losop"$
-  in "C:\Documents and Settings\...\cdiff\heho"$
-  in "C:\Documents and Settings\...\cdiff\polynom"$
-\end{verbatim}
-   \end{itemize}
-   They will load all 7 \cdiff packages.
 \end{itemize}
+
 If you use a generic editor, as soon as you are finished writing a program, you
 may run it from within \reduce by following the instructions in the previous
 section.
@@ -435,9 +404,10 @@ sessions. If you wish to translate your results in \LaTeX, see the package
 
 Here we describe some examples of computations with \cdiff. The parts of
 examples which are shared between all examples are described only once. We
-stress that all computations presented in this document can be downloaded at
-the GDEQ website \cite{gdeq}, and that they are run with \reduce by typing
-\texttt{in "program.red";} at the \reduce prompt, as explained above.
+stress that all computations presented in this document are included in the
+official \reduce distribution and can be also downloaded at the GDEQ website
+\cite{gdeq}. The examples can be run with \reduce by typing \texttt{in
+  "program.red";} at the \reduce prompt, as explained above.
 
 \textbf{Remark.} The mathematical theories on which the computations are based
 can be found in \cite{Many,KKV}.
@@ -1200,7 +1170,7 @@ The linearization of the above system and its adjoint are, respectively
 \end{displaymath}
 and lead to the $\ell^*_{\text{Bou}}$ covering equation
 \begin{displaymath}
-  \label{eq:1}
+  \label{eq:2}
   \left\{
   \begin{array}{l}
     -p_t+vp_x+q_x=0\\
