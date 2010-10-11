@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009-2010 Thomas Sturm
+# Copyright (c) 2009-2010 T. Sturm, 2010 T. Sturm, C.Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -48,6 +47,7 @@ from PySide.QtGui import QFileDialog
 
 from qrworksheet import QtReduceWorksheet
 from reduce import Reduce
+from qrpreferences import QtReducePreferencePane
 
 class QtReduceMainWindow(QMainWindow):
     sheets = [];
@@ -61,6 +61,8 @@ class QtReduceMainWindow(QMainWindow):
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
         self.worksheet.initialize()
+        self.preferencePane = QtReducePreferencePane(self)
+        self.__initPreferencePaneSignals()
         self.__setWidthByFont(83)
         self.__setHeightByFont(24)
         print "before setTitle"
@@ -103,10 +105,17 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheet.startComputation.connect(
             self.menuBar().startComputationHandler,
             type=Qt.DirectConnection)
-       
+
+    def __initPreferencePaneSignals(self):
+        self.preferencePane.appearance.fontCombo.currentFontChanged.connect(
+            self.currentFontChangedHandler)
+        self.preferencePane.appearance.sizeCombo.currentIndexChanged.connect(
+            self.currentSizeChangedHandler)
+
     def __setWidthByFont(self,n,adaptHeight=False):
         oldWidth = self.width()
-        width = n * QFontMetrics(self.worksheet.font()).width('m')
+        width = n * self.worksheet.fontMetrics().width('m')
+        print "__setWidthByFont(): width=", width, "n=", n, "font=", self.worksheet.font().family(), "size=", self.worksheet.font().pixelSize()
         self.setFixedWidth(width)
         if adaptHeight:
             factor = float(self.width())/float(oldWidth)
@@ -115,6 +124,14 @@ class QtReduceMainWindow(QMainWindow):
     def __setHeightByFont(self,n):
         height = n * QFontMetrics(self.worksheet.font()).height()
         self.resize(1,height)
+
+    def currentFontChangedHandler(self,font):
+        print "in currentFontChangedHandler font=", font
+        self.worksheet.currentFontChangedHandler(font)
+        self.__setWidthByFont(83,True)
+
+    def currentSizeChangedHandler(self,size):
+        self.worksheet.currentSizeChangedHandler(size)
 
     # File Actions
     def open(self):
@@ -154,6 +171,10 @@ class QtReduceMainWindow(QMainWindow):
             fileName += ".rws"
         self.worksheet.save(fileName)
         self.activateWindow()
+    
+    # Edit Actions
+    def preferences(self):
+        self.preferencePane.show()
 
     # View Actions
     def zoomIn(self):
@@ -161,11 +182,11 @@ class QtReduceMainWindow(QMainWindow):
         self.__setWidthByFont(83,True)
 
     def zoomOut(self):
-        self.worksheet.setupFont(max(self.worksheet.font().pixelSize()-1,8))
+        self.worksheet.setupFont(self.worksheet.font().pixelSize()-1,-1)
         self.__setWidthByFont(83,True)
 
     def zoomDef(self):
-        self.worksheet.setupFont(14)
+        self.worksheet.setupFont(self.worksheet.defaultFontSize)
         self.__setWidthByFont(83,True)
 
     # Development Actions
@@ -255,6 +276,7 @@ class QtReduceMainWindow(QMainWindow):
     def abortEvaluation(self):
         print "in abortEvaluation()"
         self.worksheet.abortEvaluation()
+        self.worksheet.compute("A")
 
 
 class QtReduceStatusBar(QStatusBar):
@@ -320,6 +342,7 @@ class QtReduceMenuBar(QMenuBar):
 
     def __createMenus(self):
         self.fileMenu = self.addMenu(self.tr("&File"))
+        self.editMenu = self.addMenu(self.tr("&Edit"))
         self.viewMenu = self.addMenu(self.tr("&View"))
         self.evaluationMenu = self.addMenu(self.tr("&Evaluation"))
         self.develMenu = self.addMenu(self.tr("Develop"))
@@ -327,6 +350,7 @@ class QtReduceMenuBar(QMenuBar):
 
     def __createActions(self):
         self.__createFileActions()
+        self.__createEditActions()
         self.__createViewActions()
         self.__createEvaluationActions()
         self.__createDevelActions()
@@ -348,6 +372,12 @@ class QtReduceMenuBar(QMenuBar):
             QKeySequence(Qt.ShiftModifier|Qt.ControlModifier|Qt.Key_S))
         self.fileMenu.addAction(self.saveAsAct)
         self.saveAsAct.triggered.connect(self.main.saveAs,type=Qt.DirectConnection)
+
+    def __createEditActions(self):
+        self.preferencesAct = QAction(self.tr("Prefere&nces..."), self)
+        self.preferencesAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_Comma))
+        self.editMenu.addAction(self.preferencesAct)
+        self.preferencesAct.triggered.connect(self.main.preferences,type=Qt.DirectConnection)
 
     def __createViewActions(self):
         self.zoomInAct = QAction(self.tr("&Zoom In"), self)

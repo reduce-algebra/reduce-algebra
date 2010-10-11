@@ -89,3 +89,4 @@ class QReduceBlockData(QTextBlockUserData):
 
     def __del__(self):
         self.message = None
+        QTextBlockUserData.__del__(self)

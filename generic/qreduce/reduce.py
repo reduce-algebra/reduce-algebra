@@ -44,7 +44,7 @@ class Reduce(QThread):
     startComputation = Signal(object)
     endComputation = Signal(object)
     
-    def __init__(self,parent=None,reduce='../../bin/redpsl'):
+    def __init__(self,parent=None,reduce='../../bin/redcsl'):
         QThread.__init__(self)
         self.parent = parent
         self.process = procNew(reduce)
@@ -76,6 +76,7 @@ class Reduce(QThread):
     def run(self):
         c = self.computation.currentCommand
         print "we compute ", c
+        print "computing ", c
         a = ansNew(self.process,c)
         ansDelete(a['handle'])
         self.__processAnswer(a['data'])

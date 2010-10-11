@@ -40,8 +40,10 @@ from PySide.QtCore import QObject
 
 from PySide.QtGui import QTextEdit
 from PySide.QtGui import QFont
+from PySide.QtGui import QFontInfo
 from PySide.QtGui import QTextCursor
 from PySide.QtGui import QMessageBox
+from PySide.QtGui import QFontDatabase
 
 from reduce import Reduce
 
@@ -66,6 +68,8 @@ class QtReduceWorksheet(QTextEdit):
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
         self.parent = parent
+        self.defaultFontFamily = ''
+        self.defaultFontSize = 12
         self.__initSignals()
         self.__initReduce()
         self.__initFont()
@@ -78,17 +82,55 @@ class QtReduceWorksheet(QTextEdit):
                                            type=Qt.DirectConnection)
 
     def __initFont(self):
-        self.setupFont(14)
+        self.setupFont(self.defaultFontSize)
 
-    def setupFont(self,pt):
+    def setupFont(self,size=None,step=1):
+#        print "in setupFont(): defaultFont=", self.defaultFont, "size=", size 
+        if not size:
+            size = self.font().pixelSize()
+#        print "size=", size
         font = self.font()
-        font.setFamily('Courier')
+        font.setFamily(self.defaultFontFamily)
         font.setFixedPitch(True)
         font.setKerning(0)
-        font.setPixelSize(pt)
         font.setWeight(QFont.Normal)
         font.setItalic(False)
+        font.setPixelSize(self.__nextGoodFontSize(font,size,step))
         self.setFont(font)
+
+    def __nextGoodFontSize(self,font,size,step):
+        info = QFontInfo(font)
+        family = info.family()
+        fontDatabase = QFontDatabase()
+        styleStr = fontDatabase.styleString(font)
+        print "in __nextGoodFontSize", family, styleStr
+        if fontDatabase.isSmoothlyScalable(family,styleStr):
+            sizes = QFontDatabase.standardSizes()
+        else:
+            sizes = fontDatabase.smoothSizes(family,styleStr)
+        print size, sizes
+        nSize = size
+        while (nSize not in sizes) and sizes[0] <= nSize and nSize <= sizes[-1]:
+            nSize += step
+        if nSize < sizes[0]:
+            return sizes[0]
+        if sizes[-1] < nSize:
+            return sizes[-1]
+        print "leaving __nextGoodFontSize", size, "->", nSize
+        return nSize
+
+    def currentFontChangedHandler(self,newFont):
+        self.defaultFontFamily = newFont.family()
+        self.setupFont()
+        # font = self.font()
+        # font.setFamily(newFont.family())
+        # self.setFont(font)
+        self.ensureCursorVisible()
+
+    def currentSizeChangedHandler(self,newSize):
+        newSize = int(newSize)
+        print "in currentSizeChangedHandler(): newSize=", type(newSize)
+        self.defaultFontSize = newSize
 
     def __initReduce(self):
         print "in __initReduce"
