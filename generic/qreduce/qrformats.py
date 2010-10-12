@@ -39,7 +39,7 @@ from PySide.QtGui import QTextBlockUserData
 
 
 class ReduceBlockFormat(QTextBlockFormat):
-    gray = QColor(qRgb(230,230,230))
+    gray = QColor(qRgb(235,235,235))
     red = QColor(qRgb(250,220,220))
 
     def __init__(self,type):

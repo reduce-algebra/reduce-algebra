@@ -114,7 +114,7 @@ class QtReducePreferencesAppearance(QWidget):
 
         self.fontCombo = QFontComboBox()
         self.fontCombo.setEditable(False)
-        self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts|QFontComboBox.ScalableFonts)
+        self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts)
         self.fontCombo.setCurrentFont(self.parent.parent.worksheet.font())
 #        self.fontCombo.setWritingSystem(QFontDatabase.Latin)
 

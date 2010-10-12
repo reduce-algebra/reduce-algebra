@@ -65,7 +65,7 @@ class QtReduceMainWindow(QMainWindow):
         self.__initPreferencePaneSignals()
         self.__setWidthByFont(83)
         self.__setHeightByFont(24)
-        print "before setTitle"
+#        print "before setTitle"
         self.setTitle(self.worksheet.fileName,0)
         self.worksheet.modified = 0
         self.setCentralWidget(self.worksheet)
@@ -171,7 +171,7 @@ class QtReduceMainWindow(QMainWindow):
             fileName += ".rws"
         self.worksheet.save(fileName)
         self.activateWindow()
-    
+
     # Edit Actions
     def preferences(self):
         self.preferencePane.show()
@@ -239,11 +239,11 @@ class QtReduceMainWindow(QMainWindow):
 	self.statusBar.showMessage(message,0)    
 
     def setTitle(self,message,modified):
-        print "in setTitle", message, modified
+#        print "in setTitle", message, modified
         msg = message.split('/')[-1] or 'untitled'
         if modified:
             msg = '*' + msg + '*'
-        print "msg=", msg
+#        print "msg=", msg
         self.setWindowTitle(msg)
 
     def closeEvent(self,ev):
@@ -345,7 +345,7 @@ class QtReduceMenuBar(QMenuBar):
         self.editMenu = self.addMenu(self.tr("&Edit"))
         self.viewMenu = self.addMenu(self.tr("&View"))
         self.evaluationMenu = self.addMenu(self.tr("&Evaluation"))
-        self.develMenu = self.addMenu(self.tr("Develop"))
+#        self.develMenu = self.ddMenu(self.tr("Develop"))
         self.helpMenu = self.addMenu(self.tr("&Help"))
 
     def __createActions(self):
@@ -353,28 +353,37 @@ class QtReduceMenuBar(QMenuBar):
         self.__createEditActions()
         self.__createViewActions()
         self.__createEvaluationActions()
-        self.__createDevelActions()
+#        self.__createDevelActions()
         self.__createHelpActions()
 
     def __createFileActions(self):
-        self.openAct = QAction(self.tr("&Open..."), self)
+        self.openAct = QAction(self.tr("&Open ..."), self)
         self.openAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_O))
         self.fileMenu.addAction(self.openAct)
         self.openAct.triggered.connect(self.main.open,type=Qt.DirectConnection)
+
+        self.fileMenu.addSeparator()
 
         self.saveAct = QAction(self.tr("&Save"), self)
         self.saveAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_S))
         self.fileMenu.addAction(self.saveAct)
         self.saveAct.triggered.connect(self.main.save,type=Qt.DirectConnection)
 
-        self.saveAsAct = QAction(self.tr("Save As..."), self)
+        self.saveAsAct = QAction(self.tr("Save As ..."), self)
         self.saveAsAct.setShortcut(
             QKeySequence(Qt.ShiftModifier|Qt.ControlModifier|Qt.Key_S))
         self.fileMenu.addAction(self.saveAsAct)
         self.saveAsAct.triggered.connect(self.main.saveAs,type=Qt.DirectConnection)
+        self.fileMenu.addSeparator()
+
+        self.quitAct = QAction(self.tr("Quit"), self)
+        self.quitAct.setShortcut(
+            QKeySequence(Qt.ControlModifier|Qt.Key_Q))
+        self.fileMenu.addAction(self.quitAct)
+        self.quitAct.triggered.connect(self.main.close,type=Qt.DirectConnection)
 
     def __createEditActions(self):
-        self.preferencesAct = QAction(self.tr("Prefere&nces..."), self)
+        self.preferencesAct = QAction(self.tr("Prefere&nces ..."), self)
         self.preferencesAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_Comma))
         self.editMenu.addAction(self.preferencesAct)
         self.preferencesAct.triggered.connect(self.main.preferences,type=Qt.DirectConnection)

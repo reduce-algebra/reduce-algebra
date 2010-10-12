@@ -307,7 +307,7 @@ class QtReduceWorksheet(QTextEdit):
         return True
 
     def textChangedHandler(self):
-        print "in textChangedHandler", self.modified
+#        print "in textChangedHandler", self.modified
         if not self.modified:
             self.modified = True
             self.parent.setTitle(self.fileName,1)
