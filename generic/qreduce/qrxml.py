@@ -40,8 +40,10 @@ from PySide.QtXml import QXmlSimpleReader
 from PySide.QtXml import QXmlInputSource
 from PySide.QtXml import QXmlDefaultHandler
 
-from qrformats import ReduceBlockFormat
-from qrformats import ReduceCharFormat
+from qrformats import ReduceInputBlockFormat
+from qrformats import ReduceResultBlockFormat
+from qrformats import ReduceNoResultBlockFormat
+from qrformats import ReduceErrorBlockFormat
 
 class ReduceXmlReader(QXmlDefaultHandler):
     def __init__(self,document):
@@ -66,7 +68,7 @@ class ReduceXmlReader(QXmlDefaultHandler):
         if not self.cursor.atStart():
             self.cursor.insertBlock()
         cur = self.cursor
-        ReduceBlockFormat.labelBlock(cur,self.mode)
+        self.labelBlock(cur,self.mode)
 	return True
 
     def endElement(self,namespaceURI,localName,qName):
@@ -96,6 +98,21 @@ class ReduceXmlReader(QXmlDefaultHandler):
             xmlReader.setErrorHandler(self)
             xmlSource = QXmlInputSource(file)
             xmlReader.parse(xmlSource)
+
+    def labelBlock(self,cursor,label):
+        # print "set ", cursor.block(), label
+        if label == 0:
+            f = ReduceInputBlockFormat()
+        elif label == 1:
+            f = ReduceResultBlockFormat()
+        elif label == 2:
+            f = ReduceNoResultBlockFormat()
+        else:
+            f = ReduceErrorBlockFormat()
+
+        cursor.block().setUserState(label)
+        cursor.setBlockCharFormat(f.charFormat)
+        cursor.setBlockFormat(f.blockFormat)
 
 class ReduceXmlWriter:
     def __init__(self,document):
