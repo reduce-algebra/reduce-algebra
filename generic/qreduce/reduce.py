@@ -44,7 +44,7 @@ class Reduce(QThread):
     startComputation = Signal(object)
     endComputation = Signal(object)
     
-    def __init__(self,parent=None,reduce='../../bin/redcsl'):
+    def __init__(self,parent=None,reduce='../../bin/redpsl'):
         QThread.__init__(self)
         self.parent = parent
         self.process = procNew(reduce)

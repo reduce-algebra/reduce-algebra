@@ -39,21 +39,27 @@ from PySide.QtGui import QTextBlockUserData
 
 
 class ReduceBlockFormat(QTextBlockFormat):
-    gray = QColor(qRgb(235,235,235))
-    red = QColor(qRgb(250,220,220))
+    gray = QColor(qRgb(235,235,238))
+#    red = QColor(qRgb(250,220,220))
+    red = QColor(qRgb(250,230,230))
 
-    def __init__(self,type):
+    def __init__(self,type,parent=None):
         QTextBlockFormat.__init__(self)
         if type == 0:
             self.setAlignment(Qt.AlignLeft)
 #            self.setBackground(Qt.yellow)
-            self.setTopMargin(10)
-            self.setBottomMargin(3)
+            self.setTopMargin(15)
+            self.setBottomMargin(8)
         if type == 1 or type == 2:
-            self.setAlignment(Qt.AlignCenter)
+#            self.setAlignment(Qt.AlignCenter)
+            self.setAlignment(Qt.AlignLeft)
+            self.setLeftMargin(15)
+            self.setNonBreakableLines(True)
             self.setBackground(self.gray)
         if type == 3:
             self.setAlignment(Qt.AlignLeft)
+            self.setLeftMargin(15)
+            self.setNonBreakableLines(True)
             self.setBackground(self.red)
 
     @staticmethod

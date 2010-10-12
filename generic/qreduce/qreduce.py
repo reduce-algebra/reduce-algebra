@@ -34,6 +34,9 @@ from PySide.QtGui import QApplication
 from qrmainwindow import QtReduceMainWindow
 
 app = QApplication(sys.argv)
+app.setOrganizationName("The Reduce Project")
+app.setOrganizationDomain("reduce-algebra.sourceforge.com")
+app.setApplicationName("QReduce")
 app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
 mainwindow = QtReduceMainWindow()
 sys.exit(app.exec_())

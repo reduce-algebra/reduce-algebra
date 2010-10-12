@@ -54,6 +54,8 @@ class QtReduceMainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
+        self.defaultWidth = 85
+        self.defaultHeight = 36
         self.setUnifiedTitleAndToolBarOnMac(1)
         self.setStatusBar(QtReduceStatusBar(parent))
         self.setMenuBar(QtReduceMenuBar(self,parent))
@@ -63,8 +65,8 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheet.initialize()
         self.preferencePane = QtReducePreferencePane(self)
         self.__initPreferencePaneSignals()
-        self.__setWidthByFont(83)
-        self.__setHeightByFont(24)
+        self.__setWidthByFont(self.defaultWidth)
+        self.__setHeightByFont(self.defaultHeight)
 #        print "before setTitle"
         self.setTitle(self.worksheet.fileName,0)
         self.worksheet.modified = 0
@@ -128,7 +130,7 @@ class QtReduceMainWindow(QMainWindow):
     def currentFontChangedHandler(self,font):
         print "in currentFontChangedHandler font=", font
         self.worksheet.currentFontChangedHandler(font)
-        self.__setWidthByFont(83,True)
+        self.__setWidthByFont(self.defaultWidth,True)
 
     def currentSizeChangedHandler(self,size):
         self.worksheet.currentSizeChangedHandler(size)
@@ -179,15 +181,15 @@ class QtReduceMainWindow(QMainWindow):
     # View Actions
     def zoomIn(self):
         self.worksheet.setupFont(self.worksheet.font().pixelSize()+1)
-        self.__setWidthByFont(83,True)
+        self.__setWidthByFont(self.defaultWidth,True)
 
     def zoomOut(self):
         self.worksheet.setupFont(self.worksheet.font().pixelSize()-1,-1)
-        self.__setWidthByFont(83,True)
+        self.__setWidthByFont(self.defaultWidth,True)
 
     def zoomDef(self):
         self.worksheet.setupFont(self.worksheet.defaultFontSize)
-        self.__setWidthByFont(83,True)
+        self.__setWidthByFont(self.defaultWidth,True)
 
     # Development Actions
     def test(self):
@@ -276,7 +278,6 @@ class QtReduceMainWindow(QMainWindow):
     def abortEvaluation(self):
         print "in abortEvaluation()"
         self.worksheet.abortEvaluation()
-        self.worksheet.compute("A")
 
 
 class QtReduceStatusBar(QStatusBar):
@@ -341,30 +342,30 @@ class QtReduceMenuBar(QMenuBar):
         self.abortAct.setEnabled(False)
 
     def __createMenus(self):
-        self.fileMenu = self.addMenu(self.tr("&File"))
-        self.editMenu = self.addMenu(self.tr("&Edit"))
-        self.viewMenu = self.addMenu(self.tr("&View"))
-        self.evaluationMenu = self.addMenu(self.tr("&Evaluation"))
+        self.fileMenu = self.addMenu(self.tr("File"))
+        self.editMenu = self.addMenu(self.tr("Edit"))
+        self.viewMenu = self.addMenu(self.tr("View"))
+        self.worksheetMenu = self.addMenu(self.tr("Worksheet"))
 #        self.develMenu = self.ddMenu(self.tr("Develop"))
-        self.helpMenu = self.addMenu(self.tr("&Help"))
+        self.helpMenu = self.addMenu(self.tr("Help"))
 
     def __createActions(self):
         self.__createFileActions()
         self.__createEditActions()
         self.__createViewActions()
-        self.__createEvaluationActions()
+        self.__createWorksheetActions()
 #        self.__createDevelActions()
         self.__createHelpActions()
 
     def __createFileActions(self):
-        self.openAct = QAction(self.tr("&Open ..."), self)
+        self.openAct = QAction(self.tr("Open ..."), self)
         self.openAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_O))
         self.fileMenu.addAction(self.openAct)
         self.openAct.triggered.connect(self.main.open,type=Qt.DirectConnection)
 
         self.fileMenu.addSeparator()
 
-        self.saveAct = QAction(self.tr("&Save"), self)
+        self.saveAct = QAction(self.tr("Save"), self)
         self.saveAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_S))
         self.fileMenu.addAction(self.saveAct)
         self.saveAct.triggered.connect(self.main.save,type=Qt.DirectConnection)
@@ -383,32 +384,48 @@ class QtReduceMenuBar(QMenuBar):
         self.quitAct.triggered.connect(self.main.close,type=Qt.DirectConnection)
 
     def __createEditActions(self):
-        self.preferencesAct = QAction(self.tr("Prefere&nces ..."), self)
+        self.preferencesAct = QAction(self.tr("Preferences ..."), self)
         self.preferencesAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_Comma))
         self.editMenu.addAction(self.preferencesAct)
         self.preferencesAct.triggered.connect(self.main.preferences,type=Qt.DirectConnection)
 
     def __createViewActions(self):
-        self.zoomInAct = QAction(self.tr("&Zoom In"), self)
+        self.zoomInAct = QAction(self.tr("Zoom In"), self)
         self.zoomInAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Plus))
         self.viewMenu.addAction(self.zoomInAct)
         self.zoomInAct.triggered.connect(self.main.zoomIn,type=Qt.DirectConnection)
 
-        self.zoomOutAct = QAction(self.tr("&Zoom Out"), self)
+        self.zoomOutAct = QAction(self.tr("Zoom Out"), self)
         self.zoomOutAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Minus))
         self.viewMenu.addAction(self.zoomOutAct)
         self.zoomOutAct.triggered.connect(self.main.zoomOut,type=Qt.DirectConnection)
 
-        self.zoomDefAct = QAction(self.tr("&Zoom Default"), self)
+        self.zoomDefAct = QAction(self.tr("Zoom Default"), self)
         self.zoomDefAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Equal))
         self.viewMenu.addAction(self.zoomDefAct)
         self.zoomDefAct.triggered.connect(self.main.zoomDef,type=Qt.DirectConnection)
 
-    def __createEvaluationActions(self):
-        self.abortAct = QAction(self.tr("&Abort Evaluation"), self)
+    def __createWorksheetActions(self):
+        self.insertAboveAct = QAction(self.tr("Insert Group Above"), self)
+        self.insertAboveAct.setEnabled(False)
+        self.worksheetMenu.addAction(self.insertAboveAct)
+
+        self.insertBelowAct = QAction(self.tr("Insert Group Below"), self)
+        self.insertBelowAct.setEnabled(False)
+        self.worksheetMenu.addAction(self.insertBelowAct)
+
+        self.worksheetMenu.addSeparator()
+
+        self.evalAct = QAction(self.tr("Evaluate Worksheet"), self)
+        self.evalAct.setEnabled(False)
+        self.worksheetMenu.addAction(self.evalAct)
+
+        self.worksheetMenu.addSeparator()
+        
+        self.abortAct = QAction(self.tr("Abort Evaluation"), self)
         self.abortAct.setEnabled(False)
         self.abortAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_C))
-        self.evaluationMenu.addAction(self.abortAct)
+        self.worksheetMenu.addAction(self.abortAct)
         self.abortAct.triggered.connect(self.main.abortEvaluation,type=Qt.DirectConnection)
 
     def __createDevelActions(self):
@@ -418,6 +435,6 @@ class QtReduceMenuBar(QMenuBar):
         self.testAct.triggered.connect(self.main.test,type=Qt.DirectConnection)
 
     def __createHelpActions(self):
-        self.aboutAct = QAction(self.tr("&About"), self)
+        self.aboutAct = QAction(self.tr("About"), self)
         self.helpMenu.addAction(self.aboutAct)
         self.aboutAct.triggered.connect(self.main.about,type=Qt.DirectConnection)
