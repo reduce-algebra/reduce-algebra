@@ -37,62 +37,91 @@ from PySide.QtGui import qRgb
 from PySide.QtGui import QTextCharFormat
 from PySide.QtGui import QTextBlockUserData
 
+# 0 = Input
+# 1 = Result
+# 2 = No Result
+# 3 = Error
 
-class ReduceBlockFormat(QTextBlockFormat):
-    gray = QColor(qRgb(235,235,238))
-#    red = QColor(qRgb(250,220,220))
-    red = QColor(qRgb(250,230,230))
+class ReduceBlockFormat(object):
+    GRAY = QColor(qRgb(235,235,238))
+    #    red = QColor(qRgb(250,220,220))
+    RED = QColor(qRgb(250,230,230))
+    DARKRED = QColor(qRgb(204,0,0))
+    DARKBLUE = QColor(qRgb(0,0,0xcc))
+    DARKGRAY = QColor(qRgb(0xa0,0xa0,0xa0))
 
-    def __init__(self,type,parent=None):
-        QTextBlockFormat.__init__(self)
-        if type == 0:
-            self.setAlignment(Qt.AlignLeft)
-#            self.setBackground(Qt.yellow)
-            self.setTopMargin(15)
-            self.setBottomMargin(8)
-        if type == 1 or type == 2:
-#            self.setAlignment(Qt.AlignCenter)
-            self.setAlignment(Qt.AlignLeft)
-            self.setLeftMargin(15)
-            self.setNonBreakableLines(True)
-            self.setBackground(self.gray)
-        if type == 3:
-            self.setAlignment(Qt.AlignLeft)
-            self.setLeftMargin(15)
-            self.setNonBreakableLines(True)
-            self.setBackground(self.red)
-
-    @staticmethod
-    def labelBlock(cursor,label):
-#        print "set ", cursor.block(), label
-        cursor.block().setUserState(label)
-        cursor.setBlockCharFormat(ReduceCharFormat(label))
-        cursor.setBlockFormat(ReduceBlockFormat(label))
+    def __init__(self):
+        self.blockFormat = QTextBlockFormat()
+        self.charFormat = QTextCharFormat()
 
 
-class ReduceCharFormat(QTextCharFormat):
-    RED = QColor(qRgb(204,0,0))
-    BLUE = QColor(qRgb(0,0,0xcc))
-    GRAY = QColor(qRgb(0xa0,0xa0,0xa0))
+class ReduceInputBlockFormat(ReduceBlockFormat):
 
-    def __init__(self,type):
-        QTextCharFormat.__init__(self)
-        if type == 0:
-            self.setForeground(ReduceCharFormat.RED)
-        if type == 1:
-            self.setForeground(ReduceCharFormat.BLUE)
-        if type == 2:
-            self.setForeground(ReduceCharFormat.GRAY)
-        if type == 3:
-            self.setForeground(Qt.black)
+    def __new__(type, *args):
+        if not '_the_instance' in type.__dict__:
+            type._the_instance = ReduceBlockFormat.__new__(type)
+        return type._the_instance
+
+    def __init__(self):
+        if not '_ready' in dir(self):
+            super(ReduceInputBlockFormat,self).__init__()
+            self.blockFormat.setAlignment(Qt.AlignLeft)
+            # self.blockFormat.setBackground(Qt.yellow)
+            self.blockFormat.setTopMargin(15)
+            self.blockFormat.setBottomMargin(8)
+            self.charFormat.setForeground(ReduceBlockFormat.DARKRED)
+            self._ready = True
 
 
-class QReduceBlockData(QTextBlockUserData):
+class ReduceResultBlockFormat(ReduceBlockFormat):
 
-    def __init__(self,n):
-        QTextBlockUserData.__init__(self)
-        self.message = "Hallo" + str(n)
+    def __new__(type, *args):
+        if not '_the_instance' in type.__dict__:
+            type._the_instance = ReduceBlockFormat.__new__(type)
+        return type._the_instance
 
-    def __del__(self):
-        self.message = None
-        QTextBlockUserData.__del__(self)
+    def __init__(self):
+        if not '_ready' in dir(self):
+            super(ReduceResultBlockFormat,self).__init__()
+            self.blockFormat.setAlignment(Qt.AlignLeft)
+            self.blockFormat.setLeftMargin(15)
+            self.blockFormat.setNonBreakableLines(True)
+            self.blockFormat.setBackground(ReduceBlockFormat.GRAY)
+            self.charFormat.setForeground(ReduceBlockFormat.DARKBLUE)
+            self._ready = True
+
+
+class ReduceNoResultBlockFormat(ReduceBlockFormat):
+
+    def __new__(type, *args):
+        if not '_the_instance' in type.__dict__:
+            type._the_instance = ReduceBlockFormat.__new__(type)
+        return type._the_instance
+
+    def __init__(self):
+        if not '_ready' in dir(self):
+            super(ReduceNoResultBlockFormat,self).__init__()
+            self.blockFormat.setAlignment(Qt.AlignLeft)
+            self.blockFormat.setLeftMargin(15)
+            self.blockFormat.setNonBreakableLines(True)
+            self.blockFormat.setBackground(ReduceBlockFormat.GRAY)
+            self.charFormat.setForeground(ReduceBlockFormat.DARKGRAY)
+            self._ready = True
+
+
+class ReduceErrorBlockFormat(ReduceBlockFormat):
+
+    def __new__(type, *args):
+        if not '_the_instance' in type.__dict__:
+            type._the_instance = ReduceBlockFormat.__new__(type)
+        return type._the_instance
+
+    def __init__(self):
+        if not '_ready' in dir(self):
+            super(ReduceErrorBlockFormat,self).__init__()
+            self.blockFormat.setAlignment(Qt.AlignLeft)
+            self.blockFormat.setLeftMargin(15)
+            self.blockFormat.setNonBreakableLines(True)
+            self.blockFormat.setBackground(ReduceBlockFormat.RED)
+            self.charFormat.setForeground(Qt.black)
+            self._ready = True

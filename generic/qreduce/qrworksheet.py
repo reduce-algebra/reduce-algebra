@@ -47,8 +47,10 @@ from PySide.QtGui import QFontDatabase
 
 from reduce import Reduce
 
-from qrformats import ReduceBlockFormat
-from qrformats import ReduceCharFormat
+from qrformats import ReduceInputBlockFormat
+from qrformats import ReduceResultBlockFormat
+from qrformats import ReduceNoResultBlockFormat
+from qrformats import ReduceErrorBlockFormat
 
 from qrxml import ReduceXmlReader
 from qrxml import ReduceXmlWriter
@@ -163,7 +165,7 @@ class QtReduceWorksheet(QTextEdit):
         print "initFirstBlock"
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.Start)
-        ReduceBlockFormat.labelBlock(cursor,0)
+        self.labelBlock(cursor,0)
         self.setTextCursor(cursor)
 
     def keyPressEvent(self,ev):
@@ -202,7 +204,7 @@ class QtReduceWorksheet(QTextEdit):
         block = cursor.block()
         nextblock = self.__getNextBlock(cursor,[1,2,3])
         if computation.error:
-            ReduceBlockFormat.labelBlock(cursor,3)
+            self.labelBlock(cursor,3)
             outp = computation.errorText
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"black")
@@ -211,19 +213,19 @@ class QtReduceWorksheet(QTextEdit):
             self.setTextCursor(cursor)
             return
         if computation.result:
-            ReduceBlockFormat.labelBlock(cursor,1)
+            self.labelBlock(cursor,1)
             outp = computation.result
             outp = outp.decode('utf-8')
             outp = self.__filterOutput(outp)
             outp = self.__colorOutput(outp,"blue")
             cursor.insertHtml(outp)
         else:
-            ReduceBlockFormat.labelBlock(cursor,2)
+            self.labelBlock(cursor,2)
             outp = self.__colorOutput("[no output]","gray")
             nextblock.setUserState(2)
             cursor.insertHtml(outp)
         nextblock = self.__getNextBlock(cursor,[0])
-        ReduceBlockFormat.labelBlock(cursor,0)
+        self.labelBlock(cursor,0)
         cursor.setPosition(nextblock.position())
         self.setTextCursor(cursor)
 
@@ -317,7 +319,22 @@ class QtReduceWorksheet(QTextEdit):
 
     def abortEvaluation(self):
         self.reduce.abortEvaluation()
-       
+
+    def labelBlock(self,cursor,label):
+        # print "set ", cursor.block(), label
+        if label == 0:
+            f = ReduceInputBlockFormat()
+        elif label == 1:
+            f = ReduceResultBlockFormat()
+        elif label == 2:
+            f = ReduceNoResultBlockFormat()
+        else:
+            f = ReduceErrorBlockFormat()
+
+        cursor.block().setUserState(label)
+        cursor.setBlockCharFormat(f.charFormat)
+        cursor.setBlockFormat(f.blockFormat)
+
 
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 
 # [GCC 4.2.1 (Apple Inc. build 5646)] on darwin
