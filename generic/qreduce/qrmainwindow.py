@@ -135,8 +135,8 @@ class QtReduceMainWindow(QMainWindow):
         traceLogger.debug("path=%s" % path)
         filter = self.tr("Reduce Worksheets (*.rws)")
         fileName = QFileDialog.getOpenFileName(None,title,path,filter)
-        traceLogger.debug("fileName=%s" % fileName)
         fileName = str(fileName[0])
+        traceLogger.debug("fileName=%s" % fileName[0])
         if fileName == '':
             return
         if not fileName.endswith(".rws"):
@@ -275,15 +275,15 @@ class QtReduceStatusBar(QStatusBar):
         QStatusBar.__init__(self,parent)
         self.symbolic = None
         font = QFont()
-        font.setPixelSize(10)
-        self.setFont(font)
+#        font.setPixelSize(10)
+#        self.setFont(font)
         self.reduceMode = QLabel()
         self.reduceMode.setFixedWidth(QFontMetrics(font).width('Mode: Algebraic'))
-        self.reduceMode.setFont(font)
+#        self.reduceMode.setFont(font)
         self.reduceTime = QLabel()
-        self.reduceTime.setFont(font)
+#        self.reduceTime.setFont(font)
         self.reduceStatus = QLabel()
-        self.reduceStatus.setFont(font)
+#        self.reduceStatus.setFont(font)
         self.addPermanentWidget(self.reduceMode)
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)
