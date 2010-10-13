@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009-2010 Thomas Sturm
+# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,6 +29,9 @@
 #
 
 from os import system
+
+from qrlogging import signalLogger
+from qrlogging import traceLogger
 
 from PySide.QtCore import QThread
 from PySide.QtCore import Signal
@@ -66,7 +67,7 @@ class Reduce(QThread):
         
     def compute(self,c,silent=False):
         self.wait()
-        print "computing ", c
+        traceLogger.debug("after wait, computing %s" % c)
         self.computation.evaluating = True
         self.computation.silent = silent
         self.computation.currentCommand = c
@@ -75,13 +76,12 @@ class Reduce(QThread):
 
     def run(self):
         c = self.computation.currentCommand
-        print "we compute ", c
-        print "computing ", c
+        traceLogger.debug("computing %s" % c)
         a = ansNew(self.process,c)
         ansDelete(a['handle'])
         self.__processAnswer(a['data'])
         self.computation.evaluating = False
-        print "emitting newReduceResult", self.computation
+        signalLogger.debug("emitting newReduceResult %s" % self.computation)
         self.endComputation.emit(self.computation)
 
     def __processAnswer(self,a):

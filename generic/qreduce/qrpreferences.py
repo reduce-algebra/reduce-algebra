@@ -50,6 +50,8 @@ from PySide.QtGui import QFontComboBox
 from PySide.QtGui import QComboBox
 from PySide.QtGui import QFontDatabase
 
+from qrlogging import signalLogger
+from qrlogging import traceLogger
 
 class QtReducePreferencePane(QDialog):
 
@@ -137,7 +139,7 @@ class QtReducePreferencesAppearance(QWidget):
         self.setLayout(mainLayout)
 
     def findSizes(self,font):
-        print "in findSizes", font.key()
+        traceLogger.debug("font.key()=%s" % font.key())
         fontDatabase = QFontDatabase()
         currentSize = unicode(self.parent.parent.worksheet.defaultFontSize)
         self.sizeCombo.blockSignals(True)

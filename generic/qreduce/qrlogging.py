@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
+# Copyright (c) 2010 T. Sturm, C. Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,20 +27,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+import logging
 
-import sys
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
 
-from PySide.QtGui import QApplication
-from qrmainwindow import QtReduceMainWindow
+formatter = logging.Formatter("%(name)s-%(levelname)s: %(module)s/%(funcName)s: %(message)s")
+ch.setFormatter(formatter)
 
-app = QApplication(sys.argv)
+signalLogger = logging.getLogger("sig")
+signalLogger.addHandler(ch)
+signalLogger.setLevel(logging.NOTSET)
 
-app.setOrganizationName("The Reduce Project")
-app.setOrganizationDomain("reduce-algebra.sourceforge.com")
-app.setApplicationName("QReduce")
-
-app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
-
-mainwindow = QtReduceMainWindow()
-
-sys.exit(app.exec_())
+traceLogger = logging.getLogger("trc")
+traceLogger.addHandler(ch)
+traceLogger.setLevel(logging.DEBUG)

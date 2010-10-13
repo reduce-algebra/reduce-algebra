@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009-2010 T. Sturm, 2010 T. Sturm, C.Zengler
+# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C.Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -45,6 +45,9 @@ from PySide.QtGui import QMessageBox
 from PySide.QtGui import QKeySequence
 from PySide.QtGui import QFileDialog
 
+from qrlogging import signalLogger
+from qrlogging import traceLogger
+
 from qrworksheet import QtReduceWorksheet
 from reduce import Reduce
 from qrpreferences import QtReducePreferencePane
@@ -67,17 +70,12 @@ class QtReduceMainWindow(QMainWindow):
         self.__initPreferencePaneSignals()
         self.__setWidthByFont(self.defaultWidth)
         self.__setHeightByFont(self.defaultHeight)
-#        print "before setTitle"
         self.setTitle(self.worksheet.fileName,0)
         self.worksheet.modified = 0
         self.setCentralWidget(self.worksheet)
         self.show()
         self.raise_()
 #         loadOptions();
-#         setupFileMenu();
-#         setupEditMenu();
-#         setupToolBar();
-#         setupWorksheets();
 
     def __initStatusBarSignals(self):
         self.worksheet.endComputation.connect(
@@ -86,16 +84,6 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheet.startComputation.connect(
             self.statusBar().startComputationHandler,
             type=Qt.DirectConnection)
-        print "got here"
-        #self.worksheet.reduce.newReduceResult.connect(
-        #    self.worksheet.newReduceResultHandler,
-        #    type=Qt.DirectConnection)
-        #self.worksheet.reduce.newReduceResult.connect(
-        #    self.statusBar().newReduceResultHandler,
-        #    type=Qt.DirectConnection)
-        #self.worksheet.reduce.newReduceComputation.connect(
-        #    self.statusBar().newReduceComputationHandler,
-        #    type=Qt.DirectConnection)
         self.worksheet.fileNameChanged.connect(
             self.setTitle,
             type=Qt.DirectConnection)
@@ -117,7 +105,9 @@ class QtReduceMainWindow(QMainWindow):
     def __setWidthByFont(self,n,adaptHeight=False):
         oldWidth = self.width()
         width = n * self.worksheet.fontMetrics().width('m')
-        print "__setWidthByFont(): width=", width, "n=", n, "font=", self.worksheet.font().family(), "size=", self.worksheet.font().pixelSize()
+        traceLogger.debug("width=%s, n=%s, family=%s, size=%s" %
+                          (width,n,self.worksheet.font().family(),
+                           self.worksheet.font().pixelSize()))
         self.setFixedWidth(width)
         if adaptHeight:
             factor = float(self.width())/float(oldWidth)
@@ -128,7 +118,7 @@ class QtReduceMainWindow(QMainWindow):
         self.resize(1,height)
 
     def currentFontChangedHandler(self,font):
-        print "in currentFontChangedHandler font=", font
+        signalLogger.debug("font=%s" % font)
         self.worksheet.currentFontChangedHandler(font)
         self.__setWidthByFont(self.defaultWidth,True)
 
@@ -139,14 +129,13 @@ class QtReduceMainWindow(QMainWindow):
     def open(self):
         title = self.tr("Open Reduce Worksheet")
         fn = self.worksheet.fileName.__str__()
-        print fn
         if fn == '':
             fn = '$HOME'
-        print fn
         path = os.path.dirname(os.path.abspath(fn))
-        print path
+        traceLogger.debug("path=%s" % path)
         filter = self.tr("Reduce Worksheets (*.rws)")
         fileName = QFileDialog.getOpenFileName(None,title,path,filter)
+        traceLogger.debug("fileName=%s" % fileName)
         fileName = str(fileName[0])
         if fileName == '':
             return
@@ -166,7 +155,7 @@ class QtReduceMainWindow(QMainWindow):
         filter = self.tr("Reduce Worksheets (*.rws)")
         fileName = QFileDialog.getSaveFileName(self,title,path,filter)
         fileName = str(fileName[0])
-        print "fileName=",fileName
+        traceLogger.debug("fileName=%s" % fileName)
         if fileName == '':
             return
         if not fileName.endswith(".rws"):
@@ -241,11 +230,11 @@ class QtReduceMainWindow(QMainWindow):
 	self.statusBar.showMessage(message,0)    
 
     def setTitle(self,message,modified):
-#        print "in setTitle", message, modified
+        traceLogger.debug("message=%s, modified=%s" % (message,modified))
         msg = message.split('/')[-1] or 'untitled'
         if modified:
             msg = '*' + msg + '*'
-#        print "msg=", msg
+        traceLogger.debug("msg=%s" % msg)
         self.setWindowTitle(msg)
 
     def closeEvent(self,ev):
@@ -276,7 +265,7 @@ class QtReduceMainWindow(QMainWindow):
         return diag.exec_()
 
     def abortEvaluation(self):
-        print "in abortEvaluation()"
+        signalLogger.debug("entering")
         self.worksheet.abortEvaluation()
 
 

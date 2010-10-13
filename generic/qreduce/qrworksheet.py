@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009-2010 Thomas Sturm
+# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -44,6 +43,9 @@ from PySide.QtGui import QFontInfo
 from PySide.QtGui import QTextCursor
 from PySide.QtGui import QMessageBox
 from PySide.QtGui import QFontDatabase
+
+from qrlogging import signalLogger
+from qrlogging import traceLogger
 
 from reduce import Reduce
 
@@ -87,10 +89,9 @@ class QtReduceWorksheet(QTextEdit):
         self.setupFont(self.defaultFontSize)
 
     def setupFont(self,size=None,step=1):
-#        print "in setupFont(): defaultFont=", self.defaultFont, "size=", size 
+        traceLogger.debug("defaultFontFamily=%s, size=%s" % (self.defaultFontFamily, size))
         if not size:
             size = self.font().pixelSize()
-#        print "size=", size
         font = self.font()
         font.setFamily(self.defaultFontFamily)
         font.setFixedPitch(True)
@@ -105,20 +106,22 @@ class QtReduceWorksheet(QTextEdit):
         family = info.family()
         fontDatabase = QFontDatabase()
         styleStr = fontDatabase.styleString(font)
-        print "in __nextGoodFontSize", family, styleStr
+        traceLogger.debug("family=%s, style=%s" % (family,styleStr))
         if fontDatabase.isSmoothlyScalable(family,styleStr):
             sizes = QFontDatabase.standardSizes()
         else:
             sizes = fontDatabase.smoothSizes(family,styleStr)
-        print size, sizes
+        traceLogger.debug("looking for %s in %s" % (size,sizes))
         nSize = size
         while (nSize not in sizes) and sizes[0] <= nSize and nSize <= sizes[-1]:
             nSize += step
         if nSize < sizes[0]:
+            traceLogger.debug("out of range - returning %s" % sizes[0])
             return sizes[0]
         if sizes[-1] < nSize:
+            traceLogger.debug("out of range - returning %s" % sizes[-1])
             return sizes[-1]
-        print "leaving __nextGoodFontSize", size, "->", nSize
+        traceLogger.debug("found %s" % nSize)
         return nSize
 
     def currentFontChangedHandler(self,newFont):
@@ -131,11 +134,11 @@ class QtReduceWorksheet(QTextEdit):
 
     def currentSizeChangedHandler(self,newSize):
         newSize = int(newSize)
-        print "in currentSizeChangedHandler(): newSize=", type(newSize)
+        traceLogger.debug("newSize=%s (%s)" % (newSize,type(newSize)))
         self.defaultFontSize = newSize
 
     def __initReduce(self):
-        print "in __initReduce"
+        traceLogger.debug("entering")
         self.reduce = Reduce(self)
         self.reduce.endComputation.connect(self.endComputationHandler,
                                       type=Qt.DirectConnection)
@@ -149,20 +152,20 @@ class QtReduceWorksheet(QTextEdit):
         self.reduce.compute(c,silent)
  
     def startComputationHandler(self,rc):
-        print "catching command ", rc.currentCommand 
+        signalLogger.debug("catching command=%s" % rc.currentCommand)
         self.__startComputationCursor = self.textCursor()
         self.setReadOnly(True)
         self.startComputation.emit(rc)
        
     def endComputationHandler(self,rc):
-        print "catching newReduceResult", rc.statCounter
+        signalLogger.debug("catching newReduceResult=%s" % rc.statCounter)
         if not rc.silent:
             self.__renderOutput(rc,self.__startComputationCursor)
         self.setReadOnly(False)
         self.endComputation.emit(rc)
 
     def __initFirstBlock(self):
-        print "initFirstBlock"
+        traceLogger.debug("entering")
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.Start)
         self.labelBlock(cursor,0)
@@ -174,7 +177,7 @@ class QtReduceWorksheet(QTextEdit):
             return self.__keyPressEvent0(ev)
         if state >= 1 and state <= 3:
             return self.__keyPressEvent1(ev)
-        print "something's wrong: state = ", state
+        traceLogger.error("state = %s" % state)
 
     def __keyPressEvent0(self,ev):
         if ev.key() == Qt.Key_Backspace:
@@ -194,7 +197,7 @@ class QtReduceWorksheet(QTextEdit):
         command = block.text().__str__().strip()
         if command != '' and not command[-1] in [';','$']:
             command += ';'
-        print "before compute(command)"
+        traceLogger.debug("before self.compute(command)")
         output = self.compute(command)
 
     def __renderOutput(self,computation,cursor=None):
@@ -240,11 +243,11 @@ class QtReduceWorksheet(QTextEdit):
         nextblock = block.next()
         if nextblock and nextblock.userState() in format:
             cursor.movePosition(QTextCursor.Right)
-#            print "reusing block", nextblock, nextblock.userState()
+            traceLogger.debug("reusing block %s (%s)" % (nextblock, nextblock.userState()))
         else:
             cursor.insertBlock()
             nextblock = cursor.block()
-#            print "new block", nextblock, format
+            traceLogger.debug("created new block %s (%s)" % (nextblock, format))
         cursor.movePosition(QTextCursor.EndOfBlock)
         cursor.movePosition(QTextCursor.StartOfBlock,QTextCursor.KeepAnchor)
 	return nextblock
@@ -309,7 +312,7 @@ class QtReduceWorksheet(QTextEdit):
         return True
 
     def textChangedHandler(self):
-#        print "in textChangedHandler", self.modified
+        traceLogger.debug("self.modified=%s" % self.modified)
         if not self.modified:
             self.modified = True
             self.parent.setTitle(self.fileName,1)
@@ -321,7 +324,7 @@ class QtReduceWorksheet(QTextEdit):
         self.reduce.abortEvaluation()
 
     def labelBlock(self,cursor,label):
-        # print "set ", cursor.block(), label
+        traceLogger.debug("cursor.block()=%s, label=%s" % (cursor.block(), label))
         if label == 0:
             f = ReduceInputBlockFormat()
         elif label == 1:

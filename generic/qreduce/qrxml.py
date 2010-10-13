@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009-2010 Thomas Sturm
+# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -39,6 +39,9 @@ from PySide.QtGui import QTextCursor
 from PySide.QtXml import QXmlSimpleReader
 from PySide.QtXml import QXmlInputSource
 from PySide.QtXml import QXmlDefaultHandler
+
+from qrlogging import signalLogger
+from qrlogging import traceLogger
 
 from qrformats import ReduceInputBlockFormat
 from qrformats import ReduceResultBlockFormat
@@ -100,7 +103,7 @@ class ReduceXmlReader(QXmlDefaultHandler):
             xmlReader.parse(xmlSource)
 
     def labelBlock(self,cursor,label):
-        # print "set ", cursor.block(), label
+        traceLogger.debug("cursor.block()=%s, label=%s" % (cursor.block(), label))
         if label == 0:
             f = ReduceInputBlockFormat()
         elif label == 1:
