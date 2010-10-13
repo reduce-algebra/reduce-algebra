@@ -40,21 +40,35 @@ from PySide.QtCore import QObject
 from RedPy import procNew, procDelete, ansNew, ansDelete
 
 
-class Reduce(QThread):
+class Reduce(object):
+    def __init__(self,reduce='../../bin/redpsl'):
+        self.__process = procNew(reduce)
+        self.__processId = self.__process['processId']
+        self.__process = self.__process['handle']
+
+    def __del__(self):
+        procDelete(self.__process)
+
+    def compute(self,c):
+        a = ansNew(self.__process,c)
+        ansDelete(a['handle'])
+        return(a['data'])
+
+    def signal(self,c):
+        signalLogger.debug("c=%s" % c)
+        system('/bin/kill -' + c + ' ' + str(self.__processId))
+
+
+class QtReduce(QThread):
     # currently only works with 'object' type, not with 'ReduceComputation' 
     startComputation = Signal(object)
     endComputation = Signal(object)
     
-    def __init__(self,parent=None,reduce='../../bin/redpsl'):
+    def __init__(self,parent=None):
         QThread.__init__(self)
         self.parent = parent
-        self.process = procNew(reduce)
-        self.processId = self.process['processId']
-        self.process = self.process['handle']
+        self.reduce = Reduce()
         self.computation = ReduceComputation()
-        
-    def __del__(self):
-        procDelete(self.process)
 
     def initialize(self):
         self.compute("load_package utf8;",True)
@@ -77,9 +91,8 @@ class Reduce(QThread):
     def run(self):
         c = self.computation.currentCommand
         traceLogger.debug("computing %s" % c)
-        a = ansNew(self.process,c)
-        ansDelete(a['handle'])
-        self.__processAnswer(a['data'])
+        a = self.reduce.compute(c)
+        self.__processAnswer(a)
         self.computation.evaluating = False
         signalLogger.debug("emitting newReduceResult %s" % self.computation)
         self.endComputation.emit(self.computation)
@@ -111,7 +124,9 @@ class Reduce(QThread):
         self.computation.error = a['error']
 
     def abortEvaluation(self):
-        system('/bin/kill -SIGINT ' + str(self.processId))
+        signalLogger.debug("entering")
+        self.reduce.signal("SIGINT")
+
 
 class ReduceComputation(QObject):
     

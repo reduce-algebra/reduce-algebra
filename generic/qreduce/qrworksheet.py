@@ -47,7 +47,7 @@ from PySide.QtGui import QFontDatabase
 from qrlogging import signalLogger
 from qrlogging import traceLogger
 
-from reduce import Reduce
+from reduce import QtReduce
 
 from qrformats import ReduceInputBlockFormat
 from qrformats import ReduceResultBlockFormat
@@ -139,7 +139,7 @@ class QtReduceWorksheet(QTextEdit):
 
     def __initReduce(self):
         traceLogger.debug("entering")
-        self.reduce = Reduce(self)
+        self.reduce = QtReduce(self)
         self.reduce.endComputation.connect(self.endComputationHandler,
                                       type=Qt.DirectConnection)
         self.reduce.startComputation.connect(self.startComputationHandler,
