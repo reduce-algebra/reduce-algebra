@@ -60,14 +60,15 @@ from qrxml import ReduceXmlWriter
 from types import DictType
 from types import StringType
 from types import IntType
+from types import BooleanType
 
 
 class QtReduceWorksheet(QTextEdit):
     fileName = ''
-    modified = False
-    fileNameChanged = Signal(StringType,IntType)
+    fileNameChanged = Signal(StringType)
     startComputation = Signal(object)
     endComputation = Signal(object)
+    modified = Signal(BooleanType)
 
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
@@ -150,13 +151,13 @@ class QtReduceWorksheet(QTextEdit):
 
     def compute(self,c,silent=False):
         self.reduce.compute(c,silent)
- 
+
     def startComputationHandler(self,rc):
         signalLogger.debug("catching command=%s" % rc.currentCommand)
         self.__startComputationCursor = self.textCursor()
         self.setReadOnly(True)
         self.startComputation.emit(rc)
-       
+
     def endComputationHandler(self,rc):
         signalLogger.debug("catching newReduceResult=%s" % rc.statCounter)
         if not rc.silent:
@@ -287,9 +288,9 @@ class QtReduceWorksheet(QTextEdit):
             QMessageBox.information(self,self.tr("Unable to open file"),
                                     str(sys.exc_info()[1]))
             return False
-        self.modified = False
+        self.modified.emit(False)
         self.fileName = tempFileName
-        self.fileNameChanged.emit(self.fileName,0)
+        self.fileNameChanged.emit(self.fileName)
         self.parent.statusBar().showMessage("Read " + self.fileName)
         self.ensureCursorVisible()
         return True
@@ -305,17 +306,19 @@ class QtReduceWorksheet(QTextEdit):
             QMessageBox.information(self,self.tr("Unable to save file"),
                                     str(sys.exc_info()[1]))
             return False
-        self.modified = False
+        self.modified.emit(False)
         self.fileName = tempFileName
-        self.fileNameChanged.emit(self.fileName,0)
+        self.fileNameChanged.emit(self.fileName)
         self.parent.statusBar().showMessage("Wrote " + self.fileName)
         return True
 
     def textChangedHandler(self):
-        traceLogger.debug("self.modified=%s" % self.modified)
-        if not self.modified:
-            self.modified = True
-            self.parent.setTitle(self.fileName,1)
+        self.modified.emit(True)
+        # traceLogger.debug("self.modified=%s" % self.modified)
+        # if not self.modified:
+        #     self.modified = True
+        #     self.parent.setWindowModified(True)
+        #     self.parent.setTitle(self.fileName,1)
 
     def cursorPositionChangedHandler(self):
         self.parent.statusBar().clearMessage()
@@ -339,7 +342,7 @@ class QtReduceWorksheet(QTextEdit):
         cursor.setBlockFormat(f.blockFormat)
 
 
-# Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24) 
+# Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24)
 # [GCC 4.2.1 (Apple Inc. build 5646)] on darwin
 # Type "help", "copyright", "credits" or "license" for more information.
 # >>> import sys

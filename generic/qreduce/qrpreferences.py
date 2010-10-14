@@ -58,7 +58,7 @@ class QtReducePreferencePane(QDialog):
     def __init__(self,parent=None):
         super(QtReducePreferencePane,self).__init__(parent)
         self.parent = parent
-        self.setModal(False)
+        self.setModal(True)
 
         self.__createContents()
 
@@ -118,7 +118,7 @@ class QtReducePreferencesAppearance(QWidget):
         self.fontCombo.setEditable(False)
         self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts)
         self.fontCombo.setCurrentFont(self.parent.parent.worksheet.font())
-#        self.fontCombo.setWritingSystem(QFontDatabase.Latin)
+        self.fontCombo.setWritingSystem(QFontDatabase.Latin)
 
         self.sizeCombo = QComboBox()
         self.sizeCombo.setEditable(False)
@@ -166,12 +166,12 @@ class QtReducePreferencesComputation(QWidget):
         reduceGroup = QGroupBox("Reduce")
 
         self.reduceBinary = QLineEdit()
-        
+
         reduceLayout = QFormLayout()
         reduceLayout.addRow(self.tr("Reduce Binary"),self.reduceBinary)
 
         reduceGroup.setLayout(reduceLayout)
-        
+
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(reduceGroup)
 

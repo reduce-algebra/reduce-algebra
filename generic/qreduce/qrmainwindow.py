@@ -65,13 +65,13 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheet = QtReduceWorksheet(self)
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
+        self.__initTitleBarSignals()
         self.worksheet.initialize()
         self.preferencePane = QtReducePreferencePane(self)
         self.__initPreferencePaneSignals()
         self.__setWidthByFont(self.defaultWidth)
         self.__setHeightByFont(self.defaultHeight)
-        self.setTitle(self.worksheet.fileName,0)
-        self.worksheet.modified = 0
+        self.setTitle(os.path.dirname(os.path.abspath("$HOME")))
         self.setCentralWidget(self.worksheet)
         self.show()
         self.raise_()
@@ -83,9 +83,6 @@ class QtReduceMainWindow(QMainWindow):
             type=Qt.DirectConnection)
         self.worksheet.startComputation.connect(
             self.statusBar().startComputationHandler,
-            type=Qt.DirectConnection)
-        self.worksheet.fileNameChanged.connect(
-            self.setTitle,
             type=Qt.DirectConnection)
 
     def __initMenuBarSignals(self):
@@ -101,6 +98,12 @@ class QtReduceMainWindow(QMainWindow):
             self.currentFontChangedHandler)
         self.preferencePane.appearance.sizeCombo.currentIndexChanged.connect(
             self.currentSizeChangedHandler)
+
+    def __initTitleBarSignals(self):
+        self.worksheet.fileNameChanged.connect(self.setTitle,
+                                               type=Qt.DirectConnection)
+        self.worksheet.modified.connect(self.setWindowModified,
+                                        type=Qt.DirectConnection)
 
     def __setWidthByFont(self,n,adaptHeight=False):
         oldWidth = self.width()
@@ -225,20 +228,18 @@ class QtReduceMainWindow(QMainWindow):
                 'software, even if advised of the possibility of such damage.'
                 '</font>'))
 
-    
     def showMessage(self,message):
-	self.statusBar.showMessage(message,0)    
+	self.statusBar.showMessage(message,0)
 
-    def setTitle(self,message,modified):
-        traceLogger.debug("message=%s, modified=%s" % (message,modified))
-        msg = message.split('/')[-1] or 'untitled'
-        if modified:
-            msg = '*' + msg + '*'
-        traceLogger.debug("msg=%s" % msg)
-        self.setWindowTitle(msg)
+    def setTitle(self,message):
+        traceLogger.debug("message=%s" % message)
+        pmessage = message.rpartition('/')
+        traceLogger.debug("pmessage=[%s,%s,%s]" % pmessage)
+        self.setWindowFilePath(pmessage[0])
+        self.setWindowTitle(pmessage[2] + "[*]")
 
     def closeEvent(self,ev):
-        while self.worksheet.modified:
+        while self.isWindowModified():
             button = self.__savediag()
             if button == QMessageBox.Save:
                 self.save()
@@ -249,7 +250,7 @@ class QtReduceMainWindow(QMainWindow):
             elif button == QMessageBox.Cancel:
                 ev.ignore()
                 return
-        del self.worksheet.reduce
+#        del self.worksheet.reduce
         ev.accept()
 
     def __savediag(self):
@@ -326,7 +327,7 @@ class QtReduceMenuBar(QMenuBar):
 
     def startComputationHandler(self,rc):
         self.abortAct.setEnabled(True)
-        
+
     def endComputationHandler(self,rc):
         self.abortAct.setEnabled(False)
 
@@ -410,7 +411,7 @@ class QtReduceMenuBar(QMenuBar):
         self.worksheetMenu.addAction(self.evalAct)
 
         self.worksheetMenu.addSeparator()
-        
+
         self.abortAct = QAction(self.tr("Abort Evaluation"), self)
         self.abortAct.setEnabled(False)
         self.abortAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_C))

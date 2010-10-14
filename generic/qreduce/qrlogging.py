@@ -41,4 +41,4 @@ signalLogger.setLevel(logging.NOTSET)
 
 traceLogger = logging.getLogger("trc")
 traceLogger.addHandler(ch)
-traceLogger.setLevel(logging.NOTSET)
+traceLogger.setLevel(logging.DEBUG)
