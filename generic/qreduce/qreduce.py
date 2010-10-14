@@ -32,6 +32,10 @@
 import sys
 
 from PySide.QtGui import QApplication
+from PySide.QtCore import QTranslator
+from PySide.QtCore import QLocale
+from PySide.QtCore import QLibraryInfo
+
 from qrmainwindow import QtReduceMainWindow
 
 app = QApplication(sys.argv)
@@ -40,7 +44,17 @@ app.setOrganizationName("The Reduce Project")
 app.setOrganizationDomain("reduce-algebra.sourceforge.com")
 app.setApplicationName("QReduce")
 
+qtTranslator = QTranslator(app)
+qtTranslator.load("qt_" + QLocale.system().name(),
+                  QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+app.installTranslator(qtTranslator)
+
+qreduceTranslator = QTranslator(app)
+qreduceTranslator.load("qreducetr.de")
+app.installTranslator(qreduceTranslator)
+
 app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
+app.setStyleSheet("QStatusBar > * { font-size: 10px }");
 
 mainwindow = QtReduceMainWindow()
 

@@ -229,14 +229,14 @@ class QtReduceMainWindow(QMainWindow):
                 '</font>'))
 
     def showMessage(self,message):
-	self.statusBar.showMessage(message,0)
+	self.statusBar.showMessage('<font size="-1">' + message + '</font>',0)
 
     def setTitle(self,fullPath):
         traceLogger.debug("fullPath=%s" % fullPath)
         pFullPath = fullPath.rpartition('/')
         traceLogger.debug("pFullPath=[%s,%s,%s]" % pFullPath)
         self.setWindowFilePath(pFullPath[0])
-        self.setWindowTitle((pFullPath[2] or "Untitled") + "[*]")
+        self.setWindowTitle((pFullPath[2] or self.tr("Untitled")) + "[*]")
 
     def closeEvent(self,ev):
         while self.isWindowModified():
