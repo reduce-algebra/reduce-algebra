@@ -53,8 +53,7 @@ qreduceTranslator = QTranslator(app)
 qreduceTranslator.load("qreducetr.de")
 app.installTranslator(qreduceTranslator)
 
-app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
-app.setStyleSheet("QStatusBar > * { font-size: 10px }");
+# app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
 
 mainwindow = QtReduceMainWindow()
 

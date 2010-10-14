@@ -44,6 +44,7 @@ from PySide.QtGui import QAction
 from PySide.QtGui import QMessageBox
 from PySide.QtGui import QKeySequence
 from PySide.QtGui import QFileDialog
+from PySide.QtGui import QIcon
 
 from qrlogging import signalLogger
 from qrlogging import traceLogger
@@ -71,7 +72,7 @@ class QtReduceMainWindow(QMainWindow):
         self.__initPreferencePaneSignals()
         self.__setWidthByFont(self.defaultWidth)
         self.__setHeightByFont(self.defaultHeight)
-        self.setTitle(os.path.dirname(os.path.abspath("$HOME")) + '/')
+        self.setTitle(os.path.dirname(''))
         self.setCentralWidget(self.worksheet)
         self.show()
         self.raise_()
@@ -233,10 +234,13 @@ class QtReduceMainWindow(QMainWindow):
 
     def setTitle(self,fullPath):
         traceLogger.debug("fullPath=%s" % fullPath)
-        pFullPath = fullPath.rpartition('/')
-        traceLogger.debug("pFullPath=[%s,%s,%s]" % pFullPath)
-        self.setWindowFilePath(pFullPath[0])
-        self.setWindowTitle((pFullPath[2] or self.tr("Untitled")) + "[*]")
+        if fullPath is '':
+            self.setWindowTitle(self.tr("Untitled") + "[*]")
+        else:
+            pFullPath = fullPath.rpartition('/')
+            traceLogger.debug("pFullPath=[%s,%s,%s]" % pFullPath)
+            self.setWindowFilePath(fullPath)
+            self.setWindowTitle("[*]" + pFullPath[2])
 
     def closeEvent(self,ev):
         while self.isWindowModified():
@@ -275,20 +279,22 @@ class QtReduceStatusBar(QStatusBar):
     def __init__(self,parent=None):
         QStatusBar.__init__(self,parent)
         self.symbolic = None
-        font = QFont()
-#        font.setPixelSize(10)
-#        self.setFont(font)
+        font = self.font()
+        traceLogger.debug(font.pointSize())
+        font.setPointSize(font.pointSize() - 3)
+        self.setFont(font)
         self.reduceMode = QLabel()
-        self.reduceMode.setFixedWidth(QFontMetrics(font).width('Mode: Algebraic'))
-#        self.reduceMode.setFont(font)
+        self.reduceMode.setFixedWidth(
+            QFontMetrics(font).width(self.tr("Mode: Algebraic")))
+        self.reduceMode.setFont(font)
         self.reduceTime = QLabel()
-#        self.reduceTime.setFont(font)
+        self.reduceTime.setFont(font)
         self.reduceStatus = QLabel()
-#        self.reduceStatus.setFont(font)
+        self.reduceStatus.setFont(font)
         self.addPermanentWidget(self.reduceMode)
         self.addPermanentWidget(self.reduceTime)
         self.addWidget(self.reduceStatus)
-        self.reduceStatus.setText("Initializing ...")
+        self.reduceStatus.setText(self.tr("Initializing ..."))
 
     def endComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
@@ -302,19 +308,19 @@ class QtReduceStatusBar(QStatusBar):
         if symbolic != self.symbolic:
             self.symbolic = symbolic
             if self.symbolic:
-                self.reduceMode.setText('Mode: Symbolic')
+                self.reduceMode.setText(self.tr("Mode: Symbolic"))
             else:
-                self.reduceMode.setText('Mode: Algebraic')
+                self.reduceMode.setText(self.tr("Mode: Algebraic"))
 
     def __updateTime(self,time,gcTime):
         timeStr = "%.2f s" % (float(time + gcTime)/1000)
-        self.reduceTime.setText("Time: " + timeStr)
+        self.reduceTime.setText(self.tr("Time: ") + timeStr)
 
     def __updateStatus(self,evaluating):
         if evaluating:
-            self.reduceStatus.setText(" Evaluating")
+            self.reduceStatus.setText(self.tr(" Evaluating"))
         else:
-            self.reduceStatus.setText(" Ready")
+            self.reduceStatus.setText(self.tr(" Ready"))
 
 
 class QtReduceMenuBar(QMenuBar):
