@@ -59,7 +59,7 @@ class QtReduceMainWindow(QMainWindow):
         QMainWindow.__init__(self, parent)
         self.defaultWidth = 85
         self.defaultHeight = 36
-        self.setUnifiedTitleAndToolBarOnMac(1)
+        self.setUnifiedTitleAndToolBarOnMac(True)
         self.setStatusBar(QtReduceStatusBar(parent))
         self.setMenuBar(QtReduceMenuBar(self,parent))
         self.worksheet = QtReduceWorksheet(self)
@@ -71,7 +71,7 @@ class QtReduceMainWindow(QMainWindow):
         self.__initPreferencePaneSignals()
         self.__setWidthByFont(self.defaultWidth)
         self.__setHeightByFont(self.defaultHeight)
-        self.setTitle(os.path.dirname(os.path.abspath("$HOME")))
+        self.setTitle(os.path.dirname(os.path.abspath("$HOME")) + '/')
         self.setCentralWidget(self.worksheet)
         self.show()
         self.raise_()
@@ -231,12 +231,12 @@ class QtReduceMainWindow(QMainWindow):
     def showMessage(self,message):
 	self.statusBar.showMessage(message,0)
 
-    def setTitle(self,message):
-        traceLogger.debug("message=%s" % message)
-        pmessage = message.rpartition('/')
-        traceLogger.debug("pmessage=[%s,%s,%s]" % pmessage)
-        self.setWindowFilePath(pmessage[0])
-        self.setWindowTitle(pmessage[2] + "[*]")
+    def setTitle(self,fullPath):
+        traceLogger.debug("fullPath=%s" % fullPath)
+        pFullPath = fullPath.rpartition('/')
+        traceLogger.debug("pFullPath=[%s,%s,%s]" % pFullPath)
+        self.setWindowFilePath(pFullPath[0])
+        self.setWindowTitle((pFullPath[2] or "Untitled") + "[*]")
 
     def closeEvent(self,ev):
         while self.isWindowModified():
