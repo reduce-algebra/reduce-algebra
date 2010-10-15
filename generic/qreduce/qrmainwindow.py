@@ -235,7 +235,7 @@ class QtReduceMainWindow(QMainWindow):
     def setTitle(self,fullPath):
         traceLogger.debug("fullPath=%s" % fullPath)
         if fullPath is '':
-            self.setWindowTitle(self.tr("Untitled") + "[*]")
+            self.setWindowTitle("[*]" + self.tr("Untitled"))
         else:
             pFullPath = fullPath.rpartition('/')
             traceLogger.debug("pFullPath=[%s,%s,%s]" % pFullPath)
@@ -281,7 +281,8 @@ class QtReduceStatusBar(QStatusBar):
         self.symbolic = None
         font = self.font()
         traceLogger.debug(font.pointSize())
-        font.setPointSize(font.pointSize() - 3)
+        if os.uname()[0] == "Darwin":
+            font.setPointSize(font.pointSize() - 3)
         self.setFont(font)
         self.reduceMode = QLabel()
         self.reduceMode.setFixedWidth(
