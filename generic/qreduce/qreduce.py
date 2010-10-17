@@ -50,7 +50,7 @@ qtTranslator.load("qt_" + QLocale.system().name(),
 app.installTranslator(qtTranslator)
 
 qreduceTranslator = QTranslator(app)
-qreduceTranslator.load("qreducetr.de")
+qreduceTranslator.load(sys.path[0] + "/" + "qreducetr.de")
 app.installTranslator(qreduceTranslator)
 
 # app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
