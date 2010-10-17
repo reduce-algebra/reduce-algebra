@@ -48,6 +48,10 @@ from PySide.QtGui import QFileDialog
 from PySide.QtGui import QIcon
 from PySide.QtGui import QToolBar
 from PySide.QtGui import QStyle
+from PySide.QtGui import QTextEdit
+from PySide.QtGui import QDialog
+from PySide.QtGui import QVBoxLayout
+
 
 from qrlogging import signalLogger
 from qrlogging import traceLogger
@@ -61,6 +65,7 @@ class QtReduceMainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
+        self.setWindowIcon(QIcon("Bumblebee.png"))
         self.defaultWidth = 85
         self.defaultHeight = 36
         self.setUnifiedTitleAndToolBarOnMac(True)
@@ -202,43 +207,74 @@ class QtReduceMainWindow(QMainWindow):
     # Help Actions
     def about(self):
         QMessageBox.about(self, self.tr("About QReduce"),self.tr(
-                '<center>'
-                '<h3>QReduce 0.2</h3>'
-                '<p>&copy; 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
-                '</center>'
-                'A worksheet-based GUI for the computer algebra system Reduce.'
-                '<p>'
-                '<font size="-3">'
-                '<hr>'
-                '<strong>License: </strong>'
-                'Redistribution and use in source and binary forms, with '
-                'or without modification, are permitted provided that the '
-                'following conditions are met: '
-                '1. Redistributions of source code must retain the relevant '
-                'copyright notice, this list of conditions and the following '
-                'disclaimer. '
-                '2. Redistributions in binary form must reproduce the above '
-                'copyright notice, this list of conditions and the following '
-                'disclaimer in the documentation and/or other materials '
-                'provided with the distribution. '
-                '</font>'
-                '<p>'
-                '<font size="-3">'
-                '<strong>Disclaimer:</strong> '
-                'This software is provided by the copyright holders and '
-                'contributors "as is" and any express or implied warranties, '
-                'including, but not limited to, the implied warranties of '
-                'merchantability and fitness for a particular purpose are '
-                'disclaimed. In no event shall the copyright owners or '
-                'contributors be liable for any direct, indirect, incidental, '
-                'special, exemplary, or consequential damages (including, but '
-                'not limited to, procurement of substitute goods or services; '
-                'loss of use, data, or profits; or business interruption) '
-                'however caused and on any theory of liability, whether in '
-                'contract, strict liability, or tort (including negligence or '
-                'otherwise) arising in any way out of the use of this '
-                'software, even if advised of the possibility of such damage.'
-                '</font>'))
+            '<span style="font-size:x-large;font-weight:bold;color:#000000">'
+            'QReduce'
+            '</span>'
+            '<p>'
+            '<span style="font-weight:normal;">'
+            'Version 0.2'
+            '</span>'
+            '<p>'
+            '<span style="font-weight:normal;">'
+            'A Worksheet-Oriented GUI '
+            'for the Computer Algebra System Reduce'
+            '</span>'
+            '<p>'
+            '<span style="font-size:small;font-weight:normal;color:#808080">'
+            '&copy; 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
+            '</span>'
+            '</span>'))
+
+    def license_(self):
+        self.lic = QTextEdit(self)
+        self.lic.setWindowFlags(Qt.Window)
+        self.lic.setWindowTitle("FreeBSD License")
+        font = self.lic.font()
+        font.setFamily('')
+        font.setFixedPitch(True)
+        font.setKerning(0)
+        font.setWeight(QFont.Normal)
+        font.setItalic(False)
+        self.lic.setFont(font)
+        self.lic.setText(
+            'Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
+            '<p>'
+            'All rights reserved.'
+            '<p>'
+            'Redistribution and use in source and binary forms, with '
+            'or without modification, are permitted provided that the '
+            'following conditions are met:'
+            '<ol>'
+            '<li>Redistributions of source code must retain the relevant '
+            'copyright notice, this list of conditions and the following '
+            'disclaimer. '
+            '<p>'
+            '<li>Redistributions in binary form must reproduce the above '
+            'copyright notice, this list of conditions and the following '
+            'disclaimer in the documentation and/or other materials '
+            'provided with the distribution. '
+            '</ol>'
+            '<p>'
+            'THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND '
+            'CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, '
+            'INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF '
+            'MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE '
+            'DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR '
+            'CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, '
+            'SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT '
+            'NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; '
+            'LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) '
+            'HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN '
+            'CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR '
+            'OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS '
+            'SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
+            '</span>')
+        self.lic.setReadOnly(True)
+        w = 66 * self.lic.fontMetrics().width('m')
+        h = 36 * self.lic.fontMetrics().height()
+        self.lic.resize(w,h)
+        self.lic.show()
+        self.lic.raise_()
 
     def showMessage(self,message):
         if os.uname()[0] == "Darwin":
@@ -272,10 +308,11 @@ class QtReduceMainWindow(QMainWindow):
 
     def __savediag(self):
         diag = QMessageBox(self)
-        msg = '<b>Do you want to save the changes in your worksheet "'
-        msg += self.worksheet.fileName.split('/')[-1] or 'untitled' + '"?</b><p>'
-        msg += '<font size="-1">Otherwise they will get lost.</font>'
+        msg = 'Do you want to save the changes in your worksheet "'
+        msg += self.worksheet.fileName.split('/')[-1] or 'untitled' + '"?'
         diag.setText(msg)
+        diag.setInformativeText("Otherwise they will get lost")
+        diag.setIcon(QMessageBox.Warning)
         diag.setStandardButtons(QMessageBox.StandardButton.Discard |
                                 QMessageBox.StandardButton.Cancel |
                                 QMessageBox.StandardButton.Save)
@@ -463,18 +500,39 @@ class QtReduceMenuBar(QMenuBar):
         self.aboutAct = QAction(self.tr("About"), self)
         self.helpMenu.addAction(self.aboutAct)
         self.aboutAct.triggered.connect(self.main.about,type=Qt.DirectConnection)
+        self.licenseAct = QAction(self.tr("License"), self)
+        self.helpMenu.addAction(self.licenseAct)
+        self.licenseAct.triggered.connect(self.main.license_,type=Qt.DirectConnection)
 
 
 class QtReduceToolBar(QToolBar):
-    iDb = {"Oxygen":
+    iDb = {"Aqua":
            {"sized":True,
-            "Open":"document_open.png",
-            "Save":"document_save.png",
-            "Save As":"document_save_as.png",
-            "Zoom In":"zoom_in.png",
-            "Zoom Out":"zoom_out.png",
-            "Zoom Default":"zoom_original.png",
+            "Open":"fileopen.png",
+            "Save":"filesave.png",
+            "Save As":"filesaveas.png",
+            "Zoom In":"tab_new.png",
+            "Zoom Out":"tab_remove.png",
+            "Zoom Default":"player_stop.png",
             "Abort":"stop.png"},
+           "Bluesphere":
+           {"sized":False,
+            "Open":"fileopen.svg",
+            "Save":"filesave-2.1.svg",
+            "Save As":"filesaveas.svg",
+            "Zoom In":"edit_add.svg",
+            "Zoom Out":"edit_remove.svg",
+            "Zoom Default":"bookmark.svg",
+            "Abort":"button_cancel.svg"},
+           "Crystal":
+           {"sized":False,
+            "Open":"fileopen-256.png",
+            "Save":"filesave-256.png",
+            "Save As":"filesaveas-256.png",
+            "Zoom In":"viewmag+-256.png",
+            "Zoom Out":"viewmag--256.png",
+            "Zoom Default":"viewmag1-256.png",
+            "Abort":"agt_stop-256.png"},
            "Nuvola":
            {"sized":True,
             "Open":"fileopen.png",
@@ -484,14 +542,14 @@ class QtReduceToolBar(QToolBar):
             "Zoom Out":"viewmag-.png",
             "Zoom Default":"viewmag1.png",
             "Abort":"stop.png"},
-           "Aqua":
+           "Oxygen":
            {"sized":True,
-            "Open":"fileopen.png",
-            "Save":"filesave.png",
-            "Save As":"filesaveas.png",
-            "Zoom In":"tab_new.png",
-            "Zoom Out":"tab_remove.png",
-            "Zoom Default":"player_stop.png",
+            "Open":"document_open.png",
+            "Save":"document_save.png",
+            "Save As":"document_save_as.png",
+            "Zoom In":"zoom_in.png",
+            "Zoom Out":"zoom_out.png",
+            "Zoom Default":"zoom_original.png",
             "Abort":"stop.png"},
            "Tango":
            {"sized":True,

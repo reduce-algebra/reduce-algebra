@@ -28,7 +28,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from types import StringType
+
 from PySide.QtCore import Qt
+from PySide.QtCore import Signal
 
 from PySide.QtGui import QDialog
 from PySide.QtGui import QWidget
@@ -42,6 +45,7 @@ from PySide.QtGui import QPushButton
 from PySide.QtGui import QVBoxLayout
 from PySide.QtGui import QFontDialog
 from PySide.QtGui import QFont
+from PySide.QtGui import QFontInfo
 from PySide.QtGui import QGroupBox
 from PySide.QtGui import QLabel
 from PySide.QtGui import QCheckBox
@@ -51,6 +55,7 @@ from PySide.QtGui import QComboBox
 from PySide.QtGui import QFontDatabase
 
 from qrlogging import signalLogger
+from qrlogging import fontLogger
 from qrlogging import traceLogger
 
 class QtReducePreferencePane(QDialog):
@@ -58,7 +63,6 @@ class QtReducePreferencePane(QDialog):
     def __init__(self,parent=None):
         super(QtReducePreferencePane,self).__init__(parent)
         self.parent = parent
-        self.setModal(False)
 
         self.__createContents()
 
@@ -132,7 +136,9 @@ class QtReducePreferencesToolBar(QWidget):
         toolBarGroup = QGroupBox(self.tr("Toolbar"))
 
         self.iconSetCombo = QtReduceComboBox()
-        self.iconSetCombo.addItems(["Aqua","Nuvola","Oxygen","Tango"])
+        iDbKeys = self.parent.parent.toolBar.iDb.keys()
+        iDbKeys.sort()
+        self.iconSetCombo.addItems(iDbKeys)
         self.iconSetCombo.setCurrentIndex(
             self.iconSetCombo.findText(self.parent.parent.toolBar.iconSet))
 
@@ -176,6 +182,44 @@ class QtReducePreferencesToolBar(QWidget):
             return self.tr("Only Text")
         return ""
 
+
+class QtReduceFontComboBox(QtReduceComboBox):
+    currentFontChanged = Signal(QFont)
+
+    def __init__(self,parent=None):
+        super(QtReduceFontComboBox,self).__init__()
+        fdb = QFontDatabase()
+        l = []
+        self.fontDict = {}
+        for fam in fdb.families(QFontDatabase.Latin):
+            for sty in fdb.styles(fam):
+                if not fam in l and fdb.isFixedPitch(fam,sty) \
+                and not fdb.bold(fam,sty) and not fdb.italic(fam,sty):
+                    fontLogger.debug("family=%s, style=%s, isFixedPitch=%s" %
+                                     (fam, sty, fdb.isFixedPitch(fam,sty)))
+                    sizes = fdb.smoothSizes(fam,sty)
+                    if sizes:
+                        font = fdb.font(fam,sty,sizes[0])
+                        if font.exactMatch():
+                            l += [fam]
+                            self.fontDict.update({str(fam):font})
+                        else:
+                            fontLogger.debug("kicking %s %s %s - no exactMatch" %
+                                             (fam,sty,sizes[0]))
+        l.sort
+        self.addItems(l)
+        self.currentIndexChanged.connect(self.currentIndexChangedHandler)
+
+    def setCurrentFont(self,font):
+        info = QFontInfo(font)
+        self.setCurrentIndex(self.findText(info.family()))
+
+    def currentFont(self):
+        return self.fontDict[self.currentText()]
+
+    def currentIndexChangedHandler(self,index):
+        return self.currentFontChanged.emit(self.currentFont())
+
 class QtReducePreferencesWorksheet(QWidget):
     def __init__(self,parent=None):
         super(QtReducePreferencesWorksheet,self).__init__(parent)
@@ -183,12 +227,11 @@ class QtReducePreferencesWorksheet(QWidget):
 
         fontGroup = QGroupBox(self.tr("Fonts"))
 
-        self.fontCombo = QFontComboBox()
+        self.fontCombo = QtReduceFontComboBox(self)
         self.setFocusPolicy(Qt.NoFocus)
         self.fontCombo.setEditable(False)
-        self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts)
+#        self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts)
         self.fontCombo.setCurrentFont(self.parent.parent.worksheet.font())
-        self.fontCombo.setWritingSystem(QFontDatabase.Latin)
 
         self.sizeCombo = QtReduceComboBox()
         self.findSizes(self.fontCombo.currentFont())
