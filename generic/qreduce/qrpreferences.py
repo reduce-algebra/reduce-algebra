@@ -58,18 +58,20 @@ class QtReducePreferencePane(QDialog):
     def __init__(self,parent=None):
         super(QtReducePreferencePane,self).__init__(parent)
         self.parent = parent
-        self.setModal(True)
+        self.setModal(False)
 
         self.__createContents()
 
-        self.appearance = QtReducePreferencesAppearance(self)
+        self.toolBar = QtReducePreferencesToolBar(self)
+        self.worksheet = QtReducePreferencesWorksheet(self)
         self.computation = QtReducePreferencesComputation(self)
 
         self.pagesWidget = QStackedWidget()
-        self.pagesWidget.addWidget(self.appearance)
+        self.pagesWidget.addWidget(self.toolBar)
+        self.pagesWidget.addWidget(self.worksheet)
         self.pagesWidget.addWidget(self.computation)
 
-        closeButton = QPushButton("Close")
+        closeButton = QPushButton(self.tr("Close"))
         closeButton.clicked.connect(self.close)
 
         horizontalLayout = QHBoxLayout()
@@ -86,7 +88,7 @@ class QtReducePreferencePane(QDialog):
 
         self.setLayout(mainLayout)
 
-        self.setWindowTitle("QReduce Preferences")
+        self.setWindowTitle(self.tr("QReduce Preferences"))
 
     def changePage(self,current,previous):
         if not current:
@@ -97,35 +99,102 @@ class QtReducePreferencePane(QDialog):
         self.contentsWidget = QListWidget()
         self.contentsWidget.setViewMode(QListView.ListMode)
         self.contentsWidget.setMovement(QListView.Static)
-        appearance = QListWidgetItem(self.contentsWidget)
-        appearance.setText("Appearance")
-        appearance.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-        self.contentsWidget.setCurrentItem(appearance)
+
+        toolBar = QListWidgetItem(self.contentsWidget)
+        toolBar.setText(self.tr("Toolbar"))
+        toolBar.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
+        self.contentsWidget.setCurrentItem(toolBar)
+
+        worksheet = QListWidgetItem(self.contentsWidget)
+        worksheet.setText(self.tr("Worksheet"))
+        worksheet.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
         computation = QListWidgetItem(self.contentsWidget)
-        computation.setText("Computation")
+        computation.setText(self.tr("Computation"))
         computation.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
         self.contentsWidget.currentItemChanged.connect(self.changePage)
 
 
-class QtReducePreferencesAppearance(QWidget):
+class QtReduceComboBox(QComboBox):
+    def __init__(self):
+        super(QtReduceComboBox,self).__init__()
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setEditable(False)
+
+
+class QtReducePreferencesToolBar(QWidget):
     def __init__(self,parent=None):
-        super(QtReducePreferencesAppearance,self).__init__(parent)
+        super(QtReducePreferencesToolBar,self).__init__(parent)
         self.parent = parent
 
-        fontGroup = QGroupBox("Fonts")
+        toolBarGroup = QGroupBox(self.tr("Toolbar"))
+
+        self.iconSetCombo = QtReduceComboBox()
+        self.iconSetCombo.addItems(["Aqua","Nuvola","Oxygen","Tango"])
+        self.iconSetCombo.setCurrentIndex(
+            self.iconSetCombo.findText(self.parent.parent.toolBar.iconSet))
+
+        self.iconSizeCombo = QtReduceComboBox()
+        self.iconSizeCombo.addItems(["16","22","32"])
+        self.iconSizeCombo.setCurrentIndex(
+            self.iconSizeCombo.findText(str(self.parent.parent.toolBar.iconSize)))
+
+        self.showCombo = QtReduceComboBox()
+        self.showCombo.addItems([self.tr("Symbol and Text"),self.tr("Only Symbol"),self.tr("Only Text")])
+        text = self.toolButtonStyleToText(self.parent.parent.toolBar.toolButtonStyle())
+        self.showCombo.setCurrentIndex(self.showCombo.findText(text))
+
+        toolBarLayout = QFormLayout()
+        toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
+        toolBarLayout.addRow(self.tr("Symbol Size"),self.iconSizeCombo)
+        toolBarLayout.addRow(self.tr("Show"),self.showCombo)
+
+        toolBarGroup.setLayout(toolBarLayout)
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(toolBarGroup)
+
+        self.setLayout(mainLayout)
+
+    def textToToolButtonStyle(self,sh):
+        if sh == self.tr("Symbol and Text"):
+            return Qt.ToolButtonTextUnderIcon
+        if sh == self.tr("Only Symbol"):
+            return Qt.ToolButtonIconOnly
+        if sh == self.tr("Only Text"):
+            return Qt.ToolButtonTextOnly
+        return ""
+
+    def toolButtonStyleToText(self,bs):
+        if bs == Qt.ToolButtonTextUnderIcon:
+            return self.tr("Symbol and Text")
+        if bs == Qt.ToolButtonIconOnly:
+            return self.tr("Only Symbol")
+        if bs == Qt.ToolButtonTextOnly:
+            return self.tr("Only Text")
+        return ""
+
+class QtReducePreferencesWorksheet(QWidget):
+    def __init__(self,parent=None):
+        super(QtReducePreferencesWorksheet,self).__init__(parent)
+        self.parent = parent
+
+        fontGroup = QGroupBox(self.tr("Fonts"))
 
         self.fontCombo = QFontComboBox()
+        self.setFocusPolicy(Qt.NoFocus)
         self.fontCombo.setEditable(False)
         self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts)
         self.fontCombo.setCurrentFont(self.parent.parent.worksheet.font())
         self.fontCombo.setWritingSystem(QFontDatabase.Latin)
 
-        self.sizeCombo = QComboBox()
-        self.sizeCombo.setEditable(False)
+        self.sizeCombo = QtReduceComboBox()
         self.findSizes(self.fontCombo.currentFont())
         self.fontCombo.currentFontChanged.connect(self.findSizes)
 
-#        styleCombo = QComboBox()
+#        styleCombo = QtReduceComboBox()
 
         fontLayout = QFormLayout()
         fontLayout.addRow(self.tr("General Worksheet Font"),self.fontCombo)

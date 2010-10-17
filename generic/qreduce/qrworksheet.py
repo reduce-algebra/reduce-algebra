@@ -225,7 +225,7 @@ class QtReduceWorksheet(QTextEdit):
             cursor.insertHtml(outp)
         else:
             self.labelBlock(cursor,2)
-            outp = self.__colorOutput("[no output]","gray")
+            outp = self.__colorOutput(self.tr("[no output]"),"gray")
             nextblock.setUserState(2)
             cursor.insertHtml(outp)
         nextblock = self.__getNextBlock(cursor,[0])
@@ -291,7 +291,7 @@ class QtReduceWorksheet(QTextEdit):
         self.modified.emit(False)
         self.fileName = tempFileName
         self.fileNameChanged.emit(self.fileName)
-        self.parent.statusBar().showMessage("Read " + self.fileName)
+        self.parent.statusBar().showMessage(self.tr("Read ") + self.fileName)
         self.ensureCursorVisible()
         return True
 
@@ -309,7 +309,7 @@ class QtReduceWorksheet(QTextEdit):
         self.modified.emit(False)
         self.fileName = tempFileName
         self.fileNameChanged.emit(self.fileName)
-        self.parent.statusBar().showMessage("Wrote " + self.fileName)
+        self.parent.statusBar().showMessage(self.tr("Wrote ") + self.fileName)
         return True
 
     def textChangedHandler(self):

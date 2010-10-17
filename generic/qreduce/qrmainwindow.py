@@ -33,6 +33,7 @@ import os
 
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
+from PySide.QtCore import QSize
 
 from PySide.QtGui import QMainWindow
 from PySide.QtGui import QStatusBar
@@ -45,6 +46,8 @@ from PySide.QtGui import QMessageBox
 from PySide.QtGui import QKeySequence
 from PySide.QtGui import QFileDialog
 from PySide.QtGui import QIcon
+from PySide.QtGui import QToolBar
+from PySide.QtGui import QStyle
 
 from qrlogging import signalLogger
 from qrlogging import traceLogger
@@ -63,6 +66,8 @@ class QtReduceMainWindow(QMainWindow):
         self.setUnifiedTitleAndToolBarOnMac(True)
         self.setStatusBar(QtReduceStatusBar(parent))
         self.setMenuBar(QtReduceMenuBar(self,parent))
+        self.toolBar = QtReduceToolBar(self)
+        self.addToolBar(self.toolBar)
         self.worksheet = QtReduceWorksheet(self)
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
@@ -95,9 +100,15 @@ class QtReduceMainWindow(QMainWindow):
             type=Qt.DirectConnection)
 
     def __initPreferencePaneSignals(self):
-        self.preferencePane.appearance.fontCombo.currentFontChanged.connect(
+        self.preferencePane.toolBar.iconSetCombo.currentIndexChanged.connect(
+            self.toolBar.iconSetChanged)
+        self.preferencePane.toolBar.iconSizeCombo.currentIndexChanged.connect(
+            self.toolBar.iconSizeChanged)
+        self.preferencePane.toolBar.showCombo.currentIndexChanged.connect(
+            self.toolBar.toolButtonStyleChanged)
+        self.preferencePane.worksheet.fontCombo.currentFontChanged.connect(
             self.currentFontChangedHandler)
-        self.preferencePane.appearance.sizeCombo.currentIndexChanged.connect(
+        self.preferencePane.worksheet.sizeCombo.currentIndexChanged.connect(
             self.currentSizeChangedHandler)
 
     def __initTitleBarSignals(self):
@@ -140,8 +151,8 @@ class QtReduceMainWindow(QMainWindow):
         filter = self.tr("Reduce Worksheets (*.rws)")
         fileName = QFileDialog.getOpenFileName(None,title,path,filter)
         fileName = str(fileName[0])
-        traceLogger.debug("fileName=%s" % fileName[0])
-        if fileName == '':
+        traceLogger.debug("fileName=%s" % fileName)
+        if fileName is '':
             return
         if not fileName.endswith(".rws"):
             fileName += ".rws"
@@ -193,7 +204,7 @@ class QtReduceMainWindow(QMainWindow):
         QMessageBox.about(self, self.tr("About QReduce"),self.tr(
                 '<center>'
                 '<h3>QReduce 0.2</h3>'
-                '<p>&copy; 2009-2010 T. Sturm, 2010 C. Zengler'
+                '<p>&copy; 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
                 '</center>'
                 'A worksheet-based GUI for the computer algebra system Reduce.'
                 '<p>'
@@ -203,10 +214,10 @@ class QtReduceMainWindow(QMainWindow):
                 'Redistribution and use in source and binary forms, with '
                 'or without modification, are permitted provided that the '
                 'following conditions are met: '
-                '(a) Redistributions of source code must retain the relevant '
+                '1. Redistributions of source code must retain the relevant '
                 'copyright notice, this list of conditions and the following '
                 'disclaimer. '
-                '(b) Redistributions in binary form must reproduce the above '
+                '2. Redistributions in binary form must reproduce the above '
                 'copyright notice, this list of conditions and the following '
                 'disclaimer in the documentation and/or other materials '
                 'provided with the distribution. '
@@ -230,7 +241,9 @@ class QtReduceMainWindow(QMainWindow):
                 '</font>'))
 
     def showMessage(self,message):
-	self.statusBar.showMessage('<font size="-1">' + message + '</font>',0)
+        if os.uname()[0] == "Darwin":
+            message = '<font size="-2">' + message + '</font>'
+	self.statusBar.showMessage(message,0)
 
     def setTitle(self,fullPath):
         traceLogger.debug("fullPath=%s" % fullPath)
@@ -254,7 +267,7 @@ class QtReduceMainWindow(QMainWindow):
             elif button == QMessageBox.Cancel:
                 ev.ignore()
                 return
-#        del self.worksheet.reduce
+        del self.worksheet.reduce
         ev.accept()
 
     def __savediag(self):
@@ -282,7 +295,7 @@ class QtReduceStatusBar(QStatusBar):
         font = self.font()
         traceLogger.debug(font.pointSize())
         if os.uname()[0] == "Darwin":
-            font.setPointSize(font.pointSize() - 3)
+            font.setPointSize(font.pointSize() - 2)
         self.setFont(font)
         self.reduceMode = QLabel()
         self.reduceMode.setFixedWidth(
@@ -357,6 +370,7 @@ class QtReduceMenuBar(QMenuBar):
     def __createFileActions(self):
         self.openAct = QAction(self.tr("Open ..."), self)
         self.openAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_O))
+        self.openAct.setIconText(self.tr("Open"))
         self.fileMenu.addAction(self.openAct)
         self.openAct.triggered.connect(self.main.open,type=Qt.DirectConnection)
 
@@ -364,19 +378,25 @@ class QtReduceMenuBar(QMenuBar):
 
         self.saveAct = QAction(self.tr("Save"), self)
         self.saveAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_S))
+        self.saveAct.setIconText(self.tr("Save"))
+
         self.fileMenu.addAction(self.saveAct)
         self.saveAct.triggered.connect(self.main.save,type=Qt.DirectConnection)
 
         self.saveAsAct = QAction(self.tr("Save As ..."), self)
         self.saveAsAct.setShortcut(
             QKeySequence(Qt.ShiftModifier|Qt.ControlModifier|Qt.Key_S))
+        self.saveAsAct.setIconText(self.tr("Save As"))
+
         self.fileMenu.addAction(self.saveAsAct)
         self.saveAsAct.triggered.connect(self.main.saveAs,type=Qt.DirectConnection)
+
         self.fileMenu.addSeparator()
 
         self.quitAct = QAction(self.tr("Quit"), self)
         self.quitAct.setShortcut(
             QKeySequence(Qt.ControlModifier|Qt.Key_Q))
+
         self.fileMenu.addAction(self.quitAct)
         self.quitAct.triggered.connect(self.main.close,type=Qt.DirectConnection)
 
@@ -387,20 +407,26 @@ class QtReduceMenuBar(QMenuBar):
         self.preferencesAct.triggered.connect(self.main.preferences,type=Qt.DirectConnection)
 
     def __createViewActions(self):
+        self.zoomDefAct = QAction(self.tr("Zoom Default"), self)
+        self.zoomDefAct.setIconText(self.tr("Zoom Default"))
+        self.zoomDefAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Equal))
+
+        self.viewMenu.addAction(self.zoomDefAct)
+        self.zoomDefAct.triggered.connect(self.main.zoomDef,type=Qt.DirectConnection)
+
         self.zoomInAct = QAction(self.tr("Zoom In"), self)
+        self.zoomInAct.setIconText(self.tr("Zoom In"))
         self.zoomInAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Plus))
+
         self.viewMenu.addAction(self.zoomInAct)
         self.zoomInAct.triggered.connect(self.main.zoomIn,type=Qt.DirectConnection)
 
         self.zoomOutAct = QAction(self.tr("Zoom Out"), self)
+        self.zoomOutAct.setIconText(self.tr("Zoom Out"))
         self.zoomOutAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Minus))
+
         self.viewMenu.addAction(self.zoomOutAct)
         self.zoomOutAct.triggered.connect(self.main.zoomOut,type=Qt.DirectConnection)
-
-        self.zoomDefAct = QAction(self.tr("Zoom Default"), self)
-        self.zoomDefAct.setShortcut(QKeySequence(Qt.ControlModifier|Qt.Key_Equal))
-        self.viewMenu.addAction(self.zoomDefAct)
-        self.zoomDefAct.triggered.connect(self.main.zoomDef,type=Qt.DirectConnection)
 
     def __createWorksheetActions(self):
         self.insertAboveAct = QAction(self.tr("Insert Group Above"), self)
@@ -420,10 +446,12 @@ class QtReduceMenuBar(QMenuBar):
         self.worksheetMenu.addSeparator()
 
         self.abortAct = QAction(self.tr("Abort Evaluation"), self)
-        self.abortAct.setEnabled(False)
         self.abortAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_C))
+        self.abortAct.setIconText(self.tr("Abort"))
+        self.abortAct.setEnabled(False)
+
         self.worksheetMenu.addAction(self.abortAct)
-        self.abortAct.triggered.connect(self.main.abortEvaluation,type=Qt.DirectConnection)
+        self.abortAct.triggered.connect(self.main.abortEvaluation)
 
     def __createDevelActions(self):
         self.testAct = QAction(self.tr("Test"), self)
@@ -435,3 +463,123 @@ class QtReduceMenuBar(QMenuBar):
         self.aboutAct = QAction(self.tr("About"), self)
         self.helpMenu.addAction(self.aboutAct)
         self.aboutAct.triggered.connect(self.main.about,type=Qt.DirectConnection)
+
+
+class QtReduceToolBar(QToolBar):
+    iDb = {"Oxygen":
+           {"sized":True,
+            "Open":"document_open.png",
+            "Save":"document_save.png",
+            "Save As":"document_save_as.png",
+            "Zoom In":"zoom_in.png",
+            "Zoom Out":"zoom_out.png",
+            "Zoom Default":"zoom_original.png",
+            "Abort":"stop.png"},
+           "Nuvola":
+           {"sized":True,
+            "Open":"fileopen.png",
+            "Save":"filesave.png",
+            "Save As":"filesaveas.png",
+            "Zoom In":"viewmag+.png",
+            "Zoom Out":"viewmag-.png",
+            "Zoom Default":"viewmag1.png",
+            "Abort":"stop.png"},
+           "Aqua":
+           {"sized":True,
+            "Open":"fileopen.png",
+            "Save":"filesave.png",
+            "Save As":"filesaveas.png",
+            "Zoom In":"tab_new.png",
+            "Zoom Out":"tab_remove.png",
+            "Zoom Default":"player_stop.png",
+            "Abort":"stop.png"},
+           "Tango":
+           {"sized":True,
+            "Open":"document-open.png",
+            "Save":"document-save.png",
+            "Save As":"document-save-as.png",
+            "Zoom In":"list-add.png",
+            "Zoom Out":"list-remove.png",
+            "Zoom Default":"view-refresh.png",
+            "Abort":"process-stop.png"}}
+
+    def __init__(self,parent=None,iconSet="Oxygen",iconSize=22,
+                 buttonStyle=Qt.ToolButtonTextUnderIcon):
+
+        super(QtReduceToolBar,self).__init__()
+
+        self.parent = parent
+        self.setVisible(True)
+        self.iconSet = iconSet
+        self.setIconSize(QSize(iconSize,iconSize))
+        self.iconSize = iconSize
+        self.__setIcons()
+        self.setToolButtonStyle(buttonStyle)
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.contextMenu)
+
+        self.addAction(self.parent.menuBar().openAct)
+        self.addAction(self.parent.menuBar().saveAct)
+        self.addAction(self.parent.menuBar().saveAsAct)
+
+        self.addSeparator()
+
+        self.addAction(self.parent.menuBar().zoomOutAct)
+        self.addAction(self.parent.menuBar().zoomDefAct)
+        self.addAction(self.parent.menuBar().zoomInAct)
+
+        self.addSeparator()
+
+        self.addAction(self.parent.menuBar().abortAct)
+
+    def contextMenu(self,position):
+        None
+
+    def iconSetChanged(self,iconSet):
+        self.iconSet = iconSet
+        self.__setIcons()
+
+    def iconSizeChanged(self,iconSize):
+        iconSize = int(iconSize)
+        self.iconSize = iconSize
+        self.setIconSize(QSize(iconSize,iconSize))
+        self.__setIcons()
+
+    def toolButtonStyleChanged(self,text):
+        style = self.parent.preferencePane.toolBar.textToToolButtonStyle(text)
+        self.setToolButtonStyle(style)
+        visibility = self.isVisible()
+        self.setVisible(not visibility)
+        self.setVisible(visibility)
+
+    def __setIcons(self):
+        self.parent.menuBar().openAct.setIcon(self.__icon("Open"))
+        self.parent.menuBar().saveAct.setIcon(self.__icon("Save"))
+        self.parent.menuBar().saveAsAct.setIcon(self.__icon("Save As"))
+        self.parent.menuBar().zoomOutAct.setIcon(self.__icon("Zoom Out"))
+        self.parent.menuBar().zoomDefAct.setIcon(self.__icon("Zoom Default"))
+        self.parent.menuBar().zoomInAct.setIcon(self.__icon("Zoom In"))
+        self.parent.menuBar().abortAct.setIcon(self.__icon("Abort"))
+        visibility = self.isVisible()
+        self.setVisible(not visibility)
+        self.setVisible(visibility)
+
+    def __icon(self,mEntry):
+        if self.iconSet:
+            iEntry = self.iDb[self.iconSet]
+            path = sys.path[0] + "/icons/" + self.iconSet + "/"
+            if iEntry["sized"]:
+                path += str(self.iconSize) + "/"
+            path += iEntry[mEntry]
+            traceLogger.debug("iconPath=%s" % path)
+            return QIcon(path)
+        else:
+            if mEntry == "open":
+                return self.style().standardIcon(QStyle.SP_DialogOpenButton)
+            elif mEntry == "save":
+                return self.style().standardIcon(QStyle.SP_DialogSaveButton)
+            elif mEntry == "abort":
+                return self.style().standardIcon(QStyle.SP_BrowserStop)
+            else:
+                return QIcon("")

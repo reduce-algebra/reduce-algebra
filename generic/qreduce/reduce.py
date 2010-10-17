@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import sys
 from os import system
 
 from qrlogging import signalLogger
@@ -42,7 +43,7 @@ from RedPy import procNew, procDelete, ansNew, ansDelete
 
 class Reduce(object):
     def __init__(self,reduce='../../bin/redpsl'):
-        self.__process = procNew(reduce)
+        self.__process = procNew(sys.path[0] + "/" + reduce)
         self.__processId = self.__process['processId']
         self.__process = self.__process['handle']
 
@@ -60,15 +61,17 @@ class Reduce(object):
 
 
 class QtReduce(QThread):
-    # currently only works with 'object' type, not with 'ReduceComputation' 
+    # currently only works with 'object' type, not with 'ReduceComputation'
     startComputation = Signal(object)
     endComputation = Signal(object)
-    
+
     def __init__(self,parent=None):
         QThread.__init__(self)
         self.parent = parent
         self.reduce = Reduce()
         self.computation = ReduceComputation()
+        self.started.connect(self.startedHandler)
+        self.finished.connect(self.finishedHandler)
 
     def initialize(self):
         self.compute("load_package utf8;",True)
@@ -78,14 +81,20 @@ class QtReduce(QThread):
         self.compute("on utf8pad;",True)
         self.compute('lisp procedure lr_aprint(u); mathprint u;',True)
         self.compute("lisp if 'psl memq lispsystem!* then remd 'break;",True)
-        
+
+    def startedHandler(self):
+        self.startComputation.emit(self.computation)
+
+    def finishedHandler(self):
+        self.endComputation.emit(self.computation)
+
     def compute(self,c,silent=False):
         self.wait()
         traceLogger.debug("after wait, computing %s" % c)
         self.computation.evaluating = True
         self.computation.silent = silent
         self.computation.currentCommand = c
-        self.startComputation.emit(self.computation)
+#        self.startComputation.emit(self.computation)
         self.start()
 
     def run(self):
@@ -95,7 +104,7 @@ class QtReduce(QThread):
         self.__processAnswer(a)
         self.computation.evaluating = False
         signalLogger.debug("emitting newReduceResult %s" % self.computation)
-        self.endComputation.emit(self.computation)
+#        self.endComputation.emit(self.computation)
 
     def __processAnswer(self,a):
         self.computation.statCounter = a['statcounter']
@@ -129,7 +138,7 @@ class QtReduce(QThread):
 
 
 class ReduceComputation(QObject):
-    
+
     def __init__(self):
         self.statCounter = 0
         self.currentCommand = None
