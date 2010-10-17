@@ -65,7 +65,7 @@ class QtReduceMainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
-        self.setWindowIcon(QIcon("Bumblebee.png"))
+        self.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
         self.defaultWidth = 85
         self.defaultHeight = 36
         self.setUnifiedTitleAndToolBarOnMac(True)
