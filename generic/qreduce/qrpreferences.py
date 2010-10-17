@@ -28,6 +28,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import os
+
 from types import StringType
 
 from PySide.QtCore import Qt
@@ -194,7 +196,8 @@ class QtReduceFontComboBox(QtReduceComboBox):
         for fam in fdb.families(QFontDatabase.Latin):
             for sty in fdb.styles(fam):
                 if not fam in l and fdb.isFixedPitch(fam,sty) \
-                and not fdb.bold(fam,sty) and not fdb.italic(fam,sty):
+                and not fdb.bold(fam,sty) and not fdb.italic(fam,sty) \
+                and self.__osxHack(fam):
                     fontLogger.debug("family=%s, style=%s, isFixedPitch=%s" %
                                      (fam, sty, fdb.isFixedPitch(fam,sty)))
                     sizes = fdb.smoothSizes(fam,sty)
@@ -206,10 +209,22 @@ class QtReduceFontComboBox(QtReduceComboBox):
 
                         l += [fam]
                         self.fontDict.update({str(fam):font})
-
         l.sort
         self.addItems(l)
         self.currentIndexChanged.connect(self.currentIndexChangedHandler)
+
+    def __osxHack(self,fam):
+        if os.uname()[0] != "Darwin":
+            return True
+        if fam.find("Andale") != -1 \
+        or fam.find("Bitstream") != -1 \
+        or fam.find("Consolas") != -1 \
+        or fam.find("Courier") != -1 \
+        or fam.find("DejaVu") != -1 \
+        or fam.find("Lucida") != -1 \
+        or fam.find("Monaco") != -1:
+            return True
+        return False
 
     def setCurrentFont(self,font):
         info = QFontInfo(font)

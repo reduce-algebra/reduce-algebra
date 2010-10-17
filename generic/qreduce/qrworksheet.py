@@ -73,7 +73,7 @@ class QtReduceWorksheet(QTextEdit):
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
         self.parent = parent
-        self.defaultFontFamily = ''
+        self.defaultFontFamily = 'DejaVu Sans Mono'
         self.defaultFontSize = 12
         self.__initSignals()
         self.__initReduce()
