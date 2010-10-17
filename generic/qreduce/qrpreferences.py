@@ -200,12 +200,13 @@ class QtReduceFontComboBox(QtReduceComboBox):
                     sizes = fdb.smoothSizes(fam,sty)
                     if sizes:
                         font = fdb.font(fam,sty,sizes[0])
-                        if font.exactMatch():
-                            l += [fam]
-                            self.fontDict.update({str(fam):font})
-                        else:
-                            fontLogger.debug("kicking %s %s %s - no exactMatch" %
+                        if not font.exactMatch():
+                            fontLogger.debug("no exactMatch for  %s %s %s" %
                                              (fam,sty,sizes[0]))
+
+                        l += [fam]
+                        self.fontDict.update({str(fam):font})
+
         l.sort
         self.addItems(l)
         self.currentIndexChanged.connect(self.currentIndexChangedHandler)
@@ -219,6 +220,7 @@ class QtReduceFontComboBox(QtReduceComboBox):
 
     def currentIndexChangedHandler(self,index):
         return self.currentFontChanged.emit(self.currentFont())
+
 
 class QtReducePreferencesWorksheet(QWidget):
     def __init__(self,parent=None):
