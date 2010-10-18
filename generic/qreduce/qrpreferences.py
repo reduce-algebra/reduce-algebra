@@ -104,6 +104,7 @@ class QtReducePreferencePane(QDialog):
     def changePage(self,current,previous):
         if not current:
             current = previous
+        QSettings().setValue("preferences/currentitem",current.text())
         self.pagesWidget.setCurrentIndex(self.contentsWidget.row(current))
 
     def __createContents(self):
@@ -115,8 +116,6 @@ class QtReducePreferencePane(QDialog):
         toolBar.setText(self.tr("Toolbar"))
         toolBar.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
 
-        self.contentsWidget.setCurrentItem(toolBar)
-
         worksheet = QListWidgetItem(self.contentsWidget)
         worksheet.setText(self.tr("Worksheet"))
         worksheet.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
@@ -124,6 +123,15 @@ class QtReducePreferencePane(QDialog):
         computation = QListWidgetItem(self.contentsWidget)
         computation.setText(self.tr("Computation"))
         computation.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
+        currentItem = QSettings().value("preferences/currentitem",
+                                        self.tr(QtReduceDefaults.CURRENTITEM))
+        if currentItem == self.tr("Toolbar"):
+            self.contentsWidget.setCurrentItem(toolBar)
+        elif currentItem == self.tr("Worksheet"):
+            self.contentsWidget.setCurrentItem(worksheet)
+        elif currentItem == self.tr("Computation"):
+            self.contentsWidget.setCurrentItem(computation)
 
         self.contentsWidget.currentItemChanged.connect(self.changePage)
 

@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
+# Copyright (c) 2010 T. Sturm, C. Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -46,3 +46,6 @@ class QtReduceDefaults(object):
 
     # Reduce
     REDUCE = "../../bin/redpsl"
+
+    # Preferences
+    CURRENTITEM = "Toolbar"
