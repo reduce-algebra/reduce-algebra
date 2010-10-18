@@ -99,7 +99,6 @@ class QtReduce(QThread):
         self.computation.evaluating = True
         self.computation.silent = silent
         self.computation.currentCommand = c
-#        self.startComputation.emit(self.computation)
         self.start()
 
     def run(self):
@@ -109,7 +108,6 @@ class QtReduce(QThread):
         self.__processAnswer(a)
         self.computation.evaluating = False
         signalLogger.debug("emitting newReduceResult %s" % self.computation)
-#        self.endComputation.emit(self.computation)
 
     def __processAnswer(self,a):
         self.computation.statCounter = a['statcounter']

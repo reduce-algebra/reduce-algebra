@@ -82,6 +82,9 @@ class QtReducePreferencePane(QDialog):
         self.pagesWidget.addWidget(self.worksheet)
         self.pagesWidget.addWidget(self.computation)
 
+        self.pagesWidget.setCurrentIndex(
+            self.contentsWidget.row(self.contentsWidget.currentItem()))
+
         closeButton = QPushButton(self.tr("Close"))
         closeButton.clicked.connect(self.close)
 

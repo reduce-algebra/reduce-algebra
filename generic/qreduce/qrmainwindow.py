@@ -72,16 +72,16 @@ class QtReduceMainWindow(QMainWindow):
         self.addToolBar(self.toolBar)
         self.setStatusBar(QtReduceStatusBar(parent))
         self.worksheet = QtReduceWorksheet(self)
-        self.preferencePane = QtReducePreferencePane(self)
-        self.__initPreferencePaneSignals()
+        self.setCentralWidget(self.worksheet)
         self.__setWidthByFont(QtReduceDefaults.WIDTH)
         self.__setHeightByFont(QtReduceDefaults.HEIGHT)
+        self.raise_()
+        self.show()
+        self.preferencePane = QtReducePreferencePane(self)
+        self.__initPreferencePaneSignals()
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
         self.__initTitleBarSignals()
-        self.setCentralWidget(self.worksheet)
-        self.show()
-        self.raise_()
         self.worksheet.initialize()
 
     def __initStatusBarSignals(self):
@@ -274,9 +274,7 @@ class QtReduceMainWindow(QMainWindow):
         self.lic.raise_()
 
     def showMessage(self,message):
-        if os.uname()[0] == "Darwin":
-            message = '<font size="-2">' + message + '</font>'
-	self.statusBar.showMessage(message,0)
+	self.statusBar().showMessage(message,0)
 
     def setTitle(self,fullPath):
         traceLogger.debug("fullPath=%s" % fullPath)
@@ -344,12 +342,18 @@ class QtReduceStatusBar(QStatusBar):
         self.addWidget(self.reduceStatus)
         self.reduceStatus.setText(self.tr("Initializing ..."))
 
+    # def showMessage(self,message):
+    #     if os.uname()[0] == "Darwin":
+    #         message = '<font size="-2">' + message + '</font>'
+    #     super(QtReduceStatusBar,self).showMessage(message)
+
     def endComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
         self.__updateTime(computation.accTime,computation.accGcTime)
         self.__updateMode(computation.symbolic)
 
     def startComputationHandler(self,computation):
+        #print computation.currentCommand
         self.__updateStatus(computation.evaluating)
 
     def __updateMode(self,symbolic):
