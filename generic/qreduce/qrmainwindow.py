@@ -31,9 +31,10 @@
 import sys
 import os
 
-from PySide.QtCore import Qt
+from PySide.QtCore import QSettings
 from PySide.QtCore import Signal
 from PySide.QtCore import QSize
+from PySide.QtCore import Qt
 
 from PySide.QtGui import QMainWindow
 from PySide.QtGui import QStatusBar
@@ -49,9 +50,6 @@ from PySide.QtGui import QIcon
 from PySide.QtGui import QToolBar
 from PySide.QtGui import QStyle
 from PySide.QtGui import QTextEdit
-from PySide.QtGui import QDialog
-from PySide.QtGui import QVBoxLayout
-
 
 from qrlogging import signalLogger
 from qrlogging import traceLogger
@@ -59,34 +57,32 @@ from qrlogging import traceLogger
 from qrworksheet import QtReduceWorksheet
 from reduce import Reduce
 from qrpreferences import QtReducePreferencePane
+from qrdefaults import QtReduceDefaults
+
 
 class QtReduceMainWindow(QMainWindow):
-    sheets = [];
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
-        self.defaultWidth = 85
-        self.defaultHeight = 36
         self.setUnifiedTitleAndToolBarOnMac(True)
-        self.setStatusBar(QtReduceStatusBar(parent))
+        self.setTitle(os.path.dirname(''))
         self.setMenuBar(QtReduceMenuBar(self,parent))
         self.toolBar = QtReduceToolBar(self)
         self.addToolBar(self.toolBar)
+        self.setStatusBar(QtReduceStatusBar(parent))
         self.worksheet = QtReduceWorksheet(self)
+        self.preferencePane = QtReducePreferencePane(self)
+        self.__initPreferencePaneSignals()
+        self.__setWidthByFont(QtReduceDefaults.WIDTH)
+        self.__setHeightByFont(QtReduceDefaults.HEIGHT)
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
         self.__initTitleBarSignals()
-        self.worksheet.initialize()
-        self.preferencePane = QtReducePreferencePane(self)
-        self.__initPreferencePaneSignals()
-        self.__setWidthByFont(self.defaultWidth)
-        self.__setHeightByFont(self.defaultHeight)
-        self.setTitle(os.path.dirname(''))
         self.setCentralWidget(self.worksheet)
         self.show()
         self.raise_()
-#         loadOptions();
+        self.worksheet.initialize()
 
     def __initStatusBarSignals(self):
         self.worksheet.endComputation.connect(
@@ -140,10 +136,11 @@ class QtReduceMainWindow(QMainWindow):
     def currentFontChangedHandler(self,font):
         signalLogger.debug("font=%s" % font)
         self.worksheet.currentFontChangedHandler(font)
-        self.__setWidthByFont(self.defaultWidth,True)
+        self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def currentSizeChangedHandler(self,size):
         self.worksheet.currentSizeChangedHandler(size)
+        self.zoomDef()
 
     # File Actions
     def open(self):
@@ -190,15 +187,15 @@ class QtReduceMainWindow(QMainWindow):
     # View Actions
     def zoomIn(self):
         self.worksheet.setupFont(self.worksheet.font().pixelSize()+1)
-        self.__setWidthByFont(self.defaultWidth,True)
+        self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def zoomOut(self):
         self.worksheet.setupFont(self.worksheet.font().pixelSize()-1,-1)
-        self.__setWidthByFont(self.defaultWidth,True)
+        self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     def zoomDef(self):
-        self.worksheet.setupFont(self.worksheet.defaultFontSize)
-        self.__setWidthByFont(self.defaultWidth,True)
+        self.worksheet.zoomDef()
+        self.__setWidthByFont(QtReduceDefaults.WIDTH,True)
 
     # Development Actions
     def test(self):
@@ -561,18 +558,22 @@ class QtReduceToolBar(QToolBar):
             "Zoom Default":"view-refresh.png",
             "Abort":"process-stop.png"}}
 
-    def __init__(self,parent=None,iconSet="Oxygen",iconSize=22,
-                 buttonStyle=Qt.ToolButtonTextUnderIcon):
+    def __init__(self,parent=None):
 
-        super(QtReduceToolBar,self).__init__()
+        super(QtReduceToolBar,self).__init__(parent)
 
         self.parent = parent
         self.setVisible(True)
-        self.iconSet = iconSet
+
+        iconSize = QSettings().value("toolbar/iconsize",
+                                     QtReduceDefaults.ICONSIZE)
         self.setIconSize(QSize(iconSize,iconSize))
-        self.iconSize = iconSize
+
         self.__setIcons()
-        self.setToolButtonStyle(buttonStyle)
+
+        buttonStyle = QSettings().value("toolbar/buttonstyle",
+                                        self.tr(QtReduceDefaults.BUTTONSTYLE))
+        self.setToolButtonStyleByText(buttonStyle)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.contextMenu)
@@ -591,25 +592,46 @@ class QtReduceToolBar(QToolBar):
 
         self.addAction(self.parent.menuBar().abortAct)
 
+        self.setVisible(True)
+
     def contextMenu(self,position):
         None
 
     def iconSetChanged(self,iconSet):
-        self.iconSet = iconSet
+        QSettings().setValue("toolbar/iconset",iconSet)
         self.__setIcons()
 
     def iconSizeChanged(self,iconSize):
         iconSize = int(iconSize)
-        self.iconSize = iconSize
+        QSettings().setValue("toolbar/iconsize",iconSize)
         self.setIconSize(QSize(iconSize,iconSize))
         self.__setIcons()
 
     def toolButtonStyleChanged(self,text):
-        style = self.parent.preferencePane.toolBar.textToToolButtonStyle(text)
-        self.setToolButtonStyle(style)
+        QSettings().setValue("toolbar/buttonstyle",text)
+        self.setToolButtonStyleByText(text)
         visibility = self.isVisible()
         self.setVisible(not visibility)
         self.setVisible(visibility)
+
+    def setToolButtonStyleByText(self,text):
+        style = self.__textToToolButtonStyle(text)
+        self.setToolButtonStyle(style)
+
+    def __textToToolButtonStyle(self,show):
+        traceLogger.debug("show=%s,('%s', '%s', '%s')" %
+                          (show,
+                           self.tr("Symbol and Text"),
+                           self.tr("Only Symbol"),
+                           self.tr("Only Text")))
+        if show == self.tr("Symbol and Text"):
+            return Qt.ToolButtonTextUnderIcon
+        if show == self.tr("Only Symbol"):
+            return Qt.ToolButtonIconOnly
+        if show == self.tr("Only Text"):
+            return Qt.ToolButtonTextOnly
+        traceLogger.warning("unknown tool button style '%s'" % show)
+        return Qt.ToolButtonTextUnderIcon
 
     def __setIcons(self):
         self.parent.menuBar().openAct.setIcon(self.__icon("Open"))
@@ -624,11 +646,14 @@ class QtReduceToolBar(QToolBar):
         self.setVisible(visibility)
 
     def __icon(self,mEntry):
-        if self.iconSet:
-            iEntry = self.iDb[self.iconSet]
-            path = sys.path[0] + "/icons/" + self.iconSet + "/"
+        iconSet = QSettings().value("toolbar/iconset",QtReduceDefaults.ICONSET)
+        iconSize = QSettings().value("toolbar/iconsize",
+                                     QtReduceDefaults.ICONSIZE)
+        if iconSet:
+            iEntry = self.iDb[iconSet]
+            path = sys.path[0] + "/icons/" + iconSet + "/"
             if iEntry["sized"]:
-                path += str(self.iconSize) + "/"
+                path += str(iconSize) + "/"
             path += iEntry[mEntry]
             traceLogger.debug("iconPath=%s" % path)
             return QIcon(path)

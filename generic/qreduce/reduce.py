@@ -29,14 +29,20 @@
 #
 
 import sys
-from os import system
+import os
+
+from PySide.QtCore import QObject
+from PySide.QtCore import QSettings
+from PySide.QtCore import QThread
+from PySide.QtCore import QThread
+from PySide.QtCore import Signal
+
+from PySide.QtGui import QMessageBox
 
 from qrlogging import signalLogger
 from qrlogging import traceLogger
 
-from PySide.QtCore import QThread
-from PySide.QtCore import Signal
-from PySide.QtCore import QObject
+from qrdefaults import QtReduceDefaults
 
 from RedPy import procNew, procDelete, ansNew, ansDelete
 
@@ -57,7 +63,7 @@ class Reduce(object):
 
     def signal(self,c):
         signalLogger.debug("c=%s" % c)
-        system('/bin/kill -' + c + ' ' + str(self.__processId))
+        os.system('/bin/kill -' + c + ' ' + str(self.__processId))
 
 
 class QtReduce(QThread):
@@ -65,10 +71,9 @@ class QtReduce(QThread):
     startComputation = Signal(object)
     endComputation = Signal(object)
 
-    def __init__(self,parent=None):
+    def __init__(self,binary):
         QThread.__init__(self)
-        self.parent = parent
-        self.reduce = Reduce()
+        self.reduce = Reduce(binary)
         self.computation = ReduceComputation()
         self.started.connect(self.startedHandler)
         self.finished.connect(self.finishedHandler)

@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 2010 T. Sturm, C. Zengler
+# Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -27,22 +27,22 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-import logging
+from PySide.QtCore import Qt
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+class QtReduceDefaults(object):
 
-formatter = logging.Formatter("%(name)s-%(levelname)s: %(module)s/%(funcName)s: %(message)s")
-ch.setFormatter(formatter)
+    # Mainwindow:
+    WIDTH = 85
+    HEIGHT = 36
 
-signalLogger = logging.getLogger("sig")
-signalLogger.addHandler(ch)
-signalLogger.setLevel(logging.WARNING)
+    # Toolbar:
+    ICONSET = "Oxygen"
+    ICONSIZE = 22
+    BUTTONSTYLE = "Symbol and Text"
 
-fontLogger = logging.getLogger("fnt")
-fontLogger.addHandler(ch)
-fontLogger.setLevel(logging.WARNING)
+    # Worksheet
+    FONTFAMILY = "DejaVu Sans Mono"
+    FONTSIZE = 12
 
-traceLogger = logging.getLogger("trc")
-traceLogger.addHandler(ch)
-traceLogger.setLevel(logging.WARNING)
+    # Reduce
+    REDUCE = "../../bin/redpsl"

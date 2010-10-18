@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import os
 import sys
 
 from types import StringType
@@ -36,6 +37,7 @@ from types import IntType
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
 from PySide.QtCore import QObject
+from PySide.QtCore import QSettings
 
 from PySide.QtGui import QTextEdit
 from PySide.QtGui import QFont
@@ -48,6 +50,8 @@ from qrlogging import signalLogger
 from qrlogging import traceLogger
 
 from reduce import QtReduce
+
+from qrdefaults import QtReduceDefaults
 
 from qrformats import ReduceInputBlockFormat
 from qrformats import ReduceResultBlockFormat
@@ -73,10 +77,7 @@ class QtReduceWorksheet(QTextEdit):
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
         self.parent = parent
-        self.defaultFontFamily = 'DejaVu Sans Mono'
-        self.defaultFontSize = 12
         self.__initSignals()
-        self.__initReduce()
         self.__initFont()
         self.__initFirstBlock()
 
@@ -87,14 +88,15 @@ class QtReduceWorksheet(QTextEdit):
                                            type=Qt.DirectConnection)
 
     def __initFont(self):
-        self.setupFont(self.defaultFontSize)
+        self.zoomDef()
 
     def setupFont(self,size=None,step=1):
-        traceLogger.debug("defaultFontFamily=%s, size=%s" % (self.defaultFontFamily, size))
+        traceLogger.debug("size=%s, step=%s" % (size,step))
         if not size:
             size = self.font().pixelSize()
         font = self.font()
-        font.setFamily(self.defaultFontFamily)
+        font.setFamily(QSettings().value("worksheet/fontfamily",
+                                         QtReduceDefaults.FONTFAMILY))
         font.setFixedPitch(True)
         font.setKerning(0)
         font.setWeight(QFont.Normal)
@@ -126,28 +128,45 @@ class QtReduceWorksheet(QTextEdit):
         return nSize
 
     def currentFontChangedHandler(self,newFont):
-        self.defaultFontFamily = newFont.family()
+        QSettings().setValue("worksheet/fontfamily",newFont.family())
         self.setupFont()
-        # font = self.font()
-        # font.setFamily(newFont.family())
-        # self.setFont(font)
         self.ensureCursorVisible()
 
     def currentSizeChangedHandler(self,newSize):
         newSize = int(newSize)
         traceLogger.debug("newSize=%s (%s)" % (newSize,type(newSize)))
-        self.defaultFontSize = newSize
+        QSettings().setValue("worksheet/fontsize",newSize)
+
+    def initialize(self):
+        self.__initReduce()
+        self.reduce.initialize()
 
     def __initReduce(self):
         traceLogger.debug("entering")
-        self.reduce = QtReduce(self)
+        binary = QSettings().value("computation/reduce",
+                                   QtReduceDefaults.REDUCE)
+        if not os.path.exists(sys.path[0] + "/" + binary):
+            tit = self.tr("Unable to Connect to Reduce")
+            txt = self.tr("The binary ")
+            txt += '"' + binary + '" '
+            txt += self.tr("does not exist.")
+            itxt = self.tr("Using the default binary ")
+            itxt += '"' + QtReduceDefaults.REDUCE + '"'
+            itxt += self.tr(". ")
+            itxt += self.tr("Please check the Preferences.")
+            mbox = QMessageBox(self)
+            mbox.setIcon(QMessageBox.Warning)
+            mbox.setWindowModality(Qt.WindowModal)
+            mbox.setWindowTitle(tit)
+            mbox.setText(txt)
+            mbox.setInformativeText(itxt)
+            mbox.exec_()
+            binary = QtReduceDefaults.REDUCE
+        self.reduce = QtReduce(binary)
         self.reduce.endComputation.connect(self.endComputationHandler,
                                       type=Qt.DirectConnection)
         self.reduce.startComputation.connect(self.startComputationHandler,
                                            type=Qt.DirectConnection)
-
-    def initialize(self):
-        self.reduce.initialize()
 
     def compute(self,c,silent=False):
         self.reduce.compute(c,silent)
@@ -340,6 +359,10 @@ class QtReduceWorksheet(QTextEdit):
         cursor.block().setUserState(label)
         cursor.setBlockCharFormat(f.charFormat)
         cursor.setBlockFormat(f.blockFormat)
+
+    def zoomDef(self):
+        self.setupFont(QSettings().value("worksheet/fontsize",
+                                         QtReduceDefaults.FONTSIZE))
 
 
 # Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24)

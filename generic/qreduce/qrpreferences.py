@@ -34,6 +34,7 @@ from types import StringType
 
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
+from PySide.QtCore import QSettings
 
 from PySide.QtGui import QDialog
 from PySide.QtGui import QWidget
@@ -55,10 +56,14 @@ from PySide.QtGui import QLineEdit
 from PySide.QtGui import QFontComboBox
 from PySide.QtGui import QComboBox
 from PySide.QtGui import QFontDatabase
+from PySide.QtGui import QMessageBox
 
 from qrlogging import signalLogger
 from qrlogging import fontLogger
 from qrlogging import traceLogger
+
+from qrdefaults import QtReduceDefaults
+
 
 class QtReducePreferencePane(QDialog):
 
@@ -142,17 +147,24 @@ class QtReducePreferencesToolBar(QWidget):
         iDbKeys.sort()
         self.iconSetCombo.addItems(iDbKeys)
         self.iconSetCombo.setCurrentIndex(
-            self.iconSetCombo.findText(self.parent.parent.toolBar.iconSet))
+            self.iconSetCombo.findText(
+                QSettings().value("toolbar/iconset",
+                                  QtReduceDefaults.ICONSET)))
 
         self.iconSizeCombo = QtReduceComboBox()
         self.iconSizeCombo.addItems(["16","22","32"])
         self.iconSizeCombo.setCurrentIndex(
-            self.iconSizeCombo.findText(str(self.parent.parent.toolBar.iconSize)))
+            self.iconSizeCombo.findText(
+                str(QSettings().value("toolbar/iconsize",
+                                      QtReduceDefaults.ICONSIZE))))
 
         self.showCombo = QtReduceComboBox()
-        self.showCombo.addItems([self.tr("Symbol and Text"),self.tr("Only Symbol"),self.tr("Only Text")])
-        text = self.toolButtonStyleToText(self.parent.parent.toolBar.toolButtonStyle())
-        self.showCombo.setCurrentIndex(self.showCombo.findText(text))
+        self.showCombo.addItems([self.tr("Symbol and Text"),
+                                 self.tr("Only Symbol"),
+                                 self.tr("Only Text")])
+        self.showCombo.setCurrentIndex(self.showCombo.findText(
+            QSettings().value("toolbar/buttonstyle",
+                              self.tr(QtReduceDefaults.BUTTONSTYLE))))
 
         toolBarLayout = QFormLayout()
         toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
@@ -165,24 +177,6 @@ class QtReducePreferencesToolBar(QWidget):
         mainLayout.addWidget(toolBarGroup)
 
         self.setLayout(mainLayout)
-
-    def textToToolButtonStyle(self,sh):
-        if sh == self.tr("Symbol and Text"):
-            return Qt.ToolButtonTextUnderIcon
-        if sh == self.tr("Only Symbol"):
-            return Qt.ToolButtonIconOnly
-        if sh == self.tr("Only Text"):
-            return Qt.ToolButtonTextOnly
-        return ""
-
-    def toolButtonStyleToText(self,bs):
-        if bs == Qt.ToolButtonTextUnderIcon:
-            return self.tr("Symbol and Text")
-        if bs == Qt.ToolButtonIconOnly:
-            return self.tr("Only Symbol")
-        if bs == Qt.ToolButtonTextOnly:
-            return self.tr("Only Text")
-        return ""
 
 
 class QtReduceFontComboBox(QtReduceComboBox):
@@ -247,7 +241,6 @@ class QtReducePreferencesWorksheet(QWidget):
         self.fontCombo = QtReduceFontComboBox(self)
         self.setFocusPolicy(Qt.NoFocus)
         self.fontCombo.setEditable(False)
-#        self.fontCombo.setFontFilters(QFontComboBox.MonospacedFonts)
         self.fontCombo.setCurrentFont(self.parent.parent.worksheet.font())
 
         self.sizeCombo = QtReduceComboBox()
@@ -270,7 +263,8 @@ class QtReducePreferencesWorksheet(QWidget):
     def findSizes(self,font):
         traceLogger.debug("font.key()=%s" % font.key())
         fontDatabase = QFontDatabase()
-        currentSize = unicode(self.parent.parent.worksheet.defaultFontSize)
+        currentSize = unicode(QSettings().value("worksheet/fontsize",
+                                                QtReduceDefaults.FONTSIZE))
         self.sizeCombo.blockSignals(True)
         self.sizeCombo.clear()
 
@@ -296,6 +290,16 @@ class QtReducePreferencesComputation(QWidget):
 
         self.reduceBinary = QLineEdit()
 
+        # font = self.reduceBinary.font()
+        # font.setFamily(QSettings().value("worksheet/fontfamily",
+        #                                QtReduceDefaults.FONTFAMILY))
+        # self.reduceBinary.setFont(font)
+
+        self.reduceBinary.setText(QSettings().value("computation/reduce",
+                                                    QtReduceDefaults.REDUCE))
+
+        self.reduceBinary.editingFinished.connect(self.editingFinishedHandler)
+
         reduceLayout = QFormLayout()
         reduceLayout.addRow(self.tr("Reduce Binary"),self.reduceBinary)
 
@@ -305,3 +309,28 @@ class QtReducePreferencesComputation(QWidget):
         mainLayout.addWidget(reduceGroup)
 
         self.setLayout(mainLayout)
+
+    def editingFinishedHandler(self):
+        old = QSettings().value("computation/reduce",QtReduceDefaults.REDUCE)
+        new = self.reduceBinary.text()
+        if old == new:
+            return
+        self.reduceBinary.blockSignals(True)
+        tit = "Change Binary?"
+        txt = self.tr("Do you really want to change this setting?")
+        itxt = self.tr("If yes, then the binary ")
+        itxt += '"' + new + '" '
+        itxt += self.tr("will be used at the next restart.")
+        mbox = QMessageBox(self)
+        mbox.setIcon(QMessageBox.Question)
+        mbox.setWindowModality(Qt.WindowModal)
+        mbox.setWindowTitle(tit)
+        mbox.setText(txt)
+        mbox.setInformativeText(itxt)
+        mbox.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
+        button = mbox.exec_()
+        if button == QMessageBox.Yes:
+            QSettings().setValue("computation/reduce",new)
+        else:
+            self.reduceBinary.setText(old)
+        self.reduceBinary.blockSignals(False)
