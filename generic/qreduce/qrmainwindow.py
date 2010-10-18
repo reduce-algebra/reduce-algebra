@@ -306,7 +306,7 @@ class QtReduceMainWindow(QMainWindow):
     def __savediag(self):
         diag = QMessageBox(self)
         msg = 'Do you want to save the changes in your worksheet "'
-        msg += self.worksheet.fileName.split('/')[-1] or 'untitled' + '"?'
+        msg += (self.worksheet.fileName.split('/')[-1] or 'untitled') + '"?'
         diag.setText(msg)
         diag.setInformativeText("Otherwise they will get lost")
         diag.setIcon(QMessageBox.Warning)
