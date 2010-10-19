@@ -69,7 +69,6 @@ class QtReducePreferencePane(QDialog):
 
     def __init__(self,parent=None):
         super(QtReducePreferencePane,self).__init__(parent)
-        self.parent = parent
 
         self.__createContents()
 
@@ -149,13 +148,13 @@ class QtReduceComboBox(QComboBox):
 class QtReducePreferencesToolBar(QWidget):
     def __init__(self,parent=None):
         super(QtReducePreferencesToolBar,self).__init__(parent)
-        self.parent = parent
+
         settings = QSettings()
 
         toolBarGroup = QGroupBox(self.tr("Toolbar"))
 
         self.iconSetCombo = QtReduceComboBox()
-        iDbKeys = self.parent.parent.toolBar.iDb.keys()
+        iDbKeys = self.parent().parent().toolBar.iDb.keys()
         iDbKeys.sort()
         self.iconSetCombo.addItems(iDbKeys)
         self.iconSetCombo.setCurrentIndex(
@@ -245,14 +244,13 @@ class QtReduceFontComboBox(QtReduceComboBox):
 class QtReducePreferencesWorksheet(QWidget):
     def __init__(self,parent=None):
         super(QtReducePreferencesWorksheet,self).__init__(parent)
-        self.parent = parent
 
         fontGroup = QGroupBox(self.tr("Fonts"))
 
         self.fontCombo = QtReduceFontComboBox(self)
         self.setFocusPolicy(Qt.NoFocus)
         self.fontCombo.setEditable(False)
-        self.fontCombo.setCurrentFont(self.parent.parent.worksheet.font())
+        self.fontCombo.setCurrentFont(self.parent().parent().worksheet.font())
 
         self.sizeCombo = QtReduceComboBox()
         self.findSizes(self.fontCombo.currentFont())

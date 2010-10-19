@@ -76,7 +76,6 @@ class QtReduceWorksheet(QTextEdit):
 
     def __init__(self,parent=None):
         QTextEdit.__init__(self)
-        self.parent = parent
         self.__initSignals()
         self.__initFont()
         self.__initFirstBlock()
@@ -317,7 +316,7 @@ class QtReduceWorksheet(QTextEdit):
         self.modified.emit(False)
         self.fileName = tempFileName
         self.fileNameChanged.emit(self.fileName)
-        self.parent.statusBar().showMessage(self.tr("Read ") + self.fileName)
+        self.parent().statusBar().showMessage(self.tr("Read ") + self.fileName)
         self.ensureCursorVisible()
         return True
 
@@ -335,7 +334,7 @@ class QtReduceWorksheet(QTextEdit):
         self.modified.emit(False)
         self.fileName = tempFileName
         self.fileNameChanged.emit(self.fileName)
-        self.parent.statusBar().showMessage(self.tr("Wrote ") + self.fileName)
+        self.parent().statusBar().showMessage(self.tr("Wrote ") + self.fileName)
         return True
 
     def textChangedHandler(self):
@@ -343,11 +342,11 @@ class QtReduceWorksheet(QTextEdit):
         # traceLogger.debug("self.modified=%s" % self.modified)
         # if not self.modified:
         #     self.modified = True
-        #     self.parent.setWindowModified(True)
-        #     self.parent.setTitle(self.fileName,1)
+        #     self.parent().setWindowModified(True)
+        #     self.parent().setTitle(self.fileName,1)
 
     def cursorPositionChangedHandler(self):
-        self.parent.statusBar().clearMessage()
+        self.parent().statusBar().clearMessage()
 
     def abortEvaluation(self):
         self.reduce.abortEvaluation()

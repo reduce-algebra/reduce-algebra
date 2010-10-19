@@ -658,7 +658,6 @@ class QtReduceToolBar(QToolBar):
 
         super(QtReduceToolBar,self).__init__(parent)
 
-        self.parent = parent
         self.setVisible(True)
 
         settings = QSettings()
@@ -676,19 +675,19 @@ class QtReduceToolBar(QToolBar):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.contextMenu)
 
-        self.addAction(self.parent.menuBar().openAct)
-        self.addAction(self.parent.menuBar().saveAct)
-        self.addAction(self.parent.menuBar().saveAsAct)
+        self.addAction(self.parent().menuBar().openAct)
+        self.addAction(self.parent().menuBar().saveAct)
+        self.addAction(self.parent().menuBar().saveAsAct)
 
         self.addSeparator()
 
-        self.addAction(self.parent.menuBar().zoomOutAct)
-        self.addAction(self.parent.menuBar().zoomDefAct)
-        self.addAction(self.parent.menuBar().zoomInAct)
+        self.addAction(self.parent().menuBar().zoomOutAct)
+        self.addAction(self.parent().menuBar().zoomDefAct)
+        self.addAction(self.parent().menuBar().zoomInAct)
 
         self.addSeparator()
 
-        self.addAction(self.parent.menuBar().abortAct)
+        self.addAction(self.parent().menuBar().abortAct)
 
         self.setVisible(True)
 
@@ -732,13 +731,13 @@ class QtReduceToolBar(QToolBar):
         return Qt.ToolButtonTextUnderIcon
 
     def __setIcons(self):
-        self.parent.menuBar().openAct.setIcon(self.__icon("Open"))
-        self.parent.menuBar().saveAct.setIcon(self.__icon("Save"))
-        self.parent.menuBar().saveAsAct.setIcon(self.__icon("Save As"))
-        self.parent.menuBar().zoomOutAct.setIcon(self.__icon("Zoom Out"))
-        self.parent.menuBar().zoomDefAct.setIcon(self.__icon("Zoom Default"))
-        self.parent.menuBar().zoomInAct.setIcon(self.__icon("Zoom In"))
-        self.parent.menuBar().abortAct.setIcon(self.__icon("Abort"))
+        self.parent().menuBar().openAct.setIcon(self.__icon("Open"))
+        self.parent().menuBar().saveAct.setIcon(self.__icon("Save"))
+        self.parent().menuBar().saveAsAct.setIcon(self.__icon("Save As"))
+        self.parent().menuBar().zoomOutAct.setIcon(self.__icon("Zoom Out"))
+        self.parent().menuBar().zoomDefAct.setIcon(self.__icon("Zoom Default"))
+        self.parent().menuBar().zoomInAct.setIcon(self.__icon("Zoom In"))
+        self.parent().menuBar().abortAct.setIcon(self.__icon("Abort"))
         visibility = self.isVisible()
         self.setVisible(not visibility)
         self.setVisible(visibility)
