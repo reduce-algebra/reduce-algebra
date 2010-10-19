@@ -31,13 +31,16 @@
 import sys
 import os
 
+from PySide.QtCore import QFileInfo
 from PySide.QtCore import QSettings
 from PySide.QtCore import Signal
 from PySide.QtCore import QSize
 from PySide.QtCore import Qt
 
+from PySide.QtGui import QApplication
 from PySide.QtGui import QMainWindow
 from PySide.QtGui import QStatusBar
+from PySide.QtGui import QMenu
 from PySide.QtGui import QMenuBar
 from PySide.QtGui import QFont
 from PySide.QtGui import QLabel
@@ -77,12 +80,14 @@ class QtReduceMainWindow(QMainWindow):
         self.__setHeightByFont(QtReduceDefaults.HEIGHT)
         self.raise_()
         self.show()
+        # QApplication.setOverrideCursor(Qt.WaitCursor)
         self.preferencePane = QtReducePreferencePane(self)
         self.__initPreferencePaneSignals()
         self.__initStatusBarSignals()
         self.__initMenuBarSignals()
         self.__initTitleBarSignals()
         self.worksheet.initialize()
+        # QApplication.restoreOverrideCursor()
 
     def __initStatusBarSignals(self):
         self.worksheet.endComputation.connect(
@@ -115,6 +120,9 @@ class QtReduceMainWindow(QMainWindow):
     def __initTitleBarSignals(self):
         self.worksheet.fileNameChanged.connect(self.setTitle,
                                                type=Qt.DirectConnection)
+        self.worksheet.fileNameChanged.connect(
+            self.menuBar().recentFileMenu.addFile,
+            type=Qt.DirectConnection)
         self.worksheet.modified.connect(self.setWindowModified,
                                         type=Qt.DirectConnection)
 
@@ -150,15 +158,20 @@ class QtReduceMainWindow(QMainWindow):
             fn = '$HOME'
         path = os.path.dirname(os.path.abspath(fn))
         traceLogger.debug("path=%s" % path)
-        filter = self.tr("Reduce Worksheets (*.rws)")
-        fileName = QFileDialog.getOpenFileName(None,title,path,filter)
+        filter = self.tr("Reduce Worksheets (*.rws);;All Files (*.*)")
+        fileName = QFileDialog.getOpenFileName(self,title,path,filter)
         fileName = str(fileName[0])
         traceLogger.debug("fileName=%s" % fileName)
         if fileName is '':
             return
         if not fileName.endswith(".rws"):
             fileName += ".rws"
-        self.worksheet.open(fileName)
+        return self.worksheet.open(fileName)
+
+    def openRecentFile(self):
+        action = self.sender()
+        if action:
+            self.worksheet.open(action.data())
 
     def save(self):
         if self.worksheet.fileName == '':
@@ -223,17 +236,17 @@ class QtReduceMainWindow(QMainWindow):
             '</span>'))
 
     def license_(self):
-        self.lic = QTextEdit(self)
-        self.lic.setWindowFlags(Qt.Window)
-        self.lic.setWindowTitle("FreeBSD License")
-        font = self.lic.font()
+        lic = QTextEdit(self)
+        lic.setWindowFlags(Qt.Window)
+        lic.setWindowTitle("QReduce FreeBSD License")
+        font = lic.font()
         font.setFamily('')
         font.setFixedPitch(True)
         font.setKerning(0)
         font.setWeight(QFont.Normal)
         font.setItalic(False)
-        self.lic.setFont(font)
-        self.lic.setText(
+        lic.setFont(font)
+        lic.setText(
             'Copyright (c) 2009 T. Sturm, 2010 T. Sturm, C. Zengler'
             '<p>'
             'All rights reserved.'
@@ -266,12 +279,12 @@ class QtReduceMainWindow(QMainWindow):
             'OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS '
             'SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
             '</span>')
-        self.lic.setReadOnly(True)
-        w = 66 * self.lic.fontMetrics().width('m')
-        h = 36 * self.lic.fontMetrics().height()
-        self.lic.resize(w,h)
-        self.lic.show()
-        self.lic.raise_()
+        lic.setReadOnly(True)
+        w = 66 * lic.fontMetrics().width('m')
+        h = 36 * lic.fontMetrics().height()
+        lic.resize(w,h)
+        lic.show()
+        lic.raise_()
 
     def showMessage(self,message):
 	self.statusBar().showMessage(message,0)
@@ -281,10 +294,9 @@ class QtReduceMainWindow(QMainWindow):
         if fullPath is '':
             self.setWindowTitle("[*]" + self.tr("Untitled"))
         else:
-            pFullPath = fullPath.rpartition('/')
-            traceLogger.debug("pFullPath=[%s,%s,%s]" % pFullPath)
-            self.setWindowFilePath(fullPath)
-            self.setWindowTitle("[*]" + pFullPath[2])
+            info = QFileInfo(fullPath)
+            self.setWindowFilePath(info.absolutePath())
+            self.setWindowTitle("[*]" + info.fileName())
 
     def closeEvent(self,ev):
         while self.isWindowModified():
@@ -347,14 +359,16 @@ class QtReduceStatusBar(QStatusBar):
     #         message = '<font size="-2">' + message + '</font>'
     #     super(QtReduceStatusBar,self).showMessage(message)
 
+    def startComputationHandler(self,computation):
+        #print computation.currentCommand
+        # QApplication.setOverrideCursor(Qt.BusyCursor)
+        self.__updateStatus(computation.evaluating)
+
     def endComputationHandler(self,computation):
         self.__updateStatus(computation.evaluating)
         self.__updateTime(computation.accTime,computation.accGcTime)
         self.__updateMode(computation.symbolic)
-
-    def startComputationHandler(self,computation):
-        #print computation.currentCommand
-        self.__updateStatus(computation.evaluating)
+        # QApplication.restoreOverrideCursor()
 
     def __updateMode(self,symbolic):
         if symbolic != self.symbolic:
@@ -412,6 +426,10 @@ class QtReduceMenuBar(QMenuBar):
         self.fileMenu.addAction(self.openAct)
         self.openAct.triggered.connect(self.main.open,type=Qt.DirectConnection)
 
+        self.fileMenu.main = self.main
+        self.recentFileMenu = QtRecentFileMenu(self.fileMenu)
+        self.fileMenu.addMenu(self.recentFileMenu)
+
         self.fileMenu.addSeparator()
 
         self.saveAct = QAction(self.tr("Save"), self)
@@ -437,7 +455,6 @@ class QtReduceMenuBar(QMenuBar):
 
         self.fileMenu.addAction(self.quitAct)
         self.quitAct.triggered.connect(self.main.close,type=Qt.DirectConnection)
-
     def __createEditActions(self):
         self.preferencesAct = QAction(self.tr("Preferences ..."), self)
         self.preferencesAct.setShortcut(QKeySequence(Qt.AltModifier|Qt.Key_Comma))
@@ -506,6 +523,81 @@ class QtReduceMenuBar(QMenuBar):
         self.licenseAct.triggered.connect(self.main.license_,type=Qt.DirectConnection)
 
 
+class QtRecentFileMenu(QMenu):
+
+    def __init__(self,parent=None):
+        super(QtRecentFileMenu,self).__init__(parent)
+
+        self.main = parent.main
+
+        self.setTitle(self.tr("Open Recent"))
+
+        self.acts = []
+        maxRecent = QSettings().value("menubar/maxrecent",
+                                      QtReduceDefaults.MAXRECENT)
+        for i in range(maxRecent):
+            act = QAction(self)
+            act.triggered.connect(self.main.openRecentFile)
+            self.acts.append(act)
+
+        self.clearAct = QAction(self.tr("Clear Menu"),self)
+        self.clearAct.triggered.connect(self.clearRecentFiles)
+
+        self.aboutToShow.connect(self.updateEntries)
+
+    def updateEntries(self):
+        settings = QSettings()
+        settings.sync()
+
+        maxRecent = settings.value("menubar/maxrecent",
+                                      QtReduceDefaults.MAXRECENT)
+
+        files = settings.value("menubar/recentfiles",[])
+        for f in files:
+            if not os.path.exists(f):
+                files.remove(f)
+        settings.setValue("menubar/recentfiles",files)
+
+        numShow = min(len(files),maxRecent)
+
+        for i in range(numShow):
+            text = QFileInfo(files[i]).fileName()
+            self.acts[i].setText(text)
+            self.acts[i].setData(files[i])
+            self.acts[i].setVisible(True)
+
+        for j in range(numShow,maxRecent):
+            self.acts[j].setVisible(False)
+
+        for i in range(maxRecent):
+            self.addAction(self.acts[i])
+
+        self.addSeparator()
+
+        self.addAction(self.clearAct)
+
+    def addFile(self,fullPath):
+        fileName = fullPath
+        settings = QSettings()
+        files = settings.value("menubar/recentfiles",[])
+
+        try:
+            files.remove(fileName)
+        except ValueError:
+            pass
+
+        files.insert(0,fileName)
+
+        maxRecent = settings.value("menubar/maxrecent",
+                                   QtReduceDefaults.MAXRECENT)
+        del files[maxRecent:]
+
+        settings.setValue("menubar/recentfiles",files)
+
+    def clearRecentFiles(self):
+        QSettings().setValue("menubar/recentfiles",[])
+
+
 class QtReduceToolBar(QToolBar):
     iDb = {"Aqua":
            {"sized":True,
@@ -569,13 +661,15 @@ class QtReduceToolBar(QToolBar):
         self.parent = parent
         self.setVisible(True)
 
-        iconSize = QSettings().value("toolbar/iconsize",
+        settings = QSettings()
+
+        iconSize = settings.value("toolbar/iconsize",
                                      QtReduceDefaults.ICONSIZE)
         self.setIconSize(QSize(iconSize,iconSize))
 
         self.__setIcons()
 
-        buttonStyle = QSettings().value("toolbar/buttonstyle",
+        buttonStyle = settings.value("toolbar/buttonstyle",
                                         self.tr(QtReduceDefaults.BUTTONSTYLE))
         self.setToolButtonStyleByText(buttonStyle)
 
@@ -650,8 +744,9 @@ class QtReduceToolBar(QToolBar):
         self.setVisible(visibility)
 
     def __icon(self,mEntry):
-        iconSet = QSettings().value("toolbar/iconset",QtReduceDefaults.ICONSET)
-        iconSize = QSettings().value("toolbar/iconsize",
+        settings = QSettings()
+        iconSet = settings.value("toolbar/iconset",QtReduceDefaults.ICONSET)
+        iconSize = settings.value("toolbar/iconsize",
                                      QtReduceDefaults.ICONSIZE)
         if iconSet:
             iEntry = self.iDb[iconSet]

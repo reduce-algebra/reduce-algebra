@@ -150,6 +150,7 @@ class QtReducePreferencesToolBar(QWidget):
     def __init__(self,parent=None):
         super(QtReducePreferencesToolBar,self).__init__(parent)
         self.parent = parent
+        settings = QSettings()
 
         toolBarGroup = QGroupBox(self.tr("Toolbar"))
 
@@ -159,23 +160,22 @@ class QtReducePreferencesToolBar(QWidget):
         self.iconSetCombo.addItems(iDbKeys)
         self.iconSetCombo.setCurrentIndex(
             self.iconSetCombo.findText(
-                QSettings().value("toolbar/iconset",
-                                  QtReduceDefaults.ICONSET)))
+                settings.value("toolbar/iconset",QtReduceDefaults.ICONSET)))
 
         self.iconSizeCombo = QtReduceComboBox()
         self.iconSizeCombo.addItems(["16","22","32"])
         self.iconSizeCombo.setCurrentIndex(
             self.iconSizeCombo.findText(
-                str(QSettings().value("toolbar/iconsize",
-                                      QtReduceDefaults.ICONSIZE))))
+                str(settings.value("toolbar/iconsize",
+                                   QtReduceDefaults.ICONSIZE))))
 
         self.showCombo = QtReduceComboBox()
         self.showCombo.addItems([self.tr("Symbol and Text"),
                                  self.tr("Only Symbol"),
                                  self.tr("Only Text")])
         self.showCombo.setCurrentIndex(self.showCombo.findText(
-            QSettings().value("toolbar/buttonstyle",
-                              self.tr(QtReduceDefaults.BUTTONSTYLE))))
+            settings.value("toolbar/buttonstyle",
+                           self.tr(QtReduceDefaults.BUTTONSTYLE))))
 
         toolBarLayout = QFormLayout()
         toolBarLayout.addRow(self.tr("Symbol Set"),self.iconSetCombo)
@@ -322,7 +322,8 @@ class QtReducePreferencesComputation(QWidget):
         self.setLayout(mainLayout)
 
     def editingFinishedHandler(self):
-        old = QSettings().value("computation/reduce",QtReduceDefaults.REDUCE)
+        settings = QSetting()
+        old = settings.value("computation/reduce",QtReduceDefaults.REDUCE)
         new = self.reduceBinary.text()
         if old == new:
             return
@@ -341,7 +342,7 @@ class QtReducePreferencesComputation(QWidget):
         mbox.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
         button = mbox.exec_()
         if button == QMessageBox.Yes:
-            QSettings().setValue("computation/reduce",new)
+            settings.setValue("computation/reduce",new)
         else:
             self.reduceBinary.setText(old)
         self.reduceBinary.blockSignals(False)

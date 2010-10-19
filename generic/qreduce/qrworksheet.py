@@ -301,11 +301,18 @@ class QtReduceWorksheet(QTextEdit):
         if tempFileName == '':
             tempFileName = self.fileName
         xmlReader = ReduceXmlReader(self.document())
-        try:
-            xmlReader.open(tempFileName)
-        except:
-            QMessageBox.information(self,self.tr("Unable to open file"),
-                                    str(sys.exc_info()[1]))
+        success = xmlReader.open(tempFileName)
+        if not success:
+            tit = self.tr("Unable to Open File")
+            txt = self.tr("The file ")
+            txt += '"' + fileName + '" '
+            txt += self.tr("cannot be opened.")
+            mbox = QMessageBox(self)
+            mbox.setIcon(QMessageBox.Information)
+            mbox.setWindowModality(Qt.WindowModal)
+            mbox.setWindowTitle(tit)
+            mbox.setText(txt)
+            mbox.exec_()
             return False
         self.modified.emit(False)
         self.fileName = tempFileName

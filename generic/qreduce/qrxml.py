@@ -101,6 +101,9 @@ class ReduceXmlReader(QXmlDefaultHandler):
             xmlReader.setErrorHandler(self)
             xmlSource = QXmlInputSource(file)
             xmlReader.parse(xmlSource)
+            return True
+        else:
+            return False
 
     def labelBlock(self,cursor,label):
         traceLogger.debug("cursor.block()=%s, label=%s" % (cursor.block(), label))

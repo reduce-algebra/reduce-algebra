@@ -35,6 +35,9 @@ class QtReduceDefaults(object):
     WIDTH = 85
     HEIGHT = 36
 
+    # Menu
+    MAXRECENT = 5
+
     # Toolbar:
     ICONSET = "Oxygen"
     ICONSIZE = 22
