@@ -42,7 +42,7 @@ from qrmainwindow import QtReduceMainWindow
 app = QApplication(sys.argv)
 
 app.setOrganizationName("The Reduce Project")
-app.setOrganizationDomain("reduce-algebra.sourceforge.com")
+app.setOrganizationDomain("reduce-algebra.sourceforge.net")
 app.setApplicationName("QReduce")
 
 qtTranslator = QTranslator(app)
