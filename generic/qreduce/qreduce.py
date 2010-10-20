@@ -29,6 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import locale
 import sys
 
 from PySide.QtGui import QApplication
@@ -50,7 +51,8 @@ qtTranslator.load("qt_" + QLocale.system().name(),
 app.installTranslator(qtTranslator)
 
 qreduceTranslator = QTranslator(app)
-qreduceTranslator.load(sys.path[0] + "/" + "qreducetr.de")
+qreduceTranslator.load(sys.path[0] + "/" + "qreducetr." +
+                       str(locale.getdefaultlocale()[0]))
 app.installTranslator(qreduceTranslator)
 
 # app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
