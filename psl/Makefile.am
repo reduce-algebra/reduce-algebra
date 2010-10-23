@@ -20,7 +20,7 @@ all:
 	if ! test -f red/bootstrap.img; \
 	then $(MAKE) red/bootstrap.img; \
 	     if test -f red/bootstrap.img; then $(MAKE) reduce; fi; \
-	else touch red/bootstrap.img; $(MAKE) reduce; fi
+	else touch red/bootstrap.img; touch red/hugo; $(MAKE) reduce; fi
 
 # The dependencies here use wild-card specifications and are set up by hand
 # because at the stage of bootstrapping I do not have any automatic
