@@ -1,4 +1,4 @@
-#! /bin/sh -x
+#! /bin/sh 
 
 # This is what "make" invokes. It gets passed as arguments
 #      make-flags
