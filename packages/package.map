@@ -81,7 +81,7 @@
  (dfpart        "misc"        core      test                 csl psl)
  (lie           "misc"        core      test                 csl psl)
  (assert        "assert"                test                 csl psl)
- (odesolve      "odesolve"              test                 csl psl)
+ (odesolve      "odesolve"    noncore   test                 csl psl)
  (pf            "misc"                  test                 csl psl)
  (cvit          "hephys"                test                 csl psl)
  (noncom2       "hephys"                                     csl psl)

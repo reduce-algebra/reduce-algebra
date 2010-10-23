@@ -217,6 +217,8 @@ begin
   i1 := open("../deps/core-packages.psl-make", 'output);
   i2 := open("../deps/core-packages.psl-depend", 'output);
   i3 := open("../deps/noncore-packages.psl-make", 'output);
+  i4 := open("../red/hugo", 'output); % aka   touch ../red/hugo
+  		close i4;
   i4 := open("../deps/noncore-packages.psl-depend", 'output);
   s := wrs i2;
   prin2 "red/reduce.img:";
@@ -231,7 +233,7 @@ begin
         prin2 car x;
         prin2 ".b:";
         if core then prin2 "	red/bootstrap.img"
-        else prin2 "	red/reduce.img";
+        else prin2 "	red/reduce.img red/hugo";
         terpri();
         prin2 "	\$(srcdir)/";
         if not core then prin2 "non";
