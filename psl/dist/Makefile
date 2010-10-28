@@ -14,7 +14,7 @@
 # The next line is the only thing that needs to be changed between
 # machines/directories.
 
-PROOT   = /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
+## PROOT   = /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin
