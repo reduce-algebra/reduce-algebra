@@ -14,7 +14,8 @@ if test $guess = "x86_64-unknown-linux-gnu"
 	export MACHINE=AMD64
 fi
 
-echo "make for PSL in "$PROOT " for MACHINE " $MACHINE
+echo "make for PSL in "$PROOT/dist " for MACHINE " $MACHINE
+echo "pleaase add " $PROOT/bin/$MACHINE " to your PATH "
 
 psys=$PROOT/bin/$MACHINE
 pxk=$PROOT/dist/kernel/$MACHINE
