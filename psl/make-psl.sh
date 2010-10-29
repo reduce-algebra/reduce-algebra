@@ -19,6 +19,12 @@ if test $guess = "x86_64-apple-darwin10.4.0"
 	export MACHINE=macintel64
 fi
 
+if test $guess = "i686-pc-linux-gnu"
+ then
+        export MACHINE=linux
+fi
+
+
 if test $1 != ""
    then 
 	export MACHINE=$1
