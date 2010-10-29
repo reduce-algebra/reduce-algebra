@@ -14,6 +14,22 @@ if test $guess = "x86_64-unknown-linux-gnu"
 	export MACHINE=AMD64
 fi
 
+if test $guess = "x86_64-apple-darwin10.4.0"
+ then
+	export MACHINE=macintel64
+fi
+
+if test $1 != ""
+   then 
+	export MACHINE=$1
+fi
+
+
+sed -e "s,\(export.*proot\)=.*,\1=$PROOT," $PROOT/dist/psl-names.bash > newnames
+mv -f newnames $PROOT/dist/psl-names.bash
+
+. $PROOT/dist/psl-names.bash
+
 echo "make for PSL in "$PROOT/dist " for MACHINE " $MACHINE
 echo "pleaase add " $PROOT/bin/$MACHINE " to your PATH "
 

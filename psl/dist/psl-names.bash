@@ -1,3 +1,5 @@
+<<<<<<< .mine
+=======
 ###############################################################################
 #
 # File:         PSL:PSL-NAMES
@@ -87,3 +89,4 @@ export pdist=$psl/distrib	# Distribution support
 export pxdist=$psl/distrib/$MACHINE # Distribution support, Machine specific
 
 # End of file.
+>>>>>>> .r827

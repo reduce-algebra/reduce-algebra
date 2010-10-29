@@ -74,13 +74,13 @@ $(PL)/c2l.o: $(PXU)/c2l.c
 	as c2ltemp.s -o $(PL)/c2l.o
 	rm -f c2ltemp.s
 
-$(PL)/fc-indirect.b: $(PXU)/fc-indir.sl
+$(PL)/fc-indirect.b: $(PXU)/fc-indirect.sl
 	$(PDIST)/make-lap $(PXU) fc-indirect
 
 $(PL)/get-options.b: $(PXU)/get-options.sl
 	$(PDIST)/make-lap $(PXU) get-options
 
-$(PL)/l2cdatacon.b: $(PXU)/l2cdatac.sl
+$(PL)/l2cdatacon.b: $(PXU)/l2cdatacon.sl
 	$(PDIST)/make-lap $(PXU) l2cdatacon
 
 $(PL)/helferlein.b: $(PXU)/helferlein.sl $(PL)/inum.b
@@ -95,7 +95,7 @@ $(PL)/spy.b: $(PXU)/spy.sl
 $(PL)/qualcount.b: $(PXU)/qualcount.sl
 	$(PDIST)/make-lap $(PXU) qualcount
 
-$(PL)/qualified-timing.b: $(PXU)/qualtime.sl
+$(PL)/qualified-timing.b: $(PXU)/qualified-timing.sl
 	$(PDIST)/make-lap $(PXU) qualified-timing
 
 $(PL)/oload.b: $(PXU)/oload.sl

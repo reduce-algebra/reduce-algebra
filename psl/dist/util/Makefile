@@ -72,7 +72,7 @@ all: \
 	$(PL)/inum.b $(PL)/iter-macros.b $(PL)/macroexpand.b \
 	$(PL)/mathlib.b $(PL)/merge-sort.b $(PL)/misc-macros.b \
 	$(PL)/mstruct.b $(PL)/nbarith.b $(PL)/nbig.b $(PL)/nbig0.b \
-	$(PL)/nstruct.b $(PL)/numeric-ops.b $(PL)/obj-const.b \
+	$(PL)/numeric-ops.b $(PL)/obj-const.b \
 	$(PL)/obj-dflavor.b $(PL)/obj-dmethod.b $(PL)/obj-hash.b \
 	$(PL)/objinstance.b $(PL)/obj-lib.b \
 	$(PL)/obj-send.b $(PL)/objects.b \
