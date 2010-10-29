@@ -17,10 +17,10 @@ fi
 echo "make for PSL in "$PROOT/dist " for MACHINE " $MACHINE
 echo "pleaase add " $PROOT/bin/$MACHINE " to your PATH "
 
-psys=$PROOT/bin/$MACHINE
-pxk=$PROOT/dist/kernel/$MACHINE
-pl=$PROOT/dist/lap/$MACHINE
-pnkl=$PROOT/dist/nonkernel/$MACHINE/lap
+export psys=$PROOT/bin/$MACHINE
+export pxk=$PROOT/dist/kernel/$MACHINE
+export pl=$PROOT/dist/lap/$MACHINE
+export pnkl=$PROOT/dist/nonkernel/$MACHINE/lap
 
 cd dist
 make
