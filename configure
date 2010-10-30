@@ -2956,14 +2956,7 @@ $as_echo "$as_me: after checking for system wxWidgets with_wx=$with_wx" >&6;}
       echo wxWidgets unpacked from archive $a
       cd $d
     fi
-    if test "x$with_wx" = "xbuiltin"
-    then
-      doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$builddir --with-wx-pending=yes --with-build=$build --without-fox"
-    else
-      doconfig="echo \"System provided version of wxxWidgets will be used\""
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: config for wx = $doconfig" >&5
-$as_echo "$as_me: config for wx = $doconfig" >&6;}
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$builddir --with-wx-pending=yes --with-build=$build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
@@ -3049,15 +3042,6 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
     LDFLAGS="$LDFLAGS -m64"
     extras="$extras --x-libraries=/usr/X11R6/lib64"
   fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: CPPFLAGS=$CPPFLAGS" >&5
-$as_echo "$as_me: CPPFLAGS=$CPPFLAGS" >&6;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: CFLAGS=$CFLAGS" >&5
-$as_echo "$as_me: CFLAGS=$CFLAGS" >&6;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: CXXFLAGS=$CXXFLAGS" >&5
-$as_echo "$as_me: CXXFLAGS=$CXXFLAGS" >&6;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: LDFLAGS=$LDFLAGS" >&5
-$as_echo "$as_me: LDFLAGS=$LDFLAGS" >&6;}
 
   if test "x$with_wx" != "xno"
   then

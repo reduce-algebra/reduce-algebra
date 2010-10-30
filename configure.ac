@@ -504,13 +504,7 @@ then
       echo wxWidgets unpacked from archive $a
       cd $d
     fi
-    if test "x$with_wx" = "xbuiltin"
-    then
-      doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$builddir --with-wx-pending=yes --with-build=$build --without-fox"
-    else
-      doconfig="echo \"System provided version of wxxWidgets will be used\""
-    fi
-    AC_MSG_NOTICE([config for wx = $doconfig])
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$builddir --with-wx-pending=yes --with-build=$build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
@@ -591,11 +585,6 @@ then
     LDFLAGS="$LDFLAGS -m64"
     extras="$extras --x-libraries=/usr/X11R6/lib64"
   fi
-
-  AC_MSG_NOTICE([CPPFLAGS=$CPPFLAGS])
-  AC_MSG_NOTICE([CFLAGS=$CFLAGS])
-  AC_MSG_NOTICE([CXXFLAGS=$CXXFLAGS])
-  AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
 
   if test "x$with_wx" != "xno"
   then
