@@ -123,6 +123,8 @@ m32=
 m64=
 nogui=
 original=$host
+fox=
+wx=
 
 # The decoding here is NOT PERFECT and will not be fully compatible with
 # all that the configure script does, but it should be sufficient for
@@ -131,43 +133,52 @@ original=$host
 for a in $*
 do
   case $a in
-  --enable-debug=no)
+  --enable-debug=no | --disable-debug)
     debug=
     ;;
   --enable-debug)
     debug=-debug
     ;;
-  --with-mingw64=no)
+  --with-mingw64=no | --without-mingw64)
     host=$original
     ;;
   --with-mingw64*)
     host=x86_64-w64-windows
     ;;
-  --with-cygwin=no)
+  --with-cygwin=no | --without-cygwin)
     host=$original
     ;;
   --with-cygwin*)
     host=i686-pc-cygwin
     ;;
-  --with-m32=no)
+  --with-m32=no | --without-m32)
     m32=
     ;;
   --with-m32*)
     m32=-m32
     m64=
     ;;
-  --with-m64=no)
+  --with-m64=no | --without-m64)
     m64=
     ;;
   --with-m64*)
     m64=-m64
     m32=
     ;;
-  --without-fox)
+  --without-fox | --with-fox=no | --without-wx | --with-wx=no)
+    fox=
+    wx=
     nogui=-nogui
     ;;
-  --with-fox=no)
-    nogui=-nogui
+  --with-fox*)
+    fox=-fox
+    wx=
+    nogui=
+    ;;
+  --with-wx*)
+    fox=
+    wx=-wx
+    nogui=
     ;;
   --with-smallpage*)
 # At present the small page size is 19-bits/512Kbytes
@@ -176,6 +187,6 @@ do
   esac
 done
 
-echo $host$m32$m64$nogui$smallpage$debug
+echo $host$m32$m64$nogui$fox$wx$smallpage$debug
 
 exit 0

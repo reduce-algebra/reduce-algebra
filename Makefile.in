@@ -92,6 +92,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WX_CONFIG = @WX_CONFIG@
+X64_GCC = @X64_GCC@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -141,9 +143,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # As at present set up this Makefile.am imagines that in a CSL build
-# directory there are two sub-directories, csl and fox, and it is
+# directory there are two sub-directories, csl and fox or wxWidgets, and it is
 # necessary to delegate make to each of them. Well if a GUI is not needed
-# then the fox sub-dircetory is not used.
+# or if a system version of wxWidgets is to be used then the fox/wxWidgets
+# sub-directory is not used.
 #
 # For PSL it supposes that there will be a build directory called
 # psl to delegate to.
@@ -155,6 +158,11 @@ AM_MAKEFLAGS = $(MFLAGS) $(MYFLAGS)
 @csl_FALSE@@psl_TRUE@FOXDEP = 
 @csl_TRUE@@fox_FALSE@FOXDEP = 
 @csl_TRUE@@fox_TRUE@FOXDEP = include/fox-1.6/fxver.h
+@csl_FALSE@@psl_FALSE@WXDEP = 
+@csl_FALSE@@psl_TRUE@WXDEP = 
+@csl_TRUE@@wx_FALSE@WXDEP = 
+@csl_TRUE@@wx_TRUE@@wxbuiltin_FALSE@WXDEP = 
+@csl_TRUE@@wx_TRUE@@wxbuiltin_TRUE@WXDEP = bin/wx-config
 all: all-am
 
 .SUFFIXES:
@@ -442,19 +450,25 @@ uninstall-am:
 	uninstall-am
 
 
-@fox_TRUE@.PHONY:	all fox
-@fox_FALSE@.PHONY: all
+@wx_TRUE@@wxbuiltin_TRUE@.PHONY:	all wx
+@wx_TRUE@@wxbuiltin_FALSE@.PHONY:	all
+@fox_TRUE@@wx_FALSE@.PHONY:	all fox
+@fox_FALSE@@wx_FALSE@.PHONY:	all
 
 # I have "all" as a special case here because the first target should be
 # the default one.
 
-all:	$(FOXDEP)
+all:	$(FOXDEP) $(WXDEP)
 	echo Build all: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) all
 	@cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 @csl_TRUE@@fox_TRUE@fox $(FOXDEP):
 @csl_TRUE@@fox_TRUE@	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
 @csl_TRUE@@fox_TRUE@	@cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+@csl_TRUE@@wx_TRUE@wx $(WXDEP):
+@csl_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
+@csl_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	@cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+@csl_TRUE@@wx_TRUE@@wxbuiltin_FALSE@	echo Will be using system version of wxWidgets
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -467,7 +481,7 @@ all:	$(FOXDEP)
 @csl_TRUE@$(srcdir)/Makefile.am:
 @csl_TRUE@	touch $(srcdir)/Makefile.am
 
-%::	$(FOXDEP)
+%::	$(FOXDEP) $(WXDEP)
 	echo $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) makecmdgoals=$(MAKECMDGOALS)
 	@cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) $(MAKECMDGOALS) MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 

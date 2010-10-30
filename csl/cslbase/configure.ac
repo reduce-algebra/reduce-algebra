@@ -28,6 +28,8 @@
 #   --host=<triplet>  cross compile for that host.
 # Eg if I have installed the 64-bit mingw compilers that cygwin supports
 # I can go  --host=x86_64-w64-mingw32  and build everything.
+# The "--with-mingw64" option is a convenience feature for use by
+# a higher level configure script and shoudl not be used directly here.
 # 
 
 
@@ -67,9 +69,14 @@ AC_ARG_WITH(csl,
   [with_csl="no"])
 
 AC_ARG_WITH(psl,
-  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system]),
+  AC_HELP_STRING([--with-psl], [Use the PSL Lisp system. Do not use here!]),
   [],
   [with_psl="no"])
+
+AC_ARG_WITH(mingw64,
+  AC_HELP_STRING([--with-mingw64], [this option is ignored here!]),
+  [],
+  [])
 
 # What host am I on?
 AC_CANONICAL_HOST()
@@ -136,6 +143,18 @@ AC_ARG_WITH(fox,
   [],
   [with_fox="no"])
 AC_MSG_NOTICE([--with-fox=$with_fox])
+
+AC_ARG_WITH(wx,
+  AC_HELP_STRING([--with-wx],
+                 [enable use of wxWidgets]),
+  [],
+  [with_wx="no"])
+AC_MSG_NOTICE([--with-wx=$with_wx])
+
+AC_ARG_WITH(ming64,
+  AC_HELP_STRING([--with-mingw64], [this option is ignored here!]),
+  [],
+  [])
 
 AC_SUBST(MAKE)
 AC_SUBST(AR)
@@ -1228,10 +1247,8 @@ AC_SUBST(FOX_INCLUDES)
 AC_SUBST(FOX_LIBS)
 
 
-if test "x$with_fox" = "xno"
+if test "x$with_fox" != "xno"
 then
-  AC_MSG_NOTICE("Will not even attempt to look for FOX")
-else
   if test "x$with_fox_pending" != "xno"
   then
     fox_present="yes"
@@ -1270,7 +1287,7 @@ else
 # C++ mode I make this test happen here at the end of my configure script.
 
 # Also I will not even want to try using C++ for anything unless FOX is
-# goin to be used. Another reason to put this stuff late her.
+# going to be used. Another reason to put this stuff late her.
 
     AC_LANG(C++)
 
@@ -1349,10 +1366,11 @@ then
 # 10.1  Puma     )
 # 10.2  Jaguar   ) I will not support these at all any more
 # 10.3  Panther  )
-# 10.4  Tiger      Support for this will be dropped soon
-# 10.5  Leopard    Testing here will be at best minimal.
+# 10.4  Tiger    )
+# 10.5  Leopard  Deprecated: Testing here will be at best minimal.
 # 10.6  Snow Leopard
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.4
+# 10.7  Lion (?)   Forthcoming 
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.5
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
@@ -1372,6 +1390,8 @@ AM_CONDITIONAL(mac_framework,test "x$framework_available" = "xyes")
 AM_CONDITIONAL(debug,test "x$enable_debug" = "xyes")
 AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
 AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
+AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
+AM_CONDITIONAL(wxbuiltin,test "x$with_wx" = "xbuiltin")
 AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")

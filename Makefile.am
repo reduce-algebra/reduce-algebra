@@ -3,16 +3,25 @@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
+if wx
+if wxbuiltin
+.PHONY:	all wx
+else
+.PHONY:	all
+endif
+else
 if fox
 .PHONY:	all fox
 else
-.PHONY: all
+.PHONY:	all
+endif
 endif
 
 # As at present set up this Makefile.am imagines that in a CSL build
-# directory there are two sub-directories, csl and fox, and it is
+# directory there are two sub-directories, csl and fox or wxWidgets, and it is
 # necessary to delegate make to each of them. Well if a GUI is not needed
-# then the fox sub-dircetory is not used.
+# or if a system version of wxWidgets is to be used then the fox/wxWidgets
+# sub-directory is not used.
 #
 # For PSL it supposes that there will be a build directory called
 # psl to delegate to.
@@ -26,13 +35,24 @@ FOXDEP=include/fox-1.6/fxver.h
 else
 FOXDEP=
 endif
+if wx
+if wxbuiltin
+WXDEP=bin/wx-config
+else
+WXDEP=
+endif
+else
+WXDEP=
+endif
 else
 if psl
 LISPDIR=psl
 FOXDEP=
+WXDEP=
 else
 LISPDIR=unknown
 FOXDEP=
+WXDEP=
 endif
 endif
 
@@ -41,7 +61,7 @@ endif
 # I have "all" as a special case here because the first target should be
 # the default one.
 
-all:	$(FOXDEP)
+all:	$(FOXDEP) $(WXDEP)
 	echo Build all: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) all
 	@cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
@@ -51,6 +71,15 @@ if fox
 fox $(FOXDEP):
 	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
 	@cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+endif
+if wx
+wx $(WXDEP):
+if wxbuiltin
+	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
+	@cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+else
+	echo Will be using system version of wxWidgets
+endif
 endif
 
 # If one of the major foundations of this Makefile have a date later than that
@@ -66,7 +95,7 @@ $(srcdir)/Makefile.am:
 
 endif
 
-%::	$(FOXDEP)
+%::	$(FOXDEP) $(WXDEP)
 	echo $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) makecmdgoals=$(MAKECMDGOALS)
 	@cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) $(MAKECMDGOALS) MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 

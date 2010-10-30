@@ -601,6 +601,10 @@ canrun_FALSE
 canrun_TRUE
 jit_FALSE
 jit_TRUE
+wxbuiltin_FALSE
+wxbuiltin_TRUE
+wx_FALSE
+wx_TRUE
 fox_FALSE
 fox_TRUE
 exeext_FALSE
@@ -735,10 +739,13 @@ ac_user_opts='
 enable_option_checking
 with_csl
 with_psl
+with_mingw64
 with_build
 with_m32
 with_m64
 with_fox
+with_wx
+with_ming64
 with_cygwin
 with_mingw
 with_fox_pending
@@ -1398,11 +1405,13 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-csl              Use the CSL Lisp system
-  --with-psl              Use the PSL Lisp system
+  --with-psl              Use the PSL Lisp system. Do not use here!
+  --with-mingw64          this option is ignored here!
   --with-build            specify host-name to use when logging
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-fox=DIR          FOX installation location
+  --with-wx               enable use of wxWidgets
   --with-cygwin           Force use of raw cywgin (note cygwin license)
   --with-mingw=DIR        MingW installation location
   --with-fox-pending      do not check dir from --with-fox
@@ -3083,6 +3092,13 @@ else
 fi
 
 
+
+# Check whether --with-mingw64 was given.
+if test "${with_mingw64+set}" = set; then :
+  withval=$with_mingw64;
+fi
+
+
 # What host am I on?
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
@@ -3250,6 +3266,24 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: --with-fox=$with_fox" >&5
 $as_echo "$as_me: --with-fox=$with_fox" >&6;}
+
+
+# Check whether --with-wx was given.
+if test "${with_wx+set}" = set; then :
+  withval=$with_wx;
+else
+  with_wx="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: --with-wx=$with_wx" >&5
+$as_echo "$as_me: --with-wx=$with_wx" >&6;}
+
+
+# Check whether --with-ming64 was given.
+if test "${with_ming64+set}" = set; then :
+  withval=$with_ming64;
+fi
+
 
 
 
@@ -10451,11 +10485,8 @@ fi
 
 
 
-if test "x$with_fox" = "xno"
+if test "x$with_fox" != "xno"
 then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: \"Will not even attempt to look for FOX\"" >&5
-$as_echo "$as_me: \"Will not even attempt to look for FOX\"" >&6;}
-else
   if test "x$with_fox_pending" != "xno"
   then
     fox_present="yes"
@@ -10498,7 +10529,7 @@ $as_echo "$as_me: \"Will look for FOX in $with_fox\"" >&6;}
 # C++ mode I make this test happen here at the end of my configure script.
 
 # Also I will not even want to try using C++ for anything unless FOX is
-# goin to be used. Another reason to put this stuff late her.
+# going to be used. Another reason to put this stuff late her.
 
     ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -10601,10 +10632,11 @@ then
 # 10.1  Puma     )
 # 10.2  Jaguar   ) I will not support these at all any more
 # 10.3  Panther  )
-# 10.4  Tiger      Support for this will be dropped soon
-# 10.5  Leopard    Testing here will be at best minimal.
+# 10.4  Tiger    )
+# 10.5  Leopard  Deprecated: Testing here will be at best minimal.
 # 10.6  Snow Leopard
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.4
+# 10.7  Lion (?)   Forthcoming
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.5
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
@@ -10727,6 +10759,22 @@ fi
 else
   fox_TRUE='#'
   fox_FALSE=
+fi
+
+ if test "x$with_wx" != "xno"; then
+  wx_TRUE=
+  wx_FALSE='#'
+else
+  wx_TRUE='#'
+  wx_FALSE=
+fi
+
+ if test "x$with_wx" = "xbuiltin"; then
+  wxbuiltin_TRUE=
+  wxbuiltin_FALSE='#'
+else
+  wxbuiltin_TRUE='#'
+  wxbuiltin_FALSE=
 fi
 
  if test "x$enable_jit" = "xyes"; then
@@ -10906,6 +10954,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${fox_TRUE}" && test -z "${fox_FALSE}"; then
   as_fn_error $? "conditional \"fox\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${wx_TRUE}" && test -z "${wx_FALSE}"; then
+  as_fn_error $? "conditional \"wx\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${wxbuiltin_TRUE}" && test -z "${wxbuiltin_FALSE}"; then
+  as_fn_error $? "conditional \"wxbuiltin\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${jit_TRUE}" && test -z "${jit_FALSE}"; then
