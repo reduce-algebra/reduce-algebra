@@ -418,10 +418,15 @@ then
       with_fox="no"
       with_wx="yes";
       ;;
+    fox/*/builtin)
+# explicit --with-wx=builtin overrides the default
+      with_fox="no"
+      with_wx="builtin";
+      ;;
     fox/*/no)
 # explicit --without-wx. If fox is the default this will not have any
 # effect and since maybe somebody thought it would disable the whole
-# GUI I will make it an error
+# GUI I will make it an error.
       AC_MSG_ERROR([--with-fox is the default configuration so --without-wx is not needed])
       ;;
     wx/default/default)
@@ -433,6 +438,11 @@ then
 # explicit --with-wx is permitted even when not needed
       with_fox="no"
       with_wx="yes";
+      ;;
+    wx/*/builtin)
+# explicit --with-wx=builtin is permitted even when not needed
+      with_fox="no"
+      with_wx="builtin";
       ;;
     wx/yes/*)
 # explicit --with-fox that overrides default
