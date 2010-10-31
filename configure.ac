@@ -504,7 +504,7 @@ then
       echo wxWidgets unpacked from archive $a
       cd $d
     fi
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$builddir --with-wx-pending=yes --with-build=$build --without-fox"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$with_wx --with-build=$build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"

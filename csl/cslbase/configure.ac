@@ -146,7 +146,7 @@ AC_MSG_NOTICE([--with-fox=$with_fox])
 
 AC_ARG_WITH(wx,
   AC_HELP_STRING([--with-wx],
-                 [enable use of wxWidgets]),
+                 [enable use of wxWidgets, Set to builtin if using private copy]),
   [],
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
@@ -1377,6 +1377,14 @@ fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
+if test "x$windows_build" != "xyes" && test "x$with_wx" != "xno"
+then
+# The "xpm" files use to establish icons for wxWindows lead to a lot
+# of ugly warnings about casts from strings to (char *) unless I disable
+# that particular warning.
+  CXXFLAGS="$CXXFLAGS -Wno-write-strings "
+fi
+
 #
 # Make some things available for conditional segments of a Makefile
 #
@@ -1391,6 +1399,7 @@ AM_CONDITIONAL(debug,test "x$enable_debug" = "xyes")
 AM_CONDITIONAL(exeext,test "x$exeext" = "xyes")
 AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
+AM_CONDITIONAL(gui,test "x$fox_present" = "xyes" || test "x$with_wx" != "xno")
 AM_CONDITIONAL(wxbuiltin,test "x$with_wx" = "xbuiltin")
 AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")

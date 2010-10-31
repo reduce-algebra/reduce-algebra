@@ -23,23 +23,38 @@ if cygpath
 # applications might otherwise receive a file-name starting "/cygdrive/x/.."
 # and not understand it.
 CYGSRC = $(shell cygpath -m $(srcdir))
-else
+else !cygpath
 CYGSRC = $(srcdir)
-endif
+endif !cygpath
 
-# On Windows if I have a GUI (here signalled by the use of Fox) I will want
+if wx
+if wxbuiltin
+CPPFLAGS += $(shell ../bin/wx-config --cppflags)
+CFLAGS   += $(shell ../bin/wx-config --cflags)
+CXXFLAGS += $(shell ../bin/wx-config --cxxflags)
+LIBS     += $(shell ../bin/wx-config --libs)
+else !wxbuiltin
+CPPFLAGS += $(shell wx-config --cppflags)
+CFLAGS   += $(shell wx-config --cflags)
+CXXFLAGS += $(shell wx-config --cxxflags)
+LIBS     += $(shell wx-config --libs)
+endif !wxbuiltin
+endif wx
+
+
+# On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
 # .com version to be a console application. If I only have command-line
 # versions it is easiest to make everything .exe
 if windows
-if fox
+if gui
 COMEXT=.com
-else
+else !gui
 COMEXT=.exe
-endif
-else
+endif !gui
+else !windows
 COMEXT=
-endif
+endif !windows
 
 if fox
 foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
@@ -47,9 +62,16 @@ else !fox
 foxdemotarget =
 endif !fox
 
+if wx
+wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
+else !wx
+wxdemotarget =
+endif !wx
+
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT)
+	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
+	$(wxdemotarget)
 
 if mac_framework
 all-local:	make-clickable csl.img reduce.img
@@ -74,13 +96,19 @@ undemo_sources = csl.c fasl.c gc.c preserve.c
 
 # If I am building under FOX then the main parts of material from
 # fwin.c and termed.c get picked up from the FOX library.
-# I arrange that fwin.c at least shows what you would need if it is
-# used stand-alone.
+# If wxWidgets is in use I have an alternate versions called wxfwin.c 
+# but termed.c can be used unchanged (but from source in this directory
+# not in the FOX directory). When I do not have a GUI at all I use both
+# fwin.c and termed.c from this directory.
 
 if fox
 fwin_sources =
 else !fox
+if wx
+fwin_sources = wxfwin.c termed.c
+else !wx
 fwin_sources = fwin.c termed.c
+endif !wx
 endif !fox
 
 if x86
@@ -175,17 +203,40 @@ bootstrapreduce_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
 reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 		$(jit_sources) bytes.c $(generated_sources)
 
+if windows
+fwin_icon = fwin-icon.$(OBJEXT)
+else !windows
+fwin_icon =
+endif !windows
+
+
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
-foxdemo_LDADD = $(FOX_LIBS)
+foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+foxdemo_DEPENDENCIES = $(fwin_icon)
 
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
-fontdemo_LDADD = $(FOX_LIBS)
+fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+fontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
 
 showmathdemo_SOURCES = showmathdemo.cpp
 showmathdemo_CPPFLAGS = $(FOX_INCLUDES)
-showmathdemo_LDADD = $(FOX_LIBS)
+showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+showmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+
+wxdemo_SOURCES = wxdemo.cpp
+wxdemo_LDADD = $(fwin_icon)
+wxdemo_DEPENDENCIES = $(fwin_icon)
+
+wxfontdemo_SOURCES = wxfontdemo.cpp
+wxfontdemo_LDADD = $(fwin_icon)
+wxfontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+
+wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
+wxshowmathdemo_LDADD = $(fwin_icon)
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+
 
 if windows
 DLLEXT=dll
@@ -241,23 +292,19 @@ REDUCECOMDEF = local-reducecom.def
 # mode versions.
 
 CONAP=-Wl,--subsystem,console
-if fox
+if gui
 WINAP=-Wl,--subsystem,windows
-else !fox
+else !gui
 WINAP=-Wl,--subsystem,console
-endif !fox
+endif !gui
 
-if windows
 GP=wgnuplot.exe
-else !windows
-GP=
-endif !windows
 
 dyndemo_LDADD = $(srcdir)/dyndemo.def
 
 reduceres = fwin-reduce.$(OBJEXT)
 
-fwindemo_LDADD = fwin-icon.$(OBJEXT) $(FOX_LIBS)
+fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
@@ -267,13 +314,8 @@ csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
 reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-fwindemo_DEPENDENCIES = fwin-icon.$(OBJEXT)
+fwindemo_DEPENDENCIES = $(fwin_icon)
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
-
-if fox
-fontdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-showmathdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-endif fox
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
 	$(WINDRES) $(srcdir)/fwin-icon.rc --include-dir=$(srcdir) \
@@ -298,6 +340,8 @@ BOOTSTRAPREDUCECOMDEF =
 REDUCEEXEDEF =
 REDUCECOMDEF =
 
+GP=
+
 fwindemo_LDADD = $(FOX_LIBS)
 csl_LDADD = $(FOX_LIBS)
 bootstrapreduce_LDADD = $(FOX_LIBS)
@@ -307,19 +351,14 @@ csl_DEPENDENCIES = $(fontsdir)/cmr10.pfb
 bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
 reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
 
-if fox
-fontdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-showmathdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-endif fox
-
 # On non-windows systems I am ASSUMING here that the C compiler will
 # accept an "-o" option to indicate where it should put its object file.
 #
-fwin-csl.$(OBJEXT):	$(srcdir)/null.c
-	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
-
-fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
-	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
+#fwin-csl.$(OBJEXT):	$(srcdir)/null.c
+#	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
+#
+#fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
+#	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
 
 # end of windows vs non-windows conditions
 endif !windows
@@ -336,7 +375,6 @@ DEST=-o
 
 R = $(srcdir)/../..
 
-#FOXDEP=../include/fox-1.6/fxver.h
 if win64
 FOXDEP=../lib/libFOX-1.6.lib
 else !win64
@@ -364,18 +402,18 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
 	-rm -f csl$(EXEEXT)
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
-if fox
+if gui
 	-rm -f csl$(COMEXT)
 	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
-endif fox
+endif gui
 endif windows
 if !debug
 if !darwin
 	$(STRIP) csl$(EXEEXT)
 if windows
-if fox
+if gui
 	$(STRIP) csl$(COMEXT)
-endif fox
+endif gui
 endif windows
 endif !darwin
 endif !debug
@@ -384,18 +422,18 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
-if fox
+if gui
 	-rm -f reduce$(COMEXT)
 	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
-endif fox
+endif gui
 endif windows
 if !debug
 if !darwin
 	$(STRIP) reduce$(EXEEXT)
 if windows
-if fox
+if gui
 	$(STRIP) reduce$(COMEXT)
-endif fox
+endif gui
 endif windows
 endif !darwin
 endif !debug
@@ -413,18 +451,18 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
-if fox
+if gui
 	-rm -f fwindemo$(COMEXT)
 	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
-endif fox
+endif gui
 endif windows
 if !debug
 if !darwin
 	$(STRIP) fwindemo$(EXEEXT)
 if windows
-if fox
+if gui
 	$(STRIP) fwindemo$(COMEXT)
-endif fox
+endif gui
 endif windows
 endif !darwin
 endif !debug
@@ -440,7 +478,7 @@ if !darwin
 endif !darwin
 endif !debug
 
-foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES)
+foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f foxdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
 if !debug
@@ -458,6 +496,40 @@ if !darwin
 endif !darwin
 endif !debug
 
+endif fox
+
+if wx
+
+wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxfontdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxfontdemo$(EXEEXT)
+endif !darwin
+endif !debug
+
+wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxdemo$(EXEEXT)
+endif !darwin
+endif !debug
+
+wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxshowmathdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxshowmathdemo$(EXEEXT)
+endif !darwin
+endif !debug
+
+endif wx
+
+if gui
 if windows
 
 csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
@@ -473,7 +545,7 @@ fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
 	$(MAKE) fwindemo.exe
 
 endif windows
-endif fox
+endif gui
 
 $(fontsdir)/cmr10.pfb:	$(srcdir)/fonts
 	-rm -rf $(fontsdir)
@@ -506,9 +578,12 @@ plain_termdemo = termdemo
 plain_foxdemo  = foxdemo
 plain_fontdemo = fontdemo
 plain_showmathdemo = showmathdemo
+plain_wxdemo  = wxdemo
+plain_wxfontdemo = wxfontdemo
+plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 
-if fox
+if gui
 $(plain_csl):	csl.exe csl$(COMEXT)
 	echo "make csl.exe is preferred"
 
@@ -521,16 +596,7 @@ $(plain_bootstrapreduce):	bootstrapreduce.exe
 $(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
 	echo "make fwindemo.exe is preferred"
 
-$(plain_foxdemo):	foxdemo.exe
-	echo "make foxdemo.exe is preferred"
-
-$(plain_fontdemo):	fontdemo.exe
-	echo "make fontdemo.exe is preferred"
-
-$(plain_showmathdemo):	showmathdemo.exe
-	echo "make showmathdemo.exe is preferred"
-
-else !fox
+else !gui
 $(plain_csl):	csl.exe
 	echo "make csl.exe is preferred"
 
@@ -543,13 +609,42 @@ $(plain_bootstrapreduce):	bootstrapreduce.exe
 $(plain_fwindemo):	fwindemo.exe
 	echo "make fwindemo.exe is preferred"
 
-endif !fox
+endif !gui
+
+if fox
+
+$(plain_foxdemo):	foxdemo.exe
+	echo "make foxdemo.exe is preferred"
+
+$(plain_fontdemo):	fontdemo.exe
+	echo "make fontdemo.exe is preferred"
+
+$(plain_showmathdemo):	showmathdemo.exe
+	echo "make showmathdemo.exe is preferred"
+
+
+endif fox
+
+if wx
+
+$(plain_wxdemo):	wxdemo.exe
+	echo "make wxdemo.exe is preferred"
+
+$(plain_wxfontdemo):	wxfontdemo.exe
+	echo "make wxfontdemo.exe is preferred"
+
+$(plain_wxshowmathdemo):	wxshowmathdemo.exe
+	echo "make wxshowmathdemo.exe is preferred"
+
+
+endif wx
 
 $(plain_termdemo):	termdemo.exe
 	echo "make termdemo.exe is preferred"
 
 $(plain_dyndemo):	dyndemo.exe dynmodule.dll
 	echo "make dyndemo.exe is preferred"
+
 endif exeext
 
 if mac_framework
@@ -611,13 +706,13 @@ install-data-local: $(image_files)
 
 if windows
 
-if fox
+if gui
 console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 noinstall_console_binaries = fwindemo$(COMEXT)
-else !fox
+else !gui
 console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 noinstall_console_binaries =
-endif !fox
+endif !gui
 
 install-exec-local: $(console_binaries)
 	@$(NORMAL_INSTALL)
@@ -731,7 +826,7 @@ COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 if windows
 dyndef =  $(srcdir)/dynmodule1.def
 dyndep =
-else
+else !windows
 dyndef =
 dyndep =
 endif !windows
@@ -753,7 +848,7 @@ objtype$(EXEEXT):	$(srcdir)/objtype.c
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
 	gcc $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
 
-else
+else !windows
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
 	$(COMPILE) $(srcdir)/objtype.c -o objtype$(EXEEXT)
@@ -761,7 +856,7 @@ objtype$(EXEEXT):	$(srcdir)/objtype.c
 makeheaders$(EXEEXT):	$(srcdir)/makeheaders.c
 	$(COMPILE) $(srcdir)/makeheaders.c -o makeheaders$(EXEEXT)
 
-endif
+endif !windows
 else !canrun
 
 # If I can not run programs built by the normal C compiler (eg because I am
@@ -1090,7 +1185,11 @@ endif !canrun
 if fox
 guisrc=$(foxdemo_SOURCES) $(fontdemo_SOURCES) $(showmathdemo_SOURCES)
 else !fox
+if wx
+guisrc=$(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
+else !wx
 guisrc=
+endif !wx
 endif !fox
 mainsrc=$(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
 srcfiles=$(mainsrc) $(csl_SOURCES)
@@ -1098,7 +1197,11 @@ srcfiles=$(mainsrc) $(csl_SOURCES)
 if fox
 guibin=foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 else !fox
+if wx
+guibin=wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
+else !wx
 guibin=
+endif !wx
 endif !fox
 mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
 if windows

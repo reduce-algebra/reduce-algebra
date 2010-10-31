@@ -35,13 +35,20 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@wx_TRUE@@wxbuiltin_TRUE@am__append_1 = $(shell ../bin/wx-config --cppflags)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_2 = $(shell ../bin/wx-config --cflags)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_3 = $(shell ../bin/wx-config --cxxflags)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_4 = $(shell ../bin/wx-config --libs)
+@wx_TRUE@@wxbuiltin_FALSE@am__append_5 = $(shell wx-config --cppflags)
+@wx_TRUE@@wxbuiltin_FALSE@am__append_6 = $(shell wx-config --cflags)
+@wx_TRUE@@wxbuiltin_FALSE@am__append_7 = $(shell wx-config --cxxflags)
+@wx_TRUE@@wxbuiltin_FALSE@am__append_8 = $(shell wx-config --libs)
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) $(am__EXEEXT_1) dyndemo$(EXEEXT)
+	termdemo$(EXEEXT) $(am__EXEEXT_1) dyndemo$(EXEEXT) \
+	$(am__EXEEXT_2)
 @windows_FALSE@fwindemo_DEPENDENCIES = $(am__DEPENDENCIES_1)
-@fox_FALSE@fontdemo_DEPENDENCIES = $(am__DEPENDENCIES_1)
-@fox_FALSE@showmathdemo_DEPENDENCIES = $(am__DEPENDENCIES_1)
-@windows_TRUE@am__append_1 = fwindemo$(COMEXT) reduce$(COMEXT)
-@windows_TRUE@am__append_2 = csl$(COMEXT)
+@windows_TRUE@am__append_9 = fwindemo$(COMEXT) reduce$(COMEXT)
+@windows_TRUE@am__append_10 = csl$(COMEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -61,15 +68,17 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 @fox_TRUE@am__EXEEXT_1 = foxdemo$(EXEEXT) fontdemo$(EXEEXT) \
 @fox_TRUE@	showmathdemo$(EXEEXT)
+@wx_TRUE@am__EXEEXT_2 = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) \
+@wx_TRUE@	wxshowmathdemo$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__bootstrapreduce_SOURCES_DIST = arith01.c arith02.c arith03.c \
 	arith04.c arith05.c arith06.c arith07.c arith08.c arith09.c \
 	arith10.c arith11.c arith12.c char.c cslmpi.c eval1.c eval2.c \
 	eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
 	restart.c sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c \
-	termed.c jit1.c jit2.c jit3.c jitx86.c x86defs.c wstring.c \
-	textdefs.c prefix.c operands.c insts.c instructions.c \
-	distorm.c decoder.c bytes1.c stubs.c
+	termed.c wxfwin.c jit1.c jit2.c jit3.c jitx86.c x86defs.c \
+	wstring.c textdefs.c prefix.c operands.c insts.c \
+	instructions.c distorm.c decoder.c bytes1.c stubs.c
 am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 	arith04.$(OBJEXT) arith05.$(OBJEXT) arith06.$(OBJEXT) \
 	arith07.$(OBJEXT) arith08.$(OBJEXT) arith09.$(OBJEXT) \
@@ -80,7 +89,8 @@ am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 	cslread.$(OBJEXT) restart.$(OBJEXT) sysfwin.$(OBJEXT)
 am__objects_2 = csl.$(OBJEXT) fasl.$(OBJEXT) gc.$(OBJEXT) \
 	preserve.$(OBJEXT)
-@fox_FALSE@am__objects_3 = fwin.$(OBJEXT) termed.$(OBJEXT)
+@fox_FALSE@@wx_FALSE@am__objects_3 = fwin.$(OBJEXT) termed.$(OBJEXT)
+@fox_FALSE@@wx_TRUE@am__objects_3 = wxfwin.$(OBJEXT) termed.$(OBJEXT)
 @x86_TRUE@am__objects_4 = x86defs.$(OBJEXT) wstring.$(OBJEXT) \
 @x86_TRUE@	textdefs.$(OBJEXT) prefix.$(OBJEXT) \
 @x86_TRUE@	operands.$(OBJEXT) insts.$(OBJEXT) \
@@ -97,10 +107,10 @@ am__csl_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 	arith05.c arith06.c arith07.c arith08.c arith09.c arith10.c \
 	arith11.c arith12.c char.c cslmpi.c eval1.c eval2.c eval3.c \
 	eval4.c fns1.c fns2.c fns3.c print.c cslread.c restart.c \
-	sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c termed.c jit1.c \
-	jit2.c jit3.c jitx86.c x86defs.c wstring.c textdefs.c prefix.c \
-	operands.c insts.c instructions.c distorm.c decoder.c bytes.c \
-	stubs.c
+	sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c termed.c \
+	wxfwin.c jit1.c jit2.c jit3.c jitx86.c x86defs.c wstring.c \
+	textdefs.c prefix.c operands.c insts.c instructions.c \
+	distorm.c decoder.c bytes.c stubs.c
 am_csl_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_5) bytes.$(OBJEXT) stubs.$(OBJEXT)
 csl_OBJECTS = $(am_csl_OBJECTS)
@@ -108,39 +118,40 @@ am_dyndemo_OBJECTS = dyndemo.$(OBJEXT)
 dyndemo_OBJECTS = $(am_dyndemo_OBJECTS)
 am_fontdemo_OBJECTS = fontdemo-fontdemo.$(OBJEXT)
 fontdemo_OBJECTS = $(am_fontdemo_OBJECTS)
+@windows_TRUE@am__DEPENDENCIES_2 = fwin-icon.$(OBJEXT)
 am_foxdemo_OBJECTS = foxdemo-foxdemo.$(OBJEXT)
 foxdemo_OBJECTS = $(am_foxdemo_OBJECTS)
-foxdemo_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am__fwindemo_SOURCES_DIST = fwindemo.c fwin.c termed.c
+am__fwindemo_SOURCES_DIST = fwindemo.c fwin.c termed.c wxfwin.c
 am_fwindemo_OBJECTS = fwindemo.$(OBJEXT) $(am__objects_3)
 fwindemo_OBJECTS = $(am_fwindemo_OBJECTS)
 am__reduce_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 	arith05.c arith06.c arith07.c arith08.c arith09.c arith10.c \
 	arith11.c arith12.c char.c cslmpi.c eval1.c eval2.c eval3.c \
 	eval4.c fns1.c fns2.c fns3.c print.c cslread.c restart.c \
-	sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c termed.c jit1.c \
-	jit2.c jit3.c jitx86.c x86defs.c wstring.c textdefs.c prefix.c \
-	operands.c insts.c instructions.c distorm.c decoder.c bytes.c \
-	$(gensrc)/u01.c $(gensrc)/u02.c $(gensrc)/u03.c \
-	$(gensrc)/u04.c $(gensrc)/u05.c $(gensrc)/u06.c \
-	$(gensrc)/u07.c $(gensrc)/u08.c $(gensrc)/u09.c \
-	$(gensrc)/u10.c $(gensrc)/u11.c $(gensrc)/u12.c \
-	$(gensrc)/u13.c $(gensrc)/u14.c $(gensrc)/u15.c \
-	$(gensrc)/u16.c $(gensrc)/u17.c $(gensrc)/u18.c \
-	$(gensrc)/u19.c $(gensrc)/u20.c $(gensrc)/u21.c \
-	$(gensrc)/u22.c $(gensrc)/u23.c $(gensrc)/u24.c \
-	$(gensrc)/u25.c $(gensrc)/u26.c $(gensrc)/u27.c \
-	$(gensrc)/u28.c $(gensrc)/u29.c $(gensrc)/u30.c \
-	$(gensrc)/u31.c $(gensrc)/u32.c $(gensrc)/u33.c \
-	$(gensrc)/u34.c $(gensrc)/u35.c $(gensrc)/u36.c \
-	$(gensrc)/u37.c $(gensrc)/u38.c $(gensrc)/u39.c \
-	$(gensrc)/u40.c $(gensrc)/u41.c $(gensrc)/u42.c \
-	$(gensrc)/u43.c $(gensrc)/u44.c $(gensrc)/u45.c \
-	$(gensrc)/u46.c $(gensrc)/u47.c $(gensrc)/u48.c \
-	$(gensrc)/u49.c $(gensrc)/u50.c $(gensrc)/u51.c \
-	$(gensrc)/u52.c $(gensrc)/u53.c $(gensrc)/u54.c \
-	$(gensrc)/u55.c $(gensrc)/u56.c $(gensrc)/u57.c \
-	$(gensrc)/u58.c $(gensrc)/u59.c $(gensrc)/u60.c
+	sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c termed.c \
+	wxfwin.c jit1.c jit2.c jit3.c jitx86.c x86defs.c wstring.c \
+	textdefs.c prefix.c operands.c insts.c instructions.c \
+	distorm.c decoder.c bytes.c $(gensrc)/u01.c $(gensrc)/u02.c \
+	$(gensrc)/u03.c $(gensrc)/u04.c $(gensrc)/u05.c \
+	$(gensrc)/u06.c $(gensrc)/u07.c $(gensrc)/u08.c \
+	$(gensrc)/u09.c $(gensrc)/u10.c $(gensrc)/u11.c \
+	$(gensrc)/u12.c $(gensrc)/u13.c $(gensrc)/u14.c \
+	$(gensrc)/u15.c $(gensrc)/u16.c $(gensrc)/u17.c \
+	$(gensrc)/u18.c $(gensrc)/u19.c $(gensrc)/u20.c \
+	$(gensrc)/u21.c $(gensrc)/u22.c $(gensrc)/u23.c \
+	$(gensrc)/u24.c $(gensrc)/u25.c $(gensrc)/u26.c \
+	$(gensrc)/u27.c $(gensrc)/u28.c $(gensrc)/u29.c \
+	$(gensrc)/u30.c $(gensrc)/u31.c $(gensrc)/u32.c \
+	$(gensrc)/u33.c $(gensrc)/u34.c $(gensrc)/u35.c \
+	$(gensrc)/u36.c $(gensrc)/u37.c $(gensrc)/u38.c \
+	$(gensrc)/u39.c $(gensrc)/u40.c $(gensrc)/u41.c \
+	$(gensrc)/u42.c $(gensrc)/u43.c $(gensrc)/u44.c \
+	$(gensrc)/u45.c $(gensrc)/u46.c $(gensrc)/u47.c \
+	$(gensrc)/u48.c $(gensrc)/u49.c $(gensrc)/u50.c \
+	$(gensrc)/u51.c $(gensrc)/u52.c $(gensrc)/u53.c \
+	$(gensrc)/u54.c $(gensrc)/u55.c $(gensrc)/u56.c \
+	$(gensrc)/u57.c $(gensrc)/u58.c $(gensrc)/u59.c \
+	$(gensrc)/u60.c
 am__objects_6 = u01.$(OBJEXT) u02.$(OBJEXT) u03.$(OBJEXT) \
 	u04.$(OBJEXT) u05.$(OBJEXT) u06.$(OBJEXT) u07.$(OBJEXT) \
 	u08.$(OBJEXT) u09.$(OBJEXT) u10.$(OBJEXT) u11.$(OBJEXT) \
@@ -165,6 +176,12 @@ showmathdemo_OBJECTS = $(am_showmathdemo_OBJECTS)
 am_termdemo_OBJECTS = termdemo.$(OBJEXT) termed.$(OBJEXT)
 termdemo_OBJECTS = $(am_termdemo_OBJECTS)
 termdemo_LDADD = $(LDADD)
+am_wxdemo_OBJECTS = wxdemo.$(OBJEXT)
+wxdemo_OBJECTS = $(am_wxdemo_OBJECTS)
+am_wxfontdemo_OBJECTS = wxfontdemo.$(OBJEXT)
+wxfontdemo_OBJECTS = $(am_wxfontdemo_OBJECTS)
+am_wxshowmathdemo_OBJECTS = wxshowmathdemo.$(OBJEXT)
+wxshowmathdemo_OBJECTS = $(am_wxshowmathdemo_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -179,12 +196,15 @@ CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
-	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES)
+	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
+	$(wxdemo_SOURCES) $(wxfontdemo_SOURCES) \
+	$(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
 	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
-	$(termdemo_SOURCES)
+	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) \
+	$(wxshowmathdemo_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -209,13 +229,13 @@ AWK = @AWK@
 BUILD = @BUILD@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ $(am__append_2) $(am__append_6)
 CPP = @CPP@
-CPPFLAGS = @CPPFLAGS@
+CPPFLAGS = @CPPFLAGS@ $(am__append_1) $(am__append_5)
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
+CXXFLAGS = @CXXFLAGS@ $(am__append_3) $(am__append_7)
 CYGPATH = @CYGPATH@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
@@ -242,7 +262,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
-LIBS = @LIBS@
+LIBS = @LIBS@ $(am__append_4) $(am__append_8)
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKE = @MAKE@
@@ -332,16 +352,18 @@ RM = rm
 # applications might otherwise receive a file-name starting "/cygdrive/x/.."
 # and not understand it.
 @cygpath_TRUE@CYGSRC = $(shell cygpath -m $(srcdir))
-@fox_FALSE@@windows_TRUE@COMEXT = .exe
+@gui_FALSE@@windows_TRUE@COMEXT = .exe
 
-# On Windows if I have a GUI (here signalled by the use of Fox) I will want
+# On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
 # .com version to be a console application. If I only have command-line
 # versions it is easiest to make everything .exe
-@fox_TRUE@@windows_TRUE@COMEXT = .com
+@gui_TRUE@@windows_TRUE@COMEXT = .com
 @windows_FALSE@COMEXT = 
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
+@wx_FALSE@wxdemotarget = 
+@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
@@ -351,12 +373,15 @@ core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 
 demo_sources = csl.c fasl.c gc.c preserve.c
 undemo_sources = csl.c fasl.c gc.c preserve.c
-@fox_FALSE@fwin_sources = fwin.c termed.c
+@fox_FALSE@@wx_FALSE@fwin_sources = fwin.c termed.c
+@fox_FALSE@@wx_TRUE@fwin_sources = wxfwin.c termed.c
 
 # If I am building under FOX then the main parts of material from
 # fwin.c and termed.c get picked up from the FOX library.
-# I arrange that fwin.c at least shows what you would need if it is
-# used stand-alone.
+# If wxWidgets is in use I have an alternate versions called wxfwin.c 
+# but termed.c can be used unchanged (but from source in this directory
+# not in the FOX directory). When I do not have a GUI at all I use both
+# fwin.c and termed.c from this directory.
 @fox_TRUE@fwin_sources = 
 
 # A BSD-licensed disassembler for x86 and x86_64
@@ -444,15 +469,29 @@ bootstrapreduce_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
 reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 		$(jit_sources) bytes.c $(generated_sources)
 
+@windows_FALSE@fwin_icon = 
+@windows_TRUE@fwin_icon = fwin-icon.$(OBJEXT)
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
-foxdemo_LDADD = $(FOX_LIBS)
+foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+foxdemo_DEPENDENCIES = $(fwin_icon)
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
-fontdemo_LDADD = $(FOX_LIBS)
+fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+fontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
 showmathdemo_SOURCES = showmathdemo.cpp
 showmathdemo_CPPFLAGS = $(FOX_INCLUDES)
-showmathdemo_LDADD = $(FOX_LIBS)
+showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
+showmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+wxdemo_SOURCES = wxdemo.cpp
+wxdemo_LDADD = $(fwin_icon)
+wxdemo_DEPENDENCIES = $(fwin_icon)
+wxfontdemo_SOURCES = wxfontdemo.cpp
+wxfontdemo_LDADD = $(fwin_icon)
+wxfontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
+wxshowmathdemo_LDADD = $(fwin_icon)
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
 @windows_FALSE@DLLEXT = so
 @windows_TRUE@DLLEXT = dll
 dyndemo_SOURCES = dyndemo.c
@@ -477,14 +516,15 @@ AM_CPPFLAGS = -Dfontsdir=reduce.fonts
 # but I also want matching ".com" files to be created to be console
 # mode versions.
 @windows_TRUE@CONAP = -Wl,--subsystem,console
-@fox_FALSE@@windows_TRUE@WINAP = -Wl,--subsystem,console
-@fox_TRUE@@windows_TRUE@WINAP = -Wl,--subsystem,windows
+@gui_FALSE@@windows_TRUE@WINAP = -Wl,--subsystem,console
+@gui_TRUE@@windows_TRUE@WINAP = -Wl,--subsystem,windows
 @windows_FALSE@WINAP = 
+@windows_FALSE@GP = 
 @windows_TRUE@GP = wgnuplot.exe
 @windows_TRUE@dyndemo_LDADD = $(srcdir)/dyndemo.def
 @windows_TRUE@reduceres = fwin-reduce.$(OBJEXT)
 @windows_FALSE@fwindemo_LDADD = $(FOX_LIBS)
-@windows_TRUE@fwindemo_LDADD = fwin-icon.$(OBJEXT) $(FOX_LIBS)
+@windows_TRUE@fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 @windows_FALSE@csl_LDADD = $(FOX_LIBS)
 @windows_TRUE@csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 @windows_FALSE@bootstrapreduce_LDADD = $(FOX_LIBS)
@@ -501,12 +541,17 @@ AM_CPPFLAGS = -Dfontsdir=reduce.fonts
 
 @windows_FALSE@reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-@windows_TRUE@fwindemo_DEPENDENCIES = fwin-icon.$(OBJEXT)
-@fox_TRUE@@windows_FALSE@fontdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-@fox_TRUE@@windows_TRUE@fontdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-@fox_TRUE@@windows_FALSE@showmathdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-@fox_TRUE@@windows_TRUE@showmathdemo_DEPENDENCIES = $(fontsdir)/cmr10.pfb
+@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
+
+# On non-windows systems I am ASSUMING here that the C compiler will
+# accept an "-o" option to indicate where it should put its object file.
+#
+#fwin-csl.$(OBJEXT):	$(srcdir)/null.c
+#	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
+#
+#fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
+#	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
 
 # end of windows vs non-windows conditions
 
@@ -520,8 +565,6 @@ CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 DEST = -o   
 R = $(srcdir)/../..
 @win64_FALSE@FOXDEP = ../lib/libFOX-1.6.a
-
-#FOXDEP=../include/fox-1.6/fxver.h
 @win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
 
 # The next section is to conspire with automake's treatement of externions for
@@ -536,6 +579,9 @@ R = $(srcdir)/../..
 @exeext_TRUE@plain_foxdemo = foxdemo
 @exeext_TRUE@plain_fontdemo = fontdemo
 @exeext_TRUE@plain_showmathdemo = showmathdemo
+@exeext_TRUE@plain_wxdemo = wxdemo
+@exeext_TRUE@plain_wxfontdemo = wxfontdemo
+@exeext_TRUE@plain_wxshowmathdemo = wxshowmathdemo
 @exeext_TRUE@plain_dyndemo = dyndemo
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
@@ -547,10 +593,10 @@ termdemo_LIBS =
 # in the same directory as executables.
 #
 @windows_TRUE@image_files = csl.img reduce.img reduce.doc $(fontsdir) wgnuplot* gnuplot.Copyright
-@fox_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@fox_TRUE@@windows_TRUE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@fox_FALSE@@windows_TRUE@noinstall_console_binaries = 
-@fox_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COMEXT)
+@gui_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_TRUE@@windows_TRUE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_FALSE@@windows_TRUE@noinstall_console_binaries = 
+@gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COMEXT)
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
@@ -573,7 +619,8 @@ COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 @windows_FALSE@dyndep = 
 @windows_TRUE@dyndep = 
 DLLIB = 
-@fox_FALSE@guisrc = 
+@fox_FALSE@@wx_FALSE@guisrc = 
+@fox_FALSE@@wx_TRUE@guisrc = $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
 
 #
 # The target "bytes1a.$(OBJEXT)" recompiles bytes1.c, but with the flag set that
@@ -592,11 +639,12 @@ DLLIB =
 @fox_TRUE@guisrc = $(foxdemo_SOURCES) $(fontdemo_SOURCES) $(showmathdemo_SOURCES)
 mainsrc = $(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
 srcfiles = $(mainsrc) $(csl_SOURCES)
-@fox_FALSE@guibin = 
+@fox_FALSE@@wx_FALSE@guibin = 
+@fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-	reduce$(EXEEXT) $(am__append_1)
-binfiles = $(mainbin) csl$(EXEEXT) $(am__append_2)
+	reduce$(EXEEXT) $(am__append_9)
+binfiles = $(mainbin) csl$(EXEEXT) $(am__append_10)
 @win64_FALSE@@windows_FALSE@NAME = $(BUILD)
 @win64_FALSE@@windows_TRUE@NAME = windows32
 @win64_TRUE@NAME = windows64
@@ -698,6 +746,15 @@ dyndemo$(EXEEXT): $(dyndemo_OBJECTS) $(dyndemo_DEPENDENCIES)
 termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES) 
 	@rm -f termdemo$(EXEEXT)
 	$(LINK) $(termdemo_OBJECTS) $(termdemo_LDADD) $(LIBS)
+@wx_FALSE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxdemo$(EXEEXT)
+@wx_FALSE@	$(CXXLINK) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS)
+@wx_FALSE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxfontdemo$(EXEEXT)
+@wx_FALSE@	$(CXXLINK) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS)
+@wx_FALSE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxshowmathdemo$(EXEEXT)
+@wx_FALSE@	$(CXXLINK) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -817,6 +874,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/u59.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/u60.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wstring.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfwin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmathdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/x86defs.Po@am__quote@
 
 .c.o:
@@ -2075,15 +2136,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 @windows_TRUE@	$(WINDRES) $(srcdir)/fwin-reduce.rc --include-dir=$(srcdir) \
 @windows_TRUE@		-o fwin-reduce.$(OBJEXT)
 
-# On non-windows systems I am ASSUMING here that the C compiler will
-# accept an "-o" option to indicate where it should put its object file.
-#
-@windows_FALSE@fwin-csl.$(OBJEXT):	$(srcdir)/null.c
-@windows_FALSE@	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
-
-@windows_FALSE@fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
-@windows_FALSE@	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
-
 # The next rule will only trigger if fxver.h is not present at all.
 
 $(FOXDEP):
@@ -2103,18 +2155,18 @@ $(srcdir)/Makefile.am:
 csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
 	-rm -f csl$(EXEEXT)
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
-@fox_TRUE@@windows_TRUE@	-rm -f csl$(COMEXT)
-@fox_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	-rm -f csl$(COMEXT)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@fox_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
-@fox_TRUE@@windows_TRUE@	-rm -f reduce$(COMEXT)
-@fox_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	-rm -f reduce$(COMEXT)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@fox_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
@@ -2124,17 +2176,17 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
-@fox_TRUE@@windows_TRUE@	-rm -f fwindemo$(COMEXT)
-@fox_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COMEXT)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@fox_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
 
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-rm -f fontdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) fontdemo$(EXEEXT)
 
-@fox_TRUE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES)
+@fox_TRUE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-rm -f foxdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) foxdemo$(EXEEXT)
@@ -2144,17 +2196,32 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
 
-@fox_TRUE@@windows_TRUE@csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
-@fox_TRUE@@windows_TRUE@	-rm -f csl.exe
-@fox_TRUE@@windows_TRUE@	$(MAKE) csl.exe
+@wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo$(EXEEXT)
 
-@fox_TRUE@@windows_TRUE@reduce$(COMEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
-@fox_TRUE@@windows_TRUE@	-rm -f reduce.exe
-@fox_TRUE@@windows_TRUE@	$(MAKE) reduce.exe
+@wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-rm -f wxdemo$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdemo$(EXEEXT)
 
-@fox_TRUE@@windows_TRUE@fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
-@fox_TRUE@@windows_TRUE@	-rm -f fwindemo.exe
-@fox_TRUE@@windows_TRUE@	$(MAKE) fwindemo.exe
+@wx_TRUE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-rm -f wxshowmathdemo$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmathdemo$(EXEEXT)
+
+@gui_TRUE@@windows_TRUE@csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@	-rm -f csl.exe
+@gui_TRUE@@windows_TRUE@	$(MAKE) csl.exe
+
+@gui_TRUE@@windows_TRUE@reduce$(COMEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@	-rm -f reduce.exe
+@gui_TRUE@@windows_TRUE@	$(MAKE) reduce.exe
+
+@gui_TRUE@@windows_TRUE@fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@	-rm -f fwindemo.exe
+@gui_TRUE@@windows_TRUE@	$(MAKE) fwindemo.exe
 
 $(fontsdir)/cmr10.pfb:	$(srcdir)/fonts
 	-rm -rf $(fontsdir)
@@ -2172,17 +2239,29 @@ $(fontsdir)/cmr10.pfb:	$(srcdir)/fonts
 	-mkdir $(fontsdir)/src
 	$(CP) -r $(srcdir)/fonts/src/*.gz $(fontsdir)/src
 
-@exeext_TRUE@@fox_TRUE@$(plain_csl):	csl.exe csl$(COMEXT)
-@exeext_TRUE@@fox_TRUE@	echo "make csl.exe is preferred"
+@exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COMEXT)
+@exeext_TRUE@@gui_TRUE@	echo "make csl.exe is preferred"
 
-@exeext_TRUE@@fox_TRUE@$(plain_reduce):	reduce.exe reduce$(COMEXT)
-@exeext_TRUE@@fox_TRUE@	echo "make reduce.exe is preferred"
+@exeext_TRUE@@gui_TRUE@$(plain_reduce):	reduce.exe reduce$(COMEXT)
+@exeext_TRUE@@gui_TRUE@	echo "make reduce.exe is preferred"
 
-@exeext_TRUE@@fox_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@exeext_TRUE@@fox_TRUE@	echo "make bootstrapreduce.exe is preferred"
+@exeext_TRUE@@gui_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
+@exeext_TRUE@@gui_TRUE@	echo "make bootstrapreduce.exe is preferred"
 
-@exeext_TRUE@@fox_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
-@exeext_TRUE@@fox_TRUE@	echo "make fwindemo.exe is preferred"
+@exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
+@exeext_TRUE@@gui_TRUE@	echo "make fwindemo.exe is preferred"
+
+@exeext_TRUE@@gui_FALSE@$(plain_csl):	csl.exe
+@exeext_TRUE@@gui_FALSE@	echo "make csl.exe is preferred"
+
+@exeext_TRUE@@gui_FALSE@$(plain_reduce):	reduce.exe
+@exeext_TRUE@@gui_FALSE@	echo "make reduce.exe is preferred"
+
+@exeext_TRUE@@gui_FALSE@$(plain_bootstrapreduce):	bootstrapreduce.exe
+@exeext_TRUE@@gui_FALSE@	echo "make bootstrapreduce.exe is preferred"
+
+@exeext_TRUE@@gui_FALSE@$(plain_fwindemo):	fwindemo.exe
+@exeext_TRUE@@gui_FALSE@	echo "make fwindemo.exe is preferred"
 
 @exeext_TRUE@@fox_TRUE@$(plain_foxdemo):	foxdemo.exe
 @exeext_TRUE@@fox_TRUE@	echo "make foxdemo.exe is preferred"
@@ -2193,17 +2272,14 @@ $(fontsdir)/cmr10.pfb:	$(srcdir)/fonts
 @exeext_TRUE@@fox_TRUE@$(plain_showmathdemo):	showmathdemo.exe
 @exeext_TRUE@@fox_TRUE@	echo "make showmathdemo.exe is preferred"
 
-@exeext_TRUE@@fox_FALSE@$(plain_csl):	csl.exe
-@exeext_TRUE@@fox_FALSE@	echo "make csl.exe is preferred"
+@exeext_TRUE@@wx_TRUE@$(plain_wxdemo):	wxdemo.exe
+@exeext_TRUE@@wx_TRUE@	echo "make wxdemo.exe is preferred"
 
-@exeext_TRUE@@fox_FALSE@$(plain_reduce):	reduce.exe
-@exeext_TRUE@@fox_FALSE@	echo "make reduce.exe is preferred"
+@exeext_TRUE@@wx_TRUE@$(plain_wxfontdemo):	wxfontdemo.exe
+@exeext_TRUE@@wx_TRUE@	echo "make wxfontdemo.exe is preferred"
 
-@exeext_TRUE@@fox_FALSE@$(plain_bootstrapreduce):	bootstrapreduce.exe
-@exeext_TRUE@@fox_FALSE@	echo "make bootstrapreduce.exe is preferred"
-
-@exeext_TRUE@@fox_FALSE@$(plain_fwindemo):	fwindemo.exe
-@exeext_TRUE@@fox_FALSE@	echo "make fwindemo.exe is preferred"
+@exeext_TRUE@@wx_TRUE@$(plain_wxshowmathdemo):	wxshowmathdemo.exe
+@exeext_TRUE@@wx_TRUE@	echo "make wxshowmathdemo.exe is preferred"
 
 @exeext_TRUE@$(plain_termdemo):	termdemo.exe
 @exeext_TRUE@	echo "make termdemo.exe is preferred"

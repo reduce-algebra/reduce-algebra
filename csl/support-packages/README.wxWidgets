@@ -1,0 +1,48 @@
+wxWidgets is distributed under LGPL 2 or later, along with an exception that
+says
+"2. The exception is that you may use, copy, link, modify and distribute
+  under your own terms, binary object code versions of works based
+  on the Library."
+
+For full details see the docs directory within an unpacked copy of wxWidgets
+or visit www.wxwidgets.org.
+
+The archive I include here is a snapshot from the 2.9.1 series. It is newer
+than the original official 2.9.1 release and so contains various corrections
+beyond that, at least one of which made me happier about using it. I hope
+that I will be able to update the archive from time to time with newer
+snapshots. But for now I value ABSOLUTE STABILITY of the version that I
+will develop against... if there are bugs I do not want them to move around!
+
+When you configure Reduce the easiest say "--with-wx" (as well as as
+--with-csl) and if there is a release of wxWidgets at least as new as 2.9.1
+available systemwide on your machine it will be used. If there is not
+or if you wish to explictly build and use the private copy here you can say
+"--with-wx=builtin". At the time of starting trials of this very few people
+will have a new enough version generally installed.
+
+
+At the time of writing this wxWidgets can NOT be used to support a full
+GUI for Reduce - there are merely a couple of small test programs to
+play with. However there are several reasons why I might wish (in the
+fullness of time) to migrate from use of FOX to wxWidgets:
+
+(1) wxWidgets has full native Macintosh support, while on the Mac FOX only
+works via X11, which Mac users appear to view with distain.
+(2) The current versions of wxWidgets can still be used under LGPL 2 rather
+than LGPL 3, and this seems less of a problem for people whose views of
+"freedom" are of the BSD rather than the FSF persuasion.
+(3) The LGPL exception in the wxWidgets license is both generous and
+transitive, so I can apply it to privately patched or extended versions of
+the code if I need to. FOX has a similar looking exception but it only
+applies if I use an unaltered vesrion of an official release (Ie I do not
+make any changes or corrections myself).
+(4) The size of the communities using the two toolkits may speak to the
+better support or brighter long term future for one.
+
+The file-name here for the wxWidgets archive relates to the subversion
+revision number as checked out from the main wxWidgets repository - initially
+in October 2010.
+
+
+
