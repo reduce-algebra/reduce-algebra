@@ -1,0 +1,33 @@
+# /bin/csh
+echo "cross"
+$psys/pslcomp <<EOF
+%
+%
+(setq loaddirectories!* (cons "$pl/../AMD64.old/" loaddirectories*))
+
+(off usermode)
+%%(load psl_case)
+(reload "AMD64-cmac")
+(reload tags)
+(load if-system)
+(load lap-to-asm)
+(on pcmac)
+(off immediatequote)
+(print (list "nextidnumber*" nextidnumber*))
+(load "unixAMD64-asm")
+(print (list "nextidnumber*" nextidnumber*))
+(dskin "unix-patch.sl")
+(print (list "nextidnumber*" nextidnumber*))
+
+(copyd 'bitma 'bitmask)
+(de bitmask (x y) (cond ((and (eq x 2) (eq y 30))  1073741823)
+                        ((and (eq x 2) (eq y 14))  1073676288)
+                        (t (bitma x y))))
+%(dm extrareg (u)
+%  (list 'displacement '(reg st) (plus2 20
+%        (times (difference (cadr u) (plus lastactualreg!& 1))
+%               (compiler-constant 'addressingunitsperitem)))))
+(prop 'car)
+(dskin "tmp.sl")
+
+EOF

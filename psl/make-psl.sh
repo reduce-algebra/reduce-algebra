@@ -23,6 +23,7 @@ if test $guess = "i686-pc-linux-gnu"
  then
         export MACHINE=linux
 fi
+pdist=$PROOT/dist/distrib
 
 
 if test $1 != ""

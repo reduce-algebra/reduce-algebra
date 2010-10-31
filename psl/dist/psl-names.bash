@@ -1,5 +1,3 @@
-<<<<<<< .mine
-=======
 ###############################################################################
 #
 # File:         PSL:PSL-NAMES
@@ -60,7 +58,7 @@
 # Since the environment is inherited, it is only necessary to source psl-names
 # once in your .login file, rather than in the .cshrc for every c-shell.
 
-export proot=/home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
+export proot=/home/winfried/reduce-algebra/trunk/psl
 
 export psl=$proot/dist          # Top of PSL tree.
 # export cl=$proot/pclsdist     # Top of PCLS tree.
@@ -89,4 +87,3 @@ export pdist=$psl/distrib	# Distribution support
 export pxdist=$psl/distrib/$MACHINE # Distribution support, Machine specific
 
 # End of file.
->>>>>>> .r827
