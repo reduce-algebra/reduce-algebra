@@ -190,7 +190,7 @@ l0010:
  .byte 111,97,100,32,76,79,65,68,45,80,83
  .byte 76,0,0
  .quad 0
-// (*entry pre-main expr 0)
+// (*entry pre-psl_psl_main expr 0)
  .globl l0011
 l0011:
  mov _symfnc@GOTPCREL(%rip),%rsi

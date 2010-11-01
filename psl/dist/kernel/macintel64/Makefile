@@ -58,7 +58,7 @@
 #
 ##############################################################################
  
-PROOT   = /newsilo/silo/cons/verkaufpsl
+### PROOT   = /newsilo/silo/cons/verkaufpsl
  
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist
@@ -176,7 +176,7 @@ CRT1  =
 
 $(USERDIR)/bpsl: $(CCFILES)  \
 		$(USERDIR)/main.o $(USERDIR)/dmain.o \
-		$(PXK)/Makefile.linux
+		$(PXK)/Makefile
 	$(USERDIR)/cclnk
 
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
