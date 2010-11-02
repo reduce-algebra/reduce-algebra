@@ -2996,6 +2996,7 @@ $as_echo "$as_me: About to configure FOX" >&6;}
   fi
 
   extras=
+  wx=
 
   case $host in
     *cygwin*)
@@ -3019,7 +3020,7 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
         extras="--with-xft --with-xim"
       fi
       ;;
-    *Darwin*)
+    *Darwin* | *darwin*)
       CFLAGS="$CFLAGS "
       CXXFLAGS="$CXXFLAGS "
       extras="--with-xft --with-xim"

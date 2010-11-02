@@ -541,6 +541,7 @@ then
   fi
 
   extras=
+  wx=
 
   case $host in
     *cygwin*)
@@ -562,7 +563,7 @@ then
         extras="--with-xft --with-xim"
       fi
       ;;
-    *Darwin*)
+    *Darwin* | *darwin*)
       CFLAGS="$CFLAGS "
       CXXFLAGS="$CXXFLAGS "
       extras="--with-xft --with-xim"

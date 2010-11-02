@@ -10688,6 +10688,14 @@ done
 test -n "$CYGPATH" || CYGPATH="no"
 
 
+if test "x$windows_build" != "xyes" && test "x$with_wx" != "xno"
+then
+# The "xpm" files use to establish icons for wxWindows lead to a lot
+# of ugly warnings about casts from strings to (char *) unless I disable
+# that particular warning.
+  CXXFLAGS="$CXXFLAGS -Wno-write-strings "
+fi
+
 #
 # Make some things available for conditional segments of a Makefile
 #
