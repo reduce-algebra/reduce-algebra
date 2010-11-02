@@ -55,6 +55,7 @@ setenv SavingPSL yes		# skip user startup before savesystem
 $psys/bare-psl << EOF
 (setq loaddirectories* '("" "\$pl/" "\$pll/"))
 (on verboseload)
+(on verboseload)
 (load pslcomp init-file)
 (load strings common)
 (savesystem "PSL 4.2 Compiler" "\$psys/pslcomp"
