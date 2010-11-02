@@ -20,7 +20,9 @@
  .globl datebuffer
   .comm datebuffer,8
  .globl _symval
+ .globl _symval
  .globl symval
+_symval:
 _symval:
 symval:
  .long ((29*0x8000000)+0)
@@ -334,8 +336,8 @@ lastbps:
  .globl bpslowerbound
 bpslowerbound:
  .long ((29*0x8000000)+284)
- .globl _psl_mainstartinitialize
-_psl_mainstartinitialize:
+ .globl _psl__psl_mainstartinitialize
+_psl__psl_mainstartinitialize:
  .long ((29*0x8000000)+285)
  .globl nextbps
 nextbps:

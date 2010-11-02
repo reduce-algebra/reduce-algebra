@@ -157,7 +157,7 @@ l0007:
  .byte 108,111,97,100,45,112,115,108,46,98
  .byte 0,0
  .long 0
-/ (*entry pre-_psl_main expr 0)
+/ (*entry pre-_psl__psl_main expr 0)
  .globl l0008
 l0008:
  call *symfnc+1272

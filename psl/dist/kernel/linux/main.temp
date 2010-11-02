@@ -8,76 +8,76 @@ firstkernel:
 / (*entry init-pointers expr 0)
  .globl l0001
 l0001:
- mov symval+1044,%edi
- mov %edi,symval+1072
- mov symval+1040,%edi
- mov %edi,symval+1076
- mov $7996,%eax
+ movl symval+1044,%edi
+ movl %edi,symval+1072
+ movl symval+1040,%edi
+ movl %edi,symval+1076
+ movl $7996,%eax
  add symval+1040,%eax
- mov %eax,symval+1080
- mov symval+1040,%edi
- mov %edi,symval+1084
- mov symval+1088,%eax
- mov %eax,symval+1092
+ movl %eax,symval+1080
+ movl symval+1040,%edi
+ movl %edi,symval+1084
+ movl symval+1088,%eax
+ movl %eax,symval+1092
  ret
  .long 0
 / (*entry init-fluids expr 0)
  .globl l0002
 l0002:
- mov [[30\*0x8000000]+128],%eax
- mov %eax,symval+1100
- mov %eax,symval+1104
- mov %eax,symval+1108
- mov %eax,symval+1112
- mov %eax,symval+1116
- mov %eax,symval+1120
- mov %eax,symval+1124
- mov %eax,symval+1128
- mov %eax,symval+1132
- mov %eax,symval+1136
- mov %eax,symval+1140
- mov %eax,symval+1144
- mov %eax,symval+1148
- mov %eax,symval+1152
- mov %eax,symval+1156
- mov %eax,symval+1160
- mov %eax,symval+1164
- mov %eax,symval+1168
- mov %eax,symval+1172
- mov %eax,symval+1176
- mov %eax,symval+1180
- mov %eax,symval+1184
- mov %eax,symval+1188
- mov %eax,symval+1192
+ movl $((30*0x8000000)+128),%eax
+ movl %eax,symval+1100
+ movl %eax,symval+1104
+ movl %eax,symval+1108
+ movl %eax,symval+1112
+ movl %eax,symval+1116
+ movl %eax,symval+1120
+ movl %eax,symval+1124
+ movl %eax,symval+1128
+ movl %eax,symval+1132
+ movl %eax,symval+1136
+ movl %eax,symval+1140
+ movl %eax,symval+1144
+ movl %eax,symval+1148
+ movl %eax,symval+1152
+ movl %eax,symval+1156
+ movl %eax,symval+1160
+ movl %eax,symval+1164
+ movl %eax,symval+1168
+ movl %eax,symval+1172
+ movl %eax,symval+1176
+ movl %eax,symval+1180
+ movl %eax,symval+1184
+ movl %eax,symval+1188
+ movl %eax,symval+1192
  ret
  .long 0
-/ (*entry main expr 0)
-main:
- .globl main
- mov 4(%esp),%edi
- mov %edi,symval+1200
- mov 8(%esp),%edi
- mov %edi,symval+1204
+/ (*entry _psl_main expr 0)
+_psl_main:
+ .globl _psl_main
+ movl 4(%esp),%edi
+ movl %edi,symval+1200
+ movl 8(%esp),%edi
+ movl %edi,symval+1204
  sub $12,%esp
- mov symval+1200,%edi
- mov %edi,(%esp)
- mov symval+1204,%edi
- mov %edi,4(%esp)
- mov %ebx,8(%esp)
- mov symval+1200,%eax
- mov symval+1204,%ebx
- mov $27,symval+1128
+ movl symval+1200,%edi
+ movl %edi,(%esp)
+ movl symval+1204,%edi
+ movl %edi,4(%esp)
+ movl %ebx,8(%esp)
+ movl symval+1200,%eax
+ movl symval+1204,%ebx
+ movl $27,symval+1128
  call *symfnc+1208
- mov (%esp),%edi
- mov %edi,symval+1200
- mov 4(%esp),%edi
- mov %edi,symval+1204
- mov 8(%esp),%edi
- mov %edi,symval+1212
+ movl (%esp),%edi
+ movl %edi,symval+1200
+ movl 4(%esp),%edi
+ movl %edi,symval+1204
+ movl 8(%esp),%edi
+ movl %edi,symval+1212
  call *symfnc+1068
- mov %esp,%edx
+ movl %esp,%edx
  shr $5,%edx
- mov %edx,symval+1216
+ movl %edx,symval+1216
  call *symfnc+1220
  call *symfnc+1224
 l0003:
@@ -99,53 +99,53 @@ l0004:
 / (*entry _reduceup expr 0)
  .globl _reduceup
 _reduceup:
- mov 4(%esp),%eax
- mov 8(%esp),%ebx
- mov 12(%esp),%ecx
- mov 16(%esp),%edx
+ movl 4(%esp),%eax
+ movl 8(%esp),%ebx
+ movl 12(%esp),%ecx
+ movl 16(%esp),%edx
  jmp *symfnc+1244
  .long 4
 / (*entry reduceup expr 4)
  .globl reduceup
 reduceup:
  sub $16,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,12(%esp)
- mov %edi,8(%esp)
- mov %ebx,4(%esp)
- mov %edx,(%esp)
- mov %ecx,%ebx
- mov $312,%edi
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %ebx,4(%esp)
+ movl %edx,(%esp)
+ movl %ecx,%ebx
+ movl $312,%edi
  call *symfnc+1248
- mov %eax,8(%esp)
- mov (%esp),%ebx
- mov 4(%esp),%eax
- mov $312,%edi
+ movl %eax,8(%esp)
+ movl (%esp),%ebx
+ movl 4(%esp),%eax
+ movl $312,%edi
  call *symfnc+1248
- mov %eax,12(%esp)
- mov [[30\*0x8000000]+116],symval+1256
- mov 8(%esp),%eax
+ movl %eax,12(%esp)
+ movl $((30*0x8000000)+116),symval+1256
+ movl 8(%esp),%eax
  call *symfnc+1260
- mov 12(%esp),%eax
+ movl 12(%esp),%eax
  call *symfnc+1264
- mov $313,%edi
+ movl $313,%edi
  call *symfnc+1252
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  call *symfnc+1260
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  call *symfnc+1264
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1268
- mov 12(%esp),%eax
+ movl 12(%esp),%eax
  call *symfnc+1268
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  add $16,%esp
  ret
  .long 0
 / (*entry init-gcarray expr 0)
  .globl l0005
 l0005:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  ret
 l0006:
  .long 21
@@ -157,16 +157,16 @@ l0007:
  .byte 108,111,97,100,45,112,115,108,46,98
  .byte 0,0
  .long 0
-/ (*entry pre-main expr 0)
+/ (*entry pre-_psl_main expr 0)
  .globl l0008
 l0008:
  call *symfnc+1272
  call *symfnc+1276
  call *symfnc+1280
- mov [[4\*0x8000000]+l0006],%eax
+ movl $((4*0x8000000)+l0006),%eax
  call *symfnc+1284
  call *symfnc+1288
- mov [[4\*0x8000000]+l0007],%eax
+ movl $((4*0x8000000)+l0007),%eax
  call *symfnc+1292
  jmp *symfnc+1296
  .long 1
@@ -186,7 +186,7 @@ l0010:
 / (*entry console-newline expr 0)
  .globl l0011
 l0011:
- mov $10,%eax
+ movl $10,%eax
  jmp *symfnc+1312
 l0012:
  .long 0
@@ -201,7 +201,7 @@ l0013:
 / (*entry binaryopenread expr 1)
  .globl binaryopenread
 binaryopenread:
- mov [[4\*0x8000000]+l0012],%ebx
+ movl $((4*0x8000000)+l0012),%ebx
  and $134217727,%ebx
  or $134217728,%ebx
  add $4,%ebx
@@ -209,9 +209,9 @@ binaryopenread:
  or $134217728,%eax
  add $4,%eax
  call *symfnc+1320
- cmp $0,%eax
+ cmpl $0,%eax
  jne l0014
- mov [[4\*0x8000000]+l0013],%eax
+ movl $((4*0x8000000)+l0013),%eax
  jmp *symfnc+1324
 l0014:
  ret
@@ -224,10 +224,10 @@ binaryread:
 / (*entry binaryreadblock expr 3)
  .globl binaryreadblock
 binaryreadblock:
- mov %ebx,%ebp
- mov %eax,%edx
- mov $4,%ebx
- mov %ebp,%eax
+ movl %ebx,%ebp
+ movl %eax,%edx
+ movl $4,%ebx
+ movl %ebp,%eax
  jmp *symfnc+1340
  .long 1
 / (*entry binaryclose expr 1)
@@ -239,86 +239,86 @@ binaryclose:
  .globl l0015
 l0015:
  sub $8,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,4(%esp)
- mov %edi,(%esp)
- mov $65000,%ebx
- mov symval+1352,%eax
- mov %eax,%edx
- mov %ebx,%ecx
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,4(%esp)
+ movl %edi,(%esp)
+ movl $65000,%ebx
+ movl symval+1352,%eax
+ movl %eax,%edx
+ movl %ebx,%ecx
 l0016:
- cmp %ecx,%edx
+ cmpl %ecx,%edx
  jg l0017
- mov %edx,%eax
+ movl %edx,%eax
  shl $2,%eax
  add symval+1356,%eax
  xor %ebx,%ebx
- inc %ebx
+ incl %ebx
  add %edx,%ebx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
- inc %edx
+ movl %ebx,(%esi)
+ incl %edx
  jmp l0016
 l0017:
- mov symval+1356,%esi
+ movl symval+1356,%esi
  or $134217728,%esi
- mov $0,260000(%esi)
- mov $68023,%ebx
+ movl $0,260000(%esi)
+ movl $68023,%ebx
  xor %eax,%eax
- mov %eax,(%esp)
- mov %ebx,4(%esp)
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
 l0018:
- mov (%esp),%edi
- cmp 4(%esp),%edi
+ movl (%esp),%edi
+ cmpl 4(%esp),%edi
  jg l0019
  xor %ecx,%ecx
- mov (%esp),%ebx
- mov symval+1048,%eax
+ movl (%esp),%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw %cx,0(%ebx,%eax,1)
- inc (%esp)
+ incl (%esp)
  jmp l0018
 l0019:
- mov symval+1356,%edi
+ movl symval+1356,%edi
  or $134217728,%edi
- mov 512(%edi),%eax
+ movl 512(%edi),%eax
  call *symfnc+1360
- mov $128,%ecx
- mov %eax,%ebx
- mov symval+1048,%eax
+ movl $128,%ecx
+ movl %eax,%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw %cx,0(%ebx,%eax,1)
  xor %ebx,%ebx
  dec %ebx
  add symval+1352,%ebx
- mov $256,%eax
- mov %eax,(%esp)
- mov %ebx,4(%esp)
+ movl $256,%eax
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
 l0020:
- mov (%esp),%edi
- cmp 4(%esp),%edi
+ movl (%esp),%edi
+ cmpl 4(%esp),%edi
  jg l0021
- mov (%esp),%eax
+ movl (%esp),%eax
  shl $2,%eax
  add symval+1356,%eax
- mov %eax,%edi
+ movl %eax,%edi
  or $134217728,%edi
- mov (%edi),%eax
+ movl (%edi),%eax
  call *symfnc+1360
- mov (%esp),%ecx
- mov %eax,%ebx
- mov symval+1048,%eax
+ movl (%esp),%ecx
+ movl %eax,%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw %cx,0(%ebx,%eax,1)
- inc (%esp)
+ incl (%esp)
  jmp l0020
 l0021:
- mov [[30\*0x8000000]+128],%eax
- mov %eax,symval+1364
+ movl $((30*0x8000000)+128),%eax
+ movl %eax,symval+1364
  add $8,%esp
  ret
  .long 1
@@ -326,62 +326,62 @@ l0021:
  .globl l0022
 l0022:
  sub $12,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,8(%esp)
- mov %edi,4(%esp)
- mov %eax,(%esp)
- mov %eax,%ebx
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,8(%esp)
+ movl %edi,4(%esp)
+ movl %eax,(%esp)
+ movl %eax,%ebx
  xor %eax,%eax
  call *symfnc+1372
- mov %eax,4(%esp)
- cmp [[30\*0x8000000]+128],%eax
+ movl %eax,4(%esp)
+ cmpl $((30*0x8000000)+128),%eax
  jne l0023
- mov (%esp),%eax
+ movl (%esp),%eax
  add $12,%esp
  jmp *symfnc+1376
 l0023:
- mov (%esp),%eax
+ movl (%esp),%eax
  and $134217727,%eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%eax
+ movl (%esi),%eax
  shl $5,%eax
  sar $5,%eax
- mov %eax,8(%esp)
- cmp 4(%esp),%eax
+ movl %eax,8(%esp)
+ cmpl 4(%esp),%eax
  jle l0024
  xor %ebx,%ebx
- inc %ebx
+ incl %ebx
  add 4(%esp),%ebx
- mov (%esp),%eax
+ movl (%esp),%eax
  and $134217727,%eax
  add $4,%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- cmp $0,%eax
+ cmpl $0,%eax
  jne l0024
- inc 4(%esp)
+ incl 4(%esp)
 l0024:
- mov 4(%esp),%edi
- cmp 8(%esp),%edi
+ movl 4(%esp),%edi
+ cmpl 8(%esp),%edi
  jl l0025
- mov (%esp),%eax
+ movl (%esp),%eax
  jmp l0026
 l0025:
- mov (%esp),%ecx
+ movl (%esp),%ecx
  and $134217727,%ecx
- mov %ecx,%esi
+ movl %ecx,%esi
  or $134217728,%esi
- mov (%esi),%ecx
+ movl (%esi),%ecx
  shl $5,%ecx
  sar $5,%ecx
- inc %ecx
+ incl %ecx
  xor %ebx,%ebx
- inc %ebx
+ incl %ebx
  add 4(%esp),%ebx
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1380
 l0026:
  add $12,%esp
@@ -399,24 +399,24 @@ l0027:
  .globl l0028
 l0028:
  sub $24,%esp
- mov %eax,(%esp)
- mov [[30\*0x8000000]+128],%ebp
- mov %ebp,%edx
- mov %ebp,%ecx
- mov %eax,%ebx
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+128),%ebp
+ movl %ebp,%edx
+ movl %ebp,%ecx
+ movl %eax,%ebx
  and $134217727,%ebx
- mov %ebx,%esi
+ movl %ebx,%esi
  or $134217728,%esi
- mov (%esi),%ebx
+ movl (%esi),%ebx
  shl $5,%ebx
  sar $5,%ebx
  and $134217727,%eax
- mov %eax,4(%esp)
- mov %ebx,8(%esp)
- mov %ecx,12(%esp)
- mov %edx,16(%esp)
- mov %ebp,20(%esp)
- cmp $0,%ebx
+ movl %eax,4(%esp)
+ movl %ebx,8(%esp)
+ movl %ecx,12(%esp)
+ movl %edx,16(%esp)
+ movl %ebp,20(%esp)
+ cmpl $0,%ebx
  jne l0029
  add $4,%eax
  or $134217728,%eax
@@ -427,35 +427,35 @@ l0028:
  or $-268435456,%eax
  jmp l0030
 l0029:
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1360
- mov %eax,%ebx
- mov %ebx,12(%esp)
- mov symval+1048,%eax
+ movl %eax,%ebx
+ movl %ebx,12(%esp)
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw 0(%eax,%ebx,1),%ax
  cwtl
  and $65535,%eax
- mov %eax,%ebx
- cmp $65535,%eax
+ movl %eax,%ebx
+ cmpl $65535,%eax
  jl l0031
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0032
 l0031:
- mov [[30\*0x8000000]+116],%eax
+ movl $((30*0x8000000)+116),%eax
 l0032:
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0033
- mov [[30\*0x8000000]+116],%eax
- cmp $0,%ebx
+ movl $((30*0x8000000)+116),%eax
+ cmpl $0,%ebx
  jg l0033
  add $12,%eax
 l0033:
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0034
- mov 12(%esp),%ebx
- mov symval+1048,%eax
+ movl 12(%esp),%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw 0(%eax,%ebx,1),%ax
@@ -465,31 +465,31 @@ l0033:
  or $-268435456,%eax
  jmp l0030
 l0034:
- cmp symval+1364,%eax
+ cmpl symval+1364,%eax
  je l0035
- mov [[4\*0x8000000]+l0027],%eax
+ movl $((4*0x8000000)+l0027),%eax
  call *symfnc+1284
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1284
  call *symfnc+1288
 l0035:
  call *symfnc+1388
- mov %eax,20(%esp)
- mov %eax,%ecx
- mov 12(%esp),%ebx
- mov symval+1048,%eax
+ movl %eax,20(%esp)
+ movl %eax,%ecx
+ movl 12(%esp),%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw %cx,0(%ebx,%eax,1)
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1392
- mov %eax,16(%esp)
- mov 4(%esp),%ebx
+ movl %eax,16(%esp)
+ movl 4(%esp),%ebx
  call *symfnc+1396
- mov 16(%esp),%ebx
+ movl 16(%esp),%ebx
  and $134217727,%ebx
  or $536870912,%ebx
- mov 20(%esp),%eax
+ movl 20(%esp),%eax
  add $24,%esp
  jmp *symfnc+1400
 l0030:
@@ -505,82 +505,82 @@ l0036:
  .globl l0037
 l0037:
  sub $16,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,12(%esp)
- mov %edi,8(%esp)
- mov %edi,4(%esp)
- mov %eax,(%esp)
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %edi,4(%esp)
+ movl %eax,(%esp)
  call *symfnc+1404
- mov %eax,4(%esp)
- mov %eax,8(%esp)
- mov $-1,12(%esp)
+ movl %eax,4(%esp)
+ movl %eax,8(%esp)
+ movl $-1,12(%esp)
 l0038:
- mov 8(%esp),%ebx
- mov symval+1048,%eax
+ movl 8(%esp),%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw 0(%eax,%ebx,1),%ax
  cwtl
  and $65535,%eax
- cmp $0,%eax
+ cmpl $0,%eax
  jne l0039
- cmp $-1,12(%esp)
+ cmpl $-1,12(%esp)
  je l0040
- mov 12(%esp),%eax
+ movl 12(%esp),%eax
  jmp l0041
 l0040:
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
 l0041:
  jmp l0042
 l0039:
- mov 8(%esp),%ebx
- mov symval+1048,%eax
+ movl 8(%esp),%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw 0(%eax,%ebx,1),%ax
  cwtl
- mov %eax,%ebx
+ movl %eax,%ebx
  and $65535,%ebx
- cmp $65535,%ebx
+ cmpl $65535,%ebx
  jne l0043
- cmp $-1,12(%esp)
+ cmpl $-1,12(%esp)
  jne l0044
- mov 8(%esp),%edi
- mov %edi,12(%esp)
+ movl 8(%esp),%edi
+ movl %edi,12(%esp)
  jmp l0044
 l0043:
- mov 8(%esp),%ebx
- mov symval+1048,%eax
+ movl 8(%esp),%ebx
+ movl symval+1048,%eax
  shl $1,%ebx
  or $134217728,%eax
  movw 0(%eax,%ebx,1),%ax
  cwtl
- mov (%esp),%ebx
+ movl (%esp),%ebx
  and $65535,%eax
  shl $2,%eax
  add symval+1356,%eax
- mov %eax,%edi
+ movl %eax,%edi
  or $134217728,%edi
- mov (%edi),%eax
+ movl (%edi),%eax
  call *symfnc+1408
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0044
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  jmp l0042
 l0044:
- cmp $68023,8(%esp)
+ cmpl $68023,8(%esp)
  jne l0045
  xor %eax,%eax
  jmp l0046
 l0045:
  xor %eax,%eax
- inc %eax
+ incl %eax
  add 8(%esp),%eax
 l0046:
- mov %eax,8(%esp)
- cmp 4(%esp),%eax
+ movl %eax,8(%esp)
+ cmpl 4(%esp),%eax
  jne l0038
- mov [[4\*0x8000000]+l0036],%eax
+ movl $((4*0x8000000)+l0036),%eax
  call *symfnc+1324
  jmp l0038
 l0042:
@@ -591,41 +591,41 @@ l0042:
  .globl l0047
 l0047:
  sub $8,%esp
- mov %eax,(%esp)
+ movl %eax,(%esp)
  and $134217727,%eax
  or $-268435456,%eax
- mov %eax,4(%esp)
- mov (%esp),%ecx
+ movl %eax,4(%esp)
+ movl (%esp),%ecx
  shl $2,%ecx
  add symval+1356,%ecx
- mov %ecx,%esi
+ movl %ecx,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
- mov (%esp),%edx
+ movl %ebx,(%esi)
+ movl (%esp),%edx
  shl $2,%edx
  add symval+1412,%edx
- mov [[30\*0x8000000]+128],%ebp
- mov %edx,%esi
+ movl $((30*0x8000000)+128),%ebp
+ movl %edx,%esi
  or $134217728,%esi
- mov %ebp,(%esi)
- mov (%esp),%eax
+ movl %ebp,(%esi)
+ movl (%esp),%eax
  shl $2,%eax
  add symval+1416,%eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ebp,(%esi)
- mov (%esp),%eax
+ movl %ebp,(%esi)
+ movl (%esp),%eax
  shl $2,%eax
  add symval+1420,%eax
- mov (%esp),%ebx
+ movl (%esp),%ebx
  and $134217727,%ebx
  or $-402653184,%ebx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
- mov (%esp),%eax
+ movl %ebx,(%esi)
+ movl (%esp),%eax
  call *symfnc+1424
- mov 4(%esp),%eax
+ movl 4(%esp),%eax
  add $8,%esp
  ret
  .long 1
@@ -633,41 +633,41 @@ l0047:
  .globl l0050
 l0050:
  sub $20,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,12(%esp)
- mov %edi,4(%esp)
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %edi,4(%esp)
  and $134217727,%eax
- mov %eax,8(%esp)
- mov %eax,%esi
+ movl %eax,8(%esp)
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%eax
+ movl (%esi),%eax
  shl $5,%eax
  sar $5,%eax
- mov %eax,(%esp)
+ movl %eax,(%esp)
  xor %eax,%eax
- mov %eax,16(%esp)
- cmp $24,(%esp)
+ movl %eax,16(%esp)
+ cmpl $24,(%esp)
  jle l0051
- mov $24,(%esp)
+ movl $24,(%esp)
 l0051:
- mov (%esp),%ebx
+ movl (%esp),%ebx
  xor %eax,%eax
- mov %eax,12(%esp)
- mov %ebx,4(%esp)
+ movl %eax,12(%esp)
+ movl %ebx,4(%esp)
 l0052:
- mov 12(%esp),%edi
- cmp 4(%esp),%edi
+ movl 12(%esp),%edi
+ cmpl 4(%esp),%edi
  jg l0053
- mov 12(%esp),%ebx
- mov $4,%eax
+ movl 12(%esp),%ebx
+ movl $4,%eax
  add 8(%esp),%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- mov $24,%ebx
+ movl $24,%ebx
  sub 12(%esp),%ebx
- cmp $0,%ebx
+ cmpl $0,%ebx
  jge l0048
  neg %ebx
  xchg %ebx,%ecx
@@ -678,190 +678,190 @@ l0048:
  shl %cl,%eax
 l0049:
  xchg %ebx,%ecx
- mov 16(%esp),%edi
+ movl 16(%esp),%edi
  xor %edi,%eax
- mov %eax,16(%esp)
- inc 12(%esp)
+ movl %eax,16(%esp)
+ incl 12(%esp)
  jmp l0052
 l0053:
- mov $68023,%ebx
- mov 16(%esp),%eax
+ movl $68023,%ebx
+ movl 16(%esp),%eax
  add $20,%esp
  cltd
  idiv %ebx
- mov %edx,%eax
+ movl %edx,%eax
  ret
  .long 1
 / (*entry faslin expr 1)
  .globl faslin
 faslin:
  sub $44,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,32(%esp)
- mov %edi,12(%esp)
- mov %edi,8(%esp)
- mov %eax,(%esp)
- mov [[30\*0x8000000]+128],16(%esp)
- mov [[30\*0x8000000]+128],24(%esp)
- mov [[30\*0x8000000]+128],28(%esp)
- mov [[30\*0x8000000]+128],40(%esp)
- mov [[30\*0x8000000]+128],4(%esp)
- mov [[30\*0x8000000]+128],20(%esp)
- mov [[30\*0x8000000]+128],36(%esp)
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,32(%esp)
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+128),16(%esp)
+ movl $((30*0x8000000)+128),24(%esp)
+ movl $((30*0x8000000)+128),28(%esp)
+ movl $((30*0x8000000)+128),40(%esp)
+ movl $((30*0x8000000)+128),4(%esp)
+ movl $((30*0x8000000)+128),20(%esp)
+ movl $((30*0x8000000)+128),36(%esp)
  call *symfnc+1316
- mov %eax,8(%esp)
+ movl %eax,8(%esp)
  call *symfnc+1328
- mov %eax,12(%esp)
- mov $65535,%ebx
+ movl %eax,12(%esp)
+ movl $65535,%ebx
  and %eax,%ebx
- cmp $399,%ebx
+ cmpl $399,%ebx
  je l0054
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1344
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1428
  jmp l0055
 l0054:
- mov 12(%esp),%eax
+ movl 12(%esp),%eax
  shr $16,%eax
- mov %eax,12(%esp)
- mov 8(%esp),%eax
+ movl %eax,12(%esp)
+ movl 8(%esp),%eax
  call *symfnc+1432
- mov %eax,16(%esp)
- mov 8(%esp),%eax
+ movl %eax,16(%esp)
+ movl 8(%esp),%eax
  call *symfnc+1328
- mov %eax,24(%esp)
+ movl %eax,24(%esp)
  call *symfnc+1436
- mov %eax,28(%esp)
+ movl %eax,28(%esp)
  xor %eax,%eax
  call *symfnc+1436
- mov %eax,36(%esp)
- mov 8(%esp),%eax
+ movl %eax,36(%esp)
+ movl 8(%esp),%eax
  call *symfnc+1328
- mov 28(%esp),%ebx
+ movl 28(%esp),%ebx
  add %eax,%ebx
- mov %ebx,40(%esp)
- mov 24(%esp),%ecx
+ movl %ebx,40(%esp)
+ movl 24(%esp),%ecx
  xor %ebx,%ebx
  add 28(%esp),%ebx
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1336
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1328
- mov %eax,4(%esp)
+ movl %eax,4(%esp)
  call *symfnc+1440
- mov %eax,%ebx
+ movl %eax,%ebx
  and $134217727,%ebx
  or $939524096,%ebx
- mov %ebx,20(%esp)
- mov 4(%esp),%ecx
+ movl %ebx,20(%esp)
+ movl 4(%esp),%ecx
  and $134217727,%ebx
  or $134217728,%ebx
  add $4,%ebx
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1336
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1344
  xor %eax,%eax
- inc %eax
+ incl %eax
  and 12(%esp),%eax
- cmp $1,%eax
+ cmpl $1,%eax
  jne l0056
- mov 16(%esp),%edx
- mov 20(%esp),%ecx
- mov 24(%esp),%ebx
- mov 28(%esp),%eax
+ movl 16(%esp),%edx
+ movl 20(%esp),%ecx
+ movl 24(%esp),%ebx
+ movl 28(%esp),%eax
  call *symfnc+1444
  jmp l0057
 l0056:
- mov 16(%esp),%edx
- mov 20(%esp),%ecx
- mov 24(%esp),%ebx
- mov 28(%esp),%eax
+ movl 16(%esp),%edx
+ movl 20(%esp),%ecx
+ movl 24(%esp),%ebx
+ movl 28(%esp),%eax
  call *symfnc+1448
 l0057:
- mov symval+1452,%eax
- mov %eax,32(%esp)
- mov 28(%esp),%edi
- mov %edi,symval+1452
- mov 40(%esp),%eax
+ movl symval+1452,%eax
+ movl %eax,32(%esp)
+ movl 28(%esp),%edi
+ movl %edi,symval+1452
+ movl 40(%esp),%eax
  call *symfnc+1456
- mov 32(%esp),%edi
- mov %edi,symval+1452
- mov 36(%esp),%ebx
- mov 40(%esp),%eax
+ movl 32(%esp),%edi
+ movl %edi,symval+1452
+ movl 36(%esp),%ebx
+ movl 40(%esp),%eax
  call *symfnc+1460
 l0055:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  add $44,%esp
  ret
  .long 2
 / (*entry delbps expr 2)
  .globl delbps
 delbps:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  ret
  .long 4
 / (*entry do-relocation expr 4)
  .globl l0058
 l0058:
  sub $24,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,16(%esp)
- mov %eax,12(%esp)
- mov %ecx,4(%esp)
- mov %edx,8(%esp)
- mov %ebx,%eax
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,16(%esp)
+ movl %eax,12(%esp)
+ movl %ecx,4(%esp)
+ movl %edx,8(%esp)
+ movl %ebx,%eax
  shl $2,%eax
  xor %ebx,%ebx
  dec %ebx
  add %eax,%ebx
  xor %eax,%eax
- mov %eax,20(%esp)
- mov %ebx,(%esp)
+ movl %eax,20(%esp)
+ movl %ebx,(%esp)
 l0059:
- mov 20(%esp),%edi
- cmp (%esp),%edi
+ movl 20(%esp),%edi
+ cmpl (%esp),%edi
  jle l0060
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0061
 l0060:
- mov 20(%esp),%ebx
- mov 4(%esp),%eax
+ movl 20(%esp),%ebx
+ movl 4(%esp),%eax
  and $134217727,%eax
  or $134217728,%eax
  add $4,%eax
- mov $366,%edi
+ movl $366,%edi
  call *symfnc+1464
- mov 12(%esp),%ebx
+ movl 12(%esp),%ebx
  add 20(%esp),%ebx
- mov %ebx,16(%esp)
- cmp $1,%eax
+ movl %ebx,16(%esp)
+ cmpl $1,%eax
  je l0062
- cmp $2,%eax
+ cmpl $2,%eax
  je l0063
- cmp $3,%eax
+ cmpl $3,%eax
  je l0064
  jmp l0065
 l0062:
- mov 8(%esp),%ecx
- mov 12(%esp),%ebx
- mov 16(%esp),%eax
+ movl 8(%esp),%ecx
+ movl 12(%esp),%ebx
+ movl 16(%esp),%eax
  call *symfnc+1468
  jmp l0065
 l0064:
- mov 8(%esp),%ecx
- mov 12(%esp),%ebx
- mov 16(%esp),%eax
+ movl 8(%esp),%ecx
+ movl 12(%esp),%ebx
+ movl 16(%esp),%eax
  call *symfnc+1472
  jmp l0065
 l0063:
- mov 8(%esp),%ecx
- mov 12(%esp),%ebx
- mov 16(%esp),%eax
+ movl 8(%esp),%ecx
+ movl 12(%esp),%ebx
+ movl 16(%esp),%eax
  call *symfnc+1476
 l0065:
- inc 20(%esp)
+ incl 20(%esp)
  jmp l0059
 l0061:
  add $24,%esp
@@ -871,66 +871,66 @@ l0061:
  .globl l0066
 l0066:
  sub $24,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,8(%esp)
- mov %eax,16(%esp)
- mov %ecx,(%esp)
- mov %edx,12(%esp)
- mov [[30\*0x8000000]+128],%ecx
- mov %eax,%ebx
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,8(%esp)
+ movl %eax,16(%esp)
+ movl %ecx,(%esp)
+ movl %edx,12(%esp)
+ movl $((30*0x8000000)+128),%ecx
+ movl %eax,%ebx
  xor %eax,%eax
- mov %eax,4(%esp)
- mov %ebx,20(%esp)
- mov (%esp),%ebp
+ movl %eax,4(%esp)
+ movl %ebx,20(%esp)
+ movl (%esp),%ebp
  and $134217727,%ebp
  add $4,%ebp
- mov %ebp,(%esp)
+ movl %ebp,(%esp)
 l0067:
- mov 4(%esp),%ebx
- mov (%esp),%eax
+ movl 4(%esp),%ebx
+ movl (%esp),%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
  and $255,%eax
- mov %eax,8(%esp)
- cmp $0,%eax
+ movl %eax,8(%esp)
+ cmpl $0,%eax
  jne l0068
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0069
 l0068:
- inc 4(%esp)
- mov $63,%eax
+ incl 4(%esp)
+ movl $63,%eax
  and 8(%esp),%eax
  add 20(%esp),%eax
- mov %eax,20(%esp)
- mov 8(%esp),%ebx
+ movl %eax,20(%esp)
+ movl 8(%esp),%ebx
  shr $6,%ebx
- mov %ebx,8(%esp)
- mov %ebx,%eax
- cmp $1,%eax
+ movl %ebx,8(%esp)
+ movl %ebx,%eax
+ cmpl $1,%eax
  je l0070
- cmp $2,%eax
+ cmpl $2,%eax
  je l0071
- cmp $3,%eax
+ cmpl $3,%eax
  je l0072
  jmp l0067
 l0070:
- mov 12(%esp),%ecx
- mov 16(%esp),%ebx
- mov 20(%esp),%eax
+ movl 12(%esp),%ecx
+ movl 16(%esp),%ebx
+ movl 20(%esp),%eax
  call *symfnc+1468
  jmp l0067
 l0072:
- mov 12(%esp),%ecx
- mov 16(%esp),%ebx
- mov 20(%esp),%eax
+ movl 12(%esp),%ecx
+ movl 16(%esp),%ebx
+ movl 20(%esp),%eax
  call *symfnc+1472
  jmp l0067
 l0071:
- mov 12(%esp),%ecx
- mov 16(%esp),%ebx
- mov 20(%esp),%eax
+ movl 12(%esp),%ecx
+ movl 16(%esp),%ebx
+ movl 20(%esp),%eax
  call *symfnc+1476
  jmp l0067
 l0069:
@@ -942,20 +942,20 @@ l0069:
 l0073:
  push %ebx
  push %eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%ebx
+ movl (%esi),%ebx
  and $1073741823,%ebx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%eax
+ movl (%esi),%eax
  shr $30,%eax
- mov %ecx,%edx
- mov 4(%esp),%ecx
+ movl %ecx,%edx
+ movl 4(%esp),%ecx
  call *symfnc+1480
- mov (%esp),%esi
+ movl (%esp),%esi
  or $134217728,%esi
- mov %eax,(%esi)
+ movl %eax,(%esi)
  add $8,%esp
  ret
  .long 3
@@ -964,25 +964,25 @@ l0073:
 l0074:
  push %ebx
  push %eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%ebx
+ movl (%esi),%ebx
  and $4194303,%ebx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%eax
+ movl (%esi),%eax
  and $12582912,%eax
  shr $22,%eax
- mov %ecx,%edx
- mov 4(%esp),%ecx
+ movl %ecx,%edx
+ movl 4(%esp),%ecx
  call *symfnc+1480
- mov (%esp),%esi
+ movl (%esp),%esi
  or $134217728,%esi
- mov (%esi),%edi
+ movl (%esi),%edi
  and $134217727,%eax
  and $-134217728,%edi
  or %eax,%edi
- mov %edi,(%esi)
+ movl %edi,(%esi)
  add $8,%esp
  ret
  .long 3
@@ -991,25 +991,25 @@ l0074:
 l0075:
  push %ebx
  push %eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%ebx
+ movl (%esi),%ebx
  and $1073676288,%ebx
  shr $16,%ebx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%eax
+ movl (%esi),%eax
  shr $30,%eax
- mov %ecx,%edx
- mov 4(%esp),%ecx
+ movl %ecx,%edx
+ movl 4(%esp),%ecx
  call *symfnc+1480
- mov (%esp),%esi
+ movl (%esp),%esi
  or $134217728,%esi
- mov (%esi),%edi
+ movl (%esi),%edi
  shl $16,%eax
  and $65535,%edi
  or %eax,%edi
- mov %edi,(%esi)
+ movl %edi,(%esi)
  add $8,%esp
  ret
  .long 4
@@ -1017,63 +1017,63 @@ l0075:
  .globl l0076
 l0076:
  push %ebx
- cmp $0,%eax
+ cmpl $0,%eax
  jne l0077
- mov %ecx,%eax
+ movl %ecx,%eax
  add %ebx,%eax
  jmp l0078
 l0077:
- cmp $2,%eax
+ cmpl $2,%eax
  jne l0079
- cmp $8150,%ebx
+ cmpl $8150,%ebx
  jl l0080
- mov $-8156,%eax
+ movl $-8156,%eax
  add %ebx,%eax
  shl $2,%eax
  add symval+1032,%eax
  jmp l0078
 l0080:
- cmp $2048,%ebx
+ cmpl $2048,%ebx
  jl l0081
- mov %edx,%ebx
- mov (%esp),%eax
+ movl %edx,%ebx
+ movl (%esp),%eax
  call *symfnc+1484
  shl $2,%eax
  add symval+1420,%eax
  jmp l0078
 l0081:
- mov %ebx,%eax
+ movl %ebx,%eax
  shl $2,%eax
  add symval+1420,%eax
  jmp l0078
 l0079:
- cmp $3,%eax
+ cmpl $3,%eax
  jne l0082
- cmp $2048,%ebx
+ cmpl $2048,%ebx
  jl l0083
- mov %edx,%ebx
- mov (%esp),%eax
+ movl %edx,%ebx
+ movl (%esp),%eax
  call *symfnc+1484
- mov %eax,(%esp)
+ movl %eax,(%esp)
 l0083:
- mov (%esp),%eax
+ movl (%esp),%eax
  shl $2,%eax
  add symval+1488,%eax
  jmp l0078
 l0082:
- cmp $1,%eax
+ cmpl $1,%eax
  jne l0084
- cmp $2048,%ebx
+ cmpl $2048,%ebx
  jl l0085
- mov %edx,%ebx
- mov (%esp),%eax
+ movl %edx,%ebx
+ movl (%esp),%eax
  add $4,%esp
  jmp *symfnc+1484
 l0085:
- mov %ebx,%eax
+ movl %ebx,%eax
  jmp l0078
 l0084:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
 l0078:
  add $4,%esp
  ret
@@ -1083,77 +1083,77 @@ l0078:
 l0086:
  add $-2047,%eax
  shl $2,%eax
- mov %ebx,%ecx
+ movl %ebx,%ecx
  and $134217727,%ecx
  add %ecx,%eax
- mov %eax,%edi
+ movl %eax,%edi
  or $134217728,%edi
- mov (%edi),%eax
+ movl (%edi),%eax
  ret
  .long 1
 / (*entry read-id-table expr 1)
  .globl l0087
 l0087:
  sub $24,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,20(%esp)
- mov %edi,16(%esp)
- mov %edi,12(%esp)
- mov %edi,8(%esp)
- mov %edi,4(%esp)
- mov %eax,(%esp)
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,20(%esp)
+ movl %edi,16(%esp)
+ movl %edi,12(%esp)
+ movl %edi,8(%esp)
+ movl %edi,4(%esp)
+ movl %eax,(%esp)
  call *symfnc+1328
- mov %eax,4(%esp)
- inc %eax
+ movl %eax,4(%esp)
+ incl %eax
  call *symfnc+1440
  and $134217727,%eax
  or $939524096,%eax
- mov %eax,8(%esp)
- mov 4(%esp),%ebx
+ movl %eax,8(%esp)
+ movl 4(%esp),%ebx
  xor %eax,%eax
- mov %eax,12(%esp)
- mov %ebx,16(%esp)
+ movl %eax,12(%esp)
+ movl %ebx,16(%esp)
 l0088:
- mov 12(%esp),%edi
- cmp 16(%esp),%edi
+ movl 12(%esp),%edi
+ cmpl 16(%esp),%edi
  jg l0089
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1328
- mov symval+1036,%esi
+ movl symval+1036,%esi
  or $134217728,%esi
- mov %eax,(%esi)
- mov $5,%ecx
+ movl %eax,(%esi)
+ movl $5,%ecx
  add %eax,%ecx
- mov %ecx,%ebx
+ movl %ecx,%ebx
  shr $30,%ebx
  add %ebx,%ecx
  sar $2,%ecx
- mov $4,%ebx
+ movl $4,%ebx
  add symval+1036,%ebx
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1336
  xor %eax,%eax
  add symval+1036,%eax
  and $134217727,%eax
  or $536870912,%eax
  call *symfnc+1368
- mov %eax,20(%esp)
+ movl %eax,20(%esp)
  xor %eax,%eax
- inc %eax
+ incl %eax
  add 12(%esp),%eax
  shl $2,%eax
- mov 8(%esp),%ebx
+ movl 8(%esp),%ebx
  and $134217727,%ebx
  add %ebx,%eax
- mov 20(%esp),%ecx
+ movl 20(%esp),%ecx
  and $134217727,%ecx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ecx,(%esi)
- inc 12(%esp)
+ movl %ecx,(%esi)
+ incl 12(%esp)
  jmp l0088
 l0089:
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  add $24,%esp
  ret
  .long 3
@@ -1163,7 +1163,7 @@ putentry:
  add symval+1452,%ecx
  and $134217727,%ecx
  or $-1610612736,%ecx
- mov $373,%edi
+ movl $373,%edi
  jmp *symfnc+1492
 l0090:
  .long 22
@@ -1174,7 +1174,7 @@ l0090:
 / (*entry faslin-bad-file expr 1)
  .globl l0091
 l0091:
- mov [[4\*0x8000000]+l0090],%eax
+ movl $((4*0x8000000)+l0090),%eax
  call *symfnc+1284
  jmp *symfnc+1288
 l0092:
@@ -1189,43 +1189,43 @@ l0092:
 gtbps:
  sub $4,%esp
 l0093:
- mov %eax,(%esp)
- cmp [[30\*0x8000000]+128],%eax
+ movl %eax,(%esp)
+ cmpl $((30*0x8000000)+128),%eax
  jne l0094
  call *symfnc+1504
 l0094:
- cmp $10,(%esp)
+ cmpl $10,(%esp)
  jle l0095
- mov $15,%eax
+ movl $15,%eax
  and symval+1144,%eax
- cmp $0,%eax
+ cmpl $0,%eax
  je l0095
- mov symval+1144,%ebx
+ movl symval+1144,%ebx
  shr $4,%ebx
  shl $4,%ebx
  add $16,%ebx
- mov %ebx,symval+1144
+ movl %ebx,symval+1144
 l0095:
- mov symval+1144,%eax
- mov (%esp),%ebx
+ movl symval+1144,%eax
+ movl (%esp),%ebx
  shl $2,%ebx
  add symval+1144,%ebx
- mov %ebx,symval+1144
- cmp symval+1132,%ebx
+ movl %ebx,symval+1144
+ cmpl symval+1132,%ebx
  jle l0096
- mov %eax,symval+1144
- mov [[30\*0x8000000]+375],%eax
+ movl %eax,symval+1144
+ movl $((30*0x8000000)+375),%eax
  call *symfnc+1508
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0097
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1500
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0097
- mov (%esp),%eax
+ movl (%esp),%eax
  jmp l0093
 l0097:
- mov [[4\*0x8000000]+l0092],%eax
+ movl $((4*0x8000000)+l0092),%eax
  add $4,%esp
  jmp *symfnc+1512
 l0096:
@@ -1240,13 +1240,13 @@ l0098:
 / (*entry gtbps-nil-error expr 0)
  .globl l0099
 l0099:
- mov [[4\*0x8000000]+l0098],%eax
+ movl $((4*0x8000000)+l0098),%eax
  jmp *symfnc+1512
  .long 1
 / (*entry gtheap expr 1)
  .globl gtheap
 gtheap:
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  jne l0100
  jmp *symfnc+1520
 l0100:
@@ -1255,15 +1255,15 @@ l0100:
 / (*entry real-gtheap expr 1)
  .globl l0101
 l0101:
- mov %eax,%ecx
- mov symval+1108,%eax
- mov %ecx,%ebx
+ movl %eax,%ecx
+ movl symval+1108,%eax
+ movl %ecx,%ebx
  shl $2,%ebx
  add symval+1108,%ebx
- mov %ebx,symval+1108
- cmp symval+1116,%ebx
+ movl %ebx,symval+1108
+ cmpl symval+1116,%ebx
  jl l0102
- mov %ecx,%ebx
+ movl %ecx,%ebx
  jmp *symfnc+1528
 l0102:
  ret
@@ -1276,7 +1276,7 @@ l0103:
 / (*entry get-heap-trap expr 1)
  .globl l0104
 l0104:
- mov [[4\*0x8000000]+l0103],%eax
+ movl $((4*0x8000000)+l0103),%eax
  jmp *symfnc+1324
 l0105:
  .long 18
@@ -1286,22 +1286,22 @@ l0105:
 / (*entry gtid expr 0)
  .globl gtid
 gtid:
- cmp $0,symval+1352
+ cmpl $0,symval+1352
  jne l0106
  call *symfnc+1532
- cmp $0,symval+1352
+ cmpl $0,symval+1352
  jne l0106
- mov [[4\*0x8000000]+l0105],%eax
+ movl $((4*0x8000000)+l0105),%eax
  call *symfnc+1324
 l0106:
- mov symval+1352,%eax
- mov %eax,%ebx
+ movl symval+1352,%eax
+ movl %eax,%ebx
  shl $2,%ebx
  add symval+1356,%ebx
- mov %ebx,%edi
+ movl %ebx,%edi
  or $134217728,%edi
- mov (%edi),%edi
- mov %edi,symval+1352
+ movl (%edi),%edi
+ movl %edi,symval+1352
  ret
  .long 1
 / (*entry gtwrds expr 1)
@@ -1310,12 +1310,12 @@ gtwrds:
  push %eax
  add $2,%eax
  call *symfnc+1516
- mov (%esp),%ebx
+ movl (%esp),%ebx
  and $134217727,%ebx
  or $-939524096,%ebx
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
+ movl %ebx,(%esi)
  add $4,%esp
  ret
  .long 1
@@ -1323,25 +1323,25 @@ gtwrds:
  .globl gtconststr
 gtconststr:
  sub $8,%esp
- mov %eax,(%esp)
+ movl %eax,(%esp)
  add $5,%eax
- mov %eax,%ebx
+ movl %eax,%ebx
  shr $30,%ebx
  add %ebx,%eax
  sar $2,%eax
- mov %eax,4(%esp)
- inc %eax
+ movl %eax,4(%esp)
+ incl %eax
  call *symfnc+1436
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esp),%edi
- mov %edi,(%esi)
- mov 4(%esp),%ebx
+ movl (%esp),%edi
+ movl %edi,(%esi)
+ movl 4(%esp),%ebx
  shl $2,%ebx
  add %eax,%ebx
- mov %ebx,%esi
+ movl %ebx,%esi
  or $134217728,%esi
- mov $0,(%esi)
+ movl $0,(%esi)
  add $8,%esp
  ret
 l0107:
@@ -1355,59 +1355,59 @@ l0107:
  .globl subseq
 subseq:
  sub $32,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,28(%esp)
- mov %edi,24(%esp)
- mov %edi,20(%esp)
- mov %edi,16(%esp)
- mov %edi,12(%esp)
- mov %eax,(%esp)
- mov %ebx,4(%esp)
- mov %ecx,8(%esp)
- mov %eax,%edi
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,28(%esp)
+ movl %edi,24(%esp)
+ movl %edi,20(%esp)
+ movl %edi,16(%esp)
+ movl %edi,12(%esp)
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ movl %ecx,8(%esp)
+ movl %eax,%edi
  shr $27,%edi
- cmp $4,%edi
+ cmpl $4,%edi
  je l0108
- mov [[4\*0x8000000]+l0107],%eax
+ movl $((4*0x8000000)+l0107),%eax
  call *symfnc+1324
 l0108:
  xor %eax,%eax
  dec %eax
  add 8(%esp),%eax
  sub 4(%esp),%eax
- mov %eax,12(%esp)
- mov (%esp),%eax
+ movl %eax,12(%esp)
+ movl (%esp),%eax
  and $134217727,%eax
- mov %eax,16(%esp)
- mov 12(%esp),%eax
+ movl %eax,16(%esp)
+ movl 12(%esp),%eax
  call *symfnc+1536
- mov %eax,20(%esp)
- mov 12(%esp),%ebx
+ movl %eax,20(%esp)
+ movl 12(%esp),%ebx
  xor %eax,%eax
- mov %eax,24(%esp)
- mov %ebx,28(%esp)
+ movl %eax,24(%esp)
+ movl %ebx,28(%esp)
 l0109:
- mov 24(%esp),%edi
- cmp 28(%esp),%edi
+ movl 24(%esp),%edi
+ cmpl 28(%esp),%edi
  jg l0110
- mov 4(%esp),%ebx
+ movl 4(%esp),%ebx
  add 24(%esp),%ebx
- mov $4,%eax
+ movl $4,%eax
  add 16(%esp),%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- mov %eax,%ecx
- mov 24(%esp),%ebx
- mov $4,%eax
+ movl %eax,%ecx
+ movl 24(%esp),%ebx
+ movl $4,%eax
  add 20(%esp),%eax
  or $134217728,%eax
  movb %cl,0(%ebx,%eax,1)
- inc 24(%esp)
+ incl 24(%esp)
  jmp l0109
 l0110:
- mov 20(%esp),%eax
+ movl 20(%esp),%eax
  and $134217727,%eax
  or $536870912,%eax
  add $32,%esp
@@ -1417,38 +1417,38 @@ l0110:
  .globl l0111
 l0111:
  sub $16,%esp
- mov %eax,(%esp)
- mov %ebx,4(%esp)
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
  and $134217727,%ebx
- mov %ebx,%esi
+ movl %ebx,%esi
  or $134217728,%esi
- mov (%esi),%ebx
+ movl (%esi),%ebx
  shl $5,%ebx
  sar $5,%ebx
  xor %eax,%eax
- mov %eax,8(%esp)
- mov %ebx,12(%esp)
+ movl %eax,8(%esp)
+ movl %ebx,12(%esp)
 l0112:
- mov 8(%esp),%edi
- cmp 12(%esp),%edi
+ movl 8(%esp),%edi
+ cmpl 12(%esp),%edi
  jle l0113
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0114
 l0113:
- mov 8(%esp),%ebx
- mov 4(%esp),%eax
+ movl 8(%esp),%ebx
+ movl 4(%esp),%eax
  and $134217727,%eax
  add $4,%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- cmp (%esp),%eax
+ cmpl (%esp),%eax
  jne l0115
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  jmp l0114
 l0115:
- inc 8(%esp)
+ incl 8(%esp)
  jmp l0112
 l0114:
  add $16,%esp
@@ -1458,58 +1458,58 @@ l0114:
  .globl l0116
 l0116:
  sub $20,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,16(%esp)
- mov [[30\*0x8000000]+128],12(%esp)
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,16(%esp)
+ movl $((30*0x8000000)+128),12(%esp)
  and $134217727,%eax
- mov %eax,(%esp)
+ movl %eax,(%esp)
  and $134217727,%ebx
- mov %ebx,4(%esp)
- mov %eax,%esi
+ movl %ebx,4(%esp)
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esi),%ecx
+ movl (%esi),%ecx
  shl $5,%ecx
  sar $5,%ecx
- mov %ecx,8(%esp)
- mov %ebx,%esi
+ movl %ecx,8(%esp)
+ movl %ebx,%esi
  or $134217728,%esi
- mov (%esi),%edx
+ movl (%esi),%edx
  shl $5,%edx
  sar $5,%edx
- cmp %edx,%ecx
+ cmpl %edx,%ecx
  je l0117
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0118
 l0117:
- mov $0,12(%esp)
+ movl $0,12(%esp)
 l0119:
- mov 12(%esp),%edi
- cmp 8(%esp),%edi
+ movl 12(%esp),%edi
+ cmpl 8(%esp),%edi
  jle l0120
- mov [[30\*0x8000000]+116],%eax
+ movl $((30*0x8000000)+116),%eax
  jmp l0118
 l0120:
- mov 12(%esp),%ebx
- mov $4,%eax
+ movl 12(%esp),%ebx
+ movl $4,%eax
  add (%esp),%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- mov %eax,16(%esp)
- mov 12(%esp),%ebx
- mov $4,%eax
+ movl %eax,16(%esp)
+ movl 12(%esp),%ebx
+ movl $4,%eax
  add 4(%esp),%eax
  or $134217728,%eax
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- cmp 16(%esp),%eax
+ cmpl 16(%esp),%eax
  je l0121
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0118
 l0121:
- inc 12(%esp)
+ incl 12(%esp)
  jmp l0119
 l0118:
  add $20,%esp
@@ -1519,63 +1519,63 @@ l0118:
  .globl copystringtofrom
 copystringtofrom:
  sub $16,%esp
- mov %eax,12(%esp)
- mov %eax,%ecx
+ movl %eax,12(%esp)
+ movl %eax,%ecx
  and $134217727,%ecx
- mov %ecx,4(%esp)
- mov %ebx,%edx
+ movl %ecx,4(%esp)
+ movl %ebx,%edx
  and $134217727,%edx
- mov %edx,8(%esp)
- mov %edx,%esi
+ movl %edx,8(%esp)
+ movl %edx,%esi
  or $134217728,%esi
- mov (%esi),%ebp
+ movl (%esi),%ebp
  shl $5,%ebp
  sar $5,%ebp
- mov %ebp,(%esp)
- mov %ecx,%esi
+ movl %ebp,(%esp)
+ movl %ecx,%esi
  or $134217728,%esi
- mov (%esi),%eax
+ movl (%esi),%eax
  shl $5,%eax
  sar $5,%eax
- cmp %ebp,%eax
+ cmpl %ebp,%eax
  jge l0122
- mov %eax,(%esp)
+ movl %eax,(%esp)
 l0122:
- mov $5,%eax
+ movl $5,%eax
  add (%esp),%eax
- mov %eax,%ebx
+ movl %eax,%ebx
  shr $30,%ebx
  add %ebx,%eax
  sar $2,%eax
  dec %eax
- mov %eax,(%esp)
- mov %eax,%ebx
+ movl %eax,(%esp)
+ movl %eax,%ebx
  xor %eax,%eax
- mov %eax,%edx
- mov %ebx,%ecx
+ movl %eax,%edx
+ movl %ebx,%ecx
 l0123:
- cmp %ecx,%edx
+ cmpl %ecx,%edx
  jg l0124
  xor %eax,%eax
- inc %eax
+ incl %eax
  add %edx,%eax
  shl $2,%eax
  add 4(%esp),%eax
  xor %ebx,%ebx
- inc %ebx
+ incl %ebx
  add %edx,%ebx
  shl $2,%ebx
  add 8(%esp),%ebx
- mov %ebx,%edi
+ movl %ebx,%edi
  or $134217728,%edi
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%edi),%edi
- mov %edi,(%esi)
- inc %edx
+ movl (%edi),%edi
+ movl %edi,(%esi)
+ incl %edx
  jmp l0123
 l0124:
- mov 12(%esp),%eax
+ movl 12(%esp),%eax
  add $16,%esp
  ret
  .long 2
@@ -1584,16 +1584,16 @@ l0124:
 cons:
  push %ebx
  push %eax
- mov $2,%eax
+ movl $2,%eax
  call *symfnc+1516
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov (%esp),%edi
- mov %edi,(%esi)
- mov %eax,%esi
+ movl (%esp),%edi
+ movl %edi,(%esi)
+ movl %eax,%esi
  or $134217728,%esi
- mov 4(%esp),%edi
- mov %edi,4(%esi)
+ movl 4(%esp),%edi
+ movl %edi,4(%esi)
  and $134217727,%eax
  or $1207959552,%eax
  add $8,%esp
@@ -1604,9 +1604,9 @@ cons:
 interrogate:
  shl $2,%eax
  add symval+1420,%eax
- mov %eax,%edi
+ movl %eax,%edi
  or $134217728,%edi
- mov (%edi),%eax
+ movl (%edi),%eax
  ret
  .long 2
 / (*entry modify expr 2)
@@ -1614,10 +1614,10 @@ interrogate:
 modify:
  shl $2,%eax
  add symval+1420,%eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
- mov %ebx,%eax
+ movl %ebx,(%esi)
+ movl %ebx,%eax
  ret
  .long 3
 / (*entry put expr 3)
@@ -1629,32 +1629,32 @@ put:
  .globl l0125
 l0125:
  sub $16,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,12(%esp)
- mov %eax,(%esp)
- mov %ebx,4(%esp)
- mov %ecx,8(%esp)
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,12(%esp)
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ movl %ecx,8(%esp)
  call *symfnc+1560
- mov %eax,12(%esp)
- mov %eax,%ebx
- mov 4(%esp),%eax
+ movl %eax,12(%esp)
+ movl %eax,%ebx
+ movl 4(%esp),%eax
  call *symfnc+1564
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0126
- mov 8(%esp),%edi
- mov %edi,-1073741820(%eax)
+ movl 8(%esp),%edi
+ movl %edi,-1073741820(%eax)
  jmp l0127
 l0126:
- mov 8(%esp),%ebx
- mov 4(%esp),%eax
+ movl 8(%esp),%ebx
+ movl 4(%esp),%eax
  call *symfnc+1540
- mov 12(%esp),%ebx
+ movl 12(%esp),%ebx
  call *symfnc+1540
- mov %eax,%ebx
- mov (%esp),%eax
+ movl %eax,%ebx
+ movl (%esp),%eax
  call *symfnc+1568
 l0127:
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  add $16,%esp
  ret
  .long 2
@@ -1662,24 +1662,24 @@ l0127:
  .globl atsoc
 atsoc:
 l0128:
- mov %ebx,%edi
+ movl %ebx,%edi
  shr $27,%edi
- cmp $9,%edi
+ cmpl $9,%edi
  je l0129
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  ret
 l0129:
- mov -1073741824(%ebx),%edi
+ movl -1073741824(%ebx),%edi
  shr $27,%edi
- cmp $9,%edi
+ cmpl $9,%edi
  jne l0130
- mov -1073741824(%ebx),%esi
- cmp -1073741824(%esi),%eax
+ movl -1073741824(%ebx),%esi
+ cmpl -1073741824(%esi),%eax
  jne l0130
- mov -1073741824(%ebx),%eax
+ movl -1073741824(%ebx),%eax
  ret
 l0130:
- mov -1073741820(%ebx),%ebx
+ movl -1073741820(%ebx),%ebx
  jmp l0128
  .long 2
 / (*entry unchecked-setprop expr 2)
@@ -1688,10 +1688,10 @@ l0131:
  and $134217727,%eax
  shl $2,%eax
  add symval+1412,%eax
- mov %eax,%esi
+ movl %eax,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
- mov %ebx,%eax
+ movl %ebx,(%esi)
+ movl %ebx,%eax
  ret
  .long 1
 / (*entry unchecked-prop expr 1)
@@ -1700,9 +1700,9 @@ l0132:
  and $134217727,%eax
  shl $2,%eax
  add symval+1412,%eax
- mov %eax,%edi
+ movl %eax,%edi
  or $134217728,%edi
- mov (%edi),%eax
+ movl (%edi),%eax
  ret
  .long 3
 / (*entry putd expr 3)
@@ -1719,40 +1719,40 @@ l0133:
  .globl l0134
 l0134:
  sub $12,%esp
- mov %eax,(%esp)
- mov %ebx,4(%esp)
- mov %ecx,8(%esp)
- mov %eax,%edi
+ movl %eax,(%esp)
+ movl %ebx,4(%esp)
+ movl %ecx,8(%esp)
+ movl %eax,%edi
  shr $27,%edi
- cmp $30,%edi
+ cmpl $30,%edi
  jne l0135
- mov %ebx,%edi
+ movl %ebx,%edi
  shr $27,%edi
- cmp $30,%edi
+ cmpl $30,%edi
  jne l0135
- mov %ecx,%edi
+ movl %ecx,%edi
  shr $27,%edi
- cmp $20,%edi
+ cmpl $20,%edi
  je l0136
 l0135:
- mov [[4\*0x8000000]+l0133],%eax
+ movl $((4*0x8000000)+l0133),%eax
  call *symfnc+1324
 l0136:
- mov 8(%esp),%ebx
+ movl 8(%esp),%ebx
  and $134217727,%ebx
- mov (%esp),%eax
+ movl (%esp),%eax
  and $134217727,%eax
  call *symfnc+1584
- mov 4(%esp),%edi
- cmp [[30\*0x8000000]+394],%edi
+ movl 4(%esp),%edi
+ cmpl $((30*0x8000000)+394),%edi
  je l0137
- mov 4(%esp),%ecx
- mov [[30\*0x8000000]+395],%ebx
- mov (%esp),%eax
+ movl 4(%esp),%ecx
+ movl $((30*0x8000000)+395),%ebx
+ movl (%esp),%eax
  add $12,%esp
  jmp *symfnc+1552
 l0137:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  add $12,%esp
  ret
  .long 1
@@ -1760,46 +1760,46 @@ l0137:
  .globl fluid
 fluid:
  sub $12,%esp
- mov [[30\*0x8000000]+128],%edi
- mov %edi,8(%esp)
- mov %eax,(%esp)
- mov [[30\*0x8000000]+128],%eax
- mov (%esp),%edi
- mov %edi,4(%esp)
- mov 4(%esp),%edi
+ movl $((30*0x8000000)+128),%edi
+ movl %edi,8(%esp)
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+128),%eax
+ movl (%esp),%edi
+ movl %edi,4(%esp)
+ movl 4(%esp),%edi
  shr $27,%edi
- cmp $9,%edi
+ cmpl $9,%edi
  jne l0138
- mov 4(%esp),%eax
- mov -1073741824(%eax),%eax
+ movl 4(%esp),%eax
+ movl -1073741824(%eax),%eax
  jmp l0139
 l0138:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
 l0139:
- mov %eax,8(%esp)
+ movl %eax,8(%esp)
 l0140:
- mov 4(%esp),%edi
+ movl 4(%esp),%edi
  shr $27,%edi
- cmp $9,%edi
+ cmpl $9,%edi
  je l0141
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0142
 l0141:
- mov 8(%esp),%eax
+ movl 8(%esp),%eax
  call *symfnc+1592
- mov 4(%esp),%eax
- mov -1073741820(%eax),%eax
- mov %eax,4(%esp)
- mov %eax,%edi
+ movl 4(%esp),%eax
+ movl -1073741820(%eax),%eax
+ movl %eax,4(%esp)
+ movl %eax,%edi
  shr $27,%edi
- cmp $9,%edi
+ cmpl $9,%edi
  jne l0143
- mov -1073741824(%eax),%eax
+ movl -1073741824(%eax),%eax
  jmp l0144
 l0143:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
 l0144:
- mov %eax,8(%esp)
+ movl %eax,8(%esp)
  jmp l0140
 l0142:
  add $12,%esp
@@ -1808,8 +1808,8 @@ l0142:
 / (*entry fluid1 expr 1)
  .globl l0145
 l0145:
- mov [[30\*0x8000000]+397],%ecx
- mov [[30\*0x8000000]+399],%ebx
+ movl $((30*0x8000000)+397),%ecx
+ movl $((30*0x8000000)+399),%ebx
  jmp *symfnc+1552
  .long 1
 / (*entry stderror expr 1)
@@ -1820,26 +1820,26 @@ stderror:
 / (*entry *define-constant expr 2)
  .globl l0146
 l0146:
- mov %eax,%ecx
+ movl %eax,%ecx
  and $134217727,%ecx
  shl $2,%ecx
  add symval+1420,%ecx
- mov %ecx,%esi
+ movl %ecx,%esi
  or $134217728,%esi
- mov %ebx,(%esi)
- mov [[30\*0x8000000]+116],%ecx
- mov [[30\*0x8000000]+400],%ebx
+ movl %ebx,(%esi)
+ movl $((30*0x8000000)+116),%ecx
+ movl $((30*0x8000000)+400),%ebx
  jmp *symfnc+1552
  .long 1
 / (*entry plantunbound expr 1)
  .globl plantunbound
 plantunbound:
  add %eax,%eax
- mov %eax,%esi
+ movl %eax,%esi
  add %esi,%esi
  add symval+1488,%esi
- mov l0147,%edi
- mov %edi,0(%esi)
+ movl l0147,%edi
+ movl %edi,0(%esi)
  ret
  .long 0
 l0147:
@@ -1849,22 +1849,22 @@ l0147:
  .globl plantcodepointer
 plantcodepointer:
  add %eax,%eax
- mov %eax,%esi
+ movl %eax,%esi
  add %esi,%esi
  add symval+1488,%esi
  or $134217728,%ebx
- mov %ebx,0(%esi)
+ movl %ebx,0(%esi)
  ret
  .long 1
 / (*entry plantlambdalink expr 1)
  .globl plantlambdalink
 plantlambdalink:
  add %eax,%eax
- mov %eax,%esi
+ movl %eax,%esi
  add %esi,%esi
  add symval+1488,%esi
- mov l0148,%edi
- mov %edi,0(%esi)
+ movl l0148,%edi
+ movl %edi,0(%esi)
  ret
  .long 0
 l0148:
@@ -1873,7 +1873,7 @@ l0148:
 / (*entry addressapply0 expr 1)
  .globl l0149
 l0149:
- *jumphugo %eax
+ jmp  *%eax
  .long 2
 / (*entry bittable expr 2)
  .globl bittable
@@ -1884,11 +1884,11 @@ bittable:
  movb 0(%eax,%ebx,1),%al
  cbtw
  cwtl
- mov (%esp),%ebx
+ movl (%esp),%ebx
  and $3,%ebx
  add %ebx,%ebx
  add $-6,%ebx
- cmp $0,%ebx
+ cmpl $0,%ebx
  jge l0150
  neg %ebx
  xchg %ebx,%ecx
@@ -1917,12 +1917,12 @@ l0152:
  .globl l0153
 l0153:
  push %edi
- mov [[4\*0x8000000]+l0152],%eax
+ movl $((4*0x8000000)+l0152),%eax
  call *symfnc+1284
- mov symval+1356,%esi
+ movl symval+1356,%esi
  pop %edi
  shl $2,%edi
- mov 0(%esi,%edi,1),%eax
+ movl 0(%esi,%edi,1),%eax
  call *symfnc+1284
  xor %eax,%eax
  call *symfnc+1228
@@ -1933,7 +1933,7 @@ l0153:
 compiledcallinginterpreted:
  and $134217727,%edi
  or $-268435456,%edi
- mov %edi,symval+1624
+ movl %edi,symval+1624
  jmp *symfnc+1628
 l0154:
  .long 12
@@ -1944,9 +1944,9 @@ l0154:
  .globl l0155
 l0155:
  push %eax
- mov [[4\*0x8000000]+l0154],%eax
+ movl $((4*0x8000000)+l0154),%eax
  call *symfnc+1284
- mov (%esp),%eax
+ movl (%esp),%eax
  call *symfnc+1284
  call *symfnc+1288
  xor %eax,%eax
@@ -1957,52 +1957,52 @@ l0155:
 / (*entry echoon expr 0)
  .globl l0156
 l0156:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call echoon
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 0
 / (*entry echooff expr 0)
  .globl l0157
 l0157:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call echooff
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 1
 / (*entry external_charsininputbuffer expr 1)
  .globl l0158
 l0158:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_charsininputbuffer
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 0
 / (*entry flushstdoutputbuffer expr 0)
  .globl l0159
 l0159:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call flushstdoutputbuffer
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 0
 / (*entry external_user_homedir_string expr 0)
  .globl l0160
 l0160:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_user_homedir_string
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 1
 / (*entry external_anyuser_homedir_string expr 1)
  .globl l0161
 l0161:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_anyuser_homedir_string
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2010,9 +2010,9 @@ l0161:
  .globl l0162
 l0162:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call alterheapsize
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2020,9 +2020,9 @@ l0162:
  .globl l0163
 l0163:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call allocatemorebps
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 3
@@ -2032,9 +2032,9 @@ l0164:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call get_file_status
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 2
@@ -2043,9 +2043,9 @@ l0164:
 l0165:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call os_startup_hook
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2053,9 +2053,9 @@ l0165:
  .globl l0166
 l0166:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call os_cleanup_hook
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2063,9 +2063,9 @@ l0166:
  .globl l0167
 l0167:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_alarm
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2074,9 +2074,9 @@ l0167:
 l0168:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_ualarm
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2084,9 +2084,9 @@ l0168:
  .globl l0169
 l0169:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_time
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2094,9 +2094,9 @@ l0169:
  .globl l0170
 l0170:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_timc
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2105,9 +2105,9 @@ l0170:
 l0171:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_stat
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2116,9 +2116,9 @@ l0171:
 l0172:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_link
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2126,9 +2126,9 @@ l0172:
  .globl l0173
 l0173:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_unlink
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2136,9 +2136,9 @@ l0173:
  .globl l0174
 l0174:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_strlen
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2147,9 +2147,9 @@ l0174:
 l0175:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_setenv
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2157,9 +2157,9 @@ l0175:
  .globl l0176
 l0176:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_getenv
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2168,9 +2168,9 @@ l0176:
 l0177:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxfloat
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2178,9 +2178,9 @@ l0177:
  .globl l0178
 l0178:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxfix
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2189,9 +2189,9 @@ l0178:
 l0179:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxassign
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -2201,9 +2201,9 @@ l0180:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxplus2
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2213,9 +2213,9 @@ l0181:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxdifference
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2225,9 +2225,9 @@ l0182:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxtimes2
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2237,9 +2237,9 @@ l0183:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxquotient
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 4
@@ -2250,9 +2250,9 @@ l0184:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxgreaterp
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 4
@@ -2263,9 +2263,9 @@ l0185:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxlessp
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 3
@@ -2275,9 +2275,9 @@ l0186:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uxwritefloat
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 2
@@ -2286,9 +2286,9 @@ l0186:
 l0187:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxdoubletofloat
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2297,9 +2297,9 @@ l0187:
 l0188:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxfloattodouble
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2308,9 +2308,9 @@ l0188:
 l0189:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxsin
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2319,9 +2319,9 @@ l0189:
 l0190:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxcos
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2330,9 +2330,9 @@ l0190:
 l0191:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxtan
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2341,9 +2341,9 @@ l0191:
 l0192:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxasin
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2352,9 +2352,9 @@ l0192:
 l0193:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxacos
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2363,9 +2363,9 @@ l0193:
 l0194:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxatan
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2374,9 +2374,9 @@ l0194:
 l0195:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxsqrt
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2385,9 +2385,9 @@ l0195:
 l0196:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxexp
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2396,9 +2396,9 @@ l0196:
 l0197:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxlog
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -2408,18 +2408,18 @@ l0198:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call uuxatan2
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 0
 / (*entry external_pwd expr 0)
  .globl l0199
 l0199:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_pwd
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 2
 / (*entry sun3_sigset expr 2)
@@ -2427,9 +2427,9 @@ l0199:
 l0200:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call sun3_sigset
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2438,9 +2438,9 @@ l0200:
 l0201:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call sun3_sigrelse
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2449,9 +2449,9 @@ l0201:
 sigrelse:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call sun3_sigrelse
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 4
@@ -2462,9 +2462,9 @@ l0202:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unexec
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 1
@@ -2472,9 +2472,9 @@ l0202:
  .globl l0203
 l0203:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixputc
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2482,9 +2482,9 @@ l0203:
  .globl l0204
 l0204:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixputs
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2492,27 +2492,27 @@ l0204:
  .globl l0205
 l0205:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixputn
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 0
 / (*entry unixcleario expr 0)
  .globl l0206
 l0206:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixcleario
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 1
 / (*entry expand_file_name expr 1)
  .globl l0207
 l0207:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call expand_file_name
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2521,9 +2521,9 @@ l0207:
 l0208:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixopen
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2531,9 +2531,9 @@ l0208:
  .globl l0209
 l0209:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixcd
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2541,9 +2541,9 @@ l0209:
  .globl l0210
 l0210:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call ctime
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2551,9 +2551,9 @@ l0210:
  .globl l0211
 l0211:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_system
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2561,9 +2561,9 @@ l0211:
  .globl l0212
 l0212:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call external_exit
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2572,9 +2572,9 @@ l0212:
 l0213:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fopen
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2582,9 +2582,9 @@ l0213:
  .globl l0214
 l0214:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fclose
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 4
@@ -2595,9 +2595,9 @@ l0215:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fread
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 2
@@ -2606,9 +2606,9 @@ l0215:
 l0216:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fputc
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2616,9 +2616,9 @@ l0216:
  .globl l0217
 l0217:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fgetc
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 3
@@ -2628,9 +2628,9 @@ l0218:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fgets
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 4
@@ -2641,9 +2641,9 @@ l0219:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fwrite
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 1
@@ -2651,9 +2651,9 @@ l0219:
  .globl l0220
 l0220:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fflush
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 3
@@ -2663,9 +2663,9 @@ l0221:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fseek
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 1
@@ -2673,9 +2673,9 @@ l0221:
  .globl l0222
 l0222:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call clearerr
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -2683,9 +2683,9 @@ l0222:
  .globl l0223
 l0223:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call getw
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2694,9 +2694,9 @@ l0223:
 l0224:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call putw
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -2705,9 +2705,9 @@ l0224:
 l0225:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call signal
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2715,9 +2715,9 @@ l0225:
  .globl l0226
 l0226:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call sleep
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 3
@@ -2727,9 +2727,9 @@ l0227:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call ieee_handler
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 4
@@ -2740,9 +2740,9 @@ l0228:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call ieee_flags
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 1
@@ -2750,26 +2750,26 @@ l0228:
  .globl l0229
 l0229:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call setlinebuf
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 0
 / (*entry getpid expr 0)
  .globl l0230
 l0230:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call getpid
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 0
 / (*entry gethostid expr 0)
  .globl l0231
 l0231:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call gethostid
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 2
 / (*entry unixsocketopen expr 2)
@@ -2777,9 +2777,9 @@ l0231:
 l0232:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixsocketopen
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -2789,9 +2789,9 @@ l0233:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call getsocket
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2801,9 +2801,9 @@ l0234:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call writesocket
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 1
@@ -2811,27 +2811,27 @@ l0234:
  .globl l0235
 l0235:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call unixclosesocket
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 0
 / (*entry fork expr 0)
  .globl l0236
 l0236:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call fork
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 1
 / (*entry wait expr 1)
  .globl l0237
 l0237:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call wait
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2840,9 +2840,9 @@ l0237:
 l0238:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call popen
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2850,9 +2850,9 @@ l0238:
  .globl l0239
 l0239:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pclose
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 3
@@ -2862,9 +2862,9 @@ l0240:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call shmctl
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2874,9 +2874,9 @@ l0241:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call shmget
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2886,9 +2886,9 @@ l0242:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call shmat
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 1
@@ -2896,9 +2896,9 @@ l0242:
  .globl l0243
 l0243:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call shmdt
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 4
@@ -2909,9 +2909,9 @@ l0244:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call semctl
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 3
@@ -2921,9 +2921,9 @@ l0245:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call semget
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -2933,9 +2933,9 @@ l0246:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call semop
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 4
@@ -2946,9 +2946,9 @@ l0247:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call profil
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 4
@@ -2959,9 +2959,9 @@ l0248:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_create
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $16,%esp
  ret
  .long 1
@@ -2969,9 +2969,9 @@ l0248:
  .globl l0249
 l0249:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_exit
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -2980,9 +2980,9 @@ l0249:
 l0250:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_join
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -2990,18 +2990,18 @@ l0250:
  .globl l0251
 l0251:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_detach
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 0
 / (*entry pthread_self expr 0)
  .globl l0252
 l0252:
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_self
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  ret
  .long 2
 / (*entry pthread_equal expr 2)
@@ -3009,9 +3009,9 @@ l0252:
 l0253:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_equal
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -3019,9 +3019,9 @@ l0253:
  .globl l0254
 l0254:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_init
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3029,9 +3029,9 @@ l0254:
  .globl l0255
 l0255:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_destroy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3040,9 +3040,9 @@ l0255:
 l0256:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setdetachstate
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3051,9 +3051,9 @@ l0256:
 l0257:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getguardsize
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3062,9 +3062,9 @@ l0257:
 l0258:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setguardsize
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3073,9 +3073,9 @@ l0258:
 l0259:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getschedparam
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3084,9 +3084,9 @@ l0259:
 l0260:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setschedparam
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3095,9 +3095,9 @@ l0260:
 l0261:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getschedpolicy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3106,9 +3106,9 @@ l0261:
 l0262:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setschedpolicy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3117,9 +3117,9 @@ l0262:
 l0263:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getinheritsched
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3128,9 +3128,9 @@ l0263:
 l0264:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setinheritsched
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3139,9 +3139,9 @@ l0264:
 l0265:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getscope
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3150,9 +3150,9 @@ l0265:
 l0266:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setscope
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -3162,9 +3162,9 @@ l0267:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getstack
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -3174,9 +3174,9 @@ l0268:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setstack
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 2
@@ -3185,9 +3185,9 @@ l0268:
 l0269:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_getstacksize
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3196,9 +3196,9 @@ l0269:
 l0270:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_attr_setstacksize
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -3208,9 +3208,9 @@ l0271:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_setschedparam
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -3220,9 +3220,9 @@ l0272:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_getschedparam
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 2
@@ -3231,9 +3231,9 @@ l0272:
 l0273:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_setschedprio
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -3241,9 +3241,9 @@ l0273:
  .globl l0274
 l0274:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_getconcurrency
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3251,9 +3251,9 @@ l0274:
  .globl l0275
 l0275:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_yield
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 3
@@ -3263,9 +3263,9 @@ l0276:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_setaffinity_np
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 3
@@ -3275,9 +3275,9 @@ l0277:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_getaffinity_np
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 2
@@ -3286,9 +3286,9 @@ l0277:
 l0278:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_once
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3297,9 +3297,9 @@ l0278:
 l0279:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_setcancelstate
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3308,9 +3308,9 @@ l0279:
 l0280:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_setcanceltype
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -3318,9 +3318,9 @@ l0280:
  .globl l0281
 l0281:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cancel
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3328,9 +3328,9 @@ l0281:
  .globl l0282
 l0282:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_testcancel
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3339,9 +3339,9 @@ l0282:
 l0283:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutex_init
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -3349,9 +3349,9 @@ l0283:
  .globl l0284
 l0284:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutex_destroy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3359,9 +3359,9 @@ l0284:
  .globl l0285
 l0285:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutex_trylock
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3369,9 +3369,9 @@ l0285:
  .globl l0286
 l0286:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutex_lock
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3379,9 +3379,9 @@ l0286:
  .globl l0287
 l0287:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutex_unlock
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3389,9 +3389,9 @@ l0287:
  .globl l0288
 l0288:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutexattr_init
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3399,9 +3399,9 @@ l0288:
  .globl l0289
 l0289:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutexattr_destroy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3410,9 +3410,9 @@ l0289:
 l0290:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutexattr_getpshared
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3421,9 +3421,9 @@ l0290:
 l0291:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_mutexattr_setpshared
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -3431,9 +3431,9 @@ l0291:
  .globl l0292
 l0292:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlock_unlock
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3441,9 +3441,9 @@ l0292:
  .globl l0293
 l0293:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlockattr_init
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3451,9 +3451,9 @@ l0293:
  .globl l0294
 l0294:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlockattr_destroy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3462,9 +3462,9 @@ l0294:
 l0295:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlockattr_getpshared
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3473,9 +3473,9 @@ l0295:
 l0296:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlockattr_setpshared
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3484,9 +3484,9 @@ l0296:
 l0297:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlockattr_getkind_np
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3495,9 +3495,9 @@ l0297:
 l0298:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_rwlockattr_setkind_np
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -3507,9 +3507,9 @@ l0299:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cond_init
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 1
@@ -3517,9 +3517,9 @@ l0299:
  .globl l0300
 l0300:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cond_destroy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3527,9 +3527,9 @@ l0300:
  .globl l0301
 l0301:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cond_signal
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3537,9 +3537,9 @@ l0301:
  .globl l0302
 l0302:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cond_broadcast
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3548,9 +3548,9 @@ l0302:
 l0303:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cond_wait
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -3560,9 +3560,9 @@ l0304:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_cond_timedwait
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 1
@@ -3570,9 +3570,9 @@ l0304:
  .globl l0305
 l0305:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_condattr_init
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3580,9 +3580,9 @@ l0305:
  .globl l0306
 l0306:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_condattr_destroy
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3591,9 +3591,9 @@ l0306:
 l0307:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_condattr_getpshared
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3602,9 +3602,9 @@ l0307:
 l0308:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_condattr_setpshared
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 2
@@ -3613,9 +3613,9 @@ l0308:
 l0309:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_key_create
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 1
@@ -3623,9 +3623,9 @@ l0309:
  .globl l0310
 l0310:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_key_delete
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 1
@@ -3633,9 +3633,9 @@ l0310:
  .globl l0311
 l0311:
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_getspecific
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $4,%esp
  ret
  .long 2
@@ -3644,9 +3644,9 @@ l0311:
 l0312:
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_setspecific
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $8,%esp
  ret
  .long 3
@@ -3656,9 +3656,9 @@ l0313:
  push %ecx
  push %ebx
  push %eax
- mov symval+1212,%ebx
+ movl symval+1212,%ebx
  call pthread_atfork
- mov %ebx,symval+1212
+ movl %ebx,symval+1212
  add $12,%esp
  ret
  .long 1
@@ -3667,50 +3667,50 @@ l0313:
 codeaddressp:
  sub $4,%esp
  and $134217727,%eax
- mov %eax,(%esp)
- mov [[30\*0x8000000]+256],%eax
+ movl %eax,(%esp)
+ movl $((30*0x8000000)+256),%eax
  call *symfnc+2232
  and $134217727,%eax
- cmp (%esp),%eax
+ cmpl (%esp),%eax
  jle l0314
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0315
 l0314:
- mov [[30\*0x8000000]+116],%eax
+ movl $((30*0x8000000)+116),%eax
 l0315:
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0316
- mov [[30\*0x8000000]+556],%eax
+ movl $((30*0x8000000)+556),%eax
  call *symfnc+2232
  and $134217727,%eax
- cmp (%esp),%eax
+ cmpl (%esp),%eax
  jg l0317
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0316
 l0317:
- mov [[30\*0x8000000]+116],%eax
+ movl $((30*0x8000000)+116),%eax
 l0316:
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  jne l0318
- mov symval+1136,%eax
+ movl symval+1136,%eax
  and $134217727,%eax
- cmp (%esp),%eax
+ cmpl (%esp),%eax
  jle l0319
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0320
 l0319:
- mov [[30\*0x8000000]+116],%eax
+ movl $((30*0x8000000)+116),%eax
 l0320:
- cmp [[30\*0x8000000]+128],%eax
+ cmpl $((30*0x8000000)+128),%eax
  je l0318
- mov symval+1144,%eax
+ movl symval+1144,%eax
  and $134217727,%eax
- cmp (%esp),%eax
+ cmpl (%esp),%eax
  jg l0321
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  jmp l0318
 l0321:
- mov [[30\*0x8000000]+116],%eax
+ movl $((30*0x8000000)+116),%eax
 l0318:
  add $4,%esp
  ret
@@ -3723,7 +3723,7 @@ lastkernel:
 / (*entry initcode expr 0)
  .globl initcode
 initcode:
- mov [[30\*0x8000000]+128],%eax
+ movl $((30*0x8000000)+128),%eax
  ret
  .globl symval
  .globl symprp
