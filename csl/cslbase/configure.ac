@@ -370,11 +370,11 @@ x86_64-w64-*)
   AC_LANG_CONFTEST(
     [AC_LANG_PROGRAM([], [])])
 # First check a path that is for Snow Leopard (10.6) in September 2009.
-  if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+  if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
   then
     AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
     enable_dependency_tracking="no"
-    archflags="-arch ppc -arch i386 -arch x86_64"
+    archflags="-arch i386 -arch x86_64"
   else
 # This is path works if I am on Leopard (10.5).
     if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
@@ -747,10 +747,11 @@ then
   AC_MSG_NOTICE([Checking for ability to build multi-arch binaries])
 # If it seems to be supported at all I will go "-arch ppc -arch i386" to
 # build a fat binary that will run on both powerpc and intel-based
-# 32-bit macs. On 1.5/10.6 I will add "-arch x86_64". Note that I do
-# not cover ppc64 since FULL 64-bit support only arrived with 10.6 and by
-# then ppc support had been dropped.
-# But *NOTE* that in such case dependency tracking using the
+# 32-bit macs. On 10.5 I will add "-arch x86_64". And finally on 10.6 I
+# will drop ppc. Note that I do not cover ppc64 since FULL 64-bit support
+# only arrived with 10.6 and by then I reallyt think ppc support was
+# being dropped.
+# *NOTE* that when doing a multi-arch build dependency tracking using the
 # mcchanisms that automake usually tries to use will FAIL. I work around that
 # by providing a customised version of "depcomp".
 #

@@ -564,13 +564,14 @@ then
       fi
       ;;
     *Darwin* | *darwin*)
-      CFLAGS="$CFLAGS "
-      CXXFLAGS="$CXXFLAGS "
-      extras="--with-xft --with-xim"
 # Note I do not even try to build wxWidgets with an SDK other than 10.6
 # because that is the first one that provides reasonably full support for
-# 64-bit systems.
-      wx="--with-cocoa --enable-universal_binary --with-macosx-sdk=/Developer/SDKs/MacOSX10.6.sdk"
+# 64-bit systems. So binaries that I build will not be suitable for anything
+# prior to Snow Leopard. I am dropping support for ppc.
+      extras="--with-xft --with-xim"
+      wx="--with-cocoa --enable-universal_binary \
+          --with-macosx-sdk=/Developer/SDKs/MacOSX10.6.sdk \
+          --with-macosx-version-min=10.6 "
       ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now
