@@ -661,6 +661,8 @@ if mac_framework
 # is available. on raw Darwin it will not be.
 
 make-clickable:	csl bootstrapreduce reduce
+# Rez is now an rather old fashioned way of doing things. With wxWidgets I
+# will replace this with stuff that creates application bundles.
 	/Developer/Tools/Rez -t APPL -o csl $(srcdir)/mac.r
 	/Developer/Tools/Rez -t APPL -o bootstrapreduce $(srcdir)/mac.r
 	/Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
