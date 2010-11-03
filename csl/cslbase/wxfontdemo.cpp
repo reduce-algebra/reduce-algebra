@@ -33,7 +33,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 50b7aa4f 31-Oct-2010 */
+/* Signature: 58ff5105 03-Nov-2010 */
 
 
 
@@ -101,13 +101,14 @@ bool SampleApp::OnInit()
         printf("%d: %s\n", i, myargv[i]);
     }
 
-    char *font = "";  // an empty string here lets wxWidgets select a font itself
-    int size = 48;
+    char *font = "Courier";  // A default font name to ask for.
+    int size = 48;           // a default size.
     if (argc > 1) font = myargv[1];
     if (argc > 2)
     {   size = atoi(myargv[2]);
-        if (size <= 0) size = 48;
+        if (size <= 2 || size > 200) size = 48;
     }
+    printf("Try for font \"%s\" at size=%d\n", font, size);
 
     SampleFrame *frame = new SampleFrame("wxfontdemo", font, size);
     frame->Show(true);
