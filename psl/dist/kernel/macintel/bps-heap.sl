@@ -9,8 +9,6 @@
 % Mode:           Lisp
 % Package:        Kernel
 %
-% (c) Copyright 1989, Konrad-Zuse-Zentrum Berlin, all rights reserved.
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
