@@ -1370,8 +1370,18 @@ then
 # 10.4  Tiger    )
 # 10.5  Leopard  Deprecated: Testing here will be at best minimal.
 # 10.6  Snow Leopard
-# 10.7  Lion (?)   Forthcoming 
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.5
+# 10.7  Lion (?)   Forthcoming
+
+# I will retain Leopard compatibility for the FOX build, but will insist on
+# Snow Lepoard when using wxWidgets. That is because with wxWidgets I wish
+# to have a full Cocoa GUI even in x86_64 mode, and I believe that may
+# require 10.6
+  if test "x$with_wx" != "xno"
+  then
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
+  else
+    ENVP=MACOSX_DEPLOYMENT_TARGET=10.5
+  fi
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
