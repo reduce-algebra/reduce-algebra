@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6974f426 04-Nov-2010 */
+/* Signature: 7e3db491 04-Nov-2010 */
 
 
 
@@ -52,7 +52,7 @@
 // and will be the same for almost all wxWidgets code.
 
 #include "wx/wxprec.h"
- 
+
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
@@ -245,6 +245,27 @@ int get_current_directory(char *s, int n)
 const char *fwin_full_program_name = "./wxfwin.exe";
 const char *programName            = "wxfwin.exe";
 const char *programDir             = ".";
+
+/*
+ * getenv() is a mild pain: Windows seems
+ * to have a strong preference for upper case names.  To allow for
+ * all this I do not call getenv() directly but go via the following
+ * code that can patch things up.
+ */
+
+const char *my_getenv(const char *s)
+{
+#ifdef WIN32
+    char uppercasename[LONGEST_LEGAL_FILENAME];
+    char *p = uppercasename;
+    int c;
+    while ((c = *s++) != 0) *p++ = toupper(c);
+    *p = 0;
+    return getenv(uppercasename);
+#else
+    return getenv(s);
+#endif
+}
 
 #ifdef WIN32
 
@@ -479,7 +500,7 @@ int find_program_directory(char *argv0)
             }
             fwin_full_program_name = pgmname;
         }
-    }       
+    }
 /*
  * Now if I have a program name I will try to see if it is a symbolic link
  * and if so I will follow it.
@@ -706,7 +727,7 @@ int find_program_directory(char *argv0)
 }
 
 
-#endif /* 0 */
+#endif /* 0 - unmerged code */
 
 
 
@@ -715,11 +736,15 @@ bool fontApp::OnInit()
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
-    find_program_directory(myargv[0]);
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
     }
+// I will find the special fonts that most interest me in a location related
+// to the directory that this application was launched from. So the first
+// think to do is to identify that location. I then print the information I
+// recover so I can debug things.
+    find_program_directory(myargv[0]);
     printf("\n%s\n%s\n%s\n", fwin_full_program_name, programName, programDir);
 
 
@@ -798,7 +823,7 @@ void fontFrame::OnPaint(wxPaintEvent &event)
             dc.DrawRectangle(32*j, 2*i, 32, 64);
         }
     }
-    
+
     dc.SetFont(*ff);
     wxCoord w1, h1, d1, xl1;
     dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
