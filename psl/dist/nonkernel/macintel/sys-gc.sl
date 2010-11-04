@@ -13,8 +13,6 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-% Copyright (c) 1982 Eric Benson                                           
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                          
 % Revisions:                                                               
@@ -30,14 +28,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                                                            
 %                                                                          
-(de beforegcsystemhook nil
-   (unless (or  (funboundp 'beforegcuserhook)
-                (flambdalinkp 'beforegcuserhook))
-        (beforegcuserhook))
-    nil)
 
-(de aftergcsystemhook nil
-    (unless (or (funboundp 'aftergcuserhook)
-                (flambdalinkp 'aftergcuserhook))
-        (aftergcuserhook))
-     nil)
+(de beforegcsystemhook nil nil)
+
+(de aftergcsystemhook nil nil)

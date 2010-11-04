@@ -48,7 +48,6 @@
 (de puthalfword (m o v)
   (puthalfword m o v))
 
-)
 (on r2i)
 
 (de bittable (a b)

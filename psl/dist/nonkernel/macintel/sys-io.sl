@@ -82,7 +82,7 @@
 (de unixstring (s)
   % Strip tags for passing a string.                                       
   (if (stringp s)
-    (strbase (mkitem fixnum-tag s))
+    (strbase (strinf s))
     (stderror (bldmsg "Not a string: %p%n" s))))
 
 % Use the C/stdio strlen fn

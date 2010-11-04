@@ -17,6 +17,9 @@
 %
 % Revisions:
 %
+%  6-Jan-95 (HM)
+%  Made datebuffer-to-string work into a static warray in order to
+%  prevent endless loop in garbage collector.
 % 17-Jul-84 22:52:31 (RAM)
 %  Changed allocation of datebuffer from warray declaration to a call on
 %  gtwarray (the compiler was emitting bad code for declare-warray on
@@ -43,30 +46,37 @@
   (setf (wgetv datebuffer 0) dateint)   % put time in datebuffer
   (datebuffer-to-string))
 
+(fluid '(static-date-string*))
+
+(setq static-date-string* (gtwarray (strpack 19)))
+
 (de datebuffer-to-string ()             % convert date, as "12-Sep-55 13:35:22"
   (prog (s tm)
-        (setq s (gtstr 19))             % allocate 20 characters
+        (setq s  static-date-string*
+              % (gtstr 17)              % allocate 18 characters
+          )
+        (wputv static-date-string* 0 (mkitem hbytes-tag 19))
         (setq tm (ctime datebuffer))    % get Unix' strange date string
-        (setf (strbyt s 0) (r_byte tm 8)) % suck out the day of the month
-        (setf (strbyt s 1) (r_byte tm 9))
+        (setf (strbyt s 0) (byte tm 8)) % suck out the day of the month
+        (setf (strbyt s 1) (byte tm 9))
         (setf (strbyt s 2) (char '!-))  % throw in a dash
-        (setf (strbyt s 3) (r_byte tm 4)) % suck out the month
-        (setf (strbyt s 4) (r_byte tm 5))
-        (setf (strbyt s 5) (r_byte tm 6))
+        (setf (strbyt s 3) (byte tm 4)) % suck out the month
+        (setf (strbyt s 4) (byte tm 5))
+        (setf (strbyt s 5) (byte tm 6))
         (setf (strbyt s 6) (char '!-))  % another dash
-        (setf (strbyt s 7) (r_byte tm 20))% and the year
-        (setf (strbyt s 8) (r_byte tm 21))
-        (setf (strbyt s 9) (r_byte tm 22))
-        (setf (strbyt s 10) (r_byte tm 23))
-        (setf (strbyt s 11) (r_byte tm 10))% copy the entire time portion, as is
-        (setf (strbyt s 12) (r_byte tm 11))
-        (setf (strbyt s 13) (r_byte tm 12))
-        (setf (strbyt s 14) (r_byte tm 13))
-        (setf (strbyt s 15) (r_byte tm 14))
-        (setf (strbyt s 16) (r_byte tm 15))
-        (setf (strbyt s 17) (r_byte tm 16))
-        (setf (strbyt s 18) (r_byte tm 17))
-        (setf (strbyt s 19) (r_byte tm 18))
+        (setf (strbyt s 7) (byte tm 20))% and the year
+        (setf (strbyt s 8) (byte tm 21))
+        (setf (strbyt s 9) (byte tm 22))% and the year
+        (setf (strbyt s 10)(byte tm 23))
+        (setf (strbyt s 11)(byte tm 10))% copy the entire time portion, as is
+        (setf (strbyt s 12) (byte tm 11))
+        (setf (strbyt s 13) (byte tm 12))
+        (setf (strbyt s 14) (byte tm 13))
+        (setf (strbyt s 15) (byte tm 14))
+        (setf (strbyt s 16) (byte tm 15))
+        (setf (strbyt s 17) (byte tm 16))
+        (setf (strbyt s 18) (byte tm 17))
+        (setf (strbyt s 19) (byte tm 18))
         (return (mkstr s))))
 
 

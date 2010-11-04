@@ -127,7 +127,7 @@
 
 (de system (unixstring)
   (if (stringp unixstring)
-    (external_system (strbase (mkfixn unixstring)))
+    (external_system (strbase (strinf unixstring)))
     (nonstringerror unixstring 'system)))
 
 
@@ -160,7 +160,8 @@
 
 (de returnaddressp (x)
   (prog (s y)
-        (unless (and (fixnp x) (>= x 2000)) (return nil))
+        (unless (and (intp x) (>= x 2000))
+          (return nil))
         % Actually, top bits must                                          
         % be 0 or -1 due to                                                
         % 9836 assembler, linker                                           
@@ -170,7 +171,7 @@
         (setq x (inf x))
         (when (wlessp x 8198)
           (return nil))
-        (cond ((not (wlessp x nextbps)) % Assures X points to real memory
+        (cond ((not (wlessp x (inf nextbps))) % Assures X points to real memory
                (return nil)))
         (setq s (inf symfnc))
         (unless (weq (halfword x -3) 16#15ff) (return nil))
@@ -208,7 +209,7 @@
         (setq len (wdifference (external_strlen c_s) 1))
         (setq new_s (gtstr len))
         (for (from i 0 len 1) 
-              (do (setf (strbyt new_s i) (r_byte c_s i))))
+              (do (setf (strbyt new_s i) (byte c_s i))))
         (return (mkstr new_s))))
 
 (de external-allocatemorebps ()
@@ -224,7 +225,7 @@
 (de anyuser-homedir-string (username)
   (if (stringp username)
     (concat (importforeignstring 
-             (external_anyuser_homedir_string (strbase (mkfixn username))))
+             (external_anyuser_homedir_string (strbase (strinf username))))
             "/")
     (nonstringerror username 'anyuser-homedir-string)))
 
@@ -233,7 +234,7 @@
   (prog nil
         (unless (stringp s)
           (return nil))
-        (return (importforeignstring (external_getenv (strbase (mkfixn s)))))))
+        (return (importforeignstring (external_getenv (strbase (strinf s)))))))
 
 (de setenv (var val)
  (cond ((not (stringp var))
@@ -241,12 +242,12 @@
        ((not (stringp val))
         (nonstringerror val 'setenv))
        (t
-        (external_setenv (strbase (mkfixn var)) (strbase (mkfixn val)))
+        (external_setenv (strbase (strinf var)) (strbase (strinf val)))
         NIL)))
 
 (de cd (s)                              % Set current working directory.
   (when (stringp s)
-   (weq 0 (unixcd (strbase (mkfixn s))))))     % 0 is success.
+   (weq 0 (unixcd (strbase (strinf s))))))     % 0 is success.
 
 (de pwd ()                              % Return current working directory.
   (importforeignstring (external_pwd)))
@@ -259,7 +260,7 @@
 (de getunixargs () % (argc argv)
   (prog (sz v)
         (setq sz (wdifference argc 1))
-        (setq v (vecbase (mkfixn (setf unixargs* (mkvect sz)))))
+        (setq v (vecbase (vecinf (setf unixargs* (mkvect sz)))))
         (for (from i 0 sz 1) 
               (do (setf (wgetv v i) (importforeignstring (wgetv argv i)))))))
 
@@ -310,44 +311,6 @@
 
 (de unix-time ()
   (sys2int (external_time 0)))
-
-% misusing ieeeflags!!
-
-(de flock (a1 a2)
-    (ieee_flags 1 a1 a2))
-
-(de fcntl (a1 a2 a3)
-    (ieee_flags 2 a1 a2 a3))
-
-(de Linux_open(a1 a2 a3); % uses open in Linux sense, returns an int fd
-     (ieee_flags 3 (strbase (strinf a1)) a2 a3))
-
-(de Linux_close(a1);    % exptects an int fd
-     (ieee_flags 4 a1))
-
-(define-constant O_ACCMODE         8#003 )
-(define-constant O_RDONLY            8#0 )
-(define-constant O_WRONLY            8#1 )
-(define-constant O_RDWR              8#2 )
-(define-constant O_CREAT           8#100 )
-(define-constant O_EXCL            8#200 )
-(define-constant O_NOCTTY          8#400 )
-(define-constant O_TRUNC          8#1000 )
-(define-constant O_APPEND         8#2000 )
-(define-constant O_NONBLOCK       8#4000 )
-(define-constant O_NDELAY     O_NONBLOCK )
-(define-constant O_SYNC          8#10000 )
-
-(define-constant LOCK_SH 1 )%       /* Shared lock.  */
-(define-constant LOCK_EX 2  ) %     /* Exclusive lock.  */
-(define-constant LOCK_UN 8  ) %     /* Unlock.  */
-
-%%%%% /* Can be OR'd in to one of the above.  */
-(define-constant LOCK_NB 4 )%      /* Don't block when locking.  */
-
-(define-constant F_GETLK        5)%  /* Get record locking info.  */
-(define-constant F_SETLK        6)%  /* Set record locking info (non-blocking).  */
-(define-constant F_SETLKW       7)%  /* Set record locking info (blocking).  */
 
 (off fast-integers)
 

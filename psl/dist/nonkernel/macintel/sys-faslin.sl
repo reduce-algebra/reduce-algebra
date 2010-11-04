@@ -113,19 +113,21 @@
 % are in the kernel, but binaryopenread needs to be redefined
 % here so conterror instead of kernel-fatal-error will be called.
 
-(de binaryopenread (filename)
-  (let ((f (unixopen (strbase (mkitem fixnum-tag filename))
-                 (strbase (mkitem fixnum-tag openreadflag)))))
-        (if (weq f 0)
+(de binaryopenread (filename) 
+  (prog (f)
+        (setq f 
+              (unixopen (strbase (strinf filename)) 
+                     (strbase openreadflag)))
+        (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for input" 
                    (binaryopenread filename))
-                  f)))
+                  f))))
 
 (de binaryopenwrite (filename)
   (prog (f)
         (setq f 
-              (unixopen (strbase (mkitem fixnum-tag filename)) 
-                     (strbase (mkitem fixnum-tag openwriteflag))))
+              (unixopen (strbase (strinf filename)) 
+                     (strbase openwriteflag)))
         (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for output" 
                    (binaryopenwrite filename))
@@ -134,8 +136,8 @@
 (de binaryopenappend (filename)
   (prog (f)
         (setq f 
-              (unixopen (strbase (mkitem fixnum-tag filename)) 
-                     (strbase (mkitem fixnum-tag openappendflag))))
+              (unixopen (strbase (strinf filename)) 
+                     (strbase openappendflag)))
         (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for append" 
                    (binaryopenappend filename))
@@ -144,8 +146,8 @@
 (de binaryopenupdate (filename)
   (prog (f)
         (setq f 
-              (unixopen (strbase (mkitem fixnum-tag filename)) 
-                     (strbase (mkitem fixnum-tag openupdateflag))))
+              (unixopen (strbase (strinf filename)) 
+                     (strbase openupdateflag)))
         (return (if (weq f 0)
                   (conterror 99 "Couldn't open binary file for update" 
                    (binaryopenupdate filename))
@@ -155,7 +157,13 @@
   (putw n channel))
 
 (de binarywriteblock (channel blockbase blocksize)
-  (fwrite (mkfixn blockbase) 4 blocksize channel))
+  (fwrite blockbase 4 blocksize channel))
 
 (de binarypositionfile (channel nastysystemdependentnumber)
   (fseek channel nastysystemdependentnumber 0))
+
+
+
+
+
+

@@ -60,8 +60,7 @@
     
 
 (de writefloat (buffer floatptr)
-  (uxwritefloat (mkfixn buffer) (mkfixn floatptr)
-		(strbase (mkfixn floatformat*))))
+  (uxwritefloat buffer floatptr (strbase (strinf floatformat*))))
 
 
 
