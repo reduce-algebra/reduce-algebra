@@ -345,14 +345,18 @@ static localFonts fontNames[] =
 
 static int fontNeeded = 0;
 
+// A brief comment here. The DEFAULT build of wxWidgets on Windows supports
+// Unicode by using wide characters and strings. That causes major pain to
+// my legacy code that just uses simple old-style C strings everywhere and
+// so uses the old-style C functions that actr on them. Sometime in the
+// future it is probable that I should clean up my code to work with modern
+// international character-sets through Unicode, but since I have not done
+// that yet I MUST (at least on Windows) restict myself to a non-Unicode
+// build of wxWidgets.
+
 static int CALLBACK fontEnumProc(
-#ifdef UNICODE
-    const LOGFONTW *lpelfe,     // logical-font data
-    const TEXTMETRICW *lpntme,  // physical-font data
-#else
     const LOGFONTA *lpelfe,     // logical-font data
     const TEXTMETRICA *lpntme,  // physical-font data
-#endif
     DWORD FontType,             // type of font
     LPARAM lParam)              // application-defined data
 {
@@ -364,24 +368,14 @@ static int CALLBACK fontEnumProc(
 static TCHAR faceName[LONGEST_LEGAL_FILENAME] = "";
 
 static int CALLBACK fontEnumProc1(
-#ifdef UNICODE
-    const LOGFONTW *lpelfe,     // logical-font data
-    const TEXTMETRICW *lpntme,  // physical-font data
-#else
     const LOGFONTA *lpelfe,     // logical-font data
     const TEXTMETRICA *lpntme,  // physical-font data
-#endif
     DWORD FontType,             // type of font
     LPARAM lParam)              // application-defined data
 {
 // avoid duplicated reports
-#ifdef UNICODE
-    if (wstrcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
-    wstrcpy(faceName, lpelfe->lfFaceName);
-#else
     if (strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
     strcpy(faceName, lpelfe->lfFaceName);
-#endif
     printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
     fflush(stdout);
     return 1;
@@ -456,13 +450,9 @@ int find_program_directory(char *argv0)
  * anywhere near me that may not be so, so I grab the information directly
  * from the Windows APIs.
  */
-    TCHAR execname[LONGEST_LEGAL_FILENAME];
+    char execname[LONGEST_LEGAL_FILENAME];
     GetModuleFileName(NULL, execname, LONGEST_LEGAL_FILENAME-2);
-#ifdef UNICODE
-    wcstombs(this_executable, execname, sizeof(this_executable));
-#else
     strcpy(this_executable, execname);
-#endif
     argv0 = this_executable;
     program_name_dot_com = 0;
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
@@ -759,11 +749,7 @@ int add_custom_fonts() // return 0 on success.
 // them for myself.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   memset((void *)&lf, 0, sizeof(lf));
-#ifdef UNICODE
-        mbstowcs(lf.lfFaceName, fontNames[i].name, sizeof(lf.lfFaceName));
-#else
         strcpy(lf.lfFaceName, fontNames[i].name);
-#endif
         lf.lfCharSet = DEFAULT_CHARSET;
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
@@ -819,15 +805,20 @@ int add_custom_fonts() // return 0 on success.
     int screen = 0;
     XftFontSet *fs = NULL;
     FcConfig *config = FcConfigCreate();
-    dpy = (Display *)NULL; // @@@@@@ appl->getDisplay();
+    dpy = XOpenDisplay(NULL);
+    if (dpy == NULL)
+    {   printf("Unable to access the display\n");
+        exit(1);
+    }
     screen = DefaultScreen(dpy);
 
 // I will add exactly and only the fonts that I will be using.
     char fff[256];
-    for (int i=0; i<4; i++)
+    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   sprintf(fff,
-            "%s/" toString(fontsdir) "/%s.pfb",
+            "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);
+        printf("Adding the font from %s\n", fff);
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
