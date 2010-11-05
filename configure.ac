@@ -603,10 +603,14 @@ then
     if test "x$with_wx" = "xbuiltin"
     then
       cd wxWidgets
+# I has thought about --enable-unicode here, but right now the
+# issue of altering all my own code to tolerate wide chars is too
+# much for me to manage! Some time in the future perhaps I should
+# do that.
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
               CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-              --disable-shared --enable-unicode \
+              --disable-shared --disable-unicode \
               --disable-compat26 --disable-compat28 \
               --with-png=builtin --without-libjpeg \
               --without-libtiff --with-libsvg=no \
@@ -615,6 +619,10 @@ then
               --disable-gif --disable-pcx \
               --disable-tga --disable-pnm \
               --disable-svg --prefix=$builddir"
+      if test "x$enable_debug" != "xno"
+      then
+        doconfig="$doconfig --enable-debug"
+      fi
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"
       cd $builddir
