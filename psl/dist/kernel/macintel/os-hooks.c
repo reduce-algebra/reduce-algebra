@@ -36,15 +36,17 @@
 #include <setjmp.h>
 
 #ifndef LINUX
-#include <ieeefp.h> 
+//#include <ieeefp.h> 
 #endif
  
 jmp_buf mainenv;
 
+long long int copy_argv();
+ 
 main(argc,argv)
 int argc;
 char *argv[];
-{ 
+{
   int val;
  
   clear_iob();             /* clear garbage pointer in _iob[]    */
@@ -52,7 +54,7 @@ char *argv[];
   /* fpsetround(FP_RZ);  */
 /*  init_malloc_param();        /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
-
+ 
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)
@@ -62,6 +64,7 @@ exit(0);
  
 }
  
+int kernelmode = 0;
  
 os_startup_hook(argc, argv)
      int argc;
@@ -70,11 +73,9 @@ os_startup_hook(argc, argv)
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
  
-os_cleanup_hook(x)
-int x;
-
-{ if(x==17) longjmp(mainenv,17);
-    else  if(x==3)  longjmp(mainenv,3); else longjmp(mainenv,1);
+os_cleanup_hook()
+{
+longjmp(mainenv,1);
 }
  
 clear_iob()

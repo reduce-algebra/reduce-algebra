@@ -2,7 +2,7 @@
 %
 % File:         PXC:NBITTAB.SL
 % Description:  New bit table format.
-% Author:       Herbert Melenk
+% Author:
 % Created:
 % Package:
 %

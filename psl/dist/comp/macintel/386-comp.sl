@@ -9,6 +9,9 @@
 % Mode:           Lisp
 % Package:        Compiler
 %
+% (c) Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
+%
 % (c) Copyright 1982, University of Utah
 %
 % Redistribution and use in source and binary forms, with or without
@@ -32,7 +35,6 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
-
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

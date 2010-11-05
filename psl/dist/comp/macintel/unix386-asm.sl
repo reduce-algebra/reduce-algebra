@@ -7,6 +7,7 @@
 % Modified:
 % Mode:         Lisp
 % Package:      
+% Status:       Experimental (Do Not Distribute)
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -102,7 +103,7 @@
 (setq NumericRegisterNames* '[nil "%eax" "%ebx" "%ecx" "%edx" "%ebp" ])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
-(setq CommentFormat* "/ %p%n")          % Comments begin with a slash
+(setq CommentFormat* "// %p%n")          % Comments begin with a slash
                                         % will group alphabetically
 
 (setq ExportedDeclarationFormat* " .globl %w%n")

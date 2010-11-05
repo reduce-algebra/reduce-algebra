@@ -200,8 +200,9 @@ setupbpsandheap(argc,argv)
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     heapsize_in_bytes = max_image_size - current_size_in_bytes;
     total = heapsize_in_bytes + bpssize;
-    printf("Size requested will result in pointer values larger than\n");
+/*    printf("Size requested will result in pointer values larger than\n");
     printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
+*/
   }
 
 #if (NUMBEROFHEAPS == 2)
@@ -240,9 +241,11 @@ setupbpsandheap(argc,argv)
         hl =  heaplast; htb = heaptrapbound;
     /* save the new values around restore of the old ones */
 
-       printf("Loading image file :%s \n",imagefile); 
+//       printf("Loading image file :%s \n",imagefile); 
        imago = fopen (imagefile,"r");
-       if (imago == NULL) { perror ("error"); exit (-1); }
+       if (imago == NULL) { 
+		printf("Loading image file :%s \n",imagefile);
+		perror ("error"); exit (-1); }
        fread (headerword,4,2,imago);
        unexec();      /* set control vector */
       if ((int) bpscontrol[0] != headerword[0] 
@@ -278,16 +281,36 @@ read_error()
     exit(-1);
   }
 
+#include <sys/mman.h>
+#include <errno.h>
+#include <limits.h>    /* for PAGESIZE */
+       #ifndef PAGESIZE
+       #define PAGESIZE 4096
+       #endif
+
+
+
 
 /* The current procedure is to convert the starting address of the char
    array defined in bps.c to an address and store it in nextbps. A check
    is made to make sure that nextbps falls on an even word boundry.
  */
 setupbps()
-{
+{ char *p = (char *) bps;
+  int bpssize;
+  char c;
+
+//  nextbps = malloc (50000000);
+//  bps = nextbps;
   nextbps  =  ((int)bps + 3) & ~3;        /* Up to a multiple of 4. */
   bpslowerbound = nextbps;
   lastbps  =  ((int)bps + BPSSIZE) & ~3;    /* Down to a multiple of 4. */
+  p = (char *)(((int) bpslowerbound  -1) & ~(PAGESIZE-1));
+  bpssize =  ((BPSSIZE + PAGESIZE-1) & ~(PAGESIZE-1));
+  if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC )) {
+            perror("Couldn’t mprotect");
+            exit(errno);
+          }
 }
 
 
@@ -323,23 +346,24 @@ getheap(heapsize)
      int heapsize;
 {
 
-//#if (NUMBEROFHEAPS == 1)
-/*  heaplowerbound        = (int)sbrk(heapsize);  /* allocate first heap * /;
-  oldheaplowerbound     = -1;
+#if (NUMBEROFHEAPS == 1)
+//  heaplowerbound        = (int)sbrk(heapsize);  /* allocate first heap */;
+//  oldheaplowerbound     = -1;
 #else
 
-  heaplowerbound        = (int)sbrk(2 * heapsize);  /* allocate first heap * /;
+  heaplowerbound        = (int)sbrk(2 * heapsize);  /* allocate first heap */;
 #endif
   if (heaplowerbound == -1) {
     perror("GETHEAP");
     exit(-1);
-  } */
-  heapsize = 110000000;
+  }
+  heapsize = 119000000;
   heaplowerbound = &bps;
   heaplowerbound += BPSSIZE;
   heapupperbound        = heaplowerbound + heapsize;
   heaplast              = heaplowerbound;
   heaptrapbound         = heapupperbound -120;
+
 
 #if (NUMBEROFHEAPS == 2)
   oldheaplowerbound     = heapupperbound;

@@ -106,13 +106,15 @@ int external_strlen (s)
 {
     return strlen(s);
 }
+
+char *getenv(const char *name);
  
 /* Tag( external_getenv )
  */
 char *external_getenv (name)
      char *name;
 {
-    return (char *)getenv(name);
+    return getenv(name);
 }
  
  

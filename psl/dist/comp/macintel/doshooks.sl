@@ -7,8 +7,8 @@
 % Modified:
 % Mode:         Lisp
 % Package:
+% Status:       Experimental (Do Not Distribute)
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 
 

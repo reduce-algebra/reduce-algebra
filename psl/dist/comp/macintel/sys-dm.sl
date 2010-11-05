@@ -5,6 +5,7 @@
 % Author:       Eric Benson, University of Utah
 % Created:	10-Jul-1981
 % Modified:     21-Jun-84 (Vicki O'Day)
+% Status:       Experimental (Do Not Distribute)
 % Mode:         Lisp
 % Package:      Compiler
 % Compile to:   PL:SYS-DM.B
@@ -66,7 +67,7 @@
   )
 
 (loadtime 
- (put 'eof 'charconst (char (cntrl d)))
+ (put 'eof 'charconst (char (cntrl z)))
  (remprop 'adjuststackpointer 'openfn)
  )
 

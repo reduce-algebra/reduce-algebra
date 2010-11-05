@@ -134,7 +134,7 @@
               ((BigP Expression)
                (progn (setq UpperBound (ISizeV Expression))
                       (AddFullWord UpperBound)
-                      (AppendItem (IGetV Expression 0)) % sign is an i
+                      (AppendItem (IGetV Expression 0)) % sign is an id
                       (setq I 1)
                       (while (ILEQ I UpperBound)
 %                    (progn (AppendItem (IGetV Expression I))
@@ -162,4 +162,4 @@
                ',(minus (powerof2p (constant-value arg2)))))
      (t form))))
 
-
+

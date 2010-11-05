@@ -10,9 +10,7 @@
  *           renamed sigset to sun3_sigset for sun os 4.
  */
  
-#include <stdio.h>
 #include <signal.h>
-#include <fenv.h>
 
 #ifndef LINUX
 #include <ieeefp.h>
@@ -21,24 +19,17 @@ fp_except fp_mask,fp_stick;
 int      fp_first=0;
 #endif
 
-fenv_t envp;
+typedef void (*sig_t) (int);
+
+// extern sig_t inthand;
 
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
-{ 
-  struct sigaction actio;
-
-  if (sig == 500) { fegetenv(&envp); return(0);}
-  if (sig == 501) { fesetenv(&envp); return(0);}
-
-  actio.sa_flags = SA_SIGINFO;
-  actio.sa_sigaction = action;
-  sigaction(sig, &actio, NULL);
-
- /*  if (signal(sig, SIG_IGN) != SIG_IGN) 
+{
+//   if (sig == 2) { signal(2,inthand); printf("%lx sig 2", &inthand); }  else
+   if (signal(sig, SIG_IGN) != SIG_IGN) 
     signal(sig, action);
- */
 
 #ifndef LINUX
    if(sig == SIGFPE && fp_first == 0)
@@ -57,12 +48,6 @@ sun3_sigrelse(sig, action)
 void (*action)();
 int sig;
 {
- sigset_t set;
- if (sig==2){ 
- sigemptyset(&set);
- sigaddset(&set,2);
- sigprocmask(SIG_UNBLOCK,&set,NULL);
-	   } 
 
 #ifndef LINUX
    if(sig == SIGFPE)
@@ -77,6 +62,9 @@ int sig;
  
 
  
+setlinebuf()
+{
+}
  
 ieee_handler()
 {
@@ -85,7 +73,19 @@ ualarm()
 
 {
 }
+#include <sys/file.h>
+#include <fcntl.h>
 
-ieee_flags()
+
+int ieee_flags(a1, a2, a3, a4)
+long long int a1,a2,a3,a4;
 {
+if (a1 == 1) { return( flock(a2,a3));};
+if (a1 == 2) { return( fcntl(a2,a3,a4));};
+if (a1 == 3) { return( open((char *)a2,a3,a4));};
+if (a1 == 4) { return( close(a2));}; 
+if (a1 == 5) { return( read(a2,a3,a4));}; 
+if (a1 == 6) { return( write(a2,a3,a4));}; 
+if (a1 == 7) { return( lseek(a2,a3,a4));}; 
 }
+

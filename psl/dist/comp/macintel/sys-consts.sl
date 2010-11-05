@@ -7,6 +7,7 @@
 % Modified:     27-Jun-84 09:31:48
 % Mode:         Lisp
 % Package:      
+% Status:       Experimental (Do Not Distribute)
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
@@ -38,7 +39,6 @@
 (define-constant infbitlength                   27) 
 (define-constant addressingunitsperitem         4)
 (define-constant charactersperword              4) 
-(makeunbound 'bitsperword) % avoid ugly message in REDUCE
 (define-constant bitsperword                    32)
 (define-constant bitsperword2                   16)
 (define-constant addressingunitsperfunctioncell 4) 
@@ -59,9 +59,9 @@
 (define-constant maxtokensize          5000)
 (define-constant bndstksize            2000)
 (define-constant catchstacksize        400)
-(define-constant hash-table-size       68023)
+(define-constant hash-table-size       18013)
 (define-constant savesize              4)
 (define-constant maxargblock           15)
 (define-constant stacksize             20000)
-(define-constant maxsymbols            65000)
+(define-constant maxsymbols            15000)
 (define-constant compressedbinaryradix 16)

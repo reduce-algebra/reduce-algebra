@@ -46,7 +46,7 @@
  */
 
 #ifndef BPSSIZE
-#define BPSSIZE 20000000  /* Minimum size in bytes */
+#define BPSSIZE 8000000  /* Minimum size in bytes */
 #endif
 
-char bps[BPSSIZE+110000000];
+char bps[BPSSIZE];

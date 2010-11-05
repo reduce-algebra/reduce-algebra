@@ -19,6 +19,11 @@ if test $guess = "x86_64-apple-darwin10.4.0"
 	export MACHINE=macintel64
 fi
 
+if test $guess = "i386-apple-darwin10.4.0"
+ then
+	export MACHINE=macintel
+fi
+
 if test $guess = "i686-pc-linux-gnu"
  then
         export MACHINE=linux
@@ -26,7 +31,7 @@ fi
 pdist=$PROOT/dist/distrib
 
 
-if test $1 != ""
+if test "$1" != ""
    then 
 	export MACHINE=$1
 fi

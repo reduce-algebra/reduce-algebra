@@ -1,1 +1,1 @@
-$pxk/bpsl -td 12000000 -f $psys/pslcomp.img 
+$pxk/bpsl -td 10000000 -f $psys/pslcomp.img 

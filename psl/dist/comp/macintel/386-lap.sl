@@ -7,6 +7,7 @@
 % Modified:
 % Mode:         Lisp
 % Package:      
+% Status:       Experimental (Do Not Distribute)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Revisions
@@ -171,13 +172,12 @@
    % if X = ( _____ !*!*!*Code!*!*Pointer!*!*!* ... )
    ((equal (second x) '***code**pointer***) 
     (setq lapreturnvalue* 
-      (if *writingfaslfile currentoffset* (wplus2 codebase* currentoffset*))))
+      (if *writingfaslfile currentoffset* (plus codebase* currentoffset*))))
 
    % If depositing into memory
    ((not *writingfaslfile) 
     (setq entries* (cons (cons (rest x) currentoffset*) entries*)) 
-    (unless lapreturnvalue* (setq lapreturnvalue*
-		 (wplus2 codebase* currentoffset*))))
+    (unless lapreturnvalue* (setq lapreturnvalue* (plus codebase* currentoffset*))))
 
    % if X = ( _____ !*!*Fasl!*!*InitCode!*!* ... )
    ((equal (second x) '**fasl**initcode**) 
@@ -200,8 +200,7 @@
 
 (de DefineEntries nil 
     (foreach X in Entries* do 
-	(PutD (first (car X)) (second (car X))
-		 (MkCODE (wplus2 CodeBase* (cdr X))))))
+	(PutD (first (car X)) (second (car X)) (MkCODE (plus CodeBase* (cdr X))))))
 
 (de DepositInstruction (X)
 % This actually dispatches to the procedures to assemble the instrucitons
@@ -941,7 +940,7 @@
     (cond 
      ((codep l) (if *writingfaslfile
 		  (inf l)
-		  (wdifference (inf l) codebase*)))
+		  (difference (inf l) codebase*)))
      ((setq offset  (atsoc l labeloffsets*)) (cdr offset))
      (t (stderror (bldmsg "Unknown label %r" l)))
      )))
@@ -1296,24 +1295,24 @@
 % ------------------------------------------------------------
 
 (de DepositByte (X) 
-(progn (putbyte (wPlus2 CodeBase* CurrentOffset*) 0 X) 
+(progn (putbyte (Plus2 CodeBase* CurrentOffset*) 0 X) 
     (UpdateBitTable 1 0) 
     (setq CurrentOffset* (plus CurrentOffset* 1))))
 
 (de DepositHalfWord (X) 
-(progn (puthalfword (wPlus2 CodeBase* CurrentOffset*) 0 X) 
+(progn (puthalfword (Plus2 CodeBase* CurrentOffset*) 0 X) 
     (UpdateBitTable 2 0) 
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (de depositword (x)
-  (putword (wplus2 codebase* currentoffset*) 0 x)
+  (putword (plus2 codebase* currentoffset*) 0 x)
   (updatebittable 4 0)
   (setq currentoffset* (plus currentoffset* 4)))
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
-  (putword (wplus2 codebase* currentoffset*)
+  (putword (plus2 codebase* currentoffset*)
 	   0 
 	   (iplus2 offset (if *writingfaslfile 0 codebase*)))
   (updatebittable 4 (const reloc_word))
@@ -1350,7 +1349,7 @@
     ((or (not *writingfaslfile) (leq (idinf x) 128)) 
      (depositword (idinf X)))
     (t
-      (putword (wplus2 codebase* currentoffset*) 0 
+      (putword (plus2 codebase* currentoffset*) 0 
 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
       (setq currentoffset* (plus currentoffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
@@ -1359,7 +1358,7 @@
 (prog (Y) 
     (return (cond ((FixP X) (DepositHalfWord X)) 
     ((LabelP X) 
-    (progn (puthalfword (wPlus2 CodeBase* CurrentOffset*) 0 
+    (progn (puthalfword (Plus2 CodeBase* CurrentOffset*) 0 
 		    (IPlus2 (LabelOffset X) 
 			   (cond (*WritingFaslFile 0) (t CodeBase*)))) 
 	(UpdateBitTable 2 (const RELOC_HALFWORD)) 
@@ -1381,7 +1380,7 @@
 	   (DepositWord 
 	       (MkItem TagPart 
 		       (cond ((LabelP InfPart) 
-			      (wPlus2 CodeBase* (LabelOffset InfPart))) 
+			      (Plus2 CodeBase* (LabelOffset InfPart))) 
 			     ((equal (first InfPart) 'IDLoc) 
 			      (IDInf (second InfPart))) 
 			     (t 
@@ -1391,10 +1390,10 @@
 	  (t 
 	     (progn (cond 
 		     ((LabelP InfPart)      % RELOC_CODE_OFFSET = 0
-		      (putword (wPlus2 CodeBase* CurrentOffset*) 0 
+		      (putword (Plus2 CodeBase* CurrentOffset*) 0 
 		       (MkItem TagPart (LabelOffset InfPart)))) 
 		     ((equal (first InfPart) 'IDLoc) 
-		      (putword (wPlus2 CodeBase* CurrentOffset*) 0 
+		      (putword (Plus2 CodeBase* CurrentOffset*) 0 
 		       (MkItem TagPart 
 			(MakeRelocInf (const RELOC_ID_NUMBER) 
 			  (FindIDNumber (second InfPart))))))
@@ -1408,7 +1407,7 @@
     (cond ((or (not *WritingFaslFile) (LEQ (IDInf X) 128)) 
 	(DepositHalfWord (IDInf X))) (t 
     
-    (progn (puthalfword (wplus2 codebase* currentoffset*) 0 
+    (progn (puthalfword (plus2 codebase* currentoffset*) 0 
 		    (makerelochalfword (const reloc_id_number) (findidnumber x))) 
 	(setq currentoffset* (plus currentoffset* 2)) 
 	(updatebittable 2 (const reloc_halfword))))))

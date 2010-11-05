@@ -2,11 +2,12 @@
 %
 % File:         PXC:os2386-ASM.SL
 % Description:  OS2 386 specific information for LAP-TO-ASM
-% Author:       Herbert Melenk
+% Author:       
 % Created:      16-Jan-1992
 % Modified:
 % Mode:         Lisp
 % Package:      
+% Status:       Experimental (Do Not Distribute)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

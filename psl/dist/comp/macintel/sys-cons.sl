@@ -12,7 +12,6 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 
@@ -60,9 +59,9 @@
 (define-constant maxtokensize          5000)
 (define-constant bndstksize            2000)
 (define-constant catchstacksize        400)
-(define-constant hash-table-size       68023)
+(define-constant hash-table-size       18013)
 (define-constant savesize              4)
 (define-constant maxargblock           15)
 (define-constant stacksize             20000)
-(define-constant maxsymbols            65000)
+(define-constant maxsymbols            15000)
 (define-constant compressedbinaryradix 16)
