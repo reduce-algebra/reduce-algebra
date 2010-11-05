@@ -78,7 +78,6 @@
 #include <X11/Xft/Xft.h>
 
 static Display *dpy;
-static XftDraw *ftDraw = NULL;
 static Visual *ftVisual = NULL;
 static Colormap ftColorMap;
 static XRenderColor ftRenderBlack = {0,0,0,0xffff};
@@ -819,7 +818,6 @@ int add_custom_fonts() // return 0 on success.
 #else // Assume all that is left is X11, and that Xft/fontconfig are available
     int screen = 0;
     XftFontSet *fs = NULL;
-    ftDraw = NULL;
     FcConfig *config = FcConfigCreate();
     dpy = (Display *)NULL; // @@@@@@ appl->getDisplay();
     screen = DefaultScreen(dpy);
@@ -885,12 +883,11 @@ int add_custom_fonts() // return 0 on success.
 
     ftVisual = DefaultVisual(dpy, screen);
     ftColorMap =  DefaultColormap(dpy, screen);
-    ftDraw = XftDrawCreate(dpy, w->canvas->id(), ftVisual, ftColorMap);
     XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack, &ftBlack);
     XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
+#if 0
 // I had identified the font that I wanted earlier so now I can open it
 // by just using the information collected then.
-#if 0
     ftFont = XftFontOpen(dpy, screen,
                          XFT_FAMILY, XftTypeString, fontname,
                          XFT_SIZE, XftTypeDouble, 24.0,
