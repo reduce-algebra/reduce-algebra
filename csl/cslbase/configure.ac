@@ -156,6 +156,13 @@ AC_ARG_WITH(ming64,
   [],
   [])
 
+if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
+then
+  with_gui="yes"
+else
+  with_gui="no"
+fi
+
 AC_SUBST(MAKE)
 AC_SUBST(AR)
 AC_SUBST(STRIP)
@@ -225,7 +232,7 @@ x86_64-w64-*)
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
-    if test "x$with_fox" != "xno"
+    if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     fi
@@ -322,7 +329,7 @@ x86_64-w64-*)
   then
     AC_PATH_PROGS(SED, [gsed sed], sed, [/usr/sfw/bin:$PATH])
   fi
-  if test "x$with_fox" != "xno"
+  if test "x$with_gui" != "xno"
   then
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
   fi
@@ -414,7 +421,7 @@ x86_64-w64-*)
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$with_fox" != "xno"
+  if test "x$with_gui" != "xno"
   then
     if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
     then
@@ -444,7 +451,7 @@ x86_64-w64-*)
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$with_fox" != "xno"
+  if test "x$with_gui" != "xno"
   then
     if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
     then
@@ -854,7 +861,7 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
-if test "x$with_fox" != "xno"
+if test "x$with_gui" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
   then
@@ -1034,7 +1041,7 @@ AC_CHECK_LIB(rt, clock_nanosleep)
 
 AC_CHECK_LIB(pthread, pthread_create)
 
-if test "x$with_fox" != "xno"
+if test "x$with_gui" != "xno"
 then
   LIBS="$XLIBS $LIBS"
 fi
@@ -1098,7 +1105,7 @@ fi
 # However Solarix 10 x86 seems to misdetect Xrender when in
 # 64-bit mode so I fudge that away here.
 
-if test "x$with_fox" != "xno" &&
+if test "x$with_gui" != "xno" &&
    test "x$solaris" != "xyes" &&
    (test "x$windows_build" != "xyes" ||
      test "x$with_cygwin" = "xyes")
