@@ -4,15 +4,6 @@
 
 # CSL and REDUCE build sequences
 
-if cygwin
-# IF BUILDING WITH CYGWIN YOU *MUST* REVIEW ALL LICENSES VERY CAREFULLY
-# BEFORE REDISTRIBUTING ANY BINARIES SINCE THE MAIN CYGWIN DLL is GPL.
-#
-# I COMPILE AND LINK WITH "-mno-cygwin" WHICH SHOULD AVOID LINKING IN THE
-# MAIN CYGWIN DLL, BUT CARE MUST BE TAKEN TO AVOID OTHER LIBRARIES THAT
-# HAVE LICENSE CONDITIONS THAT WOULD CAUSE ME GRIEF.
-endif cygwin
-
 CP = cp
 RM = rm
 
@@ -209,6 +200,15 @@ else !windows
 fwin_icon =
 endif !windows
 
+if wx
+fontsdir = wxfonts
+samplefont=cmr10.ttf
+else !wx
+fontsdir = fonts
+samplefont=cmr10.pfb
+endif !wx
+
+AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
@@ -218,12 +218,12 @@ foxdemo_DEPENDENCIES = $(fwin_icon)
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-fontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+fontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 showmathdemo_SOURCES = showmathdemo.cpp
 showmathdemo_CPPFLAGS = $(FOX_INCLUDES)
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-showmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
@@ -231,11 +231,11 @@ wxdemo_DEPENDENCIES = $(fwin_icon)
 
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
-wxfontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
-wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 
 if windows
@@ -249,9 +249,6 @@ dyndemo_SOURCES = dyndemo.c
 if !windows
 dyndemo_DEPENDENCIES = dynmodule.so
 endif !windows
-
-fontsdir = reduce.fonts
-AM_CPPFLAGS = -Dfontsdir=reduce.fonts
 
 if windows
 
@@ -310,10 +307,10 @@ bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
 
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
-		$(fontsdir)/cmr10.pfb
+		reduce.$(fontsdir)/$(samplefont)
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
+reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
 fwindemo_DEPENDENCIES = $(fwin_icon)
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
@@ -347,9 +344,9 @@ csl_LDADD = $(FOX_LIBS)
 bootstrapreduce_LDADD = $(FOX_LIBS)
 reduce_LDADD = $(FOX_LIBS)
 
-csl_DEPENDENCIES = $(fontsdir)/cmr10.pfb
-bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont)
+bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
+reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
 
 # On non-windows systems I am ASSUMING here that the C compiler will
 # accept an "-o" option to indicate where it should put its object file.
@@ -547,21 +544,29 @@ fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
 endif windows
 endif gui
 
-$(fontsdir)/cmr10.pfb:	$(srcdir)/fonts
-	-rm -rf $(fontsdir)
-	-mkdir $(fontsdir)
-	$(CP) $(srcdir)/fonts/README $(fontsdir)
-	$(CP) $(srcdir)/fonts/README.cmps-fonts $(fontsdir)
-	$(CP) $(srcdir)/fonts/README.BaKoMa $(fontsdir)
-	$(CP) $(srcdir)/fonts/*.ttf $(fontsdir)
-	$(CP) $(srcdir)/fonts/*.pfb $(fontsdir)
-	$(CP) $(srcdir)/fonts/*.pfa $(fontsdir)
-	$(CP) $(srcdir)/fonts/fonts.dir $(fontsdir)
-	$(CP) $(srcdir)/fonts/fonts.scale $(fontsdir)
-	-mkdir $(fontsdir)/pfmfiles
-	$(CP) -r $(srcdir)/fonts/pfmfiles/*.pfm $(fontsdir)/pfmfiles
-	-mkdir $(fontsdir)/src
-	$(CP) -r $(srcdir)/fonts/src/*.gz $(fontsdir)/src
+reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
+	-rm -rf reduce.$(fontsdir)
+	-mkdir reduce.$(fontsdir)
+if wx
+	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+else !wx
+	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/README.cmps-fonts reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/README.BaKoMa reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/*.pfb reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/*.pfa reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/fonts.dir reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/fonts.scale reduce.$(fontsdir)
+	-mkdir reduce.$(fontsdir)/pfmfiles
+	$(CP) -r $(srcdir)/$(fontsdir)/pfmfiles/*.pfm reduce.$(fontsdir)/pfmfiles
+	-mkdir reduce.$(fontsdir)/src
+	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
+endif !wx
 
 if exeext
 
@@ -691,9 +696,9 @@ termdemo_LIBS=
 #
 
 if windows
-image_files = csl.img reduce.img reduce.doc $(fontsdir) wgnuplot* gnuplot.Copyright
+image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 else !windows
-image_files = csl.img reduce.img reduce.doc $(fontsdir)
+image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
 endif !windows
 install-data-local: $(image_files)
 	@$(NORMAL_INSTALL)

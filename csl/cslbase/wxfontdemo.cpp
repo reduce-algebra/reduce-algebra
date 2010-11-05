@@ -57,6 +57,8 @@
 #include "wx/wx.h"
 #endif
 
+#include "config.h"
+
 #ifdef WIN32
 // I will need windows-specific functions so I can set up private fonts
 #undef _WIN32_WINNT
@@ -66,13 +68,31 @@
 #include <io.h>
 #else
 #ifdef MACINTOSH
+
 // If I need Mac-specific includes here is where to set them up!
-#else
-// I will expect that what is left here is X11.
-// Again I need some headers so that I can establish private fonts
+
+#else // MACINTOSH
+#ifdef HAVE_LIBXFT
+
 #include <X11/Xlib.h>
-#endif
-#endif
+#include <X11/Xft/Xft.h>
+
+static Display *dpy;
+static XftDraw *ftDraw = NULL;
+static Visual *ftVisual = NULL;
+static Colormap ftColorMap;
+static XRenderColor ftRenderBlack = {0,0,0,0xffff};
+static XRenderColor ftRenderWhite = {0xffff,0xffff,0xffff,0xffff};
+static XftColor ftBlack, ftWhite;
+static XftFont *ftFont = NULL;
+
+#else   // HAVE_LIBXFT
+
+#error Other than on Windows you must have Xft installed.
+
+#endif  // HAVE_LIBXFT
+#endif  // MACINTOSH
+#endif  // WIN32
 
 // I may be old fashioned , but I will be happier using C rather than C++
 // libraries here.
@@ -161,10 +181,149 @@ typedef struct localFonts
 
 static localFonts fontNames[] =
 {
-    {"cmex10", NULL},
-    {"cmmi10", NULL},
-    {"cmr10",  NULL},
-    {"cmsy10", NULL}
+// Right now I will add in ALL the fonts from the BaKoMa collection.
+// This can make sense in a font demo program but in a more serious
+// application I should be a little more selective!
+    {"cmb10",    NULL},
+    {"cmbsy10",  NULL},
+    {"cmbsy6",   NULL},
+    {"cmbsy7",   NULL},
+    {"cmbsy8",   NULL},
+    {"cmbsy9",   NULL},
+    {"cmbx10",   NULL},
+    {"cmbx12",   NULL},
+    {"cmbx5",    NULL},
+    {"cmbx6",    NULL},
+    {"cmbx7",    NULL},
+    {"cmbx8",    NULL},
+    {"cmbx9",    NULL},
+    {"cmbxsl10", NULL},
+    {"cmbxti10", NULL},
+    {"cmcsc10",  NULL},
+    {"cmcsc8",   NULL},
+    {"cmcsc9",   NULL},
+    {"cmdunh10", NULL},
+    {"cmex10",   NULL},
+    {"cmex7",    NULL},
+    {"cmex8",    NULL},
+    {"cmex9",    NULL},
+    {"cmff10",   NULL},
+    {"cmfi10",   NULL},
+    {"cmfib8",   NULL},
+    {"cminch",   NULL},
+    {"cmitt10",  NULL},
+    {"cmmi10",   NULL},
+    {"cmmi12",   NULL},
+    {"cmmi5",    NULL},
+    {"cmmi6",    NULL},
+    {"cmmi7",    NULL},
+    {"cmmi8",    NULL},
+    {"cmmi9",    NULL},
+    {"cmmib10",  NULL},
+    {"cmmib6",   NULL},
+    {"cmmib7",   NULL},
+    {"cmmib8",   NULL},
+    {"cmmib9",   NULL},
+    {"cmr10",    NULL},
+    {"cmr12",    NULL},
+    {"cmr17",    NULL},
+    {"cmr5",     NULL},
+    {"cmr6",     NULL},
+    {"cmr7",     NULL},
+    {"cmr8",     NULL},
+    {"cmr9",     NULL},
+    {"cmsl10",   NULL},
+    {"cmsl12",   NULL},
+    {"cmsl8",    NULL},
+    {"cmsl9",    NULL},
+    {"cmsltt10", NULL},
+    {"cmss10",   NULL},
+    {"cmss12",   NULL},
+    {"cmss17",   NULL},
+    {"cmss8",    NULL},
+    {"cmss9",    NULL},
+    {"cmssbx10", NULL},
+    {"cmssdc10", NULL},
+    {"cmssi10",  NULL},
+    {"cmssi12",  NULL},
+    {"cmssi17",  NULL},
+    {"cmssi8",   NULL},
+    {"cmssi9",   NULL},
+    {"cmssq8",   NULL},
+    {"cmssqi8",  NULL},
+    {"cmsy10",   NULL},
+    {"cmsy5",    NULL},
+    {"cmsy6",    NULL},
+    {"cmsy7",    NULL},
+    {"cmsy8",    NULL},
+    {"cmsy9",    NULL},
+    {"cmtcsc10", NULL},
+    {"cmtex10",  NULL},
+    {"cmtex8",   NULL},
+    {"cmtex9",   NULL},
+    {"cmti10",   NULL},
+    {"cmti12",   NULL},
+    {"cmti7",    NULL},
+    {"cmti8",    NULL},
+    {"cmti9",    NULL},
+    {"cmtt10",   NULL},
+    {"cmtt12",   NULL},
+    {"cmtt8",    NULL},
+    {"cmtt9",    NULL},
+    {"cmu10",    NULL},
+    {"cmvtt10",  NULL},
+    {"euex10",   NULL},
+    {"euex7",    NULL},
+    {"euex8",    NULL},
+    {"euex9",    NULL},
+    {"eufb10",   NULL},
+    {"eufb5",    NULL},
+    {"eufb6",    NULL},
+    {"eufb7",    NULL},
+    {"eufb8",    NULL},
+    {"eufb9",    NULL},
+    {"eufm10",   NULL},
+    {"eufm5",    NULL},
+    {"eufm6",    NULL},
+    {"eufm7",    NULL},
+    {"eufm8",    NULL},
+    {"eufm9",    NULL},
+    {"eurb10",   NULL},
+    {"eurb5",    NULL},
+    {"eurb6",    NULL},
+    {"eurb7",    NULL},
+    {"eurb8",    NULL},
+    {"eurb9",    NULL},
+    {"eurm10",   NULL},
+    {"eurm5",    NULL},
+    {"eurm6",    NULL},
+    {"eurm7",    NULL},
+    {"eurm8",    NULL},
+    {"eurm9",    NULL},
+    {"eusb10",   NULL},
+    {"eusb5",    NULL},
+    {"eusb6",    NULL},
+    {"eusb7",    NULL},
+    {"eusb8",    NULL},
+    {"eusb9",    NULL},
+    {"eusm10",   NULL},
+    {"eusm5",    NULL},
+    {"eusm6",    NULL},
+    {"eusm7",    NULL},
+    {"eusm8",    NULL},
+    {"eusm9",    NULL},
+    {"msam10",   NULL},
+    {"msam5",    NULL},
+    {"msam6",    NULL},
+    {"msam7",    NULL},
+    {"msam8",    NULL},
+    {"msam9",    NULL},
+    {"msbm10",   NULL},
+    {"msbm5",    NULL},
+    {"msbm6",    NULL},
+    {"msbm7",    NULL},
+    {"msbm8",    NULL},
+    {"msbm9",    NULL}
 };
 
 #ifdef WIN32
@@ -188,8 +347,13 @@ static localFonts fontNames[] =
 static int fontNeeded = 0;
 
 static int CALLBACK fontEnumProc(
+#ifdef UNICODE
+    const LOGFONTW *lpelfe,     // logical-font data
+    const TEXTMETRICW *lpntme,  // physical-font data
+#else
     const LOGFONTA *lpelfe,     // logical-font data
     const TEXTMETRICA *lpntme,  // physical-font data
+#endif
     DWORD FontType,             // type of font
     LPARAM lParam)              // application-defined data
 {
@@ -197,17 +361,28 @@ static int CALLBACK fontEnumProc(
     return 0;
 }
 
-static char faceName[LONGEST_LEGAL_FILENAME] = "";
+
+static TCHAR faceName[LONGEST_LEGAL_FILENAME] = "";
 
 static int CALLBACK fontEnumProc1(
+#ifdef UNICODE
+    const LOGFONTW *lpelfe,     // logical-font data
+    const TEXTMETRICW *lpntme,  // physical-font data
+#else
     const LOGFONTA *lpelfe,     // logical-font data
     const TEXTMETRICA *lpntme,  // physical-font data
+#endif
     DWORD FontType,             // type of font
     LPARAM lParam)              // application-defined data
 {
 // avoid duplicated reports
+#ifdef UNICODE
+    if (wstrcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
+    wstrcpy(faceName, lpelfe->lfFaceName);
+#else
     if (strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
     strcpy(faceName, lpelfe->lfFaceName);
+#endif
     printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
     fflush(stdout);
     return 1;
@@ -284,11 +459,11 @@ int find_program_directory(char *argv0)
  */
     TCHAR execname[LONGEST_LEGAL_FILENAME];
     GetModuleFileName(NULL, execname, LONGEST_LEGAL_FILENAME-2);
-    {   TCHAR *p1 = execname;
-        char *p2 = this_executable;
-        while (*p1 != 0) *p2++ = *p1++;
-        *p2 = 0;
-    }
+#ifdef UNICODE
+    wcstombs(this_executable, execname, sizeof(this_executable));
+#else
+    strcpy(this_executable, execname);
+#endif
     argv0 = this_executable;
     program_name_dot_com = 0;
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
@@ -568,9 +743,15 @@ int find_program_directory(char *argv0)
 
 #endif /* WIN32 */
 
-#if 0
-// unmerged code here
+#ifndef fontsdir
+#define fontsdir reduce.wxfonts
+#endif
 
+#define toString(x) toString1(x)
+#define toString1(x) #x
+
+int add_custom_fonts() // return 0 on success.
+{
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
     LOGFONT lf;
@@ -579,7 +760,11 @@ int find_program_directory(char *argv0)
 // them for myself.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   memset((void *)&lf, 0, sizeof(lf));
+#ifdef UNICODE
+        mbstowcs(lf.lfFaceName, fontNames[i].name, sizeof(lf.lfFaceName));
+#else
         strcpy(lf.lfFaceName, fontNames[i].name);
+#endif
         lf.lfCharSet = DEFAULT_CHARSET;
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
@@ -624,14 +809,19 @@ int find_program_directory(char *argv0)
     printf("Listing complete\n");
     fflush(stdout);
     DeleteDC(hDC);
-
+    return 0;
 #else // WIN32
+#ifdef MACINTOSH
 
+// Adding custom fonts not implemented yet
+    return 1;
+
+#else // Assume all that is left is X11, and that Xft/fontconfig are available
     int screen = 0;
     XftFontSet *fs = NULL;
     ftDraw = NULL;
     FcConfig *config = FcConfigCreate();
-    dpy = (Display *)appl->getDisplay();
+    dpy = (Display *)NULL; // @@@@@@ appl->getDisplay();
     screen = DefaultScreen(dpy);
 
 // I will add exactly and only the fonts that I will be using.
@@ -700,35 +890,17 @@ int find_program_directory(char *argv0)
     XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
 // I had identified the font that I wanted earlier so now I can open it
 // by just using the information collected then.
+#if 0
     ftFont = XftFontOpen(dpy, screen,
                          XFT_FAMILY, XftTypeString, fontname,
                          XFT_SIZE, XftTypeDouble, 24.0,
                          NULL);
+#endif
     XftFontSetDestroy(fs); // Now I am done with the list of fonts.
-
+    return 0;
+#endif // MACINTOSH
 #endif // WIN32
-
-    FXFontDesc fd;
-    memset(&fd, 0, sizeof(fd));
-    strcpy(fd.face, fontname);
-    printf("Will try to view %s\n", fontname);
-    fd.size = 240;               // NB size is in DECIPOINTS here
-    fd.weight = 0;
-    fd.slant = 0;
-    fd.setwidth = 0;
-    fd.encoding = FONTENCODING_DEFAULT;
-    fd.flags = 0;
-    ff = new FXFont(appl, fd);
-    if (ff == NULL) printf("Font could not be created\n");
-    else ff->create();
-
-    application.create();
-    return application.run();
 }
-
-
-#endif /* 0 - unmerged code */
-
 
 
 bool fontApp::OnInit()
@@ -747,6 +919,7 @@ bool fontApp::OnInit()
     find_program_directory(myargv[0]);
     printf("\n%s\n%s\n%s\n", fwin_full_program_name, programName, programDir);
 
+    add_custom_fonts();
 
     char *font = "default";  // A default font name to ask for.
     int size = 48;           // a default size.
@@ -838,8 +1011,7 @@ void fontFrame::OnPaint(wxPaintEvent &event)
         dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
         printf("Adjusted w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
         wxString f = ff->GetNativeFontInfoDesc();
-        const char *fd = f.utf8_str();
-        printf("Font = %s\n", fd);
+        wxPrintf("Font = %s\n", f);
         fontScaled = true; // Do this only once!
     }
 // To make my display match the one I had from my previous FOX-based

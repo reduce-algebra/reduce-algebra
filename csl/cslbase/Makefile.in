@@ -335,13 +335,6 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-
-# IF BUILDING WITH CYGWIN YOU *MUST* REVIEW ALL LICENSES VERY CAREFULLY
-# BEFORE REDISTRIBUTING ANY BINARIES SINCE THE MAIN CYGWIN DLL is GPL.
-#
-# I COMPILE AND LINK WITH "-mno-cygwin" WHICH SHOULD AVOID LINKING IN THE
-# MAIN CYGWIN DLL, BUT CARE MUST BE TAKEN TO AVOID OTHER LIBRARIES THAT
-# HAVE LICENSE CONDITIONS THAT WOULD CAUSE ME GRIEF.
 CP = cp
 RM = rm
 @cygpath_FALSE@CYGSRC = $(srcdir)
@@ -471,6 +464,11 @@ reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 
 @windows_FALSE@fwin_icon = 
 @windows_TRUE@fwin_icon = fwin-icon.$(OBJEXT)
+@wx_FALSE@fontsdir = fonts
+@wx_TRUE@fontsdir = wxfonts
+@wx_FALSE@samplefont = cmr10.pfb
+@wx_TRUE@samplefont = cmr10.ttf
+AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
@@ -478,27 +476,25 @@ foxdemo_DEPENDENCIES = $(fwin_icon)
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-fontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+fontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 showmathdemo_SOURCES = showmathdemo.cpp
 showmathdemo_CPPFLAGS = $(FOX_INCLUDES)
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-showmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
 wxdemo_DEPENDENCIES = $(fwin_icon)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
-wxfontdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
-wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(fontsdir)/cmr10.pfb
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 @windows_FALSE@DLLEXT = so
 @windows_TRUE@DLLEXT = dll
 dyndemo_SOURCES = dyndemo.c
 @windows_FALSE@dyndemo_DEPENDENCIES = dynmodule.so
 @windows_TRUE@dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
-fontsdir = reduce.fonts
-AM_CPPFLAGS = -Dfontsdir=reduce.fonts
 @windows_FALSE@CSLEXEDEF = 
 @windows_TRUE@CSLEXEDEF = local-cslexe.def
 @windows_FALSE@CSLCOMDEF = 
@@ -531,16 +527,16 @@ AM_CPPFLAGS = -Dfontsdir=reduce.fonts
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 @windows_FALSE@reduce_LDADD = $(FOX_LIBS)
 @windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS)
-@windows_FALSE@csl_DEPENDENCIES = $(fontsdir)/cmr10.pfb
+@windows_FALSE@csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont)
 @windows_TRUE@csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
-@windows_TRUE@		$(fontsdir)/cmr10.pfb
+@windows_TRUE@		reduce.$(fontsdir)/$(samplefont)
 
-@windows_FALSE@bootstrapreduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+@windows_FALSE@bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
 @windows_TRUE@bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-@windows_TRUE@		fwin-csl.$(OBJEXT) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+@windows_TRUE@		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
 
-@windows_FALSE@reduce_DEPENDENCIES = $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
-@windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) $(fontsdir)/cmr10.pfb reduce.doc/index.html $(GP)
+@windows_FALSE@reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
+@windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
 @windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
 
@@ -586,13 +582,13 @@ R = $(srcdir)/../..
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
 termdemo_LIBS = 
-@windows_FALSE@image_files = csl.img reduce.img reduce.doc $(fontsdir)
+@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live
 # in the same directory as executables.
 #
-@windows_TRUE@image_files = csl.img reduce.img reduce.doc $(fontsdir) wgnuplot* gnuplot.Copyright
+@windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 @gui_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_TRUE@@windows_TRUE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_FALSE@@windows_TRUE@noinstall_console_binaries = 
@@ -2223,21 +2219,26 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	-rm -f fwindemo.exe
 @gui_TRUE@@windows_TRUE@	$(MAKE) fwindemo.exe
 
-$(fontsdir)/cmr10.pfb:	$(srcdir)/fonts
-	-rm -rf $(fontsdir)
-	-mkdir $(fontsdir)
-	$(CP) $(srcdir)/fonts/README $(fontsdir)
-	$(CP) $(srcdir)/fonts/README.cmps-fonts $(fontsdir)
-	$(CP) $(srcdir)/fonts/README.BaKoMa $(fontsdir)
-	$(CP) $(srcdir)/fonts/*.ttf $(fontsdir)
-	$(CP) $(srcdir)/fonts/*.pfb $(fontsdir)
-	$(CP) $(srcdir)/fonts/*.pfa $(fontsdir)
-	$(CP) $(srcdir)/fonts/fonts.dir $(fontsdir)
-	$(CP) $(srcdir)/fonts/fonts.scale $(fontsdir)
-	-mkdir $(fontsdir)/pfmfiles
-	$(CP) -r $(srcdir)/fonts/pfmfiles/*.pfm $(fontsdir)/pfmfiles
-	-mkdir $(fontsdir)/src
-	$(CP) -r $(srcdir)/fonts/src/*.gz $(fontsdir)/src
+reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
+	-rm -rf reduce.$(fontsdir)
+	-mkdir reduce.$(fontsdir)
+@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
+@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
+@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
+@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)
+@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README.cmps-fonts reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README.BaKoMa reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/*.pfb reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/*.pfa reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/fonts.dir reduce.$(fontsdir)
+@wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/fonts.scale reduce.$(fontsdir)
+@wx_FALSE@	-mkdir reduce.$(fontsdir)/pfmfiles
+@wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/pfmfiles/*.pfm reduce.$(fontsdir)/pfmfiles
+@wx_FALSE@	-mkdir reduce.$(fontsdir)/src
+@wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
 
 @exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COMEXT)
 @exeext_TRUE@@gui_TRUE@	echo "make csl.exe is preferred"
