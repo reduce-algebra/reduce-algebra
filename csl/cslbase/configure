@@ -3288,6 +3288,13 @@ if test "${with_ming64+set}" = set; then :
 fi
 
 
+if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
+then
+  with_gui="yes"
+else
+  with_gui="no"
+fi
+
 
 
 
@@ -3468,7 +3475,7 @@ $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
-    if test "x$with_fox" != "xno"
+    if test "x$with_gui" != "xno"
     then
       LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
     fi
@@ -3851,7 +3858,7 @@ done
 test -n "$SED" || SED="sed"
 
   fi
-  if test "x$with_fox" != "xno"
+  if test "x$with_gui" != "xno"
   then
     LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
   fi
@@ -3967,7 +3974,7 @@ $as_echo "#define UNIX 1" >>confdefs.h
 # To survive 64-bit Linux the next line seems needed. I will leave it for
 # BSD since is a /usr/X11R6/lib64 directory does not exist no harm will
 # be done.
-  if test "x$with_fox" != "xno"
+  if test "x$with_gui" != "xno"
   then
     if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
     then
@@ -4021,7 +4028,7 @@ $as_echo "#define UNIX 1" >>confdefs.h
      ;;
   esac
 # To survive 64-bit Linux the next line seems needed.
-  if test "x$with_fox" != "xno"
+  if test "x$with_gui" != "xno"
   then
     if test "x$bits32" != "xyes" && test "x$cross_compiling" != "xyes"
     then
@@ -7657,7 +7664,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 
-if test "x$with_fox" != "xno"
+if test "x$with_gui" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
   then
@@ -8450,7 +8457,7 @@ _ACEOF
 fi
 
 
-if test "x$with_fox" != "xno"
+if test "x$with_gui" != "xno"
 then
   LIBS="$XLIBS $LIBS"
 fi
@@ -8671,7 +8678,7 @@ fi
 # However Solarix 10 x86 seems to misdetect Xrender when in
 # 64-bit mode so I fudge that away here.
 
-if test "x$with_fox" != "xno" &&
+if test "x$with_gui" != "xno" &&
    test "x$solaris" != "xyes" &&
    (test "x$windows_build" != "xyes" ||
      test "x$with_cygwin" = "xyes")

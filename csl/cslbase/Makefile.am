@@ -497,6 +497,8 @@ endif fox
 
 if wx
 
+PL=wxfontdemo.app/Contents/Info.plist
+
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-rm -f wxfontdemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
@@ -505,6 +507,57 @@ if !darwin
 	$(STRIP) wxfontdemo$(EXEEXT)
 endif !darwin
 endif !debug
+# The next few lines are as suggested by the wxWidgets Makefile and create
+# an Application Bundle.
+	SetFile -t APPL wxfontdemo
+	mkdir -p wxfontdemo.app/Contents
+	mkdir -p wxfontdemo.app/Contents/MacOS
+	mkdir -p wxfontdemo.app/Contents/Resources
+	mkdir -p wxfontdemo.app/Contents/Resources/Fonts
+	cp reduce.wxFonts/* wxfontdemo.app/Contents/Recources/Fonts
+	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PL)
+	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PL)
+	echo "<plist version=\"0.9\">" >> $(PL)
+	echo "<dict>" >> $(PL)
+	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PL)
+	echo "<string>6.0</string>" >> $(PL)
+	echo "<key>CFBundleIdentifier</key>" >> $(PL)
+	echo "<string>com.codemist.reduce.wxfontdemo</string>" >> $(PL)
+	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PL)
+	echo "<string>English</string>" >> $(PL)
+	echo "<key>CFBundleLocalizations</key>" >> $(PL)
+	echo "<array> <string>en</string> </array>" >> $(PL)
+	echo "<key>CFBundleExecutable</key>" >> $(PL)
+	echo "<string>wxfontdemo</string>" >> $(PL)
+	echo "<key>CFBundleIconFile</key>" >> $(PL)
+	echo "<string>wxmac.icns</string>" >> $(PL)
+	echo "<key>CFBundleName</key>" >> $(PL)
+	echo "<string>wxfontdemo</string>" >> $(PL)
+	echo "<key>CFBundlePackageType</key>" >> $(PL)
+	echo "<string>APPL</string>" >> $(PL)
+	echo "<key>CFBundleSignature</key>" >> $(PL)
+	echo "<string>????</string>" >> $(PL)
+	echo "<key>CFBundleVersion</key>" >> $(PL)
+	echo "<string>1</string>" >> $(PL)
+	echo "<key>CFBundleShortVersionString</key>" >> $(PL)
+	echo "<string>1</string>" >> $(PL)
+	echo "<key>CFBundleGetInfoString</key>" >> $(PL)
+	echo "<string>wxfontdemo version 1, (C) 2010 Codemist Ltd</string>" >> $(PL)
+	echo "<key>CFBundleLongVersionString</key>" >> $(PL)
+	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PL)
+	echo "<key>NSHumanReadableCopyright</key>" >> $(PL)
+	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PL)
+	echo "<key>LSRequiresCarbon</key>" >> $(PL)
+	echo "<true/>" >> $(PL)
+	echo "<key>CSResourcesFileMapped</key>" >> $(PL)
+	echo "<true/>" >> $(PL)
+	echo "<key>ATSApplicationFontsPath</key>" >> $(PL)
+	echo "<string>Fonts</string>" >> $(PL)
+	echo "</dict>" >> $(PL)
+	echo "</plist>" >> $(PL)
+	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
+	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
+	cp -f $(srcdir)/../wxWidgets/src/osx/carbon/wxmac.icns wxfontdemo.app/Contents/Resources/wxmac.icns
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 	-rm -f wxdemo$(EXEEXT)
