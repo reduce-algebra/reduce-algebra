@@ -2204,7 +2204,7 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/MacOS
 @mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/Resources
 @mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/Resources/Fonts
-@mac_framework_TRUE@@wx_TRUE@	cp reduce.wxFonts/* wxfontdemo.app/Contents/Recources/Fonts
+@mac_framework_TRUE@@wx_TRUE@	cp reduce.wxFonts/* wxfontdemo.app/Contents/Resources/Fonts
 @mac_framework_TRUE@@wx_TRUE@	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PL)
 @mac_framework_TRUE@@wx_TRUE@	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PL)
 @mac_framework_TRUE@@wx_TRUE@	echo "<plist version=\"0.9\">" >> $(PL)
@@ -2247,7 +2247,7 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @mac_framework_TRUE@@wx_TRUE@	echo "</plist>" >> $(PL)
 @mac_framework_TRUE@@wx_TRUE@	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
 @mac_framework_TRUE@@wx_TRUE@	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
-@mac_framework_TRUE@@wx_TRUE@	cp -f $(srcdir)fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
+@mac_framework_TRUE@@wx_TRUE@	cp -f $(srcdir)/fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
 
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdemo$(EXEEXT)

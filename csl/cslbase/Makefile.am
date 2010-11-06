@@ -515,7 +515,7 @@ if mac_framework
 	mkdir -p wxfontdemo.app/Contents/MacOS
 	mkdir -p wxfontdemo.app/Contents/Resources
 	mkdir -p wxfontdemo.app/Contents/Resources/Fonts
-	cp reduce.wxFonts/* wxfontdemo.app/Contents/Recources/Fonts
+	cp reduce.wxFonts/* wxfontdemo.app/Contents/Resources/Fonts
 	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PL)
 	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PL)
 	echo "<plist version=\"0.9\">" >> $(PL)
@@ -558,7 +558,7 @@ if mac_framework
 	echo "</plist>" >> $(PL)
 	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
 	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
-	cp -f $(srcdir)fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
+	cp -f $(srcdir)/fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
 endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
