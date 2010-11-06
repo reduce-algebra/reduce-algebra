@@ -36,27 +36,36 @@ from types import IntType
 
 from PySide.QtCore import Qt
 from PySide.QtCore import Signal
-from PySide.QtCore import QObject
 from PySide.QtCore import QSettings
 
+from PySide.QtGui import QAbstractItemDelegate
+from PySide.QtGui import QItemDelegate
+from PySide.QtGui import QAbstractItemView
 from PySide.QtGui import QTextEdit
 from PySide.QtGui import QFont
 from PySide.QtGui import QFontInfo
+from PySide.QtGui import QHeaderView
+from PySide.QtGui import QItemEditorCreatorBase
+from PySide.QtGui import QItemEditorFactory
 from PySide.QtGui import QTextCursor
 from PySide.QtGui import QMessageBox
 from PySide.QtGui import QFontDatabase
+from PySide.QtGui import QTableView
 
+from qrlogging import fontLogger
 from qrlogging import signalLogger
 from qrlogging import traceLogger
 
-from reduce import QtReduce
+from qrmodel import QtReduce
+from qrmodel import QtReduceComputation
 
 from qrdefaults import QtReduceDefaults
 
-from qrformats import ReduceInputBlockFormat
-from qrformats import ReduceResultBlockFormat
-from qrformats import ReduceNoResultBlockFormat
-from qrformats import ReduceErrorBlockFormat
+from qrformats import QtReduceInput
+from qrformats import QtReduceResult
+from qrformats import QtReduceNoResult
+from qrformats import QtReduceError
+from qrformats import QtReduceRowFormat
 
 from qrxml import ReduceXmlReader
 from qrxml import ReduceXmlWriter
@@ -75,10 +84,23 @@ class QtReduceWorksheet(QTextEdit):
     modified = Signal(BooleanType)
 
     def __init__(self,parent=None):
-        QTextEdit.__init__(self)
+        super(QtReduceWorksheet,self).__init__(parent)
         self.__initSignals()
         self.__initFont()
         self.__initFirstBlock()
+        #        self.__initTableHack()
+
+    def __initTableHack(self):
+        self.model = QtReduceModel(self)
+        self.view = QtReduceView(self)
+        self.view.setWindowFlags(Qt.Window)
+        self.view.setFont(self.font())
+        self.view.setModel(self.model)
+        self.endComputation.connect(self.model.addComputation)
+        self.model.rowsInserted.connect(self.view.scrollToBottom)
+        self.view.resize(600,600)
+        self.view.raise_()
+        self.view.show()
 
     def __initSignals(self):
         self.textChanged.connect(self.textChangedHandler,
@@ -90,7 +112,7 @@ class QtReduceWorksheet(QTextEdit):
         self.zoomDef()
 
     def setupFont(self,size=None,step=1):
-        traceLogger.debug("size=%s, step=%s" % (size,step))
+        fontLogger.debug("size=%s, step=%s" % (size,step))
         if not size:
             size = self.font().pixelSize()
         font = self.font()
@@ -108,22 +130,22 @@ class QtReduceWorksheet(QTextEdit):
         family = info.family()
         fontDatabase = QFontDatabase()
         styleStr = fontDatabase.styleString(font)
-        traceLogger.debug("family=%s, style=%s" % (family,styleStr))
+        fontLogger.debug("family=%s, style=%s" % (family,styleStr))
         if fontDatabase.isSmoothlyScalable(family,styleStr):
             sizes = QFontDatabase.standardSizes()
         else:
             sizes = fontDatabase.smoothSizes(family,styleStr)
-        traceLogger.debug("looking for %s in %s" % (size,sizes))
+        fontLogger.debug("looking for %s in %s" % (size,sizes))
         nSize = size
         while (nSize not in sizes) and sizes[0] <= nSize and nSize <= sizes[-1]:
             nSize += step
         if nSize < sizes[0]:
-            traceLogger.debug("out of range - returning %s" % sizes[0])
+            fontLogger.debug("out of range - returning %s" % sizes[0])
             return sizes[0]
         if sizes[-1] < nSize:
-            traceLogger.debug("out of range - returning %s" % sizes[-1])
+            fontLogger.debug("out of range - returning %s" % sizes[-1])
             return sizes[-1]
-        traceLogger.debug("found %s" % nSize)
+        fontLogger.debug("found %s" % nSize)
         return nSize
 
     def currentFontChangedHandler(self,newFont):
@@ -137,41 +159,23 @@ class QtReduceWorksheet(QTextEdit):
         QSettings().setValue("worksheet/fontsize",newSize)
 
     def initialize(self):
+        return
         self.__initReduce()
-        self.reduce.initialize()
 
     def __initReduce(self):
         traceLogger.debug("entering")
-        binary = QSettings().value("computation/reduce",
-                                   QtReduceDefaults.REDUCE)
-        if not os.path.exists(sys.path[0] + "/" + binary):
-            tit = self.tr("Unable to Connect to Reduce")
-            txt = self.tr("The binary ")
-            txt += '"' + binary + '" '
-            txt += self.tr("does not exist.")
-            itxt = self.tr("Using the default binary ")
-            itxt += '"' + QtReduceDefaults.REDUCE + '"'
-            itxt += self.tr(". ")
-            itxt += self.tr("Please check the Preferences.")
-            mbox = QMessageBox(self)
-            mbox.setIcon(QMessageBox.Warning)
-            mbox.setWindowModality(Qt.WindowModal)
-            mbox.setWindowTitle(tit)
-            mbox.setText(txt)
-            mbox.setInformativeText(itxt)
-            mbox.exec_()
-            binary = QtReduceDefaults.REDUCE
-        self.reduce = QtReduce(binary)
+        self.reduce = QtReduce()
         self.reduce.endComputation.connect(self.endComputationHandler,
                                       type=Qt.DirectConnection)
         self.reduce.startComputation.connect(self.startComputationHandler,
                                            type=Qt.DirectConnection)
+        self.compute("$ % For initializing the status bar ",silent=True)
 
     def compute(self,c,silent=False):
         self.reduce.compute(c,silent)
 
     def startComputationHandler(self,rc):
-        signalLogger.debug("catching command=%s" % rc.currentCommand)
+        signalLogger.debug("catching command=%s" % rc.command)
         self.__startComputationCursor = self.textCursor()
         self.setReadOnly(True)
         self.startComputation.emit(rc)
@@ -354,13 +358,13 @@ class QtReduceWorksheet(QTextEdit):
     def labelBlock(self,cursor,label):
         traceLogger.debug("cursor.block()=%s, label=%s" % (cursor.block(), label))
         if label == 0:
-            f = ReduceInputBlockFormat()
+            f = QtReduceInput()
         elif label == 1:
-            f = ReduceResultBlockFormat()
+            f = QtReduceResult()
         elif label == 2:
-            f = ReduceNoResultBlockFormat()
+            f = QtReduceNoResult()
         else:
-            f = ReduceErrorBlockFormat()
+            f = QtReduceError()
 
         cursor.block().setUserState(label)
         cursor.setBlockCharFormat(f.charFormat)
@@ -371,16 +375,46 @@ class QtReduceWorksheet(QTextEdit):
                                          QtReduceDefaults.FONTSIZE))
 
 
-# Python 2.5.4 (r254:67916, Jul  7 2009, 23:51:24)
-# [GCC 4.2.1 (Apple Inc. build 5646)] on darwin
-# Type "help", "copyright", "credits" or "license" for more information.
-# >>> import sys
-# >>> from PySide import QtCore, QtGui
-# >>> app = QtGui.QApplication(sys.argv)
-# >>> ed = QtGui.QPlainTextEdit()
-# >>> b = ed.textCursor().block()
-# >>> b.setUserState(42)
-# >>> b.userState()
-# 42
-# >>> print b.userState()
-# 42
+
+
+# Experiments with the Qt Model-View-Delegate pattern:
+
+class QtReduceTableView(QTableView):
+
+    def __init__(self,parent=None):
+        super(QtReduceView,self).__init__(parent)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().hide()
+        self.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.setShowGrid(False)
+        #self.delegate = QtReduceDelegate()
+        #self.setItemDelegate(self.delegate)
+        # self.setSelectionMode(QAbstractItemView.NoSelection)
+
+class QtReduceDelegate(QItemDelegate):
+
+    def __init__(self):
+        super(QtReduceDelegate,self).__init__()
+
+    def createEditor(self,parent,option,index):
+        self.editor = QTextEdit(parent)
+        return self.editor
+
+    def setEditorData(self,editor,index):
+        text = index.model().data(index,QtReduceModel.RawDataRole).__repr__()
+        editor.setText("hallo")
+
+    # def setModelData(self,editor,model,index):
+    #     text = editor.text().__str__().strip()
+    #     model.setData(index,text,QtReduceModel.RawDataRole)
+
+class QtReduceEditor(QTextEdit):
+
+    def __init__(self,parent=None):
+        super(QtReduceEditor,self).__init__(parent)
+
+    def keyPressEvent(self,ev):
+        if (ev.key() == Qt.Key_Return or ev.key() == Qt.Key_Enter) and \
+               not (ev.modifiers() & Qt.ShiftModifier):
+            None

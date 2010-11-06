@@ -30,12 +30,14 @@
 #
 
 import locale
+import os
 import sys
 
 from PySide.QtGui import QApplication
 from PySide.QtCore import QTranslator
 from PySide.QtCore import QLocale
 from PySide.QtCore import QLibraryInfo
+from PySide.QtCore import Qt
 
 from qrmainwindow import QtReduceMainWindow
 
@@ -56,6 +58,9 @@ qreduceTranslator.load(sys.path[0] + "/" + "qreducetr." +
 app.installTranslator(qreduceTranslator)
 
 # app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
+
+if os.uname()[0] == "Darwin":
+    app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
 mainwindow = QtReduceMainWindow()
 

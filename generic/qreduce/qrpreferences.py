@@ -58,11 +58,12 @@ from PySide.QtGui import QComboBox
 from PySide.QtGui import QFontDatabase
 from PySide.QtGui import QMessageBox
 
-from qrlogging import signalLogger
 from qrlogging import fontLogger
+from qrlogging import signalLogger
 from qrlogging import traceLogger
 
 from qrdefaults import QtReduceDefaults
+from qrdefaults import QtReduceIconSets
 
 
 class QtReducePreferencePane(QDialog):
@@ -154,7 +155,7 @@ class QtReducePreferencesToolBar(QWidget):
         toolBarGroup = QGroupBox(self.tr("Toolbar"))
 
         self.iconSetCombo = QtReduceComboBox()
-        iDbKeys = self.parent().parent().toolBar.iDb.keys()
+        iDbKeys = QtReduceIconSets().db.keys()
         iDbKeys.sort()
         self.iconSetCombo.addItems(iDbKeys)
         self.iconSetCombo.setCurrentIndex(
@@ -250,7 +251,7 @@ class QtReducePreferencesWorksheet(QWidget):
         self.fontCombo = QtReduceFontComboBox(self)
         self.setFocusPolicy(Qt.NoFocus)
         self.fontCombo.setEditable(False)
-        self.fontCombo.setCurrentFont(self.parent().parent().worksheet.font())
+        self.fontCombo.setCurrentFont(self.parent().parent().controller.view.font())
 
         self.sizeCombo = QtReduceComboBox()
         self.findSizes(self.fontCombo.currentFont())
@@ -270,7 +271,7 @@ class QtReducePreferencesWorksheet(QWidget):
         self.setLayout(mainLayout)
 
     def findSizes(self,font):
-        traceLogger.debug("font.key()=%s" % font.key())
+        fontLogger.debug("font.key()=%s" % font.key())
         fontDatabase = QFontDatabase()
         currentSize = unicode(QSettings().value("worksheet/fontsize",
                                                 QtReduceDefaults.FONTSIZE))
@@ -320,7 +321,7 @@ class QtReducePreferencesComputation(QWidget):
         self.setLayout(mainLayout)
 
     def editingFinishedHandler(self):
-        settings = QSetting()
+        settings = QSettings()
         old = settings.value("computation/reduce",QtReduceDefaults.REDUCE)
         new = self.reduceBinary.text()
         if old == new:

@@ -42,10 +42,10 @@ from PySide.QtXml import QXmlDefaultHandler
 from qrlogging import signalLogger
 from qrlogging import traceLogger
 
-from qrformats import ReduceInputBlockFormat
-from qrformats import ReduceResultBlockFormat
-from qrformats import ReduceNoResultBlockFormat
-from qrformats import ReduceErrorBlockFormat
+from qrformats import QtReduceInput
+from qrformats import QtReduceResult
+from qrformats import QtReduceNoResult
+from qrformats import QtReduceError
 
 class ReduceXmlReader(QXmlDefaultHandler):
     def __init__(self,document):
@@ -107,13 +107,13 @@ class ReduceXmlReader(QXmlDefaultHandler):
     def labelBlock(self,cursor,label):
         traceLogger.debug("cursor.block()=%s, label=%s" % (cursor.block(), label))
         if label == 0:
-            f = ReduceInputBlockFormat()
+            f = QtReduceInput()
         elif label == 1:
-            f = ReduceResultBlockFormat()
+            f = QtReduceResult()
         elif label == 2:
-            f = ReduceNoResultBlockFormat()
+            f = QtReduceNoResult()
         else:
-            f = ReduceErrorBlockFormat()
+            f = QtReduceError()
 
         cursor.block().setUserState(label)
         cursor.setBlockCharFormat(f.charFormat)
