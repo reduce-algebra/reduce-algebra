@@ -507,6 +507,7 @@ if !darwin
 	$(STRIP) wxfontdemo$(EXEEXT)
 endif !darwin
 endif !debug
+if mac_framework
 # The next few lines are as suggested by the wxWidgets Makefile and create
 # an Application Bundle.
 	SetFile -t APPL wxfontdemo
@@ -530,7 +531,7 @@ endif !debug
 	echo "<key>CFBundleExecutable</key>" >> $(PL)
 	echo "<string>wxfontdemo</string>" >> $(PL)
 	echo "<key>CFBundleIconFile</key>" >> $(PL)
-	echo "<string>wxmac.icns</string>" >> $(PL)
+	echo "<string>fwin.icns</string>" >> $(PL)
 	echo "<key>CFBundleName</key>" >> $(PL)
 	echo "<string>wxfontdemo</string>" >> $(PL)
 	echo "<key>CFBundlePackageType</key>" >> $(PL)
@@ -557,7 +558,8 @@ endif !debug
 	echo "</plist>" >> $(PL)
 	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
 	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
-	cp -f $(srcdir)/../wxWidgets/src/osx/carbon/wxmac.icns wxfontdemo.app/Contents/Resources/wxmac.icns
+	cp -f $(srcdir)fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
+endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 	-rm -f wxdemo$(EXEEXT)

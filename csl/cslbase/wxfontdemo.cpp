@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7e3db491 04-Nov-2010 */
+/* Signature: 7875dbfb 06-Nov-2010 */
 
 
 
@@ -162,7 +162,62 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
 END_EVENT_TABLE()
 
 
-IMPLEMENT_APP(fontApp)
+int main(int argc, char *argv[])
+{
+    int i;
+    int usegui = 1;
+// Find where I am invoked from before doing anything else
+    find_program_directory(argv[0]);
+    for (i=1; i<argc; i++)
+    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+    }
+    if (usegui)
+    {
+#ifdef MACINTOSH
+// If I will be wanting to use a GUI and if I have just loaded an
+// executable that is not within an application bundle then I will
+// use "open" to launch the corresponding application bundle. Doing this
+// makes resources (eg fonts) that are within the bundle available and
+// it also seems to cause things to terminate more neatly.
+        char xname[LONGEST_LEGAL_FILENAME];
+        sprintf(xname, "%s.app", programName);
+        if (strstr(fwin_full_program_name, xname) == NULL)
+        {
+// Here the binary I launched was not located as
+//      ...foo.app../.../foo
+// so I will view it is NOT being from an application bundle. I will
+// re-launch it so it is! This may be a bit of a hacky way to decide!
+            struct stat buf;
+            sprintf(xname, "%s.app", fwin_full_program_name);
+            if (stat(xname, &buf) == 0 &&
+                (buf.st_mode & S_IFDIR) != 0)
+            {
+// Well foo.app exists and is a directory, so I will try to use it
+                char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
+                int i;
+                nargs[0] = "/usr/bin/open";
+                nargs[1] = xname;
+                nargs[2] = "--args";
+                for (i=1; i<argc; i++)
+                    nargs[i+2] = argv[i];
+                nargs[argc+2] = NULL;
+// /usr/bin/open foo.app --args [any original arguments]
+                return execv("/usr/bin/open", nargs);
+            }
+        }
+#endif
+        wxDISABLE_DEBUG_SUPPORT();
+        return wxEntry(argc, argv);
+    }
+    printf("This program has been launched asking for use in a console\n");
+    printf("type a line of text please\n");
+    while ((i = getchar()) != '\n' && i != EOF) putchar(i);
+    putchar('\n');
+    printf("Exiting from demonstration of console mode use!\n");
+    return 0;
+}
+
+IMPLEMENT_APP_NO_MAIN(fontApp)
 
 // Pretty much everything so far has been uttery stylised and the contents
 // are forced by the structure that wxWidgets requires!
@@ -903,8 +958,7 @@ bool fontApp::OnInit()
 // I will find the special fonts that most interest me in a location related
 // to the directory that this application was launched from. So the first
 // think to do is to identify that location. I then print the information I
-// recover so I can debug things.
-    find_program_directory(myargv[0]);
+// recover so I can debug things. I have already set up programName etc
     printf("\n%s\n%s\n%s\n", fwin_full_program_name, programName, programDir);
 
     add_custom_fonts();
