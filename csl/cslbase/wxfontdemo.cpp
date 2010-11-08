@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1043e205 06-Nov-2010 */
+/* Signature: 6390ba67 08-Nov-2010 */
 
 
 
@@ -528,7 +528,7 @@ int main(int argc, char *argv[])
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   char *s = my_getenv("DISPLAY");
+    {   const char *s = my_getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -879,7 +879,7 @@ int add_custom_fonts() // return 0 on success.
     screen = DefaultScreen(dpy);
 
     char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    for (int i=0; i<(int)sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);

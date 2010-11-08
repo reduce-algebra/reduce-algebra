@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6850fd17 08-Nov-2010 */
+/* Signature: 38239127 08-Nov-2010 */
 
 
 
@@ -525,7 +525,7 @@ int main(int argc, char *argv[])
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   char *s = my_getenv("DISPLAY");
+    {   const char *s = my_getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -762,7 +762,7 @@ int add_custom_fonts() // return 0 on success.
 // use extra resources adding all that are available. But for now I prefer
 // simplicity.
     char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    for (int i=0; i<(int)sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);
@@ -1049,7 +1049,7 @@ void put_char(int32_t c)
 
 void set_font(int n)
 {
-    printf("set font number %d\n");
+    printf("set font number %d\n", n);
 }
 
 // The code here is incomplete and not merged in properly yet!
@@ -1347,6 +1347,7 @@ int submain(int argc, char *argv[])
         }
     }
     printf("end of file\n");
+    return 0;
 }
 
 
@@ -1361,8 +1362,9 @@ bool dviApp::OnInit()
 
     add_custom_fonts();
 
-    char *dvifilename = "math.dvi";
+    char *dvifilename = NULL;
     if (argc > 1) dvifilename = myargv[1];
+    
 
     dviFrame *frame = new dviFrame(dvifilename);
     frame->Show(true);
@@ -1375,20 +1377,24 @@ dviFrame::dviFrame(char *dvifilename)
     SetIcon(wxICON(fwin));
 
 // I will read the DVI data once here.
-    FILE *f = fopen(dvifilename, "rb");
-    if (f == NULL)
-    {   printf("File \"%s\" not found\n", dvifilename);
-        exit(1);
+    FILE *f = NULL;
+    if (dvifilename == NULL) string_input = math_dvi;
+    else
+    {   string_input = NULL;
+        fopen(dvifilename, "rb");
+        if (f == NULL)
+        {   printf("File \"%s\" not found\n", dvifilename);
+            exit(1);
+        }
+        fseek(f, (off_t)0, SEEK_END);
+        off_t len = ftell(f);
+        dvidata = (char *)malloc((size_t)len);
+        fseek(f, (off_t)0, SEEK_SET);
+        for (int i=0; i<len; i++) dvidata[i] = getc(f);
+        fclose(f);
     }
-    fseek(f, (off_t)0, SEEK_END);
-    off_t len = ftell(f);
-    dvidata = (char *)malloc((size_t)len);
-    fseek(f, (off_t)0, SEEK_SET);
-    int i;
-    for (i=0; i<len; i++) dvidata[i] = getc(f);
-    fclose(f);
     ff = new wxFont();
-    ff->SetNativeFontInfoUserDesc("cmr10");
+    ff->SetNativeFontInfoUserDesc("cmsy10");
     ff->SetPointSize(36);
     fontScaled = false;
 
