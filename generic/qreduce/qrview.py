@@ -65,8 +65,8 @@ class QtReduceTextEdit(QTextEdit):
 
         self.textChanged.connect(self.textChangedHandler)
 
-        self.setupFont(QSettings().value("worksheet/fontsize",
-                                         QtReduceDefaults.FONTSIZE))
+        self.setupFont(int(QSettings().value("worksheet/fontsize",
+                                         QtReduceDefaults.FONTSIZE)))
 
     def __nextGoodFontSize(self,font,size,step):
         info = QFontInfo(font)
@@ -78,7 +78,7 @@ class QtReduceTextEdit(QTextEdit):
             sizes = QFontDatabase.standardSizes()
         else:
             sizes = fontDatabase.smoothSizes(family,styleStr)
-        fontLogger.debug("looking for %s in %s" % (size,sizes))
+        fontLogger.debug("looking for %s in %s step %d" % (size,sizes,step))
         nSize = size
         while nSize not in sizes and sizes[0] <= nSize and nSize <= sizes[-1]:
             nSize += step
@@ -120,8 +120,8 @@ class QtReduceTextEdit(QTextEdit):
         self.modified.emit(True)
 
     def zoomDef(self):
-        self.setupFont(QSettings().value("worksheet/fontsize",
-                                         QtReduceDefaults.FONTSIZE))
+        self.setupFont(int(QSettings().value("worksheet/fontsize",
+                                         QtReduceDefaults.FONTSIZE)))
 
     def zoomIn(self):
         currentSize = self.font().pointSize()

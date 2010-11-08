@@ -137,7 +137,6 @@ class QtReduceMainWindow(QMainWindow):
 
     def currentSizeChangedHandler(self,size):
         self.controller.view.currentSizeChangedHandler(size)
-        self.zoomDef()
 
     def license_(self):
         lic = QTextEdit(self)
@@ -521,7 +520,7 @@ class QtReduceMainWindow(QMainWindow):
         width = n * self.controller.view.fontMetrics().width('m')
         traceLogger.debug("width=%s, n=%s, family=%s, size=%s" %
                           (width,n,self.controller.view.font().family(),
-                           self.controller.view.font().pixelSize()))
+                           self.controller.view.font().pointSize()))
         self.setFixedWidth(width)
         if adaptHeight:
             factor = float(self.width())/float(oldWidth)
