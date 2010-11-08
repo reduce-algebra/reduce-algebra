@@ -94,9 +94,6 @@ class QtReduceMainWindow(QMainWindow):
         self.show()
         self.rawModelView = QtReduceTableView(self)
         self.rawModelView.setModel(self.controller.model)
-        self.rawModelView.show()
-        self.rawModelView.raise_()
-        self.rawModelView.setVisible(False)
 
     def about(self):
         QMessageBox.about(self, self.tr("About QReduce"),self.tr(
@@ -249,10 +246,11 @@ class QtReduceMainWindow(QMainWindow):
 
     def toggleRawModel(self):
         if self.rawModelView.isVisible():
-            self.rawModelView.setVisible(False)
+            self.rawModelView.hide()
             self.rawModelAct.setText('Show Raw Model')
         else:
-            self.rawModelView.setVisible(True)
+            self.rawModelView.show()
+            self.rawModelView.raise_()
             self.rawModelAct.setText('Hide Raw Model')
 
     def test(self):
@@ -722,12 +720,15 @@ class QtReduceTableView(QTableView):
         font.setItalic(False)
         font.setPointSize(9)
         self.setFont(font)
-        if os.uname()[0] == "Darwin":
-            self.setWindowFlags(Qt.Drawer)
-        else:
-            self.setWindowFlags(Qt.Window)
+        self.setWindowFlags(Qt.Drawer)
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().hide()
         self.verticalHeader().setResizeMode(QHeaderView.ResizeToContents)
         self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.setShowGrid(True)
+        self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+    def closeEvent(self,e):
+        self.parent().toggleRawModel()
+        e.accept()
