@@ -47,6 +47,10 @@ from PySide.QtCore import QXmlStreamWriter
 
 from PySide.QtGui import QMessageBox
 
+from PySide.QtXml import QXmlSimpleReader
+from PySide.QtXml import QXmlInputSource
+from PySide.QtXml import QXmlDefaultHandler
+
 from qrlogging import signalLogger
 from qrlogging import traceLogger
 
@@ -119,6 +123,9 @@ class QtReduce(QThread):
         self.computation.processAnswer(a)
         self.computation.evaluating = False
         self.finishedComputations.append(self.computation)
+        if self.computation.error:
+            a = self.reduce.compute(" 0.0.")
+            traceLogger.debug("error recovery %s" % a)
 
     def startedHandler(self):
         signalLogger.debug("emitting QtReduce.startComputation %s" %
@@ -157,7 +164,7 @@ class QtReduce(QThread):
         self.reduce.compute("lisp procedure qr_render(u);"
                      "mathprint car u where !*nat=t$")
         self.reduce.compute("lisp put('qr_render,'psopfn,'qr_render)$")
-        self.reduce.compute("off comp$")
+        self.reduce.compute("off comp,msg$")
         self.reduce.compute("lisp if 'psl memq lispsystem!* then remd 'break$")
 
 
@@ -212,7 +219,7 @@ class QtReduceComputation(QObject):
                 for ss in l[:-1]:
                     s += ss
                 s = s.strip()
-            self.errorText = s
+            self.errorText = s or 'INCOMPLETE INPUT'
         if a['time'] != -1:
             self.time = a['time']
             self.accTime += self.time
@@ -291,7 +298,7 @@ class QtReduceModel(QAbstractTableModel):
             return computation
         if role == Qt.DisplayRole:
             return computation.__repr__()
-        traceLogger.debug("called with unhandled role %s" % role)
+#        traceLogger.debug("called with unhandled role %s" % role)
         return None
 
     def endComputationHandler(self,computation):
@@ -351,6 +358,30 @@ class QtReduceModel(QAbstractTableModel):
         xmlWriter.writeEndElement()
         xmlWriter.writeEndDocument()
 
+    def open(self,fileName):
+        tempFileName = fileName
+        if tempFileName == '':
+            tempFileName = self.fileName
+        xmlReader = QtReduceXmlReader(self)
+        newModel = xmlReader.readModel(tempFileName)
+        if not newModel:
+            tit = self.tr("Unable to Open File")
+            txt = self.tr("The file ")
+            txt += '"' + fileName + '" '
+            txt += self.tr("cannot be opened.")
+            mbox = QMessageBox(self)
+            mbox.setIcon(QMessageBox.Information)
+            mbox.setWindowModality(Qt.WindowModal)
+            mbox.setWindowTitle(tit)
+            mbox.setText(txt)
+            mbox.exec_()
+            return False
+        self.removeRows(0,self.rowCount())
+        self.insertRows(0,len(newModel))
+        for row in range(len(newModel)):
+            self.setData(self.index(row,0),newModel[row],self.RawDataRole)
+        return True
+
     def setData(self,index,value,role=Qt.EditRole):
         if role != QtReduceModel.RawDataRole:
             traceLogger.warning("role %s not supported" % role)
@@ -361,3 +392,51 @@ class QtReduceModel(QAbstractTableModel):
         traceLogger.debug("%s" % computation)
         self.insertRow(self.rowCount(QModelIndex()),QModelIndex())
         self.model[-1] = computation
+
+
+class QtReduceXmlReader(QXmlDefaultHandler):
+
+    def __init__(self,model):
+        super(QtReduceXmlReader,self).__init__()
+        self.model = model
+        self.modelData = []
+        self.key = None
+        self.value = ''
+
+    def startElement(self,namespaceURI,localName,qName,atts):
+	if localName == "rws":
+            return True
+        if localName == 'group':
+            self.key = None
+            self.value = ''
+            self.computationDict = {}
+            return True
+        self.key = localName
+        self.value = ''
+	return True
+
+    def endElement(self,namespaceURI,localName,qName):
+	if localName == "rws":
+            return True
+        if localName == 'group':
+            computation = QtReduceComputation(self.computationDict)
+            self.modelData.append(computation)
+        self.computationDict[self.key] = self.value
+	return True
+
+    def characters(self,ch):
+        if self.key:
+            self.value += ch
+        return True
+
+    def readModel(self,fileName):
+	file = QFile(fileName)
+	if (file.open(QIODevice.ReadOnly | QIODevice.Text)):
+            xmlReader = QXmlSimpleReader()
+            xmlReader.setContentHandler(self)
+            xmlReader.setErrorHandler(self)
+            xmlSource = QXmlInputSource(file)
+            xmlReader.parse(xmlSource)
+            return self.modelData
+        else:
+            return  None

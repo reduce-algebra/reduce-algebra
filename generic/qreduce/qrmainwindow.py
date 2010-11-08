@@ -219,7 +219,7 @@ class QtReduceMainWindow(QMainWindow):
         if self.controller.fileName() == '':
             self.saveAs()
         else:
-            self.controller.save('')
+            self.controller.save()
 
     def saveAs(self):
         title = self.tr("Save Reduce Worksheet")
@@ -232,7 +232,7 @@ class QtReduceMainWindow(QMainWindow):
             return
         if not fileName.endswith(".rws"):
             fileName += ".rws"
-        self.controller.save(fileName)
+        self.controller.saveAs(fileName)
         self.activateWindow()
 
     def setTitle(self,fullPath):
@@ -467,10 +467,12 @@ class QtReduceMainWindow(QMainWindow):
 
     def __createStatusBar(self):
         self.setStatusBar(QtReduceStatusBar(self))
-        self.controller.endComputation.connect(
-            self.statusBar().endComputationHandler)
         self.controller.startComputation.connect(
             self.statusBar().startComputationHandler)
+        self.controller.endComputation.connect(
+            self.statusBar().endComputationHandler)
+        self.controller.view.cursorPositionChanged.connect(
+            self.statusBar().clearMessage)
 
     def __createToolBar(self):
         self.toolBar = QtReduceToolBar(self)
@@ -493,7 +495,7 @@ class QtReduceMainWindow(QMainWindow):
     def __initTitleBar(self):
         self.setTitle(os.path.dirname(''))
         self.controller.fileNameChanged.connect(self.setTitle)
-        self.controller.view.modified.connect(self.setWindowModified)
+        self.controller.modified.connect(self.setWindowModified)
 
     def __savediag(self):
         diag = QMessageBox(self)

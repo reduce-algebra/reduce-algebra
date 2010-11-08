@@ -40,12 +40,14 @@ from qrmodel import QtReduceModel
 from qrview import QtReduceFrameView
 
 from types import BooleanType
+from types import StringType
 
 class QtReduceController(QObject):
 
     endComputation = Signal(object)
     acceptAbort = Signal(BooleanType)
-    fileNameChanged = Signal()
+    fileNameChanged = Signal(StringType)
+    modified = Signal(BooleanType)
     startComputation = Signal(object)
 
     def __init__(self,parent=None):
@@ -53,10 +55,13 @@ class QtReduceController(QObject):
 
         self.setFileName('')
 
+        self.__requestPending = False
+
         self.model = QtReduceModel()
         self.view = QtReduceFrameView(parent)
 
         self.view.computationRequest.connect(self.computationRequestV)
+        self.view.modified.connect(self.modified)
 
         self.model.dataChanged.connect(self.dataChangedM)
         self.model.endComputation.connect(self.endComputationM)
@@ -78,6 +83,7 @@ class QtReduceController(QObject):
         computation.command = self.view.input(row)
         self.model.computeAndSetData(index,computation,
                                      QtReduceModel.RawDataRole)
+        self.__requestPending = True
 
     def evaluateAll(self):
         for row in range(self.view.rowCount()):
@@ -107,10 +113,12 @@ class QtReduceController(QObject):
                 self.view.setNoResult(row)
             else:
                 self.view.setNotEvaluated(row)
-        row = end
-        if row == self.model.rowCount() - 1:
-            self.model.insertRow(row + 1)
-        self.view.gotoRow(row + 1)
+        if self.__requestPending:
+            self.__requestPending = False
+            if row == self.model.rowCount() - 1:
+                self.model.insertRow(row + 1)
+        if row < self.model.rowCount() - 1:
+            self.view.gotoRow(row + 1)
 
     def deleteRowOrPreviousRow(self):
         row = self.view.rowOrPreviousRow()
@@ -151,7 +159,12 @@ class QtReduceController(QObject):
         self.view.gotoRow(row + 1)
 
     def open(self,fileName):
-        traceLogger.warning("not yet implemented")
+        success = self.model.open(fileName)
+        if success:
+            self.view.gotoRow(self.model.rowCount() - 1)
+            self.modified.emit(False)
+            self.setFileName(fileName)
+            self.parent().showMessage(self.tr("Read ") + fileName)
         return
 
     def renderResult(self,result):
@@ -160,22 +173,34 @@ class QtReduceController(QObject):
         return answer['pretext'].strip()
 
     def rowsInsertedM(self,parent,start,end):
-        if start != end:
-            traceLogger.critical("multiple rows %d:%d not supported",start,end)
-        self.view.insertRow(start)
+        traceLogger.debug("start=%d, end=%d" % (start, end))
+        self.view.insertRows(start,end)
 
     def rowsRemovedM(self,parent,start,end):
+        traceLogger.debug("start=%d, end=%d" % (start, end))
         self.view.removeRows(start,end)
 
-    def save(self,fileName):
-        self.model.save(fileName)
+    def save(self):
+        if not self.__fileName:
+            traceLogger.critical('empty file name')
+        self.__saveAs(self.__fileName)
+
+    def saveAs(self,fileName):
+        self.__saveAs(fileName)
+        self.setFileName(fileName)
 
     def setFileName(self,name):
         self.__fileName = name
-        self.fileNameChanged.emit()
+        self.fileNameChanged.emit(name)
 
     def startComputationM(self,computation):
-        signalLogger.debug("catching computation.command =  %s" % computation.command)
+        signalLogger.debug("catching computation.command =  %s" %
+                           computation.command)
         self.view.setReadOnly(True)
         self.acceptAbort.emit(True)
         self.startComputation.emit(computation)
+
+    def __saveAs(self,fileName):
+        self.model.save(fileName)
+        self.modified.emit(False)
+

@@ -169,6 +169,10 @@ class QtReduceFrameView(QtReduceTextEdit):
         cursor.insertText(QtReduceFrameView.NotEvaluated)
         cursor.setPosition(position)
 
+    def insertRows(self,start,end):
+        for row in range(start, end + 1):
+            self.insertRow(row)
+
     def input(self,row):
         rows = self.document().rootFrame().childFrames()
         if row >= len(rows):
