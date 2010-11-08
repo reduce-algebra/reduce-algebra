@@ -1,0 +1,37 @@
+#! /bin/csh
+ftp dulcinea <<EOF
+bin
+cd verkaufpsl
+lcd psl
+cd dist
+lcd dist
+cd kernel
+lcd kernel
+cd unix386
+lcd unix386
+mput *
+cd ..
+lcd ..
+cd ..
+lcd ..
+cd nonkernel
+lcd nonkernel
+cd unix386
+lcd unix386
+mput *
+cd lap
+lcd lap
+mput *
+cd ..
+lcd ..
+cd ..
+lcd ..
+cd ..
+lcd ..
+cd lap
+lcd lap
+cd unix386
+lcd unix386
+mput *
+quit
+EOF

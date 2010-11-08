@@ -1,0 +1,7 @@
+rm bpsl_pvm
+		 
+cc -o bpsl_pvm bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pwd-fn.c sigs.c unix-io.c pvmextras.c \
+    pslsocket.c \
+   -DLINUX main_pvm.o dmain_pvm.o -L/usr/share/pvm3/src/LINUXX86_64 -lpvm3 -lm 
+

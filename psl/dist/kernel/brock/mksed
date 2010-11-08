@@ -1,0 +1,4 @@
+##! /bin/csh
+ 
+cp dmain.s dmain.old
+sed -f dmain.sed dmain.old > dmain.s

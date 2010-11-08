@@ -1,0 +1,4 @@
+cc  -m64 -o bigbpsl -DBPSSIZE=150000000  bps.c bpsheap.c echo.c file-status.c float.c \
+   os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c creloc.c formlink2.c \
+   -DLINUX main.o dmain.o -lm 
+
