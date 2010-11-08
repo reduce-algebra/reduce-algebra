@@ -54,7 +54,7 @@ foxdemotarget =
 endif !fox
 
 if wx
-wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
+wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
 else !wx
 wxdemotarget =
 endif !wx
@@ -232,6 +232,10 @@ wxdemo_DEPENDENCIES = $(fwin_icon)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+
+wxdvi_SOURCES = wxdvi.cpp
+wxdvi_LDADD = $(fwin_icon)
+wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
@@ -497,7 +501,7 @@ endif fox
 
 if wx
 
-PL=wxfontdemo.app/Contents/Info.plist
+PFD=wxfontdemo.app/Contents/Info.plist
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-rm -f wxfontdemo$(EXEEXT)
@@ -516,49 +520,113 @@ if mac_framework
 	mkdir -p wxfontdemo.app/Contents/Resources
 	mkdir -p wxfontdemo.app/Contents/Resources/Fonts
 	cp reduce.wxFonts/* wxfontdemo.app/Contents/Resources/Fonts
-	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PL)
-	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PL)
-	echo "<plist version=\"0.9\">" >> $(PL)
-	echo "<dict>" >> $(PL)
-	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PL)
-	echo "<string>6.0</string>" >> $(PL)
-	echo "<key>CFBundleIdentifier</key>" >> $(PL)
-	echo "<string>com.codemist.reduce.wxfontdemo</string>" >> $(PL)
-	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PL)
-	echo "<string>English</string>" >> $(PL)
-	echo "<key>CFBundleLocalizations</key>" >> $(PL)
-	echo "<array> <string>en</string> </array>" >> $(PL)
-	echo "<key>CFBundleExecutable</key>" >> $(PL)
-	echo "<string>wxfontdemo</string>" >> $(PL)
-	echo "<key>CFBundleIconFile</key>" >> $(PL)
-	echo "<string>fwin.icns</string>" >> $(PL)
-	echo "<key>CFBundleName</key>" >> $(PL)
-	echo "<string>wxfontdemo</string>" >> $(PL)
-	echo "<key>CFBundlePackageType</key>" >> $(PL)
-	echo "<string>APPL</string>" >> $(PL)
-	echo "<key>CFBundleSignature</key>" >> $(PL)
-	echo "<string>????</string>" >> $(PL)
-	echo "<key>CFBundleVersion</key>" >> $(PL)
-	echo "<string>1</string>" >> $(PL)
-	echo "<key>CFBundleShortVersionString</key>" >> $(PL)
-	echo "<string>1</string>" >> $(PL)
-	echo "<key>CFBundleGetInfoString</key>" >> $(PL)
-	echo "<string>wxfontdemo version 1, (C) 2010 Codemist Ltd</string>" >> $(PL)
-	echo "<key>CFBundleLongVersionString</key>" >> $(PL)
-	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PL)
-	echo "<key>NSHumanReadableCopyright</key>" >> $(PL)
-	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PL)
-	echo "<key>LSRequiresCarbon</key>" >> $(PL)
-	echo "<true/>" >> $(PL)
-	echo "<key>CSResourcesFileMapped</key>" >> $(PL)
-	echo "<true/>" >> $(PL)
-	echo "<key>ATSApplicationFontsPath</key>" >> $(PL)
-	echo "<string>Fonts</string>" >> $(PL)
-	echo "</dict>" >> $(PL)
-	echo "</plist>" >> $(PL)
+	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PFD)
+	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PFD)
+	echo "<plist version=\"0.9\">" >> $(PFD)
+	echo "<dict>" >> $(PFD)
+	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PFD)
+	echo "<string>6.0</string>" >> $(PFD)
+	echo "<key>CFBundleIdentifier</key>" >> $(PFD)
+	echo "<string>com.codemist.reduce.wxfontdemo</string>" >> $(PFD)
+	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PFD)
+	echo "<string>English</string>" >> $(PFD)
+	echo "<key>CFBundleLocalizations</key>" >> $(PFD)
+	echo "<array> <string>en</string> </array>" >> $(PFD)
+	echo "<key>CFBundleExecutable</key>" >> $(PFD)
+	echo "<string>wxfontdemo</string>" >> $(PFD)
+	echo "<key>CFBundleIconFile</key>" >> $(PFD)
+	echo "<string>fwin.icns</string>" >> $(PFD)
+	echo "<key>CFBundleName</key>" >> $(PFD)
+	echo "<string>wxfontdemo</string>" >> $(PFD)
+	echo "<key>CFBundlePackageType</key>" >> $(PFD)
+	echo "<string>APPFD</string>" >> $(PFD)
+	echo "<key>CFBundleSignature</key>" >> $(PFD)
+	echo "<string>????</string>" >> $(PFD)
+	echo "<key>CFBundleVersion</key>" >> $(PFD)
+	echo "<string>1</string>" >> $(PFD)
+	echo "<key>CFBundleShortVersionString</key>" >> $(PFD)
+	echo "<string>1</string>" >> $(PFD)
+	echo "<key>CFBundleGetInfoString</key>" >> $(PFD)
+	echo "<string>wxfontdemo version 1, (C) 2010 Codemist Ltd</string>" >> $(PFD)
+	echo "<key>CFBundleLongVersionString</key>" >> $(PFD)
+	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PFD)
+	echo "<key>NSHumanReadableCopyright</key>" >> $(PFD)
+	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PFD)
+	echo "<key>LSRequiresCarbon</key>" >> $(PFD)
+	echo "<true/>" >> $(PFD)
+	echo "<key>CSResourcesFileMapped</key>" >> $(PFD)
+	echo "<true/>" >> $(PFD)
+	echo "<key>ATSApplicationFontsPath</key>" >> $(PFD)
+	echo "<string>Fonts</string>" >> $(PFD)
+	echo "</dict>" >> $(PFD)
+	echo "</plist>" >> $(PFD)
 	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
 	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
 	cp -f $(srcdir)/fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
+endif mac_framework
+
+PDVI=wxdvi.app/Contents/Info.plist
+
+wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxdvi$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxdvi$(EXEEXT)
+endif !darwin
+endif !debug
+if mac_framework
+# The next few lines are as suggested by the wxWidgets Makefile and create
+# an Application Bundle.
+	SetFile -t APPL wxdvi
+	mkdir -p wxdvi.app/Contents
+	mkdir -p wxdvi.app/Contents/MacOS
+	mkdir -p wxdvi.app/Contents/Resources
+	mkdir -p wxdvi.app/Contents/Resources/Fonts
+	cp reduce.wxFonts/* wxdvi.app/Contents/Resources/Fonts
+	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PDVI)
+	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PDVI)
+	echo "<plist version=\"0.9\">" >> $(PDVI)
+	echo "<dict>" >> $(PDVI)
+	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PDVI)
+	echo "<string>6.0</string>" >> $(PDVI)
+	echo "<key>CFBundleIdentifier</key>" >> $(PDVI)
+	echo "<string>com.codemist.reduce.wxdvi</string>" >> $(PDVI)
+	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PDVI)
+	echo "<string>English</string>" >> $(PDVI)
+	echo "<key>CFBundleLocalizations</key>" >> $(PDVI)
+	echo "<array> <string>en</string> </array>" >> $(PDVI)
+	echo "<key>CFBundleExecutable</key>" >> $(PDVI)
+	echo "<string>wxdvi</string>" >> $(PDVI)
+	echo "<key>CFBundleIconFile</key>" >> $(PDVI)
+	echo "<string>fwin.icns</string>" >> $(PDVI)
+	echo "<key>CFBundleName</key>" >> $(PDVI)
+	echo "<string>wxdvi</string>" >> $(PDVI)
+	echo "<key>CFBundlePackageType</key>" >> $(PDVI)
+	echo "<string>APPDVI</string>" >> $(PDVI)
+	echo "<key>CFBundleSignature</key>" >> $(PDVI)
+	echo "<string>????</string>" >> $(PDVI)
+	echo "<key>CFBundleVersion</key>" >> $(PDVI)
+	echo "<string>1</string>" >> $(PDVI)
+	echo "<key>CFBundleShortVersionString</key>" >> $(PDVI)
+	echo "<string>1</string>" >> $(PDVI)
+	echo "<key>CFBundleGetInfoString</key>" >> $(PDVI)
+	echo "<string>wxdvi version 1, (C) 2010 Codemist Ltd</string>" >> $(PDVI)
+	echo "<key>CFBundleLongVersionString</key>" >> $(PDVI)
+	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PDVI)
+	echo "<key>NSHumanReadableCopyright</key>" >> $(PDVI)
+	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PDVI)
+	echo "<key>LSRequiresCarbon</key>" >> $(PDVI)
+	echo "<true/>" >> $(PDVI)
+	echo "<key>CSResourcesFileMapped</key>" >> $(PDVI)
+	echo "<true/>" >> $(PDVI)
+	echo "<key>ATSApplicationFontsPath</key>" >> $(PDVI)
+	echo "<string>Fonts</string>" >> $(PDVI)
+	echo "</dict>" >> $(PDVI)
+	echo "</plist>" >> $(PDVI)
+	echo -n "APPL????" >wxdvi.app/Contents/PkgInfo
+	ln -f wxdvi wxdvi.app/Contents/MacOS/wxdvi
+	cp -f $(srcdir)/fwin.icns wxdvi.app/Contents/Resources/fwin.icns
 endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
@@ -640,6 +708,7 @@ plain_fontdemo = fontdemo
 plain_showmathdemo = showmathdemo
 plain_wxdemo  = wxdemo
 plain_wxfontdemo = wxfontdemo
+plain_wxdvi = wxdvi
 plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 
@@ -692,6 +761,9 @@ $(plain_wxdemo):	wxdemo.exe
 
 $(plain_wxfontdemo):	wxfontdemo.exe
 	echo "make wxfontdemo.exe is preferred"
+
+$(plain_wxdvi):	wxdvi.exe
+	echo "make wxdvi.exe is preferred"
 
 $(plain_wxshowmathdemo):	wxshowmathdemo.exe
 	echo "make wxshowmathdemo.exe is preferred"

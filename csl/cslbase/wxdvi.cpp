@@ -1,19 +1,15 @@
-// wxfontdemo.cpp
+// wxdvi.cpp
 
-// A sample wxWidgets application to display fonts.
+// A sample wxWidgets application to display dvi files.
+// This will ONLY cope with a set of fonts that it itself
+// provides, and is not (at least at first) going to worry about
+// multiple pages. Indeed it will be pretty crude! But it may illustrate
+// that I can display mathematics on the screen, and when I can do that
+// I will then want to ensure that I can print it too. Thinking about
+// editing the maths or doing cut-and-paste operations seems very hard
+// and remote at present!
 //
 
-
-// The first version of this started from the "minimal" example that
-// comes with wxWidgets, and that is under the wxWidgets/wxWindows
-// license, ie LGPL plus some exceptions. Some parts of the basic
-// structure here is forced by the very nature of wxWidgets to follow
-// that pattern, but in general the code initially taken from
-// "minimal.cpp" is being removed and must count as indeed being "minimal",
-// and it is on that basis that I feel able to label this with a BSD
-// license. But license constraints or no, here seems a good place to
-// express thanks to all the people who created and continue to develop
-// wxWidgets.
 
 /**************************************************************************
  * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
@@ -44,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1043e205 06-Nov-2010 */
+/* Signature: 6850fd17 08-Nov-2010 */
 
 
 
@@ -93,7 +89,7 @@ static XftFont *ftFont = NULL;
 #endif  // MACINTOSH
 #endif  // WIN32
 
-// I may be old fashioned , but I will be happier using C rather than C++
+// I may be old fashioned, but I will be happier using C rather than C++
 // libraries here.
 
 #include <string.h>
@@ -132,33 +128,33 @@ extern char *getcwd(char *s, size_t n);
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
 
-class fontApp : public wxApp
+class dviApp : public wxApp
 {
 public:
     virtual bool OnInit();
 };
 
-class fontFrame : public wxFrame
+class dviFrame : public wxFrame
 {
 public:
-    fontFrame(char *font, int size);
+    dviFrame(char *dvifilename);
 
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnPaint(wxPaintEvent &event);
 
 private:
-    char *fontname;
-    int fontsize;
+    char *dvidata;
     wxFont *ff;
     bool fontScaled;
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(fontFrame, wxFrame)
-    EVT_MENU(wxID_EXIT,  fontFrame::OnExit)
-    EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
-    EVT_PAINT(           fontFrame::OnPaint)
+BEGIN_EVENT_TABLE(dviFrame, wxFrame)
+    EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
+// Right now I do not provide a menu that lets me trigger OnAbout.
+    EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
+    EVT_PAINT(           dviFrame::OnPaint)
 END_EVENT_TABLE()
 
 
@@ -192,8 +188,8 @@ int get_current_directory(char *s, int n)
 #define LONGEST_LEGAL_FILENAME 1024
 #endif
 
-const char *fullProgramName = "./wxfontdemo.exe";
-const char *programName     = "wxfontdemo.exe";
+const char *fullProgramName = "./wxdvi.exe";
+const char *programName     = "wxdvi.exe";
 const char *programDir      = ".";
 
 /*
@@ -239,8 +235,8 @@ int find_program_directory(char *argv0)
     program_name_dot_com = 0;
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
     {   programDir = ".";
-        programName = "wxfontdemo";  /* nothing really known! */
-        fullProgramName = ".\\wxfontdemo.exe";
+        programName = "wxdvi";  /* nothing really known! */
+        fullProgramName = ".\\wxdvi.exe";
         return 0;
     }
 
@@ -349,8 +345,8 @@ int find_program_directory(char *argv0)
  */
     if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
     {   programDir = (const char *)"."; /* some sort of default. */
-        programName = (const char *)"wxfontdemo";
-        fullProgramName = (const char *)"./wxfontdemo";
+        programName = (const char *)"wxdvi";
+        fullProgramName = (const char *)"./wxdvi";
         return 0;
     }
 /*
@@ -514,6 +510,7 @@ int find_program_directory(char *argv0)
 
 #endif /* WIN32 */
 
+
 int main(int argc, char *argv[])
 {
     int i;
@@ -570,6 +567,10 @@ int main(int argc, char *argv[])
         wxDISABLE_DEBUG_SUPPORT();
         return wxEntry(argc, argv);
     }
+//
+// The following is a bit silly but is here to prove that I can launch this
+// code in console mode if I wish to. In this case it is not very useful!
+//
     printf("This program has been launched asking for use in a console\n");
     printf("type a line of text please\n");
     while ((i = getchar()) != '\n' && i != EOF) putchar(i);
@@ -578,7 +579,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-IMPLEMENT_APP_NO_MAIN(fontApp)
+IMPLEMENT_APP_NO_MAIN(dviApp)
 
 // Pretty much everything so far has been uttery stylised and the contents
 // are forced by the structure that wxWidgets requires!
@@ -595,146 +596,53 @@ static localFonts fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    {"cmb10",    NULL},
-    {"cmbsy10",  NULL},
-    {"cmbsy6",   NULL},
-    {"cmbsy7",   NULL},
-    {"cmbsy8",   NULL},
-    {"cmbsy9",   NULL},
-    {"cmbx10",   NULL},
-    {"cmbx12",   NULL},
-    {"cmbx5",    NULL},
-    {"cmbx6",    NULL},
-    {"cmbx7",    NULL},
-    {"cmbx8",    NULL},
-    {"cmbx9",    NULL},
-    {"cmbxsl10", NULL},
-    {"cmbxti10", NULL},
-    {"cmcsc10",  NULL},
-    {"cmcsc8",   NULL},
-    {"cmcsc9",   NULL},
-    {"cmdunh10", NULL},
-    {"cmex10",   NULL},
-    {"cmex7",    NULL},
-    {"cmex8",    NULL},
-    {"cmex9",    NULL},
-    {"cmff10",   NULL},
-    {"cmfi10",   NULL},
-    {"cmfib8",   NULL},
-    {"cminch",   NULL},
-    {"cmitt10",  NULL},
-    {"cmmi10",   NULL},
-    {"cmmi12",   NULL},
-    {"cmmi5",    NULL},
-    {"cmmi6",    NULL},
-    {"cmmi7",    NULL},
-    {"cmmi8",    NULL},
-    {"cmmi9",    NULL},
-    {"cmmib10",  NULL},
-    {"cmmib6",   NULL},
-    {"cmmib7",   NULL},
-    {"cmmib8",   NULL},
-    {"cmmib9",   NULL},
-    {"cmr10",    NULL},
-    {"cmr12",    NULL},
-    {"cmr17",    NULL},
-    {"cmr5",     NULL},
-    {"cmr6",     NULL},
-    {"cmr7",     NULL},
-    {"cmr8",     NULL},
-    {"cmr9",     NULL},
-    {"cmsl10",   NULL},
-    {"cmsl12",   NULL},
-    {"cmsl8",    NULL},
-    {"cmsl9",    NULL},
-    {"cmsltt10", NULL},
-    {"cmss10",   NULL},
-    {"cmss12",   NULL},
-    {"cmss17",   NULL},
-    {"cmss8",    NULL},
-    {"cmss9",    NULL},
-    {"cmssbx10", NULL},
-    {"cmssdc10", NULL},
-    {"cmssi10",  NULL},
-    {"cmssi12",  NULL},
-    {"cmssi17",  NULL},
-    {"cmssi8",   NULL},
-    {"cmssi9",   NULL},
-    {"cmssq8",   NULL},
-    {"cmssqi8",  NULL},
-    {"cmsy10",   NULL},
-    {"cmsy5",    NULL},
-    {"cmsy6",    NULL},
-    {"cmsy7",    NULL},
-    {"cmsy8",    NULL},
-    {"cmsy9",    NULL},
-    {"cmtcsc10", NULL},
-    {"cmtex10",  NULL},
-    {"cmtex8",   NULL},
-    {"cmtex9",   NULL},
-    {"cmti10",   NULL},
-    {"cmti12",   NULL},
-    {"cmti7",    NULL},
-    {"cmti8",    NULL},
-    {"cmti9",    NULL},
-    {"cmtt10",   NULL},
-    {"cmtt12",   NULL},
-    {"cmtt8",    NULL},
-    {"cmtt9",    NULL},
-    {"cmu10",    NULL},
-    {"cmvtt10",  NULL},
-    {"euex10",   NULL},
-    {"euex7",    NULL},
-    {"euex8",    NULL},
-    {"euex9",    NULL},
-    {"eufb10",   NULL},
-    {"eufb5",    NULL},
-    {"eufb6",    NULL},
-    {"eufb7",    NULL},
-    {"eufb8",    NULL},
-    {"eufb9",    NULL},
-    {"eufm10",   NULL},
-    {"eufm5",    NULL},
-    {"eufm6",    NULL},
-    {"eufm7",    NULL},
-    {"eufm8",    NULL},
-    {"eufm9",    NULL},
-    {"eurb10",   NULL},
-    {"eurb5",    NULL},
-    {"eurb6",    NULL},
-    {"eurb7",    NULL},
-    {"eurb8",    NULL},
-    {"eurb9",    NULL},
-    {"eurm10",   NULL},
-    {"eurm5",    NULL},
-    {"eurm6",    NULL},
-    {"eurm7",    NULL},
-    {"eurm8",    NULL},
-    {"eurm9",    NULL},
-    {"eusb10",   NULL},
-    {"eusb5",    NULL},
-    {"eusb6",    NULL},
-    {"eusb7",    NULL},
-    {"eusb8",    NULL},
-    {"eusb9",    NULL},
-    {"eusm10",   NULL},
-    {"eusm5",    NULL},
-    {"eusm6",    NULL},
-    {"eusm7",    NULL},
-    {"eusm8",    NULL},
-    {"eusm9",    NULL},
-    {"msam10",   NULL},
-    {"msam5",    NULL},
-    {"msam6",    NULL},
-    {"msam7",    NULL},
-    {"msam8",    NULL},
-    {"msam9",    NULL},
-    {"msbm10",   NULL},
-    {"msbm5",    NULL},
-    {"msbm6",    NULL},
-    {"msbm7",    NULL},
-    {"msbm8",    NULL},
-    {"msbm9",    NULL}
+    {"cmb10",    NULL},  {"cmbsy10",  NULL},  {"cmbsy6",   NULL},
+    {"cmbsy7",   NULL},  {"cmbsy8",   NULL},  {"cmbsy9",   NULL},
+    {"cmbx10",   NULL},  {"cmbx12",   NULL},  {"cmbx5",    NULL},
+    {"cmbx6",    NULL},  {"cmbx7",    NULL},  {"cmbx8",    NULL},
+    {"cmbx9",    NULL},  {"cmbxsl10", NULL},  {"cmbxti10", NULL},
+    {"cmcsc10",  NULL},  {"cmcsc8",   NULL},  {"cmcsc9",   NULL},
+    {"cmdunh10", NULL},  {"cmex10",   NULL},  {"cmex7",    NULL},
+    {"cmex8",    NULL},  {"cmex9",    NULL},  {"cmff10",   NULL},
+    {"cmfi10",   NULL},  {"cmfib8",   NULL},  {"cminch",   NULL},
+    {"cmitt10",  NULL},  {"cmmi10",   NULL},  {"cmmi12",   NULL},
+    {"cmmi5",    NULL},  {"cmmi6",    NULL},  {"cmmi7",    NULL},
+    {"cmmi8",    NULL},  {"cmmi9",    NULL},  {"cmmib10",  NULL},
+    {"cmmib6",   NULL},  {"cmmib7",   NULL},  {"cmmib8",   NULL},
+    {"cmmib9",   NULL},  {"cmr10",    NULL},  {"cmr12",    NULL},
+    {"cmr17",    NULL},  {"cmr5",     NULL},  {"cmr6",     NULL},
+    {"cmr7",     NULL},  {"cmr8",     NULL},  {"cmr9",     NULL},
+    {"cmsl10",   NULL},  {"cmsl12",   NULL},  {"cmsl8",    NULL},
+    {"cmsl9",    NULL},  {"cmsltt10", NULL},  {"cmss10",   NULL},
+    {"cmss12",   NULL},  {"cmss17",   NULL},  {"cmss8",    NULL},
+    {"cmss9",    NULL},  {"cmssbx10", NULL},  {"cmssdc10", NULL},
+    {"cmssi10",  NULL},  {"cmssi12",  NULL},  {"cmssi17",  NULL},
+    {"cmssi8",   NULL},  {"cmssi9",   NULL},  {"cmssq8",   NULL},
+    {"cmssqi8",  NULL},  {"cmsy10",   NULL},  {"cmsy5",    NULL},
+    {"cmsy6",    NULL},  {"cmsy7",    NULL},  {"cmsy8",    NULL},
+    {"cmsy9",    NULL},  {"cmtcsc10", NULL},  {"cmtex10",  NULL},
+    {"cmtex8",   NULL},  {"cmtex9",   NULL},  {"cmti10",   NULL},
+    {"cmti12",   NULL},  {"cmti7",    NULL},  {"cmti8",    NULL},
+    {"cmti9",    NULL},  {"cmtt10",   NULL},  {"cmtt12",   NULL},
+    {"cmtt8",    NULL},  {"cmtt9",    NULL},  {"cmu10",    NULL},
+    {"cmvtt10",  NULL},  {"euex10",   NULL},  {"euex7",    NULL},
+    {"euex8",    NULL},  {"euex9",    NULL},  {"eufb10",   NULL},
+    {"eufb5",    NULL},  {"eufb6",    NULL},  {"eufb7",    NULL},
+    {"eufb8",    NULL},  {"eufb9",    NULL},  {"eufm10",   NULL},
+    {"eufm5",    NULL},  {"eufm6",    NULL},  {"eufm7",    NULL},
+    {"eufm8",    NULL},  {"eufm9",    NULL},  {"eurb10",   NULL},
+    {"eurb5",    NULL},  {"eurb6",    NULL},  {"eurb7",    NULL},
+    {"eurb8",    NULL},  {"eurb9",    NULL},  {"eurm10",   NULL},
+    {"eurm5",    NULL},  {"eurm6",    NULL},  {"eurm7",    NULL},
+    {"eurm8",    NULL},  {"eurm9",    NULL},  {"eusb10",   NULL},
+    {"eusb5",    NULL},  {"eusb6",    NULL},  {"eusb7",    NULL},
+    {"eusb8",    NULL},  {"eusb9",    NULL},  {"eusm10",   NULL},
+    {"eusm5",    NULL},  {"eusm6",    NULL},  {"eusm7",    NULL},
+    {"eusm8",    NULL},  {"eusm9",    NULL},  {"msam10",   NULL},
+    {"msam5",    NULL},  {"msam6",    NULL},  {"msam7",    NULL},
+    {"msam8",    NULL},  {"msam9",    NULL},  {"msbm10",   NULL},
+    {"msbm5",    NULL},  {"msbm6",    NULL},  {"msbm7",    NULL},
+    {"msbm8",    NULL},  {"msbm9",    NULL}
 };
 
 #ifdef WIN32
@@ -752,8 +660,7 @@ static localFonts fontNames[] =
 #define FR_NOT_ENUM  0x20
 #endif
 
-/* #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM) */
-#define PRIVATE_FONT FR_PRIVATE
+#define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM)
 
 static int fontNeeded = 0;
 
@@ -776,23 +683,6 @@ static int CALLBACK fontEnumProc(
     return 0;
 }
 
-
-static TCHAR faceName[LONGEST_LEGAL_FILENAME] = "";
-
-static int CALLBACK fontEnumProc1(
-    const LOGFONTA *lpelfe,     // logical-font data
-    const TEXTMETRICA *lpntme,  // physical-font data
-    DWORD FontType,             // type of font
-    LPARAM lParam)              // application-defined data
-{
-// avoid duplicated reports
-    if (strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
-    strcpy(faceName, lpelfe->lfFaceName);
-    printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
-    fflush(stdout);
-    return 1;
-}
-
 #endif
 
 
@@ -810,7 +700,9 @@ int add_custom_fonts() // return 0 on success.
     LOGFONT lf;
 // I check each of the fonts that this application wants to see if they
 // are already installed. If they are then there is no merit in installing
-// them for myself.
+// them for myself. I will ASSUME that there is no ambiguity as to what font
+// is indicated by any particular name and so that any that are found read
+// installed are in fact good in the context that I wish to use them.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   memset((void *)&lf, 0, sizeof(lf));
         strcpy(lf.lfFaceName, fontNames[i].name);
@@ -838,8 +730,6 @@ int add_custom_fonts() // return 0 on success.
             fflush(stdout);
         }
         newFontAdded = 1;
-        printf("AddFontResource %s\n", fontNames[i].path);
-        fflush(stdout);
     }
 
     if (newFontAdded)
@@ -847,16 +737,6 @@ int add_custom_fonts() // return 0 on success.
         SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     }
 
-// Now list all the fonts that are available...
-    memset((void *)&lf, 0, sizeof(lf));
-    lf.lfFaceName[0] = '\0';
-    lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfPitchAndFamily = 0;
-    printf("About to list all fonts that are now available\n");
-    fflush(stdout);
-    EnumFontFamiliesEx(hDC, &lf, fontEnumProc1, 0, 0);
-    printf("Listing complete\n");
-    fflush(stdout);
     DeleteDC(hDC);
     return 0;
 #else // WIN32
@@ -878,6 +758,9 @@ int add_custom_fonts() // return 0 on success.
     }
     screen = DefaultScreen(dpy);
 
+// It might make sense to add just the fonts that I will be using rather than
+// use extra resources adding all that are available. But for now I prefer
+// simplicity.
     char fff[LONGEST_LEGAL_FILENAME];
     for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   sprintf(fff,
@@ -891,8 +774,6 @@ int add_custom_fonts() // return 0 on success.
     fs = XftListFonts(dpy, screen,
 //                    XFT_FAMILY, XftTypeString, fontname,
                       NULL,
-// I will ask XftListFonts to return all available information about the
-// fonts that are found.
                       XFT_FAMILY, XFT_STYLE, XFT_SLANT, XFT_WEIGHT,
                       XFT_SIZE, XFT_PIXEL_SIZE, XFT_ENCODING,
                       XFT_SPACING, XFT_FOUNDRY, XFT_CORE, XFT_ANTIALIAS,
@@ -941,14 +822,6 @@ int add_custom_fonts() // return 0 on success.
     ftColorMap =  DefaultColormap(dpy, screen);
     XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack, &ftBlack);
     XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
-#if 0
-// I had identified the font that I wanted earlier so now I can open it
-// by just using the information collected then.
-    ftFont = XftFontOpen(dpy, screen,
-                         XFT_FAMILY, XftTypeString, fontname,
-                         XFT_SIZE, XftTypeDouble, 24.0,
-                         NULL);
-#endif
     XftFontSetDestroy(fs); // Now I am done with the list of fonts.
     return 0;
 #endif // MACINTOSH
@@ -956,56 +829,572 @@ int add_custom_fonts() // return 0 on success.
 }
 
 
-bool fontApp::OnInit()
+
+
+//
+// Now that start of my code in a proper sense!
+//
+//
+
+
+/*
+ * This is the ".dvi" file created by running LaTeX on the following
+ * small input file. It is provided as a sequence of hex bytes so that
+ * I have something to test and demonstrate even if there is no file
+ * containig any .dvi stuff readily available.
+ *
+ *  \documentclass{article}
+ *  \begin{document}
+ *  This is some text
+ *  \[ \frac{- b \pm \sqrt{b^2 - 4ac}}{2a}\]
+ *  end text
+ *  \end{document}
+ */
+
+unsigned char math_dvi[] =
+{
+    0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,  
+    0x00,  0x00,  0x00,  0x00,  0x03,  0xe8,  0x1b,  0x20,  
+    0x54,  0x65,  0x58,  0x20,  0x6f,  0x75,  0x74,  0x70,  
+    0x75,  0x74,  0x20,  0x32,  0x30,  0x31,  0x30,  0x2e,  
+    0x31,  0x31,  0x2e,  0x30,  0x35,  0x3a,  0x32,  0x30,  
+    0x33,  0x33,  0x8b,  0x00,  0x00,  0x00,  0x01,  0x00,  
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
+    0x00,  0x00,  0x00,  0xff,  0xff,  0xff,  0xff,  0xa0,  
+    0x02,  0x79,  0x00,  0x00,  0x8d,  0xa0,  0xfd,  0xa3,  
+    0x00,  0x00,  0xa0,  0x02,  0x3f,  0x00,  0x00,  0x8d,  
+    0xa0,  0xfd,  0xe4,  0x00,  0x00,  0x8d,  0x91,  0x4d,  
+    0x00,  0x00,  0xf3,  0x07,  0x4b,  0xf1,  0x60,  0x79,  
+    0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  
+    0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,  0x30,  0xb2,  
+    0x54,  0x68,  0x69,  0x73,  0x96,  0x03,  0x55,  0x55,  
+    0x69,  0x73,  0x93,  0x73,  0x6f,  0x6d,  0x65,  0x93,  
+    0x74,  0x65,  0x78,  0x74,  0x8e,  0x9f,  0x10,  0xe5,  
+    0xfb,  0x8d,  0x8d,  0x8d,  0x8d,  0x9f,  0xf9,  0x3c,  
+    0x24,  0x8d,  0x92,  0x00,  0xc8,  0x61,  0x7e,  0xf3,  
+    0x0d,  0x21,  0x22,  0x2c,  0x9a,  0x00,  0x0a,  0x00,  
+    0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  
+    0x6d,  0x73,  0x79,  0x31,  0x30,  0xb8,  0x00,  0xf3,  
+    0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,  0x0a,  0x00,  
+    0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  
+    0x6d,  0x6d,  0x69,  0x31,  0x30,  0xb5,  0x62,  0x96,  
+    0x02,  0x38,  0xe0,  0xb8,  0x06,  0x8d,  0x8d,  0x93,  
+    0x9f,  0xf7,  0xaa,  0xab,  0x70,  0x8e,  0x8d,  0x91,  
+    0x0a,  0x8e,  0x37,  0x9f,  0xf7,  0xaa,  0xab,  0x89,  
+    0x00,  0x00,  0x66,  0x65,  0x00,  0x23,  0x9d,  0x07,  
+    0x9f,  0x08,  0x55,  0x55,  0x8d,  0xb5,  0x62,  0x8d,  
+    0x9f,  0xfd,  0x1c,  0x72,  0xf3,  0x06,  0xd9,  0x93,  
+    0xa0,  0x52,  0x00,  0x07,  0x00,  0x00,  0x00,  0x07,  
+    0x00,  0x00,  0x00,  0x04,  0x63,  0x6d,  0x72,  0x37,  
+    0xb1,  0x32,  0x8e,  0x91,  0x06,  0xb5,  0x53,  0xb8,  
+    0x00,  0x93,  0xb2,  0x34,  0xb5,  0x61,  0x63,  0x8e,  
+    0x8e,  0x8e,  0x8e,  0x92,  0x00,  0xc8,  0x61,  0x7e,  
+    0x9f,  0x04,  0x77,  0x0e,  0x89,  0x00,  0x00,  0x66,  
+    0x65,  0x00,  0x44,  0x3d,  0x04,  0x9f,  0x09,  0x28,  
+    0xd6,  0x8d,  0x91,  0x1c,  0xf9,  0xea,  0xb2,  0x32,  
+    0xb5,  0x61,  0x8e,  0x8e,  0x8e,  0x8e,  0x8e,  0x9f,  
+    0x14,  0xcd,  0xd0,  0x8d,  0x91,  0x3e,  0x00,  0x00,  
+    0xb2,  0x65,  0x6e,  0x64,  0x91,  0x03,  0x55,  0x55,  
+    0x74,  0x65,  0x78,  0x74,  0x8e,  0x8e,  0x9f,  0x1e,  
+    0x00,  0x00,  0x8d,  0x92,  0x00,  0xe8,  0x00,  0x00,  
+    0x31,  0x8e,  0x8e,  0x8c,  0xf8,  0x00,  0x00,  0x00,  
+    0x2a,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,  0x00,  
+    0x00,  0x00,  0x00,  0x03,  0xe8,  0x02,  0x79,  0x00,  
+    0x00,  0x01,  0x97,  0x00,  0x00,  0x00,  0x0b,  0x00,  
+    0x01,  0xf3,  0x0d,  0x21,  0x22,  0x2c,  0x9a,  0x00,  
+    0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  
+    0x06,  0x63,  0x6d,  0x73,  0x79,  0x31,  0x30,  0xf3,  
+    0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,  0x0a,  0x00,  
+    0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  
+    0x6d,  0x6d,  0x69,  0x31,  0x30,  0xf3,  0x07,  0x4b,  
+    0xf1,  0x60,  0x79,  0x00,  0x0a,  0x00,  0x00,  0x00,  
+    0x0a,  0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x72,  
+    0x31,  0x30,  0xf3,  0x06,  0xd9,  0x93,  0xa0,  0x52,  
+    0x00,  0x07,  0x00,  0x00,  0x00,  0x07,  0x00,  0x00,  
+    0x00,  0x04,  0x63,  0x6d,  0x72,  0x37,  0xf9,  0x00,  
+    0x00,  0x01,  0x7c,  0x02,  0xdf,  0xdf,  0xdf,  0xdf
+};
+
+
+// I have a generated file that contains the widths of all the fonts
+// I am willing to use here.
+
+#include "cmfont-widths.c"
+
+
+
+
+// Read 1, 2 3 or 4 byte integers from the input file, with the shorter
+// variants being either signed or unsigned. All are arranged in big-endian
+// style, as defined by the DVI format.
+
+unsigned char *string_input = NULL;
+
+int mygetc(FILE *f)
+{
+   if (string_input != NULL) return *string_input++;
+   else return getc(f);
+}
+
+int32_t u1(FILE *f)
+{
+    return mygetc(f) & 0xff;
+}
+
+int32_t u2(FILE *f)
+{
+    int32_t c1 = mygetc(f);
+    int32_t c2 = mygetc(f);
+    return ((c1 & 0xff) << 8) | (c2 & 0xff);
+}
+
+int32_t u3(FILE *f)
+{
+    int32_t c1 = mygetc(f);
+    int32_t c2 = mygetc(f);
+    int32_t c3 = mygetc(f);
+    return ((c1 & 0xff) << 16) | ((c2 & 0xff) << 8) | (c3 & 0xff);
+}
+
+int32_t s1(FILE *f)
+{
+    return (int32_t)(int8_t)(mygetc(f));
+}
+
+int32_t s2(FILE *f)
+{
+    int32_t c1 = mygetc(f);
+    int32_t c2 = mygetc(f);
+    return (int32_t)(int16_t)(((c1 & 0xff) << 8) | (c2 & 0xff));
+}
+
+int32_t s3(FILE *f)
+{
+    int32_t c1 = mygetc(f);
+    int32_t c2 = mygetc(f);
+    int32_t c3 = mygetc(f);
+    int32_t r = ((c1 & 0xff) << 16) | ((c2 & 0xff) << 8) | (c3 & 0xff);
+    if ((r & 0x00800000) != 0) r |= 0xff000000;
+    return (int32_t)r;
+}
+
+int32_t s4(FILE *f)
+{
+    int32_t c1 = mygetc(f);
+    int32_t c2 = mygetc(f);
+    int32_t c3 = mygetc(f);
+    int32_t c4 = mygetc(f);
+    return ((c1 & 0xff) << 24) | ((c2 & 0xff) << 16) |
+           ((c3 & 0xff) << 8) | (c4 & 0xff);
+}
+
+int32_t h, v, w, x, y, z;
+
+int32_t C[10], p;
+
+int32_t checksum, size, designsize;
+int arealen, namelen;
+char fontname[256];
+
+int font[256];
+
+int32_t num, den, mag;
+
+#define MAX_STACK 100
+
+int32_t stack[6*MAX_STACK];
+int stackp;
+
+// The following two macros are syntactically delicate - so BEWARE.
+
+#define push()         \
+  stack[stackp++] = h; \
+  stack[stackp++] = v; \
+  stack[stackp++] = w; \
+  stack[stackp++] = x; \
+  stack[stackp++] = y; \
+  stack[stackp++] = z
+
+#define pop()          \
+  z = stack[--stackp]; \
+  y = stack[--stackp]; \
+  x = stack[--stackp]; \
+  w = stack[--stackp]; \
+  v = stack[--stackp]; \
+  h = stack[--stackp]
+
+int findfont()
+{
+    printf("Define Font\n");
+    printf("checksum = %.8x\n", checksum);
+    printf("size = %d designsize = %d\n", size, designsize);
+    printf("%d %d: %s\n", arealen, namelen, fontname);
+    return 0;
+}
+
+void set_char(int32_t c)
+{
+    printf("Set (%f,%f) char %.2x (%c)\n",
+        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
+}
+
+void put_char(int32_t c)
+{
+    printf("Set (%f,%f) char %.2x (%c)\n",
+        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
+}
+
+void set_font(int n)
+{
+    printf("set font number %d\n");
+}
+
+// The code here is incomplete and not merged in properly yet!
+
+int submain(int argc, char *argv[])
+{
+    FILE *f = NULL;
+    string_input = NULL;
+    if (argc > 1)
+    {   f = fopen(argv[1], "rb");
+        printf("Using data from file %s\n", argv[1]);
+    }
+    else
+    {   string_input = &math_dvi[0];
+        printf("Using built-in data\n");
+    }
+    int32_t a, b, c, i, k;
+    for (;;)
+    {   c = mygetc(f);
+        if (c == EOF) break;
+        c &= 0xff;
+        if (c <= 127)
+        {   set_char(c);
+            continue;
+        }
+        else
+        {   switch (c)
+            {
+        case 128:
+                set_char(u1(f));
+                continue;
+        case 129:
+                set_char(u2(f));
+                continue;
+        case 130:
+                set_char(u3(f));
+                continue;
+        case 131:
+                set_char(s4(f));
+                continue;
+        case 132:                           // set rule
+                a = s4(f);
+                b = s4(f);
+                if (a > 0 && b >0)
+                {   printf("set rule %d %d\n", (int)a, (int)b);
+                    h += b;
+                }
+                continue;
+        case 133:
+                put_char(u1(f));
+                continue;
+        case 134:
+                put_char(u2(f));
+                continue;
+        case 135:
+                put_char(u3(f));
+                continue;
+        case 136:
+                put_char(s4(f));
+                continue;
+        case 137:
+                a = s4(f);
+                b = s4(f);
+                if (a > 0 && b >0)
+                {   printf("put rule %d %d\n", (int)a, (int)b);
+                }
+                continue;
+        case 138:
+                continue;                      // no operation
+        case 139:                           // beginning of page
+                h = v = w = x = y = z = stackp = 0;
+                for (i=0; i<10; i++)
+                    C[i] = s4(f);
+                p = s4(f);
+                continue;
+        case 140:                           // end of page
+                continue;
+        case 141:
+                push();
+                continue;
+        case 142:
+                pop();
+                continue;
+        case 143:
+                h += s1(f);
+                continue;
+        case 144:
+                h += s2(f);
+                continue;
+        case 145:
+                h += s3(f);
+                continue;
+        case 146:
+                h += s4(f);
+                continue;
+        case 147:
+                h += w;
+                continue;
+        case 148:
+                h += (w = s1(f));
+                continue;
+        case 149:
+                h += (w = s2(f));
+                continue;
+        case 150:
+                h += (w = s3(f));
+                continue;
+        case 151:
+                h += (w = s4(f));
+                continue;
+        case 152:
+                h += x;
+                continue;
+        case 153:
+                h += (x = s1(f));
+                continue;
+        case 154:
+                h += (x = s2(f));
+                continue;
+        case 155:
+                h += (x = s3(f));
+                continue;
+        case 156:
+                h += (x = s4(f));
+                continue;
+        case 157:
+                v += s1(f);
+                continue;
+        case 158:
+                v += s2(f);
+                continue;
+        case 159:
+                v += s3(f);
+                continue;
+        case 160:
+                v += s4(f);
+                continue;
+        case 161:
+                v += y;
+                continue;
+        case 162:
+                v += (y = s1(f));
+                continue;
+        case 163:
+                v += (y = s2(f));
+                continue;
+        case 164:
+                v += (y = s4(f));
+                continue;
+        case 165:
+                v += (y = s4(f));
+                continue;
+        case 166:
+                v += z;
+                continue;
+        case 167:
+                v += (z = s1(f));
+                continue;
+        case 168:
+                v += (z = s2(f));
+                continue;
+        case 169:
+                v += (z = s3(f));
+                continue;
+        case 170:
+                v += (z = s4(f));
+                continue;
+        case 171:  case 172:  case 173:  case 174:
+        case 175:  case 176:  case 177:  case 178:
+        case 179:  case 180:  case 181:  case 182:
+        case 183:  case 184:  case 185:  case 186:
+        case 187:  case 188:  case 189:  case 190:
+        case 191:  case 192:  case 193:  case 194:
+        case 195:  case 196:  case 197:  case 198:
+        case 199:  case 200:  case 201:  case 202:
+        case 203:  case 204:  case 205:  case 206:
+        case 207:  case 208:  case 209:  case 210:
+        case 211:  case 212:  case 213:  case 214:
+        case 215:  case 216:  case 217:  case 218:
+        case 219:  case 220:  case 221:  case 222:
+        case 223:  case 224:  case 225:  case 226:
+        case 227:  case 228:  case 229:  case 230:
+        case 231:  case 232:  case 233:  case 234:
+                set_font(c - 171);
+                continue;
+        case 235:
+                set_font(u1(f));
+                continue;
+        case 236:
+                set_font(u2(f));
+                continue;
+        case 237:
+                set_font(u3(f));
+                continue;
+        case 238:
+                set_font(s4(f));
+                continue;
+        case 239:
+                k = u1(f);
+                for (i=0; i<k; i++) u1(f);
+                continue;
+        case 240:
+                k = u2(f);
+                for (i=0; i<k; i++) u1(f);
+                continue;
+        case 241:
+                k = u3(f);
+                for (i=0; i<k; i++) u1(f);
+                continue;
+        case 242:
+                k = s4(f);
+                for (i=0; i<k; i++) u1(f);
+                continue;
+        case 243:                         // fnt_def1
+                k = u1(f);
+                checksum = s4(f);
+                size = s4(f);
+                designsize = s4(f);
+                arealen = u1(f);
+                namelen = u1(f);
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                fontname[arealen+namelen] = 0;
+                font[k] = findfont();
+                continue;
+        case 244:
+                k = u2(f);
+                checksum = s4(f);
+                size = s4(f);
+                designsize = s4(f);
+                arealen = u1(f);
+                namelen = u1(f);
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                fontname[arealen+namelen] = 0;
+                font[k] = findfont();
+                continue;
+        case 245:
+                k = u3(f);
+                checksum = s4(f);
+                size = s4(f);
+                designsize = s4(f);
+                arealen = u1(f);
+                namelen = u1(f);
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                fontname[arealen+namelen] = 0;
+                font[k] = findfont();
+                continue;
+        case 246:
+                k = s4(f);
+                checksum = s4(f);
+                size = s4(f);
+                designsize = s4(f);
+                arealen = u1(f);
+                namelen = u1(f);
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                fontname[arealen+namelen] = 0;
+                font[k] = findfont();
+                continue;
+        case 247:                          // pre
+                i = u1(f);
+                if (i != 2)
+                {   printf("illegal DVI version %d\n", i);
+                    break;
+                }
+                num = s4(f);
+                den = s4(f);
+                mag = s4(f);
+                k = u1(f);
+                for (i=0; i<k; i++) u1(f);
+                printf("PRE: num=%d, den=%d, (%f) mag=%d\n",
+                       num, den, (double)num/(double)den, mag);
+                continue;
+        case 248:                          // post
+                s4(f); // ignore p;
+                s4(f); // ignure num
+                s4(f); // ignore den
+                s4(f); // ignore mag
+                s4(f); // height+depth of largest page
+                s4(f); // width of largest page
+                printf("Greatest stack depth = %d\n", u2(f));
+                printf("Page count = %d\n", u2(f));
+    // The postamble will have font definitions here as well.
+                continue;
+        case 249:                          // post_post
+                s4(f);
+                u1(f);
+                if (u1(f) != 223) printf("Malformed DVI file\n");
+                break;
+
+        // 250-255 undefined
+        default:
+                printf("Unknown/undefined opcode %.2x\n", c);
+                break;
+            }
+            break;
+        }
+    }
+    printf("end of file\n");
+}
+
+
+
+
+
+bool dviApp::OnInit()
 {
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
-    for (int i=0; i<argc; i++)
-    {
-        printf("Arg%d: %s\n", i, myargv[i]);
-    }
-// I will find the special fonts that most interest me in a location related
-// to the directory that this application was launched from. So the first
-// think to do is to identify that location. I then print the information I
-// recover so I can debug things. I have already set up programName etc
-    printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
 
     add_custom_fonts();
 
-    char *font = "default";  // A default font name to ask for.
-    int size = 48;           // a default size.
-    if (argc > 1) font = myargv[1];
-    if (argc > 2)
-    {   size = atoi(myargv[2]);
-        if (size <= 2 || size > 200) size = 48;
-    }
-    printf("Try for font \"%s\" at size=%d\n", font, size);
+    char *dvifilename = "math.dvi";
+    if (argc > 1) dvifilename = myargv[1];
 
-    fontFrame *frame = new fontFrame(font, size);
+    dviFrame *frame = new dviFrame(dvifilename);
     frame->Show(true);
     return true;
 }
 
-fontFrame::fontFrame(char *fname, int fsize)
-       : wxFrame(NULL, wxID_ANY, "wxfontdemo")
+dviFrame::dviFrame(char *dvifilename)
+       : wxFrame(NULL, wxID_ANY, "wxdvi")
 {
     SetIcon(wxICON(fwin));
 
-// I *think* I want to make the font have a size specified in pixels
-// not points here... however that appears to be delicate. So I will
-// create one at a plausible point size then adjust it later. I will
-// use "fontScaled" to ensure I only adjust it once.
-    fontname = fname;
-    fontsize = fsize;
+// I will read the DVI data once here.
+    FILE *f = fopen(dvifilename, "rb");
+    if (f == NULL)
+    {   printf("File \"%s\" not found\n", dvifilename);
+        exit(1);
+    }
+    fseek(f, (off_t)0, SEEK_END);
+    off_t len = ftell(f);
+    dvidata = (char *)malloc((size_t)len);
+    fseek(f, (off_t)0, SEEK_SET);
+    int i;
+    for (i=0; i<len; i++) dvidata[i] = getc(f);
+    fclose(f);
     ff = new wxFont();
-    ff->SetNativeFontInfoUserDesc(fontname);
+    ff->SetNativeFontInfoUserDesc("cmr10");
     ff->SetPointSize(36);
     fontScaled = false;
 
 // The size calculated here is the total size of the whole window,
 // including title bar and borders...
-    wxSize clientsize(32*32, 9*64);
+    wxSize clientsize(1024, 768);
     wxSize winsize(ClientToWindowSize(clientsize));
     SetSize(winsize);
     SetMinSize(winsize);
@@ -1014,45 +1403,40 @@ fontFrame::fontFrame(char *fname, int fsize)
 }
 
 
-void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
+void dviFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 {
     Destroy();
     exit(0);    // I want the whole application to terminate here!
 }
 
-void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
+void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
+// At present this never gets activated!
     wxMessageBox(
        wxString::Format(
-           "wxfontdemo (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
+           "wxdvi (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
            wxVERSION_STRING,
            wxGetOsDescription()),
-       "About wxfontdemo",
+       "About wxdvi",
        wxOK | wxICON_INFORMATION,
        this);
 }
 
-void fontFrame::OnPaint(wxPaintEvent &event)
+void dviFrame::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC dc(this);
     wxColour c1(230, 200, 255);
-    wxColour c2(100, 220, 120);
-    wxBrush b1(c1); wxBrush b2(c2);
-    wxPen p1(c1);   wxPen p2(c2);
-
-    for (int i=0; i<256+32; i+=32)
-    {   for (int j=0; j<32; j++)
-        {   int k = ((i>>5) + j) & 1;
-            dc.SetBrush(k ? b2 : b1);
-            dc.SetPen(k ? p2 : p1);
-            dc.DrawRectangle(32*j, 2*i, 32, 64);
-        }
-    }
+    wxBrush b1(c1); 
+    dc.SetBrush(b1);
+    wxPen p1(c1);
+    dc.SetPen(p1);
+    dc.DrawRectangle(0, 0, 1024, 768);
 
     dc.SetFont(*ff);
     wxCoord w1, h1, d1, xl1;
     dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
 
+#if 0
 // If I have not adjusted my font size to get the PIXEL size I want.
 // I will scale the height returned for "X" to be the number of pixels I
 // want.
@@ -1066,23 +1450,15 @@ void fontFrame::OnPaint(wxPaintEvent &event)
         wxPrintf("Font = %s\n", f);
         fontScaled = true; // Do this only once!
     }
-// To make my display match the one I had from my previous FOX-based
-// version I will adjust to make it as if DrawText uses the base-line of
-// the character for its reference point. I draw a little red circle to
-// show where the reference point is...
+#endif
     for (int i=0; i<256; i+=32)
     {   for (int j=0; j<32; j++)
-        {   dc.SetPen(*wxRED_PEN);
-            dc.SetBrush(*wxTRANSPARENT_BRUSH);
-            dc.DrawCircle(32*j, 2*i+64, 8);
-// If I do not make this wchar_t I get into utf_8 vs Unicode disasters
-// at least on some X11 versions.
-            wxString c = (wchar_t)(i+j);
+        {   wxString c = (wchar_t)(i+j);
             dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
         }
     }
 }
 
 
-// end of wxfontdemo.cpp
+// end of wxdvi.cpp
 

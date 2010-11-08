@@ -69,7 +69,7 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 @fox_TRUE@am__EXEEXT_1 = foxdemo$(EXEEXT) fontdemo$(EXEEXT) \
 @fox_TRUE@	showmathdemo$(EXEEXT)
 @wx_TRUE@am__EXEEXT_2 = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) \
-@wx_TRUE@	wxshowmathdemo$(EXEEXT)
+@wx_TRUE@	wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__bootstrapreduce_SOURCES_DIST = arith01.c arith02.c arith03.c \
 	arith04.c arith05.c arith06.c arith07.c arith08.c arith09.c \
@@ -178,6 +178,8 @@ termdemo_OBJECTS = $(am_termdemo_OBJECTS)
 termdemo_LDADD = $(LDADD)
 am_wxdemo_OBJECTS = wxdemo.$(OBJEXT)
 wxdemo_OBJECTS = $(am_wxdemo_OBJECTS)
+am_wxdvi_OBJECTS = wxdvi.$(OBJEXT)
+wxdvi_OBJECTS = $(am_wxdvi_OBJECTS)
 am_wxfontdemo_OBJECTS = wxfontdemo.$(OBJEXT)
 wxfontdemo_OBJECTS = $(am_wxfontdemo_OBJECTS)
 am_wxshowmathdemo_OBJECTS = wxshowmathdemo.$(OBJEXT)
@@ -197,14 +199,14 @@ CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
 	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
-	$(wxdemo_SOURCES) $(wxfontdemo_SOURCES) \
+	$(wxdemo_SOURCES) $(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
 	$(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
 	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
-	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxfontdemo_SOURCES) \
-	$(wxshowmathdemo_SOURCES)
+	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
+	$(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -356,7 +358,7 @@ RM = rm
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@wxdemotarget = 
-@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
+@wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
@@ -487,6 +489,9 @@ wxdemo_DEPENDENCIES = $(fwin_icon)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxdvi_SOURCES = wxdvi.cpp
+wxdvi_LDADD = $(fwin_icon)
+wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
@@ -562,7 +567,8 @@ DEST = -o
 R = $(srcdir)/../..
 @win64_FALSE@FOXDEP = ../lib/libFOX-1.6.a
 @win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
-@wx_TRUE@PL = wxfontdemo.app/Contents/Info.plist
+@wx_TRUE@PFD = wxfontdemo.app/Contents/Info.plist
+@wx_TRUE@PDVI = wxdvi.app/Contents/Info.plist
 
 # The next section is to conspire with automake's treatement of externions for
 # executables (ie ".exe") so that eg "make reduce" will case "make reduce.exe" to
@@ -578,6 +584,7 @@ R = $(srcdir)/../..
 @exeext_TRUE@plain_showmathdemo = showmathdemo
 @exeext_TRUE@plain_wxdemo = wxdemo
 @exeext_TRUE@plain_wxfontdemo = wxfontdemo
+@exeext_TRUE@plain_wxdvi = wxdvi
 @exeext_TRUE@plain_wxshowmathdemo = wxshowmathdemo
 @exeext_TRUE@plain_dyndemo = dyndemo
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
@@ -746,6 +753,9 @@ termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
 @wx_FALSE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxdemo$(EXEEXT)
 @wx_FALSE@	$(CXXLINK) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS)
+@wx_FALSE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxdvi$(EXEEXT)
+@wx_FALSE@	$(CXXLINK) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS)
 @wx_FALSE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxfontdemo$(EXEEXT)
 @wx_FALSE@	$(CXXLINK) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS)
@@ -872,6 +882,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/u60.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wstring.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdvi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmathdemo.Po@am__quote@
@@ -2205,49 +2216,105 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/Resources
 @mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/Resources/Fonts
 @mac_framework_TRUE@@wx_TRUE@	cp reduce.wxFonts/* wxfontdemo.app/Contents/Resources/Fonts
-@mac_framework_TRUE@@wx_TRUE@	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<plist version=\"0.9\">" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<dict>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>6.0</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIdentifier</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>com.codemist.reduce.wxfontdemo</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>English</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLocalizations</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<array> <string>en</string> </array>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleExecutable</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIconFile</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>fwin.icns</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleName</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundlePackageType</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>APPL</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleSignature</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>????</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleVersion</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleShortVersionString</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleGetInfoString</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo version 1, (C) 2010 Codemist Ltd</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLongVersionString</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>NSHumanReadableCopyright</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>LSRequiresCarbon</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CSResourcesFileMapped</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>ATSApplicationFontsPath</key>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>Fonts</string>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "</dict>" >> $(PL)
-@mac_framework_TRUE@@wx_TRUE@	echo "</plist>" >> $(PL)
+@mac_framework_TRUE@@wx_TRUE@	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<plist version=\"0.9\">" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<dict>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>6.0</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIdentifier</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>com.codemist.reduce.wxfontdemo</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>English</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLocalizations</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<array> <string>en</string> </array>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleExecutable</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIconFile</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>fwin.icns</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleName</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundlePackageType</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>APPFD</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleSignature</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>????</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleVersion</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleShortVersionString</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleGetInfoString</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo version 1, (C) 2010 Codemist Ltd</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLongVersionString</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>NSHumanReadableCopyright</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>LSRequiresCarbon</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CSResourcesFileMapped</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>ATSApplicationFontsPath</key>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>Fonts</string>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "</dict>" >> $(PFD)
+@mac_framework_TRUE@@wx_TRUE@	echo "</plist>" >> $(PFD)
 @mac_framework_TRUE@@wx_TRUE@	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
 @mac_framework_TRUE@@wx_TRUE@	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
 @mac_framework_TRUE@@wx_TRUE@	cp -f $(srcdir)/fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
+
+@wx_TRUE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-rm -f wxdvi$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdvi$(EXEEXT)
+# The next few lines are as suggested by the wxWidgets Makefile and create
+# an Application Bundle.
+@mac_framework_TRUE@@wx_TRUE@	SetFile -t APPL wxdvi
+@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents
+@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents/MacOS
+@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents/Resources
+@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents/Resources/Fonts
+@mac_framework_TRUE@@wx_TRUE@	cp reduce.wxFonts/* wxdvi.app/Contents/Resources/Fonts
+@mac_framework_TRUE@@wx_TRUE@	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<plist version=\"0.9\">" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<dict>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>6.0</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIdentifier</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>com.codemist.reduce.wxdvi</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>English</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLocalizations</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<array> <string>en</string> </array>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleExecutable</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxdvi</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIconFile</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>fwin.icns</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleName</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxdvi</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundlePackageType</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>APPDVI</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleSignature</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>????</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleVersion</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleShortVersionString</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleGetInfoString</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxdvi version 1, (C) 2010 Codemist Ltd</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLongVersionString</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>NSHumanReadableCopyright</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>LSRequiresCarbon</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>CSResourcesFileMapped</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<key>ATSApplicationFontsPath</key>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "<string>Fonts</string>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "</dict>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo "</plist>" >> $(PDVI)
+@mac_framework_TRUE@@wx_TRUE@	echo -n "APPL????" >wxdvi.app/Contents/PkgInfo
+@mac_framework_TRUE@@wx_TRUE@	ln -f wxdvi wxdvi.app/Contents/MacOS/wxdvi
+@mac_framework_TRUE@@wx_TRUE@	cp -f $(srcdir)/fwin.icns wxdvi.app/Contents/Resources/fwin.icns
 
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdemo$(EXEEXT)
@@ -2330,6 +2397,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxfontdemo):	wxfontdemo.exe
 @exeext_TRUE@@wx_TRUE@	echo "make wxfontdemo.exe is preferred"
+
+@exeext_TRUE@@wx_TRUE@$(plain_wxdvi):	wxdvi.exe
+@exeext_TRUE@@wx_TRUE@	echo "make wxdvi.exe is preferred"
 
 @exeext_TRUE@@wx_TRUE@$(plain_wxshowmathdemo):	wxshowmathdemo.exe
 @exeext_TRUE@@wx_TRUE@	echo "make wxshowmathdemo.exe is preferred"
