@@ -38,6 +38,7 @@ from PySide.QtCore import QCoreApplication
 from PySide.QtCore import QFile
 from PySide.QtCore import QIODevice
 from PySide.QtCore import QModelIndex
+from PySide.QtCore import QMutex
 from PySide.QtCore import QObject
 from PySide.QtCore import QSettings
 from PySide.QtCore import Qt
@@ -59,20 +60,23 @@ from qrdefaults import QtReduceDefaults
 from RedPy import procNew, procDelete, ansNew, ansDelete
 
 
-class Reduce(object):
+class Reduce(QObject):
     def __init__(self,reduce='../../bin/redpsl'):
         super(Reduce,self).__init__()
         self.__process = procNew(sys.path[0] + "/" + reduce)
         self.__processId = self.__process['processId']
         self.__process = self.__process['handle']
+        self.__mutex = QMutex()
 
     def __del__(self):
         traceLogger.warning("about to delete Reduce process - this is good!")
         procDelete(self.__process)
 
     def compute(self,c):
+        self.__mutex.lock()
         a = ansNew(self.__process,c)
         ansDelete(a['handle'])
+        self.__mutex.unlock()
         return a['data']
 
     def signal(self,c):
