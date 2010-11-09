@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6390ba67 08-Nov-2010 */
+/* Signature: 042d6160 09-Nov-2010 */
 
 
 
@@ -161,6 +161,7 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_PAINT(           fontFrame::OnPaint)
 END_EVENT_TABLE()
 
+int raw, page;
 
 int get_current_directory(char *s, int n)
 {
@@ -233,7 +234,7 @@ int find_program_directory(char *argv0)
  * from the Windows APIs.
  */
     char execname[LONGEST_LEGAL_FILENAME];
-    GetModuleFileName(NULL, execname, LONGEST_LEGAL_FILENAME-2);
+    GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
     strcpy(this_executable, execname);
     argv0 = this_executable;
     program_name_dot_com = 0;
@@ -758,13 +759,15 @@ static localFonts fontNames[] =
 static int fontNeeded = 0;
 
 // A brief comment here. The DEFAULT build of wxWidgets on Windows supports
-// Unicode by using wide characters and strings. That causes major pain to
-// my legacy code that just uses simple old-style C strings everywhere and
-// so uses the old-style C functions that actr on them. Sometime in the
-// future it is probable that I should clean up my code to work with modern
-// international character-sets through Unicode, but since I have not done
-// that yet I MUST (at least on Windows) restrict myself to a non-Unicode
-// build of wxWidgets.
+// Unicode by using wide characters and strings. That causes me some pain
+// but I NEED to accept it because the character that has code 0x14 in TeX
+// encoding gets mapped to character code 0x2219 in the Bakoma fonts, and it
+// is not at all clear that I have any way to access that glyph if I do
+// not build in Unicode mode.
+
+// You will see a load of places I explicitly call the non-Unicode versions
+// of Windows functions (eg with an "A" at the end of their name) when I wish
+// to pass legacy pre-unicode strings to them.
 
 static int CALLBACK fontEnumProc(
     const LOGFONTA *lpelfe,     // logical-font data
@@ -777,7 +780,7 @@ static int CALLBACK fontEnumProc(
 }
 
 
-static TCHAR faceName[LONGEST_LEGAL_FILENAME] = "";
+static char faceName[LONGEST_LEGAL_FILENAME] = "";
 
 static int CALLBACK fontEnumProc1(
     const LOGFONTA *lpelfe,     // logical-font data
@@ -807,7 +810,7 @@ int add_custom_fonts() // return 0 on success.
 {
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
-    LOGFONT lf;
+    LOGFONTA lf;
 // I check each of the fonts that this application wants to see if they
 // are already installed. If they are then there is no merit in installing
 // them for myself.
@@ -818,7 +821,7 @@ int add_custom_fonts() // return 0 on success.
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
         fontNames[i].path = NULL;
-        EnumFontFamiliesEx(hDC, &lf, fontEnumProc, 0, 0);
+        EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
         char *nn = new char [strlen(programDir) +
                              strlen(toString(fontsdir)) + 16];
@@ -838,8 +841,8 @@ int add_custom_fonts() // return 0 on success.
             fflush(stdout);
         }
         newFontAdded = 1;
-        printf("AddFontResource %s\n", fontNames[i].path);
-        fflush(stdout);
+//      printf("AddFontResource %s\n", fontNames[i].path);
+//      fflush(stdout);
     }
 
     if (newFontAdded)
@@ -852,11 +855,13 @@ int add_custom_fonts() // return 0 on success.
     lf.lfFaceName[0] = '\0';
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfPitchAndFamily = 0;
+#if 0
     printf("About to list all fonts that are now available\n");
     fflush(stdout);
-    EnumFontFamiliesEx(hDC, &lf, fontEnumProc1, 0, 0);
+    EnumFontFamiliesExA(hDC, &lf, fontEnumProc1, 0, 0);
     printf("Listing complete\n");
     fflush(stdout);
+#endif
     DeleteDC(hDC);
     return 0;
 #else // WIN32
@@ -961,9 +966,13 @@ bool fontApp::OnInit()
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
+    raw = page = 0;
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
+        if (strcmp(myargv[i], "--raw") == 0) raw = 1;
+        else if (myargv[i][0]!= '-' ||
+                 sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
     }
 // I will find the special fonts that most interest me in a location related
 // to the directory that this application was launched from. So the first
@@ -1075,9 +1084,20 @@ void fontFrame::OnPaint(wxPaintEvent &event)
         {   dc.SetPen(*wxRED_PEN);
             dc.SetBrush(*wxTRANSPARENT_BRUSH);
             dc.DrawCircle(32*j, 2*i+64, 8);
-// If I do not make this wchar_t I get into utf_8 vs Unicode disasters
-// at least on some X11 versions.
-            wxString c = (wchar_t)(i+j);
+            int k = i + j;
+            if (!raw)
+            {   if (k < 0xa) k = 0xa1 + k;
+#ifdef WIN32
+// This seems to be needed on Windows but not with X11. I dop not know
+// who or how the adjustment is made in the X11 case.
+                else if (k == 0x14) k = 0x2219;   //!!!
+#endif
+                else if (k < 0x20) k = 0xa3 + k;
+                else if (k == 0x20) k = 0xc3;
+                else if (k == 0x7f) k = 0xc4;
+                else if (k >= 0x80) k += 0x80*page;
+            }
+            wxString c = (wchar_t)k;
             dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
         }
     }

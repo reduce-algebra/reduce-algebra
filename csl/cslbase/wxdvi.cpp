@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 38239127 08-Nov-2010 */
+/* Signature: 7b285632 09-Nov-2010 */
 
 
 
@@ -229,7 +229,7 @@ int find_program_directory(char *argv0)
  * from the Windows APIs.
  */
     char execname[LONGEST_LEGAL_FILENAME];
-    GetModuleFileName(NULL, execname, LONGEST_LEGAL_FILENAME-2);
+    GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
     strcpy(this_executable, execname);
     argv0 = this_executable;
     program_name_dot_com = 0;
@@ -697,7 +697,7 @@ int add_custom_fonts() // return 0 on success.
 {
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
-    LOGFONT lf;
+    LOGFONTA lf;
 // I check each of the fonts that this application wants to see if they
 // are already installed. If they are then there is no merit in installing
 // them for myself. I will ASSUME that there is no ambiguity as to what font
@@ -710,7 +710,7 @@ int add_custom_fonts() // return 0 on success.
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
         fontNames[i].path = NULL;
-        EnumFontFamiliesEx(hDC, &lf, fontEnumProc, 0, 0);
+        EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
         char *nn = new char [strlen(programDir) +
                              strlen(toString(fontsdir)) + 16];
@@ -1459,7 +1459,9 @@ void dviFrame::OnPaint(wxPaintEvent &event)
 #endif
     for (int i=0; i<256; i+=32)
     {   for (int j=0; j<32; j++)
-        {   wxString c = (wchar_t)(i+j);
+        {   int k = i+j;
+            if (k == 0xe0) k = 0x2219;
+            wxString c = (wchar_t)k;
             dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
         }
     }

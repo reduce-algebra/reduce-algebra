@@ -148,7 +148,7 @@ AC_ARG_WITH(xim,
   AC_HELP_STRING([--with-xim],
                  [Can be used to control use of XIM. Default is yes (now) (CSL only)]),
   [],
-  [with_xft="yes"])
+  [with_xim="yes"])
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug],
@@ -603,14 +603,14 @@ then
     if test "x$with_wx" = "xbuiltin"
     then
       cd wxWidgets
-# I has thought about --enable-unicode here, but right now the
-# issue of altering all my own code to tolerate wide chars is too
-# much for me to manage! Some time in the future perhaps I should
-# do that.
+# I need --enable-unicode on Windows at least so that I can use the
+# BaKoMa fonts which remap at least one TeX glyph to outside the range
+# of simple 8-bit characters. This will bring some follow-on pain no doubt
+# but addressing that pain is probably good in the long term.
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
               CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-              --disable-shared --disable-unicode \
+              --disable-shared --enable-unicode \
               --disable-compat26 --disable-compat28 \
               --with-png=builtin --without-libjpeg \
               --without-libtiff --with-libsvg=no \
