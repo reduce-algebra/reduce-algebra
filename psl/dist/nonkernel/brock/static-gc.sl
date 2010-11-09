@@ -1,0 +1,1 @@
+../AMD64/static-gc.sl
