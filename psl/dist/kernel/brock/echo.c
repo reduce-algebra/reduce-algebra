@@ -9,15 +9,11 @@
 % Mode:         Text
 % Package:      
 % Status:       Experimental (Do Not Distribute)
-%
-% (c) Copyright 1984, Hewlett-Packard Company, all rights reserved.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Revisions:
-%
-% 21-Sep-86 (Leigh Stoller)
-%  Copied from Sun kernel 3.2 directory. Changed a few function names to match
+
+% Copyright 1983, Hewlett-Packard Company, see the file
+%            HP_disclaimer at the root of the PSL file tree
+
+%Changed a few function names to match
 %  3.4 conventions, and deleted a few obsolete functions.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

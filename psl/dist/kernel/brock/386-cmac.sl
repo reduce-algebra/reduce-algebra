@@ -7,9 +7,6 @@
 % Modified:
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
-%
-% (c) Copyright 1989, Konrad Zuse Zentrum, all rights reserved
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
