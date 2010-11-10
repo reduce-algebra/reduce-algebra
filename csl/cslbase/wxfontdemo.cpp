@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 042d6160 09-Nov-2010 */
+/* Signature: 1598c8b3 10-Nov-2010 */
 
 
 
@@ -146,6 +146,8 @@ public:
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnPaint(wxPaintEvent &event);
+    void OnChar(wxKeyEvent &event);
+    void OnMouse(wxMouseEvent &event);
 
 private:
     char *fontname;
@@ -159,6 +161,8 @@ BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_EXIT,  fontFrame::OnExit)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
     EVT_PAINT(           fontFrame::OnPaint)
+    EVT_CHAR(            fontFrame::OnChar)
+    EVT_LEFT_UP(         fontFrame::OnMouse)
 END_EVENT_TABLE()
 
 int raw, page;
@@ -884,11 +888,13 @@ int add_custom_fonts() // return 0 on success.
     screen = DefaultScreen(dpy);
 
     char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<(int)sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);
+#if 0
         printf("Adding the font from %s\n", fff);
+#endif
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
@@ -1041,6 +1047,20 @@ void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
        this);
 }
 
+void fontFrame::OnChar(wxKeyEvent &event)
+{
+    printf("Key event\n"); fflush(stdout);
+    page++;
+    Refresh();
+}
+
+void fontFrame::OnMouse(wxMouseEvent &event)
+{
+    page++;
+    printf("Mouse event. Page now %d\n", page); fflush(stdout);
+    Refresh();
+}
+
 void fontFrame::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC dc(this);
@@ -1087,10 +1107,9 @@ void fontFrame::OnPaint(wxPaintEvent &event)
             int k = i + j;
             if (!raw)
             {   if (k < 0xa) k = 0xa1 + k;
-#ifdef WIN32
-// This seems to be needed on Windows but not with X11. I dop not know
-// who or how the adjustment is made in the X11 case.
-                else if (k == 0x14) k = 0x2219;   //!!!
+                else if (k == 0xa) k = 0xc5;
+#ifdef UNICODE
+                else if (k == 0x14) k = 0x2219;
 #endif
                 else if (k < 0x20) k = 0xa3 + k;
                 else if (k == 0x20) k = 0xc3;
