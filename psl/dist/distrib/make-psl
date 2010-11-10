@@ -43,6 +43,21 @@
 #
 ###############################################################################
 
+set imagesize=10000000
+
+if ($MACHINE == Ibmrs) then
+  set imagesize=8000000
+endif
+if ($MACHINE == brock) then
+  set imagesize=1000
+endif
+if ($MACHINE == AMD64) then
+  set imagesize=1000
+endif
+if ($MACHINE == macintel64) then
+  set imagesize=1000
+endif
+
 pushd $psys
 if ( -e $psys/.imago) then
     mv -f $psys/psl.img $psys/old-psl.img
@@ -54,7 +69,7 @@ endif
 setenv SavingPSL yes		# skip user startup before savesystem
 
 $psys/bare-psl << EOF
-(setq loaddirectories* '("" "\$pl/" "\$pll/"))
+(setq loaddirectories* '("" "$pl/" "$pll/"))
 (on verboseload)
 (load init-file)
 (load debug useful common)
@@ -65,6 +80,13 @@ $psys/bare-psl << EOF
           "\$psys/psl" '((read-init-file "psl")))
 (exitlisp)
 EOF
+
+cat > $psys/psl << EOFF
+#
+$pxk/bpsl  -td $imagesize -f  $psys/psl.img
+#
+#EOFF
+
 
 @ pslcompstatus = $status
 popd

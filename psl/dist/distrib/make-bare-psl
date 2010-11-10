@@ -89,9 +89,9 @@ if ( -e $psys/.imago) then
 endif
 
 $pxk/bpsl -td $imagesize << EOF
-(setq loaddirectories* '("" "\$pl/"))
+(setq loaddirectories* '("" "$pl/"))
 (on verboseload)
-(setq symbolfilename* "\$pxk/bpsl")
+(setq symbolfilename* "$pxk/bpsl")
 (cond ((equal "cray-t3d" (getenv "MACHINE")) (copyd 'pre-main 'pre-main-2)))
 (savesystem 
   (cond ((unboundp '**low-case) "Bare PSL 3.4")
@@ -99,6 +99,12 @@ $pxk/bpsl -td $imagesize << EOF
          "\$psys/bare-psl" NIL)
 (exitlisp)
 EOF
+
+cat > $psys/tmp.sed << EOFF
+s/HERE/$PROOT/g
+EOFF
+
+sed -f  $psys/tmp.sed  $PROOT/run-bare-psl.tmpl >  $PROOT/run-bare-psl.sh
 
 @ pslcompstatus = $status
 popd

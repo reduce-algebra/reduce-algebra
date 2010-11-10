@@ -7,6 +7,9 @@
    modification times, permission status etc. 
    Modification: JHD 16.10.89: fix a SUNos 4 feature for files whose
    last block is precisely null
+
+   Minor modifications by Winfried Neun:
+   some more include files and   void * malloc instead of char * malloc
 */
 
 #define BSIZE 8192
@@ -16,11 +19,14 @@
 #include <utime.h>
 struct utimbuf hpux_utime;
 #endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 long lseek();
-char *malloc();
+void *malloc();
 /* Really should look it up: could be something different, but it
    doesn't really matter */
 int buf[BSIZE/4]; /* So can use word operations */
@@ -30,7 +36,7 @@ char **argv;
 { int ifile,ofile,ilen,ans,seeking;
   long lans;
   char *oname;
-  struct stat statbuf;
+  struct stat    statbuf;
   if (argc != 2)
     { printf("Usage: sparsify filename\n");
       exit(-1);
