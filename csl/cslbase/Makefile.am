@@ -202,7 +202,7 @@ endif !windows
 
 if wx
 fontsdir = wxfonts
-samplefont=cmr10.ttf
+samplefont=csl-cmr10.ttf
 else !wx
 fontsdir = fonts
 samplefont=cmr10.pfb
@@ -671,6 +671,7 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 	-rm -rf reduce.$(fontsdir)
 	-mkdir reduce.$(fontsdir)
 if wx
+	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
