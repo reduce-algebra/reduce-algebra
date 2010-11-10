@@ -11,6 +11,9 @@ to make two additions of the charecter encoding tables:
     default rendering code does not display anything there regardless of
     any data in the font. So I have made a copy of that data at code point
     0xc5 just beyond other relocated glyphs.
+(c) The file-names and the font-names have been adjusted from (eg)
+    cmr10/cmr10.ttf to csl-cmr10/csl-cmr10.ttf to avoid any possible
+    confustion between these and the regular versions on any TeX fonts. 
 
 It is probable that I could have worked around the encoding difficulties by
 implementing special custom support for encoding in my applications, and
