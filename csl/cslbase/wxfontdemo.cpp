@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 786408ec 10-Nov-2010 */
+/* Signature: 576d75fc 11-Nov-2010 */
 
 
 
@@ -138,15 +138,15 @@ public:
     virtual bool OnInit();
 };
 
-class fontFrame : public wxFrame
+class fontPanel : public wxPanel
 {
 public:
-    fontFrame(char *font, int size);
+    fontPanel(class fontFrame *parent, char *font, int size);
 
-    void OnExit(wxCommandEvent &event);
-    void OnAbout(wxCommandEvent &event);
     void OnPaint(wxPaintEvent &event);
     void OnChar(wxKeyEvent &event);
+    void OnKeyDown(wxKeyEvent &event);
+    void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
 
 private:
@@ -157,12 +157,30 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
+BEGIN_EVENT_TABLE(fontPanel, wxPanel)
+    EVT_PAINT(           fontPanel::OnPaint)
+    EVT_CHAR(            fontPanel::OnChar)
+    EVT_KEY_DOWN(        fontPanel::OnKeyDown)
+    EVT_KEY_UP(          fontPanel::OnKeyUp)
+    EVT_LEFT_UP(         fontPanel::OnMouse)
+END_EVENT_TABLE()
+
+class fontFrame : public wxFrame
+{
+public:
+    fontFrame(char *font, int size);
+
+    void OnExit(wxCommandEvent &event);
+    void OnAbout(wxCommandEvent &event);
+
+private:
+    fontPanel *panel;
+    DECLARE_EVENT_TABLE()
+};
+
 BEGIN_EVENT_TABLE(fontFrame, wxFrame)
     EVT_MENU(wxID_EXIT,  fontFrame::OnExit)
     EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
-    EVT_PAINT(           fontFrame::OnPaint)
-    EVT_CHAR(            fontFrame::OnChar)    // seems not to get activated!
-    EVT_LEFT_UP(         fontFrame::OnMouse)
 END_EVENT_TABLE()
 
 int raw, page;
@@ -913,7 +931,6 @@ int add_custom_fonts() // return 0 on success.
                       NULL);
     printf("fontset has %d distinct fonts out of %d total\n",
            fs->nfont, fs->sfont);
-    char buffer[200];
 // Having obtained all the fonts I will print out all the information about
 // them that Xft is prepared to give me. Note that this seems not to include
 // either the "true" or the "Postscript" name that I might previously have
@@ -941,6 +958,7 @@ int add_custom_fonts() // return 0 on success.
 // builds involving qt3 so it really is not just me! But I BELIEVE it will be
 // a transient bug so I will not put it in the autoconf stuff just at present.
 #if 0
+        char buffer[1000];
         XftNameUnparse(ftPattern, buffer, sizeof(buffer));
         printf("%s\n", buffer); fflush(stdout);
 #endif
@@ -1011,6 +1029,23 @@ fontFrame::fontFrame(char *fname, int fsize)
 // not points here... however that appears to be delicate. So I will
 // create one at a plausible point size then adjust it later. I will
 // use "fontScaled" to ensure I only adjust it once.
+    panel = new fontPanel(this, fname, fsize);
+    wxSize clientsize(32*32, 9*64);
+    wxSize winsize(ClientToWindowSize(clientsize));
+    SetSize(winsize);
+    SetMinSize(winsize);
+    SetMaxSize(winsize);
+    Centre();
+}
+
+
+fontPanel::fontPanel(fontFrame *parent, char *fname, int fsize)
+       : wxPanel(parent)
+{
+// I *think* I want to make the font have a size specified in pixels
+// not points here... however that appears to be delicate. So I will
+// create one at a plausible point size then adjust it later. I will
+// use "fontScaled" to ensure I only adjust it once.
     fontname = fname;
     fontsize = fsize;
     ff = new wxFont();
@@ -1020,12 +1055,12 @@ fontFrame::fontFrame(char *fname, int fsize)
 
 // The size calculated here is the total size of the whole window,
 // including title bar and borders...
-    wxSize clientsize(32*32, 9*64);
-    wxSize winsize(ClientToWindowSize(clientsize));
-    SetSize(winsize);
-    SetMinSize(winsize);
-    SetMaxSize(winsize);
-    Centre();
+//    wxSize clientsize(32*32, 9*64);
+//    wxSize winsize(ClientToWindowSize(clientsize));
+//    SetSize(winsize);
+//    SetMinSize(winsize);
+//    SetMaxSize(winsize);
+//    Centre();
 }
 
 
@@ -1047,21 +1082,39 @@ void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
        this);
 }
 
-void fontFrame::OnChar(wxKeyEvent &event)
+void fontPanel::OnChar(wxKeyEvent &event)
 {
-    printf("Key event\n"); fflush(stdout);
+    printf("Char event\n"); fflush(stdout);
+    event.Skip();
     page++;
     Refresh();
 }
 
-void fontFrame::OnMouse(wxMouseEvent &event)
+void fontPanel::OnKeyDown(wxKeyEvent &event)
+{
+    printf("Key Down event\n"); fflush(stdout);
+    page++;
+    event.Skip();
+    Refresh();
+}
+
+void fontPanel::OnKeyUp(wxKeyEvent &event)
+{
+    printf("Key Up event\n"); fflush(stdout);
+    event.Skip();
+    page++;
+    Refresh();
+}
+
+void fontPanel::OnMouse(wxMouseEvent &event)
 {
     page++;
     printf("Mouse event. Page now %d\n", page); fflush(stdout);
+    event.Skip();
     Refresh();
 }
 
-void fontFrame::OnPaint(wxPaintEvent &event)
+void fontPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC dc(this);
     wxColour c1(230, 200, 255);
@@ -1110,7 +1163,7 @@ void fontFrame::OnPaint(wxPaintEvent &event)
                 else if (k == 0xa) k = 0xc5;
 #ifdef UNICODE
 // In Unicode mode I have access to the character at code point 0x2219. If
-// not I must insiat on using my private version of the fonts where it is
+// not I must insist on using my private version of the fonts where it is
 // at 0xb7.
                 else if (k == 0x14) k = 0x2219;
 #endif
