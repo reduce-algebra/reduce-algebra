@@ -3409,6 +3409,7 @@ $as_echo "#define WIN64 1" >>confdefs.h
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
   DLL_CFLAGS="$CFLAGS -shared"
+  LDFLAGS="$LDFLAGS -static"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
@@ -3529,7 +3530,7 @@ $as_echo "#define WIN32 1" >>confdefs.h
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin "
+    LDFLAGS="$LDFLAGS -mno-cygwin -static"
     if test "x$mingw_location" != "x"
     then
       CPPFLAGS="$CPPFLAGS -I$mingw_location/include"

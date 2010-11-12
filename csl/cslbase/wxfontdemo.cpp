@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 576d75fc 11-Nov-2010 */
+/* Signature: 030a6609 12-Nov-2010 */
 
 
 
@@ -141,7 +141,7 @@ public:
 class fontPanel : public wxPanel
 {
 public:
-    fontPanel(class fontFrame *parent, char *font, int size);
+    fontPanel(class fontFrame *parent, const char *font, int size);
 
     void OnPaint(wxPaintEvent &event);
     void OnChar(wxKeyEvent &event);
@@ -150,7 +150,7 @@ public:
     void OnMouse(wxMouseEvent &event);
 
 private:
-    char *fontname;
+    const char *fontname;
     int fontsize;
     wxFont *ff;
     bool fontScaled;
@@ -168,7 +168,7 @@ END_EVENT_TABLE()
 class fontFrame : public wxFrame
 {
 public:
-    fontFrame(char *font, int size);
+    fontFrame(const char *font, int size);
 
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
@@ -246,7 +246,7 @@ int program_name_dot_com = 0;
 
 static char this_executable[LONGEST_LEGAL_FILENAME];
 
-int find_program_directory(char *argv0)
+int find_program_directory(const char *argv0)
 {
     char *w;
     int len, ndir, npgm, j;
@@ -348,7 +348,7 @@ int find_program_directory(char *argv0)
  * allocation of or expansion of the arrays I use here.
  */
 
-int find_program_directory(char *argv0)
+int find_program_directory(const char *argv0)
 {
     char pgmname[LONGEST_LEGAL_FILENAME];
     char *w;
@@ -802,6 +802,7 @@ static int CALLBACK fontEnumProc(
 }
 
 
+#if 0
 static char faceName[LONGEST_LEGAL_FILENAME] = "";
 
 static int CALLBACK fontEnumProc1(
@@ -817,6 +818,7 @@ static int CALLBACK fontEnumProc1(
     fflush(stdout);
     return 1;
 }
+#endif
 
 #endif
 
@@ -1006,7 +1008,7 @@ bool fontApp::OnInit()
 
     add_custom_fonts();
 
-    char *font = "default";  // A default font name to ask for.
+    const char *font = "default";  // A default font name to ask for.
     int size = 48;           // a default size.
     if (argc > 1) font = myargv[1];
     if (argc > 2)
@@ -1020,7 +1022,7 @@ bool fontApp::OnInit()
     return true;
 }
 
-fontFrame::fontFrame(char *fname, int fsize)
+fontFrame::fontFrame(const char *fname, int fsize)
        : wxFrame(NULL, wxID_ANY, "wxfontdemo")
 {
     SetIcon(wxICON(fwin));
@@ -1039,7 +1041,7 @@ fontFrame::fontFrame(char *fname, int fsize)
 }
 
 
-fontPanel::fontPanel(fontFrame *parent, char *fname, int fsize)
+fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
        : wxPanel(parent)
 {
 // I *think* I want to make the font have a size specified in pixels

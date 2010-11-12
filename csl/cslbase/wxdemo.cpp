@@ -33,7 +33,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 541f4ad0 31-Oct-2010 */
+/* Signature: 37aa77c8 12-Nov-2010 */
 
 
 
@@ -134,7 +134,7 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
     dc.SetPen(*wxRED_PEN);
     dc.SetBrush(*wxTRANSPARENT_BRUSH);
     dc.SetFont(*ff);
-    char *msg = "Welcome to wxWidgets";
+    const char *msg = "Welcome to wxWidgets";
     wxSize s(dc.GetTextExtent(msg));
     dc.DrawText(msg, (WIDTH-s.GetWidth())/2, (HEIGHT-3*s.GetHeight())/2);
 }

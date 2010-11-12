@@ -501,6 +501,26 @@ endif fox
 
 if wx
 
+if wxbuiltin
+if win64
+BASELIB=../lib/libwx_baseu-2.9.a
+WXDEPS=../bin/wx-config $(BASELIB)
+
+$(BASELIB):
+	pushd ../lib; \
+	for x in *mingw32.a; \
+	do \
+	  y=$${x%-x86_64-w64-mingw32.a}.a; \
+	  echo ln -s $$x $$y; \
+	ln -s $$x $$y; \
+	done; \
+	popd
+
+else !win64
+WXDEPS=../bin/wx-config
+endif !win64
+endif wxbuiltin
+
 PFD=wxfontdemo.app/Contents/Info.plist
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)

@@ -567,6 +567,9 @@ DEST = -o
 R = $(srcdir)/../..
 @win64_FALSE@FOXDEP = ../lib/libFOX-1.6.a
 @win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
+@win64_FALSE@@wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
 @wx_TRUE@PFD = wxfontdemo.app/Contents/Info.plist
 @wx_TRUE@PDVI = wxdvi.app/Contents/Info.plist
 
@@ -2203,6 +2206,16 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-rm -f showmathdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
+
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	pushd ../lib; \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	for x in *mingw32.a; \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	do \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-x86_64-w64-mingw32.a}.a; \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s $$x $$y; \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	ln -s $$x $$y; \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	done; \
+@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	popd
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)

@@ -182,6 +182,7 @@ x86_64-w64-*)
   CFLAGS="$CFLAGS -funsigned-char"
   CXXFLAGS="$CXXFLAGS -funsigned-char"
   DLL_CFLAGS="$CFLAGS -shared"
+  LDFLAGS="$LDFLAGS -static"
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
@@ -277,7 +278,7 @@ x86_64-w64-*)
     CPPFLAGS="$CPPFLAGS -mno-cygwin"
     CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
     CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin "
+    LDFLAGS="$LDFLAGS -mno-cygwin -static"
     if test "x$mingw_location" != "x"
     then
       CPPFLAGS="$CPPFLAGS -I$mingw_location/include"

@@ -606,9 +606,9 @@ then
 # I need --enable-unicode on Windows at least so that I can use the
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
-# but addressing that pain is probably good in the long term.
+# but addressing that pain is probably good in the long term. 
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
-              CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
               --disable-shared --enable-unicode \
               --disable-compat26 --disable-compat28 \
