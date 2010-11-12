@@ -45,7 +45,7 @@
 #
 ##############################################################################
  
-PROOT   = /silo/cons/verkaufpsl
+###PROOT   = /silo/cons/verkaufpsl
  
 #### MACHINE = unix386
 PSL	= $(PROOT)/dist
@@ -138,7 +138,6 @@ SLFILES= \
 	$(PK)/support.sl \
 	$(PXK)/sys-support.sl \
 	$(PXK)/externals.sl \
-	$(PXK)/pthread.sl \
 	$(USERSLFILES)
  
 BFILES= \
@@ -182,13 +181,13 @@ $(USERDIR)/dmain.o: $(USERDIR)/dmain.s
 	mv $(USERDIR)/dmain.s $(USERDIR)/dmain.temp
 	sed -f $(PXK)/dmain.linux.sed $(USERDIR)/dmain.temp > $(USERDIR)/dmain.s
 	# rm -f $(USERDIR)/dmain.temp
-	as $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
+	gcc -m32 as $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
 $(USERDIR)/main.o: $(USERDIR)/main.s
 	mv $(USERDIR)/main.s $(USERDIR)/main.temp
 	sed -f $(PXK)/main.linux.sed $(USERDIR)/main.temp > $(USERDIR)/main.s
 	# rm -f $(USERDIR)/main.temp
-	as $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
+	gcc -m32 s $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
  
 $(USERDIR)/dmain_om.o: $(USERDIR)/dmain_om.s
 	  mv $(USERDIR)/dmain_om.s $(USERDIR)/dmain.temp
