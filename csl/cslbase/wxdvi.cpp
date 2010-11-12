@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 11526ec7 12-Nov-2010 */
+/* Signature: 0128b1a2 12-Nov-2010 */
 
 
 
@@ -146,9 +146,7 @@ public:
     void OnMouse(wxMouseEvent &event);
 
 private:
-    char *dvidata;
     wxFont *ff;
-    bool fontScaled;
     DECLARE_EVENT_TABLE()
 };
 
@@ -748,7 +746,6 @@ static int CALLBACK fontEnumProc(
 
 int add_custom_fonts() // return 0 on success.
 {
-    printf("Adding custom fonts\n");
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
     LOGFONTA lf;
@@ -990,64 +987,59 @@ unsigned char math_dvi[] =
 // variants being either signed or unsigned. All are arranged in big-endian
 // style, as defined by the DVI format.
 
-unsigned char *string_input = NULL;
+unsigned char *dvidata = NULL;
+unsigned const char *string_input = NULL;
 
-int mygetc(FILE *f)
+int32_t u1()
 {
-   if (string_input != NULL) return *string_input++;
-   else return getc(f);
+    return *string_input++;
 }
 
-int32_t u1(FILE *f)
+int32_t u2()
 {
-    return mygetc(f) & 0xff;
+    int32_t c1 = *string_input++;
+    int32_t c2 = *string_input++;
+    return (c1 << 8) | c2;
 }
 
-int32_t u2(FILE *f)
+int32_t u3()
 {
-    int32_t c1 = mygetc(f);
-    int32_t c2 = mygetc(f);
-    return ((c1 & 0xff) << 8) | (c2 & 0xff);
+    int32_t c1 = *string_input++;
+    int32_t c2 = *string_input++;
+    int32_t c3 = *string_input++;
+    return (c1 << 16) | (c2 << 8) | c3;
 }
 
-int32_t u3(FILE *f)
+int32_t s1()
 {
-    int32_t c1 = mygetc(f);
-    int32_t c2 = mygetc(f);
-    int32_t c3 = mygetc(f);
-    return ((c1 & 0xff) << 16) | ((c2 & 0xff) << 8) | (c3 & 0xff);
+    return (int32_t)(int8_t)(*string_input++);
 }
 
-int32_t s1(FILE *f)
+int32_t s2()
 {
-    return (int32_t)(int8_t)(mygetc(f));
+    int32_t c1 = *string_input++;
+    int32_t c2 = *string_input++;
+    return (int32_t)(int16_t)((c1 << 8) | c2);
 }
 
-int32_t s2(FILE *f)
+int32_t s3()
 {
-    int32_t c1 = mygetc(f);
-    int32_t c2 = mygetc(f);
-    return (int32_t)(int16_t)(((c1 & 0xff) << 8) | (c2 & 0xff));
-}
-
-int32_t s3(FILE *f)
-{
-    int32_t c1 = mygetc(f);
-    int32_t c2 = mygetc(f);
-    int32_t c3 = mygetc(f);
-    int32_t r = ((c1 & 0xff) << 16) | ((c2 & 0xff) << 8) | (c3 & 0xff);
+    int32_t c1 = *string_input++;
+    int32_t c2 = *string_input++;
+    int32_t c3 = *string_input++;
+    int32_t r = (c1 << 16) | (c2 << 8) | c3;
     if ((r & 0x00800000) != 0) r |= 0xff000000;
     return (int32_t)r;
 }
 
-int32_t s4(FILE *f)
+int32_t s4()
 {
-    int32_t c1 = mygetc(f);
-    int32_t c2 = mygetc(f);
-    int32_t c3 = mygetc(f);
-    int32_t c4 = mygetc(f);
-    return ((c1 & 0xff) << 24) | ((c2 & 0xff) << 16) |
-           ((c3 & 0xff) << 8) | (c4 & 0xff);
+    int32_t c1 = *string_input++;
+    int32_t c2 = *string_input++;
+    int32_t c3 = *string_input++;
+    int32_t c4 = *string_input++;
+    return (c1 << 24) | (c2 << 16) |
+           (c3 << 8) | c4;
 }
 
 int32_t h, v, w, x, y, z;
@@ -1111,23 +1103,18 @@ void set_font(int n)
     printf("set font number %d\n", n);
 }
 
-// The code here is incomplete and not merged in properly yet!
 
-int submain(int argc, char *argv[])
+void render_dvi()
 {
-    FILE *f = NULL;
-    string_input = NULL;
-    if (argc > 1)
-    {   f = fopen(argv[1], "rb");
-        printf("Using data from file %s\n", argv[1]);
-    }
-    else
-    {   string_input = &math_dvi[0];
-        printf("Using built-in data\n");
+// This always starts afresh at the start of the DVI data, which has been
+// put in an array for me.
+    if ((string_input = dvidata) == NULL)
+    {   printf("null dvidata\n");
+        return;
     }
     int32_t a, b, c, i, k;
     for (;;)
-    {   c = mygetc(f);
+    {   c = *string_input++;
         if (c == EOF) break;
         c &= 0xff;
         if (c <= 127)
@@ -1138,40 +1125,40 @@ int submain(int argc, char *argv[])
         {   switch (c)
             {
         case 128:
-                set_char(u1(f));
+                set_char(u1());
                 continue;
         case 129:
-                set_char(u2(f));
+                set_char(u2());
                 continue;
         case 130:
-                set_char(u3(f));
+                set_char(u3());
                 continue;
         case 131:
-                set_char(s4(f));
+                set_char(s4());
                 continue;
         case 132:                           // set rule
-                a = s4(f);
-                b = s4(f);
+                a = s4();
+                b = s4();
                 if (a > 0 && b >0)
                 {   printf("set rule %d %d\n", (int)a, (int)b);
                     h += b;
                 }
                 continue;
         case 133:
-                put_char(u1(f));
+                put_char(u1());
                 continue;
         case 134:
-                put_char(u2(f));
+                put_char(u2());
                 continue;
         case 135:
-                put_char(u3(f));
+                put_char(u3());
                 continue;
         case 136:
-                put_char(s4(f));
+                put_char(s4());
                 continue;
         case 137:
-                a = s4(f);
-                b = s4(f);
+                a = s4();
+                b = s4();
                 if (a > 0 && b >0)
                 {   printf("put rule %d %d\n", (int)a, (int)b);
                 }
@@ -1181,8 +1168,8 @@ int submain(int argc, char *argv[])
         case 139:                           // beginning of page
                 h = v = w = x = y = z = stackp = 0;
                 for (i=0; i<10; i++)
-                    C[i] = s4(f);
-                p = s4(f);
+                    C[i] = s4();
+                p = s4();
                 continue;
         case 140:                           // end of page
                 continue;
@@ -1193,88 +1180,88 @@ int submain(int argc, char *argv[])
                 pop();
                 continue;
         case 143:
-                h += s1(f);
+                h += s1();
                 continue;
         case 144:
-                h += s2(f);
+                h += s2();
                 continue;
         case 145:
-                h += s3(f);
+                h += s3();
                 continue;
         case 146:
-                h += s4(f);
+                h += s4();
                 continue;
         case 147:
                 h += w;
                 continue;
         case 148:
-                h += (w = s1(f));
+                h += (w = s1());
                 continue;
         case 149:
-                h += (w = s2(f));
+                h += (w = s2());
                 continue;
         case 150:
-                h += (w = s3(f));
+                h += (w = s3());
                 continue;
         case 151:
-                h += (w = s4(f));
+                h += (w = s4());
                 continue;
         case 152:
                 h += x;
                 continue;
         case 153:
-                h += (x = s1(f));
+                h += (x = s1());
                 continue;
         case 154:
-                h += (x = s2(f));
+                h += (x = s2());
                 continue;
         case 155:
-                h += (x = s3(f));
+                h += (x = s3());
                 continue;
         case 156:
-                h += (x = s4(f));
+                h += (x = s4());
                 continue;
         case 157:
-                v += s1(f);
+                v += s1();
                 continue;
         case 158:
-                v += s2(f);
+                v += s2();
                 continue;
         case 159:
-                v += s3(f);
+                v += s3();
                 continue;
         case 160:
-                v += s4(f);
+                v += s4();
                 continue;
         case 161:
                 v += y;
                 continue;
         case 162:
-                v += (y = s1(f));
+                v += (y = s1());
                 continue;
         case 163:
-                v += (y = s2(f));
+                v += (y = s2());
                 continue;
         case 164:
-                v += (y = s4(f));
+                v += (y = s4());
                 continue;
         case 165:
-                v += (y = s4(f));
+                v += (y = s4());
                 continue;
         case 166:
                 v += z;
                 continue;
         case 167:
-                v += (z = s1(f));
+                v += (z = s1());
                 continue;
         case 168:
-                v += (z = s2(f));
+                v += (z = s2());
                 continue;
         case 169:
-                v += (z = s3(f));
+                v += (z = s3());
                 continue;
         case 170:
-                v += (z = s4(f));
+                v += (z = s4());
                 continue;
         case 171:  case 172:  case 173:  case 174:
         case 175:  case 176:  case 177:  case 178:
@@ -1295,106 +1282,106 @@ int submain(int argc, char *argv[])
                 set_font(c - 171);
                 continue;
         case 235:
-                set_font(u1(f));
+                set_font(u1());
                 continue;
         case 236:
-                set_font(u2(f));
+                set_font(u2());
                 continue;
         case 237:
-                set_font(u3(f));
+                set_font(u3());
                 continue;
         case 238:
-                set_font(s4(f));
+                set_font(s4());
                 continue;
         case 239:
-                k = u1(f);
-                for (i=0; i<k; i++) u1(f);
+                k = u1();
+                for (i=0; i<k; i++) u1();
                 continue;
         case 240:
-                k = u2(f);
-                for (i=0; i<k; i++) u1(f);
+                k = u2();
+                for (i=0; i<k; i++) u1();
                 continue;
         case 241:
-                k = u3(f);
-                for (i=0; i<k; i++) u1(f);
+                k = u3();
+                for (i=0; i<k; i++) u1();
                 continue;
         case 242:
-                k = s4(f);
-                for (i=0; i<k; i++) u1(f);
+                k = s4();
+                for (i=0; i<k; i++) u1();
                 continue;
         case 243:                         // fnt_def1
-                k = u1(f);
-                checksum = s4(f);
-                size = s4(f);
-                designsize = s4(f);
-                arealen = u1(f);
-                namelen = u1(f);
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                k = u1();
+                checksum = s4();
+                size = s4();
+                designsize = s4();
+                arealen = u1();
+                namelen = u1();
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
                 fontname[arealen+namelen] = 0;
                 font[k] = findfont();
                 continue;
         case 244:
-                k = u2(f);
-                checksum = s4(f);
-                size = s4(f);
-                designsize = s4(f);
-                arealen = u1(f);
-                namelen = u1(f);
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                k = u2();
+                checksum = s4();
+                size = s4();
+                designsize = s4();
+                arealen = u1();
+                namelen = u1();
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
                 fontname[arealen+namelen] = 0;
                 font[k] = findfont();
                 continue;
         case 245:
-                k = u3(f);
-                checksum = s4(f);
-                size = s4(f);
-                designsize = s4(f);
-                arealen = u1(f);
-                namelen = u1(f);
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                k = u3();
+                checksum = s4();
+                size = s4();
+                designsize = s4();
+                arealen = u1();
+                namelen = u1();
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
                 fontname[arealen+namelen] = 0;
                 font[k] = findfont();
                 continue;
         case 246:
-                k = s4(f);
-                checksum = s4(f);
-                size = s4(f);
-                designsize = s4(f);
-                arealen = u1(f);
-                namelen = u1(f);
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1(f);
+                k = s4();
+                checksum = s4();
+                size = s4();
+                designsize = s4();
+                arealen = u1();
+                namelen = u1();
+                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
                 fontname[arealen+namelen] = 0;
                 font[k] = findfont();
                 continue;
         case 247:                          // pre
-                i = u1(f);
+                i = u1();
                 if (i != 2)
                 {   printf("illegal DVI version %d\n", i);
                     break;
                 }
-                num = s4(f);
-                den = s4(f);
-                mag = s4(f);
-                k = u1(f);
-                for (i=0; i<k; i++) u1(f);
+                num = s4();
+                den = s4();
+                mag = s4();
+                k = u1();
+                for (i=0; i<k; i++) u1();
                 printf("PRE: num=%d, den=%d, (%f) mag=%d\n",
                        num, den, (double)num/(double)den, mag);
                 continue;
         case 248:                          // post
-                s4(f); // ignore p;
-                s4(f); // ignure num
-                s4(f); // ignore den
-                s4(f); // ignore mag
-                s4(f); // height+depth of largest page
-                s4(f); // width of largest page
-                printf("Greatest stack depth = %d\n", u2(f));
-                printf("Page count = %d\n", u2(f));
+                s4(); // ignore p;
+                s4(); // ignure num
+                s4(); // ignore den
+                s4(); // ignore mag
+                s4(); // height+depth of largest page
+                s4(); // width of largest page
+                printf("Greatest stack depth = %d\n", u2());
+                printf("Page count = %d\n", u2());
     // The postamble will have font definitions here as well.
                 continue;
         case 249:                          // post_post
-                s4(f);
-                u1(f);
-                if (u1(f) != 223) printf("Malformed DVI file\n");
+                s4();
+                u1();
+                if (u1() != 223) printf("Malformed DVI file\n");
                 break;
 
         // 250-255 undefined
@@ -1406,7 +1393,6 @@ int submain(int argc, char *argv[])
         }
     }
     printf("end of file\n");
-    return 0;
 }
 
 
@@ -1449,7 +1435,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
 {
 // I will read the DVI data once here.
     FILE *f = NULL;
-    if (dvifilename == NULL) string_input = math_dvi;
+    if (dvifilename == NULL) dvidata = math_dvi;
     else
     {   string_input = NULL;
         f = fopen(dvifilename, "rb");
@@ -1459,7 +1445,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         }
         fseek(f, (off_t)0, SEEK_END);
         off_t len = ftell(f);
-        dvidata = (char *)malloc((size_t)len);
+        dvidata = (unsigned char *)malloc((size_t)len);
         fseek(f, (off_t)0, SEEK_SET);
         for (int i=0; i<len; i++) dvidata[i] = getc(f);
         fclose(f);
@@ -1468,7 +1454,6 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
     ff = new wxFont();
     ff->SetNativeFontInfoUserDesc("csl-cmsy10");
     ff->SetPointSize(36);
-    fontScaled = false;
 
     wxSize clientsize(1024, 768);
     wxSize winsize(ClientToWindowSize(clientsize));
@@ -1541,24 +1526,14 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     dc.DrawRectangle(0, 0, 1024, 768);
 
     dc.SetFont(*ff);
+
+    render_dvi();
+    return;
+
+// What follows is left over from wxfontdemo.cpp
+
     wxCoord w1, h1, d1, xl1;
     dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
-
-#if 0
-// If I have not adjusted my font size to get the PIXEL size I want.
-// I will scale the height returned for "X" to be the number of pixels I
-// want.
-    if (!fontScaled)
-    {   printf("Original w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
-        ff->Scale((float)fontsize/(float)h1);
-        dc.SetFont(*ff);
-        dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
-        printf("Adjusted w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
-        wxString f = ff->GetNativeFontInfoDesc();
-        wxPrintf("Font = %s\n", f);
-        fontScaled = true; // Do this only once!
-    }
-#endif
     for (int i=0; i<256; i+=32)
     {   for (int j=0; j<32; j++)
         {   dc.SetPen(*wxRED_PEN);
