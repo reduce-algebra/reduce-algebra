@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 03c908bd 12-Nov-2010 */
+/* Signature: 66152d6e 12-Nov-2010 */
 
 
 
@@ -352,6 +352,7 @@ int find_program_directory(const char *argv0)
 {
     char pgmname[LONGEST_LEGAL_FILENAME];
     char *w;
+    const char *cw;
     int n, n1;
 /*
  * If the main reduce executable is has a full path-name /xxx/yyy/zzz then
@@ -384,8 +385,8 @@ int find_program_directory(const char *argv0)
  */
     else if (argv0[0] == '/') fullProgramName = argv0;
     else
-    {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
-        if (*w == '/')      /* treat as if relative to current dir */
+    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   /* seek a "/" */
+        if (*cw == '/')      /* treat as if relative to current dir */
         {   /* If the thing is actually written as "./abc/..." then */
             /* strip of the initial "./" here just to be tidy. */
             if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
