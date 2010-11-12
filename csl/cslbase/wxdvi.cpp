@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7b285632 09-Nov-2010 */
+/* Signature: 64b4d779 12-Nov-2010 */
 
 
 
@@ -134,14 +134,16 @@ public:
     virtual bool OnInit();
 };
 
-class dviFrame : public wxFrame
+class dviPanel : public wxPanel
 {
 public:
-    dviFrame(char *dvifilename);
+    dviPanel(class dviFrame *parent, const char *dvifilename);
 
-    void OnExit(wxCommandEvent &event);
-    void OnAbout(wxCommandEvent &event);
     void OnPaint(wxPaintEvent &event);
+    void OnChar(wxKeyEvent &event);
+    void OnKeyDown(wxKeyEvent &event);
+    void OnKeyUp(wxKeyEvent &event);
+    void OnMouse(wxMouseEvent &event);
 
 private:
     char *dvidata;
@@ -150,13 +152,33 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(dviFrame, wxFrame)
-    EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
-// Right now I do not provide a menu that lets me trigger OnAbout.
-    EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
-    EVT_PAINT(           dviFrame::OnPaint)
+BEGIN_EVENT_TABLE(dviPanel, wxPanel)
+    EVT_PAINT(           dviPanel::OnPaint)
+    EVT_CHAR(            dviPanel::OnChar)
+    EVT_KEY_DOWN(        dviPanel::OnKeyDown)
+    EVT_KEY_UP(          dviPanel::OnKeyUp)
+    EVT_LEFT_UP(         dviPanel::OnMouse)
 END_EVENT_TABLE()
 
+class dviFrame : public wxFrame
+{
+public:
+    dviFrame(const char *dvifilename);
+
+    void OnExit(wxCommandEvent &event);
+    void OnAbout(wxCommandEvent &event);
+
+private:
+    dviPanel *panel;
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(dviFrame, wxFrame)
+    EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
+    EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
+END_EVENT_TABLE()
+
+int raw, page;
 
 int get_current_directory(char *s, int n)
 {
@@ -219,7 +241,7 @@ int program_name_dot_com = 0;
 
 static char this_executable[LONGEST_LEGAL_FILENAME];
 
-int find_program_directory(char *argv0)
+int find_program_directory(const char *argv0)
 {
     char *w;
     int len, ndir, npgm, j;
@@ -321,7 +343,7 @@ int find_program_directory(char *argv0)
  * allocation of or expansion of the arrays I use here.
  */
 
-int find_program_directory(char *argv0)
+int find_program_directory(const char *argv0)
 {
     char pgmname[LONGEST_LEGAL_FILENAME];
     char *w;
@@ -596,53 +618,76 @@ static localFonts fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    {"cmb10",    NULL},  {"cmbsy10",  NULL},  {"cmbsy6",   NULL},
-    {"cmbsy7",   NULL},  {"cmbsy8",   NULL},  {"cmbsy9",   NULL},
-    {"cmbx10",   NULL},  {"cmbx12",   NULL},  {"cmbx5",    NULL},
-    {"cmbx6",    NULL},  {"cmbx7",    NULL},  {"cmbx8",    NULL},
-    {"cmbx9",    NULL},  {"cmbxsl10", NULL},  {"cmbxti10", NULL},
-    {"cmcsc10",  NULL},  {"cmcsc8",   NULL},  {"cmcsc9",   NULL},
-    {"cmdunh10", NULL},  {"cmex10",   NULL},  {"cmex7",    NULL},
-    {"cmex8",    NULL},  {"cmex9",    NULL},  {"cmff10",   NULL},
-    {"cmfi10",   NULL},  {"cmfib8",   NULL},  {"cminch",   NULL},
-    {"cmitt10",  NULL},  {"cmmi10",   NULL},  {"cmmi12",   NULL},
-    {"cmmi5",    NULL},  {"cmmi6",    NULL},  {"cmmi7",    NULL},
-    {"cmmi8",    NULL},  {"cmmi9",    NULL},  {"cmmib10",  NULL},
-    {"cmmib6",   NULL},  {"cmmib7",   NULL},  {"cmmib8",   NULL},
-    {"cmmib9",   NULL},  {"cmr10",    NULL},  {"cmr12",    NULL},
-    {"cmr17",    NULL},  {"cmr5",     NULL},  {"cmr6",     NULL},
-    {"cmr7",     NULL},  {"cmr8",     NULL},  {"cmr9",     NULL},
-    {"cmsl10",   NULL},  {"cmsl12",   NULL},  {"cmsl8",    NULL},
-    {"cmsl9",    NULL},  {"cmsltt10", NULL},  {"cmss10",   NULL},
-    {"cmss12",   NULL},  {"cmss17",   NULL},  {"cmss8",    NULL},
-    {"cmss9",    NULL},  {"cmssbx10", NULL},  {"cmssdc10", NULL},
-    {"cmssi10",  NULL},  {"cmssi12",  NULL},  {"cmssi17",  NULL},
-    {"cmssi8",   NULL},  {"cmssi9",   NULL},  {"cmssq8",   NULL},
-    {"cmssqi8",  NULL},  {"cmsy10",   NULL},  {"cmsy5",    NULL},
-    {"cmsy6",    NULL},  {"cmsy7",    NULL},  {"cmsy8",    NULL},
-    {"cmsy9",    NULL},  {"cmtcsc10", NULL},  {"cmtex10",  NULL},
-    {"cmtex8",   NULL},  {"cmtex9",   NULL},  {"cmti10",   NULL},
-    {"cmti12",   NULL},  {"cmti7",    NULL},  {"cmti8",    NULL},
-    {"cmti9",    NULL},  {"cmtt10",   NULL},  {"cmtt12",   NULL},
-    {"cmtt8",    NULL},  {"cmtt9",    NULL},  {"cmu10",    NULL},
-    {"cmvtt10",  NULL},  {"euex10",   NULL},  {"euex7",    NULL},
-    {"euex8",    NULL},  {"euex9",    NULL},  {"eufb10",   NULL},
-    {"eufb5",    NULL},  {"eufb6",    NULL},  {"eufb7",    NULL},
-    {"eufb8",    NULL},  {"eufb9",    NULL},  {"eufm10",   NULL},
-    {"eufm5",    NULL},  {"eufm6",    NULL},  {"eufm7",    NULL},
-    {"eufm8",    NULL},  {"eufm9",    NULL},  {"eurb10",   NULL},
-    {"eurb5",    NULL},  {"eurb6",    NULL},  {"eurb7",    NULL},
-    {"eurb8",    NULL},  {"eurb9",    NULL},  {"eurm10",   NULL},
-    {"eurm5",    NULL},  {"eurm6",    NULL},  {"eurm7",    NULL},
-    {"eurm8",    NULL},  {"eurm9",    NULL},  {"eusb10",   NULL},
-    {"eusb5",    NULL},  {"eusb6",    NULL},  {"eusb7",    NULL},
-    {"eusb8",    NULL},  {"eusb9",    NULL},  {"eusm10",   NULL},
-    {"eusm5",    NULL},  {"eusm6",    NULL},  {"eusm7",    NULL},
-    {"eusm8",    NULL},  {"eusm9",    NULL},  {"msam10",   NULL},
-    {"msam5",    NULL},  {"msam6",    NULL},  {"msam7",    NULL},
-    {"msam8",    NULL},  {"msam9",    NULL},  {"msbm10",   NULL},
-    {"msbm5",    NULL},  {"msbm6",    NULL},  {"msbm7",    NULL},
-    {"msbm8",    NULL},  {"msbm9",    NULL}
+    {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
+    {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
+    {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
+    {"csl-cmbx10",   NULL},        {"csl-cmbx12",   NULL},
+    {"csl-cmbx5",    NULL},        {"csl-cmbx6",    NULL},
+    {"csl-cmbx7",    NULL},        {"csl-cmbx8",    NULL},
+    {"csl-cmbx9",    NULL},        {"csl-cmbxsl10", NULL},
+    {"csl-cmbxti10", NULL},        {"csl-cmcsc10",  NULL},
+    {"csl-cmcsc8",   NULL},        {"csl-cmcsc9",   NULL},
+    {"csl-cmdunh10", NULL},        {"csl-cmex10",   NULL},
+    {"csl-cmex7",    NULL},        {"csl-cmex8",    NULL},
+    {"csl-cmex9",    NULL},        {"csl-cmff10",   NULL},
+    {"csl-cmfi10",   NULL},        {"csl-cmfib8",   NULL},
+    {"csl-cminch",   NULL},        {"csl-cmitt10",  NULL},
+    {"csl-cmmi10",   NULL},        {"csl-cmmi12",   NULL},
+    {"csl-cmmi5",    NULL},        {"csl-cmmi6",    NULL},
+    {"csl-cmmi7",    NULL},        {"csl-cmmi8",    NULL},
+    {"csl-cmmi9",    NULL},        {"csl-cmmib10",  NULL},
+    {"csl-cmmib6",   NULL},        {"csl-cmmib7",   NULL},
+    {"csl-cmmib8",   NULL},        {"csl-cmmib9",   NULL},
+    {"csl-cmr10",    NULL},        {"csl-cmr12",    NULL},
+    {"csl-cmr17",    NULL},        {"csl-cmr5",     NULL},
+    {"csl-cmr6",     NULL},        {"csl-cmr7",     NULL},
+    {"csl-cmr8",     NULL},        {"csl-cmr9",     NULL},
+    {"csl-cmsl10",   NULL},        {"csl-cmsl12",   NULL},
+    {"csl-cmsl8",    NULL},        {"csl-cmsl9",    NULL},
+    {"csl-cmsltt10", NULL},        {"csl-cmss10",   NULL},
+    {"csl-cmss12",   NULL},        {"csl-cmss17",   NULL},
+    {"csl-cmss8",    NULL},        {"csl-cmss9",    NULL},
+    {"csl-cmssbx10", NULL},        {"csl-cmssdc10", NULL},
+    {"csl-cmssi10",  NULL},        {"csl-cmssi12",  NULL},
+    {"csl-cmssi17",  NULL},        {"csl-cmssi8",   NULL},
+    {"csl-cmssi9",   NULL},        {"csl-cmssq8",   NULL},
+    {"csl-cmssqi8",  NULL},        {"csl-cmsy10",   NULL},
+    {"csl-cmsy5",    NULL},        {"csl-cmsy6",    NULL},
+    {"csl-cmsy7",    NULL},        {"csl-cmsy8",    NULL},
+    {"csl-cmsy9",    NULL},        {"csl-cmtcsc10", NULL},
+    {"csl-cmtex10",  NULL},        {"csl-cmtex8",   NULL},
+    {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
+    {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
+    {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
+    {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
+    {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
+    {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
+    {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
+    {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
+    {"csl-eufb10",   NULL},        {"csl-eufb5",    NULL},
+    {"csl-eufb6",    NULL},        {"csl-eufb7",    NULL},
+    {"csl-eufb8",    NULL},        {"csl-eufb9",    NULL},
+    {"csl-eufm10",   NULL},        {"csl-eufm5",    NULL},
+    {"csl-eufm6",    NULL},        {"csl-eufm7",    NULL},
+    {"csl-eufm8",    NULL},        {"csl-eufm9",    NULL},
+    {"csl-eurb10",   NULL},        {"csl-eurb5",    NULL},
+    {"csl-eurb6",    NULL},        {"csl-eurb7",    NULL},
+    {"csl-eurb8",    NULL},        {"csl-eurb9",    NULL},
+    {"csl-eurm10",   NULL},        {"csl-eurm5",    NULL},
+    {"csl-eurm6",    NULL},        {"csl-eurm7",    NULL},
+    {"csl-eurm8",    NULL},        {"csl-eurm9",    NULL},
+    {"csl-eusb10",   NULL},        {"csl-eusb5",    NULL},
+    {"csl-eusb6",    NULL},        {"csl-eusb7",    NULL},
+    {"csl-eusb8",    NULL},        {"csl-eusb9",    NULL},
+    {"csl-eusm10",   NULL},        {"csl-eusm5",    NULL},
+    {"csl-eusm6",    NULL},        {"csl-eusm7",    NULL},
+    {"csl-eusm8",    NULL},        {"csl-eusm9",    NULL},
+    {"csl-msam10",   NULL},        {"csl-msam5",    NULL},
+    {"csl-msam6",    NULL},        {"csl-msam7",    NULL},
+    {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
+    {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
+    {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
+    {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
 };
 
 #ifdef WIN32
@@ -665,13 +710,15 @@ static localFonts fontNames[] =
 static int fontNeeded = 0;
 
 // A brief comment here. The DEFAULT build of wxWidgets on Windows supports
-// Unicode by using wide characters and strings. That causes major pain to
-// my legacy code that just uses simple old-style C strings everywhere and
-// so uses the old-style C functions that actr on them. Sometime in the
-// future it is probable that I should clean up my code to work with modern
-// international character-sets through Unicode, but since I have not done
-// that yet I MUST (at least on Windows) restrict myself to a non-Unicode
-// build of wxWidgets.
+// Unicode by using wide characters and strings. That causes me some pain
+// but I NEED to accept it because the character that has code 0x14 in TeX
+// encoding gets mapped to character code 0x2219 in the Bakoma fonts, and it
+// is not at all clear that I have any way to access that glyph if I do
+// not build in Unicode mode.
+
+// You will see a load of places I explicitly call the non-Unicode versions
+// of Windows functions (eg with an "A" at the end of their name) when I wish
+// to pass legacy pre-unicode strings to them.
 
 static int CALLBACK fontEnumProc(
     const LOGFONTA *lpelfe,     // logical-font data
@@ -695,11 +742,11 @@ static int CALLBACK fontEnumProc(
 
 int add_custom_fonts() // return 0 on success.
 {
+    printf("Adding custom fonts\n");
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
     LOGFONTA lf;
 // I check each of the fonts that this application wants to see if they
-// are already installed. If they are then there is no merit in installing
 // them for myself. I will ASSUME that there is no ambiguity as to what font
 // is indicated by any particular name and so that any that are found read
 // installed are in fact good in the context that I wish to use them.
@@ -730,6 +777,8 @@ int add_custom_fonts() // return 0 on success.
             fflush(stdout);
         }
         newFontAdded = 1;
+//      printf("AddFontResource %s\n", fontNames[i].path);
+//      fflush(stdout);
     }
 
     if (newFontAdded)
@@ -762,11 +811,13 @@ int add_custom_fonts() // return 0 on success.
 // use extra resources adding all that are available. But for now I prefer
 // simplicity.
     char fff[LONGEST_LEGAL_FILENAME];
-    for (int i=0; i<(int)sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);
+#if 0
         printf("Adding the font from %s\n", fff);
+#endif
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
@@ -774,6 +825,8 @@ int add_custom_fonts() // return 0 on success.
     fs = XftListFonts(dpy, screen,
 //                    XFT_FAMILY, XftTypeString, fontname,
                       NULL,
+// I will ask XftListFonts to return all available information about the
+// fonts that are found.
                       XFT_FAMILY, XFT_STYLE, XFT_SLANT, XFT_WEIGHT,
                       XFT_SIZE, XFT_PIXEL_SIZE, XFT_ENCODING,
                       XFT_SPACING, XFT_FOUNDRY, XFT_CORE, XFT_ANTIALIAS,
@@ -783,7 +836,6 @@ int add_custom_fonts() // return 0 on success.
                       NULL);
     printf("fontset has %d distinct fonts out of %d total\n",
            fs->nfont, fs->sfont);
-    char buffer[200];
 // Having obtained all the fonts I will print out all the information about
 // them that Xft is prepared to give me. Note that this seems not to include
 // either the "true" or the "Postscript" name that I might previously have
@@ -811,6 +863,7 @@ int add_custom_fonts() // return 0 on success.
 // builds involving qt3 so it really is not just me! But I BELIEVE it will be
 // a transient bug so I will not put it in the autoconf stuff just at present.
 #if 0
+        char buffer[1000];
         XftNameUnparse(ftPattern, buffer, sizeof(buffer));
         printf("%s\n", buffer); fflush(stdout);
 #endif
@@ -1362,7 +1415,7 @@ bool dviApp::OnInit()
 
     add_custom_fonts();
 
-    char *dvifilename = NULL;
+    const char *dvifilename = NULL;
     if (argc > 1) dvifilename = myargv[1];
     
 
@@ -1371,17 +1424,29 @@ bool dviApp::OnInit()
     return true;
 }
 
-dviFrame::dviFrame(char *dvifilename)
+dviFrame::dviFrame(const char *dvifilename)
        : wxFrame(NULL, wxID_ANY, "wxdvi")
 {
     SetIcon(wxICON(fwin));
+    panel = new dviPanel(this, dvifilename);
+    wxSize clientsize(32*32, 9*64);
+    wxSize winsize(ClientToWindowSize(clientsize));
+    SetSize(winsize);
+    SetMinSize(winsize);
+    SetMaxSize(winsize);
+    Centre();
+}
 
+
+dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
+       : wxPanel(parent)
+{
 // I will read the DVI data once here.
     FILE *f = NULL;
     if (dvifilename == NULL) string_input = math_dvi;
     else
     {   string_input = NULL;
-        fopen(dvifilename, "rb");
+        f = fopen(dvifilename, "rb");
         if (f == NULL)
         {   printf("File \"%s\" not found\n", dvifilename);
             exit(1);
@@ -1393,13 +1458,12 @@ dviFrame::dviFrame(char *dvifilename)
         for (int i=0; i<len; i++) dvidata[i] = getc(f);
         fclose(f);
     }
+    printf("set up csl-cmsy10 font\n");
     ff = new wxFont();
-    ff->SetNativeFontInfoUserDesc("cmsy10");
+    ff->SetNativeFontInfoUserDesc("csl-cmsy10");
     ff->SetPointSize(36);
     fontScaled = false;
 
-// The size calculated here is the total size of the whole window,
-// including title bar and borders...
     wxSize clientsize(1024, 768);
     wxSize winsize(ClientToWindowSize(clientsize));
     SetSize(winsize);
@@ -1428,7 +1492,39 @@ void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
        this);
 }
 
-void dviFrame::OnPaint(wxPaintEvent &event)
+void dviPanel::OnChar(wxKeyEvent &event)
+{
+    printf("Char event\n"); fflush(stdout);
+    event.Skip();
+    page++;
+    Refresh();
+}
+
+void dviPanel::OnKeyDown(wxKeyEvent &event)
+{
+    printf("Key Down event\n"); fflush(stdout);
+    page++;
+    event.Skip();
+    Refresh();
+}
+
+void dviPanel::OnKeyUp(wxKeyEvent &event)
+{
+    printf("Key Up event\n"); fflush(stdout);
+    event.Skip();
+    page++;
+    Refresh();
+}
+
+void dviPanel::OnMouse(wxMouseEvent &event)
+{
+    page++;
+    printf("Mouse event. Page now %d\n", page); fflush(stdout);
+    event.Skip();
+    Refresh();
+}
+
+void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC dc(this);
     wxColour c1(230, 200, 255);
@@ -1459,8 +1555,24 @@ void dviFrame::OnPaint(wxPaintEvent &event)
 #endif
     for (int i=0; i<256; i+=32)
     {   for (int j=0; j<32; j++)
-        {   int k = i+j;
-            if (k == 0xe0) k = 0x2219;
+        {   dc.SetPen(*wxRED_PEN);
+            dc.SetBrush(*wxTRANSPARENT_BRUSH);
+            dc.DrawCircle(32*j, 2*i+64, 8);
+            int k = i + j;
+            if (!raw)
+            {   if (k < 0xa) k = 0xa1 + k;
+                else if (k == 0xa) k = 0xc5;
+#ifdef UNICODE
+// In Unicode mode I have access to the character at code point 0x2219. If
+// not I must insist on using my private version of the fonts where it is
+// at 0xb7.
+                else if (k == 0x14) k = 0x2219;
+#endif
+                else if (k < 0x20) k = 0xa3 + k;
+                else if (k == 0x20) k = 0xc3;
+                else if (k == 0x7f) k = 0xc4;
+                else if (k >= 0x80) k += 0x80*page;
+            }
             wxString c = (wchar_t)k;
             dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
         }

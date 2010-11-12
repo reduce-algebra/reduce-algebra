@@ -7,13 +7,13 @@
  */
 
 
-/* Signature: 7deb3824 08-Nov-2010 */
+/* Signature: 36596bbf 12-Nov-2010 */
 
 
 #include <stdint.h>
 
 typedef struct font_width {
-   char *name;
+   const char *name;
    int32_t checksum;
    int32_t charwidth[128];
 } font_width;

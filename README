@@ -45,83 +45,20 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ===========================================================================
 
+The CSL version of Reduce has started to migrate to use the wxWidgets
+library rather than FOX (see below). wxWidgets is under its own license
+which is LGPL 2 (or later) plus some permissive exceptions for the
+distribution of applications linked against the library. A full
+archive is wxWidgets source is included and that contains full details.
+
+
 
 Note that the directory csl/fox contains a modified version of the
 FOX toolkit (www.fox-toolkit.com) version 1.6 which is subject to
 LGPL 2.1. Note explicitly that while an unmodified version of FOX can be
 linked into an application and the resulting version may be distributed
 without hindrance even the smallest change that has not been accepted by
-the FOX central site can only be used under the terms of the LGPL. That
-means that each and every person who passes on a copy of anything containing
-binaries build from FOX (and eg either a full static binary linking it in,
-or a dynamic library of just FOX itself) is required to provide additional
-material as explained by the LGPL. A copy of those terms accompanies the
-FOX sources in the csl/fox sub-directory here. In order to comply with this
-you should always arrange to make source of everything available whenever
-you distribute a binary that you have created. However the LGPL permits me
-then to make any BINARIES that I distribute subject to any license of my
-own choice, and MY choice there is that those binaries are subject to the
-Modifies BSD License as it applies to the CSL and Reduce sources here. Thus
-while I will make all my sources available to satisfy LGPL anybody who
-fetches a binary copy of this code can do pretty much whatever they like
-with it.
-
-LGPL section 2 statement:
-(a) My modified variant of it is a software library.
-(b) I have added prominent comments in each changed file indicating that
-    it has been changed and including a date, and explaining that the
-    comments concerned are there in order to satisfy LGPL obligations.
-(c) The whole of the modified library may be used by all third parties
-    at no charge under the terms of the Lesser GNU Public License version
-    2.1.
-(d) The modified library will in places benefit from callbacks into
-    the program that uses it, and data provided by same. I am arranging
-    that all these have to be registered by passing them as arguments to
-    library entrypoints and that if the calls that register them are not
-    made that other aspects of library behaviour are not unduly damaged.
-    I include a small program "foxdemo.cpp" in my tests that demonstrates
-    the FOX library being used with no special provision for the calling
-    code to provide any special functions or data, and more elaborate
-    ones "fwindemo.cpp" and "showmathdemo.cpp" ditto.
-
-LGPL section 4 statement:
-     "4. You may copy and distribute the Library (or a portion or
-         derivative of it, under Section 2) in object code or executable
-         form under the terms of Sections 1 and 2 above provided that you
-         accompany it with the complete corresponding machine-readable
-         source code, which must be distributed under the terms of
-         Sections 1 and 2 above on a medium customarily used for software
-         interchange."
-For GPL 2 and LGPL 2.1 it seems established that placing my source on
-the same web-site that binaries are satisfies this. Note that (L)GPL 3
-doe snot consider web availability of source sufficient, and so I do not
-wish to use any code subject to it.
-
-LGPL section 6 statement:
-I view this document as a prominent place and the commentary here as
-notice of the use of the FOX library and the license terms that apply to it.
-The accompanying library source files contain a copy of the LGPL. I am
-ensuring that the full C/C++ code in this project does not display
-copyright notices, so that the requirement for it to display notices relating
-to library copyrights and licenses do not apply - although in fact via its
-embedded library source all that information is included and readily available
-to any user.
-
-To redistribute a binary where a work that uses the library has been linked
-against the library I choose to follow 6(a) of LGPL. This requires that any
-binary be accompanied with full machine readable source of the library and
-sufficient source or object code of the main application to allow relinking.
-
-Some people appear to believe that all the above would be unnecessary if the
-main code in this package was organised so as to link against the modified
-version of FOX using dynamic linking. As regards the main application here
-that might be true, but the terms of LGPL would continue to apply to the copy
-of the FOX library itself that they needed to have to dynamically (and with a
-split infinitive) link against, and so to arrange that they have the simple
-right to pass on what they have received something along the lines adopted
-here still appear to be necessary.  I apologise for the length of the
-commentary here.
-
+the FOX central site can only be used under the terms of the LGPL.
 
 Within the FOX directory the "utils" subdirectory contains a program
 reswrap.cpp that is used while building FOX. I do not see any cause for
@@ -137,13 +74,6 @@ most here as mere aggregation, and the standard build sequences here make
 even the presence of that directory optional. I do not intend to provide or
 distribute binary copies of any of them ever, and so there should not be any
 complications at all on that front.
-
-
-
-(The above lengthy discussion and mess about LGPL compliance may now be being
-replaced by a reading in the csl/reduce.doc directory that is lighter-weight.)
-
-At some stage some experiments using Qt 4,5 (under LGPL 2.1) may appear here.
 
 
 The "gnuplot" package is used with REDUCE and its license indicates that
@@ -179,7 +109,8 @@ versions.
 
 The Truetype-format fonts are from the BaKoMa Computer Modern Font collection
 as distributed via "ctan", and the associated permissive license is included
-in the directory where they are held.
+in the directory where they are held. This set of files and its associated
+.tfm metrics are gradually replacing my use of other font data.
 
 An implementation of the MD5 message digest is due to Eric Young and
 comes from an implementation of SSL, and is subject to what is in essence the
@@ -190,22 +121,11 @@ Various other parts within CSL were contributed by NAG Ltd and by various
 students and others, including J O'Connell, M O Seymour, but were made
 available to me and to Codemist for inclusion within CSL.
 
-
 The files in the "psl" directory come from ZIB and are some of the ones
-that they used with the Reduce Development System. It is hoped that the
-main sources of PSL will be available under a suitable Open Source license
-soon, but in the meanwhile binaries and probably source are avaliable from
-the ZIB web-site and the files and scripts here arrange to fetch them as needed
-so that a PSL version of Reduce can be built. But until PSL is fully open
-source the Sourceforge terms of use will not permit us to put a full
-ready-build PSL Reduce in their release system. I hope we will soon have stubs
-there that can be fetched and when run will fetch the system direct from ZIB.
+that they used with the Reduce Development System. As shown there these are
+also under a BSD license - see the HP_disclaimer.txt that confirms a release
+from one of the earlier major copyright holders.
 
-A (very) few REDUCE packages have at present been replaced by stubs while the
-original authors confirm that they are happy for their code to appear here.
-The vast bulk of the code here is released under powers granted to Tony Hearn
-when original authors contributed their code to him for incorporation in an
-earlier commercial version of REDUCE.
 
 
 

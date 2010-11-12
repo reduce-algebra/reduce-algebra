@@ -53,7 +53,7 @@
 
 
 
-/* Signature: 2e4e4cdf 08-Nov-2010 */
+/* Signature: 1476b278 12-Nov-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     fprintf(out, "\n\n/* Signature: 00000000 06-Nov-2010 */\n\n\n");
     fprintf(out, "#include <stdint.h>\n\n");
     fprintf(out, "typedef struct font_width {\n");
-    fprintf(out, "   char *name;\n");
+    fprintf(out, "   const char *name;\n");
     fprintf(out, "   int32_t checksum;\n");
     fprintf(out, "   int32_t charwidth[128];\n");
     fprintf(out, "} font_width;\n\n");
