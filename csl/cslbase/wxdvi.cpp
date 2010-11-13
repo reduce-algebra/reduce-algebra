@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0128b1a2 12-Nov-2010 */
+/* Signature: 27e8001c 13-Nov-2010 */
 
 
 
@@ -146,6 +146,25 @@ public:
     void OnMouse(wxMouseEvent &event);
 
 private:
+    void RenderDVI();
+    wxPaintDC *dcp;
+
+    unsigned char *dvidata;
+    unsigned const char *string_input;
+
+    int u2();
+    int u3();
+    int s1();
+    int s2();
+    int s3();
+    int s4();
+
+    void DefFont(int k);
+    void SelectFont(int k);
+    int MapChar(int c);
+    void SetChar(int c);
+    void PutChar(int c);
+
     wxFont *ff;
     DECLARE_EVENT_TABLE()
 };
@@ -536,6 +555,13 @@ int main(int argc, char *argv[])
 {
     int i;
     int usegui = 1;
+// I have had a case where my code appears to run happily when I run it
+// under gdb or when I have compiled it with full debugging options, but
+// where it crashes on Windows if build in "release" mode. To try to debug
+// in a case like that I add explicit print statements as follows...
+#if DEBUG
+    printf("Starting wxdvi program\n"); fflush(stdout);
+#endif
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
     for (i=1; i<argc; i++)
@@ -549,6 +575,9 @@ int main(int argc, char *argv[])
     {   const char *s = my_getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
+#endif
+#if DEBUG
+    printf("usegui=%d\n", usegui); fflush(stdout);
 #endif
     if (usegui)
     {
@@ -586,6 +615,10 @@ int main(int argc, char *argv[])
         }
 #endif
         wxDISABLE_DEBUG_SUPPORT();
+#if DEBUG
+    printf("calling wxEntry\n"); fflush(stdout);
+#endif
+
         return wxEntry(argc, argv);
     }
 //
@@ -760,14 +793,18 @@ int add_custom_fonts() // return 0 on success.
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
         fontNames[i].path = NULL;
+#if DEBUG
+        printf("check if %s is already available\n", lf.lfFaceName); fflush(stdout);
+#endif
         EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
-        char *nn = new char [strlen(programDir) +
-                             strlen(toString(fontsdir)) + 16];
+        char nn[LONGEST_LEGAL_FILENAME];
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
-        fontNames[i].path = nn;
+        char *nn1 = (char *)malloc(strlen(nn) + 1);
+        strcpy(nn1, nn);
+        fontNames[i].path = nn1;
     }
 // Now, for each font that was NOT already available I need to go
 //       AddFontResource[Ex]("filename")
@@ -987,22 +1024,14 @@ unsigned char math_dvi[] =
 // variants being either signed or unsigned. All are arranged in big-endian
 // style, as defined by the DVI format.
 
-unsigned char *dvidata = NULL;
-unsigned const char *string_input = NULL;
-
-int32_t u1()
-{
-    return *string_input++;
-}
-
-int32_t u2()
+int32_t dviPanel::u2()
 {
     int32_t c1 = *string_input++;
     int32_t c2 = *string_input++;
     return (c1 << 8) | c2;
 }
 
-int32_t u3()
+int32_t dviPanel::u3()
 {
     int32_t c1 = *string_input++;
     int32_t c2 = *string_input++;
@@ -1010,19 +1039,19 @@ int32_t u3()
     return (c1 << 16) | (c2 << 8) | c3;
 }
 
-int32_t s1()
+int32_t dviPanel::s1()
 {
     return (int32_t)(int8_t)(*string_input++);
 }
 
-int32_t s2()
+int32_t dviPanel::s2()
 {
     int32_t c1 = *string_input++;
     int32_t c2 = *string_input++;
     return (int32_t)(int16_t)((c1 << 8) | c2);
 }
 
-int32_t s3()
+int32_t dviPanel::s3()
 {
     int32_t c1 = *string_input++;
     int32_t c2 = *string_input++;
@@ -1032,7 +1061,7 @@ int32_t s3()
     return (int32_t)r;
 }
 
-int32_t s4()
+int32_t dviPanel::s4()
 {
     int32_t c1 = *string_input++;
     int32_t c2 = *string_input++;
@@ -1077,64 +1106,98 @@ int stackp;
   v = stack[--stackp]; \
   h = stack[--stackp]
 
-int findfont()
+void dviPanel::DefFont(int k)
 {
     printf("Define Font\n");
     printf("checksum = %.8x\n", checksum);
     printf("size = %d designsize = %d\n", size, designsize);
     printf("%d %d: %s\n", arealen, namelen, fontname);
-    return 0;
+    font[k] =  0;
 }
 
-void set_char(int32_t c)
+int dviPanel::MapChar(int c)
+{
+// This function maps between a TeX character encoding and the one that is
+// used by the fonts and rendering engine that I use.
+    if (c < 0xa) return 0xa1 + c;
+    else if (c == 0xa) return 0xc5;
+#ifdef UNICODE
+// In Unicode mode I have access to the character at code point 0x2219. If
+// not I must insist on using my private version of the fonts where it is
+// at 0xb7.
+    else if (c == 0x14) return 0x2219;
+#endif
+    else if (c < 0x20) return 0xa3 + c;
+    else if (c == 0x20) return 0xc3;
+    else if (c == 0x7f) return 0xc4;
+    else if (c >= 0x80) return 0xa0;
+    else return c;
+}
+
+// This assumes for now that one screen unit = 0.5 point
+#define scaler(n) ((int)(2.0*(double)(n)/(double)(1<<16)))
+
+void dviPanel::SetChar(int32_t c)
 {
     printf("Set (%f,%f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
+    wxString s = (wchar_t)c;
+    dcp->DrawText(s, scaler(h), scaler(v));
+    h += (1<<16)*8;
 }
 
-void put_char(int32_t c)
+void dviPanel::PutChar(int32_t c)
 {
     printf("Set (%f,%f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
+    wxString s = (wchar_t)c;
+    dcp->DrawText(s, scaler(h), scaler(v));
 }
 
-void set_font(int n)
+void dviPanel::SelectFont(int n)
 {
     printf("set font number %d\n", n);
 }
 
 
-void render_dvi()
+void dviPanel::RenderDVI()
 {
+    wxColour c1(230, 200, 255);
+    wxBrush b1(c1); 
+    dcp->SetBrush(b1);
+    wxPen p1(c1);
+    dcp->SetPen(p1);
+    dcp->DrawRectangle(0, 0, 1024, 768);
+
+    dcp->SetFont(*ff);
+
+
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
-    if ((string_input = dvidata) == NULL)
-    {   printf("null dvidata\n");
-        return;
-    }
+    string_input = dvidata;
     int32_t a, b, c, i, k;
     for (;;)
     {   c = *string_input++;
         if (c == EOF) break;
         c &= 0xff;
         if (c <= 127)
-        {   set_char(c);
+        {   SetChar(c);
             continue;
         }
         else
         {   switch (c)
             {
         case 128:
-                set_char(u1());
+                SetChar(*string_input++);
                 continue;
         case 129:
-                set_char(u2());
+                SetChar(u2());
                 continue;
         case 130:
-                set_char(u3());
+                SetChar(u3());
                 continue;
         case 131:
-                set_char(s4());
+                SetChar(s4());
                 continue;
         case 132:                           // set rule
                 a = s4();
@@ -1145,16 +1208,16 @@ void render_dvi()
                 }
                 continue;
         case 133:
-                put_char(u1());
+                PutChar(*string_input++);
                 continue;
         case 134:
-                put_char(u2());
+                PutChar(u2());
                 continue;
         case 135:
-                put_char(u3());
+                PutChar(u3());
                 continue;
         case 136:
-                put_char(s4());
+                PutChar(s4());
                 continue;
         case 137:
                 a = s4();
@@ -1279,82 +1342,82 @@ void render_dvi()
         case 223:  case 224:  case 225:  case 226:
         case 227:  case 228:  case 229:  case 230:
         case 231:  case 232:  case 233:  case 234:
-                set_font(c - 171);
+                SelectFont(c - 171);
                 continue;
         case 235:
-                set_font(u1());
+                SelectFont(*string_input++);
                 continue;
         case 236:
-                set_font(u2());
+                SelectFont(u2());
                 continue;
         case 237:
-                set_font(u3());
+                SelectFont(u3());
                 continue;
         case 238:
-                set_font(s4());
+                SelectFont(s4());
                 continue;
         case 239:
-                k = u1();
-                for (i=0; i<k; i++) u1();
+                k = *string_input++;
+                for (i=0; i<k; i++) *string_input++;
                 continue;
         case 240:
                 k = u2();
-                for (i=0; i<k; i++) u1();
+                for (i=0; i<k; i++) *string_input++;
                 continue;
         case 241:
                 k = u3();
-                for (i=0; i<k; i++) u1();
+                for (i=0; i<k; i++) *string_input++;
                 continue;
         case 242:
                 k = s4();
-                for (i=0; i<k; i++) u1();
+                for (i=0; i<k; i++) *string_input++;
                 continue;
         case 243:                         // fnt_def1
-                k = u1();
+                k = *string_input++;
                 checksum = s4();
                 size = s4();
                 designsize = s4();
-                arealen = u1();
-                namelen = u1();
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
+                arealen = *string_input++;
+                namelen = *string_input++;
+                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
                 fontname[arealen+namelen] = 0;
-                font[k] = findfont();
+                DefFont(k);
                 continue;
         case 244:
                 k = u2();
                 checksum = s4();
                 size = s4();
                 designsize = s4();
-                arealen = u1();
-                namelen = u1();
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
+                arealen = *string_input++;
+                namelen = *string_input++;
+                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
                 fontname[arealen+namelen] = 0;
-                font[k] = findfont();
+                DefFont(k);
                 continue;
         case 245:
                 k = u3();
                 checksum = s4();
                 size = s4();
                 designsize = s4();
-                arealen = u1();
-                namelen = u1();
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
+                arealen = *string_input++;
+                namelen = *string_input++;
+                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
                 fontname[arealen+namelen] = 0;
-                font[k] = findfont();
+                DefFont(k);
                 continue;
         case 246:
                 k = s4();
                 checksum = s4();
                 size = s4();
                 designsize = s4();
-                arealen = u1();
-                namelen = u1();
-                for (i=0; i<arealen+namelen; i++) fontname[i] = u1();
+                arealen = *string_input++;
+                namelen = *string_input++;
+                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
                 fontname[arealen+namelen] = 0;
-                font[k] = findfont();
+                DefFont(k);
                 continue;
         case 247:                          // pre
-                i = u1();
+                i = *string_input++;
                 if (i != 2)
                 {   printf("illegal DVI version %d\n", i);
                     break;
@@ -1362,8 +1425,8 @@ void render_dvi()
                 num = s4();
                 den = s4();
                 mag = s4();
-                k = u1();
-                for (i=0; i<k; i++) u1();
+                k = *string_input++;
+                for (i=0; i<k; i++) *string_input++;
                 printf("PRE: num=%d, den=%d, (%f) mag=%d\n",
                        num, den, (double)num/(double)den, mag);
                 continue;
@@ -1380,8 +1443,8 @@ void render_dvi()
                 continue;
         case 249:                          // post_post
                 s4();
-                u1();
-                if (u1() != 223) printf("Malformed DVI file\n");
+                *string_input++;
+                if (*string_input++ != 223) printf("Malformed DVI file\n");
                 break;
 
         // 250-255 undefined
@@ -1405,14 +1468,26 @@ bool dviApp::OnInit()
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
 
+#if DEBUG
+    printf("in dviApp::OnInit\n"); fflush(stdout);
+#endif
     add_custom_fonts();
+#if DEBUG
+    printf("fonts added\n"); fflush(stdout);
+#endif
 
     const char *dvifilename = NULL;
     if (argc > 1) dvifilename = myargv[1];
     
+#if DEBUG
+    printf("dvifilename=%s\n", dvifilename == NULL ? "<null>" : dvifilename); fflush(stdout);
+#endif
 
     dviFrame *frame = new dviFrame(dvifilename);
     frame->Show(true);
+#if DEBUG
+    printf("OnInint complete\n"); fflush(stdout);
+#endif
     return true;
 }
 
@@ -1452,8 +1527,8 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
     }
     printf("set up csl-cmsy10 font\n");
     ff = new wxFont();
-    ff->SetNativeFontInfoUserDesc("csl-cmsy10");
-    ff->SetPointSize(36);
+    ff->SetNativeFontInfoUserDesc("csl-cmr10");
+    ff->SetPointSize(20);
 
     wxSize clientsize(1024, 768);
     wxSize winsize(ClientToWindowSize(clientsize));
@@ -1517,47 +1592,11 @@ void dviPanel::OnMouse(wxMouseEvent &event)
 
 void dviPanel::OnPaint(wxPaintEvent &event)
 {
-    wxPaintDC dc(this);
-    wxColour c1(230, 200, 255);
-    wxBrush b1(c1); 
-    dc.SetBrush(b1);
-    wxPen p1(c1);
-    dc.SetPen(p1);
-    dc.DrawRectangle(0, 0, 1024, 768);
+    wxPaintDC mydc(this);
+    dcp = &mydc;
 
-    dc.SetFont(*ff);
-
-    render_dvi();
+    RenderDVI();
     return;
-
-// What follows is left over from wxfontdemo.cpp
-
-    wxCoord w1, h1, d1, xl1;
-    dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
-    for (int i=0; i<256; i+=32)
-    {   for (int j=0; j<32; j++)
-        {   dc.SetPen(*wxRED_PEN);
-            dc.SetBrush(*wxTRANSPARENT_BRUSH);
-            dc.DrawCircle(32*j, 2*i+64, 8);
-            int k = i + j;
-            if (!raw)
-            {   if (k < 0xa) k = 0xa1 + k;
-                else if (k == 0xa) k = 0xc5;
-#ifdef UNICODE
-// In Unicode mode I have access to the character at code point 0x2219. If
-// not I must insist on using my private version of the fonts where it is
-// at 0xb7.
-                else if (k == 0x14) k = 0x2219;
-#endif
-                else if (k < 0x20) k = 0xa3 + k;
-                else if (k == 0x20) k = 0xc3;
-                else if (k == 0x7f) k = 0xc4;
-                else if (k >= 0x80) k += 0x80*page;
-            }
-            wxString c = (wchar_t)k;
-            dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
-        }
-    }
 }
 
 

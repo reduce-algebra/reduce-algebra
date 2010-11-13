@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 66152d6e 12-Nov-2010 */
+/* Signature: 51c764e8 13-Nov-2010 */
 
 
 
@@ -766,9 +766,6 @@ int add_custom_fonts() // return 0 on success.
 #ifdef WIN32
     HDC hDC = CreateCompatibleDC(NULL);
     LOGFONTA lf;
-// I check each of the fonts that this application wants to see if they
-// are already installed. If they are then there is no merit in installing
-// them for myself.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   memset((void *)&lf, 0, sizeof(lf));
         strcpy(lf.lfFaceName, fontNames[i].name);
@@ -776,14 +773,20 @@ int add_custom_fonts() // return 0 on success.
         lf.lfPitchAndFamily = 0;
         fontNeeded = 1;
         fontNames[i].path = NULL;
+// I check each of the fonts that this application wants to see if they
+// are already installed. If they are then there is no merit in installing
+// them for myself. Well that is maybe silly since these are private fonts
+// that I really do not expect anybody to have installed before! But I will
+// leave this in here at least for now.
         EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
-        char *nn = new char [strlen(programDir) +
-                             strlen(toString(fontsdir)) + 16];
+        char nn[LONGEST_LEGAL_FILENAME];
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
-        fontNames[i].path = nn;
+        char *nn1 = (char *)malloc(strlen(nn) + 1;
+        strcpy(nn1, nn);
+        fontNames[i].path = nn1;
     }
 // Now, for each font that was NOT already available I need to go
 //       AddFontResource[Ex]("filename")
