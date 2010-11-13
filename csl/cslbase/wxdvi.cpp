@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 27e8001c 13-Nov-2010 */
+/* Signature: 062f3404 13-Nov-2010 */
 
 
 
@@ -128,6 +128,13 @@ extern char *getcwd(char *s, size_t n);
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
 
+// I have a generated file that contains the widths of all the fonts
+// I am willing to use here.
+
+#include "cmfont-widths.c"
+
+
+
 class dviApp : public wxApp
 {
 public:
@@ -149,8 +156,8 @@ private:
     void RenderDVI();
     wxPaintDC *dcp;
 
-    unsigned char *dvidata;
-    unsigned const char *string_input;
+    unsigned char *dviData;
+    unsigned const char *stringInput;
 
     int u2();
     int u3();
@@ -164,8 +171,37 @@ private:
     int MapChar(int c);
     void SetChar(int c);
     void PutChar(int c);
+    void SetRule(int height, int width);
+    int DVItoScreen(int n);
+    int DVItoScreenUP(int n);
 
-    wxFont *ff;
+    int32_t h, v, w, x, y, z;   // working values used in DVI decoding
+
+    int32_t C[10], p;           // set by start of a page
+
+    wxFont *font[256];
+    font_width *fontWidth[256], *currentFontWidth;
+
+// num and den are intended to convert TeX internal units into units
+// of 1.0e-7 metres. For display on a printer with some clearly known
+// "DPI" this probably matters - for the purposes of on-screen display I
+// will ignore it at present and just ASSUME that the values in the DVI file
+// are scaled by 2^16 from points.
+//
+// mag is a magnification factor relative to 1000.
+    int32_t num, den, mag;
+
+// I will scale things by an extra amount mymag to get bigger displays while
+// I am debugging
+    const static double mymag = 3.0;
+
+#define MAX_STACK 100
+
+    int32_t stack[6*MAX_STACK];
+    int stackp;
+
+
+
     DECLARE_EVENT_TABLE()
 };
 
@@ -499,7 +535,7 @@ int find_program_directory(const char *argv0)
         }
     }
 /* Now fullProgramName is set up, but may refer to an array that
- * is stack allocated. I need to make it proper!
+ * is stack allocated. I need to make it proper.
  */
     w = (char *)malloc(1+strlen(fullProgramName));
     if (w == NULL) return 5;           /* 5 = malloc fails */
@@ -936,87 +972,109 @@ int add_custom_fonts() // return 0 on success.
  * I have something to test and demonstrate even if there is no file
  * containig any .dvi stuff readily available.
  *
- *  \documentclass{article}
- *  \begin{document}
- *  This is some text
- *  \[ \frac{- b \pm \sqrt{b^2 - 4ac}}{2a}\]
- *  end text
- *  \end{document}
+ * \documentclass{article}
+ * \begin{document}
+ * \noindent This is some text
+ * \[ \left( \int_{b=0}^{\infty} \frac{- \beta \pm \sqrt{b^2 -
+ *  4 \, \omega \, c}}{2\, a}\, \mathrm{d}x \right\} \]
+ * end text
+ * \end{document}
  */
 
-unsigned char math_dvi[] =
+unsigned char mathDvi[] =
 {
-    0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,  
-    0x00,  0x00,  0x00,  0x00,  0x03,  0xe8,  0x1b,  0x20,  
-    0x54,  0x65,  0x58,  0x20,  0x6f,  0x75,  0x74,  0x70,  
-    0x75,  0x74,  0x20,  0x32,  0x30,  0x31,  0x30,  0x2e,  
-    0x31,  0x31,  0x2e,  0x30,  0x35,  0x3a,  0x32,  0x30,  
-    0x33,  0x33,  0x8b,  0x00,  0x00,  0x00,  0x01,  0x00,  
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  
-    0x00,  0x00,  0x00,  0xff,  0xff,  0xff,  0xff,  0xa0,  
-    0x02,  0x79,  0x00,  0x00,  0x8d,  0xa0,  0xfd,  0xa3,  
-    0x00,  0x00,  0xa0,  0x02,  0x3f,  0x00,  0x00,  0x8d,  
-    0xa0,  0xfd,  0xe4,  0x00,  0x00,  0x8d,  0x91,  0x4d,  
-    0x00,  0x00,  0xf3,  0x07,  0x4b,  0xf1,  0x60,  0x79,  
-    0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  
-    0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,  0x30,  0xb2,  
-    0x54,  0x68,  0x69,  0x73,  0x96,  0x03,  0x55,  0x55,  
-    0x69,  0x73,  0x93,  0x73,  0x6f,  0x6d,  0x65,  0x93,  
-    0x74,  0x65,  0x78,  0x74,  0x8e,  0x9f,  0x10,  0xe5,  
-    0xfb,  0x8d,  0x8d,  0x8d,  0x8d,  0x9f,  0xf9,  0x3c,  
-    0x24,  0x8d,  0x92,  0x00,  0xc8,  0x61,  0x7e,  0xf3,  
-    0x0d,  0x21,  0x22,  0x2c,  0x9a,  0x00,  0x0a,  0x00,  
-    0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  
-    0x6d,  0x73,  0x79,  0x31,  0x30,  0xb8,  0x00,  0xf3,  
-    0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,  0x0a,  0x00,  
-    0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  
-    0x6d,  0x6d,  0x69,  0x31,  0x30,  0xb5,  0x62,  0x96,  
-    0x02,  0x38,  0xe0,  0xb8,  0x06,  0x8d,  0x8d,  0x93,  
-    0x9f,  0xf7,  0xaa,  0xab,  0x70,  0x8e,  0x8d,  0x91,  
-    0x0a,  0x8e,  0x37,  0x9f,  0xf7,  0xaa,  0xab,  0x89,  
-    0x00,  0x00,  0x66,  0x65,  0x00,  0x23,  0x9d,  0x07,  
-    0x9f,  0x08,  0x55,  0x55,  0x8d,  0xb5,  0x62,  0x8d,  
-    0x9f,  0xfd,  0x1c,  0x72,  0xf3,  0x06,  0xd9,  0x93,  
-    0xa0,  0x52,  0x00,  0x07,  0x00,  0x00,  0x00,  0x07,  
-    0x00,  0x00,  0x00,  0x04,  0x63,  0x6d,  0x72,  0x37,  
-    0xb1,  0x32,  0x8e,  0x91,  0x06,  0xb5,  0x53,  0xb8,  
-    0x00,  0x93,  0xb2,  0x34,  0xb5,  0x61,  0x63,  0x8e,  
-    0x8e,  0x8e,  0x8e,  0x92,  0x00,  0xc8,  0x61,  0x7e,  
-    0x9f,  0x04,  0x77,  0x0e,  0x89,  0x00,  0x00,  0x66,  
-    0x65,  0x00,  0x44,  0x3d,  0x04,  0x9f,  0x09,  0x28,  
-    0xd6,  0x8d,  0x91,  0x1c,  0xf9,  0xea,  0xb2,  0x32,  
-    0xb5,  0x61,  0x8e,  0x8e,  0x8e,  0x8e,  0x8e,  0x9f,  
-    0x14,  0xcd,  0xd0,  0x8d,  0x91,  0x3e,  0x00,  0x00,  
-    0xb2,  0x65,  0x6e,  0x64,  0x91,  0x03,  0x55,  0x55,  
-    0x74,  0x65,  0x78,  0x74,  0x8e,  0x8e,  0x9f,  0x1e,  
-    0x00,  0x00,  0x8d,  0x92,  0x00,  0xe8,  0x00,  0x00,  
-    0x31,  0x8e,  0x8e,  0x8c,  0xf8,  0x00,  0x00,  0x00,  
-    0x2a,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,  0x00,  
-    0x00,  0x00,  0x00,  0x03,  0xe8,  0x02,  0x79,  0x00,  
-    0x00,  0x01,  0x97,  0x00,  0x00,  0x00,  0x0b,  0x00,  
-    0x01,  0xf3,  0x0d,  0x21,  0x22,  0x2c,  0x9a,  0x00,  
-    0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  
-    0x06,  0x63,  0x6d,  0x73,  0x79,  0x31,  0x30,  0xf3,  
-    0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,  0x0a,  0x00,  
-    0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  
-    0x6d,  0x6d,  0x69,  0x31,  0x30,  0xf3,  0x07,  0x4b,  
-    0xf1,  0x60,  0x79,  0x00,  0x0a,  0x00,  0x00,  0x00,  
-    0x0a,  0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x72,  
-    0x31,  0x30,  0xf3,  0x06,  0xd9,  0x93,  0xa0,  0x52,  
-    0x00,  0x07,  0x00,  0x00,  0x00,  0x07,  0x00,  0x00,  
-    0x00,  0x04,  0x63,  0x6d,  0x72,  0x37,  0xf9,  0x00,  
-    0x00,  0x01,  0x7c,  0x02,  0xdf,  0xdf,  0xdf,  0xdf
+    0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,
+    0x00,  0x00,  0x00,  0x00,  0x03,  0xe8,  0x1b,  0x20,
+    0x54,  0x65,  0x58,  0x20,  0x6f,  0x75,  0x74,  0x70,
+    0x75,  0x74,  0x20,  0x32,  0x30,  0x31,  0x30,  0x2e,
+    0x31,  0x31,  0x2e,  0x31,  0x33,  0x3a,  0x31,  0x36,
+    0x31,  0x33,  0x8b,  0x00,  0x00,  0x00,  0x01,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0xff,  0xff,  0xff,  0xff,  0xa0,
+    0x02,  0x79,  0x00,  0x00,  0x8d,  0xa0,  0xfd,  0xa3,
+    0x00,  0x00,  0xa0,  0x02,  0x3f,  0x00,  0x00,  0x8d,
+    0xa0,  0xfd,  0xe4,  0x00,  0x00,  0x8d,  0x91,  0x3e,
+    0x00,  0x00,  0xf3,  0x07,  0x4b,  0xf1,  0x60,  0x79,
+    0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,
+    0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,  0x30,  0xb2,
+    0x54,  0x68,  0x69,  0x73,  0x96,  0x03,  0x55,  0x55,
+    0x69,  0x73,  0x93,  0x73,  0x6f,  0x6d,  0x65,  0x93,
+    0x74,  0x65,  0x78,  0x74,  0x8e,  0x9f,  0x12,  0x80,
+    0x09,  0x8d,  0x8d,  0x8d,  0x92,  0x00,  0xaa,  0xc8,
+    0x51,  0x9f,  0xee,  0xe6,  0x5c,  0xf3,  0x00,  0xfa,
+    0xb1,  0x75,  0x12,  0x00,  0x0a,  0x00,  0x00,  0x00,
+    0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x65,
+    0x78,  0x31,  0x30,  0xab,  0x20,  0x8e,  0x8d,  0x92,
+    0x00,  0xb2,  0xb2,  0xfd,  0x9f,  0xf2,  0x63,  0x87,
+    0x5a,  0x8e,  0x8d,  0x9f,  0xf4,  0xdc,  0x69,  0x8d,
+    0x92,  0x00,  0xbc,  0xb2,  0xfe,  0xf3,  0x0c,  0x4f,
+    0x21,  0xe2,  0x85,  0x00,  0x07,  0x00,  0x00,  0x00,
+    0x07,  0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x73,
+    0x79,  0x37,  0xb7,  0x31,  0x8e,  0x9f,  0x14,  0x40,
+    0x10,  0x8d,  0x92,  0x00,  0xb8,  0x41,  0x37,  0xf3,
+    0x09,  0x30,  0x65,  0x97,  0x72,  0x00,  0x07,  0x00,
+    0x00,  0x00,  0x07,  0x00,  0x00,  0x00,  0x05,  0x63,
+    0x6d,  0x6d,  0x69,  0x37,  0xb4,  0x62,  0xf3,  0x06,
+    0xd9,  0x93,  0xa0,  0x52,  0x00,  0x07,  0x00,  0x00,
+    0x00,  0x07,  0x00,  0x00,  0x00,  0x04,  0x63,  0x6d,
+    0x72,  0x37,  0xb1,  0x3d,  0x30,  0x8e,  0x8e,  0x8d,
+    0x8d,  0x8d,  0x9f,  0xf9,  0x3c,  0x24,  0x8d,  0x92,
+    0x00,  0xc9,  0x43,  0x59,  0xf3,  0x0d,  0x21,  0x22,
+    0x2c,  0x9a,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
+    0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x73,  0x79,
+    0x31,  0x30,  0xb8,  0x00,  0xf3,  0x0a,  0x0b,  0xa0,
+    0x62,  0x3e,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
+    0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x6d,  0x69,
+    0x31,  0x30,  0xb5,  0x0c,  0x91,  0x02,  0xbf,  0xfc,
+    0xb8,  0x06,  0x8d,  0x8d,  0x91,  0x02,  0x38,  0xe0,
+    0x9f,  0xf7,  0xaa,  0xab,  0x70,  0x8e,  0x8d,  0x91,
+    0x0a,  0x8e,  0x37,  0x9f,  0xf7,  0xaa,  0xab,  0x89,
+    0x00,  0x00,  0x66,  0x65,  0x00,  0x28,  0x3e,  0x7b,
+    0x9f,  0x08,  0x55,  0x55,  0x8d,  0xb5,  0x62,  0x8d,
+    0x9f,  0xfd,  0x1c,  0x72,  0xb1,  0x32,  0x8e,  0x91,
+    0x06,  0xb5,  0x53,  0xb8,  0x00,  0x91,  0x02,  0x38,
+    0xe0,  0xb2,  0x34,  0x91,  0x01,  0xaa,  0xa8,  0xb5,
+    0x21,  0x91,  0x02,  0x06,  0x81,  0x63,  0x8e,  0x8e,
+    0x8e,  0x8e,  0x92,  0x00,  0xc9,  0x43,  0x59,  0x9f,
+    0x04,  0x77,  0x0e,  0x89,  0x00,  0x00,  0x66,  0x65,
+    0x00,  0x4a,  0xc2,  0xea,  0x9f,  0x09,  0x28,  0xd6,
+    0x8d,  0x91,  0x1f,  0x67,  0x89,  0xb2,  0x32,  0x91,
+    0x01,  0xaa,  0xa8,  0xb5,  0x61,  0x8e,  0x8e,  0x8e,
+    0x8e,  0x92,  0x01,  0x16,  0xe4,  0x1e,  0xb2,  0x64,
+    0xb5,  0x78,  0x8d,  0x9f,  0xee,  0xe6,  0x5c,  0xab,
+    0x29,  0x8e,  0x8e,  0x8e,  0x9f,  0x1a,  0x71,  0xd1,
+    0x8d,  0x91,  0x3e,  0x00,  0x00,  0xb2,  0x65,  0x6e,
+    0x64,  0x91,  0x03,  0x55,  0x55,  0x74,  0x65,  0x78,
+    0x74,  0x8e,  0x8e,  0x9f,  0x1e,  0x00,  0x00,  0x8d,
+    0x92,  0x00,  0xe8,  0x00,  0x00,  0x31,  0x8e,  0x8e,
+    0x8c,  0xf8,  0x00,  0x00,  0x00,  0x2a,  0x01,  0x83,
+    0x92,  0xc0,  0x1c,  0x3b,  0x00,  0x00,  0x00,  0x00,
+    0x03,  0xe8,  0x02,  0x79,  0x00,  0x00,  0x01,  0x97,
+    0x00,  0x00,  0x00,  0x0c,  0x00,  0x01,  0xf3,  0x0d,
+    0x21,  0x22,  0x2c,  0x9a,  0x00,  0x0a,  0x00,  0x00,
+    0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,
+    0x73,  0x79,  0x31,  0x30,  0xf3,  0x0c,  0x4f,  0x21,
+    0xe2,  0x85,  0x00,  0x07,  0x00,  0x00,  0x00,  0x07,
+    0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x73,  0x79,
+    0x37,  0xf3,  0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,
+    0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,
+    0x06,  0x63,  0x6d,  0x6d,  0x69,  0x31,  0x30,  0xf3,
+    0x09,  0x30,  0x65,  0x97,  0x72,  0x00,  0x07,  0x00,
+    0x00,  0x00,  0x07,  0x00,  0x00,  0x00,  0x05,  0x63,
+    0x6d,  0x6d,  0x69,  0x37,  0xf3,  0x07,  0x4b,  0xf1,
+    0x60,  0x79,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
+    0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,
+    0x30,  0xf3,  0x06,  0xd9,  0x93,  0xa0,  0x52,  0x00,
+    0x07,  0x00,  0x00,  0x00,  0x07,  0x00,  0x00,  0x00,
+    0x04,  0x63,  0x6d,  0x72,  0x37,  0xf3,  0x00,  0xfa,
+    0xb1,  0x75,  0x12,  0x00,  0x0a,  0x00,  0x00,  0x00,
+    0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x65,
+    0x78,  0x31,  0x30,  0xf9,  0x00,  0x00,  0x02,  0x19,
+    0x02,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf
 };
-
-
-// I have a generated file that contains the widths of all the fonts
-// I am willing to use here.
-
-#include "cmfont-widths.c"
-
 
 
 
@@ -1026,36 +1084,36 @@ unsigned char math_dvi[] =
 
 int32_t dviPanel::u2()
 {
-    int32_t c1 = *string_input++;
-    int32_t c2 = *string_input++;
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
     return (c1 << 8) | c2;
 }
 
 int32_t dviPanel::u3()
 {
-    int32_t c1 = *string_input++;
-    int32_t c2 = *string_input++;
-    int32_t c3 = *string_input++;
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
     return (c1 << 16) | (c2 << 8) | c3;
 }
 
 int32_t dviPanel::s1()
 {
-    return (int32_t)(int8_t)(*string_input++);
+    return (int32_t)(int8_t)(*stringInput++);
 }
 
 int32_t dviPanel::s2()
 {
-    int32_t c1 = *string_input++;
-    int32_t c2 = *string_input++;
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
     return (int32_t)(int16_t)((c1 << 8) | c2);
 }
 
 int32_t dviPanel::s3()
 {
-    int32_t c1 = *string_input++;
-    int32_t c2 = *string_input++;
-    int32_t c3 = *string_input++;
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
     int32_t r = (c1 << 16) | (c2 << 8) | c3;
     if ((r & 0x00800000) != 0) r |= 0xff000000;
     return (int32_t)r;
@@ -1063,30 +1121,14 @@ int32_t dviPanel::s3()
 
 int32_t dviPanel::s4()
 {
-    int32_t c1 = *string_input++;
-    int32_t c2 = *string_input++;
-    int32_t c3 = *string_input++;
-    int32_t c4 = *string_input++;
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
+    int32_t c4 = *stringInput++;
     return (c1 << 24) | (c2 << 16) |
            (c3 << 8) | c4;
 }
 
-int32_t h, v, w, x, y, z;
-
-int32_t C[10], p;
-
-int32_t checksum, size, designsize;
-int arealen, namelen;
-char fontname[256];
-
-int font[256];
-
-int32_t num, den, mag;
-
-#define MAX_STACK 100
-
-int32_t stack[6*MAX_STACK];
-int stackp;
 
 // The following two macros are syntactically delicate - so BEWARE.
 
@@ -1106,14 +1148,82 @@ int stackp;
   v = stack[--stackp]; \
   h = stack[--stackp]
 
+#define screenDPI 72
+
 void dviPanel::DefFont(int k)
 {
-    printf("Define Font\n");
+    printf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
+    char fontname[LONGEST_LEGAL_FILENAME];
+    int32_t checksum = s4();
+    int32_t size = s4();
+    /* int32_t designsize = */ s4();
+    int arealen = *stringInput++;
+    int namelen = *stringInput++;
+    if (k > 255)
+    {   printf("This code can only cope with 256 distinct fonts\n");
+        fflush(stdout);
+        return;
+    }
+    if (arealen != 0)
+    {   printf("Fonts with an area specification are not supported\n");
+        fflush(stdout);
+        return;
+    }
+    strcpy(fontname, "csl-");
+    for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
+    fontname[namelen+4] = 0;
     printf("checksum = %.8x\n", checksum);
-    printf("size = %d designsize = %d\n", size, designsize);
-    printf("%d %d: %s\n", arealen, namelen, fontname);
-    font[k] =  0;
+    printf("size = %d %g\n", size, (double)size/65536.0);
+    printf("%s\n", fontname);
+    if (font[k] != NULL)
+    {   printf("Font %d already defined\n", k);
+        fflush(stdout);
+        return;
+    }
+    font_width *p = cm_font_width;
+    while (p->name != NULL &&
+           strcmp(p->name, fontname+4) != 0) p++;
+    if (p->name == NULL)
+    {   printf("Fonts not found in the private font-set I support\n");
+        fflush(stdout);
+        return;
+    }
+    if (p->checksum != checksum)
+    {   printf("Font checksum issue %.8x vs %.8x\n", checksum, p->checksum);
+    }
+    wxFont *f = new wxFont();
+    f->SetNativeFontInfoUserDesc(fontname);
+    wxSize createdSize(f->GetPixelSize());
+    int fontHeight =createdSize.GetHeight();
+    printf("Font was created as %d pixels height\n", fontHeight);
+// wxWidgets appears not to see any trace of a "design size" in the
+// TrueType fonts that I use - regardless of design size things end up
+// just the same.
+    double dsize = (double)size; // size in TeX units for points
+// Now adjust into screen coordinates in the same way I do for positioning
+    dsize = dsize*(double)screenDPI/(72.0*65536.0);
+    printf("desired pixel size on screen = %.3g\n", dsize);
+    f->Scale((float)(dsize*mymag*(double)mag/1000.0/(double)fontHeight));
+    font[k] = f;
+    fontWidth[k] = p;
 }
+
+void dviPanel::SelectFont(int n)
+{
+    if (n > 255)
+    {   printf("This code can only cope with 256 distinct fonts\n");
+        fflush(stdout);
+        return;
+    }
+    if (font[n] == NULL)
+    {   printf("font %d seems not to be set\n", n);
+        fflush(stdout);
+        return;
+    }
+    dcp->SetFont(*font[n]);
+    currentFontWidth = fontWidth[n];
+}
+
 
 int dviPanel::MapChar(int c)
 {
@@ -1134,31 +1244,72 @@ int dviPanel::MapChar(int c)
     else return c;
 }
 
-// This assumes for now that one screen unit = 0.5 point
-#define scaler(n) ((int)(2.0*(double)(n)/(double)(1<<16)))
+int dviPanel::DVItoScreen(int n)
+{
+// At present this is a fixed scaling. I may well want to make it variable
+// at some later stage. The scaling here, which is based on an assumption
+// I make about the dots-per-inch resolution of my display, will end up
+// imprtant when establishing fonts.
+    return (int)(mymag*(double)mag*(double)screenDPI*(double)n/
+                 (72.0*65536.0*1000.0));
+}
+
+int dviPanel::DVItoScreenUP(int n)
+{
+// This ROUND UP to the next integer, and that is needed so that (eg)
+// very thin rules end up at least one pixel wide. Well I round up by
+// adding a value just under 1,0 then truncating.
+    return (int)(0.999999999 + mymag*(double)mag/1000.0*
+                 (double)screenDPI*(double)n/(72.0*65536.0));
+}
 
 void dviPanel::SetChar(int32_t c)
 {
+#ifdef DEBUG
     printf("Set (%f,%f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
-    wxString s = (wchar_t)c;
-    dcp->DrawText(s, scaler(h), scaler(v));
-    h += (1<<16)*8;
+#endif
+    wxString s = (wchar_t)MapChar(c);
+    wxCoord width, height, descent;
+    dcp->GetTextExtent(s, &width, &height, &descent);
+    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+// Now I must increase h by the width (in scaled points) of the character
+// I just set. This is not dependent at all on the way I map DVI internal
+// coordinates to screen ones.
+    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+// ww is now the width as extracted from the .tfm file, and that applies
+// to the glyph if it is set at its standard size.
+printf("seems to be %d my default was %d\n", ww, (1<<16)*7);
+
+//@@ At present I do not understand just what I have got wrong, but the
+//@@ scaling by 0.6 here is a FUDGE that at present gives roughly reasonable
+//@@ spacing. Somehow and somewhere I am confused about "character width"
+//@@ so when I have cleared my head I will mend this!
+
+    h += (6*ww/10);
 }
 
 void dviPanel::PutChar(int32_t c)
 {
+#ifdef DEBUG
     printf("Set (%f,%f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
-    wxString s = (wchar_t)c;
-    dcp->DrawText(s, scaler(h), scaler(v));
+#endif
+    wxString s = (wchar_t)MapChar(c);
+    wxCoord width, height, descent;
+    dcp->GetTextExtent(s, &width, &height, &descent);
+    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
 }
 
-void dviPanel::SelectFont(int n)
+void dviPanel::SetRule(int height, int width)
 {
-    printf("set font number %d\n", n);
+// Hmm I may need to worry about where the reference point is here
+    printf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
+                                        height, (double)height/65537.0);
+    fflush(stdout);
+    dcp->DrawRectangle(DVItoScreen(h), DVItoScreen(v-height),
+                       DVItoScreenUP(width), DVItoScreenUP(height));
 }
-
 
 void dviPanel::RenderDVI()
 {
@@ -1169,17 +1320,22 @@ void dviPanel::RenderDVI()
     dcp->SetPen(p1);
     dcp->DrawRectangle(0, 0, 1024, 768);
 
-    dcp->SetFont(*ff);
+    dcp->SetBrush(*wxBLACK_BRUSH);
+    dcp->SetPen(*wxBLACK_PEN);
 
+    wxSize PPI(dcp->GetPPI());
+    printf("%d by %d ppi\n", PPI.GetWidth(), PPI.GetHeight());
+    wxSize display(dcp->GetSize());
+    printf("screen size %d by %d\n", display.GetWidth(), display.GetHeight());
+    wxSize displaymm(dcp->GetSizeMM());
+    printf("display size mm %d by %d\n", displaymm.GetWidth(), displaymm.GetHeight());
 
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
-    string_input = dvidata;
+    stringInput = dviData;
     int32_t a, b, c, i, k;
     for (;;)
-    {   c = *string_input++;
-        if (c == EOF) break;
-        c &= 0xff;
+    {   c = *stringInput++;
         if (c <= 127)
         {   SetChar(c);
             continue;
@@ -1188,7 +1344,7 @@ void dviPanel::RenderDVI()
         {   switch (c)
             {
         case 128:
-                SetChar(*string_input++);
+                SetChar(*stringInput++);
                 continue;
         case 129:
                 SetChar(u2());
@@ -1202,13 +1358,11 @@ void dviPanel::RenderDVI()
         case 132:                           // set rule
                 a = s4();
                 b = s4();
-                if (a > 0 && b >0)
-                {   printf("set rule %d %d\n", (int)a, (int)b);
-                    h += b;
-                }
+                if (a > 0 && b >0) SetRule(a, b);
+                h += b;
                 continue;
         case 133:
-                PutChar(*string_input++);
+                PutChar(*stringInput++);
                 continue;
         case 134:
                 PutChar(u2());
@@ -1222,9 +1376,7 @@ void dviPanel::RenderDVI()
         case 137:
                 a = s4();
                 b = s4();
-                if (a > 0 && b >0)
-                {   printf("put rule %d %d\n", (int)a, (int)b);
-                }
+                if (a > 0 && b >0) SetRule(a, b);
                 continue;
         case 138:
                 continue;                      // no operation
@@ -1345,7 +1497,7 @@ void dviPanel::RenderDVI()
                 SelectFont(c - 171);
                 continue;
         case 235:
-                SelectFont(*string_input++);
+                SelectFont(*stringInput++);
                 continue;
         case 236:
                 SelectFont(u2());
@@ -1357,67 +1509,35 @@ void dviPanel::RenderDVI()
                 SelectFont(s4());
                 continue;
         case 239:
-                k = *string_input++;
-                for (i=0; i<k; i++) *string_input++;
+                k = *stringInput++;
+                for (i=0; i<k; i++) *stringInput++;
                 continue;
         case 240:
                 k = u2();
-                for (i=0; i<k; i++) *string_input++;
+                for (i=0; i<k; i++) *stringInput++;
                 continue;
         case 241:
                 k = u3();
-                for (i=0; i<k; i++) *string_input++;
+                for (i=0; i<k; i++) *stringInput++;
                 continue;
         case 242:
                 k = s4();
-                for (i=0; i<k; i++) *string_input++;
+                for (i=0; i<k; i++) *stringInput++;
                 continue;
         case 243:                         // fnt_def1
-                k = *string_input++;
-                checksum = s4();
-                size = s4();
-                designsize = s4();
-                arealen = *string_input++;
-                namelen = *string_input++;
-                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
-                fontname[arealen+namelen] = 0;
-                DefFont(k);
+                DefFont(*stringInput++);
                 continue;
         case 244:
-                k = u2();
-                checksum = s4();
-                size = s4();
-                designsize = s4();
-                arealen = *string_input++;
-                namelen = *string_input++;
-                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
-                fontname[arealen+namelen] = 0;
-                DefFont(k);
+                DefFont(u2());
                 continue;
         case 245:
-                k = u3();
-                checksum = s4();
-                size = s4();
-                designsize = s4();
-                arealen = *string_input++;
-                namelen = *string_input++;
-                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
-                fontname[arealen+namelen] = 0;
-                DefFont(k);
+                DefFont(u3());
                 continue;
         case 246:
-                k = s4();
-                checksum = s4();
-                size = s4();
-                designsize = s4();
-                arealen = *string_input++;
-                namelen = *string_input++;
-                for (i=0; i<arealen+namelen; i++) fontname[i] = *string_input++;
-                fontname[arealen+namelen] = 0;
-                DefFont(k);
+                DefFont(s4());
                 continue;
         case 247:                          // pre
-                i = *string_input++;
+                i = *stringInput++;
                 if (i != 2)
                 {   printf("illegal DVI version %d\n", i);
                     break;
@@ -1425,8 +1545,8 @@ void dviPanel::RenderDVI()
                 num = s4();
                 den = s4();
                 mag = s4();
-                k = *string_input++;
-                for (i=0; i<k; i++) *string_input++;
+                k = *stringInput++;
+                for (i=0; i<k; i++) *stringInput++;
                 printf("PRE: num=%d, den=%d, (%f) mag=%d\n",
                        num, den, (double)num/(double)den, mag);
                 continue;
@@ -1443,8 +1563,8 @@ void dviPanel::RenderDVI()
                 continue;
         case 249:                          // post_post
                 s4();
-                *string_input++;
-                if (*string_input++ != 223) printf("Malformed DVI file\n");
+                *stringInput++;
+                if (*stringInput++ != 223) printf("Malformed DVI file\n");
                 break;
 
         // 250-255 undefined
@@ -1510,9 +1630,9 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
 {
 // I will read the DVI data once here.
     FILE *f = NULL;
-    if (dvifilename == NULL) dvidata = math_dvi;
+    if (dvifilename == NULL) dviData = mathDvi;
     else
-    {   string_input = NULL;
+    {   stringInput = NULL;
         f = fopen(dvifilename, "rb");
         if (f == NULL)
         {   printf("File \"%s\" not found\n", dvifilename);
@@ -1520,15 +1640,11 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         }
         fseek(f, (off_t)0, SEEK_END);
         off_t len = ftell(f);
-        dvidata = (unsigned char *)malloc((size_t)len);
+        dviData = (unsigned char *)malloc((size_t)len);
         fseek(f, (off_t)0, SEEK_SET);
-        for (int i=0; i<len; i++) dvidata[i] = getc(f);
+        for (int i=0; i<len; i++) dviData[i] = getc(f);
         fclose(f);
     }
-    printf("set up csl-cmsy10 font\n");
-    ff = new wxFont();
-    ff->SetNativeFontInfoUserDesc("csl-cmr10");
-    ff->SetPointSize(20);
 
     wxSize clientsize(1024, 768);
     wxSize winsize(ClientToWindowSize(clientsize));
