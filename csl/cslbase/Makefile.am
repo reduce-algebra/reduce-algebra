@@ -502,23 +502,25 @@ endif fox
 if wx
 
 if wxbuiltin
-if win64
 BASELIB=../lib/libwx_baseu-2.9.a
 WXDEPS=../bin/wx-config $(BASELIB)
 
+# When I build wxWidgets locally I *ALWAYS* end up passing an explicit
+# "--host=..." option to the configure script. A result of that is that
+# the libraries get installed with names that include the host identity.
+# The script here makes symbolic links from the host-qualified names from
+# plain undecorated ones as mentioned by "wx-config --libs"
+
 $(BASELIB):
 	pushd ../lib; \
-	for x in *mingw32.a; \
+	for x in *$(HOST).a; \
 	do \
-	  y=$${x%-x86_64-w64-mingw32.a}.a; \
+	  y=$${x%-$(HOST).a}.a; \
 	  echo ln -s $$x $$y; \
 	ln -s $$x $$y; \
 	done; \
 	popd
 
-else !win64
-WXDEPS=../bin/wx-config
-endif !win64
 endif wxbuiltin
 
 PFD=wxfontdemo.app/Contents/Info.plist
@@ -1395,5 +1397,9 @@ ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
+
+
+showhost:
+	echo host = $(HOST)
 
 # end of Makefile

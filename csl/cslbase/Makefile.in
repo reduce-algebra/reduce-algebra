@@ -257,6 +257,7 @@ FOX_INCLUDES = @FOX_INCLUDES@
 FOX_LIBS = @FOX_LIBS@
 FREETYPE_CONFIG = @FREETYPE_CONFIG@
 GREP = @GREP@
+HOST = @HOST@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -567,9 +568,8 @@ DEST = -o
 R = $(srcdir)/../..
 @win64_FALSE@FOXDEP = ../lib/libFOX-1.6.a
 @win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
-@win64_FALSE@@wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
+@wx_TRUE@@wxbuiltin_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
+@wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
 @wx_TRUE@PFD = wxfontdemo.app/Contents/Info.plist
 @wx_TRUE@PDVI = wxdvi.app/Contents/Info.plist
 
@@ -2207,15 +2207,21 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
 
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	pushd ../lib; \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	for x in *mingw32.a; \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	do \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-x86_64-w64-mingw32.a}.a; \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s $$x $$y; \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	ln -s $$x $$y; \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	done; \
-@win64_TRUE@@wx_TRUE@@wxbuiltin_TRUE@	popd
+# When I build wxWidgets locally I *ALWAYS* end up passing an explicit
+# "--host=..." option to the configure script. A result of that is that
+# the libraries get installed with names that include the host identity.
+# The script here makes symbolic links from the host-qualified names from
+# plain undecorated ones as mentioned by "wx-config --libs"
+
+@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):
+@wx_TRUE@@wxbuiltin_TRUE@	pushd ../lib; \
+@wx_TRUE@@wxbuiltin_TRUE@	for x in *$(HOST).a; \
+@wx_TRUE@@wxbuiltin_TRUE@	do \
+@wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-$(HOST).a}.a; \
+@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s $$x $$y; \
+@wx_TRUE@@wxbuiltin_TRUE@	ln -s $$x $$y; \
+@wx_TRUE@@wxbuiltin_TRUE@	done; \
+@wx_TRUE@@wxbuiltin_TRUE@	popd
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
@@ -2820,6 +2826,9 @@ save:	all
 @windows_FALSE@	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
+
+showhost:
+	echo host = $(HOST)
 
 # end of Makefile
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

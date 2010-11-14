@@ -625,6 +625,7 @@ windows_FALSE
 windows_TRUE
 x86_FALSE
 x86_TRUE
+HOST
 CYGPATH
 FOXDEPS
 FOXLIB
@@ -10714,6 +10715,9 @@ then
 # that particular warning.
   CXXFLAGS="$CXXFLAGS -Wno-write-strings "
 fi
+
+
+HOST="$host"
 
 #
 # Make some things available for conditional segments of a Makefile

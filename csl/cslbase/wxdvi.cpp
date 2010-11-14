@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 062f3404 13-Nov-2010 */
+/* Signature: 74b2c165 14-Nov-2010 */
 
 
 
@@ -147,40 +147,51 @@ public:
     dviPanel(class dviFrame *parent, const char *dvifilename);
 
     void OnPaint(wxPaintEvent &event);
+
+// The event handling is not really needed for this application, but I
+// am putting some in so I can experiment with it!
     void OnChar(wxKeyEvent &event);
     void OnKeyDown(wxKeyEvent &event);
     void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
 
 private:
-    void RenderDVI();
-    wxPaintDC *dcp;
+    void RenderDVI();        // sub-function used by OnPaint
+    wxPaintDC *dcp;          // pointer to device context to draw on
 
-    unsigned char *dviData;
+    unsigned char *dviData;  // the .dvi file's contents are stored here
     unsigned const char *stringInput;
 
-    int u2();
+    int u2();                // read 1-4 bytes as signed or unsigned value
     int u3();
     int s1();
     int s2();
     int s3();
     int s4();
 
-    void DefFont(int k);
+    void DefFont(int k);     // dvi file font definition
     void SelectFont(int k);
-    int MapChar(int c);
-    void SetChar(int c);
-    void PutChar(int c);
+    int MapChar(int c);      // map from TeX character code to BaKoMa+ one
+    void SetChar(int c);     // dvi display charcter and move on
+    void PutChar(int c);     // dvi just display character
     void SetRule(int height, int width);
-    int DVItoScreen(int n);
-    int DVItoScreenUP(int n);
+    int DVItoScreen(int n);  // map coordinates
+    int DVItoScreenUP(int n);// ditto but used for rule widths
 
-    int32_t h, v, w, x, y, z;   // working values used in DVI decoding
+    int32_t h, v, w, x, y, z;// working values used in DVI decoding
 
-    int32_t C[10], p;           // set by start of a page
+    int32_t C[10], p;        // set by start of a page and not used!
 
-    wxFont *font[256];
-    font_width *fontWidth[256], *currentFontWidth;
+// dvi files can call for an essentially unlimited number of distinct
+// fonts - where one "font" here is not just to do with shape but also with
+// size. If I pre-scanned the dvi data I could identify the largest font
+// number used and allocate a table of exactly the right size. But for now
+// I will use a fixed limit.
+//
+#define MAX_FONTS 256
+    wxFont *font[MAX_FONTS];       // the fonts I use here
+    font_width *fontWidth[MAX_FONTS], *currentFontWidth;
+    double fontScale[MAX_FONTS], currentFontScale;
 
 // num and den are intended to convert TeX internal units into units
 // of 1.0e-7 metres. For display on a printer with some clearly known
@@ -192,11 +203,13 @@ private:
     int32_t num, den, mag;
 
 // I will scale things by an extra amount mymag to get bigger displays while
-// I am debugging
-    const static double mymag = 3.0;
+// I am debugging. This will probably be set to 1.0 for any production code.
+    const static double mymag = 4.0;
 
+// dvi files use a stack, and at the end of the file is an indication of
+// the greatest stack depth that will be used. I just give myself a fixed
+// quota for now.
 #define MAX_STACK 100
-
     int32_t stack[6*MAX_STACK];
     int stackp;
 
@@ -208,8 +221,8 @@ private:
 BEGIN_EVENT_TABLE(dviPanel, wxPanel)
     EVT_PAINT(           dviPanel::OnPaint)
     EVT_CHAR(            dviPanel::OnChar)
-    EVT_KEY_DOWN(        dviPanel::OnKeyDown)
-    EVT_KEY_UP(          dviPanel::OnKeyUp)
+//  EVT_KEY_DOWN(        dviPanel::OnKeyDown)
+//  EVT_KEY_UP(          dviPanel::OnKeyUp)
     EVT_LEFT_UP(         dviPanel::OnMouse)
 END_EVENT_TABLE()
 
@@ -230,8 +243,6 @@ BEGIN_EVENT_TABLE(dviFrame, wxFrame)
     EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
     EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
 END_EVENT_TABLE()
-
-int raw, page;
 
 int get_current_directory(char *s, int n)
 {
@@ -1152,15 +1163,17 @@ int32_t dviPanel::s4()
 
 void dviPanel::DefFont(int k)
 {
+#if 0
     printf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
+#endif
     char fontname[LONGEST_LEGAL_FILENAME];
     int32_t checksum = s4();
     int32_t size = s4();
     /* int32_t designsize = */ s4();
     int arealen = *stringInput++;
     int namelen = *stringInput++;
-    if (k > 255)
-    {   printf("This code can only cope with 256 distinct fonts\n");
+    if (k >= MAX_FONTS)
+    {   printf("This code can only cope with MAX_FONTS distinct fonts\n");
         fflush(stdout);
         return;
     }
@@ -1172,12 +1185,17 @@ void dviPanel::DefFont(int k)
     strcpy(fontname, "csl-");
     for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
     fontname[namelen+4] = 0;
+#if 0
     printf("checksum = %.8x\n", checksum);
     printf("size = %d %g\n", size, (double)size/65536.0);
     printf("%s\n", fontname);
+#endif
     if (font[k] != NULL)
-    {   printf("Font %d already defined\n", k);
+    {
+#if 0
+        printf("Font %d already defined\n", k);
         fflush(stdout);
+#endif
         return;
     }
     font_width *p = cm_font_width;
@@ -1188,30 +1206,59 @@ void dviPanel::DefFont(int k)
         fflush(stdout);
         return;
     }
+// I find that cmmi7 and cmmi10 (and probably others) give me a complaint
+// here as between the TeX fonts I have installed on cygwin and the BaKoMa
+// ones I use for Reduce. However when I used tftopl to decode the
+// apparently offending .tfm files what I found was pretty harmless (at least
+// in cmmi7) in that the BaKoMa version defines widths for character octal 200
+// (ie 0x80 = 128) while the other version did not. All metrics for other
+// characters were identical. So I display a warning here for a while but
+// will NOT make this an error. Now if I used BaKoMa TeX to prepare my .dvi
+// files (or copies their fonts and metrics into where my main lot live)
+// all oddities might go away.
     if (p->checksum != checksum)
-    {   printf("Font checksum issue %.8x vs %.8x\n", checksum, p->checksum);
+    {   printf("Font checksum issue %#o vs %#o for %s\n",
+               checksum, p->checksum, fontname);
+// Continue in a spirit of optimism!
     }
     wxFont *f = new wxFont();
     f->SetNativeFontInfoUserDesc(fontname);
     wxSize createdSize(f->GetPixelSize());
-    int fontHeight =createdSize.GetHeight();
+    int points = f->GetPointSize();  // size on screen in points.
+    int fontHeight = createdSize.GetHeight();
+#if 0
     printf("Font was created as %d pixels height\n", fontHeight);
+#endif
 // wxWidgets appears not to see any trace of a "design size" in the
 // TrueType fonts that I use - regardless of design size things end up
 // just the same.
     double dsize = (double)size; // size in TeX units for points
 // Now adjust into screen coordinates in the same way I do for positioning
-    dsize = dsize*(double)screenDPI/(72.0*65536.0);
+    dsize = dsize*mymag*(double)screenDPI/(72.0*65536.0);
+#if 0
     printf("desired pixel size on screen = %.3g\n", dsize);
-    f->Scale((float)(dsize*mymag*(double)mag/1000.0/(double)fontHeight));
+#endif
+// Now I feel a bit as if I am making an assumption here, viz that the
+// pixel size returned in fontHeight is a fully accurate representation of
+// the font size even though it has been forced to be an integer.
+    f->Scale((float)(dsize*(double)mag/1000.0/(double)fontHeight));
+// Well experiments show that the scaled font as set up here does NOT always
+// have the pixel-height that I ideally wanted, but when I try fine-tuning the
+// scaling I tend to find that I am probably as close as I can get and that
+// the actual available scales fall in a discrete rather than a continuous
+// sequence.
     font[k] = f;
     fontWidth[k] = p;
+    fontScale[k] = (double)size/(double)(p->designsize)*16.0;
+#if 0
+    printf("Scale factor for %s = %.3g\n", fontname, fontScale[k]);
+#endif
 }
 
 void dviPanel::SelectFont(int n)
 {
-    if (n > 255)
-    {   printf("This code can only cope with 256 distinct fonts\n");
+    if (n >= MAX_FONTS)
+    {   printf("This code can only cope with MAX_FONTS distinct fonts\n");
         fflush(stdout);
         return;
     }
@@ -1222,6 +1269,7 @@ void dviPanel::SelectFont(int n)
     }
     dcp->SetFont(*font[n]);
     currentFontWidth = fontWidth[n];
+    currentFontScale = fontScale[n];
 }
 
 
@@ -1277,16 +1325,11 @@ void dviPanel::SetChar(int32_t c)
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.
     int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    int32_t design = currentFontWidth->designsize;
 // ww is now the width as extracted from the .tfm file, and that applies
 // to the glyph if it is set at its standard size.
-printf("seems to be %d my default was %d\n", ww, (1<<16)*7);
 
-//@@ At present I do not understand just what I have got wrong, but the
-//@@ scaling by 0.6 here is a FUDGE that at present gives roughly reasonable
-//@@ spacing. Somehow and somewhere I am confused about "character width"
-//@@ so when I have cleared my head I will mend this!
-
-    h += (6*ww/10);
+    h += (int32_t)(currentFontScale*(double)design*(double)ww/(double)(1<<24) + 0.5);
 }
 
 void dviPanel::PutChar(int32_t c)
@@ -1303,10 +1346,11 @@ void dviPanel::PutChar(int32_t c)
 
 void dviPanel::SetRule(int height, int width)
 {
-// Hmm I may need to worry about where the reference point is here
+#if 0
     printf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
                                         height, (double)height/65537.0);
     fflush(stdout);
+#endif
     dcp->DrawRectangle(DVItoScreen(h), DVItoScreen(v-height),
                        DVItoScreenUP(width), DVItoScreenUP(height));
 }
@@ -1318,7 +1362,7 @@ void dviPanel::RenderDVI()
     dcp->SetBrush(b1);
     wxPen p1(c1);
     dcp->SetPen(p1);
-    dcp->DrawRectangle(0, 0, 1024, 768);
+    dcp->DrawRectangle(0, 0, 1600, 800);
 
     dcp->SetBrush(*wxBLACK_BRUSH);
     dcp->SetPen(*wxBLACK_PEN);
@@ -1557,8 +1601,10 @@ void dviPanel::RenderDVI()
                 s4(); // ignore mag
                 s4(); // height+depth of largest page
                 s4(); // width of largest page
+#if 0
                 printf("Greatest stack depth = %d\n", u2());
                 printf("Page count = %d\n", u2());
+#endif
     // The postamble will have font definitions here as well.
                 continue;
         case 249:                          // post_post
@@ -1616,17 +1662,21 @@ dviFrame::dviFrame(const char *dvifilename)
 {
     SetIcon(wxICON(fwin));
     panel = new dviPanel(this, dvifilename);
-    wxSize clientsize(32*32, 9*64);
-    wxSize winsize(ClientToWindowSize(clientsize));
-    SetSize(winsize);
-    SetMinSize(winsize);
-    SetMaxSize(winsize);
+    SetClientSize(panel->GetSize());
+    wxSize s(GetSize());
+    SetMinSize(s);
+    SetMaxSize(s);
     Centre();
 }
 
 
+// When I construct this I must avoid the wxTAB_TRAVERSAL style since that
+// tend sto get characters passed to child windows not this one. Avoiding
+// that is the reason behind providing so many arguments to the parent
+// constructor
+
 dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
-       : wxPanel(parent)
+       : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(1600,800), 0L, "dviPanel")
 {
 // I will read the DVI data once here.
     FILE *f = NULL;
@@ -1645,12 +1695,10 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         for (int i=0; i<len; i++) dviData[i] = getc(f);
         fclose(f);
     }
-
-    wxSize clientsize(1024, 768);
+    for (int i=0; i<MAX_FONTS; i++) font[i] = NULL;
+    wxSize clientsize(1600, 800);
     wxSize winsize(ClientToWindowSize(clientsize));
     SetSize(winsize);
-    SetMinSize(winsize);
-    SetMaxSize(winsize);
     Centre();
 }
 
@@ -1676,32 +1724,37 @@ void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 
 void dviPanel::OnChar(wxKeyEvent &event)
 {
-    printf("Char event\n"); fflush(stdout);
-    event.Skip();
-    page++;
-    Refresh();
+    const char *msg = "OnChar", *raw = "";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
+    if (0x20 < c && c < 0x7f) printf("%s%s %x (%c)\n", msg, raw, c, c);
+    else printf("%s%s %x\n", msg, raw, c);
+    fflush(stdout);
 }
 
 void dviPanel::OnKeyDown(wxKeyEvent &event)
 {
-    printf("Key Down event\n"); fflush(stdout);
-    page++;
+    const char *msg = "OnKeyDown", *raw = "";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
+    if (0x20 < c && c < 0x7f) printf("%s%s %x (%c)\n", msg, raw, c, c);
+    else printf("%s%s %x\n", msg, raw, c);
     event.Skip();
-    Refresh();
 }
 
 void dviPanel::OnKeyUp(wxKeyEvent &event)
 {
-    printf("Key Up event\n"); fflush(stdout);
+    const char *msg = "OnKeyUp", *raw = "";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
+    if (0x20 < c && c < 0x7f) printf("%s%s %x (%c)\n", msg, raw, c, c);
+    else printf("%s%s %x\n", msg, raw, c);
     event.Skip();
-    page++;
-    Refresh();
 }
 
 void dviPanel::OnMouse(wxMouseEvent &event)
 {
-    page++;
-    printf("Mouse event. Page now %d\n", page); fflush(stdout);
+    printf("Mouse event\n"); fflush(stdout);
     event.Skip();
     Refresh();
 }
@@ -1710,7 +1763,6 @@ void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
     dcp = &mydc;
-
     RenderDVI();
     return;
 }

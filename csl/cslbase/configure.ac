@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         May 2008
+# A C Norman.                                         2008-2010
 
 #
 # Special flags that can be used here:
@@ -1403,6 +1403,9 @@ then
 # that particular warning.
   CXXFLAGS="$CXXFLAGS -Wno-write-strings "
 fi
+
+AC_SUBST(HOST)
+HOST="$host"
 
 #
 # Make some things available for conditional segments of a Makefile

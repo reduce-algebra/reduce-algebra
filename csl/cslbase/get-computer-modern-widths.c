@@ -53,7 +53,7 @@
 
 
 
-/* Signature: 1476b278 12-Nov-2010 */
+/* Signature: 71e67d42 14-Nov-2010 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,7 +83,7 @@ static int process(char *d, char *s)
 {
     char line[1024];
     int i;
-    int32_t checksum, w;
+    int32_t checksum, designsize, w;
     int lenhdr, bc, ec, lenwidths;
     int32_t finfo[65536], lentab[256];
     FILE *f;
@@ -107,7 +107,8 @@ static int process(char *d, char *s)
     read4(f);
 /* Pre-header read */
     checksum = read4(f);
-    for (i=1; i<lenhdr; i++) read4(f);
+    designsize = read4(f); // design size on TeX points of 1/72.27" by 2^20
+    for (i=2; i<lenhdr; i++) read4(f);
     for (i=0; i<65536; i++) finfo[i] = 0;
     for (i=bc; i<=ec; i++) finfo[i] = read4(f);
     for (i=0; i<lenwidths; i++)
@@ -119,7 +120,9 @@ static int process(char *d, char *s)
 #endif
     }
     fclose(f);
-    fprintf(out, "{\"%s\", %d, { /* %o */\n    ", d, checksum, checksum);
+    fprintf(out, "{\"%s\", %d, %d, { /* %o %#.3g */\n    ",
+       d, checksum, designsize,
+          checksum, (double)designsize/(double)0x00100000);
 // The TeX fonts only use the first 128 character positions and so I will
 // not bother with recording widths for the range 128-255.
     for (c=0; c<127; c++)
@@ -153,6 +156,7 @@ int main(int argc, char *argv[])
     fprintf(out, "typedef struct font_width {\n");
     fprintf(out, "   const char *name;\n");
     fprintf(out, "   int32_t checksum;\n");
+    fprintf(out, "   int32_t designsize;\n");
     fprintf(out, "   int32_t charwidth[128];\n");
     fprintf(out, "} font_width;\n\n");
     fprintf(out, "static font_width cm_font_width[] = {\n");
@@ -304,7 +308,7 @@ int main(int argc, char *argv[])
     process("msbm8",              "msbm8.tfm");
     process("msbm9",              "msbm9.tfm");
 
-    fprintf(out, "    {NULL, 0, {0}}};\n\n\n");
+    fprintf(out, "    {NULL, 0, 0, {0}}};\n\n\n");
     fprintf(out, "/* End of cmfont-widths.c */\n");
     fclose(out);
     printf("File \"cmfont-widths.c\" created\n");
