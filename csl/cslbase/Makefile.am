@@ -848,7 +848,11 @@ termdemo_LIBS=
 if windows
 image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 else !windows
+if mac_framework
+image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) *.app
+else
 image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
+endif
 endif !windows
 install-data-local: $(image_files)
 	@$(NORMAL_INSTALL)

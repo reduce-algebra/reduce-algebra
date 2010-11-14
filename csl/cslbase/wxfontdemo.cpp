@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 51c764e8 13-Nov-2010 */
+/* Signature: 0d011135 14-Nov-2010 */
 
 
 
@@ -784,7 +784,7 @@ int add_custom_fonts() // return 0 on success.
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
-        char *nn1 = (char *)malloc(strlen(nn) + 1;
+        char *nn1 = (char *)malloc(strlen(nn) + 1);
         strcpy(nn1, nn);
         fontNames[i].path = nn1;
     }

@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 74b2c165 14-Nov-2010 */
+/* Signature: 1dbc67bf 14-Nov-2010 */
 
 
 
@@ -133,6 +133,29 @@ extern char *getcwd(char *s, size_t n);
 
 #include "cmfont-widths.c"
 
+static FILE *logfile = NULL;
+
+static void logprintf(const char *fmt, ...)
+{
+    va_list a;
+    if (logfile == NULL) logfile = fopen("wxdvi.log", "w");
+    if (logfile != NULL)
+    {   va_start(a, fmt);
+        vfprintf(logfile, fmt, a);
+        fflush(logfile);
+        va_end(a);
+    }
+#ifndef MACINTOSH
+// On systems other than the Mac I expect I can (sometimes!) have a console
+// attached to my program, and in that case it will be convenient to sent the
+// trace output there as well as to a file.
+    va_start(a, fmt);
+    vprintf(fmt, a);
+    va_end(a);
+    fflush(stdout);
+#endif
+}
+
 
 
 class dviApp : public wxApp
@@ -158,6 +181,7 @@ public:
 private:
     void RenderDVI();        // sub-function used by OnPaint
     wxPaintDC *dcp;          // pointer to device context to draw on
+    int vertppi;
 
     unsigned char *dviData;  // the .dvi file's contents are stored here
     unsigned const char *stringInput;
@@ -607,7 +631,7 @@ int main(int argc, char *argv[])
 // where it crashes on Windows if build in "release" mode. To try to debug
 // in a case like that I add explicit print statements as follows...
 #if DEBUG
-    printf("Starting wxdvi program\n"); fflush(stdout);
+    logprintf("Starting wxdvi program\n");
 #endif
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
@@ -624,7 +648,7 @@ int main(int argc, char *argv[])
     }
 #endif
 #if DEBUG
-    printf("usegui=%d\n", usegui); fflush(stdout);
+    logprintf("usegui=%d\n", usegui);
 #endif
     if (usegui)
     {
@@ -663,7 +687,7 @@ int main(int argc, char *argv[])
 #endif
         wxDISABLE_DEBUG_SUPPORT();
 #if DEBUG
-    printf("calling wxEntry\n"); fflush(stdout);
+    logprintf("calling wxEntry\n");
 #endif
 
         return wxEntry(argc, argv);
@@ -841,7 +865,7 @@ int add_custom_fonts() // return 0 on success.
         fontNeeded = 1;
         fontNames[i].path = NULL;
 #if DEBUG
-        printf("check if %s is already available\n", lf.lfFaceName); fflush(stdout);
+        logprintf("check if %s is already available\n", lf.lfFaceName);
 #endif
         EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
         if (!fontNeeded) continue;
@@ -860,12 +884,8 @@ int add_custom_fonts() // return 0 on success.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   if (fontNames[i].path == NULL) continue;
         if (AddFontResourceExA(fontNames[i].path, PRIVATE_FONT, 0) == 0)
-        {   printf("Failed to add font %s\n", fontNames[i].path);
-            fflush(stdout);
-        }
+            logprintf("Failed to add font %s\n", fontNames[i].path);
         newFontAdded = 1;
-//      printf("AddFontResource %s\n", fontNames[i].path);
-//      fflush(stdout);
     }
 
     if (newFontAdded)
@@ -903,7 +923,7 @@ int add_custom_fonts() // return 0 on success.
             "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);
 #if 0
-        printf("Adding the font from %s\n", fff);
+        logprintf("Adding the font from %s\n", fff);
 #endif
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
@@ -921,7 +941,7 @@ int add_custom_fonts() // return 0 on success.
                       XFT_OUTLINE, XFT_SCALABLE, XFT_RGBA,
                       XFT_SCALE, XFT_RENDER, XFT_MINSPACE,
                       NULL);
-    printf("fontset has %d distinct fonts out of %d total\n",
+    logprintf("fontset has %d distinct fonts out of %d total\n",
            fs->nfont, fs->sfont);
 // Having obtained all the fonts I will print out all the information about
 // them that Xft is prepared to give me. Note that this seems not to include
@@ -935,7 +955,7 @@ int add_custom_fonts() // return 0 on success.
 //    weight
     if (fs->nfont == 0)
     {   XftFontSetDestroy(fs);
-        printf("Desired font not found\n");
+        logprintf("Desired font not found\n");
         return 1;
     }
 // Note that an XftPattern is just an Fcpattern, so either set of functions
@@ -943,19 +963,8 @@ int add_custom_fonts() // return 0 on success.
     XftPattern *ftPattern = NULL;
     for (int k=0; k<fs->nfont; k++)
     {   ftPattern = fs->fonts[k];
-// NameUnparse converts the name to something printable
-// But BOO HISS the version of Xft shipped with openSuSE 10.2 and with some
-// other versions of Linux missed it out, so just for now I will comment that
-// bit out. Oh dear! A web search finds patches to gentoo to fix this for
-// builds involving qt3 so it really is not just me! But I BELIEVE it will be
-// a transient bug so I will not put it in the autoconf stuff just at present.
-#if 0
-        char buffer[1000];
-        XftNameUnparse(ftPattern, buffer, sizeof(buffer));
-        printf("%s\n", buffer); fflush(stdout);
-#endif
 // FcPatternPrint displays info over several lines - valuable for debugging!
-        FcPatternPrint(ftPattern); printf("\n"); fflush(stdout);
+        FcPatternPrint(ftPattern); printf("\n");
     }
 
     ftVisual = DefaultVisual(dpy, screen);
@@ -1164,7 +1173,7 @@ int32_t dviPanel::s4()
 void dviPanel::DefFont(int k)
 {
 #if 0
-    printf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
+    logprintf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
 #endif
     char fontname[LONGEST_LEGAL_FILENAME];
     int32_t checksum = s4();
@@ -1173,37 +1182,27 @@ void dviPanel::DefFont(int k)
     int arealen = *stringInput++;
     int namelen = *stringInput++;
     if (k >= MAX_FONTS)
-    {   printf("This code can only cope with MAX_FONTS distinct fonts\n");
-        fflush(stdout);
+    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
     }
     if (arealen != 0)
-    {   printf("Fonts with an area specification are not supported\n");
-        fflush(stdout);
+    {   logprintf("Fonts with an area specification are not supported\n");
         return;
     }
     strcpy(fontname, "csl-");
     for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
     fontname[namelen+4] = 0;
-#if 0
-    printf("checksum = %.8x\n", checksum);
-    printf("size = %d %g\n", size, (double)size/65536.0);
-    printf("%s\n", fontname);
+    if (font[k] != NULL) return;
+#if 1
+    logprintf("checksum = %.8x\n", checksum);
+    logprintf("size = %d %g\n", size, (double)size/65536.0);
+    logprintf("%s\n", fontname);
 #endif
-    if (font[k] != NULL)
-    {
-#if 0
-        printf("Font %d already defined\n", k);
-        fflush(stdout);
-#endif
-        return;
-    }
     font_width *p = cm_font_width;
     while (p->name != NULL &&
            strcmp(p->name, fontname+4) != 0) p++;
     if (p->name == NULL)
-    {   printf("Fonts not found in the private font-set I support\n");
-        fflush(stdout);
+    {   logprintf("Fonts not found in the private font-set I support\n");
         return;
     }
 // I find that cmmi7 and cmmi10 (and probably others) give me a complaint
@@ -1217,26 +1216,29 @@ void dviPanel::DefFont(int k)
 // files (or copies their fonts and metrics into where my main lot live)
 // all oddities might go away.
     if (p->checksum != checksum)
-    {   printf("Font checksum issue %#o vs %#o for %s\n",
+    {   logprintf("Font checksum issue %#o vs %#o for %s\n",
                checksum, p->checksum, fontname);
 // Continue in a spirit of optimism!
     }
     wxFont *f = new wxFont();
-    f->SetNativeFontInfoUserDesc(fontname);
-    wxSize createdSize(f->GetPixelSize());
-    int points = f->GetPointSize();  // size on screen in points.
-    int fontHeight = createdSize.GetHeight();
-#if 0
-    printf("Font was created as %d pixels height\n", fontHeight);
+    char sizer[10];
+    sprintf(sizer, " %d", (int)(p->designsize/1048576.0 + 0.5));
+    strcat(fontname, sizer);
+#if 1
+    logprintf("Name + size = %s\n", fontname);
 #endif
-// wxWidgets appears not to see any trace of a "design size" in the
-// TrueType fonts that I use - regardless of design size things end up
-// just the same.
-    double dsize = (double)size; // size in TeX units for points
+    f->SetNativeFontInfoUserDesc(fontname);
+    int points = f->GetPointSize();  // size in points.
+    int fontHeight = (int)(vertppi*points/72.27 + 0.5);
+#if 1
+    logprintf("Font was created as %d pixels %d points\n",
+              fontHeight, points);
+#endif
+    double dsize = (double)size; // size in TeX units
 // Now adjust into screen coordinates in the same way I do for positioning
     dsize = dsize*mymag*(double)screenDPI/(72.0*65536.0);
-#if 0
-    printf("desired pixel size on screen = %.3g\n", dsize);
+#if 1
+    logprintf("desired pixel size on screen = %.3g\n", dsize);
 #endif
 // Now I feel a bit as if I am making an assumption here, viz that the
 // pixel size returned in fontHeight is a fully accurate representation of
@@ -1247,24 +1249,30 @@ void dviPanel::DefFont(int k)
 // scaling I tend to find that I am probably as close as I can get and that
 // the actual available scales fall in a discrete rather than a continuous
 // sequence.
+#if 1
+// This is merely to display information about the font while I debug things.
+    wxString s1(f->GetNativeFontInfoDesc());
+    wxString s2(f->GetNativeFontInfoUserDesc());
+    const char *ss1 = s1.c_str();
+    const char *ss2 = s2.c_str();
+    logprintf("New font %s\n%s\n", ss1, ss2);
+#endif
     font[k] = f;
     fontWidth[k] = p;
     fontScale[k] = (double)size/(double)(p->designsize)*16.0;
-#if 0
-    printf("Scale factor for %s = %.3g\n", fontname, fontScale[k]);
+#if 1
+    logprintf("Scale factor for %s = %.3g\n", fontname, fontScale[k]);
 #endif
 }
 
 void dviPanel::SelectFont(int n)
 {
     if (n >= MAX_FONTS)
-    {   printf("This code can only cope with MAX_FONTS distinct fonts\n");
-        fflush(stdout);
+    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
     }
     if (font[n] == NULL)
-    {   printf("font %d seems not to be set\n", n);
-        fflush(stdout);
+    {   logprintf("font %d seems not to be set\n", n);
         return;
     }
     dcp->SetFont(*font[n]);
@@ -1314,7 +1322,7 @@ int dviPanel::DVItoScreenUP(int n)
 void dviPanel::SetChar(int32_t c)
 {
 #ifdef DEBUG
-    printf("Set (%f,%f) char %.2x (%c)\n",
+    logprintf("Set (%f,%f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
 #endif
     wxString s = (wchar_t)MapChar(c);
@@ -1335,7 +1343,7 @@ void dviPanel::SetChar(int32_t c)
 void dviPanel::PutChar(int32_t c)
 {
 #ifdef DEBUG
-    printf("Set (%f,%f) char %.2x (%c)\n",
+    logprintf("Set (%f,%f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
 #endif
     wxString s = (wchar_t)MapChar(c);
@@ -1347,9 +1355,8 @@ void dviPanel::PutChar(int32_t c)
 void dviPanel::SetRule(int height, int width)
 {
 #if 0
-    printf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
+    logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
                                         height, (double)height/65537.0);
-    fflush(stdout);
 #endif
     dcp->DrawRectangle(DVItoScreen(h), DVItoScreen(v-height),
                        DVItoScreenUP(width), DVItoScreenUP(height));
@@ -1362,17 +1369,19 @@ void dviPanel::RenderDVI()
     dcp->SetBrush(b1);
     wxPen p1(c1);
     dcp->SetPen(p1);
-    dcp->DrawRectangle(0, 0, 1600, 800);
+
+    wxSize window(dcp->GetSize());
+    logprintf("Window size %d by %d\n", window.GetWidth(), window.GetHeight());
+    dcp->DrawRectangle(wxPoint(0, 0), window);
 
     dcp->SetBrush(*wxBLACK_BRUSH);
     dcp->SetPen(*wxBLACK_PEN);
 
     wxSize PPI(dcp->GetPPI());
-    printf("%d by %d ppi\n", PPI.GetWidth(), PPI.GetHeight());
-    wxSize display(dcp->GetSize());
-    printf("screen size %d by %d\n", display.GetWidth(), display.GetHeight());
+    logprintf("%d by %d ppi\n", PPI.GetWidth(), PPI.GetHeight());
+    vertppi = PPI.GetHeight();
     wxSize displaymm(dcp->GetSizeMM());
-    printf("display size mm %d by %d\n", displaymm.GetWidth(), displaymm.GetHeight());
+    logprintf("display size mm %d by %d\n", displaymm.GetWidth(), displaymm.GetHeight());
 
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
@@ -1583,7 +1592,7 @@ void dviPanel::RenderDVI()
         case 247:                          // pre
                 i = *stringInput++;
                 if (i != 2)
-                {   printf("illegal DVI version %d\n", i);
+                {   logprintf("illegal DVI version %d\n", i);
                     break;
                 }
                 num = s4();
@@ -1591,7 +1600,7 @@ void dviPanel::RenderDVI()
                 mag = s4();
                 k = *stringInput++;
                 for (i=0; i<k; i++) *stringInput++;
-                printf("PRE: num=%d, den=%d, (%f) mag=%d\n",
+                logprintf("PRE: num=%d, den=%d, (%f) mag=%d\n",
                        num, den, (double)num/(double)den, mag);
                 continue;
         case 248:                          // post
@@ -1602,26 +1611,26 @@ void dviPanel::RenderDVI()
                 s4(); // height+depth of largest page
                 s4(); // width of largest page
 #if 0
-                printf("Greatest stack depth = %d\n", u2());
-                printf("Page count = %d\n", u2());
+                logprintf("Greatest stack depth = %d\n", u2());
+                logprintf("Page count = %d\n", u2());
 #endif
     // The postamble will have font definitions here as well.
                 continue;
         case 249:                          // post_post
                 s4();
                 *stringInput++;
-                if (*stringInput++ != 223) printf("Malformed DVI file\n");
+                if (*stringInput++ != 223) logprintf("Malformed DVI file\n");
                 break;
 
         // 250-255 undefined
         default:
-                printf("Unknown/undefined opcode %.2x\n", c);
+                logprintf("Unknown/undefined opcode %.2x\n", c);
                 break;
             }
             break;
         }
     }
-    printf("end of file\n");
+    logprintf("end of file\n");
 }
 
 
@@ -1635,24 +1644,25 @@ bool dviApp::OnInit()
     char **myargv = (char **)argv;
 
 #if DEBUG
-    printf("in dviApp::OnInit\n"); fflush(stdout);
+    logprintf("in dviApp::OnInit\n");
 #endif
     add_custom_fonts();
 #if DEBUG
-    printf("fonts added\n"); fflush(stdout);
+    logprintf("fonts added\n");
 #endif
 
     const char *dvifilename = NULL;
     if (argc > 1) dvifilename = myargv[1];
     
 #if DEBUG
-    printf("dvifilename=%s\n", dvifilename == NULL ? "<null>" : dvifilename); fflush(stdout);
+    logprintf("dvifilename=%s\n",
+              dvifilename == NULL ? "<null>" : dvifilename);
 #endif
 
     dviFrame *frame = new dviFrame(dvifilename);
     frame->Show(true);
 #if DEBUG
-    printf("OnInint complete\n"); fflush(stdout);
+    logprintf("OnInint complete\n");
 #endif
     return true;
 }
@@ -1676,7 +1686,8 @@ dviFrame::dviFrame(const char *dvifilename)
 // constructor
 
 dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
-       : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(1600,800), 0L, "dviPanel")
+       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
+                 wxDefaultSize, 0L, "dviPanel")
 {
 // I will read the DVI data once here.
     FILE *f = NULL;
@@ -1685,7 +1696,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
     {   stringInput = NULL;
         f = fopen(dvifilename, "rb");
         if (f == NULL)
-        {   printf("File \"%s\" not found\n", dvifilename);
+        {   logprintf("File \"%s\" not found\n", dvifilename);
             exit(1);
         }
         fseek(f, (off_t)0, SEEK_END);
@@ -1696,7 +1707,7 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++) font[i] = NULL;
-    wxSize clientsize(1600, 800);
+    wxSize clientsize(1200, 600);
     wxSize winsize(ClientToWindowSize(clientsize));
     SetSize(winsize);
     Centre();
@@ -1727,9 +1738,8 @@ void dviPanel::OnChar(wxKeyEvent &event)
     const char *msg = "OnChar", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
-    if (0x20 < c && c < 0x7f) printf("%s%s %x (%c)\n", msg, raw, c, c);
-    else printf("%s%s %x\n", msg, raw, c);
-    fflush(stdout);
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
 }
 
 void dviPanel::OnKeyDown(wxKeyEvent &event)
@@ -1737,8 +1747,8 @@ void dviPanel::OnKeyDown(wxKeyEvent &event)
     const char *msg = "OnKeyDown", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
-    if (0x20 < c && c < 0x7f) printf("%s%s %x (%c)\n", msg, raw, c, c);
-    else printf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
     event.Skip();
 }
 
@@ -1747,16 +1757,16 @@ void dviPanel::OnKeyUp(wxKeyEvent &event)
     const char *msg = "OnKeyUp", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
-    if (0x20 < c && c < 0x7f) printf("%s%s %x (%c)\n", msg, raw, c, c);
-    else printf("%s%s %x\n", msg, raw, c);
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
     event.Skip();
 }
 
 void dviPanel::OnMouse(wxMouseEvent &event)
 {
-    printf("Mouse event\n"); fflush(stdout);
+    logprintf("Mouse event\n");
     event.Skip();
-    Refresh();
+    Refresh();     // forces redraw of everything
 }
 
 void dviPanel::OnPaint(wxPaintEvent &event)

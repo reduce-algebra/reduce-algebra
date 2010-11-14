@@ -593,7 +593,8 @@ R = $(srcdir)/../..
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
 termdemo_LIBS = 
-@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
+@mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
+@mac_framework_TRUE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) *.app
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live
