@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1dbc67bf 14-Nov-2010 */
+/* Signature: 0fc46122 15-Nov-2010 */
 
 
 
@@ -1229,9 +1229,9 @@ void dviPanel::DefFont(int k)
 #endif
     f->SetNativeFontInfoUserDesc(fontname);
     int points = f->GetPointSize();  // size in points.
-    int fontHeight = (int)(vertppi*points/72.27 + 0.5);
+    double fontHeight = vertppi*points/72.27;
 #if 1
-    logprintf("Font was created as %d pixels %d points\n",
+    logprintf("Font was created as %.3g pixels %d points\n",
               fontHeight, points);
 #endif
     double dsize = (double)size; // size in TeX units
@@ -1240,15 +1240,7 @@ void dviPanel::DefFont(int k)
 #if 1
     logprintf("desired pixel size on screen = %.3g\n", dsize);
 #endif
-// Now I feel a bit as if I am making an assumption here, viz that the
-// pixel size returned in fontHeight is a fully accurate representation of
-// the font size even though it has been forced to be an integer.
-    f->Scale((float)(dsize*(double)mag/1000.0/(double)fontHeight));
-// Well experiments show that the scaled font as set up here does NOT always
-// have the pixel-height that I ideally wanted, but when I try fine-tuning the
-// scaling I tend to find that I am probably as close as I can get and that
-// the actual available scales fall in a discrete rather than a continuous
-// sequence.
+    f->Scale((float)(dsize*(double)mag/1000.0/fontHeight));
 #if 1
 // This is merely to display information about the font while I debug things.
     wxString s1(f->GetNativeFontInfoDesc());
