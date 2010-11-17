@@ -242,7 +242,7 @@ l0015:
  mov [[30\*0x8000000]+128],%edi
  mov %edi,4(%esp)
  mov %edi,(%esp)
- mov $15000,%ebx
+ mov $65000,%ebx
  mov symval+1352,%eax
  mov %eax,%edx
  mov %ebx,%ecx
@@ -263,8 +263,8 @@ l0016:
 l0017:
  mov symval+1356,%esi
  or $134217728,%esi
- mov $0,60000(%esi)
- mov $18013,%ebx
+ mov $0,260000(%esi)
+ mov $68023,%ebx
  xor %eax,%eax
  mov %eax,(%esp)
  mov %ebx,4(%esp)
@@ -568,7 +568,7 @@ l0043:
  mov 8(%esp),%eax
  jmp l0042
 l0044:
- cmp $18013,8(%esp)
+ cmp $68023,8(%esp)
  jne l0045
  xor %eax,%eax
  jmp l0046
@@ -684,7 +684,7 @@ l0049:
  inc 12(%esp)
  jmp l0052
 l0053:
- mov $18013,%ebx
+ mov $68023,%ebx
  mov 16(%esp),%eax
  add $20,%esp
  cltd
