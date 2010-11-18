@@ -85,7 +85,7 @@ cat > $psys/psl << EOFF
 #
 $pxk/bpsl  -td $imagesize -f  $psys/psl.img
 #
-#EOFF
+EOFF
 
 
 @ pslcompstatus = $status

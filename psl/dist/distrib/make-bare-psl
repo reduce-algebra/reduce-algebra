@@ -104,7 +104,7 @@ cat > $psys/tmp.sed << EOFF
 s/HERE/$PROOT/g
 EOFF
 
-sed -f  $psys/tmp.sed  $PROOT/run-bare-psl.tmpl >  $PROOT/run-bare-psl.sh
+## sed -f  $psys/tmp.sed  $PROOT/run-bare-psl.tmpl >  $PROOT/run-bare-psl.sh
 
 @ pslcompstatus = $status
 popd
