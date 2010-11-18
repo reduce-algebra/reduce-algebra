@@ -214,7 +214,9 @@ class QtReduceIconSets(QObject):
                                      QtReduceDefaults.ICONSIZE)
         if iconSet:
             iEntry = self.db[iconSet]
-            entry = iEntry[act.iconText()]
+            text = act.iconText()
+            if text in iEntry.keys():
+                entry = iEntry[text]
             path = ''
             if entry:
                 path = sys.path[0] + "/icons/" + iconSet + "/"

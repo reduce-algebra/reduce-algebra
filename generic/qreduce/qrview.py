@@ -37,10 +37,12 @@ from PySide.QtCore import QSettings
 
 from PySide.QtGui import QTextEdit
 from PySide.QtGui import QFont
-from PySide.QtGui import QFontInfo
-from PySide.QtGui import QTextCursor
-from PySide.QtGui import QMessageBox
 from PySide.QtGui import QFontDatabase
+from PySide.QtGui import QFontInfo
+from PySide.QtGui import QFrame
+from PySide.QtGui import QMessageBox
+from PySide.QtGui import QPainter
+from PySide.QtGui import QTextCursor
 
 from qrlogging import fontLogger
 from qrlogging import signalLogger
@@ -137,11 +139,45 @@ class QtReduceFrameView(QtReduceTextEdit):
     NotEvaluated = '...'
     leftRow = Signal(IntType)
 
+    def __init__(self,parent=None):
+        super(QtReduceFrameView,self).__init__(parent)
+        self.setUndoRedoEnabled(False)
+        self.selectionChanged.connect(self.pruneSelection)
+
     def atEnd(self):
         return self.textCursor().atEnd()
 
     def atStart(self):
         return self.textCursor().atStart()
+
+    def gotoNextInputPosition(self):
+        cursor = self.textCursor()
+        if not cursor.atEnd():
+            cursor.movePosition(QTextCursor.NextBlock)
+            while not cursor.atEnd() and not self.__isInputPosition(cursor):
+                cursor.movePosition(QTextCursor.NextBlock)
+            self.setTextCursor(cursor)
+
+    def gotoPreviousInputPosition(self):
+        cursor = self.textCursor()
+        if not cursor.atStart():
+            cursor.movePosition(QTextCursor.PreviousBlock)
+            while not cursor.atStart() and not self.__isInputPosition(cursor):
+                cursor.movePosition(QTextCursor.PreviousBlock)
+            self.setTextCursor(cursor)
+
+    def gotoRow(self,row):
+        rows = self.document().rootFrame().childFrames()
+        if row >= len(rows):
+            traceLogger.critical("invalid row %d > %d" % (row,len(rows)-1))
+            row = len(rows)
+        cursor = QTextCursor(rows[row].lastCursorPosition())
+        cursor.movePosition(QTextCursor.NextBlock)
+        self.setTextCursor(cursor)
+        self.ensureCursorVisible()
+        cursor = QTextCursor(rows[row].childFrames()[0])
+        self.setTextCursor(cursor)
+        self.ensureCursorVisible()
 
     def insertRow(self,row):
         document = self.document()
@@ -205,6 +241,46 @@ class QtReduceFrameView(QtReduceTextEdit):
                 self.computationRequest.emit(self.row())
                 return
         super(QtReduceTextEdit,self).keyPressEvent(e)
+
+    def paintEvent(self,e):
+        print e
+        #painter = QPainter(self)
+        # pen = painter.pen()
+        # pen.setCosmetic(True)
+        # pen.setWidth(0.0)
+        # painter.setPen(pen)
+        # painter.setRenderHint(QPainter.Antialiasing, False)
+        # height = self.verticalScrollBar().sliderPosition()
+        # for group in self.document().rootFrame().childFrames():
+        #     iblock = group.childFrames()[0].firstCursorPosition().block()
+        #     rect = iblock.layout().boundingRect()
+        #     position = iblock.layout().position()
+        #     self.__drawBracket(painter, position.y() + 1 - height, position.y()
+        #                 + rect.height() - 2 - height)
+        # painter.end()
+        super(QtReduceFrameView,self).paintEvent(e)
+
+    def pruneSelection(self):
+        cursor = self.textCursor()
+        if not cursor.hasSelection():
+            return
+        if cursor.hasComplexSelection():
+            cursor.clearSelection()
+            self.setTextCursor(cursor)
+            return
+        s = cursor.selectionStart()
+        e = cursor.selectionEnd()
+        sp = self.__positionPair(s)
+        ep = self.__positionPair(e)
+        traceLogger.debug("start=%d in %s, end=%d in %s" % (s,sp,e,ep))
+        if sp == ep:
+            return
+        c = cursor.position()
+        cp = self.__positionPair(c)
+        traceLogger.debug("cursor=%d in %s" % (c,cp))
+        cursor.clearSelection()
+        self.setTextCursor(cursor)
+        return
 
     def rowOrNextRow(self,cursor=None):
         if not cursor:
@@ -288,34 +364,11 @@ class QtReduceFrameView(QtReduceTextEdit):
     def setResult(self,row,text):
         self.__setOutput(row,text,QtReduceResult())
 
-    def gotoNextInputPosition(self):
-        cursor = self.textCursor()
-        if not cursor.atEnd():
-            cursor.movePosition(QTextCursor.NextBlock)
-            while not cursor.atEnd() and not self.__isInputPosition(cursor):
-                cursor.movePosition(QTextCursor.NextBlock)
-            self.setTextCursor(cursor)
-
-    def gotoPreviousInputPosition(self):
-        cursor = self.textCursor()
-        if not cursor.atStart():
-            cursor.movePosition(QTextCursor.PreviousBlock)
-            while not cursor.atStart() and not self.__isInputPosition(cursor):
-                cursor.movePosition(QTextCursor.PreviousBlock)
-            self.setTextCursor(cursor)
-
-    def gotoRow(self,row):
-        rows = self.document().rootFrame().childFrames()
-        if row >= len(rows):
-            traceLogger.critical("invalid row %d > %d" % (row,len(rows)-1))
-            row = len(rows)
-        cursor = QTextCursor(rows[row].lastCursorPosition())
-        cursor.movePosition(QTextCursor.NextBlock)
-        self.setTextCursor(cursor)
-        self.ensureCursorVisible()
-        cursor = QTextCursor(rows[row].childFrames()[0])
-        self.setTextCursor(cursor)
-        self.ensureCursorVisible()
+    def __drawBracket(self,painter,start,end):
+        painter.drawLine(1,start,4,start)
+        painter.drawLine(1,start,1,end)
+        painter.drawLine(1,start,4,start)
+        painter.drawLine(1,end,4,end)
 
     def __isInputPosition(self,cursor=None):
         if not cursor:
@@ -345,6 +398,37 @@ class QtReduceFrameView(QtReduceTextEdit):
         if cursor.currentFrame() == self.document().rootFrame():
             return True
         return False
+
+    def __positionPair(self,pos):
+        cursor = QTextCursor(self.document())
+        cursor.setPosition(pos)
+        rootFrame = self.document().rootFrame()
+        frames = rootFrame.childFrames()
+        frame = cursor.currentFrame()
+        if frame == rootFrame:
+            # pos is outside any group
+            return [pos,pos]
+        p = frame.parentFrame()
+        if p != rootFrame:
+            # frame is an input or output frame containing pos
+            return [frame.firstPosition(),frame.lastPosition()]
+        # frame is a group frame containing pos in a comment position
+        localFrames = frame.childFrames()
+        inputStart = localFrames[0].firstPosition()
+        if pos < inputStart:
+            return [frame.firstPosition(),inputStart-1]
+        inputEnd = localFrames[0].lastPosition()
+        outputStart = localFrames[1].firstPosition()
+        if inputEnd < pos and pos < outputStart:
+            return [inputEnd+1,outputStart-1]
+        outputEnd = localFrames[1].lastPosition()
+        if outputEnd < pos:
+            return [outputEnd+1,frame.lastPosition()]
+        traceLogger.critical("bad position %d (%d %d) (%d %d)" %
+                             (pos,
+                              ifr.firstPosition(), ifr.lastPosition(),
+                              ofr.firstPosition(), ofr.lastPosition()))
+        return [-1,-1]
 
     def __setOutput(self,row,text,reduceBlockFormat):
         rows = self.document().rootFrame().childFrames()

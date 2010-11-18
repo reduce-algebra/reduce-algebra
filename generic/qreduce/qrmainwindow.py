@@ -345,6 +345,10 @@ class QtReduceMainWindow(QMainWindow):
                                enabled=True,
                                triggered=self.controller.evaluateAll)
 
+        self.delOutpAct = QAction(self.tr("Delete All Output"), self,
+                               enabled=True,
+                               triggered=self.controller.deleteOutput)
+
         self.deleteAct = QAction(self.tr("Delete Group"), self,
                                       shortcut=QKeySequence(Qt.ControlModifier|
                                                             Qt.Key_Backspace),
@@ -419,6 +423,8 @@ class QtReduceMainWindow(QMainWindow):
         self.worksheetMenu = self.menuBar().addMenu(self.tr("Worksheet"))
         self.worksheetMenu.addAction(self.evalSelAct)
         self.worksheetMenu.addAction(self.evalAct)
+        self.worksheetMenu.addSeparator()
+        self.worksheetMenu.addAction(self.delOutpAct)
         self.worksheetMenu.addSeparator()
         self.worksheetMenu.addAction(self.deleteAct)
         self.worksheetMenu.addSeparator()

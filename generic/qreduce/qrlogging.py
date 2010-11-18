@@ -41,7 +41,7 @@ signalLogger.setLevel(logging.WARNING)
 
 fontLogger = logging.getLogger("fnt")
 fontLogger.addHandler(ch)
-fontLogger.setLevel(logging.DEBUG)
+fontLogger.setLevel(logging.WARNING)
 
 traceLogger = logging.getLogger("trc")
 traceLogger.addHandler(ch)

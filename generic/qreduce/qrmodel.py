@@ -74,9 +74,13 @@ class Reduce(QObject):
 
     def compute(self,c):
         self.__mutex.lock()
+        a = self.__compute(c)
+        self.__mutex.unlock()
+        return a
+
+    def __compute(self,c):
         a = ansNew(self.__process,c)
         ansDelete(a['handle'])
-        self.__mutex.unlock()
         return a['data']
 
     def signal(self,c):
@@ -304,6 +308,12 @@ class QtReduceModel(QAbstractTableModel):
             return computation.__repr__()
 #        traceLogger.debug("called with unhandled role %s" % role)
         return None
+
+    def deleteOutput(self):
+        for computation in self.model:
+            computation.result = ''
+            computation.evaluated = False
+        self.dataChanged.emit(self.index(0,0),self.index(len(self.model)-1,0))
 
     def endComputationHandler(self,computation):
         if not computation.silent:

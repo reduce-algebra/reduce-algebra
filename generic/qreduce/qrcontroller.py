@@ -120,6 +120,9 @@ class QtReduceController(QObject):
         if row < self.model.rowCount() - 1:
             self.view.gotoRow(row + 1)
 
+    def deleteOutput(self):
+        self.model.deleteOutput()
+
     def deleteRowOrPreviousRow(self):
         row = self.view.rowOrPreviousRow()
         if row >= 0:
