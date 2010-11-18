@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0fc46122 15-Nov-2010 */
+/* Signature: 7691cfba 18-Nov-2010 */
 
 
 
@@ -52,6 +52,8 @@
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
+
+#include <wx/display.h>
 
 #include "config.h"
 
@@ -74,12 +76,6 @@
 #include <X11/Xft/Xft.h>
 
 static Display *dpy;
-static Visual *ftVisual = NULL;
-static Colormap ftColorMap;
-static XRenderColor ftRenderBlack = {0,0,0,0xffff};
-static XRenderColor ftRenderWhite = {0xffff,0xffff,0xffff,0xffff};
-static XftColor ftBlack, ftWhite;
-static XftFont *ftFont = NULL;
 
 #else   // HAVE_LIBXFT
 
@@ -106,7 +102,7 @@ static XftFont *ftFont = NULL;
 #ifndef _MSC_VER
 extern char *getcwd(char *s, size_t n);
 #endif
-#endif /* HAVE_UNISTD_H */
+#endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -120,7 +116,7 @@ extern char *getcwd(char *s, size_t n);
 #else
 #include <direct.h>
 #endif
-#endif /* HAVE_DIRENT_H */
+#endif // HAVE_DIRENT_H
 
 
 
@@ -178,10 +174,16 @@ public:
     void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
 
+    bool firstPaint;
+
 private:
+    wxFont *fixedPitch;
+    double em;
+    double pixelsPerPoint;    // conversion from TeX to screen coordinates
+    double scaleAdjustment;
+
     void RenderDVI();        // sub-function used by OnPaint
     wxPaintDC *dcp;          // pointer to device context to draw on
-    int vertppi;
 
     unsigned char *dviData;  // the .dvi file's contents are stored here
     unsigned const char *stringInput;
@@ -217,27 +219,12 @@ private:
     font_width *fontWidth[MAX_FONTS], *currentFontWidth;
     double fontScale[MAX_FONTS], currentFontScale;
 
-// num and den are intended to convert TeX internal units into units
-// of 1.0e-7 metres. For display on a printer with some clearly known
-// "DPI" this probably matters - for the purposes of on-screen display I
-// will ignore it at present and just ASSUME that the values in the DVI file
-// are scaled by 2^16 from points.
-//
-// mag is a magnification factor relative to 1000.
-    int32_t num, den, mag;
-
-// I will scale things by an extra amount mymag to get bigger displays while
-// I am debugging. This will probably be set to 1.0 for any production code.
-    const static double mymag = 4.0;
-
 // dvi files use a stack, and at the end of the file is an indication of
 // the greatest stack depth that will be used. I just give myself a fixed
 // quota for now.
 #define MAX_STACK 100
     int32_t stack[6*MAX_STACK];
     int stackp;
-
-
 
     DECLARE_EVENT_TABLE()
 };
@@ -257,8 +244,11 @@ public:
 
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
+    void OnSize(wxSizeEvent &event);
 
 private:
+    int screenWidth, screenHeight;
+
     dviPanel *panel;
     DECLARE_EVENT_TABLE()
 };
@@ -266,6 +256,7 @@ private:
 BEGIN_EVENT_TABLE(dviFrame, wxFrame)
     EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
     EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
+    EVT_SIZE(            dviFrame::OnSize)
 END_EVENT_TABLE()
 
 int get_current_directory(char *s, int n)
@@ -273,7 +264,7 @@ int get_current_directory(char *s, int n)
     if (getcwd(s, n) == 0)
     {   switch(errno)
         {
-    case ERANGE: return -2; /* negative return value flags an error. */
+    case ERANGE: return -2; // negative return value flags an error.
     case EACCES: return -3;
     default:     return -4;
         }
@@ -333,7 +324,8 @@ int find_program_directory(const char *argv0)
 {
     char *w;
     int len, ndir, npgm, j;
-/* In older code I believed that I could rely on Windows giving me
+/*
+ * In older code I believed that I could rely on Windows giving me
  * the full path of my executable in argv[0]. With bits of mingw/cygwin
  * anywhere near me that may not be so, so I grab the information directly
  * from the Windows APIs.
@@ -343,9 +335,9 @@ int find_program_directory(const char *argv0)
     strcpy(this_executable, execname);
     argv0 = this_executable;
     program_name_dot_com = 0;
-    if (argv0[0] == 0)      /* should never happen - name is empty string! */
+    if (argv0[0] == 0)      // should never happen - name is empty string!
     {   programDir = ".";
-        programName = "wxdvi";  /* nothing really known! */
+        programName = "wxdvi";  // nothing really known!
         fullProgramName = ".\\wxdvi.exe";
         return 0;
     }
@@ -373,7 +365,7 @@ int find_program_directory(const char *argv0)
         if (c == '\\') break;
     }
     ndir = len - npgm - 1;
-    if (ndir < 0) programDir = ".";  /* none really visible */
+    if (ndir < 0) programDir = ".";  // none really visible
     else
     {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
         strncpy(w, argv0, ndir);
@@ -387,11 +379,12 @@ int find_program_directory(const char *argv0)
     return 0;
 }
 
-#else /* WIN32 */
+#else // !WIN32
 // Now for Unix, Linux, BSD (and hence Macintosh) worlds.
 
 
-/* Different systems put or do not put underscores in front of these
+/*
+ * Different systems put or do not put underscores in front of these
  * names. My adaptation here should give me a chance to work whichever
  * way round it goes.
  */
@@ -424,7 +417,7 @@ int find_program_directory(const char *argv0)
 
 
 /*
- * the length set here is at least the longest length that I
+ * The length set here is at least the longest length that I
  * am prepared to worry about. If anybody installs the program in a
  * very deep directory such that its fully rooted name is over-long
  * things may not behave well. But I am not going to fuss with dynamic
@@ -454,8 +447,8 @@ int find_program_directory(const char *argv0)
  * environment variables and user-name get expanded out by the shell before
  * the command is actually launched.
  */
-    if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
-    {   programDir = (const char *)"."; /* some sort of default. */
+    if (argv0 == NULL || argv0[0] == 0) // Information not there - return
+    {   programDir = (const char *)"."; // some sort of default.
         programName = (const char *)"wxdvi";
         fullProgramName = (const char *)"./wxdvi";
         return 0;
@@ -468,16 +461,16 @@ int find_program_directory(const char *argv0)
  */
     else if (argv0[0] == '/') fullProgramName = argv0;
     else
-    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   /* seek a "/" */
-        if (*cw == '/')      /* treat as if relative to current dir */
-        {   /* If the thing is actually written as "./abc/..." then */
-            /* strip of the initial "./" here just to be tidy. */
+    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   // seek a "/" *
+        if (*cw == '/')      // treat as if relative to current dir
+        {   // If the thing is actually written as "./abc/..." then
+            // strip of the initial "./" here just to be tidy.
             if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
             n = get_current_directory(pgmname, sizeof(pgmname));
-            if (n < 0) return 1;    /* fail! 1=current directory failure */
+            if (n < 0) return 1;    // fail! 1=current directory failure
             if (n + strlen(argv0) + 2 >= sizeof(pgmname) ||
                 pgmname[0] == 0)
-                return 2; /* Current dir unavailable or full name too long */
+                return 2; // Current dir unavailable or full name too long
             else
             {   pgmname[n] = '/';
                 strcpy(&pgmname[n+1], argv0);
@@ -498,31 +491,33 @@ int find_program_directory(const char *argv0)
             gid_t mygid = getegid(), hisgid;
             int protection;
             int ok = 0;
-/* I expect $PATH to be a sequence of directories with ":" characters to
+/*
+ * I expect $PATH to be a sequence of directories with ":" characters to
  * separate them. I suppose it COULD be that somebody used directory names
  * that had embedded colons, and quote marks or escapes in $PATH to allow
  * for that. In such case this code will just fail to cope.
  */
             if (path != NULL)
             {   while (*path != 0)
-                {   while (*path == ':') path++; /* skip over ":" */
+                {   while (*path == ':') path++; // skip over ":"
                     n = 0;
                     while (*path != 0 && *path != ':')
                     {   pgmname[n++] = *path++;
                         if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
-                            return 3; /* fail! 3=$PATH element overlong */
+                            return 3; // fail! 3=$PATH element overlong
                     }
-/* Here I have separated off the next segment of my $PATH and put it at
+/*
+ * Here I have separated off the next segment of my $PATH and put it at
  * the start of pgmname. Observe that to avoid buffer overflow I
  * exit abruptly if the entry on $PATH is itself too big for my buffer.
  */
                     pgmname[n++] = '/';
                     strcpy(&pgmname[n], argv0);
-/* see if the file whose name I have just built up exists at all. */
+// see if the file whose name I have just built up exists at all.
                     if (stat(pgmname, &buf) == -1) continue;
                     hisuid = buf.st_uid;
                     hisgid = buf.st_gid;
-                    protection = buf.st_mode; /* info about the file found */
+                    protection = buf.st_mode; // info about the file found
 /*
  * I now want to check if there is a file of the right name that is
  * executable by the current (effective) user.
@@ -530,13 +525,14 @@ int find_program_directory(const char *argv0)
                     if (protection & S_IXOTH ||
                         (mygid == hisgid && protection & S_IXGRP) ||
                         (myuid == hisuid && protection & S_IXUSR))
-                    {   ok = 1;   /* Haha - I have found the one we ... */
-                        break;    /* are presumably executing! */
+                    {   ok = 1;   // Haha - I have found the one we ...
+                        break;    // are presumably executing!
                     }
                 }
             }
-            if (!ok) return 4;    /* executable not found via $PATH */
-/* Life is not yet quite easy! $PATH may contain some items that do not
+            if (!ok) return 4;    // executable not found via $PATH
+/*
+ * Life is not yet quite easy! $PATH may contain some items that do not
  * start with "/", ie that are still local paths relative to the
  * current directory. I want to be able to return an absolute fully
  * rooted path name! So unless the item we have at present starts with "/"
@@ -546,7 +542,7 @@ int find_program_directory(const char *argv0)
             {   char temp[LONGEST_LEGAL_FILENAME];
                 strcpy(temp, pgmname);
                 n = get_current_directory(pgmname, sizeof(pgmname));
-                if (n < 0) return 1;    /* fail! 1=current directory failure */
+                if (n < 0) return 1;    // fail! 1=current directory failure
                 if ((n + strlen(temp) + 1) >= sizeof(pgmname)) return 9;
                 pgmname[n++] = '/';
                 strcpy(&pgmname[n], temp);
@@ -569,11 +565,12 @@ int find_program_directory(const char *argv0)
             fullProgramName = pgmname;
         }
     }
-/* Now fullProgramName is set up, but may refer to an array that
+/*
+ * Now fullProgramName is set up, but may refer to an array that
  * is stack allocated. I need to make it proper.
  */
     w = (char *)malloc(1+strlen(fullProgramName));
-    if (w == NULL) return 5;           /* 5 = malloc fails */
+    if (w == NULL) return 5;           // 5 = malloc fails
     strcpy(w, fullProgramName);
     fullProgramName = w;
 #ifdef RAW_CYGWIN
@@ -594,32 +591,34 @@ int find_program_directory(const char *argv0)
               tolower(w[3]) == 'm'))) w[0] = 0;
     }
 #endif
-/* OK now I have the full name, which is of the form
+/*
+ * OK now I have the full name, which is of the form
  *   abc/def/fgi/xyz
  * and I need to split it at the final "/" (and by now I very fully expect
  * there to be at least one "/".
  */
     for (n=strlen(fullProgramName)-1; n>=0; n--)
         if (fullProgramName[n] == '/') break;
-    if (n < 0) return 6;               /* 6 = no "/" in full file path */
+    if (n < 0) return 6;               // 6 = no "/" in full file path
     w = (char *)malloc(1+n);
-    if (w == NULL) return 7;           /* 7 = malloc fails */
+    if (w == NULL) return 7;           // 7 = malloc fails
     strncpy(w, fullProgramName, n);
     w[n] = 0;
-/* Note that if the executable was "/foo" then programDir will end up as ""
+/*
+ * Note that if the executable was "/foo" then programDir will end up as ""
  * so that programDir + "/" + programName works out properly.
  */
     programDir = w;
     n1 = strlen(fullProgramName) - n;
     w = (char *)malloc(n1);
-    if (w == NULL) return 8;           /* 8 = malloc fails */
+    if (w == NULL) return 8;           // 8 = malloc fails
     strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
-    return 0;                          /* whew! */
+    return 0;                          // whew!
 }
 
-#endif /* WIN32 */
+#endif // WIN32
 
 
 int main(int argc, char *argv[])
@@ -815,29 +814,6 @@ static localFonts fontNames[] =
 // #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM)
 #define PRIVATE_FONT FR_PRIVATE
 
-static int fontNeeded = 0;
-
-// A brief comment here. The DEFAULT build of wxWidgets on Windows supports
-// Unicode by using wide characters and strings. That causes me some pain
-// but I NEED to accept it because the character that has code 0x14 in TeX
-// encoding gets mapped to character code 0x2219 in the Bakoma fonts, and it
-// is not at all clear that I have any way to access that glyph if I do
-// not build in Unicode mode.
-
-// You will see a load of places I explicitly call the non-Unicode versions
-// of Windows functions (eg with an "A" at the end of their name) when I wish
-// to pass legacy pre-unicode strings to them.
-
-static int CALLBACK fontEnumProc(
-    const LOGFONTA *lpelfe,     // logical-font data
-    const TEXTMETRICA *lpntme,  // physical-font data
-    DWORD FontType,             // type of font
-    LPARAM lParam)              // application-defined data
-{
-    fontNeeded = 0;
-    return 0;
-}
-
 #endif
 
 
@@ -851,49 +827,20 @@ static int CALLBACK fontEnumProc(
 int add_custom_fonts() // return 0 on success.
 {
 #ifdef WIN32
-    HDC hDC = CreateCompatibleDC(NULL);
-    LOGFONTA lf;
-// I check each of the fonts that this application wants to see if they
-// them for myself. I will ASSUME that there is no ambiguity as to what font
-// is indicated by any particular name and so that any that are found read
-// installed are in fact good in the context that I wish to use them.
+    int newFontAdded = 0;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   memset((void *)&lf, 0, sizeof(lf));
-        strcpy(lf.lfFaceName, fontNames[i].name);
-        lf.lfCharSet = DEFAULT_CHARSET;
-        lf.lfPitchAndFamily = 0;
-        fontNeeded = 1;
-        fontNames[i].path = NULL;
-#if DEBUG
-        logprintf("check if %s is already available\n", lf.lfFaceName);
-#endif
-        EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
-        if (!fontNeeded) continue;
-        char nn[LONGEST_LEGAL_FILENAME];
+    {   char nn[LONGEST_LEGAL_FILENAME];
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
-        char *nn1 = (char *)malloc(strlen(nn) + 1);
-        strcpy(nn1, nn);
-        fontNames[i].path = nn1;
+        if (AddFontResourceExA(nn, PRIVATE_FONT, 0) == 0)
+            logprintf("Failed to add font %s\n", nn);
+        else newFontAdded = 1;
     }
-// Now, for each font that was NOT already available I need to go
-//       AddFontResource[Ex]("filename")
-//       SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    int newFontAdded = 0;
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   if (fontNames[i].path == NULL) continue;
-        if (AddFontResourceExA(fontNames[i].path, PRIVATE_FONT, 0) == 0)
-            logprintf("Failed to add font %s\n", fontNames[i].path);
-        newFontAdded = 1;
-    }
-
     if (newFontAdded)
     {   // This call to SendMessage may sometimes cause a long delay.
         SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     }
-
-    DeleteDC(hDC);
     return 0;
 #else // WIN32
 #ifdef MACINTOSH
@@ -905,7 +852,6 @@ int add_custom_fonts() // return 0 on success.
 
 #else // Assume all that is left is X11, and that Xft/fontconfig are available
     int screen = 0;
-    XftFontSet *fs = NULL;
     FcConfig *config = FcConfigCreate();
     dpy = XOpenDisplay(NULL);
     if (dpy == NULL)
@@ -922,56 +868,9 @@ int add_custom_fonts() // return 0 on success.
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.ttf",
             programDir, fontNames[i].name);
-#if 0
-        logprintf("Adding the font from %s\n", fff);
-#endif
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
-    XftInit("");
-    fs = XftListFonts(dpy, screen,
-//                    XFT_FAMILY, XftTypeString, fontname,
-                      NULL,
-// I will ask XftListFonts to return all available information about the
-// fonts that are found.
-                      XFT_FAMILY, XFT_STYLE, XFT_SLANT, XFT_WEIGHT,
-                      XFT_SIZE, XFT_PIXEL_SIZE, XFT_ENCODING,
-                      XFT_SPACING, XFT_FOUNDRY, XFT_CORE, XFT_ANTIALIAS,
-                      XFT_XLFD, XFT_FILE, XFT_INDEX, XFT_RASTERIZER,
-                      XFT_OUTLINE, XFT_SCALABLE, XFT_RGBA,
-                      XFT_SCALE, XFT_RENDER, XFT_MINSPACE,
-                      NULL);
-    logprintf("fontset has %d distinct fonts out of %d total\n",
-           fs->nfont, fs->sfont);
-// Having obtained all the fonts I will print out all the information about
-// them that Xft is prepared to give me. Note that this seems not to include
-// either the "true" or the "Postscript" name that I might previously have
-// thought was important to me. I think that this is because all the
-// information here comes directly from the font-files rather than from any
-// mapping tables. The key items here are thus probably
-//    family
-//    style
-//    slant
-//    weight
-    if (fs->nfont == 0)
-    {   XftFontSetDestroy(fs);
-        logprintf("Desired font not found\n");
-        return 1;
-    }
-// Note that an XftPattern is just an Fcpattern, so either set of functions
-// can be used to create or manipulate one.
-    XftPattern *ftPattern = NULL;
-    for (int k=0; k<fs->nfont; k++)
-    {   ftPattern = fs->fonts[k];
-// FcPatternPrint displays info over several lines - valuable for debugging!
-        FcPatternPrint(ftPattern); printf("\n");
-    }
-
-    ftVisual = DefaultVisual(dpy, screen);
-    ftColorMap =  DefaultColormap(dpy, screen);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack, &ftBlack);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
-    XftFontSetDestroy(fs); // Now I am done with the list of fonts.
     return 0;
 #endif // MACINTOSH
 #endif // WIN32
@@ -1168,8 +1067,6 @@ int32_t dviPanel::s4()
   v = stack[--stackp]; \
   h = stack[--stackp]
 
-#define screenDPI 72
-
 void dviPanel::DefFont(int k)
 {
 #if 0
@@ -1178,7 +1075,10 @@ void dviPanel::DefFont(int k)
     char fontname[LONGEST_LEGAL_FILENAME];
     int32_t checksum = s4();
     int32_t size = s4();
-    /* int32_t designsize = */ s4();
+// The designsize in a .dvi file is given in units of points/2^16 while
+// in .tfm data it is in units of points/2^20, so I adjust here so that the
+// two sources of information should match.
+    int32_t designsize = s4() << 4;
     int arealen = *stringInput++;
     int namelen = *stringInput++;
     if (k >= MAX_FONTS)
@@ -1220,40 +1120,38 @@ void dviPanel::DefFont(int k)
                checksum, p->checksum, fontname);
 // Continue in a spirit of optimism!
     }
+    if (p->designsize != designsize)
+    {   logprintf("Font designsize issue %x vs %x for %s\n",
+               designsize, p->designsize, fontname);
+// Continue in a spirit of optimism!
+    }
     wxFont *f = new wxFont();
-    char sizer[10];
-    sprintf(sizer, " %d", (int)(p->designsize/1048576.0 + 0.5));
+    char sizer[8]; // merely big enough for the size. Which will
+                   // always be between 7 and 17!
+    logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
+    sprintf(sizer, " %d", (int)(designsize/1048576.0 + 0.5));
     strcat(fontname, sizer);
 #if 1
     logprintf("Name + size = %s\n", fontname);
 #endif
     f->SetNativeFontInfoUserDesc(fontname);
-    int points = f->GetPointSize();  // size in points.
-    double fontHeight = vertppi*points/72.27;
-#if 1
-    logprintf("Font was created as %.3g pixels %d points\n",
-              fontHeight, points);
-#endif
-    double dsize = (double)size; // size in TeX units
-// Now adjust into screen coordinates in the same way I do for positioning
-    dsize = dsize*mymag*(double)screenDPI/(72.0*65536.0);
-#if 1
-    logprintf("desired pixel size on screen = %.3g\n", dsize);
-#endif
-    f->Scale((float)(dsize*(double)mag/1000.0/fontHeight));
+    double scaleBy = (double)size/(double)(p->designsize)*16.0;
+    f->Scale((float)(scaleAdjustment*scaleBy));
 #if 1
 // This is merely to display information about the font while I debug things.
     wxString s1(f->GetNativeFontInfoDesc());
     wxString s2(f->GetNativeFontInfoUserDesc());
     const char *ss1 = s1.c_str();
     const char *ss2 = s2.c_str();
-    logprintf("New font %s\n%s\n", ss1, ss2);
+    logprintf("New font Native \"%s\"\nFont NativeUser \"%s\"\n", ss1, ss2);
 #endif
     font[k] = f;
     fontWidth[k] = p;
-    fontScale[k] = (double)size/(double)(p->designsize)*16.0;
+// I need to record a scale factor used with the font so that when I look
+// up character widths in the metric table I can allow for it.
+    fontScale[k] = scaleBy;
 #if 1
-    logprintf("Scale factor for %s = %.3g\n", fontname, fontScale[k]);
+    logprintf("Scale factor for %s = %.3g\n", fontname, scaleBy);
 #endif
 }
 
@@ -1298,8 +1196,7 @@ int dviPanel::DVItoScreen(int n)
 // at some later stage. The scaling here, which is based on an assumption
 // I make about the dots-per-inch resolution of my display, will end up
 // imprtant when establishing fonts.
-    return (int)(mymag*(double)mag*(double)screenDPI*(double)n/
-                 (72.0*65536.0*1000.0));
+    return (int)(scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
 }
 
 int dviPanel::DVItoScreenUP(int n)
@@ -1307,15 +1204,15 @@ int dviPanel::DVItoScreenUP(int n)
 // This ROUND UP to the next integer, and that is needed so that (eg)
 // very thin rules end up at least one pixel wide. Well I round up by
 // adding a value just under 1,0 then truncating.
-    return (int)(0.999999999 + mymag*(double)mag/1000.0*
-                 (double)screenDPI*(double)n/(72.0*65536.0));
+    return (int)(0.999999999 + scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
 }
 
 void dviPanel::SetChar(int32_t c)
 {
-#ifdef DEBUG
+#if 0
     logprintf("Set (%f,%f) char %.2x (%c)\n",
-        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
+        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
+            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
 #endif
     wxString s = (wchar_t)MapChar(c);
     wxCoord width, height, descent;
@@ -1327,16 +1224,28 @@ void dviPanel::SetChar(int32_t c)
     int32_t ww = currentFontWidth->charwidth[c & 0x7f];
     int32_t design = currentFontWidth->designsize;
 // ww is now the width as extracted from the .tfm file, and that applies
-// to the glyph if it is set at its standard size.
-
-    h += (int32_t)(currentFontScale*(double)design*(double)ww/(double)(1<<24) + 0.5);
+// to the glyph if it is set at its standard size. So adjust for all of
+// that and end up in TeX coordinate units.
+    int32_t texwidth =
+        (int32_t)(0.5 + currentFontScale*(double)design*(double)ww/
+                        (double)(1<<24));
+    h += texwidth;
+#if 0
+// Now I want to compare the width that TeX thinks the character has with
+// what wxWidgets thinks. So I convert the TeX width to pixels.
+    double twp = scaleAdjustment*(double)screenDPI*(double)texwidth/
+                 (72.0*65536.0*1000.0);
+    logprintf("TeX says %#.4g wxWidgets says %d (%.3g)\n",
+        twp, width, twp/(double)width);
+#endif
 }
 
 void dviPanel::PutChar(int32_t c)
 {
 #ifdef DEBUG
-    logprintf("Set (%f,%f) char %.2x (%c)\n",
-        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c, (int)c);
+    logprintf("Put (%f,%f) char %.2x (%c)\n",
+        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
+            c < 0x20 || c > 0x7f ? ' ' :  (int)c);
 #endif
     wxString s = (wchar_t)MapChar(c);
     wxCoord width, height, descent;
@@ -1356,24 +1265,9 @@ void dviPanel::SetRule(int height, int width)
 
 void dviPanel::RenderDVI()
 {
-    wxColour c1(230, 200, 255);
-    wxBrush b1(c1); 
-    dcp->SetBrush(b1);
-    wxPen p1(c1);
-    dcp->SetPen(p1);
-
-    wxSize window(dcp->GetSize());
-    logprintf("Window size %d by %d\n", window.GetWidth(), window.GetHeight());
-    dcp->DrawRectangle(wxPoint(0, 0), window);
 
     dcp->SetBrush(*wxBLACK_BRUSH);
     dcp->SetPen(*wxBLACK_PEN);
-
-    wxSize PPI(dcp->GetPPI());
-    logprintf("%d by %d ppi\n", PPI.GetWidth(), PPI.GetHeight());
-    vertppi = PPI.GetHeight();
-    wxSize displaymm(dcp->GetSizeMM());
-    logprintf("display size mm %d by %d\n", displaymm.GetWidth(), displaymm.GetHeight());
 
 // This always starts afresh at the start of the DVI data, which has been
 // put in an array for me.
@@ -1403,7 +1297,7 @@ void dviPanel::RenderDVI()
         case 132:                           // set rule
                 a = s4();
                 b = s4();
-                if (a > 0 && b >0) SetRule(a, b);
+                if (a > 0 && b > 0) SetRule(a, b);
                 h += b;
                 continue;
         case 133:
@@ -1421,10 +1315,10 @@ void dviPanel::RenderDVI()
         case 137:
                 a = s4();
                 b = s4();
-                if (a > 0 && b >0) SetRule(a, b);
+                if (a > 0 && b > 0) SetRule(a, b);
                 continue;
         case 138:
-                continue;                      // no operation
+                continue;                   // no operation
         case 139:                           // beginning of page
                 h = v = w = x = y = z = stackp = 0;
                 for (i=0; i<10; i++)
@@ -1555,19 +1449,19 @@ void dviPanel::RenderDVI()
                 continue;
         case 239:
                 k = *stringInput++;
-                for (i=0; i<k; i++) *stringInput++;
+                for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
         case 240:
                 k = u2();
-                for (i=0; i<k; i++) *stringInput++;
+                for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
         case 241:
                 k = u3();
-                for (i=0; i<k; i++) *stringInput++;
+                for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
         case 242:
                 k = s4();
-                for (i=0; i<k; i++) *stringInput++;
+                for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
         case 243:                         // fnt_def1
                 DefFont(*stringInput++);
@@ -1587,21 +1481,19 @@ void dviPanel::RenderDVI()
                 {   logprintf("illegal DVI version %d\n", i);
                     break;
                 }
-                num = s4();
-                den = s4();
-                mag = s4();
+                (void)s4();    // ignore num
+                (void)s4();    // ignore den
+                (void)s4();    // ignore mag
                 k = *stringInput++;
-                for (i=0; i<k; i++) *stringInput++;
-                logprintf("PRE: num=%d, den=%d, (%f) mag=%d\n",
-                       num, den, (double)num/(double)den, mag);
+                for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
         case 248:                          // post
-                s4(); // ignore p;
-                s4(); // ignure num
-                s4(); // ignore den
-                s4(); // ignore mag
-                s4(); // height+depth of largest page
-                s4(); // width of largest page
+                (void)s4(); // ignore p;
+                (void)s4(); // ignure num
+                (void)s4(); // ignore den
+                (void)s4(); // ignore mag
+                (void)s4(); // height+depth of largest page
+                (void)s4(); // width of largest page
 #if 0
                 logprintf("Greatest stack depth = %d\n", u2());
                 logprintf("Page count = %d\n", u2());
@@ -1609,8 +1501,8 @@ void dviPanel::RenderDVI()
     // The postamble will have font definitions here as well.
                 continue;
         case 249:                          // post_post
-                s4();
-                *stringInput++;
+                (void)s4();
+                (void)*stringInput++;
                 if (*stringInput++ != 223) logprintf("Malformed DVI file\n");
                 break;
 
@@ -1622,7 +1514,9 @@ void dviPanel::RenderDVI()
             break;
         }
     }
+#if 0
     logprintf("end of file\n");
+#endif
 }
 
 
@@ -1663,11 +1557,39 @@ dviFrame::dviFrame(const char *dvifilename)
        : wxFrame(NULL, wxID_ANY, "wxdvi")
 {
     SetIcon(wxICON(fwin));
+    int numDisplays = wxDisplay::GetCount(); // how many displays?
+// It is not clear to me what I should do if there are several displays,
+// and if there are none I am probably in a mess!
+    if (numDisplays != 1)
+    {   logprintf("There seem to be %d displays\n", numDisplays);
+    }
+    wxDisplay d0(0);                         // just look st display 0
+    wxRect screenArea(d0.GetClientArea());   // omitting task bar
+    screenWidth = screenArea.GetWidth();
+    screenHeight = screenArea.GetHeight();
+    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
+// I will want to end up saving screen size (and even position) between runs
+// of this program.
+    int width = 1280;      // default size.
+    int height = 1024;
+// If the default size would fill over 90% of screen width or height I scale
+// down to make it fit better.
+    if (10*width > 9*screenWidth)
+    {   height = height*9*screenWidth/(10*width);
+        width = 9*screenWidth/10;
+        logprintf("reset to %d by %d to fix width\n", width, height);
+    }
+    if (10*height > 9 * screenHeight)
+    {   width = width*9*screenHeight/(10*height);
+        height = 9*screenHeight/10;
+        logprintf("reset to %d by %d to fix height\n", width, height);
+    }
     panel = new dviPanel(this, dvifilename);
-    SetClientSize(panel->GetSize());
-    wxSize s(GetSize());
-    SetMinSize(s);
-    SetMaxSize(s);
+    SetMinClientSize(wxSize(400, 100));
+    SetSize(width, height);
+    wxSize client(GetClientSize());
+    int w = client.GetWidth() % 80;
+    if (w != 0) SetSize(width-w, height);
     Centre();
 }
 
@@ -1699,10 +1621,8 @@ dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
         fclose(f);
     }
     for (int i=0; i<MAX_FONTS; i++) font[i] = NULL;
-    wxSize clientsize(1200, 600);
-    wxSize winsize(ClientToWindowSize(clientsize));
-    SetSize(winsize);
-    Centre();
+    fixedPitch = NULL;
+    firstPaint = true;
 }
 
 
@@ -1723,6 +1643,14 @@ void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
        "About wxdvi",
        wxOK | wxICON_INFORMATION,
        this);
+}
+
+void dviFrame::OnSize(wxSizeEvent &WXUNUSED(event))
+{
+    wxSize client(GetClientSize());
+    panel->SetSize(client);
+    panel->firstPaint = true;
+    panel->Refresh();
 }
 
 void dviPanel::OnChar(wxKeyEvent &event)
@@ -1758,12 +1686,71 @@ void dviPanel::OnMouse(wxMouseEvent &event)
 {
     logprintf("Mouse event\n");
     event.Skip();
-    Refresh();     // forces redraw of everything
+//  Refresh();     // forces redraw of everything
 }
 
 void dviPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
+
+// The next could probably be done merely by setting a background colour
+    wxColour c1(230, 200, 255);
+    wxBrush b1(c1);
+    mydc.SetBackground(b1);
+//    mydc.SetTextBackground(c1);
+    mydc.Clear(); // explicitly clear background
+
+    if (firstPaint)
+    {   if (fixedPitch == NULL)
+        {   fixedPitch = new wxFont();
+            fixedPitch->SetNativeFontInfoUserDesc("csl-cmtt10 1000");
+
+            font_width *p = cm_font_width;
+            while (p->name != NULL &&
+                   strcmp(p->name, "cmtt10") != 0) p++;
+            if (p->name == NULL)
+            {   logprintf("Oops - font data not found\n");
+                exit(1);
+            }
+            wxCoord width, height, depth, leading;
+            mydc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
+            em = (double)width/100.0;
+            double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
+            logprintf("em=%#.3g fmEm = %#.3g\n", em, fmEm);
+            logprintf("height = %#.3g total height = %#.3g leading = %#.3g\n",
+                (double)(height-depth-leading)/100.0, (double)height/100.0,
+                (double)leading/100.0);
+            pixelsPerPoint = em/fmEm;
+            logprintf("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
+            fixedPitch->SetPointSize(10);
+        }
+        wxSize window(mydc.GetSize());
+        int spacePerChar = window.GetWidth()/80;
+        scaleAdjustment = (double)spacePerChar/em;
+        fixedPitch->SetPointSize(10);
+        fixedPitch->Scale(scaleAdjustment);
+        if (firstPaint)
+        {
+// Now I need to re-size any fonts that have already been created
+            for (int i=0; i<MAX_FONTS; i++)
+            {   wxFont *ff = font[i];
+                if (ff == NULL) continue;
+                ff->SetPointSize(fontWidth[i]->designsize/1048576);
+                ff->Scale(scaleAdjustment*fontScale[i]);
+            }
+        }
+        firstPaint = false;
+    }
+// Sort of fof fun I put a row of 80 characters at the top of the screen
+// so I can show how fixed pitch stuff might end up being rendered.
+    mydc.SetFont(*fixedPitch);
+    mydc.SetBrush(*wxBLACK_BRUSH);
+    mydc.SetPen(*wxBLACK_PEN);
+    wxSize window(mydc.GetSize());
+    for (int i=0; i<80; i++)
+    {   wxString c = (wchar_t)('0' + (i % 10));
+        mydc.DrawText(c, (int)((double)i*window.GetWidth()/80.0), 0);
+    }
     dcp = &mydc;
     RenderDVI();
     return;
