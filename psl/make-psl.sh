@@ -59,5 +59,6 @@ gzip -f bpsl
 # can't say make already, because we may not have a pslcomp. Sigh
 $pdist/make-bare-psl
 $pdist/make-pslcomp
+cd $pdist/..
 make
 
