@@ -1,1 +1,3 @@
-$pxk/bpsl -td 500 -f $psys/pslcomp.img 
+#
+/home/winfried/reduce-algebra/trunk/psl/dist/kernel/AMD64/bpsl  -td 1000 -f  /home/winfried/reduce-algebra/trunk/psl/bin/AMD64/pslcomp.img
+#
