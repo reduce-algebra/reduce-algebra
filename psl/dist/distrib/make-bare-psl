@@ -100,6 +100,12 @@ $pxk/bpsl -td $imagesize << EOF
 (exitlisp)
 EOF
 
+cat > $psys/bare-psl << EOFFF
+#
+$pxk/bpsl -td imagesize -f $psys/bare-psl.img
+#
+EOFFF
+
 cat > $psys/tmp.sed << EOFF
 s/HERE/$PROOT/g
 EOFF
