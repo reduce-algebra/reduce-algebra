@@ -50,6 +50,7 @@ from qrlogging import traceLogger
 
 from qrdefaults import QtReduceDefaults
 
+from qrformats import QtReduceFormat
 from qrformats import QtReduceInput
 from qrformats import QtReduceResult
 from qrformats import QtReduceNoResult
@@ -136,7 +137,7 @@ class QtReduceTextEdit(QTextEdit):
 
 class QtReduceFrameView(QtReduceTextEdit):
     Evaluated = 'EVALUATED'
-    NotEvaluated = '...'
+    NotEvaluated = ''
     leftRow = Signal(IntType)
 
     def __init__(self,parent=None):
@@ -150,12 +151,24 @@ class QtReduceFrameView(QtReduceTextEdit):
     def atStart(self):
         return self.textCursor().atStart()
 
+    def gotoNextBlock(self):
+        cursor = self.textCursor()
+        if not cursor.atEnd():
+            cursor.movePosition(QTextCursor.NextBlock)
+            self.setTextCursor(cursor)
+
     def gotoNextInputPosition(self):
         cursor = self.textCursor()
         if not cursor.atEnd():
             cursor.movePosition(QTextCursor.NextBlock)
             while not cursor.atEnd() and not self.__isInputPosition(cursor):
                 cursor.movePosition(QTextCursor.NextBlock)
+            self.setTextCursor(cursor)
+
+    def gotoPreviousBlock(self):
+        cursor = self.textCursor()
+        if not cursor.atStart():
+            cursor.movePosition(QTextCursor.PreviousBlock)
             self.setTextCursor(cursor)
 
     def gotoPreviousInputPosition(self):
@@ -226,10 +239,10 @@ class QtReduceFrameView(QtReduceTextEdit):
 
     def keyPressEvent(self,e):
         if e.key() == Qt.Key_Tab:
-            self.gotoNextInputPosition()
+            self.gotoNextBlock()
             return
         if e.key() == Qt.Key_Backtab:
-            self.gotoPreviousInputPosition()
+            self.gotoPreviousBlock()
             return
         if self.__isReadOnlyPosition():
             if e.key() not in [Qt.Key_Left,Qt.Key_Right,Qt.Key_Up,Qt.Key_Down]:
@@ -243,21 +256,24 @@ class QtReduceFrameView(QtReduceTextEdit):
         super(QtReduceTextEdit,self).keyPressEvent(e)
 
     def paintEvent(self,e):
-        print e
-        #painter = QPainter(self)
-        # pen = painter.pen()
-        # pen.setCosmetic(True)
-        # pen.setWidth(0.0)
-        # painter.setPen(pen)
-        # painter.setRenderHint(QPainter.Antialiasing, False)
-        # height = self.verticalScrollBar().sliderPosition()
-        # for group in self.document().rootFrame().childFrames():
-        #     iblock = group.childFrames()[0].firstCursorPosition().block()
-        #     rect = iblock.layout().boundingRect()
-        #     position = iblock.layout().position()
-        #     self.__drawBracket(painter, position.y() + 1 - height, position.y()
-        #                 + rect.height() - 2 - height)
-        # painter.end()
+        painter = QPainter(self.viewport())
+        pen = painter.pen()
+        pen.setCosmetic(True)
+        pen.setWidth(0.0)
+        painter.setPen(pen)
+        painter.setRenderHint(QPainter.Antialiasing, False)
+        groups = self.document().rootFrame().childFrames()
+        for group in groups:
+            h = QtReduceRowFormat().leftMargin()
+            hoff = int(0.4*h)
+            self.__drawFrameBracket(painter,group,hoff,Qt.black,xt=-1)
+            childFrames = group.childFrames()
+            hoff = int(0.7*h)
+            self.__drawFrameBracket(painter,childFrames[0],hoff,
+                                    QtReduceFormat().DARKRED,xt=2)
+            self.__drawFrameBracket(painter,childFrames[1],hoff,
+                                    QtReduceFormat().DARKBLUE,xt=2)
+        painter.end()
         super(QtReduceFrameView,self).paintEvent(e)
 
     def pruneSelection(self):
@@ -364,11 +380,17 @@ class QtReduceFrameView(QtReduceTextEdit):
     def setResult(self,row,text):
         self.__setOutput(row,text,QtReduceResult())
 
-    def __drawBracket(self,painter,start,end):
-        painter.drawLine(1,start,4,start)
-        painter.drawLine(1,start,1,end)
-        painter.drawLine(1,start,4,start)
-        painter.drawLine(1,end,4,end)
+    def __drawFrameBracket(self,painter,frame,hoff,color,xt=0,width=2):
+        pen = painter.pen()
+        pen.setColor(color)
+        painter.setPen(pen)
+        top = self.cursorRect(frame.firstCursorPosition()).top()
+        bot = self.cursorRect(frame.lastCursorPosition()).bottom() + 1
+        top -= xt
+        bot += xt
+        painter.drawLine(hoff,top,hoff+width,top)
+        painter.drawLine(hoff,top,hoff,bot)
+        painter.drawLine(hoff,bot,hoff+width,bot)
 
     def __isInputPosition(self,cursor=None):
         if not cursor:

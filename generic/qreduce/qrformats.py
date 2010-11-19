@@ -55,8 +55,13 @@ class QtReduceFormat(object):
 
     def __init__(self):
         self.blockFormat = QTextBlockFormat()
+        self.blockFormat.setAlignment(Qt.AlignLeft)
         self.charFormat = QTextCharFormat()
         self.frameFormat = QTextFrameFormat()
+        self.frameFormat.setTopMargin(0)
+        self.frameFormat.setBottomMargin(0)
+        self.frameFormat.setLeftMargin(0)
+        self.frameFormat.setPosition(QTextFrameFormat.InFlow)
 
 
 class QtReduceInput(QtReduceFormat):
@@ -69,91 +74,76 @@ class QtReduceInput(QtReduceFormat):
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceInput,self).__init__()
-
-            self.blockFormat.setAlignment(Qt.AlignLeft)
-            self.blockFormat.setBackground(QtReduceFormat.GRAY)
-            #self.blockFormat.setRightMargin(-3)
-
             self.charFormat.setForeground(QBrush(QtReduceFormat.DARKRED))
-
-            self.frameFormat.setLeftMargin(15)
-            self.frameFormat.setBorder(1)
-            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
-            self.frameFormat.setPosition(QTextFrameFormat.InFlow)
-
+            self.showFrames(False)
             self._ready = True
 
+    def showFrames(self,b=False):
+        if b:
+            self.blockFormat.setBackground(QtReduceFormat.GRAY)
+            self.frameFormat.setBorder(1)
+            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
+        else:
+            self.blockFormat.setBackground(Qt.white)
+            self.frameFormat.setBorder(0)
+            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
 
-class QtReduceResult(QtReduceFormat):
+
+class QtReduceOutput(QtReduceFormat):
+
+    def __init__(self):
+        super(QtReduceOutput,self).__init__()
+        self.blockFormat.setNonBreakableLines(True)
+
+    def showFrames(self,b=False):
+        if b:
+            self.frameFormat.setBorder(1)
+            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_Solid)
+        else:
+            self.frameFormat.setBorder(0)
+            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
+
+
+class QtReduceResult(QtReduceOutput):
 
     def __new__(type, *args):
         if not '_the_instance' in type.__dict__:
-            type._the_instance = QtReduceFormat.__new__(type)
+            type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceResult,self).__init__()
-
-            self.blockFormat.setAlignment(Qt.AlignLeft)
-            self.blockFormat.setNonBreakableLines(True)
-
             self.charFormat.setForeground(QtReduceFormat.DARKBLUE)
-
-            self.frameFormat.setLeftMargin(15)
-            self.frameFormat.setBorder(1)
-            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
-            self.frameFormat.setPosition(QTextFrameFormat.InFlow)
-
             self._ready = True
 
 
-class QtReduceNoResult(QtReduceFormat):
+class QtReduceNoResult(QtReduceOutput):
 
     def __new__(type, *args):
         if not '_the_instance' in type.__dict__:
-            type._the_instance = QtReduceFormat.__new__(type)
+            type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceNoResult,self).__init__()
-
-            self.blockFormat.setAlignment(Qt.AlignLeft)
-            self.blockFormat.setNonBreakableLines(True)
-
             self.charFormat.setForeground(QtReduceFormat.DARKGRAY)
-
-            self.frameFormat.setLeftMargin(15)
-            self.frameFormat.setBorder(1)
-            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
-            self.frameFormat.setPosition(QTextFrameFormat.InFlow)
-
             self._ready = True
 
 
-class QtReduceError(QtReduceFormat):
+class QtReduceError(QtReduceOutput):
 
     def __new__(type, *args):
         if not '_the_instance' in type.__dict__:
-            type._the_instance = QtReduceFormat.__new__(type)
+            type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceError,self).__init__()
-
-            self.blockFormat.setAlignment(Qt.AlignLeft)
-            self.blockFormat.setNonBreakableLines(True)
             self.blockFormat.setBackground(QtReduceFormat.RED)
-
             self.charFormat.setForeground(Qt.black)
-
-            self.frameFormat.setLeftMargin(15)
-            self.frameFormat.setBorder(1)
-            self.frameFormat.setBorderStyle(QTextFrameFormat.BorderStyle_None)
-            self.frameFormat.setPosition(QTextFrameFormat.InFlow)
-
             self._ready = True
 
 
@@ -161,15 +151,13 @@ class QtReduceInvalid(QtReduceFormat):
 
     def __new__(type, *args):
         if not '_the_instance' in type.__dict__:
-            type._the_instance = QtReduceFormat.__new__(type)
+            type._the_instance = QtReduceOutput.__new__(type)
         return type._the_instance
 
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceInvalid,self).__init__()
-
             self.blockFormat.setBackground(Qt.yellow)
-
             self._ready = True
 
 
@@ -183,11 +171,17 @@ class QtReduceRowFormat(QTextFrameFormat):
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceRowFormat,self).__init__()
+            self.setPosition(QTextFrameFormat.InFlow)
+            self.setLeftMargin(25)
+            self.showFrames(False)
+            self._ready = True
 
+    def showFrames(self,b=True):
+        if b:
             self.setBorder(0.2)
             self.setBorderStyle(QTextFrameFormat.BorderStyle_Solid)
-            self.setPosition(QTextFrameFormat.InFlow)
-            self.setLeftMargin(10)
             self.setRightMargin(-4)
-
-            self._ready = True
+        else:
+            self.setBorder(0)
+            self.setBorderStyle(QTextFrameFormat.BorderStyle_None)
+            self.setRightMargin(0)
