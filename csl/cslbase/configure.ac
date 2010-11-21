@@ -1353,6 +1353,11 @@ then
 
 fi
 
+if test "x$with_wx" != "xno"
+then
+  AC_DEFINE(HAVE_LIBWX, [1], [wxWidgets library will be used])
+fi
+
 #
 # The extra libraries listed here seem to need to be scanned last.
 #

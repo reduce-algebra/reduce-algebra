@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 793be449 09-May-2010 */
+/* Signature: 368a32f0 21-Nov-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -132,6 +132,8 @@ static const char *term_colour;
  *   7  white     W, w
  */
 
+#ifndef WIN32
+
 static int map_colour(int ch)
 {
     switch (ch)
@@ -149,13 +151,17 @@ default:            return -1;
     }
 }
 
+#endif /* WIN32 */
+
 /*
  * The default values set here can be changed as a result of the colour
  * option passed to term_setup.
  */
 static int promptColour = 4;   /* Blue */
 static int inputColour  = 1;   /* Red */
+#ifndef WIN32
 static int outputColour = -1;  /* whatever user had been using */
+#endif /* WIN32 */
 
 #ifndef DEBUG
 

@@ -1,19 +1,20 @@
 /*
- * "wxfwin.c"                               Copyright A C Norman 2003-2010
+ * "wxfwin.c"                                    Copyright A C Norman 2010
  *
  *
  * Window interface for old-fashioned C applications. Intended to
  * be better than just running them within rxvt/xterm, but some people will
  * always believe that running them under emacs is best!
  *
- * Note that although the graphical bits of fwin and coded in C++ the
+ * Note that although the graphical bits of wxfwin and coded in C++ the
  * parts needed for a text-only interface are in just C. This is so that
  * on limited platforms where graphics are not relevant the C++ libraries
  * do not have to be used.
  *
- * This starts off identical to fwin.c, but is kept separate so that if
- * I make changes during my wxWidgets project I will not hurt things so
- * badly.
+ * This starts off identical to an older version, fwin.c, but is kept
+ * separate so that if I make changes during my wxWidgets project I will
+ * not hurt things so badly. Well after not very long it has already diverged
+ * a fair amount!
  */
 
 /**************************************************************************
@@ -46,55 +47,15 @@
  *************************************************************************/
 
 
-/*
- * Note that the above terms apply and must persist regardless of where or how
- * this code is used. A copy of this will be included within a modified
- * version of the FOX library and in that context the whole work has to
- * be treated subject to the constraints of the LGPL (and not the FOX
- * license addendum that would have granted static linking rights, because
- * that only applies to unmodified versions of FOX as sanctioned by its
- * original author). But this code can also be compiled and used without
- * the GUI components, in that case LGPL obligations do not apply but BSD
- * ones do.
- */
+/* Signature: 43b81f9f 21-Nov-2010 */
 
-/* Signature: 255ec818 31-Oct-2010 */
-
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#else
-/* Here I will suppose I am building as part of the FOX library */
-#define PART_OF_FOX 1
-#endif /* HAVE_CONFIG_H */
 
-#include "fwin.h"
+#include "wxfwin.h"
 
 
-extern int fwin_main(int argc, char *argv[]);
+extern int wxfwin_main(int argc, char *argv[]);
 
-#ifdef HAVE_LIBFOX
-/*
- * This case will apply when I am compiling this as part of an application
- * that uses the autoconf tools to create a file "config.h" and when
- * autoconf has reported that the FOX library is available. I require that
- * this represents my updated and extended version of FOX because it will
- * then contain a copy of most of this code. My application can then just
- * start up by transferring control into FOX, passing in information about
- * the callbacks that are needed. The code here is what is needed by
- * CSL...
- */
-
-int main(int argc, char *argv[])
-{
-    fwin_startup(argc, argv, fwin_main);
-}
-
-
-#else /* HAVE_LIBFOX */
-
-/* Even without FOX if I am building on Windows I need this header file
- * for (eg) GetModuleFileName().
- */
 #ifdef WIN32
 /* Indicate that I expect to be using a RECENT version of Windows */
 #ifndef _WIN32_WINNT
@@ -102,6 +63,7 @@ int main(int argc, char *argv[])
 #endif
 #include <windows.h>
 #include <io.h>
+#include <wchar.h>
 #endif /* WIN32 */
 
 #include <string.h>
@@ -136,21 +98,10 @@ extern char *getcwd(char *s, size_t n);
 #endif /* HAVE_DIRENT_H */
 #endif
 
-/*
- * I used to have this to give me X11 headers - but (a) if I am building
- * without FOX I do not have a GUI at all and so they are not needed and
- * (b) they conflict with the Mac-specific headers that follow. Specifically
- * I have pain with "Cursor" being a name-clash.
- *
- * #ifndef WIN32
- * #include <X11/Xlib.h>
- * #endif
- */
-
 #if defined MACINTOSH && defined MAC_FRAMEWORK
 /*
  * The extent to which any code here pays attention to Mac-specific
- * features is and will probably remain minimal! However some may be
+ * features is and should probably remain minimal! However some may be
  * used here.
  */
 #include <Carbon/Carbon.h>
@@ -165,31 +116,74 @@ extern char *getcwd(char *s, size_t n);
 
 #include "termed.h"
 
+#if defined WIN32
 /*
- * The next few are not exactly useful if FOX is not available
- * and hence this code will run in line-mode only. However it is
- * convenient to leave them available.
+ * wxWidgets in Windows uses UTF-16 (wchar_t stuff) for all its characters
+ * and strings. So I will put start using wide character varients on some of
+ * the Windows functions as a matter of proper caution. But the BULK of my
+ * code will remain committed to 8-bit chars for some while, so even when that
+ * move to unicode it will be via UTF-8.
  *
- * Note that FOX as used here is licensed under the LGPL. Its terms
- * require that if the work displays a copyright notice during execution
- * than the FOX copyright notice and a reference directing users to
- * a copy of the LGPL must be displayed to. Thus my suggestion is that the
- * about-box information here should not purport to be a copyright notice,
- * merely a reminder of who the key authors are. However despite not
- * then being obliged to say anything at all about FOX I will put in the
- * URL of its web-site, and of course that is a place where the LGPL can
- * be found. Anything beyond that would make the size of the about box
- * grow in a way I view as clumsy. The wording I use is as requested (but
- * under LGPL not actually required!) by the FOX authors.
+ * Here I wrap up the Microsoft code that converts between UTF-8 and UTF-16
+ * so I can coexist better.
+ *
+ * I am rather crudely not going to concern myself with buffer overflow issues
+ * here. The Microsoft conversion functions do but I will tell them that
+ * the strings I handle will be at most 1000 characters or bytes long. Any
+ * case that goes beyond that will lead to trouble.
  */
+
+typedef wchar_t Uchar;
+
+void unicodeToUtf8(char *dest, const wchar_t *src)
+{
+    WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, 1000, NULL, NULL);
+}
+
+void utf8ToUnicode(wchar_t *dest, const char *src)
+{
+    MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, 1000);
+}
+
+int lenAsUtf8(const wchar_t *s)
+{
+    return (int)WideCharToMultiByte(CP_UTF8, 0, s, -1, NULL, 0, NULL, NULL);
+}
+
+#else
+
+/*
+ * On all platforms except Windows the representation that wxWidgets uses
+ * for Unicode strings is just UTF8, so the "conversions" indicated here
+ * become simple data-copies.
+ */
+
+typedef char Uchar;
+
+void unicodeToUtf8(char *dest, const char *src)
+{
+    strcpy(dest, src);
+}
+
+void utf8ToUnicode(char dest, const char *src)
+{
+    strcpy(dest, src);
+}
+
+int lenAsUtf8(const char *s)
+{
+    return strlen(s) + 1;
+}
+
+#endif
 
 char about_box_title[40]       = "About XXX";
 char about_box_description[40] = "XXX version 1.1";
                               // <icon appears here>
 char about_box_rights_1[40]    = "Author info";
 char about_box_rights_2[40]    = "Additional author";
-char about_box_rights_3[40]    = "This software uses the FOX Toolkit";
-char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
+char about_box_rights_3[40]    = "This software uses wxWidgets";
+char about_box_rights_4[40]    = "(http://www.wxwidgets.org)";
 
 /*
  * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
@@ -203,9 +197,9 @@ char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
 
 const char *colour_spec = "-";
 
-char fwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
+char wxfwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
 
-int fwin_linelength = 80;
+int wxfwin_linelength = 80;
 
 delay_callback_t *delay_callback;
 interrupt_callback_t *interrupt_callback;
@@ -213,20 +207,14 @@ interrupt_callback_t *interrupt_callback;
 extern const char *my_getenv(const char *s);
 
 #ifdef WIN32
-static int program_name_dot_com;
+static int programNameDotCom;
 #endif
 
 int windowed = 0;
 
 int texmacs_mode = 0;
 
-#ifdef HAVE_LIBXFT
-int fwin_use_xft = 1;
-#else
-int fwin_use_xft = 0;
-#endif
-
-int fwin_pause_at_end = 0;
+int wxfwin_pause_at_end = 0;
 
 #ifdef WIN32
 
@@ -246,11 +234,7 @@ void consoleWait()
 
 #ifndef EMBEDDED
 
-#if defined PART_OF_FOX || defined CSL
-int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
-#else
 int main(int argc, char *argv[])
-#endif
 {
     int i;
 #ifndef WIN32
@@ -280,7 +264,6 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef PART_OF_FOX
 /*
  * As the very first thing I will do, I will seek an argument
  * that is just "-w", and if it is present record that I will want to
@@ -316,7 +299,7 @@ int main(int argc, char *argv[])
  * user must go "-w" to specify windowed mode.
  */
 
-    if (program_name_dot_com)
+    if (programNameDotCom)
     {
 /* The program was named "xxx.com". I will assume that that means it was
  * a console-mode application and it is being launched directly from a
@@ -419,11 +402,7 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(argv[i], "-h") == 0 ||
                  strcmp(argv[i], "-H") == 0) 
-#ifdef HAVE_LIBXFT
-                 fwin_use_xft = 0;
-#else
                  ; /* Ignore "-h" option if Xft not available */
-#endif
 /*
  * Note well that I detect just "--" as an entire argument here, so that
  * extended options "--option" do not interfere.
@@ -451,11 +430,7 @@ int main(int argc, char *argv[])
         }
     }
 #endif /* WIN32 */
-#else /* PART_OF_FOX */
-/* If the FOX toolkit is not available there is no point in
- * looking for a command-line option that controls whether to use it!
- */
-#endif /* PART_OF_FOX */
+
 /* Windowed or not, if there is an argument "-b" or "-bxxxx" then the
  * string xxx will do something about screen colours. An empty string
  * will suggest no colouring, the string "-" (as in -b-) whatever default
@@ -469,13 +444,8 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef PART_OF_FOX
-    if (windowed==0) return plain_worker(argc, argv, fwin_main);
-    return windowed_worker(argc, argv, fwin_main);
-#else
-/* If I am using a text-only interface everything is now set up! */
-    return plain_worker(argc, argv, fwin_main);
-#endif
+    if (windowed==0) return plain_worker(argc, argv, wxfwin_main);
+    return windowed_worker(argc, argv, wxfwin_main);
 }
 
 void MS_CDECL sigint_handler(int code)
@@ -542,7 +512,7 @@ static int direct_to_terminal(int argc, char *argv[])
 #endif /* WIN32 */
 }
 
-int plain_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
+int plain_worker(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
 {
     int r;
     signal(SIGINT, sigint_handler);
@@ -560,8 +530,8 @@ int plain_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
         using_termed = 1;
     }
     else using_termed = 0;
-    strcpy(fwin_prompt_string, "> ");
-    r = (*fwin_main)(argc, argv);
+    strcpy(wxfwin_prompt_string, "> ");
+    r = (*wxfwin_main)(argc, argv);
     input_history_end();
     term_close();
     return r;
@@ -575,12 +545,12 @@ static char input_buffer[INPUT_BUFFER_SIZE];
 static int chars_left = 0;
 static int prompt_needed = 1;
 
-int fwin_plain_getchar()
+int wxfwin_plain_getchar()
 {
     int ch;
     if (using_termed)
     {   while (chars_left == 0)
-        {   term_setprompt(fwin_prompt_string);
+        {   term_setprompt(wxfwin_prompt_string);
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
@@ -589,7 +559,7 @@ int fwin_plain_getchar()
     }
     else if (chars_left == 0)
     {   if (prompt_needed) 
-        {   printf("%s", fwin_prompt_string);
+        {   printf("%s", wxfwin_prompt_string);
             prompt_needed = 0;
         }
         fflush(stdout);
@@ -611,13 +581,11 @@ int fwin_plain_getchar()
     return ch;
 }
 
-#ifndef PART_OF_FOX
-
-void fwin_restore()
+void wxfwin_restore()
 {
 }
 
-void fwin_putchar(int c)
+void wxfwin_putchar(int c)
 {
 /*
  * Despite using termed during keyboard input I will just use the
@@ -635,20 +603,20 @@ void fwin_putchar(int c)
     putchar(c);
 }
 
-void fwin_puts(const char *s)
+void wxfwin_puts(const char *s)
 {
 /*
  * See comment above where putchar() is used...
  */
 #ifdef RAW_CYGWIN
-    while (*s != 0) fwin_putchar(*s++);
+    while (*s != 0) wxfwin_putchar(*s++);
 #else
     puts(s);
 #endif
 }
 
 
-void MS_CDECL fwin_printf(const char *fmt, ...)
+void MS_CDECL wxfwin_printf(const char *fmt, ...)
 {
     va_list a;
     va_start(a, fmt);
@@ -664,7 +632,7 @@ void MS_CDECL fwin_printf(const char *fmt, ...)
     va_end(a);
 }
 
-void fwin_vfprintf(const char *fmt, va_list a)
+void wxfwin_vfprintf(const char *fmt, va_list a)
 {
 /*
  * See comment above where putchar() is used...
@@ -677,58 +645,56 @@ void fwin_vfprintf(const char *fmt, va_list a)
 #endif
 }
 
-void fwin_ensure_screen()
+void wxfwin_ensure_screen()
 {
     fflush(stdout);
 }
 
-void fwin_report_left(const char *s)
+void wxfwin_report_left(const char *s)
 {
 }
 
-void fwin_report_mid(const char *s)
+void wxfwin_report_mid(const char *s)
 {
 }
 
-void fwin_report_right(const char *s)
+void wxfwin_report_right(const char *s)
 {
 }
 
-int fwin_getchar()
+int wxfwin_getchar()
 {
-    return fwin_plain_getchar();
+    return wxfwin_plain_getchar();
 }
 
 
-void fwin_set_prompt(const char *s)
+void wxfwin_set_prompt(const char *s)
 {
-    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
-    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    strncpy(wxfwin_prompt_string, s, sizeof(wxfwin_prompt_string));
+    wxfwin_prompt_string[sizeof(wxfwin_prompt_string)-1] = 0;
 }
 
-extern void fwin_menus(char **modules, char **switches,
+extern void wxfwin_menus(char **modules, char **switches,
                        review_switch_settings_function *f)
 {
 }
 
-void fwin_refresh_switches(char **switches, char **packages)
+void wxfwin_refresh_switches(char **switches, char **packages)
 {
 }
 
-void fwin_set_help_file(const char *key, const char *path)
+void wxfwin_set_help_file(const char *key, const char *path)
 {
 }
 
-void fwin_acknowledge_tick()
+void wxfwin_acknowledge_tick()
 {
 }
 
-int fwin_windowmode()
+int wxfwin_windowmode()
 {
     return 0;
 }
-
-#endif /* !PART_OF_FOX */
 
 int get_current_directory(char *s, int n)
 {
@@ -755,67 +721,77 @@ int get_current_directory(char *s, int n)
  * return non-zero value if failure.
  */
 
-const char *fwin_full_program_name = "./fwin.exe";
-const char *programName            = "fwin.exe";
-const char *programDir             = ".";
+const char *fullProgramName    = "./wxfwin.exe";
+const char *programName        = "wxfwin.exe";
+const char *programDir         = ".";
 
 #ifdef WIN32
 
-static char this_executable[LONGEST_LEGAL_FILENAME];
+/*
+ * I am moving towards support for Unicode here! It may take me some
+ * while to finish the conversion, especially since many C-level functions
+ * are pretty much tied to the notion of strings being "char *" and char being
+ * and 8-bit datatype.
+ */
+static wchar_t this_executable[LONGEST_LEGAL_FILENAME];
+static wchar_t temp_buffer[LONGEST_LEGAL_FILENAME];
+static char forFullProgramName[LONGEST_LEGAL_FILENAME];
+static char forProgramName[LONGEST_LEGAL_FILENAME];
+static char forProgramDir[LONGEST_LEGAL_FILENAME];
 
 int find_program_directory(char *argv0)
 {
-    char *w;
-    int len, ndir, npgm, j;
+    wchar_t *a0;
+    int i, len, ndir, npgm, j;
 /* In older code I believed that I could rely on Windows giving me
  * the full path of my executable in argv[0]. With bits of mingw/cygwin
  * anywhere near me that may not be so, so I grab the information directly
  * from the Windows APIs.
+ * Explicitly use the Unicode version here just to be brave.
  */
-    GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
-    argv0 = this_executable;
-    program_name_dot_com = 0;
-    if (argv0[0] == 0)      /* should never happen - name is empty string! */
+    GetModuleFileNameW(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
+    a0 = this_executable;
+    programNameDotCom = 0;
+    if (a0[0] == 0)      /* should never happen - name is empty string! */
     {   programDir = ".";
-        programName = "fwin";  /* nothing really known! */
-        fwin_full_program_name = ".\\fwin.exe";
+        programName = "wxfwin";  /* nothing really known! */
+        fullProgramName = ".\\wxfwin.exe";
         return 0;
     }
-
-    fwin_full_program_name = argv0;
-    len = strlen(argv0);
+    unicodeToUtf8(forFullProgramName, a0);
+    fullProgramName = forFullProgramName;
+    len = (int)wcslen(a0);
 /*
  * If the current program is called c:\aaa\xxx.exe, then the directory
  * is just c:\aaa and the simplified program name is just xxx
  */
     j = len-1;
     if (len > 4 &&
-        argv0[len-4] == '.' &&
-        ((tolower(argv0[len-3]) == 'e' &&
-          tolower(argv0[len-2]) == 'x' &&
-          tolower(argv0[len-1]) == 'e') ||
-         (tolower(argv0[len-3]) == 'c' &&
-          tolower(argv0[len-2]) == 'o' &&
-          tolower(argv0[len-1]) == 'm')))
-    {   program_name_dot_com = (tolower(argv0[len-3]) == 'c');
+        a0[len-4] == '.' &&
+        ((towlower(a0[len-3]) == 'e' &&
+          towlower(a0[len-2]) == 'x' &&
+          towlower(a0[len-1]) == 'e') ||
+         (towlower(a0[len-3]) == 'c' &&
+          towlower(a0[len-2]) == 'o' &&
+          towlower(a0[len-1]) == 'm')))
+    {   programNameDotCom = (towlower(a0[len-3]) == 'c');
         len -= 4;
     }
     for (npgm=0; npgm<len; npgm++)
-    {   int c = argv0[len-npgm-1];
+    {   int c = a0[len-npgm-1];
         if (c == '\\') break;
     }
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  /* none really visible */
     else
-    {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
-        strncpy(w, argv0, ndir);
-        w[ndir] = 0;
-        programDir = w;
+    {   for (i=0; i<ndir; i++) temp_buffer[i] = a0[i];
+        temp_buffer[ndir] = 0;
+        unicodeToUtf8(forProgramDir, temp_buffer);
+        programDir = forProgramDir;
     }
-    if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
-    strncpy(w, argv0 + len - npgm, npgm);
-    w[npgm] = 0;
-    programName = w;
+    for (i=0; i<npgm; i++) temp_buffer[i] = a0[len - npgm + i];
+    unicodeToUtf8(forProgramName, temp_buffer);
+    programName = forProgramName;
     return 0;
 }
 
@@ -823,7 +799,7 @@ int find_program_directory(char *argv0)
 
 
 /* Different systems put or do not put underscores in front of these
- * names. My adaptation here should give me a chabce to work whichever
+ * names. My adaptation here should give me a chance to work whichever
  * way round it goes.
  */
 
@@ -853,10 +829,13 @@ int find_program_directory(char *argv0)
 # endif
 #endif
 
-
 /*
- * the length set here is at least the longest length that I
- * am prepared to worry about.
+ * I will not take any action at all to deal with UTF-8 or Unicode issues
+ * in filenames or paths. Indeed most of Linux and certainly most of my
+ * code will risk terribly confusion with various perfectly ordinary
+ * 7-bit characters such as blank (' ') within filenames, so the issue
+ * of international alphabets there is something I will not really fuss
+ * about yet.
  */
 
 int find_program_directory(char *argv0)
@@ -883,8 +862,8 @@ int find_program_directory(char *argv0)
  */
     if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
     {   programDir = (const char *)"."; /* some sort of default. */
-        programName = (const char *)"fwin";
-        fwin_full_program_name = (const char *)"./fwin";
+        programName = (const char *)"wxfwin";
+        fullProgramName = (const char *)"./wxfwin";
         return 0;
     }
 /*
@@ -893,7 +872,7 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/') fwin_full_program_name = argv0;
+    else if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */
@@ -908,7 +887,7 @@ int find_program_directory(char *argv0)
             else
             {   pgmname[n] = '/';
                 strcpy(&pgmname[n+1], argv0);
-                fwin_full_program_name = pgmname;
+                fullProgramName = pgmname;
             }
         }
         else
@@ -978,7 +957,7 @@ int find_program_directory(char *argv0)
                 pgmname[n++] = '/';
                 strcpy(&pgmname[n], temp);
             }
-            fwin_full_program_name = pgmname;
+            fullProgramName = pgmname;
         }
     }       
 /*
@@ -987,28 +966,30 @@ int find_program_directory(char *argv0)
  */
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
-        if (lstat(fwin_full_program_name, &buf) != -1 &&
+        if (lstat(fullProgramName, &buf) != -1 &&
             S_ISLNK(buf.st_mode) &&
-            (n1 = readlink(fwin_full_program_name,
+            (n1 = readlink(fullProgramName,
                            temp, sizeof(temp)-1)) > 0)
         {   temp[n1] = 0;
             strcpy(pgmname, temp);
-            fwin_full_program_name = pgmname;
+            fullProgramName = pgmname;
         }
     }
-/* Now fwin_full_program_name is set up, but may refer to an array that
+/* Now fullProgramName is set up, but may refer to an array that
  * is stack allocated. I need to make it proper!
  */
-    w = (char *)malloc(1+strlen(fwin_full_program_name));
+    w = (char *)malloc(1+strlen(fullProgramName));
     if (w == NULL) return 5;           /* 5 = malloc fails */
-    strcpy(w, fwin_full_program_name);
-    fwin_full_program_name = w;
+    strcpy(w, fullProgramName);
+    fullProgramName = w;
 #ifdef RAW_CYGWIN
 /*
  * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
  * suffix, so I will purge that! This code exists here because the raw
  * cygwin build has a somewhat schitzo view as to whether it is a Windows
- * or a Unix-like system.
+ * or a Unix-like system. When I am using raw cygwin I am really not
+ * living in a Windows world (and I have not investigated whether I can
+ * build wxWidgets in that case anyway).
  */
     if (strlen(w) > 4)
     {   w += strlen(w) - 4;
@@ -1026,21 +1007,21 @@ int find_program_directory(char *argv0)
  * and I need to split it at the final "/" (and by now I very fully expect
  * there to be at least one "/".
  */
-    for (n=strlen(fwin_full_program_name)-1; n>=0; n--)
-        if (fwin_full_program_name[n] == '/') break;
+    for (n=strlen(fullProgramName)-1; n>=0; n--)
+        if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               /* 6 = no "/" in full file path */
     w = (char *)malloc(1+n);
     if (w == NULL) return 7;           /* 7 = malloc fails */
-    strncpy(w, fwin_full_program_name, n);
+    strncpy(w, fullProgramName, n);
     w[n] = 0;
 /* Note that if the executable was "/foo" then programDir will end up as ""
  * so that programDir + "/" + programName works out properly.
  */
     programDir = w;
-    n1 = strlen(fwin_full_program_name) - n;
+    n1 = strlen(fullProgramName) - n;
     w = (char *)malloc(n1);
     if (w == NULL) return 8;           /* 8 = malloc fails */
-    strncpy(w, fwin_full_program_name+n+1, n1-1);
+    strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
     return 0;                          /* whew! */
@@ -1072,7 +1053,7 @@ extern int get_users_home_directory(char *b, int len);
 
 static lookup_function *look_in_variable = NULL;
 
-void fwin_set_lookup(lookup_function *f)
+void wxfwin_set_lookup(lookup_function *f)
 {
     look_in_variable = f;
 }
@@ -1573,7 +1554,7 @@ int scan_leafstart = 0;
 
 /*
  * For CSL's purposes the following 3 are in syscsl.h, but in general I do not
- * want to use that header with random fwin applications...
+ * want to use that header with random wxfwin applications...
  */
 #define SCAN_FILE       0
 #define SCAN_STARTDIR   1
@@ -2335,7 +2316,6 @@ int get_users_home_directory(char *b, int len)
 
 #endif /* USE_GETUID */
 
-#endif /* HAVE_LIBFOX */
 
 #ifdef EMBEDDED
 #ifdef __ARM_EABI__
@@ -2412,4 +2392,4 @@ int readlink(const char *name, char *b, size_t n)
 #endif
 #endif
 
-/* end of fwin.c */
+/* end of wxfwin.c */

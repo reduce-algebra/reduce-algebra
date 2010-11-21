@@ -76,8 +76,8 @@ am__bootstrapreduce_SOURCES_DIST = arith01.c arith02.c arith03.c \
 	arith10.c arith11.c arith12.c char.c cslmpi.c eval1.c eval2.c \
 	eval3.c eval4.c fns1.c fns2.c fns3.c print.c cslread.c \
 	restart.c sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c \
-	termed.c wxfwin.c jit1.c jit2.c jit3.c jitx86.c x86defs.c \
-	wstring.c textdefs.c prefix.c operands.c insts.c \
+	termed.c wxfwin.c wxterminal.cpp jit1.c jit2.c jit3.c jitx86.c \
+	x86defs.c wstring.c textdefs.c prefix.c operands.c insts.c \
 	instructions.c distorm.c decoder.c bytes1.c stubs.c
 am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 	arith04.$(OBJEXT) arith05.$(OBJEXT) arith06.$(OBJEXT) \
@@ -90,7 +90,8 @@ am__objects_1 = arith01.$(OBJEXT) arith02.$(OBJEXT) arith03.$(OBJEXT) \
 am__objects_2 = csl.$(OBJEXT) fasl.$(OBJEXT) gc.$(OBJEXT) \
 	preserve.$(OBJEXT)
 @fox_FALSE@@wx_FALSE@am__objects_3 = fwin.$(OBJEXT) termed.$(OBJEXT)
-@fox_FALSE@@wx_TRUE@am__objects_3 = wxfwin.$(OBJEXT) termed.$(OBJEXT)
+@fox_FALSE@@wx_TRUE@am__objects_3 = wxfwin.$(OBJEXT) \
+@fox_FALSE@@wx_TRUE@	wxterminal.$(OBJEXT) termed.$(OBJEXT)
 @x86_TRUE@am__objects_4 = x86defs.$(OBJEXT) wstring.$(OBJEXT) \
 @x86_TRUE@	textdefs.$(OBJEXT) prefix.$(OBJEXT) \
 @x86_TRUE@	operands.$(OBJEXT) insts.$(OBJEXT) \
@@ -108,9 +109,9 @@ am__csl_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 	arith11.c arith12.c char.c cslmpi.c eval1.c eval2.c eval3.c \
 	eval4.c fns1.c fns2.c fns3.c print.c cslread.c restart.c \
 	sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c termed.c \
-	wxfwin.c jit1.c jit2.c jit3.c jitx86.c x86defs.c wstring.c \
-	textdefs.c prefix.c operands.c insts.c instructions.c \
-	distorm.c decoder.c bytes.c stubs.c
+	wxfwin.c wxterminal.cpp jit1.c jit2.c jit3.c jitx86.c \
+	x86defs.c wstring.c textdefs.c prefix.c operands.c insts.c \
+	instructions.c distorm.c decoder.c bytes.c stubs.c
 am_csl_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_5) bytes.$(OBJEXT) stubs.$(OBJEXT)
 csl_OBJECTS = $(am_csl_OBJECTS)
@@ -121,7 +122,8 @@ fontdemo_OBJECTS = $(am_fontdemo_OBJECTS)
 @windows_TRUE@am__DEPENDENCIES_2 = fwin-icon.$(OBJEXT)
 am_foxdemo_OBJECTS = foxdemo-foxdemo.$(OBJEXT)
 foxdemo_OBJECTS = $(am_foxdemo_OBJECTS)
-am__fwindemo_SOURCES_DIST = fwindemo.c fwin.c termed.c wxfwin.c
+am__fwindemo_SOURCES_DIST = fwindemo.c fwin.c termed.c wxfwin.c \
+	wxterminal.cpp
 am_fwindemo_OBJECTS = fwindemo.$(OBJEXT) $(am__objects_3)
 fwindemo_OBJECTS = $(am_fwindemo_OBJECTS)
 am__reduce_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
@@ -129,29 +131,29 @@ am__reduce_SOURCES_DIST = arith01.c arith02.c arith03.c arith04.c \
 	arith11.c arith12.c char.c cslmpi.c eval1.c eval2.c eval3.c \
 	eval4.c fns1.c fns2.c fns3.c print.c cslread.c restart.c \
 	sysfwin.c csl.c fasl.c gc.c preserve.c fwin.c termed.c \
-	wxfwin.c jit1.c jit2.c jit3.c jitx86.c x86defs.c wstring.c \
-	textdefs.c prefix.c operands.c insts.c instructions.c \
-	distorm.c decoder.c bytes.c $(gensrc)/u01.c $(gensrc)/u02.c \
-	$(gensrc)/u03.c $(gensrc)/u04.c $(gensrc)/u05.c \
-	$(gensrc)/u06.c $(gensrc)/u07.c $(gensrc)/u08.c \
-	$(gensrc)/u09.c $(gensrc)/u10.c $(gensrc)/u11.c \
-	$(gensrc)/u12.c $(gensrc)/u13.c $(gensrc)/u14.c \
-	$(gensrc)/u15.c $(gensrc)/u16.c $(gensrc)/u17.c \
-	$(gensrc)/u18.c $(gensrc)/u19.c $(gensrc)/u20.c \
-	$(gensrc)/u21.c $(gensrc)/u22.c $(gensrc)/u23.c \
-	$(gensrc)/u24.c $(gensrc)/u25.c $(gensrc)/u26.c \
-	$(gensrc)/u27.c $(gensrc)/u28.c $(gensrc)/u29.c \
-	$(gensrc)/u30.c $(gensrc)/u31.c $(gensrc)/u32.c \
-	$(gensrc)/u33.c $(gensrc)/u34.c $(gensrc)/u35.c \
-	$(gensrc)/u36.c $(gensrc)/u37.c $(gensrc)/u38.c \
-	$(gensrc)/u39.c $(gensrc)/u40.c $(gensrc)/u41.c \
-	$(gensrc)/u42.c $(gensrc)/u43.c $(gensrc)/u44.c \
-	$(gensrc)/u45.c $(gensrc)/u46.c $(gensrc)/u47.c \
-	$(gensrc)/u48.c $(gensrc)/u49.c $(gensrc)/u50.c \
-	$(gensrc)/u51.c $(gensrc)/u52.c $(gensrc)/u53.c \
-	$(gensrc)/u54.c $(gensrc)/u55.c $(gensrc)/u56.c \
-	$(gensrc)/u57.c $(gensrc)/u58.c $(gensrc)/u59.c \
-	$(gensrc)/u60.c
+	wxfwin.c wxterminal.cpp jit1.c jit2.c jit3.c jitx86.c \
+	x86defs.c wstring.c textdefs.c prefix.c operands.c insts.c \
+	instructions.c distorm.c decoder.c bytes.c $(gensrc)/u01.c \
+	$(gensrc)/u02.c $(gensrc)/u03.c $(gensrc)/u04.c \
+	$(gensrc)/u05.c $(gensrc)/u06.c $(gensrc)/u07.c \
+	$(gensrc)/u08.c $(gensrc)/u09.c $(gensrc)/u10.c \
+	$(gensrc)/u11.c $(gensrc)/u12.c $(gensrc)/u13.c \
+	$(gensrc)/u14.c $(gensrc)/u15.c $(gensrc)/u16.c \
+	$(gensrc)/u17.c $(gensrc)/u18.c $(gensrc)/u19.c \
+	$(gensrc)/u20.c $(gensrc)/u21.c $(gensrc)/u22.c \
+	$(gensrc)/u23.c $(gensrc)/u24.c $(gensrc)/u25.c \
+	$(gensrc)/u26.c $(gensrc)/u27.c $(gensrc)/u28.c \
+	$(gensrc)/u29.c $(gensrc)/u30.c $(gensrc)/u31.c \
+	$(gensrc)/u32.c $(gensrc)/u33.c $(gensrc)/u34.c \
+	$(gensrc)/u35.c $(gensrc)/u36.c $(gensrc)/u37.c \
+	$(gensrc)/u38.c $(gensrc)/u39.c $(gensrc)/u40.c \
+	$(gensrc)/u41.c $(gensrc)/u42.c $(gensrc)/u43.c \
+	$(gensrc)/u44.c $(gensrc)/u45.c $(gensrc)/u46.c \
+	$(gensrc)/u47.c $(gensrc)/u48.c $(gensrc)/u49.c \
+	$(gensrc)/u50.c $(gensrc)/u51.c $(gensrc)/u52.c \
+	$(gensrc)/u53.c $(gensrc)/u54.c $(gensrc)/u55.c \
+	$(gensrc)/u56.c $(gensrc)/u57.c $(gensrc)/u58.c \
+	$(gensrc)/u59.c $(gensrc)/u60.c
 am__objects_6 = u01.$(OBJEXT) u02.$(OBJEXT) u03.$(OBJEXT) \
 	u04.$(OBJEXT) u05.$(OBJEXT) u06.$(OBJEXT) u07.$(OBJEXT) \
 	u08.$(OBJEXT) u09.$(OBJEXT) u10.$(OBJEXT) u11.$(OBJEXT) \
@@ -370,7 +372,7 @@ core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 demo_sources = csl.c fasl.c gc.c preserve.c
 undemo_sources = csl.c fasl.c gc.c preserve.c
 @fox_FALSE@@wx_FALSE@fwin_sources = fwin.c termed.c
-@fox_FALSE@@wx_TRUE@fwin_sources = wxfwin.c termed.c
+@fox_FALSE@@wx_TRUE@fwin_sources = wxfwin.c wxterminal.cpp termed.c
 
 # If I am building under FOX then the main parts of material from
 # fwin.c and termed.c get picked up from the FOX library.
@@ -570,8 +572,6 @@ R = $(srcdir)/../..
 @win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
 @wx_TRUE@@wxbuiltin_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
 @wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
-@wx_TRUE@PFD = wxfontdemo.app/Contents/Info.plist
-@wx_TRUE@PDVI = wxdvi.app/Contents/Info.plist
 
 # The next section is to conspire with automake's treatement of externions for
 # executables (ie ".exe") so that eg "make reduce" will case "make reduce.exe" to
@@ -609,16 +609,14 @@ termdemo_LIBS =
 @windows_TRUE@local_image_files = bootstrapreduce.img
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
 @windows_FALSE@	objtype makeheaders machineid.c dynmodule* \
-@windows_FALSE@	$(macr) \
-@windows_FALSE@	object-files.tar.gz objs relink* datestamp.dat
+@windows_FALSE@	$(macr)
 
 @windows_TRUE@generatedfiles = $(console_binaries) $(noinstall_console_binaries) \
 @windows_TRUE@	$(image_files) $(local_image_files) \
-@windows_TRUE@	objtype* cl-wrap* makeheaders* *.def machineid.c dynmodule* \
-@windows_TRUE@	object-files.tar.gz objs relink* datestamp.dat
+@windows_TRUE@	objtype* cl-wrap* makeheaders* *.def machineid.c dynmodule*
 
 @mac_framework_FALSE@@windows_FALSE@macr = 
-@mac_framework_TRUE@@windows_FALSE@macr = mac.r
+@mac_framework_TRUE@@windows_FALSE@macr = mac.r *.app
 COMPILE_DLL = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(DLL_CFLAGS)
 
@@ -890,6 +888,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfwin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmathdemo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxterminal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/x86defs.Po@am__quote@
 
 .c.o:
@@ -2171,6 +2170,7 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
+@mac_framework_TRUE@	$(srcdir)/create_bundle.sh csl csl
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
@@ -2179,11 +2179,13 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
+@mac_framework_TRUE@	$(srcdir)/create_bundle.sh reduce reduce
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
+@mac_framework_TRUE@	$(srcdir)/create_bundle.sh reduce reduce
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
@@ -2192,6 +2194,7 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
+@mac_framework_TRUE@	$(srcdir)/create_bundle.sh fwindemo
 
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-rm -f fontdemo$(EXEEXT)
@@ -2228,123 +2231,25 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo$(EXEEXT)
-# The next few lines are as suggested by the wxWidgets Makefile and create
-# an Application Bundle.
-@mac_framework_TRUE@@wx_TRUE@	SetFile -t APPL wxfontdemo
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/MacOS
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/Resources
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxfontdemo.app/Contents/Resources/Fonts
-@mac_framework_TRUE@@wx_TRUE@	cp reduce.wxFonts/* wxfontdemo.app/Contents/Resources/Fonts
-@mac_framework_TRUE@@wx_TRUE@	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<plist version=\"0.9\">" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<dict>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>6.0</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIdentifier</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>com.codemist.reduce.wxfontdemo</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>English</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLocalizations</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<array> <string>en</string> </array>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleExecutable</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIconFile</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>fwin.icns</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleName</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundlePackageType</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>APPFD</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleSignature</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>????</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleVersion</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleShortVersionString</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleGetInfoString</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxfontdemo version 1, (C) 2010 Codemist Ltd</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLongVersionString</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>NSHumanReadableCopyright</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>LSRequiresCarbon</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CSResourcesFileMapped</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>ATSApplicationFontsPath</key>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>Fonts</string>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "</dict>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo "</plist>" >> $(PFD)
-@mac_framework_TRUE@@wx_TRUE@	echo -n "APPL????" >wxfontdemo.app/Contents/PkgInfo
-@mac_framework_TRUE@@wx_TRUE@	ln -f wxfontdemo wxfontdemo.app/Contents/MacOS/wxfontdemo
-@mac_framework_TRUE@@wx_TRUE@	cp -f $(srcdir)/fwin.icns wxfontdemo.app/Contents/Resources/fwin.icns
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo
 
 @wx_TRUE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdvi$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdvi$(EXEEXT)
-# The next few lines are as suggested by the wxWidgets Makefile and create
-# an Application Bundle.
-@mac_framework_TRUE@@wx_TRUE@	SetFile -t APPL wxdvi
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents/MacOS
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents/Resources
-@mac_framework_TRUE@@wx_TRUE@	mkdir -p wxdvi.app/Contents/Resources/Fonts
-@mac_framework_TRUE@@wx_TRUE@	cp reduce.wxFonts/* wxdvi.app/Contents/Resources/Fonts
-@mac_framework_TRUE@@wx_TRUE@	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<plist version=\"0.9\">" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<dict>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleInfoDictionaryVersion</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>6.0</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIdentifier</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>com.codemist.reduce.wxdvi</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleDevelopmentRegion</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>English</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLocalizations</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<array> <string>en</string> </array>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleExecutable</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxdvi</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleIconFile</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>fwin.icns</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleName</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxdvi</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundlePackageType</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>APPDVI</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleSignature</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>????</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleVersion</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleShortVersionString</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleGetInfoString</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>wxdvi version 1, (C) 2010 Codemist Ltd</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CFBundleLongVersionString</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>1, (C) 2010 Codemist Ltd</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>NSHumanReadableCopyright</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>Copyright 2010 Codemist Ltd</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>LSRequiresCarbon</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>CSResourcesFileMapped</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<true/>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<key>ATSApplicationFontsPath</key>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "<string>Fonts</string>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "</dict>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo "</plist>" >> $(PDVI)
-@mac_framework_TRUE@@wx_TRUE@	echo -n "APPL????" >wxdvi.app/Contents/PkgInfo
-@mac_framework_TRUE@@wx_TRUE@	ln -f wxdvi wxdvi.app/Contents/MacOS/wxdvi
-@mac_framework_TRUE@@wx_TRUE@	cp -f $(srcdir)/fwin.icns wxdvi.app/Contents/Resources/fwin.icns
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdvi
 
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdemo$(EXEEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdemo
 
 @wx_TRUE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxshowmathdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmathdemo$(EXEEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmathdemo
 
 @gui_TRUE@@windows_TRUE@csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f csl.exe

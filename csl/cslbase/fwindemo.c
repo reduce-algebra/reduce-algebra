@@ -1,32 +1,46 @@
-/* fwindemo.c                       Copyright (C) 2004-2008 Codemist Ltd */
+/* fwindemo.c                       Copyright (C) 2004-2010 Codemist Ltd */
 
 
 /*
  * This code is a very simple test and demonstration of the "FXTerminal.cpp"
- * Window-mode input local editing and history package that I have, and
- * in particular it illustrates how that code can be used. Note that if the
- * executable here is launched as just
+ * (or the "wxterminal.cpp" replacement) Window-mode input local editing and
+ * history package that I have, and in particular it illustrates how that
+ * code can be used. Note that if the executable here is launched as just
  *     fwindemo
  * it should create a window and run in it, but
  *     fwindemo -w
  * should run in console-mode.
  *
+ * Well actually things are just slightly more complicated than that!
  *
- * NB that when compiling on Windows my Makefile will create TWO executables
+ * When compiling on Windows my Makefile will create TWO executables
  * for this program. One will be called fwindemo.com and will be linked
  * with "susbsystem:console", the other will be fwindemo.exe and is set
- * up as "susbsystem:windows". If you just say "fwindemo" and the directory
- * with these in is on your path then fwindemo.com gets launched. If you
- * want to double-click you should do so on fwindemo.exe. You can launch
- * fwindemo[.com] from the command line and it will still launch and
- * run in a window (unless you give it the "-w" flag). Those who feel the
- * need to understand why I do all this can do web searches about creating
- * programs that can run in either Windows or Console mode...
- * 
+ * up as "susbsystem:windows". If you just say "fwindemo" to a normal
+ * DOS shell and the directory with these in is on your path then
+ * fwindemo.com gets launched. If you want to double-click you should do so
+ * on fwindemo.exe. But if you say just "fwindemo" to a cygwin shell that
+ * looks for fwindemo.exe, so if you need the version that remains attached
+ * to your console there you have to say "fwindemo.com" explictly.
+ * You can launch fwindemo[.com] from the command line and it will still
+ * launch and run in a window (unless you give it the "-w" flag). Those who
+ * feel the need to understand why I do all this can do web searches about
+ * creating programs that can run in either Windows or Console mode...
+ *
+ * On the Macintosh there is an "application bundle" (directory) called
+ * fwindemo.app created. the main fwindemo executable is (hard) linked to
+ * a suitable location within that. It is expected that Mac users will
+ * launch fwindemo.app by clicking on it and will run the plan fwindemo
+ * executable when running from a console. However in many cases unless
+ * the plain executable is given the "-w" flag it will internally go
+ * "open fwindemo.app" to launch the gui alternative. Even if typically
+ * Mac users might not wish to take advantage of this faciliti I personally
+ * find it a convenience - and it makes the overall behaviour of the system
+ * more compatible across platforms.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -56,26 +70,27 @@
 
 
 
-/* Signature: 7be5f863 25-May-2008 */
+/* Signature: 1281e1c8 21-Nov-2010 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed
  * development of this code, the behaviour of the Windowed interface in
- * FXTerminal.cpp and of the console mode one in termed.c are compatible.
- * The key-bindings are intended to be "emacs-like" so they support command
- * to move backwards and forwards by characters and words, to delete
- * characters or words, to adjust case and to scan up and down through a
- * history. More elaborate variants on this idea would permit the user to
- * re-assign key-bindings. I have not implemented that at all. Partly to
- * try to keep my code simple and partly because I feel customised key-
- * bindings are a source of terrible confusion.
+ * FXTerminal.cpp/wxterminal.cpp and of the console mode one in termed.c are
+ * compatible. The key-bindings are intended to be "emacs-like" so they
+ * support command to move backwards and forwards by characters and words,
+ * to delete characters or words, to adjust case and to scan up and down
+ * through a history. More elaborate variants on this idea would permit
+ * the user to re-assign key-bindings. I have not implemented that at all.
+ * Partly to try to keep my code simple and partly because I feel customised
+ * key-bindings are a source of terrible confusion. The other capability that
+ * some may miss and that perhaps I could consider adding is "completion".
  *
  * Because of my intended use for this code I have allocated some keys to
  * menu shortcuts that will not be relevant to other people but that are
  * useful to me. Not all keys can and not all keys do work under both
- * FXTerminal and termed environments. I annotate this key-list with a
- * ($) for things not active under FXTerminal and with (!) for not active
- * or incomplete under termed.
+ * FXTerminal/wxterminal and termed environments. I annotate this key-list
+ * with a ($) for things not active under FXTerminal/wxterminal and with (!)
+ * for not active or incomplete under termed.
  *
  *
  *
@@ -143,10 +158,10 @@
  *
  * Arrow etc keys...
  *
- * ->   forward char/word
- * <-   backwards char/word
- * ^    history prev/search history prev
- * v    history next/search history next
+ * ->   (right arrow) forward char/word
+ * <-   (left arrow) backwards char/word
+ * ^    (up arrow) history prev/search history prev
+ * v    (down arrow) history next/search history next
  * home start line/start buffer
  * end  end line/end buffer
  *
@@ -183,14 +198,24 @@
  */
 
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <stdio.h>
 #include <string.h>
 
+#ifdef HAVE_WX
+#include "wxfwin.h"
+#else
 #include "fwin.h"
+#endif
+
+#ifdef HAVE_WX
+/* Allow for new versions of all the names */
+#define fwin_getchar  wxfwin_getchar
+#define fwin_printf   wxfwin_print
+#define fwin_exit     wxfwin_exit
+#define fwin_startup  wxfwin_startup
+#endif
 
 int fwin_main(int argc, char **argv)
 {

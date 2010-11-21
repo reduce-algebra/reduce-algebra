@@ -10639,6 +10639,13 @@ $as_echo "$as_me: FOX libraries not found: will not build GUI code" >&6;}
 
 fi
 
+if test "x$with_wx" != "xno"
+then
+
+$as_echo "#define HAVE_LIBWX 1" >>confdefs.h
+
+fi
+
 #
 # The extra libraries listed here seem to need to be scanned last.
 #

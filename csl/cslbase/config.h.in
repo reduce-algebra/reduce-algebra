@@ -106,6 +106,9 @@
 /* Define to 1 if you have the `socket' library (-lsocket). */
 #undef HAVE_LIBSOCKET
 
+/* wxWidgets library will be used */
+#undef HAVE_LIBWX
+
 /* True Xft is available */
 #undef HAVE_LIBXFT
 
