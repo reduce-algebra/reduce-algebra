@@ -1,4 +1,4 @@
-AC_INIT([REDUCE], [20080421], [acn1@cam.ac.uk])
+AC_INIT([REDUCE], [20101122], [acn1@cam.ac.uk])
 
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
