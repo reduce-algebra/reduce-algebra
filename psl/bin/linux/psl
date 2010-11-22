@@ -1,1 +1,3 @@
-$pxk/bpsl -f $psys/psl.img -td 12000000
+#
+/home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl/dist/kernel/linux/bpsl  -td 10000000 -f  /home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl/bin/linux/psl.img
+#
