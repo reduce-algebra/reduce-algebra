@@ -1,14 +1,15 @@
 #! /bin/sh
 
 # Usage:
-#   $srcdir/create_bundle.sh name ?icon
+#   $srcdir/create_bundle.sh name srcdir ?icon
 #
 # Sets up name.app with a proper Info.plist etc for use with MacOSX.
 # This copies in an icon, and arg2 (if present) specifies its identity
 # as an .icns file in $srcdir
 
 P=$1.app/Contents/Info.plist
-IC=${2:-fwin}
+srcdir=$2
+IC=${3:-fwin}
 
 SetFile -t APPL $1
 mkdir -p $1.app/Contents

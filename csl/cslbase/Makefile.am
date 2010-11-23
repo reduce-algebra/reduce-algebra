@@ -418,9 +418,11 @@ endif gui
 endif windows
 endif !darwin
 endif !debug
+if wx
 if mac_framework
-	$(srcdir)/create_bundle.sh csl csl
+	$(srcdir)/create_bundle.sh csl $(srcdir) csl
 endif mac_framework
+endif wx
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
@@ -441,9 +443,11 @@ endif gui
 endif windows
 endif !darwin
 endif !debug
+if wx
 if mac_framework
-	$(srcdir)/create_bundle.sh reduce reduce
+	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
 endif mac_framework
+endif wx
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
@@ -453,9 +457,11 @@ if !darwin
 	$(STRIP) bootstrapreduce$(EXEEXT)
 endif !darwin
 endif !debug
+if wx
 if mac_framework
-	$(srcdir)/create_bundle.sh reduce reduce
+	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
 endif mac_framework
+endif wx
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
@@ -476,10 +482,11 @@ endif gui
 endif windows
 endif !darwin
 endif !debug
+if wx
 if mac_framework
-	$(srcdir)/create_bundle.sh fwindemo
+	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
 endif mac_framework
-
+endif wx
 
 if fox
 
@@ -545,7 +552,7 @@ if !darwin
 endif !darwin
 endif !debug
 if mac_framework
-	$(srcdir)/create_bundle.sh wxfontdemo
+	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
 endif mac_framework
 
 wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
@@ -557,7 +564,7 @@ if !darwin
 endif !darwin
 endif !debug
 if mac_framework
-	$(srcdir)/create_bundle.sh wxdvi
+	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
 endif mac_framework
 
 wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
@@ -569,7 +576,7 @@ if !darwin
 endif !darwin
 endif !debug
 if mac_framework
-	$(srcdir)/create_bundle.sh wxdemo
+	$(srcdir)/create_bundle.sh wxdemo $(srcdir)
 endif mac_framework
 
 wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
@@ -581,7 +588,7 @@ if !darwin
 endif !darwin
 endif !debug
 if mac_framework
-	$(srcdir)/create_bundle.sh wxshowmathdemo
+	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
 endif mac_framework
 
 endif wx
