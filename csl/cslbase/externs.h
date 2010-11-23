@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 35ce39c9 03-Sep-2010 */
+/* Signature: 4abbfd78 23-Nov-2010 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -758,6 +758,8 @@ extern int garbage_collection_permitted;
 extern char *files_to_read[MAX_INPUT_FILES],
      *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
      *fasl_paths[MAX_FASL_PATHS];
+extern int csl_argc;
+extern char **csl_argv;
 extern int fasl_output_file, output_directory;
 extern FILE *binary_read_file;
 

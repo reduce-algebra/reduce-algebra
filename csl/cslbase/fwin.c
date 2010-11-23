@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 7d16abe5 20-Aug-2010 */
+/* Signature: 161844b3 23-Nov-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -274,6 +274,7 @@ int main(int argc, char *argv[])
         {   printf("%s\n", programDir);
             exit(0);
         }
+        else if (strcmp, argv[i], "--args") == 0) break;
     }
 
 #ifdef PART_OF_FOX
@@ -406,7 +407,8 @@ int main(int argc, char *argv[])
  *        "-w-" for this case).
  */
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
         else if (strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
@@ -459,7 +461,8 @@ int main(int argc, char *argv[])
  */
     colour_spec = "-";
     for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-b", 2) == 0)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        else if (strncmp(argv[i], "-b", 2) == 0)
         {   colour_spec = argv[i]+2;
             break;
         }

@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 113b4772 15-Sep-2010 */
+/* Signature: 70aff9f1 23-Nov-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1256,6 +1256,9 @@ CSLbool always_noisy = NO;
 
 int load_count = 0, load_limit = 0x7fffffff;
 
+int csl_argc;
+char **csl_argv;
+
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
@@ -1298,6 +1301,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     for (i=1; i<argc; i++)
     {   char *opt = argv[i];
         if (opt == NULL) continue;
+        else if (strcmp(argv[i], "--args")==0) break;
 #if defined WINDOW_SYSTEM && !defined EMBEDDED
         if (opt[0] == '-' && tolower(opt[1] == 'w'))
         {   use_wimp = !use_wimp;
@@ -1342,7 +1346,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     car_low = 0;
     car_high = 0xffffffff;
 #endif
-
+/* I save the args so that setup can make a lisp variable out of them */
+    csl_argc = argc;
+    csl_argv = argv;
     argc--;
     for (i=1; i<=argc; i++)
     {   char *opt = argv[i];
@@ -1352,6 +1358,11 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  * here as a matter of security.
  */
         if (opt == NULL || *opt == 0) continue;
+/*
+ * The keyword "--args" terminates CSL's scanning of the arguments so any
+ * material beyond there is merely for use by the application code.
+ */
+        else if (strcmp(opt, "--args")==0) break;
 /*
  * Note that I do not treat an isolated "-" as introducing an "option".
  * Instead it is treated as a file-name and it indicates the "standard"

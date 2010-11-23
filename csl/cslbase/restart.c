@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 5f878d0f 07-Sep-2010 */
+/* Signature: 7883ce44 23-Nov-2010 */
 
 #include "headers.h"
 
@@ -1646,7 +1646,7 @@ static void expand_vecheap_page(char *low, char *olow, char *fr)
         while ((char *)newp < fr)
         {
 /* Fetch header as a 32-bit value, widen to 64-bit */
-            Header h = (Header)flip_32(*oldp), h1;
+            Header h = (Header)flip_32(*oldp);
 #ifdef DEBUG_WIDTH
 /*
  * I use printf() not term_printf() here because at the stage I run this
@@ -3616,9 +3616,13 @@ static void warm_setup()
  * may have been already, in which case I just need its handle.
  */
             push4(name, fname, env, n);
+#ifdef EMBEDDED
+            continue;
+#else /* EMBEDDED */
             table = find_def_table(mod, checksum);
             pop4(n, env, fname, name);
             if (table == NULL) continue;  /* This module is not available */
+#endif /* EMBEDDED */
 #ifdef TRACE_NATIVE
             trace_printf("setup table at %p\n", table);
 #endif
@@ -3838,6 +3842,8 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
     remove(name);
 }
 
+#ifndef EMBEDDED
+
 static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
 {
     int32_t len, checklen;
@@ -4033,10 +4039,7 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
  * "init" that I must call to tell it where nil, stack and stacklimit are.
  */
     init = (initfn *)GetProcAddress(a, "init");
-#else
-#ifdef EMBEDDED
-    return 0;
-#else
+#else /* WIN32 */
     a = dlopen(objname, RTLD_NOW | RTLD_GLOBAL);
 #ifdef TRACE_NATIVE
     trace_printf("a = %p\n", a);
@@ -4047,7 +4050,7 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
     }
     dll = (setup_type_1 *)dlsym(a, setupname);
     init = (initfn *)dlsym(a, "init");
-#endif
+#endif /* WIN32 */
 #ifdef TRACE_NATIVE
     trace_printf("setup table is %p, init fn is %p\n", dll, init);
 #endif
@@ -4088,8 +4091,9 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
     p[len] = 0;
     record_dynamic_module(p, dll);
     return dll;
-#endif /* EMBEDDED */
 }
+
+#endif /* EMBEDDED */
 
 int setup_dynamic(setup_type_1 *dll, char *modname,
                  Lisp_Object name, Lisp_Object fns)
@@ -5083,6 +5087,28 @@ static void set_up_variables(CSLbool restartp)
 #endif
         qheader(n) |= SYM_SPECIAL_VAR;
         qvalue(n) = w;
+    }
+/*
+ * lispargs* and full-lispargs!* give access to command line args used at
+ * launch. lispargs!* just contains anything beyond the keyword "--args"
+ * while full-lispargs contains everything.
+ */
+    {   Lisp_Object aa = nil, faa = nil;
+        Lisp_Object n = make_undefined_symbol("lispargs*");
+        int i, seen_args_keyword=0;
+        for (i=0; i<csl_argc; i++)
+        {   Lisp_Object s = make_string(csl_argv[i]);
+            faa = cons(s, faa);
+            if (seen_args_keyword) aa = cons(s, aa);
+            if (strcmp(csl_argv[i], "--args") == 0) seen_args_keyword = 1;
+        }
+        aa = Lreverse(nil, aa);
+        faa = Lreverse(nil, faa);
+        qheader(n) |= SYM_SPECIAL_VAR;
+        qvalue(n) = aa;
+        n = make_undefined_symbol("full-lispargs*");
+        qheader(n) |= SYM_SPECIAL_VAR;
+        qvalue(n) = faa;
     }
 #ifdef COMMON
 /*
