@@ -515,7 +515,7 @@ static int direct_to_terminal(int argc, char *argv[])
 #endif /* WIN32 */
 }
 
-int plain_worker(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
+int plain_worker(int argc, char *argv[], wxfwin_entrypoint *main)
 {
     int r;
     signal(SIGINT, sigint_handler);
@@ -534,7 +534,7 @@ int plain_worker(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
     }
     else using_termed = 0;
     strcpy(wxfwin_prompt_string, "> ");
-    r = (*wxfwin_main)(argc, argv);
+    r = (*main)(argc, argv);
     input_history_end();
     term_close();
     return r;

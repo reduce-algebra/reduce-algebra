@@ -203,18 +203,20 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef HAVE_WX
+#ifdef HAVE_LIBWX
 #include "wxfwin.h"
 #else
 #include "fwin.h"
 #endif
 
-#ifdef HAVE_WX
+#ifdef HAVE_LIBWX
 /* Allow for new versions of all the names */
-#define fwin_getchar  wxfwin_getchar
-#define fwin_printf   wxfwin_print
-#define fwin_exit     wxfwin_exit
-#define fwin_startup  wxfwin_startup
+#define fwin_getchar       wxfwin_getchar
+#define fwin_printf        wxfwin_printf
+#define fwin_exit          wxfwin_exit
+#define fwin_startup       wxfwin_startup
+#define fwin_main          wxfwin_main
+#define fwin_ensure_screen wxfwin_ensure_screen
 #endif
 
 int fwin_main(int argc, char **argv)
