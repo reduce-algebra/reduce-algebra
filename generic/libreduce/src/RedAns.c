@@ -6,7 +6,7 @@
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-  
+
       * Redistributions of source code must retain the relevant
         copyright notice, this list of conditions and the following
         disclaimer.
@@ -14,7 +14,7 @@
         copyright notice, this list of conditions and the following
         disclaimer in the documentation and/or other materials provided
         with the distribution.
-  
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -66,7 +66,7 @@ extern FILE *debugfile,*logfile;
 void RedAns_loadInitFile(RedProc process) {
   RedMsg_cfprintf(debugfile,"-> RedAns_loadInitFile: entering\n");
 
-  reduce_command(process,"load_package libreduce$");
+  RedAns_delete(RedAns_new(process,"load_package libreduce$"));
 
   RedMsg_cfprintf(debugfile,"<- RedAns_loadInitFile: leaving\n");
 }
@@ -80,7 +80,7 @@ RedAns RedAns_new(RedProc process,const char *command) {
   if (realinput)
     RedMsg_cfprintf(logfile,
 		    "pid = %d\ncommand = %s\n",process->processId,command);
-  
+
   RedAns_sendReduce(process,command);
 
   output = RedAns_readUntilPrompt(process);
@@ -89,7 +89,7 @@ RedAns RedAns_new(RedProc process,const char *command) {
     RedAns_cfprint(logfile,output);
     RedMsg_cfprintf(logfile,"\n");
   }
-  
+
   RedMsg_cfprintf(debugfile,"<- reduce_command: leaving\n");
 
   realinput = 1;
@@ -100,11 +100,11 @@ RedAns RedAns_new(RedProc process,const char *command) {
 void RedAns_sendReduce(RedProc process,const char *command) {
   char ch;
   int ii;
-  
+
   RedMsg_cfprintf(debugfile,
 		  "-> RedAns_sendReduce: entering, command=%s\n",
 		  command);
-	
+
   if (command == (char *)NULL) {
     ch = EOT;
     write(process->meToReduce[1],&ch,1);
@@ -150,10 +150,12 @@ RedAns RedAns_readUntilPrompt(RedProc process) {
   ans = (RedAns)malloc(sizeof(struct oRedAns));
 
   if (statcbuf) {
-    sscanf(StrBuf_string(statcbuf),"%d",&statcounter);
+    char *statc = StrBuf_string(statcbuf);
+    sscanf(statc,"%d",&statcounter);
+    free(statc);
   }
   ans->statcounter = statcounter;
-    
+
   ans->symbolic = symbolic;
   ans->pretext = StrBuf_string(pretext);
   ans->result = StrBuf_string(StrBuf_pruneNl(result));
@@ -184,7 +186,7 @@ void RedAns_dfa(RedProc process,StrBuf *pstatcbuf,int *psymbolic,
   RedMsg_cfprintf(debugfile,"-- RedAns_dfa: status=PRETEXT\n");
 
   while(status != FINISHED) {
-    ncharread = read(process->reduceToMe[0],buffer,READBUFSIZE); 
+    ncharread = read(process->reduceToMe[0],buffer,READBUFSIZE);
     for (ii=0; ii < ncharread; ii++) {
       ch = buffer[ii];
       if (ISCOLOR(ch)) {
@@ -225,7 +227,7 @@ void RedAns_dfa(RedProc process,StrBuf *pstatcbuf,int *psymbolic,
 void RedAns_dfaLog(RedProc process,const int st) {
   if (process->rlgFile || debugfile) {
     const char *cTab[7]=COLORTAB;
-  
+
     RedMsg_cfprintf(process->rlgFile,"<%s>",cTab[st]);
     RedMsg_cfprintf(debugfile,"-- RedAns_dfa: status=%s\n",cTab[st]);
   }
