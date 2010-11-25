@@ -40,7 +40,7 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([CSL],[6.04])
-AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
+AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 
 # Explain that a file "config.h" should be generated
@@ -48,10 +48,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_COPYRIGHT([Codemist Ltd])
 
-# I am going to expect that you have at least this version of
-# autoconf. In general I will build with  the latest version and
-# not really verift that 2.61 is still sufficient!
-AC_PREREQ(2.61)
+AC_PREREQ(2.59)
 
 # My source file is expected to have "csl.c" in it. This is just a small
 # sanity check in case somebody tries to configure with directories

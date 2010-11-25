@@ -3,16 +3,13 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([xport], [2.05])
-AM_INIT_AUTOMAKE([1.9.0 foreign])
+AM_INIT_AUTOMAKE([1.8.3 foreign])
 
 # Explain that a file "config.h" should be generated
 # AM_CONFIG_HEADER(config.h)
 
 AC_COPYRIGHT([A C Norman])
 
-# This would quite like autoconf version 2.57 or later. I am not quite
-# certain how strict this is, but this line was suggested by another of
-# the GNU build tools.
 AC_PREREQ(2.57)
 
 # My source file is expected to have "xport.c" in it. This is just a small

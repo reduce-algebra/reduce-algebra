@@ -70,7 +70,7 @@
 
 
 
-/* Signature: 1281e1c8 21-Nov-2010 */
+/* Signature: 4a78abf1 25-Nov-2010 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed

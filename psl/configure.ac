@@ -8,7 +8,7 @@ AC_CANONICAL_HOST()
 
 AC_CONFIG_SRCDIR(README.PSL)
 
-AM_INIT_AUTOMAKE([1.9.0 -Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([1.8.3 -Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 

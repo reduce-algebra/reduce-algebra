@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 5e455668 03-Sep-2010 */
+/* Signature: 091273d4 25-Nov-2010 */
 
 #include "headers.h"
 
@@ -3995,7 +3995,9 @@ void read_eval_print(int noisy)
  * end of file, or the user having #\eof in the input file.  These are NOT
  * equivalent, in that #\eof is read once and then further stuff from the
  * stream can be read, while a real EOF (eg typing ^D at the terminal in
- * some cases) ends the stream once and for all.
+ * some cases) ends the stream once and for all. well actually I do not
+ * want to close the stream for ever in case somebody did (rdf nil), so
+ * I tend to reset a bit of EOF info...
  */
         if (u == CHAR_EOF)
         {
@@ -4003,6 +4005,8 @@ void read_eval_print(int noisy)
             errorset_buffer = saved_buffer;
 #endif
             pop2(litvec, codevec);
+            if (curchar == EOF) curchar = NOT_CHAR;
+            clearerr(stdin);
             return;
         }
 
@@ -4124,7 +4128,9 @@ void read_eval_print(int noisy)
  * RDF is wanted as it is in Standard Lisp. In Common Lisp the corresponding
  * function is LOAD. LOAD takes keyword arguments, which are decoded
  * elsewhere, leaving the code here which takes a variable number of
- * args, but all with definite simple interpretations.
+ * args, but all with definite simple interpretations. Note that
+ * (rdf nil) reads from whatever input is current. And (rdf) is treated
+ * as (rdf nil).
  */
 
 Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
@@ -4306,6 +4312,8 @@ Lisp_Object MS_CDECL Lrdfn(Lisp_Object nil, int nargs, ...)
 {
     va_list a;
     Lisp_Object file, noisy, verbose, nofile = lisp_true;
+    if (nargs == 0)
+        return Lrdf4(nil, nil, lisp_true, lisp_true, lisp_true);
     if (nargs < 3 || nargs > 4) return aerror("load");
     va_start(a, nargs);
     file = va_arg(a, Lisp_Object);

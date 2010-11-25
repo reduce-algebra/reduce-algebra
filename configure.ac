@@ -13,10 +13,27 @@ fi
 
 AC_COPYRIGHT([The REDUCE project])
 
-# I am going to expect that you have at least this version of
-# autoconf. In general I will build with  the latest version and
-# not really verify that 2.61 is still sufficient.
-AC_PREREQ(2.61)
+# I have tested this on Fedora Core 1 and 2 with the versions of automake
+# and autoconf that each had at that stage back in 2003. FC1 with
+# autoconf 2.57 and automake 1.7.8 failed to establish configuration
+# because several features of automake that I use are newer than that
+# (eg -Wno-portability, no-dist-gzip) but even when I removed them
+# it behaved badly for me. However FC2 with autoconf 2.59 and automake
+# 1.8.3 gave me MANY warning messages (eg about underquoted arguments in the
+# m4 scripts) but allowed me to continue. So I set that level as my
+# baseline and ask everybody to install software newer that late 2003.
+#
+# If necessary they can fetch source versions of autoconf and automake and
+# install private versions for use here.
+
+# HOWEVER since the subversion repository for Reduce contains ready build
+# configuration files there should only even be an attempt to rerun
+# autoconf etc if time-stamps get out of order. There is a script
+# .../trunk/scripts/stamp.sh that should restore them. So any user who only
+# has ancient versions of autoconf and automake available is advised to run
+# scripts/stamp.sh after each time they go "svn update".
+
+AC_PREREQ(2.59)
 
 abssrcdir=`$srcdir/scripts/here.sh`
 
@@ -339,7 +356,7 @@ esac
 
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
-AM_INIT_AUTOMAKE([1.9.0 -Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([1.8.3 -Wall -Werror -Wno-portability foreign no-dist-gzip dist-bzip2])
 
 AC_CONFIG_FILES([Makefile])
 

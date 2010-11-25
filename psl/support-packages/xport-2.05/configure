@@ -2787,9 +2787,6 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
-# This would quite like autoconf version 2.57 or later. I am not quite
-# certain how strict this is, but this line was suggested by another of
-# the GNU build tools.
 
 
 # My source file is expected to have "xport.c" in it. This is just a small

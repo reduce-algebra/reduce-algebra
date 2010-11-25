@@ -24,11 +24,10 @@
 
 # Specify the name of this "application" and a version number
 AC_INIT([FOXTESTS],[1.4.21])
-AM_INIT_AUTOMAKE([1.9.0 -Wall -Wno-override -Wno-portability foreign dist-bzip2])
+AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-override -Wno-portability foreign dist-bzip2])
 
-# I am going to expect that you have at least this version of
-# autoconf. In general I will build with  the latest version and
-# not really verift that 2.57 is still sufficient!
+# This seemed to work with 2.57 so despite other parts of the code needing
+# a yet newer version I will leave this here.
 AC_PREREQ(2.57)
 
 AC_CONFIG_SRCDIR(scribble.cpp)

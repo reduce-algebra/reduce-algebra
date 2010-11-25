@@ -3058,9 +3058,6 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-# I am going to expect that you have at least this version of
-# autoconf. In general I will build with  the latest version and
-# not really verift that 2.61 is still sufficient!
 
 
 # My source file is expected to have "csl.c" in it. This is just a small

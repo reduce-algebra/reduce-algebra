@@ -2950,9 +2950,7 @@ then
   export SHELL
 fi
 
-# I am going to expect that you have at least this version of
-# autoconf. In general I will build with  the latest version and
-# not really verify that 2.61 is still sufficient!
+# I am going to expect that you have at least this version of autoconf.
 
 
 

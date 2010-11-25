@@ -8,9 +8,12 @@
 AC_INIT([VERSIONTEST],[1.0])
 
 # At some stage I need to decide just what version I do rely upon!
-#AC_PREREQ(2.61)
+# The settings indicated here appear to be sufficient and some versions that
+# are earlier have failed for me.
 
-AM_INIT_AUTOMAKE([1.9.0])
+AC_PREREQ(2.59)
+
+AM_INIT_AUTOMAKE([1.8.3])
 
 # end of "configver.ac"
 

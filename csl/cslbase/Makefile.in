@@ -2170,7 +2170,7 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
-@mac_framework_TRUE@	$(srcdir)/create_bundle.sh csl csl
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh csl $(srcdir) csl
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f reduce$(EXEEXT)
@@ -2179,13 +2179,13 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
-@mac_framework_TRUE@	$(srcdir)/create_bundle.sh reduce reduce
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
-@mac_framework_TRUE@	$(srcdir)/create_bundle.sh reduce reduce
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 	-rm -f fwindemo$(EXEEXT)
@@ -2194,7 +2194,7 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
-@mac_framework_TRUE@	$(srcdir)/create_bundle.sh fwindemo
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
 
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-rm -f fontdemo$(EXEEXT)
@@ -2231,25 +2231,25 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxfontdemo$(EXEEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
 
 @wx_TRUE@wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdvi$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdvi$(EXEEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdvi
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
 
 @wx_TRUE@wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxdemo$(EXEEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdemo
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxdemo $(srcdir)
 
 @wx_TRUE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxshowmathdemo$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmathdemo$(EXEEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmathdemo
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
 
 @gui_TRUE@@windows_TRUE@csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f csl.exe

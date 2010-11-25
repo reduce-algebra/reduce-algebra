@@ -1663,7 +1663,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 # At some stage I need to decide just what version I do rely upon!
-#AC_PREREQ(2.61)
+# The settings indicated here appear to be sufficient and some versions that
+# are earlier have failed for me.
+
+
 
 am__api_version='1.11'
 

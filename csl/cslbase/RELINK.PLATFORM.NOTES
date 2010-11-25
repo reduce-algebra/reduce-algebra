@@ -1,3 +1,14 @@
+Note:
+  This file and any script called "relink.sh" must be viewed as seriously
+out of date. If you want to rebuild the code here you should use "configure"
+and recompile everything from source. However the historical comments about
+old Linux versions might sometimes give useful clues in cases where you have
+trouble, so I am not instantly deleting this!
+                                      Arthur Norman.  November 2010
+
+
+
+
                    RELINKING REDUCE ON VARIOUS PLATFORMS
 
 

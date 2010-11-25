@@ -2997,9 +2997,8 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
-# I am going to expect that you have at least this version of
-# autoconf. In general I will build with  the latest version and
-# not really verift that 2.57 is still sufficient!
+# This seemed to work with 2.57 so despite other parts of the code needing
+# a yet newer version I will leave this here.
 
 
 
