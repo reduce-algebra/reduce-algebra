@@ -1098,7 +1098,7 @@ extern int64_t       sixty_four_bits(Lisp_Object a);
 extern void validate_string_fn(Lisp_Object a, char *f, int l);
 #define validate_string(a) validate_string_fn(a, __FILE__, __LINE__)
 #else
-#define validate_string(a) 0
+#define validate_string(a) /* nothing */
 #endif
 
 /*

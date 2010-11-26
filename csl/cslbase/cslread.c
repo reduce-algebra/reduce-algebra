@@ -1,4 +1,3 @@
-#define DEBUG 1
 /* cslread.c                        Copyright (C) 1990-2010 Codemist Ltd */
 
 /*
@@ -36,7 +35,7 @@
 
 
 
-/* Signature: 091273d4 25-Nov-2010 */
+/* Signature: 5d465e99 26-Nov-2010 */
 
 #include "headers.h"
 
@@ -1752,7 +1751,7 @@ static Lisp_Object Lgensymp(Lisp_Object nil, Lisp_Object a)
 
 static Lisp_Object Lreset_gensym(Lisp_Object nil, Lisp_Object a)
 {
-    Lisp_Object n = 0, old = gensym_ser;
+    Lisp_Object old = gensym_ser;
     if (is_fixnum(a) && a >= 0) gensym_ser = int_of_fixnum(a) & 0x7fffffff;
     return fixnum_of_int(old);
 }
@@ -3936,7 +3935,7 @@ void read_eval_print(int noisy)
 #endif
         {   nil = u = C_nil;
             if (errorset_msg != NULL)
-            {   term_printf("\n%s detected\n", errorset_msg);
+            {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
             }
             unwind_stack(save, NO);
@@ -4005,8 +4004,17 @@ void read_eval_print(int noisy)
             errorset_buffer = saved_buffer;
 #endif
             pop2(litvec, codevec);
-            if (curchar == EOF) curchar = NOT_CHAR;
-            clearerr(stdin);
+/*
+ * If you had gone (rdf nil) and read from the terminal - and then used ctrl-D
+ * to signal an "and of file" I want that to end merely the (rdf) section
+ * of input and not everything. The offending end of file information would
+ * have ended up in terminal_pushed. The easiest way to cope that I have found
+ * clears a terminal EOF here regardless of whether (rdf) read from terminal
+ * or anything else - terminal_pushed should only get set to EOF when it
+ * reads from the terminal! Ditto terminal_eof_seen.
+ */
+            if (terminal_pushed == EOF) terminal_pushed = NOT_CHAR;
+            terminal_eof_seen = 0;
             return;
         }
 
@@ -4087,7 +4095,7 @@ void read_eval_print(int noisy)
         else
 #endif
         {   if (errorset_msg != NULL)
-            {   term_printf("\n%s detected\n", errorset_msg);
+            {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
             }
             unwind_stack(save, NO);
@@ -4277,7 +4285,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
 #ifdef COMMON
         trace_printf("\n;; Loaded ");
 #else
-        trace_printf("\nRead ");
+        trace_printf("\nFinished reading ");
 #endif
     }
     prin_to_trace(stack[0]);
