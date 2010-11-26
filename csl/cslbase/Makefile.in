@@ -35,10 +35,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@wx_TRUE@@wxbuiltin_TRUE@am__append_1 = $(shell ../bin/wx-config --cppflags)
-@wx_TRUE@@wxbuiltin_TRUE@am__append_2 = $(shell ../bin/wx-config --cflags)
-@wx_TRUE@@wxbuiltin_TRUE@am__append_3 = $(shell ../bin/wx-config --cxxflags)
-@wx_TRUE@@wxbuiltin_TRUE@am__append_4 = $(shell ../bin/wx-config --libs)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_1 = $(shell ../bin/wx-config --cppflags 2>/dev/null)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_2 = $(shell ../bin/wx-config --cflags 2>/dev/null)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_3 = $(shell ../bin/wx-config --cxxflags 2>/dev/null)
+@wx_TRUE@@wxbuiltin_TRUE@am__append_4 = $(shell ../bin/wx-config --libs 2>/dev/null)
 @wx_TRUE@@wxbuiltin_FALSE@am__append_5 = $(shell wx-config --cppflags)
 @wx_TRUE@@wxbuiltin_FALSE@am__append_6 = $(shell wx-config --cflags)
 @wx_TRUE@@wxbuiltin_FALSE@am__append_7 = $(shell wx-config --cxxflags)
@@ -253,7 +253,6 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-FOXDEPS = @FOXDEPS@
 FOXLIB = @FOXLIB@
 FOX_INCLUDES = @FOX_INCLUDES@
 FOX_LIBS = @FOX_LIBS@
@@ -350,6 +349,9 @@ RM = rm
 # applications might otherwise receive a file-name starting "/cygdrive/x/.."
 # and not understand it.
 @cygpath_TRUE@CYGSRC = $(shell cygpath -m $(srcdir))
+@wx_FALSE@WXC = 
+@wx_TRUE@@wxbuiltin_FALSE@WXC = 
+@wx_TRUE@@wxbuiltin_TRUE@WXC = ../bin/wx-config
 @gui_FALSE@@windows_TRUE@COMEXT = .exe
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
@@ -488,16 +490,16 @@ showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
-wxdemo_DEPENDENCIES = $(fwin_icon)
+wxdemo_DEPENDENCIES = $(fwin_icon) $(WXC)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
-wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
-wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
-wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 @windows_FALSE@DLLEXT = so
 @windows_TRUE@DLLEXT = dll
 dyndemo_SOURCES = dyndemo.c
@@ -535,27 +537,25 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 @windows_FALSE@reduce_LDADD = $(FOX_LIBS)
 @windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS)
-@windows_FALSE@csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont)
+@windows_FALSE@csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) $(WXC)
 @windows_TRUE@csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
-@windows_TRUE@		reduce.$(fontsdir)/$(samplefont)
+@windows_TRUE@		reduce.$(fontsdir)/$(samplefont) $(WXC)
 
-@windows_FALSE@bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
+@windows_FALSE@bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) \
+@windows_FALSE@		reduce.doc/index.html $(GP) $(WXC)
+
 @windows_TRUE@bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-@windows_TRUE@		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
+@windows_TRUE@		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) \
+@windows_TRUE@		reduce.doc/index.html $(GP) $(WXC)
 
-@windows_FALSE@reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
-@windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
-@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon)
+@windows_FALSE@reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html \
+@windows_FALSE@		$(GP) $(WXC)
+
+@windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
+@windows_TRUE@		reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP) $(WXC)
+
+@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(WXC)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
-
-# On non-windows systems I am ASSUMING here that the C compiler will
-# accept an "-o" option to indicate where it should put its object file.
-#
-#fwin-csl.$(OBJEXT):	$(srcdir)/null.c
-#	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
-#
-#fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
-#	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
 
 # end of windows vs non-windows conditions
 
@@ -568,9 +568,12 @@ CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 # BEWARE BEWARE BEWARE the next line must have trailing blanks
 DEST = -o   
 R = $(srcdir)/../..
-@win64_FALSE@FOXDEP = ../lib/libFOX-1.6.a
-@win64_TRUE@FOXDEP = ../lib/libFOX-1.6.lib
+@fox_FALSE@FOXDEPS = 
+@fox_TRUE@@win64_FALSE@FOXDEPS = ../lib/libFOX-1.6.a
+@fox_TRUE@@win64_TRUE@FOXDEPS = ../lib/libFOX-1.6.lib
 @wx_TRUE@@wxbuiltin_TRUE@BASELIB = ../lib/libwx_baseu-2.9.a
+@wx_FALSE@WXDEPS = 
+@wx_TRUE@@wxbuiltin_FALSE@WXDEPS = 
 @wx_TRUE@@wxbuiltin_TRUE@WXDEPS = ../bin/wx-config $(BASELIB)
 
 # The next section is to conspire with automake's treatement of externions for
@@ -2149,7 +2152,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 # The next rule will only trigger if fxver.h is not present at all.
 
-$(FOXDEP):
+$(FOXDEPS):
 	@cd ../fox && $(MAKE) install
 
 # If one of the major foundations of this Makefile have a date later than that
@@ -2163,69 +2166,23 @@ $(srcdir)/configure.ac:
 $(srcdir)/Makefile.am:
 	touch $(srcdir)/Makefile.am
 
-csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
-	-rm -f csl$(EXEEXT)
-	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f csl$(COMEXT)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh csl $(srcdir) csl
-
-reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
-	-rm -f reduce$(EXEEXT)
-	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f reduce$(COMEXT)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
-
-bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
-	-rm -f bootstrapreduce$(EXEEXT)
-	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
-
-fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
-	-rm -f fwindemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COMEXT)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
-@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
-
-@fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
-@fox_TRUE@	-rm -f fontdemo$(EXEEXT)
-@fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) fontdemo$(EXEEXT)
-
-@fox_TRUE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
-@fox_TRUE@	-rm -f foxdemo$(EXEEXT)
-@fox_TRUE@	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) foxdemo$(EXEEXT)
-
-@fox_TRUE@showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
-@fox_TRUE@	-rm -f showmathdemo$(EXEEXT)
-@fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
-@darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
-
 # When I build wxWidgets locally I *ALWAYS* end up passing an explicit
 # "--host=..." option to the configure script. A result of that is that
 # the libraries get installed with names that include the host identity.
 # The script here makes symbolic links from the host-qualified names from
 # plain undecorated ones as mentioned by "wx-config --libs"
 
-@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):
-@wx_TRUE@@wxbuiltin_TRUE@	pushd ../lib; \
+@wx_TRUE@@wxbuiltin_TRUE@$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
+@wx_TRUE@@wxbuiltin_TRUE@	cd ../lib; \
 @wx_TRUE@@wxbuiltin_TRUE@	for x in *$(HOST).a; \
 @wx_TRUE@@wxbuiltin_TRUE@	do \
 @wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-$(HOST).a}.a; \
 @wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s $$x $$y; \
 @wx_TRUE@@wxbuiltin_TRUE@	ln -s $$x $$y; \
-@wx_TRUE@@wxbuiltin_TRUE@	done; \
-@wx_TRUE@@wxbuiltin_TRUE@	popd
+@wx_TRUE@@wxbuiltin_TRUE@	done
+
+@wx_TRUE@@wxbuiltin_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
+@wx_TRUE@@wxbuiltin_TRUE@	@cd ../wxWidgets && $(MAKE) install
 
 @wx_TRUE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxfontdemo$(EXEEXT)
@@ -2250,6 +2207,54 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxshowmathdemo$(EXEEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
+
+csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+	-rm -f csl$(EXEEXT)
+	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
+@gui_TRUE@@windows_TRUE@	-rm -f csl$(COMEXT)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh csl $(srcdir) csl
+
+reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+	-rm -f reduce$(EXEEXT)
+	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
+@gui_TRUE@@windows_TRUE@	-rm -f reduce$(COMEXT)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
+
+bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+	-rm -f bootstrapreduce$(EXEEXT)
+	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) bootstrapreduce$(EXEEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
+
+fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+	-rm -f fwindemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
+@gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COMEXT)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
+
+@fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
+@fox_TRUE@	-rm -f fontdemo$(EXEEXT)
+@fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) fontdemo$(EXEEXT)
+
+@fox_TRUE@foxdemo$(EXEEXT): $(foxdemo_OBJECTS) $(foxdemo_DEPENDENCIES) $(FOXDEPS)
+@fox_TRUE@	-rm -f foxdemo$(EXEEXT)
+@fox_TRUE@	$(CXXLINKTO) $(DEST)foxdemo$(EXEEXT) $(foxdemo_OBJECTS) $(foxdemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) foxdemo$(EXEEXT)
+
+@fox_TRUE@showmathdemo$(EXEEXT): $(showmathdemo_OBJECTS) $(showmathdemo_DEPENDENCIES) $(FOXDEPS)
+@fox_TRUE@	-rm -f showmathdemo$(EXEEXT)
+@fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
 
 @gui_TRUE@@windows_TRUE@csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f csl.exe

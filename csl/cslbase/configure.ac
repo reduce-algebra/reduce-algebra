@@ -1263,8 +1263,6 @@ then
     FOX_LIBS="-L$with_fox/lib -lFOX-1.6"
     AC_SUBST(FOXLIB)
     FOXLIB="$with_fox/lib/libFOX*"
-    AC_SUBST(FOXDEPS)
-    FOXDEPS="$with_fox/lib/libFOX-1.6.a"
     AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
 # Display FOX level (ie minor version number) if actually present
     if test -f $with_fox/include/fox-1.6/fxver.h

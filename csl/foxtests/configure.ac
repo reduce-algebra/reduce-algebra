@@ -70,6 +70,11 @@ AC_ARG_WITH(psl,
   [],
   [with_psl="no"])
 
+AC_ARG_WITH(mingw64,
+  AC_HELP_STRING([--with-mingw64], [Use internally with CSL]),
+  [],
+  [with_mingw64="no"])
+
 AC_ARG_WITH(build,
   AC_HELP_STRING([--with-build], [Used internally to control build directory]),
   [],

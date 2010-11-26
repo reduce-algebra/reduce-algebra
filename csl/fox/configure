@@ -718,6 +718,7 @@ ac_user_opts='
 enable_option_checking
 with_csl
 with_psl
+with_mingw64
 with_build
 enable_test
 with_mingw32
@@ -1398,6 +1399,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
+  --with-ming64           Used internally in CSL builds
   --with-build            Used internally to control build directory
   --with-mingw32=DIR    MingW32 installation location
   --with-x                use the X Window System
@@ -2778,6 +2780,15 @@ if test "${with_psl+set}" = set; then :
   withval=$with_psl;
 else
   with_psl="no"
+fi
+
+
+
+# Check whether --with-mingw64 was given.
+if test "${with_mingw64+set}" = set; then :
+  withval=$with_mingw64;
+else
+  with_mingw64="no"
 fi
 
 

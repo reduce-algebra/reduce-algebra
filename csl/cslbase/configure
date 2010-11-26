@@ -627,7 +627,6 @@ x86_FALSE
 x86_TRUE
 HOST
 CYGPATH
-FOXDEPS
 FOXLIB
 FOX_LIBS
 FOX_INCLUDES
@@ -10506,8 +10505,6 @@ $as_echo "$as_me: Will expect FOX to be in $with_fox" >&6;}
     FOX_LIBS="-L$with_fox/lib -lFOX-1.6"
 
     FOXLIB="$with_fox/lib/libFOX*"
-
-    FOXDEPS="$with_fox/lib/libFOX-1.6.a"
 
 $as_echo "#define HAVE_LIBFOX 1" >>confdefs.h
 

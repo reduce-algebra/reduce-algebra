@@ -20,17 +20,21 @@ endif !cygpath
 
 if wx
 if wxbuiltin
-CPPFLAGS += $(shell ../bin/wx-config --cppflags)
-CFLAGS   += $(shell ../bin/wx-config --cflags)
-CXXFLAGS += $(shell ../bin/wx-config --cxxflags)
-LIBS     += $(shell ../bin/wx-config --libs)
+WXC=../bin/wx-config
+CPPFLAGS += $(shell ../bin/wx-config --cppflags 2>/dev/null)
+CFLAGS   += $(shell ../bin/wx-config --cflags 2>/dev/null)
+CXXFLAGS += $(shell ../bin/wx-config --cxxflags 2>/dev/null)
+LIBS     += $(shell ../bin/wx-config --libs 2>/dev/null)
 else !wxbuiltin
+WXC=
 CPPFLAGS += $(shell wx-config --cppflags)
 CFLAGS   += $(shell wx-config --cflags)
 CXXFLAGS += $(shell wx-config --cxxflags)
 LIBS     += $(shell wx-config --libs)
 endif !wxbuiltin
-endif wx
+else !wx
+WXC=
+endif !wx
 
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
@@ -227,19 +231,19 @@ showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
-wxdemo_DEPENDENCIES = $(fwin_icon)
+wxdemo_DEPENDENCIES = $(fwin_icon) $(WXC)
 
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
-wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
-wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
-wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 
 
 if windows
@@ -311,11 +315,13 @@ bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
 
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
-		reduce.$(fontsdir)/$(samplefont)
+		reduce.$(fontsdir)/$(samplefont) $(WXC)
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
-reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
-fwindemo_DEPENDENCIES = $(fwin_icon)
+		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) \
+		reduce.doc/index.html $(GP) $(WXC)
+reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
+		reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP) $(WXC)
+fwindemo_DEPENDENCIES = $(fwin_icon) $(WXC)
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc
@@ -348,18 +354,11 @@ csl_LDADD = $(FOX_LIBS)
 bootstrapreduce_LDADD = $(FOX_LIBS)
 reduce_LDADD = $(FOX_LIBS)
 
-csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont)
-bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
-reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP)
-
-# On non-windows systems I am ASSUMING here that the C compiler will
-# accept an "-o" option to indicate where it should put its object file.
-#
-#fwin-csl.$(OBJEXT):	$(srcdir)/null.c
-#	$(COMPILE) -c $(srcdir)/null.c -o fwin-csl.$(OBJEXT)
-#
-#fwin-reduce.$(OBJEXT):	$(srcdir)/null.c
-#	$(COMPILE) -c $(srcdir)/null.c -o fwin-reduce.$(OBJEXT)
+csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) $(WXC)
+bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) \
+		reduce.doc/index.html $(GP) $(WXC)
+reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html \
+		$(GP) $(WXC)
 
 # end of windows vs non-windows conditions
 endif !windows
@@ -376,15 +375,19 @@ DEST=-o
 
 R = $(srcdir)/../..
 
+if fox
 if win64
-FOXDEP=../lib/libFOX-1.6.lib
+FOXDEPS=../lib/libFOX-1.6.lib
 else !win64
-FOXDEP=../lib/libFOX-1.6.a
+FOXDEPS=../lib/libFOX-1.6.a
 endif !win64
+else !fox
+FOXDEPS=
+endif !fox
 
 # The next rule will only trigger if fxver.h is not present at all.
 
-$(FOXDEP):
+$(FOXDEPS):
 	@cd ../fox && $(MAKE) install
 
 # If one of the major foundations of this Makefile have a date later than that
@@ -398,8 +401,87 @@ $(srcdir)/configure.ac:
 $(srcdir)/Makefile.am:
 	touch $(srcdir)/Makefile.am
 
+if wx
 
-csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS)
+if wxbuiltin
+BASELIB=../lib/libwx_baseu-2.9.a
+WXDEPS=../bin/wx-config $(BASELIB)
+
+# When I build wxWidgets locally I *ALWAYS* end up passing an explicit
+# "--host=..." option to the configure script. A result of that is that
+# the libraries get installed with names that include the host identity.
+# The script here makes symbolic links from the host-qualified names from
+# plain undecorated ones as mentioned by "wx-config --libs"
+
+$(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
+	cd ../lib; \
+	for x in *$(HOST).a; \
+	do \
+	  y=$${x%-$(HOST).a}.a; \
+	  echo ln -s $$x $$y; \
+	ln -s $$x $$y; \
+	done
+
+../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
+	@cd ../wxWidgets && $(MAKE) install
+
+else !wxbuiltin
+WXDEPS=
+endif !wxbuiltin
+
+wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxfontdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxfontdemo$(EXEEXT)
+endif !darwin
+endif !debug
+if mac_framework
+	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
+endif mac_framework
+
+wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxdvi$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxdvi$(EXEEXT)
+endif !darwin
+endif !debug
+if mac_framework
+	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
+endif mac_framework
+
+wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxdemo$(EXEEXT)
+endif !darwin
+endif !debug
+if mac_framework
+	$(srcdir)/create_bundle.sh wxdemo $(srcdir)
+endif mac_framework
+
+wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxshowmathdemo$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
+if !debug
+if !darwin
+	$(STRIP) wxshowmathdemo$(EXEEXT)
+endif !darwin
+endif !debug
+if mac_framework
+	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
+endif mac_framework
+
+else !wx
+WXDEPS=
+endif !wx
+
+csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f csl$(EXEEXT)
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -424,7 +506,7 @@ if mac_framework
 endif mac_framework
 endif wx
 
-reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS)
+reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f reduce$(EXEEXT)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -449,7 +531,7 @@ if mac_framework
 endif mac_framework
 endif wx
 
-bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS)
+bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
 	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(LIBS) $(CONAP)
 if !debug
@@ -463,7 +545,7 @@ if mac_framework
 endif mac_framework
 endif wx
 
-fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS)
+fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f fwindemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -518,80 +600,6 @@ endif !darwin
 endif !debug
 
 endif fox
-
-if wx
-
-if wxbuiltin
-BASELIB=../lib/libwx_baseu-2.9.a
-WXDEPS=../bin/wx-config $(BASELIB)
-
-# When I build wxWidgets locally I *ALWAYS* end up passing an explicit
-# "--host=..." option to the configure script. A result of that is that
-# the libraries get installed with names that include the host identity.
-# The script here makes symbolic links from the host-qualified names from
-# plain undecorated ones as mentioned by "wx-config --libs"
-
-$(BASELIB):
-	pushd ../lib; \
-	for x in *$(HOST).a; \
-	do \
-	  y=$${x%-$(HOST).a}.a; \
-	  echo ln -s $$x $$y; \
-	ln -s $$x $$y; \
-	done; \
-	popd
-
-endif wxbuiltin
-
-wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxfontdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxfontdemo$(EXEEXT) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) wxfontdemo$(EXEEXT)
-endif !darwin
-endif !debug
-if mac_framework
-	$(srcdir)/create_bundle.sh wxfontdemo $(srcdir)
-endif mac_framework
-
-wxdvi$(EXEEXT): $(wxdvi_OBJECTS) $(wxdvi_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxdvi$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxdvi$(EXEEXT) $(wxdvi_OBJECTS) $(wxdvi_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) wxdvi$(EXEEXT)
-endif !darwin
-endif !debug
-if mac_framework
-	$(srcdir)/create_bundle.sh wxdvi $(srcdir)
-endif mac_framework
-
-wxdemo$(EXEEXT): $(wxdemo_OBJECTS) $(wxdemo_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxdemo$(EXEEXT) $(wxdemo_OBJECTS) $(wxdemo_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) wxdemo$(EXEEXT)
-endif !darwin
-endif !debug
-if mac_framework
-	$(srcdir)/create_bundle.sh wxdemo $(srcdir)
-endif mac_framework
-
-wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) $(WXDEPS)
-	-rm -f wxshowmathdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)wxshowmathdemo$(EXEEXT) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS) $(CONAP)
-if !debug
-if !darwin
-	$(STRIP) wxshowmathdemo$(EXEEXT)
-endif !darwin
-endif !debug
-if mac_framework
-	$(srcdir)/create_bundle.sh wxshowmathdemo $(srcdir)
-endif mac_framework
-
-endif wx
 
 if gui
 if windows

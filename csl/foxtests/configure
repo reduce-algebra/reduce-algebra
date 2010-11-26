@@ -708,6 +708,7 @@ with_m32
 with_m64
 with_csl
 with_psl
+with_mingw64
 with_build
 with_cygwin
 with_mingw
@@ -1362,6 +1363,7 @@ Optional Packages:
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
+  --with-mingw64          Use internally with CSL
   --with-build            Used internally to control build directory
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-mingw=DIR        MingW installation location
@@ -3135,6 +3137,15 @@ if test "${with_psl+set}" = set; then :
   withval=$with_psl;
 else
   with_psl="no"
+fi
+
+
+
+# Check whether --with-mingw64 was given.
+if test "${with_mingw64+set}" = set; then :
+  withval=$with_mingw64;
+else
+  with_mingw64="no"
 fi
 
 
