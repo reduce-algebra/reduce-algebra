@@ -47,14 +47,13 @@
  *************************************************************************/
 
 
-/* Signature: 263472b0 25-Nov-2010 */
+/* Signature: 4c1ce449 27-Nov-2010 */
 
 #include "config.h"
 
 #include "wxfwin.h"
 
 
-extern int wxfwin_main(int argc, char *argv[]);
 
 #ifdef WIN32
 /* Indicate that I expect to be using a RECENT version of Windows */
@@ -234,7 +233,7 @@ void consoleWait()
 
 #ifndef EMBEDDED
 
-int main(int argc, char *argv[])
+int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
 {
     int i;
 #ifndef WIN32
@@ -286,6 +285,7 @@ int main(int argc, char *argv[])
  *    (d) windows, but launched by a double-click, .exe version
  *    (e) cygwin shell : normal case
  *    (f) cygwin shell : stdin redirected via "<"
+ *    (g) reached the shell via SSH
  * leave me in a state
  *    (a) stdin exists and is a tty, a char device and a Console
  *    (b) stdin exists and is a pipe or a file not a tty
@@ -293,11 +293,10 @@ int main(int argc, char *argv[])
  *    (d) stdin seems to exist but is not a tty
  *    (e) stdin exists and is a pipe
  *    (f) as (e)
- * I want (b), (c) and (f) to force a non-windowed treatment.  But you may see
- * that various cases are not readily properly distinguished...
+ *    (g) $SSH_CLIENT is set
+ * I want (b), (c), (f) and (g) to force a non-windowed treatment.  But
+ * you may see that various cases are not readily properly distinguished...
  *
- * So for now I will leave the code not doing ANYTHING special so that the
- * user must go "-w" to specify windowed mode.
  */
 
     if (programNameDotCom)
@@ -332,12 +331,18 @@ int main(int argc, char *argv[])
  * will defer that worry since the ".exe" not the ".com" file is the version
  * with windowed use its prime interface.
  */
-        h = GetStdHandle(STD_INPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-        else if (!GetConsoleMode(h, &w)) windowed = 0;
-        h = GetStdHandle(STD_OUTPUT_HANDLE);
-        if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-        else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
+        const char *ssh = my_getenv("SSH_CLIENT");
+        if (ssh != NULL && *ssh != 0) windowed = 0;
+        else
+        {   h = GetStdHandle(STD_INPUT_HANDLE);
+            if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
+            else if (!GetConsoleMode(h, &w)) windowed = 0;
+            else
+            {   h = GetStdHandle(STD_OUTPUT_HANDLE);
+                if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
+                else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
+            }
+        }
     }
     else
     {
@@ -362,9 +367,12 @@ int main(int argc, char *argv[])
  * work in both cases.  Note that if a user wants to launch an application
  * via a pipe then they should EITHER launch the ".com" version or (better)
  * explictly provide a "-w" flag to indicate that the application should
- * work in stream/console mode.
+ * work in stream/console mode. Well it is now 2010 and I am using Windows 7,
+ * and I *hope* this still behaves the same.
  */
-        if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
+        const char *ssh = my_getenv("SSH_CLIENT");
+        if (ssh != NULL && *ssh != 0) windowed = 0;
+        else if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
     }
 #else  /* WIN32 */
 /* If stdin or stdout is not from a "tty" I will run in non-windowed mode.
@@ -374,6 +382,17 @@ int main(int argc, char *argv[])
  */
     if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
 
+#ifdef MACINTOSH
+/*
+ * If I am using X11 as my GUI then I am happy to use remote access via
+ * SSH since I can be using X forwarding - provided DISPLAY is set all can
+ * be well. However on a Macintosh I do NOT want to launch a window if I
+ * have connected via ssh since I will not have the desktop forwarded.
+ */
+    {   const char *ssh = my_getenv("SSH_CLIENT")
+        if (ssh != NULL && *ssh != 0) windowed = 0;
+    }
+#endif
 /* On Unix-like systems I will check the DISPLAY variable, and if it is not
  * set I will suppose that I can not create a window. That case will normally
  * arise when you have gained remote access to the system eg via telnet or
@@ -448,7 +467,12 @@ int main(int argc, char *argv[])
     }
 
     if (windowed==0) return plain_worker(argc, argv, wxfwin_main);
+#if 1
+    fprintf(stderr, "\n+++ Would run windowed here\n");
+    return plain_worker(argc, argv, wxfwin_main);
+#else
     return windowed_worker(argc, argv, wxfwin_main);
+#endif
 }
 
 void MS_CDECL sigint_handler(int code)
