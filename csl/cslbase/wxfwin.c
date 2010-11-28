@@ -47,7 +47,7 @@
  *************************************************************************/
 
 
-/* Signature: 4c1ce449 27-Nov-2010 */
+/* Signature: 571db819 28-Nov-2010 */
 
 #include "config.h"
 
@@ -114,6 +114,41 @@ extern char *getcwd(char *s, size_t n);
 #endif /* Microsoft C */
 
 #include "termed.h"
+
+#ifdef DEBUG
+
+/*
+ * This will be used as in FWIN_LOG((format,arg,...)) with an extra
+ * pair of parentheses. If DEBUG was enabled it send log information
+ * to a file with the name fwin-debug.log: I hope that will not (often)
+ * clash with any file the user has or requires. 
+ */
+
+static FILE *logfile = NULL;
+
+void wxfwin_write_log(char *s, ...)
+{
+    int created = (logfile == NULL);
+    va_list x;
+/*
+ * Note that I create this file in "a" (append) mode so that previous
+ * inpformation there is not lost.
+ */
+    if (created) logfile = fopen("fwin-debug.log", "a");
+    if (logfile == NULL) return; /* the file can not be used */
+    if (created)
+    {   time_t tt = time(NULL);
+        struct tm *tt1 = localtime(&tt);
+        fprintf(logfile, "Log segment starting: %s\n", asctime(tt1));
+    }
+    va_start(x, s);
+    vfprintf(logfile, s, x);
+    va_end(x);
+    fflush(logfile);
+}
+
+#endif
+
 
 #if defined WIN32
 /*
@@ -225,8 +260,16 @@ void consoleWait()
  * to give at least a minimal chance for the user to inspect it I will
  * put in a delay here.
  */
-    clock_t c0 = clock() + 5*CLOCKS_PER_SEC;
-    while (clock() < c0);
+    int i = 5;
+    clock_t c0;
+    while (i > 0)
+    {   char title[30];
+        sprintf(title, "Exiting after %d seconds", i);
+        SetConsoleTitle(title);
+        c0 = clock() + CLOCKS_PER_SEC;
+        while (clock() < c0);
+        i--;
+    }
 }
 
 #endif
@@ -235,7 +278,7 @@ void consoleWait()
 
 int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
 {
-    int i;
+    int i, ssh_client = 0;
 #ifndef WIN32
     const char *disp;
 #endif
@@ -254,27 +297,21 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
     texmacs_mode = 0;
 /*
  * An option "--my-path" just prints the path to the executable
- * and stops.
+ * and stops. An option "--args" indicates that I should not look at any
+ * more arguments - they may be used by the program that is to be run.
  */
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
+/*
+ * The "--my-path" option may be useful for debugging, but probably does
+ * not mak emuch sense otherwise!
+ */
         else if (strcmp(argv[i], "--my-path") == 0)
         {   printf("%s\n", programDir);
             exit(0);
         }
     }
 
-/*
- * As the very first thing I will do, I will seek an argument
- * that is just "-w", and if it is present record that I will want to
- * run in text mode, not windowed mode. I also detected "--", "-f"
- * and "-f" and use them to flag up a request to run minimised.
- * Note that "-w" takes precedence over "--" here...
- *
- * I run as a minimise window (by default) in the "--" case since I can use
- * the window title-bar to report progress even when all output is directed to
- * file.
- */
     windowed = 1;
 #ifdef WIN32
 /* I have tried various messy Windows API calls here to get this right.
@@ -332,15 +369,31 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * with windowed use its prime interface.
  */
         const char *ssh = my_getenv("SSH_CLIENT");
-        if (ssh != NULL && *ssh != 0) windowed = 0;
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG(("SSH_CLIENT set on Windows, so treat as console app\n"));
+            ssh_client = 1;
+            windowed = 0;
+        }
         else
         {   h = GetStdHandle(STD_INPUT_HANDLE);
-            if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-            else if (!GetConsoleMode(h, &w)) windowed = 0;
+            if (GetFileType(h) != FILE_TYPE_CHAR)
+            {   FWIN_LOG(("STD_INPUT_HANDLE not FILE_TYPE_CHAR\n"));
+                windowed = 0;
+            }
+            else if (!GetConsoleMode(h, &w))
+            {   FWIN_LOG(("!GetConsoleMode(STD_INPUT_HANDLE)\n"));
+                windowed = 0;
+            }
             else
             {   h = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-                else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
+                if (GetFileType(h) != FILE_TYPE_CHAR)
+                {   FWIN_LOG(("STD_OUTPUT_HANDLE not FILE_TYPE_CHAR\n"));
+                    windowed = 0;
+                }
+                else if (!GetConsoleScreenBufferInfo(h, &csb))
+                {   FWIN_LOG(("!GetConsoleMode(STD_OUTPUT_HANDLE)\n"));
+                    windowed = 0;
+                }
             }
         }
     }
@@ -371,8 +424,15 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * and I *hope* this still behaves the same.
  */
         const char *ssh = my_getenv("SSH_CLIENT");
-        if (ssh != NULL && *ssh != 0) windowed = 0;
-        else if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG(("SSH_CLIENT set\n"));
+            ssh_client = 1;
+            windowed = 0;
+        }
+        else if (GetFileType(h) == FILE_TYPE_DISK)
+        {   FWIN_LOG(("STD_INPUT_HANDLE is FILE_TYPE_DISK\n"));
+            windowed = 0;
+        }
     }
 #else  /* WIN32 */
 /* If stdin or stdout is not from a "tty" I will run in non-windowed mode.
@@ -380,7 +440,10 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * what the status of stdin/stdout are when launched not from a command line
  * but by clicking on an icon...
  */
-    if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
+    if (!isatty(fileno(stdin)) || !isatty(fileno(stdout)))
+    {   FWIN_LOG(("stdin or stdout is not a tty\n"));
+        windowed = 0;
+    }
 
 #ifdef MACINTOSH
 /*
@@ -390,9 +453,13 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * have connected via ssh since I will not have the desktop forwarded.
  */
     {   const char *ssh = my_getenv("SSH_CLIENT")
-        if (ssh != NULL && *ssh != 0) windowed = 0;
+        if (ssh != NULL && *ssh != 0)
+        {   FWIN_LOG(("SSH_CLIENT set on MacOSX\n"));
+            ssh_client = 1;
+            windowed = 0;
+        }
     }
-#endif
+#else /* MACINTOSH */
 /* On Unix-like systems I will check the DISPLAY variable, and if it is not
  * set I will suppose that I can not create a window. That case will normally
  * arise when you have gained remote access to the system eg via telnet or
@@ -401,7 +468,11 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * string.
  */
     disp = my_getenv("DISPLAY");
-    if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+    if (disp == NULL || strchr(disp, ':')==NULL)
+    {   FWIN_LOG(("DISPLAY not set for an X11 version\n"));
+        windowed = 0;
+    }
+#endif /* MACINTOSH */
 #endif  /* WIN32 */
 /*
  * REGARDLESS of any decisions about windowing made so for things can be
@@ -411,6 +482,14 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  *    -w. forces use of a window, but starts it minimised.
  *    -w  forces command-line rather than windowed use (can also write
  *        "-w-" for this case).
+ * I also look for some other CSL-specific options that make me feel I
+ * should adjust behaviour:
+ *    --  All output will be going to a file. So if the program is to run in
+ *        windowed mode I will start it off minimised.
+ *    -f  An option to run Reduce as a service on a socket. This is no longer
+ *        maintained, but again it leads to starting out minimised.
+ *    --texmacs   force the run NOT to try to create its own window,
+ *        because it is being invoked via a pipe from TeXmacs,
  */
     for (i=1; i<argc; i++)
     {   if (strcmp(argv[i], "--args") == 0) break;
@@ -421,9 +500,6 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
             else windowed = 0;
             break;
         }
-        else if (strcmp(argv[i], "-h") == 0 ||
-                 strcmp(argv[i], "-H") == 0) 
-                 ; /* Ignore "-h" option if Xft not available */
 /*
  * Note well that I detect just "--" as an entire argument here, so that
  * extended options "--option" do not interfere.
@@ -434,6 +510,7 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
+    FWIN_LOG(("windowed = %d\n", windowed));
 #ifdef WIN32
 /*
  * If I am running under Windows and I have set command line options
@@ -441,13 +518,34 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * not already exist.
  */
     if (windowed == 0)
-    {   int consoleCreated = AllocConsole();
+    {   int consoleCreated;
+        FWIN_LOG(("Need a console\n"));
+        consoleCreated = AllocConsole();
+        FWIN_LOG(("consoleCreated = %d\n", consoleCreated));
         if (consoleCreated)
-        {   freopen("CONIN$", "r", stdin);
-            freopen("CONOUT$", "w", stdout);
-            freopen("CONOUT$", "w", stderr);
+        {   if (ssh_client)
+            {
+/*
+ * This situation seems totally odd to me. I just launched a Windowed-mode
+ * application and normally when I do that it detaches from the console.
+ * hoever rather than having a proper console here I am connected over
+ * ssh (I am testing this using the cygwin openssh server on Windows 7).
+ * It appears to be the case that I *DO* have stdin and stdout available to
+ * me in this case even though I think that when I launch exactly the same
+ * binary from a directly attached console it detaches and I need to use
+ * the newly created console....
+ * The code I have here is based on empirical observation in cases that
+ * most people will probably not trigger!
+ */
+                FWIN_LOG(("Running windowed mode application via ssh.\n"));
+            }
+            else
+            {   freopen("CONIN$", "r", stdin);
+                freopen("CONOUT$", "w", stdout);
+                freopen("CONOUT$", "w", stderr);
 /* I will also pause for 5 seconds at the end... */
-            atexit(consoleWait);
+                atexit(consoleWait);
+            }
         }
     }
 #endif /* WIN32 */
@@ -467,8 +565,53 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
     }
 
     if (windowed==0) return plain_worker(argc, argv, wxfwin_main);
+    FWIN_LOG(("\n+++ Would run windowed here\n"));
+
+#ifdef MACINTOSH
+/*
+ * If I will be wanting to use a GUI and if I have just loaded an
+ * executable that is not within an application bundle then I will
+ * use "open" to launch the corresponding application bundle. Doing this
+ * makes resources (eg fonts) that are within the bundle available and
+ * it also seems to cause things to terminate more neatly.
+ */
+        char xname[LONGEST_LEGAL_FILENAME];
+        sprintf(xname, "%s.app", programName);
+        if (strstr(fullProgramName, xname) == NULL)
+        {
+/*
+ * Here the binary I launched was not located as
+ *      ...foo.app../.../foo
+ * so I will view it is NOT being from an application bundle. I will
+ * re-launch it so it is. This may be a bit of a hacky way to decide.
+ * I will expect that following the re-launch that the same decisions
+ * about whether to act as a windowed application will follow-through,
+ * but I will need to review the tests associated with stdin & stdout
+ * on the Mac to verify that this is the case.
+ */
+            struct stat buf;
+            sprintf(xname, "%s.app", fullProgramName);
+            if (stat(xname, &buf) == 0 &&
+                (buf.st_mode & S_IFDIR) != 0)
+            {
+/* Well foo.app exists and is a directory, so I will try to use it */
+                char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
+                int i;
+                FWIN_LOG(("About to restart Mac from an application bundle\n"));
+                nargs[0] = "/usr/bin/open";
+                nargs[1] = xname;
+                nargs[2] = "--args";
+                for (i=1; i<argc; i++)
+                    nargs[i+2] = argv[i];
+                nargs[argc+2] = NULL;
+/* /usr/bin/open foo.app --args [any original arguments] */
+                return execv("/usr/bin/open", nargs);
+            }
+        }
+#endif
+
+
 #if 1
-    fprintf(stderr, "\n+++ Would run windowed here\n");
     return plain_worker(argc, argv, wxfwin_main);
 #else
     return windowed_worker(argc, argv, wxfwin_main);
