@@ -243,6 +243,7 @@ int fwin_main(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
+    FWIN_LOG(("Entering main(%s)\n", argv[0]));
     return fwin_startup(argc, argv, fwin_main);
 }
 

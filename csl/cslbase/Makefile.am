@@ -156,7 +156,6 @@ generated_sources =             $(gensrc)/u01.c \
 		$(gensrc)/u56.c $(gensrc)/u57.c \
 		$(gensrc)/u58.c $(gensrc)/u59.c \
 		$(gensrc)/u60.c
-
 generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u02.lsp $(gensrc)/u03.lsp \
 		$(gensrc)/u04.lsp $(gensrc)/u05.lsp \
@@ -217,7 +216,7 @@ AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-foxdemo_DEPENDENCIES = $(fwin_icon)
+foxdemo_DEPENDENCIES = $(fwin_icon) 
 
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
@@ -231,7 +230,7 @@ showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
-wxdemo_DEPENDENCIES = $(fwin_icon) $(WXC)
+wxdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
@@ -321,7 +320,7 @@ bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 		reduce.doc/index.html $(GP) $(WXC)
 reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
 		reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP) $(WXC)
-fwindemo_DEPENDENCIES = $(fwin_icon) $(WXC)
+fwindemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc

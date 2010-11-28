@@ -479,7 +479,7 @@ AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
 foxdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-foxdemo_DEPENDENCIES = $(fwin_icon)
+foxdemo_DEPENDENCIES = $(fwin_icon) 
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
@@ -490,7 +490,7 @@ showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
-wxdemo_DEPENDENCIES = $(fwin_icon) $(WXC)
+wxdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
@@ -554,7 +554,7 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
 @windows_TRUE@		reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP) $(WXC)
 
-@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(WXC)
+@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
 
 # end of windows vs non-windows conditions

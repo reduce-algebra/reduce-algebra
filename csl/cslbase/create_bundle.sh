@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Usage:
 #   $srcdir/create_bundle.sh name srcdir ?icon
@@ -6,6 +6,8 @@
 # Sets up name.app with a proper Info.plist etc for use with MacOSX.
 # This copies in an icon, and arg2 (if present) specifies its identity
 # as an .icns file in $srcdir
+
+echo TRACE: create_bundle.sh $*
 
 P=$1.app/Contents/Info.plist
 srcdir=$2
@@ -16,7 +18,12 @@ mkdir -p $1.app/Contents
 mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/Resources
 mkdir -p $1.app/Contents/Resources/Fonts
-cp reduce.wxFonts/* $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/README            $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/BaKoMa-AMS.Fonts  $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/BaKoMa-CM.Fonts   $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/README.news       $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/LICENCE           $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/*.ttf             $1.app/Contents/Resources/Fonts
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $P
 echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $P
 echo "<plist version=\"0.9\">" >> $P

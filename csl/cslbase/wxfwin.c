@@ -199,7 +199,7 @@ void unicodeToUtf8(char *dest, const char *src)
     strcpy(dest, src);
 }
 
-void utf8ToUnicode(char dest, const char *src)
+void utf8ToUnicode(char *dest, const char *src)
 {
     strcpy(dest, src);
 }
@@ -452,7 +452,7 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * be well. However on a Macintosh I do NOT want to launch a window if I
  * have connected via ssh since I will not have the desktop forwarded.
  */
-    {   const char *ssh = my_getenv("SSH_CLIENT")
+    {   const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != NULL && *ssh != 0)
         {   FWIN_LOG(("SSH_CLIENT set on MacOSX\n"));
             ssh_client = 1;
