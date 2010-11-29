@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 161844b3 23-Nov-2010 */
+/* Signature: 608043ac 29-Nov-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
         {   printf("%s\n", programDir);
             exit(0);
         }
-        else if (strcmp, argv[i], "--args") == 0) break;
+        else if (strcmp(argv[i], "--args") == 0) break;
     }
 
 #ifdef PART_OF_FOX
