@@ -70,7 +70,7 @@
 
 
 
-/* Signature: 4a78abf1 25-Nov-2010 */
+/* Signature: 3c3c2da8 29-Nov-2010 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed
@@ -217,6 +217,10 @@
 #define fwin_startup       wxfwin_startup
 #define fwin_main          wxfwin_main
 #define fwin_ensure_screen wxfwin_ensure_screen
+#endif
+
+#ifndef FWIN_LOG
+#define FWIN_LOG(x) printf x
 #endif
 
 int fwin_main(int argc, char **argv)
