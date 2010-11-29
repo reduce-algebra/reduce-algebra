@@ -75,6 +75,11 @@ AC_ARG_WITH(mingw64,
   [],
   [])
 
+AC_ARG_WITH(gui,
+  AC_HELP_STRING([--with-gui], [this option is ignored here!]),
+  [],
+  [])
+
 # What host am I on?
 AC_CANONICAL_HOST()
 

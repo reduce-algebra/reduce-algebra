@@ -165,7 +165,7 @@ do
     m64=-m64
     m32=
     ;;
-  --without-fox | --with-fox=no | --without-wx | --with-wx=no)
+  --without-fox | --with-fox=no | --without-wx | --with-wx=no | --without-gui | --with-gui=no)
     fox=
     wx=
     nogui=-nogui

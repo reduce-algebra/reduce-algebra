@@ -742,6 +742,7 @@ enable_option_checking
 with_csl
 with_psl
 with_mingw64
+with_gui
 with_build
 with_m32
 with_m64
@@ -1409,6 +1410,7 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system. Do not use here!
   --with-mingw64          this option is ignored here!
+  --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
@@ -3096,6 +3098,13 @@ fi
 # Check whether --with-mingw64 was given.
 if test "${with_mingw64+set}" = set; then :
   withval=$with_mingw64;
+fi
+
+
+
+# Check whether --with-gui was given.
+if test "${with_gui+set}" = set; then :
+  withval=$with_gui;
 fi
 
 
