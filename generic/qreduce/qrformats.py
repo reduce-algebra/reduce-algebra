@@ -49,8 +49,8 @@ class QtReduceFormat(object):
     GRAY = QColor(qRgb(235,235,238))
     #    red = QColor(qRgb(250,220,220))
     RED = QColor(qRgb(250,230,230))
-    DARKRED = QColor(qRgb(204,0,0))
-    DARKBLUE = QColor(qRgb(0,0,0xcc))
+    DARKRED = QColor(qRgb(0xb0,0,0))
+    DARKBLUE = QColor(qRgb(0,0,0xb0))
     DARKGRAY = QColor(qRgb(0xa0,0xa0,0xa0))
 
     def __init__(self):
@@ -128,7 +128,7 @@ class QtReduceNoResult(QtReduceOutput):
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceNoResult,self).__init__()
-            self.charFormat.setForeground(QtReduceFormat.DARKGRAY)
+            self.charFormat.setForeground(QtReduceFormat.DARKBLUE)
             self._ready = True
 
 
@@ -172,7 +172,7 @@ class QtReduceRowFormat(QTextFrameFormat):
         if not '_ready' in dir(self):
             super(QtReduceRowFormat,self).__init__()
             self.setPosition(QTextFrameFormat.InFlow)
-            self.setLeftMargin(25)
+            self.setLeftMargin(20)
             self.showFrames(False)
             self._ready = True
 

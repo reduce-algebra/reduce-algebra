@@ -74,7 +74,9 @@ class Reduce(QObject):
 
     def compute(self,c):
         self.__mutex.lock()
-        a = self.__compute(c)
+        l = c.split('\n')
+        for sc in l:
+            a = self.__compute(sc)
         self.__mutex.unlock()
         return a
 
@@ -89,57 +91,115 @@ class Reduce(QObject):
 
 
 class QtReduce(QThread):
-    # currently only works with 'object' type, not with
-    # 'QtReduceComputation'
     startComputation = Signal(object)
     endComputation = Signal(object)
 
     def __init__(self,parent=None):
         super(QtReduce,self).__init__(parent)
+        self.model = parent
         self.reduce = Reduce(self.__binary())
         self.__initialize()
-        self.finishedComputations = []
-        self.startedComputations = []
         self.started.connect(self.startedHandler)
         self.finished.connect(self.finishedHandler)
+        self.finishedComputations = []
+        self.startedComputations = []
+        self.queue = []
+        self.isComputing = False
+        self.aborted = False
+        self.accTime = 0
+        self.accGcTime = 0
 
     def abortComputation(self):
         traceLogger.debug("entering")
+        if self.queue:
+            self.reduce.signal("SIGSTOP")
+            ans = self.__abortComputationBox()
+            self.reduce.signal("SIGCONT")
+            if ans == 'cancel':
+                return
+            if ans == 'all':
+                self.queue = []
+        self.computation.status = QtReduceComputation.Aborted
         self.reduce.signal("SIGINT")
 
-    def compute(self,c,i,silent=False):
+    def __abortComputationBox(self):
+        tit = self.tr("Aborting Batch Computation")
+        txt = self.tr("Reduce is currently evaluating several groups in "
+                      "batch. Do you want to interrupt only the current "
+                      "computation or all?")
+        diag = QMessageBox(self.model.controller.mainWindow)
+        diag.setWindowTitle(tit)
+        diag.setIcon(QMessageBox.Question)
+        diag.setText(txt)
+        abortAll = diag.addButton("Abort All",QMessageBox.YesRole)
+        abortCurrent = diag.addButton("Abort Current",QMessageBox.YesRole)
+        cancel = diag.addButton(QMessageBox.StandardButton.Cancel)
+        diag.setDefaultButton(abortAll)
+        diag.setEscapeButton(cancel)
+        diag.setWindowModality(Qt.WindowModal)
+        diag.exec_()
+        ans = diag.clickedButton()
+        if ans == abortAll:
+            return 'all'
+        elif ans == abortCurrent:
+            return 'current'
+        elif ans == cancel:
+            return 'cancel'
+        traceLogger.critical("unidentifiable button %s" % ans)
+
+    def compute(self,c):
+        self.queue.append(c)
+        self.resumeBatch()
+
+    def compute1(self,c):
         self.wait()
         traceLogger.debug("after wait, %s"% c)
-        self.computation = QtReduceComputation()
-        self.computation.command = c
-        self.computation.row = i
-        self.computation.evaluating = True
-        self.computation.silent = silent
+        self.computation = c
+        self.computation.status = QtReduceComputation.Evaluating
         self.startedComputations.append(self.computation)
         self.start()
 
     def finishedHandler(self):
-        signalLogger.debug("emitting QtReduce.endComputation %s" %
-                           self.computation)
+        self.isComputing = False
+        l = len(self.finishedComputations)
+        if l != 1:
+            traceLogger.warning("queue of %d finished computations" % l)
         while self.finishedComputations:
-            self.endComputation.emit(self.finishedComputations.pop(0))
+            c = self.finishedComputations.pop(0)
+            signalLogger.debug("emitting endComputation %s" % c.command)
+            self.endComputation.emit(c)
+        self.resumeBatch()
+
+    def resumeBatch(self):
+        if self.isComputing:
+            return False
+        if self.queue == []:
+            return False
+        self.isComputing = True
+        c = self.queue.pop(0)
+        self.compute1(c)
+        return True
 
     def run(self):
         c = self.computation.command
         traceLogger.debug("computing %s" % c)
         a = self.reduce.compute(c)
-        self.computation.processAnswer(a)
-        self.computation.evaluating = False
+        self.computation.processAnswer(a,self.accTime,self.accGcTime)
+        self.accTime = self.computation.accTime
+        self.accGcTime = self.computation.accGcTime
         self.finishedComputations.append(self.computation)
         if self.computation.error:
             a = self.reduce.compute(" 0.0.")
             traceLogger.debug("error recovery %s" % a)
 
     def startedHandler(self):
-        signalLogger.debug("emitting QtReduce.startComputation %s" %
-                           self.computation)
+        l = len(self.startedComputations)
+        if l != 1:
+            traceLogger.warning("queue of %d started computations" % l)
         while self.startedComputations:
-            self.startComputation.emit(self.startedComputations.pop(0))
+            c = self.startedComputations.pop(0)
+            signalLogger.debug("emitting startComputation %s" % c.command)
+            self.startComputation.emit(c)
 
     def __binary(self):
         binary = QSettings().value("computation/reduce",
@@ -170,13 +230,18 @@ class QtReduce(QThread):
         self.reduce.compute("on comp$")
         self.reduce.compute("lisp procedure lr_aprint(u); mathprint u$")
         self.reduce.compute("lisp procedure qr_render(u);"
-                     "mathprint car u where !*nat=t$")
+                            "mathprint car u where !*nat=t$")
         self.reduce.compute("lisp put('qr_render,'psopfn,'qr_render)$")
         self.reduce.compute("off comp,msg$")
         self.reduce.compute("lisp if 'psl memq lispsystem!* then remd 'break$")
 
 
 class QtReduceComputation(QObject):
+    NotEvaluated = 0
+    Evaluating = 1
+    Evaluated = 2
+    Error = 3
+    Aborted = 4
 
     def __init__(self,d={}):
         self.statCounter = int(d.get('statCounter',0))
@@ -188,15 +253,17 @@ class QtReduceComputation(QObject):
         self.gcTime = int(d.get('gcTime',0))
         self.accTime = int(d.get('accTime',0))
         self.accGcTime = int(d.get('accGcTime',0))
-        self.error = self.__bool(d.get('error',False))
         self.errorText = d.get('errorText','')
-        self.evaluating = self.__bool(d.get('evaluating',False))
-        self.evaluated = self.__bool(d.get('evaluated',False))
-        self.silent = self.__bool(d.get('silent',False))
+        self.status = int(d.get('status',self.NotEvaluated))
         self.row = int(d.get('row',-1))
+        self.c1 = d.get('c1','')
+        self.c2 = d.get('c2','')
+        self.c3 = d.get('c3','')
 
     def __repr__(self):
-        l = self.toDict().items()
+        d = self.toDict()
+        d['status'] = self.__statusStr(d['status'])
+        l = d.items()
         l.sort()
         string = "[%-11s = %s\n" % (l[0][0], l[0][1])
         for x in l[1:-1]:
@@ -208,13 +275,14 @@ class QtReduceComputation(QObject):
         copy = QtReduceComputation(self.toDict())
         return copy
 
-    def processAnswer(self,a):
+    def processAnswer(self,a,accTime,accGcTime):
         self.statCounter = a['statcounter']
         self.symbolic = a['symbolic']
         self.result = a['result'] or ''
         if self.result:
             self.result = self.result.replace('\n',' ')
         self.nextPrompt = a['nextpompt'] or ''
+        self.errorText = ''
         if a['error']:
             s = a['pretext'] or ''
             if s.find('Time:') != -1:
@@ -227,37 +295,54 @@ class QtReduceComputation(QObject):
                 for ss in l[:-1]:
                     s += ss
                 s = s.strip()
-            self.errorText = s or 'INCOMPLETE INPUT'
+            if not self.status == self.Aborted:
+                self.errorText = s or 'INCOMPLETE INPUT'
+                self.status = self.Error
+        else:
+            if not self.status == self.Aborted:
+                self.status = self.Evaluated
         if a['time'] != -1:
             self.time = a['time']
-            self.accTime += self.time
+            self.accTime = accTime + self.time
         if a['gctime'] != -1:
             self.gcTime = a['gctime']
-            self.accGcTime += self.gcTime
-        self.error = a['error']
-        self.evaluated = True
+            self.accGcTime = accGcTime + self.gcTime
 
     def toDict(self):
         return {'statCounter':str(self.statCounter),
-                'command':str(self.command),
-                'symbolic':str(self.symbolic),
-                'result':str(self.result),
                 'nextPrompt':str(self.nextPrompt),
+                'c1':self.c1,
+                'command':str(self.command),
+                'c2':self.c2,
+                'result':str(self.result),
+                'c3':self.c3,
+                'symbolic':str(self.symbolic),
                 'time':str(self.time),
                 'gcTime':str(self.gcTime),
                 'accTime':str(self.accTime),
                 'accGcTime':str(self.accGcTime),
-                'error':str(self.error),
                 'errorText':str(self.errorText),
-                'silent':str(self.silent),
-                'evaluating':str(self.evaluating),
-                'evaluated':str(self.evaluated),
+                'status':str(self.status),
                 'row':str(self.row)}
 
     def __bool(self,s):
         if s in [0, '0', False, 'False']:
             return False
         return bool(s)
+
+    def __statusStr(self,status):
+        if int(status) == self.NotEvaluated:
+            return status + ' (NotEvaluated)'
+        elif int(status) == self.Evaluating:
+            return status + ' (Evaluating)'
+        elif int(status) == self.Evaluated:
+            return status + ' (Evaluated)'
+        elif int(status) == self.Error:
+            return status + ' (Error)'
+        elif int(status) == self.Aborted:
+            return status + ' (Aborted)'
+        traceLogger.warning('unkonwn status %s' % s)
+        return status + ' (unknown)'
 
     def __str(self,s):
         if s == 'None':
@@ -266,19 +351,18 @@ class QtReduceComputation(QObject):
 
 
 class QtReduceModel(QAbstractTableModel):
-
     RawDataRole = Qt.UserRole
-
     endComputation = Signal(object)
     startComputation = Signal(object)
 
     def __init__(self,parent=None):
         super(QtReduceModel,self).__init__(parent)
+        self.controller = parent
         self.model = []
         self.reduce = QtReduce(self)
         self.reduce.startComputation.connect(self.startComputation)
         self.reduce.endComputation.connect(self.endComputationHandler)
-        self.reduce.compute("$ % For initializing the status bar",-1,silent=True)
+        self.reduce.compute(QtReduceComputation({'row':-2, 'command':'$'}))
 
     def abortComputation(self):
         self.reduce.abortComputation()
@@ -289,10 +373,13 @@ class QtReduceModel(QAbstractTableModel):
         traceLogger.warning("called with valid parent %s" % index)
         return 0
 
-    def compute(self,index):
-        traceLogger.debug(index.row())
-        computation = self.data(index,QtReduceModel.RawDataRole)
-        self.reduce.compute(computation.command,index.row())
+    def compute(self,row,count=1):
+        traceLogger.debug("row=%d, count=%d" % (row, count))
+        for i in range(row,row+count):
+            computation = self.data(self.index(i,0),QtReduceModel.RawDataRole)
+            signalLogger.debug("Emmitting %s" % computation.command)
+            #self.startComputation.emit(computation)
+            self.reduce.compute(computation)
 
     def computeAndSetData(self,index,value,role=Qt.EditRole):
         if role != QtReduceModel.RawDataRole:
@@ -312,37 +399,52 @@ class QtReduceModel(QAbstractTableModel):
     def deleteOutput(self):
         for computation in self.model:
             computation.result = ''
-            computation.evaluated = False
+            computation.status = QtReduceComputation.NotEvaluated
         self.dataChanged.emit(self.index(0,0),self.index(len(self.model)-1,0))
 
     def endComputationHandler(self,computation):
-        if not computation.silent:
-            row = computation.row
-            if row == -1:
-                traceLogger.critical("invalid row -1")
-            self.setData(self.index(row,0),computation,QtReduceModel.RawDataRole)
+        row = computation.row
+        if row == -1:
+            traceLogger.critical("invalid row -1")
+        # row = -2 is be used to initialize the status bar. It is
+        # ignored in the model but computation takes place and signals
+        # are processed.
+        if row >= 0:
+            if row == len(self.model) - 1:
+                self.insertRow(row+1)
+            self.setData(self.index(row,0),computation,
+                         QtReduceModel.RawDataRole)
         self.endComputation.emit(computation)
 
     def flags(self,index):
         return(Qt.ItemIsSelectable|Qt.ItemIsEditable|Qt.ItemIsEnabled)
 
     def headerData(self,section,orientation,role=Qt.DisplayRole):
+        sup = super(QtReduceModel,self)
         if orientation == Qt.Horizontal:
-            return super(QtReduceModel,self).headerData(section,orientation,role)
+            return sup.headerData(section,orientation,role)
         if orientation == Qt.Vertical:
-            return super(QtReduceModel,self).headerData(section,orientation,role)
+            return sup.headerData(section,orientation,role)
         traceLogger.warning(orientation)
         return None
 
     def insertRows(self,row,count,index=QModelIndex()):
         self.beginInsertRows(index,row,row+count-1)
         self.model[row:row] = [QtReduceComputation()] * count
+        i = row
+        for r in self.model[row:]:
+            r.row = i
+            i += 1
         self.endInsertRows()
         return True
 
     def removeRows(self,row,count,index=QModelIndex()):
         self.beginRemoveRows(index,row,row+count-1)
         self.model[row:row+count] = []
+        i = row
+        for r in self.model[row:]:
+            r.row = i
+            i += 1
         self.endRemoveRows()
         return True
 

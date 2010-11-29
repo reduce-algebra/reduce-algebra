@@ -35,9 +35,11 @@ from qrlogging import fontLogger
 from qrlogging import signalLogger
 from qrlogging import traceLogger
 
+from qrmodel import QtReduceComputation
 from qrmodel import QtReduceModel
 
 from qrview import QtReduceFrameView
+from qrview import SubCell
 
 from types import BooleanType
 from types import StringType
@@ -53,21 +55,22 @@ class QtReduceController(QObject):
     def __init__(self,parent=None):
         super(QtReduceController,self).__init__(parent)
 
+        self.mainWindow = parent
+
         self.setFileName('')
 
-        self.__requestPending = False
-
-        self.model = QtReduceModel()
+        self.model = QtReduceModel(self)
         self.view = QtReduceFrameView(parent)
 
         self.view.computationRequest.connect(self.computationRequestV)
-        self.view.modified.connect(self.modified)
+        self.view.modified.connect(self.modifiedV)
 
         self.model.dataChanged.connect(self.dataChangedM)
         self.model.endComputation.connect(self.endComputationM)
         self.model.rowsInserted.connect(self.rowsInsertedM)
         self.model.rowsRemoved.connect(self.rowsRemovedM)
         self.model.startComputation.connect(self.startComputationM)
+        self.updatingModel = False
 
         self.model.insertRow(0)
 
@@ -79,11 +82,10 @@ class QtReduceController(QObject):
         if not self.view.input(row):
             return
         index = self.model.index(row,0)
-        computation = self.model.data(index,QtReduceModel.RawDataRole).copy()
+        computation = self.model.data(index,QtReduceModel.RawDataRole)
         computation.command = self.view.input(row)
-        self.model.computeAndSetData(index,computation,
-                                     QtReduceModel.RawDataRole)
-        self.__requestPending = True
+        self.model.setData(index,computation,QtReduceModel.RawDataRole)
+        self.model.compute(row)
 
     def evaluateAll(self):
         for row in range(self.view.rowCount()):
@@ -93,32 +95,45 @@ class QtReduceController(QObject):
         None
 
     def dataChangedM(self,topLeft,bottomRight):
+        if self.updatingModel:
+            return
         start = topLeft.row()
         end = bottomRight.row()
         signalLogger.debug("start = %d, end = %d" % (start,end))
         for row in range(start,end+1):
             index = self.model.index(row,0)
             computation = self.model.data(index,QtReduceModel.RawDataRole)
-            self.view.setInput(row,computation.command)
-            traceLogger.debug(computation)
-            if computation.error:
-                self.view.setError(row,computation.errorText)
+            self.setCell(row,computation)
+            if computation.status in [QtReduceComputation.Error,
+                                      QtReduceComputation.Aborted]:
                 return
-            elif computation.result:
+        if row < self.model.rowCount() - 1:
+            self.view.gotoRow(row + 1)
+
+    def setCell(self,row,computation):
+        self.view.setCell(row,
+                          computation.c1,
+                          computation.command,
+                          computation.c2,
+                          computation.result,
+                          computation.c3)
+        s = computation.status
+        if s == QtReduceComputation.NotEvaluated:
+            self.view.setNotEvaluated(row)
+        elif s == QtReduceComputation.Evaluated:
+            if computation.result:
                 result = computation.result
                 if not computation.symbolic:
                     result = self.renderResult(result)
                 self.view.setResult(row,result)
-            elif computation.evaluated:
-                self.view.setNoResult(row)
             else:
-                self.view.setNotEvaluated(row)
-        if self.__requestPending:
-            self.__requestPending = False
-            if row == self.model.rowCount() - 1:
-                self.model.insertRow(row + 1)
-        if row < self.model.rowCount() - 1:
-            self.view.gotoRow(row + 1)
+                self.view.setNoResult(row)
+        elif s == QtReduceComputation.Error:
+            self.view.setError(row,computation.errorText)
+        elif s == QtReduceComputation.Aborted:
+            self.view.setAborted(row)
+        else:
+            traceLogger.debug("Bad status: %d" % s)
 
     def deleteOutput(self):
         self.model.deleteOutput()
@@ -132,8 +147,8 @@ class QtReduceController(QObject):
 
     def endComputationM(self,computation):
         signalLogger.debug("catching computation.statCounter = %s,"
-                           "evaluating=%s" %
-                           (computation.statCounter,computation.evaluating))
+                           "status=%s" %
+                           (computation.statCounter,computation.status))
         self.view.setReadOnly(False)
         self.acceptAbort.emit(False)
         self.endComputation.emit(computation)
@@ -161,6 +176,25 @@ class QtReduceController(QObject):
         self.model.insertRow(row + 1)
         self.view.gotoRow(row + 1)
 
+    def modifiedV(self):
+        self.updatingModel = True
+        sc = self.view.subCell()
+        if sc.type != SubCell.Root:
+            row = sc.row
+            index = self.model.index(row,0)
+            computation = self.model.data(index,QtReduceModel.RawDataRole)
+            if sc.type == SubCell.Input:
+                computation.command = sc.content
+            elif sc.type == SubCell.C1:
+                computation.c1 = sc.content
+            elif sc.type == SubCell.C2:
+                computation.c2 = sc.content
+            elif sc.type == SubCell.C3:
+                computation.c3 = sc.content
+            self.model.setData(index,computation,QtReduceModel.RawDataRole)
+        self.modified.emit(True)
+        self.updatingModel = False
+
     def open(self,fileName):
         success = self.model.open(fileName)
         if success:
@@ -171,9 +205,14 @@ class QtReduceController(QObject):
         return
 
     def renderResult(self,result):
-        command = "qr_render(" + result + ");"
+        if result.strip("\\0123456789 ") == '':
+            return result.replace('\\ ','\\\n')
+        command = "qr_render(" + result.rstrip("$") + ");"
         answer = self.model.reduce.reduce.compute(command)
-        return answer['pretext'].strip()
+        rendered = answer['pretext']
+        if rendered:
+            rendered = rendered.strip("\n")
+        return rendered
 
     def rowsInsertedM(self,parent,start,end):
         traceLogger.debug("start=%d, end=%d" % (start, end))
@@ -206,4 +245,4 @@ class QtReduceController(QObject):
     def __saveAs(self,fileName):
         self.model.save(fileName)
         self.modified.emit(False)
-
+        self.parent().showMessage(self.tr("Wrote ") + fileName)

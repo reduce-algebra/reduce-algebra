@@ -35,14 +35,16 @@ from PySide.QtCore import Qt
 from PySide.QtCore import Signal
 from PySide.QtCore import QSettings
 
-from PySide.QtGui import QTextEdit
+from PySide.QtGui import QColor
 from PySide.QtGui import QFont
 from PySide.QtGui import QFontDatabase
 from PySide.QtGui import QFontInfo
 from PySide.QtGui import QFrame
 from PySide.QtGui import QMessageBox
 from PySide.QtGui import QPainter
+from PySide.QtGui import qRgb
 from PySide.QtGui import QTextCursor
+from PySide.QtGui import QTextEdit
 
 from qrlogging import fontLogger
 from qrlogging import signalLogger
@@ -65,11 +67,9 @@ class QtReduceTextEdit(QTextEdit):
 
     def __init__(self,parent=None):
         super(QtReduceTextEdit,self).__init__(parent)
-
-        self.textChanged.connect(self.textChangedHandler)
-
         self.setupFont(int(QSettings().value("worksheet/fontsize",
                                          QtReduceDefaults.FONTSIZE)))
+        self.textChanged.connect(self.textChangedHandler)
 
     def __nextGoodFontSize(self,font,size,step):
         info = QFontInfo(font)
@@ -120,6 +120,8 @@ class QtReduceTextEdit(QTextEdit):
         self.setupFont(newSize)
 
     def textChangedHandler(self):
+        if self.insertingFrames:
+            return
         self.modified.emit(True)
 
     def zoomDef(self):
@@ -136,7 +138,8 @@ class QtReduceTextEdit(QTextEdit):
 
 
 class QtReduceFrameView(QtReduceTextEdit):
-    Evaluated = 'EVALUATED'
+    Aborted = u'Aborted'
+    Evaluated = u'\u2713'.encode("utf-8")
     NotEvaluated = ''
     leftRow = Signal(IntType)
 
@@ -144,6 +147,7 @@ class QtReduceFrameView(QtReduceTextEdit):
         super(QtReduceFrameView,self).__init__(parent)
         self.setUndoRedoEnabled(False)
         self.selectionChanged.connect(self.pruneSelection)
+        self.insertingFrames = False
 
     def atEnd(self):
         return self.textCursor().atEnd()
@@ -193,6 +197,7 @@ class QtReduceFrameView(QtReduceTextEdit):
         self.ensureCursorVisible()
 
     def insertRow(self,row):
+        self.insertingFrames = True
         document = self.document()
         rootFrame = document.rootFrame()
         rows = rootFrame.childFrames()
@@ -217,12 +222,28 @@ class QtReduceFrameView(QtReduceTextEdit):
         cursor.setBlockCharFormat(QtReduceNoResult().charFormat)
         cursor.insertText(QtReduceFrameView.NotEvaluated)
         cursor.setPosition(position)
+        self.insertingFrames = False
 
     def insertRows(self,start,end):
         for row in range(start, end + 1):
             self.insertRow(row)
 
     def input(self,row):
+        rows = self.document().rootFrame().childFrames()
+        if row >= len(rows):
+            traceLogger.critical("invalid row %d > %d" % (row,len(rows)-1))
+            row = len(rows)
+        inputFrame = rows[row].childFrames()[0]
+        cursor = QTextCursor(inputFrame)
+        cursor.setPosition(inputFrame.lastPosition(),QTextCursor.KeepAnchor)
+        command = cursor.selectedText()
+        command = command.replace(u'\u2028',u'\n')
+        command = command.replace(u'\u2029',u'\n')
+        if command != '' and not command[-1] in [';','$']:
+            command += ';'
+        return command
+
+    def currentField(self,row):
         rows = self.document().rootFrame().childFrames()
         if row >= len(rows):
             traceLogger.critical("invalid row %d > %d" % (row,len(rows)-1))
@@ -266,13 +287,14 @@ class QtReduceFrameView(QtReduceTextEdit):
         for group in groups:
             h = QtReduceRowFormat().leftMargin()
             hoff = int(0.4*h)
-            self.__drawFrameBracket(painter,group,hoff,Qt.black,xt=-1)
+            self.__drawFrameBracket(painter,group,hoff,
+                                    QColor(qRgb(0x80,0x80,0x80)),xt=2)
             childFrames = group.childFrames()
             hoff = int(0.7*h)
             self.__drawFrameBracket(painter,childFrames[0],hoff,
-                                    QtReduceFormat().DARKRED,xt=2)
+                                    QColor(qRgb(0xb0,0x70,0x70)),xt=2)
             self.__drawFrameBracket(painter,childFrames[1],hoff,
-                                    QtReduceFormat().DARKBLUE,xt=2)
+                                    QColor(qRgb(0x70,0x70,0xb0)),xt=2)
         painter.end()
         super(QtReduceFrameView,self).paintEvent(e)
 
@@ -355,6 +377,45 @@ class QtReduceFrameView(QtReduceTextEdit):
     def setError(self,row,text):
         self.__setOutput(row,text,QtReduceError())
 
+    def setCell(self,row,c1,input,c2,output,c3):
+        rows = self.document().rootFrame().childFrames()
+        if row >= len(rows):
+            traceLogger.critical("invalid row %d > %d" % (row,len(rows)-1))
+            return
+        cell = rows[row]
+        rowFrames = cell.childFrames()
+        if len(rowFrames) != 2:
+            traceLogger.critical("%d subframes in row %d", len(rowFrames), row)
+            return
+        inputFrame = rowFrames[0]
+        outputFrame = rowFrames[1]
+        # C1:
+        cursor = cell.firstCursorPosition()
+        cursor.setPosition(inputFrame.firstPosition(),QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.Left,QTextCursor.KeepAnchor)
+        cursor.insertText(c1)
+        # Input:
+        cursor.setPosition(inputFrame.firstPosition())
+        cursor.setPosition(inputFrame.lastPosition(),QTextCursor.KeepAnchor)
+        cursor.setBlockFormat(QtReduceInput().blockFormat)
+        #cursor.insertText(input,QtReduceInput().charFormat)
+        cursor.insertText(input)
+        # C2:
+        cursor.setPosition(inputFrame.lastPosition())
+        cursor.movePosition(QTextCursor.Right)
+        cursor.setPosition(outputFrame.firstPosition(),QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.Left,QTextCursor.KeepAnchor)
+        cursor.insertText(c2)
+        # Output:
+        cursor.setPosition(outputFrame.firstPosition())
+        cursor.setPosition(outputFrame.lastPosition(),QTextCursor.KeepAnchor)
+        # ...
+        # C3
+        cursor.setPosition(outputFrame.lastPosition())
+        cursor.movePosition(QTextCursor.Right)
+        cursor.setPosition(cell.lastPosition(),QTextCursor.KeepAnchor)
+        cursor.insertText(c3)
+
     def setInput(self,row,text):
         rows = self.document().rootFrame().childFrames()
         if row >= len(rows):
@@ -364,7 +425,7 @@ class QtReduceFrameView(QtReduceTextEdit):
         if len(rowFrames) != 2:
             traceLogger.critical("%d subframes in row %d", len(rowFrames), row)
             return
-        text = text.rstrip(';')
+        #text = text.rstrip(';')
         inputFrame = rowFrames[0]
         cursor = inputFrame.firstCursorPosition()
         cursor.setPosition(inputFrame.lastPosition(),QTextCursor.KeepAnchor)
@@ -372,13 +433,67 @@ class QtReduceFrameView(QtReduceTextEdit):
         cursor.insertText(text,QtReduceInput().charFormat)
 
     def setNoResult(self,row):
-        self.__setOutput(row,self.tr(QtReduceFrameView.Evaluated),QtReduceNoResult())
+        self.__setOutput(row,QtReduceFrameView.Evaluated,QtReduceNoResult())
+
+    def setAborted(self,row):
+        self.__setOutput(row,QtReduceFrameView.Aborted,QtReduceError())
 
     def setNotEvaluated(self,row):
         self.__setOutput(row,self.tr(QtReduceFrameView.NotEvaluated),QtReduceNoResult())
 
     def setResult(self,row,text):
         self.__setOutput(row,text,QtReduceResult())
+
+    def subCell(self):
+        rootFrame = self.document().rootFrame()
+        rows = rootFrame.childFrames()
+        cursor = self.textCursor()
+        pos = cursor.position()
+        frame = cursor.currentFrame()
+        if frame == rootFrame:
+            # pos is outside any group
+            return SubCell(-1,pos,pos,SubCell.Root,'')
+        p = frame.parentFrame()
+        if p != rootFrame:
+            # frame is an input or output frame containing pos
+            row = rows.index(p)
+            i = p.childFrames().index(frame)
+            if i == 0:
+                typ = SubCell.Input
+            elif i == 1:
+                typ = SubCell.Output
+            else:
+                traceLogger.critical("bad subframe %d" % i)
+            startPos = frame.firstPosition()
+            endPos = frame.lastPosition()
+        else:
+            # frame is a group frame containing pos in a comment position
+            row = rows.index(frame)
+            localFrames = frame.childFrames()
+            inputStart = localFrames[0].firstPosition()
+            if pos < inputStart:
+                typ = SubCell.C1
+                startPos = frame.firstPosition()
+                endPos = inputStart-1
+            else:
+                inputEnd = localFrames[0].lastPosition()
+                outputStart = localFrames[1].firstPosition()
+                if inputEnd < pos and pos < outputStart:
+                    typ = SubCell.C2
+                    startPos = inputEnd+1
+                    endPos = outputStart-1
+                else:
+                    outputEnd = localFrames[1].lastPosition()
+                    if pos <= outputEnd:
+                        traceLogger.critical("pos could not be identified %d" %
+                                             pos)
+                    typ = SubCell.C3
+                    startPos = outputEnd+1
+                    endPos = frame.lastPosition()
+        cursor.setPosition(startPos)
+        cursor.setPosition(endPos,QTextCursor.KeepAnchor)
+        content = cursor.selection().toPlainText()
+        return SubCell(row,startPos,endPos,typ,content)
 
     def __drawFrameBracket(self,painter,frame,hoff,color,xt=0,width=2):
         pen = painter.pen()
@@ -466,3 +581,24 @@ class QtReduceFrameView(QtReduceTextEdit):
         cursor.setPosition(outputFrame.lastPosition(),QTextCursor.KeepAnchor)
         cursor.setBlockFormat(reduceBlockFormat.blockFormat)
         cursor.insertText(text.decode('utf-8'),reduceBlockFormat.charFormat)
+#        cursor.insertText(text,reduceBlockFormat.charFormat)
+
+
+class SubCell(object):
+    Root = 0
+    C1 = 1
+    Input = 2
+    C2 = 3
+    Output = 4
+    C3 = 5
+
+    def __init__(self,row,startPos,endPos,typ,content):
+        self.row = row
+        self.startPos = startPos
+        self.endPos = endPos
+        self.type = typ
+        self.content = content
+
+    def __repr__(self):
+        return str([self.row,[self.startPos,self.endPos],
+                    self.type,self.content])

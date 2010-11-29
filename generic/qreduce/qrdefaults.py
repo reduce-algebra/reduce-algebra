@@ -49,7 +49,7 @@ class QtReduceDefaults(object):
 
     # Toolbar:
     ICONSET = "Oxygen"
-    ICONSIZE = 22
+    ICONSIZE = 16
     BUTTONSTYLE = "Symbol and Text"
 
     # Worksheet
@@ -73,31 +73,9 @@ class QtReduceIconSets(QObject):
     def __init__(self):
         if not '_ready' in dir(self):
             super(QtReduceIconSets,self).__init__()
-            self.db = {"Aqua":
-                       {"sized":True,
-                        self.tr("Open"):"fileopen.png",
-                        self.tr("Save"):"filesave.png",
-                        self.tr("Save As"):"filesaveas.png",
-                        self.tr("Quit"):"",
-                        self.tr("Preferences"):"",
-                        self.tr("Enter Full Screen"):"",
-                        self.tr("Exit Full Screen"):"",
-                        self.tr("Insert Group Above"):"",
-                        self.tr("Insert Group Below"):"",
-                        self.tr("Evaluate All"):"",
-                        self.tr("Evaluate Selection"):"",
-                        self.tr("Abort"):"stop.png",
-                        self.tr("Show Raw Model"):"",
-                        self.tr("Hide Raw Model"):"",
-                        self.tr("MainWindow::test"):"",
-                        self.tr("About"):"",
-                        self.tr("License"):"",
-                        self.tr("Zoom In"):"tab_new.png",
-                        self.tr("Zoom Out"):"tab_remove.png",
-                        self.tr("Zoom Default"):"player_stop.png"},
-                       "Bluesphere":
+            self.db = {"Bluesphere":
                        {"sized":False,
-                        self.tr("Open"):"fileopen.svg",
+                        self.tr("Open ..."):"fileopen.svg",
                         self.tr("Save"):"filesave-2.1.svg",
                         self.tr("Save As"):"filesaveas.svg",
                         self.tr("Quit"):"",
@@ -108,6 +86,7 @@ class QtReduceIconSets(QObject):
                         self.tr("Insert Group Below"):"",
                         self.tr("Evaluate All"):"",
                         self.tr("Evaluate Selection"):"",
+                        self.tr("Delete All Output"):"",
                         self.tr("Abort"):"button_cancel.svg",
                         self.tr("Show Raw Model"):"",
                         self.tr("Hide Raw Model"):"",
@@ -119,7 +98,7 @@ class QtReduceIconSets(QObject):
                         self.tr("Zoom Default"):"bookmark.svg"},
                        "Crystal":
                        {"sized":False,
-                        self.tr( "Open"):"fileopen-256.png",
+                        self.tr( "Open ..."):"fileopen-256.png",
                         self.tr("Save"):"filesave-256.png",
                         self.tr("Save As"):"filesaveas-256.png",
                         self.tr("Quit"):"",
@@ -130,6 +109,7 @@ class QtReduceIconSets(QObject):
                         self.tr("Insert Group Below"):"",
                         self.tr("Evaluate All"):"",
                         self.tr("Evaluate Selection"):"",
+                        self.tr("Delete All Output"):"",
                         self.tr("Abort"):"agt_stop-256.png",
                         self.tr("Show Raw Model"):"",
                         self.tr("Hide Raw Model"):"",
@@ -141,17 +121,18 @@ class QtReduceIconSets(QObject):
                         self.tr("Zoom Default"):"viewmag1-256.png"},
                        "Nuvola":
                        {"sized":True,
-                       self.tr( "Open"):"fileopen.png",
+                       self.tr( "Open ..."):"fileopen.png",
                         self.tr("Save"):"filesave.png",
                         self.tr("Save As"):"filesaveas.png",
                         self.tr("Quit"):"",
                         self.tr("Preferences"):"",
-                        self.tr("Enter Full Screen"):"",
+                        self.tr("Enter Full Screen"):"view_fullscreen.png",
                         self.tr("Exit Full Screen"):"",
                         self.tr("Insert Group Above"):"",
                         self.tr("Insert Group Below"):"",
-                        self.tr("Evaluate All"):"",
+                        self.tr("Evaluate All"):"misc.png",
                         self.tr("Evaluate Selection"):"",
+                        self.tr("Delete All Output"):"editdelete.png",
                         self.tr("Abort"):"stop.png",
                         self.tr("Show Raw Model"):"",
                         self.tr("Hide Raw Model"):"",
@@ -163,17 +144,18 @@ class QtReduceIconSets(QObject):
                         self.tr("Zoom Default"):"viewmag1.png"},
                        "Oxygen":
                        {"sized":True,
-                        self.tr("Open"):"document_open.png",
+                        self.tr("Open ..."):"document_open.png",
                         self.tr("Save"):"document_save.png",
                         self.tr("Save As"):"document_save_as.png",
                         self.tr("Quit"):"",
                         self.tr("Preferences"):"",
-                        self.tr("Enter Full Screen"):"",
+                        self.tr("Enter Full Screen"):"view_fullscreen.png",
                         self.tr("Exit Full Screen"):"",
                         self.tr("Insert Group Above"):"",
                         self.tr("Insert Group Below"):"",
-                        self.tr("Evaluate All"):"",
+                        self.tr("Evaluate All"):"exec.png",
                         self.tr("Evaluate Selection"):"",
+                        self.tr("Delete All Output"):"eraser.png",
                         self.tr("Abort"):"stop.png",
                         self.tr("Show Raw Model"):"",
                         self.tr("Hide Raw Model"):"",
@@ -185,17 +167,18 @@ class QtReduceIconSets(QObject):
                         self.tr("Zoom Default"):"zoom_original.png"},
                        "Tango":
                        {"sized":True,
-                        self.tr("Open"):"document-open.png",
+                        self.tr("Open ..."):"document-open.png",
                         self.tr("Save"):"document-save.png",
                         self.tr("Save As"):"document-save-as.png",
                         self.tr("Quit"):"",
                         self.tr("Preferences"):"",
-                        self.tr("Enter Full Screen"):"",
+                        self.tr("Enter Full Screen"):"view-fullscreen.png",
                         self.tr("Exit Full Screen"):"",
                         self.tr("Insert Group Above"):"",
                         self.tr("Insert Group Below"):"",
-                        self.tr("Evaluate All"):"",
+                        self.tr("Evaluate All"):"emblem-system.png",
                         self.tr("Evaluate Selection"):"",
+                        self.tr("Delete All Output"):"edit-clear.png",
                         self.tr("Abort"):"process-stop.png",
                         self.tr("Show Raw Model"):"",
                         self.tr("Hide Raw Model"):"",
@@ -215,6 +198,7 @@ class QtReduceIconSets(QObject):
         if iconSet:
             iEntry = self.db[iconSet]
             text = act.iconText()
+            entry = None
             if text in iEntry.keys():
                 entry = iEntry[text]
             path = ''
