@@ -70,6 +70,7 @@ class QtReduceTextEdit(QTextEdit):
         self.setupFont(int(QSettings().value("worksheet/fontsize",
                                          QtReduceDefaults.FONTSIZE)))
         self.textChanged.connect(self.textChangedHandler)
+        self.setCursorWidth(1)
 
     def __nextGoodFontSize(self,font,size,step):
         info = QFontInfo(font)
@@ -169,6 +170,16 @@ class QtReduceFrameView(QtReduceTextEdit):
                 cursor.movePosition(QTextCursor.NextBlock)
             self.setTextCursor(cursor)
 
+    def gotoNextOtherPosition(self):
+        cursor = self.textCursor()
+        if not cursor.atEnd():
+            ff = cursor.currentFrame().frameFormat()
+            cursor.movePosition(QTextCursor.NextBlock)
+            while not cursor.atEnd() \
+                      and cursor.currentFrame().frameFormat() == ff:
+                cursor.movePosition(QTextCursor.NextBlock)
+            self.setTextCursor(cursor)
+
     def gotoPreviousBlock(self):
         cursor = self.textCursor()
         if not cursor.atStart():
@@ -182,6 +193,18 @@ class QtReduceFrameView(QtReduceTextEdit):
             while not cursor.atStart() and not self.__isInputPosition(cursor):
                 cursor.movePosition(QTextCursor.PreviousBlock)
             self.setTextCursor(cursor)
+
+    def gotoPreviousOtherPosition(self):
+        cursor = self.textCursor()
+        if cursor.atStart():
+            return
+        cursor.movePosition(QTextCursor.Left)
+        cf = cursor.currentFrame()
+        while not cursor.atStart() and cursor.currentFrame() == cf:
+            cursor.movePosition(QTextCursor.Left)
+        if cursor.currentFrame() != cf:
+            cursor.movePosition(QTextCursor.Right)
+        self.setTextCursor(cursor)
 
     def gotoRow(self,row):
         rows = self.document().rootFrame().childFrames()
@@ -260,10 +283,10 @@ class QtReduceFrameView(QtReduceTextEdit):
 
     def keyPressEvent(self,e):
         if e.key() == Qt.Key_Tab:
-            self.gotoNextBlock()
+            self.gotoNextOtherPosition()
             return
         if e.key() == Qt.Key_Backtab:
-            self.gotoPreviousBlock()
+            self.gotoPreviousOtherPosition()
             return
         if self.__isReadOnlyPosition():
             if e.key() not in [Qt.Key_Left,Qt.Key_Right,Qt.Key_Up,Qt.Key_Down]:
