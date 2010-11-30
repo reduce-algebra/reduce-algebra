@@ -475,6 +475,14 @@ reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
 @wx_TRUE@fontsdir = wxfonts
 @wx_FALSE@samplefont = cmr10.pfb
 @wx_TRUE@samplefont = csl-cmr10.ttf
+# For X11 and Windows I need a fonts directory
+@mac_framework_FALSE@FONTDEP = reduce.$(fontsdir)/$(samplefont)
+# On the Mac with FOX I need a fonts directory in the old way
+@mac_framework_TRUE@@wx_FALSE@FONTDEP = reduce.$(fontsdir)/$(samplefont)
+
+# On the Mac local fonts get put into the Application Bundle not into
+# a directory here
+@mac_framework_TRUE@@wx_TRUE@FONTDEP = 
 AM_CPPFLAGS = -Dfontsdir=reduce.$(fontsdir)
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES)
@@ -483,23 +491,23 @@ foxdemo_DEPENDENCIES = $(fwin_icon)
 fontdemo_SOURCES = fontdemo.cpp
 fontdemo_CPPFLAGS = $(FOX_INCLUDES)
 fontdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-fontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+fontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 showmathdemo_SOURCES = showmathdemo.cpp
 showmathdemo_CPPFLAGS = $(FOX_INCLUDES)
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
-showmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont)
+showmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 wxdemo_SOURCES = wxdemo.cpp
 wxdemo_LDADD = $(fwin_icon)
-wxdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
+wxdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxfontdemo_SOURCES = wxfontdemo.cpp
 wxfontdemo_LDADD = $(fwin_icon)
-wxfontdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
+wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxdvi_SOURCES = wxdvi.cpp
 wxdvi_LDADD = $(fwin_icon)
-wxdvi_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
+wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
-wxshowmathdemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
+wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_FALSE@DLLEXT = so
 @windows_TRUE@DLLEXT = dll
 dyndemo_SOURCES = dyndemo.c
@@ -537,24 +545,24 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 @windows_FALSE@reduce_LDADD = $(FOX_LIBS)
 @windows_TRUE@reduce_LDADD = $(reduceres) $(FOX_LIBS)
-@windows_FALSE@csl_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) $(WXC)
+@windows_FALSE@csl_DEPENDENCIES = $(FONTDEP) $(WXC)
 @windows_TRUE@csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
-@windows_TRUE@		reduce.$(fontsdir)/$(samplefont) $(WXC)
+@windows_TRUE@		$(FONTDEP) $(WXC)
 
-@windows_FALSE@bootstrapreduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) \
+@windows_FALSE@bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 @windows_FALSE@		reduce.doc/index.html $(GP) $(WXC)
 
 @windows_TRUE@bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-@windows_TRUE@		fwin-csl.$(OBJEXT) reduce.$(fontsdir)/$(samplefont) \
+@windows_TRUE@		fwin-csl.$(OBJEXT) $(FONTDEP) \
 @windows_TRUE@		reduce.doc/index.html $(GP) $(WXC)
 
-@windows_FALSE@reduce_DEPENDENCIES = reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html \
+@windows_FALSE@reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
 @windows_FALSE@		$(GP) $(WXC)
 
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
-@windows_TRUE@		reduce.$(fontsdir)/$(samplefont) reduce.doc/index.html $(GP) $(WXC)
+@windows_TRUE@		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
 
-@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) reduce.$(fontsdir)/$(samplefont) $(WXC)
+@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
 
 # end of windows vs non-windows conditions
@@ -2269,14 +2277,17 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 @gui_TRUE@@windows_TRUE@	$(MAKE) fwindemo.exe
 
 reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
-	-rm -rf reduce.$(fontsdir)
-	-mkdir reduce.$(fontsdir)
-@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
-@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
-@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
-@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
-@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)
-@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+@mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
+@mac_framework_FALSE@@wx_TRUE@	-rm -rf reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	-mkdir reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+@wx_FALSE@	-rm -rf reduce.$(fontsdir)
+@wx_FALSE@	-mkdir reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README.cmps-fonts reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README.BaKoMa reduce.$(fontsdir)
