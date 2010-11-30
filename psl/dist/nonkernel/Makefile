@@ -174,8 +174,8 @@ $(PNKL)/explode-com.b: $(PNK)/explode-com.sl
 $(PNKL)/fluid-globl.b: $(PNK)/fluid-globl.sl
 	$(PDIST)/make-pnk-lap $(PNK) fluid-globl
 
-$(PNKL)/funct-prims.b: $(PNK)/funct-prims.sl $(PL)/if-system.b
-	$(PDIST)/make-pnk-lap $(PNK) funct-prims
+$(PNKL)/funct-prims.b: $(PXNK)/funct-prims.sl $(PL)/if-system.b
+	$(PDIST)/make-pnk-lap $(PXNK) funct-prims
 
 $(PNKL)/io-decls.b: $(PNK)/io-decls.sl
 	$(PDIST)/make-pnk-lap $(PNK) io-decls
