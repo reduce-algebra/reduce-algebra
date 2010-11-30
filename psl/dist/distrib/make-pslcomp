@@ -83,6 +83,8 @@ $pxk/bpsl  -td $imagesize -f  $psys/pslcomp.img
 #
 EOFF
 
+chmod +x $psys/pslcomp
+
 @ pslcompstatus = $status
 popd
 if ( -e $psys/.imago) then

@@ -87,6 +87,7 @@ $pxk/bpsl  -td $imagesize -f  $psys/psl.img
 #
 EOFF
 
+chmod +x $psys/psl
 
 @ pslcompstatus = $status
 popd

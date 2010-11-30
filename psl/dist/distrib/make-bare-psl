@@ -106,6 +106,8 @@ $pxk/bpsl -td $imagesize -f $psys/bare-psl.img
 #
 EOFFF
 
+chmod +x $psys/bare-psl
+
 cat > $psys/tmp.sed << EOFF
 s/HERE/$PROOT/g
 EOFF
