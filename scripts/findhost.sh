@@ -104,10 +104,19 @@ esac
 # distributions or even from release to release within a distribution.
 # Well things are a LOT better than they used to be, but I still do not
 # believe it is perfect. Hence the mere tag "linux-gnu" is inadequate.
+#
+# I find (HORROR) that different versions of "config.guess" can give
+# different results even on a single machine. Specifically on some OpenSuSE
+# systems I see x86_64-suse-linux-gnu with some copies of config.guess but
+# x86_64-unknown-linux-gnu using others. And there seem to be cases where
+# I may see "-pc-" in the middle rather than "-unknown-". This can really
+# lead to confusion. so I normalise cases I spot down to "-unknown-" which
+# seemd the safest base state to be in. Oh dear what a mess! 
 
 if test "x$variant" != "xunknown"
 then
-  host=`echo $host | $SED -e s/-suse-/-pc-/`
+  host=`echo $host | $SED -e s/-suse-linux/-unknown-linux/`
+  host=`echo $host | $SED -e s/-pc-linux/-unknown-linux/`
   host=`echo $host | $SED -e s/linux-gnu/$variant/`
   host=`echo $host | $SED -e s/apple/$variant/`
 fi
