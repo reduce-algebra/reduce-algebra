@@ -70,7 +70,7 @@
 
 
 
-/* Signature: 3c3c2da8 29-Nov-2010 */
+/* Signature: 4a78abf1 30-Nov-2010 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed
@@ -219,10 +219,6 @@
 #define fwin_ensure_screen wxfwin_ensure_screen
 #endif
 
-#ifndef FWIN_LOG
-#define FWIN_LOG(x) printf x
-#endif
-
 int fwin_main(int argc, char **argv)
 {
     char line[1000];
@@ -247,7 +243,6 @@ int fwin_main(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
-    FWIN_LOG(("Entering main(%s)\n", argv[0]));
     return fwin_startup(argc, argv, fwin_main);
 }
 

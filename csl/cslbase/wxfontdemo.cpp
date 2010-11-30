@@ -44,7 +44,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0d011135 14-Nov-2010 */
+/* Signature: 4d324c32 30-Nov-2010 */
 
 
 
@@ -587,7 +587,7 @@ int main(int argc, char *argv[])
                     nargs[i+2] = argv[i];
                 nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
-                return execv("/usr/bin/open", nargs);
+                return execv(nargs[0], nargs);
             }
         }
 #endif

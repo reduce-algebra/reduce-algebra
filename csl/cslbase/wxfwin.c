@@ -47,7 +47,7 @@
  *************************************************************************/
 
 
-/* Signature: 571db819 28-Nov-2010 */
+/* Signature: 6d98aafe 30-Nov-2010 */
 
 #include "config.h"
 
@@ -115,34 +115,58 @@ extern char *getcwd(char *s, size_t n);
 
 #include "termed.h"
 
+/*
+ * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
+ * buffer overflow! I will just blandly assume throughout all my code that
+ * no string that denotes a full file-name (including its path) is ever
+ * longer than this.
+ */
+#ifndef LONGEST_LEGAL_FILENAME
+#define LONGEST_LEGAL_FILENAME 1024
+#endif
+
 #ifdef DEBUG
 
 /*
  * This will be used as in FWIN_LOG((format,arg,...)) with an extra
  * pair of parentheses. If DEBUG was enabled it send log information
  * to a file with the name fwin-debug.log: I hope that will not (often)
- * clash with any file the user has or requires. 
+ * clash with any file the user has or requires. if programDir has been
+ * set when you first generate log output then the log file will be put
+ * there (ie alongside the executable). If not it will go in /tmp. So
+ * if debugging you might want to ensure that such a directory exists!
  */
 
 static FILE *logfile = NULL;
 
+#define LOGFILE_NAME "fwin-debug.log"
+
 void wxfwin_write_log(char *s, ...)
 {
-    int created = (logfile == NULL);
+    int create = (logfile == NULL);
     va_list x;
 /*
  * Note that I create this file in "a" (append) mode so that previous
  * inpformation there is not lost.
  */
-    if (created) logfile = fopen("fwin-debug.log", "a");
+    if (create)
+    {   char logfile_name[LONGEST_LEGAL_FILENAME];
+        if (strcmp(programDir, ".") == 0)
+            sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+        else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+        logfile = fopen(logfile_name, "a");
+    }
     if (logfile == NULL) return; /* the file can not be used */
-    if (created)
+    if (create)
     {   time_t tt = time(NULL);
         struct tm *tt1 = localtime(&tt);
         fprintf(logfile, "Log segment starting: %s\n", asctime(tt1));
     }
     va_start(x, s);
     vfprintf(logfile, s, x);
+    va_end(x);
+    va_start(x, s);
+    vfprintf(stderr, s, x);
     va_end(x);
     fflush(logfile);
 }
@@ -219,16 +243,6 @@ char about_box_rights_2[40]    = "Additional author";
 char about_box_rights_3[40]    = "This software uses wxWidgets";
 char about_box_rights_4[40]    = "(http://www.wxwidgets.org)";
 
-/*
- * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
- * buffer overflow! I will just blandly assume throughout all my code that
- * no string that denotes a full file-name (including its path) is ever
- * longer than this.
- */
-#ifndef LONGEST_LEGAL_FILENAME
-#define LONGEST_LEGAL_FILENAME 1024
-#endif
-
 const char *colour_spec = "-";
 
 char wxfwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
@@ -243,6 +257,7 @@ extern const char *my_getenv(const char *s);
 #ifdef WIN32
 static int programNameDotCom;
 #endif
+static int macApp = 0;
 
 int windowed = 0;
 
@@ -282,8 +297,13 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
 #ifndef WIN32
     const char *disp;
 #endif
-/* I want to know the path to the directory from which this 
- * code was launched.
+/*
+ * I want to know the path to the directory from which this 
+ * code was launched. Note that in some cases the prints to stderr
+ * shown here will be totally ineffective and the code will just seem
+ * to exit abruptlt. Eg that can be the situation if the version being run
+ * has been linked on Windows as a window-mode (as distinct from console-mode)
+ * binary, or if it is on a Macintosh not associated with a console.
  */
     if (argc == 0)
     {   fprintf(stderr,
@@ -435,12 +455,47 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
         }
     }
 #else  /* WIN32 */
+#ifdef MACINTOSH
+#ifdef SAFE
+/*
+ * For the Macintosh I check to see if the binary I am launching has
+ * a full path of the form
+ * / ... /name.app/ ... / name
+ * and if it does I will interpret this as indicating that the program
+ * is part of an application bundle. 
+ */
+    {   char xname[LONGEST_LEGAL_FILENAME];
+        sprintf(xname, "%s.app", programName);
+        macApp = (strstr(fullProgramName, xname) != NULL);
+    }
+#else
+/*
+ * This may be a proper way to test if I am really running in an application
+ * bundle.
+ */
+    {   CFBundleRef mainBundle = CFBundleGetMainBundle();
+        FWIN_LOG(("mainBundle = %p\n", mainBundle));
+        if (mainBundle == NULL) macApp = 0;
+        else
+        {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
+            FWIN_LOG(("d=%p\n", d));
+            if (d == NULL) macApp = 0;
+            else
+            {   CFStringRef s = CFDictionaryGetValue(d,
+                    CFSTR("ATSApplicationFontsPath"));
+                FWIN_LOG(("s=%p\n", s));
+                macApp = (s != NULL);
+            }
+        }
+    }
+#endif
+#endif /* MACINTOSH */
 /* If stdin or stdout is not from a "tty" I will run in non-windowed mode.
  * This may help when the system is used in scripts. I worry a bit about
  * what the status of stdin/stdout are when launched not from a command line
  * but by clicking on an icon...
  */
-    if (!isatty(fileno(stdin)) || !isatty(fileno(stdout)))
+    if (!macApp && (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
     {   FWIN_LOG(("stdin or stdout is not a tty\n"));
         windowed = 0;
     }
@@ -575,19 +630,12 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
  * makes resources (eg fonts) that are within the bundle available and
  * it also seems to cause things to terminate more neatly.
  */
-        char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname, "%s.app", programName);
-        if (strstr(fullProgramName, xname) == NULL)
-        {
+        if (!macApp)
+        {   char xname[LONGEST_LEGAL_FILENAME];
+
 /*
- * Here the binary I launched was not located as
- *      ...foo.app../.../foo
- * so I will view it is NOT being from an application bundle. I will
- * re-launch it so it is. This may be a bit of a hacky way to decide.
- * I will expect that following the re-launch that the same decisions
- * about whether to act as a windowed application will follow-through,
- * but I will need to review the tests associated with stdin & stdout
- * on the Mac to verify that this is the case.
+ * Here the binary I launched was NOT being from an application bundle.
+ * I will try to re-launch it so it is.
  */
             struct stat buf;
             sprintf(xname, "%s.app", fullProgramName);
@@ -598,6 +646,16 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
                 char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
                 int i;
                 FWIN_LOG(("About to restart Mac from an application bundle\n"));
+#ifdef DEBUG
+/*
+ * Since I am about to restart the program I do not want the new version to
+ * find that the log file is open and hence not accessible.
+ */
+                if (logfile != NULL)
+                {   fclose(logfile);
+                    logfile = NULL;
+                }
+#endif
                 nargs[0] = "/usr/bin/open";
                 nargs[1] = xname;
                 nargs[2] = "--args";
@@ -605,7 +663,14 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
                     nargs[i+2] = argv[i];
                 nargs[argc+2] = NULL;
 /* /usr/bin/open foo.app --args [any original arguments] */
-                return execv("/usr/bin/open", nargs);
+                execv(nargs[0], nargs);
+/*
+ * execv should NEVER return, but if it does I might like to at least
+ * attempt to display a report including the error code.
+ */
+                fprintf(stderr,
+                        "Returned from execv with error code %d\n", errno);
+                exit(1);
             }
         }
 #endif
