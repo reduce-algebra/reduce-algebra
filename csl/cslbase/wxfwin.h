@@ -94,7 +94,7 @@ extern "C" {
 
 #ifdef DEBUG
 extern void wxfwin_write_log(char *s, ...);
-#define FWIN_LOG(a) wxfwin_write_log a;
+#define FWIN_LOG(a) wxfwin_write_log a
 #else
 #define FWIN_LOG(a) /* nothing */
 #endif
