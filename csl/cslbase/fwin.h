@@ -52,7 +52,7 @@
  * and not under any more restrictice license.
  */
 
-/* Signature: 5d903886 14-Jul-2009 */
+/* Signature: 6c6b25a7 30-Nov-2010 */
 
 #ifndef header_fwin_h
 #define header_fwin_h 1
@@ -81,6 +81,23 @@ extern "C" {
 #define MS_CDECL
 #endif
 #endif
+
+/*
+ * Logging support. This will give a no-op unless the preprocessor symbol
+ * DEBUG is defined at compile time.
+ *
+ * Usage (eg):  FWIN_LOG(("I reached %d of %s\n", __LINE__, __FILE__));
+ * Note the extra pair of parentheses. This will append a record to a
+ * file fwin-debug.log in the current directory.
+ */
+
+#ifdef DEBUG
+extern void fwin_write_log(char *s, ...);
+#define FWIN_LOG(a) fwin_write_log a
+#else
+#define FWIN_LOG(a) /* nothing */
+#endif
+
 
 /*
  * The "C" code will eventually be entered at fwin_main() in what looks like a
@@ -124,7 +141,7 @@ extern const char *programDir;
  * This returns bits that indicates what options fwin is running with:
  *
  *    0   A plain command-line system in circumstances where I do not do any
- *        local editing or special trapping of ^C. I just leave the 
+ *        local editing or special trapping of ^C. I just leave the
  *        underlying operating system to do all that, to the extent that it
  *        will. This is used if stdin/stdout are not directly connected to
  *        a terminal or if the terminal does not seem to support cursor

@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 608043ac 29-Nov-2010 */
+/* Signature: 6b0c41cc 30-Nov-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -162,6 +162,65 @@ extern char *getcwd(char *s, size_t n);
 #include "termed.h"
 
 /*
+ * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
+ * buffer overflow! I will just blandly assume throughout all my code that
+ * no string that denotes a full file-name (including its path) is ever
+ * longer than this.
+ */
+#ifndef LONGEST_LEGAL_FILENAME
+#define LONGEST_LEGAL_FILENAME 1024
+#endif
+
+#ifdef DEBUG
+
+/*
+ * This will be used as in FWIN_LOG((format,arg,...)) with an extra
+ * pair of parentheses. If DEBUG was enabled it send log information
+ * to a file with the name fwin-debug.log: I hope that will not (often)
+ * clash with any file the user has or requires. if programDir has been
+ * set when you first generate log output then the log file will be put
+ * there (ie alongside the executable). If not it will go in /tmp. So
+ * if debugging you might want to ensure that such a directory exists!
+ */
+
+static FILE *logfile = NULL;
+
+#define LOGFILE_NAME "fwin-debug.log"
+
+void fwin_write_log(char *s, ...)
+{
+    int create = (logfile == NULL);
+    va_list x;
+/*
+ * Note that I create this file in "a" (append) mode so that previous
+ * inpformation there is not lost.
+ */
+    if (create)
+    {   char logfile_name[LONGEST_LEGAL_FILENAME];
+        if (strcmp(programDir, ".") == 0)
+            sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+        else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+        logfile = fopen(logfile_name, "a");
+    }
+    if (logfile == NULL) return; /* the file can not be used */
+    if (create)
+    {   time_t tt = time(NULL);
+        struct tm *tt1 = localtime(&tt);
+        fprintf(logfile, "Log segment starting: %s\n", asctime(tt1));
+    }
+    va_start(x, s);
+    vfprintf(logfile, s, x);
+    va_end(x);
+    va_start(x, s);
+    vfprintf(stderr, s, x);
+    va_end(x);
+    fflush(logfile);
+}
+
+#endif
+
+
+/*
  * The next few are not exactly useful if FOX is not available
  * and hence this code will run in line-mode only. However it is
  * convenient to leave them available.
@@ -186,16 +245,6 @@ char about_box_rights_1[40]    = "Author info";
 char about_box_rights_2[40]    = "Additional author";
 char about_box_rights_3[40]    = "This software uses the FOX Toolkit";
 char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
-
-/*
- * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
- * buffer overflow! I will just blandly assume throughout all my code that
- * no string that denotes a full file-name (including its path) is ever
- * longer than this.
- */
-#ifndef LONGEST_LEGAL_FILENAME
-#define LONGEST_LEGAL_FILENAME 1024
-#endif
 
 const char *colour_spec = "-";
 

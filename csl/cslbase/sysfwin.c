@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 4a0a9880 26-Sep-2010 */
+/* Signature: 07bdc7ab 30-Nov-2010 */
 
 #include "headers.h"
 
@@ -431,14 +431,56 @@ int batchp()
  */
 char *find_image_directory(int argc, char *argv[])
 {
-    int n = strlen(programName) + strlen(programDir) + 6;
-    char *w = (char *)(*malloc_hook)(n);
-    strcpy(w, programDir);
-    n = strlen(programDir);
-    w[n] = '/';                 /* Should be '\\' for Windows? */
-    strcpy(&w[n+1], programName);
-    n += strlen(programName) + 1;
-    strcpy(&w[n], ".img");
+    int n;
+    char *w;
+    char xname[LONGEST_LEGAL_FILENAME];
+#ifdef MACINTOSH
+/*
+ * There is a special oddity on the Macintosh (with the wxWidgets version
+ * where windowed versions are set up as "applications" in a directory that
+ * forms an "application bundle". The programDir here can then refer to
+ * ./reduce.app/Contents/MacOS/reduce (or whatever) and it is probably good
+ * to make the default image location be reduce.app/Contents, ie a little
+ * above where I am. But then the vanilla console mode version is liable to
+ * be just ./reduce, and I want one image file to be used for both versions.
+ * Furthermore some kind person may have launched the executable that is
+ * within the application bundle directly from a console so that it is not
+ * really an application after all. I will do a load of rather curious
+ * tests here that are intended to detect the above cases and do special
+ * things! My tests will be based on file names and paths.
+ */
+    sprintf(xname, "/%s.app/Contents/MacOS", programName);
+    n = strlen(programDir) - strlen(xname);
+    if (n>=0 && strcmp(programDir+n, xname) == 0)
+    {   FWIN_LOG((Seem to be being executed from within application bundle"));
+        sprintf(xname, %.*s/%s.img",
+            (int)strlen(programDir)-6, programDir, programName);
+    }
+    else
+    {   struct stat buf;
+        FWIN_LOG(("Not within an application bundle"));
+/*
+ * If I am NOT within an application bundle but there is one next to me I
+ * will put the image file in the application directory. Of there is no
+ * such bundle I will put the image file in the location I would have used
+ * with Windows of X11.
+ */
+        sprintf(xname, "%s/%s.app/Contents", programDir, programName);
+        if (stat(xname, &buf) == 0 &&
+            (buf.st_mode & S_IFDIR) != 0)
+        {   sprintf(xname, "%s/%s.app/Contents/%s.img",
+                programDir, programName, programName);
+        }
+        else sprintf(xname, "%s/%s.dir", programDir, programName);
+
+    }
+#else
+    sprintf(xname, "%s/%s.img", programDir, programName);
+#endif
+    FWIN_LOG(("image directory: %s\n", xname));
+    n = strlen(xname)+1;
+    w = (char *)(*malloc_hook)(n);
+    strcpy(w, xname);
     return w;
 }
 
