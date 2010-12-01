@@ -112,7 +112,8 @@ procedure qepcad_qepcad1(f,fn);
       if null fn then <<
       	 system lto_sconcat{"qepcad < ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",
-	       lto_at2str !*time," -f qepcad.awk"};
+	    lto_at2str !*time,
+	    " -f $qe/qepcad.awk"};
 	 oldecho := !*echo;
 	 !*echo := nil;
 	 fh := rds open(fn2,'input);

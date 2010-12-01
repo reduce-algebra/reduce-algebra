@@ -31,6 +31,7 @@
 BEGIN {time=tolower(time); verb=tolower(verb)}
 /^In other words/ {f=0}
 /^==============================/ {f=0}
+/The End/ {f=0}
 (f==1) {
   if (verb=="t") print
   for (i=1; i<=NF; i++) {

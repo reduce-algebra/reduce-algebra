@@ -1,0 +1,2 @@
+For using QEPCAD you have setup an environment variable qe. Copy (or
+symbolically link) the qepcad.awk from here into that directory $qe.
