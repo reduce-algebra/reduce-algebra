@@ -253,7 +253,6 @@ then
   if test "x$with_mingw64" = "xyes"
   then
     host="x86_64-w64-mingw32"
-    ac_configure_args="$ac_configure_args --host=$host"
   fi
 
   if test "x$host" = "xx86_64_w64_mingw32" && test "x$X64_GCC" = "xno"
@@ -531,13 +530,26 @@ then
       echo wxWidgets unpacked from archive $a
       cd $d
     fi
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-wx=$with_wx --with-build=$build --without-fox"
+# A short essay to explain whi I pass down "--host=$host" here. There are
+# two points. The first is that I cope with 64-bit windows by use of
+# cross-compilation using the x86_64-win32-mingw32 toolchain. To try to
+# be helpful I use this if I am running on 64-bit windows even though
+# cygwin and config.guess view the main architecture as i686-pc-windows.
+# This involves overriding "host", and I want to pass that decision down.
+# The second reason is that different releases of "config.guess" can report
+# machine identities differently. I have particularly observes this on
+# openSuSE Linux where some versions brand the host triple with "-suse-" in
+# the middle. I do not mind much just what triple is used, but I do mind
+# very much it it is not consistent all the way through my build. So I
+# let this top-level configure script make the choice and by explicitly
+# propagating if to sub-packages I end up safer.
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --host=$host --with-wx=$with_wx --with-build=$build --without-fox"
   elif test "x$with_fox" != "xno"
   then
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --host=$host --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
   else
 # This final version will be without any GUI.
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --with-build=$build --without-fox --without-wx"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --host=$host --with-build=$build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
   eval "$doconfig"
@@ -650,7 +662,7 @@ then
     doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            --enable-release --with-opengl=no \
+            --host=$host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=$builddir $extras"
     AC_MSG_NOTICE([$doconfig])
@@ -664,7 +676,7 @@ then
       cd foxtests
 
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
-            CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
             --with-fox=$builddir --with-fox-pending=yes $extras"
       AC_MSG_NOTICE([$doconfig])
