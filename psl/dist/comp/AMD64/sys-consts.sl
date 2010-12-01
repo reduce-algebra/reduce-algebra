@@ -19,7 +19,7 @@
 
 (fluid '(system_list*))
 
-(setq system_list* '(Linux Linux_elf Intel386 i386 sun386i unix ieee))
+(setq system_list* '(x64_86 Linux Linux_elf Intel386 i386 unix ieee))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MACHINE DEPENDENT CONSTANTS FOR THE MC68000                           %
@@ -58,9 +58,9 @@
 (define-constant maxtokensize          5000)
 (define-constant bndstksize            2000)
 (define-constant catchstacksize        400)
-(define-constant hash-table-size       68023)
+(define-constant hash-table-size       21501003)
 (define-constant savesize              4)
 (define-constant maxargblock           15)
 (define-constant stacksize             20000)
-(define-constant maxsymbols            65000)
+(define-constant maxsymbols            20000000)
 (define-constant compressedbinaryradix 16)
