@@ -34,7 +34,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5f636542 03-Sep-2010 */
+/* Signature: 7bcf8f2e 01-Dec-2010 */
 
 /*
  * #include the majority of the header files needed by CSL code.
@@ -124,7 +124,11 @@
 #include "cslread.h"
 
 #ifdef HAVE_FWIN
+#if HAVE_LIBWX
+#include "wxfwin.h"
+#else
 #include "fwin.h"
+#endif
 #endif
 
 #endif /* this header included already */
