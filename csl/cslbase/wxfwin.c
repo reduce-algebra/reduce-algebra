@@ -47,7 +47,7 @@
  *************************************************************************/
 
 
-/* Signature: 6d98aafe 30-Nov-2010 */
+/* Signature: 7d790079 01-Dec-2010 */
 
 #include "config.h"
 
@@ -164,11 +164,17 @@ void wxfwin_write_log(char *s, ...)
                  strlen(programDir) >= strlen(logfile_name) &&
                  strcmp(programDir+strlen(programDir)-strlen(logfile_name),
                         logfile_name) == 0)
-        {   sprintf(logfile_name, "%*.s/%s", (int)strlen(programDir)-15,
+        {   sprintf(logfile_name, "%.*s/%s",
+                    (int)(strlen(programDir)-strlen(programName)-19),
                     programDir, LOGFILE_NAME);
         }
 #endif
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+logfile=fopen("/tmp/bad.log", "w");
+fprintf(logfile, "programDir=%s\n", programDir);
+fprintf(logfile, "programName=%s\n", programName);
+fprintf(logfile, "logfile_name=%s\n", logfile_name);
+fclose(logfile);
         logfile = fopen(logfile_name, "a");
     }
     if (logfile == NULL) return; /* the file can not be used */
