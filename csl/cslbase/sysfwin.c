@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 3995670f 01-Dec-2010 */
+/* Signature: 566b584d 01-Dec-2010 */
 
 #include "headers.h"
 
@@ -452,8 +452,8 @@ char *find_image_directory(int argc, char *argv[])
     sprintf(xname, "/%s.app/Contents/MacOS", programName);
     n = strlen(programDir) - strlen(xname);
     if (n>=0 && strcmp(programDir+n, xname) == 0)
-    {   FWIN_LOG(("Seem to be being executed from within application bundle"));
-        sprintf(xname, %.*s/%s.img",
+    {   FWIN_LOG(("Seem to be being executed from within application bundle\n"));
+        sprintf(xname, "%.*s/%s.img",
             (int)strlen(programDir)-6, programDir, programName);
     }
     else
