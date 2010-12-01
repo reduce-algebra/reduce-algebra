@@ -153,6 +153,21 @@ void wxfwin_write_log(char *s, ...)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
         if (strcmp(programDir, ".") == 0)
             sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+#ifdef MACINTOSH
+/*
+ * If the executable I am running exists as
+ *    ...../something.app/Contents/MacOS/something
+ * then I will place the log file adjacant to the .app directory rather
+ * than in the MacOS directory next to the actual raw executable.
+ */
+        else if (sprintf(logfile_name, "%s.app/Contents/MacOS", programName),
+                 strlen(programDir) >= strlen(logfile_name) &&
+                 strcmp(programDir+strlen(programDir)-strlen(logfile_name),
+                        logfile_name) == 0)
+        {   sprintf(logfile_name, "%*.s/%s", (int)strlen(programDir)-15,
+                    programDir, LOGFILE_NAME);
+        }
+#endif
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
         logfile = fopen(logfile_name, "a");
     }
