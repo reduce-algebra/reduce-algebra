@@ -136,7 +136,7 @@ setupbpsandheap(argc,argv)
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
   int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
-  long hugo;
+  long long  hugo;
 
   total        = MINSIZE;
   mallocsize    = MALLOCSIZE;

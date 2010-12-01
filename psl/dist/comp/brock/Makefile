@@ -35,7 +35,7 @@
 #
 ###############################################################################
 
-%%% PROOT   = /home/brock/psl
+### PROOT   = /home/brock/psl
 
 PSL	= $(PROOT)/dist
 PSYS	= $(PROOT)/bin

@@ -48,6 +48,7 @@ export psys=$PROOT/bin/$MACHINE
 export pxk=$PROOT/dist/kernel/$MACHINE
 export pl=$PROOT/dist/lap/$MACHINE
 export pnkl=$PROOT/dist/nonkernel/$MACHINE/lap
+export pll=$PROOT/dist/local/$MACHINE/lap
 
 cd dist
 # we have to make sure that bpsl is healthy and comptible to the

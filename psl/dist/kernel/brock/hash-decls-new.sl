@@ -16,8 +16,8 @@
 %
 % Special values for labelling unoccupied slots:
 %
-(define-constant hash-table-size     201501003)
-(define-constant maxsymbols          20000000) & 60000000)
+(define-constant hash-table-size     21501003)
+(define-constant maxsymbols          20000000)
 
 
 (define-constant deleted-slot-value  16#ffffffff)
@@ -35,7 +35,7 @@
 
 (ds occupied-slot? (u) 
   (let ((hte (hash-table-entry u)))
-       (and (wlessp hte 16#fffffff) (> hte 0))
+       (and (wlessp hte 16#ffffffff) (> hte 0))
   ))
 
 %
@@ -44,12 +44,12 @@
 (deflist 
       '(
         (Hashtab-HalfWord ((shl 2 (reg 2))
-                (mov (indexed (reg ebx) (displacement (reg eax) 0))(reg EAX))
+                (mov (indexed (reg 2) (displacement (reg 1) 0))(reg EAX))
                     (cdqe)))
         (PutHashtab-HalfWord ((shl 2 (reg 2))
                 (*move (reg 3) (reg 4))
                 (mov (reg EDX)
-		    (indexed (reg eax)(displacement (reg ebx) 0)))))) 
+		    (indexed (reg 1)(displacement (reg 2) 0)))))) 
  'OpenCode)
 
 (put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)
