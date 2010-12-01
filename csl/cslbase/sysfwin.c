@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 566b584d 01-Dec-2010 */
+/* Signature: 41ebe81b 01-Dec-2010 */
 
 #include "headers.h"
 
@@ -471,7 +471,7 @@ char *find_image_directory(int argc, char *argv[])
         {   sprintf(xname, "%s/%s.app/Contents/%s.img",
                 programDir, programName, programName);
         }
-        else sprintf(xname, "%s/%s.dir", programDir, programName);
+        else sprintf(xname, "%s/%s.img", programDir, programName);
 
     }
 #else
