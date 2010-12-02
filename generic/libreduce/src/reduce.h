@@ -6,7 +6,7 @@
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-  
+
       * Redistributions of source code must retain the relevant
         copyright notice, this list of conditions and the following
         disclaimer.
@@ -14,7 +14,7 @@
         copyright notice, this list of conditions and the following
         disclaimer in the documentation and/or other materials provided
         with the distribution.
-  
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -41,9 +41,9 @@ struct oRedProc {
 
   // A socketpair for listening to REDUCE:
   int reduceToMe[2];
-  
+
   // A detailed protocol file used only with "configure
-  // --ebable-debug:"
+  // --enable-debug:"
   FILE *rlgFile;
 };
 
@@ -75,7 +75,7 @@ struct oRedAns {
 
   // The prompt for the next computation:
   char *nextprompt;
-  
+
   // The computation time and gc time for this RedAns in ms as an
   // integer. This is why libreduce.red says "on time."
   int time;
