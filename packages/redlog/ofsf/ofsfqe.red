@@ -2019,10 +2019,19 @@ procedure ofsf_cj2atl(f);
       {f};
 
 procedure ofsf_fbqe(f);
-   <<
+   if !*rlqefbqepcad then
+      ofsf_fbqepcad(f)
+   else <<
       if !*rlverbose then
 	 ioto_prin2t "ofsf_cad with optimization of projection order";
       cdr ofsf_cad(f,ofsf_cadporder f,nil)
+   >>;
+
+procedure ofsf_fbqepcad(f);
+   <<
+      if !*rlverbose then
+	 ioto_prin2t "QEPCAD B";
+      qepcad_qepcad(f,nil)
    >>;
 
 procedure ofsf_elimset!-precise(v,alp);

@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(qepcad_rcsid!* qepcad_copyright!*);
@@ -43,13 +43,18 @@ load!-package 'redlog;
 load!-package 'ofsf;
 load!-package 'rltools;
 
-fluid '(!*rlqepnf !*rlverbose !*echo !*time !*backtrace);
+fluid '(qepcad_n!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace);
+
+switch rlqefbqepcad;
 
 put('ofsf,'rl_services,
-   '(rl_qepcad!* . qepcad_qepcad) . get('ofsf,'rl_services));
+   '(rl_qepcad!* . qepcad_qepcad) . '(rl_qepcadcells!* . qepcad_qepcadcells)
+      . get('ofsf,'rl_services));
 
 rl_mkserv('qepcad,'(rl_simp),'(reval),'(nil),
    function(lambda x; if x then rl_mk!*fof x),T);
+
+rl_mkserv('qepcadcells,'(reval),nil,nil,'reval,T);
 
 rl_set '(ofsf);
 
@@ -74,7 +79,8 @@ procedure qepcad_qepcad(f,fn);
    end;
 
 procedure qepcad_qepcad1(f,fn);
-   begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic;
+   begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
+	 cellarg,call;
       scsemic := semic!*;
       fn1 := fn or lto_sconcat{"/tmp/",getenv "USER",".qepcad"};
       if null fn then
@@ -110,10 +116,17 @@ procedure qepcad_qepcad1(f,fn);
       put('expt,'prtch,oldprtch);
       if !*rlverbose then ioto_prin2 "done";
       if null fn then <<
-      	 system lto_sconcat{"qepcad < ",fn1," | awk -v rf=",fn2,
+	 cellarg := if qepcad_n!* then
+ 	    lto_sconcat {"+N",lto_at2str qepcad_n!*," "}
+	 else
+	    "";
+      	 call := lto_sconcat{"qepcad ",cellarg,"< ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",
 	    lto_at2str !*time,
 	    " -f $qe/qepcad.awk"};
+	 if !*rlverbose then
+	    ioto_prin2t lto_sconcat {"+++ calling ",call};
+	 system call;
 	 oldecho := !*echo;
 	 !*echo := nil;
 	 fh := rds open(fn2,'input);
@@ -198,6 +211,14 @@ procedure qepcad_ppricadtimes(f,n);
       maprin cadr f;
       for each x in cddr f do << prin2!* " "; maprin x >>;
       if w then prin2!* ")"
+   end;
+
+procedure qepcad_qepcadcells(n);
+   begin scalar w;
+      w := qepcad_n!*;
+      if n then
+      	 qepcad_n!* := n;
+      return w
    end;
 
 endmodule;
