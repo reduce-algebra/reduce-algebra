@@ -277,7 +277,7 @@ procedure assert_stat();
    end;
 
 procedure assert_stat!-parse();
-   % Subroutine of assert_stat(). This is the actual paring code.
+   % Subroutine of assert_stat(). This is the actual parsing code.
    begin scalar fn,argtypel,restype;
       fn := scan();
       if scan() neq '!*colon!* then
@@ -297,11 +297,15 @@ procedure assert_stat1();
    begin scalar argtypel;
       if scan() neq '!*lpar!* then
 	 rederr {"expecting '(' in assert but found",cursym!*};
+      if scan() eq '!*rpar!* then
+	 return nil;
       repeat <<
-	 argtypel := scan() . argtypel;
+	 argtypel := cursym!* . argtypel;
 	 scan();
       	 if cursym!* neq '!*comma!* and cursym!* neq '!*rpar!* then
 	    rederr {"expecting ',' or ')' in assert but found",cursym!*};
+	 if cursym!* eq '!*comma!* then
+	    scan()
       >> until cursym!* eq '!*rpar!*;
       return reversip argtypel
    end;
