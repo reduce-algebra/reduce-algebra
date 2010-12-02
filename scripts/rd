@@ -133,6 +133,7 @@ export verbose=0
 export warn=0
 export debug=0
 export syntaxonly=0
+force=0
 
 for count in 1 2 3 4 5 6 7 8; do
     if [ "$1" = "-B" ]; then
@@ -157,6 +158,11 @@ for count in 1 2 3 4 5 6 7 8; do
 
     if [ "$1" = "-fsyntax-only" ]; then
 	syntaxonly=1
+	shift
+    fi
+
+    if [ "$1" = "-force" ]; then  # compilation w/o syntax-check
+	force=1
 	shift
     fi
 
@@ -216,15 +222,17 @@ elif [ "$lisp" = "psl" ]; then
 fi
 
 for m in $* ; do
+    
+    if [ x$force = x0 ] ; then
 
-    ($REDUCE 2<&1 | \
-        grep -v "Function .yesp. has been redefined" | \
-        grep -v "local variable" | \
-	grep -v "already defined as operator" | \
-	grep -v "module2!-to!-file" | \
-	grep -v "savedef" | \
-	grep -v "native_code" | \
-	awk "$awk1") <<EOF
+	($REDUCE 2<&1 | \
+            grep -v "Function .yesp. has been redefined" | \
+            grep -v "local variable" | \
+	    grep -v "already defined as operator" | \
+	    grep -v "module2!-to!-file" | \
+	    grep -v "savedef" | \
+	    grep -v "native_code" | \
+	    awk "$awk1") <<EOF
 off output$
 lisp;
 infile("$here/packages/rd/rd.red")$
@@ -239,14 +247,16 @@ prin2t "SREMAKE_COMPILE";
 bye;
 EOF
 
-    status=$?
+	status=$?
 
-    if [ x$syntaxonly = x1 ] ; then exit 0 ; fi
+	if [ x$syntaxonly = x1 ] ; then exit 0 ; fi
 
-    if [ $status -eq 1 ] ; then exit $status ; fi
+	if [ $status -eq 1 ] ; then exit $status ; fi
 
-    if [ $status -eq 2 ] ; then
+	if [ $status -ne 2 ] ; then exit $status ; fi
 
+    fi
+    
     ($REDUCE 2>&1 | \
 	grep -iv "REDUCE" | \
 	grep -v "Quitting" | \
@@ -270,8 +280,6 @@ make '$m;
 bye;
 EOF
 
-    fi
-    
 done
 
 done
