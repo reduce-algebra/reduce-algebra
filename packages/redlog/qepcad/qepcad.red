@@ -32,7 +32,7 @@ lisp <<
    fluid '(qepcad_rcsid!* qepcad_copyright!*);
    qepcad_rcsid!* :=
       "$Id$";
-   qepcad_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
+   qepcad_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module qepcad;
@@ -43,18 +43,22 @@ load!-package 'redlog;
 load!-package 'ofsf;
 load!-package 'rltools;
 
-fluid '(qepcad_n!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace);
+fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace);
 
 switch rlqefbqepcad;
 
 put('ofsf,'rl_services,
-   '(rl_qepcad!* . qepcad_qepcad) . '(rl_qepcadcells!* . qepcad_qepcadcells)
-      . get('ofsf,'rl_services));
+   append(get('ofsf,'rl_services),
+      '((rl_qepcad!* . qepcad_qepcad)
+        (rl_qepcadn!* . qepcad_qepcadn)
+        (rl_qepcadl!* . qepcad_qepcadl))));
+
 
 rl_mkserv('qepcad,'(rl_simp),'(reval),'(nil),
    function(lambda x; if x then rl_mk!*fof x),T);
 
-rl_mkserv('qepcadcells,'(reval),nil,nil,'reval,T);
+rl_mkserv('qepcadn,'(reval),nil,nil,'reval,T);
+rl_mkserv('qepcadl,'(reval),nil,nil,'reval,T);
 
 rl_set '(ofsf);
 
@@ -80,7 +84,7 @@ procedure qepcad_qepcad(f,fn);
 
 procedure qepcad_qepcad1(f,fn);
    begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
-	 cellarg,call;
+	 narg,larg,call;
       scsemic := semic!*;
       fn1 := fn or lto_sconcat{"/tmp/",getenv "USER",".qepcad"};
       if null fn then
@@ -116,11 +120,15 @@ procedure qepcad_qepcad1(f,fn);
       put('expt,'prtch,oldprtch);
       if !*rlverbose then ioto_prin2 "done";
       if null fn then <<
-	 cellarg := if qepcad_n!* then
+	 narg := if qepcad_n!* then
  	    lto_sconcat {"+N",lto_at2str qepcad_n!*," "}
 	 else
 	    "";
-      	 call := lto_sconcat{"qepcad ",cellarg,"< ",fn1," | awk -v rf=",fn2,
+	 larg := if qepcad_l!* then
+ 	    lto_sconcat {"+L",lto_at2str qepcad_l!*," "}
+	 else
+	    "";
+      	 call := lto_sconcat{"qepcad ",narg,larg,"< ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",
 	    lto_at2str !*time,
 	    " -f $qe/qepcad.awk"};
@@ -213,11 +221,26 @@ procedure qepcad_ppricadtimes(f,n);
       if w then prin2!* ")"
    end;
 
-procedure qepcad_qepcadcells(n);
+procedure qepcad_qepcadn(n);
+   % The +N argument to QEPCAD corresponding to the variable NU. This is
+   % the number of cells reclaimed for the garbage-collected heap. It is
+   % responsible for failures due to "too few cells reclaimed". The
+   % default is 1*10^6.
    begin scalar w;
       w := qepcad_n!*;
       if n then
       	 qepcad_n!* := n;
+      return w
+   end;
+
+procedure qepcad_qepcadl(l);
+   % The +L argument to QEPCAD corresponding to the variable NLPRIME. It
+   % is responsible for failures due to "prime list exhausted". The
+   % default is 2000.
+   begin scalar w;
+      w := qepcad_l!*;
+      if l then
+      	 qepcad_l!* := l;
       return w
    end;
 
