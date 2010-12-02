@@ -171,13 +171,14 @@ procedure lto_alunion(all);
    lto_almerge(all,'union);
 
 procedure lto_almerge(all,merge);
-   % List tools assoc list merge. [all] is a list of alists $((k1 .
-   % e1) ... (kn . en))$, where all ki are unique and all ei are
-   % lists; [merge] is a function that maps two lists to another list.
-   % Merges all alists in [all] into one alist, where the keys are the
-   % union of all ki appearing in the members of [all], and the entry
-   % to each key is obtained from the entries in [all] by applying
-   % [merge]. All members of [all] are modified by this function.
+   % List tools assoc list merge. [all] is a list of alists $((k1 . e1)
+   % ... (kn . en))$, where all ki are unique and all ei are entries,
+   % which are any; [merge] is a function that maps two entries to
+   % another entry. Merges all alists in [all] into one alist, where the
+   % keys are the union of all ki appearing in the members of [all], and
+   % the entry to each key is obtained from the entries in [all] by
+   % applying [merge]. All members of [all] are modified by this
+   % function.
    begin scalar l2,a;
       if null all then return nil;
       if null cdr all then return car all;
