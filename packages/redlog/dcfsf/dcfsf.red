@@ -59,7 +59,7 @@ fluid '(!*rlsiatadv !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlgsrad
    !*rlgsred !*rlgsprod !*rlgserf !*rlverbose !*rlsifac !*rlbnfsac !*rlgsvb
    !*rlgsbnf !*rlgsutord !*rlnzden !*rladdcond !*rlqegen !*cgbgen !*cgbreal
    !*gbverbose dcfsf_gstv!* !*cgbverbose !*groebopt !*nat !*rlsid
-   !*rlsiplugtheo);
+   !*rlsiplugtheo !*rlenffac !*rlenffacne !*rlplsimpl);
 
 flag('(dcfsf),'rl_package);
 
