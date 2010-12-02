@@ -47,7 +47,7 @@
  *************************************************************************/
 
 
-/* Signature: 7d790079 01-Dec-2010 */
+/* Signature: 3568a3b6 02-Dec-2010 */
 
 #include "config.h"
 
@@ -141,7 +141,7 @@ static FILE *logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
-void wxfwin_write_log(char *s, ...)
+void fwin_write_log(char *s, ...)
 {
     int create = (logfile == NULL);
     va_list x;
@@ -170,11 +170,6 @@ void wxfwin_write_log(char *s, ...)
         }
 #endif
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
-logfile=fopen("/tmp/bad.log", "w");
-fprintf(logfile, "programDir=%s\n", programDir);
-fprintf(logfile, "programName=%s\n", programName);
-fprintf(logfile, "logfile_name=%s\n", logfile_name);
-fclose(logfile);
         logfile = fopen(logfile_name, "a");
     }
     if (logfile == NULL) return; /* the file can not be used */
@@ -215,13 +210,15 @@ fclose(logfile);
 typedef wchar_t Uchar;
 
 void unicodeToUtf8(char *dest, const wchar_t *src)
-{
-    WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, 1000, NULL, NULL);
+{  
+    int w = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, 1000, NULL, NULL);
+    dest[w] = 0;
 }
 
 void utf8ToUnicode(wchar_t *dest, const char *src)
 {
-    MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, 1000);
+    int w = MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, 1000);
+    dest[w] = 0;
 }
 
 int lenAsUtf8(const wchar_t *s)
@@ -266,9 +263,9 @@ char about_box_rights_4[40]    = "(http://www.wxwidgets.org)";
 
 const char *colour_spec = "-";
 
-char wxfwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
+char fwin_prompt_string[MAX_PROMPT_LENGTH] = "> ";
 
-int wxfwin_linelength = 80;
+int fwin_linelength = 80;
 
 delay_callback_t *delay_callback;
 interrupt_callback_t *interrupt_callback;
@@ -284,7 +281,7 @@ int windowed = 0;
 
 int texmacs_mode = 0;
 
-int wxfwin_pause_at_end = 0;
+int fwin_pause_at_end = 0;
 
 #ifdef WIN32
 
@@ -312,7 +309,7 @@ void consoleWait()
 
 #ifndef EMBEDDED
 
-int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
+int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 {
     int i, ssh_client = 0;
 #ifndef WIN32
@@ -640,7 +637,7 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
         }
     }
 
-    if (windowed==0) return plain_worker(argc, argv, wxfwin_main);
+    if (windowed==0) return plain_worker(argc, argv, fwin_main);
     FWIN_LOG(("\n+++ Would run windowed here\n"));
 
 #ifdef MACINTOSH
@@ -698,9 +695,9 @@ int wxfwin_startup(int argc, char *argv[], wxfwin_entrypoint *wxfwin_main)
 
 
 #if 1
-    return plain_worker(argc, argv, wxfwin_main);
+    return plain_worker(argc, argv, fwin_main);
 #else
-    return windowed_worker(argc, argv, wxfwin_main);
+    return windowed_worker(argc, argv, fwin_main);
 #endif
 }
 
@@ -768,7 +765,7 @@ static int direct_to_terminal(int argc, char *argv[])
 #endif /* WIN32 */
 }
 
-int plain_worker(int argc, char *argv[], wxfwin_entrypoint *main)
+int plain_worker(int argc, char *argv[], fwin_entrypoint *main)
 {
     int r;
     signal(SIGINT, sigint_handler);
@@ -786,7 +783,7 @@ int plain_worker(int argc, char *argv[], wxfwin_entrypoint *main)
         using_termed = 1;
     }
     else using_termed = 0;
-    strcpy(wxfwin_prompt_string, "> ");
+    strcpy(fwin_prompt_string, "> ");
     r = (*main)(argc, argv);
     input_history_end();
     term_close();
@@ -801,12 +798,12 @@ static char input_buffer[INPUT_BUFFER_SIZE];
 static int chars_left = 0;
 static int prompt_needed = 1;
 
-int wxfwin_plain_getchar()
+int fwin_plain_getchar()
 {
     int ch;
     if (using_termed)
     {   while (chars_left == 0)
-        {   term_setprompt(wxfwin_prompt_string);
+        {   term_setprompt(fwin_prompt_string);
             current_line = term_getline();
             if (current_line == NULL) return EOF;  // failed or EOF
             chars_left = strlen(current_line);
@@ -815,7 +812,7 @@ int wxfwin_plain_getchar()
     }
     else if (chars_left == 0)
     {   if (prompt_needed) 
-        {   printf("%s", wxfwin_prompt_string);
+        {   printf("%s", fwin_prompt_string);
             prompt_needed = 0;
         }
         fflush(stdout);
@@ -837,11 +834,11 @@ int wxfwin_plain_getchar()
     return ch;
 }
 
-void wxfwin_restore()
+void fwin_restore()
 {
 }
 
-void wxfwin_putchar(int c)
+void fwin_putchar(int c)
 {
 /*
  * Despite using termed during keyboard input I will just use the
@@ -859,20 +856,20 @@ void wxfwin_putchar(int c)
     putchar(c);
 }
 
-void wxfwin_puts(const char *s)
+void fwin_puts(const char *s)
 {
 /*
  * See comment above where putchar() is used...
  */
 #ifdef RAW_CYGWIN
-    while (*s != 0) wxfwin_putchar(*s++);
+    while (*s != 0) fwin_putchar(*s++);
 #else
     puts(s);
 #endif
 }
 
 
-void MS_CDECL wxfwin_printf(const char *fmt, ...)
+void MS_CDECL fwin_printf(const char *fmt, ...)
 {
     va_list a;
     va_start(a, fmt);
@@ -888,7 +885,7 @@ void MS_CDECL wxfwin_printf(const char *fmt, ...)
     va_end(a);
 }
 
-void wxfwin_vfprintf(const char *fmt, va_list a)
+void fwin_vfprintf(const char *fmt, va_list a)
 {
 /*
  * See comment above where putchar() is used...
@@ -901,53 +898,53 @@ void wxfwin_vfprintf(const char *fmt, va_list a)
 #endif
 }
 
-void wxfwin_ensure_screen()
+void fwin_ensure_screen()
 {
     fflush(stdout);
 }
 
-void wxfwin_report_left(const char *s)
+void fwin_report_left(const char *s)
 {
 }
 
-void wxfwin_report_mid(const char *s)
+void fwin_report_mid(const char *s)
 {
 }
 
-void wxfwin_report_right(const char *s)
+void fwin_report_right(const char *s)
 {
 }
 
-int wxfwin_getchar()
+int fwin_getchar()
 {
-    return wxfwin_plain_getchar();
+    return fwin_plain_getchar();
 }
 
 
-void wxfwin_set_prompt(const char *s)
+void fwin_set_prompt(const char *s)
 {
-    strncpy(wxfwin_prompt_string, s, sizeof(wxfwin_prompt_string));
-    wxfwin_prompt_string[sizeof(wxfwin_prompt_string)-1] = 0;
+    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
+    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
 }
 
-extern void wxfwin_menus(char **modules, char **switches,
+extern void fwin_menus(char **modules, char **switches,
                        review_switch_settings_function *f)
 {
 }
 
-void wxfwin_refresh_switches(char **switches, char **packages)
+void fwin_refresh_switches(char **switches, char **packages)
 {
 }
 
-void wxfwin_set_help_file(const char *key, const char *path)
+void fwin_set_help_file(const char *key, const char *path)
 {
 }
 
-void wxfwin_acknowledge_tick()
+void fwin_acknowledge_tick()
 {
 }
 
-int wxfwin_windowmode()
+int fwin_windowmode()
 {
     return 0;
 }
@@ -1046,6 +1043,7 @@ int find_program_directory(char *argv0)
         programDir = forProgramDir;
     }
     for (i=0; i<npgm; i++) temp_buffer[i] = a0[len - npgm + i];
+    temp_buffer[npgm] = 0;
     unicodeToUtf8(forProgramName, temp_buffer);
     programName = forProgramName;
     return 0;
@@ -1309,7 +1307,7 @@ extern int get_users_home_directory(char *b, int len);
 
 static lookup_function *look_in_variable = NULL;
 
-void wxfwin_set_lookup(lookup_function *f)
+void fwin_set_lookup(lookup_function *f)
 {
     look_in_variable = f;
 }

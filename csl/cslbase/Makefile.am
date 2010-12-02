@@ -1018,12 +1018,17 @@ if canrun
 	mkdir -p buildlogs
 	./reduce$(COMEXT) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
-		-o ./reduce.img \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
-# is up to date with my lastest build.
-	cp reduce.img $(gensrc)
+# is up to date with my lastest build. There is a complication here that I
+# only partially hack around. On the Mac I will often save image files within
+# an application bundle, while on all other platforms they life in the
+# directory adjacent to the executable file. I conditionally copy from both
+# places here
+	if test -f reduce.app/Contents/reduce.img; \
+	then cp reduce.app/Contents/reduce.img $(gensrc); \
+	elif test -f reduce.img; then cp reduce.img $(gensrc); fi
 else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
@@ -1121,7 +1126,10 @@ if canrun
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) \
 		-- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
-	cp bootstrapreduce.img $(gensrc)
+	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
+	then cp bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
+	elif test -f bootstrapreduce.img; \
+	then cp bootstrapreduce.img $(gensrc); fi
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
 	echo Copying from $(gensrc)
@@ -1265,7 +1273,9 @@ if canrun
 		-D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
-	cp csl.img $(gensrc)
+	if test -f csl.img/Contents/csl.img; \
+	then cp csl.img/Contents/csl.img $(gensrc); \
+	elif test -f csl.img; then cp csl.img $(gensrc); fi
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)

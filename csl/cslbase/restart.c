@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7883ce44 23-Nov-2010 */
+/* Signature: 086cea4d 02-Dec-2010 */
 
 #include "headers.h"
 
@@ -3732,8 +3732,8 @@ static void find_dll_cache_directory()
     {   CSL_MD5_Init();
         sprintf(counts, "%d:", count);
         CSL_MD5_Update((unsigned char *)counts, strlen(counts));
-        CSL_MD5_Update((unsigned char *)fwin_full_program_name,
-                         strlen(fwin_full_program_name));
+        CSL_MD5_Update((unsigned char *)fullProgramName,
+                         strlen(fullProgramName));
 #ifdef WIN32
         userinfo[0] = ';';
         n = sizeof(userinfo) - 1;
@@ -3750,7 +3750,7 @@ static void find_dll_cache_directory()
         CSL_MD5_Final(md);
 #ifdef TRACE_NATIVE
         trace_printf("Base cache name on %s %s %s\n",
-            fwin_full_program_name, userinfo, linker_type);
+            fullProgramName, userinfo, linker_type);
 #endif
         p = dll_cache_directory + strlen(dll_cache_directory);
 /*
@@ -3898,7 +3898,7 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
 /*
  * Here I will do some more cache-style activity. I will hold a
  * dirctory typically called /tmp/nnnnnn (where nnnnn is a checksum
- * on fwin_full_program_name and the linker type and the curren user)
+ * on fullProgramName and the linker type and the curren user)
  * and put extracted DLL files there.
  * If I find one present there I will use it. Otherwise I
  * will extract it from the image file. This may give me trouble
@@ -4967,7 +4967,7 @@ static void set_up_variables(CSLbool restartp)
         w = cons(make_keyword("RECORD_GET"), w);
 #ifdef HAVE_FWIN
         w = acons(make_keyword("EXECUTABLE"),
-                  make_string(fwin_full_program_name), w);
+                  make_string(fullProgramName), w);
 #else
         if (program_name[0] != 0)
             w = acons(make_keyword("EXECUTABLE"),
@@ -5017,7 +5017,7 @@ static void set_up_variables(CSLbool restartp)
 #endif
 #ifdef HAVE_FWIN
         w = acons(make_keyword("executable"),
-                  make_string(fwin_full_program_name), w);
+                  make_string(fullProgramName), w);
         w = acons(make_keyword("shortname"),
                   make_string(programName), w);
 #else

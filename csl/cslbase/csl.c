@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 70aff9f1 23-Nov-2010 */
+/* Signature: 10f4c687 02-Dec-2010 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1886,7 +1886,12 @@ term_printf(
  * on did not support Xft.
  */
         case 'h':
+#ifndef HAVE_LIBWX
+/*
+ * If I am using wxWidgets this option is not supported.
+ */
                 fwin_use_xft = 0;
+#endif
 /*
  * Actually, like the "-w" option, it is TOO LATE to do this here because
  * lower-level parts of fwin may already have adjusted font paths using

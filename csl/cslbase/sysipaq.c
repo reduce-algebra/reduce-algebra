@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 278b2cbe 21-Jul-2008 */
+/* Signature: 0bd963b4 02-Dec-2010 */
 
 #include "headers.h"
 
@@ -305,7 +305,7 @@ clock_t MS_CDECL clock()
     return 0;
 }
 
-const char *fwin_full_program_name = (const char *)"./csl.exe";
+const char *fullProgramName        = (const char *)"./csl.exe";
 const char *programName            = (const char *)"csl.exe";
 const char *programDir             = (const char *)".";
 

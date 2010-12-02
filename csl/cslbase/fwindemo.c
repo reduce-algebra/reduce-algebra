@@ -70,7 +70,7 @@
 
 
 
-/* Signature: 4a78abf1 30-Nov-2010 */
+/* Signature: 7eb24563 02-Dec-2010 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed
@@ -207,16 +207,6 @@
 #include "wxfwin.h"
 #else
 #include "fwin.h"
-#endif
-
-#ifdef HAVE_LIBWX
-/* Allow for new versions of all the names */
-#define fwin_getchar       wxfwin_getchar
-#define fwin_printf        wxfwin_printf
-#define fwin_exit          wxfwin_exit
-#define fwin_startup       wxfwin_startup
-#define fwin_main          wxfwin_main
-#define fwin_ensure_screen wxfwin_ensure_screen
 #endif
 
 int fwin_main(int argc, char **argv)

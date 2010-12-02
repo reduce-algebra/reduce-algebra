@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5d4dce6d 25-Jun-2010 */
+/* Signature: 2ed8973a 02-Dec-2010 */
 
 #include "headers.h"
 
@@ -3353,7 +3353,7 @@ Lisp_Object MS_CDECL Lprint_imports(Lisp_Object nil, int nargs, ...)
     stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    s = fwin_full_program_name;
+    s = fullProgramName;
     i = strlen(s)-1;
     while (i>=0 && s[i]!='/' && s[i]!='\\') i--;
     s = s + (i + 1);

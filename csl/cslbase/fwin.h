@@ -52,7 +52,7 @@
  * and not under any more restrictice license.
  */
 
-/* Signature: 6c6b25a7 30-Nov-2010 */
+/* Signature: 6559ce3f 02-Dec-2010 */
 
 #ifndef header_fwin_h
 #define header_fwin_h 1
@@ -114,16 +114,16 @@ typedef int fwin_entrypoint(int argc, char *argv[]);
 extern int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main);
 
 /*
- * fwin_full_program_name is a string like "d:\xxx\yyy\something.exe"  This is
+ * fullProgramName is a string like "d:\xxx\yyy\something.exe"  This is
  * made available so that applications can edit it to generate names of
  * resource files (eg by just altering the ".exe" bit on the end into some
  * other suffix. I will try to find a full path for the executable on
  * Unix too.
  */
-extern const char *fwin_full_program_name;
+extern const char *fullProgramName;
 
 /*
- * programName holds just the "something" out of fwin_full_program_name.
+ * programName holds just the "something" out of fullProgramName.
  * Note that I impose an arbitrary limit on the length of the name of the
  * executable.
  */
@@ -471,9 +471,6 @@ extern const char *input_history_get(int n);
  * true file.
  */
 extern int find_program_directory(char *argv0);
-extern const char *fwin_full_program_name; /* eg "./fwin.exe" */
-extern const char *programName;            /* eg "fwin.exe"   */
-extern const char *programDir;             /* eg "."          */
 
 /*
  * Some things that are really intended to be private to the implementation

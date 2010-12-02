@@ -53,7 +53,7 @@
  * Cocoa) support on a Macintosh.
  */
 
-/* Signature: 6c59f87f 30-Nov-2010 */
+/* Signature: 33b6a4f3 02-Dec-2010 */
 
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1
@@ -93,18 +93,18 @@ extern "C" {
  */
 
 #ifdef DEBUG
-extern void wxfwin_write_log(char *s, ...);
-#define FWIN_LOG(a) wxfwin_write_log a
+extern void fwin_write_log(char *s, ...);
+#define FWIN_LOG(a) fwin_write_log a
 #else
 #define FWIN_LOG(a) /* nothing */
 #endif
 
 
 /*
- * The "C" code will eventually be entered at wxfwin_main() in what looks like a
+ * The "C" code will eventually be entered at fwin_main() in what looks like a
  * normal way. This is a type for it.
  */
-typedef int wxfwin_entrypoint(int argc, char *argv[]);
+typedef int fwin_entrypoint(int argc, char *argv[]);
 
 /*
  * To start things going you call the following. It sets up the windowed-style
@@ -112,8 +112,8 @@ typedef int wxfwin_entrypoint(int argc, char *argv[]);
  * main application.
  */
 
-extern int wxfwin_startup(int argc, char *argv[],
-                          wxfwin_entrypoint *wxfwin_main);
+extern int fwin_startup(int argc, char *argv[],
+                          fwin_entrypoint *fwin_main);
 
 /*
  * fullProgramName is a string like "d:\xxx\yyy\something.exe"
@@ -166,24 +166,24 @@ extern const char *programDir;
  *        compatibility with readline or emacs is not a sane objective.
  */
 
-#define WXFWIN_WITH_TERMED  1
-#define WXFWIN_IN_WINDOW    2
+#define FWIN_WITH_TERMED  1
+#define FWIN_IN_WINDOW    2
 
 extern int fwin_windowmode();
 
 /*
- * To finish off you can either return from wxfwin_main(), or you can go
- *        wxfwin_exit(n);
+ * To finish off you can either return from fwin_main(), or you can go
+ *        fwin_exit(n);
  * The system will forcibly close down for you if the EXIT item on
  * the FILE menu or the CLOSE item on the SYSTEM menu gets selected.  But
  * direct use of the C function "exit()" is not considered proper (even
  * if it probably works!).
  */
 
-extern void wxfwin_exit(int return_code);
+extern void fwin_exit(int return_code);
 
 /*
- * If, when the program is stopping, wxfwin_pause_at_end has been set to
+ * If, when the program is stopping, fwin_pause_at_end has been set to
  * be non-zero (by default it will be zero) then an alert box is displayed
  * forcing the user to give positive confirmation before the main window
  * is closed.  This does not give an opportunity to cancel the exit, just to
@@ -192,13 +192,13 @@ extern void wxfwin_exit(int return_code);
  * from the system menu. That is (deliberate in my code) because in those
  * cases the user has taken explicit interactive action to terminate the
  * program so an extra prompt seems unnecessary. This behaviour provides
- * at least one reason to use wxfwin_exit() rather than just exit().
+ * at least one reason to use fwin_exit() rather than just exit().
  */
-extern int wxfwin_pause_at_end;
+extern int fwin_pause_at_end;
 
 
 /*
- * wxfwin_minimize() indicates that the window should be shrunk to be just
+ * fwin_minimize() indicates that the window should be shrunk to be just
  * an icon.
  * NOTE that if the command-line arguments to an application include
  * "--", "-f" or "-F" then the application will be started off minimised.
@@ -208,17 +208,17 @@ extern int wxfwin_pause_at_end;
  * so letting my code begin and then calling fwin_minimize would not be
  * so good.
  */
-extern void wxfwin_minimize(void);
+extern void fwin_minimize(void);
 
 /*
- * wxfwin_restore() indicates that the window should be restored to
+ * fwin_restore() indicates that the window should be restored to
  * regular size.
  */
-extern void wxfwin_restore(void);
+extern void fwin_restore(void);
 
 /*
  * Rather than using putchar() and printf(), here are the calls
- * the can be made to get output onto the screen.  NOTE that wxfwin_puts()
+ * the can be made to get output onto the screen.  NOTE that fwin_puts()
  * is more like fputs than puts in that it just dumps the characters in its
  * string to the screen [it does not add an extra newline in the way that
  * puts does].
@@ -228,39 +228,39 @@ extern void wxfwin_restore(void);
  * UTF8, characters with code-points between 0x80 and 0xff and a whole
  * bunch of such matters! So just for now this is really for 7-bit ASCII.
  */
-extern void wxfwin_putchar(int c);
-extern void wxfwin_puts(const char *s);
+extern void fwin_putchar(int c);
+extern void fwin_puts(const char *s);
 
 /*
  * The "showmath" capability is not yet developed here.
  */
-extern void wxfwin_showmath(const char *s);
+extern void fwin_showmath(const char *s);
 
-extern void MS_CDECL wxfwin_printf(const char *fmt, ...);
-extern void wxfwin_vfprintf(const char *fmt, va_list a);
+extern void MS_CDECL fwin_printf(const char *fmt, ...);
+extern void fwin_vfprintf(const char *fmt, va_list a);
 
 /*
- * wxfwin_linelength holds the number of normal-sized (ie the basic
+ * fwin_linelength holds the number of normal-sized (ie the basic
  * fixed-pitch font being used) characters that fit across the screen.
  * My implementation of a window arranges to scale text so that this value
  * is in fact ALWAYS just 80.
  */
-extern int wxfwin_linelength;
+extern int fwin_linelength;
 
 /*
- * wxfwin_ensure_screen() causes the display to catch up with whatever
+ * fwin_ensure_screen() causes the display to catch up with whatever
  * else has been going on. Thing "fflush(stdout)".
  */
-extern void wxfwin_ensure_screen(void);
+extern void fwin_ensure_screen(void);
 
 /*
- * wxfwin_getchar() behaves rather as one might expect getchar() to - it
+ * fwin_getchar() behaves rather as one might expect getchar() to - it
  * grabs a character from the keyboard input buffer.
  */
-extern int wxfwin_getchar(void);
+extern int fwin_getchar(void);
 
 /*
- * wxfwin_set_prompt() tells wxfwin what string (of up to some limited
+ * fwin_set_prompt() tells wxfwin what string (of up to some limited
  * number of characters) should be used as a prompt.
  */
 
@@ -268,19 +268,19 @@ extern int wxfwin_getchar(void);
 #  define MAX_PROMPT_LENGTH 80
 #endif
 
-extern void wxfwin_set_prompt(const char *s);
+extern void fwin_set_prompt(const char *s);
 
 /*
  * Clears screen.
  */
-extern void wxfwin_clear_screen();
+extern void fwin_clear_screen();
 
 /*
  * Returns window size (measured in character positions) packed as
  *    (width << 16) + height
  * Note that the width is always liable to be just 80.
  */
-extern int wxfwin_screen_size();
+extern int fwin_screen_size();
 
 /*
  * The following function can be used to register a callback that is
@@ -293,7 +293,7 @@ extern int wxfwin_screen_size();
  */
 typedef char *lookup_function(char *s, int ch);
 
-extern void wxfwin_set_lookup(lookup_function *f);
+extern void fwin_set_lookup(lookup_function *f);
 
 
 /*
@@ -305,7 +305,7 @@ extern void wxfwin_set_lookup(lookup_function *f);
  */
 typedef void delay_callback_t(int);
 
-extern void wxfwin_callback_on_delay(delay_callback_t *f);
+extern void fwin_callback_on_delay(delay_callback_t *f);
 
 /*
  * wxfwin will call the function passed here to try to signal an
@@ -344,13 +344,13 @@ extern void wxfwin_callback_on_delay(delay_callback_t *f);
 
 typedef int interrupt_callback_t(int);
 
-extern void wxfwin_callback_to_interrupt(interrupt_callback_t *f);
+extern void fwin_callback_to_interrupt(interrupt_callback_t *f);
 
 /*
  * When a TICK is handed to the user the following should be called
  * to confirm that it has been seen.
  */
-extern void wxfwin_acknowledge_tick();
+extern void fwin_acknowledge_tick();
 
 
 /*
@@ -361,14 +361,14 @@ extern void wxfwin_acknowledge_tick();
  */
 typedef void review_switch_settings_function();
 
-extern void wxfwin_menus(char **modules, char **switches,
+extern void fwin_menus(char **modules, char **switches,
                          review_switch_settings_function *f);
 
 /*
  * The next is used when the application has re-set some switches without the
  * GUI's help, and it updates the menu
  */
-extern void wxfwin_refresh_switches(char **switches, char **packages);
+extern void fwin_refresh_switches(char **switches, char **packages);
 
 
 /*
@@ -383,9 +383,9 @@ extern void wxfwin_refresh_switches(char **switches, char **packages);
  * re-instate the default display. Use fwin_report_left("") is a yet clearer
  * way of indicating that blank info to the left is required.
  */
-extern void wxfwin_report_left(const char *msg);
-extern void wxfwin_report_mid(const char *msg);
-extern void wxfwin_report_right(const char *msg);
+extern void fwin_report_left(const char *msg);
+extern void fwin_report_mid(const char *msg);
+extern void fwin_report_right(const char *msg);
 
 /*
  * The following four strings may be updated (but PLEASE keep within the
@@ -423,14 +423,14 @@ extern char about_box_rights_4[40];    /* "ditto";               */
  * not in any file that CSL has direct access to, and the new help items may
  * not be visible until the user exits from CSL and re-starts it.
  */
-extern void wxfwin_set_help_file(const char *key, const char *path);
+extern void fwin_set_help_file(const char *key, const char *path);
 
 /*
  * The declarations below here are to be treated as private and should
  * not be touched by users.
  */
 extern int plain_worker(int argc, char *argv[],
-                        wxfwin_entrypoint *wxfwin_main);
+                        fwin_entrypoint *fwin_main);
 extern delay_callback_t *delay_callback;
 extern interrupt_callback_t *interrupt_callback;
 
@@ -442,22 +442,22 @@ extern interrupt_callback_t *interrupt_callback;
  */
 
 /*
- * like wxfwin_putchar(), but overwrites what exists on the screen rather
+ * like fwin_putchar(), but overwrites what exists on the screen rather
  * than inserting.
  */
-extern void wxfwin_putchar_overwrite(int c);
+extern void fwin_putchar_overwrite(int c);
 
 /*
  * Move the cursor up or down n lines. n is positive for movement
  * down the screen.
  */
-extern void wxfwin_move_cursor_vertically(int n);
+extern void fwin_move_cursor_vertically(int n);
 
 /*
  * Move the cursor directly to the indicated column. "0" indicates
  * the first position in the row.
  */
-extern void wxfwin_move_to_column(int column);
+extern void fwin_move_to_column(int column);
 
 /*
  * What follows is to do with a history mechanism... and again is not
@@ -507,7 +507,7 @@ extern const char *programDir;             /* eg "."          */
 extern int windowed;
 
 extern int windowed_worker(int argc, char *argv[],
-                           wxfwin_entrypoint *fwin_main);
+                           fwin_entrypoint *fwin_main);
 
 extern int directoryp(char *f, char *o, size_t n);
 
@@ -515,18 +515,20 @@ extern int file_readable(char *f, char *o, size_t n);
 
 extern int using_termed;
 
-extern int wxfwin_plain_getchar();
+extern int fwin_plain_getchar();
 
 extern int texmacs_mode;
 
 extern void MS_CDECL sigint_handler(int code);
 extern void MS_CDECL sigbreak_handler(int code);
 
-extern int plain_worker(int argc, char *argv[], wxfwin_entrypoint *fwin_main);
+extern int plain_worker(int argc, char *argv[], fwin_entrypoint *fwin_main);
 #ifndef MAX_PROMPT_LENGTH
 #  define MAX_PROMPT_LENGTH 80
 #endif
-extern char wxfwin_prompt_string[MAX_PROMPT_LENGTH];
+extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
+
+
 
 #ifdef __cplusplus
 }

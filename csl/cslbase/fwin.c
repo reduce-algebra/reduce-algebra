@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 6b0c41cc 30-Nov-2010 */
+/* Signature: 4fb31adc 02-Dec-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -803,7 +803,7 @@ int get_current_directory(char *s, int n)
  * return non-zero value if failure.
  */
 
-const char *fwin_full_program_name = "./fwin.exe";
+const char *fullProgramName        = "./fwin.exe";
 const char *programName            = "fwin.exe";
 const char *programDir             = ".";
 
@@ -826,11 +826,11 @@ int find_program_directory(char *argv0)
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
     {   programDir = ".";
         programName = "fwin";  /* nothing really known! */
-        fwin_full_program_name = ".\\fwin.exe";
+        fullProgramName = ".\\fwin.exe";
         return 0;
     }
 
-    fwin_full_program_name = argv0;
+    fullProgramName = argv0;
     len = strlen(argv0);
 /*
  * If the current program is called c:\aaa\xxx.exe, then the directory
@@ -932,7 +932,7 @@ int find_program_directory(char *argv0)
     if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
     {   programDir = (const char *)"."; /* some sort of default. */
         programName = (const char *)"fwin";
-        fwin_full_program_name = (const char *)"./fwin";
+        fullProgramName = (const char *)"./fwin";
         return 0;
     }
 /*
@@ -941,7 +941,7 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/') fwin_full_program_name = argv0;
+    else if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */
@@ -956,7 +956,7 @@ int find_program_directory(char *argv0)
             else
             {   pgmname[n] = '/';
                 strcpy(&pgmname[n+1], argv0);
-                fwin_full_program_name = pgmname;
+                fullProgramName = pgmname;
             }
         }
         else
@@ -1026,7 +1026,7 @@ int find_program_directory(char *argv0)
                 pgmname[n++] = '/';
                 strcpy(&pgmname[n], temp);
             }
-            fwin_full_program_name = pgmname;
+            fullProgramName = pgmname;
         }
     }       
 /*
@@ -1035,22 +1035,22 @@ int find_program_directory(char *argv0)
  */
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
-        if (lstat(fwin_full_program_name, &buf) != -1 &&
+        if (lstat(fullProgramName, &buf) != -1 &&
             S_ISLNK(buf.st_mode) &&
-            (n1 = readlink(fwin_full_program_name,
+            (n1 = readlink(fullProgramName,
                            temp, sizeof(temp)-1)) > 0)
         {   temp[n1] = 0;
             strcpy(pgmname, temp);
-            fwin_full_program_name = pgmname;
+            fullProgramName = pgmname;
         }
     }
-/* Now fwin_full_program_name is set up, but may refer to an array that
+/* Now fullProgramName is set up, but may refer to an array that
  * is stack allocated. I need to make it proper!
  */
-    w = (char *)malloc(1+strlen(fwin_full_program_name));
+    w = (char *)malloc(1+strlen(fullProgramName));
     if (w == NULL) return 5;           /* 5 = malloc fails */
-    strcpy(w, fwin_full_program_name);
-    fwin_full_program_name = w;
+    strcpy(w, fullProgramName);
+    fullProgramName = w;
 #ifdef RAW_CYGWIN
 /*
  * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
@@ -1074,21 +1074,21 @@ int find_program_directory(char *argv0)
  * and I need to split it at the final "/" (and by now I very fully expect
  * there to be at least one "/".
  */
-    for (n=strlen(fwin_full_program_name)-1; n>=0; n--)
-        if (fwin_full_program_name[n] == '/') break;
+    for (n=strlen(fullProgramName)-1; n>=0; n--)
+        if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               /* 6 = no "/" in full file path */
     w = (char *)malloc(1+n);
     if (w == NULL) return 7;           /* 7 = malloc fails */
-    strncpy(w, fwin_full_program_name, n);
+    strncpy(w, fullProgramName, n);
     w[n] = 0;
 /* Note that if the executable was "/foo" then programDir will end up as ""
  * so that programDir + "/" + programName works out properly.
  */
     programDir = w;
-    n1 = strlen(fwin_full_program_name) - n;
+    n1 = strlen(fullProgramName) - n;
     w = (char *)malloc(n1);
     if (w == NULL) return 8;           /* 8 = malloc fails */
-    strncpy(w, fwin_full_program_name+n+1, n1-1);
+    strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
     return 0;                          /* whew! */

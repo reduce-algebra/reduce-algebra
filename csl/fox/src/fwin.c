@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 375fd5d3 09-May-2010 */
+/* Signature: 5393e279 02-Dec-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -162,6 +162,65 @@ extern char *getcwd(char *s, size_t n);
 #include "termed.h"
 
 /*
+ * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
+ * buffer overflow! I will just blandly assume throughout all my code that
+ * no string that denotes a full file-name (including its path) is ever
+ * longer than this.
+ */
+#ifndef LONGEST_LEGAL_FILENAME
+#define LONGEST_LEGAL_FILENAME 1024
+#endif
+
+#ifdef DEBUG
+
+/*
+ * This will be used as in FWIN_LOG((format,arg,...)) with an extra
+ * pair of parentheses. If DEBUG was enabled it send log information
+ * to a file with the name fwin-debug.log: I hope that will not (often)
+ * clash with any file the user has or requires. if programDir has been
+ * set when you first generate log output then the log file will be put
+ * there (ie alongside the executable). If not it will go in /tmp. So
+ * if debugging you might want to ensure that such a directory exists!
+ */
+
+static FILE *logfile = NULL;
+
+#define LOGFILE_NAME "fwin-debug.log"
+
+void fwin_write_log(char *s, ...)
+{
+    int create = (logfile == NULL);
+    va_list x;
+/*
+ * Note that I create this file in "a" (append) mode so that previous
+ * inpformation there is not lost.
+ */
+    if (create)
+    {   char logfile_name[LONGEST_LEGAL_FILENAME];
+        if (strcmp(programDir, ".") == 0)
+            sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
+        else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
+        logfile = fopen(logfile_name, "a");
+    }
+    if (logfile == NULL) return; /* the file can not be used */
+    if (create)
+    {   time_t tt = time(NULL);
+        struct tm *tt1 = localtime(&tt);
+        fprintf(logfile, "Log segment starting: %s\n", asctime(tt1));
+    }
+    va_start(x, s);
+    vfprintf(logfile, s, x);
+    va_end(x);
+    va_start(x, s);
+    vfprintf(stderr, s, x);
+    va_end(x);
+    fflush(logfile);
+}
+
+#endif
+
+
+/*
  * The next few are not exactly useful if FOX is not available
  * and hence this code will run in line-mode only. However it is
  * convenient to leave them available.
@@ -186,16 +245,6 @@ char about_box_rights_1[40]    = "Author info";
 char about_box_rights_2[40]    = "Additional author";
 char about_box_rights_3[40]    = "This software uses the FOX Toolkit";
 char about_box_rights_4[40]    = "(http://www.fox-toolkit.org)";
-
-/*
- * The value LONGEST_LEGAL_FILENAME should be seen as a problem wrt
- * buffer overflow! I will just blandly assume throughout all my code that
- * no string that denotes a full file-name (including its path) is ever
- * longer than this.
- */
-#ifndef LONGEST_LEGAL_FILENAME
-#define LONGEST_LEGAL_FILENAME 1024
-#endif
 
 const char *colour_spec = "-";
 
@@ -274,6 +323,7 @@ int main(int argc, char *argv[])
         {   printf("%s\n", programDir);
             exit(0);
         }
+        else if (strcmp(argv[i], "--args") == 0) break;
     }
 
 #ifdef PART_OF_FOX
@@ -406,7 +456,8 @@ int main(int argc, char *argv[])
  *        "-w-" for this case).
  */
     for (i=1; i<argc; i++)
-    {   if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        if (strcmp(argv[i], "--texmacs") == 0) texmacs_mode = 1;
         else if (strncmp(argv[i], "-w", 2) == 0)
         {   if (argv[i][2] == '+') windowed = 1;
             else if (argv[i][2] == '.') windowed = -1;
@@ -459,7 +510,8 @@ int main(int argc, char *argv[])
  */
     colour_spec = "-";
     for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-b", 2) == 0)
+    {   if (strcmp(argv[i], "--args") == 0) break;
+        else if (strncmp(argv[i], "-b", 2) == 0)
         {   colour_spec = argv[i]+2;
             break;
         }
@@ -751,9 +803,11 @@ int get_current_directory(char *s, int n)
  * return non-zero value if failure.
  */
 
-const char *fwin_full_program_name = "./fwin.exe";
+const char *fullProgramName        = "./fwin.exe";
 const char *programName            = "fwin.exe";
 const char *programDir             = ".";
+
+const char *fwin_full_program_name = "./fwin.exe";
 
 #ifdef WIN32
 
@@ -774,10 +828,12 @@ int find_program_directory(char *argv0)
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
     {   programDir = ".";
         programName = "fwin";  /* nothing really known! */
+        fullProgramName = ".\\fwin.exe";
         fwin_full_program_name = ".\\fwin.exe";
         return 0;
     }
 
+    fullProgramName = argv0;
     fwin_full_program_name = argv0;
     len = strlen(argv0);
 /*
@@ -880,6 +936,7 @@ int find_program_directory(char *argv0)
     if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
     {   programDir = (const char *)"."; /* some sort of default. */
         programName = (const char *)"fwin";
+        fullProgramName = (const char *)"./fwin";
         fwin_full_program_name = (const char *)"./fwin";
         return 0;
     }
@@ -889,7 +946,10 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/') fwin_full_program_name = argv0;
+    else if (argv0[0] == '/')
+    {   fullProgramName = argv0;
+        fwin_full_program_name = argv0;
+    }
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */
@@ -904,6 +964,7 @@ int find_program_directory(char *argv0)
             else
             {   pgmname[n] = '/';
                 strcpy(&pgmname[n+1], argv0);
+                fullProgramName = pgmname;
                 fwin_full_program_name = pgmname;
             }
         }
@@ -974,6 +1035,7 @@ int find_program_directory(char *argv0)
                 pgmname[n++] = '/';
                 strcpy(&pgmname[n], temp);
             }
+            fullProgramName = pgmname;
             fwin_full_program_name = pgmname;
         }
     }       
@@ -983,21 +1045,23 @@ int find_program_directory(char *argv0)
  */
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
-        if (lstat(fwin_full_program_name, &buf) != -1 &&
+        if (lstat(fullProgramName, &buf) != -1 &&
             S_ISLNK(buf.st_mode) &&
-            (n1 = readlink(fwin_full_program_name,
+            (n1 = readlink(fullProgramName,
                            temp, sizeof(temp)-1)) > 0)
         {   temp[n1] = 0;
             strcpy(pgmname, temp);
+            fullProgramName = pgmname;
             fwin_full_program_name = pgmname;
         }
     }
-/* Now fwin_full_program_name is set up, but may refer to an array that
+/* Now fullProgramName is set up, but may refer to an array that
  * is stack allocated. I need to make it proper!
  */
-    w = (char *)malloc(1+strlen(fwin_full_program_name));
+    w = (char *)malloc(1+strlen(fullProgramName));
     if (w == NULL) return 5;           /* 5 = malloc fails */
-    strcpy(w, fwin_full_program_name);
+    strcpy(w, fullProgramName);
+    fullProgramName = w;
     fwin_full_program_name = w;
 #ifdef RAW_CYGWIN
 /*
@@ -1022,21 +1086,21 @@ int find_program_directory(char *argv0)
  * and I need to split it at the final "/" (and by now I very fully expect
  * there to be at least one "/".
  */
-    for (n=strlen(fwin_full_program_name)-1; n>=0; n--)
-        if (fwin_full_program_name[n] == '/') break;
+    for (n=strlen(fullProgramName)-1; n>=0; n--)
+        if (fullProgramName[n] == '/') break;
     if (n < 0) return 6;               /* 6 = no "/" in full file path */
     w = (char *)malloc(1+n);
     if (w == NULL) return 7;           /* 7 = malloc fails */
-    strncpy(w, fwin_full_program_name, n);
+    strncpy(w, fullProgramName, n);
     w[n] = 0;
 /* Note that if the executable was "/foo" then programDir will end up as ""
  * so that programDir + "/" + programName works out properly.
  */
     programDir = w;
-    n1 = strlen(fwin_full_program_name) - n;
+    n1 = strlen(fullProgramName) - n;
     w = (char *)malloc(n1);
     if (w == NULL) return 8;           /* 8 = malloc fails */
-    strncpy(w, fwin_full_program_name+n+1, n1-1);
+    strncpy(w, fullProgramName+n+1, n1-1);
     w[n1-1] = 0;
     programName = w;
     return 0;                          /* whew! */
@@ -1481,6 +1545,14 @@ int Cmkdir(char *s)
 
 #include <utime.h>
 
+#ifdef EMBEDDED
+#ifdef __ARM_EABI__
+
+void utime(const char *s, struct utimbuf *t);
+
+#endif
+#endif
+
 void set_filedate(char *name, unsigned long int datestamp,
                               unsigned long int filetype)
 {
@@ -1624,6 +1696,7 @@ static void exall(int namelength,
  */
 {
 #ifdef EMBEDDED
+    printf("exall function called - but not implemented here\n");
     return; /* Dummy version here */
 #else
     WIN32_FIND_DATA found;
@@ -1767,6 +1840,7 @@ static void exall(int namelength,
                   void (*proc)(const char *name, int why, long int size))
 {
 #ifdef EMBEDDED
+    printf("exall function called - but not implemented here\n");
     return; /* Dummy version here */
 #else
     DIR *d;
@@ -2322,5 +2396,80 @@ int get_users_home_directory(char *b, int len)
 #endif /* USE_GETUID */
 
 #endif /* HAVE_LIBFOX */
+
+#ifdef EMBEDDED
+#ifdef __ARM_EABI__
+
+int rmdir(const char *s)
+{
+    return 0;
+}
+
+char *getcwd(char *s, size_t n)
+{
+    return ".";
+}
+
+int chdir(const char *s)
+{
+    return 0;
+}
+
+uid_t getuid()
+{
+    return 100;
+}
+
+struct passwd *getpwuid(int x)
+{
+    return NULL;
+}
+
+void utime(const char *s, struct utimbuf *t)
+{
+}
+
+int ftruncate(int a, long b)
+{
+    return 0;
+}
+
+int lstat(char *n, struct stat b)
+{
+    return 0;
+}
+
+uid_t geteuid()
+{
+    return 0;
+}
+
+gid_t getegid()
+{
+    return 0;
+}
+
+int mkdir(const char *d, mode_t m)
+{
+}
+
+FILE *popen(const char *s, const char *d)
+{
+    return NULL;
+}
+
+int pclose(FILE *f)
+{
+    return 0;
+}
+
+int readlink(const char *name, char *b, size_t n)
+{
+    return 0;
+}
+
+
+#endif
+#endif
 
 /* end of fwin.c */
