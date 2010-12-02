@@ -47,7 +47,7 @@
  *************************************************************************/
 
 
-/* Signature: 3568a3b6 02-Dec-2010 */
+/* Signature: 32b2a98a 02-Dec-2010 */
 
 #include "config.h"
 
@@ -693,12 +693,7 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
         }
 #endif
 
-
-#if 1
-    return plain_worker(argc, argv, fwin_main);
-#else
     return windowed_worker(argc, argv, fwin_main);
-#endif
 }
 
 void MS_CDECL sigint_handler(int code)

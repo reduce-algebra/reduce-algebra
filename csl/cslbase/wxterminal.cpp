@@ -37,51 +37,1444 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6650bda6 21-Nov-2010 */
+/* Signature: 1a6f6df8 02-Dec-2010 */
+
+#include "wx/wxprec.h"
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
+#include <wx/display.h>
 
 #include "config.h"
 
-
-#if 0 // comment ALL this out for now!
-
 #ifdef WIN32
+// I will need windows-specific functions so I can set up private fonts
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0500
 #include <windows.h>
+#include <wingdi.h>
+#include <io.h>
 #else
-#include <pthread.h>
-#endif
+#ifdef MACINTOSH
+
+// If I need Mac-specific includes here is where to set them up!
+// So far I do not seem to need anything.
+
+#else // MACINTOSH
+#ifdef HAVE_LIBXFT
+
+#include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
+
+static Display *dpy;
+
+#else   // HAVE_LIBXFT
+#error Other than on Windows you must have Xft installed.
+#endif  // HAVE_LIBXFT
+#endif  // MACINTOSH
+#endif  // WIN32
+
 
 #include "wxterminal.h"      // my own header file.
 
+
 #include <string.h>
-#include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <stdio.h>
 #include <stdarg.h>
+#include <ctype.h>
+#include <time.h>
+#include <signal.h>
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#else
+#ifndef _MSC_VER
+extern char *getcwd(char *s, size_t n);
+#endif // _MSC_VER
+#endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
-#ifndef S_IXUSR
-#ifdef __S_IXUSR
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#else
+#ifndef WIN32
+#include <sys/dir.h>
+#else // WIN32
+#include <direct.h>
+#endif // WIN32
+#endif // HAVE_DIRENT_H
+
+#if !defined S_IXUSR && defined __S_IXUSR
 #define S_IXUSR __S_IXUSR
 #endif
-#endif
 
-// The next is for pipes and threads
 #ifdef WIN32
-
 #include "termed.h"
-
 HANDLE pipedes;
 int event_code = -1;
-
-#else
-
-#include <unistd.h>
-
+#else // WIN32
 int pipedes[2];
+#endif // WIN32
 
-#endif /* WIN32 */
+#include "wxfwin.h"
+
+#if !defined __WXMSW__ && !defined __WXPM__
+// I include several icons here, and will select which one to use dynamically
+// based on the programName.
+#include "fwin.xpm"
+#include "csl.xpm"
+#include "reduce.xpm"
+#endif
+
+static fwin_entrypoint *fwin_main1;
+
+int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
+{
+    fwin_main1 = fwin_main;
+#ifdef WIN32
+// The following is somewhat unsatisfactory so I will explain my options and
+// what is happening.
+// On Unix/Linux/Darwin etc I have here a single executable that, depending
+// on a command-line flag, runs either as a windowed or a command-line
+// program. All is pretty neat and convenient for me!  However...
+//
+// On Windows when I link code I can link it either as subsystem:windows or
+// as subsystem:console. If I use the windows case then it detaches from
+// its console when started. The effect I have is that when launched from
+// a Windows command prompt asking to be run in console mode it can not
+// access the console. Windows XP provides an AttachConsole API that might
+// let me re-attach to the console but (a) that is not available with
+// earlier versions of Windows and (b) my experimenst with it have not been
+// great successes and others report delicacies! However note that even if
+// the code is linked as a windows binary it can be launched from the cygwin
+// shell and inherits standard input and output very happily! But from a
+// regular Windows command shell it does not.
+// If, on the other hand I link my code as a console application then when
+// launched from a command prompt or a script things work as I might like
+// and expect. When launched by double-clicking on an icon, Windows says to
+// itself "aha - a console application" and rapidly creates a console for it.
+//  This pops up on your screen. But here (in the case I wanted a Windowed
+// interface) I just free that console, which then has no other users and
+// which therefore gets destroyed. So there is a visual glitch of an unwanted
+// console window popping up and instantly vanishing.
+//
+// The best solution that appears to be open to me under Windows is to
+// have two executable versions for each application. They would only need
+// to differ in the way they were linked (and hence, possibly, by one bit in
+// a header record in them!). One for console and one for windowed use.
+// That feels clumsy too.
+//
+// Web searches show that others have found the same sort of pain when they
+// have wanted to create applications that are both console and window
+// mode. Ah well. One final suggestion for the two-executable scheme is
+// to creats two executables, say cslw.exe and cslc.exe where cslw.exe is
+// linked in windows mode and cslc.exe in console mode. cslc.exe just
+// creates a process to run cslw.exe. When you do this the handles on
+// standard input and output can be inherited by the child process, which
+// can therefore read and write characters. However because it still does not
+// really have a CONSOLE it can not do the res of what one might like by way
+// of supporting curses-like screen updates. A final trick on this is to
+// rename those two programs as csl.exe (windowed) and csl.com (console).
+// The Windows command processor will use the ".com" extension before the
+// ".exe" one, but of course the executable is really in ".exe" format...
+// this trick maybe reduces the confusion over file-names! Or maybe it
+// makes it worse.
+
+#ifdef KEEP_CONSOLE_OPEN
+// I sometimes find a console REALLY useful for debugging.... but when you
+// launch by double-clicking on an icon it is truly ugly to have one around.
+// So I will allow myself to leave an "#ifdef" here in case that helps me make
+// a trick version for debugging...
+    FreeConsole();
+#endif // KEEP_CONSOLE_OPEN
+#endif // WIN32
+    wxDISABLE_DEBUG_SUPPORT();
+    return wxEntry(argc, argv);
+}
+
+class fwinApp : public wxApp
+{
+public:
+    virtual bool OnInit();
+};
+
+IMPLEMENT_APP_NO_MAIN(fwinApp)
+
+
+// I have a generated file that contains the widths of all the fonts
+// I am willing to use here.
+
+#include "cmfont-widths.c"
+
+static FILE *logfile = NULL;
+
+static void logprintf(const char *fmt, ...)
+{
+    va_list a;
+    if (logfile == NULL) logfile = fopen("wxdvi.log", "w");
+    if (logfile != NULL)
+    {   va_start(a, fmt);
+        vfprintf(logfile, fmt, a);
+        fflush(logfile);
+        va_end(a);
+    }
+#ifndef MACINTOSH
+// On systems other than the Mac I expect I can (sometimes!) have a console
+// attached to my program, and in that case it will be convenient to sent the
+// trace output there as well as to a file.
+    va_start(a, fmt);
+    vprintf(fmt, a);
+    va_end(a);
+    fflush(stdout);
+#endif
+}
+
+
+
+class dviPanel : public wxPanel
+{
+public:
+    dviPanel(class dviFrame *parent, const char *dvifilename);
+
+    void OnPaint(wxPaintEvent &event);
+
+// The event handling is not really needed for this application, but I
+// am putting some in so I can experiment with it!
+    void OnChar(wxKeyEvent &event);
+    void OnKeyDown(wxKeyEvent &event);
+    void OnKeyUp(wxKeyEvent &event);
+    void OnMouse(wxMouseEvent &event);
+
+    bool firstPaint;
+
+private:
+    wxFont *fixedPitch;
+    double em;
+    double pixelsPerPoint;    // conversion from TeX to screen coordinates
+    double scaleAdjustment;
+
+    void RenderDVI();        // sub-function used by OnPaint
+    wxPaintDC *dcp;          // pointer to device context to draw on
+
+    unsigned char *dviData;  // the .dvi file's contents are stored here
+    unsigned const char *stringInput;
+
+    int u2();                // read 1-4 bytes as signed or unsigned value
+    int u3();
+    int s1();
+    int s2();
+    int s3();
+    int s4();
+
+    void DefFont(int k);     // dvi file font definition
+    void SelectFont(int k);
+    int MapChar(int c);      // map from TeX character code to BaKoMa+ one
+    void SetChar(int c);     // dvi display charcter and move on
+    void PutChar(int c);     // dvi just display character
+    void SetRule(int height, int width);
+    int DVItoScreen(int n);  // map coordinates
+    int DVItoScreenUP(int n);// ditto but used for rule widths
+
+    int32_t h, v, w, x, y, z;// working values used in DVI decoding
+
+    int32_t C[10], p;        // set by start of a page and not used!
+
+// dvi files can call for an essentially unlimited number of distinct
+// fonts - where one "font" here is not just to do with shape but also with
+// size. If I pre-scanned the dvi data I could identify the largest font
+// number used and allocate a table of exactly the right size. But for now
+// I will use a fixed limit.
+//
+#define MAX_FONTS 256
+    wxFont *font[MAX_FONTS];       // the fonts I use here
+    font_width *fontWidth[MAX_FONTS], *currentFontWidth;
+    double fontScale[MAX_FONTS], currentFontScale;
+
+// dvi files use a stack, and at the end of the file is an indication of
+// the greatest stack depth that will be used. I just give myself a fixed
+// quota for now.
+#define MAX_STACK 100
+    int32_t stack[6*MAX_STACK];
+    int stackp;
+
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(dviPanel, wxPanel)
+    EVT_PAINT(           dviPanel::OnPaint)
+    EVT_CHAR(            dviPanel::OnChar)
+//  EVT_KEY_DOWN(        dviPanel::OnKeyDown)
+//  EVT_KEY_UP(          dviPanel::OnKeyUp)
+    EVT_LEFT_UP(         dviPanel::OnMouse)
+END_EVENT_TABLE()
+
+class dviFrame : public wxFrame
+{
+public:
+    dviFrame(const char *dvifilename);
+
+    void OnExit(wxCommandEvent &event);
+    void OnAbout(wxCommandEvent &event);
+    void OnSize(wxSizeEvent &event);
+
+private:
+    int screenWidth, screenHeight;
+
+    dviPanel *panel;
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(dviFrame, wxFrame)
+    EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
+    EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
+    EVT_SIZE(            dviFrame::OnSize)
+END_EVENT_TABLE()
+
+int get_current_directory(char *s, int n)
+{
+    if (getcwd(s, n) == 0)
+    {   switch(errno)
+        {
+    case ERANGE: return -2; // negative return value flags an error.
+    case EACCES: return -3;
+    default:     return -4;
+        }
+    }
+    else return strlen(s);
+}
+
+/*
+ * The next procedure is responsible for establishing information about
+ * both the "short-form" name of the program launched and the directory
+ * it was found in. This latter directory may be a good place to keep
+ * associated resources. Well many conventions would NOT view it as a
+ * good place, but it is how I organise things!
+ *
+ * The way of finding the information concerned differs between Windows and
+ * Unix/Linux, as one might expect.
+ *
+ * return non-zero value if failure.
+ */
+
+#ifndef LONGEST_LEGAL_FILENAME
+#define LONGEST_LEGAL_FILENAME 1024
+#endif
+
+/*
+ * getenv() is a mild pain: Windows seems
+ * to have a strong preference for upper case names.  To allow for
+ * all this I do not call getenv() directly but go via the following
+ * code that can patch things up.
+ */
+
+const char *my_getenv(const char *s)
+{
+#ifdef WIN32
+    char uppercasename[LONGEST_LEGAL_FILENAME];
+    char *p = uppercasename;
+    int c;
+    while ((c = *s++) != 0) *p++ = toupper(c);
+    *p = 0;
+    return getenv(uppercasename);
+#else
+    return getenv(s);
+#endif
+}
+
+
+
+/*
+ * Different systems put or do not put underscores in front of these
+ * names. My adaptation here should give me a chance to work whichever
+ * way round it goes.
+ */
+
+#ifndef S_IFMT
+# ifdef __S_IFMT
+#  define S_IFMT __S_IFMT
+# endif
+#endif
+
+#ifndef S_IFDIR
+# ifdef __S_IFDIR
+#  define S_IFDIR __S_IFDIR
+# endif
+#endif
+
+#ifndef S_IFREG
+# ifdef __S_IFREG
+#  define S_IFREG __S_IFREG
+# endif
+#endif
+
+#ifndef S_ISLNK
+# ifdef S_IFLNK
+#  ifdef S_IFMT
+#   define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
+#  endif
+# endif
+#endif
+
+
+typedef struct localFonts
+{
+    const char *name;
+    char *path;
+} localFonts;
+
+static localFonts fontNames[] =
+{
+// Right now I will add in ALL the fonts from the BaKoMa collection.
+// This can make sense in a font demo program but in a more serious
+// application I should be a little more selective!
+    {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
+    {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
+    {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
+    {"csl-cmbx10",   NULL},        {"csl-cmbx12",   NULL},
+    {"csl-cmbx5",    NULL},        {"csl-cmbx6",    NULL},
+    {"csl-cmbx7",    NULL},        {"csl-cmbx8",    NULL},
+    {"csl-cmbx9",    NULL},        {"csl-cmbxsl10", NULL},
+    {"csl-cmbxti10", NULL},        {"csl-cmcsc10",  NULL},
+    {"csl-cmcsc8",   NULL},        {"csl-cmcsc9",   NULL},
+    {"csl-cmdunh10", NULL},        {"csl-cmex10",   NULL},
+    {"csl-cmex7",    NULL},        {"csl-cmex8",    NULL},
+    {"csl-cmex9",    NULL},        {"csl-cmff10",   NULL},
+    {"csl-cmfi10",   NULL},        {"csl-cmfib8",   NULL},
+    {"csl-cminch",   NULL},        {"csl-cmitt10",  NULL},
+    {"csl-cmmi10",   NULL},        {"csl-cmmi12",   NULL},
+    {"csl-cmmi5",    NULL},        {"csl-cmmi6",    NULL},
+    {"csl-cmmi7",    NULL},        {"csl-cmmi8",    NULL},
+    {"csl-cmmi9",    NULL},        {"csl-cmmib10",  NULL},
+    {"csl-cmmib6",   NULL},        {"csl-cmmib7",   NULL},
+    {"csl-cmmib8",   NULL},        {"csl-cmmib9",   NULL},
+    {"csl-cmr10",    NULL},        {"csl-cmr12",    NULL},
+    {"csl-cmr17",    NULL},        {"csl-cmr5",     NULL},
+    {"csl-cmr6",     NULL},        {"csl-cmr7",     NULL},
+    {"csl-cmr8",     NULL},        {"csl-cmr9",     NULL},
+    {"csl-cmsl10",   NULL},        {"csl-cmsl12",   NULL},
+    {"csl-cmsl8",    NULL},        {"csl-cmsl9",    NULL},
+    {"csl-cmsltt10", NULL},        {"csl-cmss10",   NULL},
+    {"csl-cmss12",   NULL},        {"csl-cmss17",   NULL},
+    {"csl-cmss8",    NULL},        {"csl-cmss9",    NULL},
+    {"csl-cmssbx10", NULL},        {"csl-cmssdc10", NULL},
+    {"csl-cmssi10",  NULL},        {"csl-cmssi12",  NULL},
+    {"csl-cmssi17",  NULL},        {"csl-cmssi8",   NULL},
+    {"csl-cmssi9",   NULL},        {"csl-cmssq8",   NULL},
+    {"csl-cmssqi8",  NULL},        {"csl-cmsy10",   NULL},
+    {"csl-cmsy5",    NULL},        {"csl-cmsy6",    NULL},
+    {"csl-cmsy7",    NULL},        {"csl-cmsy8",    NULL},
+    {"csl-cmsy9",    NULL},        {"csl-cmtcsc10", NULL},
+    {"csl-cmtex10",  NULL},        {"csl-cmtex8",   NULL},
+    {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
+    {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
+    {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
+    {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
+    {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
+    {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
+    {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
+    {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
+    {"csl-eufb10",   NULL},        {"csl-eufb5",    NULL},
+    {"csl-eufb6",    NULL},        {"csl-eufb7",    NULL},
+    {"csl-eufb8",    NULL},        {"csl-eufb9",    NULL},
+    {"csl-eufm10",   NULL},        {"csl-eufm5",    NULL},
+    {"csl-eufm6",    NULL},        {"csl-eufm7",    NULL},
+    {"csl-eufm8",    NULL},        {"csl-eufm9",    NULL},
+    {"csl-eurb10",   NULL},        {"csl-eurb5",    NULL},
+    {"csl-eurb6",    NULL},        {"csl-eurb7",    NULL},
+    {"csl-eurb8",    NULL},        {"csl-eurb9",    NULL},
+    {"csl-eurm10",   NULL},        {"csl-eurm5",    NULL},
+    {"csl-eurm6",    NULL},        {"csl-eurm7",    NULL},
+    {"csl-eurm8",    NULL},        {"csl-eurm9",    NULL},
+    {"csl-eusb10",   NULL},        {"csl-eusb5",    NULL},
+    {"csl-eusb6",    NULL},        {"csl-eusb7",    NULL},
+    {"csl-eusb8",    NULL},        {"csl-eusb9",    NULL},
+    {"csl-eusm10",   NULL},        {"csl-eusm5",    NULL},
+    {"csl-eusm6",    NULL},        {"csl-eusm7",    NULL},
+    {"csl-eusm8",    NULL},        {"csl-eusm9",    NULL},
+    {"csl-msam10",   NULL},        {"csl-msam5",    NULL},
+    {"csl-msam6",    NULL},        {"csl-msam7",    NULL},
+    {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
+    {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
+    {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
+    {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
+};
+
+#ifdef WIN32
+
+// The next two flags instruct AddFontResourceEx that a font should be
+// available only to this application and that other application should
+// not even be able to see that it exists. I provide definitions here
+// in case MinGW32 does not have them in its header files.
+
+#ifndef FR_PRIVATE
+#define FR_PRIVATE   0x10
+#endif
+
+#ifndef FR_NOT_ENUM
+#define FR_NOT_ENUM  0x20
+#endif
+
+// It seems that when using wxWidgets that if I use the NOT_ENUM flag
+// that the font can not be found at all, and hence not used! So I just
+// tag it as PRIVATE.
+
+// #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM)
+#define PRIVATE_FONT FR_PRIVATE
+
+#endif
+
+
+#ifndef fontsdir
+#define fontsdir reduce.wxfonts
+#endif
+
+#define toString(x) toString1(x)
+#define toString1(x) #x
+
+int add_custom_fonts() // return 0 on success.
+{
+#ifdef WIN32
+    int newFontAdded = 0;
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   char nn[LONGEST_LEGAL_FILENAME];
+        strcpy(nn, programDir);
+        strcat(nn, "\\" toString(fontsdir) "\\");
+        strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
+        if (AddFontResourceExA(nn, PRIVATE_FONT, 0) == 0)
+            logprintf("Failed to add font %s\n", nn);
+        else newFontAdded = 1;
+    }
+    if (newFontAdded)
+    {   // This call to SendMessage may sometimes cause a long delay.
+        SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    }
+    return 0;
+#else // WIN32
+#ifdef MACINTOSH
+
+// Custom fonts are supported by including them in the Application Bundle
+// and mentioning them in a Plist there, so I do not need and code here to
+// deal with anything!
+    return 1;
+
+#else // Assume all that is left is X11, and that Xft/fontconfig are available
+    int screen = 0;
+    FcConfig *config = FcConfigCreate();
+    dpy = XOpenDisplay(NULL);
+    if (dpy == NULL)
+    {   printf("Unable to access the display\n");
+        exit(1);
+    }
+    screen = DefaultScreen(dpy);
+
+// It might make sense to add just the fonts that I will be using rather than
+// use extra resources adding all that are available. But for now I prefer
+// simplicity.
+    char fff[LONGEST_LEGAL_FILENAME];
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   sprintf(fff,
+            "%s/" toString(fontsdir) "/%s.ttf",
+            programDir, fontNames[i].name);
+        FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
+    }
+    FcConfigSetCurrent(config);
+    return 0;
+#endif // MACINTOSH
+#endif // WIN32
+}
+
+
+
+
+//
+// Now that start of my code in a proper sense!
+//
+//
+
+
+/*
+ * This is the ".dvi" file created by running LaTeX on the following
+ * small input file. It is provided as a sequence of hex bytes so that
+ * I have something to test and demonstrate even if there is no file
+ * containig any .dvi stuff readily available.
+ *
+ * \documentclass{article}
+ * \begin{document}
+ * \noindent This is some text
+ * \[ \left( \int_{b=0}^{\infty} \frac{- \beta \pm \sqrt{b^2 -
+ *  4 \, \omega \, c}}{2\, a}\, \mathrm{d}x \right\} \]
+ * end text
+ * \end{document}
+ */
+
+unsigned char mathDvi[] =
+{
+    0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,
+    0x00,  0x00,  0x00,  0x00,  0x03,  0xe8,  0x1b,  0x20,
+    0x54,  0x65,  0x58,  0x20,  0x6f,  0x75,  0x74,  0x70,
+    0x75,  0x74,  0x20,  0x32,  0x30,  0x31,  0x30,  0x2e,
+    0x31,  0x31,  0x2e,  0x31,  0x33,  0x3a,  0x31,  0x36,
+    0x31,  0x33,  0x8b,  0x00,  0x00,  0x00,  0x01,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+    0x00,  0x00,  0x00,  0xff,  0xff,  0xff,  0xff,  0xa0,
+    0x02,  0x79,  0x00,  0x00,  0x8d,  0xa0,  0xfd,  0xa3,
+    0x00,  0x00,  0xa0,  0x02,  0x3f,  0x00,  0x00,  0x8d,
+    0xa0,  0xfd,  0xe4,  0x00,  0x00,  0x8d,  0x91,  0x3e,
+    0x00,  0x00,  0xf3,  0x07,  0x4b,  0xf1,  0x60,  0x79,
+    0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,
+    0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,  0x30,  0xb2,
+    0x54,  0x68,  0x69,  0x73,  0x96,  0x03,  0x55,  0x55,
+    0x69,  0x73,  0x93,  0x73,  0x6f,  0x6d,  0x65,  0x93,
+    0x74,  0x65,  0x78,  0x74,  0x8e,  0x9f,  0x12,  0x80,
+    0x09,  0x8d,  0x8d,  0x8d,  0x92,  0x00,  0xaa,  0xc8,
+    0x51,  0x9f,  0xee,  0xe6,  0x5c,  0xf3,  0x00,  0xfa,
+    0xb1,  0x75,  0x12,  0x00,  0x0a,  0x00,  0x00,  0x00,
+    0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x65,
+    0x78,  0x31,  0x30,  0xab,  0x20,  0x8e,  0x8d,  0x92,
+    0x00,  0xb2,  0xb2,  0xfd,  0x9f,  0xf2,  0x63,  0x87,
+    0x5a,  0x8e,  0x8d,  0x9f,  0xf4,  0xdc,  0x69,  0x8d,
+    0x92,  0x00,  0xbc,  0xb2,  0xfe,  0xf3,  0x0c,  0x4f,
+    0x21,  0xe2,  0x85,  0x00,  0x07,  0x00,  0x00,  0x00,
+    0x07,  0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x73,
+    0x79,  0x37,  0xb7,  0x31,  0x8e,  0x9f,  0x14,  0x40,
+    0x10,  0x8d,  0x92,  0x00,  0xb8,  0x41,  0x37,  0xf3,
+    0x09,  0x30,  0x65,  0x97,  0x72,  0x00,  0x07,  0x00,
+    0x00,  0x00,  0x07,  0x00,  0x00,  0x00,  0x05,  0x63,
+    0x6d,  0x6d,  0x69,  0x37,  0xb4,  0x62,  0xf3,  0x06,
+    0xd9,  0x93,  0xa0,  0x52,  0x00,  0x07,  0x00,  0x00,
+    0x00,  0x07,  0x00,  0x00,  0x00,  0x04,  0x63,  0x6d,
+    0x72,  0x37,  0xb1,  0x3d,  0x30,  0x8e,  0x8e,  0x8d,
+    0x8d,  0x8d,  0x9f,  0xf9,  0x3c,  0x24,  0x8d,  0x92,
+    0x00,  0xc9,  0x43,  0x59,  0xf3,  0x0d,  0x21,  0x22,
+    0x2c,  0x9a,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
+    0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x73,  0x79,
+    0x31,  0x30,  0xb8,  0x00,  0xf3,  0x0a,  0x0b,  0xa0,
+    0x62,  0x3e,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
+    0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x6d,  0x69,
+    0x31,  0x30,  0xb5,  0x0c,  0x91,  0x02,  0xbf,  0xfc,
+    0xb8,  0x06,  0x8d,  0x8d,  0x91,  0x02,  0x38,  0xe0,
+    0x9f,  0xf7,  0xaa,  0xab,  0x70,  0x8e,  0x8d,  0x91,
+    0x0a,  0x8e,  0x37,  0x9f,  0xf7,  0xaa,  0xab,  0x89,
+    0x00,  0x00,  0x66,  0x65,  0x00,  0x28,  0x3e,  0x7b,
+    0x9f,  0x08,  0x55,  0x55,  0x8d,  0xb5,  0x62,  0x8d,
+    0x9f,  0xfd,  0x1c,  0x72,  0xb1,  0x32,  0x8e,  0x91,
+    0x06,  0xb5,  0x53,  0xb8,  0x00,  0x91,  0x02,  0x38,
+    0xe0,  0xb2,  0x34,  0x91,  0x01,  0xaa,  0xa8,  0xb5,
+    0x21,  0x91,  0x02,  0x06,  0x81,  0x63,  0x8e,  0x8e,
+    0x8e,  0x8e,  0x92,  0x00,  0xc9,  0x43,  0x59,  0x9f,
+    0x04,  0x77,  0x0e,  0x89,  0x00,  0x00,  0x66,  0x65,
+    0x00,  0x4a,  0xc2,  0xea,  0x9f,  0x09,  0x28,  0xd6,
+    0x8d,  0x91,  0x1f,  0x67,  0x89,  0xb2,  0x32,  0x91,
+    0x01,  0xaa,  0xa8,  0xb5,  0x61,  0x8e,  0x8e,  0x8e,
+    0x8e,  0x92,  0x01,  0x16,  0xe4,  0x1e,  0xb2,  0x64,
+    0xb5,  0x78,  0x8d,  0x9f,  0xee,  0xe6,  0x5c,  0xab,
+    0x29,  0x8e,  0x8e,  0x8e,  0x9f,  0x1a,  0x71,  0xd1,
+    0x8d,  0x91,  0x3e,  0x00,  0x00,  0xb2,  0x65,  0x6e,
+    0x64,  0x91,  0x03,  0x55,  0x55,  0x74,  0x65,  0x78,
+    0x74,  0x8e,  0x8e,  0x9f,  0x1e,  0x00,  0x00,  0x8d,
+    0x92,  0x00,  0xe8,  0x00,  0x00,  0x31,  0x8e,  0x8e,
+    0x8c,  0xf8,  0x00,  0x00,  0x00,  0x2a,  0x01,  0x83,
+    0x92,  0xc0,  0x1c,  0x3b,  0x00,  0x00,  0x00,  0x00,
+    0x03,  0xe8,  0x02,  0x79,  0x00,  0x00,  0x01,  0x97,
+    0x00,  0x00,  0x00,  0x0c,  0x00,  0x01,  0xf3,  0x0d,
+    0x21,  0x22,  0x2c,  0x9a,  0x00,  0x0a,  0x00,  0x00,
+    0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,
+    0x73,  0x79,  0x31,  0x30,  0xf3,  0x0c,  0x4f,  0x21,
+    0xe2,  0x85,  0x00,  0x07,  0x00,  0x00,  0x00,  0x07,
+    0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x73,  0x79,
+    0x37,  0xf3,  0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,
+    0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,
+    0x06,  0x63,  0x6d,  0x6d,  0x69,  0x31,  0x30,  0xf3,
+    0x09,  0x30,  0x65,  0x97,  0x72,  0x00,  0x07,  0x00,
+    0x00,  0x00,  0x07,  0x00,  0x00,  0x00,  0x05,  0x63,
+    0x6d,  0x6d,  0x69,  0x37,  0xf3,  0x07,  0x4b,  0xf1,
+    0x60,  0x79,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
+    0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,
+    0x30,  0xf3,  0x06,  0xd9,  0x93,  0xa0,  0x52,  0x00,
+    0x07,  0x00,  0x00,  0x00,  0x07,  0x00,  0x00,  0x00,
+    0x04,  0x63,  0x6d,  0x72,  0x37,  0xf3,  0x00,  0xfa,
+    0xb1,  0x75,  0x12,  0x00,  0x0a,  0x00,  0x00,  0x00,
+    0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x65,
+    0x78,  0x31,  0x30,  0xf9,  0x00,  0x00,  0x02,  0x19,
+    0x02,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf
+};
+
+
+
+// Read 1, 2 3 or 4 byte integers from the input file, with the shorter
+// variants being either signed or unsigned. All are arranged in big-endian
+// style, as defined by the DVI format.
+
+int32_t dviPanel::u2()
+{
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    return (c1 << 8) | c2;
+}
+
+int32_t dviPanel::u3()
+{
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
+    return (c1 << 16) | (c2 << 8) | c3;
+}
+
+int32_t dviPanel::s1()
+{
+    return (int32_t)(int8_t)(*stringInput++);
+}
+
+int32_t dviPanel::s2()
+{
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    return (int32_t)(int16_t)((c1 << 8) | c2);
+}
+
+int32_t dviPanel::s3()
+{
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
+    int32_t r = (c1 << 16) | (c2 << 8) | c3;
+    if ((r & 0x00800000) != 0) r |= 0xff000000;
+    return (int32_t)r;
+}
+
+int32_t dviPanel::s4()
+{
+    int32_t c1 = *stringInput++;
+    int32_t c2 = *stringInput++;
+    int32_t c3 = *stringInput++;
+    int32_t c4 = *stringInput++;
+    return (c1 << 24) | (c2 << 16) |
+           (c3 << 8) | c4;
+}
+
+
+// The following two macros are syntactically delicate - so BEWARE.
+
+#define push()         \
+  stack[stackp++] = h; \
+  stack[stackp++] = v; \
+  stack[stackp++] = w; \
+  stack[stackp++] = x; \
+  stack[stackp++] = y; \
+  stack[stackp++] = z
+
+#define pop()          \
+  z = stack[--stackp]; \
+  y = stack[--stackp]; \
+  x = stack[--stackp]; \
+  w = stack[--stackp]; \
+  v = stack[--stackp]; \
+  h = stack[--stackp]
+
+void dviPanel::DefFont(int k)
+{
+#if 0
+    logprintf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
+#endif
+    char fontname[LONGEST_LEGAL_FILENAME];
+    int32_t checksum = s4();
+    int32_t size = s4();
+// The designsize in a .dvi file is given in units of points/2^16 while
+// in .tfm data it is in units of points/2^20, so I adjust here so that the
+// two sources of information should match.
+    int32_t designsize = s4() << 4;
+    int arealen = *stringInput++;
+    int namelen = *stringInput++;
+    if (k >= MAX_FONTS)
+    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
+        return;
+    }
+    if (arealen != 0)
+    {   logprintf("Fonts with an area specification are not supported\n");
+        return;
+    }
+    strcpy(fontname, "csl-");
+    for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
+    fontname[namelen+4] = 0;
+    if (font[k] != NULL) return;
+#if 1
+    logprintf("checksum = %.8x\n", checksum);
+    logprintf("size = %d %g\n", size, (double)size/65536.0);
+    logprintf("%s\n", fontname);
+#endif
+    font_width *p = cm_font_width;
+    while (p->name != NULL &&
+           strcmp(p->name, fontname+4) != 0) p++;
+    if (p->name == NULL)
+    {   logprintf("Fonts not found in the private font-set I support\n");
+        return;
+    }
+// I find that cmmi7 and cmmi10 (and probably others) give me a complaint
+// here as between the TeX fonts I have installed on cygwin and the BaKoMa
+// ones I use for Reduce. However when I used tftopl to decode the
+// apparently offending .tfm files what I found was pretty harmless (at least
+// in cmmi7) in that the BaKoMa version defines widths for character octal 200
+// (ie 0x80 = 128) while the other version did not. All metrics for other
+// characters were identical. So I display a warning here for a while but
+// will NOT make this an error. Now if I used BaKoMa TeX to prepare my .dvi
+// files (or copies their fonts and metrics into where my main lot live)
+// all oddities might go away.
+    if (p->checksum != checksum)
+    {   logprintf("Font checksum issue %#o vs %#o for %s\n",
+               checksum, p->checksum, fontname);
+// Continue in a spirit of optimism!
+    }
+    if (p->designsize != designsize)
+    {   logprintf("Font designsize issue %x vs %x for %s\n",
+               designsize, p->designsize, fontname);
+// Continue in a spirit of optimism!
+    }
+    wxFont *f = new wxFont();
+    char sizer[8]; // merely big enough for the size. Which will
+                   // always be between 7 and 17!
+    logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
+    sprintf(sizer, " %d", (int)(designsize/1048576.0 + 0.5));
+    strcat(fontname, sizer);
+#if 1
+    logprintf("Name + size = %s\n", fontname);
+#endif
+    f->SetNativeFontInfoUserDesc(fontname);
+    double scaleBy = (double)size/(double)(p->designsize)*16.0;
+    f->Scale((float)(scaleAdjustment*scaleBy));
+#if 1
+// This is merely to display information about the font while I debug things.
+    wxString s1(f->GetNativeFontInfoDesc());
+    wxString s2(f->GetNativeFontInfoUserDesc());
+    const char *ss1 = s1.c_str();
+    const char *ss2 = s2.c_str();
+    logprintf("New font Native \"%s\"\nFont NativeUser \"%s\"\n", ss1, ss2);
+#endif
+    font[k] = f;
+    fontWidth[k] = p;
+// I need to record a scale factor used with the font so that when I look
+// up character widths in the metric table I can allow for it.
+    fontScale[k] = scaleBy;
+#if 1
+    logprintf("Scale factor for %s = %.3g\n", fontname, scaleBy);
+#endif
+}
+
+void dviPanel::SelectFont(int n)
+{
+    if (n >= MAX_FONTS)
+    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
+        return;
+    }
+    if (font[n] == NULL)
+    {   logprintf("font %d seems not to be set\n", n);
+        return;
+    }
+    dcp->SetFont(*font[n]);
+    currentFontWidth = fontWidth[n];
+    currentFontScale = fontScale[n];
+}
+
+
+int dviPanel::MapChar(int c)
+{
+// This function maps between a TeX character encoding and the one that is
+// used by the fonts and rendering engine that I use.
+    if (c < 0xa) return 0xa1 + c;
+    else if (c == 0xa) return 0xc5;
+#ifdef UNICODE
+// In Unicode mode I have access to the character at code point 0x2219. If
+// not I must insist on using my private version of the fonts where it is
+// at 0xb7.
+    else if (c == 0x14) return 0x2219;
+#endif
+    else if (c < 0x20) return 0xa3 + c;
+    else if (c == 0x20) return 0xc3;
+    else if (c == 0x7f) return 0xc4;
+    else if (c >= 0x80) return 0xa0;
+    else return c;
+}
+
+int dviPanel::DVItoScreen(int n)
+{
+// At present this is a fixed scaling. I may well want to make it variable
+// at some later stage. The scaling here, which is based on an assumption
+// I make about the dots-per-inch resolution of my display, will end up
+// imprtant when establishing fonts.
+    return (int)(scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
+}
+
+int dviPanel::DVItoScreenUP(int n)
+{
+// This ROUND UP to the next integer, and that is needed so that (eg)
+// very thin rules end up at least one pixel wide. Well I round up by
+// adding a value just under 1,0 then truncating.
+    return (int)(0.999999999 + scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
+}
+
+void dviPanel::SetChar(int32_t c)
+{
+#if 0
+    logprintf("Set (%f,%f) char %.2x (%c)\n",
+        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
+            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
+#endif
+    wxString s = (wchar_t)MapChar(c);
+    wxCoord width, height, descent;
+    dcp->GetTextExtent(s, &width, &height, &descent);
+    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+// Now I must increase h by the width (in scaled points) of the character
+// I just set. This is not dependent at all on the way I map DVI internal
+// coordinates to screen ones.
+    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
+    int32_t design = currentFontWidth->designsize;
+// ww is now the width as extracted from the .tfm file, and that applies
+// to the glyph if it is set at its standard size. So adjust for all of
+// that and end up in TeX coordinate units.
+    int32_t texwidth =
+        (int32_t)(0.5 + currentFontScale*(double)design*(double)ww/
+                        (double)(1<<24));
+    h += texwidth;
+#if 0
+// Now I want to compare the width that TeX thinks the character has with
+// what wxWidgets thinks. So I convert the TeX width to pixels.
+    double twp = scaleAdjustment*(double)screenDPI*(double)texwidth/
+                 (72.0*65536.0*1000.0);
+    logprintf("TeX says %#.4g wxWidgets says %d (%.3g)\n",
+        twp, width, twp/(double)width);
+#endif
+}
+
+void dviPanel::PutChar(int32_t c)
+{
+#ifdef DEBUG
+    logprintf("Put (%f,%f) char %.2x (%c)\n",
+        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
+            c < 0x20 || c > 0x7f ? ' ' :  (int)c);
+#endif
+    wxString s = (wchar_t)MapChar(c);
+    wxCoord width, height, descent;
+    dcp->GetTextExtent(s, &width, &height, &descent);
+    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+}
+
+void dviPanel::SetRule(int height, int width)
+{
+#if 0
+    logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
+                                        height, (double)height/65537.0);
+#endif
+    dcp->DrawRectangle(DVItoScreen(h), DVItoScreen(v-height),
+                       DVItoScreenUP(width), DVItoScreenUP(height));
+}
+
+void dviPanel::RenderDVI()
+{
+
+    dcp->SetBrush(*wxBLACK_BRUSH);
+    dcp->SetPen(*wxBLACK_PEN);
+
+// This always starts afresh at the start of the DVI data, which has been
+// put in an array for me.
+    stringInput = dviData;
+    int32_t a, b, c, i, k;
+    for (;;)
+    {   c = *stringInput++;
+        if (c <= 127)
+        {   SetChar(c);
+            continue;
+        }
+        else
+        {   switch (c)
+            {
+        case 128:
+                SetChar(*stringInput++);
+                continue;
+        case 129:
+                SetChar(u2());
+                continue;
+        case 130:
+                SetChar(u3());
+                continue;
+        case 131:
+                SetChar(s4());
+                continue;
+        case 132:                           // set rule
+                a = s4();
+                b = s4();
+                if (a > 0 && b > 0) SetRule(a, b);
+                h += b;
+                continue;
+        case 133:
+                PutChar(*stringInput++);
+                continue;
+        case 134:
+                PutChar(u2());
+                continue;
+        case 135:
+                PutChar(u3());
+                continue;
+        case 136:
+                PutChar(s4());
+                continue;
+        case 137:
+                a = s4();
+                b = s4();
+                if (a > 0 && b > 0) SetRule(a, b);
+                continue;
+        case 138:
+                continue;                   // no operation
+        case 139:                           // beginning of page
+                h = v = w = x = y = z = stackp = 0;
+                for (i=0; i<10; i++)
+                    C[i] = s4();
+                p = s4();
+                continue;
+        case 140:                           // end of page
+                continue;
+        case 141:
+                push();
+                continue;
+        case 142:
+                pop();
+                continue;
+        case 143:
+                h += s1();
+                continue;
+        case 144:
+                h += s2();
+                continue;
+        case 145:
+                h += s3();
+                continue;
+        case 146:
+                h += s4();
+                continue;
+        case 147:
+                h += w;
+                continue;
+        case 148:
+                h += (w = s1());
+                continue;
+        case 149:
+                h += (w = s2());
+                continue;
+        case 150:
+                h += (w = s3());
+                continue;
+        case 151:
+                h += (w = s4());
+                continue;
+        case 152:
+                h += x;
+                continue;
+        case 153:
+                h += (x = s1());
+                continue;
+        case 154:
+                h += (x = s2());
+                continue;
+        case 155:
+                h += (x = s3());
+                continue;
+        case 156:
+                h += (x = s4());
+                continue;
+        case 157:
+                v += s1();
+                continue;
+        case 158:
+                v += s2();
+                continue;
+        case 159:
+                v += s3();
+                continue;
+        case 160:
+                v += s4();
+                continue;
+        case 161:
+                v += y;
+                continue;
+        case 162:
+                v += (y = s1());
+                continue;
+        case 163:
+                v += (y = s2());
+                continue;
+        case 164:
+                v += (y = s4());
+                continue;
+        case 165:
+                v += (y = s4());
+                continue;
+        case 166:
+                v += z;
+                continue;
+        case 167:
+                v += (z = s1());
+                continue;
+        case 168:
+                v += (z = s2());
+                continue;
+        case 169:
+                v += (z = s3());
+                continue;
+        case 170:
+                v += (z = s4());
+                continue;
+        case 171:  case 172:  case 173:  case 174:
+        case 175:  case 176:  case 177:  case 178:
+        case 179:  case 180:  case 181:  case 182:
+        case 183:  case 184:  case 185:  case 186:
+        case 187:  case 188:  case 189:  case 190:
+        case 191:  case 192:  case 193:  case 194:
+        case 195:  case 196:  case 197:  case 198:
+        case 199:  case 200:  case 201:  case 202:
+        case 203:  case 204:  case 205:  case 206:
+        case 207:  case 208:  case 209:  case 210:
+        case 211:  case 212:  case 213:  case 214:
+        case 215:  case 216:  case 217:  case 218:
+        case 219:  case 220:  case 221:  case 222:
+        case 223:  case 224:  case 225:  case 226:
+        case 227:  case 228:  case 229:  case 230:
+        case 231:  case 232:  case 233:  case 234:
+                SelectFont(c - 171);
+                continue;
+        case 235:
+                SelectFont(*stringInput++);
+                continue;
+        case 236:
+                SelectFont(u2());
+                continue;
+        case 237:
+                SelectFont(u3());
+                continue;
+        case 238:
+                SelectFont(s4());
+                continue;
+        case 239:
+                k = *stringInput++;
+                for (i=0; i<k; i++) (void)*stringInput++;
+                continue;
+        case 240:
+                k = u2();
+                for (i=0; i<k; i++) (void)*stringInput++;
+                continue;
+        case 241:
+                k = u3();
+                for (i=0; i<k; i++) (void)*stringInput++;
+                continue;
+        case 242:
+                k = s4();
+                for (i=0; i<k; i++) (void)*stringInput++;
+                continue;
+        case 243:                         // fnt_def1
+                DefFont(*stringInput++);
+                continue;
+        case 244:
+                DefFont(u2());
+                continue;
+        case 245:
+                DefFont(u3());
+                continue;
+        case 246:
+                DefFont(s4());
+                continue;
+        case 247:                          // pre
+                i = *stringInput++;
+                if (i != 2)
+                {   logprintf("illegal DVI version %d\n", i);
+                    break;
+                }
+                (void)s4();    // ignore num
+                (void)s4();    // ignore den
+                (void)s4();    // ignore mag
+                k = *stringInput++;
+                for (i=0; i<k; i++) (void)*stringInput++;
+                continue;
+        case 248:                          // post
+                (void)s4(); // ignore p;
+                (void)s4(); // ignure num
+                (void)s4(); // ignore den
+                (void)s4(); // ignore mag
+                (void)s4(); // height+depth of largest page
+                (void)s4(); // width of largest page
+#if 0
+                logprintf("Greatest stack depth = %d\n", u2());
+                logprintf("Page count = %d\n", u2());
+#endif
+    // The postamble will have font definitions here as well.
+                continue;
+        case 249:                          // post_post
+                (void)s4();
+                (void)*stringInput++;
+                if (*stringInput++ != 223) logprintf("Malformed DVI file\n");
+                break;
+
+        // 250-255 undefined
+        default:
+                logprintf("Unknown/undefined opcode %.2x\n", c);
+                break;
+            }
+            break;
+        }
+    }
+#if 0
+    logprintf("end of file\n");
+#endif
+}
+
+
+
+
+
+bool fwinApp::OnInit()
+{
+// I find that the real type of argv is NOT "char **" but it supports
+// the cast indicated here to turn it into what I expect.
+    char **myargv = (char **)argv;
+
+#if DEBUG
+    logprintf("in fwinApp::OnInit\n");
+#endif
+    add_custom_fonts();
+#if DEBUG
+    logprintf("fonts added\n");
+#endif
+
+    const char *dvifilename = NULL;
+    if (argc > 1) dvifilename = myargv[1];
+    
+#if DEBUG
+    logprintf("dvifilename=%s\n",
+              dvifilename == NULL ? "<null>" : dvifilename);
+#endif
+
+    dviFrame *frame = new dviFrame(dvifilename);
+    frame->Show(true);
+#if DEBUG
+    logprintf("OnInint complete\n");
+#endif
+    return true;
+}
+
+dviFrame::dviFrame(const char *dvifilename)
+       : wxFrame(NULL, wxID_ANY, "wxdvi")
+{
+    SetIcon(wxICON(fwin));
+    int numDisplays = wxDisplay::GetCount(); // how many displays?
+// It is not clear to me what I should do if there are several displays,
+// and if there are none I am probably in a mess!
+    if (numDisplays != 1)
+    {   logprintf("There seem to be %d displays\n", numDisplays);
+    }
+    wxDisplay d0(0);                         // just look st display 0
+    wxRect screenArea(d0.GetClientArea());   // omitting task bar
+    screenWidth = screenArea.GetWidth();
+    screenHeight = screenArea.GetHeight();
+    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
+// I will want to end up saving screen size (and even position) between runs
+// of this program.
+    int width = 1280;      // default size.
+    int height = 1024;
+// If the default size would fill over 90% of screen width or height I scale
+// down to make it fit better.
+    if (10*width > 9*screenWidth)
+    {   height = height*9*screenWidth/(10*width);
+        width = 9*screenWidth/10;
+        logprintf("reset to %d by %d to fix width\n", width, height);
+    }
+    if (10*height > 9 * screenHeight)
+    {   width = width*9*screenHeight/(10*height);
+        height = 9*screenHeight/10;
+        logprintf("reset to %d by %d to fix height\n", width, height);
+    }
+    panel = new dviPanel(this, dvifilename);
+    SetMinClientSize(wxSize(400, 100));
+    SetSize(width, height);
+    wxSize client(GetClientSize());
+    int w = client.GetWidth() % 80;
+    if (w != 0) SetSize(width-w, height);
+    Centre();
+}
+
+
+// When I construct this I must avoid the wxTAB_TRAVERSAL style since that
+// tend sto get characters passed to child windows not this one. Avoiding
+// that is the reason behind providing so many arguments to the parent
+// constructor
+
+dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
+       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
+                 wxDefaultSize, 0L, "dviPanel")
+{
+// I will read the DVI data once here.
+    FILE *f = NULL;
+    if (dvifilename == NULL) dviData = mathDvi;
+    else
+    {   stringInput = NULL;
+        f = fopen(dvifilename, "rb");
+        if (f == NULL)
+        {   logprintf("File \"%s\" not found\n", dvifilename);
+            exit(1);
+        }
+        fseek(f, (off_t)0, SEEK_END);
+        off_t len = ftell(f);
+        dviData = (unsigned char *)malloc((size_t)len);
+        fseek(f, (off_t)0, SEEK_SET);
+        for (int i=0; i<len; i++) dviData[i] = getc(f);
+        fclose(f);
+    }
+    for (int i=0; i<MAX_FONTS; i++) font[i] = NULL;
+    fixedPitch = NULL;
+    firstPaint = true;
+}
+
+
+void dviFrame::OnExit(wxCommandEvent &WXUNUSED(event))
+{
+    Destroy();
+    exit(0);    // I want the whole application to terminate here!
+}
+
+void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
+{
+// At present this never gets activated!
+    wxMessageBox(
+       wxString::Format(
+           "wxdvi (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
+           wxVERSION_STRING,
+           wxGetOsDescription()),
+       "About wxdvi",
+       wxOK | wxICON_INFORMATION,
+       this);
+}
+
+void dviFrame::OnSize(wxSizeEvent &WXUNUSED(event))
+{
+    wxSize client(GetClientSize());
+    panel->SetSize(client);
+    panel->firstPaint = true;
+    panel->Refresh();
+}
+
+void dviPanel::OnChar(wxKeyEvent &event)
+{
+    const char *msg = "OnChar", *raw = "";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
+}
+
+void dviPanel::OnKeyDown(wxKeyEvent &event)
+{
+    const char *msg = "OnKeyDown", *raw = "";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
+    event.Skip();
+}
+
+void dviPanel::OnKeyUp(wxKeyEvent &event)
+{
+    const char *msg = "OnKeyUp", *raw = "";
+    int c = event.GetUnicodeKey();
+    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
+    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
+    else logprintf("%s%s %x\n", msg, raw, c);
+    event.Skip();
+}
+
+void dviPanel::OnMouse(wxMouseEvent &event)
+{
+    logprintf("Mouse event\n");
+    event.Skip();
+//  Refresh();     // forces redraw of everything
+}
+
+void dviPanel::OnPaint(wxPaintEvent &event)
+{
+    wxPaintDC mydc(this);
+
+// The next could probably be done merely by setting a background colour
+    wxColour c1(230, 200, 255);
+    wxBrush b1(c1);
+    mydc.SetBackground(b1);
+//    mydc.SetTextBackground(c1);
+    mydc.Clear(); // explicitly clear background
+
+    if (firstPaint)
+    {   if (fixedPitch == NULL)
+        {   fixedPitch = new wxFont();
+            fixedPitch->SetNativeFontInfoUserDesc("csl-cmtt10 1000");
+
+            font_width *p = cm_font_width;
+            while (p->name != NULL &&
+                   strcmp(p->name, "cmtt10") != 0) p++;
+            if (p->name == NULL)
+            {   logprintf("Oops - font data not found\n");
+                exit(1);
+            }
+            wxCoord width, height, depth, leading;
+            mydc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
+            em = (double)width/100.0;
+            double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
+            logprintf("em=%#.3g fmEm = %#.3g\n", em, fmEm);
+            logprintf("height = %#.3g total height = %#.3g leading = %#.3g\n",
+                (double)(height-depth-leading)/100.0, (double)height/100.0,
+                (double)leading/100.0);
+            pixelsPerPoint = em/fmEm;
+            logprintf("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
+            fixedPitch->SetPointSize(10);
+        }
+        wxSize window(mydc.GetSize());
+        int spacePerChar = window.GetWidth()/80;
+        scaleAdjustment = (double)spacePerChar/em;
+        fixedPitch->SetPointSize(10);
+        fixedPitch->Scale(scaleAdjustment);
+        if (firstPaint)
+        {
+// Now I need to re-size any fonts that have already been created
+            for (int i=0; i<MAX_FONTS; i++)
+            {   wxFont *ff = font[i];
+                if (ff == NULL) continue;
+                ff->SetPointSize(fontWidth[i]->designsize/1048576);
+                ff->Scale(scaleAdjustment*fontScale[i]);
+            }
+        }
+        firstPaint = false;
+    }
+// Sort of fof fun I put a row of 80 characters at the top of the screen
+// so I can show how fixed pitch stuff might end up being rendered.
+    mydc.SetFont(*fixedPitch);
+    mydc.SetBrush(*wxBLACK_BRUSH);
+    mydc.SetPen(*wxBLACK_PEN);
+    wxSize window(mydc.GetSize());
+    for (int i=0; i<80; i++)
+    {   wxString c = (wchar_t)('0' + (i % 10));
+        mydc.DrawText(c, (int)((double)i*window.GetWidth()/80.0), 0);
+    }
+    dcp = &mydc;
+    RenderDVI();
+    return;
+}
+
+
+
+
+
+
+#if 0 ///////////////////////////////////////////////////////////////////
 
 #define TYPEAHEAD_SIZE 200
 
@@ -4284,6 +5677,1048 @@ void FXTerminal::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint
 
 
 }
+
+//
+// "FXWorker.cpp"                          Copyright A C Norman 2003-2010
+//
+//
+// Window interface for old-fashioned C applications. Intended to
+// be better than just running them within rxvt/xterm, but some people will
+// always believe that running them under emacs is best!
+
+/******************************************************************************
+* Copyright (C) 2003-10 by Arthur Norman, Codemist Ltd.  All Rights Reserved.   *
+*******************************************************************************
+* This library is free software; you can redistribute it and/or               *
+* modify it under the terms of the GNU Lesser General Public                  *
+* License as published by the Free Software Foundation;                       *
+* version 2.1 of the License.                                                 *
+*                                                                             *
+* This library is distributed in the hope that it will be useful,             *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of              *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU           *
+* Lesser General Public License for more details.                             *
+*                                                                             *
+* You should have received a copy of the GNU Lesser General Public            *
+* License along with this library; if not, write to the Free Software         *
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.  *
+*                                                                             *
+* I had intended to release this under the FOX addendum to the LGPL that      *
+* permits static linking, however the non-transitive nature of the terms      *
+* there make that infeasible, hence this is just under LGPL.                  *
+******************************************************************************/
+
+// However as a special exception to LGPL 2.1 I grant permission for my code
+// to be merged or linked with other code that is subject to LGPL version 3
+// or GPL version 3. This provision does not represent permission to alter the
+// license of my code to be that of LGPL 3 or GPL 3 - of itself and when
+// removed from any LGPL 3 context it remains LGPL 2.1 and the freedom
+// enshrined by that can not be reduced by adding in the additional
+// constraints that LGPL 3 views as protections. However clearly the combined
+// work that then includes my work would be subject to "3". But as per LGPL
+// 2.1 (and the same would be true if I had used a BSD-style license here)
+// notices explaining the license terms related to my code should not be
+// removed. Anybody who changes or extends my code is permitted but not
+// obliged to apply this exception, and perhaps by doing do they do not lock
+// out (L)GPL 3 users but guarantee continued support for (L)GPL 2.1 in a way
+// that the "or later" clause does not (since that permits anybody to
+// unilaterally select just one version of the library to use, to the
+// potential detriment of those whose choice differs).
+
+/* Signature: 0f810654 07-Jul-2010 */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <signal.h>
+#include <ctype.h>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <X11/Xlib.h>
+#endif
+
+#include <fx.h>
+
+#include "FXTerminal.h"
+
+#include "termed.h"        // for command line case
+
+namespace FX {
+
+#include "fwin.h"
+
+#ifdef WIN32
+HANDLE thread1;
+#else
+pthread_t thread1;
+#endif
+
+extern const char *colour_spec;
+
+FXMenuBar *main_menu_bar;
+
+FXMenuPane *fileMenu, *editMenu, *fontMenu,
+           *breakMenu, *helpMenu;
+
+int rootWidth, rootHeight;
+
+#include "fox-icons.c"
+
+//
+// I derive a sub-class from MainWindow just so I can notice when the
+// window is re-sized and record information in the registry.
+//
+
+FXDEFMAP(FXMainWindow1) FXMainWindow1Map[] =
+{
+    FXMAPFUNC(SEL_CONFIGURE,    0, FXMainWindow1::onConfigure)
+};
+
+FXIMPLEMENT(FXMainWindow1, FXMainWindow, FXMainWindow1Map, ARRAYNUMBER(FXMainWindow1Map))
+
+FXMainWindow1::FXMainWindow1(FXApp *a, const FXString &b, FXIcon *c=NULL,
+    FXIcon *d=NULL, FXuint opt=DECOR_ALL,
+    FXint x=0, FXint y=0, FXint w=0, FXint h=0,
+    FXint pl=0, FXint pr=0, FXint pt=0, FXint pb=0,
+    FXint hs=0, FXint vs=0) :
+    FXMainWindow(a, b, c, d, opt,
+                 x, y, w, h,
+                 pl, pr, pt, pb,
+                 hs, vs)
+{
+}
+
+FXMainWindow1::FXMainWindow1(): FXMainWindow()
+{
+}
+
+void FXMainWindow1::create()
+{
+    FXMainWindow::create();
+}
+
+
+// This next gets called whenever the window changes size or position.
+// The purpose of handing this event is twofold.
+// (a) I want to record [in the registry] the place where my screen
+//     is positioned, so that next time I start up it appears in the
+//     same place;
+// (b) I want to force the width of the screen to remain constant at
+//     80 columns.
+
+FXApp *application_object;
+FXMainWindow1 *main_window;
+
+extern "C"
+{
+
+extern int windowed;
+
+FXTerminal *text = NULL;
+
+}
+
+long FXMainWindow1::onConfigure(FXObject *c, FXSelector s, void *ptr)
+{
+    FXEvent *e = (FXEvent *)ptr;
+    FXRegistry *reg = &(application_object->reg());
+    reg->writeIntEntry("screen", "screenx", e->rect.x);
+    reg->writeIntEntry("screen", "screeny", e->rect.y);
+    reg->writeIntEntry("screen", "screenw", e->rect.w);
+    reg->writeIntEntry("screen", "screenh", e->rect.h);
+    int r = FXMainWindow::onConfigure(c, s, ptr);
+    if (text != NULL) e->rect.w = text->forceWidth();
+    return r;
+}
+
+static int debug_option = 0;
+
+#ifndef WIN32
+static int IgnoreXError(Display *d, XErrorEvent *e)
+{
+    d = d;
+    e = e;
+    return 0;
+}
+#endif
+
+#define COMPANY_NAME  "Codemist-Ltd"
+#define PRODUCT_NAME  programName
+
+#define WINDOW_NAME   programName
+
+// registry entries will be filed under Codemist-Ltd/<something>.
+    application_object = new FXApp(PRODUCT_NAME,
+                                   COMPANY_NAME);
+// args can be sent in via command-line args, if that is any help.
+// Just at present I do not fully understand what FOX does with these
+// arguments but it MAY be that it expects to allow "-geometry" or "-fn"
+// etc arguments as per standard for X11 applications.
+    application_object->init(argc, argv, TRUE);
+#ifndef WIN32
+    debug_option = 0;
+    for (int i=1; i<argc; i++)
+    {   if (strcmp(argv[i], "-g") == 0 ||
+                 strcmp(argv[i], "-G") == 0) debug_option = 1;
+    }
+/*
+ * By default if there are any X protocol error (eg relating to missing
+ * fonts) X send a message to stdout reporting. Unless I am in debug mode
+ * there can be an unwanted distraction so I will hide them. If however
+ * I am in debug mode I will set the X protocol to run in synchronous
+ * mode, which will slow it down but make debugging easier. I believe I have
+ * to set these options after X has been initialised and I want to do it as
+ * soon as possible after that, hence this bit of decoding of command-line
+ * options is separated from the main chunk.
+ */
+    if (debug_option) _Xdebug = 1;
+    else XSetErrorHandler(IgnoreXError);
+#endif
+
+#if INT_VERSION(FOX_MAJOR,FOX_MINOR,0)==INT_VERSION(1,0,0)
+    FXRootWindow *r = application_object->getRoot();
+#else
+    FXRootWindow *r = application_object->getRootWindow();
+#endif
+    rootWidth = r->getDefaultWidth(),
+    rootHeight = r->getDefaultHeight();
+
+// Now I will decide how big the main window should be. If I have information
+// in the registry left over from my last run I will use that.
+    FXRegistry *reg = &application_object->reg();
+    int screenx = reg->readIntEntry("screen", "screenx", -1);
+    int screeny = reg->readIntEntry("screen", "screeny", -1);
+    int screenw = reg->readIntEntry("screen", "screenw", -1);
+    int screenh = reg->readIntEntry("screen", "screenh", -1);
+
+    if (screenx < 0 || screeny < 0 || screenw <= 100 || screenh < 20)
+    {   screenx = screeny = 50; // When I had 0 here that was off the screen!
+        screenw = screenh = 0;
+    }
+    int fontsize =
+        reg->readIntEntry("screen", "fontsize", -1);
+#if (FOX_MINOR<=4)
+    int fontweight =
+        reg->readIntEntry("screen", "fontweight", FONTWEIGHT_BOLD);
+    int fontslant =
+        reg->readIntEntry("screen", "fontslant", FONTSLANT_REGULAR);
+    int fontencoding =
+        reg->readIntEntry("screen", "fontencoding", FONTENCODING_DEFAULT);
+    int fontsetwidth =
+        reg->readIntEntry("screen", "fontsetwidth", FONTSETWIDTH_DONTCARE);
+    int fonthints =
+        reg->readIntEntry("screen", "fonthints",
+                          FONTPITCH_FIXED|FONTHINT_MODERN);
+#else
+    int fontweight =
+        reg->readIntEntry("screen", "fontweight", FXFont::Bold);
+    int fontslant =
+        reg->readIntEntry("screen", "fontslant", FXFont::Straight);
+    int fontencoding =
+        reg->readIntEntry("screen", "fontencoding", FONTENCODING_DEFAULT);
+    int fontsetwidth =
+        reg->readIntEntry("screen", "fontsetwidth", FXFont::NonExpanded);
+    int fonthints =
+        reg->readIntEntry("screen", "fonthints",
+                          FXFont::Fixed|FXFont::Modern);
+#endif
+    const char *fontname =
+        reg->readStringEntry("screen", "fontname",  DEFAULT_FONT_NAME);
+// I have a concern here about how long the string that is returned will
+// remain valid. As a matter of caution I will not read other string values
+// from the registry until I have used or copied this.
+
+// The icon that I use here depends on the name that this program is
+// launched with. This situation in perhaps not perfect but it seems the
+// easiest route just for now.
+    const unsigned char *icondata = fwin;
+
+// This sets alternative custom icons based on the name of the executable
+// and it clearly NOT portable... however I find it helpful, and it should
+// not impact anybody who wants to make independent use of this library.
+    if (strcmp(programName, "csl") == 0) icondata = csl;
+    else if (strcmp(programName, "bootstrapreduce") == 0) icondata = csl;
+    else if (strcmp(programName, "reduce") == 0) icondata = reduce;
+    main_window = new FXMainWindow1(
+        application_object,
+        WINDOW_NAME,
+        new FXICOIcon(application_object, icondata,
+                      FXRGB(255,255,255), IMAGE_ALPHAGUESS),
+        NULL,    // mini-icon
+        DECOR_ALL,
+        screenx, screeny,
+        screenw, screenh);
+    main_menu_bar = new FXMenuBar(main_window,
+                                  LAYOUT_SIDE_TOP | LAYOUT_FILL_X);
+// NB. NB. NB.
+// *NB*  the TEXT_COLUMNWRAP flag is my own PATCH to FOX, and when I build
+// FOX I change the files FXText.h and FXText.cpp to implement it. It
+// lets me wrap lines at exactly 80 columns, regardless of how whitespace
+// happens to lie.
+    text = new FXTerminal(main_window, NULL, 0,
+        HSCROLLER_NEVER | TEXT_FIXEDWRAP | TEXT_WORDWRAP | TEXT_COLUMNWRAP |
+        TEXT_SHOWACTIVE | LAYOUT_FILL_X | LAYOUT_FILL_Y);
+
+// I am really supposed to destroy menus as I exit. So somewhere I need to
+// arrange that - or maybe I can hope that my application only closes its
+// window when finally terminating, and somebody will tidy up at a system
+// level for me.
+    fileMenu = new FXMenuPane(main_window);
+    new FXMenuCommand(fileMenu, "&Read...", NULL,
+                                (FXObject *)text, FXTerminal::ID_READ);
+    new FXMenuCommand(fileMenu, "&Save...", NULL,
+                                (FXObject *)text, FXTerminal::ID_SAVE);
+    new FXMenuCommand(fileMenu, "Save Se&lection...", NULL,
+                                (FXObject *)text, FXTerminal::ID_SAVE_SELECTION);
+    new FXMenuCommand(fileMenu, "&Print...", NULL,
+                                (FXObject *)text, FXTerminal::ID_PRINT);
+    new FXMenuCommand(fileMenu, "Pri&nt Selection...", NULL,
+                                (FXObject *)text, FXTerminal::ID_PRINT_SELECTION);
+    new FXMenuCommand(fileMenu, "&Quit\tCtl-\\\tQuit the application.", NULL,
+                                application_object, FXApp::ID_QUIT);
+// I make this F&ile not &File since alt-F will be for "move forward one
+// word" using emacs-like key bindings.
+    new FXMenuTitle(main_menu_bar, "F&ile", NULL, fileMenu);
+
+    editMenu = new FXMenuPane(main_window);
+    new FXMenuCommand(editMenu, "&Cut", NULL,
+                                (FXObject *)text, FXTerminal::ID_CUT_SEL_X);
+    new FXMenuCommand(editMenu, "C&opy", NULL,
+                                (FXObject *)text, FXTerminal::ID_COPY_SEL_X);
+    new FXMenuCommand(editMenu, "Copy &Text", NULL,
+                                (FXObject *)text, FXTerminal::ID_COPY_SEL_TEXT_X);
+    new FXMenuCommand(editMenu, "&Paste\tCtl-V", NULL,
+                                (FXObject *)text, FXTerminal::ID_PASTE_SEL_X);
+    new FXMenuCommand(editMenu, "&Reinput\tCtl-^\tReinput", NULL,
+                                (FXObject *)text, FXTerminal::ID_REINPUT);
+    new FXMenuCommand(editMenu, "Select &All", NULL,
+                                (FXObject *)text, FXText::ID_SELECT_ALL);
+    new FXMenuCommand(editMenu, "C&lear\tCtl-L", NULL,
+                                (FXObject *)text, FXTerminal::ID_CLEAR);
+    new FXMenuCommand(editMenu, "Re&draw\tCtl-R", NULL,
+                                (FXObject *)text, FXTerminal::ID_REDRAW);
+    new FXMenuCommand(editMenu, "&Home", NULL,
+                                (FXObject *)text, FXTerminal::ID_HOME);
+    new FXMenuCommand(editMenu, "&End", NULL,
+                                (FXObject *)text, FXTerminal::ID_END);
+
+    new FXMenuTitle(main_menu_bar, "&Edit", NULL, editMenu);
+
+    fontMenu = new FXMenuPane(main_window);
+    new FXMenuCommand(fontMenu, "&Font...", NULL,
+                                (FXObject *)text, FXTerminal::ID_FONT);
+    new FXMenuCommand(fontMenu, "&Reset Font", NULL,
+                                (FXObject *)text, FXTerminal::ID_RESET_FONT);
+    new FXMenuCommand(fontMenu, "Reset &Window", NULL,
+                                (FXObject *)text, FXTerminal::ID_RESET_WINDOW);
+    new FXMenuTitle(main_menu_bar, "F&ont", NULL, fontMenu);
+
+    breakMenu = new FXMenuPane(main_window);
+    new FXMenuCommand(breakMenu, "&Break\tCtl-C\tInterrupt", NULL,
+                                (FXObject *)text, FXTerminal::ID_BREAK);
+    new FXMenuCommand(breakMenu, "Bac&ktrace\tCtl-G\tInterrupt/backtrace", NULL,
+                                (FXObject *)text, FXTerminal::ID_BACKTRACE);
+    new FXMenuCommand(breakMenu, "&Pause\tCtl-S", NULL,
+                                (FXObject *)text, FXTerminal::ID_PAUSE);
+    new FXMenuCommand(breakMenu, "&Resume\tCtl-Q", NULL,
+                                (FXObject *)text, FXTerminal::ID_RESUME);
+    new FXMenuCommand(breakMenu, "&Stop/Go\tCtl-Z", NULL,
+                                (FXObject *)text, FXTerminal::ID_STOP);
+    new FXMenuCommand(breakMenu, "&Discard Output\tCtl-O", NULL,
+                                (FXObject *)text, FXTerminal::ID_DISCARD);
+
+    new FXMenuTitle(main_menu_bar, "B&reak", NULL, breakMenu);
+
+    helpMenu = new FXMenuPane(main_window);
+    new FXMenuCommand(helpMenu, "&Help\tF1\tHelp", NULL,
+                                (FXObject *)text, FXTerminal::ID_HELP);
+#ifndef WIN32
+#if !defined MACINTOSH || !defined MAC_FRAMEWORK
+    new FXMenuCommand(helpMenu, "&Select Browser\t\tSelect Browser", NULL,
+                                (FXObject *)text, FXTerminal::ID_BROWSER);
+#endif
+#endif
+    new FXMenuCommand(helpMenu, "&About\t\tAbout", NULL,
+                                (FXObject *)text, FXTerminal::ID_ABOUT);
+
+    new FXMenuTitle(main_menu_bar, "Help", NULL, helpMenu, LAYOUT_RIGHT);
+
+    text->setEditable(FALSE);
+    text->setStyled(TRUE);
+
+    text->argc = argc;
+    text->argv = argv;
+
+    strcpy(mid_stuff, programName);
+    main_window->setTitle(programName);
+
+    application_object->create();
+
+// Selecting the font may involve measuring font sizes etc which may
+// need the font creating...
+
+    FXFont *font1 = selectFont(fontname, fontsize,
+        fontweight, fontslant, fontencoding, fontsetwidth, fonthints);
+    font1->create();
+    text->setFont(font1);
+
+    if (screenw == 0) text->onCmdResetWindow(NULL, 0, NULL);
+
+    text->onCmdHome(NULL, 0, NULL); // actually just to grab the focus!
+//
+// I will iconify the window AFTER I have adjusted its size since I do not
+// want to end up with a size that is silly and based on just an icon!
+// Also somewhere (and I now do not remember where) I picked up the idea
+// that minimizing twice over was a good idea...
+//
+#if INT_VERSION(FOX_MAJOR,FOX_MINOR,0)==INT_VERSION(1,0,0)
+    if (windowed < 0) 
+    {   main_window->iconify();
+        main_window->iconify();
+    }
+#else
+    if (windowed < 0)
+    {   main_window->minimize();
+        main_window->minimize();
+    }
+#endif
+
+    text->setupShowMath();
+
+    main_window->show();
+#ifdef WIN32
+    DWORD threadId;
+    thread1 = CreateThread(NULL,  // security attributes
+                           0,     // stack size
+                           worker_thread,
+                           (void *)text,
+                           0,     // flags
+                           &threadId); // Essential for Me/98/95
+    if (thread1 == NULL)
+    {   fprintf(stderr, "Fatal error attempting to create a thread\n");
+        application_object->exit(1);
+        exit(1);
+    }
+#else
+    if (pthread_create(&thread1, NULL, worker_thread, (void *)text))
+    {   fprintf(stderr, "Fatal error attempting to create a thread\n");
+        application_object->exit(1);
+        exit(1);
+    }
+#endif
+
+// Once a second I will try to flush any output buffers. But do not start
+// that until everything else is more or less going!
+#if FOX_MAJOR==1 && FOX_MINOR==0
+    timer = application_object->addTimeout(1000,
+               (FXObject *)text, FXTerminal::ID_TIMEOUT);
+#else
+#if FOX_MAJOR==1 && (FOX_MINOR==1 || FOX_MINOR==2)
+    timer = application_object->addTimeout((FXObject *)text,
+                FXTerminal::ID_TIMEOUT, 1000, NULL);
+#else
+    application_object->addTimeout((FXObject *)text,
+                FXTerminal::ID_TIMEOUT, 1000, NULL);
+#endif
+#endif
+
+    return application_object->run();
+}
+
+
+FXFont *selectFont(const char *name, int size,
+    int weight, int slant, int encoding, int setwidth, int hints)
+{
+// I start with a simplistic hypothesis that the width if characters in
+// fonts here will scale linearly with their point size.
+    int pointSize = 200;
+    if (size > 0) pointSize = size;
+    FXFontDesc fd;
+    strncpy(fd.face, name, sizeof(fd.face));
+    fd.size = pointSize;    // NB decipoints not points
+    fd.weight = weight;
+    fd.slant = slant;
+    fd.encoding = encoding;
+    fd.setwidth = setwidth;
+    fd.flags = hints;
+    FXFont *f = new FXFont(application_object, fd);
+// I really hope that I have a fixed-with font here!
+    f->create();
+// If the registry had told me what size font to use then I will just
+// stick with that. If not then I will have been hended in a negative
+// size specifier and I will need to make a guess here.
+   if (size > 0) return f;
+// My font-size selection will be based in font and screen widths.
+    int w = f->getFontWidth();
+// Work out what proportion of my screen's width would be filled by
+// 80 characters in this font.
+    double fill = (80.0*(double)w)/(double)rootWidth;
+    f->getFontDesc(fd);
+    pointSize = fd.size;   // in deci-points for the one actually found
+// I am now going to suggest a font size based on what I will count as
+// a half-sensible way to place a window on the screen... Well my idea
+// here is that on larger screens you will use a larger font but still fill up
+// less of the total screen. On screens down at 800*600 and below I will
+// want to use almost all of the screen, while for 1280*1024, 1600*1200 etc
+// I will only use half the available width. This must be a matter where
+// taste comes in, so others may have different views.
+    double bestSize;
+    if (rootWidth > 1100)     // try to 60% fill the root width
+        bestSize = (double)pointSize*0.6/fill;
+    else if (rootWidth > 900) // try to fill 0.75 the root width
+        bestSize = (double)pointSize*0.75/fill;
+                                // finally on small roots use almost all.
+    else bestSize = (double)pointSize*0.9/fill;
+    pointSize = (int)(0.5 + bestSize);
+// I think that I will avoid over-teeny fonts come what may. So I will
+// increate the selected size so that I always use at least 8pt.
+    if (pointSize < 80) pointSize = 80;
+    fd.size = pointSize;
+    delete f;
+// Finally create a fond that is the size that may make sense!
+    f = new FXFont(application_object, fd);
+    f->create();
+    return f;
+}
+
+
+void fwin_callback_on_delay(delay_callback_t *f)
+{
+    delay_callback = f;
+}
+
+void fwin_callback_to_interrupt(interrupt_callback_t *f)
+{
+    interrupt_callback = f;
+}
+
+
+#ifndef WIN32
+#include <pthread.h>
+#endif
+
+extern "C" {
+
+//
+// The "curses" header is a very fine example of the trouble that can be
+// generated by mixing up name-spaces. And the way that C code can be
+// less than perfect for use from C++.  On my system at least a header
+// file here goes
+//   #define clear() wclear(stdsrc)
+// but now consider a class that has a class-scope method called clear -
+// calls to it get mapped onto wclear in a way that is utterly horrid.
+// 
+// I include the curses headers AFTER all other headers to avoid mixups
+// in declarations, and sit and hope! If I get very worried I will just
+// migrate all uses of curses into a separate file where I will provide
+// myself with C++ wrappers...
+//
+
+#ifdef MOUSE_MOVED
+#undef MOUSE_MOVED
+#endif
+
+#ifdef HAVE_LIBCURSES
+#include <curses.h>
+#define HAVE_CURSES 1
+#else
+#ifdef HAVE_LIBNCURSES
+#include <ncurses.h>
+#define HAVE_CURSES 2
+#endif
+#endif
+
+}
+
+static int returncode = 0;
+
+
+// Here is the worker thread.
+
+static FXTerminal *term;
+
+#ifdef WIN32
+DWORD __stdcall worker_thread(void *arg)
+#else
+void *worker_thread(void *arg)
+#endif
+{
+// The curious-looking delegation here is to ensure that the signature
+// of the thread is a simple C-style one rather than a C++ member
+// function. That is what is required for thread creation.
+    return ((FXTerminal *)arg)->worker_thread(arg);
+}
+
+// I can signal the GUI thread by writing a byte to a pipe that it
+// watches. The byte that I write can be an indication of what
+// event I wanted to report
+
+void wake_up_terminal(int n)
+{
+#ifdef WIN32
+    event_code = n;
+    SetEvent(pipedes);
+#else
+    char pipe_data[1];
+    pipe_data[0] = n;
+    if (write(pipedes[PIPE_WRITE_PORT], pipe_data, 1) != 1)
+    {   fprintf(stdout, "Fatal error attempting to write to a pipe\n");
+        application_object->exit(1);
+        exit(1);
+    }
+#endif
+}
+
+#ifdef WIN32
+DWORD FXTerminal::worker_thread(void *arg)
+#else
+void *FXTerminal::worker_thread(void *arg)
+#endif
+{
+    signal(SIGINT, sigint_handler);
+#ifdef SIGBREAK
+    signal(SIGBREAK, sigbreak_handler);
+#endif
+    term = (FXTerminal *)arg;
+
+// set proper initial state for all the locks.
+    LockMutex(term->mutex1);
+    LockMutex(term->mutex2);
+    term->sync_even = 1;
+
+// run the application code.
+    returncode = (*fwin_main1)(term->argc, term->argv);
+    wake_up_terminal(WORKER_EXITING);
+#ifdef WIN32
+    ExitThread(returncode);
+    return returncode;
+#else
+    pthread_exit(&returncode);      // between these two lines I think
+    return &returncode;             // I must certainly exit!
+#endif
+}
+
+int fwin_windowmode()
+{
+    int r = 0;
+    r |= FWIN_WITH_TERMED;
+    if (windowed) r |= FWIN_IN_WINDOW;
+    return r;
+}
+
+void fwin_exit(int return_code)
+{
+    if (windowed)
+    {   wake_up_terminal(FXTerminal::WORKER_EXITING);
+        returncode = return_code;
+#ifdef WIN32
+        ExitThread(returncode);
+#else
+        pthread_exit(&returncode);
+#endif
+    }
+    if (using_termed)
+    {   input_history_end();
+        term_close();
+    }
+    exit(return_code);
+}
+
+
+void fwin_minimize()
+{
+    if (!windowed) return;
+    fflush(stdout);
+    wake_up_terminal(FXTerminal::MINIMIZE_MAIN);
+// I do not feel any need to get the threads into lockstep here.
+}
+
+
+void fwin_restore()
+{
+    if (!windowed) return;
+    fflush(stdout);
+    wake_up_terminal(FXTerminal::RESTORE_MAIN);
+}
+
+void fwin_putchar(int c)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+        if (c == '\n') putchar('\r');
+#endif
+        putchar(c);
+        return;
+    }
+// Observe that since I am concerned (at least a bit) with performance
+// I buffer characters here so that the cost of inter-thread communication
+// is not suffered. But every other second (or so) the user-interface thread
+// will be worken up and will flush the buffer for me, so the user ought to
+// be given a tolerable experience/
+    int nxt = term->fwin_in + 1;
+    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
+    if (nxt == term->fwin_out ||
+        term->pauseFlags & PAUSE_PAUSE) fwin_ensure_screen();
+// Note and BEWARE here that fwin_ensure_screen() can synchronize the
+// worker and interface threads and update fwin_in. Observe also that I
+// can generate a screen update if ^S has been hit.
+    term->fwin_buffer[term->fwin_in] = c;
+    nxt = term->fwin_in + 1;
+    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
+    term->fwin_in = nxt;
+    FILE *f = term->logfile;
+    if (f != NULL) putc(c, f);
+}
+
+static void fwin_ensure_buffer_space();
+
+void fwin_puts(const char *s)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+        while (*s != 0) fwin_putchar(*s++);
+#else
+        puts(s);
+#endif
+        return;
+    }
+    int len = strlen(s);
+    while (len > 0)
+    {   int n = len;
+        if (n > SPARE_FOR_VFPRINTF) n = SPARE_FOR_VFPRINTF;
+        if (term->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
+            term->pauseFlags & PAUSE_PAUSE)
+            fwin_ensure_buffer_space();
+        memcpy(&term->fwin_buffer[term->fwin_in], s, n);
+        FILE *f = term->logfile;
+        if (f != NULL) fwrite(s, 1, n, f);
+        term->fwin_in += n;
+        len -= n;
+    }
+}
+
+
+void 
+#ifdef _MSC_VER
+            __cdecl
+#endif
+            fwin_printf(const char *fmt, ...)
+{
+    va_list a;
+    va_start(a, fmt);
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+/* NOT reconstructed yet @@@ */
+        vfprintf(stdout, fmt, a);
+        va_end(a);
+#else
+        vfprintf(stdout, fmt, a);
+        va_end(a);
+#endif
+        return;
+    }
+    if (term->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
+        term->pauseFlags & PAUSE_PAUSE)
+        fwin_ensure_buffer_space();
+// The code here is inherently UNSAFE since vsprintf does not give
+// any protection against buffer overflow and there is no universally
+// available equivalent that is safe. I arrange that if the printf call
+// generates at most SPARE_FOR_VFPRINTF characters I am OK.
+//
+// Well C99 provides vsnprintf so if that is available I ought to use it...
+//
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(&term->fwin_buffer[term->fwin_in], SPARE_FOR_VFPRINTF, fmt, a);
+#else
+    vsprintf(&term->fwin_buffer[term->fwin_in], fmt, a);
+#endif
+// Cautious about portability and old libraries, and aware of values that
+// vsnprintf may return when the data does not fit, I ignore the values
+// of the above functions and adjust the data pointers by hand.
+    int n = strlen(&term->fwin_buffer[term->fwin_in]);
+    FILE *f = term->logfile;
+    if (f != NULL) fwrite(&term->fwin_buffer[term->fwin_in], 1, n, f);
+    term->fwin_in += n;
+    va_end(a);
+}
+
+void fwin_vfprintf(const char *fmt, va_list a)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+/* Not reconstructed yet @@@ */
+        vfprintf(stdout, fmt, a);
+#else
+        vfprintf(stdout, fmt, a);
+#endif
+        return;
+    }
+// see comments above.
+    if (term->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
+        term->pauseFlags & PAUSE_PAUSE)
+        fwin_ensure_buffer_space();
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(&term->fwin_buffer[term->fwin_in], SPARE_FOR_VFPRINTF, fmt, a);
+#else
+    vsprintf(&term->fwin_buffer[term->fwin_in], fmt, a);
+#endif
+    int n = strlen(&term->fwin_buffer[term->fwin_in]);
+    FILE *f = term->logfile;
+    if (f != NULL) fwrite(&term->fwin_buffer[term->fwin_in], 1, n, f);
+    term->fwin_in += n;
+}
+
+static void regain_lockstep()
+{
+// This looks jolly ugly to me - I need to talk to others who are more
+// experienced in concurrency to see if I can improve it.
+    if (term->sync_even)
+    {   UnlockMutex(term->mutex1);
+        LockMutex(term->mutex3);
+        UnlockMutex(term->mutex2);
+        LockMutex(term->mutex4);
+    }
+    else
+    {   UnlockMutex(term->mutex3);
+        LockMutex(term->mutex1);
+        UnlockMutex(term->mutex4);
+        LockMutex(term->mutex2);
+    }
+}
+
+const char *fwin_maths = NULL;
+
+void fwin_showmath(const char *s)
+{
+    if (!windowed) return;
+    fwin_ensure_screen();   // get regular text up to date first.
+    fwin_maths = s;
+    LockMutex(term->pauseMutex);
+// here I have to do real inter-thread communication.
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::SHOW_MATH);
+// here I need to wait until the signal that I just sent has been received
+// and processed.
+    regain_lockstep();
+    if (delay_callback != NULL) (*delay_callback)(0);
+    UnlockMutex(term->pauseMutex);
+}
+
+
+void fwin_ensure_screen()
+{
+    if (!windowed)
+    {   fflush(stdout);
+        return;
+    }
+    if (term->fwin_in == term->fwin_out) return;
+    LockMutex(term->pauseMutex);
+// here I have to do real inter-thread communication.
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::FLUSH_BUFFER);
+// here I need to wait until the signal that I just sent has been received
+// and processed.
+    regain_lockstep();
+    if (delay_callback != NULL) (*delay_callback)(0);
+    UnlockMutex(term->pauseMutex);
+}
+
+static void fwin_ensure_buffer_space()
+{
+    if (!windowed) return;
+    if (term->fwin_in == term->fwin_out) return;
+    LockMutex(term->pauseMutex);
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::FLUSH_BUFFER);
+    if (term->sync_even)
+    {   UnlockMutex(term->mutex1);
+        LockMutex(term->mutex3);
+        term->fwin_in = term->fwin_out = 0;
+        UnlockMutex(term->mutex2);
+        LockMutex(term->mutex4);
+    }
+    else
+    {   UnlockMutex(term->mutex3);
+        LockMutex(term->mutex1);
+        term->fwin_in = term->fwin_out = 0;
+        UnlockMutex(term->mutex4);
+        LockMutex(term->mutex2);
+    }
+    if (delay_callback != NULL) (*delay_callback)(0);
+    UnlockMutex(term->pauseMutex);
+}
+
+extern "C"
+{
+static review_switch_settings_function *review_switch_settings = NULL;
+}
+static int update_next_time = 0;
+
+
+int fwin_getchar()
+{
+    if (!windowed) return fwin_plain_getchar();
+// In general I have a line of stuff ready sitting in a buffer. So on
+// most calls to here I can just return what is in it.
+    if (term->inputBufferP < term->inputBufferLen)
+        return term->inputBuffer[term->inputBufferP++];
+// Now however a new line of input is needed, so I have to request it from
+// the user-interface thread.
+    if (update_next_time && review_switch_settings != NULL)
+    {   (*review_switch_settings)();
+        update_next_time = 0;
+    }
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::REQUEST_INPUT);
+// Wait until the signal that I just sent has been received
+// and processed.
+    regain_lockstep();
+    if (delay_callback != NULL) (*delay_callback)(0);
+// I will try a convention that if inputBufferLen is zero that indicates
+// a dodgy state. Eg the user is sending an EOF or interrupt.
+    int n = term->inputBufferLen;
+    if (n == 0) return EOF;
+    const char *p = &term->inputBuffer[term->inputBufferP];
+    while (n>0 && isspace(*p))
+    {   n--;
+        p++;
+    }
+// The next line is pretty shameless and is there to help REDUCE while not
+// getting too much in the way of anybody else. If an input line is
+// entered starting with the text "load_package" I make a callback to
+// review_switch_settings fairly soon.
+    if (n>12 && strncmp(p, "load_package", 12) == 0)
+        update_next_time = 1;
+    int ch = term->inputBuffer[term->inputBufferP++];
+    if (ch == (0x1f & 'D')) return EOF;
+    else return ch;
+}
+
+
+void fwin_set_prompt(const char *s)
+{
+    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
+    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    if (!windowed) return;
+    wake_up_terminal(FXTerminal::SET_PROMPT);
+    regain_lockstep();
+}
+
+void fwin_menus(char **modules, char **switches,
+                review_switch_settings_function *f)
+{
+    if (!windowed) return;
+    modules_list = modules;
+    switches_list = switches;
+    wake_up_terminal(FXTerminal::SET_MENUS);
+    regain_lockstep();
+    review_switch_settings = f;
+}
+
+void fwin_refresh_switches(char **switches, char **packages)
+{
+    if (!windowed) return;
+    switches_list = switches;
+    modules_list = packages;
+    wake_up_terminal(FXTerminal::REFRESH_SWITCHES);
+    regain_lockstep();
+}
+
+static char left_stuff[32] = "",
+            right_stuff[32] = "";
+char mid_stuff[32] = "", full_title[90] = "";
+
+#ifdef USE_A0_SPACER
+#define SPACER_CHAR 0xa0
+#else
+#define SPACER_CHAR 0x20
+#endif
+
+static void rewrite_title_bar()
+{
+// Just at present this does not cope with cases where the width of the window
+// has been changed...
+    int ll = strlen(left_stuff),
+        lm = strlen(mid_stuff),
+        lr = strlen(right_stuff);
+    int i, j;
+    for (i=0; i<80; i++) full_title[i] = SPACER_CHAR;
+    strncpy(full_title, left_stuff, ll);
+    j = 80 - strlen(right_stuff);
+    strncpy(&full_title[j], right_stuff, lr);
+    j = 40-(lm/2);
+    strncpy(&full_title[j], mid_stuff, lm);
+    full_title[80] = 0;
+    wake_up_terminal(FXTerminal::REFRESH_TITLE);
+    regain_lockstep();
+}
+
+
+void fwin_acknowledge_tick()
+{
+// This is to do with my handling of "^Z" to suspend the computation.
+// If the user enters ^Z I lock the pause mutex and then send a "TICK".
+// The user is expected to notice it and respond here - and hence get
+// suspended.
+    if (!windowed) return;
+    LockMutex(term->pauseMutex);
+    UnlockMutex(term->pauseMutex);
+}
+
+
+void fwin_report_left(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(left_stuff, msg, 31);
+    left_stuff[31] = 0;
+    rewrite_title_bar();
+}
+
+void fwin_report_mid(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(mid_stuff, msg, 31);
+    mid_stuff[31] = 0;
+    rewrite_title_bar();
+}
+
+void fwin_report_right(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(right_stuff, msg, 31);
+    right_stuff[31] = 0;
+    rewrite_title_bar();
+}
+
+void fwin_set_help_file(const char *key, const char *path)
+{
+    if (!windowed) return;
+    printf("fwin_set_help_file called\n");
+    fflush(stdout);
+}
+
+
+}
+
+// end of FXWorker.cpp
+
+
+
 
 #endif // 0
 
