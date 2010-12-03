@@ -32,6 +32,7 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
@@ -122,7 +123,7 @@ static power(x, n)
   return(p);
 }
 
-int creloc (long long array[], long len, long long diff, long long lowb);
+int creloc (long long array, long len, long long diff, long long lowb);
 
 setupbpsandheap(argc,argv)
      int argc;
@@ -136,7 +137,7 @@ setupbpsandheap(argc,argv)
   double bpspercent, heappercent;
   char   *argp, *scanptr, *scanformat;
   int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
-  long long  hugo;
+  long hugo;
 
   total        = MINSIZE;
   mallocsize    = MALLOCSIZE;
@@ -249,8 +250,8 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
 //       printf("neu: %lx => %lx\n",hlb, heaplowerbound);
        diff = hlb-heaplowerbound;
        if (hlb < heaplowerbound)
-             {creloc(&symval,headerword[0]/8,diff,hlb -1);} 
-        else {creloc(&symval,headerword[0]/8,diff, heaplowerbound -1);}
+             {creloc((long long) &symval,headerword[0]/8,diff,hlb -1);} 
+        else {creloc((long long) &symval,headerword[0]/8,diff, heaplowerbound -1);}
 
        if (hugo != headerword[0]) read_error();
 
@@ -296,10 +297,10 @@ setupbps()
   int bpssize;
   char c;
 
-  nextbps  =  ((int)bps + 7) & ~7;        /* Up to a multiple of 8. */
+  nextbps  =  ((long long)bps + 7) & ~7;        /* Up to a multiple of 8. */
   bpslowerbound = nextbps;
-  lastbps  =  ((int)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
-  p = (char *)(((int) bpslowerbound  -1) & ~(PAGESIZE-1));
+  lastbps  =  ((long long)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
+  p = (char *)(((long long) bpslowerbound  -1) & ~(PAGESIZE-1));
   bpssize =  ((BPSSIZE + PAGESIZE-1) & ~(PAGESIZE-1));
   if (mprotect(p, bpssize, PROT_READ | PROT_WRITE | PROT_EXEC)) {
             perror("Couldn’t mprotect");
@@ -347,7 +348,7 @@ getheap(heapsize)
 
   heaplowerbound        = (long long )malloc(2 * heapsize);  /* allocate first heap */;
 #endif
-  if ((int) heaplowerbound == 0) {
+  if (heaplowerbound  == (long long) NULL )  {
     perror("GETHEAP");
     exit(-1);
   }

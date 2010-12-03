@@ -63,6 +63,7 @@
 */
  
 #include <stdio.h>
+#include <stdlib.h>
  
 /* There is an assumption here that coercing addresses into ints is OK */
 /*
@@ -89,8 +90,8 @@ unixinitio()
     unixstdin = stdin;
     unixstdout = stdout;
     unixstderr = stderr;
-    unixnull[0] = NULL;
-    unixnull[1] = NULL;
+    unixnull[0] = (long) NULL;
+    unixnull[1] = (long) NULL;
     unixeof[0] = EOF;
     unixeof[1] = EOF;
     unixtty = fopen("/dev/tty", "r");
@@ -260,7 +261,7 @@ char *argv[];
   for (i=0; i < argc; i++)
      static_argv[i]=argv[i];
  
-  return((int)static_argv);
+  return((long)static_argv);
 }
 long long xgetw (f)
 FILE* f;
