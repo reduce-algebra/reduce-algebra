@@ -32,8 +32,10 @@ import sys
 import os
 
 from PySide.QtCore import QFileInfo
+from PySide.QtCore import QObject
 from PySide.QtCore import QSettings
 from PySide.QtCore import Signal
+from PySide.QtCore import SIGNAL
 from PySide.QtCore import QSize
 from PySide.QtCore import Qt
 
@@ -626,7 +628,9 @@ class QtRecentFileMenu(QMenu):
         self.clearAct = QAction(self.tr("Clear Menu"),self)
         self.clearAct.triggered.connect(self.clearRecentFiles)
 
-        self.aboutToShow.connect(self.updateEntries)
+        #self.aboutToShow.connect(self.updateEntries)
+        QObject.connect(
+            self, SIGNAL('aboutToShow()'), self.updateEntries)
 
     def updateEntries(self):
         settings = QSettings()
