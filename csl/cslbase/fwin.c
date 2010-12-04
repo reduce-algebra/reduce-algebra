@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 4fb31adc 02-Dec-2010 */
+/* Signature: 13a3f8e6 04-Dec-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -174,8 +174,8 @@ extern char *getcwd(char *s, size_t n);
 #ifdef DEBUG
 
 /*
- * This will be used as in FWIN_LOG((format,arg,...)) with an extra
- * pair of parentheses. If DEBUG was enabled it send log information
+ * This will be used as in FWIN_LOG(format,arg,...) using a variadic macro.
+ * If DEBUG was enabled it send log information
  * to a file with the name fwin-debug.log: I hope that will not (often)
  * clash with any file the user has or requires. if programDir has been
  * set when you first generate log output then the log file will be put

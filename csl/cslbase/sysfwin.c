@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 41ebe81b 01-Dec-2010 */
+/* Signature: 37f37bcd 04-Dec-2010 */
 
 #include "headers.h"
 
@@ -452,13 +452,13 @@ char *find_image_directory(int argc, char *argv[])
     sprintf(xname, "/%s.app/Contents/MacOS", programName);
     n = strlen(programDir) - strlen(xname);
     if (n>=0 && strcmp(programDir+n, xname) == 0)
-    {   FWIN_LOG(("Seem to be being executed from within application bundle\n"));
+    {   FWIN_LOG("Seem to be being executed from within application bundle\n");
         sprintf(xname, "%.*s/%s.img",
             (int)strlen(programDir)-6, programDir, programName);
     }
     else
     {   struct stat buf;
-        FWIN_LOG(("Not within an application bundle"));
+        FWIN_LOG("Not within an application bundle");
 /*
  * If I am NOT within an application bundle but there is one next to me I
  * will put the image file in the application directory. Of there is no
@@ -477,7 +477,7 @@ char *find_image_directory(int argc, char *argv[])
 #else
     sprintf(xname, "%s/%s.img", programDir, programName);
 #endif
-    FWIN_LOG(("image directory: %s\n", xname));
+    FWIN_LOG("image directory: %s\n", xname);
     n = strlen(xname)+1;
     w = (char *)(*malloc_hook)(n);
     strcpy(w, xname);

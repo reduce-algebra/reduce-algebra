@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1a6f6df8 02-Dec-2010 */
+/* Signature: 5c2a520a 04-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -212,43 +212,16 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 
 #include "cmfont-widths.c"
 
-static FILE *logfile = NULL;
-
-static void logprintf(const char *fmt, ...)
-{
-    va_list a;
-    if (logfile == NULL) logfile = fopen("wxdvi.log", "w");
-    if (logfile != NULL)
-    {   va_start(a, fmt);
-        vfprintf(logfile, fmt, a);
-        fflush(logfile);
-        va_end(a);
-    }
-#ifndef MACINTOSH
-// On systems other than the Mac I expect I can (sometimes!) have a console
-// attached to my program, and in that case it will be convenient to sent the
-// trace output there as well as to a file.
-    va_start(a, fmt);
-    vprintf(fmt, a);
-    va_end(a);
-    fflush(stdout);
-#endif
-}
 
 
-
-class dviPanel : public wxPanel
+class fwinPanel : public wxPanel
 {
 public:
-    dviPanel(class dviFrame *parent, const char *dvifilename);
+    fwinPanel(class fwinFrame *parent);
 
     void OnPaint(wxPaintEvent &event);
 
-// The event handling is not really needed for this application, but I
-// am putting some in so I can experiment with it!
     void OnChar(wxKeyEvent &event);
-    void OnKeyDown(wxKeyEvent &event);
-    void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
 
     bool firstPaint;
@@ -259,65 +232,27 @@ private:
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
     double scaleAdjustment;
 
-    void RenderDVI();        // sub-function used by OnPaint
     wxPaintDC *dcp;          // pointer to device context to draw on
 
-    unsigned char *dviData;  // the .dvi file's contents are stored here
-    unsigned const char *stringInput;
+    wchar_t *textBuffer;
+    int textBufferSize;
+    int caretPos;
 
-    int u2();                // read 1-4 bytes as signed or unsigned value
-    int u3();
-    int s1();
-    int s2();
-    int s3();
-    int s4();
-
-    void DefFont(int k);     // dvi file font definition
-    void SelectFont(int k);
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
-    void SetChar(int c);     // dvi display charcter and move on
-    void PutChar(int c);     // dvi just display character
-    void SetRule(int height, int width);
-    int DVItoScreen(int n);  // map coordinates
-    int DVItoScreenUP(int n);// ditto but used for rule widths
-
-    int32_t h, v, w, x, y, z;// working values used in DVI decoding
-
-    int32_t C[10], p;        // set by start of a page and not used!
-
-// dvi files can call for an essentially unlimited number of distinct
-// fonts - where one "font" here is not just to do with shape but also with
-// size. If I pre-scanned the dvi data I could identify the largest font
-// number used and allocate a table of exactly the right size. But for now
-// I will use a fixed limit.
-//
-#define MAX_FONTS 256
-    wxFont *font[MAX_FONTS];       // the fonts I use here
-    font_width *fontWidth[MAX_FONTS], *currentFontWidth;
-    double fontScale[MAX_FONTS], currentFontScale;
-
-// dvi files use a stack, and at the end of the file is an indication of
-// the greatest stack depth that will be used. I just give myself a fixed
-// quota for now.
-#define MAX_STACK 100
-    int32_t stack[6*MAX_STACK];
-    int stackp;
 
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(dviPanel, wxPanel)
-    EVT_PAINT(           dviPanel::OnPaint)
-    EVT_CHAR(            dviPanel::OnChar)
-//  EVT_KEY_DOWN(        dviPanel::OnKeyDown)
-//  EVT_KEY_UP(          dviPanel::OnKeyUp)
-    EVT_LEFT_UP(         dviPanel::OnMouse)
+BEGIN_EVENT_TABLE(fwinPanel, wxPanel)
+    EVT_PAINT(           fwinPanel::OnPaint)
+    EVT_CHAR(            fwinPanel::OnChar)
+    EVT_LEFT_UP(         fwinPanel::OnMouse)
 END_EVENT_TABLE()
 
-class dviFrame : public wxFrame
+class fwinFrame : public wxFrame
 {
 public:
-    dviFrame(const char *dvifilename);
+    fwinFrame();
 
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
@@ -326,14 +261,14 @@ public:
 private:
     int screenWidth, screenHeight;
 
-    dviPanel *panel;
+    fwinPanel *panel;
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(dviFrame, wxFrame)
-    EVT_MENU(wxID_EXIT,  dviFrame::OnExit)
-    EVT_MENU(wxID_ABOUT, dviFrame::OnAbout)
-    EVT_SIZE(            dviFrame::OnSize)
+BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
+    EVT_MENU(wxID_EXIT,  fwinFrame::OnExit)
+    EVT_MENU(wxID_ABOUT, fwinFrame::OnAbout)
+    EVT_SIZE(            fwinFrame::OnSize)
 END_EVENT_TABLE()
 
 int get_current_directory(char *s, int n)
@@ -507,25 +442,13 @@ static localFonts fontNames[] =
 
 #ifdef WIN32
 
-// The next two flags instruct AddFontResourceEx that a font should be
-// available only to this application and that other application should
-// not even be able to see that it exists. I provide definitions here
+// The next flag instruct AddFontResourceEx that a font should be
+// available only to this application. I provide a definition here
 // in case MinGW32 does not have them in its header files.
 
 #ifndef FR_PRIVATE
 #define FR_PRIVATE   0x10
 #endif
-
-#ifndef FR_NOT_ENUM
-#define FR_NOT_ENUM  0x20
-#endif
-
-// It seems that when using wxWidgets that if I use the NOT_ENUM flag
-// that the font can not be found at all, and hence not used! So I just
-// tag it as PRIVATE.
-
-// #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM)
-#define PRIVATE_FONT FR_PRIVATE
 
 #endif
 
@@ -546,8 +469,8 @@ int add_custom_fonts() // return 0 on success.
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
-        if (AddFontResourceExA(nn, PRIVATE_FONT, 0) == 0)
-            logprintf("Failed to add font %s\n", nn);
+        if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
+            FWIN_LOG("Failed to add font %s\n", nn);
         else newFontAdded = 1;
     }
     if (newFontAdded)
@@ -592,299 +515,7 @@ int add_custom_fonts() // return 0 on success.
 
 
 
-//
-// Now that start of my code in a proper sense!
-//
-//
-
-
-/*
- * This is the ".dvi" file created by running LaTeX on the following
- * small input file. It is provided as a sequence of hex bytes so that
- * I have something to test and demonstrate even if there is no file
- * containig any .dvi stuff readily available.
- *
- * \documentclass{article}
- * \begin{document}
- * \noindent This is some text
- * \[ \left( \int_{b=0}^{\infty} \frac{- \beta \pm \sqrt{b^2 -
- *  4 \, \omega \, c}}{2\, a}\, \mathrm{d}x \right\} \]
- * end text
- * \end{document}
- */
-
-unsigned char mathDvi[] =
-{
-    0xf7,  0x02,  0x01,  0x83,  0x92,  0xc0,  0x1c,  0x3b,
-    0x00,  0x00,  0x00,  0x00,  0x03,  0xe8,  0x1b,  0x20,
-    0x54,  0x65,  0x58,  0x20,  0x6f,  0x75,  0x74,  0x70,
-    0x75,  0x74,  0x20,  0x32,  0x30,  0x31,  0x30,  0x2e,
-    0x31,  0x31,  0x2e,  0x31,  0x33,  0x3a,  0x31,  0x36,
-    0x31,  0x33,  0x8b,  0x00,  0x00,  0x00,  0x01,  0x00,
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
-    0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
-    0x00,  0x00,  0x00,  0xff,  0xff,  0xff,  0xff,  0xa0,
-    0x02,  0x79,  0x00,  0x00,  0x8d,  0xa0,  0xfd,  0xa3,
-    0x00,  0x00,  0xa0,  0x02,  0x3f,  0x00,  0x00,  0x8d,
-    0xa0,  0xfd,  0xe4,  0x00,  0x00,  0x8d,  0x91,  0x3e,
-    0x00,  0x00,  0xf3,  0x07,  0x4b,  0xf1,  0x60,  0x79,
-    0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,
-    0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,  0x30,  0xb2,
-    0x54,  0x68,  0x69,  0x73,  0x96,  0x03,  0x55,  0x55,
-    0x69,  0x73,  0x93,  0x73,  0x6f,  0x6d,  0x65,  0x93,
-    0x74,  0x65,  0x78,  0x74,  0x8e,  0x9f,  0x12,  0x80,
-    0x09,  0x8d,  0x8d,  0x8d,  0x92,  0x00,  0xaa,  0xc8,
-    0x51,  0x9f,  0xee,  0xe6,  0x5c,  0xf3,  0x00,  0xfa,
-    0xb1,  0x75,  0x12,  0x00,  0x0a,  0x00,  0x00,  0x00,
-    0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x65,
-    0x78,  0x31,  0x30,  0xab,  0x20,  0x8e,  0x8d,  0x92,
-    0x00,  0xb2,  0xb2,  0xfd,  0x9f,  0xf2,  0x63,  0x87,
-    0x5a,  0x8e,  0x8d,  0x9f,  0xf4,  0xdc,  0x69,  0x8d,
-    0x92,  0x00,  0xbc,  0xb2,  0xfe,  0xf3,  0x0c,  0x4f,
-    0x21,  0xe2,  0x85,  0x00,  0x07,  0x00,  0x00,  0x00,
-    0x07,  0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x73,
-    0x79,  0x37,  0xb7,  0x31,  0x8e,  0x9f,  0x14,  0x40,
-    0x10,  0x8d,  0x92,  0x00,  0xb8,  0x41,  0x37,  0xf3,
-    0x09,  0x30,  0x65,  0x97,  0x72,  0x00,  0x07,  0x00,
-    0x00,  0x00,  0x07,  0x00,  0x00,  0x00,  0x05,  0x63,
-    0x6d,  0x6d,  0x69,  0x37,  0xb4,  0x62,  0xf3,  0x06,
-    0xd9,  0x93,  0xa0,  0x52,  0x00,  0x07,  0x00,  0x00,
-    0x00,  0x07,  0x00,  0x00,  0x00,  0x04,  0x63,  0x6d,
-    0x72,  0x37,  0xb1,  0x3d,  0x30,  0x8e,  0x8e,  0x8d,
-    0x8d,  0x8d,  0x9f,  0xf9,  0x3c,  0x24,  0x8d,  0x92,
-    0x00,  0xc9,  0x43,  0x59,  0xf3,  0x0d,  0x21,  0x22,
-    0x2c,  0x9a,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
-    0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x73,  0x79,
-    0x31,  0x30,  0xb8,  0x00,  0xf3,  0x0a,  0x0b,  0xa0,
-    0x62,  0x3e,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
-    0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x6d,  0x69,
-    0x31,  0x30,  0xb5,  0x0c,  0x91,  0x02,  0xbf,  0xfc,
-    0xb8,  0x06,  0x8d,  0x8d,  0x91,  0x02,  0x38,  0xe0,
-    0x9f,  0xf7,  0xaa,  0xab,  0x70,  0x8e,  0x8d,  0x91,
-    0x0a,  0x8e,  0x37,  0x9f,  0xf7,  0xaa,  0xab,  0x89,
-    0x00,  0x00,  0x66,  0x65,  0x00,  0x28,  0x3e,  0x7b,
-    0x9f,  0x08,  0x55,  0x55,  0x8d,  0xb5,  0x62,  0x8d,
-    0x9f,  0xfd,  0x1c,  0x72,  0xb1,  0x32,  0x8e,  0x91,
-    0x06,  0xb5,  0x53,  0xb8,  0x00,  0x91,  0x02,  0x38,
-    0xe0,  0xb2,  0x34,  0x91,  0x01,  0xaa,  0xa8,  0xb5,
-    0x21,  0x91,  0x02,  0x06,  0x81,  0x63,  0x8e,  0x8e,
-    0x8e,  0x8e,  0x92,  0x00,  0xc9,  0x43,  0x59,  0x9f,
-    0x04,  0x77,  0x0e,  0x89,  0x00,  0x00,  0x66,  0x65,
-    0x00,  0x4a,  0xc2,  0xea,  0x9f,  0x09,  0x28,  0xd6,
-    0x8d,  0x91,  0x1f,  0x67,  0x89,  0xb2,  0x32,  0x91,
-    0x01,  0xaa,  0xa8,  0xb5,  0x61,  0x8e,  0x8e,  0x8e,
-    0x8e,  0x92,  0x01,  0x16,  0xe4,  0x1e,  0xb2,  0x64,
-    0xb5,  0x78,  0x8d,  0x9f,  0xee,  0xe6,  0x5c,  0xab,
-    0x29,  0x8e,  0x8e,  0x8e,  0x9f,  0x1a,  0x71,  0xd1,
-    0x8d,  0x91,  0x3e,  0x00,  0x00,  0xb2,  0x65,  0x6e,
-    0x64,  0x91,  0x03,  0x55,  0x55,  0x74,  0x65,  0x78,
-    0x74,  0x8e,  0x8e,  0x9f,  0x1e,  0x00,  0x00,  0x8d,
-    0x92,  0x00,  0xe8,  0x00,  0x00,  0x31,  0x8e,  0x8e,
-    0x8c,  0xf8,  0x00,  0x00,  0x00,  0x2a,  0x01,  0x83,
-    0x92,  0xc0,  0x1c,  0x3b,  0x00,  0x00,  0x00,  0x00,
-    0x03,  0xe8,  0x02,  0x79,  0x00,  0x00,  0x01,  0x97,
-    0x00,  0x00,  0x00,  0x0c,  0x00,  0x01,  0xf3,  0x0d,
-    0x21,  0x22,  0x2c,  0x9a,  0x00,  0x0a,  0x00,  0x00,
-    0x00,  0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,
-    0x73,  0x79,  0x31,  0x30,  0xf3,  0x0c,  0x4f,  0x21,
-    0xe2,  0x85,  0x00,  0x07,  0x00,  0x00,  0x00,  0x07,
-    0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x73,  0x79,
-    0x37,  0xf3,  0x0a,  0x0b,  0xa0,  0x62,  0x3e,  0x00,
-    0x0a,  0x00,  0x00,  0x00,  0x0a,  0x00,  0x00,  0x00,
-    0x06,  0x63,  0x6d,  0x6d,  0x69,  0x31,  0x30,  0xf3,
-    0x09,  0x30,  0x65,  0x97,  0x72,  0x00,  0x07,  0x00,
-    0x00,  0x00,  0x07,  0x00,  0x00,  0x00,  0x05,  0x63,
-    0x6d,  0x6d,  0x69,  0x37,  0xf3,  0x07,  0x4b,  0xf1,
-    0x60,  0x79,  0x00,  0x0a,  0x00,  0x00,  0x00,  0x0a,
-    0x00,  0x00,  0x00,  0x05,  0x63,  0x6d,  0x72,  0x31,
-    0x30,  0xf3,  0x06,  0xd9,  0x93,  0xa0,  0x52,  0x00,
-    0x07,  0x00,  0x00,  0x00,  0x07,  0x00,  0x00,  0x00,
-    0x04,  0x63,  0x6d,  0x72,  0x37,  0xf3,  0x00,  0xfa,
-    0xb1,  0x75,  0x12,  0x00,  0x0a,  0x00,  0x00,  0x00,
-    0x0a,  0x00,  0x00,  0x00,  0x06,  0x63,  0x6d,  0x65,
-    0x78,  0x31,  0x30,  0xf9,  0x00,  0x00,  0x02,  0x19,
-    0x02,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf,  0xdf
-};
-
-
-
-// Read 1, 2 3 or 4 byte integers from the input file, with the shorter
-// variants being either signed or unsigned. All are arranged in big-endian
-// style, as defined by the DVI format.
-
-int32_t dviPanel::u2()
-{
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    return (c1 << 8) | c2;
-}
-
-int32_t dviPanel::u3()
-{
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    int32_t c3 = *stringInput++;
-    return (c1 << 16) | (c2 << 8) | c3;
-}
-
-int32_t dviPanel::s1()
-{
-    return (int32_t)(int8_t)(*stringInput++);
-}
-
-int32_t dviPanel::s2()
-{
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    return (int32_t)(int16_t)((c1 << 8) | c2);
-}
-
-int32_t dviPanel::s3()
-{
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    int32_t c3 = *stringInput++;
-    int32_t r = (c1 << 16) | (c2 << 8) | c3;
-    if ((r & 0x00800000) != 0) r |= 0xff000000;
-    return (int32_t)r;
-}
-
-int32_t dviPanel::s4()
-{
-    int32_t c1 = *stringInput++;
-    int32_t c2 = *stringInput++;
-    int32_t c3 = *stringInput++;
-    int32_t c4 = *stringInput++;
-    return (c1 << 24) | (c2 << 16) |
-           (c3 << 8) | c4;
-}
-
-
-// The following two macros are syntactically delicate - so BEWARE.
-
-#define push()         \
-  stack[stackp++] = h; \
-  stack[stackp++] = v; \
-  stack[stackp++] = w; \
-  stack[stackp++] = x; \
-  stack[stackp++] = y; \
-  stack[stackp++] = z
-
-#define pop()          \
-  z = stack[--stackp]; \
-  y = stack[--stackp]; \
-  x = stack[--stackp]; \
-  w = stack[--stackp]; \
-  v = stack[--stackp]; \
-  h = stack[--stackp]
-
-void dviPanel::DefFont(int k)
-{
-#if 0
-    logprintf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
-#endif
-    char fontname[LONGEST_LEGAL_FILENAME];
-    int32_t checksum = s4();
-    int32_t size = s4();
-// The designsize in a .dvi file is given in units of points/2^16 while
-// in .tfm data it is in units of points/2^20, so I adjust here so that the
-// two sources of information should match.
-    int32_t designsize = s4() << 4;
-    int arealen = *stringInput++;
-    int namelen = *stringInput++;
-    if (k >= MAX_FONTS)
-    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
-        return;
-    }
-    if (arealen != 0)
-    {   logprintf("Fonts with an area specification are not supported\n");
-        return;
-    }
-    strcpy(fontname, "csl-");
-    for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
-    fontname[namelen+4] = 0;
-    if (font[k] != NULL) return;
-#if 1
-    logprintf("checksum = %.8x\n", checksum);
-    logprintf("size = %d %g\n", size, (double)size/65536.0);
-    logprintf("%s\n", fontname);
-#endif
-    font_width *p = cm_font_width;
-    while (p->name != NULL &&
-           strcmp(p->name, fontname+4) != 0) p++;
-    if (p->name == NULL)
-    {   logprintf("Fonts not found in the private font-set I support\n");
-        return;
-    }
-// I find that cmmi7 and cmmi10 (and probably others) give me a complaint
-// here as between the TeX fonts I have installed on cygwin and the BaKoMa
-// ones I use for Reduce. However when I used tftopl to decode the
-// apparently offending .tfm files what I found was pretty harmless (at least
-// in cmmi7) in that the BaKoMa version defines widths for character octal 200
-// (ie 0x80 = 128) while the other version did not. All metrics for other
-// characters were identical. So I display a warning here for a while but
-// will NOT make this an error. Now if I used BaKoMa TeX to prepare my .dvi
-// files (or copies their fonts and metrics into where my main lot live)
-// all oddities might go away.
-    if (p->checksum != checksum)
-    {   logprintf("Font checksum issue %#o vs %#o for %s\n",
-               checksum, p->checksum, fontname);
-// Continue in a spirit of optimism!
-    }
-    if (p->designsize != designsize)
-    {   logprintf("Font designsize issue %x vs %x for %s\n",
-               designsize, p->designsize, fontname);
-// Continue in a spirit of optimism!
-    }
-    wxFont *f = new wxFont();
-    char sizer[8]; // merely big enough for the size. Which will
-                   // always be between 7 and 17!
-    logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
-    sprintf(sizer, " %d", (int)(designsize/1048576.0 + 0.5));
-    strcat(fontname, sizer);
-#if 1
-    logprintf("Name + size = %s\n", fontname);
-#endif
-    f->SetNativeFontInfoUserDesc(fontname);
-    double scaleBy = (double)size/(double)(p->designsize)*16.0;
-    f->Scale((float)(scaleAdjustment*scaleBy));
-#if 1
-// This is merely to display information about the font while I debug things.
-    wxString s1(f->GetNativeFontInfoDesc());
-    wxString s2(f->GetNativeFontInfoUserDesc());
-    const char *ss1 = s1.c_str();
-    const char *ss2 = s2.c_str();
-    logprintf("New font Native \"%s\"\nFont NativeUser \"%s\"\n", ss1, ss2);
-#endif
-    font[k] = f;
-    fontWidth[k] = p;
-// I need to record a scale factor used with the font so that when I look
-// up character widths in the metric table I can allow for it.
-    fontScale[k] = scaleBy;
-#if 1
-    logprintf("Scale factor for %s = %.3g\n", fontname, scaleBy);
-#endif
-}
-
-void dviPanel::SelectFont(int n)
-{
-    if (n >= MAX_FONTS)
-    {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
-        return;
-    }
-    if (font[n] == NULL)
-    {   logprintf("font %d seems not to be set\n", n);
-        return;
-    }
-    dcp->SetFont(*font[n]);
-    currentFontWidth = fontWidth[n];
-    currentFontScale = fontScale[n];
-}
-
-
-int dviPanel::MapChar(int c)
+int fwinPanel::MapChar(int c)
 {
 // This function maps between a TeX character encoding and the one that is
 // used by the fonts and rendering engine that I use.
@@ -903,335 +534,6 @@ int dviPanel::MapChar(int c)
     else return c;
 }
 
-int dviPanel::DVItoScreen(int n)
-{
-// At present this is a fixed scaling. I may well want to make it variable
-// at some later stage. The scaling here, which is based on an assumption
-// I make about the dots-per-inch resolution of my display, will end up
-// imprtant when establishing fonts.
-    return (int)(scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
-}
-
-int dviPanel::DVItoScreenUP(int n)
-{
-// This ROUND UP to the next integer, and that is needed so that (eg)
-// very thin rules end up at least one pixel wide. Well I round up by
-// adding a value just under 1,0 then truncating.
-    return (int)(0.999999999 + scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
-}
-
-void dviPanel::SetChar(int32_t c)
-{
-#if 0
-    logprintf("Set (%f,%f) char %.2x (%c)\n",
-        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
-            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
-#endif
-    wxString s = (wchar_t)MapChar(c);
-    wxCoord width, height, descent;
-    dcp->GetTextExtent(s, &width, &height, &descent);
-    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
-// Now I must increase h by the width (in scaled points) of the character
-// I just set. This is not dependent at all on the way I map DVI internal
-// coordinates to screen ones.
-    int32_t ww = currentFontWidth->charwidth[c & 0x7f];
-    int32_t design = currentFontWidth->designsize;
-// ww is now the width as extracted from the .tfm file, and that applies
-// to the glyph if it is set at its standard size. So adjust for all of
-// that and end up in TeX coordinate units.
-    int32_t texwidth =
-        (int32_t)(0.5 + currentFontScale*(double)design*(double)ww/
-                        (double)(1<<24));
-    h += texwidth;
-#if 0
-// Now I want to compare the width that TeX thinks the character has with
-// what wxWidgets thinks. So I convert the TeX width to pixels.
-    double twp = scaleAdjustment*(double)screenDPI*(double)texwidth/
-                 (72.0*65536.0*1000.0);
-    logprintf("TeX says %#.4g wxWidgets says %d (%.3g)\n",
-        twp, width, twp/(double)width);
-#endif
-}
-
-void dviPanel::PutChar(int32_t c)
-{
-#ifdef DEBUG
-    logprintf("Put (%f,%f) char %.2x (%c)\n",
-        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
-            c < 0x20 || c > 0x7f ? ' ' :  (int)c);
-#endif
-    wxString s = (wchar_t)MapChar(c);
-    wxCoord width, height, descent;
-    dcp->GetTextExtent(s, &width, &height, &descent);
-    dcp->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
-}
-
-void dviPanel::SetRule(int height, int width)
-{
-#if 0
-    logprintf("SetRule %d %.3g %d %.3g\n", width, (double)width/65536.0,
-                                        height, (double)height/65537.0);
-#endif
-    dcp->DrawRectangle(DVItoScreen(h), DVItoScreen(v-height),
-                       DVItoScreenUP(width), DVItoScreenUP(height));
-}
-
-void dviPanel::RenderDVI()
-{
-
-    dcp->SetBrush(*wxBLACK_BRUSH);
-    dcp->SetPen(*wxBLACK_PEN);
-
-// This always starts afresh at the start of the DVI data, which has been
-// put in an array for me.
-    stringInput = dviData;
-    int32_t a, b, c, i, k;
-    for (;;)
-    {   c = *stringInput++;
-        if (c <= 127)
-        {   SetChar(c);
-            continue;
-        }
-        else
-        {   switch (c)
-            {
-        case 128:
-                SetChar(*stringInput++);
-                continue;
-        case 129:
-                SetChar(u2());
-                continue;
-        case 130:
-                SetChar(u3());
-                continue;
-        case 131:
-                SetChar(s4());
-                continue;
-        case 132:                           // set rule
-                a = s4();
-                b = s4();
-                if (a > 0 && b > 0) SetRule(a, b);
-                h += b;
-                continue;
-        case 133:
-                PutChar(*stringInput++);
-                continue;
-        case 134:
-                PutChar(u2());
-                continue;
-        case 135:
-                PutChar(u3());
-                continue;
-        case 136:
-                PutChar(s4());
-                continue;
-        case 137:
-                a = s4();
-                b = s4();
-                if (a > 0 && b > 0) SetRule(a, b);
-                continue;
-        case 138:
-                continue;                   // no operation
-        case 139:                           // beginning of page
-                h = v = w = x = y = z = stackp = 0;
-                for (i=0; i<10; i++)
-                    C[i] = s4();
-                p = s4();
-                continue;
-        case 140:                           // end of page
-                continue;
-        case 141:
-                push();
-                continue;
-        case 142:
-                pop();
-                continue;
-        case 143:
-                h += s1();
-                continue;
-        case 144:
-                h += s2();
-                continue;
-        case 145:
-                h += s3();
-                continue;
-        case 146:
-                h += s4();
-                continue;
-        case 147:
-                h += w;
-                continue;
-        case 148:
-                h += (w = s1());
-                continue;
-        case 149:
-                h += (w = s2());
-                continue;
-        case 150:
-                h += (w = s3());
-                continue;
-        case 151:
-                h += (w = s4());
-                continue;
-        case 152:
-                h += x;
-                continue;
-        case 153:
-                h += (x = s1());
-                continue;
-        case 154:
-                h += (x = s2());
-                continue;
-        case 155:
-                h += (x = s3());
-                continue;
-        case 156:
-                h += (x = s4());
-                continue;
-        case 157:
-                v += s1();
-                continue;
-        case 158:
-                v += s2();
-                continue;
-        case 159:
-                v += s3();
-                continue;
-        case 160:
-                v += s4();
-                continue;
-        case 161:
-                v += y;
-                continue;
-        case 162:
-                v += (y = s1());
-                continue;
-        case 163:
-                v += (y = s2());
-                continue;
-        case 164:
-                v += (y = s4());
-                continue;
-        case 165:
-                v += (y = s4());
-                continue;
-        case 166:
-                v += z;
-                continue;
-        case 167:
-                v += (z = s1());
-                continue;
-        case 168:
-                v += (z = s2());
-                continue;
-        case 169:
-                v += (z = s3());
-                continue;
-        case 170:
-                v += (z = s4());
-                continue;
-        case 171:  case 172:  case 173:  case 174:
-        case 175:  case 176:  case 177:  case 178:
-        case 179:  case 180:  case 181:  case 182:
-        case 183:  case 184:  case 185:  case 186:
-        case 187:  case 188:  case 189:  case 190:
-        case 191:  case 192:  case 193:  case 194:
-        case 195:  case 196:  case 197:  case 198:
-        case 199:  case 200:  case 201:  case 202:
-        case 203:  case 204:  case 205:  case 206:
-        case 207:  case 208:  case 209:  case 210:
-        case 211:  case 212:  case 213:  case 214:
-        case 215:  case 216:  case 217:  case 218:
-        case 219:  case 220:  case 221:  case 222:
-        case 223:  case 224:  case 225:  case 226:
-        case 227:  case 228:  case 229:  case 230:
-        case 231:  case 232:  case 233:  case 234:
-                SelectFont(c - 171);
-                continue;
-        case 235:
-                SelectFont(*stringInput++);
-                continue;
-        case 236:
-                SelectFont(u2());
-                continue;
-        case 237:
-                SelectFont(u3());
-                continue;
-        case 238:
-                SelectFont(s4());
-                continue;
-        case 239:
-                k = *stringInput++;
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 240:
-                k = u2();
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 241:
-                k = u3();
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 242:
-                k = s4();
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 243:                         // fnt_def1
-                DefFont(*stringInput++);
-                continue;
-        case 244:
-                DefFont(u2());
-                continue;
-        case 245:
-                DefFont(u3());
-                continue;
-        case 246:
-                DefFont(s4());
-                continue;
-        case 247:                          // pre
-                i = *stringInput++;
-                if (i != 2)
-                {   logprintf("illegal DVI version %d\n", i);
-                    break;
-                }
-                (void)s4();    // ignore num
-                (void)s4();    // ignore den
-                (void)s4();    // ignore mag
-                k = *stringInput++;
-                for (i=0; i<k; i++) (void)*stringInput++;
-                continue;
-        case 248:                          // post
-                (void)s4(); // ignore p;
-                (void)s4(); // ignure num
-                (void)s4(); // ignore den
-                (void)s4(); // ignore mag
-                (void)s4(); // height+depth of largest page
-                (void)s4(); // width of largest page
-#if 0
-                logprintf("Greatest stack depth = %d\n", u2());
-                logprintf("Page count = %d\n", u2());
-#endif
-    // The postamble will have font definitions here as well.
-                continue;
-        case 249:                          // post_post
-                (void)s4();
-                (void)*stringInput++;
-                if (*stringInput++ != 223) logprintf("Malformed DVI file\n");
-                break;
-
-        // 250-255 undefined
-        default:
-                logprintf("Unknown/undefined opcode %.2x\n", c);
-                break;
-            }
-            break;
-        }
-    }
-#if 0
-    logprintf("end of file\n");
-#endif
-}
-
 
 
 
@@ -1242,45 +544,31 @@ bool fwinApp::OnInit()
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
 
-#if DEBUG
-    logprintf("in fwinApp::OnInit\n");
-#endif
+    FWIN_LOG("in fwinApp::OnInit\n");
     add_custom_fonts();
-#if DEBUG
-    logprintf("fonts added\n");
-#endif
+    FWIN_LOG("fonts added\n");
 
-    const char *dvifilename = NULL;
-    if (argc > 1) dvifilename = myargv[1];
-    
-#if DEBUG
-    logprintf("dvifilename=%s\n",
-              dvifilename == NULL ? "<null>" : dvifilename);
-#endif
-
-    dviFrame *frame = new dviFrame(dvifilename);
+    fwinFrame *frame = new fwinFrame();
     frame->Show(true);
-#if DEBUG
-    logprintf("OnInint complete\n");
-#endif
+    FWIN_LOG("OnInint complete\n");
     return true;
 }
 
-dviFrame::dviFrame(const char *dvifilename)
-       : wxFrame(NULL, wxID_ANY, "wxdvi")
+fwinFrame::fwinFrame()
+       : wxFrame(NULL, wxID_ANY, "wxterminal")
 {
     SetIcon(wxICON(fwin));
     int numDisplays = wxDisplay::GetCount(); // how many displays?
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
     if (numDisplays != 1)
-    {   logprintf("There seem to be %d displays\n", numDisplays);
+    {   FWIN_LOG("There seem to be %d displays\n", numDisplays);
     }
     wxDisplay d0(0);                         // just look st display 0
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
     screenWidth = screenArea.GetWidth();
     screenHeight = screenArea.GetHeight();
-    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
+    FWIN_LOG("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
 // I will want to end up saving screen size (and even position) between runs
 // of this program.
     int width = 1280;      // default size.
@@ -1290,14 +578,14 @@ dviFrame::dviFrame(const char *dvifilename)
     if (10*width > 9*screenWidth)
     {   height = height*9*screenWidth/(10*width);
         width = 9*screenWidth/10;
-        logprintf("reset to %d by %d to fix width\n", width, height);
+        FWIN_LOG("reset to %d by %d to fix width\n", width, height);
     }
     if (10*height > 9 * screenHeight)
     {   width = width*9*screenHeight/(10*height);
         height = 9*screenHeight/10;
-        logprintf("reset to %d by %d to fix height\n", width, height);
+        FWIN_LOG("reset to %d by %d to fix height\n", width, height);
     }
-    panel = new dviPanel(this, dvifilename);
+    panel = new fwinPanel(this);
     SetMinClientSize(wxSize(400, 100));
     SetSize(width, height);
     wxSize client(GetClientSize());
@@ -1308,101 +596,82 @@ dviFrame::dviFrame(const char *dvifilename)
 
 
 // When I construct this I must avoid the wxTAB_TRAVERSAL style since that
-// tend sto get characters passed to child windows not this one. Avoiding
-// that is the reason behind providing so many arguments to the parent
-// constructor
+// tends to get characters passed to child windows rather than to this one.
+// Avoiding that is the reason behind providing so many arguments to the
+// parent constructor.
 
-dviPanel::dviPanel(dviFrame *parent, const char *dvifilename)
+fwinPanel::fwinPanel(fwinFrame *parent)
        : wxPanel(parent, wxID_ANY, wxDefaultPosition,
-                 wxDefaultSize, 0L, "dviPanel")
+                 wxDefaultSize, 0L, "fwinPanel")
 {
-// I will read the DVI data once here.
-    FILE *f = NULL;
-    if (dvifilename == NULL) dviData = mathDvi;
-    else
-    {   stringInput = NULL;
-        f = fopen(dvifilename, "rb");
-        if (f == NULL)
-        {   logprintf("File \"%s\" not found\n", dvifilename);
-            exit(1);
-        }
-        fseek(f, (off_t)0, SEEK_END);
-        off_t len = ftell(f);
-        dviData = (unsigned char *)malloc((size_t)len);
-        fseek(f, (off_t)0, SEEK_SET);
-        for (int i=0; i<len; i++) dviData[i] = getc(f);
-        fclose(f);
-    }
-    for (int i=0; i<MAX_FONTS; i++) font[i] = NULL;
     fixedPitch = NULL;
     firstPaint = true;
+    textBufferSize = 80*100;
+    textBuffer = (wchar_t *)malloc(textBufferSize*sizeof(wchar_t));
+    for (int i=0; i<textBufferSize; i++) textBuffer[i] = L' ';
+    caretPos = 0;
 }
 
 
-void dviFrame::OnExit(wxCommandEvent &WXUNUSED(event))
+void fwinFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 {
     Destroy();
     exit(0);    // I want the whole application to terminate here!
 }
 
-void dviFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
+void fwinFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
 // At present this never gets activated!
     wxMessageBox(
        wxString::Format(
-           "wxdvi (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
+           "wxterminal (A C Norman 2010)\n"
+           "wxWidgets version: %s\n"
+           "Operating system: %s",
            wxVERSION_STRING,
            wxGetOsDescription()),
-       "About wxdvi",
+       "About wxterminal",
        wxOK | wxICON_INFORMATION,
        this);
 }
 
-void dviFrame::OnSize(wxSizeEvent &WXUNUSED(event))
+static int columnPos[81];
+
+void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {
+    int i;
+    double w;
     wxSize client(GetClientSize());
+    w = (double)client.GetWidth()/80.0;
     panel->SetSize(client);
     panel->firstPaint = true;
+    for (i=0; i<81; i++)
+        columnPos[i] = (int)((double)i*w);
     panel->Refresh();
 }
 
-void dviPanel::OnChar(wxKeyEvent &event)
+void fwinPanel::OnChar(wxKeyEvent &event)
 {
     const char *msg = "OnChar", *raw = "";
     int c = event.GetUnicodeKey();
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    else
+    {   textBuffer[caretPos] = c;
+        RefreshRect(wxRect(columnPos[caretPos], 0,
+            columnPos[caretPos+1]-columnPos[caretPos], 40));
+        caretPos++;
+    }
+    if (0x20 < c && c < 0x7f) FWIN_LOG("%s%s %x (%c)\n", msg, raw, c, c);
+    else FWIN_LOG("%s%s %x\n", msg, raw, c);
+    if (*raw != 0) event.Skip();
 }
 
-void dviPanel::OnKeyDown(wxKeyEvent &event)
+void fwinPanel::OnMouse(wxMouseEvent &event)
 {
-    const char *msg = "OnKeyDown", *raw = "";
-    int c = event.GetUnicodeKey();
-    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
+    FWIN_LOG("Mouse event\n");
     event.Skip();
 }
 
-void dviPanel::OnKeyUp(wxKeyEvent &event)
-{
-    const char *msg = "OnKeyUp", *raw = "";
-    int c = event.GetUnicodeKey();
-    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw";
-    if (0x20 < c && c < 0x7f) logprintf("%s%s %x (%c)\n", msg, raw, c, c);
-    else logprintf("%s%s %x\n", msg, raw, c);
-    event.Skip();
-}
-
-void dviPanel::OnMouse(wxMouseEvent &event)
-{
-    logprintf("Mouse event\n");
-    event.Skip();
-//  Refresh();     // forces redraw of everything
-}
-
-void dviPanel::OnPaint(wxPaintEvent &event)
+void fwinPanel::OnPaint(wxPaintEvent &event)
 {
     wxPaintDC mydc(this);
 
@@ -1410,7 +679,6 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
     mydc.SetBackground(b1);
-//    mydc.SetTextBackground(c1);
     mydc.Clear(); // explicitly clear background
 
     if (firstPaint)
@@ -1422,19 +690,19 @@ void dviPanel::OnPaint(wxPaintEvent &event)
             while (p->name != NULL &&
                    strcmp(p->name, "cmtt10") != 0) p++;
             if (p->name == NULL)
-            {   logprintf("Oops - font data not found\n");
+            {   FWIN_LOG("Oops - font data not found\n");
                 exit(1);
             }
             wxCoord width, height, depth, leading;
             mydc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
             em = (double)width/100.0;
             double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
-            logprintf("em=%#.3g fmEm = %#.3g\n", em, fmEm);
-            logprintf("height = %#.3g total height = %#.3g leading = %#.3g\n",
+            FWIN_LOG("em=%#.3g fmEm = %#.3g\n", em, fmEm);
+            FWIN_LOG("height = %#.3g total height = %#.3g leading = %#.3g\n",
                 (double)(height-depth-leading)/100.0, (double)height/100.0,
                 (double)leading/100.0);
             pixelsPerPoint = em/fmEm;
-            logprintf("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
+            FWIN_LOG("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
             fixedPitch->SetPointSize(10);
         }
         wxSize window(mydc.GetSize());
@@ -1444,6 +712,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
         fixedPitch->Scale(scaleAdjustment);
         if (firstPaint)
         {
+#if 0
 // Now I need to re-size any fonts that have already been created
             for (int i=0; i<MAX_FONTS; i++)
             {   wxFont *ff = font[i];
@@ -1451,6 +720,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
                 ff->SetPointSize(fontWidth[i]->designsize/1048576);
                 ff->Scale(scaleAdjustment*fontScale[i]);
             }
+#endif
         }
         firstPaint = false;
     }
@@ -1461,11 +731,10 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     mydc.SetPen(*wxBLACK_PEN);
     wxSize window(mydc.GetSize());
     for (int i=0; i<80; i++)
-    {   wxString c = (wchar_t)('0' + (i % 10));
-        mydc.DrawText(c, (int)((double)i*window.GetWidth()/80.0), 0);
+    {   wxString c = textBuffer[i];
+        mydc.DrawText(c, columnPos[i], 0);
     }
     dcp = &mydc;
-    RenderDVI();
     return;
 }
 
