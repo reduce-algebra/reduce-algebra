@@ -181,16 +181,21 @@ class QtReduce(QThread):
         return True
 
     def run(self):
+        traceLogger.debug("entering")
         c = self.computation.command
         traceLogger.debug("computing %s" % c)
         a = self.reduce.compute(c)
+        traceLogger.debug("answer is %s" % a)
         self.computation.processAnswer(a,self.accTime,self.accGcTime)
         self.accTime = self.computation.accTime
         self.accGcTime = self.computation.accGcTime
+        traceLogger.debug("processed computation is %s" % self.computation)
         self.finishedComputations.append(self.computation)
-        if self.computation.error:
+        traceLogger.debug("appended to finishedComputations")
+        if self.computation.status == QtReduceComputation.Error:
             a = self.reduce.compute(" 0.0.")
             traceLogger.debug("error recovery %s" % a)
+        traceLogger.debug("leaving")
 
     def startedHandler(self):
         l = len(self.startedComputations)
@@ -244,6 +249,7 @@ class QtReduceComputation(QObject):
     Aborted = 4
 
     def __init__(self,d={}):
+        super(QtReduceComputation,self).__init__()
         self.statCounter = int(d.get('statCounter',0))
         self.command = d.get('command','')
         self.symbolic = self.__bool(d.get('symbolic',False))
