@@ -95,6 +95,28 @@ symbolic procedure reciprocal!-by!-gcd(a,b,x,y);
                                 y,x #- y #* w)
    end;
 
+symbolic procedure safe!-modular!-reciprocal a;
+   if !*balanced_mod and a<0
+     then safe!-reciprocal!-by!-gcd(current!-modulus,
+                              a #+ current!-modulus,0,1)
+    else safe!-reciprocal!-by!-gcd(current!-modulus,a,0,1);
+
+symbolic procedure safe!-reciprocal!-by!-gcd(a,b,x,y);
+%On input A and B should be coprime. This routine then
+%finds X and Y such that A*X+B*Y=1, and returns the value Y
+%on input A > B. If a and b are not coprime return NIL not an error; 
+   if b=0 then nil
+   else if b=1 then if iminusp y then y #+ current!-modulus else y
+   else begin scalar w;
+%N.B. Invalid modular division is either:
+% a)  attempt to divide by zero directly
+% b)  modulus is not prime, and input is not
+%     coprime with it;
+     w:= a #/ b; %Truncated integer division;
+     return reciprocal!-by!-gcd(b,a #- b #* w,
+                                y,x #- y #* w)
+   end;
+
 smacro procedure modular!-quotient(a,b);
     modular!-times(a,modular!-reciprocal b);
 

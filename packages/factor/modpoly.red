@@ -128,8 +128,12 @@ symbolic procedure quotfail!-mod!-p(a,b);
 symbolic procedure quotient!-mod!-p(a,b);
    % Truncated quotient of a by b.
     if null b then errorf "B=0 IN QUOTIENT-MOD-P"
-    else if domainp b then multiply!-by!-constant!-mod!-p(a,
-                             modular!-reciprocal b)
+    else if domainp b then begin
+        scalar r;
+        r := safe!-modular!-reciprocal b;
+        if null b then return exact!-quotient!-flag:=nil
+        else return multiply!-by!-constant!-mod!-p(a, r)
+    end
     else if a=nil then nil
     else if domainp a then exact!-quotient!-flag:=nil
     else if mvar a=mvar b then xquotient!-mod!-p(a,b,mvar b)
@@ -147,7 +151,8 @@ symbolic procedure xquotient!-mod!-p(a,b,v);
       ilessp(ldeg a,ldeg b) then exact!-quotient!-flag:=nil
     else if ldeg a = ldeg b then begin scalar w;
       w:=quotient!-mod!-p(lc a,lc b);
-      if difference!-mod!-p(a,times!-mod!-p(w,b)) then
+      if w = nil or
+         difference!-mod!-p(a,times!-mod!-p(w,b)) then
         exact!-quotient!-flag:=nil;
       return w
       end

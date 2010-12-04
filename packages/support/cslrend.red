@@ -360,12 +360,16 @@ single precision integers should be used;
 % This is constant for the life of the system and could be
 % compiled in-line if the compiler permits it.
 
-largest!-small!-modulus := 2**24 - 1; % I could use up to 2^27-1, but
-         % stick to 2^24-1 since that's what Cambridge Lisp used to use.
+% As of December 2010 CSL will actually support up to 2^27, but until
+% people have had several months to install a newly compiled CSL I will
+% restrict myself to the limit that applied up until them.
+
+largest!-small!-modulus := 2**24 - 1;
 
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
-       modular!-times modular!-expt set!-small!-modulus), 'lose);
+       modular!-times modular!-expt set!-small!-modulus
+       safe!-modular!-reciprocal), 'lose);
 
 % See comments about gensym() below - which apply also to the
 % effects of having different random number generators in different
