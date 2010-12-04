@@ -82,7 +82,8 @@ class QtReduceMainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super(QtReduceMainWindow,self).__init__(parent)
-        self.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
+        if os.uname()[0] != "Darwin":
+            self.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
         self.setUnifiedTitleAndToolBarOnMac(True)
         self.controller = QtReduceController(self)
         self.setCentralWidget(self.controller.view)
@@ -259,14 +260,16 @@ class QtReduceMainWindow(QMainWindow):
         None
 
     def toggleFullScreen(self):
+        self.setUnifiedTitleAndToolBarOnMac(False)
         if self.isFullScreen():
-            self.addToolBar(Qt.TopToolBarArea,self.toolBar)
             self.showNormal()
+            self.addToolBar(Qt.TopToolBarArea,self.toolBar)
             self.fullScreenAct.setText("Enter Full Screen")
         else:
             self.showFullScreen()
             self.addToolBar(Qt.LeftToolBarArea,self.toolBar)
             self.fullScreenAct.setText("Exit Full Screen")
+        self.setUnifiedTitleAndToolBarOnMac(True)
 
     def updateActionIcons(self):
         for act in [self.openAct,
@@ -343,8 +346,8 @@ class QtReduceMainWindow(QMainWindow):
 
         self.fullScreenAct = QAction(self.tr("Enter Full Screen"), self,
                                  triggered=self.toggleFullScreen)
-        if os.uname()[0] == "Darwin":
-            self.fullScreenAct.setEnabled(False)
+        # if os.uname()[0] == "Darwin":
+        #     self.fullScreenAct.setEnabled(False)
 
         self.evalSelAct = QAction(self.tr("Evaluate Selection"), self,
                                enabled=False,

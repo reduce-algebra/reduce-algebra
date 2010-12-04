@@ -34,6 +34,8 @@ import os
 import sys
 
 from PySide.QtGui import QApplication
+from PySide.QtGui import QIcon
+
 from PySide.QtCore import QTranslator
 from PySide.QtCore import QLocale
 from PySide.QtCore import QLibraryInfo
@@ -58,6 +60,8 @@ qreduceTranslator.load(sys.path[0] + "/" + "qreducetr." +
 #app.installTranslator(qreduceTranslator)
 
 # app.setStyleSheet("QStatusBar::item { border: 0px solid black }");
+
+app.setWindowIcon(QIcon(sys.path[0] + "/" + "Bumblebee.png"))
 
 if os.uname()[0] == "Darwin":
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
