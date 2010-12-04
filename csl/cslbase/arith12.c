@@ -36,7 +36,7 @@
  *************************************************************************/
 
 
-/* Signature: 5768c7ec 24-May-2008 */
+/* Signature: 2b5efe40 04-Dec-2010 */
 
 
 #include "headers.h"
@@ -108,8 +108,33 @@ Lisp_Object Lmodular_reciprocal(Lisp_Object nil, Lisp_Object n)
     while (b != 1)
     {   int32_t w, t;
         if (b == 0)
-            return aerror1("non-prime modulus in modular-reciprocal",
-                           fixnum_of_int(current_modulus));
+            return aerror2("non-prime modulus in modular-reciprocal",
+                           fixnum_of_int(current_modulus), n);
+        w = a / b;
+        t = b;
+        b = a - b*w;
+        a = t;
+        t = y;
+        y = x - y*w;
+        x = t;
+    }
+    if (y < 0) y += current_modulus;
+    return onevalue(fixnum_of_int(y));
+}
+
+Lisp_Object Lsafe_modular_reciprocal(Lisp_Object nil, Lisp_Object n)
+{
+    int32_t a, b, x, y;
+    CSL_IGNORE(nil);
+    a = current_modulus;
+    b = int_of_fixnum(n);
+    x = 0;
+    y = 1;
+    if (b == 0) return onevalue(nil);
+    if (b < 0) b = current_modulus - ((-b)%current_modulus);
+    while (b != 1)
+    {   int32_t w, t;
+        if (b == 0) return onevalue(nil);
         w = a / b;
         t = b;
         b = a - b*w;
@@ -201,13 +226,15 @@ Lisp_Object Lset_small_modulus(Lisp_Object nil, Lisp_Object a)
 {
     int32_t r, old = current_modulus;
     CSL_IGNORE(nil);
-    if (!is_fixnum(a)) return aerror1("set-small-modulus", a);
+    if (a==nil) return onevalue(fixnum_of_int(old));
+    else if (!is_fixnum(a)) return aerror1("set-small-modulus", a);
     r = int_of_fixnum(a);
 /*
- * I COULD allow a small modulus of up to 2^27, but for compatibility
- * with Cambridge Lisp I will limit myself to 24 bits.
+ * I now allow a small modulus of up to 2^27. One I stopped at 2^24
+ * for compatibility with Cambridge Lisp, but that is now so long in the
+ * past that worrying about it seems unnecessary.
  */
-    if (r > 0x00ffffff) return aerror1("set-small-modulus", a);
+    if (r > 0x07ffffff) return aerror1("set-small-modulus", a);
     current_modulus = r;
     return onevalue(fixnum_of_int(old));
 }
@@ -621,6 +648,7 @@ setup_type const arith12_setup[] =
     {"modular-plus",            too_few_2, Lmodular_plus, wrong_no_2},
     {"modular-quotient",        too_few_2, Lmodular_quotient, wrong_no_2},
     {"modular-reciprocal",      Lmodular_reciprocal, too_many_1, wrong_no_1},
+    {"safe-modular-reciprocal", Lsafe_modular_reciprocal, too_many_1, wrong_no_1},
     {"modular-times",           too_few_2, Lmodular_times, wrong_no_2},
     {"modular-expt",            too_few_2, Lmodular_expt, wrong_no_2},
     {"set-small-modulus",       Lset_small_modulus, too_many_1, wrong_no_1},
