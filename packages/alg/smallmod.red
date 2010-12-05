@@ -113,8 +113,8 @@ symbolic procedure safe!-reciprocal!-by!-gcd(a,b,x,y);
 % b)  modulus is not prime, and input is not
 %     coprime with it;
      w:= a #/ b; %Truncated integer division;
-     return reciprocal!-by!-gcd(b,a #- b #* w,
-                                y,x #- y #* w)
+     return safe!-reciprocal!-by!-gcd(b,a #- b #* w,
+                                      y,x #- y #* w)
    end;
 
 smacro procedure modular!-quotient(a,b);
