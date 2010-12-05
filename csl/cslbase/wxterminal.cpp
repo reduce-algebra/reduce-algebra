@@ -213,13 +213,25 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 #include "cmfont-widths.c"
 
 
+// I had HOPED I might use a variant on wxTextCtrl here and let it cope
+// with all the keyboard handling, Unicode fun, local editing, scrolling -
+// in general most of the effort. However I can not find how to subvert
+// a Text Control into using a fixed pitch font and spacing it nicely to
+// make exactly 80 chars fit across the screen. And also I have real problems
+// with the deeply eccentric coding scheme used by the TeX fonts that I want
+// to use.
 
-class fwinPanel : public wxPanel
+// Musing - would a graphicscontext rather than an wxDC give me finer control
+// over font sizes and character placement?
+
+// I *probably* want to use wxvscrolledwindow here not wxscrolledcanvas!
+
+class fwinText : public wxScrolledCanvas
 {
 public:
-    fwinPanel(class fwinFrame *parent);
+    fwinText(class fwinFrame *parent);
 
-    void OnPaint(wxPaintEvent &event);
+    void OnDraw(wxDC &dc);
 
     void OnChar(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
@@ -232,10 +244,7 @@ private:
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
     double scaleAdjustment;
 
-    wxPaintDC *dcp;          // pointer to device context to draw on
-
-    wchar_t *textBuffer;
-    int textBufferSize;
+    wchar_t textBuffer[1000];
     int caretPos;
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
@@ -243,10 +252,10 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(fwinPanel, wxPanel)
-    EVT_PAINT(           fwinPanel::OnPaint)
-    EVT_CHAR(            fwinPanel::OnChar)
-    EVT_LEFT_UP(         fwinPanel::OnMouse)
+BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
+//    EVT_PAINT(           fwinText::OnPaint)
+    EVT_CHAR(            fwinText::OnChar)
+    EVT_LEFT_UP(         fwinText::OnMouse)
 END_EVENT_TABLE()
 
 class fwinFrame : public wxFrame
@@ -261,7 +270,7 @@ public:
 private:
     int screenWidth, screenHeight;
 
-    fwinPanel *panel;
+    fwinText *panel;
     DECLARE_EVENT_TABLE()
 };
 
@@ -368,6 +377,7 @@ static localFonts fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
+#if 0
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
@@ -409,8 +419,10 @@ static localFonts fontNames[] =
     {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
     {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
     {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
+#endif
     {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
     {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
+#if 0
     {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
     {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
     {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
@@ -437,6 +449,7 @@ static localFonts fontNames[] =
     {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
     {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
     {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
+#endif
     {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
 };
 
@@ -459,6 +472,8 @@ static localFonts fontNames[] =
 
 #define toString(x) toString1(x)
 #define toString1(x) #x
+
+// I will want to change this so that it adds the fonts only on need.
 
 int add_custom_fonts() // return 0 on success.
 {
@@ -515,7 +530,7 @@ int add_custom_fonts() // return 0 on success.
 
 
 
-int fwinPanel::MapChar(int c)
+int fwinText::MapChar(int c)
 {
 // This function maps between a TeX character encoding and the one that is
 // used by the fonts and rendering engine that I use.
@@ -542,7 +557,7 @@ bool fwinApp::OnInit()
 {
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
-    char **myargv = (char **)argv;
+//  char **myargv = (char **)argv;
 
     FWIN_LOG("in fwinApp::OnInit\n");
     add_custom_fonts();
@@ -564,15 +579,15 @@ fwinFrame::fwinFrame()
     if (numDisplays != 1)
     {   FWIN_LOG("There seem to be %d displays\n", numDisplays);
     }
-    wxDisplay d0(0);                         // just look st display 0
+    wxDisplay d0(0);                         // just look at display 0
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
     screenWidth = screenArea.GetWidth();
     screenHeight = screenArea.GetHeight();
     FWIN_LOG("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
 // I will want to end up saving screen size (and even position) between runs
 // of this program.
-    int width = 1280;      // default size.
-    int height = 1024;
+    int width  = 900;      // default size.
+    int height = 600;
 // If the default size would fill over 90% of screen width or height I scale
 // down to make it fit better.
     if (10*width > 9*screenWidth)
@@ -585,7 +600,7 @@ fwinFrame::fwinFrame()
         height = 9*screenHeight/10;
         FWIN_LOG("reset to %d by %d to fix height\n", width, height);
     }
-    panel = new fwinPanel(this);
+    panel = new fwinText(this);
     SetMinClientSize(wxSize(400, 100));
     SetSize(width, height);
     wxSize client(GetClientSize());
@@ -595,21 +610,16 @@ fwinFrame::fwinFrame()
 }
 
 
-// When I construct this I must avoid the wxTAB_TRAVERSAL style since that
-// tends to get characters passed to child windows rather than to this one.
-// Avoiding that is the reason behind providing so many arguments to the
-// parent constructor.
-
-fwinPanel::fwinPanel(fwinFrame *parent)
-       : wxPanel(parent, wxID_ANY, wxDefaultPosition,
-                 wxDefaultSize, 0L, "fwinPanel")
+fwinText::fwinText(fwinFrame *parent)
+       : wxScrolled<wxWindow>(parent, wxID_ANY,
+                    wxDefaultPosition, wxDefaultSize,
+                    wxVSCROLL, "fwinText")
 {
     fixedPitch = NULL;
     firstPaint = true;
-    textBufferSize = 80*100;
-    textBuffer = (wchar_t *)malloc(textBufferSize*sizeof(wchar_t));
-    for (int i=0; i<textBufferSize; i++) textBuffer[i] = L' ';
-    caretPos = 0;
+    caretPos = 1;
+    for (int i=0; i<sizeof(textBuffer)/sizeof(textBuffer[0]); i++)
+        textBuffer[i] = (wchar_t)i;
 }
 
 
@@ -649,7 +659,7 @@ void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
     panel->Refresh();
 }
 
-void fwinPanel::OnChar(wxKeyEvent &event)
+void fwinText::OnChar(wxKeyEvent &event)
 {
     const char *msg = "OnChar", *raw = "";
     int c = event.GetUnicodeKey();
@@ -665,16 +675,14 @@ void fwinPanel::OnChar(wxKeyEvent &event)
     if (*raw != 0) event.Skip();
 }
 
-void fwinPanel::OnMouse(wxMouseEvent &event)
+void fwinText::OnMouse(wxMouseEvent &event)
 {
     FWIN_LOG("Mouse event\n");
     event.Skip();
 }
 
-void fwinPanel::OnPaint(wxPaintEvent &event)
+void fwinText::OnDraw(wxDC &mydc)
 {
-    wxPaintDC mydc(this);
-
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
@@ -710,31 +718,27 @@ void fwinPanel::OnPaint(wxPaintEvent &event)
         scaleAdjustment = (double)spacePerChar/em;
         fixedPitch->SetPointSize(10);
         fixedPitch->Scale(scaleAdjustment);
-        if (firstPaint)
-        {
 #if 0
 // Now I need to re-size any fonts that have already been created
-            for (int i=0; i<MAX_FONTS; i++)
-            {   wxFont *ff = font[i];
-                if (ff == NULL) continue;
-                ff->SetPointSize(fontWidth[i]->designsize/1048576);
-                ff->Scale(scaleAdjustment*fontScale[i]);
-            }
-#endif
+        for (int i=0; i<MAX_FONTS; i++)
+        {   wxFont *ff = font[i];
+            if (ff == NULL) continue;
+            ff->SetPointSize(fontWidth[i]->designsize/1048576);
+            ff->Scale(scaleAdjustment*fontScale[i]);
         }
+#endif
         firstPaint = false;
     }
-// Sort of fof fun I put a row of 80 characters at the top of the screen
-// so I can show how fixed pitch stuff might end up being rendered.
-    mydc.SetFont(*fixedPitch);
+    SetFont(*fixedPitch);
     mydc.SetBrush(*wxBLACK_BRUSH);
     mydc.SetPen(*wxBLACK_PEN);
     wxSize window(mydc.GetSize());
-    for (int i=0; i<80; i++)
-    {   wxString c = textBuffer[i];
-        mydc.DrawText(c, columnPos[i], 0);
+    for (int j=0; j<20; j++)
+    {   for (int i=0; i<80; i++)
+        {   wxString c = (wchar_t)MapChar((int)textBuffer[i+80*j]);
+            mydc.DrawText(c, columnPos[i], 20*j);
+        }
     }
-    dcp = &mydc;
     return;
 }
 
