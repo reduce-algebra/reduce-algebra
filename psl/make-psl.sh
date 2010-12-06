@@ -42,7 +42,7 @@ mv -f newnames $PROOT/dist/psl-names.bash
 . $PROOT/dist/psl-names.bash
 
 echo "make for PSL in "$PROOT/dist " for MACHINE " $MACHINE
-echo "pleaase add " $PROOT/bin/$MACHINE " to your PATH "
+echo "please add " $PROOT/bin/$MACHINE " to your PATH "
 
 export psys=$PROOT/bin/$MACHINE
 export pxk=$PROOT/dist/kernel/$MACHINE

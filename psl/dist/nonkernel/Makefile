@@ -102,8 +102,8 @@ $(PNKL)/backtrace.b: $(PNK)/backtrace.sl
 $(PNKL)/base-io.b: $(PNK)/base-io.sl $(PL)/if-system.b $(PNKL)/io-decls.b
 	$(PDIST)/make-pnk-lap $(PNK) base-io
 
-$(PNKL)/binding.b: $(PNK)/binding.sl
-	$(PDIST)/make-pnk-lap $(PNK) binding
+$(PNKL)/binding.b: $(PXNK)/binding.sl
+	$(PDIST)/make-pnk-lap $(PXNK) binding
 
 $(PNKL)/break.b: $(PNK)/break.sl
 	$(PDIST)/make-pnk-lap $(PNK) break
