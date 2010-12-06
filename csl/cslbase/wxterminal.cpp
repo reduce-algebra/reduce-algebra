@@ -1,3 +1,5 @@
+#define DEBUG 1 /* regardless of overall build mode! */
+
 //
 // "wxterminal.cpp"                              Copyright A C Norman 2010
 //
@@ -244,8 +246,10 @@ private:
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
     double scaleAdjustment;
 
-    wchar_t textBuffer[1000];
+    unsigned short *textBuffer;
+    int textBufferSize;
     int caretPos;
+    int nRows;
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -253,7 +257,7 @@ private:
 };
 
 BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
-//    EVT_PAINT(           fwinText::OnPaint)
+//  EVT_PAINT(           fwinText::OnPaint)
     EVT_CHAR(            fwinText::OnChar)
     EVT_LEFT_UP(         fwinText::OnMouse)
 END_EVENT_TABLE()
@@ -267,10 +271,11 @@ public:
     void OnAbout(wxCommandEvent &event);
     void OnSize(wxSizeEvent &event);
 
+    fwinText *panel;
+
 private:
     int screenWidth, screenHeight;
 
-    fwinText *panel;
     DECLARE_EVENT_TABLE()
 };
 
@@ -562,10 +567,10 @@ bool fwinApp::OnInit()
     FWIN_LOG("in fwinApp::OnInit\n");
     add_custom_fonts();
     FWIN_LOG("fonts added\n");
-
     fwinFrame *frame = new fwinFrame();
+    FWIN_LOG("frame created but not shown\n");
     frame->Show(true);
-    FWIN_LOG("OnInint complete\n");
+    FWIN_LOG("Frame shown\n");
     return true;
 }
 
@@ -601,11 +606,10 @@ fwinFrame::fwinFrame()
         FWIN_LOG("reset to %d by %d to fix height\n", width, height);
     }
     panel = new fwinText(this);
+    FWIN_LOG("firstPain = %d after creation\n", panel->firstPaint);
     SetMinClientSize(wxSize(400, 100));
+    FWIN_LOG("About to setsize %d %d\n", width, height);
     SetSize(width, height);
-    wxSize client(GetClientSize());
-    int w = client.GetWidth() % 80;
-    if (w != 0) SetSize(width-w, height);
     Centre();
 }
 
@@ -618,8 +622,13 @@ fwinText::fwinText(fwinFrame *parent)
     fixedPitch = NULL;
     firstPaint = true;
     caretPos = 1;
-    for (int i=0; i<sizeof(textBuffer)/sizeof(textBuffer[0]); i++)
-        textBuffer[i] = (wchar_t)i;
+    FWIN_LOG("Creating fwinText\n");
+    nRows = 55;
+    textBufferSize = 10000;
+    textBuffer =
+        (unsigned short *)malloc(textBufferSize*sizeof(unsigned short));
+    for (int i=0; i<textBufferSize; i++)
+        textBuffer[i] = (unsigned short)i;
 }
 
 
@@ -645,6 +654,7 @@ void fwinFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 }
 
 static int columnPos[81];
+static int rowHeight, rowCount;
 
 void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {
@@ -666,8 +676,10 @@ void fwinText::OnChar(wxKeyEvent &event)
     if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
     else
     {   textBuffer[caretPos] = c;
-        RefreshRect(wxRect(columnPos[caretPos], 0,
-            columnPos[caretPos+1]-columnPos[caretPos], 40));
+        int left = columnPos[caretPos%80];
+        int right = columnPos[caretPos%80+1];
+        int top = rowHeight*(caretPos/80);
+        RefreshRect(wxRect(left, top, right-left, rowHeight));
         caretPos++;
     }
     if (0x20 < c && c < 0x7f) FWIN_LOG("%s%s %x (%c)\n", msg, raw, c, c);
@@ -681,19 +693,20 @@ void fwinText::OnMouse(wxMouseEvent &event)
     event.Skip();
 }
 
-void fwinText::OnDraw(wxDC &mydc)
+void fwinText::OnDraw(wxDC &dc)
 {
+    FWIN_LOG("OnDraw called first=%d\n", firstPaint);
 // The next could probably be done merely by setting a background colour
     wxColour c1(230, 200, 255);
     wxBrush b1(c1);
-    mydc.SetBackground(b1);
-    mydc.Clear(); // explicitly clear background
+    dc.SetBackground(b1);
+    dc.Clear(); // explicitly clear background
 
     if (firstPaint)
     {   if (fixedPitch == NULL)
         {   fixedPitch = new wxFont();
             fixedPitch->SetNativeFontInfoUserDesc("csl-cmtt10 1000");
-
+            FWIN_LOG("fixed pitch font created\n");
             font_width *p = cm_font_width;
             while (p->name != NULL &&
                    strcmp(p->name, "cmtt10") != 0) p++;
@@ -702,7 +715,7 @@ void fwinText::OnDraw(wxDC &mydc)
                 exit(1);
             }
             wxCoord width, height, depth, leading;
-            mydc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
+            dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
             em = (double)width/100.0;
             double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
             FWIN_LOG("em=%#.3g fmEm = %#.3g\n", em, fmEm);
@@ -713,11 +726,15 @@ void fwinText::OnDraw(wxDC &mydc)
             FWIN_LOG("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
             fixedPitch->SetPointSize(10);
         }
-        wxSize window(mydc.GetSize());
+        wxSize window(dc.GetSize());
         int spacePerChar = window.GetWidth()/80;
         scaleAdjustment = (double)spacePerChar/em;
         fixedPitch->SetPointSize(10);
         fixedPitch->Scale(scaleAdjustment);
+// For a 10 point font I would use a row-spacing of 13.
+        rowHeight = (int)(13.0*scaleAdjustment + 0.9999); 
+        rowCount = (window.GetHeight()+rowHeight-1)/rowHeight;
+        SetVirtualSize(wxSize(window.GetWidth(), nRows*rowHeight));
 #if 0
 // Now I need to re-size any fonts that have already been created
         for (int i=0; i<MAX_FONTS; i++)
@@ -729,14 +746,16 @@ void fwinText::OnDraw(wxDC &mydc)
 #endif
         firstPaint = false;
     }
-    SetFont(*fixedPitch);
-    mydc.SetBrush(*wxBLACK_BRUSH);
-    mydc.SetPen(*wxBLACK_PEN);
-    wxSize window(mydc.GetSize());
-    for (int j=0; j<20; j++)
+    FWIN_LOG("fixedPitch = %p, about to set it\n", fixedPitch);
+    dc.SetFont(*fixedPitch);
+    dc.SetBrush(*wxBLACK_BRUSH);
+    dc.SetPen(*wxBLACK_PEN);
+    FWIN_LOG("rowCount = %d\n", rowCount);
+    for (int j=0; j<rowCount; j++)
     {   for (int i=0; i<80; i++)
-        {   wxString c = (wchar_t)MapChar((int)textBuffer[i+80*j]);
-            mydc.DrawText(c, columnPos[i], 20*j);
+        {   if (i==0 && j == 0) FWIN_LOG("About to draw a char\n");
+            wxString c = (wchar_t)MapChar((int)textBuffer[i+80*j]);
+            dc.DrawText(c, columnPos[i], rowHeight*j);
         }
     }
     return;

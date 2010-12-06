@@ -1,3 +1,5 @@
+#define DEBUG 1   /* regardless of build mode for now! */
+
 /*
  * "wxfwin.c"                                    Copyright A C Norman 2010
  *
