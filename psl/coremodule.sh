@@ -79,6 +79,9 @@ end;
   
 package!-remake '$1;
 
+if !*faslp 
+  then system "touch $reduce/psl/mkreduce";
+
 bye;
 XXX
 

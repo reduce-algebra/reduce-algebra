@@ -491,7 +491,8 @@ deps/noncore-packages.psl-depend:
 -include deps/noncore-packages.psl-make
 -include deps/noncore-packages.psl-depend
 
-red/reduce.img:
+red/reduce.img: ../../mkreduce
+	rm ../../mkreduce
 	$(srcdir)/reduce.img.sh $(BUILD)
 
 # end of Makefile.am
