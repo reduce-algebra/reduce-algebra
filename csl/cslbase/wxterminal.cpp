@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5c2a520a 04-Dec-2010 */
+/* Signature: 7e9ec941 08-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -606,7 +606,7 @@ fwinFrame::fwinFrame()
         FWIN_LOG("reset to %d by %d to fix height\n", width, height);
     }
     panel = new fwinText(this);
-    FWIN_LOG("firstPain = %d after creation\n", panel->firstPaint);
+    FWIN_LOG("firstPaint = %d after creation\n", panel->firstPaint);
     SetMinClientSize(wxSize(400, 100));
     FWIN_LOG("About to setsize %d %d\n", width, height);
     SetSize(width, height);

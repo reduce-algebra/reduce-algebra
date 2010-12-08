@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 13a3f8e6 04-Dec-2010 */
+/* Signature: 0a5e57a1 07-Dec-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -274,6 +274,20 @@ int fwin_use_xft = 0;
 int fwin_pause_at_end = 0;
 
 #ifdef WIN32
+
+BOOL CtrlHandler(DWORD x)
+{
+    switch (x)
+    {
+case CTRL_CLOSE_EVENT:
+case CTRL_LOGOFF_EVENT:
+case CTRL_SHUTDOWN_EVENT:
+        ExitProcess(1);
+        return 1;
+default:
+        return 0;
+    }
+}
 
 void consoleWait()
 {
@@ -496,6 +510,7 @@ int main(int argc, char *argv[])
 /* I will also pause for 5 seconds at the end... */
             atexit(consoleWait);
         }
+        SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE);  
     }
 #endif /* WIN32 */
 #else /* PART_OF_FOX */

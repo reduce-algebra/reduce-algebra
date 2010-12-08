@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 622fa3c6 04-Dec-2010 */
+/* Signature: 1f84905c 08-Dec-2010 */
 
 #include "config.h"
 
@@ -311,6 +311,34 @@ void consoleWait()
 
 #ifndef EMBEDDED
 
+#ifdef WIN32
+
+BOOL CtrlHandler(DWORD x)
+{
+    switch (x)
+    {
+/*
+ * This seems to be needed to ensure that if a windows console is closed
+ * and you launched your program from a cygwin shell (via the cygwin
+ * execv(e) family) it exists nicely. Otherwise it can be retried several
+ * times.
+ */
+case CTRL_CLOSE_EVENT:
+case CTRL_LOGOFF_EVENT:
+case CTRL_SHUTDOWN_EVENT:
+case CTRL_BREAK_EVENT:
+/*
+ * I had tried the ise of ExitProcess(1) here and that was not strong enough
+ * to avoid program-restart! So I take drastic action with TerminateProcess.
+ */
+        TerminateProcess(GetCurrentProcess(), 1);
+default:
+        return 0;
+    }
+}
+
+#endif
+
 int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 {
     int i, ssh_client = 0;
@@ -476,19 +504,6 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
     }
 #else  /* WIN32 */
 #ifdef MACINTOSH
-#ifdef SAFE
-/*
- * For the Macintosh I check to see if the binary I am launching has
- * a full path of the form
- * / ... /name.app/ ... / name
- * and if it does I will interpret this as indicating that the program
- * is part of an application bundle. 
- */
-    {   char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname, "%s.app", programName);
-        macApp = (strstr(fullProgramName, xname) != NULL);
-    }
-#else
 /*
  * This may be a proper way to test if I am really running in an application
  * bundle.
@@ -508,7 +523,6 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
             }
         }
     }
-#endif
 #endif /* MACINTOSH */
 /* If stdin or stdout is not from a "tty" I will run in non-windowed mode.
  * This may help when the system is used in scripts. I worry a bit about
@@ -594,35 +608,14 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  */
     if (windowed == 0)
     {   int consoleCreated;
-        FWIN_LOG("Need a console\n");
         consoleCreated = AllocConsole();
-        FWIN_LOG("consoleCreated = %d\n", consoleCreated);
         if (consoleCreated)
-        {
-/*
- * For reasons that I really do not understand I observe that if a new
- * console has been created and somebody closes it then my code seems
- * to be restarted - it then creates itself a fresh console. I rather
- * wanted closing the console (eg using the "x" at the top right) to terminate
- * what I was doing! SetConsoleCtrlHandler() ought to be able to detect
- * when the console being closed on me, but my experiments on Windows 7
- * appear to show the handler function registered using it just not being
- * called. Yuk. So I use a fallback that is unsatisfactory but that prevents
- * users having an windows that they can try to close but that then comes
- * alive again. I disable their ability to close the window using either
- * a CLOSE entry on the menu or the "x" button. Thus the console should
- * only go away when the application itself terminates. Now of the application
- * crashes and so will not give them a chance to exit cleanly this is BAD.
- */
-            DeleteMenu(GetSystemMenu(GetConsoleWindow(), FALSE),
-                       SC_CLOSE, MF_BYCOMMAND);
-            DrawMenuBar(GetConsoleWindow());
-            if (ssh_client)
+        {   if (ssh_client)
             {
 /*
  * This situation seems totally odd to me. I just launched a Windowed-mode
  * application and normally when I do that it detaches from the console.
- * hoever rather than having a proper console here I am connected over
+ * however rather than having a proper console here I am connected over
  * ssh (I am testing this using the cygwin openssh server on Windows 7).
  * It appears to be the case that I *DO* have stdin and stdout available to
  * me in this case even though I think that when I launch exactly the same
@@ -640,15 +633,34 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
                 freopen("/dev/conout", "w", stdout);
                 freopen("/dev/conout", "w", stderr);
 #else
+/*
+ * I try rather hard here to leave things properly connected to
+ * the new console.
+ */
+                HANDLE h;
                 freopen("CONIN$", "r", stdin);
                 freopen("CONOUT$", "w", stdout);
                 freopen("CONOUT$", "w", stderr);
+                SetStdHandle(STD_INPUT_HANDLE,
+                    CreateFile("CONIN$",
+                        GENERIC_READ, FILE_SHARE_READ, NULL,
+                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+                SetStdHandle(STD_OUTPUT_HANDLE,
+                    h = CreateFile("CONOUT$",
+                        GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
+                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+                SetStdHandle(STD_ERROR_HANDLE, h);
 #endif
 /* I will also pause for 5 seconds at the end... */
                 atexit(consoleWait);
             }
         }
     }
+/*
+ * To cope with somebody forcibly closing a console on me I need
+ * to trap some console events.
+ */
+    SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE);
 #endif /* WIN32 */
 
 /* Windowed or not, if there is an argument "-b" or "-bxxxx" then the
@@ -666,7 +678,7 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
     }
 
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
-    FWIN_LOG("\n+++ Would run windowed here\n");
+    FWIN_LOG("\n+++ Will run windowed here\n");
 
 #ifdef MACINTOSH
 /*
@@ -726,30 +738,14 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
 
 void MS_CDECL sigint_handler(int code)
 {
-#ifdef TEST_SIGNAL_CATCHER
 /* For debugging I may want to see when signals get caught... */
-    fprintf(stderr, "sigint_handler called %d %#x\n", code, code);
-    fflush(stderr);
-#endif
+    FWIN_LOG("sigint_handler called %d %#x\n", code, code);
     signal(SIGINT, sigint_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
 }
 
 #endif /* EMBEDDED */
-
-#ifdef SIGBREAK
-void MS_CDECL sigbreak_handler(int code)
-{
-#ifdef TEST_SIGNAL_CATCHER
-    fprintf(stderr, "sigbreak_handler called %d %#x\n", code, code);
-    fflush(stderr);
-#endif
-    signal(SIGBREAK, sigbreak_handler);
-    if (interrupt_callback != NULL) (*interrupt_callback)(NOISY_INTERRUPT);
-    return;
-}
-#endif
 
 /*
  * I will only try to use my own local editing and history package
@@ -791,14 +787,14 @@ static int direct_to_terminal(int argc, char *argv[])
 int plain_worker(int argc, char *argv[], fwin_entrypoint *main)
 {
     int r;
+    FWIN_LOG("plain worker starting\n");
     signal(SIGINT, sigint_handler);
-#ifdef SIGBREAK
-    signal(SIGBREAK, sigbreak_handler);
-#endif
-#ifdef TEST_SIGNAL_CATCHER
-    fprintf(stderr, "handlers for sigint and sigbreak set up\n");
-    fflush(stderr);
-#endif
+/*
+ * At one time I trapped SIGBREAK. These days I just let it terminate
+ * my program if I am on Linux, Unix or BSD (inc Mac), and under Windows
+ * I sometimes trap it using alternative system-specific code,
+ */
+    FWIN_LOG("handler for sigint set up\n");
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
         term_setup(1, colour_spec);
