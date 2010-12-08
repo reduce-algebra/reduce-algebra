@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 2f5f3d05 08-Dec-2010 */
+/* Signature: 3c6e359b 08-Dec-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -165,7 +165,7 @@ static int outputColour = -1;  /* whatever user had been using */
 
 #ifndef DEBUG
 
-#define LOG(a)
+#define LOG(...)
 
 #else
 

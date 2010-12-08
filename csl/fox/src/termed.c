@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 793be449 09-May-2010 */
+/* Signature: 3c6e359b 08-Dec-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -132,6 +132,8 @@ static const char *term_colour;
  *   7  white     W, w
  */
 
+#ifndef WIN32
+
 static int map_colour(int ch)
 {
     switch (ch)
@@ -149,17 +151,21 @@ default:            return -1;
     }
 }
 
+#endif /* WIN32 */
+
 /*
  * The default values set here can be changed as a result of the colour
  * option passed to term_setup.
  */
 static int promptColour = 4;   /* Blue */
 static int inputColour  = 1;   /* Red */
+#ifndef WIN32
 static int outputColour = -1;  /* whatever user had been using */
+#endif /* WIN32 */
 
 #ifndef DEBUG
 
-#define LOG(a)
+#define LOG(...)
 
 #else
 
@@ -176,7 +182,7 @@ static void write_log(char *s, ...)
     va_end(x);
 }
 
-#define LOG(a) write_log a;
+#define LOG(...) write_log(__VA_ARGS__);
 
 #endif
 
@@ -580,7 +586,7 @@ static void measure_screen(void)
 #endif /* TIOCGWINSZ */
 #endif /* HAVE_SYS_IOCTL_H */
 #endif /* WIN32 */
-    LOG(("[screen:%dx%d]", columns, lines));
+    LOG("[screen:%dx%d]", columns, lines);
 }
 
 #ifdef WIN32
@@ -655,6 +661,7 @@ int term_setup(int flag, const char *colour)
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
+    freopen("CONOUT$", "w", stdout);
     term_enabled = 0;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
@@ -902,7 +909,7 @@ static int term_getchar(void)
  * in case that is really for "'") do I test for that. Anyway at least
  * with my keyboard this lets "^@" get through!
  */
-            if (key != 0x11) LOG(("\nascii=%x VK=%x ctrl=%x\n", ascii, key, ctrl));
+            if (key != 0x11) LOG("\nascii=%x VK=%x ctrl=%x\n", ascii, key, ctrl);
             if (ascii != 0 || key == 0xc0)
             {   if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
                     ascii |= 0x100;
@@ -983,7 +990,7 @@ static int term_getchar(void)
     int state = BASE_STATE, esc_esc = 0, ch, numval1=0, numval2=0;
     for (;;)
     {   ch = getchar();
-        LOG(("RAW ch=%.2x : <%c>\n", ch, ch | 0x40));
+        LOG("RAW ch=%.2x : <%c>\n", ch, ch | 0x40);
         if (ch == EOF) return EOF;
         switch (state)
         {
