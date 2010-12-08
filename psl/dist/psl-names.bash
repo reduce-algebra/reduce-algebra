@@ -58,7 +58,7 @@
 # Since the environment is inherited, it is only necessary to source psl-names
 # once in your .login file, rather than in the .cshrc for every c-shell.
 
-export proot=/home/brock/reduce-algebra/trunk/psl
+export proot=/mnt/home/cons/reducedev/free_reduce/reduce-algebra/trunk/psl
 
 export psl=$proot/dist          # Top of PSL tree.
 # export cl=$proot/pclsdist     # Top of PCLS tree.
