@@ -92,7 +92,7 @@ $(PL)/symget.b:  $(PXU)/symget.sl
 $(PL)/spy.b: $(PXU)/spy.sl
 	$(PDIST)/make-lap $(PXU) spy
 
-$(PL)/qualified-timing.b: $(PXU)/qualtime.sl
+$(PL)/qualified-timing.b: $(PXU)/qualfied-timing.sl
 	$(PDIST)/make-lap $(PXU) qualified-timing
 $(PL)/oload.b: $(PXU)/oload.sl
 	$(PDIST)/make-lap $(PXU) oload
