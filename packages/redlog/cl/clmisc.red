@@ -589,6 +589,33 @@ procedure cl_replace1(f,sal);
       return f
    end;
 
+procedure cl_divide(f);
+   % Divide QE problem into subproblems. [f] is a formula. Returns a
+   % pair $j . l$, where $j$ is one of [and], [or], and $l$ is a list of
+   % formulas such that $j(l)$ is equivalent to [f]. The idea is
+   % explicitly moving [ex] inside disjuctions or [all] inside
+   % conjunctions for using 3rd-party software as a fallback QE.
+   begin scalar ql,varll,m,op,q,varl,l,w;
+      {ql,varll,m} := cl_split cl_pnf f;
+      if not ql or cdr ql then
+	 return 'or . {f};
+      q := car ql;
+      op := rl_op m;
+      if not cl_qbopcompat(q,op) then
+	 return 'or . {f};
+      varl := car varll;
+      l := for each subf in rl_argn m collect <<
+	 w := subf;
+	 for each v in varl do
+	    w := rl_mkq(q,v,subf);
+	 w
+      >>;
+      return op . l
+   end;
+
+procedure cl_qbopcompat(q,bop);
+   (q eq 'ex and bop eq 'or) or (q eq 'all and bop eq 'and);
+
 endmodule;  % [clmisc]
 
 end;  % of file

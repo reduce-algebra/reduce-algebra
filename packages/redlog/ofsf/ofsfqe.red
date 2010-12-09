@@ -2019,8 +2019,11 @@ procedure ofsf_cj2atl(f);
       {f};
 
 procedure ofsf_fbqe(f);
+   % Fallback quantifier elimination. [f] is a formula. Returns a
+   % quantifier-free formula. If the switch [rlqefb] is on, then this is
+   % called when [cl_qe] fails.
    if !*rlqefbqepcad then
-      ofsf_fbqepcad(f)
+      ofsf_fbqepcad f
    else <<
       if !*rlverbose then
 	 ioto_prin2t "ofsf_cad with optimization of projection order";
@@ -2028,11 +2031,35 @@ procedure ofsf_fbqe(f);
    >>;
 
 procedure ofsf_fbqepcad(f);
-   <<
+   % Fallback quantifier elimination using Qepcad. [f] is a formula.
+   % Returns a quantifier-free formula. If the switches [rlqefb] and
+   % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
+   begin scalar j,l,resl,res,vl,w; integer n,m,vn,an;
+      j . l := cl_divide f;
+      if !*rlverbose then <<
+	 n := length l;
+	 ioto_prin2t {"QEPCAD B on ",n,ioto_cplu(" subproblem",n>1)," ..."}
+      >>;
+      resl := for each s in l collect <<
+	 if !*rlverbose then <<
+	    vl := cl_varl s;
+	    vn := length car vl + length cdr vl;
+	    an := cl_atnum s;
+	    ioto_tprin2t {"+++ subproblem ",m:=m+1," of ",n,": ",
+	       vn,ioto_cplu(" variable",vn>1),", ",
+	       an,ioto_cplu(" atomic formula",an>1)}
+	 >>;
+	 w := qepcad_qepcad(s,nil);
+	 w
+      >>;
+      res := rl_smkn(j,resl);
       if !*rlverbose then
-	 ioto_prin2t "QEPCAD B";
-      qepcad_qepcad(f,nil)
-   >>;
+	 ioto_tprin2 {"+++ Final simplification ... ",cl_atnum res," -> "};
+      res := rl_simpl(res,nil,-1);
+      if !*rlverbose then
+	 ioto_prin2t cl_atnum res;
+      return res
+   end;
 
 procedure ofsf_elimset!-precise(v,alp);
    % Ordered field standard form precise elimination set. [v] is a
