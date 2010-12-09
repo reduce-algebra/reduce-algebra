@@ -18,12 +18,17 @@ mkdir -p $1.app/Contents
 mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/Resources
 mkdir -p $1.app/Contents/Resources/Fonts
-cp $srcdir/wxfonts/README            $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/README            $1.app/Contents/Resources/Fonts/README/BaKoMa
 cp $srcdir/wxfonts/BaKoMa-AMS.Fonts  $1.app/Contents/Resources/Fonts
 cp $srcdir/wxfonts/BaKoMa-CM.Fonts   $1.app/Contents/Resources/Fonts
-cp $srcdir/wxfonts/README.news       $1.app/Contents/Resources/Fonts
-cp $srcdir/wxfonts/LICENCE           $1.app/Contents/Resources/Fonts
+cp $srcdir/wxfonts/README.news       $1.app/Contents/Resources/Fonts/README.news.BaKoMa
+cp $srcdir/wxfonts/LICENCE           $1.app/Contents/Resources/Fonts/LICENCE.BaKoMa
 cp $srcdir/wxfonts/*.ttf             $1.app/Contents/Resources/Fonts
+cp $srcdir/cm-unicode/LICENSE        $1.app/Contents/Resources/Fonts/LICENSE.cm-unicod
+cp $srcdir/cm-unicode/README         $1.app/Contents/Resources/Fonts/README.cm-unicode
+cp $srcdir/cm-unicode/cmunrm.otf     $1.app/Contents/Resources/Fonts
+cp $srcdir/cm-unicode/cmunti.otf     $1.app/Contents/Resources/Fonts
+cp $srcdir/cm-unicode/cmuntt.otf     $1.app/Contents/Resources/Fonts
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $P
 echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $P
 echo "<plist version=\"0.9\">" >> $P

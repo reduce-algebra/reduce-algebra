@@ -639,12 +639,20 @@ if mac_framework
 else !mac_framework
 	-rm -rf reduce.$(fontsdir)
 	-mkdir reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
-	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)
+	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
+	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+# At present the only CM Unicode fonts I will copy across are the CMR, CMRI
+# and CMTT versions. I will still need and use the BaKoMa fonts for CMSY,
+# CMEX and MSAM etc special characters.
+	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
+	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
+	$(CP) $(srcdir)/cm-unicode/cmunrm.otf reduce.$(fontsdir)
+	$(CP) $(srcdir)/cm-unicode/cmunti.otf reduce.$(fontsdir)
+	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
 endif !mac_framework
 else !wx
 	-rm -rf reduce.$(fontsdir)

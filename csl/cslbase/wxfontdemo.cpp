@@ -1,3 +1,4 @@
+#define LISTFONTS 1 /* while I debug */
 // wxfontdemo.cpp
 
 // A sample wxWidgets application to display fonts.
@@ -44,7 +45,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4d324c32 30-Nov-2010 */
+/* Signature: 3cfd9a4b 09-Dec-2010 */
 
 
 
@@ -619,6 +620,8 @@ static localFonts fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
+    {"cmunrm",       NULL},        {"cmunti",       NULL},
+    {"cmuntt",       NULL},
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
@@ -733,7 +736,7 @@ static int CALLBACK fontEnumProc(
 }
 
 
-#if 0
+#ifdef LISTFONTS
 static char faceName[LONGEST_LEGAL_FILENAME] = "";
 
 static int CALLBACK fontEnumProc1(
@@ -783,7 +786,9 @@ int add_custom_fonts() // return 0 on success.
         char nn[LONGEST_LEGAL_FILENAME];
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
-        strcat(nn, fontNames[i].name); strcat(nn, ".ttf");
+        strcat(nn, fontNames[i].name);
+        if (i < 3) strcat(nn, ".otf");
+        else strcat(nn, ".ttf");
         char *nn1 = (char *)malloc(strlen(nn) + 1);
         strcpy(nn1, nn);
         fontNames[i].path = nn1;
@@ -813,7 +818,7 @@ int add_custom_fonts() // return 0 on success.
     lf.lfFaceName[0] = '\0';
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfPitchAndFamily = 0;
-#if 0
+#ifdef LISTFONTS
     printf("About to list all fonts that are now available\n");
     fflush(stdout);
     EnumFontFamiliesExA(hDC, &lf, fontEnumProc1, 0, 0);

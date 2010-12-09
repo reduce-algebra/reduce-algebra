@@ -2280,12 +2280,20 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
 @mac_framework_FALSE@@wx_TRUE@	-rm -rf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	-mkdir reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
+# At present the only CM Unicode fonts I will copy across are the CMR, CMRI
+# and CMTT versions. I will still need and use the BaKoMa fonts for CMSY,
+# CMEX and MSAM etc special characters.
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmunrm.otf reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmunti.otf reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
 @wx_FALSE@	-rm -rf reduce.$(fontsdir)
 @wx_FALSE@	-mkdir reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)
