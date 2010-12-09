@@ -393,6 +393,7 @@ macro procedure rl_mkserv(argl);
       	 am := intern compress append(aprefix,explode bname);
       	 psval := intern compress nconc(explode sm,'(!! !$));
 	 prgn := {'put,mkquote am,''psopfn,mkquote psval} . prgn;
+	 prgn := {'put,mkquote am,''rtypefn,''rtypepart} . prgn;
 	 prgn := {'put,mkquote psval,''number!-of!-args,1} . prgn;
 	 prgn := {'put,mkquote psval,''cleanupfn,''rl_cleanup} . prgn;
 	 prgn := {'de,psval,'(argl),{'rl_interf1,mkquote sm,mkquote evalfnl,
