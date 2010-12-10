@@ -1,1 +1,3 @@
-$pxk/bpsl -td 500 -f $psys/bare-psl.img
+#
+/Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel64/bpsl -td 1000 -f /Users/neun/pxk/reduce-algebra/trunk/psl/bin/macintel64/bare-psl.img
+#
