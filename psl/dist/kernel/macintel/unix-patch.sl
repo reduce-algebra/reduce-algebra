@@ -2,10 +2,10 @@
 
 
 (deflist '(
-         (Byte    ( (movb (indexed (reg 2) (displacement (reg 1) 0)) (reg AL))
+         (Byte    ((movb (indexed (reg 2) (displacement (reg 1) 0)) (reg AL))
                    (cbw)
                    (cwde)))
-        (PutByte  ( (movb (reg CL) (indexed (reg 1) (displacement (reg 2) 0)))))
+        (PutByte  ((movb (reg CL) (indexed (reg 1) (displacement (reg 2) 0)))))
         (HalfWord ((shl 1 (reg 2))
                     (movw (indexed (reg 2) (displacement (reg 1) 0))(reg AX))
                     (cwde)))
@@ -15,7 +15,7 @@
 
 % foreign link for UNIX kernel
 
-(DE  !*FForeignLink (FunctionName  FunctionType NumberOfArguments)
+(DE  !*ForeignLink (FunctionName  FunctionType NumberOfArguments)
 %%%%%(codedeclareexternal FunctionName)
      (append (PNTH '((!*PUSH (REG 14)) (!*PUSH (REG 13))
              (!*PUSH (REG 12)) (!*PUSH (REG 11))
@@ -32,9 +32,9 @@
            (cond
         ((eq NumberOfArguments 0) nil)
         ((lessp NumberOfArguments 3)
-         (list (list 'add (times 8 NumberOfArguments) '(reg st))))
+         (list (list 'add (times 4 NumberOfArguments) '(reg st))))
         (t
-         (list (list 'add (times 8 NumberOfArguments) '(reg st))))
+         (list (list 'add (times 4 NumberOfArguments) '(reg st))))
         ))
            ))
 

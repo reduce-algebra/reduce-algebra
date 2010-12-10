@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%##
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PK:FASLIN.SL 
 % Title:        Loading of binary format files. 
@@ -13,6 +13,7 @@
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
+% 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -80,12 +81,11 @@
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
     (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
 
-    % Close the fil
+    % Close the file
     (binaryclose fid)
 
-    % Twiddle the bits
-
-    (if (weq (wand mode 1) 1)
+    % Twiddle the bits.
+    (if (weq (wand mode 1) 1) 
 	(do-relocation-new code-base code-size bit-table local-id-table)
 	(do-relocation code-base code-size bit-table local-id-table))
 
@@ -109,7 +109,7 @@
 				addressingunitsperitem)))
     (for (from i 0 (wdifference code-au-size 1)) 
 	 (do 
-	  (let ((bit-table-entry (bittable (loc (words-fetch bit-table 0)) i))   %%% HACK!
+	  (let ((bit-table-entry  (bittable (loc (words-fetch bit-table 0)) i))   %%% HACK!
 		(code-location    (wplus2 code-base i)))
 	    (case bit-table-entry
 	      ((reloc-word)
@@ -139,48 +139,21 @@
 	      ))))
 		    
 		     
-
-(compiletime (ds reloc-word-inf (x) (wshift (wshift x 34) -34)))
-(compiletime (ds reloc-word-tag (x) (wshift (wshift x 32) -62)))
-(compiletime (put 'put_a_halfword 'opencode '
-   ((mov  "%ebx" "0(%rax)")))) %% (reg 2) (displacement (reg rax) 0))))
-(compiletime (put 'get_a_halfword 'opencode '
-   ((!*move (displacement (reg 1) 0) (reg eax)))))
-
 (de relocate-word (code-location code-base id-table)
-  (let ((reloc-tag (reloc-word-tag (get_a_halfword code-location)))
-	(reloc-inf (reloc-word-inf (get_a_halfword code-location))
-        tempo))
-
-    (put_a_halfword code-location
-     (progn
-      (setq tempo
-      (compute-relocation reloc-tag reloc-inf code-base id-table))
-      (if (or (eq reloc-tag reloc-value-cell)
-          (eq reloc-tag reloc-code-offset)
-          (eq reloc-tag reloc-function-cell))
-         (wdifference tempo (wplus2 4 code-location)) tempo)))
-      ))
+  (let ((reloc-tag (reloc-word-tag (getmem code-location)))
+	(reloc-inf (reloc-word-inf (getmem code-location))))
+    (setf (getmem code-location)
+      (compute-relocation reloc-tag reloc-inf code-base id-table)
+      )))
 
 (de relocate-inf  (code-location code-base id-table)
-  (let ((reloc-tag  (wand (wshift (getmem code-location) -54) 3))
-	(reloc-inf (reloc-inf-inf (getmem code-location))
-        tempo))
+  (let ((reloc-tag (reloc-inf-tag (getmem code-location)))
+	(reloc-inf (reloc-inf-inf (getmem code-location))))
+    (setf (inf (getmem code-location))
+      (compute-relocation reloc-tag reloc-inf code-base id-table)
+      )))
 
-    (setf (getmem code-location)
-     (wor  (wshift (tag (getmem code-location)) 56)
-      (progn (setq tempo
-		(compute-relocation reloc-tag reloc-inf code-base id-table))
-       %  (if (or (eq reloc-tag reloc-value-cell)
-       %   			(eq reloc-tag reloc-function-cell))
-       %  (wdifference tempo code-location) tempo)
-        tempo)
-
-      ))))
-
-
-
-(commentoutcode de relocate-right-half (code-location code-base id-table)
+(de relocate-right-half (code-location code-base id-table)
   (let ((reloc-tag (reloc-right-half-tag (getmem code-location)))
 	(reloc-inf (reloc-right-half-inf (getmem code-location))))
     (setf (righthalf (getmem code-location))
@@ -190,14 +163,18 @@
 (de compute-relocation (reloc-tag reloc-inf code-base id-table)
   (cond
     ((eq reloc-tag reloc-code-offset) 
-      (wplus2 code-base reloc-inf))
+     (wplus2 code-base reloc-inf))
     ((eq reloc-tag reloc-value-cell) 
      (cond ((extraargumentp reloc-inf) 
 	    (loc (wgetv argumentblock
 			(makeextraargument reloc-inf))))
+%          ((local-id-number? reloc-inf) 
+%           (loc (symval (local-to-global-id reloc-inf id-table))))
+%          (t
+%           (loc (symval reloc-inf)))))
 	   ((local-id-number? reloc-inf)
 	      (setq reloc-inf (local-to-global-id reloc-inf id-table))
-              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf))) 
+              (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)) )
 	   (t (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)))))
     ((eq reloc-tag reloc-function-cell)
      (progn
@@ -205,7 +182,7 @@
 	(setq reloc-inf (local-to-global-id reloc-inf id-table)))
       (wplus2 symfnc                        %%% Should be (LOC (SYMFNC xxx)) ???
 	      (wtimes2 addressingunitsperfunctioncell
-		       reloc-inf)))) 
+		       reloc-inf))))
     ((eq reloc-tag reloc-id-number)
      (if (local-id-number? reloc-inf)
        (local-to-global-id reloc-inf id-table)
@@ -248,5 +225,3 @@
   )
 
 (off fast-integers)
-
-)

@@ -168,8 +168,8 @@
   (let* ((inf     (strinf s))
 	 (len     (strlen inf))
 	 (result  0))
-    (when (> len 20) %% (- bitsperword 8))
-      (setq len  20))%%(- bitsperword 8)))
+    (when (> len (- bitsperword 8))
+        (setq len (- bitsperword 8)))
     (for (from i 0 len) 
 	 (do (setf result 
 	       (^ result (<< (strbyt inf i) 

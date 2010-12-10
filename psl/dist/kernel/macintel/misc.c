@@ -27,3 +27,11 @@ long ldiv(l1,l2)
 long lrem(l1,l2)
         long l1,l2;
         {return (l1 % l2);}
+ 
+ 
+#ifndef sun  
+
+setlinebuf() { return(0);}
+ 
+#endif  
+

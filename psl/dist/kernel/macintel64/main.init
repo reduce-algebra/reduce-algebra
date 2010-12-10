@@ -3,4 +3,3 @@
 argumentblock)))
 (fluid (quote (lastbps nextbps heaplast heaptrapbound heapupperbound heaptrapped
 nextsymbol using-other-bps-spaces*)))
-(fluid (quote (bpslowerbound nextbps)))

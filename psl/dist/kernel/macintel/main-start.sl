@@ -77,7 +77,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(compiletime (on echo))   %% Move this hack somewhere else later.
 (commentoutcode
 (compiletime    %% Move this hack somewhere else later.
  (defmacro exported-fluid (list)
@@ -144,7 +143,7 @@
  (tokenbuffer       #.(compiler-constant 'maxtokensize))
  (bndstk            #.(compiler-constant 'bndstksize))
  (catchstack        #.(times2 (compiler-constant 'catchstacksize) 4))
- (hashtable         5000000 ) %%%%#.(quotient (compiler-constant 'hash-table-size) 2))
+ (hashtable         #.(quotient (compiler-constant 'hash-table-size) 2))
  (onewordbuffer     1)
  (saveargc          1)
  (saveargv          1)
@@ -209,17 +208,6 @@
    *fastcar
    ))
 
-(compiletime (flag '($fluid fluid global $global) 'terminaloperand))
-
-(lap '((*entry move-regs-to-mem expr 0)
-       (*MOVE (reg r10) ($fluid heaplast))
-       (*MOVE (reg r11) ($fluid heaptrapbound))
-       (*MOVE (reg bndstkptr) ($fluid bndstkptr))
-       (*MOVE (reg bndstklowerbound) ($fluid bndstklowerbound))
-       (*MOVE (reg bndstkupperbound) ($fluid bndstkupperbound))
-       (*exit 0)
-))
-
 (de init-pointers()
 % (setq stacklowerbound (wplus2 stack stacksize))
 % (setq stackupperbound (wplus2 stack 100))
@@ -260,19 +248,16 @@
   (setq *fastcar nil)
 )
 
-
 (lap '((*entry !m!a!i!n expr 0)
 
-       (*move (reg rdi) (reg 1))
-       (*move (reg rsi) (reg 2))
-    %   (*move (displacement (reg st) 8) (fluid argc))
-    %  (*move (displacement (reg st) 16) (fluid argv))
+       (*move (displacement (reg st) 4) (fluid argc))
+       (*move (displacement (reg st) 8) (fluid argv))
 
        (*alloc 3) % changes Stack pointer
 
-    %  (*move (fluid argc) (frame 1))
-    %   (*move (fluid argv) (frame 2))
-    %   (*move (reg 2) (frame 3)) % have to save %ebx
+       (*move (fluid argc) (frame 1))
+       (*move (fluid argv) (frame 2))
+       (*move (reg 2) (frame 3)) % have to save %ebx
 
 
   %    (*move   (fluid stack) (reg st))
@@ -281,9 +266,9 @@
   % 				     addressingunitsperitem)))
 
        %  Do OS specific initializations (uses argc and argv)
-    %   (*move (fluid argc) (reg 1))
-    %   (*move (fluid argv) (reg 2))
-    %   (*move infbitlength (fluid _infbitlength_))
+       (*move (fluid argc) (reg 1))
+       (*move (fluid argv) (reg 2))
+       (*move infbitlength (fluid _infbitlength_))
        (*link os_startup_hook expr 2)
 
        (*move (frame 1) (fluid argc))
@@ -296,15 +281,7 @@
        (*wshift (reg 4) -5)
        (*move (reg 4)  (fluid stacklowerbound))
 
-%%       (*link init-gcarray expr 0)
-
-       (*MOVE ($fluid heaplast) (reg R10))
-       (*MOVE ($fluid heaptrapbound) (reg R11))
-       (*MOVE ($fluid bndstkptr) (reg bndstkptr))
-       (*MOVE ($fluid bndstklowerbound) (reg bndstklowerbound))
-       (*MOVE ($fluid bndstkupperbound) (reg bndstkupperbound))
-       (*move 128 (reg NIL))
-       (*mkitem (reg NIL) id-tag)                 % initialize NIL reg
+       (*link init-gcarray expr 0)
 
        (*call pre-main)                                 % call PSL
 
@@ -321,8 +298,6 @@ panic-exit                      % need to do UNIX cleanup after
        (*link external_exit expr 1)
        (*exit 3)
        ))
-
-(compiletime (remflag '($fluid fluid global $global) 'terminaloperand))
 
 (de init-gcarray() nil) % hook for garbage collector initialization 
 

@@ -46,18 +46,17 @@
   )
 
 (de binaryopenread (filename)
-  (let ((f (unixopen (strbase (strinf filename))
-		 (strbase (strinf "r")))))
+  (let ((f (unixopen (strbase (strinf filename)) (strbase (strinf "r")))))
         (if (weq f 0)
             (kernel-fatal-error "Couldn't open binary file for input")
             f)))
 
 (de binaryread (filepointer)            % Read one word, 32 bits.
-  (xgetw filepointer)
+  (getw filepointer)
   )
 
 (de binaryreadblock (filepointer blockbase blocksize) 
-  (fread blockbase 8 blocksize filepointer)
+  (fread blockbase 4 blocksize filepointer)
   )
 
 (de binaryclose (filepointer) 

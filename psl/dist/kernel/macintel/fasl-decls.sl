@@ -67,15 +67,15 @@
   (wdifference u (wplus2 8150 (wplus2 maxrealregs 1)))
   )
 
-(define-constant bittable-entries-per-word 32)
+(define-constant bittable-entries-per-word 16)
 
 (ds reloc-right-half-tag (x) (field x 0 2))
 (ds reloc-right-half-inf (x) (field x 2 14))
 
 (ds reloc-inf-tag (x) (field x 8 2))
-(ds reloc-inf-inf (x) (field x 42 22))
+(ds reloc-inf-inf (x) (field x 10 22))
 
 (ds reloc-word-tag (x) (field x 0 2))
-(ds reloc-word-inf (x) (field x 2 62))
+(ds reloc-word-inf (x) (field x 2 30))
 
   

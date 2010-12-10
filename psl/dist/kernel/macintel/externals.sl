@@ -12,7 +12,6 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
@@ -123,7 +122,6 @@
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
-(external-function uxwritefloat8       (buffer floatptr convstr dummy))
 (external-function uxdoubletofloat     (x y))
 (external-function uxfloattodouble     (y y))
 (external-function uxsin           (r x))
@@ -146,7 +144,8 @@
 % Defined in sigs.c
 %
 (external-function sun3_sigset               (signame handler))
-(external-function sigrelse             (signame ))
+(external-function sun3_sigrelse             (signame handler))
+(de sigrelse(a b)(sun3_sigrelse a b))
  
  
 % Defined In unexec.c
@@ -180,7 +179,7 @@
 (external-function fflush               (fp))
 (external-function fseek                (fp offset ptrname))
 (external-function clearerr             (fp))
-(external-function xgetw                (fp))
+(external-function getw                 (fp))
 (external-function putw                 (w fp))
 (external-function signal               (signame handler))
 (external-function sleep        (sec))

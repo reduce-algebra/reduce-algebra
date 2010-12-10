@@ -35,13 +35,14 @@
 % CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
+
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
 %
-% 08-Dec-2004 (Winfried Neun)
-%  Version for AMD 64
+% 08-Sep-89 (Winfried Neun)
+%  Version for SUN386
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (on fast-integers)
@@ -50,29 +51,26 @@
 
 (lap '((!*entry PlantUnbound expr 1)
        (add   (reg 1)  (reg 1))              % ID*2
-       (mov   (reg 1)  (reg 2))
-       (add   (reg 2) (reg 2))             % ID*4
-       (add   (reg 2) (reg 2))             % ID*8
+       (mov   (reg 1)  (reg t2))
+       (add   (reg t2) (reg t2))             % ID*4
 
-       (*WPLUS2 (reg 2) (fluid SYMFNC))       
-       (mov "UndefinedFunctionInstruction@GOTPCREL(%rip)" (reg t1))
-       (*move (displacement (reg t1) 0) (reg t1))
-       (*move (reg t1) (displacement (reg 2) 0))
+       (*WPLUS2 (reg t2) (fluid SYMFNC))       
+       (mov UndefinedFunctionInstruction (reg t1))
+       (*move (reg t1) (displacement (reg t2) 0))
        (!*EXIT 0)
        (fullword 0) 
-"UndefinedFunctionInstruction"
+    UndefinedFunctionInstruction
        (fullword UndefinedFunction))
        ))
 
 
 (lap '((!*entry PlantCodePointer expr 2)
        (add   (reg 1)  (reg 1))              % ID*2
-       (mov   (reg 1)  (reg 3))
-       (add   (reg 3) (reg 3))             % ID*4
-       (add   (reg 3) (reg 3))             % ID*8
+       (mov   (reg 1)  (reg t2))
+       (add   (reg t2) (reg t2))             % ID*4
 
-       (!*WPLUS2 (reg 3) (fluid SYMFNC))
-       (*move (reg 2) (displacement (reg 3) 0))      
+       (!*WPLUS2 (reg t2) (fluid SYMFNC))
+       (*move (reg 2) (displacement (reg t2) 0))      
        (!*EXIT 0)))
 
 (compiletime 
@@ -82,17 +80,15 @@
 
 (lap '((!*entry PlantLambdaLink expr 1)
        (add (reg 1)  (reg 1))              % ID*2
-       (mov (reg 1)  (reg 2))
-       (add (reg 2) (reg 2))             % ID*4
-       (add (reg 2) (reg 2))             % ID*8
+       (mov (reg 1)  (reg t2))
+       (add (reg t2) (reg t2))             % ID*4
 
-       (*WPLUS2 (reg 2) (fluid SYMFNC))                        
-       (mov "LambdaLinkInstruction@GOTPCREL(%rip)" (reg t1))
-       (*move (displacement (reg t1) 0) (reg t1))
-       (*move (reg t1) (displacement (reg 2) 0))
+       (*WPLUS2 (reg t2) (fluid SYMFNC))                        
+       (mov  LambdaLinkInstruction (reg t1))
+       (*move (reg t1) (displacement (reg t2) 0))
        (!*EXIT 0)
        (fullword 0)
-    "LambdaLinkInstruction"
+    LambdaLinkInstruction
        (fullword CompiledCallingInterpreted)))
 
 
@@ -105,10 +101,7 @@
          30 2))
 
 (lap '((*entry undefinedfunction expr 1)
-                  (mov "_symfnc@GOTPCREL(%rip)" (reg t3))
-                  (jmp  (indirect (displacement (reg t3)
-			 (entry undefinedfunction-aux))))))
-
+       (jmp (indirect (entry undefinedfunction-aux)))))
 
    % to be redefined in nonkernel
 
@@ -118,7 +111,7 @@
        (*call console-print-string)
        (*move (fluid symnam) (reg t2))
        (*pop (reg t1))
-       (*wshift (reg t1) 3)    % * 8
+       (*wshift (reg t1) 2)    % * 4
        (*move (indexed (reg t1) (displacement (reg t2) 0)) (reg 1))
        (*call console-print-string)
        (*move 0 (reg 1))
@@ -131,8 +124,7 @@
        % Called by JMP in the function cell. Stores the ID of the interpreted
        % function in CodeForm!* without disturbing its argument registers
        %
-       (*move (wconst id-tag) (reg t2))
-       (*MKITEM (reg t1) (reg t2))
+       (*MKITEM (reg t1) (wconst id-tag))
        (*MOVE (reg t1) (Fluid CodeForm!*))
        (*JCALL CompiledCallingInterpretedAux)))
 
@@ -143,8 +135,5 @@
   (exit-with-status -1)
   )
 
-(lap '((*entry pslsignalhandler expr 0)
-       (*move (quote "Interrupt") (reg 1))
-       (*call stderror expr 1)))
 
 (off fast-integers)

@@ -419,7 +419,7 @@
 
 (de asm_macintel64-fluid-p (r)
           (and !*writingasmfile
-		(pairp r) (member (car r)  '(!$fluid !$global fluid global))))
+		(pairp r) (member (car r)  '(!$fluid !$global fluid global quote))))
 
 (de macintel64-fluid-p (r)
           (and (pairp r) (member (car r)  '(!$fluid !$global fluid global))))
@@ -833,6 +833,8 @@
     ((asm_macintel64-fluid-p regp) (*MOVE  ARGONE (Reg t3))
                             (cmp ARGTWO (Reg t3)) (ARGFOUR ARGTHREE))
     ((regp asm_macintel64-fluid-p) (*MOVE  ARGTWO (Reg t3))
+                            (cmp (Reg t3) ARGONE) (ARGFOUR ARGTHREE))
+    ((AnyP asm_macintel64-fluid-p) (*MOVE  ARGTWO (Reg t3))
                             (cmp (Reg t3) ARGONE) (ARGFOUR ARGTHREE))
 
     ((INumP INumP    ) (!*MOVE ARGONE (reg t1))

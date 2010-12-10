@@ -36,12 +36,10 @@
 #include <setjmp.h>
 
 #ifndef LINUX
-//#include <ieeefp.h> 
+#include <ieeefp.h> 
 #endif
  
 jmp_buf mainenv;
-
-long long int copy_argv();
  
 main(argc,argv)
 int argc;
@@ -64,7 +62,6 @@ exit(0);
  
 }
  
-int kernelmode = 0;
  
 os_startup_hook(argc, argv)
      int argc;
