@@ -2034,30 +2034,37 @@ procedure ofsf_fbqepcad(f);
    % Fallback quantifier elimination using Qepcad. [f] is a formula.
    % Returns a quantifier-free formula. If the switches [rlqefb] and
    % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
-   begin scalar j,l,resl,res,vl,w; integer n,m,vn,an;
+   begin scalar j,l,succl,faill,res,vl,w; integer n,m,vn,an;
       j . l := cl_divide f;
       if !*rlverbose then <<
 	 n := length l;
 	 ioto_prin2t {"QEPCAD B on ",n,ioto_cplu(" subproblem",n>1)," ..."}
       >>;
-      resl := for each s in l collect <<
+      for each s in l do <<
 	 if !*rlverbose then <<
 	    vl := cl_varl s;
 	    vn := length car vl + length cdr vl;
 	    an := cl_atnum s;
-	    ioto_tprin2t {"+++ subproblem ",m:=m+1," of ",n,": ",
+	    ioto_tprin2t {"+++ Subproblem ",m:=m+1," of ",n,": ",
 	       vn,ioto_cplu(" variable",vn>1),", ",
 	       an,ioto_cplu(" atomic formula",an>1)}
 	 >>;
 	 w := qepcad_qepcad(s,nil);
-	 w
+	 if w then
+	    succl := w . succl
+	 else
+	    faill := s . faill
       >>;
-      res := rl_smkn(j,resl);
+      res := rl_smkn(j,nconc(succl,faill));
       if !*rlverbose then
 	 ioto_tprin2 {"+++ Final simplification ... ",cl_atnum res," -> "};
       res := rl_simpl(res,nil,-1);
       if !*rlverbose then
 	 ioto_prin2t cl_atnum res;
+      w := length faill;
+      if w > 0 then
+      	 lprim {"quantifier elimination failed for",w,
+	    ioto_cplu("subproblem",w>1),"out of",n};
       return res
    end;
 
