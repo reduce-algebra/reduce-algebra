@@ -43,7 +43,8 @@ load!-package 'redlog;
 load!-package 'ofsf;
 load!-package 'rltools;
 
-fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace);
+fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
+   !*utf8);
 
 switch rlqefbqepcad;
 
@@ -63,20 +64,19 @@ rl_mkserv('qepcadl,'(reval),nil,nil,'reval,T);
 rl_set '(ofsf);
 
 procedure qepcad_qepcad(f,fn);
-   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho;
+   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,oldutf8;
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
       scsemic := semic!*;
       oldecho := !*echo;
+      oldutf8 := !*utf8;
       w := errorset({'qepcad_qepcad1,mkquote f,mkquote fn},T,!*backtrace);
       if errorp w then <<
       	 put('times,'pprifn,oldpprifn);
       	 put('expt,'prtch,oldprtch);
-      	 semic!* := scsemic;
+	 !*utf8 := oldutf8;
 	 !*echo := oldecho;
-      	 if w neq 99 then
-	    rederr w;
-	 % CTRL-C
+	 semic!* := scsemic;
 	 return nil
       >>;
       return car w
@@ -84,7 +84,8 @@ procedure qepcad_qepcad(f,fn);
 
 procedure qepcad_qepcad1(f,fn);
    begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
-	 narg,larg,call;
+	 oldutf8,narg,larg,call;
+      oldutf8 := !*utf8;
       scsemic := semic!*;
       fn1 := fn or lto_sconcat{"/tmp/",getenv "USER",".qepcad"};
       if null fn then
@@ -143,10 +144,12 @@ procedure qepcad_qepcad1(f,fn);
 	 !*echo := oldecho;
 	 system lto_sconcat{"rm -f ",fn1," ",fn2};
 	 if null result then
-	    rederr "qepcad failed";
-	 result := rl_simp result
+	    lprim "qepcad failed"
+	 else
+	    result := rl_simp result
       >>;
-      semic!* := scsemic:
+      semic!* := scsemic;
+      !*utf8 := oldutf8;
       return result
    end;
 
@@ -154,13 +157,17 @@ procedure qepcad_cadprint1(f);
    begin scalar op,!*nat;
       op := rl_op f;
       if op eq 'ex then <<
-	 prin2!* {"E",rl_var f};
-	 prin2!* " ";
+	 prin2!* "(";
+	 prin2!* "E ";
+	 prin2!* rl_var f;
+	 prin2!* ") ";
 	 return qepcad_cadprint1 rl_mat f
       >>;
       if op eq 'all then <<
-	 prin2!* {"A",rl_var f};
-	 prin2!* " ";
+	 prin2!* "(";
+	 prin2!* "A ";
+	 prin2!* rl_var f;
+	 prin2!* ") ";
       	 return qepcad_cadprint1 rl_mat f
       >>;
       prin2!* "[";
