@@ -80,7 +80,7 @@ else
       STORE=16000000
       if test -f $here/../pslbuild/$host$hx/psl/64
       then
-        STORE=150
+        STORE=1000
       fi
       bin="$here/../pslbuild/$host$hx/psl/$ap"
 #     rm -f $here/../bin/$scr
