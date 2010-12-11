@@ -83,7 +83,7 @@ EOF
 
 cat > $psys/psl << EOFF
 #
-$pxk/bpsl  -td $imagesize -f  $psys/psl.img
+$pxk/bpsl  -td $imagesize -f  $psys/psl.img \$*
 #
 EOFF
 
