@@ -26,30 +26,68 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 
-BEGIN {time=tolower(time); verb=tolower(verb)}
-/^In other words/ {f=0}
-/^==============================/ {f=0}
-/The End/ {f=0}
-(f==1) {
-  if (verb=="t") print
-  for (i=1; i<=NF; i++) {
-    oi = $i;
-    gsub(/\\\//," or ",$i);
-    gsub(/\/\\/," and ",$i);
-    gsub(/\[/,"(",$i);
-    gsub(/\]/,")",$i);
-    gsub(/\/=/,"<>",$i);
-    printf("%s",$i) > rf
-    if (match(oi,/[a-z0-9]+/) && i<NF && match($(i+1),/[a-z0-9]+/))
-      printf("*") > rf
-  }
-  printf("\n") > rf
+BEGIN {
+    time=tolower(time)
+    verb=tolower(verb)
 }
-/^System time:/ && (time=="t") {print}
-/^\*\*/ {print ""; print}
-/^Failure occurred in:/ {print ""; print}
-/^Reason for the failure:/ {print}
-/^An equivalent quantifier-free formula:/ {f=1}
-END {printf("; end;\n") > rf}
+
+/^In other words/ {
+    f=0
+}
+
+/^==============================/ {
+    f=0
+}
+
+/The End/ {
+    f=0
+}
+
+/There were/ {
+    f=0
+}
+
+(f==1) {
+    if (verb=="t" && !match($0,/^$/))
+	print "+++", name, "raw output:", $0
+    for (i=1; i<=NF; i++) {
+	oi = $i
+	gsub(/\\\//," or ",$i)
+	gsub(/\/\\/," and ",$i)
+	gsub(/\[/,"(",$i)
+	gsub(/\]/,")",$i)
+	gsub(/\/=/,"<>",$i)
+	printf("%s",$i) > rf
+	if (match(oi,/[a-z0-9]+/) && i<NF && match($(i+1),/[a-z0-9]+/))
+	    printf("*") > rf
+    }
+    printf("\n") > rf
+}
+
+/^System time/ && (time=="t") {
+    print "+++", name, $0
+}
+
+/^\*\*/ {
+    print ""
+    print
+}
+
+/^Failure occurred in:/ {
+    print ""
+    print
+}
+
+/^Reason for the failure:/ {
+    print
+}
+
+/^An equivalent/ {
+    f=1
+}
+
+END {
+    printf("; end;\n") > rf
+}

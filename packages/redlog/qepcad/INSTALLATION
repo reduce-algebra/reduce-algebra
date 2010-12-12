@@ -1,2 +1,9 @@
 For using QEPCAD you have setup an environment variable qe. Copy (or
 symbolically link) the qepcad.awk from here into that directory $qe.
+
+There is now an interface to the simplifier SLFQ for large
+quantifier-free formulas, which is based on QEPCAD and distributed on
+the QEPCAD website.
+
+Make sure that the directories containing qepcad/slfq are in the path of
+your shell.
