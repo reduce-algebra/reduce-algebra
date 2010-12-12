@@ -69,7 +69,8 @@ global '(!$eol!$
          ofl!*
          spare!*
          statcounter
-         version!*);
+         version!*
+         symchar!*);
 
 compiletime global '(cr!* ff!* tab!*);
 
@@ -373,6 +374,8 @@ Comment Initial setups for REDUCE;
 % spare!* := 11;   % We need this for bootstrapping.
 
 spare!* := 0;   % We need this for bootstrapping.
+
+symchar!* := t;  % Changed prompt when in symbolic mode.
 
 symbolic procedure initreduce; initrlisp();   % For compatibility.
 
