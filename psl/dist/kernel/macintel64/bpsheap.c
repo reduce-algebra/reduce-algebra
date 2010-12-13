@@ -175,7 +175,7 @@ setupbpsandheap(argc,argv)
   if ((heapsize_in_bytes + current_size_in_bytes) >= max_image_size) {
     heapsize_in_bytes = max_image_size - current_size_in_bytes;
     total = heapsize_in_bytes + bpssize;
-printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
+printf("total %lX %lX %lx\n",heapsize_in_bytes , current_size_in_bytes,total);
     printf("Size requested will result in pointer values larger than\n");
     printf(" PSL items can handle. Will allocate maximum size instead.\n\n");
   }

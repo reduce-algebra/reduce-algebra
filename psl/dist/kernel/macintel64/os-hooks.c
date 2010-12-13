@@ -36,6 +36,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
+#include <stdlib.h>
+
 
 #ifndef LINUX
 //#include <ieeefp.h> 

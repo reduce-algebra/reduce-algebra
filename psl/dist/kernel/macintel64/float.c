@@ -47,6 +47,8 @@
 #include <string.h>
 #include <math.h>
 #include <fenv.h>
+#include <stdio.h>
+
 
 
 /* Tag( uxfloat )

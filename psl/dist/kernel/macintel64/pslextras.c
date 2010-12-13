@@ -12,7 +12,6 @@
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
-
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -40,7 +39,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
@@ -58,7 +59,7 @@ unsigned long usec,repeat;
 }
  
 char *expand_file_name();    /* from unix-io.c */
-long time();        /* from kernel */
+long time();         /* from kernel */
  
 /* Tag( external_time )
  */
@@ -120,8 +121,9 @@ char *external_getenv (name)
 }
  
  
-int external_setenv (var, val)
+int external_setenv (var, val,ov)
     char *var, *val;
+    int ov;
 {
   int i;
   extern char **environ;
@@ -139,7 +141,7 @@ int external_setenv (var, val)
   environ = envnew;
   strcpy(var_plus_equal_sign, var);
   strcat(var_plus_equal_sign, "=");
-  return(setenv (var_plus_equal_sign, val));
+  return(setenv (var_plus_equal_sign, val,ov));
 }
  
 /*
@@ -149,8 +151,9 @@ int external_setenv (var, val)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
-setenv (var, value)
-     char *var, *value;
+setenv (var, value,ov)
+     const char *var, *value;
+     int ov;
 {
     extern char **environ;
     int index = 0;
@@ -159,7 +162,7 @@ setenv (var, value)
     while (environ [index] != NULL) {
         if (strncmp (environ [index], var, len) == 0) {
         /* found it */
-        environ[index] = (char *)malloc (len + strlen (value) + 1);
+        environ[index] = (void *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
         return;
@@ -167,7 +170,7 @@ setenv (var, value)
         index ++;
     }
  
-    environ [index] = (char *) malloc (len + strlen (value) + 1);
+    environ [index] = (void *) malloc (len + strlen (value) + 1);
     strcpy (environ [index], var);
     strcat (environ [index], value);
     environ [++index] = NULL;
