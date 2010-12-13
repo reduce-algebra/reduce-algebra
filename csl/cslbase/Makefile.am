@@ -205,7 +205,7 @@ endif !windows
 
 if wx
 fontsdir = wxfonts
-samplefont=csl-cmr10.ttf
+samplefont=cmuntt.otf
 else !wx
 fontsdir = fonts
 samplefont=cmr10.pfb

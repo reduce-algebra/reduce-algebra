@@ -45,7 +45,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3cfd9a4b 09-Dec-2010 */
+/* Signature: 250ecc69 13-Dec-2010 */
 
 
 
@@ -151,6 +151,7 @@ public:
     void OnMouse(wxMouseEvent &event);
 
 private:
+    class fontFrame *frame;
     const char *fontname;
     int fontsize;
     wxFont *ff;
@@ -609,6 +610,8 @@ IMPLEMENT_APP_NO_MAIN(fontApp)
 // are forced by the structure that wxWidgets requires!
 
 
+#ifndef MACINTOSH
+
 typedef struct localFonts
 {
     const char *name;
@@ -693,6 +696,8 @@ static localFonts fontNames[] =
     {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
     {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
 };
+
+#endif
 
 #ifdef WIN32
 
@@ -848,13 +853,15 @@ int add_custom_fonts() // return 0 on success.
 
     char fff[LONGEST_LEGAL_FILENAME];
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   sprintf(fff,
-            "%s/" toString(fontsdir) "/%s.ttf",
+    {   int w;
+        sprintf(fff,
+            (i < 3 ? "%s/" toString(fontsdir) "/%s.otf" :
+                     "%s/" toString(fontsdir) "/%s.ttf"),
             programDir, fontNames[i].name);
-#if 0
-        printf("Adding the font from %s\n", fff);
+        w = FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
+#ifdef LISTFONTS
+        printf("Adding the font from %s = %d\n", fff, w);
 #endif
-        FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
     XftInit("");
@@ -931,11 +938,12 @@ bool fontApp::OnInit()
 // I find that the real type of argv is NOT "char **" but it supports
 // the cast indicated here to turn it into what I expect.
     char **myargv = (char **)argv;
-    raw = page = 0;
+    raw = 1;
+    page = 0;
     for (int i=0; i<argc; i++)
     {
         printf("Arg%d: %s\n", i, myargv[i]);
-        if (strcmp(myargv[i], "--raw") == 0) raw = 1;
+        if (strcmp(myargv[i], "--raw") == 0) raw = !raw;
         else if (myargv[i][0]!= '-' ||
                  sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
     }
@@ -982,21 +990,15 @@ fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
 // not points here... however that appears to be delicate. So I will
 // create one at a plausible point size then adjust it later. I will
 // use "fontScaled" to ensure I only adjust it once.
+    frame = parent;
     fontname = fname;
     fontsize = fsize;
     ff = new wxFont();
-    ff->SetNativeFontInfoUserDesc(fontname);
+    ff->SetFaceName(fontname);
     ff->SetPointSize(36);
+    frame->SetTitle(ff->GetNativeFontInfoUserDesc());
     fontScaled = false;
 
-// The size calculated here is the total size of the whole window,
-// including title bar and borders...
-//    wxSize clientsize(32*32, 9*64);
-//    wxSize winsize(ClientToWindowSize(clientsize));
-//    SetSize(winsize);
-//    SetMinSize(winsize);
-//    SetMaxSize(winsize);
-//    Centre();
 }
 
 
@@ -1108,6 +1110,7 @@ void fontPanel::OnPaint(wxPaintEvent &event)
                 else if (k == 0x7f) k = 0xc4;
                 else if (k >= 0x80) k += 0x80*page;
             }
+            else k += 0x80*page;
             wxString c = (wchar_t)k;
             dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
         }

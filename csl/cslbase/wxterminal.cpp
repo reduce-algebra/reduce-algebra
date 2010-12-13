@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 15b21bf7 09-Dec-2010 */
+/* Signature: 51f535ad 13-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -224,9 +224,6 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 // with the deeply eccentric coding scheme used by the TeX fonts that I want
 // to use.
 
-// Musing - would a graphicscontext rather than an wxDC give me finer control
-// over font sizes and character placement?
-
 // I *probably* want to use wxvscrolledwindow here not wxscrolledcanvas!
 
 class fwinText : public wxScrolledCanvas
@@ -256,16 +253,105 @@ private:
 //
 // firstVisibleRow points to the first character of the first row being
 // displayed on the screen. Note that this is a ROW not a LINE.
+// lastVisibleRow is the final row displayed on the screen.
 // textEnd points at the position in textBuffer one beyond the final
 // character stored. Ie it is zero if the buffer is empty.
 // caretPos is between zero and textEnd (inclusive) and denotes a position
 // between two characters where insertion might happen.
-    int32_t *textBuffer;
+// caretX and caretY are the caret position on the screen. Set when the
+// screen near the caret gets drawn.
+    uint32_t *textBuffer;
     int textBufferSize;
     void enlargeTextBuffer();
     int caretPos;
+    int caretX, caretY;
     int textEnd; 
-    int firstVisibleRow;
+    int firstVisibleRow, lastVisibleRow;
+    int historyNumber;
+
+    int options;
+#define READONLY     1
+
+    int keyFlags;
+#define ESC_PENDING  1
+#define ANY_KEYS     2
+
+    int flags;
+#define FLAG_CHANGED 1
+#define FLAG_TIP     2
+
+#define TYPEAHEAD_SIZE 100
+    uint32_t ahead_buffer[TYPEAHEAD_SIZE];
+    int type_in, type_out;
+
+    void type_ahead(uint32_t c);
+
+    int promptEnd;
+
+    int historyFirst, historyLast;
+    int searchFlags;
+#define SEARCH_FORWARD   0x10000000
+#define SEARCH_BACKWARD  0x20000000
+#define SEARCH_LENGTH    (searchFlags & 0x00ffffff)
+    uint32_t searchString[256];
+    int searchStack[256];
+    int startMatch;
+
+    void beep();
+    void insertChar(int ch);
+    void appendText(char *s, int len);
+    void insertNewline();
+    void deleteForwards();
+    void deleteBackwards();
+    void deleteWordForwards();
+    void deleteWordBackwards();
+    void moveLeft();
+    void moveRight();
+    void moveUp();
+    void moveDown();
+    void moveWordLeft();
+    void moveWordRight();
+    void moveLineStart();
+    void moveLineEnd();
+    void pageUp();
+    void pageDown();
+    void moveDocStart();
+    void moveDocEnd();
+    void undo();
+    int charFromPosition(int x, int y);
+    void setSelectionMark();
+    void setSelectionEnd();
+    void extendSelection();
+    void cut();
+    void copyRegion();
+    void copyWordPrev();
+    void command();
+    void extendedCommand();
+    void paste();
+    void killSelection();
+    void deleteCurrentLine();
+    int setInputText(const char *s, int n);
+    void transpose();
+    void capitalize();
+    void lowerCase();
+    void upperCase();
+    void escapePressed();
+    void makePositionVisible(int p);
+    int editable;    
+    int trySearch();
+    void historyNext();
+    void historyPrev();
+    void searchHistoryNext();
+    void searchHistoryPrev();
+    int matchString(const char *pat, int n, const char *text);
+    int isEditable();
+    int isEditableForBackspace();
+    void rotateClipboard();
+    void reinput();    
+    void setCaretPos(int n);
+    void interrupt();
+    void displayBacktrace();
+    void requestFlushBuffer();
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -387,6 +473,8 @@ const char *my_getenv(const char *s)
 #endif
 
 
+#ifndef MACINTOSH
+
 typedef struct localFonts
 {
     const char *name;
@@ -477,6 +565,8 @@ static localFonts fontNames[] =
 #endif
     {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
 };
+
+#endif // MACINTOSH
 
 #ifdef WIN32
 
@@ -636,7 +726,6 @@ fwinFrame::fwinFrame()
     Centre();
 }
 
-
 fwinText::fwinText(fwinFrame *parent)
        : wxScrolled<wxWindow>(parent, wxID_ANY,
                     wxDefaultPosition, wxDefaultSize,
@@ -646,9 +735,23 @@ fwinText::fwinText(fwinFrame *parent)
     firstPaint = true;
     FWIN_LOG("Creating fwinText\n");
     textBufferSize = 10000;
-    textBuffer = (int32_t *)malloc(textBufferSize*sizeof(int32_t));
+    textBuffer = (uint32_t *)malloc(textBufferSize*sizeof(uint32_t));
     textEnd = 0;
     firstVisibleRow = 0;
+    textBuffer[textEnd++] = 0x2554; // Draw a box to show those chars.
+    textBuffer[textEnd++] = 0x2550;
+    textBuffer[textEnd++] = 0x2555;
+    textBuffer[textEnd++] = '\n';
+    textBuffer[textEnd++] = 0x2560;
+    textBuffer[textEnd++] = 0x2564;
+    textBuffer[textEnd++] = 0x2561;
+    textBuffer[textEnd++] = '\n';
+    textBuffer[textEnd++] = 0x2559;
+    textBuffer[textEnd++] = 0x2534;
+    textBuffer[textEnd++] = 0x2518;
+    textBuffer[textEnd++] = '\n';
+
+
     for (int i=0; i<384; i++)
     {   textBuffer[textEnd++] = i;
         if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
@@ -663,6 +766,857 @@ fwinText::fwinText(fwinFrame *parent)
     }
     caretPos = 0; // textEnd;
 }
+
+//
+// Here I have the procedures that implement each editing action.
+//
+
+//
+// Something I have NOT fitted quite carefully enough to all this is
+// arrangements that I ignore things if not waiting for input and force
+// the cursor to the final line in relevant cases.
+//
+
+// ^@   set mark, ie start a selection
+
+void fwinText::setSelectionMark()
+{
+//  return onCmdMark(this, 0, NULL);
+}
+
+// ^A   move to start of current line (after any prompt text!)
+
+void fwinText::moveLineStart()
+{
+    while (textBuffer[caretPos] != '\n') caretPos--;
+    makePositionVisible(caretPos);
+    while (textBuffer[caretPos] & 0x03000000) caretPos++;
+    makePositionVisible(caretPos);
+// If the mark is set maybe I should extend the selection...
+}
+
+// ^B  move back a character
+
+void fwinText::moveLeft()
+{
+#ifdef RECONSTRUCTED
+// If the mark is set maybe I should extend the selection...?
+// If I am accepting input I will not let the user move backwards into the
+// prompt string.
+    if ((options & READONLY) == 0 && caretPos == promptEnd)
+    {   beep();
+        return;
+    }
+    onCmdCursorLeft(this, 0, NULL);
+#endif
+}
+
+// ALT-B move back a word
+
+void fwinText::moveWordLeft()
+{
+#ifdef RECONSTRUCTED
+// If the mark is set maybe I should extend the selection...?
+// If I am accepting input I prevent the user from moving back past where the
+// prompt string ends. I beep if I make no move at all.
+    int w = caretPos;
+    if ((options & READONLY) == 0 && w == promptEnd)
+    {   beep();
+        return;
+    }
+    onCmdCursorWordLeft(this, 0, NULL);
+    if ((options && READONLY) == 0 &&
+        w > promptEnd &&
+        caretPos < promptEnd) setCaretPos(promptEnd);
+#endif
+}
+
+// ^C  abandon input, returning an exception to user
+
+void fwinText::interrupt()
+{
+#ifdef RECONSTRUCTED
+// Note that ^C generates a break action whether I am waiting for input or not.
+    onCmdBreak(this, 0, NULL);;
+#endif
+}
+
+// ALT-c  capitalize a word
+
+void fwinText::capitalize()
+{
+#ifdef RECONSTRUCTED
+// I arbitrarily limit the length of a word that I casefix to 63
+// chars.
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char wordbuffer[64];
+    int cp = caretPos;
+    int ws = wordStart(cp);
+    int we = wordEnd(cp);
+    if (ws < promptEnd) ws = promptEnd;
+    if (we > ws + 63) we = ws + 63;
+    extractText(wordbuffer, ws, we-ws);
+    int i;
+    wordbuffer[0] = toupper(wordbuffer[0]);
+    for (i=1; i<we-ws; i++)
+        wordbuffer[i] = tolower(wordbuffer[i]);
+    replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ^D  delete character under cursor (fowards)
+
+void fwinText::deleteForwards()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())     // side effect is to move to last line if necessary
+    {   beep();
+        return;
+    }
+    onCmdDelete(this, 0, NULL);
+#endif
+}
+
+// Should this do special things (a) if there is a selection or (b)
+// if there is a selection and the cursor is within it?
+
+// ALT-d  delete word forwards
+
+void fwinText::deleteWordForwards()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())     // side effect is to move to last line if necessary
+    {   beep();
+        return;
+    }
+    onCmdDeleteWord(this, 0, NULL);
+#endif
+}
+
+// ^E  move to end of current line
+
+void fwinText::moveLineEnd()
+{
+#ifdef RECONSTRUCTED
+// extend selection?
+//    onCmdCursorEnd(this, 0, NULL);
+#endif
+}
+
+// ^F  forward one character
+
+void fwinText::moveRight()
+{
+#ifdef RECONSTRUCTED
+// If the mark is set maybe I should extend the selection...
+//    onCmdCursorRight(this, 0, NULL);
+#endif
+}
+
+// ALT-F  forward one word
+
+void fwinText::moveWordRight()
+{
+#ifdef RECONSTRUCTED
+// If the mark is set maybe I should extend the selection...
+//    onCmdCursorWordRight(this, 0, NULL);
+#endif
+}
+
+// ^G   If it was the very very first character typed or if I am not
+//      waiting for input, ^G raises an interrupt. If I am waiting for
+//      input and have not typed anything much then it clears the current
+//      input line leaving me back with a fresh start. I will make that so
+//      fresh that ^G^G guarantees an interrupt!
+
+void fwinText::displayBacktrace()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   onCmdBacktrace(this, 0, NULL);
+    }
+    killSelection();
+    setInputText("", 0);
+    historyNumber = historyLast + 1;
+    keyFlags &= ~ANY_KEYS;
+#endif
+}
+
+// ^H  (backspace) delete char before cursor if that is reasonable.
+
+void fwinText::deleteBackwards()
+{
+#ifdef RECONSTRUCTED
+    switch (isEditableForBackspace())
+    {
+default:                // within the area for active editing.
+        onCmdBackspace(this, 0, NULL);
+        return;
+case -1:                // current input line is empty.
+case 0:                 // input is not active
+        beep();
+    }
+#endif
+}
+
+// ALT-h  delete previous word
+
+void fwinText::deleteWordBackwards()
+{
+#ifdef RECONSTRUCTED
+    int pos;
+    switch (isEditableForBackspace())
+    {
+default:                // within the area for active editing.
+// I want to be confident that whatever prompt string has been set the
+// following will never delete part of the prompt...
+        pos = leftWord(caretPos);
+        if (pos < promptEnd) pos = promptEnd;
+        removeText(pos, caretPos-pos, TRUE);
+        setCaretPos(caretPos, TRUE);
+        makePositionVisible(caretPos);
+        flags |= FLAG_CHANGED;
+        modified = TRUE;
+        return;
+case -1:                // current input line is empty.
+case 0:                 // input is not active
+        beep();
+    }
+#endif
+}
+
+// ^I was just a TAB and has been handled elsewhere
+
+// ^J (linefeed) accepts the current line of text
+
+// ^K  kill current line
+// Note that ^G and ^U are somewhat related, and that I do not
+// do anything by way of putting cut text into a kill-buffer, or allowing the
+// user to make selections using the keyboard...
+
+void fwinText::deleteCurrentLine()
+{
+#ifdef RECONSTRUCTED
+    killSelection();
+    setInputText("", 0);
+#endif
+}
+
+// ^L    clear screen (handled as menu shortcut)
+
+// ALT-L convert to lower case
+
+void fwinText::lowerCase()
+{
+#ifdef RECONSTRUCTED
+// I arbitrarily limit the length of a word that I casefix to 63
+// chars.
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char wordbuffer[64];
+    int cp = caretPos;
+    int ws = wordStart(cp);
+    if (ws < promptEnd) ws = promptEnd;
+    int we = wordEnd(cp);
+    if (we > ws + 63) we = ws + 63;
+    extractText(wordbuffer, ws, we-ws);
+    int i;
+    for (i=0; i<we-ws; i++)
+        wordbuffer[i] = tolower(wordbuffer[i]);
+    replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ^M  as ENTER, ^J
+
+// ALT-M  a &Module menu
+
+// ^N  history next if we are at present on the bottom line
+//     otherwise move down a line
+// (also down-arrow key)
+
+// To replace the input line I can can use this... It returns the
+// index of the first character of the inserted line.
+
+int fwinText::setInputText(const char *text, int n)
+{
+#ifdef RECONSTRUCTED
+    int n2 = length;
+    int n1 = lineStart(n2);
+    while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
+    replaceStyledText(n1, n2-n1, text, n, STYLE_INPUT);
+//    changeStyle(n1, length-n1, STYLE_INPUT);  // paint it the right colour
+    setCaretPos(length);
+    makePositionVisible(length);
+    return n1;
+#else
+    return n;
+#endif
+}
+
+
+// The history routines here are never invoked unless we are awaiting input
+
+void fwinText::historyNext()
+{
+#ifdef RECONSTRUCTED
+    const char *history_string;
+    if (historyLast == -1) // no history lines at all to retrieve!
+    {   beep();
+        return 1;
+    }
+    if (historyNumber < historyLast) historyNumber++;
+    if ((history_string = input_history_get(historyNumber)) == NULL)
+    {   beep();
+        return 1;
+    }
+    setInputText(history_string, strlen(history_string));
+#endif
+}
+
+// Commentary on the search mechanism:
+//   If not at present engaged in a search the search key
+//   enters search mode with an empty search string and a given
+//   direction, and the empty string will match against the current
+//   (usually empty) input line so nothing much visible will happen.
+//
+//   A further use of the search key will move one line in the given
+//   direction and search again until the pattern matches. If the alternate
+//   direction search key is pressed the line is moved one line in the
+//   new direction before scanning that way.
+//
+//   ENTER or an arrow key, or DEL or ESC (in general most things that
+//   and not printing characters and not otherwise listed here) exits
+//   search mode with the new current line.
+//
+//   BACKSPACE (^H) removes a character from the search pattern. If there
+//   that leaves none it exits search mode. It pops back to the line you
+//   had before the character it removed was inserted.
+//
+//   typical printing characters add that character to the pattern. If the
+//   pattern is not a valid Regular Expression at the time concerned it is
+//   treated as if completed in the most generous manner possible? Or maybe
+//   the match fails so you get a beep and no movement?
+//   [Gosh what do I mean by that? Do I *REALLY* want regexp matches here?]
+//   Searching continues in the most recently selected direction. If no match
+//   is found the line does not move and the system beeps.
+//
+
+// ALT-n  forward search
+
+void fwinText::searchHistoryNext()
+{
+#ifdef RECONSTRUCTED
+    if (historyLast == -1) // no history to search
+    {   beep();
+        return;
+    }
+// If I am not in a search at present then set the flag for a search
+// with an empty search string and a mark that the direction is forwards.
+// Well if I not only am not in a search but I had not previously scrolled
+// back in the history so I have nowhere to search then I might as well
+// beep and give up.
+    if (historyNumber > historyLast)
+    {   beep();
+        return;
+    }
+    searchFlags = SEARCH_FORWARD;
+#endif
+}
+
+
+int fwinText::trySearch()
+{
+    int r = -1;
+#ifdef RECONSTRUCTED
+    const char *history_string = input_history_get(historyNumber);
+    if (history_string == NULL) return -1;
+    while ((r = matchString(searchString, SEARCH_LENGTH, history_string)) < 0)
+    {   if (searchFlags & SEARCH_FORWARD)
+        {   if (historyNumber == historyLast) return -1;
+            historyNumber++;
+        }
+        else
+        {   if (historyNumber == historyFirst) return -1;
+            historyNumber--;
+        }
+        history_string = input_history_get(historyNumber);
+        if (history_string == NULL) return -1;
+    }
+#endif
+    return r;
+}
+
+int fwinText::matchString(const char *pat, int n, const char *text)
+{
+// This is a crude and not especially efficient pattern match. I think
+// it should be good enough for use here! I make it return the offset where
+// a match first occurred (if one does) in case that will be useful to me
+// later. I could put the cursor there, perhaps?
+    int offset;
+    for (offset=0;*(text+offset)!=0;offset++)
+    {   const char *p = pat, *q = text+offset;
+        int i;
+        for (i=0; i<n; i++)
+        {   if (p[i] != q[i]) break;
+        }
+        if (i == n) return offset;
+    }
+    return -1;
+}
+
+void fwinText::historyPrev()
+{
+#ifdef RECONSTRUCTED
+    const char *history_string;
+    if (historyLast == -1) // no previous lines to retrieve
+    {   beep();
+        return;
+    }
+// If I have not moved the history pointer at all yet move it into the
+// range of valid history entries.
+    if (historyNumber > historyFirst) historyNumber--;
+    history_string = input_history_get(historyNumber);
+    if (history_string == NULL)
+    {   beep();
+        return;
+    }
+    setInputText(history_string, strlen(history_string));
+#endif
+}
+
+// ALT-P  reverse search
+
+void fwinText::searchHistoryPrev()
+{
+#ifdef RECONSTRUCTED
+    if (historyLast == -1) // no history to search
+    {   beep();
+        return;
+    }
+    if (historyNumber == historyLast + 1) historyNumber--;
+    searchFlags = SEARCH_BACKWARD;
+#endif
+}
+
+// ^S as pause output is handled as a shortcut so that it can be
+// accepted whether or not I am awaiting input.
+
+// ^T  transpose
+
+void fwinText::transpose()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char buff[2];
+    int cp = caretPos;
+    if (cp > length-2)
+    {   beep();
+        return;
+    }
+    extractText(buff, cp, 2);
+    int ch;
+    ch = buff[0];
+    buff[0] = buff[1];
+    buff[1] = ch;
+    replaceStyledText(cp, 2, buff, 2, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ALT-U convert to upper case
+
+void fwinText::upperCase()
+{
+#ifdef RECONSTRUCTED
+// I arbitrarily limit the length of a word that I casefix to 63
+// chars.
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char wordbuffer[64];
+    int cp = caretPos;
+    int ws = wordStart(cp);
+    if (ws < promptEnd) ws = promptEnd;
+    int we = wordEnd(cp);
+    if (we > ws + 63) we = ws + 63;
+    extractText(wordbuffer, ws, we-ws);
+    int i;
+    for (i=0; i<we-ws; i++)
+        wordbuffer[i] = toupper(wordbuffer[i]);
+    replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ^Y  paste
+
+void fwinText::paste()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    onCmdPasteSel(this, 0, NULL);
+#endif
+}
+
+// ALT-y rotate killbuffer/clipboard
+
+void fwinText::rotateClipboard()
+{
+#ifdef RECONSTRUCTED
+// @@@@@
+#endif
+}
+
+// ^Z is a keyboard shortcut to pause execution
+
+// ALT-[, ESCAPE
+
+void fwinText::escapePressed()
+{
+    keyFlags ^= ESC_PENDING; // so that ESC ESC cancels the effect.
+}
+
+void fwinText::reinput()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    onCmdReinput(this, 0, NULL);
+#endif
+}
+
+// Return true if editable, which here is used as
+// a mark of whether the user has requested input.
+
+int fwinText::isEditable()
+{
+#ifdef RECONSTRUCTED
+    if ((options&READONLY)!=0) return FALSE;
+// If we are asking if the fwinText is editable that is because we
+// are trying to insert something. Here it is editable, so the user is
+// waiting for input. I will make the very query force the final line
+// to be visible and ensure that the cursor is within it. This should prevent
+// anybody from every clobbering anything other than the active input line.
+// Note that key-presses while the program is NOT ready to accept them
+// will not cause cursor movement until the program requests input.
+    int n = lineStart(length);
+    makePositionVisible(n);
+    while (n < length && (getStyle(n) & STYLE_PROMPT)) n++;
+    makePositionVisible(length);
+    if (caretPos < n) setCaretPos(length);
+// Furthermore if I am about to change thing I will ensure that any
+// selection lies within the active line.
+    if (selstartpos < n) selstartpos = n;
+    if (selendpos < selstartpos) selendpos = selstartpos;
+#endif
+    return TRUE;
+}
+
+// Return true if editable, to be used when the next operation would
+// be a BACKSPACE (delete-previous). It must thus shift the cursor to
+// avoid deleting the final character of the prompt string.
+
+int fwinText::isEditableForBackspace()
+{
+#ifdef RECONSTRUCTED
+    if ((options&READONLY)!=0) return 0;  // must buffer the action
+    int n = lineStart(length);
+    makePositionVisible(n);
+    while (n < length && (getStyle(n) & STYLE_PROMPT)) n++;
+    makePositionVisible(length);
+// The next line has "<=" where the previous function has just "<"
+    if (caretPos <= n) setCaretPos(length);
+// Furthermore if I am about to change thing I will ensure that any
+// selection lies within the active line.
+    if (selstartpos < n) selstartpos = n;
+    if (selendpos < selstartpos) selendpos = selstartpos;
+    if (n == length) return -1; // nothing that I am allowed to delete
+#endif
+    return 1;
+}
+
+void fwinText::insertNewline()
+{
+#ifdef RECONSTRUCTED
+    int p = length;
+// I find the first "real" character of the input line by scanning back
+// to (a) the start of the buffer (b) the end of a previous line or (c) the
+// end of a prompt string.
+    while (p>0 && getChar(p-1)!='\n' && (getStyle(p-1)&STYLE_PROMPT)==0) p--;
+    int n = length-p;
+    if (n > (int)sizeof(inputBuffer)-5) n = sizeof(inputBuffer)-5;
+    extractText(inputBuffer, p, n);
+// I enter the line that has just been collected into the history
+// record.
+    inputBuffer[n] = 0;
+    input_history_add(inputBuffer);
+// Adding an entry could cause an old one to be discarded. So I now ensure
+// that I know what the first and last recorded numbers are.
+    historyLast = input_history_next - 1;
+    historyFirst = input_history_next - INPUT_HISTORY_SIZE;
+    if (historyFirst < 0) historyFirst = 0;
+    historyNumber = historyLast + 1; // so that ALT-P moves to first entry
+// Now I add a newline to the text, since the user will expect to see that.
+    inputBuffer[n] = '\n';
+    inputBuffer[n+1] = 0;
+    inputBufferLen = n+1;
+    inputBufferP = 0;
+// Stick a newline into the text buffer, and make the screen non-updatable.
+    InsertNewline( );
+    setEditable(FALSE);
+    recently_flushed = 0;
+// stuff user typed is now in buffer... I should never have got here unless
+// the user thread was waiting, so here I unlock it, to tell it that
+// the input buffer is ready.
+    if (sync_even)
+    {   sync_even = 0;
+        UnlockMutex(mutex3);
+        LockMutex(mutex2);
+        UnlockMutex(mutex4);
+    }
+    else
+    {   sync_even = 1;
+        UnlockMutex(mutex1);
+        LockMutex(mutex4);
+        UnlockMutex(mutex2);
+    }
+#endif
+}
+
+
+void fwinText::requestFlushBuffer()
+{
+#ifdef RECONSTRUCTED
+    recently_flushed = 0;
+// here the worker thread is locked waiting for mutex2, so I can afford to
+// adjust fwin_in and fwin_out.
+    if (sync_even)
+    {   LockMutex(mutex1);
+        if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
+        {   if (fwin_in > fwin_out)
+                appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out
+            else
+            {   appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE
+                appendText(&fwin_buffer[0], fwin_in);
+            }
+            makePositionVisible(rowStart(length));
+        }
+// After this call fwin_in and fwin_out are always both zero.
+        fwin_out = fwin_in = 0;
+        sync_even = 0;
+        UnlockMutex(mutex3);
+        LockMutex(mutex2);
+        UnlockMutex(mutex4);
+    }
+    else
+    {   LockMutex(mutex3);
+        if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
+        {   if (fwin_in > fwin_out)
+                appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out
+            else
+            {   appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE
+                appendText(&fwin_buffer[0], fwin_in);
+            }
+            makePositionVisible(rowStart(length));
+        }
+        fwin_out = fwin_in = 0;
+        sync_even = 1;
+        UnlockMutex(mutex1);
+        LockMutex(mutex4);
+        UnlockMutex(mutex2);
+    }
+#endif
+}
+
+
+
+void fwinText::insertChar(int ch)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::makePositionVisible(int p)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::setCaretPos(int n)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::command()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::extendedCommand()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::moveUp()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::moveDown()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::pageUp()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::pageDown()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::undo()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::copyRegion()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::beep()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::killSelection()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::copyWordPrev()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::type_ahead(uint32_t c)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void fwinText::moveDocStart()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::moveDocEnd()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+int fwinText::charFromPosition(int x, int y)
+{
+#ifdef RECONSTRUCTED
+#endif
+    return 0;
+}
+
+
+
+
+void fwinText::setSelectionEnd()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::cut()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
 
 
 void fwinFrame::OnExit(wxCommandEvent &WXUNUSED(event))
@@ -699,6 +1653,8 @@ void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
     panel->firstPaint = true;
     for (i=0; i<81; i++)
         columnPos[i] = (int)((double)i*w);
+// When I resize the window I will refresh EVERYTHING, and in doing so I
+// will discover where the caret lies.
     panel->Refresh();
 }
 
@@ -706,28 +1662,734 @@ void fwinText::enlargeTextBuffer()
 {
     textBufferSize *= 2;
     textBuffer =
-        (int32_t *)realloc(textBuffer, textBufferSize*sizeof(int32_t));
+        (uint32_t *)realloc(textBuffer, textBufferSize*sizeof(uint32_t));
     if (textBuffer == NULL) exit(1); // Abrupt collapse on no memory.
 }
 
 void fwinText::OnChar(wxKeyEvent &event)
 {
-    const char *msg = "OnChar", *raw = "";
-    int c = event.GetUnicodeKey();
-    if (c == WXK_NONE) c = event.GetKeyCode(), raw = "Raw ";
-    else
-    {   textBuffer[caretPos] = c;
-//        int left = columnPos[caretPos%80];
-//        int right = columnPos[caretPos%80+1];
-//        int top = rowHeight*(caretPos/80);
-//        RefreshRect(wxRect(left, top, right-left, rowHeight));
-        Refresh();
-        caretPos++;
+    if (!editable)      // This makes it possible to have keyboard input
+    {   event.Skip();   // ignored - but should I still accept and process
+        return;         // eg interrupt characters?
     }
-    if (0x20 < c && c < 0x7f) FWIN_LOG("%s%s %x (%c)\n", msg, raw, c, c);
-    else FWIN_LOG("%s%s %x\n", msg, raw, c);
-    if (*raw != 0) event.Skip();
+    uint32_t c = event.GetUnicodeKey();
+    uint32_t r = event.GetKeyCode();
+    int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
+                                  // Also ALTGR, META, WIN, CONTROL
+    FWIN_LOG("Unicode = %x modifiers=%x raw-key=%x\n", c, m, r);
+    const char *history_string = "";
+// If a previous keystroke had been ESC then I act as if this one
+// had ALT combined with it. I will cancel the pending ESC on various
+// menu things as well as here. Note that this conversion copes with
+// local editing combinations such as ALT-D, but ESC-I does not activate
+// a menu the way that ALT-I would have.
+    if (keyFlags & ESC_PENDING)
+    {   m |= wxMOD_ALT;  
+        keyFlags &= ~ESC_PENDING;
+    }
+// Now I deal with keys that do not have a Unicode translation. I will
+// map them onto codes that are distinguished by having bit 0x80000000 set.
+#define NON_UNICODE 0x80000000U
+    if (c == WXK_NONE)
+    {   switch (r)
+        {
+// I will list all the WXK_ values that can arise from non-Unicode
+// input here. In many cases I will merely ignore the key-press, but
+// by having a full enumeration I remind myself of what I MIGHT want to do.
+// Of course not every keyboard will have all of these, and what might
+// be worse each operating system might intercept some of them
+// before I have a chance to respond!
+#if 0
+    case WXK_START:
+    case WXK_LBUTTON:
+    case WXK_RBUTTON:
+    case WXK_CANCEL:
+    case WXK_MBUTTON:
+    case WXK_SHIFT:
+    case WXK_ALT:
+    case WXK_CONTROL:
+    case WXK_MENU:
+    case WXK_PAUSE:
+    case WXK_CAPITAL:
+    case WXK_SELECT:
+    case WXK_PRINT:
+    case WXK_EXECUTE:
+    case WXK_SNAPSHOT:
+                  case WXK_F2:  case WXK_F3:  case WXK_F4:  case WXK_F5:
+    case WXK_F6:  case WXK_F7:  case WXK_F8:  case WXK_F9:  case WXK_F10:
+    case WXK_F11: case WXK_F12: case WXK_F13: case WXK_F14: case WXK_F15:
+    case WXK_F16: case WXK_F17: case WXK_F18: case WXK_F19: case WXK_F20:
+    case WXK_F21: case WXK_F22: case WXK_F23: case WXK_F24:
+    case WXK_NUMLOCK:
+    case WXK_SCROLL:
+    case WXK_NUMPAD_F2: case WXK_NUMPAD_F3: case WXK_NUMPAD_F4:
+    case WXK_NUMPAD_SEPARATOR:
+    case WXK_WINDOWS_RIGHT:
+    case WXK_WINDOWS_MENU:
+    case WXK_COMMAND:
+    case WXK_NUMPAD_BEGIN:
+#endif
+    default:
+// All the above either will not arise as characters or if they do will be
+// things I wish to ignore.
+            event.Skip();
+            return;
+
+    case WXK_DELETE:
+    case WXK_NUMPAD_DELETE:
+            c = WXK_DELETE|NON_UNICODE;
+            break;
+    case WXK_INSERT:
+    case WXK_NUMPAD_INSERT:
+            c = WXK_INSERT|NON_UNICODE;
+            break;
+    case WXK_CLEAR:
+            c = WXK_CLEAR|NON_UNICODE;
+            break;
+    case WXK_END:
+    case WXK_NUMPAD_END:
+            c = WXK_END|NON_UNICODE;
+            break;
+    case WXK_HOME:
+    case WXK_NUMPAD_HOME:
+            c = WXK_HOME|NON_UNICODE;
+            break;
+    case WXK_LEFT:
+    case WXK_NUMPAD_LEFT:
+            c = WXK_LEFT|NON_UNICODE;
+            break;
+    case WXK_UP:
+    case WXK_NUMPAD_UP:
+            c = WXK_UP|NON_UNICODE;
+            break;
+    case WXK_RIGHT:
+    case WXK_NUMPAD_RIGHT:
+            c = WXK_RIGHT|NON_UNICODE;
+            break;
+    case WXK_DOWN:
+    case WXK_NUMPAD_DOWN:
+            c = WXK_DOWN|NON_UNICODE;
+            break;
+    case WXK_PAGEUP:
+    case WXK_NUMPAD_PAGEUP:
+            c = WXK_PAGEUP|NON_UNICODE;
+            break;
+    case WXK_PAGEDOWN:
+    case WXK_NUMPAD_PAGEDOWN:
+            c = WXK_PAGEDOWN|NON_UNICODE;
+            break;
+    case WXK_HELP:
+    case WXK_F1:
+    case WXK_NUMPAD_F1:
+            c = WXK_HELP|NON_UNICODE;
+            break;
+
+// Now I have some cases where there may be special dedicated keys on some
+// models of keyboard, or where the numeric keypad might be in use. In the
+// cases that follow I merely map the key concerned onto the regular
+// character it equates to. So eg WXK_NUMPAD0 turns into merely '0'.
+    case WXK_NUMPAD0: case WXK_NUMPAD1:
+    case WXK_NUMPAD2: case WXK_NUMPAD3:
+    case WXK_NUMPAD4: case WXK_NUMPAD5:
+    case WXK_NUMPAD6: case WXK_NUMPAD7:
+    case WXK_NUMPAD8: case WXK_NUMPAD9:
+            c = r + '0' - WXK_NUMPAD0;
+            break;
+    case WXK_MULTIPLY:
+            c = '*';
+            break;
+    case WXK_ADD:
+            c = '+';
+            break;
+    case WXK_SEPARATOR:
+            c = WXK_SPACE;
+            break;
+    case WXK_SUBTRACT:
+            c = '-';
+            break;
+    case WXK_DECIMAL:
+            c = '.';
+            break;
+    case WXK_DIVIDE:
+            c = '/';
+            break;
+    case WXK_NUMPAD_SPACE:
+            c = WXK_SPACE;
+            break;
+    case WXK_NUMPAD_TAB:
+            c = WXK_TAB;
+            break;
+    case WXK_NUMPAD_ENTER:
+            c = WXK_RETURN;
+            break;
+    case WXK_NUMPAD_EQUAL:
+            c = '=';
+            break;
+    case WXK_NUMPAD_MULTIPLY:
+            c = '*';
+            break;
+    case WXK_NUMPAD_ADD:
+            c = '+';
+            break;
+    case WXK_NUMPAD_SUBTRACT:
+            c = '-';
+            break;
+    case WXK_NUMPAD_DECIMAL:
+            c = '.';
+            break;
+    case WXK_NUMPAD_DIVIDE:
+            c = '/';
+            break;
+        }
+// If I "break" from the above switch block it means I have translated
+// the raw character into a Unicode on in C. 
+    }
+// I will let the Search Pending code drop through in cases where the
+// keystroke should be treated as a return to "ordinary" processing. Also
+// note that I only expect to find myself in search mode in cases where the
+// system is waiting for input.
+    if (searchFlags != 0)
+    {   int save, r, ls;
+        switch (c)
+        {
+// BACKSPACE removes a character from the search string
+    case WXK_BACK:
+// When I delete a character from a search string I will pop the active
+// history line back to the first one found when the remaining string
+// was searched for. If I delete back to nothing I will leave the input
+// line blank.
+            if (SEARCH_LENGTH == 0)
+            {   beep();
+                searchFlags = 0;   // cancel searching before it started!
+                killSelection();
+                return;
+            }
+            searchFlags--;
+            if (SEARCH_LENGTH == 0)
+            {   searchFlags = 0;   // delete the one char in the search string
+                killSelection();
+                setInputText("", 0);
+                return;
+            }
+            historyNumber = searchStack[SEARCH_LENGTH];
+// The "trySearch" here really really ought to succeed since I have reverted
+// to a history line where it succeeded before. I do it again here so I can
+// find out where, on that line, the match was so I can establish it as a
+// selection.
+            startMatch = trySearch();
+            history_string = input_history_get(historyNumber);
+// ought not to return NULL here!
+            ls = setInputText(history_string, strlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+// ALT-P and ALT-p and UP all search backwards
+    case 'P': case 'p':
+            if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
+    case WXK_UP|NON_UNICODE:
+            searchFlags &= ~SEARCH_FORWARD;
+            searchFlags |= SEARCH_BACKWARD;
+            if (historyNumber <= historyFirst)
+            {   beep();  // already on last possible place
+                return;
+            }
+            save = historyNumber;
+            historyNumber--;
+            r = trySearch();
+            if (r == -1)
+            {   historyNumber = save;
+                beep();
+                return;
+            }
+            startMatch = r;
+            history_string = input_history_get(historyNumber);
+            ls = setInputText(history_string, strlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+// ALT-N and ALT-n and DOWN all search forwards
+    case 'N': case 'n':
+            if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
+    case WXK_DOWN|NON_UNICODE:
+            searchFlags |= SEARCH_FORWARD;
+            searchFlags &= ~SEARCH_BACKWARD;
+            if (historyNumber >= historyLast)
+            {   beep();
+                return;
+            }
+            save = historyNumber;
+            historyNumber++;
+            r = trySearch();
+            if (r == -1)
+            {   historyNumber = save;
+                beep();
+                return;
+            }
+            startMatch = r;
+            history_string = input_history_get(historyNumber);
+            ls = setInputText(history_string, strlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+// I detect ^U here and cause it to exit search mode.
+    case ('U' & 0x15):
+            searchFlags = 0;
+            killSelection();
+            return;
+    case WXK_ESCAPE:       // ctl-[
+            keyFlags ^= ESC_PENDING;
+            return;
+    default:
+    defaultlabelsearch:
+// I suggest "^@" as a sensible character to type to exit from searching.
+// Acting on it just "sets the mark" which is typically harmless. However
+// I will exit search mode with any control or ALT combination too
+            if (c == 0 ||
+                (c & NON_UNICODE) != 0 ||
+                (m & (wxMOD_ALT | wxMOD_CMD)) != 0)
+            {   searchFlags = 0;
+                killSelection();
+                break;
+            }
+// here I should have a single simple character in c to search for
+// and I will filter out control characters... except tab!
+            if (c < 0x20 && c != '\t')
+            {   searchFlags = 0;
+                killSelection();
+                break;
+            }
+// Here I have a further printable character to add to the search
+// pattern. If ignore it if the search string has become ridiculously long
+// to avoid a buffer overflow. Note that these days the text buffer (and hence
+// the search string and history buffer) will be stored as 32-bit units
+// each holding a Unicode char in the lower 24 bits.
+            if (SEARCH_LENGTH > 250)
+            {   beep();
+                return;
+            }
+            searchString[SEARCH_LENGTH] = c;
+            searchStack[SEARCH_LENGTH] = historyNumber;
+            searchFlags++;
+            save = historyNumber;
+            r = trySearch();
+            if (r == -1)
+            {   historyNumber = save;
+                beep();
+                searchFlags--;
+                return;
+            }
+            startMatch = r;
+            history_string = input_history_get(historyNumber);
+            ls = setInputText(history_string, strlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+        }
+    }
+// If the very first character I see is a "^D" it is to be taken as EOF
+// rather than as "delete next character".
+    if (c == ('D' & 0x1f) &&
+        !(keyFlags & ANY_KEYS))
+    {   setCaretPos(textEnd);
+// I force a Control-D character into the buffer and then pretend that
+// a newline had also been typed.
+        insertChar(0x04);
+        insertNewline();
+        return;
+    }
+// If the very first key I see is "^G" I will raise an exception
+// for the user.
+    if (c = ('C' & 0x1f) &&
+        !(keyFlags & ANY_KEYS))
+    {   displayBacktrace();
+        return;
+    }
+    keyFlags |= ANY_KEYS;
+    switch (c)
+    {
+case WXK_BACK:  // = Ctrl-H
+// ALT backspace does a delete-backwards-word, while just backspace
+// deletes a single character. I find that CTRL-backspace (at least on
+// on Windows) is mapped to ctrl-DELETE so that will delete forwards.
+        if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
+        else deleteBackwards();
+        return;
+case WXK_END|NON_UNICODE:
+// Hmmm - still should I extend a selection if an anchor is set?
+// END should probably go to the end of the current line, with ALT-END
+// going to the end of the last line.
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocEnd();
+        else moveLineEnd();
+        return;
+case WXK_HOME|NON_UNICODE:
+// HOME should probably go to the start of the current active line, with
+// ALT-HOME being the thing that goes to top of the screen-buffer.
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocStart();
+        else moveLineStart();
+        return;
+case WXK_LEFT|NON_UNICODE:
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordLeft();
+        else moveLeft();
+        return;
+case WXK_RIGHT|NON_UNICODE:
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordRight();
+        else moveRight();
+        return;
+case WXK_UP|NON_UNICODE:
+// UP      go to previous item in history
+// ALT-UP  search backwards in history
+// CTRL-UP or action in read-only region: merely move up a line
+        if ((m & wxMOD_CMD) || (options & READONLY)) moveUp();
+        else if (m & wxMOD_ALT) searchHistoryPrev();
+        else historyPrev();
+        return;
+case WXK_DOWN|NON_UNICODE:
+// If you are not waiting for input then cursor up and down just move you up
+// and down! If you are waiting for input then Control can be used to break
+// you out from the input-line...
+        if ((m & wxMOD_CMD) || (options & READONLY)) moveDown();
+        else if (m & wxMOD_ALT) searchHistoryNext();
+        else historyNext();
+        return;
+case WXK_RETURN:
+// case ('J' & 0x1f):
+// I always act as if newlines were typed at the very end of the input.
+// Right now I treat ENTER and ^J and ^M all the same, and ignore any
+// ALT, SHIFT or CTRL. Some people might want to use modifiers on ENTER
+// to signify some sort of soft newline?
+        setCaretPos(textEnd);
+        c = '\n';   // normalise to "newline"
+        break;
+case WXK_TAB:
+        c = '\t';
+        break;
+case '@':
+// As a default sort of behaviour if my chart of actions shows a key doing
+// something interesting with CONTROL but does not specify what happens
+// with ALT, I think I will tend to make ALT-x behave like ^x.
+        if (m & wxMOD_ALT)
+        {   setSelectionMark();
+            return;
+        }
+        else goto defaultlabel;
+case '@' & 0x1f:
+        setSelectionMark();
+        return;
+case 'A': case 'a':
+        if (m & wxMOD_ALT)
+        {   moveLineStart();
+            return;
+        }
+        else goto defaultlabel;
+case 'A' & 0x1f:
+        moveLineStart();
+        return;
+case 'B' & 0x1f:
+        moveLeft();
+        return;
+case 'B': case 'b':
+        if (m & wxMOD_ALT)
+        {   moveWordLeft();
+            return;
+        }
+        else goto defaultlabel;
+case 'C' & 0x1f:
+        interrupt();
+        return;
+case 'C': case 'c':
+        if (m & wxMOD_ALT)
+        {   capitalize();
+            return;
+        }
+        goto defaultlabel;
+case WXK_DELETE|NON_UNICODE:
+        if (m & (wxMOD_CMD|wxMOD_ALT))
+        {   deleteWordForwards();
+            return;
+        }
+        c = WXK_DELETE; // to type-ahead buffer
+        break;
+case 'D' & 0x1f:
+// Here I may want to arrange that if the current input-buffer is empty
+// then ^D causes and EOF to be returned. Well yes, I have arranged that
+// elsewhere so I only get here if the user has typed some chars already.
+        goto defaultlabel;
+case 'D': case 'd':
+        if (m & wxMOD_ALT)
+        {   deleteWordForwards();
+            return;
+        }
+        goto defaultlabel;
+case 'E' & 0x1f:
+        moveLineEnd();
+        return;
+case 'E': case 'e':
+// ALT-e enters the EDIT menu: this is handled by having the menu
+// registered elsewhere.
+        goto defaultlabel;
+case 'F' & 0x1f:
+        moveRight();
+        return;
+case 'F': case 'f':
+        if (m & wxMOD_ALT)
+        {   moveWordRight();
+            return;
+        }
+        goto defaultlabel;
+case 'G' & 0x1f:
+        displayBacktrace();
+        return;
+case 'G': case 'g':
+        if (m & wxMOD_ALT)
+        {   displayBacktrace();
+            return;
+        }
+        goto defaultlabel;
+// case 'H' & 0x1f: // = WXK_BACK
+case 'H': case 'h':
+        if (m & wxMOD_ALT)
+        {   deleteWordBackwards();
+            return;
+        }
+         goto defaultlabel;
+// case 'I' & 0x1f: // == WXK_TAB
+case 'I': case 'i':
+// ALT-i enters the FILE menu
+        goto defaultlabel;
+case 'J' & 0x1f:
+         insertNewline();
+         break;
+case 'J': case 'j':
+        if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
+        {   insertNewline();
+            return;
+        }
+        goto defaultlabel;
+case 'K' & 0x1f:
+        deleteCurrentLine();
+        return;
+case 'K': case 'k':
+        if (m & wxMOD_ALT)
+        {   deleteCurrentLine();
+            return;
+        }
+        goto defaultlabel;
+// ^L will be a shortcut for clear-screen
+case 'L': case 'l':
+        if (m & wxMOD_ALT)
+        {   lowerCase();
+            return;
+        }
+        goto defaultlabel;
+// case 'M' & 0x1f: // = WXK_RETURN
+case 'M': case 'm':
+// ALT-m enters the MODULE menu
+        goto defaultlabel;
+case 'N' & 0x1f:
+        if (options & READONLY) moveDown();
+        else historyNext();
+        return;
+case 'N': case 'n':
+        if (options & READONLY) goto defaultlabel;
+        else if (m & wxMOD_ALT)
+        {   searchHistoryNext();
+            return;
+        }
+        goto defaultlabel;
+// case 'O' & 0x1f: // menu shortcut to lose eoutput
+case 'O': case 'o':
+// ^O will be purge output.
+//    I hope that by making ^O, ^S and ^Q menu shortcuts they will get
+//    acted upon whether I am waiting for input or not.
+// ALT-O enters the FONT menu
+        goto defaultlabel;
+case 'P' & 0x1f:
+        if (options & READONLY) moveUp();
+        else historyPrev();
+        return;
+case 'P': case 'p':
+        if (options & READONLY) goto defaultlabel;
+        else if (m & wxMOD_ALT)
+        {   searchHistoryPrev();
+            return;
+        }
+        goto defaultlabel;
+case 'Q': case 'q':
+// ^Q will be RESUME OUTPUT
+        if (m & wxMOD_ALT) return; // Ignore ALT-Q
+        goto defaultlabel;
+case 'R' & 0x1f:
+        Refresh();
+        return;
+case 'R': case 'r':
+// ALT-r will be the B&reak menu
+        goto defaultlabel;
+// case 'S' & 0x1f: // menu shortcut
+case 'S': case 's':
+// ^S should pause output
+// ALT-s enters the SWITCH menu
+        goto defaultlabel;
+case 'T' & 0x1f:
+        transpose();
+        return;
+case 'T': case 't':
+        if (m & wxMOD_ALT)
+        {   transpose();
+            return;
+        }
+        goto defaultlabel;
+case 'U' & 0x1f:
+        undo();
+        return;
+case 'U': case 'u':
+        if (m & wxMOD_ALT)
+        {   upperCase();
+            return;
+        }
+        goto defaultlabel;
+case 'V': case 'v':
+// ^V will be PASTE and is handled as a shortcut
+        goto defaultlabel;
+case 'W' & 0x1f:
+// ^W behaviour is just like ALT-H
+        deleteWordBackwards();
+        return;
+case 'W': case 'w':
+        if (m & wxMOD_ALT)
+        {   copyRegion();
+            return;
+        }
+        goto defaultlabel;
+case 'X' & 0x1f:
+// Just what these have to do is a mystery to me at present!
+// Well that is an overstatement - what I mean is that I am not yet
+// implementing anything!
+        extendedCommand();
+        return;
+case 'X': case 'x':
+        if (m & wxMOD_ALT)
+        {   command();
+            return;
+        }
+        goto defaultlabel;
+case 'Y' & 0x1f:
+// ^Y is short for YANK, otherwise known as PASTE
+        paste();
+        return;
+case 'Y': case 'y':
+        if (m & wxMOD_ALT)
+        {   rotateClipboard();
+            return;
+        }
+        goto defaultlabel;
+// case 'Z' & 0x1f: // suspend
+case 'Z': case 'z':
+        goto defaultlabel;
+// case '[' ^ 0x1f: // = WXK_ESCAPE
+case '[':
+        goto defaultlabel;
+case WXK_ESCAPE:       // ctl-[
+// ESC must have the effect of simulating the ALT property for the following
+// character.
+        return escapePressed();
+case '\\' & 0x1f:
+        return; // should exit the application???
+case '\\':
+        goto defaultlabel;
+case ']':
+        goto defaultlabel;
+case '^' & 0x1f:
+        reinput();
+        return;
+case '^':
+        goto defaultlabel;
+case '_':
+        if (m & wxMOD_ALT)
+        {   copyWordPrev();
+            return;
+        }
+        goto defaultlabel;
+
+default:
+defaultlabel:
+#ifdef XXXXXX
+        if ((event->code & ~0xff) != 0 ||
+            event->text[1] != 0)
+            return onKeyPress();
+#endif
+// here I should have a single simple character
+#ifdef XXXXXX
+        ch = event->text[0];
+// and I will filter out control characters...
+        if ((ch & 0xff) < 0x20) return; //  onKeyPress();
+#endif
+        break;
+    }
+// Now I am left with printable characters plus TAB and NEWLINE. If the
+// terminal is waiting for input or if CTRL or ALT was associated with
+// the key I delegate.
+// @@@ I should really try to check so that when I insert a ")", "]" or
+// "}" I look for the corresponding opening bracket and flash it.
+    if (isEditable() ||
+        (m & wxMOD_ALT))
+    {
+// I want the input line to be in a special colour.
+#ifdef XXXXXX
+        long rr = onKeyPress();
+        changeStyle(promptEnd, textEnd-promptEnd, STYLE_INPUT);
+#endif
+        return;
+    }
+// I have now delegated everything except simple printable characters
+// plus tab, backspace and newline without CTRL or ALT.
+// I will interpret backspace as deleting the most recent character
+// (if there is one, and not if we get back to a newline). Otherwise
+// I just fill a (circular) buffer.
+    flags &= ~FLAG_TIP;
+    if (c == '\b')  // delete previous character in buffer if there is one
+    {   int n = type_in;
+        if (--n < 0) n = TYPEAHEAD_SIZE-1;
+// I can not delete a character if there is not one there. I will not delete
+// it if the previous character was a newline. In such cases I just beep.
+        if (type_in == type_out ||
+            ahead_buffer[n] == '\n')
+        {   beep();
+            return;
+        }
+        type_in = n;
+    }
+    else type_ahead(c);
+    return;
 }
+
 
 void fwinText::OnMouse(wxMouseEvent &event)
 {
@@ -754,7 +2416,11 @@ void fwinText::OnDraw(wxDC &dc)
     if (firstPaint)
     {   if (fixedPitch == NULL)
         {   fixedPitch = new wxFont();
-            fixedPitch->SetNativeFontInfoUserDesc("CMU Typewriter Text");
+#ifdef MACINTOSH
+            fixedPitch->SetFaceName("CMU Typewriter Text Regular");
+#else
+            fixedPitch->SetFaceName("CMU Typewriter Text");
+#endif
             fixedPitch->SetPointSize(1000);
             FWIN_LOG("fixed pitch font created\n");
             font_width *p = cm_font_width;
@@ -780,8 +2446,16 @@ void fwinText::OnDraw(wxDC &dc)
         scaleAdjustment = (double)spacePerChar/em;
         fixedPitch->SetPointSize(10);
         fixedPitch->Scale(scaleAdjustment);
-// For a 10 point font I would use a row-spacing of 13.
-        rowHeight = (int)(13.0*scaleAdjustment + 0.9999); 
+// For the 10 point font used here I will use a row-spacing of 14. I observe
+// that there are real awkward issues when font heights and widths end up
+// rounded to be an integer number of pixels - either items slightly overlap
+// or there are unwanted gaps. But if I restrict myself to just whole-number
+// font sizes I find keeping exactly 80 columns across the screen means that
+// only certain screen widths can be used. Perhaps I need to do that and
+// make any attempt to drag the window width snap to "Good" sizes. Or I
+// could make the window non-resizable but make it adjust in response to
+// a "font size" dialog on the menu bar?
+        rowHeight = (int)(14.0*scaleAdjustment + 0.9999); 
         rowCount = (window.GetHeight()+rowHeight-1)/rowHeight;
 //???        SetVirtualSize(wxSize(window.GetWidth(), nRows*rowHeight));
 #if 0
@@ -798,24 +2472,30 @@ void fwinText::OnDraw(wxDC &dc)
     dc.SetFont(*fixedPitch);
     int p = firstVisibleRow;
     int row = 0, col = 0;
+    caretX = caretY = -1; // not on the visible screen.
+    lastVisibleRow = firstVisibleRow;
     while (p<textEnd)
-    {   int32_t ch = textBuffer[p++];
+    {   if (caretPos == p)
+        {   caretX = columnPos[col];
+            caretY = row*rowHeight;
+        }
+        uint32_t ch = textBuffer[p++];
         if ((ch & 0xffffff) == '\n')
         {   dc.DrawRectangle(columnPos[col], row*rowHeight,
                              columnPos[80]-columnPos[col], rowHeight);
             col = 0;
             row++;
             if (row*rowHeight > window.GetHeight()) break;
+            lastVisibleRow = p;
         }
         else if (col == 80)
         {   col = 0;
             row++;
             if (row*rowHeight > window.GetHeight()) break;
+            lastVisibleRow = p;
         }
         else
-        {
-// Now deal with color!
-            if (ch & 0x1000000)
+        {   if (ch & 0x1000000)
             {   if (textColour != wxRED)
                     dc.SetTextForeground(*(textColour = wxRED));
             }
@@ -825,10 +2505,10 @@ void fwinText::OnDraw(wxDC &dc)
             }
             else if (textColour != wxBLACK)
                 dc.SetTextForeground(*(textColour = wxBLACK));
-// Does the next fragment cope with Unicode points beyond 0xffff on Windows?
             if ((ch & 0xffffff) <= 0x20)
                 dc.DrawText(" ", columnPos[col], rowHeight*row);
             else
+// Does the next fragment cope with Unicode points beyond 0xffff on Windows?
             {   wxString cs = (wchar_t)(ch & 0xffffff);
                 dc.DrawText(cs, columnPos[col], rowHeight*row);
                 col++;
