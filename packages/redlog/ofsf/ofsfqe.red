@@ -2034,11 +2034,28 @@ procedure ofsf_fbqepcad(f);
    % Fallback quantifier elimination using Qepcad. [f] is a formula.
    % Returns a quantifier-free formula. If the switches [rlqefb] and
    % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
-   begin scalar j,l,succl,faill,res,vl,w; integer n,m,vn,an;
+   begin scalar ql,varll,mtx,mtx1,j,l,succl,faill,res,vl,w; integer n,m,vn,an;
+      if !*rlqefbslfq then <<
+	 {ql,varll,mtx} := cl_split f;
+      	 if !*rlverbose then
+	    ioto_tprin2t {"+++ SLFQ ..."};
+	 mtx1 := qepcad_slfq(mtx,nil);
+      	 if !*rlverbose then <<
+	    ioto_tprin2 {"+++ SLFQ simplification: ",cl_atnum mtx," -> "};
+	    ioto_prin2t if mtx1 then cl_atnum mtx1 else "failed"
+	 >>;
+	 f := mtx1 or mtx;
+	 for each q in ql do
+	    for each v in pop varll do
+	       if v memq cl_fvarl1 f then
+	       	  f := rl_mkq(q,v,f)
+      >>;
+      if not rl_quap rl_op f then
+	 return f;
       j . l := cl_divide f;
       if !*rlverbose then <<
 	 n := length l;
-	 ioto_prin2t {"QEPCAD B on ",n,ioto_cplu(" subproblem",n>1)," ..."}
+	 ioto_prin2t {"+++ QEPCAD B on ",n,ioto_cplu(" subproblem",n>1)," ..."}
       >>;
       for each s in l do <<
 	 if !*rlverbose then <<
@@ -2046,8 +2063,8 @@ procedure ofsf_fbqepcad(f);
 	    vn := length car vl + length cdr vl;
 	    an := cl_atnum s;
 	    ioto_tprin2t {"+++ Subproblem ",m:=m+1," of ",n,": ",
-	       vn,ioto_cplu(" variable",vn>1),", ",
-	       an,ioto_cplu(" atomic formula",an>1)}
+	       vn,ioto_cplu(" variable",not eqn(vn,1)),", ",
+	       an,ioto_cplu(" atomic formula",not eqn(an,1))}
 	 >>;
 	 w := qepcad_qepcad(s,nil);
 	 if w then

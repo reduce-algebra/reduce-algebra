@@ -47,6 +47,10 @@ fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
    !*utf8 !*nat);
 
 switch rlqefbqepcad;
+switch rlqefbslfq;
+switch rlslfqvb;
+
+on1 'rlqefbslfq;
 
 put('ofsf,'rl_services,
    append(get('ofsf,'rl_services),
@@ -132,7 +136,7 @@ procedure qepcad_qepcad1(f,fn);
 	    "";
       	 call := lto_sconcat{"qepcad ",narg,larg,"< ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
-	    " -v name=QEPCAD -f $qe/qepcad.awk"};
+	    " -v slfqvb=nil -v name=QEPCAD -f $qe/qepcad.awk"};
 	 if !*rlverbose then
 	    ioto_prin2t lto_sconcat {"+++ calling ",call};
 	 system call;
@@ -264,7 +268,7 @@ procedure qepcad_slfq(f,fn);
    end;
 
 procedure qepcad_slfq1(f,fn);
-   begin scalar rnd,w,fn1,fn2,fh,result,oldecho,call;
+   begin scalar rnd,w,fn1,fn2,fh,result,oldecho,narg,larg,call;
       rnd := lto_at2str random(10^5);
       fn1 := fn or lto_sconcat{"/tmp/",getenv "USER",rnd,".slfq"};
       if null fn then
@@ -275,8 +279,18 @@ procedure qepcad_slfq1(f,fn);
       shut fn1;
       if !*rlverbose then ioto_prin2 "done";
       if null fn then <<
-      	 call := lto_sconcat{"slfq ","< ",fn1," | awk -v rf=",fn2,
+	 narg := if qepcad_n!* then
+ 	    lto_sconcat {"-N ",lto_at2str(qepcad_n!*/10^6)," "}
+	 else
+	    "";
+	 larg := if qepcad_l!* then
+ 	    lto_sconcat {"-P ",lto_at2str qepcad_l!*," "}
+	 else
+	    "";
+      	 call := lto_sconcat{"slfq ",narg,larg,"< ",fn1,
+	    " 2> /dev/null | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
+	    " -v slfqvb=",lto_at2str !*rlslfqvb,
 	    " -v name=SLFQ -f $qe/qepcad.awk"};
 	 if !*rlverbose then
 	    ioto_prin2t lto_sconcat {"+++ calling ",call};

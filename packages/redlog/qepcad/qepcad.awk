@@ -31,6 +31,11 @@
 BEGIN {
     time=tolower(time)
     verb=tolower(verb)
+    slfqvb=tolower(slfqvb)
+}
+
+(slfqvb=="t") {
+    print "+", $0
 }
 
 /^In other words/ {
@@ -50,7 +55,7 @@ BEGIN {
 }
 
 (f==1) {
-    if (verb=="t" && !match($0,/^$/))
+    if (verb=="t" && !match($0,/^$/) && (slfqvb=="nil"))
 	print "+++", name, "raw output:", $0
     for (i=1; i<=NF; i++) {
 	oi = $i
@@ -66,28 +71,36 @@ BEGIN {
     printf("\n") > rf
 }
 
-/^System time/ && (time=="t") {
+/^System time/ && (time=="t") && (slfqvb=="nil") {
     print "+++", name, $0
-}
-
-/^\*\*/ {
-    print ""
-    print
-}
-
-/^Failure occurred in:/ {
-    print ""
-    print
-}
-
-/^Reason for the failure:/ {
-    print
 }
 
 /^An equivalent/ {
     f=1
 }
 
+/^\*\*/ && (slfqvb=="nil") {
+    print ""
+    print
+}
+
+/WARNING/ && (slfqvb=="nil") {
+    print
+}
+
+/^Failure occurred in:/ && (slfqvb=="nil") {
+    print ""
+    print
+}
+
+/^Reason for the failure:/ && (slfqvb=="nil") {
+    print
+}
+
 END {
     printf("; end;\n") > rf
+}
+
+{
+    fflush(stdout)
 }
