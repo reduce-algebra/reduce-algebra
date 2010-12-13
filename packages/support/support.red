@@ -25,6 +25,9 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
+!#if (memq 'psl lispsystem!*)
+     create!-package('(support pslrend compat fastmath compat psl entry pslprolo),
+                    NIL);
 
 % This file is temporarily empty.
 
