@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 60dfb91d 14-Dec-2010 */
+/* Signature: 09d75f2a 14-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -47,6 +47,7 @@
 #include "wx/wx.h"
 #endif
 
+#include <wx/caret.h>
 #include <wx/display.h>
 
 #include "config.h"
@@ -241,6 +242,7 @@ public:
     int columnPos[81];
 
 private:
+    class fwinFrame *frame;
     wxFont *fixedPitch;
     double em;
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
@@ -260,13 +262,11 @@ private:
 // character stored. Ie it is zero if the buffer is empty.
 // caretPos is between zero and textEnd (inclusive) and denotes a position
 // between two characters where insertion might happen.
-// caretX and caretY are the caret position on the screen. Set when the
-// screen near the caret gets drawn.
     uint32_t *textBuffer;
     int textBufferSize;
     void enlargeTextBuffer();
+    wxCaret *caret;
     int caretPos;
-    int caretX, caretY;
     int textEnd; 
     int rowHeight, rowCount;
     int firstVisibleRow, lastVisibleRow;
@@ -687,17 +687,9 @@ int fwinText::MapChar(int c)
 
 bool fwinApp::OnInit()
 {
-// I find that the real type of argv is NOT "char **" but it supports
-// the cast indicated here to turn it into what I expect.
-//  char **myargv = (char **)argv;
-
-    FWIN_LOG("in fwinApp::OnInit\n");
     add_custom_fonts();
-    FWIN_LOG("fonts added\n");
     fwinFrame *frame = new fwinFrame();
-    FWIN_LOG("frame created but not shown\n");
     frame->Show(true);
-    FWIN_LOG("Frame shown\n");
     return true;
 }
 
@@ -715,7 +707,6 @@ fwinFrame::fwinFrame()
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
     screenWidth = screenArea.GetWidth();
     screenHeight = screenArea.GetHeight();
-    FWIN_LOG("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
 // I will want to end up saving screen size (and even position) between runs
 // of this program.
     int width  = 900;      // default size.
@@ -725,17 +716,13 @@ fwinFrame::fwinFrame()
     if (10*width > 9*screenWidth)
     {   height = height*9*screenWidth/(10*width);
         width = 9*screenWidth/10;
-        FWIN_LOG("reset to %d by %d to fix width\n", width, height);
     }
     if (10*height > 9 * screenHeight)
     {   width = width*9*screenHeight/(10*height);
         height = 9*screenHeight/10;
-        FWIN_LOG("reset to %d by %d to fix height\n", width, height);
     }
     panel = new fwinText(this);
-    FWIN_LOG("firstPaint = %d after creation\n", panel->firstPaint);
     SetMinClientSize(wxSize(400, 100));
-    FWIN_LOG("About to setsize %d %d\n", width, height);
     SetSize(width, height);
     Centre();
 }
@@ -745,14 +732,15 @@ fwinText::fwinText(fwinFrame *parent)
                     wxDefaultPosition, wxDefaultSize,
                     wxVSCROLL, "fwinText")
 {
+    frame = parent;
     fixedPitch = NULL;
     firstPaint = true;
-    FWIN_LOG("Creating fwinText\n");
     textBufferSize = 10000;
     textBuffer = (uint32_t *)malloc(textBufferSize*sizeof(uint32_t));
     textEnd = 0;
     searchFlags = 0;
     firstVisibleRow = 0;
+    caret = NULL;
     caretPos = 0;
     options = 0;
     keyFlags = 0;
@@ -1550,7 +1538,6 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
     {   c = 0;
         r++;
     }
-//    RefreshRect(wxRect(columnPos[c], r*rowHeight, columnPos[c+1], rowHeight));
     return PACK(r, c);
 }
 
@@ -1606,6 +1593,14 @@ void fwinText::insertChar(uint32_t ch)
 // I will refresh all the way down to the bottom of the screen.
         RefreshRect(wxRect(columnPos[0], (r1+1)*rowHeight,
                            columnPos[80], (rowCount-r1-1)*rowHeight));
+    }
+// Finally I will re-position the caret. Well it could be that somehow
+// somebody got to insert characters before the window has been painted,
+// and in that case the caret might nmot have been created, so I filter
+// that case out.
+    if (caret != NULL)
+    {   loc1 = locateChar(caretPos, caretPos-1, r1, c1);
+        caret->Move(columnPos[COL(loc1)], ROW(loc1)*rowHeight);
     }
 }
 
@@ -2363,7 +2358,6 @@ case 'L': case 'l':
 // case 'M' & 0x1f: // = WXK_RETURN
 case 'M': case 'm':
 // ALT-m enters the MODULE menu
-        FWIN_LOG("Ctrl-M\n");
         goto defaultlabel;
 case 'N' & 0x1f:
         if (options & READONLY) moveDown();
@@ -2628,13 +2622,14 @@ void fwinText::OnDraw(wxDC &dc)
     if (firstPaint)
     {   if (fixedPitch == NULL)
         {   fixedPitch = new wxFont();
+// It worries me that exactly the same OpenType font needs to be
+// called for using slighly different names on different platforms.
 #ifdef MACINTOSH
             fixedPitch->SetFaceName("CMU Typewriter Text Regular");
 #else
             fixedPitch->SetFaceName("CMU Typewriter Text");
 #endif
             fixedPitch->SetPointSize(1000);
-            FWIN_LOG("fixed pitch font created\n");
             font_width *p = cm_font_width;
             while (p->name != NULL &&
                    strcmp(p->name, "cmtt10") != 0) p++;
@@ -2646,12 +2641,7 @@ void fwinText::OnDraw(wxDC &dc)
             dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
             em = (double)width/100.0;
             double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
-            FWIN_LOG("em=%#.3g fmEm = %#.3g\n", em, fmEm);
-            FWIN_LOG("height = %#.3g total height = %#.3g leading = %#.3g\n",
-                (double)(height-depth-leading)/100.0, (double)height/100.0,
-                (double)leading/100.0);
             pixelsPerPoint = em/fmEm;
-            FWIN_LOG("pixelsPerPoint = %#.5g\n", pixelsPerPoint);
             fixedPitch->SetPointSize(10);
         }
         int spacePerChar = window.GetWidth()/80;
@@ -2661,9 +2651,17 @@ void fwinText::OnDraw(wxDC &dc)
         dc.SetFont(*fixedPitch);
         rowHeight = dc.GetCharHeight();
         spacePerChar = dc.GetCharWidth(); 
-        FWIN_LOG("rowHeight = %d, width = %d\n", rowHeight, spacePerChar);
         rowCount = (window.GetHeight()+rowHeight-1)/rowHeight;
-//???        SetVirtualSize(wxSize(window.GetWidth(), nRows*rowHeight));
+// Create or re-size the caret, and position it where it needs to be on the
+// screen.
+        if (caret == NULL) caret = new wxCaret::wxCaret(this, 2, rowHeight);
+        else caret->SetSize(2, rowHeight);
+        int32_t caretCell = locateChar(caretPos, firstVisibleRow, 0, 0);
+        caret->Move(columnPos[COL(caretCell)], rowHeight*ROW(caretCell));
+        caret->Show();
+
+
+        SetVirtualSize(wxSize(window.GetWidth(), 1000)); // @@@
 #if 0
 // Now I need to re-size any fonts that have already been created
         for (int i=0; i<MAX_FONTS; i++)
@@ -2678,14 +2676,9 @@ void fwinText::OnDraw(wxDC &dc)
     dc.SetFont(*fixedPitch);
     int p = firstVisibleRow;
     int row = 0, col = 0;
-    caretX = caretY = -1; // not on the visible screen.
     lastVisibleRow = firstVisibleRow;
     while (p<textEnd)
-    {   if (caretPos == p)
-        {   caretX = columnPos[col];
-            caretY = row*rowHeight;
-        }
-        uint32_t ch = textBuffer[p++];
+    {   uint32_t ch = textBuffer[p++];
         if ((ch & 0xffffff) == '\n')
         {   dc.DrawRectangle(columnPos[col], row*rowHeight,
                              columnPos[80]-columnPos[col], rowHeight);
