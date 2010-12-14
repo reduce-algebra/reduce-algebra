@@ -1,4 +1,5 @@
-cc  -o bpsl -m32 -DBPSSIZE=8000000 -pthread bps.c bpsheap.c echo.c file-status.c float.c \
+cc  -o bpsl -m32 -DBPSSIZE=8000000 -w -pthread bps.c bpsheap.c \ 
+   echo.c file-status.c float.c \
    os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
    -DLINUX main.o dmain.o -lm 
 
