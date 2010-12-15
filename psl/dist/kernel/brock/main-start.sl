@@ -77,7 +77,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(compiletime (on echo))   %% Move this hack somewhere else later.
 (commentoutcode
 (compiletime    %% Move this hack somewhere else later.
  (defmacro exported-fluid (list)

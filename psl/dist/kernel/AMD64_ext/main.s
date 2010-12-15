@@ -542,7 +542,7 @@ l0051:
  mov 16(%rsp),%rax
  jmp l0050
 l0052:
- cmpq  $68023,16(%rsp)
+ cmpq $68023,16(%rsp)
  jne l0053
  xor %rax,%rax
  jmp l0054

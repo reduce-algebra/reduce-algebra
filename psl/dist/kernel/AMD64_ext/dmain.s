@@ -333,7 +333,7 @@ lastbps:
  .globl bpslowerbound
 bpslowerbound:
  .quad [[253<<56]+285]
- .globl mainstartinitialize
+ .globl psl_mainstartinitialize
 mainstartinitialize:
  .quad [[253<<56]+286]
  .globl nextbps
@@ -2600,8 +2600,8 @@ symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
- .globl main
- .quad main
+ .globl psl_main
+ .quad psl_main
  .globl l0193
  .quad l0193
  .quad undefinedfunction
