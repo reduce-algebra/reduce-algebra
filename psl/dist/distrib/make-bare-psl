@@ -75,6 +75,9 @@ endif
 if ($MACHINE == AMD64) then
   set imagesize=1000   
 endif  
+if ($MACHINE == AMD64_ext) then
+  set imagesize=1000   
+endif  
 if ($MACHINE == macintel64) then
   set imagesize=1000   
 endif  

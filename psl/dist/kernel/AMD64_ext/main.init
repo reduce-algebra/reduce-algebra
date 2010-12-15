@@ -3,4 +3,5 @@
 argumentblock)))
 (fluid (quote (lastbps nextbps heaplast heaptrapbound heapupperbound heaptrapped
 nextsymbol using-other-bps-spaces*)))
+(def_ext pthread_attr_getdetachstate (attr detachstate))
 (fluid (quote (bpslowerbound nextbps)))

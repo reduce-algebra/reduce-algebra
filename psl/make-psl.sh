@@ -51,7 +51,7 @@ export pnkl=$PROOT/dist/nonkernel/$MACHINE/lap
 export pll=$PROOT/dist/local/$MACHINE/lap
 
 cd dist
-# we have to make sure that bpsl is healthy and comptible to the
+# we have to make sure that bpsl is healthy and compatible with the
 # operating system. So we better rebuild it.
 cd $pxk
 gzip -f bpsl
