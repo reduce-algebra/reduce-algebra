@@ -1,1 +1,1 @@
-../AMD64/
+../AMD64/arithmetic.sl
