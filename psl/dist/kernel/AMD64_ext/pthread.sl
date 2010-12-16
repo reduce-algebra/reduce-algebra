@@ -84,9 +84,9 @@
 
 (external-function pthread_testcancel (void))
 
-%/* Mutex handling.  */
+% /* Mutex handling.  */
 
-/* Initialize a mutex.  */
+% /* Initialize a mutex.  */
 (external-function pthread_mutex_init (mutex mutexattr))
 
 (external-function pthread_mutex_destroy (mutex))
