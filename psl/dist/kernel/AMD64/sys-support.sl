@@ -37,7 +37,7 @@
        (fullword 0) 
     UndefinedFunctionInstruction
        (fullword UndefinedFunction))
-       ))
+       )
 
 
 (lap '((!*entry PlantCodePointer expr 2)
