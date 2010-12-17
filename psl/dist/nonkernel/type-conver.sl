@@ -7,9 +7,6 @@
 % Modified:     04-Apr-84 14:45:33 (Brian Beach) 
 % Status:       Experimental 
 % Mode:         Lisp 
-% Package:      Kernel 
-% Compiletime:  
-% Runtime:      
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -51,9 +48,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (on fast-integers)
-
-(compiletime
-  (flag '(sys2fixn) 'internalfunction))
 
 (de id2int (u)
   % Return ID index as Lisp number
