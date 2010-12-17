@@ -91,7 +91,7 @@ fi
 # to use mingw - but I now withdraw that. For a build on Windows
 # please run under a cygwin bash shell.
 case $host in
-*CYGWIN* | *Cygwin* | *cygwin*)
+*CYGWIN* | *Cygwin* | *cygwin* | i686-*-mingw*)
   host="i686-pc-windows"
   ;;
 esac

@@ -721,7 +721,6 @@ with_psl
 with_mingw64
 with_build
 enable_test
-with_mingw32
 enable_dependency_tracking
 with_x
 with_xft
@@ -1401,7 +1400,6 @@ Optional Packages:
   --with-psl              Use the PSL Lisp system
   --with-ming64           Used internally in CSL builds
   --with-build            Used internally to control build directory
-  --with-mingw32=DIR    MingW32 installation location
   --with-x                use the X Window System
   --with-xft              enable Xft support
   --with-xcursor          compile with Xcursor support
@@ -2907,15 +2905,6 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: HOST_OS = $host_os" >&5
 $as_echo "HOST_OS = $host_os" >&6; }
 
-
-# Check whether --with-mingw32 was given.
-if test "${with_mingw32+set}" = set; then :
-  withval=$with_mingw32;
-fi
-
-
-
-
 MINGW32=""
 CYGWIN=""
 case $host_os in
@@ -2929,16 +2918,18 @@ if test "x$mingw64" = "xyes"; then
 fi
 
 
+case "$CC" in
+*mingw*)
+  MINGW32="yes"
+  CYGWIN="no"
+esac
+
 if test "x$CYGWIN" = "xyes"; then
 case "$CC $CFLAGS" in
   *-mno-cygwin*)
-       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: -mno-cywgin: MINGW32 environment even though CYGWIN shell" >&5
-$as_echo "$as_me: WARNING: -mno-cywgin: MINGW32 environment even though CYGWIN shell" >&2;}
        MINGW32="yes"
        ;;
   *)
-       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: CYGWIN environment being used" >&5
-$as_echo "$as_me: WARNING: CYGWIN environment being used" >&2;}
        LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
 esac
 fi
@@ -6423,10 +6414,6 @@ $as_echo "#define WIN32 1" >>confdefs.h
 
 LIBS="${LIBS} -lcomctl32 -l${WSOCK} -lws2_32 -lwinspool -lmpr"
 LDFLAGS="${LDFLAGS} -mwindows "
-if test "x$with_mingw32" != "x" ; then
-CPPFLAGS="${CPPFLAGS} -I$with_mingw32/include"
-LIBS="${LIBS} -L$with_mingw32/lib"
-fi
 X_BASE_LIBS=""
 else
 X_BASE_LIBS="-lXext -lX11"

@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 1f84905c 08-Dec-2010 */
+/* Signature: 203571bc 14-Dec-2010 */
 
 #include "config.h"
 
@@ -599,7 +599,6 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
-    FWIN_LOG("windowed = %d\n", windowed);
 #ifdef WIN32
 /*
  * If I am running under Windows and I have set command line options
@@ -678,7 +677,6 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
     }
 
     if (windowed==0) return plain_worker(argc, argv, fwin_main);
-    FWIN_LOG("\n+++ Will run windowed here\n");
 
 #ifdef MACINTOSH
 /*
@@ -787,14 +785,12 @@ static int direct_to_terminal(int argc, char *argv[])
 int plain_worker(int argc, char *argv[], fwin_entrypoint *main)
 {
     int r;
-    FWIN_LOG("plain worker starting\n");
     signal(SIGINT, sigint_handler);
 /*
  * At one time I trapped SIGBREAK. These days I just let it terminate
  * my program if I am on Linux, Unix or BSD (inc Mac), and under Windows
  * I sometimes trap it using alternative system-specific code,
  */
-    FWIN_LOG("handler for sigint set up\n");
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
         term_setup(1, colour_spec);

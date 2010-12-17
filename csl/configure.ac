@@ -118,7 +118,7 @@ x86_64-w64-*)
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-cygwin*)
+*-*-cygwin* | *-*-*mingw*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
@@ -142,17 +142,17 @@ x86_64-w64-*)
     exeext="yes"
   else
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-    CPPFLAGS="$CPPFLAGS -mno-cygwin"
-    CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin "
+    CPPFLAGS="$CPPFLAGS "
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
+    LDFLAGS="$LDFLAGS "
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
   fi
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-msdos* | *-*-go32* | *-*-windows* | *-*-mingw*)
+*-*-msdos* | *-*-go32* | *-*-windows*)
   AC_MSG_ERROR([For Windows you are expected to use cygwin/mingw32])
   ;;
 *-*solaris*)

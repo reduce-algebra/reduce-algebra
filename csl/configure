@@ -3285,7 +3285,7 @@ $as_echo "#define WIN64 1" >>confdefs.h
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-cygwin*)
+*-*-cygwin* | *-*-*mingw*)
   { $as_echo "$as_me:${as_lineno-$LINENO}: Building under cygwin" >&5
 $as_echo "$as_me: Building under cygwin" >&6;}
 
@@ -3319,17 +3319,17 @@ $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
-    CPPFLAGS="$CPPFLAGS -mno-cygwin"
-    CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin "
+    CPPFLAGS="$CPPFLAGS "
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
+    LDFLAGS="$LDFLAGS "
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
   fi
   windows_build="yes"
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-msdos* | *-*-go32* | *-*-windows* | *-*-mingw*)
+*-*-msdos* | *-*-go32* | *-*-windows*)
   as_fn_error $? "For Windows you are expected to use cygwin/mingw32" "$LINENO" 5
   ;;
 *-*solaris*)

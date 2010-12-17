@@ -29,7 +29,7 @@
 # Eg if I have installed the 64-bit mingw compilers that cygwin supports
 # I can go  --host=x86_64-w64-mingw32  and build everything.
 # The "--with-mingw64" option is a convenience feature for use by
-# a higher level configure script and shoudl not be used directly here.
+# a higher level configure script and should not be used directly here.
 # 
 
 
@@ -153,11 +153,6 @@ AC_ARG_WITH(wx,
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
 
-AC_ARG_WITH(ming64,
-  AC_HELP_STRING([--with-mingw64], [this option is ignored here!]),
-  [],
-  [])
-
 if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
 then
   with_gui="yes"
@@ -190,7 +185,7 @@ x86_64-w64-*)
   X_BASE_LIBS=""
   win64="yes"
   ;;
-*-*-cygwin*)
+*-*-cygwin* | *-*-*mingw*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     AC_HELP_STRING([--with-cygwin],
@@ -205,7 +200,8 @@ x86_64-w64-*)
   if test "x$really_use_cygwin" = "xyes"
   then
 # If you go "--with-cygwin" in the call to configure then I will build
-# in native cygwin mode, and not use the "-mno-cywgin" flag. As a consequence
+# in native cygwin mode, and not use the "-mno-cywgin" flag (or the more
+# modern cross-compiler-style equivalent mechanisms). As a consequence
 # some GPL libraries will be linked with your application. The cygwin
 # license has a special exception so that when cygwin1.dll is linked
 # with other code that is subject to an approved Open Source License
@@ -244,48 +240,14 @@ x86_64-w64-*)
     cygwin_build="yes"
     exeext="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
-# that means mingw..
+# that means using the mingw-style version of the compiler either via
+# "i686-w64-mingw32-gcc" or via "gcc-3 -mno-cygwin"
   else
-    AC_ARG_WITH(mingw,
-      AC_HELP_STRING([--with-mingw[=DIR]],
-                     [MingW installation location]),
-      mingw_location="$withval",
-      mingw_location="")
-# I am, of course, aware that the terms associated with the Cygwin system
-# permit linking with any code that is subject to an Open license without
-# the inclusion of cygwin1.dll imposing any further constraints. However
-# if my code is subject to a BSD license then people are entitled to use
-# it ways of their choice that could include incorporation of non-open
-# components, and my selection of a BSD not a GNU style license clearly
-# indicates that I do not see that as any cause for alarm at all. Indeed
-# I wish to preserve that option for myself and for downstream users, and
-# so will tend to avoid even the slight restriction on freedom that use
-# of cygwin imposes.
-    AC_MSG_NOTICE([************************************************])
-    AC_MSG_NOTICE([** I will set -mno-cygwin here to avoid use   **])
-    AC_MSG_NOTICE([** of cygwin1.dll.                            **])
-    AC_MSG_NOTICE([************************************************])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-#
-# This comments has to go SOMEWHERE so here is maybe good enough. Some
-# versions of gcc (in March 2004) come with a BROKEN set of include
-# files for bits of <stdio.h> so that getc() can return negative values
-# if a (binary) file contains characters with codes >= 128. Specifically
-# a byte 0xff in a file can be returned as "-1" rather than as 0xff, and this
-# then looks like EOF.  This glitch is to do with defaulting to use of
-# signed characters. Because the bad behaviour seems to be within getch
-# I can not work around it in my C code! But by forcing use of unsigned
-# characters the world moves back towards sanity...
-#
-    CPPFLAGS="$CPPFLAGS -mno-cygwin"
-    CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin -static"
-    if test "x$mingw_location" != "x"
-    then
-      CPPFLAGS="$CPPFLAGS -I$mingw_location/include"
-      LDFLAGS="$LDFLAGS -L$mingw_location/lib"
-    fi
+    CPPFLAGS="$CPPFLAGS "
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
+    LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
@@ -295,8 +257,8 @@ x86_64-w64-*)
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-msdos* | *-*-go32* | *-*-windows* | *-*-mingw*)
-  AC_MSG_ERROR([For Windows you are expected to use cygwin/mingw32])
+*-*-msdos* | *-*-go32* | *-*-windows*)
+  AC_MSG_ERROR([For Windows you are expected to use cygwin as your build environment])
   ;;
 *-*solaris*)
   AC_MSG_NOTICE([Building for Solaris])
@@ -602,6 +564,8 @@ fi
 # I will not need C++ unless FOX is available and I try to build a GUI
 # version, but maybe it does not hurt a lot to look for it regardless.
 
+
+
 old_CFLAGS="$CFLAGS"
 old_CXXFLAGS="$CXXFLAGS"
 AC_MSG_NOTICE([Looking for C pre-processor])
@@ -616,9 +580,6 @@ AC_MSG_NOTICE([Looking for C++ compiler])
 AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
-
-# I will use per-target CPPFLAGS so need this...
-AM_PROG_CC_C_O
 
 # Some newer versions of gcc support a new gnu (rather then sysv) format
 # of part of object files. The effect of this new format it to speed up

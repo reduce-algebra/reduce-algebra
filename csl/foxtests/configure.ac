@@ -103,7 +103,7 @@ x86_64-w64-*)
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-cygwin* | x86_64-w64-mingw32)
+*-*-cygwin* | *mingw*)
   AC_MSG_NOTICE([Building under cygwin])
   AC_ARG_WITH(cygwin,
     [  --with-cygwin           Force use of raw cywgin (note GPL)],
@@ -119,22 +119,13 @@ x86_64-w64-*)
     cygwin_build="yes"
     exeext="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
-# that means mingw..
+# that means mingw-style usage.
   else
-    AC_ARG_WITH(mingw,
-      [  --with-mingw[=DIR]        MingW installation location],
-      mingw_location="$withval",
-      mingw_location="")
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-    CPPFLAGS="$CPPFLAGS -mno-cygwin"
-    CFLAGS="$CFLAGS -mno-cygwin -funsigned-char"
-    CXXFLAGS="$CXXFLAGS -mno-cygwin -funsigned-char"
-    LDFLAGS="$LDFLAGS -mno-cygwin "
-    if test "x$mingw_location" != "x"
-    then
-      CPPFLAGS="$CPPFLAGS -I$mingw_location/include"
-      LDFLAGS="$LDFLAGS -L$mingw_location/lib"
-    fi
+    CPPFLAGS="$CPPFLAGS "
+    CFLAGS="$CFLAGS -funsigned-char"
+    CXXFLAGS="$CXXFLAGS -funsigned-char"
+    LDFLAGS="$LDFLAGS "
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
@@ -143,7 +134,7 @@ x86_64-w64-*)
   exeext="yes"
   X_BASE_LIBS=""
   ;;
-*-*-msdos* | *-*-go32* | *-*-windows* | *-*-mingw*)
+*-*-msdos* | *-*-go32* | *-*-windows*)
   AC_MSG_ERROR([For Windows you are expected to use cygwin/mingw32])
   ;;
 *-*solaris*)

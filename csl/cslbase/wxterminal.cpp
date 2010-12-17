@@ -236,6 +236,8 @@ public:
 
     void OnChar(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
+    void OnSetFocus(wxFocusEvent &event);
+    void OnKillFocus(wxFocusEvent &event);
 
 // I make these two public because the surrounding fwinFrame touches them.
     bool firstPaint;
@@ -265,8 +267,27 @@ private:
     uint32_t *textBuffer;
     int textBufferSize;
     void enlargeTextBuffer();
+//
+// caretPos indicates a cell within textBuffer, but it represents the gap
+// between the previous character and the one stored at that position. So
+// when you insert a character it goes into that gap. And delete-forwards and
+// delete-backwards remove the characters after or before that gap.
+// caretPos=0 puts the caret before any character in the buffer.
+// caretPos=endText puts the caret after the final character in the text. 
+// (note that if the buffer is empty both those case apply at the same time).
+//
     wxCaret *caret;
     int caretPos;
+    void repositionCaret(int w=-1, int r=0, int c=0);
+    int32_t locateChar(int p, int w=-1, int r=0, int c=0);
+// The result handed back by locateChar is either negative (if the character
+// is not on the screen) or a packed (row,column) pair. It indicates the
+// location the character would start on the screen apart from any line-wrap
+// it might trigger.
+#define PACK(r, c) ((r)<<16 | (c))
+#define ROW(n)     (((n) >> 16) & 0xffff)
+#define COL(n)     ((n) & 0xffff)
+
     int textEnd; 
     int rowHeight, rowCount;
     int firstVisibleRow, lastVisibleRow;
@@ -301,7 +322,6 @@ private:
 
     void beep();
     void insertChar(uint32_t ch);
-    int32_t locateChar(int p, int w, int r, int c);
     void appendText(char *s, int len);
     void insertNewline();
     void deleteForwards();
@@ -376,6 +396,8 @@ private:
 BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
     EVT_CHAR(            fwinText::OnChar)
     EVT_LEFT_UP(         fwinText::OnMouse)
+    EVT_SET_FOCUS(       fwinText::OnSetFocus)
+    EVT_KILL_FOCUS(      fwinText::OnKillFocus)
 END_EVENT_TABLE()
 
 class fwinFrame : public wxFrame
@@ -765,17 +787,30 @@ fwinText::fwinText(fwinFrame *parent)
 
 
     for (int i=0; i<384; i++)
+    {   if ((i & 0x7f) >= 0x20 && ((i&0x7f) != 0x7f)) 
+        {   textBuffer[textEnd++] = i;
+            if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
+        }
+    }
+    for (int i=0; i<256; i++)
+    {   if ((i & 0x7f) >= 0x20 && ((i&0x7f) != 0x7f))
+        {   textBuffer[textEnd++] = (0x1000000+i);
+            if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
+        }
+    }
+    for (int i=0; i<256; i++)
+    {   if ((i & 0x7f) >= 0x20 && ((i&0x7f) != 0x7f))
+        {   textBuffer[textEnd++] = (0xe2000000+i);
+            if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
+        }
+    }
+    for (int i=0xf500; i<0xf516; i++)
     {   textBuffer[textEnd++] = i;
-        if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
     }
-    for (int i=0; i<256; i++)
-    {   textBuffer[textEnd++] = (0x1000000+i);
-        if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
+    for (int i=0x10144; i<0x10148; i++)
+    {   textBuffer[textEnd++] = i;
     }
-    for (int i=0; i<256; i++)
-    {   textBuffer[textEnd++] = (0xe2000000+i);
-        if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
-    }
+    textBuffer[textEnd++] = '@';
 }
 
 //
@@ -799,47 +834,53 @@ void fwinText::setSelectionMark()
 
 void fwinText::moveLineStart()
 {
-    while (textBuffer[caretPos] != '\n') caretPos--;
-    makePositionVisible(caretPos);
-    while (textBuffer[caretPos] & 0x03000000) caretPos++;
-    makePositionVisible(caretPos);
-// If the mark is set maybe I should extend the selection...
+    if (caretPos==textEnd && caretPos!=0) caretPos--;
+    else if (caretPos==0 || textBuffer[caretPos] == '\n')  // already at start of line
+    {   beep();
+        return;
+    }
+    while (caretPos>=0 && textBuffer[caretPos] != '\n') caretPos--;
+    caretPos++;
+    repositionCaret();
 }
+
 
 // ^B  move back a character
 
 void fwinText::moveLeft()
 {
-#ifdef RECONSTRUCTED
 // If the mark is set maybe I should extend the selection...?
-// If I am accepting input I will not let the user move backwards into the
-// prompt string.
-    if ((options & READONLY) == 0 && caretPos == promptEnd)
+    if (caretPos==0)
     {   beep();
         return;
     }
-    onCmdCursorLeft(this, 0, NULL);
-#endif
+// This moves from the start of any line to the end of the previous.
+    caretPos--;
+    repositionCaret();
 }
 
 // ALT-B move back a word
 
 void fwinText::moveWordLeft()
 {
-#ifdef RECONSTRUCTED
-// If the mark is set maybe I should extend the selection...?
-// If I am accepting input I prevent the user from moving back past where the
-// prompt string ends. I beep if I make no move at all.
-    int w = caretPos;
-    if ((options & READONLY) == 0 && w == promptEnd)
+    if (caretPos == 0)
     {   beep();
         return;
     }
-    onCmdCursorWordLeft(this, 0, NULL);
-    if ((options && READONLY) == 0 &&
-        w > promptEnd &&
-        caretPos < promptEnd) setCaretPos(promptEnd);
-#endif
+    for (;;)  // back at least one char and over any whitespace
+    {   caretPos--;
+        if (caretPos < 0) break;
+        wxUniChar ch = textBuffer[caretPos] & 0x00ffffff;
+        if (!wxIsspace(ch)) break;
+    }
+    for (;;)
+    {   if (caretPos < 0) break;
+        wxUniChar ch = textBuffer[caretPos] & 0x00ffffff;
+        if (wxIsspace(ch)) break;
+        caretPos--;
+    }
+    caretPos++;
+    repositionCaret();
 }
 
 // ^C  abandon input, returning an exception to user
@@ -884,13 +925,19 @@ void fwinText::capitalize()
 
 void fwinText::deleteForwards()
 {
-#ifdef RECONSTRUCTED
-    if (!isEditable())     // side effect is to move to last line if necessary
+    if (caretPos == textEnd)
     {   beep();
         return;
     }
-    onCmdDelete(this, 0, NULL);
-#endif
+    int w = caretPos;
+    while (w < textEnd)
+    {   textBuffer[w] = textBuffer[w+1];
+        w++;
+    }
+    textEnd--;
+    Refresh(); // I can do a LOT better than this! See insertChar for the
+               // sort of logic to employ.
+    repositionCaret();
 }
 
 // Should this do special things (a) if there is a selection or (b)
@@ -923,10 +970,12 @@ void fwinText::moveLineEnd()
 
 void fwinText::moveRight()
 {
-#ifdef RECONSTRUCTED
-// If the mark is set maybe I should extend the selection...
-//    onCmdCursorRight(this, 0, NULL);
-#endif
+    if (caretPos == textEnd)
+    {   beep();
+        return;
+    }
+    caretPos++;
+    repositionCaret();
 }
 
 // ALT-F  forward one word
@@ -962,17 +1011,20 @@ void fwinText::displayBacktrace()
 
 void fwinText::deleteBackwards()
 {
-#ifdef RECONSTRUCTED
-    switch (isEditableForBackspace())
-    {
-default:                // within the area for active editing.
-        onCmdBackspace(this, 0, NULL);
+    if (caretPos == 0)
+    {   beep();
         return;
-case -1:                // current input line is empty.
-case 0:                 // input is not active
-        beep();
     }
-#endif
+    caretPos--;
+    int w = caretPos;
+    while (w < textEnd)
+    {   textBuffer[w] = textBuffer[w+1];
+        w++;
+    }
+    textEnd--;
+    Refresh(); // I can do a LOT better than this! See insertChar for the
+               // sort of logic to employ.
+    repositionCaret();
 }
 
 // ALT-h  delete previous word
@@ -1495,14 +1547,11 @@ void fwinText::requestFlushBuffer()
 //-     }
 //- }
 
-#define PACK(r, c) ((r)<<16 | (c))
-#define ROW(n)     (((n) >> 16) & 0xffff)
-#define COL(n)     ((n) & 0xffff)
-
 int32_t fwinText::locateChar(int p, int w, int r, int c)
 {
 // Normally call as locateChar(p, firstVisibleRow, 0, 0) but the final 3
-// args are to allow resumption after a previous call
+// args are to allow resumption after a previous call. Arg2=-1 stands for
+// firstVisibleRow.
 // Return the row/column of the character cell corresponding to address
 // p in the buffer. Return -1 if the character at position p is above the
 // window, and -2 if it is below. The pointer p may be equal to textEnd, ie
@@ -1514,11 +1563,12 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 // the fact that the width (80 columns) is a multiple of the tab width, so
 // while a tab may take one up to column 80 it can not go beyond without the
 // whole tab effect occurring on the next row.
-    //int w = firstVisibleRow;
-    if (p < w) return -1; // above the visible screen.
-    //int r = 0, c = 0;  // r will be a row count, c a column count;
+    if (w == -1) w = firstVisibleRow;
+    if (p < w) return -1; // before the part of screen being searched.
     while (w != p)
     {   uint32_t ch = textBuffer[w];
+// The characters processed within this loop are all BEFORE the one I am
+// interested in, and so I process tabs, newlines and line-wrap.
         if (ch == '\n')
         {   c = 0;
             r++;
@@ -1534,16 +1584,16 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
         else c++;
         w++;
     }
-    if (c == 80 && w < textEnd && textBuffer[w] != '\n')
-    {   c = 0;
-        r++;
-    }
+// What I have done now is to find the end position of the character
+// before position p. This is the start position for the character at
+// position p unless there is a line-wrap to perform. That could be the
+// case if r=80 and the character concerned is not a newline. 
     return PACK(r, c);
 }
 
 void fwinText::insertChar(uint32_t ch)
 {
-    int32_t loc1 = locateChar(caretPos, firstVisibleRow, 0, 0);
+    int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
 // I find the location of the end of the line that the character I am
 // about to insert will be on.
@@ -1596,12 +1646,10 @@ void fwinText::insertChar(uint32_t ch)
     }
 // Finally I will re-position the caret. Well it could be that somehow
 // somebody got to insert characters before the window has been painted,
-// and in that case the caret might nmot have been created, so I filter
-// that case out.
-    if (caret != NULL)
-    {   loc1 = locateChar(caretPos, caretPos-1, r1, c1);
-        caret->Move(columnPos[COL(loc1)], ROW(loc1)*rowHeight);
-    }
+// and in that case the caret might not have been created, so I filter
+// that case out. And also if by some mischance the window does not have
+// the focus I will have hidden the caret so I do not mess with it.
+    if (caret != NULL && caret->IsVisible()) repositionCaret();
 }
 
 
@@ -1881,7 +1929,7 @@ void fwinText::OnChar(wxKeyEvent &event)
 
     case WXK_DELETE:
     case WXK_NUMPAD_DELETE:
-            c = WXK_DELETE|NON_UNICODE;
+            c = WXK_DELETE;
             break;
     case WXK_INSERT:
     case WXK_NUMPAD_INSERT:
@@ -2276,8 +2324,12 @@ case 'C': case 'c':
             return;
         }
         goto defaultlabel;
-case WXK_DELETE|NON_UNICODE:
-        if (m & (wxMOD_CMD|wxMOD_ALT))
+case WXK_DELETE:
+// On Windows (at least) I find that Ctrl-backspace gets returned
+// as Ctrl-DELETE and I want it to delete a single character not a word.
+// I think. Hence I let Ctrl-DEL delete a character, while ALT-DEL deletes
+// a word.
+        if (m & wxMOD_ALT)
         {   deleteWordForwards();
             return;
         }
@@ -2603,6 +2655,29 @@ void fwinText::OnMouse(wxMouseEvent &event)
     event.Skip();
 }
 
+void fwinText::OnSetFocus(wxFocusEvent &event)
+{
+    if (caret!=NULL) repositionCaret();
+}
+
+void fwinText::repositionCaret(int w, int r, int c)
+{
+    int32_t caretCell = locateChar(caretPos, w, r, c);
+    if (caretCell < 0) while (caret->IsVisible()) caret->Hide();
+    else
+    {   int r = ROW(caretCell), c = COL(caretCell);
+        caret->Move(c==80 ? columnPos[c]-2 : columnPos[c], rowHeight*r);
+        while (!caret->IsVisible()) caret->Show();
+    }
+}
+
+void fwinText::OnKillFocus(wxFocusEvent &event)
+{
+    if (caret != NULL)
+        while (caret->IsVisible()) caret->Hide();
+}
+
+
 void fwinText::OnDraw(wxDC &dc)
 {
 // The next could probably be done merely by setting a background colour
@@ -2654,11 +2729,10 @@ void fwinText::OnDraw(wxDC &dc)
         rowCount = (window.GetHeight()+rowHeight-1)/rowHeight;
 // Create or re-size the caret, and position it where it needs to be on the
 // screen.
-        if (caret == NULL) caret = new wxCaret::wxCaret(this, 2, rowHeight);
+        SetFocus();
+        if (caret == NULL) caret = new wxCaret(this, 2, rowHeight);
         else caret->SetSize(2, rowHeight);
-        int32_t caretCell = locateChar(caretPos, firstVisibleRow, 0, 0);
-        caret->Move(columnPos[COL(caretCell)], rowHeight*ROW(caretCell));
-        caret->Show();
+        repositionCaret();
 
 
         SetVirtualSize(wxSize(window.GetWidth(), 1000)); // @@@

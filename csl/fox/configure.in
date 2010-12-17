@@ -108,17 +108,6 @@ AM_CONDITIONAL(xp64, test "x$mingw64" = "xyes")
 AC_CANONICAL_HOST()
 AC_MSG_RESULT(HOST_OS = $host_os)
 
-dnl Check to see if they specified MingW32 location
-AC_ARG_WITH(mingw32,[  --with-mingw32[=DIR]    MingW32 installation location])
-
-dnl Checks for the MingW32 compiler environment. If present, sets shell
-dnl variable MINGW32 to 'yes'. If not present, sets MINGW32 to the
-dnl empty string.
-dnl Checks for the Cygwin environment. If present, sets shell variable
-dnl CYGWIN to 'yes'; if not present, sets CYGWIN to the empty string.
-
-dnl (re-coded so that canonical_host is done just once)
-
 MINGW32=""
 CYGWIN=""
 case $host_os in
@@ -138,14 +127,18 @@ dnl environment we have is MINGW32 (as well as CYGWIN). The consequence
 dnl will be that Windows APIs will be used to do various things that
 dnl would otherwise done by Posix-style calls.
 
+case "$CC" in
+*mingw*)
+  MINGW32="yes"
+  CYGWIN="no"
+esac 
+
 if test "x$CYGWIN" = "xyes"; then
 case "$CC $CFLAGS" in
   *-mno-cygwin*)
-       AC_MSG_WARN(-mno-cywgin: MINGW32 environment even though CYGWIN shell)
        MINGW32="yes"
        ;;
   *)
-       AC_MSG_WARN(CYGWIN environment being used)
        LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
 esac
 fi
@@ -317,10 +310,6 @@ elif test "x$MINGW32" = "xyes" ; then
 AC_DEFINE(WIN32)
 LIBS="${LIBS} -lcomctl32 -l${WSOCK} -lws2_32 -lwinspool -lmpr"
 LDFLAGS="${LDFLAGS} -mwindows "
-if test "x$with_mingw32" != "x" ; then
-CPPFLAGS="${CPPFLAGS} -I$with_mingw32/include"
-LIBS="${LIBS} -L$with_mingw32/lib"
-fi
 X_BASE_LIBS=""
 else
 X_BASE_LIBS="-lXext -lX11"

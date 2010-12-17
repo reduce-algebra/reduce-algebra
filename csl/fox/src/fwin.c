@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 5393e279 02-Dec-2010 */
+/* Signature: 15763364 07-Dec-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -174,8 +174,8 @@ extern char *getcwd(char *s, size_t n);
 #ifdef DEBUG
 
 /*
- * This will be used as in FWIN_LOG((format,arg,...)) with an extra
- * pair of parentheses. If DEBUG was enabled it send log information
+ * This will be used as in FWIN_LOG(format,arg,...) using a variadic macro.
+ * If DEBUG was enabled it send log information
  * to a file with the name fwin-debug.log: I hope that will not (often)
  * clash with any file the user has or requires. if programDir has been
  * set when you first generate log output then the log file will be put
@@ -274,6 +274,20 @@ int fwin_use_xft = 0;
 int fwin_pause_at_end = 0;
 
 #ifdef WIN32
+
+BOOL CtrlHandler(DWORD x)
+{
+    switch (x)
+    {
+case CTRL_CLOSE_EVENT:
+case CTRL_LOGOFF_EVENT:
+case CTRL_SHUTDOWN_EVENT:
+        ExitProcess(1);
+        return 1;
+default:
+        return 0;
+    }
+}
 
 void consoleWait()
 {
@@ -496,6 +510,7 @@ int main(int argc, char *argv[])
 /* I will also pause for 5 seconds at the end... */
             atexit(consoleWait);
         }
+        SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE);  
     }
 #endif /* WIN32 */
 #else /* PART_OF_FOX */

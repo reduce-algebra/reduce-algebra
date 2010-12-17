@@ -1,4 +1,4 @@
-AC_INIT([REDUCE], [20101122], [acn1@cam.ac.uk])
+AC_INIT([REDUCE], [20101217], [acn1@cam.ac.uk])
 
 # The next line is a dreadful thing and is in case I am launched
 # from a bash prompt, in which case the SHELL variable will be set
@@ -81,7 +81,7 @@ fi
 
 AC_ARG_WITH(mingw64,
    AC_HELP_STRING([--with-mingw64],
-                  [Shorthand to force --host=x86_64-w64-mingw32 (CSL only)]),
+                  [Use "with" or "without" to force windows-64 build status (CSL only)]),
    [],
    [with_mingw64="default"])
 
@@ -205,59 +205,142 @@ AC_ARG_WITH(smallpage,
 
 ###########################################################################
 
-# This following is both a shorthand and a fudge to preserve a historical
-# way I did things. If you say "--with-mingw64" to this top-level
-# configure script it pretends you had asked for cross compilation using
-# the standard idiom --host-x86_64-w64-mingw32. Doing things this way here
-# means that the lower-level configure scripts just need to understand
-# about cross compilation and should not look for --with-mingw64 as such.
-# Then "--without-mingw64" explicitly avoids this cross-build. If you do the
-# compilation on a 64-bit version of Windows under cygwin and if you have
-# the relevent cross compilers installed the default will be to create a
-# 64-bit version, except that if you explicitly set --host. This is all
-# a bit complicated but I *HOPE* that the behaviour will end up feelin
-# natural.
+# I have a state of complication on Windows as regards 32 and 64-bit
+# windows builds. In each case I will often be doing the build hosted in
+# a cygwin environment on Windows. To create a native Windows style
+# executable (as distinct from somethin that links via the cygwin dll to
+# provide a posix-like world) I want to use the mingw version of the
+# compilers. But they might not even be installed! And the proper and
+# modern way to do the build will be to treat it as a cross-compilation so
+# that the various build-tools used are found with a host prefix - eg
+# "x86_64-w64-mingw32-g++". Sometimes I will wish to build a set of 32-bit
+# executables even if my computer happens to be running a 64-bit version of
+# windows, and sometimes I might want to build 64-bit executables even though
+# I am only in a 32-bit world.
 #
-# If you try to use --with-ming64 and an explicit setting of the host
-# at the same time I will moan!
+# The behaviour I intend to establish is that the user can find-tune things
+# using the opption "--with-mingw64":
+#    --with-mingw64 or --with-mingw64=yes:
+#         Treat very much as "--host=x86_64-w64-mingw32" and hence build
+#         64 bit executables. If the necessary cross-compile is not
+#         installed then this configuration will (obviously) fail.
+#    --without-mingw64 or --with-mingw64=no:
+#         If the relevent cross compiler is present treat very much
+#         as "--host=i686-w64-mingw32" and hence build 32-bit native
+#         windows exectuables. If that cross compiler is not available
+#         fall back to "CXX=gcc-3 -mno-cygwin" so that explicit use is
+#         made of a series 3 version of gcc where the "-mno-cygwin" option
+#         is available. If "gcc-3" is not present try with "gcc -mno-cygwin"
+#         and hope that combination will work.
+#    --with-mingw64=default or no explicit mention about this:
+#         A 32-bit version will always be built. If x86_64-w64-mingw32-g++
+#         is installed and the version of Windows being used is 64-bit
+#         then a 64-bit version will be built too. So note that if you are
+#         using 64-bit windows you will often get TWO versions built for
+#         you (because the 32-bit one may be useful for passing to friends),
+#         while if you are on a 32-bit system you will need to go
+#         "--with-mingw64" explicitly to build 64-bit executables. 
+#
+# When testing for build environents I will look to see if <host>-g++ is
+# available, and if it is I will assume the <host>-gcc and any other
+# relevant build tools and libraries will be installed. This is just to
+# simplify the tests here!
+#
+# I will tend to implement all this by causing the script to re-launch itself
+# in certain cases. I will NOT re-launch if "--host" has been set explicitly
+# or if "CC", "CXX" or asslocated flags have been provided explicitly.
 
-if test "x$with_mingw64" != "xdefault"
+considermingw="yes"
+if test "x$with_csl" = "xno" || test "x$with_cygwin" != "xno"
 then
-  case $ac_configure_args in
-  *--host=*)
-    AC_MSG_ERROR([You may not use --with-mingw64 or --without-mings64 and --host=$host at the same time])
-    ;;
-  *)
-    ;;
-  esac
+  considermingw="no"
 fi
 
-if test "x$with_csl" != "xno" && test "x$with_cygwin" = "xno"
-then
-  AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-gcc, "yes", "no")
-  case $ac_configure_args in
-  **--host=*)
-    ;;
-  *)
-    case `uname` in
-  *CYGWIN*WOW64*)
-      if test "x$with_mingw64" = "xdefault"
-      then
-        with_mingw64="$X64_GCC"
-      fi
-      ;;
-    esac
-    ;;
-  esac
+case $ac_configure_args in
+*--host=* | *CC=* | *CXX=* | *CFLAGS=* | *CXXFLAGS=*)
+# The above items in ac_configure_args either indicate me having already
+# made my adjustments or they show the use explicitly setting options that
+# I perhaps ought to respect.
+  considermingw="no"
+esac
 
+case `uname` in
+*CYGWIN*WOW64*)
+  wow64="yes"
+  ;;
+*)
+  wow64="no"
+esac
+
+if test "x$considermingw" != "xno"
+then
+# check for the availability of compilers that might matter to me.
+  AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-g++, "yes", "no")
+  AC_CHECK_PROG(X32_GCC, i686-w64-mingw32-g++, "yes", "no")
+  AC_CHECK_PROG(XGCC_3, g++-3, "yes", "no")
   if test "x$with_mingw64" = "xyes"
   then
-    host="x86_64-w64-mingw32"
-  fi
-
-  if test "x$host" = "xx86_64_w64_mingw32" && test "x$X64_GCC" = "xno"
+    if test "x$X64_GCC" = "xno"
+    then
+      AC_MSG_ERROR([Attempt to build Windows-64 system without correct cross ocmpiler installed])
+    fi
+    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+             --host=x86_64-w64-mingw32"
+    AC_MSG_NOTICE([$doconfig])
+    eval "$doconfig"
+    exit
+  elif test "x$with_mingw64" = "xno" || test "x$wow64" = "xno" || test "x$X64_GCC" = "xno"
   then
-    AC_MSG_ERROR([Attempt to build Windows-64 system without correct cross ocmpiler installed])
+# Here I either explicitly want to build a 32-bit version, or I am on
+# a 32-bit windows and did not explicitly ask for a 64-bit version. I
+# build for 32-bits. There are several possible ways to do that and I
+# will look at them here in order of preference. I do this even if I am on
+# a 64-bit Windows if the 64-bit compilers are not available.
+    if test "$X32_GCC" = "yes"
+    then
+# Use cross-compilation using i686-w64-mingw32-g++ etc.
+      doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+               --host=i686-w64-mingw32"
+      AC_MSG_NOTICE([$doconfig])
+      eval "$doconfig"
+      exit
+    elif test "$XGCC_3" = "yes"
+    then
+# Fall back to "gcc-3 -mno-cygwin"  where at least I can explicitly use
+# a series-3 version of gcc.
+      CC="gcc-3"
+      CPP="gcc-3 -E"
+      CXX="g++-3"
+      CXXCPP="g++-3 -E"
+      doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+               CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\" \
+               CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
+               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
+      AC_MSG_NOTICE([$doconfig])
+      eval "$doconfig"
+      exit
+    else
+# Just HOPE that the version of gcc available support -mno-cygwin! 
+      doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+               CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
+               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
+      AC_MSG_NOTICE([$doconfig])
+      eval "$doconfig"
+      exit
+    fi
+  else
+# This final case is when I have not said anything explicit about with or
+# without mingw64 but I am running on a 64-bit windows and have the 64-bit
+# compilers installed. In this case I will try to configure both versions.
+    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+             --with-mingw64=no"
+    AC_MSG_NOTICE([$doconfig])
+    eval "$doconfig"
+    doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+             --with-mingw64=yes"
+    AC_MSG_NOTICE([$doconfig])
+    eval "$doconfig"
+    exit
   fi
 fi
 
@@ -297,6 +380,7 @@ else
 fi
 
 AC_MSG_NOTICE([Will build in the $build subdirectory])
+
 
 case $inplace in
   yes)
@@ -576,15 +660,7 @@ then
     *cygwin*)
       if test "x$with_cygwin" != "xyes"
       then
-# Unless the user explictly asked for "--with-cygwin" I will arrange to
-# build in "mingw" mode to avoid linking in cygwin1.dll and becoming
-# constrained by the limitations (however minor some may consider them
-# to be) of the cygwin licensing terms.
-        AC_MSG_NOTICE([GCC option "-mno-cygwin" being used.])
-        CPPFLAGS="$CPPFLAGS -mno-cygwin"
-        CFLAGS="$CFLAGS -mno-cygwin"
-        CXXFLAGS="$CXXFLAGS -mno-cygwin"
-        LDFLAGS="$LDFLAGS -mno-cygwin -mwindows"
+        AC_MSG_NOTICE([gcc will be used in mingw mode.])
       else
         AC_MSG_NOTICE([Using raw cygwin])
         CFLAGS="$CFLAGS "
