@@ -268,8 +268,13 @@ case `uname` in
 *CYGWIN*WOW64*)
   wow64="yes"
   ;;
-*)
+*CYGWIN* | *cygwin* | *mingw*)
   wow64="no"
+  ;;
+*)
+# If I am not building on a cygwin machine I should not mess around with
+# windows-specific activity.
+  considermingw="no"
 esac
 
 if test "x$considermingw" != "xno"
@@ -321,6 +326,8 @@ then
       exit
     else
 # Just HOPE that the version of gcc available support -mno-cygwin! 
+      AC_MSG_WARN([Under cygwin please install i686-w64-mingw compilers, or
+at least gcc-3. Without them this build may fail.])
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
                CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
