@@ -334,7 +334,11 @@ bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 		reduce.doc/index.html $(GP) $(WXC)
 reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
 		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
+if wx
+fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC) $(FONTDEP)
+else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+endif !wx
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
 fwin-icon.$(OBJEXT):	$(srcdir)/fwin-icon.rc

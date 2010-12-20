@@ -562,7 +562,8 @@ dyndemo_SOURCES = dyndemo.c
 @windows_TRUE@reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
 @windows_TRUE@		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
 
-@windows_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+@windows_TRUE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+@windows_TRUE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC) $(FONTDEP)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
 
 # end of windows vs non-windows conditions
