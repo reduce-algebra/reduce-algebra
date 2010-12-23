@@ -621,7 +621,7 @@ then
       echo wxWidgets unpacked from archive $a
       cd $d
     fi
-# A short essay to explain whi I pass down "--host=$host" here. There are
+# A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
 # cross-compilation using the x86_64-win32-mingw32 toolchain. To try to
 # be helpful I use this if I am running on 64-bit windows even though
