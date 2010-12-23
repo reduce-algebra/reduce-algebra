@@ -1,4 +1,4 @@
-#! /bin/sh -x
+#! /bin/sh 
 #   Makes PSL in the reduce-algebra tree
 #   uses config-guess   and the position in the file tree (PROOT)
 #   the MACHINE variable ist set according to the old PSL
