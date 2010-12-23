@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 09d75f2a 14-Dec-2010 */
+/* Signature: 331af4d2 23-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -136,11 +136,13 @@ int pipedes[2];
 #include "reduce.xpm"
 #endif
 
-static fwin_entrypoint *fwin_main1;
+static fwin_entrypoint *fwin_main;
+static int fwin_argc;
+static char **fwin_argv;
 
-int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main)
+int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
 {
-    fwin_main1 = fwin_main;
+    fwin_main = fwin_main1;
 #ifdef WIN32
 // The following is somewhat unsatisfactory so I will explain my options and
 // what is happening.
@@ -227,6 +229,26 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 
 // I *probably* want to use wxvscrolledwindow here not wxscrolledcanvas!
 
+// Before I set up the main text display class I will declare the events
+// I use to commumicate with it.
+
+// The events declared here are used to send data from the worker thread
+// to the GUI thread.
+
+enum
+{
+    TO_SCREEN = wxID_HIGHEST+1,
+    SET_PROMPT,
+    SET_SWITCH_MENU,
+    SET_PACKAGE_MENU,
+    SET_LEFT,
+    SET_MID,
+    SET_RIGHT,
+    FLUSH_BUFFER,
+    REQUEST_INPUT
+};
+
+
 class fwinText : public wxScrolledCanvas
 {
 public:
@@ -238,13 +260,71 @@ public:
     void OnMouse(wxMouseEvent &event);
     void OnSetFocus(wxFocusEvent &event);
     void OnKillFocus(wxFocusEvent &event);
+    void OnToScreen(wxThreadEvent& event);
+    void OnSetPrompt(wxThreadEvent& event);
+    void OnSetSwitchMenu(wxThreadEvent& event);
+    void OnSetPackageMenu(wxThreadEvent& event);
+    void OnSetLeft(wxThreadEvent& event);
+    void OnSetMid(wxThreadEvent& event);
+    void OnSetRight(wxThreadEvent& event);
+    void OnFlushBuffer(wxThreadEvent& event);
+    void OnRequestInput(wxThreadEvent& event);
+
+// Both these will be initialised with a count of zero and no limit.
+    wxSemaphore writing;  // Used when writing to the screen
+    wxSemaphore reading;  // used when reading from the screen
+
+// I will have a buffer for transfer of characters from the application
+// to the user-interface.
+// The buffer holds 8-bit bytes. I will expect these to represent an UTF-8
+// encoding, so that the application code will tend to use UTF-8 internally.
+// The consequence will be that just the characters in the range 0x00 to 0x7f
+// are unconditionally simple here!
+
+#define FWIN_BUFFER_SIZE  1000
+// If I have vsnprintf I can be fully safe, and most modern C libraries
+// will provide this. If that is NOT available I will fall back on
+// vsprintf, and hope that all strings printed will end up less than
+// 200 bytes long.
+#define SPARE_FOR_VFPRINTF 200
+
+    char fwin_buffer[FWIN_BUFFER_SIZE];
+
+// The following two are used by both worker and interface tasks, and so
+// over-clever compiler optimisation of them is undesirable.
+//
+// fwin_in belongs to the worker thread, while fwin_out is owned by the
+// user interface. Each will use read-only access to the other (unless the
+// two are synchronised, in which case full access is permitted).
+
+    int fwin_in, fwin_out;
+
+// While the program is not asking for input any characters from the keyboard
+// will be stashed in a type-ahead buffer, But when input is asked for a
+// line will be accepted and echoed on the screen, and when ENTER is pressed
+// it will be passed on for use. The input line has its length limited by
+// the buffer here. 
+#define INPUT_BUFFER_LENGTH 512
+
+    int inputBufferLen;
+    int inputBufferP;
+    uint32_t inputBuffer[INPUT_BUFFER_LENGTH];
+
+    int recently_flushed;
+
+    FILE *logfile;
 
 // I make these two public because the surrounding fwinFrame touches them.
     bool firstPaint;
     int columnPos[81];
 
-private:
+    int pauseFlags;
+#define PAUSE_PAUSE      1
+#define PAUSE_STOP       2
+#define PAUSE_DISCARD    4
+
     class fwinFrame *frame;
+private:
     wxFont *fixedPitch;
     double em;
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
@@ -297,8 +377,8 @@ private:
 #define READONLY     1
 
     int keyFlags;
-#define ESC_PENDING  1
-#define ANY_KEYS     2
+#define ANY_KEYS     1
+#define ESC_PENDING  2
 
     int flags;
 #define FLAG_CHANGED 1
@@ -313,15 +393,17 @@ private:
     int promptEnd;
 
     int searchFlags;
-#define SEARCH_FORWARD   0x10000000
-#define SEARCH_BACKWARD  0x20000000
-#define SEARCH_LENGTH    (searchFlags & 0x00ffffff)
+#define SEARCH_LENGTH    (searchFlags & 0xff)
+#define SEARCH_FORWARD   0x100
+#define SEARCH_BACKWARD  0x200
     uint32_t searchString[256];
     int searchStack[256];
     int startMatch;
 
     void beep();
     void insertChar(uint32_t ch);
+    void insertChars(uint32_t *s, int len);
+    void insertString(wxString s);
     void appendText(char *s, int len);
     void insertNewline();
     void deleteForwards();
@@ -386,7 +468,6 @@ private:
     void setCaretPos(int n);
     void interrupt();
     void displayBacktrace();
-    void requestFlushBuffer();
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -394,14 +475,27 @@ private:
 };
 
 BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
-    EVT_CHAR(            fwinText::OnChar)
-    EVT_LEFT_UP(         fwinText::OnMouse)
-    EVT_SET_FOCUS(       fwinText::OnSetFocus)
-    EVT_KILL_FOCUS(      fwinText::OnKillFocus)
+    EVT_CHAR(                     fwinText::OnChar)
+    EVT_LEFT_UP(                  fwinText::OnMouse)
+    EVT_SET_FOCUS(                fwinText::OnSetFocus)
+    EVT_KILL_FOCUS(               fwinText::OnKillFocus)
+    EVT_THREAD(TO_SCREEN,         fwinText::OnToScreen)
+    EVT_THREAD(SET_PROMPT,        fwinText::OnSetPrompt)
+    EVT_THREAD(SET_SWITCH_MENU,   fwinText::OnSetSwitchMenu)
+    EVT_THREAD(SET_PACKAGE_MENU,  fwinText::OnSetPackageMenu)
+    EVT_THREAD(SET_LEFT,          fwinText::OnSetLeft)
+    EVT_THREAD(SET_MID,           fwinText::OnSetMid)
+    EVT_THREAD(SET_RIGHT,         fwinText::OnSetRight)
+    EVT_THREAD(FLUSH_BUFFER,      fwinText::OnFlushBuffer)
+    EVT_THREAD(REQUEST_INPUT,     fwinText::OnRequestInput)
 END_EVENT_TABLE()
+
+static fwinText *panel = NULL;
 
 class fwinFrame : public wxFrame
 {
+
+
 public:
     fwinFrame();
 
@@ -409,7 +503,7 @@ public:
     void OnAbout(wxCommandEvent &event);
     void OnSize(wxSizeEvent &event);
 
-    fwinText *panel;
+    class fwinWorker *worker;
 
 private:
     int screenWidth, screenHeight;
@@ -422,6 +516,44 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, fwinFrame::OnAbout)
     EVT_SIZE(            fwinFrame::OnSize)
 END_EVENT_TABLE()
+
+class fwinWorker : public wxThread
+{
+public:
+    fwinWorker();
+//  ~fwinWorker();
+    void sendToScreen(wxString s); // make private later on!
+private:
+    void sendSetPrompt(wxString s);
+    void sendSetSwitchMenu(wxString s);
+    void sendSetPackageMenu(wxString s);
+    void sendSetLeft(wxString s);
+    void sendSetMid(wxString s);
+    void sendSetRight(wxString s);
+    void requestFlushBuffer();
+    void sendRequestInput();
+protected:
+    virtual wxThread::ExitCode Entry();
+};
+
+fwinWorker::fwinWorker()
+{
+}
+
+wxThread::ExitCode fwinWorker::Entry()
+{
+    FWIN_LOG("fwinWorker starting\n");
+    sendToScreen("Message 1");
+    FWIN_LOG("first message sent\n");
+    sendToScreen("Message 2");
+    sendSetPrompt("Message 3");
+    FWIN_LOG("about to call fwin_main = %p\n", fwin_main);
+    int rc = (*fwin_main)(fwin_argc, fwin_argv);
+    FWIN_LOG("Return from fwin_main = %d\n", rc);
+    for (int i=0; i<0x7fffffff; i++);
+    panel->frame->worker = NULL;
+    return (wxThread::ExitCode)0;
+}
 
 int get_current_directory(char *s, int n)
 {
@@ -744,6 +876,14 @@ fwinFrame::fwinFrame()
         height = 9*screenHeight/10;
     }
     panel = new fwinText(this);
+    worker = new fwinWorker();
+    FWIN_LOG("worker = %p\n", worker);
+    int rc = worker->Create(512*1024);  // Argument is stack size
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread creation error = %d\n", rc);
+    rc = worker->Run();
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread run error = %d\n", rc);
+// Note horriblly well that the pointer "worker" may become invalid at any
+// stage from here on.
     SetMinClientSize(wxSize(400, 100));
     SetSize(width, height);
     Centre();
@@ -811,6 +951,8 @@ fwinText::fwinText(fwinFrame *parent)
     {   textBuffer[textEnd++] = i;
     }
     textBuffer[textEnd++] = '@';
+
+    writing.Post(); // enable output!
 }
 
 //
@@ -1476,49 +1618,6 @@ void fwinText::insertNewline()
 }
 
 
-void fwinText::requestFlushBuffer()
-{
-#ifdef RECONSTRUCTED
-    recently_flushed = 0;
-// here the worker thread is locked waiting for mutex2, so I can afford to
-// adjust fwin_in and fwin_out.
-    if (sync_even)
-    {   LockMutex(mutex1);
-        if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
-        {   if (fwin_in > fwin_out)
-                appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out
-            else
-            {   appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE
-                appendText(&fwin_buffer[0], fwin_in);
-            }
-            makePositionVisible(rowStart(length));
-        }
-// After this call fwin_in and fwin_out are always both zero.
-        fwin_out = fwin_in = 0;
-        sync_even = 0;
-        UnlockMutex(mutex3);
-        LockMutex(mutex2);
-        UnlockMutex(mutex4);
-    }
-    else
-    {   LockMutex(mutex3);
-        if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
-        {   if (fwin_in > fwin_out)
-                appendText(&fwin_buffer[fwin_out], fwin_in-fwin_out
-            else
-            {   appendText(&fwin_buffer[fwin_out], FWIN_BUFFER_SIZE
-                appendText(&fwin_buffer[0], fwin_in);
-            }
-            makePositionVisible(rowStart(length));
-        }
-        fwin_out = fwin_in = 0;
-        sync_even = 1;
-        UnlockMutex(mutex1);
-        LockMutex(mutex4);
-        UnlockMutex(mutex2);
-    }
-#endif
-}
 
 
 
@@ -1593,6 +1692,23 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 
 void fwinText::insertChar(uint32_t ch)
 {
+    insertChars(&ch, 1);
+}
+
+void fwinText::insertString(wxString s)
+{
+    size_t n = s.Len();
+    if (n > 100)
+    {   FWIN_LOG("Truncating in insertString\n");
+        n = 100;
+    }
+    uint32_t b[100];
+    for (size_t i=0; i<n; i++) b[i] = s.GetChar(i);
+    insertChars(b, (int)n);
+}
+
+void fwinText::insertChars(uint32_t *pch, int n)
+{
     int32_t loc1 = locateChar(caretPos);
     int r1 = ROW(loc1), c1 = COL(loc1);
 // I find the location of the end of the line that the character I am
@@ -1601,7 +1717,7 @@ void fwinText::insertChar(uint32_t ch)
     while (lineEnd < textEnd && textBuffer[lineEnd]!='\n') lineEnd++;
     int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
     textEnd++;
-    int p = textEnd;
+    int p = textEnd+n-1;
     if (p >= textBufferSize) enlargeTextBuffer();
 // In my terminal I will only ever be inserting within a "single line", and
 // even though that may consist of several rows it is liable to be only
@@ -1611,14 +1727,22 @@ void fwinText::insertChar(uint32_t ch)
 // to be much less of a performance bottleneck than it could become if I
 // permitted inserts towards the start of a lengthy document.
     while (p != caretPos)
-    {   textBuffer[p] = textBuffer[p-1];
+    {   textBuffer[p] = textBuffer[p-n];
         p--;
     }
-    textBuffer[caretPos] = ch;
+    for (int i=0; i<n; i++) textBuffer[caretPos+i] = pch[i];
 // After inserting the character I look to find where the end of the
 // line that it is on has moved to.
     int32_t loc3 = locateChar(lineEnd+1, caretPos, r1, c1);
-    caretPos++;
+    caretPos += n;
+    if (caret != NULL && caret->IsVisible()) repositionCaret();
+
+    Refresh();
+    return; // cop-out for now!
+
+// what follows is a sketch of MUCH better refresh control.
+
+
 // Now I certainly need to refresh from loc1 to loc3, but if
 // ROW(loc2) != ROW(loc3) then my insert caused a change in the number of
 // rows to be displayed so I should refresh all the way down to the bottom
@@ -1649,7 +1773,6 @@ void fwinText::insertChar(uint32_t ch)
 // and in that case the caret might not have been created, so I filter
 // that case out. And also if by some mischance the window does not have
 // the focus I will have hidden the caret so I do not mess with it.
-    if (caret != NULL && caret->IsVisible()) repositionCaret();
 }
 
 
@@ -2539,6 +2662,10 @@ case '_':
 default:
 defaultlabel:
         insertChar(c); // @@@@
+        if (c == 'X' && frame->worker != NULL)
+        {   FWIN_LOG("X test case\n");
+            frame->worker->sendToScreen("Hi there @\n"); // @@@@
+        }
 #ifdef XXXXXX
         if ((event->code & ~0xff) != 0 ||
             event->text[1] != 0)
@@ -2677,6 +2804,184 @@ void fwinText::OnKillFocus(wxFocusEvent &event)
         while (caret->IsVisible()) caret->Hide();
 }
 
+// I define this here because 
+
+void fwinWorker::sendToScreen(wxString s)
+{
+    wxCommandEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, TO_SCREEN);
+    event->SetString(s.c_str());  // careful to copy the string
+    wxQueueEvent(panel, event);
+    FWIN_LOG("sendToScreen \"%s\"\n", (const char *)s.c_str());
+}
+
+void fwinText::OnToScreen(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("receive in OnToScreen \"%s\"\n", (const char *)text.ToAscii());
+    insertString(text);
+}
+
+void fwinWorker::sendSetPrompt(wxString s)
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PROMPT);
+    event->SetString(s.c_str());  // careful to copy the string
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnSetPrompt(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetPrompt %s\n", (const char *)text.ToAscii());
+}
+
+void fwinWorker::sendSetSwitchMenu(wxString s)
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_SWITCH_MENU);
+    event->SetString(s.c_str());  // careful to copy the string
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnSetSwitchMenu(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetSwitchMenu %s\n", (const char *)text.ToAscii());
+}
+
+void fwinWorker::sendSetPackageMenu(wxString s)
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PACKAGE_MENU);
+    event->SetString(s.c_str());  // careful to copy the string
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnSetPackageMenu(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetPackageMenu %s\n", (const char *)text.ToAscii());
+}
+
+
+void fwinWorker::sendSetLeft(wxString s)
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_LEFT);
+    event->SetString(s.c_str());  // careful to copy the string
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnSetLeft(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetLeft %s\n", (const char *)text.ToAscii());
+}
+
+void fwinWorker::sendSetMid(wxString s)
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MID);
+    event->SetString(s.c_str());  // careful to copy the string
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnSetMid(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetMid %s\n", (const char *)text.ToAscii());
+}
+
+void fwinWorker::sendSetRight(wxString s)
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_RIGHT);
+    event->SetString(s.c_str());  // careful to copy the string
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnSetRight(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetRight %s\n", (const char *)text.ToAscii());
+}
+
+
+void fwinWorker::requestFlushBuffer()
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, FLUSH_BUFFER);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnFlushBuffer(wxThreadEvent& event)
+{
+    FWIN_LOG("OnFlushBuffer\n");
+    recently_flushed = 0;
+    if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
+    {   uint32_t wideBuffer[FWIN_BUFFER_SIZE];
+        int n = 0, state = 0;
+        uint32_t uc;    // unicode char as collected
+        while (fwin_in != fwin_out)
+        {   uint32_t c = fwin_buffer[fwin_out] & 0xff;
+            fwin_out++;
+            if (fwin_out == FWIN_BUFFER_SIZE) fwin_out = 0;
+            switch (state)
+            {
+        case 3:
+                if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+                uc |= ((c & 0x3f) << 12);
+                state = 2;
+                break;
+        case 2:
+                if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+                uc |= ((c & 0x3f) << 6);
+                state = 1;
+                break;
+        case 1:
+                if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+                uc |= (c & 0x3f);
+                wideBuffer[n++] = uc;
+                uc = 0;
+                state = 0;
+                break;
+        case 0: if ((c & 0x80) == 0)
+                {   wideBuffer[n++] = c;
+                }
+                else if ((c & 0xe0) == 0xc0)
+                {   uc = (c & 0x1f) << 6;
+                    state = 1;
+                }
+                else if ((c & 0xf0) == 0xe0)
+                {   uc = (c & 0x0f) << 12;
+                    state = 2;
+                }
+                else if ((c & 0xf8) == 0xf0)
+                {   uc = (c & 0x07) << 18;
+                    state = 3;
+                }
+                else FWIN_LOG("Malformed UTF-8 sequence\n");
+                break;
+            }
+        }
+        insertChars(&wideBuffer[0], n);
+#ifdef RECONSTRUCTED
+        makePositionVisible(rowStart(length));
+#endif
+    }
+// After this call fwin_in and fwin_out are always both zero.
+    fwin_out = fwin_in = 0;
+// Tell the worker thread that the GUI is now ready to be sent another request.
+    writing.Post();
+}
+
+
+void fwinWorker::sendRequestInput()
+{
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REQUEST_INPUT);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwinText::OnRequestInput(wxThreadEvent& event)
+{
+    FWIN_LOG("OnRequestInput\n");
+}
+
+
+
 
 void fwinText::OnDraw(wxDC &dc)
 {
@@ -2797,6 +3102,412 @@ void fwinText::OnDraw(wxDC &dc)
         col = col + extraCols + 1;
     }
 }
+
+static char **modules_list=NULL, **switches_list=NULL;
+
+
+void fwin_callback_on_delay(delay_callback_t *f)
+{
+    delay_callback = f;
+}
+
+void fwin_callback_to_interrupt(interrupt_callback_t *f)
+{
+    interrupt_callback = f;
+}
+
+static int returncode = 0;
+
+
+int fwin_windowmode()
+{
+    int r = 0;
+    r |= FWIN_WITH_TERMED;
+    if (windowed) r |= FWIN_IN_WINDOW;
+    return r;
+}
+
+void fwin_exit(int return_code)
+{
+#ifdef RECONSTRUCTED
+    if (windowed)
+    {   wake_up_terminal(FXTerminal::WORKER_EXITING);
+        returncode = return_code;
+#ifdef WIN32
+        ExitThread(returncode);
+#else
+        pthread_exit(&returncode);
+#endif
+    }
+    if (using_termed)
+    {   input_history_end();
+        term_close();
+    }
+#endif
+    exit(return_code);
+}
+
+
+void fwin_minimize()
+{
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    fflush(stdout);
+    wake_up_terminal(FXTerminal::MINIMIZE_MAIN);
+// I do not feel any need to get the threads into lockstep here.
+#endif
+}
+
+
+void fwin_restore()
+{
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    fflush(stdout);
+    wake_up_terminal(FXTerminal::RESTORE_MAIN);
+#endif
+}
+
+void fwin_putchar(int c)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+        if (c == '\n') putchar('\r');
+#endif
+        putchar(c);
+        return;
+    }
+#ifdef RECONSTRUCTED
+// Observe that since I am concerned (at least a bit) with performance
+// I buffer characters here so that the cost of inter-thread communication
+// is not suffered. But every other second (or so) the user-interface thread
+// will be worken up and will flush the buffer for me, so the user ought to
+// be given a tolerable experience/
+    int nxt = panel->fwin_in + 1;
+    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
+    if (nxt == panel->fwin_out ||
+        panel->pauseFlags & PAUSE_PAUSE) fwin_ensure_screen();
+// Note and BEWARE here that fwin_ensure_screen() can synchronize the
+// worker and interface threads and update fwin_in. Observe also that I
+// can generate a screen update if ^S has been hit.
+    panel->fwin_buffer[panel->fwin_in] = c;
+    nxt = panel->fwin_in + 1;
+    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
+    panel->fwin_in = nxt;
+    FILE *f = panel->logfile;
+    if (f != NULL) putc(c, f);
+#endif
+}
+
+void fwin_puts(const char *s)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+        while (*s != 0) fwin_putchar(*s++);
+#else
+        puts(s);
+#endif
+        return;
+    }
+#ifdef RECONSTRUCTED
+    int len = strlen(s);
+    while (len > 0)
+    {   int n = len;
+        if (n > SPARE_FOR_VFPRINTF) n = SPARE_FOR_VFPRINTF;
+        if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
+            panel->pauseFlags & PAUSE_PAUSE)
+            fwin_ensure_screen();
+        memcpy(&panel->fwin_buffer[panel->fwin_in], s, n);
+        FILE *f = panel->logfile;
+        if (f != NULL) fwrite(s, 1, n, f);
+        panel->fwin_in += n;
+        len -= n;
+    }
+#endif
+}
+
+
+void 
+#ifdef _MSC_VER
+            __cdecl
+#endif
+            fwin_printf(const char *fmt, ...)
+{
+    va_list a;
+    va_start(a, fmt);
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+/* NOT reconstructed yet @@@ */
+        vfprintf(stdout, fmt, a);
+        va_end(a);
+#else
+        vfprintf(stdout, fmt, a);
+        va_end(a);
+#endif
+        return;
+    }
+// If the buffer is getting full I will flush it. I will need to look at
+// what the PAUSE flag should do at a later stage.
+    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
+        panel->pauseFlags & PAUSE_PAUSE)
+        fwin_ensure_screen();
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(&panel->fwin_buffer[panel->fwin_in], SPARE_FOR_VFPRINTF, fmt, a);
+#else
+    vsprintf(&panel->fwin_buffer[panel->fwin_in], fmt, a);
+#endif
+// Cautious about portability and old libraries, and aware of values that
+// vsnprintf may return when the data does not fit, I ignore the values
+// of the above functions and adjust the data pointers by hand.
+    int n = strlen(&panel->fwin_buffer[panel->fwin_in]);
+    FILE *f = panel->logfile;
+    if (f != NULL) fwrite(&panel->fwin_buffer[panel->fwin_in], 1, n, f);
+    panel->fwin_in += n;
+    va_end(a);
+}
+
+void fwin_vfprintf(const char *fmt, va_list a)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+/* Not reconstructed yet @@@ */
+        vfprintf(stdout, fmt, a);
+#else
+        vfprintf(stdout, fmt, a);
+#endif
+        return;
+    }
+#ifdef RECONSTRUCTED
+// see comments above.
+    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
+        panel->pauseFlags & PAUSE_PAUSE)
+        fwin_ensure_screen();
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(&panel->fwin_buffer[panel->fwin_in], SPARE_FOR_VFPRINTF, fmt, a);
+#else
+    vsprintf(&panel->fwin_buffer[panel->fwin_in], fmt, a);
+#endif
+    int n = strlen(&panel->fwin_buffer[panel->fwin_in]);
+    FILE *f = panel->logfile;
+    if (f != NULL) fwrite(&panel->fwin_buffer[panel->fwin_in], 1, n, f);
+    panel->fwin_in += n;
+#endif
+}
+
+const char *fwin_maths = NULL;
+
+void fwin_showmath(const char *s)
+{
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    fwin_ensure_screen();   // get regular text up to date first.
+    fwin_maths = s;
+    LockMutex(panel->pauseMutex);
+// here I have to do real inter-thread communication.
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::SHOW_MATH);
+// here I need to wait until the signal that I just sent has been received
+// and processed.
+    regain_lockstep();
+    if (delay_callback != NULL) (*delay_callback)(0);
+    UnlockMutex(panel->pauseMutex);
+#endif
+}
+
+
+void fwin_ensure_screen()
+{
+    if (!windowed)
+    {   fflush(stdout);
+        return;
+    }
+    if (panel->fwin_in == panel->fwin_out) return;
+// Wait until GUI thread is ready.
+    panel->writing.Wait();
+// Post an event to ask the GUI thread to empty the buffer.
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, FLUSH_BUFFER);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+extern "C"
+{
+static review_switch_settings_function *review_switch_settings = NULL;
+}
+
+static int update_next_time = 0;
+
+
+int fwin_getchar()
+{
+    if (!windowed) return fwin_plain_getchar();
+#ifdef RECONSTRUCTED
+// In general I have a line of stuff ready sitting in a buffer. So on
+// most calls to here I can just return what is in it.
+    if (panel->inputBufferP < panel->inputBufferLen)
+        return panel->inputBuffer[panel->inputBufferP++];
+// Now however a new line of input is needed, so I have to request it from
+// the user-interface thread.
+    if (update_next_time && review_switch_settings != NULL)
+    {   (*review_switch_settings)();
+        update_next_time = 0;
+    }
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::REQUEST_INPUT);
+// Wait until the signal that I just sent has been received
+// and processed.
+    regain_lockstep();
+    if (delay_callback != NULL) (*delay_callback)(0);
+// I will try a convention that if inputBufferLen is zero that indicates
+// a dodgy state. Eg the user is sending an EOF or interrupt.
+    int n = panel->inputBufferLen;
+    if (n == 0) return EOF;
+    const char *p = &panel->inputBuffer[panel->inputBufferP];
+    while (n>0 && isspace(*p))
+    {   n--;
+        p++;
+    }
+// The next line is pretty shameless and is there to help REDUCE while not
+// getting too much in the way of anybody else. If an input line is
+// entered starting with the text "load_package" I make a callback to
+// review_switch_settings fairly soon.
+    if (n>12 && strncmp(p, "load_package", 12) == 0)
+        update_next_time = 1;
+    int ch = panel->inputBuffer[panel->inputBufferP++];
+    if (ch == (0x1f & 'D')) return EOF;
+    else return ch;
+#else
+    return EOF;
+#endif
+}
+
+
+void fwin_set_prompt(const char *s)
+{
+    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
+    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    wake_up_terminal(FXTerminal::SET_PROMPT);
+    regain_lockstep();
+#endif
+}
+
+void fwin_menus(char **modules, char **switches,
+                review_switch_settings_function *f)
+{
+    if (!windowed) return;
+    modules_list = modules;
+    switches_list = switches;
+#ifdef RECONSTRUCTED
+    wake_up_terminal(FXTerminal::SET_MENUS);
+    regain_lockstep();
+#endif
+    review_switch_settings = f;
+}
+
+void fwin_refresh_switches(char **switches, char **packages)
+{
+    if (!windowed) return;
+    switches_list = switches;
+    modules_list = packages;
+#ifdef RECONSTRUCTED
+    wake_up_terminal(FXTerminal::REFRESH_SWITCHES);
+    regain_lockstep();
+#endif
+}
+
+static char left_stuff[32] = "",
+            right_stuff[32] = "";
+char mid_stuff[32] = "", full_title[90] = "";
+
+#ifdef USE_A0_SPACER
+#define SPACER_CHAR 0xa0
+#else
+#define SPACER_CHAR 0x20
+#endif
+
+static void rewrite_title_bar()
+{
+// Just at present this does not cope with cases where the width of the window
+// has been changed...
+    int ll = strlen(left_stuff),
+        lm = strlen(mid_stuff),
+        lr = strlen(right_stuff);
+    int i, j;
+    for (i=0; i<80; i++) full_title[i] = SPACER_CHAR;
+    strncpy(full_title, left_stuff, ll);
+    j = 80 - strlen(right_stuff);
+    strncpy(&full_title[j], right_stuff, lr);
+    j = 40-(lm/2);
+    strncpy(&full_title[j], mid_stuff, lm);
+    full_title[80] = 0;
+#ifdef RECONSTRUCTED
+    wake_up_terminal(FXTerminal::REFRESH_TITLE);
+    regain_lockstep();
+#endif
+}
+
+
+void fwin_acknowledge_tick()
+{
+// This is to do with my handling of "^Z" to suspend the computation.
+// If the user enters ^Z I lock the pause mutex and then send a "TICK".
+// The user is expected to notice it and respond here - and hence get
+// suspended.
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    LockMutex(panel->pauseMutex);
+    UnlockMutex(panel->pauseMutex);
+#endif
+}
+
+
+
+void fwin_report_left(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(left_stuff, msg, 31);
+    left_stuff[31] = 0;
+#ifdef RECONSTRUCTED
+    rewrite_title_bar();
+#endif
+}
+
+void fwin_report_mid(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(mid_stuff, msg, 31);
+    mid_stuff[31] = 0;
+#ifdef RECONSTRUCTED
+    rewrite_title_bar();
+#endif
+}
+
+void fwin_report_right(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(right_stuff, msg, 31);
+    right_stuff[31] = 0;
+#ifdef RECONSTRUCTED
+    rewrite_title_bar();
+#endif
+}
+
+void fwin_set_help_file(const char *key, const char *path)
+{
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    printf("fwin_set_help_file called\n");
+    fflush(stdout);
+#endif
+}
+
+
+
 
 
 // End of wxterminal.cpp

@@ -52,7 +52,7 @@
  * and not under any more restrictice license.
  */
 
-/* Signature: 1fe66257 04-Dec-2010 */
+/* Signature: 77dd5638 23-Dec-2010 */
 
 #ifndef header_fwin_h
 #define header_fwin_h 1
@@ -92,7 +92,7 @@ extern "C" {
  */
 
 #ifdef DEBUG
-extern void fwin_write_log(char *s, ...);
+extern void fwin_write_log(const char *s, ...);
 #define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
 #else
 #define FWIN_LOG(...) /* nothing */

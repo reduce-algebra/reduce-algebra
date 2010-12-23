@@ -35,11 +35,16 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0b8d2f95 02-Dec-2010 */
+/* Signature: 18746b91 23-Dec-2010 */
 
 
+// The events declared here are used to send data from the worker thread
+// to the GUI thread.
 
-// Just so far I do not have anything to go in here!
+//wxDECLARE_EVENT(SET_PROMPT,        wxCommandEvent);
+//wxDECLARE_EVENT(TO_SCREEN,         wxCommandEvent);
+//wxDECLARE_EVENT(SET_SWITCH_MENU,   wxCommandEvent);
+//wxDECLARE_EVENT(SET_PACKAGE_MENU,  wxCommandEvent);
 
 #endif // header_wxterminal_h
 

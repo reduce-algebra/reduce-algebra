@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 203571bc 14-Dec-2010 */
+/* Signature: 2741824f 23-Dec-2010 */
 
 #include "config.h"
 
@@ -143,7 +143,7 @@ static FILE *logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
-void fwin_write_log(char *s, ...)
+void fwin_write_log(const char *s, ...)
 {
     int create = (logfile == NULL);
     va_list x;
@@ -847,121 +847,6 @@ int fwin_plain_getchar()
     ch = *current_line++;
     if (ch == (0x1f & 'D')) ch = EOF;
     return ch;
-}
-
-void fwin_restore()
-{
-}
-
-void fwin_putchar(int c)
-{
-/*
- * Despite using termed during keyboard input I will just use the
- * ordinary C stream functions for normal output. Provided I do an
- * fflush(stdout) before requesting input I should be OK.
- */
-#ifdef RAW_CYGWIN
-/*
- * If I have built the system under Cygwin then we are running under
- * Windows. To keep files tidy I will (mostly) insert CRs at line-end
- * in case Cygwin does not...
- */
-    if (c == '\n') putchar('\r');
-#endif
-    putchar(c);
-}
-
-void fwin_puts(const char *s)
-{
-/*
- * See comment above where putchar() is used...
- */
-#ifdef RAW_CYGWIN
-    while (*s != 0) fwin_putchar(*s++);
-#else
-    puts(s);
-#endif
-}
-
-
-void MS_CDECL fwin_printf(const char *fmt, ...)
-{
-    va_list a;
-    va_start(a, fmt);
-/*
- * See comment above where putchar() is used...
- */
-#ifdef RAW_CYGWIN
-/* NOT reconstructed yet @@@ */
-    vfprintf(stdout, fmt, a);
-#else
-    vfprintf(stdout, fmt, a);
-#endif
-    va_end(a);
-}
-
-void fwin_vfprintf(const char *fmt, va_list a)
-{
-/*
- * See comment above where putchar() is used...
- */
-#ifdef RAW_CYGWIN
-/* Not reconstructed yet @@@ */
-    vfprintf(stdout, fmt, a);
-#else
-    vfprintf(stdout, fmt, a);
-#endif
-}
-
-void fwin_ensure_screen()
-{
-    fflush(stdout);
-}
-
-void fwin_report_left(const char *s)
-{
-}
-
-void fwin_report_mid(const char *s)
-{
-}
-
-void fwin_report_right(const char *s)
-{
-}
-
-int fwin_getchar()
-{
-    return fwin_plain_getchar();
-}
-
-
-void fwin_set_prompt(const char *s)
-{
-    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
-    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
-}
-
-extern void fwin_menus(char **modules, char **switches,
-                       review_switch_settings_function *f)
-{
-}
-
-void fwin_refresh_switches(char **switches, char **packages)
-{
-}
-
-void fwin_set_help_file(const char *key, const char *path)
-{
-}
-
-void fwin_acknowledge_tick()
-{
-}
-
-int fwin_windowmode()
-{
-    return 0;
 }
 
 int get_current_directory(char *s, int n)

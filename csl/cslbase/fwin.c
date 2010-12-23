@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 0a5e57a1 07-Dec-2010 */
+/* Signature: 6f2b2299 23-Dec-2010 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -187,7 +187,7 @@ static FILE *logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
-void fwin_write_log(char *s, ...)
+void fwin_write_log(const char *s, ...)
 {
     int create = (logfile == NULL);
     va_list x;

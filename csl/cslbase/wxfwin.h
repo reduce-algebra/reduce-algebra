@@ -53,7 +53,7 @@
  * Cocoa) support on a Macintosh.
  */
 
-/* Signature: 4b4bb6f4 04-Dec-2010 */
+/* Signature: 6c26ed04 23-Dec-2010 */
 
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1
@@ -92,7 +92,7 @@ extern "C" {
  */
 
 #ifdef DEBUG
-extern void fwin_write_log(char *s, ...);
+extern void fwin_write_log(const char *s, ...);
 #define FWIN_LOG(...) fwin_write_log(__VA_ARGS__)
 #else
 #define FWIN_LOG(...) /* nothing */
