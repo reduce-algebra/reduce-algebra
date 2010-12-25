@@ -35,6 +35,11 @@ if test $guess = "x86_64-apple-darwin10.4.0"
         export MACHINE=macintel64
 fi
 
+if test $guess = "x86_64-apple-darwin10.5.0"
+ then
+        export MACHINE=macintel64
+fi
+
 if test $guess = "i386-apple-darwin10.4.0"
  then
         export MACHINE=macintel

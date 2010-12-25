@@ -74,7 +74,7 @@ OTHERCFILES = \
 	$(PXK)/pslextras.c
  
 # Use -L in the assembler to keep labels that begin with "L".
-ASARGS = arch=i386 
+ASARGS = -c
 #CFLAGS =
  
 # Header file to support car/cdr of NIL.

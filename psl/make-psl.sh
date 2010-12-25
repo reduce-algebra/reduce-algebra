@@ -14,6 +14,11 @@ if test $guess = "x86_64-unknown-linux-gnu"
         export MACHINE=AMD64
 fi
 
+if test $guess = "x86_64-apple-darwin10.5.0"
+ then
+        export MACHINE=macintel64
+fi
+
 if test $guess = "x86_64-apple-darwin10.4.0"
  then
         export MACHINE=macintel64
@@ -54,9 +59,9 @@ cd dist
 # we have to make sure that bpsl is healthy and compatible with the
 # operating system. So we better rebuild it.
 cd $pxk
-gzip -f bpsl
-./asm
-./cclnk             
+###gzip -f bpsl
+###./asm
+###./cclnk             
 # can't say make already, because we may not have a pslcomp. Sigh
 $pdist/make-bare-psl
 $pdist/make-pslcomp

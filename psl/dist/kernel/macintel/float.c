@@ -170,14 +170,14 @@ uxwritefloat(buf, flt, convstr)
 
 /* Tag( uxdoubletofloat )
  */
-uuxdoubletofloat (dbl,flt)
+uxdoubletofloat (dbl,flt)
      double *dbl;
      float  *flt;
 {
   *flt = (float) *dbl;
 }
 
-uuxfloattodouble (flt,dbl)
+uxfloattodouble (flt,dbl)
      float  *flt;             
      double *dbl;             
 {
@@ -185,61 +185,61 @@ uuxfloattodouble (flt,dbl)
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
-uuxsin (r, x)
+uxsin (r, x)
      double *r, *x;
 {
     *r = sin( *x );
 }
 
-uuxcos (r, x)
+uxcos (r, x)
      double *r, *x;
 {
     *r = cos( *x );
 }
 
-uuxtan (r, x)
+uxtan (r, x)
      double *r, *x;
 {
     *r = tan( *x );
 }
 
-uuxasin (r, x)
+uxasin (r, x)
      double *r, *x;
 {
     *r = asin( *x );
 }
 
-uuxacos (r, x)
+uxacos (r, x)
      double *r, *x;
 {
     *r = acos( *x );
 }
 
-uuxatan (r, x)
+uxatan (r, x)
      double *r, *x;
 {
     *r = atan( *x );
 }
 
-uuxsqrt (r, x)
+uxsqrt (r, x)
      double *r, *x;
 {
     *r = sqrt( *x );
 }
 
-uuxexp (r, x)
+uxexp (r, x)
      double *r, *x;
 {
     *r = exp( *x );
 }
 
-uuxlog (r, x)
+uxlog (r, x)
      double *r, *x;
 {
     *r = log( *x );
 }
 
-uuxatan2 (r, y, x)
+uxatan2 (r, y, x)
      double *r, *y, *x;
 {
     *r = atan2( *y, *x );

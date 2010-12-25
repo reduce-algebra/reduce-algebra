@@ -53,11 +53,11 @@
 
 (ds hash-table-entry (i) 
   % Access to an element of the hash table.
-  (wshift (wshift (halfword hashtable i) 48) -48) )
+%%  (wshift (wshift (halfword hashtable i) 48) -48) )
 
- % (signedfield (halfword hashtable i) 
-%	       bitsperword2
-%	       bitsperword2))
+  (field (halfword hashtable i) 
+	       bitsperword2
+	       bitsperword2))
 				         
 (ds set-hash-table-entry (i x) 
   (setf (halfword hashtable i) x))

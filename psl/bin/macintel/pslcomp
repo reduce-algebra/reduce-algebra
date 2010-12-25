@@ -1,1 +1,3 @@
-$pxk/bpsl -td 10000000 -f $psys/pslcomp.img 
+#
+/Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/bpsl.save  -td 10000000 -f  /Users/neun/pxk/reduce-algebra/trunk/psl/bin/macintel/pslcomp.img $*
+#
