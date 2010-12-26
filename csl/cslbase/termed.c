@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 3c6e359b 08-Dec-2010 */
+/* Signature: 67de90e3 26-Dec-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -171,14 +171,14 @@ static int outputColour = -1;  /* whatever user had been using */
 
 #include <stdarg.h>
 
-static FILE *logfile = NULL;
+static FILE *termed_logfile = NULL;
 
 static void write_log(char *s, ...)
 {
     va_list x;
-    if (logfile == NULL) logfile = fopen("log.log", "w");
+    if (termed_logfile == NULL) termed_logfile = fopen("log.log", "w");
     va_start(x, s);
-    vfprintf(logfile, s, x);
+    vfprintf(termed_logfile, s, x);
     va_end(x);
 }
 

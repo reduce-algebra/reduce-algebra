@@ -335,9 +335,9 @@ bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
 		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
 if wx
-fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC) $(FONTDEP)
-else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+else !wx
+fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
 dyndemo_DEPENDENCIES = $(srcdir)/dyndemo.def dynmodule.dll
 
@@ -376,6 +376,11 @@ bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 		reduce.doc/index.html $(GP) $(WXC)
 reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
 		$(GP) $(WXC)
+if wx
+fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+else !wx
+fwindemo_DEPENDENCIES = $(fwin_icon)
+endif !wx
 
 # end of windows vs non-windows conditions
 endif !windows
@@ -389,8 +394,6 @@ CXXLINKTO = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 
 # BEWARE BEWARE BEWARE the next line must have trailing blanks
 DEST=-o   
-
-R = $(srcdir)/../..
 
 if fox
 if win64

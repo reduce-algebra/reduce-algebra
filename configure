@@ -597,7 +597,7 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
-XGCC_3
+GCC_3
 X32_GCC
 X64_GCC
 host_os
@@ -653,6 +653,7 @@ with_csl
 with_psl
 with_build
 with_mingw64
+with_gcc3
 with_m32
 with_m64
 with_cygwin
@@ -1306,10 +1307,12 @@ Optional Packages:
   --with-build            Used internally to control build directory
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
+  --with-gcc3             can be used to avoid use of i686-w64-mingw32-gcc
+                          (CSL only)
   --with-m32              Force 32-bit model even on 64-bit gcc (CSL only)
   --with-m64              Force 64-bit model even if 32-bit is default (CSL
                           only)
-  --with-cygwin           Force use of raw cywgin (note licensing consequences
+  --with-cygwin           Force use of raw cygwin (note licensing consequences
                           please) (CSL only)
   --with-gui              use --without-gui to get a text-only system (CSL
                           only)
@@ -1954,6 +1957,15 @@ fi
 
 
 
+# Check whether --with-gcc3 was given.
+if test "${with_gcc3+set}" = set; then :
+  withval=$with_gcc3;
+else
+  with_gcc3="no"
+fi
+
+
+
 # Check whether --with-m32 was given.
 if test "${with_m32+set}" = set; then :
   withval=$with_m32;
@@ -2127,13 +2139,14 @@ fi
 # I am only in a 32-bit world.
 #
 # The behaviour I intend to establish is that the user can find-tune things
-# using the opption "--with-mingw64":
+# using the option "--with-mingw64":
 #    --with-mingw64 or --with-mingw64=yes:
 #         Treat very much as "--host=x86_64-w64-mingw32" and hence build
 #         64 bit executables. If the necessary cross-compile is not
 #         installed then this configuration will (obviously) fail.
 #    --without-mingw64 or --with-mingw64=no:
-#         If the relevent cross compiler is present treat very much
+#         if --with-gcc3 is set do not try i686-w64-mingw32-gcc, Otherwise
+#         if the relevent cross compiler is present treat very much
 #         as "--host=i686-w64-mingw32" and hence build 32-bit native
 #         windows exectuables. If that cross compiler is not available
 #         fall back to "CXX=gcc-3 -mno-cygwin" so that explicit use is
@@ -2268,11 +2281,11 @@ fi
 set dummy g++-3; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_XGCC_3+set}" = set; then :
+if test "${ac_cv_prog_GCC_3+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$XGCC_3"; then
-  ac_cv_prog_XGCC_3="$XGCC_3" # Let the user override the test.
+  if test -n "$GCC_3"; then
+  ac_cv_prog_GCC_3="$GCC_3" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -2281,7 +2294,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_XGCC_3=""yes""
+    ac_cv_prog_GCC_3=""yes""
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -2289,19 +2302,27 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_prog_XGCC_3" && ac_cv_prog_XGCC_3=""no""
+  test -z "$ac_cv_prog_GCC_3" && ac_cv_prog_GCC_3=""no""
 fi
 fi
-XGCC_3=$ac_cv_prog_XGCC_3
-if test -n "$XGCC_3"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XGCC_3" >&5
-$as_echo "$XGCC_3" >&6; }
+GCC_3=$ac_cv_prog_GCC_3
+if test -n "$GCC_3"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCC_3" >&5
+$as_echo "$GCC_3" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
+# If the user specified --with-gcc3 and gcc-3 was indeed present I will
+# pretend that i686-w64-mingw32-g++ was not available. This may be useful
+# sometimes when debuggin in that PERHAPS the mingw32 tools might not work
+# as well with gdb as the older "gcc-3 -mno-cygwin" recipe.
+  if test "x$with_gcc3" != "xno" && test "x$GCC_3" != "xno"
+  then
+    X32_GCC="no"
+  fi
   if test "x$with_mingw64" = "xyes"
   then
     if test "x$X64_GCC" = "xno"
@@ -2330,7 +2351,7 @@ $as_echo "$as_me: $doconfig" >&6;}
 $as_echo "$as_me: $doconfig" >&6;}
       eval "$doconfig"
       exit
-    elif test "$XGCC_3" = "yes"
+    elif test "$GCC_3" = "yes"
     then
 # Fall back to "gcc-3 -mno-cygwin"  where at least I can explicitly use
 # a series-3 version of gcc.
@@ -2341,7 +2362,7 @@ $as_echo "$as_me: $doconfig" >&6;}
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\" \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
-               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
+               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
       { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
       eval "$doconfig"
@@ -2354,7 +2375,7 @@ $as_echo "$as_me: WARNING: Under cygwin please install i686-w64-mingw compilers,
 at least gcc-3. Without them this build may fail." >&2;}
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
-               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
+               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
       { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
       eval "$doconfig"
@@ -2444,10 +2465,14 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
       cp -r $abssrcdir/csl/generated-c $abssrcdir/cslbuild
     fi
     cd $abssrcdir/cslbuild/$build
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    fi
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            --with-build=$build"
+            $passcc --with-build=$build"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
     eval "$doconfig"
@@ -3157,7 +3182,7 @@ $as_echo "$as_me: after checking for system wxWidgets with_wx=$with_wx" >&6;}
       echo wxWidgets unpacked from archive $a
       cd $d
     fi
-# A short essay to explain whi I pass down "--host=$host" here. There are
+# A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
 # cross-compilation using the x86_64-win32-mingw32 toolchain. To try to
 # be helpful I use this if I am running on 64-bit windows even though
@@ -3260,9 +3285,13 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
 # but addressing that pain is probably good in the long term.
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
               --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
               --disable-shared --enable-unicode \
               --disable-compat26 --disable-compat28 \
               --with-png=builtin --without-libjpeg \
@@ -3284,9 +3313,13 @@ $as_echo "$as_me: $doconfig" >&6;}
   elif test "x$with_fox" != "xno"
   then
     cd fox
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    fi
     doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --host=$host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=$builddir $extras"
@@ -3302,9 +3335,13 @@ $as_echo "$as_me: About to configure FOX tests" >&6;}
       mkdir -p foxtests
       cd foxtests
 
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
             --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=$builddir --with-fox-pending=yes $extras"
       { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}

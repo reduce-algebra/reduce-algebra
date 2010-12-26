@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 2741824f 23-Dec-2010 */
+/* Signature: 57ddffb8 26-Dec-2010 */
 
 #include "config.h"
 
@@ -139,13 +139,13 @@ extern char *getcwd(char *s, size_t n);
  * if debugging you might want to ensure that such a directory exists!
  */
 
-static FILE *logfile = NULL;
+static FILE *fwin_logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
 void fwin_write_log(const char *s, ...)
 {
-    int create = (logfile == NULL);
+    int create = (fwin_logfile == NULL);
     va_list x;
 /*
  * Note that I create this file in "a" (append) mode so that previous
@@ -172,21 +172,21 @@ void fwin_write_log(const char *s, ...)
         }
 #endif
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
-        logfile = fopen(logfile_name, "a");
+        fwin_logfile = fopen(logfile_name, "a");
     }
-    if (logfile == NULL) return; /* the file can not be used */
+    if (fwin_logfile == NULL) return; /* the file can not be used */
     if (create)
     {   time_t tt = time(NULL);
         struct tm *tt1 = localtime(&tt);
-        fprintf(logfile, "Log segment starting: %s\n", asctime(tt1));
+        fprintf(fwin_logfile, "Log segment starting: %s\n", asctime(tt1));
     }
     va_start(x, s);
-    vfprintf(logfile, s, x);
+    vfprintf(fwin_logfile, s, x);
     va_end(x);
     va_start(x, s);
     vfprintf(stderr, s, x);
     va_end(x);
-    fflush(logfile);
+    fflush(fwin_logfile);
 }
 
 #endif
@@ -707,8 +707,8 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  * Since I am about to restart the program I do not want the new version to
  * find that the log file is open and hence not accessible.
  */
-                if (logfile != NULL)
-                {   fclose(logfile);
+                if (fwin_logfile != NULL)
+                {   fclose(fwin_logfile);
                     logfile = NULL;
                 }
 #endif

@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 331af4d2 23-Dec-2010 */
+/* Signature: 7d7c6e1a 26-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -136,13 +136,16 @@ int pipedes[2];
 #include "reduce.xpm"
 #endif
 
-static fwin_entrypoint *fwin_main;
+static fwin_entrypoint *fwin_main_entry;
 static int fwin_argc;
 static char **fwin_argv;
 
 int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
 {
-    fwin_main = fwin_main1;
+    fwin_main_entry = fwin_main1;
+    fwin_argc = argc;
+    fwin_argv = argv;
+
 #ifdef WIN32
 // The following is somewhat unsatisfactory so I will explain my options and
 // what is happening.
@@ -239,13 +242,16 @@ enum
 {
     TO_SCREEN = wxID_HIGHEST+1,
     SET_PROMPT,
-    SET_SWITCH_MENU,
-    SET_PACKAGE_MENU,
+    SET_MENUS,
+    REFRESH_SWITCHES,
     SET_LEFT,
     SET_MID,
     SET_RIGHT,
-    FLUSH_BUFFER,
-    REQUEST_INPUT
+    FLUSH_BUFFER1,
+    FLUSH_BUFFER2,
+    REQUEST_INPUT,
+    MINIMISE_WINDOW,
+    RESTORE_WINDOW
 };
 
 
@@ -262,13 +268,17 @@ public:
     void OnKillFocus(wxFocusEvent &event);
     void OnToScreen(wxThreadEvent& event);
     void OnSetPrompt(wxThreadEvent& event);
-    void OnSetSwitchMenu(wxThreadEvent& event);
-    void OnSetPackageMenu(wxThreadEvent& event);
+    void OnSetMenus(wxThreadEvent& event);
+    void OnRefreshSwitches(wxThreadEvent& event);
     void OnSetLeft(wxThreadEvent& event);
     void OnSetMid(wxThreadEvent& event);
     void OnSetRight(wxThreadEvent& event);
-    void OnFlushBuffer(wxThreadEvent& event);
+    void OnFlushBuffer(char *fwin_buffer);
+    void OnFlushBuffer1(wxThreadEvent& event);
+    void OnFlushBuffer2(wxThreadEvent& event);
     void OnRequestInput(wxThreadEvent& event);
+    void OnMinimiseWindow(wxThreadEvent& event);
+    void OnRestoreWindow(wxThreadEvent& event);
 
 // Both these will be initialised with a count of zero and no limit.
     wxSemaphore writing;  // Used when writing to the screen
@@ -288,16 +298,10 @@ public:
 // 200 bytes long.
 #define SPARE_FOR_VFPRINTF 200
 
-    char fwin_buffer[FWIN_BUFFER_SIZE];
+    char fwin_buffer1[FWIN_BUFFER_SIZE];
+    char fwin_buffer2[FWIN_BUFFER_SIZE];
 
-// The following two are used by both worker and interface tasks, and so
-// over-clever compiler optimisation of them is undesirable.
-//
-// fwin_in belongs to the worker thread, while fwin_out is owned by the
-// user interface. Each will use read-only access to the other (unless the
-// two are synchronised, in which case full access is permitted).
-
-    int fwin_in, fwin_out;
+    int use_buffer1, fwin_in, fwin_out;
 
 // While the program is not asking for input any characters from the keyboard
 // will be stashed in a type-ahead buffer, But when input is asked for a
@@ -308,7 +312,7 @@ public:
 
     int inputBufferLen;
     int inputBufferP;
-    uint32_t inputBuffer[INPUT_BUFFER_LENGTH];
+    char inputBuffer[INPUT_BUFFER_LENGTH];
 
     int recently_flushed;
 
@@ -481,13 +485,16 @@ BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
     EVT_KILL_FOCUS(               fwinText::OnKillFocus)
     EVT_THREAD(TO_SCREEN,         fwinText::OnToScreen)
     EVT_THREAD(SET_PROMPT,        fwinText::OnSetPrompt)
-    EVT_THREAD(SET_SWITCH_MENU,   fwinText::OnSetSwitchMenu)
-    EVT_THREAD(SET_PACKAGE_MENU,  fwinText::OnSetPackageMenu)
+    EVT_THREAD(SET_MENUS,         fwinText::OnSetMenus)
+    EVT_THREAD(REFRESH_SWITCHES,  fwinText::OnRefreshSwitches)
     EVT_THREAD(SET_LEFT,          fwinText::OnSetLeft)
     EVT_THREAD(SET_MID,           fwinText::OnSetMid)
     EVT_THREAD(SET_RIGHT,         fwinText::OnSetRight)
-    EVT_THREAD(FLUSH_BUFFER,      fwinText::OnFlushBuffer)
+    EVT_THREAD(FLUSH_BUFFER1,     fwinText::OnFlushBuffer1)
+    EVT_THREAD(FLUSH_BUFFER2,     fwinText::OnFlushBuffer2)
     EVT_THREAD(REQUEST_INPUT,     fwinText::OnRequestInput)
+    EVT_THREAD(MINIMISE_WINDOW,   fwinText::OnMinimiseWindow)
+    EVT_THREAD(RESTORE_WINDOW,    fwinText::OnRestoreWindow)
 END_EVENT_TABLE()
 
 static fwinText *panel = NULL;
@@ -522,16 +529,8 @@ class fwinWorker : public wxThread
 public:
     fwinWorker();
 //  ~fwinWorker();
-    void sendToScreen(wxString s); // make private later on!
+    void sendToScreen(wxString s); // for debugging
 private:
-    void sendSetPrompt(wxString s);
-    void sendSetSwitchMenu(wxString s);
-    void sendSetPackageMenu(wxString s);
-    void sendSetLeft(wxString s);
-    void sendSetMid(wxString s);
-    void sendSetRight(wxString s);
-    void requestFlushBuffer();
-    void sendRequestInput();
 protected:
     virtual wxThread::ExitCode Entry();
 };
@@ -542,14 +541,11 @@ fwinWorker::fwinWorker()
 
 wxThread::ExitCode fwinWorker::Entry()
 {
-    FWIN_LOG("fwinWorker starting\n");
-    sendToScreen("Message 1");
-    FWIN_LOG("first message sent\n");
-    sendToScreen("Message 2");
-    sendSetPrompt("Message 3");
-    FWIN_LOG("about to call fwin_main = %p\n", fwin_main);
-    int rc = (*fwin_main)(fwin_argc, fwin_argv);
-    FWIN_LOG("Return from fwin_main = %d\n", rc);
+    int rc = (*fwin_main_entry)(fwin_argc, fwin_argv);
+    fwin_ensure_screen();
+#define pause_on_exit 0
+    FWIN_LOG("return from fwin_main_entry is %d pause_on_exit=%d\n",
+             rc, pause_on_exit);
     for (int i=0; i<0x7fffffff; i++);
     panel->frame->worker = NULL;
     return (wxThread::ExitCode)0;
@@ -897,7 +893,10 @@ fwinText::fwinText(fwinFrame *parent)
     frame = parent;
     fixedPitch = NULL;
     firstPaint = true;
-    textBufferSize = 10000;
+// I start off with a 40K character buffer, which seems reasonably
+// generous to me. The plan is that the buffer will automatically expand
+// as needed.
+    textBufferSize = 40000;
     textBuffer = (uint32_t *)malloc(textBufferSize*sizeof(uint32_t));
     textEnd = 0;
     searchFlags = 0;
@@ -910,6 +909,11 @@ fwinText::fwinText(fwinFrame *parent)
     type_in = type_out = 0;
     historyNumber = historyFirst = historyLast = 0;
     historyInit();
+
+    fwin_in = 0;
+    use_buffer1 = 1;
+
+    logfile = NULL; // a menu option will establish this to keep a log.
 
 // Here I put some sample test in the buffer so I have something to draw.
     textBuffer[textEnd++] = 0x2554; // Draw a box to show those chars.
@@ -2804,7 +2808,8 @@ void fwinText::OnKillFocus(wxFocusEvent &event)
         while (caret->IsVisible()) caret->Hide();
 }
 
-// I define this here because 
+// sendToScreen will in general NOT be used - instead I will put
+// material in fwin_buffer and then call ensure_screen().
 
 void fwinWorker::sendToScreen(wxString s)
 {
@@ -2821,164 +2826,150 @@ void fwinText::OnToScreen(wxThreadEvent& event)
     insertString(text);
 }
 
-void fwinWorker::sendSetPrompt(wxString s)
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PROMPT);
-    event->SetString(s.c_str());  // careful to copy the string
-    panel->GetEventHandler()->QueueEvent(event);
-}
-
 void fwinText::OnSetPrompt(wxThreadEvent& event)
 {
     wxString text = event.GetString();
     FWIN_LOG("OnSetPrompt %s\n", (const char *)text.ToAscii());
+    writing.Post();
 }
 
-void fwinWorker::sendSetSwitchMenu(wxString s)
+void fwinText::OnSetMenus(wxThreadEvent& event)
 {
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_SWITCH_MENU);
-    event->SetString(s.c_str());  // careful to copy the string
-    panel->GetEventHandler()->QueueEvent(event);
+    FWIN_LOG("OnSetMenus\n");
+    writing.Post();
 }
 
-void fwinText::OnSetSwitchMenu(wxThreadEvent& event)
+void fwinText::OnRefreshSwitches(wxThreadEvent& event)
 {
-    wxString text = event.GetString();
-    FWIN_LOG("OnSetSwitchMenu %s\n", (const char *)text.ToAscii());
+    FWIN_LOG("OnRefreshSwitches\n");
+    writing.Post();
 }
 
-void fwinWorker::sendSetPackageMenu(wxString s)
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PACKAGE_MENU);
-    event->SetString(s.c_str());  // careful to copy the string
-    panel->GetEventHandler()->QueueEvent(event);
-}
-
-void fwinText::OnSetPackageMenu(wxThreadEvent& event)
-{
-    wxString text = event.GetString();
-    FWIN_LOG("OnSetPackageMenu %s\n", (const char *)text.ToAscii());
-}
-
-
-void fwinWorker::sendSetLeft(wxString s)
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_LEFT);
-    event->SetString(s.c_str());  // careful to copy the string
-    panel->GetEventHandler()->QueueEvent(event);
-}
 
 void fwinText::OnSetLeft(wxThreadEvent& event)
 {
     wxString text = event.GetString();
     FWIN_LOG("OnSetLeft %s\n", (const char *)text.ToAscii());
-}
-
-void fwinWorker::sendSetMid(wxString s)
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MID);
-    event->SetString(s.c_str());  // careful to copy the string
-    panel->GetEventHandler()->QueueEvent(event);
+    writing.Post();
 }
 
 void fwinText::OnSetMid(wxThreadEvent& event)
 {
     wxString text = event.GetString();
     FWIN_LOG("OnSetMid %s\n", (const char *)text.ToAscii());
-}
-
-void fwinWorker::sendSetRight(wxString s)
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_RIGHT);
-    event->SetString(s.c_str());  // careful to copy the string
-    panel->GetEventHandler()->QueueEvent(event);
+    writing.Post();
 }
 
 void fwinText::OnSetRight(wxThreadEvent& event)
 {
     wxString text = event.GetString();
     FWIN_LOG("OnSetRight %s\n", (const char *)text.ToAscii());
+    writing.Post();
 }
 
-
-void fwinWorker::requestFlushBuffer()
+void fwinText::OnFlushBuffer1(wxThreadEvent& event)
 {
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, FLUSH_BUFFER);
-    panel->GetEventHandler()->QueueEvent(event);
+    OnFlushBuffer(&fwin_buffer1[0]);
 }
 
-void fwinText::OnFlushBuffer(wxThreadEvent& event)
+void fwinText::OnFlushBuffer2(wxThreadEvent& event)
 {
-    FWIN_LOG("OnFlushBuffer\n");
+    OnFlushBuffer(&fwin_buffer2[0]);
+}
+
+void fwinText::OnFlushBuffer(char *fwin_buffer)
+{
     recently_flushed = 0;
-    if (fwin_in != fwin_out && (pauseFlags & PAUSE_DISCARD) == 0)
-    {   uint32_t wideBuffer[FWIN_BUFFER_SIZE];
-        int n = 0, state = 0;
-        uint32_t uc;    // unicode char as collected
-        while (fwin_in != fwin_out)
-        {   uint32_t c = fwin_buffer[fwin_out] & 0xff;
-            fwin_out++;
-            if (fwin_out == FWIN_BUFFER_SIZE) fwin_out = 0;
-            switch (state)
-            {
-        case 3:
-                if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-                uc |= ((c & 0x3f) << 12);
-                state = 2;
-                break;
-        case 2:
-                if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-                uc |= ((c & 0x3f) << 6);
+    uint32_t wideBuffer[FWIN_BUFFER_SIZE];
+    int k = 0;
+    int n = 0, state = 0;
+    uint32_t uc;    // Unicode char that is being reconstructed.
+    FWIN_LOG("OnFlushBuffer <%.*s>\n", (int)fwin_out, fwin_buffer);
+    while (k != fwin_out)
+    {   uint32_t c = fwin_buffer[k] & 0xff;
+        k++;
+        if (k == FWIN_BUFFER_SIZE) k = 0;
+        switch (state)
+        {
+    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= ((c & 0x3f) << 12);
+            state = 2;
+            break;
+    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= ((c & 0x3f) << 6);
+            state = 1;
+            break;
+    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= (c & 0x3f);
+            wideBuffer[n++] = uc;
+            uc = 0;
+            state = 0;
+            break;
+    case 0: if ((c & 0x80) == 0) wideBuffer[n++] = c;
+            else if ((c & 0xe0) == 0xc0)
+            {   uc = (c & 0x1f) << 6;
                 state = 1;
-                break;
-        case 1:
-                if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-                uc |= (c & 0x3f);
-                wideBuffer[n++] = uc;
-                uc = 0;
-                state = 0;
-                break;
-        case 0: if ((c & 0x80) == 0)
-                {   wideBuffer[n++] = c;
-                }
-                else if ((c & 0xe0) == 0xc0)
-                {   uc = (c & 0x1f) << 6;
-                    state = 1;
-                }
-                else if ((c & 0xf0) == 0xe0)
-                {   uc = (c & 0x0f) << 12;
-                    state = 2;
-                }
-                else if ((c & 0xf8) == 0xf0)
-                {   uc = (c & 0x07) << 18;
-                    state = 3;
-                }
-                else FWIN_LOG("Malformed UTF-8 sequence\n");
-                break;
             }
+            else if ((c & 0xf0) == 0xe0)
+            {   uc = (c & 0x0f) << 12;
+                state = 2;
+            }
+            else if ((c & 0xf8) == 0xf0)
+            {   uc = (c & 0x07) << 18;
+                state = 3;
+            }
+            else FWIN_LOG("Malformed UTF-8 sequence\n");
+            break;
         }
-        insertChars(&wideBuffer[0], n);
-#ifdef RECONSTRUCTED
-        makePositionVisible(rowStart(length));
-#endif
     }
-// After this call fwin_in and fwin_out are always both zero.
-    fwin_out = fwin_in = 0;
+    insertChars(&wideBuffer[0], n);
+#ifdef RECONSTRUCTED
+    makePositionVisible(rowStart(length));
+#endif
 // Tell the worker thread that the GUI is now ready to be sent another request.
     writing.Post();
 }
 
 
-void fwinWorker::sendRequestInput()
-{
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REQUEST_INPUT);
-    panel->GetEventHandler()->QueueEvent(event);
-}
-
 void fwinText::OnRequestInput(wxThreadEvent& event)
 {
+    static int count = 0;
+// At this point the worker thread is halted waiting on the "reading"
+// semaphore.
     FWIN_LOG("OnRequestInput\n");
+    switch (count++)
+    {
+case 0: strcpy(inputBuffer, "(explode \"Arthur\")\n"); // "(oblist)\n");
+        inputBufferP = 0;
+        inputBufferLen = strlen(inputBuffer);
+        break;
+case 1: strcpy(inputBuffer, "(stop 0)\n");
+        inputBufferP = 0;
+        inputBufferLen = strlen(inputBuffer);
+        break;
+default:inputBufferP = 0;
+        inputBufferLen = 0;
+        break;
+    }
+    writing.Post();
+    reading.Post();
 }
+
+
+void fwinText::OnMinimiseWindow(wxThreadEvent& event)
+{
+    FWIN_LOG("OnMinimiseWindow\n");
+    Hide();
+    writing.Post();
+}
+
+void fwinText::OnRestoreWindow(wxThreadEvent& event)
+{
+    FWIN_LOG("OnRestoreWindow\n");
+    Show();
+    writing.Post();
+}
+
 
 
 
@@ -3151,21 +3142,18 @@ void fwin_exit(int return_code)
 void fwin_minimize()
 {
     if (!windowed) return;
-#ifdef RECONSTRUCTED
-    fflush(stdout);
-    wake_up_terminal(FXTerminal::MINIMIZE_MAIN);
-// I do not feel any need to get the threads into lockstep here.
-#endif
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, MINIMISE_WINDOW);
+    panel->GetEventHandler()->QueueEvent(event);
 }
 
 
 void fwin_restore()
 {
     if (!windowed) return;
-#ifdef RECONSTRUCTED
-    fflush(stdout);
-    wake_up_terminal(FXTerminal::RESTORE_MAIN);
-#endif
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, RESTORE_WINDOW);
+    panel->GetEventHandler()->QueueEvent(event);
 }
 
 void fwin_putchar(int c)
@@ -3178,26 +3166,44 @@ void fwin_putchar(int c)
         putchar(c);
         return;
     }
-#ifdef RECONSTRUCTED
-// Observe that since I am concerned (at least a bit) with performance
-// I buffer characters here so that the cost of inter-thread communication
-// is not suffered. But every other second (or so) the user-interface thread
-// will be worken up and will flush the buffer for me, so the user ought to
-// be given a tolerable experience/
-    int nxt = panel->fwin_in + 1;
-    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
-    if (nxt == panel->fwin_out ||
-        panel->pauseFlags & PAUSE_PAUSE) fwin_ensure_screen();
-// Note and BEWARE here that fwin_ensure_screen() can synchronize the
-// worker and interface threads and update fwin_in. Observe also that I
-// can generate a screen update if ^S has been hit.
-    panel->fwin_buffer[panel->fwin_in] = c;
-    nxt = panel->fwin_in + 1;
-    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
-    panel->fwin_in = nxt;
+    FWIN_LOG("fwin_putchar(%#x) (%c) in=%d\n", c, (((c & 0xff) >= 020 &&
+                                              (c & 0xff) < 0x7f) ? c : '?'), panel->fwin_in);
+// I arrange to do any buffer flushing just before I will send out a
+// byte that starts a character. An effect is that I should NEVER flush
+// the buffer part way through a multi-byte character. 
+    if ((c & 0xc0) != 0x80 &&
+        panel->fwin_in >= FWIN_BUFFER_SIZE-4) fwin_ensure_screen();
+    int in = panel->fwin_in;
+    if (panel->use_buffer1)
+        panel->fwin_buffer1[in] = c;
+    else panel->fwin_buffer2[in] = c;
+    panel->fwin_in = in+1;
     FILE *f = panel->logfile;
     if (f != NULL) putc(c, f);
-#endif
+}
+
+void fwin_putcode(int c)
+{
+// This expands a character code into an UTF sequence for transmission to
+// the GUI and for inclusion in any log file.
+    FWIN_LOG("fwin_putcode %#x\n", c);
+    if (c < 0x80) fwin_putchar(c);
+    else if (c <= 0x800)
+    {   fwin_putchar(0xc0 | ((c>>6) & 0x1f));
+        fwin_putchar(0x80 | (c & 0x3f));
+    }
+    else if (c <= 0x10000)
+    {   fwin_putchar(0xe0 | ((c>>12) & 0x0f));
+        fwin_putchar(0x80 | ((c>>6) & 0x3f));
+        fwin_putchar(0x80 | (c & 0x3f));
+    }
+    else if (c <= 0x200000)
+    {   fwin_putchar(0xf0 | ((c>>18) & 0x07));
+        fwin_putchar(0x80 | ((c>>12) & 0x3f));
+        fwin_putchar(0x80 | ((c>>6) & 0x3f));
+        fwin_putchar(0x80 | (c & 0x3f));
+    }
+    else FWIN_LOG("Illegal character code %#x\n", c);
 }
 
 void fwin_puts(const char *s)
@@ -3211,21 +3217,43 @@ void fwin_puts(const char *s)
 #endif
         return;
     }
-#ifdef RECONSTRUCTED
     int len = strlen(s);
+    FWIN_LOG("fwin_puts(\"%s\")\n", s);
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    int in = panel->fwin_in;
     while (len > 0)
     {   int n = len;
-        if (n > SPARE_FOR_VFPRINTF) n = SPARE_FOR_VFPRINTF;
-        if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
-            panel->pauseFlags & PAUSE_PAUSE)
-            fwin_ensure_screen();
-        memcpy(&panel->fwin_buffer[panel->fwin_in], s, n);
+// If the string being displayed here will not fit in the current buffer
+// I have two possible things that I could do. The first is to flush the
+// buffer so I have a totally empty buffer to store the string in. The
+// other is to split the string into several parts. If the buffer is
+// already at least half full I will flush it and try again. If the buffer
+// is at least half empty (including the case when I had just flushed it) I
+// will need to split the string.
+        if (in + n > FWIN_BUFFER_SIZE)
+        {   if (in > FWIN_BUFFER_SIZE/2)
+            {   fwin_ensure_screen();
+// flushing the buffer changes which buffer I am using.
+                b = panel->use_buffer1 ? panel->fwin_buffer1 :
+                                         panel->fwin_buffer2;
+                in = panel->fwin_in;
+                continue;
+            }
+            n = FWIN_BUFFER_SIZE - in;
+// I search for a byte that is not of the form 10xxxxxx since those are
+// continuation bytes in a multi-byte character. I have at least half a
+// buffer to search in, and valid data can only have a maximum of 3
+// continuation bytes to skip back past. Well I say 3 because I am
+// only using UTF-8 up as far as being able to cope with 21-bit codes.
+            while ((s[n] & 0xc0) == 0x80) n--;
+        }
+        memcpy(&b[panel->fwin_in], s, n);
         FILE *f = panel->logfile;
         if (f != NULL) fwrite(s, 1, n, f);
         panel->fwin_in += n;
+        s += n;
         len -= n;
     }
-#endif
 }
 
 
@@ -3235,12 +3263,14 @@ void
 #endif
             fwin_printf(const char *fmt, ...)
 {
+    FWIN_LOG("fwin_printf(\"%s\",...)\n", fmt);
     va_list a;
     va_start(a, fmt);
     if (!windowed)
     {
 #ifdef RAW_CYGWIN
-/* NOT reconstructed yet @@@ */
+// NOT reconstructed yet: in the raw cygwin you may get line-ends that
+// are mere LF where I possibly really wanted CR-LF combinations.
         vfprintf(stdout, fmt, a);
         va_end(a);
 #else
@@ -3249,23 +3279,26 @@ void
 #endif
         return;
     }
-// If the buffer is getting full I will flush it. I will need to look at
-// what the PAUSE flag should do at a later stage.
-    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
-        panel->pauseFlags & PAUSE_PAUSE)
+// If the buffer is getting full I will flush it. In earlier code I checked
+// for a PAUSE state here... I may need to reinstate that behaviour later.
+    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
         fwin_ensure_screen();
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    int in = panel->fwin_in;
 #ifdef HAVE_VSNPRINTF
-    vsnprintf(&panel->fwin_buffer[panel->fwin_in], SPARE_FOR_VFPRINTF, fmt, a);
+    vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
 #else
-    vsprintf(&panel->fwin_buffer[panel->fwin_in], fmt, a);
+// In this case I have no protection againt buffer overflow. However I
+// now really expect most C/C++ implementations to provide vsnprintf.
+    vsprintf(&b[in], fmt, a);
 #endif
 // Cautious about portability and old libraries, and aware of values that
 // vsnprintf may return when the data does not fit, I ignore the values
 // of the above functions and adjust the data pointers by hand.
-    int n = strlen(&panel->fwin_buffer[panel->fwin_in]);
+    int n = strlen(&b[in]);
     FILE *f = panel->logfile;
-    if (f != NULL) fwrite(&panel->fwin_buffer[panel->fwin_in], 1, n, f);
-    panel->fwin_in += n;
+    if (f != NULL) fwrite(&b[in], 1, n, f);
+    panel->fwin_in = in + n;
     va_end(a);
 }
 
@@ -3274,28 +3307,31 @@ void fwin_vfprintf(const char *fmt, va_list a)
     if (!windowed)
     {
 #ifdef RAW_CYGWIN
-/* Not reconstructed yet @@@ */
+// See comments aboove re CR-LF vs '\n'. I do not expect raw cygwin builds
+// to be terribly useful (since that will represent and X11 GUI running on
+// Windows rather than the native one) so I do not treat this as high
+// priority.
         vfprintf(stdout, fmt, a);
 #else
         vfprintf(stdout, fmt, a);
 #endif
         return;
     }
-#ifdef RECONSTRUCTED
+    FWIN_LOG("fwin_vfprintf(\"%s\",...)\n", fmt);
 // see comments above.
-    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE ||
-        panel->pauseFlags & PAUSE_PAUSE)
+    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
         fwin_ensure_screen();
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    int in = panel->fwin_in;
 #ifdef HAVE_VSNPRINTF
-    vsnprintf(&panel->fwin_buffer[panel->fwin_in], SPARE_FOR_VFPRINTF, fmt, a);
+    vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
 #else
-    vsprintf(&panel->fwin_buffer[panel->fwin_in], fmt, a);
+    vsprintf(&b[in], fmt, a);
 #endif
-    int n = strlen(&panel->fwin_buffer[panel->fwin_in]);
+    int n = strlen(&b[in]);
     FILE *f = panel->logfile;
-    if (f != NULL) fwrite(&panel->fwin_buffer[panel->fwin_in], 1, n, f);
+    if (f != NULL) fwrite(&b[in], 1, n, f);
     panel->fwin_in += n;
-#endif
 }
 
 const char *fwin_maths = NULL;
@@ -3315,6 +3351,9 @@ void fwin_showmath(const char *s)
     regain_lockstep();
     if (delay_callback != NULL) (*delay_callback)(0);
     UnlockMutex(panel->pauseMutex);
+#else
+// This is something that will be subject to pretty drastic review!
+    FWIN_LOG("fwin_showmath called\n");
 #endif
 }
 
@@ -3325,11 +3364,25 @@ void fwin_ensure_screen()
     {   fflush(stdout);
         return;
     }
-    if (panel->fwin_in == panel->fwin_out) return;
-// Wait until GUI thread is ready.
+    if (panel->fwin_in == 0) return;
+    FWIN_LOG("fwin_ensure_screen\n");
+    FWIN_LOG("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0]));
+    FWIN_LOG("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0]));
+// Wait until GUI thread is ready, ie has finshed emptying the other
+// buffer.
     panel->writing.Wait();
-// Post an event to ask the GUI thread to empty the buffer.
-    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, FLUSH_BUFFER);
+// The next few lines are a SAFE region. The GUI thread had completed
+// processing the previous request that had been sent to it, but it has
+// not yet been told to start on the new buffer.
+    panel->fwin_out = panel->fwin_in;
+// Create an event to ask the GUI thread to empty the buffer.
+    wxThreadEvent *event =
+        new wxThreadEvent(wxEVT_COMMAND_THREAD,
+             panel->use_buffer1 ? FLUSH_BUFFER1 : FLUSH_BUFFER2);
+// flip active buffer.
+    panel->use_buffer1 = !panel->use_buffer1;
+    panel->fwin_in = 0;
+// Post event to get the other buffer emptied to the screen.
     panel->GetEventHandler()->QueueEvent(event);
 }
 
@@ -3344,7 +3397,6 @@ static int update_next_time = 0;
 int fwin_getchar()
 {
     if (!windowed) return fwin_plain_getchar();
-#ifdef RECONSTRUCTED
 // In general I have a line of stuff ready sitting in a buffer. So on
 // most calls to here I can just return what is in it.
     if (panel->inputBufferP < panel->inputBufferLen)
@@ -3356,10 +3408,15 @@ int fwin_getchar()
         update_next_time = 0;
     }
     if (delay_callback != NULL) (*delay_callback)(1);
-    wake_up_terminal(FXTerminal::REQUEST_INPUT);
-// Wait until the signal that I just sent has been received
-// and processed.
-    regain_lockstep();
+    fwin_ensure_screen();
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REQUEST_INPUT);
+    panel->GetEventHandler()->QueueEvent(event);
+// OK - the screen is up to date as regards output and all other changes
+// I may have made - and I have now asked for some input. This request will
+// cause the GUI thread to to a Post() on the reading semaphore when it has
+// put a line of valid data into inputBuffer.
+    panel->reading.Wait(); // the genuine wait for input
     if (delay_callback != NULL) (*delay_callback)(0);
 // I will try a convention that if inputBufferLen is zero that indicates
 // a dodgy state. Eg the user is sending an EOF or interrupt.
@@ -3379,9 +3436,6 @@ int fwin_getchar()
     int ch = panel->inputBuffer[panel->inputBufferP++];
     if (ch == (0x1f & 'D')) return EOF;
     else return ch;
-#else
-    return EOF;
-#endif
 }
 
 
@@ -3390,10 +3444,9 @@ void fwin_set_prompt(const char *s)
     strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
     if (!windowed) return;
-#ifdef RECONSTRUCTED
-    wake_up_terminal(FXTerminal::SET_PROMPT);
-    regain_lockstep();
-#endif
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PROMPT);
+    panel->GetEventHandler()->QueueEvent(event);
 }
 
 void fwin_menus(char **modules, char **switches,
@@ -3402,11 +3455,10 @@ void fwin_menus(char **modules, char **switches,
     if (!windowed) return;
     modules_list = modules;
     switches_list = switches;
-#ifdef RECONSTRUCTED
-    wake_up_terminal(FXTerminal::SET_MENUS);
-    regain_lockstep();
-#endif
+    panel->writing.Wait();
     review_switch_settings = f;
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MENUS);
+    panel->GetEventHandler()->QueueEvent(event);
 }
 
 void fwin_refresh_switches(char **switches, char **packages)
@@ -3414,10 +3466,9 @@ void fwin_refresh_switches(char **switches, char **packages)
     if (!windowed) return;
     switches_list = switches;
     modules_list = packages;
-#ifdef RECONSTRUCTED
-    wake_up_terminal(FXTerminal::REFRESH_SWITCHES);
-    regain_lockstep();
-#endif
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REFRESH_SWITCHES);
+    panel->GetEventHandler()->QueueEvent(event);
 }
 
 static char left_stuff[32] = "",

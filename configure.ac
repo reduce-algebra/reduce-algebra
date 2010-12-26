@@ -85,6 +85,12 @@ AC_ARG_WITH(mingw64,
    [],
    [with_mingw64="default"])
 
+AC_ARG_WITH(gcc3,
+   AC_HELP_STRING([--with-gcc3],
+                  [can be used to avoid use of i686-w64-mingw32-gcc (CSL only)]),
+   [],
+   [with_gcc3="no"])
+
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
                   [Force 32-bit model even on 64-bit gcc (CSL only)]),
@@ -99,7 +105,7 @@ AC_ARG_WITH(m64,
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin (note licensing consequences please) (CSL only)]),
+                 [Force use of raw cygwin (note licensing consequences please) (CSL only)]),
   [],
   [with_cygwin="no"])
 
@@ -219,13 +225,14 @@ AC_ARG_WITH(smallpage,
 # I am only in a 32-bit world.
 #
 # The behaviour I intend to establish is that the user can find-tune things
-# using the opption "--with-mingw64":
+# using the option "--with-mingw64":
 #    --with-mingw64 or --with-mingw64=yes:
 #         Treat very much as "--host=x86_64-w64-mingw32" and hence build
 #         64 bit executables. If the necessary cross-compile is not
 #         installed then this configuration will (obviously) fail.
 #    --without-mingw64 or --with-mingw64=no:
-#         If the relevent cross compiler is present treat very much
+#         if --with-gcc3 is set do not try i686-w64-mingw32-gcc, Otherwise
+#         if the relevent cross compiler is present treat very much
 #         as "--host=i686-w64-mingw32" and hence build 32-bit native
 #         windows exectuables. If that cross compiler is not available
 #         fall back to "CXX=gcc-3 -mno-cygwin" so that explicit use is
@@ -282,7 +289,15 @@ then
 # check for the availability of compilers that might matter to me.
   AC_CHECK_PROG(X64_GCC, x86_64-w64-mingw32-g++, "yes", "no")
   AC_CHECK_PROG(X32_GCC, i686-w64-mingw32-g++, "yes", "no")
-  AC_CHECK_PROG(XGCC_3, g++-3, "yes", "no")
+  AC_CHECK_PROG(GCC_3, g++-3, "yes", "no")
+# If the user specified --with-gcc3 and gcc-3 was indeed present I will
+# pretend that i686-w64-mingw32-g++ was not available. This may be useful
+# sometimes when debuggin in that PERHAPS the mingw32 tools might not work
+# as well with gdb as the older "gcc-3 -mno-cygwin" recipe.
+  if test "x$with_gcc3" != "xno" && test "x$GCC_3" != "xno"
+  then
+    X32_GCC="no"
+  fi
   if test "x$with_mingw64" = "xyes"
   then
     if test "x$X64_GCC" = "xno"
@@ -309,7 +324,7 @@ then
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"
       exit
-    elif test "$XGCC_3" = "yes"
+    elif test "$GCC_3" = "yes"
     then
 # Fall back to "gcc-3 -mno-cygwin"  where at least I can explicitly use
 # a series-3 version of gcc.
@@ -320,7 +335,7 @@ then
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\" \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
-               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
+               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"
       exit
@@ -330,7 +345,7 @@ then
 at least gcc-3. Without them this build may fail.])
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
-               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cywgin"
+               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"
       exit
@@ -414,10 +429,14 @@ case $inplace in
       cp -r $abssrcdir/csl/generated-c $abssrcdir/cslbuild
     fi
     cd $abssrcdir/cslbuild/$build 
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    fi
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            --with-build=$build"
+            $passcc --with-build=$build"
     AC_MSG_NOTICE([$doconfig])
     eval "$doconfig"
     cd $abssrcdir
@@ -719,9 +738,13 @@ then
 # BaKoMa fonts which remap at least one TeX glyph to outside the range
 # of simple 8-bit characters. This will bring some follow-on pain no doubt
 # but addressing that pain is probably good in the long term. 
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
               --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+              CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
               --disable-shared --enable-unicode \
               --disable-compat26 --disable-compat28 \
               --with-png=builtin --without-libjpeg \
@@ -742,9 +765,13 @@ then
   elif test "x$with_fox" != "xno"
   then
     cd fox
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    fi
     doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --host=$host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=$builddir $extras"
@@ -758,9 +785,13 @@ then
       mkdir -p foxtests
       cd foxtests
 
+      if test "x$CC$CPP$CXX$CXXCPP" != "x"
+      then
+        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      fi
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
             --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=$builddir --with-fox-pending=yes $extras"
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"

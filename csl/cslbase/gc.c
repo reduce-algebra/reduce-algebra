@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 27890780 03-Sep-2010 */
+/* Signature: 30c13794 26-Dec-2010 */
 
 #include "headers.h"
 
@@ -348,13 +348,15 @@ void validate_all(char *why, int line, char *file)
 /*  term_printf("Validate heap for %s at line %d of %s\n", why, line, file); */
     if (heap_map == NULL)
     {   if ((heap_map = malloc(MAP_SIZE)) == NULL)
-        {   term_printf("Unable to allocate space for heap map\n");
+        {   term_printf("Unable to allocate %dM (%x) space for heap map\n",
+                (int)(MAP_SIZE/(1024*1024)), (int)(MAP_SIZE/(1024*1024)));
             return;
         }
     }
     if (vecheap_map == NULL)
     {   if ((vecheap_map = malloc(MAP_SIZE)) == NULL)
-        {   term_printf("Unable to allocate space for vecheap map\n");
+        {   term_printf("Unable to allocate %dM (%x) space for vecheap map\n",
+                (int)(MAP_SIZE/(1024*1024)), (int)(MAP_SIZE/(1024*1024)));
             return;
         }
     }

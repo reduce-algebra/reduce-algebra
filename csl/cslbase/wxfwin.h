@@ -53,7 +53,7 @@
  * Cocoa) support on a Macintosh.
  */
 
-/* Signature: 6c26ed04 23-Dec-2010 */
+/* Signature: 170829cd 26-Dec-2010 */
 
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1
@@ -221,13 +221,32 @@ extern void fwin_restore(void);
  * is more like fputs than puts in that it just dumps the characters in its
  * string to the screen [it does not add an extra newline in the way that
  * puts does].
- * These functions support printable ASCII characters.
- * I have not thought too hard about TAB and FormFeed here... yet.
- * Indeed I have not though as hard as I will need to about Unicode,
- * UTF8, characters with code-points between 0x80 and 0xff and a whole
- * bunch of such matters! So just for now this is really for 7-bit ASCII.
+ *
+ * fwin_putchar(c) treats c as a byte and puts exactly one byte into the
+ * UTS-8 stream of output. This is fully comfortable if the byte is in the
+ * range 0x00 to 0x7f and it represents a simple ASCII character. If the
+ * byte is in the range 0x80 to 0x7f it will generally represent one of the
+ * bytes that make up a multi-byte character. So if you use fwin_putchar and
+ * your internal data is in UTF-8 form everything behaves as you might expect.
+ * If you use it to send individual characters you must be careful with the
+ * ones that have codes over 0x7f. And if your internal data is in some
+ * 8-bit character set you may be in trouble.
  */
 extern void fwin_putchar(int c);
+
+/*
+ * fwin_putcode(n) lets n be an arbitrary integer character code and
+ * it dumps however many bytes are needed to represent this in UTF-8
+ * form. This means that eg fwin_putcode(0x269c) might transmit a
+ * fleur-de-lys, while to send that useing fwin_putchar would need
+ * use of the sequence 0xe2,0x9a,0x9c.
+ */
+
+extern void fwin_putcode(int c);
+
+/*
+ * fwin_puts uses pwin_putchar on each byte in the string.
+ */
 extern void fwin_puts(const char *s);
 
 /*
