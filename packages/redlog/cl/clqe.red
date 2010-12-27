@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,12 +26,12 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cl_qe_rcsid!* cl_qe_copyright!*);
    cl_qe_rcsid!* := "$Id$";
-   cl_qe_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
+   cl_qe_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module clqe;
@@ -775,25 +775,25 @@ procedure cl_qews(f,theo);
       return f
    end;
 
-procedure cl_qews1(varl,mat,theo);
+procedure cl_qews1(varl,mtx,theo);
    % Common logic quantifier eliminate with selection subroutine.
-   % [varl] is a list of variables; [mat] is a quantifier-free
+   % [varl] is a list of variables; [mtx] is a quantifier-free
    % formula; [theo] is a list of atomic formulas. Returns a formula,
    % where all existentially quantified variables from [varl] are
    % eliminated.
    begin scalar v,w;
       while varl do <<
-	 w := rl_trygauss(mat,varl,theo,nil,nil);
+	 w := rl_trygauss(mtx,varl,theo,nil,nil);
 	 if w eq 'failed then <<
-	    v := rl_varsel(mat,varl,theo);
- 	    mat := cl_qeipo(rl_mkq('ex,v,mat),theo)
+	    v := rl_varsel(mtx,varl,theo);
+ 	    mtx := cl_qeipo(rl_mkq('ex,v,mtx),theo)
 	 >> else <<
 	    v := caar w;
-	    mat := rl_qe(rl_mkq('ex,v,mat),theo)
+	    mtx := rl_qe(rl_mkq('ex,v,mtx),theo)
 	 >>;
 	 varl := delete(v,varl)
       >>;
-      return mat
+      return mtx
    end;
 
 %DS
@@ -919,7 +919,7 @@ procedure cl_fbqe(f);
 	 ioto_tprin2t "+++ no fallback QE specified";
       f
    >>;
-   
+
 endmodule;  % [clqe]
 
 end;  % of file
