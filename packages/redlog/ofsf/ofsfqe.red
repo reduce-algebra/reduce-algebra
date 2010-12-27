@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,13 +26,13 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_qe_rcsid!* ofsf_qe_copyright!*);
    ofsf_qe_rcsid!* :=
       "$Id$";
-   ofsf_qe_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
+   ofsf_qe_copyright!* := "(c) 1995-2009 A. Dolzmann T. Sturm, 2010 T. Sturm"
 >>;
 
 module ofsfqe;
@@ -2023,14 +2023,16 @@ procedure ofsf_fbqe(f);
    % quantifier-free formula. If the switch [rlqefb] is on, then this is
    % called when [cl_qe] fails.
    if !*rlqefbqepcad then
-      ofsf_fbqepcad f
+      ofsf_fbexternal(f,function qepcad_qepcad,"QEPCAD B")
+   else if !*rlqefbmma then
+      ofsf_fbexternal(f,function mma_mma,"MATHEMATICA")
    else <<
       if !*rlverbose then
 	 ioto_prin2t "ofsf_cad with optimization of projection order";
       cdr ofsf_cad(f,ofsf_cadporder f,nil)
    >>;
 
-procedure ofsf_fbqepcad(f);
+procedure ofsf_fbexternal(f,call,name);
    % Fallback quantifier elimination using Qepcad. [f] is a formula.
    % Returns a quantifier-free formula. If the switches [rlqefb] and
    % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
@@ -2055,7 +2057,7 @@ procedure ofsf_fbqepcad(f);
       j . l := cl_divide f;
       if !*rlverbose then <<
 	 n := length l;
-	 ioto_prin2t {"+++ QEPCAD B on ",n,ioto_cplu(" subproblem",n>1)," ..."}
+	 ioto_prin2t {"+++ ",name," on ",n,ioto_cplu(" subproblem",n>1)," ..."}
       >>;
       for each s in l do <<
 	 if !*rlverbose then <<
@@ -2066,7 +2068,7 @@ procedure ofsf_fbqepcad(f);
 	       vn,ioto_cplu(" variable",not eqn(vn,1)),", ",
 	       an,ioto_cplu(" atomic formula",not eqn(an,1))}
 	 >>;
-	 w := qepcad_qepcad(s,nil);
+	 w := apply(call,{s,nil});
 	 if w then
 	    succl := w . succl
 	 else

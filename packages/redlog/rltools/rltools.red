@@ -54,26 +54,24 @@ imports groebner,groebnr2;
 load!-package 'assert;
 off1 'assert;
 
-fluid '(out!*);
-
 !#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
-fluid '(!*lower loadextentions!*);
+   fluid '(!*lower loadextentions!*);
 
-procedure modulep(u);
-   begin scalar found,ld,le,!*lower;
-      !*lower := t;
-      ld := loaddirectories!*;
-      while ld and not found do <<
-	 le := loadextensions!*;
-	 while le and not found do <<
-	    if filep bldmsg("%w%w%w",first ld,u,car first le) then
-	       found := cdr first le;
-	       le := rest le
-	 >>;
-	 ld := rest ld
-      >>;
-      return not null found
-   end;
+   procedure modulep(u);
+      begin scalar found,ld,le,!*lower;
+      	 !*lower := t;
+      	 ld := loaddirectories!*;
+      	 while ld and not found do <<
+	    le := loadextensions!*;
+	    while le and not found do <<
+	       if filep bldmsg("%w%w%w",first ld,u,car first le) then
+	       	  found := cdr first le;
+	       	  le := rest le
+	    >>;
+	    ld := rest ld
+      	 >>;
+      	 return not null found
+      end;
 !#endif
 
 if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
@@ -83,49 +81,31 @@ if 'csl memq lispsystem!* or 'psl memq lispsystem!* then <<
       load!-package 'groebnr2
 >>;
 
-procedure meminfo();
-   if memq('psl,lispsystem!*) then
-      meminfopsl()
-   else if memq('csl,lispsystem!*) then
-      meminfocsl();
+!#if (memq 'psl lispsystem!*)
+   fluid '(out!*);
 
-procedure meminfopsl();
-   begin scalar bit,hs,hsb,cpgcp,w;
-      if not memq('psl,lispsystem!*) then
-	 return nil;
-      prin2 "               address of nil: 0x";
-      flushbuffer out!*;
-      channelflush out!*;
-      (bit := 4 * unixputn nil) where output=nil;
-      terpri();
-      prin2 "                address range: ";
-      prin2 bit;
-      prin2t " bit";
-      hs := set_heap_size nil;
-      prin2 "           binding stack size: ";
-      prin2 bndstksize;
-      prin2t " Lisp items";
-      prin2 "                     heapsize: ";
-      prin2 meminfocomma(hs,'!,);
-      prin2 " Lisp items";
-      hsb := (if eqn(bit,64) then 8 else 4) * hs;
-      w := meminfoscale hsb;
-      prin2 "                               ";
-      prin2 car w;
-      prin2 " ";
-      prin2t cdr w;
-      w := meminfoiscale hsb;
-      prin2 "                               ";
-      prin2 car w;
-      prin2 " ";
-      prin2t cdr w;
-      prin2 "                     GC model: ";
-      cpgcp := getd 'copyfromstaticheap;
-      prin2t if cpgcp then "stop-and-copy" else "mark-and-sweep";
-      if cpgcp then <<
-	 hsb := 2 * hsb;
-	 prin2 " memory allocation by 2 heaps: ";
+   procedure meminfo();
+      begin scalar bit,hs,hsb,cpgcp,w;
+      	 if not memq('psl,lispsystem!*) then
+	    return nil;
+      	 prin2 "               address of nil: 0x";
+      	 flushbuffer out!*;
+      	 channelflush out!*;
+      	 (bit := 4 * unixputn nil) where output=nil;
+      	 terpri();
+      	 prin2 "                address range: ";
+      	 prin2 bit;
+      	 prin2t " bit";
+      	 hs := set_heap_size nil;
+      	 prin2 "           binding stack size: ";
+      	 prin2 bndstksize;
+      	 prin2t " Lisp items";
+      	 prin2 "                     heapsize: ";
+      	 prin2 meminfocomma(hs,'!,);
+      	 prin2 " Lisp items";
+      	 hsb := (if eqn(bit,64) then 8 else 4) * hs;
       	 w := meminfoscale hsb;
+      	 prin2 "                               ";
       	 prin2 car w;
       	 prin2 " ";
       	 prin2t cdr w;
@@ -134,18 +114,36 @@ procedure meminfopsl();
       	 prin2 car w;
       	 prin2 " ";
       	 prin2t cdr w;
-      >>
-   end;
+      	 prin2 "                     GC model: ";
+      	 cpgcp := getd 'copyfromstaticheap;
+      	 prin2t if cpgcp then "stop-and-copy" else "mark-and-sweep";
+      	 if cpgcp then <<
+	    hsb := 2 * hsb;
+	    prin2 " memory allocation by 2 heaps: ";
+      	    w := meminfoscale hsb;
+      	    prin2 car w;
+      	    prin2 " ";
+      	    prin2t cdr w;
+      	    w := meminfoiscale hsb;
+      	    prin2 "                               ";
+      	    prin2 car w;
+      	    prin2 " ";
+      	    prin2t cdr w;
+      	 >>
+      end;
+!#endif
 
-procedure meminfocsl();
-   begin scalar bit;
-      if not memq('csl,lispsystem!*) then
-	 return nil;
-      bit := if memq('sixty!-four,lispsystem!*) then 64 else 32;
-      prin2 "address range: ";
-      prin2 bit;
-      prin2t " bit";
-   end;
+!#if (memq 'csl lispsystem!*)
+   procedure meminfo();
+      begin scalar bit;
+      	 if not memq('csl,lispsystem!*) then
+	    return nil;
+      	 bit := if memq('sixty!-four,lispsystem!*) then 64 else 32;
+      	 prin2 "address range: ";
+      	 prin2 bit;
+      	 prin2t " bit";
+      end;
+!#endif
 
 procedure meminfoscale(n);
    if n >= 10^9 then
@@ -179,6 +177,32 @@ procedure meminfocomma(n,comma);
 	 >>
       >>;
       return compress('!" . l)
+   end;
+
+!#if (memq 'psl lispsystem!*)
+   fluid '(symbolfilename!*);
+
+   procedure rltools_trunk();
+      rltools_dotdotx(symbolfilename!*,4);
+!#endif
+
+!#if (memq 'csl lispsystem!*)
+   procedure rltools_trunk();
+      rltools_dotdotx(!@srcdir,2);
+!#endif
+
+procedure rltools_dotdotx(s,n);
+   if eqn(n,0) then
+      s
+   else
+      rltools_dotdotx(rltools_dotdot s,n-1);
+
+procedure rltools_dotdot(s);
+   begin scalar w;
+      w := cdr reversip explode s;
+      if eqcar(w,'!/) then w := cdr w;
+      repeat w := cdr w until eqcar(w,'!/);
+      return compress reversip('!" . w)
    end;
 
 endmodule;  % [rltools]

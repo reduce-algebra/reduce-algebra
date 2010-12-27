@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) Thomas Sturm 2008-2009
+# Copyright (c) 2008-2010 Thomas Sturm
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -26,14 +26,26 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 
-BEGIN {time=tolower(time); verb=tolower(verb)}
-/^In\[2\]/ {f=0}
-/^Out\[1\]\/\/InputForm=/ {f=1}
+BEGIN {
+    time=tolower(time)
+    verb=tolower(verb)
+}
+
+/^In\[2\]/ {
+    f=0
+    printf(";\n") > rf
+}
+
+/^Out\[1\]\/\/InputForm=/ {
+    f=1
+}
+
 (f==1) {
-    if (verb=="t") printf("%s\n",$0);
     sub(/^Out\[1\]\/\/InputForm= /,"",$0);
+    if (verb=="t" && !match($0,/^$/))
+	print "+++ MATHEMATICA raw output:", $0
     for (i=1; i<=NF; i++) {
 	oi = $i;
 	gsub(/\&\&/," and ",$i);
@@ -45,4 +57,12 @@ BEGIN {time=tolower(time); verb=tolower(verb)}
 	    printf("*") > rf
     }
 }
-END {printf(";\nend;\n") > rf}
+
+/^Out\[2]=/ && (time=="t") {
+    sub(/^Out\[2\]= /,"",$0)
+    print "+++ MATHEMATICA system time:", $0, "seconds"
+}
+
+END {
+    printf("end;\n") > rf
+}

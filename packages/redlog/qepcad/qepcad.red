@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -44,7 +44,12 @@ load!-package 'ofsf;
 load!-package 'rltools;
 
 fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
-   !*utf8 !*nat);
+   !*utf8 !*nat qepcad_qepcad!* qepcad_slfq!* qepcad_wd!* qepcad_awk!*);
+
+qepcad_qepcad!* := "qepcad";
+qepcad_slfq!* := "slfq";
+qepcad_wd!* := "/tmp/";
+qepcad_awk!* := lto_sconcat {rltools_trunk(),"packages/redlog/qepcad/qepcad.awk"};
 
 switch rlqefbqepcad;
 switch rlqefbslfq;
@@ -94,9 +99,9 @@ procedure qepcad_qepcad1(f,fn);
       oldutf8 := !*utf8;
       scsemic := semic!*;
       rnd := lto_at2str random(10^5);
-      fn1 := fn or lto_sconcat{"/tmp/",getenv "USER",rnd,".qepcad"};
+      fn1 := fn or lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".qepcad"};
       if null fn then
-      	 fn2 := lto_sconcat{"/tmp/",getenv "USER",rnd,".qepcad2red"};
+      	 fn2 := lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       oldpprifn := get('times,'pprifn);
       put('times,'pprifn,'qepcad_ppricadtimes);
@@ -134,9 +139,10 @@ procedure qepcad_qepcad1(f,fn);
  	    lto_sconcat {"+L",lto_at2str qepcad_l!*," "}
 	 else
 	    "";
-      	 call := lto_sconcat{"qepcad ",narg,larg,"< ",fn1," | awk -v rf=",fn2,
+      	 call := lto_sconcat{qepcad_qepcad!*," ",narg,larg,
+	    "< ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
-	    " -v slfqvb=nil -v name=QEPCAD -f $qe/qepcad.awk"};
+	    " -v slfqvb=nil -v name=QEPCAD -f ",qepcad_awk!*};
 	 if !*rlverbose then
 	    ioto_prin2t lto_sconcat {"+++ calling ",call};
 	 system call;
@@ -270,9 +276,9 @@ procedure qepcad_slfq(f,fn);
 procedure qepcad_slfq1(f,fn);
    begin scalar rnd,w,fn1,fn2,fh,result,oldecho,narg,larg,call;
       rnd := lto_at2str random(10^5);
-      fn1 := fn or lto_sconcat{"/tmp/",getenv "USER",rnd,".slfq"};
+      fn1 := fn or lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".slfq"};
       if null fn then
-      	 fn2 := lto_sconcat{"/tmp/",getenv "USER",rnd,".slfq2red"};
+      	 fn2 := lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       out fn1;
       mathprint rl_prepfof f where !*nat=nil;
@@ -287,7 +293,7 @@ procedure qepcad_slfq1(f,fn);
  	    lto_sconcat {"-P ",lto_at2str qepcad_l!*," "}
 	 else
 	    "";
-      	 call := lto_sconcat{"slfq ",narg,larg,"< ",fn1,
+      	 call := lto_sconcat{qepcad_slfq!*," ",narg,larg,"< ",fn1,
 	    " 2> /dev/null | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
 	    " -v slfqvb=",lto_at2str !*rlslfqvb,

@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) Thomas Sturm 2008-2009
+% Copyright (c) 2008-2010 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,22 +31,25 @@
 lisp <<
    fluid '(mma_rcsid!* mma_copyright!*);
    mma_rcsid!* := "$Id$";
-   mma_copyright!* := "Copyright (c) 2008 by T. Sturm, Universitaet Passau"
+   mma_copyright!* := "(c) 2008-2010 T. Sturm"
 >>;
 
 module mma;
 
 create!-package('(mma),nil);
 
-fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
-   mma_wd!*);
-
-mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
-mma_wd!* := "/tmp/";
-
 load!-package 'redlog;
 load!-package 'ofsf;
 load!-package 'rltools;
+
+fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
+   mma_wd!* mma_awk!*);
+
+switch rlqefbmma;
+
+mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
+mma_wd!* := "/tmp/";
+mma_awk!* := lto_sconcat {rltools_trunk(),"packages/redlog/mma/mma.awk"};
 
 put('ofsf,'rl_services,
    '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));
@@ -82,11 +85,13 @@ procedure mma_mma(f,fn);
    end;
 
 procedure mma_mma1(f,fn);
-   begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic;
+   begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
+	 call,rnd;
       scsemic := semic!*;
-      fn1 := fn or lto_sconcat{mma_wd!*,getenv "USER",".mma"};
+      rnd := lto_at2str random(10^5);
+      fn1 := fn or lto_sconcat{mma_wd!*,getenv "USER",rnd,".mma"};
       if null fn then
-      	 fn2 := lto_sconcat{mma_wd!*,getenv "USER",".mma2red"};
+      	 fn2 := lto_sconcat{mma_wd!*,getenv "USER",rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
@@ -98,13 +103,17 @@ procedure mma_mma1(f,fn);
       mma_cadprint f;
       terpri!* t;
       mma_myscprint nil;
+      prin2t "TimeUsed[]";
       shut(fn1);
       put('expt,'prtch,oldprtch);
       if !*rlverbose then ioto_prin2t "done";
       if null fn then <<
-      	 system lto_sconcat{mma_call!*," < ",fn1," | awk -v rf=",fn2,
-	    " -v verb=",lto_at2str !*rlverbose," -v time=",
-	       lto_at2str !*time," -f mma.awk"};
+      	 call := lto_sconcat {mma_call!*," < ",fn1," | awk -v rf=",fn2,
+	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
+	    " -f ",mma_awk!*};
+	 if !*rlverbose then
+	    ioto_prin2t lto_sconcat {"+++ calling ",call};
+	 system call;
 	 oldecho := !*echo;
 	 !*echo := nil;
 	 fh := rds open(fn2,'input);
@@ -122,7 +131,7 @@ procedure mma_mma1(f,fn);
 
 procedure mma_cadprint(f);
    begin scalar w,!*nat;
-      prin2!* "InputForm[Reduce[";
+      prin2!* "InputForm[Resolve[";
       mma_cadprint1 f;
       prin2!* ",";
       w := cl_varl f;

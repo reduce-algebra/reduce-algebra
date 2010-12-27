@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------
-# Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+# Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010 T. Sturm
 # ----------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

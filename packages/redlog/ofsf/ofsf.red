@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,13 +26,13 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_rcsid!* ofsf_copyright!*);
    ofsf_rcsid!* :=
       "$Id$";
-   ofsf_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
+   ofsf_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
 >>;
 
 module ofsf;
@@ -94,7 +94,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlhqetheory !*rlhqegbred !*rlhqeconnect !*rlhqestrconst !*rlhqegbdimmin
    !*rlhqegen !*cgbfaithful !*rlqeaprecise !*rlqefilterbounds !*rlpos
    !*rlsifaco !*rlqeans !*rlqelog rlqelog!* !*rlqeprecise !*rlqevarseltry
-   !*rlqefbqepcad !*rlqefbslfq !*msg);
+   !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg);
 
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
@@ -232,6 +232,7 @@ put('ofsf,'rl_services,'(
    (rl_posresolve!* . ofsf_posresolve)
    (rl_tan2!* . ofsf_tan2)
    (rl_depth!* . cl_depth)
+   (rl_qesil!* . cl_qesil)
    (rl_straightify!* . cl_straightify)
    (sl_straightify!* . cl_sstraightify)
    (sl_simpl!* . cl_ssimpl)
