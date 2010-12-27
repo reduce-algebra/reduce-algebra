@@ -761,6 +761,28 @@ procedure cl_susiinter(prg,knowl,a);
 procedure cl_susiminlevel(l1,l2);
    if l1 eq 'ignore then l2 else if l2 eq 'ignore then l1 else min(l1,l2);
 
+procedure cl_qesil(fl,theo);
+   begin scalar prem,test,sol,res; integer n;
+      if !*rlverbose then <<
+      	 n := length fl + 1;
+	 ioto_cterpri()
+      >>;
+      res := for each f in fl join <<
+	 prem := rl_mkn('and,{rl_smkn('and,theo),rl_smkn('and,delete(f,fl))});
+	 test := rl_all(rl_mk2('impl,prem,f),nil);
+	 if !*rlverbose then
+	    ioto_prin2 {"[",n:=n-1};
+	 sol := rl_qe(test,nil) where !*rlverbose=nil;
+	 if !*rlverbose then
+	    ioto_prin2 {if sol eq 'true then "!" else "","] "};
+      	 if sol neq 'true then
+   	    {f}
+      >>;
+      if !*rlverbose then
+	 ioto_cterpri();
+      return res
+   end;
+
 endmodule;  % [clsimpl]
 
 end;  % of file

@@ -231,6 +231,8 @@ rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,T);
 
 rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,T);
 
+rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
+
 rl_mkserv('straightify,'(rl_simp),nil,nil,'sl_mk!*slp,t);
 rl_alias('sfy,'straightify);
 

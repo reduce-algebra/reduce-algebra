@@ -634,6 +634,16 @@ procedure rl_a2s!-atl(l);
       >>
    end;
 
+procedure rl_a2s!-fl(l);
+   % Algebraic to symbolic formula list.
+   begin scalar w,!*rlsimpl;
+      l := reval l;
+      if not eqcar(l,'list) then
+ 	 typerr(l,"list");
+      return for each x in cdr l collect
+	 rl_simp x
+   end;
+
 procedure rl_a2s!-posf(f);
    % Algebraic to symbolic positive formula.
    rl_nnf rl_simp f;
@@ -677,6 +687,8 @@ procedure rl_s2a!-opt(res);
 
 procedure rl_s2a!-atl(l);
    'list . for each x in l collect rl_mk!*fof x;
+
+copyd('rl_s2a!-fl,'rl_s2a!-atl);
 
 procedure rl_s2a!-ml(ml,s2acar);
    'list . for each p in ml collect {'list,apply(s2acar,{car p}),cdr p};
