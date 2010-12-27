@@ -86,7 +86,7 @@ procedure mma_mma(f,fn);
 
 procedure mma_mma1(f,fn);
    begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
-	 call,rnd;
+	 call,mma,rnd;
       scsemic := semic!*;
       rnd := lto_at2str random(10^5);
       fn1 := fn or lto_sconcat{mma_wd!*,getenv "USER",rnd,".mma"};
@@ -107,8 +107,9 @@ procedure mma_mma1(f,fn);
       shut(fn1);
       put('expt,'prtch,oldprtch);
       if !*rlverbose then ioto_prin2t "done";
+      mma := getenv("RLMMA") or mma_call!*;
       if null fn then <<
-      	 call := lto_sconcat {mma_call!*," < ",fn1," | awk -v rf=",fn2,
+      	 call := lto_sconcat {mma," < ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
 	    " -f ",mma_awk!*};
 	 if !*rlverbose then
@@ -122,8 +123,9 @@ procedure mma_mma1(f,fn);
 	 !*echo := oldecho;
 	 system lto_sconcat{"rm -f ",fn1," ",fn2};
 	 if null result then
-	    rederr "mma failed";
-	 result := rl_simp result
+	    lprim "Mathematica failed"
+	 else
+	    result := rl_simp result
       >>;
       semic!* := scsemic:
       return result
