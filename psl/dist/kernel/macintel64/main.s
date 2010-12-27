@@ -190,7 +190,7 @@ l0010:
  .byte 111,97,100,32,76,79,65,68,45,80,83
  .byte 76,0,0
  .quad 0
-// (*entry pre-psl_psl_main expr 0)
+// (*entry pre-_psl_main expr 0)
  .globl l0011
 l0011:
  mov _symfnc@GOTPCREL(%rip),%rsi
@@ -2094,10 +2094,9 @@ l0158:
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $389,%rdi
  call *3112(%rsi)
- mov 8(%rsp),%rdi
- mov l0153@GOTPCREL(%rip),%rcx
- mov 0(%rcx),%rcx
- cmpq %rdi,%rcx
+ mov l0153@GOTPCREL(%rip),%r8
+ mov 0(%r8),%r8
+ cmp %r8,8(%rsp)
  je l0159
  mov 8(%rsp),%rcx
  mov l0154@GOTPCREL(%rip),%rbx

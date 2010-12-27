@@ -333,8 +333,8 @@ _lastbps:
  .globl _bpslowerbound
 _bpslowerbound:
  .quad ((253<<56)+285)
- .globl psl_mainstartinitialize
-psl_mainstartinitialize:
+ .globl _psl_mainstartinitialize
+_psl_mainstartinitialize:
  .quad ((253<<56)+286)
  .globl _nextbps
 _nextbps:

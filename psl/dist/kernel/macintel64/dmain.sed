@@ -1,4 +1,4 @@
-s/main/psl_main/g
+s/main/_psl_main/g
 s/,@/@/g
 s/lastbps/_lastbps/g
 s/nextbps/_nextbps/g
