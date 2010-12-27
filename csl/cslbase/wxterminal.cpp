@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7d7c6e1a 26-Dec-2010 */
+/* Signature: 320174b8 27-Dec-2010 */
 
 #include "wx/wxprec.h"
 
@@ -273,7 +273,7 @@ public:
     void OnSetLeft(wxThreadEvent& event);
     void OnSetMid(wxThreadEvent& event);
     void OnSetRight(wxThreadEvent& event);
-    void OnFlushBuffer(char *fwin_buffer);
+    void OnFlushBuffer(const char *fwin_buffer);
     void OnFlushBuffer1(wxThreadEvent& event);
     void OnFlushBuffer2(wxThreadEvent& event);
     void OnRequestInput(wxThreadEvent& event);
@@ -307,12 +307,16 @@ public:
 // will be stashed in a type-ahead buffer, But when input is asked for a
 // line will be accepted and echoed on the screen, and when ENTER is pressed
 // it will be passed on for use. The input line has its length limited by
-// the buffer here. 
+// the buffer here. Hmm in some cases of copy-and-paste I would imagine
+// ANY limit here being bad. But for now this is what I do!
 #define INPUT_BUFFER_LENGTH 512
 
     int inputBufferLen;
     int inputBufferP;
     char inputBuffer[INPUT_BUFFER_LENGTH];
+    int awaiting;
+    uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
+    int unicodePromptLength;
 
     int recently_flushed;
 
@@ -472,6 +476,8 @@ private:
     void setCaretPos(int n);
     void interrupt();
     void displayBacktrace();
+
+    int unpackUTF8(uint32_t *u, const char *s, int n);
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -913,48 +919,13 @@ fwinText::fwinText(fwinFrame *parent)
     fwin_in = 0;
     use_buffer1 = 1;
 
+    inputBufferP = 0;
+    awaiting = 0;
+    unicodePrompt[0] = '>' | 0x02000000;
+    unicodePromptLength = 1;
+    
+
     logfile = NULL; // a menu option will establish this to keep a log.
-
-// Here I put some sample test in the buffer so I have something to draw.
-    textBuffer[textEnd++] = 0x2554; // Draw a box to show those chars.
-    textBuffer[textEnd++] = 0x2550;
-    textBuffer[textEnd++] = 0x2555;
-    textBuffer[textEnd++] = '\n';
-    textBuffer[textEnd++] = 0x2560;
-    textBuffer[textEnd++] = 0x2564;
-    textBuffer[textEnd++] = 0x2561;
-    textBuffer[textEnd++] = '\n';
-    textBuffer[textEnd++] = 0x2559;
-    textBuffer[textEnd++] = 0x2534;
-    textBuffer[textEnd++] = 0x2518;
-    textBuffer[textEnd++] = '\n';
-
-
-    for (int i=0; i<384; i++)
-    {   if ((i & 0x7f) >= 0x20 && ((i&0x7f) != 0x7f)) 
-        {   textBuffer[textEnd++] = i;
-            if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
-        }
-    }
-    for (int i=0; i<256; i++)
-    {   if ((i & 0x7f) >= 0x20 && ((i&0x7f) != 0x7f))
-        {   textBuffer[textEnd++] = (0x1000000+i);
-            if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
-        }
-    }
-    for (int i=0; i<256; i++)
-    {   if ((i & 0x7f) >= 0x20 && ((i&0x7f) != 0x7f))
-        {   textBuffer[textEnd++] = (0xe2000000+i);
-            if ((i & 0x1f) == 0x1f) textBuffer[textEnd++] = '\n';
-        }
-    }
-    for (int i=0xf500; i<0xf516; i++)
-    {   textBuffer[textEnd++] = i;
-    }
-    for (int i=0x10144; i<0x10148; i++)
-    {   textBuffer[textEnd++] = i;
-    }
-    textBuffer[textEnd++] = '@';
 
     writing.Post(); // enable output!
 }
@@ -1739,6 +1710,7 @@ void fwinText::insertChars(uint32_t *pch, int n)
 // line that it is on has moved to.
     int32_t loc3 = locateChar(lineEnd+1, caretPos, r1, c1);
     caretPos += n;
+    textEnd += n;
     if (caret != NULL && caret->IsVisible()) repositionCaret();
 
     Refresh();
@@ -2460,8 +2432,8 @@ case WXK_DELETE:
         {   deleteWordForwards();
             return;
         }
-        c = WXK_DELETE; // to type-ahead buffer
-        break;
+        c = WXK_DELETE;
+        goto defaultlabel;
 case 'D' & 0x1f:
 // Here I may want to arrange that if the current input-buffer is empty
 // then ^D causes and EOF to be returned. Well yes, I have arranged that
@@ -2665,6 +2637,24 @@ case '_':
 
 default:
 defaultlabel:
+
+
+        if (awaiting)
+        {   if (c == '\n')
+            {   insertChar(c);
+                inputBuffer[inputBufferLen++] = '\n';
+                awaiting = 0;
+                reading.Post();
+                return;
+            }
+            insertChar(c | 0x01000000);
+            inputBuffer[inputBufferLen++] = c;
+            return;
+        }
+        beep();
+        return;
+
+#ifdef RECONSTRUCTED
         insertChar(c); // @@@@
         if (c == 'X' && frame->worker != NULL)
         {   FWIN_LOG("X test case\n");
@@ -2682,7 +2672,12 @@ defaultlabel:
         if ((ch & 0xff) < 0x20) return; //  onKeyPress();
 #endif
         break;
+#endif // RECONSTRUCTED
     }
+
+
+#ifdef RECONSTRUCTED
+
 // Now I am left with printable characters plus TAB and NEWLINE. If the
 // terminal is waiting for input or if CTRL or ALT was associated with
 // the key I delegate.
@@ -2717,6 +2712,10 @@ defaultlabel:
         type_in = n;
     }
     else type_ahead(c);
+
+
+#endif // RECONSTRUCTED
+
     return;
 }
 
@@ -2826,10 +2825,59 @@ void fwinText::OnToScreen(wxThreadEvent& event)
     insertString(text);
 }
 
+int fwinText::unpackUTF8(uint32_t *u, const char *s, int ends)
+{
+    int k = 0;
+    int n = 0, state = 0;
+    uint32_t uc;    // Unicode char that is being reconstructed.
+    while (k != ends)
+    {   uint32_t c = s[k] & 0xff;
+        k++;
+        switch (state)
+        {
+    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= ((c & 0x3f) << 12);
+            state = 2;
+            break;
+    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= ((c & 0x3f) << 6);
+            state = 1;
+            break;
+    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= (c & 0x3f);
+            u[n++] = uc;
+            uc = 0;
+            state = 0;
+            break;
+    case 0: if ((c & 0x80) == 0) u[n++] = c;
+            else if ((c & 0xe0) == 0xc0)
+            {   uc = (c & 0x1f) << 6;
+                state = 1;
+            }
+            else if ((c & 0xf0) == 0xe0)
+            {   uc = (c & 0x0f) << 12;
+                state = 2;
+            }
+            else if ((c & 0xf8) == 0xf0)
+            {   uc = (c & 0x07) << 18;
+                state = 3;
+            }
+            else FWIN_LOG("Malformed UTF-8 sequence\n");
+            break;
+        }
+    }
+    return n;
+}
+
 void fwinText::OnSetPrompt(wxThreadEvent& event)
 {
     wxString text = event.GetString();
-    FWIN_LOG("OnSetPrompt %s\n", (const char *)text.ToAscii());
+    FWIN_LOG("OnSetPrompt %s\n", fwin_prompt_string);
+    unicodePromptLength = unpackUTF8(&unicodePrompt[0],
+                                     &fwin_prompt_string[0],
+                                     strlen(fwin_prompt_string));
+    for (int i=0; i<unicodePromptLength; i++)
+        unicodePrompt[i] |= 0x02000000;   // force prompt into BLUE
     writing.Post();
 }
 
@@ -2877,51 +2925,11 @@ void fwinText::OnFlushBuffer2(wxThreadEvent& event)
     OnFlushBuffer(&fwin_buffer2[0]);
 }
 
-void fwinText::OnFlushBuffer(char *fwin_buffer)
+void fwinText::OnFlushBuffer(const char *fwin_buffer)
 {
     recently_flushed = 0;
     uint32_t wideBuffer[FWIN_BUFFER_SIZE];
-    int k = 0;
-    int n = 0, state = 0;
-    uint32_t uc;    // Unicode char that is being reconstructed.
-    FWIN_LOG("OnFlushBuffer <%.*s>\n", (int)fwin_out, fwin_buffer);
-    while (k != fwin_out)
-    {   uint32_t c = fwin_buffer[k] & 0xff;
-        k++;
-        if (k == FWIN_BUFFER_SIZE) k = 0;
-        switch (state)
-        {
-    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-            uc |= ((c & 0x3f) << 12);
-            state = 2;
-            break;
-    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-            uc |= ((c & 0x3f) << 6);
-            state = 1;
-            break;
-    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
-            uc |= (c & 0x3f);
-            wideBuffer[n++] = uc;
-            uc = 0;
-            state = 0;
-            break;
-    case 0: if ((c & 0x80) == 0) wideBuffer[n++] = c;
-            else if ((c & 0xe0) == 0xc0)
-            {   uc = (c & 0x1f) << 6;
-                state = 1;
-            }
-            else if ((c & 0xf0) == 0xe0)
-            {   uc = (c & 0x0f) << 12;
-                state = 2;
-            }
-            else if ((c & 0xf8) == 0xf0)
-            {   uc = (c & 0x07) << 18;
-                state = 3;
-            }
-            else FWIN_LOG("Malformed UTF-8 sequence\n");
-            break;
-        }
-    }
+    int n = unpackUTF8(&wideBuffer[0], fwin_buffer, fwin_out);
     insertChars(&wideBuffer[0], n);
 #ifdef RECONSTRUCTED
     makePositionVisible(rowStart(length));
@@ -2935,11 +2943,34 @@ void fwinText::OnRequestInput(wxThreadEvent& event)
 {
     static int count = 0;
 // At this point the worker thread is halted waiting on the "reading"
-// semaphore.
+// semaphore. Just before that the worker thread had called
+// fwin_ensure_screen and had delayed until that action had completed, and so
+// I know that the screen is in an up to date state and that the worker is
+// at present suspended. I first display the prompt. Then if there are
+// any type-ahead characters I process them one at a time putting them
+// into inputBuffer. If I reach an ENTER I will have done and can signal
+// the worker thread. If even after processing any type-ahead material I only
+// have a part-line in inputBuffer I will set a flag (awaiting) which will
+// cause OnChar to put anything it receives into inputBuffer not the
+// type-ahead buffer. When OnChar sees an ENTER it can clear the awaiting
+// flag and signal the worker thread.
     FWIN_LOG("OnRequestInput\n");
+    caretPos = textEnd;
+    insertChars(unicodePrompt, unicodePromptLength);
+    makePositionVisible(caretPos);
+    writing.Post();
+
+    awaiting = 1;
+    return;  // no type-ahead for now
+
     switch (count++)
     {
-case 0: strcpy(inputBuffer, "(explode \"Arthur\")\n"); // "(oblist)\n");
+case 0:
+#ifdef SMALL
+        strcpy(inputBuffer, "(explode \"Arthur\")\n");
+#else
+        strcpy(inputBuffer, "(oblist)\n");
+#endif
         inputBufferP = 0;
         inputBufferLen = strlen(inputBuffer);
         break;
@@ -2951,7 +2982,6 @@ default:inputBufferP = 0;
         inputBufferLen = 0;
         break;
     }
-    writing.Post();
     reading.Post();
 }
 
@@ -3065,11 +3095,11 @@ void fwinText::OnDraw(wxDC &dc)
             if (row*rowHeight > window.GetHeight()) break;
             lastVisibleRow = p;
         }
-        if (ch & 0x1000000)
+        if (ch & 0x01000000)
         {   if (textColour != wxRED)
                 dc.SetTextForeground(*(textColour = wxRED));
         }
-        else if (ch & 0x2000000)
+        else if (ch & 0x02000000)
         {   if (textColour != wxBLUE)
                 dc.SetTextForeground(*(textColour = wxBLUE));
         }
@@ -3078,7 +3108,7 @@ void fwinText::OnDraw(wxDC &dc)
         wxString cs;
         int extraCols = 0;
 // I convert TAB into a suitable sequence of spaces.
-        if ((ch & 0xffffff) == '\t')
+        if ((ch & 0x00ffffff) == '\t')
         {   wxString spaces[8] =
             {   wxT(" "), wxT("  "), wxT("   "), wxT("    "), wxT("     "),
                 wxT("      "), wxT("       "), wxT("        ")
@@ -3086,9 +3116,9 @@ void fwinText::OnDraw(wxDC &dc)
             extraCols = 7 - (col&7); 
             cs = spaces[extraCols];
         }
-        else if ((ch & 0xffffff) == 0x20) cs = wxT(" ");
+        else if ((ch & 0x00ffffff) == 0x20) cs = wxT(" ");
 // Does the next fragment cope with Unicode points beyond 0xffff on Windows?
-        else cs = (wchar_t)(ch & 0xffffff);
+        else cs = (wchar_t)(ch & 0x00ffffff);
         dc.DrawText(cs, columnPos[col], rowHeight*row);
         col = col + extraCols + 1;
     }
@@ -3366,8 +3396,9 @@ void fwin_ensure_screen()
     }
     if (panel->fwin_in == 0) return;
     FWIN_LOG("fwin_ensure_screen\n");
-    FWIN_LOG("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0]));
-    FWIN_LOG("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0]));
+    if (panel->use_buffer1)
+        FWIN_LOG("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0]));
+    else FWIN_LOG("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0]));
 // Wait until GUI thread is ready, ie has finshed emptying the other
 // buffer.
     panel->writing.Wait();
@@ -3423,17 +3454,21 @@ int fwin_getchar()
     int n = panel->inputBufferLen;
     if (n == 0) return EOF;
     const char *p = &panel->inputBuffer[panel->inputBufferP];
+// The next line is pretty shameless and is there to help REDUCE while not
+// getting too much in the way of anybody else. If an input line is
+// entered starting with the text "load_package" (possibly with some
+// whitespace first) I make a callback to review_switch_settings fairly
+// soon.
     while (n>0 && isspace(*p))
     {   n--;
         p++;
     }
-// The next line is pretty shameless and is there to help REDUCE while not
-// getting too much in the way of anybody else. If an input line is
-// entered starting with the text "load_package" I make a callback to
-// review_switch_settings fairly soon.
     if (n>12 && strncmp(p, "load_package", 12) == 0)
         update_next_time = 1;
     int ch = panel->inputBuffer[panel->inputBufferP++];
+// Note that a Ctrl-D as the VERY FIRST character in the buffer is treated
+// as signalling end-of-file. If the user hits Ctrl-D in any other position
+// it would be treated as "delete one character forwards".
     if (ch == (0x1f & 'D')) return EOF;
     else return ch;
 }
