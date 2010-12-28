@@ -136,8 +136,10 @@ symbolic procedure exdfp0 u; %weighted vars ??
    end;
 
 symbolic procedure dwedge u;
-   %u is a wedge argument, result is a pf.
-   mkuniquewedge dwedge1(u,nil);
+   %u is a wedge argument, result is a pf.   
+   if flagp('d,'noxpnd)
+      then exdfk('wedge . u)
+    else mkuniquewedge dwedge1(u,nil);
 
 symbolic procedure dwedge1(u,v);
    if null rwf u
