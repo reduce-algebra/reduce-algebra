@@ -660,6 +660,16 @@ else !mac_framework
 	$(CP) $(srcdir)/cm-unicode/cmunrm.otf reduce.$(fontsdir)
 	$(CP) $(srcdir)/cm-unicode/cmunti.otf reduce.$(fontsdir)
 	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+# I will also use fireflysung and sazanami fonts to cover the CJK range
+	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
+	$(CP) $(srcdir)/fireflysung-1.3.0/COPYRIGHT reduce.$(fontsdir)/COPYRIGHT.fireflysung
+	$(CP) -r $(srcdir)/fireflysung-1.3.0/license reduce.$(fontsdir)/license.fireflysung
+	$(CP) $(srcdir)/sazanami-20040629/README reduce.$(fontsdir)/README.sazanami
+	$(CP) $(srcdir)/sazanami-20040629/sazanami-gothic.ttf reduce.$(fontsdir)
+	$(CP) $(srcdir)/sazanami-20040629/sazanami-mincho.ttf reduce.$(fontsdir)
+	$(CP) -r $(srcdir)/sazanami-20040629/doc reduce.$(fontsdir)/doc.sazanami
+
 endif !mac_framework
 else !wx
 	-rm -rf reduce.$(fontsdir)

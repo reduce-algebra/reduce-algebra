@@ -45,7 +45,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 250ecc69 13-Dec-2010 */
+/* Signature: 5cd6dc77 28-Dec-2010 */
 
 
 
@@ -625,6 +625,7 @@ static localFonts fontNames[] =
 // application I should be a little more selective!
     {"cmunrm",       NULL},        {"cmunti",       NULL},
     {"cmuntt",       NULL},
+    {"fireflysung",  NULL},        {"sazanami-gothic", NULL},
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},

@@ -18,17 +18,27 @@ mkdir -p $1.app/Contents
 mkdir -p $1.app/Contents/MacOS
 mkdir -p $1.app/Contents/Resources
 mkdir -p $1.app/Contents/Resources/Fonts
-cp $srcdir/wxfonts/README            $1.app/Contents/Resources/Fonts/README.BaKoMa
-cp $srcdir/wxfonts/BaKoMa-AMS.Fonts  $1.app/Contents/Resources/Fonts
-cp $srcdir/wxfonts/BaKoMa-CM.Fonts   $1.app/Contents/Resources/Fonts
-cp $srcdir/wxfonts/README.news       $1.app/Contents/Resources/Fonts/README.news.BaKoMa
-cp $srcdir/wxfonts/LICENCE           $1.app/Contents/Resources/Fonts/LICENCE.BaKoMa
-cp $srcdir/wxfonts/*.ttf             $1.app/Contents/Resources/Fonts
-cp $srcdir/cm-unicode/LICENSE        $1.app/Contents/Resources/Fonts/LICENSE.cm-unicode
-cp $srcdir/cm-unicode/README         $1.app/Contents/Resources/Fonts/README.cm-unicode
-cp $srcdir/cm-unicode/cmunrm.otf     $1.app/Contents/Resources/Fonts
-cp $srcdir/cm-unicode/cmunti.otf     $1.app/Contents/Resources/Fonts
-cp $srcdir/cm-unicode/cmuntt.otf     $1.app/Contents/Resources/Fonts
+F="$1.app/Contents/Resources/Fonts"
+cp $srcdir/wxfonts/README                        $F/README.BaKoMa
+cp $srcdir/wxfonts/BaKoMa-AMS.Fonts              $F
+cp $srcdir/wxfonts/BaKoMa-CM.Fonts               $F
+cp $srcdir/wxfonts/README.news                   $F/README.news.BaKoMa
+cp $srcdir/wxfonts/LICENCE                       $F/LICENCE.BaKoMa
+cp $srcdir/wxfonts/*.ttf                         $F
+cp $srcdir/cm-unicode/LICENSE                    $F/LICENSE.cm-unicode
+cp $srcdir/cm-unicode/README                     $F/README.cm-unicode
+cp $srcdir/cm-unicode/cmunrm.otf                 $F
+cp $srcdir/cm-unicode/cmunti.otf                 $F
+cp $srcdir/cm-unicode/cmuntt.otf                 $F
+# I will also use fireflysung and sazanami fonts to cover the CJK range
+cp $srcdir/fireflysung-1.3.0/fireflysung.ttf     $F
+cp $srcdir/fireflysung-1.3.0/AUTHORS             $F/AUTHORS.fireflysung
+cp $srcdir/fireflysung-1.3.0/COPYRIGHT           $F/COPYRIGHT.fireflysung
+cp -r $srcdir/fireflysung-1.3.0/license          $F/license.fireflysung
+cp $srcdir/sazanami-20040629/README              $F/README.sazanami
+cp $srcdir/sazanami-20040629/sazanami-gothic.ttf $F
+cp $srcdir/sazanami-20040629/sazanami-mincho.ttf $F
+cp -r $srcdir/sazanami-20040629/doc              $F/doc.sazanamix
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $P
 echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $P
 echo "<plist version=\"0.9\">" >> $P
