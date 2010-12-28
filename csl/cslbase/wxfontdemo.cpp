@@ -45,7 +45,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5cd6dc77 28-Dec-2010 */
+/* Signature: 77310764 28-Dec-2010 */
 
 
 
@@ -625,7 +625,8 @@ static localFonts fontNames[] =
 // application I should be a little more selective!
     {"cmunrm",       NULL},        {"cmunti",       NULL},
     {"cmuntt",       NULL},
-    {"fireflysung",  NULL},        {"sazanami-gothic", NULL},
+    {"fireflysung",  NULL},
+    {"sazanami-gothic", NULL},     {"sazanami-mincho", NULL},
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
@@ -1026,6 +1027,7 @@ void fontPanel::OnChar(wxKeyEvent &event)
     printf("Char event\n"); fflush(stdout);
     event.Skip();
     page++;
+    if (page == 0x1b0) page = 0x1c0; // skip surrogates
     Refresh();
 }
 
@@ -1033,6 +1035,7 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
 {
     printf("Key Down event\n"); fflush(stdout);
     page++;
+    if (page == 0x1b0) page = 0x1c0; // skip surrogates
     event.Skip();
     Refresh();
 }
@@ -1042,12 +1045,14 @@ void fontPanel::OnKeyUp(wxKeyEvent &event)
     printf("Key Up event\n"); fflush(stdout);
     event.Skip();
     page++;
+    if (page == 0x1b0) page = 0x1c0; // skip surrogates
     Refresh();
 }
 
 void fontPanel::OnMouse(wxMouseEvent &event)
 {
     page++;
+    if (page == 0x1b0) page = 0x1c0; // skip surrogates
     printf("Mouse event. Page now %d\n", page); fflush(stdout);
     event.Skip();
     Refresh();

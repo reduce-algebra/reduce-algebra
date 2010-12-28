@@ -1,20 +1,14 @@
-#define LISTFONTS 1 /* while I debug */
-// wxfontdemo.cpp
+#define DEBUG 1 /* regardless of overall build mode! */
 
-// A sample wxWidgets application to display fonts.
+//
+// "wxterminal.cpp"                              Copyright A C Norman 2010
+//
+//
+// Window interface for old-fashioned C applications. Intended to
+// be better than just running them within rxvt/xterm, but some people will
+// always believe that running them under emacs is best!
 //
 
-
-// The first version of this started from the "minimal" example that
-// comes with wxWidgets, and that is under the wxWidgets/wxWindows
-// license, ie LGPL plus some exceptions. Some parts of the basic
-// structure here is forced by the very nature of wxWidgets to follow
-// that pattern, but in general the code initially taken from
-// "minimal.cpp" is being removed and must count as indeed being "minimal",
-// and it is on that basis that I feel able to label this with a BSD
-// license. But license constraints or no, here seems a good place to
-// express thanks to all the people who created and continue to develop
-// wxWidgets.
 
 /**************************************************************************
  * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
@@ -45,18 +39,16 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5cd6dc77 28-Dec-2010 */
-
-
-
-// The first few lines are essentially taken from the wxWidgets documentation
-// and will be the same for almost all wxWidgets code.
+/* Signature: 629d6fcf 28-Dec-2010 */
 
 #include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
+
+#include <wx/caret.h>
+#include <wx/display.h>
 
 #include "config.h"
 
@@ -71,6 +63,7 @@
 #ifdef MACINTOSH
 
 // If I need Mac-specific includes here is where to set them up!
+// So far I do not seem to need anything.
 
 #else // MACINTOSH
 #ifdef HAVE_LIBXFT
@@ -79,28 +72,22 @@
 #include <X11/Xft/Xft.h>
 
 static Display *dpy;
-static Visual *ftVisual = NULL;
-static Colormap ftColorMap;
-static XRenderColor ftRenderBlack = {0,0,0,0xffff};
-static XRenderColor ftRenderWhite = {0xffff,0xffff,0xffff,0xffff};
-static XftColor ftBlack, ftWhite;
-static XftFont *ftFont = NULL;
 
 #else   // HAVE_LIBXFT
-
 #error Other than on Windows you must have Xft installed.
-
 #endif  // HAVE_LIBXFT
 #endif  // MACINTOSH
 #endif  // WIN32
 
-// I may be old fashioned , but I will be happier using C rather than C++
-// libraries here.
+
+#include "wxterminal.h"      // my own header file.
+
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <time.h>
 #include <signal.h>
@@ -110,8 +97,8 @@ static XftFont *ftFont = NULL;
 #else
 #ifndef _MSC_VER
 extern char *getcwd(char *s, size_t n);
-#endif
-#endif /* HAVE_UNISTD_H */
+#endif // _MSC_VER
+#endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -122,77 +109,461 @@ extern char *getcwd(char *s, size_t n);
 #else
 #ifndef WIN32
 #include <sys/dir.h>
-#else
+#else // WIN32
 #include <direct.h>
+#endif // WIN32
+#endif // HAVE_DIRENT_H
+
+#if !defined S_IXUSR && defined __S_IXUSR
+#define S_IXUSR __S_IXUSR
 #endif
-#endif /* HAVE_DIRENT_H */
 
+#ifdef WIN32
+#include "termed.h"
+HANDLE pipedes;
+int event_code = -1;
+#else // WIN32
+int pipedes[2];
+#endif // WIN32
 
+#include "wxfwin.h"
 
 #if !defined __WXMSW__ && !defined __WXPM__
-#include "fwin.xpm" // Icon to use in non-Windows cases
+// I include several icons here, and will select which one to use dynamically
+// based on the programName.
+#include "fwin.xpm"
+#include "csl.xpm"
+#include "reduce.xpm"
 #endif
 
-class fontApp : public wxApp
+static fwin_entrypoint *fwin_main_entry;
+static int fwin_argc;
+static char **fwin_argv;
+
+int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
+{
+    fwin_main_entry = fwin_main1;
+    fwin_argc = argc;
+    fwin_argv = argv;
+
+#ifdef WIN32
+// The following is somewhat unsatisfactory so I will explain my options and
+// what is happening.
+// On Unix/Linux/Darwin etc I have here a single executable that, depending
+// on a command-line flag, runs either as a windowed or a command-line
+// program. All is pretty neat and convenient for me!  However...
+//
+// On Windows when I link code I can link it either as subsystem:windows or
+// as subsystem:console. If I use the windows case then it detaches from
+// its console when started. The effect I have is that when launched from
+// a Windows command prompt asking to be run in console mode it can not
+// access the console. Windows XP provides an AttachConsole API that might
+// let me re-attach to the console but (a) that is not available with
+// earlier versions of Windows and (b) my experimenst with it have not been
+// great successes and others report delicacies! However note that even if
+// the code is linked as a windows binary it can be launched from the cygwin
+// shell and inherits standard input and output very happily! But from a
+// regular Windows command shell it does not.
+// If, on the other hand I link my code as a console application then when
+// launched from a command prompt or a script things work as I might like
+// and expect. When launched by double-clicking on an icon, Windows says to
+// itself "aha - a console application" and rapidly creates a console for it.
+//  This pops up on your screen. But here (in the case I wanted a Windowed
+// interface) I just free that console, which then has no other users and
+// which therefore gets destroyed. So there is a visual glitch of an unwanted
+// console window popping up and instantly vanishing.
+//
+// The best solution that appears to be open to me under Windows is to
+// have two executable versions for each application. They would only need
+// to differ in the way they were linked (and hence, possibly, by one bit in
+// a header record in them!). One for console and one for windowed use.
+// That feels clumsy too.
+//
+// Web searches show that others have found the same sort of pain when they
+// have wanted to create applications that are both console and window
+// mode. Ah well. One final suggestion for the two-executable scheme is
+// to creats two executables, say cslw.exe and cslc.exe where cslw.exe is
+// linked in windows mode and cslc.exe in console mode. cslc.exe just
+// creates a process to run cslw.exe. When you do this the handles on
+// standard input and output can be inherited by the child process, which
+// can therefore read and write characters. However because it still does not
+// really have a CONSOLE it can not do the res of what one might like by way
+// of supporting curses-like screen updates. A final trick on this is to
+// rename those two programs as csl.exe (windowed) and csl.com (console).
+// The Windows command processor will use the ".com" extension before the
+// ".exe" one, but of course the executable is really in ".exe" format...
+// this trick maybe reduces the confusion over file-names! Or maybe it
+// makes it worse.
+
+#ifdef KEEP_CONSOLE_OPEN
+// I sometimes find a console REALLY useful for debugging.... but when you
+// launch by double-clicking on an icon it is truly ugly to have one around.
+// So I will allow myself to leave an "#ifdef" here in case that helps me make
+// a trick version for debugging...
+    FreeConsole();
+#endif // KEEP_CONSOLE_OPEN
+#endif // WIN32
+    wxDISABLE_DEBUG_SUPPORT();
+    return wxEntry(argc, argv);
+}
+
+class fwinApp : public wxApp
 {
 public:
     virtual bool OnInit();
 };
 
-class fontPanel : public wxPanel
+IMPLEMENT_APP_NO_MAIN(fwinApp)
+
+
+// I have a generated file that contains the widths of all the fonts
+// I am willing to use here.
+
+#include "cmfont-widths.c"
+
+
+// I had HOPED I might use a variant on wxTextCtrl here and let it cope
+// with all the keyboard handling, Unicode fun, local editing, scrolling -
+// in general most of the effort. However I can not find how to subvert
+// a Text Control into using a fixed pitch font and spacing it nicely to
+// make exactly 80 chars fit across the screen. And also I have real problems
+// with the deeply eccentric coding scheme used by the TeX fonts that I want
+// to use.
+
+// I *probably* want to use wxvscrolledwindow here not wxscrolledcanvas!
+
+// Before I set up the main text display class I will declare the events
+// I use to commumicate with it.
+
+// The events declared here are used to send data from the worker thread
+// to the GUI thread.
+
+enum
+{
+    TO_SCREEN = wxID_HIGHEST+1,
+    SET_PROMPT,
+    SET_MENUS,
+    REFRESH_SWITCHES,
+    SET_LEFT,
+    SET_MID,
+    SET_RIGHT,
+    FLUSH_BUFFER1,
+    FLUSH_BUFFER2,
+    REQUEST_INPUT,
+    MINIMISE_WINDOW,
+    RESTORE_WINDOW
+};
+
+
+class fwinText : public wxScrolledCanvas
 {
 public:
-    fontPanel(class fontFrame *parent, const char *font, int size);
+    fwinText(class fwinFrame *parent);
 
-    void OnPaint(wxPaintEvent &event);
+    void OnDraw(wxDC &dc);
+
     void OnChar(wxKeyEvent &event);
-    void OnKeyDown(wxKeyEvent &event);
-    void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
+    void OnSetFocus(wxFocusEvent &event);
+    void OnKillFocus(wxFocusEvent &event);
+    void OnToScreen(wxThreadEvent& event);
+    void OnSetPrompt(wxThreadEvent& event);
+    void OnSetMenus(wxThreadEvent& event);
+    void OnRefreshSwitches(wxThreadEvent& event);
+    void OnSetLeft(wxThreadEvent& event);
+    void OnSetMid(wxThreadEvent& event);
+    void OnSetRight(wxThreadEvent& event);
+    void OnFlushBuffer(const char *fwin_buffer);
+    void OnFlushBuffer1(wxThreadEvent& event);
+    void OnFlushBuffer2(wxThreadEvent& event);
+    void OnRequestInput(wxThreadEvent& event);
+    void OnMinimiseWindow(wxThreadEvent& event);
+    void OnRestoreWindow(wxThreadEvent& event);
 
+// Both these will be initialised with a count of zero and no limit.
+    wxSemaphore writing;  // Used when writing to the screen
+    wxSemaphore reading;  // used when reading from the screen
+
+// I will have a buffer for transfer of characters from the application
+// to the user-interface.
+// The buffer holds 8-bit bytes. I will expect these to represent an UTF-8
+// encoding, so that the application code will tend to use UTF-8 internally.
+// The consequence will be that just the characters in the range 0x00 to 0x7f
+// are unconditionally simple here!
+
+#define FWIN_BUFFER_SIZE  1000
+// If I have vsnprintf I can be fully safe, and most modern C libraries
+// will provide this. If that is NOT available I will fall back on
+// vsprintf, and hope that all strings printed will end up less than
+// 200 bytes long.
+#define SPARE_FOR_VFPRINTF 200
+
+    char fwin_buffer1[FWIN_BUFFER_SIZE];
+    char fwin_buffer2[FWIN_BUFFER_SIZE];
+
+    int use_buffer1, fwin_in, fwin_out;
+
+// While the program is not asking for input any characters from the keyboard
+// will be stashed in a type-ahead buffer, But when input is asked for a
+// line will be accepted and echoed on the screen, and when ENTER is pressed
+// it will be passed on for use. The input line has its length limited by
+// the buffer here. Hmm in some cases of copy-and-paste I would imagine
+// ANY limit here being bad. But for now this is what I do!
+#define INPUT_BUFFER_LENGTH 512
+
+    int inputBufferLen;
+    int inputBufferP;
+    char inputBuffer[INPUT_BUFFER_LENGTH];
+    int awaiting;
+    uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
+    int unicodePromptLength;
+
+    int recently_flushed;
+
+    FILE *logfile;
+
+// I make these two public because the surrounding fwinFrame touches them.
+    bool firstPaint;
+    int columnPos[81];
+
+    int pauseFlags;
+#define PAUSE_PAUSE      1
+#define PAUSE_STOP       2
+#define PAUSE_DISCARD    4
+
+    class fwinFrame *frame;
 private:
-    class fontFrame *frame;
-    const char *fontname;
-    int fontsize;
-    wxFont *ff;
-    bool fontScaled;
+    wxFont *fixedPitch, *fixedCJK;
+    wxString cjkFontName;
+    double em;
+    double pixelsPerPoint;    // conversion from TeX to screen coordinates
+    double scaleAdjustment;
+
+// The text buffer will be arrange in lines, where each line may require
+// more than one row to display it. The layout will be
+//        C1 C2 ... '\n'
+// for a line. If the number of characters is over 80 the line will be
+// displayed wrapped onto several rows. The '\n' character must not be present
+// in the text buffer other than as a line separator.
+//
+// firstVisibleRow points to the first character of the first row being
+// displayed on the screen. Note that this is a ROW not a LINE.
+// lastVisibleRow is the final row displayed on the screen.
+// textEnd points at the position in textBuffer one beyond the final
+// character stored. Ie it is zero if the buffer is empty.
+// caretPos is between zero and textEnd (inclusive) and denotes a position
+// between two characters where insertion might happen.
+    uint32_t *textBuffer;
+    int textBufferSize;
+    void enlargeTextBuffer();
+//
+// caretPos indicates a cell within textBuffer, but it represents the gap
+// between the previous character and the one stored at that position. So
+// when you insert a character it goes into that gap. And delete-forwards and
+// delete-backwards remove the characters after or before that gap.
+// caretPos=0 puts the caret before any character in the buffer.
+// caretPos=endText puts the caret after the final character in the text. 
+// (note that if the buffer is empty both those case apply at the same time).
+//
+    wxCaret *caret;
+    int caretPos;
+    void repositionCaret(int w=-1, int r=0, int c=0);
+    int32_t locateChar(int p, int w=-1, int r=0, int c=0);
+// The result handed back by locateChar is either negative (if the character
+// is not on the screen) or a packed (row,column) pair. It indicates the
+// location the character would start on the screen apart from any line-wrap
+// it might trigger.
+#define PACK(r, c) ((r)<<16 | (c))
+#define ROW(n)     (((n) >> 16) & 0xffff)
+#define COL(n)     ((n) & 0xffff)
+
+    int textEnd; 
+    int rowHeight, rowCount;
+    int firstVisibleRow, lastVisibleRow;
+    int historyNumber;
+
+    int options;
+#define READONLY     1
+
+    int keyFlags;
+#define ANY_KEYS     1
+#define ESC_PENDING  2
+
+    int flags;
+#define FLAG_CHANGED 1
+#define FLAG_TIP     2
+
+#define TYPEAHEAD_SIZE 100
+    uint32_t ahead_buffer[TYPEAHEAD_SIZE];
+    int type_in, type_out;
+
+    void type_ahead(uint32_t c);
+
+    int promptEnd;
+
+    int searchFlags;
+#define SEARCH_LENGTH    (searchFlags & 0xff)
+#define SEARCH_FORWARD   0x100
+#define SEARCH_BACKWARD  0x200
+    uint32_t searchString[256];
+    int searchStack[256];
+    int startMatch;
+
+    void beep();
+    void insertChar(uint32_t ch);
+    void insertChars(uint32_t *s, int len);
+    void insertString(wxString s);
+    void appendText(char *s, int len);
+    void insertNewline();
+    void deleteForwards();
+    void deleteBackwards();
+    void deleteWordForwards();
+    void deleteWordBackwards();
+    void moveLeft();
+    void moveRight();
+    void moveUp();
+    void moveDown();
+    void moveWordLeft();
+    void moveWordRight();
+    void moveLineStart();
+    void moveLineEnd();
+    void pageUp();
+    void pageDown();
+    void moveDocStart();
+    void moveDocEnd();
+    void undo();
+    int charFromPosition(int x, int y);
+    void setSelectionMark();
+    void setSelectionEnd();
+    void extendSelection();
+    void cut();
+    void copyRegion();
+    void copyWordPrev();
+    void command();
+    void extendedCommand();
+    void paste();
+    void killSelection();
+    void deleteCurrentLine();
+    int setInputText(uint32_t *s, int n);
+    void transpose();
+    void capitalize();
+    void lowerCase();
+    void upperCase();
+    void escapePressed();
+    void makePositionVisible(int p);
+    int editable;    
+    int trySearch();
+    int wordlen(uint32_t *s);
+    void historyNext();
+    void historyPrev();
+    void searchHistoryNext();
+    void searchHistoryPrev();
+    uint32_t *input_history[INPUT_HISTORY_SIZE];
+    int historyNextEntry,
+        historyCurrent,
+        longestHistoryLine;
+    int historyFirst, historyLast;
+
+
+    void historyInit();
+    void historyEnd();
+    void historyAdd(uint32_t *s, int n);
+    uint32_t *historyGet(int n);
+    int matchString(const char *pat, int n, const char *text);
+    int isEditable();
+    int isEditableForBackspace();
+    void rotateClipboard();
+    void reinput();    
+    void setCaretPos(int n);
+    void interrupt();
+    void displayBacktrace();
+
+    int unpackUTF8(uint32_t *u, const char *s, int n);
+
+    int MapChar(int c);      // map from TeX character code to BaKoMa+ one
+
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(fontPanel, wxPanel)
-    EVT_PAINT(           fontPanel::OnPaint)
-    EVT_CHAR(            fontPanel::OnChar)
-    EVT_KEY_DOWN(        fontPanel::OnKeyDown)
-    EVT_KEY_UP(          fontPanel::OnKeyUp)
-    EVT_LEFT_UP(         fontPanel::OnMouse)
+BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
+    EVT_CHAR(                     fwinText::OnChar)
+    EVT_LEFT_UP(                  fwinText::OnMouse)
+    EVT_SET_FOCUS(                fwinText::OnSetFocus)
+    EVT_KILL_FOCUS(               fwinText::OnKillFocus)
+    EVT_THREAD(TO_SCREEN,         fwinText::OnToScreen)
+    EVT_THREAD(SET_PROMPT,        fwinText::OnSetPrompt)
+    EVT_THREAD(SET_MENUS,         fwinText::OnSetMenus)
+    EVT_THREAD(REFRESH_SWITCHES,  fwinText::OnRefreshSwitches)
+    EVT_THREAD(SET_LEFT,          fwinText::OnSetLeft)
+    EVT_THREAD(SET_MID,           fwinText::OnSetMid)
+    EVT_THREAD(SET_RIGHT,         fwinText::OnSetRight)
+    EVT_THREAD(FLUSH_BUFFER1,     fwinText::OnFlushBuffer1)
+    EVT_THREAD(FLUSH_BUFFER2,     fwinText::OnFlushBuffer2)
+    EVT_THREAD(REQUEST_INPUT,     fwinText::OnRequestInput)
+    EVT_THREAD(MINIMISE_WINDOW,   fwinText::OnMinimiseWindow)
+    EVT_THREAD(RESTORE_WINDOW,    fwinText::OnRestoreWindow)
 END_EVENT_TABLE()
 
-class fontFrame : public wxFrame
+static fwinText *panel = NULL;
+
+class fwinFrame : public wxFrame
 {
+
+
 public:
-    fontFrame(const char *font, int size);
+    fwinFrame();
 
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
+    void OnSize(wxSizeEvent &event);
+
+    class fwinWorker *worker;
 
 private:
-    fontPanel *panel;
+    int screenWidth, screenHeight;
+
     DECLARE_EVENT_TABLE()
 };
 
-BEGIN_EVENT_TABLE(fontFrame, wxFrame)
-    EVT_MENU(wxID_EXIT,  fontFrame::OnExit)
-    EVT_MENU(wxID_ABOUT, fontFrame::OnAbout)
+BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
+    EVT_MENU(wxID_EXIT,  fwinFrame::OnExit)
+    EVT_MENU(wxID_ABOUT, fwinFrame::OnAbout)
+    EVT_SIZE(            fwinFrame::OnSize)
 END_EVENT_TABLE()
 
-int raw, page;
+class fwinWorker : public wxThread
+{
+public:
+    fwinWorker();
+//  ~fwinWorker();
+    void sendToScreen(wxString s); // for debugging
+private:
+protected:
+    virtual wxThread::ExitCode Entry();
+};
+
+fwinWorker::fwinWorker()
+{
+}
+
+wxThread::ExitCode fwinWorker::Entry()
+{
+    int rc = (*fwin_main_entry)(fwin_argc, fwin_argv);
+    fwin_ensure_screen();
+#define pause_on_exit 0
+    FWIN_LOG("return from fwin_main_entry is %d pause_on_exit=%d\n",
+             rc, pause_on_exit);
+    for (int i=0; i<0x7fffffff; i++);
+    panel->frame->worker = NULL;
+    return (wxThread::ExitCode)0;
+}
 
 int get_current_directory(char *s, int n)
 {
     if (getcwd(s, n) == 0)
     {   switch(errno)
         {
-    case ERANGE: return -2; /* negative return value flags an error. */
+    case ERANGE: return -2; // negative return value flags an error.
     case EACCES: return -3;
     default:     return -4;
         }
@@ -217,10 +588,6 @@ int get_current_directory(char *s, int n)
 #define LONGEST_LEGAL_FILENAME 1024
 #endif
 
-const char *fullProgramName = "./wxfontdemo.exe";
-const char *programName     = "wxfontdemo.exe";
-const char *programDir      = ".";
-
 /*
  * getenv() is a mild pain: Windows seems
  * to have a strong preference for upper case names.  To allow for
@@ -242,75 +609,10 @@ const char *my_getenv(const char *s)
 #endif
 }
 
-#ifdef WIN32
 
-int program_name_dot_com = 0;
 
-static char this_executable[LONGEST_LEGAL_FILENAME];
-
-int find_program_directory(const char *argv0)
-{
-    char *w;
-    int len, ndir, npgm, j;
-/* In older code I believed that I could rely on Windows giving me
- * the full path of my executable in argv[0]. With bits of mingw/cygwin
- * anywhere near me that may not be so, so I grab the information directly
- * from the Windows APIs.
- */
-    char execname[LONGEST_LEGAL_FILENAME];
-    GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
-    strcpy(this_executable, execname);
-    argv0 = this_executable;
-    program_name_dot_com = 0;
-    if (argv0[0] == 0)      /* should never happen - name is empty string! */
-    {   programDir = ".";
-        programName = "wxfontdemo";  /* nothing really known! */
-        fullProgramName = ".\\wxfontdemo.exe";
-        return 0;
-    }
-
-    fullProgramName = argv0;
-    len = strlen(argv0);
 /*
- * If the current program is called c:\aaa\xxx.exe, then the directory
- * is just c:\aaa and the simplified program name is just xxx
- */
-    j = len-1;
-    if (len > 4 &&
-        argv0[len-4] == '.' &&
-        ((tolower(argv0[len-3]) == 'e' &&
-          tolower(argv0[len-2]) == 'x' &&
-          tolower(argv0[len-1]) == 'e') ||
-         (tolower(argv0[len-3]) == 'c' &&
-          tolower(argv0[len-2]) == 'o' &&
-          tolower(argv0[len-1]) == 'm')))
-    {   program_name_dot_com = (tolower(argv0[len-3]) == 'c');
-        len -= 4;
-    }
-    for (npgm=0; npgm<len; npgm++)
-    {   int c = argv0[len-npgm-1];
-        if (c == '\\') break;
-    }
-    ndir = len - npgm - 1;
-    if (ndir < 0) programDir = ".";  /* none really visible */
-    else
-    {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
-        strncpy(w, argv0, ndir);
-        w[ndir] = 0;
-        programDir = w;
-    }
-    if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
-    strncpy(w, argv0 + len - npgm, npgm);
-    w[npgm] = 0;
-    programName = w;
-    return 0;
-}
-
-#else /* WIN32 */
-// Now for Unix, Linux, BSD (and hence Macintosh) worlds.
-
-
-/* Different systems put or do not put underscores in front of these
+ * Different systems put or do not put underscores in front of these
  * names. My adaptation here should give me a chance to work whichever
  * way round it goes.
  */
@@ -342,274 +644,6 @@ int find_program_directory(const char *argv0)
 #endif
 
 
-/*
- * the length set here is at least the longest length that I
- * am prepared to worry about. If anybody installs the program in a
- * very deep directory such that its fully rooted name is over-long
- * things may not behave well. But I am not going to fuss with dynamic
- * allocation of or expansion of the arrays I use here.
- */
-
-int find_program_directory(const char *argv0)
-{
-    char pgmname[LONGEST_LEGAL_FILENAME];
-    char *w;
-    const char *cw;
-    int n, n1;
-/*
- * If the main reduce executable is has a full path-name /xxx/yyy/zzz then
- * I will use /xxx/yyy as its directory To find this I need to find the full
- * path for the executable. I ATTEMPT to follow the behaviour of "sh",
- * "bash" and "csh".  But NOTE WELL that if anybody launches this code in
- * an unusual manner (eg using an "exec" style function) that could confuse
- * me substantially. What comes in via argv[0] is typically just the final
- * component of the program name - what I am doing here is scanning to
- * see what path it might have corresponded to.
- *
- *
- * If the name of the executable starts with a "/" it is already an
- * absolute path name. I believe that if the user types (to the shell)
- * something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
- * environment variables and user-name get expanded out by the shell before
- * the command is actually launched.
- */
-    if (argv0 == NULL || argv0[0] == 0) /* Information not there - return */
-    {   programDir = (const char *)"."; /* some sort of default. */
-        programName = (const char *)"wxfontdemo";
-        fullProgramName = (const char *)"./wxfontdemo";
-        return 0;
-    }
-/*
- * I will treat 3 cases here
- * (a)   /abc/def/ghi      fully rooted: already an absolute name;
- * (b)   abc/def/ghi       treat as ./abc/def/ghi;
- * (c)   ghi               scan $PATH to see where it may have come from.
- */
-    else if (argv0[0] == '/') fullProgramName = argv0;
-    else
-    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   /* seek a "/" */
-        if (*cw == '/')      /* treat as if relative to current dir */
-        {   /* If the thing is actually written as "./abc/..." then */
-            /* strip of the initial "./" here just to be tidy. */
-            if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
-            n = get_current_directory(pgmname, sizeof(pgmname));
-            if (n < 0) return 1;    /* fail! 1=current directory failure */
-            if (n + strlen(argv0) + 2 >= sizeof(pgmname) ||
-                pgmname[0] == 0)
-                return 2; /* Current dir unavailable or full name too long */
-            else
-            {   pgmname[n] = '/';
-                strcpy(&pgmname[n+1], argv0);
-                fullProgramName = pgmname;
-            }
-        }
-        else
-        {   const char *path = my_getenv("PATH");
-/*
- * I omit checks for names of shell built-in functions, since my code is
- * actually being executed by here. So I get my search path and look
- * for an executable file somewhere on it. I note that the shells back this
- * up with hash tables, and so in cases where "rehash" might be needed this
- * code may become confused.
- */
-            struct stat buf;
-            uid_t myuid = geteuid(), hisuid;
-            gid_t mygid = getegid(), hisgid;
-            int protection;
-            int ok = 0;
-/* I expect $PATH to be a sequence of directories with ":" characters to
- * separate them. I suppose it COULD be that somebody used directory names
- * that had embedded colons, and quote marks or escapes in $PATH to allow
- * for that. In such case this code will just fail to cope.
- */
-            if (path != NULL)
-            {   while (*path != 0)
-                {   while (*path == ':') path++; /* skip over ":" */
-                    n = 0;
-                    while (*path != 0 && *path != ':')
-                    {   pgmname[n++] = *path++;
-                        if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
-                            return 3; /* fail! 3=$PATH element overlong */
-                    }
-/* Here I have separated off the next segment of my $PATH and put it at
- * the start of pgmname. Observe that to avoid buffer overflow I
- * exit abruptly if the entry on $PATH is itself too big for my buffer.
- */
-                    pgmname[n++] = '/';
-                    strcpy(&pgmname[n], argv0);
-/* see if the file whose name I have just built up exists at all. */
-                    if (stat(pgmname, &buf) == -1) continue;
-                    hisuid = buf.st_uid;
-                    hisgid = buf.st_gid;
-                    protection = buf.st_mode; /* info about the file found */
-/*
- * I now want to check if there is a file of the right name that is
- * executable by the current (effective) user.
- */
-                    if (protection & S_IXOTH ||
-                        (mygid == hisgid && protection & S_IXGRP) ||
-                        (myuid == hisuid && protection & S_IXUSR))
-                    {   ok = 1;   /* Haha - I have found the one we ... */
-                        break;    /* are presumably executing! */
-                    }
-                }
-            }
-            if (!ok) return 4;    /* executable not found via $PATH */
-/* Life is not yet quite easy! $PATH may contain some items that do not
- * start with "/", ie that are still local paths relative to the
- * current directory. I want to be able to return an absolute fully
- * rooted path name! So unless the item we have at present starts with "/"
- * I will stick the current directory's location in front.
- */
-            if (pgmname[0] != '/')
-            {   char temp[LONGEST_LEGAL_FILENAME];
-                strcpy(temp, pgmname);
-                n = get_current_directory(pgmname, sizeof(pgmname));
-                if (n < 0) return 1;    /* fail! 1=current directory failure */
-                if ((n + strlen(temp) + 1) >= sizeof(pgmname)) return 9;
-                pgmname[n++] = '/';
-                strcpy(&pgmname[n], temp);
-            }
-            fullProgramName = pgmname;
-        }
-    }
-/*
- * Now if I have a program name I will try to see if it is a symbolic link
- * and if so I will follow it.
- */
-    {   struct stat buf;
-        char temp[LONGEST_LEGAL_FILENAME];
-        if (lstat(fullProgramName, &buf) != -1 &&
-            S_ISLNK(buf.st_mode) &&
-            (n1 = readlink(fullProgramName,
-                           temp, sizeof(temp)-1)) > 0)
-        {   temp[n1] = 0;
-            strcpy(pgmname, temp);
-            fullProgramName = pgmname;
-        }
-    }
-/* Now fullProgramName is set up, but may refer to an array that
- * is stack allocated. I need to make it proper!
- */
-    w = (char *)malloc(1+strlen(fullProgramName));
-    if (w == NULL) return 5;           /* 5 = malloc fails */
-    strcpy(w, fullProgramName);
-    fullProgramName = w;
-#ifdef RAW_CYGWIN
-/*
- * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
- * suffix, so I will purge that! This code exists here because the raw
- * cygwin build has a somewhat schitzo view as to whether it is a Windows
- * or a Unix-like system.
- */
-    if (strlen(w) > 4)
-    {   w += strlen(w) - 4;
-        if (w[0] == '.' &&
-            ((tolower(w[1]) == 'e' &&
-              tolower(w[2]) == 'x' &&
-              tolower(w[3]) == 'e') ||
-             (tolower(w[1]) == 'c' &&
-              tolower(w[2]) == 'o' &&
-              tolower(w[3]) == 'm'))) w[0] = 0;
-    }
-#endif
-/* OK now I have the full name, which is of the form
- *   abc/def/fgi/xyz
- * and I need to split it at the final "/" (and by now I very fully expect
- * there to be at least one "/".
- */
-    for (n=strlen(fullProgramName)-1; n>=0; n--)
-        if (fullProgramName[n] == '/') break;
-    if (n < 0) return 6;               /* 6 = no "/" in full file path */
-    w = (char *)malloc(1+n);
-    if (w == NULL) return 7;           /* 7 = malloc fails */
-    strncpy(w, fullProgramName, n);
-    w[n] = 0;
-/* Note that if the executable was "/foo" then programDir will end up as ""
- * so that programDir + "/" + programName works out properly.
- */
-    programDir = w;
-    n1 = strlen(fullProgramName) - n;
-    w = (char *)malloc(n1);
-    if (w == NULL) return 8;           /* 8 = malloc fails */
-    strncpy(w, fullProgramName+n+1, n1-1);
-    w[n1-1] = 0;
-    programName = w;
-    return 0;                          /* whew! */
-}
-
-#endif /* WIN32 */
-
-int main(int argc, char *argv[])
-{
-    int i;
-    int usegui = 1;
-// Find where I am invoked from before doing anything else
-    find_program_directory(argv[0]);
-    for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
-    }
-#if !defined WIN32 && !defined MACINTOSH
-// Under X11 I will demote to being a console mode application if DISPLAY
-// is not set. This is not a perfect test but it will spot the simple
-// cases. Eg I could look at stdin & stdout and check if it looks as if
-// they are pipes of they have been redirected...
-    {   const char *s = my_getenv("DISPLAY");
-        if (s==NULL || *s == 0) usegui = 0;
-    }
-#endif
-    if (usegui)
-    {
-#ifdef MACINTOSH
-// If I will be wanting to use a GUI and if I have just loaded an
-// executable that is not within an application bundle then I will
-// use "open" to launch the corresponding application bundle. Doing this
-// makes resources (eg fonts) that are within the bundle available and
-// it also seems to cause things to terminate more neatly.
-        char xname[LONGEST_LEGAL_FILENAME];
-        sprintf(xname, "%s.app", programName);
-        if (strstr(fullProgramName, xname) == NULL)
-        {
-// Here the binary I launched was not located as
-//      ...foo.app../.../foo
-// so I will view it is NOT being from an application bundle. I will
-// re-launch it so it is! This may be a bit of a hacky way to decide!
-            struct stat buf;
-            sprintf(xname, "%s.app", fullProgramName);
-            if (stat(xname, &buf) == 0 &&
-                (buf.st_mode & S_IFDIR) != 0)
-            {
-// Well foo.app exists and is a directory, so I will try to use it
-                char **nargs = (char **)malloc(sizeof(char *)*(argc+3));
-                int i;
-                nargs[0] = "/usr/bin/open";
-                nargs[1] = xname;
-                nargs[2] = "--args";
-                for (i=1; i<argc; i++)
-                    nargs[i+2] = argv[i];
-                nargs[argc+2] = NULL;
-// /usr/bin/open foo.app --args [any original arguments]
-                return execv(nargs[0], nargs);
-            }
-        }
-#endif
-        wxDISABLE_DEBUG_SUPPORT();
-        return wxEntry(argc, argv);
-    }
-    printf("This program has been launched asking for use in a console\n");
-    printf("type a line of text please\n");
-    while ((i = getchar()) != '\n' && i != EOF) putchar(i);
-    putchar('\n');
-    printf("Exiting from demonstration of console mode use!\n");
-    return 0;
-}
-
-IMPLEMENT_APP_NO_MAIN(fontApp)
-
-// Pretty much everything so far has been uttery stylised and the contents
-// are forced by the structure that wxWidgets requires!
-
-
 #ifndef MACINTOSH
 
 typedef struct localFonts
@@ -620,12 +654,16 @@ typedef struct localFonts
 
 static localFonts fontNames[] =
 {
+// Some of the key Computer Modern Unicode fonts
+    {"cmunrm",       NULL},  // "CMU Serif"
+    {"cmunti",       NULL},  // "CMU Serif Italic"
+    {"cmuntt",       NULL},  // "CMU Typewriter Text"
+    {"fireflysung",  NULL},
+    {"sazanami-gothic", NULL},     {"sazanami-mincho", NULL},
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    {"cmunrm",       NULL},        {"cmunti",       NULL},
-    {"cmuntt",       NULL},
-    {"fireflysung",  NULL},        {"sazanami-gothic", NULL},
+#if 0
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
@@ -667,8 +705,10 @@ static localFonts fontNames[] =
     {"csl-cmtex9",   NULL},        {"csl-cmti10",   NULL},
     {"csl-cmti12",   NULL},        {"csl-cmti7",    NULL},
     {"csl-cmti8",    NULL},        {"csl-cmti9",    NULL},
+#endif
     {"csl-cmtt10",   NULL},        {"csl-cmtt12",   NULL},
     {"csl-cmtt8",    NULL},        {"csl-cmtt9",    NULL},
+#if 0
     {"csl-cmu10",    NULL},        {"csl-cmvtt10",  NULL},
     {"csl-euex10",   NULL},        {"csl-euex7",    NULL},
     {"csl-euex8",    NULL},        {"csl-euex9",    NULL},
@@ -695,69 +735,20 @@ static localFonts fontNames[] =
     {"csl-msam8",    NULL},        {"csl-msam9",    NULL},
     {"csl-msbm10",   NULL},        {"csl-msbm5",    NULL},
     {"csl-msbm6",    NULL},        {"csl-msbm7",    NULL},
+#endif
     {"csl-msbm8",    NULL},        {"csl-msbm9",    NULL}
 };
 
-#endif
+#endif // MACINTOSH
 
 #ifdef WIN32
 
-// The next two flags instruct AddFontResourceEx that a font should be
-// available only to this application and that other application should
-// not even be able to see that it exists. I provide definitions here
+// The next flag instruct AddFontResourceEx that a font should be
+// available only to this application. I provide a definition here
 // in case MinGW32 does not have them in its header files.
 
 #ifndef FR_PRIVATE
 #define FR_PRIVATE   0x10
-#endif
-
-#ifndef FR_NOT_ENUM
-#define FR_NOT_ENUM  0x20
-#endif
-
-/* #define PRIVATE_FONT (FR_PRIVATE | FR_NOT_ENUM) */
-#define PRIVATE_FONT FR_PRIVATE
-
-static int fontNeeded = 0;
-
-// A brief comment here. The DEFAULT build of wxWidgets on Windows supports
-// Unicode by using wide characters and strings. That causes me some pain
-// but I NEED to accept it because the character that has code 0x14 in TeX
-// encoding gets mapped to character code 0x2219 in the Bakoma fonts, and it
-// is not at all clear that I have any way to access that glyph if I do
-// not build in Unicode mode.
-
-// You will see a load of places I explicitly call the non-Unicode versions
-// of Windows functions (eg with an "A" at the end of their name) when I wish
-// to pass legacy pre-unicode strings to them.
-
-static int CALLBACK fontEnumProc(
-    const LOGFONTA *lpelfe,     // logical-font data
-    const TEXTMETRICA *lpntme,  // physical-font data
-    DWORD FontType,             // type of font
-    LPARAM lParam)              // application-defined data
-{
-    fontNeeded = 0;
-    return 0;
-}
-
-
-#ifdef LISTFONTS
-static char faceName[LONGEST_LEGAL_FILENAME] = "";
-
-static int CALLBACK fontEnumProc1(
-    const LOGFONTA *lpelfe,     // logical-font data
-    const TEXTMETRICA *lpntme,  // physical-font data
-    DWORD FontType,             // type of font
-    LPARAM lParam)              // application-defined data
-{
-// avoid duplicated reports
-    if (strcmp(lpelfe->lfFaceName, faceName) == 0) return 1;
-    strcpy(faceName, lpelfe->lfFaceName);
-    printf("Font \"%s\" is available\n", lpelfe->lfFaceName);
-    fflush(stdout);
-    return 1;
-}
 #endif
 
 #endif
@@ -770,68 +761,27 @@ static int CALLBACK fontEnumProc1(
 #define toString(x) toString1(x)
 #define toString1(x) #x
 
+// I will want to change this so that it adds the fonts only on need.
+
 int add_custom_fonts() // return 0 on success.
 {
 #ifdef WIN32
-    HDC hDC = CreateCompatibleDC(NULL);
-    LOGFONTA lf;
+    int newFontAdded = 0;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   memset((void *)&lf, 0, sizeof(lf));
-        strcpy(lf.lfFaceName, fontNames[i].name);
-        lf.lfCharSet = DEFAULT_CHARSET;
-        lf.lfPitchAndFamily = 0;
-        fontNeeded = 1;
-        fontNames[i].path = NULL;
-// I check each of the fonts that this application wants to see if they
-// are already installed. If they are then there is no merit in installing
-// them for myself. Well that is maybe silly since these are private fonts
-// that I really do not expect anybody to have installed before! But I will
-// leave this in here at least for now.
-        EnumFontFamiliesExA(hDC, &lf, fontEnumProc, 0, 0);
-        if (!fontNeeded) continue;
-        char nn[LONGEST_LEGAL_FILENAME];
+    {   char nn[LONGEST_LEGAL_FILENAME];
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name);
         if (i < 3) strcat(nn, ".otf");
         else strcat(nn, ".ttf");
-        char *nn1 = (char *)malloc(strlen(nn) + 1);
-        strcpy(nn1, nn);
-        fontNames[i].path = nn1;
+        if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
+            FWIN_LOG("Failed to add font %s\n", nn);
+        else newFontAdded = 1;
     }
-// Now, for each font that was NOT already available I need to go
-//       AddFontResource[Ex]("filename")
-//       SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    int newFontAdded = 0;
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   if (fontNames[i].path == NULL) continue;
-        if (AddFontResourceExA(fontNames[i].path, PRIVATE_FONT, 0) == 0)
-        {   printf("Failed to add font %s\n", fontNames[i].path);
-            fflush(stdout);
-        }
-        newFontAdded = 1;
-//      printf("AddFontResource %s\n", fontNames[i].path);
-//      fflush(stdout);
-    }
-
     if (newFontAdded)
     {   // This call to SendMessage may sometimes cause a long delay.
         SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     }
-
-// Now list all the fonts that are available...
-    memset((void *)&lf, 0, sizeof(lf));
-    lf.lfFaceName[0] = '\0';
-    lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfPitchAndFamily = 0;
-#ifdef LISTFONTS
-    printf("About to list all fonts that are now available\n");
-    fflush(stdout);
-    EnumFontFamiliesExA(hDC, &lf, fontEnumProc1, 0, 0);
-    printf("Listing complete\n");
-    fflush(stdout);
-#endif
-    DeleteDC(hDC);
     return 0;
 #else // WIN32
 #ifdef MACINTOSH
@@ -843,7 +793,6 @@ int add_custom_fonts() // return 0 on success.
 
 #else // Assume all that is left is X11, and that Xft/fontconfig are available
     int screen = 0;
-    XftFontSet *fs = NULL;
     FcConfig *config = FcConfigCreate();
     dpy = XOpenDisplay(NULL);
     if (dpy == NULL)
@@ -852,272 +801,3386 @@ int add_custom_fonts() // return 0 on success.
     }
     screen = DefaultScreen(dpy);
 
+// It might make sense to add just the fonts that I will be using rather than
+// use extra resources adding all that are available. But for now I prefer
+// simplicity.
     char fff[LONGEST_LEGAL_FILENAME];
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   int w;
-        sprintf(fff,
-            (i < 3 ? "%s/" toString(fontsdir) "/%s.otf" :
-                     "%s/" toString(fontsdir) "/%s.ttf"),
-            programDir, fontNames[i].name);
-        w = FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
-#ifdef LISTFONTS
-        printf("Adding the font from %s = %d\n", fff, w);
-#endif
+    {   if (i < 3) sprintf(fff, "%s/" toString(fontsdir) "/%s.otf",
+                           programDir, fontNames[i].name);
+        else sprintf(fff, "%s/" toString(fontsdir) "/%s.ttf",
+                     programDir, fontNames[i].name);
+        FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
     }
     FcConfigSetCurrent(config);
-    XftInit("");
-    fs = XftListFonts(dpy, screen,
-//                    XFT_FAMILY, XftTypeString, fontname,
-                      NULL,
-// I will ask XftListFonts to return all available information about the
-// fonts that are found.
-                      XFT_FAMILY, XFT_STYLE, XFT_SLANT, XFT_WEIGHT,
-                      XFT_SIZE, XFT_PIXEL_SIZE, XFT_ENCODING,
-                      XFT_SPACING, XFT_FOUNDRY, XFT_CORE, XFT_ANTIALIAS,
-                      XFT_XLFD, XFT_FILE, XFT_INDEX, XFT_RASTERIZER,
-                      XFT_OUTLINE, XFT_SCALABLE, XFT_RGBA,
-                      XFT_SCALE, XFT_RENDER, XFT_MINSPACE,
-                      NULL);
-    printf("fontset has %d distinct fonts out of %d total\n",
-           fs->nfont, fs->sfont);
-// Having obtained all the fonts I will print out all the information about
-// them that Xft is prepared to give me. Note that this seems not to include
-// either the "true" or the "Postscript" name that I might previously have
-// thought was important to me. I think that this is because all the
-// information here comes directly from the font-files rather than from any
-// mapping tables. The key items here are thus probably
-//    family
-//    style
-//    slant
-//    weight
-    if (fs->nfont == 0)
-    {   XftFontSetDestroy(fs);
-        printf("Desired font not found\n");
-        return 1;
-    }
-// Note that an XftPattern is just an Fcpattern, so either set of functions
-// can be used to create or manipulate one.
-    XftPattern *ftPattern = NULL;
-    for (int k=0; k<fs->nfont; k++)
-    {   ftPattern = fs->fonts[k];
-// NameUnparse converts the name to something printable
-// But BOO HISS the version of Xft shipped with openSuSE 10.2 and with some
-// other versions of Linux missed it out, so just for now I will comment that
-// bit out. Oh dear! A web search finds patches to gentoo to fix this for
-// builds involving qt3 so it really is not just me! But I BELIEVE it will be
-// a transient bug so I will not put it in the autoconf stuff just at present.
-#if 0
-        char buffer[1000];
-        XftNameUnparse(ftPattern, buffer, sizeof(buffer));
-        printf("%s\n", buffer); fflush(stdout);
-#endif
-// FcPatternPrint displays info over several lines - valuable for debugging!
-        FcPatternPrint(ftPattern); printf("\n"); fflush(stdout);
-    }
-
-    ftVisual = DefaultVisual(dpy, screen);
-    ftColorMap =  DefaultColormap(dpy, screen);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderBlack, &ftBlack);
-    XftColorAllocValue(dpy, ftVisual, ftColorMap, &ftRenderWhite, &ftWhite);
-#if 0
-// I had identified the font that I wanted earlier so now I can open it
-// by just using the information collected then.
-    ftFont = XftFontOpen(dpy, screen,
-                         XFT_FAMILY, XftTypeString, fontname,
-                         XFT_SIZE, XftTypeDouble, 24.0,
-                         NULL);
-#endif
-    XftFontSetDestroy(fs); // Now I am done with the list of fonts.
     return 0;
 #endif // MACINTOSH
 #endif // WIN32
 }
 
 
-bool fontApp::OnInit()
+
+
+int fwinText::MapChar(int c)
 {
-// I find that the real type of argv is NOT "char **" but it supports
-// the cast indicated here to turn it into what I expect.
-    char **myargv = (char **)argv;
-    raw = 1;
-    page = 0;
-    for (int i=0; i<argc; i++)
-    {
-        printf("Arg%d: %s\n", i, myargv[i]);
-        if (strcmp(myargv[i], "--raw") == 0) raw = !raw;
-        else if (myargv[i][0]!= '-' ||
-                 sscanf(myargv[i]+1, "%d", &page) != 1) page = 0;
-    }
-// I will find the special fonts that most interest me in a location related
-// to the directory that this application was launched from. So the first
-// think to do is to identify that location. I then print the information I
-// recover so I can debug things. I have already set up programName etc
-    printf("\n%s\n%s\n%s\n", fullProgramName, programName, programDir);
+// This function maps between a TeX character encoding and the one that is
+// used by the fonts and rendering engine that I use.
+    if (c < 0xa) return 0xa1 + c;
+    else if (c == 0xa) return 0xc5;
+#ifdef UNICODE
+// In Unicode mode I have access to the character at code point 0x2219. If
+// not I must insist on using my private version of the fonts where it is
+// at 0xb7.
+    else if (c == 0x14) return 0x2219;
+#endif
+    else if (c < 0x20) return 0xa3 + c;
+    else if (c == 0x20) return 0xc3;
+    else if (c == 0x7f) return 0xc4;
+    else if (c >= 0x80) return 0xa0;
+    else return c;
+}
 
+
+
+
+
+bool fwinApp::OnInit()
+{
     add_custom_fonts();
-
-    const char *font = "default";  // A default font name to ask for.
-    int size = 48;           // a default size.
-    if (argc > 1) font = myargv[1];
-    if (argc > 2)
-    {   size = atoi(myargv[2]);
-        if (size <= 2 || size > 200) size = 48;
-    }
-    printf("Try for font \"%s\" at size=%d\n", font, size);
-
-    fontFrame *frame = new fontFrame(font, size);
+    fwinFrame *frame = new fwinFrame();
     frame->Show(true);
     return true;
 }
 
-fontFrame::fontFrame(const char *fname, int fsize)
-       : wxFrame(NULL, wxID_ANY, "wxfontdemo")
+fwinFrame::fwinFrame()
+       : wxFrame(NULL, wxID_ANY, "wxterminal")
 {
     SetIcon(wxICON(fwin));
-    panel = new fontPanel(this, fname, fsize);
-    wxSize clientsize(32*32, 9*64);
-    wxSize winsize(ClientToWindowSize(clientsize));
-    SetSize(winsize);
-    SetMinSize(winsize);
-    SetMaxSize(winsize);
+    int numDisplays = wxDisplay::GetCount(); // how many displays?
+// It is not clear to me what I should do if there are several displays,
+// and if there are none I am probably in a mess!
+    if (numDisplays != 1)
+    {   FWIN_LOG("There seem to be %d displays\n", numDisplays);
+    }
+    wxDisplay d0(0);                         // just look at display 0
+    wxRect screenArea(d0.GetClientArea());   // omitting task bar
+    screenWidth = screenArea.GetWidth();
+    screenHeight = screenArea.GetHeight();
+// I will want to end up saving screen size (and even position) between runs
+// of this program.
+    int width  = 900;      // default size.
+    int height = 600;
+// If the default size would fill over 90% of screen width or height I scale
+// down to make it fit better.
+    if (10*width > 9*screenWidth)
+    {   height = height*9*screenWidth/(10*width);
+        width = 9*screenWidth/10;
+    }
+    if (10*height > 9 * screenHeight)
+    {   width = width*9*screenHeight/(10*height);
+        height = 9*screenHeight/10;
+    }
+    panel = new fwinText(this);
+    worker = new fwinWorker();
+    FWIN_LOG("worker = %p\n", worker);
+    int rc = worker->Create(512*1024);  // Argument is stack size
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread creation error = %d\n", rc);
+    rc = worker->Run();
+    if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread run error = %d\n", rc);
+// Note horriblly well that the pointer "worker" may become invalid at any
+// stage from here on.
+    SetMinClientSize(wxSize(400, 100));
+    SetSize(width, height);
     Centre();
 }
 
-
-fontPanel::fontPanel(fontFrame *parent, const char *fname, int fsize)
-       : wxPanel(parent)
+fwinText::fwinText(fwinFrame *parent)
+       : wxScrolled<wxWindow>(parent, wxID_ANY,
+                    wxDefaultPosition, wxDefaultSize,
+                    wxVSCROLL, "fwinText")
 {
-// I *think* I want to make the font have a size specified in pixels
-// not points here... however that appears to be delicate. So I will
-// create one at a plausible point size then adjust it later. I will
-// use "fontScaled" to ensure I only adjust it once.
     frame = parent;
-    fontname = fname;
-    fontsize = fsize;
-    ff = new wxFont();
-    ff->SetFaceName(fontname);
-    ff->SetPointSize(36);
-    frame->SetTitle(ff->GetNativeFontInfoUserDesc());
-    fontScaled = false;
+    fixedPitch = fixedCJK = NULL;
+// The available CJK fonts here are
+//     Windows & Unix            Macintosh
+//     Sazanami Mincho           Sazanami Mincho Regular
+//     Sazanami Gothic           Sazanami Gothic Regular
+//     AR PL New Sung            AR PL New Sung
+// Right at present I will make a selection, but in due course I will
+// provide a menu-driven option to let the user select.
+#ifdef MACINTOSH
+    cjkFontName = "Sazanami Mincho Regular";
+#else
+    cjkFontName = "Sazanami Mincho";
+#endif
+    firstPaint = true;
+// I start off with a 40K character buffer, which seems reasonably
+// generous to me. The plan is that the buffer will automatically expand
+// as needed.
+    textBufferSize = 40000;
+    textBuffer = (uint32_t *)malloc(textBufferSize*sizeof(uint32_t));
+    textEnd = 0;
+    searchFlags = 0;
+    firstVisibleRow = 0;
+    caret = NULL;
+    caretPos = 0;
+    options = 0;
+    keyFlags = 0;
+    flags = 0;
+    type_in = type_out = 0;
+    historyNumber = historyFirst = historyLast = 0;
+    historyInit();
 
+    fwin_in = 0;
+    use_buffer1 = 1;
+
+    inputBufferP = 0;
+    awaiting = 0;
+    unicodePrompt[0] = '>' | 0x02000000;
+    unicodePromptLength = 1;
+    
+
+    logfile = NULL; // a menu option will establish this to keep a log.
+
+    writing.Post(); // enable output!
+}
+
+//
+// Here I have the procedures that implement each editing action.
+//
+
+//
+// Something I have NOT fitted quite carefully enough to all this is
+// arrangements that I ignore things if not waiting for input and force
+// the cursor to the final line in relevant cases.
+//
+
+// ^@   set mark, ie start a selection
+
+void fwinText::setSelectionMark()
+{
+//  return onCmdMark(this, 0, NULL);
+}
+
+// ^A   move to start of current line (after any prompt text!)
+
+void fwinText::moveLineStart()
+{
+    if (caretPos==textEnd && caretPos!=0) caretPos--;
+    else if (caretPos==0 || textBuffer[caretPos] == '\n')  // already at start of line
+    {   beep();
+        return;
+    }
+    while (caretPos>=0 && textBuffer[caretPos] != '\n') caretPos--;
+    caretPos++;
+    repositionCaret();
 }
 
 
-void fontFrame::OnExit(wxCommandEvent &WXUNUSED(event))
+// ^B  move back a character
+
+void fwinText::moveLeft()
+{
+// If the mark is set maybe I should extend the selection...?
+    if (caretPos==0)
+    {   beep();
+        return;
+    }
+// This moves from the start of any line to the end of the previous.
+    caretPos--;
+    repositionCaret();
+}
+
+// ALT-B move back a word
+
+void fwinText::moveWordLeft()
+{
+    if (caretPos == 0)
+    {   beep();
+        return;
+    }
+    for (;;)  // back at least one char and over any whitespace
+    {   caretPos--;
+        if (caretPos < 0) break;
+        wxUniChar ch = textBuffer[caretPos] & 0x00ffffff;
+        if (!wxIsspace(ch)) break;
+    }
+    for (;;)
+    {   if (caretPos < 0) break;
+        wxUniChar ch = textBuffer[caretPos] & 0x00ffffff;
+        if (wxIsspace(ch)) break;
+        caretPos--;
+    }
+    caretPos++;
+    repositionCaret();
+}
+
+// ^C  abandon input, returning an exception to user
+
+void fwinText::interrupt()
+{
+#ifdef RECONSTRUCTED
+// Note that ^C generates a break action whether I am waiting for input or not.
+    onCmdBreak(this, 0, NULL);;
+#endif
+}
+
+// ALT-c  capitalize a word
+
+void fwinText::capitalize()
+{
+#ifdef RECONSTRUCTED
+// I arbitrarily limit the length of a word that I casefix to 63
+// chars.
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char wordbuffer[64];
+    int cp = caretPos;
+    int ws = wordStart(cp);
+    int we = wordEnd(cp);
+    if (ws < promptEnd) ws = promptEnd;
+    if (we > ws + 63) we = ws + 63;
+    extractText(wordbuffer, ws, we-ws);
+    int i;
+    wordbuffer[0] = toupper(wordbuffer[0]);
+    for (i=1; i<we-ws; i++)
+        wordbuffer[i] = tolower(wordbuffer[i]);
+    replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ^D  delete character under cursor (fowards)
+
+void fwinText::deleteForwards()
+{
+    if (caretPos == textEnd)
+    {   beep();
+        return;
+    }
+    int w = caretPos;
+    while (w < textEnd)
+    {   textBuffer[w] = textBuffer[w+1];
+        w++;
+    }
+    textEnd--;
+    Refresh(); // I can do a LOT better than this! See insertChar for the
+               // sort of logic to employ.
+    repositionCaret();
+}
+
+// Should this do special things (a) if there is a selection or (b)
+// if there is a selection and the cursor is within it?
+
+// ALT-d  delete word forwards
+
+void fwinText::deleteWordForwards()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())     // side effect is to move to last line if necessary
+    {   beep();
+        return;
+    }
+    onCmdDeleteWord(this, 0, NULL);
+#endif
+}
+
+// ^E  move to end of current line
+
+void fwinText::moveLineEnd()
+{
+#ifdef RECONSTRUCTED
+// extend selection?
+//    onCmdCursorEnd(this, 0, NULL);
+#endif
+}
+
+// ^F  forward one character
+
+void fwinText::moveRight()
+{
+    if (caretPos == textEnd)
+    {   beep();
+        return;
+    }
+    caretPos++;
+    repositionCaret();
+}
+
+// ALT-F  forward one word
+
+void fwinText::moveWordRight()
+{
+#ifdef RECONSTRUCTED
+// If the mark is set maybe I should extend the selection...
+//    onCmdCursorWordRight(this, 0, NULL);
+#endif
+}
+
+// ^G   If it was the very very first character typed or if I am not
+//      waiting for input, ^G raises an interrupt. If I am waiting for
+//      input and have not typed anything much then it clears the current
+//      input line leaving me back with a fresh start. I will make that so
+//      fresh that ^G^G guarantees an interrupt!
+
+void fwinText::displayBacktrace()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   onCmdBacktrace(this, 0, NULL);
+    }
+    killSelection();
+    setInputText(NULL, 0);
+    historyNumber = historyLast + 1;
+    keyFlags &= ~ANY_KEYS;
+#endif
+}
+
+// ^H  (backspace) delete char before cursor if that is reasonable.
+
+void fwinText::deleteBackwards()
+{
+    if (caretPos == 0)
+    {   beep();
+        return;
+    }
+    caretPos--;
+    int w = caretPos;
+    while (w < textEnd)
+    {   textBuffer[w] = textBuffer[w+1];
+        w++;
+    }
+    textEnd--;
+    Refresh(); // I can do a LOT better than this! See insertChar for the
+               // sort of logic to employ.
+    repositionCaret();
+}
+
+// ALT-h  delete previous word
+
+void fwinText::deleteWordBackwards()
+{
+#ifdef RECONSTRUCTED
+    int pos;
+    switch (isEditableForBackspace())
+    {
+default:                // within the area for active editing.
+// I want to be confident that whatever prompt string has been set the
+// following will never delete part of the prompt...
+        pos = leftWord(caretPos);
+        if (pos < promptEnd) pos = promptEnd;
+        removeText(pos, caretPos-pos, TRUE);
+        setCaretPos(caretPos, TRUE);
+        makePositionVisible(caretPos);
+        flags |= FLAG_CHANGED;
+        modified = TRUE;
+        return;
+case -1:                // current input line is empty.
+case 0:                 // input is not active
+        beep();
+    }
+#endif
+}
+
+// ^I was just a TAB and has been handled elsewhere
+
+// ^J (linefeed) accepts the current line of text
+
+// ^K  kill current line
+// Note that ^G and ^U are somewhat related, and that I do not
+// do anything by way of putting cut text into a kill-buffer, or allowing the
+// user to make selections using the keyboard...
+
+void fwinText::deleteCurrentLine()
+{
+#ifdef RECONSTRUCTED
+    killSelection();
+    setInputText(NULL, 0);
+#endif
+}
+
+// ^L    clear screen (handled as menu shortcut)
+
+// ALT-L convert to lower case
+
+void fwinText::lowerCase()
+{
+#ifdef RECONSTRUCTED
+// I arbitrarily limit the length of a word that I casefix to 63
+// chars.
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char wordbuffer[64];
+    int cp = caretPos;
+    int ws = wordStart(cp);
+    if (ws < promptEnd) ws = promptEnd;
+    int we = wordEnd(cp);
+    if (we > ws + 63) we = ws + 63;
+    extractText(wordbuffer, ws, we-ws);
+    int i;
+    for (i=0; i<we-ws; i++)
+        wordbuffer[i] = tolower(wordbuffer[i]);
+    replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ^M  as ENTER, ^J
+
+// ALT-M  a &Module menu
+
+// ^N  history next if we are at present on the bottom line
+//     otherwise move down a line
+// (also down-arrow key)
+
+// To replace the input line I can can use this... It returns the
+// index of the first character of the inserted line.
+
+int fwinText::setInputText(uint32_t *text, int n)
+{
+#ifdef RECONSTRUCTED
+    int n2 = length;
+    int n1 = lineStart(n2);
+    while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
+    replaceStyledText(n1, n2-n1, text, n, STYLE_INPUT);
+//    changeStyle(n1, length-n1, STYLE_INPUT);  // paint it the right colour
+    setCaretPos(length);
+    makePositionVisible(length);
+    return n1;
+#else
+    return n;
+#endif
+}
+
+
+// The history routines here are never invoked unless we are awaiting input
+
+int fwinText::wordlen(uint32_t *p)
+{
+    if (p == NULL) return 0;
+    int r = 0;
+    while (*p++ != 0) r++;
+    return r;
+}
+
+void fwinText::historyNext()
+{
+#ifdef RECONSTRUCTED
+    const uint32_t *history_string;
+    if (historyLast == -1) // no history lines at all to retrieve!
+    {   beep();
+        return;
+    }
+    if (historyNumber < historyLast) historyNumber++;
+    if ((history_string = historyGet(historyNumber)) == NULL)
+    {   beep();
+        return;
+    }
+    setInputText(history_string, wordlen(history_string));
+#endif
+}
+
+// Commentary on the search mechanism:
+//   If not at present engaged in a search the search key
+//   enters search mode with an empty search string and a given
+//   direction, and the empty string will match against the current
+//   (usually empty) input line so nothing much visible will happen.
+//
+//   A further use of the search key will move one line in the given
+//   direction and search again until the pattern matches. If the alternate
+//   direction search key is pressed the line is moved one line in the
+//   new direction before scanning that way.
+//
+//   ENTER or an arrow key, or DEL or ESC (in general most things that
+//   and not printing characters and not otherwise listed here) exits
+//   search mode with the new current line.
+//
+//   BACKSPACE (^H) removes a character from the search pattern. If there
+//   that leaves none it exits search mode. It pops back to the line you
+//   had before the character it removed was inserted.
+//
+//   typical printing characters add that character to the pattern. If the
+//   pattern is not a valid Regular Expression at the time concerned it is
+//   treated as if completed in the most generous manner possible? Or maybe
+//   the match fails so you get a beep and no movement?
+//   [Gosh what do I mean by that? Do I *REALLY* want regexp matches here?]
+//   Searching continues in the most recently selected direction. If no match
+//   is found the line does not move and the system beeps.
+//
+
+// ALT-n  forward search
+
+void fwinText::searchHistoryNext()
+{
+#ifdef RECONSTRUCTED
+    if (historyLast == -1) // no history to search
+    {   beep();
+        return;
+    }
+// If I am not in a search at present then set the flag for a search
+// with an empty search string and a mark that the direction is forwards.
+// Well if I not only am not in a search but I had not previously scrolled
+// back in the history so I have nowhere to search then I might as well
+// beep and give up.
+    if (historyNumber > historyLast)
+    {   beep();
+        return;
+    }
+    searchFlags = SEARCH_FORWARD;
+#endif
+}
+
+
+int fwinText::trySearch()
+{
+    int r = -1;
+#ifdef RECONSTRUCTED
+    const char *history_string = historyGet(historyNumber);
+    if (history_string == NULL) return -1;
+    while ((r = matchString(searchString, SEARCH_LENGTH, history_string)) < 0)
+    {   if (searchFlags & SEARCH_FORWARD)
+        {   if (historyNumber == historyLast) return -1;
+            historyNumber++;
+        }
+        else
+        {   if (historyNumber == historyFirst) return -1;
+            historyNumber--;
+        }
+        history_string = historyGet(historyNumber);
+        if (history_string == NULL) return -1;
+    }
+#endif
+    return r;
+}
+
+int fwinText::matchString(const char *pat, int n, const char *text)
+{
+// This is a crude and not especially efficient pattern match. I think
+// it should be good enough for use here! I make it return the offset where
+// a match first occurred (if one does) in case that will be useful to me
+// later. I could put the cursor there, perhaps?
+    int offset;
+    for (offset=0;*(text+offset)!=0;offset++)
+    {   const char *p = pat, *q = text+offset;
+        int i;
+        for (i=0; i<n; i++)
+        {   if (p[i] != q[i]) break;
+        }
+        if (i == n) return offset;
+    }
+    return -1;
+}
+
+void fwinText::historyPrev()
+{
+#ifdef RECONSTRUCTED
+    const char *history_string;
+    if (historyLast == -1) // no previous lines to retrieve
+    {   beep();
+        return;
+    }
+// If I have not moved the history pointer at all yet move it into the
+// range of valid history entries.
+    if (historyNumber > historyFirst) historyNumber--;
+    history_string = historyGet(historyNumber);
+    if (history_string == NULL)
+    {   beep();
+        return;
+    }
+    setInputText(history_string, wordlen(history_string));
+#endif
+}
+
+// ALT-P  reverse search
+
+void fwinText::searchHistoryPrev()
+{
+#ifdef RECONSTRUCTED
+    if (historyLast == -1) // no history to search
+    {   beep();
+        return;
+    }
+    if (historyNumber == historyLast + 1) historyNumber--;
+    searchFlags = SEARCH_BACKWARD;
+#endif
+}
+
+// ^S as pause output is handled as a shortcut so that it can be
+// accepted whether or not I am awaiting input.
+
+// ^T  transpose
+
+void fwinText::transpose()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char buff[2];
+    int cp = caretPos;
+    if (cp > length-2)
+    {   beep();
+        return;
+    }
+    extractText(buff, cp, 2);
+    int ch;
+    ch = buff[0];
+    buff[0] = buff[1];
+    buff[1] = ch;
+    replaceStyledText(cp, 2, buff, 2, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ALT-U convert to upper case
+
+void fwinText::upperCase()
+{
+#ifdef RECONSTRUCTED
+// I arbitrarily limit the length of a word that I casefix to 63
+// chars.
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    char wordbuffer[64];
+    int cp = caretPos;
+    int ws = wordStart(cp);
+    if (ws < promptEnd) ws = promptEnd;
+    int we = wordEnd(cp);
+    if (we > ws + 63) we = ws + 63;
+    extractText(wordbuffer, ws, we-ws);
+    int i;
+    for (i=0; i<we-ws; i++)
+        wordbuffer[i] = toupper(wordbuffer[i]);
+    replaceStyledText(ws, we-ws, wordbuffer, we-ws, STYLE_INPUT);
+    setCaretPos(cp);
+    makePositionVisible(cp);
+#endif
+}
+
+// ^Y  paste
+
+void fwinText::paste()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    onCmdPasteSel(this, 0, NULL);
+#endif
+}
+
+// ALT-y rotate killbuffer/clipboard
+
+void fwinText::rotateClipboard()
+{
+#ifdef RECONSTRUCTED
+// @@@@@
+#endif
+}
+
+// ^Z is a keyboard shortcut to pause execution
+
+// ALT-[, ESCAPE
+
+void fwinText::escapePressed()
+{
+    keyFlags ^= ESC_PENDING; // so that ESC ESC cancels the effect.
+}
+
+void fwinText::reinput()
+{
+#ifdef RECONSTRUCTED
+    if (!isEditable())
+    {   beep();
+        return;
+    }
+    onCmdReinput(this, 0, NULL);
+#endif
+}
+
+// Return true if editable, which here is used as
+// a mark of whether the user has requested input.
+
+int fwinText::isEditable()
+{
+#ifdef RECONSTRUCTED
+    if ((options&READONLY)!=0) return FALSE;
+// If we are asking if the fwinText is editable that is because we
+// are trying to insert something. Here it is editable, so the user is
+// waiting for input. I will make the very query force the final line
+// to be visible and ensure that the cursor is within it. This should prevent
+// anybody from every clobbering anything other than the active input line.
+// Note that key-presses while the program is NOT ready to accept them
+// will not cause cursor movement until the program requests input.
+    int n = lineStart(length);
+    makePositionVisible(n);
+    while (n < length && (getStyle(n) & STYLE_PROMPT)) n++;
+    makePositionVisible(length);
+    if (caretPos < n) setCaretPos(length);
+// Furthermore if I am about to change thing I will ensure that any
+// selection lies within the active line.
+    if (selstartpos < n) selstartpos = n;
+    if (selendpos < selstartpos) selendpos = selstartpos;
+#endif
+    return TRUE;
+}
+
+// Return true if editable, to be used when the next operation would
+// be a BACKSPACE (delete-previous). It must thus shift the cursor to
+// avoid deleting the final character of the prompt string.
+
+int fwinText::isEditableForBackspace()
+{
+#ifdef RECONSTRUCTED
+    if ((options&READONLY)!=0) return 0;  // must buffer the action
+    int n = lineStart(length);
+    makePositionVisible(n);
+    while (n < length && (getStyle(n) & STYLE_PROMPT)) n++;
+    makePositionVisible(length);
+// The next line has "<=" where the previous function has just "<"
+    if (caretPos <= n) setCaretPos(length);
+// Furthermore if I am about to change thing I will ensure that any
+// selection lies within the active line.
+    if (selstartpos < n) selstartpos = n;
+    if (selendpos < selstartpos) selendpos = selstartpos;
+    if (n == length) return -1; // nothing that I am allowed to delete
+#endif
+    return 1;
+}
+
+void fwinText::insertNewline()
+{
+#ifdef RECONSTRUCTED
+    int p = length;
+// I find the first "real" character of the input line by scanning back
+// to (a) the start of the buffer (b) the end of a previous line or (c) the
+// end of a prompt string.
+    while (p>0 && getChar(p-1)!='\n' && (getStyle(p-1)&STYLE_PROMPT)==0) p--;
+    int n = length-p;
+    if (n > (int)sizeof(inputBuffer)-5) n = sizeof(inputBuffer)-5;
+    extractText(inputBuffer, p, n);
+// I enter the line that has just been collected into the history
+// record.
+    inputBuffer[n] = 0;
+    historyAdd(inputBuffer, n);
+// Adding an entry could cause an old one to be discarded. So I now ensure
+// that I know what the first and last recorded numbers are.
+    historyLast = historyNextEntry - 1;
+    historyFirst = historyNextEntry - INPUT_HISTORY_SIZE;
+    if (historyFirst < 0) historyFirst = 0;
+    historyNumber = historyLast + 1; // so that ALT-P moves to first entry
+// Now I add a newline to the text, since the user will expect to see that.
+    inputBuffer[n] = '\n';
+    inputBuffer[n+1] = 0;
+    inputBufferLen = n+1;
+    inputBufferP = 0;
+// Stick a newline into the text buffer, and make the screen non-updatable.
+    InsertNewline( );
+    setEditable(FALSE);
+    recently_flushed = 0;
+// stuff user typed is now in buffer... I should never have got here unless
+// the user thread was waiting, so here I unlock it, to tell it that
+// the input buffer is ready.
+    if (sync_even)
+    {   sync_even = 0;
+        UnlockMutex(mutex3);
+        LockMutex(mutex2);
+        UnlockMutex(mutex4);
+    }
+    else
+    {   sync_even = 1;
+        UnlockMutex(mutex1);
+        LockMutex(mutex4);
+        UnlockMutex(mutex2);
+    }
+#endif
+}
+
+
+
+
+
+//- void fwinText::refreshRange(int p, int q)
+//- {
+//- // Firstly at present this is WRONG in that when you have inserted
+//- // a newline this refreshes and hence redraws all the characters that
+//- // are present, but it does not write background in all the places that
+//- // characters move out from.
+//- //
+//- // It is also inefficient in that it refreshes all the way down to the foot
+//- // of the page even if rows there have not altered.
+//- //
+//- // Finally it should arrange to have a Blip operation performed on the
+//- // screen to move whole rows up or down whenever that is feasible rather
+//- // than just redrawing everything from scratch.
+//- //
+//- // Reminder:
+//- //   wxPaintDC dc(this);
+//- //   dc.Blit(xdest, ydest, width, height, dc, xsrc, ysrc);
+//- // will do a simple copy.
+//-
+//-     if (p < firstVisibleRow) p = firstVisibleRow;
+//-     while (p < q)                     // Crude version here!
+//-     {   if (refreshChar(p++)) break;
+//-     }
+//- }
+
+int32_t fwinText::locateChar(int p, int w, int r, int c)
+{
+// Normally call as locateChar(p, firstVisibleRow, 0, 0) but the final 3
+// args are to allow resumption after a previous call. Arg2=-1 stands for
+// firstVisibleRow.
+// Return the row/column of the character cell corresponding to address
+// p in the buffer. Return -1 if the character at position p is above the
+// window, and -2 if it is below. The pointer p may be equal to textEnd, ie
+// one beyond the actual text in the buffer.
+// This needs to take a little care with line-wrapping. It can return
+// column numbers 0 to 79 in general, but if p is textEnd or the character
+// there is a newline it can return a column number of 80.
+// tabs are expanded with tab-stops every 8 columns. The code here exploits
+// the fact that the width (80 columns) is a multiple of the tab width, so
+// while a tab may take one up to column 80 it can not go beyond without the
+// whole tab effect occurring on the next row.
+    if (w == -1) w = firstVisibleRow;
+    if (p < w) return -1; // before the part of screen being searched.
+    while (w != p)
+    {   uint32_t ch = textBuffer[w];
+// The characters processed within this loop are all BEFORE the one I am
+// interested in, and so I process tabs, newlines and line-wrap.
+        if (ch == '\n')
+        {   c = 0;
+            r++;
+            if (r > rowCount) return -2; // below visible screen
+        }
+        else if (c == 80)
+        {   if (ch == '\t') c = 8;       // tab in column 80
+            else c = 1;
+            r++;
+            if (r > rowCount) return -2; // below visible after line-wrap
+        }
+        else if (ch == '\t') c += 8 - (c & 7); // tab
+        else c++;
+        w++;
+    }
+// What I have done now is to find the end position of the character
+// before position p. This is the start position for the character at
+// position p unless there is a line-wrap to perform. That could be the
+// case if r=80 and the character concerned is not a newline. 
+    return PACK(r, c);
+}
+
+void fwinText::insertChar(uint32_t ch)
+{
+    insertChars(&ch, 1);
+}
+
+void fwinText::insertString(wxString s)
+{
+    size_t n = s.Len();
+    if (n > 100)
+    {   FWIN_LOG("Truncating in insertString\n");
+        n = 100;
+    }
+    uint32_t b[100];
+    for (size_t i=0; i<n; i++) b[i] = s.GetChar(i);
+    insertChars(b, (int)n);
+}
+
+void fwinText::insertChars(uint32_t *pch, int n)
+{
+    int32_t loc1 = locateChar(caretPos);
+    int r1 = ROW(loc1), c1 = COL(loc1);
+// I find the location of the end of the line that the character I am
+// about to insert will be on.
+    int lineEnd = caretPos;
+    while (lineEnd < textEnd && textBuffer[lineEnd]!='\n') lineEnd++;
+    int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
+    textEnd++;
+    int p = textEnd+n-1;
+    if (p >= textBufferSize) enlargeTextBuffer();
+// In my terminal I will only ever be inserting within a "single line", and
+// even though that may consist of several rows it is liable to be only
+// a modest distance from the end of my text buffer. And in many cases the
+// user will be typing in characters right at the very end. Thus the loop
+// here copying characters to make space for the newly inserted one is liable
+// to be much less of a performance bottleneck than it could become if I
+// permitted inserts towards the start of a lengthy document.
+    while (p != caretPos)
+    {   textBuffer[p] = textBuffer[p-n];
+        p--;
+    }
+    for (int i=0; i<n; i++) textBuffer[caretPos+i] = pch[i];
+// After inserting the character I look to find where the end of the
+// line that it is on has moved to.
+    int32_t loc3 = locateChar(lineEnd+1, caretPos, r1, c1);
+    caretPos += n;
+    textEnd += n;
+    if (caret != NULL && caret->IsVisible()) repositionCaret();
+
+    Refresh();
+    return; // cop-out for now!
+
+// what follows is a sketch of MUCH better refresh control.
+
+
+// Now I certainly need to refresh from loc1 to loc3, but if
+// ROW(loc2) != ROW(loc3) then my insert caused a change in the number of
+// rows to be displayed so I should refresh all the way down to the bottom
+// of the screen.
+    if (r1 == ROW(loc3))             // everything is on one line
+    {   RefreshRect(wxRect(columnPos[c1], r1*rowHeight,
+                           columnPos[COL(loc3)], rowHeight));
+    }
+    else if (loc2>0 &&               // loc2 is on the screen, several
+             ROW(loc2) == ROW(loc3)) // rows involved, but row count unchanged
+    {   RefreshRect(wxRect(columnPos[c1], r1*rowHeight,
+                           columnPos[80], rowHeight));
+// Here I will refresh the first row from caretPos up until its end,
+// and the whole of all other rows that might be involved. 
+        RefreshRect(wxRect(columnPos[0], (r1+1)*rowHeight,
+                           columnPos[80], (ROW(loc2)-r1)*rowHeight));
+    }
+    else                             // lower bits of screen must scroll
+    {   RefreshRect(wxRect(columnPos[c1], r1*rowHeight,
+                           columnPos[80], rowHeight));
+// In inserting this character inserted a newline or caused extra wrapping
+// I will refresh all the way down to the bottom of the screen.
+        RefreshRect(wxRect(columnPos[0], (r1+1)*rowHeight,
+                           columnPos[80], (rowCount-r1-1)*rowHeight));
+    }
+// Finally I will re-position the caret. Well it could be that somehow
+// somebody got to insert characters before the window has been painted,
+// and in that case the caret might not have been created, so I filter
+// that case out. And also if by some mischance the window does not have
+// the focus I will have hidden the caret so I do not mess with it.
+}
+
+
+
+void fwinText::makePositionVisible(int p)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::setCaretPos(int n)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::command()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::extendedCommand()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::moveUp()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::moveDown()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::pageUp()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::pageDown()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::undo()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::copyRegion()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::beep()
+{
+#ifdef WIN32
+    FWIN_LOG("Use Windows Beep\n");
+    ::Beep(900, 60);
+#else
+    FWIN_LOG("Play wxBell\n");
+    ::wxBell();
+#endif
+}
+
+
+
+void fwinText::killSelection()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+void fwinText::copyWordPrev()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::type_ahead(uint32_t c)
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void fwinText::moveDocStart()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::moveDocEnd()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+int fwinText::charFromPosition(int x, int y)
+{
+#ifdef RECONSTRUCTED
+#endif
+    return 0;
+}
+
+
+
+
+void fwinText::setSelectionEnd()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+void fwinText::cut()
+{
+#ifdef RECONSTRUCTED
+#endif
+}
+
+
+
+
+
+void fwinFrame::OnExit(wxCommandEvent &WXUNUSED(event))
 {
     Destroy();
     exit(0);    // I want the whole application to terminate here!
 }
 
-void fontFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
+void fwinFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
+// At present this never gets activated!
     wxMessageBox(
        wxString::Format(
-           "wxfontdemo (A C Norman 2010)\nwxWidgets version: %s\nOperating system: %s",
+           "wxterminal (A C Norman 2010)\n"
+           "wxWidgets version: %s\n"
+           "Operating system: %s",
            wxVERSION_STRING,
            wxGetOsDescription()),
-       "About wxfontdemo",
+       "About wxterminal",
        wxOK | wxICON_INFORMATION,
        this);
 }
 
-void fontPanel::OnChar(wxKeyEvent &event)
+
+void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {
-    printf("Char event\n"); fflush(stdout);
-    event.Skip();
-    page++;
-    Refresh();
+    int i;
+    double w;
+    wxSize client(GetClientSize());
+    w = (double)client.GetWidth()/80.0;
+    panel->SetSize(client);
+    panel->firstPaint = true;
+    for (i=0; i<81; i++)
+        panel->columnPos[i] = (int)((double)i*w);
+// When I resize the window I will refresh EVERYTHING, and in doing so I
+// will discover where the caret lies.
+    panel->Refresh();
 }
 
-void fontPanel::OnKeyDown(wxKeyEvent &event)
+void fwinText::enlargeTextBuffer()
 {
-    printf("Key Down event\n"); fflush(stdout);
-    page++;
-    event.Skip();
-    Refresh();
+    textBufferSize *= 2;
+    textBuffer =
+        (uint32_t *)realloc(textBuffer, textBufferSize*sizeof(uint32_t));
+    if (textBuffer == NULL) exit(1); // Abrupt collapse on no memory.
 }
 
-void fontPanel::OnKeyUp(wxKeyEvent &event)
+void fwinText::OnChar(wxKeyEvent &event)
 {
-    printf("Key Up event\n"); fflush(stdout);
-    event.Skip();
-    page++;
-    Refresh();
-}
-
-void fontPanel::OnMouse(wxMouseEvent &event)
-{
-    page++;
-    printf("Mouse event. Page now %d\n", page); fflush(stdout);
-    event.Skip();
-    Refresh();
-}
-
-void fontPanel::OnPaint(wxPaintEvent &event)
-{
-    wxPaintDC dc(this);
-    wxColour c1(230, 200, 255);
-    wxColour c2(100, 220, 120);
-    wxBrush b1(c1); wxBrush b2(c2);
-    wxPen p1(c1);   wxPen p2(c2);
-
-    for (int i=0; i<256+32; i+=32)
-    {   for (int j=0; j<32; j++)
-        {   int k = ((i>>5) + j) & 1;
-            dc.SetBrush(k ? b2 : b1);
-            dc.SetPen(k ? p2 : p1);
-            dc.DrawRectangle(32*j, 2*i, 32, 64);
-        }
+    uint32_t c = event.GetUnicodeKey();
+    uint32_t r = event.GetKeyCode();
+    int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
+                                  // Also ALTGR, META, WIN, CONTROL
+    uint32_t *history_string = NULL;
+// If a previous keystroke had been ESC then I act as if this one
+// had ALT combined with it. I will cancel the pending ESC on various
+// menu things as well as here. Note that this conversion copes with
+// local editing combinations such as ALT-D, but ESC-I does not activate
+// a menu the way that ALT-I would have.
+    if (keyFlags & ESC_PENDING)
+    {   m |= wxMOD_ALT;  
+        keyFlags &= ~ESC_PENDING;
     }
-
-    dc.SetFont(*ff);
-    wxCoord w1, h1, d1, xl1;
-    dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
-
-// If I have not adjusted my font size to get the PIXEL size I want.
-// I will scale the height returned for "X" to be the number of pixels I
-// want.
-    if (!fontScaled)
-    {   printf("Original w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
-        ff->Scale((float)fontsize/(float)h1);
-        dc.SetFont(*ff);
-        dc.GetTextExtent("X", &w1, &h1, &d1, &xl1);
-        printf("Adjusted w:%d h:%d d:%d xl:%d\n", w1, h1, d1, xl1);
-        wxString f = ff->GetNativeFontInfoDesc();
-        wxPrintf("Font = %s\n", f);
-        fontScaled = true; // Do this only once!
-    }
-// To make my display match the one I had from my previous FOX-based
-// version I will adjust to make it as if DrawText uses the base-line of
-// the character for its reference point. I draw a little red circle to
-// show where the reference point is...
-    for (int i=0; i<256; i+=32)
-    {   for (int j=0; j<32; j++)
-        {   dc.SetPen(*wxRED_PEN);
-            dc.SetBrush(*wxTRANSPARENT_BRUSH);
-            dc.DrawCircle(32*j, 2*i+64, 8);
-            int k = i + j;
-            if (!raw)
-            {   if (k < 0xa) k = 0xa1 + k;
-                else if (k == 0xa) k = 0xc5;
-#ifdef UNICODE
-// In Unicode mode I have access to the character at code point 0x2219. If
-// not I must insist on using my private version of the fonts where it is
-// at 0xb7.
-                else if (k == 0x14) k = 0x2219;
+// Now I deal with keys that do not have a Unicode translation. I will
+// map them onto codes that are distinguished by having bit 0x80000000 set.
+#define NON_UNICODE 0x80000000U
+    if (c == WXK_NONE)
+    {   switch (r)
+        {
+// I will list all the WXK_ values that can arise from non-Unicode
+// input here. In many cases I will merely ignore the key-press, but
+// by having a full enumeration I remind myself of what I MIGHT want to do.
+// Of course not every keyboard will have all of these, and what might
+// be worse each operating system might intercept some of them
+// before I have a chance to respond!
+#if 0
+    case WXK_START:
+    case WXK_LBUTTON:
+    case WXK_RBUTTON:
+    case WXK_CANCEL:
+    case WXK_MBUTTON:
+    case WXK_SHIFT:
+    case WXK_ALT:
+    case WXK_CONTROL:
+    case WXK_MENU:
+    case WXK_PAUSE:
+    case WXK_CAPITAL:
+    case WXK_SELECT:
+    case WXK_PRINT:
+    case WXK_EXECUTE:
+    case WXK_SNAPSHOT:
+                  case WXK_F2:  case WXK_F3:  case WXK_F4:  case WXK_F5:
+    case WXK_F6:  case WXK_F7:  case WXK_F8:  case WXK_F9:  case WXK_F10:
+    case WXK_F11: case WXK_F12: case WXK_F13: case WXK_F14: case WXK_F15:
+    case WXK_F16: case WXK_F17: case WXK_F18: case WXK_F19: case WXK_F20:
+    case WXK_F21: case WXK_F22: case WXK_F23: case WXK_F24:
+    case WXK_NUMLOCK:
+    case WXK_SCROLL:
+    case WXK_NUMPAD_F2: case WXK_NUMPAD_F3: case WXK_NUMPAD_F4:
+    case WXK_NUMPAD_SEPARATOR:
+    case WXK_WINDOWS_RIGHT:
+    case WXK_WINDOWS_MENU:
+    case WXK_COMMAND:
+    case WXK_NUMPAD_BEGIN:
 #endif
-                else if (k < 0x20) k = 0xa3 + k;
-                else if (k == 0x20) k = 0xc3;
-                else if (k == 0x7f) k = 0xc4;
-                else if (k >= 0x80) k += 0x80*page;
-            }
-            else k += 0x80*page;
-            wxString c = (wchar_t)k;
-            dc.DrawText(c, 32*j, 2*i+64  -h1+d1);
+    default:
+// All the above either will not arise as characters or if they do will be
+// things I wish to ignore.
+            return;
+
+    case WXK_DELETE:
+    case WXK_NUMPAD_DELETE:
+            c = WXK_DELETE;
+            break;
+    case WXK_INSERT:
+    case WXK_NUMPAD_INSERT:
+            c = WXK_INSERT|NON_UNICODE;
+            break;
+    case WXK_CLEAR:
+            c = WXK_CLEAR|NON_UNICODE;
+            break;
+    case WXK_END:
+    case WXK_NUMPAD_END:
+            c = WXK_END|NON_UNICODE;
+            break;
+    case WXK_HOME:
+    case WXK_NUMPAD_HOME:
+            c = WXK_HOME|NON_UNICODE;
+            break;
+    case WXK_LEFT:
+    case WXK_NUMPAD_LEFT:
+            c = WXK_LEFT|NON_UNICODE;
+            break;
+    case WXK_UP:
+    case WXK_NUMPAD_UP:
+            c = WXK_UP|NON_UNICODE;
+            break;
+    case WXK_RIGHT:
+    case WXK_NUMPAD_RIGHT:
+            c = WXK_RIGHT|NON_UNICODE;
+            break;
+    case WXK_DOWN:
+    case WXK_NUMPAD_DOWN:
+            c = WXK_DOWN|NON_UNICODE;
+            break;
+    case WXK_PAGEUP:
+    case WXK_NUMPAD_PAGEUP:
+            c = WXK_PAGEUP|NON_UNICODE;
+            break;
+    case WXK_PAGEDOWN:
+    case WXK_NUMPAD_PAGEDOWN:
+            c = WXK_PAGEDOWN|NON_UNICODE;
+            break;
+    case WXK_HELP:
+    case WXK_F1:
+    case WXK_NUMPAD_F1:
+            c = WXK_HELP|NON_UNICODE;
+            break;
+
+// Now I have some cases where there may be special dedicated keys on some
+// models of keyboard, or where the numeric keypad might be in use. In the
+// cases that follow I merely map the key concerned onto the regular
+// character it equates to. So eg WXK_NUMPAD0 turns into merely '0'.
+    case WXK_NUMPAD0: case WXK_NUMPAD1:
+    case WXK_NUMPAD2: case WXK_NUMPAD3:
+    case WXK_NUMPAD4: case WXK_NUMPAD5:
+    case WXK_NUMPAD6: case WXK_NUMPAD7:
+    case WXK_NUMPAD8: case WXK_NUMPAD9:
+            c = r + '0' - WXK_NUMPAD0;
+            break;
+    case WXK_MULTIPLY:
+            c = '*';
+            break;
+    case WXK_ADD:
+            c = '+';
+            break;
+    case WXK_SEPARATOR:
+            c = WXK_SPACE;
+            break;
+    case WXK_SUBTRACT:
+            c = '-';
+            break;
+    case WXK_DECIMAL:
+            c = '.';
+            break;
+    case WXK_DIVIDE:
+            c = '/';
+            break;
+    case WXK_NUMPAD_SPACE:
+            c = WXK_SPACE;
+            break;
+    case WXK_NUMPAD_TAB:
+            c = WXK_TAB;
+            break;
+    case WXK_NUMPAD_ENTER:
+            c = WXK_RETURN;
+            break;
+    case WXK_NUMPAD_EQUAL:
+            c = '=';
+            break;
+    case WXK_NUMPAD_MULTIPLY:
+            c = '*';
+            break;
+    case WXK_NUMPAD_ADD:
+            c = '+';
+            break;
+    case WXK_NUMPAD_SUBTRACT:
+            c = '-';
+            break;
+    case WXK_NUMPAD_DECIMAL:
+            c = '.';
+            break;
+    case WXK_NUMPAD_DIVIDE:
+            c = '/';
+            break;
         }
+// If I "break" from the above switch block it means I have translated
+// the raw character into a Unicode on in C. 
+    }
+//  FWIN_LOG("Character %#x modifiers %x\n", c, m);
+// I will let the Search Pending code drop through in cases where the
+// keystroke should be treated as a return to "ordinary" processing. Also
+// note that I only expect to find myself in search mode in cases where the
+// system is waiting for input.
+    if (searchFlags != 0)
+    {   int save, r, ls;
+        switch (c)
+        {
+// BACKSPACE removes a character from the search string
+    case WXK_BACK:
+// When I delete a character from a search string I will pop the active
+// history line back to the first one found when the remaining string
+// was searched for. If I delete back to nothing I will leave the input
+// line blank.
+            if (SEARCH_LENGTH == 0)
+            {   beep();
+                searchFlags = 0;   // cancel searching before it started!
+                killSelection();
+                return;
+            }
+            searchFlags--;
+            if (SEARCH_LENGTH == 0)
+            {   searchFlags = 0;   // delete the one char in the search string
+                killSelection();
+                setInputText(NULL, 0);
+                return;
+            }
+            historyNumber = searchStack[SEARCH_LENGTH];
+// The "trySearch" here really really ought to succeed since I have reverted
+// to a history line where it succeeded before. I do it again here so I can
+// find out where, on that line, the match was so I can establish it as a
+// selection.
+            startMatch = trySearch();
+            history_string = historyGet(historyNumber);
+// ought not to return NULL here!
+            ls = setInputText(history_string, wordlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+// ALT-P and ALT-p and UP all search backwards
+    case 'P': case 'p':
+            if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
+    case WXK_UP|NON_UNICODE:
+            searchFlags &= ~SEARCH_FORWARD;
+            searchFlags |= SEARCH_BACKWARD;
+            if (historyNumber <= historyFirst)
+            {   beep();  // already on last possible place
+                return;
+            }
+            save = historyNumber;
+            historyNumber--;
+            r = trySearch();
+            if (r == -1)
+            {   historyNumber = save;
+                beep();
+                return;
+            }
+            startMatch = r;
+            history_string = historyGet(historyNumber);
+            ls = setInputText(history_string, wordlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+// ALT-N and ALT-n and DOWN all search forwards
+    case 'N': case 'n':
+            if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
+    case WXK_DOWN|NON_UNICODE:
+            searchFlags |= SEARCH_FORWARD;
+            searchFlags &= ~SEARCH_BACKWARD;
+            if (historyNumber >= historyLast)
+            {   beep();
+                return;
+            }
+            save = historyNumber;
+            historyNumber++;
+            r = trySearch();
+            if (r == -1)
+            {   historyNumber = save;
+                beep();
+                return;
+            }
+            startMatch = r;
+            history_string = historyGet(historyNumber);
+            ls = setInputText(history_string, wordlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+// I detect ^U here and cause it to exit search mode.
+    case ('U' & 0x15):
+            searchFlags = 0;
+            killSelection();
+            return;
+    case WXK_ESCAPE:       // ctl-[
+            keyFlags ^= ESC_PENDING;
+            return;
+    default:
+    defaultlabelsearch:
+// I suggest "^@" as a sensible character to type to exit from searching.
+// Acting on it just "sets the mark" which is typically harmless. However
+// I will exit search mode with any control or ALT combination too
+            if (c == 0 ||
+                (c & NON_UNICODE) != 0 ||
+                (m & (wxMOD_ALT | wxMOD_CMD)) != 0)
+            {   searchFlags = 0;
+                killSelection();
+                break;
+            }
+// here I should have a single simple character in c to search for
+// and I will filter out control characters... except tab!
+            if (c < 0x20 && c != '\t')
+            {   searchFlags = 0;
+                killSelection();
+                break;
+            }
+// Here I have a further printable character to add to the search
+// pattern. If ignore it if the search string has become ridiculously long
+// to avoid a buffer overflow. Note that these days the text buffer (and hence
+// the search string and history buffer) will be stored as 32-bit units
+// each holding a Unicode char in the lower 24 bits.
+            if (SEARCH_LENGTH > 250)
+            {   beep();
+                return;
+            }
+            searchString[SEARCH_LENGTH] = c;
+            searchStack[SEARCH_LENGTH] = historyNumber;
+            searchFlags++;
+            save = historyNumber;
+            r = trySearch();
+            if (r == -1)
+            {   historyNumber = save;
+                beep();
+                searchFlags--;
+                return;
+            }
+            startMatch = r;
+            history_string = historyGet(historyNumber);
+            ls = setInputText(history_string, wordlen(history_string));
+// To give a visual indication of what I have found I will select the match,
+// which will leave it highlighted on the display. I must remember to kill
+// my selection every time I exit search mode!
+            killSelection();
+#ifdef RECONSTRUCTED
+            setAnchorPos(ls+startMatch);
+            extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
+            setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
+#endif
+            return;
+        }
+    }
+// If the very first character I see is a "^D" it is to be taken as EOF
+// rather than as "delete next character".
+    if (c == ('D' & 0x1f) &&
+        !(keyFlags & ANY_KEYS))
+    {   setCaretPos(textEnd);
+// I force a Control-D character into the buffer and then pretend that
+// a newline had also been typed.
+        insertChar(0x04);
+        insertNewline();
+        return;
+    }
+// If the very first key I see is "^G" I will raise an exception
+// for the user.
+    if (c == ('C' & 0x1f) &&
+        !(keyFlags & ANY_KEYS))
+    {   displayBacktrace();
+        return;
+    }
+    keyFlags |= ANY_KEYS;
+    switch (c)
+    {
+case WXK_BACK:  // = Ctrl-H
+// ALT backspace does a delete-backwards-word, while just backspace
+// deletes a single character. I find that CTRL-backspace (at least on
+// on Windows) is mapped to ctrl-DELETE so that will delete forwards.
+        beep(); // to test this @@@
+        if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
+        else deleteBackwards();
+        return;
+case WXK_END|NON_UNICODE:
+// Hmmm - still should I extend a selection if an anchor is set?
+// END should probably go to the end of the current line, with ALT-END
+// going to the end of the last line.
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocEnd();
+        else moveLineEnd();
+        return;
+case WXK_HOME|NON_UNICODE:
+// HOME should probably go to the start of the current active line, with
+// ALT-HOME being the thing that goes to top of the screen-buffer.
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocStart();
+        else moveLineStart();
+        return;
+case WXK_LEFT|NON_UNICODE:
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordLeft();
+        else moveLeft();
+        return;
+case WXK_RIGHT|NON_UNICODE:
+        if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordRight();
+        else moveRight();
+        return;
+case WXK_UP|NON_UNICODE:
+// UP      go to previous item in history
+// ALT-UP  search backwards in history
+// CTRL-UP or action in read-only region: merely move up a line
+        if ((m & wxMOD_CMD) || (options & READONLY)) moveUp();
+        else if (m & wxMOD_ALT) searchHistoryPrev();
+        else historyPrev();
+        return;
+case WXK_DOWN|NON_UNICODE:
+// If you are not waiting for input then cursor up and down just move you up
+// and down! If you are waiting for input then Control can be used to break
+// you out from the input-line...
+        if ((m & wxMOD_CMD) || (options & READONLY)) moveDown();
+        else if (m & wxMOD_ALT) searchHistoryNext();
+        else historyNext();
+        return;
+case WXK_RETURN:
+// case ('J' & 0x1f):
+// I always act as if newlines were typed at the very end of the input.
+// Right now I treat ENTER and ^J and ^M all the same, and ignore any
+// ALT, SHIFT or CTRL. Some people might want to use modifiers on ENTER
+// to signify some sort of soft newline?
+        setCaretPos(textEnd);
+        c = '\n';   // normalise to "newline"
+        goto defaultlabel;
+case WXK_TAB:
+        c = '\t';
+        goto defaultlabel;
+case '@':
+// As a default sort of behaviour if my chart of actions shows a key doing
+// something interesting with CONTROL but does not specify what happens
+// with ALT, I think I will tend to make ALT-x behave like ^x.
+        if (m & wxMOD_ALT)
+        {   setSelectionMark();
+            return;
+        }
+        else goto defaultlabel;
+case '@' & 0x1f:
+        setSelectionMark();
+        return;
+case 'A': case 'a':
+        if (m & wxMOD_ALT)
+        {   moveLineStart();
+            return;
+        }
+        else goto defaultlabel;
+case 'A' & 0x1f:
+        moveLineStart();
+        return;
+case 'B' & 0x1f:
+        moveLeft();
+        return;
+case 'B': case 'b':
+        if (m & wxMOD_ALT)
+        {   moveWordLeft();
+            return;
+        }
+        else goto defaultlabel;
+case 'C' & 0x1f:
+        interrupt();
+        return;
+case 'C': case 'c':
+        if (m & wxMOD_ALT)
+        {   capitalize();
+            return;
+        }
+        goto defaultlabel;
+case WXK_DELETE:
+// On Windows (at least) I find that Ctrl-backspace gets returned
+// as Ctrl-DELETE and I want it to delete a single character not a word.
+// I think. Hence I let Ctrl-DEL delete a character, while ALT-DEL deletes
+// a word.
+        if (m & wxMOD_ALT)
+        {   deleteWordForwards();
+            return;
+        }
+        c = WXK_DELETE;
+        goto defaultlabel;
+case 'D' & 0x1f:
+// Here I may want to arrange that if the current input-buffer is empty
+// then ^D causes and EOF to be returned. Well yes, I have arranged that
+// elsewhere so I only get here if the user has typed some chars already.
+        goto defaultlabel;
+case 'D': case 'd':
+        if (m & wxMOD_ALT)
+        {   deleteWordForwards();
+            return;
+        }
+        goto defaultlabel;
+case 'E' & 0x1f:
+        moveLineEnd();
+        return;
+case 'E': case 'e':
+// ALT-e enters the EDIT menu: this is handled by having the menu
+// registered elsewhere.
+        goto defaultlabel;
+case 'F' & 0x1f:
+        moveRight();
+        return;
+case 'F': case 'f':
+        if (m & wxMOD_ALT)
+        {   moveWordRight();
+            return;
+        }
+        goto defaultlabel;
+case 'G' & 0x1f:
+        displayBacktrace();
+        return;
+case 'G': case 'g':
+        if (m & wxMOD_ALT)
+        {   displayBacktrace();
+            return;
+        }
+        goto defaultlabel;
+// case 'H' & 0x1f: // = WXK_BACK
+case 'H': case 'h':
+        if (m & wxMOD_ALT)
+        {   deleteWordBackwards();
+            return;
+        }
+         goto defaultlabel;
+// case 'I' & 0x1f: // == WXK_TAB
+case 'I': case 'i':
+// ALT-i enters the FILE menu
+        goto defaultlabel;
+case 'J' & 0x1f:
+         c = '\n';
+         goto defaultlabel;
+case 'J': case 'j':
+        if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
+        {   insertNewline();
+            return;
+        }
+        goto defaultlabel;
+case 'K' & 0x1f:
+        deleteCurrentLine();
+        return;
+case 'K': case 'k':
+        if (m & wxMOD_ALT)
+        {   deleteCurrentLine();
+            return;
+        }
+        goto defaultlabel;
+// ^L will be a shortcut for clear-screen
+case 'L': case 'l':
+        if (m & wxMOD_ALT)
+        {   lowerCase();
+            return;
+        }
+        goto defaultlabel;
+// case 'M' & 0x1f: // = WXK_RETURN
+case 'M': case 'm':
+// ALT-m enters the MODULE menu
+        goto defaultlabel;
+case 'N' & 0x1f:
+        if (options & READONLY) moveDown();
+        else historyNext();
+        return;
+case 'N': case 'n':
+        if (options & READONLY) goto defaultlabel;
+        else if (m & wxMOD_ALT)
+        {   searchHistoryNext();
+            return;
+        }
+        goto defaultlabel;
+// case 'O' & 0x1f: // menu shortcut to lose eoutput
+case 'O': case 'o':
+// ^O will be purge output.
+//    I hope that by making ^O, ^S and ^Q menu shortcuts they will get
+//    acted upon whether I am waiting for input or not.
+// ALT-O enters the FONT menu
+        goto defaultlabel;
+case 'P' & 0x1f:
+        if (options & READONLY) moveUp();
+        else historyPrev();
+        return;
+case 'P': case 'p':
+        if (options & READONLY) goto defaultlabel;
+        else if (m & wxMOD_ALT)
+        {   searchHistoryPrev();
+            return;
+        }
+        goto defaultlabel;
+case 'Q': case 'q':
+// ^Q will be RESUME OUTPUT
+        if (m & wxMOD_ALT) return; // Ignore ALT-Q
+        goto defaultlabel;
+case 'R' & 0x1f:
+        Refresh();
+        return;
+case 'R': case 'r':
+// ALT-r will be the B&reak menu
+        goto defaultlabel;
+// case 'S' & 0x1f: // menu shortcut
+case 'S': case 's':
+// ^S should pause output
+// ALT-s enters the SWITCH menu
+        goto defaultlabel;
+case 'T' & 0x1f:
+        transpose();
+        return;
+case 'T': case 't':
+        if (m & wxMOD_ALT)
+        {   transpose();
+            return;
+        }
+        goto defaultlabel;
+case 'U' & 0x1f:
+        undo();
+        return;
+case 'U': case 'u':
+        if (m & wxMOD_ALT)
+        {   upperCase();
+            return;
+        }
+        goto defaultlabel;
+case 'V': case 'v':
+// ^V will be PASTE and is handled as a shortcut
+        goto defaultlabel;
+case 'W' & 0x1f:
+// ^W behaviour is just like ALT-H
+        deleteWordBackwards();
+        return;
+case 'W': case 'w':
+        if (m & wxMOD_ALT)
+        {   copyRegion();
+            return;
+        }
+        goto defaultlabel;
+case 'X' & 0x1f:
+// Just what these have to do is a mystery to me at present!
+// Well that is an overstatement - what I mean is that I am not yet
+// implementing anything!
+        extendedCommand();
+        return;
+case 'X': case 'x':
+        if (m & wxMOD_ALT)
+        {   command();
+            return;
+        }
+        goto defaultlabel;
+case 'Y' & 0x1f:
+// ^Y is short for YANK, otherwise known as PASTE
+        paste();
+        return;
+case 'Y': case 'y':
+        if (m & wxMOD_ALT)
+        {   rotateClipboard();
+            return;
+        }
+        goto defaultlabel;
+// case 'Z' & 0x1f: // suspend
+case 'Z': case 'z':
+        goto defaultlabel;
+// case '[' ^ 0x1f: // = WXK_ESCAPE
+case '[':
+        goto defaultlabel;
+case WXK_ESCAPE:       // ctl-[
+// ESC must have the effect of simulating the ALT property for the following
+// character.
+        return escapePressed();
+case '\\' & 0x1f:
+        return; // should exit the application???
+case '\\':
+        goto defaultlabel;
+case ']':
+        goto defaultlabel;
+case '^' & 0x1f:
+        reinput();
+        return;
+case '^':
+        goto defaultlabel;
+case '_':
+        if (m & wxMOD_ALT)
+        {   copyWordPrev();
+            return;
+        }
+        goto defaultlabel;
+
+default:
+defaultlabel:
+
+
+        if (awaiting)
+        {   if (c == '\n')
+            {   insertChar(c);
+                inputBuffer[inputBufferLen++] = '\n';
+                awaiting = 0;
+                reading.Post();
+                return;
+            }
+            insertChar(c | 0x01000000);
+            inputBuffer[inputBufferLen++] = c;
+            return;
+        }
+        beep();
+        return;
+
+#ifdef RECONSTRUCTED
+        insertChar(c); // @@@@
+        if (c == 'X' && frame->worker != NULL)
+        {   FWIN_LOG("X test case\n");
+            frame->worker->sendToScreen("Hi there @\n"); // @@@@
+        }
+#ifdef XXXXXX
+        if ((event->code & ~0xff) != 0 ||
+            event->text[1] != 0)
+            return onKeyPress();
+#endif
+// here I should have a single simple character
+#ifdef XXXXXX
+        ch = event->text[0];
+// and I will filter out control characters...
+        if ((ch & 0xff) < 0x20) return; //  onKeyPress();
+#endif
+        break;
+#endif // RECONSTRUCTED
+    }
+
+
+#ifdef RECONSTRUCTED
+
+// Now I am left with printable characters plus TAB and NEWLINE. If the
+// terminal is waiting for input or if CTRL or ALT was associated with
+// the key I delegate.
+// @@@ I should really try to check so that when I insert a ")", "]" or
+// "}" I look for the corresponding opening bracket and flash it.
+    if (isEditable() ||
+        (m & wxMOD_ALT))
+    {
+// I want the input line to be in a special colour.
+#ifdef XXXXXX
+        long rr = onKeyPress();
+        changeStyle(promptEnd, textEnd-promptEnd, STYLE_INPUT);
+#endif
+        return;
+    }
+// I have now delegated everything except simple printable characters
+// plus tab, backspace and newline without CTRL or ALT.
+// I will interpret backspace as deleting the most recent character
+// (if there is one, and not if we get back to a newline). Otherwise
+// I just fill a (circular) buffer.
+    flags &= ~FLAG_TIP;
+    if (c == '\b')  // delete previous character in buffer if there is one
+    {   int n = type_in;
+        if (--n < 0) n = TYPEAHEAD_SIZE-1;
+// I can not delete a character if there is not one there. I will not delete
+// it if the previous character was a newline. In such cases I just beep.
+        if (type_in == type_out ||
+            ahead_buffer[n] == '\n')
+        {   beep();
+            return;
+        }
+        type_in = n;
+    }
+    else type_ahead(c);
+
+
+#endif // RECONSTRUCTED
+
+    return;
+}
+
+
+
+
+
+void fwinText::historyInit()
+{
+    int i;
+    historyNextEntry = historyCurrent = longestHistoryLine = 0;
+    for (i=0; i<INPUT_HISTORY_SIZE; i++)
+        input_history[i] = NULL;
+}
+
+void fwinText::historyEnd()
+{
+    int i;
+    for (i=0; i<INPUT_HISTORY_SIZE; i++)
+    {   if (input_history[i] != NULL) free(input_history[i]);
+    }
+}
+
+void fwinText::historyAdd(uint32_t *s, int n)
+{
+/* Make a copy of the input string... */
+    size_t size = sizeof(uint32_t)*(n + 1);
+    uint32_t *scopy = (uint32_t *)malloc(size);
+    int p = historyNextEntry % INPUT_HISTORY_SIZE;
+/* If malloc returns NULL I just store an empty history entry. */
+    if (scopy != NULL) memcpy(scopy, s, size);
+/*
+ * I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
+ * entries.
+ */
+    if (input_history[p] != NULL) free(input_history[p]);
+    input_history[p] = scopy;
+    historyNextEntry++;
+    if (scopy != NULL)
+    {   
+        if (n > longestHistoryLine) longestHistoryLine = n;
+    }
+}
+
+uint32_t *fwinText::historyGet(int n)
+{
+    static uint32_t nullString[] = {0};
+    uint32_t *s;
+/*
+ * Filter our values that are out of range and in those cases return NULL
+ * as a flag to report the error.
+ */
+    if (n == historyNextEntry) return &nullString[0];
+    if (n < 0 ||
+        n >= historyNextEntry ||
+        n < historyNextEntry-INPUT_HISTORY_SIZE) return NULL;
+    s = input_history[n % INPUT_HISTORY_SIZE];
+/* The NULL here would be if malloc had failed earlier. */
+    if (s == NULL) return &nullString[0];
+    else return s;
+}
+
+
+void fwinText::OnMouse(wxMouseEvent &event)
+{
+    FWIN_LOG("Mouse event\n");
+    event.Skip();
+}
+
+void fwinText::OnSetFocus(wxFocusEvent &event)
+{
+    if (caret!=NULL) repositionCaret();
+}
+
+void fwinText::repositionCaret(int w, int r, int c)
+{
+    int32_t caretCell = locateChar(caretPos, w, r, c);
+    if (caretCell < 0) while (caret->IsVisible()) caret->Hide();
+    else
+    {   int r = ROW(caretCell), c = COL(caretCell);
+        caret->Move(c==80 ? columnPos[c]-2 : columnPos[c], rowHeight*r);
+        while (!caret->IsVisible()) caret->Show();
+    }
+}
+
+void fwinText::OnKillFocus(wxFocusEvent &event)
+{
+    if (caret != NULL)
+        while (caret->IsVisible()) caret->Hide();
+}
+
+// sendToScreen will in general NOT be used - instead I will put
+// material in fwin_buffer and then call ensure_screen().
+
+void fwinWorker::sendToScreen(wxString s)
+{
+    wxCommandEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, TO_SCREEN);
+    event->SetString(s.c_str());  // careful to copy the string
+    wxQueueEvent(panel, event);
+    FWIN_LOG("sendToScreen \"%s\"\n", (const char *)s.c_str());
+}
+
+void fwinText::OnToScreen(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("receive in OnToScreen \"%s\"\n", (const char *)text.ToAscii());
+    insertString(text);
+}
+
+int fwinText::unpackUTF8(uint32_t *u, const char *s, int ends)
+{
+    int k = 0;
+    int n = 0, state = 0;
+    uint32_t uc;    // Unicode char that is being reconstructed.
+    while (k != ends)
+    {   uint32_t c = s[k] & 0xff;
+        k++;
+        switch (state)
+        {
+    case 3: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= ((c & 0x3f) << 12);
+            state = 2;
+            break;
+    case 2: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= ((c & 0x3f) << 6);
+            state = 1;
+            break;
+    case 1: if ((c & 0xc0) != 0x80) FWIN_LOG("Malformed UTF-8 sequence\n");
+            uc |= (c & 0x3f);
+            u[n++] = uc;
+            uc = 0;
+            state = 0;
+            break;
+    case 0: if ((c & 0x80) == 0) u[n++] = c;
+            else if ((c & 0xe0) == 0xc0)
+            {   uc = (c & 0x1f) << 6;
+                state = 1;
+            }
+            else if ((c & 0xf0) == 0xe0)
+            {   uc = (c & 0x0f) << 12;
+                state = 2;
+            }
+            else if ((c & 0xf8) == 0xf0)
+            {   uc = (c & 0x07) << 18;
+                state = 3;
+            }
+            else FWIN_LOG("Malformed UTF-8 sequence\n");
+            break;
+        }
+    }
+    return n;
+}
+
+void fwinText::OnSetPrompt(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetPrompt %s\n", fwin_prompt_string);
+    unicodePromptLength = unpackUTF8(&unicodePrompt[0],
+                                     &fwin_prompt_string[0],
+                                     strlen(fwin_prompt_string));
+    for (int i=0; i<unicodePromptLength; i++)
+        unicodePrompt[i] |= 0x02000000;   // force prompt into BLUE
+    writing.Post();
+}
+
+void fwinText::OnSetMenus(wxThreadEvent& event)
+{
+    FWIN_LOG("OnSetMenus\n");
+    writing.Post();
+}
+
+void fwinText::OnRefreshSwitches(wxThreadEvent& event)
+{
+    FWIN_LOG("OnRefreshSwitches\n");
+    writing.Post();
+}
+
+
+void fwinText::OnSetLeft(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetLeft %s\n", (const char *)text.ToAscii());
+    writing.Post();
+}
+
+void fwinText::OnSetMid(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetMid %s\n", (const char *)text.ToAscii());
+    writing.Post();
+}
+
+void fwinText::OnSetRight(wxThreadEvent& event)
+{
+    wxString text = event.GetString();
+    FWIN_LOG("OnSetRight %s\n", (const char *)text.ToAscii());
+    writing.Post();
+}
+
+void fwinText::OnFlushBuffer1(wxThreadEvent& event)
+{
+    OnFlushBuffer(&fwin_buffer1[0]);
+}
+
+void fwinText::OnFlushBuffer2(wxThreadEvent& event)
+{
+    OnFlushBuffer(&fwin_buffer2[0]);
+}
+
+void fwinText::OnFlushBuffer(const char *fwin_buffer)
+{
+    recently_flushed = 0;
+    uint32_t wideBuffer[FWIN_BUFFER_SIZE];
+    int n = unpackUTF8(&wideBuffer[0], fwin_buffer, fwin_out);
+    insertChars(&wideBuffer[0], n);
+#ifdef RECONSTRUCTED
+    makePositionVisible(rowStart(length));
+#endif
+// Tell the worker thread that the GUI is now ready to be sent another request.
+    writing.Post();
+}
+
+
+void fwinText::OnRequestInput(wxThreadEvent& event)
+{
+    static int count = 0;
+// At this point the worker thread is halted waiting on the "reading"
+// semaphore. Just before that the worker thread had called
+// fwin_ensure_screen and had delayed until that action had completed, and so
+// I know that the screen is in an up to date state and that the worker is
+// at present suspended. I first display the prompt. Then if there are
+// any type-ahead characters I process them one at a time putting them
+// into inputBuffer. If I reach an ENTER I will have done and can signal
+// the worker thread. If even after processing any type-ahead material I only
+// have a part-line in inputBuffer I will set a flag (awaiting) which will
+// cause OnChar to put anything it receives into inputBuffer not the
+// type-ahead buffer. When OnChar sees an ENTER it can clear the awaiting
+// flag and signal the worker thread.
+    FWIN_LOG("OnRequestInput\n");
+    caretPos = textEnd;
+    insertChars(unicodePrompt, unicodePromptLength);
+    makePositionVisible(caretPos);
+    writing.Post();
+
+    awaiting = 1;
+    return;  // no type-ahead for now
+
+    switch (count++)
+    {
+case 0:
+#ifdef SMALL
+        strcpy(inputBuffer, "(explode \"Arthur\")\n");
+#else
+        strcpy(inputBuffer, "(oblist)\n");
+#endif
+        inputBufferP = 0;
+        inputBufferLen = strlen(inputBuffer);
+        break;
+case 1: strcpy(inputBuffer, "(stop 0)\n");
+        inputBufferP = 0;
+        inputBufferLen = strlen(inputBuffer);
+        break;
+default:inputBufferP = 0;
+        inputBufferLen = 0;
+        break;
+    }
+    reading.Post();
+}
+
+
+void fwinText::OnMinimiseWindow(wxThreadEvent& event)
+{
+    FWIN_LOG("OnMinimiseWindow\n");
+    Hide();
+    writing.Post();
+}
+
+void fwinText::OnRestoreWindow(wxThreadEvent& event)
+{
+    FWIN_LOG("OnRestoreWindow\n");
+    Show();
+    writing.Post();
+}
+
+// The following table shows the character coverage provided by the
+// cmuntt.otf font I use (that is Computer Modern Typewriter Unicode).
+// I will use that font whenever the relevant bit here says it is
+// appropriate, and will use my CJK font otherwise. This table was created
+// using a jiffy Java program.
+
+static int32_t cmtt_coverage[8192] = {
+    0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
+    0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xcdfcfc66, 0x79bffcff, 0xfcffcfff,
+    0x8283a472, 0xc5b58161, 0xfffff804, 0x33c0fccf,
+    0xfffffff3, 0x470337c0, 0x0000ffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xf3fbffff, 0xffc00060,
+    0x10474000, 0x62300538, 0x00040000, 0x60000c22,
+    0x0febffff, 0xdfffffff, 0xfffe40fd, 0xc0000400,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xfeffffff, 0xffffffff, 0xfffeffff, 0xffffffcf,
+    0x00003000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000001, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 1000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 1800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x813400c8, 0x00000000, 0x00000000, 0x00000000,
+    0x0000f100, 0x00000000, 0x0cc00000, 0x00000000,
+    0xfffff0f3, 0xff3cffff, 0xfff00fff, 0xf0ffff0f,
+    0xffffffd0, 0xffffffff, 0xffffffff, 0xffffffc0,
+    0xff00fc00, 0xff00ff00, 0xfc00ff00, 0xff00fffc,
+    0xff00ff00, 0xff00fbdf, 0xfb5ff3d7, 0xffd73b5e,
+    /* Code 2000 */
+    0x518ffaff, 0xe2fec075, 0x8e002800, 0x003f0000,
+    0x80000000, 0x4a582000, 0x00000000, 0x00000000,
+    0x10000302, 0xa3020000, 0x00000000, 0x00000000,
+    0x0000f180, 0x00000000, 0x00000000, 0x00000000,
+    0x02002120, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x02000000, 0x00000000,
+    0x00000000, 0x20600000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x30000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xa0088888, 0x08080808, 0x0000ffff, 0xfff00000,
+    0x00000000, 0x00000000, 0x00100000, 0x02000000,
+    0x00000000, 0x00040000, 0x80000000, 0x00200000,
+    0x00000000, 0x00062000, 0x00000000, 0x00000000,
+    0x00000004, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 2800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00008000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000080, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 3000 */
+    0x00000030, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 3800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 4000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 4800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 5000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 5800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 6000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 6800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 7000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 7800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 8000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 8800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 9000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 9800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code a000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000018, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code a800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code b000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code b800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code c000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code c800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code d000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code d800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code e000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code e800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00001400,
+    /* Code f000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xffff7fff, 0xffffffff, 0xfffffff9, 0xffffffff,
+    0xfdffffff, 0xfffffc00, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x000e000f, 0xffffffff,
+    0xf000000f, 0xffff0000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0xffbfe000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xffffbfff, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000002, 0x00438e02, 0x00000000,
+    0x00000000, 0x0800ffc0, 0x00000000, 0x00000000,
+    0x00000000, 0x20000000, 0x00000000, 0x00000000,
+    /* Code f800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xff000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x02000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000
+};
+
+
+
+void fwinText::OnDraw(wxDC &dc)
+{
+// The next could probably be done merely by setting a background colour
+    wxColour c1(230, 200, 255);
+    wxPen p1(c1);
+    dc.SetPen(p1);
+    wxBrush b1(c1);
+    dc.SetBrush(b1);
+    dc.SetBackground(b1);
+    dc.SetTextBackground(c1);
+    const wxColour *textColour = wxBLACK;
+    dc.SetTextForeground(*textColour);
+    dc.Clear(); // explicitly clear background
+
+    wxSize window(dc.GetSize());
+
+    if (firstPaint)
+    {   if (fixedPitch == NULL)
+        {   fixedPitch = new wxFont();
+            fixedCJK   = new wxFont();
+// It worries me that exactly the same OpenType font needs to be
+// called for using slighly different names on different platforms.
+#ifdef MACINTOSH
+            fixedPitch->SetFaceName("CMU Typewriter Text Regular");
+#else
+            fixedPitch->SetFaceName("CMU Typewriter Text");
+#endif
+            fixedCJK->SetFaceName(cjkFontName);
+            fixedPitch->SetPointSize(1000);
+            fixedCJK->SetPointSize(1000);
+            font_width *p = cm_font_width;
+            while (p->name != NULL &&
+                   strcmp(p->name, "cmtt10") != 0) p++;
+            if (p->name == NULL)
+            {   FWIN_LOG("Oops - font data not found\n");
+                exit(1);
+            }
+            wxCoord width, height, depth, leading;
+            dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
+            FWIN_LOG("width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
+            em = (double)width/100.0;
+            double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
+            pixelsPerPoint = em/fmEm;
+            fixedPitch->SetPointSize(10);
+            dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
+            FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
+        }
+        int spacePerChar = window.GetWidth()/80;
+        scaleAdjustment = (double)spacePerChar/em;
+        fixedPitch->SetPointSize(10);
+        fixedPitch->Scale(scaleAdjustment);
+        fixedCJK->SetPointSize(10);
+// The CJK fonts are roughly twice as wide as the CMTT one, and so to fit
+// within the same space I halve the scale. This probably means that things
+// will not be very legible unless an overall large font size is in use.
+        fixedCJK->Scale(0.5*scaleAdjustment);
+        dc.SetFont(*fixedPitch);
+        rowHeight = dc.GetCharHeight();
+        spacePerChar = dc.GetCharWidth(); 
+        rowCount = (window.GetHeight()+rowHeight-1)/rowHeight;
+// Create or re-size the caret, and position it where it needs to be on the
+// screen.
+        SetFocus();
+        if (caret == NULL) caret = new wxCaret(this, 2, rowHeight);
+        else caret->SetSize(2, rowHeight);
+        repositionCaret();
+
+
+        SetVirtualSize(wxSize(window.GetWidth(), 1000)); // @@@
+#if 0
+// Now I need to re-size any fonts that have already been created
+        for (int i=0; i<MAX_FONTS; i++)
+        {   wxFont *ff = font[i];
+            if (ff == NULL) continue;
+            ff->SetPointSize(fontWidth[i]->designsize/1048576);
+            ff->Scale(scaleAdjustment*fontScale[i]);
+        }
+#endif
+        firstPaint = false;
+    }
+    dc.SetFont(*fixedPitch);
+    bool currentFont = true;
+    int p = firstVisibleRow;
+    int row = 0, col = 0;
+    lastVisibleRow = firstVisibleRow;
+    while (p<textEnd)
+    {   uint32_t ch = textBuffer[p++];
+        if ((ch & 0xffffff) == '\n')
+        {   dc.DrawRectangle(columnPos[col], row*rowHeight,
+                             columnPos[80]-columnPos[col], rowHeight);
+            col = 0;
+            row++;
+            if (row*rowHeight > window.GetHeight()) break;
+            lastVisibleRow = p;
+            continue;
+        }
+// a TAB can take you exactly up to column 80 but never over it.
+        if (col == 80)
+        {   col = 0;
+            row++;
+            if (row*rowHeight > window.GetHeight()) break;
+            lastVisibleRow = p;
+        }
+        if (ch & 0x01000000)
+        {   if (textColour != wxRED)
+                dc.SetTextForeground(*(textColour = wxRED));
+        }
+        else if (ch & 0x02000000)
+        {   if (textColour != wxBLUE)
+                dc.SetTextForeground(*(textColour = wxBLUE));
+        }
+        else if (textColour != wxBLACK)
+            dc.SetTextForeground(*(textColour = wxBLACK));
+        wxString cs;
+        int extraCols = 0;
+// I convert TAB into a suitable sequence of spaces.
+        if ((ch & 0x00ffffff) == '\t')
+        {   wxString spaces[8] =
+            {   wxT(" "), wxT("  "), wxT("   "), wxT("    "), wxT("     "),
+                wxT("      "), wxT("       "), wxT("        ")
+            };
+            extraCols = 7 - (col&7); 
+            cs = spaces[extraCols];
+        }
+        else if ((ch & 0x00ffffff) == 0x20) cs = wxT(" ");
+// Does the next fragment cope with Unicode points beyond 0xffff on Windows?
+        else cs = (wchar_t)(ch & 0x00ffffff);
+        bool avail =
+           ((cmtt_coverage[(ch>>5) & 0xffff] >> (ch & 0x1f)) & 1) != 0;
+        if (avail != currentFont)
+        {   dc.SetFont(avail ? *fixedPitch : *fixedCJK);
+            currentFont = avail;
+        }
+// I try to position CJK characters a little better, but the offset used
+// here will probably need tuning.
+        dc.DrawText(cs, columnPos[col],
+                        rowHeight*row + (avail ? 0 : rowHeight/3));
+        col = col + extraCols + 1;
+    }
+}
+
+static char **modules_list=NULL, **switches_list=NULL;
+
+
+void fwin_callback_on_delay(delay_callback_t *f)
+{
+    delay_callback = f;
+}
+
+void fwin_callback_to_interrupt(interrupt_callback_t *f)
+{
+    interrupt_callback = f;
+}
+
+static int returncode = 0;
+
+
+int fwin_windowmode()
+{
+    int r = 0;
+    r |= FWIN_WITH_TERMED;
+    if (windowed) r |= FWIN_IN_WINDOW;
+    return r;
+}
+
+void fwin_exit(int return_code)
+{
+#ifdef RECONSTRUCTED
+    if (windowed)
+    {   wake_up_terminal(FXTerminal::WORKER_EXITING);
+        returncode = return_code;
+#ifdef WIN32
+        ExitThread(returncode);
+#else
+        pthread_exit(&returncode);
+#endif
+    }
+    if (using_termed)
+    {   input_history_end();
+        term_close();
+    }
+#endif
+    exit(return_code);
+}
+
+
+void fwin_minimize()
+{
+    if (!windowed) return;
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, MINIMISE_WINDOW);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+
+void fwin_restore()
+{
+    if (!windowed) return;
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, RESTORE_WINDOW);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwin_putchar(int c)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+        if (c == '\n') putchar('\r');
+#endif
+        putchar(c);
+        return;
+    }
+    FWIN_LOG("fwin_putchar(%#x) (%c) in=%d\n", c, (((c & 0xff) >= 020 &&
+                                              (c & 0xff) < 0x7f) ? c : '?'), panel->fwin_in);
+// I arrange to do any buffer flushing just before I will send out a
+// byte that starts a character. An effect is that I should NEVER flush
+// the buffer part way through a multi-byte character. 
+    if ((c & 0xc0) != 0x80 &&
+        panel->fwin_in >= FWIN_BUFFER_SIZE-4) fwin_ensure_screen();
+    int in = panel->fwin_in;
+    if (panel->use_buffer1)
+        panel->fwin_buffer1[in] = c;
+    else panel->fwin_buffer2[in] = c;
+    panel->fwin_in = in+1;
+    FILE *f = panel->logfile;
+    if (f != NULL) putc(c, f);
+}
+
+void fwin_putcode(int c)
+{
+// This expands a character code into an UTF sequence for transmission to
+// the GUI and for inclusion in any log file.
+    FWIN_LOG("fwin_putcode %#x\n", c);
+    if (c < 0x80) fwin_putchar(c);
+    else if (c <= 0x800)
+    {   fwin_putchar(0xc0 | ((c>>6) & 0x1f));
+        fwin_putchar(0x80 | (c & 0x3f));
+    }
+    else if (c <= 0x10000)
+    {   fwin_putchar(0xe0 | ((c>>12) & 0x0f));
+        fwin_putchar(0x80 | ((c>>6) & 0x3f));
+        fwin_putchar(0x80 | (c & 0x3f));
+    }
+    else if (c <= 0x200000)
+    {   fwin_putchar(0xf0 | ((c>>18) & 0x07));
+        fwin_putchar(0x80 | ((c>>12) & 0x3f));
+        fwin_putchar(0x80 | ((c>>6) & 0x3f));
+        fwin_putchar(0x80 | (c & 0x3f));
+    }
+    else FWIN_LOG("Illegal character code %#x\n", c);
+}
+
+void fwin_puts(const char *s)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+        while (*s != 0) fwin_putchar(*s++);
+#else
+        puts(s);
+#endif
+        return;
+    }
+    int len = strlen(s);
+    FWIN_LOG("fwin_puts(\"%s\")\n", s);
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    int in = panel->fwin_in;
+    while (len > 0)
+    {   int n = len;
+// If the string being displayed here will not fit in the current buffer
+// I have two possible things that I could do. The first is to flush the
+// buffer so I have a totally empty buffer to store the string in. The
+// other is to split the string into several parts. If the buffer is
+// already at least half full I will flush it and try again. If the buffer
+// is at least half empty (including the case when I had just flushed it) I
+// will need to split the string.
+        if (in + n > FWIN_BUFFER_SIZE)
+        {   if (in > FWIN_BUFFER_SIZE/2)
+            {   fwin_ensure_screen();
+// flushing the buffer changes which buffer I am using.
+                b = panel->use_buffer1 ? panel->fwin_buffer1 :
+                                         panel->fwin_buffer2;
+                in = panel->fwin_in;
+                continue;
+            }
+            n = FWIN_BUFFER_SIZE - in;
+// I search for a byte that is not of the form 10xxxxxx since those are
+// continuation bytes in a multi-byte character. I have at least half a
+// buffer to search in, and valid data can only have a maximum of 3
+// continuation bytes to skip back past. Well I say 3 because I am
+// only using UTF-8 up as far as being able to cope with 21-bit codes.
+            while ((s[n] & 0xc0) == 0x80) n--;
+        }
+        memcpy(&b[panel->fwin_in], s, n);
+        FILE *f = panel->logfile;
+        if (f != NULL) fwrite(s, 1, n, f);
+        panel->fwin_in += n;
+        s += n;
+        len -= n;
     }
 }
 
 
-// end of wxfontdemo.cpp
+void 
+#ifdef _MSC_VER
+            __cdecl
+#endif
+            fwin_printf(const char *fmt, ...)
+{
+    FWIN_LOG("fwin_printf(\"%s\",...)\n", fmt);
+    va_list a;
+    va_start(a, fmt);
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+// NOT reconstructed yet: in the raw cygwin you may get line-ends that
+// are mere LF where I possibly really wanted CR-LF combinations.
+        vfprintf(stdout, fmt, a);
+        va_end(a);
+#else
+        vfprintf(stdout, fmt, a);
+        va_end(a);
+#endif
+        return;
+    }
+// If the buffer is getting full I will flush it. In earlier code I checked
+// for a PAUSE state here... I may need to reinstate that behaviour later.
+    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
+        fwin_ensure_screen();
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    int in = panel->fwin_in;
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
+#else
+// In this case I have no protection againt buffer overflow. However I
+// now really expect most C/C++ implementations to provide vsnprintf.
+    vsprintf(&b[in], fmt, a);
+#endif
+// Cautious about portability and old libraries, and aware of values that
+// vsnprintf may return when the data does not fit, I ignore the values
+// of the above functions and adjust the data pointers by hand.
+    int n = strlen(&b[in]);
+    FILE *f = panel->logfile;
+    if (f != NULL) fwrite(&b[in], 1, n, f);
+    panel->fwin_in = in + n;
+    va_end(a);
+}
+
+void fwin_vfprintf(const char *fmt, va_list a)
+{
+    if (!windowed)
+    {
+#ifdef RAW_CYGWIN
+// See comments aboove re CR-LF vs '\n'. I do not expect raw cygwin builds
+// to be terribly useful (since that will represent and X11 GUI running on
+// Windows rather than the native one) so I do not treat this as high
+// priority.
+        vfprintf(stdout, fmt, a);
+#else
+        vfprintf(stdout, fmt, a);
+#endif
+        return;
+    }
+    FWIN_LOG("fwin_vfprintf(\"%s\",...)\n", fmt);
+// see comments above.
+    if (panel->fwin_in+SPARE_FOR_VFPRINTF >= FWIN_BUFFER_SIZE)
+        fwin_ensure_screen();
+    char *b = panel->use_buffer1 ? panel->fwin_buffer1 : panel->fwin_buffer2;
+    int in = panel->fwin_in;
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(&b[in], SPARE_FOR_VFPRINTF, fmt, a);
+#else
+    vsprintf(&b[in], fmt, a);
+#endif
+    int n = strlen(&b[in]);
+    FILE *f = panel->logfile;
+    if (f != NULL) fwrite(&b[in], 1, n, f);
+    panel->fwin_in += n;
+}
+
+const char *fwin_maths = NULL;
+
+void fwin_showmath(const char *s)
+{
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    fwin_ensure_screen();   // get regular text up to date first.
+    fwin_maths = s;
+    LockMutex(panel->pauseMutex);
+// here I have to do real inter-thread communication.
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::SHOW_MATH);
+// here I need to wait until the signal that I just sent has been received
+// and processed.
+    regain_lockstep();
+    if (delay_callback != NULL) (*delay_callback)(0);
+    UnlockMutex(panel->pauseMutex);
+#else
+// This is something that will be subject to pretty drastic review!
+    FWIN_LOG("fwin_showmath called\n");
+#endif
+}
+
+
+void fwin_ensure_screen()
+{
+    if (!windowed)
+    {   fflush(stdout);
+        return;
+    }
+    if (panel->fwin_in == 0) return;
+    FWIN_LOG("fwin_ensure_screen\n");
+    if (panel->use_buffer1)
+        FWIN_LOG("B1: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer1[0]));
+    else FWIN_LOG("B2: <%.*s>\n", (int)panel->fwin_in, &(panel->fwin_buffer2[0]));
+// Wait until GUI thread is ready, ie has finshed emptying the other
+// buffer.
+    panel->writing.Wait();
+// The next few lines are a SAFE region. The GUI thread had completed
+// processing the previous request that had been sent to it, but it has
+// not yet been told to start on the new buffer.
+    panel->fwin_out = panel->fwin_in;
+// Create an event to ask the GUI thread to empty the buffer.
+    wxThreadEvent *event =
+        new wxThreadEvent(wxEVT_COMMAND_THREAD,
+             panel->use_buffer1 ? FLUSH_BUFFER1 : FLUSH_BUFFER2);
+// flip active buffer.
+    panel->use_buffer1 = !panel->use_buffer1;
+    panel->fwin_in = 0;
+// Post event to get the other buffer emptied to the screen.
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+extern "C"
+{
+static review_switch_settings_function *review_switch_settings = NULL;
+}
+
+static int update_next_time = 0;
+
+
+int fwin_getchar()
+{
+    if (!windowed) return fwin_plain_getchar();
+// In general I have a line of stuff ready sitting in a buffer. So on
+// most calls to here I can just return what is in it.
+    if (panel->inputBufferP < panel->inputBufferLen)
+        return panel->inputBuffer[panel->inputBufferP++];
+// Now however a new line of input is needed, so I have to request it from
+// the user-interface thread.
+    if (update_next_time && review_switch_settings != NULL)
+    {   (*review_switch_settings)();
+        update_next_time = 0;
+    }
+    if (delay_callback != NULL) (*delay_callback)(1);
+    fwin_ensure_screen();
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REQUEST_INPUT);
+    panel->GetEventHandler()->QueueEvent(event);
+// OK - the screen is up to date as regards output and all other changes
+// I may have made - and I have now asked for some input. This request will
+// cause the GUI thread to to a Post() on the reading semaphore when it has
+// put a line of valid data into inputBuffer.
+    panel->reading.Wait(); // the genuine wait for input
+    if (delay_callback != NULL) (*delay_callback)(0);
+// I will try a convention that if inputBufferLen is zero that indicates
+// a dodgy state. Eg the user is sending an EOF or interrupt.
+    int n = panel->inputBufferLen;
+    if (n == 0) return EOF;
+    const char *p = &panel->inputBuffer[panel->inputBufferP];
+// The next line is pretty shameless and is there to help REDUCE while not
+// getting too much in the way of anybody else. If an input line is
+// entered starting with the text "load_package" (possibly with some
+// whitespace first) I make a callback to review_switch_settings fairly
+// soon.
+    while (n>0 && isspace(*p))
+    {   n--;
+        p++;
+    }
+    if (n>12 && strncmp(p, "load_package", 12) == 0)
+        update_next_time = 1;
+    int ch = panel->inputBuffer[panel->inputBufferP++];
+// Note that a Ctrl-D as the VERY FIRST character in the buffer is treated
+// as signalling end-of-file. If the user hits Ctrl-D in any other position
+// it would be treated as "delete one character forwards".
+    if (ch == (0x1f & 'D')) return EOF;
+    else return ch;
+}
+
+
+void fwin_set_prompt(const char *s)
+{
+    strncpy(fwin_prompt_string, s, sizeof(fwin_prompt_string));
+    fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
+    if (!windowed) return;
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PROMPT);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwin_menus(char **modules, char **switches,
+                review_switch_settings_function *f)
+{
+    if (!windowed) return;
+    modules_list = modules;
+    switches_list = switches;
+    panel->writing.Wait();
+    review_switch_settings = f;
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MENUS);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+void fwin_refresh_switches(char **switches, char **packages)
+{
+    if (!windowed) return;
+    switches_list = switches;
+    modules_list = packages;
+    panel->writing.Wait();
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REFRESH_SWITCHES);
+    panel->GetEventHandler()->QueueEvent(event);
+}
+
+static char left_stuff[32] = "",
+            right_stuff[32] = "";
+char mid_stuff[32] = "", full_title[90] = "";
+
+#ifdef USE_A0_SPACER
+#define SPACER_CHAR 0xa0
+#else
+#define SPACER_CHAR 0x20
+#endif
+
+static void rewrite_title_bar()
+{
+// Just at present this does not cope with cases where the width of the window
+// has been changed...
+    int ll = strlen(left_stuff),
+        lm = strlen(mid_stuff),
+        lr = strlen(right_stuff);
+    int i, j;
+    for (i=0; i<80; i++) full_title[i] = SPACER_CHAR;
+    strncpy(full_title, left_stuff, ll);
+    j = 80 - strlen(right_stuff);
+    strncpy(&full_title[j], right_stuff, lr);
+    j = 40-(lm/2);
+    strncpy(&full_title[j], mid_stuff, lm);
+    full_title[80] = 0;
+#ifdef RECONSTRUCTED
+    wake_up_terminal(FXTerminal::REFRESH_TITLE);
+    regain_lockstep();
+#endif
+}
+
+
+void fwin_acknowledge_tick()
+{
+// This is to do with my handling of "^Z" to suspend the computation.
+// If the user enters ^Z I lock the pause mutex and then send a "TICK".
+// The user is expected to notice it and respond here - and hence get
+// suspended.
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    LockMutex(panel->pauseMutex);
+    UnlockMutex(panel->pauseMutex);
+#endif
+}
+
+
+
+void fwin_report_left(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(left_stuff, msg, 31);
+    left_stuff[31] = 0;
+#ifdef RECONSTRUCTED
+    rewrite_title_bar();
+#endif
+}
+
+void fwin_report_mid(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(mid_stuff, msg, 31);
+    mid_stuff[31] = 0;
+#ifdef RECONSTRUCTED
+    rewrite_title_bar();
+#endif
+}
+
+void fwin_report_right(const char *msg)
+{
+    if (!windowed) return;
+    strncpy(right_stuff, msg, 31);
+    right_stuff[31] = 0;
+#ifdef RECONSTRUCTED
+    rewrite_title_bar();
+#endif
+}
+
+void fwin_set_help_file(const char *key, const char *path)
+{
+    if (!windowed) return;
+#ifdef RECONSTRUCTED
+    printf("fwin_set_help_file called\n");
+    fflush(stdout);
+#endif
+}
+
+
+
+
+
+// End of wxterminal.cpp
 
