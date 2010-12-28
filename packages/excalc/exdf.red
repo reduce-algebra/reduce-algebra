@@ -136,10 +136,13 @@ symbolic procedure exdfp0 u; %weighted vars ??
    end;
 
 symbolic procedure dwedge u;
-   %u is a wedge argument, result is a pf.   
    if flagp('d,'noxpnd)
-      then exdfk('wedge . u)
+      then noxpnddwedge partitwedge u
     else mkuniquewedge dwedge1(u,nil);
+
+symbolic procedure noxpnddwedge u;
+   if null u then nil
+    else addpf(multpfsq(exdfk ldpf u,lc u),noxpnddwedge red u);
 
 symbolic procedure dwedge1(u,v);
    if null rwf u
