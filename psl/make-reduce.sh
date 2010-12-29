@@ -67,8 +67,9 @@ mkdir buildlogs
 cp -r ../$host/Makefile .
 cp ../../psl/dist/nonkernel/$MACHINE/lap/* psl
 cp ../../psl/dist/lap/$MACHINE/* psl
-cp ../..//psl/dist/kernel/$MACHINE/bpsl psl/
+cp ../../psl/dist/kernel/$MACHINE/bpsl psl/
 rm -f red/*.img
+touch ../../psl/mkreduce
 cp psl/nbig32.b psl/zbig.b
 rm -f psl/*rlisp*.b
 make
