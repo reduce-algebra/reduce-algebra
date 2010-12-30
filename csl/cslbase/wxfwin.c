@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 57ddffb8 26-Dec-2010 */
+/* Signature: 71407e43 30-Dec-2010 */
 
 #include "config.h"
 
@@ -629,24 +629,25 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
             {
 #ifdef __CYGWIN__
                 freopen("/dev/conin", "r", stdin);
-                freopen("/dev/conout", "w", stdout);
-                freopen("/dev/conout", "w", stderr);
+                freopen("/dev/conout", "w+", stdout);
+                freopen("/dev/conout", "w+", stderr);
 #else
 /*
  * I try rather hard here to leave things properly connected to
- * the new console.
+ * the new console. Note opening CONOUT in "w+" mode so it has
+ * GENERIC_READ_ACCESS.
  */
                 HANDLE h;
                 freopen("CONIN$", "r", stdin);
-                freopen("CONOUT$", "w", stdout);
-                freopen("CONOUT$", "w", stderr);
+                freopen("CONOUT$", "w+", stdout);
+                freopen("CONOUT$", "w+", stderr);
                 SetStdHandle(STD_INPUT_HANDLE,
                     CreateFile("CONIN$",
                         GENERIC_READ, FILE_SHARE_READ, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 SetStdHandle(STD_OUTPUT_HANDLE,
                     h = CreateFile("CONOUT$",
-                        GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
+                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 SetStdHandle(STD_ERROR_HANDLE, h);
 #endif

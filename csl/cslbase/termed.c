@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 67de90e3 26-Dec-2010 */
+/* Signature: 0945fec3 30-Dec-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -341,17 +341,21 @@ void term_setprompt(const char *s)
  */
 
 /*
- * Start up input through this package. Returns 0 in this case because
+ * Start up input through this package. Returns 1 in this case because
  * local editing is not supported on this platform. Hence the colour
  * option is ignored.
  */
 
 int term_setup(int flag, const char *colour)
 {
+#ifdef TEST
+    fprintf(stderr,
+        "term_setup in the DISABLE (no cursor addressability) case\n");
+#endif
     input_line = (char *)malloc(200);
     if (input_line == NULL) input_line_size = 0;
     else input_line_size = 200;
-    return 0;
+    return 1;
 }
 
 /*
@@ -373,7 +377,7 @@ char *term_getline(void)
     return term_plain_getline();
 }
 
-#else /* DISABLED */
+#else /* DISABLE */
 
 #ifndef WIN32
 
@@ -661,7 +665,14 @@ int term_setup(int flag, const char *colour)
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
-    freopen("CONOUT$", "w", stdout);
+#ifdef TEST
+    fprintf(stderr, "term_setup in the WIN32 case\n");
+#endif
+/*
+ * It is VITAL to use "w+" as the access mode here for otherwise
+ * it is not possible to access the Console Output Buffer sufficiently.
+ */
+    freopen("CONOUT$", "w+", stdout);
     term_enabled = 0;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
@@ -670,25 +681,82 @@ int term_setup(int flag, const char *colour)
     display_line = (char *)malloc(200);
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
+#ifdef TEST
+        fprintf(stderr, "unable to allocate buffers\n");
+#endif
         return 1;
     }
     else input_line_size = 200;
-    if (!flag) return 1;
+    if (!flag)
+    {
+#ifdef TEST
+        fprintf(stderr, "user asked for no local editing\n");
+#endif
+        return 1;
+    }
 /*
  * Standard input must be from a character device and must be accepted
  * by the GetConsoleMode function
  */
     stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
-    if (GetFileType(stdin_handle) != FILE_TYPE_CHAR) return 1;
-    if (!GetConsoleMode(stdin_handle, &w)) return 1;
+    if (GetFileType(stdin_handle) != FILE_TYPE_CHAR)
+    {
+#ifdef TEST
+        fprintf(stderr, "stdin not CHAR type\n");
+#endif
+        return 1;
+    }
+    if (!GetConsoleMode(stdin_handle, &w))
+    {
+#ifdef TEST
+        fprintf(stderr, "could not get stdin console mode \n");
+#endif
+        return 1;
+    }
 /*
  * Standard output must be a character device and a ConsoleScreenBuffer
  */
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetFileType(stdout_handle) != FILE_TYPE_CHAR) return 1;
-    if (!GetConsoleScreenBufferInfo(stdout_handle, &csb) ||
-        !GetConsoleMode(stdin_handle, &stdin_attributes) ||
-        !GetConsoleMode(stdout_handle, &stdout_attributes)) return 1;
+#ifdef TEST
+    fprintf(stderr, "stdin handle = %p, stdout handle = %p\n", stdin_handle, stdout_handle);
+#endif
+    if (GetFileType(stdout_handle) != FILE_TYPE_CHAR)
+    {
+#ifdef TEST
+        fprintf(stderr, "stdout not CHAR type\n");
+#endif
+        return 1;
+    }
+    if (!GetConsoleScreenBufferInfo(stdout_handle, &csb))
+    {
+#ifdef TEST
+/*
+ * This was here stdout_handled needed READ access as well as WRITE access.
+ * All the extra printing was useful while I was tracking that problem down!
+ */
+        DWORD e = GetLastError();
+        char *msg;
+        fprintf(stderr, "trouble with GetConsoleScreenBufferInfo(stdout)\n");
+        fprintf(stderr, "Error code = %d\n", (int)e);
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                      NULL,
+                      e,
+                      0,
+                      (LPSTR)&msg,
+                      0,
+                      NULL);
+        fprintf(stderr, "msg = %s\n", msg);
+#endif
+        return 1;
+    }
+    if (!GetConsoleMode(stdin_handle, &stdin_attributes) ||
+        !GetConsoleMode(stdout_handle, &stdout_attributes))
+    {
+#ifdef TEST
+        fprintf(stderr, "trouble GetConsoleMode\n");
+#endif
+        return 1;
+    }
     plainAttributes = csb.wAttributes;
     revAttributes = plainAttributes ^
       (FOREGROUND_RED | BACKGROUND_RED |
@@ -697,9 +765,21 @@ int term_setup(int flag, const char *colour)
        FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
     promptAttributes = plainAttributes ^ FOREGROUND_BLUE;
     inputAttributes = plainAttributes ^ FOREGROUND_RED;
-    if (!SetConsoleMode(stdout_handle, 0)) return 1;
+    if (!SetConsoleMode(stdout_handle, 0))
+    {
+#ifdef TEST
+        fprintf(stderr, "trouble setting stdout attributes\n");
+#endif
+        return 1;
+    }
     if (!SetConsoleMode(stdin_handle,
-        ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT)) return 1;
+        ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
+    {
+#ifdef TEST
+        fprintf(stderr, "trouble setting stdin attributes\n");
+#endif
+        return 1;
+    }
     columns = csb.srWindow.Right - csb.srWindow.Left + 1;
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
     SetConsoleMode(stdout_handle, stdout_attributes);
@@ -708,6 +788,9 @@ int term_setup(int flag, const char *colour)
     int errval, errcode;
     char *s;
     struct termios my_term;
+#ifdef TEST
+    fprintf(stderr, "term_setup in the non-Windows case\n");
+#endif
     term_enabled = 0;
     term_colour = (colour == NULL ? "-" : colour);
     {   const char *s = term_colour;
@@ -2180,19 +2263,100 @@ static void term_discard_output(void)
 
 static void term_extended_command(void)
 {
-/* @@@@@ */
+/*
+ * I could imagine using this for 6-digit unicode... but for now it does
+ * nothing much.
+ */
     insert_point += sprintf(&input_line[insert_point], "<^X>");
     term_bell();
     term_redisplay();
 }
 
 
+static int hexval(int c)
+{
+    if (isdigit(c)) return c - '0';
+    else if (isupper(c)) return c + (10 - 'A');
+    else return c + (10 - 'a');
+}
+
 static void term_obey_command(void)
 {
-/* @@@@@ */
-    insert_point += sprintf(&input_line[insert_point], "<&X>");
-    term_bell();
-    term_redisplay();
+/*
+ * The idea here is that nnnn<ALT-X> converts the hex digits nnnn into
+ * a single Unicode character, which will in fact be placed in the
+ * text packed in UTF-8 form. If the text just before the ALT-X is
+ * NOT hex  but it is an UTF-8 packed character (ie its final byte is
+ * 10xxxxxx in binary) then that code is turned back into a hex string.
+ * For full Unicode it would be proper to support up to 6 hex digits to
+ * go as far as 0x10ffff - but characters beyond 0xffff are somewhat
+ * specialist and I do not expect my fonts to support them, so I will
+ * cope with at most 4 digits here. I could let CTRL-X be an extended
+ * version to cope with up to 6 digits if I was really keen.
+ */
+    int i, c, u, l, n;
+    if (insert_point == prompt_length)
+    {   term_bell(); /* Nothing at all to convert */
+        return;
+    }
+    i = insert_point - 1;
+    c = input_line[i];
+    if ((c & 0xc0) == 0x80)
+    {   u = 0;
+        while ((c & 0xc0) == 0x80 &&
+               i!= prompt_length &&
+               insert_point-i < 4) c = input_line[--i];
+        if ((c & 0xe0) == 0xc0) u = c & 0x1f;
+        else if ((c & 0xf0) == 0xe0) u = c & 0x0f;
+        else if ((c & 0xf8) == 0xf0) u = c & 0x07;
+        else
+        {   term_bell(); /* malformed UTF-8 encoding */
+            return;
+        }
+        fprintf(stderr, "%.5s", &input_line[i]);
+        l = i+1;
+        while (l != insert_point) u = (u<<6) | (input_line[l++] & 0x3f);
+        l = 4 - (insert_point-i);
+        fprintf(stderr, "(u:%#x)", u);
+        if (u >= 0x10000) l += 2;
+        if (l != 0)  /* make space for replacement */
+        {   n = insert_point;
+            while (input_line[n] != 0) n++;
+            while (n >= insert_point)
+            {   input_line[n+l] = input_line[n];
+                n--;
+            }
+        }
+        sprintf(&input_line[i], u >= 0x10000 ? "%.6x" : "%.4x", u);
+        insert_point += l;
+        term_redisplay();
+    }
+    else if (isxdigit(c))
+    {   int u = hexval(c);
+        if (i > prompt_length+1 && isxdigit(c = input_line[--i]))
+        {   u = u | (hexval(c) << 4);
+            if (i > prompt_length+1 && isxdigit(c = input_line[--i]))
+            {   u = u | (hexval(c) << 8);
+                if (i > prompt_length+1 && isxdigit(c = input_line[--i]))
+                {   u = u | (hexval(c) << 12);
+                }
+            }
+        }
+        fprintf(stderr, "(u:%#x)", u);
+        if (u <= 0x7f) input_line[++i] = u;
+        else if (u <= 0x7ff)
+        {   input_line[++i] = 0xc0 | (u>>6);
+            input_line[++i] = 0x80 | (u & 0x3f);
+        }
+        else /* because just 4 digits accepted */
+        {   input_line[++i] = 0xe0 | (u>>11);
+            input_line[++i] = 0x80 | ((u>>6) & 0x3f);
+            input_line[++i] = 0x80 | (u & 0x3f);
+        }
+        /* This may leave one char of junk present */
+        term_redisplay();
+    }
+    else term_bell();
 }
 
 
