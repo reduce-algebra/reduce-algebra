@@ -36,7 +36,7 @@
  */
 
 
-/* Signature: 3c6e359b 08-Dec-2010 */
+/* Signature: 698424f1 30-Dec-2010 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -661,7 +661,7 @@ int term_setup(int flag, const char *colour)
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
-    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w+", stdout);
     term_enabled = 0;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
     term_colour = (colour == NULL ? "-" : colour);
