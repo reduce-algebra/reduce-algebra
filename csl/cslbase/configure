@@ -742,7 +742,7 @@ enable_option_checking
 with_csl
 with_psl
 with_mingw64
-with_gcc_3
+with_gcc3
 with_gui
 with_build
 with_m32
@@ -1409,7 +1409,7 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system. Do not use here!
   --with-mingw64          this option is ignored here!
-  --with-gcc-3            this option is ignored here!
+  --with-gcc3             this option is ignored here!
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
   --with-m32              Force 32-bit model even on 64-bit gcc
@@ -3101,9 +3101,9 @@ fi
 
 
 
-# Check whether --with-gcc-3 was given.
-if test "${with_gcc_3+set}" = set; then :
-  withval=$with_gcc_3;
+# Check whether --with-gcc3 was given.
+if test "${with_gcc3+set}" = set; then :
+  withval=$with_gcc3;
 fi
 
 

@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 216ef5e7 30-Dec-2010 */
+/* Signature: 5d7f1134 01-Jan-2011 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -505,7 +505,7 @@ int main(int argc, char *argv[])
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
         {   freopen("CONIN$", "r", stdin);
-/* need "w+" for soem console buffer access to behave properly. */
+/* need "w+" for some console buffer access to behave properly. */
             freopen("CONOUT$", "w+", stdout);
             freopen("CONOUT$", "w+", stderr);
 /* I will also pause for 5 seconds at the end... */

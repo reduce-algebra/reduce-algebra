@@ -1,4 +1,4 @@
-/* fwindemo.c                       Copyright (C) 2004-2010 Codemist Ltd */
+/* fwindemo.c                       Copyright (C) 2004-2011 Codemist Ltd */
 
 
 /*
@@ -40,7 +40,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -70,7 +70,7 @@
 
 
 
-/* Signature: 7eb24563 02-Dec-2010 */
+/* Signature: 1d5adecb 01-Jan-2011 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed
@@ -146,7 +146,7 @@
  * V    Quoted insert ($!)   -
  * W    Del Word back        Copy region ($!)
  *
- * X    eXtended command ($!)Obey command ($!)
+ * X    eXtended command ($!)utf-8/Unicode conversion
  * Y    Yank (=Paste) (!)    -
  * Z    Stop execution (!?)  -
  * [    =ESC: Meta prefix    -
@@ -154,6 +154,13 @@
  * ]    -                    -
  * _    -                    Copy previous word
  * ^    Reinput (!)          -
+ *
+ * Type nameALT-x where name is an HTML entity name (eg alpha, ...) or
+ * a string uf 4 or 6 hex digits and the input is converted into a single
+ * character. In terminal mode this will often be a multi-byte character.
+ * Pressing Alt-x again will convert back. There are some messy cases where
+ * conversion could be ambiguous, and in that case repeated use of ALT-x
+ * should cycle through all the possibilities.
  *
  *
  * Arrow etc keys...

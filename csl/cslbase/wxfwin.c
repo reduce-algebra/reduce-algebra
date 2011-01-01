@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 71407e43 30-Dec-2010 */
+/* Signature: 4ba8d524 01-Jan-2011 */
 
 #include "config.h"
 
@@ -277,7 +277,9 @@ extern const char *my_getenv(const char *s);
 #ifdef WIN32
 static int programNameDotCom;
 #endif
+#ifdef MACINTOSH
 static int macApp = 0;
+#endif
 
 int windowed = 0;
 
@@ -529,7 +531,11 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  * what the status of stdin/stdout are when launched not from a command line
  * but by clicking on an icon...
  */
-    if (!macApp && (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
+    if (
+#ifdef MACINTOSH
+        !macApp &&
+#endif
+        (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
     {   FWIN_LOG("stdin or stdout is not a tty\n");
         windowed = 0;
     }

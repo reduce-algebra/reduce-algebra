@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 629d6fcf 28-Dec-2010 */
+/* Signature: 4c5bd1fa 01-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -439,8 +439,8 @@ private:
     void cut();
     void copyRegion();
     void copyWordPrev();
-    void command();
-    void extendedCommand();
+    void unicodeInput();
+    void extendedUnicodeInput();
     void paste();
     void killSelection();
     void deleteCurrentLine();
@@ -1777,20 +1777,34 @@ void fwinText::makePositionVisible(int p)
 
 void fwinText::setCaretPos(int n)
 {
+
 #ifdef RECONSTRUCTED
 #endif
 }
 
 
-void fwinText::command()
+void fwinText::unicodeInput()
 {
+// This will take the text just in front of the caret and if it is a
+// string of up to 4 hex digits or if it is the name that I have set up
+// for a special character (and e.g. I will will set up name such as
+// "alpha" for the first Greek letter, and TeX-like names for many
+// mathematical symbols) I will treat the data as describing a single
+// Unicode character. If the symbol ahead of the caret has a name in this
+// manner I will expand it to the name. Otherwise it it is outside the
+// range 0x20 to 0x7e but is at most 0xffff I will convert it to a string
+// of 4 hex digits. In the unusual case that it is a Unicode character
+// whose code is 0x10000 or higher I will expand it to 6 hex digits.
 #ifdef RECONSTRUCTED
 #endif
 }
 
 
-void fwinText::extendedCommand()
+void fwinText::extendedUnicodeInput()
 {
+// This is as "unicodeInput" except that it takes up to 6 hex digits as input and
+// it always converts to hex and never to a character name. It will generate
+// 4 hex digits when that is enough and 6 if that is not enough.
 #ifdef RECONSTRUCTED
 #endif
 }
@@ -1984,6 +1998,7 @@ void fwinText::OnChar(wxKeyEvent &event)
     uint32_t r = event.GetKeyCode();
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
                                   // Also ALTGR, META, WIN, CONTROL
+    FWIN_LOG("Char key:%x Unicode:%x modifiers:%x\n", c, r, m);
     uint32_t *history_string = NULL;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
@@ -2601,14 +2616,11 @@ case 'W': case 'w':
         }
         goto defaultlabel;
 case 'X' & 0x1f:
-// Just what these have to do is a mystery to me at present!
-// Well that is an overstatement - what I mean is that I am not yet
-// implementing anything!
-        extendedCommand();
+        extendedUnicodeInput();
         return;
 case 'X': case 'x':
         if (m & wxMOD_ALT)
-        {   command();
+        {   unicodeInput();   // Unicode conversion
             return;
         }
         goto defaultlabel;

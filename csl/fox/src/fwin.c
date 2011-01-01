@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 15763364 07-Dec-2010 */
+/* Signature: 4a28093f 01-Jan-2011 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -187,7 +187,7 @@ static FILE *logfile = NULL;
 
 #define LOGFILE_NAME "fwin-debug.log"
 
-void fwin_write_log(char *s, ...)
+void fwin_write_log(const char *s, ...)
 {
     int create = (logfile == NULL);
     va_list x;
@@ -505,8 +505,9 @@ int main(int argc, char *argv[])
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
         {   freopen("CONIN$", "r", stdin);
-            freopen("CONOUT$", "w", stdout);
-            freopen("CONOUT$", "w", stderr);
+/* console buffer access required read as well as write access here */
+            freopen("CONOUT$", "w+", stdout);
+            freopen("CONOUT$", "w+", stderr);
 /* I will also pause for 5 seconds at the end... */
             atexit(consoleWait);
         }

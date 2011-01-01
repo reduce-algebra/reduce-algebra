@@ -1,3 +1,4 @@
+#define TEST 1
 /* termed.c                          Copyright (C) 2004-2010 Codemist Ltd */
 
 /**************************************************************************
@@ -36,7 +37,7 @@
  */
 
 
-/* Signature: 698424f1 30-Dec-2010 */
+/* Signature: 1d6785c4 01-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -171,14 +172,14 @@ static int outputColour = -1;  /* whatever user had been using */
 
 #include <stdarg.h>
 
-static FILE *logfile = NULL;
+static FILE *termed_logfile = NULL;
 
 static void write_log(char *s, ...)
 {
     va_list x;
-    if (logfile == NULL) logfile = fopen("log.log", "w");
+    if (termed_logfile == NULL) termed_logfile = fopen("log.log", "w");
     va_start(x, s);
-    vfprintf(logfile, s, x);
+    vfprintf(termed_logfile, s, x);
     va_end(x);
 }
 
@@ -266,6 +267,7 @@ static int searchFlags;
 static const char *prompt_string = ">";
 static char *input_line, *display_line;
 static int prompt_length = 1, input_line_size;
+static int unicode_flag = 0;
 
 /*
  * term_plain_getline() can be called when cursor addressing is not
@@ -341,17 +343,21 @@ void term_setprompt(const char *s)
  */
 
 /*
- * Start up input through this package. Returns 0 in this case because
+ * Start up input through this package. Returns 1 in this case because
  * local editing is not supported on this platform. Hence the colour
  * option is ignored.
  */
 
 int term_setup(int flag, const char *colour)
 {
+#ifdef TEST
+    fprintf(stderr,
+        "term_setup in the DISABLE (no cursor addressability) case\n");
+#endif
     input_line = (char *)malloc(200);
     if (input_line == NULL) input_line_size = 0;
     else input_line_size = 200;
-    return 0;
+    return 1;
 }
 
 /*
@@ -373,7 +379,7 @@ char *term_getline(void)
     return term_plain_getline();
 }
 
-#else /* DISABLED */
+#else /* DISABLE */
 
 #ifndef WIN32
 
@@ -661,6 +667,13 @@ int term_setup(int flag, const char *colour)
 #ifdef WIN32
     DWORD w;
     CONSOLE_SCREEN_BUFFER_INFO csb;
+#ifdef TEST
+    fprintf(stderr, "term_setup in the WIN32 case\n");
+#endif
+/*
+ * It is VITAL to use "w+" as the access mode here for otherwise
+ * it is not possible to access the Console Output Buffer sufficiently.
+ */
     freopen("CONOUT$", "w+", stdout);
     term_enabled = 0;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
@@ -670,25 +683,82 @@ int term_setup(int flag, const char *colour)
     display_line = (char *)malloc(200);
     if (input_line == NULL || display_line == NULL)
     {   input_line_size = 0;
+#ifdef TEST
+        fprintf(stderr, "unable to allocate buffers\n");
+#endif
         return 1;
     }
     else input_line_size = 200;
-    if (!flag) return 1;
+    if (!flag)
+    {
+#ifdef TEST
+        fprintf(stderr, "user asked for no local editing\n");
+#endif
+        return 1;
+    }
 /*
  * Standard input must be from a character device and must be accepted
  * by the GetConsoleMode function
  */
     stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
-    if (GetFileType(stdin_handle) != FILE_TYPE_CHAR) return 1;
-    if (!GetConsoleMode(stdin_handle, &w)) return 1;
+    if (GetFileType(stdin_handle) != FILE_TYPE_CHAR)
+    {
+#ifdef TEST
+        fprintf(stderr, "stdin not CHAR type\n");
+#endif
+        return 1;
+    }
+    if (!GetConsoleMode(stdin_handle, &w))
+    {
+#ifdef TEST
+        fprintf(stderr, "could not get stdin console mode \n");
+#endif
+        return 1;
+    }
 /*
  * Standard output must be a character device and a ConsoleScreenBuffer
  */
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetFileType(stdout_handle) != FILE_TYPE_CHAR) return 1;
-    if (!GetConsoleScreenBufferInfo(stdout_handle, &csb) ||
-        !GetConsoleMode(stdin_handle, &stdin_attributes) ||
-        !GetConsoleMode(stdout_handle, &stdout_attributes)) return 1;
+#ifdef TEST
+    fprintf(stderr, "stdin handle = %p, stdout handle = %p\n", stdin_handle, stdout_handle);
+#endif
+    if (GetFileType(stdout_handle) != FILE_TYPE_CHAR)
+    {
+#ifdef TEST
+        fprintf(stderr, "stdout not CHAR type\n");
+#endif
+        return 1;
+    }
+    if (!GetConsoleScreenBufferInfo(stdout_handle, &csb))
+    {
+#ifdef TEST
+/*
+ * This was here stdout_handled needed READ access as well as WRITE access.
+ * All the extra printing was useful while I was tracking that problem down!
+ */
+        DWORD e = GetLastError();
+        char *msg;
+        fprintf(stderr, "trouble with GetConsoleScreenBufferInfo(stdout)\n");
+        fprintf(stderr, "Error code = %d\n", (int)e);
+        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                      NULL,
+                      e,
+                      0,
+                      (LPSTR)&msg,
+                      0,
+                      NULL);
+        fprintf(stderr, "msg = %s\n", msg);
+#endif
+        return 1;
+    }
+    if (!GetConsoleMode(stdin_handle, &stdin_attributes) ||
+        !GetConsoleMode(stdout_handle, &stdout_attributes))
+    {
+#ifdef TEST
+        fprintf(stderr, "trouble GetConsoleMode\n");
+#endif
+        return 1;
+    }
     plainAttributes = csb.wAttributes;
     revAttributes = plainAttributes ^
       (FOREGROUND_RED | BACKGROUND_RED |
@@ -697,9 +767,21 @@ int term_setup(int flag, const char *colour)
        FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
     promptAttributes = plainAttributes ^ FOREGROUND_BLUE;
     inputAttributes = plainAttributes ^ FOREGROUND_RED;
-    if (!SetConsoleMode(stdout_handle, 0)) return 1;
+    if (!SetConsoleMode(stdout_handle, 0))
+    {
+#ifdef TEST
+        fprintf(stderr, "trouble setting stdout attributes\n");
+#endif
+        return 1;
+    }
     if (!SetConsoleMode(stdin_handle,
-        ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT)) return 1;
+        ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
+    {
+#ifdef TEST
+        fprintf(stderr, "trouble setting stdin attributes\n");
+#endif
+        return 1;
+    }
     columns = csb.srWindow.Right - csb.srWindow.Left + 1;
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
     SetConsoleMode(stdout_handle, stdout_attributes);
@@ -708,6 +790,9 @@ int term_setup(int flag, const char *colour)
     int errval, errcode;
     char *s;
     struct termios my_term;
+#ifdef TEST
+    fprintf(stderr, "term_setup in the non-Windows case\n");
+#endif
     term_enabled = 0;
     term_colour = (colour == NULL ? "-" : colour);
     {   const char *s = term_colour;
@@ -1640,8 +1725,9 @@ static void term_delete_forwards(void)
 {
     int i = insert_point;
     if (input_line[i] == 0) term_bell();
-    else while (input_line[i] != 0)
+    else for (;;)
     {   input_line[i] = input_line[i+1];
+        if (input_line[i] == 0) break;
         i++;
     }
     refresh_display();
@@ -1654,8 +1740,9 @@ static void term_delete_backwards(void)
     else 
     {   int i = insert_point - 1;
         insert_point = i;
-        while (input_line[i] != 0)
+        for (;;)
         {   input_line[i] = input_line[i+1];
+            if (input_line[i] == 0) break;
             i++;
         }
     }
@@ -1669,8 +1756,9 @@ static void term_delete_word_forwards(void)
     else 
     {   int i = insert_point;
         int n = term_find_next_word_forwards() - insert_point;
-        while (input_line[i] != 0)
+        for (;;)
         {   input_line[i] = input_line[i+n];
+            if (input_line[i] == 0) break;
             i++;
         }
         refresh_display();
@@ -1685,8 +1773,9 @@ static void term_delete_word_backwards(void)
     {   int i = term_find_next_word_backwards();
         int n = insert_point - i;
         insert_point = i;
-        while (input_line[i] != 0)
+        for (;;)
         {   input_line[i] = input_line[i+n];
+            if (input_line[i] == 0) break;
             i++;
         }
     }
@@ -2178,21 +2267,733 @@ static void term_discard_output(void)
 }
 
 
-static void term_extended_command(void)
+static int hexval(int c)
 {
-/* @@@@@ */
+    if (isdigit(c)) return c - '0';
+    else if (isupper(c)) return c + (10 - 'A');
+    else return c + (10 - 'a');
+}
+
+typedef struct uniname
+{
+    const char *name;
+    int code;
+} uniname;
+
+/*
+ * The table here is the set of names used in HTML to denote characters
+ * and so I hope that many of the names will be familiar to many people.
+ * They are sorted into a collating order based on their ASCII code so I
+ * can look up names using binary search. Note that the longest name is
+ * of length 8 ("thetasym"), and the shortest is of length 2 ("mu", "pi"
+ * and the quite a few others).
+ */
+
+uniname unicode_names[] =
+{
+    {"AElig",   198},    /* latin capital letter AE = latin capital ligature AE */
+    {"Aacute",  193},    /* latin capital letter A with acute */
+    {"Acirc",   194},    /* latin capital letter A with circumflex */
+    {"Agrave",  192},    /* latin capital letter A with grave = latin capital letter A grave */
+    {"Alpha",   913},    /* greek capital letter alpha */
+    {"Aring",   197},    /* latin capital letter A with ring above = latin capital letter A ring */
+    {"Atilde",  195},    /* latin capital letter A with tilde */
+    {"Auml",    196},    /* latin capital letter A with diaeresis */
+    {"Beta",    914},    /* greek capital letter beta */
+    {"Ccedil",  199},    /* latin capital letter C with cedilla */
+    {"Chi",     935},    /* greek capital letter chi */
+    {"Dagger",  8225},   /* double dagger */
+    {"Delta",   916},    /* greek capital letter delta */
+    {"ETH",     208},    /* latin capital letter ETH */
+    {"Eacute",  201},    /* latin capital letter E with acute */
+    {"Ecirc",   202},    /* latin capital letter E with circumflex */
+    {"Egrave",  200},    /* latin capital letter E with grave */
+    {"Epsilon", 917},    /* greek capital letter epsilon */
+    {"Eta",     919},    /* greek capital letter eta */
+    {"Euml",    203},    /* latin capital letter E with diaeresis */
+    {"Gamma",   915},    /* greek capital letter gamma */
+    {"Iacute",  205},    /* latin capital letter I with acute */
+    {"Icirc",   206},    /* latin capital letter I with circumflex */
+    {"Igrave",  204},    /* latin capital letter I with grave */
+    {"Iota",    921},    /* greek capital letter iota */
+    {"Iuml",    207},    /* latin capital letter I with diaeresis */
+    {"Kappa",   922},    /* greek capital letter kappa */
+    {"Lambda",  923},    /* greek capital letter lambda */
+    {"Mu",      924},    /* greek capital letter mu */
+    {"Ntilde",  209},    /* latin capital letter N with tilde */
+    {"Nu",      925},    /* greek capital letter nu */
+    {"OElig",   338},    /* latin capital ligature OE */
+    {"Oacute",  211},    /* latin capital letter O with acute */
+    {"Ocirc",   212},    /* latin capital letter O with circumflex */
+    {"Ograve",  210},    /* latin capital letter O with grave */
+    {"Omega",   937},    /* greek capital letter omega */
+    {"Omicron", 927},    /* greek capital letter omicron */
+    {"Oslash",  216},    /* latin capital letter O with stroke = latin capital letter O slash */
+    {"Otilde",  213},    /* latin capital letter O with tilde */
+    {"Ouml",    214},    /* latin capital letter O with diaeresis */
+    {"Phi",     934},    /* greek capital letter phi */
+    {"Pi",      928},    /* greek capital letter pi */
+    {"Prime",   8243},   /* double prime = seconds = inches */
+    {"Psi",     936},    /* greek capital letter psi */
+    {"Rho",     929},    /* greek capital letter rho */
+    {"Scaron",  352},    /* latin capital letter S with caron */
+    {"Sigma",   931},    /* greek capital letter sigma */
+    {"THORN",   222},    /* latin capital letter THORN */
+    {"Tau",     932},    /* greek capital letter tau */
+    {"Theta",   920},    /* greek capital letter theta */
+    {"Uacute",  218},    /* latin capital letter U with acute */
+    {"Ucirc",   219},    /* latin capital letter U with circumflex */
+    {"Ugrave",  217},    /* latin capital letter U with grave */
+    {"Upsilon", 933},    /* greek capital letter upsilon */
+    {"Uuml",    220},    /* latin capital letter U with diaeresis */
+    {"Xi",      926},    /* greek capital letter xi */
+    {"Yacute",  221},    /* latin capital letter Y with acute */
+    {"Yuml",    376},    /* latin capital letter Y with diaeresis */
+    {"Zeta",    918},    /* greek capital letter zeta */
+    {"aacute",  225},    /* latin small letter a with acute */
+    {"ac12",    0xac12}, /* so that frac12 gets handled smoothly */
+    {"ac14",    0xac14}, /* ditto frac14 */
+    {"ac34",    0xac34}, /* ditto frac34 */
+    {"acirc",   226},    /* latin small letter a with circumflex */
+    {"acute",   180},    /* acute accent = spacing acute */
+    {"aelig",   230},    /* latin small letter ae = latin small ligature ae */
+    {"agrave",  224},    /* latin small letter a with grave = latin small letter a grave */
+    {"alefsym", 8501},   /* alef symbol = first transfinite cardinal (note) */
+    {"alpha",   945},    /* greek small letter alpha */
+    {"amp",     38},     /* ampersand */
+    {"and",     8743},   /* logical and = wedge */
+    {"ang",     8736},   /* angle */
+    {"aring",   229},    /* latin small letter a with ring above = latin small letter a ring */
+    {"asymp",   8776},   /* almost equal to = asymptotic to */
+    {"atilde",  227},    /* latin small letter a with tilde */
+    {"auml",    228},    /* latin small letter a with diaeresis */
+    {"bdquo",   8222},   /* double low-9 quotation mark */
+    {"beta",    946},    /* greek small letter beta */
+    {"brvbar",  166},    /* broken bar = broken vertical bar */
+    {"bull",    8226},   /* bullet = black small circle (note) */
+    {"cap",     8745},   /* intersection = cap */
+    {"ccedil",  231},    /* latin small letter c with cedilla */
+    {"cedil",   184},    /* cedilla = spacing cedilla */
+    {"cent",    162},    /* cent sign */
+    {"chi",     967},    /* greek small letter chi */
+    {"circ",    710},    /* modifier letter circumflex accent */
+    {"clubs",   9827},   /* black club suit = shamrock */
+    {"cong",    8773},   /* approximately equal to */
+    {"copy",    169},    /* copyright sign */
+    {"crarr",   8629},   /* downwards arrow with corner leftwards = carriage return */
+    {"cup",     8746},   /* union = cup */
+    {"curren",  164},    /* currency sign */
+    {"dArr",    8659},   /* downwards double arrow */
+    {"dagger",  8224},   /* dagger */
+    {"darr",    8595},   /* downwards arrow */
+    {"deg",     176},    /* degree sign */
+    {"delta",   948},    /* greek small letter delta */
+    {"diams",   9830},   /* black diamond suit */
+    {"divide",  247},    /* division sign */
+    {"eacute",  233},    /* latin small letter e with acute */
+    {"ecirc",   234},    /* latin small letter e with circumflex */
+    {"egrave",  232},    /* latin small letter e with grave */
+    {"empty",   8709},   /* empty set = null set = diameter */
+    {"emsp",    8195},   /* em space */
+    {"ensp",    8194},   /* en space */
+    {"epsilon", 949},    /* greek small letter epsilon */
+    {"equiv",   8801},   /* identical to */
+    {"eta",     951},    /* greek small letter eta */
+    {"eth",     240},    /* latin small letter eth */
+    {"euml",    235},    /* latin small letter e with diaeresis */
+    {"euro",    8364},   /* euro sign */
+    {"exist",   8707},   /* there exists */
+    {"fnof",    402},    /* latin small f with hook = function = florin */
+    {"forall",  8704},   /* for all */
+    {"frac12",  189},    /* vulgar fraction one half = fraction one half */
+    {"frac14",  188},    /* vulgar fraction one quarter = fraction one quarter */
+    {"frac34",  190},    /* vulgar fraction three quarters = fraction three quarters */
+    {"frasl",   8260},   /* fraction slash */
+    {"gamma",   947},    /* greek small letter gamma */
+    {"ge",      8805},   /* greater-than or equal to */
+    {"gt",      62},     /* greater-than sign */
+    {"hArr",    8660},   /* left right double arrow */
+    {"hearts",  9829},   /* black heart suit = valentine */
+    {"hellip",  8230},   /* horizontal ellipsis = three dot leader */
+    {"iacute",  237},    /* latin small letter i with acute */
+    {"icirc",   238},    /* latin small letter i with circumflex */
+    {"iexcl",   161},    /* inverted exclamation mark */
+    {"igrave",  236},    /* latin small letter i with grave */
+    {"image",   8465},   /* blackletter capital I = imaginary part */
+    {"infin",   8734},   /* infinity */
+    {"int",     8747},   /* integral */
+    {"iota",    953},    /* greek small letter iota */
+    {"iquest",  191},    /* inverted question mark = turned question mark */
+    {"isin",    8712},   /* element of */
+    {"iuml",    239},    /* latin small letter i with diaeresis */
+    {"kappa",   954},    /* greek small letter kappa */
+    {"lArr",    8656},   /* leftwards double arrow (note) */
+    {"lambda",  955},    /* greek small letter lambda */
+    {"lang",    9001},   /* left-pointing angle bracket = bra (note) */
+    {"laquo",   171},    /* left-pointing double angle quotation mark = left pointing guillemet */
+    {"larr",    8592},   /* leftwards arrow */
+    {"lceil",   8968},   /* left ceiling = apl upstile */
+    {"ldquo",   8220},   /* left double quotation mark */
+    {"le",      8804},   /* less-than or equal to */
+    {"lfloor",  8970},   /* left floor = apl downstile */
+    {"lowast",  8727},   /* asterisk operator */
+    {"loz",     9674},   /* lozenge */
+    {"lrm",     8206},   /* left-to-right mark (for formatting only) */
+    {"lsaquo",  8249},   /* single left-pointing angle quotation mark (note) */
+    {"lsquo",   8216},   /* left single quotation mark */
+    {"lt",      60},     /* less-than sign */
+    {"macr",    175},    /* macron = spacing macron = overline = APL overbar */
+    {"mdash",   8212},   /* em dash */
+    {"micro",   181},    /* micro sign */
+    {"middot",  183},    /* middle dot = Georgian comma = Greek middle dot */
+    {"minus",   8722},   /* minus sign */
+    {"mu",      956},    /* greek small letter mu */
+    {"nabla",   8711},   /* nabla = backward difference */
+    {"nbsp",    160},    /* no-break space = non-breaking space */
+    {"ndash",   8211},   /* en dash */
+    {"ne",      8800},   /* not equal to */
+    {"ni",      8715},   /* contains as member (note) */
+    {"not",     172},    /* not sign */
+    {"notin",   8713},   /* not an element of */
+    {"nsub",    8836},   /* not a subset of */
+    {"ntilde",  241},    /* latin small letter n with tilde */
+    {"nu",      957},    /* greek small letter nu */
+    {"oacute",  243},    /* latin small letter o with acute */
+    {"ocirc",   244},    /* latin small letter o with circumflex */
+    {"oelig",   339},    /* latin small ligature oe (note) */
+    {"ograve",  242},    /* latin small letter o with grave */
+    {"oline",   8254},   /* overline = spacing overscore */
+    {"omega",   969},    /* greek small letter omega */
+    {"omicron", 959},    /* greek small letter omicron */
+    {"oplus",   8853},   /* circled plus = direct sum */
+    {"or",      8744},   /* logical or = vee */
+    {"ordf",    170},    /* feminine ordinal indicator */
+    {"ordm",    186},    /* masculine ordinal indicator */
+    {"oslash",  248},    /* latin small letter o with stroke, = latin small letter o slash */
+    {"otilde",  245},    /* latin small letter o with tilde */
+    {"otimes",  8855},   /* circled times = vector product */
+    {"ouml",    246},    /* latin small letter o with diaeresis */
+    {"para",    182},    /* pilcrow sign = paragraph sign */
+    {"part",    8706},   /* partial differential */
+    {"permil",  8240},   /* per mille sign */
+    {"perp",    8869},   /* up tack = orthogonal to = perpendicular */
+    {"phi",     966},    /* greek small letter phi */
+    {"pi",      960},    /* greek small letter pi */
+    {"piv",     982},    /* greek pi symbol */
+    {"plusmn",  177},    /* plus-minus sign = plus-or-minus sign */
+    {"pound",   163},    /* pound sign */
+    {"prime",   8242},   /* prime = minutes = feet */
+    {"prod",    8719},   /* n-ary product = product sign (note) */
+    {"prop",    8733},   /* proportional to */
+    {"psi",     968},    /* greek small letter psi */
+    {"quot",    34},     /* quotation mark = APL quote */
+    {"rArr",    8658},   /* rightwards double arrow (note) */
+    {"radic",   8730},   /* square root = radical sign */
+    {"rang",    9002},   /* right-pointing angle bracket = ket (note) */
+    {"raquo",   187},    /* right-pointing double angle quotation mark = right pointing guillemet */
+    {"rarr",    8594},   /* rightwards arrow */
+    {"rceil",   8969},   /* right ceiling */
+    {"rdquo",   8221},   /* right double quotation mark */
+    {"real",    8476},   /* blackletter capital R = real part symbol */
+    {"reg",     174},    /* registered sign = registered trade mark sign */
+    {"rfloor",  8971},   /* right floor */
+    {"rho",     961},    /* greek small letter rho */
+    {"rlm",     8207},   /* right-to-left mark (for formatting only) */
+    {"rsaquo",  8250},   /* single right-pointing angle quotation mark (note) */
+    {"rsquo",   8217},   /* right single quotation mark */
+    {"sbquo",   8218},   /* single low-9 quotation mark */
+    {"scaron",  353},    /* latin small letter s with caron */
+    {"sdot",    8901},   /* dot operator (note) */
+    {"sect",    167},    /* section sign */
+    {"shy",     173},    /* soft hyphen = discretionary hyphen (displays incorrectly on Mac) */
+    {"sigma",   963},    /* greek small letter sigma */
+    {"sigmaf",  962},    /* greek small letter final sigma (note) */
+    {"sim",     8764},   /* tilde operator = varies with = similar to (note) */
+    {"spades",  9824},   /* black spade suit (note) */
+    {"sub",     8834},   /* subset of */
+    {"sube",    8838},   /* subset of or equal to */
+    {"sum",     8721},   /* n-ary sumation (note) */
+    {"sup",     8835},   /* superset of (note) */
+    {"sup1",    185},    /* superscript one = superscript digit one */
+    {"sup2",    178},    /* superscript two = superscript digit two = squared */
+    {"sup3",    179},    /* superscript three = superscript digit three = cubed */
+    {"supe",    8839},   /* superset of or equal to */
+    {"szlig",   223},    /* latin small letter sharp s = ess-zed */
+    {"tau",     964},    /* greek small letter tau */
+    {"there4",  8756},   /* therefore */
+    {"theta",   952},    /* greek small letter theta */
+    {"thetasym",977},    /* greek small letter theta symbol */
+    {"thinsp",  8201},   /* thin space */
+    {"thorn",   254},    /* latin small letter thorn */
+    {"tilde",   732},    /* small tilde */
+    {"times",   215},    /* multiplication sign */
+    {"trade",   8482},   /* trade mark sign */
+    {"uArr",    8657},   /* upwards double arrow */
+    {"uacute",  250},    /* latin small letter u with acute */
+    {"uarr",    8593},   /* upwards arrow */
+    {"ucirc",   251},    /* latin small letter u with circumflex */
+    {"ugrave",  249},    /* latin small letter u with grave */
+    {"uml",     168},    /* diaeresis = spacing diaeresis */
+    {"upsih",   978},    /* greek upsilon with hook symbol */
+    {"upsilon", 965},    /* greek small letter upsilon */
+    {"uuml",    252},    /* latin small letter u with diaeresis */
+    {"weierp",  8472},   /* script capital P = power set = Weierstrass p */
+    {"xi",      958},    /* greek small letter xi */
+    {"yacute",  253},    /* latin small letter y with acute */
+    {"yen",     165},    /* yen sign = yuan sign */
+    {"yuml",    255},    /* latin small letter y with diaeresis */
+    {"zeta",    950},    /* greek small letter zeta */
+    {"zwj",     8205},   /* zero width joiner */
+    {"zwnj",    8204}    /* zero width non-joiner */
+};
+
+static int compare_strings(const void *a, const void *b)
+{
+    const uniname *a1 = (uniname *)a;
+    const uniname *b1 = (uniname *)b;
+    return strcmp(a1->name, b1->name);
+}
+
+int lookup_name(const char *s)
+{
+    uniname k, *p;
+    k.name = s;
+    p = bsearch(&k, unicode_names,
+                sizeof(unicode_names)/sizeof(unicode_names[0]),
+                sizeof(unicode_names[0]),
+                compare_strings);
+    if (p == NULL) return -1; /* not found */
+    else return p->code;
+}
+
+const char *lookup_code(int c)
+{
+    int i;
+/*
+ * I do a simple linear search here. It is cheap-enough given that it is
+ * only needed when the user types a special command, ALT-x.
+ */
+    for (i=0; i<sizeof(unicode_names)/sizeof(unicode_names[0]); i++)
+    {   if (unicode_names[i].code == c) return unicode_names[i].name;
+    }
+    return NULL;
+}
+
+static void term_replace_chars_backwards(int n, const char *s)
+{
+/*
+ * Replace n characters that are before the caret with bytes from the
+ * string s.
+ */
+    int m = strlen(s);
+    if (n > m)        /* Overall this deletes characters */
+    {   int i = insert_point - n;
+        for (;;)
+        {   input_line[i] = input_line[i+n-m];
+            if (input_line[i] == 0) break;
+            i++;
+        }
+        insert_point -= (n-m);
+    }
+    else if (m > n)   /* Overall this inserts characters */
+    {   int i = insert_point;
+        while (input_line[i] != 0) i++;
+        while (i >= insert_point)
+        {   input_line[i+m-n] = input_line[i];
+            i--;
+        }
+        insert_point += (m-n);
+    }
+    m = insert_point - m;
+    while (*s != 0) input_line[m++] = *s++;
+}
+
+static char input_word[16];
+static char output_word[16];
+
+static void term_ctrl_z_command(void)
+{
+/*
+ * It is not yet clear that I have anything much to allocate this to. In
+ * emacs it would be "obey extended command".
+ */
     insert_point += sprintf(&input_line[insert_point], "<^X>");
     term_bell();
     term_redisplay();
 }
 
+/*
+ * Encode into buffer b as up to 4 characters (plus a nul). Because I
+ * am only concerned with Unicode I only need encode values in the
+ * range 0 to 0x10ffff.
+ */
 
-static void term_obey_command(void)
+static void utf_encode(char *b, int c)
 {
-/* @@@@@ */
-    insert_point += sprintf(&input_line[insert_point], "<&X>");
+    c &= 0x1fffff;   /* limit myself to 21-bit values here */
+    if (c <= 0x7f) *b++ = c;
+    else if (c <= 0x7ff)
+    {   *b++ = 0xc0 | (c >> 6);
+        *b++ = 0x80 | (c & 0x3f);
+    }
+    else if (c <= 0xffff)
+    {   *b++ = 0xe0 | (c >> 12);
+        *b++ = 0x80 | ((c >> 6) & 0x3f);
+        *b++ = 0x80 | (c & 0x3f);
+    }
+    else
+    {   *b++ = 0xf0 | (c >> 18);
+        *b++ = 0x80 | ((c >> 12) & 0x3f);
+        *b++ = 0x80 | ((c >> 6) & 0x3f);
+        *b++ = 0x80 | (c & 0x3f);
+    }
+    *b = 0;
+}
+
+/*
+ * Decode utf-8 or return -1 if invalid.
+ */
+
+static int utf_decode(char *b)
+{
+    int c = *b++ & 0xff, c1, c2, c3;
+    switch (c & 0xf0)
+    {
+/*
+ *  case 0x00:
+ *  case 0x10:
+ *  case 0x20:
+ *  case 0x30:
+ *  case 0x40:
+ *  case 0x50:
+ *  case 0x60:
+ *  case 0x70:
+ */
+default:
+        return c;
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        return -1;  /* out of place continuation marker */
+case 0xc0:
+case 0xd0:
+        c1 = *b & 0xff;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        return ((c & 0x1f) << 6) | (c1 & 0x3f);
+case 0xe0:
+        c1 = *b++ & 0xff;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        c2 = *b & 0xff;
+        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        return ((c & 0x0f) << 12) | ((c1 & 0x3f) << 6) | (c2 & 0x3f);
+case 0xf0:
+        if ((c & 0x08) != 0) return -1;
+        c1 = *b++ & 0xff;
+        if ((c1 & 0xc0) != 0x80) return -1; /* not continuation */
+        c2 = *b++ & 0xff;
+        if ((c2 & 0xc0) != 0x80) return -1; /* not continuation */
+        c3 = *b & 0xff;
+        if ((c3 & 0xc0) != 0x80) return -1; /* not continuation */
+        return ((c & 0x07) << 18) | ((c1 & 0x3f) << 12) |
+               ((c2 & 0x3f) << 6) | (c3 & 0x3f);
+    }
+}
+
+static void term_unicode_input(void)
+{
+/*
+ * If you position the caret to the right of (up to) 6 hex digits and
+ * go ALT-X then the digits are replaced by single Unicode character.
+ * This may (and indeed often will) be a multi-byte character stored in the
+ * input buffer in UTF-8 form.
+ * There will also be a selection of words so that if you type ALT-X with
+ * the caret to the right of the word you get a conversion to a single
+ * character. Eg think in terms of names such as "euro" and "alpha". The
+ * initial set of names I use is the list of HTML entities.
+ *
+ * If you are to the right of a character that is a genuine multi-byte
+ * UTF-8 sequence or that seems to be in windows-1252-1 (because it has a top
+ * bit set but the preceeding bytes would not parse properly for UTF-8) then
+ * that character is expanded to a name or to hex. If it is to be expanded to
+ * hex it is normally converted to exactly 4 digits - but if the code is
+ * too large for that (which is improbable, I believe) it expands to 6.
+ *
+ * The idea is that ALT-X will cycle between the possible meanings of the
+ * input.
+ *
+ * There are a rather small number of cases where there could be ambiguity.
+ * These are coped with by arranging that successive uses of ALT-X cycle
+ * through all possibilities.
+ * Here are some particular cases that are a nuisance:
+ *    "123456"   The issue here is how many hex digits are to be used. The
+ *               first choice here will be to use exactly 4, and the
+ *               second choice exactly 6. I will only ever process 4 or 6
+ *               digits, and I will not accept codes over 10ffff or in the
+ *               surrogate region d800-dfff.
+ *    "oline"    Choice one is to interpret this "oli" followed
+ *               by a "not equal to" symbol. Choice two will be to treat
+ *               it as a single name for a "spacing overscore".
+ *    "frac12"   Choice one "fr" followed by the Unicode character U+ac12
+ *               (a Hangul (Korean) syllable). Two will be to turn it
+ *               into a fraction (1/2) symbol.
+ * The policy I will attempt to arrange is that all possible interpretations
+ * are cycled through, with the original state eventually reinstated.
+ *
+ * Well let me consider the possible display options by showing illustrations
+ * of all the cases. I will write (u+nnnn) to denote a single character. I
+ * use "10" here the possible first 2 digits of a 6-digit hex value from
+ * 00 to 10, and X for any character that can not lead to special
+ * prefixing.
+ *
+ * X(u+nnnn) 10(u+nnnn) X(u+03b1) (u+00bd)    X(u+203e)    10(u+203e)
+ * Xnnnn     10nnnn     Xalpha    frac12      Xoline       10oline
+ *           (u+10nnnn) X03b1     fr(u+ac12)  Xoli(u+2260) 10oli(u+2260)
+ *                                00bd        Xoli2260     10oli2260
+ *                                            X203e        10203e
+ *                                                         (u+10203e)
+ *
+ * I judge that restricting support to only 4 hex digits would not simplify
+ * things enough to really transform matters, but I will rely on having
+ * all names denote symbolc in the basic multilingual plane.
+ *
+ * The following transformation rules are designed to cause the code to
+ * cycle through all possibilities:
+ *                                                            example
+ * longest name that matches     -> character       10oline    -> 10(u+203e)
+ * 01 to 10 followed by 4 hex    -> character       102030     -> (u+102030)
+ * char with name NNNN
+ *    NNNN has a suffix          -> split suffix    (u+203e)   -> oli(u+2260)
+ *    NNNN has a prefix          -> hex             oli(u+2260)->oli2260
+ * char NNMMMM over 0xffff
+ *    MMMM has a name            -> NNname          (u+10203e) ->10oline
+ *    otherwise                  -> 6 hex           (u+102030) -> 102030
+ * char <= 0xffff                -> 4 hex           (i+1234)   -> 1234
+ * 4 hex of name with prefix     -> hex expanded    oli2260    -> 203e
+ * 4 hex of name                 -> name            203e       -> oline
+ * 4 hex of unnamed character    -> character       1234       -> (u+1234)
+ */
+    int i, n, c;
+    const char *p;
+    if (insert_point == prompt_length)
+    {   term_bell();
+        return;
+    }
+/*
+ * I will first see if I can find a name, and I will look for long ones first.
+ */
+    for (n=8; n>=2; n--) /* word length to seek */
+    {   if (prompt_length+n>insert_point) continue; /* not this many chars */
+        for (i=0; i<n; i++)
+            input_word[i] = input_line[insert_point-n+i];
+        input_word[n] = 0;           /* extract the (potential) word */
+        c = lookup_name(input_word);
+        if (c == -1) continue;    /* not a recognised name */
+        utf_encode(output_word, c);
+        term_replace_chars_backwards(n, output_word);
+        refresh_display();
+        return;
+    }
+/*
+ * Next check for a 6-digit hex value. Note that the first two digits
+ * must be 01, 02, ... 0f, 10. If you had "00" there then there was no
+ * point in using a 6-digit format. If you have any value beyond "10" you
+ * are outside the Unicode range.
+ */
+    if (insert_point - prompt_length >= 6)
+    {   p = &input_line[insert_point-6];
+        if ((p[0] == '0' && isxdigit(p[1]) && p[1] != '0') ||
+            (p[0] == '1' && p[1] == '0'))
+        {   c = (hexval(p[0]) << 4) | hexval(p[1]);
+            for (i=2; i<6 && c > 0; i++)
+            {   n = hexval(p[i]);
+                if (n < 0) c = -1;
+                else c = (c << 4) | n;
+            }
+            if (c > 0)
+            {   utf_encode(output_word, c);
+                term_replace_chars_backwards(6, output_word);
+                refresh_display();
+                return;
+            }
+        }
+    }   
+/*
+ * In the next two cases the character before the caret has a name
+ * associated with it. Well first I will just extract a Unicode character
+ * from before the caret, being careful to verify that it is properly
+ * formatted. It OUGHT to be, but it is "just a bit of code" to be careful.
+ */
+    if (insert_point - prompt_length >= 1 &&
+        (input_line[insert_point-1] & 0x80) == 0)
+        n = 1,
+        c = input_line[insert_point-1];
+    else if (insert_point - prompt_length >= 2 &&
+        (input_line[insert_point-1] & 0x80) == 0x80 &&
+        (input_line[insert_point-2] & 0xe0) == 0xc0)
+        n = 2,
+        c = ((input_line[insert_point-2] & 0x1f)<<6) |
+            (input_line[insert_point-1] & 0x3f);
+    else if (insert_point - prompt_length >= 3 &&
+        (input_line[insert_point-1] & 0x80) == 0x80 &&
+        (input_line[insert_point-2] & 0x80) == 0x80 &&
+        (input_line[insert_point-3] & 0xf0) == 0xe0)
+        n = 3,
+        c = ((input_line[insert_point-3] & 0x0f)<<12) |
+            ((input_line[insert_point-2] & 0x3f)<<6) |
+            (input_line[insert_point-1] & 0x3f);
+    else if (insert_point - prompt_length >= 4 &&
+        (input_line[insert_point-1] & 0x80) == 0x80 &&
+        (input_line[insert_point-2] & 0x80) == 0x80 &&
+        (input_line[insert_point-3] & 0x80) == 0x80 &&
+        (input_line[insert_point-4] & 0xf8) == 0xf0)
+        n = 4,
+        c = ((input_line[insert_point-4] & 0x07)<<18) |
+            ((input_line[insert_point-3] & 0x3f)<<12) |
+            ((input_line[insert_point-2] & 0x3f)<<6) |
+            (input_line[insert_point-1] & 0x3f);
+    else n = 0, c = -1;
+/*
+ * See if the character has a name.
+ */
+    p = lookup_code(c);
+/*
+ * Now I have two messy cases to detect. The first is if the name
+ * I have just found has a shorter name as a terminal sub-string. The second
+ * is if the name is a suffix of something longer and the prefix part happens
+ * to be in the buffer ahead of it. These two cases could both happen together
+ * if there were say names ABC, BC and just C in the list of entities, but
+ * I am glad to say that that is not the case. Beware if you ever add new
+ * entity-names! I will test for these cases in a pretty crude manner.
+ */
+    if (p != NULL)
+    {   int w = -1;
+        const char *p1 = p+1;
+        while (*p1 != 0)
+        {   w = lookup_name(p1);
+            if (w != -1) break;    /* Found a suffix */
+            p1++;
+        }
+/*
+ * The code here will convert (u+203e) to oli(u+2260) via expanding to
+ * the name "oline" and then re-coding the last two letters "ne". And
+ * a whole pile of other similar cases such Eaccute, rang, Theta, lfloor,
+ * ntilde, otimes and Yuml. I count 57 cases in the HTNL 4 entity table.
+ */
+        if (w != -1)
+        {   strcpy(output_word, p);
+            utf_encode(&output_word[p1-p], w);
+            term_replace_chars_backwards(n, output_word);
+            refresh_display();
+            return;
+        }
+/*
+ * Now there is the possible conversion the other way, where (for example)
+ * oli(u+2260) is in the buffer. If I merely expanded the unicode character
+ * to its name here I would end up with "oline" and the next ALT-X would
+ * convert that to (u+203e) - I would never get to see thing in hex form.
+ * So in this case I merely expand the character to 4 hex digits.
+ */
+        for (i=1; i+strlen(p)<9; i++)
+        {   /* i is the number of prefix characters to test for */
+            if (insert_point - prompt_length >= i+n)
+            {   memcpy(input_word, &input_line[insert_point-i-n], i);
+                strcpy(&input_word[i], p);
+/*
+ * I have now concatenated some stuff from the input buffer with the
+ * expanded character name and look it up. If I find a match I will
+ * convert the character to hex. Because the character itself was one
+ * with a name it will fit within 4 digits.
+ */
+                if (lookup_name(input_word) != -1)
+                {   sprintf(output_word, "%.4x", c);
+                    term_replace_chars_backwards(n, output_word);
+                    refresh_display();
+                    return;
+                }
+            }
+        }
+    }
+/*
+ * Here I have a character with code c and I am not processing any
+ * name it might have just now. However maybe its low 16 bits is a named
+ * character. In which case turn the low 16 bits into that name, leaving
+ * two digits of hex code ahead of that.
+ */
+    if (c > 0xffff && (p = lookup_code(c & 0xffff)) != NULL)
+    {   sprintf(output_word, "%.2x%s", (c >> 16) & 0x3f, p);
+        term_replace_chars_backwards(n, output_word);
+        refresh_display();
+        return;
+    }
+/*
+ * Character up to u+ffff turns into hex (except that plain ASCII characters
+ * do not need that, and if I tried to convert them here that would conflict
+ * with their use in hex numeric representation.
+ */
+    if (c > 0x7f && c <= 0xffff)
+    {   sprintf(output_word, "%.4x", c);
+        term_replace_chars_backwards(n, output_word);
+        refresh_display();
+        return;
+    }
+/*
+ * The case I look at now all have 4 hex digits ahead of the insertion
+ * point.
+ */
+    if (insert_point - prompt_length >= 4 &&
+        isxdigit(input_line[insert_point-4]) &&
+        isxdigit(input_line[insert_point-3]) &&
+        isxdigit(input_line[insert_point-3]) &&
+        isxdigit(input_line[insert_point-1]))
+    {   c = hexval(input_line[insert_point-4]);
+        c = (c << 4) | hexval(input_line[insert_point-3]);
+        c = (c << 4) | hexval(input_line[insert_point-2]);
+        c = (c << 4) | hexval(input_line[insert_point-1]);
+/* Now c is the relevant code. Maybe it names a character */
+        if ((p = lookup_code(c)) != NULL)  /* yes it does! */
+        {
+/*
+ * Now if the buffer contains characters that would form a prefix to the
+ * name I just found I will convert to the hex representation of the
+ * character corresponding to the longer name.
+ * This prefix processing is rather similar to a case considered earlier.
+ */
+            for (i=1; i+strlen(p)<9; i++)
+            {   /* i is the number of prefix characters to test for */
+                int c1;
+                if (insert_point - prompt_length >= i+4)
+                {   memcpy(input_word, &input_line[insert_point-i-4], i);
+                    strcpy(&input_word[i], p);
+                    if ((c1 = lookup_name(input_word)) != -1)
+                    {   sprintf(output_word, "%.4x", c1);
+                        term_replace_chars_backwards(i+4, output_word);
+                        refresh_display();
+                        return;
+                    }
+                }
+            }
+            term_replace_chars_backwards(4, p);
+            refresh_display();
+            return;
+        }
+        utf_encode(output_word, c);
+        term_replace_chars_backwards(4, output_word);
+        refresh_display();
+        return;
+    }
+
+/*
+ * 4 hex of name with prefix     -> hex expanded    oli2260    -> 203e
+ * 4 hex of name                 -> name            203e       -> oline
+ * 4 hex of unnamed character    -> character       1234       -> (u+1234)
+ */
+
+/*
+ * If I do not recognise any of the situations I will give an alert and
+ * not change the buffer at all.
+ */
     term_bell();
-    term_redisplay();
 }
 
 
@@ -2391,6 +3192,19 @@ static char *term_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
+/*
+ * I want several successibe ALT-X hits to be able to cycle through cases
+ * using unicode_flag to maintain status information. But ANY other key
+ * resets that to the starting situation.
+ */
+        switch (ch)
+        {
+    case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
+            break;
+    default:
+            unicode_flag = 0;
+        }
+
         if (ch == EOF || (ch == CTRL('D') && !any_keys))
         {   set_normal();
             return NULL;
@@ -2438,8 +3252,10 @@ static char *term_fancy_getline(void)
  * key must now be treated as if it was a "normal" non-search one.
  */
 #ifdef TEST
-    fprintf(stderr, "process character %#x\n", ch);
-    fflush(stderr);
+/*
+        fprintf(stderr, "process character %#x\n", ch);
+        fflush(stderr);
+*/
 #endif
         switch (ch)
         {
@@ -2532,7 +3348,7 @@ static char *term_fancy_getline(void)
             term_delete_word_backwards();
             continue;
     case CTRL('X'):
-            term_extended_command();
+            term_ctrl_z_command();
             continue;
     case CTRL('Y'):
             term_yank();
@@ -2641,7 +3457,7 @@ static char *term_fancy_getline(void)
             term_copy_region();
             continue;
     case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
-            term_obey_command();
+            term_unicode_input();
             continue;
     case CTRL('Y') + 0x100: case 'Y' + 0x100: case 'y' + 0x100:
             term_yank();

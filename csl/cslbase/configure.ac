@@ -75,8 +75,8 @@ AC_ARG_WITH(mingw64,
   [],
   [])
 
-AC_ARG_WITH(gcc-3,
-  AC_HELP_STRING([--with-gcc-3], [this option is ignored here!]),
+AC_ARG_WITH(gcc3,
+  AC_HELP_STRING([--with-gcc3], [this option is ignored here!]),
   [],
   [])
 

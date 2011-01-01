@@ -40,7 +40,7 @@
  */
 
 
-/* Signature: 0c84fc53 24-May-2008 */
+/* Signature: 0c84fc53 01-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
