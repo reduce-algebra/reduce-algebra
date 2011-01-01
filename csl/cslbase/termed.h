@@ -40,7 +40,7 @@
  */
 
 
-/* Signature: 0c84fc53 01-Jan-2011 */
+/* Signature: 6df7f9d9 01-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -109,6 +109,17 @@ extern void input_history_end(void);
 extern void input_history_add(const char *s);
 
 extern const char *input_history_get(int n);
+
+/*
+ * The next few are so I can access the Unicode conversion code here
+ * by pretending to be in console mode even if I am not.
+ */
+
+extern char *input_line;
+extern int prompt_length, insert_point;
+extern int utf_encode(char *b, int c);
+extern int utf_decode(char *b);
+extern void term_unicode_convert();
 
 #ifdef __cplusplus
 }

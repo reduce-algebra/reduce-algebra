@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 4c5bd1fa 01-Jan-2011 */
+/* Signature: 4d7e7c44 01-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -80,6 +80,7 @@ static Display *dpy;
 #endif  // WIN32
 
 
+#include "termed.h"
 #include "wxterminal.h"      // my own header file.
 
 
@@ -119,7 +120,6 @@ extern char *getcwd(char *s, size_t n);
 #endif
 
 #ifdef WIN32
-#include "termed.h"
 HANDLE pipedes;
 int event_code = -1;
 #else // WIN32
@@ -415,8 +415,8 @@ private:
     void insertString(wxString s);
     void appendText(char *s, int len);
     void insertNewline();
-    void deleteForwards();
-    void deleteBackwards();
+    void deleteForwards(int n);
+    void deleteBackwards(int n);
     void deleteWordForwards();
     void deleteWordBackwards();
     void moveLeft();
@@ -440,7 +440,7 @@ private:
     void copyRegion();
     void copyWordPrev();
     void unicodeInput();
-    void extendedUnicodeInput();
+    void ctrlXcommand();
     void paste();
     void killSelection();
     void deleteCurrentLine();
@@ -934,7 +934,7 @@ fwinText::fwinText(fwinFrame *parent)
     fwin_in = 0;
     use_buffer1 = 1;
 
-    inputBufferP = 0;
+    inputBufferP = inputBufferLen = 0;
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
     unicodePromptLength = 1;
@@ -1053,20 +1053,16 @@ void fwinText::capitalize()
 #endif
 }
 
-// ^D  delete character under cursor (fowards)
+// ^D  delete n characters under cursor (fowards)
 
-void fwinText::deleteForwards()
+void fwinText::deleteForwards(int n)
 {
-    if (caretPos == textEnd)
-    {   beep();
-        return;
-    }
     int w = caretPos;
-    while (w < textEnd)
-    {   textBuffer[w] = textBuffer[w+1];
+    while (w <= textEnd-n)
+    {   textBuffer[w] = textBuffer[w+n];
         w++;
     }
-    textEnd--;
+    textEnd -= n;
     Refresh(); // I can do a LOT better than this! See insertChar for the
                // sort of logic to employ.
     repositionCaret();
@@ -1141,19 +1137,15 @@ void fwinText::displayBacktrace()
 
 // ^H  (backspace) delete char before cursor if that is reasonable.
 
-void fwinText::deleteBackwards()
+void fwinText::deleteBackwards(int n)
 {
-    if (caretPos == 0)
-    {   beep();
-        return;
-    }
-    caretPos--;
+    caretPos -= n;
     int w = caretPos;
-    while (w < textEnd)
-    {   textBuffer[w] = textBuffer[w+1];
+    while (w <= textEnd-n)
+    {   textBuffer[w] = textBuffer[w+n];
         w++;
     }
-    textEnd--;
+    textEnd -= n;
     Refresh(); // I can do a LOT better than this! See insertChar for the
                // sort of logic to employ.
     repositionCaret();
@@ -1706,8 +1698,7 @@ void fwinText::insertChars(uint32_t *pch, int n)
     int lineEnd = caretPos;
     while (lineEnd < textEnd && textBuffer[lineEnd]!='\n') lineEnd++;
     int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
-    textEnd++;
-    int p = textEnd+n-1;
+    int p = textEnd+n;
     if (p >= textBufferSize) enlargeTextBuffer();
 // In my terminal I will only ever be inserting within a "single line", and
 // even though that may consist of several rows it is liable to be only
@@ -1727,7 +1718,6 @@ void fwinText::insertChars(uint32_t *pch, int n)
     caretPos += n;
     textEnd += n;
     if (caret != NULL && caret->IsVisible()) repositionCaret();
-
     Refresh();
     return; // cop-out for now!
 
@@ -1794,13 +1784,54 @@ void fwinText::unicodeInput()
 // manner I will expand it to the name. Otherwise it it is outside the
 // range 0x20 to 0x7e but is at most 0xffff I will convert it to a string
 // of 4 hex digits. In the unusual case that it is a Unicode character
-// whose code is 0x10000 or higher I will expand it to 6 hex digits.
-#ifdef RECONSTRUCTED
-#endif
+// whose code is 0x10000 or higher I will expand it to 6 hex digits. Things
+// are in fact more complicated than that, and the file termed.c has
+// the implementation and a rather fuller commentary. It also comtains the
+// table of character names that are recognised - it is set of entity
+// names from HTML.
+    char buffer[64];
+    uint32_t replacement[16];
+    if (caretPos == 0)
+    {   beep();
+        return;
+    }
+    int j, k = 0;
+    int n = caretPos - 1;
+// I want to re-use the code in termed.c, but it works on the basis of
+// a buffer holding utf8. So I translate into that format, call the code
+// and translate back.
+// So first find the position that is on the same line and as the caret
+// but is up to 10 chars before it.
+    while (n >= 0 &&
+           k < 10 &&
+           (textBuffer[n] & 0x00ffffff) != '\n' &&
+           (textBuffer[n] & 0x03000000) == 0x01000000) k++, n--;
+    n++;
+    insert_point = 0;
+// Translate the stuff so identified into utf-8.
+    k = n;
+    while (k < caretPos)
+        insert_point += utf_encode(&buffer[insert_point], textBuffer[k++]);
+    input_line = &buffer[0];
+    prompt_length = 0;
+// Do the hard work.
+    term_unicode_convert();
+// Now map the adjusted characters back into 32-bit unicode, adding back the
+// 0x01000000 bit that indicates colour.
+    j = k = 0;
+    while (buffer[k] != 0)
+    {   int c = utf_decode(&buffer[k]);
+        replacement[j++] = 0x01000000 | (c & 0x001fffff);
+        k += (c <= 0x7f ? 1 : c <= 0x7ff ? 2 : c <= 0xffff ? 3 : 4);
+    }
+// Here I do a delete and then an insert - that is perhaps clumsier than
+// if I could do a since combined "replace" operation.
+    deleteBackwards(caretPos - n);
+    insertChars(replacement, j);
 }
 
 
-void fwinText::extendedUnicodeInput()
+void fwinText::ctrlXcommand()
 {
 // This is as "unicodeInput" except that it takes up to 6 hex digits as input and
 // it always converts to hex and never to a character name. It will generate
@@ -2363,7 +2394,7 @@ case WXK_BACK:  // = Ctrl-H
 // on Windows) is mapped to ctrl-DELETE so that will delete forwards.
         beep(); // to test this @@@
         if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
-        else deleteBackwards();
+        else deleteBackwards(1);
         return;
 case WXK_END|NON_UNICODE:
 // Hmmm - still should I extend a selection if an anchor is set?
@@ -2458,12 +2489,9 @@ case WXK_DELETE:
 // as Ctrl-DELETE and I want it to delete a single character not a word.
 // I think. Hence I let Ctrl-DEL delete a character, while ALT-DEL deletes
 // a word.
-        if (m & wxMOD_ALT)
-        {   deleteWordForwards();
-            return;
-        }
-        c = WXK_DELETE;
-        goto defaultlabel;
+        if (m & wxMOD_ALT) deleteWordForwards();
+        else deleteForwards(1);
+        return;
 case 'D' & 0x1f:
 // Here I may want to arrange that if the current input-buffer is empty
 // then ^D causes and EOF to be returned. Well yes, I have arranged that
@@ -2616,7 +2644,7 @@ case 'W': case 'w':
         }
         goto defaultlabel;
 case 'X' & 0x1f:
-        extendedUnicodeInput();
+        ctrlXcommand();
         return;
 case 'X': case 'x':
         if (m & wxMOD_ALT)
@@ -2669,6 +2697,9 @@ defaultlabel:
         if (awaiting)
         {   if (c == '\n')
             {   insertChar(c);
+// This is really WRONG. I should extract from textBuffer into
+// inputBuffer when I see ENTER. The code here utterly bypasses the
+// effect of all sorts of local editing!
                 inputBuffer[inputBufferLen++] = '\n';
                 awaiting = 0;
                 reading.Post();
@@ -2988,28 +3019,10 @@ void fwinText::OnRequestInput(wxThreadEvent& event)
     writing.Post();
 
     awaiting = 1;
-    return;  // no type-ahead for now
+    return;  // no type-ahead for now. If I had type-ahead I would
+             // unload from the type-ahead buffer here and if I got as far
+             // as a newline do a reading.Post();
 
-    switch (count++)
-    {
-case 0:
-#ifdef SMALL
-        strcpy(inputBuffer, "(explode \"Arthur\")\n");
-#else
-        strcpy(inputBuffer, "(oblist)\n");
-#endif
-        inputBufferP = 0;
-        inputBufferLen = strlen(inputBuffer);
-        break;
-case 1: strcpy(inputBuffer, "(stop 0)\n");
-        inputBufferP = 0;
-        inputBufferLen = strlen(inputBuffer);
-        break;
-default:inputBufferP = 0;
-        inputBufferLen = 0;
-        break;
-    }
-    reading.Post();
 }
 
 

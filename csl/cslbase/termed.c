@@ -37,7 +37,7 @@
  */
 
 
-/* Signature: 1d6785c4 01-Jan-2011 */
+/* Signature: 47166973 01-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -265,9 +265,10 @@ static int searchFlags;
 
 
 static const char *prompt_string = ">";
-static char *input_line, *display_line;
-static int prompt_length = 1, input_line_size;
-static int unicode_flag = 0;
+char *input_line;
+static char *display_line;
+int prompt_length = 1;
+static int input_line_size;
 
 /*
  * term_plain_getline() can be called when cursor addressing is not
@@ -520,7 +521,7 @@ static void my_reset_prog_mode(void)
 static int term_enabled;
 
 static int cursorx, cursory, final_cursorx, final_cursory, max_cursory;
-static int insert_point;
+int insert_point;
 
 static int term_can_invert, invert_start, invert_end;
 
@@ -2554,7 +2555,7 @@ static int compare_strings(const void *a, const void *b)
     return strcmp(a1->name, b1->name);
 }
 
-int lookup_name(const char *s)
+static int lookup_name(const char *s)
 {
     uniname k, *p;
     k.name = s;
@@ -2625,36 +2626,39 @@ static void term_ctrl_z_command(void)
 /*
  * Encode into buffer b as up to 4 characters (plus a nul). Because I
  * am only concerned with Unicode I only need encode values in the
- * range 0 to 0x10ffff.
+ * range 0 to 0x10ffff. Returns the number of chars packed (not counting
+ * the terminating '\0').
  */
 
-static void utf_encode(char *b, int c)
+int utf_encode(char *b, int c)
 {
+    char *p = b;
     c &= 0x1fffff;   /* limit myself to 21-bit values here */
-    if (c <= 0x7f) *b++ = c;
+    if (c <= 0x7f) *p++ = c;
     else if (c <= 0x7ff)
-    {   *b++ = 0xc0 | (c >> 6);
-        *b++ = 0x80 | (c & 0x3f);
+    {   *p++ = 0xc0 | (c >> 6);
+        *p++ = 0x80 | (c & 0x3f);
     }
     else if (c <= 0xffff)
-    {   *b++ = 0xe0 | (c >> 12);
-        *b++ = 0x80 | ((c >> 6) & 0x3f);
-        *b++ = 0x80 | (c & 0x3f);
+    {   *p++ = 0xe0 | (c >> 12);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
     }
     else
-    {   *b++ = 0xf0 | (c >> 18);
-        *b++ = 0x80 | ((c >> 12) & 0x3f);
-        *b++ = 0x80 | ((c >> 6) & 0x3f);
-        *b++ = 0x80 | (c & 0x3f);
+    {   *p++ = 0xf0 | (c >> 18);
+        *p++ = 0x80 | ((c >> 12) & 0x3f);
+        *p++ = 0x80 | ((c >> 6) & 0x3f);
+        *p++ = 0x80 | (c & 0x3f);
     }
-    *b = 0;
+    *p = 0;
+    return (int)(p - b);
 }
 
 /*
  * Decode utf-8 or return -1 if invalid.
  */
 
-static int utf_decode(char *b)
+int utf_decode(char *b)
 {
     int c = *b++ & 0xff, c1, c2, c3;
     switch (c & 0xf0)
@@ -2700,7 +2704,7 @@ case 0xf0:
     }
 }
 
-static void term_unicode_input(void)
+void term_unicode_convert(void)
 {
 /*
  * If you position the caret to the right of (up to) 6 hex digits and
@@ -2791,7 +2795,6 @@ static void term_unicode_input(void)
         if (c == -1) continue;    /* not a recognised name */
         utf_encode(output_word, c);
         term_replace_chars_backwards(n, output_word);
-        refresh_display();
         return;
     }
 /*
@@ -2813,7 +2816,6 @@ static void term_unicode_input(void)
             if (c > 0)
             {   utf_encode(output_word, c);
                 term_replace_chars_backwards(6, output_word);
-                refresh_display();
                 return;
             }
         }
@@ -2884,7 +2886,6 @@ static void term_unicode_input(void)
         {   strcpy(output_word, p);
             utf_encode(&output_word[p1-p], w);
             term_replace_chars_backwards(n, output_word);
-            refresh_display();
             return;
         }
 /*
@@ -2908,7 +2909,6 @@ static void term_unicode_input(void)
                 if (lookup_name(input_word) != -1)
                 {   sprintf(output_word, "%.4x", c);
                     term_replace_chars_backwards(n, output_word);
-                    refresh_display();
                     return;
                 }
             }
@@ -2923,7 +2923,6 @@ static void term_unicode_input(void)
     if (c > 0xffff && (p = lookup_code(c & 0xffff)) != NULL)
     {   sprintf(output_word, "%.2x%s", (c >> 16) & 0x3f, p);
         term_replace_chars_backwards(n, output_word);
-        refresh_display();
         return;
     }
 /*
@@ -2934,7 +2933,6 @@ static void term_unicode_input(void)
     if (c > 0x7f && c <= 0xffff)
     {   sprintf(output_word, "%.4x", c);
         term_replace_chars_backwards(n, output_word);
-        refresh_display();
         return;
     }
 /*
@@ -2968,27 +2966,17 @@ static void term_unicode_input(void)
                     if ((c1 = lookup_name(input_word)) != -1)
                     {   sprintf(output_word, "%.4x", c1);
                         term_replace_chars_backwards(i+4, output_word);
-                        refresh_display();
                         return;
                     }
                 }
             }
             term_replace_chars_backwards(4, p);
-            refresh_display();
             return;
         }
         utf_encode(output_word, c);
         term_replace_chars_backwards(4, output_word);
-        refresh_display();
         return;
     }
-
-/*
- * 4 hex of name with prefix     -> hex expanded    oli2260    -> 203e
- * 4 hex of name                 -> name            203e       -> oline
- * 4 hex of unnamed character    -> character       1234       -> (u+1234)
- */
-
 /*
  * If I do not recognise any of the situations I will give an alert and
  * not change the buffer at all.
@@ -3192,19 +3180,6 @@ static char *term_fancy_getline(void)
     for (;;)
     {   int n;
         ch = term_getchar();
-/*
- * I want several successibe ALT-X hits to be able to cycle through cases
- * using unicode_flag to maintain status information. But ANY other key
- * resets that to the starting situation.
- */
-        switch (ch)
-        {
-    case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
-            break;
-    default:
-            unicode_flag = 0;
-        }
-
         if (ch == EOF || (ch == CTRL('D') && !any_keys))
         {   set_normal();
             return NULL;
@@ -3457,7 +3432,8 @@ static char *term_fancy_getline(void)
             term_copy_region();
             continue;
     case CTRL('X') + 0x100: case 'X' + 0x100: case 'x' + 0x100:
-            term_unicode_input();
+            term_unicode_convert();
+            refresh_display();
             continue;
     case CTRL('Y') + 0x100: case 'Y' + 0x100: case 'y' + 0x100:
             term_yank();
