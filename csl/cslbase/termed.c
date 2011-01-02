@@ -37,7 +37,7 @@
  */
 
 
-/* Signature: 47166973 01-Jan-2011 */
+/* Signature: 68b9f873 02-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -2275,12 +2275,6 @@ static int hexval(int c)
     else return c + (10 - 'a');
 }
 
-typedef struct uniname
-{
-    const char *name;
-    int code;
-} uniname;
-
 /*
  * The table here is the set of names used in HTML to denote characters
  * and so I hope that many of the names will be familiar to many people.
@@ -2545,7 +2539,8 @@ uniname unicode_names[] =
     {"yuml",    255},    /* latin small letter y with diaeresis */
     {"zeta",    950},    /* greek small letter zeta */
     {"zwj",     8205},   /* zero width joiner */
-    {"zwnj",    8204}    /* zero width non-joiner */
+    {"zwnj",    8204},   /* zero width non-joiner */
+    {NULL,      -1}      /* dummy entry so end of table is easy to detect */ 
 };
 
 static int compare_strings(const void *a, const void *b)
@@ -2560,7 +2555,8 @@ static int lookup_name(const char *s)
     uniname k, *p;
     k.name = s;
     p = bsearch(&k, unicode_names,
-                sizeof(unicode_names)/sizeof(unicode_names[0]),
+                sizeof(unicode_names)/sizeof(unicode_names[0]) -
+                    sizeof(unicode_names[0]), /* allow for the terminator */
                 sizeof(unicode_names[0]),
                 compare_strings);
     if (p == NULL) return -1; /* not found */
@@ -2572,7 +2568,8 @@ const char *lookup_code(int c)
     int i;
 /*
  * I do a simple linear search here. It is cheap-enough given that it is
- * only needed when the user types a special command, ALT-x.
+ * only needed when the user types a special command, ALT-x. It does not
+ * matter here that I scan the very final NULL entry.
  */
     for (i=0; i<sizeof(unicode_names)/sizeof(unicode_names[0]); i++)
     {   if (unicode_names[i].code == c) return unicode_names[i].name;
@@ -2948,34 +2945,40 @@ void term_unicode_convert(void)
         c = (c << 4) | hexval(input_line[insert_point-3]);
         c = (c << 4) | hexval(input_line[insert_point-2]);
         c = (c << 4) | hexval(input_line[insert_point-1]);
-/* Now c is the relevant code. Maybe it names a character */
-        if ((p = lookup_code(c)) != NULL)  /* yes it does! */
-        {
+/*
+ * Now c is the integer corresponding to the 4 hex digits. If it is in the
+ * range 0xd800 to 0xdfff it would be a surrogate - in that case I will
+ * reject it. I need to see if the code has an associated name.
+ */
+        if (c < 0xd800 || c > 0xdfff)
+        {   if ((p = lookup_code(c)) != NULL)  /* yes it does! */
+            {
 /*
  * Now if the buffer contains characters that would form a prefix to the
  * name I just found I will convert to the hex representation of the
  * character corresponding to the longer name.
  * This prefix processing is rather similar to a case considered earlier.
  */
-            for (i=1; i+strlen(p)<9; i++)
-            {   /* i is the number of prefix characters to test for */
-                int c1;
-                if (insert_point - prompt_length >= i+4)
-                {   memcpy(input_word, &input_line[insert_point-i-4], i);
-                    strcpy(&input_word[i], p);
-                    if ((c1 = lookup_name(input_word)) != -1)
-                    {   sprintf(output_word, "%.4x", c1);
-                        term_replace_chars_backwards(i+4, output_word);
-                        return;
+                for (i=1; i+strlen(p)<9; i++)
+                {   /* i is the number of prefix characters to test for */
+                    int c1;
+                    if (insert_point - prompt_length >= i+4)
+                    {   memcpy(input_word, &input_line[insert_point-i-4], i);
+                        strcpy(&input_word[i], p);
+                        if ((c1 = lookup_name(input_word)) != -1)
+                        {   sprintf(output_word, "%.4x", c1);
+                            term_replace_chars_backwards(i+4, output_word);
+                            return;
+                        }
                     }
                 }
+                term_replace_chars_backwards(4, p);
+                return;
             }
-            term_replace_chars_backwards(4, p);
+            utf_encode(output_word, c);
+            term_replace_chars_backwards(4, output_word);
             return;
         }
-        utf_encode(output_word, c);
-        term_replace_chars_backwards(4, output_word);
-        return;
     }
 /*
  * If I do not recognise any of the situations I will give an alert and

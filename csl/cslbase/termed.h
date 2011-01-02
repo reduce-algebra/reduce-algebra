@@ -40,7 +40,7 @@
  */
 
 
-/* Signature: 6df7f9d9 01-Jan-2011 */
+/* Signature: 554d413d 02-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -120,6 +120,12 @@ extern int prompt_length, insert_point;
 extern int utf_encode(char *b, int c);
 extern int utf_decode(char *b);
 extern void term_unicode_convert();
+typedef struct uniname
+{
+    const char *name;
+    int code;
+} uniname;
+extern uniname unicode_names[];
 
 #ifdef __cplusplus
 }
