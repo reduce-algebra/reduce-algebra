@@ -1,0 +1,3 @@
+gcc  -o bpst  -arch x86_64 -DBPSSIZE=5500000  bps.c echo.c file-status.c float.c \
+  test.s -lc -lm 
+

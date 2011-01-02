@@ -1,0 +1,6 @@
+x86_64-w64-mingw32-gcc -m64 -g -o $pxk/bpsl-g.exe -DBPSSIZE=15500000 \
+	    $pxk/bps.c $pxk/bpsheap.c \
+	    $pxk/echo.c $pxk/file-status.c $pxk/float.c $pxk/os-hooks.c \
+	    $pxk/pslextras.c $pxk/pslsocket.c $pxk/pwd-fn.c $pxk/sigs.c \
+	    $pxk/unix-io.c $pxk/creloc.c \
+	    $pxk/main-g.o $pxk/dmain-g.o -lm -lwsock32

@@ -1,0 +1,3 @@
+#
+x86_64-w64-mingw32-as -g -o dmain-g.o dmain.s
+x86_64-w64-mingw32-as -g -o main-g.o main.s

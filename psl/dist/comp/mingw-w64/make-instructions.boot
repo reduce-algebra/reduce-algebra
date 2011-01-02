@@ -1,0 +1,1 @@
+$bsys/pslcomp < geninstr.sl

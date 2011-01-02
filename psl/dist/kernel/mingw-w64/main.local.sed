@@ -1,0 +1,12 @@
+s/cmp $68023,16/cmpq $68023,16/g
+s/call fclose/call unixfclose/g
+s/call fopen/call unixopen/g
+s/call fread/call unixfread/g
+s/call fputc/call unixfputc/g
+s/call fgetc/call unixfgetc/g
+s/call fgets/call unixfgets/g
+s/call fwrite/call unixfwrite/g
+s/call fflush/call unixfflush/g
+s/call fseek/call unixfseek/g
+s/call clearerr/call unixclearerr/g
+s/call putw/call unixputw/g
