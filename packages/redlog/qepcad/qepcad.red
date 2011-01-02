@@ -297,7 +297,7 @@ procedure qepcad_slfq1(f,fn);
 	    " 2> /dev/null | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
 	    " -v slfqvb=",lto_at2str !*rlslfqvb,
-	    " -v name=SLFQ -f $qe/qepcad.awk"};
+	    " -v name=SLFQ -f ",qepcad_awk!*};
 	 if !*rlverbose then
 	    ioto_prin2t lto_sconcat {"+++ calling ",call};
 	 system call;
