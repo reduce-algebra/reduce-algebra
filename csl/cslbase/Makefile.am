@@ -63,7 +63,11 @@ else !wx
 wxdemotarget =
 endif !wx
 
+if wx
+bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
+else !wx
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
+endif !wx
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
 	$(wxdemotarget)
@@ -336,6 +340,7 @@ reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
 		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC)
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
@@ -378,6 +383,7 @@ reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
 		$(GP) $(WXC)
 if wx
 fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 else !wx
 fwindemo_DEPENDENCIES = $(fwin_icon)
 endif !wx
@@ -438,8 +444,8 @@ $(BASELIB):	../lib/libwx_baseu-2.9-$(HOST).a
 	for x in *$(HOST).a; \
 	do \
 	  y=$${x%-$(HOST).a}.a; \
-	  echo ln -s $$x $$y; \
-	ln -s $$x $$y; \
+	  echo ln -s -f $$x $$y; \
+	  ln -s -f $$x $$y; \
 	done
 
 ../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
@@ -590,6 +596,31 @@ if mac_framework
 endif mac_framework
 endif wx
 
+if wx
+wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
+	-rm -f wxpsl$(EXEEXT)
+	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
+if windows
+if gui
+	-rm -f wxpsl$(COMEXT)
+	$(CXXLINKTO) $(DEST)wxpsl$(COMEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
+endif gui
+endif windows
+if !debug
+if !darwin
+	$(STRIP) wxpsl$(EXEEXT)
+if windows
+if gui
+	$(STRIP) wxpsl$(COMEXT)
+endif gui
+endif windows
+endif !darwin
+endif !debug
+if mac_framework
+	$(srcdir)/create_bundle.sh wxpsl $(srcdir)
+endif mac_framework
+endif wx
+
 if fox
 
 fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
@@ -635,6 +666,10 @@ reduce$(COMEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
 fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
 	-rm -f fwindemo.exe
 	$(MAKE) fwindemo.exe
+
+wxpsl$(COMEXT):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
+	-rm -f wxpsl.exe
+	$(MAKE) wxpsl.exe
 
 endif windows
 endif gui
@@ -699,6 +734,7 @@ plain_csl = csl
 plain_reduce = reduce
 plain_bootstrapreduce = bootstrapreduce
 plain_fwindemo = fwindemo
+plain_wxpsl = wxpsl
 plain_termdemo = termdemo
 plain_foxdemo  = foxdemo
 plain_fontdemo = fontdemo
@@ -721,6 +757,11 @@ $(plain_bootstrapreduce):	bootstrapreduce.exe
 
 $(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
 	echo "make fwindemo.exe is preferred"
+
+if wx
+$(plain_wxpsl):	wxpsl.exe wxpsl$(COMEXT)
+	echo "make wxpsl.exe is preferred"
+endif wx
 
 else !gui
 $(plain_csl):	csl.exe
@@ -810,6 +851,9 @@ report-dlls:	csl.exe bootstrapreduce.exe reduce.exe
 endif cygwin
 
 fwindemo_SOURCES=fwindemo.c $(fwin_sources)
+if wx
+wxpsl_SOURCES=wxpsl.cpp $(fwin_sources)
+endif wx
 
 termdemo_SOURCES=termdemo.c termed.c
 termdemo_LIBS=
@@ -842,7 +886,11 @@ install-data-local: $(image_files)
 if windows
 
 if gui
+if wx
+console_binaries = csl$(COMEXT) reduce$(COMEXT) wxpsl$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+else !wx
 console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+endif !wx
 noinstall_console_binaries = fwindemo$(COMEXT)
 else !gui
 console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
@@ -1334,7 +1382,11 @@ else !wx
 guisrc=
 endif !wx
 endif !fox
+if wx
+mainsrc=$(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+else !wx
 mainsrc=$(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+endif !wx
 srcfiles=$(mainsrc) $(csl_SOURCES)
 
 if fox
@@ -1346,9 +1398,17 @@ else !wx
 guibin=
 endif !wx
 endif !fox
+if wx
+mainbin=$(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
+else !wx
 mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
+endif !wx
 if windows
+if wx
+mainbin+=fwindemo$(COMEXT) wxpsl$(COMEXT) reduce$(COMEXT)
+else !wx
 mainbin+=fwindemo$(COMEXT) reduce$(COMEXT)
+endif !wx
 endif windows
 binfiles=$(mainbin) csl$(EXEEXT)
 if windows

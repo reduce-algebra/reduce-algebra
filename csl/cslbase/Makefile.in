@@ -46,8 +46,9 @@ host_triplet = @host@
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(am__EXEEXT_1) dyndemo$(EXEEXT) \
 	$(am__EXEEXT_2)
-@windows_TRUE@am__append_9 = fwindemo$(COMEXT) reduce$(COMEXT)
-@windows_TRUE@am__append_10 = csl$(COMEXT)
+@windows_TRUE@@wx_TRUE@am__append_9 = fwindemo$(COMEXT) wxpsl$(COMEXT) reduce$(COMEXT)
+@windows_TRUE@@wx_FALSE@am__append_10 = fwindemo$(COMEXT) reduce$(COMEXT)
+@windows_TRUE@am__append_11 = csl$(COMEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -183,6 +184,11 @@ am_wxdvi_OBJECTS = wxdvi.$(OBJEXT)
 wxdvi_OBJECTS = $(am_wxdvi_OBJECTS)
 am_wxfontdemo_OBJECTS = wxfontdemo.$(OBJEXT)
 wxfontdemo_OBJECTS = $(am_wxfontdemo_OBJECTS)
+am__wxpsl_SOURCES_DIST = wxpsl.cpp fwin.c termed.c wxfwin.c \
+	wxterminal.cpp
+@wx_TRUE@am_wxpsl_OBJECTS = wxpsl.$(OBJEXT) $(am__objects_3)
+wxpsl_OBJECTS = $(am_wxpsl_OBJECTS)
+wxpsl_LDADD = $(LDADD)
 am_wxshowmathdemo_OBJECTS = wxshowmathdemo.$(OBJEXT)
 wxshowmathdemo_OBJECTS = $(am_wxshowmathdemo_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -201,13 +207,14 @@ SOURCES = $(bootstrapreduce_SOURCES) $(csl_SOURCES) $(dyndemo_SOURCES) \
 	$(fontdemo_SOURCES) $(foxdemo_SOURCES) $(fwindemo_SOURCES) \
 	$(reduce_SOURCES) $(showmathdemo_SOURCES) $(termdemo_SOURCES) \
 	$(wxdemo_SOURCES) $(wxdvi_SOURCES) $(wxfontdemo_SOURCES) \
-	$(wxshowmathdemo_SOURCES)
+	$(wxpsl_SOURCES) $(wxshowmathdemo_SOURCES)
 DIST_SOURCES = $(am__bootstrapreduce_SOURCES_DIST) \
 	$(am__csl_SOURCES_DIST) $(dyndemo_SOURCES) $(fontdemo_SOURCES) \
 	$(foxdemo_SOURCES) $(am__fwindemo_SOURCES_DIST) \
 	$(am__reduce_SOURCES_DIST) $(showmathdemo_SOURCES) \
 	$(termdemo_SOURCES) $(wxdemo_SOURCES) $(wxdvi_SOURCES) \
-	$(wxfontdemo_SOURCES) $(wxshowmathdemo_SOURCES)
+	$(wxfontdemo_SOURCES) $(am__wxpsl_SOURCES_DIST) \
+	$(wxshowmathdemo_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -280,6 +287,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PSLB1UILD = @PSLB1UILD@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -363,7 +371,8 @@ RM = rm
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@wxdemotarget = 
 @wx_TRUE@wxdemotarget = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxdvi$(EXEEXT) wxshowmathdemo$(EXEEXT)
-bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
+@wx_FALSE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
+@wx_TRUE@bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
 		arith06.c arith07.c arith08.c arith09.c arith10.c arith11.c \
 		arith12.c char.c cslmpi.c eval1.c eval2.c \
@@ -565,6 +574,8 @@ dyndemo_SOURCES = dyndemo.c
 @windows_FALSE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_TRUE@@wx_FALSE@fwindemo_DEPENDENCIES = $(fwin_icon)
 @windows_TRUE@@wx_TRUE@fwindemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+@windows_FALSE@@wx_TRUE@wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
+@windows_TRUE@@wx_TRUE@wxpsl_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 @windows_FALSE@BOOTSTRAPREDUCECOMDEF = 
 
 # end of windows vs non-windows conditions
@@ -593,6 +604,7 @@ DEST = -o
 @exeext_TRUE@plain_reduce = reduce
 @exeext_TRUE@plain_bootstrapreduce = bootstrapreduce
 @exeext_TRUE@plain_fwindemo = fwindemo
+@exeext_TRUE@plain_wxpsl = wxpsl
 @exeext_TRUE@plain_termdemo = termdemo
 @exeext_TRUE@plain_foxdemo = foxdemo
 @exeext_TRUE@plain_fontdemo = fontdemo
@@ -603,6 +615,7 @@ DEST = -o
 @exeext_TRUE@plain_wxshowmathdemo = wxshowmathdemo
 @exeext_TRUE@plain_dyndemo = dyndemo
 fwindemo_SOURCES = fwindemo.c $(fwin_sources)
+@wx_TRUE@wxpsl_SOURCES = wxpsl.cpp $(fwin_sources)
 termdemo_SOURCES = termdemo.c termed.c
 termdemo_LIBS = 
 @mac_framework_FALSE@@windows_FALSE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir)
@@ -614,7 +627,8 @@ termdemo_LIBS =
 #
 @windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 @gui_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@gui_TRUE@@windows_TRUE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wxpsl$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_FALSE@@windows_TRUE@noinstall_console_binaries = 
 @gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COMEXT)
 @windows_FALSE@local_image_files = bootstrapreduce.img
@@ -655,14 +669,18 @@ DLLIB =
 #		-o bytes1.$(OBJEXT) \
 #		$(C)/bytes1.c
 @fox_TRUE@guisrc = $(foxdemo_SOURCES) $(fontdemo_SOURCES) $(showmathdemo_SOURCES)
-mainsrc = $(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+@wx_FALSE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
+@wx_TRUE@mainsrc = $(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
 srcfiles = $(mainsrc) $(csl_SOURCES)
 @fox_FALSE@@wx_FALSE@guibin = 
 @fox_FALSE@@wx_TRUE@guibin = wxdemo$(EXEEXT) wxfontdemo$(EXEEXT) wxshowmathdemo$(EXEEXT)
 @fox_TRUE@guibin = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
-mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
-	reduce$(EXEEXT) $(am__append_9)
-binfiles = $(mainbin) csl$(EXEEXT) $(am__append_10)
+@wx_FALSE@mainbin = $(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) \
+@wx_FALSE@	reduce$(EXEEXT) $(am__append_9) $(am__append_10)
+@wx_TRUE@mainbin = $(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) \
+@wx_TRUE@	termdemo$(EXEEXT) reduce$(EXEEXT) $(am__append_9) \
+@wx_TRUE@	$(am__append_10)
+binfiles = $(mainbin) csl$(EXEEXT) $(am__append_11)
 @win64_FALSE@@windows_FALSE@NAME = $(BUILD)
 @win64_FALSE@@windows_TRUE@NAME = windows32
 @win64_TRUE@NAME = windows64
@@ -773,6 +791,9 @@ termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
 @wx_FALSE@wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxfontdemo$(EXEEXT)
 @wx_FALSE@	$(CXXLINK) $(wxfontdemo_OBJECTS) $(wxfontdemo_LDADD) $(LIBS)
+@wx_FALSE@wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) 
+@wx_FALSE@	@rm -f wxpsl$(EXEEXT)
+@wx_FALSE@	$(CXXLINK) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS)
 @wx_FALSE@wxshowmathdemo$(EXEEXT): $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_DEPENDENCIES) 
 @wx_FALSE@	@rm -f wxshowmathdemo$(EXEEXT)
 @wx_FALSE@	$(CXXLINK) $(wxshowmathdemo_OBJECTS) $(wxshowmathdemo_LDADD) $(LIBS)
@@ -899,6 +920,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxdvi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfontdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxfwin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxpsl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxshowmathdemo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wxterminal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/x86defs.Po@am__quote@
@@ -2186,8 +2208,8 @@ $(srcdir)/Makefile.am:
 @wx_TRUE@@wxbuiltin_TRUE@	for x in *$(HOST).a; \
 @wx_TRUE@@wxbuiltin_TRUE@	do \
 @wx_TRUE@@wxbuiltin_TRUE@	  y=$${x%-$(HOST).a}.a; \
-@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s $$x $$y; \
-@wx_TRUE@@wxbuiltin_TRUE@	ln -s $$x $$y; \
+@wx_TRUE@@wxbuiltin_TRUE@	  echo ln -s -f $$x $$y; \
+@wx_TRUE@@wxbuiltin_TRUE@	  ln -s -f $$x $$y; \
 @wx_TRUE@@wxbuiltin_TRUE@	done
 
 @wx_TRUE@@wxbuiltin_TRUE@../lib/libwx_baseu-2.9-$(HOST).a ../bin/wx-config:
@@ -2250,6 +2272,15 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 @darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
 
+@wx_TRUE@wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
+@wx_TRUE@	-rm -f wxpsl$(EXEEXT)
+@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@	-rm -f wxpsl$(COMEXT)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(COMEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
+@darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxpsl$(EXEEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(STRIP) wxpsl$(COMEXT)
+@mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxpsl $(srcdir)
+
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
 @fox_TRUE@	-rm -f fontdemo$(EXEEXT)
 @fox_TRUE@	$(CXXLINKTO) $(DEST)fontdemo$(EXEEXT) $(fontdemo_OBJECTS) $(fontdemo_LDADD) $(LIBS) $(CONAP)
@@ -2276,6 +2307,10 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 @gui_TRUE@@windows_TRUE@fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f fwindemo.exe
 @gui_TRUE@@windows_TRUE@	$(MAKE) fwindemo.exe
+
+@gui_TRUE@@windows_TRUE@wxpsl$(COMEXT):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@	-rm -f wxpsl.exe
+@gui_TRUE@@windows_TRUE@	$(MAKE) wxpsl.exe
 
 reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
@@ -2331,6 +2366,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 
 @exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
 @exeext_TRUE@@gui_TRUE@	echo "make fwindemo.exe is preferred"
+
+@exeext_TRUE@@gui_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe wxpsl$(COMEXT)
+@exeext_TRUE@@gui_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
 
 @exeext_TRUE@@gui_FALSE@$(plain_csl):	csl.exe
 @exeext_TRUE@@gui_FALSE@	echo "make csl.exe is preferred"

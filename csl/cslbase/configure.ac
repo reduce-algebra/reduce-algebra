@@ -95,6 +95,13 @@ AC_ARG_WITH(build,
 
 BUILD="$with_build"
 
+AC_ARG_WITH(pslbuild,
+   AC_HELP_STRING([--with-pslbuild], [used to invoke the PSL version]),
+   [],
+   [with_build="unknown"])
+
+AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might live])
+
 if test "x$BUILD" = "xunknown"
 then
   BUILD=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
@@ -105,6 +112,7 @@ else
 fi
 
 AC_SUBST(BUILD)
+AC_SUBST(PSLB1UILD)
 
 AC_SUBST(DLL_CFLAGS)
 

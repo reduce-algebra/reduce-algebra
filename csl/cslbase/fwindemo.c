@@ -235,8 +235,10 @@ int fwin_main(int argc, char **argv)
     return 0;
 }
 
-// The following starts up fwin and in due course runs fwin_main
-// within the console window that it creates.
+/*
+ * The following starts up fwin and in due course runs fwin_main
+ * within the console window that it creates.
+ */
 
 int main(int argc, char *argv[])
 {

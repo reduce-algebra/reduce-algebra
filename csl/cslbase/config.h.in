@@ -390,6 +390,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Show where a matching PSL might live */
+#undef PSLBUILD
+
 /* True if we are running on RAW Cygwin */
 #undef RAW_CYGWIN
 

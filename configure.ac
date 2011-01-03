@@ -394,9 +394,11 @@ echo in-place build attempt = $inplace
 
 AC_MSG_NOTICE([host=$host args=$ac_configure_args])
 
+pslbuild=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+
 if test "x$with_psl" != "xno"
 then
-  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+  build="$pslbuild"
 else
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 fi
@@ -436,7 +438,7 @@ case $inplace in
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            $passcc --with-build=$build"
+            $passcc --with-build=$build --with-pslbuild=$pslbuild"
     AC_MSG_NOTICE([$doconfig])
     eval "$doconfig"
     cd $abssrcdir

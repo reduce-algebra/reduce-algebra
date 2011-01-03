@@ -666,6 +666,7 @@ SED
 AR
 MAKE
 DLL_CFLAGS
+PSLB1UILD
 BUILD
 host_os
 host_vendor
@@ -745,6 +746,7 @@ with_mingw64
 with_gcc3
 with_gui
 with_build
+with_pslbuild
 with_m32
 with_m64
 with_fox
@@ -1412,6 +1414,7 @@ Optional Packages:
   --with-gcc3             this option is ignored here!
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
+  --with-pslbuild         used to invoke the PSL version
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-fox=DIR          FOX installation location
@@ -3198,6 +3201,21 @@ fi
 
 BUILD="$with_build"
 
+
+# Check whether --with-pslbuild was given.
+if test "${with_pslbuild+set}" = set; then :
+  withval=$with_pslbuild;
+else
+  with_build="unknown"
+fi
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define PSLBUILD "$with_pslbuild"
+_ACEOF
+
+
 if test "x$BUILD" = "xunknown"
 then
   BUILD=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
@@ -3208,6 +3226,7 @@ else
 $as_echo "$as_me: Build platform specified as $BUILD" >&6;}
 
 fi
+
 
 
 

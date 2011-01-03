@@ -2428,9 +2428,11 @@ echo in-place build attempt = $inplace
 { $as_echo "$as_me:${as_lineno-$LINENO}: host=$host args=$ac_configure_args" >&5
 $as_echo "$as_me: host=$host args=$ac_configure_args" >&6;}
 
+pslbuild=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+
 if test "x$with_psl" != "xno"
 then
-  build=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
+  build="$pslbuild"
 else
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 fi
@@ -2472,7 +2474,7 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            $passcc --with-build=$build"
+            $passcc --with-build=$build --with-pslbuild=$pslbuild"
     { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
     eval "$doconfig"
