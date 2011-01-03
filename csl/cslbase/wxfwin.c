@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 4ba8d524 01-Jan-2011 */
+/* Signature: 06cb8ff0 03-Jan-2011 */
 
 #include "config.h"
 
@@ -581,8 +581,6 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  * should adjust behaviour:
  *    --  All output will be going to a file. So if the program is to run in
  *        windowed mode I will start it off minimised.
- *    -f  An option to run Reduce as a service on a socket. This is no longer
- *        maintained, but again it leads to starting out minimised.
  *    --texmacs   force the run NOT to try to create its own window,
  *        because it is being invoked via a pipe from TeXmacs,
  */
@@ -599,9 +597,13 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  * Note well that I detect just "--" as an entire argument here, so that
  * extended options "--option" do not interfere.
  */
-        else if ((strcmp(argv[i], "--") == 0 ||
-                  strcmp(argv[i], "-f") == 0 ||
-                  strcmp(argv[i], "-F") == 0) &&
+        else if ((strcmp(argv[i], "--") == 0 
+#if 0
+/* The "-f" option to provide a socket-service is withdrawn */
+                  || strcmp(argv[i], "-f") == 0
+                  || strcmp(argv[i], "-F") == 0
+#endif
+                 ) &&
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
@@ -634,7 +636,7 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
             else
             {
 #ifdef __CYGWIN__
-                freopen("/dev/conin", "r", stdin);
+                freopen("/dev/conin", "r+", stdin);
                 freopen("/dev/conout", "w+", stdout);
                 freopen("/dev/conout", "w+", stderr);
 #else
@@ -644,12 +646,12 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  * GENERIC_READ_ACCESS.
  */
                 HANDLE h;
-                freopen("CONIN$", "r", stdin);
+                freopen("CONIN$", "r+", stdin);
                 freopen("CONOUT$", "w+", stdout);
                 freopen("CONOUT$", "w+", stderr);
                 SetStdHandle(STD_INPUT_HANDLE,
                     CreateFile("CONIN$",
-                        GENERIC_READ, FILE_SHARE_READ, NULL,
+                        GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL,
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 SetStdHandle(STD_OUTPUT_HANDLE,
                     h = CreateFile("CONOUT$",

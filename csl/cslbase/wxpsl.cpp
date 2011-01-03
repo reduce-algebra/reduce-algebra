@@ -38,7 +38,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 712f356a 28-Feb-2010 */
+/* Signature: 6fb2cd71 03-Jan-2011 */
 
 
 /*
@@ -80,13 +80,306 @@
 
 #include "wxfwin.h"
 
+#define LONGEST_LEGAL_FILENAME 1024
+
+#ifdef WIN32
+#define DIRCHAR '\\'
+#define EXEEXT  ".exe"
+#else
+#define DIRCHAR '/'
+#define EXEEXT  ""
+#endif
+
+static char bpsl_binary[LONGEST_LEGAL_FILENAME];
+static char reduce_image[LONGEST_LEGAL_FILENAME];
+static char sixtyfour_marker[LONGEST_LEGAL_FILENAME];
+
 int fwin_main(int argc, char **argv)
 {
-    char line[1000];
+    int i = strlen(programDir), j;
+    for (j=0; j<3; j++)
+    {   i--;
+        while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
+    }
+    sprintf(bpsl_binary, "%.*s%c%s%cpsl%cbpsl%s",
+        i, programDir, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
+    sprintf(reduce_image, "%.*s%c%s%cred%creduce.img",
+        i, programDir, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+    sprintf(sixtyfour_marker, "%.*s%c%s%cpsl%c64",
+        i, programDir, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+    FWIN_LOG("bin: %s\n", bpsl_binary);
+    FWIN_LOG("img: %s\n", reduce_image);
+    FWIN_LOG("64:  %s\n", sixtyfour_marker);
+
+#ifdef WIN32
+    HANDLE g_hChildStd_IN_Rd = NULL;
+    HANDLE g_hChildStd_IN_Wr = NULL;
+    HANDLE g_hChildStd_OUT_Rd = NULL;
+    HANDLE g_hChildStd_OUT_Wr = NULL;
+
+void CreateChildProcess(void);
+void WriteToPipe(void);
+void ReadFromPipe(void);
+void ErrorExit(PTSTR);
+
+    SECURITY_ATTRIBUTES saAttr;
+// Set the bInheritHandle flag so pipe handles are inherited.
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+// Create a pipe for the child process's STDOUT.
+
+    if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0))
+    {   fwin_printf("Failed to create STDOUT pipe\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+// Ensure the read handle to the pipe for STDOUT is not inherited.
+    if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0))
+    {   fwin_printf("Failed to set handle info in STDOUT handle\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+// Create a pipe for the child process's STDIN.
+   if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0))
+    {   fwin_printf("Failed to create STDIN pipe\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+// Ensure the write handle to the pipe for STDIN is not inherited.
+   if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
+    {   fwin_printf("Failed to set handle info in STDIN handle\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+
+// Create a child process that uses the previously created pipes for STDIN and STDOUT.
+{
+/*
+ * With Windows I will always create the sub-process via a command line
+ * and it will split that up int individual arguments when it is ready to.
+ */
+    char szCmdline[2*LONGEST_LEGAL_FILENAME];
+    sprintf(szCmdline, "\"%s\" -f \"%s\"", bpsl_binary, reduce_image);
+    PROCESS_INFORMATION piProcInfo;
+    STARTUPINFO siStartInfo;
+    BOOL bSuccess = FALSE;
+
+// Set up members of the PROCESS_INFORMATION structure.
+    ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+
+// Set up members of the STARTUPINFO structure.
+// This structure specifies the STDIN and STDOUT handles for redirection.
+
+    ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+    siStartInfo.cb = sizeof(STARTUPINFO);
+// Note that I could get back stderr and stout as separate channels.
+    siStartInfo.hStdError  = g_hChildStd_OUT_Wr;
+    siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
+    siStartInfo.hStdInput  = g_hChildStd_IN_Rd;
+    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+// Create the child process.
+    bSuccess = CreateProcess(NULL, // application name
+        szCmdline,     // command line
+        NULL,          // process security attributes
+        NULL,          // primary thread security attributes
+        TRUE,          // handles are inherited
+        0,             // creation flags
+        NULL,          // use parent's environment
+        NULL,          // use parent's current directory
+        &siStartInfo,  // STARTUPINFO pointer
+        &piProcInfo);  // receives PROCESS_INFORMATION
+
+// If an error occurs, exit the application.
+    if (!bSuccess)
+    {   fwin_printf("Failed to create child process\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+    // Close handles to the child process and its primary thread.
+    // Some applications might keep these handles to monitor the status
+    // of the child process, for example.
+
+    CloseHandle(piProcInfo.hProcess);
+    CloseHandle(piProcInfo.hThread);
+
+#if 0
+void WriteToPipe(void)
+
+// Read from a file and write its contents to the pipe for the child's STDIN.
+// Stop when there is no more data.
+{
+   DWORD dwRead, dwWritten;
+   CHAR chBuf[BUFSIZE];
+   BOOL bSuccess = FALSE;
+
+   for (;;)
+   {
+      bSuccess = ReadFile(g_hInputFile, chBuf, BUFSIZE, &dwRead, NULL);
+      if ( ! bSuccess || dwRead == 0 ) break;
+
+      bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, NULL);
+      if ( ! bSuccess ) break;
+   }
+
+// Close the pipe handle so the child process stops reading.
+
+   if ( ! CloseHandle(g_hChildStd_IN_Wr) )
+      ErrorExit(TEXT("StdInWr CloseHandle"));
+}
+
+void ReadFromPipe(void)
+
+// Read output from the child process's pipe for STDOUT
+// and write to the parent process's pipe for STDOUT.
+// Stop when there is no more data.
+{
+   DWORD dwRead, dwWritten;
+   CHAR chBuf[BUFSIZE];
+   BOOL bSuccess = FALSE;
+   HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+// Close the write end of the pipe before reading from the
+// read end of the pipe, to control child process execution.
+// The pipe is assumed to have enough buffer space to hold the
+// data the child process has already written to it.
+
+   if (!CloseHandle(g_hChildStd_OUT_Wr))
+      ErrorExit(TEXT("StdOutWr CloseHandle"));
+
+   for (;;)
+   {
+      bSuccess = ReadFile( g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
+      if( ! bSuccess || dwRead == 0 ) break;
+
+      bSuccess = WriteFile(hParentStdOut, chBuf,
+                           dwRead, &dwWritten, NULL);
+      if (! bSuccess ) break;
+   }
+}
+
+#endif // 0
+
+
+
+
+#else
+    if (pipe(MeToReduce) < 0)
+    {   fwin_printf("failed to create pipe MeToReduce\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+    if (pipe(ReduceToMe) < 0)
+    {   fwin_printf("failed to create pipe ReduceToMe\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+    reduceProcessId = fork();
+    if (reduceProcessID < 0)       /* Failure */
+    {   fwin_printf("cannot fork()");
+        fwin_exit(EXIT_FAILURE);
+    }
+    else if (reduceProcessId > 0)  /* Child process */
+    {   FWIN_LOG("child: process alive - fork()=%d\n", reduceProcessID);
+  char ** nargv;
+
+  nargv = (char **)malloc((argc - xargstart + 6)*sizeof(char *));
+
+  setsid();
+  sig_removeHandlers();
+  signal(SIGTSTP,SIG_IGN);
+
+  close(MeToReduce[1]);
+  close(ReduceToMe[0]);
+
+  FWIN_LOG("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
+	      MeToReduce[0], ReduceToMe[1]);
+
+  dup2(MeToReduce[0],STDIN_FILENO);
+  dup2(ReduceToMe[1],STDOUT_FILENO);
+
+  close(MeToReduce[0]);
+  close(ReduceToMe[1]);
+
+{
+    int tempfd;
+    int i;
+
+    FWIN_LOG("child: entering create_call\n");
+
+    if ((tempfd = open(BPSL,O_RDONLY)) == -1)
+    {  /* Does not check x */
+        char errstr[1024];
+        sprintf(errstr,"cannot open %s",BPSL);
+        perror(errstr);
+        exit(EXIT_FAILURE);
+    }
+    else close(tempfd);
+
+    if ((tempfd = open(REDIMG,O_RDONLY)) == -1)
+    {   char errstr[1024];
+        sprintf(errstr,"cannot open %s",REDIMG);
+        perror(errstr);
+        exit(EXIT_FAILURE);
+    }
+    else close(tempfd);
+
+    if (strcmp(memory,"0") == 0)
+    {   char *sixtyfour;
+        int i;
+        /* malloc one more in case the name of bpsl is only 1 char: */
+        sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
+        strcpy(sixtyfour,BPSL);
+        i = strlen(BPSL);
+        while (sixtyfour[i-1] != '/')
+	i--;
+        sixtyfour[i++] = '6';
+        sixtyfour[i++] = '4';
+        sixtyfour[i] = (char)0;
+        FWIN_LOG("child: checking for %s ... ",sixtyfour);
+        if ((tempfd = open(sixtyfour,O_RDONLY)) != -1)
+        {   close(tempfd);
+	    FWIN_LOG("positive\n");
+	    memory = "2000";
+        }
+        else
+        {   FWIN_LOG("negative\n");
+	    memory = "16000000";
+        }
+    }
+
+    nargv[0] = (char *)BPSL;
+    nargv[1] = (char *)"-td";
+    nargv[2] = (char *)memory;
+    nargv[3] = (char *)"-f";
+    nargv[4] = (char *)REDIMG;
+    for (i = xargstart; i < argc; i++)
+        nargv[i - xargstart + 5] = argv[i];
+    nargv[argc - xargstart + 5] = (char *)0;
+
+    for (i = 0; i <= argc - xargstart + 5; i++)
+        FWIN_LOG("child: argv[%d]=%s\n",i,nargv[i]);
+
+    FWIN_LOG("child: leaving create_call\n");
+}
+
+
+  FWIN_LOG("child: right before execv()\n");
+
+  execv(nargv[0],nargv);
+
+  {
+    char errstr[1024];
+    sprintf(errstr,"cannot execv() %s",nargv[0]);
+    perror(errstr);
+  }
+  exit(EXIT_FAILURE);
+}
+
+
+#endif
+#endif
+
     fwin_printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
     for (;;)
-    {   int i = 0, c;
+    {   int c;
+        char line[1000];
+        i = 0;
         while ((c = fwin_getchar()) != EOF && c != '\n')
         {   if (i < (int)sizeof(line)-10) line[i++] = c;
         }
@@ -95,7 +388,6 @@ int fwin_main(int argc, char **argv)
         if (c == EOF || strcmp(line, "quit") == 0) break;
     }
     fwin_printf("Done\n");
-    /* fwin_exit(0); */
     return 0;
 }
 
@@ -130,12 +422,9 @@ struct oStrl {
 typedef struct oStrl *strl;
 
 int vbprintf(const char *,...);
-void rf_exit(int);
 
 void parent(void);
 void send_reduce(char *);
-
-void child(int,char **,char **);
 
 char *line_read(char *);
 char *line_quit(const char *);
@@ -166,13 +455,11 @@ const char *memory=NULL;
 int xargstart;
 
 void parse_args(int,char **);
-void init_channels(void);
 int parse_colarg(char *);
 char *parse_memarg(char *,char *);
 void print_usage(char *);
 void print_help(char *);
 int vbprintf(const char *,...);
-void rf_exit(int);
 #define SYSMAXBUFFER 198
 
 #define READING_OUTPUT 1
@@ -204,24 +491,6 @@ void read_until_prompt(char *);
 int wxpsl_main(int argc,char **argv,char **envp)
 {
     parse_args(argc,argv);
-    init_channels();
-
-#if OLD
-    if ((reduceProcessID = fork()) = 0)
-    {   /* I am the parent */
-        if (reduceProcessID < 0)  /* Failure */
-        {   perror("cannot fork()");
-            rf_exit(-1);
-        }
-        FWIN_LOG("parent: process alive - fork()=%d\n",reduceProcessID);
-        parent();
-    }
-    else
-    {  /* I am the child */
-        FWIN_LOG("child: process alive - fork()=%d\n",reduceProcessID);
-        child(argc,argv,envp);
-    }
-#endif
 
   return -1;
 }
@@ -239,7 +508,7 @@ void parse_args(int argc,char **argv) {
     switch (c) {
     case 'h':
       print_help(argv[0]);
-      rf_exit(1);
+      exit(EXIT_FAILURE);
       break;
     case 'v':
     case 'V':
@@ -254,7 +523,7 @@ void parse_args(int argc,char **argv) {
 
   if (errflg) {
     print_usage(argv[0]);
-    rf_exit(2);
+    exit(EXIT_FAILURE);
   }
 
   if (strcmp(argv[optind - 1],"--") == 0) {
@@ -274,7 +543,7 @@ void parse_args(int argc,char **argv) {
     xargstart = argc;
   } else {
     print_usage(argv[0]);
-    rf_exit(2);
+    exit(EXIT_FAILURE);
   }
 
 }
@@ -288,14 +557,14 @@ char *parse_memarg(char *argstr,char *name) {
   lchar = tolower(argstr[i]);
   if (!isdigit(lchar) && lchar != 'm' && lchar != 'k') {
     print_usage(name);
-    rf_exit(1);
+    exit(EXIT_FAILURE);
   }
   i--;
 
   for (; i >= 0; i--)
     if (!isdigit(argstr[i])) {
       print_usage(name);
-      rf_exit(1);
+      exit(EXIT_FAILURE);
     }
 
   if (lchar == 'm' ) {
@@ -336,34 +605,6 @@ void print_help(char name[]) {
   fprintf(stderr,"          %s -m 96m.\n\n",name);
 }
 
-void init_channels(void) {
-#if 0
-#ifdef USE_PIPES
-    if (pipe(MeToReduce) < 0) {
-      perror("failed to create pipe MeToReduce\n");
-      sig_killChild();
-      rf_exit(-1);
-    }
-    if (pipe(ReduceToMe) < 0) {
-      perror("failed to create pipe ReduceToMe\n");
-      sig_killChild();
-      rf_exit(-1);
-    }
-#else
-    if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
-      perror("cannot open socket MeToReduce");
-      sig_killChild();
-      rf_exit(-1);
-    }
-    if (socketpair(AF_UNIX, SOCK_STREAM, 0, ReduceToMe) < 0) {
-      perror("cannot open socket ReduceToMe");
-      sig_killChild();
-      rf_exit(-1);
-    }
-  }
-#endif
-#endif
-}
 
 int vbprintf(const char *msg,...) {
   int ecode=0;
@@ -377,10 +618,6 @@ int vbprintf(const char *msg,...) {
   va_end(ap);
 
   return ecode;
-}
-
-void rf_exit(int ecode) {
-  exit(ecode);
 }
 
 void parent(void) {
@@ -598,111 +835,6 @@ void read_until_prompt(char der_prompt[]){
 #define BPSL   "psl_surrogate"
 #define REDIMG "psl_image_surrogate"
 
-void create_call(int argc,char **argv,char **nargv)
-{
-    int tempfd;
-    int i;
-
-    FWIN_LOG("child: entering create_call\n");
-
-    if ((tempfd = open(BPSL,O_RDONLY)) == -1)
-    {  /* Does not check x */
-        char errstr[1024];
-        sprintf(errstr,"cannot open %s",BPSL);
-        perror(errstr);
-        rf_exit(-1);
-    }
-    else close(tempfd);
-
-    if ((tempfd = open(REDIMG,O_RDONLY)) == -1)
-    {   char errstr[1024];
-        sprintf(errstr,"cannot open %s",REDIMG);
-        perror(errstr);
-        rf_exit(-1);
-    }
-    else close(tempfd);
-
-    if (strcmp(memory,"0") == 0)
-    {   char *sixtyfour;
-        int i;
-        /* malloc one more in case the name of bpsl is only 1 char: */
-        sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
-        strcpy(sixtyfour,BPSL);
-        i = strlen(BPSL);
-        while (sixtyfour[i-1] != '/')
-	i--;
-        sixtyfour[i++] = '6';
-        sixtyfour[i++] = '4';
-        sixtyfour[i] = (char)0;
-        FWIN_LOG("child: checking for %s ... ",sixtyfour);
-        if ((tempfd = open(sixtyfour,O_RDONLY)) != -1)
-        {   close(tempfd);
-	    FWIN_LOG("positive\n");
-	    memory = "2000";
-        }
-        else
-        {   FWIN_LOG("negative\n");
-	    memory = "16000000";
-        }
-    }
-
-    nargv[0] = (char *)BPSL;
-    nargv[1] = (char *)"-td";
-    nargv[2] = (char *)memory;
-    nargv[3] = (char *)"-f";
-    nargv[4] = (char *)REDIMG;
-    for (i = xargstart; i < argc; i++)
-        nargv[i - xargstart + 5] = argv[i];
-    nargv[argc - xargstart + 5] = (char *)0;
-
-    for (i = 0; i <= argc - xargstart + 5; i++)
-        FWIN_LOG("child: argv[%d]=%s\n",i,nargv[i]);
-
-    FWIN_LOG("child: leaving create_call\n");
-}
-
-void child(int argc,char *argv[],char *envp[])
-{
-  char ** nargv;
-
-  nargv = (char **)malloc((argc - xargstart + 6)*sizeof(char *));
-
-#if 0
-  setsid();
-#endif
-
-  sig_removeHandlers();
-
-#ifdef SIGTSTP
-  signal(SIGTSTP,SIG_IGN);
-#endif
-
-  close(MeToReduce[1]);
-  close(ReduceToMe[0]);
-
-  FWIN_LOG("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
-	      MeToReduce[0], ReduceToMe[1]);
-
-  dup2(MeToReduce[0],STDIN_FILENO);
-  dup2(ReduceToMe[1],STDOUT_FILENO);
-
-  close(MeToReduce[0]);
-  close(ReduceToMe[1]);
-
-  create_call(argc,argv,nargv);
-
-  FWIN_LOG("child: right before execv()\n");
-
-  execv(nargv[0],nargv);
-
-  {
-    char errstr[1024];
-    sprintf(errstr,"cannot execv() %s",nargv[0]);
-    perror(errstr);
-  }
-  rf_exit(-1);
-}
-
 char *line_read(char *prompt) {
   static char *line=NULL;
   if (line) 
@@ -749,13 +881,13 @@ void sig_sigGen(int arg) {
     if (verbose) {
       printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
     }
-    rf_exit(0);
+    exit(0);
   default:
     if (verbose) {
       printf("***** REDFRONT exiting on unexpected signal %d (%s)\n",
 	     arg,sig_identify(arg));
     }
-    rf_exit(-1);
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -791,7 +923,7 @@ void sig_sigChld(int arg) {
   if (verbose) {
     printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
   }
-  rf_exit(0);
+  exit(0);
 }
 
 void sig_sigTstp(int arg) {

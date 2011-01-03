@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1b14abf2 03-Jan-2011 */
+/* Signature: 38d1a748 03-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -4175,7 +4175,6 @@ void
 #endif
             fwin_printf(const char *fmt, ...)
 {
-    FWIN_LOG("fwin_printf(\"%s\",...)\n", fmt);
     va_list a;
     va_start(a, fmt);
     if (!windowed)

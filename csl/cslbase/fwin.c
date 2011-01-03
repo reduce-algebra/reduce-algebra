@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 5d7f1134 01-Jan-2011 */
+/* Signature: 01d4f834 03-Jan-2011 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -344,8 +344,8 @@ int main(int argc, char *argv[])
 /*
  * As the very first thing I will do, I will seek an argument
  * that is just "-w", and if it is present record that I will want to
- * run in text mode, not windowed mode. I also detected "--", "-f"
- * and "-f" and use them to flag up a request to run minimised.
+ * run in text mode, not windowed mode. I also detected "--"
+ * and use it to flag up a request to run minimised.
  * Note that "-w" takes precedence over "--" here...
  *
  * I run as a minimise window (by default) in the "--" case since I can use
@@ -489,9 +489,12 @@ int main(int argc, char *argv[])
  * Note well that I detect just "--" as an entire argument here, so that
  * extended options "--option" do not interfere.
  */
-        else if ((strcmp(argv[i], "--") == 0 ||
-                  strcmp(argv[i], "-f") == 0 ||
-                  strcmp(argv[i], "-F") == 0) &&
+        else if ((strcmp(argv[i], "--") == 0
+#if 0
+                  || strcmp(argv[i], "-f") == 0
+                  || strcmp(argv[i], "-F") == 0
+#endif
+                 ) &&
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
@@ -504,7 +507,7 @@ int main(int argc, char *argv[])
     if (windowed == 0)
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
-        {   freopen("CONIN$", "r", stdin);
+        {   freopen("CONIN$", "r+", stdin);
 /* need "w+" for some console buffer access to behave properly. */
             freopen("CONOUT$", "w+", stdout);
             freopen("CONOUT$", "w+", stderr);

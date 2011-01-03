@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 10f4c687 02-Dec-2010 */
+/* Signature: 7cb3322c 03-Jan-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1671,6 +1671,15 @@ term_printf(
                     load_limit = 0x7fffffff;
                 continue;
 
+#if 0
+/*
+ * I am REMOVING this option since I suspect that nobody is using it. If they
+ * are they may scream at me and I camn reinstate it! If I leave the code in
+ * for now it may inspire somebody to think about whether something of this
+ * nature is really useful. By removing this I free up the option "-f", and
+ * it may be that having a spare option is more important that being able
+ * to hadle sockets.
+ */
 #ifdef SOCKETS
         case 'f':
 /*
@@ -1854,7 +1863,8 @@ term_printf(
  * command line and then completes the process of getting CSL running.
  */
                 continue;
-#endif
+#endif /* SOCKETS */
+#endif /* 0 */
 
 /*
  *                      -G
