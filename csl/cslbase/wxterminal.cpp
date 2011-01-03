@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7e22c22a 02-Jan-2011 */
+/* Signature: 1b14abf2 03-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -128,6 +128,21 @@ int pipedes[2];
 
 #include "wxfwin.h"
 
+// See cmtt_coverage lower down in this code
+
+extern int32_t cmtt_coverage[];
+
+#define CMTT_AVAIL(ch)    \
+    ((ch) <= 0xffff &&    \
+     ((cmtt_coverage[((ch)>>5) & 0x7ff] >> (31-((ch) & 0x1f))) & 1) != 0)
+
+// There will be a bunch of characters that I map to end up single width.
+// I need to list them all here - sorry! Sometime soon I will merge them
+// into the cmtt_coverage map which will make the code here a lot neater but
+// leave the coverage map a hybrid of nattive information about the font and
+// commentary on special case treatment in the code here.
+
+
 #if !defined __WXMSW__ && !defined __WXPM__
 // I include several icons here, and will select which one to use dynamically
 // based on the programName.
@@ -142,6 +157,7 @@ static char **fwin_argv;
 
 int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
 {
+    FWIN_LOG("char(0x3b1) availability = %d\n", CMTT_AVAIL(0x3b1));
     fwin_main_entry = fwin_main1;
     fwin_argc = argc;
     fwin_argv = argv;
@@ -748,10 +764,36 @@ static localFonts fontNames[] =
 // using a jiffy Java program, and at present related to the 0.6.3a version
 // of the font concerned.
 
-#define CMTT_AVAIL(ch) \
-    (((cmtt_coverage[(ch>>5) & 0xffff] << (ch & 0x1f)) & 0x80000000) != 0)
+#define double_width(ch)                \
+    (!CMTT_AVAIL((ch)) &&               \
+     ((ch) >= 0x2000)  &&               \
+     ((ch) != 0x203e)  && /* oline */   \
+     ((ch) != 0x2205)  && /* empty */   \
+     ((ch) != 0x2211)  && /* sum */     \
+     ((ch) != 0x2260)  && /* ne */      \
+     ((ch) != 0x2264)  && /* le */      \
+     ((ch) != 0x2265)  && /* ge */      \
+     ((ch) != 0x22c5)  && /* sdot */    \
+     ((ch) != 0x2295)  && /* oplus */   \
+     ((ch) != 0x2297)  && /* otimes */  \
+     ((ch) != 0x2032)  && /* prime */   \
+     ((ch) != 0x2033)  && /* Prime */   \
+     ((ch) != 0x03d2)  && /* upsih */   \
+     ((ch) != 0x03a5)  && /* upsilon */ \
+     ((ch) != 0x222b)  && /* int */     \
+     ((ch) != 0x2118)  && /* weierp */  \
+     ((ch) != 0x2111)  && /* imag */    \
+     ((ch) != 0x211c)  && /* real */    \
+     ((ch) != 0x223c)  && /* sim */     \
+     ((ch) != 0x220f)  && /* prod */    \
+     ((ch) != 0x25ca)  && /* loz */     \
+     ((ch) != 0x2308)  && /* lceil */   \
+     ((ch) != 0x2309)  && /* rceil */   \
+     ((ch) != 0x230a)  && /* lfloor */  \
+     ((ch) != 0x230b))    /* rfloor */
 
-static int32_t cmtt_coverage[8192] = {
+
+int32_t cmtt_coverage[2048] = {
     0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
     0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xcdfcfc66, 0x79bffcff, 0xfcffcfff,
@@ -2156,34 +2198,6 @@ void fwinText::insertNewline()
 }
 
 
-
-
-
-//- void fwinText::refreshRange(int p, int q)
-//- {
-//- // Firstly at present this is WRONG in that when you have inserted
-//- // a newline this refreshes and hence redraws all the characters that
-//- // are present, but it does not write background in all the places that
-//- // characters move out from.
-//- //
-//- // It is also inefficient in that it refreshes all the way down to the foot
-//- // of the page even if rows there have not altered.
-//- //
-//- // Finally it should arrange to have a Blip operation performed on the
-//- // screen to move whole rows up or down whenever that is feasible rather
-//- // than just redrawing everything from scratch.
-//- //
-//- // Reminder:
-//- //   wxPaintDC dc(this);
-//- //   dc.Blit(xdest, ydest, width, height, dc, xsrc, ysrc);
-//- // will do a simple copy.
-//-
-//-     if (p < firstVisibleRow) p = firstVisibleRow;
-//-     while (p < q)                     // Crude version here!
-//-     {   if (refreshChar(p++)) break;
-//-     }
-//- }
-
 int32_t fwinText::locateChar(int p, int w, int r, int c)
 {
 // Normally call as locateChar(p, firstVisibleRow, 0, 0) but the final 3
@@ -2199,17 +2213,25 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 // tabs are expanded with tab-stops every 8 columns. The code here exploits
 // the fact that the width (80 columns) is a multiple of the tab width, so
 // while a tab may take one up to column 80 it can not go beyond without the
-// whole tab effect occurring on the next row.
+// whole tab effect occurring on the next row. It further allows that some
+// characters are double-width (a few special symbols and all CJK ideograms).
+// Fortunately the treatment of tabs gives a start to how I handle such.
     if (w == -1) w = firstVisibleRow;
     if (p < w) return -1; // before the part of screen being searched.
     while (w != p)
     {   uint32_t ch = textBuffer[w];
+        int wide = double_width(ch & 0x001fffff);
 // The characters processed within this loop are all BEFORE the one I am
 // interested in, and so I process tabs, newlines and line-wrap.
         if (ch == '\n')
         {   c = 0;
             r++;
             if (r > rowCount) return -2; // below visible screen
+        }
+        else if (c == 79 && wide)
+        {   c = 2;
+            r++;
+            if (r > rowCount) return -2; // below visible after line-wrap
         }
         else if (c == 80)
         {   if (ch == '\t') c = 8;       // tab in column 80
@@ -2218,6 +2240,7 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
             if (r > rowCount) return -2; // below visible after line-wrap
         }
         else if (ch == '\t') c += 8 - (c & 7); // tab
+        else if (wide) c += 2;
         else c++;
         w++;
     }
@@ -3695,7 +3718,6 @@ void fwinText::OnDraw(wxDC &dc)
         else caret->SetSize(2, rowHeight);
         repositionCaret();
 
-
         SetVirtualSize(wxSize(window.GetWidth(), 1000)); // @@@
 #if 0
 // Now I need to re-size any fonts that have already been created
@@ -3724,8 +3746,10 @@ void fwinText::OnDraw(wxDC &dc)
             lastVisibleRow = p;
             continue;
         }
-// a TAB can take you exactly up to column 80 but never over it.
-        if (col == 80)
+// a TAB can take you exactly up to column 80 but never over it. But a wide
+// character in column 79 could trigger a wrap.
+        if (col == 80 ||
+            (col == 79 && double_width(ch & 0x001fffff)))
         {   col = 0;
             row++;
             if (row*rowHeight > window.GetHeight()) break;
@@ -3774,7 +3798,7 @@ void fwinText::OnDraw(wxDC &dc)
             ch = 0x03c9;   // omega
             ch1 = 0x00af;  // macron
             break;
-    case 0x22c5:   //sdot
+    case 0x22c5:  // sdot
             ch = 0x00b7;   // periodcentred
             break;
     case 0x2295:  // oplus
@@ -3791,7 +3815,7 @@ void fwinText::OnDraw(wxDC &dc)
     case 0x2033:  // Prime
             ch = 0x02ba;  // modifier letter double prime
             break;
-    case 0x03d2:  // upsih;
+    case 0x03d2:  // upsih
             ch = 0x03a5;  // Upsilon is curly in cmtt
             break;
     case 0x03a5:  // upsilon
@@ -3961,22 +3985,24 @@ void fwinText::OnDraw(wxDC &dc)
             };
             extraCols = 7 - (col&7); 
             cs = spaces[extraCols];
+            extraCols |= 0x100;
         }
         else if ((ch & 0x001fffff) == 0x20) cs = wxT(" ");
 // I will not even try to display characters whose code is over 0xffff here.
 // I will map any such onto a display of a question mark.
         else if ((ch & 0x001fffff) > 0xffff) cs = "?";
         else cs = (wchar_t)(ch & 0x001fffff);
-        bool avail = CMTT_AVAIL(ch);
+        bool avail = CMTT_AVAIL(ch & 0x001fffff);
         if (avail != currentFont)
         {   dc.SetFont(avail ? *fixedPitch : *fixedCJK);
             currentFont = avail;
         }
+        if (!avail && (ch & 0x001fffff) >= 0x2000) extraCols = 1;
 // Note that if I use a CJK font here I need extra space for the character.
 // I *may* try to achieve that by putting a non-breaking space in the text
 // buffer after it.
         dc.DrawText(cs, columnPos[col], rowHeight*row);
-        col = col + extraCols + 1;
+        col = col + (extraCols & 0xff) + 1;
     }
 }
 
