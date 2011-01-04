@@ -15,7 +15,7 @@
 
 % foreign link for UNIX kernel
 
-(DE  !*ForeignLink (FunctionName  FunctionType NumberOfArguments)
+(DE  !*FForeignLink (FunctionName  FunctionType NumberOfArguments)
 %%%%%(codedeclareexternal FunctionName)
      (append (PNTH '((!*PUSH (REG 14)) (!*PUSH (REG 13))
              (!*PUSH (REG 12)) (!*PUSH (REG 11))

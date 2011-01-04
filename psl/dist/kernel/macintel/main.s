@@ -58,7 +58,7 @@ _psl_main:
  movl %edi,symval+1200
  movl 8(%esp),%edi
  movl %edi,symval+1204
- sub $24,%esp
+ sub $12,%esp
  movl symval+1200,%edi
  movl %edi,(%esp)
  movl symval+1204,%edi
@@ -111,7 +111,7 @@ l0007:
  .byte 108,111,97,100,45,112,115,108,46,98
  .byte 0,0
  .long 0
-// (*entry pre-_psl__psl_main expr 0)
+// (*entry pre-_psl_main expr 0)
  .globl l0008
 l0008:
  call *symfnc+1240
@@ -193,7 +193,7 @@ l0015:
  movl $((30*0x8000000)+128),%edi
  movl %edi,4(%esp)
  movl %edi,(%esp)
- movl $65000,%ebx
+ movl $15000,%ebx
  movl symval+1320,%eax
  movl %eax,%edx
  movl %ebx,%ecx
@@ -211,8 +211,8 @@ l0016:
  jmp l0016
 l0017:
  movl symval+1324,%esi
- movl $0,260000(%esi)
- movl $68023,%ebx
+ movl $0,60000(%esi)
+ movl $18013,%ebx
  xor %eax,%eax
  movl %eax,(%esp)
  movl %ebx,4(%esp)
@@ -590,7 +590,7 @@ l0046:
  incl 12(%esp)
  jmp l0049
 l0050:
- movl $68023,%ebx
+ movl $18013,%ebx
  movl 16(%esp),%eax
  add $20,%esp
  cltd
@@ -1793,303 +1793,577 @@ l0152:
  dec %eax
  add $4,%esp
  jmp *symfnc+1228
+ .globl echoon
  .long 0
 // (*entry echoon expr 0)
  .globl l0153
 l0153:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _echoon
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl echooff
  .long 0
 // (*entry echooff expr 0)
  .globl l0154
 l0154:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _echooff
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl external_charsininputbuffer
  .long 1
 // (*entry external_charsininputbuffer expr 1)
  .globl l0155
 l0155:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_charsininputbuffer
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl flushstdoutputbuffer
  .long 0
 // (*entry flushstdoutputbuffer expr 0)
  .globl l0156
 l0156:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _flushstdoutputbuffer
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl external_user_homedir_string
  .long 0
 // (*entry external_user_homedir_string expr 0)
  .globl l0157
 l0157:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _external_user_homedir_string
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl external_anyuser_homedir_string
  .long 1
 // (*entry external_anyuser_homedir_string expr 1)
  .globl l0158
 l0158:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_anyuser_homedir_string
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl alterheapsize
  .long 1
 // (*entry alterheapsize expr 1)
  .globl l0159
 l0159:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _alterheapsize
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl allocatemorebps
  .long 1
 // (*entry allocatemorebps expr 1)
  .globl l0160
 l0160:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _allocatemorebps
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl get_file_status
  .long 3
 // (*entry get_file_status expr 3)
  .globl l0161
 l0161:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _get_file_status
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl os_startup_hook
  .long 2
 // (*entry os_startup_hook expr 2)
  .globl l0162
 l0162:
- mov %esp,%edi
- sub $16,%esp
+ movl %esp,%edi
+ sub $32,%esp
  shr $4,%esp
  shl $4,%esp
- add $8,%esp
- mov %edi,4(%esp)
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _os_startup_hook
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl os_cleanup_hook
  .long 0
 // (*entry os_cleanup_hook expr 0)
  .globl l0163
 l0163:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _os_cleanup_hook
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl external_alarm
  .long 1
 // (*entry external_alarm expr 1)
  .globl l0164
 l0164:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_alarm
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_ualarm
  .long 2
 // (*entry external_ualarm expr 2)
  .globl l0165
 l0165:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_ualarm
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_time
  .long 1
 // (*entry external_time expr 1)
  .globl l0166
 l0166:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_time
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_timc
  .long 1
 // (*entry external_timc expr 1)
  .globl l0167
 l0167:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_timc
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_stat
  .long 2
 // (*entry external_stat expr 2)
  .globl l0168
 l0168:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_stat
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_link
  .long 2
 // (*entry external_link expr 2)
  .globl l0169
 l0169:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_link
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_unlink
  .long 1
 // (*entry external_unlink expr 1)
  .globl l0170
 l0170:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_unlink
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_strlen
  .long 1
 // (*entry external_strlen expr 1)
  .globl l0171
 l0171:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_strlen
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_setenv
  .long 2
 // (*entry external_setenv expr 2)
  .globl l0172
 l0172:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_setenv
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_getenv
  .long 1
 // (*entry external_getenv expr 1)
  .globl l0173
 l0173:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_getenv
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxfloat
  .long 2
 // (*entry uxfloat expr 2)
  .globl l0174
 l0174:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxfloat
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxfix
  .long 1
 // (*entry uxfix expr 1)
  .globl l0175
 l0175:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxfix
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxassign
  .long 2
 // (*entry uxassign expr 2)
  .globl l0176
 l0176:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxassign
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxplus2
  .long 3
 // (*entry uxplus2 expr 3)
  .globl l0177
 l0177:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxplus2
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxdifference
  .long 3
 // (*entry uxdifference expr 3)
  .globl l0178
 l0178:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxdifference
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxtimes2
  .long 3
 // (*entry uxtimes2 expr 3)
  .globl l0179
 l0179:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxtimes2
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxquotient
  .long 3
 // (*entry uxquotient expr 3)
  .globl l0180
 l0180:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxquotient
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxgreaterp
  .long 4
 // (*entry uxgreaterp expr 4)
  .globl l0181
 l0181:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2097,12 +2371,19 @@ l0181:
  movl symval+1212,%ebx
  call _uxgreaterp
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxlessp
  .long 4
 // (*entry uxlessp expr 4)
  .globl l0182
 l0182:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2110,198 +2391,358 @@ l0182:
  movl symval+1212,%ebx
  call _uxlessp
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxwritefloat
  .long 3
 // (*entry uxwritefloat expr 3)
  .globl l0183
 l0183:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxwritefloat
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxdoubletofloat
  .long 2
 // (*entry uxdoubletofloat expr 2)
  .globl l0184
 l0184:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxdoubletofloat
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxfloattodouble
  .long 2
 // (*entry uxfloattodouble expr 2)
  .globl l0185
 l0185:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxfloattodouble
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxsin
  .long 2
 // (*entry uxsin expr 2)
  .globl l0186
 l0186:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxsin
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxcos
  .long 2
 // (*entry uxcos expr 2)
  .globl l0187
 l0187:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxcos
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxtan
  .long 2
 // (*entry uxtan expr 2)
  .globl l0188
 l0188:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxtan
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxasin
  .long 2
 // (*entry uxasin expr 2)
  .globl l0189
 l0189:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxasin
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxacos
  .long 2
 // (*entry uxacos expr 2)
  .globl l0190
 l0190:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxacos
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxatan
  .long 2
 // (*entry uxatan expr 2)
  .globl l0191
 l0191:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxatan
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxsqrt
  .long 2
 // (*entry uxsqrt expr 2)
  .globl l0192
 l0192:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxsqrt
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxexp
  .long 2
 // (*entry uxexp expr 2)
  .globl l0193
 l0193:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxexp
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxlog
  .long 2
 // (*entry uxlog expr 2)
  .globl l0194
 l0194:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxlog
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl uxatan2
  .long 3
 // (*entry uxatan2 expr 3)
  .globl l0195
 l0195:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _uxatan2
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_pwd
  .long 0
 // (*entry external_pwd expr 0)
  .globl l0196
 l0196:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _external_pwd
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl sun3_sigset
  .long 2
 // (*entry sun3_sigset expr 2)
  .globl l0197
 l0197:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _sun3_sigset
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl sun3_sigrelse
  .long 2
 // (*entry sun3_sigrelse expr 2)
  .globl l0198
 l0198:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _sun3_sigrelse
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
  .long 2
 // (*entry sigrelse expr 2)
  .globl sigrelse
 sigrelse:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _sun3_sigrelse
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unexec
  .long 4
 // (*entry unexec expr 4)
  .globl l0199
 l0199:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2309,132 +2750,259 @@ l0199:
  movl symval+1212,%ebx
  call _unexec
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixputc
  .long 1
 // (*entry unixputc expr 1)
  .globl l0200
 l0200:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixputc
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixputs
  .long 1
 // (*entry unixputs expr 1)
  .globl l0201
 l0201:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixputs
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixputn
  .long 1
 // (*entry unixputn expr 1)
  .globl l0202
 l0202:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixputn
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixcleario
  .long 0
 // (*entry unixcleario expr 0)
  .globl l0203
 l0203:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _unixcleario
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl expand_file_name
  .long 1
 // (*entry expand_file_name expr 1)
  .globl l0204
 l0204:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _expand_file_name
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixopen
  .long 2
 // (*entry unixopen expr 2)
  .globl l0205
 l0205:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixopen
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixcd
  .long 1
 // (*entry unixcd expr 1)
  .globl l0206
 l0206:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixcd
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl ctime
  .long 1
 // (*entry ctime expr 1)
  .globl l0207
 l0207:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _ctime
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_system
  .long 1
 // (*entry external_system expr 1)
  .globl l0208
 l0208:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_system
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl external_exit
  .long 1
 // (*entry external_exit expr 1)
  .globl l0209
 l0209:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _external_exit
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fopen
  .long 2
 // (*entry fopen expr 2)
  .globl l0210
 l0210:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fopen
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fclose
  .long 1
 // (*entry fclose expr 1)
  .globl l0211
 l0211:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fclose
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fread
  .long 4
 // (*entry fread expr 4)
  .globl l0212
 l0212:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2442,45 +3010,79 @@ l0212:
  movl symval+1212,%ebx
  call _fread
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fputc
  .long 2
 // (*entry fputc expr 2)
  .globl l0213
 l0213:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fputc
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fgetc
  .long 1
 // (*entry fgetc expr 1)
  .globl l0214
 l0214:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fgetc
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fgets
  .long 3
 // (*entry fgets expr 3)
  .globl l0215
 l0215:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fgets
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fwrite
  .long 4
 // (*entry fwrite expr 4)
  .globl l0216
 l0216:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2488,98 +3090,179 @@ l0216:
  movl symval+1212,%ebx
  call _fwrite
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fflush
  .long 1
 // (*entry fflush expr 1)
  .globl l0217
 l0217:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fflush
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fseek
  .long 3
 // (*entry fseek expr 3)
  .globl l0218
 l0218:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _fseek
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl clearerr
  .long 1
 // (*entry clearerr expr 1)
  .globl l0219
 l0219:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _clearerr
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl getw
  .long 1
 // (*entry getw expr 1)
  .globl l0220
 l0220:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _getw
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl putw
  .long 2
 // (*entry putw expr 2)
  .globl l0221
 l0221:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _putw
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl signal
  .long 2
 // (*entry signal expr 2)
  .globl l0222
 l0222:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _signal
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl sleep
  .long 1
 // (*entry sleep expr 1)
  .globl l0223
 l0223:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _sleep
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl ieee_handler
  .long 3
 // (*entry ieee_handler expr 3)
  .globl l0224
 l0224:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _ieee_handler
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl ieee_flags
  .long 4
 // (*entry ieee_flags expr 4)
  .globl l0225
 l0225:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2587,168 +3270,319 @@ l0225:
  movl symval+1212,%ebx
  call _ieee_flags
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl setlinebuf
  .long 1
 // (*entry setlinebuf expr 1)
  .globl l0226
 l0226:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _setlinebuf
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl getpid
  .long 0
 // (*entry getpid expr 0)
  .globl l0227
 l0227:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _getpid
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl gethostid
  .long 0
 // (*entry gethostid expr 0)
  .globl l0228
 l0228:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _gethostid
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl unixsocketopen
  .long 2
 // (*entry unixsocketopen expr 2)
  .globl l0229
 l0229:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixsocketopen
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl getsocket
  .long 3
 // (*entry getsocket expr 3)
  .globl l0230
 l0230:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _getsocket
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl writesocket
  .long 3
 // (*entry writesocket expr 3)
  .globl l0231
 l0231:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _writesocket
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl unixclosesocket
  .long 1
 // (*entry unixclosesocket expr 1)
  .globl l0232
 l0232:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _unixclosesocket
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl fork
  .long 0
 // (*entry fork expr 0)
  .globl l0233
 l0233:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
+ push %eax
  movl symval+1212,%ebx
  call _fork
  movl %ebx,symval+1212
+ movl 20(%esp),%esp
  ret
+ .globl wait
  .long 1
 // (*entry wait expr 1)
  .globl l0234
 l0234:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _wait
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl popen
  .long 2
 // (*entry popen expr 2)
  .globl l0235
 l0235:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _popen
  movl %ebx,symval+1212
- add $8,%esp
+ movl 20(%esp),%esp
  ret
+ .globl pclose
  .long 1
 // (*entry pclose expr 1)
  .globl l0236
 l0236:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _pclose
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl shmctl
  .long 3
 // (*entry shmctl expr 3)
  .globl l0237
 l0237:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _shmctl
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl shmget
  .long 3
 // (*entry shmget expr 3)
  .globl l0238
 l0238:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _shmget
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl shmat
  .long 3
 // (*entry shmat expr 3)
  .globl l0239
 l0239:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _shmat
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl shmdt
  .long 1
 // (*entry shmdt expr 1)
  .globl l0240
 l0240:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
+ push %ecx
+ push %ebx
  push %eax
  movl symval+1212,%ebx
  call _shmdt
  movl %ebx,symval+1212
- add $4,%esp
+ movl 20(%esp),%esp
  ret
+ .globl semctl
  .long 4
 // (*entry semctl expr 4)
  .globl l0241
 l0241:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2756,36 +3590,59 @@ l0241:
  movl symval+1212,%ebx
  call _semctl
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
+ .globl semget
  .long 3
 // (*entry semget expr 3)
  .globl l0242
 l0242:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _semget
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl semop
  .long 3
 // (*entry semop expr 3)
  .globl l0243
 l0243:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
+ push %edx
  push %ecx
  push %ebx
  push %eax
  movl symval+1212,%ebx
  call _semop
  movl %ebx,symval+1212
- add $12,%esp
+ movl 20(%esp),%esp
  ret
+ .globl profil
  .long 4
 // (*entry unix-profile expr 4)
  .globl l0244
 l0244:
+ movl %esp,%edi
+ sub $32,%esp
+ shr $4,%esp
+ shl $4,%esp
+ add $16,%esp
+ movl %edi,4(%esp)
  push %edx
  push %ecx
  push %ebx
@@ -2793,7 +3650,7 @@ l0244:
  movl symval+1212,%ebx
  call _profil
  movl %ebx,symval+1212
- add $16,%esp
+ movl 20(%esp),%esp
  ret
  .long 1
 // (*entry codeaddressp expr 1)

@@ -6,7 +6,6 @@
 (on verboseload)
 (asmout "main")
 (dskin "$pk/firstkernel.sl")
-/Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/main-start.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/io.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/intern.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/faslin.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/alloc.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/support.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/sys-support.sl /Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/externals.sl
 (dskin "/Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/main-start.sl")
 (dskin "/Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/io.sl")
 (dskin "/Users/neun/pxk/reduce-algebra/trunk/psl/dist/kernel/macintel/intern.sl")
