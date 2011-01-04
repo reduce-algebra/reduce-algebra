@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 06cb8ff0 03-Jan-2011 */
+/* Signature: 07b7e7ea 04-Jan-2011 */
 
 #include "config.h"
 
@@ -791,6 +791,17 @@ static int direct_to_terminal(int argc, char *argv[])
 #endif /* WIN32 */
 }
 
+#ifdef WIN32
+
+static UINT originalCodePage = 0;
+
+static void resetCP()
+{
+    SetConsoleOutputCP(originalCodePage);
+}
+
+#endif
+
 int plain_worker(int argc, char *argv[], fwin_entrypoint *main)
 {
     int r;
@@ -808,6 +819,13 @@ int plain_worker(int argc, char *argv[], fwin_entrypoint *main)
     }
     else using_termed = 0;
     strcpy(fwin_prompt_string, "> ");
+#ifdef WIN32
+    originalCodePage = GetConsoleOutputCP();
+    atexit(resetCP);
+    SetConsoleOutputCP(CP_UTF8);
+    fwin_printf("original page = %d.  \xe2\x8b\x85 \n");
+    fwin_ensure_screen();
+#endif
     r = (*main)(argc, argv);
     input_history_end();
     term_close();

@@ -38,7 +38,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 6fb2cd71 03-Jan-2011 */
+/* Signature: 67910a6e 04-Jan-2011 */
 
 
 /*
@@ -52,7 +52,7 @@
 #endif
 
 #ifdef WIN32
-#define USE_PIPES 1
+#include <windows.h>
 #endif
 
 #include <stdio.h>
@@ -63,10 +63,7 @@
 #include <string.h>
 #include <libgen.h>
 #include <sys/types.h>
-#ifndef USE_PIPES
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#endif
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
@@ -92,36 +89,57 @@
 
 static char bpsl_binary[LONGEST_LEGAL_FILENAME];
 static char reduce_image[LONGEST_LEGAL_FILENAME];
-static char sixtyfour_marker[LONGEST_LEGAL_FILENAME];
+static char memory_control[LONGEST_LEGAL_FILENAME];
 
 int fwin_main(int argc, char **argv)
 {
+    int memory = 0;
     int i = strlen(programDir), j;
     for (j=0; j<3; j++)
     {   i--;
         while (i > 0 && (programDir[i] != '/' && programDir[i] != '\\')) i--;
     }
-    sprintf(bpsl_binary, "%.*s%c%s%cpsl%cbpsl%s",
-        i, programDir, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
-    sprintf(reduce_image, "%.*s%c%s%cred%creduce.img",
-        i, programDir, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
-    sprintf(sixtyfour_marker, "%.*s%c%s%cpsl%c64",
-        i, programDir, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+    sprintf(bpsl_binary, "%.*s%cpslbuild%c%s%cpsl%cbpsl%s",
+        i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR, EXEEXT);
+    sprintf(reduce_image, "%.*s%cpslbuild%c%s%cred%creduce.img",
+        i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
+    sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
+        i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     FWIN_LOG("bin: %s\n", bpsl_binary);
     FWIN_LOG("img: %s\n", reduce_image);
-    FWIN_LOG("64:  %s\n", sixtyfour_marker);
+    FWIN_LOG("64:  %s\n", memory_control);
+    {
+// Here I need to check if a file called "64" is present. I do not
+// care at all about access rights or its contents, just whether it
+// exists!
+        struct stat file_info;
+        if (stat(bpsl_binary, &file_info) != 0 ||
+            (file_info.st_mode & S_IXUSR) != S_IXUSR ||
+            stat(reduce_image, &file_info) != 0 ||
+            (file_info.st_mode & S_IRUSR) != S_IRUSR)
+        {   fwin_printf("bpsl executable or reduce image not available\n");
+            fwin_exit(EXIT_FAILURE);
+        }
+// If the user gave an explicit memory option that should override the
+// default I set up here.
+        if (stat(memory_control, &file_info) == 0) // file "64" was present
+            strcpy(memory_control, "2000");
+        else strcpy(memory_control, "16000000");
+    }
 
 #ifdef WIN32
+// in case I get to send things to the console I will try setting that
+// to process UTF8.
+    fwin_printf("u-umlaut = \xc3\xbc \n");
+    fwin_ensure_screen();
+    SetConsoleOutputCP(CP_UTF8);
+// The procedures used here are documented on Microsoft's web-site, and
+// the code I include here is closely based on their sample that shows how
+// to create a process with pipes attached to its standard streams.
     HANDLE g_hChildStd_IN_Rd = NULL;
     HANDLE g_hChildStd_IN_Wr = NULL;
     HANDLE g_hChildStd_OUT_Rd = NULL;
     HANDLE g_hChildStd_OUT_Wr = NULL;
-
-void CreateChildProcess(void);
-void WriteToPipe(void);
-void ReadFromPipe(void);
-void ErrorExit(PTSTR);
-
     SECURITY_ATTRIBUTES saAttr;
 // Set the bInheritHandle flag so pipe handles are inherited.
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -139,24 +157,30 @@ void ErrorExit(PTSTR);
         fwin_exit(EXIT_FAILURE);
     }
 // Create a pipe for the child process's STDIN.
-   if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0))
+    if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0))
     {   fwin_printf("Failed to create STDIN pipe\n");
         fwin_exit(EXIT_FAILURE);
     }
 // Ensure the write handle to the pipe for STDIN is not inherited.
-   if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
+    if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
     {   fwin_printf("Failed to set handle info in STDIN handle\n");
         fwin_exit(EXIT_FAILURE);
     }
 
 // Create a child process that uses the previously created pipes for STDIN and STDOUT.
-{
-/*
- * With Windows I will always create the sub-process via a command line
- * and it will split that up int individual arguments when it is ready to.
- */
-    char szCmdline[2*LONGEST_LEGAL_FILENAME];
-    sprintf(szCmdline, "\"%s\" -f \"%s\"", bpsl_binary, reduce_image);
+//
+// With Windows I will always create the sub-process via a command line
+// and it will split that up into individual arguments when it is ready to.
+//
+    char *cmdLine = (char *)malloc(strlen(bpsl_binary) +
+                                   strlen(reduce_image) +
+                                   strlen(memory_control) + 16);
+    if (cmdLine  == NULL)
+    {   fwin_printf("failed to allocate space for command line\n");
+        fwin_exit(EXIT_FAILURE);
+    }
+    sprintf(cmdLine, "\"%s\" -td %s -f \"%s\"",
+            bpsl_binary, memory_control, reduce_image);
     PROCESS_INFORMATION piProcInfo;
     STARTUPINFO siStartInfo;
     BOOL bSuccess = FALSE;
@@ -177,7 +201,7 @@ void ErrorExit(PTSTR);
 
 // Create the child process.
     bSuccess = CreateProcess(NULL, // application name
-        szCmdline,     // command line
+        cmdLine,       // command line
         NULL,          // process security attributes
         NULL,          // primary thread security attributes
         TRUE,          // handles are inherited
@@ -196,65 +220,8 @@ void ErrorExit(PTSTR);
     // Some applications might keep these handles to monitor the status
     // of the child process, for example.
 
-    CloseHandle(piProcInfo.hProcess);
-    CloseHandle(piProcInfo.hThread);
-
-#if 0
-void WriteToPipe(void)
-
-// Read from a file and write its contents to the pipe for the child's STDIN.
-// Stop when there is no more data.
-{
-   DWORD dwRead, dwWritten;
-   CHAR chBuf[BUFSIZE];
-   BOOL bSuccess = FALSE;
-
-   for (;;)
-   {
-      bSuccess = ReadFile(g_hInputFile, chBuf, BUFSIZE, &dwRead, NULL);
-      if ( ! bSuccess || dwRead == 0 ) break;
-
-      bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, NULL);
-      if ( ! bSuccess ) break;
-   }
-
-// Close the pipe handle so the child process stops reading.
-
-   if ( ! CloseHandle(g_hChildStd_IN_Wr) )
-      ErrorExit(TEXT("StdInWr CloseHandle"));
-}
-
-void ReadFromPipe(void)
-
-// Read output from the child process's pipe for STDOUT
-// and write to the parent process's pipe for STDOUT.
-// Stop when there is no more data.
-{
-   DWORD dwRead, dwWritten;
-   CHAR chBuf[BUFSIZE];
-   BOOL bSuccess = FALSE;
-   HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-// Close the write end of the pipe before reading from the
-// read end of the pipe, to control child process execution.
-// The pipe is assumed to have enough buffer space to hold the
-// data the child process has already written to it.
-
-   if (!CloseHandle(g_hChildStd_OUT_Wr))
-      ErrorExit(TEXT("StdOutWr CloseHandle"));
-
-   for (;;)
-   {
-      bSuccess = ReadFile( g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
-      if( ! bSuccess || dwRead == 0 ) break;
-
-      bSuccess = WriteFile(hParentStdOut, chBuf,
-                           dwRead, &dwWritten, NULL);
-      if (! bSuccess ) break;
-   }
-}
-
-#endif // 0
+//    CloseHandle(piProcInfo.hProcess);
+//    CloseHandle(piProcInfo.hThread);
 
 
 
@@ -275,104 +242,97 @@ void ReadFromPipe(void)
     }
     else if (reduceProcessId > 0)  /* Child process */
     {   FWIN_LOG("child: process alive - fork()=%d\n", reduceProcessID);
-  char ** nargv;
+        char ** nargv (char **)malloc(6*sizeof(char *));
+        setsid();
+//      sig_removeHandlers();     // I will think about handlers later on.
+//      signal(SIGTSTP,SIG_IGN);
+// Re-plumb the pipes to link to stdin & stdout.
+        close(MeToReduce[1]);
+        close(ReduceToMe[0]);
+        FWIN_LOG("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
+	                 MeToReduce[0], ReduceToMe[1]);
+        dup2(MeToReduce[0],STDIN_FILENO);
+        dup2(ReduceToMe[1],STDOUT_FILENO);
+//      dup2(ReduceToMe[1],STDERR_FILENO);    // ??????
+        close(MeToReduce[0]);
+        close(ReduceToMe[1]);
 
-  nargv = (char **)malloc((argc - xargstart + 6)*sizeof(char *));
+        FWIN_LOG("child: entering create_call\n");
 
-  setsid();
-  sig_removeHandlers();
-  signal(SIGTSTP,SIG_IGN);
+        nargv[0] = bpsl_binary;
+        nargv[1] = (char *)"-td";
+        nargv[2] = memory_control;
+        nargv[3] = (char *)"-f";
+        nargv[4] = reduce_image;
+        nargv[5] = NULL;
+//    for (i = xargstart; i < argc; i++)
+//        nargv[i - xargstart + 5] = argv[i];
+//    nargv[argc - xargstart + 5] = (char *)0;
 
-  close(MeToReduce[1]);
-  close(ReduceToMe[0]);
-
-  FWIN_LOG("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
-	      MeToReduce[0], ReduceToMe[1]);
-
-  dup2(MeToReduce[0],STDIN_FILENO);
-  dup2(ReduceToMe[1],STDOUT_FILENO);
-
-  close(MeToReduce[0]);
-  close(ReduceToMe[1]);
-
-{
-    int tempfd;
-    int i;
-
-    FWIN_LOG("child: entering create_call\n");
-
-    if ((tempfd = open(BPSL,O_RDONLY)) == -1)
-    {  /* Does not check x */
-        char errstr[1024];
-        sprintf(errstr,"cannot open %s",BPSL);
-        perror(errstr);
-        exit(EXIT_FAILURE);
+        for (i = 0; i <= 5; i++)
+            FWIN_LOG("child: argv[%d]=%s\n",i,nargv[i]);
+        FWIN_LOG("child: right before execv()\n");
+        execv(nargv[0], nargv);
+        fwin_printf("Unable to perform execv(%s)\n", bpsl_binary);
+        fwin_exit(EXIT_FAILURE);
     }
-    else close(tempfd);
+#endif // Win32 vs Unix/Linux/MacOSX child processing
 
-    if ((tempfd = open(REDIMG,O_RDONLY)) == -1)
-    {   char errstr[1024];
-        sprintf(errstr,"cannot open %s",REDIMG);
-        perror(errstr);
-        exit(EXIT_FAILURE);
+// I am now in the parent... I need to read from the relevant handle
+// and display stuuf from it to the screen.
+
+#ifdef WIN32
+    DWORD n;
+    const char *loader = "load_package redfront,utf8$\n";
+    if (WriteFile(g_hChildStd_IN_Wr, loader, strlen(loader), &n, NULL) == 0)
+    {   fwin_printf("Unable to send to child process\n");
+        fwin_exit(EXIT_FAILURE);
     }
-    else close(tempfd);
 
-    if (strcmp(memory,"0") == 0)
-    {   char *sixtyfour;
-        int i;
-        /* malloc one more in case the name of bpsl is only 1 char: */
-        sixtyfour = (char *)malloc((strlen(BPSL)+1+1)*sizeof(char));
-        strcpy(sixtyfour,BPSL);
-        i = strlen(BPSL);
-        while (sixtyfour[i-1] != '/')
-	i--;
-        sixtyfour[i++] = '6';
-        sixtyfour[i++] = '4';
-        sixtyfour[i] = (char)0;
-        FWIN_LOG("child: checking for %s ... ",sixtyfour);
-        if ((tempfd = open(sixtyfour,O_RDONLY)) != -1)
-        {   close(tempfd);
-	    FWIN_LOG("positive\n");
-	    memory = "2000";
+#define BUFSIZE 256
+    for (;;)
+    {   char buf[BUFSIZE], prompt[80];
+        int prevc = 0, c, j = 0, k;
+// At present I do not recover well when the child process terminates - the
+// call to ReadFile here can merely hang. That is BAD.
+        if (ReadFile(g_hChildStd_OUT_Rd, buf, BUFSIZE, &n, NULL) == 0 ||
+            n == 0) break;
+        while (j<(int)n && (c = buf[j++]) != 0x01)
+        {   if (c == 0x0d) fwin_putchar('\n');
+            else if (c == 0x0a)
+            {   if (prevc != 0x0d) fwin_putchar('\n');
+            } 
+            else fwin_putchar(c);
+            prevc = c;
         }
-        else
-        {   FWIN_LOG("negative\n");
-	    memory = "16000000";
+        if (c == 0x01)
+        {   k = 0;
+// There is a messy issue in that the 0x02 may be in the NEXT buffer-full
+// of stuff. I will ignore that issue just for now.
+            while (j<(int)n && (c = buf[j++]) != 0x02)
+                prompt[k++] = c;
+            prompt[k] = 0;
+            fwin_set_prompt(prompt);
+// Just after a prompt there ought not to be anything else in the buffer, so I
+// can re-use it.
+            k = 0;
+            while ((c = fwin_getchar()) != '\n' && c != EOF)
+                if (k < BUFSIZE-1) buf[k++] = c;
+            buf[k] = 0;
+            FWIN_LOG("Sending line <%s>\n", buf);
+            buf[k++] = 0x0a;  // send a newline too
+            if (WriteFile(g_hChildStd_IN_Wr, buf, k, &n, NULL) == 0)
+            {   fwin_printf("Unable to send to child process\n");
+                fwin_exit(EXIT_FAILURE);
+            }
         }
     }
 
-    nargv[0] = (char *)BPSL;
-    nargv[1] = (char *)"-td";
-    nargv[2] = (char *)memory;
-    nargv[3] = (char *)"-f";
-    nargv[4] = (char *)REDIMG;
-    for (i = xargstart; i < argc; i++)
-        nargv[i - xargstart + 5] = argv[i];
-    nargv[argc - xargstart + 5] = (char *)0;
+#else
 
-    for (i = 0; i <= argc - xargstart + 5; i++)
-        FWIN_LOG("child: argv[%d]=%s\n",i,nargv[i]);
-
-    FWIN_LOG("child: leaving create_call\n");
-}
-
-
-  FWIN_LOG("child: right before execv()\n");
-
-  execv(nargv[0],nargv);
-
-  {
-    char errstr[1024];
-    sprintf(errstr,"cannot execv() %s",nargv[0]);
-    perror(errstr);
-  }
-  exit(EXIT_FAILURE);
-}
-
-
-#endif
-#endif
+// The pattern in the Unix/Linux/MacOSX case will be fairly similar but
+// will use read and write rather than ReadFile and WriteFile... I have not
+// reconstructed it yet.
 
     fwin_printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
@@ -387,6 +347,8 @@ void ReadFromPipe(void)
         fwin_printf("Line was <%s>\n", line);
         if (c == EOF || strcmp(line, "quit") == 0) break;
     }
+#endif
+
     fwin_printf("Done\n");
     return 0;
 }
@@ -487,13 +449,6 @@ void read_until_prompt(char *);
 
 
 
-
-int wxpsl_main(int argc,char **argv,char **envp)
-{
-    parse_args(argc,argv);
-
-  return -1;
-}
 
 void parse_args(int argc,char **argv) {
   int c;

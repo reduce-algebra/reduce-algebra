@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 38d1a748 03-Jan-2011 */
+/* Signature: 78089d24 04-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -4032,6 +4032,8 @@ int fwin_windowmode()
 
 void fwin_exit(int return_code)
 {
+    fwin_ensure_screen();
+    FWIN_LOG("fwin_exit(%d)\n", return_code);
 #ifdef RECONSTRUCTED
     if (windowed)
     {   wake_up_terminal(FXTerminal::WORKER_EXITING);
