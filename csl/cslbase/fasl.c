@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 745049cb 18-Aug-2010 */
+/* Signature: 26a549a3 05-Jan-2011 */
 
 #include "headers.h"
 
@@ -922,21 +922,21 @@ static Lisp_Object fastread(void)
 
     case F_CHAR:
 /*
- * Note that in Kanji mode the interpretation here should be that the 16 bit
- * character code is specified by bits/code. I ensure that when FASL files
- * are written this arrangement holds.
+ * I dump characters as 24 bits of data.
  */
-            {   int32_t bits, font, code;
-                bits = Igetc();
+            {   int32_t b1, b2, b3;
+                b1 = Igetc();
                 fasl_byte_count++;
-                if (bits == EOF) return aerror("premature EOF in FASL file");
-                font = Igetc();
+                if (b1 == EOF) return aerror("premature EOF in FASL file");
+                b2 = Igetc();
                 fasl_byte_count++;
-                if (font == EOF) return aerror("premature EOF in FASL file");
-                code = Igetc();
+                if (b2 == EOF) return aerror("premature EOF in FASL file");
+                b3 = Igetc();
                 fasl_byte_count++;
-                if (code == EOF) return aerror("premature EOF in FASL file");
-                return pack_char(bits, font & 0xff, code & 0xff);
+                if (b3 == EOF) return aerror("premature EOF in FASL file");
+                return ((b1 & 0xff)<<24) |
+                       ((b2 & 0xff)<<16) |
+                       ((b3 & 0xff)<<8) | TAG_CHAR;
             }
 
     case F_REP:
@@ -1835,9 +1835,9 @@ static Lisp_Object write_module1(Lisp_Object a)
  * Note that for somewhat dubious reasons I have separated out the
  * end of file character earlier on and treated it oddly.
  */
-        Iputc((int)bits_of_char(a));
-        Iputc((int)font_of_char(a));
-        Iputc((int)code_of_char(a));
+        Iputc((int)(a >> 24) & 0xff);
+        Iputc((int)(a >> 16) & 0xff);
+        Iputc((int)(a >> 8) & 0xff);
     }
     else if (is_bps(a))
     {   char *d = data_of_bps(a);

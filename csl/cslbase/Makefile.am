@@ -687,14 +687,17 @@ else !mac_framework
 	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
-# At present the only CM Unicode fonts I will copy across are the CMR, CMRI
-# and CMTT versions. I will still need and use the BaKoMa fonts for CMSY,
-# CMEX and MSAM etc special characters.
+# At present the only CM Unicode font I will copy across is CMTT.
+# I will still need and use the BaKoMa fonts for CMSY, CMEX and MSAM etc
+# special characters when typesetting high quality mathematics..
 	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
 	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
-	$(CP) $(srcdir)/cm-unicode/cmunrm.otf reduce.$(fontsdir)
-	$(CP) $(srcdir)/cm-unicode/cmunti.otf reduce.$(fontsdir)
 	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+# The DejaVu Sans Mono font covers a range of characters that CMTT does not..
+	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
+	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32
+	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/AUTHORS reduce.$(fontsdir)/AUTHORS.dejavu-fonts-ttf-2.32
+	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf reduce.$(fontsdir)
 # I will also use fireflysung and sazanami fonts to cover the CJK range
 	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
 	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
@@ -1449,3 +1452,4 @@ showhost:
 	echo host = $(HOST)
 
 # end of Makefile
+

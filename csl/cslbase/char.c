@@ -1,11 +1,11 @@
-/*  char.c                           Copyright (C) 1989-2008 Codemist Ltd */
+/*  char.c                           Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * Character handling.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,10 +36,18 @@
 
 
 
-/* Signature: 419913fa 24-May-2008 */
+/* Signature: 58e452aa 05-Jan-2011 */
 
 #include "headers.h"
 
+/*
+ * I am probably going to be moving to a situation where all internal
+ * data is Unicode, stored in strings in utf-8 format. That will be
+ * quite close in behaviour to the existing "Kanji" arrangement, which
+ * uses 16-bit wide characters in places. The full change-over will take
+ * some while and in the meanwhile I hope that if people only use simple
+ * ASCII characters there will be no confusion!
+ */
 
 #ifdef Kanji
 #define ISalpha(a)     iswalpha(a)
@@ -454,6 +462,108 @@ default:
     return onevalue(a);
 }
 
+Lisp_Object Lutf8_encode(Lisp_Object nil, Lisp_Object a)
+{
+    int c;
+    if (!is_fixnum(a)) return aerror1("utf8-encode", a);    
+    c = int_of_fixnum(a) & 0x001fffff;
+    if (c <= 0x7f) return onevalue(ncons(fixnum_of_int(c)));
+    else if (c <= 0x7ff) return onevalue(
+        list2(fixnum_of_int(0xc0 | (c>>6)), fixnum_of_int(0x80 | (c & 0x3f))));
+    else if (c <= 0xffff) return onevalue(
+        list3(fixnum_of_int(0xe0 | (c>>12)),
+              fixnum_of_int(0x80 | ((c>>6) & 0x3f)),
+              fixnum_of_int(0x80 | (c & 0x3f))));
+    else return onevalue(
+        list4(fixnum_of_int(0xf0 | (c>>18)),
+              fixnum_of_int(0x80 | ((c>>12) & 0x3f)),
+              fixnum_of_int(0x80 | ((c>>6) & 0x3f)),
+              fixnum_of_int(0x80 | (c & 0x3f))));
+}
+
+static Lisp_Object utf8_decode(int c1, int c2, int c3, int c4)
+{
+    switch (c1 & 0xf0)
+    {
+default:
+        if (c2 >= 0) return aerror("utf8-decode");
+        return onevalue(fixnum_of_int(c1));
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        return aerror("utf8-decode");
+case 0xc0:
+case 0xd0:
+        if (c2 < 0 || c3 >= 0) return aerror("utf8-decode");
+        return onevalue(fixnum_of_int(((c1 & 0x1f)<<6) | (c2 & 0x3f)));
+case 0xe0:
+        if (c2 < 0 || c3 < 0 || c4 >= 0) return aerror("utf8-decode");
+        return onevalue(fixnum_of_int(((c1 & 0x0f)<<12) |
+                  ((c2 & 0x3f)<<6) | (c3 & 0x3f)));
+case 0xf0:
+        if ((c1 & 0x08) != 0 || c2 < 0 || c3 < 0 || c4 < 0)
+            return aerror("utf8-decode");
+        return onevalue(fixnum_of_int(((c1 & 0x0f)<<18) |
+                  ((c2 & 0x3f)<<12) | ((c3 & 0x3f)<<6) | (c4 & 0x3f)));
+    }
+}
+
+Lisp_Object Lutf8_decoden(Lisp_Object nil, int nargs, ...)
+{
+    Lisp_Object a, b, c, d;
+    va_list aa;
+    if (nargs != 3 && nargs != 4) return aerror("utf8-decode");
+    va_start(aa, nargs);
+    a = va_arg(aa, Lisp_Object);
+    b = va_arg(aa, Lisp_Object);
+    c = va_arg(aa, Lisp_Object);
+    if (nargs == 4) d = va_arg(aa, Lisp_Object);
+    else d = fixnum_of_int(0);
+    va_end(aa);
+    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
+    if (!is_fixnum(c)) return aerror1("utf8-decode", c);
+    if (!is_fixnum(d)) return aerror1("utf8-decode", d);
+    return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
+                      int_of_fixnum(c) & 0xff,
+                      nargs == 4 ? int_of_fixnum(d) & 0xff : -1);
+}
+
+Lisp_Object Lutf8_decode2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
+{
+    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
+    return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
+                      -1, -1);
+}
+
+Lisp_Object Lutf8_decode1(Lisp_Object nil, Lisp_Object a)
+{
+    if (car_legal(a))  /* I allow for a list of ints too */
+    {   Lisp_Object b=qcdr(a);
+        a = qcar(a);
+        if (car_legal(b))
+        {   Lisp_Object c = qcdr(b);
+            b = qcar(b);
+            if (car_legal(c))
+            {   Lisp_Object d = qcdr(c);
+                c = qcar(c);
+                if (car_legal(d))
+                {   if (car_legal(qcdr(d)))
+                        return aerror1("utf8-decode", qcdr(d));
+                    else return Lutf8_decoden(nil, 4, a, b, c, qcar(d));
+                }
+                else return Lutf8_decoden(nil, 3, a, b, c);
+            }
+            else return Lutf8_decode2(nil, a, b);
+        }
+        else return Lutf8_decode1(nil, a);
+    } 
+    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+    return utf8_decode(int_of_fixnum(a) & 0xff, -1, -1, -1);
+}
+
 Lisp_Object Lchar_code(Lisp_Object nil, Lisp_Object a)
 {
     CSL_IGNORE(nil);
@@ -515,11 +625,11 @@ static Lisp_Object Lchar_int(Lisp_Object nil, Lisp_Object a)
     characterify(a);
     if (!is_char(a)) return aerror("char-int");
     return onevalue(fixnum_of_int(((uint32_t)a) >> 8));
-}
+}    
 
 static Lisp_Object Lint_char(Lisp_Object nil, Lisp_Object a)
 {
-    if (!is_fixnum(a) || (a & 0xff000000L) != 0) return nil;
+    if (!is_fixnum(a) || (a & 0xfe000000L) != 0) return nil;
     return onevalue(TAG_CHAR + (int_of_fixnum(a) << 8));
 }
 
@@ -536,18 +646,12 @@ static Lisp_Object MS_CDECL Lmake_char(Lisp_Object nil, int nargs, ...)
     if (nargs > 2) font = va_arg(aa, Lisp_Object);
     else font = fixnum_of_int(0);
     va_end(aa);
-    if (bits < 0 || bits >= fixnum_of_int(16L) ||
-        font < 0 || font >= fixnum_of_int(256L) ||
+    if (bits != fixnum_of_int(0) ||
+        font < 0 || font >= fixnum_of_int(3L) ||
         !is_char(a)) return aerror("make-char");
-#ifdef Kanji
     return onevalue(pack_char(int_of_fixnum(bits),
-                              int_of_fixnum(font) & 0xff,
-                              code_of_char(a) & 0xffff));
-#else
-    return onevalue(pack_char(int_of_fixnum(bits),
-                              int_of_fixnum(font) & 0xff,
-                              code_of_char(a) & 0xff));
-#endif
+                              int_of_fixnum(font) & 0x3,
+                              code_of_char(a) & 0x0x001fffff));
 }
 
 /*
@@ -1297,6 +1401,8 @@ setup_type const char_setup[] =
     {"code-char",               Lcode_char1, Lcode_char2, Lcode_charn},
     {"digit",                   Ldigitp, too_many_1, wrong_no_1},
     {"special-char",            Lspecial_char, too_many_1, wrong_no_1},
+    {"utf8-encode",             Lutf8_encode, too_many_1, wrong_no_1},
+    {"utf8-decode",             Lutf8_decode1, Lutf8_decode2, Lutf8_decoden},
 #ifdef COMMON
     {"alpha-char-p",            Lalpha_char_p, too_many_1, wrong_no_1},
     {"both-case-p",             Lalpha_char_p, too_many_1, wrong_no_1},

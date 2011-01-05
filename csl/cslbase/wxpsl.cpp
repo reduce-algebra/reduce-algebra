@@ -38,7 +38,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 67910a6e 04-Jan-2011 */
+/* Signature: 0102e9d2 05-Jan-2011 */
 
 
 /*
@@ -130,9 +130,10 @@ int fwin_main(int argc, char **argv)
 #ifdef WIN32
 // in case I get to send things to the console I will try setting that
 // to process UTF8.
-    fwin_printf("u-umlaut = \xc3\xbc \n");
-    fwin_ensure_screen();
+    int oldCP = GetConsoleOutputCP();
     SetConsoleOutputCP(CP_UTF8);
+    fwin_printf("old = %d u-umlaut = \xc3\xbc \n", oldCP);
+    fwin_ensure_screen();
 // The procedures used here are documented on Microsoft's web-site, and
 // the code I include here is closely based on their sample that shows how
 // to create a process with pipes attached to its standard streams.
@@ -301,8 +302,10 @@ int fwin_main(int argc, char **argv)
         {   if (c == 0x0d) fwin_putchar('\n');
             else if (c == 0x0a)
             {   if (prevc != 0x0d) fwin_putchar('\n');
-            } 
-            else fwin_putchar(c);
+            }
+// Characters 3 and 4 are used by redfront but I believe I can
+// safely discard them here.
+            else if (c != 0x03 && c != 0x04) fwin_putchar(c);
             prevc = c;
         }
         if (c == 0x01)

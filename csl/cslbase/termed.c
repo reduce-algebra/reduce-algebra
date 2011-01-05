@@ -37,7 +37,7 @@
  */
 
 
-/* Signature: 68b9f873 02-Jan-2011 */
+/* Signature: 4d95e075 05-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -661,6 +661,14 @@ static void record_keys(void)
 
 #ifdef WIN32
 static INPUT_RECORD keyboard_buffer[1];
+
+static UINT originalCodePage = 0;
+
+static void resetCP()
+{
+    SetConsoleOutputCP(originalCodePage);
+}
+
 #endif
 
 int term_setup(int flag, const char *colour)
@@ -787,6 +795,12 @@ int term_setup(int flag, const char *colour)
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
     SetConsoleMode(stdout_handle, stdout_attributes);
     term_can_invert = 1;
+    originalCodePage = GetConsoleOutputCP();
+    atexit(resetCP);
+    SetConsoleOutputCP(CP_UTF8);
+#ifdef TEST
+    printf("Original page = %d.  \xc3\xbc\n", originalCodePage);
+#endif
 #else /* WIN32 */
     int errval, errcode;
     char *s;
@@ -3152,10 +3166,6 @@ static void set_shell(void)
 static char *term_fancy_getline(void)
 {
     int ch, any_keys = 0;
-#ifdef TEST
-    fprintf(stderr, "term_fancy_getline\n");
-    fflush(stderr);
-#endif
 #ifdef WIN32
     SetConsoleMode(stdout_handle, 0);
 #else

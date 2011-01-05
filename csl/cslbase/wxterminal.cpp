@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 78089d24 04-Jan-2011 */
+/* Signature: 360baeec 05-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -131,16 +131,15 @@ int pipedes[2];
 // See cmtt_coverage lower down in this code
 
 extern int32_t cmtt_coverage[];
+extern int32_t deja_coverage[];
 
 #define CMTT_AVAIL(ch)    \
     ((ch) <= 0xffff &&    \
      ((cmtt_coverage[((ch)>>5) & 0x7ff] >> (31-((ch) & 0x1f))) & 1) != 0)
 
-// There will be a bunch of characters that I map to end up single width.
-// I need to list them all here - sorry! Sometime soon I will merge them
-// into the cmtt_coverage map which will make the code here a lot neater but
-// leave the coverage map a hybrid of nattive information about the font and
-// commentary on special case treatment in the code here.
+#define DEJA_AVAIL(ch)    \
+    ((ch) <= 0x2fff &&    \
+     ((deja_coverage[((ch)>>5) & 0x7ff] >> (31-((ch) & 0x1f))) & 1) != 0)
 
 
 #if !defined __WXMSW__ && !defined __WXPM__
@@ -157,7 +156,6 @@ static char **fwin_argv;
 
 int windowed_worker(int argc, char *argv[], fwin_entrypoint *fwin_main1)
 {
-    FWIN_LOG("char(0x3b1) availability = %d\n", CMTT_AVAIL(0x3b1));
     fwin_main_entry = fwin_main1;
     fwin_argc = argc;
     fwin_argv = argv;
@@ -349,7 +347,7 @@ public:
 
     class fwinFrame *frame;
 private:
-    wxFont *fixedPitch, *fixedCJK;
+    wxFont *fixedPitch, *fixedAlternate, *fixedCJK;
     wxString cjkFontName;
     double em;
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
@@ -670,12 +668,14 @@ typedef struct localFonts
 
 static localFonts fontNames[] =
 {
-// Some of the key Computer Modern Unicode fonts
-    {"cmunrm",       NULL},  // "CMU Serif"
-    {"cmunti",       NULL},  // "CMU Serif Italic"
-    {"cmuntt",       NULL},  // "CMU Typewriter Text"
-    {"fireflysung",  NULL},
-    {"sazanami-gothic", NULL},     {"sazanami-mincho", NULL},
+// Some Unicode fonts
+    {"cmuntt",       NULL},     // "CMU Typewriter Text (Regular)"
+    {"DejaVuSansMono",NULL},    // "DejaVu Sans Mono"
+    {"fireflysung",  NULL},     // "AR PL New Sung"
+    {"sazanami-gothic", NULL},  // "Sazanami Gothic (Regular)"
+    {"sazanami-mincho", NULL},  // "Sazanami Mincho (Regular)"
+
+           
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
@@ -757,41 +757,27 @@ static localFonts fontNames[] =
 
 #endif // MACINTOSH
 
+// Some characters map onto double-width symbols from the CJK fonts, while
+// many come from either cmuntt or DejaVuSansMono and are single width.
+// A VERY few characters are synthesised by drawing them since they are not
+// available in either of the main fonts I am using! I expect any characters
+// from the CJK fonts that have codes under 0x2000 to be "half width".
+
+#define double_width(ch)                \
+    (!CMTT_AVAIL((ch)) &&               \
+     !DEJA_AVAIL((ch)) &&               \
+     ((ch) >= 0x2000)  &&               \
+     ((ch) != 0x2135)  && /* alefsym */ \
+     ((ch) != 0x2118)  && /* weierp */  \
+     ((ch) != 0x2111)  && /* imag */    \
+     ((ch) != 0x211c))    /* real */
+
 // The following table shows the character coverage provided by the
 // cmuntt.otf font I use (that is Computer Modern Typewriter Unicode).
 // I will use that font whenever the relevant bit here says it is
 // appropriate, and will use my CJK font otherwise. This table was created
 // using a jiffy Java program, and at present related to the 0.6.3a version
 // of the font concerned.
-
-#define double_width(ch)                \
-    (!CMTT_AVAIL((ch)) &&               \
-     ((ch) >= 0x2000)  &&               \
-     ((ch) != 0x203e)  && /* oline */   \
-     ((ch) != 0x2205)  && /* empty */   \
-     ((ch) != 0x2211)  && /* sum */     \
-     ((ch) != 0x2260)  && /* ne */      \
-     ((ch) != 0x2264)  && /* le */      \
-     ((ch) != 0x2265)  && /* ge */      \
-     ((ch) != 0x22c5)  && /* sdot */    \
-     ((ch) != 0x2295)  && /* oplus */   \
-     ((ch) != 0x2297)  && /* otimes */  \
-     ((ch) != 0x2032)  && /* prime */   \
-     ((ch) != 0x2033)  && /* Prime */   \
-     ((ch) != 0x03d2)  && /* upsih */   \
-     ((ch) != 0x03a5)  && /* upsilon */ \
-     ((ch) != 0x222b)  && /* int */     \
-     ((ch) != 0x2118)  && /* weierp */  \
-     ((ch) != 0x2111)  && /* imag */    \
-     ((ch) != 0x211c)  && /* real */    \
-     ((ch) != 0x223c)  && /* sim */     \
-     ((ch) != 0x220f)  && /* prod */    \
-     ((ch) != 0x25ca)  && /* loz */     \
-     ((ch) != 0x2308)  && /* lceil */   \
-     ((ch) != 0x2309)  && /* rceil */   \
-     ((ch) != 0x230a)  && /* lfloor */  \
-     ((ch) != 0x230b))    /* rfloor */
-
 
 int32_t cmtt_coverage[2048] = {
     0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
@@ -1339,6 +1325,113 @@ int32_t cmtt_coverage[2048] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 
+int32_t deja_coverage[384] =
+{
+    0x00640000, 0xffffffff, 0xffffffff, 0xfffffffe,
+    0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xf007ffff, 0xf3ff8ecf,
+    0xffffffff, 0xcfffffff, 0xcc0cffff, 0xffffffff,
+    0xffffffff, 0xffffffdf, 0xc3ccf3fe, 0xffc21000,
+    0xffffffff, 0xffffffff, 0x10000080, 0x40000c22,
+    0x0febffff, 0xdfffffff, 0xfffeffff, 0xc000ffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0x30003000,
+    0x0000fff0, 0x3c3ff030, 0xf999ffff, 0xffffffc0,
+    0x0000c03c, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x03680411, 0x7fffffe0, 0xfffffc20, 0xfffc0873,
+    0x9b004080, 0x08410002, 0x00080000, 0x0000ffc0,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x69a40f7f, 0x7537ffd8, 0x00fc0000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 1000 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x0000ffff, 0xfffffff8,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    /* Code 1800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x20c00b07, 0x000efffb, 0xfffffff0, 0x3c000190,
+    0x0400001f, 0xffffff7f, 0x00000000, 0x00000000,
+    0xfffff0ff, 0xfffcffff, 0xfffc0fff, 0xf0ffffcf,
+    0xffffffd1, 0xc00cc3cc, 0x033c00fc, 0xfcf3fcc0,
+    0xfffffcfc, 0xffffffff, 0xfcfcff55, 0xfffffffc,
+    0xffffffff, 0xfffffbff, 0xfbfff3f7, 0xffff3bfe,
+    /* Code 2000 */
+    0xffeffdff, 0xf2ffff6e, 0x07c00001, 0x003fcfff,
+    0xfffef800, 0xfffffcc0, 0x00000000, 0x00000000,
+    0x24070764, 0x2a320000, 0x00001fff, 0x00000000,
+    0x0000ffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xfffd75ff, 0x81fc0ffc, 0x7fffffff, 0xffc7ffff,
+    0xfff1e7ff, 0xfc000000, 0x0604003f, 0xffc10000,
+    0xfefffccf, 0xc79005fe, 0x79dcb9fb, 0x9cdf9fe4,
+    0xf0f0041f, 0xfffe0000, 0x00030000, 0x00000000,
+    0x00000000, 0x10000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffff00ff, 0xffffffff, 0xffffffff,
+    0xfff0fff8, 0xc000c000, 0x00000000, 0x00000000,
+    0x7bcfffff, 0xff7fffff, 0xfff5e2fe, 0x7ffffc00,
+    0x000008ff, 0xffff7ffe, 0x06000000, 0x80c00000,
+    /* Code 2800 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00100030,
+    0x00000000, 0x00010000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00003fe0, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x0807876f,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000080, 0x3c020000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000
+// I will not use any characters from this font beyond this point.
+};
+
+
 #ifdef WIN32
 
 // The next flag instruct AddFontResourceEx that a font should be
@@ -1370,7 +1463,7 @@ int add_custom_fonts() // return 0 on success.
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name);
-        if (i < 3) strcat(nn, ".otf");
+        if (i == 0) strcat(nn, ".otf");
         else strcat(nn, ".ttf");
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
             FWIN_LOG("Failed to add font %s\n", nn);
@@ -1498,12 +1591,12 @@ fwinText::fwinText(fwinFrame *parent)
                     wxVSCROLL, "fwinText")
 {
     frame = parent;
-    fixedPitch = fixedCJK = NULL;
+    fixedPitch = fixedAlternate = fixedCJK = NULL;
 // The available CJK fonts here are
 //     Windows & Unix            Macintosh
 //     Sazanami Mincho           Sazanami Mincho Regular
 //     Sazanami Gothic           Sazanami Gothic Regular
-//     AR PL New Sung            AR PL New Sung
+//     AR PL New Sung            AR PL New Sung                    
 // Right at present I will make a selection, but in due course I will
 // provide a menu-driven option to let the user select.
 #ifdef MACINTOSH
@@ -2428,7 +2521,6 @@ void fwinText::ctrlXcommand()
         }
         while (*s != 0) buffer[i++] = *s++, j++;
         while (j < 8) buffer[i++] = ' ', j++;
-        buffer[i++] = ' ';
         buffer[i++] = p->code | 0x01000000;
         buffer[i++] = ' ';
         sprintf(h, "%.4x", p->code);
@@ -2436,7 +2528,7 @@ void fwinText::ctrlXcommand()
         buffer[i++] = h[1];
         buffer[i++] = h[2];
         buffer[i++] = h[3];
-        buffer[i++] = ' ';
+        buffer[i++] = '\t';
         // 16 positions per symbol
         if (i >= 68)
         {   buffer[i++] = '\n';
@@ -3671,6 +3763,7 @@ void fwinText::OnDraw(wxDC &dc)
     if (firstPaint)
     {   if (fixedPitch == NULL)
         {   fixedPitch = new wxFont();
+            fixedAlternate = new wxFont();
             fixedCJK   = new wxFont();
 // It worries me that exactly the same OpenType font needs to be
 // called for using slighly different names on different platforms.
@@ -3679,8 +3772,10 @@ void fwinText::OnDraw(wxDC &dc)
 #else
             fixedPitch->SetFaceName("CMU Typewriter Text");
 #endif
+            fixedAlternate->SetFaceName("DejaVu Sans Mono");
             fixedCJK->SetFaceName(cjkFontName);
             fixedPitch->SetPointSize(1000);
+            fixedAlternate->SetPointSize(1000);
             fixedCJK->SetPointSize(1000);
             font_width *p = cm_font_width;
             while (p->name != NULL &&
@@ -3696,6 +3791,8 @@ void fwinText::OnDraw(wxDC &dc)
             double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
             pixelsPerPoint = em/fmEm;
             fixedPitch->SetPointSize(10);
+            dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedAlternate);
+            FWIN_LOG("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
             dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
             FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
         }
@@ -3703,9 +3800,9 @@ void fwinText::OnDraw(wxDC &dc)
         scaleAdjustment = (double)spacePerChar/em;
         fixedPitch->SetPointSize(10);
         fixedPitch->Scale(scaleAdjustment);
+        fixedAlternate->SetPointSize(10);
+        fixedAlternate->Scale(scaleAdjustment);
         fixedCJK->SetPointSize(10);
-// Many characters in the CJK fonts are roughly twice as wide as the CMTT one,
-// and so I will need to allow for that when displaying things. 
         fixedCJK->Scale(scaleAdjustment);
         dc.SetFont(*fixedPitch);
         rowHeight = dc.GetCharHeight();
@@ -3731,7 +3828,10 @@ void fwinText::OnDraw(wxDC &dc)
         firstPaint = false;
     }
     dc.SetFont(*fixedPitch);
-    bool currentFont = true;
+#define FONT_CMTT  0
+#define FONT_DEJA  1
+#define FONT_CJK   2
+    int currentFont = FONT_CMTT;
     int p = firstVisibleRow;
     int row = 0, col = 0;
     lastVisibleRow = firstVisibleRow;
@@ -3767,215 +3867,67 @@ void fwinText::OnDraw(wxDC &dc)
             dc.SetTextForeground(*(textColour = wxBLACK));
         wxString cs;
         int extraCols = 0;
-// There are a few characters that I map onto overstrikes in the CMR font
-// or into alternative single characters. Or even in extreme cases into
-// code that draws the character as a sequenec of strokes.
-        int ch1 = -1;
+// There are a few characters that take special action on. I will comment
+// by each about what I am doing and why.
         switch (ch & 0x001fffff)
         {
-    case 0x203e:  // oline
-            ch = 0x00af;   // Use macron
-            break;
-    case 0x2205:  // empty
-            ch = 0x00f8;
-            break;
-    case 0x2211:  // sum
-            ch = 0x03a3;   // use Sigma
-            break;
-    case 0x2260:  // ne
-            ch = '/';
-            ch1 = '=';
-            break;
-    case 0x2264:  // le
-            ch = '_';
-            ch1 = '<';
-            break;
-    case 0x2265:  // ge
-            ch = '_';
-            ch1 = '>';
-            break;
-    case 0x03d6:  // piv
-            ch = 0x03c9;   // omega
-            ch1 = 0x00af;  // macron
-            break;
-    case 0x22c5:  // sdot
-            ch = 0x00b7;   // periodcentred
-            break;
-    case 0x2295:  // oplus
-            ch = '0';
-            ch1 = '+';
-            break;
-    case 0x2297:  // otimes
-            ch = '0';
-            ch1 = 0x00d7;
-            break;
-    case 0x2032:  // prime
-            ch = 0x02b9;  // modifier letter prime
-            break;
-    case 0x2033:  // Prime
-            ch = 0x02ba;  // modifier letter double prime
-            break;
     case 0x03d2:  // upsih
-            ch = 0x03a5;  // Upsilon is curly in cmtt
+// Code 0x3d2 is not available in cmutt, but it is in DejaVi. However in
+// cmuntt the normal capital Upsilon comes out curly, so I merely map the
+// code onto that.
+            ch = 0x03a5;
             break;
     case 0x03a5:  // upsilon
-            ch = 'Y';     // Use ordinary Y for the regular version.
+// Well as explained above, the cmuntt capital Upsilon is a curly one, and
+// I want a non-curly version here. A capital Y provides the correct shape.
+            ch = 'Y';
             break;
-    case 0x222b:  // int
-            ch = 0x0283; // small letter esh
-            break;
-    case 0x21d3:  // dArr
-            ch = 0x21e9; // downwards white arrow. Wrong but best I can do!
-            break;
-    case 0x21d0:  // lArr
-            ch = 0x21e6; // leftwards white arrow
-            break;
-    case 0x21d1:  // uArr
-            ch = 0x21e7; // upwards white arrow
-            break; 
-// The next three are distinctly cop-outs.
     case 0x2118:  // weierp
-            ch = 0xf189; // plhook in the Private/Corporate range of cmuntt.
-            break;
-    case 0x2111:  // imag
-            ch = 0x026a; // small capitals I
-            break;
-    case 0x211c:  // real
-            ch = 0x0280; // small capitals R
-            break;
-    case 0x223c:  // sim
-            if (!currentFont) // draw as a tilde but slighly lowered
+// There is no script capital P in any of the fonts I am using at present,
+// however a glyph described as "plhook" in the Private/Corporate range
+// from cmuntt looks a bit like a curly P and is perhaps better than nothing.
+            ch = 0xf189;
+            if (currentFont != FONT_CMTT)
             {   dc.SetFont(*fixedPitch);
-                currentFont = TRUE;
+                currentFont = FONT_CMTT;
             }
-            dc.DrawText("~", columnPos[col], rowHeight*row+(rowHeight/3));
+            cs = (wchar_t)ch;
+            dc.DrawText(cs, columnPos[col], rowHeight*row);
             col++;
             continue;
-// The next section is a pretty ultimate cop-out, in that a DRAW the
-// characters directly. Obviously a nicer thing to do would be to
-// provide a font with them in, but for now I prefer writing this code
-// to causing confusion with private customised fonts!
-    case 0x21b5:  // crarr
-            {   int x = columnPos[col], y = rowHeight*row;
-                int w = columnPos[col+1]-x, h = rowHeight;
-                p2.SetColour(*textColour);
-                p2.SetWidth((7*rowHeight+80)/100);
-                dc.SetPen(p2);
-                dc.DrawLine(x+((4*w+3)/5), y+(2*h/10),
-                            x+((4*w+3)/5), y+((5*h-5)/10));
-                dc.SetPen(p1);
-            }
-            ch = 0x2190;
+    case 0x2111:  // image
+// This is supposed toi be a Black Letter Capital I. I use a small capital
+// which is at least different from a regular "I". But this is not very good.
+            ch = 0x026a;
             break;
-    case 0x220f:  // prod
-            {   int x = columnPos[col], y = rowHeight*row;
-                int w = columnPos[col+1]-x, h = rowHeight;
-                p2.SetColour(*textColour);
-                p2.SetWidth((7*rowHeight+80)/100);
-                dc.SetPen(p2);
-                dc.DrawLine(x+(w/4), y+(8*h/10),
-                            x+(w/4), y+(2*h/10));
-                dc.DrawLine(x+(w/4), y+(2*h/10),
-                            x+(3*w/4), y+(2*h/10));
-                dc.DrawLine(x+(3*w/4), y+(2*h/10),
-                            x+(3*w/4), y+(8*h/10)+1);
-                dc.SetPen(p1);
-                col++;
-                continue;
-            }
+    case 0x211c:  // real
+// A similar problem to "image" above, with a similar fallback
+            ch = 0x0280;
             break;
-    case 0x25ca:  // loz
+    case 0x2135:  // alefsym
             {   int x = columnPos[col], y = rowHeight*row;
                 int w = columnPos[col+1]-x, h = rowHeight;
                 p2.SetColour(*textColour);
                 p2.SetWidth((7*rowHeight+80)/100);
                 dc.SetPen(p2);
-                dc.DrawLine(x+(w/2), y+(8*h/10),
-                            x+(w/4), y+(5*h/10));
-                dc.DrawLine(x+(w/4), y+(5*h/10),
-                            x+(w/2), y+(2*h/10));
-                dc.DrawLine(x+(w/2), y+(2*h/10),
-                            x+(3*w/4), y+(5*h/10));
-                dc.DrawLine(x+(3*w/4), y+(5*h/10),
-                            x+(w/2), y+(8*h/10));
+                dc.DrawLine(x+w/6, y+(2*h)/10,
+                            x+w-w/6, y+(8*h)/10);
+                dc.DrawLine(x+w/2, y+(2*h)/10,
+                            x+w-w/6, y+(5*h)/10);
+                dc.DrawLine(x+w/6, y+(8*h)/10,
+                            x+w/2, y+(8*h)/10);
+                p2.SetWidth((3*rowHeight+50)/100);
+                dc.SetPen(p2);
+                dc.DrawLine(x+w/2, y+h/2,
+                            x+(3*w)/4, y+h/4);
+                dc.DrawLine(x+w/3, y+h/3,
+                            x+w/2, y+(8*h)/10);
                 dc.SetPen(p1);
                 col++;
                 continue;
             }
-            break;
-    case 0x2308:  // lceil
-            {   int x = columnPos[col], y = rowHeight*row;
-                int w = columnPos[col+1]-x, h = rowHeight;
-                p2.SetColour(*textColour);
-                p2.SetWidth((7*rowHeight+80)/100);
-                dc.SetPen(p2);
-                dc.DrawLine(x+(w/3), y+(8*h/10),
-                            x+(w/3), y+(2*h/10));
-                dc.DrawLine(x+(w/3), y+(2*h/10),
-                            x+(2*w/3), y+(2*h/10));
-                dc.SetPen(p1);
-                col++;
-                continue;
-            }
-            break;
-    case 0x2309:  // rceil
-            {   int x = columnPos[col], y = rowHeight*row;
-                int w = columnPos[col+1]-x, h = rowHeight;
-                p2.SetColour(*textColour);
-                p2.SetWidth((7*rowHeight+80)/100);
-                dc.SetPen(p2);
-                dc.DrawLine(x+(2*w/3), y+(8*h/10),
-                            x+(2*w/3), y+(2*h/10));
-                dc.DrawLine(x+(2*w/3), y+(2*h/10),
-                            x+(w/3), y+(2*h/10));
-                dc.SetPen(p1);
-                col++;
-                continue;
-            }
-            break;
-    case 0x230a:  // lfloor
-            {   int x = columnPos[col], y = rowHeight*row;
-                int w = columnPos[col+1]-x, h = rowHeight;
-                p2.SetColour(*textColour);
-                p2.SetWidth((7*rowHeight+80)/100);
-                dc.SetPen(p2);
-                dc.DrawLine(x+(w/3), y+(2*h/10),
-                            x+(w/3), y+(8*h/10));
-                dc.DrawLine(x+(w/3), y+(8*h/10),
-                            x+(2*w/3), y+(8*h/10));
-                dc.SetPen(p1);
-                col++;
-                continue;
-            }
-            break;
-    case 0x230b:  // rfloor
-            {   int x = columnPos[col], y = rowHeight*row;
-                int w = columnPos[col+1]-x, h = rowHeight;
-                p2.SetColour(*textColour);
-                p2.SetWidth((7*rowHeight+80)/100);
-                dc.SetPen(p2);
-                dc.DrawLine(x+(2*w/3), y+(2*h/10),
-                            x+(2*w/3), y+(8*h/10));
-                dc.DrawLine(x+(2*w/3), y+(8*h/10),
-                            x+(w/3), y+(8*h/10));
-                dc.SetPen(p1);
-                col++;
-                continue;
-            }
-            break;
-
     default:
             break;
-        }
-        if (ch1 != -1)
-        {   if (!currentFont)
-            {   dc.SetFont(*fixedPitch);
-                currentFont = TRUE;
-                cs = (wchar_t)ch1;
-                dc.DrawText(cs, columnPos[col], rowHeight*row);
-            }
-            cs = (wchar_t)ch1;
-            dc.DrawText(cs, columnPos[col], rowHeight*row);
         }
 // I convert TAB into a suitable sequence of spaces.
         if ((ch & 0x001fffff) == '\t')
@@ -3992,15 +3944,24 @@ void fwinText::OnDraw(wxDC &dc)
 // I will map any such onto a display of a question mark.
         else if ((ch & 0x001fffff) > 0xffff) cs = "?";
         else cs = (wchar_t)(ch & 0x001fffff);
-        bool avail = CMTT_AVAIL(ch & 0x001fffff);
-        if (avail != currentFont)
-        {   dc.SetFont(avail ? *fixedPitch : *fixedCJK);
-            currentFont = avail;
+        if (CMTT_AVAIL(ch & 0x001fffff))
+        {   if (currentFont != FONT_CMTT)
+            {   dc.SetFont(*fixedPitch);
+                currentFont = FONT_CMTT;
+            }
         }
-        if (!avail && (ch & 0x001fffff) >= 0x2000) extraCols = 1;
-// Note that if I use a CJK font here I need extra space for the character.
-// I *may* try to achieve that by putting a non-breaking space in the text
-// buffer after it.
+        else if (DEJA_AVAIL(ch & 0x001fffff))
+        {   if (currentFont != FONT_DEJA)
+            {   dc.SetFont(*fixedAlternate);
+                currentFont = FONT_DEJA;
+            }
+        }
+        else if (currentFont != FONT_CJK)
+        {   dc.SetFont(*fixedCJK);
+            currentFont = FONT_CJK;
+        }
+        if (currentFont == FONT_CJK &&
+            (ch & 0x001fffff) >= 0x2000) extraCols = 1;
         dc.DrawText(cs, columnPos[col], rowHeight*row);
         col = col + (extraCols & 0xff) + 1;
     }
@@ -4070,14 +4031,47 @@ void fwin_restore()
     panel->GetEventHandler()->QueueEvent(event);
 }
 
+#ifdef WIN32
+// In a manner that soewhhat astonished me under Windows I find that
+// putchar('a'); putchar('b'); differs in behaviour from fputs("ab", stdout)
+// when the characters and and b are replaced by values in the range
+// 128 - 255. Even if I have a terminal set with an utf-8 code page the
+// display following individual uses of putchar() are a mess, while if I
+// output all the bytes of a multi-byte character at once it is able to
+// display (subject to my terminal having a suitable font installed).
+// I am observing this on a Windows 7 system using "gcc-3 -mno-cygwin" and
+// am not certain exactly what other cases it will apply in. However buffering
+// a few terminal-output characters will not be a huge burden, so I will do it.
+
+#define LINE_BUFFER_SIZE 80
+static char line_buffer[LINE_BUFFER_SIZE];
+static int line_buffer_p = 0;
+
+static void flush_line_buffer()
+{
+    if (line_buffer_p != 0)
+    {   line_buffer[line_buffer_p] = 0;
+        fputs(line_buffer, stdout);
+        line_buffer_p = 0;
+    }
+}
+
+#endif
+
 void fwin_putchar(int c)
 {
     if (!windowed)
     {
 #ifdef RAW_CYGWIN
-        if (c == '\n') putchar('\r');
+        if (c == '\n') fwin_putchar('\r');
 #endif
+#ifdef WIN32
+        if ((c & 0xc0) != 0x80 && line_buffer_p > LINE_BUFFER_SIZE-5)
+            flush_line_buffer();
+        line_buffer[line_buffer_p++] = c;
+#else
         putchar(c);
+#endif
         return;
     }
     FWIN_LOG("fwin_putchar(%#x) (%c) in=%d\n", c, (((c & 0xff) >= 020 &&
@@ -4124,6 +4118,9 @@ void fwin_puts(const char *s)
 {
     if (!windowed)
     {
+#ifdef WIN32
+        flush_line_buffer();
+#endif
 #ifdef RAW_CYGWIN
         while (*s != 0) fwin_putchar(*s++);
 #else
@@ -4181,6 +4178,9 @@ void
     va_start(a, fmt);
     if (!windowed)
     {
+#ifdef WIN32
+        flush_line_buffer();
+#endif
 #ifdef RAW_CYGWIN
 // NOT reconstructed yet: in the raw cygwin you may get line-ends that
 // are mere LF where I possibly really wanted CR-LF combinations.
@@ -4219,6 +4219,9 @@ void fwin_vfprintf(const char *fmt, va_list a)
 {
     if (!windowed)
     {
+#ifdef WIN32
+        flush_line_buffer();
+#endif
 #ifdef RAW_CYGWIN
 // See comments aboove re CR-LF vs '\n'. I do not expect raw cygwin builds
 // to be terribly useful (since that will represent and X11 GUI running on
@@ -4274,7 +4277,11 @@ void fwin_showmath(const char *s)
 void fwin_ensure_screen()
 {
     if (!windowed)
-    {   fflush(stdout);
+    {
+#ifdef WIN32
+        flush_line_buffer();
+#endif
+        fflush(stdout);
         return;
     }
     if (panel->fwin_in == 0) return;
@@ -4310,7 +4317,10 @@ static int update_next_time = 0;
 
 int fwin_getchar()
 {
-    if (!windowed) return fwin_plain_getchar();
+    if (!windowed)
+    {   flush_line_buffer();
+        return fwin_plain_getchar();
+    }
 // In general I have a line of stuff ready sitting in a buffer. So on
 // most calls to here I can just return what is in it.
     if (panel->inputBufferP < panel->inputBufferLen)
@@ -4474,9 +4484,6 @@ void fwin_set_help_file(const char *key, const char *path)
     fflush(stdout);
 #endif
 }
-
-
-
 
 
 // End of wxterminal.cpp

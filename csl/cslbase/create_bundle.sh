@@ -27,9 +27,12 @@ cp $srcdir/wxfonts/LICENCE                       $F/LICENCE.BaKoMa
 cp $srcdir/wxfonts/*.ttf                         $F
 cp $srcdir/cm-unicode/LICENSE                    $F/LICENSE.cm-unicode
 cp $srcdir/cm-unicode/README                     $F/README.cm-unicode
-cp $srcdir/cm-unicode/cmunrm.otf                 $F
-cp $srcdir/cm-unicode/cmunti.otf                 $F
 cp $srcdir/cm-unicode/cmuntt.otf                 $F
+# The DejaVu Sans Mono font covers a range of characters that CMTT does not..
+cp srcdir/dejavu-fonts-ttf-2.32/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.32
+cp srcdir/dejavu-fonts-ttf-2.32/README           $F/README.dejavu-fonts-ttf-2.32
+cp srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
+cp srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
 # I will also use fireflysung and sazanami fonts to cover the CJK range
 cp $srcdir/fireflysung-1.3.0/fireflysung.ttf     $F
 cp $srcdir/fireflysung-1.3.0/AUTHORS             $F/AUTHORS.fireflysung

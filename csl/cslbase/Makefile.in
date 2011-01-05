@@ -2322,14 +2322,17 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README.news reduce.$(fontsdir)/README.news.BaKoMa
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/LICENCE reduce.$(fontsdir)/LICENCE.BaKoMa
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/*.ttf reduce.$(fontsdir)
-# At present the only CM Unicode fonts I will copy across are the CMR, CMRI
-# and CMTT versions. I will still need and use the BaKoMa fonts for CMSY,
-# CMEX and MSAM etc special characters.
+# At present the only CM Unicode font I will copy across is CMTT.
+# I will still need and use the BaKoMa fonts for CMSY, CMEX and MSAM etc
+# special characters when typesetting high quality mathematics..
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/LICENSE reduce.$(fontsdir)/LICENSE.cm-unicode
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/README reduce.$(fontsdir)/README.cm-unicode
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmunrm.otf reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmunti.otf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/cm-unicode/cmuntt.otf reduce.$(fontsdir)
+# The DejaVu Sans Mono font covers a range of characters that CMTT does not..
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/LICENSE reduce.$(fontsdir)/LICENSE.dejavu-fonts-ttf-2.32
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/README reduce.$(fontsdir)/README.dejavu-fonts-ttf-2.32
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/AUTHORS reduce.$(fontsdir)/AUTHORS.dejavu-fonts-ttf-2.32
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf reduce.$(fontsdir)
 # I will also use fireflysung and sazanami fonts to cover the CJK range
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
