@@ -1,0 +1,24 @@
+(compiletime (define-constant fasl-vlth 256))
+
+(de fasl-mkxvect() (list(mkvect fasl-vlth)))
+
+(de fasl-xputw(v n w)
+  (let((i 0))
+    (while (wlessp i addressingunitsperitem)
+         (fasl-xputb v n (wand w 255))
+         (setq w (wshift w -8))
+         (setq i (iadd1 i))
+         (setq n (iadd1 n)))
+   w))
+ 
+(de fasl-xputb(v n w)
+  (prog(i j d)
+    (setq d (times fasl-vlth addressingunitsperitem))
+    (setq i (iquotient n d)) (setq j(iremainder n d))
+    (while(igreaterp i 0) 
+      (when (null (cdr v))(rplacd v (fasl-mkxvect)))
+      (setq v (cdr v))
+      (setq i (isub1 i)))
+    (putbyte (wplus2 (vecinf (car v)) addressingunitsperitem) j w)
+    (return w)))
+

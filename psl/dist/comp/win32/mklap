@@ -1,0 +1,6 @@
+(off usermode)
+(faslout "d:\psl\lap\386-lap")
+(dskin "d:\psl\comp\dos386\386-lap.sl")
+(faslend)
+(quit)
+

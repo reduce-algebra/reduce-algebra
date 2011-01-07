@@ -51,6 +51,12 @@ if test $guess = "i686-pc-linux-gnu"
 
 fi
 
+if test "x$1" != "x"
+  then
+      MACHINE=$1
+ fi
+
+
 echo
 echo "PSL REDUCE is made for " $MACHINE " from " $host
 echo
