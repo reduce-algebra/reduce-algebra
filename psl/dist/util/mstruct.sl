@@ -4,8 +4,6 @@
 %
 % Author: Bruce A. Florman
 %
-% Copyright (c) 1989, The RAND Corporation.  All rights reserved.
-%
 % DESCRIPTION
 %
 %	(defstruct <structspec> [ <slotspec>... ] )

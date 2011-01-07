@@ -6,8 +6,6 @@
 % Created:      01-Nov-94 
 % Package:      
 %
-% (c) Copyright 1994, Konrad-Zuse-Zentrum, all rights reserved.
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
