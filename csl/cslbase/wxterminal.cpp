@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 360baeec 05-Jan-2011 */
+/* Signature: 5abc46c0 08-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -49,6 +49,7 @@
 
 #include <wx/caret.h>
 #include <wx/display.h>
+#include <wx/settings.h>
 
 #include "config.h"
 
@@ -346,9 +347,13 @@ public:
 #define PAUSE_DISCARD    4
 
     class fwinFrame *frame;
+    bool fontPriorityCMTT;
 private:
     wxFont *fixedPitch, *fixedAlternate, *fixedCJK;
     wxString cjkFontName;
+    int currentFont;
+    const wxColour *textColour;
+    
     double em;
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
     double scaleAdjustment;
@@ -360,9 +365,6 @@ private:
 // displayed wrapped onto several rows. The '\n' character must not be present
 // in the text buffer other than as a line separator.
 //
-// firstVisibleRow points to the first character of the first row being
-// displayed on the screen. Note that this is a ROW not a LINE.
-// lastVisibleRow is the final row displayed on the screen.
 // textEnd points at the position in textBuffer one beyond the final
 // character stored. Ie it is zero if the buffer is empty.
 // caretPos is between zero and textEnd (inclusive) and denotes a position
@@ -382,18 +384,17 @@ private:
     wxCaret *caret;
     int caretPos;
     void repositionCaret(int w=-1, int r=0, int c=0);
-    int32_t locateChar(int p, int w=-1, int r=0, int c=0);
-// The result handed back by locateChar is either negative (if the character
-// is not on the screen) or a packed (row,column) pair. It indicates the
-// location the character would start on the screen apart from any line-wrap
-// it might trigger.
+    int32_t locateChar(int p, int w=0, int r=0, int c=0);
+// The result handed back by locateChar is a packed (row,column) pair.
+// It indicates the location the character would start on the screen apart
+// from any line-wrap it might trigger.
 #define PACK(r, c) ((r)<<16 | (c))
 #define ROW(n)     (((n) >> 16) & 0xffff)
 #define COL(n)     ((n) & 0xffff)
 
+    int DrawTextRow(wxDC &dc, int y, int pos);
     int textEnd; 
     int rowHeight, rowCount;
-    int firstVisibleRow, lastVisibleRow;
     int historyNumber;
 
     int options;
@@ -1592,6 +1593,7 @@ fwinText::fwinText(fwinFrame *parent)
 {
     frame = parent;
     fixedPitch = fixedAlternate = fixedCJK = NULL;
+    fontPriorityCMTT = false;
 // The available CJK fonts here are
 //     Windows & Unix            Macintosh
 //     Sazanami Mincho           Sazanami Mincho Regular
@@ -1604,6 +1606,12 @@ fwinText::fwinText(fwinFrame *parent)
 #else
     cjkFontName = "Sazanami Mincho";
 #endif
+    wxColour c1(230, 200, 255);
+    SetBackgroundColour(c1);
+// These will be reviewed when I first paint the screen
+    SetScrollRate(0, 10);
+    SetVirtualSize(wxDefaultCoord, 500);
+    ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_ALWAYS);
     firstPaint = true;
 // I start off with a 40K character buffer, which seems reasonably
 // generous to me. The plan is that the buffer will automatically expand
@@ -1612,7 +1620,6 @@ fwinText::fwinText(fwinFrame *parent)
     textBuffer = (uint32_t *)malloc(textBufferSize*sizeof(uint32_t));
     textEnd = 0;
     searchFlags = 0;
-    firstVisibleRow = 0;
     caret = NULL;
     caretPos = 0;
     options = 0;
@@ -2293,13 +2300,11 @@ void fwinText::insertNewline()
 
 int32_t fwinText::locateChar(int p, int w, int r, int c)
 {
-// Normally call as locateChar(p, firstVisibleRow, 0, 0) but the final 3
-// args are to allow resumption after a previous call. Arg2=-1 stands for
-// firstVisibleRow.
+// Normally call as locateChar(p, 0, 0, 0) but the final 3
+// args are to allow resumption after a previous call.
 // Return the row/column of the character cell corresponding to address
-// p in the buffer. Return -1 if the character at position p is above the
-// window, and -2 if it is below. The pointer p may be equal to textEnd, ie
-// one beyond the actual text in the buffer.
+// p in the buffer. The pointer p may be equal to textEnd, ie one beyond
+// the actual text in the buffer.
 // This needs to take a little care with line-wrapping. It can return
 // column numbers 0 to 79 in general, but if p is textEnd or the character
 // there is a newline it can return a column number of 80.
@@ -2309,28 +2314,31 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 // whole tab effect occurring on the next row. It further allows that some
 // characters are double-width (a few special symbols and all CJK ideograms).
 // Fortunately the treatment of tabs gives a start to how I handle such.
-    if (w == -1) w = firstVisibleRow;
-    if (p < w) return -1; // before the part of screen being searched.
+
+// Well at one stage I tried to restrict my search to the section of text
+// actually visible on the screen. Howver the proper model now is that the
+/// text is a single huge buffer and scrolling causes just a biot of it to
+// be displayed but coordinates here should relate to the full buffer. So it
+// USED to be the case that I started w off as firstVisibleRow. But now I
+// start off at trhe start of the buffer.
+    if (w == -1) w = 0;
     while (w != p)
-    {   uint32_t ch = textBuffer[w];
-        int wide = double_width(ch & 0x001fffff);
+    {   uint32_t ch = textBuffer[w] & 0x001fffff;
+        int wide = double_width(ch);
 // The characters processed within this loop are all BEFORE the one I am
 // interested in, and so I process tabs, newlines and line-wrap.
         if (ch == '\n')
         {   c = 0;
             r++;
-            if (r > rowCount) return -2; // below visible screen
         }
         else if (c == 79 && wide)
         {   c = 2;
             r++;
-            if (r > rowCount) return -2; // below visible after line-wrap
         }
         else if (c == 80)
         {   if (ch == '\t') c = 8;       // tab in column 80
             else c = 1;
             r++;
-            if (r > rowCount) return -2; // below visible after line-wrap
         }
         else if (ch == '\t') c += 8 - (c & 7); // tab
         else if (wide) c += 2;
@@ -2515,10 +2523,10 @@ void fwinText::ctrlXcommand()
     while ((s = p->name) != NULL)
     {   int j = 0;
         char h[8];
-        if (CMTT_AVAIL(p->code))
-        {   p++;
-            continue;
-        }
+//        if (CMTT_AVAIL(p->code))
+//        {   p++;
+//            continue;
+//        }
         while (*s != 0) buffer[i++] = *s++, j++;
         while (j < 8) buffer[i++] = ' ', j++;
         buffer[i++] = p->code | 0x01000000;
@@ -2708,7 +2716,9 @@ void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
     int i;
     double w;
     wxSize client(GetClientSize());
-    w = (double)client.GetWidth()/80.0;
+    int sbwidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, this);
+    w = ((double)(client.GetWidth() - sbwidth)
+        )/80.0;
     panel->SetSize(client);
     panel->firstPaint = true;
     for (i=0; i<81; i++)
@@ -2732,7 +2742,7 @@ void fwinText::OnChar(wxKeyEvent &event)
     uint32_t r = event.GetKeyCode();
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
                                   // Also ALTGR, META, WIN, CONTROL
-    FWIN_LOG("Char key:%x Unicode:%x modifiers:%x\n", c, r, m);
+//  FWIN_LOG("Char key:%x Unicode:%x modifiers:%x\n", c, r, m);
     uint32_t *history_string = NULL;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
@@ -3095,7 +3105,6 @@ case WXK_BACK:  // = Ctrl-H
 // ALT backspace does a delete-backwards-word, while just backspace
 // deletes a single character. I find that CTRL-backspace (at least on
 // on Windows) is mapped to ctrl-DELETE so that will delete forwards.
-        beep(); // to test this @@@
         if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
         else deleteBackwards(1);
         return;
@@ -3557,7 +3566,10 @@ void fwinText::repositionCaret(int w, int r, int c)
     if (caretCell < 0) while (caret->IsVisible()) caret->Hide();
     else
     {   int r = ROW(caretCell), c = COL(caretCell);
-        caret->Move(c==80 ? columnPos[c]-2 : columnPos[c], rowHeight*r);
+        int x = columnPos[c], y = rowHeight*r;
+        if (c == 80) x -= 2;
+        CalcScrolledPosition(x, y, &x, &y);
+        caret->Move(x, y);
         while (!caret->IsVisible()) caret->Show();
     }
 }
@@ -3746,19 +3758,18 @@ void fwinText::OnRestoreWindow(wxThreadEvent& event)
 
 void fwinText::OnDraw(wxDC &dc)
 {
-// The next could probably be done merely by setting a background colour
-    wxColour c1(230, 200, 255);
+// 
+    wxColour c1(GetBackgroundColour());
     wxPen p1(c1), p2(c1);
     dc.SetPen(p1);
     wxBrush b1(c1);
     dc.SetBrush(b1);
     dc.SetBackground(b1);
     dc.SetTextBackground(c1);
-    const wxColour *textColour = wxBLACK;
+    textColour = wxBLACK;
     dc.SetTextForeground(*textColour);
-    dc.Clear(); // explicitly clear background
 
-    wxSize window(dc.GetSize());
+    wxSize window(GetClientSize()); // dc.GetSize());
 
     if (firstPaint)
     {   if (fixedPitch == NULL)
@@ -3791,7 +3802,7 @@ void fwinText::OnDraw(wxDC &dc)
             double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
             pixelsPerPoint = em/fmEm;
             fixedPitch->SetPointSize(10);
-            dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedAlternate);
+            dc.GetTextExtent((wchar_t)0x21d0, &width, &height, &depth, &leading, fixedAlternate);
             FWIN_LOG("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
             dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
             FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
@@ -3815,7 +3826,6 @@ void fwinText::OnDraw(wxDC &dc)
         else caret->SetSize(2, rowHeight);
         repositionCaret();
 
-        SetVirtualSize(wxSize(window.GetWidth(), 1000)); // @@@
 #if 0
 // Now I need to re-size any fonts that have already been created
         for (int i=0; i<MAX_FONTS; i++)
@@ -3825,62 +3835,71 @@ void fwinText::OnDraw(wxDC &dc)
             ff->Scale(scaleAdjustment*fontScale[i]);
         }
 #endif
+        SetScrollRate(0, rowHeight);
+        SetVirtualSize(wxDefaultCoord, 500*rowHeight);
         firstPaint = false;
     }
+
+
+    wxRect updateRegion = GetUpdateRegion().GetBox();
+    CalcUnscrolledPosition(updateRegion.x, updateRegion.y,
+                           &updateRegion.x, &updateRegion.y);
+    int firstUpdateLine = updateRegion.y/rowHeight;
+    int lastUpdateLine = updateRegion.GetBottom()/rowHeight;
+    FWIN_LOG("first = %d last = %d\n", firstUpdateLine, lastUpdateLine);
+
+
     dc.SetFont(*fixedPitch);
 #define FONT_CMTT  0
 #define FONT_DEJA  1
 #define FONT_CJK   2
-    int currentFont = FONT_CMTT;
-    int p = firstVisibleRow;
-    int row = 0, col = 0;
-    lastVisibleRow = firstVisibleRow;
+    currentFont = FONT_CMTT;
+    int p = 0;
+    int y = 0;
     while (p<textEnd)
+    {   p = DrawTextRow(dc, y, p);
+        y += rowHeight;
+    }
+}
+
+
+int fwinText::DrawTextRow(wxDC &dc, int y, int p)
+{
+    int col = 0;
+    while (p < textEnd)
     {   uint32_t ch = textBuffer[p++];
-        if ((ch & 0x001fffff) == '\n')
-        {   dc.DrawRectangle(columnPos[col], row*rowHeight,
-                             columnPos[80]-columnPos[col], rowHeight);
-            col = 0;
-            row++;
-            if (row*rowHeight > window.GetHeight()) break;
-            lastVisibleRow = p;
-            continue;
-        }
+        uint32_t flags = ch & ~0x001fffff;
+        ch &= 0x001fffff;
+        if (ch == '\n') return p;
 // a TAB can take you exactly up to column 80 but never over it. But a wide
 // character in column 79 could trigger a wrap.
         if (col == 80 ||
-            (col == 79 && double_width(ch & 0x001fffff)))
-        {   col = 0;
-            row++;
-            if (row*rowHeight > window.GetHeight()) break;
-            lastVisibleRow = p;
-        }
-        if (ch & 0x01000000)
+            (col == 79 && double_width(ch))) return p-1;
+        if (flags & 0x01000000)
         {   if (textColour != wxRED)
                 dc.SetTextForeground(*(textColour = wxRED));
         }
-        else if (ch & 0x02000000)
+        else if (flags & 0x02000000)
         {   if (textColour != wxBLUE)
                 dc.SetTextForeground(*(textColour = wxBLUE));
         }
         else if (textColour != wxBLACK)
             dc.SetTextForeground(*(textColour = wxBLACK));
         wxString cs;
-        int extraCols = 0;
 // There are a few characters that take special action on. I will comment
 // by each about what I am doing and why.
-        switch (ch & 0x001fffff)
+        switch (ch)
         {
     case 0x03d2:  // upsih
-// Code 0x3d2 is not available in cmutt, but it is in DejaVi. However in
+// Code 0x3d2 is not available in cmutt, but it is in DejaVu. However in
 // cmuntt the normal capital Upsilon comes out curly, so I merely map the
 // code onto that.
-            ch = 0x03a5;
+            if (fontPriorityCMTT) ch = 0x03a5;
             break;
     case 0x03a5:  // upsilon
 // Well as explained above, the cmuntt capital Upsilon is a curly one, and
 // I want a non-curly version here. A capital Y provides the correct shape.
-            ch = 'Y';
+            if (fontPriorityCMTT) ch = 'Y';
             break;
     case 0x2118:  // weierp
 // There is no script capital P in any of the fonts I am using at present,
@@ -3892,7 +3911,7 @@ void fwinText::OnDraw(wxDC &dc)
                 currentFont = FONT_CMTT;
             }
             cs = (wchar_t)ch;
-            dc.DrawText(cs, columnPos[col], rowHeight*row);
+            dc.DrawText(cs, columnPos[col], y);
             col++;
             continue;
     case 0x2111:  // image
@@ -3905,8 +3924,10 @@ void fwinText::OnDraw(wxDC &dc)
             ch = 0x0280;
             break;
     case 0x2135:  // alefsym
-            {   int x = columnPos[col], y = rowHeight*row;
+            {   int x = columnPos[col];
                 int w = columnPos[col+1]-x, h = rowHeight;
+                wxPen p1 = dc.GetPen();
+                wxPen p2;
                 p2.SetColour(*textColour);
                 p2.SetWidth((7*rowHeight+80)/100);
                 dc.SetPen(p2);
@@ -3930,42 +3951,48 @@ void fwinText::OnDraw(wxDC &dc)
             break;
         }
 // I convert TAB into a suitable sequence of spaces.
-        if ((ch & 0x001fffff) == '\t')
-        {   wxString spaces[8] =
-            {   wxT(" "), wxT("  "), wxT("   "), wxT("    "), wxT("     "),
-                wxT("      "), wxT("       "), wxT("        ")
-            };
-            extraCols = 7 - (col&7); 
-            cs = spaces[extraCols];
-            extraCols |= 0x100;
+        if (ch == '\t')
+        {   col = (col + 8) & ~7 ;
+            continue;
         }
-        else if ((ch & 0x001fffff) == 0x20) cs = wxT(" ");
+        else if (ch == 0x20)
+        {   col++;
+            continue;
+        }
 // I will not even try to display characters whose code is over 0xffff here.
 // I will map any such onto a display of a question mark.
-        else if ((ch & 0x001fffff) > 0xffff) cs = "?";
-        else cs = (wchar_t)(ch & 0x001fffff);
-        if (CMTT_AVAIL(ch & 0x001fffff))
+        else if (ch > 0xffff) cs = "?";
+        else cs = (wchar_t)ch;
+        if (fontPriorityCMTT && CMTT_AVAIL(ch))
         {   if (currentFont != FONT_CMTT)
             {   dc.SetFont(*fixedPitch);
                 currentFont = FONT_CMTT;
             }
         }
-        else if (DEJA_AVAIL(ch & 0x001fffff))
+        else if (DEJA_AVAIL(ch))
         {   if (currentFont != FONT_DEJA)
             {   dc.SetFont(*fixedAlternate);
                 currentFont = FONT_DEJA;
+            }
+        }
+        else if (!fontPriorityCMTT && CMTT_AVAIL(ch))
+        {   if (currentFont != FONT_CMTT)
+            {   dc.SetFont(*fixedPitch);
+                currentFont = FONT_CMTT;
             }
         }
         else if (currentFont != FONT_CJK)
         {   dc.SetFont(*fixedCJK);
             currentFont = FONT_CJK;
         }
+        dc.DrawText(cs, columnPos[col], y);
         if (currentFont == FONT_CJK &&
-            (ch & 0x001fffff) >= 0x2000) extraCols = 1;
-        dc.DrawText(cs, columnPos[col], rowHeight*row);
-        col = col + (extraCols & 0xff) + 1;
+            ch >= 0x2000) col++;
+        col++;
     }
+    return p;
 }
+
 
 static char **modules_list=NULL, **switches_list=NULL;
 
