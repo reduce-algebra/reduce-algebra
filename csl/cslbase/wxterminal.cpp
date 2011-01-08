@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5abc46c0 08-Jan-2011 */
+/* Signature: 29c5cee7 08-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -4345,7 +4345,10 @@ static int update_next_time = 0;
 int fwin_getchar()
 {
     if (!windowed)
-    {   flush_line_buffer();
+    {
+#ifdef WIN32
+        flush_line_buffer();
+#endif
         return fwin_plain_getchar();
     }
 // In general I have a line of stuff ready sitting in a buffer. So on
