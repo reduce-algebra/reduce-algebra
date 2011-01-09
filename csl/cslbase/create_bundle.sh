@@ -29,19 +29,37 @@ cp $srcdir/cm-unicode/LICENSE                    $F/LICENSE.cm-unicode
 cp $srcdir/cm-unicode/README                     $F/README.cm-unicode
 cp $srcdir/cm-unicode/cmuntt.otf                 $F
 # The DejaVu Sans Mono font covers a range of characters that CMTT does not..
-cp srcdir/dejavu-fonts-ttf-2.32/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.32
-cp srcdir/dejavu-fonts-ttf-2.32/README           $F/README.dejavu-fonts-ttf-2.32
-cp srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
-cp srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
+cp $srcdir/dejavu-fonts-ttf-2.32/LICENSE          $F/LICENSE.dejavu-fonts-ttf-2.32
+cp $srcdir/dejavu-fonts-ttf-2.32/README           $F/README.dejavu-fonts-ttf-2.32
+cp $srcdir/dejavu-fonts-ttf-2.32/AUTHORS          $F/AUTHORS.dejavu-fonts-ttf-2.32
+cp $srcdir/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf $F
 # I will also use fireflysung and sazanami fonts to cover the CJK range
-cp $srcdir/fireflysung-1.3.0/fireflysung.ttf     $F
-cp $srcdir/fireflysung-1.3.0/AUTHORS             $F/AUTHORS.fireflysung
-cp $srcdir/fireflysung-1.3.0/COPYRIGHT           $F/COPYRIGHT.fireflysung
-cp -r $srcdir/fireflysung-1.3.0/license          $F/license.fireflysung
-cp $srcdir/sazanami-20040629/README              $F/README.sazanami
-cp $srcdir/sazanami-20040629/sazanami-gothic.ttf $F
-cp $srcdir/sazanami-20040629/sazanami-mincho.ttf $F
-cp -r $srcdir/sazanami-20040629/doc              $F/doc.sazanamix
+cp $srcdir/fireflysung-1.3.0/fireflysung.ttf      $F
+cp $srcdir/fireflysung-1.3.0/AUTHORS              $F/AUTHORS.fireflysung
+cp $srcdir/fireflysung-1.3.0/COPYRIGHT            $F/COPYRIGHT.fireflysung
+mkdir -p $F/license.fireflysung
+mkdir -p $F/license.fireflysung/big5
+mkdir -p $F/license.fireflysung/english
+mkdir -p $F/license.fireflysung/gb
+cp $srcdir/fireflysung-1.3.0/license/big5/ARPHICPL.TXT    $F/license.fireflysung/big5
+cp $srcdir/fireflysung-1.3.0/license/english/ARPHICPL.TXT $F/license.fireflysung/english
+cp $srcdir/fireflysung-1.3.0/license/gb/ARPHICPL.TXT      $F/license.fireflysung/gb
+cp $srcdir/sazanami-20040629/README               $F/README.sazanami
+cp $srcdir/sazanami-20040629/sazanami-gothic.ttf  $F
+cp $srcdir/sazanami-20040629/sazanami-mincho.ttf  $F
+mkdir -p $F/doc.sazanami
+mkdir -p $F/doc.sazanami/ayu
+mkdir -p $F/doc.sazanami/kappa
+mkdir -p $F/doc.sazanami/misaki
+mkdir -p $F/doc.sazanami/mplus
+mkdir -p $F/doc.sazanami/oradano
+mkdir -p $F/doc.sazanami/shinonome
+cp  $srcdir/sazanami-20040629/doc/ayu/README.txt      $F/doc.sazanami/ayu
+cp  $srcdir/sazanami-20040629/doc/kappa/README        $F/doc.sazanami/kappa
+cp  $srcdir/sazanami-20040629/doc/misaki/misakib8.txt $F/doc.sazanami/misaki
+cp  $srcdir/sazanami-20040629/doc/mplus/LICENSE_J     $F/doc.sazanami/mplus
+cp  $srcdir/sazanami-20040629/doc/oradano/README.txt  $F/doc.sazanami/oradano
+cp  $srcdir/sazanami-20040629/doc/shinonome/LICENSE   $F/doc.sazanami/shinonome
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $P
 echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $P
 echo "<plist version=\"0.9\">" >> $P

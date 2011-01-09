@@ -680,7 +680,7 @@ if mac_framework
 	echo reduce.wxfonts not used on the Mac with wxWidgets
 else !mac_framework
 	-rm -rf reduce.$(fontsdir)
-	-mkdir reduce.$(fontsdir)
+	-mkdir -p reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
@@ -699,14 +699,34 @@ else !mac_framework
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/AUTHORS reduce.$(fontsdir)/AUTHORS.dejavu-fonts-ttf-2.32
 	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf reduce.$(fontsdir)
 # I will also use fireflysung and sazanami fonts to cover the CJK range
+# I list every file I am copying individually to avoid (eg) any backups or
+# subversion admin files ending up where I do not want them.
 	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
 	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
 	$(CP) $(srcdir)/fireflysung-1.3.0/COPYRIGHT reduce.$(fontsdir)/COPYRIGHT.fireflysung
-	$(CP) -r $(srcdir)/fireflysung-1.3.0/license reduce.$(fontsdir)/license.fireflysung
+	mkdir -p reduce.$(fontsdir)/license.fireflysung
+	mkdir -p reduce.$(fontsdir)/license.fireflysung/big5
+	mkdir -p reduce.$(fontsdir)/license.fireflysung/english
+	mkdir -p reduce.$(fontsdir)/license.fireflysung/gb
+	$(CP) $(srcdir)/fireflysung-1.3.0/license/big5/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/big5
+	$(CP) $(srcdir)/fireflysung-1.3.0/license/english/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/english
+	$(CP) $(srcdir)/fireflysung-1.3.0/license/gb/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/gb
 	$(CP) $(srcdir)/sazanami-20040629/README reduce.$(fontsdir)/README.sazanami
 	$(CP) $(srcdir)/sazanami-20040629/sazanami-gothic.ttf reduce.$(fontsdir)
 	$(CP) $(srcdir)/sazanami-20040629/sazanami-mincho.ttf reduce.$(fontsdir)
-	$(CP) -r $(srcdir)/sazanami-20040629/doc reduce.$(fontsdir)/doc.sazanami
+	mkdir -p reduce.$(fontsdir)/doc.sazanami
+	mkdir -p reduce.$(fontsdir)/doc.sazanami/ayu
+	mkdir -p reduce.$(fontsdir)/doc.sazanami/kappa
+	mkdir -p reduce.$(fontsdir)/doc.sazanami/misaki
+	mkdir -p reduce.$(fontsdir)/doc.sazanami/mplus
+	mkdir -p reduce.$(fontsdir)/doc.sazanami/oradano
+	mkdir -p reduce.$(fontsdir)/doc.sazanami/shinonome
+	$(CP)  $(srcdir)/sazanami-20040629/doc/ayu/README.txt reduce.$(fontsdir)/doc.sazanami/ayu
+	$(CP)  $(srcdir)/sazanami-20040629/doc/kappa/README reduce.$(fontsdir)/doc.sazanami/kappa
+	$(CP)  $(srcdir)/sazanami-20040629/doc/misaki/misakib8.txt reduce.$(fontsdir)/doc.sazanami/misaki
+	$(CP)  $(srcdir)/sazanami-20040629/doc/mplus/LICENSE_J reduce.$(fontsdir)/doc.sazanami/mplus
+	$(CP)  $(srcdir)/sazanami-20040629/doc/oradano/README.txt reduce.$(fontsdir)/doc.sazanami/oradano
+	$(CP)  $(srcdir)/sazanami-20040629/doc/shinonome/LICENSE reduce.$(fontsdir)/doc.sazanami/shinonome
 
 endif !mac_framework
 else !wx
@@ -720,9 +740,9 @@ else !wx
 	$(CP) $(srcdir)/$(fontsdir)/*.pfa reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/fonts.dir reduce.$(fontsdir)
 	$(CP) $(srcdir)/$(fontsdir)/fonts.scale reduce.$(fontsdir)
-	-mkdir reduce.$(fontsdir)/pfmfiles
+	-mkdir -p reduce.$(fontsdir)/pfmfiles
 	$(CP) -r $(srcdir)/$(fontsdir)/pfmfiles/*.pfm reduce.$(fontsdir)/pfmfiles
-	-mkdir reduce.$(fontsdir)/src
+	-mkdir -p reduce.$(fontsdir)/src
 	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
 endif !wx
 
@@ -1158,7 +1178,7 @@ endif !canrun
 # Copy HTML help files in a directory reduce.doc
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
-	mkdir reduce.doc
+	mkdir -p reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.html reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
@@ -1432,14 +1452,14 @@ endif !win64
 if windows
 	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
-	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
 	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).zip
 else !windows
 	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
-	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 

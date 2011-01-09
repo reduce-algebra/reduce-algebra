@@ -2315,7 +2315,7 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_TRUE@@wx_TRUE@	echo reduce.wxfonts not used on the Mac with wxWidgets
 @mac_framework_FALSE@@wx_TRUE@	-rm -rf reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	-mkdir reduce.$(fontsdir)
+@mac_framework_FALSE@@wx_TRUE@	-mkdir -p reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/README reduce.$(fontsdir)/README.BaKoMa
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-AMS.Fonts reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/$(fontsdir)/BaKoMa-CM.Fonts reduce.$(fontsdir)
@@ -2334,14 +2334,34 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/AUTHORS reduce.$(fontsdir)/AUTHORS.dejavu-fonts-ttf-2.32
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/dejavu-fonts-ttf-2.32/ttf/DejaVuSansMono.ttf reduce.$(fontsdir)
 # I will also use fireflysung and sazanami fonts to cover the CJK range
+# I list every file I am copying individually to avoid (eg) any backups or
+# subversion admin files ending up where I do not want them.
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/fireflysung.ttf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/AUTHORS reduce.$(fontsdir)/AUTHORS.fireflysung
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/COPYRIGHT reduce.$(fontsdir)/COPYRIGHT.fireflysung
-@mac_framework_FALSE@@wx_TRUE@	$(CP) -r $(srcdir)/fireflysung-1.3.0/license reduce.$(fontsdir)/license.fireflysung
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung/big5
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung/english
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/license.fireflysung/gb
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/license/big5/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/big5
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/license/english/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/english
+@mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/fireflysung-1.3.0/license/gb/ARPHICPL.TXT reduce.$(fontsdir)/license.fireflysung/gb
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/sazanami-20040629/README reduce.$(fontsdir)/README.sazanami
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/sazanami-20040629/sazanami-gothic.ttf reduce.$(fontsdir)
 @mac_framework_FALSE@@wx_TRUE@	$(CP) $(srcdir)/sazanami-20040629/sazanami-mincho.ttf reduce.$(fontsdir)
-@mac_framework_FALSE@@wx_TRUE@	$(CP) -r $(srcdir)/sazanami-20040629/doc reduce.$(fontsdir)/doc.sazanami
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami/ayu
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami/kappa
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami/misaki
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami/mplus
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami/oradano
+@mac_framework_FALSE@@wx_TRUE@	mkdir -p reduce.$(fontsdir)/doc.sazanami/shinonome
+@mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/ayu/README.txt reduce.$(fontsdir)/doc.sazanami/ayu
+@mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/kappa/README reduce.$(fontsdir)/doc.sazanami/kappa
+@mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/misaki/misakib8.txt reduce.$(fontsdir)/doc.sazanami/misaki
+@mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/mplus/LICENSE_J reduce.$(fontsdir)/doc.sazanami/mplus
+@mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/oradano/README.txt reduce.$(fontsdir)/doc.sazanami/oradano
+@mac_framework_FALSE@@wx_TRUE@	$(CP)  $(srcdir)/sazanami-20040629/doc/shinonome/LICENSE reduce.$(fontsdir)/doc.sazanami/shinonome
 
 @wx_FALSE@	-rm -rf reduce.$(fontsdir)
 @wx_FALSE@	-mkdir reduce.$(fontsdir)
@@ -2353,9 +2373,9 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/*.pfa reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/fonts.dir reduce.$(fontsdir)
 @wx_FALSE@	$(CP) $(srcdir)/$(fontsdir)/fonts.scale reduce.$(fontsdir)
-@wx_FALSE@	-mkdir reduce.$(fontsdir)/pfmfiles
+@wx_FALSE@	-mkdir -p reduce.$(fontsdir)/pfmfiles
 @wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/pfmfiles/*.pfm reduce.$(fontsdir)/pfmfiles
-@wx_FALSE@	-mkdir reduce.$(fontsdir)/src
+@wx_FALSE@	-mkdir -p reduce.$(fontsdir)/src
 @wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
 
 @exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COMEXT)
@@ -2641,7 +2661,7 @@ recompile:	reduce.img
 # Copy HTML help files in a directory reduce.doc
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
-	mkdir reduce.doc
+	mkdir -p reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.html reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.tex reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
@@ -2809,12 +2829,12 @@ save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)
 @windows_TRUE@	-rm -f reduce-windows-$(shell date +%Y%m%d).zip
 @windows_TRUE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
-@windows_TRUE@	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_TRUE@	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	cp -r reduce.exe reduce.com reduce.img reduce.doc reduce.fonts *gnuplot* reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_TRUE@	zip -r reduce-$(NAME)-$(shell date +%Y%m%d).zip reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	-rm -f reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2
 @windows_FALSE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
-@windows_FALSE@	mkdir reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
