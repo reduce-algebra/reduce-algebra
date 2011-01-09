@@ -184,10 +184,41 @@ end ;
 
 % procedures multf and multfnc have to be redefined to avoid
 % contraction of terms after exptexpand
+
+% The following is an updated version by E.S. and is similiar to what we have
+% implemented in the sstools package.
+
+symbolic procedure multfnc(u,v);
+   % Returns canonical product of U and V, with both main vars non-
+   % commutative.
+   begin scalar x,y;
+      x := multf(lc u,!*t2f lt v);
+      if null x then nil
+       else if not domainp x and mvar x eq mvar u and 
+%               ((not noncomp2 mvar x) or !*contract2)
+                ((not physopp mvar x) or !*contract2)
+        then x := addf(if null (y := mkspm(mvar u,ldeg u+ldeg x))
+                         then nil
+                        else if y = 1 then lc x
+                        else !*t2f(y .* lc x),
+                       multf(!*p2f lpow u,red x))
+       else if noncomp2 mvar u 
+               then if null noncommuting(mvar u,mvar x) and null ordop(mvar u,mvar x)
+                       then if null(y := multf(!*p2f lpow u,lc x))
+                              then x := multf(!*p2f lpow u,red x)
+                             else x := addf(!*t2f(lpow x .* y),
+                                            multf(!*p2f lpow u,red x))
+                     else x := !*t2f(lpow u .* x)
+       else x := multf(!*p2f lpow u,x) where !*!*processed=t;
+      return addf(x,addf(multf(red u,v),multf(!*t2f lt u,red v)))
+   end;
+
+%% This function could be further cleaned up. E.S.
+
 symbolic procedure multf(u,v); % changed
    %U and V are standard forms.
    %Value is standard form for U*V;
-   begin scalar ncmp,x,y;
+   begin scalar x,y;
     a:  if null u or null v then return nil
          else if u=1 then return v     % ONEP
          else if v=1 then return u     % ONEP
@@ -198,10 +229,12 @@ symbolic procedure multf(u,v); % changed
         x := mvar u;
         y := mvar v;
 %       if (ncmp := noncomp y) and noncomp x then return multfnc(u,v)
-        if noncommuting(x,y) then return multfnc(u,v)
+        if noncomp2f v and (noncomp2 x or null !*!*processed) then return multfnc(u,v)
+%       if noncommuting(x,y) and null !*!*processed then return multfnc(u,v)
 %    we have to put this clause here to prevent evaluation in case
 %    of equal main vars
-        else if noncommutingf(y, lc u) or (ordop(x,y) and (x neq y))
+        else if %noncommutingf(y, lc u) or  %noncommutingf shouldn't be necessary.
+                (ordop(x,y) and (x neq y))
           then << x := multf(lc u,v);
                  y := multf(red u,v);
                  return if null x then y else lpow u .* x .+ y>>
@@ -221,25 +254,9 @@ symbolic procedure multf(u,v); % changed
        return if null x then y else lpow v .* x .+ y
    end;
 
-symbolic procedure multfnc(u,v);
-   %returns canonical product of U and V, with both main vars non-
-   %commutative;
-   begin scalar x,y;
-      x := multf(lc u,!*t2f lt v);
-        if null x
-          then return addf(multf(red u,v),multf(!*t2f lt u,red v));
-   % switch contract added here to avoid contraction of equal powers
-   % used by PHYSOP
-      return addf((if not domainp x and (mvar x = mvar u) and
-                    ((not physopp mvar x) or !*contract2)
-                    then addf(if null (y := mkspm(mvar u,ldeg u+ldeg v))
-                                then nil
-                               else if y = 1 then lc x
-                               else !*t2f(y .* lc x),
-                            multf(!*p2f lpow u,red x))
-                    else !*t2f(lpow u .* x)),
-                  addf(multf(red u,v),multf(!*t2f lt u,red v)))
-   end;
+symbolic procedure noncomp2f u;
+ if domainp u then nil
+  else noncomp2 mvar u or noncomp2f lc u or noncomp2f red u;
 
 symbolic procedure opmtch!* u;
 % same as opmtch but turns subfg!* on
