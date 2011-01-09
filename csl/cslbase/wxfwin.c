@@ -718,7 +718,7 @@ int fwin_startup(int argc, char *argv[], fwin_entrypoint *fwin_main)
  */
                 if (fwin_logfile != NULL)
                 {   fclose(fwin_logfile);
-                    logfile = NULL;
+                    fwin_logfile = NULL;
                 }
 #endif
                 nargs[0] = "/usr/bin/open";
