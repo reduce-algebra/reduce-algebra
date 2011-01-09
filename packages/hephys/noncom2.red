@@ -427,49 +427,10 @@ if null v or null u then nil
 else noncommutingsp(u,car v) or noncommuting!_splist(u,cdr v);
 
 
-%----------------------------------%
-% modified multiplication routine  %
-%----------------------------------%
-symbolic procedure multf(u,v); % changed
-   %u and v are standard forms.
-   %value is standard form for u*v;
-   begin scalar ncmp,x,y;
-    a:  if null u or null v then return nil
-         else if u=1 then return v     % onep
-         else if v=1 then return u     % onep
-         else if domainp u then return multd(u,v)
-         else if domainp v then return multd(v,u)
-         else if not(!*exp or ncmp!* or wtl!* or x)
-          then <<u := mkprod u; v := mkprod v; x := t; go to a>>;
-        x := mvar u;
-        y := mvar v;
-%  the following line has been replaced
-%       if (ncmp:= noncomp2 y) and noncomp2 x then return multfnc(u,v)
-        if noncommuting(x,y) then return multfnc(u,v)
-%    we have to put this clause here to prevent evaluation in case
-%    of equal main vars
-        else if noncommutingf(y, lc u) or (ordop(x,y) and (x neq y))
-          then << x := multf(lc u,v);
-                 y := multf(red u,v);
-                 return if null x then y else lpow u .* x .+ y>>
-         else if x eq y
-         % two forms have the same mvars
-          then << x := mkspm(x,ldeg u+ldeg v);
-          y := addf(multf(red u,v),multf(!*t2f lt u,red v));
-                 return if null x or null(u := multf(lc u,lc v))
-                    then <<!*asymp!* := t; y>>
-                   else if x=1 then addf(u,y)
-                   else if null !*mcd then addf(!*t2f(x .* u),y)
-                   else x .* u .+ y>>;
-        x := multf(u,lc v);
-        y := multf(u,red v);
-       return if null x then y else lpow v .* x .+ y
-   end;
 
 %--------------------------------------------%
 % procedures for ordering of expressions     %
 %--------------------------------------------%
-
 
 
 symbolic procedure ordp(u,v); % modified
