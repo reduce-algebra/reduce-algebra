@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 29c5cee7 08-Jan-2011 */
+/* Signature: 316d1cf7 09-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -278,6 +278,8 @@ public:
     void OnDraw(wxDC &dc);
 
     void OnChar(wxKeyEvent &event);
+    void OnKeyDown(wxKeyEvent &event);
+    void processChar(int c, int r, int m);
     void OnMouse(wxMouseEvent &event);
     void OnSetFocus(wxFocusEvent &event);
     void OnKillFocus(wxFocusEvent &event);
@@ -502,6 +504,7 @@ private:
 
 BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
     EVT_CHAR(                     fwinText::OnChar)
+    EVT_KEY_DOWN(                 fwinText::OnKeyDown)
     EVT_LEFT_UP(                  fwinText::OnMouse)
     EVT_SET_FOCUS(                fwinText::OnSetFocus)
     EVT_KILL_FOCUS(               fwinText::OnKillFocus)
@@ -2736,13 +2739,73 @@ void fwinText::enlargeTextBuffer()
     if (textBuffer == NULL) exit(1); // Abrupt collapse on no memory.
 }
 
+// Hmmm - on the Macintosh I find that the arrow keys and regular keys
+// with ALT or CTRL set do not generate an OnChar event, only a KeyDown one.
+// Or when they do the purported Unicode value is not hat I want.
+// On Windows and Linux I can do everything via OnChar, but here I patch
+// things up for "the awkward platform".
+
+void fwinText::OnKeyDown(wxKeyEvent &event)
+{
+    uint32_t c = event.GetUnicodeKey();
+    uint32_t r = event.GetKeyCode();
+    uint32_t m = event.GetModifiers();
+//-    FWIN_LOG("SHIFT=%x ALT=%x META=%x CONTROL=%x\n",
+//-       wxMOD_SHIFT, wxMOD_ALT, wxMOD_META, wxMOD_CONTROL);
+//-    FWIN_LOG("KeyDown raw:%x unicode:%x modifiers:%x\n", r, c, m);
+// I appear to get streams of OnKeyDown(0) messages that do not seem
+// helpful to me. So I will just ignore them.
+    if (r == 0)
+    {   event.Skip();
+        return;
+    }
+// Codes from 1 to 255 should be ordinary plain genuine ASCII (or extended
+// ASCII) characters and if they are presented without ALT or CTRL I will
+// leave them to be sorted out by OnChar.
+    if (r < 256 && (m & (wxMOD_ALT|wxMOD_CMD)) == 0)
+    {   event.Skip();
+//-        FWIN_LOG("leave for OnChar since real key with no modifiers\n");
+        return;
+    }
+// Next I will try to cope with ordinary characters but with ALT or CTRL.
+// In the ALT case the Unicode entry is probably already correct, so all I
+// need to do is to delegate to OnChar. Well actually I will go direct to
+// processChar.
+    if (r < 256 && (m & wxMOD_ALT) != 0)
+    {
+//-        FWIN_LOG("Char with ALT pressed\n");
+        processChar(c, r, m);
+        return;
+    }
+// If I had a normal key plus CMD I will map the unicode value to just the
+// low 5 bits.
+    if (r < 256)
+    {
+//-        FWIN_LOG("Char with CMD pressed\n");
+        processChar(r & 0x1f, r, m);
+        return;
+    }
+// Now finally I have something where the key pressed seems to be a "special"
+// one (eg function key, numeric key-pad, arrow key etc etc.
+    FWIN_LOG("make unicode WXK_NONE=%x\n", WXK_NONE);
+    processChar(WXK_NONE, r, m);
+// because I do nothing special here this has accepted and processed the
+// key event and it will not re-appear later on via OnChar.
+}
+
 void fwinText::OnChar(wxKeyEvent &event)
 {
     uint32_t c = event.GetUnicodeKey();
     uint32_t r = event.GetKeyCode();
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
-                                  // Also ALTGR, META, WIN, CONTROL
-//  FWIN_LOG("Char key:%x Unicode:%x modifiers:%x\n", c, r, m);
+                                  // Also ALTGR, META, WIN, CONTROL that
+                                  // I will not use.
+    processChar(c, r, m);
+}
+
+void fwinText::processChar(int c, int r, int m)
+{
+//-    FWIN_LOG("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m);
     uint32_t *history_string = NULL;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
