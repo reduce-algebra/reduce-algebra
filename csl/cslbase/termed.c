@@ -37,7 +37,7 @@
  */
 
 
-/* Signature: 4d95e075 05-Jan-2011 */
+/* Signature: 49405e00 11-Jan-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -547,13 +547,51 @@ static DWORD stdin_attributes, stdout_attributes;
 
 static void term_putchar(int c)
 {
+/*
+ * This can either be given a single 8 bit character r a word with its
+ * top 8 bits non-zero. In the later case it stands for 2, 3 or 4 characfters,
+ * whihc in the Windows case must be printed all at once.
+ */
 #ifdef WIN32
-    DWORD nbytes;
-    char buffer[1];
-    buffer[0] = c;
-    WriteFile(stdout_handle, buffer, 1, &nbytes, NULL);
+    DWORD nbytes = 1;
+    char buffer[4];
+    if ((c & 0xffffff00) == 0) buffer[0] = c;
+    else if ((c & 0xffff0000) == 0xffff0000)
+    {   buffer[0] = c >> 8;
+        buffer[1] = c;
+        nbytes = 2;
+    }
+    else if ((c & 0xff000000) == 0xff000000)
+    {   buffer[0] = c >> 16;
+        buffer[1] = c >> 8;
+        buffer[2] = c;
+        nbytes = 3;
+    }
+    else
+    {   buffer[0] = c >> 24;
+        buffer[1] = c >> 16;
+        buffer[2] = c >> 8;
+        buffer[3] = c;
+        nbytes = 3;
+    }
+    WriteFile(stdout_handle, buffer, nbytes, &nbytes, NULL);
 #else
-    putchar(c);
+    if ((c & 0xffffff00) == 0) putchar(c);
+    else if ((c & 0xffff0000) == 0xffff0000)
+    {   putchar(c >> 8);
+        putchar(c);
+    }
+    else if ((c & 0xff000000) == 0xff000000)
+    {   putchar(c >> 16);
+        putchar(c >> 8);
+        putchar(c);
+    }
+    else
+    {   putchar(c >> 24);
+        putchar(c >> 16);
+        putchar(c >> 8);
+        putchar(c);
+    }
 #endif
 }
 
@@ -1359,11 +1397,46 @@ static void term_bell(void)
 
 /*
  * line_wrap() is a part of refresh_display(), and it prints a character
- * taking care of line-wrapping.
+ * taking care of line-wrapping. It also needs to cope a bit with
+ * multi-byte characters.
  */
+
+static int pending = 0;
 
 static int line_wrap(int ch, int tab_offset)
 {
+    ch &= 0xff; /* Just to be on the safe side, in case char type is signed */
+    switch (ch & 0xf0)
+    {
+case 0x80:
+case 0x90:
+case 0xa0:
+case 0xb0:
+        /* A continuation character */
+        pending = (pending << 8) | ch;
+        if ((pending & 0xff000000) != 0)
+        {   ch = pending;
+            pending = 0;
+            break;
+        }
+        return tab_offset;
+case 0xc0:
+case 0xd0:
+        /* Start of 2-byte sequence */
+        pending = 0x00ffff00 | ch;
+        return tab_offset;
+case 0xe0:
+        /* Start of 3-byte sequence */
+        pending = 0x0000ff00 | ch;
+        return tab_offset;
+case 0xf0:
+        /* Start of 4 byte sequence */
+        pending = ch & 0xf7; /* clean it up just in case */
+        return tab_offset;
+default:
+        pending = 0;
+        break;
+    }
     cursorx++;
     if (cursorx >= columns)
     {   tab_offset += cursorx;
@@ -1490,8 +1563,7 @@ static void refresh_display(void)
             finy++;
         }
         else if (ch < 0x20) finx += 2;
-        else if (ch < 0x7f) finx += 1;
-        else finx += 4;
+        else if ((ch & 0xc0) != 0x80) finx += 1; /* continuation byte */
         if (finx >= columns)
         {   tab_offset += finx;
             finx -= columns;
@@ -1568,19 +1640,15 @@ static void refresh_display(void)
             /* Turn into @, A, B etc */
             tab_offset = line_wrap(ch | 0x40, tab_offset);
         }
-        else if (ch <= 0x7f) tab_offset = line_wrap(ch, tab_offset);
-        else
-        {   char b[5];
 /*
- * Characters from 0x7f to 0xff are displayed as "[dd]" with 2 hex digits.
- * This may not be a universal standard notation and it does mean that any
- * characters in that range that are desirable (eg maybe some accented
- * letters) do not get displayed. But it avoids risk of
+ * Well bytes in the range 0x80 to 0xff should be viewed here as part of
+ * multi-byte characters. That gives two severe issues for line_wrap etc -
+ * the first is that several bytes will end up counting as only one column.
+ * The second is that at least on Windows it seems to be vital to print
+ * all bytes of a multi-byte characters at once for there to be even a chance
+ * of it being recognised.
  */
-            int j;
-            sprintf(b, "[%.2x]", ch);
-            for (j=0; j<4; j++) tab_offset = line_wrap(b[j], tab_offset);
-        }
+        else tab_offset = line_wrap(ch, tab_offset);
     }
 /*
  * Clear inverse video mode.

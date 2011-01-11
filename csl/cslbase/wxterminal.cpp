@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 316d1cf7 09-Jan-2011 */
+/* Signature: 3a04a761 11-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -372,6 +372,8 @@ private:
 // caretPos is between zero and textEnd (inclusive) and denotes a position
 // between two characters where insertion might happen.
     uint32_t *textBuffer;
+// Only the bottom 21 bits are genuine character data...
+#define TXT(n) (textBuffer[n] & 0x001fffff)
     int textBufferSize;
     void enlargeTextBuffer();
 //
@@ -385,7 +387,7 @@ private:
 //
     wxCaret *caret;
     int caretPos;
-    void repositionCaret(int w=-1, int r=0, int c=0);
+    void repositionCaret(int w=0, int r=0, int c=0);
     int32_t locateChar(int p, int w=0, int r=0, int c=0);
 // The result handed back by locateChar is a packed (row,column) pair.
 // It indicates the location the character would start on the screen apart
@@ -395,6 +397,7 @@ private:
 #define COL(n)     ((n) & 0xffff)
 
     int DrawTextRow(wxDC &dc, int y, int pos);
+    int SkipTextRow(int pos);
     int textEnd; 
     int rowHeight, rowCount;
     int historyNumber;
@@ -428,9 +431,10 @@ private:
 
     void beep();
     void insertChar(uint32_t ch);
-    void insertChars(uint32_t *s, int len);
     void insertString(wxString s);
-    void appendText(char *s, int len);
+    void insertChars(uint32_t *s, int len);
+    void replaceChars(uint32_t *s, int len);
+    void deleteChars(int len);
     void insertNewline();
     void deleteForwards(int n);
     void deleteBackwards(int n);
@@ -1668,11 +1672,11 @@ void fwinText::setSelectionMark()
 void fwinText::moveLineStart()
 {
     if (caretPos==textEnd && caretPos!=0) caretPos--;
-    else if (caretPos==0 || textBuffer[caretPos] == '\n')  // already at start of line
+    if (caretPos==0 || TXT(caretPos) == '\n')  // already at start of line
     {   beep();
         return;
     }
-    while (caretPos>=0 && textBuffer[caretPos] != '\n') caretPos--;
+    while (caretPos>=0 && TXT(caretPos) != '\n') caretPos--;
     caretPos++;
     repositionCaret();
 }
@@ -1703,12 +1707,12 @@ void fwinText::moveWordLeft()
     for (;;)  // back at least one char and over any whitespace
     {   caretPos--;
         if (caretPos < 0) break;
-        wxUniChar ch = textBuffer[caretPos] & 0x001fffff;
+        wxUniChar ch = TXT(caretPos);
         if (!wxIsspace(ch)) break;
     }
     for (;;)
     {   if (caretPos < 0) break;
-        wxUniChar ch = textBuffer[caretPos] & 0x001fffff;
+        wxUniChar ch = TXT(caretPos);
         if (wxIsspace(ch)) break;
         caretPos--;
     }
@@ -1758,14 +1762,7 @@ void fwinText::capitalize()
 
 void fwinText::deleteForwards(int n)
 {
-    int w = caretPos;
-    while (w <= textEnd-n)
-    {   textBuffer[w] = textBuffer[w+n];
-        w++;
-    }
-    textEnd -= n;
-    Refresh(); // I can do a LOT better than this! See insertChar for the
-               // sort of logic to employ.
+    deleteChars(n);
     repositionCaret();
 }
 
@@ -1841,14 +1838,7 @@ void fwinText::displayBacktrace()
 void fwinText::deleteBackwards(int n)
 {
     caretPos -= n;
-    int w = caretPos;
-    while (w <= textEnd-n)
-    {   textBuffer[w] = textBuffer[w+n];
-        w++;
-    }
-    textEnd -= n;
-    Refresh(); // I can do a LOT better than this! See insertChar for the
-               // sort of logic to employ.
+    deleteChars(n);
     repositionCaret();
 }
 
@@ -2319,14 +2309,15 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 // Fortunately the treatment of tabs gives a start to how I handle such.
 
 // Well at one stage I tried to restrict my search to the section of text
-// actually visible on the screen. Howver the proper model now is that the
-/// text is a single huge buffer and scrolling causes just a biot of it to
+// actually visible on the screen. However the proper model now is that the
+/// text is a single huge buffer and scrolling causes just a bit of it to
 // be displayed but coordinates here should relate to the full buffer. So it
 // USED to be the case that I started w off as firstVisibleRow. But now I
-// start off at trhe start of the buffer.
+// start off at the start of the buffer. At some stage if I am keen I will
+// arrange an index that lets me skip lines or rows fast.
     if (w == -1) w = 0;
     while (w != p)
-    {   uint32_t ch = textBuffer[w] & 0x001fffff;
+    {   uint32_t ch = TXT(w);
         int wide = double_width(ch);
 // The characters processed within this loop are all BEFORE the one I am
 // interested in, and so I process tabs, newlines and line-wrap.
@@ -2363,6 +2354,8 @@ void fwinText::insertChar(uint32_t ch)
 void fwinText::insertString(wxString s)
 {
     size_t n = s.Len();
+// insertString has a LIMITED capability as regarsd the string length.
+// it is probably onnly really intended for debugging use.
     if (n > 100)
     {   FWIN_LOG("Truncating in insertString\n");
         n = 100;
@@ -2372,6 +2365,16 @@ void fwinText::insertString(wxString s)
     insertChars(b, (int)n);
 }
 
+// I rather believe that all edits can be brought down to combinations
+// of three fundamental ways to update the screen - so if I implement those
+// and get the corresponding screen update arrangements correct I should
+// be in good shape:
+//   insertChars(characters, n)  insert n characters just after the caret
+//   deleteChars(n)              delete n characters after the caret
+//   replaceChars(characters, n) replace characters just after the caret.
+// both insert and replace will move the caret to a position after the
+// new material.
+
 void fwinText::insertChars(uint32_t *pch, int n)
 {
     int32_t loc1 = locateChar(caretPos);
@@ -2379,8 +2382,10 @@ void fwinText::insertChars(uint32_t *pch, int n)
 // I find the location of the end of the line that the character I am
 // about to insert will be on.
     int lineEnd = caretPos;
-    while (lineEnd < textEnd && textBuffer[lineEnd]!='\n') lineEnd++;
+    while (lineEnd < textEnd && TXT(lineEnd) != '\n')
+        lineEnd++;
     int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
+    int r2 = ROW(loc2), c2 = COL(loc2);
     int p = textEnd+n;
     if (p >= textBufferSize) enlargeTextBuffer();
 // In my terminal I will only ever be inserting within a "single line", and
@@ -2397,48 +2402,94 @@ void fwinText::insertChars(uint32_t *pch, int n)
     for (int i=0; i<n; i++) textBuffer[caretPos+i] = pch[i];
 // After inserting the character I look to find where the end of the
 // line that it is on has moved to.
-    int32_t loc3 = locateChar(lineEnd+1, caretPos, r1, c1);
+    int32_t loc3 = locateChar(lineEnd+n, caretPos, r1, c1);
+    int r3 = ROW(loc3), c3 = COL(loc3);
     caretPos += n;
     textEnd += n;
     if (caret != NULL && caret->IsVisible()) repositionCaret();
-    Refresh();
-    return; // cop-out for now!
-
-// what follows is a sketch of MUCH better refresh control.
-
-
+// When I end up with coordinated I need them to reflect scrolling.
+    int x = 0, y = r1*rowHeight;
+    CalcScrolledPosition(x, y, &x, &y);
 // Now I certainly need to refresh from loc1 to loc3, but if
 // ROW(loc2) != ROW(loc3) then my insert caused a change in the number of
 // rows to be displayed so I should refresh all the way down to the bottom
 // of the screen.
-    if (r1 == ROW(loc3))             // everything is on one line
-    {   RefreshRect(wxRect(columnPos[c1], r1*rowHeight,
-                           columnPos[COL(loc3)], rowHeight));
+    if (r1 == r3)             // everything is on one line
+    {   RefreshRect(wxRect(columnPos[c1], y,
+                           columnPos[c3], rowHeight));
     }
-    else if (loc2>0 &&               // loc2 is on the screen, several
-             ROW(loc2) == ROW(loc3)) // rows involved, but row count unchanged
-    {   RefreshRect(wxRect(columnPos[c1], r1*rowHeight,
+    else if (r2 == r3)        // several rows involved, but row count unchanged
+    {   RefreshRect(wxRect(columnPos[c1], y,
                            columnPos[80], rowHeight));
 // Here I will refresh the first row from caretPos up until its end,
 // and the whole of all other rows that might be involved. 
-        RefreshRect(wxRect(columnPos[0], (r1+1)*rowHeight,
-                           columnPos[80], (ROW(loc2)-r1)*rowHeight));
+        RefreshRect(wxRect(columnPos[0], y+rowHeight,
+                           columnPos[80], (r2-r1)*rowHeight));
     }
     else                             // lower bits of screen must scroll
-    {   RefreshRect(wxRect(columnPos[c1], r1*rowHeight,
+    {   RefreshRect(wxRect(columnPos[c1], y,
                            columnPos[80], rowHeight));
 // In inserting this character inserted a newline or caused extra wrapping
 // I will refresh all the way down to the bottom of the screen.
-        RefreshRect(wxRect(columnPos[0], (r1+1)*rowHeight,
+        RefreshRect(wxRect(columnPos[0], y+rowHeight,
                            columnPos[80], (rowCount-r1-1)*rowHeight));
     }
-// Finally I will re-position the caret. Well it could be that somehow
-// somebody got to insert characters before the window has been painted,
-// and in that case the caret might not have been created, so I filter
-// that case out. And also if by some mischance the window does not have
-// the focus I will have hidden the caret so I do not mess with it.
 }
 
+void fwinText::replaceChars(uint32_t *pch, int n)
+{
+}
+
+void fwinText::deleteChars(int n)
+{
+    int32_t loc1 = locateChar(caretPos);
+    int r1 = ROW(loc1), c1 = COL(loc1);
+    int eol = caretPos+n;
+// Find the line-end just beyond all the deleted characters.
+// to the end of the line that the caret is on fall.
+    while (eol < textEnd && TXT(eol) != '\n') eol++;
+    int32_t loc2 = locateChar(eol, caretPos, r1, c1);
+    int r2 = ROW(loc2), c2 = COL(loc2);
+    int w = caretPos;
+    while (w <= textEnd-n)
+    {   textBuffer[w] = textBuffer[w+n];
+        w++;
+    }
+    textEnd -= n;
+    eol -= n;
+    int32_t loc3 = locateChar(eol, caretPos, r1, c1);
+    int r3 = ROW(loc3), c3 = COL(loc3);
+// Apply scroll adjustment. Since I never scroll horizontally the x coordinate
+// is not an issue.
+    int x = 0, y = rowHeight*r1;
+    CalcScrolledPosition(x, y, &x, &y);
+// If r2==r3 then the total number of rows in the display has not changed and
+// so I just need to refresh from r1 to r2. If in that case r1=r2 I can do
+// a refresh of just the end of the line that changed.
+// Otherwise it has changed and I must refresh down to the bottom on the
+// screen.
+// This can still refresh a larger region than is necessary. Two examples:
+// (a) Suppose the text is a long string of identical characters - then
+//     when a few are deleted the data that moves into the vacated space does
+//     not in fact alter anything.
+// (b) If you have say 4 characters then a tab, and delete two of those
+//     four characters then everythikng beyond the tab remains in the position
+//     it started in.
+    if (r2 == r3 && r1 == r2)
+    {   RefreshRect(wxRect(columnPos[c1], y,
+                           columnPos[c2]-columnPos[c1], rowHeight));
+    }
+    else if (r2 == r3)
+    {   RefreshRect(wxRect(columnPos[c1], y,
+                           columnPos[80]-columnPos[c1], rowHeight));
+        RefreshRect(wxRect(columnPos[0], y+rowHeight,
+                           columnPos[80], (r2-r1)*rowHeight));
+    }
+    else
+    {   RefreshRect(wxRect(columnPos[0], r1*rowHeight,
+                           columnPos[80], (rowCount-r1)*rowHeight));
+    }
+}
 
 
 void fwinText::makePositionVisible(int p)
@@ -2487,7 +2538,7 @@ void fwinText::unicodeInput()
 // but is up to 10 chars before it.
     while (n >= 0 &&
            k < 10 &&
-           (textBuffer[n] & 0x001fffff) != '\n' &&
+           TXT(n) != '\n' &&
            (textBuffer[n] & 0x03000000) == 0x01000000) k++, n--;
     n++;
     insert_point = 0;
@@ -2787,7 +2838,7 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
     }
 // Now finally I have something where the key pressed seems to be a "special"
 // one (eg function key, numeric key-pad, arrow key etc etc.
-    FWIN_LOG("make unicode WXK_NONE=%x\n", WXK_NONE);
+//-    FWIN_LOG("make unicode WXK_NONE=%x\n", WXK_NONE);
     processChar(WXK_NONE, r, m);
 // because I do nothing special here this has accepted and processed the
 // key event and it will not re-appear later on via OnChar.
@@ -3907,10 +3958,8 @@ void fwinText::OnDraw(wxDC &dc)
     wxRect updateRegion = GetUpdateRegion().GetBox();
     CalcUnscrolledPosition(updateRegion.x, updateRegion.y,
                            &updateRegion.x, &updateRegion.y);
-    int firstUpdateLine = updateRegion.y/rowHeight;
-    int lastUpdateLine = updateRegion.GetBottom()/rowHeight;
-    FWIN_LOG("first = %d last = %d\n", firstUpdateLine, lastUpdateLine);
-
+    int firstUpdateRow = updateRegion.y/rowHeight;
+    int lastUpdateRow = updateRegion.GetBottom()/rowHeight;
 
     dc.SetFont(*fixedPitch);
 #define FONT_CMTT  0
@@ -3919,12 +3968,36 @@ void fwinText::OnDraw(wxDC &dc)
     currentFont = FONT_CMTT;
     int p = 0;
     int y = 0;
-    while (p<textEnd)
-    {   p = DrawTextRow(dc, y, p);
+    int linecount = 0;
+    while (p<textEnd && linecount <= lastUpdateRow)
+    {   if (linecount < firstUpdateRow) p = SkipTextRow(p);
+        else p = DrawTextRow(dc, y, p);
         y += rowHeight;
+        linecount++;
     }
 }
 
+
+int fwinText::SkipTextRow(int p)
+{
+    int col = 0;
+    while (p < textEnd)
+    {   uint32_t ch = TXT(p++);
+        if (ch == '\n') return p;
+// a TAB can take you exactly up to column 80 but never over it. But a wide
+// character in column 79 could trigger a wrap.
+        if (col == 80 ||
+            (col == 79 && double_width(ch))) return p-1;
+// I convert TAB into a suitable sequence of spaces.
+        if (ch == '\t')
+        {   col = (col + 8) & ~7 ;
+            continue;
+        }
+        if (double_width(ch)) col += 2;
+        else col++;
+    }
+    return p;
+}
 
 int fwinText::DrawTextRow(wxDC &dc, int y, int p)
 {

@@ -40,7 +40,7 @@
 
 
 
-/* Signature: 6e47b91d 14-Aug-2008 */
+/* Signature: 632ee63f 11-Jan-2011 */
 
 /*
  * To the extent that (a) it is convenient and (b) that I have completed
@@ -216,6 +216,7 @@ int main(int argc, char *argv[])
             {   int ch = *d++ & 0xff;
                 if (ch < 0x20) printf("^%c", ch | 0x40);
                 else if (ch < 0x7f) putchar(ch);
+/* In this echo I display multi-byte chars as the sequence of chars */
                 else printf("[%.2x]", ch);
             }
             printf(">\n");
