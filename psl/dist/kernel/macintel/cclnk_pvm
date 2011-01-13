@@ -1,7 +1,0 @@
-rm bpsl_pvm
-		 
-cc -DBPSSIZE=20000000 -o bpsl_pvm bps.c bpsheap.c echo.c file-status.c float.c \
-   os-hooks.c pslextras.c pwd-fn.c sigs.c unix-io.c pvmextras.c \
-   pslsocket.c \
-   -DLINUX main_pvm.o dmain_pvm.o -L/usr/share/pvm3/lib/LINUX/ -lpvm3 -lgpvm3 -lm 
-

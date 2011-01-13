@@ -74,7 +74,10 @@ cp -r ../$host/Makefile .
 cp ../../psl/dist/nonkernel/$MACHINE/lap/* psl
 cp ../../psl/dist/lap/$MACHINE/* psl
 cp ../../psl/dist/kernel/$MACHINE/bpsl psl/
-rm -f red/*.img
+if test "../../psl/dist/kernel/$MACHINE/bpsl" -nt "red/bootstrap.img"
+   then
+    rm red/bootstrap.img
+fi
 touch ../../psl/mkreduce
 cp psl/nbig32.b psl/zbig.b
 rm -f psl/*rlisp*.b

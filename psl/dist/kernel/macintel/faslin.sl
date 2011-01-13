@@ -79,7 +79,8 @@
     % Read the bit table
     (setf bit-table-size (binaryread fid))
     (setq bit-table (mkwrds (gtwrds bit-table-size)))
-    (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
+%   (binaryreadblock fid (loc (words-fetch bit-table 0)) bit-table-size)
+    (binaryreadblock fid (wplus2 4 (inf bit-table)) bit-table-size)
 
     % Close the file
     (binaryclose fid)
@@ -109,7 +110,8 @@
 				addressingunitsperitem)))
     (for (from i 0 (wdifference code-au-size 1)) 
 	 (do 
-	  (let ((bit-table-entry  (bittable (loc (words-fetch bit-table 0)) i))   %%% HACK!
+	  (let ((bit-table-entry %(bittable (loc (words-fetch bit-table 0)) i))   %%% HACK!
+			 (bittable (wplus2 4 (inf bit-table)) i))   
 		(code-location    (wplus2 code-base i)))
 	    (case bit-table-entry
 	      ((reloc-word)

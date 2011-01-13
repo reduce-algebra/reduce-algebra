@@ -9,8 +9,7 @@
 % Package:      
 % Status:       Experimental (Do Not Distribute)
 %
-% (c) Copyright 1983, Hewlett-Packard Company, see the file
-%            HP_disclaimer at the root of the PSL file tree
+% (c) Copyright 1984, Hewlett-Packard Company, all rights reserved.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -19,7 +18,7 @@
 
 (fluid '(system_list*))
 
-(setq system_list* '(Intel386 i386 sun386i unix ieee psl))
+(setq system_list* '(mac/os Intel386 psl  unix ieee))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MACHINE DEPENDENT CONSTANTS FOR THE MC68000                           %

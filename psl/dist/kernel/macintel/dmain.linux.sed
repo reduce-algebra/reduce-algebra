@@ -21,4 +21,4 @@ s/L0/MZL0/g
 s/_old_/_old/g
 s/main/_psl_main/g
 s/hashtable/_hashtable/g
-
+s/symval/_symval/

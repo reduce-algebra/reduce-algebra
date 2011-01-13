@@ -9,6 +9,8 @@
 % Package:
 % Status:       Experimental (Do Not Distribute)
 %
+% (c) Copyright 1989, Konrad Zuse Zentrum, all rights reserved
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (loadtime (progn
@@ -1223,8 +1225,15 @@ preload  (setq initload
      )
  
 (DE  !*ForeignLink (FunctionName  FunctionType NumberOfArguments)
+     (setq NumberOfArguments 4)
      (codedeclareexternal FunctionName)
-     (append (PNTH '((!*PUSH (REG 14)) (!*PUSH (REG 13))
+     (append '((*move (reg st) (reg t1))
+               (sub 32 (reg st))
+               (shr 4 (reg st))
+               (shl 4 (reg st))
+               (add 16 (reg st))
+               (*move (reg t1) (displacement (reg st) 4)))
+       (append (PNTH '((!*PUSH (REG 14)) (!*PUSH (REG 13))
 	     (!*PUSH (REG 12)) (!*PUSH (REG 11))
 	     (!*PUSH (REG 10)) (!*PUSH (REG  9))
 	     (!*PUSH (REG  8)) (!*PUSH (REG  7))
@@ -1236,12 +1245,8 @@ preload  (setq initload
 	   (list (list '!*move '(fluid ebxsave!*) '(reg 2))
 		 (list 'call (list 'ForeignEntry FunctionName))
 		 (list '!*move '(reg 2) '(fluid ebxsave!*)))
-	   (cond
-	((eq NumberOfArguments 0) nil)
-	((lessp NumberOfArguments 3)
-	 (list (list 'add (times 4 NumberOfArguments) '(reg st))))
-	(t
-	 (list (list 'add (times 4 NumberOfArguments) '(reg st))))
+	 (list (list '*move (list 'displacement '(reg st) 
+                    (plus 4 (times 4 NumberOfArguments))) '(reg st))))
 	))
 	   )))
  
