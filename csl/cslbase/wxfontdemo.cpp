@@ -45,7 +45,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 77310764 28-Dec-2010 */
+/* Signature: 581be6a5 13-Jan-2011 */
 
 
 
@@ -623,10 +623,11 @@ static localFonts fontNames[] =
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
-    {"cmunrm",       NULL},        {"cmunti",       NULL},
-    {"cmuntt",       NULL},
-    {"fireflysung",  NULL},
-    {"sazanami-gothic", NULL},     {"sazanami-mincho", NULL},
+    {"cmuntt",          NULL},
+    {"DejaVuSansMono",  NULL},
+    {"fireflysung",     NULL},
+    {"sazanami-gothic", NULL},
+    {"sazanami-mincho", NULL},
     {"csl-cmb10",    NULL},        {"csl-cmbsy10",  NULL},
     {"csl-cmbsy6",   NULL},        {"csl-cmbsy7",   NULL},
     {"csl-cmbsy8",   NULL},        {"csl-cmbsy9",   NULL},
@@ -794,7 +795,8 @@ int add_custom_fonts() // return 0 on success.
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name);
-        if (i < 3) strcat(nn, ".otf");
+// The first font used here is .oft the rest are .ttf
+        if (i == 0) strcat(nn, ".otf");
         else strcat(nn, ".ttf");
         char *nn1 = (char *)malloc(strlen(nn) + 1);
         strcpy(nn1, nn);

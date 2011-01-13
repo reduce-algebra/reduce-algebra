@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3a04a761 11-Jan-2011 */
+/* Signature: 0bd59298 13-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -323,17 +323,16 @@ public:
 // While the program is not asking for input any characters from the keyboard
 // will be stashed in a type-ahead buffer, But when input is asked for a
 // line will be accepted and echoed on the screen, and when ENTER is pressed
-// it will be passed on for use. The input line has its length limited by
-// the buffer here. Hmm in some cases of copy-and-paste I would imagine
-// ANY limit here being bad. But for now this is what I do!
-#define INPUT_BUFFER_LENGTH 512
-
+// it will be passed on for use.
+#define INITIAL_INPUT_BUFFER_SIZE 100
+    int inputBufferSize;
     int inputBufferLen;
     int inputBufferP;
-    char inputBuffer[INPUT_BUFFER_LENGTH];
+    char *inputBuffer;
     int awaiting;
     uint32_t unicodePrompt[MAX_PROMPT_LENGTH];
     int unicodePromptLength;
+    int promptEnd;
 
     int recently_flushed;
 
@@ -398,7 +397,8 @@ private:
 
     int DrawTextRow(wxDC &dc, int y, int pos);
     int SkipTextRow(int pos);
-    int textEnd; 
+    int textEnd;
+    int windowWidth, windowHeight;
     int rowHeight, rowCount;
     int historyNumber;
 
@@ -418,9 +418,6 @@ private:
     int type_in, type_out;
 
     void type_ahead(uint32_t c);
-
-    int promptEnd;
-
     int searchFlags;
 #define SEARCH_LENGTH    (searchFlags & 0xff)
 #define SEARCH_FORWARD   0x100
@@ -465,7 +462,7 @@ private:
     void paste();
     void killSelection();
     void deleteCurrentLine();
-    int setInputText(uint32_t *s, int n);
+    int setInputText(const char *s);
     void transpose();
     void capitalize();
     void lowerCase();
@@ -474,12 +471,11 @@ private:
     void makePositionVisible(int p);
     int editable;    
     int trySearch();
-    int wordlen(uint32_t *s);
     void historyNext();
     void historyPrev();
     void searchHistoryNext();
     void searchHistoryPrev();
-    uint32_t *input_history[INPUT_HISTORY_SIZE];
+    char *input_history[INPUT_HISTORY_SIZE];
     int historyNextEntry,
         historyCurrent,
         longestHistoryLine;
@@ -488,8 +484,8 @@ private:
 
     void historyInit();
     void historyEnd();
-    void historyAdd(uint32_t *s, int n);
-    uint32_t *historyGet(int n);
+    void historyAdd(char *s, int n);
+    char *historyGet(int n);
     int matchString(const char *pat, int n, const char *text);
     int isEditable();
     int isEditableForBackspace();
@@ -499,7 +495,7 @@ private:
     void interrupt();
     void displayBacktrace();
 
-    int unpackUTF8(uint32_t *u, const char *s, int n);
+    int unpackUTF8chars(uint32_t *u, const char *s, int n);
 
     int MapChar(int c);      // map from TeX character code to BaKoMa+ one
 
@@ -1505,8 +1501,8 @@ int add_custom_fonts() // return 0 on success.
 // simplicity.
     char fff[LONGEST_LEGAL_FILENAME];
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   if (i < 3) sprintf(fff, "%s/" toString(fontsdir) "/%s.otf",
-                           programDir, fontNames[i].name);
+    {   if (i == 0) sprintf(fff, "%s/" toString(fontsdir) "/%s.otf",
+                            programDir, fontNames[i].name);
         else sprintf(fff, "%s/" toString(fontsdir) "/%s.ttf",
                      programDir, fontNames[i].name);
         FcConfigAppFontAddFile(config, (const FcChar8 *)fff);
@@ -1629,6 +1625,7 @@ fwinText::fwinText(fwinFrame *parent)
     searchFlags = 0;
     caret = NULL;
     caretPos = 0;
+    promptEnd = -1;
     options = 0;
     keyFlags = 0;
     flags = 0;
@@ -1639,6 +1636,8 @@ fwinText::fwinText(fwinFrame *parent)
     fwin_in = 0;
     use_buffer1 = 1;
 
+    inputBufferSize = INITIAL_INPUT_BUFFER_SIZE;
+    inputBuffer = (char *)malloc(inputBufferSize);
     inputBufferP = inputBufferLen = 0;
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
@@ -1827,7 +1826,7 @@ void fwinText::displayBacktrace()
     {   onCmdBacktrace(this, 0, NULL);
     }
     killSelection();
-    setInputText(NULL, 0);
+    setInputText("");
     historyNumber = historyLast + 1;
     keyFlags &= ~ANY_KEYS;
 #endif
@@ -1879,10 +1878,8 @@ case 0:                 // input is not active
 
 void fwinText::deleteCurrentLine()
 {
-#ifdef RECONSTRUCTED
     killSelection();
-    setInputText(NULL, 0);
-#endif
+    setInputText("");
 }
 
 // ^L    clear screen (handled as menu shortcut)
@@ -1925,37 +1922,21 @@ void fwinText::lowerCase()
 // To replace the input line I can can use this... It returns the
 // index of the first character of the inserted line.
 
-int fwinText::setInputText(uint32_t *text, int n)
+int fwinText::setInputText(const char *text)
 {
-#ifdef RECONSTRUCTED
-    int n2 = length;
-    int n1 = lineStart(n2);
-    while (n1 < n2 && (getStyle(n1) & STYLE_PROMPT)) n1++;
-    replaceStyledText(n1, n2-n1, text, n, STYLE_INPUT);
-//    changeStyle(n1, length-n1, STYLE_INPUT);  // paint it the right colour
-    setCaretPos(length);
-    makePositionVisible(length);
-    return n1;
-#else
-    return n;
-#endif
+    caretPos = promptEnd;
+    deleteChars(textEnd - promptEnd);
+    makePositionVisible(caretPos);
+    return caretPos;
 }
 
 
 // The history routines here are never invoked unless we are awaiting input
 
-int fwinText::wordlen(uint32_t *p)
-{
-    if (p == NULL) return 0;
-    int r = 0;
-    while (*p++ != 0) r++;
-    return r;
-}
-
 void fwinText::historyNext()
 {
 #ifdef RECONSTRUCTED
-    const uint32_t *history_string;
+    const char *history_string;
     if (historyLast == -1) // no history lines at all to retrieve!
     {   beep();
         return;
@@ -1965,7 +1946,7 @@ void fwinText::historyNext()
     {   beep();
         return;
     }
-    setInputText(history_string, wordlen(history_string));
+    setInputText(history_string);
 #endif
 }
 
@@ -2076,7 +2057,7 @@ void fwinText::historyPrev()
     {   beep();
         return;
     }
-    setInputText(history_string, wordlen(history_string));
+    setInputText(history_string);
 #endif
 }
 
@@ -2244,50 +2225,37 @@ int fwinText::isEditableForBackspace()
 
 void fwinText::insertNewline()
 {
-#ifdef RECONSTRUCTED
-    int p = length;
-// I find the first "real" character of the input line by scanning back
-// to (a) the start of the buffer (b) the end of a previous line or (c) the
-// end of a prompt string.
-    while (p>0 && getChar(p-1)!='\n' && (getStyle(p-1)&STYLE_PROMPT)==0) p--;
-    int n = length-p;
-    if (n > (int)sizeof(inputBuffer)-5) n = sizeof(inputBuffer)-5;
-    extractText(inputBuffer, p, n);
+    caretPos = textEnd;
+    insertChar('\n');
+// stuff from promptEnd to textEnd should now be moved to inputBuffer.
+    int n = 0;
+    FWIN_LOG("promptEnd = %d textEnd = %d\n", promptEnd, textEnd);
+    for (int i=promptEnd; i<textEnd; i++)
+    {   int c = TXT(i);    // Just the character - no colour etc info
+        FWIN_LOG("Move char %x (%c) to posn %d in inputBuffer\n", c, c, n);
+        if (n > inputBufferSize - 5)
+        {   inputBufferSize = (4*inputBufferSize)/3;
+            inputBuffer = (char *)realloc(inputBuffer, inputBufferSize);
+        }
+        n += utf_encode(&inputBuffer[n], c);
+    }
 // I enter the line that has just been collected into the history
 // record.
-    inputBuffer[n] = 0;
-    historyAdd(inputBuffer, n);
+    historyAdd(inputBuffer, n-1);  // I omit the NEWLINE from the history
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
     historyLast = historyNextEntry - 1;
     historyFirst = historyNextEntry - INPUT_HISTORY_SIZE;
     if (historyFirst < 0) historyFirst = 0;
     historyNumber = historyLast + 1; // so that ALT-P moves to first entry
-// Now I add a newline to the text, since the user will expect to see that.
-    inputBuffer[n] = '\n';
-    inputBuffer[n+1] = 0;
-    inputBufferLen = n+1;
+    inputBufferLen = n;
     inputBufferP = 0;
-// Stick a newline into the text buffer, and make the screen non-updatable.
-    InsertNewline( );
-    setEditable(FALSE);
     recently_flushed = 0;
 // stuff user typed is now in buffer... I should never have got here unless
 // the user thread was waiting, so here I unlock it, to tell it that
 // the input buffer is ready.
-    if (sync_even)
-    {   sync_even = 0;
-        UnlockMutex(mutex3);
-        LockMutex(mutex2);
-        UnlockMutex(mutex4);
-    }
-    else
-    {   sync_even = 1;
-        UnlockMutex(mutex1);
-        LockMutex(mutex4);
-        UnlockMutex(mutex2);
-    }
-#endif
+    awaiting = 0;
+    reading.Post();
 }
 
 
@@ -2385,7 +2353,7 @@ void fwinText::insertChars(uint32_t *pch, int n)
     while (lineEnd < textEnd && TXT(lineEnd) != '\n')
         lineEnd++;
     int32_t loc2 = locateChar(lineEnd, caretPos, r1, c1);
-    int r2 = ROW(loc2), c2 = COL(loc2);
+    int r2 = ROW(loc2);
     int p = textEnd+n;
     if (p >= textBufferSize) enlargeTextBuffer();
 // In my terminal I will only ever be inserting within a "single line", and
@@ -2403,13 +2371,13 @@ void fwinText::insertChars(uint32_t *pch, int n)
 // After inserting the character I look to find where the end of the
 // line that it is on has moved to.
     int32_t loc3 = locateChar(lineEnd+n, caretPos, r1, c1);
-    int r3 = ROW(loc3), c3 = COL(loc3);
+    int r3 = ROW(loc3), c3 = COL(loc3);;
     caretPos += n;
     textEnd += n;
     if (caret != NULL && caret->IsVisible()) repositionCaret();
 // When I end up with coordinated I need them to reflect scrolling.
-    int x = 0, y = r1*rowHeight;
-    CalcScrolledPosition(x, y, &x, &y);
+    int x = 0, y = 0;
+    CalcScrolledPosition(0, r1*rowHeight, &x, &y);
 // Now I certainly need to refresh from loc1 to loc3, but if
 // ROW(loc2) != ROW(loc3) then my insert caused a change in the number of
 // rows to be displayed so I should refresh all the way down to the bottom
@@ -2431,8 +2399,9 @@ void fwinText::insertChars(uint32_t *pch, int n)
                            columnPos[80], rowHeight));
 // In inserting this character inserted a newline or caused extra wrapping
 // I will refresh all the way down to the bottom of the screen.
-        RefreshRect(wxRect(columnPos[0], y+rowHeight,
-                           columnPos[80], (rowCount-r1-1)*rowHeight));
+        if (windowHeight > y+rowHeight)
+            RefreshRect(wxRect(columnPos[0], y+rowHeight,
+                               columnPos[80], windowHeight-y-rowHeight));
     }
 }
 
@@ -2458,11 +2427,11 @@ void fwinText::deleteChars(int n)
     textEnd -= n;
     eol -= n;
     int32_t loc3 = locateChar(eol, caretPos, r1, c1);
-    int r3 = ROW(loc3), c3 = COL(loc3);
+    int r3 = ROW(loc3);
 // Apply scroll adjustment. Since I never scroll horizontally the x coordinate
 // is not an issue.
-    int x = 0, y = rowHeight*r1;
-    CalcScrolledPosition(x, y, &x, &y);
+    int x = 0, y = 0;
+    CalcScrolledPosition(0, rowHeight*r1, &x, &y);
 // If r2==r3 then the total number of rows in the display has not changed and
 // so I just need to refresh from r1 to r2. If in that case r1=r2 I can do
 // a refresh of just the end of the line that changed.
@@ -2485,17 +2454,27 @@ void fwinText::deleteChars(int n)
         RefreshRect(wxRect(columnPos[0], y+rowHeight,
                            columnPos[80], (r2-r1)*rowHeight));
     }
-    else
-    {   RefreshRect(wxRect(columnPos[0], r1*rowHeight,
-                           columnPos[80], (rowCount-r1)*rowHeight));
+    else if (windowHeight > y)
+    {   RefreshRect(wxRect(columnPos[0], y,
+                           columnPos[80], windowHeight-y));
     }
 }
 
 
 void fwinText::makePositionVisible(int p)
 {
-#ifdef RECONSTRUCTED
-#endif
+    int32_t loc = locateChar(p);
+    int r = ROW(loc);
+    int x, y;
+    CalcScrolledPosition(0, r*rowHeight, &x, &y);
+    if (y >= 0 && y <= windowHeight-rowHeight) return;
+// Getting this right took more careful thought about counting lines vs.
+// counting the gaps between lines and worrying about counts that start at
+// zero rather than 1 than I had at first expected!
+    int n = r + 1 - rowCount;
+    if (n < 0) n = 0;
+    FWIN_LOG("Scroll to offset %d r=%d rowCount=%d\n", n, r, rowCount);
+    Scroll(0, n);
 }
 
 
@@ -2857,7 +2836,7 @@ void fwinText::OnChar(wxKeyEvent &event)
 void fwinText::processChar(int c, int r, int m)
 {
 //-    FWIN_LOG("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m);
-    uint32_t *history_string = NULL;
+    char *history_string = NULL;
 // If a previous keystroke had been ESC then I act as if this one
 // had ALT combined with it. I will cancel the pending ESC on various
 // menu things as well as here. Note that this conversion copes with
@@ -3048,7 +3027,7 @@ void fwinText::processChar(int c, int r, int m)
             if (SEARCH_LENGTH == 0)
             {   searchFlags = 0;   // delete the one char in the search string
                 killSelection();
-                setInputText(NULL, 0);
+                setInputText("");
                 return;
             }
             historyNumber = searchStack[SEARCH_LENGTH];
@@ -3059,7 +3038,7 @@ void fwinText::processChar(int c, int r, int m)
             startMatch = trySearch();
             history_string = historyGet(historyNumber);
 // ought not to return NULL here!
-            ls = setInputText(history_string, wordlen(history_string));
+            ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -3090,7 +3069,7 @@ void fwinText::processChar(int c, int r, int m)
             }
             startMatch = r;
             history_string = historyGet(historyNumber);
-            ls = setInputText(history_string, wordlen(history_string));
+            ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -3121,7 +3100,7 @@ void fwinText::processChar(int c, int r, int m)
             }
             startMatch = r;
             history_string = historyGet(historyNumber);
-            ls = setInputText(history_string, wordlen(history_string));
+            ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -3181,7 +3160,7 @@ void fwinText::processChar(int c, int r, int m)
             }
             startMatch = r;
             history_string = historyGet(historyNumber);
-            ls = setInputText(history_string, wordlen(history_string));
+            ls = setInputText(history_string);
 // To give a visual indication of what I have found I will select the match,
 // which will leave it highlighted on the display. I must remember to kill
 // my selection every time I exit search mode!
@@ -3522,17 +3501,10 @@ defaultlabel:
 
         if (awaiting)
         {   if (c == '\n')
-            {   insertChar(c);
-// This is really WRONG. I should extract from textBuffer into
-// inputBuffer when I see ENTER. The code here utterly bypasses the
-// effect of all sorts of local editing!
-                inputBuffer[inputBufferLen++] = '\n';
-                awaiting = 0;
-                reading.Post();
+            {   insertNewline();
                 return;
             }
             insertChar(c | 0x01000000);
-            inputBuffer[inputBufferLen++] = c;
             return;
         }
         beep();
@@ -3623,11 +3595,11 @@ void fwinText::historyEnd()
     }
 }
 
-void fwinText::historyAdd(uint32_t *s, int n)
+void fwinText::historyAdd(char *s, int n)
 {
 /* Make a copy of the input string... */
-    size_t size = sizeof(uint32_t)*(n + 1);
-    uint32_t *scopy = (uint32_t *)malloc(size);
+    size_t size = sizeof(char)*(n + 1);
+    char *scopy = (char *)malloc(size);
     int p = historyNextEntry % INPUT_HISTORY_SIZE;
 /* If malloc returns NULL I just store an empty history entry. */
     if (scopy != NULL) memcpy(scopy, s, size);
@@ -3644,10 +3616,10 @@ void fwinText::historyAdd(uint32_t *s, int n)
     }
 }
 
-uint32_t *fwinText::historyGet(int n)
+char *fwinText::historyGet(int n)
 {
-    static uint32_t nullString[] = {0};
-    uint32_t *s;
+    static char nullString[] = {0};
+    char *s;
 /*
  * Filter our values that are out of range and in those cases return NULL
  * as a flag to report the error.
@@ -3712,7 +3684,7 @@ void fwinText::OnToScreen(wxThreadEvent& event)
     insertString(text);
 }
 
-int fwinText::unpackUTF8(uint32_t *u, const char *s, int ends)
+int fwinText::unpackUTF8chars(uint32_t *u, const char *s, int ends)
 {
     int k = 0;
     int n = 0, state = 0;
@@ -3760,9 +3732,9 @@ void fwinText::OnSetPrompt(wxThreadEvent& event)
 {
     wxString text = event.GetString();
     FWIN_LOG("OnSetPrompt %s\n", fwin_prompt_string);
-    unicodePromptLength = unpackUTF8(&unicodePrompt[0],
-                                     &fwin_prompt_string[0],
-                                     strlen(fwin_prompt_string));
+    unicodePromptLength = unpackUTF8chars(&unicodePrompt[0],
+                                          &fwin_prompt_string[0],
+                                          strlen(fwin_prompt_string));
     for (int i=0; i<unicodePromptLength; i++)
         unicodePrompt[i] |= 0x02000000;   // force prompt into BLUE
     writing.Post();
@@ -3816,7 +3788,7 @@ void fwinText::OnFlushBuffer(const char *fwin_buffer)
 {
     recently_flushed = 0;
     uint32_t wideBuffer[FWIN_BUFFER_SIZE];
-    int n = unpackUTF8(&wideBuffer[0], fwin_buffer, fwin_out);
+    int n = unpackUTF8chars(&wideBuffer[0], fwin_buffer, fwin_out);
     insertChars(&wideBuffer[0], n);
 #ifdef RECONSTRUCTED
     makePositionVisible(rowStart(length));
@@ -3843,6 +3815,7 @@ void fwinText::OnRequestInput(wxThreadEvent& event)
     FWIN_LOG("OnRequestInput\n");
     caretPos = textEnd;
     insertChars(unicodePrompt, unicodePromptLength);
+    promptEnd = textEnd;
     makePositionVisible(caretPos);
     writing.Post();
 
@@ -3883,7 +3856,9 @@ void fwinText::OnDraw(wxDC &dc)
     textColour = wxBLACK;
     dc.SetTextForeground(*textColour);
 
-    wxSize window(GetClientSize()); // dc.GetSize());
+    wxSize window(GetClientSize());
+    windowWidth = window.GetWidth();
+    windowHeight = window.GetHeight();
 
     if (firstPaint)
     {   if (fixedPitch == NULL)
@@ -3921,7 +3896,7 @@ void fwinText::OnDraw(wxDC &dc)
             dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
             FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
         }
-        int spacePerChar = window.GetWidth()/80;
+        int spacePerChar = windowWidth/80;
         scaleAdjustment = (double)spacePerChar/em;
         fixedPitch->SetPointSize(10);
         fixedPitch->Scale(scaleAdjustment);
@@ -3932,7 +3907,10 @@ void fwinText::OnDraw(wxDC &dc)
         dc.SetFont(*fixedPitch);
         rowHeight = dc.GetCharHeight();
         spacePerChar = dc.GetCharWidth(); 
-        rowCount = (window.GetHeight()+rowHeight-1)/rowHeight;
+// rowCount is the number of full rows that will fit on the screen. If the
+// window depth is not a multiple of rowHeight there could be a further
+// part-row.
+        rowCount = windowHeight/rowHeight - 1;
 // Create or re-size the caret, and position it where it needs to be on the
 // screen.
         SetFocus();
@@ -4143,8 +4121,6 @@ void fwin_callback_to_interrupt(interrupt_callback_t *f)
     interrupt_callback = f;
 }
 
-static int returncode = 0;
-
 
 int fwin_windowmode()
 {
@@ -4237,8 +4213,6 @@ void fwin_putchar(int c)
 #endif
         return;
     }
-    FWIN_LOG("fwin_putchar(%#x) (%c) in=%d\n", c, (((c & 0xff) >= 020 &&
-                                              (c & 0xff) < 0x7f) ? c : '?'), panel->fwin_in);
 // I arrange to do any buffer flushing just before I will send out a
 // byte that starts a character. An effect is that I should NEVER flush
 // the buffer part way through a multi-byte character. 
