@@ -4,20 +4,68 @@ The code here, together with the FOX toolkit, have been built and tested on
 a range of systems. The file is a place to collect comments on special
 treatment that was needed in some cases.
 
+
 In general with any system it will be necessary (or at least best) to
 ensure that autoconf and automake are installed, together with
 the develoment support for X11. Xft and (n)curses should also be installed.
 
 On old systems the versions of autoconf etc supplied may be too old to
-be usable. The support-packages directory contains versions expected to
-be adequate, and these can be unpackes, built and installed in the usual
-manner. Those who find that an undue challenge should stick to building this
-code on recent releases of operating systems and development tools!
+be usable. The usual internet archives can supply up to date versions,
+often in binary but as a fall-back in source form. In extremis these can be
+fetched, built and installed in the usual manner. Those who find that an
+undue challenge should stick to building this code on recent releases of
+operating systems and development tools! Also a script "scripts/stamp.sh"
+run after you have fetched or updated the Reduce source tree should set the
+timestamps on all autoconf related files so as to avoid reliance on any local
+autoconf. 
 
-In my testing I will always have run an on-line update to bring the
-operating system and all the developers tools to as fresh a state as
-possible before trying my build. Of course yet later updates may break
-something else...
+January 2011:
+
+I now view almost all of the previously tested systems as "legacy" and in
+many cases as "too old to matter". But if you need them you could at worst
+back off to an old release of the code or reinstate adjustments.
+
+The main platforms tested on now are
+
+Windows 7 (64-bit) building in either 32-bit mode or 64-bit mode. The
+               32-bit build should run on any version of Windows from
+               XP onwards, but Windows 95 and friends are now unsupported.
+
+Linux: I tend to test on the lastest 64-bit Ubuntu and the latest 64-bit
+               OpenSuSE. There should be no special issues in building on
+               32-bit versions of Linux. Binary compatibility is much
+               better than it was 5 years ago, so I hope that most other
+               Linux distributions will even be able to run executables
+               made using the ones I test most.
+
+Macintosh: Snow Leopard on an x86 Mac. The older FOX-based version of Reduce
+               can provide a GUI via X11 and it is known to have issues with
+               some Mac keystroke-combinations. The forthcoming wxWidgets
+               code is (at the time of writing) thoroughly incomplete and
+               barely usable at all, but will run in proper native mode
+               under MacOSX as either a 32 or 64-bit package.
+
+BSD:           I do not know of strong reasons why thkings should not
+               build, and I intend to test periodically.
+
+Solaris:       Earlier versions could be built, but unless there is strong
+               enthusiasm I am not going to do a lot of testing.
+
+Other Unix:    Probably! "./configure" is intended to support very generic
+               adaptation. But there are no guarantees - ask if you have a
+               particular case.
+
+iPad:          wxWidgets claims to build for an iPad so PERHAPS once that
+               version is stable... Ha Ha.
+
+Arbitrary embedded use: A scheme to build a cut-down executable without any
+               GUI code at all exists and is intended for use if Reduce is
+               needed as a behind-the-scenes compuattional back end. See the
+               CSL sources for an example illustrating its use.  
+
+==============================================================================
+==============================================================================
+
 
 February 2007:
 
@@ -99,8 +147,8 @@ Windows Vista: As cygwin/mingw becomes stable I expect 32-bit builds to
 happen just as they did on XP. The situation about Vista-64 is much the
 same as that for XP-64.
 
-Solaris: I am fpoewnloading solaris 10 r7 and may update these notes
-when I have trie dit a bit! All earlier solaris experienec is now out
+Solaris: I am downloading solaris 10 r7 and may update these notes
+when I have tried it a bit! All earlier solaris experience is now out
 of date.
 
 The version built on was SunOS 5.10, 11/06 with lots of useful

@@ -44,5 +44,9 @@ Most files are under the BSD LICSENSE which reads
 
 Note that parts of this code link to the LGPL-protected FOX toolkit, and so
 binaries made from it need to adhere to the conditions that that imposes.
+There are also some fonts that may be distributed freely provided their
+license terms accompany them. The Makefiles (etc) here arrange for that to
+happen. Newer versions of CSL link to wxWidgets, whihc has its own license
+which is basically LGPL plus generous extensions.
 
 =============================================================================

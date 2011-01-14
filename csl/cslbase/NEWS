@@ -1,3 +1,18 @@
+January 2011
+
+Well this file has not been being kept very well up to date!
+
+Major developments over the last year:
+
+(1) PSL sources and the ability to rebuild PSL from them are now almost
+all in place.
+
+(2) CSL is in the process of migrating from use of the FOX GUI toolkit to
+use of wxWidgets. Volunteers of help with bug-finding, getting the user
+interface "right", checking how things behave on various platforms and in
+various locales etc would be welcome.
+
+
 March 2007: creation of a "relink.sh" script.
 2006: This program is now (mostly) set up using "configure"
 
