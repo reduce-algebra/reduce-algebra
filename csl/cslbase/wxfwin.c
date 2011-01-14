@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 50478a8e 11-Jan-2011 */
+/* Signature: 7a3df32f 14-Jan-2011 */
 
 #include "config.h"
 
@@ -145,11 +145,21 @@ static FILE *fwin_logfile = NULL;
 
 void fwin_write_log(const char *s, ...)
 {
+/*
+ * I expect vfprintf and fflush to be thread-safe, however the test
+ * on fwin_logfile and the code that creates it could lead to a race
+ * if two threads both tried to open the log file at the same time. I
+ * believe that since this is JUST to be used for debugging everything can
+ * be made safe by insisting that any code that uses threads must execute
+ * FWIN_LOG() before it starts any thread, so that the log file will get
+ * created when there is not concurrency to cause confusion. That seems
+ * lighter weight than messing with a further critical section here.
+ */
     int create = (fwin_logfile == NULL);
     va_list x;
 /*
  * Note that I create this file in "a" (append) mode so that previous
- * inpformation there is not lost.
+ * information there is not lost.
  */
     if (create)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];

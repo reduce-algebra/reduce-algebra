@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0bd59298 13-Jan-2011 */
+/* Signature: 7ddea2c2 14-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -128,6 +128,8 @@ int pipedes[2];
 #endif // WIN32
 
 #include "wxfwin.h"
+
+static int returncode = 0;
 
 // See cmtt_coverage lower down in this code
 
@@ -266,7 +268,8 @@ enum
     FLUSH_BUFFER2,
     REQUEST_INPUT,
     MINIMISE_WINDOW,
-    RESTORE_WINDOW
+    RESTORE_WINDOW,
+    WORKER_FINISHED
 };
 
 
@@ -274,6 +277,7 @@ class fwinText : public wxScrolledCanvas
 {
 public:
     fwinText(class fwinFrame *parent);
+    wxCriticalSection work;    // for interaction with worker thread
 
     void OnDraw(wxDC &dc);
 
@@ -296,6 +300,7 @@ public:
     void OnRequestInput(wxThreadEvent& event);
     void OnMinimiseWindow(wxThreadEvent& event);
     void OnRestoreWindow(wxThreadEvent& event);
+    void OnWorkerFinished(wxThreadEvent& event);
 
 // Both these will be initialised with a count of zero and no limit.
     wxSemaphore writing;  // Used when writing to the screen
@@ -520,30 +525,32 @@ BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
     EVT_THREAD(REQUEST_INPUT,     fwinText::OnRequestInput)
     EVT_THREAD(MINIMISE_WINDOW,   fwinText::OnMinimiseWindow)
     EVT_THREAD(RESTORE_WINDOW,    fwinText::OnRestoreWindow)
+    EVT_THREAD(WORKER_FINISHED,   fwinText::OnWorkerFinished)
 END_EVENT_TABLE()
 
 static fwinText *panel = NULL;
 
 class fwinFrame : public wxFrame
 {
-
-
 public:
     fwinFrame();
 
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnSize(wxSizeEvent &event);
+    void OnClose(wxCloseEvent &event);
 
     class fwinWorker *worker;
 
 private:
+    void CloseAction();
     int screenWidth, screenHeight;
 
     DECLARE_EVENT_TABLE()
 };
 
 BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
+    EVT_CLOSE(           fwinFrame::OnClose)
     EVT_MENU(wxID_EXIT,  fwinFrame::OnExit)
     EVT_MENU(wxID_ABOUT, fwinFrame::OnAbout)
     EVT_SIZE(            fwinFrame::OnSize)
@@ -552,17 +559,32 @@ END_EVENT_TABLE()
 class fwinWorker : public wxThread
 {
 public:
-    fwinWorker();
-//  ~fwinWorker();
+    fwinWorker(fwinText *p)
+        : wxThread(wxTHREAD_DETACHED)
+        { parent = p; };
+   ~fwinWorker();
     void sendToScreen(wxString s); // for debugging
 private:
+    fwinText *parent;
 protected:
     virtual wxThread::ExitCode Entry();
 };
 
-fwinWorker::fwinWorker()
+fwinWorker::~fwinWorker()
 {
+    wxCriticalSectionLocker lock(panel->work);
+    panel->frame->worker = NULL;
 }
+
+void fwinText::OnWorkerFinished(wxThreadEvent& event)
+{
+    FWIN_LOG("worker thread terminated\n");
+// In which case quit!
+    Destroy();
+    exit(returncode);   
+}
+
+
 
 wxThread::ExitCode fwinWorker::Entry()
 {
@@ -571,8 +593,8 @@ wxThread::ExitCode fwinWorker::Entry()
 #define pause_on_exit 0
     FWIN_LOG("return from fwin_main_entry is %d pause_on_exit=%d\n",
              rc, pause_on_exit);
-    for (int i=0; i<0x7fffffff; i++);
-    panel->frame->worker = NULL;
+    wxCommandEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
+    wxQueueEvent(panel, event);
     return (wxThread::ExitCode)0;
 }
 
@@ -1576,14 +1598,15 @@ fwinFrame::fwinFrame()
         height = 9*screenHeight/10;
     }
     panel = new fwinText(this);
-    worker = new fwinWorker();
+    worker = new fwinWorker(panel);
     FWIN_LOG("worker = %p\n", worker);
     int rc = worker->Create(512*1024);  // Argument is stack size
     if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread creation error = %d\n", rc);
     rc = worker->Run();
     if (rc != wxTHREAD_NO_ERROR) FWIN_LOG("Thread run error = %d\n", rc);
-// Note horriblly well that the pointer "worker" may become invalid at any
-// stage from here on.
+// Note horribly well that the pointer "worker" may become invalid at any
+// stage from here on. I have a wxCriticalSection called "work" that I can use
+// to avoid trouble with that.
     SetMinClientSize(wxSize(400, 100));
     SetSize(width, height);
     Centre();
@@ -2718,17 +2741,53 @@ void fwinText::cut()
 #endif
 }
 
-
-
-
-
-void fwinFrame::OnExit(wxCommandEvent &WXUNUSED(event))
+void fwinFrame::CloseAction()
 {
+// I will ask the worker thread (most politely!) to terminate.
+    {   wxCriticalSectionLocker lock(panel->work);
+        if (panel->frame->worker != NULL)
+        {   FWIN_LOG("About to ask the worker to stop\n");
+            panel->frame->worker->Delete();
+        }
+    }
+// I will then give it 100ms to do so. Within that time it will need to
+// call TestDestroy() in order to notice my request.
+    for (int i=0; i<10; i++)
+    {   {   wxCriticalSectionLocker lock(panel->work);
+            if (panel->frame->worker == NULL) break;
+        }
+        wxMilliSleep(10);
+    }
+// If it is still alive after that (rather brief) chance to clean up
+// tidily I will apply extreme prejudice and dispose of the worker
+// forcibly.
+    {   wxCriticalSectionLocker lock(panel->work);
+// the wxWidgets documentation suggests that Kill is a BAD thing to
+// do. It will not let any onexit() functions registered by the worker
+// happen and it does not clean up memory. However when I do it here I am
+// just about to exit from my entire application, so I think I do not mind
+// very much. But using Delete() first might be kind...
+        if (panel->frame->worker != NULL)
+        {   FWIN_LOG("About to kill the worker\n");
+            panel->frame->worker->Kill();
+        }
+    }
+// Now I can close myself down too.
     Destroy();
-    exit(0);    // I want the whole application to terminate here!
+    exit(0);   
 }
 
-void fwinFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
+void fwinFrame::OnClose(wxCloseEvent &event)
+{
+    CloseAction();
+}
+
+void fwinFrame::OnExit(wxCommandEvent &event)
+{
+    CloseAction();
+}
+
+void fwinFrame::OnAbout(wxCommandEvent &event)
 {
 // At present this never gets activated!
     wxMessageBox(
@@ -2744,7 +2803,7 @@ void fwinFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 }
 
 
-void fwinFrame::OnSize(wxSizeEvent &WXUNUSED(event))
+void fwinFrame::OnSize(wxSizeEvent &event)
 {
     int i;
     double w;
@@ -4134,22 +4193,11 @@ void fwin_exit(int return_code)
 {
     fwin_ensure_screen();
     FWIN_LOG("fwin_exit(%d)\n", return_code);
-#ifdef RECONSTRUCTED
     if (windowed)
-    {   wake_up_terminal(FXTerminal::WORKER_EXITING);
-        returncode = return_code;
-#ifdef WIN32
-        ExitThread(returncode);
-#else
-        pthread_exit(&returncode);
-#endif
+    {   returncode = return_code;
+        wxThread::This()->Delete();   // terminate the worker thread
     }
-    if (using_termed)
-    {   input_history_end();
-        term_close();
-    }
-#endif
-    exit(return_code);
+    else exit(return_code);
 }
 
 
@@ -4578,6 +4626,8 @@ void fwin_acknowledge_tick()
 // The user is expected to notice it and respond here - and hence get
 // suspended.
     if (!windowed) return;
+// To keep wxWidgets threads happy I must poll like this periodically.
+    if (wxThread::This()->TestDestroy()) fwin_exit(0);
 #ifdef RECONSTRUCTED
     LockMutex(panel->pauseMutex);
     UnlockMutex(panel->pauseMutex);
