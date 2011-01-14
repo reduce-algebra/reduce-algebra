@@ -1,0 +1,21 @@
+% Put the current directory at the end for automated scripts to protect
+% against name collisions on 14 character filename machines.
+(setq loaddirectories* '("$bl/" "$bnkl/" ""))
+(on verboseload)
+(off usermode)
+
+%% For machines that require the carcdr.sl fix for car/cdr of NIL, make sure
+%% we turn on fastcar to ensure optimized code. Since PSL was written with
+%% the assumption that car/car of NIL was illegal, it is not necessary
+%% to generate code to test for this, slowing down all car/cdr operations
+%% in the process. For user code though, it defaults to off for safety.
+(on fastcar)
+(setq *syslisp t)
+%(on pcmac)
+(setq pfasl (concat "$pnkl/" (getenv "srcn"))))
+(setq plisp (concat (getenv "srcd")
+		    (concat "/" (concat (getenv "srcn") ".sl"))))
+(faslout pfasl)
+(dskin plisp)
+(faslend)
+(exitlisp)

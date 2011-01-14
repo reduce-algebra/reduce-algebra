@@ -1,0 +1,9 @@
+(setq loaddirectories* '("" "$pl\"  "$pnkl\"))
+
+(on verboseload)
+%(setq symbolfilename* "$pxk\bpsl.exe")
+(savesystem
+  (cond ((unboundp '**low-case) "Bare PSL 3.4")
+        (t "Bare PSL 4.2"))
+        "$psys\bare-psl.exe" nil)
+(exitlisp)

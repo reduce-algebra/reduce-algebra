@@ -1,0 +1,26 @@
+% For automated scripts, put "" at end to avoid name collisions on machines
+%  with 14 character filenames. Also add ulap for use in porting.
+%%(reload 386-cmac)
+(on verboseload)
+(off usermode)
+
+%% For machines that require the carcdr.sl fix for car/cdr of NIL, make sure
+%% we turn on fastcar to ensure optimized code. Since PSL was written with
+%% the assumption that car/car of NIL was illegal, it is not necessary
+%% to generate code to test for this, slowing down all car/cdr operations
+%% in the process. For user code though, it defaults to off for safety.
+(on fastcar)
+
+%(setq loaddirectories!* (cons "$pl/cross/" loaddirectories!*))
+%(load macintel64-cmac)
+%(load macintel64-lap)
+%(compiletime (remprop 'cons 'opencode))
+%(compiletime (remprop 'ncons 'opencode))
+%(compiletime (remprop 'xcons 'opencode))
+(setq pfasl (concat (getenv "pl") (concat "/" (getenv "psrc"))))
+(setq plisp (concat (getenv "pdir")
+		    (concat "/" (concat (getenv "psrc") ".sl"))))
+(faslout pfasl)
+(dskin plisp)
+(faslend)
+(exitlisp)

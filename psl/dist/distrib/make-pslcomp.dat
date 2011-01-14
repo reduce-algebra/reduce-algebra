@@ -1,0 +1,7 @@
+(setq loaddirectories* '("" "$pl/" "$pnkl/" "$pll/"))
+(on verboseload)
+(load pslcomp init-file)
+(load strings common)
+(savesystem "PSL 4.2 Compiler" "$psys/pslcomp.exe"
+   '((read-init-file "pslcomp")))
+(exitlisp)
