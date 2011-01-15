@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7ddea2c2 14-Jan-2011 */
+/* Signature: 0694a35c 15-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -404,7 +404,7 @@ private:
     int SkipTextRow(int pos);
     int textEnd;
     int windowWidth, windowHeight;
-    int rowHeight, rowCount;
+    int rowHeight, rowCount, virtualRowCount;
     int historyNumber;
 
     int options;
@@ -556,13 +556,20 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_SIZE(            fwinFrame::OnSize)
 END_EVENT_TABLE()
 
+static bool shouldExit;
+
 class fwinWorker : public wxThread
 {
 public:
     fwinWorker(fwinText *p)
         : wxThread(wxTHREAD_DETACHED)
-        { parent = p; };
+        {   parent = p;
+            shouldExit = false;
+        };
    ~fwinWorker();
+    void DoExit()
+    {   Exit(NULL);
+    };
     void sendToScreen(wxString s); // for debugging
 private:
     fwinText *parent;
@@ -595,7 +602,7 @@ wxThread::ExitCode fwinWorker::Entry()
              rc, pause_on_exit);
     wxCommandEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
     wxQueueEvent(panel, event);
-    return (wxThread::ExitCode)0;
+    return (wxThread::ExitCode)rc;
 }
 
 int get_current_directory(char *s, int n)
@@ -1636,7 +1643,8 @@ fwinText::fwinText(fwinFrame *parent)
     SetBackgroundColour(c1);
 // These will be reviewed when I first paint the screen
     SetScrollRate(0, 10);
-    SetVirtualSize(wxDefaultCoord, 500);
+    virtualRowCount = 5;
+    SetVirtualSize(wxDefaultCoord, 100);
     ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_ALWAYS);
     firstPaint = true;
 // I start off with a 40K character buffer, which seems reasonably
@@ -2397,6 +2405,10 @@ void fwinText::insertChars(uint32_t *pch, int n)
     int r3 = ROW(loc3), c3 = COL(loc3);;
     caretPos += n;
     textEnd += n;
+    if (r3 > virtualRowCount)
+    {   virtualRowCount = r3;
+        SetVirtualSize(wxDefaultCoord, rowHeight*(virtualRowCount+1));
+    }
     if (caret != NULL && caret->IsVisible()) repositionCaret();
 // When I end up with coordinated I need them to reflect scrolling.
     int x = 0, y = 0;
@@ -2743,25 +2755,49 @@ void fwinText::cut()
 
 void fwinFrame::CloseAction()
 {
-// I will ask the worker thread (most politely!) to terminate.
+// I will ask the worker thread (most politely!) to terminate. It might
+// at present be waiting on a semaphore, so I Post() to all the possibilities,
+// having set a flag that will be polled after any Wait().
+    boolean closedDown = false;
+    shouldExit = true;
+    panel->reading.Post();
+    panel->writing.Post();
+    FWIN_LOG("Have just set shouldExit and done some Posts\n");
+    wxMilliSleep(1); // give worker a chance to respond.
+// The worker might not close down utterly instantly, and it might have
+// been in the middle of a computation, so I set more flags that ask it
+// to close down. It SEEMS that the call to Delete() here will not
+// actually return to me until it has baan processed.
     {   wxCriticalSectionLocker lock(panel->work);
         if (panel->frame->worker != NULL)
         {   FWIN_LOG("About to ask the worker to stop\n");
+FWIN_LOG("%p %p %p\n", panel, panel->frame, panel->frame->worker);
             panel->frame->worker->Delete();
+            FWIN_LOG("Delete() called on worker\n");
+        }
+        else
+        {   closedDown = true;
+            FWIN_LOG("worker already terminated\n");
         }
     }
 // I will then give it 100ms to do so. Within that time it will need to
 // call TestDestroy() in order to notice my request.
-    for (int i=0; i<10; i++)
-    {   {   wxCriticalSectionLocker lock(panel->work);
-            if (panel->frame->worker == NULL) break;
+    if (!closedDown) for (int i=0; i<10; i++)
+    {   FWIN_LOG("Poll %d for worker finished\n", i);
+        {   wxCriticalSectionLocker lock(panel->work);
+            if (panel->frame->worker == NULL)
+            {   closedDown = true;
+                break;
+            }
         }
         wxMilliSleep(10);
     }
 // If it is still alive after that (rather brief) chance to clean up
 // tidily I will apply extreme prejudice and dispose of the worker
 // forcibly.
-    {   wxCriticalSectionLocker lock(panel->work);
+    if (!closedDown)
+    {   FWIN_LOG("worker did not close down by itself\n");
+        wxCriticalSectionLocker lock(panel->work);
 // the wxWidgets documentation suggests that Kill is a BAD thing to
 // do. It will not let any onexit() functions registered by the worker
 // happen and it does not clean up memory. However when I do it here I am
@@ -2771,6 +2807,7 @@ void fwinFrame::CloseAction()
         {   FWIN_LOG("About to kill the worker\n");
             panel->frame->worker->Kill();
         }
+        else FWIN_LOG("worker had closed down nicely after all\n");
     }
 // Now I can close myself down too.
     Destroy();
@@ -3987,7 +4024,7 @@ void fwinText::OnDraw(wxDC &dc)
         }
 #endif
         SetScrollRate(0, rowHeight);
-        SetVirtualSize(wxDefaultCoord, 500*rowHeight);
+        SetVirtualSize(wxDefaultCoord, rowHeight*(virtualRowCount+1));
         firstPaint = false;
     }
 
@@ -4195,9 +4232,21 @@ void fwin_exit(int return_code)
     FWIN_LOG("fwin_exit(%d)\n", return_code);
     if (windowed)
     {   returncode = return_code;
-        wxThread::This()->Delete();   // terminate the worker thread
+        panel->frame->worker->DoExit();
     }
     else exit(return_code);
+}
+
+void fwin_abrupt_exit()
+{
+// This is used e.g. when the user closes the window that you are running
+// in.
+    FWIN_LOG("fwin_abrupt_exit\n");
+    if (windowed)
+    {   returncode = 0;
+        panel->frame->worker->DoExit();
+    }
+    else exit(0);
 }
 
 
@@ -4205,6 +4254,7 @@ void fwin_minimize()
 {
     if (!windowed) return;
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, MINIMISE_WINDOW);
     panel->GetEventHandler()->QueueEvent(event);
 }
@@ -4214,6 +4264,7 @@ void fwin_restore()
 {
     if (!windowed) return;
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, RESTORE_WINDOW);
     panel->GetEventHandler()->QueueEvent(event);
 }
@@ -4477,6 +4528,7 @@ void fwin_ensure_screen()
 // Wait until GUI thread is ready, ie has finshed emptying the other
 // buffer.
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
 // The next few lines are a SAFE region. The GUI thread had completed
 // processing the previous request that had been sent to it, but it has
 // not yet been told to start on the new buffer.
@@ -4522,6 +4574,7 @@ int fwin_getchar()
     if (delay_callback != NULL) (*delay_callback)(1);
     fwin_ensure_screen();
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REQUEST_INPUT);
     panel->GetEventHandler()->QueueEvent(event);
 // OK - the screen is up to date as regards output and all other changes
@@ -4529,6 +4582,7 @@ int fwin_getchar()
 // cause the GUI thread to to a Post() on the reading semaphore when it has
 // put a line of valid data into inputBuffer.
     panel->reading.Wait(); // the genuine wait for input
+    if (shouldExit) fwin_abrupt_exit();
     if (delay_callback != NULL) (*delay_callback)(0);
 // I will try a convention that if inputBufferLen is zero that indicates
 // a dodgy state. Eg the user is sending an EOF or interrupt.
@@ -4561,6 +4615,7 @@ void fwin_set_prompt(const char *s)
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
     if (!windowed) return;
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_PROMPT);
     panel->GetEventHandler()->QueueEvent(event);
 }
@@ -4572,6 +4627,7 @@ void fwin_menus(char **modules, char **switches,
     modules_list = modules;
     switches_list = switches;
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
     review_switch_settings = f;
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, SET_MENUS);
     panel->GetEventHandler()->QueueEvent(event);
@@ -4583,6 +4639,7 @@ void fwin_refresh_switches(char **switches, char **packages)
     switches_list = switches;
     modules_list = packages;
     panel->writing.Wait();
+    if (shouldExit) fwin_abrupt_exit();
     wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, REFRESH_SWITCHES);
     panel->GetEventHandler()->QueueEvent(event);
 }
@@ -4624,14 +4681,11 @@ void fwin_acknowledge_tick()
 // This is to do with my handling of "^Z" to suspend the computation.
 // If the user enters ^Z I lock the pause mutex and then send a "TICK".
 // The user is expected to notice it and respond here - and hence get
-// suspended.
+// suspended. ????
     if (!windowed) return;
 // To keep wxWidgets threads happy I must poll like this periodically.
-    if (wxThread::This()->TestDestroy()) fwin_exit(0);
-#ifdef RECONSTRUCTED
-    LockMutex(panel->pauseMutex);
-    UnlockMutex(panel->pauseMutex);
-#endif
+    wxThread::This()->TestDestroy();
+    if (shouldExit) fwin_abrupt_exit();
 }
 
 
