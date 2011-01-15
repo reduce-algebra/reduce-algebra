@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0694a35c 15-Jan-2011 */
+/* Signature: 02bcfbef 15-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -257,6 +257,8 @@ IMPLEMENT_APP_NO_MAIN(fwinApp)
 
 enum
 {
+    FILE_QUIT = wxID_EXIT,     // I give these two standard...
+    HELP_ABOUT = wxID_ABOUT,   // identities. Most other things are custom.
     TO_SCREEN = wxID_HIGHEST+1,
     SET_PROMPT,
     SET_MENUS,
@@ -269,7 +271,36 @@ enum
     REQUEST_INPUT,
     MINIMISE_WINDOW,
     RESTORE_WINDOW,
-    WORKER_FINISHED
+    WORKER_FINISHED,
+
+    FILE_READ,
+    FILE_SAVE,
+    FILE_SAVE_SELECTION,
+    FILE_PRINT,
+    FILE_PRINT_SELECTION,
+
+    EDIT_CUT,
+    EDIT_COPY,
+    EDIT_COPY_TEXT,
+    EDIT_PASTE,
+    EDIT_REINPUT,
+    EDIT_SELECT_ALL,
+    EDIT_CLEAR,
+    EDIT_REDRAW,
+    EDIT_HOME,
+    EDIT_END,
+
+    FONT_SELECT,
+    FONT_SIZE,
+
+    BREAK_BREAK,
+    BREAK_BACKTRACE,
+    BREAK_PAUSE,
+    BREAK_RESUME,
+    BREAK_STOP_GO,
+    BREAK_DISCARD_OUTPUT,
+
+    HELP_HELP
 };
 
 
@@ -283,7 +314,7 @@ public:
 
     void OnChar(wxKeyEvent &event);
     void OnKeyDown(wxKeyEvent &event);
-    void processChar(int c, int r, int m);
+    bool processChar(int c, int r, int m);  // returns true if Skip needed
     void OnMouse(wxMouseEvent &event);
     void OnSetFocus(wxFocusEvent &event);
     void OnKillFocus(wxFocusEvent &event);
@@ -305,6 +336,31 @@ public:
 // Both these will be initialised with a count of zero and no limit.
     wxSemaphore writing;  // Used when writing to the screen
     wxSemaphore reading;  // used when reading from the screen
+
+    void OnFileRead();
+    void OnFileSave();
+    void OnFileSaveSelection();
+    void OnFilePrint();
+    void OnFilePrintSelection();
+    void OnEditCut();
+    void OnEditCopy();
+    void OnEditCopyText();
+    void OnEditPaste();
+    void OnEditReinput();
+    void OnEditSelectAll();
+    void OnEditClear();
+    void OnEditRedraw();
+    void OnEditHome();
+    void OnEditEnd();
+    void OnFontSelect();
+    void OnFontSize();
+    void OnBreakBreak();
+    void OnBreakBacktrace();
+    void OnBreakPause();
+    void OnBreakResume();
+    void OnBreakStopGo();
+    void OnBreakDiscardOutput();
+    void OnHelpHelp();
 
 // I will have a buffer for transfer of characters from the application
 // to the user-interface.
@@ -539,11 +595,59 @@ public:
     void OnAbout(wxCommandEvent &event);
     void OnSize(wxSizeEvent &event);
     void OnClose(wxCloseEvent &event);
+    void OnFileRead(wxCommandEvent &event)
+    {   panel->OnFileRead(); };
+    void OnFileSave(wxCommandEvent &event)
+    {   panel->OnFileSave(); };
+    void OnFileSaveSelection(wxCommandEvent &event)
+    {   panel->OnFileSaveSelection(); };
+    void OnFilePrint(wxCommandEvent &event)
+    {   panel->OnFilePrint(); };
+    void OnFilePrintSelection(wxCommandEvent &event)
+    {   panel->OnFilePrintSelection(); };
+    void OnEditCut(wxCommandEvent &event)
+    {   panel->OnEditCut(); };
+    void OnEditCopy(wxCommandEvent &event)
+    {   panel->OnEditCopy(); };
+    void OnEditCopyText(wxCommandEvent &event)
+    {   panel->OnEditCopyText(); };
+    void OnEditPaste(wxCommandEvent &event)
+    {   panel->OnEditPaste(); };
+    void OnEditReinput(wxCommandEvent &event)
+    {   panel->OnEditReinput(); };
+    void OnEditSelectAll(wxCommandEvent &event)
+    {   panel->OnEditSelectAll(); };
+    void OnEditClear(wxCommandEvent &event)
+    {   panel->OnEditClear(); };
+    void OnEditRedraw(wxCommandEvent &event)
+    {   panel->OnEditRedraw(); };
+    void OnEditHome(wxCommandEvent &event)
+    {   panel->OnEditHome(); };
+    void OnEditEnd(wxCommandEvent &event)
+    {   panel->OnEditEnd(); };
+    void OnFontSelect(wxCommandEvent &event)
+    {   panel->OnFontSelect(); };
+    void OnFontSize(wxCommandEvent &event)
+    {   panel->OnFontSize(); };
+    void OnBreakBreak(wxCommandEvent &event)
+    {   panel->OnBreakBreak(); };
+    void OnBreakBacktrace(wxCommandEvent &event)
+    {   panel->OnBreakBacktrace(); };
+    void OnBreakPause(wxCommandEvent &event)
+    {   panel->OnBreakPause(); };
+    void OnBreakResume(wxCommandEvent &event)
+    {   panel->OnBreakResume(); };
+    void OnBreakStopGo(wxCommandEvent &event)
+    {   panel->OnBreakStopGo(); };
+    void OnBreakDiscardOutput(wxCommandEvent &event)
+    {   panel->OnBreakDiscardOutput(); };
+    void OnHelpHelp(wxCommandEvent &event)
+    {   panel->OnHelpHelp(); };
 
     class fwinWorker *worker;
+    void CloseAction();
 
 private:
-    void CloseAction();
     int screenWidth, screenHeight;
 
     DECLARE_EVENT_TABLE()
@@ -554,6 +658,30 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_MENU(wxID_EXIT,  fwinFrame::OnExit)
     EVT_MENU(wxID_ABOUT, fwinFrame::OnAbout)
     EVT_SIZE(            fwinFrame::OnSize)
+    EVT_MENU(FILE_READ,            fwinFrame::OnFileRead)
+    EVT_MENU(FILE_SAVE,            fwinFrame::OnFileSave)
+    EVT_MENU(FILE_SAVE_SELECTION,  fwinFrame::OnFileSaveSelection)
+    EVT_MENU(FILE_PRINT,           fwinFrame::OnFilePrint)
+    EVT_MENU(FILE_PRINT_SELECTION, fwinFrame::OnFilePrintSelection)
+    EVT_MENU(EDIT_CUT,             fwinFrame::OnEditCut)
+    EVT_MENU(EDIT_COPY,            fwinFrame::OnEditCopy)
+    EVT_MENU(EDIT_COPY_TEXT,       fwinFrame::OnEditCopyText)
+    EVT_MENU(EDIT_PASTE,           fwinFrame::OnEditPaste)
+    EVT_MENU(EDIT_REINPUT,         fwinFrame::OnEditReinput)
+    EVT_MENU(EDIT_SELECT_ALL,      fwinFrame::OnEditSelectAll)
+    EVT_MENU(EDIT_CLEAR,           fwinFrame::OnEditClear)
+    EVT_MENU(EDIT_REDRAW,          fwinFrame::OnEditRedraw)
+    EVT_MENU(EDIT_HOME,            fwinFrame::OnEditHome)
+    EVT_MENU(EDIT_END,             fwinFrame::OnEditEnd)
+    EVT_MENU(FONT_SELECT,          fwinFrame::OnFontSelect)
+    EVT_MENU(FONT_SIZE,            fwinFrame::OnFontSize)
+    EVT_MENU(BREAK_BREAK,          fwinFrame::OnBreakBreak)
+    EVT_MENU(BREAK_BACKTRACE,      fwinFrame::OnBreakBacktrace)
+    EVT_MENU(BREAK_PAUSE,          fwinFrame::OnBreakPause)
+    EVT_MENU(BREAK_RESUME,         fwinFrame::OnBreakResume)
+    EVT_MENU(BREAK_STOP_GO,        fwinFrame::OnBreakStopGo)
+    EVT_MENU(BREAK_DISCARD_OUTPUT, fwinFrame::OnBreakDiscardOutput)
+    EVT_MENU(HELP_HELP,            fwinFrame::OnHelpHelp)
 END_EVENT_TABLE()
 
 static bool shouldExit;
@@ -1580,6 +1708,70 @@ fwinFrame::fwinFrame()
        : wxFrame(NULL, wxID_ANY, "wxterminal")
 {
     SetIcon(wxICON(fwin));
+// I will set up some menus here
+    wxMenu *fileMenu = new wxMenu;
+    wxMenu *editMenu = new wxMenu;
+    wxMenu *fontMenu = new wxMenu;
+    wxMenu *breakMenu = new wxMenu;
+    wxMenu *loadPackageMenu = new wxMenu;
+    wxMenu *switchMenu = new wxMenu;
+    wxMenu *helpMenu = new wxMenu;
+
+    fileMenu->Append(FILE_READ, "&Read...", "Read a file");
+    fileMenu->Append(FILE_SAVE, "&Save...", "Save to a file");
+    fileMenu->Append(FILE_SAVE_SELECTION, "Save Se&lection", "Save selection");
+    fileMenu->Append(FILE_PRINT, "&Print", "Print");
+    fileMenu->Append(FILE_PRINT_SELECTION, "Pri&nt Sekection", "Print Selection");
+    fileMenu->Append(FILE_QUIT, "&Quit\tCtrl+\\", "Quit");
+
+    editMenu->Append(EDIT_CUT, "&Cut", "Cut");
+    editMenu->Append(EDIT_COPY, "C&opy", "Copy");
+    editMenu->Append(EDIT_COPY_TEXT, "Copy &Text", "Copy as text");
+    editMenu->Append(EDIT_PASTE, "&Paste\tCtrl+V", "Paste");
+    editMenu->Append(EDIT_REINPUT, "&Reinput\tCtrl+^", "Reinput");
+    editMenu->Append(EDIT_SELECT_ALL, "Select &All", "Select All");
+    editMenu->Append(EDIT_CLEAR, "C&lear\tCtrl+L", "Clear");
+    editMenu->Append(EDIT_REDRAW, "Re&draw\tCtrl+R", "Redraw");
+    editMenu->Append(EDIT_HOME, "&Home", "Home");
+    editMenu->Append(EDIT_END, "&End", "End");
+
+    fontMenu->Append(FONT_SELECT, "&Font", "Font");
+    fontMenu->Append(FONT_SIZE, "Font &Size", "Font Size");
+ 
+    breakMenu->Append(BREAK_BREAK, "&Break", "Break");
+    breakMenu->Append(BREAK_BACKTRACE, "Bac&ktrace", "Backtrace");
+    breakMenu->Append(BREAK_PAUSE, "&Pause", "Pause");
+    breakMenu->Append(BREAK_RESUME, "&Resume", "Resume");
+    breakMenu->Append(BREAK_STOP_GO, "&Stop/Go", "Stop/Go");
+    breakMenu->Append(BREAK_DISCARD_OUTPUT, "&Discard Output", "Discard Output");
+
+// The "Load Package" and "Switch" menus get populated dynamically later on.
+
+    helpMenu->Append(HELP_HELP, "&Help\tF1", "display Help in a browser");
+    helpMenu->Append(HELP_ABOUT, "&About\tF2", "Show the About dialog");
+
+// The keyboard shortcuts indicated here are not always going to be the
+// ones you would have first expeced. This is because all sorts of combinations
+// are used for keyboard-driven editing. A good example is ALT-F which moves
+// forward one word, and so can not (also) be used to open the File menu.
+
+    wxMenuBar *menuBar = new wxMenuBar;
+    menuBar->Append(fileMenu, "F&ile");
+    menuBar->Append(editMenu, "&Edit");
+    menuBar->Append(fontMenu, "F&ont");
+    menuBar->Append(breakMenu, "B&reak");
+    menuBar->Append(loadPackageMenu, "Load Packa&ge");
+    menuBar->Append(switchMenu, "&Switch");
+    menuBar->Append(helpMenu, "Help&?");
+    SetMenuBar(menuBar);
+
+    CreateStatusBar(3);
+    SetStatusText("Left stuff", 0);
+    SetStatusText("Middle", 1);
+    SetStatusText("Right", 2);
+
+    wxToolBar *toolBar = CreateToolBar();
+
     int numDisplays = wxDisplay::GetCount(); // how many displays?
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
@@ -2826,10 +3018,9 @@ void fwinFrame::OnExit(wxCommandEvent &event)
 
 void fwinFrame::OnAbout(wxCommandEvent &event)
 {
-// At present this never gets activated!
     wxMessageBox(
        wxString::Format(
-           "wxterminal (A C Norman 2010)\n"
+           "wxterminal (A C Norman 2010-11)\n"
            "wxWidgets version: %s\n"
            "Operating system: %s",
            wxVERSION_STRING,
@@ -2864,6 +3055,129 @@ void fwinText::enlargeTextBuffer()
         (uint32_t *)realloc(textBuffer, textBufferSize*sizeof(uint32_t));
     if (textBuffer == NULL) exit(1); // Abrupt collapse on no memory.
 }
+
+// Now I have handlers for the menu items used here...
+
+void fwinText::OnFileRead()
+{
+    FWIN_LOG("READ\n");
+}
+
+void fwinText::OnFileSave()
+{
+    FWIN_LOG("SAVE\n");
+}
+
+void fwinText::OnFileSaveSelection()
+{
+    FWIN_LOG("SAVE SELECTION\n");
+}
+
+void fwinText::OnFilePrint()
+{
+    FWIN_LOG("PRINT\n");
+}
+
+void fwinText::OnFilePrintSelection()
+{
+    FWIN_LOG("PRINT SELECTION\n");
+}
+
+void fwinText::OnEditCut()
+{
+    FWIN_LOG("CUT\n");
+}
+
+void fwinText::OnEditCopy()
+{
+    FWIN_LOG("COPY\n");
+}
+
+void fwinText::OnEditCopyText()
+{
+    FWIN_LOG("COPY TEXT\n");
+}
+
+void fwinText::OnEditPaste()
+{
+    FWIN_LOG("PASTE\n");
+}
+
+void fwinText::OnEditReinput()
+{
+    FWIN_LOG("REINPUT\n");
+}
+
+void fwinText::OnEditSelectAll()
+{
+    FWIN_LOG("SELECTALL\n");
+}
+
+void fwinText::OnEditClear()
+{
+    FWIN_LOG("CLEAR\n");
+}
+
+void fwinText::OnEditRedraw()
+{
+    FWIN_LOG("REDRAW\n");
+}
+
+void fwinText::OnEditHome()
+{
+    FWIN_LOG("HOME\n");
+}
+
+void fwinText::OnEditEnd()
+{
+    FWIN_LOG("END\n");
+}
+
+void fwinText::OnFontSelect()
+{
+    FWIN_LOG("FONT SELECT\n");
+}
+
+void fwinText::OnFontSize()
+{
+    FWIN_LOG("FONT SIZE\n");
+}
+
+void fwinText::OnBreakBreak()
+{
+    FWIN_LOG("BREAK\n");
+}
+
+void fwinText::OnBreakBacktrace()
+{
+    FWIN_LOG("BACKTRACE\n");
+}
+
+void fwinText::OnBreakPause()
+{
+    FWIN_LOG("PAUSE\n");
+}
+
+void fwinText::OnBreakResume()
+{
+    FWIN_LOG("RESUME\n");
+}
+
+void fwinText::OnBreakStopGo()
+{
+    FWIN_LOG("STOP_GO\n");
+}
+
+void fwinText::OnBreakDiscardOutput()
+{
+    FWIN_LOG("DISCARDOUTPUT\n");
+}
+
+void fwinText::OnHelpHelp()
+{
+    FWIN_LOG("HELP\n");
+}
+
 
 // Hmmm - on the Macintosh I find that the arrow keys and regular keys
 // with ALT or CTRL set do not generate an OnChar event, only a KeyDown one.
@@ -2900,7 +3214,7 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
     if (r < 256 && (m & wxMOD_ALT) != 0)
     {
 //-        FWIN_LOG("Char with ALT pressed\n");
-        processChar(c, r, m);
+        if (processChar(c, r, m)) event.Skip();
         return;
     }
 // If I had a normal key plus CMD I will map the unicode value to just the
@@ -2908,13 +3222,13 @@ void fwinText::OnKeyDown(wxKeyEvent &event)
     if (r < 256)
     {
 //-        FWIN_LOG("Char with CMD pressed\n");
-        processChar(r & 0x1f, r, m);
+        if (processChar(r & 0x1f, r, m)) event.Skip();
         return;
     }
 // Now finally I have something where the key pressed seems to be a "special"
 // one (eg function key, numeric key-pad, arrow key etc etc.
 //-    FWIN_LOG("make unicode WXK_NONE=%x\n", WXK_NONE);
-    processChar(WXK_NONE, r, m);
+    if (processChar(WXK_NONE, r, m)) event.Skip();
 // because I do nothing special here this has accepted and processed the
 // key event and it will not re-appear later on via OnChar.
 }
@@ -2926,10 +3240,10 @@ void fwinText::OnChar(wxKeyEvent &event)
     int m = event.GetModifiers(); // wxMOD_ALT, wxMOD_SHIFT, wxMOD_CMD
                                   // Also ALTGR, META, WIN, CONTROL that
                                   // I will not use.
-    processChar(c, r, m);
+    if (processChar(c, r, m)) event.Skip();
 }
 
-void fwinText::processChar(int c, int r, int m)
+bool fwinText::processChar(int c, int r, int m)
 {
 //-    FWIN_LOG("process: Raw key:%x Unicode:%x modifiers:%x\n", r, c, m);
     char *history_string = NULL;
@@ -2970,7 +3284,8 @@ void fwinText::processChar(int c, int r, int m)
     case WXK_PRINT:
     case WXK_EXECUTE:
     case WXK_SNAPSHOT:
-                  case WXK_F2:  case WXK_F3:  case WXK_F4:  case WXK_F5:
+    case WXK_HELP:
+    case WXK_F1:  case WXK_F2:  case WXK_F3:  case WXK_F4:  case WXK_F5:
     case WXK_F6:  case WXK_F7:  case WXK_F8:  case WXK_F9:  case WXK_F10:
     case WXK_F11: case WXK_F12: case WXK_F13: case WXK_F14: case WXK_F15:
     case WXK_F16: case WXK_F17: case WXK_F18: case WXK_F19: case WXK_F20:
@@ -2987,7 +3302,7 @@ void fwinText::processChar(int c, int r, int m)
     default:
 // All the above either will not arise as characters or if they do will be
 // things I wish to ignore.
-            return;
+            return true;
 
     case WXK_DELETE:
     case WXK_NUMPAD_DELETE:
@@ -3031,11 +3346,6 @@ void fwinText::processChar(int c, int r, int m)
     case WXK_PAGEDOWN:
     case WXK_NUMPAD_PAGEDOWN:
             c = WXK_PAGEDOWN|NON_UNICODE;
-            break;
-    case WXK_HELP:
-    case WXK_F1:
-    case WXK_NUMPAD_F1:
-            c = WXK_HELP|NON_UNICODE;
             break;
 
 // Now I have some cases where there may be special dedicated keys on some
@@ -3117,14 +3427,14 @@ void fwinText::processChar(int c, int r, int m)
             {   beep();
                 searchFlags = 0;   // cancel searching before it started!
                 killSelection();
-                return;
+                return false;
             }
             searchFlags--;
             if (SEARCH_LENGTH == 0)
             {   searchFlags = 0;   // delete the one char in the search string
                 killSelection();
                 setInputText("");
-                return;
+                return false;
             }
             historyNumber = searchStack[SEARCH_LENGTH];
 // The "trySearch" here really really ought to succeed since I have reverted
@@ -3144,7 +3454,7 @@ void fwinText::processChar(int c, int r, int m)
             extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
             setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return;
+            return false;
 // ALT-P and ALT-p and UP all search backwards
     case 'P': case 'p':
             if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
@@ -3153,7 +3463,7 @@ void fwinText::processChar(int c, int r, int m)
             searchFlags |= SEARCH_BACKWARD;
             if (historyNumber <= historyFirst)
             {   beep();  // already on last possible place
-                return;
+                return false;
             }
             save = historyNumber;
             historyNumber--;
@@ -3161,7 +3471,7 @@ void fwinText::processChar(int c, int r, int m)
             if (r == -1)
             {   historyNumber = save;
                 beep();
-                return;
+                return false;
             }
             startMatch = r;
             history_string = historyGet(historyNumber);
@@ -3175,7 +3485,7 @@ void fwinText::processChar(int c, int r, int m)
             extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
             setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return;
+            return false;
 // ALT-N and ALT-n and DOWN all search forwards
     case 'N': case 'n':
             if (!(m & wxMOD_ALT)) goto defaultlabelsearch;
@@ -3184,7 +3494,7 @@ void fwinText::processChar(int c, int r, int m)
             searchFlags &= ~SEARCH_BACKWARD;
             if (historyNumber >= historyLast)
             {   beep();
-                return;
+                return false;
             }
             save = historyNumber;
             historyNumber++;
@@ -3192,7 +3502,7 @@ void fwinText::processChar(int c, int r, int m)
             if (r == -1)
             {   historyNumber = save;
                 beep();
-                return;
+                return false;
             }
             startMatch = r;
             history_string = historyGet(historyNumber);
@@ -3206,15 +3516,15 @@ void fwinText::processChar(int c, int r, int m)
             extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
             setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return;
+            return false;
 // I detect ^U here and cause it to exit search mode.
     case ('U' & 0x15):
             searchFlags = 0;
             killSelection();
-            return;
+            return false;
     case WXK_ESCAPE:       // ctl-[
             keyFlags ^= ESC_PENDING;
-            return;
+            return false;
     default:
     defaultlabelsearch:
 // I suggest "^@" as a sensible character to type to exit from searching.
@@ -3241,7 +3551,7 @@ void fwinText::processChar(int c, int r, int m)
 // each holding a Unicode char in the lower 24 bits.
             if (SEARCH_LENGTH > 250)
             {   beep();
-                return;
+                return false;
             }
             searchString[SEARCH_LENGTH] = c;
             searchStack[SEARCH_LENGTH] = historyNumber;
@@ -3252,7 +3562,7 @@ void fwinText::processChar(int c, int r, int m)
             {   historyNumber = save;
                 beep();
                 searchFlags--;
-                return;
+                return false;
             }
             startMatch = r;
             history_string = historyGet(historyNumber);
@@ -3266,7 +3576,7 @@ void fwinText::processChar(int c, int r, int m)
             extendSelection(ls+startMatch+SEARCH_LENGTH, SELECT_CHARS, TRUE);
             setCaretPos(ls+startMatch+SEARCH_LENGTH, TRUE);
 #endif
-            return;
+            return false;
         }
     }
 // If the very first character I see is a "^D" it is to be taken as EOF
@@ -3278,14 +3588,14 @@ void fwinText::processChar(int c, int r, int m)
 // a newline had also been typed.
         insertChar(0x04);
         insertNewline();
-        return;
+        return false;
     }
 // If the very first key I see is "^G" I will raise an exception
 // for the user.
     if (c == ('C' & 0x1f) &&
         !(keyFlags & ANY_KEYS))
     {   displayBacktrace();
-        return;
+        return false;
     }
     keyFlags |= ANY_KEYS;
     switch (c)
@@ -3296,28 +3606,28 @@ case WXK_BACK:  // = Ctrl-H
 // on Windows) is mapped to ctrl-DELETE so that will delete forwards.
         if ((m & wxMOD_ALT) != 0) deleteWordBackwards();
         else deleteBackwards(1);
-        return;
+        return false;
 case WXK_END|NON_UNICODE:
 // Hmmm - still should I extend a selection if an anchor is set?
 // END should probably go to the end of the current line, with ALT-END
 // going to the end of the last line.
         if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocEnd();
         else moveLineEnd();
-        return;
+        return false;
 case WXK_HOME|NON_UNICODE:
 // HOME should probably go to the start of the current active line, with
 // ALT-HOME being the thing that goes to top of the screen-buffer.
         if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveDocStart();
         else moveLineStart();
-        return;
+        return false;
 case WXK_LEFT|NON_UNICODE:
         if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordLeft();
         else moveLeft();
-        return;
+        return false;
 case WXK_RIGHT|NON_UNICODE:
         if ((m & (wxMOD_CMD|wxMOD_ALT)) != 0) moveWordRight();
         else moveRight();
-        return;
+        return false;
 case WXK_UP|NON_UNICODE:
 // UP      go to previous item in history
 // ALT-UP  search backwards in history
@@ -3325,7 +3635,7 @@ case WXK_UP|NON_UNICODE:
         if ((m & wxMOD_CMD) || (options & READONLY)) moveUp();
         else if (m & wxMOD_ALT) searchHistoryPrev();
         else historyPrev();
-        return;
+        return false;
 case WXK_DOWN|NON_UNICODE:
 // If you are not waiting for input then cursor up and down just move you up
 // and down! If you are waiting for input then Control can be used to break
@@ -3333,7 +3643,7 @@ case WXK_DOWN|NON_UNICODE:
         if ((m & wxMOD_CMD) || (options & READONLY)) moveDown();
         else if (m & wxMOD_ALT) searchHistoryNext();
         else historyNext();
-        return;
+        return false;
 case WXK_RETURN:
 // case ('J' & 0x1f):
 // I always act as if newlines were typed at the very end of the input.
@@ -3352,37 +3662,37 @@ case '@':
 // with ALT, I think I will tend to make ALT-x behave like ^x.
         if (m & wxMOD_ALT)
         {   setSelectionMark();
-            return;
+            return false;
         }
         else goto defaultlabel;
 case '@' & 0x1f:
         setSelectionMark();
-        return;
+        return false;
 case 'A': case 'a':
         if (m & wxMOD_ALT)
         {   moveLineStart();
-            return;
+            return false;
         }
         else goto defaultlabel;
 case 'A' & 0x1f:
         moveLineStart();
-        return;
+        return false;
 case 'B' & 0x1f:
         moveLeft();
-        return;
+        return false;
 case 'B': case 'b':
         if (m & wxMOD_ALT)
         {   moveWordLeft();
-            return;
+            return false;
         }
         else goto defaultlabel;
 case 'C' & 0x1f:
         interrupt();
-        return;
+        return false;
 case 'C': case 'c':
         if (m & wxMOD_ALT)
         {   capitalize();
-            return;
+            return false;
         }
         goto defaultlabel;
 case WXK_DELETE:
@@ -3392,7 +3702,7 @@ case WXK_DELETE:
 // a word.
         if (m & wxMOD_ALT) deleteWordForwards();
         else deleteForwards(1);
-        return;
+        return false;
 case 'D' & 0x1f:
 // Here I may want to arrange that if the current input-buffer is empty
 // then ^D causes and EOF to be returned. Well yes, I have arranged that
@@ -3401,44 +3711,44 @@ case 'D' & 0x1f:
 case 'D': case 'd':
         if (m & wxMOD_ALT)
         {   deleteWordForwards();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'E' & 0x1f:
         moveLineEnd();
-        return;
+        return false;
 case 'E': case 'e':
 // ALT-e enters the EDIT menu: this is handled by having the menu
 // registered elsewhere.
+        if (m & wxMOD_ALT) return 1;
         goto defaultlabel;
 case 'F' & 0x1f:
         moveRight();
-        return;
+        return false;
 case 'F': case 'f':
         if (m & wxMOD_ALT)
         {   moveWordRight();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'G' & 0x1f:
         displayBacktrace();
-        return;
+        return false;
 case 'G': case 'g':
-        if (m & wxMOD_ALT)
-        {   displayBacktrace();
-            return;
-        }
+// ALT-G will be for "Load Packa&ge"
+        if (m & wxMOD_ALT) return true;
         goto defaultlabel;
 // case 'H' & 0x1f: // = WXK_BACK
 case 'H': case 'h':
         if (m & wxMOD_ALT)
         {   deleteWordBackwards();
-            return;
+            return false;
         }
-         goto defaultlabel;
+        goto defaultlabel;
 // case 'I' & 0x1f: // == WXK_TAB
 case 'I': case 'i':
 // ALT-i enters the FILE menu
+        if (m & wxMOD_ALT) return true;
         goto defaultlabel;
 case 'J' & 0x1f:
          c = '\n';
@@ -3446,23 +3756,23 @@ case 'J' & 0x1f:
 case 'J': case 'j':
         if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
         {   insertNewline();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'K' & 0x1f:
         deleteCurrentLine();
-        return;
+        return false;
 case 'K': case 'k':
         if (m & wxMOD_ALT)
         {   deleteCurrentLine();
-            return;
+            return false;
         }
         goto defaultlabel;
 // ^L will be a shortcut for clear-screen
 case 'L': case 'l':
         if (m & wxMOD_ALT)
         {   lowerCase();
-            return;
+            return false;
         }
         goto defaultlabel;
 // case 'M' & 0x1f: // = WXK_RETURN
@@ -3472,12 +3782,12 @@ case 'M': case 'm':
 case 'N' & 0x1f:
         if (options & READONLY) moveDown();
         else historyNext();
-        return;
+        return false;
 case 'N': case 'n':
         if (options & READONLY) goto defaultlabel;
         else if (m & wxMOD_ALT)
         {   searchHistoryNext();
-            return;
+            return false;
         }
         goto defaultlabel;
 // case 'O' & 0x1f: // menu shortcut to lose eoutput
@@ -3486,49 +3796,52 @@ case 'O': case 'o':
 //    I hope that by making ^O, ^S and ^Q menu shortcuts they will get
 //    acted upon whether I am waiting for input or not.
 // ALT-O enters the FONT menu
+        if (m & wxMOD_ALT) return 1;
         goto defaultlabel;
 case 'P' & 0x1f:
         if (options & READONLY) moveUp();
         else historyPrev();
-        return;
+        return false;
 case 'P': case 'p':
         if (options & READONLY) goto defaultlabel;
         else if (m & wxMOD_ALT)
         {   searchHistoryPrev();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'Q': case 'q':
 // ^Q will be RESUME OUTPUT
-        if (m & wxMOD_ALT) return; // Ignore ALT-Q
+        if (m & wxMOD_ALT) return true; // Ignore ALT-Q
         goto defaultlabel;
 case 'R' & 0x1f:
         Refresh();
-        return;
+        return false;
 case 'R': case 'r':
 // ALT-r will be the B&reak menu
+        if (m & wxMOD_ALT) return 1;
         goto defaultlabel;
 // case 'S' & 0x1f: // menu shortcut
 case 'S': case 's':
 // ^S should pause output
 // ALT-s enters the SWITCH menu
+        if (m & wxMOD_ALT) return 1;
         goto defaultlabel;
 case 'T' & 0x1f:
         transpose();
-        return;
+        return false;
 case 'T': case 't':
         if (m & wxMOD_ALT)
         {   transpose();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'U' & 0x1f:
         undo();
-        return;
+        return false;
 case 'U': case 'u':
         if (m & wxMOD_ALT)
         {   upperCase();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'V': case 'v':
@@ -3537,30 +3850,30 @@ case 'V': case 'v':
 case 'W' & 0x1f:
 // ^W behaviour is just like ALT-H
         deleteWordBackwards();
-        return;
+        return false;
 case 'W': case 'w':
         if (m & wxMOD_ALT)
         {   copyRegion();
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'X' & 0x1f:
         ctrlXcommand();
-        return;
+        return false;
 case 'X': case 'x':
         if (m & wxMOD_ALT)
         {   unicodeInput();   // Unicode conversion
-            return;
+            return false;
         }
         goto defaultlabel;
 case 'Y' & 0x1f:
 // ^Y is short for YANK, otherwise known as PASTE
         paste();
-        return;
+        return false;
 case 'Y': case 'y':
         if (m & wxMOD_ALT)
         {   rotateClipboard();
-            return;
+            return false;
         }
         goto defaultlabel;
 // case 'Z' & 0x1f: // suspend
@@ -3572,23 +3885,28 @@ case '[':
 case WXK_ESCAPE:       // ctl-[
 // ESC must have the effect of simulating the ALT property for the following
 // character.
-        return escapePressed();
+        escapePressed();
+        return false;
 case '\\' & 0x1f:
-        return; // should exit the application???
+        frame->CloseAction();
+        return false;
 case '\\':
         goto defaultlabel;
 case ']':
         goto defaultlabel;
 case '^' & 0x1f:
         reinput();
-        return;
+        return false;
 case '^':
         goto defaultlabel;
 case '_':
         if (m & wxMOD_ALT)
         {   copyWordPrev();
-            return;
+            return false;
         }
+        goto defaultlabel;
+case '/': case '?':
+        if (m & wxMOD_ALT) return true;
         goto defaultlabel;
 
 default:
@@ -3598,13 +3916,13 @@ defaultlabel:
         if (awaiting)
         {   if (c == '\n')
             {   insertNewline();
-                return;
+                return false;
             }
             insertChar(c | 0x01000000);
-            return;
+            return false;
         }
         beep();
-        return;
+        return false;
 
 #ifdef RECONSTRUCTED
         insertChar(c); // @@@@
@@ -3668,7 +3986,7 @@ defaultlabel:
 
 #endif // RECONSTRUCTED
 
-    return;
+    return false;
 }
 
 
