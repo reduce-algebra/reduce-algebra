@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 02bcfbef 15-Jan-2011 */
+/* Signature: 7c7ac44a 17-Jan-2011 */
 
 #include "wx/wxprec.h"
 
@@ -50,6 +50,8 @@
 #include <wx/caret.h>
 #include <wx/display.h>
 #include <wx/settings.h>
+#include <wx/print.h>
+#include <wx/printdlg.h>
 
 #include "config.h"
 
@@ -276,8 +278,9 @@ enum
     FILE_READ,
     FILE_SAVE,
     FILE_SAVE_SELECTION,
+    FILE_PAGE_SETUP,
     FILE_PRINT,
-    FILE_PRINT_SELECTION,
+    FILE_PRINT_PREVIEW,
 
     EDIT_CUT,
     EDIT_COPY,
@@ -290,8 +293,20 @@ enum
     EDIT_HOME,
     EDIT_END,
 
-    FONT_SELECT,
-    FONT_SIZE,
+    FONT_DUMMY,   // Used with menu items added and then instantly removed!
+    FONT_CMTT,
+    FONT_DEJA,
+    FONT_SAZANAMI,
+    FONT_FIREFLY,
+    FONT_POINT10,
+    FONT_POINT12,
+    FONT_POINT14,
+    FONT_POINT17,
+    FONT_POINT20,
+    FONT_POINT24,
+    FONT_POINT28,
+    FONT_POINT34,
+    FONT_POINT40,
 
     BREAK_BREAK,
     BREAK_BACKTRACE,
@@ -311,6 +326,8 @@ public:
     wxCriticalSection work;    // for interaction with worker thread
 
     void OnDraw(wxDC &dc);
+    void SetupFonts(wxDC &dc);
+    void MainDraw(wxDC &dc, int from, int to);
 
     void OnChar(wxKeyEvent &event);
     void OnKeyDown(wxKeyEvent &event);
@@ -340,8 +357,9 @@ public:
     void OnFileRead();
     void OnFileSave();
     void OnFileSaveSelection();
+    void OnFilePageSetup();
     void OnFilePrint();
-    void OnFilePrintSelection();
+    void OnFilePrintPreview();
     void OnEditCut();
     void OnEditCopy();
     void OnEditCopyText();
@@ -352,8 +370,19 @@ public:
     void OnEditRedraw();
     void OnEditHome();
     void OnEditEnd();
-    void OnFontSelect();
-    void OnFontSize();
+    void OnFontCMTT();
+    void OnFontDeja();
+    void OnFontSazanami();
+    void OnFontFirefly();
+    void OnFontPoint10();
+    void OnFontPoint12();
+    void OnFontPoint14();
+    void OnFontPoint17();
+    void OnFontPoint20();
+    void OnFontPoint24();
+    void OnFontPoint28();
+    void OnFontPoint34();
+    void OnFontPoint40();
     void OnBreakBreak();
     void OnBreakBacktrace();
     void OnBreakPause();
@@ -410,12 +439,15 @@ public:
 
     class fwinFrame *frame;
     bool fontPriorityCMTT;
-private:
+    int sbWidth;
+    int windowWidth, windowHeight;
+    int rowHeight, rowCount, virtualRowCount;
     wxFont *fixedPitch, *fixedAlternate, *fixedCJK;
+private:
     wxString cjkFontName;
     int currentFont;
     const wxColour *textColour;
-    
+
     double em;
     double pixelsPerPoint;    // conversion from TeX to screen coordinates
     double scaleAdjustment;
@@ -442,7 +474,7 @@ private:
 // when you insert a character it goes into that gap. And delete-forwards and
 // delete-backwards remove the characters after or before that gap.
 // caretPos=0 puts the caret before any character in the buffer.
-// caretPos=endText puts the caret after the final character in the text. 
+// caretPos=endText puts the caret after the final character in the text.
 // (note that if the buffer is empty both those case apply at the same time).
 //
     wxCaret *caret;
@@ -459,8 +491,6 @@ private:
     int DrawTextRow(wxDC &dc, int y, int pos);
     int SkipTextRow(int pos);
     int textEnd;
-    int windowWidth, windowHeight;
-    int rowHeight, rowCount, virtualRowCount;
     int historyNumber;
 
     int options;
@@ -530,7 +560,7 @@ private:
     void upperCase();
     void escapePressed();
     void makePositionVisible(int p);
-    int editable;    
+    int editable;
     int trySearch();
     void historyNext();
     void historyPrev();
@@ -551,7 +581,7 @@ private:
     int isEditable();
     int isEditableForBackspace();
     void rotateClipboard();
-    void reinput();    
+    void reinput();
     void setCaretPos(int n);
     void interrupt();
     void displayBacktrace();
@@ -595,16 +625,19 @@ public:
     void OnAbout(wxCommandEvent &event);
     void OnSize(wxSizeEvent &event);
     void OnClose(wxCloseEvent &event);
+// The various menu items are delegated to handlers in the text pane.
     void OnFileRead(wxCommandEvent &event)
     {   panel->OnFileRead(); };
     void OnFileSave(wxCommandEvent &event)
     {   panel->OnFileSave(); };
     void OnFileSaveSelection(wxCommandEvent &event)
     {   panel->OnFileSaveSelection(); };
+    void OnFilePageSetup(wxCommandEvent &event)
+    {   panel->OnFilePageSetup(); };
     void OnFilePrint(wxCommandEvent &event)
     {   panel->OnFilePrint(); };
-    void OnFilePrintSelection(wxCommandEvent &event)
-    {   panel->OnFilePrintSelection(); };
+    void OnFilePrintPreview(wxCommandEvent &event)
+    {   panel->OnFilePrintPreview(); };
     void OnEditCut(wxCommandEvent &event)
     {   panel->OnEditCut(); };
     void OnEditCopy(wxCommandEvent &event)
@@ -625,10 +658,32 @@ public:
     {   panel->OnEditHome(); };
     void OnEditEnd(wxCommandEvent &event)
     {   panel->OnEditEnd(); };
-    void OnFontSelect(wxCommandEvent &event)
-    {   panel->OnFontSelect(); };
-    void OnFontSize(wxCommandEvent &event)
-    {   panel->OnFontSize(); };
+    void OnFontCMTT(wxCommandEvent &event)
+    {   panel->OnFontCMTT(); };
+    void OnFontDeja(wxCommandEvent &event)
+    {   panel->OnFontDeja(); };
+    void OnFontSazanami(wxCommandEvent &event)
+    {   panel->OnFontSazanami(); };
+    void OnFontFirefly(wxCommandEvent &event)
+    {   panel->OnFontFirefly(); };
+    void OnFontPoint10(wxCommandEvent &event)
+    {   panel->OnFontPoint10(); };
+    void OnFontPoint12(wxCommandEvent &event)
+    {   panel->OnFontPoint12(); };
+    void OnFontPoint14(wxCommandEvent &event)
+    {   panel->OnFontPoint14(); };
+    void OnFontPoint17(wxCommandEvent &event)
+    {   panel->OnFontPoint17(); };
+    void OnFontPoint20(wxCommandEvent &event)
+    {   panel->OnFontPoint20(); };
+    void OnFontPoint24(wxCommandEvent &event)
+    {   panel->OnFontPoint24(); };
+    void OnFontPoint28(wxCommandEvent &event)
+    {   panel->OnFontPoint28(); };
+    void OnFontPoint34(wxCommandEvent &event)
+    {   panel->OnFontPoint34(); };
+    void OnFontPoint40(wxCommandEvent &event)
+    {   panel->OnFontPoint40(); };
     void OnBreakBreak(wxCommandEvent &event)
     {   panel->OnBreakBreak(); };
     void OnBreakBacktrace(wxCommandEvent &event)
@@ -661,8 +716,9 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_MENU(FILE_READ,            fwinFrame::OnFileRead)
     EVT_MENU(FILE_SAVE,            fwinFrame::OnFileSave)
     EVT_MENU(FILE_SAVE_SELECTION,  fwinFrame::OnFileSaveSelection)
+    EVT_MENU(FILE_PAGE_SETUP,      fwinFrame::OnFilePageSetup)
     EVT_MENU(FILE_PRINT,           fwinFrame::OnFilePrint)
-    EVT_MENU(FILE_PRINT_SELECTION, fwinFrame::OnFilePrintSelection)
+    EVT_MENU(FILE_PRINT_PREVIEW,   fwinFrame::OnFilePrintPreview)
     EVT_MENU(EDIT_CUT,             fwinFrame::OnEditCut)
     EVT_MENU(EDIT_COPY,            fwinFrame::OnEditCopy)
     EVT_MENU(EDIT_COPY_TEXT,       fwinFrame::OnEditCopyText)
@@ -673,8 +729,19 @@ BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
     EVT_MENU(EDIT_REDRAW,          fwinFrame::OnEditRedraw)
     EVT_MENU(EDIT_HOME,            fwinFrame::OnEditHome)
     EVT_MENU(EDIT_END,             fwinFrame::OnEditEnd)
-    EVT_MENU(FONT_SELECT,          fwinFrame::OnFontSelect)
-    EVT_MENU(FONT_SIZE,            fwinFrame::OnFontSize)
+    EVT_MENU(FONT_CMTT,            fwinFrame::OnFontCMTT)
+    EVT_MENU(FONT_DEJA,            fwinFrame::OnFontDeja)
+    EVT_MENU(FONT_SAZANAMI,        fwinFrame::OnFontSazanami)
+    EVT_MENU(FONT_FIREFLY,         fwinFrame::OnFontFirefly)
+    EVT_MENU(FONT_POINT10,         fwinFrame::OnFontPoint10)
+    EVT_MENU(FONT_POINT12,         fwinFrame::OnFontPoint12)
+    EVT_MENU(FONT_POINT14,         fwinFrame::OnFontPoint14)
+    EVT_MENU(FONT_POINT17,         fwinFrame::OnFontPoint17)
+    EVT_MENU(FONT_POINT20,         fwinFrame::OnFontPoint20)
+    EVT_MENU(FONT_POINT24,         fwinFrame::OnFontPoint24)
+    EVT_MENU(FONT_POINT28,         fwinFrame::OnFontPoint28)
+    EVT_MENU(FONT_POINT34,         fwinFrame::OnFontPoint34)
+    EVT_MENU(FONT_POINT40,         fwinFrame::OnFontPoint40)
     EVT_MENU(BREAK_BREAK,          fwinFrame::OnBreakBreak)
     EVT_MENU(BREAK_BACKTRACE,      fwinFrame::OnBreakBacktrace)
     EVT_MENU(BREAK_PAUSE,          fwinFrame::OnBreakPause)
@@ -705,6 +772,21 @@ protected:
     virtual wxThread::ExitCode Entry();
 };
 
+class fwinPrintout: public wxPrintout
+{
+public:
+    fwinPrintout(fwinText* p, const wxString &title = "wxfwin printout")
+        : wxPrintout(title) { parent = p; }
+
+    void GetPageInfo(int *minPage, int *maxPage, int *from, int *to);
+    bool HasPage(int page);
+    bool OnPrintPage(int page);
+
+private:
+    fwinText *parent;
+};
+
+
 fwinWorker::~fwinWorker()
 {
     wxCriticalSectionLocker lock(panel->work);
@@ -716,7 +798,7 @@ void fwinText::OnWorkerFinished(wxThreadEvent& event)
     FWIN_LOG("worker thread terminated\n");
 // In which case quit!
     Destroy();
-    exit(returncode);   
+    exit(returncode);
 }
 
 
@@ -836,7 +918,7 @@ static localFonts fontNames[] =
     {"sazanami-gothic", NULL},  // "Sazanami Gothic (Regular)"
     {"sazanami-mincho", NULL},  // "Sazanami Mincho (Regular)"
 
-           
+
 // Right now I will add in ALL the fonts from the BaKoMa collection.
 // This can make sense in a font demo program but in a more serious
 // application I should be a little more selective!
@@ -1705,7 +1787,7 @@ bool fwinApp::OnInit()
 }
 
 fwinFrame::fwinFrame()
-       : wxFrame(NULL, wxID_ANY, "wxterminal")
+       : wxFrame(NULL, wxID_ANY, "wxfwin")
 {
     SetIcon(wxICON(fwin));
 // I will set up some menus here
@@ -1720,8 +1802,9 @@ fwinFrame::fwinFrame()
     fileMenu->Append(FILE_READ, "&Read...", "Read a file");
     fileMenu->Append(FILE_SAVE, "&Save...", "Save to a file");
     fileMenu->Append(FILE_SAVE_SELECTION, "Save Se&lection", "Save selection");
+    fileMenu->Append(FILE_PAGE_SETUP, "Page Se&tup", "Page setup");
     fileMenu->Append(FILE_PRINT, "&Print", "Print");
-    fileMenu->Append(FILE_PRINT_SELECTION, "Pri&nt Sekection", "Print Selection");
+    fileMenu->Append(FILE_PRINT_PREVIEW, "Pri&nt Preview", "Print Preview");
     fileMenu->Append(FILE_QUIT, "&Quit\tCtrl+\\", "Quit");
 
     editMenu->Append(EDIT_CUT, "&Cut", "Cut");
@@ -1735,9 +1818,26 @@ fwinFrame::fwinFrame()
     editMenu->Append(EDIT_HOME, "&Home", "Home");
     editMenu->Append(EDIT_END, "&End", "End");
 
-    fontMenu->Append(FONT_SELECT, "&Font", "Font");
-    fontMenu->Append(FONT_SIZE, "Font &Size", "Font Size");
- 
+    fontMenu->AppendRadioItem(FONT_CMTT, "Computer &Modern", "Prefer Computer Modern (cmtt) Font");
+    fontMenu->AppendRadioItem(FONT_DEJA, "&DejaVu", "Prefer DejaVu Typewriter Text Font");
+    fontMenu->AppendSeparator();
+// The next line is a hack that keeps the two sets of radio buttons separate.
+    fontMenu->Remove(fontMenu->Append(FONT_DUMMY, "dummy"));
+    fontMenu->AppendRadioItem(FONT_SAZANAMI, "&Sazanami", "Use Sazanami CJK Font");
+    fontMenu->AppendRadioItem(FONT_FIREFLY, "&Firefly Sung", "Use Firefly Sung CJK Font");
+    fontMenu->AppendSeparator();
+// The next line is a hack that keeps the two sets of radio buttons separate.
+    fontMenu->Remove(fontMenu->Append(FONT_DUMMY, "dummy"));
+    fontMenu->AppendRadioItem(FONT_POINT10, "&10 points", "Use nominally 10 point font");
+    fontMenu->AppendRadioItem(FONT_POINT12, "1&2 points", "Use nominally 12 point font");
+    fontMenu->AppendRadioItem(FONT_POINT14, "1&4 points", "Use nominally 14 point font");
+    fontMenu->AppendRadioItem(FONT_POINT17, "1&7 points", "Use nominally 17 point font");
+    fontMenu->AppendRadioItem(FONT_POINT20, "20 &points", "Use nominally 20 point font");
+    fontMenu->AppendRadioItem(FONT_POINT24, "24 p&oints", "Use nominally 24 point font");
+    fontMenu->AppendRadioItem(FONT_POINT28, "28 po&ints", "Use nominally 28 point font");
+    fontMenu->AppendRadioItem(FONT_POINT34, "34 poi&nts", "Use nominally 34 point font");
+    fontMenu->AppendRadioItem(FONT_POINT40, "40 poin&ts", "Use nominally 40 point font");
+
     breakMenu->Append(BREAK_BREAK, "&Break", "Break");
     breakMenu->Append(BREAK_BACKTRACE, "Bac&ktrace", "Backtrace");
     breakMenu->Append(BREAK_PAUSE, "&Pause", "Pause");
@@ -1811,19 +1911,23 @@ fwinFrame::fwinFrame()
     Centre();
 }
 
+static wxPrintData *printData = NULL;
+static wxPageSetupDialogData* pageSetupData = NULL;
+
 fwinText::fwinText(fwinFrame *parent)
        : wxScrolled<wxWindow>(parent, wxID_ANY,
                     wxDefaultPosition, wxDefaultSize,
                     wxVSCROLL, "fwinText")
 {
     frame = parent;
+    sbWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, this);
     fixedPitch = fixedAlternate = fixedCJK = NULL;
     fontPriorityCMTT = false;
 // The available CJK fonts here are
 //     Windows & Unix            Macintosh
 //     Sazanami Mincho           Sazanami Mincho Regular
 //     Sazanami Gothic           Sazanami Gothic Regular
-//     AR PL New Sung            AR PL New Sung                    
+//     AR PL New Sung            AR PL New Sung
 // Right at present I will make a selection, but in due course I will
 // provide a menu-driven option to let the user select.
 #ifdef MACINTOSH
@@ -1865,7 +1969,12 @@ fwinText::fwinText(fwinFrame *parent)
     awaiting = 0;
     unicodePrompt[0] = '>' | 0x02000000;
     unicodePromptLength = 1;
-    
+
+    printData = new wxPrintData();
+    printData->SetPaperId(wxPAPER_A4); // or wxPAPER_ID_LETTER, say
+    pageSetupData = new wxPageSetupDialogData();
+    pageSetupData->SetMarginTopLeft(wxPoint(20, 20));
+    pageSetupData->SetMarginBottomRight(wxPoint(20, 20));
 
     logfile = NULL; // a menu option will establish this to keep a log.
 
@@ -2533,7 +2642,7 @@ int32_t fwinText::locateChar(int p, int w, int r, int c)
 // What I have done now is to find the end position of the character
 // before position p. This is the start position for the character at
 // position p unless there is a line-wrap to perform. That could be the
-// case if r=80 and the character concerned is not a newline. 
+// case if r=80 and the character concerned is not a newline.
     return PACK(r, c);
 }
 
@@ -2617,7 +2726,7 @@ void fwinText::insertChars(uint32_t *pch, int n)
     {   RefreshRect(wxRect(columnPos[c1], y,
                            columnPos[80], rowHeight));
 // Here I will refresh the first row from caretPos up until its end,
-// and the whole of all other rows that might be involved. 
+// and the whole of all other rows that might be involved.
         RefreshRect(wxRect(columnPos[0], y+rowHeight,
                            columnPos[80], (r2-r1)*rowHeight));
     }
@@ -2773,8 +2882,6 @@ void fwinText::unicodeInput()
 
 void fwinText::ctrlXcommand()
 {
-#ifdef RECONSTRUCTED
-#endif
     uniname *p = unicode_names;
     int i = 0;
     const char *s;
@@ -2809,6 +2916,7 @@ void fwinText::ctrlXcommand()
     {   buffer[i++] = '\n';
         insertChars(buffer, i);
     }
+    makePositionVisible(textEnd);
 }
 
 
@@ -3003,7 +3111,7 @@ FWIN_LOG("%p %p %p\n", panel, panel->frame, panel->frame->worker);
     }
 // Now I can close myself down too.
     Destroy();
-    exit(0);   
+    exit(0);
 }
 
 void fwinFrame::OnClose(wxCloseEvent &event)
@@ -3020,12 +3128,12 @@ void fwinFrame::OnAbout(wxCommandEvent &event)
 {
     wxMessageBox(
        wxString::Format(
-           "wxterminal (A C Norman 2010-11)\n"
+           "wxfwin (A C Norman 2010-11)\n"
            "wxWidgets version: %s\n"
            "Operating system: %s",
            wxVERSION_STRING,
            wxGetOsDescription()),
-       "About wxterminal",
+       "About wxfwin",
        wxOK | wxICON_INFORMATION,
        this);
 }
@@ -3035,16 +3143,15 @@ void fwinFrame::OnSize(wxSizeEvent &event)
 {
     int i;
     double w;
+    FWIN_LOG("OnSize\n");
     wxSize client(GetClientSize());
-    int sbwidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, this);
-    w = ((double)(client.GetWidth() - sbwidth)
-        )/80.0;
+    w = ((double)(client.GetWidth() - panel->sbWidth))/80.0;
     panel->SetSize(client);
     panel->firstPaint = true;
     for (i=0; i<81; i++)
         panel->columnPos[i] = (int)((double)i*w);
-// When I resize the window I will refresh EVERYTHING, and in doing so I
-// will discover where the caret lies.
+// When I resize the window I will refresh EVERYTHING, because the font
+// size may change.
     panel->Refresh();
 }
 
@@ -3073,15 +3180,99 @@ void fwinText::OnFileSaveSelection()
     FWIN_LOG("SAVE SELECTION\n");
 }
 
-void fwinText::OnFilePrint()
+void fwinText::OnFilePageSetup()
 {
-    FWIN_LOG("PRINT\n");
+    FWIN_LOG("PAGESETUP\n");
+// The wxWidgets "printing" sample shows how to arrange these calls.
+    *pageSetupData = *printData;
+    wxPageSetupDialog pageSetupDialog(this, pageSetupData);
+    pageSetupDialog.ShowModal();
+    *pageSetupData = pageSetupDialog.GetPageSetupDialogData();
+    *printData = pageSetupData->GetPrintData();
 }
 
-void fwinText::OnFilePrintSelection()
+void fwinText::OnFilePrint()
 {
-    FWIN_LOG("PRINT SELECTION\n");
+    wxPrintDialogData printDialogData(*printData);
+    wxPrinter printer(&printDialogData);
+    fwinPrintout printout(this, "wxfwin");
+    if (!printer.Print(this, &printout, true))
+    {   if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
+            wxLogError("Printer error\n");
+        else FWIN_LOG("Printing cancelled");
+    }
+    else *printData = printer.GetPrintDialogData().GetPrintData();
 }
+
+void fwinText::OnFilePrintPreview()
+{
+    FWIN_LOG("PRINT PREVIEW\n");
+    wxPrintDialogData printDialogData(*printData);
+    wxPrintPreview *preview =
+        new wxPrintPreview(new fwinPrintout(this),
+                           new fwinPrintout(this), &printDialogData);
+    if (!preview->IsOk())
+    {   delete preview;
+        FWIN_LOG("Problem with print preview\n");
+        return;
+    }
+    wxPreviewFrame *frame =
+        new wxPreviewFrame(preview, this, "Print Preview",
+                           wxPoint(100, 100), wxSize(600, 650));
+    frame->Centre(wxBOTH);
+    frame->Initialize();
+    frame->Show();
+}
+
+// Now the implementation of print support
+
+void fwinPrintout::GetPageInfo(int *minPage, int *maxPage, int *from, int *to)
+{
+    *minPage = 1;
+    *maxPage = 2;
+    *from = *minPage;
+    *to = *maxPage;
+}
+
+bool fwinPrintout::HasPage(int page)
+{
+    return (page == 1);
+}
+
+bool fwinPrintout::OnPrintPage(int page)
+{
+    FWIN_LOG("Print page %d\n", page);
+    if (!HasPage(page)) return false;
+    wxDC *dc = GetDC();
+    FitThisSizeToPageMargins(
+        wxSize(parent->windowWidth, parent->windowHeight),
+        *pageSetupData);
+    wxRect fit = GetLogicalPageMarginsRect(*pageSetupData);
+    FWIN_LOG("Print about to OnDraw\n");
+// In the window size had changed recently and I have not yet redrawn it
+// the fonts and measurements may be out of date. So here I create a
+// clientDC that would let me draw on the screen - but I only use it to
+// measure fonts.
+    if (parent->firstPaint)
+    {   wxClientDC dc1(parent);
+        FWIN_LOG("SetupFonts in print framework\n");
+        parent->SetupFonts(dc1);
+    }
+// MainDraw always displays the first row it is asked to draw at y=0.
+    FWIN_LOG("MainDraw from OnPrintPage\n");
+    parent->MainDraw(*dc, 0, parent->virtualRowCount);
+    dc->SetFont(*(parent->fixedPitch));
+    dc->SetTextForeground(*wxBLACK);
+    dc->DrawText(wxString::Format("Page %d", page),
+                 -parent->rowHeight, -(3*parent->rowHeight)/2);
+    return true;
+}
+
+
+
+// end of print support
+
+
 
 void fwinText::OnEditCut()
 {
@@ -3133,15 +3324,72 @@ void fwinText::OnEditEnd()
     FWIN_LOG("END\n");
 }
 
-void fwinText::OnFontSelect()
+void fwinText::OnFontCMTT()
 {
-    FWIN_LOG("FONT SELECT\n");
+    FWIN_LOG("OnFontCMTT");
 }
 
-void fwinText::OnFontSize()
+void fwinText::OnFontDeja()
 {
-    FWIN_LOG("FONT SIZE\n");
+    FWIN_LOG("OnFontDeja");
 }
+
+void fwinText::OnFontSazanami()
+{
+    FWIN_LOG("OnFontSazanami");
+}
+
+void fwinText::OnFontFirefly()
+{
+    FWIN_LOG("OnFontFirefly");
+}
+
+void fwinText::OnFontPoint10()
+{
+    FWIN_LOG("OnFontPoint10");
+}
+
+void fwinText::OnFontPoint12()
+{
+    FWIN_LOG("OnFontPoint12");
+}
+
+void fwinText::OnFontPoint14()
+{
+    FWIN_LOG("OnFontPoint14");
+}
+
+void fwinText::OnFontPoint17()
+{
+    FWIN_LOG("OnFontPoint17");
+}
+
+void fwinText::OnFontPoint20()
+{
+    FWIN_LOG("OnFontPoint20");
+}
+
+void fwinText::OnFontPoint24()
+{
+    FWIN_LOG("OnFontPoint24");
+}
+
+void fwinText::OnFontPoint28()
+{
+    FWIN_LOG("OnFontPoint28");
+}
+
+void fwinText::OnFontPoint34()
+{
+    FWIN_LOG("OnFontPoint34");
+}
+
+void fwinText::OnFontPoint40()
+{
+    FWIN_LOG("OnFontPoint40");
+}
+
+
 
 void fwinText::OnBreakBreak()
 {
@@ -3253,7 +3501,7 @@ bool fwinText::processChar(int c, int r, int m)
 // local editing combinations such as ALT-D, but ESC-I does not activate
 // a menu the way that ALT-I would have.
     if (keyFlags & ESC_PENDING)
-    {   m |= wxMOD_ALT;  
+    {   m |= wxMOD_ALT;
         keyFlags &= ~ESC_PENDING;
     }
 // Now I deal with keys that do not have a Unicode translation. I will
@@ -3406,7 +3654,7 @@ bool fwinText::processChar(int c, int r, int m)
             break;
         }
 // If I "break" from the above switch block it means I have translated
-// the raw character into a Unicode on in C. 
+// the raw character into a Unicode on in C.
     }
 //  FWIN_LOG("Character %#x modifiers %x\n", c, m);
 // I will let the Search Pending code drop through in cases where the
@@ -4025,7 +4273,7 @@ void fwinText::historyAdd(char *s, int n)
     input_history[p] = scopy;
     historyNextEntry++;
     if (scopy != NULL)
-    {   
+    {
         if (n > longestHistoryLine) longestHistoryLine = n;
     }
 }
@@ -4204,9 +4452,10 @@ void fwinText::OnFlushBuffer(const char *fwin_buffer)
     uint32_t wideBuffer[FWIN_BUFFER_SIZE];
     int n = unpackUTF8chars(&wideBuffer[0], fwin_buffer, fwin_out);
     insertChars(&wideBuffer[0], n);
-#ifdef RECONSTRUCTED
-    makePositionVisible(rowStart(length));
-#endif
+    int p = textEnd;
+    while (p > 0 && textBuffer[--p] != '\n');
+    if (p < textEnd) p++;
+    makePositionVisible(p);
 // Tell the worker thread that the GUI is now ready to be sent another request.
     writing.Post();
 }
@@ -4255,11 +4504,89 @@ void fwinText::OnRestoreWindow(wxThreadEvent& event)
     writing.Post();
 }
 
-
-
-void fwinText::OnDraw(wxDC &dc)
+void fwinText::SetupFonts(wxDC &dc)
 {
-// 
+    FWIN_LOG("SetupFonts called, fixedPitch = %p\n", fixedPitch);
+    wxSize window(GetClientSize());
+    windowWidth = window.GetWidth();
+    windowHeight = window.GetHeight();
+    if (fixedPitch == NULL)
+    {   fixedPitch = new wxFont();
+        fixedAlternate = new wxFont();
+        fixedCJK   = new wxFont();
+// It worries me that exactly the same OpenType font needs to be
+// called for using slighly different names on different platforms.
+#ifdef MACINTOSH
+        fixedPitch->SetFaceName("CMU Typewriter Text Regular");
+#else
+        fixedPitch->SetFaceName("CMU Typewriter Text");
+#endif
+        fixedAlternate->SetFaceName("DejaVu Sans Mono");
+        fixedCJK->SetFaceName(cjkFontName);
+        fixedPitch->SetPointSize(1000);
+        fixedAlternate->SetPointSize(1000);
+        fixedCJK->SetPointSize(1000);
+        font_width *p = cm_font_width;
+        while (p->name != NULL &&
+               strcmp(p->name, "cmtt10") != 0) p++;
+        if (p->name == NULL)
+        {   FWIN_LOG("Oops - font data not found\n");
+            exit(1);
+        }
+        wxCoord width, height, depth, leading;
+        dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
+        FWIN_LOG("width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+        em = (double)width/100.0;
+        double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
+        pixelsPerPoint = em/fmEm;
+        fixedPitch->SetPointSize(10);
+        dc.GetTextExtent((wchar_t)0x21d0, &width, &height, &depth, &leading, fixedAlternate);
+        FWIN_LOG("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+        dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
+        FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading);
+    }
+    int spacePerChar = windowWidth/80;
+    scaleAdjustment = (double)spacePerChar/em;
+    FWIN_LOG("windowWidth = %d scaleAdjustment = %.3g\n", windowWidth, scaleAdjustment);
+    fixedPitch->SetPointSize(10);
+    fixedPitch->Scale(scaleAdjustment);
+    fixedAlternate->SetPointSize(10);
+    fixedAlternate->Scale(scaleAdjustment);
+    fixedCJK->SetPointSize(10);
+    fixedCJK->Scale(scaleAdjustment);
+    dc.SetFont(*fixedPitch);
+    rowHeight = dc.GetCharHeight();
+    FWIN_LOG("Setting rowHeight = %d\n", rowHeight);
+    spacePerChar = dc.GetCharWidth();
+// rowCount is the number of full rows that will fit on the screen. If the
+// window depth is not a multiple of rowHeight there could be a further
+// part-row.
+    rowCount = windowHeight/rowHeight - 1;
+
+#if 0
+// Now I need to re-size any fonts that have already been created
+    for (int i=0; i<MAX_FONTS; i++)
+    {   wxFont *ff = font[i];
+        if (ff == NULL) continue;
+        ff->SetPointSize(fontWidth[i]->designsize/1048576);
+        ff->Scale(scaleAdjustment*fontScale[i]);
+    }
+#endif
+// Create or re-size the caret, and position it where it needs to be on the
+// screen. It seems a little odd to do these steps if I happen to invoke
+// thi sfrom within the prointing framework but I believe it should not hurt.
+    SetFocus();
+    if (caret == NULL) caret = new wxCaret(this, 2, rowHeight);
+    else caret->SetSize(2, rowHeight);
+    repositionCaret();
+    SetScrollRate(0, rowHeight);
+    SetVirtualSize(wxDefaultCoord, rowHeight*(virtualRowCount+1));
+    firstPaint = false;
+}
+
+void fwinText::MainDraw(wxDC &dc,
+                        int firstUpdateRow, int lastUpdateRow)
+{
     wxColour c1(GetBackgroundColour());
     wxPen p1(c1), p2(c1);
     dc.SetPen(p1);
@@ -4269,90 +4596,6 @@ void fwinText::OnDraw(wxDC &dc)
     dc.SetTextBackground(c1);
     textColour = wxBLACK;
     dc.SetTextForeground(*textColour);
-
-    wxSize window(GetClientSize());
-    windowWidth = window.GetWidth();
-    windowHeight = window.GetHeight();
-
-    if (firstPaint)
-    {   if (fixedPitch == NULL)
-        {   fixedPitch = new wxFont();
-            fixedAlternate = new wxFont();
-            fixedCJK   = new wxFont();
-// It worries me that exactly the same OpenType font needs to be
-// called for using slighly different names on different platforms.
-#ifdef MACINTOSH
-            fixedPitch->SetFaceName("CMU Typewriter Text Regular");
-#else
-            fixedPitch->SetFaceName("CMU Typewriter Text");
-#endif
-            fixedAlternate->SetFaceName("DejaVu Sans Mono");
-            fixedCJK->SetFaceName(cjkFontName);
-            fixedPitch->SetPointSize(1000);
-            fixedAlternate->SetPointSize(1000);
-            fixedCJK->SetPointSize(1000);
-            font_width *p = cm_font_width;
-            while (p->name != NULL &&
-                   strcmp(p->name, "cmtt10") != 0) p++;
-            if (p->name == NULL)
-            {   FWIN_LOG("Oops - font data not found\n");
-                exit(1);
-            }
-            wxCoord width, height, depth, leading;
-            dc.GetTextExtent("M", &width, &height, &depth, &leading, fixedPitch);
-            FWIN_LOG("width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
-            em = (double)width/100.0;
-            double fmEm = (double)p->charwidth[(int)'M']*10.0/1048576.0;
-            pixelsPerPoint = em/fmEm;
-            fixedPitch->SetPointSize(10);
-            dc.GetTextExtent((wchar_t)0x21d0, &width, &height, &depth, &leading, fixedAlternate);
-            FWIN_LOG("Alternate width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
-            dc.GetTextExtent((wchar_t)0x4e00, &width, &height, &depth, &leading, fixedCJK);
-            FWIN_LOG("CJK width=%d height=%d depth=%d leading=%d\n", width, height, depth, leading); 
-        }
-        int spacePerChar = windowWidth/80;
-        scaleAdjustment = (double)spacePerChar/em;
-        fixedPitch->SetPointSize(10);
-        fixedPitch->Scale(scaleAdjustment);
-        fixedAlternate->SetPointSize(10);
-        fixedAlternate->Scale(scaleAdjustment);
-        fixedCJK->SetPointSize(10);
-        fixedCJK->Scale(scaleAdjustment);
-        dc.SetFont(*fixedPitch);
-        rowHeight = dc.GetCharHeight();
-        spacePerChar = dc.GetCharWidth(); 
-// rowCount is the number of full rows that will fit on the screen. If the
-// window depth is not a multiple of rowHeight there could be a further
-// part-row.
-        rowCount = windowHeight/rowHeight - 1;
-// Create or re-size the caret, and position it where it needs to be on the
-// screen.
-        SetFocus();
-        if (caret == NULL) caret = new wxCaret(this, 2, rowHeight);
-        else caret->SetSize(2, rowHeight);
-        repositionCaret();
-
-#if 0
-// Now I need to re-size any fonts that have already been created
-        for (int i=0; i<MAX_FONTS; i++)
-        {   wxFont *ff = font[i];
-            if (ff == NULL) continue;
-            ff->SetPointSize(fontWidth[i]->designsize/1048576);
-            ff->Scale(scaleAdjustment*fontScale[i]);
-        }
-#endif
-        SetScrollRate(0, rowHeight);
-        SetVirtualSize(wxDefaultCoord, rowHeight*(virtualRowCount+1));
-        firstPaint = false;
-    }
-
-
-    wxRect updateRegion = GetUpdateRegion().GetBox();
-    CalcUnscrolledPosition(updateRegion.x, updateRegion.y,
-                           &updateRegion.x, &updateRegion.y);
-    int firstUpdateRow = updateRegion.y/rowHeight;
-    int lastUpdateRow = updateRegion.GetBottom()/rowHeight;
-
     dc.SetFont(*fixedPitch);
 #define FONT_CMTT  0
 #define FONT_DEJA  1
@@ -4367,6 +4610,23 @@ void fwinText::OnDraw(wxDC &dc)
         y += rowHeight;
         linecount++;
     }
+}
+
+
+void fwinText::OnDraw(wxDC &dc)
+{
+    if (firstPaint)
+    {   FWIN_LOG("SetupFonts fronm OnDraw\n");
+        SetupFonts(dc);
+    }
+    wxRect updateRegion = GetUpdateRegion().GetBox();
+    CalcUnscrolledPosition(updateRegion.x, updateRegion.y,
+                           &updateRegion.x, &updateRegion.y);
+    int firstUpdateRow = updateRegion.y/rowHeight;
+    int lastUpdateRow = updateRegion.GetBottom()/rowHeight;
+    FWIN_LOG("update height = %d rowHeight = %d\n", updateRegion.GetBottom(), rowHeight);
+    FWIN_LOG("Update rows %d to %d\n", firstUpdateRow, lastUpdateRow);
+    MainDraw(dc, firstUpdateRow, lastUpdateRow);
 }
 
 
@@ -4632,7 +4892,7 @@ void fwin_putchar(int c)
     }
 // I arrange to do any buffer flushing just before I will send out a
 // byte that starts a character. An effect is that I should NEVER flush
-// the buffer part way through a multi-byte character. 
+// the buffer part way through a multi-byte character.
     if ((c & 0xc0) != 0x80 &&
         panel->fwin_in >= FWIN_BUFFER_SIZE-4) fwin_ensure_screen();
     int in = panel->fwin_in;
@@ -4722,7 +4982,7 @@ void fwin_puts(const char *s)
 }
 
 
-void 
+void
 #ifdef _MSC_VER
             __cdecl
 #endif
