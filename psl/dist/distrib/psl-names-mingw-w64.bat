@@ -1,7 +1,7 @@
 @echo off
 
 set machine=mingw-w64
-set proot=e:\opt\psl\0594
+set proot=c:\users\winfried\Desktop\reduce-algebra-winx64\trunk\psl\
 
 set plogs=%proot%\logs
 
@@ -12,12 +12,12 @@ rem Top of PCLS tree.
 set cl=%proot%\pclsdist
 
 rem All PSL executables go here.
-set psys=%proot%\bin
+set psys=%proot%\bin\%machine%
 
 rem Loadable files
-set pl=%proot%\lap
+set pl=%proot%\dist\lap\%machine%
 rem Non-Kernel binaries
-set pnkl=%proot%\lapnk
+set pnkl=%pnk%\%machine%\lap
 rem Lap directory for local stuff.
 set pll=%proot%\llap
 rem Lap directory for local stuff.

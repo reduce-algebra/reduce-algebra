@@ -5,5 +5,5 @@
 (savesystem
   (cond ((unboundp '**low-case) "Bare PSL 3.4")
         (t "Bare PSL 4.2"))
-        "$psys\bare-psl.exe" nil)
+        "$psys\bare-psl" nil)
 (exitlisp)

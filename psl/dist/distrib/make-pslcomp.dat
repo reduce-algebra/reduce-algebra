@@ -2,6 +2,6 @@
 (on verboseload)
 (load pslcomp init-file)
 (load strings common)
-(savesystem "PSL 4.2 Compiler" "$psys/pslcomp.exe"
+(savesystem "PSL 4.2 Compiler" "$psys/pslcomp"
    '((read-init-file "pslcomp")))
 (exitlisp)
