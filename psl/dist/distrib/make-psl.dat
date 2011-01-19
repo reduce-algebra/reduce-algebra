@@ -6,5 +6,5 @@
 (off verboseload)
 (savesystem  
  (cond ((unboundp '**low-case) "PSL 3.4") (t "PSL 4.2"))
-          "$psys/psl.exe" '((read-init-file "psl")))
+          "$psys/psl" '((read-init-file "psl")))
 (exitlisp)
