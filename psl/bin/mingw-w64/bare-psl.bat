@@ -1,4 +1,4 @@
 @echo off
 
-bpsl.exe -td 600 -f bare-psl.exe.img
+%pxk%\bpsl.exe -td 600 -f %psys%\bare-psl.img
 
