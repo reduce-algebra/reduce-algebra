@@ -1,0 +1,134 @@
+Loading image file: c:\users\winfried\Desktop\reduce-algebra-winx64\trunk\psl\\bin\mingw-w64\bare-psl.img 
+Bare PSL 4.2, 19-Jan-2011
+1 lisp> ("" "$pl/" "$pnkl/" "$pll/")
+2 lisp> nil
+3 lisp> *** loading $pl/pslcomp.b
+*** Function `main' has been redefined
+*** loading $pl/get-options.b
+*** get-options loaded
+*** loading $pl/compiler.b
+*** loading $pl/datamachine.b
+*** Function `vecbase' has been redefined
+*** loading $pl/sys-consts.b
+*** loading $pl/tags.b
+*** tags loaded
+*** sys-consts loaded
+*** loading $pl/sys-dm.b
+*** tags already loaded
+*** Function `floathighorder' has been redefined
+*** Function `floatloworder' has been redefined
+*** sys-dm loaded
+*** datamachine loaded
+*** loading $pl/pass-1.b
+*** loading $pl/p1-decls.b
+*** p1-decls loaded
+*** pass-1 loaded
+*** loading $pl/pass-2-3.b
+*** Function `compd' has been redefined
+*** pass-2-3 loaded
+*** loading $pl/comp-decls.b
+*** comp-decls loaded
+*** loading $pl/pass-1-lap.b
+*** pass-1-lap loaded
+*** loading $pl/mingw-w64-lap.b
+*** Function `depositinstruction' has been redefined
+*** Function `depositlabel' has been redefined
+*** mingw-w64-lap loaded
+*** loading $pl/mingw-w64-cmac.b
+*** Function `taggedlabel' has been redefined
+*** Function `onep' has been redefined
+*** Function `*move' has been redefined
+*** Function `*jumpeq' has been redefined
+*** Function `*jumpnoteq' has been redefined
+*** Function `*jumpwgeq' has been redefined
+*** Function `*jumpwgreaterp' has been redefined
+*** Function `*jumpwleq' has been redefined
+*** Function `*jumpwlessp' has been redefined
+*** Function `*alloc' has been redefined
+*** Function `*link' has been redefined
+*** Function `*linke' has been redefined
+*** Function `*progbind' has been redefined
+*** Function `*freerstr' has been redefined
+*** Function `&stopt' has been redefined
+*** mingw-w64-cmac loaded
+*** loading $pl/mingw-w64-comp.b
+*** mingw-w64-comp loaded
+*** loading $pl/faslout.b
+*** Function `faslout' has been redefined
+*** faslout loaded
+*** loading $pl/mingw-w64-spec.b
+*** Function `appendcontents' has been redefined
+*** mingw-w64-spec loaded
+*** loading $pnkl/fixup.b
+*** Function `bittable' has been redefined
+*** fixup loaded
+*** loading $pl/nbittab.b
+*** Function `codefileheader' has been redefined
+*** Function `codefiletrailer' has been redefined
+*** nbittab loaded
+*** compiler loaded
+*** loading $pl/str-search.b
+*** str-search loaded
+*** pslcomp loaded
+*** loading $pl/init-file.b
+*** init-file loaded
+nil
+4 lisp> *** loading $pl/strings.b
+*** loading $pl/chars.b
+*** chars loaded
+*** strings loaded
+*** loading $pl/common.b
+*** loading $pl/useful.b
+*** loading $pl/backquote.b
+*** backquote loaded
+*** loading $pl/char-macro.b
+*** char-macro loaded
+*** loading $pl/read-macros.b
+*** loading $pl/read1macros.b
+*** read1macros loaded
+*** loading $pl/read2macros.b
+*** read2macros loaded
+*** read-macros loaded
+*** loading $pl/defmacro.b
+*** loading $pl/defmacro1.b
+*** defmacro1 loaded
+*** loading $pl/defmacro2.b
+*** defmacro2 loaded
+*** defmacro loaded
+*** loading $pl/cond-macros.b
+*** cond-macros loaded
+*** loading $pl/bind-macros.b
+*** bind-macros loaded
+*** loading $pl/set-macros.b
+*** loading $pl/set1-macros.b
+*** Function `setf' has been redefined
+*** set1-macros loaded
+*** loading $pl/set2-macros.b
+*** set2-macros loaded
+*** set-macros loaded
+*** loading $pl/iter-macros.b
+*** iter-macros loaded
+*** loading $pl/for-macro.b
+*** Function `for' has been redefined
+*** for-macro loaded
+*** loading $pl/misc-macros.b
+*** misc-macros loaded
+*** loading $pl/macroexpand.b
+*** macroexpand loaded
+*** useful loaded
+*** loading $pl/fast-vector.b
+*** fast-vector loaded
+*** loading $pl/numeric-ops.b
+*** useful already loaded
+*** numeric-ops loaded
+*** common loaded
+nil
+5 lisp> 5 lisp> *** Garbage collection starting
+*** GC 1: 19-Jan-2011 22:19:46 (~ 0 ms cpu time, gc : 0 %)
+*** time 0 ms, 9182 occupied, 18932 recovered, 36522068 free
+*** Garbage collection starting
+*** GC 2: 19-Jan-2011 22:19:46 (~ 15600 ms cpu time, gc : 99 %)
+*** time 15600 ms, 9182 occupied, 0 recovered, 36522068 free
+nil
+6 lisp> 
+Quitting

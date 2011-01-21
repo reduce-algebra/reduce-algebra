@@ -1,0 +1,75 @@
+Loading image file: c:\users\winfried\Desktop\reduce-algebra-winx64\trunk\psl\\bin\mingw-w64\bare-psl.img 
+Bare PSL 4.2, 19-Jan-2011
+1 lisp> ("" "$pl/" "$pnkl/" "$pll/")
+2 lisp> nil
+3 lisp> *** loading $pl/init-file.b
+*** init-file loaded
+nil
+4 lisp> *** loading $pl/debug.b
+*** loading $pl/inum.b
+*** inum loaded
+*** fluid `*comp' cannot become global
+*** Function `load1' has been redefined
+*** Function `putd' has been redefined
+*** Function `tr' has been redefined
+*** Function `trst' has been redefined
+*** debug loaded
+*** loading $pl/useful.b
+*** loading $pl/backquote.b
+*** backquote loaded
+*** loading $pl/char-macro.b
+*** char-macro loaded
+*** loading $pl/read-macros.b
+*** loading $pl/read1macros.b
+*** read1macros loaded
+*** loading $pl/read2macros.b
+*** read2macros loaded
+*** read-macros loaded
+*** loading $pl/defmacro.b
+*** loading $pl/defmacro1.b
+*** defmacro1 loaded
+*** loading $pl/defmacro2.b
+*** defmacro2 loaded
+*** defmacro loaded
+*** loading $pl/cond-macros.b
+*** cond-macros loaded
+*** loading $pl/bind-macros.b
+*** bind-macros loaded
+*** loading $pl/set-macros.b
+*** loading $pl/set1-macros.b
+*** Function `setf' has been redefined
+*** set1-macros loaded
+*** loading $pl/set2-macros.b
+*** set2-macros loaded
+*** set-macros loaded
+*** loading $pl/iter-macros.b
+*** iter-macros loaded
+*** loading $pl/for-macro.b
+*** Function `for' has been redefined
+*** for-macro loaded
+*** loading $pl/misc-macros.b
+*** misc-macros loaded
+*** loading $pl/macroexpand.b
+*** macroexpand loaded
+*** useful loaded
+*** loading $pl/common.b
+*** Function `plist' has been redefined
+*** loading $pl/fast-vector.b
+*** fast-vector loaded
+*** loading $pl/numeric-ops.b
+*** useful already loaded
+*** numeric-ops loaded
+*** common loaded
+nil
+5 lisp> *** numeric-ops already loaded
+nil
+6 lisp> nil
+7 lisp> 7 lisp> 7 lisp> *** Garbage collection starting
+*** GC 1: 19-Jan-2011 22:22:50 (~ 0 ms cpu time, gc : 0 %)
+*** time 0 ms, 3597 occupied, 8165 recovered, 61527653 free
+*** Garbage collection starting
+*** GC 2: 19-Jan-2011 22:22:50 (~ 0 ms cpu time, gc : 0 %)
+*** time 0 ms, 3597 occupied, 0 recovered, 61527653 free
+nil
+8 lisp> 
+Quitting

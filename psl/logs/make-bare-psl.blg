@@ -1,0 +1,90 @@
+Setting heap limit as follows:
+bpsaddr = 6842816 (6869C0), heapaddr = 26411008 (1930000)
+bpssize = 15500000 (EC82E0), heapsize = 492250000 (1D572390)
+Total image size = 1010911008 (3C414720)
+About to load LOAD-PSL
+loading constants.b to 687750
+loading compsupport.b to 688010
+loading cons-mkvect.b to 6884b0
+loading prop-list.b to 689330
+loading symbol-vals.b to 689eb0
+loading type-conver.b to 68a230
+loading easy-sl.b to 68b010
+loading funct-prims.b to 68db50
+loading fluid-globl.b to 68e100
+loading allocators.b to 68e620
+loading apply-lap.b to 68f040
+loading arithmetic.b to 68f530
+loading autoload.b to 691f80
+loading autoload-tr.b to 692270
+loading backtrace.b to 692350
+loading base-io.b to 692aa8
+loading binding.b to 693c20
+loading break.b to 6941e0
+loading carcdr.b to 694d50
+loading catch-throw.b to 695b40
+loading char-io.b to 6966c0
+loading cons-mkvect.b to 696b40
+loading cont-error.b to 697570
+loading copiers.b to 697870
+loading copying-gc.b to 6982d0
+loading defconst.b to 69a540
+loading def-smacro.b to 69a780
+loading dskin.b to 69afa0
+loading easy-non-sl.b to 69bb30
+loading equal.b to 69dd00
+loading eval-apply.b to 69e7e0
+loading eval-when.b to 69f9b0
+loading explode-com.b to 69fa80
+loading io-extens.b to 6a0630
+loading knowntocomp.b to 6a0710
+loading lisp-macros.b to 6a0ce0
+loading load.b to 6a1390
+loading loop-macros.b to 6a2190
+loading oblist.b to 6a2e50
+loading onoff.b to 6a3ac0
+loading open-close.b to 6a3d30
+loading other-io.b to 6a4130
+loading others-sl.b to 6a4560
+loading printers.b to 6a4790
+loading prog-friend.b to 6a83a0
+loading rds-wrs.b to 6a8930
+loading read.b to 6a8bf0
+loading sequence.b to 6a9520
+loading sets.b to 6ab1b0
+loading string-gen.b to 6ab750
+loading token-scan.b to 6ab8c0
+loading top-loop.b to 6ad960
+loading vectors.b to 6af340
+loading dumplisp.b to 6af920
+loading io-data.b to 6afc50
+loading lap.b to 6afc80
+loading printf.b to 6b06c8
+loading scan-table.b to 6b1580
+loading sys-date.b to 6b19c0
+loading sys-extras.b to 6b1e60
+loading sys-faslin.b to 6b3040
+loading sys-gc.b to 6b3830
+loading sys-io.b to 6b3a30
+loading timc.b to 6b40a0
+loading trap.b to 6b4110
+loading wfloat.b to 6b4b30
+loading write-float.b to 6b4e50
+loading error-eset.b to 6b5010
+loading error-hand.b to 6b5460
+loading io-errors.b to 6b5bb0
+loading type-error.b to 6b5da0
+loading putd-getd.b to 6b6250
+loading 386-ext.b to 6b6fd0
+Portable Standard LISP
+1 lisp> ("" "$pl\" "$pnkl\")
+2 lisp> 2 lisp> nil
+3 lisp> 3 lisp> 3 lisp> 3 lisp> 3 lisp> *** Garbage collection starting
+*** GC 1: 19-Jan-2011 22:03:26 (~ 15600 ms cpu time, gc : 99 %)
+*** time 15600 ms, 1584 occupied, 4969 recovered, 61529666 free
+*** Garbage collection starting
+*** GC 2: 19-Jan-2011 22:03:26 (~ 15600 ms cpu time, gc : 99 %)
+*** time 0 ms, 1584 occupied, 0 recovered, 61529666 free
+nil
+4 lisp> 
+Quitting
