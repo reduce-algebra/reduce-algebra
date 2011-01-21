@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5d465e99 26-Nov-2010 */
+/* Signature: 13b1d0f1 21-Jan-2011 */
 
 #include "headers.h"
 
@@ -807,7 +807,7 @@ start_again:
  * I instate the definition given if (a) the definition is a real
  * one (ie not for an undefined function) and if (b) either I am doing a cold
  * start or the name is still marked as having a definition in the form
- * of C code (or if I gace first_try false which is when I am going round
+ * of C code (or if I gave first_try false which is when I am going round
  * again and doing rather curious things...)
  */
     if (f1 != undefined1)
@@ -833,6 +833,9 @@ start_again:
  * I print a message about it. Note also that I only rename once, so if there
  * were to be existing symbols with names that started with "~" that could
  * make my attempts here less than fully effective.
+ *
+ * I am no longer certain that this is really a great help, and I may
+ * remove it soon!
  */
             if (init_flags & INIT_VERBOSE)
               term_printf(
@@ -863,8 +866,14 @@ start_again:
             {   Lisp_Object w = qcar(v1);
                 v1 = qcdr(v1);
                 ifn1(w) = (intptr_t)f1; ifn2(w) = (intptr_t)f2; ifnn(w) = (intptr_t)fn;
-                qenv(w) = qenv(v);       /* Copy across environment too */
-                qheader(w) |= SYM_C_DEF;
+/*
+ * The following line copied the environment, but I think I believe that
+ * it should already be set, and further that the symbol I about to
+ * copy from may have had its environment cell clobbered. This needs
+ * more thought and testing, but I will try it for now...
+ */
+/*              qenv(w) = qenv(v);       /* Copy across environment too */
+/*              qheader(w) |= SYM_C_DEF; */
             }
         }
     }

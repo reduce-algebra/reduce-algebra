@@ -3058,7 +3058,7 @@ void fwinFrame::CloseAction()
 // I will ask the worker thread (most politely!) to terminate. It might
 // at present be waiting on a semaphore, so I Post() to all the possibilities,
 // having set a flag that will be polled after any Wait().
-    boolean closedDown = false;
+    bool closedDown = false;
     shouldExit = true;
     panel->reading.Post();
     panel->writing.Post();

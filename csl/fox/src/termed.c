@@ -2572,7 +2572,7 @@ const char *lookup_code(int c)
  * I do a simple linear search here. It is cheap-enough given that it is
  * only needed when the user types a special command, ALT-x.
  */
-    for (i=0; i<sizeof(unicode_names)/sizeof(unicode_names[0]); i++)
+    for (i=0; i<(int)(sizeof(unicode_names)/sizeof(unicode_names[0])); i++)
     {   if (unicode_names[i].code == c) return unicode_names[i].name;
     }
     return NULL;

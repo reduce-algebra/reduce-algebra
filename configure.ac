@@ -392,6 +392,14 @@ echo in-place build attempt = $inplace
 # non-debugging) on the same machine, and the binaries will get created in
 # separate sub-directories.
 
+# One HORRID issue is that as regards anything that is to do with selecting
+# directories to build in etc I want to look at $host as produced by
+# just one version of config.guess. This is because in the past I have
+# come across cases where different versions or releases of config.guess
+# report the same machine with slightly different names. That could cause
+# messy confusion! So when I want that information I find it once here and
+# as necessary pass it down to lower parts of the tree.
+
 AC_MSG_NOTICE([host=$host args=$ac_configure_args])
 
 pslbuild=`eval "$SHELL $srcdir/scripts/findhost.sh $host"`
