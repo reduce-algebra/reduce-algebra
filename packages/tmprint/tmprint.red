@@ -205,6 +205,10 @@ global '(!*eraise charassoc!* initl!* nat!*!* spare!* ofl!*);
 
 switch list,ratpri,revpri,nosplit;
 
+% Temp experiment while investigating a possible for for an interaction with
+% "on list"      @@@@@@@@@
+switch acn;
+
 % Global variables initialized in this section.
 
 fluid '(
@@ -1061,7 +1065,7 @@ symbolic procedure fancy!-oprin op;
     << if !*list and obrkp!* and op memq '(plus minus)
         and sumlevel!*=2
        then
-        if testing!-width!* then return 'failed
+        if testing!-width!* and not (!*acn and !*list) then return 'failed
             else fancy!-terpri!* t;
        fancy!-prin2!*(x,t);
     >>;
@@ -1209,7 +1213,7 @@ put('boolvalue!*,'fancy!-prifn,'fancy!-boolvalpri);
 
 symbolic procedure fancy!-quotpri u;
    begin scalar n1,n2,fl,w,pos,testing!-width!*;
-     if overflowed!* then return 'failed;
+     if overflowed!* or (!*acn and !*list) then return 'failed;
      testing!-width!*:=t;
      pos:=fancy!-pos!*;
      fl:=fancy!-line!*;
