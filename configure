@@ -660,6 +660,7 @@ enable_option_checking
 with_csl
 with_psl
 with_build
+with_pslbuild
 with_mingw64
 with_gcc3
 with_m32
@@ -1313,6 +1314,7 @@ Optional Packages:
   --with-csl              Use the CSL Lisp system
   --with-psl              Use the PSL Lisp system
   --with-build            Used internally to control build directory
+  --with-pslbuild         Used internally to control build directory
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
   --with-gcc3             can be used to avoid use of i686-w64-mingw32-gcc
@@ -1931,6 +1933,15 @@ if test "${with_build+set}" = set; then :
   withval=$with_build;
 else
   with_build="unknown"
+fi
+
+
+
+# Check whether --with-pslbuild was given.
+if test "${with_pslbuild+set}" = set; then :
+  withval=$with_pslbuild;
+else
+  with_pslbuild="unknown"
 fi
 
 

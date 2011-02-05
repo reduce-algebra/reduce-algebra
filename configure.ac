@@ -56,6 +56,11 @@ AC_ARG_WITH(build,
   [],
   [with_build="unknown"])
 
+AC_ARG_WITH(pslbuild,
+  AC_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
+  [],
+  [with_pslbuild="unknown"])
+
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
