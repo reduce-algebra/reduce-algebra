@@ -84,6 +84,11 @@ AC_ARG_WITH(build,
   [],
   [with_build="unknown"])
 
+AC_ARG_WITH(pslbuild,
+  AC_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
+  [],
+  [with_pslbuild="unknown"])
+
 AC_ARG_ENABLE(test,
   AC_HELP_STRING([--enable-test], [Predefine TEST to get experimental version]),
   [],

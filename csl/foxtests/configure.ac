@@ -80,6 +80,11 @@ AC_ARG_WITH(build,
   [],
   [with_build="unknown"])
 
+AC_ARG_WITH(pslbuild,
+  AC_HELP_STRING([--with-pslbuild], [Used internally to control build directory]),
+  [],
+  [with_pslbuild="unknown"])
+
 AC_SUBST(MAKE)
 AC_SUBST(AR)
 AC_SUBST(STRIP)
