@@ -30,11 +30,12 @@
 
 (window!-heading "basic CSL")
 
-(setq !*savedef (zerop (cdr (assoc 'c!-code lispsystem!*))))
+(setq !*savedef (and (not (memq 'embedded lispsystem!*))
+                     (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 (make!-special '!*native_code)
 (setq !*native_code nil)
 
-(cond ((null !*savedef) (progn
+(cond ((and (null !*savedef) (null (memq 'embedded lispsystem!*))) (progn
 
    (de c!:install (name env c!-version !&optional c1)
       (cond
@@ -477,7 +478,7 @@ rds(xxx := open("$reduce/packages/support/build.red",'input));
 
 symbolic;
 
-!#if (not !*savedef)
+!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 
 faslout 'user;
 
@@ -579,7 +580,7 @@ faslend;
 
 faslout 'remake;
 
-!#if (not !*savedef)
+!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 
 load!-module "user";
 
@@ -658,7 +659,7 @@ symbolic procedure build_reduce_modules names;
     if null (names := cdr names) then <<
         printc "Recompilation complete";
         window!-heading  "Recompilation complete" >>;
-!#if !*savedef
+!#if (or !*savedef (memq 'embedded lispsystem!*))
     if null names then restart!-csl 'begin
     else restart!-csl('(remake build_reduce_modules), names)
 !#else
@@ -1473,7 +1474,7 @@ load!-module 'remake;
    !@reduce := symbol!-value gensym();
    checkpoint('begin, "REDUCE") >>;
 
-!#if (not !*savedef)
+!#if (and (not (memq 'embedded lispsystem!*)) (not !*savedef))
 load!-module 'user;
 !#endif
 
@@ -1529,13 +1530,16 @@ build_reduce_modules reduce_base_modules;
 
 symbolic restart!-csl nil;
 
-(setq !*savedef (zerop (cdr (assoc 'c!-code lispsystem!*))))
+(setq !*savedef (and (null (memq 'embedded lispsystem!*))
+                     (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 (make!-special '!*native_code)
 (setq !*native_code nil)
 
 (setq !*backtrace t)
 
-(cond ((null !*savedef) (load!-module 'user)))
+(cond ((and (null !*savedef)
+            (null (memq 'embedded lispsystem!*)))
+       (load!-module 'user)))
 
 (load!-module 'cslcompat)
 

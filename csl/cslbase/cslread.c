@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 13b1d0f1 21-Jan-2011 */
+/* Signature: 100ca415 09-Feb-2011 */
 
 #include "headers.h"
 
@@ -4023,7 +4023,9 @@ void read_eval_print(int noisy)
  * reads from the terminal! Ditto terminal_eof_seen.
  */
             if (terminal_pushed == EOF) terminal_pushed = NOT_CHAR;
+#ifdef WINDOW_SYSTEM
             terminal_eof_seen = 0;
+#endif
             return;
         }
 

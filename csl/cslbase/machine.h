@@ -43,7 +43,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 08a5c1f8 09-May-2010 */
+/* Signature: 5825430f 09-Feb-2011 */
 
 
 #ifndef header_machine_h
@@ -55,8 +55,10 @@
  * symbol SOCKETS if I can use sockets...
  * 
  */
-#if !defined UNDER_CE && ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
+#if !defined UNDER_CE && !defined EMBEDDED
+#if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
 #define SOCKETS                  1
+#endif
 #endif
 
 

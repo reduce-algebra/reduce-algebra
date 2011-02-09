@@ -32,10 +32,10 @@
 
 
 
-/* Signature: 1b05190e 19-Aug-2010 */
+/* Signature: 75a1f941 09-Feb-2011 */
 
 /*
- * This is just the same as csl.c with som estartup code removed so that
+ * This is just the same as csl.c with some startup code removed so that
  * a separate file (eg driver.c) can use it.
  */
 

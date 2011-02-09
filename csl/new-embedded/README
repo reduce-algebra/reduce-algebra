@@ -1,0 +1,18 @@
+This is a kit from which a CSL version of Reduce can be made with the least
+possible complication and with the least reasonable reliance on system
+support. It builds in a way that might suit small platforms, and so will be
+slower than the normal version of reduce.
+It does not provide a GUI or any other clevers. It is expected that it JUST
+needs a bunch of files of C code to be compiled and linked together. You
+should not expect "help" capability etc, but the ALGEBRA bits of Reduce
+should work the way they always have.
+
+I hope it wiull end up with recipes to cross-compile or custom-build Reduce
+for a variety of interesting situations.
+
+The reduce-image directory builds a version of Reduce on the current computer
+(whatever that is) and uses it to cread a file "reduce.img". This image file
+will be needed by all other variants here.
+
+                                 Arthur Norman.   July 2009 - March 2011
+

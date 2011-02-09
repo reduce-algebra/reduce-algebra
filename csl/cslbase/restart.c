@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 086cea4d 02-Dec-2010 */
+/* Signature: 342c6ea7 09-Feb-2011 */
 
 #include "headers.h"
 
@@ -2993,7 +2993,10 @@ static void count_symbols(setup_type const s[])
 }
 
 static void set_up_variables(CSLbool restartp);
+
+#ifndef EMBEDDED
 static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum);
+#endif
 
 typedef struct dynamic_modules
 {
@@ -4411,12 +4414,16 @@ Lisp_Object Linstate_c_code(Lisp_Object nil, Lisp_Object name, Lisp_Object fns)
     nil = C_nil;
     if (exception_pending()) return nil;
 
+#ifdef EMBEDDED
+    return onevalue(nil);
+#else
     dll = find_def_table(name, qcar(fns));
     if (dll == NULL) return onevalue(nil);
 
     sprintf(modname, "%.*s", (int)len, sname);
     c = setup_dynamic(dll, modname, name, fns);
     return onevalue(c ? lisp_true : nil);
+#endif
 }
 
 static void cold_setup();
@@ -4885,6 +4892,7 @@ static void set_up_variables(CSLbool restartp)
  *       id                       unix/msdos etc again...
  *       help                     help mechanism provided within Lisp
  *       debug                    Lisp built with debug options
+ *       embedded                 if built using the EMBEDDED option
  *       (native . number)        native code tag
  *       (c-code . number)        u01.c through u60.c define n functions
  *       sixty-four               64-bit address version
@@ -4994,6 +5002,9 @@ static void set_up_variables(CSLbool restartp)
 #endif
 #ifdef DEBUG
         w = cons(make_keyword("debug"), w);
+#endif
+#ifdef EMBEDDED
+        w = cons(make_keyword("embedded"), w);
 #endif
 #ifdef HAVE_FWIN
         if (fwin_windowmode() & FWIN_WITH_TERMED)

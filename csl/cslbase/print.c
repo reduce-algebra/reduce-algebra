@@ -35,12 +35,16 @@
 
 
 
-/* Signature: 2ed8973a 02-Dec-2010 */
+/* Signature: 18484c8d 09-Feb-2011 */
 
 #include "headers.h"
 
 #ifdef COMMON
 #include "clsyms.h"
+#endif
+
+#ifdef WIN32
+#include <windows.h>
 #endif
 
 #ifdef SOCKETS
