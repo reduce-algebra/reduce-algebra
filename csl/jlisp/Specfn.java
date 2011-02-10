@@ -47,6 +47,7 @@ class Specfn
         {"times",    new TimesSpecial()},
         {"list",     new ListSpecial()},
         {"list*",    new ListStarSpecial()},
+        {"declare",  new DeclareSpecial()},
     };
 
 
@@ -451,6 +452,16 @@ class ListStarSpecial extends SpecialFunction
             args = w;
         }
         return args;
+    }
+}
+
+// (declare ...) is ignored if it ever gets to be evaluated.
+
+class DeclareSpecial extends SpecialFunction
+{
+    LispObject op(LispObject args)
+    {
+        return Jlisp.nil;
     }
 }
 
