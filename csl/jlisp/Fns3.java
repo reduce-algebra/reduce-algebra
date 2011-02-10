@@ -69,7 +69,7 @@ class Fns3
         {"oblist",                      new OblistFn()},
         {"oem-supervisor",              new Oem_supervisorFn()},
         {"open",                        new OpenFn()},
-        {"~open",                       new InternalOpenFn()},
+        {"internal-open",               new InternalOpenFn()},
         {"open-library",                new Open_libraryFn()},
         {"open-url",                    new Open_urlFn()},
         {"orderp",                      new OrderpFn()},
@@ -134,6 +134,7 @@ class Fns3
         {"return",                      new ReturnFn()},
         {"reverse",                     new ReverseFn()},
         {"reversip",                    new ReversipFn()},
+        {"nreverse",                    new ReversipFn()},
         {"rplaca",                      new RplacaFn()},
         {"rplacd",                      new RplacdFn()},
         {"rplacw",                      new RplacwFn()},
@@ -1862,6 +1863,17 @@ class ReversipFn extends BuiltinFunction
     public LispObject op1(LispObject arg1)
     {
         LispObject r = Jlisp.nil;
+        while (!arg1.atom)
+        {   LispObject a = arg1;
+            arg1 = a.cdr;
+            a.cdr = r;
+            r = a;
+        }
+        return r;
+    }
+    public LispObject op2(LispObject arg1, LispObject arg2)
+    {
+        LispObject r = arg2;
         while (!arg1.atom)
         {   LispObject a = arg1;
             arg1 = a.cdr;

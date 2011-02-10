@@ -1956,13 +1956,14 @@ static void initSymbols()
     ((Symbol)lit[Lit.redefmsg]).car/*value*/ = lispTrue;
 
 // The things put in lispsystem* must include various ones relied upon
-// by the REDUCE (3.7) build scripts!
+// by the REDUCE build scripts!
     ((Symbol)lit[Lit.lispsystem]).car/*value*/ =
         new Cons(new Cons(Symbol.intern("c-code"), LispInteger.valueOf(0)),
         new Cons(new Cons(Symbol.intern("name"),   new LispString("java")),
-        new Cons(Symbol.intern("csl"),  // a lie, in some sense!
+        new Cons(Symbol.intern("csl"),       // a lie, in some sense!
         new Cons(Symbol.intern("jlisp"),
-        nil))));
+        new Cons(Symbol.intern("embedded"),
+        nil)))));
 
     Fns.fluid(nil);
     Fns.fluid(lispTrue);

@@ -164,7 +164,7 @@ static int BIbatchp, BIdate, BIeject, BIerror1, BIgctime,
     BInull, BIoddp, BIonep, BIpagelength, BIpairp,
     BIplist, BIplusp, BIprin, BIprinc, BIprint,
     BIprintc, BIrandom, BIrational, BIload, BIrds,
-    BIremd, BIreverse, BIreversip, BIseprp, BIset_small_modulus,
+    BIremd, BIreverse, BIreversip, BIreversip2, BIseprp, BIset_small_modulus,
     BIspaces, BIxtab, BIspecial_char, BIspecial_form_p, BIspool,
     BIstop, BIstringp, BIsub1, BIsymbol_env, BIsymbol_function,
     BIsymbol_name, BIsymbol_value, BIsystem, BIfix, BIttab,
@@ -195,7 +195,7 @@ static void setupBuiltins()
 {
     builtin0 = new LispFunction[15];
     builtin1 = new LispFunction[114];
-    builtin2 = new LispFunction[72];
+    builtin2 = new LispFunction[73];
     builtin3 = new LispFunction[10];
 
     builtin0[0]   = lookupBuiltin("batchp");               BIbatchp =                0;
@@ -405,6 +405,7 @@ static void setupBuiltins()
     builtin2[69]  = lookupBuiltin("times2");               BItimes2 =                69;
     builtin2[70]  = lookupBuiltin("equalcar");             BIequalcar =              70;
     builtin2[71]  = lookupBuiltin("iequal");               BIiequal =                71;
+    builtin2[72]  = lookupBuiltin("reversip");             BIreversip2 =             72;
 
     builtin3[0]   = lookupBuiltin("bps-putv");             BIbps_putv =              0;
     builtin3[1]   = lookupBuiltin("errorset");             BIerrorset =              1;
