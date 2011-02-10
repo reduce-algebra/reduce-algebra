@@ -491,7 +491,7 @@ initdmode 'rounded;
 put('evalf,'psopfn,'evalf0);
 
 procedure evalf0(u);
-   % Return first argument as a float wrt. the current precition even
+   % Return first argument as a float wrt. the current precision even
    % with off rounded. Optional second argument overrides the current
    % precision.
    begin scalar sp,w;
@@ -506,10 +506,10 @@ procedure evalf0(u);
       >>;
       if cdr u then <<
 	 if cadr u > sp then <<
-	    prin2 "*** required accurracy exceeds current precision (";
+	    prin2 "*** required accuracy exceeds current precision (";
 	    prin2 sp;
 	    prin2t ")";
- 	    prin2t "*** printing with required accurracy ...";
+ 	    prin2t "*** printing with required accuracy ...";
 	    mathprint w;
 	    prin2t "*** finished printing"
 	 >>;
