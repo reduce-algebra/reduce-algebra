@@ -405,29 +405,29 @@ global '(loaded!-packages!* no!_init!_file personal!-dir!*);
 
 personal!-dir!* := "$HOME";
 
-symbolic procedure load!-patches!-file;
-   begin scalar !*redefmsg,file,x; % Avoid redefinition messages.
-      if memq('demo, lispsystem!*) then return;
-      if filep(file := concat(personal!-dir!*,"/patches.fsl")) then nil
-       else if filep(file :=
-          concat(get!-lisp!-directory(),"/patches.fsl"))
-        then nil
-       else return nil;
-      x := binopen(file,'input);
-      for i := 1:16 do readb x; % Skip checksum stuff.
-      load!-module x;   % Load patches.
-      close x;
-      if patch!-date!*
-        then startup!-banner concat(version!*,concat(", ",concat(date!*,
-                concat(", patched to ",concat(patch!-date!*," ...")))));
-      for each m in loaded!-packages!* do
-         if (x := get(m,'patchfn)) then apply(x,nil)
-   end;
-
-% For compatibility with older versions.
-
-symbolic procedure load!-latest!-patches;
-   load!-patches!-file();
+% symbolic procedure load!-patches!-file;
+%    begin scalar !*redefmsg,file,x; % Avoid redefinition messages.
+%       if memq('demo, lispsystem!*) then return;
+%       if filep(file := concat(personal!-dir!*,"/patches.fsl")) then nil
+%        else if filep(file :=
+%           concat(get!-lisp!-directory(),"/patches.fsl"))
+%         then nil
+%        else return nil;
+%       x := binopen(file,'input);
+%       for i := 1:16 do readb x; % Skip checksum stuff.
+%       load!-module x;   % Load patches.
+%       close x;
+%       if patch!-date!*
+%         then startup!-banner concat(version!*,concat(", ",concat(date!*,
+%                 concat(", patched to ",concat(patch!-date!*," ...")))));
+%       for each m in loaded!-packages!* do
+%          if (x := get(m,'patchfn)) then apply(x,nil)
+%    end;
+%
+% % For compatibility with older versions.
+%
+% symbolic procedure load!-latest!-patches;
+%    load!-patches!-file();
 
 Comment We need to define a function BEGIN, which acts as the top-level
 call to REDUCE, and sets the appropriate variables;
@@ -497,10 +497,10 @@ symbolic procedure begin;
         else !*mode := 'symbolic;
         % date!* := nil;
         >>;
-% If there is a patches module that is later than one that I currently
-% have installed then load it up now.
-     if version!* neq "REDUCE Development Version"
-       then load!-patches!-file();
+% % If there is a patches module that is later than one that I currently
+% % have installed then load it up now.
+%      if version!* neq "REDUCE Development Version"
+%        then load!-patches!-file();
      w := assoc('opsys, lispsystem!*);
      if not atom w then w := cdr w;
 % For MOST systems I will let ^G (bell) be the escape character, but

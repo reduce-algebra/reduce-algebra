@@ -343,16 +343,16 @@ symbolic procedure begin;
         ifl!* := ipl!* := ofl!* := nil;
         if null date!* then go to a;
         if !*loadversion then errorset!*('(load entry),nil);
-        if version!* neq "REDUCE Development Version"
-          then errorset!*('(load patches),nil);
+%       if version!* neq "REDUCE Development Version"
+%         then errorset!*('(load patches),nil);
         !*gc := nil;
         !*usermode := nil;
         linelength 80;
         prin2 version!*;
         prin2 ", ";
         prin2 date!*;
-        if patch!-date!*
-          then progn(prin2 ", patched to ",prin2 patch!-date!*);
+%       if patch!-date!*
+%         then progn(prin2 ", patched to ",prin2 patch!-date!*);
         prin2t " ...";
         !*mode := if getd 'addsq then 'algebraic else 'symbolic;
         if !*mode eq 'algebraic then !*break := nil;

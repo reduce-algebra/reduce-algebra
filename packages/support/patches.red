@@ -28,6 +28,10 @@ module patches; % Patches to correct problems in current release.
 %
 
 
+% With the full source available to everybody the value of distributing
+% a separate module of patches is no longer that high, so this file is
+% a bit of a dinosaur.
+
 global '(patch!-date!*);
 
 % patch!-date!* := "15-Apr-1999";
