@@ -1004,7 +1004,7 @@ static Lisp_Object unwind_protect_fn(Lisp_Object args, Lisp_Object env)
  */
 
 #ifndef __cplusplus
-#ifdef UISE_SIGALTSTACK
+#ifdef USE_SIGALTSTACK
 sigjmp_buf *errorset_buffer;
 #else
 jmp_buf *errorset_buffer;
