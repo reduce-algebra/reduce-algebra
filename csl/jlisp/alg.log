@@ -1,18 +1,13 @@
 Transcript sent to file alg.log
-REDUCE 3.7, 15-Jan-99 ...
+Image file defaulting to in-store data
+Reduce (Free CSL version), Feb 11, 2011 12:48:55 PM ...
+Jlisp 0.93a ... 2/11/11 12:48 PM
+Sym    = 4720
+Cons   = 44196
+String = 435
 restart mode in read eval print loop null null null
 
-1: 
-++++ File does not exist: e:\r37\packages\alg\alg.tst
-
-+++++ Error: File does not exist: e:\r37\packages\alg\alg.tst
-
-2: 
-++++ File does not exist: ../../r37/packages/alg/alg.tst
-
-+++++ Error: File does not exist: ../../r37/packages/alg/alg.tst
-
-3: Comment This is a standard test file for REDUCE that has been used for
+1: Comment This is a standard test file for REDUCE that has been used for
 many years.  It only tests a limited number of facilities in the
 current system.  In particular, it does not test floating point
 arithmetic, or any of the more advanced packages that have been made
@@ -29,7 +24,7 @@ be found in the "timings" file in the REDUCE Network Library;
 showtime;
 
 
-Time: 70 ms
+Time: 18 ms
 
 
 comment some examples of the FOR statement;
@@ -785,10 +780,11 @@ comment end of second physics example;
 showtime;
 
 
-Time: 14541 ms
+Time: 1193 ms
 
 
 end;
 
-4: 
+2: 
 Within: begin
+End of Lisp run after 18.75 seconds
