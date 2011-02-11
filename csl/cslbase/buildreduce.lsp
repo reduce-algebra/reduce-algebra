@@ -601,8 +601,10 @@ symbolic procedure get_configuration_data();
   begin
     scalar i, w, e;
 % Configuration information is held in a file called something like
-% "packagelist.dat".
-    i := "$srcdir/../../packages/package.map";
+% "package.map".
+    if boundp 'minireduce and symbol!-value 'minireduce then
+        i := "package.map"
+    else i := "$srcdir/../../packages/package.map";
     i := open(i, 'input);
     i := rds i;
     e := !*echo;
