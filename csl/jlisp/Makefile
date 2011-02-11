@@ -2,14 +2,14 @@
 # Now using a reasonably standard "make" syntax.
 
 
-all:	reduce.jar jlisp.jar
+all:	reduce.jar minireduce.jar jlisp.jar
 
 .PHONY:	clean
 clean:
 	-rm -f *.jar *.class *.img *.log *.bak *~
 
 # The idea here is that the jar file contains EVERYTHING needed for
-# Reduce, and so "java -jar jlisp.jar" will launch the system with its
+# Reduce, and so "java -jar reduce.jar" will launch the system with its
 # default image file.
 
 reduce.jar:	*.java jlisp_manifest reduce.img
@@ -17,6 +17,17 @@ reduce.jar:	*.java jlisp_manifest reduce.img
 	cp reduce.img default.img
 	-rm -f reduce.jar
 	jar cmf jlisp_manifest reduce.jar *.class default.img
+	rm default.img
+
+# minireduce.jar is a cut-down system not containing all the Reduce modules.
+# It will thus be smaller (albeit less capable of performing advanced
+# operations).
+
+minireduce.jar:	*.java jlisp_manifest minireduce.img
+	javac *.java
+	cp minireduce.img default.img
+	-rm -f minireduce.jar
+	jar cmf jlisp_manifest minireduce.jar *.class default.img
 	rm default.img
 
 # jlisp.jar is merely the Lisp system without any algebra. If may sometimes
@@ -57,6 +68,14 @@ reduce.img:
 	-rm -f reduce.img
 	java Jlisp -w -v -z -o reduce.img $(C)/buildreduce.lsp \
 		-D@srcdir="$(C)" -- reduce.log
+
+
+.PHONY:	minireduce.img
+minireduce.img:
+	javac *.java
+	-rm -f minireduce.img
+	java Jlisp -w -v -z -o minireduce.img $(C)/buildreduce.lsp \
+		-Dminireduce -D@srcdir="$(C)" -- reduce.log
 
 
 
