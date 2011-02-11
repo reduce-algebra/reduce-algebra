@@ -290,28 +290,28 @@ class UserJavaFn extends BuiltinFunction
     {
         ensureClassLoaded();
         if (m0 == null) return Jlisp.error("no 0-arg method in UserJava");
-        return (LispObject)m0.invoke(null, new LispObject [] {});
+        return (LispObject)m0.invoke(null);
     }
 
     public LispObject op1(LispObject a) throws Exception
     {
         ensureClassLoaded();
         if (m1 == null) return Jlisp.error("no 1-arg method in UserJava");
-        return (LispObject)m1.invoke(this, new LispObject [] {a});
+        return (LispObject)m1.invoke(this, a);
     }
 
     public LispObject op2(LispObject a, LispObject b) throws Exception
     {
         ensureClassLoaded();
         if (m2 == null) return Jlisp.error("no 2-arg method in UserJava");
-        return (LispObject)m2.invoke(this, new LispObject [] {a, b});
+        return (LispObject)m2.invoke(this, a, b);
     }
 
     public LispObject opn(LispObject [] a) throws Exception
     {
         ensureClassLoaded();
         if (mn == null) return Jlisp.error("no n-arg method in UserJava");
-        return (LispObject)mn.invoke(this, new LispObject [][] {a});
+        return (LispObject)mn.invoke(this, (Object)a);
     }
 }
 

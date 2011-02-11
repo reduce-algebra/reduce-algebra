@@ -124,9 +124,9 @@ public class Symbol extends LispObject
                 }
                 cache.append((char)c);
             }
-            else if ((int)c < 32)
-            {   cache.append("\\x" + Integer.toHexString((int)c));
-            }
+//          else if ((int)c < 32)
+//          {   cache.append("\\x" + Integer.toHexString((int)c));
+//          }
             else
             {   cache.append((char)'!');
                 cache.append((char)c);

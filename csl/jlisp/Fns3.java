@@ -1659,7 +1659,6 @@ class ReadchFn extends BuiltinFunction
             {   ch = ((LispStream)Jlisp.lit[Lit.std_input].car/*value*/
                      ).readChar();
             } while (ch == '\r');          // wary of Windows (& DOS)
-            if (ch == '\t') ch = ' ';      // @@@ TEMP @@@
             if (ch < 0) return Jlisp.lit[Lit.eof];
             else if (ch < 128) return Jlisp.chars[ch];
             else return Symbol.intern(String.valueOf((char)ch));

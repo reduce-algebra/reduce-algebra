@@ -147,7 +147,7 @@
 
 (de concat (u v)
     (compress (cons '!" (append (explode2 u)
-			 (nconc (explode2 v) (list '!"))))))
+                                (nconc (explode2 v) (list '!"))))))
 
 (global '(oldchan!*))
 
@@ -347,8 +347,7 @@ d     (setq nxtsym!* x)
 
 (de mkstrng (u) u)
 
-(de seprp (u) (or (eq u '! ) (eq u !$eol!$) (eq u '!
-)))
+(de seprp (u) (or (eq u blank) (eq u tab) (eq u !$eol!$)))
 
 (de scan nil
    (prog (x y)
