@@ -35,10 +35,12 @@ create!-package('(rlisp module newtok rsupport slfns superv tok xread
 
 flag('(rlisp),'core!_package);
 
-if patch!-date!* then
-    date!* := compress('!" . append(explode2 "15-Sep-2008, patched to ",
-                                nconc(explode2 patch!-date!*,list '!")))
- else date!* := "15-Sep-2008";
+% if patch!-date!* then
+%     date!* := compress('!" . append(explode2 "15-Sep-2008, patched to ",
+%                                 nconc(explode2 patch!-date!*,list '!")))
+%  else 
+
+date!* := date();
 
 if null version!* then version!* := "REDUCE";
 
