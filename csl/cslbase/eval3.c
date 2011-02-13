@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 2731d45e 03-Sep-2010 */
+/* Signature: 2a38c558 13-Feb-2011 */
 
 #include "headers.h"
 
@@ -1116,6 +1116,7 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 {
     Lisp_Object nil = C_nil, r;
     uint32_t flags = miscflags;
+    miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
 #ifndef __cplusplus
 #ifdef SIGALTSTACK
     sigjmp_buf this_level, *saved_buffer = errorset_buffer;
@@ -1151,7 +1152,8 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
         if (exception_pending())
         {   flip_exception();
             pop2(litvec, codevec);
-            miscflags = (flags & ~GC_MSG_BITS) | (miscflags & GC_MSG_BITS);
+            miscflags = (flags & (HEADLINE_FLAG | MESSAGES_FLAG)) |
+                        (miscflags & ~(HEADLINE_FLAG | MESSAGES_FLAG));
             switch (exit_reason)
             {
         case UNWIND_RESTART:
@@ -1164,7 +1166,8 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
             return onevalue(exit_value);
         }
         pop2(litvec, codevec);
-        miscflags = (flags & ~GC_MSG_BITS) | (miscflags & GC_MSG_BITS);
+        miscflags = (flags & (HEADLINE_FLAG | MESSAGES_FLAG)) |
+                    (miscflags & ~(HEADLINE_FLAG | MESSAGES_FLAG));
         r = ncons(r);
         errexit();
         return onevalue(r);
@@ -1237,8 +1240,6 @@ Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
         if (nargs >= 3) fg2 = va_arg(a, Lisp_Object);
     }
     va_end(a);
-    if (always_noisy) fg1 = fg2 = lisp_true;
-    else  miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
     return errorset3(env, form, fg1, fg2);
 }
 
