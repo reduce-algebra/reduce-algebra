@@ -73,8 +73,14 @@ symbolic procedure gevcompatible1(v1,v2,g);
 (car g=0 or car v1=car v2)
      and gevcompatible1(cdr v1,cdr v2,cdr g);
 
+% Fix by Herbert Melenk, Feb 2011
+ 
 symbolic procedure gcompatible(f,h);
- null gmodule!* or gevcompatible1(vdpevlmon f,vdpevlmon h,gmodule!*);
+ cddr cadr cddr h and
+ (null gmodule!* or gevcompatible1(vdpevlmon f,vdpevlmon h,gmodule!*));
+ 
+%symbolic procedure gcompatible(f,h);
+% null gmodule!* or gevcompatible1(vdpevlmon f,vdpevlmon h,gmodule!*);
 
 symbolic procedure groebmakepair(f,h);
 % Construct a pair from polynomials'f'and'h'.
