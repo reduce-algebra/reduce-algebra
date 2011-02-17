@@ -43,7 +43,7 @@ jlisp.jar:	*.java jlisp_manifest jlisp.img
 
 JLISP   = java -jar jlisp.jar
 MEM=300M
-STK=4M
+STK=8M
 REDUCE	= java -Xmx$(MEM) -Xms$(MEM) -Xss$(STK) -jar reduce.jar
 
 
@@ -80,10 +80,21 @@ minireduce.img:
 		-Dminireduce -D@srcdir="$(C)" -- reduce.log
 
 
-.PHONE:	testall
+.PHONY:	testall
 testall:
 	mkdir -p testlogs
 	$(REDUCE) -w $(C)/testall.red -D@srcdir=$(C) -- testlogs/testreduce.log
+	$(REDUCE) -w $(C)/checkall.red -D@srcdir=$(C) -- testlogs/checkall.log
+
+.PHONY:	test1
+# Use:    make test1 which=modulename
+test1:
+	mkdir -p testlogs
+	$(REDUCE) -w $(C)/testall.red -D@srcdir=$(C) -Dwhich=$(which) -- testlogs/test$(which).log
+
+.PHONY:	checkall
+checkall:
+	mkdir -p testlogs
 	$(REDUCE) -w $(C)/checkall.red -D@srcdir=$(C) -- testlogs/checkall.log
 
 # end of Makefile

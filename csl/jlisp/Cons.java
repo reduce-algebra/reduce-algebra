@@ -209,13 +209,15 @@ public class Cons extends LispObject
 
     public boolean lispequals(Object b)
     {
-        if (!(b instanceof Cons)) return false;
+        if (b == this) return true;
+        else if (!(b instanceof Cons)) return false;
         LispObject a1 = this, b1 = (LispObject)b;
         for (;;)
         {   LispObject p1 = a1.car, q1 = b1.car;
             if (!p1.lispequals(q1)) return false;
             p1 = a1.cdr;
             q1 = b1.cdr;
+            if (p1 == q1) return true;
             if (p1.atom) return p1.lispequals(q1);
             if (q1.atom) return false;
             a1 = p1;
