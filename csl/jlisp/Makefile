@@ -42,7 +42,9 @@ jlisp.jar:	*.java jlisp_manifest jlisp.img
 
 
 JLISP   = java -jar jlisp.jar
-REDUCE	= java -Xmx40000000 -jar reduce.jar
+MEM=300M
+STK=4M
+REDUCE	= java -Xmx$(MEM) -Xms$(MEM) -Xss$(STK) -jar reduce.jar
 
 
 ###########################################################################

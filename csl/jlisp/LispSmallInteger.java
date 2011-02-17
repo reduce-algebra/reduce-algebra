@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -243,6 +243,19 @@ public class LispSmallInteger extends LispInteger
     {
         if (value == 0) 
             return Jlisp.error("attempt to take modular recip of zero");
+        int a = Jlisp.modulus, b = value, s = 0, t = 1;
+        while (b != 0)
+        {   int q = a/b;
+            int w = a - q*b; a = b; b = w;
+            w = s - q*t; s = t; t = w;
+        }
+        if (s < 0) s += Jlisp.modulus;
+        return valueOf(s);
+    }
+
+    LispObject safeModRecip() throws Exception
+    {
+        if (value == 0) return Jlisp.nil;
         int a = Jlisp.modulus, b = value, s = 0, t = 1;
         while (b != 0)
         {   int q = a/b;

@@ -153,6 +153,7 @@ class Fns2
         {"modular-plus",                new Modular_plusFn()},
         {"modular-quotient",            new Modular_quotientFn()},
         {"modular-reciprocal",          new Modular_reciprocalFn()},
+        {"safe-modular-reciprocal",     new Safe_modular_reciprocalFn()},
         {"modular-times",               new Modular_timesFn()},
         {"msd",                         new MsdFn()},
         {"numberp",                     new NumberpFn()},
@@ -1334,6 +1335,14 @@ class Modular_reciprocalFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         return arg1.modRecip();
+    }
+}
+
+class Safe_modular_reciprocalFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        return arg1.safeModRecip();
     }
 }
 
