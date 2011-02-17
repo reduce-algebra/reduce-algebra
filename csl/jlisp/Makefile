@@ -41,8 +41,8 @@ jlisp.jar:	*.java jlisp_manifest jlisp.img
 	rm default.img
 
 
-JLISP   = java -jar jlisp.jar -i jlisp.img
-REDUCE	= java -jar jlisp.jar
+JLISP   = java -jar jlisp.jar
+REDUCE	= java -Xmx40000000 -jar reduce.jar
 
 
 ###########################################################################
@@ -78,6 +78,10 @@ minireduce.img:
 		-Dminireduce -D@srcdir="$(C)" -- reduce.log
 
 
-
+.PHONE:	testall
+testall:
+	mkdir -p testlogs
+	$(REDUCE) -w $(C)/testall.red -D@srcdir=$(C) -- testlogs/testreduce.log
+	$(REDUCE) -w $(C)/checkall.red -D@srcdir=$(C) -- testlogs/checkall.log
 
 # end of Makefile

@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -262,7 +262,8 @@ class Fns1
         {"list-to-symbol",              new List_to_symbolFn()},
         {"list2",                       new List2Fn()},
         {"list2*",                      new List2StarFn()},
-        {"list3",                       new List3Fn()}
+        {"list3",                       new List3Fn()},
+        {"resource-limit",              new ResourceLimitFn()}
     };
 
 
@@ -1991,6 +1992,56 @@ class ErrorsetFn extends BuiltinFunction
         {   Jlisp.headline = savehead;
             Jlisp.backtrace = saveback;
         }
+        return new Cons(form, Jlisp.nil);
+    }
+}
+
+/*
+ * (resource!-limit form time space io errors)
+ *   Evaluate the given form and if it succeeds return a
+ *   list whose first item is its value. If it fails in the ordinary manner
+ *   then its failure (error/throw/restart etc) gets passed back through
+ *   here in a transparent manner. But if it runs out of resources this
+ *   function catches that fact and returns an atomic value.
+ *   Resource limits are not precise, and are specified by the
+ *   subsequent arguments here:
+ *      time:  an integer giving a time allowance in seconds
+ *      space: an integer giving a measure of memory that may be used,
+ *             expressed in units of "megaconses". This may only be
+ *             checked for at garbage collection and so small values
+ *             will often be substantially overshot. This is space
+ *             allocated - the fact that memory gets recycled does not
+ *             get it discounted.
+ *      io:    an integer limiting the number of kilobytes of IO that may
+ *             be performed.
+ *      errors:an integer limiting the number of times traditional
+ *             Lisp errors can occur. Note that if errorset is used
+ *             you could have very many errors raised.
+ *   In each case specifying a negative limit means that that limit does
+ *   not apply. But at least one limit must be specified.
+ *   If calls to resource!-limit are nested the inner ones can only
+ *   reduce the resources available to their form.
+ *
+ * For now this ignores the limits!
+ */
+
+class ResourceLimitFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject a1) throws Exception
+    {
+        return opn(new LispObject [] {a1});
+    }
+    public LispObject op2(LispObject a1, LispObject a2) throws Exception
+    {
+        return opn(new LispObject [] {a1, a2});
+    }
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length > 5 || args.length < 1) 
+            return error("resource-limit called with " + args.length + 
+                         " arguments when 1 to 5 expected");
+        LispObject form = args[0];
+        form = form.eval();
         return new Cons(form, Jlisp.nil);
     }
 }

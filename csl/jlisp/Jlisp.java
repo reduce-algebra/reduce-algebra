@@ -10,7 +10,7 @@
 
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -231,6 +231,15 @@ static void startup1(String [] args)
     int undefineCount = 0;
     boolean noRestart = false;
     boolean batchSwitch = false;
+// I may need to display diagnostics before I have finshed setting up
+// streams etc in their proper final form, so I arrange a provisional
+// setting that directs early messages to the terminal.
+    lispIO = lispErr = new LispOutputStream();
+    lit[Lit.std_output] = lit[Lit.tr_output] =
+      lit[Lit.err_output] = lit[Lit.std_input] =
+      lit[Lit.terminal_io] = lit[Lit.debug_io] =
+      lit[Lit.query_io] = Symbol.intern("temp-stream");
+    standardStreams();
 
 // The options that I accept here are intended to match (as far as I can
 // reasonably make them) the ones used with the "CSL" Lisp implementation.
@@ -654,6 +663,7 @@ static void startup1(String [] args)
             if (!restarting)
                 lispIO.setReader("<stdin>", in, standAlone, true);
             standardStreams();
+System.out.printf("set up standard streams%n");
             try
             {   readEvalPrintLoop(noRestart);
                 throw new ProgEvent(ProgEvent.STOP, nil, "EOF");
@@ -712,8 +722,6 @@ static void startup1(String [] args)
                     catch (Exception e1)
                     {   System.out.println("Unexpected exception " + e1);
                     }
-// @@@ next line for debugging
-print("restart mode " + restartFn + " " + restartModule + " " + restartArg);
                     restarting = true;
                     continue;
             default:
@@ -781,8 +789,6 @@ print("restart mode " + restartFn + " " + restartModule + " " + restartArg);
                             catch (Exception e1)
                             {   System.out.println("Unexpected exception " + e);
                             }
-// @@@
-println("restart mode " + restartFn + " " + restartModule + " " + restartArg);
                             i = inputCount;
                             restarting = true;
                             break;
@@ -1010,9 +1016,7 @@ static void preserve(OutputStream dump) throws IOException
         specialNil = true;
         writeObject(lispTrue);
         for (i=0; i<Lit.names.length; i++)
-{ print("lit[" + i + "] = "); println(lit[i]); // @@@
             writeObject(lit[i]);
-}
         for (i=0; i<oblistSize; i++)
         {   Symbol s = oblist[i];
             if (s!=null)
