@@ -1219,7 +1219,6 @@ static boolean isPrime(int n)
 
 static void reHashOblist()
 {
-System.out.println("ReHashing");
     int n = ((3*oblistSize)/2) | 1;
     while (!isPrime(n)) n += 2;
     Symbol [] v = new Symbol[n];

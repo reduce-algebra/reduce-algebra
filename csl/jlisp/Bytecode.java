@@ -789,6 +789,7 @@ LispObject interpret(int pc) throws Exception
     int spsave = sp;
     int arg;
     LispObject a = Jlisp.nil, b = Jlisp.nil, w;
+    int iw, fname;
 
     if (sp > stack_size - 500) // the 500 is a pretty arbitrary margin!
                                // bad enough code could breach it.
@@ -2176,9 +2177,91 @@ case QGETVN:
         a = builtin2[BIget].op2(a, LispInteger.valueOf(arg));
         continue;
 case BIGSTACK:
-        Jlisp.error("bytecode BIGSTACK not implemented");
+        iw = bytecodes[pc++] & 0xff;
+        switch (iw & 0xc0)
+        {
+    default:
+    //case 0x00:
+            b = a;
+            iw = (iw & 0x3f) << 8;
+            a = stack[sp-(iw + (bytecodes[pc++] & 0xff))];
+            continue;
+    case 0x40:
+            iw = (iw & 0x3f) << 8;
+            stack[sp-(iw + (bytecodes[pc++] & 0xff))] = a;
+            continue;
+    case 0x80:
+            Jlisp.error("BIG CLOSURE not implemented");
+    case 0xc0:
+            Jlisp.error("BIG LEX ACCESS not implemented");
+//          n = bytecodes[pc++] & 0xff;
+//          k = bytecodes[pc++] & 0xff;
+//          n = (n << 4) | (k >> 4);
+//          r1 = stack[sp+1-n];
+//          b = a;
+//          n = w & 0x1f;
+//          while (n != 0) n--;
+//          if ((w & 0x20) == 0)
+//              a = 0;
+//          else ?? = a;
+//          continue;
+        }
 case BIGCALL:
-        Jlisp.error("bytecode BIGCALL not implemented");
+        iw = bytecodes[pc++] & 0xff;
+        fname = (bytecodes[pc++] & 0xff) + ((iw & 0xf) << 8);
+        switch (iw >> 4)
+        {
+    default:
+    //case 0: // call0
+	    a = ((Symbol)env[fname]).fn.op0();
+            continue;
+    case 1:   // call1
+	    a = ((Symbol)env[fname]).fn.op1(a);
+            continue;
+    case 2:   // call2
+	    a = ((Symbol)env[fname]).fn.op2(b, a);
+            continue;
+    case 3:   // call3
+            a = ((Symbol)env[fname]).fn.opn(
+                new LispObject [] {stack[sp--], b, a});
+            continue;
+    case 4:   // calln
+            Jlisp.error("BIG CALLN not implemented");
+    case 5:   // call2r
+	    a = ((Symbol)env[fname]).fn.op2(a, b);
+            continue;
+    case 6:   // loadfree
+            b = a;
+            a = env[fname].car/*value*/;
+            continue;
+    case 7:   // storefree
+            env[fname].car/*value*/ = a;
+            continue;
+    case 8:   // jcall0
+            sp = spsave;
+            return ((Symbol)env[fname]).fn.op0();
+    case 9:   // jcall1
+            sp = spsave;
+            return ((Symbol)env[fname]).fn.op1(a);
+    case 10:  // jcall2
+            sp = spsave;
+            return ((Symbol)env[fname]).fn.op2(b, a);
+    case 11:  // jcall3
+            pc = sp;
+            sp = spsave;
+            return ((Symbol)env[fname]).fn.opn(
+                new LispObject [] {stack[pc--], b, a});
+    case 12:  // jcalln
+            Jlisp.error("BIG JCALLN not implemented");
+    case 13:  // freebind
+            Jlisp.error("BIG FREEBIND not implemented");
+    case 14:  // litget
+            Jlisp.error("BIG LITGET not implemented");
+    case 15:  // loadlit
+            b = a;
+            a = env[fname];
+            continue;
+        }
 case ICASE:
         Jlisp.error("bytecode ICASE not implemented");
 case FASTGET:
