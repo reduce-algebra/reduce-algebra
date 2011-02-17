@@ -383,6 +383,11 @@ class LispBigInteger extends LispInteger
         return a.gcdInteger(this);
     }
 
+    public LispObject lcm(LispObject a) throws Exception
+    {
+        return a.lcmInteger(this);
+    }
+
     boolean eqn(LispObject a) throws Exception
     {
         return a.eqnInteger(this);
@@ -494,6 +499,11 @@ class LispBigInteger extends LispInteger
     public LispObject gcdInteger(LispBigInteger a) throws Exception
     {
         return valueOf(a.value.gcd(value));
+    }
+
+    public LispObject lcmInteger(LispBigInteger a) throws Exception
+    {
+        return valueOf(biglcm(a.value, value));
     }
 
     public boolean eqnInteger(LispBigInteger a) throws Exception
@@ -610,6 +620,11 @@ class LispBigInteger extends LispInteger
         return valueOf(BigInteger.valueOf((long)a.value).gcd(value));
     }
 
+    LispObject lcmSmallInteger(LispSmallInteger a) throws Exception
+    {
+        return valueOf(biglcm(BigInteger.valueOf((long)a.value), value));
+    }
+
     boolean eqnSmallInteger(LispSmallInteger a) throws Exception
     {
         return (BigInteger.valueOf((long)a.value).compareTo(value) == 0);
@@ -641,6 +656,16 @@ class LispBigInteger extends LispInteger
     }
 
 
+    static public BigInteger biglcm(BigInteger a, BigInteger b)
+    {
+        a = a.abs();
+        b = b.abs();
+        if (a.equals(BigInteger.ZERO) &&
+            b.equals(BigInteger.ZERO)) return BigInteger.ONE;
+        BigInteger g = a.gcd(b);
+        b = b.divide(g);
+        return a.multiply(b);
+    }
 }
 
 // End of LispBigInteger.java

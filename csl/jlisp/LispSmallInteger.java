@@ -446,6 +446,11 @@ public class LispSmallInteger extends LispInteger
         return a.gcdSmallInteger(this);
     }
 
+    LispObject lcm(LispObject a) throws Exception
+    {
+        return a.lcmSmallInteger(this);
+    }
+
     LispObject modAdd(LispObject a) throws Exception
     {
         return a.modAddSmallInteger(this);
@@ -595,6 +600,12 @@ public class LispSmallInteger extends LispInteger
         return valueOf(a.value.gcd(BigInteger.valueOf((long)value)));
     }
 
+    LispObject lcmInteger(LispBigInteger a) throws Exception
+    {
+        return valueOf(LispBigInteger.biglcm(
+           a.value, BigInteger.valueOf((long)value)));
+    }
+
     boolean eqnInteger(LispBigInteger a) throws Exception
     {
         return (a.value.compareTo(BigInteger.valueOf((long)value)) == 0);
@@ -726,6 +737,14 @@ public class LispSmallInteger extends LispInteger
             q = r;
         }
         return valueOf(p);
+    }
+
+    LispObject lcmSmallInteger(LispSmallInteger a) throws Exception
+    {
+        return valueOf(
+            LispBigInteger.biglcm(
+                BigInteger.valueOf((long)a.value),
+                BigInteger.valueOf((long)value)));
     }
 
     LispObject modAddSmallInteger(LispSmallInteger a) throws Exception

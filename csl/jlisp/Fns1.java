@@ -2022,6 +2022,8 @@ class ErrorsetFn extends BuiltinFunction
  *   If calls to resource!-limit are nested the inner ones can only
  *   reduce the resources available to their form.
  *
+ *   On success set *resource* limit to a list showing the resources used.
+ *
  * For now this ignores the limits!
  */
 
@@ -2037,12 +2039,36 @@ class ResourceLimitFn extends BuiltinFunction
     }
     public LispObject opn(LispObject [] args) throws Exception
     {
+        boolean ok = true;
         if (args.length > 5 || args.length < 1) 
             return error("resource-limit called with " + args.length + 
                          " arguments when 1 to 5 expected");
-        LispObject form = args[0];
-        form = form.eval();
-        return new Cons(form, Jlisp.nil);
+        LispObject form   = args[0];
+        LispObject time   = args[1];
+        LispObject space  = args[2];
+        LispObject io     = args[3];
+        LispObject errors = args[4];
+        int itime   = time.intValue();
+        int ispace  = space.intValue();
+        int iio     = io.intValue();
+        int ierrors = errors.intValue();
+        LispObject r = Jlisp.nil;
+// Right now this code does not actually do anything with the limits,
+// and the value it leaves in *resources*  is just its input values
+// re-packed. I will (maybe) update that behaviour later on.
+        try
+        {   r = form.eval();
+        }
+        catch (ResourceException e)
+        {   ok = false;
+        }
+        ((Symbol)(Jlisp.lit[Lit.resources])).car/*value*/ =
+            new Cons(new LispSmallInteger(itime),
+                new Cons(new LispSmallInteger(ispace),
+                    new Cons(new LispSmallInteger(iio),
+                        new Cons(new LispSmallInteger(ierrors), Jlisp.nil))));
+        if (ok) return new Cons(r, Jlisp.nil);
+        else return Jlisp.nil;
     }
 }
 

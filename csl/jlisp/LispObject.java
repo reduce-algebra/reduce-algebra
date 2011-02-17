@@ -493,6 +493,11 @@ public abstract class LispObject extends Object
         return Jlisp.error("Number needed", this);
     }
 
+    LispObject lcm(LispObject a) throws Exception
+    {
+        return Jlisp.error("Number needed", this);
+    }
+
     LispObject modAdd(LispObject a) throws Exception
     {
         return Jlisp.error("Number needed", this);
@@ -623,6 +628,11 @@ public abstract class LispObject extends Object
         return Jlisp.error("Number needed", this);
     }
 
+    LispObject lcmInteger(LispBigInteger a) throws Exception
+    {
+        return Jlisp.error("Number needed", this);
+    }
+
     LispObject modAddInteger(LispBigInteger a) throws Exception
     {
         return Jlisp.error("Number needed", this);
@@ -743,6 +753,11 @@ public abstract class LispObject extends Object
     }
 
     LispObject gcdSmallInteger(LispSmallInteger a) throws Exception
+    {
+        return Jlisp.error("Number needed", this);
+    }
+
+    LispObject lcmSmallInteger(LispSmallInteger a) throws Exception
     {
         return Jlisp.error("Number needed", this);
     }

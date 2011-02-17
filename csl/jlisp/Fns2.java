@@ -1081,9 +1081,20 @@ class IzeropFn extends BuiltinFunction
 
 class LcmnFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1) throws Exception
+    public LispObject op0()
+    { return LispInteger.valueOf(1); }
+    public LispObject op1(LispInteger a1)
+    { return a1; }
+    public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
-        return error(name + " not yet implemented");
+        return arg1.lcm(arg2);
+    }
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        BigInteger r = args[0].bigIntValue();
+        for (int i=2; i<args.length; i++)
+            r = LispBigInteger.biglcm(r, args[i].bigIntValue());
+        return LispInteger.valueOf(r);
     }
 }
 

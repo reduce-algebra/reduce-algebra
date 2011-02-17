@@ -93,6 +93,7 @@ class Lit
         "*debug-io*",
         "*query-io*",
         "*redefmsg",
+        "*resources*",
 
         "++spare2++",
         "++spare1++"
@@ -151,8 +152,9 @@ class Lit
     static final int debug_io   = 46;
     static final int query_io   = 47;
     static final int redefmsg   = 48;
-    static final int spare2     = 49;
-    static final int spare1     = 50;
+    static final int resources  = 49;
+    static final int spare2     = 50;
+    static final int spare1     = 51;
 }
 
 // end of Lit.java

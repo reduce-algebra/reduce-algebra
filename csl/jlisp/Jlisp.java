@@ -906,9 +906,9 @@ static Fns4 fns4 = new Fns4();
 static Specfn specfn = new Specfn();
 
 // I choose my initial oblist size so that REDUCE can run without need
-// for re-hashing at all often. The size must also be a prime, and 9001
+// for re-hashing at all often. The size must also be a prime, and 15013
 // seems to fit the bill.
-static int oblistSize = 9001;
+static int oblistSize = 15013;
 static int oblistCount = 0;
 static Symbol [] oblist = new Symbol[oblistSize];
 static LispVector obvector = new LispVector((LispObject [])oblist);

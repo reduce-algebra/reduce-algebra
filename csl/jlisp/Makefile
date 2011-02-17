@@ -90,7 +90,14 @@ testall:
 # Use:    make test1 which=modulename
 test1:
 	mkdir -p testlogs
-	$(REDUCE) -w $(C)/testall.red -D@srcdir=$(C) -Dwhich=$(which) -- testlogs/test$(which).log
+	$(REDUCE) -w -v $(C)/testall.red -D@srcdir=$(C) -Dwhich=$(which) -- testlogs/test$(which).log
+
+.PHONY:	debug1
+# Use:    make debug1 which=modulename
+#         as test1 but passes the "-g" flag that makes all backtraces noisy.
+debug1:
+	mkdir -p testlogs
+	$(REDUCE) -w -v -g $(C)/testall.red -D@srcdir=$(C) -Dwhich=$(which) -- testlogs/test$(which).log
 
 .PHONY:	checkall
 checkall:
