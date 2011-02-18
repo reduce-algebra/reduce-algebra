@@ -1,4 +1,4 @@
-Fri May 21 09:36:48 2010 run on darwin10.3.0:x86_64
+Fri Feb 18 21:28:31 2011 run on win32
 load_package redlog;
 
 
@@ -80,5 +80,5 @@ lhead(ltail(ltail(rtail(rtail(q))))) - rhead(ltail(ltail(rtail(rtail(q))))) = 0
 end;
 
 
-Time for test: 30 ms
-@@@@@ Resources used: (0 0 3 0)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 2 0)

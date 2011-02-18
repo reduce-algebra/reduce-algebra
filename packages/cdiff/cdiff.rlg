@@ -1,4 +1,4 @@
-Tue Sep 28 16:05:04 2010 run on win32
+Fri Feb 18 21:29:01 2011 run on win32
 % Raffaele Vitolo, 09/10/09
 % This is the computation for (higher) symmetries of Burgers
 
@@ -480,9 +480,9 @@ equ(1) := 2*(4*c(19)*u1*u4 + 10*c(19)*u2*u3 + 3*c(18)*u*u1*u3 + 3*c(18)*u*u2
               - c(8)*u *u1 - 6*c(8)*u *u1  + 2*c(7)*u1*u2 - c(6)*u1*u2
 
                       3                 2         2             2
-              - c(5)*u *u1 - 3*c(5)*u*u1  - c(3)*u *u1 - c(3)*u1  - c(2)*u1
+              - c(5)*u *u1 - 3*c(5)*u*u1  - c(3)*u *u1 - c(3)*u1  - c(2)*u*u1
 
-              - c(1)*u*u1)
+              - c(1)*u1)
 
 
 % This is the list of variables, to be passed to the equation solver.
@@ -694,5 +694,5 @@ equ(24) = 0
 end;
 
 
-Time for test: 128 ms, plus GC time: 5 ms
+Time for test: 31 ms, plus GC time: 16 ms
 @@@@@ Resources used: (0 0 19 0)

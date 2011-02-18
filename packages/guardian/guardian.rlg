@@ -1,4 +1,4 @@
-Sat Nov 28 12:03:28 2009 run on win32
+Fri Feb 18 21:29:01 2011 run on win32
 1 / (x^2+2*x+1);
 
 
@@ -89,5 +89,5 @@ sqrt(1+x^2*y^2+(x^2+y^2-3));
 end;
 
 
-Time for test: 15 ms
-@@@@@ Resources used: (0 0 3 0)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 2 0)

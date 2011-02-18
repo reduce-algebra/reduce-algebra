@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:49 2009 run on win32
+Fri Feb 18 21:27:22 2011 run on win32
 
 *** ^ redefined 
 % Vector test routine
@@ -1233,5 +1233,5 @@ deflineint(a,curve,phi,0,2*pi);
 end;
 
 
-Time for test: 86 ms, plus GC time: 18 ms
+Time for test: 62 ms
 @@@@@ Resources used: (0 0 35 0)

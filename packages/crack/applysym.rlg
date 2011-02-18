@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:35 2009 run on win32
+Fri Feb 18 21:27:34 2011 run on win32
 load crack,applysym$
 
 
@@ -432,5 +432,5 @@ lisp(depl!*:=nil)$
 end$
 
 
-Time for test: 2280 ms, plus GC time: 108 ms
-@@@@@ Resources used: (2 5 94 0)
+Time for test: 530 ms, plus GC time: 31 ms
+@@@@@ Resources used: (1 6 95 0)

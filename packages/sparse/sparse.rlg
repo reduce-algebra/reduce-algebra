@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:08 2009 run on win32
+Fri Feb 18 21:27:59 2011 run on win32
 % Test file for Sparse Matrices and the Linear Algebra Package for
 % Sparse Matrices.
 
@@ -3614,5 +3614,5 @@ off rounded;
 end;
 
 
-Time for test: 465 ms, plus GC time: 23 ms
-@@@@@ Resources used: (2 2 41 0)
+Time for test: 125 ms
+@@@@@ Resources used: (0 2 41 0)

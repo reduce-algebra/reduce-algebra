@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:46 2009 run on win32
+Fri Feb 18 21:28:09 2011 run on win32
 
 *** c already defined as operator 
 
@@ -187,5 +187,5 @@ ratint(1,x^5+1,x);
 end;
 
 
-Time for test: 83 ms, plus GC time: 29 ms
-@@@@@ Resources used: (0 0 7 0)
+Time for test: 16 ms, plus GC time: 15 ms
+@@@@@ Resources used: (0 0 8 0)

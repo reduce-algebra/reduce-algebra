@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:39 2009 run on win32
+Fri Feb 18 21:27:52 2011 run on win32
 % Tests of the root finding package.
 
 % Author: Stanley L. Kameny (stan_kameny@rand.org)
@@ -4378,5 +4378,5 @@ roots bb;
 end;
 
 
-Time for test: 4012 ms, plus GC time: 100 ms
-@@@@@ Resources used: (4 20 282 3)
+Time for test: 998 ms, plus GC time: 109 ms
+@@@@@ Resources used: (2 24 281 3)

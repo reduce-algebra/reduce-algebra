@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:03 2009 run on win32
+Fri Feb 18 21:28:54 2011 run on win32
 % Test file for TrigSimp package
 
 %-------------------------TrigSimp--------------------------
@@ -1404,5 +1404,5 @@ trigfactorize(1 + cos(2x) + 2cos(x)*cosh(x), x/2);
 end;
 
 
-Time for test: 4027 ms, plus GC time: 60 ms
-@@@@@ Resources used: (5 10 331 4)
+Time for test: 1061 ms, plus GC time: 63 ms
+@@@@@ Resources used: (1 11 331 4)

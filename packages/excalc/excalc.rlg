@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:33 2009 run on win32
+Fri Feb 18 21:27:50 2011 run on win32
 
 *** ^ redefined 
 % Problem: Calculate the PDE's for the isovector of the heat equation.
@@ -2287,10 +2287,10 @@ remfdomain u1,u3,u5,ff,gg;
 showtime;
 
 
-Time: 1646 ms  plus GC time: 30 ms
+Time: 358 ms  plus GC time: 16 ms
 
 end;
 
 
-Time for test: 1661 ms, plus GC time: 30 ms
-@@@@@ Resources used: (2 5 79 0)
+Time for test: 358 ms, plus GC time: 16 ms
+@@@@@ Resources used: (0 6 80 0)

@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:39 2009 run on win32
+Fri Feb 18 21:27:18 2011 run on win32
 %*********************************************************************
 %                          ATENSOR  TEST  RUN.
 %
@@ -310,7 +310,7 @@ a2(m,n)*ri(m,n,c,d) + a2(k,l)*ri(c,d,l,k);
 showtime;
 
 
-Time: 9398 ms  plus GC time: 74 ms
+Time: 3994 ms  plus GC time: 48 ms
 
 
 $
@@ -318,5 +318,5 @@ $
 END$
 
 
-Time for test: 9417 ms, plus GC time: 74 ms
-@@@@@ Resources used: (11 16 3264 0)
+Time for test: 3994 ms, plus GC time: 48 ms
+@@@@@ Resources used: (4 18 3264 0)

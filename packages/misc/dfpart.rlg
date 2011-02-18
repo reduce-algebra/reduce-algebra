@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:59 2009 run on win32
+Fri Feb 18 21:27:25 2011 run on win32
 depend y,x;
 
 
@@ -562,5 +562,5 @@ sys := {6*(w(3) + w(2) + w(1) - 1),
 end;
 
 
-Time for test: 147 ms, plus GC time: 7 ms
-@@@@@ Resources used: (0 0 15 0)
+Time for test: 46 ms
+@@@@@ Resources used: (0 0 16 0)

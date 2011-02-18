@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:38 2009 run on win32
+Fri Feb 18 21:27:18 2011 run on win32
 % test of DUMMY package version 1.1 running in REDUCE 3.6 and 3.7
 % DATE: 15 September 1998
 % Authors: H. Caprasse <hubert.caprasse@ulg.ac.be>
@@ -600,5 +600,5 @@ c_exp := co1(dv3)
 end;
 
 
-Time for test: 44 ms
-@@@@@ Resources used: (0 0 16 0)
+Time for test: 1 ms
+@@@@@ Resources used: (0 0 15 0)

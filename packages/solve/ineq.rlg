@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:30 2009 run on win32
+Fri Feb 18 21:27:16 2011 run on win32
 % polynomial Inequality (Example where another system returned {1 <= x})
 
 ineq_solve(  (2*x^2+x-1)/(x-1) >=  (x+1/2)^2 ,x);
@@ -97,5 +97,5 @@ clear lfcond,lvars;
 end;
 
 
-Time for test: 45 ms, plus GC time: 20 ms
-@@@@@ Resources used: (0 0 3 0)
+Time for test: 1 ms, plus GC time: 16 ms
+@@@@@ Resources used: (0 0 4 0)

@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:16 2009 run on win32
+Fri Feb 18 21:28:02 2011 run on win32
 % Tests of limits package.
 
 limit(sin(x)/x,x,0);
@@ -828,5 +828,5 @@ limit(h,x,0);
 end;
 
 
-Time for test: 2147 ms, plus GC time: 26 ms
-@@@@@ Resources used: (2 6 18 800)
+Time for test: 515 ms
+@@@@@ Resources used: (0 6 19 800)

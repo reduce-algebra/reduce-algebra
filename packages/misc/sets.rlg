@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:44 2009 run on win32
+Fri Feb 18 21:27:53 2011 run on win32
 %% sets.tst
 
 %% Author: F.J.Wright@Maths.QMW.ac.uk
@@ -254,5 +254,5 @@ mkset{1,2,1};
 end;
 
 
-Time for test: 23 ms
+Time for test: 1 ms
 @@@@@ Resources used: (0 0 5 0)

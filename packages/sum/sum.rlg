@@ -1,4 +1,4 @@
-Tue Nov 17 08:56:46 2009 run on win32
+Fri Feb 18 21:28:31 2011 run on win32
 % Tests of the SUM package.
 
 % Author: Fujio Kako (kako@kako.math.sci.hiroshima-u.ac.jp)
@@ -725,5 +725,5 @@ prod(e**(sin(n*x)),n);
 end;
 
 
-Time for test: 223 ms, plus GC time: 4 ms
+Time for test: 62 ms
 @@@@@ Resources used: (0 1 20 0)

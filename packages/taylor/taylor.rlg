@@ -1,4 +1,4 @@
-Tue Nov 17 08:57:08 2009 run on win32
+Fri Feb 18 21:28:37 2011 run on win32
 comment
         Test and demonstration file for the Taylor expansion package,
         by Rainer M. Schoepf.  Works with version 2.2a (01-Apr-2000);
@@ -2493,5 +2493,5 @@ comment That's all, folks;
 end;
 
 
-Time for test: 776 ms, plus GC time: 18 ms
-@@@@@ Resources used: (0 2 96 10)
+Time for test: 188 ms, plus GC time: 31 ms
+@@@@@ Resources used: (1 2 97 10)

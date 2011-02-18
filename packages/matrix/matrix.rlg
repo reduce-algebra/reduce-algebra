@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:22 2009 run on win32
+Fri Feb 18 21:27:13 2011 run on win32
 % Miscellaneous matrix tests.
 
 % Tests of eigenfunction/eigenvalue code.
@@ -2197,5 +2197,5 @@ for each n in ws collect m1*n;
 end;
 
 
-Time for test: 351 ms, plus GC time: 20 ms
+Time for test: 125 ms, plus GC time: 31 ms
 @@@@@ Resources used: (0 1 60 0)

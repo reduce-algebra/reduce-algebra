@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:37 2009 run on win32
+Fri Feb 18 21:27:35 2011 run on win32
 %*******************************************************************%
 %                                                                   %
 %                      C O N L A W . T S T                          %
@@ -2644,5 +2644,5 @@ nodepnd {u,v,r,p_t,x,y,z,a1,a2,a3,b,s,r}$
 end$
 
 
-Time for test: 54381 ms, plus GC time: 663 ms
-@@@@@ Resources used: (55 111 2904 0)
+Time for test: 14022 ms, plus GC time: 783 ms
+@@@@@ Resources used: (14 125 2903 0)

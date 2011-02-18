@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:18 2009 run on win32
+Fri Feb 18 21:28:02 2011 run on win32
 
 *** ci already defined as operator 
 
@@ -1124,5 +1124,5 @@ fourier_cos(1/(k*sqrt(pi))*e^(-x^2/(4*k^2)),x);
 end;
 
 
-Time for test: 12426 ms, plus GC time: 251 ms
-@@@@@ Resources used: (13 30 40 841)
+Time for test: 3119 ms, plus GC time: 172 ms
+@@@@@ Resources used: (4 33 41 841)

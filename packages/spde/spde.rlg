@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:09 2009 run on win32
+Fri Feb 18 21:27:59 2011 run on win32
  %Appendix (Testfile).
 
  %This appendix is a test file. The symmetry groups for various
@@ -495,5 +495,5 @@ COMM(5,6):= 8*dx(1)*x(1)
 end;
 
 
-Time for test: 1160 ms, plus GC time: 22 ms
-@@@@@ Resources used: (0 2 14 0)
+Time for test: 312 ms, plus GC time: 16 ms
+@@@@@ Resources used: (0 2 13 0)

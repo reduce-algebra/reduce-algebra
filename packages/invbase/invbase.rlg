@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:49 2009 run on win32
+Fri Feb 18 21:27:23 2011 run on win32
 
 % *****  Example 1  *****
 
@@ -408,5 +408,5 @@ invtempbasis;
 end$
 
 
-Time for test: 46 ms
-@@@@@ Resources used: (0 0 10 1)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 9 1)

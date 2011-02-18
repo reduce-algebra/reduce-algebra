@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:38 2009 run on win32
+Fri Feb 18 21:27:18 2011 run on win32
 % Test of Assist Package version 2.31.
 % DATE : 30 August 1996
 % Author: H. Caprasse <hubert.caprasse@ulg.ac.be>
@@ -2589,5 +2589,5 @@ clear g,op;
 end;
 
 
-Time for test: 73 ms, plus GC time: 3 ms
-@@@@@ Resources used: (0 0 38 4)
+Time for test: 15 ms
+@@@@@ Resources used: (0 0 37 4)

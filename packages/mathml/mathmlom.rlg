@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:46 2009 run on win32
+Fri Feb 18 21:28:10 2011 run on win32
 load mathmlom;
 
 
@@ -7633,5 +7633,5 @@ end;
 end;
 
 
-Time for test: 138 ms
+Time for test: 47 ms
 @@@@@ Resources used: (0 0 344 0)

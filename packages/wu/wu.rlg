@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:08 2009 run on win32
+Fri Feb 18 21:28:55 2011 run on win32
 % wu.tst
 
 % Russell Bradford, 8 June 90.
@@ -458,5 +458,5 @@ wu({z*z,y*z-1,x*z-1}, {x,y,z});
 end;
 
 
-Time for test: 107 ms
+Time for test: 32 ms
 @@@@@ Resources used: (0 0 8 0)

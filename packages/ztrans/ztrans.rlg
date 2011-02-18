@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:08 2009 run on win32
+Fri Feb 18 21:28:55 2011 run on win32
 
 *** binomial already defined as operator 
 
@@ -1547,5 +1547,5 @@ result:=preresult where solveresult;
 end;
 
 
-Time for test: 3393 ms, plus GC time: 63 ms
-@@@@@ Resources used: (4 11 72 2)
+Time for test: 889 ms, plus GC time: 63 ms
+@@@@@ Resources used: (1 11 72 2)

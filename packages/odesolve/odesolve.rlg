@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:00 2009 run on win32
+Fri Feb 18 21:27:25 2011 run on win32
 % Tests and demonstrations for the ODESolve 1+ package --
 % an updated version of the original odesolve test file.
 
@@ -327,5 +327,5 @@ The Wronskian is --------
 end;
 
 
-Time for test: 1021 ms, plus GC time: 24 ms
-@@@@@ Resources used: (3 2 18 0)
+Time for test: 312 ms
+@@@@@ Resources used: (1 3 18 0)

@@ -1,4 +1,4 @@
-Thu May 20 07:39:06 2010 run on darwin10.3.0:x86_64
+Fri Feb 18 21:28:22 2011 run on win32
 load_package redlog;
 
 
@@ -3582,5 +3582,5 @@ false
 end;
 
 
-Time for test: 18380 ms, plus GC time: 170 ms
-@@@@@ Resources used: (17 50 822 0)
+Time for test: 3102 ms, plus GC time: 221 ms
+@@@@@ Resources used: (3 48 820 0)

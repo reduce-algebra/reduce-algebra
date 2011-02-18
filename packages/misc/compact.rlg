@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:59 2009 run on win32
+Fri Feb 18 21:27:25 2011 run on win32
 % Tests of the COMPACT package.
 
 % Author: Anthony C. Hearn.
@@ -339,5 +339,5 @@ a  - 2*a *b  - 2*a *c  + b  - 2*b *c  + c
 end;
 
 
-Time for test: 53 ms
-@@@@@ Resources used: (0 0 11 0)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 10 0)

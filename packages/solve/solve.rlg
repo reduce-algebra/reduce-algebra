@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:23 2009 run on win32
+Fri Feb 18 21:27:14 2011 run on win32
 % Demonstration of the REDUCE SOLVE package.
 
 on fullroots;
@@ -2826,5 +2826,5 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 end;
 
 
-Time for test: 5765 ms, plus GC time: 225 ms
-@@@@@ Resources used: (7 16 153 54)
+Time for test: 1403 ms, plus GC time: 127 ms
+@@@@@ Resources used: (2 18 153 54)

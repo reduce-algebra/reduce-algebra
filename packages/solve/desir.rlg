@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:29 2009 run on win32
+Fri Feb 18 21:27:15 2011 run on win32
 off echo;
 
 
@@ -141,7 +141,7 @@ param := {}
 
 on trdesir;             %obtention facultative d'une trace
 
-Time: 45 ms  plus GC time: 22 ms
+Time: 15 ms  plus GC time: 16 ms
 
 sol:=delire(x,4,1,lcoeff,param);
 
@@ -223,7 +223,7 @@ sol := {{{{0,1,-----------------------------------,1},{}}},
 
 showtime;                      %temps d'execution de 'delire'
 
-Time: 37 ms
+Time: 0 ms
 
 1ieme solution :
 
@@ -884,11 +884,11 @@ lcoeff := {x + 1,
 
 param := {}
 
-Time: 259 ms
+Time: 78 ms
 
 sol:=delire(x,4,1,lcoeff,param);
 
-Time: 246 ms  plus GC time: 10 ms
+Time: 63 ms
 
 1ieme solution :
 
@@ -975,5 +975,5 @@ Si on reporte cette solution dans l'equation, le terme significatif du reste
                847288609443
 
 
-Time for test: 1349 ms, plus GC time: 42 ms
-@@@@@ Resources used: (2 4 33 0)
+Time for test: 312 ms, plus GC time: 16 ms
+@@@@@ Resources used: (0 5 32 0)

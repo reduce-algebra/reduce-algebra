@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:39 2009 run on win32
+Fri Feb 18 21:27:52 2011 run on win32
 % Examples for the conversion of reaction equations to ordinary
 % differential equations.
 
@@ -127,5 +127,5 @@ new species: a4
 end;
 
 
-Time for test: 19 ms, plus GC time: 4 ms
-@@@@@ Resources used: (0 0 3 0)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 4 0)

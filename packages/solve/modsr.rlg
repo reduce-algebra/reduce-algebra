@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:31 2009 run on win32
+Fri Feb 18 21:27:16 2011 run on win32
 % Test series for the package MODSR: SOLVE and ROOTS for
 % modular polynomials and modular polynomial systems.
 % Moduli need not be primes.
@@ -231,5 +231,5 @@ length ws;
 end;
 
 
-Time for test: 85 ms
-@@@@@ Resources used: (0 0 4 2)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 5 2)

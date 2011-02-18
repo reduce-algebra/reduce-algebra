@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:17 2009 run on win32
+Fri Feb 18 21:27:12 2011 run on win32
 Comment This is a standard test file for REDUCE that has been used for
 many years.  It only tests a limited number of facilities in the
 current system.  In particular, it does not test floating point
@@ -772,11 +772,11 @@ comment end of second physics example;
 showtime;
 
 
-Time: 65 ms  plus GC time: 4 ms
+Time: 187 ms
 
 
 end;
 
 
-Time for test: 86 ms, plus GC time: 4 ms
-@@@@@ Resources used: (0 0 24 0)
+Time for test: 187 ms
+@@@@@ Resources used: (0 0 23 0)

@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:08 2009 run on win32
+Fri Feb 18 21:28:55 2011 run on win32
 %----------------------------------------------------------------------
 % File:      xcolor.tst
 % Purpose:   Tests for xcolor package.
@@ -401,5 +401,5 @@ $
 END$
 
 
-Time for test: 205 ms
+Time for test: 31 ms
 @@@@@ Resources used: (0 0 20 0)

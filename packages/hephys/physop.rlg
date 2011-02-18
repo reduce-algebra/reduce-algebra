@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:02 2009 run on win32
+Fri Feb 18 21:27:26 2011 run on win32
 COMMENT
         test file for the PHYSOP package;
 
@@ -284,5 +284,5 @@ anticommute((gamma dot p),(gamma dot q));
 end;
 
 
-Time for test: 71 ms
+Time for test: 1 ms
 @@@@@ Resources used: (0 0 11 0)

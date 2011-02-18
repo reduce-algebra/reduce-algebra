@@ -1,4 +1,4 @@
-Wed Jun 02 09:32:57 2010 run on win32
+Fri Feb 18 21:27:18 2011 run on win32
 % Test of algebraic number package.
 
 defpoly sqrt2**2-2;
@@ -425,5 +425,5 @@ factorize(x**3-3);
 end;
 
 
-Time for test: 61 ms, plus GC time: 3 ms
-@@@@@ Resources used: (0 0 10 0)
+Time for test: 31 ms
+@@@@@ Resources used: (0 0 9 0)

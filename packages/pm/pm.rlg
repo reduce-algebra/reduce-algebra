@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:06 2009 run on win32
+Fri Feb 18 21:27:59 2011 run on win32
 
 *** ~ already defined as operator 
 % Tests of PM.
@@ -512,5 +512,5 @@ S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 end;
 
 
-Time for test: 53 ms
+Time for test: 1 ms
 @@@@@ Resources used: (0 0 14 0)

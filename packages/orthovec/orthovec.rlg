@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:05 2009 run on win32
+Fri Feb 18 21:27:58 2011 run on win32
 
 *** + redefined 
 
@@ -16,7 +16,7 @@ Tue Nov 17 08:53:05 2009 run on win32
 showtime;
 
 
-Time: 1 ms
+Time: 0 ms
 
 
 %example 1: vector identity
@@ -222,7 +222,7 @@ ub:=sqrt(r**2-x**2)$
 showtime;
 
 
-Time: 78 ms  plus GC time: 15 ms
+Time: 48 ms  plus GC time: 15 ms
 
 
 ;
@@ -230,5 +230,5 @@ Time: 78 ms  plus GC time: 15 ms
 end;
 
 
-Time for test: 92 ms, plus GC time: 15 ms
+Time for test: 48 ms, plus GC time: 15 ms
 @@@@@ Resources used: (0 0 5 0)

@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:44 2009 run on win32
+Fri Feb 18 21:27:53 2011 run on win32
 
 *** ^ redefined 
 
@@ -2844,5 +2844,5 @@ clear x,y,z,u,v,w,C,S;
 end;
 
 
-Time for test: 8147 ms, plus GC time: 205 ms
-@@@@@ Resources used: (9 19 150 0)
+Time for test: 1839 ms, plus GC time: 141 ms
+@@@@@ Resources used: (1 21 149 0)

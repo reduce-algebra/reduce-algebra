@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:10 2009 run on win32
+Fri Feb 18 21:28:00 2011 run on win32
 %
 %  Testing file for REDUCE Special Functions Package
 %
@@ -6786,5 +6786,5 @@ Bessel test complete.
 end;
 
 
-Time for test: 5070 ms, plus GC time: 155 ms
-@@@@@ Resources used: (6 20 283 519)
+Time for test: 1310 ms, plus GC time: 125 ms
+@@@@@ Resources used: (2 23 284 560)

@@ -1,4 +1,4 @@
-Thu May 20 09:12:58 2010 run on darwin10.3.0:x86_64
+Fri Feb 18 21:28:11 2011 run on win32
 % Examples taken from the manual:
 
 % 1 Introduction
@@ -2165,5 +2165,5 @@ torder oo;
 end;
 
 
-Time for test: 200 ms, plus GC time: 20 ms
+Time for test: 109 ms, plus GC time: 32 ms
 @@@@@ Resources used: (0 1 60 0)

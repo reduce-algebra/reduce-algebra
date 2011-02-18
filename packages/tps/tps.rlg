@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:16 2009 run on win32
+Fri Feb 18 21:28:01 2011 run on win32
 % Author: Alan Barnes <barnesa@aston.ac.uk>
 
 psexplim 8;
@@ -384,5 +384,5 @@ y + ---*y  + ----*y  + -----*y  + O(y )
 end;
 
 
-Time for test: 57 ms, plus GC time: 7 ms
+Time for test: 1 ms, plus GC time: 15 ms
 @@@@@ Resources used: (0 0 12 0)

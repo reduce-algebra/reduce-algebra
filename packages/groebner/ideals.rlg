@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:54 2009 run on win32
+Fri Feb 18 21:27:56 2011 run on win32
 I_setting(x,y,z);
 
 
@@ -143,5 +143,5 @@ intersection (I(x) , I(x^2,x*y,y^2)) .= intersection(I(x) , I(x^2,y));
 end;
 
 
-Time for test: 53 ms
+Time for test: 16 ms
 @@@@@ Resources used: (0 0 2 0)

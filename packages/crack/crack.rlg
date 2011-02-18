@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:02 2009 run on win32
+Fri Feb 18 21:27:26 2011 run on win32
 %*******************************************************************%
 %                                                                   %
 %                       C R A C K . T S T                           %
@@ -780,5 +780,5 @@ lisp(depl!*:=nil)$
 end$
 
 
-Time for test: 3140 ms, plus GC time: 43 ms
-@@@@@ Resources used: (4 7 129 0)
+Time for test: 858 ms, plus GC time: 31 ms
+@@@@@ Resources used: (1 8 128 0)

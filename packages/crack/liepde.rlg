@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:06 2009 run on win32
+Fri Feb 18 21:27:27 2011 run on win32
 %*******************************************************************%
 %                                                                   %
 %                      L I E P D E . T S T                          %
@@ -1266,7 +1266,7 @@ depend v,x,y,z,t;
 on time$
 
 
-Time: 11421 ms  plus GC time: 219 ms
+Time: 2949 ms  plus GC time: 171 ms
 
 liepde({
 
@@ -1334,35 +1334,35 @@ r(z,y,t,x), f(z,y,t,x), v(z,y,t,x)
 
 
 =============== Initializations
-time for initializations: 48 ms    GC time : 0 ms
+time for initializations: 15 ms    GC time : 0 ms
 
 
 =============== Preconditions for the 1. equation
-time to formulate conditions: 371 ms    GC time : 0 ms
-CRACK needed :  1048 ms    GC time : 22 ms
+time to formulate conditions: 78 ms    GC time : 0 ms
+CRACK needed :  266 ms    GC time : 15 ms
 
 
 =============== Preconditions for the 2. equation
 
 
 =============== Preconditions for the 3. equation
-time to formulate conditions: 172 ms    GC time : 0 ms
-CRACK needed :  335 ms    GC time : 0 ms
+time to formulate conditions: 31 ms    GC time : 0 ms
+CRACK needed :  78 ms    GC time : 0 ms
 
 
 =============== Full conditions for the 1. equation
-time to formulate conditions: 78 ms    GC time : 0 ms
-CRACK needed :  1655 ms    GC time : 24 ms
+time to formulate conditions: 32 ms    GC time : 0 ms
+CRACK needed :  390 ms    GC time : 31 ms
 
 
 =============== Full conditions for the 2. equation
-time to formulate conditions: 31 ms    GC time : 0 ms
-CRACK needed :  92 ms    GC time : 0 ms
+time to formulate conditions: 0 ms    GC time : 0 ms
+CRACK needed :  30 ms    GC time : 0 ms
 
 
 =============== Full conditions for the 3. equation
-time to formulate conditions: 53 ms    GC time : 0 ms
-CRACK needed :  98 ms    GC time : 0 ms
+time to formulate conditions: 16 ms    GC time : 0 ms
+CRACK needed :  15 ms    GC time : 0 ms
 
 The symmetries are:
 
@@ -1553,7 +1553,7 @@ eta_v=0
 
   c_221}}
 
-Time: 4248 ms  plus GC time: 57 ms
+Time: 1014 ms  plus GC time: 46 ms
 
 
 off time$
@@ -1997,5 +1997,5 @@ nodepnd {f,g}$
 end$
 
 
-Time for test: 27841 ms, plus GC time: 442 ms
-@@@@@ Resources used: (28 60 557 2)
+Time for test: 6911 ms, plus GC time: 435 ms
+@@@@@ Resources used: (7 67 557 2)

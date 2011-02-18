@@ -1,4 +1,4 @@
-Tue Nov 17 08:57:08 2009 run on win32
+Fri Feb 18 21:28:37 2011 run on win32
 
 *** @ already defined as operator 
 % test symmetry package
@@ -936,5 +936,5 @@ off complex;
 end;
 
 
-Time for test: 105 ms
-@@@@@ Resources used: (0 0 12 0)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 14 0)

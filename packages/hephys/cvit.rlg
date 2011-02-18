@@ -1,4 +1,4 @@
-Tue Nov 17 08:51:02 2009 run on win32
+Fri Feb 18 21:27:26 2011 run on win32
 % Tests of Cvitanovic Package.
 
 
@@ -411,5 +411,5 @@ xx;
 end;
 
 
-Time for test: 138 ms
-@@@@@ Resources used: (0 0 12 0)
+Time for test: 31 ms
+@@@@@ Resources used: (0 0 13 0)

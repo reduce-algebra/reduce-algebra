@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:49 2009 run on win32
+Fri Feb 18 21:27:23 2011 run on win32
 % Author H.-G. Graebe | Univ. Leipzig | Version 28.6.1995
 % graebe@informatik.uni-leipzig.de
 
@@ -22,7 +22,7 @@ off nat;
 showtime;
 
 
-Time: 1 ms
+Time: 0 ms
 
 
 comment
@@ -3068,11 +3068,11 @@ dx*x + dy*y},
 showtime;
 
 
-Time: 8384 ms  plus GC time: 183 ms
+Time: 1481 ms  plus GC time: 172 ms
 
 
 end;
 
 
-Time for test: 8406 ms, plus GC time: 183 ms
-@@@@@ Resources used: (10 34 90 0)
+Time for test: 1481 ms, plus GC time: 172 ms
+@@@@@ Resources used: (2 39 90 0)

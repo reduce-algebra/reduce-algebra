@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:44 2009 run on win32
+Fri Feb 18 21:27:53 2011 run on win32
 
 *** ^ redefined 
 % Test file for XIDEAL package (Groebner bases for exterior algebra)
@@ -485,5 +485,5 @@ deglex
 end;
 
 
-Time for test: 119 ms
-@@@@@ Resources used: (0 0 13 0)
+Time for test: 16 ms
+@@@@@ Resources used: (0 0 12 0)

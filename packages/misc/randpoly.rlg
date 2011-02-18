@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:39 2009 run on win32
+Fri Feb 18 21:27:52 2011 run on win32
 % randpoly.tst
 
 % F.J.Wright@Maths.QMW.ac.uk, 14 July 1994
@@ -334,5 +334,5 @@ on allfac;
 end;
 
 
-Time for test: 45 ms
+Time for test: 16 ms
 @@@@@ Resources used: (0 0 11 3)

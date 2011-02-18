@@ -1,4 +1,4 @@
-Thu May 20 11:47:42 2010 run on darwin10.3.0:x86_64
+Fri Feb 18 21:28:57 2011 run on win32
 % Test only multipliation:
 easy1 := (x1+1*x2)*(x1-1*x2);
 
@@ -220,5 +220,5 @@ partial(x2)
 end;
 
 
-Time for test: 9120 ms, plus GC time: 110 ms
-@@@@@ Resources used: (9 35 105 0)
+Time for test: 3279 ms, plus GC time: 154 ms
+@@@@@ Resources used: (3 36 107 0)

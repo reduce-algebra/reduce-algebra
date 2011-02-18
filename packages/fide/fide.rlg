@@ -1,4 +1,4 @@
-Tue Nov 17 08:52:35 2009 run on win32
+Fri Feb 18 21:27:51 2011 run on win32
 %***********************************************************************
 %*****                                                             *****
 %***** Package  F I D E - Test Examples Ver. 1.1.2 May 29,1995     *****
@@ -3800,5 +3800,5 @@ clear a,b,bt,pol;
 end;
 
 
-Time for test: 849 ms, plus GC time: 11 ms
-@@@@@ Resources used: (1 2 143 0)
+Time for test: 265 ms
+@@@@@ Resources used: (1 2 144 0)

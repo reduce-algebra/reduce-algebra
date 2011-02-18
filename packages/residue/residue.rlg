@@ -1,4 +1,4 @@
-Tue Nov 17 08:57:11 2009 run on win32
+Fri Feb 18 21:28:38 2011 run on win32
 % test file for residue package
 
 residue(x/(x^2-2),x,sqrt(2));
@@ -188,5 +188,5 @@ poleorder(x^3*sin(1/x)^2,x,infinity);
 end;
 
 
-Time for test: 111 ms, plus GC time: 22 ms
-@@@@@ Resources used: (0 0 4 5)
+Time for test: 16 ms, plus GC time: 15 ms
+@@@@@ Resources used: (0 0 5 5)

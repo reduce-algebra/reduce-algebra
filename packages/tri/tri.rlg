@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:03 2009 run on win32
+Fri Feb 18 21:28:54 2011 run on win32
 % TeX-REDUCE-Interface 0.70
 % set greek asserted
 % set lowercase asserted
@@ -559,5 +559,5 @@ $$\displaylines{\qdd
 \cr}$$
 
 
-Time for test: 97 ms, plus GC time: 16 ms
-@@@@@ Resources used: (0 0 12 0)
+Time for test: 31 ms
+@@@@@ Resources used: (0 0 13 0)

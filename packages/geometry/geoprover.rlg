@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:12 2009 run on win32
+Fri Feb 18 21:28:57 2011 run on win32
 
  Geoprover  1.3a  Last update  December 30, 2002
 % GeoProver test file for Reduce, created on Jan 18 2003
@@ -1116,11 +1116,11 @@ result_ := {{0,0},{0,0},{0,0},{0,0}}$
 showtime;
 
 
-Time: 916 ms  plus GC time: 48 ms
+Time: 203 ms  plus GC time: 46 ms
 
 
 end;
 
 
-Time for test: 948 ms, plus GC time: 65 ms
-@@@@@ Resources used: (2 3 40 0)
+Time for test: 203 ms, plus GC time: 62 ms
+@@@@@ Resources used: (1 3 40 0)

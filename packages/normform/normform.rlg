@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:02 2009 run on win32
+Fri Feb 18 21:27:57 2011 run on win32
 
 *** co already defined as operator 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1286,5 +1286,5 @@ j := mat((sqrt(----*b  + 6*b - 12)*i - (---*b - 2),0),
 end;
 
 
-Time for test: 2219 ms, plus GC time: 50 ms
-@@@@@ Resources used: (3 6 3290 1)
+Time for test: 624 ms
+@@@@@ Resources used: (1 7 3290 1)

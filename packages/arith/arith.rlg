@@ -1,4 +1,4 @@
-Wed Jun 02 09:32:47 2010 run on win32
+Fri Feb 18 21:27:12 2011 run on win32
 % Tests of REDUCE Arithmetic.
 
 % Authors: Anthony C. Hearn and Stanley L. Kameny.
@@ -2383,5 +2383,5 @@ begin scalar x;
 end;
 
 
-Time for test: 46 ms, plus GC time: 3 ms
-@@@@@ Resources used: (0 0 60 71)
+Time for test: 31 ms, plus GC time: 16 ms
+@@@@@ Resources used: (0 0 59 71)

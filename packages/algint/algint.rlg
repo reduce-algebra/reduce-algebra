@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:31 2009 run on win32
+Fri Feb 18 21:27:16 2011 run on win32
 COMMENT
 
                  THE REDUCE INTEGRATION TEST PACKAGE
@@ -4310,7 +4310,7 @@ symbolic summarize!-integral!-test();
 
 Number of integrals tested: 281
 
-Total time taken: 5926 ms
+Total time taken: 1558 ms
 
 Number of incorrect integrals: 0
 
@@ -4404,5 +4404,5 @@ erf(a + x)
 end;
 
 
-Time for test: 5946 ms, plus GC time: 100 ms
-@@@@@ Resources used: (6 19 155 3)
+Time for test: 1558 ms, plus GC time: 94 ms
+@@@@@ Resources used: (2 22 155 3)

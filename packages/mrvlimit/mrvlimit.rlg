@@ -1,4 +1,4 @@
-Tue Nov 17 08:57:09 2009 run on win32
+Fri Feb 18 21:28:38 2011 run on win32
 off exp;
 
  off mcd;
@@ -357,5 +357,5 @@ mrv_limit(misc4,x,infinity);
 end;
 
 
-Time for test: 1659 ms, plus GC time: 10 ms
-@@@@@ Resources used: (3 6 60 0)
+Time for test: 343 ms
+@@@@@ Resources used: (0 6 60 0)

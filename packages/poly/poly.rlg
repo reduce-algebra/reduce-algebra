@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:18 2009 run on win32
+Fri Feb 18 21:27:12 2011 run on win32
 % Tests of the poly package polynomial decomposition and gcds.
 
 
@@ -855,5 +855,5 @@ gcd(-9955*v**9*x**3*y**4*z**8+2020*v*y**7*z**4
 end;
 
 
-Time for test: 318 ms, plus GC time: 22 ms
+Time for test: 78 ms
 @@@@@ Resources used: (0 1 42 0)

@@ -1,4 +1,4 @@
-Tue Nov 17 08:53:07 2009 run on win32
+Fri Feb 18 21:27:59 2011 run on win32
 % Test SCOPE Package.
 % ==================
 % NOTE:  The SCOPE, GHORNER, GSTRUCTR and GENTRAN packages must be loaded
@@ -1044,5 +1044,5 @@ makeopts$
 end;
 
 
-Time for test: 401 ms, plus GC time: 4 ms
-@@@@@ Resources used: (0 0 29 0)
+Time for test: 93 ms
+@@@@@ Resources used: (0 0 30 0)

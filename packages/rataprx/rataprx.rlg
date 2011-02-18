@@ -1,4 +1,4 @@
-Tue Nov 17 08:58:14 2009 run on win32
+Fri Feb 18 21:28:57 2011 run on win32
 % Tests of the rataprx package.
 
 % Authors: Lisa Temme, Wolfram Koepf (koepf@zib.de)
@@ -1100,5 +1100,5 @@ taylor(ws-sin(sqrt(x)),x,0,10);
 end;
 
 
-Time for test: 1589 ms, plus GC time: 38 ms
-@@@@@ Resources used: (2 3 23 6)
+Time for test: 329 ms, plus GC time: 15 ms
+@@@@@ Resources used: (0 3 24 6)

@@ -1,4 +1,4 @@
-Tue Nov 17 08:50:19 2009 run on win32
+Fri Feb 18 21:27:12 2011 run on win32
 comment factorizer test file;
 
 
@@ -475,5 +475,5 @@ ok
 end;
 
 
-Time for test: 351 ms
-@@@@@ Resources used: (0 1 13 0)
+Time for test: 47 ms
+@@@@@ Resources used: (0 1 12 0)

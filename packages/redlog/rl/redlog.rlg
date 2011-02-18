@@ -1,4 +1,4 @@
-Thu May 20 07:50:29 2010 run on darwin10.3.0:x86_64
+Fri Feb 18 21:28:10 2011 run on win32
 on rlverbose;
 
 
@@ -969,5 +969,5 @@ b = 0 or m <> 0
 end;
 
 
-Time for test: 1950 ms, plus GC time: 40 ms
-@@@@@ Resources used: (2 11 36 0)
+Time for test: 656 ms, plus GC time: 61 ms
+@@@@@ Resources used: (1 12 35 0)
