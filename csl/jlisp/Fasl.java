@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -76,7 +76,10 @@ class Fasl
             Jlisp.images[Jlisp.outputImagePos] == null)
             return Jlisp.error("no output image available");
         String name;
-        if (arg1 instanceof Symbol) name = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            name = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) name = ((LispString)arg1).string;
         else return Jlisp.error("start-module needs a symbol or string");
         name = name + ".fasl";
@@ -131,7 +134,10 @@ class Fasl
     static boolean openModule(LispObject arg1) throws LispException
     {
         name = "unknown";
-        if (arg1 instanceof Symbol) name = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            name = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) name = ((LispString)arg1).string;
         else Jlisp.error("symbol or string needed as module name");
         name = name + ".fasl";

@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 import java.io.*;
@@ -37,14 +37,24 @@ import java.io.*;
 
 class Gensym extends Symbol
 {
+    String nameBase = "G";
+    static int gensymCounter = 0;
+    int myNumber = -1;
 
     Gensym(String name)
     {
-        pname = name;
+        pname = null;
+        nameBase = name;
         car/*value*/ = Jlisp.lit[Lit.undefined];
         cdr/*plist*/ = Jlisp.nil;
         fn = new Undefined(name);
         special = null;
+        myNumber = -1;
+    }
+
+    void completeName()
+    {   if (pname != null) return;
+        pname = nameBase + (myNumber = gensymCounter++);
     }
 
     void dump() throws IOException
@@ -60,11 +70,15 @@ class Gensym extends Symbol
 		    new Integer(Jlisp.sharedIndex++));
 		Jlisp.odump.write(X_STORE);
             }
-	    byte [] rep = pname.getBytes("UTF8");
+	    byte [] rep = nameBase.getBytes("UTF8");
 	    int length = rep.length;
 	    putPrefix2(length, X_GENSYMn, X_GENSYM);
 	    for (int i=0; i<length; i++)
 	        Jlisp.odump.write(rep[i]);
+            Jlisp.odump.write(myNumber & 0xff);
+            Jlisp.odump.write((myNumber >> 8) & 0xff);
+            Jlisp.odump.write((myNumber >> 16) & 0xff);
+            Jlisp.odump.write((myNumber >> 24) & 0xff);
 	    if (Jlisp.descendSymbols)	
 	    {   Jlisp.stack.push(car/*value*/);
 	        Jlisp.stack.push(cdr/*plist*/);
@@ -73,7 +87,7 @@ class Gensym extends Symbol
 	    }
 	}
     }
-	
+
 }
 
 // end of Gensym.java

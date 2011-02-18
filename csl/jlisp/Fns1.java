@@ -1279,7 +1279,9 @@ class Char_downcaseFn extends BuiltinFunction
     {
         char ch;
         if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
             ch = ((Symbol)arg1).pname.charAt(0);
+        }
         else if (arg1 instanceof LispInteger)
             ch = (char)arg1.intValue();
         else if (arg1 instanceof LispString)
@@ -1296,7 +1298,9 @@ class Char_upcaseFn extends BuiltinFunction
     {
         char ch;
         if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
             ch = ((Symbol)arg1).pname.charAt(0);
+        }
         else if (arg1 instanceof LispInteger)
             ch = (char)arg1.intValue();
         else if (arg1 instanceof LispString)
@@ -1656,7 +1660,10 @@ class Delete_fileFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         String s;
-        if (arg1 instanceof Symbol) s = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return Jlisp.nil;
         return LispStream.fileDelete(s);
@@ -1697,6 +1704,7 @@ class DigitFn extends BuiltinFunction
     {
         if (!(arg1 instanceof Symbol)) return Jlisp.nil;
         Symbol s = (Symbol)arg1;
+        s.completeName();
         char ch = s.pname.charAt(0);
         if (Character.isDigit(ch)) return Jlisp.lispTrue;
         else return Jlisp.nil;
@@ -2418,7 +2426,10 @@ class FiledateFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         String s;
-        if (arg1 instanceof Symbol) s = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return Jlisp.nil;
         return LispStream.fileDate(s);
@@ -2431,7 +2442,10 @@ class FilepFn extends BuiltinFunction
     {
 // use filedate(arg1) here.
         String s;
-        if (arg1 instanceof Symbol) s = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return Jlisp.nil;
         return LispStream.fileDate(s);
@@ -2615,7 +2629,7 @@ class GensymFn extends BuiltinFunction
 {
     public LispObject op0() throws Exception
     {
-        return new Gensym("G" + Fns.gensymCounter++);
+        return new Gensym("G");
     }
 }
 
@@ -2623,7 +2637,7 @@ class Gensym1Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
-        return new Gensym(((Symbol)arg1).pname + Fns.gensymCounter++);
+        return new Gensym(((Symbol)arg1).pname);
     }
 }
 
@@ -2631,6 +2645,7 @@ class Gensym2Fn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
+        ((Symbol)arg1).completeName();
         return new Gensym(((Symbol)arg1).pname);
     }
 }
@@ -2703,7 +2718,10 @@ class GetenvFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         String s;
-        if (arg1 instanceof Symbol) s = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return Jlisp.nil;
         try
@@ -2919,7 +2937,9 @@ class InternFn extends BuiltinFunction
         if (arg1 instanceof LispString)
             return Symbol.intern(((LispString)arg1).string);
         else if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
             return Symbol.intern(((Symbol)arg1).pname);
+        }
         else return error(
             "Argument to intern should be a symbol or a string");
     }
@@ -3119,7 +3139,9 @@ class List_to_stringFn extends BuiltinFunction
             arg1 = c.cdr;
             LispObject ch = c.car;
             if (ch instanceof Symbol)
+            {   ((Symbol)ch).completeName();
                 s.append(((Symbol)ch).pname.charAt(0));
+            }
             else if (ch instanceof LispString)
                 s.append(((LispString)ch).string.charAt(0));
             else if (ch instanceof LispInteger)
@@ -3140,7 +3162,9 @@ class List_to_symbolFn extends BuiltinFunction
             arg1 = c.cdr;
             LispObject ch = c.car;
             if (ch instanceof Symbol)
+            {   ((Symbol)ch).completeName();
                 s.append(((Symbol)ch).pname.charAt(0));
+            }
             if (ch instanceof LispString)
                 s.append(((LispString)ch).string.charAt(0));
             else if (ch instanceof LispInteger)

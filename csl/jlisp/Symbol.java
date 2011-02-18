@@ -56,6 +56,11 @@ public class Symbol extends LispObject
     public LispFunction fn;         // function (if any)
     SpecialFunction special; // special fn (if any)
 
+
+    void completeName()      // needed to that gensyms can have delayed names
+    {
+    }
+
 // intern() looks up a Java String and find the Lisp
 // symbol with that name. It creates it if needbe. This version
 // always sets the (pre-defined) function call of this symbol. It is
@@ -131,6 +136,7 @@ public class Symbol extends LispObject
 
     String toPrint()
     {
+        completeName();
         if ((currentFlags & (printEscape | printLower | printUpper)) == 0)
             return pname;
         else if (currentFlags == cacheFlags) return cacheString;
@@ -213,7 +219,8 @@ public class Symbol extends LispObject
     }
 
     public int lisphashCode()
-    { 
+    {
+        completeName();
         return 139*pname.hashCode() ^ 0x12345678; 
     }
 

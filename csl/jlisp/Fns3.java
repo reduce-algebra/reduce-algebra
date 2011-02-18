@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 
@@ -258,6 +258,7 @@ class LiterFn extends BuiltinFunction
     {
         if (!(arg1 instanceof Symbol)) return Jlisp.nil;
         Symbol s = (Symbol)arg1;
+        s.completeName();
         char ch = s.pname.charAt(0);
         if (Character.isLetter(ch)) return Jlisp.lispTrue;
         else return Jlisp.nil;
@@ -647,7 +648,10 @@ class ModulepFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         String s;
-        if (arg1 instanceof Symbol) s = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return error("illegal arg to modulep", arg1);
         s = s + ".fasl";
@@ -1049,6 +1053,8 @@ class OrderpFn extends BuiltinFunction
                 }
                 else if (v instanceof Symbol)
                 {   if (!(u instanceof Symbol)) return false;
+                    ((Symbol)u).completeName();
+                    ((Symbol)v).completeName();
                     return ((Symbol)u).pname.compareTo(
                         ((Symbol)v).pname) <= 0;
                 }
@@ -1773,6 +1779,7 @@ class RemdFn extends BuiltinFunction
     public LispObject op1(LispObject arg1) throws Exception
     {
         Symbol a = (Symbol)arg1;
+        a.completeName();
         a.fn = new Undefined(a.pname);
         return a;
     }
@@ -1844,11 +1851,17 @@ class Rename_fileFn extends BuiltinFunction
     public LispObject op2(LispObject arg1, LispObject arg2) throws Exception
     {
         String s;
-        if (arg1 instanceof Symbol) s = ((Symbol)arg1).pname;
+        if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s = ((Symbol)arg1).pname;
+        }
         else if (arg1 instanceof LispString) s = ((LispString)arg1).string;
         else return Jlisp.nil;
         String s1;
-        if (arg2 instanceof Symbol) s1 = ((Symbol)arg2).pname;
+        if (arg2 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
+            s1 = ((Symbol)arg2).pname;
+        }
         else if (arg2 instanceof LispString) s1 = ((LispString)arg2).string;
         else return Jlisp.nil;
         return LispStream.fileRename(s, s1);
@@ -2051,7 +2064,9 @@ class SetpcharFn extends BuiltinFunction
         if (arg1 instanceof LispString)
             Fns.prompt = ((LispString)arg1).string;
         else if (arg1 instanceof Symbol)
+        {   ((Symbol)arg1).completeName();
             Fns.prompt = ((Symbol)arg1).pname;
+        }
         else Fns.prompt = null;  // use system default
         return new LispString(old);
     }
@@ -2353,6 +2368,7 @@ class Symbol_nameFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {
+        ((Symbol)arg1).completeName();
         return new LispString(((Symbol)arg1).pname);
     }
 }
@@ -2760,7 +2776,10 @@ class Window_headingFn extends BuiltinFunction
     public LispObject op1(LispObject a) throws Exception
     {
         String s;
-        if (a instanceof Symbol) s = ((Symbol)a).pname;
+        if (a instanceof Symbol)
+        {   ((Symbol)a).completeName();
+            s = ((Symbol)a).pname;
+        }
         else if (a instanceof LispString) s = ((LispString)a).string;
         else return Jlisp.nil;
 // Note that I just dump this to output with no regard for Lisp output

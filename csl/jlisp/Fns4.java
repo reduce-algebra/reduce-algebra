@@ -268,6 +268,7 @@ class SetLabelFn extends BuiltinFunction
     {
         if (!(a instanceof Gensym)) 
             return error("argument 1 to lookup-ref must be a gensym", a);
+        ((Gensym)a).completeName();
         String label = ((Gensym)a).pname;
         cd.setLabel(label, ca);
         //Jlisp.println("SetLabelFn called for: " + label);
@@ -281,6 +282,7 @@ class LookupLabelFn extends BuiltinFunction
     {
         if (!(a instanceof Gensym)) 
             return error("argument 1 to lookup-ref must be a gensym", a);
+        ((Gensym)a).completeName();
         String label = ((Gensym)a).pname;
         cd.lookupLabel(label, ca);
         //Jlisp.println("LookupLabelFn called for: " + label);

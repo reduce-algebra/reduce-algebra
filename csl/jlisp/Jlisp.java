@@ -967,7 +967,7 @@ static void preserve(OutputStream dump) throws IOException
     int i;
     odump = dump;
     descendSymbols = true;
-    LispNumber g1 = LispInteger.valueOf(Fns.gensymCounter);
+    LispNumber g1 = LispInteger.valueOf(Gensym.gensymCounter);
     LispNumber g2 = LispInteger.valueOf(modulus);
     LispNumber g3 = LispInteger.valueOf(printprec);
     LispString gp = null;
@@ -1154,7 +1154,7 @@ static void restore(InputStream dump) throws IOException
 // there and I start with an empty table so there are no deleted
 // items to worry about.
     while ((s = (Symbol)readObject()) != null)
-    {
+    {   s.completeName();
         String name = s.pname;
 //if (name.length() > 1) System.out.println("restore symbol <" + name + "> length " + name.length());
         int inc = name.hashCode();
@@ -1191,8 +1191,8 @@ static void restore(InputStream dump) throws IOException
     }
 
     w = readObject();
-    try { Fns.gensymCounter = w.intValue(); }
-    catch (Exception ee) { Fns.gensymCounter = 0; }
+    try { Gensym.gensymCounter = w.intValue(); }
+    catch (Exception ee) { Gensym.gensymCounter = 0; }
 
     w = readObject();
     try { modulus = w.intValue(); }
@@ -1359,7 +1359,13 @@ static LispObject readObject() throws IOException
     case LispObject.X_GENSYMn:
             {   byte [] data = new byte[operand];
                 for (i=0; i<operand; i++) data[i] = (byte)idump.read();
-                Symbol ws = new Gensym(new String(data, "UTF8"));
+                int sequence = idump.read();
+                sequence = sequence | (idump.read()<<8);
+                sequence = sequence | (idump.read()<<16);
+                sequence = sequence | (idump.read()<<24);
+                Gensym ws = new Gensym(new String(data, "UTF8"));
+                ws.myNumber = sequence;
+                if (sequence != -1) ws.pname = ws.nameBase + sequence;
                 Symbol.symbolCount++;
                 if (setLabel)
                 {   shared[sharedIndex++] = ws;
@@ -1368,7 +1374,8 @@ static LispObject readObject() throws IOException
                 if (!descendSymbols)
                 {   ws.car/*value*/ = lit[Lit.undefined];
                     ws.cdr/*plist*/ = nil;
-                    ws.fn = new Undefined(ws.pname);
+                    if (ws.pname != null) ws.fn = new Undefined(ws.pname);
+                    else ws.fn = new Undefined(ws.nameBase);
                     ws.special = null;
                     w = ws;
                     break;
@@ -1959,7 +1966,7 @@ static void initSymbols()
 {
 //System.out.println("Beginning cold start: " + oblistCount);
     Fns.prompt = null;
-    Fns.gensymCounter = 0;
+    Gensym.gensymCounter = 0;
 
 // set up nil first since it is needed by Symbol.intern
     nil = Symbol.intern("nil");

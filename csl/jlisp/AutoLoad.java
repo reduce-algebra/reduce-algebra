@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -48,6 +48,7 @@ class AutoLoad extends LispFunction
     
     public LispObject op0() throws Exception
     {
+        name.completeName();
         name.fn = new Undefined(name.pname);
         Fasl.loadModule(data.car);
         return name.fn.op0();
@@ -55,6 +56,7 @@ class AutoLoad extends LispFunction
 
     public LispObject op1(LispObject a1) throws Exception
     {
+        name.completeName();
         name.fn = new Undefined(name.pname);
         Fasl.loadModule(data.car);
         return name.fn.op1(a1);
@@ -62,6 +64,7 @@ class AutoLoad extends LispFunction
 
     public LispObject op2(LispObject a1, LispObject a2) throws Exception
     {
+        name.completeName();
         name.fn = new Undefined(name.pname);
         Fasl.loadModule(data.car);
         return name.fn.op2(a1, a2);
@@ -69,6 +72,7 @@ class AutoLoad extends LispFunction
 
     public LispObject opn(LispObject [] args) throws Exception
     {
+        name.completeName();
         name.fn = new Undefined(name.pname);
         Fasl.loadModule(data.car);
         return name.fn.opn(args);
@@ -76,11 +80,13 @@ class AutoLoad extends LispFunction
 
     void print()
     {
+        name.completeName();
         Jlisp.print("#Autoload<" + name.pname + ">");
     }
 
     void print(int n)
     {
+        name.completeName();
         Jlisp.print("#Autoload<" + name.pname + ">");
     }
     
