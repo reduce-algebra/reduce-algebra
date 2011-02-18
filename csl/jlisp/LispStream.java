@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -285,6 +285,13 @@ class LispStream extends LispObject
             else if (Character.isLetterOrDigit((char)nextChar) ||
                      nextChar == '_' ||
                      nextChar == '+' || nextChar == '-' || // for numbers
+// It seems that maybe at this level Reduce wants almost any character to
+// be allowed to start a symbol. And specifically the mathmlom package depends
+// on some of these via its use of compress.
+                     nextChar == '&' || nextChar == '$' || nextChar == '*' ||
+                     nextChar == '/' || nextChar == '^' || nextChar == '?' ||
+                     nextChar == '<' || nextChar == '>' || nextChar == ':' ||
+                     nextChar == ';' || nextChar == '#' || nextChar == '\\' ||
                      nextChar == '!')
             {
 // Numbers are in one of the following forms:
@@ -306,7 +313,7 @@ class LispStream extends LispObject
 // 1.00E99 followed by L. And equally 1e-7x is two tokens, one for
 // the floating point value 1.0e-7 and a second for the "x". Escaped
 // characters (following "!") can never be parts of numbers and so
-// fit somewhere in the aboev discussion. Eg 0x12!34 is a symbol and 
+// fit somewhere in the above discussion. Eg 0x12!34 is a symbol and 
 // 1.23!e4 is a float (1.23) followed by a symbol (!e4).
 // 
 // I parse using a finite state machine so that at the end of a

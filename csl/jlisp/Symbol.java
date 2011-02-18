@@ -1,6 +1,6 @@
 //
 // This file is part of the Jlisp implementation of Standard Lisp
-// Copyright \u00a9 (C) Codemist Ltd, 1998-2000.
+// Copyright \u00a9 (C) Codemist Ltd, 1998-2011.
 //
 
 /**************************************************************************
@@ -142,7 +142,7 @@ public class Symbol extends LispObject
         else if ((currentFlags & printUpper) != 0) p = p.toUpperCase();
         char c = p.charAt(0);
         if ((currentFlags & printEscape) != 0)
-        {   if (Character.isLetter(c) || c == '_')
+        {   if (Character.isLetter(c))
             {   if (((Symbol)Jlisp.lit[Lit.lower]).car/*value*/ !=
                     Jlisp.nil)
                 {   if (Character.isUpperCase(c))
@@ -180,9 +180,9 @@ public class Symbol extends LispObject
                     }
                     cache.append((char)c);
                 } 
-                else if ((int)c < 32)
-                {   cache.append("\\x" + Integer.toHexString((int)c));
-                }
+//              else if ((int)c < 32)
+//              {   cache.append("\\x" + Integer.toHexString((int)c));
+//              }
                 else
                 {   cache.append((char)'!');
                     cache.append((char)c);

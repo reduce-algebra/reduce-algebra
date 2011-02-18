@@ -1403,37 +1403,37 @@ class CompressFn extends BuiltinFunction
         try
         {   Jlisp.lit[Lit.std_input].car/*value*/ = from;
             r = Jlisp.read();
-            int c = from.readChar();
+//-             int c = from.readChar();
             from.close();
-// The next section is a pretty shameless hack to make REDUCE a bit
-// more robust. If when I parse the input to COMPRESS I find something
-// left over, I will take that as an indication that what the user
-// intended was to have a symbol made up of all the characters in the
-// input data (except that "!" gets treated as an escape (which is no
-// longer needed, but which must be ignored)
-            if (c != -1) 
-            {   StringBuffer s = new StringBuffer();
-                boolean escaped = false;
-                while (!arg1.atom)
-                {   LispObject k = arg1.car;
-                    arg1 = arg1.cdr;
-                    char ch;
-                    if (k instanceof LispString)
-                        ch = ((LispString)k).string.charAt(0);
-                    else if (k instanceof LispInteger)
-                        ch = (char)k.intValue();
-                    else if (k instanceof Symbol)
-                        ch = ((Symbol)k).pname.charAt(0);
-                    else break;
-                    if (!escaped && ch == '!')
-                    {   escaped = true;
-                        continue;
-                    }
-                    escaped = false;
-                    s.append(ch);
-                }
-                return Symbol.intern(s.toString());
-            }
+//- // The next section is a pretty shameless hack to make REDUCE a bit
+//- // more robust. If when I parse the input to COMPRESS I find something
+//- // left over, I will take that as an indication that what the user
+//- // intended was to have a symbol made up of all the characters in the
+//- // input data (except that "!" gets treated as an escape (which is no
+//- // longer needed, but which must be ignored)
+//-             if (c != -1)
+//-             {   StringBuffer s = new StringBuffer();
+//-                 boolean escaped = false;
+//-                 while (!arg1.atom)
+//-                 {   LispObject k = arg1.car;
+//-                     arg1 = arg1.cdr;
+//-                     char ch;
+//-                     if (k instanceof LispString)
+//-                         ch = ((LispString)k).string.charAt(0);
+//-                     else if (k instanceof LispInteger)
+//-                         ch = (char)k.intValue();
+//-                     else if (k instanceof Symbol)
+//-                         ch = ((Symbol)k).pname.charAt(0);
+//-                     else break;
+//-                     if (!escaped && ch == '!')
+//-                     {   escaped = true;
+//-                         continue;
+//-                     }
+//-                     escaped = false;
+//-                     s.append(ch);
+//-                 }
+//-                 return Symbol.intern(s.toString());
+//-             }
         }
         catch (Exception e)
         {   Jlisp.errprintln(
@@ -1442,8 +1442,6 @@ class CompressFn extends BuiltinFunction
             LispStream ee = // @@@
                         (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
             e.printStackTrace(new PrintWriter(new WriterToLisp(ee)));
-
-
             r = Jlisp.nil;
         }
         finally
