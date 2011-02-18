@@ -1959,7 +1959,7 @@ static void initSymbols()
 {
 //System.out.println("Beginning cold start: " + oblistCount);
     Fns.prompt = null;
-    Fns.gensymCounter = 1;
+    Fns.gensymCounter = 0;
 
 // set up nil first since it is needed by Symbol.intern
     nil = Symbol.intern("nil");

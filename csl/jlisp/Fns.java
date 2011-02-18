@@ -44,7 +44,7 @@ class Fns
 {
     static String prompt = null;
 
-    static int gensymCounter = 1;
+    static int gensymCounter = 0;
 
     static LispObject put(Symbol name, LispObject key, LispObject value)
     {
