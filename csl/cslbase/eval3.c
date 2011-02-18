@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 2a38c558 13-Feb-2011 */
+/* Signature: 62191481 18-Feb-2011 */
 
 #include "headers.h"
 
@@ -157,21 +157,23 @@ static Lisp_Object list_fn(Lisp_Object args, Lisp_Object env)
         errexit();
         return onevalue(w1);
     }
-    push4(args, env, w1, w2);
-    w3 = eval(w3, env);
+    push4(args, env, w2, w3);
+    w1 = eval(w1, env);
     errexitn(4);
-    push(w3);
-    w2 = eval(stack[-1], stack[-3]);
+    push(w1);
+    w2 = eval(stack[-2], stack[-3]);
     errexitn(5);
-    stack[-1] = w2;
-    w1 = eval(stack[-2], stack[-3]);
+    stack[-2] = w2;
+    w3 = eval(stack[-1], stack[-3]);
     errexitn(5);
+    stack[-1] = w3;
+    pop(w1);
     r = ncons(w1);
-    errexitn(5);
+    errexitn(4);
     pop2(w3, w2);
     r = list2star(w3, w2, r);
-    errexitn(3);
-    pop3(w1, env, args);
+    errexitn(4);
+    pop2(env, args);
     while (consp(args))
     {   Lisp_Object w;
         push3(env, args, r);
