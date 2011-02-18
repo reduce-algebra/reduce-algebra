@@ -2694,7 +2694,7 @@ class GetdFn extends BuiltinFunction
         {   LispObject body = ((Interpreted)fn).body;
             return new Cons(Jlisp.lit[Lit.expr], body);
         }
-        else return new Cons(Jlisp.lit[Lit.subr], fn);
+        else return new Cons(Jlisp.lit[Lit.expr], name);
     }
 }
 
