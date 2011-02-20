@@ -18,6 +18,12 @@ else !cygpath
 CYGSRC = $(srcdir)
 endif !cygpath
 
+if cygwin
+EXE=
+else !cygwin
+EXE=$(EXEEXT)
+endif !cygwin
+
 if wx
 if wxbuiltin
 WXC=../bin/wx-config
@@ -43,12 +49,12 @@ endif !wx
 # versions it is easiest to make everything .exe
 if windows
 if gui
-COMEXT=.com
+COM=.com
 else !gui
-COMEXT=.exe
+COM=.exe
 endif !gui
 else !windows
-COMEXT=
+COM=
 endif !windows
 
 if fox
@@ -512,8 +518,8 @@ csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f csl$(COMEXT)
-	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+	-rm -f csl$(COM)
+	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 endif gui
 endif windows
 if !debug
@@ -521,7 +527,7 @@ if !darwin
 	$(STRIP) csl$(EXEEXT)
 if windows
 if gui
-	$(STRIP) csl$(COMEXT)
+	$(STRIP) csl$(COM)
 endif gui
 endif windows
 endif !darwin
@@ -537,8 +543,8 @@ reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f reduce$(COMEXT)
-	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+	-rm -f reduce$(COM)
+	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 endif gui
 endif windows
 if !debug
@@ -546,7 +552,7 @@ if !darwin
 	$(STRIP) reduce$(EXEEXT)
 if windows
 if gui
-	$(STRIP) reduce$(COMEXT)
+	$(STRIP) reduce$(COM)
 endif gui
 endif windows
 endif !darwin
@@ -576,8 +582,8 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f fwindemo$(COMEXT)
-	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+	-rm -f fwindemo$(COM)
+	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 endif gui
 endif windows
 if !debug
@@ -585,7 +591,7 @@ if !darwin
 	$(STRIP) fwindemo$(EXEEXT)
 if windows
 if gui
-	$(STRIP) fwindemo$(COMEXT)
+	$(STRIP) fwindemo$(COM)
 endif gui
 endif windows
 endif !darwin
@@ -602,8 +608,8 @@ wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
 	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
 if windows
 if gui
-	-rm -f wxpsl$(COMEXT)
-	$(CXXLINKTO) $(DEST)wxpsl$(COMEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
+	-rm -f wxpsl$(COM)
+	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
 endif gui
 endif windows
 if !debug
@@ -611,7 +617,7 @@ if !darwin
 	$(STRIP) wxpsl$(EXEEXT)
 if windows
 if gui
-	$(STRIP) wxpsl$(COMEXT)
+	$(STRIP) wxpsl$(COM)
 endif gui
 endif windows
 endif !darwin
@@ -655,19 +661,19 @@ endif fox
 if gui
 if windows
 
-csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
+csl$(COM):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
 	-rm -f csl.exe
 	$(MAKE) csl.exe
 
-reduce$(COMEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
+reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
 	-rm -f reduce.exe
 	$(MAKE) reduce.exe
 
-fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
+fwindemo$(COM):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
 	-rm -f fwindemo.exe
 	$(MAKE) fwindemo.exe
 
-wxpsl$(COMEXT):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
+wxpsl$(COM):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
 	-rm -f wxpsl.exe
 	$(MAKE) wxpsl.exe
 
@@ -769,20 +775,20 @@ plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 
 if gui
-$(plain_csl):	csl.exe csl$(COMEXT)
+$(plain_csl):	csl.exe csl$(COM)
 	echo "make csl.exe is preferred"
 
-$(plain_reduce):	reduce.exe reduce$(COMEXT)
+$(plain_reduce):	reduce.exe reduce$(COM)
 	echo "make reduce.exe is preferred"
 
 $(plain_bootstrapreduce):	bootstrapreduce.exe
 	echo "make bootstrapreduce.exe is preferred"
 
-$(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
+$(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
 	echo "make fwindemo.exe is preferred"
 
 if wx
-$(plain_wxpsl):	wxpsl.exe wxpsl$(COMEXT)
+$(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
 	echo "make wxpsl.exe is preferred"
 endif wx
 
@@ -910,11 +916,11 @@ if windows
 
 if gui
 if wx
-console_binaries = csl$(COMEXT) reduce$(COMEXT) wxpsl$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 else !wx
-console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+console_binaries = csl$(COM) reduce$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 endif !wx
-noinstall_console_binaries = fwindemo$(COMEXT)
+noinstall_console_binaries = fwindemo$(COM)
 else !gui
 console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 noinstall_console_binaries =
@@ -1104,7 +1110,7 @@ restart.$(OBJEXT):	machineid.c
 reduce.dep:
 	touch reduce.dep
 
-reduce.img:	reduce$(COMEXT) $(reducedep)
+reduce.img:	reduce$(COM) $(reducedep)
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1112,7 +1118,7 @@ if canrun
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 	mkdir -p buildlogs
-	./reduce$(COMEXT) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
+	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
@@ -1135,7 +1141,7 @@ endif !canrun
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COMEXT) $(reducedep)
+reduce.dir:	reduce$(COM) $(reducedep)
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1143,7 +1149,7 @@ if canrun
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 	mkdir -p buildlogs
-	./reduce$(COMEXT) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
+	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-o ./reduce.img/ \
 		-- buildlogs/reduce.log \
@@ -1168,7 +1174,7 @@ endif !canrun
 recompile:	reduce.img
 if canrun
 	mkdir -p buildlogs
-	./reduce$(COMEXT) -v -w $(CYGSRC)/recompile.red \
+	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 else !canrun
@@ -1307,10 +1313,10 @@ endif !canrun
 testall:	reduce.img
 if canrun
 	mkdir -p testlogs
-	./reduce$(COMEXT) -v -w $(CYGSRC)/testall.red \
+	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/testreduce.log
-	./reduce$(COMEXT) -v -w $(CYGSRC)/checkall.red \
+	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/checkall.log
 else !canrun
@@ -1330,7 +1336,7 @@ endif !canrun
 test1:	reduce.img
 if canrun
 	mkdir -p testlogs
-	./reduce$(COMEXT) -v -w $(CYGSRC)/testall.red \
+	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
 else !canrun
@@ -1340,7 +1346,7 @@ endif !canrun
 checkall:	reduce.img
 if canrun
 	mkdir -p testlogs
-	./reduce$(COMEXT) -v -w $(CYGSRC)/checkall.red \
+	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
 		-- testlogs/checkall.log
 else !canrun
@@ -1361,11 +1367,11 @@ cleanlog:
 csl.dep:
 	touch csl.dep
 
-csl.img:	csl$(COMEXT) $(csldep)
+csl.img:	csl$(COM) $(csldep)
 	-$(RM) -f csl.img
 if canrun
 	mkdir -p buildlogs
-	./csl$(COMEXT) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
+	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
@@ -1428,14 +1434,14 @@ mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if windows
 if wx
-mainbin+=fwindemo$(COMEXT) wxpsl$(COMEXT) reduce$(COMEXT)
+mainbin+=fwindemo$(COM) wxpsl$(COM) reduce$(COM)
 else !wx
-mainbin+=fwindemo$(COMEXT) reduce$(COMEXT)
+mainbin+=fwindemo$(COM) reduce$(COM)
 endif !wx
 endif windows
 binfiles=$(mainbin) csl$(EXEEXT)
 if windows
-binfiles+=csl$(COMEXT)
+binfiles+=csl$(COM)
 endif windows
 
 save:	all

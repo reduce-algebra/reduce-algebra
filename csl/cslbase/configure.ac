@@ -184,6 +184,8 @@ then
   AC_CHECK_TOOL(WINDRES, windres, windres)
 fi
 
+AC_MSG_NOTICE([host=$host])
+
 case $host in
 x86_64-w64-*)
   AC_DEFINE(WIN32, [1], [True if we are running on Windows])
@@ -205,7 +207,7 @@ x86_64-w64-*)
                    [Force use of raw cywgin (note cygwin license)]),
     [],
     [with_cygwin="no"])
-  if test "x$with_cywgin" = "xyes"
+  if test "x$with_cywgin" != "xno"
   then
     really_use_cygwin="yes"
   fi
@@ -240,7 +242,7 @@ x86_64-w64-*)
 # is closer to Unix than to Windows so this does make some sense!
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
 # The next line gives further refinement in case there are places where
-# I have to take account of the very special caes I am in. 
+# I have to take account of the very special case I am in. 
     AC_DEFINE(RAW_CYGWIN, [1], [True if we are running on RAW Cygwin])
     CFLAGS="$CFLAGS -funsigned-char"
     CXXFLAGS="$CXXFLAGS -funsigned-char"
@@ -251,11 +253,11 @@ x86_64-w64-*)
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
-    exeext="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler either via
 # "i686-w64-mingw32-gcc" or via "gcc-3 -mno-cygwin"
   else
+    AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
     CPPFLAGS="$CPPFLAGS "
     CFLAGS="$CFLAGS -funsigned-char"
@@ -265,9 +267,9 @@ x86_64-w64-*)
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
+    windows_build="yes"
+    exeext="yes"
   fi
-  windows_build="yes"
-  exeext="yes"
   X_BASE_LIBS=""
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)

@@ -3429,6 +3429,9 @@ fi
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: host=$host" >&5
+$as_echo "$as_me: host=$host" >&6;}
+
 case $host in
 x86_64-w64-*)
 
@@ -3458,7 +3461,7 @@ else
   with_cygwin="no"
 fi
 
-  if test "x$with_cywgin" = "xyes"
+  if test "x$with_cywgin" != "xno"
   then
     really_use_cygwin="yes"
   fi
@@ -3503,7 +3506,7 @@ $as_echo "$as_me: ************************************************" >&6;}
 $as_echo "#define UNIX 1" >>confdefs.h
 
 # The next line gives further refinement in case there are places where
-# I have to take account of the very special caes I am in.
+# I have to take account of the very special case I am in.
 
 $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
 
@@ -3516,11 +3519,12 @@ $as_echo "#define RAW_CYGWIN 1" >>confdefs.h
     DLL_CFLAGS="$CFLAGS -shared"
     XLIBS="-lXext -lX11"
     cygwin_build="yes"
-    exeext="yes"
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler either via
 # "i686-w64-mingw32-gcc" or via "gcc-3 -mno-cygwin"
   else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Windows built creating native binary" >&5
+$as_echo "$as_me: Windows built creating native binary" >&6;}
 
 $as_echo "#define WIN32 1" >>confdefs.h
 
@@ -3532,9 +3536,9 @@ $as_echo "#define WIN32 1" >>confdefs.h
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
+    windows_build="yes"
+    exeext="yes"
   fi
-  windows_build="yes"
-  exeext="yes"
   X_BASE_LIBS=""
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)

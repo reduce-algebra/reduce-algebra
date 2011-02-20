@@ -321,7 +321,11 @@ then
 # build for 32-bits. There are several possible ways to do that and I
 # will look at them here in order of preference. I do this even if I am on
 # a 64-bit Windows if the 64-bit compilers are not available.
-    if test "$X32_GCC" = "yes"
+#
+# Also I will prefer gcc if I have enabled debugging (because the cygwin
+# works better with it) but i686-w64-mingw32-gcc otherwise (because it is
+# newer and probably will end up better supported).
+    if test "$X32_GCC" = "yes" && test "x$enable_debug" != "xno"
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
@@ -341,6 +345,14 @@ then
                CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\" \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
                CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
+      AC_MSG_NOTICE([$doconfig])
+      eval "$doconfig"
+      exit
+    elif test "$X32_GCC" = "yes"
+    then
+# Use cross-compilation using i686-w64-mingw32-g++ etc.
+      doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
+               --host=i686-w64-mingw32"
       AC_MSG_NOTICE([$doconfig])
       eval "$doconfig"
       exit
@@ -602,7 +614,16 @@ then
 
   AC_MSG_NOTICE([with_fox=$with_fox, with_wx=$with_wx])  
 
-  
+# If I am compiling for native Cygwin I will not pass down "--host".
+  if test "x$with_cygwin" != "xno"
+  then
+    sethost=""
+  else
+    sethost="--host=$host"
+  fi
+
+  AC_MSG_NOTICE([with_cygwin=$with_cygwin sethost=$sethost])
+
 # Now at most one of with_wx and with_fox will be "yes". They could both
 # be "no".
   if test "x$with_wx" != "xno"
@@ -668,13 +689,15 @@ then
 # very much it it is not consistent all the way through my build. So I
 # let this top-level configure script make the choice and by explicitly
 # propagating if to sub-packages I end up safer.
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --host=$host --with-wx=$with_wx --with-build=$build --without-fox"
+# However if I am building for raw cygwin I find that I have pain if I
+# specify --host specifically, so in that case I will not!
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-wx=$with_wx --with-build=$build --without-fox"
   elif test "x$with_fox" != "xno"
   then
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --host=$host --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
   else
 # This final version will be without any GUI.
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args --host=$host --with-build=$build --without-fox --without-wx"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-build=$build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
   eval "$doconfig"
@@ -704,8 +727,8 @@ then
         AC_MSG_NOTICE([gcc will be used in mingw mode.])
       else
         AC_MSG_NOTICE([Using raw cygwin])
-        CFLAGS="$CFLAGS "
-        CXXFLAGS="$CXXFLAGS "
+        CFLAGS="$CFLAGS -I/usr/include/ncurses "
+        CXXFLAGS="$CXXFLAGS -I/usr/include/ncurses "
         extras="--with-xft --with-xim"
       fi
       ;;
@@ -758,7 +781,7 @@ then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
       fi
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
-              --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+              $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
               --disable-shared --enable-unicode \
               --disable-compat26 --disable-compat28 \
@@ -787,7 +810,7 @@ then
     doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --host=$host --enable-release --with-opengl=no \
+            $sethost --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=$builddir $extras"
     AC_MSG_NOTICE([$doconfig])
@@ -805,7 +828,7 @@ then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
       fi
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
-            --host=$host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=$builddir --with-fox-pending=yes $extras"
       AC_MSG_NOTICE([$doconfig])

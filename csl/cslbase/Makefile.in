@@ -46,9 +46,9 @@ host_triplet = @host@
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(am__EXEEXT_1) dyndemo$(EXEEXT) \
 	$(am__EXEEXT_2)
-@windows_TRUE@@wx_TRUE@am__append_9 = fwindemo$(COMEXT) wxpsl$(COMEXT) reduce$(COMEXT)
-@windows_TRUE@@wx_FALSE@am__append_10 = fwindemo$(COMEXT) reduce$(COMEXT)
-@windows_TRUE@am__append_11 = csl$(COMEXT)
+@windows_TRUE@@wx_TRUE@am__append_9 = fwindemo$(COM) wxpsl$(COM) reduce$(COM)
+@windows_TRUE@@wx_FALSE@am__append_10 = fwindemo$(COM) reduce$(COM)
+@windows_TRUE@am__append_11 = csl$(COM)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -356,17 +356,19 @@ RM = rm
 # applications might otherwise receive a file-name starting "/cygdrive/x/.."
 # and not understand it.
 @cygpath_TRUE@CYGSRC = $(shell cygpath -m $(srcdir))
+@cygwin_FALSE@EXE = $(EXEEXT)
+@cygwin_TRUE@EXE = 
 @wx_FALSE@WXC = 
 @wx_TRUE@@wxbuiltin_FALSE@WXC = 
 @wx_TRUE@@wxbuiltin_TRUE@WXC = ../bin/wx-config
-@gui_FALSE@@windows_TRUE@COMEXT = .exe
+@gui_FALSE@@windows_TRUE@COM = .exe
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
 # .com version to be a console application. If I only have command-line
 # versions it is easiest to make everything .exe
-@gui_TRUE@@windows_TRUE@COMEXT = .com
-@windows_FALSE@COMEXT = 
+@gui_TRUE@@windows_TRUE@COM = .com
+@windows_FALSE@COM = 
 @fox_FALSE@foxdemotarget = 
 @fox_TRUE@foxdemotarget = foxdemo$(EXEEXT) fontdemo$(EXEEXT) showmathdemo$(EXEEXT)
 @wx_FALSE@wxdemotarget = 
@@ -627,10 +629,10 @@ termdemo_LIBS =
 #
 @windows_TRUE@image_files = csl.img reduce.img reduce.doc reduce.$(fontsdir) wgnuplot* gnuplot.Copyright
 @gui_FALSE@@windows_TRUE@console_binaries = wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
-@gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COMEXT) reduce$(COMEXT) wxpsl$(COMEXT) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_TRUE@@windows_TRUE@@wx_FALSE@console_binaries = csl$(COM) reduce$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
+@gui_TRUE@@windows_TRUE@@wx_TRUE@console_binaries = csl$(COM) reduce$(COM) wxpsl$(COM) wgnuplot.exe wgnuplot.mnu wgnuplot.hlp
 @gui_FALSE@@windows_TRUE@noinstall_console_binaries = 
-@gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COMEXT)
+@gui_TRUE@@windows_TRUE@noinstall_console_binaries = fwindemo$(COM)
 @windows_FALSE@local_image_files = bootstrapreduce.img
 @windows_TRUE@local_image_files = bootstrapreduce.img
 @windows_FALSE@generatedfiles = $(image_files) $(local_image_files) \
@@ -2242,19 +2244,19 @@ $(srcdir)/Makefile.am:
 csl$(EXEEXT): $(csl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f csl$(EXEEXT)
 	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f csl$(COMEXT)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COMEXT) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	-rm -f csl$(COM)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) csl$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) csl$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh csl $(srcdir) csl
 
 reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f reduce$(EXEEXT)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f reduce$(COMEXT)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COMEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	-rm -f reduce$(COM)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) reduce$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) reduce$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
@@ -2266,19 +2268,19 @@ bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENC
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f fwindemo$(EXEEXT)
 	$(CXXLINKTO) $(DEST)fwindemo$(EXEEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COMEXT)
-@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COMEXT) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@	-rm -f fwindemo$(COM)
+@gui_TRUE@@windows_TRUE@	$(CXXLINKTO) $(DEST)fwindemo$(COM) $(fwindemo_OBJECTS) $(fwindemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@	$(STRIP) fwindemo$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@	$(STRIP) fwindemo$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh fwindemo $(srcdir)
 
 @wx_TRUE@wxpsl$(EXEEXT): $(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES) $(WXDEPS)
 @wx_TRUE@	-rm -f wxpsl$(EXEEXT)
 @wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(EXEEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(WINAP)
-@gui_TRUE@@windows_TRUE@@wx_TRUE@	-rm -f wxpsl$(COMEXT)
-@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(COMEXT) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@	-rm -f wxpsl$(COM)
+@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(CXXLINKTO) $(DEST)wxpsl$(COM) $(wxpsl_OBJECTS) $(wxpsl_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@wx_TRUE@	$(STRIP) wxpsl$(EXEEXT)
-@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(STRIP) wxpsl$(COMEXT)
+@darwin_FALSE@@debug_FALSE@@gui_TRUE@@windows_TRUE@@wx_TRUE@	$(STRIP) wxpsl$(COM)
 @mac_framework_TRUE@@wx_TRUE@	$(srcdir)/create_bundle.sh wxpsl $(srcdir)
 
 @fox_TRUE@fontdemo$(EXEEXT): $(fontdemo_OBJECTS) $(fontdemo_DEPENDENCIES) $(FOXDEPS)
@@ -2296,19 +2298,19 @@ fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXD
 @fox_TRUE@	$(CXXLINKTO) $(DEST)showmathdemo$(EXEEXT) $(showmathdemo_OBJECTS) $(showmathdemo_LDADD) $(LIBS) $(CONAP)
 @darwin_FALSE@@debug_FALSE@@fox_TRUE@	$(STRIP) showmathdemo$(EXEEXT)
 
-@gui_TRUE@@windows_TRUE@csl$(COMEXT):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@csl$(COM):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f csl.exe
 @gui_TRUE@@windows_TRUE@	$(MAKE) csl.exe
 
-@gui_TRUE@@windows_TRUE@reduce$(COMEXT):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f reduce.exe
 @gui_TRUE@@windows_TRUE@	$(MAKE) reduce.exe
 
-@gui_TRUE@@windows_TRUE@fwindemo$(COMEXT):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@fwindemo$(COM):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f fwindemo.exe
 @gui_TRUE@@windows_TRUE@	$(MAKE) fwindemo.exe
 
-@gui_TRUE@@windows_TRUE@wxpsl$(COMEXT):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
+@gui_TRUE@@windows_TRUE@wxpsl$(COM):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
 @gui_TRUE@@windows_TRUE@	-rm -f wxpsl.exe
 @gui_TRUE@@windows_TRUE@	$(MAKE) wxpsl.exe
 
@@ -2378,19 +2380,19 @@ reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 @wx_FALSE@	-mkdir -p reduce.$(fontsdir)/src
 @wx_FALSE@	$(CP) -r $(srcdir)/$(fontsdir)/src/*.gz reduce.$(fontsdir)/src
 
-@exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COMEXT)
+@exeext_TRUE@@gui_TRUE@$(plain_csl):	csl.exe csl$(COM)
 @exeext_TRUE@@gui_TRUE@	echo "make csl.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@$(plain_reduce):	reduce.exe reduce$(COMEXT)
+@exeext_TRUE@@gui_TRUE@$(plain_reduce):	reduce.exe reduce$(COM)
 @exeext_TRUE@@gui_TRUE@	echo "make reduce.exe is preferred"
 
 @exeext_TRUE@@gui_TRUE@$(plain_bootstrapreduce):	bootstrapreduce.exe
 @exeext_TRUE@@gui_TRUE@	echo "make bootstrapreduce.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COMEXT)
+@exeext_TRUE@@gui_TRUE@$(plain_fwindemo):	fwindemo.exe fwindemo$(COM)
 @exeext_TRUE@@gui_TRUE@	echo "make fwindemo.exe is preferred"
 
-@exeext_TRUE@@gui_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe wxpsl$(COMEXT)
+@exeext_TRUE@@gui_TRUE@@wx_TRUE@$(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
 @exeext_TRUE@@gui_TRUE@@wx_TRUE@	echo "make wxpsl.exe is preferred"
 
 @exeext_TRUE@@gui_FALSE@$(plain_csl):	csl.exe
@@ -2599,14 +2601,14 @@ restart.$(OBJEXT):	machineid.c
 reduce.dep:
 	touch reduce.dep
 
-reduce.img:	reduce$(COMEXT) $(reducedep)
+reduce.img:	reduce$(COM) $(reducedep)
 	-$(RM) -rf reduce.img
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 @canrun_TRUE@	mkdir -p buildlogs
-@canrun_TRUE@	./reduce$(COMEXT) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
+@canrun_TRUE@	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 @canrun_TRUE@		-D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- buildlogs/reduce.log \
 @canrun_TRUE@		-j reduce.dep
@@ -2627,14 +2629,14 @@ reduce.img:	reduce$(COMEXT) $(reducedep)
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COMEXT) $(reducedep)
+reduce.dir:	reduce$(COM) $(reducedep)
 	-$(RM) -rf reduce.img
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 @canrun_TRUE@	mkdir -p buildlogs
-@canrun_TRUE@	./reduce$(COMEXT) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
+@canrun_TRUE@	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
 @canrun_TRUE@		-D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-o ./reduce.img/ \
 @canrun_TRUE@		-- buildlogs/reduce.log \
@@ -2653,7 +2655,7 @@ bootstraprecompile:	bootstrapreduce.img
 
 recompile:	reduce.img
 @canrun_TRUE@	mkdir -p buildlogs
-@canrun_TRUE@	./reduce$(COMEXT) -v -w $(CYGSRC)/recompile.red \
+@canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-l buildlogs/$(which).log -Dwhich=$(which)
 @canrun_FALSE@	echo Can not build images on this platfrom
@@ -2769,10 +2771,10 @@ testslow:	bootstrapreduce.img
 
 testall:	reduce.img
 @canrun_TRUE@	mkdir -p testlogs
-@canrun_TRUE@	./reduce$(COMEXT) -v -w $(CYGSRC)/testall.red \
+@canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- testlogs/testreduce.log
-@canrun_TRUE@	./reduce$(COMEXT) -v -w $(CYGSRC)/checkall.red \
+@canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- testlogs/checkall.log
 @canrun_FALSE@	echo Can not run tests on this platfrom
@@ -2786,14 +2788,14 @@ testslow1:	bootstrapreduce.img
 
 test1:	reduce.img
 @canrun_TRUE@	mkdir -p testlogs
-@canrun_TRUE@	./reduce$(COMEXT) -v -w $(CYGSRC)/testall.red \
+@canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- testlogs/test$(which).log -Dwhich=$(which)
 @canrun_FALSE@	echo Can not run tests on this platfrom
 
 checkall:	reduce.img
 @canrun_TRUE@	mkdir -p testlogs
-@canrun_TRUE@	./reduce$(COMEXT) -v -w $(CYGSRC)/checkall.red \
+@canrun_TRUE@	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 @canrun_TRUE@		-Dno_init_file -D@srcdir=$(CYGSRC) \
 @canrun_TRUE@		-- testlogs/checkall.log
 @canrun_FALSE@	echo Can not check test results on this platfrom
@@ -2810,10 +2812,10 @@ cleanlog:
 csl.dep:
 	touch csl.dep
 
-csl.img:	csl$(COMEXT) $(csldep)
+csl.img:	csl$(COM) $(csldep)
 	-$(RM) -f csl.img
 @canrun_TRUE@	mkdir -p buildlogs
-@canrun_TRUE@	./csl$(COMEXT) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
+@canrun_TRUE@	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 @canrun_TRUE@		-D@cslbase="$(CYGSRC)" \
 @canrun_TRUE@		-- buildlogs/csl.img.log \
 @canrun_TRUE@		-j csl.dep
