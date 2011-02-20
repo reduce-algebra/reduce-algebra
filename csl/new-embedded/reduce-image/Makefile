@@ -84,7 +84,7 @@ reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 
 reduce.img:	reduce
 	-rm -f reduce.img
-	./reduce -z -Dno_init_file $(S)/buildreduce.lsp \
+	./reduce -z -Dminireduce -Dno_init_file $(S)/buildreduce.lsp \
 		-D@srcdir=$(S) -o reduce.img -- image.log
 
 clean:
