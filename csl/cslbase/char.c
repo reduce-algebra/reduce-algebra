@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 58e452aa 05-Jan-2011 */
+/* Signature: 7d73c804 24-Feb-2011 */
 
 #include "headers.h"
 
@@ -156,6 +156,7 @@ static Lisp_Object Lchar_downcase(Lisp_Object nil, Lisp_Object a)
     CSL_IGNORE(nil);
     characterify(a);
     if (!is_char(a)) return aerror("char-downcase");
+    if (a == CHAR_EOF) return onevalue(a);
     cc = code_of_char(a);
     if (ISupper(cc))        /* Caution to help non-ANSI libraries */
         cc = TOlower(cc);
@@ -241,6 +242,7 @@ static Lisp_Object Lchar_upcase(Lisp_Object nil, Lisp_Object a)
     CSL_IGNORE(nil);
     characterify(a);
     if (!is_char(a)) return aerror("char-upcase");
+    if (a == CHAR_EOF) return onevalue(a);
     cc = code_of_char(a);
     if (ISlower(cc))
         cc = TOupper(cc);
@@ -271,6 +273,7 @@ Lisp_Object Lalpha_char_p(Lisp_Object nil, Lisp_Object a)
     int cc;
     characterify(a);
     if (!is_char(a)) return onevalue(nil);
+    if (a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil); /* BITS present */
 #endif
@@ -285,6 +288,7 @@ static Lisp_Object Lgraphic_char_p(Lisp_Object nil, Lisp_Object a)
     int cc;
     characterify(a);
     if (!is_char(a)) return onevalue(nil);
+    if (a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil); /* BITS present */
 #endif
@@ -297,6 +301,7 @@ static Lisp_Object Lupper_case_p(Lisp_Object nil, Lisp_Object a)
     int cc;
     characterify(a);
     if (!is_char(a)) return onevalue(nil);
+    if (a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil);
 #endif
@@ -309,6 +314,7 @@ static Lisp_Object Llower_case_p(Lisp_Object nil, Lisp_Object a)
     int cc;
     characterify(a);
     if (!is_char(a)) return onevalue(nil);
+    if (a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil);
 #endif
@@ -326,7 +332,7 @@ Lisp_Object Ldigit_char_p_2(Lisp_Object nil, Lisp_Object a, Lisp_Object radix)
     if (!is_fixnum(r) || r < fixnum_of_int(2) ||
         r >= fixnum_of_int(36)) return aerror("digit-char-p");
     characterify(a);
-    if (!is_char(a)) return onevalue(nil);
+    if (!is_char(a) || a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil);
 #endif
@@ -361,6 +367,7 @@ Lisp_Object Ldigitp(Lisp_Object nil, Lisp_Object a)
     int cc;
     characterify(a);
     if (!is_char(a)) return onevalue(nil);
+    if (a == CHAR_EOF) return onevalue(nil);
 #ifndef Kanji
     if (bits_of_char(a) != 0) return onevalue(nil);
 #endif
@@ -466,6 +473,7 @@ Lisp_Object Lutf8_encode(Lisp_Object nil, Lisp_Object a)
 {
     int c;
     if (!is_fixnum(a)) return aerror1("utf8-encode", a);    
+    if (a == CHAR_EOF) return onevalue(nil);
     c = int_of_fixnum(a) & 0x001fffff;
     if (c <= 0x7f) return onevalue(ncons(fixnum_of_int(c)));
     else if (c <= 0x7ff) return onevalue(
@@ -569,6 +577,7 @@ Lisp_Object Lchar_code(Lisp_Object nil, Lisp_Object a)
     CSL_IGNORE(nil);
     characterify(a);
     if (!is_char(a)) return aerror("char-code");
+    if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
 
@@ -891,6 +900,8 @@ static Lisp_Object casefold(Lisp_Object c)
 {
     int cc;
     if (!is_char(c)) return aerror("Character object expected");
+    if (c == CHAR_EOF) return onevalue(c);
+
     cc = code_of_char(c);   /* Character in the C sense */
     cc = TOupper(cc);
     return insert_code(c, cc);

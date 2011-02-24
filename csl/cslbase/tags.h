@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 03caa5d4 05-Jan-2011 */
+/* Signature: 038a68e7 24-Feb-2011 */
 
 
 #ifndef header_tags_h
@@ -774,7 +774,9 @@ typedef uintptr_t Header;
  * earlier character packing. In the new character format this represents
  * the character 0x001f0004 in font 7. The good news for me is that this
  * is outside the range of proper Unicode characters so as well as it having
- * a non-zero "font" it can never clash with anything ordinary.
+ * a non-zero "font" it can never clash with anything ordinary. The bad news
+ * is that it is outside the valid range of characters to pass to isdigit()
+ * and friends...
  */
 #define CHAR_EOF ((Lisp_Object)(int32_t)0xff000402)
 
