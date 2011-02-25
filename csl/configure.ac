@@ -743,7 +743,7 @@ then
 # I am not certain how current the avoidance of these tests on Solaris is,
 # and it may reflect issues that are now in the past!
 
-AC_SEARCH_LIBS(XRenderCreateCursor, XRender,
+AC_SEARCH_LIBS(XRenderCreateCursor, Xrender,
   [AC_DEFINE(HAVE_XRENDERCREATECURSOR, [1], [Function XRenderCreateCursor available])],
   [AC_MSG_ERROR([Function "XRenderCreateCursor" not available])])
 
