@@ -428,7 +428,23 @@ int batchp()
  * The next procedure is responsible for establishing information about
  * where the main checkpoint image should be recovered from, and where
  * and fasl files should come from.
+ *
+ * On the Macintosh if the path to my executable indicated that I am
+ * within an "Application Bundle" I will look for the image file there.
+ *
+ * Otherwise I will look in two places! If the path to the executable ends
+ * up rather like BINDIR then I will check PKGDATADIR. The idea behind this
+ * is that if the files have been put in place using "make install" then
+ * the executable may be in say "...../bin/reduce" and the corresponding
+ * image would the be "..../share/reduce/reduce.img". I accept this if there
+ * is an image file in the location so suggested.
+ *
+ * Finally I look for an image file adjacent to the executable.
  */
+
+#define stringify(s) stringify_sub(s)
+#define stringify_sub(s) #s
+
 char *find_image_directory(int argc, char *argv[])
 {
     int n;
@@ -475,7 +491,45 @@ char *find_image_directory(int argc, char *argv[])
 
     }
 #else
-    sprintf(xname, "%s/%s.img", programDir, programName);
+    {   const char *bin  = stringify(BINDIR);
+        const char *data = stringify(PKGDATADIR);
+/*
+ * I will strip initial directory names from bin and pkgdatadir so long as
+ * they match. So if they start off as (eg) /usr/local/bin and
+ * /usr/local/share/reduce I will remove "/usr/local" from each leaving just
+ * "/bin" and "/share/reduce". The purpose of this is so that if (despite the
+ * use of "make install") somebody has copied the tree that contains Reduce
+ * to somewhere else I might still find my resources.
+ */
+        int i, j;
+        struct stat buf;
+        for (;;)
+        {   i = j = 0;
+            if (*bin == '/') while (bin[++i] != 0 && bin[i] != '/');
+            if (*data == '/') while (data[++j] != 0 && data[j] != '/');
+            if (i == j && strncmp(bin, data, i) == 0)
+            {   bin += i;
+                data += i;
+            }
+            else break;
+        }
+        i = strlen(bin);
+        j = strlen(programDir);
+        if (strcmp(programDir+j-i, bin) == 0)
+        {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, programName);
+            fprintf(stderr, "try %s\n", xname);
+        }
+/*
+ * If the name I just created does not correspond to a file I will fall
+ * back and use the older location, adjacent to my binary. Hmmm this is
+ * all interesting as regards building an image file for the first time.
+ * I think it tells us that you had better not try doing that using the
+ * installed version - do that with a copy that sits in your own private
+ * writable are of disc.
+ */
+        if (stat(xname, &buf) != 0)
+            sprintf(xname, "%s/%s.img", programDir, programName);
+    }
 #endif
     FWIN_LOG("image directory: %s\n", xname);
     n = strlen(xname)+1;

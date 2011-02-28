@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 4a28093f 01-Jan-2011 */
+/* Signature: 01d4f834 03-Jan-2011 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -344,8 +344,8 @@ int main(int argc, char *argv[])
 /*
  * As the very first thing I will do, I will seek an argument
  * that is just "-w", and if it is present record that I will want to
- * run in text mode, not windowed mode. I also detected "--", "-f"
- * and "-f" and use them to flag up a request to run minimised.
+ * run in text mode, not windowed mode. I also detected "--"
+ * and use it to flag up a request to run minimised.
  * Note that "-w" takes precedence over "--" here...
  *
  * I run as a minimise window (by default) in the "--" case since I can use
@@ -489,9 +489,12 @@ int main(int argc, char *argv[])
  * Note well that I detect just "--" as an entire argument here, so that
  * extended options "--option" do not interfere.
  */
-        else if ((strcmp(argv[i], "--") == 0 ||
-                  strcmp(argv[i], "-f") == 0 ||
-                  strcmp(argv[i], "-F") == 0) &&
+        else if ((strcmp(argv[i], "--") == 0
+#if 0
+                  || strcmp(argv[i], "-f") == 0
+                  || strcmp(argv[i], "-F") == 0
+#endif
+                 ) &&
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
@@ -504,8 +507,8 @@ int main(int argc, char *argv[])
     if (windowed == 0)
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
-        {   freopen("CONIN$", "r", stdin);
-/* console buffer access required read as well as write access here */
+        {   freopen("CONIN$", "r+", stdin);
+/* need "w+" for some console buffer access to behave properly. */
             freopen("CONOUT$", "w+", stdout);
             freopen("CONOUT$", "w+", stderr);
 /* I will also pause for 5 seconds at the end... */
@@ -823,8 +826,6 @@ const char *fullProgramName        = "./fwin.exe";
 const char *programName            = "fwin.exe";
 const char *programDir             = ".";
 
-const char *fwin_full_program_name = "./fwin.exe";
-
 #ifdef WIN32
 
 static char this_executable[LONGEST_LEGAL_FILENAME];
@@ -840,21 +841,28 @@ int find_program_directory(char *argv0)
  */
     GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
     argv0 = this_executable;
+    w = argv0;
+/*
+ * I turn every "\" into a "/". This make for better uniformity with other
+ * platforms.
+ */
+    while (*w != 0)
+    {   if (*w == '\\') *w = '/';
+        w++;
+    }
     program_name_dot_com = 0;
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
     {   programDir = ".";
         programName = "fwin";  /* nothing really known! */
-        fullProgramName = ".\\fwin.exe";
-        fwin_full_program_name = ".\\fwin.exe";
+        fullProgramName = "./fwin.exe";
         return 0;
     }
 
     fullProgramName = argv0;
-    fwin_full_program_name = argv0;
     len = strlen(argv0);
 /*
- * If the current program is called c:\aaa\xxx.exe, then the directory
- * is just c:\aaa and the simplified program name is just xxx
+ * If the current program is called c:/aaa/xxx.exe, then the directory
+ * is just c:/aaa and the simplified program name is just xxx
  */
     j = len-1;
     if (len > 4 &&
@@ -870,7 +878,7 @@ int find_program_directory(char *argv0)
     }
     for (npgm=0; npgm<len; npgm++)
     {   int c = argv0[len-npgm-1];
-        if (c == '\\') break;
+        if (c == '/') break;
     }
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  /* none really visible */
@@ -953,7 +961,6 @@ int find_program_directory(char *argv0)
     {   programDir = (const char *)"."; /* some sort of default. */
         programName = (const char *)"fwin";
         fullProgramName = (const char *)"./fwin";
-        fwin_full_program_name = (const char *)"./fwin";
         return 0;
     }
 /*
@@ -962,10 +969,7 @@ int find_program_directory(char *argv0)
  * (b)   abc/def/ghi       treat as ./abc/def/ghi;
  * (c)   ghi               scan $PATH to see where it may have come from.
  */
-    else if (argv0[0] == '/')
-    {   fullProgramName = argv0;
-        fwin_full_program_name = argv0;
-    }
+    else if (argv0[0] == '/') fullProgramName = argv0;
     else
     {   for (w=argv0; *w!=0 && *w!='/'; w++);   /* seek a "/" */
         if (*w == '/')      /* treat as if relative to current dir */
@@ -981,7 +985,6 @@ int find_program_directory(char *argv0)
             {   pgmname[n] = '/';
                 strcpy(&pgmname[n+1], argv0);
                 fullProgramName = pgmname;
-                fwin_full_program_name = pgmname;
             }
         }
         else
@@ -1052,7 +1055,6 @@ int find_program_directory(char *argv0)
                 strcpy(&pgmname[n], temp);
             }
             fullProgramName = pgmname;
-            fwin_full_program_name = pgmname;
         }
     }       
 /*
@@ -1068,7 +1070,6 @@ int find_program_directory(char *argv0)
         {   temp[n1] = 0;
             strcpy(pgmname, temp);
             fullProgramName = pgmname;
-            fwin_full_program_name = pgmname;
         }
     }
 /* Now fullProgramName is set up, but may refer to an array that
@@ -1078,7 +1079,6 @@ int find_program_directory(char *argv0)
     if (w == NULL) return 5;           /* 5 = malloc fails */
     strcpy(w, fullProgramName);
     fullProgramName = w;
-    fwin_full_program_name = w;
 #ifdef RAW_CYGWIN
 /*
  * Now if I built on raw cygwin I may have an unwanted ".com" or ".exe"
@@ -1329,26 +1329,18 @@ void process_file_name(char *filename, char *old, size_t n)
         while (*tail != 0) *p++ = *tail++;
         *p = 0;
     }
-/*
- * I map "/" characters in MSDOS filenames into "\" so that users
- * can give file names with Unix-like slashes as separators if they want.
- * People who WANT to use filenames with '/' in them will be hurt.
- */
     {   int j;
         char *tail = filename;
-        while ((j = *tail) != 0)
-        {   if (j == '/') *tail = '\\';
-            tail++;
-        }
+        while (*tail != 0) tail++;
 /*
- * stat and friends do not like directories referred to as "\foo\", so check
+ * stat and friends do not like directories referred to as "/foo/", so check
  * for a trailing slash, being careful to respect directories with names
- * like "\" and "a:\".
+ * like "/" and "a:/".
  */
        j = strlen(filename);
        if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
        {
-           if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
+           if ( (*(tail - 1) == '/')) *(tail - 1) = 0;
        }
     }
 #endif /* WIN32 */
@@ -1729,7 +1721,8 @@ static void exall(int namelength,
           n_found_files-first,
           sizeof(WIN32_FIND_DATA),
           alphasort_files);
-    while (rootlen>=0 && filename[rootlen]!='\\') rootlen--;
+    while (rootlen>=0 && filename[rootlen]!='\\' && filename[rootlen]!='/')
+        rootlen--;
     while (n_found_files != first)
     {   char *p = (char *)&found_files[--n_found_files].cFileName;
         int c;

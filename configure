@@ -2365,7 +2365,7 @@ $as_echo "$as_me: $doconfig" >&6;}
 # Also I will prefer gcc if I have enabled debugging (because the cygwin
 # works better with it) but i686-w64-mingw32-gcc otherwise (because it is
 # newer and probably will end up better supported).
-    if test "$X32_GCC" = "yes" && test "x$enable_debug" != "xno"
+    if test "$X32_GCC" = "yes" && test "x$enable_debug" = "xno"
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \

@@ -241,7 +241,10 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@ $(am__append_2) $(am__append_6)
 CPP = @CPP@
-CPPFLAGS = @CPPFLAGS@ $(am__append_1) $(am__append_5)
+
+# I wish to know where this build intends to install things...
+CPPFLAGS = @CPPFLAGS@ $(am__append_1) $(am__append_5) \
+	-DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@

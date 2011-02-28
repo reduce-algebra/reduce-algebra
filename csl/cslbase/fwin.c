@@ -841,19 +841,28 @@ int find_program_directory(char *argv0)
  */
     GetModuleFileName(NULL, this_executable, LONGEST_LEGAL_FILENAME-2);
     argv0 = this_executable;
+    w = argv0;
+/*
+ * I turn every "\" into a "/". This make for better uniformity with other
+ * platforms.
+ */
+    while (*w != 0)
+    {   if (*w == '\\') *w = '/';
+        w++;
+    }
     program_name_dot_com = 0;
     if (argv0[0] == 0)      /* should never happen - name is empty string! */
     {   programDir = ".";
         programName = "fwin";  /* nothing really known! */
-        fullProgramName = ".\\fwin.exe";
+        fullProgramName = "./fwin.exe";
         return 0;
     }
 
     fullProgramName = argv0;
     len = strlen(argv0);
 /*
- * If the current program is called c:\aaa\xxx.exe, then the directory
- * is just c:\aaa and the simplified program name is just xxx
+ * If the current program is called c:/aaa/xxx.exe, then the directory
+ * is just c:/aaa and the simplified program name is just xxx
  */
     j = len-1;
     if (len > 4 &&
@@ -869,7 +878,7 @@ int find_program_directory(char *argv0)
     }
     for (npgm=0; npgm<len; npgm++)
     {   int c = argv0[len-npgm-1];
-        if (c == '\\') break;
+        if (c == '/') break;
     }
     ndir = len - npgm - 1;
     if (ndir < 0) programDir = ".";  /* none really visible */
@@ -1320,26 +1329,18 @@ void process_file_name(char *filename, char *old, size_t n)
         while (*tail != 0) *p++ = *tail++;
         *p = 0;
     }
-/*
- * I map "/" characters in MSDOS filenames into "\" so that users
- * can give file names with Unix-like slashes as separators if they want.
- * People who WANT to use filenames with '/' in them will be hurt.
- */
     {   int j;
         char *tail = filename;
-        while ((j = *tail) != 0)
-        {   if (j == '/') *tail = '\\';
-            tail++;
-        }
+        while (*tail != 0) tail++;
 /*
- * stat and friends do not like directories referred to as "\foo\", so check
+ * stat and friends do not like directories referred to as "/foo/", so check
  * for a trailing slash, being careful to respect directories with names
- * like "\" and "a:\".
+ * like "/" and "a:/".
  */
        j = strlen(filename);
        if (j > 0 && j != 1 && !(j == 3 && *(filename+1) == ':'))
        {
-           if ( (*(tail - 1) == '\\')) *(tail - 1) = 0;
+           if ( (*(tail - 1) == '/')) *(tail - 1) = 0;
        }
     }
 #endif /* WIN32 */
@@ -1720,7 +1721,8 @@ static void exall(int namelength,
           n_found_files-first,
           sizeof(WIN32_FIND_DATA),
           alphasort_files);
-    while (rootlen>=0 && filename[rootlen]!='\\') rootlen--;
+    while (rootlen>=0 && filename[rootlen]!='\\' && filename[rootlen]!='/')
+        rootlen--;
     while (n_found_files != first)
     {   char *p = (char *)&found_files[--n_found_files].cFileName;
         int c;

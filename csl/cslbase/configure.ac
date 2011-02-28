@@ -39,7 +39,7 @@
 # change that. These are the things I note above as "special flags"
 
 # Specify the name of this "application" and a version number
-AC_INIT([CSL],[6.04])
+AC_INIT([REDUCE],[6.04])
 AM_INIT_AUTOMAKE([1.8.3 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
 
@@ -166,6 +166,12 @@ AC_ARG_WITH(wx,
   [with_wx="no"])
 AC_MSG_NOTICE([--with-wx=$with_wx])
 
+AC_ARG_WITH(cygwin,
+  AC_HELP_STRING([--with-cygwin],
+                 [Force use of raw cywgin (note cygwin license)]),
+  [],
+  [with_cygwin="no"])
+
 if test "x$with_fox" != "xno" || test "x$with_wx" != "xno"
 then
   with_gui="yes"
@@ -202,17 +208,9 @@ x86_64-w64-*)
   ;;
 *-*-cygwin* | *-*-*mingw*)
   AC_MSG_NOTICE([Building under cygwin])
-  AC_ARG_WITH(cygwin,
-    AC_HELP_STRING([--with-cygwin],
-                   [Force use of raw cywgin (note cygwin license)]),
-    [],
-    [with_cygwin="no"])
-  if test "x$with_cywgin" != "xno"
-  then
-    really_use_cygwin="yes"
-  fi
+  AC_MSG_NOTICE([with_cygwin=<$with_cygwin>])
   x86="yes"
-  if test "x$really_use_cygwin" = "xyes"
+  if test "x$with_cygwin" != "xno"
   then
 # If you go "--with-cygwin" in the call to configure then I will build
 # in native cygwin mode, and not use the "-mno-cywgin" flag (or the more

@@ -42,6 +42,8 @@ else !wx
 WXC=
 endif !wx
 
+# I wish to know where this build intends to install things...
+CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
