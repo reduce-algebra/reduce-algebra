@@ -73,7 +73,7 @@ if test -f psl/64
 then
 STORE=600
 else
-STORE=120000000
+STORE=12000000
 fi
 
 if test -d red
