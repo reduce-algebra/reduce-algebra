@@ -43,6 +43,19 @@ fluid  '(!*fort
          posn!*
          fortlang!*);
 
+fluid '(previous!-fancy!-state !*fancy);
+
+put('fort, 'simpfg, '((t (save!-fancy)) (nil (restore!-fancy))));
+
+symbolic procedure save!-fancy();
+  begin
+    previous!-fancy!-state := !*fancy;
+    if !*fancy then off fancy;
+  end;
+
+symbolic procedure restore!-fancy();
+  if previous!-fancy!-state then on fancy;
+
 switch fortupper;
 
 global '(card_no
