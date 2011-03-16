@@ -3,53 +3,118 @@
 
 
 The prerequisites for using this package will depend somewhat on whether
-you choose to use the CSL or PSL build. At present the PSL one is provided
-in the form of ready-to-run architecture-specific binaries and so the
-development environment for rebuilding those is not needed. For CSL you need
-to be able to compile both CSL itself and the FOX toolkit on which it depends.
+you choose to use the CSL or PSL build.
+
+At present most users of PSL will use the ready-build binaries of the PSL
+Lisp system that are fetched when you configure that option, and so almost no
+special development tools are required. However the full sources and some
+scripts for bootstrap-building of PSL Lisp from scratch are being provided,
+and anybody wishing to experiment in that area should check the PSL-specific
+parts of the tree and if necessary post enquiries on the mailing list and/or
+forum to check which cases are currently supported.
+
+For CSL you need to be able to compile both CSL itself and the FOX toolkit
+on which it depends. Please note that even if you have FOX available already
+on your computer the code her uses a (slightly) customised version and your
+standard system-wide installation of FOX will not be used and should be
+irrelevant here.
    For Windows, the "cygwin" environment providing a "bash" shell.
-       Note that mingw/msys is not supported.
+       Note that building under "msys" or the plain Windows command
+       prompt is not possible. Obviously it will be sensible to keep your
+       cygwin installation up to date, and some updates there have in the
+       past not always been upards compatible. The aim is to keep the
+       current CSL/Reduce at Sourceforge buildable using the most recent
+       cygwin release. But any difficulty due to temporary bugs or glitches
+       at the cygwin end can not be resolved here!
    GNU make (other versions of "make" are not liable to work), autoconf
-       and automake.
+       and automake. Well you can probably survive without having autoconf
+       and automake, but if you have them you should use a reasonably up to
+       date version.
    For CSL you need a C/C++ development context. On Windows you
-       need the "mingw" compiler variants from cygwin while on other systems
+       need the "mingw64-i686" and possily the "mingw-x86_64" compiler
+       variants (as well as plain gcc) from cygwin while on other systems
        you need X11 and other development capability, including Xft,
-       fontconfig, (n)curses, Posix threads. For building for 64-bit windows
-       you should check http://sourceforge.net/projects/mingw-w64/ and ensure
-       you have cross-tools with a name such as x88_64-w64-mingw32-gcc (and
-       all associated tools, libraries and utilities). Please use the
-       cygwin hostable versions that use Unix-style path-names.
-       NEWS: September 2010. The cygwin installer can now install a set
-       of 64-bit MinGW compilers for you, and the scripts etc here will
-       now assume that these are the ones you use. This makes it MUCH easier
-       for everybody to support 64-bit windows, so Thank You to both the
-       MinGW64 team and to cygwin for incorporating in via their distribution.
+       fontconfig, (n)curses, Posix threads.
+
+One of the most common problems people seem to have the first time that they
+try to build CSL arises when they do not have quite all the necessary tools,
+libraries and header files installed. While most relevant run-time libraries
+are liable to have been provided for them by default, the development versions
+might not have. On a 64-bit Linux it can also be nice to have the libraries
+and compiler options that make it possible to compile and run 32-bit code as
+well as 64-bit.
 
 If you try to build REDUCE but one of the programming tools or development
 libraries that is required is not available then there is no guarantee that
-the failure that results will describe itself to you clearly. Maybe some day
-somebody will try creating a "check configuration" script that can be used to
-pre-check what is available, what is needed and what is optional but desirable.
-In the meanwhile the first time you try a build if things fail start by looking
-for evidence (eg in the logs) that something is missing. For a range of the
-tools (eg autoconf, libtool etc) if you can not identify a ready-built binary
-package that suits your environment it will be easy to build one from sources
-found "at the usual places".
+the failure that results will describe itself to you clearly.
 
+To try to make that easier to cope with I provide a script that attempts to
+check for prerequisites and that is lighter weight than the full configuration
+process and maybe reports trouble in a cleaner way. To use it select the
+Reduce "trunk" directory as current and at a bash prompt (you MUST have
+"bash" available as a shell, and you will run least rish if you run all scripts
+from it. I have tried to make most of them compatible with a legacy /bin/sh
+but testing and guaranteeing that is tedious) go
+      scripts/csl-sanity-check.sh
+This should run auto-configure scripts and eventually compile and run a small
+program that pops up a dull window. If you get the window at the end it has
+succeeded and you can try building Reduce. If not then it probably reports
+a step where some header file or library is missing. You need to search the
+installation sources relevant your operating system and install more stuff,
+then try again. Eg for cygwin you re-run "setup", while on Linux I like it when
+my distribution lets me use "synaptic".
+
+Some people may find that they need things that are not installed on
+their system but they have not been granted adminitrator authority and so
+can not merely install them in the obvious way. The easiest response is to
+talk to a local system manager! But for a range of the tools (eg autoconf,
+make, ncurses etc) if you can not identify a ready-built binary
+package that suits your environment it will be easy to build one from sources
+found "at the usual places", and may be easy to arrange that the resulting
+binaries are on your PATH and libraries somewhere where they will be found.
+But in such a case you may end up needing to hand-patch some of the Makefiles
+here.
+
+If you have run the main CSL/Reduce configure step, as in
+   ./configure --with-csl
+and tried "make" at a stage when you do not have all relevant headers and
+libraries installed then the build can fail part way through in a messy way.
+In principle you can check ALL the logs and work out what happened, but in
+reality that can be daunting. Furthermore it can get in a state where a
+subsequent use of "make" fails in an unhelpful manner. Experts can patch things
+up and recover, but the simplest approach in case of confusion is
+   rm -rf cslbuild
+   ./configure --with-csl
+   make
+where all the partially build stuff that had accumulated in cslbuild is
+discarded and the configuration and compilation is started afresh. Obviously
+you will not delete that directory if you have put important files of your
+own there!
+
+A feature of subversion is that if you change any file locally then your local
+edit is interpreted as a possibly valuable update that you may at some stage
+contribute back into the project. This is good, but it means that if you
+accidentally corrupt a local copy of some file then subversion will NOT
+automatically repair it. So if you have just recently started with Reduce and
+something odd is happening it may make sense to get yourself back in lock-step
+with the central repository. You are provided with two scripts
+   scripts/make-pristine.sh
+   scripts/stamp.sh
+The first of those merely issues the subversion commands that discard all local
+changes you have made to bring everything into step. The second updates the
+time-stamps on various configuration files so that when you run "configure"
+it should not attempt to use autoconf and automake locally, but instead should
+be content with the files as fetched. These two scripts can avoid confusion
+early on. Once you are fully working and especially if you are doing your own
+development within Reduce you will not wish to use them.
 
 
 You can fetch or update REDUCE in one of (at least) two ways
 
-(1) Fetch a file named openreduce.tar.bz2 (which ought to be the latest
-version available on the site you fetch from) or openreduce-yymmdd.tar.bz2
-where yy is a year, mm a month and dd a day. For instance the file
-openreduce-081119.tar.bz2 would be one for November 19th, 2008.
-Unpack the file and you should get a directory whose name includes a
-date-code. This is done so that unpacking a new archive does not merely
-overwrite and earlier version that you had. Copy, link or rename this
-directory so you have one with a name of your choice. For the purposes
-of this document I will suppose it ends up called $HOME/openreduce, but any
-name ought to work as well.
+(1) Fetch a file from the Sourceforge download area, eg from the
+reduce-algebra-source section. Unpack it. Note that the full archives
+at sourceforge are updated sporadically and not to any coherent schedule,
+so what you get could be a little out of date.
 
 OR
 
@@ -66,6 +131,13 @@ svn checkout
     Note that the main copy of everything will end up in the "trunk"
     sub-directory of what you fetch.
 
+The version fetched and updated using subversion (hah - note that you
+need "subversion" installed on your computer to do this!) will be fully
+up to date. That naturally means that at some moments it will include
+changes that temporarily break it, but in general any suich should be
+corrected fairly rapdily. Furthermore by browsing the documentation of
+subversion you can find out how to check out a version from say 2 weeks
+ago (or indeed any historical varient) if needbe.
 
 
 
@@ -75,45 +147,41 @@ where REDUCE was unpacked as current and issue one of the command
      OR  ./configure --with-psl
 
 Follow that by the command "make" and if all goes well everything relevant
-will be compiled.
+will be compiled. But at least in the CSL case please try
+scripts/csl-sanity-check.sh first - it may save you a lot of agony.
 
 For (some sort of) convenience a script "rebuild.sh" in the top level of
 the distribution tries to do this for both PSL and CSL and it then leaves
 overall log files also at the top level.
 
-[In the CSL case only at present, but I will fix that in a bit] You can then
-run REDUCE using the command
-    bin/reduce
+You can then run REDUCE using the command
+    bin/redcsl
+or
+    bin/redpsl
 
 [At present I do not in any way guarantee (and I probably do not even expect)
 that the usual "configure" option "--prefix=..." or the idiom "make install"
-will behave as you might have hoped.]
+will behave as you might have hoped. Indeed there are reports that at
+present "make install" is deeply broken and SHOULD NOT BE ATTEMPTED.]
 
-The first time you go bin/reduce it will arrange to set up either a symbolic
-link or a short script in the bin directory (replacing the initial version
-that performs this action). This script or link can probably be copied to any
-location you view as convenient (eg somewhere on your PATH) and will continue
-to refer to the place where REDUCE was built.
+Any machine you are on is attributed an identity siuch as i686-pc-windows
+or x86_64-unknown-ubuntu10.10. Note that this is slightly more specific than
+the normal GNU host triple in that it attempts to include the name of a Linux
+distribution. Binaries are actually built within cslbuild/<triple> or
+pslbuild/<triple>. This arrangement is intended to be helpful if you have one
+file-space shared between several machine that may have different
+architectures. So the scripts like bin/redcsl deduce where to look and
+chain to binaries there. In the CSL case you could make a symbolic link
+as in "ln -s .../trunk/cslbuild/<triple>/csl/reduce XXXX" where XXXX is some
+location on your PATH which then lets you launch Reduce more directly. Reduce
+needs some resources in the same directory as the bain executable so merely
+copying <triple>/csl/reduce to somewhere else is not liable to be a good idea.
 
-When you build, a collection of log files are placed within either the
-psllogs or csllogs sub-directory. If anything seems to have gone wrong
-that is where you will need to look to find additional information.
+Logs from building and testing Reduce end up in the directory where the
+main binary gets created, so if things go wromg that is where you may wish
+to look.
 
 
-
-The setup of this project allows for use of multiple computer architectures
-and for sub-variant build options an a single architecture. The nature of
-the computer on which building is performed is detected automatically and
-all binaries and all logs are placed in directories whose names include
-that. Thus files might be make in a directory with such as
-         pslbuild/x86_64-unknown-opensuse-11.0
-     OR  cslbuild/i686-pc-windows
-Part of the purpose of this is so that in a case where a user's file-space is
-on a network file-server of some sort and they connect to that using a variety
-of computers the builds for each computer used do not conflict.
-[At least at present the mechanism in the "bin" directory detects the
-architecture in force the first time you try to launch REDUCE and does not
-adapt if you switch architectures later on]
 
 There are a number of optional ways in which configuration may be customised:
          ./configure --with-csl --enable-debug
@@ -123,31 +191,31 @@ There are a number of optional ways in which configuration may be customised:
          ./configure --with-csl --with-m32
    On an architecture that is basically 64-bit (mostly 64-bit Linux) this
    arranges to compile 32-bit binaries. As in "gcc -m32". Similarly
-   "--with-m64" exists.
+   "--with-m64" exists. To use this your computer must be set up to be
+   able to build both widths of binary. This is sometimes referred to as
+   "multilib".
  
          ./configure --with-csl --with-mingw64
    Provided a cross compiler x86_64-win64-mingw32-gcc is available (plus all
-   associated tools - see the site at sourceforge where that compiler
-   is being developed) this EXPERIMENTALLY build a 64-bit Windows system.
-   As of September 2010 the MinGW64 toolchain from sourceforge seems pretty
-   stable. Note that you NEED to use the version that hosts on Cygwin
-   not the one for Msys, since the gnu autotools etc do not play prettily
-   with Windows-style file-names and paths. Swee the note at the top to the
-   effect that this toolchain can now be installed as part of your cygwin
-   setup so you do not have to download it from sourceforge and install it
-   yourself! 
+   associated tools - and they can be installed via cygwin setup) build
+   a 64-bit Windows system.
 
          ./configure --with-csl --with-cygwin
    Normally the CSL build on a Windows platform builds a normal native Windows
    binary using "mingw32". "--with-cygwin" causes it to build a "cygwin"
    system that expects to use X-windows rather than a native Windows GUI,
    and that links in the cygwin1.dll library which imposes some additional
-   license constraints.
+   license constraints. This is not expected to be very useful and will often
+   be broken.
 
          ./configure --with-psl --with-m32
    As "--with-m32" for CSL, this used 32-bit PSL even if you are in a
-   64-bit-capable environment.
+   64-bit-capable environment. I think!
 
+   There are other options, many of which are experimental or historical.
+   See "./configure --help" for a definitive list. In the CSL world I will
+   perhaps note "--with-wx" which relates to a currently incomplete move from
+   using FOX to using wxWidgets as the GUI toolkit.
 
 
 
@@ -198,8 +266,22 @@ or pslbuild/MACHINE as your current directory: the Makefile that ends up there
 is the main one used for rebuilding the system.
 
 
+For special purposes you may wish to investigate the csl/jlisp directory (all
+Reduce runnable via Java - distinctly slower and at present the user interface
+is not well sorted, but it might be fun) and csl/embedded (a kit for making
+a simple small C-coded version for potential use as a component in some other
+software rather than a free-standing complete program).
 
-A C Norman. July 2008. Updated Jan 2009, September 2010
+
+The more alive the Reduce project is the more you can expect there to be
+additions, changes and enhancements but please understand that these all
+carry risk of transient introduction of bugs. Report trouble to us via
+Sourceforge and when and if we can we will fix them. But all the source code
+is there so you can also join in the debugging and propse fixes (please!)
+
+
+
+A C Norman. July 2008. Updated Jan 2009, September 2010, March 2011
 
 
 
