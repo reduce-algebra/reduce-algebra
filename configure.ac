@@ -94,7 +94,7 @@ AC_ARG_WITH(gcc3,
    AC_HELP_STRING([--with-gcc3],
                   [can be used to avoid use of i686-w64-mingw32-gcc (CSL only)]),
    [],
-   [with_gcc3="no"])
+   [with_gcc3="default"])
 
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
@@ -297,9 +297,9 @@ then
   AC_CHECK_PROG(GCC_3, g++-3, "yes", "no")
 # If the user specified --with-gcc3 and gcc-3 was indeed present I will
 # pretend that i686-w64-mingw32-g++ was not available. This may be useful
-# sometimes when debuggin in that PERHAPS the mingw32 tools might not work
+# sometimes when debugging in that PERHAPS the mingw32 tools might not work
 # as well with gdb as the older "gcc-3 -mno-cygwin" recipe.
-  if test "x$with_gcc3" != "xno" && test "x$GCC_3" != "xno"
+  if test "x$with_gcc3" != "xno" && test "x$with_gcc3" != "xdefault" && test "x$GCC_3" != "xno"
   then
     X32_GCC="no"
   fi
@@ -322,10 +322,10 @@ then
 # will look at them here in order of preference. I do this even if I am on
 # a 64-bit Windows if the 64-bit compilers are not available.
 #
-# Also I will prefer gcc if I have enabled debugging (because the cygwin
-# works better with it) but i686-w64-mingw32-gcc otherwise (because it is
-# newer and probably will end up better supported).
-    if test "$X32_GCC" = "yes" && test "x$enable_debug" = "xno"
+# Also I will prefer gcc-3 if I have enabled debugging (because the cygwin
+# debugger works better with it) but i686-w64-mingw32-gcc otherwise (because
+# it is newer and probably will end up better supported).
+    if test "$X32_GCC" = "yes" && ( test "x$enable_debug" = "xno" || test "x$with_gcc3" == "xno" )
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
