@@ -355,7 +355,7 @@ default:
 }
 
 
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
 
 int32_t write_action_math(int32_t op, Lisp_Object dummy)
 {
@@ -731,7 +731,7 @@ int char_to_terminal(int c, Lisp_Object dummy)
     return 0;   /* indicate success */
 }
 
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
 
 static int math_buffer_size, math_buffer_p;
 static char *math_buffer = NULL;
@@ -1428,8 +1428,13 @@ Lisp_Object Lclose(Lisp_Object nil, Lisp_Object a)
 #endif
 }
 
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX
 extern void *text;
+#define GUI_TEST text
+#endif
+#if defined HAVE_LIBWX
+extern void *panel;
+#define GUI_TEST panel
 #endif
 
 Lisp_Object Lmath_display(Lisp_Object nil, Lisp_Object a)
@@ -1448,7 +1453,7 @@ Lisp_Object Lmath_display(Lisp_Object nil, Lisp_Object a)
  *        its contents (which may be several lines) to the front end
  *        display engine.
  */
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
     if (a == nil || a == fixnum_of_int(0)) /* test if showmath available */
     {
 /*
@@ -1457,10 +1462,10 @@ Lisp_Object Lmath_display(Lisp_Object nil, Lisp_Object a)
  */
         Lisp_Object std = qvalue(standard_output);
 /*
- * text is the FXTerminal object. If it is NULL that means that I had
- * selected non-windowed mode....
+ * GUI_TEST is the FXTerminal object, or corresponding wxWidgets object.
+ * If it is NULL that means that I had selected non-windowed mode....
  */
-        if (text == NULL) return onevalue(nil);
+        if (GUI_TEST == NULL) return onevalue(nil);
 /*
  * With CSL I have all these curious ways of ending up with standard output
  * redirected to elsewhere! In any such case I want this code to report "not

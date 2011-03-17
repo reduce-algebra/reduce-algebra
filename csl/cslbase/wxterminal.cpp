@@ -1,7 +1,7 @@
 #define DEBUG 1 /* regardless of overall build mode! */
 
 //
-// "wxterminal.cpp"                              Copyright A C Norman 2010
+// "wxterminal.cpp"                              Copyright A C Norman 2011
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -11,7 +11,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -614,7 +614,7 @@ BEGIN_EVENT_TABLE(fwinText, wxScrolledCanvas)
     EVT_THREAD(WORKER_FINISHED,   fwinText::OnWorkerFinished)
 END_EVENT_TABLE()
 
-static fwinText *panel = NULL;
+fwinText *panel = NULL;
 
 class fwinFrame : public wxFrame
 {
