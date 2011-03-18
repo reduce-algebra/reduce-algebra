@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 342c6ea7 09-Feb-2011 */
+/* Signature: 20fba36e 18-Mar-2011 */
 
 #include "headers.h"
 
@@ -5012,6 +5012,17 @@ static void set_up_variables(CSLbool restartp)
 #ifdef HAVE_LIBFOX
 //      if (fwin_windowmode() & FWIN_WITH_FOX)    REINSTATE SOON PLEASE
 //          w = cons(make_keyword("fox"), w);
+        if (fwin_windowmode() & FWIN_IN_WINDOW)
+        {   w = cons(make_keyword("windowed"), w);
+// It could be the case that SHOWMATH is compiled in but the necessary
+// fonts were not located. Or if they were there but "--" has been used to
+// redirect standard output to a file.
+            if (showmathInitialised &&
+                alternative_stdout == NULL)
+                w = cons(make_keyword("showmath"), w);
+        }
+#endif
+#ifdef HAVE_LIBWX
         if (fwin_windowmode() & FWIN_IN_WINDOW)
         {   w = cons(make_keyword("windowed"), w);
 // It could be the case that SHOWMATH is compiled in but the necessary

@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 68d4c2c6 09-Feb-2011 */
+/* Signature: 2f50f634 18-Mar-2011 */
 
 #include "wx/wxprec.h"
 
@@ -130,6 +130,8 @@ int pipedes[2];
 #endif // WIN32
 
 #include "wxfwin.h"
+
+int showmathInitialised = 1; // At present lie that it has been initialised!
 
 static int returncode = 0;
 
