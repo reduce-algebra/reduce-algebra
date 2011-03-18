@@ -64,6 +64,10 @@ installation sources relevant your operating system and install more stuff,
 then try again. Eg for cygwin you re-run "setup", while on Linux I like it when
 my distribution lets me use "synaptic".
 
+Note that if you configure using "--with-csl --with-wx" you also need GTK2
+(GTK+) development files if you are on an X11-based platform, but at present
+csl-sanity-check.sh does not test for that.
+
 Some people may find that they need things that are not installed on
 their system but they have not been granted adminitrator authority and so
 can not merely install them in the obvious way. The easiest response is to
