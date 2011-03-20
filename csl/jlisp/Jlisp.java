@@ -129,7 +129,9 @@ static LispObject error(String s) throws LispException
     ResourceException.errors_now++;
     if (ResourceException.errors_limit > 0 &&
         ResourceException.errors_now > ResourceException.errors_limit)
+    {   if (headline) errprintln("++++ Error count resource exceeded");
         throw new ResourceException("error count");
+    }
     throw new LispException(s);
 }
 
@@ -144,7 +146,9 @@ static LispObject error(String s, LispObject a) throws LispException
     ResourceException.errors_now++;
     if (ResourceException.errors_limit > 0 &&
         ResourceException.errors_now > ResourceException.errors_limit)
+    {   if (headline) errprintln("++++ Error count resource exceeded");
         throw new ResourceException("error count");
+    }
     throw new LispException(s);
 }
 

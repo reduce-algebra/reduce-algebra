@@ -62,7 +62,12 @@ public class Cons extends LispObject
             ResourceException.space_now++;
             if (ResourceException.space_limit > 0 &&
                 ResourceException.space_limit < ResourceException.space_now)
+            {   if (Jlisp.headline)
+                {   Jlisp.errprintln();
+                    Jlisp.errprintln("+++ space usage limit exceeded");
+                }
                 throw new ResourceException("space");
+            }
         }
     }
 

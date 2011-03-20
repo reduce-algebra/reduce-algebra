@@ -44,7 +44,8 @@ jlisp.jar:	*.java jlisp_manifest jlisp.img
 JLISP   = java -jar jlisp.jar
 MEM=300M
 STK=8M
-REDUCE	= java -Xmx$(MEM) -Xms$(MEM) -Xss$(STK) -jar reduce.jar
+# FLAGS=-g would switch on a debugging mode that makes all backtraces noisy.
+REDUCE	= java -Xmx$(MEM) -Xms$(MEM) -Xss$(STK) -jar reduce.jar $(FLAGS)
 
 
 ###########################################################################
