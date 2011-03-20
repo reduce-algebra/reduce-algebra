@@ -33,7 +33,7 @@ import java.io.*;
 
 public class CONSTANT_Class_info extends Cp_info
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, ResourceException
     {
         short index = (short)0x11;
         CONSTANT_Class_info ci = new CONSTANT_Class_info(index);

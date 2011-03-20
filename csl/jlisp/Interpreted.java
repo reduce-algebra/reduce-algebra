@@ -45,12 +45,12 @@ class Interpreted extends LispFunction
 {
     LispObject body;
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         body.iprint();	
     }
     
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         body.blankprint();	
     }
@@ -59,7 +59,7 @@ class Interpreted extends LispFunction
     {
     }
     
-    Interpreted(LispObject def)
+    Interpreted(LispObject def) throws ResourceException
     {
         body = new Cons(Jlisp.lit[Lit.lambda], def);
     }

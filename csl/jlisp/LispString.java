@@ -49,7 +49,7 @@ public class LispString extends LispObject
 
     static StringBuffer sb = new StringBuffer();
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s;
         if ((currentFlags & printEscape) != 0) s = escapedPrint(); 
@@ -80,7 +80,7 @@ public class LispString extends LispObject
         return sb.toString();
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s;
         if ((currentFlags & printEscape) != 0) s = escapedPrint(); 

@@ -45,7 +45,7 @@ int length;
 
 long savedPosition;
 
-PDSOutputStream(PDS pds, String member) throws IOException
+PDSOutputStream(PDS pds, String member) throws IOException, ResourceException
 {
     this.pds = pds;
     this.member = member;
@@ -60,7 +60,6 @@ PDSOutputStream(PDS pds, String member) throws IOException
 public void close() throws IOException
 {
     if (pds == null) return;
-Jlisp.println("at close member: length = " + length + " memberData = " + pds.memberData);
     pds.f.seek(pds.memberData);
     pds.f.write(pds.memberStart >> 24);
     pds.f.write(pds.memberStart >> 16);

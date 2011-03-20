@@ -110,7 +110,7 @@ class FunctionSpecial extends SpecialFunction
 
 class LambdaSpecial extends SpecialFunction
 {
-    LispObject op(LispObject args)
+    LispObject op(LispObject args) throws ResourceException
     {
         return new Cons(Jlisp.lit[Lit.lambda], args);
     }

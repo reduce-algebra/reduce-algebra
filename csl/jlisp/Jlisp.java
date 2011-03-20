@@ -64,58 +64,58 @@ static boolean backtrace = true;
 static LispObject errorCode;
 static int verbosFlag = 1;
 
-static void print(String s)
+static void print(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.std_output].car/*value*/)).print(s);
 }
 
-static void println(String s)
+static void println(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.std_output].car/*value*/)).println(s);
 }
 
-static void print(LispObject s)
+static void print(LispObject s) throws ResourceException
 {
     if (s==null) print("<null>"); else s.print();
 }
 
-static void println(LispObject s)
+static void println(LispObject s) throws ResourceException
 {
     if (s==null) print("<null>"); else s.print();
     ((LispStream)(lit[Lit.std_output].car/*value*/)).println();
 }
 
-static void println()
+static void println() throws ResourceException
 {
     ((LispStream)(lit[Lit.std_output].car/*value*/)).println();
 }
 
-static void errprint(String s)
+static void errprint(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.err_output].car/*value*/)).print(s);
 }
 
-static void errprintln(String s)
+static void errprintln(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.err_output].car/*value*/)).println(s);
 }
 
-static void errprintln()
+static void errprintln() throws ResourceException
 {
     ((LispStream)(lit[Lit.err_output].car/*value*/)).println();
 }
 
-static void traceprint(String s)
+static void traceprint(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.tr_output].car/*value*/)).print(s);
 }
 
-static void traceprintln(String s)
+static void traceprintln(String s) throws ResourceException
 {
     ((LispStream)(lit[Lit.tr_output].car/*value*/)).println(s);
 }
 
-static void traceprintln()
+static void traceprintln() throws ResourceException
 {
     ((LispStream)(lit[Lit.tr_output].car/*value*/)).println();
 }
@@ -126,6 +126,10 @@ static LispObject error(String s) throws LispException
     {   errprintln();
         errprintln("++++ " + s);
     }
+    ResourceException.errors_now++;
+    if (ResourceException.errors_limit > 0 &&
+        ResourceException.errors_now > ResourceException.errors_limit)
+        throw new ResourceException("error count");
     throw new LispException(s);
 }
 
@@ -137,6 +141,10 @@ static LispObject error(String s, LispObject a) throws LispException
         a.errPrint();
         errprintln();
     }
+    ResourceException.errors_now++;
+    if (ResourceException.errors_limit > 0 &&
+        ResourceException.errors_now > ResourceException.errors_limit)
+        throw new ResourceException("error count");
     throw new LispException(s);
 }
 
@@ -193,6 +201,8 @@ public static void startup(String [] args,
     try
     {   startup1(args);
     }
+    catch (ResourceException e)
+    {}
     finally
     {
         lispIO = null;
@@ -211,7 +221,7 @@ public static void startup(String [] args,
     if (!CWin.isApplet) System.exit(0);
 }
 
-static void startup1(String [] args)
+static void startup1(String [] args) throws ResourceException
 {
     long startTime = System.currentTimeMillis();
     String [] inputFile = new String [10];
@@ -841,7 +851,7 @@ static void standardStreams()
 }
 
 
-static void preserve(LispObject arg1, LispObject arg2)
+static void preserve(LispObject arg1, LispObject arg2) throws ResourceException
 {
     PDS imagePDS = images[outputImagePos];
     if (imagePDS == null)
@@ -1113,7 +1123,7 @@ static void postRestore()
 }
 
 
-static void restore(InputStream dump) throws IOException
+static void restore(InputStream dump) throws IOException, ResourceException
 {
     idump = dump;
     preRestore();
@@ -1244,7 +1254,7 @@ static void reHashOblist()
     obvector.vec = v;
 }
 
-static LispObject readObject() throws IOException
+static LispObject readObject() throws IOException, ResourceException
 {
 // Reloading an image uses an explicit stack to manage the recusion that
 // it needs. It controls this stack using a finite-state control. The states
@@ -1568,7 +1578,6 @@ static LispObject readObject() throws IOException
             if (operand == 0) break;
             for (i=0; i<operand; i++)
                 w = new Cons(nil, w);
-            Cons.consCount += operand;
             if (setLabel)
             {   shared[sharedIndex++] = w;
                 setLabel = false;
@@ -1582,7 +1591,6 @@ static LispObject readObject() throws IOException
             {   LispObject w1 = w;
                 for (i=0; i<operand; i++)
                     w = new Cons(nil, w);
-                Cons.consCount += operand+1;
                 if (setLabel)
                 {   shared[sharedIndex++] = w;
                     setLabel = false;
@@ -1927,7 +1935,7 @@ default:r = read();
     }
 }
 
-static LispObject expandBackquote(LispObject a)
+static LispObject expandBackquote(LispObject a) throws ResourceException
 {
     if (a == nil) return a;
     else if (a.atom)
@@ -1962,7 +1970,7 @@ static void initfns(Object [][] builtins)
 
 }
 
-static void initSymbols()
+static void initSymbols() throws ResourceException
 {
 //System.out.println("Beginning cold start: " + oblistCount);
     Fns.prompt = null;
@@ -2039,7 +2047,7 @@ static void initSymbols()
 //System.out.println("After cold start: " + oblistCount);
 }
 
-static void readEvalPrintLoop(boolean noRestart) throws ProgEvent
+static void readEvalPrintLoop(boolean noRestart) throws ProgEvent, ResourceException
 {
 // If the user had set a restart-function when an image was preserved
 // then I will run that now unless the command-line had gone "-n" (for

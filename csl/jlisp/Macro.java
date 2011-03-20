@@ -46,7 +46,7 @@ class Macro extends LispFunction
 {
     LispObject body;
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         if ((currentFlags & noLineBreak) == 0 &&
             currentOutput.column + 7 > currentOutput.lineLength)
@@ -59,7 +59,7 @@ class Macro extends LispFunction
         currentOutput.print("]");
     }
 											    
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         if ((currentFlags & noLineBreak) == 0 &&
             currentOutput.column + 7 >= currentOutput.lineLength)

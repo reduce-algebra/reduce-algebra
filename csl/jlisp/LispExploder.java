@@ -58,7 +58,7 @@ class LispExploder extends LispStream
         exploded = Jlisp.nil;
     }
 
-    void print(String s)
+    void print(String s) throws ResourceException
     {
         char [] v = s.toCharArray();
         for (int i=0; i<v.length; i++)
@@ -73,7 +73,7 @@ class LispExploder extends LispStream
         }
     }
 
-    void println(String s)
+    void println(String s) throws ResourceException
     {
         print(s);
         if (asSymbols) exploded = new Cons(Jlisp.chars['\n'], exploded);

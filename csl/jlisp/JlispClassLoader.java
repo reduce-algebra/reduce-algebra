@@ -38,7 +38,7 @@ public class JlispClassLoader extends ClassLoader
 // ClassLoader
 {
 
-    Object loadMyInstance(String className, byte [] bytes)
+    Object loadMyInstance(String className, byte [] bytes) throws ResourceException
     {
         //ByteArray.printBytes(bytes);
         try
@@ -64,7 +64,7 @@ public class JlispClassLoader extends ClassLoader
         }
     }
 
-    Object loadMyInstance(String className)
+    Object loadMyInstance(String className) throws ResourceException
     {
         try
         {   Class newClass = loadClass(className, true);

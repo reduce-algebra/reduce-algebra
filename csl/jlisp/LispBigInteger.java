@@ -89,7 +89,7 @@ class LispBigInteger extends LispInteger
             return value.toString(16);
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = printAs();
         if ((currentFlags & noLineBreak) == 0 &&
@@ -98,7 +98,7 @@ class LispBigInteger extends LispInteger
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = printAs();
         if ((currentFlags & noLineBreak) == 0 &&

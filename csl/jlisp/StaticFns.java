@@ -32,11 +32,11 @@
 
 public class StaticFns 
 {
-	static LispObject cons(LispObject a, LispObject b)
+	static LispObject cons(LispObject a, LispObject b) throws ResourceException
 	{
 		return new Cons(a, b);
 	}
-	static LispObject cons3(LispObject a, LispObject b, LispObject c)
+	static LispObject cons3(LispObject a, LispObject b, LispObject c) throws ResourceException
 	{
 		return new Cons(a, new Cons(b, c));
 	}

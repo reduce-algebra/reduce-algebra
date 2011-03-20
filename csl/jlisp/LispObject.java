@@ -74,14 +74,14 @@ public abstract class LispObject extends Object
     static final int printUpper       = 64;
     static final int noLineBreak      = 128;
 
-    void print()
+    void print() throws ResourceException
     {
         currentOutput = (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;
         currentFlags = 0;
         iprint();
     }
 
-    void print(int flags)
+    void print(int flags) throws ResourceException
     {
         currentOutput = (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;
         currentFlags = flags;
@@ -94,17 +94,17 @@ public abstract class LispObject extends Object
     static LispStream currentOutput;
     static int currentFlags;
 
-    abstract void iprint();
-    abstract void blankprint(); // print but with whitespace before it
+    abstract void iprint() throws ResourceException;
+    abstract void blankprint() throws ResourceException; // print but with whitespace before it
 
-    void errPrint() // print to error output stream
+    void errPrint() throws ResourceException // print to error output stream
     {
         currentOutput = (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
         currentFlags = printEscape;
         iprint();
     }
 
-    void tracePrint() // print to trace output stream
+    void tracePrint() throws ResourceException // print to trace output stream
     {
         currentOutput = (LispStream)Jlisp.lit[Lit.tr_output].car/*value*/;
         currentFlags = printEscape;

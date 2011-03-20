@@ -33,7 +33,7 @@ import java.io.*;
 
 public class CONSTANT_Methodref_info extends Cp_info
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, ResourceException
     {
         short cidx = (short)0x4;
         short ntidx = (short)0xf;

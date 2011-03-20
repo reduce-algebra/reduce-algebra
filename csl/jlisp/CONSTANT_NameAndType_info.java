@@ -33,7 +33,7 @@ import java.io.*;
 
 public class CONSTANT_NameAndType_info extends Cp_info
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, ResourceException
     {
         short nidx = (short)0x5;
         short didx = (short)0x6;

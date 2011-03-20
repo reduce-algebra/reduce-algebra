@@ -37,6 +37,10 @@
 class ResourceException extends LispException
 {
     
+static int time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
+static int time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
+static int time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = -1;
+
     ResourceException()
     {
         this.message = "unknown"; 

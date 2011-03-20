@@ -79,7 +79,7 @@ String printAs()
     return sb.toString();
 }
 
-void iprint()
+void iprint() throws ResourceException
 {
     String s = printAs();
     if ((currentFlags & noLineBreak) == 0 &&
@@ -88,7 +88,7 @@ void iprint()
     currentOutput.print(s);
 }
 
-void blankprint()
+void blankprint() throws ResourceException
 {
     String s = printAs();
     if ((currentFlags & noLineBreak) == 0 &&
@@ -169,7 +169,7 @@ public LispObject opn(LispObject [] args) throws Exception
 
 static LispFunction builtin0[], builtin1[], builtin2[], builtin3[];
 
-static LispFunction lookupBuiltin(String s)
+static LispFunction lookupBuiltin(String s) throws ResourceException
 {
     LispFunction r = (LispFunction)Jlisp.builtinFunctions.get(s);
     if (r == null) Jlisp.println("Function " + s + " not found");
@@ -220,7 +220,7 @@ static int BIbatchp, BIdate, BIeject, BIerror1, BIgctime,
     BIerrorset, BIlist2STAR, BIlist3, BIputprop, BIputv,
     BIputv_char, BIsubst, BIapply2, BIacons;
 
-static void setupBuiltins()
+static void setupBuiltins() throws ResourceException
 {
     builtin0 = new LispFunction[15];
     builtin1 = new LispFunction[114];

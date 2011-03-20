@@ -263,7 +263,8 @@ class Fns1
         {"list2",                       new List2Fn()},
         {"list2*",                      new List2StarFn()},
         {"list3",                       new List3Fn()},
-        {"resource-limit",              new ResourceLimitFn()}
+        {"resource-limit",              new ResourceLimitFn()},
+        {"resource-exceeded",           new ResourceExceededFn()}
     };
 
 
@@ -362,7 +363,7 @@ class AppendFn extends BuiltinFunction
     { return Jlisp.nil; }
     public LispObject op1(LispObject arg1)
     { return arg1; }
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {
         LispObject r = Jlisp.nil;
         while (!arg1.atom)
@@ -378,7 +379,7 @@ class AppendFn extends BuiltinFunction
         }
         return arg2;
     }
-    public LispObject opn(LispObject [] args)
+    public LispObject opn(LispObject [] args) throws ResourceException
     {
         int n = args.length;
         LispObject r = args[--n];
@@ -1331,7 +1332,7 @@ class CheckpointFn extends BuiltinFunction
         return op2(arg1, Jlisp.nil);
     }
     
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {
         Jlisp.preserve(arg1, arg2);
         return Jlisp.nil;
@@ -1459,7 +1460,7 @@ class CompressFn extends BuiltinFunction
 
 class ConsFn extends BuiltinFunction
 {
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {   return new Cons(arg1, arg2);
     }
 }
@@ -1636,7 +1637,7 @@ class DeleqFn extends BuiltinFunction
 
 class DeleteFn extends BuiltinFunction
 {
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {
         LispObject w = Jlisp.nil;
         while (!arg2.atom)
@@ -2049,6 +2050,14 @@ class ResourceLimitFn extends BuiltinFunction
         if (args.length > 5 || args.length < 1) 
             return error("resource-limit called with " + args.length + 
                          " arguments when 1 to 5 expected");
+        int save_time_base    = ResourceException.time_base,
+            save_space_base   = ResourceException.space_base,
+            save_io_base      = ResourceException.io_base,
+            save_errors_base  = ResourceException.errors_base;
+        int save_time_limit   = ResourceException.time_limit,
+            save_space_limit  = ResourceException.space_limit,
+            save_io_limit     = ResourceException.io_limit,
+            save_errors_limit = ResourceException.errors_limit;
         LispObject form   = args[0];
         LispObject time   = args[1];
         LispObject space  = args[2];
@@ -2059,22 +2068,72 @@ class ResourceLimitFn extends BuiltinFunction
         int iio     = io.intValue();
         int ierrors = errors.intValue();
         LispObject r = Jlisp.nil;
-// Right now this code does not actually do anything with the limits,
-// and the value it leaves in *resources*  is just its input values
-// re-packed. I will (maybe) update that behaviour later on.
+        ResourceException.time_base    = ResourceException.time_now;
+        ResourceException.space_base   = ResourceException.space_now;
+        ResourceException.io_base      = ResourceException.io_now;
+        ResourceException.errors_base  = ResourceException.errors_now;
+// If there is a limit already being imposed then this one can not extend
+// it, only shrink it.
+        if (itime > 0)
+        {   int w = ResourceException.time_base + itime;
+            if (ResourceException.time_limit > 0 &&
+                ResourceException.time_limit < w)
+                w = ResourceException.time_limit;
+            ResourceException.time_limit = w;
+        }
+        if (ispace > 0)
+        {   int w = ResourceException.space_base + (ispace < 4 ? 4 : ispace);
+            if (ResourceException.space_limit > 0 &&
+                ResourceException.space_limit < w)
+                w = ResourceException.space_limit;
+            ResourceException.space_limit = w;
+        }
+        if (iio > 0)
+        {   int w = ResourceException.io_base + (iio < 2 ? 2 : iio);
+            if (ResourceException.io_limit > 0 &&
+                ResourceException.io_limit < w)
+                w = ResourceException.io_limit;
+            ResourceException.io_limit = w;
+        }
+        if (ierrors > 0)
+        {   int w = ResourceException.errors_base + ierrors;
+            if (ResourceException.errors_limit > 0 &&
+                ResourceException.errors_limit < w)
+                w = ResourceException.errors_limit;
+            ResourceException.errors_limit = w;
+        }
         try
         {   r = form.eval();
         }
         catch (ResourceException e)
         {   ok = false;
         }
+        itime =   ResourceException.time_now   - ResourceException.time_base;
+        ispace =  ResourceException.space_now  - ResourceException.space_base;
+        iio =     ResourceException.io_now     - ResourceException.io_base;
+        ierrors = ResourceException.errors_now - ResourceException.errors_base;
         ((Symbol)(Jlisp.lit[Lit.resources])).car/*value*/ =
             new Cons(new LispSmallInteger(itime),
                 new Cons(new LispSmallInteger(ispace),
                     new Cons(new LispSmallInteger(iio),
                         new Cons(new LispSmallInteger(ierrors), Jlisp.nil))));
+        ResourceException.time_base    = save_time_base;
+        ResourceException.space_base   = save_space_base;
+        ResourceException.io_base      = save_io_base;
+        ResourceException.errors_base  = save_errors_base;
+        ResourceException.time_limit   = save_time_limit;
+        ResourceException.space_limit  = save_space_limit;
+        ResourceException.io_limit     = save_io_limit;
+        ResourceException.errors_limit = save_errors_limit;
         if (ok) return new Cons(r, Jlisp.nil);
         else return Jlisp.nil;
+    }
+}
+
+class ResourceExceededFn extends BuiltinFunction
+{
+    public LispObject op0() throws LispException
+    {   throw new ResourceException();
     }
 }
 
@@ -2737,7 +2796,7 @@ class GetenvFn extends BuiltinFunction
 
 class GethashFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject key)
+    public LispObject op1(LispObject key) throws ResourceException
     {
         LispObject r = (LispObject)
             ((LispHash)Jlisp.lit[Lit.hashtab]).hash.get(key);
@@ -2833,7 +2892,7 @@ class Hash_table_pFn extends BuiltinFunction
 
 class HashcontentsFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         LispHash h = (LispHash)arg1;
         LispObject r = Jlisp.nil;
@@ -3024,7 +3083,7 @@ class LengthFn extends BuiltinFunction
 
 class LengthcFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         LispStream f = new LispCounter();
         LispObject save = Jlisp.lit[Lit.std_output].car/*value*/;
@@ -3072,14 +3131,14 @@ class LinelengthFn extends BuiltinFunction
 class ListFn extends BuiltinFunction
 {
     public LispObject op0() { return Jlisp.nil; }
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {   return new Cons(arg1, Jlisp.nil); 
     }
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {   return new Cons(arg1,
             new Cons(arg2, Jlisp.nil)); 
     }
-    public LispObject opn(LispObject [] args)
+    public LispObject opn(LispObject [] args) throws ResourceException
     {
         LispObject r = Jlisp.nil;
         for (int i=args.length; i!=0;)
@@ -3095,10 +3154,10 @@ class ListStarFn extends BuiltinFunction
     public LispObject op1(LispObject arg1)
     {   return arg1; 
     }
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {   return new Cons(arg1, arg2);
     }
-    public LispObject opn(LispObject [] args)
+    public LispObject opn(LispObject [] args) throws ResourceException
     {
         int i = args.length;
         LispObject r = args[--i];
@@ -3177,7 +3236,7 @@ class List_to_symbolFn extends BuiltinFunction
 
 class List2Fn extends BuiltinFunction
 {
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {
         return new Cons(arg1, new Cons(arg2, Jlisp.nil));
     }

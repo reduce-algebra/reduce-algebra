@@ -199,7 +199,8 @@ public class Symbol extends LispObject
         cacheString = cache.toString();
         return cacheString;
     }
-    void iprint()
+
+    void iprint() throws ResourceException
     {
         String s = toPrint();
         if ((currentFlags & noLineBreak) == 0 &&
@@ -208,7 +209,7 @@ public class Symbol extends LispObject
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = toPrint();
         if ((currentFlags & noLineBreak) == 0 &&

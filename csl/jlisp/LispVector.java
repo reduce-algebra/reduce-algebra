@@ -55,7 +55,7 @@ class LispVector extends LispObject
         return this; 
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         if ((currentFlags & noLineBreak) == 0 &&
             currentOutput.column + 1 > currentOutput.lineLength)
@@ -91,7 +91,7 @@ class LispVector extends LispObject
         currentOutput.print("]");
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         if ((currentFlags & noLineBreak) == 0 &&
             currentOutput.column + 1 >= currentOutput.lineLength)

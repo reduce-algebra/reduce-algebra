@@ -51,12 +51,12 @@ CallAs(int packed)
     nargs = packed;
 }
 
-public void print()
+public void print() throws ResourceException
 {
     print(0);
 }
 
-public void print(int fg)
+public void print(int fg) throws ResourceException
 {   Jlisp.print("#CALL" + (nargs & 0xf) + "as" +
                           ((nargs>>4) & 0xf) + "<");
     body.print(fg);

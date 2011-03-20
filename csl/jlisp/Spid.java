@@ -68,7 +68,7 @@ class Spid extends LispObject
         return this;
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = "#SPID" + tag;
         if ((currentFlags & noLineBreak) == 0 &&
@@ -77,7 +77,7 @@ class Spid extends LispObject
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = "#SPID" + tag;
         if ((currentFlags & noLineBreak) == 0 &&

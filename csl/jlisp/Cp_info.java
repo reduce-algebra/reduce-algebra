@@ -38,6 +38,7 @@ import java.io.*;
 public class Cp_info
 {
     public static void main(String[] args) throws IOException,
+                                                  ResourceException,
                                                   UnsupportedEncodingException
     {
         short cidx =    (short)0x4;
@@ -189,7 +190,7 @@ public class Cp_info
     }
     
     
-    public void printBytes(byte[] Bytes)
+    public void printBytes(byte[] Bytes) throws ResourceException
     {
         for (int i=0; i<Bytes.length; i++)
         {    

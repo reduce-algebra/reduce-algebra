@@ -46,7 +46,7 @@ abstract class SpecialFunction extends LispObject
         return Jlisp.error(s);
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = "#Special<" + name + ">";
         if ((currentFlags & noLineBreak) == 0 &&
@@ -55,7 +55,7 @@ abstract class SpecialFunction extends LispObject
         currentOutput.print(s);
     }
     
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = "#Special<" + name + ">";
         if ((currentFlags & noLineBreak) == 0 &&

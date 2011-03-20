@@ -70,7 +70,7 @@ public abstract class LispFunction extends LispObject
         return Jlisp.error(s, a);
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = "#Fn<" + name + ">";
         if ((currentFlags & noLineBreak) == 0 &&
@@ -79,7 +79,7 @@ public abstract class LispFunction extends LispObject
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = "#Fn<" + name + ">";
         if ((currentFlags & noLineBreak) == 0 &&

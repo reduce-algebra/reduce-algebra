@@ -352,7 +352,7 @@ class Make_function_streamFn extends BuiltinFunction
 
 class Make_globalFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         Symbol s = (Symbol)arg1;
         Fns.put(s, Jlisp.lit[Lit.global], Jlisp.lispTrue);
@@ -390,7 +390,7 @@ class Make_simple_stringFn extends BuiltinFunction
 
 class Make_specialFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         Symbol s = (Symbol)arg1;
         Fns.put(s, Jlisp.lit[Lit.special], Jlisp.lispTrue);
@@ -713,7 +713,7 @@ class NconcFn extends BuiltinFunction
 
 class NconsFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         return new Cons(arg1, Jlisp.nil);
     }
@@ -759,7 +759,7 @@ class NullFn extends BuiltinFunction
 
 class OblistFn extends BuiltinFunction
 {
-    public LispObject op0()
+    public LispObject op0() throws ResourceException
     {
 // Note that this implementation pushes out the object list with
 // items in a randomish order. CSL sorted it which was nice - to do that
@@ -1274,7 +1274,7 @@ class RestoreObjectFn extends BuiltinFunction
 
 class PrinFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printEscape);
         return arg1;
@@ -1283,7 +1283,7 @@ class PrinFn extends BuiltinFunction
 
 class Prin1Fn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printEscape);
         return arg1;
@@ -1292,7 +1292,7 @@ class Prin1Fn extends BuiltinFunction
 
 class Prin2Fn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(0);
         return arg1;
@@ -1301,7 +1301,7 @@ class Prin2Fn extends BuiltinFunction
 
 class Prin2aFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.noLineBreak);
         return arg1;
@@ -1310,7 +1310,7 @@ class Prin2aFn extends BuiltinFunction
 
 class PrinbinaryFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printBinary);
         return arg1;
@@ -1319,7 +1319,7 @@ class PrinbinaryFn extends BuiltinFunction
 
 class PrincFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print();
         return arg1;
@@ -1328,7 +1328,7 @@ class PrincFn extends BuiltinFunction
 
 class Princ_downcaseFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printLower);
         return arg1;
@@ -1337,7 +1337,7 @@ class Princ_downcaseFn extends BuiltinFunction
 
 class Princ_upcaseFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printUpper);
         return arg1;
@@ -1346,7 +1346,7 @@ class Princ_upcaseFn extends BuiltinFunction
 
 class PrinhexFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printHex);
         return arg1;
@@ -1355,7 +1355,7 @@ class PrinhexFn extends BuiltinFunction
 
 class PrinoctalFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printOctal);
         return arg1;
@@ -1364,7 +1364,7 @@ class PrinoctalFn extends BuiltinFunction
 
 class PrintFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print(LispObject.printEscape);
         Jlisp.println();
@@ -1374,7 +1374,7 @@ class PrintFn extends BuiltinFunction
 
 class PrintcFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         arg1.print();
         Jlisp.println();
@@ -1888,7 +1888,7 @@ class ReturnFn extends BuiltinFunction
 
 class ReverseFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         LispObject r = Jlisp.nil;
         while (!arg1.atom)
@@ -2109,7 +2109,7 @@ class SmemqFn extends BuiltinFunction
 
 class SpacesFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         int n = ((LispSmallInteger)arg1).value;
         for (int i=0; i<n; i++)
@@ -2276,7 +2276,7 @@ class SubstFn extends BuiltinFunction
         return subst(args[0], args[1], args[2]);
     }
 
-    LispObject subst(LispObject a, LispObject b, LispObject c)
+    LispObject subst(LispObject a, LispObject b, LispObject c) throws ResourceException
     {
         if (b.lispequals(c)) return a;
         if (c.atom) return c;
@@ -2521,7 +2521,7 @@ class TagbodyFn extends BuiltinFunction
 
 class TerpriFn extends BuiltinFunction
 {
-    public LispObject op0()
+    public LispObject op0() throws ResourceException
     {
         Jlisp.println();
         return Jlisp.nil;
@@ -2594,7 +2594,7 @@ class Traceset1Fn extends BuiltinFunction
 
 class TtabFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         int n = ((LispSmallInteger)arg1).value;
         LispStream f = (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;
@@ -2852,7 +2852,7 @@ class XassocFn extends BuiltinFunction
 
 class XconsFn extends BuiltinFunction
 {
-    public LispObject op2(LispObject arg1, LispObject arg2)
+    public LispObject op2(LispObject arg1, LispObject arg2) throws ResourceException
     {
         return new Cons(arg2, arg1);
     }
@@ -2868,7 +2868,7 @@ class XdifferenceFn extends BuiltinFunction
 
 class XtabFn extends BuiltinFunction
 {
-    public LispObject op1(LispObject arg1)
+    public LispObject op1(LispObject arg1) throws ResourceException
     {
         int n = ((LispSmallInteger)arg1).value;
         LispStream f = (LispStream)Jlisp.lit[Lit.std_output].car/*value*/;

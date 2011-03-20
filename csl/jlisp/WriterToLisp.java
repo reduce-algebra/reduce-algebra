@@ -56,7 +56,11 @@ class WriterToLisp extends Writer
 
     public void write(char [] buffer, int off, int len)
     {
-        stream.print(new String(buffer, off, len));
+        try
+        {   stream.print(new String(buffer, off, len));
+        }
+        catch (ResourceException e)
+        {} // This LOSES the exception....
     }
 
 }

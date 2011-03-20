@@ -71,15 +71,15 @@ class LispStream extends LispObject
     MessageDigest md;     // for md5 checksumming
     Writer wr;            // for ordinary printing!
 
-    void print(String s)
+    void print(String s) throws ResourceException
     { // attempting to print to (eg) an input stream has no effect at all
     }
 
-    void println(String s)
+    void println(String s) throws ResourceException
     {
     }
 
-    void println()
+    void println() throws ResourceException
     {
         print("\n");
     }
@@ -192,7 +192,7 @@ class LispStream extends LispObject
     static final int sym    = 12;
     static final int signed = 13;
 
-    void prompt()
+    void prompt() throws ResourceException
     {
         if (!needsPrompt) return;
 // here I want to print to the standard output regardless of any stream
@@ -654,7 +654,7 @@ class LispStream extends LispObject
         exploded = a;
     }
     
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = "#Stream<" + name + ">";
         if ((currentFlags & noLineBreak) == 0 &&
@@ -663,7 +663,7 @@ class LispStream extends LispObject
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = "#Stream<" + name + ">";
         if ((currentFlags & noLineBreak) == 0 &&

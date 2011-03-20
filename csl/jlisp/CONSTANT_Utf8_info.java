@@ -34,7 +34,8 @@ import java.io.*;
 public class CONSTANT_Utf8_info extends Cp_info
 {
     public static void main(String[] args)
-                       throws IOException, UnsupportedEncodingException
+                       throws IOException, UnsupportedEncodingException,
+                              ResourceException
     {
         String s = "<init>";
         CONSTANT_Utf8_info cu = new CONSTANT_Utf8_info(s);

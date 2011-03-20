@@ -933,7 +933,8 @@ public class ClassDescription
     Object loadCF()
         throws IOException, ClassNotFoundException,
                InstantiationException, IllegalAccessException,
-               NoSuchMethodException, InvocationTargetException
+               NoSuchMethodException, InvocationTargetException,
+               ResourceException
     {
 // This loads a class using the current CLASSPATH...
         JlispClassLoader loader = new JlispClassLoader();
@@ -945,7 +946,8 @@ public class ClassDescription
     Object instanceFromBytes()
         throws IOException, ClassNotFoundException,
                InstantiationException, IllegalAccessException,
-               NoSuchMethodException, InvocationTargetException
+               NoSuchMethodException, InvocationTargetException,
+               ResourceException
     {
 // Load a class from an array of bytes and create an instance of it.
         // byte [] bytes = dumpBytes(); //no need to...ClassBytes

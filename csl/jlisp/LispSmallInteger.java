@@ -91,7 +91,7 @@ public class LispSmallInteger extends LispInteger
             return Integer.toHexString(value);
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = printAs();
         if ((currentFlags & noLineBreak) == 0 &&
@@ -100,7 +100,7 @@ public class LispSmallInteger extends LispInteger
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = printAs();
         if ((currentFlags & noLineBreak) == 0 &&

@@ -48,7 +48,7 @@ class LispHash extends LispObject
         this.flavour = n;  // 0 to 4, with only 0 and 2 used!
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = "#<HashTable>";
         if ((currentFlags & noLineBreak) == 0 &&
@@ -57,7 +57,7 @@ class LispHash extends LispObject
         currentOutput.print(s);
     }
 
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = "#<HashTable>";
         if ((currentFlags & noLineBreak) == 0 &&

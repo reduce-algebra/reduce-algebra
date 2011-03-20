@@ -44,7 +44,7 @@ class Fns
 {
     static String prompt = null;
 
-    static LispObject put(Symbol name, LispObject key, LispObject value)
+    static LispObject put(Symbol name, LispObject key, LispObject value) throws ResourceException
     {
         LispObject plist = name.cdr/*plist*/;
         while (!plist.atom)
@@ -60,7 +60,7 @@ class Fns
         return value;
     }
 
-    static void fluid(LispObject a)
+    static void fluid(LispObject a) throws ResourceException
     {
         Symbol s = (Symbol)a;
         put(s, Jlisp.lit[Lit.special], Jlisp.lispTrue);
@@ -99,7 +99,7 @@ class Fns
         return Jlisp.nil;
     }
 
-    static LispObject list2(LispObject a, LispObject b)
+    static LispObject list2(LispObject a, LispObject b) throws ResourceException
     {
         return new Cons(a, new Cons(b, Jlisp.nil));
     }

@@ -40,7 +40,7 @@ import java.security.*;
 class LispDigester extends LispStream
 {
 
-    LispDigester()
+    LispDigester() throws ResourceException
     {
         super("<md5 digester>");
         try

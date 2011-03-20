@@ -63,7 +63,7 @@ class LispFloat extends LispNumber
         return this;
     }
 
-    void iprint()
+    void iprint() throws ResourceException
     {
         String s = trimTo(Jlisp.printprec);
         if ((currentFlags & noLineBreak) == 0 &&
@@ -72,7 +72,7 @@ class LispFloat extends LispNumber
         currentOutput.print(s);
     }
     
-    void blankprint()
+    void blankprint() throws ResourceException
     {
         String s = trimTo(Jlisp.printprec);
         if ((currentFlags & noLineBreak) == 0 &&

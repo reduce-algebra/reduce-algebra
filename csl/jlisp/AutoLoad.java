@@ -78,13 +78,13 @@ class AutoLoad extends LispFunction
         return name.fn.opn(args);
     }
 
-    void print()
+    void print() throws ResourceException
     {
         name.completeName();
         Jlisp.print("#Autoload<" + name.pname + ">");
     }
 
-    void print(int n)
+    void print(int n) throws ResourceException
     {
         name.completeName();
         Jlisp.print("#Autoload<" + name.pname + ">");

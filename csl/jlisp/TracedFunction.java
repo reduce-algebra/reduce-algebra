@@ -47,7 +47,7 @@ class TracedFunction extends LispFunction
         this.fn = fn;
     }
     
-    void indent()
+    void indent() throws ResourceException
     {
         for (int i=0; i<traceDepth; i++)
 	    Jlisp.traceprint(" ");
@@ -124,13 +124,13 @@ class TracedFunction extends LispFunction
         return r;
     }
 
-    void print()
+    void print() throws ResourceException
     {
         Jlisp.print("Traced:");
 	name.print();
     }
 
-    void print(int n)
+    void print(int n) throws ResourceException
     {
         Jlisp.print("Traced:");
 	name.print(n);

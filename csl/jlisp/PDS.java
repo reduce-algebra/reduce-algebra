@@ -165,7 +165,7 @@ long length() throws IOException
 
 int memberData, memberStart;
 
-void print() // print to Java standard output (for debugging)
+void print() throws ResourceException // print to Java standard output (for debugging)
 {
     Jlisp.println("PDS " + this + " " + name +
                           " W=" + writeable + " U=" + untidy);
@@ -196,7 +196,7 @@ void print() // print to Java standard output (for debugging)
 }
 
 
-LispObject members()
+LispObject members() throws ResourceException
 {
     LispObject r = Jlisp.nil;
     if (directory != null)
@@ -246,7 +246,7 @@ PDS(InputStream is) throws IOException
 }
 
 
-PDS(String name, boolean writeable) throws IOException
+PDS(String name, boolean writeable) throws IOException, ResourceException
 {
     this.name = name;
     this.writeable = writeable;
@@ -306,7 +306,7 @@ PDS(String name, boolean writeable) throws IOException
     }
 }
 
-void close() throws IOException
+void close() throws IOException, ResourceException
 {
     Jlisp.lispErr.println("Closing the PDS");
     writeable = false;
@@ -381,7 +381,7 @@ void readDirectory() throws IOException
     } while (p != 0);
 }
 
-void addToDirectory(String member) throws IOException
+void addToDirectory(String member) throws IOException, ResourceException
 {
     if (!writeable)
         throw new IOException("Attempt to update a read-only image file");
