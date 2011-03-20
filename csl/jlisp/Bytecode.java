@@ -784,8 +784,28 @@ static int stack_size = 5000;
 static LispObject [] stack = new LispObject[stack_size];
 static int sp = 0;
 
+static int poll_time_countdown = 0;
+
+static long last_clock = -1;
+
 LispObject interpret(int pc) throws Exception
 {
+    if (--poll_time_countdown < 0)
+    {   poll_time_countdown = 10000;
+        long t = System.currentTimeMillis();
+        if (last_clock < 0) last_clock = t;
+        else while (t - last_clock > 1000)
+        {   last_clock += 1000;
+            ResourceException.time_now++;
+            if (ResourceException.time_limit > 0 &&
+                ResourceException.time_now > ResourceException.time_limit)
+            {   if (Jlisp.headline)
+                {   Jlisp.errprint("\n+++ Time limit exceeded\n");
+                }
+                throw new ResourceException("time limit exceeded");
+            }
+        }
+    } 
     int spsave = sp;
     int arg;
     LispObject a = Jlisp.nil, b = Jlisp.nil, w;

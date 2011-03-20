@@ -2014,13 +2014,11 @@ class ErrorsetFn extends BuiltinFunction
  *   subsequent arguments here:
  *      time:  an integer giving a time allowance in seconds
  *      space: an integer giving a measure of memory that may be used,
- *             expressed in units of "megaconses". This may only be
- *             checked for at garbage collection and so small values
- *             will often be substantially overshot. This is space
+ *             expressed in units of "megaconses". This is space
  *             allocated - the fact that memory gets recycled does not
  *             get it discounted.
  *      io:    an integer limiting the number of kilobytes of IO that may
- *             be performed.
+ *             be performed. (not enforced yet in Jlisp)
  *      errors:an integer limiting the number of times traditional
  *             Lisp errors can occur. Note that if errorset is used
  *             you could have very many errors raised.
@@ -2061,12 +2059,12 @@ class ResourceLimitFn extends BuiltinFunction
         LispObject form   = args[0];
         LispObject time   = args[1];
         LispObject space  = args[2];
-        LispObject io     = args[3];
-        LispObject errors = args[4];
-        int itime   = time.intValue();
-        int ispace  = space.intValue();
-        int iio     = io.intValue();
-        int ierrors = errors.intValue();
+        LispObject io     = args.length > 3 ? args[3] : Jlisp.nil;
+        LispObject errors = args.length > 4 ? args[4] : Jlisp.nil;
+        int itime   = time instanceof LispInteger ? time.intValue() : -1;
+        int ispace  = space instanceof LispInteger ? space.intValue() : -1;
+        int iio     = io instanceof LispInteger ? io.intValue() : -1;
+        int ierrors = errors instanceof LispInteger ? errors.intValue() : -1;
         LispObject r = Jlisp.nil;
         ResourceException.time_base    = ResourceException.time_now;
         ResourceException.space_base   = ResourceException.space_now;
@@ -2103,28 +2101,32 @@ class ResourceLimitFn extends BuiltinFunction
             ResourceException.errors_limit = w;
         }
         try
-        {   r = form.eval();
+        {   try
+            {   r = form.eval();
+            }
+            catch (ResourceException e)
+            {   ok = false;
+            }
+            itime =   ResourceException.time_now   - ResourceException.time_base;
+            ispace =  ResourceException.space_now  - ResourceException.space_base;
+            iio =     ResourceException.io_now     - ResourceException.io_base;
+            ierrors = ResourceException.errors_now - ResourceException.errors_base;
+            ((Symbol)(Jlisp.lit[Lit.resources])).car/*value*/ =
+                new Cons(new LispSmallInteger(itime),
+                    new Cons(new LispSmallInteger(ispace),
+                        new Cons(new LispSmallInteger(iio),
+                            new Cons(new LispSmallInteger(ierrors), Jlisp.nil))));
         }
-        catch (ResourceException e)
-        {   ok = false;
+        finally
+        {   ResourceException.time_base    = save_time_base;
+            ResourceException.space_base   = save_space_base;
+            ResourceException.io_base      = save_io_base;
+            ResourceException.errors_base  = save_errors_base;
+            ResourceException.time_limit   = save_time_limit;
+            ResourceException.space_limit  = save_space_limit;
+            ResourceException.io_limit     = save_io_limit;
+            ResourceException.errors_limit = save_errors_limit;
         }
-        itime =   ResourceException.time_now   - ResourceException.time_base;
-        ispace =  ResourceException.space_now  - ResourceException.space_base;
-        iio =     ResourceException.io_now     - ResourceException.io_base;
-        ierrors = ResourceException.errors_now - ResourceException.errors_base;
-        ((Symbol)(Jlisp.lit[Lit.resources])).car/*value*/ =
-            new Cons(new LispSmallInteger(itime),
-                new Cons(new LispSmallInteger(ispace),
-                    new Cons(new LispSmallInteger(iio),
-                        new Cons(new LispSmallInteger(ierrors), Jlisp.nil))));
-        ResourceException.time_base    = save_time_base;
-        ResourceException.space_base   = save_space_base;
-        ResourceException.io_base      = save_io_base;
-        ResourceException.errors_base  = save_errors_base;
-        ResourceException.time_limit   = save_time_limit;
-        ResourceException.space_limit  = save_space_limit;
-        ResourceException.io_limit     = save_io_limit;
-        ResourceException.errors_limit = save_errors_limit;
         if (ok) return new Cons(r, Jlisp.nil);
         else return Jlisp.nil;
     }
