@@ -240,7 +240,7 @@ savedef carefuleq r2i native_code save_native strip_native)) (quote switch))
 ))) (setq !*notailcall nil))))
 
 (cond ((not (boundp (quote !*ord))) (progn (fluid (quote (!*ord))) (setq 
-!*ord nil))))
+!*ord t))))
 
 (cond ((not (boundp (quote !*savedef))) (progn (fluid (quote (!*savedef))) (
 setq !*savedef nil))))

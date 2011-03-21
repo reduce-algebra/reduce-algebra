@@ -404,13 +404,13 @@ if not boundp '!*pwrds then <<     % display size of generated code
    fluid '(!*pwrds);
    !*pwrds := t >>;
 
-if not boundp '!*notailcall then << % disable an optimisation
+if not boundp '!*notailcall then <<% disable an optimisation
    fluid '(!*notailcall);
    !*notailcall := nil >>;
 
-if not boundp '!*ord then << % disable an optimisation wrt evaluation order
+if not boundp '!*ord then <<       % an optimisation wrt evaluation order
    fluid '(!*ord);
-   !*ord := nil >>;
+   !*ord := t >>;                  % Make default be strincly left to right
 
 if not boundp '!*savedef then <<   % keep interpretable definition on p-list
    fluid '(!*savedef);
