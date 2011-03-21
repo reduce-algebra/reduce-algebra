@@ -45,12 +45,20 @@ JLISP   = java -jar jlisp.jar
 MEM=300M
 STK=8M
 # FLAGS=-g would switch on a debugging mode that makes all backtraces noisy.
+#   Eg "make testall FLAGS=-g"
 REDUCE	= java -Xmx$(MEM) -Xms$(MEM) -Xss$(STK) -jar reduce.jar $(FLAGS)
 
 
 ###########################################################################
 
-C = ../cslbase
+# Part of redlog does load-time calculation based on the path passed
+# here that probably requires it to be an absolute path...
+
+ifeq ($(findstring Windows, $(OS)), Windows)
+C = $(shell cygpath -m $(abspath ../cslbase))
+else
+C = $(abspath ../cslbase)
+endif
 
 # I make the targets here .PHONY so that (eg) "make reduce.img" always
 # rebuilds the image even though I have not got careful dependencies set up
