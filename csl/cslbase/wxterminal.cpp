@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 2f50f634 18-Mar-2011 */
+/* Signature: 1eb1e3fe 21-Mar-2011 */
 
 #include "wx/wxprec.h"
 
@@ -5084,8 +5084,39 @@ void fwin_showmath(const char *s)
     if (delay_callback != NULL) (*delay_callback)(0);
     UnlockMutex(panel->pauseMutex);
 #else
-// This is something that will be subject to pretty drastic review!
     FWIN_LOG("fwin_showmath called\n");
+// The current version of this is going to be pretty outrageous!
+// It will suppose you have latex installed on your computer and will
+// invoke it to convert the formula you just created into .dvi format.
+    char tempd[LONGEST_LEGAL_FILENAME];
+    int rc = GetTempPathA(LONGEST_LEGAL_FILENAME, tempd);
+    if (rc == 0 || rc >= LONGEST_LEGAL_FILENAME) strcpy(tempd, "C:\\");
+    int procid = GetCurrentProcessId();
+    int dirlen = strlen(tempd);
+    sprintf(&tempd[dirlen], "reduce-%d.tex", procid);
+    FILE *f = fopen(tempd, "w");
+    fprintf(f, "\\documentclass{article}\n");
+    fprintf(f, "\\pagestyle{empty}\n");
+    fprintf(f, "\\usepackage{breqn}\n");
+    fprintf(f, "\\begin{document}\n");
+    fprintf(f, "\\begin{dmath*}\n");
+    fprintf(f, "$$ %s $$\n", s);
+    fprintf(f, "\\end{dmath*}\n");
+    fprintf(f, "\\end{document}\n");
+    fclose(f);
+    char cmd[LONGEST_LEGAL_FILENAME];
+    sprintf(cmd, "latex --output-directory=%.*s reduce-%d.tex",
+                 dirlen, tempd, procid);
+    FWIN_LOG(s);
+    FWIN_LOG(cmd);
+    system(cmd);
+    DeleteFileA(tempd); 
+    sprintf(&tempd[dirlen], "reduce-%d.aux", procid);
+    DeleteFileA(tempd); 
+    sprintf(&tempd[dirlen], "reduce-%d.log", procid);
+    DeleteFileA(tempd); 
+    sprintf(&tempd[dirlen], "reduce-%d.dvi", procid);
+//  DeleteFileA(tempd); 
 #endif
 }
 

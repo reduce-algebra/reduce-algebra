@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 566d270d 05-Jan-2011 */
+/* Signature: 3ae746b6 21-Mar-2011 */
 
 #ifndef header_stream_h
 #define header_stream_h 1
@@ -73,7 +73,7 @@ extern int code_to_list(int c, Lisp_Object f);
 extern int count_character(int c, Lisp_Object f);
 extern int binary_outchar(int c, Lisp_Object f);
 extern int char_to_function(int c, Lisp_Object f);
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
 extern int char_to_math(int c, Lisp_Object f);
 extern int char_to_spool(int c, Lisp_Object f);
 #endif
@@ -86,7 +86,7 @@ extern int32_t write_action_broadcast(int32_t c, Lisp_Object f);
 extern int32_t write_action_twoway(int32_t c, Lisp_Object f);
 extern int32_t write_action_illegal(int32_t c, Lisp_Object f);
 extern int32_t write_action_list(int32_t c, Lisp_Object f);
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
 extern int32_t write_action_math(int32_t c, Lisp_Object f);
 extern int32_t write_action_spool(int32_t c, Lisp_Object f);
 #endif

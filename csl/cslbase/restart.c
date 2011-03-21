@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 20fba36e 18-Mar-2011 */
+/* Signature: 6c51ffdf 21-Mar-2011 */
 
 #include "headers.h"
 
@@ -5377,7 +5377,7 @@ static void set_up_variables(CSLbool restartp)
         qvalue(query_io) = f;
     }
 
-#ifdef HAVE_LIBFOX
+#if defined HAVE_LIBFOX || defined HAVE_LIBWX
     {   Lisp_Object stream = make_undefined_symbol("*math-output*");
         Lisp_Object f = make_stream_handle();
         qheader(stream) |= SYM_SPECIAL_VAR;
