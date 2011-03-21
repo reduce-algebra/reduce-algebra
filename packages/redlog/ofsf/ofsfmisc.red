@@ -287,7 +287,7 @@ procedure ofsf_lpvarl(u);
 	    ofsf_lpvarl arg;
 
 procedure ofsf_arithp(op);
-   op memq '(plus minus times expt);
+   op memq '(plus minus times expt quotient);
 
 procedure ofsf_resolve(f);
    ofsf_resolve21(f,nil);
