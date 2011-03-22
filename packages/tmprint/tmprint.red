@@ -523,6 +523,50 @@ symbolic procedure fancy!-special!-symbol(u,n);
 symbolic procedure fancy!-prin2 u;
     fancy!-prin2!*(u,nil);
 
+% fancy-prin2!* maintains a variable fancy!-pos!* which is compared
+% against (multiples of) linelength. This is not incremented when a
+% TeX keyword is inserted. That is probably reasonable for some
+% words such as "\mathrm", but seems odd for "\alpha".
+% It is incremented for "{" and "}" and also for "^" and "_". That also
+% seems deeply wrong. And to the extent that it is used to estimate the
+% width of the current part-line it is certainly oblivious to the
+% different metrics that "\,", "i", "m", and "\ldots" might have, where
+% those are rather more than minor.
+%
+% So even if one assumes that the units in which linelength() returns
+% its value are relevant in TeX output (they probably are at least
+% roughly, except that the idea of users altering linelength and getting
+% different behaviour seems pretty scary to me, and the potential confusion
+% between desired width of mathematical display and the number of character
+% positions that the TeX material should fit with seems messy) the calculation
+% done here is a bit of a mess.
+
+% I think that what I wish to do is to assume that reasonable output width
+% for TeX is (say) 500pts and so replace all calls "linelenth nil" with
+% reference to tex!-width!-points, a global variable initialised to 500.
+% Then I would want to re-work fancy!-prin2 to provide at least a rough
+% estimate of the width of each character based on expecting the width of
+% an average letter or digit to be around 6.25pts. Well it will be rather
+% nicer if even these crude estimates are make in units of millipoints, since
+% otherwise I will have enough issues of rounding to corrupt even rather
+% coarse calculations.
+
+% If I suppose that letters and digits are generally going to be set in
+% cmr or cmmi fonts in main, script or scriptscript size can have at least
+% approximate tabulation rather easily. To exploit this fancy!-prin2!* will
+% need to be aware when it is setting full-sized text and when it is processing
+% a sub- or superscript. It may be acceptable here to keep just one table of
+% widths and cope with scripts by simple scaling.
+
+% Greek letters and mathematic symbols (such as "\infty" and "\forall")
+% will need a width attribute. And any parts of tmprint.red that generate
+% stacked structures (such as displayed fractions, matrices etc) may need
+% to be reviewed.
+
+% For the purposes of a width estimate sufficient to guide line breaking
+% I feel that ligatures and kerning can be ignored. Life is messy and hard
+% enough as it is!
+
 symbolic procedure fancy!-prin2!*(u,n);
    if atom u and eqcar(explode2 u,'!\) then
       fancy!-line!* := u . fancy!-line!*
