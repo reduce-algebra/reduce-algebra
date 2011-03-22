@@ -67,7 +67,7 @@ EOF
 	echo "\subsubsection*{\sf\bfseries ${headline}}"
 	echo -e "\\\smallskip\n"
     fi
-    echo "\noindent" $USER using $REDUCE on $(hostname) "("$(arch) $(uname)")"
+    echo "\noindent" $USER using $REDUCE on $(hostname) "(\verb&"$(arch) $(uname)"&)"
     echo -e "\\\smallskip\n"
     echo "\noindent start of job on " $(date)
 }
@@ -96,7 +96,7 @@ function outputhead() {
 }
 
 function runex() {
-    (($REDUCE; echo "reduce_exit_code $?") |
+    (($REDUCE; echo -e "\nreduce_exit_code $?") |
         tee ${logdir}/${filebasename}-${i}.log |
 	awk '($1=="reduce_exit_code") {exit $2}
              ($0=="<output>") {pr=1; next}
