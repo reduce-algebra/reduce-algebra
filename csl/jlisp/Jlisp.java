@@ -2059,9 +2059,6 @@ static void readEvalPrintLoop(boolean noRestart) throws ProgEvent, ResourceExcep
 // experts to recover when an image is a bit mangled!
     LispObject r = lit[Lit.restart];
     LispObject a = null;
-//@
-println("restart mode in read eval print loop " + restartFn + " " +
-        restartModule + " " + restartArg);
     if (restarting && restartFn != null)
     {   r = Symbol.intern(restartFn);
         if (restartArg != null)

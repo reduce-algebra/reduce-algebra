@@ -263,8 +263,8 @@ class Fns1
         {"list2",                       new List2Fn()},
         {"list2*",                      new List2StarFn()},
         {"list3",                       new List3Fn()},
-        {"resource-limit",              new ResourceLimitFn()},
-        {"resource-exceeded",           new ResourceExceededFn()}
+        {"resource-exceeded",           new ResourceExceededFn()},
+        {"resource-limit",              new ResourceLimitFn()}
     };
 
 
@@ -1986,6 +1986,7 @@ class ErrorsetFn extends BuiltinFunction
                         (LispStream)Jlisp.lit[Lit.err_output].car/*value*/;
                     e.printStackTrace(new PrintWriter(new WriterToLisp(ee)));
                 }
+                if (e instanceof ResourceException) throw e;
 // I will return the atom that was the first argument in a user call to
 //    (error a b)
 // if such is available. Otherwise I return T.
@@ -2002,6 +2003,14 @@ class ErrorsetFn extends BuiltinFunction
         return new Cons(form, Jlisp.nil);
     }
 }
+
+class ResourceExceededFn extends BuiltinFunction
+{
+    public LispObject op0() throws LispException
+    {   throw new ResourceException("User indicated resource limit");
+    }
+}
+
 
 /*
  * (resource!-limit form time space io errors)
@@ -2129,13 +2138,6 @@ class ResourceLimitFn extends BuiltinFunction
         }
         if (ok) return new Cons(r, Jlisp.nil);
         else return Jlisp.nil;
-    }
-}
-
-class ResourceExceededFn extends BuiltinFunction
-{
-    public LispObject op0() throws LispException
-    {   throw new ResourceException();
     }
 }
 

@@ -5,7 +5,7 @@
 // The code here may have moved on far enough that it is not merely a copy
 // of what I found there, but I will still express my thanks here!
 
-// I think that "Hello World" scale programs perhaps berely need explicit
+// I think that "Hello World" scale programs perhaps barely need explicit
 // licenses, since their contents are so much defined by the requirement of
 // functionality. however anything I have put here I make available to others
 // under the modified BSD license.
