@@ -1,0 +1,19 @@
+\begin{thebibliography}{ASW89}
+
+\bibitem[ASW89]{ASW:89}
+Werner Antweiler, Andreas Strotmann, and Volker Winkelmann.
+\newblock {A \TeX-REDUCE-Interface}.
+\newblock {\em ACM SIGSAM Bulletin}, 23(2):26--33, April 1989.
+
+\bibitem[DS97]{DolzmannSturm:97a}
+Andreas Dolzmann and Thomas Sturm.
+\newblock Redlog: Computer algebra meets computer logic.
+\newblock {\em ACM SIGSAM Bulletin}, 31(2):2--9, June 1997.
+
+\bibitem[Hea04]{Hearn:04}
+Anthony~C. Hearn.
+\newblock {\em Reduce User's Manual for Version 3.8}.
+\newblock Santa Monica, CA, February 2004.
+\newblock http://reduce-algebra.com/.
+
+\end{thebibliography}

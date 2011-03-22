@@ -1,0 +1,302 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+# $Id$
+# ----------------------------------------------------------------------
+# Copyright (c) 2008, 2011 T. Sturm
+# ----------------------------------------------------------------------
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#    * Redistributions of source code must retain the relevant
+#      copyright notice, this list of conditions and the following
+#      disclaimer.
+#    * Redistributions in binary form must reproduce the above
+#      copyright notice, this list of conditions and the following
+#      disclaimer in the documentation and/or other materials provided
+#      with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+function startlatex() {
+    echo "\documentclass[a4paper]{article}"
+    echo "\usepackage{longtable,helvet,courier,fancyhdr}"
+    cat <<EOF
+
+% The following macros are a copy of tridefs.tex taken from the REDUCE tree.
+\def\frac#1#2{{#1\over#2}}
+\def\co{,}\def\<{\langle}\def\>{\rangle}\def\d{\hbox{\rm d}}
+\newcount\parenthesis \parenthesis=0 \newcount\n
+\def\({\global\advance\parenthesis by1\left(}
+\def\){\global\advance\parenthesis by-1\right)}
+\def\{{\global\advance\parenthesis by1\left\lbrace}
+\def\}{\global\advance\parenthesis by-1\right\rbrace}
+\def\[{\relax} % dummy parenthesis
+\def\]{\relax} % dummy parenthesis
+\def\Loop#1\Repeat{\global\n=0\global\let\body=#1\iterate}
+\def\iterate{\body\let\next=\iterate\else\let\next=\relax\fi\next}
+\def\ldd{\ifnum\n<\parenthesis\global\advance\n by1
+\left.\nulldelimiterspace=0pt\mathsurround=0pt}
+\def\rdd{\ifnum\n<\parenthesis\global\advance\n by1
+\right.\nulldelimiterspace=0pt\mathsurround=0pt}
+\def\nl{\Loop\rdd\Repeat\hfill\cr\qdd\Loop\ldd\Repeat{}}
+\def\OFF#1{\hskip#1sp\relax}
+\def\off#1{\hskip#1sp\relax}
+\def\Nl{\hfill\cr}
+\def\qdd{\quad\quad}
+
+EOF
+    echo "\renewcommand{\headrulewidth}{0pt}"
+    echo "\renewcommand{\footrulewidth}{0.4pt}"
+    echo "\fancyhf{}"
+    echo "\lfoot{\tiny breduce \copyright{} 2008 by Thomas Sturm}"
+    echo "\rfoot{\tiny page \thepage}"
+    echo "\pagestyle{fancy}"
+    echo "\begin{document}"
+    if [ "${headline}" != "" ]; then
+	echo "\subsubsection*{\sf\bfseries ${headline}}"
+	echo -e "\\\smallskip\n"
+    fi
+    echo "\noindent" $USER using $REDUCE on $(hostname) "("$(arch) $(uname)")"
+    echo -e "\\\smallskip\n"
+    echo "\noindent start of job on " $(date)
+}
+
+function starttable() {
+    echo -n "\noindent\begin{longtable}{l"
+    for sw in ${switches}; do echo -n "c"; done
+    echo "rr}"
+    echo "\hline"
+    echo -n "instance & "
+    for sw in ${switches}; do echo -n ${sw} "& "; done
+    echo "result & time (ms)\\\\"
+    echo "\hline"
+    echo "\endfirsthead"
+    echo "\hline"
+    echo -n "instance & "
+    for sw in ${switches}; do echo -n ${sw} "& "; done
+    echo "result & time (ms)\\\\"
+    echo "\hline"
+    echo "\endhead"
+}
+
+function outputhead() {
+    startlatex
+    starttable
+}
+
+function runex() {
+    (($REDUCE; echo "reduce_exit_code $?") |
+        tee ${logdir}/${filebasename}-${i}.log |
+	awk '($1=="reduce_exit_code") {exit $2}
+             ($0=="<output>") {pr=1; next}
+             ($0=="</output>") {pr=0; next}
+             /^$/ {next}
+             (pr==1) {gsub(/\\\\/,"\\\\\n"); printf("%s",$0)}') <<EOF
+on echo;
+on comp;
+%lisp(infile "${breducehome}/breduce.red")$
+load_package breduce;
+${packages:+"load ${packages};"}
+${configfilered:+"in ${configfilered};"}
+${seriesfilename:+"in ${seriesfilename};"}
+${initcommands}
+${random:+"breduce_randomseed(${random});"}
+${switches:+"breduce_setswitches({${switches}},${i});"}
+${instance:+"${instance}"}
+${filename:+"in ${filename};"}
+breduce_arg := ws;
+breduce_output(${name:-breduce_arg},1);
+${switches:+"breduce_outputswitches({${switches}},${i});"}
+breduce_sol := breduce_unset;
+breduce_time := lisp time();
+breduce_sol := ${command} breduce_arg;
+breduce_time := (lisp time()) - breduce_time;
+if breduce_sol neq breduce_unset then breduce_sol := ${processresult} breduce_sol;
+breduce_output(breduce_sol,1);
+breduce_output(breduce_time,2);
+bye;
+EOF
+}
+
+function outputseparator() {
+    echo "\hline"
+}
+
+function endtable() {
+    echo "\end{longtable}"
+}
+
+function endlatex() {
+    echo "\noindent end of job on " $(date)
+    echo -e "\\\bigskip\n"
+    echo "\vfill"
+    echo "\footnotesize"
+    echo "\begin{verbatim}"
+    echo "working directory was $(pwd)"
+    echo -e "\nconfiguration file ${configfile}:"
+    sed '/^[ \t]*$/d' ${configfile}
+    if [ "$(grep_kwd epoch)" = "" ]; then
+	echo -e "\nepoch='${epoch}'"
+    fi
+    echo "\end{verbatim}"
+    echo "\end{document}"
+}
+
+function outputtail() {
+    endtable
+    endlatex
+}
+
+function grep_kwd() {
+    grep ^${1}=\\\([\"\']\\\)[^\"\']*\\1$ ${configfile}
+}
+
+function comma_separate() {
+    echo "${1}" | sed 's/ /,/g'
+}
+
+function handle_exitcode() {
+    local signal
+    if [ $1 -le 128 ]; then
+	echo "\textsc{exit} $1 & ---\\\\"
+    else
+	let signal=$1-128
+	if [ ${signal} -eq 2 ]; then
+	    SIGINT_RECEIVER=${REDUCE}
+	    trap_sigint
+	fi
+	if [ ${signal} -eq ${SIGXCPU} ]; then
+	    handle_sigxcpu
+	else
+	    echo "\textsc{\lowercase{SIG$(kill -l ${signal})}} & ---\\\\"
+	fi
+    fi
+}
+
+function handle_sigxcpu() {
+    echo "\textsc{sigxcpu} & $>$ ${killtime} s\\\\"
+}
+
+
+if [ $# -ne 1 ]; then 
+    echo "usage: $(basename $0) configfile"
+    exit 1
+fi
+
+breducehome=$(dirname $(which $0))
+
+configfile=$(dirname "$1")/$(basename "$1" .breduce).breduce
+
+if ! [ -f ${configfile} ]; then
+    echo "$(basename $0): configfile ${configfile} does not exist"
+    exit 1
+fi
+
+function trap_sigint() {
+    local message
+    local jobs
+    message="exiting on SIGINT handled by ${SIGINT_RECEIVER:-breduce}"
+    echo ${message} > /dev/stderr
+    endtable
+    echo "\noindent\textbf{${message}}"
+    echo -e "\\\smallskip\n"
+    endlatex
+    trap SIGINT
+    kill -SIGINT $$
+}
+
+trap trap_sigint SIGINT
+
+texfile=$(basename ${configfile} .breduce).tex
+
+if [ -f ${texfile} ]; then
+    mv -f ${texfile} ${texfile}.old
+fi
+
+logdir=$(basename ${configfile} .breduce)
+mkdir -p ${logdir}
+
+echo output goes to ${texfile}, REDUCE logs go to directory ${logdir}/
+
+exec >${texfile}
+
+keywords="headline REDUCE packages initcommands random seriesfilebasename \
+seriesprintname seriesinstances switches command processresult killtime epoch"
+
+for kwd in ${keywords}; do
+    export ${kwd}=""
+    eval $(grep_kwd ${kwd})
+done
+
+REDUCE=${REDUCE:-"reduce"}
+
+seriesprintname=$(echo ${seriesprintname} | sed 's/\([^a-z]\)/!\1/g')
+
+killtime=${killtime:-"0"}
+
+export switchnum=0
+for i in ${switches}; do
+    let switchnum+=1
+done
+
+let counter=2**${switchnum}
+
+export LANG=en_US
+
+outputhead
+
+packages=$(comma_separate "${packages}")
+
+switches=$(comma_separate "${switches}")
+
+if [ "${killtime}" != "" -a "${killtime}" -ne 0 ]; then
+    ulimit -t ${killtime}
+fi
+SIGXCPU=24
+
+epoch="${epoch:-$(date +%s)}"
+export n=0
+export i
+export seriesfilename=""
+export configfilered=""
+if [ -f "$(basename $configfile .breduce).red" ]; then
+    configfilered=\"$(basename $configfile .breduce).red\"
+fi
+for inst in ${seriesinstances:-"breduce_empty_series"}; do
+    let n+=1
+    if [ "${seriesfilebasename}" = "" ]; then
+	instance="${inst};"
+	filebasename="instance${n}"
+	name="${seriesprintname:+{${seriesprintname}${n}}"
+    else
+	if [ "${inst}" = "breduce_empty_series" ]; then
+	    inst=""
+	elif [ -f "${seriesfilebasename}.red" ]; then
+	    seriesfilename=\"${seriesfilebasename}.red\"
+	fi
+	filebasename=${seriesfilebasename}${inst}
+	filename=\"${filebasename}.red\"
+	name=${seriesprintname:-${seriesfilebasename}}${inst}
+    fi
+    for ((i=0; i<counter; i+=1)); do
+	runex
+	exitcode=$?
+	if [ ${exitcode} -ne 0 ]; then
+	    handle_exitcode ${exitcode} 
+	fi
+    done
+    outputseparator
+done
+
+outputtail

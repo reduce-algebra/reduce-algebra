@@ -1,0 +1,670 @@
+\documentclass[a4paper]{article}
+\def\co{,}\def\<{\langle}\def\>{\rangle}\def\d{\hbox{\rm d}}
+\usepackage{longtable,enumerate}
+\begin{document}
+\title{\textsc{BREDUCE} User Manual}
+\author{Thomas Sturm, FIM, Universit\"at Passau,
+  Germany\footnote{\texttt{sturm@redlog.eu}}}
+\maketitle
+
+\begin{abstract}
+  This document serves as a user guide for \textsc{breduce}. This is a
+  shell script plus a supporting \textsc{reduce} module which together
+  admit batch processing of \textsc{reduce} jobs under Unix.
+  \textsc{breduce} takes as input several \textsc{reduce} files
+  containing input data plus a configuration file. It produces as
+  output a \LaTeX document with the formatted results of all
+  computations specified in the configuration file. Important features
+  include the systematic application of all combinations of a choice
+  of \textsc{reduce} switches and a mechanism for limiting the runtime
+  of the single computations.
+\end{abstract}
+
+\section{Introduction}
+\cite{Hearn:04}
+
+\section{Installation of \textsc{breduce}}
+The \textsc{breduce} distribution comprises three files:
+\begin{enumerate}
+\item An executable program \texttt{breduce},
+\item a supporting \textsc{reduce} module \texttt{breduce.red},
+\item this manual \texttt{breduce.tex}.
+\end{enumerate}
+Make sure that \texttt{breduce} is executable, and put it into a
+directory of your choice, which you probably want to have within your
+search path. Put \texttt{breduce.red} into the same directory as
+\texttt{breduce}.
+
+\section{A Simple First Example}\label{SE:first}
+We are now going to describe an extremely simple example application
+of \textsc{breduce}. This will help the users to verify that their installation
+is correct. Furthermore it will give good first idea about what
+\textsc{breduce} does. Finally it will explain a major part of the files
+maintained by \textsc{breduce}.
+
+\textsc{breduce} is based on the concept of a \emph{series} of computations to
+be performed. A series consists of one or several \emph{instances}.
+The user chooses a name \texttt{<name>} for the series. The central
+file describing the series is the \textsc{breduce} \emph{configuration file}
+\texttt{<name>.breduce}.
+
+For our first example here, all relevant information is contained in
+our configuration file \texttt{fac.breduce}. For convenience, we
+create a new directory \texttt{bredex1} to work in. Our
+\texttt{fac.breduce} reads as follows:
+\begin{verbatim}
+REDUCE='reduce'
+seriesinstances='1 2 3 4 5 6 7 8 9 10'
+command='factorize'
+\end{verbatim}
+The reader might have to adapt the choice for \texttt{REDUCE}, which
+is the name of the executable \textsc{reduce}. The choice
+\texttt{reduce} above is also the default used if \texttt{REDUCE} is
+not specified at all. There are rather rigorous formal restrictions on
+the entries in configuration files:
+\begin{itemize}
+\item A \emph{valid} line either starts with a \textsc{breduce}
+  \emph{keyword}, such as the 3 lines above, or contains exclusively
+  whitespace, or starts with the \emph{comment sign} '\texttt{\%}'.
+\item In keyword lines, there must not be any whitespace at the
+  beginning or at the end or around '\texttt{=}'. The right hand side
+  of '\texttt{=}' must be quoted with either single or double
+  quotes.\footnote{Technically, \textsc{breduce} passes the keyword
+    lines to \texttt{eval} in a Bash. Readers who do not understand
+    what this means or feel they do not fully understand the possible
+    consequences of this are strongly recommended to exclusively use
+    single quotes! For advanced users the careful use of double quotes
+    provides some hook to add information from the OS level.}
+\end{itemize}
+We now start our first \textsc{breduce} jobs as follows:
+\begin{verbatim}
+breduce fac.breduce
+\end{verbatim}
+where the extension is optional in the style of \LaTeX.
+
+Within a few milliseconds we obtain a file \LaTeX{} \texttt{fac.tex}
+containing the table in Figure~\ref{FI:fac1}.
+\begin{figure}[t]
+  \begin{center}
+    \fbox{\begin{minipage}{0.95\textwidth}
+        \small
+        \noindent sturm using reduce on lennier.local (i386 Darwin)
+        \smallskip
+
+        \noindent start of job on  Tue Jan 1 10:32:03 CET 2008
+        \noindent\begin{longtable}{lrr}
+          \hline
+          instance & result & time (ms)\\
+          \hline
+          \endfirsthead
+          \hline
+          instance & result & time (ms)\\
+          \hline
+          \endhead
+          1 & (list 1 1) & 0\\
+          \hline
+          2 & (list 2 1) & 0\\
+          \hline
+          3 & (list 3 1) & 0\\
+          \hline
+          4 & (list 2 2) & 0\\
+          \hline
+          5 & (list 5 1) & 0\\
+          \hline
+          6 & (list 2 1)(list 3 1) & 0\\
+          \hline
+          7 & (list 7 1) & 0\\
+          \hline
+          8 & (list 2 3) & 0\\
+          \hline
+          9 & (list 3 2) & 0\\
+          \hline
+          10 & (list 2 1)(list 5 1) & 0\\
+          \hline
+        \end{longtable}
+        \noindent end of job on  Tue Jan 1 10:32:03 CET 2008
+      \end{minipage}}
+    \caption{\texttt{fac.tex}\label{FI:fac1}}
+  \end{center}
+\end{figure}
+In addition, \texttt{fac.tex} contains the name of the working
+directory (\texttt{bredex1} for our example) followed by a dump of
+\texttt{fac.breduce}. Since \textsc{breduce} uses the \LaTeX{} package
+``longtable,'' which allows have tables spread over several pages, it
+may be necessary to process \texttt{fac.tex} several times until the
+table is properly arranged. The same holds for this manual. We are
+going to discuss and considerably improve the content of the result
+column of the table in Figure~\ref{FI:fac1} in the next section.
+
+In addition to \texttt{fac.tex} \textsc{breduce} creates a directory
+\texttt{fac/}, which contains log files \texttt{instance1-0.log},
+\dots,~\texttt{instance10-0.log} of the 10 \textsc{reduce} runs. We
+are going to discuss the purpose of the appended '\texttt{-0}' later
+on in Section~\ref{SE:switches}.
+
+\section{Processing Results}\label{SE:processresults}
+The result column in Figure~\label{FI:fac1} certainly looks a bit
+disappointing: It contains the raw Lisp representations of the
+results, which have actually been obtained in the algebraic mode.
+Moreover, these Lisp representations are processed with \LaTeX, which
+would cause problems whenever they happen to contain special \LaTeX{}
+symbols. Finally, it is clear that the output of the full result would
+soon exceed the space available in a table when factorizing only
+slightly larger numbers.
+
+To address all these issues, \textsc{breduce} provides an optional
+keyword \texttt{process\-results}. For instance
+\begin{verbatim}
+processresults='breduce_verbatim'
+\end{verbatim}
+Puts the result into a \LaTeX{} \texttt{verbatim} environment such
+that it may contain arbitrary characters. Another nice choice for
+small mathematical results is \texttt{breduce\_tex}, which uses the
+\texttt{reduce} package \texttt{tri} \cite{ASW:89} for producing
+\LaTeX{}-formatted output. For factorizing larger numbers in our
+examples the user might want to use \texttt{length} for obtaining the
+number of different factors.
+
+Generally, with large results one can provide a self-written procedure
+for analyzing the results and outputting suitable \LaTeX{} source
+code. The specification for such a procedure is as follows:
+\begin{itemize}
+\item It is called in the algebraic mode with the result of the
+  application of the specified \texttt{command} as its only argument.
+\item It returns a either string, which is suitable to be processed by
+  \LaTeX{}, or an algebraic mode list of such strings. With the second
+  variant all strings in the list are successively output.
+\end{itemize}
+We are going to see in Sections~\ref{SE:initcommands} and
+\ref{SE:files} where such self-written procedure can possibly be
+placed.
+
+\textsc{breduce} itself provides one such function:
+\texttt{breduce\_process\-formula} analyzes results of \texttt{redlog}
+\cite{DolzmannSturm:97a} quantifier elimination \texttt{rlqe}. If the
+result is ``true'' or ``false,'' then this is printed. Otherwise, if
+all quantifiers have been successfully eliminated there is ``$\top$''
+output, else ``$\bot$.'' These symbols are followed by ``($\langle
+k\rangle$q/$\langle n\rangle$at)'' giving the numbers $\langle
+k\rangle$ of quantifiers and of atomic formulas $\langle n\rangle$
+contained in the result.
+
+\section{Switches}\label{SE:switches}
+The systematic evaluation of switches was one major motivation for the
+development of \textsc{breduce}: With computer algebra software
+developers are often faced with design alternatives where it is not at
+all clear which choice is the best one. It is a helpful technique to
+introduce at least temporarily \textsc{reduce} switches which allow to
+interactively choose between the options. This allows to experiment
+with the options and to experimentally adjust the switches to default
+settings that deliver satisfactory performance and quality of results
+for most input data. At a later stage, there are usually some switches
+completely removed while others remain in order to allow to adapt the
+software to certain special input data which benefits from alternative
+settings.
+
+The idea is now to use \textsc{breduce} in this development process
+for systematically evaluating the effect of all possible combinations
+of certain switches.
+
+For illustration, we use two switches. The switch \texttt{nopowers} is
+off by default. When on, multiple factors are collected in one flat
+list rather than building a pair from each factor and its
+multiplicity. The switch \texttt{rounded} toggles the use of
+fixed-precision floating point numbers, which does not have any
+relevant effect on the computation considered here but illustrates the
+treatment of multiple switches. The following \texttt{fac2.breduce}
+serves also as an example for the result processing option
+\texttt{breduce\_tex} discussed in the previous section:
+\begin{verbatim}
+REDUCE='reduce'
+seriesinstances='7 8 9 10'
+switches='nopowers rounded'
+command='factorize'
+processresult='breduce_tex'
+\end{verbatim}
+\begin{figure}[t]
+  \begin{center}
+    \fbox{\begin{minipage}{0.95\textwidth}
+        \small
+        \noindent sturm using reduce on lennier.local (i386 Darwin)
+        \smallskip
+
+        \noindent start of job on  Thu Jan 3 18:14:47 CET 2008
+        \noindent\begin{longtable}{lccrr}
+          \hline
+          instance & nopowers & rounded & result & time (ms)\\
+          \hline
+          \endfirsthead
+          \hline
+          instance & nopowers & rounded & result & time (ms)\\
+          \hline
+          \endhead
+          \hline
+          7 &  $\circ$  &  $\circ$  & $\{\{7\co 1\}\}$ & 0\\
+          7 &  $\circ$  & $\bullet$ & $\{\{7\co 1\}\}$ & 0\\
+          7 & $\bullet$ &  $\circ$  & $\{7\}$ & 0\\
+          7 & $\bullet$ & $\bullet$ & $\{7\}$ & 0\\
+          \hline
+          8 &  $\circ$  &  $\circ$  & $\{\{2\co 3\}\}$ & 0\\
+          8 &  $\circ$  & $\bullet$ & $\{\{2\co 3\}\}$ & 0\\
+          8 & $\bullet$ &  $\circ$  & $\{2\co 2\co 2\}$ & 0\\
+          8 & $\bullet$ & $\bullet$ & $\{2\co 2\co 2\}$ & 0\\
+          \hline
+          9 &  $\circ$  &  $\circ$  & $\{\{3\co 2\}\}$ & 0\\
+          9 &  $\circ$  & $\bullet$ & $\{\{3\co 2\}\}$ & 0\\
+          9 & $\bullet$ &  $\circ$  & $\{3\co 3\}$ & 0\\
+          9 & $\bullet$ & $\bullet$ & $\{3\co 3\}$ & 0\\
+          \hline
+          10 &  $\circ$  &  $\circ$  & $\{\{2\co 1\}\co \{5\co 1\}\}$ & 0\\
+          10 &  $\circ$  & $\bullet$ & $\{\{2\co 1\}\co \{5\co 1\}\}$ & 0\\
+          10 & $\bullet$ &  $\circ$  & $\{2\co 5\}$ & 0\\
+          10 & $\bullet$ & $\bullet$ & $\{2\co 5\}$ & 0\\
+          \hline
+        \end{longtable}
+        \noindent end of job on  Thu Jan 3 18:14:49 CET 2008
+      \end{minipage}}
+    \caption{\texttt{fac2.tex}\label{FI:fac2}}
+  \end{center}
+\end{figure}
+The table obtained in \texttt{fac2.tex} is displayed in
+Figure~\ref{FI:fac2}.
+
+In the directory \texttt{fac2/} we obtain \textsc{reduce} log files
+named \texttt{instance1-0}, \dots, \texttt{instance1-3},
+\texttt{instance2-0}, \dots, \texttt{instance5-3}. Notice that switch
+settings are arranged in such a way that they correspond to the binary
+expansion of the appended number ``\texttt{-<n>}''.
+
+\section{Packages and Initcommands}
+\label{SE:initcommands}
+The keyword \texttt{packages} contains a whitespace-separated list of
+packages to be loaded. Here is an example:
+\begin{verbatim}
+packages='groebner groebnr2'
+\end{verbatim}
+The keyword \texttt{initcommands} takes \textsc{reduce} commands,
+which are executed right after the packages are loaded, as for
+instance
+\begin{verbatim}
+initcommands='on gc,gsugar; in "my.red"; torder lex;'
+\end{verbatim}
+Notice that here the switches are simply switched on in contrast to
+being systematically tested as with the \texttt{switch} keyword
+discussed in the previous section. It may in fact make sense to switch
+on \texttt{gc} in order to obtain corresponding information from the
+log files. The file \texttt{my.red} could provide suitable procedures
+for \texttt{processresult} as discussed in
+Section~\ref{SE:processresults}.
+
+In contrast to all other keywords, the content of
+\texttt{initcommands} is not a white\-space-sep\-a\-rated list.
+Instead it has to be specified in such a way that it can be literally
+pasted into \textsc{reduce}.
+
+\section{Commands}\label{SE:commands}
+In this section we want to discuss in more detail the keyword
+\texttt{command}, which we had introduced already in
+Section~\ref{SE:first}.
+
+To start with, we can specify a list of procedure names as for
+instance
+\begin{verbatim}
+commands='factorize factorial'
+\end{verbatim}
+which is interpreted as a nested function call
+\texttt{factorize(factorial(\dots))}. The same specification holds for
+\texttt{processresult}. There is a subtle point about whether to
+include a procedure into \texttt{command} or into
+\texttt{processresult}: The time measurement given in the last column
+of the generated \LaTeX{} include all procedures in \texttt{command}
+but not those in \texttt{processresult}. In order to obtain precise
+timings for the computations, the procedures in command are executed
+in \textsc{reduce} with a trailing '\texttt{\$}' such that the timings
+do not include any printing times. Users explicitly interested in
+including printing times would add \texttt{write} as the leftmost
+procedure in \texttt{command}.
+
+There is one apparent limitation of the approach: The rightmost
+procedure in \texttt{commands} and thus the entire chain of nested
+procedure calls specified by \texttt{commands} must establish a
+\emph{unary} function. This can, however, easily be worked around as
+follows: Imagine we actually want to work with a binary
+\texttt{myproc(x,y)}. Then we would provide an additional procedure
+\begin{verbatim}
+algebraic procedure myproc_nospread(l);
+   myproc(first l,second l);
+\end{verbatim}
+In the configuration file we would use this as follows:
+\begin{verbatim}
+commands='myproc myproc_nospread'
+\end{verbatim}
+Consequently, for each instance of a series the two arguments for
+\texttt{myproc} have to be provided in two-element algebraic mode
+lists. This approach straightforwardly generalizes to arbitrary
+numbers of arguments. \textsc{reduce} provides \texttt{nth(<l>,<n>)}
+for obtaining the \texttt{<n>}-th element of a list \texttt{<l>}.
+
+Recall the discussion on the systematic evaluation of switches at the
+beginning of Section~\ref{SE:switches}. One would obviously like to
+similarly compare and evaluate alternative implementations
+\texttt{myfun1} and \texttt{myfun2} of some algorithm. For this one
+would introduce, say in a file \texttt{myfun.red}, corresponding
+switches and a procedure testing these switches:
+\begin{verbatim}
+switch use_myfun2;
+
+algebraic procedure myfun0(x);
+   if lisp !*use_myfun2 then myfun2 x else myfun1 x;
+\end{verbatim}
+A suitable configuration file \texttt{myfun.breduce} would then
+contain
+\begin{verbatim}
+initcommands='in "myfun.red";'
+switches='use_myfun2'
+command='myfun0'
+\end{verbatim}
+\section{Random}
+Let us determine the number of (different) factors of some not too
+small random numbers. For this purpose we write the following
+configuration file \texttt{fac3a.breduce}:
+\begin{verbatim}
+switches='nopowers'
+seriesinstances='random(10^37) random(10^38) random(10^39)'
+command='factorize'
+processresult='length'
+\end{verbatim}
+The \texttt{reduce} procedure \texttt{random(<n>)} returns a random
+number between $0$ and \texttt{<n>}. It is clear that for \texttt{off
+  nopowers} the length of the list obtained from \texttt{factorize} is
+the number of different factors while for \texttt{on nopowers} we
+obtain the number of factors counting multiplicities. Since the output
+of \texttt{length} is simply a number we need not any
+\texttt{processresult} command.
+\begin{figure}[p]
+  \begin{center}
+    \fbox{\begin{minipage}{0.95\textwidth}
+        \small
+        \noindent sturm using reduce on lennier.local (i386 Darwin)
+        \smallskip
+
+        \noindent start of job on  Fri Jan 4 18:47:16 CET 2008
+        \noindent\begin{longtable}{lcrr}
+          \hline
+          instance & nopowers & result & time (ms)\\
+          \hline
+          \endfirsthead
+          \hline
+          instance & nopowers & result & time (ms)\\
+          \hline
+          \endhead
+          1870895791191171734284970352061524775 &  $\circ$  & 2 & 20\\
+          1870895791191171734284970352061524775 & $\bullet$ & 3 & 20\\
+          \hline
+          91870895791191171734284970352061524775 &  $\circ$  & 4 & 80\\
+          91870895791191171734284970352061524775 & $\bullet$ & 5 & 80\\
+          \hline
+          891870895791191171734284970352061524775 &  $\circ$  & 6 & 20\\
+          891870895791191171734284970352061524775 & $\bullet$ & 7 & 20\\
+          \hline
+        \end{longtable}
+        \noindent end of job on  Fri Jan 4 18:47:16 CET 2008
+      \end{minipage}}
+    \caption{\texttt{fac3.tex}\label{FI:fac3}}
+  \end{center}
+\end{figure}
+Looking at the obtained \texttt{fac3.tex} in Figure~\ref{FI:fac3} we
+observe two things about our randomly generated numbers:
+\begin{enumerate}
+\item In each instance we obtain for both switch settings the same
+  random number although these have been generated in different
+  \textsc{reduce} sessions.
+\item Comparing the random numbers of different sizes obtained in the
+  various instances they turn out to be all very similar.
+\end{enumerate}
+We are going to explain the situation without going into technical
+details: Since every single line in out table has been computed in a
+fresh \texttt{reduce} session, we have started every time with a
+random generator that has been freshly initialized in the very same
+way. To avoid identities between random numbers of the same size and
+the observed similarities for different sizes, we must explicitly
+initialize the random generator. \textsc{breduce} offers four
+alternative styles of initialization. They can be specified via the
+keyword \texttt{random}:
+\begin{enumerate}[(a)]
+\item \verb!random='breduce_instance'!
+\item \verb!random='breduce_every'!
+\item \verb!random='breduce_instance_abs'!
+\item \verb!random='breduce_every_abs'!
+\end{enumerate}
+
+\texttt{breduce\_instance} uses the number of the current instance for
+initialization. Recall that instances are by definition the entries in
+\texttt{seriesinstances}. When trying all possible combinations of
+switches, these belong to the same instance, and would thus generate
+the same random numbers. This is a good choice for our example
+considered here.
+\begin{figure}[p]
+  \begin{center}
+    \fbox{\begin{minipage}{0.95\textwidth}
+        \small
+        \noindent sturm using reduce on lennier.local (i386 Darwin)
+
+        \noindent start of job on  Sat Jan 5 09:30:14 CET 2008
+        \noindent\begin{longtable}{lcrr}
+          \hline
+          instance & nopowers & result & time (ms)\\
+          \hline
+          \endfirsthead
+          \hline
+          instance & nopowers & result & time (ms)\\
+          \hline
+          \endhead
+          1870895791191171734284970352061524775 &  $\circ$  & 2 & 20\\
+          1870895791191171734284970352061524775 & $\bullet$ & 3 & 20\\
+          \hline
+          80834363874062020393350577869448966607 &  $\circ$  & 2 & 870\\
+          80834363874062020393350577869448966607 & $\bullet$ & 2 & 870\\
+          \hline
+          469797831956933869052426185386836408439 &  $\circ$  & 4 & 110\\
+          469797831956933869052426185386836408439 & $\bullet$ & 6 & 110\\
+          \hline
+        \end{longtable}
+        \noindent end of job on  Sat Jan 5 09:30:18 CET 2008
+      \end{minipage}}
+    \caption{\texttt{fac3a.tex}\label{FI:fac3a}}
+  \end{center}
+\end{figure}
+\unskip The result is displayed in Figure~\ref{FI:fac3a}.
+
+\texttt{breduce\_every} initializes with the sum of the instance
+number and the decimal representation of the current switch setting.
+\begin{figure}[p]
+  \begin{center}
+    \fbox{\begin{minipage}{0.95\textwidth}
+        \small
+        \noindent sturm using reduce on lennier.local (i386 Darwin)
+        \smallskip
+
+        \noindent start of job on  Sat Jan 5 09:33:09 CET 2008
+        \noindent\begin{longtable}{lcrr}
+          \hline
+          instance & nopowers & result & time (ms)\\
+          \hline
+          \endfirsthead
+          \hline
+          instance & nopowers & result & time (ms)\\
+          \hline
+          \endhead
+          1870895791191171734284970352061524775 &  $\circ$  & 2 & 20\\
+          834363874062020393350577869448966607 & $\bullet$ & 6 & 12080\\
+          \hline
+          80834363874062020393350577869448966607 &  $\circ$  & 2 & 870\\
+          69797831956933869052426185386836408439 & $\bullet$ & 5 & 30\\
+          \hline
+          469797831956933869052426185386836408439 &  $\circ$  & 4 & 110\\
+          258761300039804717711491792904223850271 & $\bullet$ & 5 & 5180\\
+          \hline
+        \end{longtable}
+        \noindent end of job on  Sat Jan 5 09:33:28 CET 2008
+      \end{minipage}}
+    \caption{\texttt{fac3b.tex}\label{FI:fac3b}}
+  \end{center}
+\end{figure}
+This results in a different initialization for every single row of the
+table as displayed in Figure~\ref{FI:fac3b}. Note, however, that we
+are then not testing the switch combination for an instance on the
+same input data, which we probably want in most situations.
+
+With both \texttt{breduce\_instance} and \texttt{breduce\_every} we
+still observe that there is the essentially same sequence of random
+numbers used every time. Since this might not really feel like random
+to some users there are \texttt{breduce\_instance\_all} and
+\texttt{breduce\_every\_all}. These are variants of the discussed
+options, which add for initialization also the wall clock time and
+date. Technically, it uses the number of seconds since the epoch in
+the sense of Unix (00:00:00 UTC, January 1, 1970).
+
+In order to make also such \textsc{breduce} jobs reproducible, the
+number of seconds used is dumped into the \LaTeX{} output after the
+configuration file using the keyword \texttt{epoch}. When including
+this dumped \texttt{epoch} line into the configuration file, its value
+will be used instead of the real time and date and thus reproduce the
+result of the considered \textsc{breduce} job.
+
+\section{Limiting the Computation Time}
+
+\section{Instance Files}\label{SE:files}
+
+\section{Signal Handling}
+
+\section{Keyword Summary}
+\begin{description}
+\item[\texttt{command}]
+\item[\texttt{headline}]
+\item[\texttt{initcommands}]
+\item[\texttt{killtime}]
+\item[\texttt{packages}]
+\item[\texttt{processresult}]
+\item[\texttt{random}]
+\item[\texttt{REDUCE}]
+\item[\texttt{seriesinstances}]
+\item[\texttt{seriesfilebasename}]
+\item[\texttt{seriesprintname}]
+\item[\texttt{switches}]
+\end{description}
+
+\bibliographystyle{alpha}
+\bibliography{adts}
+
+\end{document}
+
+\section{Preparing the Input}
+For each instance of a series there must be one \textsc{reduce} input file
+present. The last evaluation result of each input file yields the
+input argument for the desired computation. To put it more
+technically: after reading the input file with \texttt{in}, the input
+argument is expected to be available in \texttt{ws}.
+
+Besides the input files for the series instances the user must provide
+a \textsc{breduce} configuration file \texttt{<name>.breduce}. This configuration file
+contains all information on the batch run except for the input
+arguments discussed above.
+
+As an example, we apply quantifier elimination to a series of three
+instances known as the \emph{rectangle} problem. For this we
+\texttt{mkdir} a directory \texttt{rp/}. Inside \texttt{rp/}, we prepare
+3 input argument files \texttt{rp1.red}, \dots, \texttt{rp3.red}. Each
+of these files contains a formula describing the corresponding
+instance of the problem. Recall that the last line of \textsc{reduce} files
+must be ``\texttt{end;}''. Finally, we put into \texttt{rp/} our
+configuration file \texttt{simple-rp.breduce} reads as follows:
+\begin{verbatim}
+seriesfilebasename='rp'
+seriesinstances='1 2 3'
+package='redlog'
+initcommands='rlset reals; on rlverbose;'
+command='rlqe'
+processresult='rlatnum'
+\end{verbatim}
+
+\section{Running \textsc{breduce}}
+For running \textsc{breduce} within out directory \texttt{rp/}, we use the
+command
+\begin{verbatim}
+breduce simple-rp.breduce
+\end{verbatim}
+where the extension may be omitted. Now the following happens: There
+are three instances computed. Their names \texttt{rp1}, \texttt{rp2},
+and \texttt{rp3} are constructed from \texttt{seriesfilebasename} and
+\texttt{seriesinstances} given in \texttt{simple-rp.breduce}.
+
+For each instance \texttt{rp<i>}, \textsc{breduce} proceeds as follows: It
+silently starts a new non-interactive \textsc{reduce} session, loads the
+package \texttt{redlog} specified in \texttt{package} and evaluates
+the commands specified in \texttt{initcommands}. Then it reads
+\begin{verbatim}
+in "rp<i>.red";
+\end{verbatim}
+and applies quantifier elimination \texttt{rlqe ws} as specified in
+\texttt{command}. The result of the quantifier elimination is
+processed with \texttt{rlatnum} (count number of atomic formulas) as
+specified in \texttt{processresult}.
+
+All information obtained this way is collected in a \LaTeX{} document
+\texttt{rp.tex}, the name of which is derived from the name of configuration
+file \texttt{rp.breduce}. If there already exists a file
+\texttt{rp.tex}, then this is moved to \texttt{rp.tex.old} first. In
+addition, there is a directory \texttt{simple-rp/} created, which
+contains log files \texttt{rp1.log}, \texttt{rp2.log},
+\texttt{rp3.log} of the three \textsc{reduce} sessions.
+
+\begin{figure}
+  \begin{center}
+    \fbox{\begin{minipage}{0.9\textwidth}
+        \noindent sturm using reduce.psl on lennier.local (i386 Darwin)
+        \smallskip
+
+        \noindent start of job on  Sun Dec 30 16:41:20 CET 2007
+        \noindent\begin{longtable}{lrr}
+          \hline
+          example & result & time (ms)\\
+          \hline
+          \endfirsthead
+          \hline
+          example & result & time (ms)\\
+          \hline
+          \endhead
+          rp1 & 5 & 0\\
+          \hline
+          rp2 & 50 & 80\\
+          \hline
+          rp3 & 6909 & 54000\\
+          \hline
+        \end{longtable}
+        \noindent end of job on  Sun Dec 30 16:42:17 CET 2007
+        \bigskip\bigskip
+
+        \begin{tt}
+          \footnotesize
+          working directory was /Users/sturm/rp\\
+          configuration file ./simple-rp.breduce:\\
+          seriesfilebasename='rp'\\
+          seriesinstances='1 2 3'\\
+          package='redlog'\\
+          initcommands='rlset reals; on rlverbose;'\\
+          command='rlqe'\\
+          processresult='rlatnum'
+        \end{tt}
+      \end{minipage}}
+    \caption{The formatted \texttt{simple-rp.tex}\label{simple-rp.tex}}
+  \end{center}
+\end{figure}
+
+Figure \ref{simple-rp.tex} displays the \LaTeX-formatted
+\texttt{simple-rp.tex}. Since are using the package
+\texttt{longtable}, which allows to typeset tables that split over
+several pages, it is sometimes necessary to run \LaTeX{} several times
+until the table is properly arranged.
+
+\end{document}
