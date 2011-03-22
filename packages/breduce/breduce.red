@@ -37,6 +37,7 @@ module breduce;
 % Supporting code for the breduce batch system located in
 % trunk/generic/breduce.
 
+load!-package 'redlog;
 load!-package 'tri;
 
 fluid '(out!*);
