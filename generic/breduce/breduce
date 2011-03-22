@@ -189,7 +189,7 @@ function handle_sigxcpu() {
 }
 
 
-if [ $# -ne 1 ]; then 
+if [ $# -ne 1 ]; then
     echo "usage: $(basename $0) configfile"
     exit 1
 fi
@@ -261,7 +261,7 @@ packages=$(comma_separate "${packages}")
 switches=$(comma_separate "${switches}")
 
 if [ "${killtime}" != "" -a "${killtime}" -ne 0 ]; then
-    ulimit -t ${killtime}
+    ulimit -S -t ${killtime}
 fi
 SIGXCPU=24
 
@@ -293,7 +293,7 @@ for inst in ${seriesinstances:-"breduce_empty_series"}; do
 	runex
 	exitcode=$?
 	if [ ${exitcode} -ne 0 ]; then
-	    handle_exitcode ${exitcode} 
+	    handle_exitcode ${exitcode}
 	fi
     done
     outputseparator
