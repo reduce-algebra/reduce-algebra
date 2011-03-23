@@ -1,3 +1,20 @@
+module tmprint; % Output module for TeXmacs interface
+                % this is fmprint with minor modifications
+                % Note that fmprint will not have been updated
+                % to track changes made here.
+
+
+% Fancy output package for symbolic expressions.
+% using TEX as intermediate language.
+
+% Author: Herbert Melenk, using ideas of maprin.red (A.C.H, A.C.N).
+
+% Copyright (c) 1993 RAND, Konrad-Zuse-Zentrum.  All rights reserved.
+
+
+
+
+
 % ----------------------------------------------------------------------
 % $Id: tmprint.red,v 1.15 2006/06/29 20:04:29 sturm Exp $
 % ----------------------------------------------------------------------
@@ -24,7 +41,15 @@
 % CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 % SOFTWARE.
 % ----------------------------------------------------------------------
+
+
 % $Log: tmprint.red,v $
+%
+% The set of explanations about revisons here are now rather out of date.
+% Recent history can be found by browsing the subversion repository at
+% sourceforge. However as of Easter 2011, Arthur Norman is having a go at
+% cleaning things up a little.
+%
 % Revision 1.15  2006/06/29 20:04:29  sturm
 % There are now two different linelength patches for the two Lisps. Arthur
 % hat pointed out that he does not want any at all. We have to understand
@@ -113,17 +138,6 @@
 % This is the original version by Andrey Grozin as obtained from fmprint.red
 % via patching.
 %
-% ----------------------------------------------------------------------
-module tmprint; % Output module for TeXmacs interface
-% this is fmprint with minor modifications
-
-% Fancy output package for symbolic expressions.
-% using TEX as intermediate language.
-
-% Author: Herbert Melenk, using ideas of maprin.red (A.C.H, A.C.N).
-
-% Copyright (c) 1993 RAND, Konrad-Zuse-Zentrum.  All rights reserved.
-
 %   8-Sep-94
 %               introduced data driven formatting (print-format)
 
@@ -137,6 +151,19 @@ module tmprint; % Output module for TeXmacs interface
 %               rational exponents use /
 %               vertical bar for SUB expressions
 %               explicit * for product of two quotients (Taylor)
+
+%  94-Jan-26 - Output for Taylor series repaired.
+%  94-Jan-17 - printing of index for Bessel function repaired.
+%            - New functions for local encapsulation of printing
+%              independent of smacro fancy!-level.
+%            - Allow printing of upper case symbols locally
+%              controlled by *fancy-lower
+
+%  93-Dec-22 Vectors printed with square brackets.
+
+
+% ----------------------------------------------------------------------
+
 
 % switches
 %
@@ -172,15 +199,6 @@ module tmprint; % Output module for TeXmacs interface
 %                      the symbol.  A standard character has 2 units.
 
 
-%  94-Jan-26 - Output for Taylor series repaired.
-%  94-Jan-17 - printing of index for Bessel function repaired.
-%            - New functions for local encapsulation of printing
-%              independent of smacro fancy!-level.
-%            - Allow printing of upper case symbols locally
-%              controlled by *fancy-lower
-
-%  93-Dec-22 Vectors printed with sqare brackets.
-
 create!-package('(tmprint),nil);
 
 fluid  '(
@@ -203,10 +221,19 @@ fluid  '(
 
 global '(!*eraise charassoc!* initl!* nat!*!* spare!* ofl!*);
 
+%
+% The interaction between the code here and avariety of other Reduce flags
+% that set output options is possibly delicate and probably often broken.
+% As well as "list" the code here needs review with regard to options
+% such as "fort" for generating other formats of output.
+%
+
 switch list,ratpri,revpri,nosplit;
 
 % Temp experiment while investigating a possible for for an interaction with
-% "on list"      @@@@@@@@@
+% "on list". Well in fact "on/off acn" can provide a general guard for
+% some incremental changes being made here.   But evenually this switch
+% will be retired.                 ACN March 2011
 switch acn;
 
 % Global variables initialized in this section.
@@ -257,8 +284,11 @@ symbolic procedure fmp!-switch mode;
         <<if outputhandler!* = 'fancy!-output then
           <<outputhandler!* := car outputhandler!-stack!*;
             outputhandler!-stack!* := cdr outputhandler!-stack!*;
-          >> else
-          rederr "FANCY is not current output handler"
+          >>
+          else
+             rederr "FANCY is not current output handler"
+% ACN feels that raising an error on an attempt to switch off an option
+% in the case that the option is already disabled is a bit harsh.
         >>;
 
 fluid '(lispsystem!*);
@@ -277,6 +307,8 @@ procedure linelength(a);
 
 !#else
 
+% In CSL you can look for memq('texmacs,lispsystem!*) to see if the command-
+% line option "--texmacs" was given when Reduce was started.
 procedure linelength(a);
    if texmacsp() then 30000 else linelength!-orig(a);
 
@@ -575,6 +607,10 @@ symbolic procedure fancy!-prin2 u;
 
 fluid '(cm!-widths!*);
 
+!#if (memq 'psl lispsystem!*)
+symbolic procedure list!-to!-vector a; list2vector a;
+!#endif
+
 cm!-widths!* := list(
     % name checksum design-size (millipoints)
     list("cmex10", -89033454, 10000, list!-to!-vector '(
@@ -679,8 +715,8 @@ symbolic procedure fancy!-prin2!*(u,n);
           then red!-char!-downcase x else x) . fancy!-line!*;
     >>;
     if long!* then fancy!-line!* := '!} . fancy!-line!*;
-    fancy!-pos!* := fancy!-pos!* #+ l;
-    if fancy!-pos!* #> 2 #* (linelength nil #+1 ) then overflowed!*:=t;
+    fancy!-pos!* := fancy!-pos!* + l;
+    if fancy!-pos!* > 2 * (linelength nil +1 ) then overflowed!*:=t;
   end) where !*lower = !*lower;
 
 symbolic procedure fancy!-last!-symbol();
@@ -704,10 +740,10 @@ symbolic procedure fancy!-prin2number u;
 
 symbolic procedure fancy!-prin2number1 u;
   begin integer c,ll;
-   ll := 2 #* (linelength nil #+1 );
+   ll := 2 * (linelength nil +1 );
    while u do
    <<c:=c+1;
-     if c>10 and fancy!-pos!* #> ll then fancy!-terpri!*(t);
+     if c>10 and fancy!-pos!* > ll then fancy!-terpri!*(t);
      fancy!-prin2!*(car u,2); u:=cdr u;
    >>;
   end;
@@ -770,7 +806,7 @@ symbolic procedure fancy!-terpri!* u;
    <<
      if fancy!-line!* then
          fancy!-page!* := fancy!-line!* . fancy!-page!*;
-     fancy!-pos!* :=tablevel!* #* 10;
+     fancy!-pos!* :=tablevel!* * 10;
      fancy!-line!*:= {'tab . tablevel!*};
      overflowed!* := nil
    >>;
@@ -1121,7 +1157,7 @@ symbolic procedure fancy!-inprint(op,p,l);
             then return fancy!-fail(pos,fl);
      if !*list and obrkp!* and memq(op,'(plus minus)) then
         <<sumlevel!*:=sumlevel!*+1;
-          tablevel!* := tablevel!* #+ 1>>;
+          tablevel!* := tablevel!* + 1>>;
      if !*nosplit and not testing!-width!* then
           % main line:
          fancy!-inprint1(op,p,l)
@@ -1420,7 +1456,7 @@ symbolic procedure fancy!-prinfit(u, p, op);
          if eqcar(u,'!:rd!:) then return fancy!-rdprin u;
        % generate a line break if we are not just behind an
        % opening bracket at the beginning of a line.
-     if fancy!-pos!* > linelength nil #/ 2 or
+     if fancy!-pos!* > linelength nil / 2 or
           not eqcar(fancy!-last!-symbol(),'bkt) then
            fancy!-terpri!* nil;
      return fancy!-maprint(u, p);
@@ -1762,7 +1798,7 @@ symbolic procedure fancy!-rdprin1(digits,xp,dotpos);
    <<str:='!e.str;
      for each c in explode2 xp do str:=c.str>>;
    if testing!-width!* and
-      fancy!-pos!* + 2#*length str > 2 #* linelength nil then
+      fancy!-pos!* + 2*length str > 2 * linelength nil then
         return 'failed;
    fancy!-prin2number1 reversip str;
   end;
@@ -1961,7 +1997,7 @@ symbolic procedure fancy!-matfit(u,p,op);
 
      ll:=linelength nil;
      if op then fancy!-oprin op;
-     if atom u or fancy!-pos!* > ll #/ 2 then fancy!-terpri!* nil;
+     if atom u or fancy!-pos!* > ll / 2 then fancy!-terpri!* nil;
      return fancy!-matpriflat(u);
    end;
 
