@@ -250,6 +250,8 @@ fluid '(
       !*fancy!-lower    % control of conversion to lower case
       );
 
+fluid '(fancy!-texwidth fancy!-texpos tex!-pointsize);
+
 switch fancy_tex; % output TEX equivalent.
 
 fancy!-switch!-on!* := int2id 16$
@@ -402,7 +404,8 @@ symbolic procedure fancy!-out!-item(it);
 symbolic procedure set!-fancymode bool;
   if bool neq !*fancy!-mode then
     <<!*fancy!-mode:=bool;
-      fancy!-pos!*:=0;
+      fancy!-pos!* :=0;
+      fancy!-texpos:=0;
       fancy!-page!*:=nil;
       fancy!-line!*:=nil;
       overflowed!* := nil;
@@ -599,11 +602,71 @@ symbolic procedure fancy!-prin2 u;
 % I feel that ligatures and kerning can be ignored. Life is messy and hard
 % enough as it is!
 
+
+% The unit for texwidth will be "points". That perhaps really means
+% something on paper, with 72 points per inch (or thereabouts, depending
+% on how pedantic you are). On screen it is much less certain. However
+% 500 points is roughtly a sensible width to use as the printable area
+% across an A4 or letter sheet of paper, so for now I make it my default.
+
+fancy!-texwidth := 500;
+
+% texwidth will let you reset the width that will be used, but as a matter
+% of sanity I will never let it set a width of less than 100 points (ie
+% about 1.4 inches, 3.5cm). The previously set width is returned.
+
+symbolic procedure texwidth n;
+  begin
+    scalar old;
+    old := fancy!-textwidth;
+    if fixp n and n >= 100 then fancy!-textwidth := n;
+    return old
+  end;
+
+flag('(texwidth), 'opfn);
+
+
+% You may generate the TeX either as a (default) 10pt document or
+% with a 12-point basic size. This only gives a rather small change
+% but it may be useful in terms of control over readibility.
+
+tex!-pointsize := 10;
+
+
+symbolic procedure texpointsize n;
+  begin
+    scalar old;
+    old := tex!-pointsize;
+    if n = 10 or n = 12 then tex!-pointsize := n;
+    return old
+  end;
+
+flag('(texpointsize), 'opfn);
+
+
 % Widths for characters in Computer Modern Fonts
 
 % extracted from wxfonts/tfm
 
-% Widths here are given in millipoints
+% Widths here are given in millipoints, and I include (at present)
+% four key mathematical fonts, all at nominal size 10pt. Since I am
+% only using this to give me and ESTIMATE of the width of the TeX
+% output so I have a reasonable idea of where to split lines I will
+% assume that other sizes can have their metrics deduced by scaling.
+% But when I do a bit of research I find different sizes quoted even
+% for basic cases, so the line I will follow will be based on the
+% following sequences for 10 and 12-point main text.
+%
+%   tiny       5     6
+%   script     7     8
+%   footnote   8     10
+%   small      9     11
+%   normal     10    12   <<<<< main default size
+%   large      12    14
+%   Large      14    17
+%   LARGE      17    20
+%   huge       20    25
+%   Huge       25    25
 
 fluid '(cm!-widths!*);
 
@@ -807,32 +870,35 @@ symbolic procedure fancy!-terpri!* u;
      if fancy!-line!* then
          fancy!-page!* := fancy!-line!* . fancy!-page!*;
      fancy!-pos!* :=tablevel!* * 10;
+     fancy!-texpos := tablevel!* * 30000; % Roughtly 1 cm
      fancy!-line!*:= {'tab . tablevel!*};
      overflowed!* := nil
    >>;
 
 symbolic macro procedure fancy!-level u;
  % unwind-protect for special output functions.
-  {'prog,'(pos fl w),
+  {'prog,'(pos tpos fl w),
       '(setq pos fancy!-pos!*),
+      '(setq tpos fancy!-texpos),
       '(setq fl fancy!-line!*),
       {'setq,'w,cadr u},
       '(cond ((eq w 'failed)
               (setq fancy!-line!* fl)
+              (setq fancy!-texpos tpos)
               (setq fancy!-pos!* pos))),
        '(return w)};
 
 symbolic procedure fancy!-begin();
   % collect current status of fancy output. Return as a list
   % for later recovery.
-  {fancy!-pos!*,fancy!-line!*};
+  {fancy!-pos!*,fancy!-line!*,fancy!-texpos};
 
 symbolic procedure fancy!-end(r,s);
   % terminates a fancy print sequence. Eventually resets
   % the output status from status record <s> if the result <r>
   % signals an overflow.
   <<if r='failed then
-     <<fancy!-line!*:=car s; fancy!-pos!*:=cadr s>>;
+     <<fancy!-line!*:=car s; fancy!-pos!*:=cadr s;fancy!-texpos:=caddr s>>;
      r>>;
 
 symbolic procedure fancy!-mode u;
@@ -853,11 +919,11 @@ symbolic procedure fancy!-maprint(l,p!*!*);
    % print line.  Special cases are handled by:
    %    pprifn: a print function that includes bracket level as 2nd arg.
    %     prifn: a print function with one argument.
-  (begin scalar p,x,w,pos,fl;
+  (begin scalar p,x,w,pos,tpos, fl;
         p := p!*!*;     % p!*!* needed for (expt a (quotient ...)) case.
         if null l then return nil;
         if atom l then return fancy!-maprint!-atom(l,p);
-        pos := fancy!-pos!*; fl := fancy!-line!*;
+        pos := fancy!-pos!*; tpos := fancy!-texpos; fl := fancy!-line!*;
 
         if not atom car l then return fancy!-maprint(car l,p);
 
@@ -874,7 +940,7 @@ symbolic procedure fancy!-maprint(l,p!*!*);
           then return nil;
 
         if testing!-width!* and overflowed!*
-           or w='failed then return fancy!-fail(pos,fl);
+           or w='failed then return fancy!-fail(pos,tpos,fl);
 
         % eventually convert expression to a different form
         % for printing.
@@ -906,7 +972,7 @@ symbolic procedure fancy!-maprint(l,p!*!*);
         >>;
 
         return if testing!-width!* and overflowed!*
-              or w='failed then fancy!-fail(pos,fl) else nil;
+              or w='failed then fancy!-fail(pos,tpos,fl) else nil;
     end ) where obrkp!*=obrkp!*;
 
 symbolic procedure fancy!-convert(l,m);
@@ -1095,8 +1161,8 @@ symbolic procedure fancy!-adjust!-bkt!-levels u;
 
 symbolic procedure fancy!-exptpri(l,p);
 % Prints expression in an exponent notation.
-   (begin scalar !*list,pp,q,w,w1,w2,pos,fl;
-      pos:=fancy!-pos!*; fl:=fancy!-line!*;
+   (begin scalar !*list,pp,q,w,w1,w2,pos,tpos,fl;
+      pos:=fancy!-pos!*; tpos:=fancy!-texpos; fl:=fancy!-line!*;
       pp := not((q:=get('expt,'infix))>p);  % Need to parenthesize
       w1 := cadr l; w2 := caddr l;
       testing!-width!* := t;
@@ -1107,21 +1173,22 @@ symbolic procedure fancy!-exptpri(l,p);
           then w2 := list('minus,list(car w2,cadadr w2,caddr w2))
           else w2 := negnumberchk w2;
       if fancy!-maprint(w1,q)='failed
-            then return fancy!-fail(pos,fl);
+            then return fancy!-fail(pos,tpos,fl);
      fancy!-prin2!*("^",0);
      if eqcar(w2,'quotient) and fixp cadr w2 and fixp caddr w2 then
       <<fancy!-prin2!*("{",0); w:=fancy!-inprint('!/,0,cdr w2);
                  fancy!-prin2!*("}",0)>>
            else w:=fancy!-maprint!-tex!-bkt(w2,0,nil);
-     if w='failed then return fancy!-fail(pos,fl) ;
+     if w='failed then return fancy!-fail(pos,tpos,fl) ;
     end) where !*ratpri=!*ratpri,
            testing!-width!*=testing!-width!*;
 
 put('expt,'fancy!-pprifn,'fancy!-exptpri);
 
 symbolic procedure fancy!-inprint(op,p,l);
-  (begin scalar x,y,w, pos,fl;
+  (begin scalar x,y,w, pos,tpos,fl;
      pos:=fancy!-pos!*;
+     tpos:= fancy!-texpos;
      fl:=fancy!-line!*;
       % print product of quotients using *.
      if op = 'times and eqcar(car l,'quotient) and
@@ -1154,7 +1221,7 @@ symbolic procedure fancy!-inprint(op,p,l);
           l := cdr l
       >>;
      if testing!-width!* and (overflowed!* or w='failed)
-            then return fancy!-fail(pos,fl);
+            then return fancy!-fail(pos,tpos,fl);
      if !*list and obrkp!* and memq(op,'(plus minus)) then
         <<sumlevel!*:=sumlevel!*+1;
           tablevel!* := tablevel!* + 1>>;
@@ -1162,7 +1229,7 @@ symbolic procedure fancy!-inprint(op,p,l);
           % main line:
          fancy!-inprint1(op,p,l)
      else w:=fancy!-inprint2(op,p,l);
-     if testing!-width!* and w='failed then return fancy!-fail(pos,fl);
+     if testing!-width!* and w='failed then return fancy!-fail(pos,tpos,fl);
    end
    ) where tablevel!*=tablevel!*, sumlevel!*=sumlevel!*;
 
@@ -1377,22 +1444,27 @@ symbolic procedure fancy!-boolvalpri u;
 put('boolvalue!*,'fancy!-prifn,'fancy!-boolvalpri);
 
 symbolic procedure fancy!-quotpri u;
-   begin scalar n1,n2,fl,w,pos,testing!-width!*;
+   begin scalar n1,n2,n1t,n2t,fl,w,pos,tpos,testing!-width!*;
      if overflowed!* or (!*acn and !*list) then return 'failed;
      testing!-width!*:=t;
      pos:=fancy!-pos!*;
-     fl:=fancy!-line!*;
+     tpos:=fancy!-texpos;
+     fl:=fancy!-line!*; 
      fancy!-prin2!*("\frac",0);
      w:=fancy!-maprint!-tex!-bkt(cadr u,0,t);
      n1 := fancy!-pos!*;
+     n1t := fancy!-texpos;
      if w='failed
-       then return fancy!-fail(pos,fl);
+       then return fancy!-fail(pos,tpos,fl);
      fancy!-pos!* := pos;
+     fancy!-texpos := tpos;
      w := fancy!-maprint!-tex!-bkt(caddr u,0,nil);
      n2 := fancy!-pos!*;
+     n2t := fancy!-texpos;
      if w='failed
-       then return fancy!-fail(pos,fl);
+       then return fancy!-fail(pos,tpos,fl);
      fancy!-pos!* := max(n1,n2);
+     fancy!-texpos := max(n1t,n2t);
      return t;
   end;
 
@@ -1400,24 +1472,26 @@ symbolic procedure fancy!-maprint!-tex!-bkt(u,p,m);
   % Produce expression with tex brackets {...} if
   % necessary. Ensure that {} unit is in same formula.
   % If m=t brackets will be inserted in any case.
-  begin scalar w,pos,fl,testing!-width!*;
+  begin scalar w,pos,tpos,fl,testing!-width!*;
     testing!-width!*:=t;
     pos:=fancy!-pos!*;
+    tpos:=fancy!-texpos;
     fl:=fancy!-line!*;
    if not m and (numberp u and 0<=u and u <=9 or liter u) then
    << fancy!-prin2!*(u,t);
-      return if overflowed!* then fancy!-fail(pos,fl);
+      return if overflowed!* then fancy!-fail(pos,tpos,fl);
    >>;
    fancy!-prin2!*("{",0);
    w := fancy!-maprint(u,p);
    fancy!-prin2!*("}",0);
-   if w='failed then return fancy!-fail(pos,fl);
+   if w='failed then return fancy!-fail(pos,tpos,fl);
   end;
 
-symbolic procedure fancy!-fail(pos,fl);
+symbolic procedure fancy!-fail(pos,tpos,fl);
  <<
      overflowed!* := nil;
      fancy!-pos!* := pos;
+     fancy!-texpos := tpos;
      fancy!-line!* := fl;
      'failed
  >>;
@@ -1427,10 +1501,11 @@ put('quotient,'fancy!-prifn,'fancy!-quotpri);
 symbolic procedure fancy!-prinfit(u, p, op);
 % Display u (as with maprint) with op in front of it, but starting
 % a new line before it if there would be overflow otherwise.
-   begin scalar pos,fl,w,ll,f;
+   begin scalar pos,tpos,fl,w,ll,f;
      if pairp u and (f:=get(car u,'fancy!-prinfit)) then
         return apply(f,{u,p,op});
      pos:=fancy!-pos!*;
+     tpos:=fancy!-texpos;
      fl:=fancy!-line!*;
      begin scalar testing!-width!*;
        testing!-width!*:=t;
@@ -1438,7 +1513,7 @@ symbolic procedure fancy!-prinfit(u, p, op);
        if w neq 'failed then w := fancy!-maprint(u,p);
      end;
      if w neq 'failed then return t;
-     fancy!-line!*:=fl; fancy!-pos!*:=pos;
+     fancy!-line!*:=fl; fancy!-pos!*:=pos; fancy!-texpos:=tpos;
      if testing!-width!* and w eq 'failed then return w;
 
      if op='plus and eqcar(u,'minus) then <<op := 'minus; u:=cadr u>>;
@@ -1973,8 +2048,9 @@ symbolic procedure fancy!-matfit(u,p,op);
 % Prinfit routine for matrix.
 % a new line before it if there would be overflow otherwise.
  fancy!-level
-   begin scalar pos,fl,fp,w,ll;
+   begin scalar pos,tpos,fl,fp,w,ll;
      pos:=fancy!-pos!*;
+     tpos:=fancy!-texpos;
      fl:=fancy!-line!*;
      begin scalar testing!-width!*;
        testing!-width!*:=t;
@@ -1983,7 +2059,7 @@ symbolic procedure fancy!-matfit(u,p,op);
      end;
      if w neq 'failed or
        (w eq 'failed and testing!-width!*) then return w;
-     fancy!-line!*:=fl; fancy!-pos!*:=pos; w:=nil;
+     fancy!-line!*:=fl; fancy!-pos!*:=pos; fancy!-texpos:=tpos; w:=nil;
      fp := fancy!-page!*;
 % matrix: give us a second chance with a fresh line
      begin scalar testing!-width!*;
@@ -1993,7 +2069,7 @@ symbolic procedure fancy!-matfit(u,p,op);
        if w neq 'failed then w := fancy!-matpri u;
      end;
      if w neq 'failed then return t;
-     fancy!-line!*:=fl; fancy!-pos!*:=pos; fancy!-page!*:=fp;
+     fancy!-line!*:=fl; fancy!-pos!*:=pos; fancy!-texpos:=tpos; fancy!-page!*:=fp;
 
      ll:=linelength nil;
      if op then fancy!-oprin op;

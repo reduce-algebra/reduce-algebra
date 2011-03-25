@@ -768,74 +768,77 @@ symbolic smacro procedure factor!-coeffs u; {1,u};
 symbolic smacro procedure factorize!-form!-recursion u; fctrf1 u;
 
 
-symbolic smacro procedure fancy!-begin; {fancy!-pos!*,fancy!-line!*};
+% I am commenting out all things from tmprint.red for now because that
+% module is being revised...
+
+%symbolic smacro procedure fancy!-begin; {fancy!-pos!*,fancy!-line!*};
 
 
-symbolic smacro procedure fancy!-condpri0 u; fancy!-condpri(u,0);
+%symbolic smacro procedure fancy!-condpri0 u; fancy!-condpri(u,0);
 
 
-symbolic smacro procedure fancy!-end(r,s); 
-   <<if equal(r,'failed)
-       then <<setq(fancy!-line!*,car s); setq(fancy!-pos!*,cadr s)>>; 
-     r>>;
+%symbolic smacro procedure fancy!-end(r,s); 
+%   <<if equal(r,'failed)
+%       then <<setq(fancy!-line!*,car s); setq(fancy!-pos!*,cadr s)>>; 
+%     r>>;
 
 
-symbolic smacro procedure fancy!-fail(pos,fl); 
-   <<setq(overflowed!*,nil); 
-     setq(fancy!-pos!*,pos); 
-     setq(fancy!-line!*,fl); 
-     'failed>>;
+%symbolic smacro procedure fancy!-fail(pos,fl); 
+%   <<setq(overflowed!*,nil); 
+%     setq(fancy!-pos!*,pos); 
+%     setq(fancy!-line!*,fl); 
+%     'failed>>;
 
 
-symbolic smacro procedure fancy!-last!-symbol; 
-   if fancy!-line!* then car fancy!-line!*;
+%symbolic smacro procedure fancy!-last!-symbol; 
+%   if fancy!-line!* then car fancy!-line!*;
 
 
-symbolic smacro procedure fancy!-matpri u; fancy!-matpri1(cdr u,nil);
+%symbolic smacro procedure fancy!-matpri u; fancy!-matpri1(cdr u,nil);
 
 
-symbolic smacro procedure fancy!-partialdfpri(u,l); 
-   fancy!-dfpri0(u,l,'partial!-df);
+%symbolic smacro procedure fancy!-partialdfpri(u,l); 
+%   fancy!-dfpri0(u,l,'partial!-df);
 
 
-symbolic smacro procedure fancy!-prin2 u; fancy!-prin2!*(u,nil);
+%symbolic smacro procedure fancy!-prin2 u; fancy!-prin2!*(u,nil);
 
 
-symbolic smacro procedure fancy!-prin2number u; 
-   if testing!-width!* then fancy!-prin2!*(u,t)
-    else fancy!-prin2number1 (if atom u then explode2 u else u);
+%symbolic smacro procedure fancy!-prin2number u; 
+%   if testing!-width!* then fancy!-prin2!*(u,t)
+%    else fancy!-prin2number1 (if atom u then explode2 u else u);
 
 
-symbolic smacro procedure fancy!-print!-function!-arguments u; 
-   fancy!-in!-brackets(and(u,{'fancy!-inprint,mkquote '!*comma!*,0,mkquote u}),
-                       '!(,'!));
+%symbolic smacro procedure fancy!-print!-function!-arguments u; 
+%   fancy!-in!-brackets(and(u,{'fancy!-inprint,mkquote '!*comma!*,0,mkquote u}),
+%                       '!(,'!));
 
 
-symbolic smacro procedure fancy!-print!-indexlist l; 
-   fancy!-print!-indexlist1(l,'!_,nil);
+%symbolic smacro procedure fancy!-print!-indexlist l; 
+%   fancy!-print!-indexlist1(l,'!_,nil);
 
 
-symbolic smacro procedure fancy!-prodpri(u,p); fancy!-sumpri!*(u,p,'prod);
+%symbolic smacro procedure fancy!-prodpri(u,p); fancy!-sumpri!*(u,p,'prod);
 
 
-symbolic smacro procedure fancy!-revalpri u; 
-   fancy!-maprin0 fancy!-unquote cadr u;
+%symbolic smacro procedure fancy!-revalpri u; 
+%   fancy!-maprin0 fancy!-unquote cadr u;
 
 
-symbolic smacro procedure fancy!-setmatpri(u,v); fancy!-matpri1(cdr v,u);
+%symbolic smacro procedure fancy!-setmatpri(u,v); fancy!-matpri1(cdr v,u);
 
 
-symbolic smacro procedure fancy!-sqreform u; prepsq!* sqhorner!* cadr u;
+%symbolic smacro procedure fancy!-sqreform u; prepsq!* sqhorner!* cadr u;
 
 
-symbolic smacro procedure fancy!-sqrtpri u; fancy!-sqrtpri!*(cadr u,2);
+%symbolic smacro procedure fancy!-sqrtpri u; fancy!-sqrtpri!*(cadr u,2);
 
 
-symbolic smacro procedure fancy!-sumpri(u,p); fancy!-sumpri!*(u,p,'sum);
+%symbolic smacro procedure fancy!-sumpri(u,p); fancy!-sumpri!*(u,p,'sum);
 
 
-symbolic smacro procedure fexpt(x,n); 
-   begin scalar w; setq(w,fexpt1(fsplit x,n)); return plus2(car w,cdr w) end;
+%symbolic smacro procedure fexpt(x,n); 
+%   begin scalar w; setq(w,fexpt1(fsplit x,n)); return plus2(car w,cdr w) end;
 
 
 symbolic smacro procedure fieldp u; and(not atom u,flagp(car u,'field));
@@ -2467,15 +2470,15 @@ symbolic smacro procedure evalgeq(u,v); not evallessp(u,v);
 symbolic smacro procedure expread; xread t;
 
 
-symbolic smacro procedure fancy!-boolvalpri u; fancy!-maprin0 cadr u;
+%symbolic smacro procedure fancy!-boolvalpri u; fancy!-maprin0 cadr u;
 
 
-symbolic smacro procedure fancy!-mode u; 
-   begin scalar m; 
-      setq(m,lispeval u); 
-      if eqcar(m,'!*sq) then setq(m,reval m); 
-      return m
-   end;
+%symbolic smacro procedure fancy!-mode u; 
+%   begin scalar m; 
+%      setq(m,lispeval u); 
+%      if eqcar(m,'!*sq) then setq(m,reval m); 
+%      return m
+%   end;
 
 
 symbolic smacro procedure formlog2 sf; 
