@@ -412,7 +412,8 @@ off cramer;
 
 % Problem 5.
 
-solve ({2*a3*b3+a5*b3+a3*b5, a5*b3+2*a5*b5+a3*b5,
+comment infinte loop in groebnerf ; 
+comment solve ({2*a3*b3+a5*b3+a3*b5, a5*b3+2*a5*b5+a3*b5,
         a5*b5, a2*b2, a4*b4, a5*b1+b5+a4*b3+a3*b4,
         a5*b3+a5*b5+a3*b5+a3*b3, a0*b2+b2+a4*b2+a2*b4+c2+a2*b0+a2*b1,
         a0*b0+a0*b1+a0*b4+a3*b2+b0+b1+b4+a4*b0+a4*b1+a2*b5+a4*b4+c1+c4
@@ -506,7 +507,8 @@ on complex;
 
 apu := {2*a - a6,2*b*c3 - 1,i - 2*x + 1,2*x**2 - 2*x + 1,n1 + 1}$
 
-solve apu;
+comment infinte loop in groebnerf ;
+comment solve apu;
 
 clear apu;
 
