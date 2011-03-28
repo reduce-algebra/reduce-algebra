@@ -178,6 +178,7 @@
  (guardian      "guardian"              test                 csl psl)
  (breduce       "breduce"                                    csl psl)
  (cdiff         "cdiff"                 test                 csl psl)
+ (bibasis       "bibasis"               test                 csl psl)
 )
 
 % End of configuration data
