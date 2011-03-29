@@ -94,10 +94,6 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
-#ifndef HAVE_LSTAT_EMPTY_STRING_BUG
-#error expected to have HAVE_LSTAT_EMPTY_STRING_BUG
-#endif
-
 #ifndef HAVE_MALLOC_H
 #error expected to have HAVE_MALLOC_H
 #endif
