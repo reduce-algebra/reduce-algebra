@@ -6,38 +6,38 @@ all:	reduce.jar minireduce.jar jlisp.jar
 
 .PHONY:	clean
 clean:
-	-rm -f *.jar *.class *.img *.log *.bak *~
+	-rm -f *.jar *.class *.img *.log *.bak *~ uk
 
 # The idea here is that the jar file contains EVERYTHING needed for
 # Reduce, and so "java -jar reduce.jar" will launch the system with its
 # default image file.
 
-reduce.jar:	*.java jlisp_manifest reduce.img
-	javac *.java
+reduce.jar:	core/*.java jlisp_manifest reduce.img
+	javac -d . core/*.java
 	cp reduce.img default.img
 	-rm -f reduce.jar
-	jar cmf jlisp_manifest reduce.jar *.class default.img
+	jar cmf jlisp_manifest reduce.jar uk default.img
 	rm default.img
 
 # minireduce.jar is a cut-down system not containing all the Reduce modules.
 # It will thus be smaller (albeit less capable of performing advanced
 # operations).
 
-minireduce.jar:	*.java jlisp_manifest minireduce.img
-	javac *.java
+minireduce.jar:	core/*.java jlisp_manifest minireduce.img
+	javac -d . core/*.java
 	cp minireduce.img default.img
 	-rm -f minireduce.jar
-	jar cmf jlisp_manifest minireduce.jar *.class default.img
+	jar cmf jlisp_manifest minireduce.jar uk default.img
 	rm default.img
 
 # jlisp.jar is merely the Lisp system without any algebra. If may sometimes
 # be easier to work with this smaller system while developing or interfacing?
 
-jlisp.jar:	*.java jlisp_manifest jlisp.img
-	javac *.java
+jlisp.jar:	core/*.java jlisp_manifest jlisp.img
+	javac -d . core/*.java
 	cp jlisp.img default.img
 	-rm -f jlisp.jar
-	jar cmf jlisp_manifest jlisp.jar *.class default.img
+	jar cmf jlisp_manifest jlisp.jar uk default.img
 	rm default.img
 
 
@@ -66,27 +66,27 @@ endif
 
 .PHONY:	jlisp.img
 jlisp.img:
-	javac *.java
+	javac -d . core/*.java
 	-rm -f jlisp.img
-	java Jlisp -w -v -z -o jlisp.img $(C)/buildcsl.lsp \
-		-D@cslbase="$(C)" -- jlispimg.log
+	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o jlisp.img \
+	$(C)/buildcsl.lsp -D@cslbase="$(C)" -- jlispimg.log
 
 
 
 .PHONY:	reduce.img
 reduce.img:
-	javac *.java
+	javac -d . core/*.java
 	-rm -f reduce.img
-	java Jlisp -w -v -z -o reduce.img $(C)/buildreduce.lsp \
-		-D@srcdir="$(C)" -- reduce.log
+	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o reduce.img \
+	$(C)/buildreduce.lsp -D@srcdir="$(C)" -- reduce.log
 
 
 .PHONY:	minireduce.img
 minireduce.img:
-	javac *.java
+	javac -d . core/*.java
 	-rm -f minireduce.img
-	java Jlisp -w -v -z -o minireduce.img $(C)/buildreduce.lsp \
-		-Dminireduce -D@srcdir="$(C)" -- reduce.log
+	java uk.co.codemist.jlisp.core.Jlisp -w -v -z -o minireduce.img \
+	$(C)/buildreduce.lsp -Dminireduce -D@srcdir="$(C)" -- reduce.log
 
 
 .PHONY:	testall
