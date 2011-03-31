@@ -59,7 +59,7 @@ EOF
     echo "\renewcommand{\headrulewidth}{0pt}"
     echo "\renewcommand{\footrulewidth}{0.4pt}"
     echo "\fancyhf{}"
-    echo "\lfoot{\tiny breduce \copyright{} 2008 by Thomas Sturm}"
+    echo "\lfoot{\tiny breduce \copyright{} 2008, 2011 by T. Sturm}"
     echo "\rfoot{\tiny page \thepage}"
     echo "\pagestyle{fancy}"
     echo "\begin{document}"
@@ -67,7 +67,7 @@ EOF
 	echo "\subsubsection*{\sf\bfseries ${headline}}"
 	echo -e "\\\smallskip\n"
     fi
-    echo "\noindent" $USER using $REDUCE on $(hostname) "(\verb&"$(arch) $(uname)"&)"
+    echo "\noindent" $USER using $REDUCE on $(hostname) "(\verb&"$(uname -m) $(uname)"&)"
     echo -e "\\\smallskip\n"
     echo "\noindent start of job on " $(date)
 }
@@ -289,6 +289,7 @@ for inst in ${seriesinstances:-"breduce_empty_series"}; do
 	filename=\"${filebasename}.red\"
 	name=${seriesprintname:-${seriesfilebasename}}${inst}
     fi
+    name=${name:+\"${name}\"}
     for ((i=0; i<counter; i+=1)); do
 	runex
 	exitcode=$?
