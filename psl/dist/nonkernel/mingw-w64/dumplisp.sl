@@ -62,7 +62,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(symbolfilename* gcknt* loop-time* gctime* ))
+(fluid '(symbolfilename* gcknt* gctime* ))
  
 (setq symbolfilename* "$pxk/bpsl")
 
@@ -94,7 +94,6 @@
     (setq unixargs* nil)              % its own args
         % must be 0 for a new file
         (setq gcknt* 0 gctime* 0)
-        (setq loop-time* nil)
         (setq unexecresult (binaryopenwrite (bldmsg "%w.img" filename)))
 	(binarywriteblock unexecresult bpscontrol 2)
         (binarywrite unexecresult 2600000)

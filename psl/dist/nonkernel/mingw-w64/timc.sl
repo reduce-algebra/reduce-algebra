@@ -54,6 +54,6 @@
 
 (de timc ()
   (external_timc timebuffer)
-  (wgetv timebuffer 0))
+  (wshift (wshift (wgetv timebuffer 0) 32) -32))
 
 (off fast-integers)

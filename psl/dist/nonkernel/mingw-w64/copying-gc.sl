@@ -103,7 +103,7 @@
  
 (compiletime (load hash-decls if-system))
  
-(fluid '(*gc gcknt* loop-time* gctime* heap-warn-level symget))
+(fluid '(*gc gcknt* gctime* heap-warn-level symget))
  
 (loadtime
   (progn (setq gcknt* 0)
@@ -219,7 +219,7 @@
   (!%reclaim))
  
 (de !%reclaim ()
- (prog (b enlargement-tried)
+ (prog (b oldtimehi oldtimelo enlargement-tried)
   (when *gc
     (errorprintf "*** Garbage collection starting")
     )
@@ -229,7 +229,9 @@
   (setq stacklast
     (makeaddressfromstackpointer
      (adjuststackpointer (current-stack-pointer) (wminus (framesize)))))
-  (setq oldtime (timc))
+  (setq oldtimehi (timc)) % a strange problem after 5 hours
+  (setq oldtimelo (wand oldtimehi 16#ffff))
+  (setq oldtimehi (wshift oldtimehi -16))
   (setq oldsize (wdifference heaplast heaplowerbound))
   (setf gcknt* (+ gcknt* 1))
  
@@ -245,8 +247,11 @@
   (internal_aftergcsystemhook)
   (aftergcsystemhook)
  
+  (setq oldtime (wor (wshift oldtimehi 16) oldtimelo))
   (setq oldtime (wdifference (timc) oldtime))
   (setf gctime* (wplus2 gctime* oldtime))
+  (when (not (posintp gctime*)) (setq gctime* (inf -1)))
+                 % another 5 hours problem
  
   (when *gc
     (gcstats))
@@ -606,12 +611,11 @@
                (known-free-space)))
 )
 (de gcstats ()
-  (let ((cpu-time (wdifference (timc) loop-time*)))
   (if (wgeq (known-free-space) 100)
       (Errorprintf "*** GC %w: %w (~ %w ms cpu time, gc : %w %%)"
-                      gcknt* (date-and-time) cpu-time
+                      gcknt* (date-and-time) (sys2int(timc))
                              (wquotient (wtimes2 100 gctime*)
-				 (wplus2 1 cpu-time)))
+				 (wplus2 1 (timc))))
       (Errorprintf "*** GC %w: Heap space exhausted" gcknt*))
   (Errorprintf "*** time %d ms, %d occupied, %d recovered, %d free"
      oldtime
@@ -620,7 +624,7 @@
          0
          (wquotient (wdifference oldsize (wdifference heaplast heaplowerbound))
                     addressingunitsperitem))
-     (known-free-space))))
+     (known-free-space)))
 
 
 (de set!-heap!-size (items) 
