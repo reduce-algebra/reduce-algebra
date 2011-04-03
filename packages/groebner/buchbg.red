@@ -73,10 +73,7 @@ symbolic procedure gevcompatible1(v1,v2,g);
 (car g=0 or car v1=car v2)
      and gevcompatible1(cdr v1,cdr v2,cdr g);
 
-% Fix by Herbert Melenk, Feb 2011
- 
 symbolic procedure gcompatible(f,h);
- cddr cadr cddr h and
  (null gmodule!* or gevcompatible1(vdpevlmon f,vdpevlmon h,gmodule!*));
  
 %symbolic procedure gcompatible(f,h);
@@ -181,8 +178,10 @@ symbolic procedure groebenumerate f;
 %           If one set becomes null,the set restriction is
 %           fulfilled and the branch can be cancelled.
 
+% Fix by Herbert Melenk, Feb 2011
+ 
 symbolic procedure groebbasein(g0,fact,abort1);
-begin scalar abort2,d,d1,d2,g,g1,g99,h,hlist,lasth,lv,p,problems,
+begin scalar abort2,d,d1,d2,g,gg,g1,g99,h,hlist,lasth,lv,p,problems,vars_g,
    p1,results,s,x;integer gvbc,probcount!*;
  groebabort!*:=abort1;lv:=length vdpvars!*;
  for each p in g0 do if vdpzero!? p then g0:=delete(p,g0);
@@ -217,9 +216,11 @@ begin
  begin
   if groebfasttest(g0,g,d,g99)then go to stop;
   !*trgroeb and groebmess50 g;
-  if g0 then<<h:=car g0;g0:=cdr g0;gsetsugar(h,nil);
-   groebsavelterm h;p:={nil,h,h}>>else
-   <<p:=car d;d:=delete(p,d);
+  if g0 then
+  <<h:=car g0;g0:=cdr g0;gsetsugar(h,nil);
+   groebsavelterm h;p:={nil,h,h}
+  >>else
+  <<p:=car d;d:=delete(p,d);
     s:=groebspolynom(cadr p,caddr p);
     if fact then
      pairsdone!*:=(vdpnumber cadr p.vdpnumber caddr p).pairsdone!*;
@@ -231,57 +232,64 @@ begin
      if not vdpzero!? h then  % only for real h's
      <<s:=groebchain(h,cadr p,g99);
       if s=h then h:=groebchain(h,caddr p,g99);
-      if secondvalue!* then g:=delete(secondvalue!*,g)>> >>;
-     if vdpzero!? h then go to bott;
-     if vevzero!? vdpevlmon h then % base 1 found
-     <<!*trgroeb and groebmess5(p,h);go to stop>>;
-     if testabort(h)then
-     <<!*trgroeb and groebmess19(h,abort1,abort2);go to stop>>;
-     s:= nil;
+      if secondvalue!* then g:=delete(secondvalue!*,g)
+     >>
+  >>;
+  if vdpzero!? h then go to bott;
+  if vevzero!? vdpevlmon h then % base 1 found
+  <<!*trgroeb and groebmess5(p,h);go to stop>>;
+  if testabort(h)then
+  <<!*trgroeb and groebmess19(h,abort1,abort2);go to stop>>;
+  s:= nil;
                 % Look for implicit or explicit factorization
-     hlist:=nil;
-     if groebrestriction!* then hlist:=groebtestrestriction(h,abort1);
-     if not hlist and fact then hlist:=groebfactorize(h,abort1,g,g99);
-     if hlist='zero then go to bott;
-     if groefeedback!* then g0:=append(groefeedback!*,g0);
-     groefeedback!*:=nil;
+  hlist:=nil;
+  if groebrestriction!* then hlist:=groebtestrestriction(h,abort1);
+  if not hlist and fact then hlist:=groebfactorize(h,abort1,g,g99);
+  if hlist='zero then go to bott;
+  if groefeedback!* then g0:=append(groefeedback!*,g0);
+  groefeedback!*:=nil;
                % Factorisation found but only one factor survived
-     if hlist and length hlist=2 then<<h:=car cadr hlist;hlist:=nil>>;
-     if hlist then
-     <<if hlist neq'cancel then
-      problems:= groebencapsulate(hlist,d,g0,g,g99,abort1,abort2,problems,fact);
-      go to stop>>;
+  if hlist and length hlist=2 then<<h:=car cadr hlist;hlist:=nil>>;
+  if hlist then
+  <<if hlist neq'cancel then
+    problems:= groebencapsulate(hlist,d,g0,g,g99,abort1,abort2,problems,fact);
+    go to stop
+  >>;
               %'h'polynomial is accepted now
-     h:=groebenumerate h;!*trgroeb and groebmess5(p,h);
+  h:=groebenumerate h;!*trgroeb and groebmess5(p,h);
                           % Construct new critical pairs
-     d1:=nil;
+  d1:=nil;
                !*trgroeb and groebmess50(g);
-     for each f in g do
-      if(car p or % That means "not an input polynomial"
+  gg:=g;vars_g:=variables g;                                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  for each f in g do
+   if(car p or % That means "not an input polynomial"
        not member(vdpnumber h.vdpnumber f,pairsdone!*)
         )and gcompatible(f,h)then
-     <<d1:=groebcplistsortin(groebmakepair(f,h),d1);
-      if tt(f,h)=vdpevlmon(f)then
-      <<g:=delete(f,g);
-                            !*trgroeb and groebmess2 f>> >>;
+  <<d1:=groebcplistsortin(groebmakepair(f,h),d1);
+    if tt(f,h)=vdpevlmon(f)then
+    <<g:=delete(f,g);!*trgroeb and groebmess2 f>>
+  >>;
+  if vars_g neq variables g then g:=gg;                       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 !*trgroeb and groebmess51 d1;
-      d2:=nil;
-      while d1 do
-      <<d1:=groebinvokecritf d1;p1:=car d1;d1:=cdr d1;
-         d2:=groebinvokecritbuch4(p1,d2);
-         d1:=groebinvokecritm(p1,d1)>>;
-         d:=groebinvokecritb(h,d);
-         d:=groebcplistmerge(d,d2);
+  d2:=nil;
+  while d1 do
+  <<d1:=groebinvokecritf d1;p1:=car d1;d1:=cdr d1;
+    d2:=groebinvokecritbuch4(p1,d2);
+    d1:=groebinvokecritm(p1,d1)
+  >>;
+  d:=groebinvokecritb(h,d);
+  d:=groebcplistmerge(d,d2);
                      % Monomials and binomials
-         if vdplength h < 3 and car p then
-         <<g:=groebsecondaryreduction(h,g,g99,d,nil,t);
-           if g='abort then go to stop;g99:=secondvalue!*;
-           d:=thirdvalue!*>>;
-           g:=h.g;lasth:=h;
-           g99:=groeblistadd(h,g99);
-                        !*trgroeb and groebmess8(g,d);
-           go to bott;
-stop:      d:=g:=g0:=nil;
+  if vdplength h < 3 and car p then
+  <<g:=groebsecondaryreduction(h,g,g99,d,nil,t);
+    if g='abort then go to stop;g99:=secondvalue!*;
+    d:=thirdvalue!*
+  >>;
+  g:=h.g;lasth:=h;
+  g99:=groeblistadd(h,g99);
+                         !*trgroeb and groebmess8(g,d);
+  go to bott;
+stop:d:=g:=g0:=nil;
 bott:;
 end;
 g:=vdplsort g;% Such that g descending
@@ -292,6 +300,26 @@ if g1 then<<results:=g1.results;gvbc:=gvbc+1>>;
 if gvbc >= groebresmax then
   lpriw("########","warning: GROEBRESMAX limit reached");
 return groebbasein3 results end;
+
+symbolic procedure variables g;
+% "g" is a list of vdps; the procedure returns a list of nil and t
+% where t is set if the corresponding dip variable occurs in "g".
+ begin integer l,var_count; scalar ev,f,cvars,vars;
+  if null g then return nil;
+  l:=length dipvars!*;
+  vars:=for i:=1 step 1 until l collect nil;
+b: f:=cadr cddr car g;
+c: ev:=car f; cvars:=vars;
+d: if car ev #> 0 and null car cvars then
+  <<car cvars:=t; var_count:=var_count#+1>>;
+  if var_count eq l then return vars;
+  ev:=cdr ev; if ev then <<cvars:=cdr cvars; go to d>>;
+  f:=cddr f; if f then go to c;
+  g:=cdr g; if g then go to b;
+  return vars;
+ end;
+
+% end of fix, 3.4.2011
 
 symbolic procedure groebfasttest(g0,g,d,g99);
 <<g:=g0:=d:=g99:=nil;nil>>;% A hook for special techniques
