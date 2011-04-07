@@ -135,21 +135,24 @@
 
 (declare-warray filestatus-work size 13)
 
+
+(compiletime (flag '(mkfiletime) 'internalfunction))
+
+(de mkfiletime (low high)
+   (let ((bi (gtpos 1)))
+        (wputv (inf bi) 2 low)
+        (cons 'filetime bi)))
+
 (de filestatus (filenamestring dostrings)
   (let ((status (get_file_status
 		 (expand_file_name (unixstring filenamestring))
 		 filestatus-work
 		 (if dostrings 1 0))))
-    (when (weq status 0)      % 0 = success
-      (for (from i 0 12 2)
-	   (in label '(user group mode size writetime accesstime
-			    statuschangetime))
-	   (collect (cons label
-			  (cons
-			   (importforeignstring  (wgetv filestatus-work i))
-			   (sys2int (wgetv filestatus-work (+ i 1))))))
-	   ))))
-
+     (when (and (weq status 0) (getd 'gtpos))    % 0 = success
+	   (list (cons 'createtime (mkfiletime (wgetv filestatus-work 0)))
+		 (cons 'accesstime (mkfiletime (wgetv filestatus-work 1)))
+		 (cons 'writetime (mkfiletime (wgetv filestatus-work 2))))
+)))
 
 % Inf is used heavily here just to mask off the high order byte.           
 % 9836 assembler and linker generate addresses with high order             
@@ -324,11 +327,11 @@
 (de fcntl (a1 a2 a3)
    (ieee_flags 2 a1 a2 a3))
 
-(de Linux_open(a1 a2 a3); % uses open in Linux sense, returns an int fd
+(de Linux_open(a1 a2 a3) % uses open in Linux sense, returns an int fd
  (ashift (wshift (ieee_flags 3 (strbase (strinf a1)) a2 a3)
            32 ) -32)) % sign extended
 
-(de Linux_close(a1);    % exptects an int fd
+(de Linux_close(a1)   % exptects an int fd
     (ieee_flags 4 a1))
 
 (define-constant O_ACCMODE         8#003 )
