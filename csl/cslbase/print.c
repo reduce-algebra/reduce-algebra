@@ -1,11 +1,11 @@
-/*  print.c                           Copyright (C) 1990-2010 Codemist Ltd */
+/*  print.c                           Copyright (C) 1990-2011 Codemist Ltd */
 
 /*
  * Printing, plus some file-related operations.
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 7c0927a6 18-Mar-2011 */
+/* Signature: 2ede2817 12-Apr-2011 */
 
 #include "headers.h"
 
@@ -1441,7 +1441,7 @@ Lisp_Object Lmath_display(Lisp_Object nil, Lisp_Object a)
 {
 /*
  * In all cases where maths display is not supported (ie if output is
- * not directly to a FOX window that has been built with SHOWMATH
+ * not directly to a window that has been built with SHOWMATH
  * option) this returns nil and does not do anything at all exciting. If there
  * is the possibility of maths output the cases supported here are:
  *
@@ -1482,7 +1482,7 @@ Lisp_Object Lmath_display(Lisp_Object nil, Lisp_Object a)
            std = stream_write_data(std);
         if (stream_write_fn(std) != char_to_terminal) return onevalue(nil);
 /*
- * Now I believe I am attached to a FOX screen that can display maths.
+ * Now I believe I am attached to a screen that can display maths.
  */
         return onevalue(lisp_true);
     }

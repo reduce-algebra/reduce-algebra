@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1eb1e3fe 21-Mar-2011 */
+/* Signature: 41014a0c 12-Apr-2011 */
 
 #include "wx/wxprec.h"
 
@@ -5071,53 +5071,79 @@ const char *fwin_maths = NULL;
 void fwin_showmath(const char *s)
 {
     if (!windowed) return;
-#ifdef RECONSTRUCTED
-    fwin_ensure_screen();   // get regular text up to date first.
-    fwin_maths = s;
-    LockMutex(panel->pauseMutex);
-// here I have to do real inter-thread communication.
-    if (delay_callback != NULL) (*delay_callback)(1);
-    wake_up_terminal(FXTerminal::SHOW_MATH);
-// here I need to wait until the signal that I just sent has been received
-// and processed.
-    regain_lockstep();
-    if (delay_callback != NULL) (*delay_callback)(0);
-    UnlockMutex(panel->pauseMutex);
-#else
     FWIN_LOG("fwin_showmath called\n");
 // The current version of this is going to be pretty outrageous!
 // It will suppose you have latex installed on your computer and will
 // invoke it to convert the formula you just created into .dvi format.
     char tempd[LONGEST_LEGAL_FILENAME];
+#ifdef WIN32
     int rc = GetTempPathA(LONGEST_LEGAL_FILENAME, tempd);
-    if (rc == 0 || rc >= LONGEST_LEGAL_FILENAME) strcpy(tempd, "C:\\");
-    int procid = GetCurrentProcessId();
+    if (rc == 0 || rc >= LONGEST_LEGAL_FILENAME) strcpy(tempd, "C:");
+    DWORD procid = GetCurrentProcessId();
+    char *ww;
+    for (ww=tempd; *ww!=0; ww++) if (*ww == '\\') *ww = '/';
+#else
+    strcpy(tempdir, "/tmp");
+    pid_t procid = getpid();
+#endif
     int dirlen = strlen(tempd);
-    sprintf(&tempd[dirlen], "reduce-%d.tex", procid);
+    if (tempd[dirlen-1] == '/') dirlen--;
+    FWIN_LOG("temp = \"%s\" length %d\n", tempd, dirlen);
+    sprintf(&tempd[dirlen], "/reduce-%d.tex", (int)procid);
+    FWIN_LOG("TeX file will be in \"%s\"\n", tempd);
     FILE *f = fopen(tempd, "w");
     fprintf(f, "\\documentclass{article}\n");
     fprintf(f, "\\pagestyle{empty}\n");
-    fprintf(f, "\\usepackage{breqn}\n");
+    fprintf(f, "\\setlength{\\oddsidemargin}{0in}\n");
+    fprintf(f, "\\setlength{\\evensidemargin}{0in}\n");
+    fprintf(f, "\\setlength{\\topmargin}{0in}\n");
+    fprintf(f, "\\setlength{\\headheight}{0in}\n");
+    fprintf(f, "\\setlength{\\headsep}{0in}\n");
+    fprintf(f, "\\setlength{\\textheight}{11in}\n");
     fprintf(f, "\\begin{document}\n");
-    fprintf(f, "\\begin{dmath*}\n");
-    fprintf(f, "$$ %s $$\n", s);
-    fprintf(f, "\\end{dmath*}\n");
+    fprintf(f, "%s\n", s);
     fprintf(f, "\\end{document}\n");
     fclose(f);
     char cmd[LONGEST_LEGAL_FILENAME];
+//
+// Under Windows I want to have cygwin installed and on your "PATH", with
+// tex included. However the command "latex" in that case is a cygwin-style
+// symbolic link, and the "system()" function does not accept it. To work
+// around that I explicitly invoke the bash shell. For this to behave you MUST
+// have c:\cygwin\bin (or wherever you have put things) on your PATH so that
+// bash and cygwin1.dll can be found. I really rather dislike this situation.
+//
+#ifdef WIN32
+    sprintf(cmd, "bash -c \"latex --output-directory=%.*s reduce-%d.tex\"",
+                 dirlen, tempd, procid);
+#else
     sprintf(cmd, "latex --output-directory=%.*s reduce-%d.tex",
                  dirlen, tempd, procid);
-    FWIN_LOG(s);
-    FWIN_LOG(cmd);
-    system(cmd);
-    DeleteFileA(tempd); 
-    sprintf(&tempd[dirlen], "reduce-%d.aux", procid);
-    DeleteFileA(tempd); 
-    sprintf(&tempd[dirlen], "reduce-%d.log", procid);
-    DeleteFileA(tempd); 
-    sprintf(&tempd[dirlen], "reduce-%d.dvi", procid);
-//  DeleteFileA(tempd); 
 #endif
+    FWIN_LOG("TeX is: \"%s\"\n", s);
+    FWIN_LOG("Command: \"%s\"\n", cmd);
+    int src = system(cmd);
+    FWIN_LOG("system returns %d\n", src);
+#ifdef WIN32
+    sprintf(cmd, ".\\wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, procid);
+#else
+    sprintf(cmd, "./wxdvi %.*s/reduce-%d.dvi", dirlen, tempd, procid);
+#endif
+    FWIN_LOG("Cmd: \"%s\"\n", cmd);
+    system(cmd);
+#ifdef WIN32
+#define delfile DeleteFileA
+#else
+#define delfile remove
+#endif
+//  delfile(tempd);     // Preserve the TeX file...
+    sprintf(&tempd[dirlen], "/reduce-%d.aux", procid);
+    delfile(tempd); 
+    sprintf(&tempd[dirlen], "/reduce-%d.log", procid);
+    delfile(tempd); 
+    sprintf(&tempd[dirlen], "/reduce-%d.dvi", procid);
+// Just for now I will leave the .dvi file around...
+//  delfile(tempd); 
 }
 
 

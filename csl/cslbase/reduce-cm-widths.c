@@ -55,7 +55,7 @@
 
 
 
-/* Signature: 71e67d42 14-Nov-2010 */
+/* Signature: 4b6b2b53 12-Apr-2011 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,21 +126,21 @@ static int process(char *d, char *s, int final)
     fclose(f);
     fprintf(out, "    %% name checksum design-size (millipoints)\n");
     fprintf(out, "    list(\"%s\", %d, %d, list!-to!-vector '(\n    ",
-       d, checksum, (int)((1000LL*(int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
+       d, checksum, (int)((10000LL*(int64_t)designsize+512LL*1024LL)/(1024LL*1024LL)));
 // The TeX fonts only use the first 128 character positions and so I will
 // not bother with recording widths for the range 128-255.
     for (c=0; c<127; c++)
     {           w = 0;
         if (c>=bc && c<=ec)
             w = lentab[(finfo[c] >> 24) & 0xff];
-        w = (int)((1000.0*(double)w*designpoints)/(1024.0*1024.0));
+        w = (int)((10000.0*(double)w)/(1024.0*1024.0));
         fprintf(out, "%7d ", w);
         if ((c % 8) == 7) fprintf(out, "\n    ");
     }
     w = 0;
     if (127>=bc && 127<=ec)
         w = lentab[(finfo[127] >> 24) & 0xff];
-    w = (int)((1000.0*(double)w*designpoints)/(1024.0*1024.0));
+    w = (int)((10000.0*(double)w)/(1024.0*1024.0));
     fprintf(out, "%7d))", w);
     if (!final) fprintf(out, ",");
     fprintf(out, "\n");
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     fprintf(out, "%% cmfont-widths.red\n");
     fprintf(out, "%% Widths for characters in Computer Modern Fonts\n\n");
     fprintf(out, "%% extracted from %s\n\n", FONT_PATH);
-    fprintf(out, "%% Widths here are given in millipoints\n\n");
+    fprintf(out, "%% Widths here are given in units of 1/10000 point\n\n");
     fprintf(out, "fluid '(cm!-widths!*);\n\n");
     fprintf(out, "cm!-widths!* := list(\n");
 //

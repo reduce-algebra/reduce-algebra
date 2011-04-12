@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 03b1fe7d 12-Apr-2011 */
+/* Signature: 606373fd 12-Apr-2011 */
 
 
 
@@ -1195,7 +1195,7 @@ int dviPanel::DVItoScreen(int n)
 // At present this is a fixed scaling. I may well want to make it variable
 // at some later stage. The scaling here, which is based on an assumption
 // I make about the dots-per-inch resolution of my display, will end up
-// imprtant when establishing fonts.
+// important when establishing fonts.
     return (int)(scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
 }
 
@@ -1203,7 +1203,8 @@ int dviPanel::DVItoScreenUP(int n)
 {
 // This ROUND UP to the next integer, and that is needed so that (eg)
 // very thin rules end up at least one pixel wide. Well I round up by
-// adding a value just under 1,0 then truncating.
+// adding a value just under 1.0 then truncating. That recipe works OK for
+// positive arguments!
     return (int)(0.999999999 + scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
 }
 
@@ -1751,10 +1752,10 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     mydc.SetBrush(*wxBLACK_BRUSH);
     mydc.SetPen(*wxBLACK_PEN);
     wxSize window(mydc.GetSize());
-    for (int i=0; i<80; i++)
-    {   wxString c = (wchar_t)('0' + (i % 10));
-        mydc.DrawText(c, (int)((double)i*window.GetWidth()/80.0), 0);
-    }
+//    for (int i=0; i<80; i++)
+//    {   wxString c = (wchar_t)('0' + (i % 10));
+//        mydc.DrawText(c, (int)((double)i*window.GetWidth()/80.0), 0);
+//    }
     dcp = &mydc;
     RenderDVI();
     return;

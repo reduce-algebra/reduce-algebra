@@ -768,7 +768,8 @@ symbolic procedure test_a_package names;
 %          condition here.
 
        rr := resource!-limit(list('in_list1, mkquote packge, t),
-                             600,  % allow 10 minutes per test
+                             (if memq('jlisp, lispsystem!*) then 1000
+                              else 180),  % allow 15 or 3 minutes per test
                              200,  % allow 200 megaconses
                              10000,% allow ten megabytes of I/O
                              -1);  % Do not limit Lisp-level errors at all 
