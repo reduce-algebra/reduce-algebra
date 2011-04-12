@@ -12,7 +12,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -40,7 +40,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7691cfba 18-Nov-2010 */
+/* Signature: 03b1fe7d 12-Apr-2011 */
 
 
 
@@ -1207,12 +1207,16 @@ int dviPanel::DVItoScreenUP(int n)
     return (int)(0.999999999 + scaleAdjustment*pixelsPerPoint*(double)n/65536.0);
 }
 
+static int rendered = 0;
+
 void dviPanel::SetChar(int32_t c)
 {
-#if 0
-    logprintf("Set (%f,%f) char %.2x (%c)\n",
-        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
-            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
+#ifdef DEBUG
+    if (!rendered) // only trace the first time
+//    logprintf("Set (%.2f,%.2f) char %.2x (%c)\n",
+//        (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
+//            c <  0x20 || c >= 0x7f ? ' ' : (int)c);
+    logprintf("SetChar%d [%c] %d %d\n", (int)c, (c <  0x20 || c >= 0x7f ? ' ' : (int)c), (int)h, (int)v);
 #endif
     wxString s = (wchar_t)MapChar(c);
     wxCoord width, height, descent;
@@ -1243,7 +1247,8 @@ void dviPanel::SetChar(int32_t c)
 void dviPanel::PutChar(int32_t c)
 {
 #ifdef DEBUG
-    logprintf("Put (%f,%f) char %.2x (%c)\n",
+    if (!rendered)
+    logprintf("Put (%.2f,%.2f) char %.2x (%c)\n",
         (double)h/(double)(1<<20), (double)v/(double)(1<<20), (int)c,
             c < 0x20 || c > 0x7f ? ' ' :  (int)c);
 #endif
@@ -1282,142 +1287,142 @@ void dviPanel::RenderDVI()
         else
         {   switch (c)
             {
-        case 128:
+        case 128: // set1
                 SetChar(*stringInput++);
                 continue;
-        case 129:
+        case 129: // set2
                 SetChar(u2());
                 continue;
-        case 130:
+        case 130: // set3
                 SetChar(u3());
                 continue;
-        case 131:
+        case 131: // set4
                 SetChar(s4());
                 continue;
-        case 132:                           // set rule
+        case 132: // set rule
                 a = s4();
                 b = s4();
                 if (a > 0 && b > 0) SetRule(a, b);
                 h += b;
                 continue;
-        case 133:
+        case 133: // put1
                 PutChar(*stringInput++);
                 continue;
-        case 134:
+        case 134: // put2
                 PutChar(u2());
                 continue;
-        case 135:
+        case 135: // put3
                 PutChar(u3());
                 continue;
-        case 136:
+        case 136: // put4
                 PutChar(s4());
                 continue;
-        case 137:
+        case 137: // put rule
                 a = s4();
                 b = s4();
                 if (a > 0 && b > 0) SetRule(a, b);
                 continue;
-        case 138:
-                continue;                   // no operation
-        case 139:                           // beginning of page
+        case 138: // nop
+                continue;
+        case 139: // beginning of page
                 h = v = w = x = y = z = stackp = 0;
                 for (i=0; i<10; i++)
                     C[i] = s4();
                 p = s4();
                 continue;
-        case 140:                           // end of page
+        case 140: // end of page
                 continue;
-        case 141:
+        case 141: // push
                 push();
                 continue;
-        case 142:
+        case 142: // pop
                 pop();
                 continue;
-        case 143:
+        case 143: // right1
                 h += s1();
                 continue;
-        case 144:
+        case 144: // right2
                 h += s2();
                 continue;
-        case 145:
+        case 145: // right3
                 h += s3();
                 continue;
-        case 146:
+        case 146: // right4
                 h += s4();
                 continue;
-        case 147:
+        case 147: // w0
                 h += w;
                 continue;
-        case 148:
+        case 148: // w1
                 h += (w = s1());
                 continue;
-        case 149:
+        case 149: // w2
                 h += (w = s2());
                 continue;
-        case 150:
+        case 150: // w3
                 h += (w = s3());
                 continue;
-        case 151:
+        case 151: // w4
                 h += (w = s4());
                 continue;
-        case 152:
+        case 152: // x0
                 h += x;
                 continue;
-        case 153:
+        case 153: // x1
                 h += (x = s1());
                 continue;
-        case 154:
+        case 154: // x2
                 h += (x = s2());
                 continue;
-        case 155:
+        case 155: //x3
                 h += (x = s3());
                 continue;
-        case 156:
+        case 156: // x4
                 h += (x = s4());
                 continue;
-        case 157:
+        case 157: // down1
                 v += s1();
                 continue;
-        case 158:
+        case 158: // down2
                 v += s2();
                 continue;
-        case 159:
+        case 159: // down3
                 v += s3();
                 continue;
-        case 160:
+        case 160: // down4
                 v += s4();
                 continue;
-        case 161:
+        case 161: // y0
                 v += y;
                 continue;
-        case 162:
+        case 162: // y1
                 v += (y = s1());
                 continue;
-        case 163:
+        case 163: // y2
                 v += (y = s2());
                 continue;
-        case 164:
+        case 164: // y3
+                v += (y = s3());
+                continue;
+        case 165: // y4
                 v += (y = s4());
                 continue;
-        case 165:
-                v += (y = s4());
-                continue;
-        case 166:
+        case 166: // z0
                 v += z;
                 continue;
-        case 167:
+        case 167: // z1
                 v += (z = s1());
                 continue;
-        case 168:
+        case 168: // z2
                 v += (z = s2());
                 continue;
-        case 169:
+        case 169: // z3
                 v += (z = s3());
                 continue;
-        case 170:
+        case 170: // z4
                 v += (z = s4());
                 continue;
-        case 171:  case 172:  case 173:  case 174:
+        case 171:  case 172:  case 173:  case 174: // fnt
         case 175:  case 176:  case 177:  case 178:
         case 179:  case 180:  case 181:  case 182:
         case 183:  case 184:  case 185:  case 186:
@@ -1435,47 +1440,47 @@ void dviPanel::RenderDVI()
         case 231:  case 232:  case 233:  case 234:
                 SelectFont(c - 171);
                 continue;
-        case 235:
+        case 235: // fnt1
                 SelectFont(*stringInput++);
                 continue;
-        case 236:
+        case 236: // fnt2
                 SelectFont(u2());
                 continue;
-        case 237:
+        case 237: // fnt3
                 SelectFont(u3());
                 continue;
-        case 238:
+        case 238: // fnt4
                 SelectFont(s4());
                 continue;
-        case 239:
+        case 239: // xxx1
                 k = *stringInput++;
                 for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
-        case 240:
+        case 240: // xxx2
                 k = u2();
                 for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
-        case 241:
+        case 241: // xxx3
                 k = u3();
                 for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
-        case 242:
+        case 242: // xxx4
                 k = s4();
                 for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
-        case 243:                         // fnt_def1
+        case 243: // fnt_def1
                 DefFont(*stringInput++);
                 continue;
-        case 244:
+        case 244: // fnt_def2
                 DefFont(u2());
                 continue;
-        case 245:
+        case 245: // fnt_def3
                 DefFont(u3());
                 continue;
-        case 246:
+        case 246: // fnt_def4
                 DefFont(s4());
                 continue;
-        case 247:                          // pre
+        case 247: // pre
                 i = *stringInput++;
                 if (i != 2)
                 {   logprintf("illegal DVI version %d\n", i);
@@ -1487,20 +1492,18 @@ void dviPanel::RenderDVI()
                 k = *stringInput++;
                 for (i=0; i<k; i++) (void)*stringInput++;
                 continue;
-        case 248:                          // post
+        case 248: // post
                 (void)s4(); // ignore p;
                 (void)s4(); // ignure num
                 (void)s4(); // ignore den
                 (void)s4(); // ignore mag
                 (void)s4(); // height+depth of largest page
                 (void)s4(); // width of largest page
-#if 0
-                logprintf("Greatest stack depth = %d\n", u2());
-                logprintf("Page count = %d\n", u2());
-#endif
+                (void)u2(); // stack depth
+                (void)u2(); // page count
     // The postamble will have font definitions here as well.
                 continue;
-        case 249:                          // post_post
+        case 249: // post_post
                 (void)s4();
                 (void)*stringInput++;
                 if (*stringInput++ != 223) logprintf("Malformed DVI file\n");
@@ -1517,6 +1520,7 @@ void dviPanel::RenderDVI()
 #if 0
     logprintf("end of file\n");
 #endif
+    rendered = 1;
 }
 
 
