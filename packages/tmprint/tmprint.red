@@ -518,7 +518,9 @@ symbolic procedure fancy!-flush();
       math!-display 2; % clear out any previous junk
       for each line in reverse fancy!-page!* do
         if line and not eqcar(car line,'tab) then <<
+          if 'wx memq lispsystem!* then fancy!-out!-item "\[";
           for each it in reverse line do fancy!-out!-item it;
+          if 'wx memq lispsystem!* then fancy!-out!-item "\]";
           terpri() >>;
       math!-display 3 >> where !*standard!-output!*=!*math!-output!*
     else for each line in reverse fancy!-page!* do
