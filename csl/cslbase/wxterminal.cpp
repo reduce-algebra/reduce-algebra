@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 41014a0c 12-Apr-2011 */
+/* Signature: 3a9fb5a6 13-Apr-2011 */
 
 #include "wx/wxprec.h"
 
@@ -5083,7 +5083,9 @@ void fwin_showmath(const char *s)
     char *ww;
     for (ww=tempd; *ww!=0; ww++) if (*ww == '\\') *ww = '/';
 #else
-    strcpy(tempdir, "/tmp");
+    char *tt = my_getenv("TMPDIR");
+    if (tt = NULL) strcpy(tempd, "/tmp");
+    else strcpy(tempd, tt);
     pid_t procid = getpid();
 #endif
     int dirlen = strlen(tempd);
@@ -5099,6 +5101,10 @@ void fwin_showmath(const char *s)
     fprintf(f, "\\setlength{\\topmargin}{0in}\n");
     fprintf(f, "\\setlength{\\headheight}{0in}\n");
     fprintf(f, "\\setlength{\\headsep}{0in}\n");
+// Actually I will be in a MESS if a single formula uses more than a page
+// of output. I will worry about that later! Specifically I may need to ensure
+// that my dvi-rendering code shows multiple pages neatly and worry about
+// specing at the end of a page.
     fprintf(f, "\\setlength{\\textheight}{11in}\n");
     fprintf(f, "\\begin{document}\n");
     fprintf(f, "%s\n", s);
