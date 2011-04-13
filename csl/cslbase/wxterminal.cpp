@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3a9fb5a6 13-Apr-2011 */
+/* Signature: 28e5df7c 13-Apr-2011 */
 
 #include "wx/wxprec.h"
 
@@ -711,10 +711,10 @@ private:
 };
 
 BEGIN_EVENT_TABLE(fwinFrame, wxFrame)
-    EVT_CLOSE(           fwinFrame::OnClose)
-    EVT_MENU(wxID_EXIT,  fwinFrame::OnExit)
-    EVT_MENU(wxID_ABOUT, fwinFrame::OnAbout)
-    EVT_SIZE(            fwinFrame::OnSize)
+    EVT_CLOSE(                     fwinFrame::OnClose)
+    EVT_MENU(wxID_EXIT,            fwinFrame::OnExit)
+    EVT_MENU(wxID_ABOUT,           fwinFrame::OnAbout)
+    EVT_SIZE(                      fwinFrame::OnSize)
     EVT_MENU(FILE_READ,            fwinFrame::OnFileRead)
     EVT_MENU(FILE_SAVE,            fwinFrame::OnFileSave)
     EVT_MENU(FILE_SAVE_SELECTION,  fwinFrame::OnFileSaveSelection)
@@ -3146,6 +3146,7 @@ void fwinFrame::OnSize(wxSizeEvent &event)
     int i;
     double w;
     FWIN_LOG("OnSize\n");
+    if (panel == NULL) return; // too early!
     wxSize client(GetClientSize());
     w = ((double)(client.GetWidth() - panel->sbWidth))/80.0;
     panel->SetSize(client);
@@ -5083,7 +5084,7 @@ void fwin_showmath(const char *s)
     char *ww;
     for (ww=tempd; *ww!=0; ww++) if (*ww == '\\') *ww = '/';
 #else
-    char *tt = my_getenv("TMPDIR");
+    const char *tt = my_getenv("TMPDIR");
     if (tt = NULL) strcpy(tempd, "/tmp");
     else strcpy(tempd, tt);
     pid_t procid = getpid();
