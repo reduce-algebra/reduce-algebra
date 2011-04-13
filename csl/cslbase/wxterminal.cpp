@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 28e5df7c 13-Apr-2011 */
+/* Signature: 5ed583d0 13-Apr-2011 */
 
 #include "wx/wxprec.h"
 
@@ -5085,7 +5085,7 @@ void fwin_showmath(const char *s)
     for (ww=tempd; *ww!=0; ww++) if (*ww == '\\') *ww = '/';
 #else
     const char *tt = my_getenv("TMPDIR");
-    if (tt = NULL) strcpy(tempd, "/tmp");
+    if (tt == NULL) strcpy(tempd, "/tmp");
     else strcpy(tempd, tt);
     pid_t procid = getpid();
 #endif
