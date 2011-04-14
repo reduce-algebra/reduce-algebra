@@ -2385,9 +2385,9 @@ $as_echo "$as_me: $doconfig" >&6;}
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\" \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
-               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
+               CXXFLAGS=-mno-cygwin LDFLAGS=\"-mno-cygwin -L/usr/lib/w32api\""
+      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
       eval "$doconfig"
       exit
     elif test "$X32_GCC" = "yes"
@@ -2511,12 +2511,14 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
             $passcc --with-build=$build --with-pslbuild=$pslbuild"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
     cd $abssrcdir
   fi
@@ -3343,6 +3345,8 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
       fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
               $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
@@ -3359,8 +3363,8 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
       then
         doconfig="$doconfig --enable-debug"
       fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
       eval "$doconfig"
       cd $builddir
     fi
@@ -3371,14 +3375,16 @@ $as_echo "$as_me: $doconfig" >&6;}
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
     doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $sethost --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=$builddir $extras"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
     cd $builddir
 
@@ -3393,12 +3399,14 @@ $as_echo "$as_me: About to configure FOX tests" >&6;}
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
       fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
             $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=$builddir --with-fox-pending=yes $extras"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
-$as_echo "$as_me: $doconfig" >&6;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
       eval "$doconfig"
     fi
 

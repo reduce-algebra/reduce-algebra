@@ -48,6 +48,13 @@ cd $here
 
 echo "Updating autoconf scripts in $here"
 
+# Get rid of automake scripts so that fully up to date versions can
+# be put back by autoreconf.
+
+find . -name compile -o -name config.guess -o -name config.sub -o \
+       -name depcomp -o -name install-sh -o -name missing -o \
+       -name mkinstalldirs -print | xargs rm -f
+
 if autoreconf -i -f -v
 then :
 else

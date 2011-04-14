@@ -344,8 +344,8 @@ then
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
                CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\" \
                CPPFLAGS=-mno-cygwin CFLAGS=-mno-cygwin \
-               CXXFLAGS=-mno-cygwin LDFLAGS=-mno-cygwin"
-      AC_MSG_NOTICE([$doconfig])
+               CXXFLAGS=-mno-cygwin LDFLAGS=\"-mno-cygwin -L/usr/lib/w32api\""
+      AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"
       exit
     elif test "$X32_GCC" = "yes"
@@ -460,11 +460,12 @@ case $inplace in
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
+    AC_MSG_NOTICE([passcc = $passcc])
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
             $passcc --with-build=$build --with-pslbuild=$pslbuild"
-    AC_MSG_NOTICE([$doconfig])
+    AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd $abssrcdir
   fi
@@ -780,6 +781,7 @@ then
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
       fi
+      AC_MSG_NOTICE([passcc = $passcc])
       doconfig="$SHELL $abssrcdir/csl/wxWidgets/configure $wx \
               $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
               CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
@@ -796,7 +798,7 @@ then
       then
         doconfig="$doconfig --enable-debug"
       fi
-      AC_MSG_NOTICE([$doconfig])
+      AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"
       cd $builddir
     fi
@@ -807,13 +809,14 @@ then
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
+    AC_MSG_NOTICE([passcc = $passcc])
     doconfig="$SHELL $abssrcdir/csl/fox/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $sethost --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
             --disable-png --disable-tiff --prefix=$builddir $extras"
-    AC_MSG_NOTICE([$doconfig])
+    AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd $builddir
 
@@ -827,11 +830,12 @@ then
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
       fi
+      AC_MSG_NOTICE([passcc = $passcc])
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
             $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             --with-fox=$builddir --with-fox-pending=yes $extras"
-      AC_MSG_NOTICE([$doconfig])
+      AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"
     fi
 
