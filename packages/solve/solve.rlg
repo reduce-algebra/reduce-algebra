@@ -1,4 +1,4 @@
-Fri Feb 18 21:27:14 2011 run on win32
+Thu Apr 14 14:37:06 2011 run on win32
 % Demonstration of the REDUCE SOLVE package.
 
 on fullroots;
@@ -2470,6 +2470,22 @@ off complex;
 
 
 
+% a trivial system which led to a wrong result:
+
+{a**2*b - a*b**2 + 1, a**2*b + a*b**2 - 1}$
+
+
+
+solve ws;
+
+
+Unknowns: {a,b}
+
+{}
+ 
+
+% also communicated by Jarmo Hietarinta
+
 % More examples that can now be solved.
 
 solve({e^(x+y)-1,x-y},{x,y});
@@ -2826,5 +2842,5 @@ solve({cos(1/5+alpha+x)=5,cos(2/5+alpha-x)=6},{alpha,x});
 end;
 
 
-Time for test: 1403 ms, plus GC time: 127 ms
-@@@@@ Resources used: (2 18 153 54)
+Time for test: 1365 ms, plus GC time: 132 ms
+@@@@@ Resources used: (1 18 154 54)
