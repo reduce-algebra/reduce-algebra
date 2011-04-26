@@ -48,7 +48,12 @@ symbolic procedure aeval!* u;
       return reval1(u,nil)
    end;
 
+switch revalp;
+on revalp;
+
 symbolic procedure reval1(u,v);
+   if null !*revalp then u
+   else
    (begin scalar x,y;
       if null u then return nil   % This may give trouble.
        else if stringp u then return u

@@ -199,9 +199,14 @@ symbolic procedure argsofopr u;
    % This function may be optimizable in various implementations.
    get(u,'number!-of!-args);
 
+fluid '(!*revalp);
+!*revalp := t;
+
 symbolic procedure intexprnp(u,vars);
-   %determines if U is an integer expression;
-    if atom u then if numberp u then fixp u
+   %determines if U is an integer expression. Note that with "off revalp;"
+   % nothing is considered to be an integer!
+    if not !*revalp then nil
+    else if atom u then if numberp u then fixp u
                    else if (u := atsoc(u,vars)) then cdr u eq 'integer
                    else nil
      else idp car u and flagp(car u,'intfn) and intexprlisp(cdr u,vars);
