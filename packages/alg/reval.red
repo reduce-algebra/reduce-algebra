@@ -48,8 +48,13 @@ symbolic procedure aeval!* u;
       return reval1(u,nil)
    end;
 
+remprop('revalp, 'simpfg); % While building Reduce rmsubs may not yet exist.
+
 switch revalp;
+
 on revalp;
+
+put('revalp, 'simpfg, '((t (rmsubs))));
 
 symbolic procedure reval1(u,v);
    if null !*revalp then u
