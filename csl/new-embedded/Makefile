@@ -2,7 +2,7 @@
 
 # The Makefile here expect to use GNU make, but all the scripts
 # obeyed are in fact VERY simple and so anybody who wants to build some
-# alternative wy ought not to have much trouble.
+# alternative way ought not to have much trouble.
 
 
 # The idea here is that there may be many different embedded variants.

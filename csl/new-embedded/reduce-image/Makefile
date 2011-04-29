@@ -6,10 +6,10 @@ COMMON=-O2 -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1
 
 # The idea here is that I want a C compiler and set of flags that will
 # generate a 32-bit executable. Rather than use a separate configuration
-# step I will use GNU Make trickery to delect a collection of cases
+# step I will use GNU Make trickery to detect a collection of cases
 # I expect to be enough to get me going rather often. I will assume I am
 # going to use (a version of) gcc...
-# If this doe snot work or you do not like it merely set CC and CFLAGS
+# If this does not work or you do not like it merely set CC and CFLAGS
 # manually for yourself.
 
 ifeq ($(findstring Windows, $(OS)), Windows)
