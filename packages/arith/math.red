@@ -582,6 +582,8 @@ symbolic procedure rexpt(x,y);
       if y<0.0 then <<x := 1.0/x; y := -y>>;
       % Still use integer exponentiation if y has integral value.
       if zerop(y - (p := fix y)) then return iexpt(x, p);
+      % If y=0.5 use sqrt function, which may be easier
+      if y = 0.5 then return sqrt x;
       % If x < 0 then x**y only yields a real result if y is a rational
       % number.  We already know that y is not an integer, so call
       % ft2rn1 to see if a good rational approximation to y exists.  A
@@ -599,7 +601,8 @@ symbolic procedure rexpt(x,y);
              or remainder(q,2)=0
                then error (0,list (-x,"**",y," not real"))
            else if remainder(p,2)=1 then s := t >>;
-      x := expt(x, y);     % Use the lower level expt function
+      if y = 0.5 then x := sqrt x  % sqrt safer if applicable?
+      else x := expt(x, y);        % Use the lower level expt function
       return (if s then -x else x)
  end;
 
