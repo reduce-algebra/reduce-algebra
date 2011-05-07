@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 3c5a716a 18-Mar-2011 */
+/* Signature: 58a6d3d7 07-May-2011 */
 
 #include "headers.h"
 
@@ -442,6 +442,14 @@ int batchp()
  * Finally I look for an image file adjacent to the executable.
  */
 
+#ifndef BINDIR
+#define BINDIR /usr/local/bin
+#endif
+
+#ifndef PKGDATADIR
+#define PKGDATADIR /usr/local/share/reduce
+#endif
+
 #define stringify(s) stringify_sub(s)
 #define stringify_sub(s) #s
 
@@ -507,7 +515,7 @@ char *find_image_directory(int argc, char *argv[])
         {   i = j = 0;
             if (*bin == '/') while (bin[++i] != 0 && bin[i] != '/');
             if (*data == '/') while (data[++j] != 0 && data[j] != '/');
-            if (i == j && strncmp(bin, data, i) == 0)
+            if (i != 0 && i == j && strncmp(bin, data, i) == 0)
             {   bin += i;
                 data += i;
             }
@@ -515,10 +523,13 @@ char *find_image_directory(int argc, char *argv[])
         }
         i = strlen(bin);
         j = strlen(programDir);
+        sprintf(xname, programName);
         if (strcmp(programDir+j-i, bin) == 0)
         {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, programName);
             fprintf(stderr, "try %s\n", xname);
         }
+
+fprintf(stderr, "look at %s\n", xname);
 /*
  * If the name I just created does not correspond to a file I will fall
  * back and use the older location, adjacent to my binary. Hmmm this is
