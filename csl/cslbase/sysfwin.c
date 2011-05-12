@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 58a6d3d7 07-May-2011 */
+/* Signature: 26366b48 12-May-2011 */
 
 #include "headers.h"
 
@@ -523,7 +523,6 @@ char *find_image_directory(int argc, char *argv[])
         }
         i = strlen(bin);
         j = strlen(programDir);
-        sprintf(xname, programName);
         if (strcmp(programDir+j-i, bin) == 0)
         {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, programName);
             fprintf(stderr, "try %s\n", xname);
