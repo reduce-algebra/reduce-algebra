@@ -2,7 +2,7 @@
 # will always want to run on the current machine!
 
 
-COMMON=-O2 -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1
+COMMON=-O1 -g -I. -DPAGE_BITS=19 -DHAVE_CONFIG_H=1 -DEMBEDDED=1
 
 # The idea here is that I want a C compiler and set of flags that will
 # generate a 32-bit executable. Rather than use a separate configuration

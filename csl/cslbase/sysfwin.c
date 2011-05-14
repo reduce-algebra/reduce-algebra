@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 26366b48 12-May-2011 */
+/* Signature: 2f92621f 14-May-2011 */
 
 #include "headers.h"
 
@@ -525,10 +525,8 @@ char *find_image_directory(int argc, char *argv[])
         j = strlen(programDir);
         if (strcmp(programDir+j-i, bin) == 0)
         {   sprintf(xname, "%.*s%s/%s.img", j-i, programDir, data, programName);
-            fprintf(stderr, "try %s\n", xname);
         }
 
-fprintf(stderr, "look at %s\n", xname);
 /*
  * If the name I just created does not correspond to a file I will fall
  * back and use the older location, adjacent to my binary. Hmmm this is

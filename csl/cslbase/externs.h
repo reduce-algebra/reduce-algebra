@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 1433399f 27-Nov-2010 */
+/* Signature: 17265c7f 14-May-2011 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -123,6 +123,8 @@ extern Lisp_Object *stackbase;
 extern int32_t stack_segsize;  /* measured in units of one CSL page */
 extern Lisp_Object *C_stack;
 #define stack C_stack
+
+extern CSLbool restartp;
 
 extern char *big_chunk_start, *big_chunk_end;
 

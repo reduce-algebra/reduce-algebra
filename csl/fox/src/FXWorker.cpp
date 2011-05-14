@@ -45,7 +45,7 @@
 // unilaterally select just one version of the library to use, to the
 // potential detriment of those whose choice differs).
 
-/* Signature: 0f810654 07-Jul-2010 */
+/* Signature: 1d92b0f9 14-May-2011 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -56,6 +56,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <signal.h>
+#include <time.h>
 #include <ctype.h>
 
 #ifdef HAVE_UNISTD_H
@@ -952,6 +953,7 @@ extern "C"
 static review_switch_settings_function *review_switch_settings = NULL;
 }
 static int update_next_time = 0;
+static clock_t review_time = 0;
 
 
 int fwin_getchar()
@@ -985,9 +987,21 @@ int fwin_getchar()
 // The next line is pretty shameless and is there to help REDUCE while not
 // getting too much in the way of anybody else. If an input line is
 // entered starting with the text "load_package" I make a callback to
-// review_switch_settings fairly soon.
+// review_switch_settings fairly soon. Ditto "on" and "off".
     if (n>12 && strncmp(p, "load_package", 12) == 0)
         update_next_time = 1;
+    else if (n>3 && (strncmp(p, "on", 2) == 0 || strncmp(p, "off", 3) == 0))
+        update_next_time = 1;
+// And ANYWAY I will try to trigger a review every second or so... Note that
+// until the user asks for more input from the keyboard this will not happen
+// so things can get out of step, but should eventually recover.
+    else
+    {   clock_t now = clock();
+        if (now > review_time)
+        {   update_next_time = 1;
+            review_time = now + CLOCKS_PER_SEC;
+        }
+    }
     int ch = term->inputBuffer[term->inputBufferP++];
     if (ch == (0x1f & 'D')) return EOF;
     else return ch;

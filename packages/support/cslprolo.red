@@ -36,8 +36,11 @@ symbolic procedure create!-package(u,v);
    % Make module list u into a package with path v.
    % Second argument is no longer used.
    if null idp car u then typerr(car u,"package name")
-    else progn(put(car u,'package,u),
-%          put(car u,'path,if null v then list car u else v),
+    else progn(
+% If building the bootstrap version report the name of each package.
+           (if member('cold!-start, lispsystem!*) then progn(
+              terpri(), princ "+++ Creating a package: ", print car u)),
+           put(car u,'package,u),
            car u);
 
 % create!-package('(cslprolo),nil);

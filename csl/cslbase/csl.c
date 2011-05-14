@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 7cb3322c 03-Jan-2011 */
+/* Signature: 16161bb5 14-May-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1259,10 +1259,11 @@ int load_count = 0, load_limit = 0x7fffffff;
 int csl_argc;
 char **csl_argv;
 
+CSLbool restartp;
+
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
-    CSLbool restartp;
     double store_size = 0.0;
 #ifdef CONSERVATIVE
     volatile Lisp_Object sp;

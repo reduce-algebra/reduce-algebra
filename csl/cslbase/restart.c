@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 3ca5f216 12-Apr-2011 */
+/* Signature: 4944c2ac 14-May-2011 */
 
 #include "headers.h"
 
@@ -2977,11 +2977,11 @@ static setup_type const restart_setup[] =
 };
 
 
-static void create_symbols(setup_type const s[], CSLbool restartp)
+static void create_symbols(setup_type const s[], CSLbool restart_flag)
 {
     int i;
     for (i=0; s[i].name != NULL; i++)
-        make_symbol(s[i].name, restartp, s[i].one, s[i].two, s[i].n);
+        make_symbol(s[i].name, restart_flag, s[i].one, s[i].two, s[i].n);
 }
 
 static int32_t defined_symbols;
@@ -2992,7 +2992,7 @@ static void count_symbols(setup_type const s[])
     for (i=0; s[i].name != NULL; i++) defined_symbols++;
 }
 
-static void set_up_variables(CSLbool restartp);
+static void set_up_variables(CSLbool restart_flag);
 
 #ifndef EMBEDDED
 static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum);
@@ -4747,7 +4747,7 @@ static void cold_setup()
     procstackp = 0;
 }
 
-void set_up_functions(CSLbool restartp)
+void set_up_functions(CSLbool restart_flag)
 {
 /*
  * All symbols that have a pointer to C code in their function cell must
@@ -4767,68 +4767,68 @@ void set_up_functions(CSLbool restartp)
     Lisp_Object saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    function_symbol          = make_symbol("function", restartp, function_fn, bad_special2, bad_specialn);
+    function_symbol          = make_symbol("function", restart_flag, function_fn, bad_special2, bad_specialn);
     qheader(function_symbol)|= SYM_SPECIAL_FORM;
-    quote_symbol             = make_symbol("quote", restartp, quote_fn, bad_special2, bad_specialn);
+    quote_symbol             = make_symbol("quote", restart_flag, quote_fn, bad_special2, bad_specialn);
     qheader(quote_symbol)   |= SYM_SPECIAL_FORM;
-    progn_symbol             = make_symbol("progn", restartp, progn_fn, bad_special2, bad_specialn);
+    progn_symbol             = make_symbol("progn", restart_flag, progn_fn, bad_special2, bad_specialn);
     qheader(progn_symbol)   |= SYM_SPECIAL_FORM;
-    declare_symbol           = make_symbol("declare", restartp, declare_fn, bad_special2, bad_specialn);
+    declare_symbol           = make_symbol("declare", restart_flag, declare_fn, bad_special2, bad_specialn);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
     special_symbol           = make_undefined_symbol("special");
-    cons_symbol              = make_symbol("cons", restartp, too_few_2, Lcons, wrong_no_2);
-    eval_symbol              = make_symbol("eval", restartp, Leval, too_many_1, wrong_no_1);
-    loadsource_symbol        = make_symbol("load-source", restartp, Lload_source, too_many_1, wrong_no_1);
+    cons_symbol              = make_symbol("cons", restart_flag, too_few_2, Lcons, wrong_no_2);
+    eval_symbol              = make_symbol("eval", restart_flag, Leval, too_many_1, wrong_no_1);
+    loadsource_symbol        = make_symbol("load-source", restart_flag, Lload_source, too_many_1, wrong_no_1);
 /*
  * The main bunch of symbols can be handed using a table that
  * gives names and values.
  */
     for (i=0; eval2_setup[i].name != NULL; i++)
         qheader(make_symbol(eval2_setup[i].name,
-                            restartp,
+                            restart_flag,
                             eval2_setup[i].one,
                             eval2_setup[i].two,
                             eval2_setup[i].n)) |= SYM_SPECIAL_FORM;
     for (i=0; eval3_setup[i].name != NULL; i++)
         qheader(make_symbol(eval3_setup[i].name,
-                            restartp,
+                            restart_flag,
                             eval3_setup[i].one,
                             eval3_setup[i].two,
                             eval3_setup[i].n)) |= SYM_SPECIAL_FORM;
 
-    create_symbols(arith06_setup, restartp);
-    create_symbols(arith08_setup, restartp);
-    create_symbols(arith10_setup, restartp);
-    create_symbols(arith12_setup, restartp);
-    create_symbols(char_setup, restartp);
-    create_symbols(eval1_setup, restartp);
-    create_symbols(funcs1_setup, restartp);
-    create_symbols(funcs2_setup, restartp);
-    create_symbols(funcs3_setup, restartp);
-    create_symbols(print_setup, restartp);
-    create_symbols(read_setup, restartp);
-    create_symbols(restart_setup, restartp);
-    create_symbols(mpi_setup, restartp);
+    create_symbols(arith06_setup, restart_flag);
+    create_symbols(arith08_setup, restart_flag);
+    create_symbols(arith10_setup, restart_flag);
+    create_symbols(arith12_setup, restart_flag);
+    create_symbols(char_setup, restart_flag);
+    create_symbols(eval1_setup, restart_flag);
+    create_symbols(funcs1_setup, restart_flag);
+    create_symbols(funcs2_setup, restart_flag);
+    create_symbols(funcs3_setup, restart_flag);
+    create_symbols(print_setup, restart_flag);
+    create_symbols(read_setup, restart_flag);
+    create_symbols(restart_setup, restart_flag);
+    create_symbols(mpi_setup, restart_flag);
 /*
  * Although almost everything is mappeed into upper case in a Common Lisp
  * world I will preserve the case of symbols defined in u01 to u60.
  */
     for (i=0; setup_tables[i]!=NULL; i++)
-        create_symbols(setup_tables[i], restartp | 2);
+        create_symbols(setup_tables[i], restart_flag | 2);
 
 #ifdef NAG
-    create_symbols(asp_setup, restartp);
-    create_symbols(nag_setup, restartp);
-    create_symbols(socket_setup, restartp);
-    create_symbols(xdr_setup, restartp);
-    create_symbols(grep_setup, restartp);
-    create_symbols(axfns_setup, restartp);
-    create_symbols(gr_setup, restartp);
+    create_symbols(asp_setup, restart_flag);
+    create_symbols(nag_setup, restart_flag);
+    create_symbols(socket_setup, restart_flag);
+    create_symbols(xdr_setup, restart_flag);
+    create_symbols(grep_setup, restart_flag);
+    create_symbols(axfns_setup, restart_flag);
+    create_symbols(gr_setup, restart_flag);
 #endif
 
 #ifdef OPENMATH
-    create_symbols(om_setup, restartp);
-    create_symbols(om_parse_setup, restartp);
+    create_symbols(om_setup, restart_flag);
+    create_symbols(om_parse_setup, restart_flag);
 #endif
 
 #ifdef MEMORY_TRACE
@@ -4860,7 +4860,7 @@ static int MS_CDECL alpha0(const void *a, const void *b)
 #endif
 #endif
 
-static void set_up_variables(CSLbool restartp)
+static void set_up_variables(CSLbool restart_flag)
 {
     Lisp_Object nil = C_nil;
     int i;
@@ -4868,7 +4868,7 @@ static void set_up_variables(CSLbool restartp)
     Lisp_Object saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    qvalue(macroexpand_hook) = make_symbol("funcall", restartp, Lfuncall1, Lfuncall2, Lfuncalln);
+    qvalue(macroexpand_hook) = make_symbol("funcall", restart_flag, Lfuncall1, Lfuncall2, Lfuncalln);
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
     qvalue(input_libraries) = nil;
@@ -5047,6 +5047,7 @@ static void set_up_variables(CSLbool restartp)
             w = acons(make_keyword("executable"),
                       make_string(program_name), w);
 #endif
+        if (!restartp) w = cons(make_keyword("cold-start"), w);
         w = acons(make_keyword("name"), make_string(IMPNAME), w);
         w = acons(make_keyword("version"), make_string(VERSION), w);
         w = cons(make_keyword("csl"), w);
@@ -5700,11 +5701,11 @@ void get_user_files_checksum(unsigned char *b)
     CSL_MD5_Final(b);
 }
 
-void setup(int restartp, double store_size)
+void setup(int restart_flag, double store_size)
 {
     int i;
     Lisp_Object nil;
-    if (restartp & 2) init_heap_segments(store_size);
+    if (restart_flag & 2) init_heap_segments(store_size);
     garbage_collection_permitted = 0;
     nil = C_nil;
 #ifdef TIDY_UP_MEMORY_AT_START
@@ -5723,7 +5724,7 @@ void setup(int restartp, double store_size)
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
 
-    if (restartp & 1)
+    if (restart_flag & 1)
     {   char junkbuf[120];
         char filename[LONGEST_LEGAL_FILENAME];
         if (IopenRoot(filename, 0, 0))
@@ -6018,8 +6019,8 @@ void setup(int restartp, double store_size)
                ((int32_t)current_fp_rep & ~FP_WORD_ORDER) |
                (((int32_t)PAGE_BITS) << 8);
     native_pages_changed = 0;
-    if ((restartp & 1) != 0) warm_setup((restartp & 4) != 0);
-    else cold_setup((restartp & 4) != 0);
+    if ((restart_flag & 1) != 0) warm_setup((restart_flag & 4) != 0);
+    else cold_setup((restart_flag & 4) != 0);
 
     if (init_flags & INIT_QUIET) Lverbos(nil, fixnum_of_int(1));
     if (init_flags & INIT_VERBOSE) Lverbos(nil, fixnum_of_int(3));
