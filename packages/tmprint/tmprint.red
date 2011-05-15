@@ -1174,7 +1174,11 @@ symbolic procedure fancy!-exptpri(l,p);
       if eqcar(w2,'quotient) and eqcar(cadr w2,'minus)
           then w2 := list('minus,list(car w2,cadadr w2,caddr w2))
           else w2 := negnumberchk w2;
-      if fancy!-maprint(w1,q)='failed
+      if eqcar(w1, 'quotient) then <<
+          if fancy!-in!-brackets({'fancy!-maprint, mkquote w1,mkquote q},
+                                 '!(, '!))='failed
+            then return fancy!-fail(pos,tpos,fl) >>
+      else if fancy!-maprint(w1,q)='failed
             then return fancy!-fail(pos,tpos,fl);
      fancy!-prin2!*("^",0);
      if eqcar(w2,'quotient) and fixp cadr w2 and fixp caddr w2 then
