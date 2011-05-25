@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1999-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1999-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,12 +26,12 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(redfront_rcsid!* redfront_copyright!*);
    redfront_rcsid!* := "$Id$";
-   redfront_copyright!* := "(c) 1999-2009 A. Dolzmann and T. Sturm"
+   redfront_copyright!* := "(c) 1999-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm"
 >>;
 
 
@@ -44,9 +44,9 @@ procedure redfront_oh(m,l);
       if m eq 'maprin then
          if ofl!* or posn!* neq orig!* then
             maprin l
-               else <<
+	 else <<
             redfront_on();
-             assgnpri(l,nil,nil);
+	    assgnpri(l,nil,nil);
             redfront_off()
          >>
       else if m eq 'prin2!* then
@@ -204,11 +204,13 @@ procedure redfront_learncolor(c);
       intern compress(int2id 5 . nconc(explode c,{int2id 6}));
 
 if redfront_pslp() then <<
-   fluid '(l);
+   fluid '(redfront_l!*);
    lispeval '(putd 'oblist 'expr
-      '(lambda nil (prog (l) (setq l nil)
-   	       	     	     (mapobl (function (lambda (x) (setq l (cons x l)))))
-	                     (return l))));
+      '(lambda nil (prog (redfront_l!*)
+	           (setq redfront_l!* nil)
+   	       	   (mapobl (function (lambda (x)
+		              (setq redfront_l!* (cons x redfront_l!*)))))
+	           (return redfront_l!*))));
    compile '(oblist)
 >>;
 
