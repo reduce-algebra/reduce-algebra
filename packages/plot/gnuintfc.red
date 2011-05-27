@@ -289,8 +289,11 @@ if opsys!* = 'win32 then <<
     plotcleanup!* := if null tempdir!* then {"erase gnutmp.tm*"}
                      else {bldmsg("erase %w\gnutmp.tm*", tempdir!*)} >>
 
-else <<  % Assume Unix with X11.
-    plotheader!* := "set term x11";
+else <<  % Assume Unix with X11 in general, but if the version of GNUPLOT
+         % being used knows about the "aqua" terminal type then assume that
+         % we are on a Macintosh with that capability available and best.
+    plotheader!* :=
+"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;";
     plotdta!* := for i:=1:10 collect tmpnam();
     plotcmds!*:= tmpnam();
     plotcleanup!* :=
