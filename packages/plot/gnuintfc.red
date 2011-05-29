@@ -56,7 +56,9 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
 
    if null plotheader!* then
    << if null x then
-                                                                                                    if getenv "DISPLAY" then x := '(nil . "x11")
+                                                                                                   
+      if getenv "DISPLAY" then x := '(nil . 
+"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;" )
                         else x:='(nil."dumb");
       plotheader!* := bldmsg("set term %w",cdr x);
    >>
@@ -64,7 +66,8 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
       assoc(getenv "TERM",
            '(
           %% You may want to extend or modify the terminal list above
-                ("xterm" . "x11")
+                ("xterm" . 
+"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;")
                 ("sun-cmd" . "x11")  ("sun" . "x11")
                 ("hpterm" . "x11")
                 ("vt52"  . "tek40xx")
@@ -184,7 +187,8 @@ fluid '(!*!*windows);
          bldmsg("%w:plotdt%w",plottmp!*,i); % scratch data files
    plotcmds!* :=bldmsg("%w:plotcmds",plottmp!*); % if pipes not accessible
    plotcommand!* := bldmsg("gnuplot %w",plotcmds!*);
-   plotheader!* :=  "set term x11";  % header: set terminal to X11
+   plotheader!* :=    "set term x11;";
+
    plotcleanup!* :=                  % delete scratch files
        {"del SYS$SCRATCH:plotdt*;*","del SYS$SCRATCH:plotcmds*;*"};
    !*plotinterrupts := '(10002);
