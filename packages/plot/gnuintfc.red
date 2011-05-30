@@ -69,6 +69,8 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
           %% You may want to extend or modify the terminal list above
                 ("xterm" . 
 "if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;")
+                ("xterm-color" . 
+"if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;")
                 ("sun-cmd" . "x11")  ("sun" . "x11")
                 ("hpterm" . "x11")
                 ("vt52"  . "tek40xx")
