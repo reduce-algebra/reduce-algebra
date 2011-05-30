@@ -56,11 +56,12 @@ global '(!*plotinterrupts !*plotpause !*plotusepipe plotheader!*
 
    if null plotheader!* then
    << if null x then
-                                                                                                   
       if getenv "DISPLAY" then x := '(nil . 
 "if(strstrt(GPVAL_TERMINALS,""aqua"")!=0)set terminal aqua;else set term x11;" )
                         else x:='(nil."dumb");
-      plotheader!* := bldmsg("set term %w",cdr x);
+      if wlessp (strlen strinf cdr x, 20) 
+                 then  plotheader!* :=bldmsg("set term %w",cdr x)
+                       else plotheader!* := cdr x ;
    >>
      where x =
       assoc(getenv "TERM",
