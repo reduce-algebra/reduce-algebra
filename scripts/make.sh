@@ -74,7 +74,7 @@ fi
 # even then I will only try to build in them if there is a "Makefile"
 # present.
 
-for l in cslbuild/*-*-* pslbuild/*-*-*
+for l in cslbuild/*-*-* pslbuild/${host}*
 do
    if test -f ${l}/Makefile
    then
@@ -87,4 +87,3 @@ do
 done
 
 exit 0
-
