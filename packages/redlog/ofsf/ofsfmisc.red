@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_misc_rcsid!* ofsf_misc_copyright!*);
@@ -264,17 +264,20 @@ procedure ofsf_posprep(f,resfnchkp);
 	 qvl := rl_var f . qvl;
 	 f := rl_mat f
       >>;
-      posconds := for each v in cl_fvarl f join
-	 if resfnchkp and pairp v and ofsf_rxffn car v then
-	    for each w in list2set ofsf_lpvarl v collect
- 	       ofsf_0mk2('greaterp,!*k2f w)
-	 else
- 	    {ofsf_0mk2('greaterp,!*k2f v)};
+      posconds := ofsf_posconds(cl_fvarl f,resfnchkp);
       f := rl_mkn('and,f . posconds);
       for each v in qvl do
 	 f := rl_mkq('ex,v,f);
       return f
    end;
+
+procedure ofsf_posconds(l,resfnchkp);
+   for each v in l join
+      if resfnchkp and pairp v and ofsf_rxffn car v then
+	 for each w in list2set ofsf_lpvarl v collect
+	    ofsf_0mk2('greaterp,!*k2f w)
+      else
+	 {ofsf_0mk2('greaterp,!*k2f v)};
 
 procedure ofsf_lpvarl(u);
    if idp u then
@@ -291,7 +294,7 @@ procedure ofsf_arithp(op);
 
 procedure ofsf_resolve(f);
    ofsf_resolve21(f,nil);
-   
+
 procedure ofsf_posresolve(f);
    ofsf_resolve21(ofsf_posprep(f,t),t);
 

@@ -42,27 +42,35 @@ module ofsfqe;
 % <variable> ::= <kernel>
 
 procedure ofsf_posqe(f,theo);
-   begin scalar !*rlpos;
+   begin scalar !*rlpos,posconds,res;
       !*rlpos := t;
-      return ofsf_qe(ofsf_posqe!-prep f,theo)
+      posconds := ofsf_posconds(cl_fvarl f,nil);
+      res := ofsf_qe(ofsf_posqe!-prep f,nconc(posconds,theo));
+      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
    end;
 
 procedure ofsf_posqea(f,theo);
-   begin scalar !*rlpos;
+   begin scalar !*rlpos,posconds,res;
       !*rlpos := t;
-      return ofsf_qea(ofsf_posqe!-prep f,theo)
+      posconds := ofsf_posconds(cl_fvarl f,nil);
+      res := ofsf_qea(ofsf_posqe!-prep f,nconc(posconds,theo));
+      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
    end;
 
 procedure ofsf_posgqe(f,theo,xvl);
-   begin scalar !*rlpos;
+   begin scalar !*rlpos,posconds,res;
       !*rlpos := t;
-      return cl_gqe(ofsf_posqe!-prep f,theo,xvl)
+      posconds := ofsf_posconds(cl_fvarl f,nil);
+      res := ofsf_gqe(ofsf_posqe!-prep f,nconc(posconds,theo));
+      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
    end;
 
 procedure ofsf_posgqea(f,theo,xvl);
-   begin scalar !*rlpos;
+   begin scalar !*rlpos,posconds,res;
       !*rlpos := t;
-      return cl_gqea(ofsf_posqe!-prep f,theo,xvl)
+      posconds := ofsf_posconds(cl_fvarl f,nil);
+      res := ofsf_gqea(ofsf_posqe!-prep f,nconc(posconds,theo));
+      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
    end;
 
 procedure ofsf_posqe!-prep(f);
