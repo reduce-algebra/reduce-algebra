@@ -1,0 +1,63 @@
+INTRODUCTION ==================================================================
+
+MPReduceJS is an experimental version of JReduce. JReduce is part of the Reduce
+project which is at http://reduce-algebra.sourceforge.net/.
+
+
+These instructions will in due course be updated to reflect the inclusion of
+the files within the Reduve tree. While the code is stabilising here there
+really are NO guarantees that it will all even build!
+
+Initial checkin to Sourceforge 18 June 2011.
+
+
+BUILDING INSTRUCTIONS =========================================================
+
+1) Check out the mpreduce_javascript_branch from the MathPiper project repository:
+svn checkout http://mathpiper.googlecode.com/svn/branches/mpreduce_javascript_branch mpreducejs
+
+2) Place a copy of ReduceImageInputStream.java into the org.mathpiper.mpreduce package.
+Various versions of this file can be found at http://206.21.94.61/misc/ .
+
+3) Obtain a copy of the Google Web Toolkit GWT2.4.0.beta SDK from here:
+http://code.google.com/p/google-web-toolkit/downloads/list
+
+4) See /home/tkosan/NetBeansProjects/mpreduce_javascript_branch/lib/google_web_toolkit/compile.sh
+for where to put copies of the gwt-dev.jar and gwt-user.jar files from GWT2.4.0.beta.
+
+5) Execute "ant gwt_dist". A "build" directory will be created and inside of it
+will be a directory called "gwt_dist".
+
+6) Change into the build/gwt_dist directory.
+
+7) Execute the compile.sh script with "sh compile.sh".
+
+8) After the application finishes compiling, the CAS can be launched by opening
+the build/gwt_dist/war/mpreduce.html file in a browser.
+
+Note: The CAS does not run properly in IE 8 yet.
+
+
+
+LICENSE =======================================================================
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the relevant copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+===============================================================================

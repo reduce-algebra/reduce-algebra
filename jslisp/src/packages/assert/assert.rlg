@@ -1,0 +1,128 @@
+Fri Feb 18 21:27:25 2011 run on win32
+symbolic;
+
+
+nil
+
+
+typedef any;
+*** type any is not checked 
+
+
+
+nil
+
+typedef number checked by numberp;
+
+
+numberp
+
+typedef sf checked by sfpx;
+
+
+sfpx
+
+typedef sq checked by sqp;
+
+
+sqp
+
+
+procedure hugo(x1,x2);
+   x2;
+*** local variable x1 in procedure hugo not used 
+
+
+
+hugo
+
+
+assert hugo: (number,any) -> number;
+
+
+(hugo)
+
+
+assert_install hugo;
+
+
+nil
+
+
+hugo(0,0);
+
+
+0
+
+hugo('x,0);
+
+
+*** assertion hugo: (number,any) -> number violated by arg1 x 
+
+0
+
+hugo(0,'x);
+
+
+*** assertion hugo: (number,any) -> number violated by result x 
+
+x
+
+
+assert addf: (sf,sf) -> sf;
+
+
+(addf hugo)
+
+assert addsq: (sq,sq) -> sq;
+
+
+(addsq addf hugo)
+
+
+assert_install addf,addsq;
+
+
+nil
+
+
+addsq(simp 'x,numr simp 'x);
+
+
+*** assertion addsq: (sq,sq) -> sq violated by arg2 (((x . 1) . 1)) 
+
+*** assertion addf: (sf,sf) -> sf violated by arg2 ((x . 1) . 1) 
+
+*** assertion addf: (sf,sf) -> sf violated by result ((x . 1) . 1) 
+
+*** assertion addsq: (sq,sq) -> sq violated by result (((x . 1) . 1)) 
+
+(((x . 1) . 1))
+
+
+algebraic;
+
+
+
+assert_analyze();
+
+------------------------------------------------------------------------
+function          #calls              #bad calls   #assertion violations
+------------------------------------------------------------------------
+addf                   1                       1                       2
+addsq                  1                       1                       2
+hugo                   3                       2                       2
+------------------------------------------------------------------------
+sum                    5                       4                       6
+------------------------------------------------------------------------
+
+
+assert_uninstall_all;
+
+
+
+end;
+
+
+Time for test: 1 ms
+@@@@@ Resources used: (0 0 3 0)
