@@ -1,11 +1,12 @@
 INTRODUCTION ==================================================================
 
-MPReduceJS is an experimental version of JReduce. JReduce is part of the Reduce
-project which is at http://reduce-algebra.sourceforge.net/.
+jslisp is an experimental version of jlisp which is designed to be compiled
+into JavaScript. jlisp is part of the Reduce project which is at 
+http://reduce-algebra.sourceforge.net/.
 
 
 These instructions will in due course be updated to reflect the inclusion of
-the files within the Reduve tree. While the code is stabilising here there
+the files within the Reduce tree. While the code is stabilising here there
 really are NO guarantees that it will all even build!
 
 Initial checkin to Sourceforge 18 June 2011. This version has a copy of all the
@@ -25,7 +26,7 @@ Various versions of this file can be found at http://206.21.94.61/misc/ .
 http://code.google.com/p/google-web-toolkit/downloads/list
 
 4) See /home/tkosan/NetBeansProjects/mpreduce_javascript_branch/lib/google_web_toolkit/compile.sh
-for where to put copies of the gwt-dev.jar and gwt-user.jar files from GWT2.4.0.beta.
+for which .jar files to use from GWT2.4.0.beta and where to place them.
 
 5) Execute "ant gwt_dist". A "build" directory will be created and inside of it
 will be a directory called "gwt_dist".
@@ -37,7 +38,8 @@ will be a directory called "gwt_dist".
 8) After the application finishes compiling, the CAS can be launched by opening
 the build/gwt_dist/war/mpreduce.html file in a browser.
 
-Note: The CAS does not run properly in IE 8 yet.
+Note: The CAS runs in FireFox, Chrome, IE 9 and Safari. It will also run in
+IE 8, but not very well.
 
 
 
