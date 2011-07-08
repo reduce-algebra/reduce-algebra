@@ -7,7 +7,14 @@
 
 # The idea here is that I want to name the directory by the Linux
 # distribution or other OS variant, and tag on parts that indicate
-# key configuration flags. This is necessary because 
+# key configuration flags. This is necessary because different versions
+# even of the same basic system (eg Linux) are not in general mutually
+# binary compatible. Things are MUCH better in that respect than they
+# were a decade ago, but I can still not be 100% confident that a
+# system configured and built on Fedora will run on Ubuntu (or vice versa).
+# For the Mac I can not be certain that something built for one release
+# of the operating system will be suitable for the previous or next
+# release... etc. 
 
 # I want this script to be one I can launch from anywhere, but at least
 # some of its sub-scripts will not be so generous. So find out where it
@@ -120,6 +127,13 @@ then
   host=`echo $host | $SED -e s/linux-gnu/$variant/`
   host=`echo $host | $SED -e s/apple/$variant/`
 fi
+
+# If the host name as found so far ended up with various unusual characters
+# in it that could upset some of my scripts, so I do a little filtering here.
+#host=`echo $host | $SED -e 's/[()<>{}[\];&\*?\$]/_/g'`
+host=`echo $host | $SED -e 's/[()<>{};&\*?\$|[]/_/g'`
+host=`echo $host | $SED -e 's/\]/_/g'`
+
 
 if test "x$1" = "x--short"
 then
