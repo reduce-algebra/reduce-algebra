@@ -428,6 +428,16 @@ else
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 fi
 
+#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# The following two lines are outrageous hacks so that I can see if what
+# follows is robust against file-names with parens and whitespace. At present
+# it appears that I can build the FOX-based version with these active, but not
+# build wxWidgets (unless and until I hack wxWidgets!).
+#pslbuild="$pslbuild(for psl)"
+#build="$build(for csl)"
+#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 AC_MSG_NOTICE([Will build in the $build subdirectory])
 
 
@@ -441,9 +451,9 @@ case $inplace in
   if test "x$with_csl" != "xno"
   then
     AC_MSG_NOTICE([+++ Will build in $abssrcdir/cslbuild/$build])
-    if ! test -d $abssrcdir/cslbuild/$build
+    if ! test -d "$abssrcdir/cslbuild/$build"
     then
-      mkdir -p $abssrcdir/cslbuild/$build
+      mkdir -p "$abssrcdir/cslbuild/$build"
     fi
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
@@ -455,16 +465,17 @@ case $inplace in
       mkdir -p $abssrcdir/cslbuild/generated-c
       cp -r $abssrcdir/csl/generated-c $abssrcdir/cslbuild
     fi
-    cd $abssrcdir/cslbuild/$build 
+    cd "$abssrcdir/cslbuild/$build"
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
     AC_MSG_NOTICE([passcc = $passcc])
+    pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            $passcc --with-build=$build --with-pslbuild=$pslbuild"
+            $passcc $pass_build"
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd $abssrcdir
@@ -472,14 +483,15 @@ case $inplace in
   if test "x$with_psl" != "xno"
   then
     AC_MSG_NOTICE([+++ Will build in $abssrcdir/pslbuild/$build])
-    if ! test -d $abssrcdir/pslbuild/$build
+    if ! test -d "$abssrcdir/pslbuild/$build"
     then
-      mkdir -p $abssrcdir/pslbuild/$build
+      mkdir -p "$abssrcdir/pslbuild/$build"
     fi
-    cd $abssrcdir/pslbuild/$build
+    cd "$abssrcdir/pslbuild/$build"
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
-    eval "$SHELL $abssrcdir/psl/configure $ac_configure_args --with-build=$build"
+    pass_build="--with-build=\"$build\""
+    eval "$SHELL $abssrcdir/psl/configure $ac_configure_args $pass_build"
     cd $abssrcdir
   fi
   exit 0
@@ -608,7 +620,7 @@ then
       AC_MSG_ERROR([--with-wx is the default configuration so --without-fox is not needed])
       ;;
     *)
-      AC_MSG_ERROR([--with=fox=$with_fox and --with-wx=$with_wx inconsistent here])
+      AC_MSG_ERROR([--with-fox=$with_fox and --with-wx=$with_wx inconsistent here])
       ;;
     esac
   fi
@@ -692,17 +704,20 @@ then
 # propagating if to sub-packages I end up safer.
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-wx=$with_wx --with-build=$build --without-fox"
+    pass_build="--with-build=\"$build\""
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
+    pass_build="--with-build=\"$build\""
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-build=$build --without-fox --without-wx"
+    pass_build="--with-build=\"$build\""
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost $pass_build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
   eval "$doconfig"
-  cd $builddir
+  cd "$builddir"
 
   if test "x$with_wx" = "xbuiltin"
   then
@@ -793,14 +808,14 @@ then
               --without-expat --with-regex=builtin \
               --disable-gif --disable-pcx \
               --disable-tga --disable-pnm \
-              --disable-svg --prefix=$builddir"
+              --disable-svg --prefix=\"$builddir\""
       if test "x$enable_debug" != "xno"
       then
         doconfig="$doconfig --enable-debug"
       fi
       AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"
-      cd $builddir
+      cd "$builddir"
     fi
   elif test "x$with_fox" != "xno"
   then
@@ -815,10 +830,10 @@ then
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $sethost --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
-            --disable-png --disable-tiff --prefix=$builddir $extras"
+            --disable-png --disable-tiff --prefix=\"$builddir\" $extras"
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
-    cd $builddir
+    cd "$builddir"
 
     if test -d $abssrcdir/csl/foxtests
     then
@@ -834,12 +849,12 @@ then
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
             $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --with-fox=$builddir --with-fox-pending=yes $extras"
+            --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
       AC_MSG_NOTICE([doconfig = $doconfig])
       eval "$doconfig"
     fi
 
-    cd $builddir
+    cd "$builddir"
   fi
 
 fi

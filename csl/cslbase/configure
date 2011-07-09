@@ -10484,8 +10484,8 @@ then
     fox_present="yes"
     { $as_echo "$as_me:${as_lineno-$LINENO}: Will expect FOX to be in $with_fox" >&5
 $as_echo "$as_me: Will expect FOX to be in $with_fox" >&6;}
-    FOX_INCLUDES="-I$with_fox/include/fox-1.6"
-    FOX_LIBS="-L$with_fox/lib -lFOX-1.6"
+    FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
+    FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
 
     FOXLIB="$with_fox/lib/libFOX*"
 
@@ -10545,8 +10545,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 # constraints are ones I am unwilling to accept.
 
 
-    CPPFLAGS="$CPPFLAGS -I$with_fox/include/fox-1.6"
-    LDFLAGS="$LDFLAGS -L$with_fox/lib"
+    CPPFLAGS="$CPPFLAGS -I \"$with_fox/include/fox-1.6\""
+    LDFLAGS="$LDFLAGS -L \"$with_fox/lib\""
     FOXLIB="$with_fox/lib/libFOX*"
     LIBS="-lFOX-1.6 $LIBS"
     { $as_echo "$as_me:${as_lineno-$LINENO}: FOX libraries probably as $FOXLIB" >&5
@@ -10590,8 +10590,8 @@ $as_echo "$as_me: FOX libraries not found: will not build GUI code" >&6;}
       CPPFLAGS="$cppflags_save"
       LDFLAGS="$ldflags_save"
       LIBS="$libs_save"
-      FOX_INCLUDES="-I$with_fox/include/fox-1.6"
-      FOX_LIBS="-L$with_fox/lib -lFOX-1.6"
+      FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
+      FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
 # Display FOX level (ie minor version number)
       grep LEVEL $with_fox/include/fox-1.6/fxver.h
     fi

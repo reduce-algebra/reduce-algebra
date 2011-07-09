@@ -818,8 +818,8 @@ else
   then
     fox_present="yes"
     AC_MSG_NOTICE([Will expect FOX to be in $with_fox])
-    CPPFLAGS="$CPPFLAGS -I$with_fox/include/fox-1.6"
-    LDFLAGS="$LDFLAGS -L$with_fox/lib"
+    CPPFLAGS="$CPPFLAGS -I \"$with_fox/include/fox-1.6\""
+    LDFLAGS="$LDFLAGS -L \"$with_fox/lib\""
     AC_SUBST(FOXLIB)
     FOXLIB="$with_fox/lib/libFOX*"
     LIBS="-lFOX-1.6 $LIBS"
@@ -827,9 +827,9 @@ else
     FOXDEPS="$with_fox/lib/libFOX-1.6.a"
     AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
 # Display FOX level (ie minor version number) if actually present
-    if test -f $with_fox/include/fox-1.6/fxver.h
+    if test -f "$with_fox/include/fox-1.6/fxver.h"
     then
-      grep LEVEL $with_fox/include/fox-1.6/fxver.h
+      grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
     fi
   else
     if test "x$with_fox" = "x"
@@ -841,7 +841,7 @@ else
       fi
     fi
 
-    if test -d $with_fox/$foxdir
+    if test -d "$with_fox/$foxdir"
     then
       with_fox="$with_fox/$foxdir"
     fi
@@ -874,8 +874,8 @@ else
 # constraints are ones I am unwilling to accept.
 
     AC_SUBST(FOXLIB)
-    CPPFLAGS="$CPPFLAGS -I$with_fox/include/fox-1.6"
-    LDFLAGS="$LDFLAGS -L$with_fox/lib"
+    CPPFLAGS="$CPPFLAGS -I \"$with_fox/include/fox-1.6\""
+    LDFLAGS="$LDFLAGS -L \"$with_fox/lib\""
     FOXLIB="$with_fox/lib/libFOX*"
     LIBS="-lFOX-1.6 $LIBS"
     AC_MSG_NOTICE([FOX libraries probably as $FOXLIB])
@@ -898,7 +898,7 @@ else
     else
       fox_present="yes"
 # Display FOX level (ie minor version number)
-      grep LEVEL $with_fox/include/fox-1.6/fxver.h
+      grep LEVEL "$with_fox/include/fox-1.6/fxver.h"
     fi
 
   fi

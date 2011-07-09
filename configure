@@ -2477,6 +2477,16 @@ else
   build=`eval "$SHELL $srcdir/scripts/findhost.sh $host $ac_configure_args"`
 fi
 
+#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# The following two lines are outrageous hacks so that I can see if what
+# follows is robust against file-names with parens and whitespace. At present
+# it appears that I can build the FOX-based version with these active, but not
+# build wxWidgets (unless and until I hack wxWidgets!).
+#pslbuild="$pslbuild(for psl)"
+#build="$build(for csl)"
+#####################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: Will build in the $build subdirectory" >&5
 $as_echo "$as_me: Will build in the $build subdirectory" >&6;}
 
@@ -2492,9 +2502,9 @@ case $inplace in
   then
     { $as_echo "$as_me:${as_lineno-$LINENO}: +++ Will build in $abssrcdir/cslbuild/$build" >&5
 $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
-    if ! test -d $abssrcdir/cslbuild/$build
+    if ! test -d "$abssrcdir/cslbuild/$build"
     then
-      mkdir -p $abssrcdir/cslbuild/$build
+      mkdir -p "$abssrcdir/cslbuild/$build"
     fi
 # When I configure I will install a default "profile.dat" if there is
 # not one in place already, but the user can always regenerate a newer
@@ -2506,17 +2516,18 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/cslbuild/$build" >&6;}
       mkdir -p $abssrcdir/cslbuild/generated-c
       cp -r $abssrcdir/csl/generated-c $abssrcdir/cslbuild
     fi
-    cd $abssrcdir/cslbuild/$build
+    cd "$abssrcdir/cslbuild/$build"
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
+    pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
     doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-            $passcc --with-build=$build --with-pslbuild=$pslbuild"
+            $passcc $pass_build"
     { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
@@ -2526,14 +2537,15 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
   then
     { $as_echo "$as_me:${as_lineno-$LINENO}: +++ Will build in $abssrcdir/pslbuild/$build" >&5
 $as_echo "$as_me: +++ Will build in $abssrcdir/pslbuild/$build" >&6;}
-    if ! test -d $abssrcdir/pslbuild/$build
+    if ! test -d "$abssrcdir/pslbuild/$build"
     then
-      mkdir -p $abssrcdir/pslbuild/$build
+      mkdir -p "$abssrcdir/pslbuild/$build"
     fi
-    cd $abssrcdir/pslbuild/$build
+    cd "$abssrcdir/pslbuild/$build"
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
-    eval "$SHELL $abssrcdir/psl/configure $ac_configure_args --with-build=$build"
+    pass_build="--with-build=\"$build\""
+    eval "$SHELL $abssrcdir/psl/configure $ac_configure_args $pass_build"
     cd $abssrcdir
   fi
   exit 0
@@ -3115,7 +3127,7 @@ $as_echo "$as_me: About to configure CSL core" >&6;}
       as_fn_error $? "--with-wx is the default configuration so --without-fox is not needed" "$LINENO" 5
       ;;
     *)
-      as_fn_error $? "--with=fox=$with_fox and --with-wx=$with_wx inconsistent here" "$LINENO" 5
+      as_fn_error $? "--with-fox=$with_fox and --with-wx=$with_wx inconsistent here" "$LINENO" 5
       ;;
     esac
   fi
@@ -3251,18 +3263,21 @@ $as_echo "$as_me: after checking for system wxWidgets with_wx=$with_wx" >&6;}
 # propagating if to sub-packages I end up safer.
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-wx=$with_wx --with-build=$build --without-fox"
+    pass_build="--with-build=\"$build\""
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-fox=$builddir --with-fox-pending=yes --with-build=$build --without-wx"
+    pass_build="--with-build=\"$build\""
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost --with-build=$build --without-fox --without-wx"
+    pass_build="--with-build=\"$build\""
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure $ac_configure_args $sethost $pass_build --without-fox --without-wx"
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: $doconfig" >&5
 $as_echo "$as_me: $doconfig" >&6;}
   eval "$doconfig"
-  cd $builddir
+  cd "$builddir"
 
   if test "x$with_wx" = "xbuiltin"
   then
@@ -3358,7 +3373,7 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
               --without-expat --with-regex=builtin \
               --disable-gif --disable-pcx \
               --disable-tga --disable-pnm \
-              --disable-svg --prefix=$builddir"
+              --disable-svg --prefix=\"$builddir\""
       if test "x$enable_debug" != "xno"
       then
         doconfig="$doconfig --enable-debug"
@@ -3366,7 +3381,7 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
       { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
       eval "$doconfig"
-      cd $builddir
+      cd "$builddir"
     fi
   elif test "x$with_fox" != "xno"
   then
@@ -3382,11 +3397,11 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $sethost --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
-            --disable-png --disable-tiff --prefix=$builddir $extras"
+            --disable-png --disable-tiff --prefix=\"$builddir\" $extras"
     { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
-    cd $builddir
+    cd "$builddir"
 
     if test -d $abssrcdir/csl/foxtests
     then
@@ -3404,13 +3419,13 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
       doconfig="$SHELL $abssrcdir/csl/foxtests/configure $ac_configure_args \
             $sethost CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --with-fox=$builddir --with-fox-pending=yes $extras"
+            --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
       { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
       eval "$doconfig"
     fi
 
-    cd $builddir
+    cd "$builddir"
   fi
 
 fi

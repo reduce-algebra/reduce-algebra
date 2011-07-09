@@ -31,6 +31,8 @@ src/Makefile.am                support 64-bit windows build using
                                remove use of libtool.
 utils/Makefile.am              if cross-building use gcc to compile utils.
 
+fox.pc.in                      insert quote marks so that paths with whitespace
+                               are better tolerated.
 
 (b) New files
 

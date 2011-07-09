@@ -1238,8 +1238,8 @@ then
   then
     fox_present="yes"
     AC_MSG_NOTICE([Will expect FOX to be in $with_fox])
-    FOX_INCLUDES="-I$with_fox/include/fox-1.6"
-    FOX_LIBS="-L$with_fox/lib -lFOX-1.6"
+    FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
+    FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
     AC_SUBST(FOXLIB)
     FOXLIB="$with_fox/lib/libFOX*"
     AC_DEFINE(HAVE_LIBFOX, [1], [Fox library present])
@@ -1291,8 +1291,8 @@ then
 # constraints are ones I am unwilling to accept.
 
     AC_SUBST(FOXLIB)
-    CPPFLAGS="$CPPFLAGS -I$with_fox/include/fox-1.6"
-    LDFLAGS="$LDFLAGS -L$with_fox/lib"
+    CPPFLAGS="$CPPFLAGS -I \"$with_fox/include/fox-1.6\""
+    LDFLAGS="$LDFLAGS -L \"$with_fox/lib\""
     FOXLIB="$with_fox/lib/libFOX*"
     LIBS="-lFOX-1.6 $LIBS"
     AC_MSG_NOTICE([FOX libraries probably as $FOXLIB])
@@ -1317,8 +1317,8 @@ then
       CPPFLAGS="$cppflags_save"
       LDFLAGS="$ldflags_save"
       LIBS="$libs_save"
-      FOX_INCLUDES="-I$with_fox/include/fox-1.6"
-      FOX_LIBS="-L$with_fox/lib -lFOX-1.6"
+      FOX_INCLUDES="-I \"$with_fox/include/fox-1.6\""
+      FOX_LIBS="-L \"$with_fox/lib\" -lFOX-1.6"
 # Display FOX level (ie minor version number)
       grep LEVEL $with_fox/include/fox-1.6/fxver.h
     fi
