@@ -175,6 +175,15 @@ let log(e)= 1,
 
 for all x let log(e**x)=x; % e**log x=x now done by simpexpt.
 
+for all x let logb(a**x,a)=x;
+
+for all x let log10(10**x)=x;
+
+for all x let 10^log10(x)=x;
+
+for all a,x let a^logb(x,a)=x;
+
+
 % The next rule is implemented via combine/expand logs.
 
 % for all x,y let log(x*y) = log x + log y, log(x/y) = log x - log y;
@@ -182,6 +191,10 @@ for all x let log(e**x)=x; % e**log x=x now done by simpexpt.
 let df(log(~x),~x) => 1/x;
 
 let df(log(~x/~y),~z) => df(log x,z) - df(log y,z);
+
+let df(log10(~x),~x) => 1/(x*log(10));
+
+let df(logb(~x,~a),~x) => 1/(x*log(a)) - logb(x,a)/(a*log(a))*df(a,x);
 
 % Trigonometrical functions.
 
