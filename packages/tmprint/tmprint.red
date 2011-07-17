@@ -1165,8 +1165,10 @@ symbolic procedure fancy!-exptpri(l,p);
 % Prints expression in an exponent notation.
    (begin scalar !*list,pp,q,w,w1,w2,pos,tpos,fl;
       pos:=fancy!-pos!*; tpos:=fancy!-texpos; fl:=fancy!-line!*;
-      pp := not((q:=get('expt,'infix))>p);  % Need to parenthesize
       w1 := cadr l; w2 := caddr l;
+      pp := eqcar(w1, 'quotient) or
+            eqcar(w1, 'expt) or
+            (eqcar(q1, '!*hold) and not atom cadr q1);
       testing!-width!* := t;
       if eqcar(w2,'quotient) and cadr w2 = 1
           and (fixp caddr w2 or liter caddr w2) then
@@ -1174,7 +1176,7 @@ symbolic procedure fancy!-exptpri(l,p);
       if eqcar(w2,'quotient) and eqcar(cadr w2,'minus)
           then w2 := list('minus,list(car w2,cadadr w2,caddr w2))
           else w2 := negnumberchk w2;
-      if eqcar(w1, 'quotient) then <<
+      if pp then <<
           if fancy!-in!-brackets({'fancy!-maprint, mkquote w1,mkquote q},
                                  '!(, '!))='failed
             then return fancy!-fail(pos,tpos,fl) >>
@@ -1436,6 +1438,12 @@ put('reval!*,'fancy!-prifn,'fancy!-revalpri);
 
 put('aminusp!:,'fancy!-prifn,'fancy!-patpri);
 put('aminusp!:,'fancy!-pat,'(lessp !&1 0));
+
+symbolic procedure fancy!-holdpri u;
+   if atom cadr u then fancy!-maprin0 cadr u
+   else fancy!-in!-brackets({'fancy!-maprin0, mkquote cadr u}, '!(, '!));
+
+put('!*hold, 'fancy!-prifn, 'fancy!-holdpri);
 
 symbolic procedure fancy!-patpri u;
   begin scalar p;

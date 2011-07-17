@@ -442,6 +442,14 @@ symbolic procedure progpri u;
    (rprint u) where rprifn!* = 'prin2!*,
        rterfn!* = function(lambda();terpri!* nil);
 
+put('!*hold, 'prifn, 'holdpri);
+
+symbolic procedure holdpri u;
+  << if not atom cadr u then prin2!* "(";
+     maprin cadr u;
+     if not atom cadr u then prin2!* ")" >>;
+
+
 endmodule;
 
 end;

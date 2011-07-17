@@ -187,6 +187,24 @@ symbolic procedure prepcadr u; prepsq cadr u;
 
 symbolic procedure prepexpt u; if caddr u=1 then cadr u else u;
 
+% When I enable this then "!*hold" is removed on the way towawards printing.
+% This may generally be a good thing since it causes any necessary extra
+% sets of parens to get inserted. When !*hold is removed that way there
+% is then no cause to need a 'prifn on !*hold - but I leave that present
+% for when anybody has gone "off prephold"... the flexibility here is
+% provided because the "hold" capability is at present an experiment.
+
+put('!*hold, 'prepfn2, 'prephold);
+
+switch prephold;
+!*prephold := t;
+
+symbolic procedure prephold u;
+   if (not !*prephold) or atom u then u
+   else if eqcar(u, '!*hold) then prephold cadr u
+   else if eqcar(u, '!*sq) then prepsq cadr u
+   else prephold car u . prephold cdr u;
+
 endmodule;
 
 end;

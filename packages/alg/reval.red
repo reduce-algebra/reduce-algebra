@@ -105,6 +105,21 @@ symbolic procedure reval1(u,v);
                else reval2(u,v)
    end) where varstack!* := varstack!*;
 
+% I put "hold" here because its purpose is to default much of what reval
+% does! The idea is that hold(expression) will encapsulate the un-evaluated
+% form of the given expression. Note that that will mean that variables
+% referenced in it will not have their values used, and that predefined
+% functions and operators etc do not get simplified. It is rather like the
+% Lisp "quote" notation. 
+
+symbolic procedure simphold u;
+   if length u neq 1 then rederr "hold needs exactly one argument"
+   else mksp(if eqcar(car u, '!*hold) then car u
+             else list('!*hold, car u), 1) .* 1 .+ nil ./ 1;
+
+put('hold, 'simpfn, 'simphold);
+put('!*hold, 'simpfn, 'simphold);
+
 flagop listargp;
 
 symbolic procedure rmmbreval(u,v);

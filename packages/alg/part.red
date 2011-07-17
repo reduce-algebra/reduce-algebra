@@ -38,10 +38,17 @@ symbolic procedure revalpart u;
       !*intstr := nil;
       v := cdr u;
       while v do
-         begin scalar x,y;
+         begin scalar x,y,ishold;
+%@@@ Debugging print here
+%          princ "part ["; prin expn; princ "] : "; print car v;
+%@@@ End of debug print
+           ishold := eqcar(expn, '!*hold);
            if atom expn then <<parterr2(expn,car v); bool := t>>
             else if not numberp(x := reval car v)
              then msgpri("Invalid argument",car v,"to part",nil,t)
+% As of July 2011 I can only see 'partop properties set in the
+% eds package (on !!cfrm!! and !!eds!! and in the taylor package
+% on Taylor!*.
             else if (y := get(car expn,'partop))
              then return <<expn := apply2(y,expn,x); v := cdr v>>
             else if x=0
@@ -55,8 +62,16 @@ symbolic procedure revalpart u;
                            v := nil>>
             else if x<0 then <<x := -x; y := reverse cdr expn>>
             else y := cdr expn;
+           if ishold then <<
+              y := car y;
+              if atom y then <<parterr2(expn,car v); bool:=t>>
+              else y := cdr y >>;
            if bool then nil
             else if length y<x then <<parterr2(expn,car v); bool := t>>
+            else if ishold then <<
+                expn := nth(y, x);
+                if not atom expn and
+                   not eqcar(expn, '!*hold) then expn := list('!*hold, expn) >>
             else expn := (if (getrtype w eq 'list) and (z := 'list)
                             then listeval0 w
                            else if z eq 'list
@@ -144,6 +159,12 @@ symbolic procedure partlengthreval u;
    (if atom expn then 0 else length cdr expn)
       where expn = (if getrtype car u eq 'list then listeval0 car u
                      else reval car u) where !*intstr = t;
+
+% "unhold" undoes the effect of "hold", and I define it here because
+% this file (in procedure revalpart) has a major fraction of the
+% code that supports "hold".
+
+algebraic procedure unhold u; u where !*hold(~x) => x;
 
 endmodule;
 
