@@ -181,7 +181,10 @@ for all x let log10(10**x)=x;
 
 for all x let 10^log10(x)=x;
 
-for all a,x let a^logb(x,a)=x;
+%% The following rule interferes with HE vector simplification,
+%% until the problem is resolved use a more complicated rule
+%for all a,x let a^logb(x,a)=x;
+for all a,b,x such that a=b let a^logb(x,b)=x;
 
 
 % The next rule is implemented via combine/expand logs.
