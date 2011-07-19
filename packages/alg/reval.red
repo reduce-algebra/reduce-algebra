@@ -117,7 +117,8 @@ symbolic procedure simphold u;
    else mksp(if eqcar(car u, '!*hold) then car u
              else list('!*hold, car u), 1) .* 1 .+ nil ./ 1;
 
-put('hold, 'simpfn, 'simphold);
+% put('hold, 'simpfn, 'simphold); This clashes with the pm package...
+% So users who need this should use !*hold as their keyword for now.
 put('!*hold, 'simpfn, 'simphold);
 
 flagop listargp;
