@@ -171,25 +171,32 @@ case $host in
 # declared in a way that is messed up. The result would look ugly for something
 # where the fail-safe response is just to avoid using it, and that is why
 # I redirect stdout and stderr to /dev/null.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+    if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
     then
-      AC_MSG_NOTICE("Macintosh fat binaries via 10.6")
+      AC_MSG_NOTICE("Macintosh fat i686 & x86_64 binaries via 10.7")
       enable_dependency_tracking="no"
-      archflags="-arch ppc -arch i386 -arch x86_64 "
+      archflags="-arch i386 -arch x86_64 "
     else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
+      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
       then
-        AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
+        AC_MSG_NOTICE("Macintosh fat binaries via 10.6")
         enable_dependency_tracking="no"
-        archflags="-arch ppc -arch i386 -arch x86_64"
+        archflags="-arch ppc -arch i386 -arch x86_64 "
       else
-        if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+        if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
         then
-          AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
+          AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
           enable_dependency_tracking="no"
-          archflags="-arch ppc -arch i386"
+          archflags="-arch ppc -arch i386 -arch x86_64"
         else
-          AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
+          if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+          then
+            AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
+            enable_dependency_tracking="no"
+            archflags="-arch ppc -arch i386"
+          else
+            AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
+          fi
         fi
       fi
     fi
@@ -217,18 +224,27 @@ case $host_os in
 # mechanisms that automake usually tries to use will FAIL. If I am running on
 # 10.5 or 10.6 I will also include x86_64.
 #
-# First I check if I can use the 10.6, 10.5 or 10.4u SDK.
+# First I check if I can use the 10.7, 10.6, 10.5 or 10.4u SDK.
   if test "x$GCC" = "xyes"
   then
     OLDCFLAGS="$CFLAGS"
     sysroot=""
-    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                     [[printf("Hello\n");]])],
-      [sysroot="/Developer/SDKs/MacOSX10.6.sdk"
-       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-       LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.6.Sdk"],
+      [sysroot="/Developer/SDKs/MacOSX10.7.sdk"
+       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+       LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"],
       [CFLAGS="$OLDCFLAGS"])
+    if test "x$sysroot" = "x"
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                      [[printf("Hello\n");]])],
+        [sysroot="/Developer/SDKs/MacOSX10.6.sdk"
+         CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+         LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.6.Sdk"],
+        [CFLAGS="$OLDCFLAGS"])
+    fi
     if test "x$sysroot" = "x"
     then
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"

@@ -354,30 +354,38 @@ x86_64-w64-*)
   archflags=""
   AC_LANG_CONFTEST(
     [AC_LANG_PROGRAM([], [])])
-# First check a path that is for Snow Leopard (10.6) in September 2009.
-  if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+# First check a path that is for Lion (10.7) in July 2011.
+  if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
   then
-    AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
+    AC_MSG_NOTICE([all ppc support is withdrawn when using 10.7])
     enable_dependency_tracking="no"
     archflags="-arch i386 -arch x86_64"
   else
-# This is path works if I am on Leopard (10.5).
-    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+# Check a path that is for Snow Leopard (10.6) in September 2009.
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
-      AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
+      AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
       enable_dependency_tracking="no"
-      archflags="-arch ppc -arch i386 -arch x86_64"
+      archflags="-arch i386 -arch x86_64"
     else
+# This is path works if I am on Leopard (10.5).
+      if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+      then
+        AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
+        enable_dependency_tracking="no"
+        archflags="-arch ppc -arch i386 -arch x86_64"
+      else
 # Note that if the best SDK I can find is the 10.4 one I will not even try
 # to build in 64-bit mode.
-      if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-      then
-        AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
-        enable_dependency_tracking="no"
-        archflags="-arch ppc -arch i386"
-      else
-        AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
-        AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
+        if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+        then
+          AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
+          enable_dependency_tracking="no"
+          archflags="-arch ppc -arch i386"
+        else
+          AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
+          AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
+        fi
       fi
     fi
   fi
@@ -733,7 +741,7 @@ then
 # build a fat binary that will run on both powerpc and intel-based
 # 32-bit macs. On 10.5 I will add "-arch x86_64". And finally on 10.6 I
 # will drop ppc. Note that I do not cover ppc64 since FULL 64-bit support
-# only arrived with 10.6 and by then I reallyt think ppc support was
+# only arrived with 10.6 and by then I really think ppc support was
 # being dropped.
 # *NOTE* that when doing a multi-arch build dependency tracking using the
 # mcchanisms that automake usually tries to use will FAIL. I work around that
@@ -748,16 +756,29 @@ then
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      AC_MSG_NOTICE([Checking for OSX10.6 framework])
+      AC_MSG_NOTICE([Checking for OSX10.7 framework])
       OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                       [[printf("\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-         AC_MSG_NOTICE([MacOS10.6 SDK found])
-         sysroot="/Developer/SDKs/MacOSX10.6.sdk"],
+        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+         AC_MSG_NOTICE([MacOS10.7 SDK found])
+         sysroot="/Developer/SDKs/MacOSX10.7.sdk"],
         [CFLAGS="$OLDCFLAGS"
-         AC_MSG_NOTICE([MacOS10.6 SKD NOT found])])
+         AC_MSG_NOTICE([MacOS10.7 SKD NOT found])])
+      if test "x$sysroot" = "x"
+      then
+        AC_MSG_NOTICE([Checking for OSX10.6 framework])
+        OLDCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                        [[printf("\n");]])],
+          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+           AC_MSG_NOTICE([MacOS10.6 SDK found])
+           sysroot="/Developer/SDKs/MacOSX10.6.sdk"],
+          [CFLAGS="$OLDCFLAGS"
+           AC_MSG_NOTICE([MacOS10.6 SKD NOT found])])
+      fi
       if test "x$sysroot" = "x"
       then
         AC_MSG_NOTICE([Checking for OSX10.5 framework])
@@ -1356,13 +1377,15 @@ then
 # 10.3  Panther  )
 # 10.4  Tiger    )
 # 10.5  Leopard  Deprecated: Testing here will be at best minimal.
+#                I will formally drop support for this soon.
 # 10.6  Snow Leopard
-# 10.7  Lion (?)   Forthcoming
+# 10.7  Lion
+# 10.8  ???
 
 # I will retain Leopard compatibility for the FOX build, but will insist on
-# Snow Lepoard when using wxWidgets. That is because with wxWidgets I wish
-# to have a full Cocoa GUI even in x86_64 mode, and I believe that may
-# require 10.6
+# Snow Leopard when using wxWidgets. That is because with wxWidgets I wish
+# to have a full Cocoa GUI even in x86_64 mode, and I believe that
+# requires 10.6
   if test "x$with_wx" != "xno"
   then
     ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
