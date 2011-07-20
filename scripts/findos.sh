@@ -180,11 +180,12 @@ else
         *Mac*OS*X*ProductVersion*\<string\>10.6*)
           os="mac_10.6_snowleopard"
           ;;
-#ifndef ADJUSTED
         *Mac*OS*X*ProductVersion*\<string\>10.7*)
           os="mac_10.7_lion"
           ;;
-#endif /* ! ADJUSTED */
+        *Mac*OS*X*ProductVersion*\<string\>*)
+          os="mac_unknown_version"
+          ;;
         esac
       fi
     else
