@@ -45,6 +45,7 @@ fi
 
 host=`./config.guess`
 host=`scripts/findhost.sh $host`
+os=`scripts/findos.sh`
 
 echo Current machine tag is $host
 
@@ -74,7 +75,9 @@ fi
 # even then I will only try to build in them if there is a "Makefile"
 # present.
 
-for l in cslbuild/*-*-* pslbuild/${host}*
+echo host=${host} os=${os}
+
+for l in cslbuild/*-*-${os}* pslbuild/*${host}*
 do
    if test -f ${l}/Makefile
    then
