@@ -153,14 +153,15 @@ symbolic procedure xprint(u,flg);
    begin scalar v,w;
       v := tc u;
       u := tpow u;
-      if (w := kernlp v) and w neq 1
+      if (w := kernlp v) and not !:onep w
         then <<v := quotf(v,w);
                if minusf w
                  then <<oprin 'minus; w := !:minus w; flg := nil>>>>;
       if flg then oprin 'plus;
-      if w and w neq 1 then <<prin2!* w; oprin 'times>>;
+      if w and not !:onep w
+        then <<if domainp w then maprin w else prin2!* w; oprin 'times>>;
       xprinp u;
-      if v neq 1 then <<oprin 'times; xprinf(v,red v,nil)>>
+      if not(domainp v and !:onep v) then <<oprin 'times; xprinf(v,red v,nil)>>
    end;
 
 symbolic procedure xprinp u;
