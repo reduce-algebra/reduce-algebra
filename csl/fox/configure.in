@@ -238,6 +238,7 @@ case $host_os in
        LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"],
       [CFLAGS="$OLDCFLAGS"])
     if test "x$sysroot" = "x"
+    then
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                       [[printf("Hello\n");]])],
@@ -248,7 +249,7 @@ case $host_os in
     fi
     if test "x$sysroot" = "x"
     then
-      AC_MSG_ERROR([SDK not foud - need at least the 10.6 one])
+      AC_MSG_ERROR([SDK not fonud - need at least the 10.6 one])
     fi
 #-- if test "x$sysroot" = "x"
 #-- then

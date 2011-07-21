@@ -4676,6 +4676,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
     if test "x$sysroot" = "x"
+    then
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -4700,7 +4701,7 @@ rm -f core conftest.err conftest.$ac_objext \
     fi
     if test "x$sysroot" = "x"
     then
-      as_fn_error $? "SDK not foud - need at least the 10.6 one" "$LINENO" 5
+      as_fn_error $? "SDK not fonud - need at least the 10.6 one" "$LINENO" 5
     fi
 #-- if test "x$sysroot" = "x"
 #-- then
