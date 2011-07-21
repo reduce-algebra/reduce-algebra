@@ -428,7 +428,7 @@ else
     XFTCFLAGS=`$XFT_CONFIG --cflags`
     XFTLIBS=`$XFT_CONFIG --libs`
   else
-    CPPFLAGS="${CPPFLAGS} -I/usr/include/freetype2"
+    CPPFLAGS="${CPPFLAGS} -I/usr/include/freetype2 -I/usr/X11/include/freetype2"
     AC_CHECK_HEADER([X11/Xft/Xft.h])
     AC_SEARCH_LIBS([XRenderCreatePicture],[Xrender])
     AC_SEARCH_LIBS([FcInit],[fontconfig])

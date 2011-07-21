@@ -6662,7 +6662,7 @@ test -n "$XFT_CONFIG" || XFT_CONFIG="no"
     XFTCFLAGS=`$XFT_CONFIG --cflags`
     XFTLIBS=`$XFT_CONFIG --libs`
   else
-    CPPFLAGS="${CPPFLAGS} -I/usr/include/freetype2"
+    CPPFLAGS="${CPPFLAGS} -I/usr/include/freetype2 -I/usr/X11/include/freetype2"
     ac_fn_c_check_header_mongrel "$LINENO" "X11/Xft/Xft.h" "ac_cv_header_X11_Xft_Xft_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xft_Xft_h" = xyes; then :
 
