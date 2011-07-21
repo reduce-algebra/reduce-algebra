@@ -77,7 +77,7 @@ fi
 
 echo host=${host} os=${os}
 
-for l in cslbuild/*-*-${os}* pslbuild/*${host}*
+for l in cslbuild/*-${os}* pslbuild/*${host}*
 do
    if test -f ${l}/Makefile
    then
