@@ -119,7 +119,8 @@ symbolic procedure solve!-for!-u(rhs!*,lhs!*,ulist);
    end;
 
 symbolic procedure squashconstants(express);
-begin scalar constlst,ii,xp,cl,subby,cmt,xx;
+  if null cmatrix then express 
+   else begin scalar constlst,ii,xp,cl,subby,cmt,xx;
         constlst:=reverse cmap;
         cmt:=cmatrix;
 xxx:    xx:=car cmt;            % Look at next row of Cmatrix

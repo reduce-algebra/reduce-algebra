@@ -292,10 +292,11 @@ symbolic procedure int!-simp u;
 put('int,'simpfn,'simpint);
 
 symbolic procedure integratesq(integrand,var,xlogs,zv);
- begin scalar varlist,x,zlist,!*noncomp;
+ begin scalar varlist,x,zlist,!*noncomp,intvar;
     if !*trint then <<
         printc "Start of Integration; integrand is ";
         printsq integrand >>;
+    intvar := var;
     !*noncomp := noncomfp numr integrand
                     or noncomfp denr integrand;
     varlist:=getvariables integrand;
