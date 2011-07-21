@@ -749,13 +749,19 @@ then
       fi
       ;;
     *Darwin* | *darwin*)
-# Note I do not even try to build wxWidgets with an SDK other than 10.6
+# Note I do not even try to build wxWidgets with an SDK older than 10.6
 # because that is the first one that provides reasonably full support for
 # 64-bit systems. So binaries that I build will not be suitable for anything
 # prior to Snow Leopard. I am dropping support for ppc.
+      if test -f /Developer/SDKs/MacOSX10.7.sdk
+      then
+         SDK=/Developer/SDKs/MacOSX10.7.sdk
+      else
+         SDK=/Developer/SDKs/MacOSX10.6.sdk
+      fi
       extras="--with-xft --with-xim"
       wx="--with-cocoa --enable-universal_binary \
-          --with-macosx-sdk=/Developer/SDKs/MacOSX10.6.sdk \
+          --with-macosx-sdk=$SDK \
           --with-macosx-version-min=10.6 "
       ;;
     *)

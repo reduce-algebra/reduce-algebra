@@ -183,21 +183,22 @@ case $host in
         enable_dependency_tracking="no"
         archflags="-arch ppc -arch i386 -arch x86_64 "
       else
-        if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
-        then
-          AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
-          enable_dependency_tracking="no"
-          archflags="-arch ppc -arch i386 -arch x86_64"
-        else
-          if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
-          then
-            AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
-            enable_dependency_tracking="no"
-            archflags="-arch ppc -arch i386"
-          else
-            AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
-          fi
-        fi
+#--     if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
+#--     then
+#--       AC_MSG_NOTICE("Macintosh fat binaries via 10.5")
+#--       enable_dependency_tracking="no"
+#--       archflags="-arch ppc -arch i386 -arch x86_64"
+#--     else
+#--       if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest 1> /dev/null 2> /dev/null
+#--       then
+#--         AC_MSG_NOTICE("Macintosh fat binaries via 10.4u")
+#--         enable_dependency_tracking="no"
+#--         archflags="-arch ppc -arch i386"
+#--       else
+#--         AC_MSG_NOTICE("Macintosh fat binary creation seems impossible")
+#--       fi
+#--     fi
+        AC_MSG_ERROR([SDK not found - need at least the 10.6 version])
       fi
     fi
     ;;
@@ -247,22 +248,26 @@ case $host_os in
     fi
     if test "x$sysroot" = "x"
     then
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-        LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"],
-        [CFLAGS="$OLDCFLAGS"])
+      AC_MSG_ERROR([SDK not foud - need at least the 10.6 one])
     fi
-    if test "x$sysroot" = "x"
-    then
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-        LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"],
-        [CFLAGS="$OLDCFLAGS"])
-    fi
+#-- if test "x$sysroot" = "x"
+#-- then
+#--   CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+#--   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+#--                                   [[printf("Hello\n");]])],
+#--     [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+#--     LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"],
+#--     [CFLAGS="$OLDCFLAGS"])
+#-- fi
+#-- if test "x$sysroot" = "x"
+#-- then
+#--   CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+#--   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+#--                                   [[printf("Hello\n");]])],
+#--     [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+#--     LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"],
+#--     [CFLAGS="$OLDCFLAGS"])
+#-- fi
   fi
   if test "x$GCC" = "xyes"
   then
