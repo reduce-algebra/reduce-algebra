@@ -218,26 +218,34 @@ x86_64-w64-*)
 # or any such.
   AC_LANG_CONFTEST(
     [AC_LANG_PROGRAM([], [])])
-# First check a path that is for Snow Leopard (10.6) in September 2009.
-  if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+# Check a path that is for Snow Leopard (10.7) in July 2011.
+  if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 conftest.c -o conftest > /dev/null 2>&1
   then
-    AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
+    AC_MSG_NOTICE([Can probably use SDK version 10.7])
     enable_dependency_tracking="no"
   else
-    if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+# Check a path that is for Snow Leopard (10.6) in September 2009.
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
     then
-      AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
+      AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
       enable_dependency_tracking="no"
     else
+#--   if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+#--   then
+#--     AC_MSG_NOTICE([fat binary creation will probably be possible using 10.5])
+#--     enable_dependency_tracking="no"
+#--   else
 # This is path works if I am on Tiger (10.4). Tested from Spring 2007 onwards.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
-      then
-        AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
-        enable_dependency_tracking="no"
-      else
-        AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
-        AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
-      fi
+#--   if gcc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+#--     then
+#--       AC_MSG_NOTICE([fat binary creation will probably be possible using 10.4])
+#--       enable_dependency_tracking="no"
+#--     else
+#--       AC_MSG_NOTICE([fat binary creation will probably NOT be possible])
+#--       AC_MSG_NOTICE([If you have a MacOSX later than 10.6 this script may need adjustment])
+#--     fi
+#--   fi
+      AC_MSG_ERROR([Need SDK 10.6 or 10.7])
     fi
   fi
   ;;
@@ -480,7 +488,7 @@ then
 # If it seems to be supported at all I will go "-arch ppc -arch i386" to
 # build a fat binary that will run on both powerpc and intel-based
 # 32-bit macs. But *NOTE* that in such case dependency tracking using the
-# machanisms that automake usually tries to use will FAIL. I work around that
+# mechanisms that automake usually tries to use will FAIL. I work around that
 # by providing a customised version of "depcomp".
 #
 # Also in the Macintosh/Darwin I have had special hand-crafted code to
@@ -492,49 +500,65 @@ then
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      AC_MSG_NOTICE([Checking for OSX10.6 framework])
+      AC_MSG_NOTICE([Checking for OSX10.7 framework])
       OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                       [[printf("Hello\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
-         AC_MSG_NOTICE([MacOS10.6 SDK found])
-         sysroot="/Developer/SDKs/MacOSX10.6.sdk"],
+        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+         AC_MSG_NOTICE([MacOS10.7 SDK found])
+         sysroot="/Developer/SDKs/MacOSX10.7.sdk"],
         [CFLAGS="$OLDCFLAGS"
-         AC_MSG_NOTICE([MacOS10.6 SKD NOT found])])
+         AC_MSG_NOTICE([MacOS10.7 SKD NOT found])])
       if test "x$sysroot" = "x"
       then
-        AC_MSG_NOTICE([Checking for OSX10.5 framework])
-        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+        AC_MSG_NOTICE([Checking for OSX10.6 framework])
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                         [[printf("Hello\n");]])],
-          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
-           AC_MSG_NOTICE([MacOS10.5 SDK found])
-           sysroot="/Developer/SDKs/MacOSX10.5"],
+          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+           AC_MSG_NOTICE([MacOS10.6 SDK found])
+           sysroot="/Developer/SDKs/MacOSX10.6"],
           [CFLAGS="$OLDCFLAGS"
-           AC_MSG_NOTICE([MacOS10.5 SKD NOT found])])
+           AC_MSG_NOTICE([MacOS10.6 SKD NOT found])])
       fi
+#--    if test "x$sysroot" = "x"
+#--    then
+#--      AC_MSG_NOTICE([Checking for OSX10.5 framework])
+#--      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+#--      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+#--                                      [[printf("Hello\n");]])],
+#--        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+#--         AC_MSG_NOTICE([MacOS10.5 SDK found])
+#--         sysroot="/Developer/SDKs/MacOSX10.5"],
+#--        [CFLAGS="$OLDCFLAGS"
+#--         AC_MSG_NOTICE([MacOS10.5 SKD NOT found])])
+#--    fi
+#--    if test "x$sysroot" = "x"
+#--    then
+#--      AC_MSG_NOTICE([Checking for OSX10.4u framework])
+#--      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+#--      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+#--                                      [[printf("Hello\n");]])],
+#--        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+#--         AC_MSG_NOTICE([MacOS10.4u SDK found])
+#--         sysroot="/Developer/SDKs/MacOSX10.4u"],
+#--        [CFLAGS="$OLDCFLAGS"
+#--         AC_MSG_NOTICE([MacOS10.4u SKD NOT found])])
+#--    fi
+#--    OLDCFLAGS="$CFLAGS"
+#--    CFLAGS="$CFLAGS -arch ppc -arch i386"
+#--    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+#--                                    [[printf("Hello\n");]])],
+#--      [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
+#--       LDFLAGS="$LDFLAGS -arch ppc -arch i386"
+#--       fat_support_available="yes"],
+#--      [CFLAGS="$OLDCFLAGS"
+#--       fat_support_available="no"])
       if test "x$sysroot" = "x"
       then
-        AC_MSG_NOTICE([Checking for OSX10.4u framework])
-        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                        [[printf("Hello\n");]])],
-          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
-           AC_MSG_NOTICE([MacOS10.4u SDK found])
-           sysroot="/Developer/SDKs/MacOSX10.4u"],
-          [CFLAGS="$OLDCFLAGS"
-           AC_MSG_NOTICE([MacOS10.4u SKD NOT found])])
+        AC_MSG_ERROR([Need SDK 10.6 or 10.7])
       fi
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -arch ppc -arch i386"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("Hello\n");]])],
-        [CXXFLAGS="$CXXFLAGS -arch ppc -arch i386"
-         LDFLAGS="$LDFLAGS -arch ppc -arch i386"
-         fat_support_available="yes"],
-        [CFLAGS="$OLDCFLAGS"
-         fat_support_available="no"])
       AC_MSG_NOTICE([fat_support=$fat_support_available])
     fi
   fi
@@ -923,7 +947,7 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-  ENVP=MACOSX_DEPLOYMENT_TARGET=10.4
+  ENVP=MACOSX_DEPLOYMENT_TARGET=10.6
   CC="$ENVP $CC"
   CXX="$ENVP $CXX"
 fi
