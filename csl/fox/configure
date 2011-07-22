@@ -730,6 +730,7 @@ with_mingw64
 with_build
 with_pslbuild
 enable_test
+with_lionSDK
 enable_dependency_tracking
 with_x
 with_xft
@@ -1410,6 +1411,7 @@ Optional Packages:
   --with-ming64           Used internally in CSL builds
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
+  --without-lionSDKl      can be used to avoid use of MacOSX SDK10.7
   --with-x                use the X Window System
   --with-xft              enable Xft support
   --with-xcursor          compile with Xcursor support
@@ -2831,6 +2833,15 @@ if test "x$enable_test" = "xyes"; then
 
 fi
 
+
+# Check whether --with-lionSDK was given.
+if test "${with_lionSDK+set}" = set; then :
+  withval=$with_lionSDK;
+else
+  with_lionSDK="yes"
+fi
+
+
 FASTMATH=" -ffast-math "
 WSOCK="wsock32"
 
@@ -2974,19 +2985,20 @@ case $host in
 # declared in a way that is messed up. The result would look ugly for something
 # where the fail-safe response is just to avoid using it, and that is why
 # I redirect stdout and stderr to /dev/null.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+    if test "x$with_lionSDK" != "xno" &&
+       gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
     then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh fat i686 & x86_64 binaries via 10.7\"" >&5
-$as_echo "$as_me: \"Macintosh fat i686 & x86_64 binaries via 10.7\"" >&6;}
-      enable_dependency_tracking="no"
-      archflags="-arch i386 -arch x86_64 "
+      { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh x86_64 binaries via 10.7\"" >&5
+$as_echo "$as_me: \"Macintosh x86_64 binaries via 10.7\"" >&6;}
+#     enable_dependency_tracking="no"
+      archflags="-arch x86_64 "
     else
-      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
+      if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest 1> /dev/null 2> /dev/null
       then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh fat binaries via 10.6\"" >&5
-$as_echo "$as_me: \"Macintosh fat binaries via 10.6\"" >&6;}
-        enable_dependency_tracking="no"
-        archflags="-arch ppc -arch i386 -arch x86_64 "
+        { $as_echo "$as_me:${as_lineno-$LINENO}: \"Macintosh x86_64 binaries via 10.6\"" >&5
+$as_echo "$as_me: \"Macintosh x86_64 binaries via 10.6\"" >&6;}
+#       enable_dependency_tracking="no"
+        archflags="-arch x86_64 "
       else
 #--     if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64conftest.c -o conftest 1> /dev/null 2> /dev/null
 #--     then
@@ -4653,7 +4665,9 @@ $as_echo "$as_me: Checking for ability to build multi-arch binaries" >&6;}
   then
     OLDCFLAGS="$CFLAGS"
     sysroot=""
-    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+    if test "x$with_lionSDK" != "xno"
+    then
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -4668,13 +4682,14 @@ printf("Hello\n");
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   sysroot="/Developer/SDKs/MacOSX10.7.sdk"
-       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-       LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+         CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+         LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
 else
   CFLAGS="$OLDCFLAGS"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+    fi
     if test "x$sysroot" = "x"
     then
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.6.sdk"

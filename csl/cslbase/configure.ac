@@ -80,6 +80,11 @@ AC_ARG_WITH(gcc3,
   [],
   [])
 
+AC_ARG_WITH(lionSDK,
+  AC_HELP_STRING([--with-lionSDK], [can be used to disable use of MacOSX SDK 10.7]),
+  [],
+  [])
+
 AC_ARG_WITH(gui,
   AC_HELP_STRING([--with-gui], [this option is ignored here!]),
   [],
@@ -355,17 +360,18 @@ x86_64-w64-*)
   AC_LANG_CONFTEST(
     [AC_LANG_PROGRAM([], [])])
 # First check a path that is for Lion (10.7) in July 2011.
-  if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+  if test "x$with_lionSDK" != "xno" &&
+    gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
   then
-    enable_dependency_tracking="no"
-    archflags="-arch i386 -arch x86_64"
+#   enable_dependency_tracking="no"
+    archflags="-arch x86_64"
   else
 # Check a path that is for Snow Leopard (10.6) in September 2009.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
-      AC_MSG_NOTICE([fat binary creation will probably be possible using 10.6])
-      enable_dependency_tracking="no"
-      archflags="-arch i386 -arch x86_64"
+      AC_MSG_NOTICE([x86_64 binary creation will probably be possible using 10.6])
+#     enable_dependency_tracking="no"
+      archflags="-arch x86_64"
     else
 #-- # This is path works if I am on Leopard (10.5).
 #--       if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
@@ -751,21 +757,28 @@ then
 # detect the case and switch off dependency checking as if the user had
 # run this script with "-disable_dependency_tracking" as a command-line
 # option.
+#
+# Well as of July 2011 I am dropping back to supportin just x86_64, which
+# simplifies things somewhat.
+#
   if test "x$GCC" = "xyes"
   then
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      AC_MSG_NOTICE([Checking for OSX10.7 framework])
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                      [[printf("\n");]])],
-        [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-         AC_MSG_NOTICE([MacOS10.7 SDK found])
-         sysroot="/Developer/SDKs/MacOSX10.7.sdk"],
-        [CFLAGS="$OLDCFLAGS"
-         AC_MSG_NOTICE([MacOS10.7 SKD NOT found])])
+      if test "x$with_lionSDK" != "xno"
+      then
+        AC_MSG_NOTICE([Checking for OSX10.7 framework])
+        OLDCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                        [[printf("\n");]])],
+          [CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+           AC_MSG_NOTICE([MacOS10.7 SDK found])
+           sysroot="/Developer/SDKs/MacOSX10.7.sdk"],
+          [CFLAGS="$OLDCFLAGS"
+           AC_MSG_NOTICE([MacOS10.7 SKD NOT found])])
+      fi
       if test "x$sysroot" = "x"
       then
         AC_MSG_NOTICE([Checking for OSX10.6 framework])
@@ -1387,10 +1400,7 @@ then
 # 10.7  Lion
 # 10.8  ???
 
-# I will retain Leopard compatibility for the FOX build, but will insist on
-# Snow Leopard when using wxWidgets. That is because with wxWidgets I wish
-# to have a full Cocoa GUI even in x86_64 mode, and I believe that
-# requires 10.6. Well now that 10.7 has been released I will always target
+# Well now that 10.7 has been released I will always target
 # 10.6 and support for earlier versions is no longer guaranteed.
   if test "x$with_wx" != "xno"
   then

@@ -96,6 +96,12 @@ AC_ARG_WITH(gcc3,
    [],
    [with_gcc3="default"])
 
+AC_ARG_WITH(lionSDK,
+   AC_HELP_STRING([--without-lionSDK],
+                  [can be used to avoid use of MacOSX SDK 10.7 (CSL ONLY)]),
+   [],
+   [with_lionSDK="yes"])
+
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
                   [Force 32-bit model even on 64-bit gcc (CSL only)]),
@@ -752,20 +758,28 @@ then
 # Note I do not even try to build wxWidgets with an SDK older than 10.6
 # because that is the first one that provides reasonably full support for
 # 64-bit systems. So binaries that I build will not be suitable for anything
-# prior to Snow Leopard. I am dropping support for ppc.
-      if test -d /Developer/SDKs/MacOSX10.7.sdk
+# prior to Snow Leopard. I will now build JUST for x86_64 because there
+# are not liable to be Intel Macs that do not support 64-bit mode, and ppc
+# can now be viewed as obsolete.
+# As of mid July 2011 when Lion (10.7) has just been released wxWidgets does
+# not survive the 10.7 SDK, so I support a "--without-lionSDK" configuration
+# option to drop back...
+      if test -d /Developer/SDKs/MacOSX10.7.sdk && test "x$with_lionSDK" != "xno"
       then
+        CFLAGS="$CFLAGS -msse2"
+        CXXFLAGS="$CXXFLAGS -msse2"
         SDK=/Developer/SDKs/MacOSX10.7.sdk
-        MACARCH="\"i686\"" 
+        MACARCH="--enable-macos_arch=x86_64" 
       else
         SDK=/Developer/SDKs/MacOSX10.6.sdk
-        MACARCH="\"i686 -arch ppc\"" 
+#       MACARCH="--enable-univeral_binaries" 
+        MACARCH="--enable-macos_arch=x86_64" 
       fi
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
           --with-macosx-sdk=$SDK \
           --with-macosx-version-min=10.6 \
-          --enable-macosx_arch=$MACARCH "
+          $MACARCH "
       ;;
     *)
 # On most non-windowed platforms Xft is a very good idea! And I am now

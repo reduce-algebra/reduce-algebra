@@ -719,6 +719,7 @@ with_psl
 with_mingw64
 with_build
 with_pslbuild
+with_lionSDK
 with_cygwin
 with_fox
 with_fox_pending
@@ -1374,6 +1375,7 @@ Optional Packages:
   --with-mingw64          Use internally with CSL
   --with-build            Used internally to control build directory
   --with-pslbuild         Used internally to control build directory
+  --without-lionSDKl      can disable use of MacOSX SDK10.7
   --with-cygwin           Force use of raw cywgin (note GPL)
   --with-fox=DIR          FOX installation location
   --with-fox-pending        do not check dir from --with-fox
@@ -3176,6 +3178,15 @@ fi
 
 
 
+# Check whether --with-lionSDK was given.
+if test "${with_lionSDK+set}" = set; then :
+  withval=$with_lionSDK;
+else
+  with_lionSDK="yes"
+fi
+
+
+
 
 
 
@@ -3703,18 +3714,19 @@ main ()
 }
 _ACEOF
 # Check a path that is for Snow Leopard (10.7) in July 2011.
-  if gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 conftest.c -o conftest > /dev/null 2>&1
+  if test "x$with_lionSDK" != "xno" &&
+     gcc -isysroot /Developer/SDKs/MacOSX10.7.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
   then
     { $as_echo "$as_me:${as_lineno-$LINENO}: Can probably use SDK version 10.7" >&5
 $as_echo "$as_me: Can probably use SDK version 10.7" >&6;}
-    enable_dependency_tracking="no"
+#   enable_dependency_tracking="no"
   else
 # Check a path that is for Snow Leopard (10.6) in September 2009.
-    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
+    if gcc -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch x86_64 conftest.c -o conftest > /dev/null 2>&1
     then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: fat binary creation will probably be possible using 10.6" >&5
-$as_echo "$as_me: fat binary creation will probably be possible using 10.6" >&6;}
-      enable_dependency_tracking="no"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Can probably use SDK version 10.6" >&5
+$as_echo "$as_me: Can probably use SDK version 10.6" >&6;}
+#     enable_dependency_tracking="no"
     else
 #--   if gcc -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 conftest.c -o conftest > /dev/null 2>&1
 #--   then
@@ -6964,6 +6976,8 @@ $as_echo "$as_me: Checking for ability to build dual arch binaries" >&6;}
 # 32-bit macs. But *NOTE* that in such case dependency tracking using the
 # mechanisms that automake usually tries to use will FAIL. I work around that
 # by providing a customised version of "depcomp".
+# Well actually now (as of July 2011) I am only going to build for x86_64
+# because all varieties of Mac that predate that are now very obsolete.
 #
 # Also in the Macintosh/Darwin I have had special hand-crafted code to
 # detect the case and switch off dependency checking as if the user had
@@ -6974,11 +6988,13 @@ $as_echo "$as_me: Checking for ability to build dual arch binaries" >&6;}
     if test "x$macintosh_build" = "xyes"
     then
       sysroot=""
-      { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.7 framework" >&5
+      if test "x$with_lionSDK" != "xno"
+      then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.7 framework" >&5
 $as_echo "$as_me: Checking for OSX10.7 framework" >&6;}
-      OLDCFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        OLDCFLAGS="$CFLAGS"
+        CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdio.h>
 int
@@ -6991,16 +7007,17 @@ printf("Hello\n");
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.7.sdk"
-         { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.7 SDK found" >&5
+           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.7 SDK found" >&5
 $as_echo "$as_me: MacOS10.7 SDK found" >&6;}
-         sysroot="/Developer/SDKs/MacOSX10.7.sdk"
+           sysroot="/Developer/SDKs/MacOSX10.7.sdk"
 else
   CFLAGS="$OLDCFLAGS"
-         { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.7 SKD NOT found" >&5
+           { $as_echo "$as_me:${as_lineno-$LINENO}: MacOS10.7 SKD NOT found" >&5
 $as_echo "$as_me: MacOS10.7 SKD NOT found" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+      fi
       if test "x$sysroot" = "x"
       then
         { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for OSX10.6 framework" >&5
