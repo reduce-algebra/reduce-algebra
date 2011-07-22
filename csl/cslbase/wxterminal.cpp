@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 5ed583d0 13-Apr-2011 */
+/* Signature: 3582eb68 22-Jul-2011 */
 
 #include "wx/wxprec.h"
 
@@ -812,7 +812,7 @@ wxThread::ExitCode fwinWorker::Entry()
 #define pause_on_exit 0
     FWIN_LOG("return from fwin_main_entry is %d pause_on_exit=%d\n",
              rc, pause_on_exit);
-    wxCommandEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, WORKER_FINISHED);
     wxQueueEvent(panel, event);
     return (wxThread::ExitCode)rc;
 }
@@ -4336,7 +4336,7 @@ void fwinText::OnKillFocus(wxFocusEvent &event)
 
 void fwinWorker::sendToScreen(wxString s)
 {
-    wxCommandEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, TO_SCREEN);
+    wxThreadEvent *event = new wxThreadEvent(wxEVT_COMMAND_THREAD, TO_SCREEN);
     event->SetString(s.c_str());  // careful to copy the string
     wxQueueEvent(panel, event);
     FWIN_LOG("sendToScreen \"%s\"\n", (const char *)s.c_str());
