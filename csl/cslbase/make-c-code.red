@@ -1,7 +1,7 @@
 % make-c-code.red
 
 %**************************************************************************
-%* Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+%* Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
 %*                                                                        *
 %* Redistribution and use in source and binary forms, with or without     *
 %* modification, are permitted provided that the following conditions are *
@@ -476,6 +476,13 @@ else while bulk < 50 and w_reduce do
 
 terpri();
 prin total; printc " functions compiled into C";
+
+<< ff := open("$destdir/timestamp.dat", 'output);
+   ff1 := wrs ff;
+   princ "C code last regenerated at ";
+   printc date();
+   wrs ff1;
+   close ff >>;
 
 nil >>;
 

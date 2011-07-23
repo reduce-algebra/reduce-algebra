@@ -168,6 +168,37 @@ generated_sources =             $(gensrc)/u01.c \
 		$(gensrc)/u56.c $(gensrc)/u57.c \
 		$(gensrc)/u58.c $(gensrc)/u59.c \
 		$(gensrc)/u60.c
+generated_objects =           u01.$(OBJEXT) \
+		u02.$(OBJEXT) u03.$(OBJEXT) \
+		u04.$(OBJEXT) u05.$(OBJEXT) \
+		u06.$(OBJEXT) u07.$(OBJEXT) \
+		u08.$(OBJEXT) u09.$(OBJEXT) \
+		u10.$(OBJEXT) u11.$(OBJEXT) \
+		u12.$(OBJEXT) u13.$(OBJEXT) \
+		u14.$(OBJEXT) u15.$(OBJEXT) \
+		u16.$(OBJEXT) u17.$(OBJEXT) \
+		u18.$(OBJEXT) u19.$(OBJEXT) \
+		u20.$(OBJEXT) u21.$(OBJEXT) \
+		u22.$(OBJEXT) u23.$(OBJEXT) \
+		u24.$(OBJEXT) u25.$(OBJEXT) \
+		u26.$(OBJEXT) u27.$(OBJEXT) \
+		u28.$(OBJEXT) u29.$(OBJEXT) \
+		u30.$(OBJEXT) u31.$(OBJEXT) \
+		u32.$(OBJEXT) u33.$(OBJEXT) \
+		u34.$(OBJEXT) u35.$(OBJEXT) \
+		u36.$(OBJEXT) u37.$(OBJEXT) \
+		u38.$(OBJEXT) u39.$(OBJEXT) \
+		u40.$(OBJEXT) u41.$(OBJEXT) \
+		u42.$(OBJEXT) u43.$(OBJEXT) \
+		u44.$(OBJEXT) u45.$(OBJEXT) \
+		u46.$(OBJEXT) u47.$(OBJEXT) \
+		u48.$(OBJEXT) u49.$(OBJEXT) \
+		u50.$(OBJEXT) u51.$(OBJEXT) \
+		u52.$(OBJEXT) u53.$(OBJEXT) \
+		u54.$(OBJEXT) u55.$(OBJEXT) \
+		u56.$(OBJEXT) u57.$(OBJEXT) \
+		u58.$(OBJEXT) u59.$(OBJEXT) \
+		u60.$(OBJEXT)
 generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u02.lsp $(gensrc)/u03.lsp \
 		$(gensrc)/u04.lsp $(gensrc)/u05.lsp \
@@ -411,7 +442,8 @@ DEST=-o
 
 if fox
 if win64
-FOXDEPS=../lib/libFOX-1.6.lib
+#FOXDEPS=../lib/libFOX-1.6.lib
+FOXDEPS=../lib/libFOX-1.6.a
 else !win64
 FOXDEPS=../lib/libFOX-1.6.a
 endif !win64
@@ -1112,7 +1144,7 @@ restart.$(OBJEXT):	machineid.c
 reduce.dep:
 	touch reduce.dep
 
-reduce.img:	reduce$(COM) $(reducedep)
+reduce.img:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1143,7 +1175,7 @@ endif !canrun
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COM) $(reducedep)
+reduce.dir:	reduce$(COM) $(reducedep) $(gensym)/timestamp.dat
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1262,9 +1294,10 @@ $(gensrc)/profile.dat:
 	-mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
-c-code $(generated_sources) $(generated_lisp):	bootstrapreduce.img $(gensrc)/profile.dat
+c-code $(gensrc/timestamp.dat):	$(bootstrapreducedep) $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
+	$(MAKE) bootstrapreduce.img
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
@@ -1274,6 +1307,8 @@ else !canrun
 	echo Touching existing files to adjust datestamps
 	touch $(gensrc)/*
 endif !canrun
+
+$(generated_objects):	$(gensrc)/timestamp.dat
 
 # full-c-code is a target only activated manually.
 
