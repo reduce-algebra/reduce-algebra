@@ -2768,7 +2768,7 @@ $(gensrc)/profile.dat:
 	-mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
-c-code $(gensrc/timestamp.dat):	$(bootstrapreducedep) $(gensrc)/profile.dat
+c-code $(gensrc)/timestamp.dat:	$(bootstrapreducedep) $(gensrc)/profile.dat
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	$(MAKE) bootstrapreduce.img
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \

@@ -1294,7 +1294,7 @@ $(gensrc)/profile.dat:
 	-mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
-c-code $(gensrc/timestamp.dat):	$(bootstrapreducedep) $(gensrc)/profile.dat
+c-code $(gensrc)/timestamp.dat:	$(bootstrapreducedep) $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
 	$(MAKE) bootstrapreduce.img
