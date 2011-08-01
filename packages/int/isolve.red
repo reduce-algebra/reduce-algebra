@@ -453,10 +453,10 @@ symbolic procedure gausselimn(equation,tokill);
       newrow:=mkvect(ccount);
       spreadc(equation,newrow,1);
       subst4eliminatedcs(newrow,reverse orderofelim,reverse cmatrix);
+      newrow:=makeprim newrow; % remove hcf from new equation.
       pivot:=findpivot newrow;
       if null pivot then go to nopivotfound;
       orderofelim:=pivot . orderofelim;
-      newrow:=makeprim newrow; % remove hcf from new equation.
       cmatrix:=newrow . cmatrix;
 %      if !*trint then printspreadc newrow;
       return t;
