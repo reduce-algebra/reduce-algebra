@@ -1,11 +1,11 @@
-/*  fns2.c                          Copyright (C) 1989-2010 Codemist Ltd */
+/*  fns2.c                          Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * Basic functions part 2.
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 00fd2196 11-Jul-2010 */
+/* Signature: 1af96116 04-Aug-2011 */
 
 #include "headers.h"
 
@@ -2339,8 +2339,9 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
  */
 #ifdef CHECK_STACK
     if (check_stack(__FILE__,__LINE__))
-    {   err_printf("Stack too deep in cl_equal\n");
-        my_exit(EXIT_FAILURE);
+    {   show_stack();
+        aerror("Stack too deep in cl_equal\n");
+        return NO;
     }
 #endif
     for (;;)
@@ -2517,6 +2518,24 @@ CSLbool cl_equal_fn(Lisp_Object a, Lisp_Object b)
 
 static CSLbool vec_equal(Lisp_Object a, Lisp_Object b);
 
+/*
+ * Hmmm - EQUAL could be re-implemented to be non-recursive via pointer
+ * reversing and if that was done then there could not possibly be any
+ * concerns about stck overflow in it. Furthermore since EQUAL traverses
+ * the two input lists in lockstep and only dived into structures that
+ * are not EQ, and since a larger part of one list can not be EQUAL to
+ * a smaller part of the other it may be that the temporary rearrangement
+ * to one list can never confuse traversal of the other. I might want to
+ * think about recovery in the case that cyclic (and partially shared) lists
+ * are presented. Until I implement this I do not know what the performance
+ * would be as compared agsinst a regular recursive version.
+ *
+ * For performance I might wish to consider an implementation that
+ * defers pointer reversal via a small local stack of depth (say) three.
+ * Oh what a jolly and messy project it will be if I get round to implementing
+ * and measuring that!
+ */
+
 #ifdef TRACED_EQUAL
 #define LOG_SIZE 10000
 typedef struct equal_record
@@ -2591,12 +2610,18 @@ CSLbool equal_fn(Lisp_Object a, Lisp_Object b)
 #endif
 /*
  * The for loop at the top here is so that equal can iterate along the
- * length of linear lists.
+ * length of linear lists. For MANY MANY cases in a Lisp world data
+ * structures will be long but not so terribly deep and so one hopes that
+ * stack requirements here will not be excessive. Hahaha - if I had a
+ * non-recursive version of the code too but it proved generally slower
+ * I could trigger a transfer into it at the stage that stck use became
+ * excessive...
  */
 #ifdef CHECK_STACK
     if (check_stack(__FILE__,__LINE__))
-    {   err_printf("Stack too deep in equal\n");
-        my_exit(EXIT_FAILURE);
+    {   show_stack();
+        aerror("Stack too deep in equal\n");
+        return NO;
     }
 #endif
     for (;;)
@@ -2827,8 +2852,9 @@ CSLbool equalp(Lisp_Object a, Lisp_Object b)
  */
 #ifdef CHECK_STACK
     if (check_stack(__FILE__,__LINE__))
-    {   err_printf("Stack too deep in equalp\n");
-        my_exit(EXIT_FAILURE);
+    {   show_stack();
+        aerror("Stack too deep in equalp\n");
+        return NO;
     }
 #endif
     for (;;)
@@ -3200,7 +3226,7 @@ Lisp_Object Lassoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 #endif
     }
 #ifdef TRACED_EQUAL
-/* beware stuplidly lonng lists... */
+/* beware stupidly lonng lists... */
     trace_printf("Assoc NO  %3d %3d ", pos, int_of_fixnum(Llength(nil,save_b)));
     prin_to_stdout(a); trace_printf("\n");
 #endif
@@ -3614,44 +3640,674 @@ Lisp_Object Lnconc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     }
 }
 
-/* #ifndef COMMON */
+/*
+ * All the comments that follow are the signature of me needing to think
+ * carefully while implementing a version of the code here that will
+ * not recurse in the CDR direction.
 
-static Lisp_Object Lsubstq(Lisp_Object a, Lisp_Object b, Lisp_Object c)
+ * subst(a, b, c)
+ *   if b = c then a
+ *   else if atom c then c
+ *   else subst(a, b, car c) . subst(a, b, cdr c);
+
+ * Now the logic of a version that iterates along the list...
+ *
+
+ *  orig                                      R             C
+ *   |                                        |             |
+ *   V                                        V             V
+ *  ---------    ---------    ---------     ---------     ---------
+ *  | X1|   +--->| X2|   +--->|X' | / |     |X' | : |     | Z |   +--->
+ *  =========    =========    =========     ======+==     =========
+ *                              ^                 |
+ *                              L-----------------J
+ *
+ *
+ *                    RX
+ *                     |
+ *                     V
+ *     ---------     ---------
+ *     | Y1| / |     | Y2| : |
+ *     ---------     ------+--
+ *       ^                 |
+ *       L-----------------J
+ *
+
+ * The original list C started at orig, and the cells X contain their original
+ * content there, while the result of substitution on them gives the values Y
+ * shown in the list accessed via RX.
+ *
+ * The reversed section of the original list from R back has values where
+ * substitution leaves them unaltered, so they are suitable for inclusion
+ * in the result. The reversed chains ends in cells marked "/" in the
+ * diagram - that can be any non-pair. I will use the fixnum zero. You might
+ * have expected me to use nil, but I will not because the nil variable is
+ * used at times to hold an error flag. The reversed chain at RX contains
+ * data that has needed to be copied, and so Y2 NEQ X2.
+ *
+ * The fragment of the original starting from C contains original data (Z) that
+ * has not yet been inspected.
+ *
+ * There is a procedure referred to here as "normalising"  that restores the
+ * pointers from R backwars to be forward pointers, and as it does so correspoding
+ * new items are placed on the RX list. It leaves R=nil.
+ *
+ *  orig                                          R:0       C
+ *   |                                                      |
+ *   V                                                      V
+ *  ---------    ---------    ---------     ---------     ---------
+ *  | X |   +--->| X |   +--->| X |   +---->| X |   +---->| Z |   +--->
+ *  =========    =========    =========     =========     =========
+ *
+ *                                                 RX
+ *                                                  |
+ *                                                  V
+ *     ---------     ---------      ---------     ---------
+ *     | Y | / |     | Y | : |      | Y | : |     | Y | : |
+ *     ---------     ------+--      ------+--     ------+--
+ *       ^            ^    |          ^   |             |
+ *       |            |    |          |   |             |
+ *       L------------+----J          L---+-------------J
+ *                    |                   |
+ *                    L-------------------J
+ *
+ * There is a futher procedure known here as "unwinding" that can be
+ * performed after normalisation. It takes a value in C and reverses
+ * pointers back from R (thereby restoring the original list). It then
+ * reverses the RX list onto the front to deliver a final result.
+ *
+ * The very initial situation is
+ *
+ *   C       RX:0  R:0
+ *   |
+ *   V
+ *  ---------
+ *  | X |   +--->
+ *  =========
+ *
+
+ * Each step first checks if C as a whole is to be replaced.
+ *     "if b = c then a"
+ * from the first line of the simple version. If so and if a!=c then
+ * you normalise, set c=a then unwind.
+ *
+ * If the above substitution occurs but a=c or if c is atomic
+ * just unwind.
+ *
+ * Now c is non-atomic. Recurse to process car(c). If this
+ * is unchanged then extent the reversed list ar R. This may need
+ * special care when the list is empty to start with.
+ *
+ * If the substitution on car c proceed something that differeed
+ * then normalise and push the new result onto rx.
+ *
+ */
+
+
+/*
+ * The above treatment is required for four functions
+ *     subst, substq
+ *     sublis, subla
+ */
+
+
+static Lisp_Object substq(Lisp_Object a, Lisp_Object b, Lisp_Object c)
 {
-    Lisp_Object w, nil = C_nil;
-    if (c == b) return onevalue(a);
-#ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__)) return aerror("substq");
-#endif
+    Lisp_Object nil = C_nil, w;
     stackcheck3(0, a, b, c);
+    push2(TAG_FIXNUM, TAG_FIXNUM); /* rx and r */
     push3(a, b, c);
-    if (c == b)
-    {   popv(2);
-        pop(a);
-        errexit();
-        return onevalue(a);
+#define c   stack[0]
+#define b   stack[-1]
+#define a   stack[-2]
+#define r   stack[-3]
+#define rx  stack[-4]
+    for (;;)
+    {
+        if (c == b)
+        {
+            if (c == a) break; /* substitute by leaving unchanged */
+/*
+ * Here I need to restore the part of the list from R backwards and
+ * then copy it to RX.
+ */
+            Lisp_Object cc = c;
+            while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = w;
+            }
+/* The input data is now restored */
+            r = cc;
+            while (r != c)
+            {   w = cons(qcar(r), rx);
+                errexitn(5);
+                rx = w;
+                r = qcdr(r);
+            }
+            c = a;
+            r = TAG_FIXNUM;
+            break;
+        }
+        if (!consp(c)) break;
+// Recurse in CAR direction
+        w = substq(a, b, qcar(c));
+// If the recursive call fails I need to unshare before exit - so I
+// put in a hand-crafted test that arranges that.
+        nil = C_nil;
+        if (exception_pending())
+        {   while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = c;
+                c = r;
+                r = w;
+            }
+            return nil;
+        }
+/*
+ * If the replacement is in fact identical to the original I will
+ * need to pend any copy operations
+ */
+        else if (w == qcar(c))
+        {   w = qcdr(c);
+            qcdr(c) = r;
+            r = c;
+            c = w;
+            continue;
+        }
+/* Otherwise I may need to unpend any pending copy operations... */
+        else
+        {   Lisp_Object cc = c, ww;
+            while (r != TAG_FIXNUM)
+            {   ww = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = ww;
+            }
+/* The input data is now restored */
+            r = cc;
+            while (r != c)
+            {   Lisp_Object u = qcar(r), v = rx;
+                push(w);
+                ww = cons(u, v);
+                errexitn(6);
+                pop(w);
+                rx = ww;
+                r = qcdr(r);
+            }
+            w = cons(w, rx);
+            errexitn(5);
+            rx = w;
+            c = qcdr(c);
+            r = TAG_FIXNUM;
+        }
     }
-    if (!consp(stack[0])) { pop(c); popv(2); return c; }
-    w = Lsubstq(stack[-2], stack[-1], qcar(stack[0]));
-    errexitn(3);
-    pop2(c, b);
-    a = stack[0];
-    stack[0] = w;
-    w = Lsubstq(a, b, qcdr(c));
-    pop(a);
-    errexit();
-    a = cons(a, w);
-    errexit();
-    return onevalue(a);
+#undef c
+#undef b
+#undef a
+#undef r
+#undef rx
+    pop3(c, b, a);
+    {   Lisp_Object r, rx;
+        pop2(r, rx);
+        while (r != TAG_FIXNUM)
+        {   w = qcdr(r);
+            qcdr(r) = c;
+            c = r;
+            r = w;
+        }
+/*
+ * I have now restored the input list, so if I was taking an early exit
+ * because EQUAL had failed on me I can give up now.
+ */
+        if (exception_pending()) return nil;
+        while (rx != TAG_FIXNUM)
+        {   w = qcdr(rx);
+            qcdr(rx) = c;
+            c = rx;
+            rx = w;
+        }
+    }
+    return onevalue(c);
+}
+
+
+
+Lisp_Object subst(Lisp_Object a, Lisp_Object b, Lisp_Object c)
+{
+    Lisp_Object nil = C_nil, w;
+    stackcheck3(0, a, b, c);
+    push2(TAG_FIXNUM, TAG_FIXNUM); /* rx and r */
+    push3(a, b, c);
+#define c   stack[0]
+#define b   stack[-1]
+#define a   stack[-2]
+#define r   stack[-3]
+#define rx  stack[-4]
+    for (;;)
+    {
+#ifdef COMMON
+        if (cl_equal(c, b))
+#else
+        if (equal(c, b))
+#endif
+        {
+/* if EQUAL said "yes" then it can not have failed. */
+            if (c == a) break; /* substitute by leaving unchanged */
+/*
+ * Here I need to restore the part of the list from R backwards and
+ * then copy it to RX.
+ */
+            Lisp_Object cc = c;
+            while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = w;
+            }
+/* The input data is now restored */
+            r = cc;
+            while (r != c)
+            {   w = cons(qcar(r), rx);
+                errexitn(5);
+                rx = w;
+                r = qcdr(r);
+            }
+            c = a;
+            r = TAG_FIXNUM;
+            break;
+        }
+// equal may fail with a stack overflow, and if it does it will return
+// false (and set the exception marker). In that case I must recover and
+// undo any damage I have done to input lists.
+        nil = C_nil;
+        if (exception_pending() || !consp(c)) break;
+// Recurse in CAR direction
+        w = subst(a, b, qcar(c));
+// If the recursive call fails I need to unshare before exit - so I
+// put in a hand-crafted test that arranges that.
+        nil = C_nil;
+        if (exception_pending())
+        {   while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = c;
+                c = r;
+                r = w;
+            }
+            return nil;
+        }
+/*
+ * If the replacement is in fact identical to the original I will
+ * need to pend any copy operations
+ */
+        else if (w == qcar(c))
+        {   w = qcdr(c);
+            qcdr(c) = r;
+            r = c;
+            c = w;
+            continue;
+        }
+/* Otherwise I may need to unpend any pending copy operations... */
+        else
+        {   Lisp_Object cc = c, ww;
+            while (r != TAG_FIXNUM)
+            {   ww = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = ww;
+            }
+/* The input data is now restored */
+            r = cc;
+            while (r != c)
+            {   Lisp_Object u = qcar(r), v = rx;
+                push(w);
+                ww = cons(u, v);
+                errexitn(6);
+                pop(w);
+                rx = ww;
+                r = qcdr(r);
+            }
+            w = cons(w, rx);
+            errexitn(5);
+            rx = w;
+            c = qcdr(c);
+            r = TAG_FIXNUM;
+        }
+    }
+#undef c
+#undef b
+#undef a
+#undef r
+#undef rx
+    pop3(c, b, a);
+    {   Lisp_Object r, rx;
+        pop2(r, rx);
+        while (r != TAG_FIXNUM)
+        {   w = qcdr(r);
+            qcdr(r) = c;
+            c = r;
+            r = w;
+        }
+/*
+ * I have now restored the input list, so if I was taking an early exit
+ * because EQUAL had failed on me I can give up now.
+ */
+        if (exception_pending()) return nil;
+        while (rx != TAG_FIXNUM)
+        {   w = qcdr(rx);
+            qcdr(rx) = c;
+            c = rx;
+            rx = w;
+        }
+    }
+    return onevalue(c);
+}
+
+
+Lisp_Object subla(Lisp_Object a, Lisp_Object c)
+{
+    Lisp_Object nil = C_nil, w;
+    stackcheck2(0, a, c);
+    push2(TAG_FIXNUM, TAG_FIXNUM); /* rx and r */
+    push2(a, c);
+#define c   stack[0]
+#define a   stack[-1]
+#define r   stack[-2]
+#define rx  stack[-3]
+    for (;;)
+    {   Lisp_Object tt = a;
+        CSLbool found = NO;
+        while (consp(tt))
+        {   Lisp_Object tta = qcar(tt);
+            if (consp(tta) && c == qcar(tta))
+            {   tt = qcdr(tta);
+                found = YES;
+                break;
+            }
+            tt = qcdr(tt);
+        }
+        if (found)
+        {
+            if (c == tt) break; /* substitute by leaving unchanged */
+/*
+ * Here I need to restore the part of the list from R backwards and
+ * then copy it to RX.
+ */
+            Lisp_Object cc = c;
+            while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = w;
+            }
+/* The input data is now restored */
+            a = tt;
+            r = cc;
+            while (r != c)
+            {   w = cons(qcar(r), rx);
+                errexitn(4);
+                rx = w;
+                r = qcdr(r);
+            }
+            c = a;
+            r = TAG_FIXNUM;
+            break;
+        }
+        if (!consp(c)) break;
+// Recurse in CAR direction
+        w = subla(a, qcar(c));
+// If the recursive call fails I need to unshare before exit - so I
+// put in a hand-crafted test that arranges that.
+        nil = C_nil;
+        if (exception_pending())
+        {   while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = c;
+                c = r;
+                r = w;
+            }
+            return nil;
+        }
+/*
+ * If the replacement is in fact identical to the original I will
+ * need to pend any copy operations
+ */
+        else if (w == qcar(c))
+        {   w = qcdr(c);
+            qcdr(c) = r;
+            r = c;
+            c = w;
+            continue;
+        }
+/* Otherwise I may need to unpend any pending copy operations... */
+        else
+        {   Lisp_Object cc = c, ww;
+            while (r != TAG_FIXNUM)
+            {   ww = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = ww;
+            }
+/* The input data is now restored */
+            r = cc;
+            while (r != c)
+            {   Lisp_Object u = qcar(r), v = rx;
+                push(w);
+                ww = cons(u, v);
+                errexitn(5);
+                pop(w);
+                rx = ww;
+                r = qcdr(r);
+            }
+            w = cons(w, rx);
+            errexitn(4);
+            rx = w;
+            c = qcdr(c);
+            r = TAG_FIXNUM;
+        }
+    }
+#undef c
+#undef a
+#undef r
+#undef rx
+    pop2(c, a);
+    {   Lisp_Object r, rx;
+        pop2(r, rx);
+        while (r != TAG_FIXNUM)
+        {   w = qcdr(r);
+            qcdr(r) = c;
+            c = r;
+            r = w;
+        }
+/*
+ * I have now restored the input list, so if I was taking an early exit
+ * because EQUAL had failed on me I can give up now.
+ */
+        if (exception_pending()) return nil;
+        while (rx != TAG_FIXNUM)
+        {   w = qcdr(rx);
+            qcdr(rx) = c;
+            c = rx;
+            rx = w;
+        }
+    }
+    return onevalue(c);
+}
+
+
+Lisp_Object sublis(Lisp_Object a, Lisp_Object c)
+{
+    Lisp_Object nil = C_nil, w;
+    stackcheck2(0, a, c);
+    push2(TAG_FIXNUM, TAG_FIXNUM); /* rx and r */
+    push2(a, c);
+#define c   stack[0]
+#define a   stack[-1]
+#define r   stack[-2]
+#define rx  stack[-3]
+    for (;;)
+    {   Lisp_Object tt = a;
+        CSLbool found = NO;
+        while (consp(tt))
+        {   Lisp_Object tta = qcar(tt);
+#ifdef COMMON
+            if (consp(tta) && cl_equal(c, qcar(tta)))
+#else
+            if (consp(tta) && equal(c, qcar(tta)))
+#endif
+            {   tt = qcdr(tta);
+                found = YES;
+                break;
+            }
+            nil = C_nil;
+            if (exception_pending()) break;
+            tt = qcdr(tt);
+        }
+        if (found)
+        {
+/* if EQUAL had said "yes" then it can not have failed. */
+            if (c == tt) break; /* substitute by leaving unchanged */
+/*
+ * Here I need to restore the part of the list from R backwards and
+ * then copy it to RX.
+ */
+            Lisp_Object cc = c;
+            while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = w;
+            }
+/* The input data is now restored */
+            a = tt;
+            r = cc;
+            while (r != c)
+            {   w = cons(qcar(r), rx);
+                errexitn(4);
+                rx = w;
+                r = qcdr(r);
+            }
+            c = a;
+            r = TAG_FIXNUM;
+            break;
+        }
+// equal may fail with a stack overflow, and if it does it will return
+// false (and set the exception marker). In that case I must recover and
+// undo any damage I have done to input lists.
+        nil = C_nil;
+        if (exception_pending() || !consp(c)) break;
+// Recurse in CAR direction
+        w = sublis(a, qcar(c));
+// If the recursive call fails I need to unshare before exit - so I
+// put in a hand-crafted test that arranges that.
+        nil = C_nil;
+        if (exception_pending())
+        {   while (r != TAG_FIXNUM)
+            {   w = qcdr(r);
+                qcdr(r) = c;
+                c = r;
+                r = w;
+            }
+            return nil;
+        }
+/*
+ * If the replacement is in fact identical to the original I will
+ * need to pend any copy operations
+ */
+        else if (w == qcar(c))
+        {   w = qcdr(c);
+            qcdr(c) = r;
+            r = c;
+            c = w;
+            continue;
+        }
+/* Otherwise I may need to unpend any pending copy operations... */
+        else
+        {   Lisp_Object cc = c, ww;
+            while (r != TAG_FIXNUM)
+            {   ww = qcdr(r);
+                qcdr(r) = cc;
+                cc = r;
+                r = ww;
+            }
+/* The input data is now restored */
+            r = cc;
+            while (r != c)
+            {   Lisp_Object u = qcar(r), v = rx;
+                push(w);
+                ww = cons(u, v);
+                errexitn(5);
+                pop(w);
+                rx = ww;
+                r = qcdr(r);
+            }
+            w = cons(w, rx);
+            errexitn(4);
+            rx = w;
+            c = qcdr(c);
+            r = TAG_FIXNUM;
+        }
+    }
+#undef c
+#undef a
+#undef r
+#undef rx
+    pop2(c, a);
+    {   Lisp_Object r, rx;
+        pop2(r, rx);
+        while (r != TAG_FIXNUM)
+        {   w = qcdr(r);
+            qcdr(r) = c;
+            c = r;
+            r = w;
+        }
+/*
+ * I have now restored the input list, so if I was taking an early exit
+ * because EQUAL had failed on me I can give up now.
+ */
+        if (exception_pending()) return nil;
+        while (rx != TAG_FIXNUM)
+        {   w = qcdr(rx);
+            qcdr(rx) = c;
+            c = rx;
+            rx = w;
+        }
+    }
+    return onevalue(c);
+}
+
+
+
+Lisp_Object MS_CDECL Lsubstq(Lisp_Object nil, int nargs, ...)
+{
+    Lisp_Object a, b, c;
+    va_list aa;
+    argcheck(nargs, 3, "substq");
+#ifdef CHECK_STACK
+    if (check_stack(__FILE__,__LINE__))
+    {   show_stack();
+        return aerror("subst");
+    }
+#endif
+    va_start(aa, nargs);
+    a = va_arg(aa, Lisp_Object);
+    b = va_arg(aa, Lisp_Object);
+    c = va_arg(aa, Lisp_Object);
+    va_end(aa);
+    return substq(a, b, c);
 }
 
 Lisp_Object MS_CDECL Lsubst(Lisp_Object nil, int nargs, ...)
 {
-    Lisp_Object w, a, b, c;
+    Lisp_Object a, b, c;
     va_list aa;
     argcheck(nargs, 3, "subst");
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__)) return aerror("subst");
+    if (check_stack(__FILE__,__LINE__))
+    {   show_stack();
+        return aerror("subst");
+    }
 #endif
     va_start(aa, nargs);
     a = va_arg(aa, Lisp_Object);
@@ -3659,92 +4315,23 @@ Lisp_Object MS_CDECL Lsubst(Lisp_Object nil, int nargs, ...)
     c = va_arg(aa, Lisp_Object);
     va_end(aa);
     if (c == b) return onevalue(a);
-    if (is_symbol(b) || is_fixnum(b)) return Lsubstq(a, b, c);
-    stackcheck3(0, a, b, c);
-    push3(a, b, c);
-#ifdef COMMON
-    if (cl_equal(c, b))
-#else
-    if (equal(c, b))
-#endif
-    {   popv(2);
-        pop(a);
-        errexit();
-        return onevalue(a);
-    }
-    if (!consp(stack[0])) { pop(c); popv(2); return c; }
-    w = Lsubst(nil, 3, stack[-2], stack[-1], qcar(stack[0]));
-    errexitn(3);
-    pop2(c, b);
-    a = stack[0];
-    stack[0] = w;
-    w = Lsubst(nil, 3, a, b, qcdr(c));
-    pop(a);
-    errexit();
-    a = cons(a, w);
-    errexit();
-    return onevalue(a);
+    else if (is_symbol(b) || is_fixnum(b)) return substq(a, b, c);
+    else return subst(a, b, c);
 }
-
-/* #endif */
 
 Lisp_Object Lsublis(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
 {
     stackcheck2(0, al, x);
     errexit();
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__)) return aerror("sublis");
-#endif
-    push5(al, x, al, nil, nil);
-#define carx stack[0]
-#define cdrx stack[-1]
-#define w    stack[-2]
-#define x    stack[-3]
-#define al   stack[-4]
-    for (;;)
-    {   if (!consp(w))
-        {   if (!consp(x))
-            {   Lisp_Object temp = x;
-                popv(5);
-                return temp;
-            }
-            carx = Lsublis(nil, al, qcar(x));
-            errexitn(5);
-            cdrx = Lsublis(nil, al, qcdr(x));
-            errexitn(5);
-            if (carx == qcar(x) && cdrx == qcdr(x))
-            {   Lisp_Object temp = x;
-                popv(5);
-                return temp;
-            }
-            else
-            {   Lisp_Object a1 = carx, a2 = cdrx;
-                popv(5);
-                return cons(a1, a2);
-            }
-        }
-        {   Lisp_Object temp = qcar(w);
-            if (consp(temp))
-            {   Lisp_Object v = qcar(temp);
-#ifdef COMMON
-                if (cl_equal(v, x))
-#else
-                if (equal(v, x))
-#endif
-                {   temp = qcdr(temp);
-                    popv(5);
-                    return temp;
-                }
-            }
-        }
-        w = qcdr(w);
+    if (check_stack(__FILE__,__LINE__))
+    {   show_stack();
+        return aerror("sublis");
     }
+#endif
+    return sublis(al, x);
 }
-#undef carx
-#undef cdrx
-#undef w
-#undef x
-#undef al
+
 
 Lisp_Object Lsubla(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
 /*
@@ -3754,57 +4341,21 @@ Lisp_Object Lsubla(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
     stackcheck2(0, al, x);
     errexit();
 #ifdef CHECK_STACK
-    if (check_stack(__FILE__,__LINE__)) return aerror("subla");
-#endif
-    push5(al, x, al, nil, nil);
-#define carx stack[0]
-#define cdrx stack[-1]
-#define w    stack[-2]
-#define x    stack[-3]
-#define al   stack[-4]
-    for (;;)
-    {   if (!consp(w))
-        {   if (!consp(x))
-            {   Lisp_Object temp = x;
-                popv(5);
-                return temp;
-            }
-            carx = Lsubla(nil, al, qcar(x));
-            errexitn(5);
-            cdrx = Lsubla(nil, al, qcdr(x));
-            errexitn(5);
-            if (carx == qcar(x) && cdrx == qcdr(x))
-            {   Lisp_Object temp = x;
-                popv(5);
-                return temp;
-            }
-            else
-            {   Lisp_Object a1 = carx, a2 = cdrx;
-                popv(5);
-                return cons(a1, a2);
-            }
-        }
-        {   Lisp_Object temp = qcar(w);
-            if (consp(temp))
-            {   Lisp_Object v = qcar(temp);
-                if (v == x) { temp = qcdr(temp); popv(5); return temp; }
-            }
-        }
-        w = qcdr(w);
+    if (check_stack(__FILE__,__LINE__))
+    {   show_stack();
+        return aerror("subla");
     }
+#endif
+    return subla(al, x);
 }
-#undef carx
-#undef cdrx
-#undef w
-#undef x
-#undef al
+
 
 setup_type const funcs2_setup[] =
 {
     {"assoc",                   too_few_2, Lassoc, wrong_no_2},
 /*
  * assoc** is expected to remain as the Standard Lisp version even if in
- * a Common Lisp world I redefine assoc to be someting messier. xassoc was
+ * a Common Lisp world I redefine assoc to be something messier. xassoc was
  * an earlier name I used for the same purpose, and is being withdrawn.
  */
     {"assoc**",                 too_few_2, Lassoc, wrong_no_2},
@@ -3870,6 +4421,7 @@ setup_type const funcs2_setup[] =
     {"subla",                   too_few_2, Lsubla, wrong_no_2},
     {"sublis",                  too_few_2, Lsublis, wrong_no_2},
     {"subst",                   wrong_no_3a, wrong_no_3b, Lsubst},
+    {"substq",                  wrong_no_3a, wrong_no_3b, Lsubstq},
     {"symbol-protect",          too_few_2, Lsymbol_protect, wrong_no_2},
 #ifdef COMMON
     {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
