@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 3b34084c 03-Sep-2010 */
+/* Signature: 7da5d60e 03-Aug-2011 */
 
 #include "headers.h"
 
@@ -1254,6 +1254,12 @@ static void trace_print_3(Lisp_Object name, Lisp_Object *stack)
 #define next_byte *ppc++
 #endif
 
+#ifndef NO_BYTECOUNT
+#ifdef CHECK_STACK
+char *native_stack = NULL, *native_stack_base = NULL;
+#endif
+#endif
+
 Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
                                  Lisp_Object *entry_stack)
 {
@@ -1288,6 +1294,18 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  */
 #ifndef NO_BYTECOUNT
     int32_t opcodes = 30; /* Attribute 30-bytecode overhead to entry sequence */
+#ifdef CHECK_STACK
+    {   char *my_stack = (char *)&opcodes;
+        if (native_stack == NULL) native_stack = native_stack_base = my_stack;
+        else if (my_stack + 10000 < native_stack)
+        {   native_stack = my_stack;
+            Lisp_Object ffsym = elt(lit, 0);
+            trace_printf("\nFunction %s stack depth %d\n",
+                         &celt(qpname(ffsym), 0),
+                         native_stack_base - my_stack);
+        }
+    }
+#endif
 #endif
 #ifdef DEBUG
 /*
@@ -1318,7 +1336,12 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  * special registers, called A, and B which act as a mini stack.
  */
 #ifdef CHECK_STACK
+#ifdef DEBUG
     if (check_stack(ffname,__LINE__)) return aerror("stack overflow");
+#else
+    if (check_stack("bytecode_interpreter",__LINE__))
+        return aerror("stack overflow");
+#endif
 #endif
 
 #ifndef NO_BYTECOUNT
