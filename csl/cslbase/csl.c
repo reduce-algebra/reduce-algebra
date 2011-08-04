@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 16161bb5 14-May-2011 */
+/* Signature: 5ddcdec2 03-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -119,6 +119,7 @@ static int c_stack_ptr = 0;
 int check_stack(char *file, int line)
 {
     int32_t temp = (int32_t)&temp;
+    char *file1;
     if (!spset)
     {   spbase = spmin = temp;
         spset = 1;
@@ -133,12 +134,13 @@ int check_stack(char *file, int line)
         c_stack_ptr--;
     stack_depth[c_stack_ptr] = temp;
     stack_line[c_stack_ptr] = line;
-    stack_file[c_stack_ptr] = file;
+    file1 = strrchr(file, '/');
+    stack_file[c_stack_ptr] = (file1 == NULL ? file : file1+1);
     if (temp < spmin-250)  /* Only check at granularity of 250 bytes */
     {   int i;
         term_printf("Stack depth %d at file %s line %d\n",
                      spbase-temp, file, line);
-        for (i=c_stack_ptr; i>=0 && i > c_stack_ptr-30; i--)
+        for (i=c_stack_ptr; i>=0 && i > c_stack_ptr-10; i--)
             term_printf(" %s:%d", stack_file[i], stack_line[i]);
         term_printf("\n");
         spmin = temp;
@@ -146,6 +148,21 @@ int check_stack(char *file, int line)
     }
     return 0;
 }
+
+void show_stack()
+{
+    int i, j=0;
+    term_printf("\n+++ Stack overflow traceback...\n");
+    for (i=c_stack_ptr; i>=0; i--)
+    {   if (j++ > 10)
+        {   term_printf("\n");
+            j = 0;
+        }
+        term_printf(" %d) %s:%d", i, stack_file[i], stack_line[i]);
+    }
+    term_printf("\n");
+}
+
 #endif
 
 /*

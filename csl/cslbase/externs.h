@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 17265c7f 14-May-2011 */
+/* Signature: 556513ab 03-Aug-2011 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -232,8 +232,10 @@ extern Lisp_Object *C_stackbase, *C_stacktop;
 
 #ifdef CHECK_STACK
 extern int check_stack(char *file, int line);
+extern void show_stack();
 #define if_check_stack \
-   if (check_stack(__FILE__,__LINE__)) return aerror("stack overflow");
+   if (check_stack(__FILE__,__LINE__)) \
+   {   show_stack(); return aerror("stack overflow"); }
 #else
 #define if_check_stack
 #endif
