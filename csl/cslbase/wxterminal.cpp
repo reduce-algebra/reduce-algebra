@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 3582eb68 22-Jul-2011 */
+/* Signature: 356471c5 03-Aug-2011 */
 
 #include "wx/wxprec.h"
 
@@ -3908,9 +3908,8 @@ case WXK_TAB:
         c = '\t';
         goto defaultlabel;
 case '@':
-// As a default sort of behaviour if my chart of actions shows a key doing
-// something interesting with CONTROL but does not specify what happens
-// with ALT, I think I will tend to make ALT-x behave like ^x.
+// As a default sort of behaviour I somehow need to resolve what happens in
+// case CTRL and ALT are both pressed.
         if (m & wxMOD_ALT)
         {   setSelectionMark();
             return false;
@@ -3926,9 +3925,17 @@ case 'A': case 'a':
         }
         else goto defaultlabel;
 case 'A' & 0x1f:
+        if (m & wxMOD_ALT)
+        {   moveLineStart();
+            return false;
+        }
         moveLineStart();
         return false;
 case 'B' & 0x1f:
+        if (m & wxMOD_ALT)
+        {   moveWordLeft();
+            return false;
+        }
         moveLeft();
         return false;
 case 'B': case 'b':
@@ -3938,6 +3945,10 @@ case 'B': case 'b':
         }
         else goto defaultlabel;
 case 'C' & 0x1f:
+        if (m & wxMOD_ALT)
+        {   capitalize();
+            return false;
+        }
         interrupt();
         return false;
 case 'C': case 'c':
@@ -3955,6 +3966,10 @@ case WXK_DELETE:
         else deleteForwards(1);
         return false;
 case 'D' & 0x1f:
+        if (m & wxMOD_ALT)
+        {   deleteWordForwards();
+            return false;
+        }
 // Here I may want to arrange that if the current input-buffer is empty
 // then ^D causes and EOF to be returned. Well yes, I have arranged that
 // elsewhere so I only get here if the user has typed some chars already.
@@ -3966,6 +3981,7 @@ case 'D': case 'd':
         }
         goto defaultlabel;
 case 'E' & 0x1f:
+        if (m & wxMOD_ALT) return 1;
         moveLineEnd();
         return false;
 case 'E': case 'e':
@@ -3974,6 +3990,10 @@ case 'E': case 'e':
         if (m & wxMOD_ALT) return 1;
         goto defaultlabel;
 case 'F' & 0x1f:
+        if (m & wxMOD_ALT)
+        {   moveWordRight();
+            return false;
+        }
         moveRight();
         return false;
 case 'F': case 'f':
@@ -3983,6 +4003,7 @@ case 'F': case 'f':
         }
         goto defaultlabel;
 case 'G' & 0x1f:
+        if (m & wxMOD_ALT) return true;
         displayBacktrace();
         return false;
 case 'G': case 'g':
@@ -4002,6 +4023,10 @@ case 'I': case 'i':
         if (m & wxMOD_ALT) return true;
         goto defaultlabel;
 case 'J' & 0x1f:
+        if (m & wxMOD_ALT)  // Could ALT-J be for something more interesting?
+        {   insertNewline();
+            return false;
+        }
          c = '\n';
          goto defaultlabel;
 case 'J': case 'j':
@@ -4032,6 +4057,10 @@ case 'M': case 'm':
         goto defaultlabel;
 case 'N' & 0x1f:
         if (options & READONLY) moveDown();
+        if (m & wxMOD_ALT)
+        {   searchHistoryNext();
+            return false;
+        }
         else historyNext();
         return false;
 case 'N': case 'n':
@@ -4041,7 +4070,7 @@ case 'N': case 'n':
             return false;
         }
         goto defaultlabel;
-// case 'O' & 0x1f: // menu shortcut to lose eoutput
+// case 'O' & 0x1f: // menu shortcut to lose output
 case 'O': case 'o':
 // ^O will be purge output.
 //    I hope that by making ^O, ^S and ^Q menu shortcuts they will get
@@ -4051,6 +4080,10 @@ case 'O': case 'o':
         goto defaultlabel;
 case 'P' & 0x1f:
         if (options & READONLY) moveUp();
+        if (m & wxMOD_ALT)
+        {   searchHistoryPrev();
+            return false;
+        }
         else historyPrev();
         return false;
 case 'P': case 'p':
@@ -4065,6 +4098,7 @@ case 'Q': case 'q':
         if (m & wxMOD_ALT) return true; // Ignore ALT-Q
         goto defaultlabel;
 case 'R' & 0x1f:
+        if (m & wxMOD_ALT) return 1;
         Refresh();
         return false;
 case 'R': case 'r':
@@ -4087,6 +4121,10 @@ case 'T': case 't':
         }
         goto defaultlabel;
 case 'U' & 0x1f:
+        if (m & wxMOD_ALT)
+        {   upperCase();
+            return false;
+        }
         undo();
         return false;
 case 'U': case 'u':
@@ -4100,6 +4138,10 @@ case 'V': case 'v':
         goto defaultlabel;
 case 'W' & 0x1f:
 // ^W behaviour is just like ALT-H
+        if (m & wxMOD_ALT)
+        {   copyRegion();
+            return false;
+        }
         deleteWordBackwards();
         return false;
 case 'W': case 'w':
@@ -4109,6 +4151,10 @@ case 'W': case 'w':
         }
         goto defaultlabel;
 case 'X' & 0x1f:
+        if (m & wxMOD_ALT)    // if CTRL and ALT both in use ALT wins here
+        {   unicodeInput();   // Unicode conversion
+            return false;
+        }
         ctrlXcommand();
         return false;
 case 'X': case 'x':
@@ -4119,6 +4165,10 @@ case 'X': case 'x':
         goto defaultlabel;
 case 'Y' & 0x1f:
 // ^Y is short for YANK, otherwise known as PASTE
+        if (m & wxMOD_ALT)
+        {   rotateClipboard();
+            return false;
+        }
         paste();
         return false;
 case 'Y': case 'y':
