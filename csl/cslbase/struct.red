@@ -228,7 +228,7 @@ symbolic procedure setqchk(u,v);
 %       then return nconc(reversip z,v)
        else if eqcar(car v,'return) and used!-oncep(x,cadar v)
 	then <<lprim list("assignment for",x,"removed");
-	       return nconc(reversip z,substq(x,y,car v) . cdr v)>>
+	       return nconc(reversip z,substfirst(x,y,car v) . cdr v)>>
        else if not smemq(x,car v)
 	then <<z := car v . z; v := cdr v; go to a>>
        else return u . nconc(reversip z,v)
@@ -241,13 +241,13 @@ symbolic procedure used!-oncep(u,v);
     else if u eq car v then not smemq(u,cdr v)
     else used!-oncep(u,cdr v);
 
-symbolic procedure substq(u,v,w);
+symbolic procedure substfirst(u,v,w);
    % Substitute first occurrence of atom u in w by v.
    if atom w then if u eq w then v else w
     else if car w eq 'quote then w
     else if u eq car w then v . cdr w
-    else if not atom car w then substq(u,v,car w) . substq(u,v,cdr w)
-    else car w . substq(u,v,cdr w);
+    else if not atom car w then substfirst(u,v,car w) . substfirst(u,v,cdr w)
+    else car w . substfirst(u,v,cdr w);
 
 symbolic procedure labelp u;
    atom u or car u eq '!*label;

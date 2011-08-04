@@ -148,7 +148,7 @@ cond) (list (caadar v) (cadr (cadr (cadar v)))) (list (quote t) (cadr (cadr v
 not (no!-side!-effectp y)) (return (cons u v)))) a (cond ((null v) (return (
 cons u (reversip z)))) (t (cond ((and (eqcar (car v) (quote return)) (
 used!-oncep x (cadar v))) (progn (lprim (list "assignment for" x "removed")) 
-(return (nconc (reversip z) (cons (substq x y (car v)) (cdr v)))))) (t (cond 
+(return (nconc (reversip z) (cons (substfirst x y (car v)) (cdr v)))))) (t (cond 
 ((not (smemq x (car v))) (progn (setq z (cons (car v) z)) (setq v (cdr v)) (
 go a))) (t (return (cons u (nconc (reversip z) v)))))))))))
 
@@ -156,10 +156,10 @@ go a))) (t (return (cons u (nconc (reversip z) v)))))))))))
 t) (t (cond ((eq u (car v)) (not (smemq u (cdr v)))) (t (used!-oncep u (cdr 
 v)))))))))
 
-(de substq (u v w) (cond ((atom w) (cond ((eq u w) v) (t w))) (t (cond ((eq (
+(de substfirst (u v w) (cond ((atom w) (cond ((eq u w) v) (t w))) (t (cond ((eq (
 car w) (quote quote)) w) (t (cond ((eq u (car w)) (cons v (cdr w))) (t (cond 
-((not (atom (car w))) (cons (substq u v (car w)) (substq u v (cdr w)))) (t (
-cons (car w) (substq u v (cdr w))))))))))))
+((not (atom (car w))) (cons (substfirst u v (car w)) (substfirst u v (cdr w)))) (t (
+cons (car w) (substfirst u v (cdr w))))))))))))
 
 (de labelp (u) (or (atom u) (eq (car u) (quote !*label))))
 
