@@ -105,6 +105,10 @@ flag('(atsoc copy eqcar gcdn geq lastpair leq mkquote neq reversip
        safe!-fp!-plus safe!-fp!-times safe!-fp!-quot threevectorp
        sort stable!-sort stable!-sortip lengthc),'lose);
 
+% substq has only been built into CSL since July 2011 so I will be cautious
+% here for when this file is used with a legacy version of CSL.
+
+if getd 'substq then flag('(substq), 'lose);
 
 !*argnochk := t;
 
