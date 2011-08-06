@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1af96116 04-Aug-2011 */
+/* Signature: 5b739d5c 06-Aug-2011 */
 
 #include "headers.h"
 
@@ -4329,7 +4329,8 @@ Lisp_Object Lsublis(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
         return aerror("sublis");
     }
 #endif
-    return sublis(al, x);
+    if (!consp(al)) return onevalue(x);
+    else return sublis(al, x);
 }
 
 
@@ -4346,7 +4347,8 @@ Lisp_Object Lsubla(Lisp_Object nil, Lisp_Object al, Lisp_Object x)
         return aerror("subla");
     }
 #endif
-    return subla(al, x);
+    if (!consp(al)) return onevalue(x);
+    else return subla(al, x);
 }
 
 

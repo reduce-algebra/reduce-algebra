@@ -54,14 +54,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	TODO compile config.guess config.sub depcomp install-sh \
-	missing
+	missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
@@ -2525,7 +2525,7 @@ install-data-local: $(image_files)
 @windows_TRUE@	@list='$(console_binaries) $(image_files)'; for p in $$list; do \
 @windows_TRUE@	  f=`echo "$$p" | sed 's,^.*/,,'`; \
 @windows_TRUE@	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-@windows_TRUE@	  rm -f $(DESTDIR)$(bindir)/$$f; \
+@windows_TRUE@	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
 @windows_TRUE@	done
 
 @windows_TRUE@clean-local:
@@ -2536,7 +2536,7 @@ install-data-local: $(image_files)
 @windows_FALSE@	@list='$(image_files)'; for p in $$list; do \
 @windows_FALSE@	  f=`echo "$$p" | sed 's,^.*/,,'`; \
 @windows_FALSE@	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-@windows_FALSE@	  rm -f $(DESTDIR)$(bindir)/$$f; \
+@windows_FALSE@	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
 @windows_FALSE@	done
 
 @windows_FALSE@clean-local:
@@ -2660,7 +2660,7 @@ reduce.img:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
 @canrun_TRUE@	elif test -f reduce.img; then cp reduce.img $(gensrc); fi
 @canrun_FALSE@	echo Can not build reduce.img on this platform.
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	rm -rf reduce.img
+@canrun_FALSE@	-rm -rf reduce.img
 @canrun_FALSE@	cp $(gensrc)/reduce.img .
 
 # This is a temporary target "reduce.dir" to create the image as a directory
@@ -2680,7 +2680,7 @@ reduce.dir:	reduce$(COM) $(reducedep) $(gensym)/timestamp.dat
 @canrun_TRUE@		-j reduce.dep
 @canrun_FALSE@	echo Can not build reduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	rm -rf reduce.img
+@canrun_FALSE@	-rm -rf reduce.img
 @canrun_FALSE@	cp $(gensrc)/reduce.img .
 
 bootstraprecompile:	bootstrapreduce.img
@@ -2747,7 +2747,7 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 @canrun_TRUE@	then cp bootstrapreduce.img $(gensrc); fi
 @canrun_FALSE@	echo Can not build bootstrapreduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	rm -rf bootstrapreduce.img
+@canrun_FALSE@	-rm -rf bootstrapreduce.img
 @canrun_FALSE@	cp $(gensrc)/bootstrapreduce.img .
 
 profile:	bootstrapreduce.img
@@ -2864,7 +2864,7 @@ csl.img:	csl$(COM) $(csldep)
 @canrun_TRUE@	elif test -f csl.img; then cp csl.img $(gensrc); fi
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
-@canrun_FALSE@	rm -rf csl.img
+@canrun_FALSE@	-rm -rf csl.img
 @canrun_FALSE@	cp $(gensrc)/csl.img .
 
 save:	all

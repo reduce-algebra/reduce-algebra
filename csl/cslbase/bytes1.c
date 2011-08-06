@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 7da5d60e 03-Aug-2011 */
+/* Signature: 538a9ec0 04-Aug-2011 */
 
 #include "headers.h"
 
@@ -1309,17 +1309,24 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
 #endif
 #ifdef DEBUG
 /*
- * ffname will (at least until a garbage collection occurs) point to the
- * (C) string that is the name of the function being interpreted. This is
- * jolly useful if one is in a debugger trying to understand what has
- * been going on! Note that the executable code here does not use this
- * variable at all: it is JUST so that I have a simple "char *" variable
+ * ffname will be the first 15 characters of the name of the function
+ * that is being interpreted.
+ * This is jolly useful if one is in a debugger trying to understand what
+ * has been going on! Note that the executable code here does not use this
+ * variable at all: it is JUST so that I have a simple string variable
  * that a symbolic debugger can inspect to find my function name without
  * me having to mess about too much. I make this "volatile" in the hope that
  * that will prevent any compiler from optimising it out of existence!
+ * If your function names are very long this may not give you all the info
+ * you would like.
  */
     Lisp_Object volatile ffsym = elt(lit, 0);
-    char * volatile ffname = &celt(qpname(ffsym), 0);  /* DEBUG */
+    char volatile ffname[16];
+    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
+    int fflength =
+        (int)(length_of_header(vechdr(qpname(ffsym))) - CELL);
+    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+    ffname[fflength] = 0;
     if (*ffname == 0)
     {   fprintf(stderr, "\nffname empty - system corrupted?\n");
         fflush(stderr);
@@ -1328,7 +1335,6 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
         abort(); 
     }
     CSL_IGNORE(ffsym);
-    CSL_IGNORE(ffname);
 #endif
 
 /*
@@ -1337,7 +1343,8 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
  */
 #ifdef CHECK_STACK
 #ifdef DEBUG
-    if (check_stack(ffname,__LINE__)) return aerror("stack overflow");
+    if (check_stack((char *)&ffname[0],__LINE__))
+        return aerror("stack overflow");
 #else
     if (check_stack("bytecode_interpreter",__LINE__))
         return aerror("stack overflow");

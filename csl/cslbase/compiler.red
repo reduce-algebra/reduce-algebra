@@ -1,11 +1,11 @@
-%
+%  
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist Ltd, 1990-2010
+%       Copyright (C) Codemist Ltd, 1990-2011
 %
 
 
 %%
-%% Copyright (C) 2010, following the master REDUCE source files.          *
+%% Copyright (C) 2011,              A C Norman, Codemist Ltd              *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -1818,6 +1818,56 @@ symbolic procedure s!:imp_idifference u;
   end;
 
 put('idifference, 's!:tidy_fn, 's!:imp_idifference);
+
+% imp_or and imp_and "improve" (or ...) and (and ...) forms. They
+% should only get involved when the value of the expression is needed. Their
+% purpose is to rework things so that in cases where special CSL bytecodes
+% can make tests that will happen.
+
+symbolic procedure s!:boolean_jumpable u;
+  null u or
+  u = t
+  or (not atom u and atom car u and
+      (flagp(car u, 's!:bool_opcode) or
+       ((car u = 'and or car u = 'or) and s!:boolean_jumpable_list cdr u)));
+
+symbolic procedure s!:boolean_jumpable_list u;
+   atom u or
+   (s!:boolean_jumpable car u and s!:boolean_jumpable_list cdr u);
+
+flag('(null not eq equal neq eqcar atom flagp), 's!:bool_opcode);
+
+symbolic procedure s!:imp_or u;
+  begin
+    scalar w, x;
+    w := cdr u;
+    if atom w then return nil;
+    x := car w;
+    if atom cdr w then return s!:improve x
+    else if s!:boolean_jumpable x then
+      return list('cond,
+               list(x, t),
+               list(t, s!:imp_or ('or . cdr w)))
+    else return list('or, s!:improve x, s!:imp_or('or . cdr w))
+  end;
+
+put('or, 's!:tidy_fn, 's!:imp_or);
+
+symbolic procedure s!:imp_and u;
+  begin
+    scalar w, x;
+    w := cdr u;
+    if atom w then return t;
+    x := car w;
+    if atom cdr w then return x
+    else if s!:boolean_jumpable x then
+      return list('cond,
+               list(x, s!:imp_and ('and . cdr w)),
+               list(t, nil))
+    else return list('and, s!:improve x, s!:imp_and('and . cdr w))
+  end;
+
+put('and, 's!:tidy_fn, 's!:imp_and);
 
 % s!:iseasy yields true if the given expression can be loaded without
 % disturbing registers.
@@ -3783,6 +3833,10 @@ symbolic procedure s!:testeqcar(neg, x, env, lab);
     if not promote and eqcar(b, 'quote) then <<
        s!:comval(a, env, 1);
        b := cadr b;
+       a := list(if neg then 'JUMPEQCAR else 'JUMPNEQCAR, b, b);
+       s!:record_literal_for_jump(a, env, lab) >>
+    else if b=nil or b=t or (not symbolp b and eq!-safe b) then <<
+       s!:comval(a, env, 1);
        a := list(if neg then 'JUMPEQCAR else 'JUMPNEQCAR, b, b);
        s!:record_literal_for_jump(a, env, lab) >>
     else <<

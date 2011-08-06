@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 556513ab 03-Aug-2011 */
+/* Signature: 0fb2525a 06-Aug-2011 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -229,6 +229,7 @@ extern Lisp_Object *C_stackbase, *C_stacktop;
 #define GC_PRESERVE  6
 #define GC_NATIVE    7
 
+extern volatile char stack_contents_temp;
 
 #ifdef CHECK_STACK
 extern int check_stack(char *file, int line);
@@ -237,7 +238,17 @@ extern void show_stack();
    if (check_stack(__FILE__,__LINE__)) \
    {   show_stack(); return aerror("stack overflow"); }
 #else
-#define if_check_stack
+/*
+ * This tries to read from memory below where the current stack is
+ * in the expectation that if a stack overflow is about to happen
+ * an exception will be provoked.
+ */
+#define if_check_stack \
+   {   char *p = (char *)&p; \
+       stack_contents_temp = p[-4000]; \
+       stack_contents_temp = p[-8000]; \
+       stack_contents_temp = p[-12000]; \
+   }
 #endif
 
 extern int32_t software_ticks, countdown;

@@ -929,6 +929,33 @@ quote iminus) b))) (t (cond ((equal b 0) a) (t (list (car u) a b))))))))
 
 (put (quote idifference) (quote s!:tidy_fn) (quote s!:imp_idifference))
 
+(de s!:boolean_jumpable (u) (or (null u) (equal u t) (and (not (atom u)) (
+atom (car u)) (or (flagp (car u) (quote s!:bool_opcode)) (and (or (equal (car
+u) (quote and)) (equal (car u) (quote or))) (s!:boolean_jumpable_list (cdr u
+)))))))
+
+(de s!:boolean_jumpable_list (u) (or (atom u) (and (s!:boolean_jumpable (car 
+u)) (s!:boolean_jumpable_list (cdr u)))))
+
+(flag (quote (null not eq equal neq eqcar atom flagp)) (quote s!:bool_opcode)
+)
+
+(de s!:imp_or (u) (prog (w x) (setq w (cdr u)) (cond ((atom w) (return nil)))
+(setq x (car w)) (cond ((atom (cdr w)) (return (s!:improve x))) (t (cond ((
+s!:boolean_jumpable x) (return (list (quote cond) (list x t) (list t (
+s!:imp_or (cons (quote or) (cdr w))))))) (t (return (list (quote or) (
+s!:improve x) (s!:imp_or (cons (quote or) (cdr w)))))))))))
+
+(put (quote or) (quote s!:tidy_fn) (quote s!:imp_or))
+
+(de s!:imp_and (u) (prog (w x) (setq w (cdr u)) (cond ((atom w) (return t))) 
+(setq x (car w)) (cond ((atom (cdr w)) (return x)) (t (cond ((
+s!:boolean_jumpable x) (return (list (quote cond) (list x (s!:imp_and (cons (
+quote and) (cdr w)))) (list t nil)))) (t (return (list (quote and) (
+s!:improve x) (s!:imp_and (cons (quote and) (cdr w)))))))))))
+
+(put (quote and) (quote s!:tidy_fn) (quote s!:imp_and))
+
 (de s!:alwayseasy (x) t)
 
 (put (quote quote) (quote s!:helpeasy) (function s!:alwayseasy))
@@ -1936,11 +1963,14 @@ s!:comval x env 1) (s!:outjump (cond (neg (quote JUMPT)) (t (quote JUMPNIL)))
 lab) (return nil)))))) (cond ((and (not promote) (eqcar b (quote quote))) (
 progn (s!:comval a env 1) (setq b (cadr b)) (setq a (list (cond (neg (quote 
 JUMPEQCAR)) (t (quote JUMPNEQCAR))) b b)) (s!:record_literal_for_jump a env 
+lab))) (t (cond ((or (equal b nil) (equal b t) (and (not (symbolp b)) (
+eq!-safe b))) (progn (s!:comval a env 1) (setq a (list (cond (neg (quote 
+JUMPEQCAR)) (t (quote JUMPNEQCAR))) b b)) (s!:record_literal_for_jump a env 
 lab))) (t (progn (setq sw (s!:load2 a b env)) (cond (sw (s!:outopcode0 (quote
 SWOP) (quote (SWOP))))) (cond (promote (s!:outopcode1 (quote BUILTIN2) (get 
 (quote equalcar) (quote s!:builtin2)) (quote equalcar))) (t (s!:outopcode0 (
 quote EQCAR) (quote (EQCAR))))) (s!:outjump (cond (neg (quote JUMPT)) (t (
-quote JUMPNIL))) lab))))))
+quote JUMPNIL))) lab))))))))
 
 (put (quote eqcar) (quote s!:testfn) (function s!:testeqcar))
 

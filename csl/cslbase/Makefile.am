@@ -976,7 +976,7 @@ uninstall-local:
 	@list='$(console_binaries) $(image_files)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's,^.*/,,'`; \
 	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-	  rm -f $(DESTDIR)$(bindir)/$$f; \
+	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
 	done
 
 local_image_files = bootstrapreduce.img
@@ -995,7 +995,7 @@ uninstall-local:
 	@list='$(image_files)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's,^.*/,,'`; \
 	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-	  rm -f $(DESTDIR)$(bindir)/$$f; \
+	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
 	done
 
 local_image_files = bootstrapreduce.img
@@ -1168,7 +1168,7 @@ if canrun
 else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
-	rm -rf reduce.img
+	-rm -rf reduce.img
 	cp $(gensrc)/reduce.img .
 endif !canrun
 
@@ -1191,7 +1191,7 @@ if canrun
 else !canrun
 	echo Can not build reduce.img on this platform
 	echo Copying from $(gensrc)
-	rm -rf reduce.img
+	-rm -rf reduce.img
 	cp $(gensrc)/reduce.img .
 endif !canrun
 
@@ -1269,7 +1269,7 @@ if canrun
 else !canrun
 	echo Can not build bootstrapreduce.img on this platform
 	echo Copying from $(gensrc)
-	rm -rf bootstrapreduce.img
+	-rm -rf bootstrapreduce.img
 	cp $(gensrc)/bootstrapreduce.img .
 endif !canrun
 
@@ -1418,7 +1418,7 @@ if canrun
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
-	rm -rf csl.img
+	-rm -rf csl.img
 	cp $(gensrc)/csl.img .
 endif !canrun
 

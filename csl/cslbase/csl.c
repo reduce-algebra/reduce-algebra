@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 5ddcdec2 03-Aug-2011 */
+/* Signature: 60ec84ba 06-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -96,6 +96,8 @@ int32_t mpi_rank,mpi_size;
 /*      Error reporting and recovery                                         */
 /*****************************************************************************/
 
+volatile char stack_contents_temp = 0;
+
 #ifdef CHECK_STACK
 /*
  * Some computers are notably unhelpful about their behaviour when the system
@@ -104,10 +106,12 @@ int32_t mpi_rank,mpi_size;
  * I think may be critical.  I impose an arbitrary limit on the stack size,
  * but that is better than no checking and random corruption - maybe. Please
  * do not enable CHECK_STACK unless it is really necessary to hunt a bug,
- * since it is miserably expensive and crude.
+ * since it is miserably expensive and crude. I appear to observe that on
+ * my Windows versions (both 32 and 64-bit) there is around 2M of stack, while
+ * on Linux the amount of stack is set via ulimit and is not fixed.
  */
 
-#define C_STACK_ALLOCATION 240000
+#define C_STACK_ALLOCATION 1000000
 
 static int spset = 0;
 static int32_t spbase = 0, spmin;
@@ -145,6 +149,15 @@ int check_stack(char *file, int line)
         term_printf("\n");
         spmin = temp;
         if (temp < spbase-C_STACK_ALLOCATION) return 1;
+    }
+/*
+ * As well as the fully software action I also try the same probe that I use
+ * elsewhere...
+ */
+    {   char *p = (char *)&temp;
+        stack_contents_temp = p[-4000];
+        stack_contents_temp = p[-8000];
+        stack_contents_temp = p[-12000];
     }
     return 0;
 }

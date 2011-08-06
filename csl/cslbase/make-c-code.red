@@ -52,6 +52,8 @@ on echo;
 
 symbolic;
 
+errorset('(delete!-file "$destdir/timestamp.dat"), nil, nil);
+
 % Three major parameters are available:
 %
 %   fnames       a list of files to create. Making the list longer (or
