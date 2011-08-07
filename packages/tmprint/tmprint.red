@@ -620,8 +620,8 @@ fancy!-texwidth := 500;
 symbolic procedure texwidth n;
   begin
     scalar old;
-    old := fancy!-textwidth;
-    if fixp n and n >= 100 then fancy!-textwidth := n;
+    old := fancy!-texwidth;
+    if fixp n and n >= 100 then fancy!-texwidth := n;
     return old
   end;
 
@@ -1168,7 +1168,7 @@ symbolic procedure fancy!-exptpri(l,p);
       w1 := cadr l; w2 := caddr l;
       pp := eqcar(w1, 'quotient) or
             eqcar(w1, 'expt) or
-            (eqcar(q1, '!*hold) and not atom cadr q1);
+            (eqcar(w1, '!*hold) and not atom cadr w1);
       testing!-width!* := t;
       if eqcar(w2,'quotient) and cadr w2 = 1
           and (fixp caddr w2 or liter caddr w2) then
