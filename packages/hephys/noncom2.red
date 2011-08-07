@@ -93,12 +93,12 @@ switch mymatch;
 %   general utility functions  %
 %------------------------------%
 symbolic procedure trwrite u;
-begin  scalar x;
-if not flagp(car u,'tracing) then return nil;
-write "**in procedure: ", car u; terpri();
-for each x in cdr u do write x;
-terpri();
-end;
+  begin  scalar x;
+    if not flagp(car u,'tracing) then return nil;
+    write "**in procedure: ", car u; terpri();
+    for each x in cdr u do write x;
+    terpri();
+  end;
 
 symbolic procedure funtrace u;
 for each x in u do flag(list(x),'tracing);

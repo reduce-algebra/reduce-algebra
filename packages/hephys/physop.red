@@ -291,19 +291,18 @@ rlistat '(oporder);
 symbolic procedure physopdelete(u,v);
 % u is a physop, v is a list of physops
 % deletes u from v
-if atom u then delete(u,v)
-else
-delete(u,delete(car u,delete(removeindices(u,collectindices u),v)));
+  if atom u then delete(u,v)
+  else delete(u,delete(car u,delete(removeindices(u,collectindices u),v)));
 
 symbolic procedure opnum!* u; % new 1.03
-begin scalar op,arglist;
-if not idp u then u := removeindices(u,collectindices u);
-if idp u then op := u
-else << op := car u; arglist := cdr u;>>;
-return
-  if null (u:= assoc(arglist,get(op,'opnum))) then
-       cdr  assoc(nil,get(op,'opnum))
-  else cdr u
+  begin
+    scalar op,arglist, opnums;
+    if not idp u then u := removeindices(u,collectindices u);
+    if idp u then op := u
+    else << op := car u; arglist := cdr u;>>;
+    opnums := get(op, 'opnum);
+    if u:= assoc(arglist, opnums) then return cdr u
+    else return cdr assoc(nil, opnums)
 end;
 
 symbolic procedure reset!_opnums();
@@ -397,20 +396,21 @@ symbolic procedure physopordchk(u,v);  % new version 080591
 % builds up a list of physops of u and v
 % checks if there is a pair of wrong ordered noncommuting operators
 % in these lists
-begin scalar x,y,z,oplist,lst;
-x := deletemult!* !*collectphysops u;  %1.01
-y := deletemult!* !*collectphysops v; % 1.01
-return
-if null x then t
-else if null y then nil
-else if member('unit,x) or member('unit,y) then nil %further eval needed
-else physopordchk!*(x,y);
-end;
+  begin
+    scalar x,y,z,oplist,lst;
+    x := deletemult!* !*collectphysops u;  %1.01
+    y := deletemult!* !*collectphysops v; % 1.01
+    return
+      if null x then t
+      else if null y then nil
+      else if member('unit,x) or member('unit,y) then nil %further eval needed
+      else physopordchk!*(x,y);
+  end;
 
 symbolic procedure ncmpchk(x,y); % order changed 1.02
 % x and y are physops
 % checks for correct ordering in noncommuting case
-(not noncommuting(x,y)) or ordop(x,y);
+  (not noncommuting(x,y)) or ordop(x,y);
 
 symbolic procedure  physopordchk!*(u,v);
 % u and v are lists of physops
@@ -440,27 +440,28 @@ else (idp car u and (get(car u,'rtype) eq 'physop));
 
 symbolic procedure !*physopp u;
 % used to determine physops when physop rtype is hidden
-if atom u then (idp u and get(u,'phystype))
-else (idp car u and get(car u,'phystype));
+  if atom u then (idp u and get(u,'phystype))
+  else (idp car u and get(car u,'phystype));
 
 
 symbolic procedure physopp!* u;
- physopp u or (not atom u and (flagp(car u,'physopfn) or
-(flagp(car u,'physoparith) and
-hasonephysop  cdr u) or (flagp(car u,'physopmapping) and
-hasonephysop cdr u)));
+  physopp u or
+  (not atom u and
+    (flagp(car u,'physopfn) or
+    (flagp(car u,'physoparith) and hasonephysop cdr u) or
+    (flagp(car u,'physopmapping) and hasonephysop cdr u)));
 
 symbolic procedure !*physopp!* u;
-physopp!* u or getphystype u;
+  physopp!* u or getphystype u;
 
 symbolic  procedure hasonephysop u;
 if null u then nil
 else (physopp!* car u) or hasonephysop cdr u;
 
 symbolic  procedure areallphysops u;
-if null u then nil
-else if null cdr u then !*physopp!* car u
-else (!*physopp!* car u) and areallphysops cdr u;
+  if null u then nil
+  else if null cdr u then !*physopp!* car u
+  else (!*physopp!* car u) and areallphysops cdr u;
 
 % *****defining functions for different data subtypes******
 
@@ -745,86 +746,148 @@ else if tensopp u then <<n:= get(u,'tensdimen);
       "invalid argument to insertfreeindices");
 end;
 
+%- symbolic procedure collectindices u;
+%- % makes a list of all indices in a.e. u
+%- begin scalar v,x;
+%- if atom u then
+%-   if isanindex u then return list(u)
+%-   else return nil;
+%- a: v := car u;
+%-    u := cdr u;
+%-    x :=nconc(x,collectindices v);
+%-    if null u then return x;
+%-    go to a
+%- end;
+
+% This new version is intended to return exactly the same result as the
+% original version as per above - however I think it is shorter and hence
+% nicer. It does not use NCONC which I like because nconc is a destructive
+% function, and if the result list ends up long it can avoid a potential
+% quadratic cost as nconc searches to find the tail of the list that it
+% needs to clobber. If it did not matter what order the indices were listed
+% in one could avoid the little wrapper that calls REVERSIP.
+% ACN August 2011.
+
+symbolic procedure collectindices_reversed(u, r);
+  begin
+    if atom u then <<
+      if isanindex u then return u . r
+      else return r >>;
+    while u do <<
+       r := collectindices_reversed(car u, r);
+       u := cdr u >>;
+    return r
+  end;
+
 symbolic procedure collectindices u;
-% makes a list of all indices in a.e. u
-begin scalar v,x;
-if atom u then
-  if isanindex u then return list(u)
-  else return nil;
-a: v := car u;
-   u := cdr u;
-   x :=nconc(x,collectindices v);
-   if null u then return x;
-   go to a
-end;
+  reversip collectindices_reversed(u, nil);
+
 
 symbolic procedure removeindices(u,x);
 % u is physop (scalop) containing  physindices
 % x is an index or a list of indices
-begin scalar op;
- trwrite('removeindices,"u= ",u," x= ",x);
-if null x or idp u or not !*physopp u then return u;
-if (idp x and not isanindex x) or (idlistp x and not areallindices x)
-   then rederr2('removeindices, "invalid arguments to removeindices");
-op:=car u;u := cdr u;
-if null u then return op;
-if idp x then u := delete(x,u)
-else for each y in x do u:= delete(y,u);
-return if null u then op else op . u
+  begin
+    scalar op;
+% Because I see this function rather heavily used I list the test up
+% so that I do not do the function call to trwrite unless it is going to
+% be useful.
+    if flagp('removeindices, 'tracing) then
+      trwrite('removeindices,"u= ",u," x= ",x);
+    if null x or idp u or not !*physopp u then return u;
+    if (idp x and not isanindex x) or
+       (idlistp x and not areallindices x) then
+      rederr2('removeindices, "invalid arguments to removeindices");
+    op := car u;
+    u := cdr u;
+    if null u then return op
+    else if idp x then u := delete(x,u)
+    else for each y in x do u:= delete(y,u);
+    return if null u then op else op . u
 end;
 
 symbolic procedure deadindices u;
 % checks an a.e. u to see if there are dead indices
 % i.e. indices appearing twice or more
 %returns the list of dead indices in u
-begin scalar x,res;
-if null u or atom u then return nil;
-x := collectindices u;
-for each y in x do
-if memq(y,memq(y,x)) then res :=nconc(res,list(y));
-return res
-end;
+  begin
+    scalar x,res;
+    if null u or atom u then return nil;
+    x := collectindices u;
+    for each y in x do
+      if memq(y,memq(y,x)) then res :=y . res;
+    return reversip res
+  end;
+
+%- symbolic procedure collectphysops u;
+%- % makes a list of all physops in a.e. u
+%-   begin
+%-     scalar v,x;
+%-     if atom u then
+%-       if physopp u then return list(u)
+%-       else return nil
+%-     else if physopp u then return list(removeindices(u,collectindices u));
+%- a:  v := car u;
+%-     u := cdr u;
+%-     x :=nconc(x,collectphysops v);
+%-     if null u then return x;
+%-     go to a
+%- end;
+%-
+
+symbolic procedure collectphysops_reversed(u, r);
+% makes a list of all physops in a.e. u
+  begin
+    if atom u then <<
+      if physopp u then return u . r
+      else return r >>
+    else if physopp u then
+      return removeindices(u, collectindices u) . r;
+    while not atom u do <<
+      r := collectphysops_reversed(car u, r);
+      u := cdr u >>;  
+    return r;
+  end;
 
 symbolic procedure collectphysops u;
-% makes a list of all physops in a.e. u
-begin scalar v,x;
-if atom u then
-  if physopp u then return list(u)
-  else return nil
-else if physopp u then return list(removeindices(u,collectindices u));
-a: v := car u;
-   u := cdr u;
-   x :=nconc(x,collectphysops v);
-   if null u then return x;
-   go to a
-end;
+  reversip collectphysops_reversed(u, nil);
 
-symbolic procedure !*collectphysops u;
+%- symbolic procedure !*collectphysops u;
+%- % makes a list of all physops in a.e. u
+%- % with ALL indices
+%- begin scalar v,x;
+%- if physopp u then return list(u);
+%- if atom u then return nil;
+%- a: v := car u;
+%-    u := cdr u;
+%-    x :=nconc(x,!*collectphysops v);
+%-    if null u then return x;
+%-    go to a
+%- end;
+
+symbolic procedure !*collectphysops_reversed(u, r);
 % makes a list of all physops in a.e. u
 % with ALL indices
-begin scalar v,x;
-if physopp u then return list(u);
-if atom u then return nil;
-a: v := car u;
-   u := cdr u;
-   x :=nconc(x,!*collectphysops v);
-   if null u then return x;
-   go to a
-end;
+  begin
+    if physopp u then return u . r;
+    while not atom u do <<
+      r := !*collectphysops_reversed(car u, r);
+      u := cdr u >>;
+    return r;
+  end;
+
+symbolic procedure !*collectphysops u;
+  reversip !*collectphysops_reversed(u, nil);
+
 
 symbolic procedure collectphysops!* u;
-begin scalar x;
-x:= for each y in collectphysops u collect if idp y then y
-                                           else car y;
-return x
-end;
+  for each y in collectphysops u collect (if idp y then y else car y);
 
 symbolic procedure collectphystype u; % new 1.01
 % makes a list of all physops in u
 % with ALL indices
-if physopp u then list(getphystype u)
-else if atom u then nil
-else   deletemult!* (for each v in u collect getphystype v);
+  if physopp u then list(getphystype u)
+  else if atom u then nil
+  else deletemult!* (for each v in u collect getphystype v);
 
 % ----  PHYSOP procedures for type check and assignement ----
 
@@ -932,9 +995,9 @@ else getphystype mvar u or getphystypesf lc u;
 % we have also to modify the simp!*sq routine since
 % there is no type checking included
 symbolic procedure physopsimp!*sq u;
-if cadr u then car u
-else if physop!*sq u then physop2sq physopsm!* !*q2a car u
-     else resimp car u;
+  if cadr u then car u
+  else if physop!*sq u then physop2sq physopsm!* !*q2a car u
+  else resimp car u;
 
 put('!*sq,'simpfn,'physopsimp!*sq);
 % ***** end of dirty trick ******
@@ -943,56 +1006,57 @@ put('!*sq,'simpfn,'physopsimp!*sq);
 
 symbolic procedure !*physopsm!* (u,v);
 % u is the PHYSOP expression to simplify
-begin scalar x,contractflg;
+  begin
+    scalar x,contractflg;
 % if contract is set to on we keep its value at the top level
 % (first call to physopsm) and set it to nil;
-contractflg:=!*contract;!*contract := nil;
-!*hardstop := nil;
-if physopp u then
-    if (x:= get(u,'rvalue)) then u := physopaeval x
-    else if idp u then return u
-         else if x:=get(car u,'psimpfn) then u:= apply1(x,u)
-         else return physopsimp u;
-u:= physopsm!* u;
-if !*hardstop then <<
-  write "        *************** WARNING: ***************";terpri();
-  write "Evaluation incomplete due to missing elementary relations";
-  terpri();
-   return u>>;
+    contractflg:=!*contract;!*contract := nil;
+    !*hardstop := nil;
+    if physopp u then
+      if (x:= get(u,'rvalue)) then u := physopaeval x
+      else if idp u then return u
+      else if x:=get(car u,'psimpfn) then u:= apply1(x,u)
+      else return physopsimp u;
+    u:= physopsm!* u;
+    if !*hardstop then <<
+      write "        *************** WARNING: ***************";terpri();
+      write "Evaluation incomplete due to missing elementary relations";
+      terpri();
+      return u >>;
 % the next step is to do substitutions if there are someones on
 % the matching lists
-if !*match or powlis1!* then <<
-u := physopsubs u;
+    if !*match or powlis1!* then <<
+      u := physopsubs u;
 % now eval u with the substitutions
-u := physopsim!* u; >>;
+      u := physopsim!* u; >>;
 if not contractflg then return u
-else <<
-!*contract:=contractflg;
- return physopcontract u >>
-end;
+    else <<
+      !*contract:=contractflg;
+      return physopcontract u >>
+  end;
 
 symbolic procedure physopsim!* u;
-if !*physopp!* u then physopsm!* u else u;
+  if !*physopp!* u then physopsm!* u else u;
 
 symbolic  procedure physop2sq u; %modified 1.01
 % u is a physop expr
 % returns standard quotient of evaluated u
-begin scalar x;
-return
-if physopp u then if (x:= get(u,'rvalue)) then physop2sq x
-                       else if idp u then !*k2q u
-                       else if (x:= get(car u,'psimpfn)) then
-                              if physopp (x:=apply1(x,u)) then
-                                 !*k2q x
-                              else cadr physopsm!* x
-                       else if get(car u,'opmtch) and
-                               (x:= opmtch!* u) then physop2sq x
-                       else !*k2q u
- else if atom u then simp u % added 1.01
-     else if car u eq '!*sq then cadr u
-          else if null getphystype u then simp u % moved from top 1.01
-               else physop2sq physopsm!* u
-end;
+  begin scalar x;
+    return
+      if physopp u then
+        if (x:= get(u,'rvalue)) then physop2sq x
+        else if idp u then !*k2q u
+        else if (x:= get(car u,'psimpfn)) then
+          if physopp (x:=apply1(x,u)) then !*k2q x
+          else cadr physopsm!* x
+        else if get(car u,'opmtch) and
+                (x:= opmtch!* u) then physop2sq x
+        else !*k2q u
+      else if atom u then simp u % added 1.01
+      else if car u eq '!*sq then cadr u
+      else if null getphystype u then simp u % moved from top 1.01
+      else physop2sq physopsm!* u
+  end;
 
 symbolic procedure physopsm!* u;
 % basic simplification routine
