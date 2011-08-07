@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 4944c2ac 14-May-2011 */
+/* Signature: 7bffef0a 07-Aug-2011 */
 
 #include "headers.h"
 
@@ -2562,6 +2562,16 @@ static Lisp_Object Lreclaim_method(Lisp_Object nil, Lisp_Object a)
     return onevalue(a);
 }
 
+static Lisp_Object Lreclaim_trap(Lisp_Object nil, Lisp_Object a)
+{
+    int32_t previous = reclaim_trap_count;
+    if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
+    reclaim_trap_count = int_of_fixnum(a);
+    term_printf("+++ Reclaim trap set at %d, previous = %d\n",
+        reclaim_trap_count, previous);
+    return onevalue(fixnum_of_int(previous));
+}
+
 static void init_heap_segments(double store_size)
 /*
  * This function just makes nil and the pool of page-frames available.
@@ -2971,6 +2981,7 @@ static setup_type const restart_setup[] =
     {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {"reclaim",                 Lgc, too_many_1, Lgc0},
 #endif
+    {"reclaim-trap",            Lreclaim_trap, too_many_1, wrong_no_1},
     {"reclaim-method",          Lreclaim_method, too_many_1, wrong_no_1},
     {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
     {NULL,                      0, 0, 0}
@@ -3745,7 +3756,7 @@ static void find_dll_cache_directory()
         if (GetTempPath(LONGEST_LEGAL_FILENAME, dll_cache_directory) == 0)
             strcpy(dll_cache_directory, ".\\");
 #else
-        sprintf(userinfo, ";%d;", geteuid());
+        sprintf(userinfo, ";%d;", (int)geteuid());
         strcpy(dll_cache_directory, "/tmp/");
 #endif
         CSL_MD5_Update((unsigned char *)userinfo, strlen(userinfo));
@@ -3832,11 +3843,11 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
  * pattern. Well it is a bit messier than that - the first few chars of the
  * checksum info may have matched...
  */
-    while (*p != 0 && isdigit(*p)) p++;
+    while (*p != 0 && isdigit((int)*p)) p++;
     if (*p == '-') p++;
-    while (*p != 0 && isdigit(*p)) p++;
+    while (*p != 0 && isdigit((int)*p)) p++;
     if (*p == '-') p++;
-    while (*p != 0 && isdigit(*p)) p++;
+    while (*p != 0 && isdigit((int)*p)) p++;
     if (strcmp(p, ".dll") != 0 &&
         strcmp(p, ".so") != 0) return;
 #ifdef TRACE_NATIVE

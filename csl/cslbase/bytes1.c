@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 538a9ec0 04-Aug-2011 */
+/* Signature: 047c2664 07-Aug-2011 */
 
 #include "headers.h"
 
@@ -988,7 +988,7 @@ Lisp_Object Lplist(Lisp_Object nil, Lisp_Object a)
  */
 extern int profile_count_mode;
 
-#define OPCOUNT	(profile_count_mode ? 1 : opcodes)
+#define OPCOUNT	(profile_count_mode ? 1 : (opcodes+70)/100)
 
 #include "opnames.c"
 
@@ -1400,7 +1400,15 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
     for (;;)
     {
 #ifndef NO_BYTECOUNT
-        opcodes++;
+/*
+ * So that there is no risk of losing information when one crashes out from
+ * a very heavy function I bring the profile information up to date every so
+ * often.
+ */
+        if (opcodes++ > 1000 && !profile_count_mode)
+        {   qcount(elt(litvec, 0)) += (opcodes+50)/100;
+            opcodes = 0;
+        }
         total++;
         frequencies[*ppc]++;
 #endif

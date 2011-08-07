@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 30c13794 26-Dec-2010 */
+/* Signature: 0e808051 07-Aug-2011 */
 
 #include "headers.h"
 
@@ -401,6 +401,7 @@ int check_env(Lisp_Object env)
 int gc_number = 0;
 CSLbool gc_method_is_copying = 0;     /* YES if copying, NO if sliding */
 int force_reclaim_method = 0;
+int reclaim_trap_count = -1;
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
              big_numbers, box_floats, bytestreams, other_mem,
@@ -2464,12 +2465,12 @@ Lisp_Object Lmapstore(Lisp_Object nil, Lisp_Object a)
     if ((what & 6) == 0)
     {   double running = 0.0;
         qsort((void *)buff, buffp, sizeof(buff[0]), profile_cf);
-        trace_printf("\n  Value  %%bytes (So far) Bytecodes  Function name\n");
+        trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
         for (j=0; j<buffp; j++)
         {   running += buff[j].n;
             trace_printf("%7.2f %7.2f (%6.2f) %9lu: ",
                 buff[j].w, buff[j].n, running,
-                (long unsigned)(buff[j].n1/1000000u));
+                (long unsigned)(buff[j].n1/10000u));
             prin_to_trace(buff[j].p);
             trace_printf("\n");
         }
@@ -3006,6 +3007,8 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             trace_printf(
         "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
                  (long)gc_number, why, t/100, t%100, gct/100, gct%100);
+            if (reclaim_trap_count >= 0)
+                trace_printf("Will trap at GC %d\n", reclaim_trap_count);
 #ifdef DEBUG
             trace_printf("GC method: %s\n",
                          gc_method_is_copying ? "copying" : "sliding");
@@ -3048,6 +3051,10 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         flip_exception();
     }
     if (spool_file != NULL) fflush(spool_file);
+    if (gc_number == reclaim_trap_count)
+    {   trace_printf("\nReclaim trap count reached...\n");
+        return aerror("reclaim-trap-count");
+    }
 
 #ifdef CONSERVATIVE
 /*

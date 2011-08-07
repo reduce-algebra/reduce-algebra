@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 0fb2525a 06-Aug-2011 */
+/* Signature: 3e3ef9d2 07-Aug-2011 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -810,7 +810,7 @@ extern char *standard_directory;
 
 extern int gc_number;
 extern CSLbool gc_method_is_copying;
-extern int force_reclaim_method;
+extern int force_reclaim_method, reclaim_trap_count;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2

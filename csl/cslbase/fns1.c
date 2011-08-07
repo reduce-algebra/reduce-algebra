@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 5db2bd32 08-Sep-2010 */
+/* Signature: 1aa06b6e 07-Aug-2011 */
 
 #include "headers.h"
 
@@ -51,11 +51,12 @@ Lisp_Object integerp(Lisp_Object p)
     Lisp_Object nil = C_nil;
     int tag = ((int)p) & TAG_BITS;
     if (tag == TAG_FIXNUM) return lisp_true;
-    if (tag == TAG_NUMBERS)
+    else if (tag == TAG_NUMBERS)
     {   Header h = *(Header *)((char *)p - TAG_NUMBERS);
         if (type_of_header(h) == TYPE_BIGNUM) return lisp_true;
+        else return nil;
     }
-    return nil;
+    else return nil;
 }
 
 /*****************************************************************************/
@@ -695,10 +696,16 @@ Lisp_Object Lfixp(Lisp_Object nil, Lisp_Object a)
 #else
 /*
  * Standard Lisp defines fixp to say yes to bignums as well as
- * fixnums.
+ * fixnums. The code here is as in intergerp.
  */
-    CSL_IGNORE(nil);
-    return onevalue(integerp(a));
+    int tag = ((int)a) & TAG_BITS;
+    if (tag == TAG_FIXNUM) return onevalue(lisp_true);
+    else if (tag == TAG_NUMBERS)
+    {   Header h = *(Header *)((char *)a - TAG_NUMBERS);
+        if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
+        else return onevalue(nil);
+    }
+    else return onevalue(nil);
 #endif
 }
 
