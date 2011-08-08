@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 0e808051 07-Aug-2011 */
+/* Signature: 7b789ec7 08-Aug-2011 */
 
 #include "headers.h"
 
@@ -245,6 +245,7 @@ static void validate(Lisp_Object p)
     char *info = "unknown";
     Header h = 0;
     intptr_t i = 0;
+top:
     if (p == nil) return;
     if (p == 0)
     {   term_printf("NULL item found\n");
@@ -256,15 +257,19 @@ static void validate(Lisp_Object p)
 /*
  * The code here is going to be simply recursive so that if any problem
  * is detected I have maximum information on the stack about where it
- * came from.
+ * came from. Well that would be asking for stack overflow, so I iterate
+ * in the CDR direction on lists.
  */
     if (is_immed_or_cons(p))
     {   if (!is_cons(p)) return;
         info = "cons cell";
         if (bitmap_mark_cons(p)) return;
         validate(qcar(p));
-        validate(qcdr(p));
-        return;
+        p = qcdr(p);
+        info = "unknown";
+        h = 0;
+        i = 0;
+        goto top;
     }
 /* here we have a vector of some sort */
     switch ((int)p & TAG_BITS)
@@ -3007,9 +3012,9 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
             trace_printf(
         "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
                  (long)gc_number, why, t/100, t%100, gct/100, gct%100);
-            if (reclaim_trap_count >= 0)
-                trace_printf("Will trap at GC %d\n", reclaim_trap_count);
 #ifdef DEBUG
+            if (reclaim_trap_count >= 0)
+                trace_printf("Will trap at GC %d. ", reclaim_trap_count);
             trace_printf("GC method: %s\n",
                          gc_method_is_copying ? "copying" : "sliding");
 #endif
