@@ -28,9 +28,10 @@ module gcd; % Greatest common divisor routines.
 %
 
 
-fluid '(!*exp !*ezgcd !*gcd !*heugcd !*mcd asymplis!* dmode!*);
+fluid '(!*exp !*anygcd !*ezgcd !*gcd !*heugcd !*mcd asymplis!* dmode!*);
 
-switch ezgcd,heugcd;
+switch anygcd,ezgcd,heugcd;
+!*anygcd := t;
 
 % Note: The handling of non-commuting quantities in the following is
 % dubious. The problem is that to do things properly, a left- and
@@ -103,7 +104,10 @@ symbolic procedure gcdf1(u,v);
        else if u=1 or v=1 then return 1
        else if domainp u then return gcdfd(u,v)
        else if domainp v then return gcdfd(v,u)
-       else if not num!-exponents u or not num!-exponents v then 1
+% "off anygcd" can prevent anything that could even possibly be expensive.
+       else if not !*anygcd or
+               not num!-exponents u or
+               not num!-exponents v then 1
        else if quotf1(u,v) then return v
        else if quotf1(v,u) then return u;
       w := gcdf2(u,v);
@@ -119,7 +123,9 @@ symbolic procedure gcdf2(u,v);
    % U and V are both non-trivial forms. Value is their GCD.
    % We need to rebind asymplis!* to avoid setting higher powers to 0.
    begin scalar asymplis!*,w,z;
-      if not num!-exponents u or not num!-exponents v then return 1;
+      if not !*anygcd or
+         not num!-exponents u or
+         not num!-exponents v then return 1;
       if !*gcd and length(w := kernord(u,v))>1
         then <<w := list setkorder w;   % List used to make sure non-NIL
                u := reorder u;
