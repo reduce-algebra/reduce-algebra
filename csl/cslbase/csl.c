@@ -1,4 +1,4 @@
-/*  csl.c                            Copyright (C) 1989-2010 Codemist Ltd */
+/*  csl.c                            Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 60ec84ba 06-Aug-2011 */
+/* Signature: 43862f37 09-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -200,7 +200,7 @@ Lisp_Object MS_CDECL error(int nargs, int code, ...)
     Lisp_Object nil = C_nil, w1;
     Lisp_Object *w = (Lisp_Object *)&work_1;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s: ", errcode(code));
 /*
  * There is now some painful shuffling around to get all the args
@@ -232,7 +232,8 @@ Lisp_Object MS_CDECL error(int nargs, int code, ...)
  * used as a base register for lots of things...  Still this is the
  * cheapest way I can see to mark the need for unwinding.
  */
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -250,7 +251,7 @@ Lisp_Object MS_CDECL cerror(int nargs, int code1, int code2, ...)
     int i;
     Lisp_Object *w = (Lisp_Object *)&work_1;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ Error %s, %s: ", errcode(code1), errcode(code2));
         va_start(a, code2);
         for (i=0; i<nargs; i++) *w++ = va_arg(a, Lisp_Object);
@@ -276,7 +277,8 @@ Lisp_Object MS_CDECL cerror(int nargs, int code1, int code2, ...)
  * used as a base register for lots of things...  Still this is the
  * cheapest way I can see to mark the need for unwinding.
  */
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -397,7 +399,7 @@ Lisp_Object interrupted(Lisp_Object p)
 /*
  * now for the common code to be used in all cases.
  */
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
 	err_printf("+++ Interrupted\n");
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
@@ -405,7 +407,8 @@ Lisp_Object interrupted(Lisp_Object p)
     {   (*qfn1(w))(qenv(w), nil);
         ignore_exception();
     }
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -416,7 +419,7 @@ Lisp_Object interrupted(Lisp_Object p)
 Lisp_Object aerror(char *s)
 {
     Lisp_Object nil = C_nil, w;
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
@@ -424,7 +427,8 @@ Lisp_Object aerror(char *s)
     {   (*qfn1(w))(qenv(w), nil);
         ignore_exception();
     }
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -435,7 +439,7 @@ Lisp_Object aerror(char *s)
 Lisp_Object aerror0(char *s)
 {
     Lisp_Object nil = C_nil, w;
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
@@ -443,7 +447,8 @@ Lisp_Object aerror0(char *s)
     {   (*qfn1(w))(qenv(w), nil);
         ignore_exception();
     }
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -460,7 +465,7 @@ Lisp_Object aerror0(char *s)
 Lisp_Object aerror1(char *s, Lisp_Object a)
 {
     Lisp_Object nil = C_nil, w;
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
         err_printf("\n");
@@ -471,7 +476,8 @@ Lisp_Object aerror1(char *s, Lisp_Object a)
     {   (*qfn1(w))(qenv(w), nil);
         ignore_exception();
     }
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -488,7 +494,7 @@ Lisp_Object aerror1(char *s, Lisp_Object a)
 Lisp_Object aerror2(char *s, Lisp_Object a, Lisp_Object b)
 {
     Lisp_Object nil = C_nil, w;
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
         err_printf(" ");
@@ -501,7 +507,8 @@ Lisp_Object aerror2(char *s, Lisp_Object a, Lisp_Object b)
     {   (*qfn1(w))(qenv(w), nil);
         ignore_exception();
     }
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -522,7 +529,7 @@ static Lisp_Object wrong(int wanted, int given, Lisp_Object env)
     CSL_IGNORE(nil);
     sprintf(msg, "Function called with %d args where %d wanted", given, wanted);
     if (is_cons(env)) env = qcdr(env);
-    if ((miscflags & (HEADLINE_FLAG|ALWAYS_NOISY)) && is_vector(env))
+    if ((miscflags & HEADLINE_FLAG) && is_vector(env))
     {   Lisp_Object fname = elt(env, 0);
         err_printf("\nCalling ");
         loop_print_error(fname);
@@ -839,7 +846,7 @@ static void lisp_main(void)
         {   nil = C_nil;
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
-            {   miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
+            {   miscflags |= BACKTRACE_MSG_BITS;
 /*
  * Here I reconstruct the argument that I passed in (restart_csl f a).
  */
@@ -1282,7 +1289,7 @@ malloc_function  *malloc_hook = CSL_malloc;
 realloc_function *realloc_hook = CSL_realloc;
 free_function    *free_hook   = CSL_free;
 
-CSLbool always_noisy = NO;
+int errorset_min = 0, errorset_max = 3;
 
 int load_count = 0, load_limit = 0x7fffffff;
 
@@ -1302,7 +1309,8 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 #ifdef EMBEDDED
     fwin_set_lookup(look_in_lisp_variable);
 #endif
-    always_noisy = NO;
+    errorset_min = 0;
+    errorset_max = 3;
     stack_segsize = 1;
     module_enquiry = NULL;
     countdown = 0x7fffffff;
@@ -1917,7 +1925,8 @@ term_printf(
                     fwin_restore();
                     term_printf("Too many requests: \"-G\" ignored\n");
                 }
-                always_noisy = YES;
+                errorset_min = 3;
+                errorset_max = 3;
                 continue;
 /*
  *                      -H
@@ -2558,13 +2567,12 @@ term_printf(
  * output, because the other relevant streams will not have been set up.
  */
         setup(restartp ? 3 : 2, store_size);
-/*
- * I need to set the NOISY flag after doing setup to avoid it getting
- * reloaded from a heap image
- */
         {   nil_as_base
-            if (always_noisy) miscflags |= (ALWAYS_NOISY | 3);
-	    else miscflags &= ~ALWAYS_NOISY;
+/*
+ * If the user had used "-g" on the command line that will have set
+ * errorset_min and I use that to trigger turing on gc and fasl messages.
+ */
+            if (errorset_min == 3) miscflags |= GC_MESSAGES | FASL_MESSAGES;
         }
 
 #ifndef COMMON

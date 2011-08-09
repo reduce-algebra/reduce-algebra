@@ -1,4 +1,4 @@
-/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2010 */
+/* File gc.c                    Copyright (c) Codemist Ltd, 1990-2011 */
 
 /*
  * Garbage collection.
@@ -43,7 +43,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 7b789ec7 08-Aug-2011 */
+/* Signature: 13188756 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -1392,10 +1392,6 @@ Lisp_Object Lverbos(Lisp_Object nil, Lisp_Object a)
     if (a == nil) code = 0;
     else if (is_fixnum(a)) code = (int)int_of_fixnum(a);
     else code = 1;
-/*
- * -G on the command line makes garbage collection noisy always...
- */
-    if (miscflags & ALWAYS_NOISY) code |= 3;
     miscflags = (miscflags & ~GC_MSG_BITS) | (code & GC_MSG_BITS);
     return onevalue(fixnum_of_int(old_code));
 }
@@ -2908,9 +2904,14 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
 #endif
             return onevalue(p);
         }
+/*
+ * If the user provokes a backtrace then at present I *ALWAYS* make it
+ * a 100% full one. At some stage I could provide a different menu item
+ * to deliver a semi-quiet interrupt...
+ */
         else if (async_type == NOISY_INTERRUPT)
-            miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
-        else miscflags &= ~MESSAGES_FLAG;
+            miscflags |= BACKTRACE_MSG_BITS;
+        else miscflags &= ~BACKTRACE_MSG_BITS;
         async_type = QUERY_INTERRUPT;     /* accepted! */
 #ifdef DEBUG
         validate_all("end of gc", __LINE__, __FILE__);

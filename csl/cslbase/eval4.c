@@ -1,11 +1,11 @@
-/* eval4.c                           Copyright (C) 1991-2008, Codemist Ltd */
+/* eval4.c                           Copyright (C) 1991-2011, Codemist Ltd */
 
 /*
  * Bytecode interpreter/main interpreter interfaces
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4eebc042 04-Jan-2009 */
+/* Signature: 11286f3b 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -140,7 +140,7 @@ Lisp_Object bytecoded1(Lisp_Object def, Lisp_Object a)
  */
         stack++;
         pop3(a, codevec, litvec); 
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(a); err_printf("\n");
             ignore_exception();
@@ -186,7 +186,7 @@ Lisp_Object bytecoded2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     if (exception_pending())
     {   flip_exception();
         stack += 2;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg 1: ");
             loop_print_error(stack[-1]); err_printf("\n");
             ignore_exception();
@@ -247,7 +247,7 @@ Lisp_Object MS_CDECL bytecoded3(Lisp_Object def, int nargs, ...)
     if (exception_pending())
     {   flip_exception();
         stack += 3;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(stack[-2]); err_printf("\n");
             ignore_exception();
@@ -296,7 +296,7 @@ Lisp_Object MS_CDECL bytecodedn(Lisp_Object def, int nargs, ...)
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
 /*
  * Note that in this display if a function had over 50 args then the
  * final bunch of them will be bundled up in to a list (as if for &rest).
@@ -429,7 +429,7 @@ Lisp_Object tracebytecoded1(Lisp_Object def, Lisp_Object a)
     {   flip_exception();
         stack++;
         pop(a); popv(1); pop2(codevec, litvec);
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(a); err_printf("\n");
             ignore_exception();
@@ -507,7 +507,7 @@ Lisp_Object tracebytecoded2(Lisp_Object def,
     if (exception_pending())
     {   flip_exception();
         stack += 2;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(stack[-1]); err_printf("\n");
             ignore_exception();
@@ -606,7 +606,7 @@ Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object def, int nargs, ...)
     if (exception_pending())
     {   flip_exception();
         stack += 3;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(stack[-2]); err_printf("\n");
             ignore_exception();
@@ -688,7 +688,7 @@ Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object def, int nargs, ...)
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -774,7 +774,7 @@ Lisp_Object double_bytecoded1(Lisp_Object def, Lisp_Object a)
     {   flip_exception();
         stack++;
         pop3(a, codevec, litvec); 
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(a); err_printf("\n");
             ignore_exception();
@@ -807,7 +807,7 @@ Lisp_Object double_bytecoded2(Lisp_Object def, Lisp_Object a, Lisp_Object b)
     if (exception_pending())
     {   flip_exception();
         stack += 2;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg 1: ");
             loop_print_error(stack[-1]); err_printf("\n");
             ignore_exception();
@@ -852,7 +852,7 @@ Lisp_Object MS_CDECL double_bytecoded3(Lisp_Object def, int nargs, ...)
     if (exception_pending())
     {   flip_exception();
         stack += 3;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         {   err_printf("Arg1: ");
             loop_print_error(stack[-2]); err_printf("\n");
             ignore_exception();
@@ -896,7 +896,7 @@ Lisp_Object MS_CDECL double_bytecodedn(Lisp_Object def, int nargs, ...)
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -960,7 +960,7 @@ static Lisp_Object vbyteoptn(Lisp_Object def, int nargs,
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -1050,7 +1050,7 @@ static Lisp_Object vbyterestn(Lisp_Object def, int nargs,
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -1137,7 +1137,7 @@ static Lisp_Object double_vbyteoptn(Lisp_Object def, int nargs,
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -1228,7 +1228,7 @@ static Lisp_Object double_vbyterestn(Lisp_Object def, int nargs,
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -1324,7 +1324,7 @@ static Lisp_Object vtracebyteoptn(Lisp_Object def, int nargs,
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");
@@ -1456,7 +1456,7 @@ static Lisp_Object vtracebyterestn(Lisp_Object def, int nargs,
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_ARGS) != 0)
         for (i=1; i<=nargs; i++)
         {   err_printf("Arg%d: ", i);
             loop_print_error(stack[i-nargs]); err_printf("\n");

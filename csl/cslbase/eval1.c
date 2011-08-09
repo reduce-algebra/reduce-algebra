@@ -1,11 +1,11 @@
-/*  eval1.c                          Copyright (C) 1989-2010 Codemist Ltd */
+/*  eval1.c                          Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * Interpreter (part 1).
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 63a6fea7 12-May-2010 */
+/* Signature: 0f92bfdb 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -186,7 +186,7 @@ restart:
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
-                        if ((exit_reason & UNWIND_ERROR) != 0)
+                        if ((exit_reason & UNWIND_FNAME) != 0)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(u);
                             nil = C_nil;
@@ -235,7 +235,7 @@ restart:
                 nil = C_nil;
                 if (exception_pending())
                 {   flip_exception();
-                    if ((exit_reason & UNWIND_ERROR) != 0)
+                    if ((exit_reason & UNWIND_FNAME) != 0)
                     {   err_printf("\nMacroexpanding: ");
                         loop_print_error(u);
                         nil = C_nil;
@@ -273,7 +273,7 @@ ordinary_function:
                 if (exception_pending())
                 {   flip_exception();
                     stack = save_stack;
-                    if ((exit_reason & UNWIND_ERROR) != 0)
+                    if ((exit_reason & UNWIND_ARGS) != 0)
                     {   err_printf("\nEvaluating: ");
                         loop_print_error(qcar(args));
                         nil = C_nil;
@@ -1488,7 +1488,7 @@ static Lisp_Object macroexpand_1(Lisp_Object form, Lisp_Object env)
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
-                        if ((exit_reason & UNWIND_ERROR) != 0)
+                        if ((exit_reason & UNWIND_FNAME) != 0)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(form);
                             nil = C_nil;

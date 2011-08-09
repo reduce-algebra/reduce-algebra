@@ -1,4 +1,4 @@
-/* tags.h                               Copyright (C) Codemist 1990-2010 */
+/* tags.h                               Copyright (C) Codemist 1990-2011 */
 
 /*
  *   Data-structure and tag bit definitions, also common C macros
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 038a68e7 24-Feb-2011 */
+/* Signature: 4cf387d0 09-Aug-2011 */
 
 
 #ifndef header_tags_h
@@ -1106,8 +1106,10 @@ typedef struct Single_Float
 #define UNWIND_RESTART    0x4         /* (restart!-csl ...) */
 #define UNWIND_RESOURCE   0x5         /* used with (resource!-limit ...) */
 
-#define UNWIND_ERROR      0x100       /* when backtrace is needed */
-#define UNWIND_UNWIND     0x200       /* no backtrace, still an error */
+#define UNWIND_FNAME      0x100       /* at least short backtrace is needed */
+#define UNWIND_ARGS       0x200       /* produce long form backtrace */
+#define UNWIND_ERROR      (UNWIND_FNAME|UNWIND_ARGS)
+#define UNWIND_UNWIND     0x400       /* no backtrace, still an error */
 
 #endif /* header_tags_h */
 

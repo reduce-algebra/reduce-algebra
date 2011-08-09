@@ -1,12 +1,12 @@
 /*
- * bytes1.c              Copyright (C) 1991-2008, Codemist Ltd
+ * bytes1.c              Copyright (C) 1991-2011, Codemist Ltd
  *
  *
  * Bytecode interpreter for Lisp
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 047c2664 07-Aug-2011 */
+/* Signature: 7eb345c8 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -5485,7 +5485,7 @@ create_closure:
  * I suspect that the next few lines are UNHELPFUL now, so maybe I should
  * get rid of them...
  */
-            if ((exit_reason & UNWIND_ERROR) != 0)
+            if ((exit_reason & UNWIND_FNAME) != 0)
             {   err_printf("apply: ");
                 loop_print_error(r1);
                 err_printf("\n");
@@ -5502,7 +5502,7 @@ create_closure:
  * I suspect that the next few lines are UNHELPFUL now, so maybe I should
  * get rid of them...
  */
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_FNAME) != 0)
         {   err_printf("apply: ");
             loop_print_error(A_reg);
             err_printf("\n");
@@ -5527,7 +5527,7 @@ create_closure:
 /*
  * What follows is my current guess for a good diagnostic...
  */
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_FNAME) != 0)
         {   err_printf("Inside: ");
             loop_print_error(elt(litvec, 0));
             err_printf("\n");

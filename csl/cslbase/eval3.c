@@ -1,4 +1,4 @@
-/*  eval3.c                          Copyright (C) 1991-2010 Codemist Ltd */
+/*  eval3.c                          Copyright (C) 1991-2011 Codemist Ltd */
 
 /*
  * Interpreter (part 3).
@@ -7,7 +7,7 @@
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 62191481 18-Feb-2011 */
+/* Signature: 5dbb72c9 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -358,7 +358,7 @@ static Lisp_Object prog_fn(Lisp_Object args, Lisp_Object env)
             popv(3);
             return exit_value;  /* exit_count already OK here */
         }
-        if ((exit_reason & UNWIND_ERROR) != 0)
+        if ((exit_reason & UNWIND_FNAME) != 0)
         {   err_printf("\nEvaluating: ");
             loop_print_error(args);
         }
@@ -389,7 +389,7 @@ Lisp_Object progn_fn(Lisp_Object args, Lisp_Object env)
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
-            if ((exit_reason & UNWIND_ERROR) != 0)
+            if ((exit_reason & UNWIND_FNAME) != 0)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(f);
             }
@@ -787,7 +787,7 @@ Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env)
                 {   qcar(qcar(env)) = fixnum_of_int(2);
                     env = qcdr(env);
                 }
-                if ((exit_reason & UNWIND_ERROR) != 0)
+                if ((exit_reason & UNWIND_FNAME) != 0)
                 {   err_printf("\nEvaluating: ");
                     loop_print_error(f);
                     ignore_exception();
@@ -807,7 +807,7 @@ Lisp_Object tagbody_fn(Lisp_Object args, Lisp_Object env)
                         {   qcar(qcar(env)) = fixnum_of_int(2);
                             env = qcdr(env);
                         }
-                        if ((exit_reason & UNWIND_ERROR) != 0)
+                        if ((exit_reason & UNWIND_FNAME) != 0)
                         {   err_printf("\nEvaluating: ");
                             loop_print_error(f);
                             ignore_exception();
@@ -1024,7 +1024,7 @@ void MS_CDECL low_level_signal_handler(int code)
  */
     Lisp_Object nil;
     ignore_exception();
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
     switch (code)
     {
 default:
@@ -1118,7 +1118,6 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 {
     Lisp_Object nil = C_nil, r;
     uint32_t flags = miscflags;
-    miscflags &= ~(HEADLINE_FLAG | MESSAGES_FLAG);
 #ifndef __cplusplus
 #ifdef SIGALTSTACK
     sigjmp_buf this_level, *saved_buffer = errorset_buffer;
@@ -1127,8 +1126,79 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #endif
 #endif
     Lisp_Object *save;
-    if (always_noisy || fg1 != nil) miscflags |= HEADLINE_FLAG;
-    if (always_noisy || fg2 != nil) miscflags |= MESSAGES_FLAG;
+
+/*
+ * See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
+ *
+ * (ERRORSET form message traceback)
+ * evaluates the form. If evaluation succeeds it hands back a list of
+ * length 1 containing the value. If it fails it returns an atom.
+ * If message=nil and traceback=nil then no diagnostics should appear.
+ * if message is set then the a 1-line explanation of any error is
+ * displayed. If traceback is set then in addition to that a backtrace
+ * is produced. I believe there is no merit in generating a traceback
+ * without the initial message, so (errorset form nil t) will be treated
+ * as if it had been (errorset form t t).
+ *
+ * CSL has four "levels" of diagnostic:
+ *    0            none at all
+ *    1            displays an inital message but nothing more
+ *    2            initial message + trace of functions that are active
+ *    3            as above but also shows args to functions.
+ *
+ * The "message" and "traceback" args to errorset select a level for
+ * use within the evaluation that is being controlled...
+ *    message traceback    resulting level
+ *       nil    any            0
+ *       0-3    any            0-3
+ *       t      nil            1
+ *       t      t              3
+ *       t      0              1
+ *       t      1-3            1-3
+ * any value other then nil and 0-3 counts as t above.
+ *
+ * The level established this way is then limited to be in the range
+ * set by (enable-errorset min max) where the default min and max are
+ * (obviously) 0 and 3. The limits set by enable-errorset are global.
+ * A facility previously called "always_noisy" is now achieved as
+ * by (enable-errorset 3 3).
+ *
+ * Finally within the evaluation of the form that erroset processes it is
+ * possible to call (enable-backtrace level) where level is 0-3 (or nil
+ * for 0, t for 3) and that sets the diagnostic level independent of the
+ * errorset. A level set by enable-backtrace typically just lasts until
+ * you exit from the surrounding errorset, because that resets the level
+ * to its prior value.
+ */
+
+    {   int n;
+        if (fg1 == nil) n = 0;
+        else if (fg1 == fixnum_of_int(0) ||
+                 fg1 == fixnum_of_int(1) ||
+                 fg1 == fixnum_of_int(2) ||
+                 fg1 == fixnum_of_int(3)) n = int_of_fixnum(fg1);
+        else /* now depend on fg2 */
+          if (fg2 == nil || fg1 == fixnum_of_int(0)) n = 1;
+          else if (fg1 == fixnum_of_int(1) ||
+                   fg1 == fixnum_of_int(2) ||
+                   fg1 == fixnum_of_int(3)) n = int_of_fixnum(fg1);
+          else n = 3;
+        if (n < errorset_min) n = errorset_min;
+        if (n > errorset_max) n = errorset_max;
+        miscflags &= ~BACKTRACE_MSG_BITS;
+        switch (n)
+        {
+    case 0: break;
+    case 1: miscflags |= HEADLINE_FLAG;
+            break;
+    case 2: miscflags |= (HEADLINE_FLAG | FNAME_FLAG);
+            break;
+    default: /* case 3: */
+            miscflags |= BACKTRACE_MSG_BITS;
+            break;
+        }
+    }
+
     push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
@@ -1154,8 +1224,32 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
         if (exception_pending())
         {   flip_exception();
             pop2(litvec, codevec);
-            miscflags = (flags & (HEADLINE_FLAG | MESSAGES_FLAG)) |
-                        (miscflags & ~(HEADLINE_FLAG | MESSAGES_FLAG));
+            miscflags = (flags & BACKTRACE_MSG_BITS) |
+                        (miscflags & ~BACKTRACE_MSG_BITS);
+/*
+ * Now if within this errorset somebody had gone (enable-errorset min max)
+ * I must reset flags on the way out...
+ */
+            switch (errorset_min)
+            {
+        case 0: break;
+        case 1: miscflags |= HEADLINE_FLAG;
+                break;
+        case 2: miscflags |= (HEADLINE_FLAG | FNAME_FLAG);
+                break;
+        default: /* case 3: */
+                miscflags |= BACKTRACE_MSG_BITS;
+                break;
+            }
+            switch (errorset_max)
+            {
+        case 0: miscflags &= ~BACKTRACE_MSG_FLAGS;
+                break;
+        case 1: miscflags &= ~(FNAME_FLAGS | ARGS_FLAG);
+                break;
+        case 2: miscflags &= ~ARGS_FLAG;
+        default:break;
+            }
             switch (exit_reason)
             {
         case UNWIND_RESTART:
@@ -1168,8 +1262,28 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
             return onevalue(exit_value);
         }
         pop2(litvec, codevec);
-        miscflags = (flags & (HEADLINE_FLAG | MESSAGES_FLAG)) |
-                    (miscflags & ~(HEADLINE_FLAG | MESSAGES_FLAG));
+        miscflags = (flags & BACKTRACE_MSG_BITS) |
+                    (miscflags & ~BACKTRACE_MSG_BITS);
+        switch (errorset_min)
+        {
+    case 0: break;
+    case 1: miscflags |= HEADLINE_FLAG;
+            break;
+    case 2: miscflags |= (HEADLINE_FLAG | FNAME_FLAG);
+            break;
+    default: /* case 3: */
+            miscflags |= BACKTRACE_MSG_BITS;
+            break;
+        }
+        switch (errorset_max)
+        {
+    case 0: miscflags &= ~BACKTRACE_MSG_FLAGS;
+            break;
+    case 1: miscflags &= ~(FNAME_FLAGS | ARGS_FLAG);
+            break;
+    case 2: miscflags &= ~ARGS_FLAG;
+    default:break;
+        }
         r = ncons(r);
         errexit();
         return onevalue(r);
@@ -1231,9 +1345,9 @@ Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
  * error.
  */
 {
-    Lisp_Object nil = C_nil, form, fg1, fg2;
+    Lisp_Object form, fg1, fg2;
     va_list a;
-     if (nargs < 1 || nargs > 3) return aerror("errorset");
+    if (nargs < 1 || nargs > 3) return aerror("errorset");
     va_start(a, nargs);
     form = va_arg(a, Lisp_Object);
     fg1 = fg2 = lisp_true;
@@ -1247,13 +1361,13 @@ Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
 
 Lisp_Object Lerrorset1(Lisp_Object nil, Lisp_Object form)
 {
-    return Lerrorsetn(nil, 3, form, nil, nil);
+    return errorset3(nil, form, nil, nil);
 }
 
 
 Lisp_Object Lerrorset2(Lisp_Object nil, Lisp_Object form, Lisp_Object ffg1)
 {
-    return Lerrorsetn(nil, 3, form, ffg1, nil);
+    return errorset3(nil, form, ffg1, nil);
 }
 
 /*
@@ -1508,7 +1622,7 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
 
 Lisp_Object MS_CDECL Lresource_limitn(Lisp_Object env, int nargs, ...)
 {
-    Lisp_Object nil = C_nil, form, ltime, lspace, lio, lerrors;
+    Lisp_Object form, ltime, lspace, lio, lerrors;
     va_list a;
     if (nargs < 2 || nargs > 5) return aerror("resource_limit");
     va_start(a, nargs);

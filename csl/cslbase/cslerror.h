@@ -1,4 +1,4 @@
-/*  cslerror.h                        Copyright (C) 1989-2008 Codemist Ltd */
+/*  cslerror.h                        Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * Error codes and functions.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -36,7 +36,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 1873508c 28-Feb-2010 */
+/* Signature: 1fbd841c 09-Aug-2011 */
 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
@@ -70,13 +70,23 @@ extern void MS_CDECL fatal_error(int code, ...);
 #define GC_MESSAGES   0x01
 #define FASL_MESSAGES 0x02
 #define VERBOSE_MSGS  0x04
+
 #define GC_MSG_BITS   0x07
+#define verbos_flag (miscflags & GC_MSG_BITS)
+
+/*
+ * In a backtrace I can get
+ *    +++ Error EXPLANATION               HEADLINE_FLAG
+ *    Calling: FUNCTION                   FNAME_FLAG
+ *    Arg1: DATA                          ARGS_FLAG
+ *
+ */
 
 #define HEADLINE_FLAG 0x08
-#define MESSAGES_FLAG 0x10
-#define ALWAYS_NOISY  0x20
+#define FNAME_FLAG    0x10
+#define ARGS_FLAG     0x20
 
-#define verbos_flag (miscflags & GC_MSG_BITS)
+#define BACKTRACE_MSG_BITS 0x38
 
 /*
  * It is essential that the #define values set up here are kept in

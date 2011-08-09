@@ -1,4 +1,4 @@
-/* externs.h                            Copyright (C) Codemist 1989-2010 */
+/* externs.h                            Copyright (C) Codemist 1989-2011 */
 
 /*
  *   Main batch of extern declarations.
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 3e3ef9d2 07-Aug-2011 */
+/* Signature: 6400ee31 09-Aug-2011 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -797,7 +797,7 @@ extern void flush_socket(void);
 extern void report_file(const char *s);
 
 extern CSLbool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
-extern CSLbool always_noisy;
+extern int errorset_min, errorset_max;
 
 extern int number_of_input_files,
     number_of_symbols_to_define,

@@ -1008,7 +1008,7 @@ then
 # Using 19 bits here causes allocation in pages each of which is 512Kbytes,
 # rather than the default 4M pages. A key limitation this introduces is that
 # any Lisp vector may then be at most 128K items long. I hope that not many
-# people will worry abou that.
+# people will worry about that.
   CFLAGS="$CFLAGS -DPAGE_BITS=19"
 fi
 
@@ -1016,10 +1016,19 @@ if test "x$GCC" = "xyes"
 then
   if test "x$enable_debug" = "xyes"
   then
-    CFLAGS="${CFLAGS} -fno-strict-aliasing ${LOWOPT} -g -DDEBUG=1 -Wall"
-    CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing ${LOWOPT} -g -DDEBUG=1 -Wall"
-    DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${LOWOPT} -g -DDEBUG=1 -Wall"
-    LDFLAGS="${LDFLAGS} -g"
+# If only to see how many people get upset, I will put "-pg" in the command
+# line if debugging is requested. For gcc (at least on many platforms) this
+# will enabling profiling so that "gprof" can be used after a run to observe
+# where theer were hot-spots. If I get keen I will put in extra tests here to
+# check if the "-pg" option is at least acceptable to the compiler... but
+# for now it is unconditional based on a belief that those who specify
+# --enable-debug will be experienced enough to sort out any mess that could
+# arise.
+    PROFILE="-pg"
+    CFLAGS="${CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    DLL_CFLAGS="${DLL_CFLAGS} -fno-strict-aliasing ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
+    LDFLAGS="${LDFLAGS} -g ${PROFILE}"
   else
     CFLAGS="$CFLAGS -fno-strict-aliasing ${HIGHOPT} -Wall"
     CXXFLAGS="$CXXFLAGS -fno-strict-aliasing ${HIGHOPT} -Wall"

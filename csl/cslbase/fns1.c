@@ -1,11 +1,11 @@
-/*  fns1.c                           Copyright (C) 1989-2008 Codemist Ltd */
+/*  fns1.c                           Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * Basic functions part 1.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1aa06b6e 07-Aug-2011 */
+/* Signature: 60b3edf8 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -1294,12 +1294,73 @@ Lisp_Object Lunion(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(b);
 }
 
+
+Lisp_Object Lenable_errorset(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
+{
+    Lisp_Object r = cons(fixnum_of_int(errorset_min),
+                         fixnum_of_int(errorset_max));
+    errexit();
+    if (a == nil || a == fixnum_of_int(0)) errorset_min = 0;
+    else if (a == fixnum_of_int(1)) errorset_min = 1;
+    else if (a == fixnum_of_int(2)) errorset_min = 2;
+    else if (a == fixnum_of_int(3) || a == lisp_true) errorset_min = 3;
+    if (b == nil || a == fixnum_of_int(0)) errorset_max = 0;
+    else if (b == fixnum_of_int(1)) errorset_max = 1;
+    else if (b == fixnum_of_int(2)) errorset_max = 2;
+    else if (b == fixnum_of_int(3) || b == lisp_true) errorset_max = 3;
+/* I increase the max to be at least as high as the indicated min */
+    if (errorset_min > errorset_max) errorset_max = errorset_min;
+/* I also arrange that the current state is within the specified range */
+    switch (errorset_min)
+    {
+case 0: break;
+case 1: miscflags |= HEADLINE_FLAG;
+        break; 
+case 2: miscflags |= HEADLINE_FLAG | FNAME_FLAG;
+        break; 
+default: /* case 3: */
+        miscflags |= BACKTRACE_MSG_BITS;
+        break; 
+    }
+    switch (errorset_max)
+    {
+case 0: miscflags &= ~BACKTRACE_MSG_BITS;
+        break;
+case 1: miscflags &= ~(FNAME_FLAG | ARGS_FLAG);
+        break;
+case 2: miscflags &= ~ARGS_FLAG;
+        break;
+default: /* case 3: */
+        break;
+    }
+    return r;
+}
+
 Lisp_Object Lenable_backtrace(Lisp_Object nil, Lisp_Object a)
 {
+/*
+ *    (enable-backtrace nil)    errors silent unless ALWAYS_NOISY set
+ *    (enable-backtrace 0)      ditto
+ *    (enable-backtrace 1)      show 1-line messaqe on error
+ *    (enable-backtrace 2)      show function names but not args in B/T
+ *    (enable-backtrace 3)      show functions and args                   
+ *    (enable-backtrace t)      ditto
+ *    otherwise                 just return previous setting
+ */
     int32_t n = miscflags;
-    if (a == nil) miscflags &= ~MESSAGES_FLAG;
-    else miscflags |= MESSAGES_FLAG;
-    return onevalue(Lispify_predicate((n & MESSAGES_FLAG) != 0));
+    miscflags &= ~BACKTRACE_MSG_BITS;
+    if (a == nil || a == fixnum_of_int(0)) /* nothing */;
+    else if (a == fixnum_of_int(1))
+        miscflags |=  HEADLINE_FLAG;
+    else if (a == fixnum_of_int(2))
+        miscflags |=  HEADLINE_FLAG | FNAME_FLAG;
+    else if (a == lisp_true || a == fixnum_of_int(3))
+        miscflags |= BACKTRACE_MSG_BITS;
+    else miscflags = n; /* Otherwise have no effect */
+    return onevalue(fixnum_of_int(miscflags & ARGS_FLAG ? 3 :
+                                  miscflags & FNAME_FLAG ? 2 :
+                                  miscflags & HEADLINE_FLAG ? 1 :
+                                  0));
 }
 
 #ifdef NAG
@@ -1307,7 +1368,8 @@ Lisp_Object Lenable_backtrace(Lisp_Object nil, Lisp_Object a)
 Lisp_Object MS_CDECL Lunwind(Lisp_Object nil, int nargs, ...)
 {
     argcheck(nargs, 0, "unwind");
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_count = 0;
     exit_tag = nil;
@@ -1376,7 +1438,7 @@ Lisp_Object MS_CDECL Lerror(Lisp_Object nil, int nargs, ...)
     qvalue(emsg_star) = r;               /* "Error message" in CL world */
     exit_value = fixnum_of_int(0);       /* "Error number"  in CL world */
 #else
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+    if (miscflags & HEADLINE_FLAG)
     {   err_printf("\n+++ error: ");
         loop_print_error(stack[1-nargs]);
         for (i=1; i<nargs; i++)
@@ -1399,7 +1461,8 @@ Lisp_Object MS_CDECL Lerror(Lisp_Object nil, int nargs, ...)
     {   (*qfn1(w))(qenv(w), qvalue(emsg_star));
         ignore_exception();
     }
-    exit_reason = (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? UNWIND_ERROR :
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_count = 0;
     exit_tag = nil;
@@ -1422,13 +1485,25 @@ Lisp_Object MS_CDECL Lerror0(Lisp_Object nil, int nargs, ...)
 /*
  * Silently provoked error - unwind to surrounding errorset level. Note that
  * this will NEVER enter a user-provided break loop...
+ * Also note that (enable-errorset) can set a lower limit to noise levels
+ * that can result in the error here NOT being silent!
  */
     argcheck(nargs, 0, "error0");
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         return resource_exceeded();
-    if (!always_noisy) miscflags &= ~(MESSAGES_FLAG | HEADLINE_FLAG);
-    exit_reason = UNWIND_UNWIND;
+    switch (errorset_min)
+    {
+case 0: miscflags &= ~BACKTRACE_MSG_BITS;
+        break;
+case 1: miscflags &= ~(FNAME_FLAG | ARGS_FLAG);
+        break;
+case 2: miscflags &= ~ARGS_FLAG;
+default:break;
+    }
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                  UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
     flip_exception();
@@ -2167,6 +2242,7 @@ setup_type const funcs1_setup[] =
     {"constantp",               Lconstantp, too_many_1, wrong_no_1},
     {"date",                    Ldate1, wrong_no_nb, Ldate},
     {"datestamp",               wrong_no_na, wrong_no_nb, Ldatestamp},
+    {"enable-errorset",         too_few_2, Lenable_errorset, wrong_no_2},
     {"enable-backtrace",        Lenable_backtrace, too_many_1, wrong_no_1},
     {"error",                   Lerror1, Lerror2, Lerror},
     {"error1",                  wrong_no_na, wrong_no_nb, Lerror0},

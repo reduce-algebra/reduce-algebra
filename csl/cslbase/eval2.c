@@ -1,11 +1,11 @@
-/*  eval2.c                          Copyright (C) 1989-2010 Codemist Ltd */
+/*  eval2.c                          Copyright (C) 1989-2011 Codemist Ltd */
 
 /*
  * Interpreter (part 2).  apply & some special forms
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 41465c90 18-Aug-2010 */
+/* Signature: 6c2e77c3 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -538,7 +538,7 @@ static Lisp_Object block_fn(Lisp_Object args, Lisp_Object env)
                 popv(3);
                 return nvalues(exit_value, exit_count);
             }
-            if ((exit_reason & UNWIND_ERROR) != 0)
+            if ((exit_reason & UNWIND_FNAME) != 0)
             {   err_printf("\nEvaluating: ");
                 loop_print_error(qcar(args));
                 ignore_exception();

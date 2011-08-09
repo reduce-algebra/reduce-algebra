@@ -1,11 +1,11 @@
-/* cslread.c                        Copyright (C) 1990-2010 Codemist Ltd */
+/* cslread.c                        Copyright (C) 1990-2011 Codemist Ltd */
 
 /*
  * Reading and symbol-table support.
  */
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 100ca415 09-Feb-2011 */
+/* Signature: 37102529 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -2333,11 +2333,12 @@ int char_from_terminal(Lisp_Object dummy)
                 }
                 if (interrupt_pending)
                 {   interrupt_pending = 0;
-                    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
+                    if (miscflags & HEADLINE_FLAG)
                         err_printf("+++ Interrupted\n");
                     exit_reason = 
-                        (miscflags & (MESSAGES_FLAG|ALWAYS_NOISY)) ? 
-                        UNWIND_ERROR : UNWIND_UNWIND;
+                        (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                        (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                        UNWIND_UNWIND;
                     exit_value = exit_tag = nil;
                     exit_count = 0;
                     flip_exception();
@@ -3920,7 +3921,7 @@ void read_eval_print(int noisy)
 #ifdef COMMON
         int32_t nvals, i;
 #endif
-        miscflags |= (HEADLINE_FLAG | MESSAGES_FLAG);
+        miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
 #ifdef __cplusplus
         try
@@ -4032,7 +4033,7 @@ void read_eval_print(int noisy)
         if (qvalue(standard_input) == lisp_terminal_io &&
             spool_file != NULL) putc('\n', spool_file);
 
-        miscflags |= (HEADLINE_FLAG | MESSAGES_FLAG);
+        miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
 #ifdef __cplusplus
         try
@@ -4087,7 +4088,7 @@ void read_eval_print(int noisy)
                 nil = C_nil;
                 if (exception_pending()) flip_exception();
                 mv_2 = u;
-                miscflags |= (HEADLINE_FLAG | MESSAGES_FLAG);
+                miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
                 for (i=2; i<=nvals; i++)
                 {   print((&mv_2)[i-2]);
                     nil = C_nil;
@@ -4270,6 +4271,7 @@ Lisp_Object Lrdf4(Lisp_Object nil, Lisp_Object file, Lisp_Object noisyp,
     if (exception_pending())
     {   flip_exception();
         if (exit_reason == UNWIND_ERROR ||
+            exit_reason == UNWIND_FNAME ||
             exit_reason == UNWIND_RESOURCE)
         {
 #ifdef COMMON
