@@ -94,102 +94,119 @@ switch mymatch;
 %------------------------------%
 symbolic procedure trwrite u;
   begin  scalar x;
-    if not flagp(car u,'tracing) then return nil;
-    write "**in procedure: ", car u; terpri();
+    if not flagp(car u, 'tracing) then return nil;
+    write "**in procedure: ", car u;
+    terpri();
     for each x in cdr u do write x;
     terpri();
   end;
 
 symbolic procedure funtrace u;
-for each x in u do flag(list(x),'tracing);
+  for each x in u do flag(list(x), 'tracing);
 
 deflist('((trwrite rlis) (funtrace rlis)),'stat);
 
 symbolic procedure pnth!*(u,n); % slightly modified from pnth
-   if null u then nil
-    else if n=1 then u
-    else pnth!*(cdr u,n-1);
+  if null u then nil
+  else if n=1 then u
+  else pnth!*(cdr u, n-1);
 
 symbolic procedure nth!*(u,n);
-if length(u) < n then nil
-else car pnth!*(u,n);
+  if length(u) < n then nil
+  else car pnth!*(u,n);
 
 symbolic procedure revassoc(u,v); % added 140791 mw
-% revesre of assoc
+% reverse of assoc
 % checks the a-list v for a pair whose CDR is u
-begin scalar x;
-if not listp v then rederr "invalid argument to revassoc";
-a: if null v then return;
-   x := car v;
-   v := cdr v;
-   if (pairp x)  and (cdr x = u) then return car x;
-   go to a;
-end;
+  begin
+    scalar x;
+    if not listp v then rederr "invalid argument to revassoc";
+a:  if null v then return;
+    x := car v;
+    v := cdr v;
+    if (pairp x)  and (cdr x = u) then return car x;
+    go to a;
+  end;
 
 symbolic procedure kernelp u;  %new
 % checks if an algebraic expression is a kernel
-if null u or domain!*p u then nil
-else if idp u then t
-else if listp u and idp car u and not (car u memq
-'(!*sq set setq plus minus difference times quotient))
- then t
-else nil;
+  if null u or domain!*p u then nil
+  else if idp u then t
+  else if listp u and
+          idp car u and
+          not (car u memq
+               '(!*sq set setq plus minus difference times quotient)) then t
+  else nil;
 
 symbolic procedure spp u;  %new
 % checks if u is a standard power
-pairp u and kernelp car u;
+  pairp u and kernelp car u;
 
 symbolic procedure stp u;  %new
 % checks if u is a s.t.
-pairp u and spp car u;
+  pairp u and spp car u;
 
 symbolic procedure sfp2 u; %new
 % checks if u if a s.f.
 % sfp seems to be ill defined
-pairp u and stp car u;
+  pairp u and stp car u;
 
 symbolic procedure tstp u; %new
 % checks if u is a "true" standard term, i.e. a product term
-stp u and (car !*f2a !*t2f u neq 'plus);
+  stp u and (car !*f2a !*t2f u neq 'plus);
 
 symbolic procedure !*!*a2f u;  %new
 %converts u without call of subs2
-begin scalar flg,res;
-flg := subfg!*; subfg!* := nil;
-res := !*a2f u;
-subfg!* := flg;
-return res
-end;
+  begin
+    scalar flg,res;
+    flg := subfg!*;
+    subfg!* := nil;
+    res := !*a2f u;
+    subfg!* := flg;
+    return res
+  end;
 
 symbolic procedure !*!*a2q u;  %new
 %converts an algebraic expression into a s.q. using !*!*a2f
-if car u eq 'quotient  then !*!*a2f cadr u . !*!*a2f caddr u
-else  !*f2q !*!*a2f u;
+  if car u eq 'quotient  then !*!*a2f cadr u . !*!*a2f caddr u
+  else !*f2q !*!*a2f u;
 
 symbolic procedure !*a2q u;  %new
 %converts an algebraic expression into a s.q. using !*a2f
-if (not atom u and car u eq 'quotient) then
-        !*a2f cadr u . !*a2f caddr u
-else  !*f2q !*a2f u;
+  if (not atom u and car u eq 'quotient) then
+    !*a2f cadr u . !*a2f caddr u
+  else !*f2q !*a2f u;
+
+%- symbolic procedure atsoc2(u,v);
+%- % same as atsoc but looks for the caar part
+%-   begin
+%-     scalar res;
+%-     for each x in v do
+%-       if (not atom car x and caar x eq u) then res:= x;
+%-     return res
+%-   end;
 
 symbolic procedure atsoc2(u,v);
-% same as atsoc but looks for the caar part
-begin scalar res;
-for each x in v do
-if (not atom car x and caar x eq u) then res:= x;
-return res
-end;
+% same as atsoc but looks for the caar part.
+% This version stops as soon as it finds a match and uses EQCAR.
+  begin
+a:  if null v then return nil
+    else if eqcar(caar v, u) then return car v;
+    v := cdr v;
+    go to a
+  end;
 
 symbolic procedure sublist(u,v);
 % u and v are lists of sp
 % checks if all elements of u are included in v in the right order
 % return a sublist of containing the elements of u + the rest of v
-begin scalar x,z,y,w,reslist,n,u1;
-if not (listp u and listp v) then
-    rederr " invalid arguments to sublist";
+  begin
+    scalar x,z,y,w,reslist,n,u1;
+    if not (listp u and listp v) then
+      rederr " invalid arguments to sublist";
 %initialization
-if null u or null v or not (V:= member(car u,v)) then return;
-a : if null u then return nconc(reslist,append(u1,v));
+    if null u or null v or not (V:= member(car u,v)) then return;
+a:  if null u then return nconc(reslist,append(u1,v));
     z:= v;
     x := car u;
     u := cdr u;
@@ -198,63 +215,67 @@ a : if null u then return nconc(reslist,append(u1,v));
     n:= length(z) - length(v) - 1;
     z := for k:= 1 : n collect nth(z,k);
     trwrite(sublist,"z= ",z," v= ",v," x= ",x);
-a0: if null z then
-    <<
+a0: if null z then <<
        u1 := nconc(u1,list(x));
-       go to a;
-    >>;
+       go to a >>;
     w := car z;
     z := cdr z;
     if noncommuting!_splist(w,u1) then go to a1
     else reslist := nconc(reslist,list(w));
     go to a0;
-a1:
-    z := reverse (w . z);
+a1: z := reverse (w . z);
     if noncommutingsp(car z,x) then return;
     v := (car z) . v;
     z := reverse cdr  z;
     go to a0;
-end;
+  end;
 
 symbolic procedure deleteall(x,u); %2.1
 % deletes all occurrences of x in u
-begin scalar y,res;
-a: if null u then return res;
-y:=  car u;
-u := cdr u;
-if not (y = x) then  res:= nconc(res,list(y));
-go to a
-end;
+  begin
+    scalar y,res;
+a:  if null u then return res;
+    y := car u;
+    u := cdr u;
+    if not (y = x) then  res:= nconc(res,list(y));
+    go to a
+  end;
 
 symbolic procedure deletemult(x,u);  %2.1
 % deletes multiples occurences of x in u
 % keeping only one left
-begin scalar y,n;
-if null (y:= cdr member(x,u)) then return u;
-n:=length(u)-length(y);
-return nconc(for k:=1 :n collect nth(u,k),deleteall(x,y));
-end;
+  begin
+    scalar y,n;
+    if null (y:= cdr member(x,u)) then return u;
+    n := length(u)-length(y);
+% This looks a bit clunky to me...
+    return nconc(for k:=1:n collect nth(u,k), deleteall(x,y));
+  end;
 
 symbolic procedure deletemult!* u;
 % deletes all multiple occurences of elements in u
-begin scalar x;
-if null u then return u;
-x:=list(car u);
-u := cdr u;
-for each y in u do
-if not member(y,x) then nconc(x,list(y));
-return x
-end;
+  begin
+    scalar x;
+    if null u then return u;
+    x := list(car u);
+    u := cdr u;
+% The use of NCONC here can be improved on to get linear not
+% quadratic costs.
+    for each y in u do
+      if not member(y, x) then nconc(x, list y);
+    return x
+  end;
 
 symbolic procedure listofvarnames u; %new
 % u is a list of s.p.
 %  returns list of vars in u
 % we keep nil as  placeholder for numbers in u
-if not listp u then rederr "invalid argument to listofvarnames"
-else for each x in u collect if domain!*p x then (nil . 'free)
-                             else if atom x then (nil . 'free)
-                             else if idp car x then ((car x) . 'free)
-                             else if idp caar x then ((caar x) . 'free);
+  if not listp u then rederr "invalid argument to listofvarnames"
+  else for each x in u collect
+    if domain!*p x then (nil . 'free)
+    else if atom x then (nil . 'free)
+    else if idp car x then ((car x) . 'free)
+    else if idp caar x then ((caar x) . 'free);
 
 
 
@@ -262,19 +283,20 @@ symbolic procedure replsublist(u,v,w); %new
 % v and w are p-lists
 % u is anything
 % replaces the sublist v in w by u
-begin scalar n,x,res;
-if not (x:= sublist(v,w)) then return w;
-n:= length(w)-length(x);
+  begin
+    scalar n,x,res;
+    if not (x:= sublist(v,w)) then return w;
+    n:= length(w)-length(x);
 % trwrite "n= ",n," x= ",x;
 % u := if listp u then u else list(u);
 % trwrite "u= ",u,listp u;
-res := if zerop n then nil
-       else for k:= 1 :n  collect nth(w,k);
-res := if null res then u else nconc(res,u);
+    res := if zerop n then nil
+           else for k:= 1:n collect nth(w,k);
+    res := if null res then u else nconc(res,u);
 % trwrite "res= ",res;
-return if (length(v) = length(x)) then res
-       else  nconc(res,pnth(x,length(v)+1))
-end;
+    return if (length(v) = length(x)) then res
+           else nconc(res, pnth(x, length(v)+1))
+  end;
 
 symbolic procedure locate!_n(x,lst,n);
 % returns the position of the n-th occurence of x in lst
@@ -351,48 +373,46 @@ remprop('noncom,'stat);
 
 symbolic procedure noncomp2 u; % changed
 % u is a kernel checks for noncom flag
-if atom u then flagp(u,'noncom)
-else flagpcar(u,'noncom);
+  if atom u then flagp(u,'noncom)
+  else flagpcar(u,'noncom);
 
 symbolic procedure noncom u; %new
-begin scalar y,liste;
-if not listp u  then rederr(u, "invalid argument to noncom");
-for each x in u do <<
- if not idp x then rederr(x, "invalid argument to noncom");
- noncom1 x;
- liste:=get(x,'noncommutes);
- y := delete(x,u);
- put(x,'noncommutes,deletemult!* nconc(liste,y));
+  begin scalar y,liste;
+    if not listp u then rederr(u, "invalid argument to noncom");
+    for each x in u do <<
+      if not idp x then rederr(x, "invalid argument to noncom");
+      noncom1 x;
+      liste:=get(x,'noncommutes);
+      y := delete(x,u);
+      put(x, 'noncommutes, deletemult!* nconc(liste,y));
 % the following is needed for the physop package  added  2.1 140891 mw
- if (get(x,'rtype) = 'physop) then
- <<
-     noncom1 adjp x;
-     liste:=get(adjp x,'noncommutes);
-     y := delete(adjp x,for each j in u collect adjp j);
-     put(adjp x,'noncommutes,deletemult!* nconc(liste,y));
-     noncom1 invp x;
-     liste:=get(invp x,'noncommutes);
-     y := delete(invp x,for each j in u collect invp j);
-     put(invp x,'noncommutes,deletemult!* nconc(liste,y));
-   >>;
- >>;
- return nil
+      if (get(x,'rtype) = 'physop) then <<
+        noncom1 adjp x;
+        liste:=get(adjp x, 'noncommutes);
+        y := delete(adjp x, for each j in u collect adjp j);
+        put(adjp x, 'noncommutes, deletemult!* nconc(liste,y));
+        noncom1 invp x;
+        liste:=get(invp x, 'noncommutes);
+        y := delete(invp x,for each j in u collect invp j);
+        put(invp x,'noncommutes,deletemult!* nconc(liste,y)) >> >>;
+   return nil
  end;
+
 deflist('((noncom rlis)),'stat);
 
 symbolic procedure noncommuting(u,v);  % modifed 2.1 140891 mw
 % u and v are two kernels
 % checks for noncommuting
-begin scalar list,res;
-u := if atom u then u else car u;
-v := if atom v then v else car v;
-  if not (noncomp2 u and noncomp2 v) then nil
-  else <<
-       list :=get(u,'noncommutes);
-       res:=member(v,list);
-             >>;
-return res
-end;
+  begin
+    scalar list,res;
+    u := if atom u then u else car u;
+    v := if atom v then v else car v;
+    if not (noncomp2 u and noncomp2 v) then nil
+    else <<
+      list :=get(u,'noncommutes);
+      res:=member(v,list) >>;
+    return res
+  end;
 
 symbolic procedure noncommutingterm u;  %new
 % u is a standard term
