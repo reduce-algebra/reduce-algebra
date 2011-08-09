@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 5dbb72c9 09-Aug-2011 */
+/* Signature: 5e48fea9 09-Aug-2011 */
 
 #include "headers.h"
 
@@ -1243,9 +1243,9 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
             }
             switch (errorset_max)
             {
-        case 0: miscflags &= ~BACKTRACE_MSG_FLAGS;
+        case 0: miscflags &= ~BACKTRACE_MSG_BITS;
                 break;
-        case 1: miscflags &= ~(FNAME_FLAGS | ARGS_FLAG);
+        case 1: miscflags &= ~(FNAME_FLAG | ARGS_FLAG);
                 break;
         case 2: miscflags &= ~ARGS_FLAG;
         default:break;
@@ -1277,9 +1277,9 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
         }
         switch (errorset_max)
         {
-    case 0: miscflags &= ~BACKTRACE_MSG_FLAGS;
+    case 0: miscflags &= ~BACKTRACE_MSG_BITS;
             break;
-    case 1: miscflags &= ~(FNAME_FLAGS | ARGS_FLAG);
+    case 1: miscflags &= ~(FNAME_FLAG | ARGS_FLAG);
             break;
     case 2: miscflags &= ~ARGS_FLAG;
     default:break;
