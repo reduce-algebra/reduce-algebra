@@ -665,7 +665,7 @@ symbolic procedure simp0 u;
               and (flagp(car u,'simp0fn) or get(car u,'rtype))
           then z := simp u
          else z := simpiden u;
-        rplaca(alglist!*,delasc(u,car alglist!*));
+        rplaca(alglist!*, delete_from_alglist(u, car alglist!*));
         % Since we don't want to keep this value.
         subfg!* := car x;
         !*sub2 := cdr x;

@@ -130,6 +130,68 @@ symbolic procedure subs2 u;
     return u
    end;
 
+% car alglist!* is a table, inspected here in simp and set (only) in
+% !*ssave, which in turn is only ever called form here. In forall.red
+% there is a call that removes items from the table. The only
+% other constraint on it is that NIL must represent an empty table.
+% The value stored against a key is always a CONS, and specifically is
+% never NIL.
+%
+% Items should only ever be added to the list if there are not already
+% present. This means that the order of items in the table is not
+% important. There are, across the Reduce tests, about as many searches
+% as there are additions to this table.
+%
+% The initial implementation was a simple association list. That works
+% well provided it remains short! However for instance the liepde test
+% script leads to a table with over 4000 entries, so other large calculations
+% may be bad too. But of course an over-heavy-handed implementation might
+% also cause pain! To help me understand this I will make all access to this
+% table abstract via small procedures here.
+
+
+!#if (memq 'csl lispsystem!*)
+
+% With CSL I have hash tables and I am fairly confident both that for
+% cases where alglist!* becomes long they are a significant win and that
+% in other cases they are as close to cost-neutral as I can measure.
+
+smacro procedure add_to_alglist(key, val, l);
+<<
+  if null l then l := mkhash(10, 3, 2.0);
+  puthash(key, l, val);
+  l >>;
+
+smacro procedure search_alglist(key, l);
+  if null l then nil
+  else gethash(key, l);
+
+symbolic procedure delete_from_alglist(key, l);
+  if null l then nil
+  else << remhash(key, l); l >>;
+
+!#else
+
+% With PSL I maintain the previous association-list model, albeit now
+% lifted by a level of abstraction.
+
+smacro procedure add_to_alglist(key, val, l);
+  (key . val) . l;
+
+smacro procedure search_alglist(key, l);
+  begin
+    scalar r;
+    r := assoc(key, l);
+    if null r then return r
+    else return cdr r
+  end;
+
+symbolic procedure delete_from_alglist(key, l);
+  delasc(key, l);
+
+!#endif
+
+
 symbolic procedure simp u;
    (begin scalar x,y;
     % This case is sufficiently common it is done first.
@@ -144,8 +206,8 @@ symbolic procedure simp u;
              rerror(alg,12,"Simplification recursion too deep")>>
      else if eqcar(u,'!*sq) and caddr u and null !*resimp
       then return cadr u
-     else if null !*uncached and (x := assoc(u,car alglist!*))
-      then return <<if cadr x then !*sub2 := t; cddr x>>;
+     else if null !*uncached and (x := search_alglist(u,car alglist!*))
+      then return <<if car x then !*sub2 := t; cdr x>>;
     simpcount!* := simpcount!*+1; % undone by returning through !*SSAVE.
     if atom u then return !*ssave(simpatom u,u)
      else if not idp car u or null car u
@@ -220,12 +282,12 @@ symbolic procedure getinfix u;
 symbolic procedure !*ssave(u,v);
    % We keep !*sub2 as well, since there may be an unsubstituted
    % power in U.
-   begin
-      if not !*uncached
-    then rplaca(alglist!*,(v . (!*sub2 . u)) . car alglist!*);
-      simpcount!* := simpcount!*-1;
-      return u
-   end;
+  begin
+    if not !*uncached then
+      rplaca(alglist!*, add_to_alglist(v, (!*sub2 . u), car alglist!*));
+    simpcount!* := simpcount!*-1;
+    return u
+  end;
 
 symbolic procedure numlis u;
    null u or (numberp car u and numlis cdr u);
