@@ -792,6 +792,7 @@ symbolic procedure test_a_package names;
 % Temp while I watch things
        if atom rr then printc "+++++ Error: Resource limit exceeded";
        princ "@@@@@ Resources used: "; print !*resources!*;
+       if !*savedef then mapstore t;
        linelength oll
     end;
     close logfile;
@@ -910,7 +911,7 @@ top:
               prin2 " ms" >>;
           if atom rr then printc "+++++ Error: Resource limit exceeded";
           princ "@@@@@ Resources used: "; print !*resources!*;
-          terpri();
+          if !*savedef then mapstore t;
           linelength oll
        end;
        close logfile;

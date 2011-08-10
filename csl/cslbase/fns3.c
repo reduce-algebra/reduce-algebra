@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 0b4b77aa 21-Jun-2010 */
+/* Signature: 77ad3c24 10-Aug-2011 */
 
 #include "headers.h"
 
@@ -326,6 +326,8 @@ static Lisp_Object get_hash_vector(int32_t n)
 
 Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
 /*
+ * (mkhash size flavour growth)
+ *
  * size suggests how many items can be inserted before re-hashing
  * occurs. flavour is 0, 1, 2, 3 or 4 corresponding to hash tables
  * that use EQ, EQL, EQUAL, EQUALS or EQUALP.  growth is a floating point
@@ -393,8 +395,10 @@ Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
  * hash function is a user-provided one. This is a matter of security
  * since it will often not really be necessary, since it will be a bit hard
  * for user hash functions to depend on absolute memory addresses. But all
- * rehashing costs is some time, I hope.
+ * that rehashing costs is some time, I hope, and I view that as fairly
+ * unimportant.
  */
+#ifdef OLD_HASH
     if (flavour == fixnum_of_int(0) ||
         flavour == fixnum_of_int(1) || !is_fixnum(flavour))
     {   qcdr(v) = eq_hash_tables;
@@ -404,6 +408,14 @@ Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...)
     {   qcdr(v) = equal_hash_tables;
         equal_hash_tables = v;
     }
+#else
+/*
+ * My newer understanding is that symbols always has on the basis of EQ.
+ * Thus ALL hash tables need to be rehashed by the garbage collector.
+ */
+    qcdr(v) = eq_hash_tables;
+    eq_hash_tables = v;
+#endif
     pop3(growth, v1, v);
     elt(v, 0) = elt(v1, 0) = flavour;
     elt(v1, 1) = fixnum_of_int(0);
@@ -432,7 +444,7 @@ static uint32_t update_hash(uint32_t prev, uint32_t data)
 static uint32_t hash_eql(Lisp_Object key)
 /*
  * Must return same code for two eql numbers.  This is remarkably
- * painfull! I would like the value to be insensitive to fine details
+ * painful! I would like the value to be insensitive to fine details
  * of the machine I am running on.
  */
 {
@@ -551,11 +563,15 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
             continue;
     case TAG_SYMBOL:
             if (key == C_nil) return r;
+#ifdef OLD_HASH
             key = get_pname(key);
             nil = C_nil;
             if (exception_pending()) return 0;
             r = update_hash(r, 1); /* makes name & string hash differently */
             /* Drop through, because the pname is a string */
+#else
+            return update_hash(1, (uint32_t)key);
+#endif
     case TAG_VECTOR:
             {   ha = vechdr(key);
                 len = type_of_header(ha);
@@ -711,11 +727,15 @@ static uint32_t hash_equal(Lisp_Object key)
             continue;
     case TAG_SYMBOL:
             if (key == C_nil) return r;
+#ifdef OLD_HASH
             key = get_pname(key);
             nil = C_nil;
             if (exception_pending()) return 0;
             r = update_hash(r, 1);
             /* Drop through, because the pname is a string */
+#else
+            return update_hash(1, (uint32_t)key);
+#endif
     case TAG_VECTOR:
             {   ha = vechdr(key);
                 type = type_of_header(ha);
@@ -828,9 +848,16 @@ static uint32_t hash_equal(Lisp_Object key)
 
 hash_as_string:
 /* Here len is the length of the string data structure, excluding header */
-        while (len > 0)
-        {   c = data[--len];
-            r = update_hash(r, c);
+        {   int32_t w = 0;
+            while (len > 0)
+            {   c = data[--len];
+                w = (w << 8) | c;
+                if (w & 0xff000000)
+                {   r = update_hash(r, w);
+                    w = 0;
+                }
+            }
+            if (w != 0) r = update_hash(r, w);
         }
         return r;
 #ifdef COMMON
@@ -879,11 +906,15 @@ static uint32_t hash_equalp(Lisp_Object key)
             continue;
     case TAG_SYMBOL:
             if (key == C_nil) return r;
+#ifdef OLD_HASH
             key = get_pname(key);
             nil = C_nil;
             if (exception_pending()) return 0;
             r = update_hash(r, 1);
             /* Drop through, because the pname is a string */
+#else
+            return update_hash(1, (uint32_t)key);
+#endif
     case TAG_VECTOR:
             {   ha = vechdr(key);
                 type = type_of_header(ha);
@@ -933,7 +964,7 @@ static uint32_t hash_equalp(Lisp_Object key)
                         switch (ha)
                         {
                     case 0: data = &ucelt(key, int_of_fixnum(w));
-                            goto hash_as_string;
+                            goto hash_nearly_as_string;
 #ifdef COMMON
                     case 1:
                             data = &ucelt(key, 0);
@@ -983,8 +1014,9 @@ static uint32_t hash_equalp(Lisp_Object key)
             if (is_bps(key))
             {   data = (unsigned char *)data_of_bps(key);
                 /* I treat bytecode things as strings here */
+                /* Oops - what about the fact that strings get case-folded? */
                 len = length_of_header(*(Header *)(data - CELL));
-                goto hash_as_string;
+                goto hash_nearly_as_string;
             }
             else if (is_char(key))
                 key = pack_char(0, 0, tolower(code_of_char(key)));
@@ -1019,9 +1051,31 @@ static uint32_t hash_equalp(Lisp_Object key)
  */
 hash_as_string:
 /* Here len is the length of the string data structure, excluding header */
-        while (len > 0)
-        {   c = tolower(data[--len]);
-            r = update_hash(r, update_hash(1, pack_char(0, 0, c)));
+        {   int32_t w = 0;
+            while (len > 0)
+            {   c = data[--len];
+                c = tolower(c);
+                w = (w << 8) | c;
+                if (w & 0xff000000)
+                {   r = update_hash(r, w);
+                    w = 0;
+                }
+            }
+            if (w != 0) r = update_hash(r, w);
+        }
+        return r;
+hash_nearly_as_string:
+/* Here len is the length of the string data structure, excluding header */
+        {   int32_t w = 0;
+            while (len > 0)
+            {   c = data[--len];
+                w = (w << 8) | c;
+                if (w & 0xff000000)
+                {   r = update_hash(r, w);
+                    w = 0;
+                }
+            }
+            if (w != 0) r = update_hash(r, w);
         }
         return r;
 #ifdef COMMON
