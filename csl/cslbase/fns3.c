@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 77ad3c24 10-Aug-2011 */
+/* Signature: 6d1d723f 11-Aug-2011 */
 
 #include "headers.h"
 
@@ -464,14 +464,22 @@ static uint32_t hash_eql(Lisp_Object key)
 #ifdef COMMON
     case TYPE_SINGLE_FLOAT:
             nasty_union.fp = (double)single_float_val(key);
+/*
+ * A *horrid* issue arises here in that (EQL 0.0 -0.0) will be true
+ * hence 0.0 and -0.0 must hash to the same value. Hence the following
+ * line even if at first sight it looks ridiculous!
+ */
+            if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
             break;
 #endif
     case TYPE_DOUBLE_FLOAT:
             nasty_union.fp = double_float_val(key);
+            if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
             break;
 #ifdef COMMON
     case TYPE_LONG_FLOAT:
             nasty_union.fp = (double)long_float_val(key);
+            if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
             break;
 #endif
     default:
@@ -496,8 +504,7 @@ static uint32_t hash_eql(Lisp_Object key)
         {
     case TYPE_BIGNUM:
             n = length_of_header(h);
-            n = (n>>2) - 2;  /* last index into the data */
-            r = update_hash(1, (uint32_t)h);
+            n = (n-CELL-4)>>2;  /* last index into the data */
 /*
  * This mat be overkill - for very long bignums it is possibly a waste to
  * walk over ALL the digits when computing a hash value - I could do well
@@ -587,8 +594,8 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
                 }
 #ifdef COMMON
                 else if (header_of_bitvector(ha))
-                {   len = length_of_header(ha);
-                    len = (len - 5)*8 + ((ha & 0x380) >> 7) + 1;
+                {   len = length_of_header(ha) - CELL;
+                    len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
                     bitoff = 0;
                     data = &ucelt(key, 0);
                     goto hash_as_bitvector;
@@ -651,7 +658,7 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
             if (is_bps(key))
             {   data = (unsigned char *)data_of_bps(key);
                 /* I treat bytecode things as strings here */
-                len = length_of_header(*(Header *)(data - CELL));
+                len = length_of_header(*(Header *)(data - CELL)) - CELL;
                 goto hash_as_string;
             }
             else return update_hash(r, (uint32_t)key);
@@ -668,11 +675,17 @@ static uint32_t hash_cl_equal(Lisp_Object key, CSLbool descend)
  * yonder and usually crashes.
  */
     default:
-            return hash_eql(key);
+            return update_hash(r, hash_eql(key));
         }
 
 hash_as_string:
-/* Here len is the length of the string data structure, excluding header */
+/*
+ * Here len is the length of the string data structure, excluding header.
+ * I work character by character here both because the final word of a
+ * string will usually not be full and to avoid sensitivity to byte order.
+ * but that may be adding to by costs in an unhelpful way, so maybe
+ * I should work harder to do this word at a time?
+ */
         while (len > 0)
         {   c = data[--len];
             r = update_hash(r, c);
@@ -680,7 +693,12 @@ hash_as_string:
         return r;
 #ifdef COMMON
 hash_as_bitvector:
-/* here len is the number of bits to scan, and bitoff is a BIT offset */
+/*
+ * here len is the number of bits to scan, and bitoff is a BIT offset.
+ * This really is clumsily inefficient but it is never used in Standard
+ * Lisp mode anyway, so I can test and enhance it if anybody not only
+ * uses Common Lisp but then relies on hashing bit-vectors.
+ */
         len += bitoff;
         while (len > bitoff)
         {   len--;
@@ -761,7 +779,7 @@ static uint32_t hash_equal(Lisp_Object key)
  * a way that is expected to look at their contents. Here I just descend
  * all components of the pathname.
  */
-                if (len == TYPE_STRUCTURE &&
+                if (type == TYPE_STRUCTURE &&
                     elt(key, 0) != pathname_symbol)
                     return update_hash(r, (uint32_t)key);
 #endif
@@ -837,13 +855,13 @@ static uint32_t hash_equal(Lisp_Object key)
             if (is_bps(key))
             {   data = (unsigned char *)data_of_bps(key);
                 /* I treat bytecode things as strings here */
-                len = length_of_header(*(Header *)(data - CELL));
+                len = length_of_header(*(Header *)(data - CELL)) - CELL;
                 goto hash_as_string;
             }
             else return update_hash(r, (uint32_t)key);
     case TAG_BOXFLOAT:
     default:/* The default case here mainly covers numbers */
-            return hash_eql(key);
+            return update_hash(r, hash_eql(key));
         }
 
 hash_as_string:
@@ -1015,7 +1033,7 @@ static uint32_t hash_equalp(Lisp_Object key)
             {   data = (unsigned char *)data_of_bps(key);
                 /* I treat bytecode things as strings here */
                 /* Oops - what about the fact that strings get case-folded? */
-                len = length_of_header(*(Header *)(data - CELL));
+                len = length_of_header(*(Header *)(data - CELL)) - CELL;
                 goto hash_nearly_as_string;
             }
             else if (is_char(key))
@@ -1034,14 +1052,15 @@ static uint32_t hash_equalp(Lisp_Object key)
                 {
             case TYPE_RATNUM:
             case TYPE_COMPLEX_NUM:
-                    return update_hash(hash_equalp(numerator(key)),
-                                       hash_equalp(denominator(key)));
+                    return update_hash(r,
+                              update_hash(hash_equalp(numerator(key)),
+                                          hash_equalp(denominator(key))));
             default:
                     break;
                 }
             }
 #endif
-            return hash_eql(key);
+            return update_hash(r, hash_eql(key));
         }
 /*
  * Note that I scan the elements of a string or bitvector in the same order
@@ -1463,11 +1482,12 @@ Lisp_Object MS_CDECL Lput_hash(Lisp_Object nil, int nargs, ...)
             else if (is_float(growth))
             {   double w2 = float_of_number(growth);
                 int32_t newsize = isize;
-                if (1.0 < w2 && w2 < 10.0) newsize = (int32_t)(w2 * (double)isize);
+                if (1.0 < w2 && w2 < 10.0)
+                   newsize = (int32_t)(w2 * (double)isize + 2.0);
                 if (newsize > isize) isize = newsize;
-                else isize = isize + (isize/2);
+                else isize = isize + (isize/2) + 2;
             }
-            else isize = isize + (isize/2);
+            else isize = isize + (isize/2) + 2;
 /*
  * NB - Lmkhash() does not disturb large_hash_table, so I can still
  * access the old table happily even after this call...
@@ -1557,6 +1577,9 @@ Lisp_Object MS_CDECL Lclr_hash_0(Lisp_Object nil, int nargs, ...)
 
 Lisp_Object Lsxhash(Lisp_Object nil, Lisp_Object key)
 {
+/*
+ * Does not descend vectors
+ */
     uint32_t h = hash_cl_equal(key, YES);
     errexit();
     h = (h ^ (h >> 16)) & 0x03ffffff; /* ensure it will be a positive fixnum */
@@ -1565,7 +1588,21 @@ Lisp_Object Lsxhash(Lisp_Object nil, Lisp_Object key)
 
 Lisp_Object Leqlhash(Lisp_Object nil, Lisp_Object key)
 {
+/*
+ * Only handles atoms
+ */
     uint32_t h = hash_cl_equal(key, NO);
+    errexit();
+    h = (h ^ (h >> 16)) & 0x03ffffff; /* ensure it will be a positive fixnum */
+    return onevalue(fixnum_of_int(h));
+}
+
+Lisp_Object Lequalhash(Lisp_Object nil, Lisp_Object key)
+{
+/*
+ * Descends vectors as the Standard Lisp EQUAL function does.
+ */
+    uint32_t h = hash_equal(key);
     errexit();
     h = (h ^ (h >> 16)) & 0x03ffffff; /* ensure it will be a positive fixnum */
     return onevalue(fixnum_of_int(h));
@@ -3877,6 +3914,7 @@ setup_type const funcs3_setup[] =
     {"clrhash",                 Lclr_hash, too_many_1, Lclr_hash_0},
     {"sxhash",                  Lsxhash, too_many_1, wrong_no_1},
     {"eqlhash",                 Leqlhash, too_many_1, wrong_no_1},
+    {"equalhash",               Lequalhash, too_many_1, wrong_no_1},
     {"maphash",                 too_few_2, Lmaphash, wrong_no_2},
     {"hashcontents",            Lhashcontents, too_many_1, wrong_no_1},
     {"upbv",                    Lupbv, too_many_1, wrong_no_1},
