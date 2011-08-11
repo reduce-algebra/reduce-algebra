@@ -498,7 +498,7 @@ static uint32_t hash_eql(Lisp_Object key)
     }
     else if (is_numbers(key))
     {   Header h = numhdr(key);
-        uint32_t r;
+        uint32_t r = 9876543;
         int n;
         switch (type_of_header(h))
         {
