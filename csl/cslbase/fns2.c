@@ -3198,7 +3198,7 @@ Lisp_Object Lassoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 #endif
 #ifdef DEBUG
     int64_t this_assoc = 0;
-    if ((assoc_calls % 1000) == 0)
+    if ((assoc_calls % 1000) == 999)
         term_printf("Assoc %.1f calls %.3f av length %.1f max\n",
            (double)assoc_calls,
            (double)assoc_length/(double)assoc_calls,

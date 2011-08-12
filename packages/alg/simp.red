@@ -156,11 +156,53 @@ symbolic procedure subs2 u;
 % cases where alglist!* becomes long they are a significant win and that
 % in other cases they are as close to cost-neutral as I can measure.
 
+!#if nil % Version for testing purposes only. Will be removed soon!
+
+% The code here is for use while I test the hash table idea - it keeps
+% a hash table AND the old style association list and checks that they
+% deliver the same answers!
+
+smacro procedure add_to_alglist(key, val, l);
+<<
+  if null l then l := nil . mkhash(10, 3, 2.0);
+  puthash(key, cdr l, val);
+  ((key . val) . car l) . cdr l >>;
+
+smacro procedure search_alglist(key, l);
+  if null l then nil
+  else begin
+    scalar al, ha;
+    al := assoc(key, car l);
+    if al then al := cdr al;
+    ha := gethash(key, cdr l);
+    if not (al = ha) then <<
+       printc "+++++ HO HO HO alglist search messup +++++";
+       print key;
+       print l;
+       print al;
+       print ha;
+       g_key := key;
+       g_hash := cdr l;
+       g_al := car l;
+       g_from_hash := ha;
+       g_from_al := al;
+       error(99, "broken") >>;
+    return ha
+  end;
+
+symbolic procedure delete_from_alglist(key, l);
+  if null l then nil
+  else <<
+    remhash(key, cdr l); (delasc(key, car l) . cdr l) >>;
+
+!#else
+
 smacro procedure add_to_alglist(key, val, l);
 <<
   if null l then l := mkhash(10, 3, 2.0);
   puthash(key, l, val);
-  l >>;
+  l
+>>;
 
 smacro procedure search_alglist(key, l);
   if null l then nil
@@ -169,6 +211,8 @@ smacro procedure search_alglist(key, l);
 symbolic procedure delete_from_alglist(key, l);
   if null l then nil
   else << remhash(key, l); l >>;
+
+!#endif
 
 !#else
 
