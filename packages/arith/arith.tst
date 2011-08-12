@@ -418,7 +418,7 @@ comment   Functions which require arguments which evaluate to integers.
 
 Function of one argument:  FACTORIAL
 
-Fumction of two arguments:  PERM, CHOOSE;$
+Function of two arguments:  PERM, CHOOSE;$
 
 factorial 10;
 
