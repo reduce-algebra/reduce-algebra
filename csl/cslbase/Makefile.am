@@ -1368,7 +1368,7 @@ if canrun
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
                 -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
-		-- testlogs/test$(which).log -Dwhich=$(which) \
+		-- testlogs/test$(which).log -Dwhich=$(which)
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
