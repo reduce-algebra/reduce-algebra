@@ -673,6 +673,14 @@ symbolic procedure test_a_package names;
   begin
     scalar packge, logname, logtmp, logfile, start_time, start_gctime, gt;
     scalar redef, quitfn, oll, rr;
+    if not boundp '!*cpulimit or
+       not fixp !*cpulimit or
+       !*cpulimit < 1 then
+       !*cpulimit := if memq('jlisp, lispsystem!*) then 1000 else 180;
+    if not boundp '!*conslimit or
+       not fixp !*conslimit or
+       !*conslimit < 1 then
+       !*conslimit := 2000;
     princ "TESTING: "; print car names;
     window!-heading list!-to!-string explodec car names;
     !*backtrace := nil;
@@ -768,9 +776,8 @@ symbolic procedure test_a_package names;
 %          condition here.
 
        rr := resource!-limit(list('in_list1, mkquote packge, t),
-                             (if memq('jlisp, lispsystem!*) then 1000
-                              else 180),  % allow 15 or 3 minutes per test
-                             200,  % allow 200 megaconses
+                             !*cpulimit, % CPU time per test
+                             !*conslimit,  % megaconses
                              10000,% allow ten megabytes of I/O
                              -1);  % Do not limit Lisp-level errors at all 
        erfg!* := nil;
@@ -840,6 +847,14 @@ symbolic procedure complete_tests names;
     scalar packge, tfile, logname, logfile, logtmp,
            start_time, start_gctime, gt, rr;
     scalar date1, date2, date3, oll;
+    if not boundp '!*cpulimit or
+       not fixp !*cpulimit or
+       !*cpulimit < 1 then
+       !*cpulimit := if memq('jlisp, lispsystem!*) then 1000 else 180;
+    if not boundp '!*conslimit or
+       not fixp !*conslimit or
+       !*conslimit < 1 then
+       !*conslimit := 2000;
     !*backtrace := nil;
     !*errcont := t;
     !*extraecho := t;    % Ensure standard environment for the test...
@@ -891,8 +906,8 @@ top:
           putd('quit, 'expr, 'posn);
           !*errcont := t;
           rr := resource!-limit(list('in_list1, mkquote tfile, t),
-                                300,  % allow 5 minutes per test
-                                200,  % allow 200 megaconses
+                                !*cpulimit,
+                                !*conslimit,
                                 10000,% allow ten megabytes of I/O
                                 -1);  % Do not limit Lisp-level errors at all 
           erfg!* := nil;
@@ -949,6 +964,14 @@ symbolic procedure profile_compare_fn(p, q);
 symbolic procedure profile_a_package names;
   begin
     scalar packge, oll, w, w1, w2, quitfn, !*errcont, rr;
+    if not boundp '!*cpulimit or
+       not fixp !*cpulimit or
+       !*cpulimit < 1 then
+       !*cpulimit := if memq('jlisp, lispsystem!*) then 1000 else 180;
+    if not boundp '!*conslimit or
+       not fixp !*conslimit or
+       !*conslimit < 1 then
+       !*conslimit := 2000;
     princ "PROFILING: "; print car names;
     !*backtrace := nil;
     !*errcont := t;
@@ -977,8 +1000,8 @@ symbolic procedure profile_a_package names;
     rr := resource!-limit(list('errorset,
                                mkquote list('in_list1, mkquote packge, t),
                                nil, nil),
-                          300,  % allow 5 minutes per test
-                          200,  % allow 200 megaconses
+                          !*cpulimit,
+                          !*conslimit,
                           10000,% allow ten megabytes of I/O
                           -1);  % Do not limit Lisp-level errors at all 
     wrs w;          rds w1;

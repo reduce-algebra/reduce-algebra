@@ -1278,6 +1278,7 @@ if canrun
 	mkdir -p buildlogs
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) \
+                -Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
 # I preserve the previous profile.dat as profile.dat.old
 	-cp $(gensrc)/profile.dat $(gensrc)/profile.dat.old
@@ -1352,6 +1353,7 @@ if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
+                -Dcpulimit=$cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
 	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
@@ -1365,7 +1367,9 @@ if canrun
 	mkdir -p testlogs
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
-		-- testlogs/test$(which).log -Dwhich=$(which)
+                -Dcpulimit=$cpulimit) -Dconslimit=$(conslimit) \
+		-- testlogs/test$(which).log -Dwhich=$(which) \
+                -Dcpulimit=$cpulimit) -Dconslimit=$(conslimit)
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -1375,7 +1379,8 @@ if canrun
 	mkdir -p testlogs
 	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) \
-		-- testlogs/test$(which).log -Dwhich=$(which)
+		-- testlogs/test$(which).log -Dwhich=$(which) \
+                -Dcpulimit=$cpulimit) -Dconslimit=$(conslimit)
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
