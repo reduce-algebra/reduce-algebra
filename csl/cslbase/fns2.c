@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 514afb27 10-Aug-2011 */
+/* Signature: 479d19c4 13-Aug-2011 */
 
 #include "headers.h"
 
@@ -3186,7 +3186,7 @@ Lisp_Object Lreverse(Lisp_Object nil, Lisp_Object a)
     return onevalue(r);
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_ASSOC
 static int64_t assoc_calls = 0, assoc_length = 0, assoc_max = 0; //@@
 #endif
 
@@ -3196,7 +3196,7 @@ Lisp_Object Lassoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     Lisp_Object save_b = b;
     int pos = 0;
 #endif
-#ifdef DEBUG
+#ifdef DEBUG_ASSOC
     int64_t this_assoc = 0;
     if ((assoc_calls % 1000) == 999)
         term_printf("Assoc %.1f calls %.3f av length %.1f max\n",
@@ -3208,7 +3208,7 @@ Lisp_Object Lassoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   Lisp_Object c = qcar(b);
-#ifdef DEBUG
+#ifdef DEBUG_ASSOC
             assoc_length++;
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
 //!!        if (assoc_max > 1000) return aerror("length for assoc");
@@ -3222,7 +3222,7 @@ Lisp_Object Lassoc(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     {   Lisp_Object c = qcar(b);
         if (consp(c))
         {   Lisp_Object cc = qcar(c);
-#ifdef DEBUG
+#ifdef DEBUG_ASSOC
             assoc_length++;
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
 //!!        if (assoc_max > 1000) return aerror("length for assoc");
