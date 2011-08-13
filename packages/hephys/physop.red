@@ -254,9 +254,24 @@ symbolic procedure multf(u,v); % changed
        return if null x then y else lpow v .* x .+ y
    end;
 
+%symbolic procedure noncomp2f u;
+% if domainp u then nil
+%  else noncomp2 mvar u or noncomp2f lc u or noncomp2f red u;
+
 symbolic procedure noncomp2f u;
- if domainp u then nil
-  else noncomp2 mvar u or noncomp2f lc u or noncomp2f red u;
+% I found an example where this was absolutely a hot-spot: so I have
+% transcribed from noncom2 to put that in-line here and I have explicitly
+% turned the recursion into an interation in the CDR direction...
+  begin
+    scalar v;
+top:if domainp u then return nil
+    else if atom (v := mvar u) then <<
+      if flagp(v, 'noncom) then return t >>
+    else if flagp(car v, 'noncom) then return t
+    else if noncomp2f lc u then return t;
+    u := red u;
+    go to top
+  end; 
 
 symbolic procedure opmtch!* u;
 % same as opmtch but turns subfg!* on
