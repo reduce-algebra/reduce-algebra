@@ -36,15 +36,15 @@ lisp <<
 
 module clsl;
 
-typedef formula checked by formulap;
-typedef slp checked by slpp;
-typedef list checked by listp;
-typedef number checked by numberp;
+struct formula checked by formulap;
+struct slp checked by slpp;
+struct list checked by listp;
+struct number checked by numberp;
 
 procedure cl_satnum(slp);
    for each line in slp sum rl_atnum sll_rhs line;
 
-assert cl_satnum: (slp) -> number;
+declare cl_satnum: (slp) -> number;
 
 procedure cl_ssimpl(slp);
    begin scalar old;
@@ -59,14 +59,14 @@ procedure cl_ssimpl1(slp);
    sl_reduce for each line in slp collect
       sll_mkx(sll_lhs line,rl_simpl(sll_rhs line,nil,-1));
 
-assert cl_ssimpl: (slp) -> slp;
+declare cl_ssimpl: (slp) -> slp;
 
 procedure cl_straightify(f);
    % [f] is a formula. Returns an SLPROG. The result is a minimal SLPROG
    % equivalent to [f].
    cl_ssimpl cl_straightify1 {sll_mk cl_simpl(f,nil,-1)};
 
-assert cl_straightify: (formula) -> slp;
+declare cl_straightify: (formula) -> slp;
 
 procedure cl_sstraightify(slp);
    cl_ssimpl cl_straightify1  cl_ssimpl slp;
@@ -95,7 +95,7 @@ procedure cl_straightify1(slp);
       return slp
    end;
 
-assert cl_straightify1: (slp) -> slp;
+declare cl_straightify1: (slp) -> slp;
 
 procedure cl_sreplace(slp,sal);
    if sal then
@@ -111,7 +111,7 @@ procedure cl_dcollect(slp,n);
       for each sl in slp collect cl_dcollect1(sll_rhs sl,n),
       function plus2);
 
-assert cl_dcollect: (slp,number) -> list;
+declare cl_dcollect: (slp,number) -> list;
 
 procedure cl_dcollect1(f,n);
    % Recursive subroutine of cl_dcollect for one single SL. [sth] is a
@@ -138,14 +138,14 @@ procedure cl_dcollect1(f,n);
       rederr {"something wrong in cl_dcollect1:",f}
    end;
 
-assert cl_dcollect1: (any,number) -> list;
+declare cl_dcollect1: (any,number) -> list;
 
 procedure cl_sldepth(f);
    % Wrapper for cl_depth, which modifies the depth of SLVs from 0 to
    % -1.
    if eqcar(f,'slv) then -1 else cl_depth f;
 
-assert cl_sldepth: (any) -> number;
+declare cl_sldepth: (any) -> number;
 
 procedure cl_spnf(slp);
    begin scalar tslp,lst;
