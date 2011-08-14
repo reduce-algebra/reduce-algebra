@@ -40,15 +40,15 @@ create!-package('(assert assertcheckfn),nil);
 
 global '(assert_functionl!* exlist !*comp);
 
-fluid '(!*assert !*assertstatistics assertstatistics!* lispsystem!*);
+fluid '(!*assert !*assertstatistics assertstatistics!* lispsystem!* !*msg);
 
 switch assert,assertbreak,assertstatistics;
 
-% The switch assert is a hook to make all stats introduced here return
-% nil thus turning them into comments. Note that even when it is on,
-% typedefs and assertions only modify property lists but do not change
-% the behaviour of the system unless assert_install or
-% assert_install_all is used. I thus switch it on by default for now.
+% The switch assert is a hook to make all stats introduced here return nil thus
+% turning them into comments. Note that even when it is on, structs and
+% assertions only modify property lists but do not change the behaviour of the
+% system unless assert_install or assert_install_all is used. I thus switch it
+% on by default for now.
 on1 'assert;
 
 off1 'assertbreak;
@@ -148,10 +148,14 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
 %	 {"argument",typeno,"of",fn,"invalid as",type,":",arg};
 	 {"assertion",assert_format(fn,argtypel,restype),
 	    "violated by",mkid('arg,typeno),arg};
-      if !*assertbreak then
+      if !*assertbreak then <<
+	 if 'psl memq lispsystem!* and !*backtrace then
+	    backtrace();
 	 rederr msg
-      else
+      >> else <<
+	 prin2 "!*msg="; prin2t !*msg;
 	 lprim msg
+      >>
    end;
 
 procedure assert_format(fn,argtypel,restype);
@@ -170,8 +174,8 @@ procedure assert_format(fn,argtypel,restype);
       return compress ass
    end;
 
-procedure assert_typedefstat();
-   % The parser for typedef. Returns a form that stores the type
+procedure assert_structstat();
+   % The parser for struct. Returns a form that stores the type
    % checking function on the property list of the type.
    begin scalar type,cfn;
       type := scan();
@@ -183,18 +187,18 @@ procedure assert_typedefstat();
       	 return nil
       >>;
       if cursym!* neq 'checked then
-	 rederr {"expecting 'checked by' in typedef but found",cursym!*};
+	 rederr {"expecting 'checked by' in struct but found",cursym!*};
       if scan() neq 'by then
-	 rederr {"expecting 'by' in typedef but found",cursym!*};
+	 rederr {"expecting 'by' in struct but found",cursym!*};
       cfn := scan();
       if not flagp(scan(),'delim) then
-	 rederr {"expecting end of typedef but found",cursym!*};
+	 rederr {"expecting end of struct but found",cursym!*};
       if not !*assert then
 	 return nil;
       return {'put,mkquote type,''assert_checkfn,mkquote cfn}
    end;
 
-put('typedef,'stat,'assert_typedefstat);
+put('struct,'stat,'assert_structstat);
 
 operator assert_analyze;
 
@@ -247,7 +251,7 @@ procedure assert_analyze();
 %%       return {'assert_check,fn,'list . argtypel,restype}
 %%    end;
 
-procedure assert_stat();
+procedure assert_declarestat();
    % The parser for assert. Returns forms that define a suitable wrapper
    % function, store relevant information on the property list of the
    % original function, and add the original function to the global list
@@ -310,7 +314,7 @@ procedure assert_stat1();
       return reversip argtypel
    end;
 
-put('assert,'stat,'assert_stat);
+put('declare,'stat,'assert_declarestat);
 
 procedure assert_install(fnl);
    % This is parsed as stat rlis, i.e., it takes a comma-separated list
