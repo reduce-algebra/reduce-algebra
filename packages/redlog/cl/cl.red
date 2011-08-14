@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 lisp <<
    fluid '(cl_rcsid!* cl_copyright!*);
    cl_rcsid!* := "$Id$";
-   cl_copyright!* := "(c) 1995-2009 A. Dolzmann and T. Sturm"
+   cl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T Sturm"
 >>;
 
 module cl;
@@ -66,7 +66,7 @@ fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlidentify !*rlsichk !*rlsism !*rlsiexpla !*rlbnfsm !*rlverbose
    !*rlsiidem !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
    !*rlqegen !*rlbnfsac !*rltabib !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
-   !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
+   !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlqeapprox !*rlresi !*rlqeprecise
    !*rlqeaprecise !*slat);
 
 procedure cl_atfp(x);
