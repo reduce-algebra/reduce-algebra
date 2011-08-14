@@ -14,7 +14,7 @@
 %      copyright notice, this list of conditions and the following
 %      disclaimer in the documentation and/or other materials provided
 %      with the distribution.
-% 
+%
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 % "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 % LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -27,7 +27,7 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-   
+
 lisp <<
    fluid '(lr_rcsid!* lr_copyright!*);
    lr_rcsid!* := "$Id$";
@@ -59,7 +59,7 @@ procedure lr_statcounter();
    <<
       prin2 int2id 4
    >>;
-   
+
 procedure lr_mode();
    <<
       prin2 int2id 5
@@ -122,7 +122,7 @@ procedure lr_color(c);
       	 reversip('!" . int2id 2 . cdr reversip cdr explode c))
    else
       intern compress(int2id 1 . nconc(explode c,{int2id 2}));
-      
+
 procedure lr_uncolor(c);
    if stringp c then
       compress('!" . reversip('!" . cddr reversip cddr explode c))
@@ -191,7 +191,7 @@ if lr_pslp() then <<
    copyd('lr_compute!-prompt!-string!-orig,'compute!-prompt!-string);
    copyd('compute!-prompt!-string,'lr_compute!-prompt!-string)
 >>;
-   
+
 procedure lr_break_prompt();
    <<
       prin2 "break["; prin2 breaklevel!*; prin2 "]";

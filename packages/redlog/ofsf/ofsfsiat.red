@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_siat_rcsid!* ofsf_siat_copyright!*);
@@ -97,7 +97,7 @@ procedure ofsf_facequal!*(f,sop);
       ofsf_facequal f
    else
       ofsf_0mk2('equal,f);
-   
+
 procedure ofsf_facequal(f);
    % Left hand side factorization [equal] case.
    rl_smkn('or,for each x in cdr fctrf f collect ofsf_0mk2('equal,car x));
