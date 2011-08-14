@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@ lisp <<
    fluid '(cl_misc_rcsid!* cl_misc_copyright!*);
    cl_misc_rcsid!* :=
       "$Id$";
-   cl_misc_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
+   cl_misc_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
 >>;
 
 module clmisc;
