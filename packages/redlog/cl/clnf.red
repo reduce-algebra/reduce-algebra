@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 lisp <<
    fluid '(cl_nf_rcsid!* cl_nf_copyright!*);
    cl_nf_rcsid!* := "$Id$";
-   cl_nf_copyright!* := "(c) 1995-2009 by A. Dolzmann and T. Sturm"
+   cl_nf_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
 >>;
 
 module clnf;
