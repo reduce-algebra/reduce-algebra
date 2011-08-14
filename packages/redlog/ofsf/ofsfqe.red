@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
+% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@ lisp <<
    fluid '(ofsf_qe_rcsid!* ofsf_qe_copyright!*);
    ofsf_qe_rcsid!* :=
       "$Id$";
-   ofsf_qe_copyright!* := "(c) 1995-2009 A. Dolzmann T. Sturm, 2010 T. Sturm"
+   ofsf_qe_copyright!* := "(c) 1995-2009 A. Dolzmann T. Sturm, 2010-2011 T. Sturm"
 >>;
 
 module ofsfqe;
@@ -50,27 +50,23 @@ procedure ofsf_posqe(f,theo);
    end;
 
 procedure ofsf_posqea(f,theo);
-   begin scalar !*rlpos,posconds,res;
+   begin scalar !*rlpos;
       !*rlpos := t;
-      posconds := ofsf_posconds(cl_fvarl f,nil);
-      res := ofsf_qea(ofsf_posqe!-prep f,nconc(posconds,theo));
-      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
+      return ofsf_qea(ofsf_posqe!-prep f,theo)
    end;
 
 procedure ofsf_posgqe(f,theo,xvl);
    begin scalar !*rlpos,posconds,res;
       !*rlpos := t;
       posconds := ofsf_posconds(cl_fvarl f,nil);
-      res := ofsf_gqe(ofsf_posqe!-prep f,nconc(posconds,theo));
-      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
+      res := cl_gqe(ofsf_posqe!-prep f,nconc(posconds,theo),xvl);
+      return car res . cl_simpl(rl_smkn('and,cdr res . posconds),nil,-1)
    end;
 
 procedure ofsf_posgqea(f,theo,xvl);
-   begin scalar !*rlpos,posconds,res;
+   begin scalar !*rlpos;
       !*rlpos := t;
-      posconds := ofsf_posconds(cl_fvarl f,nil);
-      res := ofsf_gqea(ofsf_posqe!-prep f,nconc(posconds,theo));
-      return cl_simpl(rl_smkn('and,res . posconds),nil,-1)
+      return cl_gqea(ofsf_posqe!-prep f,theo,xvl)
    end;
 
 procedure ofsf_posqe!-prep(f);
@@ -846,7 +842,19 @@ procedure ofsf_translat1(atf,v,theo);
    % [atf] is an atomic formula; [v] is a variable; [theo] is the
    % current theory. Returns an ALP or a pair of the key ['failed] and
    % an error message.
-   begin scalar w,rel;
+   begin scalar w,rel,kl,c,k;
+      if !*rlbrkcxk then <<
+	 kl := ofsf_varlat atf where !*rlbrkcxk=nil;
+	 c := t; while c and kl do <<
+	    k := pop kl;
+	    if pairp k and v memq rltools_lpvarl k then
+	       c := nil
+	 >>;
+	 if not c then <<
+	    lprim {"ignoring quantified variable",v,"in",k};
+	    return nil . nil
+	 >>
+      >>;
       w := ofsf_mktriplel(ofsf_arg2l atf,v);
       if car w eq 'failed then return w;
       rel := ofsf_op atf;
@@ -1442,9 +1450,19 @@ procedure ofsf_qefsolset(a,v,theo,ans,bvl);
    % solution set. [a] is an atomic formula; [v] is a variable; [theo]
    % is the current theory; [ans] is Boolean; [bvl] is a list of
    % variables. Returns an IGRV.
-   begin scalar w;
+   begin scalar w,k,c;
       if ofsf_op a neq 'equal then
 	 return '(failed . nil);
+      if !*rlbrkcxk then <<
+	 w := ofsf_varlat a where !*rlbrkcxk=nil;
+	 c := t; while w and c do <<
+	    k := pop w;
+	    if pairp k and v memq rltools_lpvarl k then
+	       c := nil
+	 >>;
+	 if not c then
+ 	    return '(failed . nil)
+      >>;
       w := ofsf_varlat a;
       if v memq w then
       	 return  ofsf_findeqsol(a,v,theo,ans,bvl);
@@ -1672,139 +1690,6 @@ procedure ofsf_croot(u,n);
 procedure ofsf_preprexpr(r);
    quotsq(!*f2q addf(car r,multf(cadr r,numr simp {'sqrt,prepf caddr r})),
       !*f2q cadddr r);
-
-procedure ofsf_decdeg(f);
-   % Ordered field standard form decrease degrees. [f] is a formula.
-   % Returns a formula equivalent to [f], hopefully decreasing the
-   % degrees of the bound variables.
-   car ofsf_decdeg0 cl_rename!-vars f;
-
-procedure ofsf_decdeg0(f);
-   begin scalar op,w,gamma,newmat,dvl,nargl;
-      op := rl_op f;
-      if rl_boolp op then <<
-	 nargl := for each subfo in rl_argn f collect <<
-   	    w := ofsf_decdeg0 subfo;
-	    dvl := nconc(dvl,cdr w);
-	    car w
-	 >>;
-	 return rl_mkn(op,nargl) . dvl
-      >>;
-      if rl_quap op then <<
-	 w := ofsf_decdeg0 rl_mat f;
-	 dvl := cdr w;
-	 w := ofsf_decdeg1(car w,{rl_var f});
-	 dvl := nconc(dvl,cdr w);
-	 newmat := if null cdr w or not evenp cdr car cdr w then
-	    car w
-	 else <<
-	    gamma := ofsf_0mk2('geq,numr simp car car cdr w);
-	    rl_mkn(if op eq 'ex then 'and else 'impl,{gamma,car w})
-	 >>;
-	 return rl_mkq(op,rl_var f,newmat) . dvl
-      >>;
-      % [f] is not complex.
-      return f . nil
-   end;
-
-procedure ofsf_decdeg1(f,vl);
-   % Ordered field standard form decremet degrees. [f] is a formula;
-   % [vl] is a list of variables $v$ such that $v$ does not occur
-   % boundly in [f], or ['fvarl]. Returns a pair $(\phi . l)$; $\phi$
-   % is a formula, and $l$ is a list of pairs $(v . d)$ where $v$ in
-   % [vl] and $d$ is an integer. We have $\exists [vl] [f]$ equivalent
-   % to $\exists [vl] (\phi \land \bigwedge_{(v . d) \in [vl]}(v^d
-   % \geq 0))$, where $\phi$ is obtained from [f] by substituting $v$
-   % for $v^d$ for each $(v . d)$ in $l$. ['fvarl] stands for the list
-   % of all free variables in [f].
-   begin scalar dvl; integer n;
-      if vl eq 'fvarl then
-	 vl := cl_fvarl1 f;
-      for each v in vl do <<
-	 n := ofsf_decdeg2(f,v);
-	 if n>1 then <<
-	    f := ofsf_decdeg3(f,v,n);
-	    dvl := (v . n) . dvl
-	 >>
-      >>;
-      return f . dvl
-   end;
-
-procedure ofsf_decdeg2(f,v);
-   % Ordered field standard form decrement degree subroutine. [f] is a
-   % formula; [v] is a variable. Returns an INTEGER $n$. The degree of [v]
-   % in [f] can be decremented using the substitution $[v]^n=v$.
-   begin scalar a,w,atl,dgcd,!*gcd,oddp;
-      !*gcd := T;
-      atl := cl_atl1 f;
-      dgcd := 0;
-      while atl and dgcd neq 1 do <<
-	 a := car atl;
-	 atl := cdr atl;
-	 w := ofsf_ignshift(a,v);
-	 if w eq 'odd and null oddp then
-	    oddp := 'odd
-	 else if null w then <<
-	    a := sfto_reorder(ofsf_arg2l a,v);
-	    while (not domainp a) and (mvar a eq v) and dgcd neq 1 do <<
-	       dgcd := gcdf(dgcd,ldeg a);
-	       a := red a
-	    >>
-      	 >>;
-	 if dgcd > 0 and oddp eq 'odd then <<
-	    oddp := T;
-	    while w := quotf(dgcd,2) do
-	       dgcd := w
-	 >>
-      >>;
-      if dgcd = 0 then
-	 return 1;
-      return dgcd
-   end;
-
-procedure ofsf_transform(f,v);
-   % Ordered field standard form transform formula. [f] is a
-   % quantifier-free formula; [v] is a variable. Returns a pair $(\phi
-   % . a)$. $\phi$ is a formula such that $\exists [v]([f])$ is
-   % equivalent to $\exists [v](\phi)$. $a$ is either [nil] or a pair
-   % $([v] . d)$. If $a$ is not [nil] then the degree $d'$ of [v] in
-   % [f] is reduced to $d'/d$. If $a$ is nil then $[f]=\phi$.
-   begin scalar dgcd;
-      dgcd := ofsf_decdeg2(f,v);
-      if dgcd = 1 then
-	 return f . nil;
-      if !*rlverbose then ioto_prin2 {"(",v,"^",dgcd,")"};
-      f := ofsf_decdeg3(f,v,dgcd);
-      if evenp dgcd then
-	 f := rl_mkn('and,{ofsf_0mk2('geq,numr simp v),f});
-      return f . (v . dgcd)
-   end;
-
-procedure ofsf_ignshift(at,v);
-   % Orderd field standard form ignore shift. [at] is an atomic
-   % formula; [v] is a variable. Returns [nil], ['ignore], or ['odd].
-   begin scalar w;
-      w := sfto_reorder(ofsf_arg2l at,v);
-      if not domainp w and null red w and mvar w eq v then
-	 if !*rlpos or ofsf_op at memq '(equal neq) or evenp ldeg w then
-	    return 'ignore
-	 else
-	    return 'odd
-   end;
-
-procedure ofsf_decdeg3(f,v,n);
-   % Ordered field standard form decrement degree. [f] is a formula;
-   % [v] is a variable; [n] is an integer. Returns a formula.
-   cl_apply2ats1(f,'ofsf_decdegat,{v,n});
-
-procedure ofsf_decdegat(atf,v,n);
-   % Ordered field standard form decrement degree atomic formula. [f]
-   % is an atomic formula; [v] is a variable; [n] is an integer. Returns
-   % an atomic formula.
-   if ofsf_ignshift(atf,v) then
-      atf
-   else
-      ofsf_0mk2(ofsf_op atf,sfto_decdegf(ofsf_arg2l atf,v,n));
 
 procedure ofsf_updatr(atr,upd);
    % Ordered field standard form update answer translation. [atr] is
