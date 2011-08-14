@@ -148,14 +148,10 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
 %	 {"argument",typeno,"of",fn,"invalid as",type,":",arg};
 	 {"assertion",assert_format(fn,argtypel,restype),
 	    "violated by",mkid('arg,typeno),arg};
-      if !*assertbreak then <<
-	 if 'psl memq lispsystem!* and !*backtrace then
-	    backtrace();
+      if !*assertbreak then
 	 rederr msg
-      >> else <<
-	 prin2 "!*msg="; prin2t !*msg;
+      else
 	 lprim msg
-      >>
    end;
 
 procedure assert_format(fn,argtypel,restype);
