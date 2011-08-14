@@ -39,6 +39,8 @@ module rltools;
 
 create!-package('(rltools ioto lto sfto),nil);
 
+fluid '(!*rlbrkcxk);
+
 exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
    ioto_cterpri,ioto_cplu,ioto_realtime,ioto_flush,ioto_datestamp,
    lto_insert,lto_insertq,lto_mergesort,lto_catsoc,lto_natsoc,lto_cassoc,
@@ -204,6 +206,13 @@ procedure rltools_dotdot(s);
       repeat w := cdr w until eqcar(w,'!/);
       return compress reversip('!" . w)
    end;
+
+procedure rltools_lpvarl(u);
+   if idp u then
+      {u}
+   else if pairp u then
+      for each v in cdr u join
+ 	 rltools_lpvarl v;
 
 endmodule;  % [rltools]
 
