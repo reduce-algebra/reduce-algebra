@@ -187,14 +187,8 @@ procedure rl_simpbq(f);
 
 procedure rl_qvarchk(v);
    % Syntax-check quantified variable.
-   if null v then
-      typerr("nil","quantified variable")
-   else if numberp v then
-      typerr({"number",v},"quantified variable")
-   else if stringp v then
-      typerr({"string",v},"quantified variable")
-   else if pairp v then
-      typerr({"complex expression",v},"quantified variable");
+   if not sfto_kernelp v or (!*rlbrkcxk and pairp v) then
+      typerr(v,"quantified variable");
 
 procedure rl_simp!*fof(u);
    % Reduce logic simp [!*fof] operator. [u] is of the form
@@ -222,6 +216,7 @@ procedure rl_resimp(u);
       if rl_quap op then <<
       	 if (w := rl_gettype(rl_var u)) then
  	    typerr({w,rl_var u},"quantified variable");
+	 rl_qvarchk rl_var u;
       	 return rl_mkq(op,rl_var u,rl_resimp rl_mat u)
       >>;
       if rl_bquap op then <<
@@ -747,6 +742,19 @@ procedure rl_s2a!-struct(l);
 procedure rl_a2s!-pt(u);
    for each x in cdr reval u collect
       cadr x . caddr x;
+
+procedure rl_a2s!-aqepoints(u);
+   begin scalar w;
+      return for each x in cdr reval u collect <<
+	 w := caddr x;
+	 if floatp w then
+	    rederr "floats not supported yet";
+	 w := simp w;
+	 if not (numberp numr w and numberp denr w) then
+	    typerr(caddr x,"rational number");
+      	 cadr x . w
+      >>
+   end;
 
 procedure rl_s2a!-idlist(l);
    'list . l;
