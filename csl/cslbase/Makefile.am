@@ -1373,6 +1373,20 @@ else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
 
+if valgrind
+
+countall:	reduce.img
+	mkdir -p testlogs
+	valgrind --tool=exp-bbv --instr-count-only=yes \
+		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+                -Dcpulimit=30000 -Dconslimit=$(conslimit) \
+		-- testlogs/countreduce.log
+
+
+
+endif valgrind
+
 test1:	reduce.img
 if canrun
 	mkdir -p testlogs
@@ -1383,6 +1397,18 @@ if canrun
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
+
+if valgrind
+
+count1:	reduce.img
+	mkdir -p testlogs
+	valgrind --tool=exp-bbv --instr-count-only=yes \
+		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
+		-Dno_init_file -D@srcdir=$(CYGSRC) \
+		-- testlogs/count$(which).log -Dwhich=$(which) \
+                -Dcpulimit=30000 -Dconslimit=$(conslimit)
+
+endif valgrind
 
 checkall:	reduce.img
 if canrun

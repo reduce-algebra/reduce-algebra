@@ -478,6 +478,7 @@ then
   AC_CHECK_PROGS(SED,[gsed sed],[sed])
 fi
 
+AC_CHECK_PROGS(VALGRIND, [valgrind], [x])
 
 AC_ARG_WITH(fox-pending,
   AC_HELP_STRING([--with-fox-pending],
@@ -1453,6 +1454,7 @@ AM_CONDITIONAL(wxbuiltin,test "x$with_wx" = "xbuiltin")
 AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
+AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 
 AC_OUTPUT
 
