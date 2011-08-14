@@ -41,7 +41,8 @@ module ofsf;
 % ['equal], ['neq], ['greaterp], ['lessp], ['geq], ['leq].
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
-   ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe),
+   ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
+   ofsfdecdeg),
    nil);
 
 load!-package 'redlog;
@@ -94,7 +95,7 @@ fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlhqetheory !*rlhqegbred !*rlhqeconnect !*rlhqestrconst !*rlhqegbdimmin
    !*rlhqegen !*cgbfaithful !*rlqeaprecise !*rlqefilterbounds !*rlpos
    !*rlsifaco !*rlqeans !*rlqelog rlqelog!* !*rlqeprecise !*rlqevarseltry
-   !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg);
+   !*rlqefbqepcad !*rlqefbmma !*rlqefbslfq !*msg !*rlbrkcxk);
 
 fluid '(!*rlqegen1 !*rlcadmcproj !*rlpscsgen); % temporary for CAD
 fluid '(ofsf_hqetheo!* ofsf_hqexvars!*);         % temporary for HQE
