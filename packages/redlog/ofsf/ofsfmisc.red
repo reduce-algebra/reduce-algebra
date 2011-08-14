@@ -100,7 +100,13 @@ procedure ofsf_varlat(atform);
    % Ordered field standard form atomic formula list of variables.
    % [atform] is an atomic formula. Returns the variables contained in
    % [atform] as a list.
-   kernels ofsf_arg2l atform;
+   begin scalar vl;
+      vl := kernels ofsf_arg2l atform;
+      if !*rlbrkcxk then
+	 vl := for each v in vl join
+	    rltools_lpvarl v;
+      return vl
+   end;
 
 procedure ofsf_varsubstat(atf,new,old);
    % Ordered field standard form substitute variable for variable in
