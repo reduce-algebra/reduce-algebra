@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_sism_rcsid!* ofsf_sism_copyright!*);
@@ -244,7 +244,7 @@ procedure ofsf_entry2at(op,entry,parasq);
       cl_identifyat ofsf_entry2at1(op,entry,parasq)
    else
       ofsf_entry2at1(op,entry,parasq);
-      
+
 procedure ofsf_entry2at1(op,entry,parasq);
    ofsf_0mk2(ofsf_clnegrel(car entry,op eq 'and),numr addsq(parasq,cdr entry));
 
