@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ofsf_xopt_rcsid!* ofsf_xopt_copyright!*);
@@ -36,16 +36,17 @@ lisp <<
 >>;
 
 module ofsfxopt;
-% Extended optimization. A very restricted form of the QE by virtual
-% substitution. Pnf of input must be an existential quantified weak
-% parametric linear formula containing only weak relations.
+% Ordered field standard form extended optimization. A very restricted
+% form of the QE by virtual substitution. Pnf of input must be an
+% existential quantified weak parametric linear formula containing only
+% weak relations.
 
 % Global variables: used only for statistics
 % fluid '(ofsf_xopt!-nodes!* ofsf_xopt!-delnodes!* ofsf_xopt!-plnodes!*
 %   ofsf_xopt!-fnodes!* ofsf_xopt!-thcof!* !*rlxoptqe);
 %
 % Switches used by xopt:
-% on1 'rlxopt;      % ofsf uses xopt procedures 
+% on1 'rlxopt;      % ofsf uses xopt procedures
 % on1 'rlxoptsb;    % select boundary type
 % on1 'rlxoptpl;    % passive list
 % on1 'rlxoptri;    % result inheritance
@@ -54,123 +55,160 @@ module ofsfxopt;
 % on1 'rlxoptses;   % structural elimination sets.
 
 %DS
-% <ANSL> ::= (...,<ANS>,...)
-% <ANS> ::= (<GD> . <PT>)
-% <GD> ::= "quantifier free formula"
-% <PT> ::= (...,<CT>,...)
-% <CT> ::= (<VAR>,<VALUE>);
-% <VALUE> ::= Lisp-Prefix
+% AnswerList ::= (..., Answer, ...)
+% <Answer> ::= (<Guard> . <Point>)
+% <Guard> ::= <Quantifier-Free Formula>
+% <Point> ::= (..., <Ct>, ...)
+% <Ct> ::= (<Variable> . <Value>)
+% <Value> ::= <LispPrefix>
 
 smacro procedure ofsf_xopt!-ansl!-mk(l);
+   % Answer list make. [l] is a list. Returns an <Answer List>.
    l;
 
 smacro procedure ofsf_xopt!-ansl!-ansl(ansl);
+   % Answer list extract answer list. [ansl] is an <Answer List>. Returns a list
+   % of <Answer>.
    ansl;
 
 smacro procedure ofsf_xopt!-ans!-mk(gd,pt);
+   % Answer make. [gd] is a <Guard>, [pt] is a <Point>. Returns an <Answer>.
    gd . pt;
 
 smacro procedure ofsf_xopt!-ans!-gd(ans);
+   % Answer extract guard. [ans] is an ANS. Returns a GD.
    car ans;
 
 smacro procedure ofsf_xopt!-ans!-pt(ans);
+   % Answer extract point. [ans] is an ANS. Returns a PT.
    cdr ans;
 
 smacro procedure ofsf_xopt!-pt!-ctl(pt);
+   % Point extract CTL. [pt] is PT. Returns a list of CT.
    pt;
 
 smacro procedure ofsf_xopt!-pt!-mk(ctl);
+   % Point make. [ctl] is a list of CT. Returns a PT.
    ctl;
 
 smacro procedure ofsf_xopt!-ct!-mk(v,vl);
+   % CT make. [v] is a variable, [vl] is Lisp prefix. Returns a CT.
    v . vl;
 
 smacro procedure ofsf_xopt!-ct!-var(ct);
+   % CT variable. [ct] is a CT. Returns a variable.
    car ct;
 
 smacro procedure ofsf_xopt!-ct!-value(ct);
+   % CT value. [ct] is a CT. Returns Lisp prefix.
    cdr ct;
 
 %DS
-% <CO> ::= (...,<CE>,...)
-% <CE> ::= (<VL>,<FORMULA>,<PT>,<PL>)
-% <VL> ::= "list of variables to be eliminated"
-% <FORMULA> ::= "RL-formula"
-% <PL> ::= (...,<ATOMIC_FORMULA>,...)
+% <CO> ::= (..., <CE>, ...)
+% <CE> ::= (<VL>, <FORMULA>, <PT>, <PL>)
+% <VL> ::= <List of variables> (* to be eliminated *)
+% <FORMULA> ::= <Redlog formula>
+% <PL> ::= (..., <Atomic formula>, ...)
 
 smacro procedure ofsf_xopt!-co!-mk(cel);
+   % Container make. [cel] is a CE. Returns a CO.
    cel;
 
 smacro procedure ofsf_xopt!-co!-cel(co);
+   % Container extract container element list. [co] is a CO. Returns a
+   % list of CE.
    co;
 
 smacro procedure ofsf_xopt!-ce!-mk(vl,f,pt,pl);
+   % Container element make. [vl] is a VL, [f] is a formula, [pt] is a
+   % PT and [pl] is a PL. Returns a CE.
    {vl,f,pt,pl};
 
 smacro procedure ofsf_xopt!-ce!-vl(ce);
+   % Container element extract variable list. [ce] is a CE. Returns a
+   % VL.
    car ce;
 
 smacro procedure ofsf_xopt!-ce!-f(ce);
+   % Container element extract formula. [ce] is a CE. Returns a formula.
    cadr ce;
 
 smacro procedure ofsf_xopt!-ce!-pt(ce);
+   % Container element extract point. [ce] is a CE. Returns a PT.
    caddr ce;
 
 smacro procedure ofsf_xopt!-ce!-pl(ce);
+   % Container element extract PL. [ce] is a CE. Returns a PL.
    cadddr ce;
 
-procedure ofsf_xopt!-co!-putl(co,cel);
-   for each ce in cel collect ofsf_xopt!-co!-put(co,ce);
-
 smacro procedure ofsf_xopt!-co!-put(co,ce);
+   % Container put. [co] is a CO, [ce] is a CE. Returns a CO.
    ce . co;
 
+procedure ofsf_xopt!-co!-putl(co,cel);
+   % Container put list. [co] is a CO. [cel] is a list of CE. Returns a
+   % CO.
+   for each ce in cel collect ofsf_xopt!-co!-put(co,ce);
+
 smacro procedure ofsf_xopt!-co!-get(co);
-   co;
+   % Container get. [co] is a CO. Returns a CO.
+   co;  % car co . cdr co;
 
 smacro procedure ofsf_xopt!-co!-length(co);
+   % Container length. [co] is a CO. Returns a number.
    length co;
 
 %DS
-% <CS> ::= (<UBL>,<LBL>,<EQL>)
-% <UBL> ::= (...,<CP>,...)  % "upper bounds"
-% <LBL> ::= (...,<CP>,...)  % "lower bounds"
-% <EQL> ::= (...,<CP>,...)  % "equations"
+% <CS> ::= (<UBL>, <LBL>, <EQL>)
+% <UBL> ::= (..., <CP>, ...)  % "upper bounds"
+% <LBL> ::= (..., <CP>, ...)  % "lower bounds"
+% <EQL> ::= (..., <CP>, ...)  % "equations"
 % <CP> ::= "minimal polynomial" | minf | pinf
 
 smacro procedure ofsf_xopt!-cs!-mk(ubl,lbl,eql);
+   % CS make. [ubl] us an UBL, [lbl] is an LBL, [eql] is an EQL. Returns
+   % a CS.
    {ubl,lbl,eql};
 
 smacro procedure ofsf_xopt!-cs!-ubl(cs);
+   % CS extract upper bound list. [cs] is a CS. Returns a UBL.
    car cs;
 
 smacro procedure ofsf_xopt!-cs!-lbl(cs);
+   % CS extract upper lower list. [cs] is a CS. Returns an LBL.
    cadr cs;
 
 smacro procedure ofsf_xopt!-cs!-eql(cs);
+   % CS extract equation list. [cs] is a CS. Returns EQL.
    caddr cs;
 
 smacro procedure ofsf_xopt!-cp!-mk(p);
+   % CP make. Returns a CP.
    p;
 
 smacro procedure ofsf_xopt!-cp!-p(cp);
+   % CP extract p. Returns a CP.
    cp;
 
 procedure ofsf_xopt!-cs!-null(cs);
+   % CS null. [cs] is a CS. Returns extended Boolean.
    null car cs and null cadr cs and null caddr cs;
 
 %DS
 % <ES> ::= (...,<CP>,...)
 
 smacro procedure ofsf_xopt!-es!-mk(cpl);
+   % Elimination set make. [cpl] is a list of CP. Returns an ES.
    cpl;
 
 smacro procedure ofsf_xopt!-es!-cpl(es);
+   % Elimination set CP list. [es] is an elimination set. Returns a list
+   % of CP.
    es;
 
 procedure ofsf_xopt!-check(f);
-   % Ordered field standard form extended optimization check. [f] is a
-   % formula. Returns non-[nil] if f can be eliminated by using xopt.
+   % Check. [f] is a formula. Returns non-[nil] if [f] can be eliminated
+   % by using xopt.
    begin scalar !*rlsiatadv,!*rlsitsqspl,!*rlsifac,!*rldavgcd,!*rlsipd,
 	 !*rlsipw;
       !*rlsipw := T;
@@ -178,13 +216,16 @@ procedure ofsf_xopt!-check(f);
    end;
 
 procedure ofsf_xopt!-check1(f,vl,p);
+   % Check subroutine. [f] is a formula, [vl] is a list of variables,
+   % [p] is boolean. Returns non-[nil] if [f] can be eliminated by using
+   % xopt.
    begin scalar op,argl,r;
       if f eq 'true or f eq 'false then
-	 return nil;	 
+	 return nil;
       op := rl_op f;
 %       if op eq 'ex or op eq 'all then
       if op eq 'ex  then
-	 return p and ofsf_xopt!-check1(rl_mat f,rl_var f . vl,T);      
+	 return p and ofsf_xopt!-check1(rl_mat f,rl_var f . vl,T);
       if op eq 'all  then
       	 return nil;
       if rl_cxp op then <<
@@ -201,18 +242,17 @@ procedure ofsf_xopt!-check1(f,vl,p);
    end;
 
 procedure ofsf_xopt!-qea(f);
-   % Ordered field standard form extended optimization quantifier
-   % elimination with answer. [f] is an existentially quantified, weak
-   % parametric, linear formula with only weak relations. Returns a
-   % list of pairs $(..., (c_i, A_i), ...)$. The $c_i$ are
-   % quantifier-free formulas, and the $A_i$ are lists of equations.
-   % Entry point for ofsf_qea.
+   % Quantifier elimination with answer. [f] is an existentially
+   % quantified, weak parametric, linear formula with only weak
+   % relations. Returns a list of pairs $(..., (c_i, A_i), ...)$. The
+   % $c_i$ are quantifier-free formulas, and the $A_i$ are lists of
+   % equations. Entry point for ofsf_qea.
    begin scalar !*rlxoptqe;
       return ofsf_xopt!-trans!-ansl ofsf_xopt!-xopt f
    end;
 
 procedure ofsf_xopt!-trans!-ansl(u);
-   % translate ansl. [u] is a ANSL. Returns a answer as required by
+   % Translate ansl. [u] is a ANSL. Returns a answer as required by
    % [cl_qea].
    for each ans in ofsf_xopt!-ansl!-ansl u collect
       {ofsf_xopt!-ans!-gd ans,
@@ -220,11 +260,10 @@ procedure ofsf_xopt!-trans!-ansl(u);
 	    {'equal,ofsf_xopt!-ct!-var ct,ofsf_xopt!-ct!-value ct}};
 
 procedure ofsf_xopt!-qe(f);
-   % Ordered field standard form extended optimization quantifier
-   % elimination with answer. [f] is an existentially quantified, weak
-   % parametric, linear formula with only weak relations. Returns a
-   % quantifier free formula equivalent to [f]. Entry point for
-   % ofsf_qe.
+   % Quantifier elimination with answer. [f] is an existentially
+   % quantified, weak parametric, linear formula with only weak
+   % relations. Returns a quantifier free formula equivalent to [f].
+   % Entry point for ofsf_qe.
    begin scalar !*rlxoptqe;
       !*rlxoptqe := T;
       return ofsf_xopt!-xopt f
@@ -351,11 +390,11 @@ procedure ofsf_xopt!-scset(f,v);
 	 ioto_prin2 "g";
       return car w
    end;
-      
+
 procedure ofsf_xopt!-scset1(f,v);
-   % Structural candidate set 1. [f] is a formula; [v] is a variable;
-   % Returns a pair $(\Gamma,\tau)$, where $\gamma$ is a CS and $\tau$
-   % is either ['finite] or [nil].
+   % Structural candidate set subroutine. [f] is a formula; [v] is a
+   % variable; Returns a pair $(\Gamma,\tau)$, where $\gamma$ is a CS
+   % and $\tau$ is either ['finite] or [nil].
    if rl_junctp rl_op f then
       ofsf_xopt!-scsetjunct(f,v)
    else if cl_atfp(f) then
@@ -411,7 +450,7 @@ procedure ofsf_xopt!-scsetat(at,v);
    % $\gamma$ is a CS and $\tau$ is either ['finite] or [nil].
    begin scalar bt,p;
       bt := ofsf_xopt!-boundarytype(at,v);
-      p := ofsf_arg2l at;      
+      p := ofsf_arg2l at;
       return if bt eq 'ub then
 	 ofsf_xopt!-cs!-mk({p},nil,nil) . nil
       else if bt eq 'lb then
@@ -452,7 +491,7 @@ procedure ofsf_xopt!-boundarytype(at,v);
 	    'ub;
    end;
 
-procedure ofsf_xopt!-csettrad(f,v);   
+procedure ofsf_xopt!-csettrad(f,v);
    % Candidate set traditional style. [f] is a formula, v is a
    % variable. Returns a CS.
    begin scalar atl,bt,ubl,lbl,eql,p;
@@ -482,8 +521,8 @@ procedure ofsf_xopt!-applypl(cs,pl);  % TODO: Keine Spezialfaelle von ESET durch
       	 ofsf_xopt!-applypl1(ofsf_xopt!-cs!-eql cs,pl));
 
 procedure ofsf_xopt!-applypl1(cpl,pl);
-   % Apply passive list 1. [cpl] is a list of CP's; [pl] is a PL.
-   % Returns a list of CP's.
+   % Apply passive list subroutine. [cpl] is a list of CP's; [pl] is a
+   % PL. Returns a list of CP's.
    for each cp in cpl join
       if cl_simpl(ofsf_0mk2('equal,ofsf_xopt!-cp!-p cp),pl,-1) eq 'false then <<
 	 ofsf_xopt!-plnodes!* := ofsf_xopt!-plnodes!*+1;
@@ -533,8 +572,8 @@ procedure ofsf_xopt!-succs(ce,es,v,theo);
    end;
 
 procedure ofsf_xopt!-succs1(ce,cp,v,npl,theo);
-   % Successors 1. [ce] is an CE; [cp] is a CP; [v] is a variable;
-   % [npl] is a PL; [theo] is a theory. Returns a CE.
+   % Successors subroutine. [ce] is an CE; [cp] is a CP; [v] is a
+   % variable; [npl] is a PL; [theo] is a theory. Returns a CE.
    begin scalar p,f,w;
       p := ofsf_xopt!-cp!-p cp;
       f := ofsf_xopt!-sub(ofsf_xopt!-ce!-f ce,v,p,theo);
@@ -564,8 +603,8 @@ procedure ofsf_xopt!-sub(f,v,sol,theo);  % TODO: Ist das teuer!
    end;
 
 procedure ofsf_xopt!-sub1(f,v,sol);
-   % Substitution 1. [f] is a formula; [v] is a variable; [sol] is a
-   % SF. Returns a formula.
+   % Substitution subroutine. [f] is a formula; [v] is a variable; [sol]
+   % is a SF. Returns a formula.
    if sol memq '(minf pinf) then
       cl_apply2ats1(f,'ofsf_xopt!-subiat,{v,sol})
    else
@@ -573,8 +612,9 @@ procedure ofsf_xopt!-sub1(f,v,sol);
       cl_apply2ats1(f,'ofsf_xopt!-subat,{v,sol});
 
 procedure ofsf_xopt!-subiat(atf,v,it);
-   % Substitution infinity. [atf] is an atomic formula; [v] is a
-   % variable; [it] is either ['pinf] or ['minf]. Returns a formula.
+   % Substitution of infinity into atomic formula. [atf] is an atomic
+   % formula; [v] is a variable; [it] is either ['pinf] or ['minf].
+   % Returns a formula.
    begin scalar rel,p,rp,pos;
       rel := ofsf_op atf;
       if rel eq 'equal then
@@ -626,8 +666,8 @@ procedure ofsf_xopt!-sublf(p,v,mp);
    end;
 
 procedure ofsf_xopt!-solv(p,v);
-   % Solve. [p] is either a SF, ['pinf], or ['minf]; [v] is a
-   % variable. Returns Lisp-prefix.
+   % Solve. [p] is either a SF, ['pinf], or ['minf]; [v] is a variable.
+   % Returns Lisp-prefix.
    begin scalar rp;
       if p memq '(minf pinf) then return p;
       rp := sfto_reorder(p,v);
@@ -635,8 +675,8 @@ procedure ofsf_xopt!-solv(p,v);
    end;
 
 procedure ofsf_xopt!-plsub(pl,v,sol);
-   % Passive list substitution. [pl] is a [PL]; [v] is a variable;
-   % [sol] is a SF. Returns a PL.
+   % Passive list substitution. [pl] is a [PL]; [v] is a variable; [sol]
+   % is a SF. Returns a PL.
    begin scalar w;
       if not !*rlxoptpl then return nil;
       if null pl then return nil;
@@ -700,7 +740,7 @@ procedure ofsf_xopt!-updco(cel,co,resl,theo);
 		  ofsf_xopt!-ce!-mk(ofsf_xopt!-ce!-vl ce,
 		     ff,
 		     ofsf_xopt!-ce!-pt ce,
-		     ofsf_xopt!-ce!-pl ce));	       
+		     ofsf_xopt!-ce!-pl ce));
 	    >>
 	 else
 	    co := ofsf_xopt!-ccoput(co,ce);
@@ -738,7 +778,7 @@ procedure ofsf_xopt!-resinherit(ce,resl,co,theo);  % TODO: Splitting OR's???
       if !*rlxoptric then
       	 co := ofsf_xopt!-thapplyco(co,theo);
 % mathprint rl_prepfof rl_smkn('and,theo);
-      if !*rlverbose then ioto_prin2 ".";	 
+      if !*rlverbose then ioto_prin2 ".";
       return {ce . resl,co,theo}
    end;
 
