@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
+% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 lisp <<
    fluid '(rl_rcsid!* rl_copyright!*);
    rl_rcsid!* := "$Id$";
-   rl_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
+   rl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
 >>;
 
 module redlog;
@@ -77,7 +77,7 @@ switch rlsism,rlsichk,rlsiidem,rlsiatadv,rlsipd,rlsiexpl,rlsiexpla,rlsiso,
    rlhqetfcfast,rlhqevb,rlhqevarsel,rlhqevarselx,rlhqedim0,rlhqetheory,
    rlhqegbred,rlhqeconnect,rlhqestrconst,rlhqegbdimmin,rlresi,rlqeasri,
    rlqeaprecise,rlqefilterbounds,rlsifaco,rlqelog,rlqeprecise,rlqevarseltry,
-   rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl;
+   rlsid,rlsiplugtheo,rlenffac,rlenffacne,rlplsimpl,rlbrkcxk;
 
 on1 'rlbrop;
 off1 'rlbnfsm;
@@ -191,9 +191,12 @@ on1 'rlsiplugtheo;      % Plug in constant values of variables in the
 off1 'rlenffac;         % For dcfsf.
 on1 'rlenffacne;        % For dcfsf.
 on1 'rlplsimpl;         % For dcfsf.
+off1 'rlbrkcxk;         % Break complex kernels.
 
 put('rlidentify,'simpfg,
    '((t (rl_identifyonoff t)) (nil (rl_identifyonoff nil))));
+
+put('rlbrkcxk,'simpfg,'((t (rmsubs)) (nil (rmsubs))));
 
 procedure quotelog(x); 'logical;
 
