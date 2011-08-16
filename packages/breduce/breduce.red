@@ -29,7 +29,7 @@
 %
 lisp <<
    fluid '(breduce_rcsid!* breduce_copyright!*);
-   breduce_rcsid!* := "$Id";
+   breduce_rcsid!* := "$Id$";
    breduce_copyright!* := "(c) 2008, 2011 T. Sturm"
 >>;
 

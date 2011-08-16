@@ -46,14 +46,12 @@ create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    nil);
 
 load!-package 'redlog;
-load!-package 'cl;
-load!-package 'rltools;
-load!-package 'linalg;
-load!-package 'matrix;
-load!-package 'factor;
-remflag('(load!-package),'eval);  % for bootstrapping
-load!-package 'cgb;
-flag('(load!-package),'eval);
+loadtime load!-package 'cl;
+loadtime load!-package 'rltools;
+loadtime load!-package 'linalg;
+loadtime load!-package 'matrix;
+loadtime load!-package 'factor;
+loadtime load!-package 'cgb;
 
 exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_simpat,ofsf_op,ofsf_arg2l,ofsf_arg2r,ofsf_argn,ofsf_mk2,ofsf_0mk2,

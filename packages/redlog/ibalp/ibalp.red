@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm
+% (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm, 2011 T.Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,13 +26,13 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(ibalp_rcsid!* ibalp_copyright!*);
    ibalp_rcsid!* := "$Id$";
    ibalp_copyright!* :=
-      "Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm"
+      "(c) 2003-2009 A. Dolzmann, A. Seidl, T. Sturm, 2011 T. Sturm"
 >>;
 
 module ibalp;
@@ -41,9 +41,9 @@ module ibalp;
 
 create!-package('(ibalp ibalpkapur ibalpqsat),nil);
 
-load!-package 'redlog;  % for rl_texmacsp()
-load!-package 'cl;
-load!-package 'rltools;
+load!-package 'redlog;
+loadtime load!-package 'cl;
+loadtime load!-package 'rltools;
 
 imports rltools,cl;
 
@@ -84,9 +84,9 @@ put('ibalp,'rl_params,'(
    (rl_simplat1!* . ibalp_simplat1)
    (rl_ordatp!* . ibalp_ordatp)
    (rl_termmlat!* . ibalp_termmlat)
-   (rl_op!* . ibalp_op) 
-   (rl_varsubstat!* . ibalp_substat) 
-   (rl_negateat!* . ibalp_negateat) 
+   (rl_op!* . ibalp_op)
+   (rl_varsubstat!* . ibalp_substat)
+   (rl_negateat!* . ibalp_negateat)
    (rl_qemkans!* . ibalp_qemkans)
    (rl_varlat!* . ibalp_varlat)
    (rl_qstrycons!* . cl_qstrycons)
@@ -124,7 +124,7 @@ put('ibalp,'rl_services,'(
    (rl_varl!* . cl_varl)
    (rl_fvarl!* . cl_fvarl)
    (rl_bvarl!* . cl_bvarl)
-   (rl_quine!* . cl_quine) 
+   (rl_quine!* . cl_quine)
    (rl_qe!* . cl_qe)
    (rl_qea!* . cl_qea)
    (rl_qsat!* . ibalp_qsat)
@@ -250,7 +250,7 @@ procedure ibalp_fancy!-pribnot(u);
       ibalp_fancy!-pribnot!-tm(u)
    else
       ibalp_fancy!-pribnot!-fm(u);
-	 
+
 procedure ibalp_fancy!-pribnot!-tm(u);
    <<
       fancy!-prin2 "(";
@@ -471,7 +471,7 @@ procedure ibalp_prepat(f);
    % Prep atomic formula. [f] is a IBALP atomic formula. Returns [f]
    % in Lisp prefix form.
    f;
-   
+
 procedure ibalp_resimpat(f);
    % Resimp atomic formula. [f] is an IBALP atomic formula. Returns the
    % atomic formula [f] with resimplified terms.
@@ -496,7 +496,7 @@ procedure ibalp_op(atf);
 procedure ibalp_atfp(f);
    % Atomic formula predicate. [f] is a
    % formula. Returns t is and only if [f] is an atomic formula.
-   ibalp_op f memq '(equal neq); 
+   ibalp_op f memq '(equal neq);
 
 procedure ibalp_arg1(atf);
    % Unary operator argument. [atf] is an atomic formula $R(t)$.
@@ -712,7 +712,7 @@ procedure ibalp_termmlat(at);
       if lhs = rhs then return {lhs . 2};
       return {lhs . 1,rhs . 1}
    end;
-      
+
 %(rl_varlat!* . ibalp_varlat))); %%% needs to be written in ibalpmisc.red
 
 %%% --- this part might become ibalpsiat.red --- %%%
@@ -756,10 +756,10 @@ procedure ibalp_term2fo(term);
       if rel eq 'bnot then return rl_mk1('not,ibalp_term2fo ibalp_arg1 term);
       if rel eq 'band then return
 	 rl_mkn('and,for each a in ibalp_argn term collect
-	    ibalp_term2fo a);      
+	    ibalp_term2fo a);
       if rel eq 'bor then return
 	 rl_mkn('or,for each a in ibalp_argn term collect
-	    ibalp_term2fo a);      
+	    ibalp_term2fo a);
       if rel eq 'bimpl then return rl_mk2('impl,ibalp_term2fo ibalp_arg2l term,
 	 ibalp_term2fo ibalp_arg2r term);
       if rel eq 'brepl then return rl_mk2('repl,ibalp_term2fo ibalp_arg2l term,
@@ -838,7 +838,7 @@ procedure ibalp_badvarsel(f,vl);
 	 >>;
       return if v then {v} else {car sort(vl,'ibalp_ordp)}
    end;
-      
+
 %
 % procedure ibalp_varsel(f,vl,theo);
 %    % Variable selection. [vl] is a list of variables; [f] is a
@@ -853,7 +853,7 @@ procedure ibalp_badvarsel(f,vl);
 % 	 gvp := not ibalp_goodvarp(f,v,{0,1});  % good var is bad var once more
 % 	 if !*ibalpbadvarsel then
 % 	    gvp := not gvp;
-% 	 if gvp then  
+% 	 if gvp then
 % 	    found := t
 %       >>;
 %       return v
@@ -873,7 +873,7 @@ procedure ibalp_badvarsel(f,vl);
 % 	 return deletip(ibalp_arg2r f,l);
 %       return l
 %    end;
-	 
+
 procedure ibalp_translat(atf,v,theo,pos,ans);
    % Translate atomic formula. [atf] is an atomic formula $\rho(t,0)$;
    % [v] is a variable; [theo] is the current theory; [pos], [ans] are

@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2008-2009 Thomas Sturm
+% (c) 2008-2011 Thomas Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -26,12 +26,12 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(mri_rcsid!* mri_copyright!*);
    mri_rcsid!* := "$Id$";
-   mri_copyright!* := "Copyright (c) 2008-2009 T. Sturm"
+   mri_copyright!* := "(c) 2008-2011 T. Sturm"
 >>;
 
 module mri;
@@ -39,10 +39,10 @@ module mri;
 
 create!-package('(mri mriqe),nil);
 
-load!-package 'cl;
+loadtime load!-package 'rltools;
+loadtime load!-package 'cl;
 load!-package 'pasf;
 load!-package 'ofsf;
-load!-package 'rltools;
 
 fluid '(!*msg !*rlverbose);
 
@@ -86,7 +86,7 @@ put('mri,'rl_services,'(
    (rl_atnum!* . cl_atnum)
    (rl_varlat!* . mri_varlat)
    (rl_atl!* . cl_atl)
-   (rl_subfof!* . cl_subfof)	 
+   (rl_subfof!* . cl_subfof)
    (rl_expand!* . mri_expand)
    (rl_qe!* . mri_qe)));
 
@@ -267,7 +267,7 @@ procedure mri_irsplit(k);
       if not eqcar(k,'floor) then
       	 return !*k2f k . nil;
       w := mri_irsplit1 mri_simplfloor numr simp cadr k;
-      return car w . if cdr w then !*k2f !*a2k {'floor,prepf cdr w} 
+      return car w . if cdr w then !*k2f !*a2k {'floor,prepf cdr w}
    end;
 
 procedure mri_irsplit1(k);
@@ -339,7 +339,7 @@ procedure mri_expand(f);
 
 procedure mri_bqp(f);
    smemq('bex,f) or smemq('ball,f);
-   
+
 endmodule;
 
 end;

@@ -42,12 +42,10 @@ module dcfsf;
 
 create!-package('(dcfsf dcfsfmisc dcfsfqe dcfsfsism dcfsfkacem),nil);
 
-load!-package 'rltools;
-load!-package 'cl;
-remflag('(load!-package),'eval);  % for bootstrapping
-load!-package 'cgb;
-flag('(load!-package),'eval);
-load!-package 'acfsf;
+loadtime load!-package 'rltools;
+loadtime load!-package 'cl;
+loadtime load!-package 'cgb;
+loadtime load!-package 'acfsf;
 
 exports dcfsf_simpterm,dcfsf_prepat,dcfsf_resimpat,dcfsf_lengthat,
    dcfsf_chsimpat,dcfsf_simpat,dcfsf_op,dcfsf_arg2l,dcfsf_arg2r,dcfsf_argn,

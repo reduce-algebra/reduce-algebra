@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(tplp_rcsid!* tplp_copyright!*);
@@ -42,8 +42,8 @@ module tplp;
 create!-package('(tplp tplpkapur),nil);
 
 load!-package 'redlog;  % for rl_texmacsp()
-load!-package 'cl;
-load!-package 'rltools;
+loadtime load!-package 'cl;
+loadtime load!-package 'rltools;
 
 imports rltools,cl;
 

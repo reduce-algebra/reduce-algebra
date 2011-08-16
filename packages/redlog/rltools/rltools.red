@@ -54,7 +54,7 @@ exports ioto_prin2,ioto_tprin2,ioto_prin2t,ioto_tprin2t,ioto_prtmsg,
 imports groebner,groebnr2;
 
 load!-package 'assert;
-off1 'assert;
+on1 'assert;
 
 !#if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
    fluid '(!*lower loadextentions!*);

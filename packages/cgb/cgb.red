@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(cgb_rcsid!* cgb_copyright!*);
@@ -66,13 +66,11 @@ procedure modulep(u);
    end;
 !#endif
 
-load!-package 'ezgcd;
+loadtime load!-package 'ezgcd;
 
-load!-package 'groebner;  % for torder
+loadtime load!-package 'groebner;  % for torder
 
-%if 'csl memq lispsystem!* or 'psl memq lispsystem!* then
-%   if modulep 'redlog then
-      load!-package 'redlog;
+load!-package 'redlog;
 
 switch cgbstat,cgbfullred,cgbverbose,cgbcontred,cgbgs,cgbreal,
    cgbsgreen,cgbfaithful;

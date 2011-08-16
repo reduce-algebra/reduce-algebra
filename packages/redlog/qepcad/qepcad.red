@@ -41,7 +41,7 @@ create!-package('(qepcad),nil);
 
 load!-package 'redlog;
 load!-package 'ofsf;
-load!-package 'rltools;
+loadtime load!-package 'rltools;
 
 fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
    !*utf8 !*nat qepcad_qepcad!* qepcad_slfq!* qepcad_wd!* qepcad_awk!*);

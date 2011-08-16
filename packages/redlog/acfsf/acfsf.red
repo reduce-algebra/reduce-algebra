@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(acfsf_rcsid!* acfsf_copyright!*);
@@ -42,11 +42,10 @@ module acfsf;
 create!-package(
    '(acfsf acfsfsiat acfsfsism acfsfbnf acfsfgs acfsfmisc acfsfqe),nil);
 
-load!-package 'rltools;
-load!-package 'cl;
-remflag('(load!-package),'eval);  % for bootstrapping
-load!-package 'cgb;
-flag('(load!-package),'eval);
+load!-package 'redlog;
+loadtime load!-package 'rltools;
+loadtime load!-package 'cl;
+loadtime load!-package 'cgb;
 
 exports acfsf_simpterm,acfsf_prepat,acfsf_resimpat,acfsf_lengthat,
    acfsf_chsimpat,acfsf_simpat,acfsf_op,acfsf_arg2l,acfsf_arg2r,acfsf_argn,

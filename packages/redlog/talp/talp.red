@@ -26,7 +26,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
+%
 
 lisp <<
    fluid '(talp_rcsid!* talp_copyright!*);
@@ -42,8 +42,8 @@ module talp;
 
 create!-package('(talp talpsiat talpmisc talpbnf talpsism talpqe),nil);
 
-load!-package 'cl;
-load!-package 'rltools;
+loadtime load!-package 'cl;
+loadtime load!-package 'rltools;
 
 exports talp_enter,talp_exit,talp_mkalop,talp_unmkalop,talp_get!-invs,
    talp_mkinvop,talp_getl,talp_getextl,talp_prepat,talp_lengthat,
@@ -123,7 +123,7 @@ put('talp,'rl_services,'(
    (rl_fvarl!* . cl_fvarl)
    (rl_bvarl!* . cl_bvarl)
    (rl_matrix!* . cl_matrix)
-   (rl_qe!* . talp_qe) 
+   (rl_qe!* . talp_qe)
    (rl_qea!* . talp_qea)
    (rl_simpl!* . cl_simpl) ));
 
@@ -169,7 +169,7 @@ procedure talp_enter(argl);
 
 procedure talp_exit();
    % Term algebra lisp prefix exit context. No arguments.
-   <<   
+   <<
       for each x in talp_getextl() do
 	 if cdr x neq 0 then talp_unmkalop car x;
       talp_lang!* := nil;
@@ -179,7 +179,7 @@ procedure talp_exit();
 procedure talp_mkalop(f);
    % Term algebra lisp prefix make algebraic operator. [f] is a dotted
    % pair of the form $(op arity)$. Returns an identifier.
-   <<   
+   <<
       f := if pairp car f then talp_mkinvop(cadar f,caddar f) else car f;
       algebraic operator f;
       f
@@ -213,7 +213,7 @@ procedure talp_getextl();
 procedure talp_prepat(atf);
    % Term algebra Lisp prefix prep atomic formula. [atf] is an atomic
    % formula.  Returns [atf] in Lisp prefix form.
-   if atf then 
+   if atf then
       {talp_op atf,talp_prepterm talp_arg2l atf, talp_prepterm talp_arg2r atf}
    else atf;
 
@@ -229,7 +229,7 @@ procedure talp_simpterm(term);
       if atom term then return term;
       obj := atsoc(talp_op term,talp_getextl());
       if null obj then rederr {talp_op term, "not declared as operator"};
-      arity := cdr obj; 
+      arity := cdr obj;
       if length (talp_fargl term) neq arity then
 	 rederr {talp_op term, "  defined as  ", arity, "- ary"}
       else obj := for each arg in talp_fargl term collect talp_simpterm arg;
@@ -256,7 +256,7 @@ procedure talp_simpat(atf);
       >> else <<
 	 rhs := talp_arg2r atf;
 	 lhs := talp_arg2l atf
-      >>;	 
+      >>;
       return talp_mk2(talp_op atf,lhs,rhs)
    end;
 
@@ -292,16 +292,16 @@ procedure talp_arg2r(at);
    caddr at;
 
 procedure talp_argl(f);
-   % Term algebra Lisp prefix argument list. [f] is a formula. 
+   % Term algebra Lisp prefix argument list. [f] is a formula.
    % Returns the list of arguments of [f].
    cdr f;
 
 procedure talp_invp(term);
    % Term algeba Lisp prefix ['inv]-term predicate. [term] is a
    % term. Returns t if [term] is a term $inv_{fs,no}(arg)$.
-   pairp term and not atsoc(talp_op term,talp_getl()) 
+   pairp term and not atsoc(talp_op term,talp_getl())
       and atsoc(talp_op term,talp_getextl());
-      
+
 procedure talp_invf(term);
    % Term algebra Lisp prefix ['inv]-term's function symbol. [term] is
    % a term $inv_{fs,no}(arg)$. Returns the corresponding function

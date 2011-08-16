@@ -47,8 +47,9 @@ create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
 fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*utf8);
 
 load!-package 'redlog;
-load!-package 'cl;
-load!-package 'rltools;
+loadtime load!-package 'cl;
+loadtime load!-package 'rltools;
+
 imports rltools,cl;
 
 fluid '(!*rlverbose secondvalue!*);

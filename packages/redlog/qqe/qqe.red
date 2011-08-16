@@ -43,8 +43,8 @@ module qqe;
 
 create!-package('(qqe qqetrans qqemisc qqesism qqeqe qqesiat qqeqemisc),nil);
 
-load!-package 'rltools;
 load!-package 'redlog;
+loadtime load!-package 'rltools;
 % load!-package 'qqe_ofsf;
 
 exports qqe_chsimpat;

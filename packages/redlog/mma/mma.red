@@ -40,7 +40,7 @@ create!-package('(mma),nil);
 
 load!-package 'redlog;
 load!-package 'ofsf;
-load!-package 'rltools;
+loadtime load!-package 'rltools;
 
 fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
    mma_wd!* mma_awk!*);
