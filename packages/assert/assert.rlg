@@ -1,31 +1,37 @@
-Fri Feb 18 21:27:25 2011 run on win32
+Tue Aug 16 12:18:48 2011 run on darwin11.0.0:x86_64
 symbolic;
 
 
 nil
 
 
-typedef any;
+struct any;
 *** type any is not checked 
 
 
 
 nil
 
-typedef number checked by numberp;
+struct number checked by numberp;
 
 
 numberp
 
-typedef sf checked by sfpx;
+struct sf checked by sfpx;
 
 
 sfpx
 
-typedef sq checked by sqp;
+struct sq checked by sqp;
 
 
 sqp
+
+
+declare hugo: (number,any) -> number;
+
+
+(hugo)
 
 
 procedure hugo(x1,x2);
@@ -35,12 +41,6 @@ procedure hugo(x1,x2);
 
 
 hugo
-
-
-assert hugo: (number,any) -> number;
-
-
-(hugo)
 
 
 assert_install hugo;
@@ -69,12 +69,12 @@ hugo(0,'x);
 x
 
 
-assert addf: (sf,sf) -> sf;
+declare addf: (sf,sf) -> sf;
 
 
 (addf hugo)
 
-assert addsq: (sq,sq) -> sq;
+declare addsq: (sq,sq) -> sq;
 
 
 (addsq addf hugo)
