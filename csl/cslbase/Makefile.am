@@ -1295,21 +1295,44 @@ $(gensrc)/profile.dat:
 	-mkdir -p $(gensrc)
 	$(CP) $(srcdir)/../profile.dat $(gensrc)
 
-c-code $(gensrc)/timestamp.dat:	$(bootstrapreducedep) $(gensrc)/profile.dat
-if canrun
+$(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
+	@rm -f $(gensrc)/make.tmp
+	@touch $(gensrc)/make.tmp
 	mkdir -p buildlogs
-	$(MAKE) bootstrapreduce.img
+	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
-else !canrun
-	echo Can not generate C code on this platfrom
-	echo Touching existing files to adjust datestamps
-	touch $(gensrc)/*
-endif !canrun
+	@mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
-$(generated_objects):	$(gensrc)/timestamp.dat
+# The following rule can lead to rache conditions with parallel make if
+# several generated files have been deleted but not the make.stamp file.
+# You should be able to recover reliably by going "make clean" followed
+# by "make".
+
+c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
+## Recover from the removal of $@
+	if test -f $@; then :; else \
+	  rm -f $(gensrc)/make.stamp; \
+	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
+	fi
+
+#c-code $(gensrc)/timestamp.dat:	$(bootstrapreducedep) $(gensrc)/profile.dat
+#if canrun
+#	mkdir -p buildlogs
+#	$(MAKE) bootstrapreduce.img
+#	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+#		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
+#		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
+#		-- buildlogs/c-code.log
+#else !canrun
+#	echo Can not generate C code on this platfrom
+#	echo Touching existing files to adjust datestamps
+#	touch $(gensrc)/*
+#endif !canrun
+
+#$(generated_objects):	$(gensrc)/timestamp.dat
 
 # full-c-code is a target only activated manually.
 
