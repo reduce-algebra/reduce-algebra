@@ -1169,13 +1169,13 @@ else !canrun
 	echo Can not build reduce.img on this platform.
 	echo Copying from $(gensrc)
 	-rm -rf reduce.img
-	cp $(gensrc)/reduce.img .
+	cp -r $(gensrc)/reduce.img .
 endif !canrun
 
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COM) $(reducedep) $(gensym)/timestamp.dat
+reduce.dir:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1192,7 +1192,7 @@ else !canrun
 	echo Can not build reduce.img on this platform
 	echo Copying from $(gensrc)
 	-rm -rf reduce.img
-	cp $(gensrc)/reduce.img .
+	cp -r $(gensrc)/reduce.img .
 endif !canrun
 
 bootstraprecompile:	bootstrapreduce.img
@@ -1458,21 +1458,37 @@ csl.dep:
 	touch csl.dep
 
 csl.img:	csl$(COM) $(csldep)
-	-$(RM) -f csl.img
+	-$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
 	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
-	if test -f csl.img/Contents/csl.img; \
-	then cp csl.img/Contents/csl.img $(gensrc); \
-	elif test -f csl.img; then cp csl.img $(gensrc); fi
+	if test -f csl.app/Contents/csl.img; \
+	then cp -r csl.app/Contents/csl.img $(gensrc); \
+	elif test -f csl.img; then cp -r csl.img $(gensrc); fi
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
 	-rm -rf csl.img
-	cp $(gensrc)/csl.img .
+	cp -r $(gensrc)/csl.img .
+endif !canrun
+
+
+csl.dir:	csl$(COM) $(csldep)
+	-$(RM) -rf csl.img
+if canrun
+	mkdir -p buildlogs
+	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
+		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
+		-- buildlogs/csl.img.log \
+		-j csl.dep
+else !canrun
+	echo Can not create csl.img on this platfrom
+	echo Copying from $(gensrc)
+	-rm -rf csl.img
+	cp -r $(gensrc)/csl.img .
 endif !canrun
 
 

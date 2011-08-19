@@ -2662,12 +2662,12 @@ reduce.img:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
 @canrun_FALSE@	echo Can not build reduce.img on this platform.
 @canrun_FALSE@	echo Copying from $(gensrc)
 @canrun_FALSE@	-rm -rf reduce.img
-@canrun_FALSE@	cp $(gensrc)/reduce.img .
+@canrun_FALSE@	cp -r $(gensrc)/reduce.img .
 
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COM) $(reducedep) $(gensym)/timestamp.dat
+reduce.dir:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
 	-$(RM) -rf reduce.img
 # I will make the REDUCE image file a directory rather than a single
 # file... This is achieved by specifying its name here with a trailing "/",
@@ -2682,7 +2682,7 @@ reduce.dir:	reduce$(COM) $(reducedep) $(gensym)/timestamp.dat
 @canrun_FALSE@	echo Can not build reduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
 @canrun_FALSE@	-rm -rf reduce.img
-@canrun_FALSE@	cp $(gensrc)/reduce.img .
+@canrun_FALSE@	cp -r $(gensrc)/reduce.img .
 
 bootstraprecompile:	bootstrapreduce.img
 @canrun_TRUE@	mkdir -p buildlogs
@@ -2899,19 +2899,31 @@ csl.dep:
 	touch csl.dep
 
 csl.img:	csl$(COM) $(csldep)
-	-$(RM) -f csl.img
+	-$(RM) -rf csl.img
 @canrun_TRUE@	mkdir -p buildlogs
 @canrun_TRUE@	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
 @canrun_TRUE@		-D@cslbase="$(CYGSRC)" \
 @canrun_TRUE@		-- buildlogs/csl.img.log \
 @canrun_TRUE@		-j csl.dep
-@canrun_TRUE@	if test -f csl.img/Contents/csl.img; \
-@canrun_TRUE@	then cp csl.img/Contents/csl.img $(gensrc); \
-@canrun_TRUE@	elif test -f csl.img; then cp csl.img $(gensrc); fi
+@canrun_TRUE@	if test -f csl.app/Contents/csl.img; \
+@canrun_TRUE@	then cp -r csl.app/Contents/csl.img $(gensrc); \
+@canrun_TRUE@	elif test -f csl.img; then cp -r csl.img $(gensrc); fi
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
 @canrun_FALSE@	-rm -rf csl.img
-@canrun_FALSE@	cp $(gensrc)/csl.img .
+@canrun_FALSE@	cp -r $(gensrc)/csl.img .
+
+csl.dir:	csl$(COM) $(csldep)
+	-$(RM) -rf csl.img
+@canrun_TRUE@	mkdir -p buildlogs
+@canrun_TRUE@	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
+@canrun_TRUE@		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
+@canrun_TRUE@		-- buildlogs/csl.img.log \
+@canrun_TRUE@		-j csl.dep
+@canrun_FALSE@	echo Can not create csl.img on this platfrom
+@canrun_FALSE@	echo Copying from $(gensrc)
+@canrun_FALSE@	-rm -rf csl.img
+@canrun_FALSE@	cp -r $(gensrc)/csl.img .
 
 save:	all
 	echo ARCHITECTURE=$(ARCHITECTURE)  NAME=$(NAME)

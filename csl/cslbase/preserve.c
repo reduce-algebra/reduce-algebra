@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 2ab6bba2 21-Jun-2010 */
+/* Signature: 43aa801c 19-Aug-2011 */
 
 #include "headers.h"
 
@@ -89,7 +89,21 @@
  * schemes can not do MUCH better.
  */
 
-int32_t compression_worth_while = 128;
+/*
+ * int32_t compression_worth_while = 128;
+ *
+ * Well for many years the above compression probably made sense, and
+ * the space saving in the image file was useful. However my judgement now
+ * is that disc space has become so cheap that the slow-down introduced
+ * by this is no longer a sensible cost to pay. I achieve faster PRESERVE
+ * and slightly faster start-up by disabling compression. Now fortunately
+ * when I originally implemented this I put a byte in an image that marked
+ * how compressed it was, and merely altering the value of the variable
+ * "compression_worth_while" I can create uncompressed images and even old
+ * copies of the system will load them without trouble....
+ */
+
+int32_t compression_worth_while = 256*1024*1024;
 
 static void Cfwrite(char *a, int32_t size)
 {
