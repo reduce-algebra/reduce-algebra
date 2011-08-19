@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 43aa801c 19-Aug-2011 */
+/* Signature: 3fa120c3 19-Aug-2011 */
 
 #include "headers.h"
 
@@ -103,7 +103,9 @@
  * copies of the system will load them without trouble....
  */
 
-int32_t compression_worth_while = 256*1024*1024;
+/* The change I was making maybe breaks things on 64-bit machines? */
+
+int32_t compression_worth_while = 128; /* 256*1024*1024; */
 
 static void Cfwrite(char *a, int32_t size)
 {

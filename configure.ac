@@ -235,6 +235,10 @@ AC_ARG_WITH(smallpage,
 # windows, and sometimes I might want to build 64-bit executables even though
 # I am only in a 32-bit world.
 #
+# In a while I will retire all option of using gcc-3 and "-mno-cygwin" and
+# I will insist on use of the cross-compiler. But I need to give people
+# time to catch up...
+#
 # The behaviour I intend to establish is that the user can find-tune things
 # using the option "--with-mingw64":
 #    --with-mingw64 or --with-mingw64=yes:
@@ -305,6 +309,7 @@ then
 # pretend that i686-w64-mingw32-g++ was not available. This may be useful
 # sometimes when debugging in that PERHAPS the mingw32 tools might not work
 # as well with gdb as the older "gcc-3 -mno-cygwin" recipe.
+# Well as gdb catches up that sort of reason can fade...
   if test "x$with_gcc3" != "xno" && test "x$with_gcc3" != "xdefault" && test "x$GCC_3" != "xno"
   then
     X32_GCC="no"
@@ -328,10 +333,7 @@ then
 # will look at them here in order of preference. I do this even if I am on
 # a 64-bit Windows if the 64-bit compilers are not available.
 #
-# Also I will prefer gcc-3 if I have enabled debugging (because the cygwin
-# debugger works better with it) but i686-w64-mingw32-gcc otherwise (because
-# it is newer and probably will end up better supported).
-    if test "$X32_GCC" = "yes" && ( test "x$enable_debug" = "xno" || test "x$with_gcc3" == "xno" )
+    if test "$X32_GCC" = "yes" && test "x$with_gcc3" == "xno"
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \
