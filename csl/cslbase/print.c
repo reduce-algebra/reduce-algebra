@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 2ede2817 12-Apr-2011 */
+/* Signature: 157f0c82 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -920,7 +920,9 @@ static Lisp_Object Lfiledate(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME], tt[32];
     int32_t len;
-    char *w = get_string_data(name, "filep", &len);
+    char *w;
+    memset(filename, 0, sizeof(filename));
+    w = get_string_data(name, "filep", &len);
     errexit();
     if (len >= sizeof(filename)) len = sizeof(filename);
     if (!file_exists(filename, w,
@@ -954,11 +956,14 @@ Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...)
     Lisp_Object r;
     char tempdir[LONGEST_LEGAL_FILENAME];
 #ifdef WIN32
-    DWORD len = GetTempPath(LONGEST_LEGAL_FILENAME, tempdir);
+    DWORD len;
+    memset(tempdir, 0, sizeof(tempdir));
+    len = GetTempPath(LONGEST_LEGAL_FILENAME, tempdir);
     argcheck(nargs, 0, "tmpnam");
     if (len <= 0) return onevalue(nil);
     s = tempnam(tempdir, "CSL_t");
 #else
+    memset(tempdir, 0, sizeof(tempdir));
     argcheck(nargs, 0, "tmpnam");
     s = tmpnam(NULL);
 #endif
@@ -994,7 +999,9 @@ char *CSLtmpnam(char *suffix, int32_t suffixlen)
     char tt[32];
     char *s;
 #ifdef WIN32
-    DWORD len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
+    DWORD len;
+    memset(fname, 0, sizeof(fname));
+    len = GetTempPath(LONGEST_LEGAL_FILENAME, tempname);
     if (len <= 0) return NULL;
 /*
  * I want to avoid name clashes fairly often, so I will use the current
@@ -1006,6 +1013,7 @@ char *CSLtmpnam(char *suffix, int32_t suffixlen)
     taskid = (unsigned long)GetCurrentThreadId()*169 +
              (unsigned long)GetCurrentProcessId();
 #else
+    memset(fname, 0, sizeof(fname));
     strcpy(tempname, "/tmp/");
     taskid = (unsigned long)getpid()*169 + (unsigned long)getuid();
 #endif
@@ -1157,6 +1165,8 @@ Lisp_Object Lopen(Lisp_Object nil, Lisp_Object name, Lisp_Object dir)
 #if defined HAVE_POPEN || defined HAVE_FWIN
     CSLbool pipep = NO;
 #endif
+    memset(filename, 0, sizeof(filename));
+    memset(fn1, 0, sizeof(fn1));
     if (!is_fixnum(dir)) return aerror1("open", dir);
     d = (int)int_of_fixnum(dir);
 
@@ -1519,6 +1529,7 @@ Lisp_Object Ltruename(Lisp_Object nil, Lisp_Object name)
     int32_t len;
     char *w = get_string_data(name, "truename", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     w = get_truename(filename,w,len);
@@ -1536,6 +1547,7 @@ Lisp_Object Lcreate_directory(Lisp_Object nil, Lisp_Object name)
     char filename[LONGEST_LEGAL_FILENAME];
     int32_t len;
     char *w;
+    memset(filename, 0, sizeof(filename));
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "create-directory", &len);
     errexit();
@@ -1554,6 +1566,7 @@ Lisp_Object Lfile_readable(Lisp_Object nil, Lisp_Object name)
     int32_t len;
     char *w = get_string_data(name, "file-readable", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     len = file_readable(filename, w, (size_t)len);
@@ -1566,6 +1579,7 @@ Lisp_Object Lchange_directory(Lisp_Object nil, Lisp_Object name)
     int32_t len;
     char *err;
     char *w;
+    memset(filename, 0, sizeof(filename));
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "change-directory", &len);
     errexit();
@@ -1584,6 +1598,7 @@ Lisp_Object Lfile_writeable(Lisp_Object nil, Lisp_Object name)
     char filename[LONGEST_LEGAL_FILENAME];
     int32_t len;
     char *w;
+    memset(filename, 0, sizeof(filename));
 
     /* First check whether file exists */
     if (Lfilep(nil,name) == nil) return nil;
@@ -1601,6 +1616,7 @@ Lisp_Object Ldelete_file(Lisp_Object nil, Lisp_Object name)
     char filename[LONGEST_LEGAL_FILENAME];
     int32_t len;
     char *w;
+    memset(filename, 0, sizeof(filename));
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "delete-file", &len);
     errexit();
@@ -1621,6 +1637,7 @@ Lisp_Object Lfile_length(Lisp_Object nil, Lisp_Object name)
     long size;
     char *w = get_string_data(name, "file-length", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     size = file_length(filename, w, (size_t)len);
@@ -1638,6 +1655,7 @@ Lisp_Object Ldirectoryp(Lisp_Object nil, Lisp_Object name)
     int32_t len;
     char *w = get_string_data(name, "directoryp", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
 
     len = directoryp(filename, w, (size_t)len);
@@ -1650,6 +1668,7 @@ Lisp_Object MS_CDECL Lget_current_directory(Lisp_Object nil, int nargs, ...)
     char filename[LONGEST_LEGAL_FILENAME];
     int len;
     Lisp_Object w;
+    memset(filename, 0, sizeof(filename));
     argcheck(nargs, 0, "get-current-directory");
     len = get_current_directory(filename, LONGEST_LEGAL_FILENAME);
     if (len == 0) return onevalue(nil);
@@ -1663,6 +1682,7 @@ Lisp_Object MS_CDECL Luser_homedir_pathname(Lisp_Object nil, int nargs, ...)
     char home[LONGEST_LEGAL_FILENAME];
     int len;
     Lisp_Object w;
+    memset(home, 0, sizeof(home));
     argcheck(nargs, 0, "user-homedir-pathname")
     len = get_home_directory(home, LONGEST_LEGAL_FILENAME);
     if (len == 0) return onevalue(nil);
@@ -1676,6 +1696,7 @@ Lisp_Object MS_CDECL Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
     char filename[LONGEST_LEGAL_FILENAME];
     int len;
     Lisp_Object w;
+    memset(filename, 0, sizeof(filename));
     argcheck(nargs, 0, "get-lisp-directory");
     strcpy(filename, standard_directory);
     len = strlen(filename);
@@ -1694,6 +1715,8 @@ Lisp_Object Lrename_file(Lisp_Object nil, Lisp_Object from, Lisp_Object to)
     char from_name[LONGEST_LEGAL_FILENAME], to_name[LONGEST_LEGAL_FILENAME];
     int32_t from_len, to_len;
     char *from_w, *to_w;
+    memset(from_name, 0, sizeof(from_name));
+    memset(to_name, 0, sizeof(to_name));
     if (from == unset_var) return onevalue(nil);
     if (to == unset_var) return onevalue(nil);
 #ifdef SOCKETS
@@ -1743,6 +1766,7 @@ Lisp_Object Llist_directory(Lisp_Object nil, Lisp_Object name)
     int32_t len;
     char *w = get_string_data(name, "list-directory", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
     push(nil);
     list_directory_members(filename, w,
@@ -3892,6 +3916,7 @@ static FILE *binary_open(Lisp_Object nil, Lisp_Object name, char *dir, char *e)
     char *w = get_string_data(name, e, &len);
     nil = C_nil;
     if (exception_pending()) return NULL;
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
     file = open_file(filename, w,
                      (size_t)len, dir, NULL);
@@ -4166,6 +4191,7 @@ static Lisp_Object Lopen_library(Lisp_Object nil, Lisp_Object file,
     int i;
     char *w = get_string_data(file, "open-library", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename)-1;
     memcpy(filename, w, len);
     filename[len] = 0;
@@ -4222,6 +4248,7 @@ static Lisp_Object Ljava(Lisp_Object nil, Lisp_Object name)
     char *w = get_string_data(name, "java", &len);
     nil = C_nil;
     if (exception_pending()) return nil;
+    memset(filename, 0, sizeof(filename));
     if (len >= sizeof(filename)) len = sizeof(filename);
     file = open_file(filename, w, (size_t)len, "rb", NULL);
     if (file == NULL)
@@ -4498,6 +4525,8 @@ static Lisp_Object Lopen_url(Lisp_Object nil, Lisp_Object url)
     Lisp_Object r;
     char *w = get_string_data(url, "open-url", &len);
     errexit();
+    memset(filename, 0, sizeof(filename));
+    memset(filename1, 0, sizeof(filename1));
 
 start_again:
 

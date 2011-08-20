@@ -54,7 +54,7 @@
  * ones do.
  */
 
-/* Signature: 1ed2bedc 18-Mar-2011 */
+/* Signature: 42253370 20-Aug-2011 */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -197,6 +197,7 @@ void fwin_write_log(const char *s, ...)
  */
     if (create)
     {   char logfile_name[LONGEST_LEGAL_FILENAME];
+        memset(logfile_name, 0, sizeof(logfile_name));
         if (strcmp(programDir, ".") == 0)
             sprintf(logfile_name, "/tmp/%s", LOGFILE_NAME);
         else sprintf(logfile_name, "%s/%s", programDir, LOGFILE_NAME);
@@ -940,6 +941,7 @@ int find_program_directory(char *argv0)
     char pgmname[LONGEST_LEGAL_FILENAME];
     char *w;
     int n, n1;
+    memset(pgmname, 0, sizeof(pgmname));
 /*
  * If the main reduce executable is has a full path-name /xxx/yyy/zzz then
  * I will use /xxx/yyy as its directory To find this I need to find the full
@@ -1047,6 +1049,7 @@ int find_program_directory(char *argv0)
  */
             if (pgmname[0] != '/')
             {   char temp[LONGEST_LEGAL_FILENAME];
+                memset(temp, 0, sizeof(temp));
                 strcpy(temp, pgmname);
                 n = get_current_directory(pgmname, sizeof(pgmname));
                 if (n < 0) return 1;    /* fail! 1=current directory failure */
@@ -1063,6 +1066,7 @@ int find_program_directory(char *argv0)
  */
     {   struct stat buf;
         char temp[LONGEST_LEGAL_FILENAME];
+        memset(temp, 0, sizeof(temp));
         if (lstat(fullProgramName, &buf) != -1 &&
             S_ISLNK(buf.st_mode) &&
             (n1 = readlink(fullProgramName,
@@ -1358,6 +1362,7 @@ void process_file_name(char *filename, char *old, size_t n)
     {   char alias[LONGEST_LEGAL_FILENAME];
         FSRef ref;
         Boolean is_folder, is_alias;
+        memset(alias, 0, sizeof(alias));
 /*
  * This works by converting from a path to an FSRef object, which is the Mac
  * internal handle. It can then resolve the alias. I use the option that
@@ -2162,6 +2167,7 @@ char *get_truename(char *filename, char *old, size_t n)
     struct stat buf;
     char *temp, *fn, *dir;
     char pwd[LONGEST_LEGAL_FILENAME];
+    memset(pwd, 0, sizeof(pwd));
 
     process_file_name(filename, old, n);
     if (*filename == 0)
@@ -2214,6 +2220,7 @@ char *get_truename(char *filename, char *old, size_t n)
         if (temp) 
         {   /* Found a directory component */
             char theDir[LONGEST_LEGAL_FILENAME];
+            memset(theDir, 0, sizeof(theDir));
             fn   = (char *)malloc(1+strlen(temp));
             strcpy(fn, temp);
             *temp = '\0';
@@ -2335,6 +2342,7 @@ const char *my_getenv(const char *s)
     char uppercasename[LONGEST_LEGAL_FILENAME];
     char *p = uppercasename;
     int c;
+    memset(uppercasename, 0, sizeof(uppercasename));
     while ((c = *s++) != 0) *p++ = toupper(c);
     *p = 0;
     return getenv(uppercasename);

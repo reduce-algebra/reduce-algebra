@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 479d19c4 13-Aug-2011 */
+/* Signature: 1315e6e4 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -2074,6 +2074,7 @@ static Lisp_Object Lpreserve(Lisp_Object nil,
 {
     char filename[LONGEST_LEGAL_FILENAME];
     CSLbool failed;
+    memset(filename, 0, sizeof(filename));
 #ifdef SOCKETS
 /*
  * Security measure - deny preserve to remote users
@@ -2118,6 +2119,7 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     CSLbool failed = 0;
     char *msg = "";
     int len = 0;
+    memset(filename, 0, sizeof(filename));
 #ifdef SOCKETS
 /*
  * Security measure - deny checkpoint to remote users

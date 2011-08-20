@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 228e29dc 20-Aug-2011 */
+/* Signature: 1a9f80cb 20-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1638,6 +1638,7 @@ term_printf(
                 else break; /* Illegal at end of command-line */
                 {   char filename[LONGEST_LEGAL_FILENAME];
                     FILE *f;
+                    memset(filename, 0, sizeof(filename));
 #ifdef WINDOW_SYSTEM
                     f = open_file(filename, w, strlen(w), "w", NULL);
                     if (f == NULL)
@@ -2154,6 +2155,7 @@ term_printf(
                 else if (i != argc) w = argv[++i];
                 else break; /* Illegal at end of command-line */
                 {   char filename[LONGEST_LEGAL_FILENAME];
+                    memset(filename, 0, sizeof(filename));
                     spool_file = open_file(filename, w,
                            strlen(w), "w", NULL);
                     if (spool_file == NULL)
@@ -2421,6 +2423,7 @@ term_printf(
     if (number_of_fasl_paths == 0)
     {   char *p = standard_directory, *p1;
         char cur[LONGEST_LEGAL_FILENAME];
+        memset(cur, 0, sizeof(cur));
 /*
  * If the user does not specify any image files then the behaviour
  * defaults as follows:
@@ -2500,6 +2503,7 @@ term_printf(
         int32_t size;
         int i;
         Lisp_Object nil;
+        memset(fullname, 0, sizeof(fullname));
 /*
  * Imodulep expects input_libraries to be set up. So I will fudge the
  * creation of something that looks sufficiently like a list to pass muster
@@ -2873,8 +2877,10 @@ static void cslaction(void)
                 }
                 else
                 {   char filename[LONGEST_LEGAL_FILENAME];
-                    FILE *f = open_file(filename, files_to_read[i],
-                                                strlen(files_to_read[i]), "r", NULL);
+                    FILE *f;
+                    memset(filename, 0, sizeof(filename));
+                    f = open_file(filename, files_to_read[i],
+                                            strlen(files_to_read[i]), "r", NULL);
                     if (f == NULL)
                         err_printf("\n+++ Could not read file \"%s\"\n",
                                    files_to_read[i]);

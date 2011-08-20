@@ -11,17 +11,11 @@
 
 symbolic;
 
+trace '(resource!-limit);
+
 load!-module 'remake;
 
 get_configuration_data();
-
-if boundp 'cpulimit and
-   numberp (cpulimit := compress explodec cpulimit) and
-   cpulimit > 0 then !*cpulimit := cpulimit;
-
-if boundp 'conslimit and
-   numberp (conslimit := compress explodec conslimit) and
-   conslimit > 0 then !*conslimit := conslimit;
 
 if boundp 'which and which and not (which = "") then <<
    mods := compress explodec which;

@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 3fa120c3 19-Aug-2011 */
+/* Signature: 74d59d44 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -464,6 +464,7 @@ directory *open_pds(char *name, int mode)
     struct stat buf;
     FILE *f;
     int l, i, n;
+    memset(expanded, 0, sizeof(expanded));
     l = strlen(name);
     nameDir = (name[l-1] == '/') || (name[l-1] == '\\');
     f = NULL;
@@ -827,6 +828,7 @@ static CSLbool open_input(directory *d, char *name, int len,
     nativedir = NO;
     if (d->full_filename != NULL) /* native directory mode */
     {   char nn[LONGEST_LEGAL_FILENAME];
+        memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
         if ((binary_read_file = fopen(nn, "rb")) == NULL) return YES;
         fseek(binary_read_file, 0L, SEEK_END);
@@ -1011,6 +1013,7 @@ CSLbool open_output(char *name, int len)
     current_output_directory = d;
     if (d->full_filename != NULL) /* native directory mode */
     {   char nn[LONGEST_LEGAL_FILENAME];
+        memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
         if ((binary_write_file = fopen(nn, "wb")) == NULL) return YES;
         write_bytes_written = 0;
@@ -1357,6 +1360,7 @@ CSLbool Imodulep(char *name, int len, char *datestamp, int32_t *size,
         if (d->full_filename != NULL)
         {   char nn[LONGEST_LEGAL_FILENAME];
             struct stat statbuff;
+            memset(nn, 0, sizeof(nn));
             fasl_file_name(nn, d, name, len);
             if (stat(nn, &statbuff) != 0) continue;   /* file not present */
             strcpy(expanded_name, nn);
@@ -1632,6 +1636,7 @@ CSLbool Idelete(char *name, int len)
         Istatus != I_INACTIVE) return YES;
     if (d->full_filename != NULL)
     {   char nn[LONGEST_LEGAL_FILENAME];
+        memset(nn, 0, sizeof(nn));
         fasl_file_name(nn, d, name, len);
         return (remove(nn) != 0);
     }

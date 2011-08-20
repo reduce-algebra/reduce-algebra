@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 26a549a3 05-Jan-2011 */
+/* Signature: 71a3a329 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -1181,6 +1181,7 @@ Lisp_Object Lcopy_native(Lisp_Object nil, Lisp_Object src, Lisp_Object dest)
     char filename[LONGEST_LEGAL_FILENAME];
     FILE *srcfile;
     int c;
+    memset(filename, 0, sizeof(filename));
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "copy-native"
@@ -1379,6 +1380,7 @@ static Lisp_Object load_module(Lisp_Object nil, Lisp_Object file,
     int32_t old_symbol_protect_flag;
 #endif
 
+    memset(filename, 0, sizeof(filename));
     if (is_stream(file)) h=0, from_stream = YES;
     else if (symbolp(file))
     {   file = get_pname(file);
@@ -1561,6 +1563,7 @@ Lisp_Object Lmodule_exists(Lisp_Object nil, Lisp_Object file)
     int32_t len;
     int32_t size;
     char *modname;
+    memset(filename, 0, sizeof(filename));
     if (symbolp(file))
     {   file = get_pname(file);
         errexit();
@@ -1674,6 +1677,7 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
         char *modname;
         int32_t len;
         Header h;
+        memset(filename, 0, sizeof(filename));
         push(name);
         w = getvector_init(CELL*(KEEP_RECENT+1), nil);
         pop(name);
@@ -2475,6 +2479,7 @@ Lisp_Object Lwrite_help_module(Lisp_Object nil,
     unsigned char *frequencies;
     char_pair_hash *overflow;
     CSL_IGNORE(ignore);
+    memset(filename, 0, sizeof(filename));
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do write-help-module"

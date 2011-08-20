@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 37102529 09-Aug-2011 */
+/* Signature: 1b5d7f3f 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -208,6 +208,7 @@ Lisp_Object Lgetenv(Lisp_Object nil, Lisp_Object a)
     Lisp_Object r;
     int32_t len;
     char *w;
+    memset(parmname, 0, sizeof(parmname));
 #ifdef COMMON
     if (complex_stringp(a))
     {   a = simplify_string(a);
@@ -238,6 +239,7 @@ Lisp_Object Lsystem(Lisp_Object nil, Lisp_Object a)
     Header h;
     int32_t len;
     int w;
+    memset(parmname, 0, sizeof(parmname));
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "system"
@@ -286,6 +288,10 @@ static Lisp_Object Lsilent_system(Lisp_Object nil, Lisp_Object a)
     Header h;
     int32_t len;
     int i;
+    memset(cmd, 0, sizeof(cmd));
+#ifdef SHELL_EXECUTE
+    memset(args, 0, sizeof(args));
+#endif
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "system"
@@ -4356,6 +4362,7 @@ Lisp_Object Lspool(Lisp_Object nil, Lisp_Object file)
     char filename[LONGEST_LEGAL_FILENAME];
     Header h;
     int32_t len;
+    memset(filename, 0, sizeof(filename));
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "spool"

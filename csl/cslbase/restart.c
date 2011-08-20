@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7bffef0a 07-Aug-2011 */
+/* Signature: 2bd37309 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -3878,6 +3878,9 @@ static setup_type_1 *find_def_table(Lisp_Object mod, Lisp_Object checksum)
 #else
     void *a;
 #endif
+    memset(modname, 0, sizeof(modname));
+    memset(xmodname, 0, sizeof(xmodname));
+    memset(sname1, 0, sizeof(sname1));
 #ifdef TRACE_NATIVE
     trace_printf("find_def_table "); 
     prin_to_trace(mod);
@@ -5738,6 +5741,8 @@ void setup(int restart_flag, double store_size)
     if (restart_flag & 1)
     {   char junkbuf[120];
         char filename[LONGEST_LEGAL_FILENAME];
+        memset(junkbuf, 0, sizeof(junkbuf));
+        memset(filename, 0, sizeof(filename));
         if (IopenRoot(filename, 0, 0))
         {   term_printf("\n+++ Image file \"%s\" can not be read\n",
                     filename);

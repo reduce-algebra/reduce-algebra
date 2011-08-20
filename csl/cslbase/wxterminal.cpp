@@ -39,7 +39,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 356471c5 03-Aug-2011 */
+/* Signature: 3676c06b 20-Aug-2011 */
 
 #include "wx/wxprec.h"
 
@@ -860,6 +860,7 @@ const char *my_getenv(const char *s)
     char uppercasename[LONGEST_LEGAL_FILENAME];
     char *p = uppercasename;
     int c;
+    memset(uppercasename, 0, sizeof(uppercasename));
     while ((c = *s++) != 0) *p++ = toupper(c);
     *p = 0;
     return getenv(uppercasename);
@@ -1705,6 +1706,7 @@ int add_custom_fonts() // return 0 on success.
     int newFontAdded = 0;
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
+        memset(nn, 0, sizeof(nn));
         strcpy(nn, programDir);
         strcat(nn, "\\" toString(fontsdir) "\\");
         strcat(nn, fontNames[i].name);
@@ -1741,6 +1743,7 @@ int add_custom_fonts() // return 0 on success.
 // use extra resources adding all that are available. But for now I prefer
 // simplicity.
     char fff[LONGEST_LEGAL_FILENAME];
+    memset(fff, 0, sizeof(fff));
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   if (i == 0) sprintf(fff, "%s/" toString(fontsdir) "/%s.otf",
                             programDir, fontNames[i].name);
@@ -5128,13 +5131,16 @@ void fwin_showmath(const char *s)
 // invoke it to convert the formula you just created into .dvi format.
     char tempd[LONGEST_LEGAL_FILENAME];
 #ifdef WIN32
-    int rc = GetTempPathA(LONGEST_LEGAL_FILENAME, tempd);
+    int rc;
+    memset(tempd, 0, sizeof(tempd));
+    rc = GetTempPathA(LONGEST_LEGAL_FILENAME, tempd);
     if (rc == 0 || rc >= LONGEST_LEGAL_FILENAME) strcpy(tempd, "C:");
     DWORD procid = GetCurrentProcessId();
     char *ww;
     for (ww=tempd; *ww!=0; ww++) if (*ww == '\\') *ww = '/';
 #else
     const char *tt = my_getenv("TMPDIR");
+    memset(tempd, 0, sizeof(tempd));
     if (tt == NULL) strcpy(tempd, "/tmp");
     else strcpy(tempd, tt);
     pid_t procid = getpid();
@@ -5162,6 +5168,7 @@ void fwin_showmath(const char *s)
     fprintf(f, "\\end{document}\n");
     fclose(f);
     char cmd[LONGEST_LEGAL_FILENAME];
+    memset(cmd, 0, sizeof(cmd));
 //
 // Under Windows I want to have cygwin installed and on your "PATH", with
 // tex included. However the command "latex" in that case is a cygwin-style
