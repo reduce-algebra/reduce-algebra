@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 1f64ae50 20-Aug-2011 */
+/* Signature: 29964a6c 20-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1332,8 +1332,20 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     {   struct rlimit r;
         if (getrlimit(RLIMIT_STACK, &r) == 0)
         {   int64_t stackLimit = (int64_t)r.rlim_cur;
-            C_stack_limit = (char *)&argc - stackLimit + 0x10000;
-            fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+/*
+ * If the user has used ulimit to remove all stack limits I will
+ * nevertheless apply one at 20 Mbytes. That is SO much higher than any
+ * default as to not hurt ordinary people - and if anybody NEEDS gigabytes
+ * of stack they need to ensure that getrlimit returns a finite indication
+ * of that! Results of RLIM_SAVED_MAX represent a sort of "give up" from
+ * getrlimit so I will treat them as failure.
+ */
+            if (stackLimit != RLIM_SAVED_MAX &&
+                stackLimit != RLIM_SAVED_CUR)
+            {   if (stackLimit == RLIM_INFINITY) stackLimit = 20*1024*1024;
+                C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+                fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+            }
         }
     }
 #endif
