@@ -49,7 +49,7 @@
  *************************************************************************/
 
 
-/* Signature: 644e3ca1 07-Aug-2011 */
+/* Signature: 6ef5b270 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -458,6 +458,7 @@ char *find_image_directory(int argc, char *argv[])
     int n;
     char *w;
     char xname[LONGEST_LEGAL_FILENAME];
+    memset(xname, 0, sizeof(xname));
 #ifdef MACINTOSH
 /*
  * There is a special oddity on the Macintosh (with the wxWidgets version
