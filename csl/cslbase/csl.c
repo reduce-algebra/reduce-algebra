@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 3551a27b 20-Aug-2011 */
+/* Signature: 228e29dc 20-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1330,7 +1330,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
  */
             if (stackLimit < 200*1024) stackLimit = 200*1024;
 /* I also assume that any sigure over 20 Mbytes is a mess so ignore it */
-            if (stackSize <= 20*1024*1024)
+            if (stackLimit <= 20*1024*1024)
             {   /* I try to give myself 64K spare... */
                 C_stack_limit = (char *)&argc - stackLimit + 0x10000;
 #ifdef DEBUG
