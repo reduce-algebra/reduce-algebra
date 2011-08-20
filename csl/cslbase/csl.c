@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 29964a6c 20-Aug-2011 */
+/* Signature: 3551a27b 20-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1322,9 +1322,21 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 (IMAGE_NT_HEADERS*)((BYTE*)dh + dh->e_lfanew);
             int64_t stackLimit =
                 (int64_t)NTh->OptionalHeader.SizeOfStackReserve;
-            /* I try to give myself 64K spare... */
-            C_stack_limit = (char *)&argc - stackLimit + 0x10000;
-            fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+/*
+ * If the limit recovered above is under 200K I will pretend it is
+ * just plain wrong and increase it to that. The effect may be that I
+ * end up with an untidy stack overflow but at least I get closer to
+ * using all the space that I have.
+ */
+            if (stackLimit < 200*1024) stackLimit = 200*1024;
+/* I also assume that any sigure over 20 Mbytes is a mess so ignore it */
+            if (stackSize <= 20*1024*1024)
+            {   /* I try to give myself 64K spare... */
+                C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+#ifdef DEBUG
+                fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+#endif
+            }
         }
     }
 #else
@@ -1343,8 +1355,13 @@ void cslstart(int argc, char *argv[], character_writer *wout)
             if (stackLimit != RLIM_SAVED_MAX &&
                 stackLimit != RLIM_SAVED_CUR)
             {   if (stackLimit == RLIM_INFINITY) stackLimit = 20*1024*1024;
-                C_stack_limit = (char *)&argc - stackLimit + 0x10000;
-                fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+/* I view values under 200K as silly and ignore them! */
+                if (stackLimit >= 200*1024)
+                {   C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+#ifdef DEBUG
+                    fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+#endif
+                }
             }
         }
     }
@@ -1353,7 +1370,9 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 /* If I can not read a value then I will set a limit at 4 Mbytes... */
     if (C_stack_limit == NULL)
     {   C_stack_limit = (char *)&argc - 4*1024*1024 + 0x10000;
+#ifdef DEBUG
         fprintf(stderr, "stack defaulting to 4Mb\n");
+#endif
     }
 
 #ifdef EMBEDDED
