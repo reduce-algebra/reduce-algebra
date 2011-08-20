@@ -36,7 +36,7 @@
 
 
 
-/* Signature: 7eb345c8 09-Aug-2011 */
+/* Signature: 69b5252c 20-Aug-2011 */
 
 #include "headers.h"
 
@@ -1349,6 +1349,8 @@ Lisp_Object bytestream_interpret(Lisp_Object code, Lisp_Object lit,
     if (check_stack("bytecode_interpreter",__LINE__))
         return aerror("stack overflow");
 #endif
+#else
+    if_check_stack
 #endif
 
 #ifndef NO_BYTECOUNT

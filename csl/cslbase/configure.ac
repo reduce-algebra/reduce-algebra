@@ -1157,11 +1157,12 @@ AC_CHECK_HEADER([inttypes.h],
 AC_MSG_NOTICE([inttypes_header=$inttypes_header])
 
 AC_CHECK_HEADERS([fcntl.h float.h malloc.h memory.h])
-AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
+AC_CHECK_HEADERS([stddef.h stdlib.h string.h sys/resource.h])
 AC_CHECK_HEADERS([sys/param.h sys/time.h sys/times.h unistd.h utime.h])
 AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h sys/socket.h sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/shm.h sys/ipc.h signal.h])
 AC_CHECK_HEADERS([setjmp.h sys/sysctl.h syscall.h sched.h])
+
 
 AC_CHECK_TYPES([cpu_set_t], [], [],
    [#ifdef HAVE_SCHED_H
@@ -1227,7 +1228,7 @@ AC_FUNC_UTIME_NULL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit ftruncate getcwd gethostbyaddr gethostbyname inet_ntoa])
 AC_CHECK_FUNCS([memmove memset mkdir pow rmdir socket sqrt strchr strdup])
-AC_CHECK_FUNCS([strrchr strstr utime popen])
+AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
 AC_CHECK_FUNCS([vsnprintf sysctlbyname])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])

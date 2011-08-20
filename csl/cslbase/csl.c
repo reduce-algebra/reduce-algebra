@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 43862f37 09-Aug-2011 */
+/* Signature: 1f64ae50 20-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -55,6 +55,14 @@
 
 #ifdef HAVE_UNISTD_H
 #include <sys/unistd.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
 #endif
 
 #ifndef HAVE_FWIN
@@ -114,15 +122,16 @@ volatile char stack_contents_temp = 0;
 #define C_STACK_ALLOCATION 1000000
 
 static int spset = 0;
-static int32_t spbase = 0, spmin;
+static intptr_t spbase = 0, spmin;
 
-static int stack_depth[C_STACK_ALLOCATION], stack_line[C_STACK_ALLOCATION];
+static intptr_t stack_depth[C_STACK_ALLOCATION];
+static int stack_line[C_STACK_ALLOCATION];
 static char *stack_file[C_STACK_ALLOCATION];
-static int c_stack_ptr = 0;
+static intptr_t c_stack_ptr = 0;
 
 int check_stack(char *file, int line)
 {
-    int32_t temp = (int32_t)&temp;
+    intptr_t temp = (intptr_t)&temp;
     char *file1;
     if (!spset)
     {   spbase = spmin = temp;
@@ -142,22 +151,14 @@ int check_stack(char *file, int line)
     stack_file[c_stack_ptr] = (file1 == NULL ? file : file1+1);
     if (temp < spmin-250)  /* Only check at granularity of 250 bytes */
     {   int i;
-        term_printf("Stack depth %d at file %s line %d\n",
-                     spbase-temp, file, line);
+        term_printf("Stack depth %u at file %s line %d\n",
+                     (unsigned int)(spbase-temp), file, line);
         for (i=c_stack_ptr; i>=0 && i > c_stack_ptr-10; i--)
             term_printf(" %s:%d", stack_file[i], stack_line[i]);
         term_printf("\n");
         spmin = temp;
-        if (temp < spbase-C_STACK_ALLOCATION) return 1;
-    }
-/*
- * As well as the fully software action I also try the same probe that I use
- * elsewhere...
- */
-    {   char *p = (char *)&temp;
-        stack_contents_temp = p[-4000];
-        stack_contents_temp = p[-8000];
-        stack_contents_temp = p[-12000];
+        if (temp < spbase-C_STACK_ALLOCATION ||
+            temp < C_stack_limit) return 1;
     }
     return 0;
 }
@@ -1298,6 +1299,8 @@ char **csl_argv;
 
 CSLbool restartp;
 
+char *C_stack_limit = NULL;
+
 void cslstart(int argc, char *argv[], character_writer *wout)
 {
     int i;
@@ -1306,6 +1309,41 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
 #endif
+#ifdef DEBUG
+    fprintf(stderr, "cslstart() called\n");
+#endif
+
+    C_stack_limit = NULL;
+#ifdef WIN32
+    {   HMODULE h = GetModuleHandle(NULL); /* For current executable */
+        if (h != NULL)
+        {   IMAGE_DOS_HEADER *dh = (IMAGE_DOS_HEADER*)h;
+            IMAGE_NT_HEADERS *NTh =
+                (IMAGE_NT_HEADERS*)((BYTE*)dh + dh->e_lfanew);
+            int64_t stackLimit =
+                (int64_t)NTh->OptionalHeader.SizeOfStackReserve;
+            /* I try to give myself 64K spare... */
+            C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+            fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+        }
+    }
+#else
+#ifdef HAVE_SYS_RESOURCE_H
+    {   struct rlimit r;
+        if (getrlimit(RLIMIT_STACK, &r) == 0)
+        {   int64_t stackLimit = (int64_t)r.rlim_cur;
+            C_stack_limit = (char *)&argc - stackLimit + 0x10000;
+            fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+        }
+    }
+#endif
+#endif
+/* If I can not read a value then I will set a limit at 4 Mbytes... */
+    if (C_stack_limit == NULL)
+    {   C_stack_limit = (char *)&argc - 4*1024*1024 + 0x10000;
+        fprintf(stderr, "stack defaulting to 4Mb\n");
+    }
+
 #ifdef EMBEDDED
     fwin_set_lookup(look_in_lisp_variable);
 #endif

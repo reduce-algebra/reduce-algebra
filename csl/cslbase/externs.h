@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 6400ee31 09-Aug-2011 */
+/* Signature: 3e81e8fa 20-Aug-2011 */
 
 #ifndef header_externs_h
 #define header_externs_h 1
@@ -123,6 +123,7 @@ extern Lisp_Object *stackbase;
 extern int32_t stack_segsize;  /* measured in units of one CSL page */
 extern Lisp_Object *C_stack;
 #define stack C_stack
+extern char *C_stack_limit;
 
 extern CSLbool restartp;
 
@@ -238,16 +239,9 @@ extern void show_stack();
    if (check_stack(__FILE__,__LINE__)) \
    {   show_stack(); return aerror("stack overflow"); }
 #else
-/*
- * This tries to read from memory below where the current stack is
- * in the expectation that if a stack overflow is about to happen
- * an exception will be provoked.
- */
 #define if_check_stack \
    {   char *p = (char *)&p; \
-       stack_contents_temp = p[-4000]; \
-       stack_contents_temp = p[-8000]; \
-       stack_contents_temp = p[-12000]; \
+       if (p < C_stack_limit) return aerror("stack overflow"); \
    }
 #endif
 
