@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 1a9f80cb 20-Aug-2011 */
+/* Signature: 226c269a 21-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -707,7 +707,7 @@ static void report_dependencies()
         if (p[0] != 0 &&
             p[1] == ':' &&
             (p[2] == '/' || p[2] == '\\'))
-        {   fprintf(f, "/cygdrive/%c", p[0]);
+        {   fprintf(f, "/cygdrive/%c", tolower(p[0]));
             p+=2;
         }
         while ((c = *p++) != 0) putc(c == '\\' ? '/' : c, f);
@@ -1309,9 +1309,6 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
 #endif
-#ifdef DEBUG
-    fprintf(stderr, "cslstart() called\n");
-#endif
 
     C_stack_limit = NULL;
 #ifdef WIN32
@@ -1334,7 +1331,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
             {   /* I try to give myself 64K spare... */
                 C_stack_limit = (char *)&argc - stackLimit + 0x10000;
 #ifdef DEBUG
-                fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+                fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
 #endif
             }
         }
@@ -1359,7 +1356,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
                 if (stackLimit >= 200*1024)
                 {   C_stack_limit = (char *)&argc - stackLimit + 0x10000;
 #ifdef DEBUG
-                    fprintf(stderr, "stack %dK\n", (int)(stackLimit/1024));
+                    fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
 #endif
                 }
             }
@@ -1371,7 +1368,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     if (C_stack_limit == NULL)
     {   C_stack_limit = (char *)&argc - 4*1024*1024 + 0x10000;
 #ifdef DEBUG
-        fprintf(stderr, "stack defaulting to 4Mb\n");
+        fprintf(stderr, "[debug] stack defaulting to 4Mb\n");
 #endif
     }
 

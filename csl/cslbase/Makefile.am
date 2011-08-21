@@ -1,8 +1,85 @@
 ## process this file with automake to create Makefile.in
+
 ## and then use autoconf to create ./configure. Finally run that
 ## to build your usable Makefile (probably in another directory)
 
 # CSL and REDUCE build sequences
+
+# If I list all the phony targets here this may help document things you
+# can do via this Makefile
+
+if exeext
+# On Windows I might normally have to go "make reduce.exe" but I really
+# want to be able to say merely "make reduce". So to cope with that I make
+# "reduce" a phony target that triggers rebuiling of reduce.exe. However
+# I had better not do that on Unix where the ".exe" extension is not
+# used so that just "reduce" is the true name of the executable. I find
+# that automake gets unhappy about .PHONY targets in a conditonal section
+# so I intruduce a load that have silly name sin the case I do not
+# really need them.
+plain_csl = csl
+plain_reduce = reduce
+plain_bootstrapreduce = bootstrapreduce
+plain_fwindemo = fwindemo
+plain_wxpsl = wxpsl
+plain_termdemo = termdemo
+plain_foxdemo  = foxdemo
+plain_fontdemo = fontdemo
+plain_showmathdemo = showmathdemo
+plain_wxdemo  = wxdemo
+plain_wxfontdemo = wxfontdemo
+plain_wxdvi = wxdvi
+plain_wxshowmathdemo = wxshowmathdemo
+plain_dyndemo = dyndemo
+else !exeext
+plain_csl = csl.unnecessary.except.on.windows
+plain_reduce = reduce.unnecessary.except.on.windows
+plain_bootstrapreduce = bootstrapreduce.unnecessary.except.on.windows
+plain_fwindemo = fwindemo.unnecessary.except.on.windows
+plain_wxpsl = wxpsl.unnecessary.except.on.windows
+plain_termdemo = termdemo.unnecessary.except.on.windows
+plain_foxdemo  = foxdemo.unnecessary.except.on.windows
+plain_fontdemo = fontdemo.unnecessary.except.on.windows
+plain_showmathdemo = showmathdemo.unnecessary.except.on.windows
+plain_wxdemo  = wxdemo.unnecessary.except.on.windows
+plain_wxfontdemo = wxfontdemo.unnecessary.except.on.windows
+plain_wxdvi = wxdvi.unnecessary.except.on.windows
+plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
+plain_dyndemo = dyndemo.unnecessary.except.on.windows
+endif !exeext
+
+.PHONY: $(plain_csl)
+.PHONY: $(plain_reduce)
+.PHONY: $(plain_bootstrapreduce)
+.PHONY: $(plain_fwindemo)
+.PHONY: $(plain_wxpsl)
+.PHONY: $(plain_foxdemo)
+.PHONY: $(plain_fontdemo)
+.PHONY: $(plain_showmathdemo)
+.PHONY: $(plain_wxdemo)
+.PHONY: $(plain_wxfontdemo)
+.PHONY: $(plain_wxdvi)
+.PHONY: $(plain_wxshowmathdemo)
+.PHONY: $(plain_termdemo)
+.PHONY: $(plain_dyndemo)
+
+.PHONY: report-dlls
+.PHONY:	bootstraprecompile
+.PHONY:	recompile
+.PHONY:	profile
+.PHONY:	prof-inst
+.PHONY:	c-code
+.PHONY:	full-c-code
+.PHONY:	smacros
+.PHONY:	testslow
+.PHONY:	testall
+.PHONY:	testslow1
+.PHONY:	countall
+.PHONY:	test1
+.PHONY:	count1
+.PHONY:	checkall
+.PHONY:	cleanlog
+.PHONY:	showhost
 
 CP = cp
 RM = rm
@@ -80,15 +157,11 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) dyndemo$(EXEEXT) \
 	$(wxdemotarget)
 
-if mac_framework
-all-local:	make-clickable csl.img reduce.img
-else !mac_framework
 if cygwin
 all-local:	report-dlls csl.img reduce.img
 else !cygwin
 all-local:	csl.img reduce.img
 endif !cygwin
-endif !mac_framework
 
 
 core_sources = arith01.c arith02.c arith03.c arith04.c arith05.c \
@@ -570,9 +643,15 @@ if wx
 if mac_framework
 	$(srcdir)/create_bundle.sh csl $(srcdir) csl
 endif mac_framework
-endif wx
+else !wx
+if mac_framework
+	/Developer/Tools/Rez -t APPL -o csl $(srcdir)/mac.r
+endif mac_framework
 
-reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
+endif !wx
+
+reduce$(EXEEXT): $(reduce_OBJECTS) $(reduce_DEPENDENCIES) $(FOXDEPS) \
+			$(WXDEPS) $(generated_lisp)
 	-rm -f reduce$(EXEEXT)
 	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(LIBS) $(WINAP)
 if windows
@@ -595,7 +674,25 @@ if wx
 if mac_framework
 	$(srcdir)/create_bundle.sh reduce $(srcdir) reduce
 endif mac_framework
-endif wx
+else !wx
+if mac_framework
+# on Darwin I want to go
+# /Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
+# (and similarly for csl) after linking, so that the items concerned
+# become clickable. Note that "mac.r" is copied directly from the
+# FLTK distribution (www.fltk.org) and it is released there under
+# LGPL with an array of extra permissions that mean that static
+# linking is permitted and it is not necessary to be as careful
+# to distribute copies of licenses as it is with the regular LGPL.
+#
+# Well to be a little more precise, I want to do that if the MacOS framework
+# is available. on raw Darwin it will not be.
+#
+# Rez is now an rather old fashioned way of doing things. With wxWidgets I
+# will replace this with stuff that creates application bundles.
+	/Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
+endif mac_framework
+endif !wx
 
 bootstrapreduce$(EXEEXT): $(bootstrapreduce_OBJECTS) $(bootstrapreduce_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f bootstrapreduce$(EXEEXT)
@@ -609,7 +706,11 @@ if wx
 if mac_framework
 	$(srcdir)/create_bundle.sh bootstrapreduce $(srcdir) reduce
 endif mac_framework
-endif wx
+else !wx
+if mac_framework
+	/Developer/Tools/Rez -t APPL -o bootstrapreduce $(srcdir)/mac.r
+endif mac_framework
+endif !wx
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS)
 	-rm -f fwindemo$(EXEEXT)
@@ -695,24 +796,41 @@ endif fox
 if gui
 if windows
 
-csl$(COM):	$(csl_OBJECTS) $(csl_DEPENDENCIES)
-	-rm -f csl.exe
-	$(MAKE) csl.exe
+csl$(COM):	csl.exe
+## Recover from the removal of csl.com
+	if test -f csl.com; then touch csl.com; else \
+	  rm -f csl.exe; \
+	  $(MAKE) $(AM_MAKEFLAGS) csl.exe; \
+	fi
 
-reduce$(COM):	$(reduce_OBJECTS) $(reduce_DEPENDENCIES)
-	-rm -f reduce.exe
-	$(MAKE) reduce.exe
+reduce$(COM):	reduce.exe
+## Recover from the removal of reduce.com
+	if test -f reduce.com; then touch reduce.com; else \
+	  rm -f reduce.exe; \
+	  $(MAKE) $(AM_MAKEFLAGS) reduce.exe; \
+	fi
 
-fwindemo$(COM):	$(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES)
-	-rm -f fwindemo.exe
-	$(MAKE) fwindemo.exe
+fwindemo$(COM):	fwindemo.exe
+## Recover from the removal of fwindemo.com
+	if test -f fwindemo.com; then touch fwindemo.com; else \
+	  rm -f fwindemo.exe; \
+	  $(MAKE) $(AM_MAKEFLAGS) fwindemo.exe; \
+	fi
 
-wxpsl$(COM):	$(wxpsl_OBJECTS) $(wxpsl_DEPENDENCIES)
-	-rm -f wxpsl.exe
-	$(MAKE) wxpsl.exe
+wxpsl$(COM):	wxpsl.exe
+## Recover from the removal of wxpsl.com
+	if test -f wxpsl.com; then touch wxpsl.com; else \
+	  rm -f wxpsl.exe; \
+	  $(MAKE) $(AM_MAKEFLAGS) wxpsl.exe; \
+	fi
 
 endif windows
 endif gui
+
+# Here you could take the view that I am lazy in that I take
+# just one file in the font directory as a signature that it has been
+# built. If I was keener I would put in rules that allowed the
+# fonts to be updated if any other font was lost or became out of date.
 
 reduce.$(fontsdir)/$(samplefont):	$(srcdir)/fonts
 if wx
@@ -788,25 +906,12 @@ endif !wx
 
 if exeext
 
-# The next section is to conspire with automake's treatement of externions for
+# The next section is to conspire with automake's treatment of extensions for
 # executables (ie ".exe") so that eg "make reduce" will case "make reduce.exe" to
 # happen. The use of parameter substitution to generate the plain targets is
 # because in that case automake will not auto-map the target adding ".exe".
 
-plain_csl = csl
-plain_reduce = reduce
-plain_bootstrapreduce = bootstrapreduce
-plain_fwindemo = fwindemo
-plain_wxpsl = wxpsl
-plain_termdemo = termdemo
-plain_foxdemo  = foxdemo
-plain_fontdemo = fontdemo
-plain_showmathdemo = showmathdemo
-plain_wxdemo  = wxdemo
-plain_wxfontdemo = wxfontdemo
-plain_wxdvi = wxdvi
-plain_wxshowmathdemo = wxshowmathdemo
-plain_dyndemo = dyndemo
+
 
 if gui
 $(plain_csl):	csl.exe csl$(COM)
@@ -869,7 +974,6 @@ $(plain_wxdvi):	wxdvi.exe
 $(plain_wxshowmathdemo):	wxshowmathdemo.exe
 	echo "make wxshowmathdemo.exe is preferred"
 
-
 endif wx
 
 $(plain_termdemo):	termdemo.exe
@@ -879,28 +983,6 @@ $(plain_dyndemo):	dyndemo.exe dynmodule.dll
 	echo "make dyndemo.exe is preferred"
 
 endif exeext
-
-if mac_framework
-# on Darwin I want to go
-# /Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
-# (and similarly for csl) after linking, so that the items concerned
-# become clickable. Note that "mac.r" is copied directly from the
-# FLTK distribution (www.fltk.org) and it is released there under
-# LGPL with an array of extra permissions that mean that static
-# linking is permitted and it is not necessary to be as careful
-# to distribute copies of licenses as it is with the regular LGPL.
-#
-# Well to be a little more precise, I want to do that if the MacOS framework
-# is available. on raw Darwin it will not be.
-
-make-clickable:	csl bootstrapreduce reduce
-# Rez is now an rather old fashioned way of doing things. With wxWidgets I
-# will replace this with stuff that creates application bundles.
-	/Developer/Tools/Rez -t APPL -o csl $(srcdir)/mac.r
-	/Developer/Tools/Rez -t APPL -o bootstrapreduce $(srcdir)/mac.r
-	/Developer/Tools/Rez -t APPL -o reduce $(srcdir)/mac.r
-
-endif mac_framework
 
 if cygwin
 # on cygwin I scan to verify which DLLs are referenced by my main
@@ -923,7 +1005,11 @@ termdemo_LIBS=
 
 #
 # Possibly unreasonably (but it is WHAT I DO!) image files for CSL live
-# in the same directory as executables.
+# in the same directory as executables. Well actually it is more complicated
+# that that. If the executable lives as .../bin/xxx then I will also look
+# in .../share/xxx/xxx.img for an image, and on the Macintosh with my newer
+# code I look in xxx.app/Contents/...
+# But initially the images get built next to the executable.
 #
 
 if windows
@@ -1084,7 +1170,8 @@ if canrun
 
 if windows
 
-# On windows I must avoid -mno-cygwin here.
+# On windows I must avoid -mno-cygwin here if only because that is an option
+# that no longer exists!
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
 	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
@@ -1107,7 +1194,7 @@ else !canrun
 # cross-compiling) I will build these two utilities using gcc. I will blandly
 # assume that in any cross-compilation situation that gcc is available
 # and works, and the assumption is simplified by the fact that these two
-# programs are botf fairly small and conservative.
+# programs are both fairly small and conservative.
 
 objtype$(EXEEXT):	$(srcdir)/objtype.c
 	gcc $(srcdir)/objtype.c -o objtype$(EXEEXT)
@@ -1119,7 +1206,9 @@ endif !canrun
 
 # The next line generates a small file that contains inforation about the
 # object files used on this computer and the command used to compile
-# simple C code.
+# simple C code. Note that machineid.c is made to depend on Makefile
+# so if for any reason Makefile gets update so will it, and hence
+# restart.o and the rest.
 
 machineid.c:	cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 			makeheaders$(EXEEXT) Makefile $(srcdir)/impex.def \
@@ -1144,7 +1233,7 @@ restart.$(OBJEXT):	machineid.c
 reduce.dep:
 	touch reduce.dep
 
-reduce.img:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
+reduce.img:	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1175,7 +1264,7 @@ endif !canrun
 # This is a temporary target "reduce.dir" to create the image as a directory
 # rather than as a single file.
 
-reduce.dir:	reduce$(COM) $(reducedep) $(gensrc)/timestamp.dat
+reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 	-$(RM) -rf reduce.img
 if canrun
 # I will make the REDUCE image file a directory rather than a single
@@ -1215,7 +1304,9 @@ else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
 
-# Copy HTML help files in a directory reduce.doc
+# Copy HTML help files in a directory reduce.doc.
+# This rule lets the index file stand for all others, so if others
+# were to get lost or corrupted they would not be automatically restored.
 reduce.doc/index.html:
 	-$(RM) -rf reduce.doc
 	mkdir -p reduce.doc
@@ -1233,6 +1324,9 @@ if windows
 # if this stuff as fetched using subversion there will be directories
 # called ".svn" that should not be copied, so I can not merely use
 # a simple wild-card to copy everything!
+#
+# Again if just PART of gnuplot became lost or corrupted that might
+# not trigger this rule.
 $(GP):
 	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/R* .
 	$(CP) $(srcdir)/../support-packages/gnuplot-windows-bin/g* .
@@ -1306,33 +1400,42 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat
 		-- buildlogs/c-code.log
 	@mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
-# The following rule can lead to rache conditions with parallel make if
+# The following rule can lead to race conditions with parallel make if
 # several generated files have been deleted but not the make.stamp file.
 # You should be able to recover reliably by going "make clean" followed
 # by "make".
+# See section 27.9 of the Automake manual where it discusses
+# adding a lock to cope with any races.. Well maybe soon while I am about
+# it I will implement what they suggest! Soon.
+
+$(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
+		$(gensrc)/profile.dat
+
+# Whenever I rebuild the generated C files I will forcibly recompile
+# all of them. This is because otherwise any versions that were
+# up to date before the regeneration will NOT get spotted as in need
+# of compilation even though they have changed.
+
+# I believe there is a potential race (with "make -j") if say u01.o is
+# out of date in a simple way and starts to get compiled, but while that
+# is going on a missing version of say u33.lsp causes the rule here to
+# trigger... and in the process re-create a new version of u05.c. I try
+# to deal with that by deleting all the *.o files just in case some
+# parallel process has slotted one in just when I did not want that!
+# Well it is even worse - the main reduce executable can become out
+# of date... but fail to be rebuilt. So here I will forcibly remake that.
+# I rather hope that the delay while C-code is re-created is long enough
+# to let any previous steps complete.
 
 c-code $(generated_sources) $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
-	if test -f $@; then :; else \
+	if test -f $@; then touch $@; else \
 	  rm -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
+	  rm -f $(generated-objects); \
+	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
 
-#c-code $(gensrc)/timestamp.dat:	$(bootstrapreducedep) $(gensrc)/profile.dat
-#if canrun
-#	mkdir -p buildlogs
-#	$(MAKE) bootstrapreduce.img
-#	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
-#		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
-#		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
-#		-- buildlogs/c-code.log
-#else !canrun
-#	echo Can not generate C code on this platfrom
-#	echo Touching existing files to adjust datestamps
-#	touch $(gensrc)/*
-#endif !canrun
-
-#$(generated_objects):	$(gensrc)/timestamp.dat
 
 # full-c-code is a target only activated manually.
 

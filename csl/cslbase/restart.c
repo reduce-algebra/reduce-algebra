@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 2bd37309 20-Aug-2011 */
+/* Signature: 0874c37a 21-Aug-2011 */
 
 #include "headers.h"
 
@@ -2938,11 +2938,11 @@ static Lisp_Object MS_CDECL Lcheck_c_code(Lisp_Object nil, int nargs, ...)
     if (p == NULL) return aerror1("check-c-code", name);
 
     if (sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
-        return aerror("check-c-code");
+        return aerror1("check-c-code", name);
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
-    return aerror("check-c-code");
+    return aerror1("check-c-code", name);
 }
 
 static setup_type const restart_setup[] =

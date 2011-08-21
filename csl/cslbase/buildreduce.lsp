@@ -644,7 +644,9 @@ symbolic procedure build_reduce_modules names;
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
-    window!-heading list!-to!-string explodec car names;
+    w := explodec car names;
+    if !*savedef then w := append(explodec "[Bootstrap] ", w);
+    window!-heading list!-to!-string w;
 !#if !*savedef
 % When building the bootstrap version I want to record what switches
 % get declared...

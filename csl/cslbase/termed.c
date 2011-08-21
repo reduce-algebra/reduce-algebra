@@ -1,4 +1,3 @@
-#define TEST 1
 /* termed.c                          Copyright (C) 2004-2010 Codemist Ltd */
 
 /**************************************************************************
@@ -37,7 +36,7 @@
  */
 
 
-/* Signature: 49405e00 11-Jan-2011 */
+/* Signature: 5ab9b110 21-Aug-2011 */
 
 /*
  * This supports modest line-editing and history for terminal-mode
@@ -631,7 +630,9 @@ static void measure_screen(void)
 #endif /* TIOCGWINSZ */
 #endif /* HAVE_SYS_IOCTL_H */
 #endif /* WIN32 */
-    LOG("[screen:%dx%d]", columns, lines);
+/*
+ *  LOG("[screen:%dx%d]", columns, lines);
+ */
 }
 
 #ifdef WIN32

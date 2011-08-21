@@ -52,8 +52,6 @@ on echo;
 
 symbolic;
 
-errorset('(delete!-file "$destdir/timestamp.dat"), nil, nil);
-
 % Three major parameters are available:
 %
 %   fnames       a list of files to create. Making the list longer (or
@@ -478,13 +476,6 @@ else while bulk < 50 and w_reduce do
 
 terpri();
 prin total; printc " functions compiled into C";
-
-<< ff := open("$destdir/timestamp.dat", 'output);
-   ff1 := wrs ff;
-   princ "C code last regenerated at ";
-   printc date();
-   wrs ff1;
-   close ff >>;
 
 nil >>;
 
