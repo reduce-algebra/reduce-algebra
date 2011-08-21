@@ -328,20 +328,27 @@ these operators by using the {\tt LET}\ttindex{LET} command.
 
 \hypertarget{switch:COMBINELOGS}{}
 \hypertarget{switch:EXPANDLOGS}{}
+\hypertarget{switch:PRECISE}{}
 In many cases it is desirable to expand product arguments of logarithms,
 or collect a sum of logarithms into a single logarithm.  Since these are
 inverse operations, it is not possible to provide rules for doing both at
 the same time and preserve the {\REDUCE} concept of idempotent evaluation.
 As an alternative, REDUCE provides two switches {\tt EXPANDLOGS}
 \ttindex{EXPANDLOGS} and {\tt COMBINELOGS}\ttindex{COMBINELOGS} to carry
-out these operations.  Both are off by default.  Thus to expand {\tt
-LOG(X*Y)} into a sum of logs, one can say
+out these operations.  Both are off by default, and are subject 
+to the value of the switch \texttt{PRECISE}\ttindex{PRECISE}. This switch is on
+by default and prevents modifications that may be false in a complex domain.
+Thus to expand {\tt LOG(3*Y)} into a sum of logs, one can say
 \begin{verbatim}
-	ON EXPANDLOGS; LOG(X*Y);
+	ON EXPANDLOGS; LOG(3*Y);
 \end{verbatim}
-and to combine this sum into a single log:
+whereas to expand {\tt LOG(X*Y)} into a sum of logs, one needs to say
 \begin{verbatim}
-	ON COMBINELOGS; LOG(X) + LOG(Y);
+        OFF PRECISE; ON EXPANDLOGS; LOG(X*Y);
+\end{verbatim}
+To combine this sum into a single log:
+\begin{verbatim}
+	OFF PRECISE; ON COMBINELOGS; LOG(X) + LOG(Y);
 \end{verbatim}
 
 At the present time, it is possible to have both switches on at once,
