@@ -45,7 +45,7 @@ deflist('((expt crexpt!*) (sin crsin!*) (cos crcos!*) (tan crtan!*)
           (coth crcoth!*) (atanh cratanh!*) (acoth cracoth!*)
           (sech crsech!*) (csch crcsch!*) (asech crasech!*)
           (acsch cracsch!*) (atan2 cratan2!*) (arg crarg!*)
-          (sqrt crsqrt!*) (norm crnorm!*) (arg crarg!*) (log crlog!*)
+          (sqrt crsqrt!*) (norm crnorm!*) (arg crarg!*) (log crlog!*) (log10 crlog10!*)
           (exp crexp!*) (logb crlogb!*) (e cre!*) (pi crpi!*)),'!:cr!:);
 
 % deflist('((sind crsind!*) (cosd crcosd!*) (tand crtand!*)
@@ -128,6 +128,8 @@ symbolic procedure cratan2!*(y,x);
 
 symbolic procedure crlog!* u;
    mkcr(rdlog!* crnorm!* u,crarg!* u);
+
+symbolic procedure crlog10!* u; cr!:quotient(crlog!* u,crlog!* i2cr!* 10);
 
 symbolic procedure crlogb!*(u,b); cr!:quotient(crlog!* u,crlog!* b);
 
