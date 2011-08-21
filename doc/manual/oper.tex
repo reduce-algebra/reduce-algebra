@@ -351,6 +351,9 @@ To combine this sum into a single log:
 	OFF PRECISE; ON COMBINELOGS; LOG(X) + LOG(Y);
 \end{verbatim}
 
+These switches affect the logarithmic functions LOG10 (base 10) and LOGB
+(arbitrary base) as well.
+
 At the present time, it is possible to have both switches on at once,
 which could lead to infinite recursion.  However, an expression is
 switched from one form to the other in this case.  Users should not rely
