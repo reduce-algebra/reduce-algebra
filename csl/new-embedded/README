@@ -11,10 +11,10 @@ I hope it will end up with recipes to cross-compile or custom-build Reduce
 for a variety of interesting situations.
 
 The reduce-image directory builds a version of Reduce on the current computer
-(whatever that is) and uses it to cread a file "reduce.img". This image file
+(whatever that is) and uses it to create a file "reduce.img". This image file
 will be needed by all other variants here. minireduce-image is much the
 same but builds a custom cut-down version for use when memory may be tight and
 some of the more advanced packages are not required.
 
-                                 Arthur Norman.   July 2009 - March 2011
+                                 Arthur Norman.   July 2009 - August 2011
 

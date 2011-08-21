@@ -60,7 +60,7 @@ S=../../cslbase
 
 VPATH=$(S)
 
-all:	reduce
+all:	reduce reduce.img
 
 reduce:		arith01.o arith02.o arith03.o arith04.o arith05.o \
 		arith06.o arith07.o arith08.o arith09.o arith10.o \
