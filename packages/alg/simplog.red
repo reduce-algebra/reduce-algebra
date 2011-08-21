@@ -42,7 +42,10 @@ symbolic smacro procedure get!-log!-base u;
 symbolic procedure simplog u;
    (if !*expandlogs then
      (resimp simplogbi(x,get!-log!-base u) where !*expandlogs=nil)
-%    else if fixp x then simplogbn(x,get!-log!-base u)
+%%% next line temporarily left out: causes CRACK test file to fail
+%    else if x=0 then rerror(alg,210,{car u,"0 formed"})
+    else if fixp x and car u='log10 and not(dmode!* and get('log10,dmode!*))
+      then simplogbn(x,get!-log!-base u)
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
      then negsq simpiden(car u . cddr x)
@@ -52,6 +55,7 @@ symbolic procedure simplog u;
 symbolic procedure simplogb u;
    (if !*expandlogs then
      (resimp simplogbi(x,carx(cddr u,'simplogb)) where !*expandlogs=nil)
+    else if x=0 then rerror(alg,210,"Logb(0,...) formed")
 %    else if fixp x then simplogbn(x,caddr u)
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
@@ -177,6 +181,8 @@ symbolic procedure simplogbn(u,base);
              else <<z := cdr fives;
                      y := append(y, list(2 . (cdr twos - cdr fives)))>>>>
       end;
+      if null !*expandlogs
+        then return (if null y then z else !*kk2f mk!-log!-arg(u,base)) ./ 1;
       if eqcar(y,'(-1 . 1)) and null(y := mergeminus cdr y)
        then return !*kk2q mk!-log!-arg(u,base);
       for each x in y do
