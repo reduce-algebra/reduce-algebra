@@ -340,7 +340,7 @@ to the value of the switch \texttt{PRECISE}\ttindex{PRECISE}. This switch is on
 by default and prevents modifications that may be false in a complex domain.
 Thus to expand {\tt LOG(3*Y)} into a sum of logs, one can say
 \begin{verbatim}
-	ON EXPANDLOGS; LOG(3*Y);
+        ON EXPANDLOGS; LOG(3*Y);
 \end{verbatim}
 whereas to expand {\tt LOG(X*Y)} into a sum of logs, one needs to say
 \begin{verbatim}
@@ -348,7 +348,7 @@ whereas to expand {\tt LOG(X*Y)} into a sum of logs, one needs to say
 \end{verbatim}
 To combine this sum into a single log:
 \begin{verbatim}
-	OFF PRECISE; ON COMBINELOGS; LOG(X) + LOG(Y);
+        OFF PRECISE; ON COMBINELOGS; LOG(X) + LOG(Y);
 \end{verbatim}
 
 These switches affect the logarithmic functions LOG10 (base 10) and LOGB
