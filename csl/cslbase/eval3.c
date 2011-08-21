@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 5e48fea9 09-Aug-2011 */
+/* Signature: 7ab252e5 21-Aug-2011 */
 
 #include "headers.h"
 
@@ -1347,6 +1347,7 @@ Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...)
 {
     Lisp_Object form, fg1, fg2;
     va_list a;
+    nil_as_base;
     if (nargs < 1 || nargs > 3) return aerror("errorset");
     va_start(a, nargs);
     form = va_arg(a, Lisp_Object);

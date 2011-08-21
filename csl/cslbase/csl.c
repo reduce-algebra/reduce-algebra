@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 226c269a 21-Aug-2011 */
+/* Signature: 4bcbb1d0 21-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -1311,6 +1311,10 @@ void cslstart(int argc, char *argv[], character_writer *wout)
 #endif
 
     C_stack_limit = NULL;
+#ifdef EMBEDDED
+/* This provides a fixed limit in the embedded build */
+    C_stack_limit = (char *)&argc - 2*1024*1024 + 0x10000;
+#else /* EMBEDDED */
 #ifdef WIN32
     {   HMODULE h = GetModuleHandle(NULL); /* For current executable */
         if (h != NULL)
@@ -1336,7 +1340,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
             }
         }
     }
-#else
+#else /* WIN32 */
 #ifdef HAVE_SYS_RESOURCE_H
     {   struct rlimit r;
         if (getrlimit(RLIMIT_STACK, &r) == 0)
@@ -1362,8 +1366,8 @@ void cslstart(int argc, char *argv[], character_writer *wout)
             }
         }
     }
-#endif
-#endif
+#endif /* HAVE_SYS_RESOURCE_H */
+#endif /* WIN32 */
 /* If I can not read a value then I will set a limit at 4 Mbytes... */
     if (C_stack_limit == NULL)
     {   C_stack_limit = (char *)&argc - 4*1024*1024 + 0x10000;
@@ -1371,6 +1375,7 @@ void cslstart(int argc, char *argv[], character_writer *wout)
         fprintf(stderr, "[debug] stack defaulting to 4Mb\n");
 #endif
     }
+#endif /* EMBEDDED */
 
 #ifdef EMBEDDED
     fwin_set_lookup(look_in_lisp_variable);
