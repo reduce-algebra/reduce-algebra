@@ -214,7 +214,9 @@ public static void startup(String [] args,
     {
         lispIO = null;
         finishingUp = true;
-        t.interrupt();     // so it can exit
+        if (t != null) {
+            t.interrupt();     // so it can exit
+        }
         int i;
 // In general I close in the opposite order from that in which I opened files.
 // The code here is such that if closing one file happened to have a side
