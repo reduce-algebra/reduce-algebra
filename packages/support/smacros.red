@@ -2481,8 +2481,14 @@ symbolic smacro procedure expread; xread t;
 %   end;
 
 
-symbolic smacro procedure formlog2 sf; 
-   cons(cons(mksp({'log,prepf sf},1),1),nil);
+symbolic smacro procedure mk!-log!-arg(arg,base);
+   if null base or base eq 'e then {'log,arg}
+    else if base=10 then {'log10,arg}
+    else {'logb,arg,base};
+
+
+symbolic smacro procedure formlog2(sf,base); 
+   cons(cons(mksp(mk!-log!-arg(prepf sf,base),1),1),nil);
 
 
 symbolic smacro procedure gf2cr!: x; 
@@ -2698,8 +2704,8 @@ symbolic smacro procedure deg2rad!* u;
    (lambda x; mkround (if atom x then deg2rad x else deg2rad!: x)) convprec u;
 
 
-symbolic smacro procedure formlog sf; 
-   if null cdr sf then formlogterm sf else cons(formlog2 sf,1);
+symbolic smacro procedure formlog(sf,base); 
+   if null cdr sf then formlogterm(sf,base) else cons(formlog2(sf,base),1);
 
 
 symbolic smacro procedure cracos!* u; 

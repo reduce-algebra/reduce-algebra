@@ -30,50 +30,76 @@ fluid '(!*intflag!* !*noneglogs !*expandlogs);
 
 global '(domainlist!*);
 
-exports simplog,simplogi,simplogsq;
+exports simplog,simplogb,simplogbi,simplogbsq,simplogi,simplogsq;
 
 imports addf,addsq,comfac,quotf,prepf,mksp,simp!*,!*multsq,simptimes,
         minusf,negf,negsq,mk!*sq,carx,multsq,resimp,simpiden,simpplus,
         prepd,mksq,rerror,zfactor,sfchk;
 
+symbolic smacro procedure get!-log!-base u;
+   if car u eq 'log10 then 10 else nil;
+
 symbolic procedure simplog u;
    (if !*expandlogs then
-     (resimp simplogi x where !*expandlogs=nil)
+     (resimp simplogbi(x,get!-log!-base u) where !*expandlogs=nil)
+%    else if fixp x then simplogbn(x,get!-log!-base u)
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
-     then negsq simpiden('log . cddr x)
+     then negsq simpiden(car u . cddr x)
     else simpiden u)
     where x=carx(cdr u,'simplog);
 
+symbolic procedure simplogb u;
+   (if !*expandlogs then
+     (resimp simplogbi(x,carx(cddr u,'simplogb)) where !*expandlogs=nil)
+%    else if fixp x then simplogbn(x,caddr u)
+    else if eqcar(x,'quotient) and cadr x=1
+      and (null !*precise or realvaluedp caddr x)
+     then negsq simpiden {car u, caddr x, caddr u}
+    else simpiden u)
+    where x=cadr u;
+
 put('log,'simpfn,'simplog);
 
-flag('(log),'full);
+put('log10,'simpfn,'simplog);
+
+put('logb,'simpfn,'simplogb);
+
+flag('(log log10 logb),'full);
 
 put('expandlogs,'simpfg,'((nil (rmsubs)) (t (rmsubs))));
 
 put('combinelogs,'simpfg,'((nil (rmsubs)) (t (rmsubs))));
 
+symbolic smacro procedure mk!-log!-arg(arg,base);
+   if null base or base eq 'e then {'log,arg}
+    else if base=10 then {'log10,arg}
+    else {'logb,arg,base};
+
 symbolic procedure simplogi(sq);
+   simplogbi(sq,nil);
+
+symbolic procedure simplogbi(sq,base);
    % This version will only expand a log if at most one of the
    % arguments is complex.  Otherwise you can finish up on the wrong
    % sheet.
-   if atom sq then simplogsq simp!* sq
-    else if car sq memq domainlist!* then simpiden list('log,sq)
+   if atom sq then simplogbsq(simp!* sq,base)
+    else if car sq memq domainlist!* then simpiden mk!-log!-arg(sq,base)
     else if car sq eq 'times
           then if null !*precise or one_complexlist cdr sq
-           then simpplus(for each u in cdr sq collect mk!*sq simplogi u)
-          else !*kk2q {'log,sq}
+           then simpplus(for each u in cdr sq collect mk!*sq simplogbi(u,base))
+          else !*kk2q mk!-log!-arg(sq,base)
     else if car sq eq 'quotient
        and (null !*precise or one_complexlist cdr sq)
-     then addsq(simplogi cadr sq,negsq simplogi caddr sq)
+     then addsq(simplogbi(cadr sq,base),negsq simplogbi(caddr sq,base))
     else if car sq eq 'expt
-     then simptimes list(caddr sq,mk!*sq simplogi cadr sq)
+     then simptimes list(caddr sq,mk!*sq simplogbi(cadr sq,base))
     else if car sq eq 'nthroot
-     then multsq!*(1 ./ caddr sq,simplogi cadr sq)
+     then multsq!*(1 ./ caddr sq,simplogbi(cadr sq,base))
     % we had (nthroot of n).
-    else if car sq eq 'sqrt then multsq!*(1 ./ 2,simplogi cadr sq)
-    else if car sq = '!*sq then simplogsq cadr sq
-    else simplogsq simp!* sq;
+    else if car sq eq 'sqrt then multsq!*(1 ./ 2,simplogbi(cadr sq,base))
+    else if car sq = '!*sq then simplogbsq(cadr sq,base)
+    else simplogbsq(simp!* sq,base);
 
 symbolic procedure one_complexlist u;
    % True if at most one member of list u is complex.
@@ -85,44 +111,76 @@ symbolic procedure multsq!*(u,v);
    if !*intflag!* then !*multsq(u,v) else multsq(u,v);
 
 symbolic procedure simplogsq sq;
+   simplogbsq(sq,nil);
+
+symbolic procedure simplogbsq(sq,base);
    % This procedure needs to be reworked to provide for proper sheet
    % handling.
    if null numr sq then rerror(alg,210,"Log 0 formed")
-    else if denr sq=1 and domainp numr sq and !:onep numr sq
-     then nil ./ 1
-    else if !*precise then !*kk2q {'log,prepsq sq}
-    else addsq(simplog2 numr sq,negsq simplog2 denr sq);
+    else begin integer n;
+      if denr sq=1 and domainp numr sq
+        then <<if !:onep numr sq then return nil ./ 1
+                else if (n:=int!-equiv!-chk numr sq) and fixp n then return simplogbn(n,base)
+                else if eqcar(numr sq,'!:rn!:) and not !:minusp numr sq
+                 then return addsq(simplogb2(cadr numr sq,base),negsq simplogb2(cddr numr sq,base)) >>
+       else if fixp denr sq and domainp numr sq
+        then <<if (n:=int!-equiv!-chk numr sq) and fixp n
+                 then return addsq(simplogbn(n,base),negsq simplogbn(denr sq,base))>>;
+      if !*precise then return !*kk2q mk!-log!-arg(prepsq sq,base)
+        else return addsq(simplogb2(numr sq,base),negsq simplogb2(denr sq,base));
+    end;
 
-symbolic procedure simplog2(sf);
+symbolic procedure simplogb2(sf,base);
  if atom sf
    then if null sf then rerror(alg,21,"Log 0 formed")
       else if numberp sf
        then if sf iequal 1 then nil ./ 1
              else if sf iequal 0 then rerror(alg,22,"Log 0 formed")
-             else simplogn sf
-      else formlog(sf)
-   else if domainp sf then mksq({'log,prepd sf},1)
+             else simplogbn(sf,base)
+      else formlog(sf,base)
+   else if domainp sf then mksq(mk!-log!-arg(prepd sf,base),1)
      else begin scalar form;
         form := comfac sf;
         if not null car form
-          then return addsq(formlog(form .+ nil),
-                            simplog2 quotf(sf,form .+ nil));
+          then return addsq(formlog(form .+ nil,base),
+                            simplogb2(quotf(sf,form .+ nil),base));
         % We have killed common powers.
         form := cdr form;
         if form neq 1
-          then return addsq(simplog2 form,simplog2 quotf(sf,form));
+          then return addsq(simplogb2(form,base),simplogb2(quotf(sf,form),base));
         % Remove a common factor from the sf.
-        return formlog sf
+        return formlog(sf,base)
      end;
 
 symbolic procedure simplogn u;
+   simplogbn(u,nil);
+
+
+% If base is 10, apply simplification for log10 of an integer:
+% after factorization of the integer argument, check if the
+% factors 2 and 5 can be combined to a power of 10.
+
+symbolic procedure simplogbn(u,base);
    % See comments in formlog for an explanation of the code.
    begin scalar y,z;
       y := zfactor u;
-      if car y= '(-1 . 1) and null(y := mergeminus cdr y)
-       then return !*kk2q {'log,u};
+      if base=10 then begin integer twos,fives;
+         twos := assoc(2,y);
+         fives := assoc(5,y);
+         if twos and fives then <<
+            y := delete(twos,y);
+            y := delete(fives,y);
+            if cdr twos = cdr fives then z := cdr twos
+             else if cdr twos < cdr fives
+              then <<z := cdr twos;
+                     y := append(y, list(5 . (cdr fives - cdr twos)))>>
+             else <<z := cdr fives;
+                     y := append(y, list(2 . (cdr twos - cdr fives)))>>>>
+      end;
+      if eqcar(y,'(-1 . 1)) and null(y := mergeminus cdr y)
+       then return !*kk2q mk!-log!-arg(u,base);
       for each x in y do
-          z := addf(((mksp({'log,car x},1) .* cdr x) .+ nil),z);
+          z := addf(((mksp(mk!-log!-arg(car x,base),1) .* cdr x) .+ nil),z);
       return z ./ 1
    end;
 
@@ -134,32 +192,32 @@ symbolic procedure mergeminus u;
        else <<x := car u . x; u := cdr u; go to a>>
    end;
 
-symbolic procedure formlog sf;
+symbolic procedure formlog(sf,base);
    % Minus test commented out. Otherwise, we can get:
    % log(a) + log(-1) => log(a*(-1)) => log(-a).
    % log(a) - log(-1) => log(a/(-1)) => log(-a).
    % I.e., log(-a) can be log(a) + log(-1) or log(a) - log(-1).
-   if null red sf then formlogterm sf
+   if null red sf then formlogterm(sf,base)
 %   else if minusf sf and null !*noneglogs
 %    then addf((mksp(list('log,-1),1) .* 1) .+ nil,
-%              formlog2 negf sf) ./ 1
-    else (formlog2 sf) ./ 1;
+%              formlog2(negf sf,base)) ./ 1
+    else formlog2(sf,base) ./ 1;
 
-symbolic procedure formlogterm(sf);
+symbolic procedure formlogterm(sf,base);
    begin scalar u;
       u := mvar sf;
       if not atom u and (car u member '(times sqrt expt nthroot))
-         then u := addsq(simplog2 lc sf,
-                         multsq!*(simplogi u,simp!* ldeg sf))
+         then u := addsq(simplogb2(lc sf,base),
+                         multsq!*(simplogbi(u,base),simp!* ldeg sf))
         else if (lc sf iequal 1) and (ldeg sf iequal 1)
-         then u := ((mksp(list('log,sfchk u),1) .* 1) .+ nil) ./ 1
-        else u := addsq(simptimes list(list('log,sfchk u),ldeg sf),
-                        simplog2 lc sf);
+         then u := ((mksp(mk!-log!-arg(sfchk u,base),1) .* 1) .+ nil) ./ 1
+        else u := addsq(simptimes list(mk!-log!-arg(sfchk u,base),ldeg sf),
+                        simplogb2(lc sf,base));
       return u
    end;
 
-symbolic procedure formlog2 sf;
-   ((mksp(list('log,prepf sf),1) .* 1) .+ nil);
+symbolic procedure formlog2(sf,base);
+   ((mksp(mk!-log!-arg(prepf sf,base),1) .* 1) .+ nil);
 
 endmodule;
 
