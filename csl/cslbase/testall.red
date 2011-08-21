@@ -11,8 +11,6 @@
 
 symbolic;
 
-trace '(resource!-limit);
-
 load!-module 'remake;
 
 get_configuration_data();
