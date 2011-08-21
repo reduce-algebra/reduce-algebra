@@ -102,6 +102,12 @@ AC_ARG_WITH(lionSDK,
    [],
    [with_lionSDK="yes"])
 
+AC_ARG_WITH(lto,
+   AC_HELP_STRING([--with-lto],
+                  [Experiment with extreme optimisation in gcc (CSL only)]),
+   [],
+   [with_lto="no"])
+
 AC_ARG_WITH(m32,
    AC_HELP_STRING([--with-m32],
                   [Force 32-bit model even on 64-bit gcc (CSL only)]),
@@ -310,7 +316,9 @@ then
 # sometimes when debugging in that PERHAPS the mingw32 tools might not work
 # as well with gdb as the older "gcc-3 -mno-cygwin" recipe.
 # Well as gdb catches up that sort of reason can fade...
-  if test "x$with_gcc3" != "xno" && test "x$with_gcc3" != "xdefault" && test "x$GCC_3" != "xno"
+  if test "x$with_gcc3" != "xno" && \
+     test "x$with_gcc3" != "xdefault" && \
+     test "x$GCC_3" != "xno"
   then
     X32_GCC="no"
   fi
@@ -325,7 +333,9 @@ then
     AC_MSG_NOTICE([$doconfig])
     eval "$doconfig"
     exit
-  elif test "x$with_mingw64" = "xno" || test "x$wow64" = "xno" || test "x$X64_GCC" = "xno"
+  elif test "x$with_mingw64" = "xno" || \
+       test "x$wow64" = "xno" || \
+       test "x$X64_GCC" = "xno"
   then
 # Here I either explicitly want to build a 32-bit version, or I am on
 # a 32-bit windows and did not explicitly ask for a 64-bit version. I
@@ -333,7 +343,7 @@ then
 # will look at them here in order of preference. I do this even if I am on
 # a 64-bit Windows if the 64-bit compilers are not available.
 #
-    if test "$X32_GCC" = "yes" && test "x$with_gcc3" == "xno"
+    if test "$X32_GCC" = "yes" && test "x$with_gcc3" != "xyes"
     then
 # Use cross-compilation using i686-w64-mingw32-g++ etc.
       doconfig="$SHELL $abssrcdir/configure $ac_configure_args \

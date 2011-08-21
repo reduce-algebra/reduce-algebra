@@ -759,6 +759,7 @@ with_lionSDK
 with_gui
 with_build
 with_pslbuild
+with_lto
 with_m32
 with_m64
 with_fox
@@ -1428,6 +1429,7 @@ Optional Packages:
   --with-gui              this option is ignored here!
   --with-build            specify host-name to use when logging
   --with-pslbuild         used to invoke the PSL version
+  --with-lto              Force extreme optimisation with gcc
   --with-m32              Force 32-bit model even on 64-bit gcc
   --with-m64              Force 64-bit model even if 32-bit is default
   --with-fox=DIR          FOX installation location
@@ -3275,6 +3277,15 @@ _ACEOF
 cat >>confdefs.h <<_ACEOF
 #define HOST_OS "$host_os"
 _ACEOF
+
+
+
+# Check whether --with-lto was given.
+if test "${with_lto+set}" = set; then :
+  withval=$with_lto;
+else
+  with_lto="no"
+fi
 
 
 # The next line may be of use when building on a 64-bit system that uses
@@ -7712,6 +7723,43 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 
+if test "x$with_lto" != "xno"
+then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for link time optimisation capability (LTO)" >&5
+$as_echo "$as_me: Checking for link time optimisation capability (LTO)" >&6;}
+  if test "x$GCC" = "xyes"
+  then
+    OLDCFLAGS="$CFLAGS"
+    OLDLDFLAGS="$LDFLAGS"
+    CFLAGS="$CFLAGS -flto"
+    LDFLAGS="$LDFLAGS -flto"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+printf("\n");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  CXXFLAGS="$CXXFLAGS -flto"
+       HIGHOPT="-O3"
+       { $as_echo "$as_me:${as_lineno-$LINENO}: Will use link-time optimisation and -O3" >&5
+$as_echo "$as_me: Will use link-time optimisation and -O3" >&6;}
+else
+  CFLAGS="$OLDCFLAGS"
+       LDFLAGS="$OLDLDFLAGS"
+       { $as_echo "$as_me:${as_lineno-$LINENO}: -flto not available" >&5
+$as_echo "$as_me: -flto not available" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  fi
+fi
+
 if test "x$with_gui" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
@@ -8301,7 +8349,10 @@ $as_echo "$enable_static" >&6; }
 #
 
 LOWOPT="-O0"
-HIGHOPT="-O2"
+if test "x$HIGHOPT" = "x"
+then
+  HIGHOPT="-O2"
+fi
 
 case $CC in
 x86_64-w64-*)

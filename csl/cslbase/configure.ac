@@ -7,6 +7,7 @@
 #
 #   --with-m32        Force 32-bit compilation when host is 64-bit gcc
 #   --with-m64        Force 64-bit compilation even if default is 32-bit
+#   --with-lto        Try link-time optimisation with gcc. EXPERIMENTAL.
 #   --with-cygwin     Build native cygwin X11 based system, 
 #                     Please note cygwin licensing issues, which do not
 #                     have any adverse effects so long as you retain BSD
@@ -129,6 +130,12 @@ AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
 AC_DEFINE_UNQUOTED(HOST_CPU,"$host_cpu",[Name of CPU])
 AC_DEFINE_UNQUOTED(HOST_VENDOR,"$host_vendor",[Name of vendor])
 AC_DEFINE_UNQUOTED(HOST_OS,"$host_os",[Name of Operating System])
+
+AC_ARG_WITH(lto,
+   AC_HELP_STRING([--with-lto],
+                  [Force extreme optimisation with gcc]),
+   [],
+   [with_lto="no"])
 
 # The next line may be of use when building on a 64-bit system that uses
 # gcc. It forces "-m32" into CFLAGS etc.
@@ -877,6 +884,26 @@ then
                  [CFLAGS="$OLDCFLAGS"])
 fi
 
+if test "x$with_lto" != "xno"
+then
+  AC_MSG_NOTICE([Checking for link time optimisation capability (LTO)])
+  if test "x$GCC" = "xyes"
+  then
+    OLDCFLAGS="$CFLAGS"
+    OLDLDFLAGS="$LDFLAGS"
+    CFLAGS="$CFLAGS -flto"
+    LDFLAGS="$LDFLAGS -flto"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                    [[printf("\n");]])],
+      [CXXFLAGS="$CXXFLAGS -flto"
+       HIGHOPT="-O3"
+       AC_MSG_NOTICE(Will use link-time optimisation and -O3)],
+      [CFLAGS="$OLDCFLAGS"
+       LDFLAGS="$OLDLDFLAGS"
+       AC_MSG_NOTICE(-flto not available)])
+  fi
+fi
+
 if test "x$with_gui" != "xno"
 then
   if (test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes")
@@ -990,7 +1017,10 @@ AC_MSG_RESULT([$enable_static])
 #
 
 LOWOPT="-O0"
-HIGHOPT="-O2"
+if test "x$HIGHOPT" = "x"
+then
+  HIGHOPT="-O2"
+fi
 
 case $CC in
 x86_64-w64-*)
