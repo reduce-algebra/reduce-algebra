@@ -45,7 +45,7 @@ symbolic procedure simplog u;
 %%% next line temporarily left out: causes CRACK test file to fail
 %    else if x=0 then rerror(alg,210,{car u,"0 formed"})
     else if fixp x and car u='log10 and not(dmode!* and get('log10,dmode!*))
-      then simplogbn(x,get!-log!-base u)
+      then simplogbn(x,get!-log!-base u,t)
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
      then negsq simpiden(car u . cddr x)
@@ -56,7 +56,7 @@ symbolic procedure simplogb u;
    (if !*expandlogs then
      (resimp simplogbi(x,carx(cddr u,'simplogb)) where !*expandlogs=nil)
     else if x=0 then rerror(alg,210,"Logb(0,...) formed")
-%    else if fixp x then simplogbn(x,caddr u)
+%    else if fixp x then simplogbn(x,caddr u,nil)
     else if eqcar(x,'quotient) and cadr x=1
       and (null !*precise or realvaluedp caddr x)
      then negsq simpiden {car u, caddr x, caddr u}
@@ -124,12 +124,12 @@ symbolic procedure simplogbsq(sq,base);
     else begin integer n;
       if denr sq=1 and domainp numr sq
         then <<if !:onep numr sq then return nil ./ 1
-                else if (n:=int!-equiv!-chk numr sq) and fixp n then return simplogbn(n,base)
+                else if (n:=int!-equiv!-chk numr sq) and fixp n then return simplogbn(n,base,nil)
                 else if eqcar(numr sq,'!:rn!:) and not !:minusp numr sq
                  then return addsq(simplogb2(cadr numr sq,base),negsq simplogb2(cddr numr sq,base)) >>
        else if fixp denr sq and domainp numr sq
         then <<if (n:=int!-equiv!-chk numr sq) and fixp n
-                 then return addsq(simplogbn(n,base),negsq simplogbn(denr sq,base))>>;
+                 then return addsq(simplogbn(n,base,nil),negsq simplogbn(denr sq,base,nil))>>;
       if !*precise then return !*kk2q mk!-log!-arg(prepsq sq,base)
         else return addsq(simplogb2(numr sq,base),negsq simplogb2(denr sq,base));
     end;
@@ -140,7 +140,7 @@ symbolic procedure simplogb2(sf,base);
       else if numberp sf
        then if sf iequal 1 then nil ./ 1
              else if sf iequal 0 then rerror(alg,22,"Log 0 formed")
-             else simplogbn(sf,base)
+             else simplogbn(sf,base,nil)
       else formlog(sf,base)
    else if domainp sf then mksq(mk!-log!-arg(prepd sf,base),1)
      else begin scalar form;
@@ -157,14 +157,15 @@ symbolic procedure simplogb2(sf,base);
      end;
 
 symbolic procedure simplogn u;
-   simplogbn(u,nil);
+   simplogbn(u,nil,nil);
 
 
 % If base is 10, apply simplification for log10 of an integer:
 % after factorization of the integer argument, check if the
 % factors 2 and 5 can be combined to a power of 10.
 
-symbolic procedure simplogbn(u,base);
+% The third argument flg tells simplogbn to not return a sum of terms.
+symbolic procedure simplogbn(u,base,flg);
    % See comments in formlog for an explanation of the code.
    begin scalar y,z;
       y := zfactor u;
@@ -181,8 +182,7 @@ symbolic procedure simplogbn(u,base);
              else <<z := cdr fives;
                      y := append(y, list(2 . (cdr twos - cdr fives)))>>>>
       end;
-      if null !*expandlogs
-        then return (if null y then z else !*kk2f mk!-log!-arg(u,base)) ./ 1;
+      if flg then return (if null y then z else !*kk2f mk!-log!-arg(u,base)) ./ 1;
       if eqcar(y,'(-1 . 1)) and null(y := mergeminus cdr y)
        then return !*kk2q mk!-log!-arg(u,base);
       for each x in y do
