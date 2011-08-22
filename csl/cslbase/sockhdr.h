@@ -37,7 +37,7 @@
  *************************************************************************/
 
 
-/* Signature: 5cef0ec1 24-May-2008 */
+/* Signature: 5ad8f2ee 22-Aug-2011 */
 
 #ifndef UNDER_CE
 #include <errno.h>
@@ -71,6 +71,12 @@
 #endif
 #endif
 
+#if 0
+/*
+ * At one time I could make Reduce serve on a socket - I am removing that
+ * code now, but leaving remains visible in case anybody else needs it.
+ */
+
 #define default_csl_server_port 1206
 #define MAX_USERS                 10  /* approx concurrent remote users */
 #define REMOTE_STORE            8000  /* Allow 8 Mbytes per remote user */
@@ -99,6 +105,8 @@ extern int sockets_ready;
 extern SOCKET socket_server;
 extern char *WSAErrName(int i);
 extern int ensure_sockets_ready(void);
+
+#endif /* 0 */
 
 /* End of sockhdr.h */
 

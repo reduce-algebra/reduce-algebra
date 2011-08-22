@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-/* Signature: 74d59d44 20-Aug-2011 */
+/* Signature: 75a978f3 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -1679,7 +1679,7 @@ static int validate_checksum(FILE *f, uint32_t chk1)
 {
     int c;
     uint32_t chk2 = 0;
-    Lisp_Object nil = C_nil;
+    nil_as_base
     if (read_bytes_remaining < 0)
     {   if ((c = Igetc()) == EOF) goto failed;
         chk2 = c & 0xff;

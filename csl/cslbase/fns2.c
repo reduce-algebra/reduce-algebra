@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1315e6e4 20-Aug-2011 */
+/* Signature: 459047de 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -838,11 +838,13 @@ Lisp_Object MS_CDECL Lsymbol_set_native(Lisp_Object nil, int nargs, ...)
     Lisp_Object fn, args, bpsbase, offset, env, w1, w2, w3;
     int32_t pagenumber, t_p, arginfo;
     intptr_t address, page, bps;
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - deny symbol-set-native to remote users
  */
     if (socket_server != 0) return aerror("symbol-set-native");
+#endif
 #endif
     argcheck(nargs, 5, "symbol-set-native");
     va_start(a, nargs);
@@ -2011,11 +2013,13 @@ static Lisp_Object Lrestart_csl2(Lisp_Object nil,
 {
     int n;
     char *v;
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - deny restart-csl to remote users
  */
     if (socket_server != 0) return aerror("restart-csl");
+#endif
 #endif
     ensure_screen();
     n = 0;
@@ -2075,11 +2079,13 @@ static Lisp_Object Lpreserve(Lisp_Object nil,
     char filename[LONGEST_LEGAL_FILENAME];
     CSLbool failed;
     memset(filename, 0, sizeof(filename));
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - deny preserve to remote users
  */
     if (socket_server != 0) return aerror("preserve");
+#endif
 #endif
     if (startup != nil) supervisor = startup;
     failed = Iwriterootp(filename);  /* Can I open image file for writing? */
@@ -2120,11 +2126,13 @@ static Lisp_Object Lcheckpoint(Lisp_Object nil,
     char *msg = "";
     int len = 0;
     memset(filename, 0, sizeof(filename));
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - deny checkpoint to remote users
  */
     if (socket_server != 0) return aerror("checkpoint");
+#endif
 #endif
     ensure_screen();
     if (startup != nil) supervisor = startup;

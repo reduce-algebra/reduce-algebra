@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 71a3a329 20-Aug-2011 */
+/* Signature: 472963f5 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -1141,11 +1141,13 @@ Lisp_Object Lcopy_module(Lisp_Object nil, Lisp_Object file)
     Header h;
     int32_t len;
     char *modname;
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "copy-module"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (file == nil) Icopy(NULL, 0);
     else
@@ -1182,13 +1184,14 @@ Lisp_Object Lcopy_native(Lisp_Object nil, Lisp_Object src, Lisp_Object dest)
     FILE *srcfile;
     int c;
     memset(filename, 0, sizeof(filename));
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "copy-native"
  */
     if (socket_server != 0) return onevalue(nil);
 #endif
-
+#endif
     w = get_string_data(src, "copy-native", &len);
     nil = C_nil;
     if (exception_pending()) return nil;
@@ -1239,11 +1242,13 @@ Lisp_Object Ldelete_module(Lisp_Object nil, Lisp_Object file)
     Header h;
     int32_t len;
     char *modname;
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "delete-module"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (file == nil) Idelete(NULL, 0);
     else
@@ -1293,11 +1298,13 @@ Lisp_Object Lbanner(Lisp_Object nil, Lisp_Object info)
         errexit();
         return onevalue(info);
     }
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not change banner info
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (symbolp(info))
     {   info = get_pname(info);
@@ -1597,13 +1604,14 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
  */
 {
     Lisp_Object w;        
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "FASLOUT" & start-module
  */
     if (socket_server != 0) return onevalue(nil);
 #endif
-
+#endif
     recent_pointer = 0;
     skipping_output = 0;
     fp_rep_set = NO;
@@ -1726,11 +1734,13 @@ Lisp_Object Lstart_module(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Ldefine_in_module(Lisp_Object nil, Lisp_Object a)
 {
     int32_t args, opts, ntail;
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "define-in-module"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (!is_fixnum(a)) return aerror("define-in-module");
     if (a == fixnum_of_int(-1))
@@ -1938,11 +1948,13 @@ static Lisp_Object write_module0(Lisp_Object nil, Lisp_Object a)
  * must intrude).
  */
 {
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "write-module"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (a == nil) Iputc(F_NIL);
     else if (a == lisp_true) Iputc(F_TRU);
@@ -2480,11 +2492,13 @@ Lisp_Object Lwrite_help_module(Lisp_Object nil,
     char_pair_hash *overflow;
     CSL_IGNORE(ignore);
     memset(filename, 0, sizeof(filename));
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do write-help-module"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
 #ifdef COMMON
     if (complex_stringp(name))

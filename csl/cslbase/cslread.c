@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 1b5d7f3f 20-Aug-2011 */
+/* Signature: 403cf454 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -169,6 +169,7 @@ Lisp_Object MS_CDECL Lbatchp(Lisp_Object nil, int nargs, ...)
 {
     CSL_IGNORE(nil);
     argcheck(nargs, 0, "batchp");
+#if 0
 #ifdef SOCKETS
 /*
  * If CSL is being run as a service (ie accessed via a socket) then I will
@@ -177,6 +178,7 @@ Lisp_Object MS_CDECL Lbatchp(Lisp_Object nil, int nargs, ...)
  * communications link.
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
 /*
  * If the user had specified input files on the command line I will say that
@@ -240,11 +242,13 @@ Lisp_Object Lsystem(Lisp_Object nil, Lisp_Object a)
     int32_t len;
     int w;
     memset(parmname, 0, sizeof(parmname));
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "system"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (a == nil)            /* enquire if command processor is available */
     {   w = my_system(NULL);
@@ -292,11 +296,13 @@ static Lisp_Object Lsilent_system(Lisp_Object nil, Lisp_Object a)
 #ifdef SHELL_EXECUTE
     memset(args, 0, sizeof(args));
 #endif
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "system"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (a == nil)            /* enquire if command processor is available */
         return onevalue(lisp_true); /* always is on Windows! */
@@ -4363,11 +4369,13 @@ Lisp_Object Lspool(Lisp_Object nil, Lisp_Object file)
     Header h;
     int32_t len;
     memset(filename, 0, sizeof(filename));
+#if 0
 #ifdef SOCKETS
 /*
  * Security measure - remote client can not do "spool"
  */
     if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (spool_file != NULL) 
     {

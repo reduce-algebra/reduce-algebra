@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 157f0c82 20-Aug-2011 */
+/* Signature: 2cc710b8 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -81,8 +81,10 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 
 void ensure_screen()
 {
+#if 0
 #ifdef SOCKETS
     if (socket_server != 0) flush_socket();
+#endif
 #endif
 #ifdef HAVE_FWIN
     fwin_ensure_screen();
@@ -919,7 +921,7 @@ char *get_string_data(Lisp_Object name, char *why, int32_t *len)
 static Lisp_Object Lfiledate(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME], tt[32];
-    int32_t len;
+    int32_t len = 0;
     char *w;
     memset(filename, 0, sizeof(filename));
     w = get_string_data(name, "filep", &len);
@@ -1080,7 +1082,7 @@ Lisp_Object MS_CDECL Ltmpnam1(Lisp_Object nil, Lisp_Object extn)
  */
 {
     char *suffix;
-    int32_t suffixlen;
+    int32_t suffixlen = 0;
     Lisp_Object r;
     suffix = get_string_data(extn, "tmpnam", &suffixlen);
     errexit();
@@ -1159,7 +1161,7 @@ Lisp_Object Lopen(Lisp_Object nil, Lisp_Object name, Lisp_Object dir)
     FILE *file;
     Lisp_Object r;
     char filename[LONGEST_LEGAL_FILENAME], fn1[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w;
     int d;
 #if defined HAVE_POPEN || defined HAVE_FWIN
@@ -1170,6 +1172,7 @@ Lisp_Object Lopen(Lisp_Object nil, Lisp_Object name, Lisp_Object dir)
     if (!is_fixnum(dir)) return aerror1("open", dir);
     d = (int)int_of_fixnum(dir);
 
+#if 0
 #ifdef SOCKETS
 /*
  * If I am working as a socket server I will prohibit operations that
@@ -1181,6 +1184,7 @@ Lisp_Object Lopen(Lisp_Object nil, Lisp_Object name, Lisp_Object dir)
          (d & DIRECTION_MASK) == DIRECTION_IO ||
          (d & OPEN_PIPE) != 0))
         return aerror1("open invalid in server mode", dir);
+#endif
 #endif
 
 #ifdef DEBUG_OPENING_FILES
@@ -1526,7 +1530,7 @@ Lisp_Object Ltruename(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
     Lisp_Object truename;
-    int32_t len;
+    int32_t len = 0;
     char *w = get_string_data(name, "truename", &len);
     errexit();
     memset(filename, 0, sizeof(filename));
@@ -1545,17 +1549,18 @@ Lisp_Object Ltruename(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Lcreate_directory(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w;
     memset(filename, 0, sizeof(filename));
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "create-directory", &len);
     errexit();
     if (len >= sizeof(filename)) len = sizeof(filename);
+#if 0
 #ifdef SOCKETS
     if (socket_server != 0) return aerror("create-directory");
 #endif
-
+#endif
     len = create_directory(filename, w, (size_t)len);
     return onevalue(Lispify_predicate(len == 0));
 }
@@ -1563,7 +1568,7 @@ Lisp_Object Lcreate_directory(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Lfile_readable(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w = get_string_data(name, "file-readable", &len);
     errexit();
     memset(filename, 0, sizeof(filename));
@@ -1576,7 +1581,7 @@ Lisp_Object Lfile_readable(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Lchange_directory(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *err;
     char *w;
     memset(filename, 0, sizeof(filename));
@@ -1596,7 +1601,7 @@ Lisp_Object Lchange_directory(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Lfile_writeable(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w;
     memset(filename, 0, sizeof(filename));
 
@@ -1614,17 +1619,18 @@ Lisp_Object Lfile_writeable(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Ldelete_file(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w;
     memset(filename, 0, sizeof(filename));
     if (name == unset_var) return onevalue(nil);
     w = get_string_data(name, "delete-file", &len);
     errexit();
     if (len >= sizeof(filename)) len = sizeof(filename);
+#if 0
 #ifdef SOCKETS
     if (socket_server != 0) return aerror("delete-file");
 #endif
-
+#endif
     len = delete_file(filename, w, (size_t)len);
     return onevalue(Lispify_predicate(len == 0));
 }
@@ -1633,7 +1639,7 @@ Lisp_Object Ldelete_file(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Lfile_length(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     long size;
     char *w = get_string_data(name, "file-length", &len);
     errexit();
@@ -1652,7 +1658,7 @@ Lisp_Object Lfile_length(Lisp_Object nil, Lisp_Object name)
 Lisp_Object Ldirectoryp(Lisp_Object nil, Lisp_Object name)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w = get_string_data(name, "directoryp", &len);
     errexit();
     memset(filename, 0, sizeof(filename));
@@ -1713,14 +1719,16 @@ Lisp_Object MS_CDECL Lget_lisp_directory(Lisp_Object nil, int nargs, ...)
 Lisp_Object Lrename_file(Lisp_Object nil, Lisp_Object from, Lisp_Object to)
 {
     char from_name[LONGEST_LEGAL_FILENAME], to_name[LONGEST_LEGAL_FILENAME];
-    int32_t from_len, to_len;
+    int32_t from_len = 0, to_len = 0;
     char *from_w, *to_w;
     memset(from_name, 0, sizeof(from_name));
     memset(to_name, 0, sizeof(to_name));
     if (from == unset_var) return onevalue(nil);
     if (to == unset_var) return onevalue(nil);
+#if 0
 #ifdef SOCKETS
     if (socket_server != 0) return aerror("rename-file");
+#endif
 #endif
     push(to);
     from_w = get_string_data(from, "rename-file", &from_len);
@@ -1763,7 +1771,7 @@ Lisp_Object Llist_directory(Lisp_Object nil, Lisp_Object name)
 {
     Lisp_Object result;
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w = get_string_data(name, "list-directory", &len);
     errexit();
     memset(filename, 0, sizeof(filename));
@@ -2155,7 +2163,6 @@ case TAG_VECTOR:
                             putc_stream('"', active_stream);
                         for (k = 0; k < len; k++)
                         {   int ch = celt(stack[0], k);
-                            static char *hexdig = "0123456789abcdef";
 #ifdef COMMON
 /*
  * In Common Lisp mode I do something special with '"' and '\', and
@@ -2163,6 +2170,7 @@ case TAG_VECTOR:
  * moved to proper support for Unicode I would have significant extra work
  * to do here.
  */
+                            const char *hexdig = "0123456789abcdef";
                             if ((escaped_printing & escape_yes) &&
                                  (ch == '"' || ch == '\\'))
                             {   putc_stream('\\', active_stream);
@@ -3912,7 +3920,7 @@ static FILE *binary_open(Lisp_Object nil, Lisp_Object name, char *dir, char *e)
 {
     FILE *file;
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     char *w = get_string_data(name, e, &len);
     nil = C_nil;
     if (exception_pending()) return NULL;
@@ -3929,8 +3937,10 @@ static FILE *binary_open(Lisp_Object nil, Lisp_Object name, char *dir, char *e)
 
 static Lisp_Object Lbinary_open_output(Lisp_Object nil, Lisp_Object name)
 {
+#if 0
 #ifdef SOCKETS
     if (socket_server != 0) return aerror("binary-open-output");
+#endif
 #endif
     binary_outfile = binary_open(nil, name, "wb", "binary_open_output");
     errexit();
@@ -4186,7 +4196,7 @@ static Lisp_Object Lopen_library(Lisp_Object nil, Lisp_Object file,
                                                   Lisp_Object dirn)
 {
     char filename[LONGEST_LEGAL_FILENAME];
-    int32_t len;
+    int32_t len = 0;
     CSLbool forinput = (dirn==nil);
     int i;
     char *w = get_string_data(file, "open-library", &len);
@@ -4517,7 +4527,7 @@ static Lisp_Object Lopen_url(Lisp_Object nil, Lisp_Object url)
          filename1[LONGEST_LEGAL_FILENAME], *p;
     char *user, *pass, *proto, *hostaddr, *port, *path;
     int  nuser, npass, nproto, nhostaddr, nport, npath;
-    int32_t len;
+    int32_t len = 0;
     struct hostent *host;
     long int hostnum;
     SOCKET s;

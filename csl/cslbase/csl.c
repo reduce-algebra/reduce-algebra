@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 4bcbb1d0 21-Aug-2011 */
+/* Signature: 4aaa2c4f 22-Aug-2011 */
 
 #define  INCLUDE_ERROR_STRING_TABLE 1
 #include "headers.h"
@@ -75,12 +75,16 @@
 
 #ifdef SOCKETS
 
+#if 0
+/* Being removed */
 static int port_number, remote_store, current_users, max_users;
 SOCKET socket_server;
-int sockets_ready;
 clock_t cpu_timeout;
 time_t elapsed_timeout;
 static int char_to_socket(int c);
+#endif
+
+int sockets_ready = 0;
 
 #endif
 
@@ -1422,8 +1426,10 @@ void cslstart(int argc, char *argv[], character_writer *wout)
     fwin_pause_at_end = 1;
 #endif
 #ifdef SOCKETS
+#if 0
     sockets_ready = 0;
     socket_server = 0;
+#endif
 #endif
 /*
  * Now that the window manager is active I can send output through
@@ -2705,6 +2711,7 @@ term_printf(
 #endif /* HAVE_FWIN */
 }
 
+#if 0
 #ifdef SOCKETS
 
 #define SOCKET_BUFFER_SIZE 1024
@@ -2809,6 +2816,7 @@ void flush_socket(void)
 }
 
 #endif
+#endif
 
 static void cslaction(void)
 /*
@@ -2851,6 +2859,7 @@ static void cslaction(void)
 #endif
 #endif
         non_terminal_input = NULL;
+#if 0
 #ifdef SOCKETS
         if (socket_server)
         {   ensure_screen();
@@ -2862,6 +2871,7 @@ static void cslaction(void)
             procedural_output = NULL;
         }
         else
+#endif
 #endif
 #ifdef WINDOW_SYSTEM
         terminal_eof_seen = 0;
@@ -3134,7 +3144,6 @@ int ENTRYPOINT(int argc, char *argv[])
 int PROC_set_callbacks(character_reader *r,
                        character_writer *w)
 {
-    Lisp_Object nil;
     procedural_input = r;
     procedural_output = w;
     return 0;   /* can never report failure */
@@ -3575,7 +3584,7 @@ static void PROC_standardise_gensyms(Lisp_Object w)
 int PROC_lisp_eval()
 {
     Lisp_Object nil = C_nil;
-    Lisp_Object w = nil, w1 = nil;
+    Lisp_Object w = nil;
 #ifdef CONSERVATIVE
     volatile Lisp_Object sp;
     C_stackbase = (Lisp_Object *)&sp;
@@ -3697,7 +3706,7 @@ PROC_handle PROC_get_value()
 {
     Lisp_Object nil = C_nil;
     Lisp_Object w;
-    if (procstack == C_nil) w = fixnum_of_int(0);
+    if (procstack == nil) w = fixnum_of_int(0);
     else
     {   w = qcar(procstack);
         procstack = qcdr(procstack);

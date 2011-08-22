@@ -71,7 +71,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* Signature: 13188756 09-Aug-2011 */
+/* Signature: 63ca4800 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -2837,6 +2837,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
     _kbhit(); /* Fairly harmless anyway, but is here to let ^c get noticed */
 /*    printf("(*)"); fflush(stdout);  /* while I debug! */
 #endif /* WIN32 */
+#if 0
 #ifdef SOCKETS
     if (socket_server != 0)
     {   time_t tt0 = time(NULL);
@@ -2851,7 +2852,7 @@ Lisp_Object reclaim(Lisp_Object p, char *why, int stg_class, intptr_t size)
         }
     }
 #endif /* SOCKETS */
-
+#endif
     push_clock(); t0 = base_time;
 
 #ifdef HAVE_FWIN

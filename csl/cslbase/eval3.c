@@ -37,7 +37,7 @@
 
 
 
-/* Signature: 7ab252e5 21-Aug-2011 */
+/* Signature: 4f80c1a4 22-Aug-2011 */
 
 #include "headers.h"
 
@@ -1110,17 +1110,24 @@ void unwind_stack(Lisp_Object *entry_stack, CSLbool findcatch)
  * using had trouble when both va_args and setjmp were used together, and
  * that version of gcc failed with an internal error! While that state
  * will get fixed it was still convenient as a short term measure and
- * harmless longer term to do things this way!
+ * harmless longer term to do things this way! Furthermore I am tagging
+ * form and env "volatile" purely to get rid of a warning that gcc
+ * produces re potential consequences of longjmp. Not that I believe there
+ * ever could be issues since I never rely on the value in either of these
+ * variable after setjmp has caught anything! But getting rid of the warning
+ * may be good policy...
  */
 
-static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
+static Lisp_Object errorset3(volatile Lisp_Object env,
+                             volatile Lisp_Object form,
                              Lisp_Object fg1, Lisp_Object fg2)
 {
     Lisp_Object nil = C_nil, r;
     uint32_t flags = miscflags;
 #ifndef __cplusplus
 #ifdef SIGALTSTACK
-    sigjmp_buf this_level, *saved_buffer = errorset_buffer;
+    sigjmp_buf this_level;
+    sigjmp_buf *saved_buffer = errorset_buffer;
 #else
     jmp_buf this_level, *saved_buffer = errorset_buffer;
 #endif
@@ -1293,18 +1300,26 @@ static Lisp_Object errorset3(Lisp_Object env, Lisp_Object form,
 #else
     else
 #endif
-    {   form = env = nil = C_nil;
+    {
+/*
+ * Note that this is where a longjmp might suddenly get me back to. The
+ * values of any local variables that are not marked as "volatile" could
+ * be uncertain here! So I hope I have tagged the right things as
+ * volatile.
+ */
+        nil = C_nil;
         if (errorset_msg != NULL)
         {   term_printf("\n%s detected\n", errorset_msg);
             errorset_msg = NULL;
         }
 /*
  * Worry about restoration of fluids bound before the exception
- * forced unwinding.  All pretty dreadful, I think.  If I leave fluid
- * unbind information interleaved on the stack I could cope with it
- * here I think... but I have not done so yet.
+ * forced unwinding.  All pretty dreadful, I think.
  */
         unwind_stack(save, NO);
+/* /*
+ * I also suspect I should restore miscflags from flags...
+ */
         stack = save;
         nil = C_nil;
         pop2(litvec, codevec);
@@ -1406,7 +1421,10 @@ int64_t time_base = 0,   space_base = 0,   io_base = 0,   errors_base = 0;
 int64_t time_now = 0,    space_now = 0,    io_now = 0,    errors_now = 0;
 int64_t time_limit = -1, space_limit = -1, io_limit = -1, errors_limit = 0;
 
-static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
+/* form and env "volatile" to get rid of gcc warnings re longjmp */
+
+static Lisp_Object resource_limit5(volatile Lisp_Object env,
+                             volatile Lisp_Object form,
                              Lisp_Object ltime, Lisp_Object lspace,
                              Lisp_Object lio, Lisp_Object lerrors)
 {
@@ -1569,7 +1587,7 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
 #else
     else
 #endif
-    {   form = env = nil = C_nil;
+    {   nil = C_nil;
         time_base  = save_time_base;  space_base   = save_space_base;
         io_base    = save_io_base;    errors_base  = save_errors_base;
         time_limit = save_time_limit; space_limit  = save_space_limit;
@@ -1580,9 +1598,7 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
         }
 /*
  * Worry about restoration of fluids bound before the exception
- * forced unwinding.  All pretty dreadful, I think.  If I leave fluid
- * unbind information interleaved on the stack I could cope with it
- * here I think... but I have not done so yet.
+ * forced unwinding.  All pretty dreadful, I think.
  */
         unwind_stack(save, NO);
         stack = save;
@@ -1611,12 +1627,13 @@ static Lisp_Object resource_limit5(Lisp_Object env, Lisp_Object form,
         if (segvtrap) signal(SIGILL, low_level_signal_handler);
 #endif
 #endif
-        form = list4(fixnum_of_int(r0),
-                     fixnum_of_int(r1),
-                     fixnum_of_int(r2),
-                     fixnum_of_int(r3));
-        errexit();
-        qvalue(resources) = form;
+        {   Lisp_Object r = list4(fixnum_of_int(r0),
+                                  fixnum_of_int(r1),
+                                  fixnum_of_int(r2),
+                                  fixnum_of_int(r3));
+            errexit();
+            qvalue(resources) = r;
+        }
         return aerror("signal caught");
     }
 }
