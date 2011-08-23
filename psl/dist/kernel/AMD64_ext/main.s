@@ -71,8 +71,8 @@ psl_main:
  sub $24,%rsp
  mov %r15,%rdi
  mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
- mov %rdi,(%rsp)
+ mov %rax,(%rsp)
+ mov %rbx,8(%rsp)
  call *symfnc+2408
  mov (%rsp),%rdi
  mov %rdi,symval+2416
