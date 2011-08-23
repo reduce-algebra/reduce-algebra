@@ -1,4 +1,4 @@
-cc  -m64 -o bpsl -DBPSSIZE=9500000 -pthread bps.c bpsheap.c echo.c file-status.c float.c \
+cc  -m64 -o bpsl -DBPSSIZE=20500000 -pthread bps.c bpsheap.c echo.c file-status.c float.c \
    os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c creloc.c formlink2.c \
    -DLINUX main.o dmain.o -lm 
 
