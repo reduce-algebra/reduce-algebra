@@ -2717,8 +2717,10 @@ symbolic procedure err_catch_readin$
 begin scalar h,mode_bak,echo_bak$
  mode_bak:=!*mode; % as the _stop_ file has to start with 'lisp;'
  echo_bak:=!*echo; semic!*:='!$;
- h:= errorset({'in,mkquote {"_stop_"}},nil,nil)
-     where !*protfg=t;
+ if filep "_stop_" then <<
+   h:= errorset({'in,mkquote {"_stop_"}},nil,nil)
+       where !*protfg=t >>
+ else h := '(nil);
  !*echo:=echo_bak; semic!*:='!; ;
  erfg!*:=nil; !*mode:=mode_bak$
  return not errorp h
@@ -2802,7 +2804,7 @@ begin scalar h,bak,kernlist!*bak,kord!*bak,bakup_bak;
  kernlist!*bak:=kernlist!*$
  kord!*bak:=kord!*$
  bakup_bak:=backup_;backup_:='max_gc_fac$
- h:=errorset({'reval,list('GCD,mkquote a,mkquote b)},nil,nil)
+ h:=errorset({'reval, mkquote list('GCD,mkquote a,mkquote b)},nil,nil)
     where !*protfg=t;
  kernlist!*:=kernlist!*bak$
  kord!*:=kord!*bak;
