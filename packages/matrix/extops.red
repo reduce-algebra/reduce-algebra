@@ -170,7 +170,7 @@ symbolic procedure innprodkp(w,v,u,s);
    % calulates w^(v _| u), assuming degree u > 1 and returns sign
    % permutation as well
    if null u then nil
-   else if v = car u then s . nconc(reversip w,cdr u)
+   else if v = car u then s . reversip2(w,cdr u)
    else innprodkp(car u . w,v,cdr u,not s);
 
 

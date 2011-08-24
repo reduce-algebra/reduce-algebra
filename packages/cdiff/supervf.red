@@ -150,8 +150,8 @@ lisp procedure merge_lists(x1,x2);
 	 ;
    b:
 
-      if null x1 then return sign . nconc(reversip lx2,x2);
-      if null lx2 then return sign . nconc(reversip x1,x2);
+      if null x1 then return sign . reversip2(lx2,x2);
+      if null lx2 then return sign . reversip2(x1,x2);
       clx2:=car lx2;
       if cx1=clx2 and cx1>0 then return nil;
       if cx1>clx2 then goto b1;

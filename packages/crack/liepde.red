@@ -329,8 +329,8 @@ begin scalar newdep;
     newdep:=union(car li1, car li2) . newdep;
     li1:=cdr li1; li2:=cdr li2
   >>;
-  return if li1 then nconc(reversip newdep,li1) else
-         if li2 then nconc(reversip newdep,li2) else reversip newdep
+  return if li1 then reversip2(newdep,li1) else
+         if li2 then reversip2(newdep,li2) else reversip newdep
 end$
 
 %---------------------

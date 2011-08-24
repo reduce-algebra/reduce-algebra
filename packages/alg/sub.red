@@ -59,7 +59,7 @@ symbolic procedure subeval0 u;
                      else if not(cadar u = (y := reval caddar u))
                       then x := {caar u,cadar u,y} . x;
                     u := cdr u>>;
-   if null x then return car u else u := nconc(reversip x,u);
+   if null x then return car u else u := reversip2(x,u);
    % Separate assignments from expression.
       if u member sublist!* then return mk!*sq !*p2q mksp('sub . u,1)
        else sublist!* := u . sublist!*;

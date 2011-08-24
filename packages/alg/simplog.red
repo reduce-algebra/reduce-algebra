@@ -194,7 +194,7 @@ symbolic procedure mergeminus u;
    begin scalar x;
    a: if null u then return nil
        else if remainder(cdar u,2)=1
-        then return nconc(reversip x,((-caar u) . cdar u) . cdr u)
+        then return reversip2(x,((-caar u) . cdar u) . cdr u)
        else <<x := car u . x; u := cdr u; go to a>>
    end;
 
