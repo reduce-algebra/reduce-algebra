@@ -37,8 +37,9 @@ create!-package('(reset),'(contrib misc));
 % things that cause a gradual loss of space.  It would be relatively
 % easy to make it interactive, so allowing for selective resetting.
 
-fluid '(!*asterisk !*dfprint !*fortupper !*horner 
-        !*list !*noarg !*nosplit !*ratpri !*revpri);
+global '(!*asterisk !*dfprint inputbuflis!* statcounter);
+
+fluid '(!*fortupper !*horner !*list !*noarg !*nosplit !*ratpri !*revpri);
 
 symbolic procedure resetreduce;
  begin
@@ -57,7 +58,7 @@ symbolic procedure resetreduce;
   !*factor:=nil;      !*fastfor:=nil; !*force:=nil;      !*fort:=nil;
   !*fortupper:=nil;   !*fullprec:=nil;!*fullprecision:=nil;
   !*fullroots:=nil;   !*gcd:=nil;     !*heugcd:=nil;     !*horner:=nil;
-  !*ifactor:=nil;     !*int:=nil;     !*intstr:=nil;     !*lcm:=t;
+  !*ifactor:=nil;     !*int:=t;       !*intstr:=nil;     !*lcm:=t;
   !*lessspace:=nil;   !*limitedfactors:=nil;             !*list:=nil;
   !*listargs:=nil;    !*lower:=t;     !*mcd:=t;          !*modular:=nil;
   !*msg:=t;           !*multiplicities:=nil;             !*nat:=t;
@@ -84,7 +85,9 @@ symbolic procedure resetreduce;
         if mode='algebraic then algreset(comm)
         else if mode='symbolic then symbreset(comm)
     >>;
- inputbuflis!*:=nil
+ inputbuflis!*:=nil;
+%%% reset statement counter and prompt
+% statcounter := 0;
  end;
 
 symbolic procedure algreset(comm);
@@ -117,7 +120,8 @@ symbolic procedure algreset(comm);
  end;
 
 symbolic procedure symbreset(comm);
-  <<
+  if atom comm then nil
+   else <<
     if car comm='setq then set(cadr comm,nil)
     else if car comm='progn then foreach y in cdr comm do symbreset(y)
     else if car comm='flag then eval('remflag . (cdr comm))
