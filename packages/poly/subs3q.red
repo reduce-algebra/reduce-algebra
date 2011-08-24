@@ -140,7 +140,7 @@ symbolic procedure mtchk(u,v);
    %If a match is made, value is of the form:
    %list list(NIL,<boolean form>,<subst value>,<denoms>),
    %otherwise value is an updated list of templates;
-   begin scalar flg,v1,w,x,y,z;
+   begin scalar flg,v1,w,x,y,z, lastpairz;
         flg := noncomp car u;
     a0: if null v then return z;
         v1 := car v;
@@ -153,13 +153,20 @@ symbolic procedure mtchk(u,v);
                                       subla(car x,caddr v1),
                                       subla(car x,car w)
                                           . cadddr v1))
-          then z := y . z
+          then << z := y . z;
+                  if null lastpairz then lastpairz := z >>
          else if lispeval subla(car x,cdadr v1) then return list y;
         x := cdr x;
         go to b;
     c:  if null flg then <<w := cdr w; go to a>>
          else if cadddr v1 and nocp w then go to e;
-    d:  z :=aconc(z,v1);   % Could also be append(z,list v1).
+    d:  % z :=aconc(z,v1);   % Could also be append(z,list v1).
+% The above use of nconc tended to be painful when list of matching
+% templates was long, so I now track the end of the list and tack items
+% on without any need to scan what is already there.
+        if null z then z := lastpairz := list v1
+        else << rplacd(lastpairz, list v1);
+                lastpairz := cdr lastpairz >>;
     e:  v := cdr v;
         go to a0
    end;
