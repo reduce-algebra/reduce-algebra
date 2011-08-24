@@ -123,27 +123,24 @@ symbolic procedure mchcomb(u,v,op);
    begin integer n;
       n := length u - length v +1;
       if n<1 then return nil
-       else if n=1 then return mchsarg(u,v,op)
-       else if not smemqlp(frlis!*,v) then return nil;
+      else if n=1 then return mchsarg(u,v,op)
+      else if not smemqlp(frlis!*,v) then return nil;
+% The expansion of "for each ... join" is careful not to scan the
+% list that is being generated from the start at each step and so is
+% not a terrible cost issue.
       return for each x in comb(u,n) join
            if null ncmp!* then mchsarg((op . x) . setdiff(u,x),v,op)
-%  (reversip!* (for each j in permutations v collect pair(j,w))
-%               where w=(op . x) . setdiff(u,x))
-%          else if length v>2
-%           then rederr "noncom with 3 free args not implemented"
-            else (if null y then nil
-%            else if cdr y then mchsarg(aconc(car y,op . x),v,op)
-%             else mchsarg((op . x) . car y,v,op))
-                   else mchsarg((op . x) . car y,
-                                if cdr y then reverse v else v,op))
-            where y = mchcomb2(x,u,nil,nil,nil)
+           else (if null y then nil
+                 else mchsarg((op . x) . car y,
+                              if cdr y then reverse v else v,op))
+             where y = mchcomb2(x,u,nil,nil,nil)
    end;
 
 symbolic procedure mchcomb2(u,v,w,bool1,bool2);
    % Determines if v can be removed from u according to noncom rules,
    % and whether remaining terms must be on the left (t) or right (nil).
    if null u
-     then nconc(reversip w,v) . bool2
+     then reversip2(w,v) . bool2
    % (bool2 or null noncomlistp v and noncomlistp w and 'ok)
     else if car u = car v
            then if noncomp car u then mchcomb2(cdr u,cdr v,w,t,bool2)
@@ -153,16 +150,36 @@ symbolic procedure mchcomb2(u,v,w,bool1,bool2);
            else mchcomb2(u,cdr v,car v . w,t,if bool2 then bool2 else t)
     else mchcomb2(u,cdr v,car v . w,bool1,bool2);
 
+%- symbolic procedure comb(u,n);
+%-    % Value is list of all combinations of N elements from the list U.
+%-    begin scalar v; integer m;
+%-         if n=0 then return list nil
+%-          else if (m:=length u-n)<0 then return nil
+%-          else for i := 1:m do
+%-           <<v := nconc!*(v,mapcons(comb(cdr u,n-1),car u));
+%-             u := cdr u>>;
+%-         return u . v
+%-    end;
+
 symbolic procedure comb(u,n);
-   % Value is list of all combinations of N elements from the list U.
-   begin scalar v; integer m;
-        if n=0 then return list nil
-         else if (m:=length u-n)<0 then return nil
-         else for i := 1:m do
-          <<v := nconc!*(v,mapcons(comb(cdr u,n-1),car u));
-            u := cdr u>>;
-        return u . v
-   end;
+% Value is list of all combinations of N elements from the list U.
+% This new version does not return the combinations in the same order,
+% but I really hope that does not matter. It avoids the use of
+% nconc that repeatedly tagged items on the end of what could end up
+% a very long list, and so for long lists u its costs should be
+% smaller.
+  begin
+    scalar v, w;
+    integer m;
+    if n=0 then return list nil
+    else if (m:=length u-n)<0 then return nil;
+    for i := 1:m do <<
+      w := comb(cdr u, n-1);
+      for each q in w do v := ((car u) . q) . v;
+      u := cdr u>>;
+    return u . v
+  end;
+
 
 symbolic procedure mcharg2(u,v,w,x);
    % Matches compatible list U of operator X against template V.
@@ -309,7 +326,7 @@ symbolic procedure noncomdel(u,v);
 symbolic procedure noncomdel1(u,v);
    begin scalar z;
    a: if null v then return reversip!* z
-       else if u eq car v then return nconc(reversip!* z,cdr v)
+       else if u eq car v then return reversip2(z,cdr v)
        else if NONCOMP!* car v then return 'failed;
       z := car v . z;
       v := cdr v;
