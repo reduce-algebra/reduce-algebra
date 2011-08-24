@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 459047de 22-Aug-2011 */
+/* Signature: 49085c5c 24-Aug-2011 */
 
 #include "headers.h"
 
@@ -4452,6 +4452,8 @@ setup_type const funcs2_setup[] =
     {"reversip",                Lnreverse, Lnreverse2, wrong_no_1},
 /* I make the name nreverse generally available as well as reversip */
     {"nreverse",                Lnreverse, Lnreverse2, wrong_no_1},
+/* also reversip2 for the 2-arg varient */
+    {"reversip2",               too_few_2, Lnreverse2, wrong_no_1},
     {"smemq",                   too_few_2, Lsmemq, wrong_no_2},
     {"subla",                   too_few_2, Lsubla, wrong_no_2},
     {"sublis",                  too_few_2, Lsublis, wrong_no_2},
