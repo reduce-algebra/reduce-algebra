@@ -34,6 +34,21 @@ symbolic smacro procedure !*!*s2a(u,vars); u;
 symbolic smacro procedure !*!*s2i(u,vars); if fixp u then u else {'!*s2i,u};
 
 
+symbolic smacro procedure !*cr2crn u; 
+   cons('!:crn!:,cons(realrat trimcr cadr u,realrat trimcr cddr u));
+
+
+symbolic smacro procedure !*crn2rn n; 
+   if not equal(car cddr n,0)
+     then error(0,
+                "complex to real type conversion requires zero imaginary part")
+    else cons('!:rn!:,cadr n);
+
+
+symbolic smacro procedure !*gi2crn u; 
+   cons('!:crn!:,cons(cons(cadr u,1),cons(cddr u,1)));
+
+
 symbolic smacro procedure !*i2gi u; cons('!:gi!:,cons(u,0));
 
 
@@ -41,6 +56,15 @@ symbolic smacro procedure !*i2rn u; cons('!:rn!:,cons(u,1));
 
 
 symbolic smacro procedure !*n2f u; if zerop u then nil else u;
+
+
+symbolic smacro procedure !*q2a u; if null !*nosq then mk!*sq u else prepsqxx u;
+
+
+symbolic smacro procedure !*q2a1(u,v); if null v then mk!*sq u else prepsqxx u;
+
+
+symbolic smacro procedure !*rn2crn u; cons('!:crn!:,cons(cdr u,cons(0,1)));
 
 
 symbolic smacro procedure !*s2i u; if fixp u then u else typerr(u,"integer");
@@ -59,10 +83,6 @@ symbolic smacro procedure !:minusp u;
 
 symbolic smacro procedure !:onep u; 
    if atom u then onep u else apply1(get(car u,'onep),u);
-
-
-symbolic smacro procedure !:rn2rd x; 
-   if and(!*roundall,!*rounded) then !*rn2rd x else x;
 
 
 symbolic smacro procedure abs!: nmbr; 
@@ -87,6 +107,9 @@ symbolic smacro procedure addcomment u; setq(cursym!*,u);
 
 symbolic smacro procedure adddm!*(u,v); 
    if null u then v else if null v then u else adddm(u,v);
+
+
+symbolic smacro procedure aevalox u; mprino1(aevalox1 car u,{0,0});
 
 
 symbolic smacro procedure algid(u,vars); 
@@ -130,11 +153,19 @@ symbolic smacro procedure bfdivide(u,v);
    if atom u then quotient(u,v) else csl_normbf divide!:(u,v,!:bprec!:);
 
 
+symbolic smacro procedure bfinverse u; 
+   if atom u then quotient(1.0,u) else csl_normbf divide!:(bfone!*,u,!:bprec!:);
+
+
 symbolic smacro procedure bflerrmsg u; error(0,{"Invalid argument to",u});
 
 
 symbolic smacro procedure bflessp(a,b); 
    if atom a then lessp(a,b) else grpbf(b,a);
+
+
+symbolic smacro procedure bfminus u; 
+   if atom u then minus u else cons('!:rd!:,cons(minus cadr u,cddr u));
 
 
 symbolic smacro procedure bfplus(u,v); 
@@ -153,6 +184,21 @@ symbolic smacro procedure bftrim!: v;
 
 
 symbolic smacro procedure bfzerop!: u; equal(cadr u,0);
+
+
+symbolic smacro procedure blocktyperr u; 
+   (lambda !g115; 
+       <<setq(errmsg!*,!g115); 
+         begin if not !*protfg then lprie !g115; error1() end>>)
+    {u,"invalid except at head of block"};
+
+
+symbolic smacro procedure bool!-eval u; eval u;
+
+
+symbolic smacro procedure boolvalpri u; 
+   if outputhandler!* then apply2(outputhandler!*,'maprin,cadr u)
+    else if not overflowed!* then maprint(cadr u,0);
 
 
 symbolic smacro procedure boolvalue!* u; and(u,null equal(u,0));
@@ -265,7 +311,7 @@ symbolic smacro procedure c!:cunwind_protect(u,env); error(0,"unwind_protect");
 
 
 symbolic smacro procedure c!:has_calls(a,b); 
-   begin scalar visited; return c!:has_calls_1(a,b) end;
+   begin scalar c!:visited; return c!:has_calls_1(a,b) end;
 
 
 symbolic smacro procedure c!:insert1(a,b); if memq(a,b) then b else cons(a,b);
@@ -281,7 +327,7 @@ symbolic smacro procedure c!:locally_bound(x,env); atsoc(x,car env);
 symbolic smacro procedure c!:newreg; 
    begin scalar r; 
       setq(r,c!:my_gensym()); 
-      setq(registers,cons(r,registers)); 
+      setq(c!:registers,cons(r,c!:registers)); 
       return r
    end;
 
@@ -293,8 +339,8 @@ symbolic smacro procedure c!:one_operand op;
 
 
 symbolic smacro procedure c!:outop(a,b,c,d); 
-   if current_block
-     then setq(current_contents,cons({a,b,c,d},current_contents));
+   if c!:current_block
+     then setq(c!:current_contents,cons({a,b,c,d},c!:current_contents));
 
 
 symbolic smacro procedure c!:passoc(op,r1,r2,r3,depth); 
@@ -467,7 +513,7 @@ symbolic smacro procedure c!:small_number x;
 
 
 symbolic smacro procedure c!:startblock s; 
-   <<setq(current_block,s); setq(current_contents,nil)>>;
+   <<setq(c!:current_block,s); setq(c!:current_contents,nil)>>;
 
 
 symbolic smacro procedure c!:valid_fndef(args,body); 
@@ -499,9 +545,6 @@ symbolic smacro procedure c_end;
       setq(s!:cmod_name,nil); 
       return nil
    end;
-
-
-symbolic smacro procedure cdarx u; cdr carx(u,'cdar);
 
 
 symbolic smacro procedure cflot x; 
@@ -538,7 +581,8 @@ symbolic smacro procedure concat(u,v);
    compress cons('!",append(explode2 u,nconc(explode2 v,{'!"})));
 
 
-symbolic smacro procedure concat2(u,v); concat(u,v);
+symbolic smacro procedure concat2(u,v); 
+   compress cons('!",append(explode2 u,nconc(explode2 v,{'!"})));
 
 
 symbolic smacro procedure condterpri; 
@@ -553,6 +597,9 @@ symbolic smacro procedure convertmode(exprn,vars,target,source);
    convertmode1(form1(exprn,vars,source),vars,target,source);
 
 
+symbolic smacro procedure convprec u; convchk (if atom cdr u then cdr u else u);
+
+
 symbolic smacro procedure convprec!* u; 
    convchk (if atom u then u else cons('!:rd!:,u));
 
@@ -560,15 +607,43 @@ symbolic smacro procedure convprec!* u;
 symbolic smacro procedure cos!* u; cos!:(u,!:bprec!:);
 
 
+symbolic smacro procedure cosh!* x; 
+   (lambda y; 
+       csl_timbf(bfhalf!*,plubf(y,csl_normbf divide!:(bfone!*,y,!:bprec!:))))
+    exp!:(x,!:bprec!:);
+
+
 symbolic smacro procedure cr2rderr; 
    error(0,"complex to real type conversion requires zero imaginary part");
+
+
+symbolic smacro procedure cracsc!* u; 
+   cr!:minus cr!:times(cri!*(),
+                       crasinh!* cr!:times(cri!*(),cr!:quotient(i2cr!* 1,u)));
+
+
+symbolic smacro procedure cracsch!* u; crasinh!* cr!:quotient(i2cr!* 1,u);
 
 
 symbolic smacro procedure crarg!* u; 
    rdatan2!*(cons('!:rd!:,cddr u),cons('!:rd!:,cadr u));
 
 
-symbolic smacro procedure crlogb!*(u,b); cr!:quotient(crlog!* u,crlog!* b);
+symbolic smacro procedure crasin!* u; 
+   cr!:minus cr!:times(cri!*(),crasinh!* cr!:times(cri!*(),u));
+
+
+symbolic smacro procedure crcoth!* u; 
+   (lambda(x,y); cr!:quotient(cr!:plus(x,y),cr!:differ(x,y)))
+   (crexp!* cr!:times(i2cr!* 2,u),i2cr!* 1);
+
+
+symbolic smacro procedure crcsc!* u; cr!:quotient(i2cr!* 1,crsin!* u);
+
+
+symbolic smacro procedure crcsch!* u; 
+   (lambda y; cr!:quotient(i2cr!* 2,cr!:differ(y,cr!:quotient(i2cr!* 1,y))))
+    crexp!* u;
 
 
 symbolic smacro procedure crn!:minusp u; and(equal(caddr u,0),minusp caadr u);
@@ -593,8 +668,17 @@ symbolic smacro procedure crnorm!* u;
    rdhypot!*(cons('!:rd!:,cadr u),cons('!:rd!:,cddr u));
 
 
-symbolic smacro procedure crprcd u; 
-   (lambda(rl,im); cons(rl,im))(convprec!* cadr u,convprec!* cddr u);
+symbolic smacro procedure crsec!* u; cr!:quotient(i2cr!* 1,crcos!* u);
+
+
+symbolic smacro procedure crsech!* u; 
+   (lambda y; cr!:quotient(i2cr!* 2,cr!:plus(y,cr!:quotient(i2cr!* 1,y))))
+    crexp!* u;
+
+
+symbolic smacro procedure crtanh!* u; 
+   (lambda(x,y); cr!:quotient(cr!:differ(x,y),cr!:plus(x,y)))
+   (crexp!* cr!:times(i2cr!* 2,u),i2cr!* 1);
 
 
 symbolic smacro procedure cutf(u,x,n); if ilessp(n,1) then u else cutf1(u,x,n);
@@ -622,7 +706,18 @@ symbolic smacro procedure decprec2internal p;
 symbolic smacro procedure deg2rad x; times2(x,pi!/180);
 
 
+symbolic smacro procedure deg2rad!: x; 
+   csl_normbf divide!:(csl_timbf(x,
+                                 if greaterp(!:prec!:,1000)
+                                   then !:bigpi !:bprec!:
+                                  else !:pi !:bprec!:),!:180!*,!:bprec!:);
+
+
 symbolic smacro procedure delcp u; flagp(u,'delchar);
+
+
+symbolic smacro procedure delete_from_alglist(key,l); 
+   if null l then nil else <<remhash(key,l); l>>;
 
 
 symbolic smacro procedure den u; mk!*sq cons(cdr simp!* u,1);
@@ -643,9 +738,6 @@ symbolic smacro procedure dmconv0 dmd;
 
 symbolic smacro procedure dms2deg l; 
    plus2(quotient(plus2(quotient(caddr l,60.0),cadr l),60.0),car l);
-
-
-symbolic smacro procedure dms2rad!* u; deg2rad!* dms2deg!* u;
 
 
 symbolic smacro procedure dn!:prin u; bfprin0x(cadr u,cddr u);
@@ -708,6 +800,9 @@ symbolic smacro procedure errpri2(u,v);
    msgpri("Syntax error:",u,"invalid",nil,v);
 
 
+symbolic smacro procedure evalgeq(u,v); not evalgreaterp(v,u);
+
+
 symbolic smacro procedure evalleq(u,v); not evalgreaterp(u,v);
 
 
@@ -715,10 +810,6 @@ symbolic smacro procedure evallessp(u,v); evalgreaterp(v,u);
 
 
 symbolic smacro procedure evalneq(u,v); not evalequal(u,v);
-
-
-symbolic smacro procedure evalwhereexp u; 
-   evalletsub({cdar u,{'aeval,mkquote {'aeval,carx(cdr u,'where)}}},nil);
 
 
 symbolic smacro procedure exchk u; exchk1(u,nil,nil,nil);
@@ -741,6 +832,15 @@ symbolic smacro procedure exports u;
 
 
 symbolic smacro procedure exppri(u,v); assgnpri(u,nil,v);
+
+
+symbolic smacro procedure expread; 
+   begin 
+    a: 
+      scan(); 
+      if and(!*eoldelimp,eq(cursym!*,'!*semicol!*)) then go to a; 
+      return xread1 t
+   end;
 
 
 symbolic smacro procedure exptchksq u; 
@@ -768,77 +868,8 @@ symbolic smacro procedure factor!-coeffs u; {1,u};
 symbolic smacro procedure factorize!-form!-recursion u; fctrf1 u;
 
 
-% I am commenting out all things from tmprint.red for now because that
-% module is being revised...
-
-%symbolic smacro procedure fancy!-begin; {fancy!-pos!*,fancy!-line!*};
-
-
-%symbolic smacro procedure fancy!-condpri0 u; fancy!-condpri(u,0);
-
-
-%symbolic smacro procedure fancy!-end(r,s); 
-%   <<if equal(r,'failed)
-%       then <<setq(fancy!-line!*,car s); setq(fancy!-pos!*,cadr s)>>; 
-%     r>>;
-
-
-%symbolic smacro procedure fancy!-fail(pos,fl); 
-%   <<setq(overflowed!*,nil); 
-%     setq(fancy!-pos!*,pos); 
-%     setq(fancy!-line!*,fl); 
-%     'failed>>;
-
-
-%symbolic smacro procedure fancy!-last!-symbol; 
-%   if fancy!-line!* then car fancy!-line!*;
-
-
-%symbolic smacro procedure fancy!-matpri u; fancy!-matpri1(cdr u,nil);
-
-
-%symbolic smacro procedure fancy!-partialdfpri(u,l); 
-%   fancy!-dfpri0(u,l,'partial!-df);
-
-
-%symbolic smacro procedure fancy!-prin2 u; fancy!-prin2!*(u,nil);
-
-
-%symbolic smacro procedure fancy!-prin2number u; 
-%   if testing!-width!* then fancy!-prin2!*(u,t)
-%    else fancy!-prin2number1 (if atom u then explode2 u else u);
-
-
-%symbolic smacro procedure fancy!-print!-function!-arguments u; 
-%   fancy!-in!-brackets(and(u,{'fancy!-inprint,mkquote '!*comma!*,0,mkquote u}),
-%                       '!(,'!));
-
-
-%symbolic smacro procedure fancy!-print!-indexlist l; 
-%   fancy!-print!-indexlist1(l,'!_,nil);
-
-
-%symbolic smacro procedure fancy!-prodpri(u,p); fancy!-sumpri!*(u,p,'prod);
-
-
-%symbolic smacro procedure fancy!-revalpri u; 
-%   fancy!-maprin0 fancy!-unquote cadr u;
-
-
-%symbolic smacro procedure fancy!-setmatpri(u,v); fancy!-matpri1(cdr v,u);
-
-
-%symbolic smacro procedure fancy!-sqreform u; prepsq!* sqhorner!* cadr u;
-
-
-%symbolic smacro procedure fancy!-sqrtpri u; fancy!-sqrtpri!*(cadr u,2);
-
-
-%symbolic smacro procedure fancy!-sumpri(u,p); fancy!-sumpri!*(u,p,'sum);
-
-
-%symbolic smacro procedure fexpt(x,n); 
-%   begin scalar w; setq(w,fexpt1(fsplit x,n)); return plus2(car w,cdr w) end;
+symbolic smacro procedure fexpt(x,n); 
+   begin scalar w; setq(w,fexpt1(fsplit x,n)); return plus2(car w,cdr w) end;
 
 
 symbolic smacro procedure fieldp u; and(not atom u,flagp(car u,'field));
@@ -950,10 +981,6 @@ symbolic smacro procedure getinfix u;
 symbolic smacro procedure getrtypecar u; getrtype car u;
 
 
-symbolic smacro procedure gettransferfn(u,v); 
-   (lambda x; if x then x else dmoderr(u,v)) get(u,v);
-
-
 symbolic smacro procedure gffdiff(u,v); 
    cons(difference(car u,car v),difference(cdr u,cdr v));
 
@@ -973,25 +1000,16 @@ symbolic smacro procedure gffrsq u;
    plus2(times2(car u,car u),times2(cdr u,cdr u));
 
 
-symbolic smacro procedure gfminus u; cons(bfminus car u,bfminus cdr u);
-
-
-symbolic smacro procedure gfplus(u,v); 
-   if atom car u then gffplus(u,v) else gbfplus(u,v);
-
-
 symbolic smacro procedure gfquotient(u,v); 
    if atom car u then gffquot(u,v) else gbfquot(u,v);
 
 
-symbolic smacro procedure gfrotate u; cons(bfminus cdr u,car u);
-
-
-symbolic smacro procedure gfrsq u; gfdot(u,u);
-
-
 symbolic smacro procedure gftimes(u,v); 
    if atom car u then gfftimes(u,v) else gbftimes(u,v);
+
+
+symbolic smacro procedure gidifference!:(u,v); 
+   cons('!:gi!:,cons(difference(cadr u,cadr v),difference(cddr u,cddr v)));
 
 
 symbolic smacro procedure giminusp!: u; 
@@ -1003,6 +1021,10 @@ symbolic smacro procedure gintequiv!: u;
 
 
 symbolic smacro procedure gionep!: u; and(equal(cadr u,1),equal(cddr u,0));
+
+
+symbolic smacro procedure giplus!:(u,v); 
+   cons('!:gi!:,cons(plus2(cadr u,cadr v),plus2(cddr u,cddr v)));
 
 
 symbolic smacro procedure giprim im; if equal(im,1) then 'i else {'times,im,'i};
@@ -1029,6 +1051,13 @@ symbolic smacro procedure hashtagged!-name(base,value);
    intern list!-to!-string append(explodec base,cons('!_,s!:stamp md60 value));
 
 
+symbolic smacro procedure i2crn!* u; cons('!:crn!:,cons(cons(u,1),cons(0,1)));
+
+
+symbolic smacro procedure i2rd!* u; 
+   (lambda u; if atom u then cons('!:rd!:,u) else u) chkint!* u;
+
+
 symbolic smacro procedure icbrt x; irootn(fix x,3);
 
 
@@ -1050,6 +1079,14 @@ symbolic smacro procedure in u; in_non_empty_list u;
 
 symbolic smacro procedure infinityp u; 
    (lambda x; not or(eq(x,'!-),digit x)) car explode u;
+
+
+symbolic smacro procedure initreduce; 
+   <<setq(statcounter,0); 
+     setq(crbuflis!*,nil); 
+     setq(spare!*,0); 
+     setq(!*int,t); 
+     nil>>;
 
 
 symbolic smacro procedure initrlisp; 
@@ -1081,6 +1118,10 @@ symbolic smacro procedure iroot(n,r);
       setq(tmp,irootn(n,r)); 
       return if equal(expt(tmp,r),n) then tmp else nil
    end;
+
+
+symbolic smacro procedure isqrt x; 
+   if leq(x,0) then error(0,{x," invalid for ",'isqrt}) else irootn(fix x,2);
 
 
 symbolic smacro procedure kernels u; kernels1(u,nil);
@@ -1116,9 +1157,6 @@ symbolic smacro procedure linfacf u; trykrf(u,'(0 1));
 symbolic smacro procedure lispeval u; eval u;
 
 
-symbolic smacro procedure load!-latest!-patches; load!-patches!-file();
-
-
 symbolic smacro procedure log!* u; log!:(u,!:bprec!:);
 
 
@@ -1144,7 +1182,11 @@ symbolic smacro procedure maprin u;
     else if not overflowed!* then maprint(u,0);
 
 
-symbolic smacro procedure mathprint l; <<terpri!* t; maprin l; terpri!* t>>;
+symbolic smacro procedure mathprint l; 
+   <<terpri!* t; 
+     if outputhandler!* then apply2(outputhandler!*,'maprin,l)
+      else if not overflowed!* then maprint(l,0); 
+     terpri!* t>>;
 
 
 symbolic smacro procedure max2!:(a,b); if greaterp!:(a,b) then a else b;
@@ -1152,9 +1194,6 @@ symbolic smacro procedure max2!:(a,b); if greaterp!:(a,b) then a else b;
 
 symbolic smacro procedure mchkopt(u,v); 
    (lambda o; if o then mchkopt1(u,v,o)) get(car v,'optional);
-
-
-symbolic smacro procedure mconv v; <<dmconv0 dmode!*; mconv1 v>>;
 
 
 symbolic smacro procedure min2!:(a,b); if greaterp!:(a,b) then b else a;
@@ -1225,10 +1264,11 @@ symbolic smacro procedure moddifference!:(u,v);
    !*modular2f general!-modular!-difference(cdr u,cdr v);
 
 
-symbolic smacro procedure moddivide!:(u,v); cons(!*i2mod 0,u);
+symbolic smacro procedure moddivide!:(u,v); 
+   cons(!*modular2f general!-modular!-number 0,u);
 
 
-symbolic smacro procedure modgcd!:(u,v); !*i2mod 1;
+symbolic smacro procedure modgcd!:(u,v); !*modular2f general!-modular!-number 1;
 
 
 symbolic smacro procedure modminusp!: u; 
@@ -1272,11 +1312,6 @@ symbolic smacro procedure mvar_member(u,v);
    or(equal(u,v),and(null atom v,arglist_member(u,cdr v)));
 
 
-symbolic smacro procedure name!-for!-patched!-version(name,extra); 
-   if member('psl,lispsystem!*) then gensym1 'g
-    else hashtagged!-name(name,extra);
-
-
 symbolic smacro procedure nconc!*(u,v); nconc(u,v);
 
 
@@ -1292,11 +1327,6 @@ symbolic smacro procedure newvar u;
     else intern compress append(explode '!=,explode u);
 
 
-symbolic smacro procedure noargsprin u; 
-   if or(not !*nat,!*fort) then 'failed
-    else <<remember!-args(car u,cdr u); maprin car u>>;
-
-
 symbolic smacro procedure noncom1 u; <<setq(!*ncmp,t); flag({u},'noncom)>>;
 
 
@@ -1307,7 +1337,7 @@ symbolic smacro procedure noncomp u; and(!*ncmp,noncomp1 u);
 
 
 symbolic smacro procedure noncomp!* u; 
-   or(noncomp u,and(eqcar(u,'expt),noncomp cadr u));
+   or(and(!*ncmp,noncomp1 u),and(eqcar(u,'expt),and(!*ncmp,noncomp1 cadr u)));
 
 
 symbolic smacro procedure nth(u,n); car pnth(u,n);
@@ -1335,7 +1365,8 @@ symbolic smacro procedure offnoargs u; setprifn(u,nil);
 symbolic smacro procedure omark u; <<rplacd(buffp,{u}); setq(buffp,cdr buffp)>>;
 
 
-symbolic smacro procedure omarko u; omark {u,0};
+symbolic smacro procedure omarko u; 
+   <<rplacd(buffp,{{u,0}}); setq(buffp,cdr buffp)>>;
 
 
 symbolic smacro procedure on1 u; onoff(u,t);
@@ -1386,7 +1417,10 @@ symbolic smacro procedure pi!*;
    if greaterp(!:prec!:,1000) then !:bigpi !:bprec!: else !:pi !:bprec!:;
 
 
-symbolic smacro procedure pi!/2!*; csl_timbf(bfhalf!*,pi!*());
+symbolic smacro procedure pi!/2!*; 
+   csl_timbf(bfhalf!*,
+             if greaterp(!:prec!:,1000) then !:bigpi !:bprec!:
+              else !:pi !:bprec!:);
 
 
 symbolic smacro procedure posintegerp u; and(fixp u,greaterp(u,0));
@@ -1415,10 +1449,6 @@ symbolic smacro procedure prepd1 u;
 symbolic smacro procedure prepexpt u; if equal(caddr u,1) then cadr u else u;
 
 
-symbolic smacro procedure prepf u; 
-   (lambda x; if null x then 0 else replus x) prepf1(u,nil);
-
-
 symbolic smacro procedure prepreform u; prepreform1(u,append(ordl!*,factors!*));
 
 
@@ -1429,7 +1459,9 @@ symbolic smacro procedure prepsq u;
 symbolic smacro procedure prepsq!*2 u; replus prepsq!*1(u,1,nil);
 
 
-symbolic smacro procedure prepsqx u; if !*intstr then prepsq!* u else prepsq u;
+symbolic smacro procedure prepsqx u; 
+   if !*intstr then prepsq!* u
+    else if null car u then 0 else sqform(u,function prepf);
 
 
 symbolic smacro procedure prepsqyy u; 
@@ -1440,7 +1472,8 @@ symbolic smacro procedure prettyprint x;
    <<superprinm(x,posn()); terpri(); nil>>;
 
 
-symbolic smacro procedure prim!-part u; quotf1(u,comfac!-to!-poly comfac u);
+symbolic smacro procedure prim!-part u; 
+   quotf1(u,(lambda u; if null car u then cdr u else {u}) comfac u);
 
 
 symbolic smacro procedure prin20x u; 
@@ -1478,7 +1511,8 @@ symbolic smacro procedure printl x; <<prinl x; terpri(); x>>;
 symbolic smacro procedure printprompt u; nil;
 
 
-symbolic smacro procedure printsf u; <<prinsf u; terpri!* nil; u>>;
+symbolic smacro procedure printsf u; 
+   <<if null u then prin2!* 0 else xprinf2 u; terpri!* nil; u>>;
 
 
 symbolic smacro procedure printsq u; <<terpri!* t; sqprint u; terpri!* u; u>>;
@@ -1509,6 +1543,10 @@ symbolic smacro procedure quotfx(u,v);
    if or(null !*exp,null !*mcd) then quotf(u,v) else quotfx1(u,v);
 
 
+symbolic smacro procedure quotfxerr(u,v); 
+   begin if not !*protfg then lprie "exact division failed"; error1() end;
+
+
 symbolic smacro procedure quotodd(p,q); 
    if and(atom p,atom q) then int!-equiv!-chk mkrn(p,q) else lowest!-terms(p,q);
 
@@ -1524,13 +1562,12 @@ symbolic smacro procedure rad2deg x; times2(x,!180!/pi);
 
 
 symbolic smacro procedure rad2deg!: x; 
-   csl_normbf divide!:(csl_timbf(x,!:180!*),pi!*(),!:bprec!:);
+   csl_normbf divide!:(csl_timbf(x,!:180!*),
+                       if greaterp(!:prec!:,1000) then !:bigpi !:bprec!:
+                        else !:pi !:bprec!:,!:bprec!:);
 
 
-symbolic smacro procedure rad2dms x; deg2dms rad2deg x;
-
-
-symbolic smacro procedure rad2dms!* u; deg2dms!* rad2deg!* u;
+symbolic smacro procedure rad2dms x; deg2dms times2(x,!180!/pi);
 
 
 symbolic smacro procedure raddsq(u,n); simpexpt {mk!*sq u,{'quotient,1,n}};
@@ -1544,104 +1581,29 @@ symbolic smacro procedure rd2rn1 n;
 
 
 symbolic smacro procedure rd!:explode u; 
-   bfexplode0 bftrim!: (if atom cdr u then fl2bf cdr u else u);
-
-
-symbolic smacro procedure rd!:minus u; 
-   if atom cdr u then cons('!:rd!:,minus cdr u) else minus!: u;
-
-
-symbolic smacro procedure rd!:minusp u; 
-   if atom cdr u then minusp cdr u else minusp!: u;
-
-
-symbolic smacro procedure rd!:onep u; 
-   if atom cdr u then lessp(abs difference(1.0,cdr u),!!fleps1)
-    else equal!:(bfone!*,bftrim!: u);
+   bfexplode0 csl_normbf round!:mt(if atom cdr u then fl2bf cdr u else u,
+                                   difference(!:bprec!:,3));
 
 
 symbolic smacro procedure rd!:prin u; 
-   bfprin!: bftrim!: (if atom cdr u then fl2bf cdr u else u);
+   bfprin0 csl_normbf round!:mt(if atom cdr u then fl2bf cdr u else u,
+                                difference(!:bprec!:,3));
 
 
 symbolic smacro procedure rd!:zerop u; 
    if atom cdr u then zerop cdr u else equal(cadr u,0);
 
 
-symbolic smacro procedure rdacos!* u; 
-   (lambda x; mkround (if atom x then acos x else acos!* x)) convprec u;
-
-
-symbolic smacro procedure rdacosh!* u; 
-   (lambda x; mkround (if atom x then acosh x else acosh!* x)) convprec u;
-
-
-symbolic smacro procedure rdacot!* u; 
-   (lambda x; mkround (if atom x then acot x else difbf(pi!/2!*(),atan!* x)))
-    convprec u;
-
-
-symbolic smacro procedure rdacoth!* u; 
-   (lambda x; mkround (if atom x then acoth x else atanh!* invbf x)) convprec u;
-
-
-symbolic smacro procedure rdacsc!* u; 
-   (lambda x; mkround (if atom x then acsc x else asin!* invbf x)) convprec u;
-
-
-symbolic smacro procedure rdasec!* u; 
-   (lambda x; 
-       mkround (if atom x then asec x else difbf(pi!/2!*(),asin!* invbf x)))
-    convprec u;
-
-
-symbolic smacro procedure rdasin!* u; 
-   (lambda x; mkround (if atom x then asin x else asin!* x)) convprec u;
-
-
-symbolic smacro procedure rdasinh!* u; 
-   (lambda x; mkround (if atom x then asinh x else asinh!* x)) convprec u;
-
-
-symbolic smacro procedure rdatan!* u; 
-   (lambda x; mkround (if atom x then atan x else atan!* x)) convprec u;
-
-
-symbolic smacro procedure rdatanh!* u; 
-   (lambda x; mkround (if atom x then atanh x else atanh!* x)) convprec u;
-
-
-symbolic smacro procedure rdcos!* u; 
-   (lambda x; mkround (if atom x then cos x else cos!* x)) convprec u;
-
-
-symbolic smacro procedure rdcosh!* u; 
-   (lambda x; mkround (if atom x then cosh x else cosh!* x)) convprec u;
-
-
-symbolic smacro procedure rde!*; mkround (if !*!*roundbf then e!*() else !!ee);
+symbolic smacro procedure rde!*; 
+   (lambda u; if atom u then cons('!:rd!:,u) else u)
+    (if !*!*roundbf then !:e !:bprec!:
+      else !!ee);
 
 
 symbolic smacro procedure rdhalf!*; if !*!*roundbf then bfhalf!* else 0.5;
 
 
-symbolic smacro procedure rdlog!* u; 
-   (lambda x; mkround (if atom x then log x else log!* x)) convprec u;
-
-
-symbolic smacro procedure rdlog10!* u; 
-   (lambda x; mkround (if atom x then log10 x else logb!*(x,bften!*)))
-    convprec u;
-
-
-symbolic smacro procedure rdnorm!* u; if rd!:minusp u then rd!:minus u else u;
-
-
 symbolic smacro procedure rdone!*; if !*!*roundbf then bfone!* else 1.0;
-
-
-symbolic smacro procedure rdpi!*; 
-   mkround (if !*!*roundbf then pi!*() else !!pii);
 
 
 symbolic smacro procedure rdprep1 u; 
@@ -1649,18 +1611,6 @@ symbolic smacro procedure rdprep1 u;
 
 
 symbolic smacro procedure rdqoterr; error(0,"zero divisor in quotient");
-
-
-symbolic smacro procedure rdsec!* u; 
-   (lambda x; mkround (if atom x then sec x else invbf cos!* x)) convprec u;
-
-
-symbolic smacro procedure rdsech!* u; 
-   (lambda x; mkround (if atom x then sech x else invbf cosh!* x)) convprec u;
-
-
-symbolic smacro procedure rdsqrt!* u; 
-   (lambda x; mkround (if atom x then sqrt x else bfsqrt x)) convprec u;
 
 
 symbolic smacro procedure rdtwo!*; if !*!*roundbf then bftwo!* else 2.0;
@@ -1696,7 +1646,8 @@ symbolic smacro procedure reordsq u; cons(reorder car u,reorder cdr u);
 
 
 symbolic smacro procedure rerror(packagename,number,message); 
-   <<setq(errmsg!*,message); rederr message>>;
+   <<setq(errmsg!*,message); 
+     begin if not !*protfg then lprie message; error1() end>>;
 
 
 symbolic smacro procedure resetparser; if null !*slin then comm1 t;
@@ -1708,7 +1659,11 @@ symbolic smacro procedure resimpcar u; resimp car u;
 symbolic smacro procedure rest x; cdr x;
 
 
-symbolic smacro procedure revalpri u; maprin eval cadr u;
+symbolic smacro procedure revalpri u; 
+   (lambda u; 
+       if outputhandler!* then apply2(outputhandler!*,'maprin,u)
+        else if not overflowed!* then maprint(u,0))
+    eval cadr u;
 
 
 symbolic smacro procedure revalruletst u; 
@@ -1728,7 +1683,7 @@ symbolic smacro procedure revpr u; cons(cdr u,car u);
 symbolic smacro procedure rhs u; lhs!-rhs(u,'caddr);
 
 
-symbolic smacro procedure rlispmain; lispeval '(begin);
+symbolic smacro procedure rlispmain; eval '(begin);
 
 
 symbolic smacro procedure rlistatp u; member(get(u,'stat),'(endstat rlis));
@@ -1745,16 +1700,18 @@ symbolic smacro procedure rmsubs;
    end;
 
 
-symbolic smacro procedure rnchoose!*(x,n); choose(rnfixchk x,rnfixchk n);
+symbolic smacro procedure rnchoose!*(x,n); 
+   (lambda !g92; quotient(perm(!g92,rnfixchk n),factorial !g92)) rnfixchk x;
 
 
 symbolic smacro procedure rnfix!* x; quotient(cadr x,cddr x);
 
 
-symbolic smacro procedure rnilog2!* x; ilog2 rnfix!* x;
+symbolic smacro procedure rnilog2!* x; ilog2 quotient(cadr x,cddr x);
 
 
-symbolic smacro procedure rnirootn!*(x,n); irootn(rnfix!* x,rnfixchk n);
+symbolic smacro procedure rnirootn!*(x,n); 
+   irootn(quotient(cadr x,cddr x),rnfixchk n);
 
 
 symbolic smacro procedure rnminus!: u; cons(car u,cons(!:minus cadr u,cddr u));
@@ -1784,7 +1741,8 @@ symbolic smacro procedure rnzerop!: u; equal(cadr u,0);
 symbolic smacro procedure round!* x; if atom cdr x then cdr x else x;
 
 
-symbolic smacro procedure round2a!* a; if atom a then a else round!* a;
+symbolic smacro procedure round2a!* a; 
+   if atom a then a else if atom cdr a then cdr a else a;
 
 
 symbolic smacro procedure roundbfoff; 
@@ -1800,18 +1758,23 @@ symbolic smacro procedure rplaca!*(u,v); rplaca(u,v);
 symbolic smacro procedure rplacd!*(u,v); rplacd(u,v);
 
 
-symbolic smacro procedure rread; <<prin2x " '"; rread1()>>;
+symbolic smacro procedure rread; <<setq(outl!*,cons(" '",outl!*)); rread1()>>;
 
 
 symbolic smacro procedure rsverr x; 
-   rerror('rlisp,13,{x,"is a reserved identifier"});
+   (lambda !g121; 
+       <<setq(errmsg!*,!g121); 
+         begin if not !*protfg then lprie !g121; error1() end>>)
+    {x,"is a reserved identifier"};
 
 
 symbolic smacro procedure rtypepart u; 
-   if getrtypecar u then 'yetunknowntype else nil;
+   if getrtype car u then 'yetunknowntype else nil;
 
 
-symbolic smacro procedure rule_error u; rederr {"error in rule:",u,"illegal"};
+symbolic smacro procedure rule_error u; 
+   begin if not !*protfg then lprie {"error in rule:",u,"illegal"}; error1()
+   end;
 
 
 symbolic smacro procedure s!:alwayseasy x; t;
@@ -1988,11 +1951,6 @@ symbolic smacro procedure s!:testnot(neg,x,env,lab);
    s!:jumpif(not neg,cadr x,env,lab);
 
 
-symbolic smacro procedure safe!-putd(name,type,body); 
-   if getd name then lprim {"Autoload stub for",name,"not defined"}
-    else putd(name,type,body);
-
-
 symbolic smacro procedure savesession u; preserve 'begin;
 
 
@@ -2022,10 +1980,11 @@ symbolic smacro procedure setifngfl(v,y);
    <<if not globalp v then fluid {v}; set(v,y)>>;
 
 
+symbolic smacro procedure sfchk u; 
+   if and(not atom u,not atom car u) then prepf u else u;
+
+
 symbolic smacro procedure sfp u; and(not atom u,not atom car u);
-
-
-symbolic smacro procedure sfpf u; and(not or(atom u,atom car u),sfp caaar u);
 
 
 symbolic smacro procedure sgn x; 
@@ -2053,7 +2012,20 @@ symbolic smacro procedure simpcar u; simp car u;
 symbolic smacro procedure simpconj u; conjsq simp!* car u;
 
 
+symbolic smacro procedure simpdiff u; 
+   <<ckpreci!# u; addsq(simp car u,simpminus cdr u)>>;
+
+
 symbolic smacro procedure simpexpon u; simpexpon1(u,'simp!*);
+
+
+symbolic smacro procedure simplogi sq; simplogbi(sq,nil);
+
+
+symbolic smacro procedure simplogn u; simplogbn(u,nil,nil);
+
+
+symbolic smacro procedure simplogsq sq; simplogbsq(sq,nil);
 
 
 symbolic smacro procedure simpmax u; 
@@ -2068,7 +2040,9 @@ symbolic smacro procedure sin!* u; sin!:(u,!:bprec!:);
 
 
 symbolic smacro procedure sinh!* x; 
-   (lambda y; csl_timbf(bfhalf!*,difbf(y,invbf y))) exp!* x;
+   (lambda y; 
+       csl_timbf(bfhalf!*,difbf(y,csl_normbf divide!:(bfone!*,y,!:bprec!:))))
+    exp!:(x,!:bprec!:);
 
 
 symbolic smacro procedure sinitl u; set(u,eval get(u,'initl));
@@ -2091,10 +2065,6 @@ symbolic smacro procedure sq_member(u,v);
 
 
 symbolic smacro procedure sqrt!* u; sqrt!:(u,!:bprec!:);
-
-
-symbolic smacro procedure ss2sf s; 
-   if or(atom s,atom car s) then s else sdl2sq(car s,sdlist cadr xx2lx s);
 
 
 symbolic smacro procedure stable!-sort(l,pred); 
@@ -2131,11 +2101,11 @@ symbolic smacro procedure terminalp; and(!*int,null ifl!*);
 
 
 symbolic smacro procedure terms u; 
-   <<lprim "Please use LENGTH instead"; termsf car simp!* u>>;
+   <<and(!*msg,lpriw("***","Please use LENGTH instead")); termsf car simp!* u>>;
 
 
 symbolic smacro procedure terpri0x; 
-   if rterfn!* then lispeval {rterfn!*} else terpri();
+   if rterfn!* then eval {rterfn!*} else terpri();
 
 
 symbolic smacro procedure terrlst(x,y); error(0,{x," invalid for ",y});
@@ -2156,9 +2126,6 @@ symbolic smacro procedure tildepri u; <<prin2!* "~"; prin2!* cadr u>>;
 
 symbolic smacro procedure times!:(n1,n2); 
    cons('!:rd!:,cons(times2(cadr n1,cadr n2),plus2(cddr n1,cddr n2)));
-
-
-symbolic smacro procedure timesi!* u; cr!:times(cri!*(),u);
 
 
 symbolic smacro procedure timesip x; and(eqcar(x,'times),memq('i,cdr x));
@@ -2191,29 +2158,11 @@ symbolic smacro procedure tmsf!* u;
 symbolic smacro procedure to(u,p); cons(u,p);
 
 
-symbolic smacro procedure tokbquote; 
-   begin 
-      setq(crchar!*,readch1()); 
-      setq(nxtsym!*,{'backquote,rread()}); 
-      setq(ttype!*,3); 
-      return nxtsym!*
-   end;
-
-
 symbolic smacro procedure token; token1();
 
 
 symbolic smacro procedure toknump x; 
    or(numberp x,eqcar(x,'!:dn!:),eqcar(x,'!:int!:));
-
-
-symbolic smacro procedure tokquote; 
-   begin 
-      setq(crchar!*,readch1()); 
-      setq(nxtsym!*,mkquote rread()); 
-      setq(ttype!*,4); 
-      return nxtsym!*
-   end;
 
 
 symbolic smacro procedure traceset l; mapc(l,function traceset1);
@@ -2223,10 +2172,6 @@ symbolic smacro procedure treesizep(u,n); equal(treesizep1(u,n),0);
 
 
 symbolic smacro procedure trimcrrl n; trimcr cadr n;
-
-
-symbolic smacro procedure tstpolyarg(y,u); 
-   and(null !*ratarg,neq(y,1),typerr(prepsq u,"polynomial"));
 
 
 symbolic smacro procedure univariatep pol; 
@@ -2278,7 +2223,8 @@ symbolic smacro procedure xread u;
    end;
 
 
-symbolic smacro procedure xsimp u; expchk simp!* u;
+symbolic smacro procedure xsimp u; 
+   (lambda u; if !*exp then u else offexpchk u) simp!* u;
 
 
 symbolic smacro procedure xxsort l; 
@@ -2295,272 +2241,28 @@ symbolic smacro procedure zfactor n; zfactor1(n,t);
 symbolic smacro procedure znumrnil u; if znumr u then cons(nil,1) else u;
 
 
-symbolic smacro procedure !*cr2crn u; 
-   mkcrn(realrat trimcrrl u,realrat trimcr cddr u);
-
-
-symbolic smacro procedure !*crn2rd n; 
-   if not equal(car cddr n,0) then cr2rderr() else mkround chkrn!* r2bf cadr n;
-
-
-symbolic smacro procedure !*crn2rn n; 
-   if not equal(car cddr n,0) then cr2rderr() else cons('!:rn!:,cadr n);
-
-
-symbolic smacro procedure !*ff2a(u,v); 
-   (lambda x; if wtl!* then prepsq x else mk!*sq x) cancel cons(u,v);
-
-
-symbolic smacro procedure !*gi2crn u; mkcrn(cons(cadr u,1),cons(cddr u,1));
-
-
 symbolic smacro procedure !*i2mod u; !*modular2f general!-modular!-number u;
-
-
-symbolic smacro procedure !*q2a1(u,v); if null v then mk!*sq u else prepsqxx u;
-
-
-symbolic smacro procedure !*q2f u; 
-   if equal(cdr u,1) then car u else typerr(prepsq u,'polynomial);
-
-
-symbolic smacro procedure !*q2k u; 
-   if kernp u then caaar car u else typerr(prepsq u,'kernel);
-
-
-symbolic smacro procedure !*rd2crn u; 
-   (lambda x; mkcrn(realrat x,cons(0,1))) round!* u;
-
-
-symbolic smacro procedure !*rn2crn u; mkcrn(cdr u,cons(0,1));
-
-
-symbolic smacro procedure !*rn2rd u; mkround chkrn!* r2bf cdr u;
-
-
-symbolic smacro procedure add2inputbuf(u,mode); 
-   begin 
-      if or(null terminalp(),!*nosave!*) then return nil; 
-      setq(inputbuflis!*,cons({statcounter,mode,u},inputbuflis!*))
-   end;
-
-
-symbolic smacro procedure aevalox u; mprino aevalox1 car u;
-
-
-symbolic smacro procedure arrayeval(u,v); 
-   if not atom u then rerror('rlisp,24,"Array arithmetic not defined") else u;
-
-
-symbolic smacro procedure bfinverse u; 
-   if atom u then quotient(1.0,u) else invbf u;
-
-
-symbolic smacro procedure bfminus u; if atom u then minus u else minus!: u;
-
-
-symbolic smacro procedure blocktyperr u; 
-   rerror('rlisp,8,{u,"invalid except at head of block"});
-
-
-symbolic smacro procedure bool!-eval u; lispeval u;
-
-
-symbolic smacro procedure boolvalpri u; maprin cadr u;
 
 
 symbolic smacro procedure c!:narg(x,env); 
    c!:cval(expand(cdr x,get(car x,'c!:binary_version)),env);
 
 
-symbolic smacro procedure carx(u,v); 
-   if null cdr u then car u
-    else rerror('alg,5,{"Wrong number of arguments to",v});
-
-
 symbolic smacro procedure chars2 u; chars21(u,0);
-
-
-symbolic smacro procedure command1; 
-   begin scan(); setcloc!*(); setq(key!*,cursym!*); return xread1 nil end;
-
-
-symbolic smacro procedure convprec u; convchk round!* u;
-
-
-symbolic smacro procedure cosh!* x; 
-   (lambda y; csl_timbf(bfhalf!*,plubf(y,invbf y))) exp!* x;
-
-
-symbolic smacro procedure cracsch!* u; crasinh!* cr!:quotient(i2cr!* 1,u);
-
-
-symbolic smacro procedure crasec!* u; cracos!* cr!:quotient(i2cr!* 1,u);
-
-
-symbolic smacro procedure crasech!* u; cracosh!* cr!:quotient(i2cr!* 1,u);
-
-
-symbolic smacro procedure crasin!* u; cr!:minus timesi!* crasinh!* timesi!* u;
-
-
-symbolic smacro procedure crcoth!* u; 
-   (lambda(x,y); cr!:quotient(cr!:plus(x,y),cr!:differ(x,y)))
-   (crexp!* cr!:times(i2cr!* 2,u),i2cr!* 1);
-
-
-symbolic smacro procedure crcsc!* u; cr!:quotient(i2cr!* 1,crsin!* u);
-
-
-symbolic smacro procedure crcsch!* u; 
-   (lambda y; cr!:quotient(i2cr!* 2,cr!:differ(y,cr!:quotient(i2cr!* 1,y))))
-    crexp!* u;
-
-
-symbolic smacro procedure crsec!* u; cr!:quotient(i2cr!* 1,crcos!* u);
-
-
-symbolic smacro procedure crsech!* u; 
-   (lambda y; cr!:quotient(i2cr!* 2,cr!:plus(y,cr!:quotient(i2cr!* 1,y))))
-    crexp!* u;
-
-
-symbolic smacro procedure crsinh!* u; 
-   (lambda y; cr!:times(crhalf!*(),cr!:differ(y,cr!:quotient(i2cr!* 1,y))))
-    crexp!* u;
-
-
-symbolic smacro procedure crtanh!* u; 
-   (lambda(x,y); cr!:quotient(cr!:differ(x,y),cr!:plus(x,y)))
-   (crexp!* cr!:times(i2cr!* 2,u),i2cr!* 1);
-
-
-symbolic smacro procedure deg2dms!* u; 
-   (lambda x; mklist3!* (if atom x then deg2dms x else deg2dms!: x))
-    round2a!* u;
-
-
-symbolic smacro procedure deg2rad!: x; 
-   csl_normbf divide!:(csl_timbf(x,pi!*()),!:180!*,!:bprec!:);
-
-
-symbolic smacro procedure dmoderr(u,v); 
-   rerror('poly,10,
-          {"Conversion between",
-           get(u,'dname),"and",
-           get(v,'dname),"not defined"});
-
-
-symbolic smacro procedure errach u; 
-   begin 
-      terpri!* t; 
-      lprie "CATASTROPHIC ERROR *****"; 
-      printty u; 
-      lpriw(" ",nil); 
-      rerror('alg,4,
-             
-         "Please report output and input listing on the sourceforge bug tracker"
-)
-   end;
-
-
-symbolic smacro procedure evalgeq(u,v); not evallessp(u,v);
-
-
-symbolic smacro procedure expread; xread t;
-
-
-%symbolic smacro procedure fancy!-boolvalpri u; fancy!-maprin0 cadr u;
-
-
-%symbolic smacro procedure fancy!-mode u; 
-%   begin scalar m; 
-%      setq(m,lispeval u); 
-%      if eqcar(m,'!*sq) then setq(m,reval m); 
-%      return m
-%   end;
-
-
-symbolic smacro procedure mk!-log!-arg(arg,base);
-   if null base or base eq 'e then {'log,arg}
-    else if base=10 then {'log10,arg}
-    else {'logb,arg,base};
-
-
-symbolic smacro procedure formlog2(sf,base); 
-   cons(cons(mksp(mk!-log!-arg(prepf sf,base),1),1),nil);
-
-
-symbolic smacro procedure gf2cr!: x; 
-   cons('!:cr!:,cons(striptag car x,striptag cdr x));
-
-
-symbolic smacro procedure gfdiffer(u,v); 
-   if atom car u then gffdiff(u,v) else gbfdiff(u,v);
-
-
-symbolic smacro procedure gfdot(u,v); 
-   if atom car u then gffdot(u,v) else gbfdot(u,v);
-
-
-symbolic smacro procedure gidifference!:(u,v); 
-   mkgi(difference(cadr u,cadr v),difference(cddr u,cddr v));
-
-
-symbolic smacro procedure giplus!:(u,v); 
-   mkgi(plus2(cadr u,cadr v),plus2(cddr u,cddr v));
-
-
-symbolic smacro procedure i2crn!* u; mkcrn(cons(u,1),cons(0,1));
-
-
-symbolic smacro procedure i2rd!* u; mkround chkint!* u;
 
 
 symbolic smacro procedure idsort u; sort(u,function idcompare);
 
 
-symbolic smacro procedure ieval u; !*s2i reval u;
-
-
-symbolic smacro procedure initreduce; initrlisp();
-
-
-symbolic smacro procedure isqrt x; 
-   if leq(x,0) then terrlst(x,'isqrt) else irootn(fix x,2);
-
-
-symbolic smacro procedure korder u; 
-   <<setq(kord!*,if equal(u,'(nil)) then nil else kernel!-list u); rmsubs()>>;
-
-
-symbolic smacro procedure lambdox u; 
-   begin 
-      omark '(m u); 
-      setq(curmark,plus2(curmark,1)); 
-      procox1('lambda,car u,cadr u)
-   end;
+symbolic smacro procedure ieval u; 
+   (lambda u; if fixp u then u else typerr(u,"integer")) reval u;
 
 
 symbolic smacro procedure let u; let0 u;
 
 
-symbolic smacro procedure lispapply(u,v); 
-   if null atom u then rerror('rlisp,2,{"Apply called with non-id arg",u})
-    else apply(u,v);
-
-
 symbolic smacro procedure lxsort l; 
    sort(l,function (lambda(a,b); lessp(termorder1(car a,car b),0)));
-
-
-symbolic smacro procedure mkcr(u,v); cons('!:cr!:,cons(striptag u,striptag v));
-
-
-symbolic smacro procedure mkfil u; 
-   if stringp u then u
-    else if not idp u then typerr(u,"file name")
-    else string!-downcase u;
 
 
 symbolic smacro procedure mkrootlsq(u,n); 
@@ -2569,185 +2271,15 @@ symbolic smacro procedure mkrootlsq(u,n);
     else mkrootlsq1(u,n);
 
 
-symbolic smacro procedure modcnv u; 
-   rerror('poly,13,
-          {"Conversion between modular integers and",
-           get(car u,'dname),"not defined"});
-
-
-symbolic smacro procedure noncomdel(u,v); 
-   if null noncomp!* u then delete(u,v) else noncomdel1(u,v);
-
-
 symbolic smacro procedure oblist; 
    sort(s!:oblist1(getv(!*package!*,1),nil),function orderp);
-
-
-symbolic smacro procedure precision n; 
-   <<if or(not numberp n,lessp(n,0))
-       then rerror('arith,6,"positive number required"); 
-     precision1(n,t)>>;
-
-
-symbolic smacro procedure prepcadr u; prepsq cadr u;
-
-
-symbolic smacro procedure quotfxerr(u,v); rederr "exact division failed";
-
-
-symbolic smacro procedure rad2deg!* u; 
-   (lambda x; mkround (if atom x then rad2deg x else rad2deg!: x)) convprec u;
-
-
-symbolic smacro procedure rd!:prep u; 
-   if !*noconvert then rdprep1 u
-    else if rd!:onep u then 1
-    else if rd!:onep rd!:minus u then minus 1
-    else rdprep1 u;
-
-
-symbolic smacro procedure rdarg!* u; 
-   if rd!:minusp u then rdpi!*() else rdzero!*();
-
-
-symbolic smacro procedure rdcot!* u; 
-   (lambda x; mkround (if atom x then cot x else tan!* difbf(pi!/2!*(),x)))
-    convprec u;
-
-
-symbolic smacro procedure rdcsc!* u; 
-   (lambda x; mkround (if atom x then csc x else invbf sin!* x)) convprec u;
-
-
-symbolic smacro procedure rdcsch!* u; 
-   (lambda x; mkround (if atom x then csch x else invbf sinh!* x)) convprec u;
-
-
-symbolic smacro procedure rdsin!* u; 
-   (lambda x; mkround (if atom x then sin x else sin!* x)) convprec u;
-
-
-symbolic smacro procedure rdsinh!* u; 
-   (lambda x; mkround (if atom x then sinh x else sinh!* x)) convprec u;
-
-
-symbolic smacro procedure rdtan!* u; 
-   (lambda x; mkround (if atom x then tan x else tan!* x)) convprec u;
-
-
-symbolic smacro procedure remf(u,v); 
-   if null v then rerror('poly,201,"Zero divisor") else cdr qremf(u,v);
 
 
 symbolic smacro procedure s!:cancel_local_decs w; unfluid w;
 
 
-symbolic smacro procedure sfchk u; if sfp u then prepf u else u;
-
-
-symbolic smacro procedure simpdiff u; 
-   <<ckpreci!# u; addsq(simpcar u,simpminus cdr u)>>;
-
-
-symbolic smacro procedure !*a2f u; !*q2f simp!* u;
-
-
-symbolic smacro procedure !*q2a u; !*q2a1(u,!*nosq);
-
-
-symbolic smacro procedure !*rd2cr u; 
-   (lambda x; mkcr(x,if atom x then 0.0 else bfz!*)) convprec u;
-
-
-symbolic smacro procedure cr2i!*; mkcr(rdzero!*(),rdtwo!*());
-
-
-symbolic smacro procedure cr!:prep u; 
-   crprep1 cons(rd!:prep cons('!:rd!:,cadr u),rd!:prep cons('!:rd!:,cddr u));
-
-
-symbolic smacro procedure cr!:simp u; cons(gf2cr!: crprcd u,1);
-
-
-symbolic smacro procedure cracsc!* u; crasin!* cr!:quotient(i2cr!* 1,u);
-
-
-symbolic smacro procedure cre!*; mkcr(rde!*(),rdzero!*());
-
-
-symbolic smacro procedure crhalf!*; mkcr(rdhalf!*(),rdzero!*());
-
-
-symbolic smacro procedure cri!*; mkcr(rdzero!*(),rdone!*());
-
-
-symbolic smacro procedure cri!/2; mkcr(rdzero!*(),rdhalf!*());
-
-
-symbolic smacro procedure crlog!* u; mkcr(rdlog!* crnorm!* u,crarg!* u);
-
-
-symbolic smacro procedure crone!*; mkcr(rdone!*(),rdzero!*());
-
-
-symbolic smacro procedure crpi!*; mkcr(rdpi!*(),rdzero!*());
-
-
-symbolic smacro procedure crr2d!* u; 
-   mkcr(rad2deg!* cons('!:rd!:,cadr u),rad2deg!* cons('!:rd!:,cddr u));
-
-
-symbolic smacro procedure crsqrt!* u; gf2cr!: gfsqrt crprcd u;
-
-
-symbolic smacro procedure deg2rad!* u; 
-   (lambda x; mkround (if atom x then deg2rad x else deg2rad!: x)) convprec u;
-
-
-symbolic smacro procedure formlog(sf,base); 
-   if null cdr sf then formlogterm(sf,base) else cons(formlog2(sf,base),1);
-
-
-symbolic smacro procedure cracos!* u; 
-   cr!:plus(cr!:times(crhalf!*(),crpi!*()),timesi!* crasinh!* timesi!* u);
-
-
-symbolic smacro procedure cracosh!* u; 
-   crlog!* cr!:plus(u,crsqrt!* cr!:differ(cr!:times(u,u),i2cr!* 1));
-
-
-symbolic smacro procedure cracot!* u; 
-   cr!:times(cri!/2(),
-             crlog!* cr!:quotient(cr!:differ(u,cri!*()),cr!:plus(cri!*(),u)));
-
-
-symbolic smacro procedure cracoth!* u; 
-   cr!:times(crhalf!*(),
-             crlog!* cr!:quotient(cr!:plus(i2cr!* 1,u),cr!:differ(u,i2cr!* 1)));
-
-
-symbolic smacro procedure cratan!* u; 
-   cr!:times(cri!/2(),
-             crlog!* cr!:quotient(cr!:plus(cri!*(),u),cr!:differ(cri!*(),u)));
-
-
-symbolic smacro procedure cratanh!* u; 
-   cr!:times(crhalf!*(),
-             crlog!* cr!:quotient(cr!:plus(i2cr!* 1,u),cr!:differ(i2cr!* 1,u)));
-
-
-symbolic smacro procedure crcosh!* u; 
-   (lambda y; cr!:times(crhalf!*(),cr!:plus(y,cr!:quotient(i2cr!* 1,y))))
-    crexp!* u;
-
-
-symbolic smacro procedure crd2r!* u; 
-   mkcr(deg2rad!* cons('!:rd!:,cadr u),deg2rad!* cons('!:rd!:,cddr u));
-
-
-symbolic smacro procedure crexpt!*(u,v); 
-   if cr!:zerop cr!:differ(v,crhalf!*()) then crsqrt!* u
-    else crexp!* cr!:times(v,crlog!* u);
+symbolic smacro procedure prepcadr u; 
+   if null car cadr u then 0 else sqform(cadr u,function prepf);
 
 
 end;
