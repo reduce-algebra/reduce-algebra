@@ -682,7 +682,7 @@ flag('(threevectorp), 'lose);
 
 deflist('((imports rlis)),'stat);
 
-flag('(sort stable!-sort stable!-sortip),'lose);
+flag('(sort stable!-sort stable!-sortip reversip2),'lose);
 
 % We also need this.
 

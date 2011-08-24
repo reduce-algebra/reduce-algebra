@@ -127,6 +127,17 @@ put('tstack!*,'initl,0);
 
 % ***** UTILITY FUNCTIONS *****.
 
+symbolic procedure reversip2(a, b);
+  begin
+    scalar w;
+    while a do <<
+      w := cdr a;
+      rplacd(a, b);
+      b := a;
+      a := w >>;
+    return b
+  end; 
+
 symbolic procedure mkid(x,y);
   % creates the ID XY from identifier X and (evaluated) object Y.
   if not idp x then typerr(x,"MKID root")
