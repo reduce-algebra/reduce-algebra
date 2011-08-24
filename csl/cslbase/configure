@@ -7746,6 +7746,7 @@ printf("\n");
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   CXXFLAGS="$CXXFLAGS -flto"
+       LDFLAGS="$LDFLAGS -fwhole-program"
        HIGHOPT="-O3"
        { $as_echo "$as_me:${as_lineno-$LINENO}: Will use link-time optimisation and -O3" >&5
 $as_echo "$as_me: Will use link-time optimisation and -O3" >&6;}

@@ -896,6 +896,7 @@ then
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                     [[printf("\n");]])],
       [CXXFLAGS="$CXXFLAGS -flto"
+       LDFLAGS="$LDFLAGS -fwhole-program"
        HIGHOPT="-O3"
        AC_MSG_NOTICE(Will use link-time optimisation and -O3)],
       [CFLAGS="$OLDCFLAGS"
