@@ -1,120 +1,127 @@
 
 % u48.lsp           Machine generated Lisp
 
-(c!:install "u48" 13727 4100654 1626915)
+(c!:install "u48" 18241 3343796 7090520)
 
-(c!:install 'opfchk!! '(opfchk!! integer t !:rn!: !*numval dmode!* (
-!:rd!: !:cr!:) !:rd!: nil simprn simparg simprd !*complex list expt
-!:cr!: "is not defined as complex function" errmsg!* !*protfg apply
-!*backtrace i2d revlis simpcr lprie errorset) 2233828875048501830)
+(c!:install 'cl_simpl1 '(cl_simpl1 true t false or and not ex all
+!*rlsism bex ball impl repl equiv cl_simpl !*protfg
+"cl_simpl1(): unknown operator" cl_smsimpl!-junct rl_smrmknowl cl_fvarl
+cl_simplbq rl_external apply cl_simplat rl_smcpknowl rl_smupdknowl
+rl_smmkatl lprie cl_smsimpl!-equiv cl_smsimpl!-imprep cl_flip cl_atfp
+rl_negateat cl_negate!-invol) 1985323189621910390)
 
-(c!:install 'vp1 '(vp1 "Var not in z-list after all" vp2 nreverse interr
-) 837320831737607815)
+(c!:install 'rat_sgn '(rat_sgn t) 1853911567820195068)
 
-(c!:install 'exceeds!-order!-variant '(exceeds!-order!-variant nil
-tayexp!-plus2 tayexp!-greaterp) 281437532664161638)
+(c!:install 'tryreduction '(tryreduction t simp !*exptsq f2df
+multdfconst multdf) 603318246135562576)
 
-(c!:install 'ps!:expt!-erule '(ps!:expt!-erule ps quotient nil ps!:order
-ps!:evaluate multsq invsq addsq prepsqxx simpexpt) 444289017905284672)
+(c!:install 'make!-ps '(make!-ps tps tag !*sqvar!* ps!:putv) 
+1795175176455646077)
 
-(c!:install 'dipcontenti1 '(dipcontenti1 vbcgcd dipcontevmin bcone!?) 
-821378543249485162)
+(c!:install 'check_info '(check_info nil avarlst avalue a2value rtype (
+array matrix) malst constp) 1708153306166849481)
 
-(c!:install 'remove_root_item '(remove_root_item nil setcar setcdr) 
-1330967292679213183)
+(c!:install 'vdpenumerate '(vdpenumerate t number pcount!* vdpsave
+vdpgetprop vdpputprop) 1888319346551266682)
 
-(c!:install 'randpoly '(randpoly lambda_l9xqtv_12 sparse wtl!* list t
-nil equalopr g equal dense coeffs expons (degree deg maxdeg) (ord mindeg
-) terms "optional randpoly argument" revlis !*eqn2a simp!* kernp
-functionp typerr natnump apply mksq multsq addsq mk!*sq subeval
-rand!-mons!-dense apply_e !*kp2q rand!-mons!-sparse) 1817191405658801184
-)
+(c!:install 'cvt5 '(cvt5 round!:mt equal!:) 2202979197306591367)
 
-(c!:install 'lambda_l9xqtv_12 '(lambda_l9xqtv_12 random) 
-751505179396902813)
+(c!:install 'redassign1p '(redassign1p t setq (read for) nil) 
+131242635122447328)
 
-(c!:install 'chksymmetries!&subst '(chksymmetries!&subst nil
-chksymmetries!&sub1) 1700494600459241268)
+(c!:install 'partdff '(partdff t !*product!-rule nil addsq multsq
+partdfpow partdft) 1367082714225540413)
 
-(c!:install 'free '(free nil freeind) 1361021780282992428)
+(c!:install 'physopsubs '(physopsubs alglist!* nil physoplist!* rtype
+simpfn simpiden (dot) physopfn dot !*nosq physop physop2sq subs2
+prepsqxx mk!*sq) 2050192195268264526)
 
-(c!:install 'lengthreval '(lengthreval
-"LENGTH called with wrong number of arguments" errmsg!* !*protfg rtype
-array list dimension lengthfn "LENGTH not defined for argument of type"
-"LENGTH argument" lprie aeval getrtype typerr) 857291945937552135)
+(c!:install 'coeff1_calc '(coeff1_calc calc_coeffmap_ nreverse) 
+1897238753576047443)
 
-(c!:install 'deg '(deg gdmode!* dmode!* simp!* tstpolyarg2 numrdeg) 
-274556648238284272)
+(c!:install 'red_extract '(red_extract bas_rep dp_comp bas_nr bas_dpoly
+dp_diff bas_make1) 2210310813076995154)
 
-(c!:install 'lto_alunion '(lto_alunion union lto_almerge) 
-980192573495283260)
+(c!:install 'permp!: '(permp!: t) 1310205780846314399)
 
-(c!:install 'get!*order '(get!*order get!*elements) 1961358405182470548)
+(c!:install 'merge_list1 '(merge_list1) 1671125622661630910)
 
-(c!:install 'qqe_simplqequal '(qqe_simplqequal true qepsilon false nil
-qequal qqe_arg2r qqe_arg2l qqe_qprefix!-var
-qqe_number!-of!-adds!-in!-qterm qqe_number!-of!-tails!-in!-qterm
-qqe_simplterm qqe_mk2) 621872463473106876)
+(c!:install 'constant_exprp '(constant_exprp constant t i idvalfn nil
+realvalued alwaysrealvalued (plus minus difference times quotient)
+!:rd!: !*complex !:cr!: constant_expr_listp) 1968306754571372480)
 
-(c!:install 'pasf_mkop '(pasf_mkop (cong ncong) !*protfg
-"Modulo 0 congruence created" lprie) 737169923691018591)
+(c!:install 'cl_gaussintersection '(cl_gaussintersection gignore nil
+rl_bettergaussp) 1938612638791916654)
 
-(c!:install 'vdp_sugar '(vdp_sugar !*cgbsugar sugar vdp_zero!?
-vdp_getprop) 1543194898394881371)
+(c!:install 'sfto_yun!-updecf '(sfto_yun!-updecf !*gcd t diff sfto_gcdf
+quotf negf addf multf setcar setcdr) 1512703944541331907)
 
-(c!:install 'applyml '(applyml char rdlist!* (i d e n t !/) (c o m p o s
-e !/) nil (i n v e r s e !/) t lex compress!* apply errorml) 
-1098752773977122203)
+(c!:install 'get_mat '(get_mat id nil t !*protfg "error in get_mat"
+lprie get!+row!+nr mk!+unit!+mat) 1924454971503791478)
 
-(c!:install 'xpdiff '(xpdiff nil "B too long in xpdiff"
-"A too long in xpdiff" failed interr) 1652087081665327731)
+(c!:install 'cl_applysac1 '(cl_applysac1 t break (nil) nil cl_applysac2)
+ 1710015882775374484)
 
-(c!:install 'ps!:constmult!-erule '(ps!:constmult!-erule ps!:evaluate
-multsq) 1043935901522579270)
+(c!:install 'logrtn '(logrtn 2.0 log2 msd log) 350007936810546106)
 
-(c!:install 'mkuniquewedge '(mkuniquewedge nil mkuniquewedge1 multpfsq
-addpf) 1825251528310770281)
+(c!:install 'physopplus '(physopplus nil "type mismatch in plus "
+physopsim!* getphystype rederr2 physop2sq addsq mk!*sq) 
+2232360910756131446)
 
-(c!:install 'dvertex!-to!-projector '(dvertex!-to!-projector mktails
-repeatsp prop!-simp mk!-contract!-coeff dpropagator) 1717623831293684885
-)
+(c!:install 'coeff_ordn1 '(coeff_ordn1 nil p_subsatlaslist) 
+1635828600124870843)
 
-(c!:install 'dp_prod '(dp_prod dp!=prod) 1131889884801490894)
+(c!:install 'frlp '(frlp t frlis!* nil) 1213576744569851735)
 
-(c!:install 'find!-null!-space '(find!-null!-space null!-space!-basis
-nil tidy!-up!-null!-vectors clear!-column) 1625684863086195589)
+(c!:install 'inormmat '(inormmat nil ilcm) 387447287324606610)
 
-(c!:install 'lowestdeg '(lowestdeg) 1099483672231151835)
+(c!:install 'validrule1 '(validrule1 nil list replaceby equal) 
+2069285054748685587)
 
-(c!:install 'simprad '(simprad !*reduced !*rationalize t quotient nil
-prepf !*precise radfa invsq multsq exptf multf minusf negf radf retimes
-simp prepf1 replus mkrootsq sqform) 513294354628100927)
+(c!:install 'qqe_qadd!-inside '(qqe_qadd!-inside t nil a
+qqe_qadd!-location!* d qqe_op qqe_qopaddp) 2024637090131022217)
 
-(c!:install 'reduce!-mod!-eig '(reduce!-mod!-eig nil reduce!-mod!-eigf
-lcm quotf multf) 455080532723605792)
+(c!:install 'iv_new '(iv_new) 1120989220244112093)
 
-(c!:install 'preptaylor!*2 '(preptaylor!*2 nil quotient minus prepsq!*
-preptaycoeff retimes) 1897677212579780943)
+(c!:install 'lengthf '(lengthf plus times t minus quotient !*rational
+expt dx du xi eta c x u df flatsizec max) 1927956892158565675)
 
-(c!:install 'conjgd '(conjgd cmpxfn realtype !:minus multf addf) 
-1491618507401601321)
+(c!:install 'xreduce1 '(xreduce1 weak_xreduce1 nreverse) 
+430404374178128349)
 
-(c!:install 'numpoly_red '(numpoly_red numpoly_null) 870005702024814768)
+(c!:install 'subsetneqp '(subsetneqp nil subsetp) 1834216667324185968)
 
-(c!:install 'letscalar '(letscalar "Syntax error:" "invalid" nil hold df
-simpfn "operator" avalue rtype antisymmetric infix kvalue linear noncom
-op opmtch symmetric wtl!* opfn !*sqvar!* t alglist!* expt frlis!* sqrt
-!*sqrtrulep (quotient 1 2) !*precise "Substitution for" "not allowed"
-msgpri getrtype reval let2 redmsg mkop let3 letexprn simp0 letdf delasc)
- 76291925164509416)
+(c!:install 'exp!: '(exp!: t "Invalid argument to" bfone!* !:rd!:
+!:bprec!: nil error difference!: msd !:e texpt!: greaterp!: cut!:ep max
+divide!: plus!: cut!:mt round!:mt) 2190155017803165167)
 
-(c!:install 'make!-image!-mod!-p '(make!-image!-mod!-p t unlucky!-case
-degree!-in!-variable make!-univariate!-image!-mod!-p) 
-1346888438108201498)
+(c!:install 'simpinnerprod '(simpinnerprod partitinnerprod !*pf2sq) 
+2246283138748548981)
 
-(c!:install 'subeval1 '(subeval1 nil subfn
-"No substitution defined for type" errmsg!* !*protfg t !*sub2 getrtype
-lprie simp subsq subs2 mk!*sq) 366128386720963758)
+(c!:install 'new_edge '(new_edge nil new_edge_list mk_edge_name) 
+1785637529940774812)
+
+(c!:install 'generic!-sub '(generic!-sub dfp list dfp!-sub) 
+1855280535076220756)
+
+(c!:install 'fs!:intequiv!: '(fs!:intequiv!: nil cos fs!:null!-angle) 
+1264060883437206811)
+
+(c!:install 'all_index_lst '(all_index_lst list nil listp) 
+1348312532109847265)
+
+(c!:install 'eval_uni_poly '(eval_uni_poly nil) 1983392336052449364)
+
+(c!:install 'liqsimp1!-check '(liqsimp1!-check min liqsimp1!-check1 negf
+) 1049686995422678962)
+
+(c!:install 'rule!-list '(rule!-list nil frasc!* t mcond!* avalue list
+"rule list" equal !*msg "***" "Please use => instead of = in rules"
+replaceby "rule" when algebraic typerr remove!-free!-vars
+remove!-free!-vars!* formbool rule!* lpriw) 1983491062097872713)
+
+(c!:install 'qqe_prefix!-length '(qqe_prefix!-length nil (rtail ltail
+rhead lhead)) 1670905950333623322)
 
 
 % End of generated Lisp code

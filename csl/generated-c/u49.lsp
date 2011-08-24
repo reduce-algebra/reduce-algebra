@@ -1,99 +1,91 @@
 
 % u49.lsp           Machine generated Lisp
 
-(c!:install "u49" 11473 7503723 5898766)
+(c!:install "u49" 3286 2422498 4002612)
 
-(c!:install 'red!=recover '(red!=recover nil bas_rep mo_comp bas_nr
-red!=hide dp_neworder bas_make1) 529827288013441176)
+(c!:install 'cpr_buchcrit4t '(cpr_buchcrit4t ev_disjointp) 
+1875249702315620495)
 
-(c!:install 'formclear '(formclear clear formclear1) 178664885272145638)
+(c!:install 'rewrite2 '(rewrite2 nil) 2176527659367536494)
 
-(c!:install 'general!-negate!-term '(general!-negate!-term
-general!-minus!-mod!-p) 450923593234793085)
+(c!:install 'tchscheme2 '(tchscheme2 rowmax nil removechild to!*scheme) 
+1447257969803628223)
 
-(c!:install 'glsoleig '(glsoleig nil negf multf) 1405951657791942658)
+(c!:install 'num '(num simp!* mk!*sq) 580636443919111328)
 
-(c!:install 'gd_newtype '(gd_newtype gec geg nil ger) 243269055669436911
+(c!:install 'updkorder '(updkorder kord!* nil alglist!*) 
+467378026450231291)
+
+(c!:install 'xadd '(xadd replace nil t updoldrules) 1037658286132575604)
+
+(c!:install 'liendimcom '(liendimcom lie_dim difference nil lie_cc lie_p
+lie_q plus quotient times lie_help lie_s lientrans lie_kk!* lie_tt aeval
+setk aeval!* aminusp!: evalneq evalequal) 1824858229931467854)
+
+(c!:install 'sc_create '(sc_create nil symbolic list2vect!*) 
+1008660952504726646)
+
+(c!:install 'modroots1 '(modroots1 nil g plus times t subf
+reduce!-mod!-p!* modroots2 modp) 1050950286806908222)
+
+(c!:install 'quotfail!-mod!-p '(quotfail!-mod!-p t exact!-quotient!-flag
+"QUOTIENT NOT EXACT (MOD P)" quotient!-mod!-p errorf) 548509529394753561
 )
 
-(c!:install 'sqfrf '(sqfrf !*gcd !*msg t !*rounded rational !*ezgcd
-dmode!* field nil rounded failed "CATASTROPHIC ERROR *****"
-"sqfrf failure" " "
-"Please report output and input listing on the sourceforge bug tracker"
-errmsg!* !*protfg on resimp diff gcdf quotf lnc !:recip multd degr
-rassoc multf rootxf terpri!* lprie printty lpriw) 1582313776221284978)
+(c!:install 'setqdeletedescendants '(setqdeletedescendants
+fluidbibasissetq nil) 1067265262060072884)
 
-(c!:install 'acfsf_0mk2 '(acfsf_0mk2 nil) 1367688769343188831)
+(c!:install 'rl_ex '(rl_ex rl_ex!* apply) 885236111330654233)
 
-(c!:install 'tidysqrt '(tidysqrt nil tidysqrtf invsq multsq) 
-1496738360046693267)
+(c!:install 'ofsf_smdbgetrel '(ofsf_smdbgetrel nil) 1686553462853540157)
 
-(c!:install 'xpwrlcmp '(xpwrlcmp expt sqrt getdenom getdenomx lcm) 
-2280473160855004936)
+(c!:install 'addcoeffs '(addcoeffs nil smallest!-increment
+common!-increment makecoeffpairs multsq addsq) 1424128364073273772)
 
-(c!:install 'smaddm2 '(smaddm2 nil copy_vect findrow simp addsq mk!*sq
-letmtr3) 2249339279527841630)
+(c!:install 'mk_resimp_rep '(mk_resimp_rep nil get_group_in
+get!*elements get_rep_matrix_in mk!+resimp!+mat) 2079311118525604802)
 
-(c!:install 'mod!-domainvalchk '(mod!-domainvalchk expt nil failed
-mod!-expt!-fract) 1290297913437185486)
+(c!:install 'subst!-cn '(subst!-cn t nil setkorder reorder multf addf) 
+1912112996527767049)
 
-(c!:install 'nssimp '(nssimp !*div yetunknowntype nil fn "not set"
-errmsg!* !*protfg tag i2d "Missing" "in" t rtype dsimp getrtype
-eval!-yetunknowntypeexpr simptimes addns msgpri lprie redmsg) 
-715203598072051633)
+(c!:install 'qqe_qadd!-inside!-at '(qqe_qadd!-inside!-at t nil rl_prepat
+qqe_arg2l qqe_arg2r qqe_qadd!-inside) 184965526275803037)
 
-(c!:install 'dipreplus '(dipreplus plus) 2231842920475923467)
+(c!:install 'ratpoly_pp '(ratpoly_pp sfto_dprpartksf) 969441403382824869
+)
 
-(c!:install 'addm1 '(addm1 "Matrix mismatch" errmsg!* !*protfg nreverse
-lprie) 1713016891200220096)
+(c!:install 'ps!:find!-order1 '(ps!:find!-order1 ps ps!:order!-fn
+ps!:max!-order nil ps!:order!-limit "Expression "
+" has zero expansion to order " errmsg!* !*protfg ps!:order
+ps!:last!-term ps!:getv apply ps!:putv ps!:value ps!:evaluate!-next
+lprie) 635235846026681142)
 
-(c!:install 'indexvp '(indexvp nil indexvar) 134120132175058051)
+(c!:install 'specrd!:sqrt '(specrd!:sqrt 0.5 specrd!:expt) 
+1337064193239862071)
 
-(c!:install 'calc_world '(calc_world s_world_names actual_alst
-calc_atlas reval) 1735440944159530077)
+(c!:install 'weak_xreduce '(weak_xreduce nil !*trxmod " =" last "   "
+first preppf eval assgnpri weak_xreduce1) 2055784620037819862)
 
-(c!:install 'intargfn '(intargfn integer list algebraic form1
-convertmode1) 2030711349376929916)
+(c!:install '!:dm2fix '(!:dm2fix nil !*noequiv 0.0 int!-equiv!-chk) 
+2203029852143571371)
 
-(c!:install 'mo!=pair '(mo!=pair nreverse) 247848940693978943)
+(c!:install 'delength '(delength plus t times quotient minus equal) 
+1437440619992244120)
 
-(c!:install 'permp!: '(permp!: t) 1310205780846314399)
+(c!:install 'calc_map_2d '(calc_map_2d mk_names_map_2 mk_binding
+coeff_calc) 2072218527561229452)
 
-(c!:install 'movebds '(movebds !*intp sgn1) 139604066828928241)
+(c!:install 'dp_content '(dp_content nil dp_lc bc_inv bc_gcd bc_fi) 
+380075340668190229)
 
-(c!:install 'ofsf_smeqtable '(ofsf_smeqtable ((equal (equal . equal) (
-neq . false) (geq . equal) (leq . equal) (greaterp . false) (lessp .
-false)) (neq (neq . neq) (geq . greaterp) (leq . lessp) (greaterp .
-greaterp) (lessp . lessp)) (geq (geq . geq) (leq . equal) (greaterp .
-greaterp) (lessp . false)) (leq (leq . leq) (greaterp . false) (lessp .
-lessp)) (greaterp (greaterp . greaterp) (lessp . false)) (lessp (lessp .
-lessp)))) 1215348524260009273)
+(c!:install 'cdr_signsort '(cdr_signsort nil t copy apply) 
+16652505972153283)
 
-(c!:install 'mkarg '(mkarg (quote !:dn!: !:int!:) list) 
-1486974578097348569)
+(c!:install 'gcd!-in!-vector '(gcd!-in!-vector t
+"GCD WITH ZERO NOT ALLOWED" nil errorf remainder!-in!-vector) 
+1335145477742697937)
 
-(c!:install 'product!-set2 '(product!-set2 nil) 1141923048983691310)
-
-(c!:install 'ratnump '(ratnump nil simp!*) 1889804209242521143)
-
-(c!:install 'dip!-nc!-ev!-prod '(dip!-nc!-ev!-prod nil bcprod
-dip!-nc!-ev!-prod1) 2224665023924069173)
-
-(c!:install 'fortexp1 '(fortexp1 !+ nil minus !*!* literal range !:
-!:rd!: !:lower!-sci!: !:upper!-sci!: !:bprec!: !. !*double !D !E (!D 0)
-!:crn!: !:gi!: !:cr!: !*f90 cmplx!( !, kind!(1!.0!D0!) !)
-!*fortranname!* (real dble) real listp fortranname optype
-fortranprecedence fortranop insertparens lastpair isfloat !*gi2cr
-!*crn2cr round!:mt csl_normbf bfexplode0 fortliteral fl2bf fortexp) 
-1244872942248745800)
-
-(c!:install 'store_edges '(store_edges nil) 1508654666156025741)
-
-(c!:install 'ezgcd!-comfac '(ezgcd!-comfac nil gcdlist poly!-abs) 
-1230955745152052753)
-
-(c!:install 'linineqevaltest '(linineqevaltest !*ineqerr !*protfg
-"unable to process nonlinear system" lprie) 1054756749197069417)
+(c!:install 'cl_ex '(cl_ex ex cl_closure) 2161111789049350897)
 
 (c!:install 'chrstrem '(chrstrem !*trwu !*trchrstrem t
 "--------------------------------------------------------" nil
@@ -103,6 +95,11 @@ inconsistent "A basic set is" "The remainder of "
 "the equations are inconsistent." "The final characteristic set is:"
 wusort wuconstantp prin2t!* xprinf2 terpri!* prin2!* setdiff
 findremainder minusf negf union pickbasicset) 1325119271437415757)
+
+(c!:install 'mkbin '(mkbin) 948100678985762811)
+
+(c!:install 'termlst1 '(termlst1 nil t expt e multf simp!* multsq addsq)
+ 219519910297821759)
 
 
 % End of generated Lisp code
