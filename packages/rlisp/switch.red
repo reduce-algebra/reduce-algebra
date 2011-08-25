@@ -76,8 +76,6 @@ symbolic procedure switch u;
          if not null dflt then <<put(x,'switchdefault,car dflt); set(y,car dflt)>>
       end;
 
-trst switch;
-
 deflist('((switch rlis)),'stat);   % we use deflist since it's flagged
                                    % eval
 flag('(switch),'eval);
