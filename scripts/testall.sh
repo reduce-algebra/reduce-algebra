@@ -52,6 +52,12 @@ echo "Test package $p"
 $here/scripts/test1.sh $p
 done
 
+csldiffs=`cd csl-times ; echo *.rlg.diff`
+psldiffs=`cd psl-times ; echo *.rlg.diff`
+
+test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" ${csldiffs//.rlg.diff}
+test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" ${psldiffs//.rlg.diff}
+
 # end of script
 
 

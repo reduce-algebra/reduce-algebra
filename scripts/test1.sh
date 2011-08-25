@@ -43,7 +43,7 @@ echo $here
 
 
 p=${1:-alg}
-echo "Package to test is $p"
+echo -n "Package to test is $p: "
 
 w=`grep " test " $here/packages/package.map | grep "($p "`
 
@@ -80,31 +80,60 @@ ulimit -c 30
 # intended to support this and avoid any other timings taken within
 # test scripts from hurting.
 
-time ($here/bin/redcsl -w <<XXX > csl-times/$p.rlg) 2>howlong.tmp
+time ($here/bin/redcsl -w <<XXX > csl-times/$p.rlg.tmp) 2>howlong.tmp
 off int;
+symbolic(!*redeflg!* := nil);
+%off pwrds;
+on errcont;
 $loader
 resettime1;
+write "START OF REDUCE TEST RUN"$
 in "$f";
+write "END OF REDUCE TEST RUN"$
 showtime1;
 quit;
 XXX
-cat howlong.tmp >> csl-times/$p.rlg
-echo "+++ CSL for package $p +++"
-diff -w $here/packages/$d/$p.rlg csl-times/$p.rlg
+cat howlong.tmp >> csl-times/$p.rlg.tmp
+echo -n CSL...
+#sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" -e "/OMIT/,/TIMO/d" <$here/packages/$d/$p.rlg >csl-times/$p.rlg.orig
+sed -e "1d" -e "/^Time for test:/,//d" <$here/packages/$d/$p.rlg >csl-times/$p.rlg.orig
+sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" -e "/OMIT/,/TIMO/d" <csl-times/$p.rlg.tmp | sed -e "1s/^1: //" | sed -e '$s/^1: //' >csl-times/$p.rlg
+diff -B -w csl-times/$p.rlg.orig csl-times/$p.rlg >csl-times/$p.rlg.diff
+if test -s csl-times/$p.rlg.diff
+  then echo -n "Diff is in csl-times/$p.rlg.diff "
+  else echo -n "OK! " ; rm csl-times/$p.rlg.diff csl-times/$p.rlg.orig
+fi
+#diff -w $here/packages/$d/$p.rlg csl-times/$p.rlg
+rm csl-times/$p.rlg.tmp
 
 mkdir -p psl-times
 
-time ($here/bin/redpsl <<XXX > psl-times/$p.rlg) 2>howlong.tmp
+time ($here/bin/redpsl <<XXX > psl-times/$p.rlg.tmp) 2>howlong.tmp
 off int;
+symbolic(!*redefmsg := nil);
+symbolic(!*redeflg!* := nil);
+%off pwrds;
+on errcont;
 $loader
 resettime1;
+write "START OF REDUCE TEST RUN"$
 in "$f";
+write "END OF REDUCE TEST RUN"$
 showtime1;
 quit;
 XXX
-cat howlong.tmp >> psl-times/$p.rlg
-echo "+++ PSL for package $p +++"
-diff -w $here/packages/$d/$p.rlg psl-times/$p.rlg
+cat howlong.tmp >> psl-times/$p.rlg.tmp
+echo -n "PSL..."
+#sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" -e "/OMIT/,/TIMO/d" <$here/packages/$d/$p.rlg >psl-times/$p.rlg.orig
+sed -e "1d" -e "/^Time for test:/,//d" <$here/packages/$d/$p.rlg >psl-times/$p.rlg.orig
+sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | sed -e "1s/^1: //" | sed -e '$s/^1: //' >psl-times/$p.rlg
+diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
+if test -s psl-times/$p.rlg.diff
+  then echo "diff is in psl-times/$p.rlg.diff"
+  else echo "OK! " ; rm psl-times/$p.rlg.diff psl-times/$p.rlg.orig
+fi
+#diff -w $here/packages/$d/$p.rlg psl-times/$p.rlg
+rm  psl-times/$p.rlg.tmp
 
 rm howlong.tmp
 
