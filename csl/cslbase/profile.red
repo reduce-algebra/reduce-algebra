@@ -7,11 +7,11 @@
 symbolic;
 
 if boundp 'cpulimit and
-   numberp cpulimit := compress explodec cpulimit and
+   numberp (cpulimit := compress explodec cpulimit) and
    cpulimit > 0 then !*cpulimit := cpulimit;
 
 if boundp 'conslimit and
-   numberp conslimit := compress explodec conslimit and
+   numberp (conslimit := compress explodec conslimit) and
    conslimit > 0 then !*conslimit := conslimit;
 
 
