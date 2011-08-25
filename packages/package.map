@@ -180,6 +180,7 @@
  (cdiff         "cdiff"                 test                 csl psl)
  (bibasis       "bibasis"               test                 csl psl)
  (clprl         "clprl"                 test                 csl psl)
+ (gcref         "gcref"                 test                 csl psl)
 )
 
 % End of configuration data
