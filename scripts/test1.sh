@@ -76,12 +76,16 @@ mkdir -p csl-times
 
 ulimit -c 30
 
+# Note that resettime1/showtime1 is a new timing feature in Reduce
+# intended to support this and avoid any other timings taken within
+# test scripts from hurting.
+
 time ($here/bin/redcsl -w <<XXX > csl-times/$p.rlg) 2>howlong.tmp
 off int;
 $loader
-showtime;
+resettime1;
 in "$f";
-showtime;
+showtime1;
 quit;
 XXX
 cat howlong.tmp >> csl-times/$p.rlg
@@ -93,9 +97,9 @@ mkdir -p psl-times
 time ($here/bin/redpsl <<XXX > psl-times/$p.rlg) 2>howlong.tmp
 off int;
 $loader
-showtime;
+resettime1;
 in "$f";
-showtime;
+showtime1;
 quit;
 XXX
 cat howlong.tmp >> psl-times/$p.rlg

@@ -143,6 +143,18 @@ put('quit,'stat,'endstat);
 flag('(bye quit),'eval);
 
 put('showtime,'stat,'endstat);
+% showtime, showtime1, showtime2 and showtime3 will just be independent
+% timing statements so that one can be used without interfering with
+% any of the others.
+put('showtime1,'stat,'endstat);
+put('showtime2,'stat,'endstat);
+put('showtime3,'stat,'endstat);
+
+% "resettime" re-bases the counter but does not print anything.
+put('resettime,'stat,'endstat);
+put('resettime1,'stat,'endstat);
+put('resettime2,'stat,'endstat);
+put('resettime3,'stat,'endstat);
 
 endmodule;
 

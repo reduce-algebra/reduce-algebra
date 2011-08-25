@@ -80,6 +80,12 @@ global '(!$eof!$
          opl!*
          ogctime!*
          otime!*
+         ogctime1!*
+         otime1!*
+         ogctime2!*
+         otime2!*
+         ogctime3!*
+         otime3!*
          program!*
          programl!*
          promptexp!*
@@ -222,6 +228,8 @@ symbolic procedure begin1;
       otime!* := time();
       % The next line is that way for bootstrapping purposes.
       if getd 'gctime then ogctime!* := gctime() else ogctime!* := 0;
+      otime1!* := otime2!* := otime3!* := otime!*;
+      ogctime1!* := ogctime2!* := ogctime3!* := ogctime!*;
       cursym!* := '!*semicol!*;
   a:  if terminalp()
         then progn((if !*nosave!* or statcounter=0 then nil
@@ -456,7 +464,6 @@ symbolic procedure dfprint u;
                 go to a
          end;
 
-remprop('showtime,'lose);  % Temporary.
 
 symbolic procedure showtime;
    begin scalar x,y;
@@ -474,6 +481,99 @@ symbolic procedure showtime;
       terpri();
       return if !*reduce4 then mknovalobj() else nil
    end;
+
+% OK so what is this all about...
+% Well for benchmarking I would like to record the time spent in
+% a test script. However some test scripts use "showtime" and that
+% then interferes. So I introduce a variant on showtime specifically
+% for my use that does just the same but that will be independent of
+% the original version. I call this "showtime1". And then in a spirit
+% of future-proofing I provide two further versions for other people
+% to use too. So
+%   showtime1;
+%   showtime;
+%   part A
+%   showtime;    % time just for part A
+%   part B
+%   showtime;    % time just for part B
+%   showtime1;   % total time.
+% Because the counters used differ (obviously) I found this easiest to
+% do my replicating code rather than having a single parameterised
+% function.
+
+symbolic procedure showtime1;
+   begin scalar x,y;
+      x := otime1!*;
+      otime1!* := time();
+      x := otime1!* - x;
+      y := ogctime1!*;
+      ogctime1!* := gctime();
+      y := ogctime1!* - y;
+      if 'psl memq lispsystem!* then x := x - y;
+      terpri();
+      prin2 "Time (counter 1): "; prin2 x; prin2 " ms";
+      if null(y=0)
+        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+      terpri();
+      return if !*reduce4 then mknovalobj() else nil
+   end;
+
+symbolic procedure showtime2;
+   begin scalar x,y;
+      x := otime2!*;
+      otime2!* := time();
+      x := otime2!* - x;
+      y := ogctime2!*;
+      ogctime2!* := gctime();
+      y := ogctime2!* - y;
+      if 'psl memq lispsystem!* then x := x - y;
+      terpri();
+      prin2 "Time (counter 2): "; prin2 x; prin2 " ms";
+      if null(y=0)
+        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+      terpri();
+      return if !*reduce4 then mknovalobj() else nil
+   end;
+
+symbolic procedure showtime3;
+   begin scalar x,y;
+      x := otime3!*;
+      otime3!* := time();
+      x := otime3!* - x;
+      y := ogctime3!*;
+      ogctime3!* := gctime();
+      y := ogctime3!* - y;
+      if 'psl memq lispsystem!* then x := x - y;
+      terpri();
+      prin2 "Time (counter 3): "; prin2 x; prin2 " ms";
+      if null(y=0)
+        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+      terpri();
+      return if !*reduce4 then mknovalobj() else nil
+   end;
+
+symbolic procedure resettime;
+% Beware - because of bootstrapping restrictions I can not use
+% << ... >> for progn here!
+  progn(otime!* := time(),
+       ogctime!* := gctime(),
+       if !*reduce4 then mknovalobj() else nil);
+
+symbolic procedure resettime1;
+  progn(otime1!* := time(),
+       ogctime1!* := gctime(),
+       if !*reduce4 then mknovalobj() else nil);
+
+symbolic procedure resettime2;
+  progn(otime2!* := time(),
+       ogctime2!* := gctime(),
+       if !*reduce4 then mknovalobj() else nil);
+
+symbolic procedure resettime3;
+  progn(otime3!* := time(),
+       ogctime3!* := gctime(),
+       if !*reduce4 then mknovalobj() else nil);
+
 
 symbolic procedure sinitl u;
    set(u,eval get(u,'initl));
