@@ -108,7 +108,7 @@ symbolic procedure fl2bf x;
 
 flag ('(fl2bf msd!: fix2 rndpwr timbf), 'lose);
 
-set!-print!-precision 14;
+set!-print!-precision 6;
 
 % The following definition is appropriate for MSDOS, and the value of
 % !!maxbflexp should be OK for all IEEE systems. BEWARE if you have a

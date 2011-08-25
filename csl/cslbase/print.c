@@ -1848,6 +1848,12 @@ static Lisp_Object Lprint_precision(Lisp_Object nil, Lisp_Object a)
     return onevalue(fixnum_of_int(old));
 }
 
+static Lisp_Object Lget_precision(Lisp_Object nil, int nargs, ...)
+{
+    argcheck(nargs, 0, "getprintprecision");
+    return onevalue(fixnum_of_int(print_precision));
+}
+
 static void prin_buf(char *buf, int blankp)
 {
     Lisp_Object nil = C_nil;
@@ -2360,75 +2366,93 @@ case TAG_VECTOR:
         }
 
     case TYPE_VEC8:
-             outprefix(blankp, 4);
-             putc_stream('#', active_stream); putc_stream('V', active_stream);
-             putc_stream('8', active_stream); putc_stream('(', active_stream);
-             for (k=0; k<len; k++)
-             {   sprintf(my_buff, "%d", scelt(stack[0], k));
-                 prin_buf(my_buff, k != 0);
-             }
-             outprefix(NO, 1);
-             putc_stream(')', active_stream);
-             popv(1);
-             return;
+            outprefix(blankp, 4);
+            putc_stream('#', active_stream); putc_stream('V', active_stream);
+            putc_stream('8', active_stream); putc_stream('(', active_stream);
+            for (k=0; k<len; k++)
+            {   sprintf(my_buff, "%d", scelt(stack[0], k));
+                prin_buf(my_buff, k != 0);
+            }
+            outprefix(NO, 1);
+            putc_stream(')', active_stream);
+            popv(1);
+            return;
     case TYPE_VEC16:
-             outprefix(blankp, 5);
-             putc_stream('#', active_stream); putc_stream('V', active_stream);
-             putc_stream('1', active_stream); putc_stream('6', active_stream); putc_stream('(', active_stream);
-             len = len >> 1;
-             for (k=0; k<len; k++)
-             {   sprintf(my_buff, "%d", helt(stack[0], k));
-                 prin_buf(my_buff, k != 0);
-             }
-             outprefix(NO, 1);
-             putc_stream(')', active_stream);
-             popv(1);
-             return;
+            outprefix(blankp, 5);
+            putc_stream('#', active_stream); putc_stream('V', active_stream);
+            putc_stream('1', active_stream); putc_stream('6', active_stream); putc_stream('(', active_stream);
+            len = len >> 1;
+            for (k=0; k<len; k++)
+            {   sprintf(my_buff, "%d", helt(stack[0], k));
+                prin_buf(my_buff, k != 0);
+            }
+            outprefix(NO, 1);
+            putc_stream(')', active_stream);
+            popv(1);
+            return;
     case TYPE_VEC32:
-             outprefix(blankp, 5);
-             putc_stream('#', active_stream); putc_stream('V', active_stream);
-             putc_stream('3', active_stream); putc_stream('2', active_stream); putc_stream('(', active_stream);
-             len = len >> 2;
+            outprefix(blankp, 5);
+            putc_stream('#', active_stream); putc_stream('V', active_stream);
+            putc_stream('3', active_stream); putc_stream('2', active_stream); putc_stream('(', active_stream);
+            len = len >> 2;
 /* /* I think that this is broken on 64-bit machines since then ielt
       fetches a 64-bit value....  Oh misery! But maybe it is not a VERY
       important part of Lisp so I can think about it later! */
-             for (k=0; k<len; k++)
-             {   sprintf(my_buff, "%ld", (long)ielt(stack[0], k));
-                 prin_buf(my_buff, k != 0);
-             }
-             outprefix(NO, 1);
-             putc_stream(')', active_stream);
-             popv(1);
-             return;
+            for (k=0; k<len; k++)
+            {   sprintf(my_buff, "%ld", (long)ielt(stack[0], k));
+                prin_buf(my_buff, k != 0);
+            }
+            outprefix(NO, 1);
+            putc_stream(')', active_stream);
+            popv(1);
+            return;
     case TYPE_FLOAT32:
-             outprefix(blankp, 4);
-             putc_stream('#', active_stream); putc_stream('F', active_stream);
-             putc_stream('S', active_stream); putc_stream('(', active_stream);
-             len = len >> 2;
-             for (k=0; k<len; k++)
-             {   sprintf(my_buff, "%#.7g", (double)felt(stack[0], k));
-                 prin_buf(my_buff, k != 0);
-             }
-             outprefix(NO, 1);
-             putc_stream(')', active_stream);
-             popv(1);
-             return;
+            outprefix(blankp, 4);
+            putc_stream('#', active_stream); putc_stream('F', active_stream);
+            putc_stream('S', active_stream); putc_stream('(', active_stream);
+            len = len >> 2;
+/* Note that I ignore print precision for single floats. This may be wrong. */
+            for (k=0; k<len; k++)
+            {   sprintf(my_buff, "%#.7g", (double)felt(stack[0], k));
+                prin_buf(my_buff, k != 0);
+            }
+            outprefix(NO, 1);
+            putc_stream(')', active_stream);
+            popv(1);
+            return;
     case TYPE_FLOAT64:
-             outprefix(blankp, 4);
-             putc_stream('#', active_stream); putc_stream('F', active_stream);
-             putc_stream('D', active_stream); putc_stream('(', active_stream);
-             len = (len-CELL)/8;
+            outprefix(blankp, 4);
+            putc_stream('#', active_stream); putc_stream('F', active_stream);
+            putc_stream('D', active_stream); putc_stream('(', active_stream);
+            len = (len-CELL)/8;
 /* I will not worry about print-precision bugs here... */
-             for (k=0; k<len; k++)
-             {   sprintf(my_buff, "%#.*g",
-                     (int)print_precision, delt(stack[0], k));
-                 prin_buf(my_buff, k != 0);
-             }
-             outprefix(NO, 1);
-             putc_stream(')', active_stream);
-             popv(1);
-             return;
-    default: goto error_case;
+            for (k=0; k<len; k++)
+            {   sprintf(my_buff, "%#.*g",
+                    (int)print_precision, delt(stack[0], k));
+                prin_buf(my_buff, k != 0);
+                {   char *dot = strrchr(my_buff, '.');
+                    if (dot == NULL)
+                    {   char *e;
+                        if ((e = strrchr(my_buff, 'e')) != NULL ||
+                            (e = strrchr(my_buff, 'E')) != NULL)
+                        {   char *p = e+1;
+                            while (*p != 0) p++;
+                            while (p != e)
+                            {   p[2] = p[0];
+                                p--;
+                            }
+                            p[2] = p[0];
+                            p[1] = '0';
+                            p[0] = '.';
+                        }
+                    }
+                }
+            }
+            outprefix(NO, 1);
+            putc_stream(')', active_stream);
+            popv(1);
+            return;
+    default:goto error_case;
             }
 #ifdef COMMON
 /* Here for bit-vectors */
@@ -2743,8 +2767,26 @@ case TAG_BOXFLOAT:
                                   double_float_val(u));
             }
             else
-                 sprintf(my_buff, "%#.*g", (int)print_precision,
-                                  double_float_val(u));
+            {   sprintf(my_buff, "%#.*g", (int)print_precision,
+                                 double_float_val(u));
+                {   char *dot = strrchr(my_buff, '.');
+                    if (dot == NULL)
+                    {   char *e;
+                        if ((e = strrchr(my_buff, 'e')) != NULL ||
+                            (e = strrchr(my_buff, 'E')) != NULL)
+                        {   char *p = e+1;
+                            while (*p != 0) p++;
+                            while (p != e)
+                            {   p[2] = p[0];
+                                p--;
+                            }
+                            p[2] = p[0];
+                            p[1] = '0';
+                            p[0] = '.';
+                        }
+                    }
+                }
+            }
             break;
 #ifdef COMMON
     case TYPE_LONG_FLOAT:
@@ -5015,6 +5057,9 @@ setup_type const print_setup[] =
     {"print-imports",           wrong_no_na, wrong_no_nb, Lprint_imports},
     {"math-display",            Lmath_display, too_many_1, wrong_no_1},
     {"debug-print",             Ldebug_print, too_many_1, wrong_no_1},
+    {"set-print-precision",     Lprint_precision, too_many_1, wrong_no_1},
+    {"setprintprecision",       Lprint_precision, too_many_1, wrong_no_1},
+    {"getprintprecision",       wrong_no_na, wrong_no_nb, Lget_precision},
 #ifdef COMMON
     {"charpos",                 Lposn_1, wrong_no_nb, Lposn},
     {"finish-output",           Lflush1, wrong_no_nb, Lflush},
@@ -5047,7 +5092,6 @@ setup_type const print_setup[] =
     {"prin2a",                  Lprin2a, too_many_1, wrong_no_1},
     {"print",                   Lprint, too_many_1, wrong_no_1},
     {"printc",                  Lprintc, too_many_1, wrong_no_1},
-    {"set-print-precision",     Lprint_precision, too_many_1, wrong_no_1},
 #else
     {"close",                   Lclose, too_many_1, wrong_no_1},
     {"explode",                 Lexplode, too_many_1, wrong_no_1},
@@ -5070,7 +5114,6 @@ setup_type const print_setup[] =
     {"prin2a",                  Lprin2a, too_many_1, wrong_no_1},
     {"print",                   Lprint, too_many_1, wrong_no_1},
     {"printc",                  Lprintc, too_many_1, wrong_no_1},
-    {"set-print-precision",     Lprint_precision, too_many_1, wrong_no_1},
     {"tyo",                     Ltyo, too_many_1, wrong_no_1},
 #endif
     {NULL,                      0, 0, 0}

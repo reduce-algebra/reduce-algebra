@@ -4539,7 +4539,7 @@ static void cold_setup()
     }
 #endif
     gensym_ser = 0;
-    print_precision = 15;
+    print_precision = 6; /* I maybe prefer 15 but use 6 to agree with PSL */
     current_modulus = 1;
     fastget_size = 32;
     package_bits = 0;

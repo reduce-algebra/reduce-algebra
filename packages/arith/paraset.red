@@ -45,13 +45,18 @@ flag('(!!nfpd !!nbfpd !!maxflexp),'share);
 symbolic procedure find!!nfpd;
    begin scalar x,y,z;integer i; x:=y:=9.0;
       repeat <<x := 10.0*x+y; i := i+1>> until (z := x+1.0)=x;
-      if 10.0*fix(z/10) - 1.0 neq x then i := i - 1;
+% The following line and the corresponding one in find!!nbfpd can call
+% FIX on a a value that is around 10^16 (if floats are IEEE 64-bit values) and
+% that mighht lead to unreliable conseqences. If arithmetic is IEEE (as maybe
+% it mostly will be these days) then the test would fail anyway, so
+% in that case commenting it out can not have adverse effects!
+%     if 10.0*fix(z/10) - 1.0 neq x then i := i - 1;
       return !!nfpd:=i end;
 
 symbolic procedure find!!nbfpd;
    begin scalar x,y,z;integer i; x:=y:=1.0;
       repeat <<x := 2.0*x+y; i := i+1>> until (z := x+1.0)=x;
-      if 2.0*fix(z/2) - 1.0 neq x then i := i-1;
+%     if 2.0*fix(z/2) - 1.0 neq x then i := i-1;
       return !!nbfpd:=i end;
 
 symbolic procedure find!!maxbflexp;
