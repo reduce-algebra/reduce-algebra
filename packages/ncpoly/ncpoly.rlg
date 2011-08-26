@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:56 2011 run on win32
 nc_setup({k,n,NN,KK},{NN*n-n*NN=NN,KK*k-k*KK=KK},left);
 
 
@@ -261,6 +260,7 @@ nc_cleanup;
 
 end;
 
-
-Time for test: 1154 ms, plus GC time: 141 ms
-@@@@@ Resources used: (2 26 6 0)
+Time (counter 1): 1073 ms  plus GC time: 52 ms
+real	0m1.713s
+user	0m0.060s
+sys	0m0.136s

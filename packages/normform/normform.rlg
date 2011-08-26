@@ -1,6 +1,3 @@
-Fri Feb 18 21:27:57 2011 run on win32
-
-*** co already defined as operator 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                      %
 % Examples of calculations of matrix normal forms using the REDUCE     %
@@ -1285,6 +1282,7 @@ j := mat((sqrt(----*b  + 6*b - 12)*i - (---*b - 2),0),
 
 end;
 
-
-Time for test: 624 ms
-@@@@@ Resources used: (1 7 3290 1)
+Time (counter 1): 615 ms  plus GC time: 21 ms
+real	0m1.251s
+user	0m0.030s
+sys	0m0.153s

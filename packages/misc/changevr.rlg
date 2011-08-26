@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:25 2011 run on win32
 %*********************************************************************;
 %         This is a test file    for  the  CHANGEVAR package.         ;
 %         Make sure that before you attempt to run it the             ;
@@ -115,6 +114,7 @@ changevar(u, { r , theta }, { x=r*cos theta, y=r*sin theta },
 
 end;
 
-
-Time for test: 1 ms
-@@@@@ Resources used: (0 0 12 0)
+Time (counter 1): 22 ms
+real	0m0.595s
+user	0m0.031s
+sys	0m0.138s

@@ -1,4 +1,3 @@
-Fri Feb 18 21:28:31 2011 run on win32
 load_package redlog;
 
 
@@ -79,6 +78,7 @@ lhead(ltail(ltail(rtail(rtail(q))))) - rhead(ltail(ltail(rtail(rtail(q))))) = 0
 
 end;
 
-
-Time for test: 16 ms
-@@@@@ Resources used: (0 0 2 0)
+Time (counter 1): 25 ms  plus GC time: 2 ms
+real	0m0.476s
+user	0m0.030s
+sys	0m0.060s

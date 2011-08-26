@@ -1,8 +1,3 @@
-Fri Feb 18 21:28:55 2011 run on win32
-
-*** binomial already defined as operator 
-
-*** ~f already defined as operator 
 % test file for ztrans package
 % 
 operator f;
@@ -1546,6 +1541,7 @@ result:=preresult where solveresult;
 
 end;
 
-
-Time for test: 889 ms, plus GC time: 63 ms
-@@@@@ Resources used: (1 11 72 2)
+Time (counter 1): 1068 ms  plus GC time: 34 ms
+real	0m1.744s
+user	0m0.092s
+sys	0m0.138s

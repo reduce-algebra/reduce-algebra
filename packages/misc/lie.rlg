@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:25 2011 run on win32
 % test file for the Lie package
 
 % 1. n-dimensional Lie algebras with dimL1=1
@@ -253,6 +252,7 @@ off tr_lie$
 
 end$
 
-
-Time for test: 109 ms
-@@@@@ Resources used: (0 2 5 0)
+Time (counter 1): 191 ms  plus GC time: 8 ms
+real	0m0.745s
+user	0m0.045s
+sys	0m0.076s

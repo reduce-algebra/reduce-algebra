@@ -1,4 +1,3 @@
-Wed Aug 17 11:54:09 2011 run on darwin11.0.0:x86_64
 off clprlverbose;
 
 
@@ -338,6 +337,7 @@ false
 
 end;
 
-
-Time for test: 1980 ms, plus GC time: 60 ms
-@@@@@ Resources used: (1 22 181 0)
+Time (counter 1): 2324 ms  plus GC time: 52 ms
+real	0m3.117s
+user	0m0.045s
+sys	0m0.122s

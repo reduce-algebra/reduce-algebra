@@ -1,4 +1,3 @@
-Fri Feb 18 21:28:10 2011 run on win32
 on rlverbose;
 
 
@@ -968,6 +967,7 @@ b = 0 or m <> 0
 
 end;
 
-
-Time for test: 656 ms, plus GC time: 61 ms
-@@@@@ Resources used: (1 12 35 0)
+Time (counter 1): 790 ms  plus GC time: 80 ms
+real	0m1.435s
+user	0m0.030s
+sys	0m0.107s

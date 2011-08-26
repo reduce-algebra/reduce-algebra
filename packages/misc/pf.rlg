@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:26 2011 run on win32
 % Tests of the partial fraction module.
 
 % Author: Anthony C. Hearn
@@ -126,6 +125,7 @@ pf(((2*w**2+2*h**2*l**2*t**2+2*h**2*l**2*qst**2)*z**2-8*h**2*l**2*qst
 
 end;
 
-
-Time for test: 15 ms, plus GC time: 16 ms
-@@@@@ Resources used: (0 0 3 0)
+Time (counter 1): 45 ms  plus GC time: 5 ms
+real	0m0.692s
+user	0m0.077s
+sys	0m0.123s

@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:23 2011 run on win32
 % Test series for the boolean package.
 
 boolean true;
@@ -146,6 +145,7 @@ clear v,x;
 
 end;
 
-
-Time for test: 16 ms
-@@@@@ Resources used: (0 0 2 4)
+Time (counter 1): 20 ms
+real	0m0.642s
+user	0m0.076s
+sys	0m0.076s

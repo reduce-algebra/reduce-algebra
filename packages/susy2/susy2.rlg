@@ -1,4 +1,3 @@
-Fri Feb 18 21:28:38 2011 run on win32
 on list;
 
 
@@ -1304,14 +1303,11 @@ dr(-2)*fer(f,1,2)*bos(kk,0,2);
 on time;
 
 
-Time: 1217 ms  plus GC time: 16 ms
 
 showtime;
 
 
-Time: 0 ms
 
-Time: 0 ms
 
 
 dr(-3)*bos(g,3,1)*bos(ff,3,2);
@@ -1367,15 +1363,12 @@ dr(-3)*bos(g,3,1)*bos(ff,3,2);
 
 +bos(g,3,1)*bos(ff,3,2)*dr(-3)
 
-Time: 15 ms
 
 
 showtime;
 
 
-Time: 0 ms
 
-Time: 0 ms
 
 %if you try usual integration
 
@@ -2088,15 +2081,12 @@ d(-1)**3*bos(g,3,1)*bos(ff,3,2);
                              3
 +bos(g,3,1)*bos(ff,3,2)*d(-1)
 
-Time: 172 ms
 
 
 showtime;
 
 
-Time: 0 ms
 
-Time: 0 ms
 
 
 % then the time - diffrences is evident. In this example d(-1)
@@ -9579,6 +9569,7 @@ as5 := fer(f,2,1)*bos(f,0,0)
 
 end;
 
-
-Time for test: 15164 ms, plus GC time: 405 ms
-@@@@@ Resources used: (15 82 258 1)
+Time (counter 1): 11237 ms  plus GC time: 162 ms
+real	0m12.160s
+user	0m0.031s
+sys	0m0.154s

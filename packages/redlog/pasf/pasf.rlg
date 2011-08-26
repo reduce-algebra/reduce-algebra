@@ -1,4 +1,3 @@
-Fri Feb 18 21:28:25 2011 run on win32
 load_package redlog;
 
 
@@ -245,6 +244,7 @@ z - 3 > 0
 
 end;
 
-
-Time for test: 5195 ms, plus GC time: 626 ms
-@@@@@ Resources used: (6 107 7 0)
+Time (counter 1): 5668 ms  plus GC time: 181 ms
+real	0m6.402s
+user	0m0.045s
+sys	0m0.045s

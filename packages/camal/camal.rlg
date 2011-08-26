@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:24 2011 run on win32
 n := 4;
 
 
@@ -869,11 +868,11 @@ y+z] + ( - ----*b *e + ---*b*d *e + ----*b*e  - ---*b*e)cos[u-v] + (
 showtime;
 
 
-Time: 62 ms
 
 
 end;
 
-
-Time for test: 62 ms
-@@@@@ Resources used: (0 0 39 0)
+Time (counter 1): 86 ms
+real	0m0.598s
+user	0m0.061s
+sys	0m0.075s

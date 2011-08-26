@@ -1,6 +1,3 @@
-Fri Feb 18 21:28:37 2011 run on win32
-
-*** @ already defined as operator 
 % test symmetry package
 % implementation of theory of linear representations
 % for small groups 
@@ -935,6 +932,7 @@ off complex;
 
 end;
 
-
-Time for test: 16 ms
-@@@@@ Resources used: (0 0 14 0)
+Time (counter 1): 33 ms
+real	0m0.475s
+user	0m0.000s
+sys	0m0.091s

@@ -1,4 +1,3 @@
-Sun Mar 27 17:21:07 2011 run on linux-gnu:x86_64
 % ***** Simple test 1 *****
 vars := {x, y, z};
 
@@ -197,6 +196,7 @@ bibasis(polys, vars, degrevlex, t);
 
 end$
 
-
-Time for test: 10 ms
-@@@@@ Resources used: (0 0 3 0)
+Time (counter 1): 12 ms
+real	0m0.633s
+user	0m0.060s
+sys	0m0.139s

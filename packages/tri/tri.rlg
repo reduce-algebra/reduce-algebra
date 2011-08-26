@@ -1,11 +1,3 @@
-Fri Feb 18 21:28:54 2011 run on win32
-% TeX-REDUCE-Interface 0.70
-% set greek asserted
-% set lowercase asserted
-% set Greek asserted
-% set Uppercase asserted
-% \tolerance 10
-% \hsize=150mm
 % load tri;
 
 global '(textest!*);
@@ -558,6 +550,7 @@ $$\displaylines{\qdd
             ^{2}}\,dx}
 \cr}$$
 
-
-Time for test: 31 ms
-@@@@@ Resources used: (0 0 13 0)
+Time (counter 1): 44 ms  plus GC time: 25 ms
+real	0m0.682s
+user	0m0.076s
+sys	0m0.153s

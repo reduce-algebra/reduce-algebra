@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:27 2011 run on win32
 %*******************************************************************%
 %                                                                   %
 %                      L I E P D E . T S T                          %
@@ -1266,7 +1265,6 @@ depend v,x,y,z,t;
 on time$
 
 
-Time: 2949 ms  plus GC time: 171 ms
 
 liepde({
 
@@ -1334,35 +1332,24 @@ r(z,y,t,x), f(z,y,t,x), v(z,y,t,x)
 
 
 =============== Initializations
-time for initializations: 15 ms    GC time : 0 ms
 
 
 =============== Preconditions for the 1. equation
-time to formulate conditions: 78 ms    GC time : 0 ms
-CRACK needed :  266 ms    GC time : 15 ms
 
 
 =============== Preconditions for the 2. equation
 
 
 =============== Preconditions for the 3. equation
-time to formulate conditions: 31 ms    GC time : 0 ms
-CRACK needed :  78 ms    GC time : 0 ms
 
 
 =============== Full conditions for the 1. equation
-time to formulate conditions: 32 ms    GC time : 0 ms
-CRACK needed :  390 ms    GC time : 31 ms
 
 
 =============== Full conditions for the 2. equation
-time to formulate conditions: 0 ms    GC time : 0 ms
-CRACK needed :  30 ms    GC time : 0 ms
 
 
 =============== Full conditions for the 3. equation
-time to formulate conditions: 16 ms    GC time : 0 ms
-CRACK needed :  15 ms    GC time : 0 ms
 
 The symmetries are:
 
@@ -1553,7 +1540,6 @@ eta_v=0
 
   c_221}}
 
-Time: 1014 ms  plus GC time: 46 ms
 
 
 off time$
@@ -1996,6 +1982,7 @@ nodepnd {f,g}$
 
 end$
 
-
-Time for test: 6911 ms, plus GC time: 435 ms
-@@@@@ Resources used: (7 67 557 2)
+Time (counter 1): 7172 ms  plus GC time: 203 ms
+real	0m8.027s
+user	0m0.030s
+sys	0m0.169s

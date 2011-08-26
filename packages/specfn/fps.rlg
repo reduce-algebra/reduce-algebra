@@ -1,4 +1,3 @@
-Fri Feb 18 21:28:06 2011 run on win32
 %       Examples for the algorithmic calculation of formal 
 %       Puiseux, Laurent and power series,
 %
@@ -690,6 +689,7 @@ infsum(( - x   *( - 1) *108 *factorial(k)*x)/(6*46656 *factorial(3*k + 1)
 
 end;
 
-
-Time for test: 2947 ms, plus GC time: 188 ms
-@@@@@ Resources used: (3 38 135 518)
+Time (counter 1): 3333 ms  plus GC time: 93 ms
+real	0m4.103s
+user	0m0.061s
+sys	0m0.153s

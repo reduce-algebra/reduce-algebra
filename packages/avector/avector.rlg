@@ -1,6 +1,3 @@
-Fri Feb 18 21:27:22 2011 run on win32
-
-*** ^ redefined 
 % Vector test routine
 
 % Author: David Harper (algebra@liverpool.ac.uk)
@@ -13,7 +10,7 @@ Fri Feb 18 21:27:22 2011 run on win32
 linelength 72;
 
 
-80
+t
 
 off allfac;
 
@@ -1232,6 +1229,7 @@ deflineint(a,curve,phi,0,2*pi);
 
 end;
 
-
-Time for test: 62 ms
-@@@@@ Resources used: (0 0 35 0)
+Time (counter 1): 65 ms  plus GC time: 24 ms
+real	0m0.674s
+user	0m0.061s
+sys	0m0.123s

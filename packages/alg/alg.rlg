@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:12 2011 run on win32
 Comment This is a standard test file for REDUCE that has been used for
 many years.  It only tests a limited number of facilities in the
 current system.  In particular, it does not test floating point
@@ -16,7 +15,6 @@ be found in the "timings" file in the REDUCE Network Library;
 showtime;
 
 
-Time: 0 ms
 
 
 comment some examples of the FOR statement;
@@ -772,11 +770,11 @@ comment end of second physics example;
 showtime;
 
 
-Time: 187 ms
 
 
 end;
 
-
-Time for test: 187 ms
-@@@@@ Resources used: (0 0 23 0)
+Time (counter 1): 61 ms  plus GC time: 4 ms
+real	0m0.926s
+user	0m0.077s
+sys	0m0.107s

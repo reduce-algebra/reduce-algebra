@@ -1,4 +1,3 @@
-Fri Feb 18 21:27:18 2011 run on win32
 % Test of CANTENS.RED
 %
 %     Authors: H. Caprasse <hubert.caprasse@ulg.ac.be>
@@ -1926,6 +1925,7 @@ canonical aa;
 
 end;
 
-
-Time for test: 31 ms
-@@@@@ Resources used: (0 0 36 14)
+Time (counter 1): 56 ms
+real	0m0.615s
+user	0m0.000s
+sys	0m0.169s
