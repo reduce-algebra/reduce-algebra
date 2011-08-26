@@ -3067,35 +3067,47 @@ symbolic procedure math_ml (u);
 %This function executes certain commands when switches state are changed.
 %It will change the outputhandler!* when mathml is set to on or both is set
 %to on. And then modify it accroding to the switches states.
+%%% RmS: This is unnecessary.
+%%%      Function removed in favor of using the simpfg property for the
+%%%      switches in question 
+%%%
+%%%symbolic procedure onoff(u,bool);
+%%%   begin scalar x,y;
+%%%      if not idp u then typerr(u,"switch")
+%%%       else if not flagp(u,'switch)
+%%%               then rerror(rlisp,25,list(u,"not defined as switch"));
+%%%      x := intern compress append(explode '!*,explode u);
+%%%      if !*switchcheck and lispeval x eq bool then return nil
+%%%       else if y := atsoc(bool,get(u,'simpfg))
+%%%        then lispeval('progn . append(cdr y,list nil));
+%%%      if bool and x eq '!*!r!a!i!s!e then x := '!*raise; % Special case.
+%%%   if x='!*web AND bool=t then
+%%%      outputhandler!*:='math_ml_printer;
+%%%   if x='!*web AND bool=nil then
+%%%      if !*mathml neq t then outputhandler!*:=nil;
+%%%   if x='!*mathml AND bool=t then
+%%%      outputhandler!*:='math_ml_printer;
+%%%   if x='!*mathml AND bool=nil then
+%%%      if !*both=nil then
+%%%        outputhandler!*:=nil;
+%%%   if x='!*both AND bool=t then
+%%%      outputhandler!*:='math_ml_printer;
+%%%   if x='!*both AND bool=nil then
+%%%      if !*mathml=nil then
+%%%        outputhandler!*:=nil
+%%%      else outputhandler!*:='math_ml_printer;
+%%%
+%%%       set(x,bool);
+%%%   end;
 
-symbolic procedure onoff(u,bool);
-   begin scalar x,y;
-      if not idp u then typerr(u,"switch")
-       else if not flagp(u,'switch)
-               then rerror(rlisp,25,list(u,"not defined as switch"));
-      x := intern compress append(explode '!*,explode u);
-      if !*switchcheck and lispeval x eq bool then return nil
-       else if y := atsoc(bool,get(u,'simpfg))
-        then lispeval('progn . append(cdr y,list nil));
-      if bool and x eq '!*!r!a!i!s!e then x := '!*raise; % Special case.
-   if x='!*web AND bool=t then
-      outputhandler!*:='math_ml_printer;
-   if x='!*web AND bool=nil then
-      if !*mathml neq t then outputhandler!*:=nil;
-   if x='!*mathml AND bool=t then
-      outputhandler!*:='math_ml_printer;
-   if x='!*mathml AND bool=nil then
-      if !*both=nil then
-        outputhandler!*:=nil;
-   if x='!*both AND bool=t then
-      outputhandler!*:='math_ml_printer;
-   if x='!*both AND bool=nil then
-      if !*mathml=nil then
-        outputhandler!*:=nil
-      else outputhandler!*:='math_ml_printer;
+put('web,'simpfg,'((nil (or !*mathml (setq outputhandler!* nil)))
+                   (t (setq outputhandler!* (quote math_ml_printer)))));
 
-       set(x,bool);
-   end;
+put('mathml,'simpfg,'((nil (and (null !*both) (setq outputhandler!* nil)))
+                      (t (setq outputhandler!* (quote math_ml_printer)))));
+
+put('both,'simpfg,'((nil (setq outputhandler!* (and !*mathml (quote math_ml_printer))))
+                    (t (setq outputhandler!* (quote math_ml_printer)))));
 
 lisp operator mml;
 lisp operator parseml;
