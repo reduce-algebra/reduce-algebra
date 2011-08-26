@@ -1,9 +1,9 @@
-Fri Feb 18 21:28:10 2011 run on win32
+Fri Aug 26 13:59:59 2011 run on win32
 load mathmlom;
 
 
 
-in "$reduce/packages/mathml/examples.mml";
+%in "$reduce/packages/mathml/examples.mml";
 
 %  Description: This file contains a long list of examples demonstrating the abilities of
 %               the translator. Most of these examples come straight from the MathML spec. They
@@ -3264,10 +3264,8 @@ Intermediate representation:
   </OMBIND>
 </OMOBJ>            
 
-end;
 
-
-in "$reduce/packages/mathml/examples.om";
+%in "$reduce/packages/mathml/examples.om";
 
 %  Description: This file contains a long list of examples demonstrating the abilities of
 %               the translator. Most of these examples come straight from the CDs. They
@@ -3297,7 +3295,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(plus nil f d (plus nil 1 10000000000.0))
+(plus nil f d (plus nil 1 1.0e10))
 
 <math>
    <apply><plus/>
@@ -3305,7 +3303,7 @@ Intermediate representation:
       <ci> d </ci>
       <apply><plus/>
          <cn type="integer"> 1 </cn>
-         <cn type="real"> 10000000000.0 </cn>
+         <cn type="real"> 1.0e10 </cn>
       </apply>
    </apply>
 </math>       
@@ -7627,11 +7625,10 @@ Intermediate representation:
    <cn type="rational">4<sep/>2</cn>
 </math> 
 
-end;
 
 
 end;
 
 
-Time for test: 47 ms
-@@@@@ Resources used: (0 0 344 0)
+Time for test: 53 ms
+@@@@@ Resources used: (0 0 343 0)
