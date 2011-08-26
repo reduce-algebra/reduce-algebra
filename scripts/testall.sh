@@ -56,11 +56,15 @@ csldiffs=`cd csl-times ; echo *.rlg.diff`
 psldiffs=`cd psl-times ; echo *.rlg.diff`
 cslpsldiffs=`cd csl-psl-times-comparison ; echo *.rlg.diff`
 
+echo
+echo "Summary of CSL and PSL test runs"
+echo "================================"
+echo
 test "$csldiffs" != "*.rlg.diff" && echo "Differences for CSL:" ${csldiffs//.rlg.diff}
 echo
 test "$psldiffs" != "*.rlg.diff" && echo "Differences for PSL:" ${psldiffs//.rlg.diff}
 echo
-test "$cslpsldiffs != "*.rlg.diff" && echo "Differences between CSL and PSL :" ${cslpsldiffs//.rlg.diff}
+test "$cslpsldiffs" != "*.rlg.diff" && echo "Differences between CSL and PSL :" ${cslpsldiffs//.rlg.diff}
 echo
 
 # end of script
