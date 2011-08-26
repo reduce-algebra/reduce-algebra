@@ -674,7 +674,7 @@ symbolic procedure build_reduce_modules names;
 symbolic procedure test_a_package names;
   begin
     scalar packge, logname, logtmp, logfile, start_time, start_gctime, gt;
-    scalar redef, quitfn, oll, rr;
+    scalar redef, quitfn, oll, rr, !*redefmsg, !*redeflg!*;
     if not boundp 'cpulimit or
        not fixp (cpulimit := compress explodec cpulimit) or
        cpulimit < 1 then
@@ -848,7 +848,7 @@ symbolic procedure complete_tests names;
 % to date are not re-generated.
     scalar packge, tfile, logname, logfile, logtmp,
            start_time, start_gctime, gt, rr;
-    scalar date1, date2, date3, oll;
+    scalar date1, date2, date3, oll, !*redefmsg, !*redeflg!*;
     if not boundp 'cpulimit or
        not fixp (cpulimit := compress explodec cpulimit) or
        cpulimit < 1 then
