@@ -133,6 +133,13 @@ fi
 sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | sed -e '/^1: /d;' >psl-times/$p.time
 rm  psl-times/$p.rlg.tmp
 
+mkdir -p csl-psl-times-comparison
+diff -B -w csl-times/$p.rlg psl-times/$p.rlg >csl-psl-times-comparison/$p.rlg.diff
+if test -s csl-psl-times-comparison/$p.rlg.diff
+  then echo "CSL and PSL test logs differ!"
+  else rm csl-psl-times-comparison/$p.rlg.diff
+fi
+
 rm howlong.tmp
 
 # end of test
