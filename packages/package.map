@@ -181,6 +181,7 @@
  (bibasis       "bibasis"               test                 csl psl)
  (clprl         "clprl"                 test                 csl psl)
  (gcref         "gcref"                 test                 csl psl)
+ (turtle        "plot"                                       csl psl)
 )
 
 % End of configuration data
