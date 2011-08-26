@@ -55,6 +55,10 @@ symbolic procedure onoff(u,bool);
        set(x,bool)
    end;
 
+symbolic procedure onoff!-reset u;
+   % set switch to its default value
+   onoff(u,if get(u,'switchdefault) then t else nil);
+
 symbolic procedure switch u;
    % Declare list u as switches.
    for each x in u do
