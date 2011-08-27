@@ -1676,7 +1676,7 @@ else !windows
 	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
-	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
+	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 ARCHIVE=reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 
 endif !windows
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi

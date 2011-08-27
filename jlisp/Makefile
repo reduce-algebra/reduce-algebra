@@ -6,7 +6,7 @@ all:	reduce.jar minireduce.jar jlisp.jar
 
 .PHONY:	clean
 clean:
-	-rm -f *.jar *.class *.img *.log *.bak *~ uk
+	-rm -rf *.jar *.class *.img *.log *.bak *~ uk
 
 # The idea here is that the jar file contains EVERYTHING needed for
 # Reduce, and so "java -jar reduce.jar" will launch the system with its

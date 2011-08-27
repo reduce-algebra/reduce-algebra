@@ -3026,7 +3026,7 @@ save:	all
 @windows_FALSE@	-rm -rf reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	mkdir -p reduce-$(NAME)-$(shell date +%Y%m%d)
 @windows_FALSE@	cp -r reduce reduce.img reduce.doc reduce.fonts reduce-$(NAME)-$(shell date +%Y%m%d)
-@windows_FALSE@	tar cvfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
+@windows_FALSE@	tar cfj reduce-$(NAME)-$(shell date +%Y%m%d).tar.bz2 reduce-$(NAME)-$(shell date +%Y%m%d)
 	if test "x$(savedest)" != "x"; then scp $(ARCHIVE) $(savedest); fi
 
 showhost:

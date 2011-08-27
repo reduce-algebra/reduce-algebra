@@ -34,7 +34,7 @@ esac
 
 here=`echo $c | sed -e 's+/[^/]*$++'`
 
-rm -rf $here/../bin/*
+#rm -rf $here/../bin/*
 cp $here/README-BIN $here/../bin/README
 
 $here/reset.sh csl

@@ -684,7 +684,8 @@ symbolic procedure test_a_package names;
        conslimit < 1 then
        conslimit := 2000;
     princ "TESTING: "; print car names;
-    window!-heading list!-to!-string explodec car names;
+    window!-heading list!-to!-string append(explodec [Testing] ",
+                                            explodec car names);
     !*backtrace := nil;
     !*errcont := t;
     !*extraecho := t;    % Ensure standard environment for the test...
@@ -884,7 +885,8 @@ top:
     if null date3 or
        datelessp(date3, date1) or datelessp(date3, date2) then <<
        princ "TESTING: "; print packge;
-       window!-heading list!-to!-string explodec packge;
+       window!-heading list!-to!-string append(explodec "[Testing] ",
+                                               explodec packge);
        logfile := open(logtmp, 'output);
        start_time := time();
        start_gctime := gctime();
@@ -989,7 +991,8 @@ symbolic procedure profile_a_package names;
                     concat(car names,".tst"))));
     oll := linelength 80;
     !*mode := 'algebraic;
-    window!-heading list!-to!-string explodec car names;
+    window!-heading list!-to!-string append(explodec "[Profile] ",
+                                            explodec car names);
     quitfn := getd 'quit;
     remd 'quit;
     putd('quit, 'expr, 'posn);
