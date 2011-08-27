@@ -101,6 +101,9 @@ case $host in
 *CYGWIN* | *Cygwin* | *cygwin* | i686-*-mingw*)
   host="i686-pc-windows"
   ;;
+x86_64-*-mingw*)
+  host="x86_64-w64-windows"
+  ;;
 esac
 
 # The exact transformations I apply are a matter of taste, I think. I
