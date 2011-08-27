@@ -1,7 +1,19 @@
 
 % u05.lsp           Machine generated Lisp
 
-(c!:install "u05" 1411 9896659 4437160)
+(c!:install "u05" 18133 847009 5012294)
+
+(c!:install 'times!-term!-mod!-p '(times!-term!-mod!-p nil t
+multiply!-by!-constant!-mod!-p adjoin!-term ordop times!-mod!-p fkern
+getpower) 1318951204792960146)
+
+(c!:install 'procstat '(procstat nil procstat1) 455173745286575792)
+
+(c!:install 'cl_varl1 '(cl_varl1 nil cl_varl2) 764533428685220521)
+
+(c!:install 'subs2 '(subs2 subfg!* !*sub2 powlis1!* !*combineexpt slash
+opmtch !*match t !*exp nil exptchk invsq multsq resimp subs3q subs4q
+subs2q) 418869612129941152)
 
 (c!:install 'ibalp_getupl '(ibalp_getupl nil) 946262548456115407)
 
@@ -46,6 +58,9 @@ multsq make!-term fs!:plus negf) 376679258273637766)
 (c!:install 'c!:ordexp '(c!:ordexp t c!:ordxp) 2210592478747308295)
 
 (c!:install '!*i2gi '(!*i2gi !:gi!:) 1223087745230862844)
+
+(c!:install 'xread '(xread !*eoldelimp cursym!* !*semicol!* scan xread1)
+ 2220548205264620612)
 
 (c!:install 'mcharg '(mcharg minus slash nil reform!-minus mcharg1
 reform!-minus2 lastpair) 145061111874481039)
@@ -154,18 +169,6 @@ multf negf) 1319205382807559690)
 
 (c!:install 'areallindices '(areallindices nil t isanindex) 
 299020035761465616)
-
-(c!:install 'token1 '(token1 crchar!* !$eol!$ !*eoldelimp nil tokprop !%
-!*savecomments!* !! !*micro!-version !*defn !" ttype!* !$eof!$ ! 
-nxtsym!* delchar !- !*minusliter minus !*lower !*raise !_
-"***** End-of-file in string" readch1 token!-number lispapply filenderr
-lpriw) 2000309963909591490)
-
-(c!:install 'dp_diff '(dp_diff dp_neg dp_sum) 837692868180533857)
-
-(c!:install 'dquot '(dquot nil) 1254828911740559560)
-
-(c!:install 'pv_sort1 '(pv_sort1 pv_sort2) 2183149452455538334)
 
 
 % End of generated Lisp code

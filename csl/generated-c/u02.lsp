@@ -1,7 +1,10 @@
 
 % u02.lsp           Machine generated Lisp
 
-(c!:install "u02" 8289 2055433 8197539)
+(c!:install "u02" 6831 8489523 5386027)
+
+(c!:install 'lto_hashequalq '(lto_hashequalq nil lto_hashid) 
+1378811000342075648)
 
 (c!:install 'compress!* '(compress!* nil !/ t !- !; !. !!) 
 20421565559074398)
@@ -54,6 +57,9 @@ addf mkspm) 7816986856649403)
 current!-modulus) 1176804135381338572)
 
 (c!:install '!*d2n '(!*d2n) 1327497365554127659)
+
+(c!:install 'add2calls '(add2calls cinthis nolist xseen!* calls!* nil) 
+645451796685024331)
 
 (c!:install 'cl_atmlc '(cl_atmlc) 1365061913854416366)
 
@@ -170,6 +176,9 @@ physopp) 1256685637594396601)
 
 (c!:install 'pappl0 '(pappl0 unpkp pappl pkp) 625645324720507398)
 
+(c!:install 'checkargcount '(checkargcount naryargs nil number!-of!-args
+curfun!* instdof hasarg) 250677345708653982)
+
 (c!:install 'sfto_dcontentf '(sfto_dcontentf nil sfto_dcontentf1) 
 2073300369082929674)
 
@@ -205,21 +214,6 @@ physopp) 1256685637594396601)
 98676729407286938)
 
 (c!:install 'quotematrix '(quotematrix matrix) 410813060502481001)
-
-(c!:install 'peel '(peel (liedf innerprod) quotient worderp) 
-1474301296103034713)
-
-(c!:install 'lnc '(lnc t) 605447460102045807)
-
-(c!:install 'hasonephysop '(hasonephysop nil physopp!*) 
-2192203047103297718)
-
-(c!:install 'union_edges '(union_edges union_edge) 2236416736913321440)
-
-(c!:install 'mo!=modiv1 '(mo!=modiv1 t nil) 1310502997823808787)
-
-(c!:install '!:minus '(!:minus nil minus times dcombine) 
-1682505242206381904)
 
 
 % End of generated Lisp code

@@ -1,7 +1,49 @@
 
 % u12.lsp           Machine generated Lisp
 
-(c!:install "u12" 8866 127711 6736972)
+(c!:install "u12" 11574 4433184 287530)
+
+(c!:install 'ratpoly_mvartest '(ratpoly_mvartest nil) 
+1540972074209171349)
+
+(c!:install 'mathml2 '(mathml2 nil sub_math) 1410865963078639162)
+
+(c!:install 'spquotematrix '(spquotematrix sparse) 1314214755277929996)
+
+(c!:install 'newenv '(newenv unbound bind) 716227193995120863)
+
+(c!:install 'wedgepf '(wedgepf !*pf2wedgepf wedgepf2 !*wedgepf2pf) 
+1541818696814386813)
+
+(c!:install 'prinfit '(prinfit !*nat t testing!-width!* oprin maprint
+layout!-formula putpline) 767580772016161439)
+
+(c!:install '!:dmpluslst '(!:dmpluslst !:plus) 1020923110959131113)
+
+(c!:install 'ptoken '(ptoken !) outl!* !  nil !( t token1) 
+1276433963240108083)
+
+(c!:install 'mv!-domainlist!-!- '(mv!-domainlist!-!- nreverse) 
+1841734429713644479)
+
+(c!:install 'red_better '(red_better bas_dplen) 1664735070248066575)
+
+(c!:install 'pneg '(pneg nil cneg) 1093098300173118493)
+
+(c!:install 'dl_get '(dl_get nil dl_get2) 1456529060383798284)
+
+(c!:install 'rnminus!: '(rnminus!: !:minus) 890830873474091536)
+
+(c!:install 'gcref_mkgraph '(gcref_mkgraph !*gcrefudg gcref_mkgraph!-udg
+gcref_mkgraph!-tgf) 360810041986208163)
+
+(c!:install 'rl_simpl '(rl_simpl rl_simpl!* apply) 1730109553395665762)
+
+(c!:install 'removeg2 '(removeg2 g3 t "Edge" "is absent in vertex" qg
+cerror mkcopy negf revv0) 1108408177032605200)
+
+(c!:install 'rl_susipost '(rl_susipost rl_susipost!* apply) 
+1050300289256822084)
 
 (c!:install 'cl_varl2 '(cl_varl2 true t false or and not impl repl equiv
 nil ex all bex ball lto_insertq delq rl_varlat) 1101555127072638993)
@@ -29,6 +71,8 @@ nil ex all bex ball lto_insertq delq rl_varlat) 1101555127072638993)
 
 (c!:install 'difference!-mod!-p '(difference!-mod!-p minus!-mod!-p
 plus!-mod!-p) 1116723781456793462)
+
+(c!:install 'traput '(traput toplv!*) 986856002312909169)
 
 (c!:install 'sfto_ucontentf '(sfto_ucontentf t sfto_ucontentf1) 
 1520555230224091218)
@@ -61,6 +105,9 @@ ycoord!* scprint) 1487959244540664247)
 (c!:install 'noncomperm '(noncomperm nil failed noncomdel mapcons
 lastpair) 1837535307391352088)
 
+(c!:install 'gcref_mkedges!-tgf '(gcref_mkedges!-tgf nil " ") 
+132288123880600425)
+
 (c!:install 'rl_csimpl '(rl_csimpl !*rlsimpl rl_simpl nil getd) 
 520934790743523296)
 
@@ -90,6 +137,10 @@ ibalp_isinminclause) 1006406061108426878)
 (c!:install 'degree!-in!-variable '(degree!-in!-variable t
 "Polynomial with a zero coefficient found" max errorf) 
 1385817458333841346)
+
+(c!:install 'hasarg '(hasarg haveargs!* maxarg!* "**** " " has "
+" arguments" bldmsg number!-of!-args qerline newline) 533017317664970946
+)
 
 (c!:install 'lto_almerge '(lto_almerge nil apply setcdr) 
 733741587543979265)
@@ -122,10 +173,10 @@ assert_functionl!* assert_uninstall) 1682111651404989875)
 
 (c!:install 'eqdummy '(eqdummy nil dummy) 1935115272343029557)
 
-(c!:install 'numlist_ordp '(numlist_ordp lambda_lqgavx_2 cons_ordp) 
+(c!:install 'numlist_ordp '(numlist_ordp lambda_lqlbvc_2 cons_ordp) 
 829179638730125395)
 
-(c!:install 'lambda_lqgavx_2 '(lambda_lqgavx_2) 1483914847284232950)
+(c!:install 'lambda_lqlbvc_2 '(lambda_lqlbvc_2) 1603022334170186373)
 
 (c!:install 'extmult '(extmult t nil ordexn c!:subs2multf negf extadd) 
 688717124643291776)
@@ -177,45 +228,6 @@ qqe_simplat1 qqe_op qqe_rqopp ofsf_simplat1) 1765485718931082795)
 
 (c!:install 'rl_negateat '(rl_negateat rl_negateat!* apply) 
 284003718963730135)
-
-(c!:install 'ibalp_redclause '(ibalp_redclause nil t ibalp_vmember) 
-1204029135769100971)
-
-(c!:install 'aex_simplenullp '(aex_simplenullp aex_ex ratpoly_nullp) 
-1584517931381719990)
-
-(c!:install 'variablesir '(variablesir char (!/ o m b v a r) nil omvir
-lex) 1491151712486603)
-
-(c!:install 'lid '(lid) 1048228651616277337)
-
-(c!:install 'invp '(invp unit inverse (comm anticomm) quotient) 
-1194048734702535011)
-
-(c!:install 'formcond1 '(formcond1 formbool formc nreverse) 
-1050685435280048797)
-
-(c!:install 'mkarray1 '(mkarray1 symbolic nil) 416267680075305298)
-
-(c!:install '!:divide '(!:divide nil "zero divisor" errmsg!* !*protfg
-divide dividef dcombine lprie) 1607938198215898332)
-
-(c!:install 'gperm0 '(gperm0 nil gperm3) 1812561587287361708)
-
-(c!:install 'freeofl '(freeofl t depl!* nil smember) 183112358725115055)
-
-(c!:install 'cl_atfp '(cl_atfp true t false or and not impl repl equiv
-ex all bex ball rl_external) 176517113001301036)
-
-(c!:install 'ibalp_lenisone '(ibalp_lenisone nil) 509341193799918985)
-
-(c!:install 'numpoly_nullp '(numpoly_nullp t) 561122451936877504)
-
-(c!:install 'inshisto '(inshisto codmat maxvar codhisto headhisto nil
-min) 1187670024143300172)
-
-(c!:install 'evenfree '(evenfree nil qremd minusf negf addf) 
-715608271978811620)
 
 
 % End of generated Lisp code

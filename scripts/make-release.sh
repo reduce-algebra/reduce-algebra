@@ -5,10 +5,25 @@
 # first. When run on Linux it will expect to be on a 64-bit Linux
 # that has both 32 and 64-bit mingw cross compilers installed.
 
-# On other platforms it merely builds the current local version
+# This tries to make a Source, a Java, a PSL and possibly several
+# CSL archives. On a Windows host it takes maybe 90 minutes on a fairly
+# fast machine, while on Linux it takes around 20 mins. Probably the
+# biggest cause of the difference is that "fork" is notably expensive
+# in cygwin and so many bash scripts run very slowly - especially the
+# "configure" ones.
 
 # I force recompilation of the GUI library, re-profile the system,
-# re-generates C code etc. Thus everything takes a while.
+# re-generates C code etc.
+
+# On Linux64 this builds
+#    Java, PSL-linux-64, CSL-linux-64, CSL-linux-32, CSL-windows-32 and
+#    CSL-windows-64
+#
+# On Windows64 it build
+#    Java, PSL-windows-32, CSL-windows-32, CSL-windows-64
+#
+# On other platforms it may just build a Java version and the
+# default CSL and PSL versions.
 
 mkdir -p releases
 
@@ -45,9 +60,9 @@ pushd cslbuild/$h
   make save
   if test -f reduce*zip
   then
-    mv reduce*zip ../../../releases
+    mv reduce*zip ../../../releases/cslreduce-$h-$da.zip
   else
-    mv reduce*bz2 ../../../releases
+    mv reduce*bz2 ../../../releases/cslreduce-$h-$da.tar.bz2
   fi
 popd
 
@@ -71,7 +86,7 @@ rm releases/reduce-algebra.tar.bz2
 pushd pslbuild/*
   make clean
   make
-  tar cfj ../releases/pslreduce-$da.tar.bz2 *
+  tar cfj ../../releases/pslreduce-$h-$da.tar.bz2 *
 popd
 
 # At present I only try to cross-build Windows binaries if I am on
@@ -98,9 +113,9 @@ i686-pc-windows)
       make save
       if test -f reduce*zip
       then
-        mv reduce*zip ../../../releases
+        mv reduce*zip ../../../releases/cslreduce-$h-$da.zip
       else
-        mv reduce*bz2 ../../../releases
+        mv reduce*bz2 ../../../releases/cslreduce-$h-$da.tar.bz2
       fi
     popd
   fi
@@ -126,8 +141,7 @@ pushd cslbuild/$h-m32
 # a regular 32-bit Linux not on a 64-bit one using multilib facilities
   n=reduce-x86_64*-m32*bz2
   nn=`echo $n | sed -e 's/x86_64/i686/; s/-m32//'`
-  mv $n $nn
-  mv reduce-i686*bz2 ../../../releases
+  mv $n ../../../releases/csl$nn.bz2
 popd
 
 if which i686-w64-mingw32-gcc
@@ -143,7 +157,7 @@ then
 # Get rid of any previous archive
     rm -f reduce*zip
     make save
-    mv reduce*zip ../../../releases
+    mv reduce*zip ../../../releases/cslreduce-windows32-$da.zip
   popd
 fi
 
@@ -160,7 +174,7 @@ then
 # Get rid of any previous archive
     rm -f reduce*zip
     make save
-    mv reduce*zip ../../../releases
+    mv reduce*zip ../../../releases/cslreduce-windows64-$da.zip
   popd
 fi
 

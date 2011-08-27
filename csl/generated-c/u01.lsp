@@ -1,7 +1,7 @@
 
 % u01.lsp           Machine generated Lisp
 
-(c!:install "u01" 3132 4749726 3043247)
+(c!:install "u01" 19095 7754670 5407145)
 
 (c!:install 'reval '(reval t reval1) 607148151428708743)
 
@@ -12,6 +12,9 @@
 (c!:install 'getrtypeor '(getrtypeor nil getrtype) 62732981189452306)
 
 (c!:install '!*d2q '(!*d2q nil !:zerop) 637035353559099761)
+
+(c!:install 'readch1 '(readch1 !*int ifl!* !$eol!$ curline!* nil
+crbuf1!* crbuf!*) 2141418192445341486)
 
 (c!:install 'quotf '(quotf t !*exp quotf1) 985572180358968177)
 
@@ -87,9 +90,6 @@ intequivfn) 872083308430638116)
 
 (c!:install 'memq_edgelist '(memq_edgelist) 277865452633296949)
 
-(c!:install 'readch1 '(readch1 !*int ifl!* !$eol!$ curline!* nil
-crbuf1!* crbuf!*) 2141418192445341486)
-
 (c!:install 'termsf '(termsf t nil) 1208146628438393276)
 
 (c!:install 'mkspm '(mkspm subfg!* asymplis!* nil sub2chk) 
@@ -104,6 +104,8 @@ crbuf1!* crbuf!*) 2141418192445341486)
 (c!:install 'listp '(listp t nil) 774075962164745811)
 
 (c!:install 'modzerop!: '(modzerop!:) 1366312979062888268)
+
+(c!:install 'xcomment '(xcomment comment) 2209671256892413223)
 
 (c!:install 'monomgetvariabledegree '(monomgetvariabledegree nil) 
 296208610728129592)
@@ -175,6 +177,9 @@ multiply!-by!-constant!-mod!-p nil t adjoin!-term) 1860229763733566770)
 
 (c!:install 'modonep!: '(modonep!:) 546888529946242389)
 
+(c!:install 'eolcheck '(eolcheck !*eoldelimp nil nxtsym!* !$eol!$
+cursym!* end !; token1) 1115182728816103448)
+
 (c!:install 'mtchp1 '(mtchp1 nil frlis!* t !*mcd mchk!* powmtch mapcons)
  1369750783821265649)
 
@@ -230,6 +235,9 @@ current!-modulus) 1125200793222787416)
 
 (c!:install 'getpower '(getpower expt nil t !*sub2) 1213961177307631295)
 
+(c!:install 'anform '(anform !*globals nil locls!* glb2rf globs!*
+anform1) 513186927183167842)
+
 (c!:install 'reorder '(reorder t raddf rmultpf) 1342638692105521622)
 
 (c!:install 'ofsf_smwupdknowl '(ofsf_smwupdknowl !*rlsusi
@@ -247,9 +255,6 @@ dname prepsqxx mcharg mchkopt1 mchkminus) 2084182588494494895)
 
 (c!:install 'qqe_rbopp '(qqe_rbopp (equal neq lessp leq geq greaterp)) 
 1869043606676884770)
-
-(c!:install 'lto_hashequalq '(lto_hashequalq nil lto_hashid) 
-1378811000342075648)
 
 
 % End of generated Lisp code

@@ -1,7 +1,39 @@
 
 % u11.lsp           Machine generated Lisp
 
-(c!:install "u11" 1670 9221874 8563999)
+(c!:install "u11" 3623 4508784 9998587)
+
+(c!:install 'variables '(variables nil dipvars!* t setcar) 
+1120007630353667818)
+
+(c!:install 'flatindxl '(flatindxl nil minus) 1994311323824406189)
+
+(c!:install 'list!+list '(list!+list !:plus nreverse) 
+1282605013187262199)
+
+(c!:install 'nth '(nth pnth) 1574764749196478615)
+
+(c!:install 'split!-road '(split!-road sroad) 1032071747175359674)
+
+(c!:install 'aminusp!: '(aminusp!: !*modular modular nil aminusp!:1 t
+"arithmetic expression" setdmode errorset2 typerr) 736551376972088580)
+
+(c!:install 'mv!-pow!-chk '(mv!-pow!-chk nil mv!-pow!-!- mv!-pow!-minusp
+) 6252537058940825)
+
+(c!:install 'dd '(dd ordering lex nc varlist nil dquot leftzeros class
+dless) 739292952114009161)
+
+(c!:install 'make!-univariate!-image!-mod!-p '(
+make!-univariate!-image!-mod!-p t nil image!-of!-power times!-mod!-p
+plus!-mod!-p adjoin!-term) 1680162136296008025)
+
+(c!:install 'qqe_id!-nyt!-branchq '(qqe_id!-nyt!-branchq qqe_qopaddp
+qqe_qoptailp qqe_qtidp qqe_nytidp) 1826796433520129214)
+
+(c!:install 'ibalp_getnewwl '(ibalp_getnewwl nil) 1887706235505743254)
+
+(c!:install 'sacar '(sacar nil) 1836350234365885204)
 
 (c!:install 'initbrsea '(initbrsea rowmin rowmax nil codmat maxvar
 codhisto headhisto redcodmat inshisto initwght) 698571853162106996)
@@ -53,9 +85,6 @@ sqchk exchk2) 1142470071386621866)
 
 (c!:install 'powers1 '(powers1 nil powers3 powers2) 641116616433665437)
 
-(c!:install 'xread '(xread !*eoldelimp cursym!* !*semicol!* scan xread1)
- 2220548205264620612)
-
 (c!:install 'simptimes '(simptimes tstack!* t mul!* nil alglist!* simp
 multsq) 1837397960585133442)
 
@@ -64,6 +93,9 @@ ring_degrees mo!=sprod mo!=sum) 1304255516672808549)
 
 (c!:install 'modquotient!: '(modquotient!: general!-modular!-reciprocal
 general!-modular!-times !*modular2f) 2021983611340879705)
+
+(c!:install 'qcputx '(qcputx quote cref t compile nil) 
+319580501340183514)
 
 (c!:install 'janettreefind '(janettreefind fluidbibasisjanettreerootnode
 nil monomgetvariabledegree) 1462777861778315896)
@@ -112,45 +144,6 @@ cerror mkcopy invsq) 1016266861339963175)
 
 (c!:install 'lastnondomain '(lastnondomain t "non-domain" errach) 
 6067694052669692)
-
-(c!:install 'ratpoly_mvartest '(ratpoly_mvartest nil) 
-1540972074209171349)
-
-(c!:install 'mathml2 '(mathml2 nil sub_math) 1410865963078639162)
-
-(c!:install 'spquotematrix '(spquotematrix sparse) 1314214755277929996)
-
-(c!:install 'newenv '(newenv unbound bind) 716227193995120863)
-
-(c!:install 'wedgepf '(wedgepf !*pf2wedgepf wedgepf2 !*wedgepf2pf) 
-1541818696814386813)
-
-(c!:install 'prinfit '(prinfit !*nat t testing!-width!* oprin maprint
-layout!-formula putpline) 767580772016161439)
-
-(c!:install '!:dmpluslst '(!:dmpluslst !:plus) 1020923110959131113)
-
-(c!:install 'ptoken '(ptoken !) outl!* !  nil !( t token1) 
-1276433963240108083)
-
-(c!:install 'mv!-domainlist!-!- '(mv!-domainlist!-!- nreverse) 
-1841734429713644479)
-
-(c!:install 'red_better '(red_better bas_dplen) 1664735070248066575)
-
-(c!:install 'pneg '(pneg nil cneg) 1093098300173118493)
-
-(c!:install 'dl_get '(dl_get nil dl_get2) 1456529060383798284)
-
-(c!:install 'rnminus!: '(rnminus!: !:minus) 890830873474091536)
-
-(c!:install 'rl_simpl '(rl_simpl rl_simpl!* apply) 1730109553395665762)
-
-(c!:install 'removeg2 '(removeg2 g3 t "Edge" "is absent in vertex" qg
-cerror mkcopy negf revv0) 1108408177032605200)
-
-(c!:install 'rl_susipost '(rl_susipost rl_susipost!* apply) 
-1050300289256822084)
 
 
 % End of generated Lisp code

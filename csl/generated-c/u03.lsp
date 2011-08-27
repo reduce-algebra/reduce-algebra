@@ -1,7 +1,22 @@
 
 % u03.lsp           Machine generated Lisp
 
-(c!:install "u03" 13534 6877648 6328376)
+(c!:install "u03" 8455 5124845 9188096)
+
+(c!:install 'peel '(peel (liedf innerprod) quotient worderp) 
+1474301296103034713)
+
+(c!:install 'lnc '(lnc t) 605447460102045807)
+
+(c!:install 'hasonephysop '(hasonephysop nil physopp!*) 
+2192203047103297718)
+
+(c!:install 'union_edges '(union_edges union_edge) 2236416736913321440)
+
+(c!:install 'mo!=modiv1 '(mo!=modiv1 t nil) 1310502997823808787)
+
+(c!:install '!:minus '(!:minus nil minus times dcombine) 
+1682505242206381904)
 
 (c!:install 'pappl '(pappl nil unpkp) 301518372055536544)
 
@@ -52,8 +67,6 @@ nil2zero) 2005037774111500916)
 ) 1821664726582691824)
 
 (c!:install 'qassoc '(qassoc nil) 272092484517487447)
-
-(c!:install 'xcomment '(xcomment comment) 2209671256892413223)
 
 (c!:install '!*ssave '(!*ssave !*uncached alglist!* 2.0 !*sub2
 simpcount!* mkhash puthash) 1621273092612235860)
@@ -196,11 +209,6 @@ canonsq multf gcdf) 1993568376341925867)
 
 (c!:install 'round!:last '(round!:last nil t !:rd!:) 2060101431233620421
 )
-
-(c!:install 'remainder!-in!-vector '(remainder!-in!-vector
-"ATTEMPT TO DIVIDE BY ZERO" nil errorf) 744903400461801080)
-
-(c!:install 'gionep!: '(gionep!: nil) 1953210649077377872)
 
 
 % End of generated Lisp code

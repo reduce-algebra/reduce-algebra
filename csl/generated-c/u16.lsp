@@ -1,7 +1,48 @@
 
 % u16.lsp           Machine generated Lisp
 
-(c!:install "u16" 2110 1686156 9768838)
+(c!:install "u16" 18986 2185907 2364654)
+
+(c!:install 'setmat '(setmat !*modular modular mod_was_on nil
+!*mod_was_on off on my_letmtr reval) 1607288821199188598)
+
+(c!:install 'rd!:plus '(rd!:plus nil !*!*roundbf !:rd!: yy!! plus2
+!*backtrace t convprc2 plubf rdzchk errorset rndbfon fl2bf csl_normbf
+read!:num safe!-fp!-plus) 946951010876746165)
+
+(c!:install 'total!-degree!-in!-powers '(total!-degree!-in!-powers t nil
+) 1332782792841291032)
+
+(c!:install 'begin1 '(begin1 otime!* gctime ogctime!* otime3!* otime2!*
+otime1!* ogctime3!* ogctime2!* ogctime1!* !*semicol!* cursym!* !*int
+ifl!* !*nosave!* statcounter nil !*strind !*time (showtime) !*output
+ofl!* !*defn !*lessspace tslin!* !*slin lreadfn!* initl!* initl
+forkeywords!* delim repeatkeywords!* whilekeywords!* erfg!* end key!* ed
+promptexp!* (command) t !*backtrace !*echo !*extraecho !*demo symbolic
+xmodule err2 err3 crbuf1!* !*msg "***"
+"Closing object improperly removed. Redo edit." eof!* "End-of-file read"
+(bye) crbuf!* program!* !$eof!$ ttype!* "BEGIN invalid" !*errcont cmsg!*
+"Continuing with parsing only ..." getd add2buflis update_prompt eval
+printprompt errorset comm1 lprie pause1 lpriw xmodloop begin11) 
+714164095230134842)
+
+(c!:install 'red_divtest '(red_divtest nil bas_dpoly dp_lmon
+mo_vdivides!?) 714855455564249474)
+
+(c!:install 'il_simp '(il_simp nil il_simp1) 324237945134653804)
+
+(c!:install 'repeats '(repeats nreverse) 1935793202905244089)
+
+(c!:install 'arglist_member '(arglist_member t nil) 368644826227911490)
+
+(c!:install 'mconv '(mconv dmode!* !:rn!: !:gi!: !:crn!: dmd!* mconv1) 
+2103433038214118152)
+
+(c!:install 'remlocs '(remlocs !*globals nil locls!* begin !*protfg
+" Lvar confused" getd lprie efface1 error) 263740923751463110)
+
+(c!:install 'ofsf_entry2at1 '(ofsf_entry2at1 and nil ofsf_clnegrel addsq
+) 839944857403023036)
 
 (c!:install 'ibalp_process!-var '(ibalp_process!-var !! nil setcar) 
 1836767802063121196)
@@ -28,6 +69,9 @@ current!-modulus modulus!/2 largest!-small!-modulus) 1160174369003061794
 current!-modulus convert i2d "String" "identifier" share idvalfn
 !*numval constant lispapply !*backtrace t scalar typerr eval simp mksq
 errorset !*d2q getrtype fl2bf) 1188814423318592778)
+
+(c!:install 'gettype '(gettype number t form simpfn operator avalue
+procedure global fluid parm parameter rtype getd) 858000679744201335)
 
 (c!:install 'pasf_vf '(pasf_vf true t false nil (cong ncong)
 pasf_evalatp) 2265870788048835742)
@@ -76,71 +120,14 @@ rederr2 idlistp areallindices) 1411264797663108431)
 
 (c!:install 'mkcr '(mkcr !:cr!:) 2225832111046959012)
 
+(c!:install 'pairxvars '(pairxvars scalar t infix stat
+"Invalid parameter:" nil symerr) 1167310948086381031)
+
 (c!:install 'settinsert '(settinsert fluidbibasissett janettreeinsert) 
 1212783772874772386)
 
 (c!:install 'cl_simpl '(cl_simpl !*rlsism nil inctheo and false
 cl_sitheo rl_smupdknowl cl_simpl1) 223841921215303609)
-
-(c!:install 'prepsq!* '(prepsq!* !*combinelogs ordl!* factors!* nil
-prepsq!*fn klist ordop kord!* t wtl!* !*rat !*div upl!* dnl!* prepsq!*2
-setkorder lastpair sort formop sqform prepsq!*1 replus) 
-927756539515416153)
-
-(c!:install 'qqe_ofsf_varlterm '(qqe_ofsf_varlterm nil qepsilon
-lto_insertq) 1078044558906077840)
-
-(c!:install 'ibalp_var!-unsatlist '(ibalp_var!-unsatlist nil setcar) 
-721177257164790431)
-
-(c!:install 'ratpoly_nullp '(ratpoly_nullp t) 527245105585462607)
-
-(c!:install 'ir2mml '(ir2mml (indent) ind indent "<math>" t nil
-"</math>" fluid printout indent!* expression) 1271247275779687797)
-
-(c!:install 'evalvars '(evalvars t intfn rtype setelemfn
-revlis_without_mode revlis nreverse) 2122889097865007208)
-
-(c!:install 'doublep '(doublep !:rd!: nil) 620829993394421821)
-
-(c!:install 'equalreval '(equalreval !*evallhseqp immediate nil equal
-reval) 41285753939560881)
-
-(c!:install 'gparg1p '(gparg1p t nil gpargp) 2283668922211430838)
-
-(c!:install 'no!-side!-effect!-listp '(no!-side!-effect!-listp t nil
-no!-side!-effectp) 850758379198238797)
-
-(c!:install 'lengthcdr '(lengthcdr) 1931703340798432864)
-
-(c!:install 'sc_rep '(sc_rep g_sc_ve) 2035150554936520584)
-
-(c!:install 'arplus!: '(arplus!: dmode!* !*exp t !:ar!: addf) 
-142261442931697279)
-
-(c!:install 'innprodkp '(innprodkp nil reversip2) 2177462594026997482)
-
-(c!:install 'triplesetprolongset '(triplesetprolongset nil) 
-752068266017963461)
-
-(c!:install 'ofsf_surep '(ofsf_surep true cl_simpl) 903473357816069129)
-
-(c!:install 'qremd '(qremd dmode!* field t !:recip multd !:divide qremf
-multf addf) 842041458933085401)
-
-(c!:install 'rndifference!: '(rndifference!: mkrn) 2148311571176245217)
-
-(c!:install 'token!-number '(token!-number ttype!* !) !.
-"Syntax error: improper number" errmsg!* !*protfg t (!0) x !X nil !\ e
-!E !- !+ hexdigit !:dn!: !*adjprec !:int!: nxtsym!* crchar!* readch1
-lprie) 714219609991176020)
-
-(c!:install 'aex_ids '(aex_ids aex_ex ratpoly_idl) 738945018239800204)
-
-(c!:install 'gcd2 '(gcd2) 2066153566096260810)
-
-(c!:install 'bcfd '(bcfd !*grmod!* !:mod!: !*protfg
-"Invalid modular coefficient" bcfi lprie mkbc) 2176230707199489800)
 
 
 % End of generated Lisp code

@@ -1,7 +1,86 @@
 
 % u20.lsp           Machine generated Lisp
 
-(c!:install "u20" 9481 2055775 1788496)
+(c!:install "u20" 2291 4295969 9237383)
+
+(c!:install 'dipilcomb1 '(dipilcomb1 !*gcd t nil vbcsize evzero!? evsum
+evcomp bcprod bcsum bczero!? dipprod) 217199092425223551)
+
+(c!:install 'getphystypecar '(getphystypecar nil getphystype) 
+549554832887196808)
+
+(c!:install 'red!=cancelsimp '(red!=cancelsimp nil red_better bas_dpoly
+dp_lmon mo_vdivides!?) 32242303980174412)
+
+(c!:install 'dfprintfn '(dfprintfn !*nat t !*fort !*dfprint failed
+!!df!! nil layout!-formula putpline) 1964666450204102206)
+
+(c!:install 'b!:ordexp '(b!:ordexp t nil) 230326786041818154)
+
+(c!:install 'subf1 '(subf1 nil t dmode!* resimplify varstack!* wtl!*
+asymplis!* k!* yetunknowntype list "substituted expression" !*d2q prepf
+simp simpatom degr subsublis simprecip exptsq subs2 multsq addsq
+getrtype eval!-yetunknowntypeexpr typerr setkorder reorder sub2chk kernp
+wtchk) 942601069251705790)
+
+(c!:install 'reduce!-degree!-mod!-p '(reduce!-degree!-mod!-p fkern
+getpower times!-term!-mod!-p plus!-mod!-p multiply!-by!-constant!-mod!-p
+) 1783091888513968183)
+
+(c!:install 'monomdivide '(monomdivide nil) 332373470803455919)
+
+(c!:install 'smemberlp '(smemberlp nil) 1127233335721024545)
+
+(c!:install 'get!-denom!-ll '(get!-denom!-ll get!-denom!-l lcmn nreverse
+) 642493320547310938)
+
+(c!:install 'aex_subrat1 '(aex_subrat1 nil aex_ex ratpoly_subrat1
+aex_ctx aex_mk) 1135898223018262912)
+
+(c!:install 'bvarml '(bvarml "<bvar>" t nil "</bvar>" printout indent!*
+expression degreeml) 977333505995985171)
+
+(c!:install 'evdif '(evdif nil (0)) 1991173245947069153)
+
+(c!:install 'groebsavelterm '(groebsavelterm !*groelterms t
+groebsaveltermbc) 2019868696966292276)
+
+(c!:install 'coordp '(coordp coord!*) 214463969463078503)
+
+(c!:install 'indordn '(indordn nil indordad indord2) 1270862301250861552
+)
+
+(c!:install 'mk!-strand!-vertex2 '(mk!-strand!-vertex2) 
+1688459633702943915)
+
+(c!:install 'assert_uninstall '(assert_uninstall !*assert nil
+assert_uninstall1) 2001029654612123388)
+
+(c!:install 'groeb!=weight '(groeb!=weight mo_ecart bas_dpecart) 
+2292707930337159140)
+
+(c!:install 'extract_dummy_ids '(extract_dummy_ids dummy_id!* nreverse) 
+1750923938922874130)
+
+(c!:install 'outrefend '(outrefend calls!* calls toplv!* nil cinthis
+seen seen!* calledby globs!* globs dclglb usedby gseen gseen!* usedunby
+glb2rf glb2bd boundby glb2st setby union traput) 861894399151424851)
+
+(c!:install 'negind '(negind nil) 369439999097960237)
+
+(c!:install 'expnd1 '(expnd1 t nil addf multf exptf) 2081688685545235425
+)
+
+(c!:install 'delet '(delet t nreverse) 1890376183643778759)
+
+(c!:install 'numpoly_ldeg '(numpoly_ldeg numpoly_nullp) 
+1898963168831507800)
+
+(c!:install 'naryom '(naryom var variance valid_om!* multiset nil
+"<OMA>" indent "<OMS cd=""" """ name=""" """>" "</OMA>" printout multiom
+) 1708830407962136241)
+
+(c!:install 'atomlis '(atomlis t nil) 1890258955834315217)
 
 (c!:install 'rationalizesq '(rationalizesq !*structure !*sub2 dmode!*
 rationalizefn (i 2 (nil . t) -1 nil) powlis!* t !*algint !*rationalize
@@ -60,89 +139,6 @@ pasf_anegateat minusf negf) 1103566318065785167)
 
 (c!:install 'chkint!* '(chkint!* !*!*roundbf !:rd!: !!maxbflexp fl2bf
 csl_normbf read!:num msd rndbfon) 1141097000288292229)
-
-(c!:install 'unresidp '(unresidp !*reservedops!*) 1582293203848722938)
-
-(c!:install 'replace1_parents '(replace1_parents replace2_parents) 
-1779060672907265546)
-
-(c!:install 'comm1 '(comm1 end cursym!* !*semicol!* t (end else then
-until !*rpar!* !*rsqbkt!*) nil !*msg "***"
-"END-COMMENT NO LONGER SUPPORTED" scan lpriw) 2033750439767753010)
-
-(c!:install 'fieldconv '(fieldconv dmode!* !:rn!: quotient
-"field conversion" t divd multd simpgd dcombine errach) 
-1615950274106196130)
-
-(c!:install 'kernord!-split '(kernord!-split nil powers0) 
-331602830909534051)
-
-(c!:install 'rl_qefsolset '(rl_qefsolset rl_qefsolset!* apply) 
-2044364883179931557)
-
-(c!:install 'rl_identifyonoff '(rl_identifyonoff rl_identifyonoff!*
-apply) 264122958181467562)
-
-(c!:install 'get!-denom!-l '(get!-denom!-l nil lcmn) 1688803098278549094
-)
-
-(c!:install 'exptf1 '(exptf1 nil multf) 31462355031675114)
-
-(c!:install 'sfto_sqfpartf '(sfto_sqfpartf t sfto_ucontentf quotf diff
-sfto_gcdf!* multf) 1526155285455852663)
-
-(c!:install 'ft!:zerop '(ft!:zerop !:prec!: nil) 734794199516223409)
-
-(c!:install 'vevdif '(vevdif nil t backtrace
-"Vevdif, difference would be < 0" errmsg!* !*protfg getd lprie
-vevzero!?1) 55147887788152676)
-
-(c!:install 'nconc2 '(nconc2 nil) 47631498442616533)
-
-(c!:install 'getphystypeor '(getphystypeor nil getphystype) 
-1413460377503364269)
-
-(c!:install 'nfactorial '(nfactorial nil fac!-part) 1136885059357765423)
-
-(c!:install 'begin11 '(begin11 errmsg!* newrule!* cursym!* end !*int
-ifl!* !*lisp_hook !*semicol!* t !*nosave!* nil !*reduce4 retry
-programl!* !*msg "***" "No previous expression" program!* !$eof!$
-ttype!* eof!* c (bye quit) bye !*byeflag!* ed cedit "ED not supported"
-!*defn erfg!* key!* ignore quote eval !*output !*echo !*lessspace
-!*backtrace err2 symbolic noval semic!* !$ !*debug "Value:" print !*mode
-assgnpri list only err3 "of type: " add2inputbuf getd lpriw dfprint
-errorset mkobject type value add2resultbuf rapply1 getsetvars comm1) 
-253166635143850853)
-
-(c!:install 'bas_newnumber '(bas_newnumber) 377037737988728049)
-
-(c!:install 'gcdout '(gcdout !*modular nil ljet ord gcdf!* pcdiv) 
-1221045648352382135)
-
-(c!:install 'dv_ind2var '(dv_ind2var g_dvnames g_dvbase upbve mkid) 
-1388431312388812982)
-
-(c!:install 'ilog2 '(ilog2 " invalid for " nil error) 967642275976074788
-)
-
-(c!:install 'rl_transform '(rl_transform rl_transform!* apply) 
-1982992635277786676)
-
-(c!:install 'super_der_simp '(super_der_simp variables (ext) ext
-even_dimension nil odd_dimension simpiden reval simp!* split_form
-even_action super_product_sq multf invsq multsq odd_action addsq negf
-split_ext pnth) 1985636992735999807)
-
-(c!:install 'findremainder '(findremainder nil wupseudodivide) 
-405066793970175807)
-
-(c!:install 'checku '(checku nil t) 1987823232057252175)
-
-(c!:install 'lx2xx '(lx2xx t lambda_lqgavy_4 lastnondomain delet sort) 
-454250922078895036)
-
-(c!:install 'lambda_lqgavy_4 '(lambda_lqgavy_4 termorder) 
-1990513422610017479)
 
 
 % End of generated Lisp code

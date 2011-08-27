@@ -1,11 +1,26 @@
 
 % u06.lsp           Machine generated Lisp
 
-(c!:install "u06" 2006 9534840 4134596)
+(c!:install "u06" 18587 635472 4644823)
+
+(c!:install 'token1 '(token1 crchar!* !$eol!$ !*eoldelimp nil tokprop !%
+!*savecomments!* !! !*micro!-version !*defn !" ttype!* !$eof!$ ! 
+nxtsym!* delchar !- !*minusliter minus !*lower !*raise !_
+"***** End-of-file in string" readch1 token!-number lispapply filenderr
+lpriw) 2000309963909591490)
+
+(c!:install 'dp_diff '(dp_diff dp_neg dp_sum) 837692868180533857)
+
+(c!:install 'dquot '(dquot nil) 1254828911740559560)
+
+(c!:install 'pv_sort1 '(pv_sort1 pv_sort2) 2183149452455538334)
 
 (c!:install 'general!-modular!-reciprocal '(general!-modular!-reciprocal
 !*balanced_mod current!-modulus general!-reciprocal!-by!-gcd) 
 2002659737781213311)
+
+(c!:install 'anform1 '(anform1 nil dclglb glb2rf globs!* locls!* noanl
+anlfn anforml add2calls checkargcount) 236708319357678279)
 
 (c!:install 'lto_catsoc '(lto_catsoc) 2061900363353958102)
 
@@ -159,30 +174,13 @@ resultbuflis!* putobject) 1086880230781943607)
 
 (c!:install 'ordn '(ordn nil ordad ordp) 1951851007915704415)
 
+(c!:install 'undefdchk '(undefdchk defd undefns!*) 411770452085520832)
+
 (c!:install 'polynomadd '(polynomadd nil monomcompare) 
 974150726482038692)
 
 (c!:install 'cl_apply2ats '(cl_apply2ats nil cl_apply2ats1) 
 1012692339953446282)
-
-(c!:install 'mcharg2 '(mcharg2 nil mchk updtemplate msappend lastpair) 
-1393188779926853418)
-
-(c!:install 'mri_pasf2mriat '(mri_pasf2mriat mri_0mk2) 
-1780723413708049718)
-
-(c!:install 'ibalp_varlt1 '(ibalp_varlt1 t nil ibalp_argn lto_insertq) 
-1238347319408794872)
-
-(c!:install 'checktag '(checktag char "Problem" "problem" errorml) 
-128680829893963259)
-
-(c!:install 'reval1 '(reval1 !*revalp varstack!* nil dmode!* convert
-subfg!* avalue "improperly defined in terms of itself" t evfn
-"Syntax error:" "invalid" !*sq !*resimp remember opfn psopfn cleanupfn
-rtype array "Missing evaluation for type" errmsg!* !*protfg list
-aggregatefn matrixmap matmapfn boolean !*listargs listargp reval2 msgpri
-getrtype lprie rmmbreval opfneval getelv prepsqxx) 628407640481382871)
 
 
 % End of generated Lisp code

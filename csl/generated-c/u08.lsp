@@ -1,7 +1,27 @@
 
 % u08.lsp           Machine generated Lisp
 
-(c!:install "u08" 2418 5331755 9535540)
+(c!:install "u08" 9304 2738998 1280901)
+
+(c!:install 'ordpa '(ordpa t nil ordpv1) 1961772832555718688)
+
+(c!:install 'sfto_davp '(sfto_davp t nil) 1350198900027366189)
+
+(c!:install 'comfac '(comfac dmode!* field nil t !*ncmp lnc !:recip
+multd degr gcdf noncomp1) 1198050272172930454)
+
+(c!:install 'pasf_deci '(pasf_deci pasf_dec) 689346751863457834)
+
+(c!:install 'ratpoly_idl '(ratpoly_idl sf_idl) 1633963137476964986)
+
+(c!:install 'objectom '(objectom ir2mml!* nil apply fnom basicom) 
+1128734990833441447)
+
+(c!:install 'rd!:prep '(rd!:prep !*noconvert !:bprec!: round!:mt
+rd!:onep rd!:minus) 1629694250484869921)
+
+(c!:install 'dfn_prop '(dfn_prop dfn dfn2 dfn3 mkid) 1296988453782669313
+)
 
 (c!:install 'letmtr3 '(letmtr3 sparsemat "Matrix" "not set" errmsg!*
 !*protfg t "Syntax error:" "invalid" nil hold cx revlis numlis msgpri
@@ -33,6 +53,8 @@ vectormapping isvectorindex hasonevector) 2250899134802842041)
 
 (c!:install 'general!-plus!-mod!-p '(general!-plus!-mod!-p t nil
 general!-modular!-plus nreverse ordop adjoin!-term) 17338415905414427)
+
+(c!:install 'efface1 '(efface1 nil) 1350623678855668088)
 
 (c!:install 'ofsf_clnegrel '(ofsf_clnegrel ofsf_lnegrel) 
 1495032427540284046)
@@ -72,6 +94,8 @@ vevcomp vdpgetprop vevcompless!?) 45463741637778272)
 
 (c!:install 'reduce!-mod!-p '(reduce!-mod!-p nil t adjoin!-term) 
 2104192391038368024)
+
+(c!:install 'chknewnam '(chknewnam newnam t) 218677808758793034)
 
 (c!:install '!*sqprint '(!*sqprint sqprint) 1026988552425578217)
 
@@ -150,6 +174,9 @@ errmsg!* !*protfg avalue lprie getel1) 144009899339842507)
 (c!:install 'wtchk '(wtchk k!* "weight confusion" quotf errach) 
 467527599239370084)
 
+(c!:install 'gcref_mknode!-tgf '(gcref_mknode!-tgf " " nil) 
+612337067510767894)
+
 (c!:install 'ckrn '(ckrn dmode!* field (!:rd!: !:cr!:) nil lnc quotfd
 ckrn1 multf) 2046420340827429049)
 
@@ -175,35 +202,6 @@ ibalp_arg2l ibalp_arg2r) 1632355243837137231)
 (c!:install 'diplength '(diplength) 535326959659586985)
 
 (c!:install '!*kp2f '(!*kp2f mksq) 666337834992111105)
-
-(c!:install 'covposp '(covposp t nil) 884478413950111432)
-
-(c!:install 'opnum!* '(opnum!* nil opnum collectindices removeindices) 
-2131924763112094351)
-
-(c!:install 'formcond '(formcond cond formcond1) 388642168095654870)
-
-(c!:install 'red!-ratios1 '(red!-ratios1 nil red!-ratios2) 
-439554841299993978)
-
-(c!:install 'subsetp '(subsetp t nil) 656082696218474237)
-
-(c!:install 'quotk '(quotk nil quotf1) 738213989969173996)
-
-(c!:install 'gperm2 '(gperm2 nil rev gperm1) 1923382954738947238)
-
-(c!:install 'times!-in!-vector '(times!-in!-vector nil) 
-167978836511768691)
-
-(c!:install 'tr_write '(tr_write !*trsolve nil) 240870562347370954)
-
-(c!:install 'msappend '(msappend nil) 1808899511262869677)
-
-(c!:install 'ibalp_simpat '(ibalp_simpat ibalp_simpterm ibalp_mk2) 
-1056519305897848361)
-
-(c!:install 'poly!-abs '(poly!-abs poly!-minusp negf) 
-1009189177833569811)
 
 
 % End of generated Lisp code

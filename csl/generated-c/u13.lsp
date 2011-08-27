@@ -1,7 +1,58 @@
 
 % u13.lsp           Machine generated Lisp
 
-(c!:install "u13" 21677 2236031 2907285)
+(c!:install "u13" 7713 5437721 9977764)
+
+(c!:install 'ibalp_redclause '(ibalp_redclause nil t ibalp_vmember) 
+1204029135769100971)
+
+(c!:install 'aex_simplenullp '(aex_simplenullp aex_ex ratpoly_nullp) 
+1584517931381719990)
+
+(c!:install 'variablesir '(variablesir char (!/ o m b v a r) nil omvir
+lex) 1491151712486603)
+
+(c!:install 'lid '(lid) 1048228651616277337)
+
+(c!:install 'invp '(invp unit inverse (comm anticomm) quotient) 
+1194048734702535011)
+
+(c!:install 'formcond1 '(formcond1 formbool formc nreverse) 
+1050685435280048797)
+
+(c!:install 'mkarray1 '(mkarray1 symbolic nil) 416267680075305298)
+
+(c!:install '!:divide '(!:divide nil "zero divisor" errmsg!* !*protfg
+divide dividef dcombine lprie) 1607938198215898332)
+
+(c!:install 'gperm0 '(gperm0 nil gperm3) 1812561587287361708)
+
+(c!:install 'freeofl '(freeofl t depl!* nil smember) 183112358725115055)
+
+(c!:install 'xread1 '(xread1 commentlist!* nil cursym!* !*lpar!*
+!*rpar!* infix delim stat !*reduce4 type decstat !:dn!: t !:int!:
+!$eol!$ nxtsym!* switch!* !( !*eoldelimp times proc
+"Syntax error in procedure header" struct paren !*comma!* lambda
+"Improper delimiter" group "Too many right parentheses" !*semicol!*
+unary "Redundant operator" !*!*un!*!* "Missing operator" nary right alt
+(lambda paren) not member "NOT" "infix operator" endstat go endstatfn
+delchar !, procedure "proc form" !*colon!* for !*blockp nodel (
+!*rsqbkt!* !*rcbkt!* !*rsqb!*) "Too few right parentheses"
+"Please send hearn@rand.org your program!!" eolcheck symerr xcomment
+scan typerr procstat1 lispapply chknewnam) 2043792748091316298)
+
+(c!:install 'cl_atfp '(cl_atfp true t false or and not impl repl equiv
+ex all bex ball rl_external) 176517113001301036)
+
+(c!:install 'ibalp_lenisone '(ibalp_lenisone nil) 509341193799918985)
+
+(c!:install 'numpoly_nullp '(numpoly_nullp t) 561122451936877504)
+
+(c!:install 'inshisto '(inshisto codmat maxvar codhisto headhisto nil
+min) 1187670024143300172)
+
+(c!:install 'evenfree '(evenfree nil qremd minusf negf addf) 
+715608271978811620)
 
 (c!:install 'revalind '(revalind alglist!* nil subfg!* !0 prepf simp
 sqform) 880058185741474552)
@@ -18,6 +69,9 @@ typerr reval_without_mod pnth lprie) 117309722634945273)
 
 (c!:install 'negate!-term '(negate!-term minus!-mod!-p) 
 1589566562124193339)
+
+(c!:install 'defineargs '(defineargs number!-of!-args nil calledby
+instdof hasarg) 2080968085092740621)
 
 (c!:install 'ofsf_smmkatl '(ofsf_smmkatl and ofsf_smmkatl!-or
 ofsf_smmkatl!-and) 2131233955413420777)
@@ -90,95 +144,6 @@ qqe_number!-of!-adds!-in!-qterm (ladd radd) qqe_op qqe_arg2r qqe_arg2l)
 
 (c!:install 'stats_getargs '(stats_getargs nil mathml) 
 1755204892087223778)
-
-(c!:install 'matsm!*1 '(matsm!*1 mat nil !*nosq !*sub2 subs2!* prepsqxx
-mk!*sq) 1037048502258201157)
-
-(c!:install 'chk '(chk t nil bsubs freexp reval) 1576257663263142641)
-
-(c!:install 'add_minus '(add_minus !:rd!: nil minus) 512496440279988873)
-
-(c!:install 'fctlength '(fctlength fctargs) 1314763850174820148)
-
-(c!:install 'trwrite '(trwrite tracing nil "**in procedure: ") 
-308268762144453540)
-
-(c!:install 'endstat '(endstat cursym!* end comm1) 2062630210712658115)
-
-(c!:install 'evalequal '(evalequal nil difference getrtype reval) 
-105839307103780548)
-
-(c!:install 'listtest '(listtest nil t) 566000474996085451)
-
-(c!:install 'ad_numsort '(ad_numsort lambda_lqgavx_3 sort) 
-402327177911246617)
-
-(c!:install 'lambda_lqgavx_3 '(lambda_lqgavx_3) 648150825358341799)
-
-(c!:install 'moduntag '(moduntag !:mod!: nreverse) 157214285183738732)
-
-(c!:install 'image!-of!-power '(image!-of!-power image!-set
-next!-random!-number) 1656309739400979791)
-
-(c!:install 'ofsf_ordatp '(ofsf_ordatp ordp ofsf_ordrelp) 
-1656702307649018192)
-
-(c!:install 'polynomheadreduceby '(polynomheadreduceby nil t
-fluidbibasisreductionsmade monomisdivisibleby monomdivide
-polynommultiplybymonom polynomadd) 920549759093585458)
-
-(c!:install 'simpg3 '(simpg3 g3 simpcv) 2740668184409933)
-
-(c!:install 'remove!-free!-vars!* '(remove!-free!-vars!* t
-!*!*noremove!*!* remove!-free!-vars) 207734612737065001)
-
-(c!:install 'cl_susiupdknowl1 '(cl_susiupdknowl1 and rl_negateat
-cl_susiupdknowl2) 467828445460135408)
-
-(c!:install 'rl_simp1 '(rl_simp1 rl_cid!* !*protfg "select a context"
-rl_simpfn full simpfnname psopfn opfn nil prepfn2 "predicate"
-simpdefault lprie argnochk apply reval rl_redmsg rl_simpatom) 
-504930407550264061)
-
-(c!:install 'nary '(nary e power nil exp "<apply>" "<" "/" t "</apply>"
-unary printout attributesml indent!* multi_elem) 300482358832996601)
-
-(c!:install 'opmtch '(opmtch nil subfg!* !*uncached alglist!* mcharg
-eval) 777903917119859303)
-
-(c!:install 'unchecked_getmatelem '(unchecked_getmatelem mat "Matrix"
-"not set" errmsg!* !*protfg pnth lprie) 2236000579521724338)
-
-(c!:install 'evaluate1 '(evaluate1 dname i dmode!* ivalue (nil) !*protfg
-"i used as indeterminate value" e t pi !*evaluateerror "number"
-evaluate2 simp force!-to!-dm typerr apply lprie) 144656115495634358)
-
-(c!:install 'lispassignp '(lispassignp setq) 336996339852873306)
-
-(c!:install 'assert_uninstall1 '(assert_uninstall1 assert_installed
-!*msg nil "***" "assert not installed for" assert_noassertfn copyd lpriw
-) 1658696494492217906)
-
-(c!:install 'dp_times_bcmo '(dp_times_bcmo nil mo_sum bc_prod) 
-865330035068680049)
-
-(c!:install 'addgt '(addgt ordering lex plus eval) 1701930144718944906)
-
-(c!:install 'wi_new '(wi_new wi_number !: windex mkid) 
-220910669035685733)
-
-(c!:install 'tensorp '(tensorp tensor nil) 1161121837443474795)
-
-(c!:install 'ofsf_entry2at '(ofsf_entry2at !*rlidentify ofsf_entry2at1
-cl_identifyat) 573280501347709166)
-
-(c!:install 'squared!+matrix!+p '(squared!+matrix!+p t matrix!+p
-get!+row!+nr get!+col!+nr) 472387686763251964)
-
-(c!:install 'mri_realvarp '(mri_realvarp nil mri_type real) 
-141725919399813138)
-
-(c!:install 'searchpl '(searchpl t nil setunion) 1330134615114190804)
 
 
 % End of generated Lisp code

@@ -1,7 +1,82 @@
 
 % u18.lsp           Machine generated Lisp
 
-(c!:install "u18" 5100 396317 8162030)
+(c!:install "u18" 7201 5305786 4079122)
+
+(c!:install 'ordop2 '(ordop2 kord!* t nil ordp) 1870441096632376356)
+
+(c!:install 'contr '(contr split!-road nreverse) 413287277630912843)
+
+(c!:install 'setelv '(setelv nil reval_without_mod setel) 
+1674528869367596471)
+
+(c!:install 'fs!:times '(fs!:times nil fs!:timesterm fs!:plus) 
+2038439418465987686)
+
+(c!:install 'dpmat_coldegs '(dpmat_coldegs pnth) 1324398620588824637)
+
+(c!:install 'st_consolidate '(st_consolidate nil t !*) 
+704199119824727847)
+
+(c!:install 'reducepowers '(reducepowers t repowl!* multf addf) 
+990043950302439561)
+
+(c!:install 'general!-evaluate!-mod!-p '(general!-evaluate!-mod!-p t nil
+"Variable=NIL in GENERAL-EVALUATE-MOD-P" adjoin!-term
+general!-horner!-rule!-mod!-p errorf) 1980905549695426232)
+
+(c!:install 'mkfil!* '(mkfil!* "file name" share nil !" (!") typerr eval
+explode2lc) 1063097561987040158)
+
+(c!:install 'rl_bestgaussp '(rl_bestgaussp rl_bestgaussp!* apply) 
+334180714154650332)
+
+(c!:install 'mkpartitions1 '(mkpartitions1) 336453036083815684)
+
+(c!:install 'tayexp!-times2 '(tayexp!-times2 nil !:rn!: mkrn) 
+1817178742565139820)
+
+(c!:install 'ibalp_negateat '(ibalp_negateat ibalp_op ibalp_arg2l
+ibalp_arg2r ibalp_negatet ibalp_mk2) 144857308665868860)
+
+(c!:install 'cgp_number '(cgp_number pnth) 921086720059936428)
+
+(c!:install 'crprimp '(crprimp i minus times) 920916713853873528)
+
+(c!:install 'pfordp '(pfordp nil termordp) 1151164187902870271)
+
+(c!:install 'r2findindex '(r2findindex r2findindex1) 735477344331856105)
+
+(c!:install 'inttovec!-solve '(inttovec!-solve t nil) 
+1230480444328374448)
+
+(c!:install 'rd!:times '(rd!:times nil !*!*roundbf !:rd!: yy!! times2
+!*backtrace t convprc2 csl_timbf errorset rndbfon fl2bf csl_normbf
+read!:num safe!-fp!-times) 2364201904390444)
+
+(c!:install 'factorial '(factorial t "invalid factorial argument"
+errmsg!* !*protfg lprie nfactorial) 1202676091632483996)
+
+(c!:install 'setel1 '(setel1 "array index" "Array out of bounds"
+errmsg!* !*protfg lprie typerr) 362843076335200951)
+
+(c!:install 'comm1 '(comm1 end cursym!* !*semicol!* t (end else then
+until !*rpar!* !*rsqbkt!*) nil !*msg "***"
+"END-COMMENT NO LONGER SUPPORTED" scan lpriw) 2033750439767753010)
+
+(c!:install 'cl_atml1 '(cl_atml1 cl_atmlc cl_f2ml) 288013265062649120)
+
+(c!:install 'mksq '(mksq subfg!* wtl!* k!* !*nosubs avalue nil used!*
+asymplis!* powlis!* (expt sqrt) t !*sub2 mksqsubfn kvalue !*resubs fkern
+getpower multsq simp exptsq) 714770496093400635)
+
+(c!:install 'ofsf_smupdknowl '(ofsf_smupdknowl nil and false
+ofsf_negateat ofsf_at2ir ofsf_sminsert setcdr) 209437363141205634)
+
+(c!:install '!*tayexp2q '(!*tayexp2q nil) 1574608827519937848)
+
+(c!:install 'mk!+unit!+mat '(mk!+unit!+mat gen!+can!+bas) 
+216115980400862047)
 
 (c!:install 'qqe_arg!-check '(qqe_arg!-check
 "some arguments are not of queue type" nil
@@ -93,77 +168,6 @@ flatindxl boundindp indordlp) 574791126496740713)
 (c!:install 'cl_fvarl1 '(cl_fvarl1 cl_varl1) 1605419124039901549)
 
 (c!:install 'wusort '(wusort wulessp!* sort) 1940493422728237256)
-
-(c!:install 'cl_sacat '(cl_sacat keep nil) 1987925681016809754)
-
-(c!:install 'ibalp_renewwl '(ibalp_renewwl nil ibalp_getnewwl setcar) 
-696587307402434281)
-
-(c!:install 'ratpoly_deg '(ratpoly_deg ratpoly_mvartest ratpoly_ldeg
-ratpoly_nullp) 1494517086597859378)
-
-(c!:install 'vintersection '(vintersection nil) 1055362262337549666)
-
-(c!:install 'row '(row nil expression) 882471908047470164)
-
-(c!:install 'subs4q '(subs4q slash opmtch prepf slash!* quotient nil
-minus sqform reval simp!*) 141387529218342018)
-
-(c!:install 'nextcomb '(nextcomb i nil initcomb) 1185417246500391149)
-
-(c!:install 'bfplusn '(bfplusn plus!:) 1005581150094354391)
-
-(c!:install 'indordp '(indordp indxl!* t nil) 667524420029714105)
-
-(c!:install 'assert_stat!-parse '(assert_stat!-parse !*colon!* !*protfg
-"expecting ':' in assert but found" cursym!* difference t greaterp
-"expecting '->' in assert but found" delim
-"expecting end of assert but found" scan lprie assert_stat1) 
-2145740578074483381)
-
-(c!:install 'mo_times_ei '(mo_times_ei mo!=deglist) 1220347791345774791)
-
-(c!:install 'quotof '(quotof nil t minus lcx quotofd fkern getpower carx
-ordop raddf) 1425604662215514506)
-
-(c!:install 'cons_ordp '(cons_ordp t nil) 975461228913855627)
-
-(c!:install 'sqhorner!* '(sqhorner!* !*horner ordl!* kord!* reorder
-hornerf hornersq) 2158324459255236648)
-
-(c!:install 'sq2sspl '(sq2sspl t sq2sstm) 473512398605107682)
-
-(c!:install 'ibalp_tvb '(ibalp_tvb nil ibalp_var!-unset) 
-1790339988164330966)
-
-(c!:install 'unaryrd '(unaryrd mathml lex) 1553712806480985015)
-
-(c!:install 'diffsq '(diffsq difff multsq negf addsq) 582868247314975111
-)
-
-(c!:install 'dm!-mkfloat '(dm!-mkfloat !:rd!: i2d) 1683939568627972179)
-
-(c!:install 'vdpvevlcomp '(vdpvevlcomp dipevlcomp) 1471218915367231787)
-
-(c!:install 'vevstrictlydivides!? '(vevstrictlydivides!? nil vevmtest!?)
- 900986280397584821)
-
-(c!:install 'wedgek2 '(wedgek2 wedge nil deg!*form wedgef mksgnsq
-multpfsq wedgewedge worderp multf addf wedgepf2) 1468019601521927329)
-
-(c!:install 'physopordchk '(physopordchk t nil unit !*collectphysops
-deletemult!* physopordchk!*) 201005715645974337)
-
-(c!:install 'edge_new_parent '(edge_new_parent nil new_edge_list) 
-1470169097709471506)
-
-(c!:install 'assert_install1 '(assert_install1 assert_installed !*msg
-nil "***" "assert already installed for" expr
-"is not an expr procedure - ignoring assert" assert_noassertfn
-assert_assertfn t lpriw getd copyd) 2218046875722477949)
-
-(c!:install 'setk0 '(setk0 frasc!* setelemfn nil alglist!* t rtype
-setkfn getrtype let2) 334681673467544588)
 
 
 % End of generated Lisp code

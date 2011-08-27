@@ -1,7 +1,67 @@
 
 % u48.lsp           Machine generated Lisp
 
-(c!:install "u48" 18241 3343796 7090520)
+(c!:install "u48" 15485 5353527 9953695)
+
+(c!:install 'split!-wrt!-variables '(split!-wrt!-variables nil t) 
+263752640622623420)
+
+(c!:install 'dp!=replus '(dp!=replus plus) 280215869184604256)
+
+(c!:install 'pst_equitable '(pst_equitable pst_reduce pst_equitable1) 
+1792295440654686533)
+
+(c!:install 'sqlessp '(sqlessp nil minusp negf addsq) 92175314179259630)
+
+(c!:install 'gcd!-with!-number '(gcd!-with!-number t dmode!* field gcddd
+) 2104892163634078727)
+
+(c!:install 'pasf_or '(pasf_or true t false (lessp greaterp leq geq)
+lessp nil leq greaterp geq pasf_deci simp addf negf) 820847617144401066)
+
+(c!:install 'dip_f2dip1 '(dip_f2dip1 nil t bc_fd bc_prod dip_fmon
+dip_f2dip2 dip_sum) 2181897843869070183)
+
+(c!:install 'rnfix!* '(rnfix!*) 950600838787376087)
+
+(c!:install 'ldf!-all!-var '(ldf!-all!-var ldf!-dep!-var ldf!-pow!-var
+ldf!-spf!-var appends makeset) 1333976100562228379)
+
+(c!:install 'formoptimize1 '(formoptimize1 (!:rd!: !:cr!: !:crn!: !:dn!:
+) !:int!: eval sq2pre aeval (lsetq rsetq lrsetq) (lsetq lrsetq) nil (
+rsetq lrsetq) setq list constp chopchop decimal2internal form1 listp) 
+818450415012562679)
+
+(c!:install 'test!-ideal '(test!-ideal id!-vars!* list
+"ideal setting; set variables first" i "polynomial ideal" typerr) 
+1369119772175317357)
+
+(c!:install 'rand!-mons!-dense '(rand!-mons!-dense nil mksq max multf
+lastpair) 3519816536075209)
+
+(c!:install 'gcdlist '(gcdlist nil t "Term content division failed"
+gcdld mapcarcar powers1 numeric!-content vintersection gcddd fkern
+getpower multf quotfail1 gcdlist1 poly!-abs) 2162228522692832422)
+
+(c!:install 'calc_world '(calc_world s_world_names actual_alst
+calc_atlas reval) 1735440944159530077)
+
+(c!:install 'makemainvar '(makemainvar t mulcoeffsby mergeadd) 
+2230961793041417839)
+
+(c!:install 'dvfsf_susitf '(dvfsf_susitf) 1987078485028862052)
+
+(c!:install 'put!-avalue '(put!-avalue scalar !*sq nil
+"improperly defined in terms of itself" t !*reduce4 generic avalue
+smember msgpri sf_member putobject) 1054479935049163773)
+
+(c!:install 'equal!+matrices!+p '(equal!+matrices!+p nil !*complex t
+same!+dim!+squared!+p mk!+scal!+mult!+mat mk!+mat!+plus!+mat
+mk!+conjugate!+sq multsq addsq change!+sq!+to!+algnull) 
+1663448286731126958)
+
+(c!:install 'pasf_premf1 '(pasf_premf1 t minusf addf exptf multf) 
+671404613138930611)
 
 (c!:install 'cl_simpl1 '(cl_simpl1 true t false or and not ex all
 !*rlsism bex ball impl repl equiv cl_simpl !*protfg
@@ -31,97 +91,6 @@ vdpgetprop vdpputprop) 1888319346551266682)
 
 (c!:install 'partdff '(partdff t !*product!-rule nil addsq multsq
 partdfpow partdft) 1367082714225540413)
-
-(c!:install 'physopsubs '(physopsubs alglist!* nil physoplist!* rtype
-simpfn simpiden (dot) physopfn dot !*nosq physop physop2sq subs2
-prepsqxx mk!*sq) 2050192195268264526)
-
-(c!:install 'coeff1_calc '(coeff1_calc calc_coeffmap_ nreverse) 
-1897238753576047443)
-
-(c!:install 'red_extract '(red_extract bas_rep dp_comp bas_nr bas_dpoly
-dp_diff bas_make1) 2210310813076995154)
-
-(c!:install 'permp!: '(permp!: t) 1310205780846314399)
-
-(c!:install 'merge_list1 '(merge_list1) 1671125622661630910)
-
-(c!:install 'constant_exprp '(constant_exprp constant t i idvalfn nil
-realvalued alwaysrealvalued (plus minus difference times quotient)
-!:rd!: !*complex !:cr!: constant_expr_listp) 1968306754571372480)
-
-(c!:install 'cl_gaussintersection '(cl_gaussintersection gignore nil
-rl_bettergaussp) 1938612638791916654)
-
-(c!:install 'sfto_yun!-updecf '(sfto_yun!-updecf !*gcd t diff sfto_gcdf
-quotf negf addf multf setcar setcdr) 1512703944541331907)
-
-(c!:install 'get_mat '(get_mat id nil t !*protfg "error in get_mat"
-lprie get!+row!+nr mk!+unit!+mat) 1924454971503791478)
-
-(c!:install 'cl_applysac1 '(cl_applysac1 t break (nil) nil cl_applysac2)
- 1710015882775374484)
-
-(c!:install 'logrtn '(logrtn 2.0 log2 msd log) 350007936810546106)
-
-(c!:install 'physopplus '(physopplus nil "type mismatch in plus "
-physopsim!* getphystype rederr2 physop2sq addsq mk!*sq) 
-2232360910756131446)
-
-(c!:install 'coeff_ordn1 '(coeff_ordn1 nil p_subsatlaslist) 
-1635828600124870843)
-
-(c!:install 'frlp '(frlp t frlis!* nil) 1213576744569851735)
-
-(c!:install 'inormmat '(inormmat nil ilcm) 387447287324606610)
-
-(c!:install 'validrule1 '(validrule1 nil list replaceby equal) 
-2069285054748685587)
-
-(c!:install 'qqe_qadd!-inside '(qqe_qadd!-inside t nil a
-qqe_qadd!-location!* d qqe_op qqe_qopaddp) 2024637090131022217)
-
-(c!:install 'iv_new '(iv_new) 1120989220244112093)
-
-(c!:install 'lengthf '(lengthf plus times t minus quotient !*rational
-expt dx du xi eta c x u df flatsizec max) 1927956892158565675)
-
-(c!:install 'xreduce1 '(xreduce1 weak_xreduce1 nreverse) 
-430404374178128349)
-
-(c!:install 'subsetneqp '(subsetneqp nil subsetp) 1834216667324185968)
-
-(c!:install 'exp!: '(exp!: t "Invalid argument to" bfone!* !:rd!:
-!:bprec!: nil error difference!: msd !:e texpt!: greaterp!: cut!:ep max
-divide!: plus!: cut!:mt round!:mt) 2190155017803165167)
-
-(c!:install 'simpinnerprod '(simpinnerprod partitinnerprod !*pf2sq) 
-2246283138748548981)
-
-(c!:install 'new_edge '(new_edge nil new_edge_list mk_edge_name) 
-1785637529940774812)
-
-(c!:install 'generic!-sub '(generic!-sub dfp list dfp!-sub) 
-1855280535076220756)
-
-(c!:install 'fs!:intequiv!: '(fs!:intequiv!: nil cos fs!:null!-angle) 
-1264060883437206811)
-
-(c!:install 'all_index_lst '(all_index_lst list nil listp) 
-1348312532109847265)
-
-(c!:install 'eval_uni_poly '(eval_uni_poly nil) 1983392336052449364)
-
-(c!:install 'liqsimp1!-check '(liqsimp1!-check min liqsimp1!-check1 negf
-) 1049686995422678962)
-
-(c!:install 'rule!-list '(rule!-list nil frasc!* t mcond!* avalue list
-"rule list" equal !*msg "***" "Please use => instead of = in rules"
-replaceby "rule" when algebraic typerr remove!-free!-vars
-remove!-free!-vars!* formbool rule!* lpriw) 1983491062097872713)
-
-(c!:install 'qqe_prefix!-length '(qqe_prefix!-length nil (rtail ltail
-rhead lhead)) 1670905950333623322)
 
 
 % End of generated Lisp code

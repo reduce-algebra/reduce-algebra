@@ -1,7 +1,36 @@
 
 % u10.lsp           Machine generated Lisp
 
-(c!:install "u10" 12312 9344232 80885)
+(c!:install "u10" 7919 7124431 5951869)
+
+(c!:install 'split_f '(split_f t nil
+"SPLIT_F: expression not linear w.r.t." list multf addf msgpri
+update_kc_list get_first_kernel) 1686252993858126732)
+
+(c!:install 'totalcompare '(totalcompare equal less greater wulessp
+wuconstantp totalcompareconstants) 2027958323558624556)
+
+(c!:install 'intexprnp '(intexprnp !*revalp nil integer intfn
+intexprlisp) 568883298941404200)
+
+(c!:install 'rl_external '(rl_external) 1177925317166109603)
+
+(c!:install 'aex_deg '(aex_deg aex_ex ratpoly_deg) 955981404380112860)
+
+(c!:install 'omvir '(omvir atts name hex "wrong att" dec find errorml) 
+715326010998117375)
+
+(c!:install 'find_sub_df '(find_sub_df nil is_sub_df) 
+2261341057226299788)
+
+(c!:install 'spmultm2 '(spmultm2 t nil mkempspmat empty findrow simp
+multsq addsq mk!*sq letmtr3) 1175611251218418354)
+
+(c!:install 'dm!-minus '(dm!-minus !:minus nil2zero) 2053795124603352492
+)
+
+(c!:install 'getcomb '(getcomb i comb nil nextcomb setdiff) 
+1755985039213462250)
 
 (c!:install 'dcombine '(dcombine i2d (!:crn!: !:gi!:) (!:rd!: !:cr!:) t
 cmpxfn nil !:ps!: noconvert !:rd!: !:cr!: !:rn!: !:gi!: !:crn!:
@@ -74,6 +103,8 @@ sqform) 704827423330200063)
 gen!-mult!-by!-const!-mod!-p ordop adjoin!-term
 general!-times!-term!-mod!-p general!-plus!-mod!-p) 1122495670563378629)
 
+(c!:install 'mkprogn '(mkprogn progn) 185803810215152666)
+
 (c!:install 'monommultiplybyvariable '(monommultiplybyvariable nil) 
 988599471722280590)
 
@@ -128,40 +159,6 @@ errmsg!* !*protfg lose getd putd lprie) 1724655864375557997)
 
 (c!:install 'findnewvars '(findnewvars nil lastpair genp) 
 935728443037538372)
-
-(c!:install 'variables '(variables nil dipvars!* t setcar) 
-1120007630353667818)
-
-(c!:install 'flatindxl '(flatindxl nil minus) 1994311323824406189)
-
-(c!:install 'list!+list '(list!+list !:plus nreverse) 
-1282605013187262199)
-
-(c!:install 'nth '(nth pnth) 1574764749196478615)
-
-(c!:install 'split!-road '(split!-road sroad) 1032071747175359674)
-
-(c!:install 'procstat '(procstat nil procstat1) 455173745286575792)
-
-(c!:install 'aminusp!: '(aminusp!: !*modular modular nil aminusp!:1 t
-"arithmetic expression" setdmode errorset2 typerr) 736551376972088580)
-
-(c!:install 'mv!-pow!-chk '(mv!-pow!-chk nil mv!-pow!-!- mv!-pow!-minusp
-) 6252537058940825)
-
-(c!:install 'dd '(dd ordering lex nc varlist nil dquot leftzeros class
-dless) 739292952114009161)
-
-(c!:install 'make!-univariate!-image!-mod!-p '(
-make!-univariate!-image!-mod!-p t nil image!-of!-power times!-mod!-p
-plus!-mod!-p adjoin!-term) 1680162136296008025)
-
-(c!:install 'qqe_id!-nyt!-branchq '(qqe_id!-nyt!-branchq qqe_qopaddp
-qqe_qoptailp qqe_qtidp qqe_nytidp) 1826796433520129214)
-
-(c!:install 'ibalp_getnewwl '(ibalp_getnewwl nil) 1887706235505743254)
-
-(c!:install 'sacar '(sacar nil) 1836350234365885204)
 
 
 % End of generated Lisp code

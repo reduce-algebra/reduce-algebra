@@ -1,7 +1,38 @@
 
 % u09.lsp           Machine generated Lisp
 
-(c!:install "u09" 1560 9861094 3949934)
+(c!:install "u09" 1781 5388860 7625525)
+
+(c!:install 'covposp '(covposp t nil) 884478413950111432)
+
+(c!:install 'opnum!* '(opnum!* nil opnum collectindices removeindices) 
+2131924763112094351)
+
+(c!:install 'formcond '(formcond cond formcond1) 388642168095654870)
+
+(c!:install 'red!-ratios1 '(red!-ratios1 nil red!-ratios2) 
+439554841299993978)
+
+(c!:install 'subsetp '(subsetp t nil) 656082696218474237)
+
+(c!:install 'quotk '(quotk nil quotf1) 738213989969173996)
+
+(c!:install 'gperm2 '(gperm2 nil rev gperm1) 1923382954738947238)
+
+(c!:install 'times!-in!-vector '(times!-in!-vector nil) 
+167978836511768691)
+
+(c!:install 'tr_write '(tr_write !*trsolve nil) 240870562347370954)
+
+(c!:install 'remflagss '(remflagss nil) 2129313893082856920)
+
+(c!:install 'msappend '(msappend nil) 1808899511262869677)
+
+(c!:install 'ibalp_simpat '(ibalp_simpat ibalp_simpterm ibalp_mk2) 
+1056519305897848361)
+
+(c!:install 'poly!-abs '(poly!-abs poly!-minusp negf) 
+1009189177833569811)
 
 (c!:install 'integerom '(integerom "<OMI> " " </OMI>" printout) 
 1375589739819048204)
@@ -60,8 +91,6 @@ opmtchrevop eval redmsg mkop simpatom gethash) 100384927939145160)
 
 (c!:install 'gpexp1p '(gpexp1p t nil gpexpp) 842590921140604801)
 
-(c!:install 'chknewnam '(chknewnam newnam t) 218677808758793034)
-
 (c!:install 'mo!=lexcomp '(mo!=lexcomp (0)) 1327996723722056312)
 
 (c!:install 'arintequiv!: '(arintequiv!: !:rn!: nil) 534237669984907826)
@@ -70,6 +99,8 @@ opmtchrevop eval redmsg mkop simpatom gethash) 100384927939145160)
 1008346651469743991)
 
 (c!:install 'crprcd2 '(crprcd2 yy!! crprcd) 199137307142809539)
+
+(c!:install 'rempropss '(rempropss nil) 2172907543236737199)
 
 (c!:install 'qqe_arg!-check!-b '(qqe_arg!-check!-b nil t
 qqe_id!-nyt!-branchb qqe_qtidp qqe_nytidp qqe_btid qqe_add2rollbackids
@@ -118,36 +149,9 @@ addsq subs3t subs3q subs2q) 1003127167443182107)
 (c!:install 'clear!-column '(clear!-column null!-space!-basis t nil) 
 2174171855257234860)
 
+(c!:install 'setpage '(setpage title!* pgnum!*) 1681228330177415959)
+
 (c!:install 'mkkl '(mkkl) 1952428244750614934)
-
-(c!:install 'split_f '(split_f t nil
-"SPLIT_F: expression not linear w.r.t." list multf addf msgpri
-update_kc_list get_first_kernel) 1686252993858126732)
-
-(c!:install 'totalcompare '(totalcompare equal less greater wulessp
-wuconstantp totalcompareconstants) 2027958323558624556)
-
-(c!:install 'intexprnp '(intexprnp !*revalp nil integer intfn
-intexprlisp) 568883298941404200)
-
-(c!:install 'rl_external '(rl_external) 1177925317166109603)
-
-(c!:install 'aex_deg '(aex_deg aex_ex ratpoly_deg) 955981404380112860)
-
-(c!:install 'omvir '(omvir atts name hex "wrong att" dec find errorml) 
-715326010998117375)
-
-(c!:install 'find_sub_df '(find_sub_df nil is_sub_df) 
-2261341057226299788)
-
-(c!:install 'spmultm2 '(spmultm2 t nil mkempspmat empty findrow simp
-multsq addsq mk!*sq letmtr3) 1175611251218418354)
-
-(c!:install 'dm!-minus '(dm!-minus !:minus nil2zero) 2053795124603352492
-)
-
-(c!:install 'getcomb '(getcomb i comb nil nextcomb setdiff) 
-1755985039213462250)
 
 
 % End of generated Lisp code

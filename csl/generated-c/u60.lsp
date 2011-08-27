@@ -1,63 +1,110 @@
 
 % u60.lsp           Machine generated Lisp
 
-(c!:install "u60" 5253 3855145 3561217)
+(c!:install "u60" 8962 3123391 4654216)
 
-(c!:install 'myspmatpri2 '(myspmatpri2 spm nil "Empty Matrix" empty
-sparpri) 821368276499764126)
+(c!:install 'ofsf_sminsert '(ofsf_sminsert t false true nil
+ofsf_sminsert1 setcdr) 1727033817576091008)
 
-(c!:install 'vbcminus!? '(vbcminus!? nil) 2266777331550936950)
+(c!:install 'makefunc '(makefunc nil texpatt indexvar ((apply makeexcinx
+)) ((f) !\!( (l !,) !\!)) texuby f apply x y t z r l m makemat makearg
+mktag texexplode) 1090838738406582178)
 
-(c!:install 'vdptdeg '(vdptdeg t max vevtdeg vdpred) 430102835426818768)
+(c!:install 'mk_relation_mat '(mk_relation_mat nil get!+row!+nr
+mk!+unit!+mat get_mat mk!+mat!+mult!+mat) 1164944140005604110)
 
-(c!:install 'bf2flck '(bf2flck !*!*roundbf 0.0 !:rd!: !!minflbf
-!!maxflbf nil grpbf bf2flr rndbfon) 416088331714601706)
+(c!:install 'rl_subat '(rl_subat rl_subat!* apply) 823858473539513481)
 
-(c!:install 'binomial '(binomial !_binomialn !_binomialb !_binomialk nil
-) 866840025378657258)
+(c!:install 'acfsf_opp '(acfsf_opp (equal neq)) 464639001451742854)
 
-(c!:install 'lispexpp '(lispexpp t !*lisparithexpops!* !*lisplogexpops!*
-!*lispstmtops!* !*lispstmtgpops!* !*lispdefops!* nil) 357578804425138753
+(c!:install 'arbitrary_c '(arbitrary_c nil found_int found_mat_int
+found_compl found_mat_compl mat t flagg "<apply><forall/>" indent
+"<condition>" "<apply><and/>" consts_compl consts_int "</apply>"
+"</condition>" consts_mat_compl consts_mat_int isarb_compl isarb_int
+printout print_arb_compl print_arb_int in_complexml in_integerml
+printarb_mat_compl printarb_mat_int isarb_mat_compl isarb_mat_int) 
+87787866699516320)
+
+(c!:install 'crnequiv '(crnequiv nil) 756038777451127770)
+
+(c!:install 'mkdep '(mkdep nil t depend1) 2077599978790671051)
+
+(c!:install 'fl2bfexp '(fl2bfexp !*bftag expfl2bf exp) 
+505024384548762331)
+
+(c!:install 'makeanewindex '(makeanewindex idx mkid isanindex
+putanewindex) 1698543156323035876)
+
+(c!:install 'mk_simple_map_ '(mk_simple_map_ nil mk_simple_map_1) 
+317260080980145983)
+
+(c!:install 'fillin1 '(fillin1 nreverse) 721776940379112198)
+
+(c!:install 'dp_comp '(dp_comp nil dp!=comp mo_deletecomp) 
+2201046406480900582)
+
+(c!:install 'invlex '(invlex list !*protfg
+"Argument to invlex not a list" nil equal difference invsysvars!* lex
+ordering gg plus gv prepf reval gvarlis readsys invlex!* !*di2q sqform
+lprie) 2050640579603357244)
+
+(c!:install 'depth!: '(depth!: list t bag nil) 1530113174020211076)
+
+(c!:install 'rl_betterp '(rl_betterp rl_betterp!* apply) 
+2222264995308503001)
+
+(c!:install 'smallest!-increment '(smallest!-increment nil get!-denom!-l
+get!-denom!-ll mkrn confusion) 1613353579836834931)
+
+(c!:install 'relation_check_p '(relation_check_p mk_relation_mat
+equal!+matrices!+p) 1788805158111177317)
+
+(c!:install 'ev_zero!? '(ev_zero!? t nil) 319021200342501873)
+
+(c!:install 'formlog '(formlog formlog2 formlogterm) 1681145823009812429
 )
 
-(c!:install 'ezgcd!-comfac '(ezgcd!-comfac t nil poly!-abs gcdlist) 
-1230955745152052753)
+(c!:install 'smaddm2 '(smaddm2 nil copy_vect findrow simp addsq mk!*sq
+letmtr3) 2249339279527841630)
 
-(c!:install 'restorealldfs '(restorealldfs t translate2 nil fullcopy
-setcar) 977627209061654578)
+(c!:install 'to!*scheme '(to!*scheme codmat maxvar plus nil varlst!*
+times dm!-expt getcind delyzz) 894560562106469122)
 
-(c!:install 'ad_signsort '(ad_signsort nil t copy apply) 
-415502572631271728)
+(c!:install 'evalletsub '(evalletsub t "Invalid simplification" errmsg!*
+!*protfg evalletsub2 lprie) 1044511324907909099)
 
-(c!:install 'general!-xquotient!-mod!-p '(general!-xquotient!-mod!-p nil
-t exact!-quotient!-flag fkern getpower general!-quotient!-mod!-p
-general!-negate!-term general!-times!-term!-mod!-p general!-plus!-mod!-p
-general!-times!-mod!-p general!-difference!-mod!-p) 1142492575603976403)
+(c!:install '!:pi '(!:pi t "Invalid argument to" not_found nil !:rd!:
+error get!:const round!:mt save!:const) 1065030639748549291)
 
-(c!:install 'ofsf_chsimpat '(ofsf_chsimpat nil and true false
-ofsf_chsimpat1 ofsf_simpat) 774394157452924966)
+(c!:install 'lispreturnp '(lispreturnp return) 997679682127899872)
 
-(c!:install 'pasf_qff2ivl '(pasf_qff2ivl !*protfg
-"pasf_qff2ivl : uniform Presburger arithmetic formula in input"
-pasf_uprap lprie pasf_dnf pasf_qff2ivl1) 643984167545638275)
+(c!:install 'not_included '(not_included t nil) 1547102369775051817)
 
-(c!:install 'logsort '(logsort !*div !*combinelogs !*expandlogs
-!*noneglogs t !*uncached nil simp prepsq!* comblog) 468425349379459173)
+(c!:install 'calc_map_tar '(calc_map_tar ev!-poles constimes ev!-tades
+strand!-alg!-top) 2074601762213313877)
 
-(c!:install 'formlet '(formlet let formlet1) 77820428439856184)
+(c!:install 'st_extract_symcells '(st_extract_symcells nil !*
+st_consolidate st_extract_symcells1 listp upbve sc_repkern) 
+1324185076271611028)
 
-(c!:install 'mk_spec_atlas '(mk_spec_atlas atlas_edges edges_parents
-diff_edges) 1813562323507943294)
+(c!:install 'find_solvable_kernel '(find_solvable_kernel
+!*coefficient_check first_solvable_kernel) 427426232983125183)
 
-(c!:install 'comcom1 '(comcom1 a11 a22 a33 ccc nil ff mat det liemat
-times quotient plus cc minus sqrt abs !*tr_lie "[X,Y]=W, [X,Z]=" first
-"Y, [Y,Z]=X" last lie_class list liealg comtab difference expt "Is "
-"<0 ? (y/n) and press <RETURN>" y "[W,Z]=2W, [X,Y]=W, [X,Z]=X-" "Y, "
-"[Y,Z]=" "X+Y" "<1 ? (y/n) and press <RETURN>"
-"[W,Z]=2W, [X,Y]=W, [X,Z]=" "X, [Y,Z]=" "Y"
-"[W,Z]=2W, [X,Y]=W, [X,Z]=X+Y, [Y,Z]=Y" only matrix aeval setk evalneq
-evalequal revalx boolvalue!* assgnpri evalgreaterp clear evalnumberp
-evallessp aeval!*) 1325725521147250635)
+(c!:install 'rl_elimset '(rl_elimset rl_elimset!* apply) 
+1969014497886551718)
+
+(c!:install 'mkdgi '(mkdgi !:gi!:) 462082913034149482)
+
+(c!:install 'multtaylor1 '(multtaylor1 nil add!-degrees exceeds!-order
+min2!-order multsq addsq enter!-sorted subs2!* lastpair) 
+1829104462584184038)
+
+(c!:install 'posnumlistp '(posnumlistp t nil posnump) 38277521405250056)
+
+(c!:install 'vdp_putprop '(vdp_putprop) 268153680213254213)
+
+(c!:install 'acfsf_prepat '(acfsf_prepat acfsf_op acfsf_arg2l prepf
+acfsf_arg2r) 1711637762086508611)
 
 
 % End of generated Lisp code

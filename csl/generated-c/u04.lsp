@@ -1,7 +1,14 @@
 
 % u04.lsp           Machine generated Lisp
 
-(c!:install "u04" 14802 923976 294743)
+(c!:install "u04" 19203 2810979 4650731)
+
+(c!:install 'remainder!-in!-vector '(remainder!-in!-vector
+"ATTEMPT TO DIVIDE BY ZERO" nil errorf) 744903400461801080)
+
+(c!:install 'gionep!: '(gionep!: nil) 1953210649077377872)
+
+(c!:install '!*!*s2a '(!*!*s2a) 918493646849818657)
 
 (c!:install 'quotf1 '(quotf1 nil t !*mcd quotfd ordop quotk rank lt!*
 negf multf addf rnconc) 576310021879361692)
@@ -38,9 +45,6 @@ read!:num bf2flck) 862262474623006349)
 
 (c!:install 'repeatsp '(repeatsp nil) 1088315556521374433)
 
-(c!:install 'eolcheck '(eolcheck !*eoldelimp nil nxtsym!* !$eol!$
-cursym!* end !; token1) 1115182728816103448)
-
 (c!:install 'nonzero!-length '(nonzero!-length) 1750574501613621881)
 
 (c!:install 'bas_rep '(bas_rep pnth) 340812496019002120)
@@ -52,6 +56,9 @@ csl_normbf bfprin0 fl2bf prin2lint add_prin_char terpri!*)
 401339241677579709)
 
 (c!:install 'lcm '(lcm t nil gcdf quotf multf) 2463977880154873)
+
+(c!:install 'lispapply '(lispapply "Apply called with non-id arg"
+errmsg!* !*protfg lprie apply) 623222388795798175)
 
 (c!:install 'sfto_reorder '(sfto_reorder setkorder reorder) 
 776219512282437951)
@@ -106,6 +113,9 @@ statcounter inputbuflis!*) 431962351579010235)
 
 (c!:install 'mod!# '(mod!# current!-modulus) 663717233808797810)
 
+(c!:install 'anforml '(anforml nil !*globals locls!* glb2rf globs!*
+anform) 1062340167909456825)
+
 (c!:install 'cl_cflip '(cl_cflip cl_flip) 2024120084740411748)
 
 (c!:install 'get!+col!+nr '(get!+col!+nr) 2016147149417159660)
@@ -158,6 +168,8 @@ key!* scan xread1) 718375168074910326)
 (c!:install '!*modular2f '(!*modular2f nil !*balanced_mod
 current!-modulus !:mod!:) 379326499075662109)
 
+(c!:install 'outdefr '(outdefr outref) 2302073692054621181)
+
 (c!:install 'rl_ordatp '(rl_ordatp rl_ordatp!* apply) 323878800305080664
 )
 
@@ -187,9 +199,6 @@ physopmapping physopp hasonephysop) 76957525370170601)
 (c!:install 'contr1!-strand '(contr1!-strand nil contr2!-strand) 
 110189551354594408)
 
-(c!:install 'lispapply '(lispapply "Apply called with non-id arg"
-errmsg!* !*protfg lprie apply) 623222388795798175)
-
 (c!:install 'reval2 '(reval2 !*combineexpt t dmode!* nil !*mcd simp!*
 prepsqxx mk!*sq) 1621593886914384390)
 
@@ -207,16 +216,6 @@ angles!-equal) 68458874584036423)
 
 (c!:install 'gen!-mult!-by!-const!-mod!-p '(gen!-mult!-by!-const!-mod!-p
 nil t general!-modular!-times adjoin!-term) 1712476447469107450)
-
-(c!:install 'times!-term!-mod!-p '(times!-term!-mod!-p nil t
-multiply!-by!-constant!-mod!-p adjoin!-term ordop times!-mod!-p fkern
-getpower) 1318951204792960146)
-
-(c!:install 'cl_varl1 '(cl_varl1 nil cl_varl2) 764533428685220521)
-
-(c!:install 'subs2 '(subs2 subfg!* !*sub2 powlis1!* !*combineexpt slash
-opmtch !*match t !*exp nil exptchk invsq multsq resimp subs3q subs4q
-subs2q) 418869612129941152)
 
 
 % End of generated Lisp code

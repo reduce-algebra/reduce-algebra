@@ -1,7 +1,48 @@
 
 % u15.lsp           Machine generated Lisp
 
-(c!:install "u15" 3577 3318230 9050101)
+(c!:install "u15" 20091 6607288 6203018)
+
+(c!:install 'listeval '(listeval simpcount!* simplimit!*
+"Simplification recursion too deep" errmsg!* !*protfg avalue share list
+nil listfn "Illegal operation on lists" lprie reval1 eval typerr) 
+622018306010920951)
+
+(c!:install 'indord2 '(indord2 indordp) 1618021129309535199)
+
+(c!:install 'my_freeof '(my_freeof depl!* nil smember freeofdepl) 
+921718580149925090)
+
+(c!:install 'map__edges '(map__edges nil union_edges) 604158144082819394
+)
+
+(c!:install 'sfpx1 '(sfpx1 t nil assert_kernelp ordpp) 
+1569450916978919294)
+
+(c!:install 'mo_neworder '(mo_neworder mo!=shorten mo!=deglist) 
+1192786992171161537)
+
+(c!:install 'pv_times1 '(pv_times1 pv_times2) 653312142238460454)
+
+(c!:install 'rootrnd '(rootrnd acc!# rtrnda) 1724817214426732907)
+
+(c!:install 'quotient!-mod!-p '(quotient!-mod!-p "B=0 IN QUOTIENT-MOD-P"
+t nil exact!-quotient!-flag safe!-modular!-reciprocal
+multiply!-by!-constant!-mod!-p ordop adjoin!-term xquotient!-mod!-p
+errorf) 783270726452021012)
+
+(c!:install 'rlis '(rlis cursym!* delim nil !*reduce4 list lambda
+!*comma!* scan xread1) 396270111797738630)
+
+(c!:install 'mml2om '(mml2om t "Intermediate representation: " mml2ir
+terpri!* ir2om) 1170377462810069099)
+
+(c!:install 'vevlcm '(vevlcm nil) 1815374866976315301)
+
+(c!:install 'oprinla '(oprinla lapr prtch lapop !  prin2la prinlatom) 
+1501876224168863218)
+
+(c!:install 'fortexp '(fortexp fortexp1) 2129437788835831713)
 
 (c!:install 'command '(command errmsg!* loopdelimslist!* !*demo ifl!*
 !*slin t !*reduce4 nil curline!* cloc!* lreadfn!* crchar!* !$eol!$
@@ -14,6 +55,10 @@ command1 structchk rprint convertmode1) 1812204387974376618)
 
 (c!:install 'simp!-prop!-order '(simp!-prop!-order nil prop!* t) 
 34964571509570729)
+
+(c!:install 'symbvarlst '(symbvarlst symbolic nil !*novarmsg !*msg "***"
+"local variable" "in procedure" fname!* "not used" lpriw) 
+1742119313907041508)
 
 (c!:install 'setqget '(setqget fluidbibasissetq) 1308814383770440887)
 
@@ -56,6 +101,9 @@ null setq) 1871648385319638657)
 
 (c!:install 'reverse!-num '(reverse!-num ilog2 reverse!-num1) 
 893954207581207090)
+
+(c!:install 'readprogn '(readprogn !*eoldelimp cursym!* !*semicol!*
+group !*rsqbkt!* progn scan xread1) 925448076935135004)
 
 (c!:install 'ibalp_initwl '(ibalp_initwl nil setcar) 79720393803908056)
 
@@ -110,43 +158,6 @@ terpri!* ir2mml) 787896593084350663)
 
 (c!:install 'resume '(resume t substitution amatch chk bsubs) 
 1253263108759598642)
-
-(c!:install 'setmat '(setmat !*modular modular mod_was_on nil
-!*mod_was_on off on my_letmtr reval) 1607288821199188598)
-
-(c!:install 'rd!:plus '(rd!:plus nil !*!*roundbf !:rd!: yy!! plus2
-!*backtrace t convprc2 plubf rdzchk errorset rndbfon fl2bf csl_normbf
-read!:num safe!-fp!-plus) 946951010876746165)
-
-(c!:install 'total!-degree!-in!-powers '(total!-degree!-in!-powers t nil
-) 1332782792841291032)
-
-(c!:install 'begin1 '(begin1 otime!* gctime ogctime!* !*semicol!*
-cursym!* !*int ifl!* !*nosave!* statcounter nil !*strind !*time (
-showtime) !*output ofl!* !*defn !*lessspace tslin!* !*slin lreadfn!*
-initl!* initl forkeywords!* delim repeatkeywords!* whilekeywords!*
-erfg!* end key!* ed promptexp!* (command) t !*backtrace !*echo
-!*extraecho !*demo symbolic xmodule err2 err3 crbuf1!* !*msg "***"
-"Closing object improperly removed. Redo edit." eof!* "End-of-file read"
-(bye) crbuf!* program!* !$eof!$ ttype!* "BEGIN invalid" !*errcont cmsg!*
-"Continuing with parsing only ..." getd add2buflis update_prompt eval
-printprompt errorset comm1 lprie pause1 lpriw xmodloop begin11) 
-1822611508529058319)
-
-(c!:install 'red_divtest '(red_divtest nil bas_dpoly dp_lmon
-mo_vdivides!?) 714855455564249474)
-
-(c!:install 'il_simp '(il_simp nil il_simp1) 324237945134653804)
-
-(c!:install 'repeats '(repeats nreverse) 1935793202905244089)
-
-(c!:install 'arglist_member '(arglist_member t nil) 368644826227911490)
-
-(c!:install 'mconv '(mconv dmode!* !:rn!: !:gi!: !:crn!: dmd!* mconv1) 
-2103433038214118152)
-
-(c!:install 'ofsf_entry2at1 '(ofsf_entry2at1 and nil ofsf_clnegrel addsq
-) 839944857403023036)
 
 
 % End of generated Lisp code
