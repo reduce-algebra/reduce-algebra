@@ -57,7 +57,11 @@ symbolic procedure onoff(u,bool);
 
 symbolic procedure onoff!-reset u;
    % set switch to its default value
-   onoff(u,if get(u,'switchdefault) then t else nil);
+   % set !*switchcheck to t so that simpfg code is executed only 
+   %  if the switch is actually toggled.
+   <<!*switchcheck := t;
+     onoff(u,if get(u,'switchdefault) then t else nil);
+     !*switchcheck := swcksave>> where swcksave:=!*switchcheck;
 
 symbolic procedure switch u;
    % Declare list u as switches.
