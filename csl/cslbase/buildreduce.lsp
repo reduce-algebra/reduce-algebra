@@ -684,7 +684,7 @@ symbolic procedure test_a_package names;
        conslimit < 1 then
        conslimit := 2000;
     princ "TESTING: "; print car names;
-    window!-heading list!-to!-string append(explodec [Testing] ",
+    window!-heading list!-to!-string append(explodec "[Testing] ",
                                             explodec car names);
     !*backtrace := nil;
     !*errcont := t;
