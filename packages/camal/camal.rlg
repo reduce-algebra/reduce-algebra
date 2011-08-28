@@ -872,7 +872,8 @@ showtime;
 
 end;
 
-Time (counter 1): 86 ms
-real	0m0.598s
-user	0m0.061s
-sys	0m0.075s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 95 ms
+real	0m0.655s
+user	0m0.060s
+sys	0m0.138s

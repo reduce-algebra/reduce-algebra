@@ -1230,7 +1230,8 @@ clear g, gg, trinkspolys, trinksvars$
 
 end;
 
-Time (counter 1): 208 ms  plus GC time: 32 ms
-real	0m1.768s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 200 ms  plus GC time: 35 ms
+real	0m0.762s
 user	0m0.046s
-sys	0m0.122s
+sys	0m0.106s

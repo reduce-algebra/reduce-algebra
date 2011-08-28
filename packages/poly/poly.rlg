@@ -853,7 +853,8 @@ gcd(-9955*v**9*x**3*y**4*z**8+2020*v*y**7*z**4
 
 end;
 
-Time (counter 1): 113 ms  plus GC time: 30 ms
-real	0m0.723s
-user	0m0.000s
-sys	0m0.185s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 109 ms  plus GC time: 32 ms
+real	0m0.624s
+user	0m0.075s
+sys	0m0.060s

@@ -1402,7 +1402,8 @@ trigfactorize(1 + cos(2x) + 2cos(x)*cosh(x), x/2);
 
 end;
 
-Time (counter 1): 1447 ms  plus GC time: 52 ms
-real	0m2.075s
-user	0m0.016s
-sys	0m0.123s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 1110 ms  plus GC time: 31 ms
+real	0m1.769s
+user	0m0.030s
+sys	0m0.153s

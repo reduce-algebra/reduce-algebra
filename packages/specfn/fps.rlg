@@ -689,7 +689,8 @@ infsum(( - x   *( - 1) *108 *factorial(k)*x)/(6*46656 *factorial(3*k + 1)
 
 end;
 
-Time (counter 1): 3333 ms  plus GC time: 93 ms
-real	0m4.103s
-user	0m0.061s
-sys	0m0.153s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 3855 ms  plus GC time: 102 ms
+real	0m4.513s
+user	0m0.015s
+sys	0m0.091s

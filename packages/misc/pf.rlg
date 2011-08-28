@@ -125,7 +125,8 @@ pf(((2*w**2+2*h**2*l**2*t**2+2*h**2*l**2*qst**2)*z**2-8*h**2*l**2*qst
 
 end;
 
-Time (counter 1): 45 ms  plus GC time: 5 ms
-real	0m0.692s
-user	0m0.077s
-sys	0m0.123s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 41 ms  plus GC time: 6 ms
+real	0m0.736s
+user	0m0.015s
+sys	0m0.045s

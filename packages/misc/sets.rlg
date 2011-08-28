@@ -252,7 +252,8 @@ mkset{1,2,1};
 
 end;
 
-Time (counter 1): 14 ms
-real	0m0.646s
-user	0m0.030s
-sys	0m0.199s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 64 ms
+real	0m1.299s
+user	0m0.046s
+sys	0m0.090s

@@ -481,7 +481,8 @@ deglex
 
 end;
 
-Time (counter 1): 47 ms
-real	0m0.655s
-user	0m0.062s
-sys	0m0.137s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 48 ms
+real	0m0.583s
+user	0m0.061s
+sys	0m0.123s

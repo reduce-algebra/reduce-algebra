@@ -406,7 +406,8 @@ invtempbasis;
 
 end$
 
+Tested on x86_64-w64-windows CSL
 Time (counter 1): 25 ms
-real	0m0.616s
-user	0m0.045s
-sys	0m0.122s
+real	0m0.522s
+user	0m0.046s
+sys	0m0.138s

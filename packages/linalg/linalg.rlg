@@ -2208,7 +2208,8 @@ if not rounded_was_on then off rounded;
 
 END;
 
-Time (counter 1): 109 ms
-real	0m0.653s
-user	0m0.000s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 110 ms
+real	0m0.684s
+user	0m0.061s
 sys	0m0.138s

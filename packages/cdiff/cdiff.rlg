@@ -692,7 +692,8 @@ equ(24) = 0
 
 end;
 
-Time (counter 1): 75 ms  plus GC time: 6 ms
-real	0m0.630s
-user	0m0.046s
-sys	0m0.092s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 56 ms  plus GC time: 12 ms
+real	0m0.532s
+user	0m0.030s
+sys	0m0.075s

@@ -149,6 +149,7 @@ class Fns1
         {"dated-name",                  new Dated_nameFn()},
         {"datelessp",                   new DatelesspFn()},
         {"datestamp",                   new DatestampFn()},
+        {"timeofday",                   new TimeofdayFn()},
         {"define-in-module",            new Define_in_moduleFn()},
         {"deflist",                     new DeflistFn()},
         {"deleq",                       new DeleqFn()},
@@ -168,6 +169,7 @@ class Fns1
         {"egetv",                       new EgetvFn()},
         {"eject",                       new EjectFn()},
         {"enable-backtrace",            new Enable_backtraceFn()},
+        {"enable-errorset",             new Enable_errorsetFn()},
         {"endp",                        new EndpFn()},
         {"eputv",                       new EputvFn()},
         {"eq",                          new EqFn()},
@@ -1597,6 +1599,17 @@ class DatestampFn extends BuiltinFunction
     }
 }
 
+class TimeofdayFn extends BuiltinFunction
+{
+    public LispObject op0() throws Exception
+    {
+        Date now = new Date();
+        long ms = now.getTime();
+        return new Cons(LispInteger.valueOf(ms/1000),
+                        LispInteger.valueOf(1000*(ms%1000)));
+    }
+}
+
 class Define_in_moduleFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
@@ -1789,6 +1802,14 @@ class EjectFn extends BuiltinFunction
 }
 
 class Enable_backtraceFn extends BuiltinFunction
+{
+    public LispObject op1(LispObject arg1) throws Exception
+    {
+        return error(name + " not yet implemented");
+    }
+}
+
+class Enable_errorsetFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
     {

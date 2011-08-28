@@ -550,7 +550,8 @@ $$\displaylines{\qdd
             ^{2}}\,dx}
 \cr}$$
 
-Time (counter 1): 44 ms  plus GC time: 25 ms
-real	0m0.682s
-user	0m0.076s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 56 ms  plus GC time: 31 ms
+real	0m0.783s
+user	0m0.015s
 sys	0m0.153s

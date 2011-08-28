@@ -1795,7 +1795,8 @@ invlap(--------,p,t)
 
 end;
 
-Time (counter 1): 342 ms  plus GC time: 40 ms
-real	0m0.990s
-user	0m0.076s
-sys	0m0.170s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 330 ms  plus GC time: 37 ms
+real	0m0.844s
+user	0m0.015s
+sys	0m0.137s

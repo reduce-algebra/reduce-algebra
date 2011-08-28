@@ -218,7 +218,8 @@ partial(x2)
 
 end;
 
-Time (counter 1): 5521 ms  plus GC time: 112 ms
-real	0m6.310s
-user	0m0.045s
-sys	0m0.091s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 3392 ms  plus GC time: 64 ms
+real	0m4.119s
+user	0m0.092s
+sys	0m0.107s

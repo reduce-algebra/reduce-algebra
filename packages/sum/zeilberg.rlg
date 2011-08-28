@@ -1163,7 +1163,8 @@ hypergeom({k + 1, - k + 1},{3},x)*k*x
 
 end;
 
-Time (counter 1): 5093 ms  plus GC time: 164 ms
-real	0m5.777s
-user	0m0.046s
-sys	0m0.107s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 5006 ms  plus GC time: 160 ms
+real	0m6.426s
+user	0m0.031s
+sys	0m0.030s

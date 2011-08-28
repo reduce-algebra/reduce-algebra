@@ -186,7 +186,8 @@ poleorder(x^3*sin(1/x)^2,x,infinity);
 
 end;
 
-Time (counter 1): 65 ms  plus GC time: 22 ms
-real	0m0.634s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 63 ms  plus GC time: 26 ms
+real	0m0.536s
 user	0m0.045s
-sys	0m0.122s
+sys	0m0.061s

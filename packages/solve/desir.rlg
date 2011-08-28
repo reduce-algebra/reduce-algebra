@@ -969,7 +969,8 @@ Si on reporte cette solution dans l'equation, le terme significatif du reste
  est :  - -----------------------*x     *e                      *x
                847288609443
 
-Time (counter 1): 442 ms  plus GC time: 35 ms
-real	0m1.813s
-user	0m0.015s
-sys	0m0.076s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 523 ms  plus GC time: 37 ms
+real	0m1.159s
+user	0m0.091s
+sys	0m0.137s

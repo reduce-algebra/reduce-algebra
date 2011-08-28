@@ -3103,7 +3103,8 @@ erf(a + x)
 
 end;
 
-Time (counter 1): 645 ms  plus GC time: 14 ms
-real	0m1.100s
-user	0m0.060s
-sys	0m0.045s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 668 ms  plus GC time: 14 ms
+real	0m2.021s
+user	0m0.046s
+sys	0m0.138s

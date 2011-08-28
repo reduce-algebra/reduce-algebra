@@ -166,7 +166,8 @@ GENTRAN
 
 END$
 
-Time (counter 1): 26 ms  plus GC time: 5 ms
-real	0m0.577s
-user	0m0.061s
-sys	0m0.124s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 113 ms  plus GC time: 6 ms
+real	0m1.392s
+user	0m0.076s
+sys	0m0.122s

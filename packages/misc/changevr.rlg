@@ -114,7 +114,8 @@ changevar(u, { r , theta }, { x=r*cos theta, y=r*sin theta },
 
 end;
 
-Time (counter 1): 22 ms
-real	0m0.595s
-user	0m0.031s
-sys	0m0.138s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 107 ms
+real	0m1.331s
+user	0m0.045s
+sys	0m0.153s

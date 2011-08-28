@@ -508,7 +508,8 @@ S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 
 end;
 
-Time (counter 1): 14 ms
-real	0m0.536s
-user	0m0.046s
-sys	0m0.107s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 24 ms
+real	0m0.498s
+user	0m0.030s
+sys	0m0.060s

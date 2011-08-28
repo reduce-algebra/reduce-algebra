@@ -2587,7 +2587,8 @@ clear g,op;
 % showtime;
 end;
 
-Time (counter 1): 32 ms  plus GC time: 3 ms
-real	0m0.528s
-user	0m0.061s
-sys	0m0.060s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 57 ms  plus GC time: 6 ms
+real	0m1.473s
+user	0m0.045s
+sys	0m0.124s

@@ -141,7 +141,8 @@ intersection (I(x) , I(x^2,x*y,y^2)) .= intersection(I(x) , I(x^2,y));
 
 end;
 
+Tested on x86_64-w64-windows CSL
 Time (counter 1): 25 ms
-real	0m0.629s
-user	0m0.075s
-sys	0m0.216s
+real	0m0.641s
+user	0m0.030s
+sys	0m0.184s

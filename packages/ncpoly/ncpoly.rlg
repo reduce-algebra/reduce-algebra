@@ -260,7 +260,8 @@ nc_cleanup;
 
 end;
 
-Time (counter 1): 1073 ms  plus GC time: 52 ms
-real	0m1.713s
-user	0m0.060s
-sys	0m0.136s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 1201 ms  plus GC time: 57 ms
+real	0m1.846s
+user	0m0.030s
+sys	0m0.121s

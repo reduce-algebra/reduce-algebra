@@ -399,7 +399,8 @@ $
 
 END$
 
-Time (counter 1): 97 ms
-real	0m0.766s
-user	0m0.106s
-sys	0m0.092s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 66 ms
+real	0m0.559s
+user	0m0.015s
+sys	0m0.122s

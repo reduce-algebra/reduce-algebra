@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 0874c37a 21-Aug-2011 */
+/* Signature: 7b5d6186 28-Aug-2011 */
 
 #include "headers.h"
 
@@ -4979,6 +4979,8 @@ static void set_up_variables(CSLbool restart_flag)
                   fixnum_of_int(native_code_tag), w);
         w = acons(make_keyword("C-CODE"),
                   fixnum_of_int(defined_symbols), w);
+        w = acons(make_keyword("PLATFORM"),
+                  make_undefined_symbol(BUILTFOR), w);
         if (SIXTY_FOUR_BIT) w = cons(make_keyword("SIXTY-FOUR"), w);
 #if defined HAVE_POPEN || defined HAVE_FWIN
             w = cons(make_keyword("PIPES"), w);
@@ -5006,6 +5008,8 @@ static void set_up_variables(CSLbool restart_flag)
                   fixnum_of_int(native_code_tag), w);
         w = acons(make_keyword("c-code"),
                   fixnum_of_int(defined_symbols), w);
+        w = acons(make_keyword("platform"),
+                  make_undefined_symbol(BUILTFOR), w);
 #ifdef HAVE_FWIN
         if (texmacs_mode)
             w = cons(make_keyword("texmacs"), w);

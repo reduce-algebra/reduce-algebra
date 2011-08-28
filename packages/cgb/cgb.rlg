@@ -2163,7 +2163,8 @@ torder oo;
 
 end;
 
-Time (counter 1): 104 ms  plus GC time: 18 ms
-real	0m0.567s
-user	0m0.000s
-sys	0m0.075s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 119 ms  plus GC time: 26 ms
+real	0m0.687s
+user	0m0.046s
+sys	0m0.123s

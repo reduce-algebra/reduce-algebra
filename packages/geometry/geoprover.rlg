@@ -1220,7 +1220,8 @@ showtime;
 
 end;
 
-Time (counter 1): 329 ms  plus GC time: 44 ms
-real	0m0.920s
-user	0m0.045s
-sys	0m0.045s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 259 ms  plus GC time: 35 ms
+real	0m0.736s
+user	0m0.015s
+sys	0m0.076s

@@ -1541,7 +1541,8 @@ result:=preresult where solveresult;
 
 end;
 
-Time (counter 1): 1068 ms  plus GC time: 34 ms
-real	0m1.744s
-user	0m0.092s
-sys	0m0.138s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 1120 ms  plus GC time: 35 ms
+real	0m1.790s
+user	0m0.031s
+sys	0m0.122s

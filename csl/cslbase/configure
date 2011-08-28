@@ -677,8 +677,8 @@ SED
 AR
 MAKE
 DLL_CFLAGS
-PSLB1UILD
-BUILD
+PSLBUILD
+BUILTFOR
 host_os
 host_vendor
 host_cpu
@@ -3125,10 +3125,13 @@ if test "${with_gcc3+set}" = set; then :
 fi
 
 
+# For now I will use the Snow Leopard SDK even if I am on Lion.
 
 # Check whether --with-lionSDK was given.
 if test "${with_lionSDK+set}" = set; then :
   withval=$with_lionSDK;
+else
+  with_lionSDK="no"
 fi
 
 
@@ -3221,7 +3224,7 @@ else
 fi
 
 
-BUILD="$with_build"
+BUILTFOR="$with_build"
 
 
 # Check whether --with-pslbuild was given.
@@ -3238,16 +3241,22 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-if test "x$BUILD" = "xunknown"
+if test "x$BUILTFOR" = "xunknown"
 then
-  BUILD=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Build platform detected as $BUILD" >&5
-$as_echo "$as_me: Build platform detected as $BUILD" >&6;}
+  BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Build platform detected as $BUILTFOR" >&5
+$as_echo "$as_me: Build platform detected as $BUILTFOR" >&6;}
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Build platform specified as $BUILD" >&5
-$as_echo "$as_me: Build platform specified as $BUILD" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Build platform specified as $BUILTFOR" >&5
+$as_echo "$as_me: Build platform specified as $BUILTFOR" >&6;}
 
 fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define BUILTFOR "$BUILTFOR"
+_ACEOF
+
 
 
 
@@ -10478,7 +10487,7 @@ _ACEOF
 fi
 done
 
-for ac_func in vsnprintf sysctlbyname
+for ac_func in vsnprintf sysctlbyname gettimeofday
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

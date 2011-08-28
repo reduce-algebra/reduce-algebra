@@ -1575,7 +1575,8 @@ true
 
 end;
 
-Time (counter 1): 9882 ms  plus GC time: 258 ms
-real	0m10.776s
-user	0m0.015s
-sys	0m0.106s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 10540 ms  plus GC time: 262 ms
+real	0m11.708s
+user	0m0.030s
+sys	0m0.154s

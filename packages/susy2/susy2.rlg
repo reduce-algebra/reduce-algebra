@@ -9569,7 +9569,8 @@ as5 := fer(f,2,1)*bos(f,0,0)
 
 end;
 
-Time (counter 1): 11237 ms  plus GC time: 162 ms
-real	0m12.160s
-user	0m0.031s
-sys	0m0.154s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 10081 ms  plus GC time: 138 ms
+real	0m10.760s
+user	0m0.045s
+sys	0m0.045s

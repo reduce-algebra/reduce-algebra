@@ -6784,7 +6784,8 @@ Bessel test complete.
 
 end;
 
-Time (counter 1): 1720 ms  plus GC time: 56 ms
-real	0m2.501s
-user	0m0.060s
-sys	0m0.154s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 1289 ms  plus GC time: 46 ms
+real	0m2.016s
+user	0m0.046s
+sys	0m0.122s

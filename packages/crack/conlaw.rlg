@@ -2642,7 +2642,8 @@ nodepnd {u,v,r,p_t,x,y,z,a1,a2,a3,b,s,r}$
 
 end$
 
-Time (counter 1): 185 ms
-real	0m14.877s
-user	0m0.077s
-sys	0m0.076s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 256 ms
+real	0m16.847s
+user	0m0.107s
+sys	0m0.138s

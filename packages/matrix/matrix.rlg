@@ -2195,7 +2195,8 @@ for each n in ws collect m1*n;
 
 end;
 
-Time (counter 1): 92 ms  plus GC time: 10 ms
-real	0m0.519s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 136 ms  plus GC time: 16 ms
+real	0m0.723s
 user	0m0.030s
-sys	0m0.092s
+sys	0m0.137s

@@ -598,7 +598,8 @@ c_exp := co1(dv3)
 
 end;
 
-Time (counter 1): 35 ms
-real	0m0.581s
-user	0m0.015s
-sys	0m0.107s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 23 ms
+real	0m0.643s
+user	0m0.091s
+sys	0m0.138s

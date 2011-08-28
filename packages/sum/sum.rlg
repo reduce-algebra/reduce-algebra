@@ -723,7 +723,8 @@ prod(e**(sin(n*x)),n);
 
 end;
 
-Time (counter 1): 70 ms  plus GC time: 2 ms
-real	0m0.494s
-user	0m0.030s
-sys	0m0.015s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 72 ms  plus GC time: 3 ms
+real	0m0.456s
+user	0m0.000s
+sys	0m0.046s

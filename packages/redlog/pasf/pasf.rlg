@@ -244,7 +244,8 @@ z - 3 > 0
 
 end;
 
-Time (counter 1): 5668 ms  plus GC time: 181 ms
-real	0m6.402s
-user	0m0.045s
-sys	0m0.045s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 7951 ms  plus GC time: 215 ms
+real	0m8.932s
+user	0m0.031s
+sys	0m0.215s

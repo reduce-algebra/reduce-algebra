@@ -826,7 +826,8 @@ limit(h,x,0);
 
 end;
 
-Time (counter 1): 722 ms  plus GC time: 16 ms
-real	0m1.328s
-user	0m0.015s
-sys	0m0.153s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 640 ms  plus GC time: 11 ms
+real	0m1.301s
+user	0m0.062s
+sys	0m0.168s

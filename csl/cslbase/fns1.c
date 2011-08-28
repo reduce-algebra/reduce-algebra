@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 60b3edf8 09-Aug-2011 */
+/* Signature: 29356c6b 28-Aug-2011 */
 
 #include "headers.h"
 
@@ -2061,6 +2061,40 @@ Lisp_Object MS_CDECL Ldatestamp(Lisp_Object nil, int nargs, ...)
     return onevalue(w);
 }
 
+Lisp_Object MS_CDECL Ltimeofday(Lisp_Object nil, int nargs, ...)
+/*
+ * This is like datestamp, in that it returns information about the
+ * current real time. However it returns a pair of two values, the
+ * first being in seconds and the second (when available) being in
+ * microseconds.
+ */
+{
+    Lisp_Object w;
+    time_t t = time(NULL);
+/*
+ * Note that the 32-bit time used here will wrap in 2038.
+ */
+    uint32_t n = (uint32_t)t, un = 0;
+#ifdef HAVE_SYS_TIME_H
+#ifdef HAVE_GETTIMEOFDAY
+/* If more precise informatuon is available then use it */
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    n = (uint32_t)tv.tv_sec;
+    un = (uint32_t)tv.tv_usec;
+#endif
+#endif
+    argcheck(nargs, 0, "datestamp");
+    CSL_IGNORE(nil);
+    if ((n & fix_mask) == 0) w = fixnum_of_int(n);
+    else if ((n & 0xc0000000U) == 0) w = make_one_word_bignum(n);
+    else w = make_two_word_bignum((n >> 31) & 1, n & 0x7fffffff);
+    errexit();
+    w = cons(w, fixnum_of_int(un));
+    errexit();
+    return onevalue(w);
+}
+
 #define STR24HDR (TAG_ODDS+TYPE_STRING+((24+CELL)<<10))
 
 static int getint(char *p, int len)
@@ -2242,6 +2276,7 @@ setup_type const funcs1_setup[] =
     {"constantp",               Lconstantp, too_many_1, wrong_no_1},
     {"date",                    Ldate1, wrong_no_nb, Ldate},
     {"datestamp",               wrong_no_na, wrong_no_nb, Ldatestamp},
+    {"timeofday",               wrong_no_na, wrong_no_nb, Ltimeofday},
     {"enable-errorset",         too_few_2, Lenable_errorset, wrong_no_2},
     {"enable-backtrace",        Lenable_backtrace, too_many_1, wrong_no_1},
     {"error",                   Lerror1, Lerror2, Lerror},

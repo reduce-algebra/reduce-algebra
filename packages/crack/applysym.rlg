@@ -430,7 +430,8 @@ lisp(depl!*:=nil)$
 
 end$
 
-Time (counter 1): 55 ms
-real	0m1.279s
-user	0m0.030s
-sys	0m0.121s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 75 ms
+real	0m2.029s
+user	0m0.075s
+sys	0m0.154s

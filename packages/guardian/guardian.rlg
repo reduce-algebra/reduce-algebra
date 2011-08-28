@@ -87,7 +87,8 @@ sqrt(1+x^2*y^2+(x^2+y^2-3));
 
 end;
 
-Time (counter 1): 24 ms
-real	0m0.720s
-user	0m0.062s
-sys	0m0.106s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 36 ms
+real	0m0.701s
+user	0m0.061s
+sys	0m0.061s

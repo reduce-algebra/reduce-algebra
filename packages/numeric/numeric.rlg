@@ -2235,7 +2235,8 @@ off rounded;
 
 end;
 
-Time (counter 1): 538 ms  plus GC time: 29 ms
-real	0m1.164s
-user	0m0.015s
-sys	0m0.185s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 461 ms  plus GC time: 35 ms
+real	0m1.019s
+user	0m0.030s
+sys	0m0.092s

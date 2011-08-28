@@ -409,7 +409,8 @@ xx;
 
 end;
 
-Time (counter 1): 44 ms
-real	0m0.577s
-user	0m0.015s
-sys	0m0.075s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 41 ms
+real	0m0.484s
+user	0m0.092s
+sys	0m0.030s

@@ -967,7 +967,8 @@ b = 0 or m <> 0
 
 end;
 
-Time (counter 1): 790 ms  plus GC time: 80 ms
-real	0m1.435s
-user	0m0.030s
-sys	0m0.107s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 797 ms  plus GC time: 43 ms
+real	0m1.527s
+user	0m0.076s
+sys	0m0.168s

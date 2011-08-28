@@ -81,10 +81,11 @@ AC_ARG_WITH(gcc3,
   [],
   [])
 
+# For now I will use the Snow Leopard SDK even if I am on Lion.
 AC_ARG_WITH(lionSDK,
   AC_HELP_STRING([--with-lionSDK], [can be used to disable use of MacOSX SDK 10.7]),
   [],
-  [])
+  [with_lionSDK="no"])
 
 AC_ARG_WITH(gui,
   AC_HELP_STRING([--with-gui], [this option is ignored here!]),
@@ -99,7 +100,7 @@ AC_ARG_WITH(build,
    [],
    [with_build="unknown"])
 
-BUILD="$with_build"
+BUILTFOR="$with_build"
 
 AC_ARG_WITH(pslbuild,
    AC_HELP_STRING([--with-pslbuild], [used to invoke the PSL version]),
@@ -108,17 +109,19 @@ AC_ARG_WITH(pslbuild,
 
 AC_DEFINE_UNQUOTED(PSLBUILD,["$with_pslbuild"], [Show where a matching PSL might live])
 
-if test "x$BUILD" = "xunknown"
+if test "x$BUILTFOR" = "xunknown"
 then
-  BUILD=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
-  AC_MSG_NOTICE([Build platform detected as $BUILD])
+  BUILTFOR=`eval "$SHELL $srcdir/../scripts/findhost.sh $host $ac_configure_args"`
+  AC_MSG_NOTICE([Build platform detected as $BUILTFOR])
 else
-  AC_MSG_NOTICE([Build platform specified as $BUILD])
+  AC_MSG_NOTICE([Build platform specified as $BUILTFOR])
 
 fi
 
-AC_SUBST(BUILD)
-AC_SUBST(PSLB1UILD)
+AC_DEFINE_UNQUOTED(BUILTFOR,["$BUILTFOR"], [Architecture this is built to run on])
+
+AC_SUBST(BUILTFOR)
+AC_SUBST(PSLBUILD)
 
 AC_SUBST(DLL_CFLAGS)
 
@@ -1261,7 +1264,7 @@ AC_CHECK_FUNCS([atexit ftruncate getcwd gethostbyaddr gethostbyname inet_ntoa])
 AC_CHECK_FUNCS([memmove memset mkdir pow rmdir socket sqrt strchr strdup])
 AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
-AC_CHECK_FUNCS([vsnprintf sysctlbyname])
+AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
 # sigsetjmp will be a macro not a function, and so the various predefined
 # tests are not very good at detecting it. So I have a custom test here.

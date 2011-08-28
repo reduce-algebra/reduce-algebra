@@ -1982,7 +1982,8 @@ nodepnd {f,g}$
 
 end$
 
-Time (counter 1): 7172 ms  plus GC time: 203 ms
-real	0m8.027s
-user	0m0.030s
-sys	0m0.169s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 6259 ms  plus GC time: 171 ms
+real	0m6.918s
+user	0m0.031s
+sys	0m0.106s

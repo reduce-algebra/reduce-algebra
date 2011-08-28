@@ -3580,7 +3580,8 @@ false
 
 end;
 
-Time (counter 1): 2263 ms  plus GC time: 85 ms
-real	0m2.889s
-user	0m0.030s
-sys	0m0.061s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 2519 ms  plus GC time: 88 ms
+real	0m3.169s
+user	0m0.031s
+sys	0m0.077s

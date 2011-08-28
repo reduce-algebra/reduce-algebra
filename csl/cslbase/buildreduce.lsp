@@ -673,8 +673,8 @@ symbolic procedure build_reduce_modules names;
 
 symbolic procedure test_a_package names;
   begin
-    scalar packge, logname, logtmp, logfile, start_time, start_gctime, gt;
-    scalar redef, quitfn, oll, rr, !*redefmsg, !*redeflg!*;
+    scalar packge, logname, logtmp, logfile;
+    scalar quitfn, oll, rr, !*redefmsg, !*redeflg!*, walltime, w;
     if not boundp 'cpulimit or
        not fixp (cpulimit := compress explodec cpulimit) or
        cpulimit < 1 then
@@ -692,7 +692,6 @@ symbolic procedure test_a_package names;
     !*int := nil;        % ... so that results are predictable.
     packge := car names;
     verbos nil;
-%    load!-latest!-patches();
 % Normally logs from testing go in testlogs/name.rlg, however you may
 % may sometimes want to put them somewhere else. If you do then launch reduce
 % along the lines
@@ -706,6 +705,8 @@ symbolic procedure test_a_package names;
     logname := concat(logname, concat(car names,".rlg"));
     logfile := open(logtmp, 'output);
     get_configuration_data();
+% Any messages generated while loading the package do NOT appear in the log
+    load!-package packge;
     begin
        scalar !*terminal!-io!*, !*standard!-output!*, !*error!-output!*,
               !*trace!-output!*, !*debug!-io!*, !*query!-io!*, !*errcont,
@@ -713,15 +714,12 @@ symbolic procedure test_a_package names;
        !*terminal!-io!* := !*standard!-output!* := !*error!-output!* := logfile;
        !*trace!-output!* := !*debug!-io!* := !*query!-io!* := logfile;
        oll := linelength 80;
-       princ date(); princ " run on "; printc cdr assoc('name, lispsystem!*);
-       load!-package packge;
+%      princ date(); princ " run on "; printc cdr assoc('name, lispsystem!*);
        if get(packge,'folder) then packge := get(packge,'folder);
        packge := concat("$srcdir/../../packages/",
                    concat(packge,
                      concat("/",
                        concat(car names,".tst"))));
-       redef := !*redefmsg;
-       !*redefmsg := nil;
        quitfn := getd 'quit;
 % At least at one stage at least one test file ends in "quit;" rather than
 % "end;" and the normal effect would be that this leads it to cancel
@@ -731,8 +729,6 @@ symbolic procedure test_a_package names;
 % that does not need an argument and that is "harmless".
        remd 'quit;
        putd('quit, 'expr, 'posn);
-       start_time := time();
-       start_gctime := gctime();
        !*mode := 'algebraic;
        !*extraecho := t;    % Ensure standard environment for the test...
        !*int := nil;        % ... so that results are predictable.
@@ -777,7 +773,8 @@ symbolic procedure test_a_package names;
 %          usually). So I do not constrain errors here. But if things were
 %          ever such that no errors were expected I could enforce that
 %          condition here.
-
+       walltime := timeofday();
+       eval '(resettime1);
        rr := resource!-limit(list('in_list1, mkquote packge, t),
                              cpulimit, % CPU time per test
                              conslimit,  % megaconses
@@ -785,24 +782,31 @@ symbolic procedure test_a_package names;
                              -1);  % Do not limit Lisp-level errors at all 
        erfg!* := nil;
        terpri();
+       princ "Tested on ";
+       princ cdr assoc('platform, lispsystem!*);
+       princ " CSL";
+       eval '(showtime1);
+       w := timeofday();
+       walltime := (car w - car walltime) . (cdr w - cdr walltime);
+       w := cdr walltime;
+       walltime := car walltime;
+       if w < 0 then << walltime := walltime - 1; w := w + 1000000 >>;
+       princ "real	";
+       princ (walltime/60);
+       princ "m";
+       princ remainder(walltime, 60);
+       princ ".";
+% This illustrates that I need a proper general formatted print mechanism!
+       w := (w + 500)/1000;
+       if w < 10 then princ "00"
+       else if w < 100 then princ "0";
+       princ w;
+       printc "s";
+       erfg!* := nil;
        putd('quit, car quitfn, cdr quitfn);
-       !*redefmsg := redef;
-       terpri();
-       prin2 "Time for test: ";
-       gt := time() - start_time;
-% I ensure that the reported time is at least 1 millisecond.
-       if gt = 0 then gt := 1;
-       prin2 gt;
-       prin2 " ms";
-       if (gt := gctime() - start_gctime) > 0 then <<
-           prin2 ", plus GC time: ";
-           prin2 gt;
-           prin2 " ms" >>;
-       terpri();
-% Temp while I watch things
        if atom rr then printc "+++++ Error: Resource limit exceeded";
-       princ "@@@@@ Resources used: "; print !*resources!*;
-       if !*savedef then mapstore t;
+%      princ "@@@@@ Resources used: "; print !*resources!*;
+%      if !*savedef then mapstore t;
        linelength oll
     end;
     close logfile;
@@ -816,134 +820,6 @@ symbolic procedure test_a_package names;
     else restart!-csl('(remake test_a_package), names)
   end;
 
-symbolic procedure report_incomplete_tests names;
-  begin
-% Displays information about what "complete_tests" would do
-    scalar packge, tfile, logname;
-    scalar date1, date2, date3;
-    get_configuration_data();
-    for each packge in names do <<
-       tfile := packge;
-       if get(packge,'folder) then tfile := get(packge,'folder);
-       tfile := concat("$srcdir/../../packages/",
-                   concat(tfile,
-                      concat("/",
-                        concat(packge,".tst"))));
-       if boundp '!@log and stringp symbol!-value '!@log then
-           logname := symbol!-value '!@log
-       else logname := "testlogs";
-       logname := concat(logname, concat("/", concat(packge,".rlg")));
-       date1 := filedate "reduce.img";
-       date2 := filedate tfile;
-       date3 := filedate logname;
-       if null date1 then date1 := date();
-       if null date2 then date2 := date();
-       if null date3 or
-          datelessp(date3, date1) or datelessp(date3, date2) then <<
-             princ "NEED TO TEST: "; print packge >> >>
-  end;
-
-symbolic procedure complete_tests names;
-  begin
-% Just like the previous testing code except that logs that are already up
-% to date are not re-generated.
-    scalar packge, tfile, logname, logfile, logtmp,
-           start_time, start_gctime, gt, rr;
-    scalar date1, date2, date3, oll, !*redefmsg, !*redeflg!*;
-    if not boundp 'cpulimit or
-       not fixp (cpulimit := compress explodec cpulimit) or
-       cpulimit < 1 then
-       cpulimit := if memq('jlisp, lispsystem!*) then 1000 else 180;
-    if not boundp 'conslimit or
-       not fixp (conslimit := compress explodec conslimit) or
-       conslimit < 1 then
-       conslimit := 2000;
-    !*backtrace := nil;
-    !*errcont := t;
-    !*extraecho := t;    % Ensure standard environment for the test...
-    !*int := nil;        % ... so that results are predictable.
-    verbos nil;
-    get_configuraion_data();
-top:
-    tfile := packge := car names;
-    if get(tfile,'folder) then tfile := get(tfile,'folder);
-    tfile := concat("$srcdir/../../packages/",
-                concat(tfile,
-                  concat("/",
-                    concat(packge,".tst"))));
-    if boundp '!@log and stringp symbol!-value '!@log then
-        logname := symbol!-value '!@log
-    else logname := "testlogs";
-    logname := concat(logname, "/");
-    logtmp  := concat(logname, concat(packge, ".tmp"));
-    logname := concat(logname, concat(packge, ".rlg"));
-    date1 := filedate "reduce.img";
-    date2 := filedate tfile;
-    date3 := filedate logname;
-    if null date1 then date1 := date();
-    if null date2 then date2 := date();
-    if null date3 or
-       datelessp(date3, date1) or datelessp(date3, date2) then <<
-       princ "TESTING: "; print packge;
-       window!-heading list!-to!-string append(explodec "[Testing] ",
-                                               explodec packge);
-       logfile := open(logtmp, 'output);
-       start_time := time();
-       start_gctime := gctime();
-       begin
-          scalar !*terminal!-io!*, !*standard!-output!*, !*error!-output!*,
-                 !*trace!-output!*, !*debug!-io!*, !*query!-io!*, !*errcont,
-                 outputhandler!*, redef, quitfn;
-          !*terminal!-io!* := !*standard!-output!* := !*error!-output!* := logfile;
-          !*trace!-output!* := !*debug!-io!* := !*query!-io!* := logfile;
-          oll := linelength 80;
-          princ date(); princ " run on ";
-          printc cdr assoc('name, lispsystem!*);
-          load!-package packge;
-          !*mode := 'algebraic;
-          !*extraecho := t;    % Ensure standard environment for the test...
-          !*int := nil;        % ... so that results are predictable.
-          redef := !*redefmsg;
-          !*redefmsg := nil;
-          quitfn := getd 'quit;
-          remd 'quit;
-          putd('quit, 'expr, 'posn);
-          !*errcont := t;
-          rr := resource!-limit(list('in_list1, mkquote tfile, t),
-                                cpulimit,
-                                conslimit,
-                                10000,% allow ten megabytes of I/O
-                                -1);  % Do not limit Lisp-level errors at all 
-          erfg!* := nil;
-          terpri();
-          putd('quit, car quitfn, cdr quitfn);
-          !*redefmsg := redef;
-          terpri();
-          prin2 "Time for test: ";
-          gt := time() - start_time;
-          if gt = 0 then gt := 1;
-          prin2 gt;
-          prin2 " ms";
-          if (gt := gctime() - start_gctime) > 0 then <<
-              prin2 ", plus GC time: ";
-              prin2 gt;
-              prin2 " ms" >>;
-          if atom rr then printc "+++++ Error: Resource limit exceeded";
-          princ "@@@@@ Resources used: "; print !*resources!*;
-          if !*savedef then mapstore t;
-          linelength oll
-       end;
-       close logfile;
-       delete!-file logname;
-       rename!-file(logtmp, logname) >>
-    else if cdr names then <<
-       names := cdr names;
-       go to top >>;
-    names := cdr names;
-    if null names then restart!-csl t
-    else restart!-csl('(remake complete_tests), names)
-  end;
-
 symbolic procedure profile_compare_fn(p, q);
    (float caddr p/float cadr p) < (float caddr q/float cadr q);
 
@@ -951,19 +827,6 @@ symbolic procedure profile_compare_fn(p, q);
 % This function runs a test file and sorts out what the top 350
 % functions in it. It appends their names to "profile.dat".
 %
-
-% I need to talk a little about the interaction between profiling and
-% patching.  Well firstly I arrange that whenever I run a profiling job
-% I rebuild REDUCE with the latest paches. This may involve re-compiling
-% the patches.red source.  Thus when a test is run the current patches
-% will be in place. Patched functions are first defined with funny names
-% (including a hash based on their definition) and then copied into place
-% when a package is loaded. However MAPSTORE and the CSL instrumentation
-% attributes their cost to the hash-extended name even though the
-% functions may have been called via the simple one. Thus in the face
-% of patches one can expect the profile data to refer to some names that
-% are long and curious looking. Throughout all this I assume that there will
-% never be embarassing collisions in my hash functions.
 
 symbolic procedure profile_a_package names;
   begin
@@ -1073,39 +936,40 @@ symbolic procedure read_file f1;
 % memory at the start of processing. This makes life easier for me
 % and the REDUCE log files are small compared with current main memory sizes.
     scalar r, w, w1, n, x;
-    scalar p1, p2, p3, p4, p5, p6, p7;
-% To make comparisons between my CSL logs and some of the Hearn "reference
+    scalar p1, p2, p3, p4, p5, p6, p7, p8;
+% To make comparisons between my CSL logs and some of the "reference
 % logs", which are created using a different script, I will discard
 % lines that match certain patterns!  Note that if the reference logs change
 % the particular tests I perform here could become out of date! Also if any
 % legitimate test output happened to match one of the following strings
 % I would lose out slightly.
-    p1 := explodec "REDUCE 3.8,";
-    p2 := explodec "1: 1:";
-    p3 := explodec "2: 2: 2:";
-    p4 := explodec "3: 3: ";    % a prefix to first real line of output.
-    p5 := explodec "4: 4: 4:";
-    p6 := explodec "5: 5:";
-    p7 := explodec "Quittin";   % nb left so that the "g" remains!
-                                % this is so that the match is detected.
+    p1 := explodec "Time: ";
+    p2 := explodec "user	";
+    p3 := explodec "sys	";
+    p4 := explodec "time to formulate conditions:";
+    p5 := explodec "CRACK needed :";
+    p6 := explodec "time for initializations:";
+    p7 := explodec "Tested on ";
+    p8 := explodec "Total time taken:";
     r := nil;
     n := 0;
     while not ((w := readline f1) = !$eof!$) do <<
        w1 := explodec w;
-       if x := trim_prefix(p4, w1) then
-           r := ((n := n + 1) . list!-to!-string x) . r
-       else if trim_prefix(p1, w1) or
-               trim_prefix(p2, w1) or
-               trim_prefix(p3, w1) or
-               trim_prefix(p5, w1) or
-               trim_prefix(p6, w1) or
-               trim_prefix(p7, w1) then nil
+       if trim_prefix(p1, w1)
+          or trim_prefix(p2, w1)
+          or trim_prefix(p3, w1)
+          or trim_prefix(p4, w1)
+          or trim_prefix(p5, w1)
+          or trim_prefix(p6, w1)
+          or trim_prefix(p7, w1)
+          or trim_prefix(p8, w1)
+          then n := n + 1
        else r := ((n := n + 1) . w) . r >>;
     w := r;
 % The text scanned for here is expected to match that generated by the
 % test script. I locate the last match in a file, extract the numbers
 % and eventually write them to testlogs/times.log
-    n := explodec "Time for test:";
+    n := explodec "Time (counter 1):";
     while w and null (x := trim_prefix(n, explodec cdar w)) do w := cdr w;
     if null w then <<
        time_info := nil;
@@ -1123,6 +987,10 @@ symbolic procedure read_file f1;
     return reversip r;
   end;
 
+fluid '(!*insist_on_exact_match);
+
+!*insist_on_exact_match := t;
+
 symbolic procedure roughly_equal(a, b);
   begin
 % a and b are strings repesenting lines of text. I want to test if they
@@ -1131,6 +999,7 @@ symbolic procedure roughly_equal(a, b);
     if a = b then return t;
     a := explodec a;
     b := explodec b;
+    if !*exist_on_exact_match then return (a = b);
 top:
 % First deal with end of line matters.
     if null a and null b then return t
@@ -1252,9 +1121,11 @@ symbolic procedure prinright(x, w);
     princ x;
   end;
 
+fluid '(files_with_differences);
+
 symbolic procedure file_compare(f1, f2, name);
   begin
-    scalar i, j, d1, d2, t1, gt1, t2, gt2, time_info;
+    scalar i, j, d1, d2, t1, gt1, t2, gt2, time_info, fdiffer;
     d1 := read_file f1;
     if null time_info then t1 := gt1 := 0
     else << t1 := car time_info; gt1 := cdr time_info >>;
@@ -1313,18 +1184,22 @@ top:
        if d2 then terpri();
        i := 0;
        while d2 and i < 20 do <<
+          fdiffer := t;
           princ "REF "; princ caar d2; princ ":"; ttab 10; printc cdar d2;
           d2 := cdr d2;
           i := i + 1 >>;
        if d2 then printc "...";
+       if fdiffer then files_with_differences := name . files_with_differences;
        return >>;
     if null d2 then <<      % end of other file
        i := 0;
        while d1 and i < 20 do <<
+          fdiffer := t;
           princ "NEW "; princ caar d1; princ ":"; ttab 10; printc cdar d1;
           d1 := cdr d1;
           i := i + 1 >>;
        if d1 then printc "...";
+       if fdiffer then files_with_differences := name . files_with_differences;
        return >>;
 % The test "roughly_equal" compares allowing some tolerance on floating
 % point values. This is because REDUCE uses platform libraries for
@@ -1340,11 +1215,13 @@ top:
 % one or other file. This special case is addressed here because it
 % appears more common a possibility than I had expected.
     if cdar d1 = "" and cdr d1 and roughly_equal(cdadr d1, cdar d2) then <<
+       fdiffer := t;
        princ "NEW "; princ caar d1; princ ":"; ttab 10; printc cdar d1;
        d1 := cdr d1;
        go to top >>
     else if cdar d1 = "" and cdr d1 and cdadr d1 = "" and cddr d1 and
        roughly_equal(cdaddr d1, cdar d2) then <<
+       fdiffer := t;
        princ "NEW "; princ caar d1; princ ":"; ttab 10; printc cdar d1;
        d1 := cdr d1;
        princ "NEW "; princ caar d1; princ ":"; ttab 10; printc cdar d1;
@@ -1352,11 +1229,13 @@ top:
        go to top >>
     else if cdar d2 = "" and cdr d2 and
        roughly_equal(cdadr d2, cdar d1) then <<
+       fdiffer := t;
        princ "REF "; princ caar d2; princ ":"; ttab 10; printc cdar d2;
        d2 := cdr d2;
        go to top >>
     else if cdar d2 = "" and cdr d2 and cdadr d2 = "" and cddr d2 and
        roughly_equal(cdaddr d2, cdar d1) then <<
+       fdiffer := t;
        princ "REF "; princ caar d2; princ ":"; ttab 10; printc cdar d2;
        d2 := cdr d2;
        princ "REF "; princ caar d2; princ ":"; ttab 10; printc cdar d2;
@@ -1369,13 +1248,20 @@ inner:
     if in_sync(d1, i, d2, j) then <<
        terpri();
        for k := 1:i do <<
+          if not trim_prefix(explodec "Time (counter 1)", explodec cdar d1) and
+             not trim_prefix(explodec "real	", explodec cdar d1) then
+             fdiffer := t;
           princ "NEW "; princ caar d1; princ ":"; ttab 10; printc cdar d1;
           d1 := cdr d1 >>;
        for k := 1:j do <<
+          if not trim_prefix(explodec "Time (counter 1)", explodec cdar d2) and
+             not trim_prefix(explodec "real	", explodec cdar d2) then
+             fdiffer := t;
           princ "REF "; princ caar d2; princ ":"; ttab 10; printc cdar d2;
           d2 := cdr d2 >>;
-% Should be in step again here.
-       if null d1 then return
+       if null d1 then <<
+          if fdiffer then files_with_differences := name . files_with_differences;
+          return >>
        else go to top >>;
     j := j + 1;
     i := i - 1;
@@ -1387,17 +1273,20 @@ inner:
     terpri();
     i := 0;
     while d2 and i < 20 do <<
+       fdiffer := t;
        princ "REF "; princ caar d2; princ ":"; ttab 10; printc cdar d2;
        d2 := cdr d2;
        i := i+1 >>;
     if d2 then printc "...";
     i := 0;
     while d1 and i < 20 do <<
+       fdiffer := t;
        princ "NEW "; princ caar d1; princ ":"; ttab 10; printc cdar d1;
        d1 := cdr d1;
        i := i+1 >>;
     if d1 then printc "...";
-    printc "Comparison failed."
+    printc "Comparison failed.";
+    if fdiffer then files_with_differences := name . files_with_differences;
   end;
 
 fluid '(which_module);
@@ -1405,7 +1294,8 @@ fluid '(which_module);
 symbolic procedure check_a_package;
   begin
     scalar oll, names, p1, logname, mylogname, mylog, reflogname, reflog,
-           time_data, time_ratio, gc_time_ratio, log_count;
+           time_data, time_ratio, gc_time_ratio, log_count,
+           files_with_differences;
     get_configuration_data();
     if boundp 'which_module and symbol!-value 'which_module and
        not (symbol!-value 'which_module = "") then <<
@@ -1466,6 +1356,11 @@ symbolic procedure check_a_package;
         set!-print!-precision p1 >>;
      close wrs time_data;
      linelength oll;
+     if null files_with_differences then printc "+++ All log files match"
+     else <<
+       printc "+++ The following logs differ:";
+       for each x in files_with_differences do <<
+          ttab 4; print x >> >>;
   end;
 
 
@@ -1581,14 +1476,6 @@ symbolic restart!-csl nil;
 (load!-module 'cslprolo)          % CSL specific code.
 
 (setq loaded!-packages!* '(cslcompat user cslprolo))
-
-% NB I will re-load the "patches" module when REDUCE is started
-% if there is a version newer than the one I load up here. Note that
-% if there had not been a "patches.red" file I will not have a module to load
-% here.
-%
-% (cond
-%    ((modulep 'patches) (load!-module 'patches)))
 
 (load!-package 'rlisp)
 

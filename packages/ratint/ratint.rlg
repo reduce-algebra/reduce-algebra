@@ -183,7 +183,8 @@ ratint(1,x^5+1,x);
 
 end;
 
-Time (counter 1): 43 ms  plus GC time: 26 ms
-real	0m0.767s
-user	0m0.060s
-sys	0m0.184s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 52 ms  plus GC time: 23 ms
+real	0m0.582s
+user	0m0.091s
+sys	0m0.061s

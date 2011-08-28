@@ -125,7 +125,8 @@ new species: a4
 
 end;
 
-Time (counter 1): 21 ms  plus GC time: 5 ms
-real	0m0.590s
-user	0m0.000s
-sys	0m0.107s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 22 ms  plus GC time: 4 ms
+real	0m0.680s
+user	0m0.015s
+sys	0m0.152s

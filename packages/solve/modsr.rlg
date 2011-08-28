@@ -229,7 +229,8 @@ length ws;
 
 end;
 
-Time (counter 1): 17 ms
-real	0m1.373s
-user	0m0.015s
-sys	0m0.091s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 13 ms
+real	0m0.712s
+user	0m0.124s
+sys	0m0.090s

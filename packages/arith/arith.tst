@@ -1023,4 +1023,6 @@ begin scalar x;
         terpr(i,5)>>
  end$
 
+algebraic;
+
 end;

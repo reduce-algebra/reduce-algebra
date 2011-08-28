@@ -2491,7 +2491,8 @@ comment That's all, folks;
 
 end;
 
-Time (counter 1): 333 ms  plus GC time: 20 ms
-real	0m1.288s
-user	0m0.031s
-sys	0m0.108s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 198 ms  plus GC time: 10 ms
+real	0m0.685s
+user	0m0.015s
+sys	0m0.137s

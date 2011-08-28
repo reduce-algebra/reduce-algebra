@@ -1282,7 +1282,8 @@ j := mat((sqrt(----*b  + 6*b - 12)*i - (---*b - 2),0),
 
 end;
 
-Time (counter 1): 615 ms  plus GC time: 21 ms
-real	0m1.251s
-user	0m0.030s
-sys	0m0.153s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 618 ms  plus GC time: 18 ms
+real	0m1.438s
+user	0m0.123s
+sys	0m0.122s

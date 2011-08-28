@@ -423,7 +423,8 @@ factorize(x**3-3);
 
 end;
 
-Time (counter 1): 41 ms  plus GC time: 9 ms
-real	0m0.491s
-user	0m0.015s
-sys	0m0.091s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 81 ms  plus GC time: 7 ms
+real	0m0.614s
+user	0m0.045s
+sys	0m0.154s

@@ -252,7 +252,8 @@ off tr_lie$
 
 end$
 
-Time (counter 1): 191 ms  plus GC time: 8 ms
-real	0m0.745s
-user	0m0.045s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 133 ms  plus GC time: 8 ms
+real	0m0.599s
+user	0m0.015s
 sys	0m0.076s

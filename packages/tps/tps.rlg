@@ -382,7 +382,8 @@ y + ---*y  + ----*y  + -----*y  + O(y )
 
 end;
 
-Time (counter 1): 51 ms  plus GC time: 10 ms
-real	0m0.636s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 50 ms  plus GC time: 12 ms
+real	0m0.586s
 user	0m0.030s
-sys	0m0.170s
+sys	0m0.122s

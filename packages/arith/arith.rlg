@@ -2379,12 +2379,14 @@ begin scalar x;
 1.0  1.0  1.0  1.0  1.0  
 
 
+algebraic;
+
+
+
 end;
 
-nil
-Time (counter 1): 60 ms  plus GC time: 7 ms
-
-nil
-real	0m0.486s
-user	0m0.015s
-sys	0m0.107s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 59 ms  plus GC time: 7 ms
+real	0m0.588s
+user	0m0.030s
+sys	0m0.154s

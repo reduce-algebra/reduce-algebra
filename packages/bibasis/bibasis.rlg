@@ -196,7 +196,8 @@ bibasis(polys, vars, degrevlex, t);
 
 end$
 
-Time (counter 1): 12 ms
-real	0m0.633s
-user	0m0.060s
-sys	0m0.139s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 21 ms
+real	0m0.664s
+user	0m0.045s
+sys	0m0.138s

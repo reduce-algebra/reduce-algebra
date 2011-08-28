@@ -166,6 +166,7 @@ class Fns3
         {"return",                      new ReturnFn()},
         {"reverse",                     new ReverseFn()},
         {"reversip",                    new ReversipFn()},
+        {"reversip2",                   new ReversipFn()},
         {"nreverse",                    new ReversipFn()},
         {"rplaca",                      new RplacaFn()},
         {"rplacd",                      new RplacdFn()},
@@ -180,6 +181,8 @@ class Fns3
         {"set-autoload",                new Set_autoloadFn()},
         {"set-help-file",               new Set_help_fileFn()},
         {"set-print-precision",         new Set_print_precisionFn()},
+        {"setprintprecision",           new Set_print_precisionFn()},
+        {"getprintprecision",           new Get_print_precisionFn()},
         {"setpchar",                    new SetpcharFn()},
         {"simple-string-p",             new Simple_string_pFn()},
         {"simple-vector-p",             new Simple_vector_pFn()},
@@ -197,7 +200,11 @@ class Fns3
         {"subla",                       new SublaFn()},
         {"sublis",                      new SublisFn()},
         {"subst",                       new SubstFn()},
+        {"substq",                      new SubstqFn()},
         {"sxhash",                      new SxhashFn()},
+// equalhash is NOT really sorted out yet since it ought not to
+// descend through vectors.
+        {"equalhash",                   new SxhashFn()},
         {"symbol-argcount",             new Symbol_argcountFn()},
         {"symbol-env",                  new Symbol_envFn()},
         {"symbol-fastgets",             new Symbol_fastgetsFn()},
@@ -2058,6 +2065,14 @@ class Set_print_precisionFn extends BuiltinFunction
     }
 }
 
+class Get_print_precisionFn extends BuiltinFunction
+{
+    public LispObject op0() throws Exception
+    {
+        return LispInteger.valueOf(Jlisp.printprec);
+    }
+}
+
 class SetpcharFn extends BuiltinFunction
 {
     public LispObject op1(LispObject arg1) throws Exception
@@ -2286,6 +2301,31 @@ class SubstFn extends BuiltinFunction
         LispObject cc = c;
         LispObject aa = subst(a, b, cc.car);
         LispObject bb = subst(a, b, cc.cdr);
+        if (aa == cc.car && bb == cc.cdr) return c;
+        else return new Cons(aa, bb);
+    }
+}
+
+class SubstqFn extends BuiltinFunction
+{
+    public LispObject opn(LispObject [] args) throws Exception
+    {
+        if (args.length != 3)
+            return error("substq called with " + args.length +
+                "args when 1 to 3 expected");
+        return substq(args[0], args[1], args[2]);
+    }
+
+    LispObject substq(LispObject a, LispObject b, LispObject c) throws ResourceException
+    {
+        if (b instanceof LispNumber)
+        {   if (b.lispequals(c)) return a;
+        }
+        else if (b == c) return a;
+        if (c.atom) return c;
+        LispObject cc = c;
+        LispObject aa = substq(a, b, cc.car);
+        LispObject bb = substq(a, b, cc.cdr);
         if (aa == cc.car && bb == cc.cdr) return c;
         else return new Cons(aa, bb);
     }

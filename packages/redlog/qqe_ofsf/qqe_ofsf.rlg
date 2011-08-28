@@ -78,7 +78,8 @@ lhead(ltail(ltail(rtail(rtail(q))))) - rhead(ltail(ltail(rtail(rtail(q))))) = 0
 
 end;
 
-Time (counter 1): 25 ms  plus GC time: 2 ms
-real	0m0.476s
-user	0m0.030s
-sys	0m0.060s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 28 ms  plus GC time: 2 ms
+real	0m0.527s
+user	0m0.015s
+sys	0m0.152s

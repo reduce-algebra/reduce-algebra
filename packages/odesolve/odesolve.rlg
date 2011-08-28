@@ -325,7 +325,8 @@ The Wronskian is --------
 
 end;
 
-Time (counter 1): 378 ms  plus GC time: 19 ms
-real	0m1.037s
-user	0m0.092s
-sys	0m0.122s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 273 ms  plus GC time: 11 ms
+real	0m0.730s
+user	0m0.015s
+sys	0m0.091s

@@ -12,8 +12,9 @@
 # in cygwin and so many bash scripts run very slowly - especially the
 # "configure" ones.
 
-# I force recompilation of the GUI library, re-profile the system,
-# re-generates C code etc.
+# I force recompilation of the GUI library, re-generates C code etc.
+# With the --reprofile flag this re-makes profile information for CSL.
+# After large changes or before a bif release that is strongly advised.
 
 # On Linux64 this builds
 #    Java, PSL-linux-64, CSL-linux-64, CSL-linux-32, CSL-windows-32 and
@@ -47,10 +48,13 @@ rm -rf cslbuild/$h/lib cslbuild/$h/include cslbuild/$h/bin
 pushd cslbuild/$h
   make clean
   rm -rf lib include bin
+  if test "x$1" = "x--reprofile"
+  then
 # Note that I will only need to profile and regenerate c-code
 # once since the relevant files will be shared across all versions
 # build on this machine.
-  make profile
+    make profile
+  fi
   make c-code
   cp ../generated-c/* ../../csl/generated-c
   make

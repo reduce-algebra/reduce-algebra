@@ -2838,7 +2838,8 @@ clear x,y,z,u,v,w,C,S;
 
 end;
 
-Time (counter 1): 2543 ms  plus GC time: 101 ms
-real	0m3.303s
-user	0m0.030s
-sys	0m0.153s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 1945 ms  plus GC time: 79 ms
+real	0m2.708s
+user	0m0.045s
+sys	0m0.108s

@@ -10,7 +10,7 @@
 linelength 72;
 
 
-t
+80
 
 off allfac;
 
@@ -1229,7 +1229,8 @@ deflineint(a,curve,phi,0,2*pi);
 
 end;
 
-Time (counter 1): 65 ms  plus GC time: 24 ms
-real	0m0.674s
+Tested on x86_64-w64-windows CSL
+Time (counter 1): 54 ms  plus GC time: 27 ms
+real	0m0.746s
 user	0m0.061s
-sys	0m0.123s
+sys	0m0.137s
