@@ -978,7 +978,7 @@ symbolic procedure read_file f1;
     w := n := nil;
     while digit car x do << w := car x . w; x := cdr x >>;
     while eqcar(x, '! ) do x := cdr x;
-    if x := trim_prefix(explodec "ms, plus GC time:", x) then <<
+    if x := trim_prefix(explodec "ms  plus GC time:", x) then <<
         while eqcar(x, '! ) do x := cdr x;
         while digit car x do << n := car x . n; x := cdr x >> >>;
     if null w then w := '(!0);
