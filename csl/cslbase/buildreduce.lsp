@@ -954,7 +954,7 @@ symbolic procedure read_file f1;
 % memory at the start of processing. This makes life easier for me
 % and the REDUCE log files are small compared with current main memory sizes.
     scalar r, w, w1, n, x;
-    scalar p1, p2, p3, p4, p5, p6, p7, p8;
+    scalar p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12;
 % To make comparisons between my CSL logs and some of the "reference
 % logs", which are created using a different script, I will discard
 % lines that match certain patterns!  Note that if the reference logs change
@@ -969,6 +969,10 @@ symbolic procedure read_file f1;
     p6 := explodec "time for initializations:";
     p7 := explodec "Tested on ";
     p8 := explodec "Total time taken:";
+    p9 := explodec "*** turned off switch";
+    p10 := explodec "+++ levelt compiled";
+    p11 := explodec "Request to set constant bitsperword";
+    p12 := explodec "*** (levelt): base";
     r := nil;
     n := 0;
     while not ((w := readline f1) = !$eof!$) do <<
@@ -981,6 +985,10 @@ symbolic procedure read_file f1;
           or trim_prefix(p6, w1)
           or trim_prefix(p7, w1)
           or trim_prefix(p8, w1)
+          or trim_prefix(p9, w1)
+          or trim_prefix(p10, w1)
+          or trim_prefix(p11, w1)
+          or trim_prefix(p12, w1)
           then n := n + 1
        else r := ((n := n + 1) . w) . r >>;
     w := r;

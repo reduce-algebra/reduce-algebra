@@ -142,8 +142,22 @@ quit$
 XXX
 cat howlong.tmp >> csl-times/$p.rlg.tmp
 echo -n CSL...
-sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | sed -e '/^Total time taken:/d; /^Number of garbage/d; /^Time: /d; /^CRACK needed :/d; /^time for init/d; /^time to formulate/d; /\*\*\* turned off switch/d' >csl-times/$p.rlg.orig
-sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" -e "/OMIT/,/TIMO/d" <csl-times/$p.rlg.tmp | sed -e "1s/^1: //" | sed -e '$s/^1: //' | sed -e '/^Total time taken:/d; /^Number of garbage/d; /^Time: /d; /^CRACK needed :/d; /^time for init/d; /^time to formulate/d; /\*\*\* turned off switch/d' >csl-times/$p.rlg
+sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg |
+  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
+      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
+      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
+      -e '/^Request to set constant bitsperword/d' \
+      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+       >csl-times/$p.rlg.orig
+sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+    -e "/OMIT/,/TIMO/d" <csl-times/$p.rlg.tmp | \
+  sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
+      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
+      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
+      -e '/^Request to set constant bitsperword/d' \
+      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+       >csl-times/$p.rlg
 diff -B -w csl-times/$p.rlg.orig csl-times/$p.rlg >csl-times/$p.rlg.diff
 if test "$psl" = "yes"
 then
@@ -156,7 +170,8 @@ if test -s csl-times/$p.rlg.diff
   else echo $n "OK! " ; rm csl-times/$p.rlg.diff csl-times/$p.rlg.orig
 fi
 echo "Tested on $mc CSL" > csl-times/$p.time
-sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | sed -e '/^1: /d;' >>csl-times/$p.time
+sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | \
+  sed -e '/^1: /d;' >>csl-times/$p.time
 rm csl-times/$p.rlg.tmp
 
 fi # CSL case
@@ -181,15 +196,30 @@ quit$
 XXX
 cat howlong.tmp >> psl-times/$p.rlg.tmp
 echo -n "PSL..."
-sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | sed -e '/^Total time taken:/d; /^Number of garbage/d; /^Time: /d; /^CRACK needed :/d; /^time for init/d; /^time to formulate/d; /\*\*\* turned off switch/d' >psl-times/$p.rlg.orig
-sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | sed -e "1s/^1: //" | sed -e '$s/^1: //' | sed -e '/^Total time taken:/d; /^Number of garbage/d; /^Time: /d; /^CRACK needed :/d; /^time for init/d; /^time to formulate/d; /\*\*\* turned off switch/d' >psl-times/$p.rlg
+sed -e "/^Tested on /,//d" <$here/packages/$d/$p.rlg | \
+  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
+      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
+      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
+      -e '/^Request to set constant bitsperword/d' \
+      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+     >psl-times/$p.rlg.orig
+sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
+    -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
+  sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+  sed -e '/^Total time taken:/d; /^Number of garbage/d' \
+      -e '/^Time: /d; /^CRACK needed :/d; /^time for init/d' \
+      -e '/^+++ levelt compiled/d; /^\*\*\* (levelt): base/d' \
+      -e '/^Request to set constant bitsperword/d' \
+      -e '/^time to formulate/d; /\*\*\* turned off switch/d' \
+     >psl-times/$p.rlg
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
   then echo "diff is in psl-times/$p.rlg.diff"
   else echo "OK! " ; rm psl-times/$p.rlg.diff psl-times/$p.rlg.orig
 fi
 echo "Tested on $mc PSL" > psl-times/$p.time
-sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | sed -e '/^1: /d;' >psl-times/$p.time
+sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
+  sed -e '/^1: /d;' >psl-times/$p.time
 rm  psl-times/$p.rlg.tmp
 
 fi # PSL case
