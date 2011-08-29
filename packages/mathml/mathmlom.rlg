@@ -3294,7 +3294,7 @@ om2mml();
 </OMOBJ>
 
 Intermediate representation:
-(plus nil f d (plus nil 1 1.0e10))
+(plus nil f d (plus nil 1 1.0e+10))
 
 <math>
    <apply><plus/>
@@ -3302,7 +3302,7 @@ Intermediate representation:
       <ci> d </ci>
       <apply><plus/>
          <cn type="integer"> 1 </cn>
-         <cn type="real"> 1.0e10 </cn>
+         <cn type="real"> 1.0e+10 </cn>
       </apply>
    </apply>
 </math>       
