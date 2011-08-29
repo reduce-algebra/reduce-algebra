@@ -418,14 +418,16 @@ symbolic procedure rcons u;
        else typerr(x,"list or bag")
    end;
 
-remflag('(isimpa),'lose);
-
-symbolic procedure isimpa(u,v);
- if eqcar(u,'list) or !*!:avoid or (atom u and get(u,'rtype) eq 'hvector)
-   then <<!*!:avoid:=nil; u>>
- else !*q2a1(isimpq simp u,v);
-
-flag('(isimpa),'lose);
+%remflag('(isimpa),'lose);
+%
+% The version here is now in hephys so this copy is no longer needed
+%
+%symbolic procedure isimpa(u,v);
+% if eqcar(u,'list) or !*!:avoid or (atom u and get(u,'rtype) eq 'hvector)
+%   then <<!*!:avoid:=nil; u>>
+% else !*q2a1(isimpq simp u,v);
+%
+%flag('(isimpa),'lose);
 
 put('cons,'setqfn,'(lambda (u v w) (setpart!* u v w)));
 

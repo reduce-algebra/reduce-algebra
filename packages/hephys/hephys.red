@@ -238,8 +238,20 @@ symbolic smacro procedure multfs(u,v);
 
 put('rcons,'cleanupfn,'isimpa);
 
+fluid '(!*!:avoid);
+
+% I have moved the definition from assist/baglist.red into here in the
+% hope that it will stilll remain valid in this context. Doing so avoids
+% having a function redefinition and use of the 'lose flag and following
+% potential confusion.
+
 symbolic procedure isimpa(u,v);
-   if eqcar(u,'list) then u else !*q2a1(isimpq simp u,v);
+   if eqcar(u,'list) or
+      !*!:avoid or
+      (atom u and get(u, 'rtype) eq 'hvector) then <<
+      !*!:avoid := nil;
+      u >>
+    else !*q2a1(isimpq simp u,v);
 
 symbolic procedure isimpq u;
    begin scalar ndims!*;
