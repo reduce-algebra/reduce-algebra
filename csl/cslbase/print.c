@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 2e06a3ca 28-Aug-2011 */
+/* Signature: 7e83e8be 29-Aug-2011 */
 
 #include "headers.h"
 
@@ -2425,11 +2425,9 @@ case TAG_VECTOR:
             putc_stream('#', active_stream); putc_stream('F', active_stream);
             putc_stream('D', active_stream); putc_stream('(', active_stream);
             len = (len-CELL)/8;
-/* I will not worry about print-precision bugs here... */
             for (k=0; k<len; k++)
             {   sprintf(my_buff, "%#.*g",
                     (int)print_precision, delt(stack[0], k));
-                prin_buf(my_buff, k != 0);
                 {   char *dot = strrchr(my_buff, '.');
                     if (dot == NULL)
                     {   char *e;
@@ -2447,6 +2445,7 @@ case TAG_VECTOR:
                         }
                     }
                 }
+                prin_buf(my_buff, k != 0);
             }
             outprefix(NO, 1);
             putc_stream(')', active_stream);
@@ -2766,27 +2765,8 @@ case TAG_BOXFLOAT:
                                   (long)p[1-q], (long)p[q],
                                   double_float_val(u));
             }
-            else
-            {   sprintf(my_buff, "%#.*g", (int)print_precision,
-                                 double_float_val(u));
-                {   char *dot = strrchr(my_buff, '.');
-                    if (dot == NULL)
-                    {   char *e;
-                        if ((e = strrchr(my_buff, 'e')) != NULL ||
-                            (e = strrchr(my_buff, 'E')) != NULL)
-                        {   char *p = e+1;
-                            while (*p != 0) p++;
-                            while (p != e)
-                            {   p[2] = p[0];
-                                p--;
-                            }
-                            p[2] = p[0];
-                            p[1] = '0';
-                            p[0] = '.';
-                        }
-                    }
-                }
-            }
+            else sprintf(my_buff, "%#.*g", (int)print_precision,
+                                  double_float_val(u));
             break;
 #ifdef COMMON
     case TYPE_LONG_FLOAT:
@@ -2812,11 +2792,21 @@ case TAG_BOXFLOAT:
     float_print_tidyup:
 #endif
         {   int i = 0, j, c;
-            while ((c = my_buff[i]) != 0 && c != '.') i++;
-            if (c == 0) break; /* No '.' found, so leave unaltered */
-            j = i+1;
+            while ((c = my_buff[i]) != 0 && c != '.' && c != 'e') i++;
+            if (c == 0) break; /* No '.' or 'e' found, so leave unaltered */
+            if (c == 'e') j = i;
+            else j = i+1;
 /* Find the end of the fraction (= end of number or start of exponent) */
             while ((c = my_buff[j]) != 'e' && c != 0) j++;
+#ifdef COMMON
+/*
+ * I now wish to make CSL as compatible as I can with PSL as regards
+ * floating point output (even if the choices are not the ones
+ * I had made for myself). So the code here that turns 1.0e+07 into
+ * 1.0e7 is now commented out so that an explicit "+" will be present
+ * whenever an exponent is positive and the exponent will always have
+ * at least 2 digits.
+ */
             if (c == 'e')
             {   /* check for leading zeros in an exponent component */
                 while (my_buff[j+1] == '+' || my_buff[j+1] == '0')
@@ -2838,8 +2828,22 @@ case TAG_BOXFLOAT:
                 }
                 if (my_buff[j+1] == 0) my_buff[j] = 0; /* "e" now at end? */
             }
+#endif
+/*
+ * However the code that maps "1e+09" onto "1.0e+09" is still required.
+ */
             k = j - 1;
-            if (k == i) /* no digits after the '.' - push in a '0' */
+            if (i == j) /* no '.' at all - push in a '.0' */
+            {   int l = j;
+                while (my_buff[l] != 0) l++;
+                while (l >= j)
+                {   my_buff[l+2] = my_buff[l];
+                    l--;
+                }
+                my_buff[j++] = '.';
+                my_buff[j++] = '0';
+            }
+            else if (k == i) /* no digits after the '.' - push in a '0' */
             {   int l = j;
                 while (my_buff[l] != 0) l++;
                 while (l >= j)
@@ -2849,7 +2853,10 @@ case TAG_BOXFLOAT:
                 my_buff[j++] = '0';
             }
             else
-/* Scan back past any trailing zeroes */
+/*
+ * Scan back past any trailing zeroes. Well I think printf ought
+ * not to have left any present, but I will be careful here.
+ */
             {   i++;
                 while (k > i && my_buff[k] == '0') k--;
 /* Copy data down to strip out the unnecessary '0' characters */
