@@ -589,7 +589,8 @@ load!-module "user";
 
 in "$reduce/packages/support/remake.red"$
 
-global '(reduce_base_modules reduce_extra_modules reduce_test_cases);
+global '(reduce_base_modules reduce_extra_modules
+         reduce_test_cases reduce_regression_tests);
  
 symbolic procedure get_configuration_data();
 % Read data from a configuration file that lists the modules that must
@@ -599,7 +600,7 @@ symbolic procedure get_configuration_data();
 % system maintainance functions rather than generally flexible things
 % for arbitrary use.
   begin
-    scalar i, w, e;
+    scalar i, w, e, r, r1;
 % Configuration information is held in a file called something like
 % "package.map".
     if boundp 'minireduce and symbol!-value 'minireduce then
@@ -625,11 +626,28 @@ symbolic procedure get_configuration_data();
       for each x in w conc
          if member('test, cddr x) and
             member('csl, cddr x) then list car x else nil;
+% Any file with a name *.tst in the regressions directory will be
+% considered to be a test case in addition to ones explicitly shown
+% in package.map.
+    reduce_regression_tests := nil;
+    r := list!-directory "$srcdir/../../packages/regressions";
+    for each f in r do <<
+      r1 := reverse explodec f;
+      if eqcar(r1, 't) and
+         eqcar(cdr r1, 's) and
+         eqcar(cddr r1, 't) and
+         eqcar(cdddr r1, '!.) then <<
+            r1 := intern list!-to!-string reverse cddddr r1;
+            put(r1, 'folder, "regressions");
+            reduce_regression_tests :=
+               r1 . reduce_regression_tests >> >>;
+    reduce_test_cases := append(reduce_test_cases, reduce_regression_tests);
     for each x in w do
        if member('csl, cddr x) then put(car x, 'folder, cadr x);
 %   princ "reduce_base_modules: "; print reduce_base_modules;
 %   princ "reduce_extra_modules: "; print reduce_extra_modules;
 %   princ "reduce_test_cases: "; print reduce_test_cases;
+%   princ "reduce_regression_tests: "; print reduce_regression_tests;
     return;
   end;
 
@@ -683,7 +701,7 @@ symbolic procedure test_a_package names;
        not fixp (conslimit := compress explodec conslimit) or
        conslimit < 1 then
        conslimit := 2000;
-    princ "TESTING: "; print car names;
+    princ "TESTING: "; printc car names;
     window!-heading list!-to!-string append(explodec "[Testing] ",
                                             explodec car names);
     !*backtrace := nil;
@@ -706,7 +724,7 @@ symbolic procedure test_a_package names;
     logfile := open(logtmp, 'output);
     get_configuration_data();
 % Any messages generated while loading the package do NOT appear in the log
-    load!-package packge;
+    if not memq(packge, reduce_regression_tests) then load!-package packge;
     begin
        scalar !*terminal!-io!*, !*standard!-output!*, !*error!-output!*,
               !*trace!-output!*, !*debug!-io!*, !*query!-io!*, !*errcont,
@@ -1356,11 +1374,20 @@ symbolic procedure check_a_package;
         set!-print!-precision p1 >>;
      close wrs time_data;
      linelength oll;
-     if null files_with_differences then printc "+++ All log files match"
+     if null files_with_differences then <<
+        terpri(); terpri();
+        printc "+++++++++++++++++++++++++++";
+        printc "+++ All log files match +++";
+        printc "+++++++++++++++++++++++++++";
+        terpri() >>
      else <<
-       printc "+++ The following logs differ:";
-       for each x in files_with_differences do <<
-          ttab 4; print x >> >>;
+        terpri(); terpri();
+        printc "+++++++++++++++++++++++++++++++";
+        printc "+++ The following logs differ:";
+        for each x in files_with_differences do <<
+           ttab 4; print x >>;
+        printc "+++++++++++++++++++++++++++++++";
+        terpri() >>;
   end;
 
 

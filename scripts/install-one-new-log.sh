@@ -45,16 +45,17 @@ p=${1:-alg}
 w=`grep " test " $here/packages/package.map | grep "($p "`
 
 case $w in
-*$p*) ;;
-*)    echo "Package $p not identified in packages/package.map"
-      exit 1
-      ;;
+*$p*)
+  d=${w%\"*}
+  d=${d#*\"}
+  ;;
+*)
+  echo "Package $p not identified in packages/package.map"
+  echo "Assuming it to be a regression test"
+  d="regressions"
+  ;;
 esac
 
-# This is bash-specific. If anybody really wanted this could
-# be redone using sed then this script could use plain /bin/sh.
-d=${w%\"*}
-d=${d#*\"}
 
 echo "Install $p.rlg as packages/$d/$p.rlg"
 

@@ -29,12 +29,17 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-(setpchar "> ")
+% Some of my trickery when bootstrap-building Reduce can load this
+% file multiple times. But it has calls to setpchar and assignments to
+% variables (the one to !!fleps1 bit me!) that ought not to be done
+% more than once. 
 
-(remflag '(geq leq neq logand logor logxor leftshift princ printc
-	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
-	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn lcmn printprompt pair putc) 'lose)
+(cond
+  ((not (fluidp '!!fleps1)) (progn
+
+
+
+(setpchar "> ")
 
 (symbol!-make!-fastget 32)
 (symbol!-make!-fastget 'noncom 0)  % built into the kernel
@@ -71,8 +76,74 @@
    (symbol!-set!-env 'logeqv 9))
 
 (make!-special '!!fleps1)
-(setq !!fleps1 1.0e-12)
+% The following value for !!fleps appears to be what Reduce expects
+% when using IEEE double-precision arithmetic.
+(setq !!fleps1 5.684341886080802e-14)
+
 (symbol!-set!-env 'safe!-fp!-plus '!!fleps1)
+
+(cond ((null (flagp 'printprompt 'lose))
+       (de printprompt (u) nil)))
+
+(make!-global 'program!*)
+(make!-global 'ttype!*)
+(make!-global 'eof!*)
+
+(make!-global 'crbuf!*)
+
+(make!-global 'blank)
+(make!-global ' !$eol!$)
+(make!-global 'tab)
+(make!-global '!$eof!$)
+(make!-global 'esc!*)
+
+(make!-special '!*notailcall)
+(make!-special '!*carcheckflag)
+
+(make!-special '!*terminal!-io!*)
+(make!-special '!*standard!-input!*)
+(make!-special '!*standard!-output!*)
+(make!-special '!*error!-output!*)
+(make!-special '!*trace!-output!*)
+(make!-special '!*debug!-io!*)
+(make!-special '!*query!-io!*)
+
+(setq !*notailcall nil)
+(setq !*carcheckflag t)
+
+(progn
+% The "special-char" numeric codes here are all very odd and are of no
+% relevance beyond the initial build stages of this Lisp. In particular they
+% have little or no resemblance to any widely used character code schemes.
+   (setq blank   (compress (list '!! (special!-char 0))))
+   (setq !$eol!$ (compress (list '!! (special!-char 1))))
+   (setq tab     (compress (list '!! (special!-char 3))))
+   (setq esc!*   (compress (list '!! (special!-char 9))))
+   (setq !$eof!$ (special!-char 8))
+   nil)
+
+(setq crbuf!* (list !$eol!$))    % may not be necessary
+
+% Since this should never get called I will just not define it here!
+
+%(de symerr (u v)
+%  (progn (terpri)
+%     (print (list 'symerr u v))
+%     (error 'failure)))
+
+(make!-global '!*full!-oblist)
+
+(setq !*full!-oblist nil)
+
+)))
+
+% But I will reload the following function definitions regardlesss.
+
+
+(remflag '(geq leq neq logand logor logxor leftshift princ printc
+	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
+	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
+	subla gcdn lcmn printprompt pair putc) 'lose)
 
 (de rplacw (a b) (progn (rplaca a (car b)) (rplacd a (cdr b))))
 
@@ -274,52 +345,12 @@ top (cond ((null a) (return (reversip r))))
 
 (global '(ofl!*))
 
-(de printprompt (u) nil)
-
-(global '(program!* ttype!* eof!*))
-
-(global '(crbuf!*))
-
-(global '(blank !$eol!$ tab !$eof!$ esc!*))
-
-(fluid '(!*notailcall !*carcheckflag))
-
-(fluid '(!*terminal!-io!* !*standard!-input!* !*standard!-output!* 
-         !*error!-output!* !*trace!-output!* !*debug!-io!* !*query!-io!*))
-
-(setq !*notailcall nil)
-(setq !*carcheckflag t)
-
 (de carcheck (n)
    (prog (old)
       (cond ((zerop n) (setq n nil)))
       (setq old !*carcheckflag)
       (setq !*carcheckflag n)
       (return old)))
-
-(progn
-% The "special-char" numeric codes here are all very odd and are of no
-% relevance beyond the initial build stages of this Lisp. In particular they
-% have little or no resemblance to any widely used character code schemes.
-   (setq blank   (compress (list '!! (special!-char 0))))
-   (setq !$eol!$ (compress (list '!! (special!-char 1))))
-   (setq tab     (compress (list '!! (special!-char 3))))
-   (setq esc!*   (compress (list '!! (special!-char 9))))
-   (setq !$eof!$ (special!-char 8))
-   nil)
-
-(setq crbuf!* (list !$eol!$))    % may not be necessary
-
-% Since this should never get called I will just not define it here!
-
-%(de symerr (u v)
-%  (progn (terpri)
-%     (print (list 'symerr u v))
-%     (error 'failure)))
-
-(global '(!*full!-oblist))
-
-(setq !*full!-oblist nil)
 
 (de s!:oblist (v r)
    (prog (n a)
@@ -495,6 +526,7 @@ top   (cond ((minusp n) (return r)))
 	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
 	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
 	subla gcdn lcmn printprompt pair putc) 'lose)
+
 
 % end of compat.lsp
 

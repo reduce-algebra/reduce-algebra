@@ -81,6 +81,14 @@ do
   $here/scripts/test1.sh $* $p
 done
 
+for p1 in $here/packages/regressions/*.tst
+do
+  p=${p1%.tst}
+  p=${p##*/}
+  echo "Test regression case $p"
+  $here/scripts/test1.sh $* regression $p
+done
+
 if test "$csl" = "yes"
 then
   csldiffs=`cd csl-times ; echo *.rlg.diff`

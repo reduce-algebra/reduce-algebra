@@ -5,7 +5,7 @@
 # is to be used.
 
 #    scripts/test1.sh [--csl or --psl] package_name
-
+# OR scripts/test1.sh [--csl or --psl] regressions testname
 
 csl="yes"
 psl="yes"
@@ -58,38 +58,36 @@ esac
 here=`echo $c | sed -e 's+/[^/]*$++'`
 here=`echo $here | sed -e 's+/[^/]*$++'`
 
-echo $here
+loader=""
 
 # If no argument is provided then this runs alg.tst
 p=${1:-alg}
 # WARNING - the "-n" option to echo is not portable.
-echo -n "Package to test is $p: "
+if test "x$p" = "xregressions"
+then
+  r=${2:-aug-29-2011}
+  echo -n "Regression test $r: "
+  p="$r"
+  d="regressions"
+else
+  echo -n "Package to test is $p: "
+  w=`grep " test " $here/packages/package.map | grep "($p "`
+  case $w in
+  *$p*) ;;
+  *)    echo "Package $p does not exist for testing purposes"
+        exit 1
+        ;;
+  esac
+  case $w in
+  " core ") loader=""
+            ;;
+  *)        loader="load $p;"
+            ;;
+  esac
+  d=${w%\"*}
+  d=${d#*\"}
+fi
 
-w=`grep " test " $here/packages/package.map | grep "($p "`
-
-case $w in
-*$p*) ;;
-*)    echo "Package $p does not exist for testing purposes"
-      exit 1
-      ;;
-esac
-
-case $w in
-" core ") loader=""
-          ;;
-*)        loader="load $p;"
-          ;;
-esac
-
-# This is bash-specific. If anybody really wanted this could
-# be redone using sed then this script could use plain /bin/sh.
-# It takes a line '(modname "dirname" other stuff)' and deletes up to and
-# including the first double quote and everything from the other double
-# quote onwards. What is left is the directory name within trunk/packages
-# that the test is in.
-
-d=${w%\"*}
-d=${d#*\"}
 
 # If I am running on Windows I need to have the file name in
 # (close to) native windows form. I can usefully retain "/" rather than
