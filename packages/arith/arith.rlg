@@ -83,13 +83,13 @@ symbolic ws;
 z := sin(pi);
 
 
-z := 1.22460635382e-16
+z := 1.22464679915e-16
 
 
 symbolic ws;
 
 
-(!*sq ((!:rd!: . 1.22461e-16) . 1) t)
+(!*sq ((!:rd!: . 1.22465e-16) . 1) t)
 
 
 % Handling very small quantities.
@@ -497,7 +497,7 @@ asin 2;
 sin ws;
 
 
-2.0 - 1.06054021205e-16*i
+2.0 - 1.06057523872e-16*i
 
 
 acos 2;
@@ -539,7 +539,7 @@ exp ws;
 e**(i*pi);
 
 
- - 1 + 1.22460635382e-16*i
+ - 1 + 1.22464679915e-16*i
 
 
 e**i;
@@ -1474,7 +1474,7 @@ Complex function of two variables:  EXPT, LOGB, ATAN2;
 e**(pi*i);
 
 
- - 1 + 1.22461e-16*i
+ - 1 + 1.22465e-16*i
  % Should be -1 (except for computational error.)
 
 log(1+i);
@@ -1522,7 +1522,7 @@ asin 2;
 sin ws;
 
 
-2.0 - 1.06054e-16*i
+2.0 - 1.06058e-16*i
 
 
 acos 2;
@@ -1582,7 +1582,7 @@ acsc 0.1;
 csc ws;
 
 
-0.1 + 6.09234e-18*i
+0.1 + 6.09254e-18*i
 
 
 sinh(1+i);
@@ -1618,7 +1618,7 @@ atanh 2;
 tanh ws;
 
 
-2.0 + 1.83691e-16*i
+2.0 + 1.83697e-16*i
 
 
 acoth 0.3;
@@ -1630,7 +1630,7 @@ acoth 0.3;
 coth ws;
 
 
-0.3 - 5.57196e-17*i
+0.3 - 5.57214e-17*i
 
 
 asech(1-i);
@@ -2385,8 +2385,8 @@ algebraic;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 59 ms  plus GC time: 7 ms
-real	0m0.588s
-user	0m0.030s
-sys	0m0.154s
+Tested on x86_64-unknown-ubuntu11.04 CSL
+Time (counter 1): 20 ms
+real	0m0.147s
+user	0m0.070s
+sys	0m0.020s

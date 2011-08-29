@@ -1015,12 +1015,12 @@ clear a1,a2,a3,a,x,y,z,x1,x2,op$
 mkidnew();
 
 
-g0
+g0001
 
 mkidnew(a);
 
 
-ag1
+ag0002
 
 ;
 

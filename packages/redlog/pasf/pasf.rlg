@@ -54,17 +54,17 @@ phi := ex(n,
 rlwqe phi;
 
 
-             2            2                2            2
-bex g19 [ - a  + 2*a*b - b  - 2 <= g19 <= a  - 2*a*b + b  + 2] (a - b < 0
+               2            2                  2            2
+bex g0020 [ - a  + 2*a*b - b  - 2 <= g0020 <= a  - 2*a*b + b  + 2] (a - b < 0
 
-                2
- and a - b + g19  = 0 and a + b #2# 0 and a + b - 2*g19 + 1 = 0) or bex g18 [
+                  2
+ and a - b + g0020  = 0 and a + b #2# 0 and a + b - 2*g0020 + 1 = 0) or bex 
 
-    2            2                2            2
- - a  + 2*a*b - b  - 2 <= g18 <= a  - 2*a*b + b  + 2] (a - b < 0
+           2            2                  2            2
+g0019 [ - a  + 2*a*b - b  - 2 <= g0019 <= a  - 2*a*b + b  + 2] (a - b < 0
 
-                2
- and a - b + g18  = 0 and a + b ~2~ 0 and a + b - 2*g18 = 0)
+                  2
+ and a - b + g0019  = 0 and a + b ~2~ 0 and a + b - 2*g0019 = 0)
 
 
 % Integer Roots
@@ -86,8 +86,8 @@ phi := ex(x,a*x^2+b*x+c=0)$
 rlwqe phi;
 
 
-             2    2                2    2            2
-bex g20 [ - b  - c  - 2 <= g20 <= b  + c  + 2] (a*g20  + b*g20 + c = 0)
+               2    2                  2    2              2
+bex g0021 [ - b  - c  - 2 <= g0021 <= b  + c  + 2] (a*g0021  + b*g0021 + c = 0)
 
 
 % Feasibility of Parametric Integer Constraints
@@ -98,19 +98,19 @@ las := ex(x,a*x>=b and c*x<=d)$
 rlwqe las;
 
 
-bex g22 [ - abs(a) <= g22 <= abs(a)] (
+bex g0023 [ - abs(a) <= g0023 <= abs(a)] (
 
-((a*d - b*c - c*g22 >= 0 and a > 0) or (a*d - b*c - c*g22 <= 0 and a < 0))
+((a*d - b*c - c*g0023 >= 0 and a > 0) or (a*d - b*c - c*g0023 <= 0 and a < 0))
 
- and ((a > 0 and g22 >= 0) or (a < 0 and g22 <= 0)) and b + g22 ~a~ 0 and a <> 0
+ and ((a > 0 and g0023 >= 0) or (a < 0 and g0023 <= 0)) and b + g0023 ~a~ 0
 
-) or bex g22 [ - abs(c) <= g22 <= abs(c)] (
+ and a <> 0) or bex g0023 [ - abs(c) <= g0023 <= abs(c)] (
 
-((c > 0 and g22 <= 0) or (c < 0 and g22 >= 0))
+((c > 0 and g0023 <= 0) or (c < 0 and g0023 >= 0)) and (
 
- and ((a*d + a*g22 - b*c >= 0 and c > 0) or (a*d + a*g22 - b*c <= 0 and c < 0))
+(a*d + a*g0023 - b*c >= 0 and c > 0) or (a*d + a*g0023 - b*c <= 0 and c < 0))
 
- and d + g22 ~c~ 0 and c <> 0) or (b <= 0 and d >= 0)
+ and d + g0023 ~c~ 0 and c <> 0) or (b <= 0 and d >= 0)
 
 
 procedure t1(m);
@@ -244,8 +244,8 @@ z - 3 > 0
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 7951 ms  plus GC time: 215 ms
-real	0m8.932s
-user	0m0.031s
-sys	0m0.215s
+Tested on x86_64-unknown-ubuntu11.04 CSL
+Time (counter 1): 5569 ms  plus GC time: 100 ms
+real	0m5.947s
+user	0m5.870s
+sys	0m0.020s

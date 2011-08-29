@@ -1356,10 +1356,10 @@ taylor(sin x,x,pi/2,4);
 
 
                                                                    2
-1 + 6.12303176911e-17*(x - 1.57079632679) - 0.5*(x - 1.57079632679)
+1 + 6.12323399574e-17*(x - 1.57079632679) - 0.5*(x - 1.57079632679)
 
                                         3                                      4
- - 1.02050529485e-17*(x - 1.57079632679)  + 0.0416666666667*(x - 1.57079632679)
+ - 1.02053899929e-17*(x - 1.57079632679)  + 0.0416666666667*(x - 1.57079632679)
 
                         5
  + O((x - 1.57079632679) )
@@ -2491,8 +2491,8 @@ comment That's all, folks;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 198 ms  plus GC time: 10 ms
-real	0m0.685s
-user	0m0.015s
-sys	0m0.137s
+Tested on x86_64-unknown-ubuntu11.04 CSL
+Time (counter 1): 190 ms  plus GC time: 9 ms
+real	0m0.385s
+user	0m0.310s
+sys	0m0.010s

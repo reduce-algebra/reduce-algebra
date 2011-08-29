@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 49085c5c 24-Aug-2011 */
+/* Signature: 36834886 29-Aug-2011 */
 
 #include "headers.h"
 
@@ -1957,7 +1957,7 @@ Lisp_Object get_pname(Lisp_Object a)
         char genname[64];
         len = length_of_header(vechdr(name)) - CELL;
         if (len > 60) len = 60;     /* Unpublished truncation of the string */
-        sprintf(genname, "%.*s%lu", (int)len,
+        sprintf(genname, "%.*s%.4lu", (int)len,
                 (char *)name + (CELL - TAG_VECTOR), (long)gensym_ser++);
         push(a);
         name = make_string(genname);

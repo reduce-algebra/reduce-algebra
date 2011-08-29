@@ -1030,20 +1030,20 @@ makeopts$
 
 {
     {
-        g17=b+c;
-        g18=c+d;
-        aa[1][1]=g18*g17;
-        aa[1][2]=(g18-3)*(g17+2);
-        g16=b+d;
-        aa[2][1]=g16*(g17-3);
-        aa[2][2]=g17*(g16+4);
+        g18=b+c;
+        g19=c+d;
+        aa[1][1]=g19*g18;
+        aa[1][2]=(g19-3)*(g18+2);
+        g17=b+d;
+        aa[2][1]=g17*(g18-3);
+        aa[2][2]=g18*(g17+4);
     }
 }
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 124 ms
-real	0m0.757s
-user	0m0.091s
-sys	0m0.046s
+Tested on x86_64-unknown-ubuntu11.04 CSL
+Time (counter 1): 20 ms
+real	0m0.160s
+user	0m0.090s
+sys	0m0.010s

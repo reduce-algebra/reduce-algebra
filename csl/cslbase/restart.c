@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 7b5d6186 28-Aug-2011 */
+/* Signature: 17d2f321 29-Aug-2011 */
 
 #include "headers.h"
 
@@ -4538,7 +4538,7 @@ static void cold_setup()
         elt(packint_(CP), i) = nil;
     }
 #endif
-    gensym_ser = 0;
+    gensym_ser = 1;
     print_precision = 6; /* I maybe prefer 15 but use 6 to agree with PSL */
     current_modulus = 1;
     fastget_size = 32;

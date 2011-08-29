@@ -1384,7 +1384,7 @@ symbolic procedure check_a_package;
         terpri(); terpri();
         printc "+++++++++++++++++++++++++++++++";
         printc "+++ The following logs differ:";
-        for each x in files_with_differences do <<
+        for each x in reverse files_with_differences do <<
            ttab 4; print x >>;
         printc "+++++++++++++++++++++++++++++++";
         terpri() >>;
