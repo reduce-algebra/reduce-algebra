@@ -125,8 +125,8 @@ symbolic procedure subsq(u,v);
       x := subf(numr u,v);
       u := subf(denr u,v);
       if null numr subs2!* u
-       then if null numr subs2!* x then rederr "0/0 formed"
-             else rederr "Zero divisor";
+       then if null numr subs2!* x then rerror(alg,201,"0/0 formed")
+             else rerror(alg,201,"Zero divisor");
       return quotsq(x,u)
    end;
 
