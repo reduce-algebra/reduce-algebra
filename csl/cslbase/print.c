@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 7e83e8be 29-Aug-2011 */
+/* Signature: 4124d13f 30-Aug-2011 */
 
 #include "headers.h"
 
@@ -1865,6 +1865,83 @@ static void prin_buf(char *buf, int blankp)
     }
 }
 
+/*
+ * I want the floating point print style that I use to match the
+ * one used by PSL rather carefully. So here is some code so that
+ * everything I do about it is in one place.
+ */
+
+
+/*
+ * Two crummy little functions to delete and insert chars from strings.
+ */
+
+static void char_del(char *s)
+{
+    while (*s != 0)
+    {  *s = *(s+1);
+       s++;
+    }
+}
+
+static void char_ins(char *s, int c)
+{
+    char *p = s;
+    while (*p != 0) p++;
+    while (p != s)
+    {   *(p+1) = *p;
+        p--;
+    }
+    *(s+1) = *s;
+    *s = c;
+}
+
+static void fp_sprint(char *buff, double x, int prec)
+{
+#ifdef DEBUG
+    char *fullbuff = buff; /* Useful for when running under a debugger */
+#endif
+    if (x == 0.0)
+    {   strcpy(buff, "0.0");
+        return;
+    }
+    if (x < 0.0)
+    {   *buff++ = '-';
+        x = -x;
+    }
+/* Now I just have strictly positive values to worry about */
+    sprintf(buff, "%.*g", prec, x);
+/* I will allow for pathologically bad versions of sprintf... */
+    if (*buff == '+') char_del(buff);      /* Explicit "+" not wanted */
+    if (*buff == '.') char_ins(buff, '0'); /* turn .nn to 0.nn */
+    else if (*buff == 'e')                 /* turn Ennn to 0.0Ennn */
+    {   char_ins(buff, '0');
+        char_ins(buff, '.');
+        char_ins(buff, '0');
+    }
+/* I now have at lesst one digit before any "." or "E" */
+    while (*buff != 0 && *buff != '.' && *buff != 'e') buff++;
+    if (*buff == 0 || *buff == 'e')     /* ddd to ddd.0 */
+    {   char_ins(buff, '0');            /* and dddEnnn to ddd.0Ennn */ 
+        char_ins(buff, '.');
+    }
+/* I now have a "." in there */
+    while (*buff != 0 && *buff != 'e') buff++;
+    if (*(buff-1) == '.') char_ins(buff++, '0');/* ddd. to ddd.0 */
+    while (*(buff-1) == '0' &&                  /* ddd.nnn0 to ddd.nnn */
+           *(buff-2) != '.') char_del(--buff);
+    if (*buff == 0) return; /* no E present */
+    buff++;
+/* At this stage I am looking at the exponent part */
+    if (*buff == 0) strcpy(buff, "+e00");
+    else if (isdigit(*buff)) char_ins(buff, '+');
+/* Exponent should now start with expicit + or - sign */
+    buff++;
+/* Force exponent to have at least 2 digits */
+    if (*(buff+1) == 0) char_ins(buff, '0');
+/* Three-digit exponent with leading zero gets trimmed here */
+    else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
+}
 static int32_t local_gensym_count;
 
 void internal_prin(Lisp_Object u, int blankp)
@@ -1944,7 +2021,7 @@ case TAG_CONS:
 case TAG_SFLOAT:
         {   Float_union uu;
             uu.i = u - TAG_SFLOAT;
-            sprintf(my_buff, "%#.6g", (double)uu.f);
+            fp_sprint(my_buff, (double)uu.f, print_precision);
         }
         goto float_print_tidyup;
 #endif
@@ -2411,9 +2488,8 @@ case TAG_VECTOR:
             putc_stream('#', active_stream); putc_stream('F', active_stream);
             putc_stream('S', active_stream); putc_stream('(', active_stream);
             len = len >> 2;
-/* Note that I ignore print precision for single floats. This may be wrong. */
             for (k=0; k<len; k++)
-            {   sprintf(my_buff, "%#.7g", (double)felt(stack[0], k));
+            {   fp_sprint(my_buff, (double)felt(stack[0], k), print_precision);
                 prin_buf(my_buff, k != 0);
             }
             outprefix(NO, 1);
@@ -2426,25 +2502,7 @@ case TAG_VECTOR:
             putc_stream('D', active_stream); putc_stream('(', active_stream);
             len = (len-CELL)/8;
             for (k=0; k<len; k++)
-            {   sprintf(my_buff, "%#.*g",
-                    (int)print_precision, delt(stack[0], k));
-                {   char *dot = strrchr(my_buff, '.');
-                    if (dot == NULL)
-                    {   char *e;
-                        if ((e = strrchr(my_buff, 'e')) != NULL ||
-                            (e = strrchr(my_buff, 'E')) != NULL)
-                        {   char *p = e+1;
-                            while (*p != 0) p++;
-                            while (p != e)
-                            {   p[2] = p[0];
-                                p--;
-                            }
-                            p[2] = p[0];
-                            p[1] = '0';
-                            p[0] = '.';
-                        }
-                    }
-                }
+            {   fp_sprint(my_buff, delt(stack[0], k), print_precision);
                 prin_buf(my_buff, k != 0);
             }
             outprefix(NO, 1);
@@ -2740,7 +2798,7 @@ case TAG_BOXFLOAT:
         {
 #ifdef COMMON
     case TYPE_SINGLE_FLOAT:
-            sprintf(my_buff, "%#.7g", (double)single_float_val(u));
+            fp_sprint(my_buff, (double)single_float_val(u), print_precision);
             break;
 #endif
     case TYPE_DOUBLE_FLOAT:
@@ -2765,113 +2823,21 @@ case TAG_BOXFLOAT:
                                   (long)p[1-q], (long)p[q],
                                   double_float_val(u));
             }
-            else sprintf(my_buff, "%#.*g", (int)print_precision,
-                                  double_float_val(u));
+            else fp_sprint(my_buff, double_float_val(u), print_precision);
             break;
 #ifdef COMMON
     case TYPE_LONG_FLOAT:
-            sprintf(my_buff, "%#.17g", (double)long_float_val(u));
+/* This just uses a regular double... */
+            fo_sprint(my_buff, (double)long_float_val(u), print_precision);
             break;
 #endif
     default:
             sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
             break;
         }
-/*
- * I want to trim off trailing zeros, but ensure I leave a digit after the
- * decimal point. Things are made more complicated by the presence of an
- * exponent.  Note that the '#' in the format conversions should mean that
- * I ALWAYS have a '.' in the number that has been printed.  However on some
- * systems this proves not to be the case - in particular IEEE infinities
- * (and maybe NaNs?) get displayed without a '.' in some environments where
- * they are supported.  I also see that some C libraries in some of the cases
- * I generate above dump out nonsense like 0.0e+000 with unreasonably wide
- * exponents, so I will try to rationalise that sort of mess too.
- */
 #ifdef COMMON
     float_print_tidyup:
 #endif
-        {   int i = 0, j, c;
-            while ((c = my_buff[i]) != 0 && c != '.' && c != 'e') i++;
-            if (c == 0) break; /* No '.' or 'e' found, so leave unaltered */
-            if (c == 'e') j = i;
-            else j = i+1;
-/* Find the end of the fraction (= end of number or start of exponent) */
-            while ((c = my_buff[j]) != 'e' && c != 0) j++;
-#ifdef COMMON
-/*
- * I now wish to make CSL as compatible as I can with PSL as regards
- * floating point output (even if the choices are not the ones
- * I had made for myself). So the code here that turns 1.0e+07 into
- * 1.0e7 is now commented out so that an explicit "+" will be present
- * whenever an exponent is positive and the exponent will always have
- * at least 2 digits.
- */
-            if (c == 'e')
-            {   /* check for leading zeros in an exponent component */
-                while (my_buff[j+1] == '+' || my_buff[j+1] == '0')
-                {   int m = j+1;
-                    for (;;)
-                    {   if ((my_buff[m] = my_buff[m+1]) == 0) break;
-                        m++;
-                    }
-                }
-                if (my_buff[j+1] == '-')  /* kill leading zeros after '-' */
-                {   while (my_buff[j+2] == '0')
-                    {   int m = j+2;
-                        for (;;)
-                        {   if ((my_buff[m] = my_buff[m+1]) == 0) break;
-                            m++;
-                        }
-                    }
-                    if (my_buff[j+2] == 0) my_buff[j+1] = 0;
-                }
-                if (my_buff[j+1] == 0) my_buff[j] = 0; /* "e" now at end? */
-            }
-#endif
-/*
- * However the code that maps "1e+09" onto "1.0e+09" is still required.
- */
-            k = j - 1;
-            if (i == j) /* no '.' at all - push in a '.0' */
-            {   int l = j;
-                while (my_buff[l] != 0) l++;
-                while (l >= j)
-                {   my_buff[l+2] = my_buff[l];
-                    l--;
-                }
-                my_buff[j++] = '.';
-                my_buff[j++] = '0';
-            }
-            else if (k == i) /* no digits after the '.' - push in a '0' */
-            {   int l = j;
-                while (my_buff[l] != 0) l++;
-                while (l >= j)
-                {   my_buff[l+1] = my_buff[l];
-                    l--;
-                }
-                my_buff[j++] = '0';
-            }
-            else
-/*
- * Scan back past any trailing zeroes. Well I think printf ought
- * not to have left any present, but I will be careful here.
- */
-            {   i++;
-                while (k > i && my_buff[k] == '0') k--;
-/* Copy data down to strip out the unnecessary '0' characters */
-                if (k != j-1)
-                {   k++;
-                    while ((my_buff[k++] = my_buff[j++]) != 0) /* nothing */ ;
-                }
-            }
-        }
-/*
- * For my purposes I do not want to see "-0.0" - it causes muddle and loses
- * portability. I know that losing the information here removes a facility
- * from people but it also removes pain from naive users!
- */
-        if (strcmp(my_buff, "-0.0") == 0) strcpy(my_buff, "0.0");
         break;
 
 case TAG_NUMBERS:
