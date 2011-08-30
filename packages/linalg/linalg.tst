@@ -1,526 +1,322 @@
+if lisp !*rounded then rounded_was_on := t 
+ else rounded_was_on := nil;
 
-lisp setprintprecision 15;
-
+mat1  := mat((1,2,3,4,5),(2,3,4,5,6),(3,4,5,6,7),(4,5,6,7,8),(5,6,7,8,9));
+mat2  := mat((1,1,1,1),(2,2,2,2),(3,3,3,3),(4,4,4,4));
+mat3  := mat((x),(x),(x),(x));
+mat4  := mat((3,3),(4,4),(5,5),(6,6)); 
+mat5  := mat((1,2,1,1),(1,2,3,1),(4,5,1,2),(3,4,5,6));
+mat6  := mat((i+1,i+2,i+3),(4,5,2),(1,i,0));
+mat7  := mat((1,1,0),(1,3,1),(0,1,1));
+mat8  := mat((1,3),(-4,3));
 mat9 :=  mat((1,2,3,4),(9,8,7,6));
+poly  := x^7+x^5+4*x^4+5*x^3+12;
+poly1 := x^2+x*y^3+x*y*z^3+y*x+2+y*3;
 
-on rounded;
-
-
-
-symbolic smacro procedure my_minus(u);
-  %
-  % Efficiently performs reval({'minus,u}).
-  %
-  if atom u then {'minus,u}
-   else if car u = 'minus then cadr u
-    else {'minus,u};
+on errcont;
 
 
+% Basis matrix manipulations.
 
-symbolic procedure svd(A);
-  %
-  % Computation of the singular values and complete orthogonal
-  % decomposition of a real rectangular matrix A.
-  %
-  %      A = tp(U) diag(q) V,   U tp(U) = V tp(V) = I,
-  %
-  % and q contains the singular values along the diagonal.
-  % (tp => transpose).
-  %
-  % Algorithm taken from "Linear Algebra"
-  %                      J.H.Wilkinson & C.Reinsch
-  %
-  begin
-    scalar ee,U,V,g,x,eps,tolerance,q,s,f,h,y,test_f_splitting,
-           cancellation,test_f_convergence,convergence,c,z,denom,q_mat,
-           I_rounded_turned_on,trans_done;
-    integer i,j,k,l,l1,m,n;
-    trans_done := I_rounded_turned_on := nil;
-    if not !*rounded then << on rounded; I_rounded_turned_on := t; >>;
+add_columns(mat1,1,2,5*y);
+add_rows(mat1,1,2,x);
 
-    if not matrixp(A) then
-     rederr "Error in svd: non matrix input.";
+add_to_columns(mat1,3,1000);
+add_to_columns(mat1,{1,2,3},y);
+add_to_rows(mat1,2,1000);
+add_to_rows(mat1,{1,2,3},x);
 
-    % The value of eps can be decreased to increase accuracy.
-    % As usual, doing this will slow things down (and vice versa).
-    % It should not be made smaller than the value of rd!-tolerance!*.
-    eps := get_num_part(my_reval({'times,1.5,{'expt,10,-8}}));
-    tolerance := get_num_part(my_reval({'expt,10,-31}));
+augment_columns(mat1,2);  
+augment_columns(mat1,{1,2,5});
+stack_rows(mat1,3);  
+stack_rows(mat1,{1,3,5});  
 
-    % Algorithm requires m >= n. If this is not the case then transpose
-    % the input and swap U and V in the output (as A = tp(U) diag(q) V
-    % but tp(A) = tp(V) diag(q) U  ).
-    if row_dim(A) < column_dim(A) then
-    << A := algebraic tp(A); trans_done := t; >>;
+char_poly(mat1,x);
 
-    m := row_dim(A);
-    n := column_dim(A);
+column_dim(mat2);
+row_dim(mat1);
 
-    U := rd_copy_mat(A);
-    V := mkmatrix(n,n);
-    ee := mkvect(n);
-    q := mkvect(n);
+copy_into(mat7,mat1,2,3);
+copy_into(mat7,mat1,5,5);
 
-    % Householder's reduction to bidiagonal form:
-    g := x := 0;
-    for i:=1:n do
-    <<
-      putv(ee,i,g);
-      s := 0;
-      l := i+1;
-      for j:=i:m do s := specrd!:plus(s,specrd!:expt(getmat(U,j,i),2));
-      if get_num_part(s) < tolerance then g := 0
-      else
-      <<
-        f := getmat(U,i,i);
-        if get_num_part(f)<0 then g := specrd!:sqrt!(s)
-         else g := my_minus(specrd!:sqrt(s));
-        h := specrd!:plus(specrd!:times(f,g),my_minus(s));
-        setmat(U,i,i,specrd!:plus(f,my_minus(g)));
-        for j:=l:n do
-        <<
-          s := 0;
-          for k:=i:m do
-           s := specrd!:plus(s,specrd!:times(getmat(U,k,i),
-                                             getmat(U,k,j)));
-          f := specrd!:quotient(s,h);
-          for k:=i:m do
-           setmat(U,k,j,specrd!:plus(getmat(U,k,j),
-                        specrd!:times(f,getmat(U,k,i))));
-        >>;
-      >>;
-      putv(q,i,g);
-      s := 0;
-      for j:=l:n do s := specrd!:plus(s,specrd!:expt(getmat(U,i,j),2));
-      if get_num_part(s) < tolerance then g := 0
-      else
-      <<
-        f := getmat(U,i,i+1);
-        if get_num_part(f)<0 then g := specrd!:sqrt(s)
-         else g := my_minus(specrd!:sqrt(s));
-        h := specrd!:plus(specrd!:times(f,g),my_minus(s));
-        setmat(U,i,i+1,specrd!:plus(f,my_minus(g)));
-        for j:=l:n do putv(ee,j,specrd!:quotient(getmat(U,i,j),h));
-        for j:=l:m do
-        <<
-          s := 0;
-          for k:=l:n do
-           s := specrd!:plus(s,specrd!:times(getmat(U,j,k),
-                                             getmat(U,i,k)));
-          for k:=l:n do
-           setmat(U,j,k,specrd!:plus(getmat(U,j,k),
-                        specrd!:times(s,getv(ee,k))));
-        >>;
-      >>;
-      y := specrd!:plus(abs(get_num_part(getv(q,i))),
-                        abs(get_num_part(getv(ee,i))));
-      if get_num_part(y) > get_num_part(x) then x := y;
-    >>;
+diagonal(3);
+% diagonal can take both a list of arguments or just the arguments.
+diagonal({mat2,mat6});
+diagonal(mat1,mat2,mat5);
 
-    % Accumulation of right hand transformations:
-    for i:=n step -1 until 1 do
-    <<
-      if get_num_part(g) neq 0 then
-      <<
-        h := specrd!:times(getmat(U,i,i+1),g);
-        for j:=l:n do setmat(V,j,i,specrd!:quotient(getmat(U,i,j),h));
-        for j:=l:n do
-        <<
-          s := 0;
-          for k:=l:n do
-           s := specrd!:plus(s,specrd!:times(getmat(U,i,k),
-                                             getmat(V,k,j)));
-          for k:=l:n do
-           setmat(V,k,j,specrd!:plus(getmat(V,k,j),
-                        specrd!:times(s,getmat(V,k,i))));
-        >>;
-      >>;
-      for j:=l:n do << setmat(V,i,j,0); setmat(V,j,i,0); >>;
-      setmat(V,i,i,1);
-      g := getv(ee,i);
-      l := i;
-    >>;
+extend(mat1,3,2,x);
 
-    % Accumulation of left hand transformations:
-    for i:=n step -1 until 1 do
-    <<
-      l := i+1;
-      g := getv(q,i);
-      for j:=l:n do setmat(U,i,j,0);
-      if get_num_part(g) neq 0 then
-      <<
-        h := specrd!:times(getmat(U,i,i),g);
-        for j:=l:n do
-        <<
-          s := 0;
-          for k:=l:m do
-           s := specrd!:plus(s,specrd!:times(getmat(U,k,i),
-                                             getmat(U,k,j)));
-          f := specrd!:quotient(s,h);
-          for k:=i:m do
-           setmat(U,k,j,specrd!:plus(getmat(U,k,j),
-                        specrd!:times(f,getmat(U,k,i))));
-        >>;
-        for j:=i:m do setmat(U,j,i,specrd!:quotient(getmat(U,j,i),g));
-      >>
-      else for j:=i:m do setmat(U,j,i,0);
-      setmat(U,i,i,specrd!:plus(getmat(U,i,i),1));
-    >>;
+find_companion(mat5,x);
 
-    % Diagonalisation of the bidiagonal form:
-    eps := get_num_part(specrd!:times(eps,x));
-    test_f_splitting := t;
-    k := n;
-    while k>=1 do
-    <<
-      convergence := nil;
-      if test_f_splitting then
-      <<
-        l := k;
-        test_f_convergence := cancellation := nil;
-        while l>=1 and not (test_f_convergence or cancellation) do
-        <<
-          if abs(get_num_part(getv(ee,l))) <= eps
-           then test_f_convergence := t
-          else if abs(get_num_part(getv(q,l-1))) <= eps
-           then cancellation := t
-          else l := l-1;
-        >>;
-      >>;
+get_columns(mat1,1);
+get_columns(mat1,{1,2});
+get_rows(mat1,3);
+get_rows(mat1,{1,3});
 
-      % Cancellation of e[l] if l>1:
-      if not test_f_convergence then
-      <<
-        c := 0; s := 1; l1 := l-1;
-        i := l;
-        while i<=k and not test_f_convergence do
-        <<
-          f := specrd!:times(s,getv(ee,i));
-          putv(ee,i,specrd!:times(c,getv(ee,i)));
-          if abs(get_num_part(f)) <= eps then
-           test_f_convergence := t
-          else
-          <<
-            g := getv(q,i);
-            h := specrd!:sqrt(specrd!:plus(specrd!:times(f,f),
-                                           specrd!:times(g,g)));
-            putv(q,i,h);
-            c := specrd!:quotient(g,h);
-            s := specrd!:quotient(my_minus(f),h);
-            for j:=1:m do
-            <<
-              y := getmat(U,j,l1);
-              z := getmat(U,j,i);
-              setmat(U,j,l1,specrd!:plus(specrd!:times(y,c),
-                                         specrd!:times(z,s)));
-              setmat(U,j,i,specrd!:difference(specrd!:times(z,c),
-                                              specrd!:times(y,s)));
-            >>;
-            i := i+1;
-          >>;
-        >>;
-      >>;
-      z := getv(q,k);
-      if l = k then convergence := t;
+hermitian_tp(mat6);
 
-      if not convergence then
-      <<
-        % Shift from bottom 2x2 minor:
-        x := getv(q,l);
-        y := getv(q,k-1);
-        g := getv(ee,k-1);
-        h := getv(ee,k);
-        f := specrd!:quotient(specrd!:plus(specrd!:times(
-              specrd!:plus(y,my_minus(z)),specrd!:plus(y,z)),
-               specrd!:times(specrd!:plus(g,my_minus(h)),
-                specrd!:plus(g,h))),specrd!:times(
-                 specrd!:times(2,h),y));
-        g := specrd!:sqrt(specrd!:plus(specrd!:times(f,f),1));
-        % Needed to change < here to <=.
-        if get_num_part(f)<=0 then
-        denom := specrd!:plus(f,my_minus(g))
-         else denom := specrd!:plus(f,g);
-        f := specrd!:quotient(specrd!:plus(specrd!:times(
-              specrd!:plus(x,my_minus(z)),specrd!:plus(x,z)),
-               specrd!:times(h,specrd!:quotient(y,
-                specrd!:plus(denom,my_minus(h))))),x);
+% matrix_augment and matrix_stack can take both a list of arguments 
+% or just the arguments.
+matrix_augment({mat1,mat2});
+matrix_augment(mat4,mat2,mat4);
+matrix_stack(mat1,mat2);
+matrix_stack({mat6,mat((z,z,z)),mat7});
 
-        % Next QR transformation:
-        c := s := 1;
-        for i:=l+1:k do
-        <<
-          g := getv(ee,i);
-          y := getv(q,i);
-          h := specrd!:times(s,g);
-          g := specrd!:times(c,g);
-          z := specrd!:sqrt(specrd!:plus(specrd!:times(f,f),
-                                         specrd!:times(h,h)));
-          putv(ee,i-1,z);
-          c := specrd!:quotient(f,z);
-          s := specrd!:quotient(h,z);
-          f := specrd!:plus(specrd!:times(x,c),specrd!:times(g,s));
-          g := specrd!:plus(specrd!:times(my_minus(x),s),
-                            specrd!:times(g,c));
-          h := specrd!:times(y,s);
-          y := specrd!:times(y,c);
-          for j:=1:n do
-          <<
-            x := getmat(V,j,i-1);
-            z := getmat(V,j,i);
-            setmat(V,j,i-1,specrd!:plus(specrd!:times(x,c),
-                                        specrd!:times(z,s)));
-            setmat(V,j,i,specrd!:difference(specrd!:times(z,c),
-                                            specrd!:times(x,s)));
-          >>;
-          z := specrd!:sqrt(specrd!:plus(specrd!:times(f,f),
-                                         specrd!:times(h,h)));
-          putv(q,i-1,z);
-          c := specrd!:quotient(f,z);
-          s := specrd!:quotient(h,z);
-          f := specrd!:plus(specrd!:times(c,g),specrd!:times(s,y));
-          x := specrd!:plus(specrd!:times(my_minus(s),g),
-                            specrd!:times(c,y));
-          for j:=1:m do
-          <<
-                y := getmat(U,j,i-1);
-                z := getmat(U,j,i);
-            setmat(U,j,i-1,specrd!:plus(specrd!:times(y,c),
-                                        specrd!:times(z,s)));
-            setmat(U,j,i,specrd!:difference(specrd!:times(z,c),
-                                            specrd!:times(y,s)));
-          >>;
-        >>;
-        putv(ee,l,0);
-        putv(ee,k,f);
-        putv(q,k,x);
-      >>
-      else % convergence:
-      <<
-        if get_num_part(z)<0 then
-        <<
-          % q[k] is made non-negative:
-          putv(q,k,my_minus(z));
-          for j:=1:n do setmat(V,j,k,my_minus(getmat(V,j,k)));
-        >>;
-        k := k-1;
-      >>;
-    >>;
+minor(mat1,2,3);
 
-    q_mat := q_to_diag_matrix(q);
-    if I_rounded_turned_on then off rounded;
-    if trans_done then
-     return {'list,algebraic tp V,q_mat,algebraic tp U}
-      else return {'list,algebraic tp U,q_mat,algebraic tp V};
-  end;
+mult_columns(mat1,3,y);
+mult_columns(mat1,{2,3,4},100);
+mult_rows(mat1,2,x);
+mult_rows(mat1,{1,3,5},10);
 
-flag('(svd),'opfn); % To make it available from algebraic (user) mode.
+pivot(mat1,3,3);
+rows_pivot(mat1,3,3,{1,5});
+
+remove_columns(mat1,3);
+remove_columns(mat1,{2,3,4});
+remove_rows(mat1,2);
+remove_rows(mat1,{1,3});
+remove_rows(mat1,{1,2,3,4,5});
+
+swap_columns(mat1,2,4);
+swap_rows(mat1,1,2);
+swap_entries(mat1,{1,1},{5,5});
 
 
+% Constructors - functions that create matrices.
 
-symbolic procedure q_to_diag_matrix(q);
-  %
-  % Converts q (a vector) to a diagonal matrix with the elements of
-  % q on the diagonal.
-  %
-  begin
-    scalar q_mat;
-    integer i,sq_dim_q;
-    sq_dim_q := upbv(q);
-    q_mat := mkmatrix(sq_dim_q,sq_dim_q);
-    for i:=1:sq_dim_q do setmat(q_mat,i,i,getv(q,i));
-    return q_mat;
-  end;
+band_matrix(x,5);
+band_matrix({x,y,z},6);
 
+block_matrix(1,2,{mat1,mat2});
+block_matrix(2,3,{mat2,mat3,mat2,mat3,mat2,mat2});
 
-symbolic procedure showfloats x;
-  if floatp x then << print list(x, hexfloat x) >>
-  else if atom x then nil
-  else << showfloats car x;
-          showfloats cdr x >>;
-    
+char_matrix(mat1,x);
 
-symbolic procedure pseudo_inverse(in_mat);
-  %
-  % Also known as the Moore-Penrose Inverse.
-  %
-  % Given the singular value decomposition A := tp(U) diag(q) V
-  % the pseudo inverse A^(-1) is defined as
-  %
-  %   A^(-1) = tp(V) (diag(q))^(-1) U.
-  %
-  % NB: this can be quite handy as we can take the inverse of non
-  % square matrices (A * pseudo_inverse(A) = identity).
-  %
-  begin
-    scalar psu_inv,svd_list;
-    svd_list := svd(in_mat);
-    prin2 "first:  "; print first svd_list;
-    showfloats first svd_list;
-    prin2 "second: "; print second svd_list;
-    showfloats second svd_list;
-    prin2 "third:  "; print third svd_list;
-    showfloats third svd_list;
-    prin2 "fourth: "; print fourth svd_list;
-    showfloats fourth svd_list;
-    psu_inv := algebraic
-                (tp(third svd_list)*(1/second svd_list)*first svd_list);
-    return psu_inv;
-  end;
+cfmat := coeff_matrix({x+y+4*z=10,y+x-z=20,x+y+4});
+first cfmat * second cfmat;
+third cfmat;
 
-flag('(pseudo_inverse),'opfn);
+companion(poly,x);
 
+hessian(poly1,{w,x,y,z});
 
+hilbert(4,1);
+hilbert(3,y+x);
 
-symbolic procedure rd_copy_mat(A);
-  %
-  % Creates a copy of the input matrix and returns it aswell as
-  % reval-ing each elt to get them in !:rd!: form;
-  %
-  begin
-    scalar C;
-    integer row_dim,column_dim;
-    row_dim := first size_of_matrix(A);
-    column_dim := second size_of_matrix(A);
-    C := mkmatrix(row_dim,column_dim);
-    for i:=1:row_dim do
-    <<
-      for j:=1:column_dim do
-      <<
-        setmat(C,i,j,my_reval(getmat(A,i,j)));
-      >>;
-    >>;
-    return C;
-  end;
+% NOTE WELL. The function tested here used to be called just "jacobian"
+% however us of that name was in conflict with another Reduce package so
+% now it is called mat_jacobian.
+mat_jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z});
 
+jordan_block(x,5);
 
+make_identity(11);
 
-%
-% All computation is done with rounded mode on and with all numbers
-% in !:rd!: form. The following specrd!: functions makes the algebraic
-% computation of these numbers very efficient.
-%
-symbolic procedure specrd!:times(u,v);
-  begin
-    scalar negsign;
-    u := add_minus(u);
-    v := add_minus(v);
-    if eqcar(u,'minus) then << u := cadr u; negsign := t>>;
-    if eqcar(v,'minus) then << v := cadr v; negsign := not negsign>>;
-    if atom u then u := mkround float u;
-    if atom v then v := mkround float v;
-    return if negsign then list('minus,rd!:times(u,v))
-            else rd!:times(u,v);
-  end;
+on rounded; % makes things a bit easier to read.
+random_matrix(3,3,100);
+on not_negative;
+random_matrix(3,3,100);
+on only_integer;
+random_matrix(3,3,100);
+on symmetric;
+random_matrix(3,3,100);
+off symmetric;
+on upper_matrix;
+random_matrix(3,3,100);
+off upper_matrix;
+on lower_matrix;
+random_matrix(3,3,100);
+off lower_matrix;
+on imaginary;
+off not_negative;
+random_matrix(3,3,100);
+off rounded;
 
+% toeplitz and vandermonde can take both a list of arguments or just 
+% the arguments.
+toeplitz({1,2,3,4,5});
+toeplitz(x,y,z);
 
+vandermonde({1,2,3,4,5});
+vandermonde(x,y,z);
 
-symbolic procedure specrd!:quotient(u,v);
-  begin
-    scalar negsign;
-    u := add_minus(u);
-    v := add_minus(v);
-    if eqcar(u,'minus) then << u := cadr u; negsign := t>>;
-    if eqcar(v,'minus) then << v := cadr v; negsign := not negsign>>;
-    if atom u then u := mkround float u;
-    if atom v then v := mkround float v;
-    return if negsign then list('minus,rd!:quotient(u,v))
-                else rd!:quotient(u,v);
-  end;
+% kronecker_product
 
+a1 := mat((1,2),(3,4),(5,6));
+a2 := mat((1,x,1),(2,2,2),(3,3,3));
 
+kronecker_product(a1,a2);
 
-symbolic procedure specrd!:expt(u,v);
-  begin
-    scalar r;
-    print list('expt, u, v);
-    showfloats u; showfloats v;
-    if (u = '(!:rd!: . 0.0) or u = 0) then return '(!:rd!: . 0.0);
-    if eqcar(u,'minus) then u := ('!:rd!: . -cdadr u);
-    if eqcar(v,'minus) then v := ('!:rd!: . -cdadr v);
-    if atom u then u := mkround float u;
-    if atom v then v := mkround float v;
-    r := rdexpt!*(u,v);
-    print list("=", r);
-    showfloats r;
-    return r;
-  end;
+clear a1,a2;
 
+% High level algorithms.
 
+on rounded; % makes output easier to read.
+ch := cholesky(mat7);
+tp first ch - second ch;
+tmp := first ch * second ch;
+tmp - mat7;
+off rounded;
 
-symbolic procedure specrd!:sqrt(u);
-  begin
-    print "specrd::sqrt";
-    if u = '(!:rd!: . 0.0) or u = 0 then return '(!:rd!: . 0.0);
-    if eqcar(u, 'minus) then u := '!:rd!: . -cdadr u;
-    if atom u then u := mkround float u;
-    u := rdsqrt!* u;
-    return u;
-  end;
+gram_schmidt({1,0,0},{1,1,0},{1,1,1});
+gram_schmidt({1,2},{3,4});
 
-
-
-symbolic procedure specrd!:plus(u,v);
-  begin
-    scalar negsign;
-    negsign := 0;
-    u := add_minus(u);
-    v := add_minus(v);
-    if eqcar(u,'minus) then << u := cadr u; negsign := 1>>;
-    if eqcar(v,'minus) then << v := cadr v; negsign := negsign +2>>;
-    if atom u then u := mkround float u;
-    if atom v then v := mkround float v;
-    return if negsign = 0 then rd!:plus(u,v)
-            else if negsign = 3 then list('minus,rd!:plus(u,v))
-             else if negsign =2 then rd!:difference (u,v)
-               else rd!:difference(v,u);
-  end;
-
-
-symbolic procedure specrd!:difference(u,v);
-  begin
-    scalar negsign;
-    negsign := 0;
-    u := add_minus(u);
-    v := add_minus(v);
-    if eqcar(u,'minus) then << u := cadr u; negsign := 1>>;
-    if eqcar(v,'minus) then << v := cadr v; negsign := negsign +2>>;
-    if atom u then u := mkround float u;
-    if atom v then v := mkround float v;
-    return if negsign = 0 then rd!:difference(u,v)
-            else if negsign = 3 then list('minus,rd!:difference(u,v))
-             else if negsign =2 then rd!:plus (u,v)
-              else list('minus,rd!:plus(v,u));
-  end;
-
-
-
-symbolic procedure add_minus(u);
-  %
-  % Things like (!:rd!: . -0.12345) can cause problems as negsign does
-  % not notice the negative. This function converts that to
-  % {'minus,(!:rd!: . 0.12345)}. Unfortunately it slows things down but
-  % it works.
-  %
-  begin
-    if atom u then return u
-    else if car u = '!:rd!: and cdr u >= 0 then return u
-    else if car u = '!:rd!: and cdr u < 0 then
-     return {'minus,('!:rd!: . abs(cdr u))}
-    else if car u = 'minus and numberp cadr u then return u
-    else if car u = 'minus and cdadr u < 0 then
-     return ('!:rd!: . abs(cdadr u))
-    else if car u = 'minus then return u
-    else if cdr u < 0 then return {'minus,('!:rd!: . abs(cdr u))}
-    else return u;
-  end;
-
-
-
-
+on rounded; % again, makes large quotients a bit more readable.
+% The algorithm used for lu_decom sometimes swaps the rows of the input 
+% matrix so that (given matrix A, lu_decom(A) = {L,U,vec}), we find L*U 
+% does not equal A but a row equivalent of it. The call convert(A,vec) 
+% will return this row equivalent (ie: L*U = convert(A,vec)).
+lu := lu_decom(mat5); 
+mat5;
+tmp := first lu * second lu;
+tmp1 := convert(mat5,third lu);
+tmp - tmp1;
+% and the complex case...
+lu1 := lu_decom(mat6);
+mat6;
+tmp := first lu1 * second lu1;
+tmp1 := convert(mat6,third lu1);
+tmp - tmp1;
 
 mat9inv := pseudo_inverse(mat9);
+mat9 * mat9inv;
 
-end;
+simplex(min,2*x1+14*x2+36*x3,{-2*x1+x2+4*x3>=5,-x1-2*x2-3*x3<=2});
 
+simplex(max,10000 x1 + 1000 x2 + 100 x3 + 10 x4 + x5,{ x1 <= 1, 20 x1 +
+ x2 <= 100, 200 x1 + 20 x2 + x3 <= 10000, 2000 x1 + 200 x2 + 20 x3 + x4
+ <= 1000000, 20000 x1 + 2000 x2 + 200 x3 + 20 x4 + x5 <= 100000000});
+
+simplex(max, 5 x1 + 4 x2 + 3 x3,
+           { 2 x1 + 3 x2 + x3 <= 5, 
+             4 x1 + x2 + 2 x3 <= 11, 
+             3 x1 + 4 x2 + 2 x3 <= 8 });
+
+simplex(min,3 x1 + 5 x2,{ x1 + 2 x2 >= 2, 22 x1 + x2 >= 3});
+
+simplex(max,10x+5y+5.5z,{5x+3z<=200,0.2x+0.1y+0.5z<=12,0.1x+0.2y+0.3z<=9,
+                         30x+10y+50z<=1500});
+
+%example of extra variables (>=0) being added.
+simplex(min,x-y,{x>=-3});
+
+% unfeasible as simplex algorithm implies all x>=0.
+simplex(min,x,{x<=-100});
+
+% three error examples.
+simplex(maxx,x,{x>=5});
+simplex(max,x,x>=5);
+simplex(max,x,{x<=y});
+
+simplex(max, 346 X11 + 346 X12 + 248 X21 + 248 X22 + 399 X31 + 399 X32 + 
+             200 Y11 + 200 Y12 + 75 Y21 + 75 Y22 + 2.35 Z1 + 3.5 Z2,
+{ 
+ 4 X11 + 4 X12 + 2 X21 + 2 X22 + X31 + X32 + 250 Y11 + 250 Y12 + 125 Y21 + 
+  125 Y22 <= 25000,
+ X11 + X12 + X21 + X22 + X31 + X32 + 2 Y11 + 2 Y12 + Y21 + Y22 <= 300,
+ 20 X11 + 15 X12 + 30 Y11 + 20 Y21 + Z1 <= 1500,
+ 40 X12 + 35 X22 + 50 X32 + 15 Y12 + 10 Y22 + Z2  = 5000,
+ X31  = 0,
+ Y11 + Y12 <= 50,
+ Y21 + Y22 <= 100
+});
+
+
+% from Marc van Dongen. Finding the first feasible solution for the 
+% solution of systems of linear diophantine inequalities.
+simplex(max,0,{
+  3*X259+4*X261+3*X262+2*X263+X269+2*X270+3*X271+4*X272+5*X273+X229=2,
+  7*X259+11*X261+8*X262+5*X263+3*X269+6*X270+9*X271+12*X272+15*X273+X229=4,
+  2*X259+5*X261+4*X262+3*X263+3*X268+4*X269+5*X270+6*X271+7*X272+8*X273=1,
+  X262+2*X263+5*X268+4*X269+3*X270+2*X271+X272+2*X229=1,
+  X259+X262+2*X263+4*X268+3*X269+2*X270+X271-X273+3*X229=2,
+  X259+2*X261+2*X262+2*X263+3*X268+3*X269+3*X270+3*X271+3*X272+3*X273+X229=1,
+  X259+X261+X262+X263+X268+X269+X270+X271+X272+X273+X229=1});
+
+svd_ans := svd(mat8);
+tmp := tp first svd_ans * second svd_ans * third svd_ans;
+tmp - mat8;
+
+mat9inv := pseudo_inverse(mat9);
+mat9 * mat9inv;
+
+% triang_adjoint(in_mat) calculates the
+% triangularizing adjoint of in_mat
+
+triang_adjoint(mat1);
+triang_adjoint(mat2);
+triang_adjoint(mat5);
+triang_adjoint(mat6);
+triang_adjoint(mat7);
+triang_adjoint(mat8);
+triang_adjoint(mat9);
+
+% testing triang_adjoint with random matrices
+
+% the range of the integers is in one case from
+% -1000 to 1000. in the other case it is from
+% -1 to 1 so that the deteminant of the i-th
+% submatrix equals very often to zero.
+
+% random matrix contains arbitrary real values
+off only_integer;
+tmp:=random_matrix(5,5,1000);
+triang_adjoint tmp;
+
+tmp:=random_matrix(1,1,1000);
+triang_adjoint tmp;
+
+% random matrix contains complex real values
+on imaginary;
+tmp:=random_matrix(5,5,1000);
+triang_adjoint tmp;
+
+tmp:=random_matrix(1,1,1000);
+triang_adjoint tmp;
+off imaginary;
+
+% random matrix contains rounded real values
+on rounded;
+tmp:=random_matrix(5,5,1000);
+triang_adjoint tmp;
+
+tmp:=random_matrix(1,1,1000);
+triang_adjoint tmp;
+off rounded;
+
+% random matrix contains only integer values
+on only_integer;
+tmp:=random_matrix(7,7,1000);
+triang_adjoint tmp;
+
+tmp:=random_matrix(7,7,1);
+triang_adjoint tmp;
+
+% random matrix contains only complex integer
+% values
+
+on imaginary;
+tmp:=random_matrix(5,5,1000);
+triang_adjoint tmp;
+
+tmp:=random_matrix(5,5,2);
+triang_adjoint tmp;
+
+% Predicates.
+
+matrixp(mat1);
+matrixp(poly);
+
+squarep(mat2);
+squarep(mat3);
+
+symmetricp(mat1);
+symmetricp(mat3);
+
+if not rounded_was_on then off rounded;
+
+
+END;
 
 
