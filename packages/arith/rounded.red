@@ -540,6 +540,80 @@ procedure evalnum0(u);
       return w
    end;
 
+!#if (memq 'psl lispsystem!*)
+
+symbolic procedure list!-to!-string u;
+  compress ('!" . append(u, '(!")));
+
+symbolic procedure hexdig w;
+  cdr assoc(w, '((0 . !0) (1 . !1) (2 . !2) (3 . !3)
+                 (4 . !4) (5 . !5) (6 . !6) (7 . !7)
+                 (8 . !8) (9 . !9) (10 . !a) (11 . !b)
+                 (12 . !c) (13 . !d) (14 . !e) (15 . !f)));
+
+symbolic procedure explodehex n;
+  begin
+% Only for use with integers
+    scalar r, s;
+    if n = 0 then return "0";
+    if n < 0 then << n := -n; s = t >>;
+    while not zerop n do <<
+       r := hexdig remainder(n, 16) . r;
+       n := n / 16 >>;
+    if s then r := '!- . r;
+    return r
+  end;
+
+!#endif
+
+symbolic procedure hexfloat u;
+  begin
+    scalar w, w1, s, x, m1, m2, m3, m4;
+    if numberp u then <<
+      w := aeval u;
+      w1 := '!:rd!: . float u >>
+    else <<
+      w := aeval car u;
+      w1 := prepsq simp w >>;
+    if eqcar(w1, '!:rd!:) and floatp cdr w1 then <<
+      w1 := cdr w1;
+      if w1 = 0.0 then return "0.0"
+      else if not (w1 = w1) then return "NaN";
+      if w1 < 0.0 then << s := t; w1 := -w1 >>;
+      x := 0;
+      while w1 < 0.5 do << w1 := 2.0*w1; x := x-1 >>;
+      if w1 = w1/2.0 then return (if s then "minusinfinity" else "infinity");
+      while w1 >= 1.0 do << w1 := w1/2.0; x := x+1 >>;
+      w1 := w1 * 32.0;
+      m1 := fix w1;
+      w1 := w1 - float m1;
+      w1 := w1 * 65536.0;
+      m2 := fix w1;
+      w1 := w1 - float m2;
+      w1 := w1 * 65536.0;
+      m3 := fix w1;
+      w1 := w1 - float m3;
+      w1 := w1 * 65536.0;
+      m4 := fix w1;
+      w1 := w1 - float m4;
+      if not zerop w1 then error(1, "Floating point oddity in hexfloat");
+% I should now have 5+16+16+16=53 bits of mantissa;
+      m1 := explodehex m1;
+      m2 := cdr explodehex (m2 + 65536);
+      m3 := cdr explodehex (m3 + 65536);
+      m4 := cdr explodehex (m4 + 65536);
+      w := '!B . explode x;
+      w := append(m4, '!_ . w);
+      w := append(m3, '!_ . w);
+      w := append(m2, '!_ . w);
+      w := append(m1, '!_ . w);
+      if s then w := '!- . w;
+      return list!-to!-string w >>
+    else return w;
+  end;
+
+put('hexfloat, 'psopfn, 'hexfloat);
+
 endmodule;
 
 end;
