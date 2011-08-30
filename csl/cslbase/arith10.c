@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 081e1c1d 21-Aug-2010 */
+/* Signature: 14662dad 30-Aug-2011 */
 
 
 #include "headers.h"
@@ -52,6 +52,84 @@
  * used by Codemist with its Fortran compiler.
  */
 
+#ifdef WIN32
+
+/*
+ * At least as of the end of August 2011 the implementations of sin
+ * and cos in the C library that comes with i686-w64-mingw32 and
+ * x86_65-w64-mingw32 compilers do not do range reduction very well,
+ * and so a calculation "sin(4.0*atan(1.0))" gives a bad result -
+ * specifically one with a load of trailing zeros in its binary
+ * representation. The code here does some more careful range reduction
+ * and so calls the basic version only when it is safer.
+ */
+
+
+static double MS_CDECL arg_reduce(double a, int *quadrant)
+/*
+ * Reduce argument to the range -pi/4 to pi/4, and set quadrant to the
+ * relevant quadant.
+ */
+{
+/*
+ * pi/2 is close to c1 + c2 + c3 and both c1 and c2 should be
+ * stored with only the top 30 bits in their FP representation non-zero.
+ * Furthermore the integers used to specify values here are less than
+ * 2^31 and so any internal working that could have limits at 32-bit
+ * integers should be safe.
+ */
+    static double c1 = 1686629713.0/1073741824.0;
+    static double c2 = 1121027177.0/1073741824.0/1073741824.0/16.0;
+    static double c3 = 2.91273205609335616e-20;
+    double w = a / 1.5707963267948966;
+    int32_t n = (int)(w < 0.0 ? w - 0.5 : w + 0.5);
+/*
+ * OK - now n should be the nearest integer to a/(pi/2) so
+ * (a - n) should be at most (about) pi/4 in absolute value.
+ */
+    w = a - (double)n*c1;
+    w = w - (double)n*c2;
+    w = w - (double)n*c3;
+    *quadrant = (int)(n & 3);
+    return w;
+}
+
+double MS_CDECL my_sin(double x)
+{
+    int quadrant;
+    x = arg_reduce(x, &quadrant);
+    switch (quadrant)
+    {
+default:
+case 0: return sin(x);
+case 1: return cos(x);
+case 2: return sin(-x);
+case 3: return -cos(x);
+    }
+}
+
+double MS_CDECL my_cos(double x)
+{
+    int quadrant;
+    x = arg_reduce(x, &quadrant);
+    switch (quadrant)
+    {
+default:
+case 0: return cos(x);
+case 1: return sin(-x);
+case 2: return -cos(x);
+case 3: return sin(x);
+    }
+}
+
+#else
+
+#define my_sin sin
+#define my_cos cos
+
+#endif
+
+
 #define CSL_log_2 0.6931471805599453094
 
 #ifdef COMMON
@@ -61,7 +139,7 @@ static Complex MS_CDECL Cdiv_z(Complex, Complex);
 static Complex MS_CDECL cpowi(Complex z, int n)
 {
 /*
- * Raises a complex number to an integer power by repeated squaring.
+ * Raises w complex number to an integer power by repeated squaring.
  */
     if (n == 0)
     {   Complex one;
@@ -118,7 +196,7 @@ static Complex MS_CDECL csin(Complex z)
  * For smallish y this can be used directly.  For |y| > 50 I will
  * compute sinh and cosh as just +/- exp(|y|)/2
  */
-    double s = sin(x), c = cos(x);
+    double s = my_sin(x), c = my_cos(x);
     double absy = fabs(y);
     if (absy <= 50.0)
     {   double sh = sinh(y), ch = cosh(y);
@@ -694,7 +772,7 @@ static double MS_CDECL rcot(double a)
  * a slower formula for big a.
  */
 {
-    if (a > 1000.0 || a < -1000.0) return cos(a)/sin(a);
+    if (a > 1000.0 || a < -1000.0) return my_cos(a)/my_sin(a);
     else return 1.0/tan(a);
 }
 
@@ -784,7 +862,7 @@ static double MS_CDECL rcoth(double a)
 
 static double MS_CDECL rcsc(double a)
 {
-    a = sin(a);
+    a = my_sin(a);
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/a;
 }
@@ -843,7 +921,7 @@ static double MS_CDECL ilog2(double a)
 
 static double MS_CDECL rsec(double a)
 {
-    a = cos(a);
+    a = my_cos(a);
     if (a == 0.0) return HUGE_VAL;
     else return 1.0/a;
 }
@@ -1184,7 +1262,6 @@ typedef struct trigfn
 #endif
 } trigfn_record;
 
-
 #ifdef COMMON
 static trigfn_record const trig_functions[] =
 {
@@ -1209,7 +1286,7 @@ static trigfn_record const trig_functions[] =
     {0,      0,      0},      /* atan2d 18 2-arg inverse tan, degs, [0, 360) */
     {ratanh, iatanh, catanh}, /* atanh  19 inverse hyperbolic tan */
     {rcbrt,  0,      ccbrt},  /* cbrt   20 cube root */
-    {cos,    0,      Ccos},   /* cos    21 cosine, rads */
+    {my_cos  0,      Ccos},   /* cos    21 cosine, rads */
     {rcosd,  0,      ccosd},  /* cosd   22 cosine, degs */
     {cosh,   0,      ccosh},  /* cosh   23 hyperbolic cosine */
     {rcot,   0,      ccot},   /* cot    24 cotangent, rads */
@@ -1227,7 +1304,7 @@ static trigfn_record const trig_functions[] =
     {rsec,   0,      csec},   /* sec    36 secant, rads */
     {rsecd,  0,      csecd},  /* secd   37 secant, degs */
     {rsech,  0,      csech},  /* sech   38 hyperbolic secant */
-    {sin,    0,      csin},   /* sin    39 sine, rads */
+    {my_sin, 0,      csin},   /* sin    39 sine, rads */
     {rsind,  0,      csind},  /* sind   40 sine, degs */
     {sinh,   0,      csinh},  /* sinh   41 hyperbolic sine */
     {rsqrt,  isqrt,  csqrt},  /* sqrt   42 square root */
@@ -1261,7 +1338,7 @@ static trigfn_record const trig_functions[] =
     {0,      0},       /* atan2d 18 2-arg inverse tangent, degs, [0, 360) */
     {ratanh, iatanh},  /* atanh  19 inverse hyperbolic tangent */
     {rcbrt,  0},       /* cbrt   20 cube root */
-    {cos,    0},       /* cos    21 cosine, rads */
+    {my_cos, 0},       /* cos    21 cosine, rads */
     {rcosd,  0},       /* cosd   22 cosine, degs */
     {cosh,   0},       /* cosh   23 hyperbolic cosine */
     {rcot,   0},       /* cot    24 cotangent, rads */
@@ -1279,7 +1356,7 @@ static trigfn_record const trig_functions[] =
     {rsec,   0},       /* sec    36 secant, rads */
     {rsecd,  0},       /* secd   37 secant, degs */
     {rsech,  0},       /* sech   38 hyperbolic secant */
-    {sin,    0},       /* sin    39 sine, rads */
+    {my_sin, 0},       /* sin    39 sine, rads */
     {rsind,  0},       /* sind   40 sine, degs */
     {sinh,   0},       /* sinh   41 hyperbolic sine */
     {rsqrt,  isqrt},   /* sqrt   42 square root */
