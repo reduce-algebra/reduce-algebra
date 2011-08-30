@@ -456,12 +456,13 @@ symbolic procedure specrd!:expt(u,v);
     return rdexpt!*(u,v);
   end;
 
-
-
-symbolic procedure specrd!:sqrt(u);
-  specrd!:expt(u,0.5);
-
-
+symbolic procedure specrd!:sqrt u;
+  begin
+    if u = '(!:rd!: . 0.0) or u = 0 then return '(!:rd!: . 0.0);
+    if eqcar(u, 'minus) then u := '!:rd!: . -cdadr u;
+    if atom u then u := mkround float u;
+    return rdsqrt!* u;
+  end;
 
 symbolic procedure specrd!:plus(u,v);
   begin
