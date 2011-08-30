@@ -579,7 +579,7 @@ symbolic procedure groeb_minimize(bas,syz);
 
 symbolic procedure groeb_homstbasis(m,comp_mgb,comp_ch,comp_syz);
   (begin scalar v,c,u;
-  c:=cali!=basering; v:=list gensym();
+  c:=cali!=basering; v:=list make_cali_varname();
   if not(comp_ch or comp_syz) then cali!=monset:=append(v,cali!=monset);
   setring!* ring_sum(c,ring_define(v,nil,'lex,'(1)));
   cali!=degrees:=mo_degneworder dpmat_coldegs m;

@@ -350,7 +350,7 @@ symbolic procedure matintersect!* l;
   else (begin scalar c,u,v,p,size;
     matop!=testdpmatlist l;
     size:=dpmat_cols car l;
-    v:=for each x in l collect gensym();
+    v:=for each x in l collect make_cali_varname();
     c:=cali!=basering;
     setring!* ring_sum(c,
         ring_define(v,degreeorder!* v,'lex,for each x in v collect 1));

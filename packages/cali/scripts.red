@@ -122,7 +122,7 @@ symbolic procedure ratpreimage!*(m,map);
         rederr"RATPREIMAGE only for noetherian term orders"
   else begin scalar u,oldring,newnames,oldnames,f,g,v,g0;
   if not eqcar(m,'list) then rederr"RATPREIMAGE only for ideals";
-  oldring:=first map; v:=gensym();
+  oldring:=first map; v:=make_cali_varname();
   newnames:=v . ring_names second map;
   oldnames:=ring_names oldring; u:=append(oldnames,newnames);
   setring!* ring_define(u,nil,'lex,for each x in u collect 1);
@@ -186,7 +186,7 @@ symbolic procedure affine_monomial_curve!*(l,R);
   else if length l neq length R then
         rederr"number of variables doesn't match"
   else begin scalar u,t0,v;
-    v:=list gensym();
+    v:=list make_cali_varname();
     r:=ring_define(r,{l},'revlex,l);
     setring!* ring_sum(r,ring_define(v,degreeorder!* v,'lex,'(1)));
     t0:=dp_from_a car v;
@@ -212,7 +212,7 @@ symbolic procedure proj_monomial_curve!*(l,R);
   else if length l neq length R then
         rederr"number of variables doesn't match"
   else begin scalar u,t0,t1,v,d;
-    t0:=gensym(); t1:=gensym(); v:={t0,t1};
+    t0:=make_cali_varname(); t1:=make_cali_varname(); v:={t0,t1};
     d:=listexpand(function max2,l);
     r:=ring_define(r,degreeorder!* r,'revlex,for each x in r collect 1);
     setring!* ring_sum(r,ring_define(v,degreeorder!* v,'lex,'(1 1)));
@@ -251,7 +251,7 @@ symbolic procedure blowup!*(M,N,vars);
         rederr {"ring must have",dpmat_rows n,"variables"};
     u:=for each x in dpmat_rowdegrees n collect mo_ecart cdr x;
     r1:=ring_define(vars,list u,'revlex,u);
-    s:=ring_sum(cali!=basering,r1); v:=list(gensym());
+    s:=ring_sum(cali!=basering,r1); v:=list(make_cali_varname());
     setring!* ring_sum(s,ring_define(v,degreeorder!* v,'lex,'(1)));
     t0:=dp_from_a car v;
     n:=for each x in
@@ -297,7 +297,7 @@ symbolic procedure analytic_spread!* m;
    if (dpmat_cols m>0) then rederr"ANALYTIC SPREAD only for ideals"
    else (begin scalar r,m1,vars;
    r:=ring_names cali!=basering;
-   vars:=for each x in dpmat_list m collect gensym();
+   vars:=for each x in dpmat_list m collect make_cali_varname();
    m1:=blowup!*(dpmat_from_dpoly nil,m,vars);
    return dim!* gbasis!* matsum!*{m1,dpmat_from_a('list . r)};
    end) where cali!=basering=cali!=basering;

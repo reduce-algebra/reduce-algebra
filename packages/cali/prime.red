@@ -229,7 +229,7 @@ symbolic procedure prime!=zeroprimes2 m;
 % Decompose the radical zerodimensional dmpat ideal m using a general
 % position argument. Returns a reduced list of gbases.
   (begin scalar c,v,vars,u,d,r;
-    c:=cali!=basering; vars:=ring_names c; v:=gensym();
+    c:=cali!=basering; vars:=ring_names c; v:=make_cali_varname();
     u:=setdiff(vars,for each x in moid_from_bas dpmat_list m
                 join {mo_linear x});
     if (length u)=1 then return prime!=zeroprimes3(m,first u);
@@ -272,7 +272,7 @@ symbolic procedure prime!=iszeroprime2 m;
 % Test the radical zerodimensional dmpat ideal m to be prime using a
 % general position argument.
   (begin scalar c,v,vars,u,r;
-    c:=cali!=basering; vars:=ring_names c; v:=gensym();
+    c:=cali!=basering; vars:=ring_names c; v:=make_cali_varname();
     if ring_tag c='revlex then % for proper ring_sum redefine it.
         r:=ring_define(vars,ring_degrees c,'lex,ring_ecart c)
     else r:=c;

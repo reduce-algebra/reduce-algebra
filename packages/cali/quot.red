@@ -140,7 +140,7 @@ symbolic procedure idealquotient1!*(m,n);
   else if dpmat_cols m=1 then
         ideal2mat!* modulequotient1!*(m,ideal2mat!* n)
   else (begin scalar u1,u2,f,v,r,m1;
-  v:=list gensym(); r:=cali!=basering;
+  v:=list make_cali_varname(); r:=cali!=basering;
   setring!* ring_sum(r,ring_define(v,degreeorder!* v,'revlex,'(1)));
   cali!=degrees:=mo_degneworder dpmat_coldegs m;
   n:=for each x in dpmat_list n collect dp_neworder x;
@@ -165,7 +165,7 @@ symbolic procedure modulequotient1!*(m,n);
   n:=for each x in dpmat_list n collect matop_pseudomod(bas_dpoly x,m);
   n:=for each x in n join if x then {x};
   if null n then return dpmat_from_dpoly dp_fi 1;
-  v:=list gensym(); r:=cali!=basering;
+  v:=list make_cali_varname(); r:=cali!=basering;
   setring!* ring_sum(r,ring_define(v,degreeorder!* v,'revlex,'(1)));
   cali!=degrees:=mo_degneworder cali!=degrees;
   u1:=u2:=dp_from_a car v; f:=dp_neworder car n;
@@ -231,7 +231,7 @@ symbolic procedure quot!=stabquot(m,f);
 % m must be a module.
   if dpmat_cols m=0 then rederr"quot_stabquot only for cols>0"
   else (begin scalar m1,p,p1,p2,v,v1,v2,c;
-    v1:=gensym(); v2:=gensym(); v:={v1,v2};
+    v1:=make_cali_varname(); v2:=make_cali_varname(); v:={v1,v2};
     setring!* ring_sum(c:=cali!=basering,
         ring_define(v,degreeorder!* v,'lex,'(1 1)));
     cali!=degrees:=mo_degneworder dpmat_coldegs m;

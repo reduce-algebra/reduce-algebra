@@ -297,6 +297,13 @@ symbolic procedure cali_choose(m,k);
         for each x in cali_choose(cdr m,k-1) collect (car m . x),
         cali_choose(cdr m,k));
 
+fluid '(cali!:varindex!!);
+cali!:varindex!! := 0;
+
+symbolic procedure make_cali_varname();
+  <<cali!:varindex!! := cali!:varindex!!+1;
+    mkid('cali!:var,cali!:varindex!!)>>;
+
 endmodule;
 
 end;

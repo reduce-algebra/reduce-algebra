@@ -252,7 +252,7 @@ symbolic procedure affine_points!* m;
   if length(names:=ring_names cali!=basering) neq length cadr m then
         typerr(m,"coordinate matrix");
   put('cali,'sublist,for each x in cdr m collect pair(names,x));
-  put('cali,'varnames, names:=for each x in cdr m collect gensym());
+  put('cali,'varnames, names:=for each x in cdr m collect make_cali_varname());
   put('cali,'varlessp,'lf!=pointvarlessp);
   put('cali,'evlf,'lf!=pointevlf);
   return lf_dualbasis(
@@ -273,7 +273,7 @@ symbolic procedure proj_points!* m;
   if length(names:=ring_names cali!=basering) neq length cadr m then
         typerr(m,"coordinate matrix");
   put('cali,'sublist,u:=for each x in cdr m collect pair(names,x));
-  put('cali,'varnames, names:=for each x in cdr m collect gensym());
+  put('cali,'varnames, names:=for each x in cdr m collect make_cali_varname());
   put('cali,'varlessp,'lf!=pointvarlessp);
   put('cali,'evlf,'lf!=pointevlf);
   return lf_dualhbasis(
