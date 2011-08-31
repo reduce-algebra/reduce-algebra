@@ -155,6 +155,17 @@ deflist(
    (!a 10) (!b 11) (!c 12) (!d 13) (!e 14) (!f 15)
    (!A 10) (!B 11) (!C 12) (!D 13) (!E 14) (!F 15)), 'hexdigit);
 
+% The special marker !_line!_ will be replaced in the input stream of
+% tokens by the current line number. Note that if terminalp() returns
+% true that input lines are not counted - ie if !*int is on (to signal
+% interactive use) and input is direct from whatever is standard when
+% reduce starts then !_line!_ will always expand to 1. Go "off int;" or
+% put your material in a file that you read using "in" if this matters
+% to you.
+
+fluid '(!*line!-marker);
+!*line!-marker := intern compress '(!! !_ l i n e !! !_);
+
 symbolic procedure token1;
    begin scalar x,y;
         x := crchar!*;
@@ -194,7 +205,9 @@ symbolic procedure token1;
          else if x eq '!- and !*minusliter
           then progn(y := '!! . y, go to let1)
          else if x eq '!_ then go to let1;    % Allow _ as letter.
-        nxtsym!* := intern compress reversip!* y;
+        y := intern compress reversip!* y;
+        if y = !*line!-marker then nxtsym!* := curline!*
+        else nxtsym!* := y;
         crchar!* := x;
     c:  return nxtsym!*;
 %   minusl:
