@@ -3702,24 +3702,24 @@ Test at offset 54
 ("positions" 54 1)
 
 Test at offset 55
-......................................................<(a .
+......................................................<(a . 
 x)>
 ("positions" 55 2)
 
 Test at offset 56
-.......................................................<(a .
-x)>
-("positions" 56 2)
+.......................................................<(a
+ . x)>
+("positions" 56 5)
 
 Test at offset 57
 ........................................................<(a
-. x)>
-("positions" 57 4)
+ . x)>
+("positions" 57 5)
 
 Test at offset 58
 .........................................................<(a
-. x)>
-("positions" 58 4)
+ . x)>
+("positions" 58 5)
 
 Test at offset 59
 ..........................................................<(
@@ -3820,24 +3820,24 @@ Test at offset 20
 ("positions" 20 1)
 
 Test at offset 21
-....................<(a b c d e f g h i j k l m n o p q r .
+....................<(a b c d e f g h i j k l m n o p q r . 
 x)>
 ("positions" 21 2)
 
 Test at offset 22
-.....................<(a b c d e f g h i j k l m n o p q r .
-x)>
-("positions" 22 2)
+.....................<(a b c d e f g h i j k l m n o p q r
+ . x)>
+("positions" 22 5)
 
 Test at offset 23
 ......................<(a b c d e f g h i j k l m n o p q r
-. x)>
-("positions" 23 4)
+ . x)>
+("positions" 23 5)
 
 Test at offset 24
 .......................<(a b c d e f g h i j k l m n o p q r
-. x)>
-("positions" 24 4)
+ . x)>
+("positions" 24 5)
 
 Test at offset 25
 ........................<(a b c d e f g h i j k l m n o p q
@@ -4204,24 +4204,24 @@ Test at offset 44
 ("positions" 44 1)
 
 Test at offset 45
-............................................<((((a b c))) .
+............................................<((((a b c))) . 
 x)>
 ("positions" 45 2)
 
 Test at offset 46
-.............................................<((((a b c))) .
-x)>
-("positions" 46 2)
+.............................................<((((a b c)))
+ . x)>
+("positions" 46 5)
 
 Test at offset 47
 ..............................................<((((a b c)))
-. x)>
-("positions" 47 4)
+ . x)>
+("positions" 47 5)
 
 Test at offset 48
 ...............................................<((((a b c)))
-. x)>
-("positions" 48 4)
+ . x)>
+("positions" 48 5)
 
 Test at offset 49
 ................................................<((((a b c))

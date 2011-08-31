@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4124d13f 30-Aug-2011 */
+/* Signature: 62872076 31-Aug-2011 */
 
 #include "headers.h"
 
@@ -2007,10 +2007,14 @@ case TAG_CONS:
         }
         if (w != nil)
         {   stack[0] = w;
-            outprefix(YES, 1);
+            outprefix(NO, 3);
+            putc_stream(' ', active_stream);
+            errexitvn(1);
             putc_stream('.', active_stream);
             errexitvn(1);
-            internal_prin(stack[0], 1);
+            putc_stream(' ', active_stream);
+            errexitvn(1);
+            internal_prin(stack[0], 0);
         }
         popv(1);
         outprefix(NO, 1);
