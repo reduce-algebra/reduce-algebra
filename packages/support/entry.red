@@ -138,7 +138,10 @@ if 'psl memq lispsystem!* then defautoload(lap,compiler)
 
 remd 'crefon;  % don't use PSL version
 
-put('cref,'simpfg,'((t (crefon)) (nil (crefoff))));
+% Protect against "off cref;" calling crefoff before the rcref module 
+% is loaded.
+put('cref,'simpfg,'((t (crefon))
+                    (nil (and (getd (quote crefoff)) (crefoff)))));
 
 defautoload(crefon,rcref,expr,0);
 
