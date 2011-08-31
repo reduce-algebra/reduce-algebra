@@ -368,7 +368,13 @@ single precision integers should be used;
 % people have had several months to install a newly compiled CSL I will
 % restrict myself to the limit that applied up until them.
 
-largest!-small!-modulus := 2**24 - 1;
+% largest!-small!-modulus := 2**24 - 1;
+
+% Well in August 2011 I conclude that matching the value that PSL uses is
+% important for compatibility... so I hope that if PSL ever changes somebody
+% will tell me.
+
+largest!-small!-modulus := 2**23;
 
 flag('(modular!-difference modular!-minus modular!-number
        modular!-plus modular!-quotient modular!-reciprocal
