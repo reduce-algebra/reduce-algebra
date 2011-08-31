@@ -23,7 +23,8 @@ symbolic procedure test_wrap x;
       b := posn();
       prin2 ">";
       terpri();
-      print list("positions", a, b) >>;
+      if b > 60 then print list('overflowed, a, b)
+      else print list("positions", a, b) >>;
     print "done"
   end;
 
@@ -1076,6 +1077,7 @@ Test at offset 60
 
 nil
 
+% The next line has tabs on it
 test_wrap '!	!	;
 
 
@@ -1327,16 +1329,311 @@ Test at offset 60
 
 nil
 
-test_wrap $
+test_wrap !$eol!$;
 
 
-+++ Error unset variable: test_wrap
-eol$
+Test at offset 1
+<!
+>
+("positions" 1 0)
 
+Test at offset 2
+.<!
+>
+("positions" 2 0)
 
-+++ Error unset variable: eol
-;
+Test at offset 3
+..<!
+>
+("positions" 3 0)
 
+Test at offset 4
+...<!
+>
+("positions" 4 0)
+
+Test at offset 5
+....<!
+>
+("positions" 5 0)
+
+Test at offset 6
+.....<!
+>
+("positions" 6 0)
+
+Test at offset 7
+......<!
+>
+("positions" 7 0)
+
+Test at offset 8
+.......<!
+>
+("positions" 8 0)
+
+Test at offset 9
+........<!
+>
+("positions" 9 0)
+
+Test at offset 10
+.........<!
+>
+("positions" 10 0)
+
+Test at offset 11
+..........<!
+>
+("positions" 11 0)
+
+Test at offset 12
+...........<!
+>
+("positions" 12 0)
+
+Test at offset 13
+............<!
+>
+("positions" 13 0)
+
+Test at offset 14
+.............<!
+>
+("positions" 14 0)
+
+Test at offset 15
+..............<!
+>
+("positions" 15 0)
+
+Test at offset 16
+...............<!
+>
+("positions" 16 0)
+
+Test at offset 17
+................<!
+>
+("positions" 17 0)
+
+Test at offset 18
+.................<!
+>
+("positions" 18 0)
+
+Test at offset 19
+..................<!
+>
+("positions" 19 0)
+
+Test at offset 20
+...................<!
+>
+("positions" 20 0)
+
+Test at offset 21
+....................<!
+>
+("positions" 21 0)
+
+Test at offset 22
+.....................<!
+>
+("positions" 22 0)
+
+Test at offset 23
+......................<!
+>
+("positions" 23 0)
+
+Test at offset 24
+.......................<!
+>
+("positions" 24 0)
+
+Test at offset 25
+........................<!
+>
+("positions" 25 0)
+
+Test at offset 26
+.........................<!
+>
+("positions" 26 0)
+
+Test at offset 27
+..........................<!
+>
+("positions" 27 0)
+
+Test at offset 28
+...........................<!
+>
+("positions" 28 0)
+
+Test at offset 29
+............................<!
+>
+("positions" 29 0)
+
+Test at offset 30
+.............................<!
+>
+("positions" 30 0)
+
+Test at offset 31
+..............................<!
+>
+("positions" 31 0)
+
+Test at offset 32
+...............................<!
+>
+("positions" 32 0)
+
+Test at offset 33
+................................<!
+>
+("positions" 33 0)
+
+Test at offset 34
+.................................<!
+>
+("positions" 34 0)
+
+Test at offset 35
+..................................<!
+>
+("positions" 35 0)
+
+Test at offset 36
+...................................<!
+>
+("positions" 36 0)
+
+Test at offset 37
+....................................<!
+>
+("positions" 37 0)
+
+Test at offset 38
+.....................................<!
+>
+("positions" 38 0)
+
+Test at offset 39
+......................................<!
+>
+("positions" 39 0)
+
+Test at offset 40
+.......................................<!
+>
+("positions" 40 0)
+
+Test at offset 41
+........................................<!
+>
+("positions" 41 0)
+
+Test at offset 42
+.........................................<!
+>
+("positions" 42 0)
+
+Test at offset 43
+..........................................<!
+>
+("positions" 43 0)
+
+Test at offset 44
+...........................................<!
+>
+("positions" 44 0)
+
+Test at offset 45
+............................................<!
+>
+("positions" 45 0)
+
+Test at offset 46
+.............................................<!
+>
+("positions" 46 0)
+
+Test at offset 47
+..............................................<!
+>
+("positions" 47 0)
+
+Test at offset 48
+...............................................<!
+>
+("positions" 48 0)
+
+Test at offset 49
+................................................<!
+>
+("positions" 49 0)
+
+Test at offset 50
+.................................................<!
+>
+("positions" 50 0)
+
+Test at offset 51
+..................................................<!
+>
+("positions" 51 0)
+
+Test at offset 52
+...................................................<!
+>
+("positions" 52 0)
+
+Test at offset 53
+....................................................<!
+>
+("positions" 53 0)
+
+Test at offset 54
+.....................................................<!
+>
+("positions" 54 0)
+
+Test at offset 55
+......................................................<!
+>
+("positions" 55 0)
+
+Test at offset 56
+.......................................................<!
+>
+("positions" 56 0)
+
+Test at offset 57
+........................................................<!
+>
+("positions" 57 0)
+
+Test at offset 58
+.........................................................<!
+>
+("positions" 58 0)
+
+Test at offset 59
+..........................................................<
+!
+>
+("positions" 59 0)
+
+Test at offset 60
+...........................................................<
+!
+>
+("positions" 60 0)
+"done"
 
 nil
 
@@ -2367,6 +2664,284 @@ Test at offset 60
 ...........................................................<
 "abcdefghijklmnopqr">
 ("positions" 60 20)
+"done"
+
+nil
+
+% The next line is to test double-quotes within strings
+test_wrap "a""c""e""g""h""j""l""n""p""r";
+
+
+Test at offset 1
+<"a""c""e""g""h""j""l""n""p""r">
+("positions" 1 31)
+
+Test at offset 2
+.<"a""c""e""g""h""j""l""n""p""r">
+("positions" 2 32)
+
+Test at offset 3
+..<"a""c""e""g""h""j""l""n""p""r">
+("positions" 3 33)
+
+Test at offset 4
+...<"a""c""e""g""h""j""l""n""p""r">
+("positions" 4 34)
+
+Test at offset 5
+....<"a""c""e""g""h""j""l""n""p""r">
+("positions" 5 35)
+
+Test at offset 6
+.....<"a""c""e""g""h""j""l""n""p""r">
+("positions" 6 36)
+
+Test at offset 7
+......<"a""c""e""g""h""j""l""n""p""r">
+("positions" 7 37)
+
+Test at offset 8
+.......<"a""c""e""g""h""j""l""n""p""r">
+("positions" 8 38)
+
+Test at offset 9
+........<"a""c""e""g""h""j""l""n""p""r">
+("positions" 9 39)
+
+Test at offset 10
+.........<"a""c""e""g""h""j""l""n""p""r">
+("positions" 10 40)
+
+Test at offset 11
+..........<"a""c""e""g""h""j""l""n""p""r">
+("positions" 11 41)
+
+Test at offset 12
+...........<"a""c""e""g""h""j""l""n""p""r">
+("positions" 12 42)
+
+Test at offset 13
+............<"a""c""e""g""h""j""l""n""p""r">
+("positions" 13 43)
+
+Test at offset 14
+.............<"a""c""e""g""h""j""l""n""p""r">
+("positions" 14 44)
+
+Test at offset 15
+..............<"a""c""e""g""h""j""l""n""p""r">
+("positions" 15 45)
+
+Test at offset 16
+...............<"a""c""e""g""h""j""l""n""p""r">
+("positions" 16 46)
+
+Test at offset 17
+................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 17 47)
+
+Test at offset 18
+.................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 18 48)
+
+Test at offset 19
+..................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 19 49)
+
+Test at offset 20
+...................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 20 50)
+
+Test at offset 21
+....................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 21 51)
+
+Test at offset 22
+.....................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 22 52)
+
+Test at offset 23
+......................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 23 53)
+
+Test at offset 24
+.......................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 24 54)
+
+Test at offset 25
+........................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 25 55)
+
+Test at offset 26
+.........................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 26 56)
+
+Test at offset 27
+..........................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 27 57)
+
+Test at offset 28
+...........................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 28 58)
+
+Test at offset 29
+............................<"a""c""e""g""h""j""l""n""p""r">
+("positions" 29 59)
+
+Test at offset 30
+.............................<"a""c""e""g""h""j""l""n""p""r"
+>
+("positions" 30 60)
+
+Test at offset 31
+..............................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 31 30)
+
+Test at offset 32
+...............................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 32 30)
+
+Test at offset 33
+................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 33 30)
+
+Test at offset 34
+.................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 34 30)
+
+Test at offset 35
+..................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 35 30)
+
+Test at offset 36
+...................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 36 30)
+
+Test at offset 37
+....................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 37 30)
+
+Test at offset 38
+.....................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 38 30)
+
+Test at offset 39
+......................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 39 30)
+
+Test at offset 40
+.......................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 40 30)
+
+Test at offset 41
+........................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 41 30)
+
+Test at offset 42
+.........................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 42 30)
+
+Test at offset 43
+..........................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 43 30)
+
+Test at offset 44
+...........................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 44 30)
+
+Test at offset 45
+............................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 45 30)
+
+Test at offset 46
+.............................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 46 30)
+
+Test at offset 47
+..............................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 47 30)
+
+Test at offset 48
+...............................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 48 30)
+
+Test at offset 49
+................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 49 30)
+
+Test at offset 50
+.................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 50 30)
+
+Test at offset 51
+..................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 51 30)
+
+Test at offset 52
+...................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 52 30)
+
+Test at offset 53
+....................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 53 30)
+
+Test at offset 54
+.....................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 54 30)
+
+Test at offset 55
+......................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 55 30)
+
+Test at offset 56
+.......................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 56 30)
+
+Test at offset 57
+........................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 57 30)
+
+Test at offset 58
+.........................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 58 30)
+
+Test at offset 59
+..........................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 59 30)
+
+Test at offset 60
+...........................................................<
+"a""c""e""g""h""j""l""n""p""r">
+("positions" 60 30)
 "done"
 
 nil
@@ -3443,6 +4018,1814 @@ Test at offset 60
 ...........................................................<
 (a b c d e f g h i j k l m n o p q r . x)>
 ("positions" 60 41)
+"done"
+
+nil
+
+test_wrap '((((a b c))) . x);
+
+
+Test at offset 1
+<((((a b c))) . x)>
+("positions" 1 18)
+
+Test at offset 2
+.<((((a b c))) . x)>
+("positions" 2 19)
+
+Test at offset 3
+..<((((a b c))) . x)>
+("positions" 3 20)
+
+Test at offset 4
+...<((((a b c))) . x)>
+("positions" 4 21)
+
+Test at offset 5
+....<((((a b c))) . x)>
+("positions" 5 22)
+
+Test at offset 6
+.....<((((a b c))) . x)>
+("positions" 6 23)
+
+Test at offset 7
+......<((((a b c))) . x)>
+("positions" 7 24)
+
+Test at offset 8
+.......<((((a b c))) . x)>
+("positions" 8 25)
+
+Test at offset 9
+........<((((a b c))) . x)>
+("positions" 9 26)
+
+Test at offset 10
+.........<((((a b c))) . x)>
+("positions" 10 27)
+
+Test at offset 11
+..........<((((a b c))) . x)>
+("positions" 11 28)
+
+Test at offset 12
+...........<((((a b c))) . x)>
+("positions" 12 29)
+
+Test at offset 13
+............<((((a b c))) . x)>
+("positions" 13 30)
+
+Test at offset 14
+.............<((((a b c))) . x)>
+("positions" 14 31)
+
+Test at offset 15
+..............<((((a b c))) . x)>
+("positions" 15 32)
+
+Test at offset 16
+...............<((((a b c))) . x)>
+("positions" 16 33)
+
+Test at offset 17
+................<((((a b c))) . x)>
+("positions" 17 34)
+
+Test at offset 18
+.................<((((a b c))) . x)>
+("positions" 18 35)
+
+Test at offset 19
+..................<((((a b c))) . x)>
+("positions" 19 36)
+
+Test at offset 20
+...................<((((a b c))) . x)>
+("positions" 20 37)
+
+Test at offset 21
+....................<((((a b c))) . x)>
+("positions" 21 38)
+
+Test at offset 22
+.....................<((((a b c))) . x)>
+("positions" 22 39)
+
+Test at offset 23
+......................<((((a b c))) . x)>
+("positions" 23 40)
+
+Test at offset 24
+.......................<((((a b c))) . x)>
+("positions" 24 41)
+
+Test at offset 25
+........................<((((a b c))) . x)>
+("positions" 25 42)
+
+Test at offset 26
+.........................<((((a b c))) . x)>
+("positions" 26 43)
+
+Test at offset 27
+..........................<((((a b c))) . x)>
+("positions" 27 44)
+
+Test at offset 28
+...........................<((((a b c))) . x)>
+("positions" 28 45)
+
+Test at offset 29
+............................<((((a b c))) . x)>
+("positions" 29 46)
+
+Test at offset 30
+.............................<((((a b c))) . x)>
+("positions" 30 47)
+
+Test at offset 31
+..............................<((((a b c))) . x)>
+("positions" 31 48)
+
+Test at offset 32
+...............................<((((a b c))) . x)>
+("positions" 32 49)
+
+Test at offset 33
+................................<((((a b c))) . x)>
+("positions" 33 50)
+
+Test at offset 34
+.................................<((((a b c))) . x)>
+("positions" 34 51)
+
+Test at offset 35
+..................................<((((a b c))) . x)>
+("positions" 35 52)
+
+Test at offset 36
+...................................<((((a b c))) . x)>
+("positions" 36 53)
+
+Test at offset 37
+....................................<((((a b c))) . x)>
+("positions" 37 54)
+
+Test at offset 38
+.....................................<((((a b c))) . x)>
+("positions" 38 55)
+
+Test at offset 39
+......................................<((((a b c))) . x)>
+("positions" 39 56)
+
+Test at offset 40
+.......................................<((((a b c))) . x)>
+("positions" 40 57)
+
+Test at offset 41
+........................................<((((a b c))) . x)>
+("positions" 41 58)
+
+Test at offset 42
+.........................................<((((a b c))) . x)>
+("positions" 42 59)
+
+Test at offset 43
+..........................................<((((a b c))) . x)
+>
+("positions" 43 60)
+
+Test at offset 44
+...........................................<((((a b c))) . x
+)>
+("positions" 44 1)
+
+Test at offset 45
+............................................<((((a b c))) .
+x)>
+("positions" 45 2)
+
+Test at offset 46
+.............................................<((((a b c))) .
+x)>
+("positions" 46 2)
+
+Test at offset 47
+..............................................<((((a b c)))
+. x)>
+("positions" 47 4)
+
+Test at offset 48
+...............................................<((((a b c)))
+. x)>
+("positions" 48 4)
+
+Test at offset 49
+................................................<((((a b c))
+) . x)>
+("positions" 49 6)
+
+Test at offset 50
+.................................................<((((a b c)
+)) . x)>
+("positions" 50 7)
+
+Test at offset 51
+..................................................<((((a b c
+))) . x)>
+("positions" 51 8)
+
+Test at offset 52
+...................................................<((((a b
+c))) . x)>
+("positions" 52 9)
+
+Test at offset 53
+....................................................<((((a b
+c))) . x)>
+("positions" 53 9)
+
+Test at offset 54
+.....................................................<((((a
+b c))) . x)>
+("positions" 54 11)
+
+Test at offset 55
+......................................................<((((a
+b c))) . x)>
+("positions" 55 11)
+
+Test at offset 56
+.......................................................<((((
+a b c))) . x)>
+("positions" 56 13)
+
+Test at offset 57
+........................................................<(((
+(a b c))) . x)>
+("positions" 57 14)
+
+Test at offset 58
+.........................................................<((
+((a b c))) . x)>
+("positions" 58 15)
+
+Test at offset 59
+..........................................................<(
+(((a b c))) . x)>
+("positions" 59 16)
+
+Test at offset 60
+...........................................................<
+((((a b c))) . x)>
+("positions" 60 17)
+"done"
+
+nil
+
+test_wrap '((((a b))));
+
+
+Test at offset 1
+<((((a b))))>
+("positions" 1 12)
+
+Test at offset 2
+.<((((a b))))>
+("positions" 2 13)
+
+Test at offset 3
+..<((((a b))))>
+("positions" 3 14)
+
+Test at offset 4
+...<((((a b))))>
+("positions" 4 15)
+
+Test at offset 5
+....<((((a b))))>
+("positions" 5 16)
+
+Test at offset 6
+.....<((((a b))))>
+("positions" 6 17)
+
+Test at offset 7
+......<((((a b))))>
+("positions" 7 18)
+
+Test at offset 8
+.......<((((a b))))>
+("positions" 8 19)
+
+Test at offset 9
+........<((((a b))))>
+("positions" 9 20)
+
+Test at offset 10
+.........<((((a b))))>
+("positions" 10 21)
+
+Test at offset 11
+..........<((((a b))))>
+("positions" 11 22)
+
+Test at offset 12
+...........<((((a b))))>
+("positions" 12 23)
+
+Test at offset 13
+............<((((a b))))>
+("positions" 13 24)
+
+Test at offset 14
+.............<((((a b))))>
+("positions" 14 25)
+
+Test at offset 15
+..............<((((a b))))>
+("positions" 15 26)
+
+Test at offset 16
+...............<((((a b))))>
+("positions" 16 27)
+
+Test at offset 17
+................<((((a b))))>
+("positions" 17 28)
+
+Test at offset 18
+.................<((((a b))))>
+("positions" 18 29)
+
+Test at offset 19
+..................<((((a b))))>
+("positions" 19 30)
+
+Test at offset 20
+...................<((((a b))))>
+("positions" 20 31)
+
+Test at offset 21
+....................<((((a b))))>
+("positions" 21 32)
+
+Test at offset 22
+.....................<((((a b))))>
+("positions" 22 33)
+
+Test at offset 23
+......................<((((a b))))>
+("positions" 23 34)
+
+Test at offset 24
+.......................<((((a b))))>
+("positions" 24 35)
+
+Test at offset 25
+........................<((((a b))))>
+("positions" 25 36)
+
+Test at offset 26
+.........................<((((a b))))>
+("positions" 26 37)
+
+Test at offset 27
+..........................<((((a b))))>
+("positions" 27 38)
+
+Test at offset 28
+...........................<((((a b))))>
+("positions" 28 39)
+
+Test at offset 29
+............................<((((a b))))>
+("positions" 29 40)
+
+Test at offset 30
+.............................<((((a b))))>
+("positions" 30 41)
+
+Test at offset 31
+..............................<((((a b))))>
+("positions" 31 42)
+
+Test at offset 32
+...............................<((((a b))))>
+("positions" 32 43)
+
+Test at offset 33
+................................<((((a b))))>
+("positions" 33 44)
+
+Test at offset 34
+.................................<((((a b))))>
+("positions" 34 45)
+
+Test at offset 35
+..................................<((((a b))))>
+("positions" 35 46)
+
+Test at offset 36
+...................................<((((a b))))>
+("positions" 36 47)
+
+Test at offset 37
+....................................<((((a b))))>
+("positions" 37 48)
+
+Test at offset 38
+.....................................<((((a b))))>
+("positions" 38 49)
+
+Test at offset 39
+......................................<((((a b))))>
+("positions" 39 50)
+
+Test at offset 40
+.......................................<((((a b))))>
+("positions" 40 51)
+
+Test at offset 41
+........................................<((((a b))))>
+("positions" 41 52)
+
+Test at offset 42
+.........................................<((((a b))))>
+("positions" 42 53)
+
+Test at offset 43
+..........................................<((((a b))))>
+("positions" 43 54)
+
+Test at offset 44
+...........................................<((((a b))))>
+("positions" 44 55)
+
+Test at offset 45
+............................................<((((a b))))>
+("positions" 45 56)
+
+Test at offset 46
+.............................................<((((a b))))>
+("positions" 46 57)
+
+Test at offset 47
+..............................................<((((a b))))>
+("positions" 47 58)
+
+Test at offset 48
+...............................................<((((a b))))>
+("positions" 48 59)
+
+Test at offset 49
+................................................<((((a b))))
+>
+("positions" 49 60)
+
+Test at offset 50
+.................................................<((((a b)))
+)>
+("positions" 50 1)
+
+Test at offset 51
+..................................................<((((a b))
+))>
+("positions" 51 2)
+
+Test at offset 52
+...................................................<((((a b)
+)))>
+("positions" 52 3)
+
+Test at offset 53
+....................................................<((((a b
+))))>
+("positions" 53 4)
+
+Test at offset 54
+.....................................................<((((a
+b))))>
+("positions" 54 5)
+
+Test at offset 55
+......................................................<((((a
+b))))>
+("positions" 55 5)
+
+Test at offset 56
+.......................................................<((((
+a b))))>
+("positions" 56 7)
+
+Test at offset 57
+........................................................<(((
+(a b))))>
+("positions" 57 8)
+
+Test at offset 58
+.........................................................<((
+((a b))))>
+("positions" 58 9)
+
+Test at offset 59
+..........................................................<(
+(((a b))))>
+("positions" 59 10)
+
+Test at offset 60
+...........................................................<
+((((a b))))>
+("positions" 60 11)
+"done"
+
+nil
+
+% I could perhaps try almost all special characters at the start and
+% within names...
+test_wrap '!_abc!_def;
+
+
+Test at offset 1
+<!_abc_def>
+("positions" 1 10)
+
+Test at offset 2
+.<!_abc_def>
+("positions" 2 11)
+
+Test at offset 3
+..<!_abc_def>
+("positions" 3 12)
+
+Test at offset 4
+...<!_abc_def>
+("positions" 4 13)
+
+Test at offset 5
+....<!_abc_def>
+("positions" 5 14)
+
+Test at offset 6
+.....<!_abc_def>
+("positions" 6 15)
+
+Test at offset 7
+......<!_abc_def>
+("positions" 7 16)
+
+Test at offset 8
+.......<!_abc_def>
+("positions" 8 17)
+
+Test at offset 9
+........<!_abc_def>
+("positions" 9 18)
+
+Test at offset 10
+.........<!_abc_def>
+("positions" 10 19)
+
+Test at offset 11
+..........<!_abc_def>
+("positions" 11 20)
+
+Test at offset 12
+...........<!_abc_def>
+("positions" 12 21)
+
+Test at offset 13
+............<!_abc_def>
+("positions" 13 22)
+
+Test at offset 14
+.............<!_abc_def>
+("positions" 14 23)
+
+Test at offset 15
+..............<!_abc_def>
+("positions" 15 24)
+
+Test at offset 16
+...............<!_abc_def>
+("positions" 16 25)
+
+Test at offset 17
+................<!_abc_def>
+("positions" 17 26)
+
+Test at offset 18
+.................<!_abc_def>
+("positions" 18 27)
+
+Test at offset 19
+..................<!_abc_def>
+("positions" 19 28)
+
+Test at offset 20
+...................<!_abc_def>
+("positions" 20 29)
+
+Test at offset 21
+....................<!_abc_def>
+("positions" 21 30)
+
+Test at offset 22
+.....................<!_abc_def>
+("positions" 22 31)
+
+Test at offset 23
+......................<!_abc_def>
+("positions" 23 32)
+
+Test at offset 24
+.......................<!_abc_def>
+("positions" 24 33)
+
+Test at offset 25
+........................<!_abc_def>
+("positions" 25 34)
+
+Test at offset 26
+.........................<!_abc_def>
+("positions" 26 35)
+
+Test at offset 27
+..........................<!_abc_def>
+("positions" 27 36)
+
+Test at offset 28
+...........................<!_abc_def>
+("positions" 28 37)
+
+Test at offset 29
+............................<!_abc_def>
+("positions" 29 38)
+
+Test at offset 30
+.............................<!_abc_def>
+("positions" 30 39)
+
+Test at offset 31
+..............................<!_abc_def>
+("positions" 31 40)
+
+Test at offset 32
+...............................<!_abc_def>
+("positions" 32 41)
+
+Test at offset 33
+................................<!_abc_def>
+("positions" 33 42)
+
+Test at offset 34
+.................................<!_abc_def>
+("positions" 34 43)
+
+Test at offset 35
+..................................<!_abc_def>
+("positions" 35 44)
+
+Test at offset 36
+...................................<!_abc_def>
+("positions" 36 45)
+
+Test at offset 37
+....................................<!_abc_def>
+("positions" 37 46)
+
+Test at offset 38
+.....................................<!_abc_def>
+("positions" 38 47)
+
+Test at offset 39
+......................................<!_abc_def>
+("positions" 39 48)
+
+Test at offset 40
+.......................................<!_abc_def>
+("positions" 40 49)
+
+Test at offset 41
+........................................<!_abc_def>
+("positions" 41 50)
+
+Test at offset 42
+.........................................<!_abc_def>
+("positions" 42 51)
+
+Test at offset 43
+..........................................<!_abc_def>
+("positions" 43 52)
+
+Test at offset 44
+...........................................<!_abc_def>
+("positions" 44 53)
+
+Test at offset 45
+............................................<!_abc_def>
+("positions" 45 54)
+
+Test at offset 46
+.............................................<!_abc_def>
+("positions" 46 55)
+
+Test at offset 47
+..............................................<!_abc_def>
+("positions" 47 56)
+
+Test at offset 48
+...............................................<!_abc_def>
+("positions" 48 57)
+
+Test at offset 49
+................................................<!_abc_def>
+("positions" 49 58)
+
+Test at offset 50
+.................................................<!_abc_def>
+("positions" 50 59)
+
+Test at offset 51
+..................................................<!_abc_def
+>
+("positions" 51 60)
+
+Test at offset 52
+...................................................<
+!_abc_def>
+("positions" 52 9)
+
+Test at offset 53
+....................................................<
+!_abc_def>
+("positions" 53 9)
+
+Test at offset 54
+.....................................................<
+!_abc_def>
+("positions" 54 9)
+
+Test at offset 55
+......................................................<
+!_abc_def>
+("positions" 55 9)
+
+Test at offset 56
+.......................................................<
+!_abc_def>
+("positions" 56 9)
+
+Test at offset 57
+........................................................<
+!_abc_def>
+("positions" 57 9)
+
+Test at offset 58
+.........................................................<
+!_abc_def>
+("positions" 58 9)
+
+Test at offset 59
+..........................................................<
+!_abc_def>
+("positions" 59 9)
+
+Test at offset 60
+...........................................................<
+!_abc_def>
+("positions" 60 9)
+"done"
+
+nil
+
+test_wrap '!+abc!+def;
+
+
+Test at offset 1
+<!+abc!+def>
+("positions" 1 11)
+
+Test at offset 2
+.<!+abc!+def>
+("positions" 2 12)
+
+Test at offset 3
+..<!+abc!+def>
+("positions" 3 13)
+
+Test at offset 4
+...<!+abc!+def>
+("positions" 4 14)
+
+Test at offset 5
+....<!+abc!+def>
+("positions" 5 15)
+
+Test at offset 6
+.....<!+abc!+def>
+("positions" 6 16)
+
+Test at offset 7
+......<!+abc!+def>
+("positions" 7 17)
+
+Test at offset 8
+.......<!+abc!+def>
+("positions" 8 18)
+
+Test at offset 9
+........<!+abc!+def>
+("positions" 9 19)
+
+Test at offset 10
+.........<!+abc!+def>
+("positions" 10 20)
+
+Test at offset 11
+..........<!+abc!+def>
+("positions" 11 21)
+
+Test at offset 12
+...........<!+abc!+def>
+("positions" 12 22)
+
+Test at offset 13
+............<!+abc!+def>
+("positions" 13 23)
+
+Test at offset 14
+.............<!+abc!+def>
+("positions" 14 24)
+
+Test at offset 15
+..............<!+abc!+def>
+("positions" 15 25)
+
+Test at offset 16
+...............<!+abc!+def>
+("positions" 16 26)
+
+Test at offset 17
+................<!+abc!+def>
+("positions" 17 27)
+
+Test at offset 18
+.................<!+abc!+def>
+("positions" 18 28)
+
+Test at offset 19
+..................<!+abc!+def>
+("positions" 19 29)
+
+Test at offset 20
+...................<!+abc!+def>
+("positions" 20 30)
+
+Test at offset 21
+....................<!+abc!+def>
+("positions" 21 31)
+
+Test at offset 22
+.....................<!+abc!+def>
+("positions" 22 32)
+
+Test at offset 23
+......................<!+abc!+def>
+("positions" 23 33)
+
+Test at offset 24
+.......................<!+abc!+def>
+("positions" 24 34)
+
+Test at offset 25
+........................<!+abc!+def>
+("positions" 25 35)
+
+Test at offset 26
+.........................<!+abc!+def>
+("positions" 26 36)
+
+Test at offset 27
+..........................<!+abc!+def>
+("positions" 27 37)
+
+Test at offset 28
+...........................<!+abc!+def>
+("positions" 28 38)
+
+Test at offset 29
+............................<!+abc!+def>
+("positions" 29 39)
+
+Test at offset 30
+.............................<!+abc!+def>
+("positions" 30 40)
+
+Test at offset 31
+..............................<!+abc!+def>
+("positions" 31 41)
+
+Test at offset 32
+...............................<!+abc!+def>
+("positions" 32 42)
+
+Test at offset 33
+................................<!+abc!+def>
+("positions" 33 43)
+
+Test at offset 34
+.................................<!+abc!+def>
+("positions" 34 44)
+
+Test at offset 35
+..................................<!+abc!+def>
+("positions" 35 45)
+
+Test at offset 36
+...................................<!+abc!+def>
+("positions" 36 46)
+
+Test at offset 37
+....................................<!+abc!+def>
+("positions" 37 47)
+
+Test at offset 38
+.....................................<!+abc!+def>
+("positions" 38 48)
+
+Test at offset 39
+......................................<!+abc!+def>
+("positions" 39 49)
+
+Test at offset 40
+.......................................<!+abc!+def>
+("positions" 40 50)
+
+Test at offset 41
+........................................<!+abc!+def>
+("positions" 41 51)
+
+Test at offset 42
+.........................................<!+abc!+def>
+("positions" 42 52)
+
+Test at offset 43
+..........................................<!+abc!+def>
+("positions" 43 53)
+
+Test at offset 44
+...........................................<!+abc!+def>
+("positions" 44 54)
+
+Test at offset 45
+............................................<!+abc!+def>
+("positions" 45 55)
+
+Test at offset 46
+.............................................<!+abc!+def>
+("positions" 46 56)
+
+Test at offset 47
+..............................................<!+abc!+def>
+("positions" 47 57)
+
+Test at offset 48
+...............................................<!+abc!+def>
+("positions" 48 58)
+
+Test at offset 49
+................................................<!+abc!+def>
+("positions" 49 59)
+
+Test at offset 50
+.................................................<!+abc!+def
+>
+("positions" 50 60)
+
+Test at offset 51
+..................................................<
+!+abc!+def>
+("positions" 51 10)
+
+Test at offset 52
+...................................................<
+!+abc!+def>
+("positions" 52 10)
+
+Test at offset 53
+....................................................<
+!+abc!+def>
+("positions" 53 10)
+
+Test at offset 54
+.....................................................<
+!+abc!+def>
+("positions" 54 10)
+
+Test at offset 55
+......................................................<
+!+abc!+def>
+("positions" 55 10)
+
+Test at offset 56
+.......................................................<
+!+abc!+def>
+("positions" 56 10)
+
+Test at offset 57
+........................................................<
+!+abc!+def>
+("positions" 57 10)
+
+Test at offset 58
+.........................................................<
+!+abc!+def>
+("positions" 58 10)
+
+Test at offset 59
+..........................................................<
+!+abc!+def>
+("positions" 59 10)
+
+Test at offset 60
+...........................................................<
+!+abc!+def>
+("positions" 60 10)
+"done"
+
+nil
+
+test_wrap '!&abc!&def;
+
+
+Test at offset 1
+<!&abc!&def>
+("positions" 1 11)
+
+Test at offset 2
+.<!&abc!&def>
+("positions" 2 12)
+
+Test at offset 3
+..<!&abc!&def>
+("positions" 3 13)
+
+Test at offset 4
+...<!&abc!&def>
+("positions" 4 14)
+
+Test at offset 5
+....<!&abc!&def>
+("positions" 5 15)
+
+Test at offset 6
+.....<!&abc!&def>
+("positions" 6 16)
+
+Test at offset 7
+......<!&abc!&def>
+("positions" 7 17)
+
+Test at offset 8
+.......<!&abc!&def>
+("positions" 8 18)
+
+Test at offset 9
+........<!&abc!&def>
+("positions" 9 19)
+
+Test at offset 10
+.........<!&abc!&def>
+("positions" 10 20)
+
+Test at offset 11
+..........<!&abc!&def>
+("positions" 11 21)
+
+Test at offset 12
+...........<!&abc!&def>
+("positions" 12 22)
+
+Test at offset 13
+............<!&abc!&def>
+("positions" 13 23)
+
+Test at offset 14
+.............<!&abc!&def>
+("positions" 14 24)
+
+Test at offset 15
+..............<!&abc!&def>
+("positions" 15 25)
+
+Test at offset 16
+...............<!&abc!&def>
+("positions" 16 26)
+
+Test at offset 17
+................<!&abc!&def>
+("positions" 17 27)
+
+Test at offset 18
+.................<!&abc!&def>
+("positions" 18 28)
+
+Test at offset 19
+..................<!&abc!&def>
+("positions" 19 29)
+
+Test at offset 20
+...................<!&abc!&def>
+("positions" 20 30)
+
+Test at offset 21
+....................<!&abc!&def>
+("positions" 21 31)
+
+Test at offset 22
+.....................<!&abc!&def>
+("positions" 22 32)
+
+Test at offset 23
+......................<!&abc!&def>
+("positions" 23 33)
+
+Test at offset 24
+.......................<!&abc!&def>
+("positions" 24 34)
+
+Test at offset 25
+........................<!&abc!&def>
+("positions" 25 35)
+
+Test at offset 26
+.........................<!&abc!&def>
+("positions" 26 36)
+
+Test at offset 27
+..........................<!&abc!&def>
+("positions" 27 37)
+
+Test at offset 28
+...........................<!&abc!&def>
+("positions" 28 38)
+
+Test at offset 29
+............................<!&abc!&def>
+("positions" 29 39)
+
+Test at offset 30
+.............................<!&abc!&def>
+("positions" 30 40)
+
+Test at offset 31
+..............................<!&abc!&def>
+("positions" 31 41)
+
+Test at offset 32
+...............................<!&abc!&def>
+("positions" 32 42)
+
+Test at offset 33
+................................<!&abc!&def>
+("positions" 33 43)
+
+Test at offset 34
+.................................<!&abc!&def>
+("positions" 34 44)
+
+Test at offset 35
+..................................<!&abc!&def>
+("positions" 35 45)
+
+Test at offset 36
+...................................<!&abc!&def>
+("positions" 36 46)
+
+Test at offset 37
+....................................<!&abc!&def>
+("positions" 37 47)
+
+Test at offset 38
+.....................................<!&abc!&def>
+("positions" 38 48)
+
+Test at offset 39
+......................................<!&abc!&def>
+("positions" 39 49)
+
+Test at offset 40
+.......................................<!&abc!&def>
+("positions" 40 50)
+
+Test at offset 41
+........................................<!&abc!&def>
+("positions" 41 51)
+
+Test at offset 42
+.........................................<!&abc!&def>
+("positions" 42 52)
+
+Test at offset 43
+..........................................<!&abc!&def>
+("positions" 43 53)
+
+Test at offset 44
+...........................................<!&abc!&def>
+("positions" 44 54)
+
+Test at offset 45
+............................................<!&abc!&def>
+("positions" 45 55)
+
+Test at offset 46
+.............................................<!&abc!&def>
+("positions" 46 56)
+
+Test at offset 47
+..............................................<!&abc!&def>
+("positions" 47 57)
+
+Test at offset 48
+...............................................<!&abc!&def>
+("positions" 48 58)
+
+Test at offset 49
+................................................<!&abc!&def>
+("positions" 49 59)
+
+Test at offset 50
+.................................................<!&abc!&def
+>
+("positions" 50 60)
+
+Test at offset 51
+..................................................<
+!&abc!&def>
+("positions" 51 10)
+
+Test at offset 52
+...................................................<
+!&abc!&def>
+("positions" 52 10)
+
+Test at offset 53
+....................................................<
+!&abc!&def>
+("positions" 53 10)
+
+Test at offset 54
+.....................................................<
+!&abc!&def>
+("positions" 54 10)
+
+Test at offset 55
+......................................................<
+!&abc!&def>
+("positions" 55 10)
+
+Test at offset 56
+.......................................................<
+!&abc!&def>
+("positions" 56 10)
+
+Test at offset 57
+........................................................<
+!&abc!&def>
+("positions" 57 10)
+
+Test at offset 58
+.........................................................<
+!&abc!&def>
+("positions" 58 10)
+
+Test at offset 59
+..........................................................<
+!&abc!&def>
+("positions" 59 10)
+
+Test at offset 60
+...........................................................<
+!&abc!&def>
+("positions" 60 10)
+"done"
+
+nil
+
+test_wrap '!!abc!!def;
+
+
+Test at offset 1
+<!!abc!!def>
+("positions" 1 11)
+
+Test at offset 2
+.<!!abc!!def>
+("positions" 2 12)
+
+Test at offset 3
+..<!!abc!!def>
+("positions" 3 13)
+
+Test at offset 4
+...<!!abc!!def>
+("positions" 4 14)
+
+Test at offset 5
+....<!!abc!!def>
+("positions" 5 15)
+
+Test at offset 6
+.....<!!abc!!def>
+("positions" 6 16)
+
+Test at offset 7
+......<!!abc!!def>
+("positions" 7 17)
+
+Test at offset 8
+.......<!!abc!!def>
+("positions" 8 18)
+
+Test at offset 9
+........<!!abc!!def>
+("positions" 9 19)
+
+Test at offset 10
+.........<!!abc!!def>
+("positions" 10 20)
+
+Test at offset 11
+..........<!!abc!!def>
+("positions" 11 21)
+
+Test at offset 12
+...........<!!abc!!def>
+("positions" 12 22)
+
+Test at offset 13
+............<!!abc!!def>
+("positions" 13 23)
+
+Test at offset 14
+.............<!!abc!!def>
+("positions" 14 24)
+
+Test at offset 15
+..............<!!abc!!def>
+("positions" 15 25)
+
+Test at offset 16
+...............<!!abc!!def>
+("positions" 16 26)
+
+Test at offset 17
+................<!!abc!!def>
+("positions" 17 27)
+
+Test at offset 18
+.................<!!abc!!def>
+("positions" 18 28)
+
+Test at offset 19
+..................<!!abc!!def>
+("positions" 19 29)
+
+Test at offset 20
+...................<!!abc!!def>
+("positions" 20 30)
+
+Test at offset 21
+....................<!!abc!!def>
+("positions" 21 31)
+
+Test at offset 22
+.....................<!!abc!!def>
+("positions" 22 32)
+
+Test at offset 23
+......................<!!abc!!def>
+("positions" 23 33)
+
+Test at offset 24
+.......................<!!abc!!def>
+("positions" 24 34)
+
+Test at offset 25
+........................<!!abc!!def>
+("positions" 25 35)
+
+Test at offset 26
+.........................<!!abc!!def>
+("positions" 26 36)
+
+Test at offset 27
+..........................<!!abc!!def>
+("positions" 27 37)
+
+Test at offset 28
+...........................<!!abc!!def>
+("positions" 28 38)
+
+Test at offset 29
+............................<!!abc!!def>
+("positions" 29 39)
+
+Test at offset 30
+.............................<!!abc!!def>
+("positions" 30 40)
+
+Test at offset 31
+..............................<!!abc!!def>
+("positions" 31 41)
+
+Test at offset 32
+...............................<!!abc!!def>
+("positions" 32 42)
+
+Test at offset 33
+................................<!!abc!!def>
+("positions" 33 43)
+
+Test at offset 34
+.................................<!!abc!!def>
+("positions" 34 44)
+
+Test at offset 35
+..................................<!!abc!!def>
+("positions" 35 45)
+
+Test at offset 36
+...................................<!!abc!!def>
+("positions" 36 46)
+
+Test at offset 37
+....................................<!!abc!!def>
+("positions" 37 47)
+
+Test at offset 38
+.....................................<!!abc!!def>
+("positions" 38 48)
+
+Test at offset 39
+......................................<!!abc!!def>
+("positions" 39 49)
+
+Test at offset 40
+.......................................<!!abc!!def>
+("positions" 40 50)
+
+Test at offset 41
+........................................<!!abc!!def>
+("positions" 41 51)
+
+Test at offset 42
+.........................................<!!abc!!def>
+("positions" 42 52)
+
+Test at offset 43
+..........................................<!!abc!!def>
+("positions" 43 53)
+
+Test at offset 44
+...........................................<!!abc!!def>
+("positions" 44 54)
+
+Test at offset 45
+............................................<!!abc!!def>
+("positions" 45 55)
+
+Test at offset 46
+.............................................<!!abc!!def>
+("positions" 46 56)
+
+Test at offset 47
+..............................................<!!abc!!def>
+("positions" 47 57)
+
+Test at offset 48
+...............................................<!!abc!!def>
+("positions" 48 58)
+
+Test at offset 49
+................................................<!!abc!!def>
+("positions" 49 59)
+
+Test at offset 50
+.................................................<!!abc!!def
+>
+("positions" 50 60)
+
+Test at offset 51
+..................................................<
+!!abc!!def>
+("positions" 51 10)
+
+Test at offset 52
+...................................................<
+!!abc!!def>
+("positions" 52 10)
+
+Test at offset 53
+....................................................<
+!!abc!!def>
+("positions" 53 10)
+
+Test at offset 54
+.....................................................<
+!!abc!!def>
+("positions" 54 10)
+
+Test at offset 55
+......................................................<
+!!abc!!def>
+("positions" 55 10)
+
+Test at offset 56
+.......................................................<
+!!abc!!def>
+("positions" 56 10)
+
+Test at offset 57
+........................................................<
+!!abc!!def>
+("positions" 57 10)
+
+Test at offset 58
+.........................................................<
+!!abc!!def>
+("positions" 58 10)
+
+Test at offset 59
+..........................................................<
+!!abc!!def>
+("positions" 59 10)
+
+Test at offset 60
+...........................................................<
+!!abc!!def>
+("positions" 60 10)
+"done"
+
+nil
+
+test_wrap '!-abc!-def;
+
+
+Test at offset 1
+<!-abc!-def>
+("positions" 1 11)
+
+Test at offset 2
+.<!-abc!-def>
+("positions" 2 12)
+
+Test at offset 3
+..<!-abc!-def>
+("positions" 3 13)
+
+Test at offset 4
+...<!-abc!-def>
+("positions" 4 14)
+
+Test at offset 5
+....<!-abc!-def>
+("positions" 5 15)
+
+Test at offset 6
+.....<!-abc!-def>
+("positions" 6 16)
+
+Test at offset 7
+......<!-abc!-def>
+("positions" 7 17)
+
+Test at offset 8
+.......<!-abc!-def>
+("positions" 8 18)
+
+Test at offset 9
+........<!-abc!-def>
+("positions" 9 19)
+
+Test at offset 10
+.........<!-abc!-def>
+("positions" 10 20)
+
+Test at offset 11
+..........<!-abc!-def>
+("positions" 11 21)
+
+Test at offset 12
+...........<!-abc!-def>
+("positions" 12 22)
+
+Test at offset 13
+............<!-abc!-def>
+("positions" 13 23)
+
+Test at offset 14
+.............<!-abc!-def>
+("positions" 14 24)
+
+Test at offset 15
+..............<!-abc!-def>
+("positions" 15 25)
+
+Test at offset 16
+...............<!-abc!-def>
+("positions" 16 26)
+
+Test at offset 17
+................<!-abc!-def>
+("positions" 17 27)
+
+Test at offset 18
+.................<!-abc!-def>
+("positions" 18 28)
+
+Test at offset 19
+..................<!-abc!-def>
+("positions" 19 29)
+
+Test at offset 20
+...................<!-abc!-def>
+("positions" 20 30)
+
+Test at offset 21
+....................<!-abc!-def>
+("positions" 21 31)
+
+Test at offset 22
+.....................<!-abc!-def>
+("positions" 22 32)
+
+Test at offset 23
+......................<!-abc!-def>
+("positions" 23 33)
+
+Test at offset 24
+.......................<!-abc!-def>
+("positions" 24 34)
+
+Test at offset 25
+........................<!-abc!-def>
+("positions" 25 35)
+
+Test at offset 26
+.........................<!-abc!-def>
+("positions" 26 36)
+
+Test at offset 27
+..........................<!-abc!-def>
+("positions" 27 37)
+
+Test at offset 28
+...........................<!-abc!-def>
+("positions" 28 38)
+
+Test at offset 29
+............................<!-abc!-def>
+("positions" 29 39)
+
+Test at offset 30
+.............................<!-abc!-def>
+("positions" 30 40)
+
+Test at offset 31
+..............................<!-abc!-def>
+("positions" 31 41)
+
+Test at offset 32
+...............................<!-abc!-def>
+("positions" 32 42)
+
+Test at offset 33
+................................<!-abc!-def>
+("positions" 33 43)
+
+Test at offset 34
+.................................<!-abc!-def>
+("positions" 34 44)
+
+Test at offset 35
+..................................<!-abc!-def>
+("positions" 35 45)
+
+Test at offset 36
+...................................<!-abc!-def>
+("positions" 36 46)
+
+Test at offset 37
+....................................<!-abc!-def>
+("positions" 37 47)
+
+Test at offset 38
+.....................................<!-abc!-def>
+("positions" 38 48)
+
+Test at offset 39
+......................................<!-abc!-def>
+("positions" 39 49)
+
+Test at offset 40
+.......................................<!-abc!-def>
+("positions" 40 50)
+
+Test at offset 41
+........................................<!-abc!-def>
+("positions" 41 51)
+
+Test at offset 42
+.........................................<!-abc!-def>
+("positions" 42 52)
+
+Test at offset 43
+..........................................<!-abc!-def>
+("positions" 43 53)
+
+Test at offset 44
+...........................................<!-abc!-def>
+("positions" 44 54)
+
+Test at offset 45
+............................................<!-abc!-def>
+("positions" 45 55)
+
+Test at offset 46
+.............................................<!-abc!-def>
+("positions" 46 56)
+
+Test at offset 47
+..............................................<!-abc!-def>
+("positions" 47 57)
+
+Test at offset 48
+...............................................<!-abc!-def>
+("positions" 48 58)
+
+Test at offset 49
+................................................<!-abc!-def>
+("positions" 49 59)
+
+Test at offset 50
+.................................................<!-abc!-def
+>
+("positions" 50 60)
+
+Test at offset 51
+..................................................<
+!-abc!-def>
+("positions" 51 10)
+
+Test at offset 52
+...................................................<
+!-abc!-def>
+("positions" 52 10)
+
+Test at offset 53
+....................................................<
+!-abc!-def>
+("positions" 53 10)
+
+Test at offset 54
+.....................................................<
+!-abc!-def>
+("positions" 54 10)
+
+Test at offset 55
+......................................................<
+!-abc!-def>
+("positions" 55 10)
+
+Test at offset 56
+.......................................................<
+!-abc!-def>
+("positions" 56 10)
+
+Test at offset 57
+........................................................<
+!-abc!-def>
+("positions" 57 10)
+
+Test at offset 58
+.........................................................<
+!-abc!-def>
+("positions" 58 10)
+
+Test at offset 59
+..........................................................<
+!-abc!-def>
+("positions" 59 10)
+
+Test at offset 60
+...........................................................<
+!-abc!-def>
+("positions" 60 10)
 "done"
 
 nil
