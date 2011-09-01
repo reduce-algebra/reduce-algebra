@@ -86,7 +86,7 @@ do
   p=${p1%.tst}
   p=${p##*/}
   echo "Test regression case $p"
-  $here/scripts/test1.sh $* regression $p
+  $here/scripts/test1.sh $* regressions $p
 done
 
 if test "$csl" = "yes"
