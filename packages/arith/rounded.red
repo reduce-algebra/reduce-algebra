@@ -566,24 +566,24 @@ symbolic procedure explodehex n;
 
 !#endif
 
-symbolic procedure hexfloat u;
-  begin
-    scalar w, w1, s, x, m1, m2, m3, m4;
-    if numberp u then <<
-      w := aeval u;
-      w1 := '!:rd!: . float u >>
-    else <<
-      w := aeval car u;
-      w1 := prepsq simp w >>;
-    if eqcar(w1, '!:rd!:) and floatp cdr w1 then <<
-      w1 := cdr w1;
-      if w1 = 0.0 then return "0.0"
-      else if not (w1 = w1) then return "NaN";
+symbolic procedure hexfloat1 w1;
+% hexfloat may be useful from symbolic mode
+  if floatp w1 then
+    begin
+      scalar w, s, x, m1, m2, m3, m4, n;
+      if w1 = 0.0 then return "0.0";
+% The test that follows appears to behave OK on at least CSL and PSL on
+% some Linux systems...
+      if w1 = 0.5*w1 then <<
+         if w1 > 0.0 then return "inf"
+         else if w1 < 0.0 then return "-inf"
+         else return "NaN" >>;
       if w1 < 0.0 then << s := t; w1 := -w1 >>;
       x := 0;
-      while w1 < 0.5 do << w1 := 2.0*w1; x := x-1 >>;
-      if w1 = w1/2.0 then return (if s then "minusinfinity" else "infinity");
-      while w1 >= 1.0 do << w1 := w1/2.0; x := x+1 >>;
+      n := 0;
+      while w1 < 0.5 and n < 5000 do << w1 := 2.0*w1; x := x-1; n := n + 1 >>;
+      while w1 >= 1.0 and n < 5000 do << w1 := w1/2.0; x := x+1; n := n + 1 >>;
+      if n >= 5000 then return "hexfloat failed";
       w1 := w1 * 32.0;
       m1 := fix w1;
       w1 := w1 - float m1;
@@ -608,7 +608,23 @@ symbolic procedure hexfloat u;
       w := append(m2, '!_ . w);
       w := append(m1, '!_ . w);
       if s then w := '!- . w;
-      return list!-to!-string w >>
+      return list!-to!-string w
+    end
+  else if atom w1 then w1
+  else hexfloat1 car w1 . hexfloat1 cdr w1;
+
+symbolic procedure hexfloat u;
+% hexfloat tries to be a little generous about its args since it will
+% be used in debugging context - but it is inteded to be given a rounded
+% valoue and it returns a string...
+  begin
+    scalar w, w1;
+    if numberp u then return hexfloat1 u
+    else if atom u then return u
+    else <<
+      w := aeval car u;
+      w1 := prepsq simp w >>;
+    if eqcar(w1, '!:rd!:) and floatp cdr w1 then return hexfloat1 cdr w1
     else return w;
   end;
 

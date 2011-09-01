@@ -1,11 +1,11 @@
-/*  arith08.c                         Copyright (C) 1990-2008 Codemist Ltd */
+/*  arith08.c                         Copyright (C) 1990-2011 Codemist Ltd */
 
 /*
  * Arithmetic functions.
  */
 
 /**************************************************************************
- * Copyright (C) 2008, Codemist Ltd.                     A C Norman       *
+ * Copyright (C) 2011, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4e04c032 22-Aug-2010 */
+/* Signature: 72a64eb9 01-Sep-2011 */
 
 #include "headers.h"
 
@@ -1057,6 +1057,33 @@ Lisp_Object Ltruncate(Lisp_Object nil, Lisp_Object a)
     return lisp_fix(a, FIX_TRUNCATE);
 }
 
+#if 0
+
+/*
+ * This is an OLD version from Reduce that got replaced long ago but that
+ * had been my model for what was to be implemented in CSL.
+ *
+ *  symbolic procedure safe!-fp!-plus(x,y);
+ *     if zerop x then y else if zerop y then x else
+ *     begin scalar u;
+ *        if x>0.0 and y>0.0 then
+ *           if x<!!plumax and y<!!plumax then go to ret else return nil;
+ *        if x<0.0 and y<0.0 then
+ *           if -x<!!plumax and -y<!!plumax then go to ret else return nil;
+ *        if abs x<!!plumin and abs y<!!plumin then return nil;
+ *   ret: return
+ *          if (u := plus2(x,y))=0.0
+ *             or x>0.0 and y>0.0 or x<0.0 and y<0.0 then u
+ *          else if abs u<(abs x)*!!fleps1 then 0.0 else u end;
+ *
+ *
+ * Now the code that I implement does not actually do the above, and it
+ * contains a comments that the exact place where trouble is detected is
+ * not vital. Well now (2011) I want the PSL and CSL results to match bit for
+ * bit, and so I want my implementation here to do EXACTLY what the Reduce
+ * source code asks for....
+ */
+
 /*
  * The following macro is expected to select out the 32-bit word within a
  * floating point number that has the exponent field packed within it.
@@ -1073,20 +1100,7 @@ Lisp_Object Ltruncate(Lisp_Object nil, Lisp_Object a)
     ii = w.i[(~current_fp_rep) & FP_WORD_ORDER]; \
   }
 
-/*
- *  symbolic procedure safe!-fp!-plus(x,y);
- *     if zerop x then y else if zerop y then x else
- *     begin scalar u;
- *        if x>0.0 and y>0.0 then
- *           if x<!!plumax and y<!!plumax then go to ret else return nil;
- *        if x<0.0 and y<0.0 then
- *           if -x<!!plumax and -y<!!plumax then go to ret else return nil;
- *        if abs x<!!plumin and abs y<!!plumin then return nil;
- *   ret: return
- *          if (u := plus2(x,y))=0.0
- *             or x>0.0 and y>0.0 or x<0.0 and y<0.0 then u
- *          else if abs u<(abs x)*!!fleps1 then 0.0 else u end;
- */
+
 
 static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 /*
@@ -1187,6 +1201,75 @@ static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
     return onevalue(a);
 }
 
+#endif
+
+/*
+ * This is the newer Reduce code - and now I want to behave EXACTLY as it
+ * indicates...
+ *
+ * symbolic procedure safe!-fp!-plus(x,y);
+ *    if zerop x then y
+ *     else if zerop y then x
+ *     else if x>0.0 and y>0.0
+ *      then if x<!!plumax and y<!!plumax then plus2(x,y) else nil
+ *     else if x<0.0 and y<0.0
+ *      then if -x<!!plumax and -y<!!plumax then plus2(x,y) else nil
+ *     else if abs x<!!plumin and abs y<!!plumin then nil
+ *     else (if u=0.0 then u else if abs u<!!fleps1*abs x then 0.0 else u)
+ *          where u = plus2(x,y);
+ */
+
+static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object x, Lisp_Object y)
+{
+    Lisp_Object nil = C_nil;
+    double xx, yy, u;
+    double fleps1 = 5.6843418860808e-14,
+           plumax = 2.24711641857789e+307,
+           plumin = 4.4501477170144e-296;
+    Lisp_Object v;
+// zerop x => y     zeropy => x
+    if (!is_float(x) || !is_float(y)) return aerror2("safe-fp-plus", x, y);
+    if ((xx = double_float_val(x)) == 0.0) return onevalue(y);
+    if ((yy = double_float_val(y)) == 0.0) return onevalue(x);
+    if (is_cons(env))
+    {   if (is_symbol(v = qcar(env)) &&
+            is_float(v = qvalue(v))) fleps1 = double_float_val(v);
+        env = qcdr(env);
+        if (is_cons(env))
+        {   if (is_symbol(v = qcar(env)) &&
+                is_float(v = qvalue(v))) plumax = double_float_val(v);
+            if (is_symbol(v = qcdr(env)) &&
+                is_float(v = qvalue(v))) plumin = double_float_val(v);
+        }
+    }
+    if (xx > 0.0 && yy > 0.0)
+    {   if (xx < plumax && yy < plumax)
+        {   x = make_boxfloat(xx + yy, TYPE_DOUBLE_FLOAT);
+            errexit();
+            return onevalue(x);
+        }
+        else return onevalue(nil);
+    }
+    else if (xx < 0.0 && yy < 0.0)
+    {   if (-xx < plumax && -yy < plumax)
+        {   x = make_boxfloat(xx + yy, TYPE_DOUBLE_FLOAT);
+            errexit();
+            return onevalue(x);
+        }
+        else return onevalue(nil);
+
+    }
+    else if ((xx < 0.0 ? -xx : xx) < plumin &&
+             (yy < 0.0 ? -yy : yy) < plumin) return onevalue(nil);
+    u = xx + yy;
+    if ((u < 0.0 ? -u : u) < fleps1*(xx < 0.0 ? -xx : xx)) u = 0.0;
+    x = make_boxfloat(u, TYPE_DOUBLE_FLOAT);
+    errexit();
+    return onevalue(x);
+}
+
+#if 0
+
 /*
  *  symbolic procedure safe!-fp!-times(x,y);
  *   if zerop x or zerop y then 0.0
@@ -1248,9 +1331,70 @@ static Lisp_Object Lsafe_fp_times(Lisp_Object nil,
     return onevalue(a);
 }
 
+#endif
+
+/*
+ *  symbolic procedure safe!-fp!-times(x,y);
+ *   if zerop x or zerop y then 0.0
+ *   else if x=1.0 then y else if y=1.0 then x else
+ *     begin scalar u,v; u := abs x; v := abs y;
+ *        if u>=1.0 and u<=!!timmax then
+ *           if v<=!!timmax then go to ret else return nil;
+ *        if u>!!timmax then if v<=1.0 then go to ret else return nil;
+ *        if u<1.0 and u>=!!timmin then
+ *           if v>=!!timmin then go to ret else return nil;
+ *        if u<!!timmin and v<1.0 then return nil;
+ *   ret: return times2(x,y) end;
+ *
+ * The new C code here is intended to match the above exactly!
+ */
+
+static Lisp_Object Lsafe_fp_times(Lisp_Object env,
+                                  Lisp_Object x, Lisp_Object y)
+{
+    Lisp_Object nil = C_nil;
+    double xx, yy, uu, vv;
+    double timmax = 4.74037595405459e+153,
+           timmin = 2.1095373229726e-154;
+    Lisp_Object v;
+    if (!is_float(x) || !is_float(y)) return aerror2("safe-fp-times", x, y);
+    if ((xx = double_float_val(x)) == 0.0) return onevalue(x);
+    if ((yy = double_float_val(y)) == 0.0) return onevalue(y);
+    if (xx == 1.0) return onevalue(y);
+    if (yy == 1.0) return onevalue(x);
+    if (is_cons(env))
+    {   if (is_symbol(v = qcar(env)) &&
+            is_float(v = qvalue(v))) timmax = double_float_val(v);
+        if (is_symbol(v = qcdr(env)) &&
+            is_float(v = qvalue(v))) timmin = double_float_val(v);
+    }
+    uu = xx < 0.0 ? -xx : xx;
+    vv = yy < 0.0 ? -yy : yy;
+    if (uu >= 1.0 && uu <= timmax)
+    {   if (vv <= timmax) goto ret;
+        else return onevalue(nil);
+    }
+    if (uu > timmax)
+    {   if (vv <= 1.0) goto ret;
+        else return onevalue(nil);
+    }
+    if (uu < 1.0 && uu >= timmin)
+    {   if (vv >= timmin) goto ret;
+        else return onevalue(nil);
+    }
+    if (uu < timmin && vv < 1.0) return onevalue(nil);
+ret:
+    x = make_boxfloat(xx*yy, TYPE_DOUBLE_FLOAT);
+    errexit();
+    return onevalue(x);
+}
+
+
+#if 0
+
 /*
  *  symbolic procedure safe!-fp!-quot(x,y);
- *   if zerop y then rdqoterr()
+ *   if zerop y then rdqoterr()  % error(0, "zero divisor in quotient")
  *   else if zerop x then 0.0 else if y=1.0 then x else
  *     begin scalar u,v; u := abs x; v := abs y;
  *        if u>=1.0 and u<=!!timmax then
@@ -1284,7 +1428,69 @@ static Lisp_Object Lsafe_fp_quot(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(a);
 }
 
+#endif
+
 /*
+ *  symbolic procedure safe!-fp!-quot(x,y);
+ *   if zerop y then rdqoterr()  % error(0, "zero divisor in quotient")
+ *   else if zerop x then 0.0 else if y=1.0 then x else
+ *     begin scalar u,v; u := abs x; v := abs y;
+ *        if u>=1.0 and u<=!!timmax then
+ *           if v>=!!timmin then go to ret else return nil;
+ *        if u>!!timmax then if v>=1.0 then go to ret else return nil;
+ *        if u<1.0 and u>=!!timmin then
+ *           if v<=!!timmax then go to ret else return nil;
+ *        if u<!!timmin and v>1.0 then return nil;
+ *   ret: return quotient(x,y) end;
+ *
+ * New version intended to be exact match for above
+ */
+
+static Lisp_Object Lsafe_fp_quot(Lisp_Object env, Lisp_Object x, Lisp_Object y)
+{
+    Lisp_Object nil = C_nil;
+    double xx, yy, uu, vv;
+    double timmax = 4.74037595405459e+153,
+           timmin = 2.1095373229726e-154;
+    Lisp_Object v;
+    if (!is_float(x) || !is_float(y)) return aerror2("safe-fp-quotient", x, y);
+    if ((yy = double_float_val(y)) == 0.0)
+        return aerror("zero divisor in quotient");
+    if ((xx = double_float_val(x)) == 0.0) return onevalue(x);
+    if (yy == 1.0) return onevalue(x);
+    if (is_cons(env))
+    {   if (is_symbol(v = qcar(env)) &&
+            is_float(v = qvalue(v))) timmax = double_float_val(v);
+        if (is_symbol(v = qcdr(env)) &&
+            is_float(v = qvalue(v))) timmin = double_float_val(v);
+    }
+    uu = xx < 0.0 ? -xx : xx;
+    vv = yy < 0.0 ? -yy : yy;
+    if (uu>=1.0 && uu<=timmax)
+    {   if (vv >= timmin) goto ret;
+        else return onevalue(nil);
+    }
+    if (uu>timmax)
+    {   if (vv >= 1.0) goto ret;
+        else return onevalue(nil);
+    }
+    if (uu < 1.0 && uu >= timmin)
+    {   if (vv <= timmax) goto ret;
+        else return onevalue(nil);
+    }
+    if (uu < timmin && vv > 1.0) return nil;
+ret:
+    x = make_boxfloat(xx/yy, TYPE_DOUBLE_FLOAT);
+    errexit();
+    return onevalue(x);
+}
+
+
+#if 0
+
+/*
+ * This seems no longer to be used...
+ *
  *  symbolic procedure safe!-fp!-pl(x,y);
  *    % floating plus protect from under- and over-flows but no zero
  *    % result check.
@@ -1356,18 +1562,21 @@ static Lisp_Object Llose_precision(Lisp_Object nil,
     return onevalue(a);
 }
 
+#endif
+
+
 setup_type const arith08_setup[] =
 {
 /*
  * The next few are JUST for REDUCE, but they are expected to speed up
  * rounded-mode arithmetic rather a lot.
  */
-    {"lose-precision",          too_few_2, Llose_precision, wrong_no_2},
+/*  {"lose-precision",          too_few_2, Llose_precision, wrong_no_2}, */
     {"safe-fp-plus",            too_few_2, Lsafe_fp_plus, wrong_no_2},
     {"safe-fp-times",           too_few_2, Lsafe_fp_times, wrong_no_2},
     {"safe-fp-quot",            too_few_2, Lsafe_fp_quot, wrong_no_2},
-    {"safe-fp-pl",              too_few_2, Lsafe_fp_pl, wrong_no_2},
-    {"safe-fp-pl0",             too_few_2, Lsafe_fp_pl, wrong_no_2},
+/*  {"safe-fp-pl",              too_few_2, Lsafe_fp_pl, wrong_no_2}, */
+/*  {"safe-fp-pl0",             too_few_2, Lsafe_fp_pl, wrong_no_2}, */
 /* End of REDUCE specialities */
     {"ceiling",                 Lceiling, Lceiling_2, wrong_no_1},
     {"floor",                   Lfloor, Lfloor_2, wrong_no_1},

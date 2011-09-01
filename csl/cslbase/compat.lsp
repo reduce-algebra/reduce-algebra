@@ -76,11 +76,22 @@
    (symbol!-set!-env 'logeqv 9))
 
 (make!-special '!!fleps1)
-% The following value for !!fleps appears to be what Reduce expects
+(make!-special '!!plumax)
+(make!-special '!!plumin)
+(make!-special '!!timmax)
+(make!-special '!!timmin)
+% The following values for !!fleps etc appear to be what Reduce expects
 % when using IEEE double-precision arithmetic.
-(setq !!fleps1 5.684341886080802e-14)
+(setq !!fleps1 5.6843418860808e-14)
+(setq !!plumax 2.24711641857789e+307)
+(setq !!plumin 4.4501477170144e-296)
+(setq !!timmax 4.74037595405459e+153)
+(setq !!timmin 2.1095373229726e-154)
 
-(symbol!-set!-env 'safe!-fp!-plus '!!fleps1)
+(symbol!-set!-env 'safe!-fp!-plus '(!!fleps1 !!plumax . !!plumin))
+(symbol!-set!-env 'safe!-fp!-pl '(!!plumax . !!plumin))
+(symbol!-set!-env 'safe!-fp!-times '(!!timmax . !!timmin))
+(symbol!-set!-env 'safe!-fp!-quot '(!!timmax . !!timmin))
 
 (cond ((null (flagp 'printprompt 'lose))
        (de printprompt (u) nil)))

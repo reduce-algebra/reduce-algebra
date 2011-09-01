@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 62872076 31-Aug-2011 */
+/* Signature: 1f1dce69 31-Aug-2011 */
 
 #include "headers.h"
 
@@ -711,6 +711,7 @@ int char_to_terminal(int c, Lisp_Object dummy)
         io_now++;
     }
     if (c == '\n' || c == '\f') terminal_column = 0;
+    else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
     else terminal_column++;
     if (spool_file != NULL)
     {   putc(c, spool_file);
@@ -769,6 +770,7 @@ int char_to_spool(int c, Lisp_Object stream)
 {
     if (spool_file == NULL) return 1;
     if (c == '\n' || c == '\f') terminal_column = 0;
+    else if (c == '\t') terminal_column = (terminal_column + 8) & ~7;
     else terminal_column++;
     putc(c, spool_file);
     return 0;
@@ -783,6 +785,8 @@ int char_to_file(int c, Lisp_Object stream)
         io_now++;
     }
     if (c == '\n' || c == '\f') stream_char_pos(stream) = 0;
+    else if (c == '\t')
+        stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
     else stream_char_pos(stream)++;
     putc(c, stream_file(stream));
     return 0;   /* indicate success */
@@ -873,6 +877,8 @@ int char_to_pipeout(int c, Lisp_Object stream)
         io_now++;
     }
     if (c == '\n' || c == '\f') stream_char_pos(stream) = 0;
+    else if (c == '\t')
+        stream_char_pos(stream) = (stream_char_pos(stream) + 8) & ~7;
     else stream_char_pos(stream)++;
     my_pipe_putc(c, stream_file(stream));
     return 0;   /* indicate success */
@@ -1905,6 +1911,15 @@ static void fp_sprint(char *buff, double x, int prec)
     {   strcpy(buff, "0.0");
         return;
     }
+    if (x != x)
+    {   strcpy(buff, "NaN");
+        return;
+    }
+    if (x == 2.0*x)
+    {   if (x < 0.0) strcpy(buff, "minusinf");
+        else strcpy(buff, "inf");
+        return;
+    }
     if (x < 0.0)
     {   *buff++ = '-';
         x = -x;
@@ -2210,6 +2225,14 @@ case TAG_VECTOR:
             {
     case TYPE_STRING:
                 {   int32_t slen = 0;
+/* /*
+ * Getting the width of strings that contain tabs correct here is
+ * something I have not yet attempted - the width to be accumulated in
+ * slen has to depend on the column at which printing is to start
+ * (including allowance for any pending blank that may be needed).
+ * And while I consider this, what about a string that contains
+ * a newline character?
+ */
                     if (escaped_printing & escape_yes)
                     {   for (k = 0; k < len; k++)
                         {   int ch = celt(stack[0], k);
@@ -2700,6 +2723,10 @@ case TAG_SYMBOL:
 #endif
                          )) extralen++;
                 }
+/* /*
+ * Again here I should perhaps take a view about linelength and
+ * symbols with tabs in their names... At present I do not.
+ */
                 for (k = 0; k < len; k++)
                 {   int ch = celt(stack[0], k);
                     if (escaped_printing & escape_yes &&
@@ -2721,7 +2748,8 @@ case TAG_SYMBOL:
 #ifdef COMMON
 /*
  * The |xxx| notation is where the "2" here comes from, but that does not
- * make full allowance for names with '\\' in them. Tough!
+ * make full allowance for names with '\\' in them. Tough! But view that
+ * as yet another place where the code could need upgrading.
  */
                 if (extralen != 0) extralen = 2;
                 switch (pkgid)
@@ -3340,6 +3368,10 @@ int code_to_list(int c, Lisp_Object f)
     nil = C_nil;
     if (!exception_pending())
     {   stream_write_data(f) = k;
+/*
+ * In this case the "position" must count in characters and not pay
+ * any attention if some of them are tabs or newlines etc.
+ */
         stream_char_pos(f)++;
         return 0;
     }
@@ -3653,6 +3685,9 @@ int count_character(int c, Lisp_Object f)
 
 Lisp_Object Llengthc(Lisp_Object nil, Lisp_Object a)
 {
+/*
+ * This one counts a TAB as having width 1.
+ */
     CSL_IGNORE(nil);
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
