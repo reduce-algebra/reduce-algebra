@@ -4,18 +4,44 @@
 # An option "--csl" or "--psl" can specify that only that one Lisp
 # is to be used.
 
-#    scripts/test1.sh [--csl or --psl] package_name
-# OR scripts/test1.sh [--csl or --psl] regressions testname
+#    scripts/test1.sh [--keep] [--csl or --psl] package_name 
+# OR scripts/test1.sh [--keep] [--csl or --psl] regressions testname
+
+keep="no"
 
 csl="yes"
 psl="yes"
 case $1 in
 --csl)
+  csl="yes"
   psl="no"
   shift
   ;;
 --psl)
   csl="no"
+  psl="yes"
+  shift
+  ;;
+--keep)
+  keep="yes"
+  shift
+  ;;
+*)
+  ;;
+esac
+case $1 in
+--csl)
+  csl="yes"
+  psl="no"
+  shift
+  ;;
+--psl)
+  csl="no"
+  psl="yes"
+  shift
+  ;;
+--keep)
+  keep="yes"
   shift
   ;;
 *)
@@ -173,7 +199,10 @@ fi
 echo "Tested on $mc CSL" > csl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <csl-times/$p.rlg.tmp | \
   sed -e '/^1: /d;' >>csl-times/$p.time
-rm csl-times/$p.rlg.tmp
+if test "x$keep" = "xno"
+then
+  rm csl-times/$p.rlg.tmp
+fi
 
 fi # CSL case
 
@@ -222,7 +251,10 @@ fi
 echo "Tested on $mc PSL" > psl-times/$p.time
 sed -e "1,/END OF REDUCE TEST RUN/d"  <psl-times/$p.rlg.tmp | \
   sed -e '/^1: /d;' >psl-times/$p.time
-rm  psl-times/$p.rlg.tmp
+if test "x$keep" = "xno"
+then
+  rm  psl-times/$p.rlg.tmp
+fi
 
 fi # PSL case
 
