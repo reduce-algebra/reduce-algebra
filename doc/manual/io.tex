@@ -10,6 +10,7 @@ LOAD\_PACKAGE} are discussed in Section~\ref{sec-load}.
 \section{IN Command}\ttindex{IN}
 \hypertarget{command:IN}{}
 \hypertarget{switch:ECHO}{}
+\hypertarget{reserved:_LINE_}{}
 This command takes a list of file names as argument and directs the system
 to input\index{Input} each file (that should contain {\REDUCE} statements
 and commands) into the system.  File names can either be an identifier or
@@ -34,6 +35,10 @@ the user will have if there are, by mistake, more {\tt BEGIN}s than
 {\tt END}s on the file.  Secondly, it triggers some file control book-keeping
 which may improve system efficiency.  If {\tt END} is omitted, an error
 message {\tt "End-of-file read"} will occur.
+
+While a file is being loaded, the special identifier \texttt{_LINE_} is
+replaced by the number of the current line in the file currently
+being read.
 
 \section{OUT Command}\ttindex{OUT}
 \hypertarget{command:OUT}{}
