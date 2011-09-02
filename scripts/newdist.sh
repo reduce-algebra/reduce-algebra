@@ -69,6 +69,9 @@ cd $here/..
 
 rm -rf $f
 svn export . $f
+# While the previous releases of Reduce are in the tree they
+# are not needed in a source release!
+rm -rf $f/historical
 ls -lRh $f > MANIFEST
 
 echo Now create the .tar.bz2 file
