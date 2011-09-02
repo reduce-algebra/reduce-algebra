@@ -1,0 +1,86 @@
+
+<A NAME=WHERE>
+
+<TITLE>WHERE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>WHERE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>where</em> operator provides an infix notation for one-time 
+substitutions for kernels in expressions. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+&lt;expression&gt; <em>where</em> &lt;kernel&gt; 
+ <em>=</em>&lt;expression&gt; 
+ {,&lt;kernel&gt; <em>=</em>&lt;expression&gt;}* 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any REDUCE scalar expression, &lt;kernel&gt; must 
+be a 
+<A HREF=r37_0002.html>kernel</A>. Alternatively a 
+<A HREF=r37_0060.html>rule</A> or a <em>rule list</em> 
+can be a member of the right-hand part of a <em>where</em> expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+x**2 + 17*x*y + 4*y**2 where x=1,y=2; 
+
+
+  51 
+
+
+for i := 1:5 collect x**i*q where q= for j := 1:i product j;
+ 
+
+
+        2    3     4      5
+  {X,2*X ,6*X ,24*X ,120*X } 
+
+
+x**2 + y + z where z=y**3,y=3; 
+
+   2    3
+  X  + Y  + 3
+
+</TT></PRE><P>Substitution inside a <em>where</em> expression has no effect upon
+ the values 
+of the kernels outside the expression. The <em>where</em> operator has the 
+lowest precedence of all the infix operators, which are lower than prefix 
+operators, so that the substitutions apply to the entire expression 
+preceding the <em>where</em> operator. However, <em>where</em> is applied 
+before command keywords such as <em>then</em>, <em>repeat</em>, or <em>do</em>. 
+
+<P>
+<P>
+A 
+<A HREF=r37_0060.html>rule</A> or a <em>rule set</em> in the right-hand part of 
+the 
+<em>where</em> expression act as if the rules were activated by 
+<A HREF=r37_0199.html>let</A> 
+immediately before the evaluation of the expression and deactivated 
+by 
+<A HREF=r37_0190.html>clearrules</A> immediately afterwards. 
+<P>
+<P>
+<em>where</em>gives you a natural notation for auxiliary variables in 
+expressions. As the second example shows, the substitute expression can be 
+a command to be evaluated. The substitute assignments are made in 
+parallel, rather than sequentially, as the last example shows. The 
+expression resulting from the first round of substitutions is not 
+reexamined to see if any further such substitutions can be made. 
+<em>where</em> can also be used to define auxiliary variables in 
+
+<A HREF=r37_0055.html>procedure</A> definitions. 
+<P>
+<P>
+<P>

@@ -1,0 +1,59 @@
+From miked@nag.co.ukWed Oct 18 18:52:37 1995
+Date: Wed, 18 Oct 1995 14:23:18 +0000 (BST)
+From: Mike Dewar <miked@nag.co.uk>
+To: acn1 <acn1%cam.ac.uk@maths.bath.ac.uk>
+Subject: Interface for dynamic opening and closing of libraries
+
+Arthur:
+
+I've discussed the specification of the "dynamic libraries" interface with
+Barry and this is what we think we need.  For a user's own code, we will
+always know the full pathname of the library it is in, so we can load the
+module explicitly.
+
+1. A function that loads a particular module from a particular library, e.g.
+    (load-module <module> <pathname>)
+   The library need not be open for input.  You might wish to have separate
+   open-library, load-module, and close-library operations if that is more
+   efficient.  
+
+2. A function that opens a library for output, e.g.
+    (open-library <pathname>)
+   The function need not be responsible for checking if the library is open 
+   already.
+
+3. A function that reads a lisp source file, translates it into byte codes, 
+   and writes the results into a named library, e.g.
+    (fasl-out <filename> <library>)
+   This could either:
+     (a) Overwrite an existing module with the same name (our preferred option),
+         or
+     (b) replace the entire library if it already exists.
+
+4. A function that closes an open library and, if option 3a above is 
+   implemented, does all the necessary tidying-up, compaction etc, e.g.
+    (close-library <pathname>)
+
+5. Facilities for setting the library search path from within Lisp:
+    (a) deleting a library from the search path;
+    (b) adding a new library to the front of the search path;
+    (c) adding a new library to the end of the search path.
+
+
+Let me know what you think of this.  I had trouble sending email to you
+yesterday and today, so please let me know when/if this message arrives!
+
+Regards, Mike.
+
+-- 
+---------------------------------------------------------------------------
+
+    Mike Dewar                             email: miked@nag.co.uk
+    AXIOM System Coordinator               phone: (+44) 1865 511245
+    NAG Ltd.                               fax:   (+44) 1865 311205
+    Wilkinson House, Jordan Hill Rd, Oxford, OX2 8DR
+
+---------------------------------------------------------------------------
+
+
+

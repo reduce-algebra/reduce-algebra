@@ -1,0 +1,2166 @@
+%!PS-Adobe-3.0
+%%Title: c_applic.cpp
+%%For: U-PANAMINT\Administrator
+%%Creator: a2ps version 4.13
+%%CreationDate: Wed Oct  2 08:49:57 2002
+%%BoundingBox: 24 50 571 818
+%%DocumentData: Clean7Bit
+%%Orientation: Landscape
+%%Pages: 6
+%%PageOrder: Ascend
+%%DocumentMedia: A4dj 595 842 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontMatrix get 3 get 1000 mul
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Define these in case they're not in the FontInfo (also, here
+    % they're easier to get to.
+    /UnderlinePosition 1 def
+    /UnderlineThickness 1 def
+    
+    % Get the underline position and thickness if they're defined.
+    currentdict /FontInfo known {
+      FontInfo
+      
+      dup /UnderlinePosition known {
+	dup /UnderlinePosition get
+	0 exch FontMatrix transform exch pop
+	/UnderlinePosition exch def
+      } if
+      
+      dup /UnderlineThickness known {
+	/UnderlineThickness get
+	0 exch FontMatrix transform exch pop
+	/UnderlineThickness exch def
+      } if
+      
+    } if
+    currentdict 
+  end 
+} bind def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 595 def
+/sw 842 def
+/llx 50 def
+/urx 818 def
+/ury 571 def
+/lly 24 def
+/#copies 1 def
+/th 15.000000 def
+/fnfs 11 def
+/bfs 7.291667 def
+/cw 4.375000 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 86.400000 mul
+def
+/ph
+   500.937489 th add
+def
+/pmw urx llx sub pw 2 mul sub 1 div def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+  dup pmw add pw add
+] def
+/y [
+  pmh ph add 0 mul ph add
+  dup
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 5 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1-2) 1
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(1) # (// c_applic.cpp) c n
+(2) # (//         The "application" part of my program. This is concerned with) N
+(3) # (//         initial creation of windows and the capture of any command-line) N
+(4) # (//         or other options.) N
+(5) # (//) N
+(6) # (//     Copyright \(C\)/\251/\270 Codemist Ltd, 1995-2002) N
+(7) # () N
+(8) # (/*) N
+(9) # ( * This code may be used and modified, and redistributed in binary) N
+(10) # ( * or source form, subject to the "CCL Public License", which should) N
+(11) # ( * accompany it. This license is a variant on the BSD license, and thus) N
+(12) # ( * permits use of code derived from this in either open and commercial) N
+(13) # ( * projects: but it does require that updates to this code be made) N
+(14) # ( * available back to the originators of the package.) N
+(15) # ( * Before merging other code in with this or linking this code) N
+(16) # ( * with other packages or libraries please check that the license terms) N
+(17) # ( * of the other material are compatible with those of this.) N
+(18) # ( */) N
+(19) # () N
+(20) # () N
+(21) # (/* Signature: 2253e25b 30-Sep-2002 */) N
+(22) # () N
+(23) # () N
+(24) # () N
+(25) # () S
+(#include) K
+( ") p
+(cwin.hpp) str
+(") p n
+(26) # () N
+(27) # () S
+(extern) K
+( ") p
+(C) str
+(" {) p n
+(28) # () S
+(extern) K
+( ) p
+(int) k
+( Lstop\() p
+(int) k
+( a, ) p
+(int) k
+( b\);) p n
+(29) # (}) N
+(30) # () N
+(31) # () S
+(//) c n
+(32) # (// Windows enters my code at WinMain, but with MFC I arrive via all sorts) N
+(33) # (// of jolly initialisation code.  To support old code I read the command) N
+(34) # (// line that invoked me, and parse it into words which I store in argv[],) N
+(35) # (// much as per the regular C startup process.) N
+(36) # (//) N
+(37) # () S
+( ) p n
+(38) # () S
+(char) k
+( programName[64];) p n
+(39) # () S
+(char) k
+( *cwin_full_program_name;) p n
+(40) # () S
+(static) K
+( ) p
+(int) k
+( argc;) p n
+(41) # () S
+(static) K
+( ) p
+(char) k
+( **argv;) p n
+(42) # () N
+(43) # () S
+(static) K
+( ) p
+(int) k
+( set_up_argv\(\)) p n
+(44) # () S
+(// This sets up argc and argv[] as expected for a regular C application.) c n
+(45) # (// It arranges that argv[0] is an unqualified name, forced into upper case.) N
+(46) # (// Ie argv[0] does not have a path-name on the front of it or any ".EXE") N
+(47) # (// suffix after it.) N
+(48) # (// I return a flag that indicates whether "--" was found among the arguments.) N
+(49) # (// \(and now I will return the same flag if "-f" was among the arguments\)) N
+(50) # () S
+({) p n
+(51) # (    ) S
+(int) k
+( doubledashFound = 0;) p n
+(52) # (    ) S
+(int) k
+( i = 0, c, len = 0;) p n
+(53) # (    ) S
+(char) k
+( *w = GetCommandLine\(\);) p n
+(54) # () S
+(// The string I obtained there may be in UniCode, but I will suppose that it) c n
+(55) # (// does not contain any funny characters.  In particular I will demand) N
+(56) # (// that this module is compiled with Unicode mapped onto ordinary 8-bit) N
+(57) # (// chars.) N
+(58) # () S
+(    ) p
+(char) k
+( *w1 = w, *argbuf;) p n
+(59) # () S
+(// I scan the command line once to assess its length. I treat any item) c n
+(60) # (// that STARTS with a double-quote mark as running on until the following) N
+(61) # (// double quote \(even if there are blanks in the way\), and in that case I) N
+(62) # (// remove the quotes before passing on to the user's program. Something) N
+(63) # (// like this appears to be essential for dealing with Windows-95 with) N
+(64) # (// its long filenames: it puts the first item on the command line \(the name) N
+(65) # (// of the program that is being executed\) in double quotes in case it is long) N
+(66) # (// and in case it has embedded whitespace, and unless I strip those quotes) N
+(67) # (// later on bits of code crash. Note now the subtle distinction between) N
+(68) # (//            -W "yy") N
+(c_applic.cpp) (Page 1/11) (Sep 30, 02 19:17) title
+border
+/v 1 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(69) # (// and        -W"yy") c n
+(70) # (// where -W is some option that user code tries to interpret. In the first) N
+(71) # (// case the quotes are gobbled up and removed here, in the second they) N
+(72) # (// remain for the user to see. Note that) N
+(73) # (//            -W"yy is here") N
+(74) # (// returns three words, two of which have embedded quote marks. It is probably) N
+(75) # (// impossible to guarantee to win all cases here!) N
+(76) # () S
+(    ) p
+(do) K n
+(77) # () S
+(    {   ) p
+(while) K
+( \(\(c = *w++\) == ') p
+( ) str
+(' || c == ') p
+(\\t) str
+('\);) p
+(// Blank at start of an item) c n
+(78) # () S
+(        ) p
+(if) K
+( \(c == 0\) ) p
+(break) K
+(;) p n
+(79) # (        i++;                                   ) S
+(// Count of words) c n
+(80) # () S
+(        ) p
+(if) K
+( \(c == ') p
+(") str
+('\)                          ) p
+(// items in double quotes?) c n
+(81) # () S
+(        {   c = *w++;) p n
+(82) # (            ) S
+(while) K
+( \(c != 0 && c != ') p
+(") str
+('\) c = *w++, len++;) p n
+(83) # (            ) S
+(if) K
+( \(c == ') p
+(") str
+('\) c = *w++;) p n
+(84) # (        }) N
+(85) # (        ) S
+(else) K
+( ) p
+(while) K
+( \(c != 0 && c != ') p
+( ) str
+(' && c != ') p
+(\\t) str
+('\) c = *w++, len++;) p n
+(86) # (    } ) S
+(while) K
+( \(c != 0\);) p n
+(87) # () S
+(// Now I can allocate space for the argument vector and a copy of the data.) c n
+(88) # (// I grab a little more space than I am going to use as a matter of caution.) N
+(89) # () S
+(    argv = \() p
+(char) k
+( **\)malloc\(\(i+1\)*) p
+(sizeof) K
+(\() p
+(char) k
+( *\)\);) p n
+(90) # (    argbuf = \() S
+(char) k
+( *\)malloc\(i+len\);) p n
+(91) # (    argc = 0;) N
+(92) # (    ) S
+(if) K
+( \(argv==) p
+(NULL) K
+( || argbuf==) p
+(NULL) K
+(\) ) p
+(return) K
+( 0;) p n
+(93) # () S
+(// Re-scan the command line copying characters into buffers) c n
+(94) # () S
+(    w = w1;) p n
+(95) # (    ) S
+(do) K n
+(96) # () S
+(    {   ) p
+(while) K
+( \(\(c = *w++\) == ') p
+( ) str
+(' || c == ') p
+(\\t) str
+('\);) p n
+(97) # (        ) S
+(if) K
+( \(c == 0\) ) p
+(break) K
+(;) p n
+(98) # (        argv[argc++] = argbuf;) N
+(99) # (        ) S
+(if) K
+( \(c == ') p
+(") str
+('\)   ) p
+(// I strip the quotes while I tokenise) c n
+(100) # () S
+(        {   c = *w++;) p n
+(101) # (            ) S
+(while) K
+( \(c != 0 && c != ') p
+(") str
+('\) *argbuf++ = c, c = *w++;) p n
+(102) # (            ) S
+(if) K
+( \(c == ') p
+(") str
+('\) c = *w++;) p n
+(103) # (        }) N
+(104) # (        ) S
+(else) K
+( ) p
+(while) K
+( \(c != 0 && c != ') p
+( ) str
+(' && c != ') p
+(\\t) str
+('\) *argbuf++ = c, c = *w++;) p n
+(105) # (        *argbuf++ = 0;) N
+(106) # (        ) S
+(if) K
+( \(argv[argc-1][0] == ') p
+(-) str
+(' &&) p n
+(107) # (            \(argv[argc-1][1] == ') S
+(-) str
+(' ||) p n
+(108) # (             argv[argc-1][1] == ') S
+(f) str
+(' ||) p n
+(109) # (             argv[argc-1][1] == ') S
+(F) str
+('\)\) doubledashFound = 1;) p n
+(110) # (    } ) S
+(while) K
+( \(c != 0\);) p n
+(111) # () S
+(// Put a NULL pointer at the end of argv[], just to be safe) c n
+(112) # () S
+(    argv[argc] = ) p
+(NULL) K
+(;) p n
+(113) # () S
+(// Now I want to trim argv[0] so that even if it started with a full) c n
+(114) # (// path or with an extension \(eg. "\\bin\\csl.exe"\) it is passed on trimmed) N
+(115) # (// down to just its root \(eg. "csl" in the above case\).  This string will) N
+(116) # (// be left in programName too.) N
+(117) # () S
+(    w = w1 = argv[0];) p n
+(118) # (    cwin_full_program_name = ) S
+(NULL) K
+(;) p n
+(119) # (    ) S
+(while) K
+( \(\(c = *w++\) != 0\)) p n
+(120) # (    {   ) S
+(if) K
+( \(c == ') p
+(\\\\) str
+('\) w1 = w;) p n
+(121) # () S
+(// I take the view that if argv[0] contains a ":" character then it can be) c n
+(122) # (// presumed to be a fully rooted file name, including a drive specification.) N
+(123) # (// In such cases I will use it when I want the full name of the executable) N
+(124) # (// I am running. Well I will also require in that case that it should end) N
+(125) # (// in a ".exe" suffix. This final test is certainly needed under Windows) N
+(126) # (// NT 4.0 when one launches CSL from a command line but specifying) N
+(127) # (// a drive to find it on. What I want is the text) N
+(128) # (//    "D:\\xxxx.exe") N
+(129) # () S
+(        ) p
+(else) K
+( ) p
+(if) K
+( \(c == ') p
+(:) str
+(' && *w==') p
+(\\\\) str
+('\)) p n
+(130) # (        {   i = strlen\(w\)-4;) N
+(131) # (            ) S
+(if) K
+( \(i > 0 && w[i]==') p
+(.) str
+(' &&) p n
+(132) # (                tolower\(w[i+1]\)==') S
+(e) str
+(' &&) p n
+(133) # (                tolower\(w[i+2]\)==') S
+(x) str
+(' &&) p n
+(134) # (                tolower\(w[i+3]\)==') S
+(e) str
+('\)) p n
+(135) # (                    cwin_full_program_name = argv[0];) N
+(136) # (        }) N
+(c_applic.cpp) (Page 2/11) (Sep 30, 02 19:17) title
+border
+grestore
+(Printed by U-PANAMINT\\Administrator) rhead
+(c_applic.cpp) (1/6) (Wednesday October 02, 2002) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(137) # (    }) p n
+(138) # (    ) S
+(if) K
+( \(*w1 == 0\) w1 = ") p
+(CWIN) str
+(";  ) p
+(// Final char of argv[0] was '\\': use default) c n
+(139) # () S
+(    w = programName;) p n
+(140) # (    ) S
+(while) K
+( \(\(c = *w1++\) != 0 && c != ') p
+(.) str
+('\) *w++ = toupper\(c\);) p n
+(141) # (    *w = 0;) N
+(142) # (    argv[0] = programName;) N
+(143) # (    ) S
+(if) K
+( \(cwin_full_program_name == ) p
+(NULL) K
+(\)) p n
+(144) # () S
+(// Now I would like to get a full path to the program name... The) c n
+(145) # (// SearchPath function looks first in the directory from which the) N
+(146) # (// application was fetched, and provided that the ".exe" extension) N
+(147) # (// I specify here is correct the file really ought to be located!) N
+(148) # () S
+(    {   ) p
+(int) k
+( nameLength = SearchPath\() p
+(NULL) K
+(, programName, ") p
+(.EXE) str
+(", 0, argbuf, &w\);) p n
+(149) # () S
+(// There is one critically important case where "SearchPath" will fail here,) c n
+(150) # (// and that is when the program has been started from a debugger and the) N
+(151) # (// real name of the program is just not available.  In that case tough) N
+(152) # (// luck, you will have to make resources available by some means NOT) N
+(153) # (// dependent on the program name or the directory it lives in.  Maybe in some) N
+(154) # (// cases with DOS extenders the program will appear to have been loaded from) N
+(155) # (// a directory distinct from the one that the obvious ".EXE" file lives in.) N
+(156) # (// In those cases I had better hope that argv[0] gave me a completely) N
+(157) # (// rooted file name.) N
+(158) # () S
+(        cwin_full_program_name = \() p
+(char) k
+( *\)malloc\(nameLength+1\);) p n
+(159) # (        ) S
+(if) K
+( \(cwin_full_program_name == ) p
+(NULL) K
+(\)) p n
+(160) # (            cwin_full_program_name = ") S
+(cwin.exe) str
+(";) p n
+(161) # (        ) S
+(else) K n
+(162) # () S
+(        {   ) p
+(if) K
+( \(SearchPath\() p
+(NULL) K
+(, programName, ") p
+(.EXE) str
+(",) p n
+(163) # (                           nameLength+1, cwin_full_program_name, &w\) == 0\)) N
+(164) # (                cwin_full_program_name = ") S
+(cwin.exe) str
+(";) p n
+(165) # (        }) N
+(166) # (    }) N
+(167) # (    ) S
+(return) K
+( doubledashFound;) p n
+(168) # (}) N
+(169) # () N
+(170) # () N
+(171) # (CTheApp theApp;) N
+(172) # () N
+(173) # (CString mainWindowClass;) N
+(174) # () N
+(175) # (UINT clipboardformat;) N
+(176) # () N
+(177) # (BOOL CTheApp::InitInstance\(\)) N
+(178) # ({) N
+(179) # () S
+(// I find the explanations about m_nCmdShow and GetStartupInfo jolly) c n
+(180) # (// confusing! However the code as given here will be tested with CSL launched) N
+(181) # (// from a command line with) N
+(182) # (//       start csl ...) N
+(183) # (//       start /min csl ...) N
+(184) # (//       start /max csl ...) N
+(185) # (// and   start csl -- logfile.log) N
+(186) # (//) N
+(187) # (// The last of these ought to start CSL minimised even if /min or) N
+(188) # (// /max is given as well.) N
+(189) # (//) N
+(190) # (// Initial testing is on NT. Next I will need to try Windows 95. The) N
+(191) # (// issue of win32s \(on Windows 3.1x\) will be gently ignored now.) N
+(192) # () S
+(    ) p
+(int) k
+( nShow = m_nCmdShow;) p n
+(193) # () S
+(#ifdef) K
+( __WATCOM_CPLUSPLUS__) p n
+(194) # () S
+(#if) K
+( __WATCOM_CPLUSPLUS__ > 1060) p n
+(195) # () S
+(// Oh calamity. The following 3 lines seem necessary to make the initial) c n
+(196) # (// window behave properly, but when I inserted them I had reports that the) N
+(197) # (// code would not link on a system with just the previous version of) N
+(198) # (// Watcom C. While I investigate this I will try to disable this facility) N
+(199) # (// unless I have version 11.0 installed, and maybe this will allow us to) N
+(200) # (// keep moving forward.) N
+(201) # () S
+(    STARTUPINFO su;) p n
+(202) # (    GetStartupInfo\(&su\);) N
+(203) # (    ) S
+(if) K
+( \(su.dwFlags & 1\) nShow = su.wShowWindow;) p n
+(204) # () S
+(#endif) K n
+(c_applic.cpp) (Page 3/11) (Sep 30, 02 19:17) title
+border
+/v 1 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(205) # (#endif) K n
+(206) # () N
+(207) # () S
+(// I will grab information out of the registry as soon as the application) c n
+(208) # (// is started.) N
+(209) # () N
+(210) # () S
+(    SetRegistryKey\(") p
+(Codemist) str
+("\);   ) p
+(// Use registry rather than ".ini" file) c n
+(211) # () S
+(    ) p
+(int) k
+( left   = GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(ScreenLeft) str
+(",   -1000000\);) p n
+(212) # (    ) S
+(int) k
+( width  = GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(ScreenWidth) str
+(",  -1000000\);) p n
+(213) # (    ) S
+(int) k
+( top    = GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(ScreenTop) str
+(",    -1000000\);) p n
+(214) # (    ) S
+(int) k
+( height = GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(ScreenHeight) str
+(", -1000000\);) p n
+(215) # (    ) S
+(int) k
+( fsize  = GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(FontSize) str
+(",     0\);) p n
+(216) # (    ) S
+(int) k
+( fweight= GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(FontWeight) str
+(",   0\);) p n
+(217) # (    ) S
+(int) k
+( linel  = GetProfileInt\(") p
+(MainWindow) str
+(", ") p
+(LineLength) str
+(",   -1000000\);) p n
+(218) # (    CString fname\(GetProfileString\(") S
+(MainWindow) str
+(", ") p
+(FontName) str
+(", ") p
+(Courier New) str
+("\)\);) p n
+(219) # () N
+(220) # (    ) S
+(int) k
+( doubledashFound = set_up_argv\(\);) p n
+(221) # () N
+(222) # (    mainWindow = ) S
+(NULL) K
+(;) p n
+(223) # () N
+(224) # (    mainWindowClass = ::AfxRegisterWndClass\(CS_DBLCLKS,) N
+(225) # (                          LoadStandardCursor\(IDC_ARROW\),) N
+(226) # (                          \(HBRUSH\)\(COLOR_WINDOW+1\),) N
+(227) # (                          LoadIcon\(") S
+(CWIN) str
+("\)\);) p n
+(228) # () S
+(/*) c n
+(229) # ( * I introduce a private clipboard format here. It will be just like) N
+(230) # ( * simple text \(to start with\) except that certain control characters) N
+(231) # ( * will be used to separate off the places that prompt strings occus. This) N
+(232) # ( * can be exploited in PASTE operations so that prompts issued by this) N
+(233) # ( * system do not get re-entered when previous input is copies and pasted.) N
+(234) # ( */) N
+(235) # () S
+(    clipboardformat = RegisterClipboardFormat\(") p
+(Codemist Text) str
+("\);) p n
+(236) # () S
+(/*) c n
+(237) # ( * clipboardformat is left zero if anything went wrong, so in such cases) N
+(238) # ( * I must not attempt to use it.) N
+(239) # ( */) N
+(240) # () N
+(241) # () S
+(    ) p
+(if) K
+( \(\(mainWindow = ) p
+(new) K
+( CMainWindow\(\)\) == ) p
+(NULL) K
+(\) ) p
+(return) K
+( FALSE;) p n
+(242) # (    m_pMainWnd = mainWindow;) N
+(243) # (    CClientDC dc\(mainWindow\);) N
+(244) # (    mainWindow->windowFonts.InitFont\(&dc, \(LPCTSTR\)fname, fweight, fsize\);) N
+(245) # () S
+(// If there was "--" given as an argument I start off with the window) c n
+(246) # (// minimized. This is because I then expect an application to use this) N
+(247) # (// flag to enable output to a file rather than to the screen.) N
+(248) # () S
+(    WINDOWPLACEMENT wp;) p n
+(249) # (    mainWindow->GetWindowPlacement\(&wp\);) N
+(250) # () S
+(// Here I will see where the window is about to be placed, and adjust its) c n
+(251) # (// width \(and maybe its left hand side\) in an attempt to make the client) N
+(252) # (// are just big enough for 80 columns. I am a bit unhappy about the) N
+(253) # (// calculation here using system metrics, and have added in one more) N
+(254) # (// CXBORDER as a fudge to bring experimental reality on MY system into) N
+(255) # (// line. Hope it is OK on other systems and configurations too.) N
+(256) # (// The "+5" on the end is an attempt to leave room for a caret to the right) N
+(257) # (// of the last sensible character on a line...) N
+(258) # () S
+(    ) p
+(if) K
+( \(left!=-1000000 && width!=-1000000 &&) p n
+(259) # (        top!=-1000000 && height!=-1000000 &&) N
+(260) # (        linel!=-1000000\)) N
+(261) # (    {   mainWindow->SetWindowPos\() S
+(NULL) K
+(, left, top, width, height,) p n
+(262) # (            SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER\);) N
+(263) # (        cwin_linelength = linel;) N
+(264) # (    }) N
+(265) # (    ) S
+(else) K n
+(266) # () S
+(    {   ) p
+(int) k
+( screenWidth = GetSystemMetrics\(SM_CXSCREEN\);) p n
+(267) # (        RECT *wr = &wp.rcNormalPosition;) N
+(268) # (        ) S
+(int) k
+( left = wr->left;) p n
+(269) # (        ) S
+(int) k
+( cwidth = 80*mainWindow->windowFonts.HCourier.across[') p
+(X) str
+('] +) p n
+(270) # (                     3*GetSystemMetrics\(SM_CXBORDER\) +) N
+(271) # (                     2*GetSystemMetrics\(SM_CXFRAME\) +) N
+(272) # (                     GetSystemMetrics\(SM_CXVSCROLL\) + 5;) N
+(c_applic.cpp) (Page 4/11) (Sep 30, 02 19:17) title
+border
+grestore
+(Printed by U-PANAMINT\\Administrator) rhead
+(c_applic.cpp) (2/6) (Wednesday October 02, 2002) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5-6) 3
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(273) # (// Try to get the whole window onto the screen.) c n
+(274) # () S
+(        ) p
+(if) K
+( \(left + cwidth > screenWidth\)) p n
+(275) # (        {   left = screenWidth - cwidth;) N
+(276) # (            ) S
+(if) K
+( \(left < 0\) left = 0;) p n
+(277) # (        }) N
+(278) # (        mainWindow->SetWindowPos\() S
+(NULL) K
+(, ) p n
+(279) # (            left, wr->top,) N
+(280) # (            cwidth, \(wr->bottom - wr->top\),) N
+(281) # (            SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER\);) N
+(282) # (        cwin_linelength = 80;) N
+(283) # (        WriteProfileInt\(") S
+(MainWindow) str
+(", ") p
+(ScreenLeft) str
+(",   left\);) p n
+(284) # (        WriteProfileInt\(") S
+(MainWindow) str
+(", ") p
+(ScreenWidth) str
+(",  cwidth\);) p n
+(285) # (        WriteProfileInt\(") S
+(MainWindow) str
+(", ") p
+(ScreenTop) str
+(",    wr->top\);) p n
+(286) # (        WriteProfileInt\(") S
+(MainWindow) str
+(", ") p
+(ScreenHeight) str
+(", wr->bottom-wr->top\);) p n
+(287) # (        WriteProfileInt\(") S
+(MainWindow) str
+(", ") p
+(LineLength) str
+(",   cwin_linelength\);) p n
+(288) # (    }) N
+(289) # (    mainWindow->ShowWindow\(doubledashFound ? SW_SHOWMINNOACTIVE : nShow\);) N
+(290) # (    mainWindow->UpdateWindow\(\);) N
+(291) # () N
+(292) # (    ) S
+(return) K
+( TRUE;) p n
+(293) # (}) N
+(294) # () N
+(295) # () S
+(class) K
+( CenteredDialogBox : ) p
+(public) K
+( CDialog) p n
+(296) # ({) N
+(297) # () S
+(public) K
+(:) p n
+(298) # (    ) S
+(void) k
+( CreateAndDisplay\(HGLOBAL h\);) p n
+(299) # (};) N
+(300) # () N
+(301) # () S
+(void) k
+( CenteredDialogBox::CreateAndDisplay\(HGLOBAL h\)) p n
+(302) # ({) N
+(303) # (    InitModalIndirect\(h\);) N
+(304) # (    DoModal\(\);) N
+(305) # (}) N
+(306) # () N
+(307) # () S
+(// In-store dialog-box templates need some of their strings in 16-bit) c n
+(308) # (// Unicode form.  This code stretches out a simple string. It also round) N
+(309) # (// the length of the data written to a multiple of 8 bytes, which seems to) N
+(310) # (// be an unpublished \(?\) requirement for the dialog box template structures.) N
+(311) # () N
+(312) # () S
+(static) K
+( LPWORD WidenString\(LPWORD p, ) p
+(char) k
+( *q\)) p n
+(313) # ({) N
+(314) # (    ) S
+(int) k
+( n = 0;) p n
+(315) # (    ) S
+(while) K
+( \(\(*p++ = *q++\) != 0\) n++;) p n
+(316) # (    ) S
+(if) K
+( \(n & 1\) *p++ = 0;) p n
+(317) # (    ) S
+(return) K
+( p;) p n
+(318) # (}) N
+(319) # () N
+(320) # () S
+(// The following function fills in details about one control within a) c n
+(321) # (// dialog box template.) N
+(322) # () N
+(323) # () S
+(static) K
+( LPWORD PlantDlgItem\(LPWORD p3, ) p
+(int) k
+( x, ) p
+(int) k
+( y, ) p
+(int) k
+( cx, ) p
+(int) k
+( cy,) p n
+(324) # (                           ) S
+(int) k
+( id, DWORD style, ) p
+(int) k
+( type, ) p
+(char) k
+( *text\)) p n
+(325) # ({) N
+(326) # (    LPDLGITEMTEMPLATE p2 = \(LPDLGITEMTEMPLATE\)p3;) N
+(327) # (    p2->x = x; p2->y = y; p2->cx = cx, p2->cy = cy;) N
+(328) # (    p2->id = id;) N
+(329) # (    p2->style = style;) N
+(330) # (    p3 = \(LPWORD\)\(p2 + 1\);) N
+(331) # (    *p3++ = 0xffff;) N
+(332) # (    *p3++ = type;) N
+(333) # (    ) S
+(int) k
+( n = 1;) p n
+(334) # (    ) S
+(while) K
+( \(\(*p3++ = *text++\) != 0\) n++;) p n
+(335) # (    ) S
+(if) K
+( \(n & 1\) *p3++ = 0;) p n
+(336) # (    *p3++ = 0;) N
+(337) # (    ) S
+(return) K
+( p3;) p n
+(338) # (}) N
+(339) # () N
+(340) # () S
+(// I make the "ABOUT" dialog box from an in-memory template, and) c n
+(c_applic.cpp) (Page 5/11) (Sep 30, 02 19:17) title
+border
+/v 1 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(341) # (// this makes it possible to make the text that is included depend on) c n
+(342) # (// strings that the user can potentially reconfigure.  The strings put here) N
+(343) # (// are somewhat generic.   Note also that if a user hits the HELP menu) N
+(344) # (// during system start-up before the regular user code at main\(\) has been) N
+(345) # (// entered than the messages shown here will appear, even though later on) N
+(346) # (// the user's properly selected messages will be the ones that show up. I) N
+(347) # (// think that on balance I almost count that to be a positive advantage! It) N
+(348) # (// means that the "CWIN" information and credits are at least just about) N
+(349) # (// available to all users!) N
+(350) # () N
+(351) # () S
+(char) k
+( about_box_title[32]       = ") p
+(About CWIN) str
+(";) p n
+(352) # () S
+(char) k
+( about_box_description[32] = ") p
+(The CWIN window driver) str
+(";) p n
+(353) # () S
+(char) k
+( about_box_rights_1[32]    = ") p
+(Copyright Codemist Ltd.) str
+(";) p n
+(354) # () S
+(char) k
+( about_box_rights_2[32]    = ") p
+(A C Norman       1994-6) str
+(";) p n
+(355) # () N
+(356) # () S
+(void) k
+( CTheApp::OnAbout\(\)) p n
+(357) # ({) N
+(358) # (    HGLOBAL h = GlobalAlloc\(GMEM_ZEROINIT, 1024\);) N
+(359) # (    ) S
+(if) K
+( \(!h\) ) p
+(return) K
+(;) p n
+(360) # (    LPDLGTEMPLATE p1 = \(LPDLGTEMPLATE\)GlobalLock\(h\);) N
+(361) # (    WORD *p0 = \(WORD *\)p1;) N
+(362) # (    p1->style = WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_MODALFRAME;) N
+(363) # (    p1->cdit = 5;) N
+(364) # (    p1->cx = 167; p1->cy = 86;) N
+(365) # (    LONG units = ::GetDialogBaseUnits\(\);) N
+(366) # (    ) S
+(int) k
+( dlgx = units & 0xffff, dlgy = \(units >> 16\) & 0xffff;) p n
+(367) # (    p1->x = \(\(4*mainWindow->clientWidth\)/dlgx - p1->cx\)/2;) N
+(368) # (    p1->y = \(\(8*mainWindow->clientHeight\)/dlgy - p1->cy\)/2;) N
+(369) # (    LPWORD p2 = \(LPWORD\)\(p1 + 1\);) N
+(370) # (    *p2++ = 0;       ) S
+(// no menu) c n
+(371) # () S
+(    *p2++ = 0;       ) p
+(// a predefined box class) c n
+(372) # () S
+(    p2 = WidenString\(p2, about_box_title\);) p n
+(373) # (    p2 = PlantDlgItem\(p2, 0, 4, 167, 8, -1,) N
+(374) # (        WS_CHILD | WS_VISIBLE | SS_CENTER, 0x0082, about_box_description\);) N
+(375) # (    p2 = PlantDlgItem\(p2, 0, 45, 167, 8, -1,) N
+(376) # (        WS_CHILD | WS_VISIBLE | SS_CENTER, 0x0082, about_box_rights_1\);) N
+(377) # (    p2 = PlantDlgItem\(p2, 0, 53, 167, 8, -1,) N
+(378) # (        WS_CHILD | WS_VISIBLE | SS_CENTER, 0x0082, about_box_rights_2\);) N
+(379) # (    p2 = PlantDlgItem\(p2, 74, 22, 0, 0, -1,) N
+(380) # (        WS_CHILD | WS_VISIBLE | SS_ICON, 0x0082, ") S
+(CWIN) str
+("\);) p n
+(381) # (    p2 = PlantDlgItem\(p2, 66, 65, 32, 14, IDOK,) N
+(382) # (        WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 0x0080, ") S
+(OK) str
+("\);) p n
+(383) # (    GlobalUnlock\(h\);) N
+(384) # (    CenteredDialogBox dlg;) N
+(385) # (    dlg.CreateAndDisplay\(h\);) N
+(386) # (    GlobalFree\(h\);) N
+(387) # (}) N
+(388) # () N
+(389) # () S
+(// When I want to pop up a box that says "Press OK to exit" I make the) c n
+(390) # (// structure that defines the dialog box here in memory rather than putting) N
+(391) # (// it into my resource file.  The reason for taking this step is that it) N
+(392) # (// allows to to keep the resource file as spartan and simple as possible.) N
+(393) # (// It also provides a place for me to ensure that the dialog box is central) N
+(394) # (// in the area that my window occupies.) N
+(395) # () N
+(396) # () S
+(static) K
+( ) p
+(void) k
+( DoFinishBox\(\)) p n
+(397) # ({) N
+(398) # (    HGLOBAL h = GlobalAlloc\(GMEM_ZEROINIT, 1024\);) N
+(399) # (    ) S
+(if) K
+( \(!h\) ) p
+(return) K
+(;) p n
+(400) # (    LPDLGTEMPLATE p1 = \(LPDLGTEMPLATE\)GlobalLock\(h\);) N
+(401) # (    WORD *p0 = \(WORD *\)p1; ) S
+(//DEBUG) c n
+(402) # () S
+(    p1->style = WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_MODALFRAME;) p n
+(403) # (    p1->cdit = 2;) N
+(404) # (    p1->cx = 95; p1->cy = 52;) N
+(405) # () S
+(// I want the box to appear in the centre of where my window is. This) c n
+(406) # (// causes extra fun because of the special coordinate system used with) N
+(407) # (// dialog boxes - I have to convert units.) N
+(408) # () S
+(    LONG units = ::GetDialogBaseUnits\(\);) p n
+(c_applic.cpp) (Page 6/11) (Sep 30, 02 19:17) title
+border
+grestore
+(Printed by U-PANAMINT\\Administrator) rhead
+(c_applic.cpp) (3/6) (Wednesday October 02, 2002) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7-8) 4
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(409) # (    ) p
+(int) k
+( dlgx = units & 0xffff, dlgy = \(units >> 16\) & 0xffff;) p n
+(410) # (    p1->x = \(\(4*theApp.mainWindow->clientWidth\)/dlgx - p1->cx\)/2;) N
+(411) # (    p1->y = \(\(8*theApp.mainWindow->clientHeight\)/dlgy - p1->cy\)/2;) N
+(412) # (    LPWORD p2 = \(LPWORD\)\(p1 + 1\);) N
+(413) # (    *p2++ = 0;       ) S
+(// no menu) c n
+(414) # () S
+(    *p2++ = 0;       ) p
+(// a predefined box class) c n
+(415) # () S
+(    *p2++ = 0;       ) p
+(// no title) c n
+(416) # () S
+(    p2 = PlantDlgItem\(p2, 1, 10, 94, 12, -1,) p n
+(417) # (        WS_CHILD | WS_VISIBLE | SS_CENTER, 0x0082, ") S
+(Press OK to exit) str
+("\);) p n
+(418) # (    p2 = PlantDlgItem\(p2, 28, 23, 40, 14, IDOK,) N
+(419) # (        WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 0x0080, ") S
+(OK) str
+("\);) p n
+(420) # (    GlobalUnlock\(h\);) N
+(421) # (    CenteredDialogBox dlg;) N
+(422) # (    dlg.CreateAndDisplay\(h\);) N
+(423) # (    GlobalFree\(h\);) N
+(424) # (}) N
+(425) # () N
+(426) # () N
+(427) # () S
+(// Here I override the Run member of my application so that I take control) c n
+(428) # (// of the way in which the underlying window system is polled. This is) N
+(429) # (// somewhat delicate!  The code here has to be a close enough shadow of) N
+(430) # (// what MFC does that I do not cause conflict.) N
+(431) # () N
+(432) # () S
+(int) k
+( cwin_pause_at_end;) p n
+(433) # () N
+(434) # () S
+(int) k
+( CTheApp::Run\(\)       ) p
+(// Main running routine until application exits) c n
+(435) # () S
+({) p n
+(436) # () S
+(// If I had not managed to open a main window then I should give up.) c n
+(437) # () S
+(    ) p
+(if) K
+( \(m_pMainWnd == ) p
+(NULL) K n
+(438) # () S
+(//      && AfxOleGetUserCtrl\(\)     // Embedding or Automation invocation?) c n
+(439) # () S
+(        \) AfxPostQuitMessage\(0\);) p n
+(440) # () S
+(// The message handler needs to access m_msgCur which is a private member) c n
+(441) # (// of the class, so I can not use just \(theApp.m_msgCur\) to get at it. To) N
+(442) # (// work around the problem I just dump a reference to it in the variable) N
+(443) # (// msgPtr.) N
+(444) # (//+++ This was OK with Visual C++ version 5, but by version 7 \(in) N
+(445) # (//+++ Visual Studio .NET\) the m_msgCur member no longer exists, and so this) N
+(446) # (//+++ code needs to be rebuilt! Oh dear, especially since the way it) N
+(447) # (//+++ was breaking private visibility is an indication that the original) N
+(448) # (//+++ version was something of a crock!     ACN September 2002) N
+(449) # () S
+(    msgPtr = &m_msgCur;) p n
+(450) # () S
+(// Now the real fun!  I call cwin_main\(\) which fires up my application code) c n
+(451) # (// Remember that cwin_main\(\) should either return to me or do a cwin_exit\(\)) N
+(452) # (// and it should NOT call exit\(\).) N
+(453) # () S
+(    cwin_pause_at_end = FALSE;) p n
+(454) # (    ) S
+(int) k
+( returnCode;) p n
+(455) # () S
+(//    try { ) c n
+(456) # () S
+(    returnCode = cwin_main\(argc, argv\);) p n
+(457) # () S
+(//    }) c n
+(458) # (//    catch \(int rc\) { returnCode = rc; }) N
+(459) # () S
+(    ) p
+(if) K
+( \(cwin_pause_at_end\)) p n
+(460) # (    {   cwin_maximize\(\);) N
+(461) # (        cwin_ensure_screen\(\);) N
+(462) # (        DoFinishBox\(\);) N
+(463) # (    }) N
+(464) # (    ) S
+(if) K
+( \(m_pMainWnd != ) p
+(NULL) K
+(\) ) p
+(delete) K
+( m_pMainWnd;) p n
+(465) # (    m_pMainWnd = mainWindow = ) S
+(NULL) K
+(;) p n
+(466) # (    ) S
+(int) k
+( returnCode1 = ExitInstance\(\);) p n
+(467) # (    ) S
+(if) K
+( \(returnCode1 > returnCode\) returnCode = returnCode1;) p n
+(468) # (    ) S
+(if) K
+( \(m_pMainWnd != ) p
+(NULL) K
+(\) m_pMainWnd->SendMessage\(WM_CLOSE\);) p n
+(469) # () S
+(// Although I go to some trouble to collect a return code here I find such) c n
+(470) # (// things somewhat unhelpful under Windows, and so at the last minute I) N
+(471) # (// check away the information and return zero.) N
+(472) # () S
+(    ) p
+(return) K
+( 0;              ) p
+(// returnCode;) c n
+(473) # () S
+(}) p n
+(474) # () N
+(475) # () S
+(//void cwin_exit\(int r\)) c n
+(476) # (//{) N
+(c_applic.cpp) (Page 7/11) (Sep 30, 02 19:17) title
+border
+/v 1 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(477) # (//    throw r;) c n
+(478) # (//}) N
+(479) # () N
+(480) # () S
+(BEGIN_MESSAGE_MAP\(CTheApp, CWinApp\)) p n
+(481) # () N
+(482) # (    ON_COMMAND\(IDM_HELPCONTENTS,   OnHelpContents\)) N
+(483) # (    ON_COMMAND\(IDM_HELPSEARCH,     OnHelpSearch\)) N
+(484) # (    ON_COMMAND\(IDM_HELP_ON_HELP,   OnHelpUsing\)) N
+(485) # (    ON_COMMAND\(IDM_ABOUT,          OnAbout\)) N
+(486) # () S
+(#ifdef) K
+( DEMOVERSION) p n
+(487) # (    ON_COMMAND\(IDM_EUPRICES,       OnEUPrices\)) N
+(488) # (    ON_COMMAND\(IDM_WORLDPRICES,    OnWorldPrices\)) N
+(489) # (    ON_COMMAND\(IDM_ORDERFORM,      OnOrderform\)) N
+(490) # () S
+(#endif) K n
+(491) # () S
+(    ON_COMMAND_RANGE\(IDM_DYNAMIC_ITEMS, IDM_LAST_DYNAMIC, OnDynamic\)) p n
+(492) # () N
+(493) # (END_MESSAGE_MAP\(\)) N
+(494) # () N
+(495) # () N
+(496) # () N
+(497) # () S
+(// At various times I will want to go back and poll the window manager) c n
+(498) # (// to ensure that mouse activity is responded to, the screen is re-drawn and) N
+(499) # (// other applications get a share of the CPU. To do that I will arrange that) N
+(500) # (// 'cwin_poll_window_manager\(\)' is called from time to time in the middle of) N
+(501) # (// whatever else I am doing.  This grabs a message from the window manager) N
+(502) # (// and dispatches it to whatever handler is relevant.) N
+(503) # () N
+(504) # () S
+(static) K
+( ) p
+(void) k
+( timer_processing\(\)) p n
+(505) # ({) N
+(506) # (    SYSTEMTIME t1;) N
+(507) # (    GetSystemTime\(&t1\);) N
+(508) # () S
+(//-         if \(t1.wHour != lastFlushTime.wHour ||) c n
+(509) # (//-             \(t1.wMinute - lastFlushTime.wMinute\)*60 +) N
+(510) # (//-             \(t1.wSecond - lastFlushTime.wSecond\) > 3\)) N
+(511) # (//-             cwin_almost_ensure_screen\(\);) N
+(512) # () S
+(    ) p
+(if) K
+( \(!theApp.mainWindow->leftSetByUser\)) p n
+(513) # (    {) N
+(514) # () S
+(// Here I arrange to update the title-bar clock about once every 5 secs. It) c n
+(515) # (// seems that every second it too frequent, especially since it often flashes) N
+(516) # (// the title-bar while re-drawing it.  But 10 seconds is too long and lets) N
+(517) # (// the user feel things may be stuck.) N
+(518) # (// If the user explicitly sets any value in the left part of the title bar) N
+(519) # (// then this action is disabled. I do not set titleUpdateTime at the start) N
+(520) # (// of a run but that does not matter - it will fall into line within a few) N
+(521) # (// seconds whatever its initial value \(however junky\) is.) N
+(522) # () S
+(        ) p
+(if) K
+( \(theApp.mainWindow->titleUpdateTime.wHour != t1.wHour ||) p n
+(523) # (            theApp.mainWindow->titleUpdateTime.wMinute != t1.wMinute ||) N
+(524) # (            theApp.mainWindow->titleUpdateTime.wSecond/5 != t1.wSecond/5\)) N
+(525) # (        {   theApp.mainWindow->titleUpdateTime = t1;) N
+(526) # (            theApp.mainWindow->titleUpdateTime.wSecond =) N
+(527) # (                 5*\(theApp.mainWindow->titleUpdateTime.wSecond/5\);) N
+(528) # (            theApp.mainWindow->cwin_display_date\(\);) N
+(529) # (        }) N
+(530) # (    }) N
+(531) # (}) N
+(532) # () N
+(533) # () S
+(// This task will busy-wait in its idle-state watching time go by and) c n
+(534) # (// occasionally updating the screen etc.) N
+(535) # () N
+(536) # () S
+(BOOL CTheApp::OnIdle\(LONG lCount\)) p n
+(537) # ({) N
+(538) # (    BOOL r = CWinApp::OnIdle\(lCount\);) N
+(539) # (    ) S
+(if) K
+( \(!r\) timer_processing\(\);) p n
+(540) # (    ) S
+(return) K
+( r;) p n
+(541) # (}) N
+(542) # () N
+(543) # () N
+(544) # () S
+(void) k
+( cwin_poll_window_manager\() p
+(void) k
+(\)) p n
+(c_applic.cpp) (Page 8/11) (Sep 30, 02 19:17) title
+border
+grestore
+(Printed by U-PANAMINT\\Administrator) rhead
+(c_applic.cpp) (4/6) (Wednesday October 02, 2002) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (9-10) 5
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(545) # ({) p n
+(546) # () S
+(// If the application has registered an idle-time handler then that gets) c n
+(547) # (// invoked until it has finished or until a real message arrives whenever) N
+(548) # (// I call cwin_poll_window_manager\(\).  I also process ALL the window messages) N
+(549) # (// that have stacked up and only go back to the user when otherwise idle.) N
+(550) # (// Note that for my application I always want a stream of idle processing) N
+(551) # (// to be going on, so that timer-related activity can be handled.) N
+(552) # () S
+(    LONG Idle = 0;) p n
+(553) # () S
+(// Now I do any "idle tasks" that have been registered.) c n
+(554) # () S
+(    ) p
+(while) K
+( \(!::PeekMessage\(theApp.msgPtr, ) p
+(NULL) K
+(, 0, 0, PM_NOREMOVE\)\)) p n
+(555) # (    {   ) S
+(if) K
+( \(!theApp.OnIdle\(Idle++\)\) ) p
+(return) K
+(;) p n
+(556) # (    }) N
+(557) # () S
+(// I only drop through if there is a message waiting for me, so that) c n
+(558) # (// PumpMessage will not block.) N
+(559) # () S
+(    ) p
+(do) K n
+(560) # () S
+(    {   ) p
+(if) K
+( \(!theApp.PumpMessage\(\)\)) p n
+(561) # (        {   Lstop\(0, 1\);  ) S
+(// the "1" here actually means "0"!) c n
+(562) # () S
+(            ) p
+(return) K
+(;) p n
+(563) # (        }) N
+(564) # () S
+(// If the user selects CLOSE from the system menu it causes PumpMessage to) c n
+(565) # (// return FALSE, so in that case I close things down.) N
+(566) # () S
+(    } ) p
+(while) K
+( \(::PeekMessage\(theApp.msgPtr, ) p
+(NULL) K
+(, 0, 0, PM_NOREMOVE\)\);) p n
+(567) # (}) N
+(568) # () N
+(569) # () S
+(void) k
+( cwin_minimize\(\)) p n
+(570) # ({) N
+(571) # (    WINDOWPLACEMENT wp;) N
+(572) # (    ) S
+(if) K
+( \(!::GetWindowPlacement\(theApp.mainWindow->m_hWnd, &wp\)\) ) p
+(return) K
+(;) p n
+(573) # (    wp.showCmd = SW_SHOWMINIMIZED;) N
+(574) # (    ::SetWindowPlacement\(theApp.mainWindow->m_hWnd, &wp\);) N
+(575) # (}) N
+(576) # () N
+(577) # () S
+(void) k
+( cwin_maximize\(\)) p n
+(578) # ({) N
+(579) # (    WINDOWPLACEMENT wp;) N
+(580) # (    ) S
+(if) K
+( \(!::GetWindowPlacement\(theApp.mainWindow->m_hWnd, &wp\)\) ) p
+(return) K
+(;) p n
+(581) # (    wp.showCmd = SW_RESTORE;) N
+(582) # (    ::SetWindowPlacement\(theApp.mainWindow->m_hWnd, &wp\);) N
+(583) # (}) N
+(584) # () N
+(585) # () S
+(void) k
+( CTheApp::OnHelpContents\(\)              ) p
+(// Start on contents page.) c n
+(586) # () S
+({) p n
+(587) # (    WinHelp\(0L, HELP_CONTENTS\);) N
+(588) # (}) N
+(589) # () N
+(590) # () S
+(void) k
+( CTheApp::OnHelpSearch\(\)) p n
+(591) # ({) N
+(592) # (    WinHelp\(\(DWORD\)"", HELP_PARTIALKEY\);    ) S
+(// Search through keywords.) c n
+(593) # () S
+(}) p n
+(594) # () N
+(595) # () S
+(void) k
+( CTheApp::OnDynamic\() p
+(unsigned) k
+( ) p
+(int) k
+( commandId\)) p n
+(596) # ({) N
+(597) # (    ) S
+(char) k
+( hah[100];) p n
+(598) # () S
+(//    sprintf\(hah, "Help message %d %s\\n", commandId,) c n
+(599) # (//        dynamic_files[commandId-IDM_DYNAMIC_ITEMS]\);) N
+(600) # (//    DisplayMsg\(hah\);) N
+(601) # () S
+(    ::WinHelp\(mainWindow->m_hWnd, ) p n
+(602) # (              dynamic_files[commandId-IDM_DYNAMIC_ITEMS],) N
+(603) # (              HELP_CONTENTS,) N
+(604) # (              0\);) N
+(605) # (}) N
+(606) # () N
+(607) # () S
+(void) k
+( CTheApp::cwin_set_help_file\() p
+(const) K
+( ) p
+(char) k
+( *key, ) p
+(const) K
+( ) p
+(char) k
+( *path\)) p n
+(608) # ({) N
+(609) # (    ) S
+(char) k
+( key1[8];) p n
+(610) # (    ) S
+(int) k
+( i;) p n
+(611) # (    ) S
+(if) K
+( \(key == ) p
+(NULL) K
+(\)) p n
+(612) # (    {   WriteProfileInt\(") S
+(HelpItems) str
+(", ") p
+(HowMany) str
+(", 0\);) p n
+(c_applic.cpp) (Page 9/11) (Sep 30, 02 19:17) title
+border
+/v 1 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(613) # (        ) p
+(for) K
+( \(i=0; i<dynamicCount; i++\)) p n
+(614) # (        {   sprintf\(key1, ") S
+(T%.3d) str
+(", i\);) p n
+(615) # (            WriteProfileString\(") S
+(HelpItems) str
+(", key1, ) p
+(NULL) K
+(\);) p n
+(616) # (            sprintf\(key1, ") S
+(P%.3d) str
+(", i\);) p n
+(617) # (            WriteProfileString\(") S
+(HelpItems) str
+(", key1, ) p
+(NULL) K
+(\);) p n
+(618) # (        }) N
+(619) # (        ) S
+(return) K
+(;) p n
+(620) # (    }) N
+(621) # (    ) S
+(for) K
+( \(i=0; i<dynamicCount; i++\)) p n
+(622) # (    {   ) S
+(if) K
+( \(strcmp\(key, dynamic[i]\) == 0\) ) p
+(break) K
+(;) p n
+(623) # (    }) N
+(624) # (    ) S
+(if) K
+( \(i == dynamicCount\) ) p
+(// not found) c n
+(625) # () S
+(    {   ) p
+(if) K
+( \(path == ) p
+(NULL) K
+(\) ) p
+(return) K
+(;) p n
+(626) # (        ) S
+(else) K n
+(627) # () S
+(        {   dynamic[dynamicCount] = key;) p n
+(628) # (            dynamic_files[dynamicCount++] = path;) N
+(629) # (        }) N
+(630) # (    }) N
+(631) # (    ) S
+(else) K n
+(632) # () S
+(    {   ) p
+(if) K
+( \(path == ) p
+(NULL) K
+(\)) p n
+(633) # (        {   dynamicCount--;) N
+(634) # (            ) S
+(for) K
+( \(;i<dynamicCount; i++\)) p n
+(635) # (            {   dynamic[i] = dynamic[i+1];) N
+(636) # (                dynamic_files[i] = dynamic_files[i+1];) N
+(637) # (            }) N
+(638) # (        }) N
+(639) # (        ) S
+(else) K
+( dynamic_files[i] = path;) p n
+(640) # (    }) N
+(641) # (    WriteProfileInt\(") S
+(HelpItems) str
+(", ") p
+(HowMany) str
+(", dynamicCount\);) p n
+(642) # (    ) S
+(for) K
+( \(i=0; i<dynamicCount; i++\)) p n
+(643) # (    {   sprintf\(key1, ") S
+(T%.3d) str
+(", i\);) p n
+(644) # (        WriteProfileString\(") S
+(HelpItems) str
+(", key1, dynamic[i]\);) p n
+(645) # (        sprintf\(key1, ") S
+(P%.3d) str
+(", i\);) p n
+(646) # (        WriteProfileString\(") S
+(HelpItems) str
+(", key1, dynamic_files[i]\);) p n
+(647) # (    }) N
+(648) # (    ) S
+(if) K
+( \(path == ) p
+(NULL) K
+(\)) p n
+(649) # (    {   sprintf\(key1, ") S
+(T%.3d) str
+(", i\);) p n
+(650) # (        WriteProfileString\(") S
+(HelpItems) str
+(", key1, ) p
+(NULL) K
+(\);) p n
+(651) # (        sprintf\(key1, ") S
+(P%.3d) str
+(", i\);) p n
+(652) # (        WriteProfileString\(") S
+(HelpItems) str
+(", key1, ) p
+(NULL) K
+(\);) p n
+(653) # (    }) N
+(654) # (}) N
+(655) # () N
+(656) # () S
+(void) k
+( cwin_set_help_file\() p
+(const) K
+( ) p
+(char) k
+( *key, ) p
+(const) K
+( ) p
+(char) k
+( *path\)) p n
+(657) # ({) N
+(658) # (    theApp.cwin_set_help_file\(key, path\);) N
+(659) # (}) N
+(660) # () N
+(661) # () N
+(662) # () S
+(// DisplayMsg is used a bit like fprintf\(stderr, ...\) but ONLY for debugging.) c n
+(663) # (// It pops up a modal dialog box each time it is called.  This is easy to) N
+(664) # (// code, but a bit clumsy in the way it disturbs the screen.) N
+(665) # () N
+(666) # () S
+(void) k n
+(667) # () S
+(#ifdef) K
+( _MSC_VER) p n
+(668) # (     __cdecl) N
+(669) # () S
+(#endif) K n
+(670) # () S
+(     DisplayMsg\() p
+(char) k
+( *msg, ...\)) p n
+(671) # ({) N
+(672) # (    ) S
+(char) k
+( buffer[256];) p n
+(673) # (    va_list a;) N
+(674) # (    va_start\(a, msg\);) N
+(675) # (    vsprintf\(buffer, msg, a\);) N
+(676) # (    va_end\(a\);) N
+(677) # (    AfxMessageBox\(buffer\);) N
+(678) # (}) N
+(679) # () N
+(680) # () S
+(// End of c_applic.cpp) c n
+(c_applic.cpp) (Page 10/11) (Sep 30, 02 19:17) title
+border
+grestore
+(Printed by U-PANAMINT\\Administrator) rhead
+(c_applic.cpp) (5/6) (Wednesday October 02, 2002) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (11) 6
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.062500 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(681) # () p n
+(c_applic.cpp) (Page 11/11) (Sep 30, 02 19:17) title
+border
+grestore
+(Printed by U-PANAMINT\\Administrator) rhead
+(c_applic.cpp) (6/6) (Wednesday October 02, 2002) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF

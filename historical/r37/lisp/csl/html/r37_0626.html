@@ -1,0 +1,96 @@
+
+<A NAME=Frobenius>
+
+<TITLE>Frobenius</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FROBENIUS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The operator <em>frobenius</em> computes the <em>frobenius</em> normal form F of
+ a 
+
+<A HREF=r37_0345.html>matrix</A> (A say). It returns {F,P,P^-1} where P*F*P^-1 =
+ A. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>frobenius</em>(&lt;matrix&gt;) 
+<P>
+<P>
+&lt;matrix&gt; :- a square 
+<A HREF=r37_0345.html>matrix</A>. 
+<P>
+<P>
+<P>
+Field Extensions: 
+<P>
+<P>
+By default, calculations are performed in the rational numbers. To 
+extend this field the 
+<A HREF=r37_0634.html>arnum</A> package can be used. The package must 
+first be loaded by load_package arnum;. The field can now be extended 
+by using the defpoly command. For example, defpoly sqrt2**2-2; will 
+extend the field to include the square root of 2 (now defined by sqrt2). 
+<P>
+<P>
+Modular Arithmetic: 
+<P>
+<P>
+<em>Frobenius</em>can also be calculated in a modular base. To do this 
+first type on modular;. Then setmod p; (where p is a prime) will set 
+the modular base of calculation to p. By further typing on balanced_mod 
+the answer will appear using a symmetric modular representation. See 
+
+<A HREF=r37_0627.html>ratjordan</A> for an example. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ a := mat((x,x^2),(3,5*x)); 
+
+       [    2 ]
+       [x  x  ]
+  a := [      ]
+       [3  5*x]
+
+
+ frobenius(a);
+
+     [         2]    [1  x]    [       - x ]
+  {  [0   - 2*x ],   [    ],   [1     -----]  }
+     [          ]    [0  3]    [        3  ]
+     [1    6*x  ]              [           ]
+                               [        1  ]
+                               [0      --- ]
+                               [        3  ]
+
+
+ load_package arnum;
+
+ defpoly sqrt2**2-2;
+
+ a := mat((sqrt2,5),(7*sqrt2,sqrt2));
+
+
+       [ sqrt2     5  ]
+  a := [              ]
+       [7*sqrt2  sqrt2]
+
+
+
+ frobenius(a); 
+
+    [0  35*sqrt2 - 2]    [1   sqrt2 ]    [           1  ]
+  { [               ],   [          ],   [1       - --- ]  }
+    [1    2*sqrt2   ]    [1  7*sqrt2]    [           7  ]
+                                         [              ]
+                                         [     1        ]
+                                         [0   ----*sqrt2]
+                                         [     14       ]
+
+</TT></PRE><P>

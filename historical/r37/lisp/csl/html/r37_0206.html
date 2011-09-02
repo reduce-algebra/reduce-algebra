@@ -1,0 +1,67 @@
+
+<A NAME=NONCOM>
+
+<TITLE>NONCOM</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NONCOM</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+ <P>
+<P>
+<em>noncom</em>declares that already-declared operators are noncommutative 
+under multiplication. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>noncom</em>&lt;operator&gt;{,&lt;operator&gt;}* 
+<P>
+<P>
+<P>
+&lt;operator&gt; must have been declared an 
+<A HREF=r37_0211.html>operator</A>, or a warning 
+message is given. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+operator f,h; 
+
+noncom f; 
+
+f(a)*f(b) - f(b)*f(a); 
+
+  F(A)*F(B) - F(B)*F(A) 
+
+
+h(a)*h(b) - h(b)*h(a); 
+
+  0 
+
+
+operator comm; 
+
+for all x,y such that x neq y and ordp(x,y)
+        let f(x)*f(y) = f(y)*f(x) + comm(x,y);
+
+
+f(1)*f(2); 
+
+  F(1)*F(2) 
+
+
+f(2)*f(1); 
+
+  COMM(2,1) + F(1)*F(2)
+
+</TT></PRE><P>The last example introduces the commutator of f(x) and f(y) 
+for all x and y. The equality check is to prevent an infinite loop. The 
+operator f can have other functionality attached to it if desired, or it 
+can remain an indeterminate operator. 
+<P>
+<P>
+<P>

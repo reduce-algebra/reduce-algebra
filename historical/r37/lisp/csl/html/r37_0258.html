@@ -1,0 +1,67 @@
+
+<A NAME=SECH>
+
+<TITLE>SECH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SECH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>sech</em> operator returns the hyperbolic secant of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>sech</em>(&lt;expression&gt;) or <em>sech</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; is any valid scalar REDUCE expression, 
+&lt;simple\_expression&gt; is a single identifier or begins with a prefix 
+operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+sech abc; 
+
+  SECH(ABC) 
+
+
+
+sech(0); 
+
+  1 
+
+
+
+sech 4; 
+
+  SECH(4) 
+
+
+
+on rounded; 
+
+
+sech(4); 
+
+  0.0366189934737 
+
+
+
+sech log 5; 
+
+  0.384615384615
+
+</TT></PRE><P><em>sech</em>returns a numeric value only if 
+<A HREF=r37_0330.html>rounded</A> is on. Then the 
+expression is calculated to the current degree of floating point precision. 
+<P>
+<P>
+<P>

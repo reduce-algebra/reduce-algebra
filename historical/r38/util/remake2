@@ -1,0 +1,35 @@
+#!/bin/csh -f
+
+# Compile a package set.
+
+# Author: Anthony C. Hearn.
+
+$reduce/reduce.$lisp >>& $reduce/log/remake.log << EOF
+
+symbolic;
+
+!*argnochk := t;
+
+if getenv "lisp" eq "psl"
+  then <<load compiler;
+	 errorset('(load compat),nil,nil); % PSL compiler REDUCE support.
+	 on verboseload>>;
+
+if not getd 'package!-remake2 then load remake;
+
+package!-remake2(prolog_file,'support);
+
+package!-remake2(rend_file,'support);
+
+package!-remake2('entry,'support);
+
+package!-remake2('remake,'support);
+
+package!-remake2('patches,'support);
+
+% See if REDUCE core image needs remaking.
+
+if !*faslp then system "touch $reduce/lisp/$lisp/$MACHINE/mkreduce";
+
+bye;
+EOF

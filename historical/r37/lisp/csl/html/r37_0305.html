@@ -1,0 +1,55 @@
+
+<A NAME=MODULAR>
+
+<TITLE>MODULAR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MODULAR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>modular</em> is on, polynomial coefficients are reduced by the 
+modulus set by 
+<A HREF=r37_0104.html>setmod</A>. If no modulus has been set, <em>modular</em> 
+has no effect. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+setmod 2; 
+
+  1 
+
+
+on modular; 
+
+(x+y)**2; 
+
+   2    2
+  X  + Y  
+
+
+145*x**2 + 20*x**3 + 17 + 15*x*y;
+			 
+
+
+   2
+  X  + X*Y + 1
+
+</TT></PRE><P>Modular operations are only conducted on the coefficients, not the
+ 
+exponents. The modulus is not restricted to being prime. When the modulus 
+is prime, division by a number not relatively prime to the modulus results 
+in a &lt;Zero divisor&gt; error message. When the modulus is a composite 
+number, division by a power of the modulus results in an error message, but 
+division by an integer which is a factor of the modulus does not. 
+The representation of modular number can be influenced by 
+
+<A HREF=r37_0269.html>balanced_mod</A>. 
+<P>
+<P>
+<P>

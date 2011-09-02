@@ -1,0 +1,1435 @@
+%!PS-Adobe-3.0
+%%Title: oddcopy.c
+%%For: U-PANAMINT\acn1
+%%Creator: a2ps version 4.13
+%%CreationDate: Fri Jan 19 20:29:34 2007
+%%BoundingBox: 24 50 571 750
+%%DocumentData: Clean7Bit
+%%Orientation: Portrait
+%%Pages: 7
+%%PageOrder: Ascend
+%%DocumentMedia: A4acn 595 842 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontMatrix get 3 get 1000 mul
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Define these in case they're not in the FontInfo (also, here
+    % they're easier to get to.
+    /UnderlinePosition 1 def
+    /UnderlineThickness 1 def
+    
+    % Get the underline position and thickness if they're defined.
+    currentdict /FontInfo known {
+      FontInfo
+      
+      dup /UnderlinePosition known {
+	dup /UnderlinePosition get
+	0 exch FontMatrix transform exch pop
+	/UnderlinePosition exch def
+      } if
+      
+      dup /UnderlineThickness known {
+	/UnderlineThickness get
+	0 exch FontMatrix transform exch pop
+	/UnderlineThickness exch def
+      } if
+      
+    } if
+    currentdict 
+  end 
+} bind def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 842 def
+/sw 595 def
+/llx 24 def
+/urx 571 def
+/ury 750 def
+/lly 50 def
+/#copies 1 def
+/th 20.000000 def
+/fnfs 15 def
+/bfs 11.199836 def
+/cw 6.719901 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   646.230524 th add
+def
+/pmw 0 def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+] def
+/y [
+  pmh ph add 0 mul ph add
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1) 1
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*) c n
+( * This is going to be a version of the copying garbage collector for use) N
+( * on 64-bit machines when it has just loaded a 32-bit image file.) N
+( * its job is then to do a copying-style garbage collection where the) N
+( * source space is set up to be in 32-bit format and the destination) N
+( * is in 64-bit form! One nasty issue is that of forwarding addresses, which) N
+( * can no longer be normal native references - in the 32-bit space ALL) N
+( * addresses will have to live in a fort of segmented form) N
+( *    -----------------------------------------------) N
+( *   | <page number> | <offset within page> | <tags> |) N
+( *    -----------------------------------------------) N
+( * whh=ich is the form that the have while in an image file.) N
+( */) N
+() p n
+(static) K
+( ) p
+(int) k
+( trailing_heap_pages_count,) p n
+(           trailing_vheap_pages_count;) N
+() N
+(typedef) K
+( ) p
+(int) k
+(32_t Source_Object;) p n
+(typedef) K
+( Lisp_Object Destination_Object;) p n
+() N
+(/*) c n
+( * This is going to be "just" the code from the regular garbage collector) N
+( * adjusted so that the source space is in smaller items. Well perhaps if I) N
+( * was clever enough I could make it such that it just had one type for its) N
+( * source and another for its destination half-space and one bit of) N
+( * code here could copy either preserving, widening or narrowing) N
+( * representation.) N
+( */) N
+() p n
+(static) K
+( ) p
+(void) k
+( copy\(Source_Object *p\)) p n
+(/*) c n
+( * This copies the object pointed at by p from the old to the new semi-space,) N
+( * and returns a copy to the pointer.  If scans the copied material to copy) N
+( * all relevent sub-structures to the new semi-space.) N
+( */) N
+({) p n
+(    Lisp_Object nil = C_nil;) N
+(    ) S
+(char) k
+( *fr = \() p
+(char) k
+( *\)fringe, *vfr = \() p
+(char) k
+( *\)vfringe;) p n
+(    ) S
+(char) k
+( *tr_fr = fr, *tr_vfr = vfr;) p n
+(    ) S
+(void) k
+( *p1;) p n
+(#define) K
+( CONT           0) p n
+(#define) K
+( DONE_CAR      -1) p n
+(#define) K
+( DONE_VALUE    -2) p n
+(#define) K
+( DONE_ENV      -3) p n
+(#define) K
+( DONE_PNAME    -4) p n
+(#define) K
+( DONE_PLIST    -5) p n
+(#define) K
+( DONE_FASTGETS -6) p n
+(    ) S
+(int) k
+( next = CONT;) p n
+(    ) S
+(char) k
+( *tr=) p
+(NULL) K
+(;) p n
+(#ifdef) K
+( DEBUG_GC) p n
+(    term_printf\(") S
+(Copy [%p] %p\\n) str
+(", \() p
+(void) k
+( *\)p, \() p
+(void) k
+( *\)*p\);) p n
+(#endif) K n
+(/*) c n
+( * The code here is a simulation of multiple procedure calls to the) N
+( * code that copies a single object.  What might otherwise have been) N
+( * a "return address" in the calls is handled by the variable "next" which) N
+( * takes positive values while copying vectors, and negative ones in) N
+(oddcopy.c) (Page 1/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (1/7) (Friday January 19, 2007) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 2
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * the more common cases. I use "for \(;;\)" blocks a lot so that I can) c n
+( * use "break" and "continue" to leap around in the code - maybe I) N
+( * would do better to be honest and use regular labels and "goto") N
+( * statements.) N
+( */) N
+(    ) p
+(for) K
+( \(;;\)) p n
+(    {) N
+(/*) c n
+( * Copy one object, pointed at by p, from the old semi-space into the new) N
+( * one.) N
+( */) N
+(        Lisp_Object a = *p;) p n
+(#ifdef) K
+( DEBUG_GC) p n
+(    term_printf\(") S
+(Next copy [%p] %p\\n) str
+(", \() p
+(void) k
+( *\)p, \() p
+(void) k
+( *\)*p\);) p n
+(#endif) K n
+(        ) p
+(for) K
+( \(;;\)) p n
+(        {) N
+(            ) S
+(if) K
+( \(a == nil\) ) p
+(break) K
+(;    ) p
+(/* common and cheap enough to test here */) c n
+(            ) p
+(else) K
+( ) p
+(if) K
+( \(is_immed_or_cons\(a\)\)) p n
+(            {   ) S
+(if) K
+( \(is_cons\(a\)\)) p n
+(                {) N
+(                    Lisp_Object w;) N
+(                    w = qcar\(a\);) N
+(                    ) S
+(if) K
+( \(is_cons\(w\) && is_marked_p\(w\)\) ) p
+(/* a forwarding address */) c n
+(                    {   *p = flip_mark_bit_p\(w\);) p n
+(                        ) S
+(break) K
+(;) p n
+(                    }) N
+(                    fr = fr - ) S
+(sizeof) K
+(\(Cons_Cell\);) p n
+(                    cons_cells += 2*CELL;) N
+(/*) c n
+( * When I am doing regular calculation I leave myself a bunch of spare) N
+( * words \(size SPARE bytes\) so that I can afford to do several cons operations) N
+( * between tests.  Here I do careful tests on every step, and so I can) N
+( * sail much closer to the wind wrt filling up space.) N
+( */) N
+(                    ) p
+(if) K
+( \(fr <= \() p
+(char) k
+( *\)heaplimit - SPARE + 32\)) p n
+(                    {   ) S
+(char) k
+( *hl = \() p
+(char) k
+( *\)heaplimit;) p n
+(                        ) S
+(void) k
+( *p;) p n
+(                        uintptr_t len = \(uintptr_t\)\(fr - \(hl - SPARE\) +) N
+(                                                      ) S
+(sizeof) K
+(\(Cons_Cell\)\);) p n
+(                        car32\(hl - SPARE\) = len;) N
+(                        qcar\(fr\) = SPID_GCMARK;) N
+(                        ) S
+(if) K
+( \(pages_count == 0\)) p n
+(                        {   term_printf\(") S
+(pages_count = 0 in GC\\n) str
+("\);) p n
+(                            ensure_screen\(\);) N
+(                            abort\(\);) N
+(                            ) S
+(return) K
+(;) p n
+(                        }) N
+(                        p = pages[--pages_count];) N
+(                        zero_out\(p\);) N
+(                        new_heap_pages[new_heap_pages_count++] = p;) N
+(                        heaplimit = quadword_align_up\(\(intptr_t\)p\);) N
+(                        hl = \() S
+(char) k
+( *\)heaplimit;) p n
+(                        car32\(heaplimit\) = CSL_PAGE_SIZE;) N
+(                        fr = hl + CSL_PAGE_SIZE - ) S
+(sizeof) K
+(\(Cons_Cell\);) p n
+(                        heaplimit = \(Lisp_Object\)\(hl + SPARE\);) N
+(                    }) N
+(oddcopy.c) (Page 2/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (Friday January 19, 2007) (2/7) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 3
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                    qcar\(fr\) = w;) p n
+(                    qcdr\(fr\) = qcdr\(a\);) N
+(                    *p = w = \(Lisp_Object\)\(fr + TAG_CONS\);) N
+(                    qcar\(a\) = flip_mark_bit_p\(w\);) N
+(                    ) S
+(break) K
+(;) p n
+(                }) N
+(                ) S
+(else) K
+( ) p
+(if) K
+( \(is_bps\(a\)\)) p n
+(                {   ) S
+(char) k
+( *d = data_of_bps\(a\) - CELL, *rr;) p n
+(                    intptr_t alloc_size;) N
+(                    Header h = *\(Header *\)d;) N
+(                    intptr_t len;) N
+(                    ) S
+(if) K
+( \(is_bps\(h\)\)  ) p
+(/* Replacement handle in header field? */) c n
+(                    {   *p = h ;) p n
+(                        ) S
+(break) K
+(;) p n
+(                    }) N
+(                    len = length_of_header\(h\);) N
+(                    alloc_size = \(intptr_t\)doubleword_align_up\(len\);) N
+(                    bytestreams += alloc_size;) N
+(                    ) S
+(for) K
+( \(;;\)) p n
+(                    {   ) S
+(char) k
+( *cf = \() p
+(char) k
+( *\)codefringe,) p n
+(                             *cl = \() S
+(char) k
+( *\)codelimit;) p n
+(                        uintptr_t free = \(uintptr_t\)\(cf - cl\);) N
+(                        ) S
+(if) K
+( \(alloc_size > \(intptr_t\)free\)) p n
+(                        {) N
+(                            ) S
+(void) k
+( *p;) p n
+(                            ) S
+(if) K
+( \(codelimit != 0\)) p n
+(                            {   uintptr_t len = \(uintptr_t\)\(cf - \(cl - 8\)\);) N
+(                                car32\(cl - 8\) = len;) N
+(                            }) N
+(                            ) S
+(if) K
+( \(pages_count == 0\)) p n
+(                            {   term_printf\(") S
+(pages_count = 0 in GC\\n) str
+("\);) p n
+(                                ensure_screen\(\);) N
+(                                abort\(\);) N
+(                                ) S
+(return) K
+(;) p n
+(                            }) N
+(                            p = pages[--pages_count];) N
+(                            zero_out\(p\);) N
+(                            new_bps_pages[new_bps_pages_count++] = p;) N
+(                            cl = \() S
+(char) k
+( *\)doubleword_align_up\(\(intptr_t\)p\);) p n
+(                            codefringe = \(Lisp_Object\)\(cl + CSL_PAGE_SIZE\);) N
+(                            codelimit = \(Lisp_Object\)\(cl + 8\);) N
+(                            ) S
+(continue) K
+(;) p n
+(                        }) N
+(                        rr = cf - alloc_size;) N
+(                        codefringe = \(Lisp_Object\)rr;) N
+(/*) c n
+( * See comments in fns2.c for the curious packing here!) N
+( */) N
+(                        *\(Header *\)d = *p = TAG_BPS +) p n
+(                           \(\(\(intptr_t\)\(\(rr + CELL\) - \(cl - 8\)\) &) N
+(                             \(PAGE_POWER_OF_TWO-4\)\) << 6\) +) N
+(                           \(\(\(intptr_t\)\(new_bps_pages_count-1\)\)<<\(PAGE_BITS+6\)\);) N
+(                        ) S
+(/* Wow! How obscure!! */) c n
+(                        *\(Header *\)rr = h;) p n
+(                        memcpy\(rr+CELL, d+CELL, alloc_size-CELL\);) N
+(                        ) S
+(break) K
+(;) p n
+(                    }) N
+(oddcopy.c) (Page 3/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (3/7) (Friday January 19, 2007) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (4) 4
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                    ) p
+(break) K
+(;) p n
+(                }) N
+(                ) S
+(else) K
+( ) p
+(break) K
+(;        ) p
+(/* Immediate data drops out here */) c n
+(            }) p n
+(            ) S
+(else) K
+(                    ) p
+(/* Here I have a symbol or vector */) c n
+(            {   Header h;) p n
+(                ) S
+(int) k
+( tag;) p n
+(                intptr_t len;) N
+(                tag = \(\() S
+(int) k
+(\)a\) & TAG_BITS;) p n
+(                a = \(Lisp_Object\)\(\() S
+(char) k
+( *\)a - tag\);) p n
+(                h = *\(Header *\)a;) N
+(#ifdef) K
+( DEBUG_GC) p n
+(                term_printf\(") S
+(Header is %p\\n) str
+(", \() p
+(void) k
+( *\)h\);) p n
+(#endif) K n
+(                ) p
+(if) K
+( \(!is_odds\(h\)\)) p n
+(                {   *p = h;) N
+(                    ) S
+(break) K
+(;) p n
+(                }) N
+(                ) S
+(if) K
+( \(tag == TAG_SYMBOL\)) p n
+(                    len = symhdr_length, symbol_heads += symhdr_length;) N
+(                ) S
+(else) K n
+(                {   len = doubleword_align_up\(length_of_header\(h\)\);) p n
+(                    ) S
+(switch) K
+( \(type_of_header\(h\)\)) p n
+(                    {) N
+(                ) S
+(case) K
+( TYPE_STRING:) p n
+(                        strings += len; ) S
+(break) K
+(;) p n
+(                ) S
+(case) K
+( TYPE_BIGNUM:) p n
+(                        big_numbers += len; ) S
+(break) K
+(;) p n
+(#ifdef) K
+( COMMON) p n
+(                ) S
+(case) K
+( TYPE_SINGLE_FLOAT:) p n
+(                ) S
+(case) K
+( TYPE_LONG_FLOAT:) p n
+(#endif) K n
+(                ) p
+(case) K
+( TYPE_DOUBLE_FLOAT:) p n
+(                        box_floats += len; ) S
+(break) K
+(;) p n
+(                ) S
+(case) K
+( TYPE_SIMPLE_VEC:) p n
+(                        user_vectors += len; ) S
+(break) K
+(;) p n
+(                ) S
+(default) K
+(:) p n
+(                        other_mem += len; ) S
+(break) K
+(;) p n
+(                    }) N
+(                }) N
+(                ) S
+(for) K
+( \(;;\)) p n
+(                {   ) S
+(char) k
+( *vl = \() p
+(char) k
+( *\)vheaplimit;) p n
+(                    uintptr_t free = \(uintptr_t\)\(vl - vfr\);) N
+(                    ) S
+(if) K
+( \(len > \(intptr_t\)free\)) p n
+(                    {   uintptr_t free1 =) N
+(                            \(uintptr_t\)\(vfr - \(vl - \(CSL_PAGE_SIZE - 8\)\)\);) N
+(                        car32\(vl - \(CSL_PAGE_SIZE - 8\)\) = free1;) N
+(                        qcar\(vfr\) = 0;          ) S
+(/* sentinel value */) c n
+(                        ) p
+(if) K
+( \(pages_count == 0\)) p n
+(                        {   term_printf\(") S
+(pages_count = 0 in GC\\n) str
+("\);) p n
+(                            ensure_screen\(\);) N
+(                            abort\(\);) N
+(                            ) S
+(return) K
+(;) p n
+(                        }) N
+(                        p1 = pages[--pages_count];) N
+(                        zero_out\(p1\);) N
+(                        new_vheap_pages[new_vheap_pages_count++] = p1;) N
+(oddcopy.c) (Page 4/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (Friday January 19, 2007) (4/7) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5) 5
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                        vfr = \() p
+(char) k
+( *\)doubleword_align_up\(\(intptr_t\)p1\) + 8;) p n
+(                        vl = vfr + \(CSL_PAGE_SIZE - 16\);) N
+(                        vheaplimit = \(Lisp_Object\)vl;) N
+(                        free1 = \(uintptr_t\)\(vfr - \(vl - \(CSL_PAGE_SIZE - 8\)\)\);) N
+(                        car32\(vl - \(CSL_PAGE_SIZE - 8\)\) = free1;) N
+(                        ) S
+(continue) K
+(;) p n
+(                    }) N
+(                    *\(Lisp_Object *\)a = *p = \(Lisp_Object\)\(vfr + tag\);) N
+(                    *\(Header *\)vfr = h;) N
+(                    memcpy\(\() S
+(char) k
+( *\)vfr+CELL, \() p
+(char) k
+( *\)a+CELL, len-CELL\);) p n
+(                    vfr += len;) N
+(                    ) S
+(break) K
+(;) p n
+(                }) N
+(                ) S
+(break) K
+(;) p n
+(            }) N
+(        }) N
+(/*) c n
+( * Now I have copied one object - the next thing to do is to scan to see) N
+( * if any further items are in the new space, and if so I will copy) N
+( * their offspring.) N
+( */) N
+(        ) p
+(for) K
+( \(;;\)) p n
+(        {) N
+(            ) S
+(switch) K
+( \(next\)) p n
+(            {) N
+(        ) S
+(case) K
+( CONT:) p n
+(                ) S
+(if) K
+( \(tr_fr != fr\)) p n
+(                {   tr_fr = tr_fr - ) S
+(sizeof) K
+(\(Cons_Cell\);) p n
+(                    ) S
+(if) K
+( \(qcar\(tr_fr\) == SPID_GCMARK\)) p n
+(                    {   ) S
+(char) k
+( *w;) p n
+(                        p1 = new_heap_pages[trailing_heap_pages_count++];) N
+(                        w = \() S
+(char) k
+( *\)quadword_align_up\(\(intptr_t\)p1\);) p n
+(                        tr_fr = w + \(CSL_PAGE_SIZE - ) S
+(sizeof) K
+(\(Cons_Cell\)\);) p n
+(                    }) N
+(                    next = DONE_CAR;) N
+(                    p = &qcar\(tr_fr\);) N
+(                    ) S
+(break) K
+(;              ) p
+(/* Takes me to the outer loop */) c n
+(                }) p n
+(                ) S
+(else) K
+( ) p
+(if) K
+( \(tr_vfr != vfr\)) p n
+(                {   Header h;) N
+(                    h = *\(Header *\)tr_vfr;) N
+(                    ) S
+(if) K
+( \(h == 0\)) p n
+(                    {   ) S
+(char) k
+( *w;) p n
+(                        p1 = new_vheap_pages[trailing_vheap_pages_count++];) N
+(                        w = \() S
+(char) k
+( *\)doubleword_align_up\(\(intptr_t\)p1\);) p n
+(                        tr_vfr = w + 8;) N
+(                        h = *\(Header *\)tr_vfr;) N
+(                    }) N
+(                    ) S
+(if) K
+( \(is_symbol_header\(h\)\)) p n
+(                    {   next = DONE_VALUE;   ) N
+(                        p = &\(\(\(Symbol_Head *\)tr_vfr\)->value\);) N
+(                        ) S
+(break) K
+(;) p n
+(                    }) N
+(                    ) S
+(else) K n
+(                    {   intptr_t len = doubleword_align_up\(length_of_header\(h\)\);) p n
+(                        tr = tr_vfr;) N
+(                        tr_vfr = tr_vfr + len;) N
+(oddcopy.c) (Page 5/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (5/7) (Friday January 19, 2007) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (6) 6
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                        ) p
+(switch) K
+( \(type_of_header\(h\)\)) p n
+(                        {) N
+(#ifdef) K
+( COMMON) p n
+(                    ) S
+(case) K
+( TYPE_SINGLE_FLOAT:) p n
+(                    ) S
+(case) K
+( TYPE_LONG_FLOAT:) p n
+(#endif) K n
+(                    ) p
+(case) K
+( TYPE_DOUBLE_FLOAT:) p n
+(                    ) S
+(case) K
+( TYPE_BIGNUM:) p n
+(                            ) S
+(continue) K
+(;) p n
+(                    ) S
+(case) K
+( TYPE_MIXED1: ) p
+(case) K
+( TYPE_MIXED2:) p n
+(                    ) S
+(case) K
+( TYPE_MIXED3: ) p
+(case) K
+( TYPE_STREAM:) p n
+(                            next = 2*CELL;) N
+(                            ) S
+(break) K
+(;) p n
+(/*) c n
+( * There is a slight delight here. The test "vector_holds_binary" is only) N
+( * applicable if the header to be checked is a header of a genuine vector,) N
+( * ie something that would have TAG_VECTOR in the pointer to it. But here) N
+( * various numeric data types also live in the vector heap, so I need to) N
+( * separate them out explicitly. The switch block here does slightly more than) N
+( * it actually HAS to, since the vector_holds_binary test would happen to) N
+( * deal with several of the numeric types "by accident", but I feel that) N
+( * the security of listing them as separate cases is more important than the) N
+( * minor speed-up that might come from exploiting such marginal behaviour.) N
+( */) N
+(                    ) p
+(default) K
+(:) p n
+(                            ) S
+(if) K
+( \(vector_holds_binary\(h\)\) ) p
+(continue) K
+(;) p n
+(#ifdef) K
+( COMMON) p n
+(                    ) S
+(case) K
+( TYPE_RATNUM:) p n
+(                    ) S
+(case) K
+( TYPE_COMPLEX_NUM:) p n
+(#endif) K n
+(                            next = len - 2*CELL;) p n
+(                            ) S
+(break) K
+(;) p n
+(                        }) N
+(                        p = \(Lisp_Object *\)\(tr + next + CELL\);) N
+(                        ) S
+(break) K
+(;) p n
+(                    }) N
+(                }) N
+(                ) S
+(else) K n
+(                {   fringe = \(Lisp_Object\)fr;) p n
+(                    vfringe = \(Lisp_Object\)vfr;) N
+(                    ) S
+(return) K
+(;        ) p
+(/* Final exit when all has been copied */) c n
+(                }) p n
+(        ) S
+(case) K
+( DONE_CAR:) p n
+(                next = CONT;) N
+(                p = &qcdr\(tr_fr\);) N
+(                ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( DONE_VALUE:) p n
+(                next = DONE_ENV;   ) N
+(                p = &\(\(\(Symbol_Head *\)tr_vfr\)->env\);) N
+(                ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( DONE_ENV:) p n
+(                next = DONE_FASTGETS;   ) N
+(                p = &\(\(\(Symbol_Head *\)tr_vfr\)->fastgets\);) N
+(                ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( DONE_FASTGETS:) p n
+(                next = DONE_PNAME;   ) N
+(                p = &\(\(\(Symbol_Head *\)tr_vfr\)->pname\);) N
+(oddcopy.c) (Page 6/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (Friday January 19, 2007) (6/7) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7) 7
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.703931 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                ) p
+(break) K
+(;) p n
+(        ) S
+(case) K
+( DONE_PNAME:) p n
+(#ifndef) K
+( COMMON) p n
+(                next = CONT;) N
+(                p = &\(\(\(Symbol_Head *\)tr_vfr\)->plist\);) N
+(                tr_vfr = tr_vfr + symhdr_length;) N
+(                ) S
+(break) K
+(;) p n
+(#else) K n
+(                next = DONE_PLIST;   ) p n
+(                p = &\(\(\(Symbol_Head *\)tr_vfr\)->plist\);) N
+(                ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( DONE_PLIST:) p n
+(                next = CONT;) N
+(                p = &\(\(\(Symbol_Head *\)tr_vfr\)->package\);) N
+(                tr_vfr = tr_vfr + symhdr_length;) N
+(                ) S
+(break) K
+(;) p n
+(#endif) K n
+(        ) p
+(default) K
+(:) p n
+(                p = \(Lisp_Object *\)\(tr + next\);) N
+(                next -= CELL;) N
+(                ) S
+(break) K
+(;) p n
+(            }) N
+(            ) S
+(break) K
+(;) p n
+(        }) N
+(    }) N
+(}) N
+() N
+(oddcopy.c) (Page 7/7) (Jan 19, 07 20:29) title
+border
+grestore
+(Printed by U-PANAMINT\\acn1) rhead
+() (7/7) (Friday January 19, 2007) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF

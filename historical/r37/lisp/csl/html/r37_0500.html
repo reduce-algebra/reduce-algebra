@@ -1,0 +1,48 @@
+
+<A NAME=ChebyshevU>
+
+<TITLE>ChebyshevU</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>CHEBYSHEVU</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>ChebyshevU</em> operator returns the nth Chebyshev U Polynomial (of the 
+
+second kind). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>ChebyshevU</em>(&lt;integer&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ChebyshevU(3,xx); 
+
+          2
+  4*x*(2*x   - 1) 
+
+
+
+ChebyshevU(3,4); 
+
+  496
+
+</TT></PRE><P>Chebyshev's U polynomials are computed using the recurrence relati
+on: 
+<P>
+<P>
+ChebyshevU(n,x) := 2x*ChebyshevU(n-1,x) - ChebyshevU(n-2,x) with 
+<P>
+<P>
+ChebyshevU(0,x) := 0 and ChebyshevU(1,x) := 2x 
+<P>
+<P>
+<P>
+<P>

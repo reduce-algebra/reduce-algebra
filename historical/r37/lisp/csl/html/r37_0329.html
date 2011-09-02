@@ -1,0 +1,46 @@
+
+<A NAME=ROUNDBF>
+
+<TITLE>ROUNDBF</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ROUNDBF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+When 
+<A HREF=r37_0330.html>rounded</A> is on, the normal defaults cause underflows to
+ be 
+converted to zero. If you really want the small number that results in 
+such cases, <em>roundbf</em> can be turned on. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+on rounded; 
+
+exp(-100000.1^2); 
+
+  0 
+
+
+on roundbf; 
+
+exp(-100000.1^2); 
+
+  1.18441281937E-4342953505
+
+</TT></PRE><P>If a polynomial is input in 
+<A HREF=r37_0330.html>rounded</A> mode at the default 
+precision into any 
+<A HREF=r37_0438.html>roots</A> function, and it is not possible to 
+represent any of the coefficients of the polynomial precisely in the 
+system floating point representation, the switch <em>roundbf</em> will be 
+automatically turned on. All rounded computation will use the internal 
+bigfloat representation until the user subsequently turns <em>roundbf</em> 
+off. (A message is output to indicate that this condition is in effect.) 
+<P>
+<P>
+<P>

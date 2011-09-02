@@ -1,0 +1,53 @@
+
+<A NAME=EVENP>
+
+<TITLE>EVENP</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>EVENP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>evenp</em> logical operator returns 
+<A HREF=r37_0122.html>true</A> if its argument is an 
+even integer, and 
+<A HREF=r37_0014.html>nil</A> if its argument is an odd integer. An error 
+message is returned if its argument is not an integer. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>evenp</em>(&lt;integer&gt;) or <em>evenp</em> &lt;integer&gt; 
+<P>
+<P>
+<P>
+&lt;integer&gt; must evaluate to an integer. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+aa := 1782; 
+
+  AA := 1782 
+
+
+if evenp aa then yes else no; 
+
+  YES 
+
+
+if evenp(-3) then yes else no; 
+
+  NO 
+
+</TT></PRE><P>Although you would not ordinarily enter an expression such as the 
+last 
+example above, note that the negative term must be enclosed in parentheses 
+to be correctly parsed. The <em>evenp</em> operator can only be used in 
+conditional statements such as <em>if</em>...<em>then</em>...<em>else</em> 
+or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>

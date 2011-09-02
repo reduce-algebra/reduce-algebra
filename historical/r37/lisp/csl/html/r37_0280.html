@@ -1,0 +1,67 @@
+
+<A NAME=DIV>
+
+<TITLE>DIV</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DIV</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>div</em> is on, the system divides any simple factors found in 
+the denominator of an expression into the numerator. Default is <em>off</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+on div; 
+
+
+a := x**2/y**2; 
+
+        2   -2
+  A := X  *Y   
+
+
+
+b := a/(3*z); 
+
+       1  2   -2    -1
+  B := -*X  *Y    *Z   
+       3
+
+
+
+off div; 
+
+
+a; 
+
+   2
+  X
+  ---
+   2
+  Y
+
+
+
+b; 
+
+     2
+    X
+  -------                                       
+     2
+  3*Y  *Z
+
+</TT></PRE><P>The <em>div</em> switch only has effect when the 
+<A HREF=r37_0319.html>pri</A> switch is on. 
+When <em>pri</em> is off, regardless of the setting of <em>div</em>, the 
+printing behavior is as if <em>div</em> were off. 
+<P>
+<P>
+<P>

@@ -1,0 +1,46 @@
+
+<A NAME=TRACE>
+
+<TITLE>TRACE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TRACE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>trace</em> operator finds the trace of its 
+<A HREF=r37_0345.html>matrix</A> argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>trace</em>(&lt;expression&gt;) or <em>trace</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; or &lt;simple\_expression&gt; must evaluate to a square 
+matrix. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+matrix a; 
+
+a := mat((x1,y1),(x2,y2))$ 
+
+trace a; 
+
+  X1 + Y2
+
+</TT></PRE><P>The trace is the sum of the entries along the diagonal of a square
+ matrix. 
+Given a non-matrix expression, or a non-square matrix, <em>trace</em> returns 
+an error message. 
+<P>
+<P>
+<P>

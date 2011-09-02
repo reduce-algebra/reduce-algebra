@@ -1,0 +1,43 @@
+
+<A NAME=SIGN>
+
+<TITLE>SIGN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SIGN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>sign</em>&lt;expression&gt; 
+<P>
+<P>
+<P>
+<em>sign</em>tries to evaluate the sign of its argument. If this 
+is possible <em>sign</em> returns one of 1, 0 or -1. Otherwise, the result 
+is the original form or a simplified variant. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+        sign(-5) 
+
+  -1
+
+
+        sign(-a^2*b) 
+
+  -SIGN(B)
+
+</TT></PRE><P>Even powers of formal expressions are assumed to be positive only 
+as long 
+as the switch 
+<A HREF=r37_0274.html>complex</A> is off. 
+<P>
+<P>
+<P>

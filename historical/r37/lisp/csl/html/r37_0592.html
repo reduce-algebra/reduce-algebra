@@ -1,0 +1,59 @@
+
+<A NAME=hermitian_tp>
+
+<TITLE>hermitian_tp</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>HERMITIAN_TP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em> hermitian_tp</em>(&lt;matrix&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<A HREF=r37_0345.html>matrix</A>. 
+<P>
+<P>
+<em>hermitian_tp</em>computes the hermitian transpose of &lt;matrix&gt;. 
+<P>
+<P>
+This is a 
+<A HREF=r37_0345.html>matrix</A> in which the (i,j)'th entry is the conjugate 
+of the (j,i)'th entry of &lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+J := mat((i+1,i+2,i+3),(4,5,2),(1,i,0)); 
+
+
+       [i + 1  i + 2  i + 3]
+       [                   ]
+  j := [  4      5      2  ]
+       [                   ]
+       [  1      i      0  ]
+
+
+
+hermitian_tp(j); 
+
+  [ - i + 1  4   1  ]
+  [                 ]
+  [ - i + 2  5   - i]
+  [                 ]
+  [ - i + 3  2   0  ]
+
+</TT></PRE><P>Related functions: 
+
+<A HREF=r37_0348.html>tp</A>. 
+<P>
+<P>

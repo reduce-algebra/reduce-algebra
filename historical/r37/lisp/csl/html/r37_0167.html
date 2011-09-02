@@ -1,0 +1,77 @@
+
+<A NAME=ODESOLVE>
+
+<TITLE>ODESOLVE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ODESOLVE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>odesolve</em> package is a solver for ordinary differential 
+equations. At the present time it has still limited capabilities: 
+<P>
+<P>
+1. it can handle only a single scalar equation presented as an 
+ algebraic expression or equation, and 
+<P>
+<P>
+2. it can solve only first-order equations of simple types, linear 
+ equations with constant coefficients and Euler equations. 
+<P>
+<P>
+These solvable types are exactly those for which Lie symmetry 
+techniques give no useful information. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>odesolve</em>(&lt;expr&gt;,&lt;var1&gt;,&lt;var2&gt;) 
+<P>
+<P>
+<P>
+<P>
+&lt;expr&gt; is a single scalar expression such that &lt;expr&gt;=0 
+is the ordinary differential equation (ODE for short) to be solved, or 
+is an equivalent 
+<A HREF=r37_0045.html>equation</A>. 
+<P>
+<P>
+&lt;var1&gt; is the name of the dependent variable, 
+&lt;var2&gt; is the name of the independent variable. 
+<P>
+<P>
+A differential in &lt;expr&gt; is expressed using the 
+<A HREF=r37_0148.html>df</A> 
+operator. Note that in most cases you must declare explicitly 
+&lt;var1&gt; to depend of &lt;var2&gt; using a 
+<A HREF=r37_0192.html>depend</A> 
+declaration -- otherwise the derivative might be evaluated to 
+zero on input to <em>odesolve</em>. 
+<P>
+<P>
+The returned value is a list containing the equation giving the general 
+solution of the ODE (for simultaneous equations this will be a 
+list of equations eventually). It will contain occurrences of 
+the operator <em>arbconst</em> for the arbitrary constants in the general 
+solution. The arguments of <em>arbconst</em> should be new. 
+A counter <em>!!arbconst</em> is used to arrange this. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+depend y,x;
+
+% A first-order linear equation, with an initial condition
+
+ode:=df(y,x) + y * sin x/cos x - 1/cos x$
+
+odesolve(ode,y,x); 
+
+  {y=arbconst(1)*cos(x) + sin(x)}
+
+</TT></PRE><P>

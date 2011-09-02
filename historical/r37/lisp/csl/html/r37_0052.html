@@ -1,0 +1,164 @@
+
+<A NAME=IF>
+
+<TITLE>IF</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>IF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+The <em>if</em> command is a conditional statement that executes a statement 
+if a condition is true, and optionally another statement if it is not. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>if</em>&lt;condition&gt; <em>then</em> &lt;statement&gt; 
+  _ _ _ option(<em>else</em> &lt;statement&gt;) 
+<P>
+<P>
+<P>
+&lt;condition&gt; must be a logical or comparison operator that evaluates to 
+a 
+<A HREF=r37_0109.html>boolean value</A>. 
+&lt;statement&gt; must be a single REDUCE statement or a 
+
+<A HREF=r37_0038.html>group</A> (<em>&lt;&lt;</em>...<em>&gt;&gt;</em>) or 
+
+<A HREF=r37_0041.html>block</A> (<em>begin</em>...<em>end</em>) statement. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+if x = 5 then a := b+c else a := d+f;
+			 
+
+
+  D + F 
+
+
+x := 9; 
+
+  X := 9 
+
+
+if numberp x and x&lt;20 then y := sqrt(x) else write &quot;illegal&quot;;
+			 
+
+
+  3  
+
+
+clear x; 
+
+if numberp x and x&lt;20 then y := sqrt(x) else write &quot;illegal&quot;;
+			 
+
+
+  illegal 
+
+
+x := 12; 
+
+  X := 12 
+
+
+a := if x &lt; 5 then 100 else 150;
+			 
+
+
+  A := 150 
+
+
+b := u**(if x &lt; 10 then 2);
+			 
+
+  B := 1 
+
+
+bb := u**(if x &gt; 10 then 2);
+			 
+
+         2
+  BB := U
+
+</TT></PRE><P>An <em>if</em> statement may be used inside an assignment statemen
+t and sets 
+its value depending on the conditions, or used anywhere else an 
+expression would be valid, as shown in the last example. If there is no 
+ <em>else</em> clause, the value is 0 if a number is expected, and nothing 
+otherwise. 
+<P>
+<P>
+The <em>else</em> clause may be left out if no action is to be taken if the 
+condition is false. 
+<P>
+<P>
+The condition may be a compound conditional statement using 
+<A HREF=r37_0039.html>and</A> or 
+
+<A HREF=r37_0054.html>or</A>. If a non-conditional statement, such as a constant
+, is used by 
+accident, it is assumed to have value true. 
+ <P>
+<P>
+Be sure to use 
+<A HREF=r37_0038.html>group</A> or 
+<A HREF=r37_0041.html>block</A> statements after 
+ <em>then</em> or <em>else</em>. 
+<P>
+<P>
+The <em>if</em> operator is right associative. The following constructions are 
+examples: 
+<P>
+<P>
+ _ _ _ (1) 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>if</em>&lt;condition&gt; <em>then</em> <em>if</em> &lt;condition&gt; <em>the
+n</em> 
+ &lt;action&gt; <em>else</em> &lt;action&gt; 
+<P>
+<P>
+<P>
+which is equivalent to 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>if</em>&lt;condition&gt; <em>then</em> (<em>if</em> &lt;condition&gt; 
+ <em>then</em> &lt;action&gt; <em>else</em> &lt;action&gt;); 
+<P>
+<P>
+<P>
+ _ _ _ (2) 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>if</em>&lt;condition&gt; <em>then</em> &lt;action&gt; <em>else if</em> 
+ &lt;condition&gt; <em>then</em> &lt;action&gt; <em>else</em> &lt;action&gt; 
+<P>
+<P>
+<P>
+which is equivalent to 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>if</em>&lt;condition&gt; <em>then</em> &lt;action&gt; <em>else</em> 
+<P>
+<P>
+(<em>if</em> &lt;condition&gt; <em>then</em> &lt;action&gt; 
+ <em>else</em> &lt;action&gt;). 
+<P>
+<P>
+<P>
+<P>
+<P>
+<P>

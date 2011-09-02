@@ -1,0 +1,64 @@
+
+<A NAME=CSCH>
+
+<TITLE>CSCH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>CSCH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>cosh</em> operator returns the hyperbolic cosecant of its argument. 
+The derivative of <em>csch</em> and some simple transformations are known 
+to the system. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>csch</em>(&lt;expression&gt;) or <em>csch</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+csch b; 
+
+  CSCH(B) 
+
+
+
+csch(0); 
+
+  0 
+
+
+
+df(csch(x*y),x); 
+
+  - COTH(X*Y)*CSCH(X*Y)*Y 
+
+
+
+int(csch(x),x); 
+
+  INT(CSCH(X),X)
+
+</TT></PRE><P>A numeric value is not returned by <em>csch</em> unless the switch
+ 
+
+<A HREF=r37_0330.html>rounded</A> is on and its argument evaluates to a number. 
+
+<P>
+<P>
+<P>

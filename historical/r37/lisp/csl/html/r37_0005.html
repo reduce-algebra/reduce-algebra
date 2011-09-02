@@ -1,0 +1,33 @@
+
+<A NAME=assumptions>
+
+<TITLE>assumptions</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ASSUMPTIONS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>variable</B><P>
+<P>
+ 
+ <P>
+<P>
+After solving a linear or polynomial equation system 
+with parameters, the variable <em>assumptions</em> contains a list 
+of side relations for the parameters. The solution is valid only 
+as long as none of these expression is zero. 
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+solve({a*x-b*y+x,y-c},{x,y});
+
+       b*c
+  {{x=-----,y=c}} 
+      a + 1
+
+
+assumptions; 
+
+  {a + 1}
+
+</TT></PRE><P><P>
+<P>

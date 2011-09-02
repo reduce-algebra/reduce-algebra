@@ -1,0 +1,4 @@
+unz550xN.exe is a self-extracting executable that contains
+unzip.exe and the associated BSD-style license statements.
+You might like to run it in an otherwise empty directory
+since it places files where it is run.

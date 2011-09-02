@@ -1,0 +1,46 @@
+
+<A NAME=COMPACT>
+
+<TITLE>COMPACT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>COMPACT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>package</B><P>
+<P>
+ 
+ <P>
+<P>
+Author: Anthony C. Hearn 
+<P>
+<P>
+COMPACT is a package of functions for the reduction of a polynomial in the 
+presence of side relations. COMPACT applies the side relations to the 
+polynomial so that an equivalent expression results with as few terms as 
+possible. For example, the evaluation of 
+<P>
+<P>
+<P><PRE><TT>
+     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,
+             {cos x^2+sin x^2=1});
+
+</TT></PRE><P>yields the result 
+<P><PRE><TT>
+
+              2           2
+        SIN(X) *C + COS(X) *S + 1
+</TT></PRE><P><P>
+<P>
+The first argument to the operator <em>compact</em> is the expression 
+and the second is a list of side relations that can be 
+equations or simple expressions (implicitly equated to zero). The 
+kernels in the side relations may also be free variables with the 
+same meaning as in rules, e.g. 
+<P><PRE><TT>
+     sin_cos_identity :=  {cos ~w^2+sin ~w^2=1}$
+     compact(u,in_cos_identity);
+</TT></PRE><P><P>
+<P>
+Also the full rule syntax with the replacement operator is allowed here. 
+ <P>
+<P>

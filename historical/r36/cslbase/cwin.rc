@@ -1,0 +1,305 @@
+// cwin.rc
+//            Resource file to define menu structures, dialog boxes
+//            and so on.
+//
+//     Copyright )/(C) A C Norman   1995-99
+
+#include <afxres.h>
+
+#include "cwinres.h"
+
+// The idea here is that an application-specific resource file just says
+//      CWIN     ICON my_own.ico
+//      #include "cwin.rc"
+
+MainMenu MENU
+{
+    POPUP "&File"
+    {
+        MENUITEM "&Read",            IDM_READ
+        MENUITEM "Save &As",         IDM_SAVEAS
+        MENUITEM "Save &Selection",  IDM_SAVESEL
+        MENUITEM "To &File",         IDM_TOFILE
+        MENUITEM "&Print",           IDM_PRINT
+        MENUITEM "Pr&int Selection", IDM_PRINTSEL
+        MENUITEM "E&xit\a^Z",        IDM_EXIT
+    }
+    POPUP "&Edit"
+    {
+        MENUITEM "Cu&t\a^X",         IDM_CUT
+        MENUITEM "&Paste\a^V",       IDM_PASTE
+        MENUITEM "C&opy\a^O",        IDM_COPY
+        MENUITEM "&Re-input\a^R",    IDM_REINPUT
+        MENUITEM "Select &All",      IDM_SELECTALL
+        MENUITEM "C&lear",           IDM_CLEAR
+//      MENUITEM "&Undo",            IDM_UNDO
+        MENUITEM "Re&draw\a^L",      IDM_REDRAW
+        MENUITEM "&Home",            IDM_HOME
+        MENUITEM "&End",             IDM_END
+    }
+    POPUP "F&ont"
+    {
+        MENUITEM "&Font",            IDM_FONT
+        MENUITEM "&Reset Font",      IDM_RESET_FONT
+        MENUITEM "&Reset Window",    IDM_RESET_WINDOW
+    }
+    POPUP "&Break"
+    {
+        MENUITEM "&Interrupt\a^C",   IDM_INTERRUPT
+        MENUITEM "&Backtrace\a^G",   IDM_BACKTRACE
+        MENUITEM "&Page Mode",       IDM_PAGEMODE
+        MENUITEM "E&xit\a^Z",        IDM_EXIT
+    }
+#ifdef GRAPHICS_WINDOW
+    POPUP "&Windows"
+    {
+        MENUITEM "&Graphics",        IDM_GRAPHICS
+//      MENUITEM "&History",         IDM_HISTORY
+    }
+#endif
+#ifndef COMMON
+    POPUP "&Load"
+    {
+        POPUP "A-C"
+        {
+            MENUITEM "algint",           IDM_ALGINT
+            MENUITEM "applysym",         IDM_APPLYSYM
+            MENUITEM "arnum",            IDM_ARNUM
+            MENUITEM "assist",           IDM_ASSIST
+            MENUITEM "avector",          IDM_AVECTOR
+            MENUITEM "boolean",          IDM_BOOLEAN
+            MENUITEM "cali",             IDM_CALI
+            MENUITEM "camal",            IDM_CAMAL
+            MENUITEM "changevr",         IDM_CHANGEVR
+            MENUITEM "compact",          IDM_COMPACT
+            MENUITEM "complex",          IDM_COMPLEX
+            MENUITEM "crack",            IDM_CRACK
+            MENUITEM "cvit",             IDM_CVIT
+        }
+        POPUP "D-I"
+        {
+            MENUITEM "decompos",         IDM_DECOMPOS
+            MENUITEM "defint",           IDM_DEFINT
+            MENUITEM "desir",            IDM_DESIR
+            MENUITEM "dfpart",           IDM_DFPART
+            MENUITEM "dummy",            IDM_DUMMY
+            MENUITEM "elem",             IDM_ELEM
+            MENUITEM "excalc",           IDM_EXCALC
+            MENUITEM "fide",             IDM_FIDE
+            MENUITEM "fps",              IDM_FPS
+            MENUITEM "gentran",          IDM_GENTRAN
+            MENUITEM "gnuplot",          IDM_GNUPLOT
+            MENUITEM "groebner",         IDM_GROEBNER
+            MENUITEM "ideals",           IDM_IDEALS
+            MENUITEM "ineq",             IDM_INEQ
+            MENUITEM "invbase",          IDM_INVBASE
+        }
+        POPUP "L-R"
+        {
+            MENUITEM "laplace",          IDM_LAPLACE
+            MENUITEM "lie",              IDM_LIE
+            MENUITEM "linalg",           IDM_LINALG
+            MENUITEM "modsr",            IDM_MODSR
+            MENUITEM "ncpoly",           IDM_NCPOLY
+            MENUITEM "normform",         IDM_NORMFORM
+            MENUITEM "numeric",          IDM_NUMERIC
+            MENUITEM "odesolve",         IDM_ODESOLVE
+            MENUITEM "orthovec",         IDM_ORTHOVEC
+            MENUITEM "physop",           IDM_PHYSOP
+            MENUITEM "pmrules",          IDM_PMRULES
+            MENUITEM "randpoly",         IDM_RANDPOLY
+            MENUITEM "reacteqn",         IDM_REACTEQN
+            MENUITEM "residue",          IDM_RESIDUE
+            MENUITEM "rlfi",             IDM_RLFI
+            MENUITEM "rsolve",           IDM_RSOLVE
+        }
+        POPUP "S-Z"
+        {
+            MENUITEM "scope",            IDM_SCOPE
+            MENUITEM "sets",             IDM_SETS
+            MENUITEM "spde",             IDM_SPDE
+            MENUITEM "specfn",           IDM_SPECFN
+            MENUITEM "symmetry",         IDM_SYMMETRY
+            MENUITEM "taylor",           IDM_TAYLOR
+            MENUITEM "tps",              IDM_TPS
+            MENUITEM "tri",              IDM_TRI
+            MENUITEM "trigsimp",         IDM_TRIGSIMP
+            MENUITEM "wu",               IDM_WU
+            MENUITEM "xcolor",           IDM_XCOLOR
+            MENUITEM "xideal",           IDM_XIDEAL
+            MENUITEM "zeilberg",         IDM_ZEILBERG
+            MENUITEM "ztrans",           IDM_ZTRANS
+        }
+    }
+    POPUP "&Switches"
+    {
+        POPUP "A-E"
+        {
+            MENUITEM "algint",           IDS_algint
+            MENUITEM "adjprec",          IDS_adjprec
+            MENUITEM "allbranch",        IDS_allbranch
+            MENUITEM "allfac",           IDS_allfac, CHECKED
+            MENUITEM "arbvars",          IDS_arbvars
+            MENUITEM "asterisk",         IDS_asterisk, CHECKED
+            MENUITEM "backtrace",        IDS_backtrace
+            MENUITEM "balanced_mod",     IDS_balanced_mod
+            MENUITEM "bfspace",          IDS_bfspace
+            MENUITEM "combineexpt",      IDS_combineexpt
+            MENUITEM "combinelogs",      IDS_combinelogs
+            MENUITEM "comp",             IDS_comp
+            MENUITEM "complex",          IDS_complex
+            MENUITEM "compxroots",       IDS_compxroots
+            MENUITEM "cramer",           IDS_cramer
+            MENUITEM "cref",             IDS_cref
+            MENUITEM "defn",             IDS_defn
+            MENUITEM "demo",             IDS_demo
+            MENUITEM "dfprint",          IDS_dfprint
+            MENUITEM "div",              IDS_div
+            MENUITEM "echo",             IDS_echo
+            MENUITEM "errcont",          IDS_errcont
+            MENUITEM "evallhseqp",       IDS_evallhseqp
+            MENUITEM "exp",              IDS_exp, CHECKED
+            MENUITEM "expandexpt",       IDS_expandexpt, CHECKED
+            MENUITEM "expandlogs",       IDS_expandlogs
+            MENUITEM "ezgcd",            IDS_ezgcd
+        }
+        POPUP "&F-L"
+        {
+            MENUITEM "factor",           IDS_factor
+            MENUITEM "fastfor",          IDS_fastfor
+            MENUITEM "force",            IDS_force
+            MENUITEM "fort",             IDS_fort
+            MENUITEM "fortupper",        IDS_fortupper
+            MENUITEM "fullprec",         IDS_fullprec
+            MENUITEM "fullprecision",    IDS_fullprecision
+            MENUITEM "fullroots",        IDS_fullroots
+            MENUITEM "gc",               IDS_gc
+            MENUITEM "gcd",              IDS_gcd
+            MENUITEM "heugcd",           IDS_heugcd
+            MENUITEM "horner",           IDS_horner
+            MENUITEM "ifactor",          IDS_ifactor
+            MENUITEM "int",              IDS_int
+            MENUITEM "intstr",           IDS_intstr
+            MENUITEM "lcm",              IDS_lcm, CHECKED
+            MENUITEM "lessspace",        IDS_lessspace
+            MENUITEM "limitedfactors",   IDS_limitedfactors
+            MENUITEM "list",             IDS_list
+            MENUITEM "listargs",         IDS_listargs
+            MENUITEM "lower",            IDS_lower, CHECKED
+        }
+        POPUP "M-Q"
+        {
+            MENUITEM "mcd",              IDS_mcd, CHECKED
+            MENUITEM "modular",          IDS_modular
+            MENUITEM "msg",              IDS_msg, CHECKED
+            MENUITEM "multiplicities",   IDS_multiplicities
+            MENUITEM "nat",              IDS_nat, CHECKED
+            MENUITEM "nero",             IDS_nero
+            MENUITEM "noarg",            IDS_noarg, CHECKED
+            MENUITEM "noconvert",        IDS_noconvert
+            MENUITEM "nonlnr",           IDS_nonlnr
+            MENUITEM "nosplit",          IDS_nosplit, CHECKED
+            MENUITEM "numval",           IDS_numval, CHECKED
+            MENUITEM "output",           IDS_output, CHECKED
+            MENUITEM "period",           IDS_period, CHECKED
+            MENUITEM "pgwd",             IDS_pgwd
+            MENUITEM "plap",             IDS_plap
+            MENUITEM "precise",          IDS_precise, CHECKED
+            MENUITEM "pret",             IDS_pret
+            MENUITEM "pri",              IDS_pri, CHECKED
+            MENUITEM "pwrds",            IDS_pwrds, CHECKED
+            MENUITEM "quotenewnam",      IDS_quotenewnam, CHECKED
+        }
+        POPUP "R-Z"
+        {
+            MENUITEM "raise",            IDS_raise
+            MENUITEM "rat",              IDS_rat
+            MENUITEM "ratarg",           IDS_ratarg
+            MENUITEM "rational",         IDS_rational
+            MENUITEM "rationalize",      IDS_rationalize
+            MENUITEM "ratpri",           IDS_ratpri, CHECKED
+            MENUITEM "reduced",          IDS_reduced
+            MENUITEM "revpri",           IDS_revpri
+            MENUITEM "rlisp88",          IDS_rlisp88
+            MENUITEM "rootmsg",          IDS_rootmsg
+            MENUITEM "roundall",         IDS_roundall, CHECKED
+            MENUITEM "roundbf",          IDS_roundbf
+            MENUITEM "rounded",          IDS_rounded
+            MENUITEM "savestructr",      IDS_savestructr
+            MENUITEM "solvesingular",    IDS_solvesingular
+            MENUITEM "time",             IDS_time
+            MENUITEM "trallfac",         IDS_trallfac
+            MENUITEM "trfac",            IDS_trfac
+            MENUITEM "trint",            IDS_trint
+            MENUITEM "trroot",           IDS_trroot
+        }
+    }
+#endif
+    POPUP "&Help"
+    {
+#ifndef NAG
+        MENUITEM "&Contents",        IDM_HELPCONTENTS
+        MENUITEM "&Search for help", IDM_HELPSEARCH
+        MENUITEM "&Help on Help",    IDM_HELP_ON_HELP
+#endif
+        MENUITEM "&About",           IDM_ABOUT
+#ifdef DEMOVERSION
+        MENUITEM "&European Prices", IDM_EUPRICES
+        MENUITEM "&World Prices",    IDM_WORLDPRICES
+        MENUITEM "&Order Form",      IDM_ORDERFORM
+#endif
+    }
+}
+
+#ifdef GRAPHICS_WINDOW
+GraphicsMenu MENU
+{
+    POPUP "&File"
+    {
+        MENUITEM "Save &As",         IDM_SAVEAS
+        MENUITEM "&Print",           IDM_PRINT
+        MENUITEM "&Close",           IDM_CLOSE
+    }
+    POPUP "&Edit"
+    {
+        MENUITEM "C&opy\a^O",        IDM_COPY
+        MENUITEM "C&lear",           IDM_CLEAR
+        MENUITEM "&Redraw\a^L",      IDM_REDRAW
+    }
+    POPUP "&Render"
+    {
+        MENUITEM "&Wire frame",      IDM_WIREFRAME, CHECKED
+        MENUITEM "&No surface",      IDM_NOSURFACE
+        MENUITEM "Sur&face",         IDM_SURFACE
+        MENUITEM "&Squares",         IDM_SQUARES, CHECKED
+        MENUITEM "&Triangles",       IDM_TRIANGLES
+        MENUITEM "S&mooth",          IDM_SMOOTH
+        MENUITEM "&Hi-smooth",       IDM_HISMOOTH
+        MENUITEM "Wire &Preview",    IDM_WIREPREVIEW, CHECKED
+    }
+    POPUP "&Viewpoint"
+    {
+        MENUITEM "&View control",    IDM_VIEWPOINT
+        MENUITEM "rotate &Left",     IDM_ROTLEFT
+        MENUITEM "rotate &Right",    IDM_ROTRIGHT
+        MENUITEM "roll &Up",         IDM_ROTUP
+        MENUITEM "roll &Down",       IDM_ROTDOWN
+        MENUITEM "&Clockwise",       IDM_CLOCKWISE
+        MENUITEM "&Anti-clock",      IDM_ANTICLOCK
+        MENUITEM "&Bigger",          IDM_ENLARGE
+        MENUITEM "&Smaller",         IDM_SHRINK
+    }
+}
+#endif
+
+HelpMenu MENU
+{
+    MENUITEM "&Close",           IDM_CLOSE
+//  MENUITEM "C&opy",            IDM_COPY
+    MENUITEM "&Redraw",          IDM_REDRAW
+//  MENUITEM "Save &As",         IDM_SAVEAS
+//  MENUITEM "&Print",           IDM_PRINT
+}
+
+// end of cwin.rc
+

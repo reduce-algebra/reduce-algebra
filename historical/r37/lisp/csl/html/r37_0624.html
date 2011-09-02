@@ -1,0 +1,49 @@
+
+<A NAME=Smithex>
+
+<TITLE>Smithex</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SMITHEX</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The operator <em>smithex</em> computes the Smith normal form S of a 
+
+<A HREF=r37_0345.html>matrix</A> A (say). It returns {S,P,P^-1} where P*S*P^-1 =
+ A. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>smithex</em>(&lt;matrix&gt;,&lt;variable&gt;) 
+<P>
+<P>
+&lt;matrix&gt; :- a rectangular 
+<A HREF=r37_0345.html>matrix</A> of univariate polynomials in 
+ &lt;variable&gt;. 
+&lt;variable&gt; :- the variable. 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ a := mat((x,x+1),(0,3*x^2)); 
+
+        [x  x + 1]
+        [        ]
+   a := [      2 ]
+        [0  3*x  ]
+
+
+
+ smithex(a,x); 
+
+     [1  0 ]    [1    0]    [x   x + 1]
+  {  [     ],   [      ],   [         ]  }
+     [    3]    [   2  ]    [         ]
+     [0  x ]    [3*x  1]    [-3    -3 ]
+
+</TT></PRE><P>

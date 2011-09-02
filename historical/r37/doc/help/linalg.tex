@@ -1,0 +1,2081 @@
+\section{Linear Algebra package}
+
+\begin{Introduction}{Linear Algebra package}
+
+This section briefly describes what's available in the Linear Algebra
+package.
+
+Note on examples: In the examples throughout this
+document, the matrix A will be
+\begin{verbatim}
+     [1  2  3]
+     [4  5  6]
+     [7  8  9].
+\end{verbatim}
+
+The functions can be divided into four categories:
+
+{\bf Basic matrix handling}
+ 
+\nameref{add\_columns},
+
+\nameref{add\_rows},
+ 
+\nameref{add\_to\_columns},
+ 
+\nameref{add\_to\_rows},   
+ 
+\nameref{augment\_columns},
+ 
+\nameref{char\_poly},
+ 
+\nameref{column\_dim},      
+ 
+\nameref{copy\_into},
+ 
+\nameref{diagonal},
+ 
+\nameref{extend},
+ 
+\nameref{find\_companion},
+ 
+\nameref{get\_columns},
+ 
+\nameref{get\_rows},
+ 
+\nameref{hermitian\_tp},    
+ 
+\nameref{matrix\_augment},  
+ 
+\nameref{matrix\_stack} ,
+ 
+\nameref{minor},   
+ 
+\nameref{mult\_columns},    
+ 
+\nameref{mult\_rows},
+
+\nameref{pivot},      
+ 
+\nameref{remove\_columns},  
+ 
+\nameref{remove\_rows}, 
+ 
+\nameref{row\_dim},    
+ 
+\nameref{rows\_pivot},     
+ 
+\nameref{stack\_rows},     
+ 
+\nameref{sub\_matrix},     
+ 
+\nameref{swap\_columns},    
+ 
+\nameref{swap\_entries},   
+ 
+\nameref{swap\_rows}.  
+
+{\bf Constructors -- functions that create matrices}
+ 
+\nameref{band\_matrix},
+ 
+\nameref{block\_matrix},
+ 
+\nameref{char\_matrix},
+ 
+\nameref{coeff\_matrix},
+ 
+\nameref{companion},
+ 
+\nameref{hessian},
+ 
+\nameref{hilbert},
+ 
+\nameref{jacobian},
+ 
+\nameref{jordan\_block},
+ 
+\nameref{make\_identity},
+ 
+\nameref{random\_matrix},
+ 
+\nameref{toeplitz},
+ 
+\nameref{vandermonde}.
+
+{\bf High level algorithms}
+ 
+\nameref{char\_poly},
+ 
+\nameref{cholesky},
+ 
+\nameref{gram\_schmidt},
+ 
+\nameref{lu\_decom},
+ 
+\nameref{pseudo\_inverse},
+ 
+\nameref{simplex},
+ 
+\nameref{svd}.  
+
+{\bf Normal Forms}
+
+There is a separate package, NORMFORM, for computing
+the following matrix normal forms in \REDUCE:
+
+\nameref{smithex}, 
+
+\nameref{smithex\_int}, 
+
+\nameref{frobenius}, 
+
+\nameref{ratjordan}, 
+
+\nameref{jordansymbolic}, 
+
+\nameref{jordan}.
+
+
+{\bf Predicates}
+
+\nameref{matrixp},
+ 
+\nameref{squarep},
+ 
+\nameref{symmetricp}.
+
+\end{Introduction}
+
+
+\begin{Switch}{fast_la}
+
+By turning the \name{fast\_la} switch on, the speed of the following
+functions will be increased:
+
+ 
+\nameref{add\_columns},
+ 
+\nameref{add\_rows},
+ 
+\nameref{augment\_columns},
+ 
+\nameref{column\_dim},
+ 
+\nameref{copy\_into},
+ 
+\nameref{make\_identity},
+ 
+\nameref{matrix\_augment},
+ 
+\nameref{matrix\_stack},
+ 
+\nameref{minor},
+ 
+\nameref{mult\_columns},
+ 
+\nameref{mult\_rows},
+ 
+\nameref{pivot},
+ 
+\nameref{remove\_columns},
+ 
+\nameref{remove\_rows},
+ 
+\nameref{rows\_pivot},
+ 
+\nameref{squarep},
+ 
+\nameref{stack\_rows},
+ 
+\nameref{sub\_matrix},
+ 
+\nameref{swap\_columns},
+ 
+\nameref{swap\_entries},
+ 
+\nameref{swap\_rows},
+ 
+\nameref{symmetricp}.                                  
+              
+
+The increase in speed will be negligible unless you are making a
+significant number (i.e. thousands) of calls. When using this switch,
+error checking is minimized. This means that illegal input may give
+strange error messages. Beware.
+\end{Switch}
+
+\begin{Operator}{add_columns}
+Add columns, add rows:
+\begin{Syntax}
+\name{add\_columns}\(\meta{matrix},\meta{c1},\meta{c2},\meta{expr}\)
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix}. 
+
+\meta{c1},\meta{c2} :- positive integers. 
+
+\meta{expr} :- a scalar expression. 
+
+The Operator \name{add\_columns} replaces column \meta{\meta{c2}} of 
+\meta{matrix}  by \meta{expr} * column(\meta{matrix},\meta{c1}) +
+column(\meta{matrix},\meta{c2}).
+
+\name{add\_rows} performs the equivalent task on the rows of 
+\meta{matrix}.
+
+\begin{Examples}
+
+add_columns(A,1,2,x); &
+\begin{multilineoutput}{6cm}
+[1   x + 2   3]
+[             ]
+[4  4*x + 5  6]
+[             ]
+[7  7*x + 8  9]
+\end{multilineoutput} \\
+
+add_rows(A,2,3,5); & 
+\begin{multilineoutput}{6cm}
+[1   2   3 ]
+[          ]
+[4   5   6 ]
+[          ]
+[27  33  39]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions: \nameref{add\_to\_columns}, 
+\nameref{add\_to\_rows}, \nameref{mult\_columns}, 
+\nameref{mult\_rows}.
+
+\end{Operator}
+
+
+\begin{Operator}{add_rows}
+ see: \nameref{add\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{add_to_columns}
+Add to columns, add to rows:
+
+\begin{Syntax}
+\name{add\_to\_columns}\(\meta{matrix},\meta{column\_list},\meta{expr}\)
+\end{Syntax}
+
+\meta{matrix}       :- a matrix. 
+
+\meta{column\_list} :- a positive integer or a list of positive 
+                       integers. 
+
+\meta{expr}         :- a scalar expression.
+
+\name{add\_to\_columns} adds \meta{expr} to each column specified in 
+\meta{column\_list} of \meta{matrix}.  
+
+\name{add\_to\_rows} performs the equivalent task on the rows of 
+\meta{matrix}.
+
+\begin{Examples}
+
+add_to_columns(A,\{1,2\},10); &
+\begin{multilineoutput}{6cm}
+[11  12  3]
+[         ]
+[14  15  6]
+[         ]
+[17  18  9]
+\end{multilineoutput}\\
+
+add_to_rows(A,2,-x) &
+\begin{multilineoutput}{6cm} 
+[   1         2         3    ]
+[                            ]
+[ - x + 4   - x + 5   - x + 6]
+[                            ]
+[   7         8         9    ]
+\end{multilineoutput} \\
+\end{Examples}
+
+Related functions:
+\nameref{add\_columns},  \nameref{add\_rows},  \nameref{mult\_rows}, 
+\nameref{mult\_columns}.
+
+\end{Operator}
+
+
+\begin{Operator}{add_to_rows}
+ see:  \nameref{add\_to\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{augment_columns}
+Augment columns, stack rows:
+
+\begin{Syntax}
+\name{augment\_columns}(\meta{matrix},\meta{column\_list})
+\end{Syntax}
+
+\meta{matrix}       :- a matrix. 
+
+\meta{column\_list} :-  either a positive integer or a list of positive 
+                        integers. 
+
+\name{augment\_columns} gets hold of the columns of \meta{matrix} 
+specified in \name{column\_list} and sticks them together. 
+
+\name{stack\_rows} performs the same task on rows of \meta{matrix}.
+
+\begin{Examples}
+
+augment_columns(A,\{1,2\}) &
+\begin{multilineoutput}{6cm} 
+[1  2]
+[    ]
+[4  5]
+[    ]
+[7  8]
+\end{multilineoutput} \\
+
+stack_rows(A,\{1,3\}) &
+\begin{multilineoutput}{6cm}
+[1  2  3]
+[       ]
+[7  8  9]
+\end{multilineoutput} \\
+\end{Examples}
+
+Related functions:
+\nameref{get\_columns},  \nameref{get\_rows}, \nameref{sub\_matrix}.
+
+\end{Operator}
+
+
+\begin{Operator}{band_matrix}
+
+\begin{Syntax}
+\name{band\_matrix}(\meta{expr\_list},\meta{square\_size})
+\end{Syntax}
+
+\meta{expr\_list}   :- either a single scalar expression or a list of 
+                       an odd number of scalar expressions.
+
+\meta{square\_size} :- a positive integer.
+
+\name{band\_matrix} creates a square matrix of dimension
+\meta{square\_size}. The diagonal consists of the middle expression
+of the \meta{expr\_list}. The expressions to the left of this fill
+the required number of sub\_diagonals and the expressions to the right 
+the super\_diagonals. 
+
+\begin{Examples}
+
+band_matrix(\{x,y,z\},6) & 
+\begin{multilineoutput}{6cm}
+[y  z  0  0  0  0]
+[                ]
+[x  y  z  0  0  0]
+[                ]
+[0  x  y  z  0  0]
+[                ]
+[0  0  x  y  z  0]
+[                ]
+[0  0  0  x  y  z]
+[                ]
+[0  0  0  0  x  y]
+\end{multilineoutput} \\
+\end{Examples}
+
+Related functions: \nameref{diagonal}.
+
+\end{Operator}
+
+
+\begin{Operator}{block_matrix}
+
+\begin{Syntax}
+\name{block\_matrix}(\meta{r},\meta{c},\meta{matrix\_list})
+\end{Syntax}
+
+\meta{r},\meta{c}          :- positive integers. 
+
+\meta{matrix\_list}        :- a list of matrices. 
+
+\name{block\_matrix} creates a matrix that consists of \meta{r} by 
+\meta{c} matrices filled from the \meta{matrix\_list} row wise.
+
+\begin{Examples}
+B := make_identity(2); &
+\begin{multilineoutput}{6cm}
+     [1  0]
+b := [    ]
+     [0  1]
+\end{multilineoutput} \\
+
+C := mat((5),(5)); &
+\begin{multilineoutput}{6cm}
+     [5]
+c := [ ]
+     [5]
+\end{multilineoutput} \\
+
+D := mat((22,33),(44,55)); &
+\begin{multilineoutput}{6cm}
+     [22  33]
+d := [      ]
+     [44  55]
+\end{multilineoutput} \\
+
+block_matrix(2,3,\{B,C,D,D,C,B\}); & 
+\begin{multilineoutput}{6cm}
+[1   0   5  22  33]
+[                 ]
+[0   1   5  44  55]
+[                 ]
+[22  33  5  1   0 ]
+[                 ]
+[44  55  5  0   1 ]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{char_matrix}
+
+\begin{Syntax}
+\name{char\_matrix}(\meta{matrix},\meta{lambda})
+\end{Syntax}
+
+\meta{matrix} :- a square matrix. 
+\meta{lambda}  :- a symbol or algebraic expression. 
+
+\meta{char\_matrix} creates the characteristic matrix C of 
+\meta{matrix}.
+
+This is C = \meta{lambda} * Id - A. 
+Id is the identity matrix.
+
+\begin{Examples}
+
+char_matrix(A,x); & 
+\begin{multilineoutput}{6cm}
+[x - 1   -2     -3  ]
+[                   ]
+[ -4    x - 5   -6  ]
+[                   ]
+[ -7     -8    x - 9]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions: \nameref{char\_poly}. 
+
+\end{Operator}
+
+
+\begin{Operator}{char_poly}
+
+\begin{Syntax}
+\name{char\_poly}(\meta{matrix},\meta{lambda})
+\end{Syntax}
+
+\meta{matrix} :- a square matrix. 
+
+\meta{lambda} :- a symbol or algebraic expression.
+
+\name{char\_poly} finds the characteristic polynomial of \meta{matrix}.
+This is the determinant of \meta{lambda} * Id - A.
+Id is the identity matrix.
+
+\begin{Examples}
+char_poly(A,x); &
+x^3-15*x^2-18*x
+\end{Examples}
+
+Related functions: \nameref{char\_matrix}. 
+
+\end{Operator}
+
+
+\begin{Operator}{cholesky}
+
+\begin{Syntax}
+\name{cholesky}(\meta{matrix})
+\end{Syntax}
+
+\meta{matrix} :- a positive definite matrix containing numeric entries.
+
+\name{cholesky} computes the cholesky decomposition of \meta{matrix}.
+
+It returns \{L,U\} where L is a lower matrix, U is an upper matrix, 
+A = LU, and U = $L^T$.
+
+\begin{Examples}
+F := mat((1,1,0),(1,3,1),(0,1,1)); &
+\begin{multilineoutput}{6cm}
+     [1  1  0]
+     [       ]
+f := [1  3  1]
+     [       ]
+     [0  1  1]
+\end{multilineoutput} \\
+
+on rounded; \\
+cholesky(F); & 
+\begin{multilineoutput}{6cm}
+\{
+
+ [1        0               0       ]
+ [                                 ]
+ [1  1.41421356237         0       ]
+ [                                 ]
+ [0  0.707106781187  0.707106781187]
+
+ ,
+
+
+ [1        1              0       ]
+ [                                ]
+ [0  1.41421356237  0.707106781187]
+ [                                ]
+ [0        0        0.707106781187]
+
+\}
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions: \nameref{lu\_decom}.
+
+\end{Operator}
+
+
+\begin{Operator}{coeff_matrix}
+
+\begin{Syntax}
+\name{coeff\_matrix}(\{\meta{lineq\_list}\}) 
+\end{Syntax}
+
+(If you are feeling lazy then the braces can be omitted.)
+
+\meta{lineq\_list}  :- linear equations. Can be of the form equation = number
+or just equation.
+
+\name{coeff\_matrix} creates the coefficient matrix C of the linear 
+equations. 
+
+It returns \{C,X,B\} such that CX = B.
+
+\begin{Examples}
+
+coeff_matrix(\{x+y+4*z=10,y+x-z=20,x+y+4\}); &
+\begin{multilineoutput}{6cm}
+\{
+
+ [4   1  1]
+ [        ]
+ [-1  1  1]
+ [        ]
+ [0   1  1]
+
+ ,
+
+ [z]
+ [ ]
+ [y]
+ [ ]
+ [x]
+
+ ,
+
+ [10]
+ [  ]
+ [20]
+ [  ]
+ [-4]
+
+\}
+\end{multilineoutput} \\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{column_dim}
+Column dimension, row dimension:
+
+\begin{Syntax}
+\name{column\_dim}(\meta{matrix})
+\end{Syntax}
+
+\meta{matrix} :- a matrix.
+
+\name{column\_dim} finds the column dimension of \meta{matrix}. 
+
+\name{row\_dim} finds the row dimension of \meta{matrix}.
+
+
+\begin{Examples}
+
+column_dim(A); &
+3 \\
+row_dim(A); &
+3 \\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{companion}
+
+\begin{Syntax}
+\name{companion}(\meta{poly},\meta{x})
+\end{Syntax}
+
+\meta{poly} :- a monic univariate polynomial in \meta{x}. 
+
+\meta{x}    :- the variable.
+
+
+\name{companion} creates the companion matrix C of \meta{poly}. 
+
+This is the square matrix of dimension n, where n is the degree of 
+\meta{poly} w.r.t. \meta{x}.
+
+The entries of C are: 
+
+                C(i,n) = -coeffn(\meta{poly},\meta{x},i-1) for i = 1 
+                \ldots n, C(i,i-1) = 1 for i = 2 \ldots n and 
+                the rest are 0.
+
+\begin{Examples}
+
+companion(x^4+17*x^3-9*x^2+11,x); &
+\begin{multilineoutput}{6cm}
+[0  0  0  -11]
+[            ]
+[1  0  0   0 ]
+[            ]
+[0  1  0   9 ]
+[            ]
+[0  0  1  -17]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions:
+\nameref{find\_companion}.
+
+\end{Operator}
+
+
+\begin{Operator}{copy_into}
+
+\begin{Syntax}
+\name{copy\_into}(\meta{A},\meta{B},\meta{r},\meta{c})
+\end{Syntax}
+
+\meta{A},\meta{B} :- matrices. 
+
+\meta{r},\meta{c} :- positive integers. 
+
+
+\name{copy\_into} copies matrix \meta{matrix} into \meta{B} with 
+\meta{matrix}(1,1) at \meta{B}(\meta{r},\meta{c}).
+
+\begin{Examples} 
+
+G := mat((0,0,0,0,0),(0,0,0,0,0),(0,0,0,0,0),(0,0,0,0,0),(0,0,0,0,0)); &
+\begin{multilineoutput}{6cm}
+     [0  0  0  0  0]
+     [             ]
+     [0  0  0  0  0]
+     [             ]
+g := [0  0  0  0  0]
+     [             ]
+     [0  0  0  0  0]
+     [             ]
+     [0  0  0  0  0]
+\end{multilineoutput} \\
+
+copy_into(A,G,1,2); &
+\begin{multilineoutput}{6cm}
+[0  1  2  3  0]
+[             ]
+[0  4  5  6  0]
+[             ]
+[0  7  8  9  0]
+[             ]
+[0  0  0  0  0]
+[             ]
+[0  0  0  0  0]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions: 
+\nameref{augment\_columns}, \nameref{extend}, \nameref{matrix\_augment}, 
+\nameref{matrix\_stack}, \nameref{stack\_rows}, \nameref{sub\_matrix}.
+
+\end{Operator}
+
+
+\begin{Operator}{diagonal}
+
+\begin{Syntax}
+\name{diagonal}(\{\meta{mat\_list}\}) 
+\end{Syntax}
+(If you are feeling lazy then the braces can be omitted.)
+
+\meta{mat\_list} :- each can be either a scalar expression or a 
+square \nameref{matrix}. 
+
+\name{diagonal} creates a matrix that contains the input on the 
+diagonal.
+
+\begin{Examples}
+
+H := mat((66,77),(88,99)); &
+\begin{multilineoutput}{6cm}
+     [66  77]
+h := [      ]
+     [88  99]
+\end{multilineoutput} \\
+
+diagonal(\{A,x,H\}); &
+\begin{multilineoutput}{6cm}
+[1  2  3  0  0   0 ]
+[                  ]
+[4  5  6  0  0   0 ]
+[                  ]
+[7  8  9  0  0   0 ]
+[                  ]
+[0  0  0  x  0   0 ]
+[                  ]
+[0  0  0  0  66  77]
+[                  ]
+[0  0  0  0  88  99]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions: 
+\nameref{jordan\_block}.
+
+\end{Operator}
+
+
+\begin{Operator}{extend}
+
+\begin{Syntax}
+\name{extend}(\meta{matrix},\meta{r},\meta{c},\meta{expr})
+\end{Syntax}
+
+\meta{matrix}            :- a \nameref{matrix}. 
+
+\meta{r},\meta{c}        :- positive integers. 
+
+\meta{expr}              :- algebraic expression or symbol.
+
+\name{extend} returns a copy of \meta{matrix} that has been extended by 
+\meta{r} rows and \meta{c} columns. The new entries are made equal to 
+\meta{expr}.
+
+\begin{Examples}
+
+extend(A,1,2,x); &
+\begin{multilineoutput}{6cm}
+[1  2  3  x  x]
+[             ]
+[4  5  6  x  x]
+[             ]
+[7  8  9  x  x]
+[             ]
+[x  x  x  x  x]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions: 
+\nameref{copy\_into}, \nameref{matrix\_augment}, \nameref{matrix\_stack},  
+\nameref{remove\_columns}, \nameref{remove\_rows}.
+
+\end{Operator}
+
+
+\begin{Operator}{find_companion}
+
+\begin{Syntax}
+\name{find\_companion}(\meta{matrix},\meta{x})
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix}. 
+
+\meta{x}      :- the variable.
+
+Given a companion matrix, \name{find\_companion} finds the polynomial 
+from which it was made.
+
+\begin{Examples}
+
+C := companion(x^4+17*x^3-9*x^2+11,x); &
+\begin{multilineoutput}{6cm}
+     [0  0  0  -11]
+     [            ]
+     [1  0  0   0 ]
+c := [            ]
+     [0  1  0   9 ]
+     [            ]
+     [0  0  1  -17]
+\end{multilineoutput}\\
+
+find_companion(C,x); &
+x^4+17*x^3-9*x^2+11
+
+\end{Examples}
+
+Related functions:
+\nameref{companion}.
+
+\end{Operator}
+
+
+\begin{Operator}{get_columns}
+Get columns, get rows:
+
+\begin{Syntax}
+\name{get\_columns}(\meta{matrix},\meta{column\_list})
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix}.
+
+\meta{c}      :- either a positive integer or a list of positive 
+                 integers.
+
+\name{get\_columns} removes the columns of \meta{matrix} specified in 
+\meta{column\_list} and returns them as a list of column matrices. 
+
+\name{get\_rows} performs the same task on the rows of \meta{matrix}. 
+
+\begin{Examples}
+
+get_columns(A,\{1,3\}); & 
+\begin{multilineoutput}{6cm}
+\{
+
+ [1]
+ [ ]
+ [4]
+ [ ]
+ [7]
+
+ ,
+
+ [3]
+ [ ]
+ [6]
+ [ ]
+ [9]
+
+\}
+\end{multilineoutput} \\
+
+get_rows(A,2); &
+\begin{multilineoutput}{6cm}
+\{
+
+ [4  5  6]
+
+\}
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions:
+\nameref{augment\_columns}, \nameref{stack\_rows}, \nameref{sub\_matrix}.
+
+\end{Operator}
+
+
+\begin{Operator}{get_rows}
+see:  \nameref{get\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{gram_schmidt}
+
+\begin{Syntax}
+\name{gram\_schmidt}(\{\meta{vec\_list}\}) 
+\end{Syntax}
+
+(If you are feeling lazy then the braces can be omitted.)
+
+\meta{vec\_list} :- linearly independent vectors. Each vector must be 
+written as a list, eg:\{1,0,0\}. 
+
+\name{gram\_schmidt} performs the gram\_schmidt orthonormalization on
+the input vectors. 
+
+It returns a list of orthogonal normalized vectors.
+
+\begin{Examples}
+
+gram_schmidt(\{\{1,0,0\},\{1,1,0\},\{1,1,1\}\}); &
+\{\{1,0,0\},\{0,1,0\},\{0,0,1\}\} \\
+
+gram_schmidt(\{\{1,2\},\{3,4\}\}); &
+\{\{ \rfrac{1}{{sqrt(5)}} , \rfrac{2}{sqrt(5)} \},
+\{ \rfrac{2*sqrt(5)}{5} , \rfrac{-sqrt(5)}{5} \}\}
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{hermitian_tp}
+
+\begin{Syntax}
+\name{ hermitian\_tp}(\meta{matrix})
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix}. 
+
+\name{hermitian\_tp} computes the hermitian transpose of \meta{matrix}. 
+
+This is a \nameref{matrix} in which the (i,j)'th entry is the conjugate
+of the (j,i)'th entry of \meta{matrix}. 
+
+\begin{Examples}
+
+J := mat((i+1,i+2,i+3),(4,5,2),(1,i,0)); &
+\begin{multilineoutput}{6cm}
+     [i + 1  i + 2  i + 3]
+     [                   ]
+j := [  4      5      2  ]
+     [                   ]
+     [  1      i      0  ]
+\end{multilineoutput} \\
+
+hermitian_tp(j); &
+\begin{multilineoutput}{6cm}
+[ - i + 1  4   1  ]
+[                 ]
+[ - i + 2  5   - i]
+[                 ]
+[ - i + 3  2   0  ]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions:
+\nameref{tp}.
+
+\end{Operator}
+
+
+\begin{Operator}{hessian}
+
+\begin{Syntax}
+\name{hessian}(\meta{expr},\meta{variable\_list})
+\end{Syntax}
+
+\meta{expr}           :- a scalar expression. 
+
+\meta{variable\_list} :- either a single variable or a list of 
+                         variables.
+
+\name{hessian} computes the hessian matrix of \meta{expr} w.r.t. the 
+variables in \meta{variable\_list}.
+
+% Does df exist in the help pages?
+This is an n by n matrix where n is the number of variables and the 
+(i,j)'th  entry is \nameref{df}(\meta{expr},\meta{variable\_list}(i),
+\meta{variable\_list}(j)).
+
+\begin{Examples}
+
+hessian(x*y*z+x^2,\{w,x,y,z\}); &
+\begin{multilineoutput}{6cm}
+[0  0  0  0]
+[          ]
+[0  2  z  y]
+[          ]
+[0  z  0  x]
+[          ]
+[0  y  x  0]
+\end{multilineoutput}{6cm}
+
+\end{Examples}
+
+Related functions: \nameref{df}.
+
+\end{Operator}
+
+
+\begin{Operator}{hilbert}
+
+\begin{Syntax}
+\name{hilbert}(\meta{square\_size},\meta{expr})
+\end{Syntax}
+
+\meta{square\_size} :- a positive integer. 
+
+\meta{expr}         :- an algebraic expression.
+
+\name{hilbert} computes the square hilbert matrix of dimension 
+\meta{square\_size}. 
+
+This is the symmetric matrix in which the (i,j)'th entry is 
+1/(i+j-\meta{expr}).
+
+\begin{Examples}
+
+hilbert(3,y+x); &
+\begin{multilineoutput}{6cm}
+[    - 1          - 1          - 1    ]
+[-----------  -----------  -----------]
+[ x + y - 2    x + y - 3    x + y - 4 ]
+[                                     ]
+[    - 1          - 1          - 1    ]
+[-----------  -----------  -----------]
+[ x + y - 3    x + y - 4    x + y - 5 ]
+[                                     ]
+[    - 1          - 1          - 1    ]
+[-----------  -----------  -----------]
+[ x + y - 4    x + y - 5    x + y - 6 ]
+\end{multilineoutput}
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{jacobian}
+
+\begin{Syntax}
+\name{jacobian}(\meta{expr\_list},\meta{variable\_list})
+\end{Syntax}
+
+\meta{expr\_list}     :- either a single algebraic expression or a list 
+                         of algebraic expressions.
+
+\meta{variable\_list} :- either a single variable or a list of 
+                         variables.
+
+\name{jacobian} computes the jacobian matrix of \meta{expr\_list} 
+w.r.t. \meta{variable\_list}. 
+
+This is a matrix whose (i,j)'th entry is \nameref{df}(\meta{expr\_list}
+(i),\meta{variable\_list}(j)).
+
+The matrix is n by m where n is the number of variables and m the number
+of expressions.
+
+\begin{Examples}
+ 
+jacobian(\{x^4,x*y^2,x*y*z^3\},\{w,x,y,z\}); &
+\begin{multilineoutput}{6cm}
+[      3                 ]
+[0  4*x     0       0    ]
+[                        ]
+[     2                  ]
+[0   y    2*x*y     0    ]
+[                        ]
+[      3     3          2]
+[0  y*z   x*z    3*x*y*z ]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions:
+\nameref{hessian}, \nameref{df}.
+
+\end{Operator}
+
+
+\begin{Operator}{jordan_block}
+
+\begin{Syntax}
+\name{jordan\_block}(\meta{expr},\meta{square\_size})
+\end{Syntax}
+
+\meta{expr}         :- an algebraic expression or symbol. 
+
+\meta{square\_size} :- a positive integer.
+
+\name{jordan\_block} computes the square jordan block matrix J of 
+dimension \meta{square\_size}. 
+
+The entries of J are:
+
+                J(i,i) = \meta{expr} for i=1 
+                \ldots n, J(i,i+1) = 1 for i=1 
+                \ldots n-1, and all other entries are 0.
+
+\begin{Examples}
+
+jordan\_block(x,5); &
+\begin{multilineoutput}{6cm}
+[x  1  0  0  0]
+[             ]
+[0  x  1  0  0]
+[             ]
+[0  0  x  1  0]
+[             ]
+[0  0  0  x  1]
+[             ]
+[0  0  0  0  x]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions: \nameref{diagonal}, \nameref{companion}.
+
+\end{Operator}
+
+
+\begin{Operator}{lu_decom}
+
+\begin{Syntax}
+\name{lu\_decom}(\meta{matrix})
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix} containing either numeric entries 
+                 or imaginary entries with numeric coefficients.
+
+\name{lu\_decom} performs LU decomposition on \meta{matrix}, ie: it 
+returns \{L,U\} where L is a lower diagonal \nameref{matrix},  U an 
+upper diagonal \nameref{matrix} and A = LU.
+
+Caution:
+
+The algorithm used can swap the rows of \meta{matrix} during the 
+calculation. This means that LU does not equal \meta{matrix} but a row 
+equivalent of it. Due to this,  \name{lu\_decom} returns \{L,U,vec\}. 
+The call \name{convert(\meta{matrix},vec)} will return the matrix that has
+been decomposed, i.e: LU = convert(\meta{matrix},vec).
+
+
+\begin{Examples}
+
+K := mat((1,3,5),(-4,3,7),(8,6,4)); &
+\begin{multilineoutput}{6cm}
+     [1   3  5]
+     [        ]
+k := [-4  3  7]
+     [        ]
+     [8   6  4]
+\end{multilineoutput}\\
+
+on rounded;\\
+lu :=  lu_decom(K); &
+\begin{multilineoutput}{6cm}
+lu := \{
+
+       [8    0      0  ]
+       [               ]
+       [-4  6.0     0  ]
+       [               ]
+       [1   2.25  1.125]
+
+       ,
+
+
+       [1  0.75  0.5]
+       [            ]
+       [0   1    1.5]
+       [            ]
+       [0   0     1 ]
+
+       ,
+
+       [3 2 3]\}
+\end{multilineoutput} \\
+
+first lu * second lu; &
+\begin{multilineoutput}{6cm}
+[8   6.0  4.0]
+[            ]
+[-4  3.0  7.0]
+[            ]
+[1   3.0  5.0]
+\end{multilineoutput}\\
+
+convert(K,third lu); &
+\begin{multilineoutput}
+[8   6  4]
+[        ]
+[-4  3  7]
+[        ]
+[1   3  5]
+\end{multilineoutput}\\
+
+P := mat((i+1,i+2,i+3),(4,5,2),(1,i,0)); &
+\begin{multilineoutput}{6cm}
+     [i + 1  i + 2  i + 3]
+     [                   ]
+p := [  4      5      2  ]
+     [                   ]
+     [  1      i      0  ]
+\end{multilineoutput}\\
+
+lu :=  lu_decom(P); &
+\begin{multilineoutput}{6cm}
+lu := \{
+
+       [  1        0                      0                ]
+       [                                                   ]
+       [  4     - 4*i + 5                 0                ]
+       [                                                   ]
+       [i + 1      3       0.414634146341*i + 2.26829268293]
+
+       ,
+
+
+       [1  i                 0                ]
+       [                                      ]
+       [0  1  0.19512195122*i + 0.243902439024]
+       [                                      ]
+       [0  0                 1                ]
+
+       ,
+
+       [3 2 3]\}
+\end{multilineoutput}\\
+
+first lu * second lu; &
+\begin{multilineoutput}{6cm}
+[  1      i       0   ]
+[                     ]
+[  4      5      2.0  ]
+[                     ]
+[i + 1  i + 2  i + 3.0]
+\end{multilineoutput}\\
+
+convert(P,third lu); &
+\begin{multilineoutput}{6cm}
+[  1      i      0  ]
+[                   ]
+[  4      5      2  ]
+[                   ]
+[i + 1  i + 2  i + 3]
+\end{multilineoutput}\\
+
+\end{Examples}
+
+Related functions: \nameref{cholesky}.
+
+\end{Operator}
+
+
+\begin{Operator}{make_identity}
+
+\begin{Syntax}
+\name{make\_identity}(\meta{square\_size})
+\end{Syntax}
+
+\meta{square\_size} :- a positive integer.
+
+\name{make\_identity} creates the identity matrix of dimension 
+\meta{square\_size}.
+
+\begin{Examples}
+
+make_identity(4); &
+\begin{multilineoutput}{6cm}
+[1  0  0  0]
+[          ]
+[0  1  0  0]
+[          ]
+[0  0  1  0]
+[          ]
+[0  0  0  1]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions: \nameref{diagonal}.
+
+\end{Operator}
+
+
+\begin{Operator}{matrix_augment}
+Matrix augment, matrix stack:
+
+\begin{Syntax}
+\name{matrix\_augment} \{\meta{matrix\_list}\}
+\end{Syntax}
+
+(If you are feeling lazy then the braces can be omitted.)
+
+\meta{matrix\_list} :- matrices.
+
+\name{matrix\_augment} sticks the matrices in \meta{matrix\_list}
+together horizontally. 
+
+\name{matrix\_stack} sticks the matrices in \meta{matrix\_list} 
+together vertically.
+
+
+\begin{Examples}
+
+matrix_augment(\{A,A\}); &
+\begin{multilineoutput}{6cm}
+[1  2  3  1  2  3]
+[                ]
+[4  5  6  4  5  6]
+[                ]
+[7  8  9  7  8  9]
+\end{multilineoutput}\\
+
+matrix_stack(A,A); &
+\begin{multilineoutput}{6cm}
+[1  2  3]
+[       ]
+[4  5  6]
+[       ]
+[7  8  9]
+[       ]
+[1  2  3]
+[       ]
+[4  5  6]
+[       ]
+[7  8  9]
+\end{multilineoutput} \\
+
+\end{Examples}
+
+Related functions:
+\nameref{augment\_columns}, \nameref{stack\_rows}, \nameref{sub\_matrix}.
+
+\end{Operator}
+
+
+\begin{Operator}{matrixp}
+
+\begin{Syntax}
+\name{matrixp}(\meta{test\_input})
+\end{Syntax}
+
+\meta{test\_input} :- anything you like.
+
+\name{matrixp} is a boolean function that returns t if the input is a 
+matrix and nil otherwise.
+
+
+\begin{Examples}
+
+matrixp A; &
+t \\
+matrixp(doodlesackbanana);&
+nil 
+
+\end{Examples}
+
+Related functions: \nameref{squarep}, \nameref{symmetricp}.
+
+\end{Operator}
+
+
+\begin{Operator}{matrix_stack}
+see:  \nameref{matrix\_augment}.
+\end{Operator}
+
+
+\begin{Operator}{minor}
+
+\begin{Syntax}
+\name{minor}(\meta{matrix},\meta{r},\meta{c})
+\end{Syntax}
+
+\meta{matrix}            :- a \nameref{matrix}.
+\meta{r},\meta{c}        :- positive integers.
+
+\name{minor} computes the (\meta{r},\meta{c})'th minor of \meta{matrix}.
+This is created by removing the \meta{r}'th row and the \meta{c}'th 
+column from \meta{matrix}.
+
+                
+\begin{Examples}
+
+minor(A,1,3); &
+\begin{multilineoutput}{6cm}
+[4  5]
+[    ]
+[7  8]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions:
+\nameref{remove\_columns}, \nameref{remove\_rows}.
+
+\end{Operator}
+
+
+\begin{Operator}{mult_columns}
+Mult columns, mult rows:
+
+\begin{Syntax}
+\name{mult\_columns}(\meta{matrix},\meta{column\_list},\meta{expr})
+\end{Syntax}
+
+\meta{matrix}       :- a \nameref{matrix}. 
+
+\meta{column\_list} :- a positive integer or a list of positive 
+                       integers. 
+
+\meta{expr}         :- an algebraic expression.
+
+\name{mult\_columns} returns a copy of \meta{matrix} in which the 
+columns specified in \meta{column\_list} have been multiplied by 
+\meta{expr}. 
+
+\name{mult\_rows} performs the same task on the rows of \meta{matrix}.
+
+\begin{Examples}
+
+mult_columns(A,\{1,3\},x); &
+\begin{multilineoutput}{6cm}
+[ x   2  3*x]
+[           ]
+[4*x  5  6*x]
+[           ]
+[7*x  8  9*x]
+\end{multilineoutput}\\
+
+mult_rows(A,2,10); &
+\begin{multilineoutput}{6cm}
+[1   2   3 ]
+[          ]
+[40  50  60]
+[          ]
+[7   8   9 ]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions: \nameref{add\_to\_columns}, \nameref{add\_to\_rows}.
+
+\end{Operator}
+
+
+\begin{Operator}{mult_rows}
+see:  \nameref{mult\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{pivot}
+
+\begin{Syntax}
+\name{pivot}(\meta{matrix},\meta{r},\meta{c})
+\end{Syntax}
+ 
+\meta{matrix}     :- a matrix. 
+
+\meta{r},\meta{c} :- positive integers such that \meta{matrix}(\meta{r},
+                     \meta{c}) neq 0.
+
+\name{pivot} pivots \meta{matrix} about it's (\meta{r},\meta{c})'th 
+entry. 
+ 
+To do this, multiples of the \meta{r}'th row are added to every other 
+row in the matrix. 
+
+This means that the \meta{c}'th column will be 0 except for the 
+(\meta{r},\meta{c})'th entry. 
+
+
+\begin{Examples}
+
+pivot(A,2,3); &
+\begin{multilineoutput}{6cm}
+[      - 1    ]
+[-1  ------  0]
+[      2      ]
+[             ]
+[4     5     6]
+[             ]
+[      1      ]
+[1    ---    0]
+[      2      ]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions:
+\nameref{rows\_pivot}.
+
+\end{Operator}
+
+\begin{Operator}{pseudo_inverse}
+
+\begin{Syntax}
+\name{pseudo\_inverse}(\meta{matrix})
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix}.
+
+\name{pseudo\_inverse}, also known as the Moore-Penrose inverse, 
+computes the pseudo inverse of \meta{matrix}. 
+
+Given the singular value decomposition of \meta{matrix}, i.e: 
+A = $U*P*V^T$, then the pseudo inverse $A^{-1}$ is defined by
+$A^{-1} = V^T*P^{-1}*U$.
+
+Thus \meta{matrix} *  pseudo\_inverse(A) = Id.
+(Id is the identity matrix).
+
+
+\begin{Examples}
+
+R := mat((1,2,3,4),(9,8,7,6)); &
+\begin{multilineoutput}{6cm}
+     [1  2  3  4]
+r := [          ]
+     [9  8  7  6]
+\end{multilineoutput}\\
+
+on rounded; \\
+pseudo_inverse(R); &
+\begin{multilineoutput}{6cm}
+[ - 0.199999999996      0.100000000013   ]
+[                                        ]
+[ - 0.0499999999988    0.0500000000037   ]
+[                                        ]
+[ 0.0999999999982     - 5.57825497203e-12]
+[                                        ]
+[  0.249999999995      - 0.0500000000148 ]
+\end{multilineoutput}
+
+\end{Examples}
+
+
+Related functions: \nameref{svd}.
+
+\end{Operator}
+
+
+\begin{Operator}{random_matrix}
+
+\begin{Syntax}
+\name{random\_matrix}(\meta{r},\meta{c},\meta{limit})
+\end{Syntax}
+ 
+\meta{r},\meta{c},\meta{limit} :- positive integers. 
+
+\name{random\_matrix} creates an \meta{r} by \meta{c} matrix with random
+entries in the range -limit < entry < limit.
+
+
+Switches:
+
+\name{imaginary}    :- if on then matrix entries are x+i*y where -limit < x,y
+                 < \meta{limit}. 
+
+\name{not\_negative} :- if on then 0 < entry < \meta{limit}. In the imaginary 
+                 case we have 0 < x,y < \meta{limit}. 
+
+\name{only\_integer} :- if on then each entry is an integer. In the imaginary 
+		 case x and y are integers.
+
+\name{symmetric}     :- if on then the matrix is symmetric. 
+
+\name{upper\_matrix} :- if on then the matrix is upper triangular.
+
+\name{lower\_matrix} :- if on then the matrix is lower triangular.
+
+
+
+\begin{Examples}
+
+on rounded; \\
+random_matrix(3,3,10); &
+\begin{multilineoutput}{6cm}
+[ - 8.11911717343    - 5.71677292768   0.620580830035 ]
+[                                                     ]
+[ - 0.032596262422    7.1655452861     5.86742633837  ]
+[                                                     ]
+[ - 9.37155438255    - 7.55636708637   - 8.88618627557]
+\end{multilineoutput}\\
+
+on only_integer, not_negative, upper_matrix, imaginary; \\
+random_matrix(4,4,10); &
+\begin{multilineoutput}{6cm}
+[70*i + 15  28*i + 8   2*i + 79   27*i + 44]
+[                                          ]
+[    0      46*i + 95  9*i + 63   95*i + 50]
+[                                          ]
+[    0          0      31*i + 75  14*i + 65]
+[                                          ]
+[    0          0          0      5*i + 52 ]
+\end{multilineoutput}\\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{remove_columns}
+Remove columns, remove rows:
+
+\begin{Syntax}
+\name{remove\_columns}(\meta{matrix},\meta{column\_list})
+\end{Syntax}
+
+\meta{matrix}       :- a \nameref{matrix}.
+\meta{column\_list} :- either a positive integer or a list of positive 
+                       integers.
+
+\name{remove\_columns} removes the columns specified in 
+\meta{column\_list} from \meta{matrix}. 
+
+\name{remove\_rows} performs the same task on the rows of \meta{matrix}.
+
+\begin{Examples} 
+
+remove_columns(A,2); &
+\begin{multilineoutput}{6cm}
+[1  3]
+[    ]
+[4  6]
+[    ]
+[7  9]
+\end{multilineoutput}\\
+
+remove_rows(A,\{1,3\}); &
+\begin{multilineoutput}{6cm}
+[4  5  6]
+\end{multilineoutput}\\
+
+
+\end{Examples}
+
+Related functions: \nameref{minor}.
+
+\end{Operator}
+
+
+\begin{Operator}{remove_rows}
+see:  \nameref{remove\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{row_dim}
+see:  \nameref{column\_dim}.
+\end{Operator}
+
+
+\begin{Operator}{rows_pivot}
+
+\begin{Syntax}
+\name{rows\_pivot}(\meta{matrix},\meta{r},\meta{c},\{\meta{row\_list}\})
+\end{Syntax}
+
+\meta{matrix}     :- a nameref{matrix}.
+
+\meta{r},\meta{c} :- positive integers such that \meta{matrix}(\meta{r},
+                     \meta{c}) neq 0.
+
+\meta{row\_list}  :- positive integer or a list of positive integers.
+
+\name{rows\_pivot} performs the same task as  \name{pivot} but applies 
+the pivot only to the rows specified in \meta{row\_list}.
+
+
+\begin{Examples}
+
+N := mat((1,2,3),(4,5,6),(7,8,9),(1,2,3),(4,5,6)); &
+\begin{multilineoutput}{6cm}
+     [1  2  3]
+     [       ]
+     [4  5  6]
+     [       ]
+n := [7  8  9]
+     [       ]
+     [1  2  3]
+     [       ]
+     [4  5  6]
+\end{multilineoutput}\\
+
+rows_pivot(N,2,3,{4,5}); &
+\begin{multilineoutput}{6cm}
+[1     2     3]
+[             ]
+[4     5     6]
+[             ]
+[7     8     9]
+[             ]
+[      - 1    ]
+[-1  ------  0]
+[      2      ]
+[             ]
+[0     0     0]
+\end{multilineoutput}\\
+
+\end{Examples}
+
+Related functions: \nameref{pivot}.
+
+\end{Operator}
+
+
+\begin{Operator}{simplex}
+
+\begin{Syntax}
+\name{simplex}(\meta{max/min},\meta{objective function},
+\{\meta{linear inequalities}\})
+\end{Syntax}
+
+\meta{max/min}             :- either max or min (signifying maximize and
+			      minimize).
+
+\meta{objective function}  :- the function you are maximizing or
+			      minimizing.
+
+\meta{linear inequalities} :- the constraint inequalities. Each one must
+                              be of the form {\it sum of variables (
+                              <=,=,>=) number}.
+
+\name{simplex} applies the revised simplex algorithm to find the 
+optimal(either maximum or minimum) value of the 
+\meta{objective function} under the linear inequality constraints.
+
+It returns \{optimal value,\{ values of variables at this optimal\}\}.
+
+The algorithm implies that all the variables are non-negative.
+
+\begin{Examples}
+
+ simplex(max,x+y,\{x>=10,y>=20,x+y<=25\}); &
+
+ ***** Error in simplex: Problem has no feasible solution\\
+
+simplex(max,10x+5y+5.5z,\{5x+3z<=200,x+0.1y+0.5z<=12,
+0.1x+0.2y+0.3z<=9, 30x+10y+50z<=1500\}); &
+
+\{525.0,\{x=40.0,y=25.0,z=0\}\}\\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{squarep}
+
+\begin{Syntax}
+\name{squarep}(\meta{matrix})
+\end{Syntax}
+ 
+\meta{matrix} :- a \nameref{matrix}.
+
+\name{squarep} is a predicate that returns t if the \meta{matrix} is 
+square and nil otherwise.
+
+\begin{Examples}
+
+squarep(mat((1,3,5))); &
+nil \\
+squarep(A);
+t\\
+
+\end{Examples}
+
+Related functions: \nameref{matrixp}, \nameref{symmetricp}.
+
+\end{Operator}
+
+
+\begin{Operator}{stack_rows}
+see:  \nameref{augment\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{sub_matrix}
+
+\begin{Syntax}
+\name{sub\_matrix}(\meta{matrix},\meta{row\_list},\meta{column\_list})
+\end{Syntax}
+
+\meta{matrix}                         :- a matrix. 
+\meta{row\_list}, \meta{column\_list} :- either a positive integer or a
+                                         list of positive integers.
+
+name{sub\_matrix} produces the matrix consisting of the intersection of
+the rows specified in \meta{row\_list} and the columns specified in 
+\meta{column\_list}. 
+
+
+\begin{Examples}
+
+sub_matrix(A,\{1,3\},\{2,3\}); &
+\begin{multilineoutput}{6cm}
+[2  3]
+[    ]
+[8  9]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions:
+\nameref{augment\_columns}, \nameref{stack\_rows}.
+
+\end{Operator}
+
+
+\begin{Operator}{svd}
+\index{singular value decomposition}
+Singular value decomposition:
+
+\begin{Syntax}
+\name{svd}(\meta{matrix})
+\end{Syntax}
+
+\meta{matrix} :- a \nameref{matrix} containing only numeric entries.
+
+
+\name{svd} computes the singular value decomposition of \meta{matrix}. 
+
+It returns 
+
+\{U,P,V\} 
+
+where A = $U*P*V^T$
+
+and P = diag(sigma(1) ... sigma(n)). 
+
+sigma(i) for i= 1 ... n are the singular values of 
+\meta{matrix}.
+
+n is the column dimension of \meta{matrix}.
+
+The singular values of \meta{matrix} are the non-negative square roots 
+of the eigenvalues of $A^T*A$.
+
+U and V are such that $U*U^T = V*V^T = V^T*V$ = Id.
+Id is the identity matrix.
+
+
+\begin{Examples}
+
+Q := mat((1,3),(-4,3)); &
+\begin{multilineoutput}{6cm}
+     [1   3]
+q := [     ]
+     [-4  3]
+\end{multilineoutput}\\
+
+on rounded; \\
+svd(Q); &
+\begin{multilineoutput}{6cm}
+\{
+
+ [ 0.289784137735    0.957092029805]
+ [                                 ]
+ [ - 0.957092029805  0.289784137735]
+
+ ,
+
+
+ [5.1491628629       0      ]
+ [                          ]
+ [     0        2.9130948854]
+
+ ,
+
+
+ [ - 0.687215403194   0.726453707825  ]
+ [                                    ]
+ [ - 0.726453707825   - 0.687215403194]
+
+\}
+\end{multilineoutput}\\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{swap_columns}
+Swap columns, swap rows:
+
+\begin{Syntax}
+\name{swap\_columns} (\meta{matrix},\meta{c1},\meta{c2})
+\end{Syntax}
+
+\meta{matrix}       :- a \nameref{matrix}.
+
+\meta{c1},\meta{c1} :- positive integers. 
+ 
+\name{swap\_columns} swaps column \meta{c1} of \meta{matrix} with 
+column \meta{c2}. 
+
+\name{swap\_rows} performs the same task on two rows of \meta{matrix}.
+
+\begin{Examples}
+
+swap_columns(A,2,3); &
+\begin{multilineoutput}{6cm}
+[1  3  2]
+[       ]
+[4  6  5]
+[       ]
+[7  9  8]
+\end{multilineoutput}\\
+
+swap_rows(A,1,3); &
+\begin{multilineoutput}{6cm}
+[7  8  9]
+[       ]
+[4  5  6]
+[       ]
+[1  2  3]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions: \nameref{swap\_entries}.
+
+\end{Operator}
+
+
+\begin{Operator}{swap_entries}
+
+\begin{Syntax}
+\name{swap\_entries}(\meta{matrix},\{\meta{r1},\meta{c1}\},\{\meta{r2},
+\meta{c2}\})
+\end{Syntax}
+
+\meta{matrix}  :- a \nameref{matrix}. 
+
+\meta{r1},\meta{c1},\meta{r2},\meta{c2} :- positive integers.
+
+\name{swap\_entries} swaps \meta{matrix}(\meta{r1},\meta{c1}) with 
+\meta{matrix}(\meta{r2},\meta{c2}).
+
+\begin{Examples}
+
+swap_entries(A,\{1,1\},\{3,3\}); &
+\begin{multilineoutput}{6cm}
+[9  2  3]
+[       ]
+[4  5  6]
+[       ]
+[7  8  1]
+\end{multilineoutput}
+
+\end{Examples}
+
+Related functions: \nameref{swap\_columns}, \nameref{swap\_rows}.
+
+\end{Operator}
+
+
+\begin{Operator}{swap_rows}
+see:  \nameref{swap\_columns}.
+\end{Operator}
+
+
+\begin{Operator}{symmetricp}
+
+\begin{Syntax}
+\name{symmetricp}(\meta{matrix})
+\end{Syntax}
+ 
+\meta{matrix} :- a \nameref{matrix}.
+
+\name{symmetricp} is a predicate that returns t if the matrix is symmetric 
+and nil otherwise.
+
+
+\begin{Examples}
+
+symmetricp(make_identity(11)); &
+t \\
+symmetricp(A); &
+nil\\
+
+\end{Examples}
+
+Related functions: \nameref{matrixp}, \nameref{squarep}.
+
+\end{Operator}
+
+
+\begin{Operator}{toeplitz}
+
+\begin{Syntax}
+\name{toeplitz}(\meta{expr\_list}) 
+\end{Syntax}
+(If you are feeling lazy then the braces can be omitted.)
+
+\meta{expr\_list} :- list of algebraic expressions.
+
+\name{toeplitz} creates the toeplitz matrix from the \meta{expr\_list}. 
+
+This is a square symmetric matrix in which the first expression is 
+placed on the diagonal and the i'th expression is placed on the (i-1)'th
+sub and super diagonals.
+
+It has dimension n where n is the number of expressions.
+
+
+\begin{Examples}
+
+toeplitz({w,x,y,z}); &
+\begin{multilineoutput}{6cm}
+[w  x  y  z]
+[          ]
+[x  w  x  y]
+[          ]
+[y  x  w  x]
+[          ]
+[z  y  x  w]
+\end{multilineoutput}
+
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{vandermonde}
+
+\begin{Syntax}  
+\name{vandermonde}(\{\meta{expr\_list}\})  
+\end{Syntax}
+(If you are feeling lazy then the braces can be omitted.)
+
+\meta{expr\_list} :- list of algebraic expressions.
+
+\name{vandermonde} creates the vandermonde matrix from the 
+\meta{expr\_list}.
+
+This is the square matrix in which the (i,j)'th entry is 
+\meta{expr\_list}$(i)^(j-1)$.
+
+It has dimension n where n is the number of expressions.
+
+         
+\begin{Examples}             
+vandermonde({x,2*y,3*z}); &
+\begin{multilineoutput}{6cm}
+[          2 ]
+[1   x    x  ]
+[            ]
+[           2]
+[1  2*y  4*y ]
+[            ]
+[           2]
+[1  3*z  9*z ]
+\end{multilineoutput}
+
+\end{Examples}
+
+\end{Operator}
+

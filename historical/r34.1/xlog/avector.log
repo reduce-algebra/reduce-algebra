@@ -1,0 +1,1411 @@
+Sat May 30 16:26:41 PDT 1992
+REDUCE 3.4.1, 15-Jul-92 ...
+
+1: 1: 
+2: 2: 
+*** ^ redefined 
+
+(AVECTOR)
+
+3: 3: 
+Time: 68 ms
+
+4: 4: % Vector test routine
+
+% Author: David Harper (algebra@liverpool.ac.uk)
+%         Computer Algebra Support Officer
+%         University of Liverpool Computer Laboratory.
+
+% Please compare carefully the output from running this test file with the
+% log file provided to make sure your implementation is correct.
+
+linelength 72;
+
+
+80
+
+off allfac;
+
+ on div;
+
+
+vec a,b,c;
+
+
+matrix q;
+
+
+a := avec(ax,ay,az);
+
+
+VEC(X) := AX
+
+VEC(Y) := AY
+
+VEC(Z) := AZ
+
+
+b := avec(bx,by,bz);
+
+
+VEC(X) := BX
+
+VEC(Y) := BY
+
+VEC(Z) := BZ
+
+
+q := mat((q11,q12,q13),(q21,q22,q23),(q31,q32,q33));
+
+
+     [Q11  Q12  Q13]
+     [             ]
+Q := [Q21  Q22  Q23]
+     [             ]
+     [Q31  Q32  Q33]
+
+
+
+c := a+b;
+
+
+VEC(X) := AX + BX
+
+VEC(Y) := AY + BY
+
+VEC(Z) := AZ + BZ
+
+
+c := a-b;
+
+
+VEC(X) := AX - BX
+
+VEC(Y) := AY - BY
+
+VEC(Z) := AZ - BZ
+
+
+c := a cross b;
+
+
+VEC(X) := AY*BZ - AZ*BY
+
+VEC(Y) :=  - AX*BZ + AZ*BX
+
+VEC(Z) := AX*BY - AY*BX
+
+
+d := a dot b;
+
+
+D := AX*BX + AY*BY + AZ*BZ
+
+a dot c;
+
+
+0
+ b dot c;
+
+
+0
+
+q*a;
+
+
+VEC(X) := AX*Q11 + AY*Q12 + AZ*Q13
+
+VEC(Y) := AX*Q21 + AY*Q22 + AZ*Q23
+
+VEC(Z) := AX*Q31 + AY*Q32 + AZ*Q33
+
+
+c:=2*f*a - b/7;
+
+
+                    1
+VEC(X) := 2*F*AX - ---*BX
+                    7
+
+                    1
+VEC(Y) := 2*F*AY - ---*BY
+                    7
+
+                    1
+VEC(Z) := 2*F*AZ - ---*BZ
+                    7
+
+
+c(0);
+
+
+          1
+2*F*AX - ---*BX
+          7
+ c(1);
+
+
+          1
+2*F*AY - ---*BY
+          7
+ c(2);
+
+
+          1
+2*F*AZ - ---*BZ
+          7
+
+
+1/vmod(a);
+
+
+   2     2     2  - 1/2
+(AX  + AY  + AZ )
+
+b/vmod(a);
+
+
+             2     2     2  - 1/2
+VEC(X) := (AX  + AY  + AZ )      *BX
+
+             2     2     2  - 1/2
+VEC(Y) := (AX  + AY  + AZ )      *BY
+
+             2     2     2  - 1/2
+VEC(Z) := (AX  + AY  + AZ )      *BZ
+
+
+(a cross b)/(a dot b);
+
+
+               AY*BZ - AZ*BY
+VEC(X) := -----------------------
+           AX*BX + AY*BY + AZ*BZ
+
+              - AX*BZ + AZ*BX
+VEC(Y) := -----------------------
+           AX*BX + AY*BY + AZ*BZ
+
+               AX*BY - AY*BX
+VEC(Z) := -----------------------
+           AX*BX + AY*BY + AZ*BZ
+
+
+2/3*vmod(a)*a*(a dot c)/(vmod(a cross c));
+
+
+           28     2   2     2   2
+VEC(X) := ----*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+           3
+
+                                     2   2     2   2
+                 - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                     2   2     2   2     - 1
+                 - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                         2
+
+                  2     2     2      3    28     2   2
+          *SQRT(AX  + AY  + AZ )*F*AX  + ----*(AX *BY
+                                          3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*F*AX
+                            2
+
+             2    28     2   2     2   2
+          *AY  + ----*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+                  3
+
+                                  2   2     2   2
+              - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                  2   2     2   2     - 1
+              - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                      2
+
+                  2     2     2         2    2     2   2
+          *SQRT(AX  + AY  + AZ )*F*AX*AZ  - ---*(AX *BY
+                                             3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2    2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*AX *BX
+                            2
+
+              2     2   2     2   2
+           - ---*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+              3
+
+                                  2   2     2   2
+              - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                  2   2     2   2     - 1
+              - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                      2
+
+                  2     2     2              2     2   2
+          *SQRT(AX  + AY  + AZ )*AX*AY*BY - ---*(AX *BY
+                                             3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*AX*AZ
+                            2
+
+          *BZ
+
+           28     2   2     2   2
+VEC(Y) := ----*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+           3
+
+                                     2   2     2   2
+                 - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                     2   2     2   2     - 1
+                 - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                         2
+
+                  2     2     2      2       28     2   2
+          *SQRT(AX  + AY  + AZ )*F*AX *AY + ----*(AX *BY
+                                             3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2      3
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*F*AY  
+                            2
+
+             28     2   2     2   2
+          + ----*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+             3
+
+                                  2   2     2   2
+              - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                  2   2     2   2     - 1
+              - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                      2
+
+                  2     2     2         2    2     2   2
+          *SQRT(AX  + AY  + AZ )*F*AY*AZ  - ---*(AX *BY
+                                             3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*AX*AY
+                            2
+
+                 2     2   2     2   2
+          *BX - ---*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+                 3
+
+                                  2   2     2   2
+              - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                  2   2     2   2     - 1
+              - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                      2
+
+                  2     2     2    2       2     2   2
+          *SQRT(AX  + AY  + AZ )*AY *BY - ---*(AX *BY
+                                           3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*AY*AZ
+                            2
+
+          *BZ
+
+           28     2   2     2   2
+VEC(Z) := ----*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+           3
+
+                                     2   2     2   2
+                 - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                     2   2     2   2     - 1
+                 - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                         2
+
+                  2     2     2      2       28     2   2
+          *SQRT(AX  + AY  + AZ )*F*AX *AZ + ----*(AX *BY
+                                             3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2      2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*F*AY
+                            2
+
+                 28     2   2     2   2
+          *AZ + ----*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+                 3
+
+                                  2   2     2   2
+              - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                  2   2     2   2     - 1
+              - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                      2
+
+                  2     2     2      3    2     2   2
+          *SQRT(AX  + AY  + AZ )*F*AZ  - ---*(AX *BY
+                                          3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*AX*AZ
+                            2
+
+                 2     2   2     2   2
+          *BX - ---*(AX *BY  + AX *BZ  - 2*AX*AY*BX*BY
+                 3
+
+                                  2   2     2   2
+              - 2*AX*AZ*BX*BZ + AY *BX  + AY *BZ
+
+                                  2   2     2   2     - 1
+              - 2*AY*AZ*BY*BZ + AZ *BX  + AZ *BY )**------
+                                                      2
+
+                  2     2     2              2     2   2
+          *SQRT(AX  + AY  + AZ )*AY*AZ*BY - ---*(AX *BY
+                                             3
+
+                  2   2
+              + AX *BZ  - 2*AX*AY*BX*BY - 2*AX*AZ*BX*BZ
+
+                  2   2     2   2                     2   2
+              + AY *BX  + AY *BZ  - 2*AY*AZ*BY*BZ + AZ *BX
+
+                  2   2     - 1         2     2     2    2
+              + AZ *BY )**------*SQRT(AX  + AY  + AZ )*AZ *BZ
+                            2
+
+
+
+a := avec(x**2*y**3,log(z+x),13*z-y);
+
+
+           2  3
+VEC(X) := X *Y
+
+VEC(Y) := LOG(X + Z)
+
+VEC(Z) :=  - Y + 13*Z
+
+
+df(a,x);
+
+
+               3
+VEC(X) := 2*X*Y
+
+             1
+VEC(Y) := -------
+           X + Z
+
+VEC(Z) := 0
+
+
+df(a,x,y);
+
+
+               2
+VEC(X) := 6*X*Y
+
+VEC(Y) := 0
+
+VEC(Z) := 0
+
+
+int(a,x);
+
+
+           1   3  3
+VEC(X) := ---*X *Y
+           3
+
+VEC(Y) := LOG(X + Z)*X + LOG(X + Z)*Z - X
+
+VEC(Z) :=  - X*Y + 13*X*Z
+
+
+exp(a);
+
+
+            2  3
+           X *Y
+VEC(X) := E
+
+VEC(Y) := X + Z
+
+            - Y + 13*Z
+VEC(Z) := E
+
+
+log sin b;
+
+
+VEC(X) := LOG(SIN(BX))
+
+VEC(Y) := LOG(SIN(BY))
+
+VEC(Z) := LOG(SIN(BZ))
+
+
+
+a := avec(ax,ay,az);
+
+
+VEC(X) := AX
+
+VEC(Y) := AY
+
+VEC(Z) := AZ
+
+
+depend ax,x,y,z;
+
+ depend ay,x,y,z;
+
+ depend az,x,y,z;
+
+
+depend p,x,y,z;
+
+
+c := grad p;
+
+
+VEC(X) := DF(P,X)
+
+VEC(Y) := DF(P,Y)
+
+VEC(Z) := DF(P,Z)
+
+
+div c;
+
+
+DF(P,X,2) + DF(P,Y,2) + DF(P,Z,2)
+
+delsq p;
+
+
+DF(P,X,2) + DF(P,Y,2) + DF(P,Z,2)
+
+div a;
+
+
+DF(AX,X) + DF(AY,Y) + DF(AZ,Z)
+
+curl a;
+
+
+VEC(X) :=  - DF(AY,Z) + DF(AZ,Y)
+
+VEC(Y) := DF(AX,Z) - DF(AZ,X)
+
+VEC(Z) :=  - DF(AX,Y) + DF(AY,X)
+
+
+delsq a;
+
+
+VEC(X) := DF(AX,X,2) + DF(AX,Y,2) + DF(AX,Z,2)
+
+VEC(Y) := DF(AY,X,2) + DF(AY,Y,2) + DF(AY,Z,2)
+
+VEC(Z) := DF(AZ,X,2) + DF(AZ,Y,2) + DF(AZ,Z,2)
+
+
+
+depend h1,x,y,z;
+
+ depend h2,x,y,z;
+
+ depend h3,x,y,z;
+
+
+scalefactors(h1,h2,h3);
+
+
+grad p;
+
+
+                    -1
+VEC(X) := DF(P,X)*H1
+
+                    -1
+VEC(Y) := DF(P,Y)*H2
+
+                    -1
+VEC(Z) := DF(P,Z)*H3
+
+
+div a;
+
+
+           -1              -1              -1
+DF(AX,X)*H1   + DF(AY,Y)*H2   + DF(AZ,Z)*H3
+
+                 -1   -1                 -1   -1
+ + DF(H1,Y)*AY*H1  *H2   + DF(H1,Z)*AZ*H1  *H3
+
+                 -1   -1                 -1   -1
+ + DF(H2,X)*AX*H1  *H2   + DF(H2,Z)*AZ*H2  *H3
+
+                 -1   -1                 -1   -1
+ + DF(H3,X)*AX*H1  *H3   + DF(H3,Y)*AY*H2  *H3
+
+curl a;
+
+
+                        -1              -1
+VEC(X) :=  - DF(AY,Z)*H3   + DF(AZ,Y)*H2
+
+                           -1   -1                 -1   -1
+           - DF(H2,Z)*AY*H2  *H3   + DF(H3,Y)*AZ*H2  *H3
+
+                     -1              -1
+VEC(Y) := DF(AX,Z)*H3   - DF(AZ,X)*H1
+
+                           -1   -1                 -1   -1
+           + DF(H1,Z)*AX*H1  *H3   - DF(H3,X)*AZ*H1  *H3
+
+                        -1              -1
+VEC(Z) :=  - DF(AX,Y)*H2   + DF(AY,X)*H1
+
+                           -1   -1                 -1   -1
+           - DF(H1,Y)*AX*H1  *H2   + DF(H2,X)*AY*H1  *H2
+
+
+dp1 := delsq p;
+
+
+                   -2                      -3
+DP1 := DF(P,X,2)*H1   - DF(P,X)*DF(H1,X)*H1
+
+                             -2   -1
+        + DF(P,X)*DF(H2,X)*H1  *H2
+
+                             -2   -1               -2
+        + DF(P,X)*DF(H3,X)*H1  *H3   + DF(P,Y,2)*H2
+
+                             -1   -2                      -3
+        + DF(P,Y)*DF(H1,Y)*H1  *H2   - DF(P,Y)*DF(H2,Y)*H2
+
+                             -2   -1               -2
+        + DF(P,Y)*DF(H3,Y)*H2  *H3   + DF(P,Z,2)*H3
+
+                             -1   -2
+        + DF(P,Z)*DF(H1,Z)*H1  *H3
+
+                             -1   -2                      -3
+        + DF(P,Z)*DF(H2,Z)*H2  *H3   - DF(P,Z)*DF(H3,Z)*H3
+
+dp2 := div grad p;
+
+
+                   -2                      -3
+DP2 := DF(P,X,2)*H1   - DF(P,X)*DF(H1,X)*H1
+
+                             -2   -1
+        + DF(P,X)*DF(H2,X)*H1  *H2
+
+                             -2   -1               -2
+        + DF(P,X)*DF(H3,X)*H1  *H3   + DF(P,Y,2)*H2
+
+                             -1   -2                      -3
+        + DF(P,Y)*DF(H1,Y)*H1  *H2   - DF(P,Y)*DF(H2,Y)*H2
+
+                             -2   -1               -2
+        + DF(P,Y)*DF(H3,Y)*H2  *H3   + DF(P,Z,2)*H3
+
+                             -1   -2
+        + DF(P,Z)*DF(H1,Z)*H1  *H3
+
+                             -1   -2                      -3
+        + DF(P,Z)*DF(H2,Z)*H2  *H3   - DF(P,Z)*DF(H3,Z)*H3
+
+dp1-dp2;
+
+
+0
+
+delsq a;
+
+
+                       -2                       -3
+VEC(X) := DF(AX,X,2)*H1   - DF(AX,X)*DF(H1,X)*H1
+
+                                 -2   -1
+           + DF(AX,X)*DF(H2,X)*H1  *H2
+
+                                 -2   -1                -2
+           + DF(AX,X)*DF(H3,X)*H1  *H3   + DF(AX,Y,2)*H2
+
+                                 -1   -2
+           + DF(AX,Y)*DF(H1,Y)*H1  *H2
+
+                                 -3
+           - DF(AX,Y)*DF(H2,Y)*H2
+
+                                 -2   -1                -2
+           + DF(AX,Y)*DF(H3,Y)*H2  *H3   + DF(AX,Z,2)*H3
+
+                                 -1   -2
+           + DF(AX,Z)*DF(H1,Z)*H1  *H3
+
+                                 -1   -2
+           + DF(AX,Z)*DF(H2,Z)*H2  *H3
+
+                                 -3
+           - DF(AX,Z)*DF(H3,Z)*H3
+
+                                   -2   -1
+           + 2*DF(AY,X)*DF(H1,Y)*H1  *H2
+
+                                   -1   -2
+           - 2*DF(AY,Y)*DF(H2,X)*H1  *H2
+
+                                   -2   -1
+           + 2*DF(AZ,X)*DF(H1,Z)*H1  *H3
+
+                                   -1   -2
+           - 2*DF(AZ,Z)*DF(H3,X)*H1  *H3
+
+                             -2   -1
+           + DF(H1,X,Y)*AY*H1  *H2
+
+                             -2   -1
+           + DF(H1,X,Z)*AZ*H1  *H3
+
+                                    -3   -1
+           - DF(H1,X)*DF(H1,Y)*AY*H1  *H2
+
+                                    -3   -1
+           - DF(H1,X)*DF(H1,Z)*AZ*H1  *H3
+
+                                    -3   -1
+           - DF(H1,X)*DF(H2,X)*AX*H1  *H2
+
+                                    -3   -1
+           - DF(H1,X)*DF(H3,X)*AX*H1  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H1,Y,2)*AX*H1  *H2   - DF(H1,Y) *AX*H1  *H2
+
+                                    -1   -3
+           - DF(H1,Y)*DF(H2,Y)*AX*H1  *H2
+
+                                    -1   -2   -1
+           + DF(H1,Y)*DF(H3,Y)*AX*H1  *H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H1,Z,2)*AX*H1  *H3   - DF(H1,Z) *AX*H1  *H3
+
+                                    -1   -1   -2
+           + DF(H1,Z)*DF(H2,Z)*AX*H1  *H2  *H3
+
+                                    -1   -3
+           - DF(H1,Z)*DF(H3,Z)*AX*H1  *H3
+
+                             -1   -2
+           - DF(H2,X,Y)*AY*H1  *H2
+
+                             -1   -1   -1
+           + DF(H2,X,Z)*AZ*H1  *H2  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H2,X,2)*AX*H1  *H2   - DF(H2,X) *AX*H1  *H2
+
+                                    -1   -3
+           + DF(H2,X)*DF(H2,Y)*AY*H1  *H2
+
+                                    -1   -2   -1
+           - DF(H2,X)*DF(H2,Z)*AZ*H1  *H2  *H3
+
+                                      -1   -2   -1
+           - 2*DF(H2,X)*DF(H3,Y)*AY*H1  *H2  *H3
+
+                                      -1   -1   -2
+           - 2*DF(H2,Z)*DF(H3,X)*AZ*H1  *H2  *H3
+
+                             -1   -1   -1
+           + DF(H3,X,Y)*AY*H1  *H2  *H3
+
+                             -1   -2
+           - DF(H3,X,Z)*AZ*H1  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H3,X,2)*AX*H1  *H3   - DF(H3,X) *AX*H1  *H3
+
+                                    -1   -1   -2
+           - DF(H3,X)*DF(H3,Y)*AY*H1  *H2  *H3
+
+                                    -1   -3
+           + DF(H3,X)*DF(H3,Z)*AZ*H1  *H3
+
+                                   -2   -1
+VEC(Y) :=  - 2*DF(AX,X)*DF(H1,Y)*H1  *H2
+
+                                   -1   -2                -2
+           + 2*DF(AX,Y)*DF(H2,X)*H1  *H2   + DF(AY,X,2)*H1
+
+                                 -3
+           - DF(AY,X)*DF(H1,X)*H1
+
+                                 -2   -1
+           + DF(AY,X)*DF(H2,X)*H1  *H2
+
+                                 -2   -1                -2
+           + DF(AY,X)*DF(H3,X)*H1  *H3   + DF(AY,Y,2)*H2
+
+                                 -1   -2
+           + DF(AY,Y)*DF(H1,Y)*H1  *H2
+
+                                 -3
+           - DF(AY,Y)*DF(H2,Y)*H2
+
+                                 -2   -1                -2
+           + DF(AY,Y)*DF(H3,Y)*H2  *H3   + DF(AY,Z,2)*H3
+
+                                 -1   -2
+           + DF(AY,Z)*DF(H1,Z)*H1  *H3
+
+                                 -1   -2
+           + DF(AY,Z)*DF(H2,Z)*H2  *H3
+
+                                 -3
+           - DF(AY,Z)*DF(H3,Z)*H3
+
+                                   -2   -1
+           + 2*DF(AZ,Y)*DF(H2,Z)*H2  *H3
+
+                                   -1   -2
+           - 2*DF(AZ,Z)*DF(H3,Y)*H2  *H3
+
+                             -2   -1
+           - DF(H1,X,Y)*AX*H1  *H2
+
+                                    -3   -1
+           + DF(H1,X)*DF(H1,Y)*AX*H1  *H2
+
+                                    -3   -1
+           - DF(H1,X)*DF(H2,X)*AY*H1  *H2
+
+                             -1   -1   -1
+           + DF(H1,Y,Z)*AZ*H1  *H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H1,Y,2)*AY*H1  *H2   - DF(H1,Y) *AY*H1  *H2
+
+                                    -2   -1   -1
+           - DF(H1,Y)*DF(H1,Z)*AZ*H1  *H2  *H3
+
+                                    -1   -3
+           - DF(H1,Y)*DF(H2,Y)*AY*H1  *H2
+
+                                      -2   -1   -1
+           - 2*DF(H1,Y)*DF(H3,X)*AX*H1  *H2  *H3
+
+                                    -1   -1   -2
+           + DF(H1,Z)*DF(H2,Z)*AY*H1  *H2  *H3
+
+                                      -1   -1   -2
+           - 2*DF(H1,Z)*DF(H3,Y)*AZ*H1  *H2  *H3
+
+                             -1   -2
+           + DF(H2,X,Y)*AX*H1  *H2
+
+                             -2   -1           2      -2   -2
+           + DF(H2,X,2)*AY*H1  *H2   - DF(H2,X) *AY*H1  *H2
+
+                                    -1   -3
+           - DF(H2,X)*DF(H2,Y)*AX*H1  *H2
+
+                                    -2   -1   -1
+           + DF(H2,X)*DF(H3,X)*AY*H1  *H2  *H3
+
+                             -2   -1
+           + DF(H2,Y,Z)*AZ*H2  *H3
+
+                                    -3   -1
+           - DF(H2,Y)*DF(H2,Z)*AZ*H2  *H3
+
+                                    -3   -1
+           - DF(H2,Y)*DF(H3,Y)*AY*H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H2,Z,2)*AY*H2  *H3   - DF(H2,Z) *AY*H2  *H3
+
+                                    -1   -3
+           - DF(H2,Z)*DF(H3,Z)*AY*H2  *H3
+
+                             -1   -1   -1
+           + DF(H3,X,Y)*AX*H1  *H2  *H3
+
+                                    -1   -1   -2
+           - DF(H3,X)*DF(H3,Y)*AX*H1  *H2  *H3
+
+                             -1   -2
+           - DF(H3,Y,Z)*AZ*H2  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H3,Y,2)*AY*H2  *H3   - DF(H3,Y) *AY*H2  *H3
+
+                                    -1   -3
+           + DF(H3,Y)*DF(H3,Z)*AZ*H2  *H3
+
+                                   -2   -1
+VEC(Z) :=  - 2*DF(AX,X)*DF(H1,Z)*H1  *H3
+
+                                   -1   -2
+           + 2*DF(AX,Z)*DF(H3,X)*H1  *H3
+
+                                   -2   -1
+           - 2*DF(AY,Y)*DF(H2,Z)*H2  *H3
+
+                                   -1   -2                -2
+           + 2*DF(AY,Z)*DF(H3,Y)*H2  *H3   + DF(AZ,X,2)*H1
+
+                                 -3
+           - DF(AZ,X)*DF(H1,X)*H1
+
+                                 -2   -1
+           + DF(AZ,X)*DF(H2,X)*H1  *H2
+
+                                 -2   -1                -2
+           + DF(AZ,X)*DF(H3,X)*H1  *H3   + DF(AZ,Y,2)*H2
+
+                                 -1   -2
+           + DF(AZ,Y)*DF(H1,Y)*H1  *H2
+
+                                 -3
+           - DF(AZ,Y)*DF(H2,Y)*H2
+
+                                 -2   -1                -2
+           + DF(AZ,Y)*DF(H3,Y)*H2  *H3   + DF(AZ,Z,2)*H3
+
+                                 -1   -2
+           + DF(AZ,Z)*DF(H1,Z)*H1  *H3
+
+                                 -1   -2
+           + DF(AZ,Z)*DF(H2,Z)*H2  *H3
+
+                                 -3                   -2   -1
+           - DF(AZ,Z)*DF(H3,Z)*H3   - DF(H1,X,Z)*AX*H1  *H3
+
+                                    -3   -1
+           + DF(H1,X)*DF(H1,Z)*AX*H1  *H3
+
+                                    -3   -1
+           - DF(H1,X)*DF(H3,X)*AZ*H1  *H3
+
+                             -1   -1   -1
+           + DF(H1,Y,Z)*AY*H1  *H2  *H3
+
+                                    -2   -1   -1
+           - DF(H1,Y)*DF(H1,Z)*AY*H1  *H2  *H3
+
+                                      -1   -2   -1
+           - 2*DF(H1,Y)*DF(H2,Z)*AY*H1  *H2  *H3
+
+                                    -1   -2   -1
+           + DF(H1,Y)*DF(H3,Y)*AZ*H1  *H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H1,Z,2)*AZ*H1  *H3   - DF(H1,Z) *AZ*H1  *H3
+
+                                      -2   -1   -1
+           - 2*DF(H1,Z)*DF(H2,X)*AX*H1  *H2  *H3
+
+                                    -1   -3
+           - DF(H1,Z)*DF(H3,Z)*AZ*H1  *H3
+
+                             -1   -1   -1
+           + DF(H2,X,Z)*AX*H1  *H2  *H3
+
+                                    -1   -2   -1
+           - DF(H2,X)*DF(H2,Z)*AX*H1  *H2  *H3
+
+                                    -2   -1   -1
+           + DF(H2,X)*DF(H3,X)*AZ*H1  *H2  *H3
+
+                             -2   -1
+           - DF(H2,Y,Z)*AY*H2  *H3
+
+                                    -3   -1
+           + DF(H2,Y)*DF(H2,Z)*AY*H2  *H3
+
+                                    -3   -1
+           - DF(H2,Y)*DF(H3,Y)*AZ*H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H2,Z,2)*AZ*H2  *H3   - DF(H2,Z) *AZ*H2  *H3
+
+                                    -1   -3
+           - DF(H2,Z)*DF(H3,Z)*AZ*H2  *H3
+
+                             -1   -2
+           + DF(H3,X,Z)*AX*H1  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H3,X,2)*AZ*H1  *H3   - DF(H3,X) *AZ*H1  *H3
+
+                                    -1   -3
+           - DF(H3,X)*DF(H3,Z)*AX*H1  *H3
+
+                             -1   -2
+           + DF(H3,Y,Z)*AY*H2  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H3,Y,2)*AZ*H2  *H3   - DF(H3,Y) *AZ*H2  *H3
+
+                                    -1   -3
+           - DF(H3,Y)*DF(H3,Z)*AY*H2  *H3
+
+
+curl grad p;
+
+
+VEC(X) := 0
+
+VEC(Y) := 0
+
+VEC(Z) := 0
+
+
+grad div a;
+
+
+                       -2                       -3
+VEC(X) := DF(AX,X,2)*H1   - DF(AX,X)*DF(H1,X)*H1
+
+                                 -2   -1
+           + DF(AX,X)*DF(H2,X)*H1  *H2
+
+                                 -2   -1
+           + DF(AX,X)*DF(H3,X)*H1  *H3
+
+                          -1   -1
+           + DF(AY,X,Y)*H1  *H2
+
+                                 -2   -1
+           + DF(AY,X)*DF(H1,Y)*H1  *H2
+
+                                 -1   -1   -1
+           + DF(AY,X)*DF(H3,Y)*H1  *H2  *H3
+
+                                 -1   -2
+           - DF(AY,Y)*DF(H2,X)*H1  *H2
+
+                          -1   -1
+           + DF(AZ,X,Z)*H1  *H3
+
+                                 -2   -1
+           + DF(AZ,X)*DF(H1,Z)*H1  *H3
+
+                                 -1   -1   -1
+           + DF(AZ,X)*DF(H2,Z)*H1  *H2  *H3
+
+                                 -1   -2
+           - DF(AZ,Z)*DF(H3,X)*H1  *H3
+
+                             -2   -1
+           + DF(H1,X,Y)*AY*H1  *H2
+
+                             -2   -1
+           + DF(H1,X,Z)*AZ*H1  *H3
+
+                                    -3   -1
+           - DF(H1,X)*DF(H1,Y)*AY*H1  *H2
+
+                                    -3   -1
+           - DF(H1,X)*DF(H1,Z)*AZ*H1  *H3
+
+                                    -3   -1
+           - DF(H1,X)*DF(H2,X)*AX*H1  *H2
+
+                                    -3   -1
+           - DF(H1,X)*DF(H3,X)*AX*H1  *H3
+
+                                    -2   -2
+           - DF(H1,Y)*DF(H2,X)*AY*H1  *H2
+
+                                    -2   -2
+           - DF(H1,Z)*DF(H3,X)*AZ*H1  *H3
+
+                             -1   -1   -1
+           + DF(H2,X,Z)*AZ*H1  *H2  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H2,X,2)*AX*H1  *H2   - DF(H2,X) *AX*H1  *H2
+
+                                    -1   -2   -1
+           - DF(H2,X)*DF(H2,Z)*AZ*H1  *H2  *H3
+
+                                    -1   -2   -1
+           - DF(H2,X)*DF(H3,Y)*AY*H1  *H2  *H3
+
+                                    -1   -1   -2
+           - DF(H2,Z)*DF(H3,X)*AZ*H1  *H2  *H3
+
+                             -1   -1   -1
+           + DF(H3,X,Y)*AY*H1  *H2  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H3,X,2)*AX*H1  *H3   - DF(H3,X) *AX*H1  *H3
+
+                                    -1   -1   -2
+           - DF(H3,X)*DF(H3,Y)*AY*H1  *H2  *H3
+
+                       -1   -1                       -2   -1
+VEC(Y) := DF(AX,X,Y)*H1  *H2   - DF(AX,X)*DF(H1,Y)*H1  *H2
+
+                                 -1   -2
+           + DF(AX,Y)*DF(H2,X)*H1  *H2
+
+                                 -1   -1   -1
+           + DF(AX,Y)*DF(H3,X)*H1  *H2  *H3
+
+                          -2                       -1   -2
+           + DF(AY,Y,2)*H2   + DF(AY,Y)*DF(H1,Y)*H1  *H2
+
+                                 -3
+           - DF(AY,Y)*DF(H2,Y)*H2
+
+                                 -2   -1
+           + DF(AY,Y)*DF(H3,Y)*H2  *H3
+
+                          -1   -1
+           + DF(AZ,Y,Z)*H2  *H3
+
+                                 -1   -1   -1
+           + DF(AZ,Y)*DF(H1,Z)*H1  *H2  *H3
+
+                                 -2   -1
+           + DF(AZ,Y)*DF(H2,Z)*H2  *H3
+
+                                 -1   -2
+           - DF(AZ,Z)*DF(H3,Y)*H2  *H3
+
+                             -1   -1   -1
+           + DF(H1,Y,Z)*AZ*H1  *H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H1,Y,2)*AY*H1  *H2   - DF(H1,Y) *AY*H1  *H2
+
+                                    -2   -1   -1
+           - DF(H1,Y)*DF(H1,Z)*AZ*H1  *H2  *H3
+
+                                    -2   -2
+           - DF(H1,Y)*DF(H2,X)*AX*H1  *H2
+
+                                    -1   -3
+           - DF(H1,Y)*DF(H2,Y)*AY*H1  *H2
+
+                                    -2   -1   -1
+           - DF(H1,Y)*DF(H3,X)*AX*H1  *H2  *H3
+
+                                    -1   -1   -2
+           - DF(H1,Z)*DF(H3,Y)*AZ*H1  *H2  *H3
+
+                             -1   -2
+           + DF(H2,X,Y)*AX*H1  *H2
+
+                                    -1   -3
+           - DF(H2,X)*DF(H2,Y)*AX*H1  *H2
+
+                             -2   -1
+           + DF(H2,Y,Z)*AZ*H2  *H3
+
+                                    -3   -1
+           - DF(H2,Y)*DF(H2,Z)*AZ*H2  *H3
+
+                                    -3   -1
+           - DF(H2,Y)*DF(H3,Y)*AY*H2  *H3
+
+                                    -2   -2
+           - DF(H2,Z)*DF(H3,Y)*AZ*H2  *H3
+
+                             -1   -1   -1
+           + DF(H3,X,Y)*AX*H1  *H2  *H3
+
+                                    -1   -1   -2
+           - DF(H3,X)*DF(H3,Y)*AX*H1  *H2  *H3
+
+                             -2   -1           2      -2   -2
+           + DF(H3,Y,2)*AY*H2  *H3   - DF(H3,Y) *AY*H2  *H3
+
+                       -1   -1                       -2   -1
+VEC(Z) := DF(AX,X,Z)*H1  *H3   - DF(AX,X)*DF(H1,Z)*H1  *H3
+
+                                 -1   -1   -1
+           + DF(AX,Z)*DF(H2,X)*H1  *H2  *H3
+
+                                 -1   -2
+           + DF(AX,Z)*DF(H3,X)*H1  *H3
+
+                          -1   -1
+           + DF(AY,Y,Z)*H2  *H3
+
+                                 -2   -1
+           - DF(AY,Y)*DF(H2,Z)*H2  *H3
+
+                                 -1   -1   -1
+           + DF(AY,Z)*DF(H1,Y)*H1  *H2  *H3
+
+                                 -1   -2                -2
+           + DF(AY,Z)*DF(H3,Y)*H2  *H3   + DF(AZ,Z,2)*H3
+
+                                 -1   -2
+           + DF(AZ,Z)*DF(H1,Z)*H1  *H3
+
+                                 -1   -2
+           + DF(AZ,Z)*DF(H2,Z)*H2  *H3
+
+                                 -3
+           - DF(AZ,Z)*DF(H3,Z)*H3
+
+                             -1   -1   -1
+           + DF(H1,Y,Z)*AY*H1  *H2  *H3
+
+                                    -2   -1   -1
+           - DF(H1,Y)*DF(H1,Z)*AY*H1  *H2  *H3
+
+                                    -1   -2   -1
+           - DF(H1,Y)*DF(H2,Z)*AY*H1  *H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H1,Z,2)*AZ*H1  *H3   - DF(H1,Z) *AZ*H1  *H3
+
+                                    -2   -1   -1
+           - DF(H1,Z)*DF(H2,X)*AX*H1  *H2  *H3
+
+                                    -2   -2
+           - DF(H1,Z)*DF(H3,X)*AX*H1  *H3
+
+                                    -1   -3
+           - DF(H1,Z)*DF(H3,Z)*AZ*H1  *H3
+
+                             -1   -1   -1
+           + DF(H2,X,Z)*AX*H1  *H2  *H3
+
+                                    -1   -2   -1
+           - DF(H2,X)*DF(H2,Z)*AX*H1  *H2  *H3
+
+                             -1   -2           2      -2   -2
+           + DF(H2,Z,2)*AZ*H2  *H3   - DF(H2,Z) *AZ*H2  *H3
+
+                                    -2   -2
+           - DF(H2,Z)*DF(H3,Y)*AY*H2  *H3
+
+                                    -1   -3
+           - DF(H2,Z)*DF(H3,Z)*AZ*H2  *H3
+
+                             -1   -2
+           + DF(H3,X,Z)*AX*H1  *H3
+
+                                    -1   -3
+           - DF(H3,X)*DF(H3,Z)*AX*H1  *H3
+
+                             -1   -2
+           + DF(H3,Y,Z)*AY*H2  *H3
+
+                                    -1   -3
+           - DF(H3,Y)*DF(H3,Z)*AY*H2  *H3
+
+
+div curl a;
+
+
+0
+
+
+% Examples of integration : (1) Volume integrals
+
+getcsystem 'spherical;
+
+
+(R THETA PHI)
+
+
+% Example 1 : integration of r**n over a sphere
+
+origin := avec(0,0,0);
+
+
+VEC(R) := 0
+
+VEC(THETA) := 0
+
+VEC(PHI) := 0
+
+
+upperbound := avec(rr,pi,2*pi);
+
+
+VEC(R) := RR
+
+VEC(THETA) := PI
+
+VEC(PHI) := 2*PI
+
+
+volintegral(r**n,origin,upperbound);
+
+
+     N      3
+ 4*RR *PI*RR
+--------------
+    N + 3
+
+
+% Substitute n=0 to get the volume of a sphere
+sub(n=0,ws);
+
+
+ 4       3
+---*PI*RR
+ 3
+
+
+% Example 2 : volume of a right-circular cone
+
+getcsystem 'cylindrical;
+
+
+(R Z PHI)
+
+upperbound := avec(pp*z,h,2*pi);
+
+
+VEC(R) := Z*PP
+
+VEC(Z) := H
+
+VEC(PHI) := 2*PI
+
+
+volintorder := avec(2,0,1);
+
+
+VEC(R) := 2
+
+VEC(Z) := 0
+
+VEC(PHI) := 1
+
+      % Integrate in the order : phi, r, z
+cone := volintegral(1,origin,upperbound);
+
+
+         1   3   2
+CONE := ---*H *PP *PI
+         3
+
+
+% Now we replace P*Z by RR to get the result in the familiar form
+
+let pp*h=rr;
+
+
+cone := cone;
+
+
+         1         2
+CONE := ---*H*PI*RR
+         3
+                    % This is the familiar form
+clear pp*h;
+
+
+
+% Example 3 : line integral to obtain the length of a line of latitude
+%             on a sphere
+
+getcsystem 'spherical;
+
+
+(R THETA PHI)
+
+
+a := avec(0,0,1);
+
+
+VEC(R) := 0
+
+VEC(THETA) := 0
+
+VEC(PHI) := 1
+
+            % Function vector is the tangent to the
+                             % line of latitude
+curve := avec(rr,latitude,phi);
+
+
+VEC(R) := RR
+
+VEC(THETA) := LATITUDE
+
+VEC(PHI) := PHI
+
+   % Path is round a line of latitude
+
+deflineint(a,curve,phi,0,2*pi);
+
+
+2*SIN(LATITUDE)*PI*RR
+
+
+end;
+
+5: 5: 
+Time: 4216 ms  plus GC time: 136 ms
+6: 6: 
+Quitting
+Sat May 30 16:26:46 PDT 1992

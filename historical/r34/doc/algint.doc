@@ -1,0 +1,44 @@
+
+                                  ALGINT
+
+A Package for the Analytic Integration of Expressions Involving Square Roots
+
+                            James H. Davenport
+			   Mathematical Sciences
+                            University of Bath
+                              Claverton Down
+                               Bath, BA2 7AY
+                               GREAT BRITAIN
+
+                       E-mail:jhd@uk.ac.bath.maths
+               (redirect via ucl-cs.arpa or ...!mcvax!ukc)
+
+
+ALGINT is an extension of the standard REDUCE integration package for the
+integration of expressions involving square roots where the answer exists
+in that class of functions.  It is an implementation of the work described
+in [Davenport 1981].  Both this and the source code should be consulted for
+a more detailed description of this work.
+
+To use this package, the command
+
+	LOAD ALGINT;
+
+should be used.  The form of this command may vary according to
+implementation.  One then enters an expression for integration, e.g.:
+
+	INT(SQRT(X+SQRT(X**2+1)/X,X);
+
+If one later wishes to integrate expressions without using the facilities of
+this package, the switch ALGINT should be turned off. This is turned on
+automatically when the package is loaded.
+
+The switches supported by the standard integrator (e.g., TRINT) are also
+supported by this package.  In addition, the switch TRA, if on, will give
+further tracing information about the specific functioning of the algebraic
+integrator.
+
+REFERENCES
+
+Davenport, 1981 Davenport, J.H., "On the Integration of Algebraic
+     Functions", LNCS 102, Springer 1981.

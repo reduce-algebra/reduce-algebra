@@ -1,0 +1,40 @@
+
+<A NAME=LIST_switch>
+
+<TITLE>LIST_switch</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LIST</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+The <em>list</em> switch causes REDUCE to print each term in any sum on 
+separate lines. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+x**2*(y**2 + 2*y) + x*(y**2 + z)/(2*a);
+			 
+
+
+            2              2
+  X*(2*A*X*Y  + 4*A*X*Y + Y  +Z)
+  ------------------------------ 
+               2*A
+
+
+on list; 
+
+ws; 
+
+             2
+  (X*(2*A*X*Y
+    + 4*A*X*Y
+       2
+    + Y
+    + Z))/(2*A)
+
+</TT></PRE><P>

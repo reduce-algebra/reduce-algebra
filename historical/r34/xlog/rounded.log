@@ -1,0 +1,261 @@
+Sat Jun 29 13:37:56 PDT 1991
+REDUCE 3.4, 15-Jul-91 ...
+
+1: 1: 
+2: 2: 
+3: 3: % Tests in the exact mode.
+
+x := 1/2;
+
+
+      1
+X := ---
+      2
+
+
+y := x + 0.7;
+
+
+      6
+Y := ---
+      5
+
+
+% Tests in approximate mode.
+
+on rounded;
+
+
+
+y;
+
+
+1.2
+   % as expected not converted to approximate form.
+
+z := y+1.2;
+
+
+Z := 2.4
+
+
+z/3;
+
+
+0.8
+
+
+% Let's raise this to a high power.
+
+ws^24;
+
+
+0.00472236648287
+
+
+% Now a high exponent value.
+
+% 10.2^821;
+
+% Elementary function evaluation.
+
+cos(pi);
+
+
+ - 1
+
+
+symbolic ws;
+
+
+(!*SQ ((!:RD!: . -1.0) . 1) T)
+
+
+z := sin(pi);
+
+
+Z := 0
+
+
+symbolic ws;
+
+
+0
+
+
+% Handling very small quantities.
+
+% With normal defaults, underflows are converted to 0.
+
+exp(-100000.1**2);
+
+
+0
+
+
+% However, if you really want that small number, roundbf can be used.
+
+on roundbf;
+
+
+
+exp(-100000.1**2);
+
+
+1.18440746497E-4342953505
+
+
+off roundbf;
+
+
+
+% Now let us evaluate pi.
+
+pi;
+
+
+3.14159265359
+
+
+
+% Let us try a higher precision.
+
+precision 50;
+
+
+12
+
+
+pi;
+
+
+3.141 59265 35897 93238 46264 33832 79502 88419 71693 99375 1
+
+
+% Now find the cosine of pi/6.
+
+cos(ws/6);
+
+
+0.866 02540 37844 38646 76372 31707 52936 18347 14026 26905 19
+
+
+% This should be the sqrt(3)/2.
+
+ws**2;
+
+
+0.75
+
+
+
+%Here are some well known examples which show the power of this system.
+
+precision 10;
+
+
+50
+
+
+% This should give the usual default again.
+
+let xx=e**(pi*sqrt(163));
+
+
+
+let yy=1-2*cos((6*log(2)+log(10005))/sqrt(163));
+
+
+
+% First notice that xx looks like an integer.
+
+xx;
+
+
+2.625374126E+17
+
+
+% and that yy looks like zero.
+
+yy;
+
+
+0
+
+
+% but of course it's an illusion.
+
+precision 50;
+
+
+10
+
+
+xx;
+
+
+26253 74126 40768 743.9 99999 99999 92500 72597 19818 56888 8
+
+
+yy;
+
+
+ - 1.281 52565 59456 09277 51597 49532 17051 34 E  -16
+
+
+%now let's look at an unusual way of finding an old friend;
+
+precision 50;
+
+
+50
+
+
+procedure agm;
+  <<a := 1$ b := 1/sqrt 2$ u:= 1/4$ x := 1$ pn := 4$ repeat
+   <<p := pn;
+     y := a; a := (a+b)/2; b := sqrt(y*b); % Arith-geom mean.
+     u := u-x*(a-y)**2; x := 2*x; pn := a**2/u;
+     write "pn=",pn>> until pn>=p; p>>;
+
+
+AGM
+
+
+let ag=agm();
+
+
+
+ag;
+
+
+pn=3.187 67264 27121 08627 20192 99705 25369 23265 10535 71859 4
+
+pn=3.141 68029 32976 53293 91807 04245 60009 38279 57194 38815 4
+
+pn=3.141 59265 38954 46496 00291 47588 18043 48610 88792 37261 3
+
+pn=3.141 59265 35897 93238 46636 06027 06631 32175 77024 11342 4
+
+pn=3.141 59265 35897 93238 46264 33832 79502 88419 71699 49164 7
+
+pn=3.141 59265 35897 93238 46264 33832 79502 88419 71693 99375 1
+
+pn=3.141 59265 35897 93238 46264 33832 79502 88419 71693 99375 1
+
+3.141 59265 35897 93238 46264 33832 79502 88419 71693 99375 1
+
+
+% The limit is obviously.
+
+pi;
+
+
+3.141 59265 35897 93238 46264 33832 79502 88419 71693 99375 1
+
+
+end;
+
+4: 4: 
+Quitting
+Sat Jun 29 13:38:02 PDT 1991

@@ -1,0 +1,52 @@
+
+<A NAME=hilbert>
+
+<TITLE>hilbert</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>HILBERT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>hilbert</em>(&lt;square\_size&gt;,&lt;expr&gt;) 
+<P>
+<P>
+<P>
+&lt;square\_size&gt; :- a positive integer. 
+<P>
+<P>
+&lt;expr&gt; :- an algebraic expression. 
+<P>
+<P>
+<em>hilbert</em>computes the square hilbert matrix of dimension 
+&lt;square\_size&gt;. 
+<P>
+<P>
+This is the symmetric matrix in which the (i,j)'th entry is 
+1/(i+j-&lt;expr&gt;). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+hilbert(3,y+x); 
+
+  [    - 1          - 1          - 1    ]
+  [-----------  -----------  -----------]
+  [ x + y - 2    x + y - 3    x + y - 4 ]
+  [                                     ]
+  [    - 1          - 1          - 1    ]
+  [-----------  -----------  -----------]
+  [ x + y - 3    x + y - 4    x + y - 5 ]
+  [                                     ]
+  [    - 1          - 1          - 1    ]
+  [-----------  -----------  -----------]
+  [ x + y - 4    x + y - 5    x + y - 6 ]
+
+</TT></PRE><P>

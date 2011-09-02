@@ -1,0 +1,54 @@
+
+<A NAME=DILOG_extended>
+
+<TITLE>DILOG_extended</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DILOG EXTENDED</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The package <em>specfn</em> supplies an extended support for the 
+
+<A HREF=r37_0078.html>dilog</A> operator which implements the <em>dilogarithm fu
+nction</em>. 
+<P>
+<P>
+dilog(x) := - defint(log(t)/(t - 1),t,1,x); 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>Dilog</em>(&lt;order&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+defint(log(t)/(t - 1),t,1,x); 
+
+  - dilog (x) 
+
+
+dilog 2; 
+
+      2
+  - pi  /12 
+
+
+
+on rounded; 
+
+Dilog 20; 
+
+  - 5.92783972438
+
+</TT></PRE><P>The operator <em>Dilog</em> is sometimes called Spence's Integral 
+for n = 2. 
+<P>
+<P>
+<P>

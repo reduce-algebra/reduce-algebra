@@ -1,0 +1,256 @@
+Sat May 30 16:26:35 PDT 1992
+REDUCE 3.4.1, 15-Jul-92 ...
+
+1: 1: 
+2: 2: 
+*** + redefined 
+
+*** - redefined 
+
+*** * redefined 
+
+*** / redefined 
+
+*** ^ redefined 
+
+(ORTHOVEC)
+
+3: 3: 
+Time: 51 ms
+
+4: 4: %===========================================
+%test file for ORTHOVEC version 2, June 1990
+%===========================================
+
+showtime;
+
+
+Time: 0 ms
+
+
+%example 1: vector identity
+a:=svec(a1,a2,a3);
+
+
+A := [A1,A2,A3]
+
+b:=svec(b1,b2,b3);
+
+
+B := [B1,B2,B3]
+
+c:=svec(c1,c2,c3);
+
+
+C := [C1,C2,C3]
+
+d:=svec(d1,d2,d3);
+
+
+D := [D1,D2,D3]
+
+
+a><b*c><d - (a*c)*(b*d) + (a*d)*(b*c);
+
+
+0
+
+%showtime;
+
+%example 2: Equation of Motion in cylindricals
+vstart$
+
+
+Select Coordinate System by number
+
+1] cartesian
+
+2] cylindrical
+
+3] spherical
+
+4] general
+
+5] others
+
+2
+
+coordinate type = 2
+
+coordinates = R,TH,Z
+
+scale factors = 1,R,1
+v:=svec(vr,vt,vz)$
+
+b:=svec(br,bt,bz)$
+
+
+depend v,r,th,z$
+
+
+depend b,r,th,z$
+
+
+depend p,r,th,z$
+
+
+
+eom:=vout( vdf(v,tt) + v dotgrad v + grad(p) - curl(b) >< b )$
+
+
+[1] (DF(P,R)*R + DF(VR,R)*R*VR + DF(VR,Z)*R*VZ + DF(VR,TH)*VT
+
+      - DF(BR,Z)*R*BZ - DF(BR,TH)*BT + DF(BT,R)*R*BT + DF(BZ,R)*R*BZ
+
+          2     2
+      - VT  + BT )/R
+
+[2] (DF(P,TH) + DF(VT,R)*R*VR + DF(VT,Z)*R*VZ + DF(VT,TH)*VT
+
+      + DF(BR,TH)*BR - DF(BT,R)*R*BR - DF(BT,Z)*R*BZ + DF(BZ,TH)*BZ
+
+      + VR*VT - BR*BT)/R
+
+[3] (DF(P,Z)*R + DF(VZ,R)*R*VR + DF(VZ,Z)*R*VZ + DF(VZ,TH)*VT
+
+      + DF(BR,Z)*R*BR + DF(BT,Z)*R*BT - DF(BZ,R)*R*BR - DF(BZ,TH)*BT)
+
+    /R
+
+%showtime;
+
+%example 3: Taylor expansions
+on div;
+
+
+on revpri;
+
+
+vtaylor(sin(x)*cos(y)+e**z,svec(x,y,z),svec(0,0,0),svec(3,4,5));
+
+
+         1   2    1   3    1    4     1    5        1     2
+1 + Z + ---*Z  + ---*Z  + ----*Z  + -----*Z  + X - ---*X*Y
+         2        6        24        120            2
+
+    1      4    1   3    1    3  2     1    3  4
+ + ----*X*Y  - ---*X  + ----*X *Y  - -----*X *Y
+    24          6        12           144
+
+vtaylor(sin(x)/x,x,0,5);
+
+
+     1   2     1    4
+1 - ---*X  + -----*X
+     6        120
+
+te:=vtaylor(svec(x/sin(x),(e**y-1)/y,(1+z)**10),svec(x,y,z),
+svec(0,0,0),5);
+
+
+                  2      4
+        360 + 60*X  + 7*X
+TE := [--------------------,
+               360
+
+                          2       3      4    5
+       720 + 360*Y + 120*Y  + 30*Y  + 6*Y  + Y                  2
+      ------------------------------------------,1 + 10*Z + 45*Z
+                         720
+
+              3        4        5
+       + 120*Z  + 210*Z  + 252*Z ]
+
+%showtime;
+
+%example 4: extract components
+eom _2;
+
+
+    -1          -1                    -1
+ - R  *BR*BT + R  *VR*VT + DF(BZ,TH)*R  *BZ - DF(BT,Z)*BZ
+
+                            -1                 -1
+ - DF(BT,R)*BR + DF(BR,TH)*R  *BR + DF(VT,TH)*R  *VT + DF(VT,Z)*VZ
+
+                           -1
+ + DF(VT,R)*VR + DF(P,TH)*R
+
+te _1;
+
+
+     1   2     7    4
+1 + ---*X  + -----*X
+     6        360
+
+off div;
+
+
+off revpri;
+
+
+%showtime;
+
+%example 5: Line Integral
+vstart$
+
+
+Select Coordinate System by number
+
+1] cartesian
+
+2] cylindrical
+
+3] spherical
+
+4] general
+
+5] others
+
+1
+
+coordinate type = 1
+
+coordinates = X,Y,Z
+
+scale factors = 1,1,1
+dlineint(svec(3*x**2+5*y,-12*y*z,2*x*y*z**2),svec(s,s**2,s**3),s,1,2);
+
+
+ 68491
+-------
+  42
+
+%showtime;
+
+%example 6: Volume Integral
+ub:=sqrt(r**2-x**2)$
+
+
+8 * dvolint(1,svec(0,0,0),svec(r,ub,ub),6);
+
+
+     3
+ 16*R
+-------
+   3
+
+
+%===========================================
+% end of test
+%===========================================
+showtime;
+
+
+Time: 3043 ms  plus GC time: 85 ms
+
+;
+
+end;
+
+5: 5: 
+Time: 0 ms
+
+6: 6: 
+Quitting
+Sat May 30 16:26:40 PDT 1992

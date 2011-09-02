@@ -1,0 +1,293 @@
+\documentstyle[11pt,reduce]{article}
+\date{}
+\title{GNUPLOT Interface for REDUCE}
+\author{Herbert Melenk \\ 
+Konrad--Zuse--Zentrum f\"ur Informationstechnik Berlin \\
+E--mail: Melenk@sc.zib--berlin.de}
+\begin{document}
+\maketitle
+
+\index{GNUPLOT package}
+ 
+\section{Introduction}
+The GUNPLOT system provides standard graphics output 
+curves or surfaces which are defined by  
+formulas and/or data sets. GNUPLOT supports a great variety of output devices
+such as \verb+X-windows+, \verb+SUN tools+, 
+\verb+VGA screen+, \verb+postscript+, \verb+pic+ \TeX.
+The {\small REDUCE} GNUPLOT package lets one use the GNUPLOT
+features directly from inside {\small REDUCE}, either for
+the interactive display of curves/surfaces or for the production
+of pictures on paper. 
+
+This version supports hidden surface removal with GNUPLOT 3.2 or higher.
+By default hidden surface removal is switched off for compatibility with
+earlier versions of GNUPLOT which don't understand this option.
+You can ask for hidden surface removal locally; a global switch on is
+possible by adding a command line to $plotheader$ which now accepts
+more than one commands encoded as a list of strings (see below).
+
+ 
+\section{Requirements}
+Requirements for the usage of GNUPLOT under REDUCE are:
+\begin{enumerate}
+\item A running version of GNUPLOT 3.0 or higher,
+The actual version of GNUPLOT can be obtained via anonymous ftp
+from one of the sites
+\begin{itemize}
+\item dartmouth.edu (129.170.16.4)
+\item monu1.cc.monash.edu.au (130.194.1.101)
+\item irisa.irisa.fr (131.254.2.3)
+\end{itemize}
+
+\item REDUCE based on a LISP system which supports either
+      output pipes or a function `system' for invoking
+      operating system commands.
+
+All REDUCE 3.4 versions with PSL 3.4 running under UNIX and MS-DOS support
+these functions; however, the virtual memory
+must be large enough to support several big nested processes.
+\end{enumerate}
+ 
+\section{Installation}
+For the installation of the {\small REDUCE} GNUPLOT
+interface the following steps are to be performed:
+\begin{enumerate}
+\item  edit the strings in the top of the source file;
+\begin{itemize}
+\item{plotcommand:} a string with the command line to execute GNUPLOT;
+under UNIX this may contain several commands separated by \`;', e.g.
+a change of directory to the GNUPLOT binaries and a call of the
+GNUPLOT main program, e.g.
+\begin{verbatim}
+   plotcommand := "cd /usr/users/gnuplot3.2; gnuplot";
+\end{verbatim}
+\item{plotdata and plotdata2:} two file names for eventual temporary 
+data to be passed to GNUPLOT
+\item{plotheader:} a string or list of strings to be inserted as initial
+      command(s) for GNUPLOT; e.g. for MS-DOS you can set the terminal type:
+\begin{verbatim}
+       plotheader := "set terminal vgabios";
+\end{verbatim}
+or set a terminal type and a global mode
+\begin{verbatim}
+       plotheader := {"set terminal vgabios",
+                      "set hidden3d"};
+\end{verbatim}
+
+\end{itemize}
+You might as well set these variables later at
+{\small REDUCE} runtime (e.g. in the .reducerc file).
+Note that $plotheader$ will be evaluated in pipe mode only with the
+first plot command and with a plot call following a $plotreset$.
+
+\item compile the module by executing {\small REDUCE} with
+the commands
+\begin{verbatim}
+     faslout "gnuplot";
+     in "gnuplot.red"$
+     faslend; 
+\end{verbatim}
+\end{enumerate}
+
+\section{Call of GNUPLOT}
+ 
+At {\small REDUCE} run time you enter
+\begin{verbatim}
+     load gnuplot;
+\end{verbatim}
+
+and then the commands \verb+PLOT(...)+ and \verb+PLOTRESET+ are
+available.
+ 
+GNUPLOT lets one display in two dimensions a graph of a
+function $y=f(x)$ or a parameterized line $x=f_1(t),y=f_2(t)$.
+For three dimensional objects a two dimensional projection can
+be displayed, given either explicitly as $z=f(x,y)$ or 
+parameterized as $x=f_1(u,v),y=f_2(u,v),z=f_3(u,v)$. Note
+that the role of the names for the coordinates $x,y,z$ and the 
+parameters $t$ resp $u,v$ are fixed. If your object to be
+displayed contains different variables, you would have
+to substitute them before, e.g. using the 
+{\small REDUCE} operator SUB.
+
+The functions $f_i()$ can be given as explicit algebraic 
+expressions depending of the variables resp. parameters, or
+for 2 dimensions as set of points (=pairs of numbers).
+If given as expressions, they must
+evaluate to numbers for all possible values of their
+subscripts. The functions can be entered as equations
+too - then the lefthand sides are ignored.
+ 
+If one picture should contain more than one graph, e.g. x, x**2
+and x**3, the operator $``family"$ is used, either in the
+form
+ 
+\begin{verbatim}
+      family(x, x**2, x**3)
+\end{verbatim}
+or  in the form
+\begin{verbatim}
+      family({x, x**2, x**3})
+\end{verbatim}
+The second form lets you pass a list of expressions with an
+undetermined length. Multiple graphs are aexowed only for
+explicit forms.
+ 
+The interface determines automatically from the used names 
+which dimension to activate and whether
+to use explicit or parameterized mode. All other features
+have to be stated explicitly in the plot command as
+additional options. Options can have the form
+ 
+\begin{itemize}
+\item{var = (l .. u)} where `var' is one of $x,y,z,u,v,t$;
+   $l,u$ evaluate to numbers with $l<u$; this form defines a range for
+   a variable/ parameter. If not bound explicitly, independent
+   variables/ parameters are bound by the interval (-10 .. 10).
+   Example:  \verb+x=(0 .. 5)+
+\item{$keyword$} A simple GNUPLOT option can be entered directly
+   as keyword. E.g.  \verb+polar+ corresponds to the GNUPLOT command
+   \verb+`set polar'+. 
+\item{$keyword=value$} A GNUPLOT option with value can be entered
+   in this form. E.g.  \verb+title="Regression"+ corresponds to the
+   GNUPLOT command \verb+`set title "Regression"'+. As value
+   a number, an identifier or a string are allowed. If GNUPLOT
+   requires a value composed from several items, the righthand
+   side has to be enclosed in string quotes.
+\end{itemize}
+ 
+The following options are supported as keywords:
+
+\begin{quotation}
+           arrow noarrow contour nocontour
+            autoscale noautoscale border noborder clip noclip
+            polar nopolar grid nogrid key nokey label nolabel
+            logscale nologscale surface nosurface tics time notime
+            zeroaxis nozeroaxis
+\end{quotation}
+
+and for GNUPLOT 3.2 or higher
+\begin{quotation}
+            hidden3d nohidden3d
+\end{quotation}
+
+The following options are supported as equations:
+ 
+\begin{quotation}
+                 angles contour
+                 arrow noarrow autoscale noautoscale cntrparam isosamples
+                 label nolabel key logscale nologscale mapping offsets
+                 samples size terminal tics ticslevel time view
+                 xlabel xtics ylabel ytics zlabel ztics
+\end{quotation}
+
+The intersection of these sets is nonempty because GUNPLOT
+allows for some options to appear with or without value.
+The parameters for the command PLOT are processed from left
+to right: a later option might override a previous one.
+
+\section{Special Cases}
+
+\subsection{GNUPLOT error}
+
+If GNUPLOT is invoked directly by an output pipe (UNIX only),
+an eventual error in the GNUPLOT input might cause GNUPLOT to
+quit. As {\small REDUCE} is unable to detect this case, you
+have to reset the whole application by calling the 
+command \verb+PLOTRESET();+ afterwards new graphic output
+can be produced. You might use this command as well for
+getting rid of the graphical output window if you don't need
+it any longer - it can be recreated later with a new call to
+PLOT.
+
+\subsection{Change of output device, Postscript}
+
+The output device (default: graphics window) can be selected
+for each call to plot by setting the variable terminal, e.g.
+\begin{verbatim}
+    plot(x**2,terminal=x);
+\end{verbatim}
+Once selected the output device remains active until the next
+explicit selection resp. \verb+PLOTRESET();+. For generating
+a printed picture the device ``postscript'' can be used. As
+GNUPLOT then generates the postscript commands on standard
+output, a special form of \verb+plotcommand+ should be used
+which redirects output to a file or to the printer, e.g.
+for UNIX 
+
+\begin{verbatim}
+    plotcommand := "gnuplot >/tmp/plotfile"$
+\end{verbatim}
+
+Note that a modification of \verb+plotcommand+ after a call
+to plot will have an effect only after an additional call to
+\verb+PLOTRESET();+. This command also closes a target
+output file. With the above setting one could 
+produce a printed picture by 
+
+\begin{verbatim}
+    plot(x**2,terminal=postscript);
+    plotreset();
+    system "lpr /tmp/plotfile"$
+\end{verbatim}
+
+Please consult the GNUPLOT manual for more Postscript options.
+
+\subsection{Saving GNUPLOT command sequence}
+
+If you want to use the internal GNUPLOT command sequence
+more than once (e.g. for producing a picture for a publication),
+you simply turn off the piped mode by setting \verb+OFF PLOT_PIPE+.
+Then GNUPLOT is invoked via a command file, which you can save
+and edit later for explicit calls of GNUPLOT.
+
+\subsection{Permanent options}
+
+Note that some of the options can survive the actual call
+to GNUPLOT (e.g. `contour'). Only `nopolar' is set automatically,
+if no `polar' appeared in the option list - so `polar'
+is only local in scope.
+Please do not try to set `parametric/noparametric'
+as option: these are computed by the {\small REDUCE} interface implicitly.
+
+\section{Examples}
+ 
+\begin{verbatim}
+
+plot(x**2);
+
+plot(y=x**2,x=(1 .. 4),y=(0 .. 4),title="hugo");
+
+plot(x**2,polar);
+
+plot(z=x**2+y,x=(1 .. 2),y=(3 .. 4));
+
+plot(x=u**2,y=v+1,z=u*v);
+
+plot(x=t*sin(5*t),y=t*cos(5*t),t=(0 .. 10));
+
+plot(x*y,contour);
+
+plot(sin x * cos y,x=(-2 .. 2),y=(-2 .. 2));
+
+plot(sin(x**2+y**2),x=(-1.5 .. 1.5),y=(-1.5 .. 1.5),contour);
+
+plot((sin x + sin y)/(x**2 + y**2),x=(-0.1 .. 0.1), y=(-0.1 .. 0.1));
+
+plot(x=u, y=v*cos (-u), z=v* sin(-u), u=(0 .. 3), v =(-0.1 .. 0.1),
+    samples = 50);
+
+plot(family(x,x**2,x**3), x=(0 .. 1));
+
+plot({{0,0}, {0.2,1}, {0.4,-1}, {0.6,0}}, x=(0 .. 0.6));
+
+plot(x**2*y**2,hidden3d);
+
+\end{verbatim}
+
+The file $gnuplot.tst$ contains some more examples.
+ 
+\end{document}
+
+

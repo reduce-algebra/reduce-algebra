@@ -1,0 +1,14 @@
+This directory contains a suite of four packages: crack, applysym,
+liepde and conlaw.  The last three all call crack, which is
+essentially a library of routines, and hence automatically load crack.
+Beware that the liepde and conlaw test files take quite a lot of
+computing resource.
+
+Note that Thomas Wolf used PSL-REDUCE 3.6 when writing his code, and I
+have ported it to CSL where necessary.  I have tested the suite using
+both CSL and PSL (under Windows 95).  The distributed log files were
+run using CSL, but PSL produces equivalent results.  Also, there is
+currently no crack.tst file, but crack is indirectly tested by the
+other three test files.
+
+FJW, 16 July 1998

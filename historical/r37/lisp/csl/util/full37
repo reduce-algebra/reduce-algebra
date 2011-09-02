@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# full37 --- Build REDUCE 3.7 under Windows using CSL.
+
+# Author: Arthur C Norman
+
+./r37 -z -Dno_init_file ../util/build37.lsp -- log/full37.log
+
+

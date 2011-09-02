@@ -1,0 +1,69 @@
+
+<A NAME=OR>
+
+<TITLE>OR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>OR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>or</em> binary logical operator returns true if either one or 
+both of its arguments is true. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+&lt;logical expression&gt; <em>or</em> &lt;logical expression&gt; 
+<P>
+<P>
+<P>
+&lt;logical expression&gt; must evaluate to true or nil. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+a := 10; 
+
+  A := 10 
+
+
+if a&lt;0 or a&gt;140 then write &quot;not a valid human age&quot; else
+   write &quot;age = &quot;,a;
+ 
+
+
+
+  age = 10 
+
+
+a := 200; 
+
+  A := 200 
+
+
+if a &lt; 0 or a &gt; 140 then write &quot;not a valid human age&quot;;
+			 
+
+
+  not a valid human age
+
+</TT></PRE><P>The <em>or</em> operator is left associative: <em>x or y or z</em>
+ is equivalent to 
+<em>(x or y)</em> <em>or z</em>. 
+<P>
+<P>
+Logical operators can only be used in conditional expressions, such as 
+<P>
+<P>
+
+<A HREF=r37_0052.html>if</A>...<em>then</em>...<em>else</em> 
+and 
+<A HREF=r37_0228.html>while</A>...<em>do</em>. 
+<em>or</em> evaluates its arguments in order and quits, returning true, 
+on finding the first true statement. 
+<P>
+<P>
+<P>

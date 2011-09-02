@@ -1,0 +1,40 @@
+
+<A NAME=FOREACH>
+
+<TITLE>FOREACH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FOREACH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+<em>foreach</em>is a synonym for the <em>for each</em> variant of the 
+
+<A HREF=r37_0047.html>for</A> construct. It is designed to iterate down a list, 
+and an 
+error will occur if a list is not used. The use of <em>for each</em> is 
+preferred to <em>foreach</em>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>foreach</em>&lt;variable&gt; in &lt;list&gt; &lt;action&gt; &lt;expression
+&gt; 
+<P>
+<P>
+where &lt;action&gt; ::= <em>do | product | sum | collect | join</em> 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+foreach x in {q,r,s} sum x**2; 
+
+   2    2    2
+  Q  + R  + S
+
+</TT></PRE><P>

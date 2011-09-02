@@ -1,0 +1,54 @@
+
+<A NAME=LTERM>
+
+<TITLE>LTERM</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LTERM</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>lterm</em> operator returns the leading term of an expression with 
+respect to a kernel. The expression is returned if it does not depend on 
+the kernel. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>lterm</em>(&lt;expression&gt;,&lt;kernel&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is ordinarily a polynomial. If 
+<A HREF=r37_0322.html>ratarg</A> is on, 
+a rational expression may also be used, otherwise an error results. 
+&lt;kernel&gt; must be a 
+<A HREF=r37_0002.html>kernel</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+lterm((x+2*y)**6,y); 
+
+      6
+  64*Y  
+
+
+lterm((x + cos(x))**8 + df(x**2,x),cos(x));
+			 
+
+
+        8
+  COS(X)  
+
+
+lterm(x**3 + 3*x,y); 
+
+   3
+  X  + 3X
+
+</TT></PRE><P>

@@ -1,0 +1,47 @@
+(setq loaddirectories* '("" "$reduce\lisp\psl\win32\red\"
+			    "$reduce\lisp\psl\win32\psl\"))
+
+(set_heap_extend_size 120000)
+
+% (ON BACKTRACE) % Doesn't work properly?
+
+(cd (getenv "reduce"))
+
+(reclaim)
+
+(load arith387)   % Since we don't see too many bare 386's these days.
+
+% load REDUCE modules
+
+(dskin "packages\support\mkredpsl.sl")
+
+% hooks for plot, help and fancy.
+
+(load w-pipes)
+
+(setq !*!*windows 1)   % For gnuplot.
+
+% (errorset '(dskin "$reduce\packages\plot\plothook.sl") nil nil)
+
+(flag '(fancy) 'switch)
+
+(put 'fancy 'simpfg
+  '((t (load fmprint) (fmp!-switch t))
+    (nil (fmp!-switch nil)) ))
+
+% implant graphics mode switch
+
+(setq *fancy nil)
+
+(cond ((not (unboundp 'win-messages))
+       (putv win-messages 3 '(~on '(fancy)))
+       (putv win-messages 4 '(and *fancy (~off '(fancy))))))
+
+(setq lispsystem!* (cons (INTERN (GETENV "machine")) (delete 'UNIX lispsystem!*)))
+
+(copyd '! yield 'whatsup)
+
+(savesystem "REDUCE"
+   (BLDMSG "lisp\psl\%w\red\reduce" (GETENV "machine")) '((read-init-file "reduce")))
+
+(exitlisp)

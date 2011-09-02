@@ -1,0 +1,101 @@
+
+<A NAME=groebnerf>
+
+<TITLE>groebnerf</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GROEBNERF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>groebnerf</em>({&lt;exp&gt;, ...}[,{},{&lt;nz&gt;, ... }]); 
+<P>
+<P>
+<P>
+<P>
+where {&lt;exp&gt;, ... } is a list of expressions or 
+equations, and {&lt;nz&gt;,... } is 
+an optional list of polynomials to be considered as non zero 
+for this calculation. An empty list must be passed as second argument 
+if the non-zero list is specified. 
+<P>
+<P>
+<em>groebnerf</em>tries to separate polynomials into individual factors and 
+to branch the computation in a recursive manner (factorization tree). 
+The result is a list of partial Groebner bases. 
+Multiplicities (one factor with a higher power, the same partial basis 
+twice) are deleted as early as possible in order to speed up the 
+calculation. 
+<P>
+<P>
+The third parameter of <em>groebnerf</em> declares some polynomials 
+nonzero. If any of these is found in a branch of the calculation 
+the branch is canceled. 
+<P>
+<P>
+ <P> <H3> 
+example: </H3>
+<P><PRE><TT>
+groebnerf({ 3*x**2*y+2*x*y+y+9*x**2+5*x = 3,  
+            2*x**3*y-x*y-y+6*x**3-2*x**2-3*x = -3, 
+            x**3*y+x**2*y+3*x**3+2*x**2 }, {y,x});
+
+       {{Y - 3,X},
+
+                      2
+    {2*Y + 2*X - 1,2*X  - 5*X - 5}}
+</TT></PRE><P> <P> <H3> 
+related: </H3>
+<P>
+ _ _ _ 
+<A HREF=r37_0392.html>groebresmax</A>variable 
+<P>
+ _ _ _  
+<A HREF=r37_0391.html>groebmonfac</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0393.html>groebrestriction</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0382.html>groebner</A> operator 
+<P>
+ _ _ _  
+<A HREF=r37_0371.html>gvarslast</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0370.html>groebopt</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0372.html>groebprereduce</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0373.html>groebfullreduction</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0374.html>gltbasis</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0375.html>gltb</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0376.html>glterms</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0377.html>groebstat</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0378.html>trgroeb</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0379.html>trgroebs</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0397.html>groebnert</A> operator 
+<P>
+<P>
+<P>

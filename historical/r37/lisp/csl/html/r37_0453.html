@@ -1,0 +1,40 @@
+
+<A NAME=HANKEL1>
+
+<TITLE>HANKEL1</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>HANKEL1</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>Hankel1</em> operator returns the Hankel function of the first kind. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>Hankel1</em>(&lt;order&gt;,&lt;argument&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+on complex; 
+
+Hankel1 (1/2,pi); 
+
+  - i * sqrt(2) / pi 
+
+
+Hankel1 (1,pi); 
+
+  besselj(1,pi) + i*bessely(1,pi)
+
+</TT></PRE><P>The operator <em>Hankel1</em> is also called Bessel function of th
+e third kind. 
+There is currently no numeric evaluation of Hankel functions. 
+<P>
+<P>
+<P>

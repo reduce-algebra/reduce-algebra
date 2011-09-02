@@ -1,0 +1,29 @@
+#!/bin/csh -f
+
+# test --- Run a REDUCE test file.
+
+# Author: Anthony C. Hearn.
+
+echo testing $1 ...
+
+rm -rf $reduce/log/$1.log
+
+date > $reduce/log/$1.log
+
+$reduce/reduce >>& $reduce/log/$1.log << EOF
+
+on errcont;   % So that computation continues after an error.
+
+symbolic if "$2" neq "" then load_package $2;
+
+showtime;
+
+in "$reduce/xmpl/$1.tst";
+
+showtime;
+
+bye;
+
+EOF
+
+date >> $reduce/log/$1.log

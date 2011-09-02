@@ -1,0 +1,47 @@
+
+<A NAME=ChebyshevT>
+
+<TITLE>ChebyshevT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>CHEBYSHEVT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>ChebyshevT</em> operator computes the nth Chebyshev T Polynomial (of the
+ 
+first kind). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>ChebyshevT</em>(&lt;integer&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ChebyshevT(3,xx); 
+
+          2
+  xx*(4*xx   - 3) 
+
+
+
+ChebyshevT(3,4); 
+
+  244
+
+</TT></PRE><P>Chebyshev's T polynomials are computed using the recurrence relati
+on: 
+<P>
+<P>
+ChebyshevT(n,x) := 2x*ChebyshevT(n-1,x) - ChebyshevT(n-2,x) with 
+<P>
+<P>
+ChebyshevT(0,x) := 0 and ChebyshevT(1,x) := x 
+<P>
+<P>
+<P>

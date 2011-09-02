@@ -1,0 +1,47 @@
+
+<A NAME=DMS2RAD>
+
+<TITLE>DMS2RAD</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DMS2RAD</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>dms2rad</em>(&lt;list&gt;) 
+<P>
+<P>
+<P>
+In 
+<A HREF=r37_0330.html>rounded</A> mode, if &lt;list&gt; is a list of three real 
+numbers, 
+the operator <em>dms2rad</em> will interpret the list as degrees, minutes 
+and seconds and convert it to the equivalent radians. In all other cases, 
+an expression in terms of the original operator is returned. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+dms2rad {42,3,7}; 
+
+  DMS2RAD({42,3,7}) 
+
+
+on rounded; 
+
+ws; 
+
+  0.733944887421 
+
+
+dms2rad a; 
+
+  DMS2RAD(A)
+
+</TT></PRE><P>

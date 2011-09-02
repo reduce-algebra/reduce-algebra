@@ -1,0 +1,795 @@
+\documentstyle[a4,11pt]{article}
+\hyphenation{Inter-active}
+\newcommand{\REDUCE}{REDUCE}
+\begin{document}
+\thispagestyle{empty}
+\vspace{4cm}
+\begin{center} {\Huge \bf REDUCE 3.8} \end{center}
+\vspace{.3cm}
+\begin{center} {\Huge \bf (Personal System)} \end{center}
+\vspace{.5cm}
+\begin{center} {\LARGE \bf Installation and Operations Manual} \end{center}
+\vspace{.3cm}
+\begin{center} {\Large Using CSL Version 6.00 --- April 2004} \end{center}
+
+\vspace{8cm}
+\begin{center}
+Codemist Ltd \\
+Alta, Horsecombe Vale \\
+Combe Down \\
+Bath BA2 5QR \\
+England \\
+Tel/FAX: +44 1225 837430 \\
+e-mail: reduce@codemist.co.uk
+\end{center}
+
+\vspace{1cm} These instructions cover installation of the Personal
+\REDUCE\  3.8 on Windows, Linux/GNU, and Macintosh OSX with XDarwin
+computers, and a short User's Guide to the CSL-based \REDUCE\  system.
+In general \REDUCE\  requires a hard disk drive: executable binaries and
+help will
+fill up about *** Mbytes, while a full system including machine readable
+documentation needs about *** Mbytes. 
+
+\newpage
+\tableofcontents
+\newpage
+
+With \REDUCE\ 3.8 Codemist are releasing our new user interface which is
+(very nearly) uniform across all platforms.  This interface can be run
+as a window on machines that support that interface, with menus and a
+scrollable output area, or it can be run in non-windows mode in a
+terminal window, DOS-box or xterm.  As the systems are now so similar
+we are producing this unified document, with small subsections on the
+individual systems idiosyncrasies, covering mainly installation.
+
+\section{Contents of the Distribution}
+
+The standard distribution contains:
+
+\begin{enumerate}
+\item \REDUCE\  Licence Agreement
+\item Installation and Use Instructions
+\item \REDUCE\  Registration Form
+\item Media (CR-ROM or DAT tape, or as arranged)
+\end{enumerate}
+
+The CD format is ISO9660 format, with Rock Ridge extensions. {\em
+  ***Check this.***}  As well as CSL/\REDUCE\  it contains the two support
+  packages {\bf FOX} and {\bf gnuplot} which are used as components of
+  \REDUCE.  The CD should have the directory layout should be as shown
+  in the figure~\ref{dir}.
+
+\begin{figure}
+\label{dir}
+\begin{verbatim}
+REDUCE38 _________ doc
+(the CD) |
+         |________ Fox-extras
+         |
+         |________ log
+         |
+         |________ object-files
+         |
+         |________ r38.doc
+         |
+         |________ support-packages
+         |         |
+         |         |___ libedit-2.6.7
+         |         |
+         |         |___ mingw
+         |         |
+         |         |___ tetex
+         |              |
+         |              |___ fonts
+         |                   |
+         |                   |___ afm
+         |                        |
+         |                        |___ adobe
+         |                             |
+         |                             |.....
+         |
+         |________ tests
+         |
+         |________ util
+
+\end{verbatim}
+\caption{Directory Layout}
+\end{figure}
+
+\subsection{Installation}
+
+The first stage is to copy the necessary files to the location you
+require.
+
+\subsubsection{Linux, Macintosh OSX and Unix systems}
+
+On unix-like systems this can be done with the installation script {\tt
+  install-personal.sh} {\em ***which does not yet exist! Needs rename***}.
+  This will prompt for an installation directory, create it if
+  necessary, and copy the necessary files to that directory.  There
+  are other files on the CD which are for packages which \REDUCE\ uses,
+  or should be distributed according to the GPL or LGPL licence. 
+
+\subsubsection{Windows systems}
+
+{\em ***To be written***}
+{\em ***I really would like an install program if not installshield***}
+
+
+\subsubsection{Hand Linking of \REDUCE\ }
+
+It is possible that the file {\tt r38} in the top level directory
+will work directly off the CD, but because of all the problems with
+differing libraries, compiler versions and licencing issues, we
+recommend that you relink \REDUCE, especially on Linux systems.
+
+The necessary object files are in the {\tt object-files}
+directory.  The command {\tt relink.sh} in the top directory will
+create a system for your machine.  We cannot guarantee that this will
+work for all Linux distributions.  If the relink fails you either have
+to follow the instructions below, or contact Codemist.
+
+{\em ***To Be Written***}
+
+\section{Use of \REDUCE\ }
+
+You will probably want to change your PATH to add the \REDUCE\  directory
+to your path.  Note that there is an assumption that {\tt r38},
+{\tt r38.img} and {\tt r38.doc} are kept together in the same
+directory.  It is usual to set an environment variable {\tt reduce} to
+the directory where {\tt r38.img} is kept.
+
+Normal interactive use of \REDUCE\ is by issuing the command
+\begin{verbatim}
+	r38
+\end{verbatim}
+and after a delay for loading the executable and the preserved image
+file, the prompt will appear in a new window.  If instead the command 
+\begin{verbatim}
+	r38 -w
+\end{verbatim}
+is used the system will run as a command line system in the terminal.
+In either case the prompt will be
+\begin{verbatim}
+	1:
+\end{verbatim}
+
+\noindent The system is then as described in the \REDUCE\ 3.8 Manual.
+Try typing
+\begin{verbatim}
+      in "test/alg.tst";
+      quit;
+\end{verbatim}
+to run the standard simple test.  The file {\tt alg.rlg} in the
+{\tt test} directory shows what output should be expected.
+
+Some parts of the system are not resident in the initial system, but
+they are automatically loaded on demand.  Parts of the library
+need to be loaded by the function load\_package or by using the {\tt
+Load Module} menu and its sub-menus.  
+
+\begin{verbatim}
+	load_package laplace;
+\end{verbatim}
+
+\section{Some Simple Tests}
+
+When you have installed \REDUCE\ here are a few quick tests you might
+like to try to see what it can do. Many more examples of \REDUCE's
+capabilities are included on other distribution disks:
+
+{\small
+\begin{verbatim}
+    factorial 200;            % display value of the factorial of 200
+    (x+y)^4;                  % expand out a simple algebraic formula
+    int(x^6*log x, x);        % perform an integration
+    z := mat((0,1),(1,1));    % create a matrix, save it in variable 'z'
+    z^40;                     % raise matrix z to the 40th power
+    solve(a*x^2+b*x+c, x);    % solve a quadratic equation
+    on rounded; precision 70; % select long-precision floating point mode
+    pi;                       % inspect pi to 70 digits;
+    bye;                      % finish session - exit from REDUCE
+\end{verbatim}
+}
+When things do not behave as you expect or you want to know how to
+solve some particular problem you need to read the manual!  If you
+have installed all of \REDUCE\ you will find a collection of test and
+demonstration files in the {\tt tests} folder with extension
+{\tt .tst}, and corresponding output with extension {\tt .rlg}.
+
+\section{Help}
+
+There is a HTML-based help tree in {\tt r38.doc} which can be used
+with an external browser, or the browser can be started from the {\tt
+  Help} menu on the right of the \REDUCE\ window.  There is also the
+complete manual available as a PDF file in {\tt r38.pdf} at top level.
+
+See the section on Help below (section~\ref{help}) for more details.
+
+\section{Interrupts}
+\label{Interrupts}
+
+CSL-\REDUCE\ is designed so Control-C is an interrupt which causes a
+LISP-level error.  So if a calculation is taking too long, or for some
+other reason it is wished to abort it, typing Control-C should return
+control to the user.  As in LISP all errors may be caught and handled
+by the program; it is possible that this will not rescue control.
+Repeated use of Control-C may help.  Note that from time to
+time \REDUCE\ has to ``garbage collect'',  {\em i.e.\/} reorganise its memory to
+make more space.  While doing this (which can take a couple of
+seconds) interrupts will be recognised but response to them will be
+queued up until the end of garbage collection.
+
+A Control-G is a similar interrupt, but it also generates a backtrace,
+so it is possible to see where the calculation is which is being
+aborted.
+
+
+\section{Filenames and CSL}
+
+CSL, the LISP system on which this implementation of \REDUCE\ is based,
+runs on a variety of computers using several different filing systems:
+it attempts to perform some conversions that improve consistency
+across the different systems.  Those who always use simple filenames,
+where the names do not include any punctuation characters, do not need
+to be aware of this but the details may help when the file-name
+mapping leads to confusion.
+
+When a file name is presented to CSL it performs two transformations.
+The first set of transformations apply only to an initial segment of
+the file name.  If this is of the form:
+
+\begin{center} \$\{{\em word}\} \end{center}
+
+\noindent then it is replaced by the value of the environment variable 
+{\em word}.
+Similarly for the form \${\em name} where {\em name} is a non-empty
+sequence of characters terminated by one of the three characters `.',
+`/' or `$\backslash$' or by the end of the file name.  Note that the
+form \$\{{\em word}\} is mainly intended for use when the character
+following the `\}' is not one of these separation characters.  The
+expected use of this mechanism is to allow environment variables to
+specify the location of various files that are to be accessed, thus
+avoiding the need for absolute path names in source
+files.
+
+A file name starting with
+\begin{verbatim}
+            ~name
+\end{verbatim}
+has its initial {\tt \~{ }name} segment replaced by a path to the home
+directory of a user called {\tt name}.  The special case where the name is
+not present indicates the home directory of the current user, with a
+fall back to the value in an environment variable {\tt home}, again
+with the current directory if that is not set.  As for `\$' the name
+following a `\~{ }' is terminated by `.', `/' or `$\backslash$'.
+
+\section{Window Environment}
+
+\subsection{Menus}
+
+There is a number of menus which are displayed at the top of the
+screen, some of which have been mentioned before.  This section
+explains briefly what they all are for.   
+%% The later
+%% menus are removed while \REDUCE\  is performing computations, as for
+%% example one cannot load modules or change switches except when \REDUCE\ 
+%% is expecting commands.
+
+\subsubsection{File menu}
+
+The {\em File} menu has three kinds of item in it.  The first five
+items are for user input and information
+\begin{itemize}
+\item{Read...} allows a \REDUCE\  input file to be selected using a
+file selection dialog.  When {\bf OK} is finally chosen characters are
+inserted into the buffer to do a \REDUCE\  {\tt in} command.  The line
+ends with a semicolon, but it is not terminated with a newline.  The
+user can decide whether to use the semicolon or replace it with a
+dollar terminator.  Note that the file name is expanded to a full
+path, and so this facility can only be used for files whose full path
+is less than about 240 characters.
+
+\item{\em Save...} provides a facility to save the current buffer to a
+{\tt .log} file.  This file will contain the current viewable text, as can be
+seen by scrolling back.  It does not save older material.  See also
+the -L command line option.
+
+\item{\em Save Selection...} provides a facility to save the currently
+  selected text to a {\tt .log} file.  
+
+\item{\em Print...} allows the current buffer to be sent to a printer.  A
+  dialog is started to select which printer, paper size {\em etc.}.
+
+\item{\em Print Selection...} is similar to Print, but for the selected text
+  only.
+
+\item{\em Exit} leaves \REDUCE\ which can also be achieved with
+  Control-$\backslash$ or typing {\tt bye;} or {\tt quit;} to the
+  main window.
+
+\end{itemize}
+
+
+%% The rest of the menu is for information.  It displays the time used,
+%% and the overhead time, together with the number of garbage
+%% collections.
+
+\subsubsection{Edit}
+
+The Edit menu gives access to the usual cut/copy/paste.
+Using the mouse it is possible to select text, either by dragging
+(moving the mouse with the button depressed) or by double-clicking to
+select words.  The menu items are
+\begin{itemize}
+\item{\em Cut} removes the selected text from the buffer into the clipboard;
+\item{\em Copy} copies the selected text into the clipboard;
+\item{\em Paste} pastes a copy of the clipboard text into \REDUCE.  This
+  can also be achieved with Control-V;
+\item{\em Reinput} is in effect s copy followed by a paste.  If the
+  cursor is other than in the input line the text is inserted at the end.
+\item{\em Select All} selects all the text in the buffer
+\item{\em Clear} clears the buffer, which can also be done with Control-L.
+  Note this will include removing the prompt if \REDUCE\ is waiting
+  for input; 
+\item{\em Redraw} or Control-R redraws the window;
+\item{\em Home}moves to the start of the window;
+\item{\em End} moves to the end of the window.
+\end{itemize}
+Note that the characters {\tt Home} and {\tt End} move to the start
+and end of the current input as it is being composed.
+
+\subsubsection{Font}
+
+This menu affects the look of the \REDUCE\ window.
+
+\begin{itemize}
+\item{\em Font...} introduces a dialog to change the font used for characters
+  in the \REDUCE\ window.  Which fonts are offered will depend on
+  which fonts are installed on your computer;
+\item{\em Reset Font} restores the font selection to the default we use;
+\item{\em Reset Window} restores the size of the window to the defaults..
+\end{itemize}
+
+
+\subsubsection{Break}
+The menus for user controlled interrupts.
+
+\begin{itemize}
+\item{\em Break}\label{Break} allows a calculation to be
+interrupted, as described in section~\ref{Interrupts}.  There may be a
+short delay before the interrupt if noticed, but then an interrupt
+message will appear in the main window.  This can also be done with
+Control-C. 
+
+\item{\em Backtrace} is the same as Break but also produces a
+  programmer's backtrace to show where the calculation was stopped.
+  Control-G is the same action.
+
+\item{\em Pause} or Control-S stops the output of characters to the
+  screen, until a {\em Resume} or Control-Q is made.
+
+\item{\em Resume} or Control-Q reverses the {\em Pause}.
+
+\item{\em Go/Stop} provides a different pausing interface, acting as a
+  flip-flop.
+
+\item{\em Discard Output} does not display characters that are
+  produced but have not yet reached the screen.  This can be useful in
+  cases of a great deal of tracing.  Control-O does the same.
+\end{itemize}
+
+\subsubsection{Load Module}
+\label{Library}
+\label{Load}
+
+The {\em Load Module} menu presents the user with a list of the
+modules which may be loaded into \REDUCE\ divided into 7 submenus by
+initial letter. 
+%Modules which have already been loaded are marks 
+%with a check sign.  
+Selecting one of the modules causes the string
+\begin{verbatim}
+        load_package "name";
+\end{verbatim}
+to be inserted into the input stream for the named package.
+
+A package when loaded will have its name greyed out.
+
+\subsubsection{Switch}
+
+\REDUCE\  has a number of switches.  The ones in the delivered system are made
+available with the {\em Switches} menu.  The initial state is
+indicated as the switches which are ON are marked with a tick sign.
+Selecting a switch inserts characters into the input to change the
+sense of the switch.  Note that if the user changes the switches
+directly, not via this menu, then the menu will not notice the
+changes, and so selecting the switch will set it to the opposite of
+what is indicated in the menu, which may not be the same as the
+current state.
+
+If a switch is in a module not yet loaded the switch item will be
+greyed out.
+
+\subsubsection{REDUCE Update}
+
+For use of this item see section~\ref{update}.
+
+\subsubsection{Help}
+
+The exact format of the submenus depend on the base operating system.
+There are two main items, {\em Help} and {\em About}.  On some
+Unix-like systems there is also a submenu to allow a browser to be
+selected.  On Windows and Macintosh the browser is chosen in the
+standard way for those systems.
+
+Note that on Macintosh the browser runs as a Carbon application, and
+not as an X one.
+
+The {\em About} menu displays a window with names and copyright
+information.
+
+For for details on the use of the Help pages displayed from the {\em
+  Help} selection of from typing F1, see section~\ref{help}.
+
+\section{CSL and \REDUCE\ User options}
+\label{Options}
+
+Command-line options are not sensitive to the case of the letter
+immediately following the `-', and in general if an option can be
+written as
+
+\hspace*{1cm} {\large {\bf -X}{\em yyy}} 
+
+\noindent with no space between the -X and its argument yyy, it can
+also be written {\large {\bf -X }{\em yyy}} with a space.
+
+The following are recognised.
+
+\vspace{2mm}\noindent {\large \bf -B }
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Run in batch mode, with no interaction or window.
+}
+
+\vspace{2mm}\noindent {\large \bf -C }
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{Displays Codemist's copyright notice.
+}
+
+\vspace{2mm}
+\noindent {\large \bf -Dname=value }
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+As if {\tt (setq name value)} were obeyed just before the start of the
+Lisp run.  The characters that form the name are used without any
+conversion at all, so variables with unusual spellings can be set up
+directly.  It does however mean that it is not possible to predefine a
+variable whose name includes an `=' sign.  The value (after the `='
+sign) is in effect passed through the regular CSL parser, and so must
+obey the regular CSL rules about the formation of valid input.  All
+Lisp-level syntax is available, and in particular a variable can be
+set to values that are symbols, numbers or strings.  Just -Dname sets
+name to T.  It is possible to have many -D (and -U) requests on the
+command line, and they are processed from left to right.  Note that
+these variables are LISP variables, and not necessarily \REDUCE\  ones.}
+
+\hspace*{.25in}\parbox{4.5in}{Note that extra punctuation may be
+needed to prevent your operating system or command line decoder from
+doing strange things to command lines that include some characters
+(notably `*' and `$\backslash$'); when using Unix you may have to
+write -D$\backslash$*xxx=yyy if you want to predefine a variable
+called *xxx. The `$\backslash$' escape character in such cases is
+interpreted by the Unix shell and not by CSL.
+}
+
+\vspace{2mm} \noindent {\large \bf -G(options)}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{Set debugging options.  Currently equivalent to
+-D*backtrace.}
+
+\vspace{2mm}
+\noindent {\large \bf -I(filename) }
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{Specify a file to scan for fasl files.
+The file will be opened read-only.
+
+{\bf -I} can be specified several times, and the files given will
+be scanned from left to right when a fasl file is looked for.
+
+The special syntax {\bf -I-} indicates a reference to the ``standard''
+image file associated with the current application, which is
+r38.exe then this file is r38.img
+}
+
+\vspace{2mm} 
+\noindent {\large \bf -K(number)}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Specify how much memory CSL should use, in units of Kilobytes.
+The number is used to establish the space used for workspace,
+and additional space is consumed by the CSL executable image
+itself, and perhaps by buffers used for input and output
+files, and by the stack.  The number is interpreted in decimal
+by default, but can be given in hexadecimal if written
+starting with ``0x'' (as in the C language).  The value given
+may be subject to rounding (e.g. in some versions of CSL store
+is allocated in units of 64K), and if the value given is too
+small to allow loading of an image file the value may be
+increased without comment.  If {\bf -K} is not given or {\bf -K0} is
+specified a default heap size (currently about 4 Mbytes)
+will be used, but then this space will be expanded (if
+possible) later in the run if store seems to be becoming
+full.}
+
+\vspace{2mm}
+\noindent {\large \bf -L(file)}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Send transcript of everything sent to the screen to the specified file
+as well (as if by doing {\tt lisp spool "file"} at the start, and
+hence subsequent use of {\tt lisp spool()} can switch the listing off
+or redirect it).}
+
+\vspace{2mm} \noindent {\large \bf -O(filename)}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{See below (section~\ref{OptO})}
+
+\vspace{2mm} \noindent {\large \bf -P}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Profile option.  For some systems this enables a monitoring
+system that can gather low level information about where time
+is being spent.  For use by expert system tuners only, and
+potentially no use to those who do not have a source licence
+to CSL.}
+
+\vspace{2mm} \noindent {\large \bf -Q}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Run in quiet mode: no messages at start up, or from fasl
+mechanism or garbage collector (unless enabled from within
+Lisp). }
+
+\vspace{2mm} \noindent {\large \bf -Rnnn}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Sets the initial random seed, for reproducible runs.  -R0 (the
+default) sets the initial seed based on the time of day or some
+similar value.} 
+
+\vspace{2mm} \noindent {\large \bf -S}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Sets *plap to true at the start of a run so that compilation
+leads to a display of the byte-codes that are generated.
+Exactly equivalent to -D*plap. }
+
+\vspace{2mm} \noindent {\large \bf -U(name)}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Unset the variable named.  Sort of inverse to -D(name).}
+
+\vspace{2mm} \noindent {\large \bf -V}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Run in verbose mode.  Messages will be displayed at start-up,
+when a fasl file is loaded or when there is a garbage
+collection. }
+
+\vspace{2mm} \noindent {\large \bf -W}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+This is used to disable use of the window manager, and instead to run
+in a ``glass teletype'' mode.
+}
+
+\vspace{2mm}\noindent {\large \bf -X }
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Unset any traps so errors lead to system crashes.  This is used for debugging.
+}
+
+\vspace{2mm}\noindent {\large \bf -Y }
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Ignore calls to {\em restart}.
+}
+
+\vspace{2mm} \noindent {\large \bf -Z}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+See below: cold-start mode for use by system builders only.}
+
+\vspace{2mm}
+\noindent {\large \bf filename}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Make that file available to CSL as its standard input file.
+If several files are given the top-level read--eval--print
+procedure will be invoked several times, once for each.  Note
+that a file being read this way will not be deemed to be a
+``terminal'' file (while on some systems the shell redirection
+<filename may leave CSL thinking that the input is direct from
+a terminal).}
+
+\vspace{2mm} 
+\noindent {\large \bf $>$(filename)}
+\vspace{1mm}
+
+\hspace*{.25in}\parbox{4.5in}{
+Redirects the standard output to the given file.  This option
+is present as a fall-back, in that it will usually be the case
+that output re-direction can be done by the shell or operating
+system, and CSL will not need to worry about it.  This option
+will not be enabled in general, on the assumption that
+operating system redirection is better.}
+
+\vspace{4mm}
+
+There are limits on the number of files CSL can accept and the number
+of symbols it can predefine --- up to 40 source files are permitted, up
+to 20 directories in the FASL search path (including the implicit one
+present by default at the start of the run), and up to 40 symbols can
+be defined or undefined.
+
+\section{Corrections to \REDUCE\ }
+\label{update}
+
+A patches file, correcting various problems that have been discovered
+since the initial release of \REDUCE\ 3.8, is available for installation in
+the Codemist versions of \REDUCE.  To do this you either click the
+{\em REDUCE update} menu item, or issue the \REDUCE\ command:
+\begin{verbatim}
+     update_reduce();
+\end{verbatim}
+This will install the patches file and make it available in this and
+future runs of \REDUCE.  If \REDUCE\ is already up to date it will report this
+fact, otherwise it just produces brief messages about contacting the
+server where updates live.
+
+If you have any problems with this update procedure, you can download
+the relevant file, {\tt patches.fsl}, from {\tt
+http://reduce-algebra.com/support/patches} .  This file should be
+installed in either your home directory, or the directory where your
+\REDUCE\ executable and image files ({\em i.e.\/} {\tt r38.exe} or {\tt
+r38} and {\tt r38.img}) live.  The version in your home directory has
+precedence if such files exist in both places.  When you next run
+\REDUCE, your software is updated with the patches file. If network
+failure or other issues cause the {\tt patches.fsl} file to get
+corrupted then you can should just delete it and a corrected version
+will be fetched the next time you update \REDUCE.
+
+Full details of the issues addressed by patches are available at the web
+address given above. The file {\tt patches.txt} describes problems, a file
+{\tt patches.tst} is a test script and {\tt patches.rlg} sample output
+from the tests. 
+
+If you retrieve these files from {\tt www.reduce-algebra.com} you can just read
+{\tt patches.tst} into a freshly-started copy of \REDUCE\ and compare its output
+with {\tt patches.rlg}.  The usual \REDUCE\ menus and commands can be used to read
+the file and save output from it so that it is convenient to make the
+comparison.  When \REDUCE\ is run in a window the FILE/READ menu can be used
+to read in the test file, and then FILE/SAVE can save the resulting
+output.  If \REDUCE\ is on your path so you can run it from a command prompt
+a command such as
+\begin{verbatim}
+    r38 patches.tst -l patches.log
+\end{verbatim}
+would read the test file and leave a copy of its output in {\tt patches.log}
+
+\section{Gnuplot}
+
+The following notice is taken from the {\bf gnuplot} distribution.  The
+version included here was taken from a generally available software
+archive, and up to date versions should be similarly available.  
+The distributed version is taken directly from the Internet.  It is not
+part of \REDUCE\ , but is supplied as \REDUCE\  can generate output for {\bf
+gnuplot} and is the usually graphical output system for \REDUCE\ .
+
+{\small
+\begin{verbatim}
+/*
+ * Copyright (C) 1986 - 1993   Thomas Williams, Colin Kelley
+ *
+ * Permission to use, copy, and distribute this software and its
+ * documentation for any purpose with or without fee is hereby granted,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation.
+ *
+ * Permission to modify the software is granted, but not the right to
+ * distribute the modified code.  Modifications are to be distributed
+ * as patches to released version.
+ *
+ * This software is provided "as is" without express or implied warranty.
+ *
+ * AUTHORS
+ *
+ *   Original Software:
+ *     Thomas Williams,  Colin Kelley.
+ *
+ *   Gnuplot 2.0 additions:
+ *       Russell Lang, Dave Kotz, John Campbell.
+ *
+ *   Gnuplot 3.0 additions:
+ *       Gershon Elber and many others.
+ *
+ * Send your comments or suggestions to
+ *  info-gnuplot@dartmouth.edu.
+ * This is a mailing list; to join it send a note to
+ *  info-gnuplot-request@dartmouth.edu.
+ * Send bug reports to
+ *  bug-gnuplot@dartmouth.edu.
+ */
+\end{verbatim}
+}
+
+\subsection{\REDUCE\  Help System}
+\label{help}
+
+The \REDUCE\ help is presented in HTML and is viewed via a browser,
+either the system default, or as selected from the Reduce Help menu.
+The initial page is a list of major topics.
+{\em *** would be nice if it had at least a Reduce and/or CSL picture
+  and header!!}
+There is also a link to an alphabetical index page.
+
+
+\section{Managing Images}
+\label{OptO}
+
+The state of a \REDUCE\ session can be captured through use of the
+LISP function {\tt preserve}.  When CSL is first entered it loads a
+heap image from the data fork of the application; a call to {\tt lisp
+preserve()} dumps the current state of CSL, including all current
+variable and function definitions (but not the stack), back onto that
+file.  CSL then stops.  Optionally a quoted argument can be given to
+{\tt preserve}: this will be treated as the name of a function to be
+called when the dumped image is re-loaded, and typically it will be a
+replacement for the built-in CSL read--eval--print loop.  In general
+for \REDUCE\ this function is {\tt begin}.  If such an argument is not
+given, or if {\tt NIL} is specified, then the startup function present
+when CSL was loaded is retained.  The InitialImage subfile is kept as
+part of the data fork of the application, so those wanting to produce
+a modified version of the system will usually need to take a copy of
+the entire file.  Alternatively use can be made of the -O option
+discussed later and -Z which can start up CSL without the benefit of
+any initial Image file.  From within a running system a call to {\tt
+restart!-csl} abandons all existing calculations and sets the system
+up as if it had just been loaded.  If the argument to {\tt
+restart!-csl} is nil then it is as if the -Z option had been given,
+and only a very minimal Lisp environment is available.  Otherwise an
+initial image is loaded, as at the start of a normal run.  This
+function is used in the scripts that rebuild a complete \REDUCE, but
+is not expected to be of interest to the casual \REDUCE\ user.
+
+{\em More Needed here???}
+
+\end{document}
+
+[end]
+}
+
+
+

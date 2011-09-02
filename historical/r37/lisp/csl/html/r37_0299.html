@@ -1,0 +1,81 @@
+
+<A NAME=LCM>
+
+<TITLE>LCM</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LCM</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>lcm</em> switch instructs REDUCE to compute the least common multiple 
+of denominators whenever rational expressions occur. Default is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+off lcm; 
+
+z := 1/(x**2 - y**2) + 1/(x-y)**2;  
+			 
+
+
+              2*X*(X - Y)
+  Z := ------------------------- 
+        4      3          3    4
+       X  - 2*X *Y + 2*X*Y  - Y
+
+
+on lcm; 
+
+z; 
+
+         2*X*(X - Y)
+  ------------------------- 
+   4      3          3    4
+  X  - 2*X *Y + 2*X*Y  - Y
+
+
+zz := 1/(x**2 - y**2) + 1/(x-y)**2;
+			 
+
+
+                 2*X
+  ZZ := --------------------- 
+         3    2        2    3
+        X  - X *Y - X*Y  + Y
+
+
+on gcd; 
+
+z; 
+
+           2*X
+  ----------------------
+   3    2        2    3
+  X  - X *Y - X*Y  + Y
+
+</TT></PRE><P>Note that <em>lcm</em> has effect only when rational expressions a
+re first 
+combined. It does not examine existing structures for simplifications on 
+display. That is shown above when z is entered with 
+<em>lcm</em> off. It remains unsimplified even after <em>lcm</em> is turned 
+back on. However, a new variable containing the same expression is 
+simplified on entry. The switch 
+<A HREF=r37_0086.html>gcd</A> does examine existing 
+structures, as shown in the last example line above. 
+<P>
+<P>
+Full greatest common divisor calculations become expensive if work with 
+large rational expressions is required. A considerable savings of time 
+can be had if a full gcd check is made only when denominators are combined, 
+and only a partial check for numerators. This is the effect of the <em>lcm</em> 
+
+switch. 
+<P>
+<P>
+<P>

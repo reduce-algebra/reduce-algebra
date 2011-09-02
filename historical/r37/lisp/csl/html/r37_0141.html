@@ -1,0 +1,102 @@
+
+<A NAME=COEFF>
+
+<TITLE>COEFF</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>COEFF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>coeff</em> operator returns the coefficients of the powers of the 
+specified variable in the given expression, in a 
+<A HREF=r37_0053.html>list</A>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>coeff</em>(&lt;expression&gt;<em>,</em>&lt;variable&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is expected to be a polynomial expression, not a rational 
+expression. Rational expressions are accepted when the switch 
+
+<A HREF=r37_0322.html>ratarg</A> is on. &lt;variable&gt; must be a kernel. The r
+esults are 
+returned in a list. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+coeff((x+y)**3,x); 
+
+    3     2
+  {Y  ,3*Y  ,3*Y,1} 
+
+
+coeff((x+2)**4 + sin(x),x); 
+
+  {SIN(X) + 16,32,24,8,1} 
+
+
+high_pow; 
+
+  4 
+
+
+low_pow; 
+
+  0 
+
+
+ab := x**9 + sin(x)*x**7 + sqrt(y); 
+ 
+
+
+                          7     9
+  AB := SQRT(Y) + SIN(X)*X   + X
+
+
+coeff(ab,x); 
+
+  {SQRT(Y),0,0,0,0,0,0,SIN(X),0,1}
+
+</TT></PRE><P>The variables 
+<A HREF=r37_0010.html>high_pow</A> and 
+<A HREF=r37_0013.html>low_pow</A> are set to the 
+highest and lowest powers of the variable, respectively, appearing in the 
+expression. 
+<P>
+<P>
+The coefficients are put into a list, with the coefficient of the lowest 
+(constant) term first. You can use the usual list access methods 
+(<em>first</em>, <em>second</em>, <em>third</em>, <em>rest</em>, <em>length</em>
+, and 
+<em>part</em>) to extract them. If a power does not appear in the 
+expression, the corresponding element of the list is zero. Terms involving 
+functions of the specified variable but not including powers of it (for 
+example in the expression <em>x**4 + 3*x**2 + tan(x)</em>) are placed in the 
+constant term. 
+<P>
+<P>
+Since the <em>coeff</em> command deals with the expanded form of the expression,
+ 
+you may get unexpected results when 
+<A HREF=r37_0284.html>exp</A> is off, or when 
+
+<A HREF=r37_0287.html>factor</A> or 
+<A HREF=r37_0296.html>ifactor</A> are on. 
+<P>
+<P>
+If you want only a specific coefficient rather than all of them, use the 
+
+<A HREF=r37_0142.html>coeffn</A> operator. 
+<P>
+<P>
+<P>
+<P>

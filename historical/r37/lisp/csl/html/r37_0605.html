@@ -1,0 +1,59 @@
+
+<A NAME=pivot>
+
+<TITLE>pivot</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>PIVOT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>pivot</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a matrix. 
+<P>
+<P>
+&lt;r&gt;,&lt;c&gt; :- positive integers such that &lt;matrix&gt;(&lt;r&gt;, 
+ &lt;c&gt;) neq 0. 
+<P>
+<P>
+<em>pivot</em>pivots &lt;matrix&gt; about it's (&lt;r&gt;,&lt;c&gt;)'th 
+entry. 
+ <P>
+<P>
+To do this, multiples of the &lt;r&gt;'th row are added to every other 
+row in the matrix. 
+<P>
+<P>
+This means that the &lt;c&gt;'th column will be 0 except for the 
+(&lt;r&gt;,&lt;c&gt;)'th entry. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+pivot(A,2,3); 
+
+  [      - 1    ]
+  [-1  ------  0]
+  [      2      ]
+  [             ]
+  [4     5     6]
+  [             ]
+  [      1      ]
+  [1    ---    0]
+  [      2      ]
+
+</TT></PRE><P>Related functions: 
+
+<A HREF=r37_0611.html>rows_pivot</A>. 
+<P>
+<P>

@@ -1,0 +1,41 @@
+
+<A NAME=END>
+
+<TITLE>END</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>END</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+The command <em>end</em> has two main uses: 
+<P>
+<P>
+ _ _ _ (i) 
+as the ending of a 
+<A HREF=r37_0040.html>begin</A>...<em>end</em> 
+<A HREF=r37_0041.html>block</A>; and 
+<P>
+ _ _ _ (ii) 
+to end input from a file. 
+<P>
+<P>
+In a <em>begin</em>...<em>end</em> 
+<A HREF=r37_0041.html>block</A>, there need not be a delimiter 
+(<em>;</em> or <em>$</em>) before the <em>end</em>, though there must be one 
+after it, or a right bracket matching an earlier left bracket. 
+<P>
+<P>
+Files to be read into REDUCE should end with <em>end;</em>, which must be 
+preceded by a semicolon (usually the last character of the previous line). 
+The additional semicolon avoids problems with mistakes in the files. If 
+you have suspended file operation by answering <em>n</em> to a <em>pause</em> 
+command, you are still, technically speaking, ``in&quot; the file. Use 
+<em>end</em> to exit the file. 
+<P>
+<P>
+An <em>end</em> at the top level of a program is ignored. 
+<P>
+<P>
+<P>

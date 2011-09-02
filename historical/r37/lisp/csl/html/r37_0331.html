@@ -1,0 +1,67 @@
+
+<A NAME=SAVESTRUCTR>
+
+<TITLE>SAVESTRUCTR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SAVESTRUCTR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>savestructr</em> is on, results of the 
+<A HREF=r37_0181.html>structr</A> command are 
+returned as a list whose first element is the representation for the 
+expression and the remaining elements are equations showing the 
+relationships of the generated variables. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+off exp; 
+
+structr((x+y)^3 + sin(x)^2); 
+
+  ANS3
+     where
+                    3       2
+        ANS3 := ANS1  + ANS2
+        ANS2 := SIN(X)
+        ANS1 := X + Y
+
+
+ans3; 
+
+  ANS3 
+
+
+on savestructr; 
+
+structr((x+y)^{3} + sin(x)^{2}); 
+
+                3       2
+  ANS3,ANS3=ANS1  + ANS2 ,ANS2=SIN(X),ANS1=X + Y 
+
+
+ans3 where rest ws; 
+
+         3         2
+  (X + Y)  + SIN(X)
+
+</TT></PRE><P>In normal operation, 
+<A HREF=r37_0181.html>structr</A> is only a display command. With 
+<em>savestructr</em> on, you can access the various parts of the expression 
+produced by <em>structr</em>. 
+<P>
+<P>
+The generic system names use the stem <em>ANS</em>. You can change this to your 
+
+own stem by the command 
+<A HREF=r37_0225.html>varname</A>. REDUCE adds integers to this stem 
+to make unique identifiers. 
+<P>
+<P>
+<P>

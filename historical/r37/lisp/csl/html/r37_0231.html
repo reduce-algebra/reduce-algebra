@@ -1,0 +1,55 @@
+
+<A NAME=IN>
+
+<TITLE>IN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>IN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>in</em> command takes a list of file names and inputs each file into 
+the system. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>in</em>&lt;filename&gt;{,&lt;filename&gt;}* 
+<P>
+<P>
+<P>
+&lt;filename&gt; must be in the current directory, or be a valid pathname. 
+If the file name is not an identifier, double quote marks (<em>&quot;</em>) are 
+
+needed around the file name. 
+<P>
+<P>
+A message is given if the file cannot be found, or has a mistake 
+in it. 
+<P>
+<P>
+Ending the command with a semicolon causes the file to be echoed to the 
+screen; ending it with a dollar sign does not echo the file. If you want 
+some but not all of a file echoed, turn the switch 
+<A HREF=r37_0281.html>echo</A> on or off 
+in the file. 
+<P>
+<P>
+An efficient way to develop procedures in REDUCE is to write them into a file 
+using a system editor of your choice, and then input the 
+files into an active REDUCE session. REDUCE reparses the procedure as 
+it takes information from the file, overwriting the previous procedure 
+definition. When it accepts the procedure, it echoes its name to the screen. 
+Data can also be input to the system from files. 
+<P>
+<P>
+Files to be read in should always end in 
+<A HREF=r37_0044.html>end</A><em>;</em> to avoid 
+end-of-file problems. Note that this is an additional <em>end;</em> to any 
+ending procedures in the file. 
+<P>
+<P>
+<P>

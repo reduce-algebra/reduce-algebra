@@ -1,0 +1,448 @@
+\documentstyle[fullpage]{article}
+\begin{document}
+
+\title{TRUNCATED POWER SERIES}
+ 
+\author{Alan Barnes \\
+Dept. of Computer Science and Applied Mathematics \\
+Aston University, Aston Triangle, \\
+Birmingham B4 7ET \\
+GREAT BRITAIN \\
+e-mail: barnesa@kirk.aston.ac.uk \\
+ \\
+Julian Padget \\
+School of Mathematics, University of Bath \\
+Claverton Down, Bath, BA2 7AY \\
+GREAT BRITAIN \\
+e-mail: jap@maths.bath.ac.uk}
+
+\maketitle
+
+\section*{INTRODUCTION}
+
+This package implements formal Laurent series expansions in one
+variable using the domain mechanism of REDUCE. This means that power
+series objects can be added, multiplied, differentiated etc. like other
+first class objects in the system. A lazy evaluation scheme is used in
+the package and thus terms of the series are not evaluated until they
+are required for printing or for use in calculating terms in other
+power series. The series are extendible giving the user the impression
+that the full infinite series is being manipulated.  The errors that
+can sometimes occur using series that are truncated at some fixed depth
+(for example when a term in the required series depends on terms of an
+intermediate series beyond the truncation depth) are thus avoided.
+
+Below we give a brief description of the operators available in the
+power series package together with some examples of their use.
+
+\subsection*{PS OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PS(EXPRN:algebraic,DEPVAR:kernel,ABOUT:algebraic):ps object.
+\end{verbatim}
+The {\tt PS} operator returns a  power series object (a tagged domain element)
+representing the univariate formal power series expansion of {\tt EXPRN} with
+respect to the dependent variable {\tt DEPVAR} about the expansion point
+{\tt ABOUT}.  {\tt EXPRN} may itself contain power series objects.
+ 
+The algebraic expression {\tt ABOUT} should simplify to an expression
+which is independent of the dependent variable {\tt DEPVAR}, otherwise
+an error will result.  If {\tt ABOUT} is the identifier {\tt INFINITY}
+then the power series expansion about {\tt DEPVAR} = $\infty$ is
+obtained in ascending powers of {\tt 1/DEPVAR}.
+ 
+If the command is terminated by a semi-colon, a power series object
+representing {\tt EXPRN} is compiled and then a number of terms of the
+power series expansion are evaluated and printed.  The expansion is
+carried out as far as the value specified by {\tt PSEXPLIM}.  If,
+subsequently, the value of {\tt PSEXPLIM} is increased, sufficient
+information is stored in the power series object to enable the
+additional terms to be calculated without recalculating the terms
+already obtained.
+ 
+If the command is terminated by a dollar symbol, a power series object
+is compiled, but at most one term is calculated at this stage.
+ 
+If the function has a pole at the expansion point then the correct
+Laurent series expansion will be produced.
+ 
+\noindent The following examples are valid uses of {\tt PS}:
+\begin{verbatim}
+    psexplim 6;
+    ps(log x,x,1);
+    ps(e**(sin x),x,0);
+    ps(x/(1+x),x,infinity);
+    ps(sin x/(1-cos x),x,0);
+\end{verbatim}
+
+New user-defined functions may be expanded provided the user provides
+LET rules giving
+\begin{enumerate}
+\item the value of the function at the expansion point
+\item a differentiation rule for the new function.
+\end{enumerate}
+
+\noindent For example
+\begin{verbatim}
+    OPERATOR SECH;
+    FORALL X LET DF(SECH X,X)= - SECH X * TANH X;
+    LET SECH 0 = 1;
+    PS(SECH(X**2),X,0);
+\end{verbatim}
+ 
+The power series expansion of an integral may also be obtained (even if
+REDUCE cannot evaluate the integral in closed form).  An example of
+this is
+\begin{verbatim}
+    PS(INT(e**X/X,X),X,1);
+\end{verbatim}
+ 
+Note that if the integration variable is the same as the expansion
+variable then REDUCE's integration package is not called; if on the
+other hand the two variables are different then the integrator is
+called to integrate each of the coefficients in the power series
+expansion of the integrand.  The constant of integration is zero by
+default.  If another value is desired, then the shared variable {\tt
+PSINTCONST} should be set to required value.
+
+For example in algebraic mode
+\begin{verbatim}
+        PSINTCONST:=A**2;
+\end{verbatim}
+would set the value of this constant to be (the value of) {\tt A**2}.
+The setting of this constant has no effect on the value returned by
+the REDUCE integrator. If the expansion and integration variables are
+the same and {\tt PSINTCONST} depends on this variable an error
+results.
+ 
+ 
+\subsection*{PSEXPLIM OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSEXPLIM(UPTO:integer):integer,
+  or PSEXPLIM ():integer.
+\end{verbatim} 
+Calling this operator sets an internal variable of the
+TPS package to the value of {\tt
+UPTO} (which should evaluate to an integer).  The value returned is
+the previous value of this variable.  The default value is six.
+ 
+If {\tt PSEXPLIM} is called with no argument, the current value for
+the expansion limit is returned.
+ 
+
+\subsection*{PSORDLIM OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSORDLIM(UPTO:integer):integer,
+  or PSORDLIM ():integer.
+\end{verbatim}
+An internal variable is set to the value of {\tt UPTO} (which should
+evaluate to an integer). The value returned is the previous value of
+the variable.  The default value is 15.
+
+If {\tt PSORDLIM} is called with no argument, the current value is
+returned.
+
+The significance of this control is that the system attempts to find
+the order of the power series required, that is the order is the
+degree of the first non-zero term in the power series.  If the order
+is greater than the value of this variable an error message is given
+and the computation aborts. This prevents infinite loops in examples
+such as
+\begin{verbatim}
+        PS(1 - (sin x)**2 - (cos x)**2,x,0);
+\end{verbatim}
+where the expression being expanded is identically zero, but is not
+recognized as such by REDUCE.
+
+
+\subsection*{PSTERM OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSTERM(TPS:power series object,NTH: integer):algebraic
+\end{verbatim}
+The operator {\tt PSTERM} returns the {\tt NTH} term of the existing
+power series object {\tt TPS}. If {\tt NTH} does not evaluate to
+an integer or {\tt TPS} to a power series object an error results.  It
+should be noted that an integer is treated as a power series.
+
+
+\subsection*{PSORDER OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSORDER(TPS:power series object):integer
+\end{verbatim}
+The operator {\tt PSORDER} returns the order, that is the degree of
+the first non-zero term, of the power series object {\tt TPS}. {\tt
+TPS} should evaluate to a power series object or an error results. If
+{\tt TPS} is zero, the identifier {\tt UNDEFINED} is returned.
+
+\subsection*{PSSETORDER OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSSETORDER(TPS:power series object,ORD:integer):integer
+\end{verbatim}
+The operator {\tt PSSETORDER} sets the order of the power series {\tt
+TPS} to the value {\tt ORD}, which should evaluate to an integer. If
+{\tt TPS} does not evaluate to a power series object, then an error
+occurs. The value returned by this operator is the previous order of
+{\tt TPS}, or 0 if the order of {\tt TPS} was undefined.  This
+operator is useful for setting the order of the power series of a
+function defined by a differential equation in cases where the power
+series package is inadequate to determine the order automatically.
+
+
+\subsection*{PSDEPVAR OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSDEPVAR(TPS:power series object):identifier
+\end{verbatim}
+The operator {\tt PSDEPVAR} returns the expansion variable of the
+power series object {\tt TPS}. {\tt TPS} should evaluate to a power
+series object or an integer, otherwise an error results. If {\tt TPS}
+is an integer, the identifier {\tt UNDEFINED} is returned.
+
+\subsection*{PSEXPANSIONPT OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSEXPANSIONPT(TPS:power series object):algebraic
+\end{verbatim}
+The operator {\tt PSEXPANSIONPT} returns the expansion point of the
+power series object {\tt TPS}. {\tt TPS} should evaluate to a power
+series object or an integer, otherwise an error results. If {\tt TPS}
+is integer, the identifier {\tt UNDEFINED} is returned. If the
+expansion is about infinity, the identifier {\tt INFINITY} is
+returned.
+
+\subsection*{PSFUNCTION OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSFUNCTION(TPS:power series object):algebraic
+\end{verbatim}
+The operator {\tt PSFUNCTION} returns the function whose expansion
+gave rise to the power series object {\tt TPS}. {\tt TPS} should
+evaluate to a power series object or an integer, otherwise an error
+results.
+
+\subsection*{PSCHANGEVAR OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSCHANGEVAR(TPS:power series object,X:kernel):power series object
+\end{verbatim}
+The operator {\tt PSCHANGEVAR} changes the dependent variable of the
+power series object {\tt TPS} to the variable {\tt X}. {\tt TPS}
+should evaluate to a power series object and {\tt X} to a kernel,
+otherwise an error results.  Also {\tt X} should not appear as a
+parameter in {\tt TPS}. The power series with the new dependent
+variable is returned.
+
+\subsection*{PSREVERSE OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSREVERSE(TPS:power series object):power series
+\end{verbatim}
+Power series reversion.  The power series {\tt TPS} is functionally
+inverted.  Four cases arise:
+\begin{enumerate}
+\item if the order of the series is 1, then the expansion point of the
+inverted series is 0. 
+
+\item if the order is 0 {\em and} if the first order term in {\tt TPS}
+is non-zero, then the expansion point of the inverted series is taken
+to be the coefficient of the zeroth order term in {\tt TPS}.
+
+\item if the order is -1 the expansion point of the inverted series
+is the point at infinity.  In all other cases a REDUCE error is
+reported because the series cannot be inverted as a power series. Puiseux
+expansion would be required to handle these cases.
+
+\item If the expansion point of {\tt TPS} is finite it becomes the
+zeroth order term in the inverted series. For expansion about 0 or the
+point at infinity the order of the inverted series is one.
+\end{enumerate}
+If {\tt TPS} is not a power series object after evaluation an error results.
+
+\noindent Here are some examples:
+\begin{verbatim}
+        PS(sin x,x,0);
+        PSREVERSE(ws); % produces the series for asin x about x=0.
+        PS(exp x,x,0);
+        PSREVERSE ws; % produces the series for log x about x=1.
+        PS(sin(1/x),x,infinity);
+        PSREVERSE(ws); % produces the series for 1/asin(x) about x=0.
+\end{verbatim}
+
+\subsection*{PSCOMPOSE OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSCOMPOSE(TPS1:power series,TPS2:power series):power series
+\end{verbatim}
+Power Series Composition.
+
+The power series {\tt TPS1} and {\tt TPS2} are functionally composed.
+That is to say that {\tt TPS2} is substituted for the expansion
+variable in {\tt TPS1} and the result expressed as a power series. The
+dependent variable and expansion point of the result coincide with
+those of {\tt TPS2}.  The following conditions apply to power series
+composition:
+
+\begin{enumerate}
+\item If the expansion point of {\tt TPS1} is 0 then the order of the
+{\tt TPS2} must be at least 1.
+
+\item If the expansion point of {\tt TPS1} is finite, it should
+coincide with the coefficient of the zeroth order term in {\tt TPS2}.
+The order of {\tt TPS2} should also be non-negative in this case.
+
+\item If the expansion point of {\tt TPS1} is the point at infinity
+then the order of {\tt TPS2} must be less than or equal to -1.
+
+\end{enumerate}
+
+If these conditions do not hold the series cannot be composed (with
+the current algorithm terms of the inverted series would involve
+infinite sums) and a REDUCE error occurs.
+
+\noindent Examples of power series composition include the following.
+\begin{verbatim}
+       A:=PS(exp y,y,0);  B:=PS(sin x,x,0); 
+       PSCOMPOSE(A,B);
+    % produces the power series expansion of exp(sin x) about x=0.
+
+       A:=PS(exp z,z,1); B:=PS(cos x,x,0);
+       PSCOMPOSE(A,B);
+    % produces the power series expansion of exp(cos x) about x=0.
+
+      A:=PS(cos(1/x),x,infinity);  B:=ps(1/sin x,x,0);
+      PSCOMPOSE(A,B);
+    % produces the power series expansion of cos(sin x) about x=0.
+\end{verbatim}
+
+\subsection*{PSSUM OPERATOR}
+
+Syntax:
+\begin{verbatim}
+ PSSUM(J:kernel = LOWLIM:integer, COEFF: algebraic, X: kernel,
+       ABOUT: algebraic; POWER: algebraic):power series
+\end{verbatim}
+The formal power series sum for {\tt J} from {\tt LOWLIM} to {\tt INFINITY} of 
+\begin{verbatim}
+      COEFF*(X-ABOUT)**POWER
+\end{verbatim}
+or if {\tt ABOUT} is given as {\tt INFINITY}
+\begin{verbatim}
+      COEFF*(1/X)**POWER
+\end{verbatim}
+is constructed and returned. This enables power series whose general
+term is known to be constructed and manipulated using the other
+procedures of the power series package. 
+
+{\tt J} and {\tt X} should be distinct simple kernels. The algebraics
+{\tt ABOUT},  {\tt COEFF} and {\tt POWER} should not depend on the
+expansion variable {\tt X}, similarly the algebraic {\tt ABOUT} should
+not depend on the summation variable {\tt J}.  The algebraic {\tt
+POWER} should be a strictly increasing integer valued function of {\tt
+J} for {\tt J} in the range {\tt LOWLIM} to {\tt INFINITY}.
+
+\begin{verbatim}
+   PSSUM(N=0,1,x,0,N*N);
+% produces the power series summation for n=0 to infinity of x**(n*n)
+
+   PSSUM(m=1,(-1)**(m-1)/(2m-1),y,1,2m-1);
+   % produces the power series expansion of atan(y-1) about y=1
+
+   PSSUM(j=1,-1/j,x,infinity,j);
+% produces the power series expansion of log(1-1/x) about the point at
+% infinity
+
+   PSSUM(n=0,1,x,0,2n**2+3n) + PSSUM(n=1,1,x,0,2n**2-3n);
+% produces the power series summation for n=-infinity to +infinity of
+%    x**(2n**2+3n)
+\end{verbatim}
+
+\subsection*{ARITHMETIC OPERATIONS}
+ 
+As power series objects are domain elements they may be combined
+together in algebraic expressions in algebraic mode of REDUCE in the
+normal way.
+ 
+For example if {\tt A} and {\tt B} are power
+series objects then the commands such as:
+\begin{verbatim}
+    A*B;
+    A**2+B**2;
+\end{verbatim}
+will produce power series objects representing the product and the sum
+of the squares of the power series objects {\tt A} and {\tt B}
+respectively.
+ 
+\subsection*{DIFFERENTIATION}
+ 
+If {\tt A} is a power series object depending on {\tt X} then the input
+{\tt DF(A,X)}; will produce the power series expansion of the derivative
+of {\tt A} with respect to {\tt X}.
+
+
+\section*{Restrictions and Known Bugs}
+
+If {\tt A} and {\tt B} are power series objects and {\tt X} is a variable
+which evaluates to itself then currently expressions such as {\tt A/B} and
+{\tt A*X} do not evaluate to a single power series object (although the
+results are in each case formally valid).  Instead use {\tt PS(A/B,X,0)}
+and {\tt PS(A*X,X,0)} {\em etc.}.  The failure of the system to simplify
+quotients to a single power series is due to an infelicity in the REDUCE
+simplifier which will be corrected in future releases of REDUCE.
+
+Similarly expressions such as {\tt sin(A)} where {\tt A} is a PS object
+currently will not be expanded.
+ 
+{\em e.g.}
+\begin{verbatim}
+    A:=PS(1/(1+X),X,0);
+    B:=sin (A); 
+\end{verbatim}
+will not expand {\tt sin(1/(1+x))} as a power series . In fact
+\begin{verbatim}
+          sin(1 - x + x**2 - x**3 + .....)
+\end{verbatim}
+will be returned. However,
+\begin{verbatim} 
+    B:=PS(SIN(A),X,0);
+\end{verbatim}
+or
+\begin{verbatim} 
+    B:=PS(SIN(1/(1+X)),X,0);
+\end{verbatim}
+should work as intended.
+
+The handling of functions with essential singularities is currently
+erratic: usually an error message Essential Singularity or Logarithmic
+Singularity occurs but occasionally a division by zero error or some
+drastic error like (for PSL) binding stack overflow may occur.
+ 
+Mixed mode arithmetic of power series objects with other domain
+elements is quite restricted: only integers and floats can currently
+be converted to power series objects.
+ 
+The printing of power series currently leaves something to be
+desired: often line-breaks appear in the middle of terms.
+
+There is no simple way to write the results of power series
+calculation to a file and read them back into REDUCE at a later
+stage.
+
+\end{document}
+

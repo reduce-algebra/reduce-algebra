@@ -1,0 +1,47 @@
+
+<A NAME=STIRLING1>
+
+<TITLE>STIRLING1</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>STIRLING1</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>Stirling1</em> operator returns the Stirling Numbers S(n,m) of the first
+ 
+kind, i.e. the number of permutations of n symbols which have exactly m cycles 
+(divided by (-1)**(n-m)). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>Stirling1</em>(&lt;integer&gt;,&lt;integer&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+Stirling1 (17,4); 
+
+  -87077748875904 
+
+
+Stirling1 (n,n-1); 
+
+  -gamma(n+1)
+  -------------
+  2*gamma(n-1)
+
+</TT></PRE><P>The operator <em>Stirling1</em> evaluates the Stirling numbers of 
+the 
+first kind by rulesets for special cases or by a computing the closed 
+form, which is a series involving the operators 
+<A HREF=r37_0520.html>BINOMIAL</A> 
+and 
+<A HREF=r37_0522.html>STIRLING2</A>. 
+<P>
+<P>
+<P>

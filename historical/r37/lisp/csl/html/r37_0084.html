@@ -1,0 +1,54 @@
+
+<A NAME=FLOOR>
+
+<TITLE>FLOOR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FLOOR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>floor</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+This operator returns the floor (i.e., the greatest integer less than or 
+equal to its argument) if its argument has a numerical value. For 
+positive numbers, this is equivalent to 
+<A HREF=r37_0082.html>fix</A>. For non-numeric 
+arguments, the value is an expression in the original operator. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+floor 3.4; 
+
+  3 
+
+
+fix 3.4; 
+
+  3 
+
+
+floor(-5.2); 
+
+  -6 
+
+
+fix(-5.2); 
+
+  -5 
+
+
+floor a; 
+
+  FLOOR(A)
+
+</TT></PRE><P>

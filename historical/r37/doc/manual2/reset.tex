@@ -1,0 +1,21 @@
+\chapter{RESET: Reset REDUCE to its initial state}
+\label{RESET}
+\typeout{{RESET: Code to reset REDUCE to its initial state}}
+
+{\footnotesize
+\begin{center}
+J. P. Fitch \\
+School of Mathematical Sciences, University of Bath\\
+BATH BA2 7AY, England \\[0.05in]
+e--mail: jpff@maths.bath.ac.uk
+\end{center}
+}
+\ttindex{RESET}
+
+This package defines a command {\tt RESETREDUCE}
+\ttindex{RESETREDUCE} that works through the history of previous
+commands, and clears any values which have been assigned, plus any
+rules, arrays and the like.  It also sets the various switches to
+their initial values.  It is not complete, but does work for most
+things that cause a gradual loss of space.
+

@@ -1,0 +1,47 @@
+
+<A NAME=SUM>
+
+<TITLE>SUM</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SUM</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>sum</em> returns 
+the indefinite or definite summation of a given expression. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>sum</em>(&lt;expr&gt;,&lt;k&gt;[,&lt;lolim&gt; [,&lt;uplim&gt; ]]) 
+<P>
+<P>
+<P>
+<P>
+where &lt;expr&gt; is the expression to be added, &lt;k&gt; is the 
+control variable (a 
+<A HREF=r37_0002.html>kernel</A>), and &lt;lolim&gt; and &lt;uplim&gt; 
+are the optional lower and upper limits. If &lt;uplim&gt; is 
+not supplied the upper limit is taken as &lt;k&gt;. The Gosper 
+algorithm is used. If there is no closed form solution, the operator 
+returns the input unchanged. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+sum(4n**3,n); 
+
+   2    2
+  n  *(n   + 2*n + 1)
+
+
+sum(2a+2k*r,k,0,n-1);
+
+  n*(2*a + n*r - r)
+
+</TT></PRE><P>

@@ -1,0 +1,2438 @@
+Manifest for Reduce 3.8 distribution
+
+search for "#" for comments and worries
+
+
+W  program files (windows versions)
+U  program files (unix (linux) versions)
+X  example files and logs
+D  documentation
+R  REDUCE sources
+L  Lisp and other sources
+
+Note that the program that processes this file ignores eveything
+up to a line starting with at least four '#' signs. The line just after
+that is then also discarded and what follows is the real data.
+
+################################ start
+flags    directory   binary name
+WU D          1         0    doc
+#source doc ../doc
+WU D          0         0    doc/install.tex
+WU D          0         0    doc/install.ps
+WU D          0         1    doc/install.pdf
+WU D          0         0    doc/uguide.tex
+WU D          0         0    doc/uguide.ps
+WU D          0         1    doc/uguide.pdf
+#endsource
+#source doc ../../../doc/util
+   D          0         1    doc/r38.pdf
+   D          0         0    doc/r38.ps
+#endsource
+#source doc ..
+   D          1         0    doc/html
+   D          0         0    doc/html/r38.html
+   D          0         0    doc/html/r38_0001.html
+   D          0         0    doc/html/r38_0002.html
+   D          0         0    doc/html/r38_0003.html
+   D          0         0    doc/html/r38_0004.html
+   D          0         0    doc/html/r38_0005.html
+   D          0         0    doc/html/r38_0006.html
+   D          0         0    doc/html/r38_0007.html
+   D          0         0    doc/html/r38_0008.html
+   D          0         0    doc/html/r38_0009.html
+   D          0         0    doc/html/r38_0010.html
+   D          0         0    doc/html/r38_0011.html
+   D          0         0    doc/html/r38_0012.html
+   D          0         0    doc/html/r38_0013.html
+   D          0         0    doc/html/r38_0014.html
+   D          0         0    doc/html/r38_0015.html
+   D          0         0    doc/html/r38_0016.html
+   D          0         0    doc/html/r38_0017.html
+   D          0         0    doc/html/r38_0018.html
+   D          0         0    doc/html/r38_0019.html
+   D          0         0    doc/html/r38_0020.html
+   D          0         0    doc/html/r38_0021.html
+   D          0         0    doc/html/r38_0022.html
+   D          0         0    doc/html/r38_0023.html
+   D          0         0    doc/html/r38_0024.html
+   D          0         0    doc/html/r38_0025.html
+   D          0         0    doc/html/r38_0026.html
+   D          0         0    doc/html/r38_0027.html
+   D          0         0    doc/html/r38_0028.html
+   D          0         0    doc/html/r38_0029.html
+   D          0         0    doc/html/r38_0030.html
+   D          0         0    doc/html/r38_0031.html
+   D          0         0    doc/html/r38_0032.html
+   D          0         0    doc/html/r38_0033.html
+   D          0         0    doc/html/r38_0034.html
+   D          0         0    doc/html/r38_0035.html
+   D          0         0    doc/html/r38_0036.html
+   D          0         0    doc/html/r38_0038.html
+   D          0         0    doc/html/r38_0038.html
+   D          0         0    doc/html/r38_0039.html
+   D          0         0    doc/html/r38_0040.html
+   D          0         0    doc/html/r38_0041.html
+   D          0         0    doc/html/r38_0042.html
+   D          0         0    doc/html/r38_0043.html
+   D          0         0    doc/html/r38_0044.html
+   D          0         0    doc/html/r38_0045.html
+   D          0         0    doc/html/r38_0046.html
+   D          0         0    doc/html/r38_0047.html
+   D          0         0    doc/html/r38_0048.html
+   D          0         0    doc/html/r38_0049.html
+   D          0         0    doc/html/r38_0050.html
+   D          0         0    doc/html/r38_0051.html
+   D          0         0    doc/html/r38_0052.html
+   D          0         0    doc/html/r38_0053.html
+   D          0         0    doc/html/r38_0054.html
+   D          0         0    doc/html/r38_0055.html
+   D          0         0    doc/html/r38_0056.html
+   D          0         0    doc/html/r38_0057.html
+   D          0         0    doc/html/r38_0058.html
+   D          0         0    doc/html/r38_0059.html
+   D          0         0    doc/html/r38_0060.html
+   D          0         0    doc/html/r38_0061.html
+   D          0         0    doc/html/r38_0062.html
+   D          0         0    doc/html/r38_0063.html
+   D          0         0    doc/html/r38_0064.html
+   D          0         0    doc/html/r38_0065.html
+   D          0         0    doc/html/r38_0066.html
+   D          0         0    doc/html/r38_0067.html
+   D          0         0    doc/html/r38_0068.html
+   D          0         0    doc/html/r38_0069.html
+   D          0         0    doc/html/r38_0070.html
+   D          0         0    doc/html/r38_0071.html
+   D          0         0    doc/html/r38_0072.html
+   D          0         0    doc/html/r38_0073.html
+   D          0         0    doc/html/r38_0074.html
+   D          0         0    doc/html/r38_0075.html
+   D          0         0    doc/html/r38_0076.html
+   D          0         0    doc/html/r38_0077.html
+   D          0         0    doc/html/r38_0078.html
+   D          0         0    doc/html/r38_0079.html
+   D          0         0    doc/html/r38_0080.html
+   D          0         0    doc/html/r38_0081.html
+   D          0         0    doc/html/r38_0082.html
+   D          0         0    doc/html/r38_0083.html
+   D          0         0    doc/html/r38_0084.html
+   D          0         0    doc/html/r38_0085.html
+   D          0         0    doc/html/r38_0086.html
+   D          0         0    doc/html/r38_0087.html
+   D          0         0    doc/html/r38_0088.html
+   D          0         0    doc/html/r38_0089.html
+   D          0         0    doc/html/r38_0090.html
+   D          0         0    doc/html/r38_0091.html
+   D          0         0    doc/html/r38_0092.html
+   D          0         0    doc/html/r38_0093.html
+   D          0         0    doc/html/r38_0094.html
+   D          0         0    doc/html/r38_0095.html
+   D          0         0    doc/html/r38_0096.html
+   D          0         0    doc/html/r38_0097.html
+   D          0         0    doc/html/r38_0098.html
+   D          0         0    doc/html/r38_0099.html
+   D          0         0    doc/html/r38_0100.html
+   D          0         0    doc/html/r38_0101.html
+   D          0         0    doc/html/r38_0102.html
+   D          0         0    doc/html/r38_0103.html
+   D          0         0    doc/html/r38_0104.html
+   D          0         0    doc/html/r38_0105.html
+   D          0         0    doc/html/r38_0106.html
+   D          0         0    doc/html/r38_0107.html
+   D          0         0    doc/html/r38_0108.html
+   D          0         0    doc/html/r38_0109.html
+   D          0         0    doc/html/r38_0110.html
+   D          0         0    doc/html/r38_0111.html
+   D          0         0    doc/html/r38_0112.html
+   D          0         0    doc/html/r38_0113.html
+   D          0         0    doc/html/r38_0114.html
+   D          0         0    doc/html/r38_0115.html
+   D          0         0    doc/html/r38_0116.html
+   D          0         0    doc/html/r38_0117.html
+   D          0         0    doc/html/r38_0118.html
+   D          0         0    doc/html/r38_0119.html
+   D          0         0    doc/html/r38_0120.html
+   D          0         0    doc/html/r38_0121.html
+   D          0         0    doc/html/r38_0122.html
+   D          0         0    doc/html/r38_0123.html
+   D          0         0    doc/html/r38_0124.html
+   D          0         0    doc/html/r38_0125.html
+   D          0         0    doc/html/r38_0126.html
+   D          0         0    doc/html/r38_0127.html
+   D          0         0    doc/html/r38_0128.html
+   D          0         0    doc/html/r38_0129.html
+   D          0         0    doc/html/r38_0130.html
+   D          0         0    doc/html/r38_0131.html
+   D          0         0    doc/html/r38_0132.html
+   D          0         0    doc/html/r38_0133.html
+   D          0         0    doc/html/r38_0134.html
+   D          0         0    doc/html/r38_0135.html
+   D          0         0    doc/html/r38_0136.html
+   D          0         0    doc/html/r38_0138.html
+   D          0         0    doc/html/r38_0138.html
+   D          0         0    doc/html/r38_0139.html
+   D          0         0    doc/html/r38_0140.html
+   D          0         0    doc/html/r38_0141.html
+   D          0         0    doc/html/r38_0142.html
+   D          0         0    doc/html/r38_0143.html
+   D          0         0    doc/html/r38_0144.html
+   D          0         0    doc/html/r38_0145.html
+   D          0         0    doc/html/r38_0146.html
+   D          0         0    doc/html/r38_0147.html
+   D          0         0    doc/html/r38_0148.html
+   D          0         0    doc/html/r38_0149.html
+   D          0         0    doc/html/r38_0150.html
+   D          0         0    doc/html/r38_0151.html
+   D          0         0    doc/html/r38_0152.html
+   D          0         0    doc/html/r38_0153.html
+   D          0         0    doc/html/r38_0154.html
+   D          0         0    doc/html/r38_0155.html
+   D          0         0    doc/html/r38_0156.html
+   D          0         0    doc/html/r38_0157.html
+   D          0         0    doc/html/r38_0158.html
+   D          0         0    doc/html/r38_0159.html
+   D          0         0    doc/html/r38_0160.html
+   D          0         0    doc/html/r38_0161.html
+   D          0         0    doc/html/r38_0162.html
+   D          0         0    doc/html/r38_0163.html
+   D          0         0    doc/html/r38_0164.html
+   D          0         0    doc/html/r38_0165.html
+   D          0         0    doc/html/r38_0166.html
+   D          0         0    doc/html/r38_0167.html
+   D          0         0    doc/html/r38_0168.html
+   D          0         0    doc/html/r38_0169.html
+   D          0         0    doc/html/r38_0170.html
+   D          0         0    doc/html/r38_0171.html
+   D          0         0    doc/html/r38_0172.html
+   D          0         0    doc/html/r38_0173.html
+   D          0         0    doc/html/r38_0174.html
+   D          0         0    doc/html/r38_0175.html
+   D          0         0    doc/html/r38_0176.html
+   D          0         0    doc/html/r38_0177.html
+   D          0         0    doc/html/r38_0178.html
+   D          0         0    doc/html/r38_0179.html
+   D          0         0    doc/html/r38_0180.html
+   D          0         0    doc/html/r38_0181.html
+   D          0         0    doc/html/r38_0182.html
+   D          0         0    doc/html/r38_0183.html
+   D          0         0    doc/html/r38_0184.html
+   D          0         0    doc/html/r38_0185.html
+   D          0         0    doc/html/r38_0186.html
+   D          0         0    doc/html/r38_0187.html
+   D          0         0    doc/html/r38_0188.html
+   D          0         0    doc/html/r38_0189.html
+   D          0         0    doc/html/r38_0190.html
+   D          0         0    doc/html/r38_0191.html
+   D          0         0    doc/html/r38_0192.html
+   D          0         0    doc/html/r38_0193.html
+   D          0         0    doc/html/r38_0194.html
+   D          0         0    doc/html/r38_0195.html
+   D          0         0    doc/html/r38_0196.html
+   D          0         0    doc/html/r38_0197.html
+   D          0         0    doc/html/r38_0198.html
+   D          0         0    doc/html/r38_0199.html
+   D          0         0    doc/html/r38_0200.html
+   D          0         0    doc/html/r38_0201.html
+   D          0         0    doc/html/r38_0202.html
+   D          0         0    doc/html/r38_0203.html
+   D          0         0    doc/html/r38_0204.html
+   D          0         0    doc/html/r38_0205.html
+   D          0         0    doc/html/r38_0206.html
+   D          0         0    doc/html/r38_0207.html
+   D          0         0    doc/html/r38_0208.html
+   D          0         0    doc/html/r38_0209.html
+   D          0         0    doc/html/r38_0210.html
+   D          0         0    doc/html/r38_0211.html
+   D          0         0    doc/html/r38_0212.html
+   D          0         0    doc/html/r38_0213.html
+   D          0         0    doc/html/r38_0214.html
+   D          0         0    doc/html/r38_0215.html
+   D          0         0    doc/html/r38_0216.html
+   D          0         0    doc/html/r38_0217.html
+   D          0         0    doc/html/r38_0218.html
+   D          0         0    doc/html/r38_0219.html
+   D          0         0    doc/html/r38_0220.html
+   D          0         0    doc/html/r38_0221.html
+   D          0         0    doc/html/r38_0222.html
+   D          0         0    doc/html/r38_0223.html
+   D          0         0    doc/html/r38_0224.html
+   D          0         0    doc/html/r38_0225.html
+   D          0         0    doc/html/r38_0226.html
+   D          0         0    doc/html/r38_0227.html
+   D          0         0    doc/html/r38_0228.html
+   D          0         0    doc/html/r38_0229.html
+   D          0         0    doc/html/r38_0230.html
+   D          0         0    doc/html/r38_0231.html
+   D          0         0    doc/html/r38_0232.html
+   D          0         0    doc/html/r38_0233.html
+   D          0         0    doc/html/r38_0234.html
+   D          0         0    doc/html/r38_0235.html
+   D          0         0    doc/html/r38_0236.html
+   D          0         0    doc/html/r38_0238.html
+   D          0         0    doc/html/r38_0238.html
+   D          0         0    doc/html/r38_0239.html
+   D          0         0    doc/html/r38_0240.html
+   D          0         0    doc/html/r38_0241.html
+   D          0         0    doc/html/r38_0242.html
+   D          0         0    doc/html/r38_0243.html
+   D          0         0    doc/html/r38_0244.html
+   D          0         0    doc/html/r38_0245.html
+   D          0         0    doc/html/r38_0246.html
+   D          0         0    doc/html/r38_0247.html
+   D          0         0    doc/html/r38_0248.html
+   D          0         0    doc/html/r38_0249.html
+   D          0         0    doc/html/r38_0250.html
+   D          0         0    doc/html/r38_0251.html
+   D          0         0    doc/html/r38_0252.html
+   D          0         0    doc/html/r38_0253.html
+   D          0         0    doc/html/r38_0254.html
+   D          0         0    doc/html/r38_0255.html
+   D          0         0    doc/html/r38_0256.html
+   D          0         0    doc/html/r38_0257.html
+   D          0         0    doc/html/r38_0258.html
+   D          0         0    doc/html/r38_0259.html
+   D          0         0    doc/html/r38_0260.html
+   D          0         0    doc/html/r38_0261.html
+   D          0         0    doc/html/r38_0262.html
+   D          0         0    doc/html/r38_0263.html
+   D          0         0    doc/html/r38_0264.html
+   D          0         0    doc/html/r38_0265.html
+   D          0         0    doc/html/r38_0266.html
+   D          0         0    doc/html/r38_0267.html
+   D          0         0    doc/html/r38_0268.html
+   D          0         0    doc/html/r38_0269.html
+   D          0         0    doc/html/r38_0270.html
+   D          0         0    doc/html/r38_0271.html
+   D          0         0    doc/html/r38_0272.html
+   D          0         0    doc/html/r38_0273.html
+   D          0         0    doc/html/r38_0274.html
+   D          0         0    doc/html/r38_0275.html
+   D          0         0    doc/html/r38_0276.html
+   D          0         0    doc/html/r38_0277.html
+   D          0         0    doc/html/r38_0278.html
+   D          0         0    doc/html/r38_0279.html
+   D          0         0    doc/html/r38_0280.html
+   D          0         0    doc/html/r38_0281.html
+   D          0         0    doc/html/r38_0282.html
+   D          0         0    doc/html/r38_0283.html
+   D          0         0    doc/html/r38_0284.html
+   D          0         0    doc/html/r38_0285.html
+   D          0         0    doc/html/r38_0286.html
+   D          0         0    doc/html/r38_0287.html
+   D          0         0    doc/html/r38_0288.html
+   D          0         0    doc/html/r38_0289.html
+   D          0         0    doc/html/r38_0290.html
+   D          0         0    doc/html/r38_0291.html
+   D          0         0    doc/html/r38_0292.html
+   D          0         0    doc/html/r38_0293.html
+   D          0         0    doc/html/r38_0294.html
+   D          0         0    doc/html/r38_0295.html
+   D          0         0    doc/html/r38_0296.html
+   D          0         0    doc/html/r38_0297.html
+   D          0         0    doc/html/r38_0298.html
+   D          0         0    doc/html/r38_0299.html
+   D          0         0    doc/html/r38_0300.html
+   D          0         0    doc/html/r38_0301.html
+   D          0         0    doc/html/r38_0302.html
+   D          0         0    doc/html/r38_0303.html
+   D          0         0    doc/html/r38_0304.html
+   D          0         0    doc/html/r38_0305.html
+   D          0         0    doc/html/r38_0306.html
+   D          0         0    doc/html/r38_0307.html
+   D          0         0    doc/html/r38_0308.html
+   D          0         0    doc/html/r38_0309.html
+   D          0         0    doc/html/r38_0310.html
+   D          0         0    doc/html/r38_0311.html
+   D          0         0    doc/html/r38_0312.html
+   D          0         0    doc/html/r38_0313.html
+   D          0         0    doc/html/r38_0314.html
+   D          0         0    doc/html/r38_0315.html
+   D          0         0    doc/html/r38_0316.html
+   D          0         0    doc/html/r38_0317.html
+   D          0         0    doc/html/r38_0318.html
+   D          0         0    doc/html/r38_0319.html
+   D          0         0    doc/html/r38_0320.html
+   D          0         0    doc/html/r38_0321.html
+   D          0         0    doc/html/r38_0322.html
+   D          0         0    doc/html/r38_0323.html
+   D          0         0    doc/html/r38_0324.html
+   D          0         0    doc/html/r38_0325.html
+   D          0         0    doc/html/r38_0326.html
+   D          0         0    doc/html/r38_0327.html
+   D          0         0    doc/html/r38_0328.html
+   D          0         0    doc/html/r38_0329.html
+   D          0         0    doc/html/r38_0330.html
+   D          0         0    doc/html/r38_0331.html
+   D          0         0    doc/html/r38_0332.html
+   D          0         0    doc/html/r38_0333.html
+   D          0         0    doc/html/r38_0334.html
+   D          0         0    doc/html/r38_0335.html
+   D          0         0    doc/html/r38_0336.html
+   D          0         0    doc/html/r38_0338.html
+   D          0         0    doc/html/r38_0338.html
+   D          0         0    doc/html/r38_0339.html
+   D          0         0    doc/html/r38_0340.html
+   D          0         0    doc/html/r38_0341.html
+   D          0         0    doc/html/r38_0342.html
+   D          0         0    doc/html/r38_0343.html
+   D          0         0    doc/html/r38_0344.html
+   D          0         0    doc/html/r38_0345.html
+   D          0         0    doc/html/r38_0346.html
+   D          0         0    doc/html/r38_0347.html
+   D          0         0    doc/html/r38_0348.html
+   D          0         0    doc/html/r38_0349.html
+   D          0         0    doc/html/r38_0350.html
+   D          0         0    doc/html/r38_0351.html
+   D          0         0    doc/html/r38_0352.html
+   D          0         0    doc/html/r38_0353.html
+   D          0         0    doc/html/r38_0354.html
+   D          0         0    doc/html/r38_0355.html
+   D          0         0    doc/html/r38_0356.html
+   D          0         0    doc/html/r38_0357.html
+   D          0         0    doc/html/r38_0358.html
+   D          0         0    doc/html/r38_0359.html
+   D          0         0    doc/html/r38_0360.html
+   D          0         0    doc/html/r38_0361.html
+   D          0         0    doc/html/r38_0362.html
+   D          0         0    doc/html/r38_0363.html
+   D          0         0    doc/html/r38_0364.html
+   D          0         0    doc/html/r38_0365.html
+   D          0         0    doc/html/r38_0366.html
+   D          0         0    doc/html/r38_0367.html
+   D          0         0    doc/html/r38_0368.html
+   D          0         0    doc/html/r38_0369.html
+   D          0         0    doc/html/r38_0380.html
+   D          0         0    doc/html/r38_0381.html
+   D          0         0    doc/html/r38_0382.html
+   D          0         0    doc/html/r38_0383.html
+   D          0         0    doc/html/r38_0384.html
+   D          0         0    doc/html/r38_0385.html
+   D          0         0    doc/html/r38_0386.html
+   D          0         0    doc/html/r38_0387.html
+   D          0         0    doc/html/r38_0388.html
+   D          0         0    doc/html/r38_0389.html
+   D          0         0    doc/html/r38_0380.html
+   D          0         0    doc/html/r38_0381.html
+   D          0         0    doc/html/r38_0382.html
+   D          0         0    doc/html/r38_0383.html
+   D          0         0    doc/html/r38_0384.html
+   D          0         0    doc/html/r38_0385.html
+   D          0         0    doc/html/r38_0386.html
+   D          0         0    doc/html/r38_0387.html
+   D          0         0    doc/html/r38_0388.html
+   D          0         0    doc/html/r38_0389.html
+   D          0         0    doc/html/r38_0390.html
+   D          0         0    doc/html/r38_0391.html
+   D          0         0    doc/html/r38_0392.html
+   D          0         0    doc/html/r38_0393.html
+   D          0         0    doc/html/r38_0394.html
+   D          0         0    doc/html/r38_0395.html
+   D          0         0    doc/html/r38_0396.html
+   D          0         0    doc/html/r38_0397.html
+   D          0         0    doc/html/r38_0398.html
+   D          0         0    doc/html/r38_0399.html
+   D          0         0    doc/html/r38_0400.html
+   D          0         0    doc/html/r38_0401.html
+   D          0         0    doc/html/r38_0402.html
+   D          0         0    doc/html/r38_0403.html
+   D          0         0    doc/html/r38_0404.html
+   D          0         0    doc/html/r38_0405.html
+   D          0         0    doc/html/r38_0406.html
+   D          0         0    doc/html/r38_0407.html
+   D          0         0    doc/html/r38_0408.html
+   D          0         0    doc/html/r38_0409.html
+   D          0         0    doc/html/r38_0410.html
+   D          0         0    doc/html/r38_0411.html
+   D          0         0    doc/html/r38_0412.html
+   D          0         0    doc/html/r38_0413.html
+   D          0         0    doc/html/r38_0414.html
+   D          0         0    doc/html/r38_0415.html
+   D          0         0    doc/html/r38_0416.html
+   D          0         0    doc/html/r38_0417.html
+   D          0         0    doc/html/r38_0418.html
+   D          0         0    doc/html/r38_0419.html
+   D          0         0    doc/html/r38_0420.html
+   D          0         0    doc/html/r38_0421.html
+   D          0         0    doc/html/r38_0422.html
+   D          0         0    doc/html/r38_0423.html
+   D          0         0    doc/html/r38_0424.html
+   D          0         0    doc/html/r38_0425.html
+   D          0         0    doc/html/r38_0426.html
+   D          0         0    doc/html/r38_0427.html
+   D          0         0    doc/html/r38_0428.html
+   D          0         0    doc/html/r38_0429.html
+   D          0         0    doc/html/r38_0430.html
+   D          0         0    doc/html/r38_0431.html
+   D          0         0    doc/html/r38_0432.html
+   D          0         0    doc/html/r38_0433.html
+   D          0         0    doc/html/r38_0434.html
+   D          0         0    doc/html/r38_0435.html
+   D          0         0    doc/html/r38_0436.html
+   D          0         0    doc/html/r38_0438.html
+   D          0         0    doc/html/r38_0438.html
+   D          0         0    doc/html/r38_0439.html
+   D          0         0    doc/html/r38_0440.html
+   D          0         0    doc/html/r38_0441.html
+   D          0         0    doc/html/r38_0442.html
+   D          0         0    doc/html/r38_0443.html
+   D          0         0    doc/html/r38_0444.html
+   D          0         0    doc/html/r38_0445.html
+   D          0         0    doc/html/r38_0446.html
+   D          0         0    doc/html/r38_0447.html
+   D          0         0    doc/html/r38_0448.html
+   D          0         0    doc/html/r38_0449.html
+   D          0         0    doc/html/r38_0450.html
+   D          0         0    doc/html/r38_0451.html
+   D          0         0    doc/html/r38_0452.html
+   D          0         0    doc/html/r38_0453.html
+   D          0         0    doc/html/r38_0454.html
+   D          0         0    doc/html/r38_0455.html
+   D          0         0    doc/html/r38_0456.html
+   D          0         0    doc/html/r38_0457.html
+   D          0         0    doc/html/r38_0458.html
+   D          0         0    doc/html/r38_0459.html
+   D          0         0    doc/html/r38_0460.html
+   D          0         0    doc/html/r38_0461.html
+   D          0         0    doc/html/r38_0462.html
+   D          0         0    doc/html/r38_0463.html
+   D          0         0    doc/html/r38_0464.html
+   D          0         0    doc/html/r38_0465.html
+   D          0         0    doc/html/r38_0466.html
+   D          0         0    doc/html/r38_0467.html
+   D          0         0    doc/html/r38_0468.html
+   D          0         0    doc/html/r38_0469.html
+   D          0         0    doc/html/r38_0470.html
+   D          0         0    doc/html/r38_0471.html
+   D          0         0    doc/html/r38_0472.html
+   D          0         0    doc/html/r38_0473.html
+   D          0         0    doc/html/r38_0474.html
+   D          0         0    doc/html/r38_0475.html
+   D          0         0    doc/html/r38_0476.html
+   D          0         0    doc/html/r38_0477.html
+   D          0         0    doc/html/r38_0478.html
+   D          0         0    doc/html/r38_0479.html
+   D          0         0    doc/html/r38_0480.html
+   D          0         0    doc/html/r38_0481.html
+   D          0         0    doc/html/r38_0482.html
+   D          0         0    doc/html/r38_0483.html
+   D          0         0    doc/html/r38_0484.html
+   D          0         0    doc/html/r38_0485.html
+   D          0         0    doc/html/r38_0486.html
+   D          0         0    doc/html/r38_0487.html
+   D          0         0    doc/html/r38_0488.html
+   D          0         0    doc/html/r38_0489.html
+   D          0         0    doc/html/r38_0490.html
+   D          0         0    doc/html/r38_0491.html
+   D          0         0    doc/html/r38_0492.html
+   D          0         0    doc/html/r38_0493.html
+   D          0         0    doc/html/r38_0494.html
+   D          0         0    doc/html/r38_0495.html
+   D          0         0    doc/html/r38_0496.html
+   D          0         0    doc/html/r38_0497.html
+   D          0         0    doc/html/r38_0498.html
+   D          0         0    doc/html/r38_0499.html
+   D          0         0    doc/html/r38_0500.html
+   D          0         0    doc/html/r38_0501.html
+   D          0         0    doc/html/r38_0502.html
+   D          0         0    doc/html/r38_0503.html
+   D          0         0    doc/html/r38_0504.html
+   D          0         0    doc/html/r38_0505.html
+   D          0         0    doc/html/r38_0506.html
+   D          0         0    doc/html/r38_0507.html
+   D          0         0    doc/html/r38_0508.html
+   D          0         0    doc/html/r38_0509.html
+   D          0         0    doc/html/r38_0510.html
+   D          0         0    doc/html/r38_0511.html
+   D          0         0    doc/html/r38_0512.html
+   D          0         0    doc/html/r38_0513.html
+   D          0         0    doc/html/r38_0514.html
+   D          0         0    doc/html/r38_0515.html
+   D          0         0    doc/html/r38_0516.html
+   D          0         0    doc/html/r38_0517.html
+   D          0         0    doc/html/r38_0518.html
+   D          0         0    doc/html/r38_0519.html
+   D          0         0    doc/html/r38_0520.html
+   D          0         0    doc/html/r38_0521.html
+   D          0         0    doc/html/r38_0522.html
+   D          0         0    doc/html/r38_0523.html
+   D          0         0    doc/html/r38_0524.html
+   D          0         0    doc/html/r38_0525.html
+   D          0         0    doc/html/r38_0526.html
+   D          0         0    doc/html/r38_0527.html
+   D          0         0    doc/html/r38_0528.html
+   D          0         0    doc/html/r38_0529.html
+   D          0         0    doc/html/r38_0530.html
+   D          0         0    doc/html/r38_0531.html
+   D          0         0    doc/html/r38_0532.html
+   D          0         0    doc/html/r38_0533.html
+   D          0         0    doc/html/r38_0534.html
+   D          0         0    doc/html/r38_0535.html
+   D          0         0    doc/html/r38_0536.html
+   D          0         0    doc/html/r38_0538.html
+   D          0         0    doc/html/r38_0538.html
+   D          0         0    doc/html/r38_0539.html
+   D          0         0    doc/html/r38_0540.html
+   D          0         0    doc/html/r38_0541.html
+   D          0         0    doc/html/r38_0542.html
+   D          0         0    doc/html/r38_0543.html
+   D          0         0    doc/html/r38_0544.html
+   D          0         0    doc/html/r38_0545.html
+   D          0         0    doc/html/r38_0546.html
+   D          0         0    doc/html/r38_0547.html
+   D          0         0    doc/html/r38_0548.html
+   D          0         0    doc/html/r38_0549.html
+   D          0         0    doc/html/r38_0550.html
+   D          0         0    doc/html/r38_0551.html
+   D          0         0    doc/html/r38_0552.html
+   D          0         0    doc/html/r38_0553.html
+   D          0         0    doc/html/r38_0554.html
+   D          0         0    doc/html/r38_0555.html
+   D          0         0    doc/html/r38_0556.html
+   D          0         0    doc/html/r38_0557.html
+   D          0         0    doc/html/r38_0558.html
+   D          0         0    doc/html/r38_0559.html
+   D          0         0    doc/html/r38_0560.html
+   D          0         0    doc/html/r38_0561.html
+   D          0         0    doc/html/r38_0562.html
+   D          0         0    doc/html/r38_0563.html
+   D          0         0    doc/html/r38_0564.html
+   D          0         0    doc/html/r38_0565.html
+   D          0         0    doc/html/r38_0566.html
+   D          0         0    doc/html/r38_0567.html
+   D          0         0    doc/html/r38_0568.html
+   D          0         0    doc/html/r38_0569.html
+   D          0         0    doc/html/r38_0570.html
+   D          0         0    doc/html/r38_0571.html
+   D          0         0    doc/html/r38_0572.html
+   D          0         0    doc/html/r38_0573.html
+   D          0         0    doc/html/r38_0574.html
+   D          0         0    doc/html/r38_0575.html
+   D          0         0    doc/html/r38_0576.html
+   D          0         0    doc/html/r38_0577.html
+   D          0         0    doc/html/r38_0578.html
+   D          0         0    doc/html/r38_0579.html
+   D          0         0    doc/html/r38_0580.html
+   D          0         0    doc/html/r38_0581.html
+   D          0         0    doc/html/r38_0582.html
+   D          0         0    doc/html/r38_0583.html
+   D          0         0    doc/html/r38_0584.html
+   D          0         0    doc/html/r38_0585.html
+   D          0         0    doc/html/r38_0586.html
+   D          0         0    doc/html/r38_0587.html
+   D          0         0    doc/html/r38_0588.html
+   D          0         0    doc/html/r38_0589.html
+   D          0         0    doc/html/r38_0590.html
+   D          0         0    doc/html/r38_0591.html
+   D          0         0    doc/html/r38_0592.html
+   D          0         0    doc/html/r38_0593.html
+   D          0         0    doc/html/r38_0594.html
+   D          0         0    doc/html/r38_0595.html
+   D          0         0    doc/html/r38_0596.html
+   D          0         0    doc/html/r38_0597.html
+   D          0         0    doc/html/r38_0598.html
+   D          0         0    doc/html/r38_0599.html
+   D          0         0    doc/html/r38_0600.html
+   D          0         0    doc/html/r38_0601.html
+   D          0         0    doc/html/r38_0602.html
+   D          0         0    doc/html/r38_0603.html
+   D          0         0    doc/html/r38_0604.html
+   D          0         0    doc/html/r38_0605.html
+   D          0         0    doc/html/r38_0606.html
+   D          0         0    doc/html/r38_0607.html
+   D          0         0    doc/html/r38_0608.html
+   D          0         0    doc/html/r38_0609.html
+   D          0         0    doc/html/r38_0610.html
+   D          0         0    doc/html/r38_0611.html
+   D          0         0    doc/html/r38_0612.html
+   D          0         0    doc/html/r38_0613.html
+   D          0         0    doc/html/r38_0614.html
+   D          0         0    doc/html/r38_0615.html
+   D          0         0    doc/html/r38_0616.html
+   D          0         0    doc/html/r38_0617.html
+   D          0         0    doc/html/r38_0618.html
+   D          0         0    doc/html/r38_0619.html
+   D          0         0    doc/html/r38_0620.html
+   D          0         0    doc/html/r38_0621.html
+   D          0         0    doc/html/r38_0622.html
+   D          0         0    doc/html/r38_0623.html
+   D          0         0    doc/html/r38_0624.html
+   D          0         0    doc/html/r38_0625.html
+   D          0         0    doc/html/r38_0626.html
+   D          0         0    doc/html/r38_0627.html
+   D          0         0    doc/html/r38_0628.html
+   D          0         0    doc/html/r38_0629.html
+   D          0         0    doc/html/r38_0630.html
+   D          0         0    doc/html/r38_0631.html
+   D          0         0    doc/html/r38_0632.html
+   D          0         0    doc/html/r38_0633.html
+   D          0         0    doc/html/r38_0634.html
+   D          0         0    doc/html/r38_0635.html
+   D          0         0    doc/html/r38_0636.html
+   D          0         0    doc/html/r38_0638.html
+   D          0         0    doc/html/r38_0638.html
+   D          0         0    doc/html/r38_0639.html
+   D          0         0    doc/html/r38_0640.html
+   D          0         0    doc/html/r38_0641.html
+   D          0         0    doc/html/r38_0642.html
+   D          0         0    doc/html/r38_0643.html
+   D          0         0    doc/html/r38_0644.html
+   D          0         0    doc/html/r38_0645.html
+   D          0         0    doc/html/r38_0646.html
+   D          0         0    doc/html/r38_0647.html
+   D          0         0    doc/html/r38_0648.html
+   D          0         0    doc/html/r38_0649.html
+   D          0         0    doc/html/r38_0650.html
+   D          0         0    doc/html/r38_0651.html
+   D          0         0    doc/html/r38_0652.html
+   D          0         0    doc/html/r38_0653.html
+   D          0         0    doc/html/r38_0654.html
+   D          0         0    doc/html/r38_0655.html
+   D          0         0    doc/html/r38_0656.html
+   D          0         0    doc/html/r38_0657.html
+   D          0         0    doc/html/r38_0658.html
+   D          0         0    doc/html/r38_0659.html
+   D          0         0    doc/html/r38_0660.html
+   D          0         0    doc/html/r38_0661.html
+   D          0         0    doc/html/r38_0662.html
+   D          0         0    doc/html/r38_0663.html
+   D          0         0    doc/html/r38_0664.html
+   D          0         0    doc/html/r38_0665.html
+   D          0         0    doc/html/r38_0666.html
+   D          0         0    doc/html/r38_0667.html
+   D          0         0    doc/html/r38_0668.html
+   D          0         0    doc/html/r38_0669.html
+   D          0         0    doc/html/r38_0670.html
+   D          0         0    doc/html/r38_0671.html
+   D          0         0    doc/html/r38_0672.html
+   D          0         0    doc/html/r38_0673.html
+   D          0         0    doc/html/r38_0674.html
+   D          0         0    doc/html/r38_0675.html
+   D          0         0    doc/html/r38_0676.html
+   D          0         0    doc/html/r38_0677.html
+   D          0         0    doc/html/r38_0678.html
+   D          0         0    doc/html/r38_0679.html
+   D          0         0    doc/html/r38_0680.html
+   D          0         0    doc/html/r38_0681.html
+   D          0         0    doc/html/r38_0682.html
+   D          0         0    doc/html/r38_0683.html
+# There is a worry here - if the raw help data is changed and then this
+# HTML version is re-created there may be more (or fewer) files to list
+# and I will have to hand-update this manifest.
+   D          0         0    doc/html/r38_idx.html
+#endsource
+   D          1         0    doc/manual
+   D          0         0    doc/manual/abstract.tex
+   D          0         0    doc/manual/acknowl.tex
+   D          0         0    doc/manual/appenda.tex
+   D          0         0    doc/manual/aprop.tex
+   D          0         0    doc/manual/cfrac.tex
+   D          0         0    doc/manual/command.tex
+   D          0         0    doc/manual/convert.tex
+   D          0         0    doc/manual/exprn.tex
+   D          0         0    doc/manual/header.tex
+   D          0         0    doc/manual/hephys.tex
+   D          0         0    doc/manual/heugcd.tex
+   D          0         0    doc/manual/inter.tex
+   D          0         0    doc/manual/intro.tex
+   D          0         0    doc/manual/io.tex
+   D          0         0    doc/manual/list.tex
+   D          0         0    doc/manual/macros.tex
+   D          0         0    doc/manual/maintain.tex
+   D          0         0    doc/manual/manual.tex
+   D          0         0    doc/manual/map.tex
+   D          0         0    doc/manual/matrix.tex
+   D          0         0    doc/manual/oper.tex
+   D          0         0    doc/manual/oper2.tex
+   D          0         0    doc/manual/polyrat.tex
+   D          0         0    doc/manual/proc.tex
+   D          0         0    doc/manual/progstr.tex
+   D          0         0    doc/manual/rememb.tex
+   D          0         0    doc/manual/rest.tex
+   D          0         0    doc/manual/rlisp88.tex
+   D          0         0    doc/manual/rlispref.tex
+   D          0         0    doc/manual/solve.tex
+   D          0         0    doc/manual/statemnt.tex
+   D          0         0    doc/manual/structr.tex
+   D          0         0    doc/manual/subst.tex
+   D          0         0    doc/manual/symbolic.tex
+   D          0         0    doc/manual/title.tex
+   D          0         0    doc/manual/util.tex
+   D          1         0    doc/manual2
+   D          0         0    doc/manual2/algint.tex
+   D          0         0    doc/manual2/applysym.tex
+   D          0         0    doc/manual2/arnum.tex
+   D          0         0    doc/manual2/assist.tex
+   D          0         0    doc/manual2/atensor.tex
+   D          0         0    doc/manual2/avector.tex
+   D          0         0    doc/manual2/boolean.tex
+   D          0         0    doc/manual2/cali.tex
+   D          0         0    doc/manual2/camal.tex
+   D          0         0    doc/manual2/cgb.tex
+   D          0         0    doc/manual2/changevr.tex
+   D          0         0    doc/manual2/compact.tex
+   D          0         0    doc/manual2/crack.tex
+   D          0         0    doc/manual2/cvit.tex
+   D          0         0    doc/manual2/defint.tex
+   D          0         0    doc/manual2/desir.tex
+   D          0         0    doc/manual2/dfpart.tex
+   D          0         0    doc/manual2/dummy.tex
+   D          0         0    doc/manual2/eds.tex
+   D          0         0    doc/manual2/excalc.tex
+   D          0         0    doc/manual2/fide.tex
+   D          0         0    doc/manual2/fps.tex
+   D          0         0    doc/manual2/gentran.tex
+   D          0         0    doc/manual2/geometry.tex
+   D          0         0    doc/manual2/gnuplot.tex
+   D          0         0    doc/manual2/groebner.tex
+   D          0         0    doc/manual2/ideals.tex
+   D          0         0    doc/manual2/ineq.tex
+   D          0         0    doc/manual2/invbase.tex
+   D          0         0    doc/manual2/laplace.tex
+   D          0         0    doc/manual2/lie.tex
+   D          0         0    doc/manual2/limits.tex
+   D          0         0    doc/manual2/linalg.tex
+   D          0         0    doc/manual2/mathml.tex
+   D          0         0    doc/manual2/modsr.tex
+   D          0         0    doc/manual2/mrvlimit.tex
+   D          0         0    doc/manual2/ncpoly.tex
+   D          0         0    doc/manual2/normform.tex
+   D          0         0    doc/manual2/numeric.tex
+   D          0         0    doc/manual2/odesolve.tex
+   D          0         0    doc/manual2/orthovec.tex
+   D          0         0    doc/manual2/physop.tex
+   D          0         0    doc/manual2/pm.tex
+   D          0         0    doc/manual2/prolog1.tex
+   D          0         0    doc/manual2/prolog2.tex
+   D          0         0    doc/manual2/qsum.tex
+   D          0         0    doc/manual2/randpoly.tex
+   D          0         0    doc/manual2/rataprx.tex
+   D          0         0    doc/manual2/reacteqn.tex
+   D          0         0    doc/manual2/redlog.tex
+   D          0         0    doc/manual2/reset.tex
+   D          0         0    doc/manual2/residue.tex
+   D          0         0    doc/manual2/rlfi.tex
+   D          0         0    doc/manual2/roots.tex
+   D          0         0    doc/manual2/rsolve.tex
+   D          0         0    doc/manual2/scope.tex
+   D          0         0    doc/manual2/sets.tex
+   D          0         0    doc/manual2/sl.tex
+#  D          0         0    doc/manual2/sl.bib
+   D          0         0    doc/manual2/sparse.tex
+   D          0         0    doc/manual2/spde.tex
+   D          0         0    doc/manual2/specfn.tex
+   D          0         0    doc/manual2/specfn2.tex
+   D          0         0    doc/manual2/sum.tex
+   D          0         0    doc/manual2/susy2.tex
+   D          0         0    doc/manual2/symmetry.tex
+   D          0         0    doc/manual2/tail1.tex
+   D          0         0    doc/manual2/tail2.tex
+   D          0         0    doc/manual2/taylor.tex
+   D          0         0    doc/manual2/title.tex
+   D          0         0    doc/manual2/tps.tex
+   D          0         0    doc/manual2/tri.tex
+   D          0         0    doc/manual2/trigsimp.tex
+   D          0         0    doc/manual2/user2.tex
+   D          0         0    doc/manual2/wu.tex
+   D          0         0    doc/manual2/xcolor.tex
+   D          0         0    doc/manual2/xideal.tex
+   D          0         0    doc/manual2/zeilberg.tex
+   D          0         0    doc/manual2/ztrans.tex
+   D          1         0    doc/util
+   D          0         0    doc/util/bibl.bib
+   D          0         0    doc/util/sl.bib
+   D          0         0    doc/util/mkpdf.bat
+   D          0         0    doc/util/mkman2
+   D          0         0    doc/util/mkman2.bat
+   D          0         0    doc/util/r38.tex
+
+WUXDRL        1         0    lisp
+WUXDRL        1         0    lisp/csl
+    RL        1         0    lisp/csl/csl-c
+    RL        0         0    lisp/csl/csl-c/profile.dat
+    RL        0         0    lisp/csl/csl-c/u01.c
+    RL        0         0    lisp/csl/csl-c/u01.lsp
+    RL        0         0    lisp/csl/csl-c/u02.c
+    RL        0         0    lisp/csl/csl-c/u02.lsp
+    RL        0         0    lisp/csl/csl-c/u03.c
+    RL        0         0    lisp/csl/csl-c/u03.lsp
+    RL        0         0    lisp/csl/csl-c/u04.c
+    RL        0         0    lisp/csl/csl-c/u04.lsp
+    RL        0         0    lisp/csl/csl-c/u05.c
+    RL        0         0    lisp/csl/csl-c/u05.lsp
+    RL        0         0    lisp/csl/csl-c/u06.c
+    RL        0         0    lisp/csl/csl-c/u06.lsp
+    RL        0         0    lisp/csl/csl-c/u07.c
+    RL        0         0    lisp/csl/csl-c/u07.lsp
+    RL        0         0    lisp/csl/csl-c/u08.c
+    RL        0         0    lisp/csl/csl-c/u08.lsp
+    RL        0         0    lisp/csl/csl-c/u09.c
+    RL        0         0    lisp/csl/csl-c/u09.lsp
+    RL        0         0    lisp/csl/csl-c/u10.c
+    RL        0         0    lisp/csl/csl-c/u10.lsp
+    RL        0         0    lisp/csl/csl-c/u11.c
+    RL        0         0    lisp/csl/csl-c/u11.lsp
+    RL        0         0    lisp/csl/csl-c/u12.c
+    RL        0         0    lisp/csl/csl-c/u12.lsp
+     L        1         0    lisp/csl/cslbase
+     L        0         0    lisp/csl/cslbase/arith.h
+     L        0         0    lisp/csl/cslbase/arith01.c
+     L        0         0    lisp/csl/cslbase/arith02.c
+     L        0         0    lisp/csl/cslbase/arith03.c
+     L        0         0    lisp/csl/cslbase/arith04.c
+     L        0         0    lisp/csl/cslbase/arith05.c
+     L        0         0    lisp/csl/cslbase/arith06.c
+     L        0         0    lisp/csl/cslbase/arith07.c
+     L        0         0    lisp/csl/cslbase/arith08.c
+     L        0         0    lisp/csl/cslbase/arith09.c
+     L        0         0    lisp/csl/cslbase/arith10.c
+     L        0         0    lisp/csl/cslbase/arith11.c
+     L        0         0    lisp/csl/cslbase/arith12.c
+     L        0         0    lisp/csl/cslbase/build0.lsp
+     L        0         0    lisp/csl/cslbase/bytes.c
+     L        0         0    lisp/csl/cslbase/bytes.h
+     L        0         0    lisp/csl/cslbase/bytes1.c
+     L        0         0    lisp/csl/cslbase/byteuse.doc
+     L        0         0    lisp/csl/cslbase/c_applic.cpp
+     L        0         0    lisp/csl/cslbase/c_graph.cpp
+     L        0         0    lisp/csl/cslbase/c_render.cpp
+     L        0         0    lisp/csl/cslbase/c_text.cpp
+     L        0         0    lisp/csl/cslbase/c_viewpt.cpp
+     L        0         0    lisp/csl/cslbase/ccomp.lsp
+     L        0         0    lisp/csl/cslbase/ccomp.red
+     L        0         0    lisp/csl/cslbase/char.c
+     L        0         0    lisp/csl/cslbase/compat.lsp
+     L        0         0    lisp/csl/cslbase/compiler.lsp
+     L        0         0    lisp/csl/cslbase/compiler.red
+     L        0         0    lisp/csl/cslbase/copyrt
+     L        0         0    lisp/csl/cslbase/csl.c
+     L        0         1    lisp/csl/cslbase/csl.ico
+     L        0         0    lisp/csl/cslbase/csl.rc
+     L        0         1    lisp/csl/cslbase/csl.res
+     L        0         0    lisp/csl/cslbase/cslerror.h
+     L        0         0    lisp/csl/cslbase/cslmpi.c
+     L        0         0    lisp/csl/cslbase/cwin.h
+     L        0         0    lisp/csl/cslbase/cwin.hpp
+     L        0         1    lisp/csl/cslbase/cwin.ico
+     L        0         0    lisp/csl/cslbase/cwin.ps
+     L        0         0    lisp/csl/cslbase/cwin.rc
+     L        0         0    lisp/csl/cslbase/cwin.tex
+     L        0         0    lisp/csl/cslbase/cwinres.h
+     L        0         0    lisp/csl/cslbase/doc.h
+     L        0         0    lisp/csl/cslbase/dyn-lib.doc
+     L        0         0    lisp/csl/cslbase/entries.h
+     L        0         0    lisp/csl/cslbase/eval1.c
+     L        0         0    lisp/csl/cslbase/eval2.c
+     L        0         0    lisp/csl/cslbase/eval3.c
+     L        0         0    lisp/csl/cslbase/eval4.c
+     L        0         0    lisp/csl/cslbase/externs.h
+     L        0         0    lisp/csl/cslbase/extras.lsp
+     L        0         0    lisp/csl/cslbase/extras.red
+     L        0         0    lisp/csl/cslbase/fasl.c
+     L        0         0    lisp/csl/cslbase/fastgets.doc
+     L        0         0    lisp/csl/cslbase/filename.c
+     L        0         0    lisp/csl/cslbase/fileops.c
+     L        0         0    lisp/csl/cslbase/fns1.c
+     L        0         0    lisp/csl/cslbase/fns2.c
+     L        0         0    lisp/csl/cslbase/fns3.c
+     L        0         0    lisp/csl/cslbase/gc.c
+     L        0         0    lisp/csl/cslbase/igcc386.s
+     L        0         0    lisp/csl/cslbase/imularm.s
+     L        0         0    lisp/csl/cslbase/imuldos.asm
+     L        0         0    lisp/csl/cslbase/imulnt.asm
+     L        0         0    lisp/csl/cslbase/imulvc.c
+     L        0         0    lisp/csl/cslbase/imulwat.asm
+     L        0         0    lisp/csl/cslbase/lispfile.lsp
+     L        0         0    lisp/csl/cslbase/machine.h
+     L        0         0    lisp/csl/cslbase/makemake.c
+     L        0         0    lisp/csl/cslbase/mkbytes.red
+     L        0         0    lisp/csl/cslbase/mpipack.c
+     L        0         0    lisp/csl/cslbase/opcodes.red
+     L        0         0    lisp/csl/cslbase/opnames.c
+     L        0         0    lisp/csl/cslbase/preserve.c
+     L        0         0    lisp/csl/cslbase/print.c
+     L        0         0    lisp/csl/cslbase/pro.c
+     L        0         0    lisp/csl/cslbase/procl.c
+     L        0         1    lisp/csl/cslbase/r38.ico
+     L        0         0    lisp/csl/cslbase/read.c
+     L        0         0    lisp/csl/cslbase/read.h
+     L        0         1    lisp/csl/cslbase/reddoc.ico
+     L        0         0    lisp/csl/cslbase/restart.c
+     L        0         1    lisp/csl/cslbase/rlisp.ico
+     L        0         0    lisp/csl/cslbase/rlisp.lsp
+     L        0         0    lisp/csl/cslbase/scandir.c
+     L        0         0    lisp/csl/cslbase/sockhdr.h
+     L        0         0    lisp/csl/cslbase/stdwin.h
+     L        0         0    lisp/csl/cslbase/stream.h
+     L        0         0    lisp/csl/cslbase/stubs.c
+     L        0         0    lisp/csl/cslbase/sys.h
+     L        0         0    lisp/csl/cslbase/sysarm.c
+     L        0         0    lisp/csl/cslbase/syscwin.c
+     L        0         0    lisp/csl/cslbase/syscyg.c
+     L        0         0    lisp/csl/cslbase/sysdos.c
+     L        0         0    lisp/csl/cslbase/sysmac.c
+     L        0         0    lisp/csl/cslbase/sysstmac.c
+     L        0         0    lisp/csl/cslbase/sysunix.c
+     L        0         0    lisp/csl/cslbase/sysvms.c
+     L        0         0    lisp/csl/cslbase/sysxwin.c
+     L        0         0    lisp/csl/cslbase/tags.h
+     L        0         0    lisp/csl/cslbase/version.h
+     L        0         0    lisp/csl/cslbase/whereis.lsp
+WU DRL        0         0    lisp/csl/readme.txt
+WUX RL        1         0    lisp/csl/util
+    R         0         0    lisp/csl/util/boot38
+    R         0         0    lisp/csl/util/boot38.bat
+     L        0         0    lisp/csl/util/borcsl.lnk
+     L        0         0    lisp/csl/util/borr38.lnk
+    R         0         0    lisp/csl/util/build38.lsp
+     L        0         0    lisp/csl/util/c-code38
+     L        0         0    lisp/csl/util/c-code38.bat
+     L        0         0    lisp/csl/util/c-code38.red
+  X R         0         0    lisp/csl/util/checkall
+  X R         0         0    lisp/csl/util/checkall.bat
+  X R         0         0    lisp/csl/util/checkall.red
+    R         0         0    lisp/csl/util/clash
+    R         0         0    lisp/csl/util/clash.bat
+    R         0         0    lisp/csl/util/clash.red
+  X R         0         0    lisp/csl/util/config.lsp
+     L        0         1    lisp/csl/util/csl.ico
+     L        0         0    lisp/csl/util/csl.rc
+     L        0         1    lisp/csl/util/cwin.ico
+    RL        0         0    lisp/csl/util/fastgets.lsp
+    R         0         0    lisp/csl/util/full38
+    R         0         0    lisp/csl/util/full38.bat
+    RL        0         0    lisp/csl/util/getconf.red
+    R         0         0    lisp/csl/util/helpdata
+    R         0         0    lisp/csl/util/makeall
+    R         0         0    lisp/csl/util/makeall.bat
+    RL        0         0    lisp/csl/util/makebase
+    RL        0         0    lisp/csl/util/Makefile.alpha
+    RL        0         0    lisp/csl/util/Makefile.cc
+    RL        0         0    lisp/csl/util/Makefile.cyg
+    RL        0         0    lisp/csl/util/Makefile.gcc
+    RL        0         0    lisp/csl/util/Makefile.linux
+    RL        0         0    lisp/csl/util/Makefile.sgi
+    RL        0         0    lisp/csl/util/Makefile.solaris
+    RL        0         0    lisp/csl/util/Makefile.sunos
+    RL        0         0    lisp/csl/util/Makefile.ultra
+    RL        0         0    lisp/csl/util/Makefile.vc
+    RL        0         0    lisp/csl/util/Makefile.w32
+    RL        0         0    lisp/csl/util/makemake.c
+    RL        0         0    lisp/csl/util/makes.bat
+    RL        0         0    lisp/csl/util/Makew32.dbg
+    R         0         0    lisp/csl/util/package
+    R         0         0    lisp/csl/util/package.bat
+    R         0         0    lisp/csl/util/package.red
+ U  R         0         0    lisp/csl/util/patchup
+W   R         0         0    lisp/csl/util/patchup.bat
+WU  R         0         0    lisp/csl/util/patchup.red
+     L        0         0    lisp/csl/util/profile
+     L        0         0    lisp/csl/util/profile.bat
+     L        0         0    lisp/csl/util/profile.red
+     L        0         1    lisp/csl/util/r38.ico
+    R         0         1    lisp/csl/util/r38.inf
+     L        0         0    lisp/csl/util/r38.rc
+     L        0         1    lisp/csl/util/r38.res
+     L        0         1    lisp/csl/util/reddoc.ico
+ U  RL        0         0    lisp/csl/util/relink
+    RL        0         0    lisp/csl/util/setexec
+  X R         0         0    lisp/csl/util/testall
+  X R         0         0    lisp/csl/util/testall.bat
+  X R         0         0    lisp/csl/util/testall.red
+  X R         0         0    lisp/csl/util/testrest
+  X R         0         0    lisp/csl/util/testrest.bat
+  X R         0         0    lisp/csl/util/testrest.red
+    R         0         0    lisp/csl/util/testslow
+    R         0         0    lisp/csl/util/testslow.bat
+# The next few lines show what I might do for other compilers/systems
+    RL        1         0    lisp/csl/winvc
+    RL        0         0    lisp/csl/winvc/Makefile
+    RL        1         0    lisp/csl/winvc/log
+ U DRL        1         0    lisp/csl/linux
+ U  RL        0         0    lisp/csl/linux/Makefile
+# For Linux the rules associated with the Gnu Public Library License
+# mean that I must distribute object code with my executable so that
+# a customer has the opportunity to re-link with any newer versions of
+# the libraries. See ../util/relink for how to do this.
+ U            0         1    lisp/csl/linux/arith01.o
+ U            0         1    lisp/csl/linux/arith02.o
+ U            0         1    lisp/csl/linux/arith03.o
+ U            0         1    lisp/csl/linux/arith04.o
+ U            0         1    lisp/csl/linux/arith05.o
+ U            0         1    lisp/csl/linux/arith06.o
+ U            0         1    lisp/csl/linux/arith07.o
+ U            0         1    lisp/csl/linux/arith08.o
+ U            0         1    lisp/csl/linux/arith09.o
+ U            0         1    lisp/csl/linux/arith10.o
+ U            0         1    lisp/csl/linux/arith11.o
+ U            0         1    lisp/csl/linux/arith12.o
+ U            0         1    lisp/csl/linux/bytes.o
+ U            0         1    lisp/csl/linux/bytes1.o
+ U            0         1    lisp/csl/linux/char.o
+ U            0         1    lisp/csl/linux/csl
+ U            0         1    lisp/csl/linux/csl.o
+ U            0         1    lisp/csl/linux/cslmpi.o
+ U            0         1    lisp/csl/linux/eval1.o
+ U            0         1    lisp/csl/linux/eval2.o
+ U            0         1    lisp/csl/linux/eval3.o
+ U            0         1    lisp/csl/linux/eval4.o
+ U            0         1    lisp/csl/linux/fasl.o
+ U            0         1    lisp/csl/linux/fns1.o
+ U            0         1    lisp/csl/linux/fns2.o
+ U            0         1    lisp/csl/linux/fns3.o
+ U            0         1    lisp/csl/linux/gc.o
+ U            0         0    lisp/csl/linux/Makefile
+ U            0         1    lisp/csl/linux/preserve.o
+ U            0         1    lisp/csl/linux/print.o
+ U            0         1    lisp/csl/linux/r38
+#source lisp/csl/linux ../win32
+# use the image file I made under win32, please...
+ U            0         1    lisp/csl/linux/r38.img
+ U            0         1    lisp/csl/linux/csl.img
+ U DRL        1         0    lisp/csl/linux/log
+ U D          0         0    lisp/csl/linux/log/checkall.log
+ U D          0         0    lisp/csl/linux/log/full38.log
+ U D          0         0    lisp/csl/linux/log/testall.log
+ U D          0         0    lisp/csl/linux/log/times.log
+#endsource
+ U            0         1    lisp/csl/linux/read.o
+ U            0         1    lisp/csl/linux/restart.o
+ U            0         1    lisp/csl/linux/stubs.o
+ U            0         1    lisp/csl/linux/sysunix.o
+ U            0         1    lisp/csl/linux/u01.o
+ U            0         1    lisp/csl/linux/u02.o
+ U            0         1    lisp/csl/linux/u03.o
+ U            0         1    lisp/csl/linux/u04.o
+ U            0         1    lisp/csl/linux/u05.o
+ U            0         1    lisp/csl/linux/u06.o
+ U            0         1    lisp/csl/linux/u07.o
+ U            0         1    lisp/csl/linux/u08.o
+ U            0         1    lisp/csl/linux/u09.o
+ U            0         1    lisp/csl/linux/u10.o
+ U            0         1    lisp/csl/linux/u11.o
+ U            0         1    lisp/csl/linux/u12.o
+    RL        1         0    lisp/csl/solaris
+    RL        0         0    lisp/csl/solaris/Makefile
+    RL        1         0    lisp/csl/solaris/log
+# end of oddments
+W  DRL        1         0    lisp/csl/win32
+W             0         1    lisp/csl/win32/csl.exe
+W             0         1    lisp/csl/win32/csl.img
+W             0         1    lisp/csl/win32/cslc.exe
+W  DRL        1         0    lisp/csl/win32/log
+W  D          0         0    lisp/csl/win32/log/checkall.log
+W  D          0         0    lisp/csl/win32/log/full38.log
+W  D          0         0    lisp/csl/win32/log/testall.log
+W  D          0         0    lisp/csl/win32/log/times.log
+    RL        0         0    lisp/csl/win32/Makefile
+W             0         1    lisp/csl/win32/r38.exe
+W             0         1    lisp/csl/win32/r38.hlp
+W             0         1    lisp/csl/win32/r38.img
+W             0         1    lisp/csl/win32/r38c.exe
+WUXDRL        1         0    log
+    RL        0         0    package.red
+  XDR         1         0    packages
+  XDR         1         0    packages/alg
+    R         0         0    packages/alg/alg-form.red
+    R         0         0    packages/alg/alg.red
+#source packages/alg ../../../log
+  X           0         0    packages/alg/alg.rlg
+#endsource
+  X R         0         0    packages/alg/alg.tst
+    R         0         0    packages/alg/algbool.red
+    R         0         0    packages/alg/algdcl.red
+    R         0         0    packages/alg/coeff.red
+    R         0         0    packages/alg/depend.red
+    R         0         0    packages/alg/elem.red
+    R         0         0    packages/alg/eqn.red
+    R         0         0    packages/alg/exptchk.red
+    R         0         0    packages/alg/extout.red
+    R         0         0    packages/alg/fac.red
+    R         0         0    packages/alg/farith.red
+    R         0         0    packages/alg/forall.red
+    R         0         0    packages/alg/gcdchk.red
+    R         0         0    packages/alg/general.red
+    R         0         0    packages/alg/genmod.red
+    R         0         0    packages/alg/heugcd.red
+    R         0         0    packages/alg/intro.red
+    R         0         0    packages/alg/linop.red
+    R         0         0    packages/alg/logsort.red
+    R         0         0    packages/alg/map.red
+    R         0         0    packages/alg/maxmin.red
+    R         0         0    packages/alg/mkgroup.red
+    R         0         0    packages/alg/nestrad.red
+    R         0         0    packages/alg/nssimp.red
+    R         0         0    packages/alg/numsup.red
+    R         0         0    packages/alg/opmtch.red
+    R         0         0    packages/alg/order.red
+    R         0         0    packages/alg/part.red
+    R         0         0    packages/alg/prep.red
+    R         0         0    packages/alg/random.red
+    R         0         0    packages/alg/reval.red
+    R         0         0    packages/alg/rmsubs.red
+    R         0         0    packages/alg/showrule.red
+    R         0         0    packages/alg/simp.red
+    R         0         0    packages/alg/simplog.red
+    R         0         0    packages/alg/smallmod.red
+    R         0         0    packages/alg/sort.red
+    R         0         0    packages/alg/str.red
+    R         0         0    packages/alg/sub.red
+    R         0         0    packages/alg/weight.red
+    R         0         0    packages/alg/zfactor.red
+  XDR         1         0    packages/algint
+    R         0         0    packages/algint/afactor.red
+    R         0         0    packages/algint/algfn.red
+    R         0         0    packages/algint/algint.red
+#source packages/algint ../../../log
+  X           0         0    packages/algint/algint.rlg
+#endsource
+  X R         0         0    packages/algint/algint.tst
+    R         0         0    packages/algint/antisubs.red
+    R         0         0    packages/algint/coates.red
+    R         0         0    packages/algint/coatesid.red
+    R         0         0    packages/algint/findmagc.red
+    R         0         0    packages/algint/findres.red
+    R         0         0    packages/algint/finitise.red
+    R         0         0    packages/algint/fixsubf.red
+    R         0         0    packages/algint/fracdi.red
+    R         0         0    packages/algint/genus.red
+    R         0         0    packages/algint/intbasis.red
+    R         0         0    packages/algint/inttaylr.red
+    R         0         0    packages/algint/jhddiff.red
+    R         0         0    packages/algint/jhdriver.red
+    R         0         0    packages/algint/linrel.red
+    R         0         0    packages/algint/log2atan.red
+    R         0         0    packages/algint/maninp.red
+    R         0         0    packages/algint/modify.red
+    R         0         0    packages/algint/modlineq.red
+    R         0         0    packages/algint/nagell.red
+    R         0         0    packages/algint/nbasis.red
+    R         0         0    packages/algint/places.red
+    R         0         0    packages/algint/precoats.red
+    R         0         0    packages/algint/removecm.red
+    R         0         0    packages/algint/sqfrnorm.red
+    R         0         0    packages/algint/substns.red
+    R         0         0    packages/algint/torsionb.red
+    R         0         0    packages/algint/wstrass.red
+    R         0         0    packages/algint/zmodule.red
+  XDR         1         0    packages/arith
+    R         0         0    packages/arith/arith.red
+#source packages/arith ../../../log
+  X           0         0    packages/arith/arith.rlg
+#endsource
+  X R         0         0    packages/arith/arith.tst
+    R         0         0    packages/arith/bfauxil.red
+    R         0         0    packages/arith/bfelem.red
+    R         0         0    packages/arith/comprd.red
+    R         0         0    packages/arith/crelem.red
+    R         0         0    packages/arith/math.red
+    R         0         0    packages/arith/paraset.red
+    R         0         0    packages/arith/rdelem.red
+    R         0         0    packages/arith/rounded.red
+    R         0         0    packages/arith/smlbflot.red
+  XDR         1         0    packages/arnum
+    R         0         0    packages/arnum/arinv.red
+   D          0         0    packages/arnum/arnum.bib
+    R         0         0    packages/arnum/arnum.red
+#source packages/arnum ../../../log
+  X           0         0    packages/arnum/arnum.rlg
+#endsource
+   D          0         0    packages/arnum/arnum.tex
+  X R         0         0    packages/arnum/arnum.tst
+  XDR         1         0    packages/assist
+    R         0         0    packages/assist/assist.red
+#source packages/assist ../../../log
+  X           0         0    packages/assist/assist.rlg
+#endsource
+   D          0         0    packages/assist/assist.tex
+  X R         0         0    packages/assist/assist.tst
+    R         0         0    packages/assist/auxitens.red
+    R         0         0    packages/assist/backtrck.red
+    R         0         0    packages/assist/baglist.red
+    R         0         0    packages/assist/cantens.red
+#source packages/assist ../../../log
+  X           0         0    packages/assist/cantens.rlg
+#endsource
+   D          0         0    packages/assist/cantens.tex
+  X R         0         0    packages/assist/cantens.tst
+    R         0         0    packages/assist/checkind.red
+    R         0         0    packages/assist/control.red
+    R         0         0    packages/assist/contrtns.red
+    R         0         0    packages/assist/ctintro.red
+    R         0         0    packages/assist/dummy.red
+#source packages/assist ../../../log
+  X           0         0    packages/assist/dummy.rlg
+#endsource
+   D          0         0    packages/assist/dummy.tex
+  X R         0         0    packages/assist/dummy.tst
+    R         0         0    packages/assist/dummycnt.red
+    R         0         0    packages/assist/genpurfn.red
+    R         0         0    packages/assist/gentens.red
+    R         0         0    packages/assist/grassman.red
+    R         0         0    packages/assist/hcvctors.red
+    R         0         0    packages/assist/helpasst.red
+    R         0         0    packages/assist/matrext.red
+    R         0         0    packages/assist/opertens.red
+    R         0         0    packages/assist/partitns.red
+    R         0         0    packages/assist/perms.red
+    R         0         0    packages/assist/polyexns.red
+   D          0         0    packages/assist/readme
+####source packages/assist ../../../log
+  X           0         0    packages/assist/selfgra.rlg
+####endsource
+  X R         0         0    packages/assist/selfgra.tst
+    R         0         0    packages/assist/sl2psl.red
+    R         0         0    packages/assist/spaces.red
+    R         0         0    packages/assist/switchxt.red
+    R         0         0    packages/assist/transfns.red
+    R         0         0    packages/assist/vectorop.red
+  XDR         1         0    packages/atensor
+   D          0         0    packages/atensor/atensor.ps
+    R         0         0    packages/atensor/atensor.red
+#source packages/atensor ../../../log
+  X           0         0    packages/atensor/atensor.rlg
+#endsource
+  X R         0         0    packages/atensor/atensor.tst
+    R         0         0    packages/atensor/basis.red
+    R         0         0    packages/atensor/dummy1.red
+    R         0         0    packages/atensor/dummy2.red
+    R         0         0    packages/atensor/perm1.red
+    R         0         0    packages/atensor/pvector.red
+    R         0         0    packages/atensor/tensor.red
+    R         0         0    packages/atensor/tensor1.red
+    R         0         0    packages/atensor/tensorio.red
+  XDR         1         0    packages/avector
+    R         0         0    packages/avector/avector.red
+#source packages/avector ../../../log
+  X           0         0    packages/avector/avector.rlg
+#endsource
+   D          0         0    packages/avector/avector.tex
+  X R         0         0    packages/avector/avector.tst
+  XDR         1         0    packages/cali
+    R         0         0    packages/cali/bas.red
+    R         0         0    packages/cali/bcsf.red
+    R         0         0    packages/cali/cali.red
+#source packages/cali ../../../log
+  X           0         0    packages/cali/cali.rlg
+#endsource
+   D          0         0    packages/cali/cali.tex
+  X R         0         0    packages/cali/cali.tst
+    R         0         0    packages/cali/calimat.red
+    R         0         0    packages/cali/dpmat.red
+    R         0         0    packages/cali/dpoly.red
+    R         0         0    packages/cali/groeb.red
+    R         0         0    packages/cali/groebf.red
+    R         0         0    packages/cali/hf.red
+    R         0         0    packages/cali/intf.red
+    R         0         0    packages/cali/lf.red
+    R         0         0    packages/cali/matop.red
+    R         0         0    packages/cali/mo.red
+    R         0         0    packages/cali/moid.red
+    R         0         0    packages/cali/odim.red
+    R         0         0    packages/cali/prime.red
+    R         0         0    packages/cali/quot.red
+    R         0         0    packages/cali/red.red
+    R         0         0    packages/cali/res.red
+    R         0         0    packages/cali/ring.red
+    R         0         0    packages/cali/scripts.red
+    R         0         0    packages/cali/triang.red
+  XDR         1         0    packages/camal
+   D          0         0    packages/camal/camal.bib
+    R         0         0    packages/camal/camal.red
+#source packages/camal ../../../log
+  X           0         0    packages/camal/camal.rlg
+#endsource
+   D          0         0    packages/camal/camal.tex
+  X R         0         0    packages/camal/camal.tst
+    R         0         0    packages/camal/fourdom.red
+    R         0         0    packages/camal/fourplus.red
+    R         0         0    packages/camal/hdiff.red
+    R         0         0    packages/camal/hsub.red
+    R         0         0    packages/camal/makefour.red
+  XDR         1         0    packages/crack
+    R         0         0    packages/crack/applysym.red
+#source packages/crack ../../../log
+  X           0         0    packages/crack/applysym.rlg
+#endsource
+   D          0         0    packages/crack/applysym.tex
+  X R         0         0    packages/crack/applysym.tst
+   D          0         0    packages/crack/conca.tex
+    R         0         0    packages/crack/conlaw.red
+#source packages/crack ../../../log
+  X           0         0    packages/crack/conlaw.rlg
+#endsource
+   D          0         0    packages/crack/conlaw.tex
+  X R         0         0    packages/crack/conlaw.tst
+   D          0         0    packages/crack/conlaw.txt
+    R         0         0    packages/crack/conlaw0.red
+    R         0         0    packages/crack/conlaw1.red
+    R         0         0    packages/crack/conlaw2.red
+    R         0         0    packages/crack/conlaw3.red
+    R         0         0    packages/crack/crack.red
+   D          0         0    packages/crack/crack.tex
+    R         0         0    packages/crack/crdec.red
+    R         0         0    packages/crack/crequsol.red
+    R         0         0    packages/crack/crgensep.red
+    R         0         0    packages/crack/crinit.red
+    R         0         0    packages/crack/crint.red
+    R         0         0    packages/crack/crintfix.red
+    R         0         0    packages/crack/crmain.red
+    R         0         0    packages/crack/crorder.red
+    R         0         0    packages/crack/crsep.red
+    R         0         0    packages/crack/crshort.red
+    R         0         0    packages/crack/crsimp.red
+    R         0         0    packages/crack/crsimpso.red
+    R         0         0    packages/crack/crstart.red
+    R         0         0    packages/crack/crutil.red
+    R         0         0    packages/crack/liepde.red
+#source packages/crack ../../../log
+  X           0         0    packages/crack/liepde.rlg
+#endsource
+   D          0         0    packages/crack/liepde.tex
+  X R         0         0    packages/crack/liepde.tst
+   D          0         0    packages/crack/liepde.txt
+   D          0         0    packages/crack/README
+  XDR         1         0    packages/defint
+    R         0         0    packages/defint/defint.red
+#source packages/defint ../../../log
+  X           0         0    packages/defint/defint.rlg
+#endsource
+   D          0         0    packages/defint/defint.tex
+  X R         0         0    packages/defint/defint.tst
+    R         0         0    packages/defint/defint0.red
+    R         0         0    packages/defint/definta.red
+    R         0         0    packages/defint/defintb.red
+    R         0         0    packages/defint/defintc.red
+    R         0         0    packages/defint/defintd.red
+    R         0         0    packages/defint/definte.red
+    R         0         0    packages/defint/defintf.red
+    R         0         0    packages/defint/defintg.red
+    R         0         0    packages/defint/definth.red
+    R         0         0    packages/defint/definti.red
+    R         0         0    packages/defint/defintj.red
+    R         0         0    packages/defint/defintk.red
+    R         0         0    packages/defint/defintx.red
+  XDR         1         0    packages/dipoly
+    R         0         0    packages/dipoly/a2dip.red
+    R         0         0    packages/dipoly/bcoeff.red
+    R         0         0    packages/dipoly/condense.red
+    R         0         0    packages/dipoly/dip2a.red
+    R         0         0    packages/dipoly/dipoly.red
+   D          0         0    packages/dipoly/dipoly.txt
+    R         0         0    packages/dipoly/dipoly1.red
+    R         0         0    packages/dipoly/dipprint.red
+    R         0         0    packages/dipoly/dipvars.red
+    R         0         0    packages/dipoly/expvec.red
+    R         0         0    packages/dipoly/torder.red
+    R         0         0    packages/dipoly/vdp2dip.red
+    R         0         0    packages/dipoly/vdpcom.red
+  XDR         1         0    packages/eds
+    R         0         0    packages/eds/contact.red
+    R         0         0    packages/eds/disjoin.red
+    R         0         0    packages/eds/eds.red
+#source packages/eds ../../../log
+  X           0         0    packages/eds/eds.rlg
+#endsource
+   D          0         0    packages/eds/eds.tex
+  X R         0         0    packages/eds/eds.tst
+    R         0         0    packages/eds/edsaux.red
+    R         0         0    packages/eds/edscfrm.red
+    R         0         0    packages/eds/edsequiv.red
+    R         0         0    packages/eds/edseval.red
+    R         0         0    packages/eds/edsexptl.red
+    R         0         0    packages/eds/edsnorml.red
+    R         0         0    packages/eds/edspatch.red
+    R         0         0    packages/eds/edspde.red
+    R         0         0    packages/eds/edssolve.red
+    R         0         0    packages/eds/edsuser.red
+    R         0         0    packages/eds/element.red
+    R         0         0    packages/eds/invol.red
+    R         0         0    packages/eds/prolong.red
+    R         0         0    packages/eds/pullback.red
+    R         0         0    packages/eds/restrict.red
+    R         0         0    packages/eds/systems.red
+    R         0         0    packages/eds/tableaux.red
+    R         0         0    packages/eds/transfrm.red
+  XDR         1         0    packages/excalc
+    R         0         0    packages/excalc/degform.red
+    R         0         0    packages/excalc/exaux.red
+    R         0         0    packages/excalc/excalc.red
+#source packages/excalc ../../../log
+  X           0         0    packages/excalc/excalc.rlg
+#endsource
+   D          0         0    packages/excalc/excalc.tex
+  X R         0         0    packages/excalc/excalc.tst
+    R         0         0    packages/excalc/exdf.red
+    R         0         0    packages/excalc/exintro.red
+    R         0         0    packages/excalc/exlists.red
+    R         0         0    packages/excalc/forder.red
+    R         0         0    packages/excalc/frames.red
+    R         0         0    packages/excalc/hodge.red
+    R         0         0    packages/excalc/idexf.red
+    R         0         0    packages/excalc/indices.red
+    R         0         0    packages/excalc/indsymm.red
+    R         0         0    packages/excalc/indxprin.red
+    R         0         0    packages/excalc/innerprd.red
+    R         0         0    packages/excalc/liedf.red
+    R         0         0    packages/excalc/lievalfm.red
+    R         0         0    packages/excalc/partdf.red
+    R         0         0    packages/excalc/partitsf.red
+    R         0         0    packages/excalc/vardf.red
+    R         0         0    packages/excalc/vecanlys.red
+    R         0         0    packages/excalc/wedge.red
+  XDR         1         0    packages/factor
+    R         0         0    packages/factor/alphas.red
+    R         0         0    packages/factor/bigmodp.red
+    R         0         0    packages/factor/coeffts.red
+    R         0         0    packages/factor/degsets.red
+    R         0         0    packages/factor/ezgcd.red
+    R         0         0    packages/factor/ezgcdf.red
+    R         0         0    packages/factor/facmisc.red
+    R         0         0    packages/factor/facmod.red
+    R         0         0    packages/factor/facprim.red
+    R         0         0    packages/factor/facstr.red
+    R         0         0    packages/factor/factor.red
+#source packages/factor ../../../log
+  X           0         0    packages/factor/factor.rlg
+#endsource
+  X R         0         0    packages/factor/factor.tst
+    R         0         0    packages/factor/facuni.red
+    R         0         0    packages/factor/imageset.red
+    R         0         0    packages/factor/interfac.red
+    R         0         0    packages/factor/linmodp.red
+    R         0         0    packages/factor/mhensfns.red
+    R         0         0    packages/factor/modpoly.red
+    R         0         0    packages/factor/multihen.red
+    R         0         0    packages/factor/pfacmult.red
+    R         0         0    packages/factor/pfactor.red
+    R         0         0    packages/factor/unihens.red
+    R         0         0    packages/factor/vecpoly.red
+  XDR         1         0    packages/fide
+    R         0         0    packages/fide/approx.red
+    R         0         0    packages/fide/charpol.red
+    R         0         0    packages/fide/discret.red
+    R         0         0    packages/fide/expres.red
+    R         0         0    packages/fide/fide.red
+#source packages/fide ../../../log
+  X           0         0    packages/fide/fide.rlg
+#endsource
+  X R         0         0    packages/fide/fide.tst
+   D          0         0    packages/fide/fide.txt
+    R         0         0    packages/fide/fide1.red
+###source packages/fide ../../../log
+  X           0         0    packages/fide/fide1.rlg
+###endsource
+    R         0         0    packages/fide/hurwp.red
+    R         0         0    packages/fide/iimet.red
+    R         0         0    packages/fide/linband.red
+  XDR         1         0    packages/gentran
+   D          0         0    packages/gentran/gentran.bib
+    R         0         0    packages/gentran/gentran.red
+#source packages/gentran ../../../log
+  X           0         0    packages/gentran/gentran.rlg
+#endsource
+   D          0         0    packages/gentran/gentran.tex
+  X R         0         0    packages/gentran/gentran.tst
+    R         0         0    packages/gentran/goutput.red
+    R         0         0    packages/gentran/gparser.red
+    R         0         0    packages/gentran/intrfc.red
+    R         0         0    packages/gentran/lspc.red
+    R         0         0    packages/gentran/lspfor.red
+    R         0         0    packages/gentran/lsppasc.red
+    R         0         0    packages/gentran/lsprat.red
+    R         0         0    packages/gentran/pre.red
+    R         0         0    packages/gentran/redlsp.red
+    R         0         0    packages/gentran/segmnt.red
+    R         0         0    packages/gentran/templt.red
+    R         0         0    packages/gentran/utils.red
+  XDR         1         0    packages/geometry
+   D          0         0    packages/geometry/geometry.bib
+    R         0         0    packages/geometry/geometry.red
+#source packages/geometry ../../../log
+  X           0         0    packages/geometry/geometry.rlg
+#endsource
+   D          0         0    packages/geometry/geometry.tex
+  X R         0         0    packages/geometry/geometry.tst
+  XDR         1         0    packages/groebner
+    R         0         0    packages/groebner/buchbg.red
+    R         0         0    packages/groebner/glexconv.red
+    R         0         0    packages/groebner/grinter2.red
+    R         0         0    packages/groebner/grinterf.red
+    R         0         0    packages/groebner/groebcri.red
+    R         0         0    packages/groebner/groebfac.red
+    R         0         0    packages/groebner/groebidq.red
+    R         0         0    packages/groebner/groebman.red
+    R         0         0    packages/groebner/groebmes.red
+   D          0         0    packages/groebner/groebner.bib
+    R         0         0    packages/groebner/groebner.red
+#source packages/groebner ../../../log
+  X           0         0    packages/groebner/groebner.rlg
+#endsource
+   D          0         0    packages/groebner/groebner.tex
+  X R         0         0    packages/groebner/groebner.tst
+    R         0         0    packages/groebner/groebnr2.red
+    R         0         0    packages/groebner/groebopt.red
+    R         0         0    packages/groebner/groebres.red
+    R         0         0    packages/groebner/groebrst.red
+    R         0         0    packages/groebner/groebsea.red
+    R         0         0    packages/groebner/groebsor.red
+    R         0         0    packages/groebner/groebspa.red
+    R         0         0    packages/groebner/groebtra.red
+    R         0         0    packages/groebner/groesolv.red
+    R         0         0    packages/groebner/groeweak.red
+    R         0         0    packages/groebner/hggroeb.red
+    R         0         0    packages/groebner/hilbertp.red
+    R         0         0    packages/groebner/hilberts.red
+    R         0         0    packages/groebner/ideals.red
+#source packages/groebner ../../../log
+  X           0         0    packages/groebner/ideals.rlg
+#endsource
+   D          0         0    packages/groebner/ideals.tex
+  X R         0         0    packages/groebner/ideals.tst
+    R         0         0    packages/groebner/kredelw.red
+    R         0         0    packages/groebner/kuechl.red
+    R         0         0    packages/groebner/traverso.red
+  XDR         1         0    packages/hephys
+    R         0         0    packages/hephys/cvit.red
+#source packages/hephys ../../../log
+  X           0         0    packages/hephys/cvit.rlg
+#endsource
+   D          0         0    packages/hephys/cvit.tex
+  X R         0         0    packages/hephys/cvit.tst
+    R         0         0    packages/hephys/cvitmap.red
+    R         0         0    packages/hephys/evalmaps.red
+    R         0         0    packages/hephys/hephys.red
+    R         0         0    packages/hephys/intfierz.red
+    R         0         0    packages/hephys/map2strn.red
+    R         0         0    packages/hephys/noncom2.red
+    R         0         0    packages/hephys/physop.red
+#source packages/hephys ../../../log
+  X           0         0    packages/hephys/physop.rlg
+#endsource
+   D          0         0    packages/hephys/physop.tex
+  X R         0         0    packages/hephys/physop.tst
+    R         0         0    packages/hephys/red2cvit.red
+  XDR         1         0    packages/int
+    R         0         0    packages/int/contents.red
+    R         0         0    packages/int/csolve.red
+    R         0         0    packages/int/df2q.red
+    R         0         0    packages/int/dint.red
+    R         0         0    packages/int/distrib.red
+    R         0         0    packages/int/divide.red
+    R         0         0    packages/int/driver.red
+    R         0         0    packages/int/hacksqrt.red
+    R         0         0    packages/int/halfangl.red
+    R         0         0    packages/int/ibasics.red
+    R         0         0    packages/int/idepend.red
+    R         0         0    packages/int/int.red
+#source packages/int ../../../log
+  X           0         0    packages/int/int.rlg
+#endsource
+  X R         0         0    packages/int/int.tst
+    R         0         0    packages/int/intfac.red
+    R         0         0    packages/int/isolve.red
+    R         0         0    packages/int/jpatches.red
+    R         0         0    packages/int/makevars.red
+    R         0         0    packages/int/reform.red
+    R         0         0    packages/int/simpsqrt.red
+    R         0         0    packages/int/sqrtf.red
+    R         0         0    packages/int/symint.red
+    R         0         0    packages/int/tidysqrt.red
+    R         0         0    packages/int/trcase.red
+    R         0         0    packages/int/trialdiv.red
+    R         0         0    packages/int/vect.red
+  XDR         1         0    packages/invbase
+    R         0         0    packages/invbase/invbase.red
+#source packages/invbase ../../../log
+  X           0         0    packages/invbase/invbase.rlg
+#endsource
+   D          0         0    packages/invbase/invbase.tex
+  X R         0         0    packages/invbase/invbase.tst
+    R         0         0    packages/invbase/invbcomp.red
+    R         0         0    packages/invbase/invbint.red
+  XDR         1         0    packages/laplace
+    R         0         0    packages/laplace/laplace.red
+#source packages/laplace ../../../log
+  X           0         0    packages/laplace/laplace.rlg
+#endsource
+  X R         0         0    packages/laplace/laplace.tst
+   D          0         0    packages/laplace/laplace.txt
+  XDR         1         0    packages/linalg
+    R         0         0    packages/linalg/cholesky.red
+    R         0         0    packages/linalg/gramschm.red
+    R         0         0    packages/linalg/lamatrix.red
+    R         0         0    packages/linalg/linalg.red
+#source packages/linalg ../../../log
+  X           0         0    packages/linalg/linalg.rlg
+#endsource
+   D          0         0    packages/linalg/linalg.tex
+  X R         0         0    packages/linalg/linalg.tst
+    R         0         0    packages/linalg/ludecom.red
+    R         0         0    packages/linalg/simplex.red
+    R         0         0    packages/linalg/svd.red
+    R         0         0    packages/linalg/tadjoint.red
+  XDR         1         0    packages/mathml
+    R         0         0    packages/mathml/mathml.red
+#source packages/mathml ../../../log
+  X           0         0    packages/mathml/mathml.rlg
+#endsource
+   D          0         0    packages/mathml/mathml.tex
+  X R         0         0    packages/mathml/mathml.tst
+  XDR         1         0    packages/mathpr
+    R         0         0    packages/mathpr/dfprin.red
+    R         0         0    packages/mathpr/fortpri.red
+    R         0         0    packages/mathpr/mathpr.red
+    R         0         0    packages/mathpr/mprint.red
+    R         0         0    packages/mathpr/ratprin.red
+    R         0         0    packages/mathpr/sqprint.red
+  XDR         1         0    packages/matrix
+    R         0         0    packages/matrix/bareiss.red
+    R         0         0    packages/matrix/cofactor.red
+    R         0         0    packages/matrix/det.red
+    R         0         0    packages/matrix/extops.red
+    R         0         0    packages/matrix/glmat.red
+    R         0         0    packages/matrix/matpri.red
+    R         0         0    packages/matrix/matpri2.red
+    R         0         0    packages/matrix/matrix.red
+#source packages/matrix ../../../log
+  X           0         0    packages/matrix/matrix.rlg
+#endsource
+  X R         0         0    packages/matrix/matrix.tst
+    R         0         0    packages/matrix/matsm.red
+    R         0         0    packages/matrix/nestdom.red
+    R         0         0    packages/matrix/nullsp.red
+    R         0         0    packages/matrix/rank.red
+    R         0         0    packages/matrix/resultnt.red
+  XDR         1         0    packages/misc
+    R         0         0    packages/misc/boolean.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/boolean.rlg
+#endsource
+   D          0         0    packages/misc/boolean.tex
+  X R         0         0    packages/misc/boolean.tst
+    R         0         0    packages/misc/cedit.red
+    R         0         0    packages/misc/changevr.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/changevr.rlg
+#endsource
+   D          0         0    packages/misc/changevr.tex
+  X R         0         0    packages/misc/changevr.tst
+    R         0         0    packages/misc/comfac.red
+   D          0         0    packages/misc/compact.bib
+    R         0         0    packages/misc/compact.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/compact.rlg
+#endsource
+   D          0         0    packages/misc/compact.tex
+  X R         0         0    packages/misc/compact.tst
+    R         0         0    packages/misc/compactf.red
+    R         0         0    packages/misc/dfpart.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/dfpart.rlg
+#endsource
+   D          0         0    packages/misc/dfpart.tex
+  X R         0         0    packages/misc/dfpart.tst
+    R         0         0    packages/misc/ftr.red
+   D          0         0    packages/misc/lie.bib
+    R         0         0    packages/misc/lie.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/lie.rlg
+#endsource
+   D          0         0    packages/misc/lie.tex
+  X R         0         0    packages/misc/lie.tst
+    R         0         0    packages/misc/lie1234.red
+    R         0         0    packages/misc/liendmc1.red
+    R         0         0    packages/misc/limits.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/limits.rlg
+#endsource
+   D          0         0    packages/misc/limits.tex
+  X R         0         0    packages/misc/limits.tst
+    R         0         0    packages/misc/misc.red
+    R         0         0    packages/misc/mv.red
+    R         0         0    packages/misc/mvmatch.red
+    R         0         0    packages/misc/odeex.red
+    R         0         0    packages/misc/pf.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/pf.rlg
+#endsource
+  X R         0         0    packages/misc/pf.tst
+    R         0         0    packages/misc/randpoly.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/randpoly.rlg
+#endsource
+   D          0         0    packages/misc/randpoly.tex
+  X R         0         0    packages/misc/randpoly.tst
+    R         0         0    packages/misc/rcref.red
+    R         0         0    packages/misc/reacteqn.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/reacteqn.rlg
+#endsource
+  X R         0         0    packages/misc/reacteqn.tst
+   D          0         0    packages/misc/reacteqn.txt
+    R         0         0    packages/misc/reddom.red
+    R         0         0    packages/misc/redio.red
+    R         0         0    packages/misc/reset.red
+   D          0         0    packages/misc/rlfi.bib
+    R         0         0    packages/misc/rlfi.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/rlfi.rlg
+#endsource
+   D          0         0    packages/misc/rlfi.tex
+  X R         0         0    packages/misc/rlfi.tst
+    R         0         0    packages/misc/sets.red
+#source packages/misc ../../../log
+  X           0         0    packages/misc/sets.rlg
+#endsource
+   D          0         0    packages/misc/sets.tex
+  X R         0         0    packages/misc/sets.tst
+  XDR         1         0    packages/mrvlimit
+    R         0         0    packages/mrvlimit/expon.red
+    R         0         0    packages/mrvlimit/mrvlimit.red
+#source packages/mrvlimit ../../../log
+  X           0         0    packages/mrvlimit/mrvlimit.rlg
+#endsource
+   D          0         0    packages/mrvlimit/mrvlimit.tex
+  X R         0         0    packages/mrvlimit/mrvlimit.tst
+  XDR         1         0    packages/ncpoly
+    R         0         0    packages/ncpoly/ncdip.red
+    R         0         0    packages/ncpoly/ncenv.red
+    R         0         0    packages/ncpoly/ncfactor.red
+    R         0         0    packages/ncpoly/ncgroeb.red
+    R         0         0    packages/ncpoly/ncout.red
+    R         0         0    packages/ncpoly/ncpoly.red
+#source packages/ncpoly ../../../log
+  X           0         0    packages/ncpoly/ncpoly.rlg
+#endsource
+   D          0         0    packages/ncpoly/ncpoly.tex
+  X R         0         0    packages/ncpoly/ncpoly.tst
+  XDR         1         0    packages/normform
+    R         0         0    packages/normform/froben.red
+    R         0         0    packages/normform/jordan.red
+    R         0         0    packages/normform/jordsymb.red
+    R         0         0    packages/normform/matarg.red
+    R         0         0    packages/normform/nestdom.red
+    R         0         0    packages/normform/normform.red
+#source packages/normform ../../../log
+  X           0         0    packages/normform/normform.rlg
+#endsource
+   D          0         0    packages/normform/normform.tex
+  X R         0         0    packages/normform/normform.tst
+    R         0         0    packages/normform/ratjord.red
+    R         0         0    packages/normform/smithex.red
+    R         0         0    packages/normform/smithex1.red
+  XDR         1         0    packages/numeric
+    R         0         0    packages/numeric/bounds.red
+    R         0         0    packages/numeric/chebysh.red
+    R         0         0    packages/numeric/gauss.red
+    R         0         0    packages/numeric/newton.red
+    R         0         0    packages/numeric/numeric.red
+#source packages/numeric ../../../log
+  X           0         0    packages/numeric/numeric.rlg
+#endsource
+   D          0         0    packages/numeric/numeric.tex
+  X R         0         0    packages/numeric/numeric.tst
+   D          0         0    packages/numeric/numeric.txt
+    R         0         0    packages/numeric/numeval.red
+    R         0         0    packages/numeric/numfit.red
+    R         0         0    packages/numeric/numint.red
+    R         0         0    packages/numeric/numsolve.red
+    R         0         0    packages/numeric/rungeku.red
+    R         0         0    packages/numeric/steepstd.red
+  XDR         1         0    packages/odesolve
+    R         0         0    packages/odesolve/lccode.red
+    R         0         0    packages/odesolve/linearn.red
+    R         0         0    packages/odesolve/ode1.red
+    R         0         0    packages/odesolve/odesolve.red
+#source packages/odesolve ../../../log
+  X           0         0    packages/odesolve/odesolve.rlg
+#endsource
+   D          0         0    packages/odesolve/odesolve.tex
+  X R         0         0    packages/odesolve/odesolve.tst
+   D          0         0    packages/odesolve/odesolve.txt
+    R         0         0    packages/odesolve/testdf.red
+  XDR         1         0    packages/orthovec
+   D          0         0    packages/orthovec/orthovec.bib
+    R         0         0    packages/orthovec/orthovec.red
+#source packages/orthovec ../../../log
+  X           0         0    packages/orthovec/orthovec.rlg
+#endsource
+   D          0         0    packages/orthovec/orthovec.tex
+  X R         0         0    packages/orthovec/orthovec.tst
+  XDR         1         0    packages/plot
+  XD          0         0    packages/plot/bild1.ps
+  XD          0         0    packages/plot/bild2.ps
+  XD          0         0    packages/plot/eg1.ps
+  XD          0         0    packages/plot/eg4.ps
+  XD          0         0    packages/plot/eg5a.ps
+  XD          0         0    packages/plot/eg5b.ps
+  XD          0         0    packages/plot/eg6a.ps
+  XD          0         0    packages/plot/eg7.ps
+  XD          0         0    packages/plot/eg8.ps
+  XD          0         0    packages/plot/eg9.ps
+    R         0         0    packages/plot/gnuintfc.red
+    R         0         0    packages/plot/gnupldrv.red
+    R         0         0    packages/plot/gnuplot.red
+###source packages/plot ../../../log
+  X           0         0    packages/plot/gnuplot.rlg
+###endsource
+   D          0         0    packages/plot/gnuplot.tex
+  X R         0         0    packages/plot/gnuplot.tst
+  XD          0         0    packages/plot/gnuplotex1.ps
+  XD          0         0    packages/plot/gnuplotex2.ps
+  XD          0         0    packages/plot/gnuplotex3.ps
+  XD          0         0    packages/plot/gnuplotex4.ps
+  XD          0         0    packages/plot/gnuplotex5.ps
+  XD          0         0    packages/plot/gnuplotex6.ps
+    R         0         0    packages/plot/parray.red
+    R         0         0    packages/plot/plot.red
+    R         0         0    packages/plot/plotexp2.red
+    R         0         0    packages/plot/plotexp3.red
+    R         0         0    packages/plot/plotimp2.red
+    R         0         0    packages/plot/plotimp3.red
+    R         0         0    packages/plot/plotnum.red
+    R         0         0    packages/plot/plotsynt.red
+    R         0         0    packages/plot/pltpara.red
+  X R         0         0    packages/plot/riemann.tst
+  X R         0         0    packages/plot/specplot.tst
+    R         0         0    packages/plot/turtle.red
+   D          0         0    packages/plot/turtle.tex
+  X R         0         0    packages/plot/turtle.tst
+    R         0         0    packages/plot/xvect.red
+  XDR         1         0    packages/pm
+    R         0         0    packages/pm/pattdefn.red
+    R         0         0    packages/pm/pattperm.red
+    R         0         0    packages/pm/pm.red
+#source packages/pm ../../../log
+  X           0         0    packages/pm/pm.rlg
+#endsource
+  X R         0         0    packages/pm/pm.tst
+   D          0         0    packages/pm/pm.txt
+    R         0         0    packages/pm/pmintrfc.red
+    R         0         0    packages/pm/pmpatch.red
+    R         0         0    packages/pm/pmrules.red
+    R         0         0    packages/pm/unify.red
+  XDR         1         0    packages/poly
+    R         0         0    packages/poly/compopr.red
+    R         0         0    packages/poly/conj.red
+    R         0         0    packages/poly/cpxrn.red
+    R         0         0    packages/poly/decompos.red
+    R         0         0    packages/poly/diff.red
+    R         0         0    packages/poly/dmode.red
+    R         0         0    packages/poly/dmodeop.red
+    R         0         0    packages/poly/exptf.red
+    R         0         0    packages/poly/facform.red
+    R         0         0    packages/poly/gcd.red
+    R         0         0    packages/poly/gint.red
+    R         0         0    packages/poly/homog.red
+    R         0         0    packages/poly/horner.red
+    R         0         0    packages/poly/interpol.red
+    R         0         0    packages/poly/kernel.red
+    R         0         0    packages/poly/kronf.red
+    R         0         0    packages/poly/mksp.red
+    R         0         0    packages/poly/modular.red
+    R         0         0    packages/poly/polrep.red
+    R         0         0    packages/poly/poly.red
+#source packages/poly ../../../log
+  X           0         0    packages/poly/poly.rlg
+#endsource
+  X R         0         0    packages/poly/poly.tst
+    R         0         0    packages/poly/polydiv.red
+#source packages/poly ../../../log
+  X           0         0    packages/poly/polydiv.rlg
+#endsource
+   D          0         0    packages/poly/polydiv.tex
+  X R         0         0    packages/poly/polydiv.tst
+    R         0         0    packages/poly/polyop.red
+    R         0         0    packages/poly/primfac.red
+    R         0         0    packages/poly/quotf.red
+    R         0         0    packages/poly/rational.red
+    R         0         0    packages/poly/reord.red
+    R         0         0    packages/poly/rnelem.red
+    R         0         0    packages/poly/specfac.red
+    R         0         0    packages/poly/subs2q.red
+    R         0         0    packages/poly/subs3q.red
+    R         0         0    packages/poly/subs4q.red
+    R         0         0    packages/poly/tdconv.red
+  XDR         1         0    packages/qsum
+    R         0         0    packages/qsum/qsum.red
+#source packages/qsum ../../../log
+  X           0         0    packages/qsum/qsum.rlg
+#endsource
+   D          0         0    packages/qsum/qsum.tex
+  X R         0         0    packages/qsum/qsum.tst
+  XDR         1         0    packages/rataprx
+    R         0         0    packages/rataprx/contfr.red
+    R         0         0    packages/rataprx/contfrac.red
+    R         0         0    packages/rataprx/decrep.red
+    R         0         0    packages/rataprx/pade.red
+    R         0         0    packages/rataprx/primitive.red
+    R         0         0    packages/rataprx/rataprx.red
+#source packages/rataprx ../../../log
+  X           0         0    packages/rataprx/rataprx.rlg
+#endsource
+   D          0         0    packages/rataprx/rataprx.tex
+  X R         0         0    packages/rataprx/rataprx.tst
+  XDR         1         0    packages/ratint
+    R         0         0    packages/ratint/convert.red
+    R         0         0    packages/ratint/ratint.red
+#source packages/ratint ../../../log
+  X           0         0    packages/ratint/ratint.rlg
+#endsource
+   D          0         0    packages/ratint/ratint.tex
+  X R         0         0    packages/ratint/ratint.tst
+  XDR         1         0    packages/redlog
+    R         0         0    packages/redlog/acfsf.red
+    R         0         0    packages/redlog/acfsfbnf.red
+    R         0         0    packages/redlog/acfsfgs.red
+    R         0         0    packages/redlog/acfsfmisc.red
+    R         0         0    packages/redlog/acfsfqe.red
+    R         0         0    packages/redlog/acfsfsiat.red
+    R         0         0    packages/redlog/acfsfsism.red
+    R         0         0    packages/redlog/cl.red
+    R         0         0    packages/redlog/clbnf.red
+    R         0         0    packages/redlog/clmisc.red
+    R         0         0    packages/redlog/clnf.red
+    R         0         0    packages/redlog/clqe.red
+    R         0         0    packages/redlog/clsimpl.red
+    R         0         0    packages/redlog/cltab.red
+    R         0         0    packages/redlog/dvfsf.red
+    R         0         0    packages/redlog/dvfsfmisc.red
+    R         0         0    packages/redlog/dvfsfqe.red
+    R         0         0    packages/redlog/dvfsfsiat.red
+    R         0         0    packages/redlog/dvfsfsism.red
+    R         0         0    packages/redlog/ioto.red
+    R         0         0    packages/redlog/lto.red
+    R         0         0    packages/redlog/ofsf.red
+    R         0         0    packages/redlog/ofsfbnf.red
+    R         0         0    packages/redlog/ofsfgs.red
+    R         0         0    packages/redlog/ofsfmisc.red
+    R         0         0    packages/redlog/ofsfopt.red
+    R         0         0    packages/redlog/ofsfqe.red
+    R         0         0    packages/redlog/ofsfsiat.red
+    R         0         0    packages/redlog/ofsfsism.red
+    R         0         0    packages/redlog/redlog.red
+#source packages/redlog ../../../log
+  X           0         0    packages/redlog/redlog.rlg
+#endsource
+   D          0         0    packages/redlog/redlog.texi
+  X R         0         0    packages/redlog/redlog.tst
+    R         0         0    packages/redlog/rlami.red
+    R         0         0    packages/redlog/rlcont.red
+    R         0         0    packages/redlog/rlsched.red
+    R         0         0    packages/redlog/rltools.red
+    R         0         0    packages/redlog/sfto.red
+  XDR         1         0    packages/cgb
+    R         0         0    packages/cgb/cgb.bib
+    R         0         0    packages/cgb/cgb.red
+#source packages/cgb ../../../log
+  X           0         0    packages/cgb/cgb.rlg
+#endsource
+    R         0         0    packages/cgb/cgb.tex
+    R         0         0    packages/cgb/cgb.tst
+    R         0         0    packages/cgb/dp.red
+    R         0         0    packages/cgb/gb.red
+  XDR         1         0    packages/residue
+    R         0         0    packages/residue/residue.red
+#source packages/residue ../../../log
+  X           0         0    packages/residue/residue.rlg
+#endsource
+   D          0         0    packages/residue/residue.tex
+  X R         0         0    packages/residue/residue.tst
+  XDR         1         0    packages/rlisp
+    R         0         0    packages/rlisp/array.red
+    R         0         0    packages/rlisp/block.red
+    R         0         0    packages/rlisp/form.red
+    R         0         0    packages/rlisp/forstat.red
+    R         0         0    packages/rlisp/infix.red
+    R         0         0    packages/rlisp/inter.red
+    R         0         0    packages/rlisp/io.red
+    R         0         0    packages/rlisp/list.red
+    R         0         0    packages/rlisp/loops.red
+    R         0         0    packages/rlisp/lpri.red
+    R         0         0    packages/rlisp/module.red
+    R         0         0    packages/rlisp/newtok.red
+    R         0         0    packages/rlisp/parser.red
+    R         0         0    packages/rlisp/proc.red
+    R         0         0    packages/rlisp/rlisp.red
+    R         0         0    packages/rlisp/rsupport.red
+    R         0         0    packages/rlisp/slfns.red
+    R         0         0    packages/rlisp/smacro.red
+    R         0         0    packages/rlisp/statmisc.red
+    R         0         0    packages/rlisp/superv.red
+    R         0         0    packages/rlisp/switch.red
+    R         0         0    packages/rlisp/tok.red
+    R         0         0    packages/rlisp/where.red
+    R         0         0    packages/rlisp/xread.red
+  XDR         1         0    packages/rlisp88
+    R         0         0    packages/rlisp88/bquote.red
+    R         0         0    packages/rlisp88/comment.red
+    R         0         0    packages/rlisp88/for88.red
+    R         0         0    packages/rlisp88/inspect.red
+    R         0         0    packages/rlisp88/loops88.red
+    R         0         0    packages/rlisp88/mstruct.red
+    R         0         0    packages/rlisp88/records.red
+    R         0         0    packages/rlisp88/rlisp88.red
+###source packages/rlisp88 ../../../log
+  X           0         0    packages/rlisp88/rlisp88.rlg
+###endsource
+  X R         0         0    packages/rlisp88/rlisp88.tst
+    R         0         0    packages/rlisp88/rvector.red
+  XDR         1         0    packages/roots
+    R         0         0    packages/roots/allroot.red
+    R         0         0    packages/roots/bfdoer.red
+    R         0         0    packages/roots/bfdoer2.red
+    R         0         0    packages/roots/complxp.red
+    R         0         0    packages/roots/multroot.red
+    R         0         0    packages/roots/nrstroot.red
+    R         0         0    packages/roots/realroot.red
+    R         0         0    packages/roots/rootaux.red
+    R         0         0    packages/roots/roots.red
+#source packages/roots ../../../log
+  X           0         0    packages/roots/roots.rlg
+#endsource
+   D          0         0    packages/roots/roots.tex
+  X R         0         0    packages/roots/roots.tst
+    R         0         0    packages/roots/roots2.red
+  XDR         1         0    packages/rprint
+    R         0         0    packages/rprint/fmprint.red
+    R         0         0    packages/rprint/pretty.red
+    R         0         0    packages/rprint/rprint.red
+  XDR         1         0    packages/rtrace
+    R         0         0    packages/rtrace/reduce.rc
+    R         0         0    packages/rtrace/rtrace.red
+###source packages/rtrace ../../../log
+  X           0         0    packages/rtrace/rtrace.rlg
+###endsource
+   D          0         0    packages/rtrace/rtrace.tex
+  X R         0         0    packages/rtrace/rtrace.tst
+  XDR         1         0    packages/scope
+    R         0         0    packages/scope/codad1.red
+    R         0         0    packages/scope/codad2.red
+    R         0         0    packages/scope/codctl.red
+    R         0         0    packages/scope/coddec.red
+    R         0         0    packages/scope/coddom.red
+    R         0         0    packages/scope/codgen.red
+    R         0         0    packages/scope/codhrn.red
+    R         0         0    packages/scope/codmat.red
+    R         0         0    packages/scope/codopt.red
+    R         0         0    packages/scope/codpri.red
+    R         0         0    packages/scope/codstr.red
+    R         0         0    packages/scope/minlngth.red
+    R         0         0    packages/scope/restore.red
+   D          0         0    packages/scope/scope.bib
+    R         0         0    packages/scope/scope.red
+#source packages/scope ../../../log
+  X           0         0    packages/scope/scope.rlg
+#endsource
+   D          0         0    packages/scope/scope.tex
+  X R         0         0    packages/scope/scope.tst
+  XDR         1         0    packages/solve
+    R         0         0    packages/solve/desir.red
+#source packages/solve ../../../log
+  X           0         0    packages/solve/desir.rlg
+#endsource
+  X R         0         0    packages/solve/desir.tst
+   D          0         0    packages/solve/desir.txt
+    R         0         0    packages/solve/glsolve.red
+    R         0         0    packages/solve/ineq.red
+#source packages/solve ../../../log
+  X           0         0    packages/solve/ineq.rlg
+#endsource
+   D          0         0    packages/solve/ineq.tex
+  X R         0         0    packages/solve/ineq.tst
+    R         0         0    packages/solve/linineq.red
+    R         0         0    packages/solve/liqsimp1.red
+    R         0         0    packages/solve/liqsimp2.red
+    R         0         0    packages/solve/modroots.red
+    R         0         0    packages/solve/modsolve.red
+    R         0         0    packages/solve/modsqrt.red
+    R         0         0    packages/solve/modsr.red
+#source packages/solve ../../../log
+  X           0         0    packages/solve/modsr.rlg
+#endsource
+  X R         0         0    packages/solve/modsr.tst
+    R         0         0    packages/solve/polineq.red
+    R         0         0    packages/solve/ppsoln.red
+    R         0         0    packages/solve/quartic.red
+    R         0         0    packages/solve/rsolve.red
+#source packages/solve ../../../log
+  X           0         0    packages/solve/rsolve.rlg
+#endsource
+   D          0         0    packages/solve/rsolve.tex
+  X R         0         0    packages/solve/rsolve.tst
+   D          0         0    packages/solve/rsolve.txt
+    R         0         0    packages/solve/solve.red
+#source packages/solve ../../../log
+  X           0         0    packages/solve/solve.rlg
+#endsource
+  X R         0         0    packages/solve/solve.tst
+    R         0         0    packages/solve/solve1.red
+    R         0         0    packages/solve/solvealg.red
+    R         0         0    packages/solve/solvelnr.red
+    R         0         0    packages/solve/solvetab.red
+  XDR         1         0    packages/sparse
+    R         0         0    packages/sparse/sparse.red
+#source packages/sparse ../../../log
+  X           0         0    packages/sparse/sparse.rlg
+#endsource
+   D          0         0    packages/sparse/sparse.tex
+  X R         0         0    packages/sparse/sparse.tst
+    R         0         0    packages/sparse/sparsmat.red
+    R         0         0    packages/sparse/spchlsky.red
+    R         0         0    packages/sparse/spgrmshm.red
+    R         0         0    packages/sparse/splinalg.red
+    R         0         0    packages/sparse/spludcmp.red
+    R         0         0    packages/sparse/spmateig.red
+    R         0         0    packages/sparse/spsvd.red
+  XDR         1         0    packages/spde
+    R         0         0    packages/spde/spde.red
+#source packages/spde ../../../log
+  X           0         0    packages/spde/spde.rlg
+#endsource
+   D          0         0    packages/spde/spde.tex
+  X R         0         0    packages/spde/spde.tst
+  XDR         1         0    packages/specfn
+    R         0         0    packages/specfn/constre.red
+    R         0         0    packages/specfn/dilog.red
+    R         0         0    packages/specfn/fps.red
+#source packages/specfn ../../../log
+  X           0         0    packages/specfn/fps.rlg
+#endsource
+   D          0         0    packages/specfn/fps.tex
+  X R         0         0    packages/specfn/fps.tst
+    R         0         0    packages/specfn/ghyper.red
+   D          0         0    packages/specfn/ghyper.tex
+    R         0         0    packages/specfn/harmonic.red
+    R         0         0    packages/specfn/hgrsolve.red
+    R         0         0    packages/specfn/jsymbols.red
+    R         0         0    packages/specfn/linrec.red
+    R         0         0    packages/specfn/meijerg.red
+   D          0         0    packages/specfn/meijerg.tex
+    R         0         0    packages/specfn/ratalgo.red
+    R         0         0    packages/specfn/recsimpl.red
+    R         0         0    packages/specfn/sfairy.red
+    R         0         0    packages/specfn/sfbdata.red
+    R         0         0    packages/specfn/sfbern.red
+    R         0         0    packages/specfn/sfbes.red
+    R         0         0    packages/specfn/sfbinom.red
+    R         0         0    packages/specfn/sfconsts.red
+    R         0         0    packages/specfn/sfellip.red
+    R         0         0    packages/specfn/sfellipi.red
+    R         0         0    packages/specfn/sfgamm.red
+    R         0         0    packages/specfn/sfgamma.red
+    R         0         0    packages/specfn/sfgen.red
+    R         0         0    packages/specfn/sfigamma.red
+    R         0         0    packages/specfn/sfint.red
+    R         0         0    packages/specfn/sfkummer.red
+    R         0         0    packages/specfn/sfother.red
+    R         0         0    packages/specfn/sfpolys.red
+    R         0         0    packages/specfn/sfpsi.red
+    R         0         0    packages/specfn/sfsums.red
+    R         0         0    packages/specfn/simpfact.red
+    R         0         0    packages/specfn/simplede.red
+    R         0         0    packages/specfn/specbess.red
+    R         0         0    packages/specfn/specfaux.red
+   D          0         0    packages/specfn/specfn.bib
+    R         0         0    packages/specfn/specfn.red
+#source packages/specfn ../../../log
+  X           0         0    packages/specfn/specfn.rlg
+#endsource
+   D          0         0    packages/specfn/specfn.tex
+  X R         0         0    packages/specfn/specfn.tst
+    R         0         0    packages/specfn/specfn2.red
+    R         0         0    packages/specfn/substexp.red
+  XDR         1         0    packages/sum
+    R         0         0    packages/sum/complx.red
+    R         0         0    packages/sum/prod.red
+    R         0         0    packages/sum/sum.red
+#source packages/sum ../../../log
+  X           0         0    packages/sum/sum.rlg
+#endsource
+   D          0         0    packages/sum/sum.tex
+  X R         0         0    packages/sum/sum.tst
+    R         0         0    packages/sum/sum2.red
+    R         0         0    packages/sum/zeilberg.red
+#source packages/sum ../../../log
+  X           0         0    packages/sum/zeilberg.rlg
+#endsource
+   D          0         0    packages/sum/zeilberg.tex
+  X R         0         0    packages/sum/zeilberg.tst
+  XDR         1         0    packages/support
+    R         0         0    packages/support/boot.sl
+    R         0         0    packages/support/build.red
+#   R         0         0    packages/support/clrend.red
+    R         0         0    packages/support/compat.red
+    R         0         0    packages/support/csl.red
+    R         0         0    packages/support/cslprolo.red
+    R         0         0    packages/support/cslrend.red
+#   R         0         0    packages/support/dbuild.lsp
+#   R         0         0    packages/support/dbuild.sl
+#   R         0         0    packages/support/dbuild2.sl
+    R         0         0    packages/support/entry.red
+#   R         0         0    packages/support/fastmath.red
+#   R         0         0    packages/support/fastmod.red
+#   R         0         0    packages/support/mkred2.sl
+#   R         0         0    packages/support/mkredcsl.sl
+#   R         0         0    packages/support/mkredpsl.sl
+    R         0         0    packages/support/patches.red
+#   R         0         0    packages/support/psl.red
+#   R         0         0    packages/support/pslprolo.red
+#   R         0         0    packages/support/pslrend.red
+    R         0         0    packages/support/remake.red
+    R         0         0    packages/support/support.red
+#   R         0         0    packages/support/symget.dat
+  XDR         1         0    packages/susy2
+    R         0         0    packages/susy2/susy2.red
+#source packages/susy2 ../../../log
+  X           0         0    packages/susy2/susy2.rlg
+#endsource
+   D          0         0    packages/susy2/susy2.tex
+  X R         0         0    packages/susy2/susy2.tst
+  XDR         1         0    packages/symmetry
+    R         0         0    packages/symmetry/symatvec.red
+    R         0         0    packages/symmetry/symaux.red
+    R         0         0    packages/symmetry/symcheck.red
+    R         0         0    packages/symmetry/symchrep.red
+    R         0         0    packages/symmetry/symdata1.red
+    R         0         0    packages/symmetry/symdata2.red
+    R         0         0    packages/symmetry/symhandl.red
+    R         0         0    packages/symmetry/symmetry.red
+#source packages/symmetry ../../../log
+  X           0         0    packages/symmetry/symmetry.rlg
+#endsource
+   D          0         0    packages/symmetry/symmetry.tex
+  X R         0         0    packages/symmetry/symmetry.tst
+    R         0         0    packages/symmetry/sympatch.red
+    R         0         0    packages/symmetry/symwork.red
+  XDR         1         0    packages/taylor
+    R         0         0    packages/taylor/taybasic.red
+    R         0         0    packages/taylor/tayconv.red
+    R         0         0    packages/taylor/taydiff.red
+    R         0         0    packages/taylor/tayexpnd.red
+    R         0         0    packages/taylor/tayfns.red
+    R         0         0    packages/taylor/tayfront.red
+    R         0         0    packages/taylor/tayimpl.red
+    R         0         0    packages/taylor/tayintrf.red
+    R         0         0    packages/taylor/tayintro.red
+    R         0         0    packages/taylor/taylor.red
+#source packages/taylor ../../../log
+  X           0         0    packages/taylor/taylor.rlg
+#endsource
+   D          0         0    packages/taylor/taylor.tex
+  X R         0         0    packages/taylor/taylor.tst
+    R         0         0    packages/taylor/taypart.red
+    R         0         0    packages/taylor/tayprint.red
+    R         0         0    packages/taylor/tayrevrt.red
+    R         0         0    packages/taylor/taysimp.red
+    R         0         0    packages/taylor/taysubst.red
+    R         0         0    packages/taylor/tayutils.red
+  XDR         1         0    packages/tps
+    R         0         0    packages/tps/tps.red
+#source packages/tps ../../../log
+  X           0         0    packages/tps/tps.rlg
+#endsource
+   D          0         0    packages/tps/tps.tex
+  X R         0         0    packages/tps/tps.tst
+    R         0         0    packages/tps/tpscomp.red
+    R         0         0    packages/tps/tpsconv.red
+    R         0         0    packages/tps/tpsdom.red
+    R         0         0    packages/tps/tpseval.red
+    R         0         0    packages/tps/tpsfns.red
+    R         0         0    packages/tps/tpsmisc.red
+    R         0         0    packages/tps/tpsrev.red
+    R         0         0    packages/tps/tpssum.red
+  XDR         1         0    packages/tri
+  XDR         0         0    packages/tri/reduce.tex
+  XDR         0         0    packages/tri/redwidth.tex
+  XDR         0         0    packages/tri/tri.latex
+    R         0         0    packages/tri/tri.red
+#source packages/tri ../../../log
+  X           0         0    packages/tri/tri.rlg
+#endsource
+   D          0         0    packages/tri/tri.tex
+  X R         0         0    packages/tri/tri.tst
+  XDR         0         0    packages/tri/tridefs.tex
+  X           0         0    packages/tri/tritest.tex
+  X           0         0    packages/tri/tritst.tex
+  XDR         1         0    packages/trigint
+    R         0         0    packages/trigint/trigint.red
+#source packages/trigint ../../../log
+  X           0         0    packages/trigint/trigint.rlg
+#endsource
+   D          0         0    packages/trigint/trigint.tex
+  X R         0         0    packages/trigint/trigint.tst
+  XDR         1         0    packages/trigsimp
+    R         0         0    packages/trigsimp/trigsimp.red
+#source packages/trigsimp ../../../log
+  X           0         0    packages/trigsimp/trigsimp.rlg
+#endsource
+   D          0         0    packages/trigsimp/trigsimp.tex
+  X R         0         0    packages/trigsimp/trigsimp.tst
+    R         0         0    packages/trigsimp/trigsmp1.red
+    R         0         0    packages/trigsimp/trigsmp2.red
+  XDR         1         0    packages/wu
+    R         0         0    packages/wu/wu.red
+#source packages/wu ../../../log
+  X           0         0    packages/wu/wu.rlg
+#endsource
+   D          0         0    packages/wu/wu.tex
+  X R         0         0    packages/wu/wu.tst
+  XDR         1         0    packages/xcolor
+    R         0         0    packages/xcolor/cface.red
+    R         0         0    packages/xcolor/xcolor.red
+#source packages/xcolor ../../../log
+  X           0         0    packages/xcolor/xcolor.rlg
+#endsource
+  X R         0         0    packages/xcolor/xcolor.tst
+   D          0         0    packages/xcolor/xcolor.txt
+  XDR         1         0    packages/xideal
+    R         0         0    packages/xideal/xaux.red
+    R         0         0    packages/xideal/xcrit.red
+    R         0         0    packages/xideal/xexcalc.red
+    R         0         0    packages/xideal/xgroeb.red
+    R         0         0    packages/xideal/xideal.red
+#source packages/xideal ../../../log
+  X           0         0    packages/xideal/xideal.rlg
+#endsource
+   D          0         0    packages/xideal/xideal.tex
+  X R         0         0    packages/xideal/xideal.tst
+    R         0         0    packages/xideal/xpowers.red
+    R         0         0    packages/xideal/xreduct.red
+    R         0         0    packages/xideal/xstorage.red
+  XDR         1         0    packages/ztrans
+    R         0         0    packages/ztrans/ztrans.red
+#source packages/ztrans ../../../log
+  X           0         0    packages/ztrans/ztrans.rlg
+#endsource
+   D          0         0    packages/ztrans/ztrans.tex
+  X R         0         0    packages/ztrans/ztrans.tst
+    R         0         0    packages/ztrans/ztrrules.red
+    R         0         0    upackage.bat
+  X R         0         0    xpackage.bat
+#source gnuplot ../gnuplot
+     L        1         0    gnuplot
+     L        0         1    gnuplot/README
+     L        0         0    gnuplot/ANNOUNCEMENT
+     L        0         0    gnuplot/gnuplot-3.8.tar.gz.sig
+     L        0         1    gnuplot/gnuplot-3.8.tar.gz
+     L        0         1    gnuplot/gnuplot3.8cyg.zip
+     L        0         0    gnuplot/gnuplot3.8cyg.zip.sig
+     L        0         1    gnuplot/gp38dj2.zip
+     L        0         0    gnuplot/gp38dj2.zip.sig
+     L        0         1    gnuplot/gp38djg.zip
+     L        0         0    gnuplot/gp38djg.zip.sig
+     L        0         1    gnuplot/gp38dos.zip
+     L        0         0    gnuplot/gp38dos.zip.sig
+     L        0         1    gnuplot/gp38mgw.zip
+     L        0         0    gnuplot/gp38mgw.zip.sig
+     L        0         1    gnuplot/gp38os2.zip
+     L        0         0    gnuplot/gp38os2.zip.sig
+     L        0         1    gnuplot/gp38w16.zip
+     L        0         0    gnuplot/gp38w16.zip.sig
+     L        0         1    gnuplot/gpdoc.zip
+     L        0         0    gnuplot/gpdoc.zip.sig
+#endsource
+############################### end of manifest
+
+
+

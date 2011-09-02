@@ -1,0 +1,142 @@
+#!/bin/csh -f
+
+#  Create r37.tex
+
+setenv man $reduce/doc/manual
+setenv man2 $reduce/doc/manual2
+
+rm -f r37.tmp
+
+cat $man2/prolog1.tex > r37.tmp
+cat $man2/title.tex >> r37.tmp
+
+# Original manual sections
+
+cat $man/abstract.tex >> r37.tmp
+cat $man/acknowl.tex >> r37.tmp
+cat $man/intro.tex >> r37.tmp
+cat $man/progstr.tex >> r37.tmp
+cat $man/exprn.tex >> r37.tmp
+cat $man/list.tex >> r37.tmp
+cat $man/statemnt.tex >> r37.tmp
+cat $man/command.tex >> r37.tmp
+cat $man/oper.tex >> r37.tmp
+cat $man/solve.tex >> r37.tmp
+cat $man/oper2.tex >> r37.tmp
+cat $man/structr.tex >> r37.tmp
+cat $man/polyrat.tex >> r37.tmp
+cat $man/subst.tex >> r37.tmp
+cat $man/io.tex >> r37.tmp
+cat $man/inter.tex >> r37.tmp
+cat $man/matrix.tex >> r37.tmp
+cat $man/proc.tex >> r37.tmp
+cat $man/rememb.tex >> r37.tmp
+cat $man2/user2.tex >> r37.tmp
+# cat $man/user.tex >> r37.tmp
+cat $man/symbolic.tex >> r37.tmp
+cat $man/rlisp88.tex >> r37.tmp
+cat $man/rlispref.tex >> r37.tmp
+cat $man/hephys.tex >> r37.tmp
+cat $man/util.tex >> r37.tmp
+cat $man/maintain.tex >> r37.tmp
+
+# Now part 2.
+
+cat $man2/prolog2.tex >> r37.tmp
+cat $man2/algint.tex >> r37.tmp
+cat $man2/applysym.tex >> r37.tmp
+cat $man2/arnum.tex >> r37.tmp
+cat $man2/assist.tex >> r37.tmp
+cat $man2/atensor.tex >> r37.tmp
+cat $man2/avector.tex >> r37.tmp
+cat $man2/boolean.tex >> r37.tmp
+cat $man2/cali.tex >> r37.tmp
+cat $man2/camal.tex >> r37.tmp
+cat $man2/cgb.tex >> r37.tmp
+cat $man2/changevr.tex >> r37.tmp
+cat $man2/compact.tex >> r37.tmp
+# cat $man2/contfr.tex >> r37.tmp   superceded by rataprx.
+cat $man2/crack.tex >> r37.tmp
+cat $man2/cvit.tex >> r37.tmp
+cat $man2/defint.tex >> r37.tmp
+cat $man2/desir.tex >> r37.tmp
+cat $man2/dfpart.tex >> r37.tmp
+cat $man2/dummy.tex >> r37.tmp
+cat $man2/eds.tex >> r37.tmp
+cat $man2/excalc.tex >> r37.tmp
+cat $man2/fide.tex >> r37.tmp
+cat $man2/fps.tex >> r37.tmp
+#cat $man2/fps.tex >> r37.tmp
+#cat $man2/fide.tex >> r37.tmp
+cat $man2/gentran.tex >> r37.tmp
+cat $man2/geometry.tex >> r37.tmp
+cat $man2/gnuplot.tex >> r37.tmp
+cat $man2/groebner.tex >> r37.tmp
+cat $man2/ideals.tex >> r37.tmp
+cat $man2/ineq.tex >> r37.tmp
+cat $man2/invbase.tex >> r37.tmp
+cat $man2/laplace.tex >> r37.tmp
+cat $man2/lie.tex >> r37.tmp
+cat $man2/limits.tex >> r37.tmp
+cat $man2/linalg.tex >> r37.tmp
+cat $man2/mathml.tex >> r37.tmp
+cat $man2/modsr.tex >> r37.tmp
+cat $man2/mrvlimit.tex >> r37.tmp
+cat $man2/ncpoly.tex >> r37.tmp
+cat $man2/normform.tex >> r37.tmp
+cat $man2/numeric.tex >> r37.tmp
+cat $man2/odesolve.tex >> r37.tmp
+# cat $man2/odesolv1.tex >> r37.tmp
+cat $man2/orthovec.tex >> r37.tmp
+cat $man2/physop.tex >> r37.tmp
+cat $man2/pm.tex >> r37.tmp
+cat $man2/qsum.tex >> r37.tmp
+cat $man2/randpoly.tex >> r37.tmp
+cat $man2/rataprx.tex >> r37.tmp
+cat $man2/reacteqn.tex >> r37.tmp
+cat $man2/redlog.tex >> r37.tmp
+cat $man2/reset.tex >> r37.tmp
+cat $man2/residue.tex >> r37.tmp
+cat $man2/rlfi.tex >> r37.tmp
+cat $man2/roots.tex >> r37.tmp
+cat $man2/rsolve.tex >> r37.tmp
+#cat $man2/rsolve.tex >> r37.tmp
+#cat $man2/roots.tex >> r37.tmp
+cat $man2/scope.tex >> r37.tmp
+cat $man2/sets.tex >> r37.tmp
+cat $man2/sparse.tex >> r37.tmp
+cat $man2/spde.tex >> r37.tmp
+cat $man2/specfn.tex >> r37.tmp
+cat $man2/specfn2.tex >> r37.tmp
+cat $man2/sum.tex >> r37.tmp
+cat $man2/susy2.tex >> r37.tmp
+cat $man2/symmetry.tex >> r37.tmp
+cat $man2/taylor.tex >> r37.tmp
+cat $man2/tps.tex >> r37.tmp
+cat $man2/tri.tex >> r37.tmp
+cat $man2/trigsimp.tex >> r37.tmp
+cat $man2/wu.tex >> r37.tmp
+cat $man2/xcolor.tex >> r37.tmp
+cat $man2/xideal.tex >> r37.tmp
+#cat $man2/xcolor.tex >> r37.tmp
+#cat $man2/xideal.tex >> r37.tmp
+#cat $man2/wu.tex >> r37.tmp
+cat $man2/zeilberg.tex >> r37.tmp
+cat $man2/ztrans.tex >> r37.tmp
+
+cat $man2/sl.tex >> r37.tmp
+
+cat $man2/tail1.tex >> r37.tmp
+
+cat $man/appenda.tex >> r37.tmp
+
+cat $man2/tail2.tex >> r37.tmp
+
+# expand r37.tmp > ,tmp
+# rm r37.tmp
+# sed 's/  *$//g' ,tmp > r37.tmp
+# rm ,tmp
+
+perl conv.pl
+
+rm r37.tmp

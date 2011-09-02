@@ -1,0 +1,1710 @@
+\section{Syntax}
+
+\begin{Command}[semicolon]{;}
+The semicolon is a statement delimiter, indicating results are to be printed
+when used in interactive mode.
+
+\begin{Examples}
+(x+1)**2;                     &  X^{2} + 2*X + 1 \\
+df(x**2 + 1,x);               &    2*X
+\end{Examples}
+
+\begin{Comments}
+Entering a \key{Return} without a semicolon or dollar sign results in a
+prompt on the following line.  A semicolon or dollar sign can be
+added at this point to execute the statement.  In interactive mode, a
+statement that is ended with a semicolon and \key{Return} has its results
+printed on the screen.
+
+Inside a group statement \name{<<}\ldots\name{>>}
+or a \name{begin}\ldots\name{end} block, a
+semicolon or dollar sign separates individual REDUCE statements.  Since
+results are not printed from a block without a specific \name{return}
+statement, there is no difference between using the semicolon or dollar
+sign.  In a group statement, the last value produced is the value
+returned by the group statement.  Thus, if a semicolon or dollar sign is
+placed between the last statement and the ending brackets, the group
+statement returns the value 0 or {\em nil}, rather than the value of the
+last statement.
+\end{Comments}
+\end{Command}
+
+
+\begin{Command}[dollar]{$}
+The dollar sign is a statement delimiter, indicating results are not to be
+printed when used in interactive mode.
+
+\begin{Examples}
+
+(x+1)**2$ &
+\explanationo{The workspace is set to $x^{2} + 2x + 1$
+              but nothing shows on the screen} \\
+ws; &            X^{2}  + 2*X + 1
+\end{Examples}
+
+\begin{Comments}
+Entering a \key{Return} without a semicolon or dollar sign results in a
+prompt on the following line.  A semicolon or dollar sign can
+be added at this point to execute the statement.  In interactive mode, a
+statement that ends with a dollar sign \name{\$} and a \key{Return} is
+executed, but the results not printed.
+
+Inside a \nameref{group} statement \name{<<}\ldots\name{>>}
+or a \name{begin}\ldots\name{end} \nameref{block}, a
+semicolon or dollar sign separates individual REDUCE statements.  Since
+results are not printed from a \nameref{block} without a specific 
+\nameref{return}
+statement, there is no difference between using the semicolon or dollar
+sign.
+
+In a group statement, the last value produced is the value returned by the
+group statement.  Thus, if a semicolon or dollar sign is placed between the
+last statement and the ending brackets, the group statement returns the
+value 0 or {\em nil}, rather than the value of the last statement.
+
+\end{Comments}
+\end{Command}
+
+\begin{Command}[percent]{%}
+The percent sign is used to precede comments; everything from a percent
+to the end of the line is ignored.
+
+\begin{Examples}
+
+df(x**3 + y,x);\% This is a comment \key{Return} &       3*X^{2} \\
+int(3*x**2,x) \%This is a comment; \key{Return} \\
+
+\explanation{A prompt is given, waiting for the semicolon that was not
+detected in the comment}
+\end{Examples}
+
+\begin{Comments}
+Statement delimiters \name{;} and \name{\$} are not detected between a
+percent sign and the end of the line.
+\end{Comments}
+\end{Command}
+
+
+% \begin{Operator}[ampersand]{&}
+%
+% ***** To be added *****
+%
+% \end{Operator}
+%
+%
+\begin{Operator}[dot]{.}
+\index{list}
+The . (dot) infix binary operator adds a new item to the beginning of an
+existing \nameref{list}.  In high energy physics expressions, 
+it can also be used
+to represent the scalar product of two Lorentz four-vectors.
+
+\begin{Syntax}
+\meta{item} \name{.} \meta{list}
+\end{Syntax}
+
+\meta{item} can be any REDUCE scalar expression, including a list;
+\meta{list} must be a \nameref{list} to avoid producing an error message.  
+The dot operator is right associative.
+
+\begin{Examples}
+
+liss := a . \{\};             &     LISS := \{A\} \\
+liss := b . liss;             &     LISS := \{B,A\} \\
+newliss := liss . liss;       &     NEWLISS := \{\{B,A\},B,A\} \\
+firstlis := a . b . \{c\};    &     FIRSTLIS := \{A,B,C\} \\
+secondlis := x . y . \{z\};   &     SECONDLIS := \{X,Y,Z\} \\
+for i := 1:3 sum part(firstlis,i)*part(secondlis,i);
+                              &     A*X + B*Y + C*Z
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}[assign]{:=}
+\index{assign}
+The \name{:=} is the assignment operator, assigning the value on the right-hand
+side to the identifier or other valid expression on the left-hand side.
+
+\begin{Syntax}
+  \meta{restricted\_expression} \name{:=} \meta{expression}
+\end{Syntax}
+
+\meta{restricted\_expression} is ordinarily a single identifier, though simple
+expressions may be used (see Comments below). \meta{expression} is any
+valid REDUCE expression.  If \meta{expression} is a \nameref{matrix} 
+identifier, then
+\meta{restricted\_expression} can be a matrix identifier (redimensioned if
+necessary) which has each element set to the corresponding elements
+of the identifier on the right-hand side.
+
+\begin{Examples}
+a := x**2 + 1;                &          A := X^{2}  + 1 \\
+a;                            &          X^{2} + 1 \\
+first := second := third;     &          FIRST := SECOND := THIRD \\
+first;                        &          THIRD \\
+second;                       &          THIRD \\
+b := for i := 1:5 product i;  &          B := 120 \\
+b;                            &          120 \\
+w + (c := x + 3) + z;         &          W + X + Z + 3 \\
+c;                            &          X + 3 \\
+y + b := c;                   &          Y + B := C \\
+y;                            &           - (B - C)
+\end{Examples}
+
+\begin{Comments}
+The assignment operator is right associative, as shown in the second and
+third examples.  A string of such assignments has all but the last
+item set to the value of the last item.  Embedding an assignment statement
+in another expression has the side effect of making the assignment, as well
+as causing the given replacement in the expression.
+
+Assignments of values to expressions rather than simple identifiers (such as in
+the last example above) can also be done, subject to the following remarks:
+\begin{itemize}
+
+\item[(i)]
+If the left-hand side is an identifier, an operator, or a power, the
+substitution rule is added to the rule table.
+
+\item[(ii)]
+If the operators \name{- + /} appear on the left-hand side, all but the first
+term of the expression is moved to the right-hand side.
+
+\item[(iii)]
+If the operator \name{*} appears on the left-hand side, any constant terms are
+moved to the right-hand side, but the symbolic factors remain.
+\end{itemize}
+
+Assignment is valid for \nameref{array} elements, but not for entire arrays.
+The assignment operator can also be used to attach functionality to operators.
+
+A recursive construction such as \name{a := a + b} is allowed, but when
+\name{a} is referenced again, the process of resubstitution continues
+until the expression stack overflows (you get an error message).
+Recursive assignments can be done safely inside controlled loop
+expressions, such as \nameref{for}\ldots or \nameref{repeat}\ldots\name{until}.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[equalsign]{=}
+The \name{=} operator is a prefix or infix equality comparison operator.
+
+\begin{Syntax}
+  \name{=}\(\meta{expression}\name{,}\meta{expression}\)
+  or
+  \meta{expression} \name{=} \meta{expression}
+\end{Syntax}
+
+\meta{expression} can be any REDUCE scalar expression.
+
+\begin{Examples}
+a := 4;                       &         A := 4 \\
+if =(a,10) then write "yes" else write "no";
+                              &         no \\
+b := c;                       &         B := C \\
+if b = c then write "yes" else write "no";
+                              &         yes \\
+on rounded; \\
+if 4.0 = 4 then write "yes" else write "no";
+                              &         yes
+\end{Examples}
+
+\begin{Comments}
+This logical equality operator can only be used inside a conditional
+statement, such as \nameref{if}\ldots\name{then}\ldots\name{else}
+or \nameref{repeat}\ldots\name{until}. In other places the equal
+sign establishes an algebraic object of type \nameref{equation}.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[replace]{=>}
+
+The \name{=>} operator is a binary operator used in \ref{rule} lists to
+denote replacements.
+
+\begin{Examples}
+operator f; \\
+let f(x) => x^2; \\
+f(x); & x^{2}
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}[plussign]{+}
+The \name{+} operator is a prefix or infix n-ary addition operator.
+
+\begin{Syntax}
+\meta{expression} \{ \name{+}\meta{expression}\}\repeated
+
+{\em or} \name{+}\(\meta{expression} \{,\meta{expression}\}\repeated\)
+\end{Syntax}
+
+\meta{expression} may be any valid REDUCE expression.
+
+\begin{Examples}
+x**4 + 4*x**2 + 17*x + 1;     &   X^{4} + 4*X^{2} + 17*X + 1 \\
+14 + 15 + x;                  &   X + 29 \\
++(1,2,3,4,5);                 &   15
+\end{Examples}
+
+\begin{Comments}
+\name{+} is also valid as an addition operator for \nameref{matrix} variables
+that are of the same dimensions and for \nameref{equation}s.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[minussign]{-}
+The \name{-} operator is a prefix or infix binary subtraction operator, as well
+as the unary minus operator.
+
+\begin{Syntax}
+\meta{expression} \name{-} \meta{expression}
+or \name{-}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} may be any valid REDUCE expression.
+
+\begin{Examples}
+15 - 4;                      &   11 \\
+x*(-5);                      &   - 5*X \\
+a - b - 15;                  &   A - B - 15 \\
+-(a,4);                      &   A - 4
+\end{Examples}
+
+\begin{Comments}
+The subtraction operator is left associative, so that a - b - c is equivalent
+to (a - b) - c, as shown in the third example.  The subtraction operator is
+also valid with \nameref{matrix} expressions of the correct dimensions
+and with \nameref{equation}s.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[asterisk]{*}
+The \name{*} operator is a prefix or infix n-ary multiplication operator.
+
+\begin{Syntax}
+\meta{expression} \{ \name{*} \meta{expression}\}\repeated
+
+ or \name{*}\(\meta{expression} \{,\meta{expression}\}\repeated\)
+\end{Syntax}
+
+\meta{expression} may be any valid REDUCE expression.
+
+\begin{Examples}
+15*3;                        &   45 \\
+24*x*yvalue*2;               &   48*X*YVALUE \\
+*(6,x);                      &   6*X \\
+on rounded; \\
+3*1.5*x*x*x;                 &   4.5*X^{3} \\
+off rounded; \\
+2x**2;                       &   2*X^{2}
+\end{Examples}
+
+\begin{Comments}
+REDUCE assumes you are using an implicit multiplication operator when an
+identifier is preceded by a number, as shown in the last line above.  Since
+no valid identifiers can begin with numbers, there is no ambiguity in
+making this assumption.
+
+The multiplication operator is also valid with \nameref{matrix} expressions 
+of the
+proper dimensions: matrices \IFTEX{$A$}{A} and \IFTEX{$B$}{B} 
+can be multiplied if
+\IFTEX{$A$}{A} is \IFTEX{$n \times m$}{n x m} and \IFTEX{$B$}{B} is
+\IFTEX{$m \times p$}{m x p}.  Matrices and \nameref{equation}s can also be 
+multiplied by scalars: the
+result is as if each element was multiplied by the scalar.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[slash]{/}
+The \name{/} operator is a prefix or infix binary division operator or
+prefix unary \nameref{recip}rocal operator.
+
+\begin{Syntax}
+\meta{expression}\name{/}\meta{expression} {\em or}
+ \name{/}\meta{expression}
+
+or \name{/}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} may be any valid REDUCE expression.
+
+\begin{Examples}
+20/5;                        &   4  \\
+100/6;                       &   \rfrac{50}{3} \\
+16/2/x;                      &   \rfrac{8}{X} \\
+/b;                          &   \rfrac{1}{B} \\
+/(y,5);                      &   \rfrac{Y}{5} \\
+on rounded; \\
+35/4;                        &   8.75 \\
+/20;                         &   0.05
+\end{Examples}
+
+\begin{Comments}
+The division operator is left associative, so that \name{a/b/c} is equivalent
+to \name{(a/b)/c}.  The division operator is also valid with square
+\nameref{matrix} expressions of the same dimensions: With \IFTEX{$A$}{A} and
+\IFTEX{$B$}{B} both \IFTEX{$n \times n$}{n x n} matrices and \IFTEX{$B$}{B}
+invertible, \IFTEX{$A/B$}{A/B} is
+given by \IFTEX{$A \times B^{-1}$}{A*B^{-1}}.
+Division of a matrix by a scalar is defined, with the results being the
+division of each element of the matrix by the scalar.  Division of a
+scalar by a matrix is defined if the matrix is invertible, and has the
+effect of multiplying the scalar by the inverse of the matrix.  When
+\name{/} is used as a reciprocal operator for a matrix, the inverse of
+the matrix is returned if it exists.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[power]{**}
+The \name{**} operator is a prefix or infix binary exponentiation operator.
+
+\begin{Syntax}
+\meta{expression} \name{**}\meta{expression}
+     or \name{**}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} may be any valid REDUCE expression.
+
+\begin{Examples}
+x**15;                       &        X^{15} \\
+x**y**z;                     &        X^{Y*Z} \\
+x**(y**z);                   &        X^{Y^{Z}} \\
+ **(y,4);                    &        Y^{4} \\
+on rounded; \\
+2**pi;                       &        8.82497782708
+\end{Examples}
+
+\begin{Comments}
+The exponentiation operator is left associative, so that \name{a**b**c} is
+equivalent to \name{(a**b)**c}, as shown in the second example.  Note
+that this is {\em not} \name{a**(b**c)}, which would be right associative.
+
+When \nameref{nat} is on (the default), REDUCE output produces raised
+exponents, as shown.  The symbol \name{^}, which is the upper-case 6 on
+most keyboards, may be used in the place of \name{**}.
+
+A square \nameref{matrix} may also be raised to positive and negative powers
+with the exponentiation operator (negative powers require the matrix to be
+invertible).  Scalar expressions and \nameref{equation}s may be raised to 
+fractional and floating-point powers.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}[caret]{^}
+The \name{^} operator is a prefix or infix binary exponentiation operator.
+It is equivalent to \nameref{power} or **.
+
+\begin{Syntax}
+\meta{expression} \name{^}\meta{expression}
+      or \name{^}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} may be any valid REDUCE expression.
+
+\begin{Examples}
+x^15;                       &        X^{15} \\
+x^y^z;                     &        X^{Y*Z} \\
+x^(y^z);                   &        X^{Y^{Z}} \\
+^(y,4);                      &        Y^{4} \\
+on rounded; \\
+2^pi;                       &        8.82497782708
+\end{Examples}
+
+\begin{Comments}
+The exponentiation operator is left associative, so that \name{a^b^c} is
+equivalent to \name{(a^b)^c}, as shown in the second example.  Note
+that this is \meta{not} \name{a^(b^c)}, which would be right associative.
+
+When \nameref{nat} is on (the default), REDUCE output produces raised
+exponents, as shown.
+
+A square \nameref{matrix} may also be raised to positive 
+and negative powers with
+the exponentiation operator (negative powers require the matrix to be
+invertible).  Scalar expressions and \nameref{equation}s 
+may be raised to fractional and floating-point powers.
+\end{Comments}
+\end{Operator}
+
+
+
+\begin{Operator}[geqsign]{>=}
+\name{>=} is an infix binary comparison operator, which returns {\em true} if
+its first argument is greater than or equal to its second argument.
+
+\begin{Syntax}
+\meta{expression} \name{>=} \meta{expression}
+\end{Syntax}
+
+\meta{expression} must evaluate to an integer or floating-point number.
+
+\begin{Examples}
+if (3 >= 2) then yes;        &     yes \\
+a := 15;                     &       A := 15 \\
+if a >= 20 then big else small;
+                             &     small \\
+\end{Examples}
+
+\begin{Comments}
+
+The binary comparison operators can only be used for comparisons between
+numbers or variables that evaluate to numbers.  The truth values returned
+by such a comparison can only be used inside programming constructs, such
+as \nameref{if}\ldots\name{then}\ldots\name{else}
+or \nameref{repeat}\ldots\name{until} or \nameref{while}\ldots\name{do}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[greater]{>}
+The \name{>} is an infix binary comparison operator that returns
+{\em true} if its first argument is strictly greater than its second.
+
+\begin{Syntax}
+\meta{expression} \name{>} \meta{expression}
+\end{Syntax}
+
+\meta{expression} must evaluate to a number, e.g., integer, rational or
+floating point number.
+
+\begin{Examples}
+on rounded; \\
+if 3.0 > 3 then write "different" else write "same";    &     same \\
+off rounded; \\
+a := 20;                                                &     A := 20 \\
+if a > 20 then write "bigger" else write "not bigger";  &     not bigger \\
+\end{Examples}
+
+\begin{Comments}
+The binary comparison operators can only be used for comparisons between
+numbers or variables that evaluate to numbers.  The truth values returned
+by such a comparison can only be used inside programming constructs, such
+as \nameref{if}\ldots\name{then}\ldots\name{else} or
+\nameref{repeat}\ldots\name{until} or \nameref{while}\ldots\name{do}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[leqsign]{<=}
+\name{<=} is an infix binary comparison operator that returns
+{\em true} if its first argument is less than or equal to its second argument.
+
+\begin{Syntax}
+\meta{expression} \name{<=} \meta{expression}
+\end{Syntax}
+
+\meta{expression} must evaluate to a number, e.g., integer, rational or
+floating point number.
+
+\begin{Examples}
+a := 10;                     &     A := 10 \\
+if a <= 10 then true;        &     true
+\end{Examples}
+
+\begin{Comments}
+
+The binary comparison operators can only be used for comparisons between
+numbers or variables that evaluate to numbers.  The truth values returned
+by such a comparison can only be used inside programming constructs, such
+as \nameref{if}\ldots\name{then}\ldots\name{else} or
+\nameref{repeat}\ldots\name{until} or \nameref{while}\ldots\name{do}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}[less]{<}
+\name{<} is an infix binary logical comparison operator that
+returns {\em true} if its first argument is strictly less than its second
+argument.
+
+\begin{Syntax}
+\meta{expression} \name{<} \meta{expression}
+\end{Syntax}
+
+\meta{expression} must evaluate to a number, e.g., integer, rational or
+floating point number.
+
+\begin{Examples}
+f := -3;                                               &       F := -3 \\
+if f < -3 then write "yes" else write "no";            &       no
+\end{Examples}
+
+\begin{Comments}
+The binary comparison operators can only be used for comparisons between
+numbers or variables that evaluate to numbers.  The truth values returned
+by such a comparison can only be used inside programming constructs, such
+as \nameref{if}\ldots\name{then}\ldots\name{else}
+or \nameref{repeat}\ldots\name{until} or
+\nameref{while}\ldots\name{do}.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}[tilde]{~}
+The \name{~} is used as a unary prefix operator in the left-hand
+sides of \nameref{rule}s to mark \nameref{free variable}s. A double tilde
+marks an optional \nameref{free variable}.
+\end{Operator}
+
+
+\begin{Command}[group]{<<}
+The \name{<<}\ldots\name{>>} command is a group statement,
+used to group statements
+together where REDUCE expects a single statement.
+
+%%%INCONSISTENT??? \name{or}
+\begin{Syntax}
+\name{<<}\meta{statement}\{; \meta{statement} \name{or}
+                           \$\meta{statement}\}\optional \name{>>}
+\end{Syntax}
+
+\meta{statement} may be any valid REDUCE statement or expression.
+
+\begin{Examples}
+a := 2;                                                &    A := 2 \\
+if a < 5 then <<b := a + 10; write b>>;                &    12 \\
+<<d := c/15; f := d + 3; f**2>>;
+                             &      \rfrac{C^{2} + 90*C + 202}{225}
+\end{Examples}
+
+\begin{Comments}
+The value returned from a group statement is the value of the last
+individual statement executed inside it.  Note that when a semicolon is
+placed between the last statement and the closing brackets, 0 or
+{\em nil} is returned.  Group statements are often used in the
+consequence portions of \nameref{if}\ldots\name{then},
+\nameref{repeat}\ldots\name{until}, and
+\nameref{while}\ldots\name{do}
+clauses.  They may also be used in interactive
+operation to execute several statements at one time.  Statements inside
+the group statement are separated by semicolons or dollar signs.
+
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{AND}
+The \name{and} binary logical operator returns {\em true} if both of its
+arguments are {\em true}.
+
+\begin{Syntax}
+\meta{logical\_expression} \name{and} \meta{logical\_expression}
+\end{Syntax}
+
+\meta{logical\_expression} must evaluate to {\em true} or {\em nil}.
+
+\begin{Examples}
+a := 12;                   &     A := 12 \\
+if numberp a and a < 15 then write a**2 else write "no";
+                           &     144 \\
+clear a; \\
+if numberp a and a < 15 then write a**2 else write "no";
+                           &     no
+\end{Examples}
+
+\begin{Comments}
+Logical operators can only be used inside conditional statements, such as
+\nameref{while}\ldots\name{do} or
+\nameref{if}\ldots\name{then}\ldots\name{else}. \name{and} examines each of
+its arguments in order, and quits, returning {\em nil}, on finding an
+argument that is not {\em true}.  An error results if it is used in other
+contexts.
+
+\name{and} is left associative: \name{x and y and z} is equivalent to
+\name{(x and y) and z}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Command}{BEGIN}
+\name{begin} is used to start a \nameref{block} statement, which is closed with
+\name{end}.
+
+\begin{Syntax}
+\name{begin} \meta{statement}\{\name{;} \meta{statement}\}\optional \ \name{end}
+\end{Syntax}
+
+\meta{statement} is any valid REDUCE statement.
+
+\begin{Examples}
+begin for i := 1:3 do write i end; &
+\begin{multilineoutput}{1cm}
+1
+2
+3     
+\end{multilineoutput} \\
+begin scalar n;n:=1;b:=for i:=1:4 product(x-i);return n end;
+                     &         1 \\
+b;                   &
+                     X^{4}  - 10*X^{3}  + 35*X^{2}  - 50*X  + 24
+\end{Examples}
+
+\begin{Comments}
+A \name{begin}\ldots\name{end} block can do actions (such as \name{write}), but 
+does not
+return a value unless instructed to by a \nameref{return} statement, which must
+be the last statement executed in the block.  It is unnecessary to insert
+a semicolon before the \name{end}.
+
+Local variables, if any, are declared in the first statement immediately
+after \name{begin}, and may be defined as \name{scalar, integer,} or
+\name{real}.  \nameref{array} variables declared 
+within a \name{begin}\ldots\name{end} block
+are global in every case,  and \nameref{let} statements have global
+effects.  A \nameref{let} statement involving a formal parameter affects
+the calling parameter that corresponds to it.  \nameref{let} statements
+involving local variables make global assignments, overwriting outside
+variables by the same name or creating them if they do not exist.  You
+can use this feature to affect global variables from procedures, but be
+careful that you do not do it inadvertently.
+
+\end{Comments}
+\end{Command}
+
+
+\begin{Command}{block}
+A \name{block} is a sequence of statements enclosed by
+commands \nameref{begin} and \nameref{end}.
+
+\begin{Syntax}
+\name{begin} \meta{statement}\{\name{;} \meta{statement}\}\optional \ \name{end}
+\end{Syntax}
+For more details see \nameref{begin}.
+\end{Command}
+
+
+\begin{Command}{COMMENT}
+Beginning with the word \name{comment}, all text until the next statement
+terminator (\name{;} or \name{\$}) is ignored.
+
+\begin{Examples}
+
+x := a**2 comment--a is the velocity of the particle;;
+                             &      X := A^{2}
+\end{Examples}
+
+\begin{Comments}
+Note that the first semicolon ends the comment and the second one
+terminates the original REDUCE statement.
+
+Multiple-line comments are often needed in interactive files.  The
+\name{comment} command allows a normal-looking text to accompany the
+REDUCE statements in the file.
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{CONS}
+The \name{cons} operator adds a new element to the beginning of a 
+\nameref{list}.  Its
+operation is identical to the symbol \nameref{dot} (dot).  It can be used
+infix or prefix.
+
+\begin{Syntax}
+\name{cons}\(\meta{item},\meta{list}\) or \meta{item} \name{cons} \meta{list}
+\end{Syntax}
+
+\meta{item} can be any REDUCE scalar expression, including a list; \meta{list}
+must be a list.
+
+\begin{Examples}
+
+liss := cons(a,{b});         &        \{A,B\} \\
+
+liss := c cons liss;         &        \{C,A,B\} \\
+
+newliss := for each y in liss collect cons(y,list x);
+                             &        NEWLISS := \{\{C,X\},\{A,X\},\{B,X\}\} \\
+
+for each y in newliss sum (first y)*(second y);
+                             &        X*(A + B + C)
+\end{Examples}
+
+\begin{Comments}
+If you want to use \name{cons} to put together two elements into a new list,
+you must make the second one into a list with curly brackets or the \name{list}
+command.  You can also start with an empty list created by \name{\{\}}.
+
+The \name{cons} operator is right associative: \name{a cons b cons c} is valid
+if \name{c} is a list; \name{b} need not be a list.  The list produced is
+\name{\{a,b,c\}}.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Command}{END}
+The command \name{end} has two main uses:
+\begin{itemize}
+\item[(i)]
+as the ending of a \nameref{begin}\ldots\name{end} \nameref{block}; and
+\item[(ii)]
+to end input from a file.
+\end{itemize}
+
+\begin{Comments}
+In a \name{begin}\ldots\name{end} \nameref{block}, there need not be a delimiter
+(\name{;} or \name{\$}) before the \name{end}, though there must be one
+after it, or a right bracket matching an earlier left bracket.
+
+Files to be read into REDUCE should end with \name{end;}, which must be
+preceded by a semicolon (usually the last character of the previous line).
+The additional semicolon avoids problems with mistakes in the files.  If
+you have suspended file operation by answering \name{n} to a \name{pause}
+command, you are still, technically speaking, ``in" the file.  Use
+\name{end} to exit the file.
+
+An \name{end} at the top level of a program is ignored.
+\end{Comments}
+\end{Command}
+
+
+\begin{Type}{EQUATION}
+\index{equation}\index{equal}\index{arithmetic}
+An \name{equation} is an expression where two algebraic expressions
+are connected by the (infix) operator \nameref{equal} or by \nameindex{=}.
+For access to the components of an \name{equation} the operators
+\nameref{lhs}, \nameref{rhs} or \nameref{part} can be used. The
+evaluation of the left-hand side of an \name{equation} is controlled
+by the switch \nameref{evallhseqp}, while the right-hand side is
+evaluated unconditionally. When an \name{equation} is part of a
+logical expression, e.g. in a \nameref{if} or \nameref{while} statement,
+the equation is evaluated by subtracting both sides can comparing
+the result with zero.
+
+Equations occur in many contexts, e.g. as arguments of the \nameref{sub}
+operator and in the arguments and the results
+of the operator \nameref{solve}. An equation can be member of a \nameref{list}
+and you may assign an equation to a variable. Elementary arithmetic is supported
+for equations: if \nameref{evallhseqp} is on, you may add and subtract
+equations, and you can combine an equation with a scalar expression by
+addition, subtraction, multiplication, division and raise an equation
+to a power. 
+\begin{Examples}
+on evallhseqp;\\
+u:=x+y=1$\\
+v:=2x-y=0$\\
+2*u-v; &  - 3*y=-2\\
+ws/3; & y=\rfrac{2}{3}\\
+\end{Examples}
+Important: the equation must occur in the leftmost term of such an expression.
+For other operations, e.g. taking function values of both sides, use the
+\nameref{map} operator.
+
+\end{Type}
+
+\begin{Operator}{FIRST}
+\index{list}\index{decomposition}
+The \name{first} operator returns the first element of a \nameref{list}.
+\begin{Syntax}
+\name{first}\(\meta{list}\) or \name{first} \meta{list}
+\end{Syntax}
+
+\meta{list} must be a non-empty list to avoid an error message.
+
+\begin{Examples}
+alist := \{a,b,c,d\};          &    ALIST := \{A,B,C,D\} \\
+first alist;                 &  A \\
+blist := \{x,y,\{ww,aa,qq\},z\}; &  BLIST := \{X,Y,\{WW,AA,QQ\},Z\} \\
+first third blist;           &  WW
+\end{Examples}
+\end{Operator}
+
+
+\begin{Command}{FOR}
+\index{loop}
+The \name{for} command is used for iterative loops.  There are many
+possible forms it can take.
+\begin{INFO}
+{
+\begin{verbatim}
+                   /                   \
+   /               |STEP <number> UNTIL|        \
+   |<var>:=<number>|                   |<number>|
+FOR|               |         :         |        |<action> <exprn>
+   |               \                   /        |
+   |EACH <var> IN <list>                        |
+   \                                            /
+
+ where <action> ::= DO|PRODUCT|SUM|COLLECT|JOIN.
+\end{verbatim}
+}
+\end{INFO}
+\begin{TEX}
+\begin{Syntax}
+     \name{for}
+      \begin{alternative}
+         \meta{var} \name{:=} \meta{start} \name{:} \meta{stop}\\
+         \meta{var} \name{:=} \meta{start} \name{step} \meta{inc}
+                              \name{until} \meta{stop}\\
+         \name{each} \meta{var} \name{in} \meta{list}
+      \end{alternative}
+      \begin{alternative}
+         \name{collect}\\
+         \name{do}\\
+         \name{join}\\
+         \name{product}\\
+         \name{sum}
+      \end{alternative}
+    \meta{expression}
+\end{Syntax}
+\end{TEX}
+
+\meta{var} can be any valid REDUCE identifier except \name{t} or
+\name{nil}, \meta{inc}, \meta{start} and \meta{stop} can be any expression
+that evaluates to a positive or negative integer. \meta{list} must be a
+valid \nameref{list} structure.  
+The action taken must be one of the actions shown
+above, each of which is followed by a single REDUCE expression, statement
+or a \nameref{group} (\name{<<}\ldots\name{>>}) or \nameref{block}
+(\nameref{begin}\ldots\nameref{end}) statement.
+
+\begin{Examples}
+for i := 1:10 sum i;                                    
+                            &     55 \\
+for a := -2 step 3 until 6 product a;
+							&     -8 \\
+a := 3;                     &     A := 3 \\
+for iter := 4:a do write iter; \\
+m := 0;                     &     M := 0 \\
+for s := 10 step -1 until 3 do <<d := 10*s;m := m + d>>; \\
+m;                          &     520 \\
+for each x in {q,r,s} sum x**2;  &     Q^{2} + R^{2} + S^{2} \\
+for i := 1:4 collect 1/i;                              
+     &     \{1,\rfrac{1}{2},\rfrac{1}{3},\rfrac{1}{4}\} \\
+for i := 1:3 join list solve(x**2 + i*x + 1,x);         
+     & \begin{multilineoutput}{5cm}
+\{\{X= -\rfrac{SQRT(3)*I + 1}{2},
+  X= -\rfrac{SQRT(3)*I - 1}{2}\}
+ \{X=-1\},
+ \{X= - \rfrac{SQRT(5) + 3}{2},X=\rfrac{SQRT(5) - 3}{2}\}\}
+\end{multilineoutput}
+\end{Examples}
+
+\begin{Comments}
+The behavior of each of the five action words follows:
+
+\begin{TEX}
+\begin{center}
+\begin{tabular}{|l|p{5cm}|p{5cm}|}
+\hline
+\multicolumn{3}{|c|}{Action Word Behavior}\\
+\hline
+\multicolumn{1}{|c|}{Keyword} &
+   \multicolumn{1}{c|}{Argument Type} & \multicolumn{1}{c|}{Action} \\
+\hline
+do & statement, command, group or block &
+Evaluates its argument once for each iteration of the loop, not saving
+results \\
+collect & expression, statement, command, group, block, list &
+Evaluates its argument once for each iteration of the loop, storing the results
+in a list which is returned by the \verb|for| statement when done \\
+join & list or an operator which produces a list &
+Evaluates its argument once for each iteration of the loop, appending the
+elements in each individual result list onto the overall result list \\
+product & expression, statement, command, 
+\nameref{group} or \nameref{block} &
+Evaluates its argument once for each iteration of the loop, multiplying the
+results together and returning the overall product \\
+sum & expression, statement, command, group or block &
+Evaluates its argument once for each iteration of the loop, adding the results
+together and returning the overall sum\\
+\hline
+\end{tabular}
+\end{center}
+\end{TEX}
+\begin{INFO}
+{\begin{verbatim}
+                           Action Word Behavior
+Keyword   Argument Type                    Action
+   do    statement, command, group   Evaluates its argument once
+         or block                    for each iteration of the loop,
+                                     not saving results
+collect expression, statement,       Evaluates its argument once for
+        command, group, block, list  each iteration of the loop,
+                                     storing the results in a list
+                                     which is returned by the for
+                                     statement when done
+ join   list or an operator which    Evaluates its argument once for
+        produces a list              each iteration of the loop,
+                                     appending the elements in each
+                                     individual result list onto the
+                                     overall result list
+product expression, statement,       Evaluates its argument once for
+        command, group or block      each iteration of the loop,
+                                     multiplying the results together
+                                     and returning the overall product
+  sum   expression, statement,       Evaluates its argument once for
+        command, group or block      each iteration of the loop,
+                                     adding the results together and
+                                     returning the overall sum
+\end{verbatim} }
+\end{INFO}
+
+For number-driven \name{for} statements, if the ending limit is smaller
+than the beginning limit (larger in the case of negative steps) the action
+statement is not executed at all.  The iterative variable is local to the
+\name{for} statement, and does not affect the value of an identifier with
+the same name.  For list-driven \name{for} statements, if the list is
+empty, the action statement is not executed, but no error occurs.
+
+You can use nested \name{for} statements, with the inner \name{for}
+statement after the action keyword.   You must make sure that your inner
+statement returns an expression that the outer statement can handle.
+\end{Comments}
+\end{Command}
+
+
+\begin{Command}{FOREACH}
+\index{loop}
+\name{foreach} is a synonym for the \name{for each} variant of the
+\nameref{for} construct.  It is designed to iterate down a list, and an
+error will occur if a list is not used.  The use of \name{for each} is
+preferred to \name{foreach}.
+
+\begin{Syntax}
+\name{foreach} \meta{variable} in \meta{list} \meta{action} \meta{expression} \\
+ where \meta{action} ::= \name{do | product | sum | collect | join}
+\end{Syntax}
+
+\begin{Examples}
+foreach x in {q,r,s} sum x**2;  &   Q^{2} + R^{2} + S^{2}
+\end{Examples}
+
+\end{Command}
+
+
+\begin{Operator}{GEQ}
+The \name{geq} operator is a binary infix or prefix logical operator.  It
+returns true if its first argument is greater than or equal to its second 
+argument.  As an infix operator it is identical with \name{>=}.
+\begin{Syntax}
+\name{geq}\(\meta{expression},\meta{expression}\) or \meta{expression}
+\name{geq} \meta{expression}
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE expression that evaluates to a
+number.
+
+\begin{Examples}
+a := 20;                     &          A := 20 \\
+if geq(a,25) then write "big" else write "small";
+			     &          small \\
+if a geq 20 then write "big" else write "small";
+			     &          big  \\
+if (a geq 18) then write "big" else write "small";
+			     &          big
+\end{Examples}
+
+\begin{Comments}
+Logical operators can only be used in conditional statements such as \\
+\nameref{if}\ldots\name{then}\ldots\name{else} or 
+\nameref{repeat}\ldots\name{until}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Command}{GOTO}
+Inside a \name{begin}\ldots\name{end} \nameref{block}, \name{goto}, or 
+preferably, \name{go to}, transfers flow of control to a labeled statement.
+\begin{Syntax}
+\name{go to} \meta{labeled_statement} or \name{goto} \meta{labeled_statement}
+\end{Syntax}
+\meta{labeled_statement} is of the form \meta{label} \name{:}\meta{statement}
+
+\begin{Examples}
+\begin{multilineinput}
+     procedure dumb(a);
+        begin scalar q;
+           go to lab;
+           q := df(a**2 - sin(a),a);
+           write q;
+      lab: return a
+        end;
+\end{multilineinput}         &         DUMB \\
+
+dumb(17);                    &         17
+\end{Examples}
+
+\begin{Comments}
+\name{go to} can only be used inside a \name{begin}\ldots\name{end} 
+\nameref{block}, and inside
+the block only statements at the top level can be labeled, not ones inside
+\name{<<}\ldots\name{>>}, \nameref{while}\ldots\name{do}, etc.
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{GREATERP}
+The \name{greaterp} logical operator returns true if its first argument is
+strictly greater than its second argument.  As an infix operator it is
+identical with \name{>}.
+\begin{Syntax}
+\name{greaterp}\(\meta{expression},\meta{expression}\) or \meta{expression}
+\name{greaterp} \meta{expression}
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE expression that evaluates to a
+number.
+
+\begin{Examples}
+
+a := 20;                     &          A := 20 \\
+if greaterp(a,25) then write "big" else write "small";
+			     &          small \\
+if a greaterp 20 then write "big" else write "small";
+			     &          small \\
+if (a greaterp 18) then write "big" else write "small";
+			     &          big
+\end{Examples}
+
+\begin{Comments}
+Logical operators can only be used in conditional statements such as \\
+\nameref{if}\ldots\name{then}\ldots\name{else} 
+or \nameref{repeat}\ldots\nameref{while}.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Command}{IF}
+The \name{if} command is a conditional statement that executes a statement
+if a condition is true, and optionally another statement if it is not.
+\begin{Syntax}
+\name{if} \meta{condition} \name{then} \meta{statement}
+\ \&option\(\name{else}\ \meta{statement}\)
+\end{Syntax}
+
+\meta{condition} must be a logical or comparison operator that evaluates to
+a \nameref{boolean value}.  
+\meta{statement} must be a single REDUCE statement or a
+\nameref{group} (\name{<<}\ldots\name{>>}) or 
+\nameref{block} (\name{begin}\ldots\name{end}) statement.
+
+\begin{Examples}
+if x = 5 then a := b+c else a := d+f;
+			     &         D + F \\
+x := 9;                      &         X := 9 \\
+if numberp x and x<20 then y := sqrt(x) else write "illegal";
+			     &         3  \\
+clear x; \\
+if numberp x and x<20 then y := sqrt(x) else write "illegal";
+			     &          illegal \\
+x := 12;                     &          X := 12 \\
+a := if x < 5 then 100 else 150;
+			     &          A := 150 \\
+b := u**(if x < 10 then 2);
+			     &          B := 1 \\
+bb := u**(if x > 10 then 2);
+			     &          BB := U^{2}
+\end{Examples}
+
+\begin{Comments}
+An \name{if} statement may be used inside an assignment statement and sets
+its value depending on the conditions, or used anywhere else an
+expression would be valid, as shown in the last example.  If there is no
+\nameindex{else} clause, the value is 0 if a number is expected, and nothing
+otherwise.
+
+The \name{else} clause may be left out if no action is to be taken if the
+condition is false.
+
+The condition may be a compound conditional statement using \nameref{and} or
+\nameref{or}.  If a non-conditional statement, such as a constant, is used by
+accident, it is assumed to have value {\em true}.
+ 
+Be sure to use \nameref{group} or \nameref{block} statements after 
+\nameindex{then} or \name{else}.
+
+The \name{if} operator is right associative.  The following constructions are
+examples:
+\begin{itemize}
+\item[(1)]
+\begin{Syntax}
+\name{if} \meta{condition} \name{then} \name{if} \meta{condition} \name{then}
+          \meta{action} \name{else} \meta{action}
+\end{Syntax}
+%\end{itemize}
+
+which is equivalent to
+\begin{Syntax}
+\name{if} \meta{condition} \name{then} \(\name{if}\ \meta{condition}
+\ \name{then}\ \meta{action}\ \name{else}\ \meta{action}\);
+\end{Syntax}
+%\begin{itemize}
+
+\item[(2)]
+\begin{Syntax}
+\name{if} \meta{condition} \name{then} \meta{action} \name{else if}
+ \meta{condition} \name{then} \meta{action} \name{else} \meta{action}
+\end{Syntax}
+which is equivalent to
+\begin{Syntax}
+\name{if}\ \meta{condition} \name{then} \meta{action} \name{else} \\
+    \(\name{if}\ \meta{condition}\ \name{then}\ \meta{action}
+\ \name{else}\ \meta{action}\).
+\end{Syntax}
+\end{itemize}
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{LIST}
+\index{list}
+The \name{list} operator constructs a list from its arguments.
+\begin{Syntax}
+\name{list}\(\meta{item} \{,\meta{item}\}\optional\) or
+ \name{list}\(\) to construct an empty list.
+\end{Syntax}
+
+\meta{item} can be any REDUCE scalar expression, including another list.
+Left and right curly brackets can also be used instead of the operator
+\name{list} to construct a list.
+
+\begin{Examples}
+liss := list(c,b,c,\{xx,yy\},3x**2+7x+3,df(sin(2*x),x));
+	 &    LISS := \{C,B,C,\{XX,YY\},3*X^{2} + 7*X + 3,2*COS(2*X)\} \\
+length liss;                &    6 \\
+liss := \{c,b,c,\{xx,yy\},3x**2+7x+3,df(sin(2*x),x)\};
+	 &    LISS := \{C,B,C,\{XX,YY\},3*X^{2} + 7*X + 3,2*COS(2*X)\} \\
+emptylis := list();         &    EMPTYLIS := \{\} \\
+a . emptylis;               &    \{A\}
+\end{Examples}
+
+\begin{Comments}
+Lists are ordered, hierarchical structures.  The elements stay where you
+put them, and only change position in the list if you specifically change
+them.  Lists can have nested sublists to any (reasonable) level.  The 
+\nameref{part} operator can be used to access elements anywhere within a list
+hierarchy.  The \nameref{length} operator counts the 
+number of top-level elements
+of its list argument; elements that are themselves lists still only 
+count as one element.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{OR}
+The \name{or} binary logical operator returns {\it true} if either one or
+both of its arguments is {\it true}.
+\begin{Syntax}
+\meta{logical expression} \name{or} \meta{logical expression}
+\end{Syntax}
+
+\meta{logical expression} must evaluate to {\it true} or {\it nil}.
+
+\begin{Examples}
+a := 10;                    &         A := 10 \\
+\begin{multilineinput}
+if a<0 or a>140 then write "not a valid human age" else
+   write "age = ",a;
+\end{multilineinput} \\
+&         age = 10 \\
+a := 200;                   &         A := 200 \\
+if a < 0 or a > 140 then write "not a valid human age";
+			    &         not a valid human age
+\end{Examples}
+
+\begin{Comments}
+The \name{or} operator is left associative: \name{x or y or z} is equivalent to
+\name{(x or y)} \name{or z}.
+
+Logical operators can only be used in conditional expressions, such as \\
+\nameref{if}\ldots\name{then}\ldots\name{else} 
+and \nameref{while}\ldots\name{do}.
+\name{or} evaluates its arguments in order and quits, returning {\it true},
+on finding the first {\it true} statement.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Command}{PROCEDURE}
+The \name{procedure} command allows you to define a mathematical operation as a
+function with arguments.
+\begin{Syntax}
+\&\meta{option} \name{procedure} \meta{identifier}
+  \(\meta{arg}\{,\meta{arg}\}\repeated\)\name{;}\meta{body}
+\end{Syntax}
+
+The \meta{option} may be \nameref{algebraic} or \nameref{symbolic}, 
+indicating the
+mode under which the procedure is executed, or \nameref{real} or
+\nameref{integer}, indicating the type of answer expected.  The default is
+algebraic.  Real or integer procedures are subtypes of algebraic
+procedures; type-checking is done on the results of integer procedures, but
+not on real procedures (in the current REDUCE release). \meta{identifier}
+may be any valid REDUCE identifier that is not already a procedure name,
+operator, \nameref{array} or \nameref{matrix}.  
+\meta{arg} is a formal parameter that may be any
+valid REDUCE identifier.  \meta{body} is a single statement (a \nameref{group} 
+or \nameref{block} statement may be used) with the desired activities in it.
+
+\begin{Examples}
+\begin{multilineinput}
+procedure fac(n);
+   if not (fixp(n) and n>=0)
+     then rederr "Choose nonneg. integer only"
+    else for i := 0:n-1 product i+1;
+\end{multilineinput}
+			      &        FAC \\
+fac(0);                       &        1 \\
+fac(5);                       &        120 \\
+fac(-5);                      &        ***** choose nonneg. integer only
+\end{Examples}
+
+\begin{Comments}
+Procedures are automatically declared as operators upon definition.  When
+REDUCE has parsed the procedure definition and successfully converted it to
+a form for its own use, it prints the name of the procedure.  Procedure
+definitions cannot be nested.  Procedures can call other procedures, or can
+recursively call themselves.  Procedure identifiers can be cleared as you
+would clear an operator.  Unlike \nameref{let} statements, new definitions
+under the same procedure name replace the previous definitions completely.
+
+Be careful not to use the name of a system operator for your own procedure.
+REDUCE may or may not give you a warning message.  If you redefine a system
+operator in your own procedure, the original function of the system operator
+is lost for the remainder of the REDUCE session.
+
+Procedures may have none, one, or more than one parameter.  A REDUCE
+parameter is a formal parameter only; the use of {\it x} as a parameter in
+a \name{procedure} definition has no connection with a value of {\it x} in
+the REDUCE session, and the results of calling a procedure have no effect
+on the value of {\it x}.  If a procedure is {\it called} with {\it x} as a
+parameter, the current value of {\it x} is used as specified in the
+computation, but is not changed outside the procedure.
+Making an assignment statement by \name{:=} with a
+formal parameter on the left-hand side only changes the value of the
+calling parameter within the procedure.
+
+Using a \nameref{let} statement inside a procedure always changes the value
+globally: a \name{let} with a formal parameter makes the change to the calling
+parameter.  \name{let} statements cannot be made on local variables inside
+\nameref{begin}\ldots\name{end} \nameref{block}\name{s}.  
+When \nameref{clear} statements are used on formal
+parameters, the calling variables associated with them are cleared globally too.
+The use of \name{let} or \name{clear} statements inside procedures 
+should be done with extreme caution.
+
+Arrays and operators may be used as parameters to procedures.  The body of the
+procedure can contain statements that appropriately manipulate these
+arguments.  Changes are made to values of the calling arrays or operators.
+Simple expressions can also be used as arguments, in the place of scalar
+variables.  Matrices may {\it not} be used as arguments to procedures.
+
+A procedure that has no parameters is called by the procedure name,
+immediately followed by empty parentheses.  The empty parentheses may be left
+out when writing a procedure with no parameters, but must appear in a call of
+the procedure.  If this is a nuisance to you, use a \nameref{let} statement on
+the name of the procedure (i.e., \name{let noargs = noargs()}) after which
+you can call the procedure by just its name.
+
+Procedures that have a single argument can leave out the parentheses around
+it both in the definition and procedure call.  (You can use the parentheses if
+you wish.)  Procedures with more than one argument must use parentheses, with
+the arguments separated by commas.
+
+Procedures often have a \name{begin}\ldots\name{end} block in them. Inside the
+block, local variables are declared using \name{scalar}, \name{real} or 
+\name{integer} declarations.  
+The declarations must be made immediately after the word
+\name{begin}, and if more than one type of declaration is made, they are
+separated by semicolons.  REDUCE currently does no type checking on local
+variables; \name{real} and \name{integer} are treated just like \name{scalar}.
+Actions take place as specified in the statements inside the block statement.
+Any identifiers that are not formal parameters or local variables are treated
+as global variables, and activities involving these identifiers are global in
+effect.
+
+If a return value is desired from a procedure call, a specific
+\nameref{return} command must be the last statement executed before exiting
+from the procedure.  If no \name{return} is used, a procedure returns a
+zero or no value.
+
+Procedures are often written in a file using an editor, then the file
+is input using the command \nameref{in}.  This method allows easy changes in
+development, and also allows you to load the named procedures whenever
+you like, by loading the files that contain them.
+\end{Comments}
+\end{Command}
+
+
+\begin{Command}{REPEAT}
+\index{loop}
+The \nameref{repeat} command causes repeated execution of a statement 
+\nameindex{until}
+the given  condition is found to be true.  The statement is always executed
+at least once.
+\begin{Syntax}
+\name{repeat} \meta{statement} \name{until} \meta{condition}
+\end{Syntax}
+
+\meta{statement} can be a single statement, \nameref{group} statement, or
+a \name{begin}\ldots\name{end} \nameref{block}.  \meta{condition} must be 
+a logical operator that evaluates to {\it true} or {\it nil}.
+
+\begin{Examples}
+<<m := 4; repeat <<write 100*x*m;m := m-1>> until m = 0>>;
+			     & \begin{multilineoutput}{6cm}
+400*X
+300*X
+200*X
+100*X
+\end{multilineoutput}\\
+
+<<m := -1; repeat <<write m; m := m-1>> until m <= 0>>;
+			     &           -1
+
+\end{Examples}
+\begin{Comments}
+\name{repeat} must always be followed by an \name{until} with a condition.
+Be careful not to generate an infinite loop with a condition that is never
+true.  In the second example, if the condition had been \name{m = 0}, it
+would never have been true since \name{m} already had value -2 when the
+condition was first evaluated.
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{REST}
+\index{list}\index{decomposition}
+The \name{rest} operator returns a \nameref{list} containing all but the first 
+element of the list it is given.
+\begin{Syntax}
+\name{rest}\(\meta{list}\) or \name{rest} \meta{list}
+
+
+\end{Syntax}
+\meta{list} must be a non-empty list, but need not have more than one element.
+
+\begin{Examples}
+alist := {a,b,c,d};          &     ALIST := \{A,B,C,D\}; \\
+rest alist;                  &     \{B,C,D\} \\
+blist := {x,y,{aa,bb,cc},z}; &     BLIST := \{X,Y,\{AA,BB,CC\},Z\} \\
+second rest blist;           &     \{AA,BB,CC\} \\
+clist := {c};                &     CLIST := C \\
+rest clist;                  &     \{\}
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Command}{RETURN}
+The \name{return} command causes a value to be returned from inside a
+\name{begin}\ldots\name{end} \nameref{block}.
+\begin{TEX}
+\begin{Syntax}
+\name{begin} \meta{statements} \name{return} \meta{\&option(expression)}
+ \name{end}
+\end{Syntax}    
+\end{TEX}
+\begin{INFO}
+{\begin{Syntax}
+\name{begin} \meta{statements} \name{return} \meta{(expression)}
+ \name{end}
+\end{Syntax}
+}\end{INFO}
+
+\meta{statements} can be any valid REDUCE statements.  The value of
+\meta{expression} is returned.
+
+\begin{Examples}
+begin write "yes"; return a end;                       & 
+\begin{multilineoutput}{5cm}
+yes
+A
+\end{multilineoutput}\\
+\begin{multilineinput}
+procedure dumb(a);
+  begin if numberp(a) then return a else return 10 end;
+\end{multilineinput}
+						       &      DUMB \\
+dumb(x);                                               &      10 \\
+dumb(-5);                                              &      -5  \\
+\begin{multilineinput}
+procedure dumb2(a);
+  begin c := a**2 + 2*a + 1; d := 17; c*d; return end;
+\end{multilineinput}		                       &      DUMB2 \\
+dumb2(4); \\
+c;                                                     &      25 \\
+d;                                                     &      17
+\end{Examples}
+
+\begin{Comments}
+Note in \name{dumb2} above that the assignments were made as requested, but
+the product \name{c*d} cannot be accessed.  Changing the procedure to read
+\name{return c*d} would remedy this problem.
+
+The \name{return} statement is always the last statement executed before
+leaving the block.  If \name{return} has no argument, the block is exited but
+no value is returned.  A block statement does not need a \name{return} ;
+the statements inside terminate in their normal fashion without one.  
+In that case no value is returned, although the specified actions inside the 
+block take place.
+
+The \name{return} command can be used inside \name{<<}\ldots\name{>>} 
+\nameref{group} statements and
+\nameref{if}\ldots\name{then}\ldots\name{else} commands that 
+are inside \name{begin}\ldots\name{end} \nameref{block}s.
+It is not valid in these constructions that are not inside 
+a \name{begin}\ldots\name{end}
+ block. It is not valid inside \nameref{for}, 
+\nameref{repeat}\ldots\name{until} or \nameref{while}\ldots\name{do}
+ loops in any construction.  To force early termination from loops, the
+\name{go to}(\nameref{goto}) command must be used. 
+When you use nested block statements, a
+\name{return} from an inner block exits returning a value to the next-outermost
+block, rather than all the way to the outside.
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{REVERSE}
+\index{list}
+The \name{reverse} operator returns a \nameref{list} that is the reverse of the 
+list it is given.
+\begin{Syntax}
+\name{reverse}\(\meta{list}\) or \name{reverse} \meta{list}
+\end{Syntax}
+
+\meta{list} must be a \nameref{list}.
+
+\begin{Examples}
+aa := \{c,b,a,\{x**2,z**3\},y\}; &    AA := \{C,B,A,\{X^{2},Z^{3}\},Y\} \\
+reverse aa;                  &    \{Y,\{X^{2},Z^{3}\},A,B,C\} \\
+reverse(q . reverse aa);  &    \{C,B,A,\{X^{2},Z^{3}\},Y,Q\}
+\end{Examples}
+
+\begin{Comments}
+\name{reverse} and \nameref{cons} can be used together to add a new element to
+the end of a list (\name{.} adds its new element to the beginning).  The
+\name{reverse} operator uses a noticeable amount of system resources,
+especially if the list is long.  If you are doing much heavy-duty list
+manipulation, you should probably design your algorithms to avoid much
+reversing of lists.  A moderate amount of list reversing is no problem.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Type}{RULE}
+\index{rule}\index{rule list}
+A \name{rule} is an instruction to replace an algebraic expression
+or a part of an expression by another one. 
+\begin{Syntax}
+\meta{lhs} => \meta{rhs} or
+\meta{lhs} => \meta{rhs} \name{when} \meta{cond}
+\end{Syntax}
+\meta{lhs} is an algebraic expression used as search pattern and
+\meta{rhs} is an algebraic expression which replaces matches of
+\meta{rhs}. \name{=>} is the operator \nameref{replace}.
+
+\meta{lhs} can contain \nameref{free variable}s which are
+symbols preceded by a tilde \nameindex{~} in their leftmost position
+in  \meta{lhs}. 
+A double tilde marks an \nameref{optional free variable}.
+If a rule has a \name{when} \meta{cond}
+part it will fire only if the evaluation of \meta{cond} has a
+result \nameref{true}.   \meta{cond} may contain references to
+free variables of \meta{lhs}.
+
+Rules can be collected in a \nameref{list} which then forms a
+\nameindex{rule list}. \name{Rule lists} can be used to collect
+algebraic knowledge for a  specific evaluation context.
+
+\name{Rules} and \name{rule lists} are globally activated and 
+deactivated  by \nameref{let}, \nameref{forall}, \nameref{clearrules}.
+For a single evaluation they can be locally activate by \nameref{where}. 
+The active rules for an operator can be visualized by \nameref{showrules}.
+
+\begin{Examples}
+operator f,g,h; \\
+let f(x) => x^2; \\
+f(x); & x^{2}\\
+g_rules:={g(~n,~x)=>h(n/2,x) when evenp n,\\
+g(~n,~x)=>h((1-n)/2,x) when not evenp n}$\\
+let g_rules;\\
+g(3,x); & h(-1,x)
+\end{Examples}
+
+\end{Type}
+
+\begin{Type}{Free Variable}
+\index{variable}
+A variable preceded by a tilde is considered as \name{free variable}
+and stands for an arbitrary part in an algebraic form during
+pattern matching. Free variables occur in the left-hand sides
+of \nameref{rule}s, in the side relations for \nameref{compact}
+and in the first arguments of \nameref{map} and \nameref{select}
+calls. See \nameref{rule} for examples.
+
+In rules also \nameref{optional free variable}s may occur.
+\end{Type}
+
+\begin{Type}{Optional Free Variable}
+\index{variable}
+A variable preceded by a double tilde is considered as 
+\name{optional free variable}
+and stands for an arbitrary part part in an algebraic form during
+pattern matching. In contrast to ordinary \nameref{free variable}s
+an operator pattern with an \name{optional free variable}
+matches also if the operand for the variable is missing. In such
+a case the variable is bound to a neutral value.
+Optional free variables can be used as
+
+   term in a sum: set to 0 if missing,
+
+   factor in a product: set to 1 if missing,
+
+   exponent: set to 1 if missing
+
+\begin{Examples}
+   sin(~~u + ~~n * pi) => sin(u) when evenp u;
+\end{Examples}
+
+Optional free variables are allowed only in the left-hand sides
+of \nameref{rule}s.
+\end{Type}
+
+\begin{Operator}{SECOND}
+\index{list}\index{decomposition}
+The \name{second} operator returns the second element of a list.
+\begin{Syntax}
+\name{second}\(\meta{list}\) or \name{second} \meta{list}
+
+
+\end{Syntax}
+
+\meta{list} must be a list with at least two elements, to avoid an error
+message.
+
+\begin{Examples}
+alist := \{a,b,c,d\};          &      ALIST := \{A,B,C,D\} \\
+second alist;                &      B \\
+blist := \{x,\{aa,bb,cc\},z\};   &      BLIST := \{X,\{AA,BB,CC\},Z\} \\
+second second blist;         &      BB
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}{SET}
+\index{assign}
+The \name{set} operator is used for assignments when you want both sides of
+the assignment statement to be evaluated.
+%%% INCONSISTENT??? hyphen after restricted
+\begin{Syntax}
+\name{set}\(\meta{restricted\_expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} can be any REDUCE expression; \meta{restricted\_expression}
+must be an identifier or an expression that evaluates to an identifier.
+
+\begin{Examples}
+a := y;                      &           A := Y \\
+set(a,sin(x^2));             &           SIN(X^{2}) \\
+a;                           &           SIN(X^{2}) \\
+y;                           &           SIN(X^{2}) \\
+a := b + c;                  &           A := B + C \\
+set(a-c,z);                  &           Z \\
+b;                           &           Z
+\end{Examples}
+
+\begin{Comments}
+Using an \nameref{array} or \nameref{matrix} reference as the first 
+argument to \name{set} has
+the result of setting the {\it contents} of the designated element to
+\name{set}'s second argument.  You should be careful to avoid unwanted
+side effects when you use this facility.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{SETQ}
+\index{assign}
+The \name{setq} operator is an infix or prefix binary assignment operator.
+It is identical to \name{:=}.
+\begin{Syntax}
+\name{setq}\(\meta{restricted\_expression},\meta{expression}\) or \\
+\meta{restricted\_expression} \name{setq} \meta{expression}
+\end{Syntax}
+
+\meta{restricted expression} is ordinarily a single identifier, though
+simple expressions may be used (see Comments below). \meta{expression} can
+be any valid REDUCE expression.  If \meta{expression} is a \nameref{matrix}
+identifier, then \meta{restricted\_expression} can be a matrix identifier
+(redimensioned if necessary), which has each element set to the
+corresponding elements of the identifier on the right-hand side.
+
+\begin{Examples}
+setq(b,6);                   &           B := 6 \\
+c setq sin(x);               &           C := SIN(X) \\
+w + setq(c,x+3) + z;         &           W + X + Z + 3 \\
+c;                           &           X + 3 \\
+setq(a1 + a2,25);            &           A1 + A2 := 25 \\
+a1;                          &           - (A2 - 25)
+\end{Examples}
+\begin{Comments}
+Embedding a \name{setq} statement in an expression has the side effect of making
+the assignment, as shown in the third example above.
+
+Assignments are generally done for identifiers, but may be done for simple
+expressions as well, subject to the following remarks:
+\begin{itemize}
+
+\item[(i)]
+If the left-hand side is an identifier, an operator, or a power, the rule
+is added to the rule table.
+
+\item[(ii)]
+If the operators \name{- + /} appear on the left-hand side, all but the first
+term of the expression is moved to the right-hand side.
+
+\item[(iii)]
+If the operator \name{*} appears on the left-hand side, any constant terms are
+moved to the right-hand side, but the symbolic factors remain.
+\end{itemize}
+
+Be careful not to make a recursive \name{setq} assignment that is not
+controlled inside a loop statement.  The process of resubstitution
+continues until you get a stack overflow message. \name{setq} can be used
+to attach functionality to operators, as the \name{:=} does.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{THIRD}
+\index{list}\index{decomposition}
+The \name{third} operator returns the third item of a \nameref{list}.
+\begin{Syntax}
+\name{third}\(\meta{list}\) or \name{third} \meta{list}
+
+\end{Syntax}
+
+
+\meta{list} must be a list containing at least three items to avoid an error
+message.
+
+\begin{Examples}
+alist := \{a,b,c,d\};          &      ALIST := \{A,B,C,D\} \\
+third alist;                 &      C \\
+blist := \{x,\{aa,bb,cc\},y,z\}; &      BLIST := \{X,\{AA,BB,CC\},Y,Z\}; \\
+third second blist;          &      CC \\
+third blist;                 &      Y
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{WHEN}
+\index{rule}
+The \name{when} operator is used inside a \name{rule} to make the
+execution of the rule depend on a boolean condition which is
+evaluated at execution time. For the use see \nameref{rule}. 
+\end{Operator}
+

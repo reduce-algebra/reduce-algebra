@@ -1,0 +1,1629 @@
+\section{Declarations}
+
+\begin{Command}{ALGEBRAIC}
+\index{evaluation}
+The \name{algebraic} command changes REDUCE's mode of operation to
+algebraic.  When \name{algebraic} is used as an operator (with an
+argument inside parentheses) that argument is evaluated in algebraic
+mode, but REDUCE's mode is not changed.
+
+\begin{Examples}
+algebraic; \\
+symbolic;                  &      NIL \\
+algebraic(x**2);           &      X^{2} \\
+x**2;                      &      \begin{multilineoutput}{6cm}
+  ***** The symbol X has no value.
+\end{multilineoutput}
+\end{Examples}
+
+\begin{Comments}
+REDUCE's symbolic mode does not know about most algebraic commands.
+Error messages in this mode may also depend on the particular Lisp
+used for the REDUCE implementation.
+% You can tell that you are in algebraic mode if the numbered prompt
+% contains a colon rather than an asterisk.
+\end{Comments}
+\end{Command}
+
+
+\begin{Declaration}{ANTISYMMETRIC}
+When an operator is declared \name{antisymmetric}, its arguments are
+reordered to conform to the internal ordering of the system.  If an odd
+number of argument interchanges are required to do this ordering,
+the sign of the expression is changed.
+
+\begin{Syntax}
+\name{antisymmetric} \meta{identifier}\{\name{,}\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} is an identifier that has been declared as an operator.
+
+\begin{Examples}
+operator m,n; \\
+antisymmetric m,n; \\
+m(x,n(1,2));               &         - M( - N(2,1),X) \\
+operator p; \\
+antisymmetric p; \\
+p(a,b,c);                  &           P(A,B,C) \\
+p(b,a,c);                  &         - P(A,B,C)
+\end{Examples}
+
+\begin{Comments}
+If \meta{identifier} has not been declared an operator, the flag
+\name{antisymmetric} is still attached to it.  When \meta{identifier} is
+subsequently used as an operator, the message \name{Declare} \meta{identifier}
+ \name{operator? (Y or N)} is printed.  If the user replies \name{y}, the
+antisymmetric property of the operator is used.
+
+Note in the first example, identifiers are customarily ordered
+alphabetically, while numbers are ordered from largest to smallest.
+The operators may have any desired number of arguments (less than 128).
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{ARRAY}
+The \name{array} declaration declares a list of identifiers to be of type
+\name{array}, and sets all their entries to 0.
+\begin{Syntax}
+\name{array}
+\meta{identifier}\(\meta{dimensions}\)
+              \{\name{,}\meta{identifier}\(\meta{dimensions}\)\}\optional
+\end{Syntax}
+
+\meta{identifier} may be any valid REDUCE identifier.  If the identifier
+was already an array, a warning message is given that the array has been
+redefined.  \meta{dimensions} are of form
+ \meta{integer}\{,\meta{integer}\}\optional.
+
+\begin{Examples}
+array a(2,5),b(3,3,3),c(200);  \\
+array a(3,5);              &     *** ARRAY A REDEFINED \\
+a(3,4);                    &     0 \\
+length a;                  &     {4,6}
+\end{Examples}
+
+\begin{Comments}
+Arrays are always global, even if defined inside a procedure or block
+statement.  Their status as an array remains until the variable is
+reset by \nameref{clear}.  Arrays may not have the same names as operators,
+procedures or scalar variables.
+
+Array elements are referred to by the usual notation: \name{a(i,j)}
+returns the jth element of the ith row.  The \nameref{assign}ment operator
+\name{:=} is used to put values into the array.  Arrays as a whole
+cannot be subject to assignment by \nameref{let} or \name{:=} ; the
+assignment operator \name{:=} is only valid for individual elements.
+
+When you use \nameref{let} on an array element, the contents of that
+element become the argument to \name{let}.  Thus, if the element
+contains a number or some other expression that is not a valid argument
+for this command, you get an error message.  If the element contains an
+identifier, the identifier has the substitution rule attached to it
+globally.  The same behavior occurs with \nameref{clear}.  If the array
+element contains an identifier or simple\_expression, it is cleared.  Do
+\meta{not} use \name{clear} to try to set an array element to 0.  Because
+of the side effects of either \name{let} or \name{clear}, it is unwise
+to apply either of these to array elements.
+
+Array indices always start with 0, so that the declaration \name{array a(5)}
+sets aside 6 units of space, indexed from 0 through 5, and initializes
+them to 0.  The \nameref{length} command returns a list of the true number of
+elements in each dimension.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{CLEAR}
+The \name{clear} command is used to remove assignments or remove substitution
+rules from any expression.
+
+\begin{Syntax}
+\name{clear} \meta{identifier}\{,\meta{identifier}\}\repeated \ or \\
+\meta{let-type statement} \name{clear} \meta{identifier}
+\end{Syntax}
+
+\meta{identifier} can be any \name{scalar}, \nameref{matrix}, 
+or \nameref{array} variable or
+\nameref{procedure} name.  \meta{let-type statement} can be any general 
+or specific \nameref{let} statement (see below in Comments).
+
+\begin{Examples}
+array a(2,3); \\
+a(2,2) := 15;                &             A(2,2) := 15 \\
+clear a;                     \\
+a(2,2);                      &             Declare A operator? (Y or N) \\
+let x = y + z; \\
+sin(x);                      &             SIN(Y + Z) \\
+clear x; \\
+sin(x);                      &             SIN(X) \\
+let x**5 = 7; \\
+clear x; \\
+x**5;                        &             7 \\
+clear x**5; \\
+x**5;                        &             X^{5}
+\end{Examples}
+\begin{Comments}
+
+Although it is not a good idea, operators of the same name but taking
+different numbers of arguments can be defined.  Using a \name{clear} statement
+on any of these operators clears every one with the same name, even if the
+number of arguments is different.
+
+The \name{clear} command is used to ``forget" matrices, arrays, operators
+and scalar variables, returning their identifiers to the pristine state
+to be used for other purposes.  When \name{clear} is applied to array
+elements, the contents of the array element becomes the argument for
+\name{clear}.  Thus, you get an error message if the element contains a
+number, or some other expression that is not a legal argument to
+\name{clear}.  If the element contains an identifier, it is cleared.
+When clear is applied to matrix elements, an error message is returned
+if the element evaluates to a number, otherwise there is no effect.  Do
+{\em not} try to use \name{clear} to set array or matrix elements to 0.
+You will not be pleased with the results.
+
+If you are trying to clear power or product substitution rules made with
+either \nameref{let} or \nameref{forall}\ldots\name{let}, you must
+reproduce the rule, exactly as you typed it with the same arguments, up to
+but not including the equal sign, using the word \name{clear} instead of
+the word \name{let}.  This is shown in the last example.  Any other type of
+\name{let} or \name{forall}\ldots\name{let} substitution can be cleared
+with just the variable or operator name.  \nameref{match} behaves the same as
+\nameref{let} in this situation.  There is a more complicated example under
+\nameref{forall}.
+
+\end{Comments}
+\end{Command}
+
+
+\begin{Command}{CLEARRULES}
+\index{rule}
+\begin{Syntax}
+\name{clearrules} \meta{list}\{,\meta{list}\}\repeated
+\end{Syntax}
+
+The operator \name{clearrules} is used to remove previously defined
+\nameref{rule} lists from the system.  \meta{list} can be an explicit rule
+list, or evaluate to a rule list.
+
+\begin{Examples}
+trig1 := {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,
+	  cos(~x)*sin(~y) => (sin(x+y)-sin(x-y))/2,
+	  sin(~x)*sin(~y) => (cos(x-y)-cos(x+y))/2,
+	  cos(~x)^2       => (1+cos(2*x))/2,
+	  sin(~x)^2       => (1-cos(2*x))/2}$ \\
+let trig1;
+cos(a)*cos(b); &
+\rfrac{COS(A - B) + COS(A + B)}{2} \\
+clearrules trig1;
+cos(a)*cos(b); &  COS(A)*COS(B)
+\end{Examples}
+
+\end{Command}
+
+
+\begin{Command}{DEFINE}
+The command \name{define} allows you to supply a new name for an identifier
+or replace it by any valid REDUCE expression.
+
+\begin{Syntax}
+\name{define} \meta{identifier}\name{=}\meta{substitution}
+      \{\name{,}\meta{identifier}\name{=}\meta{substitution}\}\optional
+\end{Syntax}
+
+
+\meta{identifier} is any valid REDUCE identifier, \meta{substitution} can be a
+number, an identifier, an operator, a reserved word, or an expression.
+
+\begin{Examples}
+
+define is= :=, xx=y+z; \\
+
+a is 10;                     &            A := 10 \\
+
+xx**2;                       &            Y^{2}  + 2*Y*Z + Z^{2} \\
+
+xx := 10;                    &            Y + Z := 10
+\end{Examples}
+
+\begin{Comments}
+The renaming is done at the input level, and therefore takes precedence
+over any other replacement or substitution declared for the same identifier.
+It remains in effect until the end of the REDUCE session.  Be careful with
+it, since you cannot easily undo it without ending the session.
+\end{Comments}
+\end{Command}
+
+
+\begin{Declaration}{DEPEND}
+\index{dependency}
+\name{depend} declares that its first argument depends on the rest of its
+arguments.
+
+\begin{Syntax}
+\name{depend} \meta{kernel}\{\name{,}\meta{kernel}\}\repeated
+\end{Syntax}
+
+\meta{kernel} must be a legal variable name or a prefix operator (see
+\nameref{kernel}).
+
+\begin{Examples}
+
+depend y,x; \\
+
+df(y**2,x);                 &            2*DF(Y,X)*Y \\
+
+depend z,cos(x),y; \\
+
+df(sin(z),cos(x));          &            COS(Z)*DF(Z,COS(X)) \\
+
+df(z**2,x);                 &            2*DF(Z,X)*Z \\
+
+nodepend z,y; \\
+
+df(z**2,x);                 &            2*DF(Z,X)*Z \\
+
+cc := df(y**2,x);           &            CC := 2*DF(Y,X)*Y \\
+
+y := tan x;                 &            Y := TAN(X); \\
+
+cc;                         &            2*TAN(X)*(TAN(X)^{2}  + 1)
+\end{Examples}
+\begin{Comments}
+Dependencies can be removed by using the declaration \nameref{nodepend}.
+The differentiation operator uses this information, as shown in the
+examples above.  Linear operators also use knowledge of dependencies
+(see \nameref{linear}).  Note that dependencies can be nested:  Having
+declared \IFTEX{$y$}{y} to depend on \IFTEX{$x$}{x}, and \IFTEX{$z$}{z}
+to depend on \IFTEX{$y$}{y}, we
+see that the chain rule was applied to the derivative of a function of
+\IFTEX{$z$}{z} with respect to \IFTEX{$x$}{x}.   If the explicit function of the
+dependency is later entered into the system, terms with \name{DF(Y,X)},
+for example, are expanded when they are displayed again, as shown in the
+last example.  The boolean operator \nameref{freeof} allows you to
+check the dependency between two algebraic objects.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{EVEN}
+\begin{Syntax}
+\name{even} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+This declaration is used to declare an operator {\em even} in its first
+argument.  Expressions involving an operator declared in this manner are
+transformed if the first argument contains a minus sign.  Any other
+arguments are not affected.
+\begin{Examples}
+	even f; \\
+	f(-a)    &    F(A) \\
+	f(-a,-b) &    F(A,-B)
+\end{Examples}
+\end{Declaration}
+
+
+\begin{Declaration}{FACTOR}
+\index{output}
+When a kernel is declared by \name{factor}, all terms involving fixed
+powers of that kernel are printed as a product of the fixed powers and
+the rest of the terms. 
+\begin{Syntax}
+\name{factor} \meta{kernel} \{\name{,}\meta{kernel}\}\optional
+\end{Syntax}
+
+\meta{kernel} must be a \nameref{kernel} or a \nameref{list} of
+\name{kernel}s.
+
+\begin{Examples}
+a := (x + y + z)**2;         &
+     A := X^{2} + 2*X*Y + 2*X*Z + Y^{2} + 2*Y*Z + Z^{2} \\
+factor y; \\
+a;                           &
+     Y^{2} + 2*Y*(X + Z) + X^{2} + 2*X*Z + Z^{2} \\
+factor sin(x); \\
+c := df(sin(x)**4*x**2*z,x); &
+     C := 2*SIN(X)^{4}*X*Z + 4*SIN(X)^{3}*COS(X)*X^{2}*Z \\
+remfac sin(x); \\
+c;                           &
+     2*SIN(X)^{3}*X*Z*(2*COS(X)*X + SIN(X))
+\end{Examples}
+
+\begin{Comments}
+Use the \name{factor} declaration to display variables of interest so that
+you can see their powers more clearly, as shown in the example.  Remove
+this special treatment with the declaration \nameref{remfac}.  The
+\name{factor} declaration is only effective when the switch \nameref{pri} 
+is on.
+
+The \name{factor} declaration is not a factoring command; to factor
+expressions use the \nameref{factor} switch or the \nameref{factorize} command.
+
+The \name{factor} declaration is helpful in such cases as Taylor polynomials
+where the explicit powers of the variable are expected at the top level, not
+buried in various factored forms.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{FORALL}
+\index{substitution}
+The \name{forall} or (preferably) \name{for all} command is used as a
+modifier for \nameref{let} statements, indicating the universal applicability
+of the rule, with possible qualifications.
+\begin{Syntax}
+\name{for all} \meta{identifier}\{,\meta{identifier}\}\optional\ \name{let}
+\meta{let statement}
+
+{\em or}
+
+\name{for all} \meta{identifier}\{,\meta{identifier}\}\optional
+\ \name{such that} \meta{condition} \name{let} \meta{let statement}
+\end{Syntax}
+
+
+\meta{identifier} may be any valid REDUCE identifier, \meta{let statement}
+can be an operator, a product or power, or a group or block statement.
+\meta{condition} must be a logical or comparison operator returning true or
+false.
+
+\begin{Examples}
+for all x let f(x) = sin(x**2);
+			     &     Declare F operator ? (Y or N) \\
+y \\
+f(a);                        &     SIN(A^{2}) \\
+operator pos; \\
+for all x such that x>=0 let pos(x) = sqrt(x + 1); \\
+pos(5);                      &     SQRT(6) \\
+pos(-5);                     &     POS(-5) \\
+clear pos; \\
+pos(5);                      &     Declare POS operator ? (Y or N) \\
+for all a such that numberp a let x**a = 1; \\
+x**4;                        &     1 \\
+clear x**a;                  &     *** X**A not found \\
+for all a  clear x**a; \\
+x**4;                        &     1 \\
+for all a such that numberp a clear x**a; \\
+x**4;                        &     X^{4}
+\end{Examples}
+
+\begin{Comments}
+Substitution rules defined by \name{for all} or \name{for
+all}\ldots\name{such that} commands that involve products or powers are
+cleared by reproducing the command, with exactly the same variable names
+used, up to but not including the equal sign, with \nameref{clear}
+replacing \name{let}, as shown in the last example.  Other substitutions
+involving variables or operator names can be cleared with just the name,
+like any other variable.
+
+The \nameref{match} command can also be used in product and power substitutions.
+The syntax of its use and clearing is exactly like \name{let}.  A \name{match}
+substitution only replaces the term if it is exactly like the pattern, for
+example \name{match x**5 = 1} replaces only terms of \name{x**5} and not
+terms of higher powers.
+
+It is easier to declare your potential operator before defining the 
+\name{for all} rule, since the system will ask you to declare it an
+operator anyway.  Names of declared arrays or matrices or scalar
+variables are invalid as operator names, to avoid ambiguity.  Either
+\name{for all}\ldots\name{let} statements or procedures are often used to define
+operators.  One difference is that procedures implement ``call by value"
+meaning that assignments involving their formal parameters do not change
+the calling variables that replace them.  If you use assignment statements
+on the formal parameters in a \name{for all}\ldots\name{let} statement, the
+effects are seen in the calling variables.  Be careful not to redefine a
+system operator unless you mean it: the statement \name{for all x let
+sin(x)=0;} has exactly that effect, and the usual definition for sin(x) has
+been lost for the remainder of the REDUCE session. \end{Comments}
+\end{Command}
+
+\begin{Declaration}{INFIX}
+\index{operator}
+\name{infix} declares identifiers to be infix operators.
+\begin{Syntax}
+\name{infix} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} can be any valid REDUCE identifier, which has not already
+been declared an operator, array or matrix, and is not reserved by the
+system.
+
+\begin{Examples}
+infix aa; \\
+for all x,y let aa(x,y) = cos(x)*cos(y) - sin(x)*sin(y); \\
+x aa y;                      &       COS(X)*COS(Y) - SIN(X)*SIN(Y) \\
+pi/3 aa pi/2;                &        - \rfrac{SQRT(3)}{2} \\
+aa(pi,pi);                   &           1
+\end{Examples}
+
+\begin{Comments}
+A \nameref{let} statement must be used to attach functionality to 
+the operator. Note that the operator is defined in prefix form in 
+the \name{let} statement.
+After its definition, the operator may be used in either prefix or infix
+mode.  The above operator \IFTEX{$aa$}{aa} finds the cosine of the sum 
+of two angles by the formula 
+\begin{TEX}
+\begin{displaymath}
+\cos(x+y) = \cos x \cos y  - \sin x \sin y.
+\end{displaymath}
+\end{TEX}
+\begin{INFO}
+cos(x+y) = cos(x)*cos(y) - sin(x)*sin(y).
+\end{INFO}
+Precedence may be attached to infix operators with the
+\nameref{precedence} declaration.
+
+User-defined infix operators may be used in prefix form.  If they are used
+in infix form, a space must be left on each side of the operator to avoid
+ambiguity.  Infix operators are always binary.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{INTEGER}
+The \name{integer} declaration must be made immediately after a
+\nameref{begin} (or other variable declaration such as \nameref{real}
+and \nameref{scalar}) and declares local integer variables.  They are
+initialized to 0.
+\begin{Syntax}
+\name{integer} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} may be any valid REDUCE identifier, except
+\name{t} or \name{nil}.
+
+\begin{Comments}
+Integer variables remain local, and do not share values with variables of
+the same name outside the \nameref{begin}\ldots\name{end} block.  When the
+block is finished, the variables are removed.  You may use the words
+\nameref{real} or \nameref{scalar} in the place of \name{integer}.
+\name{integer} does not indicate typechecking by the
+current REDUCE; it is only for your own information.  Declaration
+statements must immediately follow the \name{begin}, without a semicolon
+between \name{begin} and the first variable declaration.
+
+Any variables used inside \name{begin}\ldots\name{end} blocks that were not
+declared \name{scalar}, \name{real} or \name{integer} are global, and any
+change made to them inside the block affects their global value.  Any
+\ref{array} or \ref{matrix} declared inside a block is always global.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{KORDER}
+\index{kernel order}\index{variable order}\index{order}
+The \name{korder} declaration changes the internal canonical ordering of
+kernels.
+\begin{Syntax}
+\name{korder} \meta{kernel}\{\name{,}\meta{kernel}\}\optional
+\end{Syntax}
+
+\meta{kernel} must be a REDUCE \nameref{kernel} or a \nameref{list} of
+\name{kernel}s.
+
+\begin{Comments}
+The declaration \name{korder} changes the internal ordering, but not the print
+ordering, so the effects cannot be seen on output.  However, in some 
+calculations, the order of the variables can have significant effects on the 
+time and space demands of a calculation.  If you are doing a demanding 
+calculation with several kernels, you can experiment with changing the 
+canonical ordering to improve behavior.
+
+The first kernel in the argument list is given the highest priority, the
+second gets the next highest, and so on.  Kernels not named in a
+\name{korder} ordering otherwise.  A new \name{korder} declaration replaces 
+the previous one.  To return to canonical ordering, use the command 
+\name{korder nil}.
+
+To change the print ordering, use the declaration \nameref{order}.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{LET}
+\index{substitution}\index{rule}
+The \name{let} command defines general or specific substitution rules.
+\begin{Syntax}
+\name{let} \meta{identifier} \name{=} \meta{expression}\{,\meta{identifier}
+\name{=} \meta{expression}\}\optional
+\end{Syntax}
+
+
+\meta{identifier} can be any valid REDUCE identifier except an array, and in
+some cases can be an expression; \meta{expression} can be any valid REDUCE
+expression.   
+
+\begin{Examples}
+let a = sin(x); \\
+b := a;                      &          B := SIN X; \\
+let c = a;  \\
+exp(a);                      &          E^{SIN(X)} \\
+a := x**2;                   &          A := X^{2} \\
+exp(a);                      &          E^{X^{2}} \\
+exp(b);                      &          E^{SIN(X)} \\
+exp(c);                      &          E^{X^{2}} \\
+let m + n = p; \\
+(m + n)**5;                  &          P^{5} \\
+%%%let z**6 = 0; \\
+%%%z**3*(z + 1)**4;             &          Z^{3}*(6*Z^{2}  + 4*Z + 1) \\
+operator h; \\
+let h(u,v) = u - v; \\
+h(u,v);                      &          U - V \\
+h(x,y);                      &          H(X,Y) \\
+array q(10); \\
+let q(1) = 15;               &   ***** Substitution for 0 not allowed
+\end{Examples}
+
+The \name{let} command is also used to activate a \name{rule sets}.
+\begin{Syntax}
+\name{let} \meta{list}\{,\meta{list}\}\repeated
+\end{Syntax}
+
+\meta{list} can be an explicit \nameref{rule} \name{list}, or evaluate 
+to a rule list.
+
+\begin{Examples}
+trig1 := {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,
+	  cos(~x)*sin(~y) => (sin(x+y)-sin(x-y))/2,
+	  sin(~x)*sin(~y) => (cos(x-y)-cos(x+y))/2,
+	  cos(~x)^2       => (1+cos(2*x))/2,
+	  sin(~x)^2       => (1-cos(2*x))/2}$ \\
+let trig1;
+cos(a)*cos(b); &
+\rfrac{COS(A - B) + COS(A + B)}{2}
+\end{Examples}
+
+\begin{Comments}
+A \name{let} command returns no value, though the substitution rule is
+entered.  Assignment rules made by \nameref{assign} and \name{let} 
+rules are at the
+same level, and cancel each other.  There is a difference in their
+operation, however, as shown in the first example:  a \name{let} assignment
+tracks the changes in what it is assigned to, while a \name{:=} assignment
+is fixed at the value it originally had.  
+
+The use of expressions as left-hand sides of \name{let} statements is a 
+little complicated.  The rules of operation are:
+\begin{itemize}
+
+\item[(i)]
+Expressions of the form A*B = C do not change A, B or C, but set A*B to C.
+
+\item[(ii)]
+Expressions of the form A+B = C substitute C - B for A, but do not change
+B or C.
+
+\item[(iii)]
+Expressions of the form A-B = C substitute B + C for A, but do not change
+B or C.
+
+\item[(iv)]
+Expressions of the form A/B = C substitute B*C for A, but do not change B or
+C.
+
+\item[(v)]
+Expressions of the form A**N = C substitute C for A**N in every expression of
+a power of A to N or greater.  An asymptotic command such as A**N = 0 sets
+all terms involving A to powers greater than or equal to N to 0.  Finite
+fields may be generated by requiring modular arithmetic (the \nameref{modular}
+switch) and defining the primitive polynomial via a \name{let} statement.
+
+\end{itemize}
+\name{let} substitutions involving expressions are cleared by using
+the \nameref{clear} command with exactly the same expression.
+
+Note when a simple \name{let} statement is used to assign functionality to an
+operator, it is valid only for the exact identifiers used.  For the use of the 
+\name{let} command to attach more general functionality to an operator,
+see \nameref{forall}.
+
+Arrays as a whole cannot be arguments to \name{let} statements, but
+matrices as a whole can be legal arguments, provided both arguments are
+matrices.  However, it is important to note that the two matrices are then
+linked.  Any change to an element of one matrix changes the corresponding
+value in the other.  Unless you want this behavior, you should not use
+\name{let} for matrices.  The assignment operator \nameref{assign} can be used
+for non-tracking assignments, avoiding the side effects.  Matrices are
+redimensioned as needed in \name{let} statements.
+
+When array or matrix elements are used as the left-hand side of \name{let}
+statements, the contents of that element is used as the argument.  When the 
+contents is a number or some other expression that is not a valid left-hand 
+side for \name{let}, you get an error message.  If the contents is an
+identifier or simple expression, the \name{let} rule is globally attached 
+to that identifier, and is in effect not only inside the array or matrix, 
+but everywhere.  Because of such unwanted side effects, you should not 
+use \name{let} with array or matrix elements.  The assignment operator 
+\name{:=} can be used to put values into array or matrix elements without 
+the side effects.
+
+Local variables declared inside \name{begin}\ldots\name{end} blocks cannot
+be used as the left-hand side of \name{let} statements.  However,
+\nameref{begin}\ldots\name{end} blocks themselves can be used as the
+right-hand side of \name{let} statements.  The construction:
+\begin{Syntax}
+        \name{for all} \meta{vars}
+        \name{let}\meta{operator}\(\meta{vars}\)\name{=}\meta{block}
+\end{Syntax}
+is an alternative to the 
+\begin{Syntax}
+        \name{procedure} \meta{name}\(\meta{vars}\)\name{;}\meta{block}
+\end{Syntax}
+construction.  One important difference between the two constructions is that
+the \meta{vars} as formal parameters to a procedure have their global values
+protected against change by the procedure, while the \meta{vars} of a 
+\name{let} statement are changed globally by its actions. 
+
+Be careful in using a construction such as \name{let x = x + 1} except inside
+a controlled loop statement.  The process of resubstitution continues until 
+a stack overflow message is given.  
+
+The \name{let} statement may be used to make global changes to variables from
+inside procedures.  If \name{x} is a formal parameter to a procedure, the 
+command \name{let x = }\ldots makes the change to the calling variable.  
+For example, if a procedure was defined by 
+\begin{verbatim}
+        procedure f(x,y);
+        let x = 15;
+\end{verbatim}
+and the procedure was called as
+\begin{verbatim}
+        f(a,b);
+\end{verbatim}
+\name{a} would have its value changed to 15.  Be careful when using \name{let}
+statements inside procedures to avoid unwanted side effects.
+
+It is also important to be careful when replacing \name{let} statements with
+other \name{let} statements.  The overlapping of these substitutions can be
+unpredictable.  Ordinarily the latest-entered rule is the first to be applied.
+Sometimes the previous rule is superseded completely; other times it stays
+around as a special case.  The order of entering a set of related \name{let}
+expressions is very important to their eventual behavior.  The best
+approach is to assume that the rules will be applied in an arbitrary order.
+%%%Be sure to research this subject carefully when you are programming
+%%%mathematical operations using related \name{let} substitutions.
+\end{Comments}
+\end{Command}
+
+
+\begin{Declaration}{LINEAR}
+\index{operator}
+An operator can be declared linear in its first argument over powers of
+its second argument by the declaration \name{linear.}
+\begin{Syntax}
+ \name{linear} \meta{operator}\{\name{,}\meta{operator}\}\optional
+\end{Syntax}
+\meta{operator} must have been declared to be an operator.  Be careful not
+to use a system operator name, because this command may change its definition.
+The operator being declared must have at least two arguments, and the
+second one must be a \nameref{kernel}.
+
+\begin{Examples}
+operator f; \\
+linear f; \\
+f(0,x);                      &        0 \\
+f(-y,x);                     &        - F(1,X)*Y \\
+f(y+z,x);                    &        F(1,X)*(Y + Z) \\
+f(y*z,x);                    &        F(1,X)*Y*Z \\
+depend z,x; \\
+f(y*z,x);                    &        F(Z,X)*Y \\
+f(y/z,x);                    &        F(\rfrac{1}{Z},X)*Y \\
+depend y,x;  \\
+f(y/z,x);                    &        F(\rfrac{Y}{Z},X) \\
+nodepend z,x; \\
+f(y/z,x);                    &        \rfrac{F(Y,X)}{Z} \\
+f(2*e**sin(x),x);            &        2*F(E^{SIN(X)},X)
+\end{Examples}
+
+\begin{Comments}
+Even when the operator has not had its functionality attached, it exhibits
+linear properties as shown in the examples.  Notice the difference when
+dependencies are added.  Dependencies are also in effect when the operator's
+first argument contains its second, as in the last line above.
+
+For a fully-developed example of the use of linear operators, refer to the
+article in the \meta{Journal of Computational Physics}, Vol. 14 (1974), pp.
+301-317, ``Analytic Computation of Some Integrals in Fourth Order Quantum
+Electrodynamics," by J.A. Fox and A.C. Hearn.  The article includes the
+complete listing of REDUCE procedures used for this work.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{LINELENGTH}
+\index{output}
+The \name{linelength} declaration sets the length of the output line. Default
+is 80.
+\begin{Syntax}
+\name{linelength} \meta{expression}
+\end{Syntax}
+
+To change the linelength,
+\meta{expression} must evaluate to a positive integer less than 128
+(although this varies from system to system), and should not be less than
+20 or so for proper operation.
+
+\begin{Comments}
+% If you want to use a thin window to set beside another window,
+% reset the linelength shorter to avoid problems with raised exponents.
+\name{linelength} returns the previous linelength.  If you want the current
+linelength value, but not change it, say \name{linelength nil}.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{LISP}
+The \name{lisp} command changes REDUCE's mode of operation to symbolic.  When
+\name{lisp} is followed by an expression, that expression is evaluated in
+symbolic mode, but REDUCE's mode is not changed.  This command is
+equivalent to \nameref{symbolic}.
+
+\begin{Examples}
+lisp;                       &            NIL \\
+car '(a b c d e);           &            A  \\
+algebraic; \\
+c := (lisp car '(first second))**2; \\
+			    &           C := FIRST^{2}
+
+\end{Examples}
+
+\end{Command}
+
+
+\begin{Declaration}{LISTARGP}
+\index{list}\index{argument}
+\begin{Syntax}
+\name{listargp} \meta{operator}\{\name{,}\meta{operator}\}\optional
+\end{Syntax}
+If an operator other than those specifically defined for lists is given a
+single argument that is a \nameref{list}, then the result of this 
+operation will be a list in which that operator is applied to each element 
+of the list.
+This process can be inhibited for a specific operator, or list of operators,
+by using the declaration \name{listargp}.
+
+\begin{Examples}
+log {a,b,c}; & {LOG(A),LOG(B),LOG(C)} \\
+listargp log; \\
+log {a,b,c}; & LOG({A,B,C})
+\end{Examples}
+
+\begin{Comments}
+It is possible to inhibit such distribution globally by turning on the
+switch \nameref{listargs}.  In addition, if an operator has more than one
+argument, no such distribution occurs, so \name{listargp} has no effect.
+\end{Comments}
+
+\end{Declaration}
+
+
+\begin{Declaration}{NODEPEND}
+\index{depend}
+The \name{nodepend} declaration removes the dependency declared with
+\nameref{depend}.
+\begin{Syntax}
+\name{nodepend} \meta{dep-kernel}\{,\meta{kernel}\}\repeated
+
+\end{Syntax}
+
+
+\meta{dep-kernel} must be a kernel that has had a dependency declared upon the 
+one or more other kernels that are its other arguments.  
+
+\begin{Examples}
+depend y,x,z; \\
+df(sin y,x);                 &        COS(Y)*DF(Y,X) \\
+df(sin y,x,z);               &  COS(Y)*DF(Y,X,Z) - DF(Y,X)*DF(Y,Z)*SIN(Y) \\
+nodepend y,z; \\
+df(sin y,x);                 &        COS(Y)*DF(Y,X) \\
+df(sin y,x,z);               &        0
+\end{Examples}
+
+\begin{Comments}
+A warning message is printed if the dependency had not been declared by
+\name{depend}.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{MATCH}
+\index{substitution}
+The \name{match} command is similar to the \nameref{let} command, except
+that it matches only explicit powers in substitution.
+\begin{Syntax}
+\name{match} \meta{expr} \name{=} \meta{expression}\{,\meta{expr}
+ \name{=}\meta{expression}\}\optional
+\end{Syntax}
+
+\meta{expr} is generally a term involving powers, and is limited by
+the rules for the \nameref{let} command.  \meta{expression} may be
+any valid REDUCE scalar expression.
+
+
+\begin{Examples}
+match c**2*a**2 = d;
+(a+c)**4;                    &      
+            A^{4}  + 4*A^{3}*C + 4*A*C^{3} + C^{4} + 6*D \\
+match a+b = c; \\
+a + 2*b;                     &       B + C \\
+(a + b + c)**2;              &       
+            A^{2}  - B^{2}  + 2*B*C + 3*C^{2} \\
+clear a+b; \\
+(a + b + c)**2;              &       
+            A ^{2} + 2*A*B + 2*A*C + B^{2} + 2*B*C + C^{2} \\
+let p*r = s; \\
+match p*q = ss; \\
+(a + p*r)**2;                &       A^{2} + 2*A*S + S^{2} \\
+(a + p*q)**2;                &       A^{2}  + 2*A*SS + P^{2}*Q^{2}
+\end{Examples}
+
+\begin{Comments}
+Note in the last example that \name{a + b} has been explicitly matched
+after the squaring was done, replacing each single power of \name{a} by
+\name{c - b}.  This kind of substitution, although following the rules, is
+confusing and could lead to unrecognizable results.  It is better to use
+\name{match} with explicit powers or products only.  \name{match} should
+not be used inside procedures for the same reasons that \name{let} should
+not be.
+
+Unlike \nameref{let} substitutions, \name{match} substitutions are executed
+after all other operations are complete.  The last example shows the
+difference. \name{match} commands can be cleared by using \nameref{clear},
+with exactly the expression that the original \name{match} took.
+\name{match} commands can also be done more generally with \name{for all}
+or \nameref{forall}\ldots\name{such that} commands.
+\end{Comments}
+\end{Command}
+
+
+\begin{Declaration}{NONCOM}
+\index{commutative}\index{non commutative}\index{operator}
+\name{noncom} declares that already-declared operators are noncommutative
+under multiplication.
+\begin{Syntax}
+\name{noncom} \meta{operator}\{,\meta{operator}\}\optional
+\end{Syntax}
+
+\meta{operator} must have been declared an \nameref{operator}, or a warning
+message is given.
+
+\begin{Examples}
+operator f,h; \\
+noncom f; \\
+f(a)*f(b) - f(b)*f(a);       &         F(A)*F(B) - F(B)*F(A) \\
+h(a)*h(b) - h(b)*h(a);       &         0 \\
+operator comm; \\
+\begin{multilineinput}
+for all x,y such that x neq y and ordp(x,y)
+        let f(x)*f(y) = f(y)*f(x) + comm(x,y);
+\end{multilineinput}\\
+f(1)*f(2);                   &         F(1)*F(2) \\
+f(2)*f(1);                   &         COMM(2,1) + F(1)*F(2)
+\end{Examples}
+
+\begin{Comments}
+The last example introduces the commutator of $f(x)$ and $f(y)$
+for all x and y.  The equality check is to prevent an infinite loop.  The 
+operator {\it f} can have other functionality attached to it if desired, or it 
+can remain an indeterminate operator.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{NONZERO}
+\index{operator}
+\begin{Syntax}
+\name{nonzero} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+If an \ref{operator} \name{f} is declared \nameref{odd}, then \name{f(0)}
+is replaced by zero unless \name{f} is also declared {\em non zero} by the
+declaration \name{nonzero}.
+\begin{Examples}
+	odd f; \\
+	f(0)    &   0 \\
+	nonzero f; \\
+	f(0) &   F(0)
+\end{Examples}
+\end{Declaration}
+
+
+\begin{Declaration}{ODD}
+\index{operator}
+
+\begin{Syntax}
+\name{odd} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+This declaration is used to declare an operator {\em odd} in its first
+argument.  Expressions involving an operator declared in this manner are
+transformed if the first argument contains a minus sign.  Any other
+arguments are not affected.
+\begin{Examples}
+	odd f; \\
+	f(-a)    &   -F(A) \\
+	f(-a,-b) &   -F(A,-B) \\
+	f(a,-b)  &    F(A,-B)
+\end{Examples}
+
+\begin{Comments}
+
+If say \name{f} is declared odd, then \name{f(0)} is replaced by zero
+unless \name{f} is also declared {\em non zero} by the declaration
+\nameref{nonzero}.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{OFF}
+\index{switch}
+The \name{off} command is used to turn switches off.
+\begin{Syntax}
+\name{off} \meta{switch}\{,\meta{switch}\}\optional
+\end{Syntax}
+
+\meta{switch} can be any \name{switch} name.  There is no problem if the
+switch is already off.  If the switch name is mistyped, an error message is
+given.
+\end{Command}
+
+
+\begin{Command}{ON}
+\index{switch}
+The \name{on} command is used to turn switches on.
+\begin{Syntax}
+\name{on} \meta{switch}\{,\meta{switch}\}\optional
+\end{Syntax}
+
+\meta{switch} can be any \name{switch} name.  There is no problem if the
+switch is already on.  If the switch name is mistyped, an error message is
+given.
+\end{Command}
+
+
+\begin{Declaration}{OPERATOR}
+Use the \name{operator} declaration to declare your own operators.
+\begin{Syntax}
+\name{operator} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} can be any valid REDUCE identifier, which is not the name
+of a \nameref{matrix}, \nameref{array}, scalar variable or previously-defined
+operator.  
+
+\begin{Examples}
+operator dis,fac; \\
+let dis(~x,~y) = sqrt(x^2 + y^2); \\
+dis(1,2);                   &       SQRT(5) \\
+dis(a,10);                  &       SQRT(A^{2} + 100) \\
+on rounded; \\
+dis(1.5,7.2);               &       7.35459040329\\
+\begin{multilineinput}
+let fac(~n) = if n=0 then 1
+               else if not(fixp n and n>0)
+                then rederr "choose non-negative integer"
+               else for i := 1:n product i;
+\end{multilineinput} \\
+fac(5);                     &      120 \\
+fac(-2);                    &      ***** choose non-negative integer
+\end{Examples}
+ 
+\begin{Comments}
+The first operator is the Euclidean distance metric, the distance of point
+$(x,y)$ from the origin.  The second operator is the factorial.
+
+Operators can have various properties assigned to them; they can be
+declared \nameref{infix}, \nameref{linear}, \nameref{symmetric}, 
+\nameref{antisymmetric}, or \nameref{noncom}\name{mutative}.
+The default operator is prefix, nonlinear, and commutative.
+Precedence can also be assigned to operators using the declaration
+\nameref{precedence}.
+
+Functionality is assigned to an operator by a \nameref{let} statement or
+a \nameref{forall}\ldots\name{let} statement, 
+(or possibly by a procedure with the name
+of the operator). Be careful not to redefine a system operator by
+accident. REDUCE permits you to redefine system operators, giving you a 
+warning message that the operator was already defined.  This flexibility 
+allows you to add mathematical rules that do what you want them to do, but 
+can produce odd or erroneous behavior if you are not careful. 
+
+You can declare operators from inside \nameref{procedure}s, as long as they 
+are not local variables.  Operators defined inside procedures are global. 
+A formal parameter may be declared as an operator, and has the effect of 
+declaring the calling variable as the operator.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{ORDER}
+\index{order}\index{variable order}\index{output}
+The \name{order} declaration changes the order of precedence of kernels for
+display purposes only.
+\begin{Syntax}
+\name{order} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+\meta{kernel} must be a valid \nameref{kernel} or \nameref{operator} name
+complete with argument or a \nameref{list} of such objects.
+
+\begin{Examples}
+x + y + z + cos(a);         &         COS(A) + X + Y + Z \\
+order z,y,x,cos(a); \\
+x + y + z + cos(a);         &         Z + Y + X + COS(A) \\
+(x + y)**2;                 &         Y^{2} + 2*Y*X + X^{2} \\
+order nil; \\
+(z + cos(z))**2;            &         COS(Z)^{2} + 2*COS(Z)*Z + Z^{2}
+\end{Examples}
+
+\begin{Comments}
+\name{order} affects the printing order of the identifiers only; internal
+order is unchanged.  Change internal order of evaluation with the
+declaration \nameref{korder}.  You can use \name{order} to feature variables
+or functions you are particularly interested in.
+
+Declarations made with \name{order} are cumulative:  kernels in new order
+declarations are ordered behind those in previous declarations, and
+previous declarations retain their relative order.  Of course, specific
+kernels named in new declarations are removed from previous ones and given
+the new priority.  Return to the standard canonical printing order with the 
+statement \name{order nil}.
+
+The print order specified by \name{order} commands is not in effect if the
+switch \nameref{pri} is off.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{PRECEDENCE}
+\index{operator}
+The \name{precedence} declaration attaches a precedence to an infix operator.
+\begin{Syntax}
+\name{precedence} \meta{operator},\meta{known\_operator}
+\end{Syntax}
+
+\meta{operator} should have been declared an operator but may be a REDUCE
+identifier that is not already an operator, array, or matrix.
+\meta{known\_operator} must be a system infix operator or have had its
+precedence already declared.
+
+\begin{Examples}
+operator f,h; \\
+precedence f,+; \\
+precedence h,*;  \\
+a + f(1,2)*c;                &         (1 F 2)*C + A \\
+a + h(1,2)*c;                &         1 H 2*C + A \\
+a*1 f 2*c;                   &         A F 2*C \\
+a*1 h 2*c;                   &         1 H 2*A*C
+%%%symbolic;                    &         NIL \\
+%%%preclis!*;                  &
+%%%   (IREM IEQUAL OVER ADD MULT TO OR AND NOT MEMBER MEMQ EQUAL NEQ EQ GEQ
+%%%   GREATERP IGREATERP LEQ LESSP ILESSP FREEOF PLUS F IPLUS DIFFERENCE
+%%%   IDIFFERENCE TIMES H ITIMES QUOTIENT IQUOTIENT EXPT CONS)
+\end{Examples}
+
+\begin{Comments}
+The operator whose precedence is being declared is inserted into the infix
+operator precedence list at the next higher place than \meta{known\_operator}.
+
+Attaching a precedence to an operator has the side effect of declaring the
+operator to be infix.  If the identifier argument for \name{precedence} has
+not been declared to be an operator, an attempt to use it causes an error
+message.  After declaring it to be an operator, it becomes an infix operator
+with the precedence previously given.  Infix operators may be used in prefix
+form; if they are used in infix form, a space must be left on each side of
+the operator to avoid ambiguity.  Declared infix operators are always binary.
+
+To see the infix operator precedence list, enter symbolic mode and type
+\name{preclis!*;}.  The lowest precedence operator is listed first.
+
+All prefix operators have precedence higher than infix operators.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{PRECISION}
+\index{rounded}\index{floating point}
+The \name{precision} declaration sets the number of decimal places used when
+\nameref{rounded} is on.  Default is system dependent, and normally about 12.
+\begin{Syntax}
+\name{precision}(\meta{integer}) or \name{precision} \meta{integer}
+\end{Syntax}
+
+\meta{integer} must be a positive integer.  When \meta{integer} is 0, the
+current precision is displayed, but not changed.  There is no upper limit,
+but precision of greater than several hundred causes unpleasantly slow
+operation on numeric calculations.
+
+\begin{Examples}
+on rounded; \\
+7/9;                         &       0.777777777778 \\
+precision 20;                &       20 \\
+7/9;                         &       0.77777777777777777778 \\
+sin(pi/4);                   &       0.7071067811865475244
+\end{Examples}
+
+\begin{Comments}
+Trailing zeroes are dropped, so sometimes fewer than 20 decimal places are
+printed as in the last example.  Turn on the switch \nameref{fullprec} if
+you want to print all significant digits.  The \nameref{rounded} mode
+carries calculations to two more places than given by \name{precision}, and
+rounds off.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{PRINT\_PRECISION}
+\index{output}\index{floating point}\index{rounded}
+
+\begin{Syntax}
+\name{print\_precision}(\meta{integer})
+   or \name{print\_precision} \meta{integer}
+\end{Syntax}
+
+In \nameref{rounded} mode, numbers are normally printed to the specified
+precision.  If the user wishes to print such numbers with less precision,
+the printing precision can be set by the declaration \name{print\_precision}.
+
+\begin{Examples}
+on rounded; \\
+1/3; & 0.333333333333 \\
+print_precision 5; \\
+1/3 & 0.33333
+\end{Examples}
+\end{Declaration}
+
+
+\begin{Declaration}{REAL}
+The \name{real} declaration must be made immediately after a
+\nameref{begin} (or other variable declaration such as \nameref{integer}
+and \nameref{scalar}) and declares local integer variables.  They are
+initialized to zero.
+\begin{Syntax}
+\name{real} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} may be any valid REDUCE identifier, except
+\name{t} or \name{nil}.
+
+\begin{Comments}
+Real variables remain local, and do not share values with variables of the
+same name outside the \nameref{begin}\ldots\name{end} block.  When the
+block is finished, the variables are removed.  You may use the words
+\nameref{integer} or \nameref{scalar} in the place of \name{real}.
+\name{real} does not indicate typechecking by the current REDUCE; it is
+only for your own information.  Declaration statements must immediately
+follow the \name{begin}, without a semicolon between \name{begin} and the
+first variable declaration.
+
+Any variables used inside a \name{begin}\ldots\name{end} \nameref{block}
+that were not declared \name{scalar}, \name{real} or \name{integer} are
+global, and any change made to them inside the block affects their global
+value.  Any \ref{array} or \ref{matrix} declared inside a block is always
+global.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{REMFAC}
+\index{factor}\index{output}
+The \name{remfac} declaration removes the special factoring treatment of its
+arguments that was declared with \nameref{factor}.
+\begin{Syntax}
+\name{remfac} \meta{kernel}\{,\meta{kernel}\}\repeated
+\end{Syntax}
+
+\meta{kernel} must be a \nameref{kernel} or \nameref{operator} name that
+was declared as special with the \nameref{factor} declaration.
+\end{Declaration}
+
+
+\begin{Declaration}{SCALAR}
+The \name{scalar} declaration must be made immediately after a
+\nameref{begin} (or other variable declaration such as \nameref{integer}
+and \nameref{real}) and declares local scalar variables.  They are
+initialized to 0.
+\begin{Syntax}
+\name{scalar} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} may be any valid REDUCE identifier, except \name{t} or
+\name{nil}.
+
+\begin{Comments}
+Scalar variables remain local, and do not share values with variables of
+the same name outside the \nameref{begin}\ldots\name{end} \nameref{block}.
+When the block is finished, the variables are removed.  You may use the
+words \nameref{real} or \nameref{integer} in the place of \name{scalar}.
+\name{real} and \name{integer} do not indicate typechecking by the current
+REDUCE; they are only for your own information.  Declaration statements
+must immediately follow the \name{begin}, without a semicolon between
+\name{begin} and the first variable declaration.
+
+Any variables used inside \name{begin}\ldots\name{end} blocks that were not
+declared \name{scalar}, \name{real} or \name{integer} are global, and any
+change made to them inside the block affects their global value.  Arrays
+declared inside a block are always global.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{SCIENTIFIC\_NOTATION}
+\index{output}\index{floating point}\index{rounded}
+\begin{Syntax}
+\name{scientific\_notation}(\meta{m}) or
+\name{scientific\_notation}(\{\meta{m},\meta{n}\})
+\end{Syntax}
+
+\meta{m} and \meta{n} are positive integers.
+\name{scientific\_notation} controls the output format of floating point
+numbers.  At the default settings, any number with five or less digits
+before the decimal point is printed in a fixed-point notation, e.g., 
+{\tt 12345.6}.  Numbers with more than five digits are printed in scientific
+notation, e.g., {\tt 1.234567E+5}.  Similarly, by default, any number with
+eleven or more zeros after the decimal point is printed in scientific
+notation.
+
+When \name{scientific\_notation} is called with the numerical argument
+{\em m} a number with more than {\em m} digits before the decimal point,
+or {\em m} or more zeros after the decimal point, is printed in scientific
+notation.  When \name{scientific\_notation} is called with a list
+\{\meta{m},\meta{n}\}, a number with more than {\em m} digits before the
+decimal point, or {\em n} or more zeros after the decimal point is
+printed in scientific notation.
+
+\begin{Examples}
+
+on rounded;\\
+
+12345.6;&
+
+12345.6\\
+
+123456.5;&1.234565e+5\\
+
+0.00000000000000012;&
+
+1.2e-16\\
+
+scientific_notation 20;&
+
+{5,11}\\
+
+5: 123456.7;&
+
+123456.7\\
+
+0.00000000000000012;&
+
+0.00000000000000012\\
+
+\end{Examples}
+\end{Declaration}
+
+
+\begin{Declaration}{SHARE}
+The \name{share} declaration allows access to its arguments by both
+algebraic and symbolic modes.
+\begin{Syntax}
+\name{share} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} can be any valid REDUCE identifier.
+
+\begin{Comments}
+Programming in \nameref{symbolic} as well as algebraic mode allows 
+you a wider range
+of techniques than just algebraic mode alone.  Expressions do not cross the
+boundary since they have different representations, unless the \name{share}
+declaration is used.  For more information on using symbolic mode, see
+the \meta{REDUCE User's Manual}, and the \meta{Standard Lisp Report}.
+
+You should be aware that a previously-declared array is destroyed by the
+\name{share} declaration.  Scalar variables retain their values.  You can
+share a declared \nameref{matrix} that has not yet 
+been dimensioned so that it can be
+used by both modes.  Values that are later put into the matrix are
+accessible from symbolic mode too, but not by the usual matrix reference
+mechanism.  In symbolic mode, a matrix is stored as a list whose first
+element is \nameref{MAT}, and whose next elements are the rows of the matrix
+stored as lists of the individual elements.  Access in symbolic mode is by
+the operators \nameref{first}, \nameref{second}, \nameref{third} and
+\nameref{rest}.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{SYMBOLIC}
+The \name{symbolic} command changes REDUCE's mode of operation to symbolic.
+When \name{symbolic} is followed by an expression, that expression is
+evaluated in symbolic mode, but REDUCE's mode is not changed.  It is
+equivalent to the \nameref{lisp} command.
+
+\begin{Examples}
+symbolic;                    &       NIL \\
+cdr '(a b c);                &       (B C) \\
+algebraic; \\
+x + symbolic car '(y z);     &       X + Y
+\end{Examples}
+% \begin{Comments}
+% You can tell when you are in symbolic mode by noting that the numbered
+% prompt contains an asterisk (\name{*}) rather than a colon.
+% \end{Comments}
+\end{Command}
+
+
+\begin{Declaration}{SYMMETRIC}
+\index{operator}
+When an operator is declared \name{symmetric}, its arguments are reordered
+to conform to the internal ordering of the system.  
+\begin{Syntax}
+\name{symmetric} \meta{identifier}\{,\meta{identifier}\}\optional
+\end{Syntax}
+
+\meta{identifier} is an identifier that has been declared an operator.
+
+\begin{Examples}
+operator m,n; \\
+symmetric m,n; \\
+m(y,a,sin(x));               &           M(SIN(X),A,Y) \\
+n(z,m(b,a,q));               &           N(M(A,B,Q),Z)
+\end{Examples}
+
+\begin{Comments}
+If \meta{identifier} has not been declared to be an operator, the flag
+\name{symmetric} is still attached to it.  When \meta{identifier} is
+subsequently used as an operator, the message \name{Declare}\meta{identifier}
+ \name{operator ? (Y or N)} is printed.  If the user replies \name{y}, the
+symmetric property of the operator is used.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{TR}
+\index{trace}
+The \name{tr} declaration is used to trace system or user-written procedures.
+It is only useful to those with a good knowledge of both Lisp and the
+internal formats used by REDUCE.
+
+\begin{Syntax}
+\name{tr} \meta{name}\{,\meta{name}\}\optional
+\end{Syntax}
+
+\meta{name} is the name of a REDUCE system procedure or one of your own
+procedures.
+
+\begin{Examples}
+\explanation{The system procedure \name{prepsq} is traced,
+	     which prepares REDUCE standard
+forms for printing by converting them to a Lisp prefix form.} \\
+tr prepsq;               &      (PREPSQ) \\
+x**2 + y;                &
+\begin{multilineoutput}{6cm}
+PREPSQ entry:
+  Arg 1: (((((X . 2) . 1) ((Y . 1) . 1)) . 1)
+PREPSQ return value = (PLUS (EXPT X 2) Y)
+PREPSQ entry:
+  Arg 1: (1 . 1)
+PREPSQ return value = 1
+X^{2} + Y
+\end{multilineoutput}\\
+untr prepsq;             &       (PREPSQ)
+\end{Examples}
+
+\begin{Comments}
+This example is for a PSL-based system; the above format will vary if
+other Lisp systems are used.
+
+When a procedure is traced, the first lines show entry to the procedure and
+the arguments it is given.  The value returned by the procedure is printed
+upon exit.  If you are tracing several procedures, with a call to one of
+them inside the other, the inner trace will be indented showing procedure
+nesting.  There are no trace options. However, the format of the trace
+depends on the underlying Lisp system used.  The trace can be removed with
+the command \nameref{untr}.  Note that \name{trace}, below, is a matrix
+operator, while \name{tr} does procedure tracing.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Declaration}{UNTR}
+\index{trace}
+The \name{untr} declaration is used to remove a trace from system or
+user-written procedures declared with \nameref{tr}.  It is only useful to
+those with a good knowledge of both Lisp and the internal formats used by
+REDUCE.
+
+\begin{Syntax}
+\name{untr} \meta{name}\{,\meta{name}\}\optional
+\end{Syntax}
+
+\meta{name} is the name of a REDUCE system procedure or one of your own
+procedures that has previously been the argument of a \name{tr}
+declaration.
+\end{Declaration}
+
+
+\begin{Declaration}{VARNAME}
+The declaration \name{varname} instructs REDUCE to use its argument as the
+default Fortran (when \nameref{fort} is on) or \nameref{structr} identifier
+and identifier stem, rather than using \name{ANS}.
+\begin{Syntax}
+\name{varname} \meta{identifier}
+\end{Syntax}
+
+\meta{identifier} can be any combination of one or more alphanumeric
+characters.  Try to avoid REDUCE reserved words.
+
+\begin{Examples}
+varname ident;               &         IDENT \\
+on fort; \\
+x**2 + 1;                    &         IDENT=X**2+1. \\
+off fort,exp; \\
+structr(((x+y)**2 + z)**3);  &\begin{multilineoutput}{6cm}
+IDENT2^{3}
+    where
+       IDENT2 := IDENT1^{2} + Z
+IDENT1 := X + Y
+\end{multilineoutput}
+\end{Examples}
+\begin{Comments}
+\nameref{exp} was turned off so that \nameref{structr} could show the
+structure.  If \name{exp} had been on, the expression would have been
+expanded into a polynomial.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Command}{WEIGHT}
+The \name{weight} command is used to attach weights to kernels for asymptotic
+constraints.
+\begin{Syntax}
+\name{weight} \meta{kernel} \name{=}\meta{number}
+\end{Syntax}
+
+\meta{kernel} must be a REDUCE \nameref{kernel}, \meta{number} must be a
+positive integer, not 0.
+
+\begin{Examples}
+a := (x+y)**4;               & 
+     A := X^{4} + 4*X^{3}*Y + 6*X^{2}*Y^{2} + 4*X*Y^{3} + Y^{4} \\
+weight x=2,y=3; \\
+wtlevel 8; \\
+a;                           &     X^{4} \\
+wtlevel 10; \\
+a;                           &      X^{2}*(6*Y^{2} + 4*X*Y  + X^{2}) \\
+int(x**2,x);                 &     ***** X invalid as KERNEL
+\end{Examples}
+\begin{Comments}
+Weights and \nameref{wtlevel} are used for asymptotic constraints, where
+higher-order terms are considered insignificant.  
+
+Weights are originally equivalent to 0 until set by a \name{weight}
+command.  To remove a weight from a kernel, use the \nameref{clear}
+command.  Weights once assigned cannot be changed without clearing the
+identifier.  Once a weight is assigned to a kernel, it is no longer a
+kernel and cannot be used in any REDUCE commands or operators that require
+kernels, until the weight is cleared.  Note that terms are ordered by
+greatest weight.
+
+The weight level of the system is set by \nameref{wtlevel}, initially at
+2.  Since no kernels have weights, no effect from \name{wtlevel} can be
+seen.  Once you assign weights to kernels, you must set \name{wtlevel}
+correctly for the desired operation.  When weighted variables appear in a
+term, their weights are summed for the total weight of the term (powers of
+variables multiply their weights).  When a term exceeds the weight level
+of the system, it is discarded from the result expression.
+\end{Comments}
+\end{Command}
+
+
+\begin{Operator}{WHERE}
+\index{substitution}
+The \name{where} operator provides an infix notation for one-time
+substitutions for kernels in expressions.
+\begin{Syntax}
+\meta{expression} \name{where} \meta{kernel} 
+       \name{=}\meta{expression}\
+	 \{,\meta{kernel} \name{=}\meta{expression}\}\optional
+\end{Syntax}
+
+\meta{expression} can be any REDUCE scalar expression, \meta{kernel} must
+be a \nameref{kernel}. Alternatively a \nameref{rule} or a \name{rule list}
+can be a member of the right-hand part of a \name{where} expression. 
+
+\begin{Examples}
+x**2 + 17*x*y + 4*y**2 where x=1,y=2;          &      51 \\
+for i := 1:5 collect x**i*q where q= for j := 1:i product j;
+			     & \{X,2*X^{2},6*X^{3},24*X^{4},120*X^{5}\} \\
+x**2 + y + z where z=y**3,y=3;                 &      X^{2} + Y^{3} + 3
+\end{Examples}
+
+\begin{Comments}
+Substitution inside a \name{where} expression has no effect upon the values
+of the kernels outside the expression.  The \name{where} operator has the
+lowest precedence of all the infix operators, which are lower than prefix
+operators, so that the substitutions apply to the entire expression
+preceding the \name{where} operator.  However, \name{where} is applied
+before command keywords such as \name{then}, \name{repeat}, or \name{do}.
+
+A \nameref{rule} or a \name{rule set} in the right-hand part of the
+\name{where} expression act as if the rules were activated by \nameref{let}
+immediately before the evaluation of the expression and deactivated
+by \nameref{clearrules} immediately afterwards.
+
+\name{where} gives you a natural notation for auxiliary variables in
+expressions.  As the second example shows, the substitute expression can be
+a command to be evaluated.  The substitute assignments are made in
+parallel, rather than sequentially, as the last example shows.   The
+expression resulting from the first round of substitutions is not
+reexamined to see if any further such substitutions can be made.
+\name{where} can also be used to define auxiliary variables in
+\nameref{procedure} definitions.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Command}{WHILE}
+\index{loop}
+The \name{while} command causes a statement to be repeatedly executed until a
+given condition is true.  If the condition is initially false, the statement
+is not executed at all.
+\begin{Syntax}
+\name{while} \meta{condition} \name{do} \meta{statement}
+\end{Syntax}
+
+\meta{condition} is given by a logical operator, \meta{statement} must be a
+single REDUCE statement, or a \nameref{group} (\name{<<}\ldots\name{>>}) or
+\nameref{begin}\ldots\name{end} \nameref{block}.
+
+\begin{Examples}
+a := 10;                     &           A := 10 \\
+while a <= 12 do <<write a; a := a + 1>>;
+			     &           10 \\
+                                          11 \\
+                                          12 \\
+while a < 5 do <<write a; a := a + 1>>;
+			     &           {\it nothing is printed}
+\end{Examples}
+
+\end{Command}
+
+
+\begin{Command}{WTLEVEL}
+In conjunction with \nameref{weight}, \name{wtlevel} is used to implement
+asymptotic constraints.  Its default value is 2.
+\begin{Syntax}
+\name{wtlevel} \meta{expression}
+\end{Syntax}
+
+To change the weight level, \meta{expression} must evaluate to a positive
+integer that is the greatest weight term to be retained in expressions
+involving kernels with weight assignments. \name{wtlevel} returns the
+new weight level.  If you want the current weight level, but not
+change it, say \name{wtlevel nil}.
+
+\begin{Examples}
+(x+y)**4;          
+        & X^{4} + 4*X^{3}*Y + 6*X^{2}*Y^{2} + 4*X*Y^{3} + Y^{4} \\
+weight x=2,y=3; \\
+wtlevel 8; \\
+(x+y)**4;          & X^{4} \\
+wtlevel 10; \\
+(x+y)**4;          & X^{2}*(6*Y^{2} + 4*X*Y + X^{2}) \\
+int(x**2,x);       & ***** X invalid as KERNEL
+\end{Examples}
+\begin{Comments}
+\name{wtlevel} is used in conjunction with the command \nameref{weight} to
+enable asymptotic constraints.  Weight of a term is computed by multiplying
+the weights of each variable in it by the power to which it has been
+raised, and adding the resulting weights for each variable.  If the weight
+of the term is greater than \name{wtlevel}, the term is dropped from the
+expression, and not used in any further computation involving the
+expression.
+
+Once a weight has been attached to a \nameref{kernel}, it is no longer
+recognized by the system as a kernel, though still a variable.  It cannot
+be used in REDUCE commands and operators that need kernels.  The weight
+attachment can be undone with a \nameref{clear} command. \name{wtlevel} can
+be changed as desired.
+\end{Comments}
+\end{Command}
+

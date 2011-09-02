@@ -1,0 +1,66 @@
+
+<A NAME=LESSP>
+
+<TITLE>LESSP</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LESSP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>lessp</em> operator is a binary infix or prefix logical operator. It 
+returns 
+<A HREF=r37_0122.html>true</A> if its first argument is strictly less than its s
+econd 
+argument. As an infix operator it is identical with <em>&lt;</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>lessp</em>(&lt;expression&gt;,&lt;expression&gt;) 
+or &lt;expression&gt; <em>lessp</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE expression that evaluates to a 
+number. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+a := 15; 
+
+  A := 15 
+
+
+if lessp(a,25) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  yes 
+
+
+if lessp(a,15) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  no 
+
+
+if lessp(a,5) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  no
+
+</TT></PRE><P>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>

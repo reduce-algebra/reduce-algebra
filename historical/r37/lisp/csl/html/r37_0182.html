@@ -1,0 +1,58 @@
+
+<A NAME=SUB>
+
+<TITLE>SUB</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SUB</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>sub</em> operator substitutes a new expression for a kernel in an 
+expression. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>sub</em>(&lt;kernel&gt;<em>=</em>&lt;expression&gt; 
+	 {,&lt;kernel&gt;<em>=</em>&lt;expression&gt;}*, 
+	 &lt;expression&gt;) or 
+<P>
+<P>
+<em>sub</em>({&lt;kernel&gt;<em>=</em>&lt;expression&gt;*, 
+	 &lt;kernel&gt;<em>=</em><em>expression</em>},&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a 
+<A HREF=r37_0002.html>kernel</A>, &lt;expression&gt; can be any REDUCE 
+scalar expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+sub(x=3,y=4,(x+y)**3); 
+
+  343 
+
+
+x; 
+
+  X 
+
+
+sub({cos=sin,sin=cos},cos a+sin b) 
+
+
+  COS(B) + SIN(A)
+
+</TT></PRE><P>Note in the second example that operators can be replaced using th
+e 
+<em>sub</em> operator. 
+<P>
+<P>
+<P>

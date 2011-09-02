@@ -1,0 +1,57 @@
+
+<A NAME=LegendreP>
+
+<TITLE>LegendreP</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LEGENDREP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The binary <em>LegendreP</em> operator computes the nth Legendre 
+Polynomial which is 
+a special case of the nth Jacobi Polynomial with 
+<P>
+<P>
+LegendreP(n,x) := JacobiP(n,0,0,x) 
+<P>
+<P>
+The ternary form returns the associated Legendre Polynomial (see below). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>LegendreP</em>(&lt;integer&gt;,&lt;expression&gt;) or 
+<P>
+<P>
+<em>LegendreP</em>(&lt;integer&gt;,&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+LegendreP(3,xx); 
+
+          2
+  xx*(5*xx   - 3)
+  ----------------
+         2
+
+
+
+LegendreP(3,2,xx); 
+
+              2
+  15*xx*( - xx   + 1)
+
+</TT></PRE><P>The ternary form of the operator <em>LegendreP</em> is the associa
+ted 
+Legendre Polynomial defined as 
+ <P>
+<P>
+P(n,m,x) = (-1)**m * (1-x**2)**(m/2) * df(LegendreP(n,x),x,m) 
+<P>
+<P>
+<P>

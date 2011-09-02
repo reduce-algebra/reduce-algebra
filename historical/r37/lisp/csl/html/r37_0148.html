@@ -1,0 +1,98 @@
+
+<A NAME=DF>
+
+<TITLE>DF</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>df</em> operator finds partial derivatives with respect to one or 
+more variables. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>df</em>(&lt;expression&gt;<em>,</em>&lt;var&gt; 
+	 [<em>,</em>&lt;number&gt;] 
+ {<em>,</em>&lt;var&gt; [ <em>,</em>&lt;number&gt;] } ) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE algebraic expression. &lt;var&gt; 
+must be a 
+<A HREF=r37_0002.html>kernel</A>, and is the differentiation variable. 
+&lt;number&gt; must be a non-negative integer. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+df(x**2,x); 
+
+  2*X 
+
+
+
+df(x**2*y + sin(y),y); 
+
+            2
+  COS(Y) + X  
+
+
+
+df((x+y)**10,z); 
+
+  0 
+
+
+
+
+df(1/x**2,x,2); 
+
+  6
+  ---
+   4
+  X
+
+
+
+df(x**4*y + sin(y),y,x,3); 
+
+  24*X 
+
+
+
+for all x let df(tan(x),x) = sec(x)**2; 
+
+
+df(tan(3*x),x); 
+
+            2
+  3*SEC(3*X)
+
+</TT></PRE><P>An error message results if a non-kernel is entered as a different
+iation 
+operator. If the optional number is omitted, it is assumed to be 1. 
+See the declaration 
+<A HREF=r37_0192.html>depend</A> to establish dependencies for implicit 
+differentiation. 
+<P>
+<P>
+You can define your own differentiation rules, expanding REDUCE's 
+capabilities, using the 
+<A HREF=r37_0199.html>let</A> command as shown in the last example 
+above. Note that once you add your own rule for differentiating a 
+function, it supersedes REDUCE's normal handling of that function for the 
+duration of the REDUCE session. If you clear the rule 
+(
+<A HREF=r37_0190.html>clearrules</A>), you don't get back 
+to the previous rule. 
+<P>
+<P>
+<P>

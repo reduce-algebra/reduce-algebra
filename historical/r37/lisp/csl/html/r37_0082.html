@@ -1,0 +1,65 @@
+
+<A NAME=FIX>
+
+<TITLE>FIX</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FIX</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>fix</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+The operator <em>fix</em> returns the integer part of its argument, if that 
+argument has a numerical value. For positive numbers, this is equivalent 
+to 
+<A HREF=r37_0084.html>floor</A>, and, for negative numbers, 
+<A HREF=r37_0073.html>ceiling</A>. For 
+non-numeric arguments, the value is an expression in the original operator. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+fix 3.4; 
+
+  3 
+
+
+floor 3.4; 
+
+  3 
+
+
+ceiling 3.4; 
+
+  4 
+
+
+fix(-5.2); 
+
+  -5 
+
+
+floor(-5.2); 
+
+  -6 
+
+
+ceiling(-5.2); 
+
+  -5 
+
+
+fix(a); 
+
+  FIX(A)
+
+</TT></PRE><P>

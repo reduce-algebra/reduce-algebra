@@ -1,0 +1,55 @@
+
+<A NAME=LOW_POW>
+
+<TITLE>LOW_POW</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LOW\_POW</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>variable</B><P>
+<P>
+ 
+ <P>
+<P>
+The variable <em>low_pow</em> is set by 
+<A HREF=r37_0141.html>coeff</A> to the lowest power 
+of the variable of interest in the given expression. You can access this 
+variable for use in further computation or display. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+coeff((x+2*y)**6,y); 
+
+    6
+  {X ,
+       5
+   12*X ,
+       4
+   60*X ,
+        3
+   160*X ,
+        2
+   240*X ,
+   192*X,
+   64}
+
+
+low_pow; 
+
+  0 
+
+
+coeff(x**2*(x*sin(y) + 1),x); 
+			 
+
+
+  {0,0,1,SIN(Y)} 
+
+
+low_pow; 
+
+  2
+
+</TT></PRE><P>

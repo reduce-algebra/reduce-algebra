@@ -1,0 +1,1213 @@
+% This is a LaTeX file
+\documentstyle[12pt]{article}
+
+%Sets size of page and margins
+\oddsidemargin 10mm  \evensidemargin 10mm
+\topmargin 0pt   \headheight 0pt   \headsep 0pt
+\footheight 14pt  \footskip 40pt
+\textheight 23cm  \textwidth 15cm
+%\textheight 15cm  \textwidth 10cm
+
+%spaces lines at one and a half spacing
+%\def\baselinestretch{1.5}
+
+%\parskip = \baselineskip
+
+%Defines capital R for the reals, ...
+%\font\Edth=msym10
+%\def\Integer{\hbox{\Edth Z}}
+%\def\Rational{\hbox{\Edth Q}}
+%\def\Real{\hbox{\Edth R}}
+%\def\Complex{\hbox{\Edth C}}
+
+\title{The Computer Algebra Package {\tt CRACK} for Investigating PDEs}
+\author{Thomas Wolf \\
+        School of Mathematical Sciences \\
+        Queen Mary and Westfield College \\
+        University of London \\
+        London E1 4NS \\
+        T.Wolf@maths.qmw.ac.uk
+\\ \\
+Andreas Brand \\ Institut f\"{u}r
+Informatik \\ Friedrich Schiller Universit\"{a}t Jena \\ 07740 Jena
+\\ Germany \\ maa@hpux.rz.uni-jena.de
+}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section{The purpose of {\tt CRACK}}
+The package {\tt CRACK} attempts the solution of an overdetermined
+system of ordinary or partial differential
+equations (ODEs/PDEs) with at most polynomial nonlinearities.
+Under `normal circumstances' the number of DEs which describe physical
+processes matches the number of unknown functions which are involved.
+Moreover none of those equations can be solved or integrated and
+integrability conditions yield only identities.  Though the package
+{\tt CRACK} applied to solve such `difficult' systems
+directly will not be of much  help usually, it is possible to
+investigate them indirectly by
+studying analytic properties which would be useful for their
+solution. Such `simpler' overdetermined PDEs also result from
+investigating properties of ODEs and problems in differential geometry.
+The property of overdetermination (by which we only mean the fact
+that there are more equations than unknown functions) is not a
+prerequisite for applying the package but it simplifies the problem
+and it is usually necessary for success in solving or simplifying the
+system.
+
+The following examples are quite different in nature. They demonstrate
+typical applications of {\tt CRACK} and give an impression of its efficiency.
+In principle it makes no difference to investigate more general
+symmetries, more general coordinate transformations and so on, except that the
+computational complexity may grow very rapidly for more general
+ans\"atze, especially for nonlinear problems, such that a solution
+becomes practically impossible.
+
+The following overview makes suggestions for possible
+applications; the mathematics of the applications and of the
+algorithms which are applied in {\tt CRACK} are described only
+superficially. These applications are only examples. The user will usually
+have to write own procedures to formulate his problem in form of
+an overdetermined system of PDEs which is then solved or simplified with
+{\tt CRACK}.
+
+\begin{enumerate}
+ \item
+  DEs as well as differential geometric objects, like a metric which
+  describes infinitesimal distances in a manifold, can have
+  infinitesimal symmetries, i.e.\ there exist transformations of dependent
+  and independent variables, which leave the DE or metric
+  form-invariant. According to a theory of Sophus Lie such
+  symmetries of an ODE can be used to integrate the
+  ODE and symmetries of a PDE can be used to decrease the number
+  of independent variables.
+
+    The determining conditions for the generators of this
+  symmetry are given by a system of linear PDEs.
+
+\item
+  Other ans\"atze, e.g.\ for finding
+\begin{itemize}
+\item integrating factors of DEs, or
+\item a variational principle, i.e.\ a Lagrangian which is equivalent
+    to a given ODE, or
+\item a factorization ansatz which transforms a given $n$-th order
+    ODE into two ODEs of order $k$ and $n-k,$
+\end{itemize}
+  lead to PDE-systems for the remaining free functions with good
+  prospects for solution.
+\item
+  The ability of {\tt CRACK} to decouple systems of DEs with at most polynomial
+  nonlinearity can be used to perform very general transformations of
+  undetermined functions. If, for example, an equation
+\begin{equation}
+        0 = D_1(x, f)             \label{df}
+\end{equation}
+  for a function $f(x)$ is given with $D_1$ as a differential
+expression in $x$ and $f$, and a further function $g$ of $x$
+is related to $f$ through a differential relation
+\begin{equation}
+        0 = D_2(x, g, f),          \label{dg}
+\end{equation}
+then, to obtain an equation equivalent to (\ref{df}) for the function $g,$
+the system (\ref{df},\ref{dg}) could be decoupled w.r.t.\ $f$ to
+obtain an equation
+\[        0 = D_3(x, g)     \]
+which contains only $g$.
+
+    Such generalized transformations can in principle also be done for more
+than one equation of the form (\ref{df}), more old and new functions and
+variables, and more relations of the form (\ref{dg}).
+
+\item
+  If a PDE or `well defined' system is too complicated to be solved in
+  general, and one has some idea of the dependence of one of the
+  functions which are to be calculated (e.g. $f$) on at least one
+  variable (e.g. $x$), then one could try an ansatz for $f$ which
+  involves $x$ (and possibly other variables)
+  only explicitly and furthermore only unknown functions
+  that are independent of $x$. Also other
+  ans\"atze are possible where no variable occurs explicitly but all new
+  functions involve only a subset of all variables. This approach
+  includes separations such as the well known product ansatz $f(r,
+  \theta, \varphi) = R(r)Y(\theta, \varphi)$ to solve the Laplace
+  equation $\triangle f = 0$ in spherical coordinates. After such a
+  substitution the resulting system is simplified and can be solved
+  usually, because the
+  number of functions of all independent variables is decreased and is
+  now less than the number of equations.
+
+\item
+  A difficult DE-system is simplified usually if further conditions
+  in the form of differential equations are added,
+  because then the resulting system is not necessarily in involution
+  and integrability conditions can be used to lower the order or to
+  solve it.
+\end{enumerate}
+
+To explain the input to {\tt CRACK}, which corresponds to examples
+given in the final two sections, the way to call {\tt CRACK} is described next.
+
+\section{How to apply {\tt CRACK}}
+\subsection{The call}
+{\tt CRACK} is written in the symbolic mode of REDUCE 3.4 and is loaded by
+{\tt load CRACK;}. Then {\tt CRACK} is called by
+\begin{tabbing}
+  {\tt CRACK}(\=\{{\it equ}$_1$, {\it equ}$_2$, \ldots , {\it equ}$_m$\},  \\
+              \>\{{\it ineq}$_1$, {\it ineq}$_2$, \ldots , {\it ineq}$_n$\}, \\
+              \>\{{\it fun}$_1$, {\it fun}$_2$, \ldots , {\it fun}$_p$\},  \\
+              \>\{{\it var}$_1$, {\it var}$_2$, \ldots , {\it var}$_q$\});
+\end{tabbing}
+        $m,n,p,q$ are arbitrary.
+\begin{itemize}
+\item
+The {\it equ}$_i$ are identically vanishing partial differential expressions,
+i.e.\
+they represent equations  $0 = {\it equ}_i$, which are to be solved for the
+functions ${\it fun}_j$ as far as possible, thereby drawing only necessary
+conclusions and not restricting the general solution.
+\item
+The {\it ineq}$_i$ are expressions which must not vanish identically for
+any solution to be determined, i.e. only such solutions are computed for which
+none of the {\it ineq}$_i$ vanishes identically in all independent variables.
+\item
+The dependence of the (scalar) functions ${\it fun}_j$ on possibly a number of
+variables is assumed to have been defined with DEPEND rather than
+declaring these functions
+as operators. Their arguments may  themselves only be independent variables
+and not expressions.
+\item
+The functions ${\it fun}_j$ and their derivatives may only occur polynomially.
+Other unknown functions in ${\it equ}_i$ may be represented as operators.
+\item
+The ${\it var}_k$ are further independent variables, which are not
+already arguments
+of any of the ${\it fun}_j$. If there are none then the third argument is
+the empty list \{\}.
+\item
+The dependence of the ${\it equ}_i$ on the independent variables and on
+constants and functions other than ${\it fun}_j$ is arbitrary.
+\end{itemize}
+
+\subsection{The result}
+The result is a list of solutions
+\[      \{{\it sol}_1, \ldots \}  \]
+where each solution is a list of 3 lists:
+\begin{tabbing}
+       \{\=\{${\it con}_1, \; {\it con}_2, \ldots , \; {\it con}_q$\}, \\
+         \>\{${\it fun}_a={\it ex}_a, \;\;
+{\it fun}_b={\it ex}_b, \ldots , \;\; {\it fun}_p={\it ex}_p$\},\=  \\
+         \>\{${\it fun}_c, \;\; {\it fun}_d, \ldots , \;\; {\it fun}_r$\} \>\}
+\end{tabbing}
+with integer $a, b, c, d, p, q, r.$
+If {\tt CRACK} finds a contradiction as e.g. $0=1$ then there exists no
+solution and it returns the empty list \{\}.
+The empty list is also returned if no solution exists
+which does not violate the inequalities
+{\it ineq}$_i \neq 0.$
+For example, in the case of a linear system as input, there is
+at most one solution ${\it sol}_1$.
+
+The expressions ${\it con}_i$ (if there are any), are the
+remaining necessary and sufficient conditions for the functions
+${\it fun}_c,\ldots,{\it fun}_r$ in the third list.  Those
+functions can be original functions from the equations to be
+solved (of the second argument of the call of {\tt CRACK}) or new
+functions or constants which arose from integrations.
+The dependence of new functions on variables is declared with {\tt DEPEND}
+and to visualize this dependence the algebraic mode function
+${\tt FARGS({\it fun}_i)}$ can be used.
+If there are no ${\it con}_i$ then all equations are solved and the
+functions in the third list are unconstrained.
+
+The second list contains
+equations ${\it fun}_i={\it ex}_i$ where each ${\it fun}_i$ is an
+original function and ${\it ex}_i$ is the computed expression
+for ${\it fun}_i$.
+
+\subsection{Flags}
+Possible flags which can be changed in symbolic mode
+after {\tt CRACK} has been loaded are (initial values in brackets):
+\begin{description}
+\item[{\tt cont\_ :}] if t then if the maximal number of terms of an expression
+             is greater then {\tt fcteval\_} or {\tt odesolve\_} then
+             the user is asked
+             whether or not the expression is to be substituted or integrated
+             with {\tt ODESOLVE} respectively.  (default: {\tt nil})
+\item[{\tt decouple\_ :}] maximal number of decoupling attempts for a
+             function (default: 2)
+\item[{\tt factorize\_ :}] If an equation can be factored with more than one
+             factor
+             containing unknown functions then independent investigations
+             start. In each investigation exactly one of these factors is set
+             to zero. If
+             many equations can be factorized then this may lead to a large
+             number of individual investigations. {\tt factorize\_} is the
+             maximal number
+             of factorizations. If the starting system is linear then
+             an attempt at factorization would be unsuccessful, i.e.
+             {\tt factorize\_:=0} prevents this unnecessary
+             attempt. (default: 4)
+\item[{\tt fcteval\_ :}] if a function has been computed from an equation and
+             is to
+             be substituted in other equations then {\tt fcteval\_} is the
+             upper limit for the number of terms of the equated expression
+             for which substitution is done. (default: 100)
+\item[{\tt fname\_ :}] the name to be used for new constants and functions
+             which result from integrations  (default: {\tt c})
+\item[{\tt genint\_ :}] generalized integration disabled/enabled
+             (default: {\tt nil})
+\item[{\tt logoprint\_ :}] If t then printing of a standard message whenever
+             {\tt CRACK} is called (default: {\tt t})
+\item[{\tt independence\_ :}] If t then the user will be asked during
+             separation whether expressions are considered to
+             be linear independent or not. This should be set true if
+             in a previous run the assumption of linear independence made by
+             {\tt CRACK} automatically was false. (default: {\tt nil})
+\item[{\tt odesolve\_ :}] the maximal number of terms of expressions which
+             are to be
+             investigated with {\tt ODESOLVE}.  (default: $100$)
+\item[{\tt print\_ :}] If nil then there is no output during calculation
+             otherwise {\tt print\_} is the maximal number of terms
+             of equations which are to be output. (default: 8)
+\item[{\tt sp\_cases :}] After a factorization factors are dropped
+             if they do not contain functions which are to be solved. An
+             exceptional case is if a factor contains other (parametric)
+             functions or constants. Then a corresponding message is given
+             at the first appearance of each factor. These factors are
+             stored in a list {\tt special\_cases}. If {\tt sp\_cases}
+             is not {\tt nil} then such factors are not dropped.
+             (default: {\tt nil})
+\item[{\tt time\_ :}] If t then printing the time necessary for the last
+             {\tt CRACK} run (default: {\tt t})
+\item[{\tt tr\_gensep :}] to trace of the generalized separation
+             (default: nil)
+\end{description}
+
+\subsection{Help}
+Parts of this text are provided after typing
+
+{\tt crackhp();}
+
+The authors are grateful for critical comments
+on the interface, efficiency and computational errors.
+
+\section{Contents of the {\tt CRACK} package}
+The package {\tt CRACK} contains modules for decoupling PDEs, integrating
+exact PDEs, separating PDEs, solving DEs containing functions of only
+a subset of all variables and solving standard ODEs (of Bernoulli or
+Euler type, linear, homogeneous and separable ODEs). These facilities
+will be described briefly together with examples.
+
+\subsection{Decoupling}
+The decoupling module differentiates equations and combines them algebraically
+to obtain if possible decoupled and simplified equations of lower order.
+How this could work is demonstrated in the following example.
+The integrability condition for the system
+\[ \begin{array}{cccl}
+f = f(x,y), \; \; & f,_{x} & = & 1   \\
+                  & f,_{y} & = & (f-x-1/y)x - 1/y^2
+\end{array}  \]
+provides an algebraic condition for the function $f$
+which turns out not only to be necessary but also sufficient to solve both
+equations:
+\begin{eqnarray*}
+ 0 = f,_{xy} - f,_{yx} & = & - xf,_x - f + 2x + 1/y \\
+                       & = & - f + x + 1/y \; \; \; \; \; \;
+ \mbox{(with $f,_x$ from above)}
+\end{eqnarray*}
+\[ \rightarrow f = x + 1/y. \]
+A general algorithm to bring a system of PDEs into a standard form
+where all integrability conditions are satisfied by applying
+a finite number of additions, multiplications and differentiations
+is based on the general theory of involutive systems \cite{Riq,Th,Ja}.
+Essential to this theory is a total ordering of partial derivatives
+which allows assignment to each PDE of a {\em Leading Derivative}
+(LD) according to a chosen ordering of functions
+and derivatives. Examples for possible orderings are
+\begin{itemize}
+\item lex.\ order of functions $>$ lex.\ order of variables
+\item lex.\ order of functions $>$ total differential order $>$ lex.\
+      order of variables
+\item total order $>$ lex.\ order of functions $>$ lex.\ order of variables
+\end{itemize}
+or mixtures of them by giving weights to individual functions and variables.
+Above, the `$>$' indicate ``before'' in priority of criteria. The principle
+is then to
+\begin{itemize}
+\item take two equations at a time and differentiate them as often as
+necessary to get equal LDs,
+\item regard these two equations as algebraic equations in
+the common LD and calculate the remainder w.r.t.\ the LD, i.e.\ to
+generate an equation without the LD by the Euclidean algorithm, and
+\item add this equation to the system.
+\end{itemize}
+Usually pairs of equations are taken first, such that only one must be
+differentiated. If in such a generation step one of both equations is not
+differentiated then it is called a
+simplification step and this equation will be replaced by the new equation.
+The algorithm ends if each combination of two equations yields only equations
+which simplify to an identity modulo the other equations.
+A more detailed description is given e.g. in \cite{Alex,Reid1}.
+
+In {\tt CRACK}, a reduced version of this algorithm has so far been
+implemented, which applies the first of the above orderings with
+lexicographical ordering of functions having the highest
+priority. This is done to get decoupled equations, i.e.\ a system with
+a ``triangular dependence'' of the equations on the functions,
+which is usually easier to solve
+successively (starting with the equation containing the fewest
+functions) than are coupled DEs. To save memory not all equations
+are stored but new equations replace in general older ones.
+Details of the algorithm used
+in {\tt CRACK} are given in \cite{Wo}.
+Programs implementing the standard algorithm are described e.g. in
+\cite{FS,Alex,Fush} and \cite{Reid1}.
+
+The possible variations of orderings or even the switch between
+them open possibilities for future optimization.
+
+{\em Example:}
+Applying the decoupling module alone without factorization and integration
+to the two equations
+\[ \begin{array}{rclcl}
+ D_1 & := & f + f,_{yy}f,_x & = & 0 \\ \\
+ D_2 & := & f,_y + f,_x^2   & = & 0
+\end{array} \]
+for $f(x,y)$, using the lexicographic ordering of variables $y>x>1,$
+the steps would be
+\begin{tabbing}
+$D_1:=$\=$D_1-D_{2y}f_x=f-2f_x^2f_{yx}$ \\
+     \> $\rightarrow$  a second 1st order eqn. in $y$\\ \\
+$D_1:=$\>$D_1+2f_x^2D_{2x}=f+4f_x^3f_{xx} \rightarrow$  first ODE \\
+     \> to get a second ODE we need an extra equation $D_3:$ \\ \\
+$D_3:=$\>$4f_x^3D_{2xx}-D_{1y}=8f_{xx}^2f_x^3+8f_{xxx}f_x^4-12f_x^2f_{xx}f_{xy}
+-f_y$ \\ \\
+$D_3:=$\>$D_3+12f_x^2f_{xx}D_{2x}=32f_{xx}^2f_x^3+8f_{xxx}f_x^4-f_y$
+\\ \\
+$D_2:=$\>$D_2+D_3=32f_{xx}^2f_x^3+8f_{xxx}f_x^4+f_x^2 \rightarrow$
+second ODE \\ \\
+$D_2:=$\>$2f_xD_{1x}-D_2=-8f_{xx}^2f_x^3+f_x^2$ \\ \\
+$D_2:=$\>$D_2+2f_{xx}D_1=2ff_{xx}+f_x^2$ \\ \\
+$D_2:=$\>$D_1f-2f_x^3D_2=f^2-2f_x^5$ \\ \\
+$D_1:=$\>$2D_{2x}+5f_xD_1=9ff_x$ \\ \\
+$D_2:=$\>$2f_x^4D_1+9fD_2=9f^3 \rightarrow f=0$ is necessary and \\
+     \> as a test shows also sufficient, \\ \\
+$D_1:=$\>$D_{2x}-3fD_2=0 \rightarrow$ end
+\end{tabbing}
+Here $D_1:=\ldots$ means that the old expression for $D_1$ is replaced
+by the result of the calculation of the right side. As the indices
+show the calculation can be done by storing only 3 equations at a time,
+which is the purpose of the chosen total ordering of derivatives. If
+we have $n$ independent variables and $k$ equations at the beginning,
+then the calculation can be done by storing not more than $k+n-1$
+equations at a time (plus the original $k$ equations to test results for
+sufficiency at the end).
+In {\tt CRACK} all intermediate equations generated are checked to see
+whether they can be integrated at least once directly by an integration
+module.
+
+\subsection{Integrating exact PDEs}
+The technical term `exact' is adapted for PDEs from exterior calculus and
+is a small abuse of language but it is useful to characterize the kind of PDEs
+under consideration.
+
+The purpose of the integration module in {\tt CRACK} is to  decide
+whether a given differential
+expression $D$ which involves unknown functions $f^i(x^j),\;\; 1\leq i\leq m$
+of independent variables $x^j, 1\leq j\leq n$
+is a total derivative of another expression $I$
+w.r.t. any variable $x^k, 1\leq k\leq n$
+\[ D(x^i,\; f^j,\; f^j,_p,\; f^j,_{pq}, \ldots)
+     = \frac{d I(x^i,\; f^j,\; f^j,_p,\; f^j,_{pq}, \ldots)}{d x^k} \]
+and to invert the total derivative i.e. to find $I.$ The index $k$ is
+reserved in the following for the integration variable $x^k.$ Because
+the appropriate constant or function of integration which depends on
+all variables except $x^k$ is added to $I,$ a replacement of $0 = D$
+by $0 = I$ in a system of equations is no loss of generality.
+
+Of course there
+always exists a function $I$ with a total derivative equal to $D$ but
+the question is whether for \underline{arbitrary} $f^i$ the integral
+$I$ is functionally dependent only on the $f^i$ and their derivatives,
+and not on integrals of $f^i.$ \\
+\underline{Preconditions:} \\
+$D$ is a polynomial in the $f^i$ and their derivatives. The number of
+functions and variables is free.
+For deciding the existence of $I$ only, the explicit occurrence of the
+variables $x^i$ is arbitrary. In order to actually
+calculate $I$ explicitly, $D$ must have the property that all terms in $D$
+must either contain an unknown function of $x^k$ or
+must be formally integrable w.r.t. $x^k.$
+That means if $I$ exists then
+only a special explicit occurrence of $x^k$ can prevent the
+calculation of $I$
+and furthermore only in those terms which do not contain
+any unknown function of $x^k.$
+If such terms occur in $D$ and $I$ exists then $I$ can still be expressed
+as a polynomial in the $f^i, f^i,_j, \ldots$ and terms containing
+indefinite integrals with integrands explicit in $x^k.$ \\
+\underline{Algorithm:} \\
+Successive partial integration of the term with the highest
+$x^k$-derivative of any $f^i.$ By that the
+differential order w.r.t. $x^k$ is reduced
+successively. This procedure is always applicable because steps involve only
+differentiations and the polynomial
+integration $(\int h^n\frac{\partial h}{\partial x}dx =
+h^{n+1}/(n+1))$ where $h$ is a partial derivative of some function
+$f^i.$ For a more detailed description see \cite{WoInt}.\\
+\underline{Stop:} \\
+Iteration stops if no term with any $x^k$-derivative of any $f^i$ is left.
+If in the remaining un-integrated terms any $f^i(x^k)$ itself occurs,
+then $I$ is not expressible with $f^i$ and its derivatives only.  In
+case no $f^i(x^k)$ occurs then any remaining terms can contain $x^k$ only
+explicitly. Whether they can be integrated depends on their formal
+integrability. For their integration the REDUCE integrator is applied. \\
+\underline{Example :} \\
+We apply the above algorithm to
+\begin{equation}
+D := 2f,_yg' + 2f,_{xy}g + gg'^3 + xg'^4 + 3xgg'^2g'' = 0
+\label{D}
+\end{equation}
+with $f = f(x,y), \, g = g(x), \, '\equiv d/dx.$
+Starting with terms containing $g$
+and at first with the highest derivative $g,_{xx},$ the steps are
+\[
+\begin{array}{rcccl}
+\int 3xgg,_x^2g,_{xx} dx
+& = & \int d(xgg,_x^3)
+    & - & \int \left( \partial_x(xg) g,_x^3\right) dx \\ \\
+& = & xgg,_x^3 & - & \int g,_x^3(g + xg,_x) dx,
+\end{array} \]
+\[ I := I + xgg,_x^3 \]
+\[ D := D - g,_x^3(g + xg,_x)  \]
+The new terms $- g,_x^3(g + xg,_x)$ are of lower order than $g,_{xx}$
+and so in the expression $D$ the maximal order of $x$-derivatives
+of $g$ is lowered. The conditions that $D$ is exact are the following.
+\begin{itemize}
+\item The leading derivative must occur linearly before each partial
+integration step.
+\item After the partial integration of the terms with first order
+$x$-derivatives of $f$ the remaining $D$ must not contain $f$
+or other derivatives of $f$, because such terms cannot
+be integrated w.r.t.\ $x$ without specifying $f$.
+\end{itemize}
+The result of $x$- and $y$-integration in the above example is
+(remember $g=g(x)$)
+\begin{equation}
+0 = 2fg + xygg,_x^3 + c_1(x) + c_2(y) \; \; (=I). \nonumber
+\end{equation}
+{\tt CRACK} can now eliminate $f$ and substitute
+for it in all other equations.
+\underline{Generalization:} \\
+If after applying the above basic algorithm, terms are left which contain
+functions of $x^k$ but each of these functions depends only on a subset of
+all $x^i, 1\leq i\leq n,$ then a generalized version of the above algorithm
+can still provide a formal expression for the integral $I$
+(see \cite{WoInt}). The price consists of
+additional differential conditions, but they are equations in less variables
+than occur in the integrated equation. Integrating for example
+\begin{equation}
+\tilde{D} = D + g^2(y^2 + x\sin y + x^2e^y)       \label{Dnew}
+\end{equation}
+by introducing as few
+new functions and additional conditions as possible gives as the integral
+$\tilde{I}$
+\begin{eqnarray*}
+\tilde{I} & = & 2fg + xygg,_{x}^{3} + c_1(x) + c_2(y) \\
+  &   & + \frac{1}{3}y^3c_3'' - \cos y(xc_3'' - c_3)
++ e^y(x^2c_3'' - 2xc_3' + 2c_3)
+\end{eqnarray*}
+with $c_3 = c_3(x), \, '\equiv d/dx$ and the single additional
+condition $g^2 = c_3'''.$
+The integration of the new terms of (\ref{Dnew}) is
+achieved by partial integration again. For example
+\begin{eqnarray*}
+\int g^2x^2 dx & = & x^2\int g^2 dx - \int (2x\!\int g^2 dx) dx \\
+& = & x^2\int g^2 dx - 2x\int\!\!\int g^2 dx
++ 2 \int\!\!\int\!\!\int g^2 dx \\
+& = & x^2c_3'' - 2xc_3' + 2c_3
+\end{eqnarray*}
+\underline{Characterization:} \\
+This algorithm is a decision algorithm which does not involve any
+heuristic. It is fast because time and memory requirements grow only
+linearly with the number of terms in $D$ and with the order of
+the highest derivative.
+After integration the new equation is still a polynomial
+in $f^i$ and in the new constant or function of integration,.
+Therefore the algorithms for bringing the system into standard form can still
+be applied to the PDE-system
+after the equation $D = 0$ is replaced by $I = 0.$
+
+The complexity of algorithms for bringing a PDE-system into a standard
+form depends nonlinearly on the order of these equations because of
+the nonlinear increase of the number of different leading derivatives
+and by that the number of equations generated intermediately by such
+an algorithm. It therefore in general pays off to integrate equations (with
+linear expenses) during such a standard form algorithm.  The increase
+in the number of unknown constants/functions through integration does
+not play a role for standard form algorithms because these functions
+have less variables and do not increase the number of possible leading
+derivatives and therefore not the number of equations to be maintained
+during execution of the standard form algorithm.
+
+If an $f^i,$ which depends on all variables, can be eliminated after an
+integration, then depending on its length
+it is in general helpful to substitute $f^i$ in other equations and
+to reduce the number of equations and functions by one. This is especially
+profitable if the replaced expression is short and
+contains only functions of less variables than $f^i.$
+\underline{Test:} \\
+The corresponding test input is
+\begin{verbatim}
+depend f,x,y;
+depend g,x;
+crack({2*df(f,y)*df(g,x)+2*df(f,x,y)*g+g*df(g,x)**3
+       +x*df(g,x)**4+3*x*g*df(g,x)**2*df(g,x,2)
+       +g**2*(y**2+x*sin y+x**2*e**y)},
+      {f,g},{});
+\end{verbatim}
+The meaning of the REDUCE command {\tt depend} is to declare that $f$
+depends in an unknown way on $x$ and $y$. For more details on the
+algorithm see \cite{WoInt}, for an introduction to REDUCE see \cite{WM}.
+
+\subsection{Direct separation of PDEs}
+As a result of repeated integrations the functions in the
+remaining equations have less and less variables. It therefore may happen
+that after a substitution an equation results where at least one variable
+occurs only explicitly and not as an argument of an unknown function.
+Consequently all coefficients of linearly independent expressions in this
+variable can be set to zero individually. \\
+
+{\em Example:}  \\
+$f = f(x,y), \;\; g = g(x), \;\; x,y,z$ are independent variables.
+The equation is
+\begin{equation}
+0 = f,_y + z(f^2+g,_x) + z^2(g,_x+yg^2) \label{sep}
+\end{equation}
+$x$-separation? $\rightarrow$ no  \\
+$y$-separation? $\rightarrow$ no  \\
+$z$-separation? $\rightarrow$ yes: $0 \,=\, f,_y \,=\, f^2+g,_x \,=\,
+g,_x+yg^2$ \\
+$y$-separation? $\rightarrow$ yes: $0 = g,_x = g^2\;\;$
+(from the third equation from the $z$-separation)
+
+If $z^2$ had been replaced in (\ref{sep}) by a third
+function $h(z)$ then direct separation would not have been possible.
+The situation changes if $h$ is a parametric function which is
+assumed to be independently given and which should not be
+calculated, i.e.\ $f$ and $g$ should be calculated for any
+arbitrary given $h(z)$. Then the same separation could have been
+done with an extra treatment of the special case $h,_{zz} = 0,$
+i.e.\ $h$ linear in $z$. This different treatment of unknown functions
+makes it necessary to input explicitly the functions to be
+calculated as the second argument to {\tt CRACK}. The input
+in this case would be
+\begin{verbatim}
+depend f,x,y;
+depend g,x;
+depend h,z;
+crack({df(f,y)+z*f**2+(z+h)*df(g,x)+h*y*g**2},{f,g},{z});
+\end{verbatim}
+The third parameter for {\tt CRACK} is necessary to make clear that
+in addition to the variables of $f$ and $g$, $z$ is also an independent
+variable.
+
+If the flag {\tt independence\_} is not {\tt nil} then {\tt CRACK} will
+stop if linear independence of the explicit expressions of the
+separation variable (in the example $1,z,z^2$) is not clear and ask
+interactively whether separation should be done or not.
+
+\subsection{Indirect separation of PDEs}
+For the above direct separation a precondition is that at least one
+variable occurs only explicitly or as an argument of parametric
+functions.  The situation where each variable is an argument of at least
+one function but no function contains all independent variables of an
+equation needs a more elaborate treatment.
+
+The steps are these
+\begin{itemize}
+ \item A variable $x_a$ is chosen which occurs in as few functions as possible.
+ This variable will be separated directly later which
+ requires that all unknown functions $f_i$ containing $x_a$ are to be
+ eliminated. Therefore, as long as $F:=\{f_i\}$ is not empty do the following:
+ \begin{itemize}
+  \item Choose the function $f_i(y_p)$ in $F$ with the smallest number of
+  variables $y_p$ and with $z_{ij}$ as those variables on which $f_i$ does
+  not depend.
+  \item Identify all different products $P_{ik}$ of powers of
+  $f_i$-derivatives and of $f_i$ in the equation.
+  Determine the $z_{ij}$-dependent factors $C_{ik}$ of the coefficients
+  of $P_{ik}$.
+  \item Choose a $z_{ij}$ and for each $C_{il}$ ($i$ fixed, $l=1,\ldots)$:
+  \begin{itemize}
+   \item divide by $C_{il}$ the equation and all the $C_{im}$ with $m>l,$
+   \item differentiate the equation and the $C_{im}$ w.r.t.\ $z_{ij}$
+  \end{itemize}
+ \end{itemize}
+ \item The resulting equation no longer contains any unknown function of $x_a$
+ and can be separated w.r.t.\ $x_a$ directly. The
+ equations arising can be integrated, inverting the sequence of differentiation
+ and division, by
+ \begin{itemize}
+  \item multiplying them and the $C_{im}$ with $m<l$ by the elements
+  of the $C_{ik}$-lists in exactly the inverse order
+  \item integrating these exact PDEs and $C_{im}$ w.r.t.\ $z_{ij}$.
+ \end{itemize}
+ \item The equations originating that way are used to simplify the original
+ DE\@. For example direct separability w.r.t.\ $y_p$ could be tested, because
+ those products which contain functions $f_i(y_p)$ and their derivatives
+ have been evaluated up to constants so that $y_p$ can occur only explicitly.
+ \item The whole procedure is repeated for another variable $x_b$ if the
+ original DE still has the property that it contains only functions of
+ a subset of all variables in the equation.
+\end{itemize}
+The additional bookkeeping of coefficients $C_{ik}$ and their updating by
+division, differentiation, integration and multiplication is done to use
+them as integrating factors for the backward integration.
+The following example makes this clearer. The equation is
+\begin{equation}
+0 = f(x) g(y) - \frac{1}{2}xf'(x) - g'(y) - (1+x^2)y. \label{isep}
+\end{equation}
+The steps are (equal levels of indentation correspond to the general
+description of the algorithm)
+\begin{itemize}
+ \item $x_1:=x, \, F=\{f\}$
+ \begin{itemize}
+  \item Identify $f_1:=f, \; \; \; \; \; y_1:=x, \; \; \; \; \; z_{11}:=y$
+  \item and $P_1=\{f',f\}, \; \; \; \; \; C_1=\{1,g\}$
+  \begin{itemize}
+   \item Divide $C_{12}$ and
+         (\ref{isep}) by $C_{11}=1$ and differentiate w.r.t. $z_{11}=y:$
+         \begin{eqnarray}
+         0 & = & fg' - g'' - (1+x^2)   \label{isep2}  \\
+         C_{12} & = & g'    \nonumber
+         \end{eqnarray}
+ \item Divide (\ref{isep2}) by $C_{12}=g'$ and differentiate w.r.t. $z_{11}=y:$
+\[ 0 = - (g''/g')' - (1+x^2)(1/g')' \]
+
+  \end{itemize}
+ \end{itemize}
+ \item Direct separation w.r.t.\ $x$ and integration:
+ \[\begin{array}{rclclcl}
+  x^2: 0 & = & (1/g')' & \Rightarrow & c_1g' =  1 & \Rightarrow &
+        g = y/c_1 + c_2 \\
+  x^0: 0 & = & (g''/g')' & \Rightarrow & c_3g' = g'' & \Rightarrow &
+        c_3 = 0
+ \end{array} \]
+ \item Substitution of $g$ in the original DE
+       \[0 = (y/c_1+c_2)f - \frac{1}{2}xf' - 1/c_1 - (1+x^2)y \]
+       and further solution by direct separation w.r.t.\ $y$
+ \[\begin{array}{rclcl}
+  y^1: 0 & = & f/c_1 - 1 - x^2               & \Rightarrow & f'  =  2c_1x \\
+  y^0: 0 & = & c_2f - \frac{1}{2}xf' - 1/c_1 & \Rightarrow & 0   =
+       c_2c_1(1+x^2) - c_1x^2 - 1/c_1
+ \end{array}\]
+       and direct separation w.r.t.\ $x$:
+ \begin{eqnarray*}
+ x^0:  0 & = & c_2c_1 - c_1    \\
+ x^2:  0 & = & c_2c_1 - 1/c_1   \\
+    & \Rightarrow &  0 = c_1 - 1/c_1   \\
+    & \Rightarrow & c_1 = \pm 1 \Rightarrow c_2 = 1.
+ \end{eqnarray*}
+\end{itemize}
+We get the two solutions $f = 1 + x^2, g = 1 + y$ and
+$f = - 1 - x^2, g = 1 - y.$ The corresponding input to {\tt CRACK} would be
+\begin{verbatim}
+depend f,x;
+depend g,y;
+crack({f*g-x*df(f,x)/2-df(g,x)-(1+x**2)*y},{f,g},{});
+\end{verbatim}
+
+\subsection{Solving standard ODEs}
+For solving standard ODEs the package {\tt ODESOLVE} by MacCallum
+\cite{Mal} is applied. This package is distributed with REDUCE 3.4
+and can be used independently of {\tt CRACK}. The syntax of
+{\tt ODESOLVE} is quite similar to that of {\tt CRACK} \\
+\verb+depend+ {\it function}, {\it variable}; \\
+\verb+odesolve(+ODE, {\it function}, {\it variable});  \\
+In the present form (spring 93) it solves standard first order ODEs
+(Bernoulli and Euler type, with separable variables, $\ldots$) and linear
+higher order ODEs with constant coefficients. Its applicability is
+increased by a subroutine which recognizes such PDEs in which there is only
+one unknown function of all variables and all occurring derivatives
+are only derivatives w.r.t. one variable of only one partial derivative.
+For example the PDE for $f(x,y)$
+\[ 0 = f,_{xxy} + f,_{xxyy} \]
+can be viewed as a first order ODE in $y$ for $f,_{xxy}.$
+
+In preparation is a subpackage
+written by Y.K.\ Man for solving first order ODEs with the Prelle-Singer
+algorithm.
+
+\section{Examples}
+\subsection{Investigating symmetries of ODEs/PDEs and systems of them}
+According to a theory of Sophus Lie the knowledge of an infinitesimal symmetry
+of a DE(-system), i.e. of generators $\xi, \eta$ such that the
+infinitesimal transformation
+\begin{eqnarray*}
+\tilde{x} & = & x + \epsilon\xi   \\
+\tilde{y} & = & y + \epsilon\eta
+\end{eqnarray*}
+keeps the DE(-system) forminvariant up to terms $O(\epsilon^2)$, can be used
+to integrate the ODE. The resulting conditions for $\xi, \eta$ are a
+linear system of PDEs. If the DEs are PDEs then $x$ and $\xi$ get an
+index. If one investigates a system of DEs then $y$ and $\eta$ get an index.
+To determine for example point-symmetries of the ODE (6.97) in \cite{Ka}
+\begin{equation}
+0 = x^4y'' - y'(2xy + x^3) + 4y^2  \label{k97}
+\end{equation}
+for $y = y(x)$ the input would be
+\begin{verbatim}
+depend y,x;
+de := {df(y,x,2) - (df(y,x)*(2*x*y+x**3) + 4*y**2)/x**4, y, x};
+mo := {0, nil, nil};
+LIEPDE(de,mo);
+\end{verbatim}
+
+The first argument to {\tt LIEPDE} is a list which includes
+a single equation or a list of equations,
+a single unknown function or a list of unknown functions and
+a single independent variables or a list of independent variables.
+The second argument to {\tt LIEPDE} specifies the mode of operation.
+It is a list {\tt mo = \{od, lp, fl\}} where
+\begin{itemize}
+\item {\tt od} is the order of the ansatz for $\xi, \eta.$ It is = 0 for
+point symmetries and = 1 for contact symmetries (only in case of
+one ODE/PDE for one unknown function).
+% and $>1$ for dynamical symmetries
+%(only in case of one ODE for one unknown function)
+\item If {\tt lp} is $nil$ then the standard ansatz for $\xi^i, \eta^\alpha$
+is taken which is
+\begin{itemize}
+\item for point symmetries ({\tt od}=0) $\xi^i = \xi^i(x^j,u^\beta),
+      u^\alpha = u^\alpha(x^j,u^\beta)$
+\item for contact symmetries ({\tt od}=1)
+   $ \xi^i := \Omega,_{u,_i}, \;\;\;
+     \eta := u,_i\Omega,_{u_i} \; - \; \Omega, \;\;\;
+     \Omega:=\Omega(x^i, u, u,_j)$
+%\item for dynamical symmetries ({\tt od}$>1$)  \\
+%   $ \xi := \Omega,_{u'}, \;\;\;
+%     \eta := u'\Omega,_{u'} \; - \; \Omega, \;\;\;
+%     \Omega:=\Omega(x, u, u',\ldots, u^{({\tt od}-1)})$
+%     where {\tt od} must be less than the order of the ODE.
+\end{itemize}
+
+
+If {\tt lp} is not $nil$ then {\tt lp} is the ansatz for
+$\xi^i, \eta^\alpha$ and must have the form
+\begin{itemize}
+  \item for point symmetries
+        {\tt \{xi\_\mbox{$x1$} = ..., ..., eta\_\mbox{$u1$} = ..., ...\}}
+        where {\tt xi\_, eta\_}
+        are fixed and $x1, \ldots, u1$ are to be replaced by the actual names
+        of the variables and functions.
+  \item otherwise {\tt spot\_ = ...} where the expression on the right hand
+        side is the ansatz for the Symmetry-POTential $\Omega.$
+\end{itemize}
+
+\item {\tt fl} is the list of free functions in the ansatz
+in case {\tt lp} is not $nil.$
+\end{itemize}
+
+The conditions for the symmetry generators $\xi, \eta$ to provide
+infinitesimal transformations
+which leave (\ref{k97}) form-invariant to order $O(\varepsilon^2)$ are
+formulated by the program {\tt LIEPDE} to be
+\begin{eqnarray}
+0 & = & \frac{1}{2}x^3\eta,_{yy} - x^3\xi,_{xy} - x^2\xi,_y - 2y\xi,_y
+        \label{con1} \\
+0 & = & 12y^2\xi,_y - x^4\xi,_{xx} - x^3\xi,_x - 2xy\xi,_x
+        + 2x^4\eta,_{xy} + x^2\xi + 6y\xi - 2x\eta  \\
+0 & = & 2y^2\xi - xy^2\xi,_x - \frac{1}{8}x^5\eta,_{xx}
+        + \frac{1}{8}x^4\eta,_x
+        + \frac{1}{4}x^2y\eta,_x + \frac{1}{2}xy^2\eta,_y
+        - xy\eta  \\
+0 & = & \xi,_{yy}.   \label{con2}
+\end{eqnarray}
+{\tt LIEPDE} then calls {\tt CRACK} to solve this system.
+
+First (\ref{con2}) is integrated to $0 = \xi + c_1y + c_2$
+with new functions $c_1(x), c_2(x).$
+Then $\xi$ is substituted into the other three equations. Now (\ref{con1})
+can be integrated to
+\[ 0 = x^3\eta + x^3y^2c_1' - x^3yc_3 - x^3c_4 + x^2y^2c_1
+       + \frac{2}{3}y^3c_1 \]
+with new functions $c_3(x), c_4(x)$ and $\eta$ can be substituted.
+Because the functions $c_1,\ldots,c_4$ are functions of $x$ only,
+a separation of the remaining two equations w.r.t.\ the independent
+variable $y$ becomes possible which yields 5 and 4 equations. One of
+them is $c_1=0$.
+After setting $c_1$ to zero, the exact second order ODE
+$0 = xc_4'' + 3c_4'$ can be integrated once and
+the resulting first order ODE can be solved by
+{\tt ODESOLVE} \cite{Mal} to give $c_4 = x^2c_6 - c_5/2$
+with constants $c_5, c_6$. From another equation $c_3$ can be eliminated
+and substituted: $c_3 = c_2' - 3c_2/x$. The last function $c_2(x)$ is
+solved by {\tt ODESOLVE} from $0 = x^2c_2'' - xc_2' + c_2$ to give
+$c_2 = x(c_8\log x + c_7)$. Because now only constants are involved in
+the remaining two equations, {\tt CRACK} separates them w.r.t.\ $x$ to obtain 4
+conditions which are solved to give $c_5 = 0$ and $c_6 = - c_8$,
+finally obtaining two symmetries (for $c_7 = 0, \, c_8 = -1$ and
+$c_7 = -1, \, c_8 = 0$):
+\[
+\begin{array}{rclrcl}
+ \xi_1 & = & x\log x,\hspace{0.5in}  & \eta_1 & = & 2y\log x + x^2 - y \\
+ \xi_2 & = & x,                      & \eta_2 & = & 2y .
+\end{array} \]
+Applying Lie's algorithm by hand, the general solution of (\ref{k97})
+is \cite{Ka}
+\[ y = \left\{ \begin{array}{l}
+                 x^2(1 + c_9\tan(c_9\log x + c_{10})) \\
+                 x^2(1 - c_9\tanh(c_9\log x + c_{10})) \\
+                 x^2(1 - c_9\coth(c_9\log x + c_{10}))
+               \end{array}
+       \right. \]
+with constant $c_9, c_{10}$.
+
+If symmetries of a PDE or of a system of equations shall be determined then
+{\tt LIEPDE} does this iteratively by formulating some of the conditions and
+solving them by calling {\tt CRACK} to simplify the formulation of the
+remaining conditions. If a system of DEs is investigated then the conditions
+following from the form-invariance of each single equation are investigated
+successively. If a PDE is investigated then conditions which result from
+setting to zero the coefficients of the highest derivatives of $y$ are
+investigated first. For more details on this iteration see \cite{Alex},
+\cite{Step} and \cite{LIEPDE}.
+
+A more difficult system of PDEs are the Karpman equations \cite{Karp}
+which play a role in plasma physics. In their real form, which is used to
+determine symmetries, they are (\cite{Cham})
+\[\rho,_t+w_1\rho,_z+\frac{1}{2}\left[s_1(2\rho,_x\phi,_x+2\rho,_y\phi,_y
+  +\rho\phi,_{xx}+\rho\phi,_{yy})+
+  s_2(2\rho,_z\phi,_z+\rho\phi,_{zz})\right] = 0\]
+\[\phi,_t+w_1\phi,_z-\frac{1}{2}\left[s_1\left(\frac{\rho,_{xx}}{\rho}
+  +\frac{\rho,_{yy}}{\rho}-\phi,_x^2-\phi,_y^2\right)+
+  s_2\left(\frac{\rho,_{zz}}{\rho}-\phi,_z^2\right)\right]+a_1\nu = 0\]
+\[\nu,_{tt}-(w_2)^2(\nu,_{xx}+\nu,_{yy}+\nu,_{zz})-
+2a_2\rho(\rho,_{xx}+\rho,_{yy}+\rho,_{zz})-2a_2(\rho,_x^2+\rho,_y^2+\rho,_z^2) = 0\]
+with the three functions $\rho,\phi,\nu$ of four variables $t,x,y,z$ and
+with constant parameters $a_i,s_i,w_i.$
+
+At first, preliminary symmetry conditions are
+derived and solved successively
+for each of the three equations.
+The solution
+of the preliminary conditions for the
+first equation
+requires 31 integrations and states that all $\xi^i$ are
+functions of $t,x,y,z$ only.
+The preliminary conditions of the second equation do not provide new
+constraints.
+The result from the preliminary conditions for the third equation
+is that $\nu$ is a function of $t,x,y,z$ only. This needs 4
+integrations.
+After 7.1/0.1 sec the full conditions for the first equation are derived
+which to solve requires further 77 integrations.
+The remaining full conditions for the second equation
+to solve requires 6 integrations. Finally,
+the full conditions for the last equation are
+solved with three more integrations.
+
+The general solution for the symmetry generators then reads
+\[ \begin{array}{rclrcl}
+ \xi^x & = & - y c_1 + c_2 \;\;\;\;\; &  \eta^r & = & 0  \\
+ \xi^y & = & x c_1 + c_3  &  \eta^\phi & = & a_1 c_6 t^2 + a_1 c_7 t + c_8  \\
+ \xi^z & = & c_4      &  \eta^v & = & - c_6 t - c_7     \\
+ \xi^t & = & c_5  & & &
+\end{array}
+\]
+with constants $c_1, \ldots, c_8.$ The corresponding 8 symmetry generators are
+\begin{eqnarray*}
+ X_1 = \partial_x & \;\;\;\;\;\;\;\;\;\; & X_5 = y\partial_x - x\partial_y \\
+ X_2 = \partial_y & &  X_6 = \partial_\phi               \\
+ X_3 = \partial_z & & X_7 = a_1t\partial_\phi - \partial_\nu \\
+ X_4 = \partial_t & & X_8 = a_1t^2\partial_\phi - 2t\partial_\nu.
+\end{eqnarray*}
+
+The total time in a test run with {\tt lisp(print\_:=nil);} was
+260/3.2 seconds on a PC486 with 33 MHz and 4MB RAM,
+i.e. less than 5 min.
+For comparison, the same calculation reported in \cite{Cham}, also split
+into 6 parts but with integrations done by hand, took more than 2 hours CPU
+on a VAX 8600 to formulate and simplify the symmetry conditions using the
+program {\tt SYMMGRP.MAX} written in MACSYMA.
+The corresponding input for {\tt LIEPDE} is
+\begin{verbatim}
+depend r,x,y,z,tt;
+depend f,x,y,z,tt;
+depend v,x,y,z,tt;
+
+de := {{df(r,tt)+w1*df(r,z)
+        + s1*(df(r,x)*df(f,x)+df(r,y)*df(f,y)+r*df(f,x,2)/2+r*df(f,y,2)/2)
+        + s2*(df(r,z)*df(f,z)+r*df(f,z,2)/2),
+
+        df(f,tt)+w1*df(f,z)
+        - (s1*(df(r,x,2)/r+df(r,y,2)/r-df(f,x)**2-df(f,y)**2) +
+           s2*(df(r,z,2)/r-df(f,z)**2))/2 + a1*v,
+
+        df(v,tt,2)-w2**2*(df(v,x,2)+df(v,y,2)+df(v,z,2))
+        - 2*a2*r*(df(r,x,2)+df(r,y,2)+df(r,z,2))
+        - 2*a2*(df(r,x)**2+df(r,y)**2+df(r,z)**2)},
+
+       {r,f,v},  {x,y,z,tt}};
+mo := {0, nil, nil};
+LIEPDE(de,mo);
+\end{verbatim}
+
+\subsection{Determining integrating factors}
+Another way to solve or simplify nonlinear DEs is to determine first
+integrals by finding integrating factors. For the equation (6.37) of
+\cite{Ka} (which has no point symmetry)
+\begin{equation}
+0 = y'' + y'(2y + F(x)) + F(x)y^2 - H(x)  \label{k37}
+\end{equation}
+for $y(x)$ and parametric functions $F, H$ of $x$ the input
+consists of
+\begin{verbatim}
+depend f,x;
+depend h,x;
+depend y,x;
+de := {df(y,x,2) = -(2*y+f)*df(y,x)-f*y**2+h, y, x};
+mo := {0,{},2};
+FIRINT(de,mo);
+\end{verbatim}
+The arguments to {\tt FIRINT} are similar to those of {\tt LIEPDE}\@.
+Here {\tt mo = \{fi,fl,dg\}} specifies an ansatz for the first integral.
+
+   For {\tt fi=0} the ansatz for the first integral is determined by
+{\tt dg}: The first integral is assumed to be a
+polynomial of degree {\tt dg} in $y^{(n-1)}$ (with $n$ as the order of the ODE)
+and with arbitrary functions of $x, y,\ldots,y^{(n-2)}$ as coefficients.
+In this case
+{\tt fl} has no meaning and is set to \{\}.
+For {\tt fi}$\neq${\tt 0, fi} is the ansatz for the first integral and
+{\tt fl} is a list of
+unknown functions in the ansatz, which are to be solved for. In this case
+{\tt dg} has no meaning.
+
+   The above example determines first integrals which are at most quadratic
+in $y'$ for equation (6.37) in \cite{Ka}.
+{\tt FIRINT} starts with the ansatz
+\begin{equation}
+{\rm const.} = h_2(x,y)y'^2 + h_1(x,y)y' + h_0(x,y)  \label{fians}
+\end{equation}
+and formulates the determining system by total differentiation of
+(\ref{fians}), identification of $y''$ with $y''$ in (\ref{k37}) and
+direct separation of $y',$ to produce
+\begin{eqnarray*}
+0 & = & h_2,_y  \\
+0 & = & (H - F y^2)h_1 + h_0,_x  \\
+0 & = & h_1,_x + h_2,x - (2F + 4y)h_2  \\
+0 & = & 2(H - Fy^2)h_2 - (F - 2y)h_1 + h_0,y + h_1,x.
+\end{eqnarray*}
+It then calls {\tt CRACK} which provides the solution for $h_0,h_1,h_2.$
+The first integral is
+\begin{equation}
+\mbox{const.} = \left( \frac{dy}{dx}+y^2 \right) e^{\int \!F\,dx} -
+\int He^{\int \!F\,dx} dx
+\end{equation}
+which is linear in $y'$. Many other nonlinear ODEs in \cite{Ka} have quadratic
+first integrals.
+
+\subsection{Determining a Lagrangian for a given 2nd order ODE}
+The knowledge of a Lagrangian $L$ for a given set of differential
+equations may be useful in solving and understanding these equations.
+If $L$ is known it is easier to determine symmetries, conserved
+quantities and singular points. An equivalent variational principle
+could also be useful for a more efficient numerical solution.
+This problem is known as the inverse problem of variational calculus.
+For example, the first transcendental Painlev\'{e} equation
+\begin{equation}
+ y'' = 6y^2 + x        \label{pain}
+\end{equation}
+has no point symmetries but proves to have a Lagrangian with the
+structure
+\begin{equation}
+ L = u(x,y)(y')^2 + v(x,y).   \label{lagr}
+\end{equation}
+(The other 5 transcendental Painlev\'{e} equations have a Lagrangian
+of this structure as well.)
+A program {\tt LAGRAN} formulates the conditions for $u$ and $v$ (a first
+order PDE-system). The call is
+\begin{verbatim}
+depend f,x; depend y,x;
+de := {df(y,x,2) = 6*y**2 + x, y, x};
+mo := {0,{}};
+LAGRAN(de,mo);
+\end{verbatim}
+
+If a system of ODEs or a PDE with at least two variables is given,
+then the existence of an equivalent Lagrangian $L$ is not guaranteed.
+Only in the case of
+a single 2nd order ODE, which is treated by the program {\tt LAGRAN},
+must a Lagrangian which is locally equivalent to the ODE
+exist. As a consequence the determination of $L$ for a second order
+ODE is in general not simpler than the solution of the ODE itself.
+Therefore the structure of
+$L$ must be specified, which is done through (\ref{lagr}).
+
+   In the call of {\tt LAGRAN} the second argument {\tt mo=\{lg,fl\}} allows
+input of an ansatz for the Lagrangian.
+For {\tt lg=0} the default ansatz for the first integral is as given in
+(\ref{lagr}).
+For {\tt lg$\neq$0, lg} is the ansatz for the Lagrangian and {\tt fl} is a
+list of unknown functions in the ansatz which are to be solved.
+For equation (\ref{pain}) the resulting equivalent Lagrangian is
+\[ L = y'^2 + xy + 4y^3. \]
+Because the first order system for $u$ and $v$ is normally not too
+difficult, more complicated problems can also be solved, such as the
+determination of $L$ for the 6'th transcendental Painlev\'{e} equation
+\begin{eqnarray}
+ y'' = & \frac{1}{2}\left(\frac{1}{y}+\frac{1}{y-1}+\frac{1}{y-x}\right) y'^2
+- \left(\frac{1}{x}+\frac{1}{x-1}+\frac{1}{y-x}\right)y'  \nonumber \\
+& + \frac{y(y-1)(y-x)}{x^2(x-1)^2}\left(a+\frac{bx}{y^2}+\frac{c(x-1)}{(y-1)^2}
++\frac{dx(x-1)}{(y-x)^2}\right)
+\end{eqnarray}
+for which $L$ turns out to be
+\[
+\begin{array}{rcll}
+L & = & 1/[xy(x-y)(x+1)(x-1)(y-1)] \cdot [(x+1)(x-1)^2x^2y'^2  \\
+  &   & - 2a(xy+x+y)(x-y)(y-1)y + 2b(x+y+1)(x-y)(y-1)x \\
+  &   & + 2c(x+y)(x-y)(x-1)y  - 2d(x-1)(y+1)(y-1)xy ].
+\end{array} \]
+
+\subsection{A factorization ansatz for a given ODE}
+A further possible way to integrate an $n$'th order ODE is to decompose it
+into two ODEs of order $k$ and $n-k$. If one specifies the structure of the
+$k$'th order ODE and demands that these ODEs can be solved successively then
+this leads to a system of PDEs in the variables
+$x, y, \ldots, y^{k-1}$ with a good chance of solution.
+
+To solve the ODE (6.122) in \cite{Ka}
+\begin{equation}
+0 = yy'' - y'^2 + F(x)yy' + Q(x)y^2       \label{6.122}
+\end{equation}
+the input would be
+\begin{verbatim}
+depend f,x;
+depend q,x;
+depend y,x;
+de := {df(y,x,2) = df(y,x)**2/y - f*df(y,x) - y*q, y, x};
+mo := {2,{}};
+DECOMP(de,mo);
+\end{verbatim}
+In contrast to {\tt FIRINT}, {\tt LAGRAN} the ODE could here
+be in the implicit form $0 = \ldots \;$ as well.
+
+The second argument {\tt mo = \{as,fl\}} specifies an ansatz for the $k$'th
+order ODE. If {\tt as} is an integer between 1 and 4 inclusive
+then a default ansatz
+is taken and {\tt fl} (the list of further unknown functions) is \{\}.
+The 4 ans\"atze for \verb+as+ $\in$ [1,4] are
+\begin{eqnarray}
+y' & = & a(x)\,b(y)      \nonumber   \\
+y' & = & a(x)\,y + b(x)   \label{d2}     \\
+y' & = & a(x)\,y^n + b(x)\,y    \nonumber   \\
+y' & = & a(x)\,y^2 + b(x)\,y + c(x)      \nonumber
+\end{eqnarray}
+
+   For {\tt as}$\not\in$[1,4], {\tt as} itself is the ansatz for the $k$'th
+order ODE with $y^{(k)}$ eliminated on the left side and {\tt fl} is
+a list of unknown functions in the ansatz, which are to be solved for.
+
+The program {\tt DECOMP} formulates the determining system, in the above
+example
+\begin{eqnarray*}
+0 & = & b^2  \\
+0 & = & - F(x)b - b' + ab  \\
+0 & = & - F(x)a - Q(x) - a'
+\end{eqnarray*}
+and calls {\tt CRACK} to solve it. Because the result
+\begin{eqnarray*}
+a(x) & = & \left(c_1 - \int Qe^{-\int F dx} dx\right)e^{-\int F dx} \\
+b(x) & = & 0
+\end{eqnarray*}
+contains $n-k = 1$ constant(s) of integration, this factorization ansatz
+does not restrict the solution space  of (\ref{6.122})
+and because of (\ref{d2}) the general solution is
+\[y = c_2e^{\int \left[\left(c_1 - \int Qe^{-\int F dx} dx\right)e^{-\int F dx}
+\right] dx}.\]
+
+\subsection{General remarks on complexity}
+In general, PDE-systems are easier to solve, the fewer arbitrary functions of
+fewer variables are contained in the general solution. This in turn
+is the case if more and more equations have to be satisfied for less functions,
+i.e. the more restrictive is the PDE-system.
+Having more equations to solve for a given number of functions
+improves the
+chance of finding an integrable one among them and provides
+more possibilities to combine them and find a quick way to solve
+them. For example, it is usually more difficult to find all
+point symmetries of a very simple ODE with many point symmetries
+than to show that an ODE that is possibly more difficult
+to solve has no point symmetry.
+An appropriate strategy could therefore be to start an
+investigation with a very restrictive ansatz and later to try
+less restrictive ones. For example, an ODE could be investigated at first
+with respect to point symmetries and if none is found then one
+could look for contact and then for dynamical symmetries.
+
+Experience shows that nonlinear systems may lead to an
+explosion in the length of generated equations much quicker
+than linear equations
+even if they have more independent variables or are of higher order.
+For solving ODEs one should therefore investigate infinitesimal
+symmetries or integrating factors first which provide linear systems
+and only later consider the factorization into two ODEs of lower order.
+
+\subsection{Acknowledgement}
+We want to thank especially Francis Wright and Herbert Melenk for
+continuous help in respect with special features and bugs of REDUCE.
+
+\newpage
+\begin{thebibliography}{99}
+\bibitem{Riq} C. Riquier, Les syst\`{e}mes d'\'{e}quations aux d\'{e}riv\'{e}es
+partielles, Gauthier--Villars, Paris (1910).
+\bibitem{Th} J. Thomas, Differential Systems, AMS, Colloquium
+publications, v. 21, N.Y. (1937).
+\bibitem{Ja} M. Janet, Le\c{c}ons sur les syst\`{e}mes d'\'{e}quations aux
+d\'{e}riv\'{e}es, Gauthier--Villars, Paris (1929).
+\bibitem{Topu} V.L. Topunov, Reducing Systems of Linear Differential
+Equations to a Passive Form, Acta Appl. Math. 16 (1989) 191--206.
+\bibitem{Alex} A.V. Bocharov and M.L. Bronstein, Efficiently
+Implementing Two Methods of the Geometrical Theory of Differential
+Equations: An Experience in Algorithm and Software Design, Acta. Appl.
+Math. 16 (1989) 143--166.
+\bibitem{Reid1} G.J. Reid, A triangularization algorithm which
+determines the Lie symmetry algebra of any system of PDEs, J.Phys. A:
+Math. Gen. 23 (1990) L853-L859.
+\bibitem{FS} F. Schwarz, Automatically Determining Symmetries of Partial
+Differential Equations, Computing 34, (1985) 91-106.
+\bibitem{Fush} W.I. Fushchich and V.V. Kornyak, Computer Algebra
+Application for Determining Lie and Lie--B\"{a}cklund Symmetries of
+Differential Equations, J. Symb. Comp. 7 (1989) 611--619.
+\bibitem{Ka} E. Kamke, Differentialgleichungen, L\"{o}sungsmethoden
+und L\"{o}sungen, Band 1, Gew\"{o}hnliche Differentialgleichungen,
+Chelsea Publishing Company, New York, 1959.
+\bibitem{Wo} T. Wolf, An Analytic Algorithm for Decoupling and Integrating
+systems of Nonlinear Partial Differential Equations, J. Comp. Phys.,
+no. 3, 60 (1985) 437-446 and, Zur analytischen Untersuchung und exakten
+L\"{o}sung von Differentialgleichungen mit Computeralgebrasystemen,
+Dissertation B, Jena (1989).
+\bibitem{WoInt} T. Wolf, The Symbolic Integration of Exact PDEs,
+preprint, submitted to J.\ Symb.\ Comp. (1991).
+\bibitem{WM} M.A.H. MacCallum, F.J. Wright, Algebraic Computing with REDUCE,
+Clarendon Press, Oxford (1991).
+\bibitem{Mal} M.A.H. MacCallum, An Ordinary Differential Equation
+Solver for REDUCE, Proc. ISAAC'88, Springer Lect. Notes in Comp Sci.
+358, 196--205.
+\bibitem{Step} H. Stephani, Differential equations, Their solution using
+symmetries, Cambridge University Press (1989).
+\bibitem{LIEPDE} T. Wolf, An efficiency improved program {\tt LIEPDE}
+for determining Lie-symmetries of PDEs, Proceedings of the workshop on
+Modern group theory methods in Acireale (Sicily) Nov. (1992)
+\bibitem{Karp} V.I. Karpman, Phys. Lett. A 136, 216 (1989)
+\bibitem{Cham} B. Champagne, W. Hereman and P. Winternitz, The computer
+      calculation of Lie point symmetries of large systems of differential
+      equation, Comp. Phys. Comm. 66, 319-340 (1991)
+
+\end{thebibliography}
+
+\end{document}

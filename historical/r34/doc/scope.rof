@@ -1,0 +1,2030 @@
+.\" NOTE: This file can be processed with eqn <filename> | tbl | troff -ms
+.hw unknowns
+.hw FORTRAN
+.hw FORMAC
+.hw REDUCE
+.hw GENTRAN
+.nr PS 11
+.ps 11
+.nr VS 15
+.EQ
+tdefine !eq '~ = back 80 / ~'
+ndefine !eq '~ = "./" ~'
+tdefine empty % size +1 \(es %
+ndefine empty % O./ %
+tdefine !member ' ^ \(mo back 70 / ^ '
+ndefine !member % C.-./ %
+tdefine => % ^ = back 40 = back 40 > ^ %
+ndefine => % "==>" %
+tdefine !=> % ^ = back 40 / back 30 = back 60 > ^ %
+tdefine <=> % ^ < back 25 = back 40 = back 60 > ^ %
+ndefine <=> % "<=>" %
+tdefine exists %"\s-3\h'.2m'\v'.2m'\z\(em\v'-.5m'\z\(em\v'-.5m'\z\(em\
+\v'.85m'\h'.9m'\v'-.3m'\z\(br\h'.01m'\(br\v'.3m'\h'.02m'\v'-.05m'\s0" ~%
+tdefine !exist %"\s-3\h'.2m'\v'.2m'\z\(em\v'-.5m'\z\(em\v'-.5m'\z\(em\
+\v'.85m'\h'.9m'\v'-.3m'\z\(br\h'.01m'\(br\v'.3m'\h'.02m'\v'-.05m'\
+\s0" { back 65 down 10 size +3 / } ^%
+tdefine forall % "\f1\s+1\zV\zV\v'-.2m'\h'.22m'\z--\v'.2m'\h'.05m'\s0\fP" %
+ndefine forall % V.- %
+tdefine orsign % ^ "\s-2\h'.05m'\v'.15m'\z\e\e\h'-.08m'\z\(sl\
+\(sl\h'-.1m'\v'-.15m'\s0" ^ %
+ndefine orsign % \e / %
+tdefine andsign % ^ "\s-2\v'.15m'\z\(sl\(sl\h'-.18m'\z\e\e\v'-.15m'\s0" ^ %
+ndefine andsign % / \e %
+delim @@
+.EN
+.de Sq
+.pl +\\n(.v
+.nr tL \\n(.l-\\w'\(sq'
+.lt 0
+.lt +\\n(.lu
+.br
+.if !\\n(.n-\\n(tL .sp -1
+.tl '''\fR\(sq\fP'
+.nr tL 0
+.pl -\\n(.v
+..
+..
+\f3SCOPE, a Source-Code Optimization PackagE for REDUCE - User's Manual\f1
+.sp 2
+\f2Preliminary Version\f1
+.sp 2
+\f2J.A. van Hulzen \f1
+.sp 4
+\f3Table of Contents\f1
+.LP
+.nr vs 13
+.TS
+expand,tab(/);
+l n.
+_
+.sp
+\f31. Introduction\f1/2
+.sp .3
+\f32. Source-Code Optimization : The Basic Facilities\f1/4
+.sp .3
+\ \ \  \f32.1. The Strategy\f1/4
+.sp .3
+\ \ \  \f32.2. The Facilities\f1/6
+.sp .3
+\f33. Preprocessing Possibilities\f1/17
+.sp .3
+\f34. Generation of Declarations\f1/22
+.sp .3
+\f35. File Management and Optimization Strategies\f1/23
+.sp .3
+\f36. Some Possible Shortcomings and Future Versions\f1/26
+.sp .3
+\f3Acknowledgements\f1/26
+.sp .3
+\f3References\f1/27
+.sp .3
+\f3Appendix 1: How to install the code\f1/29
+.sp 
+_
+.TE
+.nr VS 15
+.vs 15
+.sp 10
+\f3Abstract\f1
+.sp .4
+A survey of the strategy behind and the facilities of SCOPE, a Source-Code 
+Optimization PackagE for REDUCE is given. We avoid a detailed discussion of the
+different algorithms and concentrate on the user aspects of the package.
+Examples of straightforward and more advanced usage are shown.
+A combined use of GENTRAN and SCOPE is not yet discussed in this preliminary
+version of the SCOPE manual.
+.bp
+.NH
+Introduction
+.LP
+An important application of computer algebra systems is the generation
+of code for numerical purposes via automatic or semi-automatic program
+generation. GENTRAN [3,4], a flexible general-purpose package, was 
+especially developed to assist in such a task, when using MACSYMA or
+REDUCE.
+.br
+Attendant to automatic program generation is the problem of automatic
+source-code optimization. This is a crucial aspect because code generated
+from symbolic computations often tends to be made up of lengthy arithmetic
+expressions. One of our test examples contained, for instance, 20534
+additions and subtractions, 41746 multiplications,
+12473 integer exponentiations and 7990 other operations, such as function
+calls.
+These lengthy expressions will be grouped together in blocks of
+straightline code in a program for numerical purposes. The main objective
+of source-code optimization is to minimize the number of (elementary)
+arithmetic operations in such blocks.
+This form of optimization is often helpful in reducing redundancy in
+expressions. Simplification algorithms applied on expressions
+viewed as entities, neither guarantee complete structure preservation nor
+allow improvements inside expressions by renaming sub-expressions.
+.br
+Optimizing compilers ought to deal effectively and efficiently with the
+average, hand coded program. The enormous, arithmetic intensive
+expressions, easily producable by a computer algebra system, fall outside the
+range of the FORTRAN-programs, once analyzed and discussed by Knuth [15].
+He suggested that optimization of the arithmetic in such
+a program is slightly overdone. This may explain why even in reasonably
+recent literature, such as [1], optimization of arithmetic code is hardly
+discussed. The dag-models, usually employed for optimization of arithmetic
+code, hardly allow the application of any algebraic identity (see for instance
+[6]). These models often force constants to act as if they were
+indeterminates and powers
+as objects requiring function calls, i.e. they force to think of
+@2a~+~3b@ and @4a~+~6b@ or of @a sup 2@, @a sup 4@ and @a sup 6@ as being 
+different entities.
+Our optimization strategy however, requires the validity of some
+elementary algebraic laws. We employ heuristic techniques to reduce the
+arithmetic complexity of the given representation of a set of input expressions
+@ roman E sub in@, thus producing a set of output expressions @roman E sub
+out@. The optimized version of the earlier mentioned test example contains
+"only" 4316 additions and subtractions, 4919 multiplications,
+13 integer exponentiations and 60 other operations.
+@roman E sub in@ and @roman E sub out@ define blocks of code, which would
+compute the same exact values for the same exact inputs, thus implicitly
+proving the correctness of the underlying software.  Obviously the use
+of @roman E sub out@ saves a considerable amount of execution time in
+comparison with the application of @roman E sub in@.
+Johnson e.a. [14] suggest that such transformations do not destabilize the
+computations. However this is only apparent after a careful error analysis
+of both @roman E sub in@ and @roman E sub out@. In view of the 
+size of both @roman E sub in@ and @roman E sub out@ such an analysis has
+to be automatized as well. Work in this direction is in progress.
+.LP 
+The current version of SCOPE, our Source-Code Optimization PackagE, 
+is written in RLISP. It can be used as an extension of REDUCE [9]. 
+It allows to subject
+almost any set of proper REDUCE assignment statements to a heuristic 
+search for common (sub)expressions (cse's).
+The output is obtained as a sequence of assignment statements,
+by default given in REDUCE syntax.
+.br
+The first version of the package was designed to optimize the description of
+REDUCE-statements, generated by NETFORM [17,18]. This version was
+tailored to a restrictive class of problems, occurring mainly in 
+electrical network theory, thus implying that the 
+righthand sides (rhs's) in the input were limited to elements of
+@{roman bold Z} sub 2@[V], where V is a set of identifiers.
+The second version [12] allowed rhs's from \f3Z\f1[V]. For both versions the
+validity of the commutative and the associative law was assumed.
+A third version evolved from the latter package by allowing to apply the
+distributive law, i.e. by replacing (sub)expressions like @a.b~+~a.c@
+by @a.(b~+~c)@ whenever possible. 
+But the range of possible applications of this version was really
+enlarged by redefining V as a set of kernels, implying
+that, at least by that time, almost any proper REDUCE expression could
+function as a rhs. 
+The mathematical capabilities of this version are shortly summarized in [19],
+in the context of code generation and optimization for finite-element analysis.
+It is used in combination with GENTRAN, for the construction
+of Jacobians and Hessians [10] and also in experiments with strategies for
+code vectorization [5].
+It still assumes constant coefficients to be elements of \f3Z\f1.
+The user-interface of the present version relies on some GENTRAN 
+facilities.
+.sp
+.LP
+.ps 11
+In [11,12] we described the overall optimization-strategy used for SCOPE 
+as a composite function @{roman R sup -1}~\(de~{roman T}~\(de~{roman R}@. 
+The function R
+defines how to store the input @{roman E} sub 0@ in an expression data base
+@{roman D} sub 0@. This @{roman D} sub 0@ is formed by two matrix-structures
+and a function table.
+The incidence matrices represent @{roman E} sub 0@, a set of arithmetic 
+expressions, in a two-dimensional structure where the rows represent expression
+or sub-expression references and the columns represent identifier references
+such as variable and function names. 
+The function names are taken from the function table, 
+consisting of a list of pairs of function applications occurring in 
+@{roman E} sub 0@, and system selected names functioning as their placeholders
+during the optimization process. Arguments of functions are similarly
+entered in the matrix-structures when ever relevant.
+A given sub-expression will be entered in one
+of two types of incidence matrices, one for sums and one for products, depending
+on the nature of the arithmetic operation at the top level of the expression.
+The two matrices are correlated by auxiliary predecessor-successor information
+at the row level for every sub-expression reference. The actual entries in the
+matrices are either multiplicative numerical coefficients for the sums matrix
+or powers for the products matrix. 
+The inverse function @{roman R} sup {-1}@ defines the output-production.
+The function T defines the optimization process itself. It essentially
+consists of a heuristic remodeling of the (extendable) matrices in
+combination with storing information required for a fast retrieval and
+correct insertion of the detected cse's in the output.
+This is accomplished by an iteratively applied search, resulting
+in a stepwise reduction of the arithmetic complexity of the input set, using
+an extended version of Breuer's grow factor algorithm [2,11,12]. It is applied until
+no further profit is gained, i.e. until the reduction in arithmetic 
+complexity stops. Before producing output, a finishing touch can be performed
+to further reduce the arithmetic complexity with some locally applied
+techniques. The overall process can be summarized as follows:
+.ps 10
+.EQ 
+{roman R}~mark :~{{roman E} sub 0}~->~({{roman D} sub 0},{{roman profit} sub 0})
+.EN
+.EQ 
+{{roman T} sub beta}~mark :~({{roman D} sub i},{{roman profit} sub i})~->~
+({{roman D} sub {i+1}},{{roman profit} sub {i+1}})~,~{roman i}~=~0,..., lambda -1.
+.EN
+.EQ 
+{roman F}~mark :~({{roman D} sub lambda},{{roman profit} sub lambda})~->~
+{D sub lambda}
+.EN
+.EQ 
+{{roman R} sup {-1}}~mark :~{D sub lambda}~->~{{roman E} sub lambda}
+.EN
+.ps 11
+@{roman D} sub 0@ is created as a result of an R-application
+performed on input @{roman E} sub 0@.
+The termination condition depends on some profit criterion related
+to the arithmetic complexity of the latest version of the input,
+@{{roman D} sub i}@. Hence we assume @{{roman profit} sub i}~=~true@ for
+@i~=~0,..., lambda -1@ and @{{roman profit} sub lambda}~=~false@.
+The function T is composite as well, and defined by @{roman T}~=~{roman F}~\(de~
+{{{roman T} sub beta} sup lambda}@. @{roman T} sub beta@
+defines one iteration step, i.e one
+application of the extended version of Breuer's algorithm. The function F 
+defines a finishing touch, resulting in the final
+version @D sub lambda@ of @{roman D} sub 0@, used to produce the 
+output @{roman E} sub lambda@. We omit a further discussion of the different
+algorithms used for optimization; this can be found in [11,12], 
+for instance.
+.LP
+.ps 11
+.LP
+The present version makes use of some GENTRAN facilities to translate
+its input into  LISP prefix-forms. This approach can be seen as a form
+of preprocessing, i.e. @{roman E} sub 0@, the input for R can be considered
+as a list of \f3setq\f1-applications
+.LP
+.ps 11
+The GENTRAN-SCOPE Interface, allows other preprocessing activities.
+We introduced the optional use of GENTRAN's \f3declare\f1-statement, 
+thus allowing
+to specify the type of some or all of the lhs's and of the identifiers
+used to construct the rhs's. In addition to the prefixlist,
+a list of declarations in the Target Language can be produced,
+based on default assumptions concerning un-typed lhs's and identifiers
+in the input.
+This facility is based on the use of GENTRAN's symbol-table.
+.br
+Before optimizing rhs's it might be attractive to rewrite them using a
+generalized form of Horner's rule. We designed such a command,
+which does not necessarily have to be used in the context
+of SCOPE. It can operate on a set
+of assignment statements and it can deliver the result in the form of a sequence
+of prefix-forms, defining the rewritten statements. Subjecting such a
+sequence of prefix-forms to a SCOPE-application implies that the
+GENTRAN-approach is not directly applicable. The GENTRAN := and :=:
+assignment operators define literal translation or rhs-simplification,
+respectively. Therefore we extended our Interface with special facilities,
+allowing SCOPE to accept the result of the application of such a
+command literally. Besides the \f3g\f1(eneralized)\f3horner\f1(rule) we have a
+command, generalizing the impact of the \f3structr\f1-command to a set of
+assignment statements. 
+.LP
+.ps 11
+We discuss and illustrate a straightforward use of SCOPE in section 2.
+In section 3 we introduce the special commands \f3ghorner\f1 and \f3gstructr\f1
+and show
+how to use them, also in combination with SCOPE. We use section 4 to
+discuss the declaration-facilities and section 5 to show the different
+file-handling possibilities and modes of operation.
+Section 6 is finally used to indicate future work.
+Guidelines for installing the package are given in Appendix 1.
+.NH
+Source-Code Optimization : The Basic Facilities
+.NH 2
+The Strategy
+.LP
+.ps 11
+Before illustrating the effect of applying SCOPE, we shortly 
+describe the operations, covered by the functions @{roman T} sub beta@ and F,
+mentioned in the previous section.
+.br
+The function R accepts assignment statements given in prefix-form.
+We can  divide these forms in three categories using
+their leading operator. We distinguish between PLUS, TIMES and OTHER-operators.
+Leaving aside the OTHER-operators for awhile, we reduce the
+structure of possible rhs's to those of not necessarily expanded multivariate
+polynomials with integer coefficients. Assuming the leading operator is PLUS,
+the operands, being terms of a polynomial (for instance
+@3a~+~2b~+~3 {b sup 2} c (3a~+~2b){(c~+~d) sup 2}@),
+can either be primitive or composite.
+A primitive term is an integer, an identifier or the product of an integer
+and an identifier.
+Hence the primitive terms of a sum form an (eventually empty) linear
+expression (@3a~+~2b@).
+Composite terms are products, which cannot be qualified as a primitive
+term (@3 {b sup 2} c (3a~+~2b) {(c~+~d)} sup 2@).
+Like sums, prefix-forms with a TIMES-operator, can have
+a primitive and/or composite part. The primitive part of a product is an
+(eventually empty) power product(@{b sup 2} c@).
+The composite part is a product of sums and/or powers of sums
+(@(3a~+~2b) {(c~+~d) sup 2}@).
+Observe that our expression-structure discussed so far is still too simple. 
+Powers of sums have EXPT as their leading operator (@{(c~+~d)} sup 2@).
+Similarly, a product can have a integer coefficient (@3 {b sup 2} c@).
+.br
+This description suggests, as already indicated in section 1,
+that we can consider any set of rhs's as
+being built with linear expressions and power products only. This allows
+to map such a set onto two incidence matrices: One defining the linear
+expressions, using the coefficients, and another defining the power products,
+using the exponents. The rows of these matrices can be associated with the
+(sub)expressions under consideration and the columns with the identifiers,
+used to construct these expressions. This is why we need to assume the
+validity of the commutative and associative law. To be able to retrieve
+the structure of the assignment statements forming the input set,
+we need to combine additional information with
+the rows and columns of these matrices. Essential is, for instance, storage
+of the exponents of sums and of the coefficients of products.
+Equally important is storage of the lhs's, which are the rhs-recognizers.
+Details are given in [12]. The examples 2.2.1 and 2.2.2  provide
+illustrations of these data structures.
+.br
+When introducing kernels, i.e. when assuming the set of OTHER-operators 
+to be not empty, we have to store lists of non-commutable arguments.
+Therefore a function table of pairs is made, formed by the
+kernels and their internally created names. These names are entered
+in the matrices as new identifiers. The arguments of such a kernel
+can be arbitrary REDUCE-expressions, which also have to be incorporated in
+the matrices.  Hence the function table is created recursively.
+.LP
+What is a cse and how do we locate its occurrences?
+A (sub)expression is common when it occurs repeatedly in the 
+input. The occurrences are, as part of the input, distributed over the matrices,
+and shown as equivalent integer (sub)patterns.
+In fact, we repeatedly search for completely dense (sub)matrices of rank 1.
+The expression @2a~+~3c@ is a cse of
+@{e sub 1}~=~2a~+~4b~+~3c@ and @{e sub 2}~=~4a~+~6c~+~5d@, representable
+by (2,4,3,0) and (4,0,6,5), respectively.
+We indeed have to assume commutativity, so as
+to be able to produce new patterns (2,0,3,0,0), (0,4,0,0,1) and (0,0,0,5,2),
+representing @s~=~2a~+~3c@, @{e sub 1}~=~4b~+~s@ and @{e sub 2}~=~5d~+~2s@,
+respectively, and thus saving one addition and one multiplication.
+Such an additive cse can be a factor in a composite (sub)product,
+which in turn can be reduced to a primitive product, when the cse is replaced by
+a new symbol.
+Therefore an essential part of an optimization step is regrouping
+of information. This migration of information between the matrices is performed
+if the Breuer-searches are temporarily completed. 
+After this regrouping the distributive law is applied, eventually also leading
+to a further regrouping. If at least one of these actions leads to a
+rearrangement of information the function @{roman T} sub beta@ is again applied.
+Observe that this @{roman T} sub beta@ is also a composite function.
+In view of the iterative character of the optimization process
+we always accept minimal profits.
+.br
+A similar search is performed to detect multiplicative cse's, for instance
+occuring in @{e sub 1}~=~{a sup 2} {b sup 4} {c sup 3}@ and
+@{e sub 2}~=~{a sup 4} {c sup 6} {d sup 5}@.
+However, given a power product @prod from i=1 to m {x sub i} sup {a sub i}@,
+any product @prod from i=1 to m {x sub i} sup {b sub i}@, such that some
+@{b sub i}~<~{a sub i}@, for i = 1(1)m, can function as a cse.
+We therefore extend the search for multiplicative cse's by employing this
+property, and as indicated in [12].
+.br
+The function F -defining the finishing touch- performs one-row and/or
+one-column searches. Once the extended Breuer-searches do not lead to 
+further reduction in the arithmetic complexity we try -applying it-
+to improve what is left.
+The integer coefficients in (sub)sums can have, possibly locally,
+a gcd, which can be factored out.
+One-column operations serve to discover and properly replace integer
+multiples of identifiers.
+As part of the output-process we subject all exponentiations left -
+at most one for each identifier - to an addition chain algorithm. 
+Another action, covered by F is therefore replacement by a new symbol
+of those (sub)sums, which are raised to some integer power.
+.NH 2
+The Facilities
+.LP
+.ps 11
+REDUCE allows, roughly speaking, two modes of operation: ON EXP or OFF EXP.
+The first alternative is the default setting leading to expanded forms.
+The latter gives unexpanded forms, as discussed by Hearn  in some
+detail [7,8]. It is obvious that the OFF EXP setting is in general preferable
+over the ON EXP setting when attempting to optimize the description of
+a set of assignment statements.
+.br
+Starting a REDUCE session gives the initial state. All switches have their
+initial value: ON EXP, PERIOD and OFF FORT, for instance.
+When loading SCOPE we create a new operating environment, without
+disturbing the current state of the system. 
+.br
+The result of an application of SCOPE can be influenced by the use
+of certain REDUCE- or SCOPE-switches. The influence of EXP is obvious.
+By default the switch ACINFO is turned on. This guarantees an echo of the form
+in which the assignment statements are consumed by SCOPE. It also
+guarantees tables with the numbers of arithmetic operations,
+occuring in @{{roman E} sub 0}@ and @{roman E} sub lambda@, respectively,
+to be printed.
+Some switches are available to obtain information about the process itself.
+They were introduced to assist in debugging and testing.
+PRIMAT can be used to visualize both @{roman D} sub 0@ and @D sub lambda@.
+PRIALL is a switch which combines not only the effect of ACINFO and PRIMAT,
+but also allows to obtain timings of the different sub-algorithms of SCOPE.
+.br
+Output is by default given in REDUCE syntax, but FORTRAN syntax is possible
+in the usual way. The switch PREFIX can be used to obtain the prefixlist itself
+as output. 
+.br
+A SCOPE action is easily performed.
+Either the command "\f3optimize\f1 @<@object@>@;" or the command
+"\f3optimize\f1 @<@object@>@ \f3iname\f1 @<@cse-prefix@>@;" suffices.
+The @<@object@>@ to be elaborated is either one assignment statement or
+a list of such statements, all obeying the GENTRAN rules.
+The @<@cse-prefix@>@ is an identifier, used to generate the cse-names, by 
+extending it with an integer part. The \f3gensym\f1-function is applied
+when the \f3iname\f1-extension is omitted.
+.LP
+We now illustrate the use of SCOPE through some small examples,
+by showing parts of REDUCE sessions.
+.sp
+\f3Example 2.2.1\f1
+.LP
+The multivariate polynomial Z is a sum of 6 composite terms. These terms,
+monomials, are constant multiples of primitive products.
+A picture of @{roman D} sub 0@
+is shown after the input echo. The sums-matrix consists of only one row,
+identifiable by its Fa(the)r Z, the lhs. Its exponent is given in the
+E(xponent or )C(oefficient) field. The 6 monomials are stored in the 
+products-matrix. The coefficients are stored in the EC-fields and the 
+predecessor row index, 0, is given in the Far-field. Before the @D sub lambda@
+picture is given the effect of the optimization process, the output
+and the operator counts are shown. The optimized form of Z is obtained by
+applying the distributive law. The output also shows applications of an addition
+chain algorithm ([16], 441-466) as part of @{roman R} sup {-1}@, although
+its use in example 2.2.3 is more apparent.
+.br
+Observe that the output illustrates the heuristic character of the optimization
+process: In this particular case the rhs can be written as a polynomial in
+S3, thus saving one extra multiplication.
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+on primat$
+
+optimize z:=a^2*b^2+10*a^2*m^6+a^2*m^2+2*a*b*m^4+2*b^2*m^6+b^2*m^2 iname s;
+
+      2  2       2  6    2  2          4      2  6    2  2
+Z := A *B  + 10*A *M  + A *M  + 2*A*B*M  + 2*B *M  + B *M
+
+
+
+Sumscheme :
+
+   || EC|Far
+------------
+  0||  1| Z
+------------
+
+
+Productscheme :
+
+   |  0  1  2| EC|Far
+---------------------
+  1|     2  2|  1| 0
+  2|  6     2| 10| 0
+  3|  2     2|  1| 0
+  4|  4  1  1|  2| 0
+  5|  6  2   |  2| 0
+  6|  2  2   |  1| 0
+---------------------
+0  : M
+1  : B
+2  : A
+
+
+Number of operations in the input is:
+
+Number of (+,-)-operations : 5
+Number of (*)-operations : 10
+Number of integer exponentiations : 11
+Number of other operations : 0
+
+
+S0 := B*A
+S4 := M*M
+S8 := B*B
+S1 := S4*S8
+S9 := A*A
+S2 := S4*S9
+S3 := S4*S4
+Z := S1 + S2 + S0*(2*S3 + S0) + S3*(2*S1 + 10*S2)
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 5
+Number of (*)-operations : 12
+Number of integer exponentiations : 0
+Number of other operations : 0
+
+
+
+Sumscheme :
+
+   |  0  3  4  5| EC|Far
+------------------------
+  0|        1  1|  1| Z
+ 15|        2 10|  1| 14
+ 17|  2  1      |  1| 16
+------------------------
+0  : S3
+3  : S0
+4  : S1
+5  : S2
+
+Productscheme :
+
+   |  8  9 10 11 17 18 19 20| EC|Far
+------------------------------------
+  7|                    1  1|  1| S0
+  8|  1                 2   |  1| S1
+  9|  1                    2|  1| S2
+ 10|  2                     |  1| S3
+ 11|                 2      |  1| S4
+ 14|     1                  |  1| 0
+ 16|              1         |  1| 0
+------------------------------------
+8  : S4
+9  : S3
+10 : S2
+11 : S1
+17 : S0
+18 : M
+19 : B
+20 : A
+
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.LP
+\f3Example 2.2.2\f1
+.LP
+The input echo below shows the literal copy of the first assignment,
+in accordance with the GENTRAN := operator.
+The second assignment, again in accordance with the GENTRAN operator ::=:,
+has a rhs in expanded form.
+.br
+The @{roman D} sub 0@ picture shows that during parsing string matching
+of kernels in prefix-form already contributes to optimization :
+S2 = C*X + D and S3 =SIN(S2) are stored once.
+.br
+Application of the distributive law gives the original structure of A(1,1)
+back.
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+on primat$
+operator a$
+k:=j:=1$
+u:=c*x+d$
+v:=sin(u)$
+
+optimize {a(k,j) := v*(v^2*cos(u)^2+u),
+          a(k,j)  ::=:v*(v^2*cos(u)^2+u)} iname s;
+
+
+              2       2
+A(K,J) := V*(V *COS(U)  + U)
+
+                      2             3
+A(1,1) := COS(C*X + D) *SIN(C*X + D)  + SIN(C*X + D)*C*X + SIN(C*X + D)*D
+
+
+Sumscheme :
+
+   |  7  8| EC|Far
+------------------
+  1|  1   |  1| 0
+  3|      |  1| A(1,1)
+  5|     1|  1| S2
+------------------
+7  : U
+8  : D
+
+Productscheme :
+
+   |  0  1  2  3  4  5  6| EC|Far
+---------------------------------
+  0|                    1|  1| A(K,J)
+  2|                 2  2|  1| 1
+  4|     3  2            |  1| 3
+  6|           1  1      |  1| 5
+  7|     1     1  1      |  1| 3
+  8|  1  1               |  1| 3
+---------------------------------
+0  : D
+1  : S3=SIN(S2)
+2  : S1=COS(S2)
+3  : X
+4  : C
+5  : S0=COS(U)
+6  : V
+
+Number of operations in the input is:
+
+Number of (+,-)-operations : 7
+Number of (*)-operations : 10
+Number of integer exponentiations : 4
+Number of other operations : 5
+
+S6 := COS(U)*V
+S9 := S6*S6
+A(K,J) := V*(U + S9)
+S2 := D + X*C
+S3 := SIN(S2)
+S7 := S3*COS(S2)
+S8 := S7*S7
+A(1,1) := S3*(S2 + S8)
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 3
+Number of (*)-operations : 7
+Number of integer exponentiations : 0
+Number of other operations : 3
+
+Sumscheme :
+
+   |  2 12 13| EC|Far
+---------------------
+  1|     1   |  1| 0
+  3|         |  1| A(1,1)
+  5|        1|  1| S2
+ 11|  1      |  1| 10
+---------------------
+2  : S2
+12 : U
+13 : D
+
+Productscheme :
+
+   |  0  1  5  6  7  8  9 10 11| EC|Far
+---------------------------------------
+  0|                          1|  1| A(K,J)
+  2|     2                     |  1| 1
+  4|  2                        |  1| 11
+  9|                 1  1      |  1| 5
+ 10|           1               |  1| 3
+ 13|                       1  1|  1| S6
+ 14|           1  1            |  1| S7
+---------------------------------------
+0  : S7
+1  : S6
+5  : D
+6  : S3=SIN(S2)
+7  : COS(S2)
+8  : X
+9  : C
+10 : COS(U)
+11 : V
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.LP
+\f3Example 2.2.3\f1
+.LP
+The effect is shown of a finishing touch application, in combination
+with FORTRAN output.
+During output preparation @{roman S0} sup 13@ is rewritten, using the
+earlier mentioned addition chain algorithm.
+.in +3
+.vs 10
+.nf
+\fC\s8
+on fort$
+off acinfo,period$
+
+optimize z:=96*a+18*b+9*c+3*d+6*e+18*f+6*g+5*h+5*k+3)^13 iname s;
+
+      S0=5*(H+K)+3*(3*C+D+1+6*(B+F)+2*(A+E+G))
+      S4=S0*S0
+      S3=S0*S4
+      S2=S3*S3
+      S1=S2*S2
+      Z=S0*S1
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+\f3Example 2.2.4\f1
+.LP
+Recovery of repeatedly occurring integer multiples of identifiers,
+as part of the finishing touch, is illustrated. The switch ACINFO
+is turned off.
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+optimize {x:=3*a*p,
+          y:=3*a*q,
+          z:=6*a*r+2*b*p,
+          u:=6*a*d+2*b*q,
+          v:=9*a*c+4*b*d,
+          w:=4*b} iname s;
+
+S1 := 3*A
+X := S1*P
+Y := S1*Q
+S2 := 6*A
+S3 := 2*B
+Z := S3*P + S2*R
+U := S3*Q + S2*D
+S0 := 4*B
+V := S0*D + 9*A*C
+W := S0
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.bp
+\f3Example 2.2.5\f1
+.LP
+.ps 11
+The effect of ON EXP or OFF EXP on the result of a 
+SCOPE-application is now shown by optimizing the representation of the
+determinant of a symmetric (3,3) matrix M. Besides differences in computing time
+we also observe that the arithmetic complexity of the optimized version of the
+expanded representation of the determinant is about the same as the not
+optimized form of the unexpanded representation.
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+matrix M(3,3)$
+
+m(1,1):=18*cos(q3)*cos(q2)*m30*p^2-sin(q3)^2*j30y+sin(q3)^2*j30z-
+        9*sin(q3)^2*m30*p^2+j1oy+j30y+m10*p^2+18*m30*p^2$
+m(2,1):=
+m(1,2):=9*cos(q3)*cos(q2)*m30*p^2-sin(q3)^2*j30y+sin(q3)^2*j30z-
+        9*sin(q3)^2*m30*p^2+j30y+9*m30*p^2$
+m(3,1):=
+m(1,3):=-9*sin(q3)*sin(q2)*m30*p^2$
+m(2,2):=-sin(q3)^2*j30y+sin(q3)^2*j30z-9*sin(q3)^2*m30*p^2+j30y+9*m30*p^2$
+m(3,2):=
+m(2,3):=0$
+m(3,3):=9*m30*p^2+j30x$
+
+optimize detm:=:det(M) iname s;
+
+                   4        2  6    3             4        2  4    2
+DETM := 729*SIN(Q3) *SIN(Q2) *P *M30  + 81*SIN(Q3) *SIN(Q2) *P *M30 *
+
+                 4        2  4    2                   2        2  6
+J30Y - 81*SIN(Q3) *SIN(Q2) *P *M30 *J30Z - 729*SIN(Q3) *SIN(Q2) *P *
+
+   3             2        2  4    2                   2  6    3
+M30  - 81*SIN(Q3) *SIN(Q2) *P *M30 *J30Y - 729*SIN(Q3) *P *M30  - 81*
+
+       2  6    2                 2  4    2                  2  4    2
+SIN(Q3) *P *M30 *M10 - 81*SIN(Q3) *P *M30 *J30Y + 81*SIN(Q3) *P *M30
+
+                  2  4    2                  2  4    2
+*J30Z - 81*SIN(Q3) *P *M30 *J1OY - 81*SIN(Q3) *P *M30 *J30X - 9*
+
+       2  4                         2  4                         2  4
+SIN(Q3) *P *M30*J30Y*M10 + 9*SIN(Q3) *P *M30*J30Z*M10 - 9*SIN(Q3) *P
+
+                         2  2                          2  2
+*M30*M10*J30X - 9*SIN(Q3) *P *M30*J30Y*J1OY - 9*SIN(Q3) *P *M30*J30Y*
+
+                2  2                          2  2
+J30X + 9*SIN(Q3) *P *M30*J30Z*J1OY + 9*SIN(Q3) *P *M30*J30Z*J30X - 9*
+
+       2  2                        2  2                        2  2
+SIN(Q3) *P *M30*J1OY*J30X - SIN(Q3) *P *J30Y*M10*J30X + SIN(Q3) *P *
+
+                       2                         2
+J30Z*M10*J30X - SIN(Q3) *J30Y*J1OY*J30X + SIN(Q3) *J30Z*J1OY*J30X - 
+
+           2        2  6    3             2        2  4    2
+729*COS(Q3) *COS(Q2) *P *M30  - 81*COS(Q3) *COS(Q2) *P *M30 *J30X + 
+
+     6    3       6    2           4    2            4    2
+729*P *M30  + 81*P *M30 *M10 + 81*P *M30 *J30Y + 81*P *M30 *J1OY + 81
+
+  4    2           4                   4                   2
+*P *M30 *J30X + 9*P *M30*J30Y*M10 + 9*P *M30*M10*J30X + 9*P *M30*J30Y
+
+           2                    2                  2
+*J1OY + 9*P *M30*J30Y*J30X + 9*P *M30*J1OY*J30X + P *J30Y*M10*J30X + 
+
+J30Y*J1OY*J30X
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 36
+Number of (*)-operations : 148
+Number of integer exponentiations : 84
+Number of other operations : 32
+
+
+S0 := SIN(Q3)
+S30 := S0*S0
+S1 := SIN(Q2)
+S34 := S1*S1
+S35 := P*P
+S7 := S35*M30
+S33 := S7*S7
+S5 := S33*J30Y
+S6 := S30*S7
+S8 := S30*M10
+S49 := COS(Q2)*COS(Q3)
+S9 := S49*S49
+S11 := S34*S30*S30
+S22 := S35*S7
+S14 := S30*J30Z
+S19 := S35*J30X
+S23 := J30X*J1OY
+S31 := S33*S7
+S47 := 81*S33*J30X
+S39 :=  - S47 - S23*J30Y - 81*S33*J1OY
+S40 :=  - 81*S30*S5 - 729*S33*S6
+S45 := 9*S6*J30Z
+S46 := 9*S6
+S48 := 81*S5
+DETM := S48 + S40 - S39 + 729*S31 + ( - J1OY - J30X)*(9*(S6*J30Y - S7
+
+      *J30Y) - S45) + (J30Z - J30Y)*(9*S22*S8 + S19*S8) + 9*(M10 - S8
+
+   )*(S22*J30X + 9*S22*S7) + M10*J30Y*(9*S22 + S19) + S23*(S14 + 9*S7
+
+    - S46) + S39*S30 + S31*(729*(S11 - S9)) + S34*(S40 - S46*S45) - 
+
+S47*S9 + 81*S33*S14 + S48*S11
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 29
+Number of (*)-operations : 58
+Number of integer exponentiations : 0
+Number of other operations : 4
+
+
+off exp$
+
+optimize detm:=:det(M) iname s;
+
+             2                           2                   2
+DETM := ((9*P *M30 + J30Y - J30Z)*SIN(Q3)  - (18*M30 + M10)*P  - 18*
+
+                          2                         2
+         COS(Q3)*COS(Q2)*P *M30 - J30Y - J1OY)*((9*P *M30 + J30Y - 
+
+                   2      2                 2
+      J30Z)*SIN(Q3)  - 9*P *M30 - J30Y)*(9*P *M30 + J30X) - 
+
+     2                           2                      2          2
+((9*P *M30 + J30Y - J30Z)*SIN(Q3)  - 9*COS(Q3)*COS(Q2)*P *M30 - 9*P *
+
+            2     2                       2
+ M30 - J30Y) *(9*P *M30 + J30X) + 81*((9*P *M30 + J30Y - J30Z)*
+
+          2      2                    2        2  4    2
+   SIN(Q3)  - 9*P *M30 - J30Y)*SIN(Q3) *SIN(Q2) *P *M30
+
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 24
+Number of (*)-operations : 42
+Number of integer exponentiations : 21
+Number of other operations : 10
+
+S0 := SIN(Q3)
+S9 := S0*S0
+S8 := P*P
+S5 := S8*M30
+S6 := S5*COS(Q2)*COS(Q3)
+S15 := 9*S5
+S13 := (S15 + J30Y - J30Z)*S9
+S14 := S13 - S15 - J30Y
+S3 := S14 - 9*S6
+S4 := SIN(Q2)
+DETM := (S15 + J30X)*(S14*(S13 - 18*S6 - J30Y - J1OY - S8*(18*M30 + 
+
+         M10)) - S3*S3) + 9*S15*S14*S9*S5*S4*S4
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 13
+Number of (*)-operations : 20
+Number of integer exponentiations : 0
+Number of other operations : 4
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.LP
+.ps 11
+We can also use this example to show that correctness of the results can easily
+be verified. When turning off the switch NAT and storing the result of
+a SCOPE application in a file, it is of course possible to read the result 
+in again. But we then operate in a normal REDUCE-like way. This
+implies that all cse-names are automatically replaced by their values.
+We show the "correctness" of SCOPE by storing the optimized version of 
+the expanded form of the determinant of M, called detm1 in file out1 and
+the result of a SCOPE-application on the unexpanded form, detm2, in file out2,
+followed by reading both files and by subtracting detm2 from detm1, resulting
+in the value 0. This is of course an ad hoc correctness-proof for one specific
+example. It is in fact another way of testing the code of the package.
+So, assuming SCOPE is loaded and the matrix M is known to the system, all we
+have to do is:
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+2: off acinfo,nat$
+
+3: out out1$
+4: optimize detm1:=:det(M) iname s;
+5: write "end$"$
+6: shut "out1"$
+
+7: off exp$
+
+8: out out2$
+9: optimize detm2:=:det(M) iname t;
+10: write "end$"$
+11: shut out2$
+
+12: on nat$
+
+13: in out1;
+
+S0 := SIN(Q3)$
+S30 := S0*S0$
+S1 := SIN(Q2)$
+S34 := S1*S1$
+S35 := P*P$
+S7 := S35*M30$
+S33 := S7*S7$
+S5 := S33*J30Y$
+S6 := S30*S7$
+S8 := S30*M10$
+S49 := COS(Q2)*COS(Q3)$
+S9 := S49*S49$
+S11 := S34*S30*S30$
+S22 := S35*S7$
+S14 := S30*J30Z$
+S19 := S35*J30X$
+S23 := J30X*J1OY$
+S31 := S33*S7$
+S47 := 81*S33*J30X$
+S39 :=  - S47 - S23*J30Y - 81*S33*J1OY$
+S40 :=  - 81*S30*S5 - 729*S33*S6$
+S45 := 9*S6*J30Z$
+S46 := 9*S6$
+S48 := 81*S5$
+DETM1 := S48 + S40 - S39 + 729*S31 + ( - J1OY - J30X)*(9*(S6*J30Y - S7*J30Y) -
+
+S45) + (J30Z - J30Y)*(9*S22*S8 + S19*S8) + 9*(M10 - S8)*(S22*J30X + 9
+
+*S22*S7) + M10*J30Y*(9*S22 + S19) + S23*(S14 + 9*S7 - S46) + S39*S30
+
++ S31*(729*(S11 - S9)) + S34*(S40 - S46*S45) - S47*S9 + 81*S33*S14 +
+
+S48*S11$
+
+end$
+
+14: in out2;
+
+T0 := SIN(Q3)$
+T9 := T0*T0$
+T8 := P*P$
+T5 := T8*M30$
+T6 := T5*COS(Q2)*COS(Q3)$
+T15 := 9*T5$
+T13 := (T15 + J30Y - J30Z)*T9$
+T14 := T13 - T15 - J30Y$
+T3 := T14 - 9*T6$
+T4 := SIN(Q2)$
+DETM2 := (T15 + J30X)*(T14*(T13 - 18*T6 - J30Y - J1OY - T8*(18*M30 +
+
+ M10)) - T3*T3) + 9*T15*T14*T9*T5*T4*T4$
+
+end$
+
+15: detm1-detm2;
+
+0
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+\f3Example 2.2.6\f1
+.LP
+.ps 11
+This example serves to show how SCOPE deals with rational exponents.
+All rational exponents of a variable are collected. The least common
+multiple lcm of the denominators of these rational exponents is computed 
+and the variable is replaced
+by a possibly newly selected variable name, denoting the variable raised
+to the power 1/lcm. This facility is only efficient for what we believe
+to be problems occurring in computational practice. This is easily verified by
+extending the sum we are elaborating here with some extra terms.
+.br
+.ps 11
+Producing FORTRAN-output shows an implied danger, due to a shortcoming in 
+GENTRAN. This rational exponent will in practice act as if it were 0.
+.LP
+.ps 11
+This example is also used to show the effect of turning on the switch PRIALL.
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+on fort,priall$
+ 
+optimize z:=:for j:=2:6 sum q^(1/j) iname s;
+
+
+      1/6    1/5    1/4    1/3
+Z := Q    + Q    + Q    + Q    + SQRT(Q)
+
+
+Sumscheme :
+
+   || EC|Far
+------------
+  0||  1| Z
+------------
+
+Productscheme :
+
+   |  0| EC|Far
+---------------
+  1| 10|  1| 0
+  2| 12|  1| 0
+  3| 15|  1| 0
+  4| 20|  1| 0
+  5| 30|  1| 0
+---------------
+0  : Q
+
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 4
+Number of (*)-operations : 0
+Number of integer exponentiations : 0
+Number of other operations : 5
+
+
+Time: 2992 ms
+
+Breuer search : 
+Time: 867 ms
+
+Removal of different names for identical cse's : 
+Time: 17 ms
+
+Change Scheme : 
+Time: 0 ms
+
+Local Factorization : 
+Time: 34 ms
+
+Breuer search : 
+Time: 204 ms
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+Change Scheme : 
+Time: 17 ms
+
+Local Factorization : 
+Time: 0 ms
+
+Breuer search : 
+Time: 187 ms
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+Change Scheme : 
+Time: 17 ms
+
+Local Factorization : 
+Time: 0 ms
+
+Breuer search : 
+Time: 119 ms
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+Change Scheme : 
+Time: 17 ms
+
+Local Factorization : 
+Time: 0 ms
+
+Additional optimization during finishing touch :
+Time: 34 ms
+
+
+      Q=Q**(1/60)
+      S7=Q*Q
+      S6=S7*Q
+      S4=S7*S6
+      S2=S4*S4
+      S1=S7*S2
+      S0=S6*S1
+      S3=S4*S0
+      Z=S3+S0+S1+S2+S3*S2
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 4
+Number of (*)-operations : 8
+Number of integer exponentiations : 0
+Number of other operations : 1
+
+
+Sumscheme :
+
+   |  3  4  5  6| EC|Far
+------------------------
+  0|  1  1  1  1|  1| Z
+------------------------
+3  : S3
+4  : S0
+5  : S1
+6  : S2
+
+
+Productscheme :
+
+   |  9 10 12 13 14 15 16 22| EC|Far
+------------------------------------
+  5|           1  1         |  1| 0
+  6|     1           1      |  1| S0
+  7|  1           1         |  1| S1
+  8|        2               |  1| S2
+  9|        1           1   |  1| S3
+ 10|  1  1                  |  1| S4
+ 12|  1                    1|  1| S6
+ 13|                       2|  1| S7
+------------------------------------
+9  : S7
+10 : S6
+12 : S4
+13 : S3
+14 : S2
+15 : S1
+16 : S0
+22 : Q
+
+Time: 459 ms
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.NH
+Preprocessing Possibilities
+.LP
+.ps 11
+It may happen that structure is obviously visible in the 
+rhs's of a set of assignment statements, which we want to optimize.
+One can think of a set of partial derivatives of products. 
+Or one may consider the application of Horner-rules.
+Such facilities may be attractive, independent of the question if a 
+SCOPE-application will be performed on its result.
+Therefore we first discuss these facilities and show their effect, again
+by using simple examples, before we continue with a combined use of SCOPE
+and these possibilities.
+.br
+.ps 11
+The first alternative demands a generalized \f3structr\f1-command.
+We implemented such a facility. Its syntax is straightforward:
+"\f3gstructr\f1 @<@object@>@ \f3name\f1 @<@id@>@;" The @<@object@>@ 
+to be elaborated is one assignment statement or a set of such
+statements, separated by semicolons and grouped together between the
+special symbols @<<@ and @>>@. In stead of a statement a matrix-name
+is also allowed. Then all non-zero matrix elements are incorporated in the
+search for obvious cse's. The @<@id@>@ of the optional \f3name\f1-part,
+being an identifier, is used to identify 
+the subexpressions, produced via the application of a \f3gstructr\f1
+command. When the switch ALGPRI is on -the default setting- 
+the output is given in REDUCE syntax, while turning it off leads to output
+in prefix-form.
+The latter is employed by the function R, used to store SCOPE-input 
+in @{roman D} sub 0@.
+It is also possible to get FORTRAN-output by turning off the switch PERIOD and 
+turning on the switch  FORTRAN.
+The input remains unchanged when the switch EXP is on.
+.LP
+\f3Example 3.1\f1
+.LP
+We show part of a REDUCE session.
+.vs 10
+.in +3
+.nf
+\fC\s8
+
+off exp$
+
+matrix a(2,2)$
+
+a(1,1) := x+y+z$
+a(1,2) := x*y$
+a(2,1) := (x+y)*x*y$
+a(2,2) := (x+2*y+3)^3-x$
+
+on fort$
+off period$
+
+load struct$
+
+gstructr << a;
+            b:=(x+y)^2;
+            c:=(x+y)*(y+z);
+            d:=(x+2*y)*(y+z)*(z+x)^2
+         >> name v;
+
+      V1=X+Y+Z
+      A(1,1)=V1
+      A(1,2)=X*Y
+      V2=X+Y
+      A(2,1)=V2*X*Y
+      V3=X+2*Y+3
+      V4=V3**3-X
+      A(2,2)=V4
+      B=V2**2
+      V5=Y+Z
+      C=V2*V5
+      V6=X+2*Y
+      V7=X+Z
+      D=V6*V7**2*V5
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.LP
+.ps 11
+Observe that V1, V3, V4, V6 and V7 only occur once in this result
+of a \f3gstructr\f1-application. When applied as part of a SCOPE-operation
+these redundancies will be removed before the actual optimization process
+is performed, as shown in example 3.3.
+.Sq
+.sp
+.LP
+.ps 11
+The syntax for the \f3ghorner\f1-command is very similar.
+The application of a Horner-rule assumes an ordering of the identifiers.
+We allow instead of the \f3name\f1-part of the \f3gstructr\f1 command an
+optional \f3vorder\f1 @<@list of id.s@>@ extension.
+The @<@list of id.s@>@ consists
+of at least one identifier. This list overrules, in the order given, the
+current identifier ordering of the system. The rhs's are considered as
+polynomials in the leftmost element of the \f3vorder\f1-list. The thus created
+coefficients are in turn considered as polynomials in the second element 
+of this list. And so on. When the \f3vorder\f1-extension is omitted the
+current system identifier ordering is applied.
+The internal switch ALGPRI is again applicable  and has the same meaning as for
+\f3gstructr\f1.
+.br
+Some optimizing compilers apply Horner-rules when possible. Our optimization
+strategy is based on an all levels, all expressions search. This contradicts
+the Horner-mechanism. To avoid destabilizing side-effects of
+Horner-rule applications we decided to bring such a facility under user-control.
+.LP
+\f3Example 3.2
+.LP
+Some Taylor-expansions are shown. 
+.LP
+.vs 10
+.in +3
+.nf
+\fC\s8
+
+algebraic procedure taylor(fx,x,x0,n);
+sub(x=x0,fx)+for k:=1:n sum (sub(x=x0,df(fx,x,k))*(x-x0)^k/
+                                     (if k<3 then k else for j:=2:k product j))$
+
+let x^4=0,y^7=0$
+
+f1:=(taylor(e^x,x,0,4)*taylor(cos y,y,0,6))^2;
+
+
+             3  6       3  4        3  2        3       2  6       2
+F1 :=  - (8*X *Y  - 60*X *Y  + 180*X *Y  - 180*X  + 12*X *Y  - 90*X *
+
+           4        2  2        2         6         4          2
+          Y  + 270*X *Y  - 270*X  + 12*X*Y  - 90*X*Y  + 270*X*Y  - 
+
+                     6       4        2
+          270*X + 6*Y  - 45*Y  + 135*Y  - 135)/135
+
+load horner$
+
+ghorner << f1:=f1;
+           g1:=taylor(e^x,x,0,4);
+           h1:=taylor(cos y,y,0,6);
+           f1:=(g1*h1)^2 >> vorder y,x;
+
+                                            2
+F1 := ((135 + X*(270 + X*(270 + X*180))) + Y *(( - 135 + X*( - 270 + 
+
+                                           2
+                X*( - 270 + X*(-180)))) + Y *((45 + X*(90 + X*(90 + X
+
+                                2
+                      *60))) + Y *( - 6 + X*( - 12 + X*( - 12 + X*(-8
+
+                      )))))))/135
+
+       6 + X*(6 + X*(3 + X))
+G1 := -----------------------
+                 6
+
+              2            2        2
+       720 + Y *( - 360 + Y *(30 + Y *(-1)))
+H1 := ---------------------------------------
+                        720
+
+
+                              2              2         2           2   2
+       (6 + X*(6 + X*(3 + X)))  * ( - 720 + Y *(360 + Y *( - 30 + Y )))
+F1 := -------------------------------------------------------------------
+                               18662400
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.LP
+Both commands can be used inside an \f3optimize\f1-command. We advise to compile
+both facilities and SCOPE separately (see also Appendix 1).
+.LP
+.ps 11
+To be able to order the application of either a \f3gstructr\f1-command or a
+\f3ghorner\f1-rewrite instruction inside the definition of a SCOPE-operation
+we have to extend the rules given in section 2.2. The permissible structures
+for the <object>'s to be elaborated by SCOPE are simply extended with 
+syntactically correct \f3ghorner\f1- and \f3gstructr\f1-commands. Hence the
+structure of an \f3optimize\f1-command is not altered, as is shown by the
+following two examples.
+.LP
+.ps 11
+\f3Example 3.3\f1
+.LP
+We show the effect of an application of the \f3optimize\f1-command
+on the \f3gstructr\f1-command of example 3.1.
+Observe that the cse-names produced during optimization  begin with an S,
+while \f3gstructr\f1 created names start with a V.
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+on fort,acinfo$
+off exp,period$
+
+optimize gstructr << a;
+                     b:=(x+y)^2;
+                     c:=(x+y)*(y+z);
+                     d:=(x+2*y)*(y+z)*(z+x)^2
+                  >> name v
+         iname s;
+
+
+A(1,1) := X + Y + Z
+
+A(1,2) := X*Y
+
+V2 := X + Y
+
+A(2,1) := V2*X*Y
+
+                       3
+A(2,2) := (X + 2*Y + 3)  - X
+
+       2
+B := V2
+
+V5 := Y + Z
+
+C := V2*V5
+
+                      2
+D := (X + 2*Y)*(X + Z) *V5
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 9
+Number of (*)-operations : 8
+Number of integer exponentiations : 3
+Number of other operations : 0
+
+
+      S5=X+Z
+      A(1,1)=S5+Y
+      S8=Y*X
+      A(1,2)=S8
+      V2=X+Y
+      A(2,1)=S8*V2
+      S6=X+2*Y
+      S4=S6+3
+      A(2,2)=S4*S4*S4-X
+      B=V2*V2
+      V5=Y+Z
+      C=V5*V2
+      D=S6*S5*S5*V5
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 7
+Number of (*)-operations : 10
+Number of integer exponentiations : 0
+Number of other operations : 0
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+\f3Example 3.4\f1
+.LP
+.ps 11
+For completeness we also show how to use the Horner-facilities inside an 
+\f3optimize\f1-command. Due to the structure of the method -we operate
+internally on expanded forms- both representations of h1, and thus also
+of the corresponding prefix representations used to built @{roman D} sub 0@
+slightly differ. The consequences are visualized in the results of the
+SCOPE-application.
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+load scope$
+
+optimize ghorner <<h1:=taylor(cos y,y,0,6);
+                   f1:=(taylor(e^x,x,0,4)*h1)^2>> vorder y,x
+         iname s;
+
+
+              2            2        2
+       720 + Y *( - 360 + Y *(30 + Y *(-1)))
+H1 := ---------------------------------------
+                        720
+
+                              2              2         2           2   2
+       (6 + X*(6 + X*(3 + X)))  * ( - 720 + Y *(360 + Y *( - 30 + Y )))
+F1 := -------------------------------------------------------------------
+                               18662400
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 9
+Number of (*)-operations : 8
+Number of integer exponentiations : 8
+Number of other operations : 2
+
+
+S6 := Y*Y
+       720 + S6*(S6*(30 - 1*S6) - 360)
+H1 := ---------------------------------
+                     720
+S7 := (S6*(360 + S6*(S6 - 30)) - 720)*(6 + X*(6 + X*(3 + X)))
+        S7*S7
+F1 := ----------
+       18662400
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 9
+Number of (*)-operations : 10
+Number of integer exponentiations : 0
+Number of other operations : 2
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.NH
+Generation of Declarations
+.LP
+The GENTRAN \f3declare\f1-statement can also be used as an optional extension of
+the \f3optimize\f1-command. An illustration of this facility is given in 
+example 4.1. The syntax of such a statement is in accordance with the
+GENTRAN-rules [3]. We also use the symbol-table of GENTRAN.
+During parsing, the declared identifiers and/or  array- and matrix-names
+are entered in the symbol-table. Once optimization is finished
+all relevant information for completing the declarations is known,
+and collected in the prefixlist, which is used for output-production.
+This prefixlist is employed to decide which not yet 
+typed identifiers and system selected cse-names have to be 
+entered in the symbol-table. We make use of already known information, 
+expression-structure and the normal hierarchy in data types. 
+The strategy to achieve this is essentially based on chapter 6 of [1].
+Once this table is completed a list of declarations is produced
+if the switch OPTDECS is turned on.
+SCOPE-output is by default given in REDUCE syntax. Alternative output is
+obtained by assigning a relevant value to the global identifier Optlang!*.
+This causes GENTRAN to take over the output preparation, as shown in:
+.LP
+\f3Example 4.1\f1
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+on optdecs$
+off acinfo$
+optlang!*:='fortran$
+
+optimize {x(i+1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} 
+         iname s
+         declare << a(4,4),x(4),y(5):real; b(5):integer >>;
+
+
+      INTEGER B(5),I,S1,S3
+      DOUBLE PRECISION A(4,4),S4,X(4),Y(5)
+      S1=I+1
+      S3=I-1
+      S4=B(I)
+      X(S1)=A(S1,S3)+S4
+      Y(S3)=A(S3,S1)-S4
+
+optlang!*:='c$
+
+optimize {x(i+1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} 
+         iname s
+         declare << a(4,4),x(4),y(5):real; b(5):integer >>;
+
+
+LONG B[6],I,S1,S3;
+DOUBLE A[5][5],S4,X[5],Y[6];
+{
+    S1=I+1;
+    S3=I-1;
+    S4=B[I];
+    X[S1]=A[S1][S3]+S4;
+    Y[S3]=A[S3][S1]-S4;
+}
+
+optlang!*:='pascal$
+
+optimize {x(i+1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} 
+         iname s
+         declare << a(4,4),x(4),y(5):real; b(5):integer >>;
+
+
+VAR
+    B[0..5],I,S1,S3: INTEGER;
+    A[0..4,0..4],S4,X[0..4],Y[0..5]: REAL;
+BEGIN
+    S1:=I+1;
+    S3:=I-1;
+    S4:=B[I];
+    X[S1]:=A[S1,S3]+S4;
+    Y[S3]:=A[S3,S1]-S4
+END;
+
+optlang!*:='ratfor$
+
+optimize {x(i+1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} 
+         iname s
+         declare << a(4,4),x(4),y(5):real; b(5):integer >>;
+
+
+INTEGER B(5),I,S1,S3
+DOUBLE PRECISION A(4,4),S4,X(4),Y(5)
+{
+    S1=I+1
+    S3=I-1
+    S4=B(I)
+    X(S1)=A(S1,S3)+S4
+    Y(S3)=A(S3,S1)-S4
+}
+
+%%% The following command restores the initial situation. %%%
+
+optlang!*:='nil$
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.sp
+.LP
+.NH
+File Management and Optimization Strategies
+.LP
+Another alternative for the <object>'s to be optimized is formed by the
+sequence \f3in\f1 @{roman file} sub 1@, @{roman file} sub 2@, ..., 
+@{roman file} sub n@, @n~>=~1@.  Each of these files is assumed to contain 
+one or a list of more assignment statements, obeying the GENTRAN-assignment 
+rules.  A SCOPE application results in a unified sequence of assignment
+statements in the target language. This is illustrated by the following
+example, where each file fi contains one assignment statement of the form
+ei := some expression.
+.LP
+.ps 11
+\f3Example 5.1\f1
+.LP
+.ps 11
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+
+3: optimize in f1,f2,f3 iname s;
+
+
+                                2
+                2        (X + Y)              8        2      2
+       2*(SIN(X)  - COS(E        ) + 3*COS(X)) *(X + Y)  + 4*Y  + 4*Y
+E1 := ----------------------------------------------------------------
+                                 3*X + 2*Y
+
+E2 := (4*
+
+                              2
+              2        (X + Y)              2        3       2
+       (SIN(X)  - COS(E        ) + 2*COS(X)) *(X + Y)  + (4*X  - 4*Y)
+
+                   2
+        - 6*X)/(8*X  + 3*Y - 2*X)
+
+                         2
+                  (X + Y)
+E3 := (4*SIN(COS(E        )) + SIN(X + Y) + 
+
+           2           2
+       (4*X  - X + 2*Y) )/(3*Y + F(X,G( - COS(X))))
+
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 21
+Number of (*)-operations : 20
+Number of integer exponentiations : 12
+Number of other operations : 16
+
+
+S3 := SIN(X)
+S7 := X + Y
+S6 := S7*S7
+           S6
+S4 := COS(E  )
+S8 := COS(X)
+S28 := S3*S3 - S4
+S2 := S28 + 3*S8
+S36 := S2*S2
+S35 := S36*S36
+S30 := 2*Y
+S9 := S30 + 3*X
+       2*(2*Y + S30*Y + S6*S35*S35)
+E1 := ------------------------------
+                    S9
+S12 := S28 + 2*S8
+S29 := 4*X*X
+S27 := S29 - X
+S31 := 3*Y
+       S29 - 2*S9 + 4*S6*S12*S12*S7
+E2 := ------------------------------
+               S31 + 2*S27
+S18 := S30 + S27
+       4*SIN(S4) + SIN(S7) + S18*S18
+E3 := -------------------------------
+            S31 + F(X,G( - S8))
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 15
+Number of (*)-operations : 24
+Number of integer exponentiations : 0
+Number of other operations : 11
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.Lp
+.ps 11
+.br
+However a switch is available for stepwise performing the optimization of
+a set of assignment statements, distributed over different files.
+When turning on this AGAIN switch the finishing touch is not done.
+Moreover,  the system is instructed to save relevant internal information
+in combination with the result of the present optimization run. The
+thus extended output is assumed to be stored in a file. When the 
+optimization task is continued during another session this file is
+assumed to be read before all other remaining files. 
+This mode of operation is illustrated in 
+.LP
+.ps 11
+\f3Example 5.2\f1
+.LP
+.ps 11
+.LP
+.in +3
+.vs 10
+.nf
+\fC\s8
+2: off acinfo$
+3: on again$
+
+4: out f5$
+5: optimize in f1,f2 iname s;
+6: write "end$"$
+7: shut f5$
+
+8: off again$
+9: on acinfo$
+10: optimize in f5,f3 iname t;
+
+S7 := X + Y
+
+        2
+S6 := S7
+
+S8 := COS(X)
+
+             2        S6
+S18 := SIN(X)  - COS(E  )
+
+S9 := 3*X + 2*Y
+
+                2                    8
+       4*Y + 4*Y  + 2*S6*(S18 + 3*S8)
+E1 := ---------------------------------
+                     S9
+
+        2
+S15 := X
+
+                                       2
+       4*S15 - 2*S9 + 4*S6*(S18 + 2*S8) *S7
+E2 := --------------------------------------
+                8*S15 - 2*X + 3*Y
+
+                         2
+                  (X + Y)
+E3 := (4*SIN(COS(E        )) + SIN(X + Y) + 
+
+           2           2
+       (4*X  - X + 2*Y) )/(3*Y + F(X,G( - COS(X))))
+
+Number of operations in the total input, i.e. in the 2 input sets is: 
+
+Number of (+,-)-operations : 22
+Number of (*)-operations : 20
+Number of integer exponentiations : 13
+Number of other operations : 17
+
+
+T17 := X + Y
+T16 := T17*T17
+S8 := COS(X)
+T1 := SIN(X)
+           T16
+T2 := COS(E   )
+S18 := T1*T1 - T2
+T28 := 2*Y
+S9 := T28 + 3*X
+T6 := S18 + 3*S8
+T36 := T6*T6
+T35 := T36*T36
+       2*(2*Y + T28*Y + T35*T35*T16)
+E1 := -------------------------------
+                    S9
+S15 := X*X
+T9 := S18 + 2*S8
+T30 := 4*S15
+T26 := T30 - X
+T29 := 3*Y
+       T30 - 2*S9 + 4*T17*T9*T9*T16
+E2 := ------------------------------
+               T29 + 2*T26
+T19 := T28 + T26
+       4*SIN(T2) + SIN(T17) + T19*T19
+E3 := --------------------------------
+            T29 + F(X,G( - S8))
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 15
+Number of (*)-operations : 24
+Number of integer exponentiations : 0
+Number of other operations : 11
+
+\f1\s0
+.fi
+.in -3
+.vs 15
+.Sq
+.LP
+.ps 11
+Since the construction of declarations in combination with some optimization
+activity is based on a quite specific use of GENTRAN's symbol table, one has
+to operate carefully when optimizing input in different sessions. A correct
+list of declarations is only guaranteed, when the last optimization-command
+is extended with the required declaration-information.
+.NH
+Some Possible Shortcomings and Future Versions
+.LP
+.ps 11
+The present version of SCOPE may have some shortcomings and possibly also
+some inefficiencies. However, since we are working on a second version,
+as stated in [13], we do not have the intention to largely modify the
+present version. 
+However, we intend to improve one special aspect of the present SCOPE-version:
+The combined use of SCOPE and GENTRAN. This preliminary version of the manual
+will shortly be extended with the description of these combined features.
+.br
+Bugs and obvious deficiencies will of course be removed. 
+.sp
+\f3Acknowledgements\f1
+.LP
+.ps 11
+The many discussions I had over the past years with  Barbara L. Gates,
+Victor V. Goldman, Anthony C. Hearn, Jaap Smit and Paul S. Wang about the 
+symbolic-numeric aspects of computer algebra have been very stimulating and 
+valuable. They also contributed to the present status of SCOPE.
+.br
+Completion of the code would have been impossible without the dedicated
+assistance of my students and the frequent discussions we had.
+I certainly want to mention Ben Hulshof, Pim van den Heuvel, Marcel van 
+Heerwaarden, Anco Smit, Johan de Boer and Jan Verheul.
+.bp
+\f3References\f1
+.LP
+.KS
+.IP [1]
+Aho, A.V., Sethi, R., Ullman, J.D.: \f2Compilers Principles, Techniques
+and Tools\f1. Reading, Mass.: Addison-Wesley (1986).
+.KE
+.KS
+.IP [2]
+Breuer, M.A.: "Generation of optimal code for expressions via factorization",
+\f2Comm. ACM\f1 \f312, 6\f1, 330-340 (1969).
+.KE
+.KS
+.IP [3]
+Gates, B.L.: "GENTRAN: An automatic code generation facility for REDUCE",
+\f2A.C.M. SIGSAM Bulletin\f1 \f319, 3\f1, 24-42. New York: A.C.M. (1985).
+.KE
+.KS
+.IP [4]
+Gates, B.L., Wang,P.S.: "A LISP-based RATFOR code generator", \f2Proceedings
+1984 MACSYMA User's Conference\f1 (V.E. Golden, ed.), 319-329.
+Schenectady, N.Y.: Gen. El. (1984).
+.KE
+.KS
+.IP [5]
+Goldman, V.V., van Hulzen, J.A.: "Automatic code vectorization of arithmetic
+expressions by bottom-up structure recognition", \f2Computer Algebra and 
+Parallelism\f1 (J. Della Dora and J. Fitch, ed.s), 119-132. London: Academic
+Press (1989).
+.KE
+.KS
+.IP [6]
+Gonzales, T., Ja' Ja', J.: "Evaluation of arithmetic expressions with 
+algebraic identities", \f2SIAM J. Comp.\f1, \f311\f1, \f34\f1, 633-662
+(1982).
+.KE
+.KS
+.IP [7]
+Hearn, A.C.: "Structure: The key to improved algebraic computation",
+\f2Proceedings RSYMSAC2\f1 (N. Inada en T. Soma, ed.'s), 215-230.
+Singapore: World Scientific Publ. (1985).
+.KE
+.KS
+.IP [8]
+Hearn, A.C.: "Optimal evaluation of algebraic expressions", \f2Proceedings
+AAECC-3\f1 (J. Calmet, ed.), Springer LNCS series nr \f3229\f1, 392-403.
+Heidelberg: Springer Verlag (1986).
+.KE
+.KS
+.IP [9]
+Hearn, A.C.: \f2REDUCE user's manual, version 3.3\f1. Santa Monica, CA:
+The Rand Corporation (1988).
+.KE
+.KS
+.IP [10]
+van den Heuvel, P., van Hulzen, J.A., Goldman, V.V.: "Automatic generation
+of FORTRAN-coded Jacobians and Hessians", \f2Proceedings EUROCAL '87\f1 (J.H.
+Davenport, ed.), Springer LNCS-series nr \f3378\f1, 120-131. Heidelberg:
+Springer Verlag (1989).
+.KE
+.KS
+.IP [11]
+van Hulzen, J.A.: "Breuer's grow factor algorithm in computer 
+algebra", \f2Proceedings SYMSAC '81\f1 (P.S. Wang, ed.), 100-104. New York:
+ACM-Press (1981).
+.KE
+.KS
+.IP [12]
+van Hulzen, J.A.: "Code optimization of multivariate polynomial schemes:
+A pragmatic approach", \f2Proceedings EUROCAL '83\f1, (J.A. van Hulzen, ed.),
+Springer LNCS series \f3162\f1, 286-300. Heidelberg: Springer Verlag (1983).
+.KE
+.KS
+.IP [13]
+van Hulzen, J.A.: "Current trends in source-code optimization", \f2Proceedings
+JINR IV Conference on Computer Algebra and its Applications in Theoretical
+Physics\f1, Dubna, May 20-25, 1990 (to appear). Also available as Memorandum 
+\f3INF-90-41\f1, Department of Computer Science, Uniersity Twente (1990).
+.KE
+.KS
+.IP [14]
+Johnson, D.B., Miller, W., Minnihan, B., Wrathall, C.: "Reducibility among
+floating-point graphs", \f2J. ACM\f1 \f326\f1, \f34\f1, 739-760 (1979).
+.KE
+.KS
+.IP [15]
+Knuth, D.E.: "An empirical study of Fortran programs", \f2Software Practice
+and Experience\f1 \f31\f1, 105-133 (1971).
+.KE
+.KS
+.IP [16]
+Knuth, D.E.: \f2The art of computer programming, Vol.\f1 \f32\f1
+(Second Edition). Reading, Mass.: Addison-Wesley (1980).
+.KE
+.KS
+.IP [17]
+Smit, J., van Hulzen, J.A., Hulshof, B.J.A.: "NETFORM and code optimizer
+manual", \f2A.C.M. SIGSAM Bulletin\f1 \f315,4\f1, 23-32.
+New York: A.C.M. (1981).
+.KE
+.KS
+.IP [18]
+Smit, J., van Hulzen, J.A.: "Symbolic-numeric methods in microwave
+technology", \f2Proceedings EUROCAM '82\f1 (J. Calmet, ed.), Springer
+LNCS series \f3144\f1, 281-288. Heidelberg: Springer Verlag (1982).
+.KE
+.KS
+.IP [19]
+Wang, P.S., Chang, T.Y.P., van Hulzen, J.A.: "Code generation and
+optimization for finite element analysis", \f2Proceedings EUROSAM '84
+\f1, (J.P. Fitch ed.), Springer LNCS series \f3174\f1,
+237-247. Heidelberg: Springer Verlag (1984).
+.KE
+.bp
+\f3Appendix 1: How to install the Code\f1
+.sp
+.LP
+.ps 11
+The code consists of a number of modules, collected in five files. Two of
+these modules play a special role and can best be compiled separately:
+gstructr, defining the \f3gstructr\f1 facilities, and ghorner, containing
+the code for the Horner-rules.
+.LP
+.ps 11
+The other modules form SCOPE. Since @{roman D} sub 0@ and all operations on it
+and on its later versions @{roman D} sub i@ are defined using \f3smacros's\f1
+it is essential to read in the module cosmac, containing these \f3smacro's\f1,
+first. Since we also use part of
+the GENTRAN code care have to be taken that GENTRAN is loaded when 
+compiling the code.

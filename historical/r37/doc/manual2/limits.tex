@@ -1,0 +1,98 @@
+\chapter{LIMITS: A package for finding limits}
+\label{LIMITS}
+\typeout{{LIMITS: A package for finding limits}}
+
+{\footnotesize
+\begin{center}
+Stanley L. Kameny \\
+Los Angeles, U.S.A.
+\end{center}
+}
+\ttindex{LIMITS}
+
+LIMITS is a fast limit package for \REDUCE\ for functions which are
+continuous except for computable poles and singularities, based on some
+earlier work by Ian Cohen and John P. Fitch.
+The Truncated Power Series
+package is used for non-critical points, at which the value of the
+function is the constant term in the expansion around that point.
+\index{l'H\^opital's rule}
+l'H\^opital's rule is used in critical cases, with preprocessing of
+$\infty - \infty$ forms and reformatting of product forms in order
+to apply l'H\^opital's rule.  A limited amount of bounded arithmetic
+is also employed where applicable.
+
+\section{Normal entry points}
+\ttindex{LIMIT}
+\vspace{.1in}
+\noindent {\tt LIMIT}(EXPRN:{\em algebraic}, VAR:{\em kernel},
+LIMPOINT:{\em algebraic}):{\em algebraic}
+\vspace{.1in}
+
+This is the standard way of calling limit, applying all of the
+methods. The result is the limit of EXPRN as VAR approaches LIMPOINT.
+
+
+\section{Direction-dependent limits}
+
+\ttindex{LIMIT+}\ttindex{LIMIT-}
+\vspace{.1in}
+\noindent {\tt LIMIT!+}(EXPRN:{\em algebraic}, VAR:{\em kernel},
+LIMPOINT:{\em algebraic}):{\em algebraic} \\
+\noindent {\tt LIMIT!-}(EXPRN:{\em algebraic}, VAR:{\em kernel},
+LIMPOINT:{\em algebraic}):{\em algebraic}
+\vspace{.1in}
+
+If the limit depends upon the direction of approach to the {\tt
+LIMPOINT}, the functions {\tt LIMIT!+} and {\tt LIMIT!-} may be used.
+They are defined by:
+
+\vspace{.1in}
+\noindent{\tt LIMIT!+} (EXP,VAR,LIMPOINT) $\rightarrow$
+\hspace*{2em}{\tt LIMIT}(EXP*,$\epsilon$,0) \\
+where EXP* = sub(VAR=VAR+$\epsilon^2$,EXP)
+
+and
+
+\noindent{\tt LIMIT!-} (EXP,VAR,LIMPOINT) $\rightarrow$
+\hspace*{2em}{\tt LIMIT}(EXP*,$\epsilon$,0) \\
+where EXP* = sub(VAR=VAR-$\epsilon^2$,EXP)
+
+Examples:
+\begin{verbatim}
+load_package misc;
+
+limit(sin(x)/x,x,0);
+
+1
+
+limit((a^x-b^x)/x,x,0);
+
+log(a) - log(b)
+
+limit(x/(e**x-1), x, 0);
+
+1
+
+limit!-(sin x/cos x,x,pi/2);
+
+infinity
+
+limit!+(sin x/cos x,x,pi/2);
+
+ - infinity
+
+limit(x^log(1/x),x,infinity);
+
+0
+
+limit((x^(1/5) + 3*x^(1/4))^2/(7*(sqrt(x + 9) - 3 - x/6))^(1/5),x,0);
+
+     3/5
+  - 6
+---------
+   1/5
+  7
+
+\end{verbatim}
+

@@ -1,0 +1,20 @@
+#!/bin/csh -f
+
+# mkslfile --- Build Standard LISP form of REDUCE or RLISP file.
+
+# Usage: $reduce/util/mkslfile infile_name [reduce-root_dir]
+# Output file is infile_name.sl
+# Input taken from src/infile_name.red
+# Reduce_root_dir is optional, and will be prepended to the infile src
+#    directory if supplied.
+
+$reduce/reduce << EOF
+linelength 71;
+!*force := t;                  % To expand all macros
+flag('(de df dm),'noexpand);   % except these
+off msg;
+on defn;
+out "$1.sl";
+in "$2src/$1.red"\$
+bye;
+EOF

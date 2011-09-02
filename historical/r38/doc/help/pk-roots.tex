@@ -1,0 +1,179 @@
+\section{Roots Package}
+\begin{Introduction}{Roots Package}
+\index{roots}\index{polynomial}
+The root  finding package is designed  so that it can  
+be  used to  find some  or  all of  the roots  of  univariate
+polynomials  with  real or  complex  coefficients,  to  the  accuracy
+specified by the user.                             
+
+Not all operators of \name{roots package} are described here. For using
+the operators 
+
+\nameindex{isolater} (intervals isolating real roots)
+
+\nameindex{rlrootno} (number of real roots in an interval)
+
+\nameindex{rootsat-prec} (roots at system precision)
+
+\nameindex{rootval} (result in equation form)
+
+\nameindex{firstroot} (computing only one root)
+
+\nameindex{getroot} (selecting roots from a collection)
+
+please consult the full documentation of the package.
+
+\end{Introduction}
+
+\begin{Operator}{MKPOLY}
+\index{polynomial}\index{roots}\index{interpolation}
+Given a roots list as returned by \nameref{roots},
+the operator \name{mkpoly} constructs a 
+polynomial which has these numbers as roots.
+\begin{Syntax}
+\name{mkpoly} \meta{rl}
+\end{Syntax}
+where \meta{rl} is a \nameref{list} with equations, which
+all have the same \nameref{kernel} on their left-hand sides
+and numbers as right-hand sides.
+
+\begin{Examples}
+mkpoly{x=1,x=-2,x=i,x=-i};&
+x**4 + x**3 - x**2 + x - 2\\
+\end{Examples}
+
+Note that this polynomial is unique only up to a numeric
+factor.
+\end{Operator}
+
+
+\begin{Operator}{NEARESTROOT}
+\index{roots}\index{solve}
+The operator \name{nearestroot} finds one root of a polynomial
+with an iteration using a given starting point.
+
+\begin{Syntax}
+\name{nearestroot}\(\meta{p}\,\meta{pt}\)
+\end{Syntax}
+
+where \meta{p} is a univariate polynomial
+and \meta{pt} is a number. 
+
+\begin{Examples}
+nearestroot(x^2+2,2);&\{x=1.41421*i\}\\
+\end{Examples}
+The minimal accuracy of the result values is controlled by 
+\nameref{rootacc}.
+\end{Operator}
+
+\begin{Operator}{REALROOTS}
+\index{roots}\index{solve}
+The operator \name{realroots} finds that real roots of a polynomial  
+to an accuracy that is sufficient to separate them  and which is
+a minimum of  6 decimal places.              
+
+\begin{Syntax}
+\name{realroots}\(\meta{p}\) or \\
+\name{realroots}\(\meta{p}\,\meta{from},\meta{to}\)
+\end{Syntax}
+
+where \meta{p} is a univariate polynomial. 
+The optional parameters \meta{from} and \meta{to} classify
+an interval: if given, exactly the real roots in this
+interval will be returned. \meta{from} and \meta{to}
+can also take the values \name{infinity} or \name{-infinity}.
+If omitted all real roots will be returned.
+Result is a \nameref{list}
+of equations which represent the roots of the polynomial at the
+given accuracy.
+
+\begin{Examples}
+realroots(x^5-2);&\{x=1.1487\}\\
+realroots(x^3-104*x^2+403*x-300,2,infinity);&\{x=3.0,x=100.0\}\\
+realroots(x^3-104*x^2+403*x-300,-infinity,2);&\{x=1\}\\
+\end{Examples}
+The minimal accuracy of the result values is controlled by 
+\nameref{rootacc}.
+\end{Operator}
+
+
+\begin{Operator}{ROOTACC}
+\index{roots}\index{accuracy}
+The operator \name{rootacc} allows you to set the accuracy
+up to which the roots package computes its results.
+\begin{Syntax}
+\name{rootacc}\(\meta{n}\)
+\end{Syntax}
+Here \meta{n} is an integer value. The internal accuracy of
+the \name{roots} package is adjusted to a value of
+\name{max(6,n)}. The default value is \name{6}.
+\end{Operator}
+
+\begin{Operator}{ROOTS}
+\index{roots}\index{solve}\index{polynomial}
+The operator \name{roots} 
+is  the main top level  function of the roots  package.
+It will  find all roots, real and  complex, of the polynomial  p
+to an accuracy that is sufficient to separate them  and which is
+a minimum of  6 decimal places.               
+
+\begin{Syntax}
+\name{roots}\(\meta{p}\)
+\end{Syntax}
+
+where \meta{p} is a univariate polynomial. Result is a \nameref{list}
+of equations which represent the roots of the polynomial at the
+given accuracy. In addition, \name{roots}  stores
+separate  lists of real  roots and complex  roots in the  global
+variables \nameref{rootsreal} and \nameref{rootscomplex}. 
+
+\begin{Examples}
+roots(x^5-2);&\begin{multilineoutput}{3cm}
+\{x=-0.929316 + 0.675188*i,
+  x=-0.929316 - 0.675188*i,
+  x=0.354967 + 1.09248*i,
+  x=0.354967 - 1.09248*i, 
+  x=1.1487\}
+\end{multilineoutput}\\
+\end{Examples}
+The minimal accuracy of the result values is controlled by 
+\nameref{rootacc}.
+\end{Operator}
+
+\begin{Operator}{ROOT\_VAL}
+\index{roots}\index{solve}\index{polynomial}
+The operator \name{root\_val} computes the roots of a 
+univariate polynomial at system precision
+(or greater if required for root separation) and presents 
+its result as a list of numbers.
+\begin{Syntax}
+\name{roots}\(\meta{p}\)
+\end{Syntax}
+
+where \meta{p} is a univariate polynomial.
+
+\begin{Examples}
+root_val(x^5-2);&\begin{multilineoutput}{3cm}
+\{-0.929316490603 + 0.6751879524*i,
+ -0.929316490603 - 0.6751879524*i,
+ 0.354967313105 + 1.09247705578*i,
+ 0.354967313105 - 1.09247705578*i,
+ 1.148698355\}
+\end{multilineoutput}\\
+\end{Examples}
+\end{Operator} 
+
+\begin{Variable}{ROOTSCOMPLEX}
+\index{roots}\index{complex}
+When the operator \nameref{roots} is called the complex
+roots are collected in the global variable \name{rootscomplex}
+as \nameref{list}.
+\end{Variable}
+
+
+\begin{Variable}{ROOTSREAL}
+\index{roots}\index{complex}
+When the operator \nameref{roots} is called the real
+roots are collected in the global variable \name{rootreal}
+as \nameref{list}.
+\end{Variable}

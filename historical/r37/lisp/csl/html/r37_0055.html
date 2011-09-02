@@ -1,0 +1,173 @@
+
+<A NAME=PROCEDURE>
+
+<TITLE>PROCEDURE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>PROCEDURE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+The <em>procedure</em> command allows you to define a mathematical operation as 
+a 
+function with arguments. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+ _ _ _ &lt;option&gt; <em>procedure</em> &lt;identifier&gt; 
+ (&lt;arg&gt;{,&lt;arg&gt;}+)<em>;</em>&lt;body&gt; 
+<P>
+<P>
+<P>
+The &lt;option&gt; may be 
+<A HREF=r37_0186.html>algebraic</A> or 
+<A HREF=r37_0221.html>symbolic</A>, 
+indicating the 
+mode under which the procedure is executed, or 
+<A HREF=r37_0216.html>real</A> or 
+
+<A HREF=r37_0197.html>integer</A>, indicating the type of answer expected. The d
+efault is 
+algebraic. Real or integer procedures are subtypes of algebraic 
+procedures; type-checking is done on the results of integer procedures, but 
+not on real procedures (in the current REDUCE release). &lt;identifier&gt; 
+may be any valid REDUCE identifier that is not already a procedure name, 
+operator, 
+<A HREF=r37_0188.html>array</A> or 
+<A HREF=r37_0345.html>matrix</A>. 
+&lt;arg&gt; is a formal parameter that may be any 
+valid REDUCE identifier. &lt;body&gt; is a single statement (a 
+<A HREF=r37_0038.html>group</A> 
+or 
+<A HREF=r37_0041.html>block</A> statement may be used) with the desired activiti
+es in it. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+procedure fac(n);
+   if not (fixp(n) and n&gt;=0)
+     then rederr &quot;Choose nonneg. integer only&quot;
+    else for i := 0:n-1 product i+1;
+
+			 
+
+  FAC 
+
+
+fac(0); 
+
+  1 
+
+
+fac(5); 
+
+  120 
+
+
+fac(-5); 
+
+  ***** choose nonneg. integer only
+
+</TT></PRE><P>Procedures are automatically declared as operators upon definition
+. When 
+REDUCE has parsed the procedure definition and successfully converted it to 
+a form for its own use, it prints the name of the procedure. Procedure 
+definitions cannot be nested. Procedures can call other procedures, or can 
+recursively call themselves. Procedure identifiers can be cleared as you 
+would clear an operator. Unlike 
+<A HREF=r37_0199.html>let</A> statements, new definitions 
+under the same procedure name replace the previous definitions completely. 
+<P>
+<P>
+Be careful not to use the name of a system operator for your own procedure. 
+REDUCE may or may not give you a warning message. If you redefine a system 
+operator in your own procedure, the original function of the system operator 
+is lost for the remainder of the REDUCE session. 
+<P>
+<P>
+Procedures may have none, one, or more than one parameter. A REDUCE 
+parameter is a formal parameter only; the use of x as a parameter in 
+a <em>procedure</em> definition has no connection with a value of x in 
+the REDUCE session, and the results of calling a procedure have no effect 
+on the value of x. If a procedure is called with x as a 
+parameter, the current value of x is used as specified in the 
+computation, but is not changed outside the procedure. 
+Making an assignment statement by <em>:=</em> with a 
+formal parameter on the left-hand side only changes the value of the 
+calling parameter within the procedure. 
+<P>
+<P>
+Using a 
+<A HREF=r37_0199.html>let</A> statement inside a procedure always changes the va
+lue 
+globally: a <em>let</em> with a formal parameter makes the change to the calling
+ 
+parameter. <em>let</em> statements cannot be made on local variables inside 
+
+<A HREF=r37_0040.html>begin</A>...<em>end</em> 
+<A HREF=r37_0041.html>block</A><em>s</em>. 
+When 
+<A HREF=r37_0189.html>clear</A> statements are used on formal 
+parameters, the calling variables associated with them are cleared globally too.
+ 
+The use of <em>let</em> or <em>clear</em> statements inside procedures 
+should be done with extreme caution. 
+<P>
+<P>
+Arrays and operators may be used as parameters to procedures. The body of the 
+procedure can contain statements that appropriately manipulate these 
+arguments. Changes are made to values of the calling arrays or operators. 
+Simple expressions can also be used as arguments, in the place of scalar 
+variables. Matrices may not be used as arguments to procedures. 
+<P>
+<P>
+A procedure that has no parameters is called by the procedure name, 
+immediately followed by empty parentheses. The empty parentheses may be left 
+out when writing a procedure with no parameters, but must appear in a call of 
+the procedure. If this is a nuisance to you, use a 
+<A HREF=r37_0199.html>let</A> statement on 
+the name of the procedure (i.e., <em>let noargs = noargs()</em>) after which 
+you can call the procedure by just its name. 
+<P>
+<P>
+Procedures that have a single argument can leave out the parentheses around 
+it both in the definition and procedure call. (You can use the parentheses if 
+you wish.) Procedures with more than one argument must use parentheses, with 
+the arguments separated by commas. 
+<P>
+<P>
+Procedures often have a <em>begin</em>...<em>end</em> block in them. Inside the 
+
+block, local variables are declared using <em>scalar</em>, <em>real</em> or 
+<em>integer</em> declarations. 
+The declarations must be made immediately after the word 
+<em>begin</em>, and if more than one type of declaration is made, they are 
+separated by semicolons. REDUCE currently does no type checking on local 
+variables; <em>real</em> and <em>integer</em> are treated just like <em>scalar
+</em>. 
+Actions take place as specified in the statements inside the block statement. 
+Any identifiers that are not formal parameters or local variables are treated 
+as global variables, and activities involving these identifiers are global in 
+effect. 
+<P>
+<P>
+If a return value is desired from a procedure call, a specific 
+
+<A HREF=r37_0058.html>return</A> command must be the last statement executed bef
+ore exiting 
+from the procedure. If no <em>return</em> is used, a procedure returns a 
+zero or no value. 
+<P>
+<P>
+Procedures are often written in a file using an editor, then the file 
+is input using the command 
+<A HREF=r37_0231.html>in</A>. This method allows easy changes in 
+development, and also allows you to load the named procedures whenever 
+you like, by loading the files that contain them. 
+<P>
+<P>
+<P>

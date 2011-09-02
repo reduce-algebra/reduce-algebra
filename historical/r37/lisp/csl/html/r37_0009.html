@@ -1,0 +1,42 @@
+
+<A NAME=FORT_WIDTH>
+
+<TITLE>FORT_WIDTH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FORT\_WIDTH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>variable</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>fort_width</em> variable sets the number of characters in a line of 
+Fortran-compatible output produced when the 
+<A HREF=r37_0289.html>fort</A> switch is on. 
+Default is 70. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+fort_width := 30; 
+
+  FORT_WIDTH := 30  
+
+
+on fort; 
+
+df(sin(x**3*y),x); 
+
+        ANS=3.*COS(X
+       . **3*Y)*X**2*
+       . Y
+
+</TT></PRE><P><em>fort_width</em>includes the usually blank characters at the be
+ginning 
+of the card. As you may notice above, it is conservative and makes the 
+lines even shorter than it was told. 
+<P>
+<P>
+<P>

@@ -1,0 +1,2883 @@
+
+
+
+
+UCP-60                                                January 1978
+                                      First Revision - August 1978
+
+
+
+                       STANDARD LISP REPORT
+
+                            J. B. Marti
+                            A. C. Hearn
+                            M. L. Griss
+                             C. Griss
+
+                        University of Utah
+                     Salt Lake City, UT 84112
+
+                            UUCS-78-101
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ABSTRACT:  A description of Standard LISP primitive
+        data structures and functions is presented.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Work supported in part by the National Science Foundation under Grant
+No. MCS76-15035 and by the Burroughs Corporation.
+
+
+Standard LISP Report.                                                   1
+1. Introduction.
+
+
+
+1. Introduction.
+
+     Although the programming language LISP was first formulated in
+1960 [6], a widely accepted standard has never appeared. As a result,
+various dialects of LISP have been produced [4-12], in some cases
+several on the same machine! Consequently, a user often faces
+considerable difficulty in moving programs from one system to
+another. In addition, it is difficult to write and use programs which
+depend on the structure of the source code such as translators,
+editors and cross-reference programs.
+
+     In 1969, a model for such a standard was produced [2] as part of
+a general effort to make a large LISP based algebraic manipulation
+program, REDUCE [3], as portable as possible. The goal of this work
+was to define a uniform subset of LISP 1.5 and its variants so that
+programs written in this subset could run on any reasonable LISP
+system.
+
+     In the intervening years, two deficiencies in the approach taken
+in Ref. [2] have emerged. First in order to be as general as
+possible, the specific semantics and values of several key functions
+were left undefined. Consequently, programs built on this subset
+could not make any assumptions about the form of the values of such
+functions. The second deficiency related to the proposed method of
+implementation of this language. The model considered in effect two
+versions of LISP on any given machine, namely Standard LISP and the
+LISP of the host machine (which we shall refer to as Target LISP).
+This meant that if any definition was stored in interpretive form, it
+would vary from implementation to implementation, and consequently
+one could not write programs in Standard LISP which needed to assume
+any knowledge about the structure of such forms. This deficiency
+became apparent during recent work on the development of a portable
+compiler for LISP [1]. Clearly a compiler has to know precisely the
+structure of its source code; we concluded that the appropriate
+source was Standard LISP and not Target LISP.
+
+     With these thoughts in mind we decided to attempt again a
+definition of Standard LISP. However, our approach this time is more
+aggressive. In this document we define a standard for a reasonably
+large subset of LISP with as precise as possible a statement about
+the semantics of each function. Secondly, we now require that the
+target machine interpreter be modified or written to support this
+standard, rather than mapping Standard LISP onto Target LISP as
+previously.
+
+     We have spent countless hours in discussion over many of the
+definitions given in this report. We have also drawn on the help and
+advice of a lot of friends whose names are given in the
+Acknowledgements. Wherever possible, we have used the definition of a
+function as given in the LISP 1.5 Programmer's Manual [6] and have
+only deviated where we felt it desirable in the light of LISP
+programming experience since that time. In particular, we have given
+
+
+Standard LISP Report.                                                   2
+1. Introduction.
+
+considerable thought to the question of variable bindings and the
+definition of the evaluator functions EVAL and APPLY. We have also
+abandoned the previous definition of LISP arrays in favor of the more
+accepted idea of a vector which most modern LISP systems support.
+These are the places where we have strayed furthest from the
+conventional definitions, but we feel that the consistency which
+results from our approach is worth the redefinition.
+
+     We have avoided entirely in this report problems which arise
+from environment passing, such as those represented by the FUNARG
+problem. We do not necessarily exclude these considerations from our
+standard, but in this report have decided to avoid the controversy
+which they create. The semantic differences between compiled and
+interpreted functions is the topic of another paper [1]. Only
+functions which affect the compiler in a general way make reference
+to it.
+
+     This document is not intended as an introduction to LISP rather
+it is assumed that the reader is already familiar with some version.
+The document is thus intended as an arbiter of the syntax and
+semantics of Standard LISP. However, since it is not intended as an
+implementation description, we deliberately leave unspecified many of
+the details on which an actual implementation depends. For example,
+while we assume the existence of a symbol table for atoms (the
+"object list" in LISP terminology), we do not specify its structure,
+since conventional LISP programming does not require this
+information. Our ultimate goal, however, is to remedy this by
+defining an interpreter for Standard LISP which is sufficiently
+complete that its implementation on any given computer will be
+straightforward and precise. At that time, we shall produce an
+implementation level specification for Standard LISP which will
+extend the description of the primitive functions defined herein by
+introducing a new set of lower level primitive functions in which the
+structure of the symbol table, heap and so on may be defined.
+
+     The plan of this paper is as follows. In Section 2 we describe
+the various data types used in Standard LISP. In Section 3, a
+description of all Standard LISP functions is presented, organized by
+type. These functions are defined in an ALGOL-like syntax which is
+easier to read than LISP S-expressions. Section 4 describes global
+variables which control the operation of Standard LISP. For
+completeness, a formal translation of the extended syntax to Standard
+LISP is given in Appendix A. In Appendix B is an alphabetical list of
+all defined LISP functions and their arguments and types for easy
+reference. A complete index of all functions and concepts concludes
+the report.
+
+
+Standard LISP Report.                                                   3
+2. Preliminaries.
+
+
+
+2.1 Primitive Data Types.
+
+integer - Integers are also called "fixed" numbers. The magnitude of
+   an integer is unrestricted. Integers in the LISP input stream are
+   recognized by the grammar:
+
+      <digit> ::= 0|1|2|3|4|5|6|7|8|9
+      <unsigned-integer> ::= <digit>|<unsigned-integer><digit>
+      <integer> ::= <unsigned-integer> |
+                    +<unsigned-integer> |
+                    -<unsigned-integer>
+
+floating - Any floating point number. The precision of floating point
+   numbers is determined solely by the implementation. In BNF
+   floating point numbers are recognized by the grammar:
+
+      <base> ::= <unsigned-integer>.|.<unsigned-integer>|
+                  <unsigned-integer>.<unsigned-integer>
+      <unsigned-floating> ::= <base>|
+                  <base>E<unsigned-integer>|
+                  <base>E-<unsigned-integer>|
+                  <base>E+<unsigned-integer>
+      <floating> ::= <unsigned-floating>|
+                  +<unsigned-floating>|-<unsigned-floating>
+
+id - An identifier is a string of characters which may have the
+   following items associated with it.
+
+   print name - The characters of the identifier.
+
+   flags - An identifier may be tagged with a flag. Access is by the
+      FLAG, REMFLAG, and FLAGP functions defined in the "Property
+      List Functions" section.
+
+   properties - An identifier may have an indicator-value pair
+      associated with it. Access is by the PUT, GET, and REMPROP
+      functions defined in the "Property List Functions" section.
+
+   values/functions - An identifier may have a value associated with
+      it. Access to values is by SET and SETQ defined in the
+      "Variables and Bindings" section. The method by which the value
+      is attached to the identifier is known as the binding type,
+      being one of LOCAL, GLOBAL, or FLUID. Access to the binding
+      type is by the GLOBAL, GLOBALP, FLUID, FLUIDP, and UNFLUID
+      functions.
+
+           An identifier may have a function or macro associated with
+      it. Access is by the PUTD, GETD, and REMD functions defined in
+      the "Function Definition" section. An identifier may not have
+      both a function and a value associated with it.
+
+   OBLIST entry - An identifier may be entered and removed from a
+
+
+Standard LISP Report.                                                   4
+2. Preliminaries.
+
+      structure called the OBLIST. Its presence on the OBLIST does
+      not directly affect the other properties. Access to the OBLIST
+      is by INTERN, REMOB, and READ defined in the "Identifiers" and
+      "Input and Output" sections.
+
+   The maximum length of a Standard LISP identifier is 24 characters
+   (excluding occurrences of the escape character !) but an
+   implementation may allow more. Special characters (digits in the
+   first position and punctuation) must be prefixed with an escape
+   character, an ! in Standard LISP. In BNF identifiers are
+   recognized by the grammar:
+
+      <special-character> ::= !<any-character>
+      <alphabetic> ::=
+        A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|
+        a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z
+      <lead-character> ::= <special-character>|<alphabetic>
+      <regular-character> ::= <lead-character>|<digit>
+      <last-part> ::= <regular-character>|
+        <last-part><regular-character>
+      <id> ::= <lead-character>|<lead-character><last-part>
+
+   Note: Using lower case letters in identifiers may cause
+   portability problems. Lower case letters are automatically
+   converted to upper case when the !*RAISE flag is T. See the
+   "System GLOBAL Variables" section.
+
+
+string - A set of characters enclosed in double quotes as in "THIS IS
+   A STRING". A quote is included by doubling it as in "HE SAID,
+   ""LISP""". The maximum size of strings is 80 characters but an
+   implementation may allow more. Strings are not part of the OBLIST
+   and are considered constants like numbers, vectors, and
+   function-pointers.
+
+
+dotted-pair - A primitive structure which has a left and right part.
+   A notation called dot-notation is used for dotted pairs and takes
+   the form:
+
+      (<left-part> . <right-part>)
+
+   The <left-part> is known as the CAR portion and the <right-part>
+   as the CDR portion. The left and right parts may be of any type.
+   Spaces are used to resolve ambiguity with floating point numbers.
+
+
+vector - A primitive uniform structure in which an integer index is
+   used to access random values in the structure. The individual
+   elements of a vector may be of any type. Access to vectors is
+   restricted to functions defined in the "Vectors" section. A
+   notation for vectors, vector-notation, has the elements of a
+   vector separated by commas and surrounded by square brackets.
+
+
+
+Standard LISP Report.                                                   5
+2. Preliminaries.
+
+
+      <elements> ::= <any>|<any>, <elements>
+      <vector> ::= [<elements>]
+
+
+function-pointer - An implementation may have functions which deal
+   with specific data types other than those listed. The use of these
+   entities is to be avoided with the exception of a restricted use
+   of the function-pointer, an access method to compiled EXPRs and
+   FEXPRs. A particular function-pointer must remain valid throughout
+   execution. Systems which change the location of a function must
+   use either an indirect reference or change all occurrences of the
+   associated value. There are two classes of use of
+   function-pointers, those which are supported by Standard LISP but
+   are not well defined, and those which are well defined.
+
+   Not well defined - Function pointers may be displayed by the print
+      functions or expanded by EXPLODE. The value appears in the
+      convention of the implementation site. The value is not defined
+      in Standard LISP. Function pointers may be created by COMPRESS
+      in the format used for printing but the value used is not
+      defined in Standard LISP. Function pointers may be created by
+      functions which deal with compiled function loading. Again, the
+      values created are not well defined in Standard LISP.
+
+   Well defined - The function pointer associated with a EXPR or
+      FEXPR may be retrieved by GETD and is valid as long as Standard
+      LISP is in execution. Function pointers may be stored using
+      PUTD, PUT, SETQ and the like or by being bound to variables.
+      Function pointers may be checked for equivalence by EQ. The
+      value may be checked for being a function pointer by the CODEP
+      function.
+
+
+
+2.2 Classes of Primitive Data Types.
+
+     The classes of primitive types are a notational convenience for
+describing the properties of functions.
+
+
+boolean - The set of global variables {T,NIL}, or their respective
+   values, {T, NIL}. (see the "System GLOBAL Variables" section).
+
+
+extra-boolean - Any value in the system. Anything that is not NIL has
+   the boolean interpretation T.
+
+
+ftype - The class of definable function types. The set of ids {EXPR,
+   FEXPR, MACRO}.
+
+
+number - The set of {integer, floating}.
+
+
+
+
+Standard LISP Report.                                                   6
+2. Preliminaries.
+
+constant - The set of {integer, floating, string, vector,
+   function-pointer}. Constants evaluate to themselves (see the
+   definition of EVAL in "The Interpreter" section).
+
+
+any - The set of {integer, floating, string, id, dotted-pair, vector,
+   function-pointer}. An S-expression is another term for any. All
+   Standard LISP entities have some value unless an ERROR occurs
+   during evaluation.
+
+
+atom - The set {any}-{dotted-pair}.
+
+
+
+2.3 Structures.
+
+     Structures are entities created out of the primitive types by
+the use of dotted-pairs. Lists are structures very commonly required
+as actual parameters to functions. Where a list of homogeneous
+entities is required by a function this class will be denoted by
+xxx-list where xxx is the name of a class of primitives or
+structures. Thus a list of ids is an id-list, a list of integers an
+integer-list and so on.
+
+
+list - A list is recursively defined as NIL or the dotted-pair (any .
+   list). A special notation called list-notation is used to
+   represent lists. List-notation eliminates extra parentheses and
+   dots. The list (a . (b . (c . NIL))) in list notation is (a b c).
+   List-notation and dot-notation may be mixed as in (a b . c) or (a
+   (b . c) d) which are (a . (b . c)) and (a . ((b . c) . (d .
+   NIL))). In BNF lists are recognized by the grammar:
+
+      <left-part> ::= ( | <left-part> <any>
+      <list> ::= <left-part>) | <left-part> . <any>)
+
+   Note: () is an alternate input representation of NIL.
+
+
+alist - An association list; each element of the list is a
+   dotted-pair, the CAR part being a key associated with the value in
+   the CDR part.
+
+
+cond-form - A cond-form is a list of 2 element lists of the form:
+
+      (ANTECEDENT:any CONSEQUENT:any)
+
+   The first element will henceforth be known as the antecedent and
+   the second as the consequent. The antecedent must have a value.
+   The consequent may have a value or an occurrence of GO or RETURN
+   as described in the "Program Feature Functions" section.
+
+
+
+
+Standard LISP Report.                                                   7
+2. Preliminaries.
+
+lambda - A LAMBDA expression which must have the form (in list
+   notation): (LAMBDA parameters body). "parameters" is a list of
+   formal parameters for "body" an S-expression to be evaluated. The
+   semantics of the evaluation are defined with the EVAL function
+   (see "The Interpreter" section).
+
+
+function - A LAMBDA expression or a function-pointer to a function. A
+   function is always evaluated as an EVAL, SPREAD form.
+
+
+
+2.4 Function Descriptions.
+
+     Each function is provided with a prototypical header line. Each
+formal parameter is given a name and suffixed with its allowed type.
+Lower case tokens are names of classes and upper case tokens are
+parameter names referred to in the definition. The type of the value
+returned by the function (if any) is suffixed to the parameter list.
+If it is not commonly used the parameter type may be a specific set
+enclosed in brackets {...}. For example:
+
+PUTD(FNAME:id, TYPE:ftype, BODY:{lambda, function-pointer}):id
+
+PUTD is a function with three parameters. The parameter FNAME is an
+id to be the name of the function being defined. TYPE is the type of
+the function being defined and BODY is a lambda expression or a
+function-pointer. PUTD returns the name of the function being
+defined.
+
+     Functions which accept formal parameter lists of arbitrary
+length have the type class and parameter enclosed in square brackets
+indicating that zero or more occurrences of that argument are
+permitted. For example:
+
+   AND([U:any]):extra-boolean
+
+AND is a function which accepts zero or more arguments which may be
+of any type.
+
+
+
+2.5 Function Types.
+
+     EVAL type functions are those which are invoked with evaluated
+arguments. NOEVAL functions are invoked with unevaluated arguments.
+SPREAD type functions have their arguments passed in one-to-one
+correspondence with their formal parameters. NOSPREAD functions
+receive their arguments as a single list. EVAL, SPREAD functions are
+associated with EXPRs and NOEVAL, NOSPREAD functions with FEXPRs.
+EVAL, NOSPREAD and NOEVAL, SPREAD functions can be simulated using
+NOEVAL, NOSPREAD functions or MACROs.
+
+
+
+Standard LISP Report.                                                   8
+2. Preliminaries.
+
+     EVAL, SPREAD type functions may have a maximum of 15 parameters.
+There is no limit on the number of parameters a NOEVAL, NOSPREAD
+function or MACRO may have.
+
+     In the context of the description of an EVAL, SPREAD function,
+when we speak of the formal parameters we mean their actual values.
+However, in a NOEVAL, NOSPREAD function it is the unevaluated actual
+parameters.
+
+     A third function type, the MACRO, implements functions which
+create S-expressions based on actual parameters. When a macro
+invocation is encountered, the body of the macro, a lambda
+expression, is invoked as a NOEVAL, NOSPREAD function with the
+macro's invocation bound as a list to the macros single formal
+parameter. When the macro has been evaluated the resulting
+S-expression is reevaluated. The description of the EVAL and EXPAND
+functions provide precise details.
+
+
+
+2.6 The Extended Syntax.
+
+     Functions that may be conveniently defined in Standard LISP
+appear in a subset of the REDUCE syntax [3] which we believe is
+easier to read than Standard LISP. A formal translation scheme for
+the extended syntax to Standard LISP is presented in Appendix A. The
+definitions supplied are not intended as a rigorous implementation
+guide but rather as a precise definition of the function's semantics.
+
+
+
+2.7 Error and Warning Messages.
+
+     Many functions detect errors. The description of such functions
+will include these error conditions and suggested formats for display
+of the generated error messages. A call on the ERROR function is
+implied but the error number is not specified by Standard LISP. In
+some cases a warning message is sufficient. To distinguish between
+errors and warnings, errors are prefixed with five asterisks and
+warnings with only three.
+
+     Primitive functions check arguments that must be of a certain
+primitive type for being of that type and display an error message if
+the argument is not correct. The type mismatch error always takes the
+form:
+
+   ***** PARAMETER not TYPE for FN
+
+Here PARAMETER is the unacceptable actual parameter, TYPE is the type
+that PARAMETER was supposed to be. FN is the name of the function
+that detected the error.
+
+
+Standard LISP Report.                                                   9
+3.1 Elementary Predicates.
+
+
+
+3.1 Elementary Predicates.
+
+     Functions in this section return T when the condition defined is
+met and NIL when it is not. Defined are type checking functions and
+elementary comparisons.
+
+
+
+ATOM(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is not a pair.
+
+EXPR PROCEDURE ATOM(U);
+  NULL PAIRP U;
+
+
+CODEP(U:any):boolean
+TYPE: EVAL, SPREAD.
+Returns T if U is a function-pointer.
+
+
+CONSTANTP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a constant (a number, string, function-pointer, or
+vector).
+
+EXPR PROCEDURE CONSTANTP(U);
+  NULL OR(PAIRP U, IDP U);
+
+
+EQ(U:any, V:any):boolean
+Type: EVAL, SPREAD
+Returns T if U points to the same object as V. EQ is not a reliable
+comparison between numeric arguments.
+
+
+EQN(U:any, V:any):boolean
+Type: EVAL, SPREAD
+Returns T if U and V are EQ or if U and V are numbers and have the
+same value and type.
+
+
+EQUAL(U:any, V:any):boolean
+Type: EVAL, SPREAD
+Returns T if U and V are the same. Dotted-pairs are compared
+recursively to the bottom levels of their trees. Vectors must have
+identical dimensions and EQUAL values in all positions. Strings must
+have identical characters. Function pointers must have EQ values.
+Other atoms must be EQN equal.
+
+
+
+
+Standard LISP Report.                                                  10
+3.1 Elementary Predicates.
+
+FIXP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is an integer (a fixed number).
+
+
+FLOATP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a floating point number.
+
+
+IDP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is an id.
+
+
+NULL(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is NIL.
+
+EXPR PROCEDURE NULL(U);
+  U EQ NIL;
+
+
+NUMBERP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a number (integer or floating).
+
+EXPR PROCEDURE NUMBERP(U);
+  IF OR(FIXP U, FLOATP U) THEN T ELSE NIL;
+
+
+PAIRP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a dotted-pair.
+
+
+STRINGP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a string.
+
+
+VECTORP(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a vector.
+
+
+
+
+
+
+
+Standard LISP Report.                                                  11
+3.2 Functions on Dotted-Pairs.
+
+3.2 Functions on Dotted-Pairs.
+
+     The following are elementary functions on dotted-pairs. All
+functions in this section which require dotted-pairs as parameters
+detect a type mismatch error if the actual parameter is not a
+dotted-pair.
+
+
+
+CAR(U:dotted-pair):any
+Type: EVAL, SPREAD
+CAR(CONS a b) ==> a. The left part of U is returned. The type
+mismatch error occurs if U is not a dotted-pair.
+
+
+CDR(U:dotted-pair):any
+Type: EVAL, SPREAD
+CDR(CONS a b) ==> b. The right part of U is returned. The type
+mismatch error occurs if U is not a dotted-pair.
+
+
+The composites of CAR and CDR are supported up to 4 levels, namely:
+
+   CAAAAR     CAAAR     CAAR
+   CAAADR     CAADR     CADR
+   CAADAR     CADAR     CDAR
+   CAADDR     CADDR     CDDR
+   CADAAR     CDAAR
+   CADADR     CDADR
+   CADDAR     CDDAR
+   CADDDR     CDDDR
+   CDAAAR
+   CDAADR
+   CDADAR
+   CDADDR
+   CDDAAR
+   CDDADR
+   CDDDAR
+   CDDDDR
+
+
+CONS(U:any, V:any):dotted-pair
+Type: EVAL, SPREAD
+Returns a dotted-pair which is not EQ to anything and has U as its
+CAR part and V as its CDR part.
+
+
+LIST([U:any]):list
+Type: NOEVAL, NOSPREAD, or MACRO
+A list of the evaluation of each element of U is returned.
+
+FEXPR PROCEDURE LIST(U);
+  EVLIS U;
+
+
+
+
+Standard LISP Report.                                                  12
+3.2 Functions on Dotted-Pairs.
+
+RPLACA(U:dotted-pair, V:any):dotted-pair
+Type: EVAL, SPREAD
+The CAR portion of the dotted-pair U is replaced by V. If dotted-pair
+U is (a . b) then (V . b) is returned. The type mismatch error occurs
+if U is not a dotted-pair.
+
+
+RPLACD(U:dotted-pair, V:any):dotted-pair
+Type: EVAL, SPREAD
+The CDR portion of the dotted-pair U is replaced by V. If dotted-pair
+U is (a . b) then (a . V) is returned. The type mismatch error occurs
+if U is not a dotted-pair.
+
+
+
+
+3.3 Identifiers.
+
+     The following functions deal with identifiers and the OBLIST,
+the structure of which is not defined. The function of the OBLIST is
+to provide a symbol table for identifiers created during input.
+Identifiers created by READ which have the same characters will
+therefore refer to the same object (see the EQ function in the
+"Elementary Predicates" section).
+
+
+
+COMPRESS(U:id-list):{atom}-{vector}
+Type: EVAL, SPREAD
+U is a list of single character identifiers which is built into a
+Standard LISP entity and returned. Recognized are numbers, strings,
+and identifiers with the escape character prefixing special
+characters. The formats of these items appear in the "Primitive Data
+Types" section. Identifiers are not interned on the OBLIST. Function
+pointers may be compressed but this is an undefined use. If an entity
+cannot be parsed out of U or characters are left over after parsing
+an error occurs:
+
+   ***** Poorly formed atom in COMPRESS
+
+
+EXPLODE(U:{atom}-{vector}):id-list
+Type: EVAL, SPREAD
+Returned is a list of interned characters representing the characters
+to print of the value of U. The primitive data types have these
+formats:
+
+  integer - Leading zeroes are suppressed and a minus sign prefixes
+     the digits if the integer is negative.
+
+  floating - The value appears in the format [-]0.nn...nnE[-]mm if
+     the magnitude of the number is too large or small to display in
+     [-]nnnn.nnnn format. The crossover point is determined by the
+     implementation.
+
+
+Standard LISP Report.                                                  13
+3.3 Identifiers.
+
+
+  id - The characters of the print name of the identifier are
+     produced with special characters prefixed with the escape
+     character.
+
+  string - The characters of the string are produced surrounded by
+     double quotes "...".
+
+  function-pointer - The value of the function-pointer is created as
+     a list of characters conforming to the conventions of the system
+     site.
+
+The type mismatch error occurs if U is not a number, identifier,
+string, or function-pointer.
+
+
+GENSYM():id
+Creates an identifier which is not interned on the OBLIST and
+consequently not EQ to anything else.
+
+
+INTERN(U:{id,string}):id
+Type: EVAL, SPREAD
+INTERN searches the OBLIST for an identifier with the same print name
+as U and returns the identifier on the OBLIST if a match is found.
+Any properties and global values associated with U may be lost. If U
+does not match any entry, a new one is created and returned. If U has
+more than the maximum number of characters permitted by the
+implementation (the minimum number is 24) an error occurs:
+
+   ***** Too many characters to INTERN
+
+
+REMOB(U:id):id
+Type: EVAL, SPREAD
+If U is present on the OBLIST it is removed. This does not affect U
+having properties, flags, functions and the like. U is returned.
+
+
+
+
+
+3.4 Property List Functions.
+
+     With each id in the system is a "property list", a set of
+entities which are associated with the id for fast access. These
+entities are called "flags" if their use gives the id a single valued
+property, and "properties" if the id is to have a multivalued
+attribute: an indicator with a property.
+
+     Flags and indicators may clash, consequently care should be
+taken to avoid this occurrence. Flagging X with an id which already
+is an indicator for X may result in that indicator and associated
+
+
+Standard LISP Report.                                                  14
+3.4 Property List Functions.
+
+property being lost. Likewise, adding an indicator which is the same
+id as a flag may result in the flag being destroyed.
+
+
+
+FLAG(U:id-list, V:id):NIL
+Type: EVAL, SPREAD
+U is a list of ids which are flagged with V. The effect of FLAG is
+that FLAGP will have the value T for those ids of U which were
+flagged. Both V and all the elements of U must be identifiers or the
+type mismatch error occurs.
+
+
+FLAGP(U:any, V:any):boolean
+Type: EVAL, SPREAD
+Returns T if U has been previously flagged with V, else NIL. Returns
+NIL if either U or V is not an id.
+
+
+GET(U:any, IND:any):any
+Type: EVAL, SPREAD
+Returns the property associated with indicator IND from the property
+list of U. If U does not have indicator IND, NIL is returned. GET
+cannot be used to access functions (use GETD instead).
+
+
+PUT(U:id, IND:id, PROP:any):any
+Type: EVAL, SPREAD
+The indicator IND with the property PROP is placed on the property
+list of the id U. If the action of PUT occurs, the value of PROP is
+returned. If either of U and IND are not ids the type mismatch error
+will occur and no property will be placed. PUT cannot be used to
+define functions (use PUTD instead).
+
+
+REMFLAG(U:any-list, V:id):NIL
+Type: EVAL, SPREAD
+Removes the flag V from the property list of each member of the list
+U. Both V and all the elements of U must be ids or the type mismatch
+error will occur.
+
+
+REMPROP(U:any, IND:any):any
+Type: EVAL, SPREAD
+Removes the property with indicator IND from the property list of U.
+Returns the removed property or NIL if there was no such indicator.
+
+
+
+
+
+
+
+Standard LISP Report.                                                  15
+3.5 Function Definition.
+
+3.5 Function Definition.
+
+     Functions in Standard LISP are global entities. To avoid
+function-variable naming clashes no variable may have the same name
+as a function.
+
+
+
+DE(FNAME:id, PARAMS:id-list, FN:any):id
+Type: NOEVAL, NOSPREAD
+The function FN with the formal parameter list PARAMS is added to the
+set of defined functions with the name FNAME. Any previous
+definitions of the function are lost. The function created is of type
+EXPR unless the !*COMP variable is T in which case the EXPR is
+compiled. The name of the defined function is returned.
+
+FEXPR PROCEDURE DE(U);
+  PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));
+
+
+DF(FNAME:id, PARAM:id-list, FN:any):id
+Type: NOEVAL, NOSPREAD
+The function FN with formal parameter PARAM is added to the set of
+defined functions with the name FNAME. Any previous definitions of
+the function are lost. The function created is of type FEXPR unless
+the !*COMP variable is T in which case the FEXPR is compiled. The
+name of the defined function is returned.
+
+FEXPR PROCEDURE DF(U);
+  PUTD(CAR U, 'FEXPR, LIST('LAMBDA, CADR U, CADDR U));
+
+
+DM(MNAME:id, PARAM:id-list, FN:any):id
+Type: NOEVAL, NOSPREAD
+The macro FN with the formal parameter PARAM is added to the set of
+defined functions with the name MNAME. Any previous definitions of
+the function are overwritten. The function created is of type MACRO.
+The name of the macro is returned.
+
+FEXPR PROCEDURE DM(U);
+  PUTD(CAR U, 'MACRO, LIST('LAMBDA, CADR U, CADDR U));
+
+
+GETD(FNAME:any):{NIL, dotted-pair}
+Type: EVAL, SPREAD
+If FNAME is not the name of a defined function, NIL is returned. If
+FNAME is a defined function then the dotted-pair
+(TYPE:ftype . DEF:{function-pointer, lambda}) is returned.
+
+
+
+
+Standard LISP Report.                                                  16
+3.5 Function Definition.
+
+PUTD(FNAME:id, TYPE:ftype, BODY:function):id
+Type: EVAL, SPREAD
+Creates a function with name FNAME and definition BODY of type TYPE.
+If PUTD succeeds the name of the defined function is returned. The
+effect of PUTD is that GETD will return a dotted-pair with the
+functions type and definition. Likewise the GLOBALP predicate will
+return T when queried with the function name.
+
+     If the function FNAME has already been declared as a GLOBAL or
+FLUID variable the error:
+
+   ***** FNAME is a non-local variable
+
+occurs and the function will not be defined. If function FNAME
+already exists a warning message will appear:
+
+   *** FNAME redefined
+
+     The function defined by PUTD will be compiled before definition
+if the !*COMP global variable is non-NIL (see the "System GLOBAL
+Variables" section).
+
+
+REMD(FNAME:id):{NIL, dotted-pair}
+Type: EVAL, SPREAD
+Removes the function named FNAME from the set of defined functions.
+Returns the (ftype . function) dotted-pair or NIL as does GETD. The
+global/function attribute of FNAME is removed and the name may be
+used subsequently as a variable.
+
+
+
+
+3.6 Variables and Bindings.
+
+     A variable is a place holder for a Standard LISP entity which is
+said to be bound to the variable. The scope of a variable is the
+range over which the variable has a defined value. There are three
+different binding mechanisms in Standard LISP.
+
+Local Binding - This type of binding occurs only in compiled
+   functions. Local variables occur as formal parameters in lambda
+   expressions and as PROG form variables. The binding occurs when a
+   lambda expression is evaluated or when a PROG form is executed.
+   The scope of a local variable is the body of the function in which
+   it is defined.
+
+Global Binding - Only one binding of a global variable exists at any
+   time allowing direct access to the value bound to the variable.
+   The scope of a global variable is universal. Variables declared
+   GLOBAL may not appear as parameters in lambda expressions or as
+   PROG form variables. A variable must be declared GLOBAL prior to
+   its use as a global variable since the default type for undeclared
+   variables is FLUID.
+
+
+Standard LISP Report.                                                  17
+3.6 Variables and Bindings.
+
+
+Fluid Binding - Fluid variables are global in scope but may occur as
+   formal parameters or PROG form variables. In interpreted functions
+   all formal parameters and PROG form variables are considered to
+   have fluid binding until changed to local binding by compilation.
+   When fluid variables are used as parameters they are rebound in
+   such a way that the previous binding may be restored. All
+   references to fluid variables are to the currently active binding.
+
+
+
+FLUID(IDLIST:id-list):NIL
+Type: EVAL, SPREAD
+The ids in IDLIST are declared as FLUID type variables (ids not
+previously declared are initialized to NIL). Variables in IDLIST
+already declared FLUID are ignored. Changing a variable's type from
+GLOBAL to FLUID is not permissible and results in the error:
+
+   ***** ID cannot be changed to FLUID
+
+
+FLUIDP(U:any):boolean
+Type: EVAL, SPREAD
+If U has been declared FLUID (by declaration only) T is returned,
+otherwise NIL is returned.
+
+
+GLOBAL(IDLIST:id-list):NIL
+Type: EVAL, SPREAD
+The ids of IDLIST are declared global type variables. If an id has
+not been declared previously it is initialized to NIL. Variables
+already declared GLOBAL are ignored. Changing a variables type from
+FLUID to GLOBAL is not permissible and results in the error:
+
+   ***** ID cannot be changed to GLOBAL
+
+
+GLOBALP(U:any):boolean
+Type: EVAL, SPREAD
+If U has been declared GLOBAL or is the name of a defined function, T
+is returned, else NIL is returned.
+
+
+
+
+Standard LISP Report.                                                  18
+3.6 Variables and Bindings.
+
+SET(EXP:id, VALUE:any):any
+Type: EVAL, SPREAD
+EXP must be an identifier or a type mismatch error occurs. The effect
+of SET is replacement of the item bound to the identifier by VALUE.
+If the identifier is not a local variable or has not been declared
+GLOBAL it is automatically declared FLUID with the resulting warning
+message:
+
+   *** EXP declared FLUID
+
+EXP must not evaluate to T or NIL or an error occurs:
+
+   ***** Cannot change T or NIL
+
+
+SETQ(VARIABLE:id, VALUE:any):any
+Type: NOEVAL, NOSPREAD
+If VARIABLE is not local or GLOBAL it is by default declared FLUID
+and the warning message:
+
+   *** VARIABLE declared FLUID
+
+appears. The value of the current binding of VARIABLE is replaced by
+the value of VALUE. VARIABLE must not be T or NIL or an error occurs:
+
+   ***** Cannot change T or NIL
+
+MACRO PROCEDURE SETQ(X);
+  LIST('SET, LIST('QUOTE, CADR X), CADDR X);
+
+
+UNFLUID(IDLIST:id-list):NIL
+Type: EVAL, SPREAD
+The variables in IDLIST that have been declared as FLUID variables
+are no longer considered as fluid variables. Others are ignored. This
+affects only compiled functions as free variables in interpreted
+functions are automatically considered fluid (see Ref. [1]).
+
+
+
+
+
+3.7 Program Feature Functions.
+
+     These functions provide for explicit control sequencing, and the
+definition of blocks altering the scope of local variables.
+
+
+
+
+
+Standard LISP Report.                                                  19
+3.7 Program Feature Functions.
+
+GO(LABEL:id)
+Type: NOEVAL, NOSPREAD
+GO alters the normal flow of control within a PROG function. The next
+statement of a PROG function to be evaluated is immediately preceded
+by LABEL. A GO may only appear in the following situations:
+
+  1) At the top level of a PROG referencing a label which also
+     appears at the top level of the same PROG.
+
+  2a) As the consequent of a COND item of a COND appearing on the top
+     level of a PROG.
+  2b) As the consequent of a COND item which appears as the
+     consequent of a COND item to any level.
+
+  3a) As the last statement of a PROGN which appears at the top level
+     of a PROG or in a PROGN appearing in the consequent of a COND to
+     any level subject to the restrictions of 2a,b.
+  3b) As the last statement of a PROGN within a PROGN or as the
+     consequent of a COND in a PROGN to any level subject to the
+     restrictions of 2a,b and 3a.
+
+     If LABEL does not appear at the top level of the PROG in which
+the GO appears, an error occurs:
+
+   ***** LABEL is not a known label
+
+     If the GO has been placed in a position not defined by rules
+1-3, another error is detected:
+
+   ***** Illegal use of GO to LABEL
+
+
+PROG(VARS:id-list, [PROGRAM:{id, any}]):any
+Type: NOEVAL, NOSPREAD
+VARS is a list of ids which are considered fluid when the PROG is
+interpreted and local when compiled (see the "Variables and Bindings"
+section). The PROGs variables are allocated space when the PROG form
+is invoked and are deallocated when the PROG is exited. PROG
+variables are initialized to NIL. The PROGRAM is a set of expressions
+to be evaluated in order of their appearance in the PROG function.
+Identifiers appearing in the top level of the PROGRAM are labels
+which can be referenced by GO. The value returned by the PROG
+function is determined by a RETURN function or NIL if the PROG "falls
+through".
+
+
+PROGN([U:any]):any
+Type: NOEVAL, NOSPREAD
+U is a set of expressions which are executed sequentially. The value
+returned is the value of the last expression.
+
+
+
+
+Standard LISP Report.                                                  20
+3.7 Program Feature Functions.
+
+RETURN(U:any)
+Type: EVAL, SPREAD
+Within a PROG, RETURN terminates the evaluation of a PROG and returns
+U as the value of the PROG. The restrictions on the placement of
+RETURN are exactly those of GO. Improper placement of RETURN results
+in the error:
+
+   ***** Illegal use of RETURN
+
+
+
+
+
+3.8 Error Handling.
+
+
+
+ERROR(NUMBER:integer, MESSAGE:any)
+Type: EVAL, SPREAD
+NUMBER and MESSAGE are passed back to a surrounding ERRORSET (the
+Standard LISP reader has an ERRORSET). MESSAGE is placed in the
+global variable EMSG!* and the error number becomes the value of the
+surrounding ERRORSET. FLUID variables and local bindings are unbound
+to return to the environment of the ERRORSET. Global variables are
+not affected by the process.
+
+
+ERRORSET(U:any, MSGP:boolean, TR:boolean):any
+Type: EVAL, SPREAD
+If an error occurs during the evaluation of U, the value of NUMBER
+from the ERROR call is returned as the value of ERRORSET. In
+addition, if the value of MSGP is non-NIL, the MESSAGE from the ERROR
+call is displayed upon both the standard output device and the
+currently selected output device unless the standard output device is
+not open. The message appears prefixed with 5 asterisks. The MESSAGE
+list is displayed without top level parentheses. The MESSAGE from the
+ERROR call will be available in the global variable EMSG!*. The exact
+format of error messages generated by Standard LISP functions
+described in this document are not fixed and should not be relied
+upon to be in any particular form. Likewise, error numbers generated
+by Standard LISP functions are implementation dependent.
+
+     If no error occurs during the evaluation of U, the value of
+(LIST (EVAL U)) is returned.
+
+     If an error has been signaled and the value of TR is non-NIL a
+traceback sequence will be initiated on the selected output device.
+The traceback will display information such as unbindings of FLUID
+variables, argument lists and so on in an implementation dependent
+format.
+
+
+
+
+
+
+
+Standard LISP Report.                                                  21
+3.9 Vectors.
+
+3.9 Vectors.
+
+     Vectors are structured entities in which random elements may be
+accessed with an integer index. A vector has a single dimension. Its
+maximum size is determined by the implementation and available space.
+A suggested input output "vector notation" is defined (see "Classes
+of Primitive Data Types").
+
+
+
+GETV(V:vector, INDEX:integer):any
+Type: EVAL, SPREAD
+Returns the value stored at position INDEX of the vector V. The type
+mismatch error may occur. An error occurs if the INDEX does not lie
+within 0...UPBV(V) inclusive:
+
+   ***** INDEX subscript is out of range
+
+
+MKVECT(UPLIM:integer):vector
+Type: EVAL, SPREAD
+Defines and allocates space for a vector with UPLIM+1 elements
+accessed as 0...UPLIM. Each element is initialized to NIL. An error
+will occur if UPLIM is < 0 or there is not enough space for a vector
+of this size:
+
+   ***** A vector of size UPLIM cannot be allocated
+
+
+PUTV(V:vector, INDEX:integer, VALUE:any):any
+Type: EVAL, SPREAD
+Stores VALUE into the vector V at position INDEX. VALUE is returned.
+The type mismatch error may occur. If INDEX does not lie in
+0...UPBV(V) an error occurs:
+
+   ***** INDEX subscript is out of range
+
+
+UPBV(U:any):{NIL,integer}
+Type: EVAL, SPREAD
+Returns the upper limit of U if U is a vector, or NIL if it is not.
+
+
+
+
+
+
+
+Standard LISP Report.                                                  22
+3.10 Boolean Functions and Conditionals.
+
+3.10 Boolean Functions and Conditionals.
+
+
+
+AND([U:any]):extra-boolean
+Type: NOEVAL, NOSPREAD
+AND evaluates each U until a value of NIL is found or the end of the
+list is encountered. If a non-NIL value is the last value it is
+returned, or NIL is returned.
+
+FEXPR PROCEDURE AND(U);
+BEGIN
+   IF NULL U THEN RETURN NIL;
+LOOP: IF NULL CDR U THEN RETURN EVAL CAR U
+        ELSE IF NULL EVAL CAR U THEN RETURN NIL;
+   U := CDR U;
+   GO LOOP
+END;
+
+
+COND([U:cond-form]):any
+Type: NOEVAL, NOSPREAD
+The antecedents of all U's are evaluated in order of their appearance
+until a non-NIL value is encountered. The consequent of the selected
+U is evaluated and becomes the value of the COND. The consequent may
+also contain the special functions GO and RETURN subject to the
+restraints given for these functions in the "Program Feature
+Functions" section. In these cases COND does not have a defined
+value, but rather an effect. If no antecedent is non-NIL the value of
+COND is NIL. An error is detected if a U is improperly formed:
+
+   ***** Improper cond-form as argument of COND
+
+
+NOT(U:any):boolean
+Type: EVAL, SPREAD
+If U is NIL, return T else return NIL (same as NULL function).
+
+EXPR PROCEDURE NOT(U);
+  U EQ NIL;
+
+
+
+
+Standard LISP Report.                                                  23
+3.10 Boolean Functions and Conditionals.
+
+OR([U:any]):extra-boolean
+Type: NOEVAL, NOSPREAD
+U is any number of expressions which are evaluated in order of their
+appearance. When one is found to be non-NIL it is returned as the
+value of OR. If all are NIL, NIL is returned.
+
+FEXPR PROCEDURE OR(U);
+BEGIN SCALAR X;
+LOOP: IF NULL U THEN RETURN NIL
+     ELSE IF (X := EVAL CAR U) THEN RETURN X;
+   U := CDR U;
+   GO LOOP
+END;
+
+
+
+
+
+3.11 Arithmetic Functions.
+
+     Conversions between numeric types are provided explicitly by the
+FIX and FLOAT functions and implicitly by any multi-parameter
+arithmetic function which receives mixed types of arguments. A
+conversion from fixed to floating point numbers may result in a loss
+of precision without a warning message being generated. Since
+integers may have a greater magnitude that that permitted for
+floating numbers, an error may be signaled when the attempted
+conversion cannot be done. Because the magnitude of integers is
+unlimited the conversion of a floating point number to a fixed number
+is always possible, the only loss of precision being the digits to
+the right of the decimal point which are truncated. If a function
+receives mixed types of arguments the general rule will have the
+fixed numbers converted to floating before arithmetic operations are
+performed. In all cases an error occurs if the parameter to an
+arithmetic function is not a number:
+
+   ***** XXX parameter to FUNCTION is not a number
+
+XXX is the value of the parameter at fault and FUNCTION is the name
+of the function that detected the error. Exceptions to the rule are
+noted where they occur.
+
+
+
+
+ABS(U:number):number
+Type: EVAL, SPREAD
+Returns the absolute value of its argument.
+
+EXPR PROCEDURE ABS(U);
+  IF LESSP(U, 0) THEN MINUS(U) ELSE U;
+
+
+
+
+Standard LISP Report.                                                  24
+3.11 Arithmetic Functions.
+
+DIFFERENCE(U:number, V:number):number
+Type: EVAL, SPREAD
+The value U - V is returned.
+
+
+DIVIDE(U:number, V:number):dotted-pair
+Type: EVAL, SPREAD
+The dotted-pair (quotient . remainder) is returned. The quotient part
+is computed the same as by QUOTIENT and the remainder the same as by
+REMAINDER. An error occurs if division by zero is attempted:
+
+   ***** Attempt to divide by 0 in DIVIDE
+
+EXPR PROCEDURE DIVIDE(U, V);
+  (QUOTIENT(U, V) . REMAINDER(U, V));
+
+
+EXPT(U:number, V:integer):number
+Type: EVAL, SPREAD
+Returns U raised to the V power. A floating point U to an integer
+power V does not have V changed to a floating number before
+exponentiation.
+
+
+FIX(U:number):integer
+Type: EVAL, SPREAD
+Returns an integer which corresponds to the truncated value of U. The
+result of conversion must retain all significant portions of U. If U
+is an integer it is returned unchanged.
+
+
+FLOAT(U:number):floating
+Type: EVAL, SPREAD
+The floating point number corresponding to the value of the argument
+U is returned. Some of the least significant digits of an integer may
+be lost do to the implementaion of floating point numbers. FLOAT of a
+floating point number returns the number unchanged. If U is too large
+to represent in floating point an error occurs:
+
+   ***** Argument to FLOAT is too large
+
+
+GREATERP(U:number, V:number):boolean
+Type: EVAL, SPREAD
+Returns T if U is strictly greater than V, otherwise returns NIL.
+
+
+LESSP(U:number, V:number):boolean
+Type: EVAL, SPREAD
+Returns T if U is strictly less than V, otherwise returns NIL.
+
+
+
+
+Standard LISP Report.                                                  25
+3.11 Arithmetic Functions.
+
+MAX([U:number]):number
+Type: NOEVAL, NOSPREAD, or MACRO
+Returns the largest of the values in U. If two or more values are the
+same the first is returned.
+
+MACRO PROCEDURE MAX(U);
+  EXPAND(CDR U, 'MAX2);
+
+
+MAX2(U:number, V:number):number
+Type: EVAL, SPREAD
+Returns the larger of U and V. If U and V are the same value U is
+returned (U and V might be of different types).
+
+EXPR PROCEDURE MAX2(U, V);
+  IF LESSP(U, V) THEN V ELSE U;
+
+
+MIN([U:number]):number
+Type: NOEVAL, NOSPREAD, or MACRO
+Returns the smallest of the values in U. If two ore more values are
+the same the first of these is returned.
+
+MACRO PROCEDURE MIN(U);
+  EXPAND(CDR U, 'MIN2);
+
+
+MIN2(U:number, V:number):number
+Type: EVAL, SPREAD
+Returns the smaller of its arguments. If U and V are the same value,
+U is returned (U and V might be of different types).
+
+EXPR PROCEDURE MIN2(U, V);
+  IF GREATERP(U, V) THEN V ELSE U;
+
+
+MINUS(U:number):number
+Type: EVAL, SPREAD
+Returns -U.
+
+EXPR PROCEDURE MINUS(U);
+  DIFFERENCE(0, U);
+
+
+PLUS([U:number]):number
+Type: NOEVAL, NOSPREAD, or MACRO
+Forms the sum of all its arguments.
+
+MACRO PROCEDURE PLUS(U);
+  EXPAND(CDR U, 'PLUS2);
+
+
+
+
+Standard LISP Report.                                                  26
+3.11 Arithmetic Functions.
+
+PLUS2(U:number, V:number):number
+Type: EVAL, SPREAD
+Returns the sum of U and V.
+
+
+QUOTIENT(U:number, V:number):number
+Type: EVAL, SPREAD
+The quotient of U divided by V is returned. Division of two positive
+or two negative integers is conventional. When both U and V are
+integers and exactly one of them is negative the value returned is
+the negative truncation of the absolute value of U divided by the
+absolute value of V. An error occurs if division by zero is
+attempted:
+
+   ***** Attempt to divide by 0 in QUOTIENT
+
+
+REMAINDER(U:number, V:number):number
+Type: EVAL, SPREAD
+If both U and V are integers the result is the integer remainder of U
+divided by V. If either parameter is floating point, the result is
+the difference between U and V*(U/V) all in floating point. If either
+number is negative the remainder is negative. If both are positive or
+both are negative the remainder is positive. An error occurs if V is
+zero:
+
+   ***** Attempt to divide by 0 in REMAINDER
+
+EXPR PROCEDURE REMAINDER(U, V);
+  DIFFERENCE(U, TIMES2(QUOTIENT(U, V), V));
+
+
+TIMES([U:number]):number
+Type: NOEVAL, NOSPREAD, or MACRO
+Returns the product of all its arguments.
+
+MACRO PROCEDURE TIMES(U);
+  EXPAND(CDR U, 'TIMES2);
+
+
+TIMES2(U:number, V:number):number
+Type: EVAL, SPREAD
+Returns the product of U and V.
+
+
+
+
+
+
+
+Standard LISP Report.                                                  27
+3.12 MAP Composite Functions.
+
+3.12 MAP Composite Functions.
+
+
+
+MAP(X:list, FN:function):any
+Type: EVAL, SPREAD
+Applies FN to successive CDR segments of X. NIL is returned.
+
+EXPR PROCEDURE MAP(X, FN);
+  WHILE X DO << FN X;
+              X := CDR X >>;
+
+
+MAPC(X:list, FN:function):any
+Type: EVAL, SPREAD
+FN is applied to successive CAR segments of list X. NIL is returned.
+
+EXPR PROCEDURE MAPC(X, FN);
+  WHILE X DO << FN CAR X;
+              X := CDR X >>;
+
+
+MAPCAN(X:list, FN:function):any
+Type: EVAL, SPREAD
+A concatenated list of FN applied to successive CAR elements of X is
+returned.
+
+EXPR PROCEDURE MAPCAN(X, FN);
+  IF NULL X THEN NIL
+    ELSE NCONC(FN CAR X, MAPCAN(CDR X, FN));
+
+
+MAPCAR(X:list, FN:function):any
+Type: EVAL, SPREAD
+Returned is a constructed list of FN applied to each CAR of list X.
+
+EXPR PROCEDURE MAPCAR(X, FN);
+  IF NULL X THEN NIL
+    ELSE FN CAR X . MAPCAR(CDR X, FN);
+
+
+MAPCON(X:list, FN:function):any
+Type: EVAL, SPREAD
+Returned is a concatenated list of FN applied to successive CDR
+segments of X.
+
+EXPR PROCEDURE MAPCON(X, FN);
+  IF NULL X THEN NIL
+    ELSE NCONC(FN X, MAPCON(CDR X, FN));
+
+
+
+
+Standard LISP Report.                                                  28
+3.12 MAP Composite Functions.
+
+MAPLIST(X:list, FN:function):any
+Type: EVAL, SPREAD
+Returns a constructed list of FN applied to successive CDR segments
+of X.
+
+EXPR PROCEDURE MAPLIST(X, FN);
+  IF NULL X THEN NIL
+    ELSE FN X . MAPLIST(CDR X, FN);
+
+
+
+
+
+3.13 Composite Functions.
+
+
+
+APPEND(U:list, V:list):list
+Type: EVAL, SPREAD
+Returns a constructed list in which the last element of U is followed
+by the first element of V. The list U is copied, V is not.
+
+EXPR PROCEDURE APPEND(U, V);
+  IF NULL U THEN V
+    ELSE CAR U . APPEND(CDR U, V);
+
+
+ASSOC(U:any, V:alist):{dotted-pair, NIL}
+Type: EVAL, SPREAD
+If U occurs as the CAR portion of an element of the alist V, the
+dotted-pair in which U occurred is returned, else NIL is returned.
+ASSOC might not detect a poorly formed alist so an invalid
+construction may be detected by CAR or CDR.
+
+EXPR PROCEDURE ASSOC(U, V);
+  IF NULL V THEN NIL
+    ELSE IF ATOM CAR V THEN
+      ERROR(000, LIST(V, "is a poorly formed alist"))
+    ELSE IF U = CAAR V THEN CAR V
+    ELSE ASSOC(U, CDR V);
+
+
+
+
+Standard LISP Report.                                                  29
+3.13 Composite Functions.
+
+DEFLIST(U:dlist, IND:id):list
+Type: EVAL, SPREAD
+A "dlist" is a list in which each element is a two element list:
+(ID:id PROP:any). Each ID in U has the indicator IND with property
+PROP placed on its property list by the PUT function. The value of
+DEFLIST is a list of the first elements of each two element list.
+Like PUT, DEFLIST may not be used to define functions.
+
+EXPR PROCEDURE DEFLIST(U, IND);
+  IF NULL U THEN NIL
+    ELSE <<PUT(CAAR U, IND, CADAR U);
+           CAAR U >> . DEFLIST(CDR U, IND);
+
+
+DELETE(U:any, V:list):list
+Type: EVAL, SPREAD
+Returns V with the first top level occurrence of U removed from it.
+
+EXPR PROCEDURE DELETE(U, V);
+  IF NULL V THEN NIL
+    ELSE IF CAR V = U THEN CDR V
+    ELSE CAR V . DELETE(U, CDR V);
+
+
+DIGIT(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a digit, otherwise NIL.
+
+EXPR PROCEDURE DIGIT(U);
+  IF MEMQ(U, '(!0 !1 !2 !3 !4 !5 !6 !7 !8 !9))
+    THEN T ELSE NIL;
+
+
+LENGTH(X:any):integer
+Type: EVAL, SPREAD
+The top level length of the list X is returned.
+
+EXPR PROCEDURE LENGTH(X);
+  IF ATOM X THEN 0
+    ELSE PLUS(1, LENGTH CDR X);
+
+
+LITER(U:any):boolean
+Type: EVAL, SPREAD
+Returns T if U is a character of the alphabet, NIL otherwise.
+
+EXPR PROCEDURE LITER(U);
+  IF MEMQ(U, '(A B C D E F G H I J K L M N O P Q R S T
+           U V W X Y Z a b c d e f g h i j k l m n o p
+           q r s t u v w x y z))
+  THEN T ELSE NIL;
+
+
+
+
+Standard LISP Report.                                                  30
+3.13 Composite Functions.
+
+MEMBER(A:any, B:list):extra-boolean
+Type: EVAL, SPREAD
+Returns NIL if A is not a member of list B, returns the remainder of
+B whose first element is A.
+
+EXPR PROCEDURE MEMBER(A, B);
+  IF NULL B THEN NIL
+    ELSE IF A = CAR B THEN B
+    ELSE MEMBER(A, CDR B);
+
+
+MEMQ(A:any, B:list):extra-boolean
+Type: EVAL, SPREAD
+Same as MEMBER but an EQ check is used for comparison.
+
+EXPR PROCEDURE MEMQ(A, B);
+  IF NULL B THEN NIL
+    ELSE IF A EQ CAR B THEN B
+    ELSE MEMQ(A, CDR B);
+
+
+NCONC(U:list, V:list):list
+Type: EVAL, SPREAD
+Concatenates V to U without copying U. The last CDR of U is modified
+to point to V.
+
+EXPR PROCEDURE NCONC(U, V);
+BEGIN SCALAR W;
+  IF NULL U THEN RETURN V;
+  W := U;
+  WHILE CDR W DO W := CDR W;
+  RPLACD(W, V);
+  RETURN U
+END;
+
+
+PAIR(U:list, V:list):alist
+Type: EVAL, SPREAD
+U and V are lists which must have an identical number of elements. If
+not, an error occurs (the 000 used in the ERROR call is arbitrary and
+need not be adhered to). Returned is a list where each element is a
+dotted-pair, the CAR of the pair being from U, and the CDR the
+corresponding element from V.
+
+EXPR PROCEDURE PAIR(U, V);
+  IF AND(U, V) THEN (CAR U . CAR V) . PAIR(CDR U, CDR V)
+    ELSE IF OR(U, V) THEN ERROR(000,
+            "Different length lists in PAIR")
+    ELSE NIL;
+
+
+
+
+Standard LISP Report.                                                  31
+3.13 Composite Functions.
+
+REVERSE(U:list):list
+Type: EVAL, SPREAD
+Returns a copy of the top level of U in reverse order.
+
+EXPR PROCEDURE REVERSE(U);
+BEGIN SCALAR W;
+  WHILE U DO << W := CAR U . W;
+                U := CDR U >>;
+  RETURN W
+END;
+
+
+SASSOC(U:any, V:alist, FN:function):any
+Type: EVAL, SPREAD
+Searches the alist V for an occurrence of U. If U is not in the alist
+the evaluation of function FN is returned.
+
+EXPR PROCEDURE SASSOC(U, V, FN);
+  IF NULL V THEN FN()
+    ELSE IF U = CAAR V THEN CAR V
+    ELSE SASSOC(U, CDR V, FN);
+
+
+SUBLIS(X:alist, Y:any):any
+Type: EVAL, SPREAD
+The value returned is the result of substituting the CDR of each
+element of the alist X for every occurrence of the CAR part of that
+element in Y.
+
+EXPR PROCEDURE SUBLIS(X, Y);
+  IF NULL X THEN Y
+    ELSE BEGIN SCALAR U;
+      U := ASSOC(Y, X);
+      RETURN IF U THEN CDR U
+             ELSE IF ATOM Y THEN Y
+             ELSE SUBLIS(X, CAR Y) . SUBLIS(X, CDR Y)
+      END;
+
+
+SUBST(U:any, V:any, W:any):any
+Type: EVAL, SPREAD
+The value returned is the result of substituting U for all
+occurrences of V in W.
+
+EXPR PROCEDURE SUBST(U, V, W);
+  IF NULL W THEN NIL
+    ELSE IF V = W THEN U
+    ELSE IF ATOM W THEN W
+    ELSE SUBST(U, V, CAR W) . SUBST(U, V, CDR W);
+
+
+
+
+
+
+
+Standard LISP Report.                                                  32
+3.14 The Interpreter.
+
+3.14 The Interpreter.
+
+
+
+APPLY(FN:{id,function}, ARGS:any-list):any
+Type: EVAL, SPREAD
+APPLY returns the value of FN with actual parameters ARGS. The actual
+parameters in ARGS are already in the form required for binding to
+the formal parameters of FN.
+
+
+EXPR PROCEDURE APPLY(FN, ARGS);
+BEGIN SCALAR DEFN;
+   IF CODEP FN THEN RETURN
+     {Spread the actual parameters in ARGS following the conventions
+      for calling functions, transfer to the entry point of the
+      function, and return the value returned by the function.};
+   IF IDP FN THEN RETURN
+     IF NULL(DEFN := GETD FN) THEN
+       ERROR(000, LIST(FN, "is an undefined function"))
+     ELSE IF CAR DEFN EQ 'EXPR THEN
+       APPLY(CDR DEFN, ARGS)
+     ELSE ERROR(000, LIST(FN, "cannot be evaluated by APPLY"));
+   IF OR(ATOM FN, NOT(CAR FN EQ 'LAMBDA)) THEN
+     ERROR(000, LIST(FN, "cannot be evaluated by APPLY"));
+   RETURN
+     {Bind the actual parameters in ARGS to the formal parameters of
+      the lambda expression. If the two lists are not of equal length
+      then ERROR(000, "Number of parameters do not match"); The value
+      returned is EVAL CADDR FN.}
+END;
+
+
+EVAL(U:any):any
+Type: EVAL, SPREAD
+The value of the expression U is computed. Error numbers are
+arbitrary. Portions of EVAL involving machine specific coding are
+expressed in English enclosed in brackets {...}.
+
+EXPR PROCEDURE EVAL(U);
+BEGIN SCALAR FN;
+   IF CONSTANTP U THEN RETURN U;
+   IF IDP U THEN RETURN
+     {U is an id. Return the value most currently bound to U or if
+      there is no such binding: ERROR(000, LIST("Unbound:", U))};
+   IF PAIRP CAR U THEN RETURN
+     IF CAAR U EQ 'LAMBDA THEN APPLY(CAR U, EVLIS CDR U)
+     ELSE ERROR(000, LIST(CAR U,
+               "improperly formed LAMBDA expression"))
+   ELSE IF CODEP CAR U THEN RETURN APPLY(CAR U, EVLIS CDR U);
+   FN := GETD CAR U;
+   IF NULL FN THEN
+     ERROR(000, LIST(CAR U, "is an undefined function"))
+   ELSE IF CAR FN EQ 'EXPR THEN
+
+
+Standard LISP Report.                                                  33
+3.14 The Interpreter.
+
+     RETURN APPLY(CDR FN, EVLIS CDR U)
+   ELSE IF CAR FN EQ 'FEXPR THEN
+     RETURN APPLY(CDR FN, LIST CDR U)
+   ELSE IF CAR FN EQ 'MACRO THEN
+     RETURN EVAL APPLY(CDR FN, LIST U)
+END;
+
+
+EVLIS(U:any-list):any-list
+Type: EVAL, SPREAD
+EVLIS returns a list of the evaluation of each element of U.
+
+EXPR PROCEDURE EVLIS(U);
+  IF NULL U THEN NIL
+  ELSE EVAL CAR U . EVLIS CDR U;
+
+
+EXPAND(L:list, FN:function):list
+Type: EVAL, SPREAD
+FN is a defined function of two arguments to be used in the expansion
+of a MACRO. EXPAND returns a list in the form:
+
+   (FN L[0] (FN L[1] ... (FN L[n-1] L[n]) ... ))
+
+"n" is the number of elements in L, L[i] is the ith element of L.
+
+EXPR PROCEDURE EXPAND(L,FN);
+IF NULL CDR L THEN CAR L
+ELSE LIST(FN, CAR L, EXPAND(CDR L, FN));
+
+
+FUNCTION(FN:function):function
+Type: NOEVAL, NOSPREAD
+The function FN is to be passed to another function. If FN is to have
+side effects its free variables must be fluid or global. FUNCTION is
+like QUOTE but its argument may be affected by compilation. We do not
+consider FUNARGs in this report.
+
+
+QUOTE(U:any):any
+Type: NOEVAL, NOSPREAD
+Stops evaluation and returns U unevaluated.
+
+FEXPR PROCEDURE QUOTE(U);
+  CAR U;
+
+
+
+
+
+
+
+Standard LISP Report.                                                  34
+3.15 Input and Output.
+
+3.15 Input and Output.
+
+     The user normally communicates with Standard LISP through
+"standard devices" . The default devices are selected in accordance
+with the conventions of the implementation site. Other input and
+output devices or files may be selected for reading and writing using
+the functions described herein.
+
+
+
+CLOSE(FILEHANDLE:any):any
+Type: EVAL, SPREAD
+Closes the file with the internal name FILEHANDLE writing any
+necessary end of file marks and such. The value of FILEHANDLE is that
+returned by the corresponding OPEN. The value returned is the value
+of FILEHANDLE. An error occurs if the file can not be closed.
+
+   ***** FILEHANDLE could not be closed
+
+
+EJECT():NIL
+Causes a skip to the top of the next output page. Automatic EJECTs
+are executed by the print functions when the length set by the
+PAGELENGTH function is exceeded.
+
+
+LINELENGTH(LEN:{integer, NIL}):integer
+Type: EVAL, SPREAD
+If LEN is an integer the maximum line length to be printed before the
+print functions initiate an automatic TERPRI is set to the value LEN.
+No initial Standard LISP line length is assumed. The previous line
+length is returned except when LEN is NIL. This special case returns
+the current line length and does not cause it to be reset. An error
+occurs if the requested line length is too large for the currently
+selected output file or LEN is negative or zero.
+
+   ***** LEN is an invalid line length
+
+
+LPOSN():integer
+Returns the number of lines printed on the current page. At the top
+of a page, 0 is returned.
+
+
+
+
+Standard LISP Report.                                                  35
+3.15 Input and Output.
+
+OPEN(FILE:any, HOW:id):any
+Type: EVAL, SPREAD
+Open the file with the system dependent name FILE for output if HOW
+is EQ to OUTPUT, or input if HOW is EQ to INPUT. If the file is
+opened successfully, a value which is internally associated with the
+file is returned. This value must be saved for use by RDS and WRS. An
+error occurs if HOW is something other than INPUT or OUTPUT or the
+file can't be opened.
+
+   ***** HOW is not option for OPEN
+   ***** FILE could not be opened
+
+
+PAGELENGTH(LEN:{integer, NIL}):integer
+Type: EVAL, SPREAD
+Sets the vertical length (in lines) of an output page. Automatic page
+EJECTs are executed by the print functions when this length is
+reached. The initial vertical length is implementation specific. The
+previous page length is returned. If LEN is 0, no automatic page
+ejects will occur.
+
+
+POSN():integer
+Returns the number of characters in the output buffer. When the
+buffer is empty, 0 is returned.
+
+
+PRINC(U:id):id
+Type: EVAL, SPREAD
+U must be a single character id such as produced by EXPLODE or read
+by READCH or the value of !$EOL!$. The effect is the character U
+displayed upon the currently selected output device. The value of
+!$EOL!$ causes termination of the current line like a call to TERPRI.
+
+
+PRINT(U:any):any
+Type: EVAL, SPREAD
+Displays U in READ readable format and terminates the print line. The
+value of U is returned.
+
+EXPR PROCEDURE PRINT(U);
+BEGIN
+  PRIN1 U;
+  TERPRI();
+  RETURN U
+END;
+
+
+
+
+Standard LISP Report.                                                  36
+3.15 Input and Output.
+
+PRIN1(U:any):any
+Type: EVAL, SPREAD
+U is displayed in a READ readable form. The format of display is the
+result of EXPLODE expansion; special characters are prefixed with the
+escape character !, and strings are enclosed in "...". Lists are
+displayed in list-notation and vectors in vector-notation .
+
+
+PRIN2(U:any):any
+Type: EVAL, SPREAD
+U is displayed upon the currently selected print device but output is
+not READ readable. The value of U is returned. Items are displayed as
+described in the EXPLODE function with the exceptions that the escape
+character does not prefix special characters and strings are not
+enclosed in "...". Lists are displayed in list-notation and vectors
+in vector-notation. The value of U is returned.
+
+
+RDS(FILEHANDLE:any):any
+Type: EVAL, SPREAD
+Input from the currently selected input file is suspended and further
+input comes from the file named. FILEHANDLE is a system dependent
+internal name which is a value returned by OPEN. If FILEHANDLE is NIL
+the standard input device is selected. When end of file is reached on
+a non-standard input device, the standard input device is reselected.
+When end of file occurs on the standard input device the Standard
+LISP reader terminates. RDS returns the internal name of the
+previously selected input file.
+
+   ***** FILEHANDLE could not be selected for input
+
+
+READ():any
+Returns the next expression from the file currently selected for
+input. Valid input forms are: vector-notation, dot-notation,
+list-notation, numbers, function-pointers, strings, and identifiers
+with escape characters. Identifiers are interned on the OBLIST (see
+the INTERN function in the "Identifiers" section). READ returns the
+value of !$EOF!$ when the end of the currently selected input file is
+reached.
+
+
+READCH():id
+Returns the next interned character from the file currently selected
+for input. Two special cases occur. If all the characters in an input
+record have been read, the value of !$EOL!$ is returned. If the file
+selected for input has all been read the value of !$EOF!$ is
+returned.
+
+
+TERPRI():NIL
+The current print line is terminated.
+
+
+
+
+Standard LISP Report.                                                  37
+3.15 Input and Output.
+
+WRS(FILEHANDLE:any):any
+Type: EVAL, SPREAD
+Output to the currently active output file is suspended and further
+output is directed to the file named. FILEHANDLE is an internal name
+which is returned by OPEN. The file named must have been opened for
+output. If FILEHANDLE is NIL the standard output device is selected.
+WRS returns the internal name of the previously selected output file.
+
+   ***** FILEHANDLE could not be selected for output
+
+
+
+
+
+3.16 LISP Reader.
+
+     An EVAL read loop has been chosen to drive a Standard LISP
+system to provide a continuity in functional syntax. Choices of
+messages and the amount of extra information displayed are decisions
+left to the implementor.
+
+EXPR PROCEDURE STANDARD!-LISP();
+BEGIN SCALAR VALUE;
+  RDS NIL;  WRS NIL;
+  PRIN2 "Standard LISP"; TERPRI();
+  WHILE T DO
+   << PRIN2 "EVAL:"; TERPRI();
+      VALUE := ERRORSET(QUOTE EVAL READ(), T, T);
+      IF NOT ATOM VALUE THEN PRINT CAR VALUE;
+      TERPRI() >>;
+END;
+
+
+Standard LISP Report.                                                  38
+4. System GLOBAL Variables.
+
+
+
+4. System GLOBAL Variables.
+
+     These variables provide global control of the LISP system, or
+implement values which are constant throughout execution.
+
+
+!*COMP - Initial value = NIL.
+The value of !*COMP controls whether or not PUTD compiles the
+function defined in its arguments before defining it. If !*COMP is
+NIL the function is defined as an xEXPR. If !*COMP is something else
+the function is first compiled. Compilation will produce certain
+changes in the semantics of functions particularly FLUID type access.
+
+
+EMSG!* - Initial value = NIL.
+Will contain the MESSAGE generated by the last ERROR call (see the
+"Error Handling" section).
+
+
+!$EOF!$ - Value = an uninterned identifier
+The value of !$EOF!$ is returned by all input functions when the end
+of the currently selected input file is reached.
+
+
+!$EOL!$ - Value = an uninterned identifier
+The value of !$EOL!$ is returned by READCH when it reaches the end of
+a logical input record. Likewise PRINC will terminate its current
+line (like a call to TERPRI) when !$EOL!$ is its argument.
+
+
+NIL - Value = NIL
+NIL is a special global variable. It is protected from being modified
+by SET or SETQ.
+
+
+!*RAISE - Initial value = NIL
+If !*RAISE is T all characters input through Standard LISP
+input/output functions will be raised to upper case. If !*RAISE is
+NIL characters will be input as is.
+
+
+T - Value = T
+T is a special global variable. It is protected from being modified
+by SET or SETQ.
+
+
+Standard LISP Report.                                                  39
+
+
+
+Acknowledgment. The authors would like to thank the following persons
+whose helpful comments contributed to the completion of this
+document. J. Fitch, I. Frick, E. Goto, S. Harrington, R. Jenks, A.
+Lux, A. Norman, M. Rothstein, M. Wirth.
+
+
+Standard LISP Report.                                                  40
+List of References.
+
+
+
+List of References
+
+
+
+[1] M. L. Griss, A. C. Hearn, A Portable LISP Compiler, (in
+preparation).
+
+[2] A. C. Hearn, Standard LISP, SIGPLAN Notices, ACM, Vol. 4, No. 9,
+September 1966, Reprinted in SIGSAM Bulletin, ACM, Vol. 13, 1969, p.
+28-49.
+
+[3] A. C. Hearn, REDUCE 2 Symbolic Mode Primer, Utah Computational
+Physics, Operating Note No. 5.1, October 1974.
+-, REDUCE 2 User's Manual, Utah Computational Physics, UCP-19, March
+1973.
+
+[4] LISP Reference Manual, CDC-6000, Computation Center, The
+University of Texas at Austin.
+
+[5] LISP/360 Reference Manual, Stanford Center for Information
+Processing, Stanford University.
+
+[6] John McCarthy, Paul W. Abrahams, Daniel J. Edwards, Timothy P.
+Hart, Michael I. Levin, LISP 1.5 Programmers Manual, The Computation
+Center and Research Laboratory of Electronics, Massachusettes
+Institute of Technology, The M.I.T. Press, Cambridge, Massachusettes,
+1965.
+
+[7] MACLISP Reference Manual, March 6, 1976.
+
+[8] J. Strother Moore II, The INTERLISP Virtual Machine
+Specification, CSL 76-5 September 1976, XEROX, Palo Alto Research
+Center.
+
+[9] Mats Nordstrom, Erik Sandewall, Diz Breslow, LISP F1: A FORTRAN
+Implementation of LISP 1.5, Uppsala University, Department of
+Computer Sciences.
+
+[10] Lynn H. Quam, Whitfield Diffie, Stanford LISP 1.6 Manual,
+Stanford Artificial Intelligence Laboratory, Operating Note 28.7.
+
+[11] Warren Teitelman, INTERLISP Reference Manual, XEROX, Palo Alto
+Research Center, 1974.
+
+[12] Clark Weissman, LISP 1.5 Primer, Dickenson Publishing Company,
+Inc., 1967.
+
+
+Standard LISP Report.                                                  41
+Appendix A. The Extended Syntax.
+
+
+
+The Extended Syntax.
+
+     Whenever it is possible to define Standard LISP functions in
+LISP the text of the function will appear in an extended syntax.
+These definitions are supplied as an aid to understanding the
+behavior of functions and not as a strict implementation guide.  A
+formal scheme for the translation of extended syntax to Standard LISP
+is presented to eliminate misinterpretation of the definitions.
+
+     The goal of the transformation scheme is to produce a PUTD
+invocation which has the function translated from the extended syntax
+as its actual parameter.  A rule has a name in brackets <...> by
+which it is known and is defined by what follows the meta symbol ::=.
+Each rule of the set consists of one or more "alternatives" separated
+by the | meta symbol, being the different ways in which the rule will
+be matched by source text.  Each alternative is composed of a
+"recognizer" and a "generator" separated by the ==> meta symbol.  The
+recognizer is a concatenation of any of three different forms.  1)
+Terminals - Upper case lexemes and punctuation which is not part of
+the meta syntax represent items which must appear as is in the source
+text for the rule to succeed.  2) Rules - Lower case lexemes enclosed
+in <...> are names of other rules.  The source text is matched if the
+named rule succeeds.  3) Primitives - Lower case singletons not in
+brackets are names of primitives or primitive classes of Standard
+LISP.  The syntax and semantics of the primitives are given in Part
+I.
+
+     The recognizer portion of the following rule matches an extended
+syntax procedure:
+
+
+<function> ::= ftype PROCEDURE id (<id list>); <statement>; ==>
+
+
+     A function is recognized as an "ftype" (one of the tokens EXPR,
+FEXPR, etc.) followed by the keyword PROCEDURE, followed by an "id"
+(the name of the function), followed by an "<id list>" (the formal
+parameter names) enclosed in parentheses.  A semicolon terminates the
+title line.  The body of the function is a <statement> followed by a
+semicolon.  For example:
+
+
+EXPR PROCEDURE NULL(X); EQ(X, NIL);
+
+
+satisfies the recognizer, causes the generator to be activated and
+the rule to be matched successfully.
+
+     The generator is a template into which generated items are
+substituted.  The three syntactic entities have corresponding
+meanings when they appear in the generator portion.  1) Terminals -
+These lexemes are copied as is to the generated text.  2) Rules - If
+
+
+Standard LISP Report.                                                  42
+Appendix A. The Extended Syntax.
+
+a rule has succeeded in the recognizer section then the value of the
+rule is the result of the generator portion of that rule.  3)
+Primitives - When primitives are matched the primitive lexeme
+replaces its occurrence in the generator.
+
+     If more than one occurrence of an item would cause ambiguity in
+the generator portion this entity appears with a bracketed subscript.
+Thus:
+
+
+<conditional> ::=
+     IF <expression> THEN <statement[1]> ELSE <statement[2]>...
+
+
+has occurrences of two different <statement>s.  The generator portion
+uses the subscripted entities to reference the proper generated
+value.
+
+     The <function> rule appears in its entirety as:
+
+
+<function> ::= ftype PROCEDURE id (<id list>); <statement>;
+   ==> (PUTD (QUOTE id) (QUOTE ftype)
+         (QUOTE (LAMBDA (<id list>) <statement>)))
+
+
+     If the recognizer succeeds (as it would in the case of the NULL
+procedure example) the generator returns:
+
+
+(PUTD (QUOTE NULL) (QUOTE EXPR) (QUOTE (LAMBDA (X) (EQ X NIL))))
+
+
+The identifier in the template is replaced by the procedure name
+NULL, <id list> by the single formal parameter X, the <statement> by
+(EQ X NIL) which is the result of the <statement> generator.  EXPR
+replaces ftype, the type of the defined procedure.
+
+
+
+                      The Extended Syntax Rules
+
+
+<function> ::= ftype PROCEDURE id (<id list>); <statement>;
+   ==> (PUTD (QUOTE id) (QUOTE ftype)
+          (QUOTE (LAMBDA (<id list>) <statement>)))
+
+<id list> ::= id ==> id
+   | id, <id list> ==> id <id list>
+
+<statement> ::= <expression> ==> <expression>
+   | <proper statement> ==> <proper statement>
+
+<proper statement> ::=
+
+
+Standard LISP Report.                                                  43
+Appendix A. The Extended Syntax.
+
+     <assignment statement> ==> <assignment statement>
+   | <conditional statement> ==> <conditional statement>
+   | <while statement> ==> <while statement>
+   | <compound statement> ==> <compound statement>
+
+<assignment statement> ::= id := <expression>
+   ==> (SETQ id <expression>)
+
+<conditional statement> ::=
+   IF <expression> THEN <statement[1]> ELSE <statement[2]>
+     ==> (COND (<expression> <statement[1]>)
+               (T <statement[2]>))
+   | IF <expression> THEN <statement>
+     ==> (COND (<expression> <statement>))
+
+<while statement> ::= WHILE <expression> DO <statement>
+   ==> (PROG NIL
+        LBL (COND ((NULL <expression>) (RETURN NIL)))
+            <statement>
+            (GO LBL))
+
+<compound statement> ::=
+     BEGIN SCALAR <id list>; <program list> END
+      ==> (PROG (<id list>) <program list>)
+   | BEGIN <program list> END
+      ==> (PROG NIL <program list>)
+   | << <statement list> >> ==> (PROGN <statement list>)
+
+<program list> ::= <full statement> ==> <full statement>
+   | <full statement> <program list>
+      ==> <full statement> <program list>
+
+<full statement> ::= <statement> ==> <statement>
+   | id: ==> id
+
+<statement list> ::= <statement> ==> <statement>
+   | <statement>; <statement list>
+      ==> <statement> <statement list>
+
+<expression> ::= <expression[1]> .  <expression[2]>
+      ==> (CONS <expression[1]> <expression[2]>
+   | <expression[1]> = <expression[2]>
+      ==> (EQUAL <expression[1]> <expression[2]>)
+   | <expression[1]> EQ <expression[2]>
+      ==> (EQ <expression[1]> <expression[2]>)
+   | '<expression> ==> (QUOTE <expression>)
+   | function <expression> ==> (function <expression>)
+   | function(<argument list>)
+      ==> (function <argument list>)
+   | number ==> number
+   | id ==> id
+
+<argument list> ::= () ==>
+   | <expression> ==> <expression>
+
+
+Standard LISP Report.                                                  44
+Appendix A. The Extended Syntax.
+
+   | <expression>, <argument list>
+      ==> <expression> <argument list>
+
+
+
+
+     Notice the three infix operators .  EQ and = which are
+translated into calls on CONS, EQ, and EQUAL respectively.  Note also
+that a call on a function which has no formal parameters must have ()
+as an argument list.  The QUOTE function is abbreviated by '.
+
+
+Standard LISP Report.                                                  45
+Appendix B. Alphabetical List of Functions
+
+
+
+The following is an alphabetical list of the Standard LISP functions
+with formal parameters and the page on which they are defined.
+
+
+
+     ABS(U:number):number                                   23
+     AND([U:any]):extra-boolean                             22
+     APPEND(U:list, V:list):list                            28
+     APPLY(FN:{id,function}, ARGS:any-list):any             32
+     ASSOC(U:any, V:alist):{dotted-pair,NIL}                28
+     ATOM(U:any):boolean                                    9
+
+     CAR(U:dotted-pair):any                                 11
+     CDR(U:dotted-pair):any                                 11
+     CLOSE(FILEHANDLE:any):any                              34
+     CODEP(U:any):boolean                                   9
+     COMPRESS(U:id-list):{atom}-{vector}                    12
+     COND([U:cond-form]):any                                22
+     CONS(U:any, V:any):dotted-pair                         11
+     CONSTANTP(U:any):boolean                               9
+
+     DE(FNAME:id, PARAMS:id-list, FN:any):id                15
+     DEFLIST(U:dlist, IND:id):list                          29
+     DELETE(U:any, V:list):list                             29
+     DF(FNAME:id, PARAM:id-list, FN:any):id                 15
+     DIFFERENCE(U:number, V:number):number                  24
+     DIGIT(U:any):boolean                                   29
+     DIVIDE(U:number, V:number):dotted-pair                 24
+     DM(MNAME:id, PARAM:id-list, FN:any):id                 15
+
+     EJECT():NIL                                            34
+     EQ(U:any, V:any):boolean                               9
+     EQN(U:any, V:any):boolean                              9
+     EQUAL(U:any, V:any):boolean                            9
+     ERROR(NUMBER:integer, MESSAGE:any)                     20
+     ERRORSET(U:any, MSGP:boolean, TR:boolean):any          20
+     EVAL(U:any):any                                        32
+     EVLIS(U:any-list):any-list                             33
+     EXPAND(L:list, FN:function):list                       33
+     EXPLODE(U:{atom}-{vector}):id-list                     12
+     EXPT(U:number, V:integer):number                       24
+
+     FIX(U:number):integer                                  24
+     FIXP(U:any):boolean                                    10
+     FLAG(U:id-list, V:id):NIL                              14
+     FLAGP(U:any, V:any):boolean                            14
+     FLOAT(U:number):floating                               24
+     FLOATP(U:any):boolean                                  10
+     FLUID(IDLIST:id-list):NIL                              17
+     FLUIDP(U:any):boolean                                  17
+     FUNCTION(FN:function):function                         33
+
+
+
+Standard LISP Report.                                                  46
+Appendix B. Alphabetical List of Functions
+
+     GENSYM():id                                            13
+     GET(U:any, IND:any):any                                14
+     GETD(FNAME:any):{NIL, dotted-pair}                     15
+     GETV(V:vector, INDEX:integer):any                      21
+     GLOBAL(IDLIST:id-list):NIL                             17
+     GLOBALP(U:any):boolean                                 17
+     GO(LABEL:id)                                           19
+     GREATERP(U:number, V:number):boolean                   24
+
+     IDP(U:any):boolean                                     10
+     INTERN(U:{id,string}):id                               13
+
+     LENGTH(X:any):integer                                  29
+     LESSP(U:number, V:number):boolean                      24
+     LINELENGTH(LEN:{integer,NIL}):integer                  34
+     LIST([U:any]):list                                     11
+     LITER(U:any):boolean                                   29
+     LPOSN():integer                                        34
+
+     MAP(X:list, FN:function):any                           27
+     MAPC(X:list, FN:function):any                          27
+     MAPCAN(X:list, FN:function):any                        27
+     MAPCAR(X:list, FN:function):any                        27
+     MAPCON(X:list, FN:function):any                        27
+     MAPLIST(X:list, FN:function):any                       28
+     MAX([U:number]):number                                 25
+     MAX2(U:number, V:number):number                        25
+     MEMBER(A:any, B:list):extra-boolean                    30
+     MEMQ(A:any, B:list):extra-boolean                      30
+     MIN([U:number]):number                                 25
+     MINUS(U:number):number                                 25
+     MIN2(U:number, V:number):number                        25
+     MKVECT(UPLIM:integer):vector                           21
+
+     NCONC(U:list, V:list):list                             30
+     NOT(U:any):boolean                                     22
+     NULL(U:any):boolean                                    10
+     NUMBERP(U:any):boolean                                 10
+
+     OPEN(FILE:any, HOW:id):any                             35
+     OR([U:any]):extra-boolean                              23
+
+     PAGELENGTH(LEN:{integer,NIL}):integer                  35
+     PAIR(U:list, V:list):alist                             30
+     PAIRP(U:any):boolean                                   10
+     PLUS([U:number]):number                                25
+     PLUS2(U:number, V:number):number                       26
+     POSN():integer                                         35
+     PRINC(U:id):id                                         35
+     PRINT(U:any):any                                       35
+     PRIN1(U:any):any                                       36
+     PRIN2(U:any):any                                       36
+     PROG(VARS:id-list, [PROGRAM:{id,any}]):any             19
+     PROGN([U:any]):any                                     19
+
+
+Standard LISP Report.                                                  47
+Appendix B. Alphabetical List of Functions
+
+     PUT(U:id, IND:id, PROP:any):any                        14
+     PUTD(FNAME:id, TYPE:ftype, BODY:function):id           16
+     PUTV(V:vector, INDEX:integer, VALUE:any):any           21
+
+     QUOTE(U:any):any                                       33
+     QUOTIENT(U:number, V:number):number                    26
+
+     RDS(FILEHANDLE:any):any                                36
+     READ():any                                             36
+     READCH():id                                            36
+     REMAINDER(U:number, V:number):number                   26
+     REMD(FNAME:id):{NIL, dotted-pair}                      16
+     REMFLAG(U:any-list, V:id):NIL                          14
+     REMOB(U:id):id                                         13
+     REMPROP(U:any, IND:any):any                            14
+     RETURN(U:any)                                          20
+     REVERSE(U:list):list                                   31
+     RPLACA(U:dotted-pair, V:any):dotted-pair               12
+     RPLACD(U:dotted-pair, V:any):dotted-pair               12
+
+     SASSOC(U:any, V:alist, FN:function):any                31
+     SET(EXP:id, VALUE:any):any                             18
+     SETQ(VARIABLE:id, VALUE:any):any                       18
+     STRINGP(U:any):boolean                                 10
+     SUBLIS(X:alist, Y:any):any                             31
+     SUBST(U:any, V:any, W:any):any                         31
+
+     TERPRI():NIL                                           36
+     TIMES([U:number]):number                               26
+     TIMES2(U:number, V:number):number                      26
+
+     UNFLUID(IDLIST:id-list):NIL                            18
+     UPBV(U:any):{NIL,integer}                              21
+
+     VECTORP(U:any):boolean                                 10
+
+     WRS(FILEHANDLE:any):any                                37
+
+
+Standard LISP Report.                                                  48
+Index.
+
+
+
+Index.
+
+
+
+
+!$EOF!$,   36, 38
+!$EOL!$,   36, 38
+!*COMP,   15, 38
+!*RAISE,   38
+
+ABS,   23
+alist,   6
+AND,   22
+antecedent,   6
+any,   6
+APPEND,   28
+APPLY,   32
+Arithmetic Functions,   23
+ASSOC,   28
+association list,   6
+ATOM,   9
+atom,   6
+
+binding,   3
+boolean,   5
+Boolean Functions,   22
+
+C...R composites,   11
+CAR,   11
+CDR,   11
+CLOSE,   34
+CODEP,   5, 9
+Composite functions,   28
+COMPRESS,   12
+COND,   22
+cond-form,   6
+Conditional,   22
+CONS,   11
+consequent,   6
+constant,   6
+CONSTANTP,   9
+
+DE,   15
+DEFLIST,   29
+DELETE,   29
+DF,   15
+DIFFERENCE,   24
+DIGIT,   29
+DIVIDE,   24
+DM,   15
+dot-notation,   4, 36
+dotted-pair,   4
+
+
+
+Standard LISP Report.                                                  49
+Index.
+
+EJECT,   34
+Elementary Predicates,   9
+EMSG!*,   20, 38
+EQ,   9
+EQN,   9
+EQUAL,   9
+ERROR,   20
+ERROR handling,   8, 20
+Error messages,   8
+ERRORSET,   20
+escape character,   4, 13
+EVAL,   32
+EVAL functions,   7
+EVAL, SPREAD functions,   7
+EVAL, SPREAD parameter limit,   7
+EVLIS,   33
+EXPAND,   33
+EXPLODE,   12
+EXPR,   5
+EXPT,   24
+extra-boolean,   5
+
+FEXPR,   5
+FIX,   24
+FIXP,   10
+FLAG,   14
+FLAGP,   14
+flags,   3, 13
+FLOAT,   24
+floating,   3, 12
+FLOATP,   10
+FLUID,   17
+fluid binding,   17
+FLUIDP,   17
+ftype,   5
+funargs,   33
+FUNCTION,   33
+function,   3, 7
+Function Definition,   15
+function-pointer,   5, 13
+Functions on Dotted-Pairs,   11
+
+GENSYM,   13
+GET,   14
+GETD,   15
+GETV,   21
+GLOBAL,   17
+global binding,   16
+GLOBALP,   17
+GO,   19
+GREATERP,   24
+
+id,   3, 13
+identifiers,   3, 12
+
+
+Standard LISP Report.                                                  50
+Index.
+
+IDP,   10
+indicator,   13
+Input and output,   34
+integer,   3, 12
+INTERN,   13
+Interpreter,   32
+
+lambda,   6
+LAMBDA expression,   6
+LENGTH,   29
+LESSP,   24
+LINELENGTH,   34
+LISP reader,   37
+LIST,   11
+list,   6
+list-notation,   6, 36
+LITER,   29
+local binding,   16
+LPOSN,   34
+
+MACRO,   5
+MAP,   27
+MAPC,   27
+MAPCAN,   27
+MAPCAR,   27
+MAPCON,   27
+MAPLIST,   28
+MAX,   25
+MAX2,   25
+MEMBER,   30
+MEMQ,   30
+MIN,   25
+MINUS,   25
+MIN2,   25
+MKVECT,   21
+
+NCONC,   30
+NIL,   5, 38
+NOEVAL functions,   7
+NOSPREAD functions,   7
+NOT,   22
+NULL,   10
+number,   5
+NUMBERP,   10
+
+object,   9, 12
+OBLIST,   3, 12, 13
+OPEN,   35
+OR,   23
+
+PAGELENGTH,   35
+PAIR,   30
+PAIRP,   10
+PLUS,   25
+
+
+Standard LISP Report.                                                  51
+Index.
+
+PLUS2,   26
+POSN,   35
+PRINC,   35
+PRINT,   35
+print name,   3, 13
+PRIN1,   36
+PRIN2,   36
+PROG,   19
+PROGN,   19
+Program Feature Functions,   18
+properties,   3, 13
+Property List Functions,   13
+PUT,   14
+PUTD,   16
+PUTV,   21
+
+QUOTE,   33
+QUOTIENT,   26
+
+RDS,   36
+READ,   36
+READCH,   36
+REMAINDER,   26
+REMD,   16
+REMFLAG,   14
+REMOB,   13
+REMPROP,   14
+RETURN,   20
+REVERSE,   31
+RPLACA,   12
+RPLACD,   12
+
+S-expression,   6
+SASSOC,   31
+SET,   18
+SETQ,   18
+SPREAD functions,   7
+standard devices,   34
+string,   13
+STRINGP,   10
+strings,   4
+structures,   6
+SUBLIS,   31
+SUBST,   31
+System GLOBAL Variables,   38
+
+T,   5, 38
+TERPRI,   36
+TIMES,   26
+TIMES2,   26
+type mismatch error,   8
+
+UNFLUID,   18
+UPBV,   21
+
+
+
+Standard LISP Report.                                                  52
+Index.
+
+variable,   16
+variables,   3
+Variables and Bindings,   16
+vector,   4
+vector-notation,   4, 36
+VECTORP,   10
+Vectors,   21
+
+Warning messages,   8
+WRS,   37
+
+
+Standard LISP Report.
+
+
+
+
+
+
+                         TABLE OF CONTENTS
+
+
+
+    1.   Introduction ....................................   1
+
+    2.   Preliminaries ...................................   3
+    2.1  Primitive Data Types ............................   3
+    2.2  Classes of Primitive Data Types .................   5
+    2.3  Structures ......................................   6
+    2.4  Function Descriptions ...........................   7
+    2.5  Function Types ..................................   7
+    2.6  The Extended Syntax .............................   8
+    2.7  Error and Warning Messages ......................   8
+
+    3.   Functions .......................................   9
+    3.1  Elementary Predicates ...........................   9
+    3.2  Functions on Dotted-Pairs .......................  11
+    3.3  Identifiers .....................................  12
+    3.4  Property List Functions .........................  13
+    3.5  Function Definition .............................  15
+    3.6  Variables and Bindings  .........................  16
+    3.7  Program Feature Functions .......................  18
+    3.8  Error Handling ..................................  20
+    3.9  Vectors .........................................  21
+    3.10 Boolean Functions and Conditionals ..............  22
+    3.11 Arithmetic Functions ............................  23
+    3.12 MAP Composite Functions .........................  27
+    3.13 Composite Functions .............................  28
+    3.14 The Interpreter .................................  32
+    3.15 Input and Output ................................  34
+    3.16 LISP Reader .....................................  37
+
+    4.   System GLOBAL Variables .........................  38
+
+    List of References ...................................  40
+
+    Appendix A. The Extended Syntax ......................  41
+    Appendix B. Alphabetical List of Functions ...........  45
+
+    Index ................................................  48
+
+
+

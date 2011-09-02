@@ -1,0 +1,76 @@
+
+<A NAME=CRAMER>
+
+<TITLE>CRAMER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>CRAMER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When the <em>cramer</em> switch is on, 
+<A HREF=r37_0345.html>matrix</A> inversion 
+and linear equation 
+solving (operator 
+<A HREF=r37_0179.html>solve</A>) is done by Cramer's rule, through exterior 
+multiplication. Default is <em>off</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+on time; 
+
+  Time: 80 ms 
+
+
+off output; 
+
+  Time: 100 ms 
+
+
+mm := mat((a,b,c,d,f),(a,a,c,f,b),(b,c,a,c,d), (c,c,a,b,f),
+          (d,a,d,e,f));
+ 
+
+  Time: 300 ms 
+
+
+inverse := 1/mm; 
+
+  Time: 18460 ms 
+
+
+on cramer; 
+
+  Time: 80 ms 
+
+
+cramersinv := 1/mm; 
+
+  Time: 9260 ms
+
+</TT></PRE><P>Your time readings will vary depending on the REDUCE version you u
+se. 
+After you invert the matrix, turn on 
+<A HREF=r37_0314.html>output</A> and ask for one of 
+the elements of the inverse matrix, such as <em>cramersinv(3,2)</em>, so that 
+you can see the size of the expressions produced. 
+<P>
+<P>
+Inversion of matrices and the solution of linear equations with dense 
+symbolic entries in many variables is generally considerably faster with 
+<em>cramer</em> on. However, inversion of numeric-valued matrices is 
+slower. Consider the matrices you're inverting before deciding whether to 
+turn <em>cramer</em> on or off. A substantial portion of the time in matrix 
+inversion is given to formatting the results for printing. To save this 
+time, turn <em>output</em> off, as shown in this example or terminate the 
+expression with a dollar sign instead of a semicolon. The results are 
+still available to you in the workspace associated with your prompt 
+number, or you can assign them to an identifier for further use. 
+<P>
+<P>
+<P>

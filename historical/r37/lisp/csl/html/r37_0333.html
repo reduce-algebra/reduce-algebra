@@ -1,0 +1,49 @@
+
+<A NAME=TIME>
+
+<TITLE>TIME</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TIME</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>time</em> is on, the system time used in executing each REDUCE 
+statement is printed after the answer is printed. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+on time; 
+
+  Time: 4940 ms 
+
+
+df(sin(x**2 + y),y); 
+
+            2
+  COS(X  + Y )
+  Time: 180 ms
+
+
+solve(x**2 - 6*y,x); 
+
+  {X= - SQRT(Y)*SQRT(6),
+   X=SQRT(Y)*SQRT(6)}
+  Time: 320 ms
+
+</TT></PRE><P>When <em>time</em> is first turned on, the time since the beginnin
+g of the 
+REDUCE session is printed. After that, the time used in computation, 
+(usually in milliseconds, though this is system dependent) is printed after 
+the results of each command. Idle time or time spent typing in commands is 
+not counted. If <em>time</em> is turned off, the first reading after it is 
+turned on again gives the time elapsed since it was turned off. The time 
+printed is CPU or wall clock time, depending on the system. 
+<P>
+<P>
+<P>

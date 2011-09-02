@@ -1,0 +1,75 @@
+
+<A NAME=DET>
+
+<TITLE>DET</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DET</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>det</em> operator returns the determinant of its 
+(square 
+<A HREF=r37_0345.html>matrix</A>) argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>det</em>(&lt;expression&gt;) or <em>det</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; must evaluate to a square matrix. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+matrix m,n; 
+
+
+m := mat((a,b),(c,d)); 
+
+  M(1,1) := A
+  M(1,2) := B
+  M(2,1) := C
+  M(2,2) := D
+                                 
+
+
+det m; 
+
+  A*D - B*C 
+
+
+n := mat((1,2),(1,2)); 
+
+  N(1,1) := 1
+  N(1,2) := 2
+  N(2,1) := 1
+  N(2,2) := 2
+                                 
+
+
+
+det(n); 
+
+  0 
+
+
+
+det(5); 
+
+  5
+
+</TT></PRE><P>Given a numerical argument, <em>det</em> returns the number. Howev
+er, given a 
+variable name that has not been declared of type matrix, or a non-square 
+matrix, <em>det</em> returns an error message. 
+<P>
+<P>
+<P>

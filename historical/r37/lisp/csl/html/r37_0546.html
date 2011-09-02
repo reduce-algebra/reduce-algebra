@@ -1,0 +1,40 @@
+
+<A NAME=taylortostandard>
+
+<TITLE>taylortostandard</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TAYLORTOSTANDARD</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ This operator converts all Taylor kernels in its argument into 
+ standard form and resimplifies the result. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>taylortostandard</em>(&lt;expression&gt;) or 
+ <em>taylortostandard</em> &lt;simple_expression&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+    hugo := taylor(exp(x),x,0,2); 
+
+                  1  2      3
+  HUGO := 1 + X + -*X  + O(X )
+                  2
+
+
+    taylortostandard hugo; 
+
+   2
+  X  + 2*X + 2
+  ------------  
+       2
+
+</TT></PRE><P><P>

@@ -1,0 +1,51 @@
+
+<A NAME=ODD>
+
+<TITLE>ODD</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ODD</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>odd</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+This declaration is used to declare an operator odd in its first 
+argument. Expressions involving an operator declared in this manner are 
+transformed if the first argument contains a minus sign. Any other 
+arguments are not affected. 
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+        odd f; 
+
+        f(-a) 
+
+  -F(A) 
+
+
+        f(-a,-b) 
+
+  -F(A,-B) 
+
+
+        f(a,-b) 
+
+  F(A,-B)
+
+</TT></PRE><P><P>
+<P>
+If say <em>f</em> is declared odd, then <em>f(0)</em> is replaced by zero 
+unless <em>f</em> is also declared non zero by the declaration 
+
+<A HREF=r37_0207.html>nonzero</A>. 
+<P>
+<P>
+<P>

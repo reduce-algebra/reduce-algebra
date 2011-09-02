@@ -1,0 +1,12 @@
+# Set REDUCE 3.4 names
+
+echo "Using directory $reduce as Reduce root"
+
+setenv rdoc $reduce/doc
+setenv rexec $reduce
+setenv rfasl $reduce/fasl
+setenv rlog $reduce/log
+setenv rpsl $reduce/psl
+setenv rsrc $reduce/src
+setenv rutil $reduce/util
+setenv rxmpl $reduce/xmpl

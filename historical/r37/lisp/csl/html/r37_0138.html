@@ -1,0 +1,29 @@
+
+<A NAME=ARBINT>
+
+<TITLE>ARBINT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ARBINT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>arbint</em> is used to express arbitrary integer parts 
+of an expression, e.g. in the result of 
+<A HREF=r37_0179.html>solve</A> when 
+
+<A HREF=r37_0266.html>allbranch</A> is on. 
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+solve(log(sin(x+3)),x); 
+
+  {X=2*ARBINT(1)*PI - ASIN(1) - 3,
+   X=2*ARBINT(1)*PI + ASIN(1) + PI - 3}
+
+</TT></PRE><P><P>
+<P>

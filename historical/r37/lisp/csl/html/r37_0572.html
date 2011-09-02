@@ -1,0 +1,70 @@
+
+<A NAME=add_columns>
+
+<TITLE>add_columns</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ADD_COLUMNS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+Add columns, add rows: 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>add_columns</em>(&lt;matrix&gt;,&lt;c1&gt;,&lt;c2&gt;,&lt;expr&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<A HREF=r37_0345.html>matrix</A>. 
+<P>
+<P>
+&lt;c1&gt;,&lt;c2&gt; :- positive integers. 
+<P>
+<P>
+&lt;expr&gt; :- a scalar expression. 
+<P>
+<P>
+The Operator <em>add_columns</em> replaces column &lt;\meta{c2&gt;} of 
+&lt;matrix&gt; by &lt;expr&gt; * column(&lt;matrix&gt;,&lt;c1&gt;) + 
+column(&lt;matrix&gt;,&lt;c2&gt;). 
+<P>
+<P>
+<em>add_rows</em>performs the equivalent task on the rows of 
+&lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+add_columns(A,1,2,x); 
+
+  [1   x + 2   3]
+  [             ]
+  [4  4*x + 5  6]
+  [             ]
+  [7  7*x + 8  9]
+
+
+
+add_rows(A,2,3,5); 
+
+  [1   2   3 ]
+  [          ]
+  [4   5   6 ]
+  [          ]
+  [27  33  39]
+
+</TT></PRE><P>Related functions: 
+<A HREF=r37_0574.html>add_to_columns</A>, 
+
+<A HREF=r37_0575.html>add_to_rows</A>, 
+<A HREF=r37_0603.html>mult_columns</A>, 
+
+<A HREF=r37_0604.html>mult_rows</A>. 
+<P>
+<P>

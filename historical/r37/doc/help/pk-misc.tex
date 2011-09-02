@@ -1,0 +1,558 @@
+\section{Miscellaneous Packages}
+
+\begin{Introduction}{Miscellaneous Packages}
+REDUCE includes a large number of packages that have been contributed by
+users from various fields.  Some of these, together with their relevant
+commands, switches and so on (e.g., the NUMERIC package), have
+been described elsewhere.  This section describes those packages for which
+no separate help material exists.  Each has its own switches, commands,
+and operators, and some redefine special characters to aid in their
+notation.  However, the brief descriptions given here do not include all
+such information.  Readers are referred to the general package
+documentation in this case, which can be found, along with the source
+code, under the subdirectories \name{doc} and \name{src} in the
+\name{reduce} directory.  The \nameref{load_package} command is used to
+load the files you wish into your system.  There will be a short delay
+while the package is loaded.  A package cannot be {\it unloaded}.  Once it
+is in your system, it stays there until you end the session.  Each package
+also has a test file, which you will find under its name in the
+\name{\$reduce/xmpl} directory.
+
+Finally, it should be mentioned that such user-contributed packages are
+unsupported; any questions or problems should be directed to their
+authors.
+
+\end{Introduction}
+
+\begin{Package}{ALGINT}
+\index{integration}\index{integration of square roots}
+Author: James H. Davenport \\
+
+The \name{algint} package provides indefinite integration of square roots.
+This package, which is an extension of the basic integration package
+distributed with REDUCE, will analytically integrate a wide range of
+expressions involving square roots.  The \nameref{algint} switch provides for
+the use of the facilities given by the package, and is automatically turned
+on when the package is loaded.  If you want to return to the standard
+integration algorithms, turn \nameref{algint} off.  An error message is given
+if you try to turn the \nameref{algint} switch on when its package is not
+loaded.
+\end{Package}
+
+\begin{Package}{APPLYSYM}
+\index{differential equations} \index{symmetries}
+Author: Thomas Wolf \\
+
+This package provides programs APPLYSYM, QUASILINPDE and DETRAFO for
+computing with infinitesimal symmetries of differential equations.
+\end{Package}
+
+\begin{Package}{ARNUM}
+\index{algebraic numbers}
+Author: Eberhard Schruefer\\
+
+This package provides facilities for handling algebraic numbers as polynomial
+coefficients in REDUCE calculations.  It includes facilities for introducing
+indeterminates to represent algebraic numbers, for calculating splitting
+fields, and for factoring and finding greatest common divisors in such
+domains.
+\end{Package}
+
+\begin{Package}{ASSIST}
+\index{utilities}
+Author: Hubert Caprasse\\
+
+ASSIST contains a large number of additional general purpose functions
+that allow a user to better adapt REDUCE to various calculational
+strategies and to make the programming task more straightforward and more
+efficient.
+\end{Package}
+
+\begin{Package}{AVECTOR}
+\index{vector algebra}\index{cross product}\index{dot product}
+Author: David Harper\\
+
+This package provides REDUCE with the ability to perform vector algebra
+using the same notation as scalar algebra.  The basic algebraic operations
+are supported, as are differentiation and integration of vectors with
+respect to scalar variables, cross product and dot product, component
+manipulation and application of scalar functions (e.g. cosine) to a vector
+to yield a vector result.
+\end{Package}
+
+\begin{Package}{BOOLEAN}
+\index{boolean expressions}
+Author: Herbert Melenk\\
+
+This package supports the computation with boolean expressions in the
+propositional calculus.  The data objects are composed from algebraic
+expressions connected by the infix boolean operators {\bf and}, {\bf or},
+{\bf implies}, {\bf equiv}, and the unary prefix operator {\bf not}.
+{\bf Boolean} allows you to simplify expressions built from these
+operators, and to test properties like equivalence, subset property etc.
+\end{Package}
+
+\begin{Package}{CALI}
+\index{polynomial}\index{Groebner}\index{commutative algebra}
+Author: Hans-Gert Gr{\"a}be \\
+
+This package contains algorithms for computations in commutative algebra
+closely related to the Groebner algorithm for ideals and modules.  Its
+heart is a new implementation of the Groebner algorithm that also allows
+for the computation of syzygies.  This implementation is also applicable to
+submodules of free modules with generators represented as rows of a matrix.
+\end{Package}
+
+\begin{Package}{CAMAL}
+\index{celestial mechanics}\index{Fourier series}
+Author: John P. Fitch\\
+
+This packages implements in REDUCE the Fourier transform procedures of the
+CAMAL package for celestial mechanics.
+\end{Package}
+
+\begin{Package}{CHANGEVR}
+Author: G. Ucoluk\\
+
+This package provides facilities for changing the independent variables in
+a differential equation. It is basically the application of the chain rule.
+\end{Package}
+
+\begin{Package}{COMPACT}
+\index{simplification}
+Author: Anthony C. Hearn\\
+
+COMPACT is a package of functions for the reduction of a polynomial in the
+presence of side relations.  COMPACT applies the side relations to the
+polynomial so that an equivalent expression results with as few terms as
+possible.  For example, the evaluation of
+
+\begin{verbatim}
+     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,
+             {cos x^2+sin x^2=1});
+
+\end{verbatim}
+yields the result
+\begin{verbatim}
+
+              2           2
+        SIN(X) *C + COS(X) *S + 1
+\end{verbatim}
+
+The first argument to the operator \name{compact} is the expression
+and the second is a list of side relations that can be
+equations or simple expressions (implicitly equated to zero). The
+kernels in the side relations may also be free variables with the
+same meaning as in rules, e.g.
+\begin{verbatim}
+     sin_cos_identity :=  {cos ~w^2+sin ~w^2=1}$
+     compact(u,in_cos_identity);
+\end{verbatim}
+Also the full rule syntax with the replacement operator is allowed here.
+\end{Package}                 
+
+\begin{Package}{CRACK}
+\index{differential equation}
+Authors: Andreas Brand, Thomas Wolf\\
+
+CRACK is a package for solving overdetermined systems of partial or
+ordinary differential equations (PDEs, ODEs).  Examples of programs which
+make use of CRACK for investigating ODEs (finding symmetries, first
+integrals, an equivalent Lagrangian or a ``differential factorization'') are
+included.
+\end{Package}
+
+\begin{Package}{CVIT}
+\index{Dirac algebra}
+Authors: V.Ilyin, A.Kryukov, A.Rodionov, A.Taranov\\
+
+This package provides an alternative method for computing traces of Dirac
+gamma matrices, based on an algorithm by Cvitanovich that treats gamma
+matrices as 3-j symbols.
+\end{Package}
+
+\begin{Package}{DEFINT}
+\index{definite integration}
+Authors: Kerry Gaskell, Stanley M. Kameny, Winfried Neun\\
+
+This package finds the definite integral of an expression in a stated
+interval.  It uses several techniques, including an innovative approach
+based on the Meijer G-function, and contour integration.
+\end{Package}
+
+\begin{Package}{DESIR}
+\index{differential equation}
+Authors: C. Dicrescenzo, F. Richard-Jung, E. Tournier\\
+
+This package enables the basis of formal solutions to be computed for an
+ordinary homogeneous differential equation with polynomial coefficients
+over Q of any order, in the neighborhood of zero (regular or irregular
+singular point, or ordinary point).
+\end{Package}
+
+\begin{Package}{DFPART}
+\index{partial derivative}
+Author: Herbert Melenk\\
+
+This package supports computations with total and partial derivatives of
+formal function objects.  Such computations can be useful in the context
+of differential equations or power series expansions.
+\end{Package}
+
+\begin{Package}{DUMMY}
+\index{dummy variable}
+Author: Alain Dresse\\
+
+This package allows a user to find the canonical form of expressions
+involving dummy variables. In that way, the simplification of
+polynomial expressions can be fully done. The indeterminates are general
+operator objects endowed with as few properties as possible. In that way
+the package may be used in a large spectrum of applications.
+\end{Package}
+
+\begin{Package}{EXCALC}
+\index{exterior calculus}\index{differential calculus}
+\index{differential form}
+Author: Eberhard Schruefer\\
+
+The \name{excalc} package is designed for easy use by all who are familiar
+with the calculus of Modern Differential Geometry.  The program is currently
+able to handle scalar-valued exterior forms, vectors and operations between
+them, as well as non-scalar valued forms (indexed forms).  It is thus an ideal
+tool for studying differential equations, doing calculations in general
+relativity and field theories, or doing simple things such as calculating the
+Laplacian of a tensor field for an arbitrary given frame. 
+\end{Package}
+
+\begin{Package}{FPS}
+\index{power series} \index{Laurent-Puiseux series}
+Authors: Wolfram Koepf, Winfried Neun\\
+
+This package can expand a specific class of functions into their
+corresponding Laurent-Puiseux series.
+\end{Package}
+
+\begin{Package}{FIDE}
+Author:  Richard Liska\\
+
+This package performs  automation of  the process of numerically
+solving  partial  differential  equations  systems  (PDES)  by  means of
+computer algebra.  For PDES solving, the finite difference method is applied.
+The  computer  algebra  system  REDUCE  and  the  numerical  programming
+language FORTRAN  are used in the presented methodology. The main aim of
+this methodology is to speed up the process of preparing numerical
+programs for  solving PDES.  This process is quite often, especially for
+complicated systems, a tedious and time consuming task.
+\end{Package}
+
+\begin{Package}{GENTRAN}
+\index{code generation}\index{FORTRAN}\index{C}
+Author: Barbara L. Gates\\
+
+This package is an automatic code GENerator and TRANslator.  It constructs
+complete numerical programs based on sets of algorithmic specifications and
+symbolic expressions.  Formatted FORTRAN, RATFOR or C code can be generated
+through a series of interactive commands or under the control of a template
+processing routine.  Large expressions can be automatically segmented into
+subexpressions of manageable size, and a special file-handling mechanism
+maintains stacks of open I/O channels to allow output to be sent to any
+number of files simultaneously and to facilitate recursive invocation of the
+whole code generation process.
+\end{Package}
+
+\begin{Package}{IDEALS}
+\index{polynomial}\index{Groebner}\index{commutative algebra}
+\index{ideal}
+Author: Herbert Melenk\\
+
+This package implements the basic arithmetic for polynomial ideals by
+exploiting the Groebner bases package of REDUCE.  In order to save
+computing time all intermediate Groebner bases are stored internally such
+that time consuming repetitions are inhibited.
+\end{Package}
+
+\begin{Package}{INEQ}
+\index{inequality}
+Author: Herbert Melenk\\
+
+This package supports the operator \name{ineq\_solve} that
+tries to solves single inequalities and sets of coupled inequalities.
+\end{Package}
+
+\begin{Package}{INVBASE}
+Authors: A.Yu. Zharkov and Yu.A. Blinkov\\
+
+Involutive bases are a new tool for solving problems in connection with
+multivariate polynomials, such as solving systems of polynomial equations
+and analyzing polynomial ideals.  An involutive basis of polynomial ideal
+is nothing but a special form of a redundant Groebner basis.  The
+construction of involutive bases reduces the problem of solving polynomial
+systems to simple linear algebra.
+\end{Package}
+
+\begin{Package}{LAPLACE}
+\index{transform}
+Authors: C. Kazasov, M. Spiridonova, V. Tomov\\
+
+This package can calculate ordinary and inverse Laplace transforms of
+expressions.  Documentation is in plain text.
+\end{Package}
+
+\begin{Package}{LIE}
+Authors: Carsten and Franziska Sch{\"o}bel\\
+
+\name{Lie} is a package of functions for the classification of real
+n-dimensional Lie algebras.  It consists of two modules: \name{liendmc1}
+and \name{lie1234}.  With the help of the functions in the \name{liendmcl}
+module, real n-dimensional Lie algebras $L$ with a derived algebra
+$L^{(1)}$ of dimension 1 can be classified.
+\end{Package}
+
+\begin{Package}{MODSR}
+\index{modular polynomial}
+Author: Herbert Melenk\\
+
+This package supports solve (M\_SOLVE) and roots (M\_ROOTS) operators for
+modular polynomials and modular polynomial systems.  The moduli need not
+be primes. M\_SOLVE requires a modulus to be set.  M\_ROOTS takes the
+modulus as a second argument. For example:
+
+\begin{verbatim}
+on modular; setmod 8;
+m_solve(2x=4);            ->  {{X=2},{X=6}}
+m_solve({x^2-y^3=3});
+    ->  {{X=0,Y=5}, {X=2,Y=1}, {X=4,Y=5}, {X=6,Y=1}}
+m_solve({x=2,x^2-y^3=3}); ->  {{X=2,Y=1}}
+off modular;
+m_roots(x^2-1,8);         ->  {1,3,5,7}
+m_roots(x^3-x,7);         ->  {0,1,6}
+\end{verbatim}
+\end{Package}
+
+\begin{Package}{NCPOLY}
+\index{non-commutativity}
+Authors: Herbert Melenk, Joachim Apel\\
+
+This package allows the user to set up automatically a consistent
+environment for computing in an algebra where the non--commutativity is
+defined by Lie-bracket commutators.  The package uses the REDUCE
+\name{noncom} mechanism for elementary polynomial arithmetic; the commutator
+rules are automatically computed from the Lie brackets.
+\end{Package}
+
+\begin{Package}{ORTHOVEC}
+\index{vector algebra}\index{vector calculus}\index{Laplacian}\index{Taylor}
+\index{cross product}\index{dot product}\index{div}\index{grad}\index{curl}
+Author: James W. Eastwood\\
+
+\name{orthovec} is a collection of REDUCE procedures and operations which
+provide a simple-to-use environment for the manipulation of scalars and
+vectors.  Operations include addition, subtraction, dot and cross
+products, division, modulus, div, grad, curl, laplacian, differentiation,
+integration, and Taylor expansion.
+\end{Package}
+
+\begin{Package}{PHYSOP}
+Author: Mathias Warns\\
+
+This package has been designed to meet the requirements of theoretical
+physicists looking for a computer algebra tool to perform complicated
+calculations in quantum theory with expressions containing operators.
+These operations consist mainly of the calculation of commutators between
+operator expressions and in the evaluations of operator matrix elements in
+some abstract space.
+\end{Package}
+
+\begin{Package}{PM}
+\index{pattern matching}
+Author: Kevin McIsaac\\
+
+PM is a general pattern matcher similar in style to those found in systems
+such as SMP and Mathematica, and is based on the pattern matcher described
+in Kevin McIsaac, ``Pattern Matching Algebraic Identities'', SIGSAM Bulletin,
+19 (1985), 4-13.
+\end{Package}
+
+\begin{Package}{RANDPOLY}
+\index{random polynomial}
+Author: Francis J. Wright\\
+
+This package is based on a port of the Maple random polynomial
+generator together with some support facilities for the generation
+of random numbers and anonymous procedures.
+\end{Package}
+
+\begin{Package}{REACTEQN}
+\index{chemical reaction}
+Author: Herbert Melenk\\
+
+This package allows a user to transform chemical reaction systems into
+ordinary differential equation systems (ODE) corresponding to the laws of
+pure mass action.
+\end{Package}
+
+\begin{Package}{RESET}
+Author: John Fitch\\
+
+This package defines a command command RESETREDUCE that works through the
+history of previous commands, and clears any values which have been
+assigned, plus any rules, arrays and the like.  It also sets the various
+switches to their initial values.  It is not complete, but does work for
+most things that cause a gradual loss of space.  It would be relatively
+easy to make it interactive, so allowing for selective resetting.
+\end{Package}
+
+\begin{Package}{RESIDUE}
+Author: Wolfram Koepf\\
+
+This package supports the calculation of residues of arbitrary
+expressions.
+\end{Package}
+
+\begin{Package}{RLFI}
+\index{output}\index{TEX}
+Author: Richard Liska\\
+
+This package
+adds \begin{TEX}\LaTeX \end{TEX}\begin{INFO}LaTeX \end{INFO} syntax
+to REDUCE.  Text generated by REDUCE in this mode can be directly
+used in \begin{TEX}\LaTeX \end{TEX} \begin{INFO}LaTeX \end{INFO} source
+documents.  Various
+mathematical constructions are supported by the interface including
+subscripts, superscripts, font changing, Greek letters, divide-bars,
+integral and sum signs, derivatives, and so on.
+\end{Package}
+
+\begin{Package}{SCOPE}
+\index{code generation}\index{optimization}
+Author: J.A. van Hulzen\\
+
+SCOPE is a package for the production of an optimized form of a set of
+expressions.  It applies an heuristic search for common (sub)expressions
+to almost any set of proper REDUCE assignment statements.  The output is
+obtained as a sequence of assignment statements.  \name{gentran} is used to
+facilitate expression output.
+\end{Package}
+
+\begin{Package}{SETS}
+Author: Francis J. Wright\\
+
+The SETS package provides algebraic-mode support for set operations on
+lists regarded as sets (or representing explicit sets) and on implicit
+sets represented by identifiers.
+\end{Package}
+
+\begin{Package}{SPDE}
+\index{differential equation}\index{Lie symmetry}
+Author: Fritz Schwartz \\
+
+The package \name{spde} provides a set of functions which may be used to
+determine the symmetry group of Lie- or point-symmetries of a given system of
+partial differential equations.  In many cases the determining system is
+solved completely automatically.  In other cases the user has to provide
+additional input information for the solution algorithm to terminate.
+\end{Package}
+
+\begin{Package}{SYMMETRY}               
+Author: Karin Gatermann\\
+
+This package computes symmetry-adapted bases and block diagonal forms of
+matrices which have the symmetry of a group.  The package is the
+implementation of the theory of linear representations for small finite
+groups such as the dihedral groups.
+\end{Package}
+
+
+\begin{Package}{TPS}
+\index{power series}\index{Taylor series}
+Authors: Alan Barnes, Julian Padget\\
+
+This package implements formal Laurent series expansions in one variable
+using the domain mechanism of REDUCE.  This means that power series
+objects can be added, multiplied, differentiated etc., like other first
+class objects in the system.  A lazy evaluation scheme is used and thus
+terms of the series are not evaluated until they are required for printing
+or for use in calculating terms in other power series.  The series are
+extendible giving the user the impression that the full infinite series is
+being manipulated.  The errors that can sometimes occur using series that
+are truncated at some fixed depth (for example when a term in the required
+series depends on terms of an intermediate series beyond the truncation
+depth) are thus avoided.
+\end{Package}
+
+\begin{Package}{TRI}
+\index{output}\index{TEX}
+Author: Werner Antweiler\\
+
+This package provides facilities written in REDUCE-Lisp for typesetting
+REDUCE formulas
+using \begin{TEX}\TeX. \end{TEX} \begin{INFO}TeX. \end{INFO} The
+TeX-REDUCE-Interface incorporates three levels
+of \begin{TEX}\TeX \end{TEX} \begin{INFO}TeX \end{INFO} output:
+without line breaking, with line breaking, and
+with line breaking plus indentation.
+\end{Package}
+
+\begin{Package}{TRIGSIMP}
+\index{simplification}
+Author: Wolfram Koepf\\
+TRIGSIMP is a useful tool for all kinds of trigonometric and hyperbolic
+simplification and factorization.  There are three procedures included in
+TRIGSIMP: \name{trigsimp}, \name{trigfactorize} and \name{triggcd}.  The
+first is for finding simplifications of trigonometric or hyperbolic
+expressions with many options, the second for factorizing them and the
+third for finding the greatest common divisor of two trigonometric or
+hyperbolic polynomials.
+\end{Package}
+
+\begin{Package}{XCOLOR}
+\index{high energy physics}
+Author: A. Kryukov\\
+
+This package calculates the color factor in non-abelian gauge field
+theories using an algorithm due to Cvitanovich.
+\end{Package}
+
+\begin{Package}{XIDEAL}
+\index{Groebner basis}
+Author: David Hartley\\
+
+\name{xideal} constructs Groebner bases for solving the left ideal
+membership problem:  Groebner left ideal bases or GLIBs.  For graded
+ideals, where each form is homogeneous in degree, the distinction between
+left and right ideals vanishes.  Furthermore, if the generating forms are
+all homogeneous, then the Groebner bases for the non-graded and graded
+ideals are identical.  In this case, \name{xideal} is able to save time by
+truncating the Groebner basis at some maximum degree if desired.
+\end{Package}
+
+\begin{Package}{WU}
+\index{polynomial}\index{Wu-Wen-Tsun algorithm}
+Author: Russell Bradford\\
+
+This is a simple implementation of the Wu algorithm implemented in REDUCE
+working directly from ``A Zero Structure Theorem for
+Polynomial-Equations-Solving,'' Wu Wen-tsun, Institute of Systems Science,
+Academia Sinica, Beijing.
+\end{Package}
+
+\begin{Package}{ZEILBERG}
+\index{summation}
+Authors: Gregor St{\"o}lting and Wolfram Koepf\\
+
+This package is a careful implementation of the Gosper and Zeilberger
+algorithms for indefinite and definite summation of hypergeometric terms,
+respectively.  Extensions of these algorithms are also included that are
+valid for ratios of products of powers,
+factorials,\begin{TEX}$\Gamma$ \end{TEX} \begin{INFO}gamma \end{INFO}function
+terms, binomial coefficients, and shifted factorials that are
+rational-linear in their arguments.
+\end{Package}
+
+\begin{Package}{ZTRANS}
+Authors: Wolfram Koepf, Lisa Temme\\
+
+This package is an implementation of the Z-transform of a sequence.
+This is the discrete analogue of the Laplace Transform.
+\end{Package}
+

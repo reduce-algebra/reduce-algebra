@@ -1,0 +1,1004 @@
+REDUCE 3.4, 15-Jul-91 ...
+
+1: 
+
+ DESIR : solutions formelles d'equations differentielles
+          lineaires homogenes au voisinage de zero, point 
+          singulier regulier ou irregulier, ou point regulier
+
+                Version  3.1  -  Septembre 1989 
+                   Appel par desir();        
+
+
+(DESIR)
+
+
+off echo;
+
+
+Premier exemple: utilisation interactive sur une equation simple
+
+desir();                       %appel de DESIR
+
+   ATTENTION : chaque donnee doit etre suivie de ; ou de $
+
+ 
+
+                     *****  INTRODUCTION DES DONNEES  ***** 
+
+ 
+
+  L' equation est  de la forme
+
+      a(0)(x)d^0 + a(1)(x)d^1 + .... + a(n)(x)d^n = 0 
+
+ ordre de l'equation ? 
+
+  Donner les coefficients   a(j)(x), j = 0..n
+
+a(0) = 1
+
+a(1) = X
+
+a(2) = X
+
+        6
+a(3) = X
+
+  
+
+correction ? ( oui; / non; )   
+
+transformation ? (oui;/non;)  
+
+nombre de termes desires pour la solution ?
+
+ 
+
+LES 3 SOLUTIONS CALCULEES SONT LES SUIVANTES
+
+ 
+
+ ==============
+
+  SOLUTION No 1
+
+ ==============
+
+    1    4    1   3    2
+X*(----*X  - ---*X  + X  - 2*X + 2)
+    12        3
+
+ 
+
+ ==============
+
+  SOLUTION No 2
+
+ ==============
+
+ 1          4    1          3           2               5    4
+---*LOG(X)*X  - ---*LOG(X)*X  + LOG(X)*X  - LOG(X)*X - ----*X
+ 6               2                                      36
+
+    1   3
+ + ---*X  - X + 1
+    4
+
+ 
+
+ ==============
+
+  SOLUTION No 3
+
+ ==============
+
+       4
+ 1/(4*X )  10   361   4    1   3    1   2
+E        *X  *(-----*X  + ---*X  + ---*X  + X + 1)
+                24         6        2
+
+voulez-vous continuer ? 
+
+'non;' : la liste des solutions calculees est affichee (sous
+
+ forme generalisee).
+
+'non$' : cette liste n'est pas affichee.
+
+          6
+{{{1,X,X,X },
+
+             4       3        2
+           XT  - 4*XT  + 12*XT  - 24*XT + 24
+  {{{{0,1,-----------------------------------,1},{}}},
+                          12
+
+                       4                3                2
+   {{{0,1,(6*LOG(XT)*XT  - 18*LOG(XT)*XT  + 36*LOG(XT)*XT
+
+                                  4       3
+            - 36*LOG(XT)*XT - 5*XT  + 9*XT  - 36*XT + 36)/36,0},{}}},
+
+                       4       3        2
+         1       361*XT  + 4*XT  + 12*XT  + 24*XT + 24
+   {{{-------,1,---------------------------------------,10},{}}}}}}
+           4                      24
+       4*XT
+
+solvalide(first ws,1,4);
+
+                              4      3       2
+                          X*(X  - 4*X  + 12*X  - 24*X + 24)
+La solution numero 1 est -----------------------------------
+                                         12
+
+La partie reguliere du reste est de l'ordre de x**5
+
+Si on reporte cette solution dans l'equation, le terme 
+
+                             1   5
+significatif du reste est : ---*X
+                             2
+
+  5      3       2
+ X *(10*X  - 16*X  + 12*X + 1)
+-------------------------------
+               2
+
+Le meme exemple en utilisation directe
+
+lcoeff:={1,x,x,x**6};
+
+                  6
+LCOEFF := {1,X,X,X }
+
+param:={};
+
+PARAM := {}
+
+on trdesir;             %obtention facultative d'une trace
+
+Time: 4794 ms
+
+sol:=delire(x,4,1,lcoeff,param);
+
+0  -1  0  2
+
+2  -1  4  1
+
+f(0) = LAMBD*(LAMBD - 1)
+
+        2  -1  4  1
+
+0  -5  0  1
+
+f(0) = LAMBD - 10
+
+                  4       3        2
+                XT  - 4*XT  + 12*XT  - 24*XT + 24
+SOL := {{{{0,1,-----------------------------------,1},{}}},
+                               12
+
+                            4                3                2
+        {{{0,1,(6*LOG(XT)*XT  - 18*LOG(XT)*XT  + 36*LOG(XT)*XT
+
+                                       4       3
+                 - 36*LOG(XT)*XT - 5*XT  + 9*XT  - 36*XT + 36)/36,0},
+
+          {}}},
+
+                            4       3        2
+              1       361*XT  + 4*XT  + 12*XT  + 24*XT + 24
+        {{{-------,1,---------------------------------------,10},{}}}
+                4                      24
+            4*XT
+
+        }
+
+showtime;                      %temps d'execution de 'delire'
+
+Time: 2805 ms
+
+1ieme solution :
+
+    1    4    1   3    2
+X*(----*X  - ---*X  + X  - 2*X + 2)
+    12        3
+0
+
+2ieme solution :
+
+ 1          4    1          3           2               5    4
+---*LOG(X)*X  - ---*LOG(X)*X  + LOG(X)*X  - LOG(X)*X - ----*X
+ 6               2                                      36
+
+    1   3
+ + ---*X  - X + 1
+    4
+0
+
+3ieme solution :
+
+       4
+ 1/(4*X )  10   361   4    1   3    1   2
+E        *X  *(-----*X  + ---*X  + ---*X  + X + 1)
+                24         6        2
+0
+
+solvalide({lcoeff,sol},2,4)$
+
+                                4
+                          1/(4*X )  10
+La solution numero 3 est E        *X
+
+   361   4    1   3    1   2
+*(-----*X  + ---*X  + ---*X  + X + 1)
+   24         6        2
+
+La partie reguliere du reste est de l'ordre de x**10
+
+Si on reporte cette solution dans l'equation, le terme 
+
+                                             4
+                                2137   1/(4*X )  10
+significatif du reste est :  - ------*E        *X
+                                 24
+
+solvalide({lcoeff,sol},3,4)$
+
+                                4
+                          1/(4*X )  10
+La solution numero 3 est E        *X
+
+   361   4    1   3    1   2
+*(-----*X  + ---*X  + ---*X  + X + 1)
+   24         6        2
+
+La partie reguliere du reste est de l'ordre de x**10
+
+Si on reporte cette solution dans l'equation, le terme 
+
+                                             4
+                                2137   1/(4*X )  10
+significatif du reste est :  - ------*E        *X
+                                 24
+
+off trdesir;
+
+Deuxieme exemple : utilisation interactive, parametres et
+
+transformations
+
+desir();
+
+   ATTENTION : chaque donnee doit etre suivie de ; ou de $
+
+ 
+
+                     *****  INTRODUCTION DES DONNEES  ***** 
+
+ 
+
+  L' equation est  de la forme
+
+      a(0)(x)d^0 + a(1)(x)d^1 + .... + a(n)(x)d^n = 0 
+
+ ordre de l'equation ? 
+
+  Donner les coefficients   a(j)(x), j = 0..n
+
+        2     2
+a(0) = X  - NU
+
+a(1) = X
+
+        2
+a(2) = X
+
+  
+
+correction ? ( oui; / non; )   
+
+nombre de parametres ?  
+
+donner ce parametre :
+
+transformation ? (oui;/non;)  
+
+nombre de termes desires pour la solution ?
+
+ 
+
+LES 2 SOLUTIONS CALCULEES SONT LES SUIVANTES
+
+ 
+
+ ==============
+
+  SOLUTION No 1
+
+ ==============
+
+   - NU   1   2
+ X     *(---*X  + NU - 1)
+          4
+--------------------------
+          NU - 1
+
+Si : 
+
+ - 2*NU  non entier
+
+     - NU   2   2
+ 2*X     *NU *(X  + 4*NU - 4)
+------------------------------
+            NU - 1
+
+Si : 
+
+ - 2*NU  entier positif
+
+    NU   2      2
+ 2*X  *NU *( - X  + 4*NU + 4)
+------------------------------
+            NU + 1
+
+Si : 
+
+ - 2*NU  entier negatif
+
+  NU      1   2
+ X  *( - ---*X  + NU + 1)
+          4
+--------------------------
+          NU + 1
+
+Si : 
+
+ - 2*NU  nul
+
+ 
+
+ ==============
+
+  SOLUTION No 2
+
+ ==============
+
+  NU      1   2
+ X  *( - ---*X  + NU + 1)
+          4
+--------------------------
+          NU + 1
+
+Si : 
+
+ - 2*NU  non entier
+
+  NU      1          2       1          2            2
+(X  *( - ---*LOG(X)*X *NU - ---*LOG(X)*X  + LOG(X)*NU  + 2*LOG(X)*NU
+          4                  4
+
+                   1   2       1   2      2
+       + LOG(X) + ---*X *NU + ---*X ))/(NU  + 2*NU + 1)
+                   8           4
+
+Si : 
+
+ - 2*NU  nul
+
+voulez-vous continuer ? 
+
+'non;' : la liste des solutions calculees est affichee (sous
+
+ forme generalisee).
+
+'non$' : cette liste n'est pas affichee.
+
+derivation : 1; 
+
+changement de variable : 2; 
+
+changement de fonction inconnue : 3;
+
+substitution : 4;
+
+valeur de x en fonction de la nouvelle variable v ? 
+
+           2   2
+a(0) =  - V *NU  + 1
+
+        3
+a(1) = V
+
+        4
+a(2) = V
+
+transformation ? (oui;/non;)  
+
+nombre de termes desires pour la solution ?
+
+ 
+
+LES 2 SOLUTIONS CALCULEES SONT LES SUIVANTES
+
+ 
+
+ ==============
+
+  SOLUTION No 1
+
+ ==============
+
+          - I/X   1   -1     2    1   -1      1   2   4    5    2   2
+SQRT(X)*E      *(---*I  *X*NU  - ---*I  *X - ---*X *NU  + ----*X *NU
+                  2               8           8            16
+
+                      9    2
+                  - -----*X  + 1)
+                     128
+
+ 
+
+ ==============
+
+  SOLUTION No 2
+
+ ==============
+
+         I/X      1   -1     2    1   -1      1   2   4    5    2   2
+SQRT(X)*E   *( - ---*I  *X*NU  + ---*I  *X - ---*X *NU  + ----*X *NU
+                  2               8           8            16
+
+                   9    2
+               - -----*X  + 1)
+                  128
+
+voulez-vous continuer ? 
+
+'non;' : la liste des solutions calculees est affichee (sous
+
+ forme generalisee).
+
+'non$' : cette liste n'est pas affichee.
+
+sol1:=first sol$        %solutions au voisinage de 0
+
+sol2:=second sol$       %solutions au voisinage de l'infini
+
+solvalide(sol1,1,2)$
+
+presence de solutions conditionnelles :
+
+ cette procedure ne peut pas etre appelee.
+
+solvalide(sol2,1,2)$
+
+La solution numero 1 est (SQRT(X)
+
+              2   4         2   2        2                  2
+   *( - 16*I*X *NU  + 40*I*X *NU  - 9*I*X  + 128*I + 64*X*NU  - 16*X)
+
+           I/X
+   )/(128*E   *I)
+
+                                                   9
+La partie reguliere du reste est de l'ordre de x**---
+                                                   2
+
+Si on reporte cette solution dans l'equation, le terme 
+
+significatif du reste est : 
+
+  1           4    6    35    4    259    2    225
+ ---*SQRT(X)*X *(NU  - ----*NU  + -----*NU  - -----)
+  8                     4          16          64
+-----------------------------------------------------
+                         I/X
+                        E
+
+Remarque : la verification de la validite des solutions est possible
+
+malgre la presence d'un parametre (pas de condition).
+
+standsol(sol1);                %=sol1...sans interet!
+
+   2     2    2
+{{X  - NU ,X,X },
+
+ {},
+
+            2
+          XT  + 4*NU - 4
+ {{{{0,1,----------------, - NU},
+            4*(NU - 1)
+
+    { - 2*NU,NONENT,, sauf :,1}},
+
+              2    2
+          2*NU *(XT  + 4*NU - 4)
+   {{0,1,------------------------, - NU},
+                  NU - 1
+
+    { - 2*NU,ENTPOS}},
+
+              2       2
+          2*NU *( - XT  + 4*NU + 4)
+   {{0,1,---------------------------,NU},
+                   NU + 1
+
+    { - 2*NU,ENTNEG}},
+
+               2
+           - XT  + 4*NU + 4
+   {{0,1,-------------------,NU},
+             4*(NU + 1)
+
+    { - 2*NU,ENTNUL}}},
+
+               2
+           - XT  + 4*NU + 4
+  {{{0,1,-------------------,NU},
+             4*(NU + 1)
+
+    { - 2*NU,NONENT,, sauf :,1}},
+
+   {{0,
+
+     1,
+
+                   2      4               2      3
+     ( - LOG(XT)*XT *LAMBD  + 4*LOG(XT)*XT *LAMBD *NU
+
+                     2      3               2      2   2
+       - 4*LOG(XT)*XT *LAMBD  - 2*LOG(XT)*XT *LAMBD *NU
+
+                      2      2                  2      2
+       + 16*LOG(XT)*XT *LAMBD *NU - 4*LOG(XT)*XT *LAMBD
+
+                     2         3                2         2
+       - 4*LOG(XT)*XT *LAMBD*NU  - 12*LOG(XT)*XT *LAMBD*NU
+
+                      2                        2   4
+       + 16*LOG(XT)*XT *LAMBD*NU + 3*LOG(XT)*XT *NU
+
+                      2   2                6                  5
+       - 12*LOG(XT)*XT *NU  + LOG(XT)*LAMBD  - 4*LOG(XT)*LAMBD *NU
+
+                        5                4   2                   4
+       + 8*LOG(XT)*LAMBD  + LOG(XT)*LAMBD *NU  - 32*LOG(XT)*LAMBD *NU
+
+                         4                  3   3
+       + 24*LOG(XT)*LAMBD  + 8*LOG(XT)*LAMBD *NU
+
+                         3   2                   3
+       + 16*LOG(XT)*LAMBD *NU  - 96*LOG(XT)*LAMBD *NU
+
+                         3                  2   4
+       + 32*LOG(XT)*LAMBD  - 5*LOG(XT)*LAMBD *NU
+
+                         2   3                   2   2
+       + 32*LOG(XT)*LAMBD *NU  + 64*LOG(XT)*LAMBD *NU
+
+                          2                      2
+       - 128*LOG(XT)*LAMBD *NU + 16*LOG(XT)*LAMBD
+
+                           5                      4
+       - 4*LOG(XT)*LAMBD*NU  - 24*LOG(XT)*LAMBD*NU
+
+                            3                      2
+       + 32*LOG(XT)*LAMBD*NU  + 96*LOG(XT)*LAMBD*NU
+
+                                           6                4
+       - 64*LOG(XT)*LAMBD*NU + 3*LOG(XT)*NU  - 24*LOG(XT)*NU
+
+                      2       2      2          2      2
+       + 48*LOG(XT)*NU  - 4*XT *LAMBD *NU - 4*XT *LAMBD
+
+             2         2       2             2   3        2   2
+       + 8*XT *LAMBD*NU  - 8*XT *LAMBD - 4*XT *NU  + 12*XT *NU
+
+              2             5          4              4
+       + 16*XT *NU + 2*LAMBD  - 4*LAMBD *NU + 16*LAMBD
+
+                3   2           3              3          2   3
+       - 4*LAMBD *NU  - 32*LAMBD *NU + 48*LAMBD  + 8*LAMBD *NU
+
+                 2   2           2              2             4
+       - 16*LAMBD *NU  - 96*LAMBD *NU + 64*LAMBD  + 2*LAMBD*NU
+
+                    3              2
+       + 32*LAMBD*NU  - 16*LAMBD*NU  - 128*LAMBD*NU + 32*LAMBD
+
+             5        3                4          3          2   2
+       - 4*NU  + 32*NU  - 64*NU)/(LAMBD  + 8*LAMBD  - 2*LAMBD *NU
+
+                   2             2                4       2
+         + 24*LAMBD  - 8*LAMBD*NU  + 32*LAMBD + NU  - 8*NU  + 16),
+
+     NU},
+
+    { - 2*NU,ENTPOS}},
+
+   {{0,
+
+     1,
+
+                   2      4               2      3
+     ( - LOG(XT)*XT *LAMBD  - 4*LOG(XT)*XT *LAMBD *NU
+
+                     2      3               2      2   2
+       - 4*LOG(XT)*XT *LAMBD  - 2*LOG(XT)*XT *LAMBD *NU
+
+                      2      2                  2      2
+       - 16*LOG(XT)*XT *LAMBD *NU - 4*LOG(XT)*XT *LAMBD
+
+                     2         3                2         2
+       + 4*LOG(XT)*XT *LAMBD*NU  - 12*LOG(XT)*XT *LAMBD*NU
+
+                      2                        2   4
+       - 16*LOG(XT)*XT *LAMBD*NU + 3*LOG(XT)*XT *NU
+
+                      2   2                6                  5
+       - 12*LOG(XT)*XT *NU  + LOG(XT)*LAMBD  + 4*LOG(XT)*LAMBD *NU
+
+                        5                4   2                   4
+       + 8*LOG(XT)*LAMBD  + LOG(XT)*LAMBD *NU  + 32*LOG(XT)*LAMBD *NU
+
+                         4                  3   3
+       + 24*LOG(XT)*LAMBD  - 8*LOG(XT)*LAMBD *NU
+
+                         3   2                   3
+       + 16*LOG(XT)*LAMBD *NU  + 96*LOG(XT)*LAMBD *NU
+
+                         3                  2   4
+       + 32*LOG(XT)*LAMBD  - 5*LOG(XT)*LAMBD *NU
+
+                         2   3                   2   2
+       - 32*LOG(XT)*LAMBD *NU  + 64*LOG(XT)*LAMBD *NU
+
+                          2                      2
+       + 128*LOG(XT)*LAMBD *NU + 16*LOG(XT)*LAMBD
+
+                           5                      4
+       + 4*LOG(XT)*LAMBD*NU  - 24*LOG(XT)*LAMBD*NU
+
+                            3                      2
+       - 32*LOG(XT)*LAMBD*NU  + 96*LOG(XT)*LAMBD*NU
+
+                                           6                4
+       + 64*LOG(XT)*LAMBD*NU + 3*LOG(XT)*NU  - 24*LOG(XT)*NU
+
+                      2       2      2          2      2
+       + 48*LOG(XT)*NU  + 4*XT *LAMBD *NU - 4*XT *LAMBD
+
+             2         2       2             2   3        2   2
+       + 8*XT *LAMBD*NU  - 8*XT *LAMBD + 4*XT *NU  + 12*XT *NU
+
+              2             5          4              4
+       - 16*XT *NU + 2*LAMBD  + 4*LAMBD *NU + 16*LAMBD
+
+                3   2           3              3          2   3
+       - 4*LAMBD *NU  + 32*LAMBD *NU + 48*LAMBD  - 8*LAMBD *NU
+
+                 2   2           2              2             4
+       - 16*LAMBD *NU  + 96*LAMBD *NU + 64*LAMBD  + 2*LAMBD*NU
+
+                    3              2
+       - 32*LAMBD*NU  - 16*LAMBD*NU  + 128*LAMBD*NU + 32*LAMBD
+
+             5        3                4          3          2   2
+       + 4*NU  - 32*NU  + 64*NU)/(LAMBD  + 8*LAMBD  - 2*LAMBD *NU
+
+                   2             2                4       2
+         + 24*LAMBD  - 8*LAMBD*NU  + 32*LAMBD + NU  - 8*NU  + 16),
+
+      - NU},
+
+    { - 2*NU,ENTNEG}},
+
+   {{0,
+
+     1,
+
+                     2                  2               2
+     ( - 2*LOG(XT)*XT *NU - 2*LOG(XT)*XT  + 8*LOG(XT)*NU
+
+                                       2          2
+       + 16*LOG(XT)*NU + 8*LOG(XT) + XT *NU + 2*XT )/(8
+
+            2
+        *(NU  + 2*NU + 1)),
+
+     NU},
+
+    { - 2*NU,ENTNUL}}}}}
+
+standsol(sol2);      %solutions retournees sous forme standard.
+
+      2   2      3  4
+{{ - X *NU  + 1,X ,X },
+
+ {(SQRT(X)
+
+              2   4         2   2        2                  2
+   *( - 16*I*X *NU  + 40*I*X *NU  - 9*I*X  + 128*I + 64*X*NU  - 16*X)
+
+           I/X
+   )/(128*E   *I),
+
+            I/X
+  (SQRT(X)*E
+
+              2   4         2   2        2                  2
+   *( - 16*I*X *NU  + 40*I*X *NU  - 9*I*X  + 128*I - 64*X*NU  + 16*X)
+
+   )/(128*I)},
+
+ {}}
+
+Pour revoir les solutions au voisinage de 0 :
+
+for each elt in second sol1 do
+
+          <<j:=j+1;write j,'ieme solution';sorsol(elt);>>;
+
+1ieme solution
+
+  2
+ X  + 4*NU - 4
+----------------
+    NU
+ 4*X  *(NU - 1)
+
+Si : 
+
+ - 2*NU  non entier
+
+     2   2
+ 2*NU *(X  + 4*NU - 4)
+-----------------------
+      NU
+     X  *(NU - 1)
+
+Si : 
+
+ - 2*NU  entier positif
+
+    NU   2      2
+ 2*X  *NU *( - X  + 4*NU + 4)
+------------------------------
+            NU + 1
+
+Si : 
+
+ - 2*NU  entier negatif
+
+  NU      2
+ X  *( - X  + 4*NU + 4)
+------------------------
+       4*(NU + 1)
+
+Si : 
+
+ - 2*NU  nul
+
+2ieme solution
+
+  NU      2
+ X  *( - X  + 4*NU + 4)
+------------------------
+       4*(NU + 1)
+
+Si : 
+
+ - 2*NU  non entier
+
+  NU               2                2              2
+(X  *( - 2*LOG(X)*X *NU - 2*LOG(X)*X  + 8*LOG(X)*NU  + 16*LOG(X)*NU
+
+                     2         2         2
+       + 8*LOG(X) + X *NU + 2*X ))/(8*(NU  + 2*NU + 1))
+
+Si : 
+
+ - 2*NU  nul
+
+Evaluation des solns au voisinage de 0 pour une valeur particuliere
+
+du parametre :
+
+sorparam(sol1,{nu});%evaluation des solutions au voisinage de 0
+
+                 %pour une valeur particuliere du parametre
+
+                 %nu = 1
+
+                 %ecriture et retour des solutions sous forme
+
+                 %standard
+
+donner la valeur du parametre NU
+
+ 
+
+ ==============
+
+  SOLUTION No 1
+
+ ==============
+
+       2
+X*( - X  + 8)
+
+ 
+
+ ==============
+
+  SOLUTION No 2
+
+ ==============
+
+            2
+  - LOG(X)*X  + 2
+------------------
+        X
+
+   2        2
+{{X  - 1,X,X },
+
+                            2
+         2        - LOG(X)*X  + 2
+ {X*( - X  + 8),------------------}}
+                        X
+
+solparam(sol1,{nu},{1});
+
+   2        2
+{{X  - 1,X,X },
+
+              2
+ {{{{0,1, - XT  + 8,1},{}}},
+
+                      2
+  {{{0,1, - LOG(XT)*XT  + 2,-1},{}}}}}
+
+Meme fonction avec retour des solutions sous forme generalisee,
+
+ce qui permet d'enchainer :
+
+solvalide(ws,1,2)$
+
+                                2
+La solution numero 1 est X*( - X  + 8)
+
+La partie reguliere du reste est de l'ordre de x**4
+
+Si on reporte cette solution dans l'equation, le terme 
+
+                                5
+significatif du reste est :  - X
+
+L'exemple suivant a ete cree specialement pour tester l'algorithme
+
+et utiliser un grand nombre de procedures :
+
+LCOEFF := {X + 1,
+
+              2
+           2*X *(X + 1),
+
+            4
+           X ,
+
+               7
+            5*X
+           ------,
+             2
+
+            10
+           X  }
+
+PARAM := {}
+
+Time: 28968 ms
+
+sol:=delire(x,4,1,lcoeff,param);
+
+Time: 27982 ms
+
+1ieme solution :
+
+ (SQRT(X)*SQRT(6) + 1)/X  -4      1330595            - 1/2
+E                       *X  *( - ---------*SQRT(X)*6      *X
+                                    96
+
+       173            - 1/2    174069763   2    9173
+    - -----*SQRT(X)*6       + -----------*X  + ------*X + 1)
+        2                        4608            16
+0
+
+2ieme solution :
+
+ ( - SQRT(X)*SQRT(6) + 1)/X  -4   1330595            - 1/2
+E                          *X  *(---------*SQRT(X)*6      *X
+                                    96
+
+       173            - 1/2    174069763   2    9173
+    + -----*SQRT(X)*6       + -----------*X  + ------*X + 1)
+        2                        4608            16
+0
+
+3ieme solution :
+
+                           2
+ 13/27  ( - 32*X + 3)/(12*X )  14   90412648939865456   4
+X     *E                     *X  *(-------------------*X
+                                       10460353203
+
+       10833178373456   3    353835104   2    25336
+    + ----------------*X  + -----------*X  + -------*X + 1)
+          43046721             59049           243
+0
+
+4ieme solution :
+
+                     2
+ 1/54  (2*X + 3)/(3*X )  10   863316799848061   4    48578095525   3
+X    *E                *X  *(-----------------*X  - -------------*X
+                               1338925209984          344373768
+
+       7318955   2    1333
+    + ---------*X  - ------*X + 1)
+       236196         243
+0
+
+                          (SQRT(X)*SQRT(6) + 1)/X  -4
+La solution numero 1 est E                       *X  *(
+
+       1330595            - 1/2      173            - 1/2
+    - ---------*SQRT(X)*6      *X - -----*SQRT(X)*6
+         96                           2
+
+       174069763   2    9173
+    + -----------*X  + ------*X + 1)
+         4608            16
+
+                                                      3
+La partie reguliere du reste est de l'ordre de x** - ---
+                                                      2
+
+Si on reporte cette solution dans l'equation, le terme 
+
+                                6740979385   (SQRT(X)*SQRT(6) + 1)/X
+significatif du reste est :  - ------------*E
+                                   6144
+
+                                                    2
+                          13/27  ( - 32*X + 3)/(12*X )  14
+La solution numero 3 est X     *E                     *X  *(
+
+    90412648939865456   4    10833178373456   3    353835104   2
+   -------------------*X  + ----------------*X  + -----------*X
+       10460353203              43046721             59049
+
+       25336
+    + -------*X + 1)
+        243
+
+                                                   526
+La partie reguliere du reste est de l'ordre de x**-----
+                                                   27
+
+Si on reporte cette solution dans l'equation, le terme 
+
+significatif du reste est : 
+
+                                                       2
+    409426546365146093644   13/27  ( - 32/3*X + 1)/(4*X )  19
+ - -----------------------*X     *E                      *X
+        847288609443
+
+
+Quitting

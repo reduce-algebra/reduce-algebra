@@ -1,0 +1,362 @@
+\hoffset -.5cm
+\documentstyle[11pt]{report}
+\parindent 0pt
+\parskip 6pt
+\pagestyle{empty}
+\setlength{\topsep}{0.5\baselineskip}  % above and below environments
+\setlength{\itemsep}{\topsep}
+\setlength{\abovedisplayskip}{\topsep}  % for "long" equations
+\setlength{\belowdisplayskip}{\topsep}
+
+\renewcommand{\arraystretch}{1.3}
+\renewcommand{\thechapter}{\arabic{chapter}}
+\renewcommand{\thesection}{\arabic{section}.}
+\renewcommand{\thesubsection}{\arabic{subsection}.}
+\newcommand{\REDUCE}{REDUCE}
+
+% The following are version dependent.
+
+\newcommand{\system}{Sun Microsystems SPARC systems and Sun 4}
+\newcommand{\programsize}{2.5}      % megabytes
+\newcommand{\virtualsize}{128}      % megabytes
+\newcommand{\timingmachine}{Sun 4/260}
+\newcommand{\machinefactors}{SparcStation 1+&0.9
+                          \\ SparcStation 2 &0.7
+                          \\ SparcServer    &0.9
+                          \\ Sun 4/110      &1.1
+                          \\ Sun 4/65       &1.0}
+\newcommand{\cartridgecommand}{tar xbf 126 /dev/rst0}
+\newcommand{\tapespace}{8.8}        % megabytes
+\newcommand{\createtime}{11}        % seconds
+\newcommand{\executablespace}{2.5}  % megabytes
+\newcommand{\testtime}{5.5}         % seconds
+\newcommand{\floatingpointdigits}{12}
+
+\begin{document}
+\vspace*{1cm}
+\begin{center}
+{\LARGE {\bf REDUCE} User's Guide  for the } \vspace*{2mm} \\
+{\LARGE {\system} Workstations} \\
+\vspace*{.5cm}
+{\LARGE Version 3.4} \\[0.3cm]
+{\large by} \\[0.3cm]
+{\Large Anthony C. Hearn}\\
+{\large RAND} \\
+{\large Santa Monica, CA 90407-2138 USA} \\[0.3cm]
+{\large and} \\[0.3cm]
+{\Large Winfried Neun}\\
+{\large ZIB} \\
+{\large 1000 Berlin 31, FRG} \\[0.3cm]
+{\large July 1991}\\[0.5cm]
+\vfill
+
+{\bf Abstract}
+\end{center}
+This document describes operating procedures for running {\REDUCE}
+specific to the {\system} workstations.
+\begin{center}
+{ZIB  Publication M 2.010.04} \\
+\vspace*{1cm}
+Copyright \copyright 1991 by RAND and ZIB.  All rights reserved.
+\end{center}
+
+Registered  system holders may reproduce all or any part of  this
+publication  for  internal  purposes,   provided  that the source
+of the material is clearly acknowledged, and the copyright notice
+is retained.
+
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+
+\newpage
+\setcounter{page}{1}
+\pagestyle{plain}
+
+\section{Preliminary}
+This document describes operating procedures for running {\REDUCE}
+specific to the {\system} workstations.  It supplements the {\REDUCE}
+User's Manual, describing features, extensions and limitations specific to
+this implementation of {\REDUCE}.
+
+This manual assumes that {\tt csh} is used as the command shell.  If a
+different shell is used, please change commands or filenames accordingly.
+
+The files that form the {\REDUCE} system are stored under the {\REDUCE}
+root directory, identified here as ``\$reduce''.  To execute {\REDUCE}
+first check that the {\REDUCE} binary directory, identified here as
+{\tt reduce.bindir} is included in your search path.  If not, the path
+definition in your .login or .cshrc file should be modified accordingly,
+e.g.:
+\begin{verbatim}
+        set path=( <reduce.bindir> $path)
+\end{verbatim}
+Alternatively, for calling {\REDUCE} without a search path reference, you
+can put an entry in the .login or .cshrc file to define an alias for
+calling {\REDUCE} directly, e.g.:
+\begin{verbatim}
+        alias reduce <reduce.bindir>/reduce
+\end{verbatim}
+In order to access the {\REDUCE} directories most easily, you should also
+include the statement (csh dependent)
+\begin{verbatim}
+        setenv reduce <REDUCE root directory>
+\end{verbatim}
+
+Directories of interest to the general user include \$reduce/doc,
+containing relevant documents and \$reduce/xmpl, containing various
+examples of the use of {\REDUCE}.  The more serious user may also be
+interested in the {\REDUCE} sources stored in the directory \$reduce/src. \\
+
+To run {\REDUCE}, you enter (in lower case only)
+\begin{verbatim}
+        reduce
+\end{verbatim}
+or, if you like a simple protocol of your session written into a file,
+\begin{verbatim}
+        reduce | tee <file>
+\end{verbatim}
+after which {\REDUCE} will respond with a banner line and then prompt for
+the first line of input:
+\begin{verbatim}
+        REDUCE 3.4, 15-Jul-91 ...
+        1:
+\end{verbatim}
+
+You can now begin entering commands.  Alternatively you can enter the full
+pathname:
+\begin{verbatim}
+        <reduce.bindir>/reduce
+\end{verbatim}
+
+\section{{\REDUCE} Documentation}
+{\REDUCE} documents are kept in the directory \$reduce/doc .  These
+include descriptions of all user contributed packages and the following:
+
+\begin{center}
+\begin{tabular}{rl}
+reduce.tex & {\REDUCE} User's Manual in \LaTeX\ format \\
+install.tex & Installation instructions in \LaTeX\ format \\
+oper.tex & System specific operation notes in \LaTeX\ format \\
+sl.doc & Standard LISP Report in plain text format.
+% bugs33.doc &  Known bugs and problems in REDUCE 3.3.
+\end{tabular}
+\end{center}
+
+\section{An Introduction to {\REDUCE}}
+New users of {\REDUCE} are advised to process the seven {\REDUCE} Lessons,
+which are available as \$reduce/xmpl/less$\langle$i$\rangle$.  For
+example, to run Lesson 1, you would say:
+\begin{verbatim}
+        in "$reduce/xmpl/less1";
+\end{verbatim}
+A number of example files are also contained in the \$reduce/xmpl
+directory.  These show how many of the facilities available in {\REDUCE}
+are used.
+
+\section{Resource Requirement}
+The distributed version of {\REDUCE} requires approximately
+{\executablespace} megabytes for storage of the executable binary file.
+At run time, it takes its default execution size from the
+underlying PSL system.
+This size can be changed with the \verb|set_heap_size| command 
+(see chapter 7). 
+This implementation will allocate up to {\virtualsize} megabytes
+dynamically, if the operating system supplies a sufficiently large swap
+space on disks.
+
+\section{File Handling}
+The file names that appear in {\tt in}, {\tt out} and {\tt shut}
+statements follow normal UNIX conventions.  If the name contains uppercase
+or special characters (e.g., \verb| $ ~ . /|)
+it must be enclosed in double quotes
+(``FileName").  Whereas, if an
+identifier is used as a filename all characters are
+interpreted as lower case.
+Filenames containing patterns \verb| ~user, ~/ or $var| are expanded , whereas
+patterns including \verb| * , ? , {...} or [...]| are not expanded.
+
+
+If you execute the statement (csh dependent)
+\begin{verbatim}
+        source $reduce/util/reduce-names
+\end{verbatim}
+(preferably in your .login or .cshrc file), {\REDUCE} sub-directories such
+as \$reduce/xmpl can then be referenced using symbolic names.  These are
+formed by prefixing \$r to the sub-directory names.  Thus less1 can also
+be input by the statement
+\begin{verbatim}
+        in "$rxmpl/less1";
+\end{verbatim}
+
+\section{Internal Parameters}
+
+\subsection{Object Sizes}
+The maximum string and identifier lengths are limited only by the
+underlying PSL base.  The current implementation allows several thousand
+characters in both identifiers and strings.  However, we recommend that
+such names be limited to 24 characters or less for compatibility with
+other versions of {\REDUCE}.
+
+In the default precision, floating point numbers are printed in
+fixed-point notation rounded to {\floatingpointdigits} digits.
+
+Arbitrary precision integer and real arithmetic are supported.
+
+\subsection{Special Characters and Interrupts}
+Lower case input is permitted, but converted to upper case unless the
+switch {\tt raise} is off.
+
+The end-of-file character is $\langle$control$\rangle$D.
+
+A terminal interrupt (often $\langle$del$\rangle$ or
+$\langle$control$\rangle$C) causes the current calculation to halt.  The
+user is then prompted whether to continue the evaluation.  If not,
+{\REDUCE} prompts for the next command.  In some cases the continuation
+prompt may be omitted and {\REDUCE} immediately prompts for the next
+command.
+
+$\langle$escape$\rangle$ is used to terminate strings in the {\REDUCE}
+interactive editor.
+
+\subsection{Miscellaneous}
+There is no link currently to an external editor.
+
+The internal ordering on alphabetic characters is from A through Z
+followed by a through z.
+
+Times (as reported by {\tt on time; } or {\tt showtime;}) are given in
+milliseconds, and measure execution time and garbage collection
+time separately.  They do not include operating system overhead 
+(e.g., swapping time).
+
+To exit {\REDUCE} use {\tt bye;} .  Alternatively, if
+you want to continue the {\REDUCE}
+session later use {\tt <control>Z}.  To restart, one says
+{\tt fg}, or another valid UNIX command for this purpose.  Use the UNIX
+{\tt kill} command to remove the job.
+
+\section{Customizing the {\REDUCE} Environment}
+
+\subsection{Size of Working Space} Depending on the complexity
+of your application, the amount of storage
+used by {\REDUCE} for storing and manipulating your data will vary
+considerably. You may get an idea of the storage requirements however by
+turning on the switch {\tt gc}:
+\begin{verbatim}
+        on gc;
+\end{verbatim}
+You will then get messages like:
+\begin{verbatim}
+ *** Garbage collection starting
+ *** GC 2: 15-Jul-91 16:12:53 (~ 1836 ms cpu time, gc : 28 %)
+ *** time 289 ms, 50167 occupied, 51876 recovered, 949833 free
+\end{verbatim}
+at various points in your calculation.
+>From these statistics you can see the amount of storage used, the
+free memory, and the percentage of cpu time spent on
+memory management (garbage collection). If the percentage is high, more
+than 20\% say, it is recommended that you increase memory size.
+This can be done by the command:
+\begin{verbatim}
+        set_heap_size nnnnnnn;
+\end{verbatim}
+where nnnnnnn is the size in machine words of the dynamic storage.
+The default will be (in most cases) 1000000 words. The present memory size
+is returned by:
+\begin{verbatim}
+        set_heap_size nil;
+\end{verbatim}
+
+\subsection{Initial Commands} When {\REDUCE} is initialized,
+a .reducerc file, if present, will be read
+from the user's home directory.  This file can contain any {\REDUCE} or
+PSL commands needed for customizing the {\REDUCE} environment.  Typically
+these are load commands to load specific user modules or the inclusion
+of local user directories through the LOADDIRECTORIES facilities.  See the
+PSL manual for more information on this feature.
+
+The commands in the .reducerc file must be in Standard Lisp syntax.  To
+display {\REDUCE} commands in Standard Lisp syntax, the {\REDUCE} {\tt on
+defn} feature can be used.  The script \$reduce/util/mkslfile is available
+for converting an entire file to Standard Lisp syntax.  For further
+details, the Standard Lisp Report should be consulted.
+
+\section{Communicating with UNIX}
+
+There are two different ways for a {\REDUCE} user to communicate with the
+UNIX operating system:
+It is possible to issue a UNIX command and return to
+{\REDUCE} at its completion by means of the command {\tt system}. 
+Alternatively, some UNIX functions are built into the REDUCE executable
+directly such that the user can influence the present task and interpret
+the system's return value.
+
+The argument to {\tt system} is a string which is then passed as a UNIX
+command to your default shell.  For example,
+\begin{verbatim}
+        system "vi foo/bah";
+\end{verbatim}
+will edit the file foo/bah using the "vi" editor, and
+\begin{verbatim}
+        system "lpr foo/bah";
+\end{verbatim}
+will print the same file. If you want to change for example your current
+working directory the command:
+\begin{verbatim}
+        system "cd /tmp";
+\end{verbatim}
+is not of much use, since the {\tt cd} command is run in a UNIX child's
+environment and not in the Reduce task environment.  In this case the
+command
+\begin{verbatim}
+        cd "/tmp";
+\end{verbatim}
+will produce the desired effect. More internally available functions
+are provided, including {\tt pwd}, {\tt getenv} and {\tt setenv}.
+The latter work as described in the UNIX
+``man" pages, i.e., they expect parameters as strings, e.g.
+\begin{center}
+\begin{tabular}{l@{\rm\quad returns }l}
+\tt pwd();                   & \tt "/tmp/"   \\
+\tt setenv ("hugo","otto");  & \tt NIL  \rm and then \\
+\tt getenv "hugo";           & \tt "otto"
+\end{tabular}
+\end{center}
+
+\section{Implementation Dependent Error Messages}
+A number of error messages from the underlying PSL system may be seen from
+time to time.  These include:
+
+\paragraph{Floating point exception.} Probably means a division by zero
+has been attempted or a floating-point overflow has happend.
+
+\paragraph{Heap space exhausted.} Your problem is too large in its present
+form for the available workspace; either change your problem formulation
+or ask your site consultant to build a bigger system for you.
+
+\paragraph{Non-numeric argument in arithmetic.} This means that a Lisp
+arithmetic routine has been called with an invalid argument.
+
+\paragraph{Segmentation violation.} This indicates an illegal memory
+reference.  It can arise from applying the Lisp function {\tt car} to an
+atom in compiled code.
+
+\paragraph{Bus error.} This indicates an illegal memory reference.  It
+can arise from applying the Lisp function {\tt car} to an atom in compiled
+code.
+
+\paragraph{Binding stack overflow, restarting...} This can arise from 
+the evaluation of
+very complicated expressions. You can increase the binding stack by the
+\verb|set_bndstk_size| command.  For example, to set this to 100000, use:
+\begin{verbatim}
+        set_bndstk_size 100000;
+\end{verbatim}
+\section{Further Help}
+For further help with {\REDUCE}, please contact:
+\begin{center}
+$\langle$list your site consultant here$\rangle$
+\end{center}
+
+\end{document}

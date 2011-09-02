@@ -1,0 +1,66 @@
+
+<A NAME=ANTISYMMETRIC>
+
+<TITLE>ANTISYMMETRIC</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ANTISYMMETRIC</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+When an operator is declared <em>antisymmetric</em>, its arguments are 
+reordered to conform to the internal ordering of the system. If an odd 
+number of argument interchanges are required to do this ordering, 
+the sign of the expression is changed. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>antisymmetric</em>&lt;identifier&gt;{<em>,</em>&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; is an identifier that has been declared as an operator. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+operator m,n; 
+
+antisymmetric m,n; 
+
+m(x,n(1,2)); 
+
+  - M( - N(2,1),X) 
+
+
+operator p; 
+
+antisymmetric p; 
+
+p(a,b,c); 
+
+  P(A,B,C) 
+
+
+p(b,a,c); 
+
+  - P(A,B,C)
+
+</TT></PRE><P>If &lt;identifier&gt; has not been declared an operator, the flag 
+
+<em>antisymmetric</em> is still attached to it. When &lt;identifier&gt; is 
+subsequently used as an operator, the message <em>Declare</em> &lt;identifier
+&gt; 
+ <em>operator? (Y or N)</em> is printed. If the user replies <em>y</em>, the 
+antisymmetric property of the operator is used. 
+<P>
+<P>
+Note in the first example, identifiers are customarily ordered 
+alphabetically, while numbers are ordered from largest to smallest. 
+The operators may have any desired number of arguments (less than 128). 
+<P>
+<P>
+<P>

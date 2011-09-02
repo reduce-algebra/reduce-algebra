@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# test all modules whose logs are not already up to date
+
+# main log files go in ../../../log/*.rlg
+
+./r37 -v ../util/testall.red -Dno_init_file -Dwhich_module=$1 -- log/testall.log
+
+

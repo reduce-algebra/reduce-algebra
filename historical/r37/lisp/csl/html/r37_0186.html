@@ -1,0 +1,46 @@
+
+<A NAME=ALGEBRAIC>
+
+<TITLE>ALGEBRAIC</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ALGEBRAIC</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>algebraic</em> command changes REDUCE's mode of operation to 
+algebraic. When <em>algebraic</em> is used as an operator (with an 
+argument inside parentheses) that argument is evaluated in algebraic 
+mode, but REDUCE's mode is not changed. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+algebraic; 
+
+symbolic; 
+
+  NIL 
+
+
+algebraic(x**2); 
+
+   2
+  X  
+
+
+x**2; 
+
+    ***** The symbol X has no value.
+
+</TT></PRE><P>REDUCE's symbolic mode does not know about most algebraic commands
+. 
+Error messages in this mode may also depend on the particular Lisp 
+used for the REDUCE implementation. 
+<P>
+<P>
+<P>

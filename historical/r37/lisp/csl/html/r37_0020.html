@@ -1,0 +1,49 @@
+
+<A NAME=semicolon>
+
+<TITLE>semicolon</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>;</B> _ _ _ <B>SEMICOLON</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+The semicolon is a statement delimiter, indicating results are to be printed 
+when used in interactive mode. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+(x+1)**2; 
+
+   2
+  X  + 2*X + 1 
+
+
+df(x**2 + 1,x); 
+
+  2*X
+
+</TT></PRE><P>Entering a <em>Return</em> without a semicolon or dollar sign resu
+lts in a 
+prompt on the following line. A semicolon or dollar sign can be 
+added at this point to execute the statement. In interactive mode, a 
+statement that is ended with a semicolon and <em>Return</em> has its results 
+printed on the screen. 
+<P>
+<P>
+Inside a group statement <em>&lt;&lt;</em>...<em>&gt;&gt;</em> 
+or a <em>begin</em>...<em>end</em> block, a 
+semicolon or dollar sign separates individual REDUCE statements. Since 
+results are not printed from a block without a specific <em>return</em> 
+statement, there is no difference between using the semicolon or dollar 
+sign. In a group statement, the last value produced is the value 
+returned by the group statement. Thus, if a semicolon or dollar sign is 
+placed between the last statement and the ending brackets, the group 
+statement returns the value 0 or nil, rather than the value of the 
+last statement. 
+<P>
+<P>
+<P>

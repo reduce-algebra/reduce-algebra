@@ -1,0 +1,21 @@
+These are informal and not-guaranteed-complete smapshots of some
+previous releases of Reduce. There should not be any binaries or
+serious build scripts here and these are all to be viewed as OUT
+OF DATE and NOT SUPPORTED AT ALL. However some people may enjoy seeing
+how the code-base has grown and getting a bit of insight into the
+world of the past. And developers tracking a newly uncovered bug may
+sometimes find it useful to look back into these archives in case
+that gives insight.
+
+PLEASE do not ask the main developers about building or installing
+from these old files. ALL current support will be focussed on the
+main version.
+
+The files here typically have old restrictive copyright notices and
+sometimes restrictive license terms. They are included here by virtue
+of the permission that their originators granted to Tony Hearn and
+his distributors to use them, but you should not modify and redistribute
+anything from this directory without careful thought.
+
+
+              Arthur Norman. August 2011

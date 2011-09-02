@@ -1,0 +1,174 @@
+
+                     REDUCE USER CONTRIBUTED LIBRARY
+
+                               15 July 1992
+
+The files in this directory comprise a library of contributions from many
+REDUCE users.  The relevant members first appeared in the REDUCE Network
+Library.  They are collected here as a service to REDUCE users, and no
+responsibility can be taken regarding them.  In particular, any questions
+about any of the files should be directed to the relevant author(s).
+
+All code in this library has been tested with REDUCE 3.4, but may require
+modifications to work in later releases.  Any updates will appear in later
+releases of this library, or in the REDUCE Network Library.  For an
+information about this library, send the message "help" to
+reduce-netlib@rand.org, reduce-netlib@can.nl or redlib@elib.zib-berlin.de.
+
+A prototypical Makefile is included for those users whose systems provide
+this facility (e.g., UNIX-based systems).  Although this makefile is
+specific to PSL- and Common Lisp-based systems, it should be fairly easy
+to modify for other versions.  The use of this Makefile should be
+self-explanatory.  In particular, "make all" will make fast loading
+versions of all relevant files in that directory, and "make <package>"
+will make a fast loading version of the package named <package>.
+
+The Network Library is divided into sublibraries which have a particular
+theme (such as "chemistry").  The sublibraries are then divided into
+members, which are individual files with names of the form <name>.<type>.
+This particular organization is not preserved here, since all members are
+in a single directory.  The table of contents of the current library
+organized in the original hierarchical manner is:
+
+                               ARITH
+
+numeric.red    - Source for numerical algorithm package
+numeric.tst    - Test file for numerical algorithm package
+numeric.tex    - Document file for numerical algorithm package
+numeric.log    - Log of test run for numerical algorithm package
+
+                             CHEMISTRY
+
+reacteqn.doc   - documentation for reaction equation system package
+reacteqn.log   - log of test file for reaction equation system package
+reacteqn.red   - source for reaction equation system package
+reacteqn.tst   - test file for reaction equation system package
+
+                       DE (Differential Equations)
+
+changevar.log  - Log of test file for Changevar - a package for
+                    changing variables in differential equations
+changevar.red  - Source for Changevar package
+changevar.tex  - Tex version of document for Changevar package
+changevar.tst  - Test file for Changevar package
+desir.doc      - Document for DESIR package
+desir.log      - Log of UNIX script for testing DESIR package
+desir.red      - Source for DESIR package
+desir.tst      - Test file for DESIR package.  This should be used with
+                    the UNIX script tstdesir, or modified for the local
+                    system
+tstdesir       - UNIX script for testing DESIR package
+fide.doc       - Document for FIDE package for the automation
+                    of the finite difference method for PDE's
+fide.log       - log of run of FIDE package test file
+fide1.red      - part 1 of source file for FIDE package
+fide.red       - part 2 of source file for FIDE package
+fide.tst       - Test file for FIDE package
+odeex.red      - Examples of solving ODE's using Taylor series
+
+                              GRAPHICS
+
+gnuplot.red    - Source for REDUCE GNUPLOT package
+gnuplot.tst    - Test file for REDUCE GNUPLOT package
+gnuplot.tex    - Document for REDUCE GNUPLOT package
+
+                              GROEBNER
+
+wu.log         - log of test file for Wu's algorithm package
+wu.red         - source for Wu's algorithm package
+wu.tex         - LaTeX version of document for Wu's algorithm
+                   package (there is no plain text version)
+wu.tst         - test file for Wu's algorithm package
+
+                              LAPLACE
+
+laplace.red    - source for Laplace and Inverse Laplace Transforms
+laplace.doc    - document for Laplace and Inverse Laplace Transforms
+laplace.tst    - Test file for Laplace and Inverse Laplace Transforms
+laplace.log    - Log of test file for Laplace and Inverse Laplace Transforms
+
+                                MISC
+
+reset.red      - code for resetting REDUCE to initial state
+
+                              PHYSICS
+
+cvit.red       - source for CVIT package for the computation of Dirac
+                 gamma matrix expressions by the Cvitanovic-Kennedy
+                 algorithm
+cvit.doc       - document for CVIT package
+cvit.log       - log of running test file for CVIT package
+cvit.tst       - test file for CVIT package
+physop.red     - source file for PHYSOP package for operator
+                     calculus in physics. This REQUIRES the NONCOM2
+                     package described below
+physop.log     - log of running test file for PHYSOP package
+physop.tex     - LaTeX version of document for PHYSOP package
+physop.tst     - Test file for PHYSOP package
+noncom2.red    - source for noncommutativity package NONCOM2
+                               needed by PHYSOP package
+symmetry.log   - Log of test run for symmetry package
+symmetry.red   - Part 1 of source for symmetry package
+                    (all parts are needed)
+symdata1.red   - Part 2 of source for symmetry package
+symdata2.red   - Part 3 of source for symmetry package
+symmetry.tex   - Document file for symmetry package
+symmetry.tst   - Log of test run for symmetry package
+
+
+                                RULES
+
+pm.red         - Source of the PM pattern matcher
+pmrules.red    - Basic rules for PM pattern matcher
+                 NOTE that pm.red is loaded by this file
+pmrules2.red   - More rules for PM pattern matcher, but not thoroughly
+                 tested. NOTE that pm.red and pmrules.red must be loaded
+                 before this file
+pm.doc         - Document for the PM pattern matcher
+pmrules.tst    - Test file for the PM pattern matcher and basic rules
+pmrules.log    - Log of test file for PM pattern matcher and basic rules
+
+                               SERIES
+
+camal.red      - Source for CAMAL package for celestial mechanics
+camal.bib      - Bibliography file for CAMAL package document
+camal.log      - Log of running test file for CAMAL package
+camal.tex      - LaTeX version of document for CAMAL package
+camal.tst      - Test file for CAMAL package
+
+                               SOLVE
+
+linineq.log    - Log of test file for the linineq package for
+                     solving sets of linear inequalities
+linineq.red    - Source for linineq package
+linineq.tex    - LaTex version of document for linineq package
+linineq.tst    - Test file for linineq package
+
+                                TEX
+
+reduce.tex     -  TeX file to be used together with output from
+                      the TRI package for producing TeX output
+redwidth.tex   -  TeX file for determining item widths
+tri.latex      -  LaTeX form of document for TRI package
+tri.red        -  REDUCE source code for TRI package
+tri.tex        -  TeX form of document for TRI package
+tri.tst        -  Test file for TRI package; this produces a file
+                     tritst.tex,  which can be compared with
+                     tritstx.tex, and then processed by "tex tritest"
+tri.log        -  Log from run of TRI test file
+tritest.tex    -  TeX file for processing output of tri.tst
+tritstx.tex    -  Normal output from running test file for TRI package
+rlfi.doc       -  Document for the RLFI package for producing
+                     LaTeX output
+rlfi.red       -  REDUCE source for RLFI package
+rlfi.log       -  Log from run of RLFI test file
+rlfi.tst       -  Test file for RLFI package
+
+                                UTIL
+
+assist.doc     -  Document for ASSIST utility package
+assist.log     -  Log of test file for ASSIST utility package
+assist.red     -  Source for ASSIST utility package
+assist.tst     -  Test file for ASSIST utility package
+showrules.red  -  Source for a command to show rules for an
+                     operator (no other documentation)

@@ -1,0 +1,64 @@
+
+<A NAME=AND>
+
+<TITLE>AND</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>AND</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>and</em> binary logical operator returns true if both of its 
+arguments are true. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;logical\_expression&gt; <em>and</em> &lt;logical\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;logical\_expression&gt; must evaluate to true or nil. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+a := 12; 
+
+  A := 12 
+
+
+if numberp a and a &lt; 15 then write a**2 else write &quot;no&quot;;
+ 
+
+
+  144 
+
+
+clear a; 
+
+if numberp a and a &lt; 15 then write a**2 else write &quot;no&quot;;
+ 
+
+
+  no
+
+</TT></PRE><P>Logical operators can only be used inside conditional statements, 
+such as 
+
+<A HREF=r37_0228.html>while</A>...<em>do</em> or 
+
+<A HREF=r37_0052.html>if</A>...<em>then</em>...<em>else</em>. <em>and</em> exami
+nes each of 
+its arguments in order, and quits, returning nil, on finding an 
+argument that is not true. An error results if it is used in other 
+contexts. 
+<P>
+<P>
+<em>and</em>is left associative: <em>x and y and z</em> is equivalent to 
+<em>(x and y) and z</em>. 
+<P>
+<P>
+<P>

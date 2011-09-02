@@ -1,0 +1,16 @@
+
+Codemist Standard Lisp 3.54 for DEC Alpha: May 23 1994
+Dump file created: Mon May 23 10:39:11 1994
+REDUCE 3.5, 15-Oct-93 ...
+Memory allocation: 6023424 bytes
+
++++ About to read file ndotest.red
+
+
+Failed to find "r35Img(pf)"
+
+***** error in loading package pf or package not found 
+
+
+
+End of Lisp run after 0.03+0.63 seconds

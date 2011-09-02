@@ -1,0 +1,110 @@
+
+ascii=74 VK=54 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=20 VK=20 ctrl=20
+[screen:80x43]
+ascii=74 VK=54 ctrl=20
+[screen:80x43]
+ascii=79 VK=59 ctrl=20
+[screen:80x43]
+ascii=70 VK=50 ctrl=20
+[screen:80x43]
+ascii=65 VK=45 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=2c VK=bc ctrl=20
+[screen:80x43]
+ascii=61 VK=41 ctrl=20
+[screen:80x43]
+ascii=73 VK=53 ctrl=20
+[screen:80x43]
+ascii=73 VK=53 ctrl=20
+[screen:80x43]
+ascii=68 VK=48 ctrl=20
+[screen:80x43]
+ascii=8 VK=8 ctrl=20
+[screen:80x43]
+ascii=67 VK=47 ctrl=20
+[screen:80x43]
+ascii=6e VK=4e ctrl=20
+[screen:80x43]
+ascii=70 VK=50 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=69 VK=49 ctrl=20
+[screen:80x43]
+ascii=2c VK=bc ctrl=20
+[screen:80x43]
+ascii=20 VK=20 ctrl=20
+[screen:80x43]
+ascii=65 VK=45 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=6f VK=4f ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=73 VK=53 ctrl=20
+[screen:80x43]
+ascii=65 VK=45 ctrl=20
+[screen:80x43]
+ascii=72 VK=52 ctrl=20
+[screen:80x43]
+ascii=8 VK=8 ctrl=20
+[screen:80x43]
+ascii=74 VK=54 ctrl=20
+[screen:80x43]
+ascii=0 VK=10 ctrl=30
+
+ascii=21 VK=31 ctrl=30
+[screen:80x43]
+ascii=2a VK=38 ctrl=30
+[screen:80x43]
+ascii=3b VK=ba ctrl=20
+[screen:80x43]
+ascii=d VK=d ctrl=20
+
+ascii=0 VK=10 ctrl=30
+
+ascii=22 VK=32 ctrl=30
+[screen:80x43]
+ascii=61 VK=41 ctrl=20
+[screen:80x43]
+ascii=0 VK=10 ctrl=30
+
+ascii=22 VK=32 ctrl=30
+[screen:80x43]
+ascii=20 VK=20 ctrl=20
+[screen:80x43]
+ascii=0 VK=10 ctrl=30
+
+ascii=2b VK=bb ctrl=30
+[screen:80x43]
+ascii=20 VK=20 ctrl=20
+[screen:80x43]
+ascii=31 VK=31 ctrl=20
+[screen:80x43]
+ascii=3b VK=ba ctrl=20
+[screen:80x43]
+ascii=d VK=d ctrl=20
+
+ascii=71 VK=51 ctrl=20
+[screen:80x43]
+ascii=75 VK=55 ctrl=20
+[screen:80x43]
+ascii=69 VK=49 ctrl=20
+[screen:80x43]
+ascii=74 VK=54 ctrl=20
+[screen:80x43]
+ascii=3b VK=ba ctrl=20
+[screen:80x43]
+ascii=d VK=d ctrl=20

@@ -1,0 +1,58 @@
+REDUCE 3.6, 15-Jul-95, patched to 6 Mar 96 ...
+
+
+% TeX-REDUCE-Interface 0.50
+% set greek asserted
+% set lowercase asserted
+% \tolerance 10
+% \hsize=150mm
+% load tri;
+
+global '(textest!*);
+
+
+
+symbolic procedure texexa(code);
+   begin
+     prin2 "\TRIexa{"; prin2 textest!*;
+     if !*TeXindent then prin2 "}{TeXindent}{" else
+     if !*TeXbreak  then prin2 "}{TeXBreak}{" else
+     if !*TeX then prin2 "TeX" else prin2 "}{---}{";
+     if !*TeXbreak then prin2 tolerance!* else prin2 "---";
+     prin2 "}{"; prin2 code; prin2 "}"; terpri()
+   end;
+
+
+texexa
+
+
+algebraic procedure exa(expression,code);
+   begin symbolic texexa code; return expression end;
+
+
+exa
+
+
+% ----------------------------------------------------------------------
+% Examples from the Integrator Test File
+% ----------------------------------------------------------------------
+
+symbolic(textest!*:="Integration");
+
+
+"Integration"
+
+
+texsetbreak(120,1000);
+
+% \tolerance 1000
+% \hsize=120mm
+
+
+on texindent;
+
+
+
+off echo;
+
+(TIME:  tri 1830 1900)

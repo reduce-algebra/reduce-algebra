@@ -1,0 +1,53 @@
+
+<A NAME=LPOWER>
+
+<TITLE>LPOWER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LPOWER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>lpower</em> operator returns the leading power of an expression with 
+respect to a kernel. 1 is returned if the expression does not depend on 
+the kernel. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>lpower</em>(&lt;expression&gt;,&lt;kernel&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is ordinarily a polynomial. If 
+<A HREF=r37_0322.html>ratarg</A> is on, 
+a rational expression may also be used, otherwise an error results. 
+&lt;kernel&gt; must be a 
+<A HREF=r37_0002.html>kernel</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+lpower((x+2*y)**6,y); 
+
+   6
+  Y  
+
+
+lpower((x + cos(x))**8 + df(x**2,x),cos(x));
+			 
+
+
+        8
+  COS(X)  
+
+
+lpower(x**3 + 3*x,y); 
+
+  1
+
+</TT></PRE><P>

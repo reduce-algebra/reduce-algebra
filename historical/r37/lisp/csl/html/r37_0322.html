@@ -1,0 +1,54 @@
+
+<A NAME=RATARG>
+
+<TITLE>RATARG</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RATARG</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>ratarg</em> is on, rational expressions can be given to operators 
+such as 
+<A HREF=r37_0141.html>coeff</A> and 
+<A HREF=r37_0161.html>lterm</A> that normally require 
+polynomials in one of their arguments. When <em>ratarg</em> is off, rational 
+expressions cause an error message. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+aa := x/y**2 + 1/x + y/x**2; 
+ 
+
+         3      2    3
+        X  + X*Y  + Y
+  AA := -------------- 
+             2  2
+            X *Y
+
+
+coeff(aa,x); 
+
+         3      2    3
+        X  + X*Y  + Y
+  ***** -------------- invalid as POLYNOMIAL
+             2  2
+            X *Y
+
+
+on ratarg; 
+
+coeff(aa,x);                
+ 
+
+   Y  1      1
+  {--,--,0,-----}
+    2  2    2  2
+   X  X    X *Y
+
+</TT></PRE><P>

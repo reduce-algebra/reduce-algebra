@@ -1,0 +1,71 @@
+
+<A NAME=LN>
+
+<TITLE>LN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>ln</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid scalar REDUCE expression. 
+<P>
+<P>
+The <em>ln</em> operator returns the natural logarithm of its argument. 
+However, unlike 
+<A HREF=r37_0088.html>log</A>, there are no algebraic rules associated 
+with it; it will only evaluate when 
+<A HREF=r37_0330.html>rounded</A> is on, and the 
+argument is a real number. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ln(x); 
+
+  LN(X) 
+
+
+ln 4; 
+
+  LN(4) 
+
+
+ln(e); 
+
+  LN(E) 
+
+
+df(ln(x),x); 
+
+  DF(LN(X),X) 
+
+
+on rounded; 
+
+ln 4; 
+
+  1.38629436112 
+
+
+ln e; 
+
+  1
+
+</TT></PRE><P>Because of the restricted algebraic properties of <em>ln</em>, use
+rs are 
+advised to use 
+<A HREF=r37_0088.html>log</A> whenever possible. 
+<P>
+<P>
+<P>

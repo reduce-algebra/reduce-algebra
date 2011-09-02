@@ -1,0 +1,28 @@
+
+<A NAME=RECLAIM>
+
+<TITLE>RECLAIM</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RECLAIM</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+REDUCE's memory is in a storage structure called a heap. As REDUCE 
+statements execute, chunks of memory are used up. When these chunks are no 
+longer needed, they remain idle. When the memory is almost full, 
+the system executes a garbage collection, reclaiming space that is no 
+longer needed, and putting all the free space at one end. Depending on 
+the size of the image REDUCE is using, 
+garbage collection needs to be done more or less often. A 
+larger image means fewer but longer garbage collections. 
+Regardless of memory size, 
+if you ask REDUCE to do something ridiculous, like <em>factorial(2000)</em>, it 
+may 
+garbage collect many times. 
+<P>
+<P>
+<P>

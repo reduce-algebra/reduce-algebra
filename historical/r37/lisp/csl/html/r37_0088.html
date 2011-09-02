@@ -1,0 +1,57 @@
+
+<A NAME=LOG>
+
+<TITLE>LOG</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LOG</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>log</em> operator returns the natural logarithm of its argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>log</em>(&lt;expression&gt;) or <em>log</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid scalar REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+log(x); 
+
+  LOG(X) 
+
+
+log 4; 
+
+  LOG(4) 
+
+
+log(e); 
+
+  1 
+
+
+on rounded; 
+
+log 4; 
+
+  1.38629436112
+
+</TT></PRE><P><em>log</em>returns a numeric value only when 
+<A HREF=r37_0330.html>rounded</A> is on. In that 
+case, use of a negative argument for <em>log</em> results in an error 
+message. No error is given on a negative argument when REDUCE is not in 
+that mode. 
+<P>
+<P>
+<P>

@@ -1,0 +1,59 @@
+
+<A NAME=TIMES>
+
+<TITLE>TIMES</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TIMES</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>times</em> operator is an infix or prefix n-ary multiplication 
+operator. It is identical to <em>*</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+&lt;expression&gt; <em>times</em> &lt;expression&gt; {<em>times</em> &lt;express
+ion&gt;}* 
+<P>
+<P>
+or <em>times</em>(&lt;expression&gt;,&lt;expression&gt; {,&lt;expression&gt;}*) 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE scalar or matrix expression. 
+Matrix expressions must be of the correct dimensions. Compatible scalar 
+and matrix expressions can be mixed. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+var1 times var2; 
+
+  VAR1*VAR2 
+
+
+times(6,5); 
+
+  30 
+
+
+matrix aa,bb; 
+
+aa := mat((1),(2),(x))$ 
+
+bb := mat((0,3,1))$ 
+
+aa times bb times 5; 
+
+  [0   15    5 ]
+  [            ]
+  [0   30   10 ]
+  [            ]
+  [0  15*X  5*X]
+
+</TT></PRE><P>

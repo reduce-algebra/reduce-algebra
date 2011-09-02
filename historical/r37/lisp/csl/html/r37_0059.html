@@ -1,0 +1,58 @@
+
+<A NAME=REVERSE>
+
+<TITLE>REVERSE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>REVERSE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>reverse</em> operator returns a 
+<A HREF=r37_0053.html>list</A> that is the reverse of the 
+list it is given. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>reverse</em>(&lt;list&gt;) or <em>reverse</em> &lt;list&gt; 
+<P>
+<P>
+<P>
+&lt;list&gt; must be a 
+<A HREF=r37_0053.html>list</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+aa := {c,b,a,{x**2,z**3},y}; 
+
+                 2  3
+  AA := {C,B,A,{X ,Z },Y} 
+
+
+reverse aa; 
+
+       2  3
+  {Y,{X ,Z },A,B,C} 
+
+
+reverse(q . reverse aa); 
+
+           2  3
+  {C,B,A,{X ,Z },Y,Q}
+
+</TT></PRE><P><em>reverse</em>and 
+<A HREF=r37_0043.html>cons</A> can be used together to add a new element to 
+the end of a list (<em>.</em> adds its new element to the beginning). The 
+<em>reverse</em> operator uses a noticeable amount of system resources, 
+especially if the list is long. If you are doing much heavy-duty list 
+manipulation, you should probably design your algorithms to avoid much 
+reversing of lists. A moderate amount of list reversing is no problem. 
+<P>
+<P>
+<P>

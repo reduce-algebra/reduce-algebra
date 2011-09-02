@@ -1,0 +1,46 @@
+
+<A NAME=MIN>
+
+<TITLE>MIN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MIN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>min</em> is an n-ary prefix operator, which returns the 
+smallest value in its arguments. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>min</em>(&lt;expression&gt;{,&lt;expression&gt;}*) 
+<P>
+<P>
+<P>
+&lt;expression&gt; must evaluate to a number. <em>min</em> of an empty list 
+returns 0. 
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+min(-3,0,17,2); 
+
+  -3 
+
+
+&lt;&lt;a := 23;b := 2*a;c := 4**2;min(a,b,c)&gt;&gt;;
+			 
+
+
+  16 
+
+
+min(5,10,a); 
+
+  5
+
+</TT></PRE><P><P>
+<P>

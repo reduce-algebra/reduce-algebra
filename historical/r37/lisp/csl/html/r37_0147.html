@@ -1,0 +1,80 @@
+
+<A NAME=DEN>
+
+<TITLE>DEN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DEN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>den</em> operator returns the denominator of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>den</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is ordinarily a rational expression, but may be any valid 
+scalar REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+a := x**3 + 3*x**2 + 12*x; 
+
+           2
+  A := X*(X   + 3*X + 12) 
+
+
+
+b := 4*x*y + x*sin(x); 
+
+  B := X*(SIN(X) + 4*Y) 
+
+
+
+den(a/b); 
+
+  SIN(X) + 4*Y 
+
+
+
+den(aa/4 + bb/5); 
+
+  20 
+
+
+
+den(100/6); 
+
+  3 
+
+
+
+den(sin(x)); 
+
+  1
+
+</TT></PRE><P><em>den</em>returns the denominator of the expression after it has
+ been 
+simplified by REDUCE. As seen in the examples, this includes putting 
+sums of rational expressions over a common denominator, and reducing 
+common factors where possible. If the expression does not have any 
+other denominator, 1 is returned. 
+<P>
+<P>
+Switch settings, such as 
+<A HREF=r37_0304.html>mcd</A> or 
+<A HREF=r37_0323.html>rational</A>, have an 
+effect on the denominator of an expression. 
+<P>
+<P>
+<P>

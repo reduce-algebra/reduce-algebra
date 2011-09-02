@@ -1,0 +1,62 @@
+
+<A NAME=simplex>
+
+<TITLE>simplex</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SIMPLEX</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>simplex</em>(&lt;max/min&gt;,&lt;objective function&gt;, 
+{&lt;linear inequalities&gt;}) 
+<P>
+<P>
+<P>
+&lt;max/min&gt; :- either max or min (signifying maximize and 
+			 minimize). 
+<P>
+<P>
+&lt;objective function&gt; :- the function you are maximizing or 
+			 minimizing. 
+<P>
+<P>
+&lt;linear inequalities&gt; :- the constraint inequalities. Each one must 
+ be of the form sum of variables ( 
+ &lt;=,=,&gt;=) number. 
+<P>
+<P>
+<em>simplex</em>applies the revised simplex algorithm to find the 
+optimal(either maximum or minimum) value of the 
+&lt;objective function&gt; under the linear inequality constraints. 
+<P>
+<P>
+It returns {optimal value,{ values of variables at this optimal}}. 
+<P>
+<P>
+The algorithm implies that all the variables are non-negative. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+ simplex(max,x+y,{x&gt;=10,y&gt;=20,x+y&lt;=25}); 
+
+
+   ***** Error in simplex: Problem has no feasible solution
+
+
+
+simplex(max,10x+5y+5.5z,{5x+3z&lt;=200,x+0.1y+0.5z&lt;=12,
+0.1x+0.2y+0.3z&lt;=9, 30x+10y+50z&lt;=1500}); 
+
+
+  {525.0,{x=40.0,y=25.0,z=0}}
+
+</TT></PRE><P>

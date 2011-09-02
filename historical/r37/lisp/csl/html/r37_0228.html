@@ -1,0 +1,59 @@
+
+<A NAME=WHILE>
+
+<TITLE>WHILE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>WHILE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>while</em> command causes a statement to be repeatedly executed until a 
+
+given condition is true. If the condition is initially false, the statement 
+is not executed at all. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>while</em>&lt;condition&gt; <em>do</em> &lt;statement&gt; 
+<P>
+<P>
+<P>
+&lt;condition&gt; is given by a logical operator, &lt;statement&gt; must be a 
+single REDUCE statement, or a 
+<A HREF=r37_0038.html>group</A> (<em>&lt;&lt;</em>...<em>&gt;&gt;</em>) or 
+
+<A HREF=r37_0040.html>begin</A>...<em>end</em> 
+<A HREF=r37_0041.html>block</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+a := 10; 
+
+  A := 10 
+
+
+while a &lt;= 12 do &lt;&lt;write a; a := a + 1&gt;&gt;;
+ 
+
+
+  10 
+
+
+                                          11 
+
+                                          12 
+
+while a &lt; 5 do &lt;&lt;write a; a := a + 1&gt;&gt;;
+ 
+
+
+      nothing is printed
+
+</TT></PRE><P>

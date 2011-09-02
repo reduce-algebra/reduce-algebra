@@ -1,0 +1,47 @@
+
+<A NAME=Lambert_W_function>
+
+<TITLE>Lambert_W_function</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LAMBERT\_W FUNCTION</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+Lambert's W function is the inverse of the function w * e**w. 
+It is used in the 
+<A HREF=r37_0179.html>solve</A> package for equations containing 
+exponentials and logarithms. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>Lambert_W</em>(&lt;z&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+Lambert_W(-1/e); 
+
+  -1 
+
+
+solve(w + log(w),w); 
+
+  w=lambert_w(1)
+
+
+on rounded; 
+
+Lambert_W(-0.05); 
+
+  - 0.0527059835515
+
+</TT></PRE><P>The current implementation will compute the principal branch in 
+rounded mode only. 
+<P>
+<P>
+<P>

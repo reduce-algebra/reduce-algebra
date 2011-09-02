@@ -1,0 +1,32 @@
+
+<A NAME=KERNEL>
+
+<TITLE>KERNEL</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>KERNEL</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>type</B><P>
+<P>
+ 
+A <em>kernel</em> is a form that cannot be modified further by the REDUCE 
+canonical simplifier. Scalar variables are always kernels. The 
+other important class of kernels are operators with their arguments. 
+Some examples should help clarify this concept: 
+<P>
+<P>
+<P><PRE><TT>
+        Expression                     Kernel?
+
+          x                              Yes
+          varname                        Yes
+          cos(a)                         Yes
+          log(sin(x**2))                 Yes
+          a*b                            No
+          (x+y)**4                       No
+          matrix-identifier              No
+</TT></PRE><P>Many REDUCE operators expect kernels among their arguments. Error 
+messages 
+result from attempts to use non-kernel expressions for these arguments. 
+ <P>
+<P>

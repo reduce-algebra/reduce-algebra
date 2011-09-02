@@ -1,0 +1,51 @@
+
+<A NAME=LISTARGP>
+
+<TITLE>LISTARGP</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LISTARGP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>listargp</em>&lt;operator&gt;{<em>,</em>&lt;operator&gt;}* 
+<P>
+<P>
+<P>
+If an operator other than those specifically defined for lists is given a 
+single argument that is a 
+<A HREF=r37_0053.html>list</A>, then the result of this 
+operation will be a list in which that operator is applied to each element 
+of the list. 
+This process can be inhibited for a specific operator, or list of operators, 
+by using the declaration <em>listargp</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+log {a,b,c}; 
+
+  LOG(A),LOG(B),LOG(C) 
+
+
+listargp log; 
+
+log {a,b,c}; 
+
+  LOG(A,B,C)
+
+</TT></PRE><P>It is possible to inhibit such distribution globally by turning on
+ the 
+switch 
+<A HREF=r37_0303.html>listargs</A>. In addition, if an operator has more than on
+e 
+argument, no such distribution occurs, so <em>listargp</em> has no effect. 
+<P>
+<P>
+<P>

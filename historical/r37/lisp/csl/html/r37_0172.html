@@ -1,0 +1,53 @@
+
+<A NAME=REDUCT>
+
+<TITLE>REDUCT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>REDUCT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>reduct</em> operator returns the remainder of its expression after the 
+leading term with respect to the kernel in the second argument is removed. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>reduct</em>(&lt;expression&gt;,&lt;kernel&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is ordinarily a polynomial. If 
+<A HREF=r37_0322.html>ratarg</A> is on, 
+a rational expression may also be used, otherwise an error results. 
+&lt;kernel&gt; must be a 
+<A HREF=r37_0002.html>kernel</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+reduct((x+y)**3,x); 
+
+        2            2
+  Y*(3*X  + 3*X*Y + Y ) 
+
+
+reduct(x + sin(x)**3,sin(x)); 
+
+  X 
+
+
+reduct(x + sin(x)**3,y); 
+
+  0
+
+</TT></PRE><P>If the expression does not contain the kernel, <em>reduct</em> ret
+urns 0. 
+<P>
+<P>
+<P>

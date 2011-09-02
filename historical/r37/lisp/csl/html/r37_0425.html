@@ -1,0 +1,69 @@
+
+<A NAME=num_min>
+
+<TITLE>num_min</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NUM_MIN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The Fletcher Reeves version of the <em>steepest descent</em> 
+algorithms is used to find the <em>minimum</em> of a 
+function of one or more variables. The 
+function must have continuous partial derivatives with respect to all 
+variables. The starting point of the search can be 
+specified; if not, random values are taken instead. 
+The steepest descent algorithms in general find only local 
+minima. 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>num_min</em>(&lt;exp&gt;, 
+ &lt;var&gt;[=&lt;val&gt;] [,&lt;var&gt;[=&lt;val&gt;] ... 
+ [,accuracy=&lt;a&gt;] [,iterations=&lt;i&gt;]) 
+<P>
+<P>
+or 
+<P>
+<P>
+<em>num_min</em>(exp, { 
+ &lt;var&gt;[=&lt;val&gt;] [,&lt;var&gt;[=&lt;val&gt;] ...] } 
+ [,accuracy=&lt;a&gt;] [,iterations=&lt;i&gt;]) 
+<P>
+<P>
+<P>
+where &lt;exp&gt; is a function expression, 
+&lt;var&gt; are the variables in &lt;exp&gt; and 
+&lt;val&gt; are the (optional) start values. 
+For &lt;a&gt; and &lt;i&gt; see 
+<A HREF=r37_0423.html>numeric accuracy</A>. 
+<P>
+<P>
+<em>Num_min</em>tries to find the next local minimum along the descending 
+path starting at the given point. The result is a 
+<A HREF=r37_0053.html>list</A> 
+with the minimum function value as first element followed by a list 
+of 
+<A HREF=r37_0045.html>equation</A><em>s</em>, where the variables are equated to
+ the coordinates 
+of the result point. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+num_min(sin(x)+x/5, x)
+
+  {4.9489585606,{X=29.643767785}}
+
+
+num_min(sin(x)+x/5, x=0)
+
+  { - 1.3342267466,{X= - 1.7721582671}}
+
+</TT></PRE><P>

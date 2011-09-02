@@ -1,0 +1,108 @@
+
+<A NAME=MATRIX>
+
+<TITLE>MATRIX</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MATRIX</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+Identifiers are declared to be of type <em>matrix</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>matrix</em>&lt;identifier&gt;  _ _ _ option (&lt;index&gt;,&lt;index&gt;) 
+<P>
+<P>
+{,&lt;identifier&gt;  _ _ _ option 
+ (&lt;index&gt;,&lt;index&gt;)}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; must not be an already-defined operator or array or 
+the name of a scalar variable. Dimensions are optional, and if used appear 
+inside parentheses. &lt;index&gt; must be a positive integer. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+matrix a,b(1,4),c(4,4); 
+
+b(1,1); 
+
+  0 
+
+
+a(1,1); 
+
+  ***** Matrix A not set 
+
+
+a := mat((x0,y0),(x1,y1)); 
+
+  A(1,1) := X0
+  A(1,2) := Y0
+  A(2,1) := X0
+  A(2,2) := X1
+
+
+length a; 
+
+  {2,2} 
+
+
+b := a**2; 
+
+              2
+  B(1,1) := X0  + X1*Y0
+  B(1,2) := Y0*(X0 + Y1)
+  B(2,1) := X1*(X0 + Y1)
+                      2
+  B(2,2) := X1*Y0 + Y1
+
+</TT></PRE><P>When a matrix variable has not been dimensioned, matrix elements c
+annot be 
+referenced until the matrix is set by the 
+<A HREF=r37_0343.html>mat</A> operator. When a 
+matrix is dimensioned in its declaration, matrix elements are set to 0. 
+Matrix elements cannot stand for themselves. When you use 
+<A HREF=r37_0199.html>let</A> on 
+a matrix element, there is no effect unless the element contains a 
+constant, in which case an error message is returned. The same behavior 
+occurs with 
+<A HREF=r37_0189.html>clear</A>. Do &lt;not&gt; use 
+<A HREF=r37_0189.html>clear</A> to try to 
+set a matrix element to 0. 
+<A HREF=r37_0199.html>let</A> statements can be applied to 
+matrices as a whole, if the right-hand side of the expression is a matrix 
+expression, and the left-hand side identifier has been declared to be a matrix. 
+
+<P>
+<P>
+Arithmetical operators apply to matrices of the correct dimensions. The 
+operators <em>+</em> and <em>-</em> can be used with matrices of the same 
+dimensions. The operator <em>*</em> can be used to multiply 
+m x n matrices by n x p 
+matrices. Matrix multiplication is non-commutative. Scalars can also be 
+multiplied with matrices, with the result that each element of the matrix 
+is multiplied by the scalar. The operator <em>/</em> applied to two 
+matrices computes the first matrix multiplied by the inverse of the 
+second, if the inverse exists, and produces an error message otherwise. 
+Matrices can be divided by scalars, which results in dividing each element 
+of the matrix. Scalars can also be divided by matrices when the matrices 
+are invertible, and the result is the multiplication of the scalar by the 
+inverse of the matrix. Matrix inverses can by found by <em>1/A</em> or 
+<em>/A</em>, where <em>A</em> is a matrix. Square matrices can be raised to 
+positive integer powers, and also to negative integer powers if they are 
+nonsingular. 
+<P>
+<P>
+When a matrix variable is assigned to the results of a calculation, the 
+matrix is redimensioned if necessary. 
+<P>
+<P>
+<P>

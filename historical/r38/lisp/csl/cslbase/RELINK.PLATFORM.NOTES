@@ -1,0 +1,56 @@
+                   RELINKING REDUCE ON VARIOUS PLATFORMS
+
+
+
+If you are going to relink REDUCE you must have gcc, g++ and a fairly full
+set of development libraries installed on your system. That must include
+not just the basic C and C++ libraries but support for developent of
+X-windows applications, including Xcursor, freetype, Xft. If you get
+linker errors in most cases it will be because your Linux does not have some
+required development-support packages installed.
+
+The notes her relate to my "relink.sh" scripts and the level of problems and
+success I have experienced building on one varient of Linux and relinking
+on another. The exact experience can depend critically on exactly which
+packages are installed on both the development and the relinking system.
+
+In all cases it makes sense to do an online update to get all software
+fully patched before trying anything. With that caveat, and subject to
+having enough development libraries installed (Xft, Xcursor and (n)curses
+being notable as things where the development environments needed for
+relinking code using them may easily be overlooked) I believe I find
+broad compatibility across a range of Linux distributions released since
+2003 (specifcally from Red Hat 9 onwards)
+
+
+Red Hat 6.2, 7.2
+    I now view these as out of date, and so I expect that you need to
+compile your own system completely on one of them if you need to run
+there.
+
+Red Hat 8.0
+    If code has been compiled on Red Hat 8.0 my link script will try to
+link in -lXft2. For re-linking on more modern systems this needs to be
+changed to link in just -lXft. If you try to link newer object files on
+Red Hat 8.0 you should expect to need to find and install Xcursor and
+fontconfig libraries.
+
+Ubuntu 6.10 
+    Object file screated on Ubuntu tend to reference __stack_check_fail
+since by default the compiler options there enable stack checking. Most
+other current Linux variante will not provide support for this.
+To link on Ubuntu I needed to install curses-devel and Xcursor-devel.
+
+
+Debian 3.1
+    To be able to re-link Reduce I needed to install the Xcursor-devel
+package.
+
+SuSE 10.1
+    SuSE provides an ncurses library but not curses, so I needed to change
+some linker scripts to say -lncurses where they previously said -lcurses.
+
+
+
+
+===========================

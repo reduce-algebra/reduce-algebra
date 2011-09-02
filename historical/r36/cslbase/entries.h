@@ -1,0 +1,495 @@
+
+/* entries.h                            Copyright (C) Codemist 1991-96 */
+
+/* Signature: 6f65e7e1 07-Mar-2000 */
+
+#ifndef header_entries_h
+#define header_entries_h 1
+
+/*
+ * things with no args...
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern DLLexport Lisp_Object MS_CDECL Lbatchp(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL bytecounts(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Ldate(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Ldatestamp(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Leject(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lerror(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lerror0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lflush(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lgc0(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lgctime(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lgensym(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llist_modules(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llibrary_members0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llposn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lmapstore0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lnext_random(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lposn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lread(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lreadch(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lrtell(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lterpri(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Ltime(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Ltmpnam(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Ltyi(Lisp_Object env, int nargs, ...);
+
+/*
+ * things with one arg...
+ */
+
+extern DLLexport Lisp_Object autoload1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object bytecoded1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object byteopt1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object byteoptrest1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object double_bytecoded1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object double_byteopt1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object double_byteoptrest1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object double_funarged1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object double_hardopt1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object double_hardoptrest1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object double_interpreted1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object funarged1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object tracefunarged1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object hardopt1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object hardoptrest1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object interpreted1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object tracebytecoded1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object tracebyteopt1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object tracebyteoptrest1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object tracebytecoded1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object traceinterpreted1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object tracehardopt1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object tracehardoptrest1(Lisp_Object def, Lisp_Object a);
+extern DLLexport Lisp_Object undefined1(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object f1_as_0(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object f1_as_1(Lisp_Object env, Lisp_Object a);
+#ifdef CJAVA
+extern DLLexport Lisp_Object java1(Lisp_Object env, Lisp_Object a);
+#endif
+
+extern DLLexport Lisp_Object Labsval(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ladd1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lalpha_char_p(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lapply0(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lapply_1(Lisp_Object env, Lisp_Object fn);
+extern DLLexport Lisp_Object Latan(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Latom(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lbanner(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lboundp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lbpsp(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lbpsupbv(Lisp_Object nil, Lisp_Object v);
+extern DLLexport Lisp_Object Lcaaaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaaadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaadar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaaddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcadaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcadadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcadar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaddar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcadddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcaddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdaaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdaadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdadar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdaddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcddaar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcddadr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcddar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdddar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcddddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcddr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcdr(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lchar_code(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lclose(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcodep(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcompress(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lconsp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lconstantp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lcopy_module(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ldefine_in_module(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ldelete_module(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ldigitp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lendp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lerror1(Lisp_Object nil, Lisp_Object a1);
+extern DLLexport Lisp_Object Lerrorset1(Lisp_Object nil, Lisp_Object form);
+extern DLLexport Lisp_Object Leval(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Levenp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Levlis(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplode(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplode2lc(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplode2lcn(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplode2n(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplodec(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplodecn(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplodehex(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lexploden(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lexplodeoctal(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lfixp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lfloat(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lfloatp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lfrexp(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lfuncall1(Lisp_Object env, Lisp_Object fn);
+extern DLLexport Lisp_Object Lgc(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lgensym1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lgensym2(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lgetd(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lgetenv(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lget_bps(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lhelp(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Liadd1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lidentity(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Liminus(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Liminusp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lindirect(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lintegerp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lintern(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lionep(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lisub1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lizerop(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Llength(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Llengthc(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Llibrary_members(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Llinelength(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lload_module(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lload_source(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Llognot(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Llog_1(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Llsd(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmacroexpand(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmacroexpand_1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmacro_function(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmake_global(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmake_special(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmapstore(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmd5(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object Lmd60(Lisp_Object env, Lisp_Object a1);
+extern DLLexport Lisp_Object Lminus(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lminusp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmkevect(Lisp_Object nil, Lisp_Object n);
+extern DLLexport Lisp_Object Lmkquote(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmkvect(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmodular_minus(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmodular_number(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmodular_reciprocal(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmodule_exists(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmsd(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lmv_list(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lncons(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lnreverse(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lnull(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lnumberp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Loddp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lonep(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lpagelength(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lplist(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lplusp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lprin(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lprin(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lprin2a(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lprinc(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lprinc(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lprint(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lprintc(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lrandom(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lrational(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lrdf1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lrds(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lremd(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lreverse(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsetpchar(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lset_small_modulus(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsmkvect(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lspecial_char(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lspecial_form_p(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lspool(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lstart_module(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lstop(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lstringp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsub1(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbolp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbol_env(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbol_function(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbol_globalp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbol_name(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbol_specialp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsymbol_value(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsystem(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lthreevectorp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ltrace(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ltruncate(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lttab(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Ltyo(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lunintern(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lunmake_global(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lunmake_special(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Luntrace(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lupbv(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lsimple_vectorp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lvectorp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lverbos(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lwhitespace_char_p(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lwritable_libraryp(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lwrite_module(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lwrs(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lxtab(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lxtab(Lisp_Object env, Lisp_Object a);
+extern DLLexport Lisp_Object Lzerop(Lisp_Object env, Lisp_Object a);
+
+#ifdef COMMON
+extern DLLexport Lisp_Object Lfind_symbol_1(Lisp_Object nil, Lisp_Object str);
+extern DLLexport Lisp_Object Llistp(Lisp_Object env, Lisp_Object a);
+#endif
+
+/*
+ * things with two args ...
+ */
+
+extern DLLexport Lisp_Object autoload2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object bytecoded2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object byteopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object byteoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object double_bytecoded2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object double_byteopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object double_byteoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object double_funarged2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object double_hardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object double_hardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object double_interpreted2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object funarged2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object tracefunarged2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object hardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object hardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object interpreted2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object tracebyteopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object tracebyteoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object tracebytecoded2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object traceinterpreted2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object tracehardopt2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object tracehardoptrest2(Lisp_Object def, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object undefined2(Lisp_Object env, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object f2_as_0(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object f2_as_1(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object f2_as_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+#ifdef CJAVA
+extern DLLexport Lisp_Object java2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+#endif
+
+extern DLLexport Lisp_Object Lappend(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lapply_2(Lisp_Object env, Lisp_Object fn, Lisp_Object a1);
+extern DLLexport Lisp_Object Lapply1(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lash(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lash1(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lassoc(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Latan2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Latan2d(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Latsoc(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lbpsgetv(Lisp_Object nil, Lisp_Object v, Lisp_Object n);
+extern DLLexport Lisp_Object Lcons(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ldeleq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ldelete(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ldifference2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ldivide(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Leq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Leqcar(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lequalcar(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Leql(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Leqn(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lcl_equal(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lequal(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lerror2(Lisp_Object nil, Lisp_Object a1, Lisp_Object a2);
+extern DLLexport Lisp_Object Lerrorset2(Lisp_Object nil, Lisp_Object form, Lisp_Object ffg1);
+extern DLLexport Lisp_Object Lexpt(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lflag(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lflagp(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lflagpcar(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lfuncall2(Lisp_Object env, Lisp_Object fn, Lisp_Object a1);
+extern DLLexport Lisp_Object Lgcd(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lgeq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lget(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lget_hash_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lgetv(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lgreaterp(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lhelp_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lidifference(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ligeq(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ligreaterp(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lileq(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lilessp(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Limax(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Limin(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Linorm(Lisp_Object nil, Lisp_Object a, Lisp_Object k);
+extern DLLexport Lisp_Object Lintersect(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Liplus2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Liquotient(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Liremainder(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lirightshift(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Litimes2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Llcm(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lleq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Llessp(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Llist2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Llog(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Llog_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmake_random_state(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmake_random_state(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmax2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmember(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmemq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmin2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmod(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmodular_difference(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmodular_expt(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmodular_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmodular_quotient(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmodular_times(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lnconc(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lneq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lorderp(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lpair(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lplus2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lquotient(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lrem(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lremflag(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lremprop(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lrplaca(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lrplacd(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lrseek(Lisp_Object nil, Lisp_Object a);
+extern DLLexport Lisp_Object Lset(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lset_help_file(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lsgetv(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lsmemq(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lsubla(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lsublis(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lsymbol_set_definition(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lsymbol_set_env(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ltimes2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lunion(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lwrite_help_module(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lxcons(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+
+#ifdef COMMON
+extern DLLexport Lisp_Object Laref2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Latan_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lelt(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lfloat_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lintern_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmacroexpand_1_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lmacroexpand_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lrandom_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Ltruncate_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+extern DLLexport Lisp_Object Lunintern_2(Lisp_Object env, Lisp_Object a, Lisp_Object b);
+#endif
+
+/*
+ * Things with three args or more args
+ */
+
+extern DLLexport Lisp_Object MS_CDECL autoloadn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL bytecoded0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL bytecoded3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL bytecodedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL byteoptn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL byteoptrestn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_bytecoded0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_bytecoded3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_bytecodedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_byteoptn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_byteoptrestn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_funargedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_hardoptn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_hardoptrestn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL double_interpretedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL funargedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracefunargedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL hardoptn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL hardoptrestn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL interpretedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracebyteoptn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracebyteoptrestn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracebytecoded0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracebytecoded3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracebytecodedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL traceinterpretedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracehardoptn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL tracehardoptrestn(Lisp_Object def, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL undefinedn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL f0_as_0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL f3_as_0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL f3_as_1(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL f3_as_2(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL f3_as_3(Lisp_Object env, int nargs, ...);
+#ifdef CJAVA
+extern DLLexport Lisp_Object MS_CDECL java0(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL java3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL javan(Lisp_Object env, int nargs, ...);
+#endif
+
+extern DLLexport Lisp_Object MS_CDECL Lacons(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lapply_n(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lapply2(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lapply3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lbpsputv(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lerrorset3(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lerrorsetn(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lfuncalln(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lhelp_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llist(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llist2star(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llist3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llogand(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llogeqv(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llogor(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llogxor(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lmax(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lmin(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lmkhash(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lput_hash(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lputprop(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lputv(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lsputv(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lsubst(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lvalues(Lisp_Object env, int nargs, ...);
+
+#ifdef COMMON
+extern DLLexport Lisp_Object MS_CDECL Lappend_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object Laref(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Laset(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Leqn_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lgcd_n(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lgeq_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lget_3(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lgreaterp_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llcm_n(Lisp_Object env, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lleq_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Llessp_n(Lisp_Object nil, int nargs, ...);
+extern DLLexport Lisp_Object MS_CDECL Lquotient_n(Lisp_Object nil, int nargs, ...);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* header_entries_h */
+
+/* end of entries.h */

@@ -1,0 +1,93 @@
+#!/bin/sh
+
+# ensure script files in this directory have correct permissions
+
+#
+# Note
+#  most scripts here are intended to be executed from a target architecture
+#  directory, via a command such as
+#       ../util/boot37
+#  but this one (setexec) and "makes.bat" should be executed with
+# this util directory current.
+
+# chmod +x setexec       but hard to do while being executed?
+
+# makes.bat can be run after compiling "makemake.c" and rebuilds
+# system-specific Makefiles from the basic file "makebase"
+
+chmod +x makes.bat
+
+# full37 is the build script to use supposing that all the C code
+# (in directory csl-c) has already been built. It is the only rebuild
+# job needed in normal circumstances
+
+chmod +x full37
+
+# patchup arranges that the most recent patches (installed in the file
+# packages/support/patches.red within the top-level REDUCE directory)
+# get installed into the current REDUCE image.
+
+chmod +x patchup
+
+# testall called on its own runs all known test scripts.
+# If followed by a package name it just runs the test for that package.
+# testrest is similar, except that it only updates logs that seem out of
+# date.
+
+chmod +x testall 
+chmod +x testrest
+
+# checkall produces a log (in log/checkall.log) of differences between
+# the logs creates by testall and reference ones. "checkall XXX" produces
+# a log that relates to just that one package.
+
+chmod +x checkall
+
+#
+# If (for any reason) you want to recompile just one package that forms
+# part of REDUCE you can go
+#   ../util/package  <packagename>
+# This will recompile such modules that are parts of the given package
+# and whose source files are newer than the compiled versions stored
+# within the REDUCE image file.  This may be useful if you have updated
+# some of the source code. Note that if you add extra packages to REDUCE
+# you will need to update the "package.red" file in the REDUCE root
+# directory and follow the rukes about having a file for each package
+# that identifies all of the other relevant source files.
+#
+
+chmod +x package
+
+#
+# The next scripts are only needed if you want to rebuild everything
+# from scratch. "boot37" uses a "slowr37" executable and builds a
+# bootstrap version of REDUCE. "testslow" is like "testall" but tests this
+# version. "profile" collects profile data, and then "c-code37" compiles
+# the hot-spot functions into C. "clash" looks for places in the REDUCE
+# source where two packages each define a function with the same name.
+#
+
+chmod +x boot37
+chmod +x testslow
+chmod +x profile 
+chmod +x c-code37
+
+chmod +x clash 
+
+# the "makeall" script does all the above and provides a hands-free
+# utterly complete reconstruction and test.
+
+chmod +x makeall
+
+# For Linux the object files for REDUCE will be distributed. The "relink"
+# script makes executables out of them again. Those who have the
+# "professional" version of REDUCE will probably prefer to use "make"
+# to achieve this effect, but when source files are not avauilable the
+# dependancy information in the Makefile can cause pain - this small
+# free-standing script may avoid that.
+
+chmod +x relink
+
+# end of setexec script
+
+

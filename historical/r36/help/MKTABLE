@@ -1,0 +1,14 @@
+#  Creates a table of all keywords defined the in the help files.
+
+grep '***** To' *.tex
+grep '\begin{Command}' *.tex
+grep '\begin{Operator}' *.tex
+grep '\begin{Switch}' *.tex
+grep '\begin{Variable}' *.tex
+grep '\begin{Declaration}' *.tex
+grep '\begin{Package}' *.tex
+grep '\begin{Concept}' *.tex
+grep '\begin{Constant}' *.tex
+grep '\begin{Type}' *.tex
+grep '\begin{info}' *.tex
+grep '\section' *.tex

@@ -1,0 +1,40 @@
+
+<A NAME=erfc>
+
+<TITLE>erfc</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ERFC</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>erfc</em> operator returns the complementary Error function 
+<P>
+<P>
+1 - defint(e**(-x**2),x,0,infinity) * 2/sqrt(pi) 
+<P>
+<P>
+. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>erfc</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+erfc(xx); 
+
+  - erf(xx) + 1
+
+</TT></PRE><P>The operator <em>erfc</em> is simplified towards the 
+<A HREF=r37_0255.html>erf</A> operator. 
+<P>
+<P>
+<P>

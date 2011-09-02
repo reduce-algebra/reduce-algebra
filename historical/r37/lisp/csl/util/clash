@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Look for name-clashes in REDUCE
+
+./slowr37 -v -Dno_init_file ../util/clash.red -- log/clash.log
+
+

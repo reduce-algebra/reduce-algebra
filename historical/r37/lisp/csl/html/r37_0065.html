@@ -1,0 +1,100 @@
+
+<A NAME=SETQ>
+
+<TITLE>SETQ</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SETQ</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>setq</em> operator is an infix or prefix binary assignment operator. 
+It is identical to <em>:=</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>setq</em>(&lt;restricted\_expression&gt;,&lt;expression&gt;) or 
+<P>
+<P>
+&lt;restricted\_expression&gt; <em>setq</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+&lt;restricted expression&gt; is ordinarily a single identifier, though 
+simple expressions may be used (see Comments below). &lt;expression&gt; can 
+be any valid REDUCE expression. If &lt;expression&gt; is a 
+<A HREF=r37_0345.html>matrix</A> 
+identifier, then &lt;restricted\_expression&gt; can be a matrix identifier 
+(redimensioned if necessary), which has each element set to the 
+corresponding elements of the identifier on the right-hand side. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+setq(b,6); 
+
+  B := 6 
+
+
+c setq sin(x); 
+
+  C := SIN(X) 
+
+
+w + setq(c,x+3) + z; 
+
+  W + X + Z + 3 
+
+
+c; 
+
+  X + 3 
+
+
+setq(a1 + a2,25); 
+
+  A1 + A2 := 25 
+
+
+a1; 
+
+  - (A2 - 25)
+
+</TT></PRE><P>Embedding a <em>setq</em> statement in an expression has the side 
+effect of making 
+the assignment, as shown in the third example above. 
+<P>
+<P>
+Assignments are generally done for identifiers, but may be done for simple 
+expressions as well, subject to the following remarks: 
+<P>
+<P>
+ _ _ _ (i) 
+If the left-hand side is an identifier, an operator, or a power, the rule 
+is added to the rule table. 
+<P>
+<P>
+ _ _ _ (ii) 
+If the operators <em>- + /</em> appear on the left-hand side, all but the first 
+
+term of the expression is moved to the right-hand side. 
+<P>
+<P>
+ _ _ _ (iii) 
+If the operator <em>*</em> appears on the left-hand side, any constant terms are
+ 
+moved to the right-hand side, but the symbolic factors remain. 
+<P>
+<P>
+Be careful not to make a recursive <em>setq</em> assignment that is not 
+controlled inside a loop statement. The process of resubstitution 
+continues until you get a stack overflow message. <em>setq</em> can be used 
+to attach functionality to operators, as the <em>:=</em> does. 
+<P>
+<P>
+<P>

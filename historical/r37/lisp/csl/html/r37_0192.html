@@ -1,0 +1,101 @@
+
+<A NAME=DEPEND>
+
+<TITLE>DEPEND</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DEPEND</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+ <P>
+<P>
+<em>depend</em>declares that its first argument depends on the rest of its 
+arguments. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>depend</em>&lt;kernel&gt;{<em>,</em>&lt;kernel&gt;}+ 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a legal variable name or a prefix operator (see 
+
+<A HREF=r37_0002.html>kernel</A>). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+depend y,x; 
+
+
+df(y**2,x); 
+
+  2*DF(Y,X)*Y 
+
+
+
+depend z,cos(x),y; 
+
+
+df(sin(z),cos(x)); 
+
+  COS(Z)*DF(Z,COS(X)) 
+
+
+
+df(z**2,x); 
+
+  2*DF(Z,X)*Z 
+
+
+
+nodepend z,y; 
+
+
+df(z**2,x); 
+
+  2*DF(Z,X)*Z 
+
+
+
+cc := df(y**2,x); 
+
+  CC := 2*DF(Y,X)*Y 
+
+
+
+y := tan x; 
+
+  Y := TAN(X); 
+
+
+
+cc; 
+
+                  2
+  2*TAN(X)*(TAN(X)   + 1)
+
+</TT></PRE><P>Dependencies can be removed by using the declaration 
+<A HREF=r37_0204.html>nodepend</A>. 
+The differentiation operator uses this information, as shown in the 
+examples above. Linear operators also use knowledge of dependencies 
+(see 
+<A HREF=r37_0200.html>linear</A>). Note that dependencies can be nested: Having 
+
+declared y to depend on x, and z 
+to depend on y, we 
+see that the chain rule was applied to the derivative of a function of 
+z with respect to x. If the explicit function of the 
+dependency is later entered into the system, terms with <em>DF(Y,X)</em>, 
+for example, are expanded when they are displayed again, as shown in the 
+last example. The boolean operator 
+<A HREF=r37_0113.html>freeof</A> allows you to 
+check the dependency between two algebraic objects. 
+<P>
+<P>
+<P>

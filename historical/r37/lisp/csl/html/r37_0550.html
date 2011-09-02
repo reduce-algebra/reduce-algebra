@@ -1,0 +1,35 @@
+
+<A NAME=Pointset>
+
+<TITLE>Pointset</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>POINTSET</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>type</B><P>
+<P>
+ 
+ <P>
+<P>
+A curve can be give as a set of precomputed points (a polygon) 
+in 2 or 3 dimensions. Such a point set is a 
+<A HREF=r37_0053.html>list</A> 
+of points, where each point is a 
+<A HREF=r37_0053.html>list</A> 2 (or 3) 
+numbers. These numbers are interpreted as <em>(x,y)</em> 
+(or <em>x,y,z</em>) coordinates. All points of one set must have 
+the same dimension. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT></TT></PRE><P>Also a surface in 3d can be given by precomputed point
+s, 
+but only on a logically orthogonal mesh: the surface is defined 
+by a list of curves (in 3d) which must have a uniform length. 
+GNUPLOT then will draw an orthogonal mesh by first drawing the 
+given lines, and second connecting the 1st point of the 1st curve 
+with the 1st point of the 2nd curve, that one with the 1st point 
+of the 3rd curve and so on for all curves and for all indexes. 
+<P>
+<P>

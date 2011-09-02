@@ -1,0 +1,1090 @@
+This is TeX, Version 3.14159 (MiKTeX 1.20b) (preloaded format=latex 1999.6.15)  21 JUN 1999 13:46
+**r37
+(r37.tex
+LaTeX2e <1998/12/01> patch level 1
+Babel <v3.6x> and hyphenation patterns for american, french, german, ngerman, n
+ohyphenation, loaded.
+(d:\texmf\tex\latex\base\book.cls
+Document Class: book 1999/01/07 v1.4a Standard LaTeX document class
+(d:\texmf\tex\latex\base\bk11.clo
+File: bk11.clo 1999/01/07 v1.4a Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (d:\texmf\tex\latex\base\makeidx.sty
+Package: makeidx 1998/08/17 v1.0k Standard LaTeX package
+)
+(d:\texmf\tex\latex\graphics\graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(d:\texmf\tex\latex\graphics\keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(d:\texmf\tex\latex\graphics\graphics.sty
+Package: graphics 1999/02/16 v1.0l Standard LaTeX Graphics (DPC,SPQR)
+ (d:\texmf\tex\latex\graphics\trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+) (d:\texmf\tex\latex\config\graphics.cfg)
+Package graphics Info: Driver file: dvipdfm.def on input line 80.
+
+(d:\texmf\tex\latex\graphics\dvipdfm.def
+File: dvipdfm.def 1998/11/24 vx.x Driver-dependant file
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+(d:\texmf\tex\latex\hyperref\hyperref.sty
+Package: hyperref 1999/04/13 6.56 Hypertext links for LaTeX
+
+(d:\texmf\tex\latex\hyperref\nameref.sty
+Package: nameref 1999/02/17 Cross-referencing by name of section
+)
+\@linkdim=\dimen105
+
+(d:\texmf\tex\latex\hyperref\pd1enc.def
+File: pd1enc.def 1999/03/30 v0.3 PDFDocEncoding (Heiko Oberdiek)
+)
+Package hyperref Info: Bookmarks ON on input line 732.
+Package hyperref Info: Hyper figures OFF on input line 744.
+Package hyperref Info: Link nesting OFF on input line 749.
+Package hyperref Info: Hyper index ON on input line 752.
+Package hyperref Info: Plain pages ON on input line 757.
+Package hyperref Info: Backreferencing OFF on input line 764.
+
+Implicit mode ON; LaTeX internals redefined
+(d:\texmf\tex\latex\misc\url.sty
+Package: url 1999/03/02  ver 1.4  Verb mode for urls, email addresses, and file
+ names
+)
+\Fld@menulength=\count88
+\Field@Width=\dimen106
+\Fld@charsize=\dimen107
+\Choice@toks=\toks15
+\Field@toks=\toks16
+Package hyperref Info: Hyper figures OFF on input line 1244.
+Package hyperref Info: Link nesting OFF on input line 1249.
+Package hyperref Info: Hyper index ON on input line 1252.
+Package hyperref Info: backreferencing OFF on input line 1259.
+Package hyperref Info: Link coloring OFF on input line 1264.
+\c@Item=\count89
+\c@Hfootnote=\count90
+\OddToc=\count91
+LaTeX Info: Redefining \ref on input line 1914.
+LaTeX Info: Redefining \pageref on input line 1915.
+)
+*hyperref using driver hdvipdfm*
+(d:\texmf\tex\latex\hyperref\hdvipdfm.def
+\pdfm@box=\box26
+\@outlinefile=\write3
+)
+\reduceboxwidth=\skip43
+\redboxwidth=\skip44
+\rboxwidth=\skip45
+\@indexfile=\write4
+
+Writing index file r37.idx
+(r37.aux)
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+Package hyperref Info: Link coloring OFF on input line 103.
+ (r37.out) (r37.out) [1
+
+]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 133.
+
+ (d:\texmf\tex\latex\base\omscmr.fd
+File: omscmr.fd 1998/03/27 v2.5g Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 133.
+ [2]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 146.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 146.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 146.
+
+[3] [4
+
+] (r37.toc [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16]
+[17] [18] [19] [20] [21] [22] [23] [24] [25] [26])
+\tf@toc=\write5
+ [27] [28
+
+] [29] [30] [31]
+[32] [33
+
+] [34
+
+] [35] [36
+
+]
+Chapter 1.
+[37] [38] [39] [40] [41] [42
+
+]
+Chapter 2.
+[43] [44] [45] [46] [47] [48] [49] [50] [51] [52
+
+]
+Chapter 3.
+[53] [54] [55] [56] [57] [58]
+Chapter 4.
+[59
+
+]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 1149.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing 'math shift' on input line 1149.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing 'math shift' on input line 1149.
+
+[60]
+LaTeX Font Info:    Try loading font information for OMS+cmtt on input line 118
+2.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 1182.
+
+
+LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
+(Font)              using `OMS/cmsy/m/n' instead
+(Font)              for symbol `textbraceleft' on input line 1182.
+
+[61] [62]
+Chapter 5.
+[63
+
+] [64] [65] [66]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 1426.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 1426.
+ [67] [68] [69] [70] [71] [72] [73] [74]
+Chapter 6.
+[75
+
+] [76] [77] [78]
+Chapter 7.
+[79
+
+] [80] [81] [82] [83] [84] [85] [86] [87] [88] [89] [90] [91] [92] [93]
+[94] [95] [96] [97] [98] [99]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <9> on input line 2988.
+ [100] [101] [102] [103] [104] [105] [106]
+[107] [108] [109] [110
+
+]
+Chapter 8.
+[111] [112] [113] [114] [115] [116] [117] [118] [119] [120] [121] [122]
+[123] [124] [125] [126] [127] [128] [129] [130] [131] [132
+
+]
+Chapter 9.
+[133] [134] [135] [136] [137] [138] [139] [140] [141] [142] [143] [144]
+[145] [146] [147] [148] [149] [150]
+Chapter 10.
+[151
+
+] [152] [153] [154] [155] [156] [157] [158] [159] [160] [161] [162]
+[163] [164] [165] [166] [167] [168
+
+]
+Chapter 11.
+[169] [170] [171] [172
+
+]
+Chapter 12.
+[173]
+Underfull \hbox (badness 1132) in paragraph at lines 5853--5854
+[]\OT1/cmr/m/n/10.95 move pointer to next oc-cur-rence of
+ []
+
+[174] [175] [176]
+Chapter 13.
+[177
+
+] [178] [179] [180] [181] [182] [183] [184]
+Chapter 14.
+[185
+
+] [186] [187] [188] [189] [190] [191] [192]
+Chapter 15.
+[193
+
+]
+
+LaTeX Warning: Reference `CONTFR' on page 194 undefined on input line 6717.
+
+[194] [195] [196]
+Chapter 16.
+[197
+
+] [198] [199] [200] [201] [202] [203] [204] [205] [206] [207] [208]
+[209] [210]
+Chapter 17.
+[211
+
+] [212] [213] [214] [215] [216] [217] [218]
+Chapter 18.
+[219
+
+] [220] [221] [222] [223] [224]
+Chapter 19.
+[225
+
+]
+\c@examplectr=\count92
+ [226] [227
+
+] [228] [229] [230
+
+]
+Chapter 20.
+{ALGINT: Integration of square roots}
+[231] [232] [233] [234
+
+]
+Chapter 21.
+[APPLYSYM: Infinitesimal symmetries]
+[235] [236] [237] [238
+
+]
+Chapter 22.
+{ARNUM: An algebraic number package}
+[239] [240] [241] [242
+
+]
+Chapter 23.
+{ASSIST: Various Useful Utilities}
+[243] [244] [245] [246] [247] [248] [249] [250] [251] [252] [253] [254]
+[255] [256] [257] [258] [259] [260] [261] [262] [263] [264
+
+]
+Chapter 24.
+{ATENSOR: Package for Tensor Simplification}
+[265] [266] [267] [268
+
+]
+Chapter 25.
+{AVECTOR: Vector Algebra}
+[269] [270] [271] [272] [273] [274] [275] [276]
+Chapter 26.
+{BOOLEAN: A package for boolean algebra}
+[277
+
+] [278] [279] [280] [281] [282
+
+]
+Chapter 27.
+{CALI: Computational Commutative Algebra}
+[283] [284]
+Chapter 28.
+{CAMAL: Calculations in Celestial Mechanics}
+[285
+
+] [286] [287] [288
+
+]
+Chapter 29.
+{CGB: Comprehensive Gr\"obner Bases}
+[289]
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\discretionary' on input line 10875.
+
+[290] [291] [292]
+Overfull \hbox (16.29929pt too wide) has occurred while \output is active
+[]\OT1/cmr/m/sl/10.95 29.7.  SWITCH CGBREAL: COMPUTING OVER THE REAL NUMBERS \O
+T1/cmr/m/n/10.95 293
+ []
+
+[293] [294]
+Chapter 30.
+[CHANGEVR: Change of Variables in DEs]
+[295
+
+] [296]
+Chapter 31.
+{COMPACT: Package for compacting expressions}
+[297
+
+] [298]
+Chapter 32.
+[CRACK: Overdetermined systems of DEs]
+[299
+
+] [300] [301] [302]
+Chapter 33.
+[CVIT:Dirac gamma matrix traces]
+[303
+
+] [304]
+Chapter 34.
+{DEFINT: Definite Integration for REDUCE}
+[305
+
+] [306] [307] [308]
+Chapter 35.
+[DESIR: Linear Homogeneous DEs]
+[309
+
+] [310] [311] [312
+
+]
+Chapter 36.
+{DFPART: Derivatives of generic functions}
+[313] [314] [315] [316] [317] [318
+
+]
+Chapter 37.
+[DUMMY: Expressions with dummy variables]
+[319] [320] [321] [322
+
+]
+Chapter 38.
+{EDS: Exterior differential systems}
+[323] [324] [325]
+Overfull \hbox (28.56746pt too wide) in paragraph at lines 12117--12129
+\OT1/cmr/m/n/10.95 A sim-ple [] is con-structed us-ing the \OT1/cmtt/m/n/10.95 
+EDS \OT1/cmr/m/n/10.95 op-er-a-tor where the []
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 12117--12129
+
+ []
+
+[326]
+Underfull \hbox (badness 10000) in paragraph at lines 12173--12176
+
+ []
+
+
+Overfull \hbox (13.29237pt too wide) in paragraph at lines 12177--12197
+[][]
+ []
+
+[327]
+Underfull \hbox (badness 10000) in paragraph at lines 12229--12235
+
+ []
+
+
+Overfull \hbox (5.51761pt too wide) in paragraph at lines 12236--12255
+[][]
+ []
+
+[328]
+Underfull \hbox (badness 10000) in paragraph at lines 12280--12284
+
+ []
+
+
+Overfull \hbox (46.90974pt too wide) in paragraph at lines 12285--12310
+[][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 12313--12319
+
+ []
+
+[329]
+Underfull \hbox (badness 10000) in paragraph at lines 12351--12353
+
+ []
+
+
+Overfull \hbox (53.44337pt too wide) in paragraph at lines 12354--12370
+[][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 12373--12376
+
+ []
+
+
+Overfull \hbox (38.60904pt too wide) in paragraph at lines 12377--12386
+[][]
+ []
+
+[330] [331] [332
+
+]
+Chapter 39.
+{EXCALC: A differential geometry package}
+[333] [334] [335] [336] [337] [338] [339] [340] [341] [342] [343] [344
+
+]
+Chapter 40.
+[FIDE: Finite differences for PDEs]
+[345] [346] [347] [348]
+Chapter 41.
+[FPS: Formal power series]
+[349
+
+] [350]
+Chapter 42.
+{GENTRAN: A code generation package}
+[351
+
+] [352] [353] [354] [355] [356] [357] [358] [359] [360] [361] [362
+
+]
+Chapter 43.
+{GEOMETRY: Mechanized (Plane) Geometry Manipulations}
+[363]
+Underfull \hbox (badness 10000) in paragraph at lines 13708--13791
+
+ []
+
+[364] [365] [366]
+Underfull \hbox (badness 10000) in paragraph at lines 13797--13801
+
+ []
+
+[367]
+Underfull \hbox (badness 10000) in paragraph at lines 13808--13810
+
+ []
+
+[368] [369] [370
+
+]
+Chapter 44.
+{GNUPLOT: Display of functions and surfaces}
+[371] [372] [373] [374
+
+]
+Chapter 45.
+{GROEBNER: A Gr\"obner basis package}
+[375] [376]
+LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 14059
+.
+ [377]
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing 'math shift' on input line 14129.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\mathop' on input line 14129.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\mathgroup' on input line 14129.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\symoperators' on input line 14129.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\nolimits' on input line 14129.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing 'math shift' on input line 14129.
+
+[378] [379] [380] [381] [382] [383]
+Overfull \hbox (5.98795pt too wide) in paragraph at lines 14421--14421
+[]\OT1/cmr/bx/n/14.4 Ideal De-com-po-si-tion & Equat-ion Sys-tem Solv-
+ []
+
+[384]
+Chapter 46.
+{IDEALS: Arithmetic for polynomial ideals}
+[385
+
+] [386]
+Chapter 47.
+{INEQ: Support for solving inequalities}
+[387
+
+] [388]
+Chapter 48.
+{INVBASE: A package for computing involutive bases}
+[389
+
+] [390] [391] [392
+
+]
+Chapter 49.
+{LAPLACE: Laplace and inverse Laplace transforms}
+[393] [394] [395] [396
+
+]
+Chapter 50.
+{LIE: Functions for the classification of real n-dimensional Lie algebras}
+[397] [398]
+Chapter 51.
+{LIMITS: A package for finding limits}
+[399
+
+] [400] [401] [402
+
+]
+Chapter 52.
+{LINALG: Linear algebra package}
+[403] [404] [405] [406] [407] [408] [409] [410] [411] [412] [413] [414
+
+]
+Chapter 53.
+{MATHML : MathML Interface for REDUCE}
+[415] [416] [417] [418
+
+]
+Chapter 54.
+{MODSR: Modular solve and roots}
+[419] [420
+
+]
+Chapter 55.
+{MRVLIMIT: Package for Computing Limits of "Exp-Log" Functions}
+[421]
+Underfull \hbox (badness 10000) in paragraph at lines 15923--15929
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 15923--15929
+
+ []
+
+[422] [423] [424
+
+]
+Chapter 56.
+{NCPOLY: Non--commutative polynomial ideals}
+[425] [426] [427] [428] [429] [430]
+Chapter 57.
+{NORMFORM: Computation of matrix normal forms}
+[431
+
+] [432] [433]
+Underfull \hbox (badness 10000) in paragraph at lines 16385--16386
+
+ []
+
+[434] [435] [436
+
+]
+Chapter 58.
+{NUMERIC: Solving numerical problems}
+[437] [438] [439] [440] [441] [442] [443] [444] [445] [446] [447] [448
+
+]
+Chapter 59.
+[ODESOLVE: Ordinary differential equations solver]
+[449] [450] [451] [452
+
+]
+Chapter 60.
+{ORTHOVEC: Three-dimensional vector analysis}
+[453] [454]
+Underfull \hbox (badness 10000) in paragraph at lines 17136--17145
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17146--17155
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17156--17166
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17167--17182
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17183--17195
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17196--17202
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17203--17211
+
+ []
+
+[455]
+Underfull \hbox (badness 10000) in paragraph at lines 17212--17218
+
+ []
+
+[456]
+Underfull \hbox (badness 10000) in paragraph at lines 17287--17293
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 17316--17320
+
+ []
+
+[457] [458] [459] [460
+
+]
+Chapter 61.
+{PHYSOP: Operator calculus in quantum theory}
+
+Underfull \hbox (badness 10000) in paragraph at lines 17427--17432
+
+ []
+
+[461] [462] [463]
+Underfull \hbox (badness 10000) in paragraph at lines 17571--17573
+
+ []
+
+[464] [465]
+Underfull \hbox (badness 10000) in paragraph at lines 17683--17692
+
+ []
+
+[466] [467] [468]
+Chapter 62.
+{PM: A REDUCE pattern matcher}
+[469
+
+] [470]
+This is not true
+[471] [472] [473] [474
+
+]
+Chapter 63.
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\protect' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\relax' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\protect' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\edef' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\protect' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\xdef' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\OT1/cmr/bx/sl/24.88' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\PD1/cmr/m/n/10.95' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\OT1/cmr/bx/sl/24.88' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\size@update' on input line 17988.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\enc@update' on input line 17988.
+
+{QSUM : Package for summation of $q$-hypergeometric terms}
+\c@redprompt=\count93
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\protect' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\relax' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\protect' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\edef' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\protect' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\xdef' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\OT1/cmr/bx/sl/14.4' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\PD1/cmr/m/n/10.95' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\OT1/cmr/bx/sl/14.4' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\size@update' on input line 18064.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing '\enc@update' on input line 18064.
+
+[475]
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 18102
+.
+ [476] [477]
+Underfull \hbox (badness 10000) in paragraph at lines 18181--18184
+
+ []
+
+[478] [479] [480
+
+]
+Chapter 64.
+{RANDPOLY: A random polynomial generator}
+[481] [482] [483] [484] [485] [486
+
+]
+Chapter 65.
+{RATAPRX : Rational Approximations Package}
+[487]
+Underfull \hbox (badness 10000) in paragraph at lines 18460--18462
+
+ []
+
+[488] [489] [490] [491] [492]
+Chapter 66.
+{REACTEQN: Support for chemical reaction equations}
+[493
+
+] [494]
+Chapter 67.
+{REDLOG: Logic System}
+
+LaTeX Font Warning: Font shape `OT1/cmr/bx/sc' undefined
+(Font)              using `OT1/cmr/bx/n' instead on input line 18665.
+
+[495
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 18722--18723
+
+ []
+
+[496]
+Overfull \hbox (31.73804pt too wide) in paragraph at lines 18751--18763
+ [] 
+ []
+
+[497] [498] [499] [500] [501] [502] [503] [504
+
+]
+Chapter 68.
+{RESET: Code to reset REDUCE to its initial state}
+[505] [506
+
+]
+Chapter 69.
+{RESIDUE: A residue package}
+[507] [508]
+Chapter 70.
+{RLFI: REDUCE LaTeX formula interface}
+[509
+
+] [510] [511] [512
+
+]
+Chapter 71.
+{ROOTS: A REDUCE root finding package}
+[513] [514] [515] [516] [517] [518
+
+]
+Chapter 72.
+[RSOLVE: Rational polynomial solver]
+[519]
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 19475
+.
+
+Underfull \hbox (badness 10000) in paragraph at lines 19475--19477
+[]\OT1/cmr/m/n/10.95 assign the mul-ti-plic-ity list to the global vari-able
+ []
+
+[520]
+Chapter 73.
+{SCOPE: REDUCE source code optimisation package}
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 19546
+.
+
+Overfull \hbox (11.1949pt too wide) in paragraph at lines 19539--19554
+[]  
+ []
+
+[521
+
+] [522] [523] [524
+
+]
+Chapter 74.
+{SETS: A basic set theory package}
+[525] [526] [527] [528] [529] [530]
+Chapter 75.
+{SPARSE: Sparse Matrices}
+[531
+
+] [532] [533] [534
+
+]
+Chapter 76.
+{SPDE: A package for finding symmetry groups of {PDE}'s}
+[535] [536] [537] [538
+
+]
+Chapter 77.
+{SPECFN: Package for special functions}
+[539] [540] [541] [542]
+Overfull \hbox (9.72835pt too wide) in paragraph at lines 20241--20242
+ [] 
+ []
+
+[543]
+Overfull \vbox (3.89938pt too high) has occurred while \output is active []
+
+
+[544]
+Chapter 78.
+{SPECFN2: Package for special special functions}
+[545
+
+] [546]
+Chapter 79.
+{SUM: A package for series summation}
+[547
+
+] [548] [549] [550
+
+]
+Chapter 80.
+{SUSY2: Super Symmetry}
+
+Underfull \hbox (badness 10000) in paragraph at lines 20467--20471
+
+ []
+
+[551] [552] [553] [554] [555] [556
+
+]
+Chapter 81.
+{SYMMETRY: Operations on symmetric matrices}
+[557] [558] [559] [560
+
+]
+Chapter 82.
+{TAYLOR: Manipulation of Taylor series}
+[561] [562] [563] [564] [565] [566
+
+]
+Chapter 83.
+{TPS: A truncated power series package}
+[567] [568] [569] [570] [571] [572] [573] [574] [575] [576
+
+]
+Chapter 84.
+{TRI: TeX REDUCE interface}
+[577] [578] [579] [580] [581] [582
+
+]
+Chapter 85.
+{TRIGSIMP: Simplification and factorisation of trigonometric and hyperbolic fun
+ctions}
+[583] [584] [585] [586]
+Chapter 86.
+{WU: Wu algorithm for polynomial systems}
+[587
+
+] [588]
+Chapter 87.
+{XCOLOR: Calculation of the color factor in non-abelian gauge field theories}
+[589
+
+] [590] [591] [592
+
+]
+Chapter 88.
+{XIDEAL: Gr\"obner Bases for exterior algebra}
+[593] [594] [595] [596] [597] [598
+
+]
+Chapter 89.
+{ZEILBERG: A package for indefinite and definite summation}
+[599] [600] [601] [602] [603] [604] [605] [606
+
+]
+Chapter 90.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <24.88> on input line 22395.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <20.74> on input line 22395.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <17.28> on input line 22395.
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing 'math shift' on input line 22395.
+
+
+Package hyperref Warning: Token not allowed in a PDFDocEncoded string,
+(hyperref)                removing 'math shift' on input line 22395.
+
+{ZTRANS: $Z$-transform package}
+[607] [608] [609] [610] [611
+
+] [612]
+Chapter 91.
+{The Standard Lisp Report}
+\argwidth=\skip46
+\dewidth=\skip47
+[613
+
+] [614] [615] [616] [617] [618] [619] [620] [621] [622] [623] [624]
+[625] [626] [627] [628] [629] [630] [631] [632] [633] [634] [635] [636]
+[637] [638] [639] [640] [641] [642] [643] [644] [645] [646] [647] [648]
+[649] [650] [651]
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+[]\OT1/cmtt/m/n/10.95 Spread the actual parameters in ARGS
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 following the conventions: for calling
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 functions, transfer to the entry point
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 of the function, and return the value
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+[]\OT1/cmtt/m/n/10.95 Bind the actual parameters in ARGS to
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 the formal parameters of the lambda
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 expression. If the two lists are not
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 of equal length then ERROR(000, "Number
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24304--24304
+\OT1/cmtt/m/n/10.95 of parameters do not match"); The value
+ []
+
+[652]
+Underfull \hbox (badness 10000) in paragraph at lines 24334--24334
+[]\OT1/cmtt/m/n/10.95 U is an id. Return the value most
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24334--24334
+\OT1/cmtt/m/n/10.95 currently bound to U or if there
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 24334--24334
+\OT1/cmtt/m/n/10.95 is no such binding: ERROR(000,
+ []
+
+[653] [654] [655] [656] [657] [658] [659] [660] [661] [662] [663] [664]
+[665] [666
+
+] [667] [668]
+Appendix A.
+[669
+
+] [670] (r37.bbl [671
+
+] [672]) (r37.ind [673] [674
+
+] [675] [676] [677]
+[678] [679] [680] [681] [682] [683] [684] [685] [686] [687] [688] [689]
+[690] [691] [692] [693] [694] [695] [696] [697] [698
+
+]) (r37.aux)
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+
+LaTeX Warning: There were undefined references.
+
+ )
+Output written on r37.dvi (698 pages, 1846256 bytes).

@@ -1,0 +1,54 @@
+
+<A NAME=hessian>
+
+<TITLE>hessian</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>HESSIAN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>hessian</em>(&lt;expr&gt;,&lt;variable\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;expr&gt; :- a scalar expression. 
+<P>
+<P>
+&lt;variable\_list&gt; :- either a single variable or a list of 
+ variables. 
+<P>
+<P>
+<em>hessian</em>computes the hessian matrix of &lt;expr&gt; w.r.t. the 
+variables in &lt;variable\_list&gt;. 
+<P>
+<P>
+This is an n by n matrix where n is the number of variables and the 
+(i,j)'th entry is 
+<A HREF=r37_0148.html>df</A>(&lt;expr&gt;,&lt;variable\_list&gt;(i), 
+&lt;variable\_list&gt;(j)). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+hessian(x*y*z+x^2,{w,x,y,z}); 
+
+  [0  0  0  0]
+  [          ]
+  [0  2  z  y]
+  [          ]
+  [0  z  0  x]
+  [          ]
+  [0  y  x  0]
+
+</TT></PRE><P>Related functions: 
+<A HREF=r37_0148.html>df</A>. 
+<P>
+<P>

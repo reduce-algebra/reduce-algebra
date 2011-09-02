@@ -1,0 +1,3079 @@
+
+<a name=r38_0200>
+
+<title>LINEAR</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LINEAR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+An operator can be declared linear in its first argument over powers of 
+its second argument by the declaration <em>linear.</em> 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>linear</em>&lt;operator&gt;{<em>,</em>&lt;operator&gt;}* 
+<P>
+<P>
+<P>
+&lt;operator&gt; must have been declared to be an operator. Be careful not 
+to use a system operator name, because this command may change its definition. 
+The operator being declared must have at least two arguments, and the 
+second one must be a 
+<a href=r38_0001.html#r38_0002>kernel</a>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+operator f; 
+
+linear f; 
+
+f(0,x); 
+
+  0 
+
+
+f(-y,x); 
+
+  - F(1,X)*Y 
+
+
+f(y+z,x); 
+
+  F(1,X)*(Y + Z) 
+
+
+f(y*z,x); 
+
+  F(1,X)*Y*Z 
+
+
+depend z,x; 
+
+f(y*z,x); 
+
+  F(Z,X)*Y 
+
+
+f(y/z,x); 
+
+    1
+  F(-,X)*Y 
+    Z
+
+
+depend y,x; 
+
+f(y/z,x); 
+
+    Y
+  F(-,X) 
+    Z
+
+
+nodepend z,x; 
+
+f(y/z,x); 
+
+  F(Y,X)
+  ------ 
+    Z
+
+
+f(2*e**sin(x),x); 
+
+       SIN(X)
+  2*F(E      ,X)
+
+</tt></pre><p>Even when the operator has not had its functionality attached, it 
+exhibits 
+linear properties as shown in the examples. Notice the difference when 
+dependencies are added. Dependencies are also in effect when the operator's 
+first argument contains its second, as in the last line above. 
+<P>
+<P>
+For a fully-developed example of the use of linear operators, refer to the 
+article in the &lt;Journal of Computational Physics&gt;, Vol. 14 (1974), pp. 
+301-317, ``Analytic Computation of Some Integrals in Fourth Order Quantum 
+Electrodynamics,&quot; by J.A. Fox and A.C. Hearn. The article includes the 
+complete listing of REDUCE procedures used for this work. 
+<P>
+<P>
+<P>
+
+<a name=r38_0201>
+
+<title>LINELENGTH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LINELENGTH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>linelength</em> declaration sets the length of the output line. Default 
+
+is 80. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>linelength</em>&lt;expression&gt; 
+<P>
+<P>
+<P>
+To change the linelength, 
+&lt;expression&gt; must evaluate to a positive integer less than 128 
+(although this varies from system to system), and should not be less than 
+20 or so for proper operation. 
+<P>
+<P>
+<em>linelength</em>returns the previous linelength. If you want the current 
+linelength value, but not change it, say <em>linelength nil</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0202>
+
+<title>LISP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LISP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The <em>lisp</em> command changes REDUCE's mode of operation to symbolic. When 
+<em>lisp</em> is followed by an expression, that expression is evaluated in 
+symbolic mode, but REDUCE's mode is not changed. This command is 
+equivalent to 
+<a href=r38_0200.html#r38_0221>symbolic</a>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+lisp; 
+
+  NIL 
+
+
+car '(a b c d e); 
+
+  A  
+
+
+algebraic; 
+
+c := (lisp car '(first second))**2; 
+
+ 
+
+            2
+  C := FIRST
+
+</tt></pre><p>
+<a name=r38_0203>
+
+<title>LISTARGP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LISTARGP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>listargp</em>&lt;operator&gt;{<em>,</em>&lt;operator&gt;}* 
+<P>
+<P>
+<P>
+If an operator other than those specifically defined for lists is given a 
+single argument that is a 
+<a href=r38_0050.html#r38_0053>list</a>, then the result of this 
+operation will be a list in which that operator is applied to each element 
+of the list. 
+This process can be inhibited for a specific operator, or list of operators, 
+by using the declaration <em>listargp</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+log {a,b,c}; 
+
+  LOG(A),LOG(B),LOG(C) 
+
+
+listargp log; 
+
+log {a,b,c}; 
+
+  LOG(A,B,C)
+
+</tt></pre><p>It is possible to inhibit such distribution globally by turning on
+ the 
+switch 
+<a href=r38_0300.html#r38_0303>listargs</a>. In addition, if an operator has mor
+e than one 
+argument, no such distribution occurs, so <em>listargp</em> has no effect. 
+<P>
+<P>
+<P>
+
+<a name=r38_0204>
+
+<title>NODEPEND</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>NODEPEND</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>nodepend</em> declaration removes the dependency declared with 
+
+<a href=r38_0150.html#r38_0192>depend</a>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>nodepend</em>&lt;dep-kernel&gt;{,&lt;kernel&gt;}+ 
+<P>
+<P>
+<P>
+<P>
+&lt;dep-kernel&gt; must be a kernel that has had a dependency declared upon the 
+
+one or more other kernels that are its other arguments. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+depend y,x,z; 
+
+df(sin y,x); 
+
+  COS(Y)*DF(Y,X) 
+
+
+df(sin y,x,z); 
+
+  COS(Y)*DF(Y,X,Z) - DF(Y,X)*DF(Y,Z)*SIN(Y) 
+
+
+nodepend y,z; 
+
+df(sin y,x); 
+
+  COS(Y)*DF(Y,X) 
+
+
+df(sin y,x,z); 
+
+  0
+
+</tt></pre><p>A warning message is printed if the dependency had not been declar
+ed by 
+<em>depend</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0205>
+
+<title>MATCH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>MATCH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>match</em> command is similar to the 
+<a href=r38_0150.html#r38_0199>let</a> command, except 
+that it matches only explicit powers in substitution. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>match</em>&lt;expr&gt; <em>=</em> &lt;expression&gt;{,&lt;expr&gt; 
+ <em>=</em>&lt;expression&gt;}* 
+<P>
+<P>
+<P>
+&lt;expr&gt; is generally a term involving powers, and is limited by 
+the rules for the 
+<a href=r38_0150.html#r38_0199>let</a> command. &lt;expression&gt; may be 
+any valid REDUCE scalar expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+match c**2*a**2 = d;
+(a+c)**4; 
+
+   4       3          3    4
+  A   + 4*A *C + 4*A*C  + C  + 6*D 
+
+
+match a+b = c; 
+
+a + 2*b; 
+
+  B + C 
+
+
+(a + b + c)**2; 
+
+   2     2               2
+  A   - B   + 2*B*C + 3*C  
+
+
+clear a+b; 
+
+(a + b + c)**2; 
+
+    2                    2            2
+  A   + 2*A*B + 2*A*C + B  + 2*B*C + C  
+
+
+let p*r = s; 
+
+match p*q = ss; 
+
+(a + p*r)**2; 
+
+   2            2
+  A  + 2*A*S + S  
+
+
+(a + p*q)**2; 
+
+   2              2  2
+  A   + 2*A*SS + P *Q
+
+</tt></pre><p>Note in the last example that <em>a + b</em> has been explicitly m
+atched 
+after the squaring was done, replacing each single power of <em>a</em> by 
+<em>c - b</em>. This kind of substitution, although following the rules, is 
+confusing and could lead to unrecognizable results. It is better to use 
+<em>match</em> with explicit powers or products only. <em>match</em> should 
+not be used inside procedures for the same reasons that <em>let</em> should 
+not be. 
+<P>
+<P>
+Unlike 
+<a href=r38_0150.html#r38_0199>let</a> substitutions, <em>match</em> substitutio
+ns are executed 
+after all other operations are complete. The last example shows the 
+difference. <em>match</em> commands can be cleared by using 
+<a href=r38_0150.html#r38_0189>clear</a>, 
+with exactly the expression that the original <em>match</em> took. 
+<em>match</em> commands can also be done more generally with <em>for all</em> 
+or 
+<a href=r38_0150.html#r38_0195>forall</a>...<em>such that</em> commands. 
+<P>
+<P>
+<P>
+
+<a name=r38_0206>
+
+<title>NONCOM</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>NONCOM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+<em>noncom</em>declares that already-declared operators are noncommutative 
+under multiplication. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>noncom</em>&lt;operator&gt;{,&lt;operator&gt;}* 
+<P>
+<P>
+<P>
+&lt;operator&gt; must have been declared an 
+<a href=r38_0200.html#r38_0211>operator</a>, or a warning 
+message is given. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+operator f,h; 
+
+noncom f; 
+
+f(a)*f(b) - f(b)*f(a); 
+
+  F(A)*F(B) - F(B)*F(A) 
+
+
+h(a)*h(b) - h(b)*h(a); 
+
+  0 
+
+
+operator comm; 
+
+for all x,y such that x neq y and ordp(x,y)
+        let f(x)*f(y) = f(y)*f(x) + comm(x,y);
+
+
+f(1)*f(2); 
+
+  F(1)*F(2) 
+
+
+f(2)*f(1); 
+
+  COMM(2,1) + F(1)*F(2)
+
+</tt></pre><p>The last example introduces the commutator of f(x) and f(y) 
+for all x and y. The equality check is to prevent an infinite loop. The 
+operator f can have other functionality attached to it if desired, or it 
+can remain an indeterminate operator. 
+<P>
+<P>
+<P>
+
+<a name=r38_0207>
+
+<title>NONZERO</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>NONZERO</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>nonzero</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+If an 
+<a href=r38_0200.html#r38_0211>operator</a> <em>f</em> is declared 
+<a href=r38_0200.html#r38_0208>odd</a>, then <em>f(0)</em> 
+is replaced by zero unless <em>f</em> is also declared non zero by the 
+declaration <em>nonzero</em>. 
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+        odd f; 
+
+        f(0) 
+
+  0 
+
+
+        nonzero f; 
+
+        f(0) 
+
+  F(0)
+
+</tt></pre><p><P>
+<P>
+
+<a name=r38_0208>
+
+<title>ODD</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ODD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>odd</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+This declaration is used to declare an operator odd in its first 
+argument. Expressions involving an operator declared in this manner are 
+transformed if the first argument contains a minus sign. Any other 
+arguments are not affected. 
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+        odd f; 
+
+        f(-a) 
+
+  -F(A) 
+
+
+        f(-a,-b) 
+
+  -F(A,-B) 
+
+
+        f(a,-b) 
+
+  F(A,-B)
+
+</tt></pre><p><P>
+<P>
+If say <em>f</em> is declared odd, then <em>f(0)</em> is replaced by zero 
+unless <em>f</em> is also declared non zero by the declaration 
+
+<a href=r38_0200.html#r38_0207>nonzero</a>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0209>
+
+<title>OFF</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>OFF</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>off</em> command is used to turn switches off. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>off</em>&lt;switch&gt;{,&lt;switch&gt;}* 
+<P>
+<P>
+<P>
+&lt;switch&gt; can be any <em>switch</em> name. There is no problem if the 
+switch is already off. If the switch name is mistyped, an error message is 
+given. 
+<P>
+<P>
+
+<a name=r38_0210>
+
+<title>ON</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ON</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>on</em> command is used to turn switches on. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>on</em>&lt;switch&gt;{,&lt;switch&gt;}* 
+<P>
+<P>
+<P>
+&lt;switch&gt; can be any <em>switch</em> name. There is no problem if the 
+switch is already on. If the switch name is mistyped, an error message is 
+given. 
+<P>
+<P>
+
+<a name=r38_0211>
+
+<title>OPERATOR</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>OPERATOR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+Use the <em>operator</em> declaration to declare your own operators. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>operator</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; can be any valid REDUCE identifier, which is not the name 
+of a 
+<a href=r38_0300.html#r38_0345>matrix</a>, 
+<a href=r38_0150.html#r38_0188>array</a>, scalar variable or previously-defined 
+
+operator. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+operator dis,fac; 
+
+let dis(~x,~y) = sqrt(x^2 + y^2); 
+
+dis(1,2); 
+
+  SQRT(5) 
+
+
+dis(a,10); 
+
+        2
+  SQRT(A  + 100) 
+
+
+on rounded; 
+
+dis(1.5,7.2); 
+
+  7.35459040329
+
+
+let fac(~n) = if n=0 then 1
+               else if not(fixp n and n&gt;0)
+                then rederr &quot;choose non-negative integer&quot;
+               else for i := 1:n product i;
+ 
+
+fac(5); 
+
+  120 
+
+
+fac(-2); 
+
+  ***** choose non-negative integer
+
+</tt></pre><p>The first operator is the Euclidean distance metric, the distance 
+of point 
+(x,y) from the origin. The second operator is the factorial. 
+<P>
+<P>
+Operators can have various properties assigned to them; they can be 
+declared 
+<a href=r38_0150.html#r38_0196>infix</a>, 
+<a href=r38_0200.html#r38_0200>linear</a>, 
+<a href=r38_0200.html#r38_0222>symmetric</a>, 
+
+<a href=r38_0150.html#r38_0187>antisymmetric</a>, or 
+<a href=r38_0200.html#r38_0206>noncom</a><em>mutative</em>. 
+The default operator is prefix, nonlinear, and commutative. 
+Precedence can also be assigned to operators using the declaration 
+
+<a href=r38_0200.html#r38_0213>precedence</a>. 
+<P>
+<P>
+Functionality is assigned to an operator by a 
+<a href=r38_0150.html#r38_0199>let</a> statement or 
+a 
+<a href=r38_0150.html#r38_0195>forall</a>...<em>let</em> statement, 
+(or possibly by a procedure with the name 
+of the operator). Be careful not to redefine a system operator by 
+accident. REDUCE permits you to redefine system operators, giving you a 
+warning message that the operator was already defined. This flexibility 
+allows you to add mathematical rules that do what you want them to do, but 
+can produce odd or erroneous behavior if you are not careful. 
+<P>
+<P>
+You can declare operators from inside 
+<a href=r38_0050.html#r38_0055>procedure</a>s, as long as they 
+are not local variables. Operators defined inside procedures are global. 
+A formal parameter may be declared as an operator, and has the effect of 
+declaring the calling variable as the operator. 
+<P>
+<P>
+<P>
+
+<a name=r38_0212>
+
+<title>ORDER</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ORDER</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>order</em> declaration changes the order of precedence of kernels for 
+display purposes only. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>order</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a valid 
+<a href=r38_0001.html#r38_0002>kernel</a> or 
+<a href=r38_0200.html#r38_0211>operator</a> name 
+complete with argument or a 
+<a href=r38_0050.html#r38_0053>list</a> of such objects. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+x + y + z + cos(a); 
+
+  COS(A) + X + Y + Z 
+
+
+order z,y,x,cos(a); 
+
+x + y + z + cos(a); 
+
+  Z + Y + X + COS(A) 
+
+
+(x + y)**2; 
+
+   2            2
+  Y  + 2*Y*X + X  
+
+
+order nil; 
+
+(z + cos(z))**2; 
+
+        2                 2
+  COS(Z)  + 2*COS(Z)*Z + Z
+
+</tt></pre><p><em>order</em>affects the printing order of the identifiers only; 
+internal 
+order is unchanged. Change internal order of evaluation with the 
+declaration 
+<a href=r38_0150.html#r38_0198>korder</a>. You can use <em>order</em> to feature
+ variables 
+or functions you are particularly interested in. 
+<P>
+<P>
+Declarations made with <em>order</em> are cumulative: kernels in new order 
+declarations are ordered behind those in previous declarations, and 
+previous declarations retain their relative order. Of course, specific 
+kernels named in new declarations are removed from previous ones and given 
+the new priority. Return to the standard canonical printing order with the 
+statement <em>order nil</em>. 
+<P>
+<P>
+The print order specified by <em>order</em> commands is not in effect if the 
+switch 
+<a href=r38_0300.html#r38_0319>pri</a> is off. 
+<P>
+<P>
+<P>
+
+<a name=r38_0213>
+
+<title>PRECEDENCE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PRECEDENCE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>precedence</em> declaration attaches a precedence to an infix operator. 
+
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>precedence</em>&lt;operator&gt;,&lt;known\_operator&gt; 
+<P>
+<P>
+<P>
+&lt;operator&gt; should have been declared an operator but may be a REDUCE 
+identifier that is not already an operator, array, or matrix. 
+&lt;known\_operator&gt; must be a system infix operator or have had its 
+precedence already declared. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+operator f,h; 
+
+precedence f,+; 
+
+precedence h,*; 
+
+a + f(1,2)*c; 
+
+  (1 F 2)*C + A 
+
+
+a + h(1,2)*c; 
+
+  1 H 2*C + A 
+
+
+a*1 f 2*c; 
+
+  A F 2*C 
+
+
+a*1 h 2*c; 
+
+  1 H 2*A*C
+
+</tt></pre><p>The operator whose precedence is being declared is inserted into t
+he infix 
+operator precedence list at the next higher place than &lt;known\_operator&gt;. 
+
+<P>
+<P>
+Attaching a precedence to an operator has the side effect of declaring the 
+operator to be infix. If the identifier argument for <em>precedence</em> has 
+not been declared to be an operator, an attempt to use it causes an error 
+message. After declaring it to be an operator, it becomes an infix operator 
+with the precedence previously given. Infix operators may be used in prefix 
+form; if they are used in infix form, a space must be left on each side of 
+the operator to avoid ambiguity. Declared infix operators are always binary. 
+<P>
+<P>
+To see the infix operator precedence list, enter symbolic mode and type 
+<em>preclis!*;</em>. The lowest precedence operator is listed first. 
+<P>
+<P>
+All prefix operators have precedence higher than infix operators. 
+<P>
+<P>
+<P>
+
+<a name=r38_0214>
+
+<title>PRECISION</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PRECISION</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>precision</em> declaration sets the number of decimal places used when 
+
+<a href=r38_0300.html#r38_0330>rounded</a> is on. Default is system dependent, a
+nd normally about 12. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>precision</em>(&lt;integer&gt;) or <em>precision</em> &lt;integer&gt; 
+<P>
+<P>
+<P>
+&lt;integer&gt; must be a positive integer. When &lt;integer&gt; is 0, the 
+current precision is displayed, but not changed. There is no upper limit, 
+but precision of greater than several hundred causes unpleasantly slow 
+operation on numeric calculations. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+on rounded; 
+
+7/9; 
+
+  0.777777777778 
+
+
+precision 20; 
+
+  20 
+
+
+7/9; 
+
+  0.77777777777777777778 
+
+
+sin(pi/4); 
+
+  0.7071067811865475244
+
+</tt></pre><p>Trailing zeroes are dropped, so sometimes fewer than 20 decimal pl
+aces are 
+printed as in the last example. Turn on the switch 
+<a href=r38_0250.html#r38_0291>fullprec</a> if 
+you want to print all significant digits. The 
+<a href=r38_0300.html#r38_0330>rounded</a> mode 
+carries calculations to two more places than given by <em>precision</em>, and 
+rounds off. 
+<P>
+<P>
+<P>
+
+<a name=r38_0215>
+
+<title>PRINT_PRECISION</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PRINT\_PRECISION</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>print_precision</em>(&lt;integer&gt;) 
+ or <em>print_precision</em> &lt;integer&gt; 
+<P>
+<P>
+<P>
+In 
+<a href=r38_0300.html#r38_0330>rounded</a> mode, numbers are normally printed to
+ the specified 
+precision. If the user wishes to print such numbers with less precision, 
+the printing precision can be set by the declaration <em>print_precision</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+on rounded; 
+
+1/3; 
+
+  0.333333333333 
+
+
+print_precision 5; 
+
+1/3 
+
+  0.33333
+
+</tt></pre><p>
+<a name=r38_0216>
+
+<title>REAL</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>REAL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+The <em>real</em> declaration must be made immediately after a 
+
+<a href=r38_0001.html#r38_0040>begin</a> (or other variable declaration such as 
+<a href=r38_0150.html#r38_0197>integer</a> 
+and 
+<a href=r38_0200.html#r38_0218>scalar</a>) and declares local integer variables.
+ They are 
+initialized to zero. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>real</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; may be any valid REDUCE identifier, except 
+<em>t</em> or <em>nil</em>. 
+<P>
+<P>
+Real variables remain local, and do not share values with variables of the 
+same name outside the 
+<a href=r38_0001.html#r38_0040>begin</a>...<em>end</em> block. When the 
+block is finished, the variables are removed. You may use the words 
+
+<a href=r38_0150.html#r38_0197>integer</a> or 
+<a href=r38_0200.html#r38_0218>scalar</a> in the place of <em>real</em>. 
+<em>real</em> does not indicate typechecking by the current REDUCE; it is 
+only for your own information. Declaration statements must immediately 
+follow the <em>begin</em>, without a semicolon between <em>begin</em> and the 
+first variable declaration. 
+<P>
+<P>
+Any variables used inside a <em>begin</em>...<em>end</em> 
+<a href=r38_0001.html#r38_0041>block</a> 
+that were not declared <em>scalar</em>, <em>real</em> or <em>integer</em> are 
+global, and any change made to them inside the block affects their global 
+value. Any 
+<a href=r38_0150.html#r38_0188>array</a> or 
+<a href=r38_0300.html#r38_0345>matrix</a> declared inside a block is always 
+global. 
+<P>
+<P>
+<P>
+
+<a name=r38_0217>
+
+<title>REMFAC</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>REMFAC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>remfac</em> declaration removes the special factoring treatment of its 
+arguments that was declared with 
+<a href=r38_0250.html#r38_0287>factor</a>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>remfac</em>&lt;kernel&gt;{,&lt;kernel&gt;}+ 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a 
+<a href=r38_0001.html#r38_0002>kernel</a> or 
+<a href=r38_0200.html#r38_0211>operator</a> name that 
+was declared as special with the 
+<a href=r38_0250.html#r38_0287>factor</a> declaration. 
+<P>
+<P>
+
+<a name=r38_0218>
+
+<title>SCALAR</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SCALAR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+The <em>scalar</em> declaration must be made immediately after a 
+
+<a href=r38_0001.html#r38_0040>begin</a> (or other variable declaration such as 
+<a href=r38_0150.html#r38_0197>integer</a> 
+and 
+<a href=r38_0200.html#r38_0216>real</a>) and declares local scalar variables. Th
+ey are 
+initialized to 0. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>scalar</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; may be any valid REDUCE identifier, except <em>t</em> or 
+<em>nil</em>. 
+<P>
+<P>
+Scalar variables remain local, and do not share values with variables of 
+the same name outside the 
+<a href=r38_0001.html#r38_0040>begin</a>...<em>end</em> 
+<a href=r38_0001.html#r38_0041>block</a>. 
+When the block is finished, the variables are removed. You may use the 
+words 
+<a href=r38_0200.html#r38_0216>real</a> or 
+<a href=r38_0150.html#r38_0197>integer</a> in the place of <em>scalar</em>. 
+<em>real</em> and <em>integer</em> do not indicate typechecking by the current 
+REDUCE; they are only for your own information. Declaration statements 
+must immediately follow the <em>begin</em>, without a semicolon between 
+<em>begin</em> and the first variable declaration. 
+<P>
+<P>
+Any variables used inside <em>begin</em>...<em>end</em> blocks that were not 
+declared <em>scalar</em>, <em>real</em> or <em>integer</em> are global, and any 
+
+change made to them inside the block affects their global value. Arrays 
+declared inside a block are always global. 
+<P>
+<P>
+<P>
+
+<a name=r38_0219>
+
+<title>SCIENTIFIC_NOTATION</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SCIENTIFIC\_NOTATION</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>scientific_notation</em>(&lt;m&gt;) or 
+<em>scientific_notation</em>({&lt;m&gt;,&lt;n&gt;}) 
+<P>
+<P>
+<P>
+&lt;m&gt; and &lt;n&gt; are positive integers. 
+<em>scientific_notation</em> controls the output format of floating point 
+numbers. At the default settings, any number with five or less digits 
+before the decimal point is printed in a fixed-point notation, e.g., 
+12345.6. Numbers with more than five digits are printed in scientific 
+notation, e.g., 1.234567E+5. Similarly, by default, any number with 
+eleven or more zeros after the decimal point is printed in scientific 
+notation. 
+<P>
+<P>
+When <em>scientific_notation</em> is called with the numerical argument 
+ m a number with more than m digits before the decimal point, 
+or m or more zeros after the decimal point, is printed in scientific 
+notation. When <em>scientific_notation</em> is called with a list 
+{&lt;m&gt;,&lt;n&gt;}, a number with more than m digits before the 
+decimal point, or n or more zeros after the decimal point is 
+printed in scientific notation. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+on rounded;
+
+
+12345.6;
+
+  12345.6
+
+
+
+123456.5;
+
+  1.234565e+5
+
+
+
+0.00000000000000012;
+
+  1.2e-16
+
+
+
+scientific_notation 20;
+
+  5,11
+
+
+
+5: 123456.7;
+
+  123456.7
+
+
+
+0.00000000000000012;
+
+  0.00000000000000012
+
+</tt></pre><p>
+<a name=r38_0220>
+
+<title>SHARE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SHARE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+The <em>share</em> declaration allows access to its arguments by both 
+algebraic and symbolic modes. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>share</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; can be any valid REDUCE identifier. 
+<P>
+<P>
+Programming in 
+<a href=r38_0200.html#r38_0221>symbolic</a> as well as algebraic mode allows 
+you a wider range 
+of techniques than just algebraic mode alone. Expressions do not cross the 
+boundary since they have different representations, unless the <em>share</em> 
+declaration is used. For more information on using symbolic mode, see 
+the &lt;REDUCE User's Manual&gt;, and the &lt;Standard Lisp Report&gt;. 
+<P>
+<P>
+You should be aware that a previously-declared array is destroyed by the 
+<em>share</em> declaration. Scalar variables retain their values. You can 
+share a declared 
+<a href=r38_0300.html#r38_0345>matrix</a> that has not yet 
+been dimensioned so that it can be 
+used by both modes. Values that are later put into the matrix are 
+accessible from symbolic mode too, but not by the usual matrix reference 
+mechanism. In symbolic mode, a matrix is stored as a list whose first 
+element is 
+<a href=r38_0300.html#r38_0343>MAT</a>, and whose next elements are the rows of 
+the matrix 
+stored as lists of the individual elements. Access in symbolic mode is by 
+the operators 
+<a href=r38_0001.html#r38_0046>first</a>, 
+<a href=r38_0050.html#r38_0063>second</a>, 
+<a href=r38_0050.html#r38_0066>third</a> and 
+
+<a href=r38_0050.html#r38_0057>rest</a>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0221>
+
+<title>SYMBOLIC</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SYMBOLIC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The <em>symbolic</em> command changes REDUCE's mode of operation to symbolic. 
+When <em>symbolic</em> is followed by an expression, that expression is 
+evaluated in symbolic mode, but REDUCE's mode is not changed. It is 
+equivalent to the 
+<a href=r38_0200.html#r38_0202>lisp</a> command. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+symbolic; 
+
+  NIL 
+
+
+cdr '(a b c); 
+
+  (B C) 
+
+
+algebraic; 
+
+x + symbolic car '(y z); 
+
+  X + Y
+
+</tt></pre><p>
+<a name=r38_0222>
+
+<title>SYMMETRIC</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SYMMETRIC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+When an operator is declared <em>symmetric</em>, its arguments are reordered 
+to conform to the internal ordering of the system. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>symmetric</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; is an identifier that has been declared an operator. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+operator m,n; 
+
+symmetric m,n; 
+
+m(y,a,sin(x)); 
+
+  M(SIN(X),A,Y) 
+
+
+n(z,m(b,a,q)); 
+
+  N(M(A,B,Q),Z)
+
+</tt></pre><p>If &lt;identifier&gt; has not been declared to be an operator, the
+ flag 
+<em>symmetric</em> is still attached to it. When &lt;identifier&gt; is 
+subsequently used as an operator, the message <em>Declare</em>&lt;identifier&gt;
+ 
+ <em>operator ? (Y or N)</em> is printed. If the user replies <em>y</em>, the 
+symmetric property of the operator is used. 
+<P>
+<P>
+<P>
+
+<a name=r38_0223>
+
+<title>TR</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>TR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>tr</em> declaration is used to trace system or user-written procedures. 
+
+It is only useful to those with a good knowledge of both Lisp and the 
+internal formats used by REDUCE. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>tr</em>&lt;name&gt;{,&lt;name&gt;}* 
+<P>
+<P>
+<P>
+&lt;name&gt; is the name of a REDUCE system procedure or one of your own 
+procedures. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt></tt></pre><p>The system procedure <em>prepsq</em> is traced, 
+ which prepares REDUCE standard 
+forms for printing by converting them to a Lisp prefix form.<p><pre><tt> 
+
+tr prepsq; 
+
+  (PREPSQ) 
+
+
+x**2 + y; 
+
+  PREPSQ entry:
+    Arg 1: (((((X . 2) . 1) ((Y . 1) . 1)) . 1)
+  PREPSQ return value = (PLUS (EXPT X 2) Y)
+  PREPSQ entry:
+    Arg 1: (1 . 1)
+  PREPSQ return value = 1
+   2
+  X  + Y
+
+
+untr prepsq; 
+
+  (PREPSQ)
+
+</tt></pre><p> 
+<P>
+<P>
+This example is for a PSL-based system; the above format will vary if 
+other Lisp systems are used. 
+<P>
+<P>
+When a procedure is traced, the first lines show entry to the procedure and 
+the arguments it is given. The value returned by the procedure is printed 
+upon exit. If you are tracing several procedures, with a call to one of 
+them inside the other, the inner trace will be indented showing procedure 
+nesting. There are no trace options. However, the format of the trace 
+depends on the underlying Lisp system used. The trace can be removed with 
+the command 
+<a href=r38_0200.html#r38_0224>untr</a>. Note that <em>trace</em>, below, is a m
+atrix 
+operator, while <em>tr</em> does procedure tracing. 
+<P>
+<P>
+<P>
+
+<a name=r38_0224>
+
+<title>UNTR</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>UNTR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>untr</em> declaration is used to remove a trace from system or 
+user-written procedures declared with 
+<a href=r38_0200.html#r38_0223>tr</a>. It is only useful to 
+those with a good knowledge of both Lisp and the internal formats used by 
+REDUCE. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>untr</em>&lt;name&gt;{,&lt;name&gt;}* 
+<P>
+<P>
+<P>
+&lt;name&gt; is the name of a REDUCE system procedure or one of your own 
+procedures that has previously been the argument of a <em>tr</em> 
+declaration. 
+<P>
+<P>
+
+<a name=r38_0225>
+
+<title>VARNAME</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>VARNAME</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>declaration</b><P>
+<P>
+ 
+The declaration <em>varname</em> instructs REDUCE to use its argument as the 
+default Fortran (when 
+<a href=r38_0250.html#r38_0289>fort</a> is on) or 
+<a href=r38_0150.html#r38_0181>structr</a> identifier 
+and identifier stem, rather than using <em>ANS</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>varname</em>&lt;identifier&gt; 
+<P>
+<P>
+<P>
+&lt;identifier&gt; can be any combination of one or more alphanumeric 
+characters. Try to avoid REDUCE reserved words. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+varname ident; 
+
+  IDENT 
+
+
+on fort; 
+
+x**2 + 1; 
+
+  IDENT=X**2+1. 
+
+
+off fort,exp; 
+
+structr(((x+y)**2 + z)**3); 
+
+        3
+  IDENT2
+      where
+                         2
+         IDENT2 := IDENT1  + Z
+  IDENT1 := X + Y
+
+</tt></pre><p>
+<a href=r38_0250.html#r38_0284>exp</a>was turned off so that 
+<a href=r38_0150.html#r38_0181>structr</a> could show the 
+structure. If <em>exp</em> had been on, the expression would have been 
+expanded into a polynomial. 
+<P>
+<P>
+<P>
+
+<a name=r38_0226>
+
+<title>WEIGHT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>WEIGHT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The <em>weight</em> command is used to attach weights to kernels for asymptotic 
+
+constraints. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>weight</em>&lt;kernel&gt; <em>=</em>&lt;number&gt; 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a REDUCE 
+<a href=r38_0001.html#r38_0002>kernel</a>, &lt;number&gt; must be a 
+positive integer, not 0. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+a := (x+y)**4; 
+
+        4      3        2  2        3    4
+  A := X  + 4*X *Y + 6*X *Y  + 4*X*Y  + Y  
+
+
+weight x=2,y=3; 
+
+wtlevel 8; 
+
+a; 
+
+   4
+  X  
+
+
+wtlevel 10; 
+
+a; 
+
+   2     2             2
+  X *(6*Y  + 4*X*Y  + X ) 
+
+
+int(x**2,x); 
+
+  ***** X invalid as KERNEL
+
+</tt></pre><p>Weights and 
+<a href=r38_0200.html#r38_0229>wtlevel</a> are used for asymptotic constraints, 
+where 
+higher-order terms are considered insignificant. 
+<P>
+<P>
+Weights are originally equivalent to 0 until set by a <em>weight</em> 
+command. To remove a weight from a kernel, use the 
+<a href=r38_0150.html#r38_0189>clear</a> 
+command. Weights once assigned cannot be changed without clearing the 
+identifier. Once a weight is assigned to a kernel, it is no longer a 
+kernel and cannot be used in any REDUCE commands or operators that require 
+kernels, until the weight is cleared. Note that terms are ordered by 
+greatest weight. 
+<P>
+<P>
+The weight level of the system is set by 
+<a href=r38_0200.html#r38_0229>wtlevel</a>, initially at 
+2. Since no kernels have weights, no effect from <em>wtlevel</em> can be 
+seen. Once you assign weights to kernels, you must set <em>wtlevel</em> 
+correctly for the desired operation. When weighted variables appear in a 
+term, their weights are summed for the total weight of the term (powers of 
+variables multiply their weights). When a term exceeds the weight level 
+of the system, it is discarded from the result expression. 
+<P>
+<P>
+<P>
+
+<a name=r38_0227>
+
+<title>WHERE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>WHERE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>where</em> operator provides an infix notation for one-time 
+substitutions for kernels in expressions. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+&lt;expression&gt; <em>where</em> &lt;kernel&gt; 
+ <em>=</em>&lt;expression&gt; 
+ {,&lt;kernel&gt; <em>=</em>&lt;expression&gt;}* 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any REDUCE scalar expression, &lt;kernel&gt; must 
+be a 
+<a href=r38_0001.html#r38_0002>kernel</a>. Alternatively a 
+<a href=r38_0050.html#r38_0060>rule</a> or a <em>rule list</em> 
+can be a member of the right-hand part of a <em>where</em> expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+x**2 + 17*x*y + 4*y**2 where x=1,y=2; 
+
+
+  51 
+
+
+for i := 1:5 collect x**i*q where q= for j := 1:i product j;
+ 
+
+
+        2    3     4      5
+  {X,2*X ,6*X ,24*X ,120*X } 
+
+
+x**2 + y + z where z=y**3,y=3; 
+
+   2    3
+  X  + Y  + 3
+
+</tt></pre><p>Substitution inside a <em>where</em> expression has no effect upon
+ the values 
+of the kernels outside the expression. The <em>where</em> operator has the 
+lowest precedence of all the infix operators, which are lower than prefix 
+operators, so that the substitutions apply to the entire expression 
+preceding the <em>where</em> operator. However, <em>where</em> is applied 
+before command keywords such as <em>then</em>, <em>repeat</em>, or <em>do</em>. 
+
+<P>
+<P>
+A 
+<a href=r38_0050.html#r38_0060>rule</a> or a <em>rule set</em> in the right-hand
+ part of the 
+<em>where</em> expression act as if the rules were activated by 
+<a href=r38_0150.html#r38_0199>let</a> 
+immediately before the evaluation of the expression and deactivated 
+by 
+<a href=r38_0150.html#r38_0190>clearrules</a> immediately afterwards. 
+<P>
+<P>
+<em>where</em>gives you a natural notation for auxiliary variables in 
+expressions. As the second example shows, the substitute expression can be 
+a command to be evaluated. The substitute assignments are made in 
+parallel, rather than sequentially, as the last example shows. The 
+expression resulting from the first round of substitutions is not 
+reexamined to see if any further such substitutions can be made. 
+<em>where</em> can also be used to define auxiliary variables in 
+
+<a href=r38_0050.html#r38_0055>procedure</a> definitions. 
+<P>
+<P>
+<P>
+
+<a name=r38_0228>
+
+<title>WHILE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>WHILE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>while</em> command causes a statement to be repeatedly executed until a 
+
+given condition is true. If the condition is initially false, the statement 
+is not executed at all. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>while</em>&lt;condition&gt; <em>do</em> &lt;statement&gt; 
+<P>
+<P>
+<P>
+&lt;condition&gt; is given by a logical operator, &lt;statement&gt; must be a 
+single REDUCE statement, or a 
+<a href=r38_0001.html#r38_0038>group</a> (<em>&lt;&lt;</em>...<em>&gt;&gt;</em>)
+ or 
+
+<a href=r38_0001.html#r38_0040>begin</a>...<em>end</em> 
+<a href=r38_0001.html#r38_0041>block</a>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+a := 10; 
+
+  A := 10 
+
+
+while a &lt;= 12 do &lt;&lt;write a; a := a + 1&gt;&gt;;
+ 
+
+
+  10 
+
+
+                                          11 
+
+                                          12 
+
+while a &lt; 5 do &lt;&lt;write a; a := a + 1&gt;&gt;;
+ 
+
+
+      nothing is printed
+
+</tt></pre><p>
+<a name=r38_0229>
+
+<title>WTLEVEL</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>WTLEVEL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+In conjunction with 
+<a href=r38_0200.html#r38_0226>weight</a>, <em>wtlevel</em> is used to implement
+ 
+asymptotic constraints. Its default value is 2. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>wtlevel</em>&lt;expression&gt; 
+<P>
+<P>
+<P>
+To change the weight level, &lt;expression&gt; must evaluate to a positive 
+integer that is the greatest weight term to be retained in expressions 
+involving kernels with weight assignments. <em>wtlevel</em> returns the 
+new weight level. If you want the current weight level, but not 
+change it, say <em>wtlevel nil</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+(x+y)**4;          
+ 
+
+   4      3        2  2        3    4
+  X  + 4*X *Y + 6*X *Y  + 4*X*Y  + Y  
+
+
+weight x=2,y=3; 
+
+wtlevel 8; 
+
+(x+y)**4; 
+
+   4
+  X  
+
+
+wtlevel 10; 
+
+(x+y)**4; 
+
+   2     2            2
+  X *(6*Y  + 4*X*Y + X ) 
+
+
+int(x**2,x); 
+
+  ***** X invalid as KERNEL
+
+</tt></pre><p><em>wtlevel</em>is used in conjunction with the command 
+<a href=r38_0200.html#r38_0226>weight</a> to 
+enable asymptotic constraints. Weight of a term is computed by multiplying 
+the weights of each variable in it by the power to which it has been 
+raised, and adding the resulting weights for each variable. If the weight 
+of the term is greater than <em>wtlevel</em>, the term is dropped from the 
+expression, and not used in any further computation involving the 
+expression. 
+<P>
+<P>
+Once a weight has been attached to a 
+<a href=r38_0001.html#r38_0002>kernel</a>, it is no longer 
+recognized by the system as a kernel, though still a variable. It cannot 
+be used in REDUCE commands and operators that need kernels. The weight 
+attachment can be undone with a 
+<a href=r38_0150.html#r38_0189>clear</a> command. <em>wtlevel</em> can 
+be changed as desired. 
+<P>
+<P>
+<P>
+
+<a name=r38_0230>
+
+<title>Declarations</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<b>Declarations</b><menu>
+<li><a href=r38_0150.html#r38_0186>ALGEBRAIC command</a><P>
+<li><a href=r38_0150.html#r38_0187>ANTISYMMETRIC declaration</a><P>
+<li><a href=r38_0150.html#r38_0188>ARRAY declaration</a><P>
+<li><a href=r38_0150.html#r38_0189>CLEAR command</a><P>
+<li><a href=r38_0150.html#r38_0190>CLEARRULES command</a><P>
+<li><a href=r38_0150.html#r38_0191>DEFINE command</a><P>
+<li><a href=r38_0150.html#r38_0192>DEPEND declaration</a><P>
+<li><a href=r38_0150.html#r38_0193>EVEN declaration</a><P>
+<li><a href=r38_0150.html#r38_0194>FACTOR declaration</a><P>
+<li><a href=r38_0150.html#r38_0195>FORALL command</a><P>
+<li><a href=r38_0150.html#r38_0196>INFIX declaration</a><P>
+<li><a href=r38_0150.html#r38_0197>INTEGER declaration</a><P>
+<li><a href=r38_0150.html#r38_0198>KORDER declaration</a><P>
+<li><a href=r38_0150.html#r38_0199>LET command</a><P>
+<li><a href=r38_0200.html#r38_0200>LINEAR declaration</a><P>
+<li><a href=r38_0200.html#r38_0201>LINELENGTH declaration</a><P>
+<li><a href=r38_0200.html#r38_0202>LISP command</a><P>
+<li><a href=r38_0200.html#r38_0203>LISTARGP declaration</a><P>
+<li><a href=r38_0200.html#r38_0204>NODEPEND declaration</a><P>
+<li><a href=r38_0200.html#r38_0205>MATCH command</a><P>
+<li><a href=r38_0200.html#r38_0206>NONCOM declaration</a><P>
+<li><a href=r38_0200.html#r38_0207>NONZERO declaration</a><P>
+<li><a href=r38_0200.html#r38_0208>ODD declaration</a><P>
+<li><a href=r38_0200.html#r38_0209>OFF command</a><P>
+<li><a href=r38_0200.html#r38_0210>ON command</a><P>
+<li><a href=r38_0200.html#r38_0211>OPERATOR declaration</a><P>
+<li><a href=r38_0200.html#r38_0212>ORDER declaration</a><P>
+<li><a href=r38_0200.html#r38_0213>PRECEDENCE declaration</a><P>
+<li><a href=r38_0200.html#r38_0214>PRECISION declaration</a><P>
+<li><a href=r38_0200.html#r38_0215>PRINT\_PRECISION declaration</a><P>
+<li><a href=r38_0200.html#r38_0216>REAL declaration</a><P>
+<li><a href=r38_0200.html#r38_0217>REMFAC declaration</a><P>
+<li><a href=r38_0200.html#r38_0218>SCALAR declaration</a><P>
+<li><a href=r38_0200.html#r38_0219>SCIENTIFIC\_NOTATION declaration</a><P>
+<li><a href=r38_0200.html#r38_0220>SHARE declaration</a><P>
+<li><a href=r38_0200.html#r38_0221>SYMBOLIC command</a><P>
+<li><a href=r38_0200.html#r38_0222>SYMMETRIC declaration</a><P>
+<li><a href=r38_0200.html#r38_0223>TR declaration</a><P>
+<li><a href=r38_0200.html#r38_0224>UNTR declaration</a><P>
+<li><a href=r38_0200.html#r38_0225>VARNAME declaration</a><P>
+<li><a href=r38_0200.html#r38_0226>WEIGHT command</a><P>
+<li><a href=r38_0200.html#r38_0227>WHERE operator</a><P>
+<li><a href=r38_0200.html#r38_0228>WHILE command</a><P>
+<li><a href=r38_0200.html#r38_0229>WTLEVEL command</a><P>
+</menu>
+<a name=r38_0231>
+
+<title>IN</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>IN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>in</em> command takes a list of file names and inputs each file into 
+the system. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>in</em>&lt;filename&gt;{,&lt;filename&gt;}* 
+<P>
+<P>
+<P>
+&lt;filename&gt; must be in the current directory, or be a valid pathname. 
+If the file name is not an identifier, double quote marks (<em>&quot;</em>) are 
+
+needed around the file name. 
+<P>
+<P>
+A message is given if the file cannot be found, or has a mistake 
+in it. 
+<P>
+<P>
+Ending the command with a semicolon causes the file to be echoed to the 
+screen; ending it with a dollar sign does not echo the file. If you want 
+some but not all of a file echoed, turn the switch 
+<a href=r38_0250.html#r38_0281>echo</a> on or off 
+in the file. 
+<P>
+<P>
+An efficient way to develop procedures in REDUCE is to write them into a file 
+using a system editor of your choice, and then input the 
+files into an active REDUCE session. REDUCE reparses the procedure as 
+it takes information from the file, overwriting the previous procedure 
+definition. When it accepts the procedure, it echoes its name to the screen. 
+Data can also be input to the system from files. 
+<P>
+<P>
+Files to be read in should always end in 
+<a href=r38_0001.html#r38_0044>end</a><em>;</em> to avoid 
+end-of-file problems. Note that this is an additional <em>end;</em> to any 
+ending procedures in the file. 
+<P>
+<P>
+<P>
+
+<a name=r38_0232>
+
+<title>INPUT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>INPUT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>input</em> command returns the input expression to the REDUCE numbered 
+prompt that is its argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>input</em>(&lt;number&gt;) or <em>input</em> &lt;number&gt; 
+<P>
+<P>
+<P>
+<P>
+&lt;number&gt; must be between 1 and the current REDUCE prompt number. 
+<P>
+<P>
+An expression brought back by <em>input</em> can be reexecuted with new 
+values or switch settings, or used as an argument in another expression. 
+The command 
+<a href=r38_0150.html#r38_0184>ws</a> brings back the results of a numbered REDU
+CE 
+statement. Two lists contain every input and every output statement since 
+the beginning of the session. If your session is very long, storage space 
+begins to fill up with these expressions, so it is a good idea to end the 
+session once in a while, saving needed expressions to files with the 
+
+<a href=r38_0100.html#r38_0133>saveas</a> and 
+<a href=r38_0200.html#r38_0233>out</a> commands. 
+<P>
+<P>
+Switch settings and 
+<a href=r38_0150.html#r38_0199>let</a> statements can also be reexecuted by usin
+g 
+<em>input</em>. 
+<P>
+<P>
+An error message is given if a number is called for that has not yet been used. 
+
+<P>
+<P>
+<P>
+
+<a name=r38_0233>
+
+<title>OUT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>OUT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>out</em> command directs output to the filename that is its argument, 
+until another <em>out</em> changes the output file, or 
+<a href=r38_0200.html#r38_0234>shut</a> closes it. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>out</em>&lt;filename&gt; or <em>out &quot;</em>&lt;pathname&gt; <em>&quot;
+</em> or <em>out t</em> 
+<P>
+<P>
+<P>
+&lt;filename&gt; must be in the current directory, or be a valid complete 
+file description for your system. If the file name is not 
+in the current directory, quote marks are needed around the file name. 
+If the file already exists, a message is printed allowing you to decide 
+whether to supersede the contents of the file with new material. 
+<P>
+<P>
+To restore output to the terminal, type <em>out t</em>, or 
+<a href=r38_0200.html#r38_0234>shut</a> the 
+file. When you use <em>out t</em>, the file remains available, and if you 
+open it again (with another <em>out</em>), new material is appended rather 
+than overwriting. 
+<P>
+<P>
+To write a file using <em>out</em> that can be input at a later time, the 
+switch 
+<a href=r38_0300.html#r38_0308>nat</a> must be turned off, so that the standard 
+linear form 
+is saved that can be read in by 
+<a href=r38_0200.html#r38_0231>in</a>. If <em>nat</em> is on, exponents 
+are printed on the line above the expression, which causes trouble 
+when REDUCE tries to read the file. 
+<P>
+<P>
+There is a slight complication if you are using the <em>out</em> command from 
+inside a file to create another file. The 
+<a href=r38_0250.html#r38_0281>echo</a> switch is normally 
+off at the top-level and on while reading files (so you can see what is 
+being read in). If you create a file using <em>out</em> at the top-level, 
+the result lines are printed into the file as you want them. But if you 
+create such a file from inside a file, the <em>echo</em> switch is on, and 
+every line is echoed, first as you typed it, then as REDUCE parsed it, and 
+then once more for the file. Therefore, when you create a file from 
+a file, you need to turn <em>echo</em> off explicitly before the <em>out</em> 
+command, and turn it back on when you <em>shut</em> the created file, so your 
+executing file echoes as it should. This behavior also means that as you 
+watch the file execute, you cannot see the lines that are being put into 
+the <em>out</em> file. As soon as you turn <em>echo</em> on, you can see 
+output again. 
+<P>
+<P>
+<P>
+
+<a name=r38_0234>
+
+<title>SHUT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SHUT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>shut</em> command closes output files. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>shut</em>&lt;filename&gt;{,&lt;filename&gt;}* 
+<P>
+<P>
+<P>
+&lt;filename&gt; must have been a file opened by 
+<a href=r38_0200.html#r38_0233>out</a>. 
+<P>
+<P>
+A file that has been opened by 
+<a href=r38_0200.html#r38_0233>out</a> must be <em>shut</em> before it is 
+brought in by 
+<a href=r38_0200.html#r38_0231>in</a>. Files that have been opened by <em>out
+</em> should 
+always be <em>shut</em> before the end of the REDUCE session, to avoid either 
+loss of information or the printing of extraneous information into the file. 
+In most systems, terminating a session by 
+<a href=r38_0100.html#r38_0124>bye</a> closes all open 
+output files. 
+<P>
+<P>
+<P>
+
+<a name=r38_0235>
+
+<title>Input and Output</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<b>Input and Output</b><menu>
+<li><a href=r38_0200.html#r38_0231>IN command</a><P>
+<li><a href=r38_0200.html#r38_0232>INPUT command</a><P>
+<li><a href=r38_0200.html#r38_0233>OUT command</a><P>
+<li><a href=r38_0200.html#r38_0234>SHUT command</a><P>
+</menu>
+<a name=r38_0236>
+
+<title>ACOS</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ACOS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>acos</em> operator returns the arccosine of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>acos</em>(&lt;expression&gt;) or <em>acos</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+acos(ab); 
+
+  ACOS(AB) 
+
+
+acos 15; 
+
+  ACOS(15) 
+
+
+df(acos(x*y),x); 
+
+           2  2
+  SQRT( - X *Y  + 1)*Y
+  -------------------- 
+        2  2
+       X *Y  - 1
+
+
+on rounded; 
+
+res := acos(sqrt(2)/2); 
+
+  RES := 0.785398163397 
+
+
+res-pi/4; 
+
+  0
+
+</tt></pre><p>An explicit numeric value is not given unless the switch 
+<a href=r38_0300.html#r38_0330>rounded</a> is 
+on and the argument has an absolute numeric value less than or equal to 1. 
+<P>
+<P>
+<P>
+
+<a name=r38_0237>
+
+<title>ACOSH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ACOSH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+<em>acosh</em>represents the hyperbolic arccosine of its argument. It takes 
+an arbitrary scalar expression as its argument. The derivative of 
+<em>acosh</em> is known to the system. Numerical values may also be found by 
+turning on the switch 
+<a href=r38_0300.html#r38_0330>rounded</a>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>acosh</em>(&lt;expression&gt;) or <em>acosh</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+acosh a; 
+
+  ACOSH(A) 
+
+
+acosh(0); 
+
+  ACOSH(0) 
+
+
+df(acosh(a**2),a); 
+
+          4
+  2*SQRT(A  - 1)*A
+  ---------------- 
+        4
+       A  - 1
+
+
+int(acosh(x),x); 
+
+  INT(ACOSH(X),X)
+
+</tt></pre><p>You may attach functionality by defining <em>acosh</em> to be the 
+inverse of 
+<em>cosh</em>. This is done by the commands 
+<p><pre><tt>
+        put('cosh,'inverse,'acosh);
+        put('acosh,'inverse,'cosh);
+</tt></pre><p><P>
+<P>
+You can write a procedure to attach integrals or other 
+functions to <em>acosh</em>. You may wish to add a check to see that its 
+argument is properly restricted. 
+<P>
+<P>
+<P>
+
+<a name=r38_0238>
+
+<title>ACOT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ACOT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+<em>acot</em>represents the arccotangent of its argument. It takes 
+an arbitrary scalar expression as its argument. The derivative of 
+<em>acot</em> is known to the system. Numerical values may also be found by 
+turning on the switch 
+<a href=r38_0300.html#r38_0330>rounded</a>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>acot</em>(&lt;expression&gt;) or <em>acot</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+You can add functionality yourself with <em>let</em> and procedures. 
+<P>
+<P>
+
+<a name=r38_0239>
+
+<title>ACOTH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ACOTH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+<em>acoth</em>represents the inverse hyperbolic cotangent of its argument. 
+It takes an arbitrary scalar expression as its argument. The derivative 
+of <em>acoth</em> is known to the system. Numerical values may also be found 
+by turning on the switch 
+<a href=r38_0300.html#r38_0330>rounded</a>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>acoth</em>(&lt;expression&gt;) or <em>acoth</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, 
+matrix or vector expression. &lt;simple\_expression&gt; must be a single 
+identifier or begin with a prefix operator name. You can add 
+functionality yourself with <em>let</em> and procedures. 
+<P>
+<P>
+
+<a name=r38_0240>
+
+<title>ACSC</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ACSC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>acsc</em> operator returns the arccosecant of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>acsc</em>(&lt;expression&gt;) or <em>acsc</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+acsc(ab); 
+
+  ACSC(AB) 
+
+
+acsc 15; 
+
+  ACSC(15) 
+
+
+df(acsc(x*y),x); 
+
+         2  2
+  -SQRT(X *Y  - 1)
+  ---------------- 
+       2  2
+   X*(X *Y  - 1)
+
+
+on rounded; 
+
+res := acsc(2/sqrt(3)); 
+
+  RES := 1.0471975512 
+
+
+res-pi/3; 
+
+  0
+
+</tt></pre><p>An explicit numeric value is not given unless the switch <em>round
+ed</em> is 
+on and the argument has an absolute numeric value less than or equal to 1. 
+<P>
+<P>
+<P>
+
+<a name=r38_0241>
+
+<title>ACSCH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ACSCH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>acsch</em> operator returns the hyperbolic arccosecant of its argument. 
+
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>acsch</em>(&lt;expression&gt;) or <em>acsch</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+acsch(ab); 
+
+  ACSCH(AB) 
+
+
+acsch 15; 
+
+  ACSCH(15) 
+
+
+df(acsch(x*y),x); 
+
+         2  2
+  -SQRT(X *Y  + 1)
+  ---------------- 
+       2  2
+   X*(X *Y  + 1)
+
+
+on rounded; 
+
+res := acsch(3); 
+
+  RES := 0.327450150237
+
+</tt></pre><p>An explicit numeric value is not given unless the switch <em>round
+ed</em> is 
+on and the argument has an absolute numeric value less than or equal to 1. 
+<P>
+<P>
+<P>
+
+<a name=r38_0242>
+
+<title>ASEC</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ASEC</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>asec</em> operator returns the arccosecant of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>asec</em>(&lt;expression&gt;) or <em>asec</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+asec(ab); 
+
+  ASEC(AB) 
+
+
+asec 15; 
+
+  ASEC(15) 
+
+
+df(asec(x*y),x); 
+
+        2  2
+  SQRT(X *Y  - 1)
+  --------------- 
+       2  2
+   X*(X *Y  - 1)
+
+
+on rounded; 
+
+res := asec sqrt(2); 
+
+  RES := 0.785398163397 
+
+
+res-pi/4; 
+
+  0
+
+</tt></pre><p>An explicit numeric value is not given unless the switch <em>round
+ed</em> is 
+on and the argument has an absolute numeric value greater or equal to 1. 
+<P>
+<P>
+<P>
+
+<a name=r38_0243>
+
+<title>ASECH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ASECH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+<em>asech</em>represents the hyperbolic arccosecant of its argument. It takes 
+an arbitrary scalar expression as its argument. The derivative of 
+<em>asech</em> is known to the system. Numerical values may also be found by 
+turning on the switch 
+<a href=r38_0300.html#r38_0330>rounded</a>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>asech</em>(&lt;expression&gt;) or <em>asech</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+asech a; 
+
+  ASECH(A) 
+
+
+asech(1); 
+
+  0 
+
+
+df(acosh(a**2),a); 
+
+            4
+  2*SQRT(- A  + 1)
+  ---------------- 
+         4
+     A*(A  - 1)
+
+
+int(asech(x),x); 
+
+  INT(ASECH(X),X)
+
+</tt></pre><p>You may attach functionality by defining <em>asech</em> to be the 
+inverse of 
+<em>sech</em>. This is done by the commands 
+<p><pre><tt>
+        put('sech,'inverse,'asech);
+        put('asech,'inverse,'sech);
+</tt></pre><p><P>
+<P>
+You can write a procedure to attach integrals or other 
+functions to <em>asech</em>. You may wish to add a check to see that its 
+argument is properly restricted. 
+<P>
+<P>
+<P>
+
+<a name=r38_0244>
+
+<title>ASIN</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ASIN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>asin</em> operator returns the arcsine of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>asin</em>(&lt;expression&gt;) or <em>asin</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+asin(givenangle); 
+
+  ASIN(GIVENANGLE) 
+
+
+asin(5); 
+
+  ASIN(5) 
+
+
+df(asin(2*x),x); 
+
+                 2
+    2*SQRT( - 4*X  + 1))
+  - -------------------- 
+             2
+          4*X  - 1
+
+
+on rounded; 
+
+asin .5; 
+
+  0.523598775598 
+
+
+asin(sqrt(3)); 
+
+  ASIN(1.73205080757) 
+
+
+asin(sqrt(3)/2); 
+
+  1.04719755120 
+
+</tt></pre><p>A numeric value is not returned by <em>asin</em> unless the switch
+ 
+<em>rounded</em> is on and its argument has an absolute value less than or 
+equal to 1. 
+<P>
+<P>
+<P>
+
+<a name=r38_0245>
+
+<title>ASINH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ASINH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>asinh</em> operator returns the hyperbolic arcsine of its argument. 
+The derivative of <em>asinh</em> and some simple transformations are known 
+to the system. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>asinh</em>(&lt;expression&gt;) or <em>asinh</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+asinh d; 
+
+  ASINH(D) 
+
+
+asinh(1); 
+
+  ASINH(1) 
+
+
+df(asinh(2*x),x); 
+
+            2
+  2*SQRT(4*X  + 1))
+  ----------------- 
+         2
+      4*X  + 1
+
+</tt></pre><p>You may attach further functionality by defining <em>asinh</em> to
+ be the 
+inverse of <em>sinh</em>. This is done by the commands 
+<p><pre><tt>
+        put('sinh,'inverse,'asinh);
+        put('asinh,'inverse,'sinh);
+</tt></pre><p><P>
+<P>
+A numeric value is not returned by <em>asinh</em> unless the switch 
+<em>rounded</em> is on and its argument evaluates to a number. 
+<P>
+<P>
+<P>
+
+<a name=r38_0246>
+
+<title>ATAN</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ATAN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>atan</em> operator returns the arctangent of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>atan</em>(&lt;expression&gt;) or <em>atan</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+atan(middle); 
+
+  ATAN(MIDDLE) 
+
+
+on rounded; 
+
+atan 45; 
+
+  1.54857776147 
+
+
+off rounded; 
+
+int(atan(x),x); 
+
+                     2
+  2*ATAN(X)*X - LOG(X  + 1)
+  ------------------------- 
+              2
+
+
+df(atan(y**2),y); 
+
+   2*Y
+  -------
+   4
+  Y  + 1
+
+</tt></pre><p>A numeric value is not returned by <em>atan</em> unless the switch
+ 
+
+<a href=r38_0300.html#r38_0330>rounded</a> is on and its argument evaluates to a
+ number. 
+<P>
+<P>
+<P>
+
+<a name=r38_0247>
+
+<title>ATANH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ATANH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>atanh</em> operator returns the hyperbolic arctangent of its argument. 
+The derivative of <em>asinh</em> and some simple transformations are known 
+to the system. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>atanh</em>(&lt;expression&gt;) or <em>atanh</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+atanh aa; 
+
+  ATANH(AA) 
+
+
+atanh(1); 
+
+  ATANH(1) 
+
+
+df(atanh(x*y),y); 
+
+     - X
+  ----------
+   2  2
+  X *Y  - 1
+
+</tt></pre><p>A numeric value is not returned by <em>asinh</em> unless the switc
+h 
+<em>rounded</em> is on and its argument evaluates to a number. 
+You may attach additional functionality by defining <em>atanh</em> to be the 
+inverse of <em>tanh</em>. This is done by the commands 
+<P>
+<P>
+<p><pre><tt>
+        put('tanh,'inverse,'atanh);
+        put('atanh,'inverse,'tanh);
+</tt></pre><p><P>
+<P>
+
+<a name=r38_0248>
+
+<title>ATAN2</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ATAN2</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>atan2</em>(&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is any valid scalar REDUCE expression. In 
+
+<a href=r38_0300.html#r38_0330>rounded</a> mode, if a numerical value exists, 
+<em>atan2</em> returns 
+the principal value of the arc tangent of the second argument divided by 
+the first in the range [-pi,+pi] radians, using the signs of both 
+arguments to determine the quadrant of the return value. An expression in 
+terms of <em>atan2</em> is returned in other cases. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+atan2(3,2); 
+
+  ATAN2(3,2); 
+
+
+on rounded; 
+
+atan2(3,2); 
+
+  0.982793723247 
+
+
+atan2(a,b); 
+
+  ATAN2(A,B); 
+
+
+atan2(1,0); 
+
+  1.57079632679
+
+</tt></pre><p><em>atan2</em>returns a numeric value only if 
+<a href=r38_0300.html#r38_0330>rounded</a> is on. Then 
+<em>atan2</em> is calculated to the current degree of floating point precision. 
+
+<P>
+<P>
+<P>
+<P>
+
+<a name=r38_0249>
+
+<title>COS</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>cos</em> operator returns the cosine of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>cos</em>(&lt;expression&gt;) or <em>cos</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; is any valid scalar REDUCE expression, 
+&lt;simple\_expression&gt; is a single identifier or begins with a prefix 
+operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+
+cos abc; 
+
+  COS(ABC) 
+
+
+
+cos(pi); 
+
+  -1 
+
+
+
+cos 4; 
+
+  COS(4) 
+
+
+
+on rounded; 
+
+
+cos(4); 
+
+  - 0.653643620864 
+
+
+
+cos log 5; 
+
+  - 0.0386319699339
+
+</tt></pre><p><em>cos</em>returns a numeric value only if 
+<a href=r38_0300.html#r38_0330>rounded</a> is on. Then the 
+cosine is calculated to the current degree of floating point precision. 
+<P>
+<P>
+<P>
+<P>

@@ -1,0 +1,111 @@
+
+<A NAME=G>
+
+<TITLE>G</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>G</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<em>g</em> is an n-ary operator used to denote a product of gamma matrices 
+contracted with Lorentz four-vectors, in high-energy physics. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>g</em>(&lt;identifier&gt;,&lt;vector-expr&gt; 
+{,&lt;vector-expr&gt;}*) 
+<P>
+<P>
+<P>
+&lt;identifier&gt; is a scalar identifier representing a fermion line 
+identifier, &lt;vector-expr&gt; can be any valid vector expression, 
+representing a vector or a gamma matrix. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+vector aa,bb,cc; 
+
+vector a; 
+
+g(line1,aa,bb); 
+
+  AA.BB 
+
+
+g(line2,aa,a); 
+
+  0 
+
+
+g(id,aa,bb,cc); 
+
+  0 
+
+
+g(li1,aa,bb) + k; 
+
+  AA.BB + K 
+
+
+let aa.bb = m*k; 
+
+g(ln1,aa)*g(ln1,bb); 
+
+  K*M 
+
+
+g(ln1,aa)*g(ln2,bb); 
+
+  0
+
+</TT></PRE><P>The vector <em>A</em> is reserved in arguments of <em>g</em> to de
+note the 
+special gamma matrix gamma_5. It must be declared to 
+be a vector before you use it. 
+<P>
+<P>
+Gamma matrix expressions are associated with fermion lines in a Feynman 
+diagram. If more than one line occurs in an expression, the gamma 
+matrices involved are separate (operating in independent spin space), as 
+shown in the last two example lines above. A product of gamma matrices 
+associated with a single line can be entered either as a single <em>g</em> 
+command with several vector arguments, or as products of separate <em>g</em> 
+commands each with a single argument. 
+<P>
+<P>
+While the product of vectors is not defined, the product, sum and 
+difference of several gamma expressions are defined, as is the product of 
+a gamma expression with a scalar. If an expression involving gamma 
+matrices includes a scalar, the scalar is treated as if it were the 
+product of itself with a unit 4 x 4 matrix. 
+<P>
+<P>
+Dirac expressions are evaluated by computing the trace of the expression 
+using the commutation algebra of gamma matrices. The algorithms used are 
+described in articles by J. S. R. Chisholm in &lt;Il Nuovo Cimento X,&gt; Vol. 
+30, p. 426, 1963, and J. Kahane, &lt;Journal of Mathematical Physics&gt;, 
+Vol. 9, p. 1732, 1968. The trace is then divided by 4 to distinguish 
+between the trace of a scalar and the trace of an expression that is the 
+product of a scalar with a unit 4 x 4 matrix. 
+<P>
+<P>
+Trace calculations may be prevented over any line identifier by declaring it 
+to be 
+<A HREF=r37_0415.html>nospur</A>. If it is later desired to evaluate these trace
+s, 
+the declaration can be undone with the 
+<A HREF=r37_0417.html>spur</A> declaration. 
+<P>
+<P>
+The notation of Bjorken and Drell, &lt;Relativistic Quantum Mechanics,&gt; 
+1964, is assumed in all operations involving gamma matrices. For an 
+example of the use of <em>g</em> in a calculation, see the &lt;REDUCE 
+User's Manual&gt;. 
+<P>
+<P>
+<P>

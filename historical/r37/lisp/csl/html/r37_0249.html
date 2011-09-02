@@ -1,0 +1,68 @@
+
+<A NAME=COS>
+
+<TITLE>COS</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>COS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>cos</em> operator returns the cosine of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>cos</em>(&lt;expression&gt;) or <em>cos</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; is any valid scalar REDUCE expression, 
+&lt;simple\_expression&gt; is a single identifier or begins with a prefix 
+operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+
+cos abc; 
+
+  COS(ABC) 
+
+
+
+cos(pi); 
+
+  -1 
+
+
+
+cos 4; 
+
+  COS(4) 
+
+
+
+on rounded; 
+
+
+cos(4); 
+
+  - 0.653643620864 
+
+
+
+cos log 5; 
+
+  - 0.0386319699339
+
+</TT></PRE><P><em>cos</em>returns a numeric value only if 
+<A HREF=r37_0330.html>rounded</A> is on. Then the 
+cosine is calculated to the current degree of floating point precision. 
+<P>
+<P>
+<P>
+<P>

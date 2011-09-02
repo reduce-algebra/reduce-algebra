@@ -1,0 +1,367 @@
+\chapter{REDLOG: Logic System}
+\label{REDLOG}
+\typeout{{REDLOG: Logic System}}
+
+
+{\footnotesize
+\begin{center}
+Andreas Dolzmann \\
+Thomas Sturm \\
+University of Passau, Germany \\
+e-mail: dolzmann@uni-passau.de, sturm@uni-passau.de
+\end{center}
+}
+\ttindex{REDLOG}
+
+\section{Introduction}
+This package extends \REDUCE\ to a computer logic system implementing
+symbolic algorithms on first-order formulas wrt.~temporarily fixed
+first-order languages and theories.
+
+\subsection{Contexts}
+REDLOG is designed for working with several languages and theories in
+the sense of first-order logic. Both a language and a theory make up a
+context. There are the following contexts available:
+\begin{description}
+\item[\textsc{OFSF}]
+\textsc{OF} stands for \emph{ordered fields}, which is a little imprecise.
+The quantifier elimination actually requires the more restricted class
+of \emph{real closed fields}, while most of the tool-like algorithms
+are generally correct for ordered fields. One usually has in mind real
+numbers with ordering when using \textsc{OFSF}.
+
+\item[\textsc{DVFSF}]
+\emph{Discretely valued fields}. This is for computing with formulas
+over classes of $p$-adic valued extension fields of the rationals,
+usually the fields of $p$-adic numbers for some prime $p$.
+
+\item[\textsc{ACFSF}]
+\emph{Algebraically closed fields} such as the complex numbers.
+\end{description}
+
+\subsection{Overview}
+REDLOG origins from the implementation of quantifier elimination
+procedures. Successfully applying such methods to both academic and
+real-world problems, the authors have developed over the time a large
+set of formula-manipulating tools, many of which are meanwhile
+interesting in their own right:
+
+\begin{itemize}
+\item
+Numerous tools for comfortably inputing, decomposing, and analyzing
+formulas.
+\item
+Several techniques for the \emph{simplification} of formulas.
+\item
+Various \emph{normal form computations}. The
+\emph{\textsc{CNF}/\textsc{DNF}} computation includes both Boolean and
+algebraic simplification strategies. The \emph{prenex normal form}
+computation minimizes the number of quantifier changes.
+\item
+\emph{Quantifier elimination} computes quantifier-free equivalents for
+given first-order formulas. For \textsc{OFSF} and \textsc{DVFSF} the
+formulas have to obey certain degree restrictions.
+\item 
+The context \textsc{OFSF} allows a variant of quantifier elimination
+called \emph{generic quantifier elimination}: There are certain
+non-degeneracy assumptions made on the parameters, which considerably
+speeds up the elimination.
+\item
+The contexts \textsc{OFSF} and \textsc{DVFSF} provide variants of
+(generic) quantifier elimination that additionally compute
+\emph{answers} such as satisfying sample points for existentially
+quantified formulas.
+\item
+\textsc{OFSF}
+includes linear \emph{optimization} techniques based on quantifier
+elimination.
+\end{itemize}
+
+To avoid ambiguities with other packages, all \textsc{REDLOG} functions and
+switches are prefixed by ``\texttt{RL}''.
+
+The package is loaded by typing: \qquad {\tt load\_package redlog;} \\
+
+It is recommended to read the documentation which comes with this
+package. This manual chapter gives an overview on the features of
+\textsc{REDLOG}, which is by no means complete.
+
+
+\section{Context Selection}
+The context to be used has to be selected explicitly. One way 
+to do this is using the command \f{RLSET}\ttindex{RLSET}. As argument it takes one 
+of the
+valid choices \f{ACFSF}\ttindex{ACFSF} (algebraically closed fields
+standard form),
+\f{OFSF}\ttindex{OFSF} (ordered fields standard form), and 
+\f{DVFSF}\ttindex{DVFSF}
+(discretely valued fields standard form). By default, \f{DVFSF}\ttindex{DVFSF} 
+computes
+uniformly over the class of all $p$-adic valued fields. For the sake
+of efficiency, this can be restricted by means of an extra 
+\f{RLSET}\ttindex{RLSET} argument.
+\f{RLSET}\ttindex{RLSET} returns the old setting as a list.
+
+\section{Format and Handling of Formulas}
+
+\subsection{First-order Operators}
+REDLOG knows the following operators for constructing Boolean
+combinations and quantifications of atomic formulas:
+
+\begin{center}
+\begin{tabular}{llll}
+\f{NOT}\ttindex{NOT}: Unary & 
+\f{AND}\ttindex{AND}: N-ary Infix &
+\f{OR}\ttindex{OR}: N-ary Infix  &
+\f{IMPL}\ttindex{IMPL}: Binary Infix \\
+\f{REPL}\ttindex{REPL}: Binary Infix  & 
+\f{EQUIV}\ttindex{EQUIV}: Binary Infix &
+\f{EX}\ttindex{EX}: Binary \\
+\f{ALL}\ttindex{ALL}: Binary &
+\f{TRUE}\ttindex{TRUE}: Variable &
+\f{FALSE}\ttindex{FALSE}: Variable & 
+\end{tabular}
+\end{center}
+
+The \f{EX} and the \f{ALL} operators are the quantifiers. Their first
+argument is the quantified variable, the second one a matrix formula.
+
+There are operators \f{MKAND}\ttindex{MKAND} and
+\f{MKOR}\ttindex{MKOR} for the construction of large systematic
+conjunctions/disjunctions via for loops available. They are used in
+the style of \f{SUM} and \f{COLLECT}.
+
+\vspace{0.5cm}
+{\bf Example:}
+\begin{verbatim}
+1: load_package redlog;
+
+2: rlset ofsf;
+
+{}
+
+3: g := for i:=1:3 mkand
+
+          for j:=1:3 mkor
+
+            if j<>i then mkid(x,i) + mkid(x,j)=0;
+
+true and (false or false or x1 + x2 = 0 or x1 + x3 = 0)
+
+ and (false or x1 + x2 = 0 or false or x2 + x3 = 0)
+
+ and (false or x1 + x3 = 0 or x2 + x3 = 0 or false)
+\end{verbatim}
+
+\subsection{OFSF Operators}
+The \f{OFSF}\ttindex{OFSF} context implements {\it ordered fields}
+over the language of {\it ordered rings}. There are the following
+binary operators available:
+
+\begin{center}
+\begin{tabular}{llllllll}
+\f{EQUAL}\ttindex{EQUAL} &
+\f{NEQ}\ttindex{NEQ} &
+\f{LEQ}\ttindex{LEQ} &
+\f{GEQ}\ttindex{GEQ} &
+\f{LESSP}\ttindex{LESSP} & 
+\f{GREATERP}\ttindex{GREATERP}
+\end{tabular}
+\end{center}
+They can also be written as \f{=}, \f{<>}, \f{<=}, \f{>=}, \f{<}, and
+\f{>}.
+For {\sc OFSF}
+there is specified that all right hand sides must be zero. Non-zero right
+hand sides are immediately subtracted. 
+
+\subsection{DVFSF Operators}\ttindex{DVFSF}
+Discretely valued fields are implemented as a one-sorted language
+using in addition to \f{=} and \f{<>} the
+binary operators \f{|}, \f{||}, \f{\~{}}, and \f{/\~{}}, which encode
+$\leq$, $<$, $=$, and $\neq$ in the
+value group, respectively.
+\begin{center}
+\begin{tabular}{llllll}
+\f{EQUAL}\ttindex{EQUAL} &
+\f{NEQ}\ttindex{NEQ} &
+\f{DIV}\ttindex{DIV} &
+\f{SDIV}\ttindex{SDIV} &
+\f{ASSOC}\ttindex{ASSOC} & 
+\f{NASSOC}\ttindex{NASSOC} \\
+\end{tabular}
+\end{center}
+
+\subsection{ACFSF Operators}\ttindex{ACFSF}
+For algebraically closed fields there are only equations and
+inequalities allowed:
+
+\begin{center}
+\begin{tabular}{ll}
+\f{EQUAL}\ttindex{EQUAL} &
+\f{NEQ}\ttindex{NEQ}
+\end{tabular}
+\end{center}
+
+As in \textsc{OFSF}, they can be conveniently written as \f{=} and
+\f{<>}, respectively. All right hand sides are zero.
+
+\subsection{Extended Built-in Commands}
+The operators 
+\f{SUB}\ttindex{SUB},
+\f{PART}\ttindex{PART},
+and \f{LENGTH}\ttindex{LENGTH} work on formulas in a reasonable way.
+
+\subsection{Global Switches}
+The switch \f{RLSIMPL}\ttindex{RLSIMPL} causes the function
+\f{RLSIMPL} to be automatically applied at the expression evaluation stage.
+
+The switch \f{RLREALTIME}\ttindex{RLREALTIME} protocols the wall clock
+time needed for {\sc REDLOG} commands in seconds.
+
+The switch \f{RLVERBOSE}\ttindex{RLVERBOSE} toggles verbosity output
+with some {\sc REDLOG} procedures.
+
+\section{Simplification}
+{\sc REDLOG} knows three types of simplifiers to reduce the size of a
+given first-order formula: the standard simplifier, tableau
+simplifiers, and Gr\"obner simplifiers.
+
+\subsection{Standard Simplifier}
+The standard simplifier \f{RLSIMPL}\ttindex{RLSIMPL} returns a
+simplified equivalent of its argument formula. It is much faster
+though less powerful than the other simplifiers.
+
+As an optional argument there can be a \emph{theory} passed. This is a
+list of atomic formulas assumed to hold. Simplification is then
+performed on the basis of these assumptions.
+
+\vspace{0.5cm}
+{\bf Example:}
+\begin{verbatim}
+4: rlsimpl g;
+
+(x1 + x2 = 0 or x1 + x3 = 0) and (x1 + x2 = 0 or x2 + x3 = 0)
+
+ and (x1 + x3 = 0 or x2 + x3 = 0)
+\end{verbatim}
+
+\subsection{Tableau Simplifier}
+The standard simplifier preserves the basic Boolean structure of a formula. The
+tableau methods, in contrast, provide a technique for changing the Boolean 
+structure of a formula by constructing case distinctions.
+
+The function \f{RLATAB}\ttindex{RLATAB} automatically finds a suitable
+case distinction. Based on \f{RLATAB}, the function
+\f{RLITAB}\ttindex{RLITAB} iterates this process until no further
+simplification can be detected. There is a more fundamental entry
+point \f{RLTAB}\ttindex{RLTAB} for manually entering case
+distinctions.
+
+\subsection{Gr\"obner Simplifier}
+The Gr\"obner simplifier considers algebraic simplification rules
+between the atomic formulas of the input formula. The usual procedure
+called for Gr\"obner simplification is \f{RLGSN}\ttindex{RLGSN}.
+Similar to the standard simplifier, there is an optional theory
+argument.
+
+\begin{samepage}
+\vspace{0.5cm}
+{\bf Example:}
+\begin{verbatim}
+5: rlgsn(x*y+1<>0 or y*z+1<>0 or x-z=0);
+
+true
+\end{verbatim}
+\end{samepage}
+
+\section{Normal Forms}
+
+\subsection{Boolean Normal Forms}
+\f{RLCNF}\ttindex{RLCNF} and \f{RLDNF}\ttindex{RLDNF} compute conjunctive
+resp.~disjunctive normal forms of their formula arguments. Subsumption
+and cut strategies are applied to decrease the number of clauses.
+
+\subsection{Miscellaneous Normal Forms}
+\f{RLNNF}\ttindex{RLNNF} computes a 
+negation normal form. This is an {\tt and}-\texttt{or}-combination of
+atomic formulas.
+
+\f{RLPNF}\ttindex{RLPNF} computes a prenex normal form of its
+argument. That is, all quantifiers are moved outside such that they
+form a block in front of a quantifier-free matrix formula.
+
+\section{Quantifier Elimination and Variants}
+Quantifier elimination computes quantifier-free equivalents for given
+first-order formulas. For \textsc{OFSF} and \textsc{DVFSF}, REDLOG
+uses a technique based on elimination set ideas. The \textsc{OFSF}
+implementation is restricted to at most quadratic occurrences of the
+quantified variables, but includes numerous heuristic strategies for
+coping with higher degrees. The \textsc{DVFSF} implementation is
+restricted to formulas that are linear in the quantified variables.
+The \textsc{ACFSF} quantifier elimination is based on comprehensive
+Gr\"obner basis computation; there are no degree restrictions for this
+context
+
+\subsection{Quantifier Elimination}
+\f{RLQE}\ttindex{RLQE} performs quantifier elimination on its argument
+formula. There is an optional theory argument in the style of
+\f{RLSIMPL} supported.
+
+\begin{samepage}
+\vspace{0.5cm}
+{\bf Example:}
+\begin{verbatim}
+6: rlqe(ex(x,a*x**2+b*x+c>0),{a<0});
+
+         2
+4*a*c - b  < 0
+\end{verbatim}
+\end{samepage}
+
+For \textsc{OFSF} and \textsc{DVFSF} there is a variant
+\f{RLQEA}\ttindex{RLQEA} available. It returns instead of a
+quantifier-free equivalent, a list of condition-solution pairs
+containing, e.g., satisfying sample points for outermost existential
+quantifier blocks.
+
+\begin{samepage}
+\vspace{0.5cm}
+{\bf Example:}
+\begin{verbatim}
+7: rlqea(ex(x,a*x**2+b*x+c>0),{a<0});
+
+           2
+{{4*a*c - b  < 0,
+
+                            2
+         - sqrt( - 4*a*c + b ) - 2*a*epsilon1 - b
+  {x = -------------------------------------------}}}
+                           2*a
+\end{verbatim}
+\end{samepage}
+
+\subsection{Generic Quantifier Elimination}
+\textsc{OFSF} allows generic quantifier elimination
+\f{RLGQE}\ttindex{RLGQE}, which enlarges the theory by disequations,
+i.e.~\f{<>}-atomic formulas, wherever this supports the quantifier
+elimination. There is also generic quantifier elimination with answer
+available: \f{RLGQEA}\ttindex{RLGQEA}.
+
+\begin{samepage}
+\vspace{0.5cm}
+{\bf Example:}
+\begin{verbatim}
+8: rlgqe ex(x,a*x**2+b*x+c>0);
+
+{{a <> 0},
+
+          2
+ 4*a*c - b  < 0 or a >= 0}
+\end{verbatim}
+\end{samepage}
+
+\subsection{Linear Optimization}
+\f{RLOPT}\ttindex{RLOPT} uses quantifier elimination for linear
+optimization. It takes as arguments a list of constraints and the
+target function. The target function is minimized subject to the
+constraints.

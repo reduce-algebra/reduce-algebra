@@ -1,0 +1,88 @@
+\chapter[MRVLIMIT: Limits of ``exp-log'' functions]%
+{MRVLIMIT: Package for Computing Limits of "Exp-Log" Functions}
+\label{MRVLIMIT}
+\typeout{{MRVLIMIT: Package for Computing Limits of "Exp-Log" Functions}}
+
+{\footnotesize
+\begin{center}
+Neil Langmead \\
+Konrad-Zuse-Zentrum f\"ur Informationstechnik Berlin (ZIB) \\
+Takustra\"se 7 \\
+D - 14195 Berlin-Dahlem, Germany \\
+\end{center}
+}
+\ttindex{MRVLIMIT}
+%\markboth{CHAPTER \ref{MRVLIMIT}. MRVLIMIT: LIMITS OF ``EXP-LOG'' FUNCTIONS}{}
+%\thispagestyle{myheadings}
+
+Using the LIMITS package to compute the limits of functions containing
+exponential and logarithmic expressions may raise a problem. For the computation
+of indefinite forms (such as $0/0$,or $\frac{\infty}{\infty}$) L'Hospital's 
+rule may only be applied a finite number of times in a CAS. In REDUCE it is 
+applied 3 times. This algorithm of Dominik Gruntz of the ETH Z\"urich
+solves this particular problem, and enables the computation of many more
+limit calculations in REDUCE.
+
+
+\begin{verbatim}
+1: load limits;
+
+2: limit(x^7/e^x,x,infinity);
+
+              7
+             x
+      limit(----,x,infinity)
+              x
+             e
+
+3: load mrvlimit;
+
+4: mrv_limit(x^7/e^x,x,infinity);
+
+      0
+\end{verbatim}
+
+For this example, the MRVLIMIT package is able to compute the correct limit. \\
+\ttindex{MRV\_LIMIT}
+\vspace{.1in}
+\noindent {\tt MRV\_LIMIT}(EXPRN:{\em algebraic}, VAR:{\em kernel},
+LIMPOINT:{\em algebraic}):{\em algebraic} \ttindex{MRV\_LIMIT} \par
+The result is the limit of EXPRN as VAR approaches LIMPOINT. 
+\vspace{.1in}
+
+A switch {\tt TRACELIMIT} is available to inform the user about the computed
+Taylor expansion, all recursive calls and the return value of the
+internally called function {\tt MRV}. \\
+\\
+{\bf Examples}:
+\\
+\begin{verbatim}
+5: b:=e^x*(e^(1/x-e^-x)-e^(1/x));
+
+                -1        - x
+           x + x      - e
+      b:= e       *(e         - 1)
+
+
+6: mrv_limit(b,x,infinity);
+
+
+      -1
+
+                                     -1
+7: ex:= - log(log(log(log(x))) + log(x))  *log(x)
+
+                       *(log(log(x)) - log(log(log(x)) + log(x)));
+
+
+                  - log(x)*(log(log(x)) - log(log(log(x)) + log(x)))
+      ex:=     -----------------------------------------------------
+                          log(log(log(log(x))) + log(x))
+
+8: off mcd;
+
+9: mrv_limit(ex,x,infinity);
+
+      1
+
+\end{verbatim}

@@ -1,0 +1,39 @@
+
+<A NAME=CONJ>
+
+<TITLE>CONJ</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>CONJ</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>conj</em>(&lt;expression&gt;) or <em>conj</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+This operator returns the complex conjugate of an expression, if that 
+argument has an numerical value. A non-numerical argument is returned as 
+an expression in the operators 
+<A HREF=r37_0173.html>repart</A> and 
+<A HREF=r37_0153.html>impart</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+conj(1+i); 
+
+  1-I 
+
+
+conj(a+i*b); 
+
+  REPART(A) - REPART(B)*I - IMPART(A)*I - IMPART(B)
+
+</TT></PRE><P>

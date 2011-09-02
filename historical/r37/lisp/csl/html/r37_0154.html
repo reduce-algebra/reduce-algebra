@@ -1,0 +1,109 @@
+
+<A NAME=INT>
+
+<TITLE>INT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>INT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>int</em> operator performs analytic integration on a variety of 
+functions. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>int</em>(&lt;expression&gt;,&lt;kernel&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any scalar expression. involving polynomials, log 
+functions, exponential functions, or tangent or arctangent expressions. 
+<em>int</em> attempts expressions involving error functions, dilogarithms 
+and other trigonometric expressions. Integrals involving algebraic 
+extensions (such as square roots) may not succeed. &lt;kernel&gt; must be a 
+REDUCE 
+<A HREF=r37_0002.html>kernel</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+int(x**3 + 3,x); 
+
+      3
+  X*(X  + 12)
+  ----------- 
+       4
+
+
+
+int(sin(x)*exp(2*x),x);
+ 
+
+     2*X
+    E   *(COS(X) - 2*SIN(X))
+  - ------------------------ 
+               5
+
+
+int(1/(x^2-2),x);
+ 
+
+  SQRT(2)*(LOG( - SQRT(2) + X) - LOG(SQRT(2) + X))
+  ------------------------------------------------ 
+                         4
+
+
+int(sin(x)/(4 + cos(x)**2),x);
+ 
+
+         COS(X)
+    ATAN(------)
+           2
+  - ------------ 
+         2
+
+
+
+int(1/sqrt(x^2-x),x); 
+
+      SQRT(X)*SQRT(X - 1)
+  INT(-------------------,X)
+              2
+             X -X
+
+</TT></PRE><P>Note that REDUCE couldn't handle the last integral with its defaul
+t 
+integrator, since the integrand involves a square root. However, 
+the integral can be found using the 
+<A HREF=r37_0265.html>algint</A> package. 
+Alternatively, you could add a rule using the 
+<A HREF=r37_0199.html>let</A> statement 
+to evaluate this integral. 
+<P>
+<P>
+The arbitrary constant of integration is not shown. Definite integrals can 
+be found by evaluating the result at the limits of integration (use 
+
+<A HREF=r37_0330.html>rounded</A>) and subtracting the lower from the higher. Ev
+aluation can 
+be easily done by the 
+<A HREF=r37_0182.html>sub</A> operator. 
+<P>
+<P>
+When <em>int</em> cannot find an integral it returns an expression 
+involving formal <em>int</em> expressions unless the switch 
+
+<A HREF=r37_0288.html>failhard</A> has been set. If not all of the expression 
+can be integrated, the switch 
+<A HREF=r37_0311.html>nolnr</A> controls whether a partially 
+integrated result should be returned or not. 
+<P>
+<P>
+<P>
+<P>

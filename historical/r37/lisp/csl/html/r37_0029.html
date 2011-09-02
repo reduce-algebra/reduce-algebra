@@ -1,0 +1,79 @@
+
+<A NAME=asterisk>
+
+<TITLE>asterisk</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>*</B> _ _ _ <B>ASTERISK</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>*</em> operator is a prefix or infix n-ary multiplication operator. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; { <em>*</em> &lt;expression&gt;}+ 
+<P>
+<P>
+or <em>*</em>(&lt;expression&gt; {,&lt;expression&gt;}+) 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any valid REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+15*3; 
+
+  45 
+
+
+24*x*yvalue*2; 
+
+  48*X*YVALUE 
+
+
+*(6,x); 
+
+  6*X 
+
+
+on rounded; 
+
+3*1.5*x*x*x; 
+
+       3
+  4.5*X  
+
+
+off rounded; 
+
+2x**2; 
+
+     2
+  2*X
+
+</TT></PRE><P>REDUCE assumes you are using an implicit multiplication operator w
+hen an 
+identifier is preceded by a number, as shown in the last line above. Since 
+no valid identifiers can begin with numbers, there is no ambiguity in 
+making this assumption. 
+<P>
+<P>
+The multiplication operator is also valid with 
+<A HREF=r37_0345.html>matrix</A> expressions 
+of the 
+proper dimensions: matrices A and B 
+can be multiplied if 
+A is n x m and B is 
+m x p. Matrices and 
+<A HREF=r37_0045.html>equation</A>s can also be 
+multiplied by scalars: the 
+result is as if each element was multiplied by the scalar. 
+<P>
+<P>
+<P>

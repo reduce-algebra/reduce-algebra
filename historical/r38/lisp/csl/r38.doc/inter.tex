@@ -1,0 +1,139 @@
+\chapter{Commands for Interactive Use}\index{Interactive use}
+
+{\REDUCE} is designed as an interactive system, but naturally it can also
+operate in a batch processing or background mode by taking its input
+command by command from the relevant input stream. There is a basic
+difference, however, between interactive and batch use of the system. In
+the former case, whenever the system discovers an ambiguity at some point
+in a calculation, such as a forgotten type assignment for instance, it asks
+the user for the correct interpretation. In batch operation, it is not
+practical to terminate the calculation at such points and require
+resubmission of the job, so the system makes the most obvious guess of the
+user's intentions and continues the calculation.
+
+There is also a difference in the handling of errors.  In the former case,
+the computation can continue since the user has the opportunity to correct
+the mistake.  In batch mode, the error may lead to consequent erroneous
+(and possibly time consuming) computations.  So in the default case, no
+further evaluation occurs, although the remainder of the input is checked
+for syntax errors.  A message {\tt "Continuing with parsing only"}
+informs the user that this is happening.  On the other hand, the switch
+{\tt ERRCONT},\ttindex{ERRCONT} if on, will cause the system to continue
+evaluating expressions after such errors occur.
+
+When a syntactical error occurs, the place where the system detected the
+error is marked with three dollar signs (\$\$\$). In interactive mode, the
+user can then use {\tt ED}\ttindex{ED} to correct the error, or retype the
+command.  When a non-syntactical error occurs in interactive mode, the
+command being evaluated at the time the last error occurred is saved, and
+may later be reevaluated by the command {\tt RETRY}.\ttindex{RETRY}
+
+\section{Referencing Previous Results}
+
+It is often useful to be able to reference results of previous
+computations during a {\REDUCE} session.  For this purpose, {\REDUCE}
+maintains a history\index{History} of all interactive inputs and the
+results of all interactive computations during a given session.  These
+results are referenced by the command number that {\REDUCE} prints
+automatically in interactive mode.  To use an input expression in a new
+computation, one writes {\tt input(}$n${\tt )},\ttindex{INPUT} where
+$n$ is the command number.  To use an output expression, one writes {\tt
+WS(}$n${\tt )}.\ttindex{WS} {\tt WS} references the previous command.
+E.g., if command number 1 was {\tt INT(X-1,X)}; and the result of command
+number 7 was {\tt X-1}, then
+\begin{verbatim}
+        2*input(1)-ws(7)^2;
+\end{verbatim}
+would give the result {\tt -1}, whereas
+\begin{verbatim}
+        2*ws(1)-ws(7)^2;
+\end{verbatim}
+would yield the same result, but {\em without\/} a recomputation of the
+integral.
+
+The operator {\tt DISPLAY}\ttindex{DISPLAY} is available to display previous
+inputs.  If its argument is a positive integer, {\it n} say, then the
+previous n inputs are displayed.  If its argument is {\tt ALL} (or in fact
+any non-numerical expression), then all previous inputs are displayed.
+
+\section{Interactive Editing}
+It is possible when working interactively to edit any {\REDUCE} input that
+comes from the user's terminal, and also some user-defined procedure
+definitions.  At the top level, one can access any previous command string
+by the command {\tt ed(}$n${\tt )},\ttindex{ED} where n is the desired
+command number as prompted by the system in interactive mode. {\tt ED};
+(i.e. no argument) accesses the previous command.
+
+After {\tt ED} has been called, you can now edit the displayed string using a
+string editor with the following commands:
+
+\begin{tabular}{lp{\rboxwidth}}
+{\tt~~~~~  B} & move pointer to beginning \\
+{\tt~~~~~  C<character>} & replace next character by
+{\em character} \\
+{\tt~~~~~  D} & delete next character \\
+{\tt~~~~~  E} & end editing and reread text \\
+{\tt~~~~~  F<character>} & move pointer to next
+occurrence of {\em character} \\[1.7pt]
+{\tt~~~~~  I<string><escape>} &
+ insert {\em string\/} in front of pointer \\
+{\tt~~~~~  K<character>} & delete all characters
+ until {\em character} \\
+{\tt~~~~~  P} & print string from current pointer \\
+{\tt~~~~~  Q} & give up with error exit \\
+{\tt~~~~~  S<string><escape>} &
+ search for first occurrence of {\em string},
+                             positioning pointer just before it \\
+{\tt~~~~~  space} or {\tt X} & move pointer right
+one character.
+\end{tabular}
+
+The above table can be displayed online by typing a question mark followed
+by a carriage return to the editor. The editor prompts with an angle
+bracket. Commands can be combined on a single line, and all command
+sequences must be followed by a carriage return to become effective.
+
+Thus, to change the command {\tt x := a+1;} to {\tt x := a+2}; and cause
+it to be executed, the following edit command sequence could be used:
+\begin{verbatim}
+        f1c2e<return>.
+\end{verbatim}
+The interactive editor may also be used to edit a user-defined procedure that
+has not been compiled.  To do this, one says:
+\ttindex{EDITDEF}
+\begin{verbatim}
+        editdef <id>;
+\end{verbatim}
+where {\tt <id>} is the name of the procedure.  The procedure definition
+will then be displayed in editing mode, and may then be edited and
+redefined on exiting from the editor.
+
+Some versions of {\REDUCE} now include input editing that uses the
+capabilities of modern window systems.  Please consult your system
+dependent documentation to see if this is possible.  Such editing
+techniques are usually much easier to use then {\tt ED} or {\tt EDITDEF}.
+
+\section{Interactive File Control}
+If input is coming from an external file, the system treats it as a batch
+processed calculation.  If the user desires interactive
+\index{Interactive use} response in this case, he can include the command
+{\tt on int};\ttindex{INT} in the file.  Likewise, he can issue the
+command {\tt off int}; in the main program if he does not desire continual
+questioning from the system.  Regardless of the setting of {\tt INT},
+input commands from a file are not kept in the system, and so cannot be
+edited using {\tt ED}.  However, many implementations of {\REDUCE} provide
+a link to an external system editor that can be used for such editing.
+The specific instructions for the particular implementation should be
+consulted for information on this.
+
+Two commands are available in {\REDUCE} for interactive use of files. {\tt
+PAUSE};\ttindex{PAUSE} may be inserted at any point in an input file.  When
+this command is encountered on input, the system prints the message {\tt
+CONT?} on the user's terminal and halts.  If the user responds {\tt Y}
+(for yes), the calculation continues from that point in the file.  If the
+user responds {\tt N} (for no), control is returned to the terminal, and
+the user can input further statements and commands.  Later on he can use
+the command {\tt cont;}\ttindex{CONT} to transfer control back to the
+point in the file following the last {\tt PAUSE} encountered.  A top-level
+{\tt pause;}\ttindex{PAUSE} from the user's terminal has no effect.
+

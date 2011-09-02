@@ -1,0 +1,94 @@
+
+<A NAME=slash>
+
+<TITLE>slash</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>/</B> _ _ _ <B>SLASH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>/</em> operator is a prefix or infix binary division operator or 
+prefix unary 
+<A HREF=r37_0101.html>recip</A>rocal operator. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt;<em>/</em>&lt;expression&gt; or 
+ <em>/</em>&lt;expression&gt; 
+<P>
+<P>
+or <em>/</em>(&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any valid REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+20/5; 
+
+  4  
+
+
+100/6; 
+
+  50
+  -- 
+  3
+
+
+16/2/x; 
+
+  8
+  - 
+  X
+
+
+/b; 
+
+  1
+  - 
+  B
+
+
+/(y,5); 
+
+  Y
+  - 
+  5
+
+
+on rounded; 
+
+35/4; 
+
+  8.75 
+
+
+/20; 
+
+  0.05
+
+</TT></PRE><P>The division operator is left associative, so that <em>a/b/c</em> 
+is equivalent 
+to <em>(a/b)/c</em>. The division operator is also valid with square 
+
+<A HREF=r37_0345.html>matrix</A> expressions of the same dimensions: With A and 
+
+B both n x n matrices and B 
+invertible, A/B is 
+given by A*B^-1. 
+Division of a matrix by a scalar is defined, with the results being the 
+division of each element of the matrix by the scalar. Division of a 
+scalar by a matrix is defined if the matrix is invertible, and has the 
+effect of multiplying the scalar by the inverse of the matrix. When 
+<em>/</em> is used as a reciprocal operator for a matrix, the inverse of 
+the matrix is returned if it exists. 
+<P>
+<P>
+<P>

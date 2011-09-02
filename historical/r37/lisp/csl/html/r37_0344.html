@@ -1,0 +1,80 @@
+
+<A NAME=MATEIGEN>
+
+<TITLE>MATEIGEN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MATEIGEN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>mateigen</em> operator calculates the eigenvalue equation and the 
+corresponding eigenvectors of a 
+<A HREF=r37_0345.html>matrix</A>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>mateigen</em>(&lt;matrix-id&gt;,&lt;tag-id&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix-id&gt; must be a declared matrix of values, and &lt;tag-id&gt; must b
+e 
+a legal REDUCE identifier. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+aa := mat((2,5),(1,0))$ 
+
+mateigen(aa,alpha); 
+
+         2
+  {{ALPHA  - 2*ALPHA - 5,
+    1,
+                5*ARBCOMPLEX(1)
+    MAT(1,1) := ---------------,
+                   ALPHA - 2
+    MAT(2,1) := ARBCOMPLEX(1)
+    }}
+
+
+charpoly := first first ws; 
+
+                   2
+  CHARPOLY := ALPHA  - 2*ALPHA - 5 
+
+
+bb := mat((1,0,1),(1,1,0),(0,0,1))$ 
+
+mateigen(bb,lamb); 
+
+  {{LAMB - 1,3,
+    [      0      ]
+    [ARBCOMPLEX(2)]
+    [      0      ]
+    }}
+
+</TT></PRE><P>The <em>mateigen</em> operator returns a list of lists of three 
+elements. The first element is a square free factor of the characteristic 
+polynomial; the second element is its multiplicity; and the third element 
+is the corresponding eigenvector. If the characteristic polynomial can be 
+completely factored, the product of the first elements of all the sublists 
+will produce the minimal polynomial. You can access the various parts of 
+the answer with the usual list access operators. 
+<P>
+<P>
+If the matrix is degenerate, more than one eigenvector can be produced for 
+the same eigenvalue, as shown by more than one arbitrary variable in the 
+eigenvector. The identification numbers of the arbitrary complex variables 
+shown in the examples above may not be the same as yours. Note that since 
+<em>lambda</em> is a reserved word in REDUCE, you cannot use it as a 
+tag-id for this operator. 
+<P>
+<P>
+<P>

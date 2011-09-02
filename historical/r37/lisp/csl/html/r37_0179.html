@@ -1,0 +1,222 @@
+
+<A NAME=SOLVE>
+
+<TITLE>SOLVE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SOLVE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>solve</em> operator solves a single algebraic 
+<A HREF=r37_0045.html>equation</A> or a 
+system of simultaneous equations. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>solve</em>(&lt;expression&gt; [ , &lt;kernel&gt;]) or 
+<P>
+<P>
+<em>solve</em>({&lt;expression&gt;,...} [ ,{ &lt;kernel&gt; ,...}] ) 
+<P>
+<P>
+ <P>
+<P>
+If the number of equations equals the number of distinct kernels, the 
+optional kernel argument(s) may be omitted. &lt;expression&gt; is either a 
+scalar expression or an 
+<A HREF=r37_0045.html>equation</A>. 
+When more than one expression is given, 
+the 
+<A HREF=r37_0053.html>list</A> of expressions is surrounded by curly braces. 
+The optional list 
+of 
+<A HREF=r37_0002.html>kernel</A>s follows, also in curly braces. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+sss := solve(x^2 + 7); 
+
+  Unknown: X
+  SSS := {X= - SQRT(7)*I,
+          X=SQRT(7)*I}
+
+
+rhs first sss; 
+
+  - SQRT(7)*I 
+
+
+solve(sin(x^2*y),y); 
+
+     2*ARBINT(1)*PI
+  {Y=---------------
+            2
+           X
+     PI*(2*ARBINT(1) + 1)
+   Y=--------------------}
+               2
+              X
+
+
+off allbranch; 
+
+solve(sin(x**2*y),y); 
+
+  {Y=0} 
+
+
+solve({3x + 5y = -4,2*x + y = -10},{x,y});
+ 
+
+
+         22   46
+  {{X= - --,Y=--}} 
+         7    7
+
+
+solve({x + a*y + z,2x + 5},{x,y});
+ 
+
+
+         5      2*Z - 5
+  {{X= - -,Y= - -------}} 
+         2        2*A
+
+
+ab := (x+2)^2*(x^6 + 17x + 1);
+ 
+
+         8      7      6       3       2
+  AB := X  + 4*X  + 4*X  + 17*X  + 69*X  + 72*X + 4 
+
+
+www := solve(ab,x); 
+
+  {X=ROOT F(X6 + 17*X + 1),X=-2} 
+         O            
+
+
+root_multiplicities; 
+
+  {1,2}
+
+</TT></PRE><P>Results of the <em>solve</em> operator are returned as 
+<A HREF=r37_0045.html>equation</A><em>s</em> 
+in a 
+<A HREF=r37_0053.html>list</A>. 
+You can use the usual list access methods (
+<A HREF=r37_0046.html>first</A>, 
+
+<A HREF=r37_0063.html>second</A>, 
+<A HREF=r37_0066.html>third</A>, 
+<A HREF=r37_0057.html>rest</A> and 
+<A HREF=r37_0169.html>part</A>) to 
+extract the desired equation, and then use the operators 
+<A HREF=r37_0175.html>rhs</A> and 
+
+<A HREF=r37_0158.html>lhs</A> to access the right-hand or left-hand expression o
+f the 
+equation. When <em>solve</em> is unable to solve an equation, it returns the 
+unsolved part as the argument of <em>root_of</em>, with the variable renamed 
+to avoid confusion, as shown in the last example above. 
+<P>
+<P>
+For one equation, <em>solve</em> uses square-free factorization, roots of 
+unity, and the known inverses of the 
+<A HREF=r37_0088.html>log</A>, 
+<A HREF=r37_0259.html>sin</A>, 
+
+<A HREF=r37_0249.html>cos</A>, 
+<A HREF=r37_0236.html>acos</A>, 
+<A HREF=r37_0244.html>asin</A>, and 
+exponentiation operators. The quadratic, cubic and quartic formulas are 
+used if necessary, but these are applied only when the switch 
+
+<A HREF=r37_0292.html>fullroots</A> is set on; otherwise or when no closed form 
+is available 
+the result is returned as 
+
+<A HREF=r37_0176.html>root_of</A> expression. The switch 
+<A HREF=r37_0336.html>trigform</A> 
+determines which type of cubic and quartic formula is used. 
+The multiplicity of each solution is given in a list as 
+the system variable 
+<A HREF=r37_0017.html>root_multiplicities</A>. For systems of 
+simultaneous linear equations, matrix inversion is used. For nonlinear 
+systems, the Groebner basis method is used. 
+<P>
+<P>
+Linear equation system solving is influenced by the switch 
+<A HREF=r37_0276.html>cramer</A>. 
+<P>
+<P>
+Singular systems can be solved when the switch 
+<A HREF=r37_0332.html>solvesingular</A> is 
+on, which is the default setting. An empty list is returned the system of 
+equations is inconsistent. For a linear inconsistent system with parameters 
+the variable 
+<A HREF=r37_0016.html>requirements</A> constraints 
+conditions for the system to become consistent. 
+<P>
+<P>
+For a solvable linear and polynomial system with parameters 
+the variable 
+<A HREF=r37_0005.html>assumptions</A> 
+contains a list side relations for the parameters: the solution is 
+valid only as long as none of these expressions is zero. 
+<P>
+<P>
+If the switch 
+<A HREF=r37_0339.html>varopt</A> is on (default), the system rearranges the 
+variable sequence for minimal computation time. Without <em>varopt</em> 
+the user supplied variable sequence is maintained. 
+<P>
+<P>
+If the solution has free variables (dimension of the solution is greater 
+than zero), these are represented by 
+<A HREF=r37_0139.html>arbcomplex</A> expressions 
+as long as the switch 
+<A HREF=r37_0268.html>arbvars</A> is on (default). Without 
+<em>arbvars</em> no explicit equations are generated for free variables. 
+<P>
+<P>
+<P>
+ <P> <H3> 
+related: </H3>
+<P>
+ _ _ _ 
+<A HREF=r37_0266.html>allbranch</A>switch 
+<P>
+ _ _ _ 
+<A HREF=r37_0268.html>arbvars</A> switch 
+<P>
+ _ _ _ 
+<A HREF=r37_0005.html>assumptions</A> variable 
+<P>
+ _ _ _ 
+<A HREF=r37_0292.html>fullroots</A> switch 
+<P>
+ _ _ _ 
+<A HREF=r37_0016.html>requirements</A> variable 
+<P>
+ _ _ _ 
+<A HREF=r37_0438.html>roots</A> operator 
+<P>
+ _ _ _ 
+<A HREF=r37_0176.html>root_of</A> operator 
+<P>
+ _ _ _ 
+<A HREF=r37_0336.html>trigform</A> switch 
+<P>
+ _ _ _ 
+<A HREF=r37_0339.html>varopt</A> switch 
+<P>
+<P>
+<P>

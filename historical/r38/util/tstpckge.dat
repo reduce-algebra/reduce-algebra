@@ -1,0 +1,23 @@
+on errcont;   % So that computation continues after an error.
+
+symbolic <<linelength 80; share packge;
+	   packge := intern compress explode2 getenv "package";
+	   load!-package packge; in "$reduce/package.red";
+	   if get(packge,'folder) then packge := get(packge,'folder);
+	   if 'psl memq lispsystem!* then packge := id2string packge;
+	   packge := concat(getenv "reduce",concat("/packages/",
+	     concat(packge,concat("/",concat(getenv "package",".tst")))));
+	   !*_xxx_!* := time(); !*_yyy_!* := gctime(); nil>>$
+
+in packge;
+
+% The +- construct in the following is required to finesse Orthovec's
+% renaming of -.
+
+symbolic <<terpri(); terpri(); prin2 "Time for test: ";
+	   prin2 (time()+-!*_xxx_!*); prin2 " ms";
+	   if (!*_yyy_!* := gctime()+-!*_yyy_!*)>0
+	     then <<prin2 ", plus GC time: "; prin2 !*_yyy_!*;
+		    prin2 " ms"; terpri()>>>>$
+
+bye;

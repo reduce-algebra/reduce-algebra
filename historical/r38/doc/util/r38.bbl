@@ -1,0 +1,127 @@
+\begin{thebibliography}{10}
+
+\bibitem{Baker:81a}
+George~A. Baker(Jr.) and Peter Graves-Morris.
+\newblock {\em Pad\'{e} Approximants, Part I: Basic Theory}.
+\newblock Addison-Wesley Publishing Company, Reading, Massachusetts, 1981.
+
+\bibitem{CDC-LISP}
+Computation Center.
+\newblock {\em {LISP} Reference Manual, CDC-6000}.
+\newblock The University of Texas at Austin.
+
+\bibitem{Chou:84}
+S.-C. Chou.
+\newblock Proving elementary geometry theorems using {Wu's} algorithm.
+\newblock In {\em Contemp. Math.}, volume~19, pages 243 -- 286. AMS,
+  Providence, Rhode Island, 1984.
+
+\bibitem{Chou:88}
+S.-C. Chou.
+\newblock {\em Mechanical geometry theorem proving}.
+\newblock Reidel, Dortrecht, 1988.
+
+\bibitem{Chou:90}
+S.-C. Chou.
+\newblock Automated reasoning in geometries using the characteristic set method
+  and {Gr\"obner} basis method.
+\newblock In {\em Proc. ISSAC-90}, pages 255--260. ACM Press, 1990.
+
+\bibitem{DolzmannSturm:97a}
+Andreas Dolzmann and Thomas Sturm.
+\newblock Redlog: Computer algebra meets computer logic.
+\newblock {\em ACM SIGSAM Bulletin}, 31(2):2--9, June 1997.
+
+\bibitem{DolzmannSturm:97c}
+Andreas Dolzmann and Thomas Sturm.
+\newblock Simplification of quantifier-free formulae over ordered fields.
+\newblock {\em Journal of Symbolic Computation}, 24(2):209--231, August 1997.
+
+\bibitem{DolzmannSturm:99}
+Andreas Dolzmann and Thomas Sturm.
+\newblock {\em Redlog User Manual}.
+\newblock FMI, Universit\"at Passau, D-94030 Passau, Germany, April 1999.
+\newblock Edition 2.0 for Version 2.0.
+
+\bibitem{LISP/360}
+Stanford~Center for Information~Processing.
+\newblock {\em {LISP/360} Reference Manual}.
+\newblock Stanford University.
+
+\bibitem{PLC}
+M.~L. Griss and A.~C. Hearn.
+\newblock A portable {LISP} compiler.
+\newblock {\em Software---Practice and Experience}, 11:541--605, June 1981.
+
+\bibitem{REDUCE3.3}
+A.~C. Hearn.
+\newblock {REDUCE} user's manual: Version 3.3.
+\newblock Publication CP78 (Rev 1/88), {RAND}, 1988.
+
+\bibitem{Hearn:69}
+A.~C. Hearn, P.~K. Kuo, and D.~R. Yennie.
+\newblock Radiative corrections to an electron-positron scattering experiment.
+\newblock {\em Phys. Rev.}, 187:2088--2096, 1969.
+
+\bibitem{Koepf:95}
+Wolfram Koepf.
+\newblock {REDUCE} package for the indefinite and definite summation.
+\newblock {\em {SIGSAM} Bulletin}, 29(1):14--30, January 1995.
+
+\bibitem{Koornwinder:93}
+T.~H. Koornwinder.
+\newblock On {Zeilberger's} algorithm and its $q$-analogue: a rigorous
+  description.
+\newblock {\em J. of Comput. and Appl. Math.}, 48:91--111, 1993.
+
+\bibitem{MACLISP}
+{\em {MACLISP} Reference Manual}, March 1976.
+
+\bibitem{LISP1.5}
+John McCarthy, Paul~W. Abrahams, Daniel~J. Edwards, Timothy~P. Hart, and
+  Michael~I. Levin.
+\newblock {\em {LISP} 1.5 Programmers Manual}.
+\newblock The {M.I.T.} Press, Cambridge, Massachusettes, 1965.
+
+\bibitem{LISPF1}
+Mats Nordstrom, Erik Sandewall, and Diz Breslow.
+\newblock {\em {LISP F1}: A {FORTRAN} Implementation of {LISP} 1.5}.
+\newblock Uppsala University, Department of Computer Sciences.
+
+\bibitem{LISP1.6}
+Lynn~H. Quam and Whitfield Diffie.
+\newblock {\em Stanford {LISP} 1.6 Manual}.
+\newblock Stanford Artificial Intelligence Laboratory, operating note 28.7
+  edition.
+
+\bibitem{Interlisp}
+Warren Teitelman.
+\newblock {\em {INTERLISP} Reference Manual}.
+\newblock {XEROX}, Palo Alto Research Centers, 3333 Coyote Road, Palo Alto,
+  California 94304, 1978.
+
+\bibitem{Weispfenning:92}
+Volker Weispfenning.
+\newblock Comprehensive {G}r\"obner bases.
+\newblock {\em Journal of Symbolic Computation}, 14:1--29, July 1992.
+
+\bibitem{Wu:84a}
+W.-T. Wu.
+\newblock On the decision problem and the mechanization of theorem-proving in
+  elementary geometry.
+\newblock In {\em Contemp. Math.}, volume~19, pages 213 -- 234. AMS,
+  Providence, Rhode Island, 1984.
+
+\bibitem{Wu:84b}
+W.-T. Wu.
+\newblock Some recent advances in mechanical theorem proving of geometry.
+\newblock In {\em Contemp. Math.}, volume~19, pages 235 -- 241. AMS,
+  Providence, Rhode Island, 1984.
+
+\bibitem{Wu:94}
+W.-T. Wu.
+\newblock {\em Mechanical Theorem Proving in Geometries}.
+\newblock Number~1 in Texts and Monographs in Symbolic Computation. Springer,
+  Wien, 1994.
+
+\end{thebibliography}

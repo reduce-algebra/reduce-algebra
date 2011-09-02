@@ -1,0 +1,368 @@
+\section{Matrix Operations}
+
+\begin{Operator}{COFACTOR}
+\index{matrix}
+The operator \name{cofactor} returns the cofactor of the element in row
+\meta{row} and column \meta{column} of a \nameref{matrix}.  Errors occur
+if \meta{row} or \meta{column} do not evaluate to integer expressions or if
+the matrix is not square.
+
+\begin{Syntax}
+\name{cofactor}\(\meta{matrix\_expression},\meta{row},\meta{column}\)
+% COFACTOR(EXPRN:matrix_expression,ROW:integer,COLUMN:integer):algebraic
+\end{Syntax}
+
+\begin{Examples}
+cofactor(mat((a,b,c),(d,e,f),(p,q,r)),2,2); & A*R - C*P \\
+cofactor(mat((a,b,c),(d,e,f)),1,1); &  ***** non-square matrix
+\end{Examples}
+\end{Operator}
+
+
+\begin{Operator}{DET}
+\index{matrix}\index{determinant}
+The \name{det} operator returns the determinant of its 
+(square \nameref{matrix}) argument.
+
+\begin{Syntax}
+\name{det}\(\meta{expression}\) or \name{det} \meta{expression}
+\end{Syntax}
+
+\meta{expression} must evaluate to a square matrix.
+
+\begin{Examples}
+
+matrix m,n; \\
+
+m := mat((a,b),(c,d));      &  \begin{multilineoutput}{4cm}
+M(1,1) := A
+M(1,2) := B
+M(2,1) := C
+M(2,2) := D
+                               \end{multilineoutput}\\
+det m;                      &      A*D - B*C \\
+n := mat((1,2),(1,2));      &  \begin{multilineoutput}{4cm}
+N(1,1) := 1
+N(1,2) := 2
+N(2,1) := 1
+N(2,2) := 2
+                               \end{multilineoutput} \\
+
+det(n);                     &      0 \\
+
+det(5);                     &      5
+\end{Examples}
+
+\begin{Comments}
+Given a numerical argument, \name{det} returns the number.  However, given a
+variable name that has not been declared of type matrix, or a non-square
+matrix, \name{det} returns an error message.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{MAT}
+\index{matrix}
+The \name{mat} operator is used to represent a two-dimensional 
+\nameref{matrix}.
+\begin{Syntax}
+\name{mat}\(\(\meta{expr}\{,\meta{expr}\}\optional\)%
+            \{\(\meta{expr}\{\name{,}\meta{expr}\}\optional\)\}\optional\)
+\end{Syntax}
+
+
+\meta{expr} may be any valid REDUCE scalar expression.
+
+\begin{Examples}
+mat((1,2),(3,4));            & 
+\begin{multilineoutput}{6cm}
+MAT(1,1) := 1
+MAT(2,3) := 2
+MAT(2,1) := 3
+MAT(2,2) := 4
+\end{multilineoutput}\\
+mat(2,1);                    & \begin{multilineoutput}{6cm}
+***** Matrix mismatch
+Cont? (Y or N) 
+\end{multilineoutput}\\
+matrix qt;  \\
+qt := ws;                    & \begin{multilineoutput}{6cm}
+QT(1,1) := 1
+QT(1,2) := 2
+QT(2,1) := 3
+QT(2,2) := 4 
+\end{multilineoutput}\\
+matrix a,b; \\
+a := mat((x),(y),(z));       & \begin{multilineoutput}{6cm}
+A(1,1) := X
+A(2,1) := Y
+A(3,1) := Z 
+\end{multilineoutput}\\
+b := mat((sin x,cos x,1));   & \begin{multilineoutput}{6cm}
+B(1,1) := SIN(X)
+B(1,2) := COS(X)
+B(1,3) := 1
+\end{multilineoutput}
+\end{Examples}
+
+\begin{Comments}
+Matrices need not have a size declared (unlike arrays).  \name{mat}
+redimensions a matrix variable as needed.  It is necessary, of course,
+that all rows be the same length.  An anonymous matrix, as shown in the
+first example, must be named before it can be referenced (note error
+message).  When using \name{mat} to fill a \IFTEX{$1 \times n$}{1 x n}
+matrix, the row of values must be inside a second set of parentheses, to
+eliminate ambiguity.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{MATEIGEN}
+\index{matrix}\index{eigenvalue}
+The \name{mateigen} operator calculates the eigenvalue equation and the
+corresponding eigenvectors of a \nameref{matrix}.
+\begin{Syntax}
+\name{mateigen}\(\meta{matrix-id},\meta{tag-id}\)
+\end{Syntax}
+
+
+\meta{matrix-id} must be a declared matrix of values, and \meta{tag-id} must be 
+a legal REDUCE identifier.
+
+\begin{Examples}
+aa := mat((2,5),(1,0))\$ \\
+mateigen(aa,alpha);          & 
+\begin{multilineoutput}{2cm}
+\{\{ALPHA^{2} - 2*ALPHA - 5,
+  1,
+  MAT(1,1) := \rfrac{5*ARBCOMPLEX(1)}{ALPHA - 2},
+
+  MAT(2,1) := ARBCOMPLEX(1)
+  \}\}
+\end{multilineoutput}\\
+charpoly := first first ws;  &       CHARPOLY := ALPHA^{2} - 2*ALPHA - 5 \\
+bb := mat((1,0,1),(1,1,0),(0,0,1))\$ \\
+mateigen(bb,lamb);          &  
+\begin{multilineoutput}{6cm}
+\{\{LAMB - 1,3,
+  [      0      ]
+  [ARBCOMPLEX(2)]
+  [      0      ]
+  \}\}
+\end{multilineoutput}
+\end{Examples}
+
+
+\begin{Comments}
+The \name{mateigen} operator returns a list of lists of three
+elements.  The first element is a square free factor of the characteristic
+polynomial; the second element is its multiplicity; and the third element
+is the corresponding eigenvector.  If the characteristic polynomial can be
+completely factored, the product of the first elements of all the sublists
+will produce the minimal polynomial.  You can access the various parts of
+the answer with the usual list access operators.
+
+If the matrix is degenerate, more than one eigenvector can be produced for
+the same eigenvalue, as shown by more than one arbitrary variable in the
+eigenvector.  The identification numbers of the arbitrary complex variables
+shown in the examples above may not be the same as yours.  Note that since
+\name{lambda} is a reserved word in REDUCE, you cannot use it as a {\it
+tag-id} for this operator.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Declaration}{MATRIX}
+Identifiers are declared to be of type \name{matrix}.
+\begin{Syntax}
+\name{matrix} \meta{identifier} \&option \(\meta{index},\meta{index}\)\\
+          \{,\meta{identifier} \&option
+          \(\meta{index},\meta{index}\)\}\optional
+\end{Syntax}
+
+\meta{identifier} must not be an already-defined operator or array or 
+the name of a scalar variable.  Dimensions are optional, and if used appear 
+inside parentheses.  \meta{index} must be a positive integer. 
+
+\begin{Examples}
+matrix a,b(1,4),c(4,4); \\
+b(1,1);                      &          0 \\
+a(1,1);                      &          ***** Matrix A not set \\
+a := mat((x0,y0),(x1,y1));   & \begin{multilineoutput}{6cm}
+A(1,1) := X0
+A(1,2) := Y0
+A(2,1) := X0
+A(2,2) := X1
+\end{multilineoutput}\\
+length a;                    &          \{2,2\} \\
+b := a**2;                   & \begin{multilineoutput}{6cm}
+B(1,1) := X0^{2} + X1*Y0
+B(1,2) := Y0*(X0 + Y1)
+B(2,1) := X1*(X0 + Y1)
+B(2,2) := X1*Y0 + Y1^{2}
+\end{multilineoutput}
+\end{Examples}
+
+\begin{Comments}
+When a matrix variable has not been dimensioned, matrix elements cannot be
+referenced until the matrix is set by the \nameref{mat} operator.  When a
+matrix is dimensioned in its declaration, matrix elements are set to 0.
+Matrix elements cannot stand for themselves.  When you use \nameref{let} on
+a matrix element, there is no effect unless the element contains a
+constant, in which case an error message is returned.  The same behavior
+occurs with \nameref{clear}.  Do \meta{not} use \nameref{clear} to try to
+set a matrix element to 0. \nameref{let} statements can be applied to
+matrices as a whole, if the right-hand side of the expression is a matrix
+expression, and the left-hand side identifier has been declared to be a matrix.
+
+Arithmetical operators apply to matrices of the correct dimensions.  The
+operators \name{+} and \name{-} can be used with matrices of the same
+dimensions.  The operator \name{*} can be used to multiply
+\IFTEX{$m \times n$}{m x n} matrices by \IFTEX{$n \times p$}{n x p}
+matrices.  Matrix multiplication is non-commutative.  Scalars can also be
+multiplied with matrices, with the result that each element of the matrix
+is multiplied by the scalar.  The operator \name{/} applied to two
+matrices computes the first matrix multiplied by the inverse of the
+second, if the inverse exists, and produces an error message otherwise.
+Matrices can be divided by scalars, which results in dividing each element
+of the matrix.  Scalars can also be divided by matrices when the matrices
+are invertible, and the result is the multiplication of the scalar by the
+inverse of the matrix.  Matrix inverses can by found by \name{1/A} or
+\name{/A}, where \name{A} is a matrix.  Square matrices can be raised to
+positive integer powers, and also to negative integer powers if they are
+nonsingular.
+
+When a matrix variable is assigned to the results of a calculation, the
+matrix is redimensioned if necessary.
+\end{Comments}
+\end{Declaration}
+
+
+\begin{Operator}{NULLSPACE}
+\index{matrix}
+\begin{Syntax}
+\name{nullspace}(\meta{matrix\_expression})
+\end{Syntax}
+
+\meta{nullspace} calculates for its \nameref{matrix} argument, 
+\name{a}, a list of
+linear independent vectors (a basis) whose linear combinations satisfy the
+equation $a x = 0$.  The basis is provided in a form such that as many
+upper components as possible are isolated.
+
+\begin{Examples}
+nullspace mat((1,2,3,4),(5,6,7,8)); &
+\begin{multilineoutput}{6cm}
+       \{
+         [ 1  ]
+         [    ]
+         [ 0  ]
+         [    ]
+         [ - 3]
+         [    ]
+         [ 2  ]
+         ,
+         [ 0  ]
+         [    ]
+         [ 1  ]
+         [    ]
+         [ - 2]
+         [    ]
+         [ 1  ]
+        \}
+\end{multilineoutput}
+\end{Examples}
+
+\begin{Comments}
+Note that with \name{b := nullspace a}, the expression \name{length b} is
+the {\em nullity\/} of A, and that \name{second length a - length b}
+calculates the {\em rank\/} of A.  The rank of a matrix expression can
+also be found more directly by the \nameref{rank} operator.
+
+In addition to the REDUCE matrix form, \name{nullspace} accepts as input a
+matrix given as a \nameref{list} of lists, that is interpreted as a row matrix.  If
+that form of input is chosen, the vectors in the result will be
+represented by lists as well.  This additional input syntax facilitates
+the use of \name{nullspace} in applications different from classical linear
+algebra.
+\end{Comments}
+
+\end{Operator}
+
+
+\begin{Operator}{RANK}
+\index{matrix}
+\begin{Syntax}
+\name{rank}(\meta{matrix\_expression})
+\end{Syntax}
+\name{rank} calculates the rank of its matrix argument.
+
+\begin{Examples}
+rank mat((a,b,c),(d,e,f));  & 2
+\end{Examples}
+
+\begin{Comments}
+The argument to \name{rank} can also be a \nameref{list} of lists, interpreted
+either as a row matrix or a set of equations.  If that form of input is
+chosen, the vectors in the result will be represented by lists as well.
+This additional input syntax facilitates the use of \name{rank} in
+applications different from classical linear algebra.
+\end{Comments}
+
+\end{Operator}
+
+
+\begin{Operator}{TP}
+\index{transpose}\index{matrix}
+The \name{tp} operator returns the transpose of its \nameref{matrix}
+ argument.
+\begin{Syntax}
+\name{tp} \meta{identifier} or  \name{tp}\(\meta{identifier}\)
+\end{Syntax}
+
+\meta{identifier} must be a matrix, which either has had its dimensions set
+in its declaration, or has had values put into it by \name{mat}.
+
+\begin{Examples}
+matrix m,n; \\
+m := mat((1,2,3),(4,5,6))$ \\
+n := tp m;                   &
+\begin{multilineoutput}{6cm}
+N(1,1) := 1
+N(1,2) := 4
+N(2,1) := 2
+N(2,2) := 5
+N(3,1) := 3
+N(3,2) := 6
+\end{multilineoutput}
+\end{Examples}
+\begin{Comments}
+In an assignment statement involving \name{tp}, the matrix identifier on the
+left-hand side is redimensioned to the correct size for the transpose.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{TRACE}
+\index{matrix}
+The \name{trace} operator finds the trace of its \nameref{matrix} argument.
+\begin{Syntax}
+\name{trace}\(\meta{expression}\) or \name{trace} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} or \meta{simple\_expression} must evaluate to a square
+matrix.
+
+\begin{Examples}
+matrix a; \\
+a := mat((x1,y1),(x2,y2))\$ \\
+trace a;                     &         X1 + Y2
+\end{Examples}
+\begin{Comments}
+The trace is the sum of the entries along the diagonal of a square matrix.
+Given a non-matrix expression, or a non-square matrix, \name{trace} returns
+an error message.
+\end{Comments}
+\end{Operator}
+
+

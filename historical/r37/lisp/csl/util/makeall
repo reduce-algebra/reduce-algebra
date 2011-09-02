@@ -1,0 +1,29 @@
+#!/bin/sh
+# makeall
+
+# re-builds absolutely everything, inclusing doing a re-profile
+# of REDUCE to select what should be compiled into C. This should only
+# be required after MAJOR changes in the source.
+
+# Note that you will need to have made a suitable Makefile available,
+# eg by going something like
+#    ln -s ../util/Makefile.xxx Makefile
+# for xxx matching the computer you are using.
+
+make slowr37
+../util/boot37
+../util/profile
+cp profile.dat ../csl-c
+rm profile.dat
+../util/c-code37
+make r37
+
+# the bits from here down are cheaper and are all that is usually needed
+../util/full37
+
+../util/testall
+../util/checkall
+
+# log/checkall.log and log/times.log should now be up to date.
+
+

@@ -1,0 +1,21 @@
+ACN changes March 2004
+
+mkhelp.bat deleted as being for German documentation only so not
+of interest to Codemist
+
+mkhelpw.bat adjusted so that I can use it again with r38 not r38, and
+with hcp not hc (hc runs out of memory).  You need the Microsoft program
+"hcp.exe" as a help compiler... but these days Microsoft would like
+you to use "HTML Help Workshop" that generates help files in a format that
+is Microsoft-only externsions to HTML...
+
+===========================
+
+To create HTML help I use the script "mkhtml1" which puts all of its
+generated stuff in ../lisp/csl/r38.doc as about 10 medium-sized files.
+
+I am ignoring all the other options that might be available and just
+sticking with that.
+
+This directory will not be distributed.
+

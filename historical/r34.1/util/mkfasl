@@ -1,0 +1,36 @@
+#!/bin/csh -f
+
+# mkfasl --- Make a fasl file.
+
+# Author: Anthony C. Hearn.
+
+rm -f $reduce/log/mk$1.log
+
+set dir=src
+if ( $2 != "" ) set dir=$2
+
+$reduce/reduce >& $reduce/log/mk$1.log << EOF
+
+symbolic;
+
+% Compiler loading and modifications.
+
+load compiler;
+remprop('wplus2,'one);                  % For hilbertp.
+remprop('log,'no!-side!-effects!?);     % So that math can be fasled.
+remprop('atan,'no!-side!-effects!?);    % So that math can be fasled.
+load fast!-vector;                      % To use IGETV, etc.
+errorset('(load compat),nil,nil);       % PSL compiler REDUCE support.
+
+!*verboseload := t;   % To help debugging.
+!*fastcar := t;       % Since we assume all car/cdr calls are correct.
+
+faslout "$reduce/fasl/$1";
+in "$reduce/$dir/$1.red"\$
+faslend;
+
+showtime;
+
+bye;
+
+EOF

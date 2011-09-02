@@ -1,0 +1,5 @@
+#!/bin/bash
+ci -l *.java
+ci -l Makefile.gnu
+ci -l Makefile.watcom
+

@@ -1,0 +1,43 @@
+
+<A NAME=MKPOLY>
+
+<TITLE>MKPOLY</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MKPOLY</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+Given a roots list as returned by 
+<A HREF=r37_0438.html>roots</A>, 
+the operator <em>mkpoly</em> constructs a 
+polynomial which has these numbers as roots. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>mkpoly</em>&lt;rl&gt; 
+<P>
+<P>
+<P>
+where &lt;rl&gt; is a 
+<A HREF=r37_0053.html>list</A> with equations, which 
+all have the same 
+<A HREF=r37_0002.html>kernel</A> on their left-hand sides 
+and numbers as right-hand sides. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+mkpoly{x=1,x=-2,x=i,x=-i};
+
+  x**4 + x**3 - x**2 + x - 2
+
+</TT></PRE><P>Note that this polynomial is unique only up to a numeric 
+factor. 
+<P>
+<P>

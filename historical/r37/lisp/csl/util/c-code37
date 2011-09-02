@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# c-code37.   generate C code... optionally limit number of fns to compile.
+
+./slowr37 -Dno_init_file ../util/c-code37.red -dhow_many=$1 -- log/c-code37.log
+
+

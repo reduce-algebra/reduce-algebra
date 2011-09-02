@@ -1,0 +1,59 @@
+
+<A NAME=SOLVESINGULAR>
+
+<TITLE>SOLVESINGULAR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SOLVESINGULAR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>solvesingular</em> is on, singular or underdetermined systems of 
+linear equations are solved, using arbitrary real, complex or integer 
+variables in the answer. Default is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+solve({2x + y,4x + 2y},{x,y}); 
+
+         ARBCOMPLEX(1)
+  {{X= - -------------,Y=ARBCOMPLEX(1)}} 
+               2
+
+
+solve({7x + 15y - z,x - y - z},{x,y,z}); 
+
+
+      8*ARBCOMPLEX(3)
+  {{X=----------------
+            11
+         3*ARBCOMPLEX(3)
+    Y= - ----------------
+               11
+    Z=ARBCOMPLEX(3)}}
+
+
+off solvesingular; 
+
+solve({2x + y,4x + 2y},{x,y}); 
+
+  ***** SOLVE given singular equations 
+
+
+solve({7x + 15y - z,x - y - z},{x,y,z}); 
+
+
+  ***** SOLVE given singular equations
+
+</TT></PRE><P>The integer following the identifier 
+<A HREF=r37_0139.html>arbcomplex</A> above is assigned by 
+the system, and serves to identify the variable uniquely. It has no other 
+significance. 
+<P>
+<P>
+<P>

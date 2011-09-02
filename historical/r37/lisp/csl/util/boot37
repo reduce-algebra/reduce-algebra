@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# boot37 --- Build REDUCE 3.7 under Windows using CSL.
+
+# Author: Arthur C Norman
+
+# This takes around 4 minutes on a P6-400
+
+./slowr37 -z -Dno_init_file ../util/build37.lsp -- log/boot37.log
+
+

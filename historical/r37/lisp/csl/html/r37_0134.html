@@ -1,0 +1,46 @@
+
+<A NAME=SHOWTIME>
+
+<TITLE>SHOWTIME</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SHOWTIME</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>showtime</em> command prints the elapsed system time since the last 
+call of this command or since the beginning of the session, if it has not 
+been called before. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+showtime; 
+
+  Time: 1020 ms 
+
+
+factorize(x^4 - 8x^4 + 8x^2 - 136x - 153);
+			 
+
+
+          2
+  {X - 9,X  + 17,X + 1} 
+
+
+showtime; 
+
+  Time: 920 ms
+
+</TT></PRE><P>The time printed is either the elapsed cpu time or the elapsed wal
+l clock 
+time, depending on your system. <em>showtime</em> allows you to see the 
+system time resources REDUCE uses in its calculations. Your time readings 
+will of course vary from this example according to the system you use. 
+<P>
+<P>
+<P>

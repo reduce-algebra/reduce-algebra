@@ -1,0 +1,15 @@
+
+[OPTIONS]
+CONTENTS=main_index
+TITLE = REDUCE Help System
+compress = true
+; compress = 0
+warning = 3
+; warning = 1
+
+; [CONFIG]
+; BrowseButtons()
+
+[FILES]
+redhelp.rtf
+

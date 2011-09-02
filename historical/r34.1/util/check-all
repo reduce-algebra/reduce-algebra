@@ -1,0 +1,25 @@
+#!/bin/csh -f
+
+# check-all --- Check all REDUCE Test Files against Exemplary logs.
+
+# Author: Anthony C. Hearn.
+
+# Standard Tests
+
+foreach x (reduce math rounded complex elem decompos factor gcd int matrix \
+           solve limits roots sum)
+   echo "Checking $x ..."
+   echo " "
+   diff $reduce/log/$x.log $reduce/xlog
+   echo " "
+end
+
+# Tests of Contributed Packages
+
+foreach x (algint arnum excalc gentran groebner scope taylor \
+           spde tps compact orthovec avector)
+   echo "Checking $x ..."
+   echo " "
+   diff $reduce/log/$x.log $reduce/xlog
+   echo " "
+end

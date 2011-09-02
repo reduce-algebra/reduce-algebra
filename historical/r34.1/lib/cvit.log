@@ -1,0 +1,421 @@
+REDUCE 3.4.1, 15-Jul-92 ...
+
+1: 
+(CVIT)
+
+
+% Tests of Cvitanovic Package.
+
+
+% COPYRIGHT (C) 1990, INSTITUTE OF NUCLEAR PHYSICS, MOSCOW STATE UNIV.
+% CVITBUBLE  TEST OF CVITANOVIC PACKAGE
+% AUTHOR     A. KRYUKOV, ARODIONOV, A.TARANOV
+% VERSION    1.1
+% RELEASE    18-SEP-90
+
+index j1,j2,j3,j4,j5,j6,j7,j8,j9,j0;
+
+
+vecdim n$
+
+
+
+%       Tests of the weels with buble
+%       (Use notation from SIGSAM Bull, 1989, v.23, no.4, pp.15-24)
+
+g(l,j1,j2,j2,j1);
+
+
+ 2
+N
+
+
+g(l,j1,j2)*g(l1,j3,j1,j2,j3);
+
+
+ 2
+N
+
+g(l,j1,j2)*g(l1,j3,j1,j3,j2);
+
+
+N*( - N + 2)
+
+g(l,j1,j2)*g(l1,j3,j3,j2,j1);
+
+
+ 2
+N
+
+
+g(l,j1,j2,j3,j4)*g(l1,j1,j2,j3,j4);
+
+
+N*(3*N - 2)
+
+g(l,j1,j2)*g(l1,j3,j4,j1,j2,j4,j3);
+
+
+ 3
+N
+
+g(l,j1,j2,j3,j4)*g(l1,j1,j4,j2,j3);
+
+
+N*( - N + 2)
+
+g(l,j1,j2)*g(l1,j3,j4,j1,j4,j3,j2);
+
+
+    2
+N*(N  - 4*N + 4)
+
+
+g(l,j1,j2)*g(l1,j3,j4,j5,j1,j2,j3,j4,j5);
+
+
+ 2      2
+N *( - N  + 6*N - 4)
+
+g(l,j1,j2,j3,j4)*g(l1,j5,j1,j2,j3,j5,j4);
+
+
+         2
+N*( - 3*N  + 8*N - 4)
+
+g(l,j1,j2,j3,j4,j5,j1)*g(l1,j2,j5,j3,j4);
+
+
+ 2
+N *( - N + 2)
+
+g(l,j1,j2,j3,j4,j5,j1,j2,j5)*g(l1,j4,j3);
+
+
+ 2      2
+N *( - N  + 6*N - 4)
+
+
+g(l,j1,j2)*g(l1,j3,j4,j5,j6,j1,j2,j3,j4,j5,j6);
+
+
+ 2   3       2
+N *(N  - 12*N  + 28*N - 16)
+
+g(l,j1,j2,j3,j4)*g(l1,j5,j6,j1,j2,j3,j4,j6,j5);
+
+
+ 3
+N *(3*N - 2)
+
+g(l,j1,j2,j3,j4,j5,j6)*g(l1,j1,j2,j4,j3,j6,j5);
+
+
+      2
+N*(7*N  - 22*N + 16)
+
+g(l,j1,j2,j3,j4,j5,j6,j1,j2)*g(l1,j6,j3,j4,j5);
+
+
+ 2        2
+N *( - 3*N  + 8*N - 4)
+
+g(l,j1,j2,j3,j4,j5,j6,j7,j1,j2,j3,j4,j5)*g(l1,j6,j7);
+
+
+ 2   4       3        2
+N *(N  - 20*N  + 100*N  - 160*N + 80)
+
+g(l,j1,j2,j3,j4,j5,j6,j7,j1,j2,j3)*g(l1,j4,j5,j7,j6);
+
+
+ 2   3      2
+N *(N  - 8*N  + 16*N - 8)
+
+g(l,j1,j2,j3,j4,j5,j6,j7,j2)*g(l1,j1,j3,j4,j5,j6,j7);
+
+
+          3       2
+N*( - 15*N  + 60*N  - 76*N + 32)
+
+
+
+% COPYRIGHT (C) 1988,1990, INSTITUTE OF NUCLEAR PHYSICS, MOSCOW STATE U.
+% CVITEST   Test of CVITANOVIC PACKAGE
+% AUTHOR    A. KRYUKOV, A.RODIONOV, A.TARANOV
+% VERSION   1.2
+% RELEASE   11-MAR-90
+
+%
+%     Test for trace of Dirac matrices.
+%
+%     All tests are the lattices with difference lines
+%     (Use notation from SIGSAM Bull, 1989, v.4,no.23, pp.15-24)
+
+index m1,m2,m3,m4,m5,m6,m7,m8,m9,m0;
+
+
+index n1,n2,n3,n4,n5,n6,n7,n8,n9,n0;
+
+
+
+vecdim n;
+
+
+
+ g(l,n1,n1);
+
+
+N
+
+ g(l,n1,m1,n1,m1);
+
+
+N*( - N + 2)
+
+
+ g(l,n1,n2,n2,n1);
+
+
+ 2
+N
+
+ g(l,n1,n2,m1,n2,n1,m1);
+
+
+    2
+N*(N  - 4*N + 4)
+
+ g(l,n1,n2,m1,m2,n2,n1,m2,m1);
+
+
+    3      2
+N*(N  - 8*N  + 24*N - 16)
+
+
+ g(l,n1,n2,n3,n3,n2,n1);
+
+
+ 3
+N
+
+ g(l,n1,n2,n3,m1,n3,n2,n1,m1);
+
+
+       3      2
+N*( - N  + 6*N  - 12*N + 8)
+
+ g(l,n1,n2,n3,m1,m2,n3,n2,n1,m2,m1);
+
+
+    4       3       2
+N*(N  - 12*N  + 60*N  - 112*N + 64)
+
+ g(l,n1,n2,n3,m1,m2,m3,n3,n2,n1,m3,m2,m1);
+
+
+       5       4        3        2
+N*( - N  + 18*N  - 144*N  + 528*N  - 816*N + 416)
+
+ g(l,n1,n2,n3,m1,n3,n1,n2,m1);
+
+
+    3      2
+N*(N  - 8*N  + 16*N - 8)
+
+ g(l,n1,n2,n3,m1,m2,n3,n1,n2,m1,m2);
+
+
+    4       3       2
+N*(N  - 16*N  + 72*N  - 120*N + 64)
+
+ g(l,n1,n2,n3,m1,m2,m3,n2,n3,n1,m3,m1,m2);
+
+
+       5       4        3        2
+N*( - N  + 22*N  - 172*N  + 584*N  - 848*N + 416)
+
+
+
+% COPYRIGHT (C) 1988,1990, INSTITUTE OF NUCLEAR PHYSICS, MOSCOW STATE U.
+% CVITWEEL  TEST OF CVITANOVIC PACKAGE
+% AUTHOR    A. KRYUKOV, ARODIONOV, A.TARANOV
+% VERSION   1.2
+% RELEASE   11-MAR-90
+
+index j1,j2,j3,j4,j5,j6,j7,j8,j9,j0;
+
+
+vecdim n$
+
+
+
+%       Test of CVITANOVIC PACKAGE
+%
+%       All tests are the weels with defferent spoke
+%       (Use notation from SIGSAM Bull, 1989, v.23, no.4, pp.15-24)
+
+g(l,j1,j2,j2,j1);
+
+
+ 2
+N
+
+
+g(l,j1,j2,j3,j1,j2,j3);
+
+
+       2
+N*( - N  + 6*N - 4)
+
+g(l,j1,j2,j3,j1,j3,j2);
+
+
+    2
+N*(N  - 4*N + 4)
+
+g(l,j1,j2,j3,j3,j2,j1);
+
+
+ 3
+N
+
+
+g(l,j1,j2,j3,j4,j1,j2,j3,j4);
+
+
+    3       2
+N*(N  - 12*N  + 28*N - 16)
+
+g(l,j1,j2,j3,j4,j1,j2,j4,j3);
+
+
+       3       2
+N*( - N  + 10*N  - 24*N + 16)
+
+g(l,j1,j2,j3,j4,j1,j4,j2,j3);
+
+
+    3      2
+N*(N  - 8*N  + 16*N - 8)
+
+g(l,j1,j2,j3,j4,j1,j4,j3,j2);
+
+
+       3      2
+N*( - N  + 6*N  - 12*N + 8)
+
+
+g(l,j1,j2,j3,j4,j5,j1,j2,j3,j4,j5);
+
+
+    4       3        2
+N*(N  - 20*N  + 100*N  - 160*N + 80)
+
+g(l,j1,j2,j3,j4,j5,j1,j2,j3,j5,j4);
+
+
+       4       3       2
+N*( - N  + 18*N  - 88*N  + 152*N - 80)
+
+g(l,j1,j2,j3,j4,j5,j1,j2,j5,j3,j4);
+
+
+    4       3       2
+N*(N  - 16*N  + 72*N  - 120*N + 64)
+
+g(l,j1,j2,j3,j4,j5,j1,j2,j5,j4,j3);
+
+
+       4       3       2
+N*( - N  + 14*N  - 60*N  + 112*N - 64)
+
+
+g(l,j1,j2,j3,j4,j5,j6,j1,j2,j3,j4,j5,j6);
+
+
+       5       4        3        2
+N*( - N  + 30*N  - 260*N  + 840*N  - 1120*N + 512)
+
+g(l,j1,j2,j3,j4,j5,j6,j1,j2,j3,j4,j6,j5);
+
+
+    5       4        3        2
+N*(N  - 28*N  + 236*N  - 784*N  + 1088*N - 512)
+
+g(l,j1,j2,j3,j4,j5,j6,j1,j2,j4,j3,j6,j5);
+
+
+       5       4        3        2
+N*( - N  + 26*N  - 216*N  + 736*N  - 1056*N + 512)
+
+g(l,j1,j2,j3,j4,j5,j6,j1,j2,j6,j3,j4,j5);
+
+
+    5       4        3        2
+N*(N  - 24*N  + 176*N  - 536*N  + 704*N - 320)
+
+g(l,j1,j2,j3,j4,j5,j6,j7,j1,j2,j3,j4,j5,j6,j7);
+
+
+       6       5        4         3         2
+N*( - N  + 42*N  - 560*N  + 3080*N  - 7840*N  + 9184*N - 3904)
+
+g(l,j1,j2,j3,j4,j5,j6,j7,j1,j2,j3,j4,j5,j7,j6);
+
+
+    6       5        4         3         2
+N*(N  - 40*N  + 520*N  - 2880*N  + 7520*N  - 9024*N + 3904)
+
+g(l,j1,j2,j3,j4,j5,j6,j7,j2,j1,j3,j4,j5,j6,j7);
+
+
+    6       5        4         3         2
+N*(N  - 40*N  + 520*N  - 2880*N  + 7520*N  - 9024*N + 3904)
+
+
+%  Test of example that calculated incorrectly in earlier package.
+
+index ix,iy,iz;
+
+
+mass p1=mm, p2=mm, p3=mm, p4=mm, k1=0;
+
+ 
+mshell p1,p2,p3,p4,k1;
+
+
+vector q1,q2;
+
+ 
+operator ga,gb;
+
+
+for all p let ga(p)=g(la,p) + mm,
+              gb(p)=g(lb,p) + mm;
+
+
+xx := g(la,ix)*g(la,iy)*(g(lb,ix)*gb(p1)*g(lb,iy)*gb(q2) +
+                      gb(p3)*g(lb,ix)*g(lb,iy));
+
+
+                                 2
+XX :=  - P1.Q2*N + 2*P1.Q2 + N*MM  + N*MM
+
+let q1=p1-k1, q2=p3+k1;
+
+
+
+xx;
+
+
+                                               2
+ - P1.P3*N + 2*P1.P3 - P1.K1*N + 2*P1.K1 + N*MM  + N*MM
+
+
+end;
+
+
+Time: 3536 ms  plus GC time: 136 ms
+
+Quitting

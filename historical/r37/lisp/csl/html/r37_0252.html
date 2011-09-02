@@ -1,0 +1,53 @@
+
+<A NAME=COTH>
+
+<TITLE>COTH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>COTH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>coth</em> operator returns the hyperbolic cotangent of its argument. 
+The derivative of <em>coth</em> and some simple transformations are known 
+to the system. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>coth</em>(&lt;expression&gt;) or <em>coth</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression. &lt;simple\_expression
+&gt; 
+must be a single identifier or begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+df(coth(x*y),x); 
+
+                2
+  - Y*(COTH(X*Y)   - 1) 
+
+
+
+coth acoth z; 
+
+  Z
+
+</TT></PRE><P>You can write 
+<A HREF=r37_0199.html>let</A> statements and procedures to add further 
+functionality to <em>coth</em> if you wish. Numerical values of expressions 
+involving <em>coth</em> may also be found by turning on the switch 
+
+<A HREF=r37_0330.html>rounded</A>. 
+<P>
+<P>
+<P>
+<P>

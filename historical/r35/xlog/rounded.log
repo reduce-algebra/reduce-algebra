@@ -1,0 +1,265 @@
+
+Codemist Standard Lisp 3.54 for DEC Alpha: May 23 1994
+Dump file created: Mon May 23 10:39:11 1994
+REDUCE 3.5, 15-Oct-93 ...
+Memory allocation: 6023424 bytes
+
++++ About to read file ndotest.red
+
+
+% Tests in the exact mode.
+
+x := 1/2;
+
+
+      1
+x := ---
+      2
+
+
+y := x + 0.7;
+
+
+      6
+y := ---
+      5
+
+
+% Tests in approximate mode.
+
+on rounded;
+
+
+
+y;
+
+
+1.2
+   % as expected not converted to approximate form.
+
+z := y+1.2;
+
+
+z := 2.4
+
+
+z/3;
+
+
+0.8
+
+
+% Let's raise this to a high power.
+
+ws^24;
+
+
+0.00472236648287
+
+
+% Now a high exponent value.
+
+% 10.2^821;
+
+% Elementary function evaluation.
+
+cos(pi);
+
+
+ - 1
+
+
+symbolic ws;
+
+
+(!*sq ((!:rd!: . -1.0) . 1) t)
+
+
+z := sin(pi);
+
+
+z := 1.22464679915e-16
+
+
+symbolic ws;
+
+
+(!*sq ((!:rd!: . 1.2246467991474e-16) . 1) t)
+
+
+% Handling very small quantities.
+
+% With normal defaults, underflows are converted to 0.
+
+exp(-100000.1**2);
+
+
+0
+
+
+% However, if you really want that small number, roundbf can be used.
+
+on roundbf;
+
+
+
+exp(-100000.1**2);
+
+
+1.18441281937e-4342953505
+
+
+off roundbf;
+
+
+
+% Now let us evaluate pi.
+
+pi;
+
+
+3.14159265359
+
+
+
+% Let us try a higher precision.
+
+precision 50;
+
+
+12
+
+
+pi;
+
+
+3.1415926535897932384626433832795028841971693993751
+
+
+% Now find the cosine of pi/6.
+
+cos(ws/6);
+
+
+0.86602540378443864676372317075293618347140262690519
+
+
+% This should be the sqrt(3)/2.
+
+ws**2;
+
+
+0.75
+
+
+
+%Here are some well known examples which show the power of this system.
+
+precision 10;
+
+
+50
+
+
+% This should give the usual default again.
+
+let xx=e**(pi*sqrt(163));
+
+
+
+let yy=1-2*cos((6*log(2)+log(10005))/sqrt(163));
+
+
+
+% First notice that xx looks like an integer.
+
+xx;
+
+
+2.625374126e+17
+
+
+% and that yy looks like zero.
+
+yy;
+
+
+0
+
+
+% but of course it's an illusion.
+
+precision 50;
+
+
+10
+
+
+xx;
+
+
+2.6253741264076874399999999999925007259719818568888e+17
+
+
+yy;
+
+
+ - 1.2815256559456092775159749532170513334408547400481e-16
+
+
+%now let's look at an unusual way of finding an old friend;
+
+precision 50;
+
+
+50
+
+
+procedure agm;
+  <<a := 1$ b := 1/sqrt 2$ u:= 1/4$ x := 1$ pn := 4$ repeat
+   <<p := pn;
+     y := a; a := (a+b)/2; b := sqrt(y*b); % Arith-geom mean.
+     u := u-x*(a-y)**2; x := 2*x; pn := a**2/u;
+     write "pn=",pn>> until pn>=p; p>>;
+
+
+agm
+
+
+let ag=agm();
+
+
+
+ag;
+
+
+pn=3.1876726427121086272019299705253692326510535718594
+
+pn=3.1416802932976532939180704245600093827957194388154
+
+pn=3.1415926538954464960029147588180434861088792372613
+
+pn=3.1415926535897932384663606027066313217577024113424
+
+pn=3.1415926535897932384626433832795028841971699491647
+
+pn=3.1415926535897932384626433832795028841971693993751
+
+pn=3.1415926535897932384626433832795028841971693993751
+
+3.1415926535897932384626433832795028841971693993751
+
+
+% The limit is obviously.
+
+pi;
+
+
+3.1415926535897932384626433832795028841971693993751
+
+
+end;
+(TIME:  rounded 683 683)
+
+
+End of Lisp run after 0.71+0.63 seconds

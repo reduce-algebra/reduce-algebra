@@ -1,0 +1,35 @@
+#!/bin/csh -f
+
+# mkreduce --- Make basic REDUCE executable file.
+
+# Author: Anthony C. Hearn.
+
+rm -f $reduce/reduce $reduce/log/mkreduce.log
+
+pushd $reduce/psl
+
+# The Sun uses a copying garbage collector, so we need more heap space.
+
+if (-e /bin/sun) then
+   set command='./bpsl -td 5000000 -b 0.27 -h 0.73'
+  else
+   set command='./bpsl -td 5000000 -b 0.35 -h 0.65'
+ endif
+
+$command >>& $reduce/log/mkreduce.log << EOF
+
+(dskin "$reduce/src/symget.dat")
+
+(setq symbolfilename* "$reduce/psl/bpsl")
+
+(setq loaddirectories!* '("" "$reduce/fasl/" "$reduce/psl/"))
+
+(dskin "$reduce/src/mkreduce.sl")
+
+(savesystem "REDUCE 3.4" "$reduce/reduce" nil)
+
+(bye)
+
+EOF
+
+popd

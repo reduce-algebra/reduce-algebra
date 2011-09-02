@@ -1,0 +1,14 @@
+Microsoft Visual Studio Solution File, Format Version 1.00
+Project("{66355F20-A65B-11D0-BFB5-00A0C91EBFA0}") = "Jlisp", "Jlisp.vjp", "{FFEE9534-C4F5-11D1-9157-000000000000}"
+EndProject
+Global
+	GlobalSection(DeploymentRoot) = postSolution
+		DeploymentRootNumChildren = 0
+	EndGlobalSection
+	GlobalSection(LocalDeployment) = postSolution
+		StartupProject = {FFEE9534-C4F5-11D1-9157-000000000000}
+	EndGlobalSection
+	GlobalSection(BuildOrder) = postSolution
+		0 = {FFEE9534-C4F5-11D1-9157-000000000000}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,1601 @@
+\section{Special Functions}
+\begin{Introduction}{Special Function Package}
+The REDUCE \name{Special Function Package} supplies extended
+algebraic and numeric support for a wide class of objects.
+This package was released together with REDUCE 3.5 (October 1993)
+for the first time, a major update is released with REDUCE 3.6.\\
+\\
+
+The functions included in this package are in most cases (unless otherwise
+stated) defined and named like in the book by Abramowitz and Stegun:
+Handbook of Mathematical Functions, Dover Publications.\\
+ \\
+
+The aim is to collect as much information on the special functions
+and simplification capabilities as possible,
+i.e. algebraic simplifications and numeric (rounded mode) code, limits
+of the functions together
+with the definitions of the functions, which are in most cases a power 
+series, a (definite) integral and/or a differential equation.\\
+ \\
+
+{\em What can be found:} Some famous constants, a variety of Bessel functions,
+special polynomials,
+the Gamma function, the (Riemann) Zeta function, Elliptic Functions, Elliptic
+Integrals, 3J symbols (Clebsch-Gordan coefficients) and integral functions.\\
+ \\
+
+{\em What is missing:} Mathieu functions, LerchPhi, etc..
+The information about the special functions which solve certain
+differential equation is very limited.
+In several cases numerical approximation is restricted to real
+arguments or is missing completely.\\
+ \\
+
+The implementation of this package uses REDUCE rule sets to a large extent,
+which guarantees a high 'readability' of the functions definitions in the
+source file directory. It makes extensions to the special
+functions code easy in most cases too. To look at these rules
+it may be convenient to use the showrules operator e.g.\\
+ \\
+ \nameref{showrules} Besseli;\\
+.\\
+
+Some evaluations are improved if the special function package is loaded,
+e.g. some (infinite) sums and products leading to expressions including
+special functions are known in this case.\\
+\\
+
+Note: The special function package has to be loaded explicitly by calling
+\begin{verbatim}
+   load_package specfn;
+\end{verbatim}
+The functions \nameref{MeijerG} and \nameref{hypergeometric} require
+additionally
+\begin{verbatim}
+   load_package specfn2;
+\end{verbatim}
+
+\end{Introduction}
+
+\begin{Concept}{Constants}
+\index{Euler's constant}\index{Catalan's constant}\index{Khinchin's constant}
+\index{Golden_Ratio}
+
+There are a few constants known to the special function package, namely
+\begin{itemize}
+\item[\name{Euler's constant }]  (which can be computed as -\nameref{Psi}(1)) and
+\item[\name{Khinchin's constant}] (which is defined in Khinchin's book
+        ``Continued Fractions'') and
+\item[\name{Golden_Ratio}]  (which can be computed as (1 + sqrt 5)/2)   and
+\item[\name{Catalan's constant}] (which is known as an infinite sum of reciprocal 
+powers)
+\end{itemize}
+
+\begin{Examples}
+on rounded;
+Euler_Gamma;                 &       0.577215664902 \\
+Khinchin;                    &       2.68545200107 \\
+Catalan                      &       0.915965594177 \\
+Golden_Ratio                 &       1.61803398875
+\end{Examples}
+
+\end{Concept}
+
+\subsection{Bernoulli Euler Zeta}
+
+\begin{Operator}{BERNOULLI}
+The \name{bernoulli} operator returns the nth Bernoulli number.
+
+\begin{Syntax}
+
+\name{Bernoulli}\(\meta{integer}\)
+
+\end{Syntax}
+
+\begin{Examples}
+bernoulli 20;                  &       - 174611 / 330 \\
+bernoulli 17;                  &       0
+\end{Examples}
+
+\begin{Comments}
+All Bernoulli numbers with odd indices except for 1 are zero.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{BERNOULLIP}
+The \name{BernoulliP} operator returns the nth Bernoulli Polynomial
+evaluated at x.
+
+\begin{Syntax}
+
+\name{BernoulliP}\(\meta{integer},\meta{expression}\)
+
+\end{Syntax}
+
+\begin{Examples}
+BernoulliP(3,z);            &    z*(2*z^2  - 3*z + 1)/2\\
+
+BernoulliP(10,3);           &    338585 / 66
+\end{Examples}
+
+\begin{Comments}
+The value of the nth Bernoulli Polynomial at 0 is the nth Bernoulli number. 
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{EULER}
+The \name{EULER} operator returns the nth Euler number.
+
+\begin{Syntax}
+\name{Euler}\(\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Euler 20;                         &       370371188237525 \\
+Euler 0;                          &       1
+\end{Examples}
+
+\begin{Comments}
+The \name{Euler} numbers are evaluated by a recursive algorithm which
+makes it hard to compute Euler numbers above say 200.
+
+Euler numbers appear in the coefficients of the power series 
+representation of 1/cos(z).
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{EULERP}
+The \name{EulerP} operator returns the nth Euler Polynomial.
+
+\begin{Syntax}
+\name{EulerP}\(\meta{integer},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+EulerP(2,xx);            &  xx*(xx - 1) \\
+EulerP(10,3);            &  2046
+\end{Examples}
+
+\begin{Comments}
+The Euler numbers are the values of the Euler Polynomials at 1/2
+multiplied by 2**n.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{ZETA}
+The \name{Zeta} operator returns Riemann's Zeta function, 
+
+  Zeta (z) := sum(1/(k**z),k,1,infinity)
+
+\begin{Syntax}
+\name{Zeta}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+Zeta(2);                 &  pi^2 / 6 \\
+on rounded; \\
+Zeta 1.01;               &  100.577943338
+\end{Examples}
+
+\begin{Comments}
+Numerical computation for the Zeta function for arguments close to 1 are 
+tedious, because the series is converging very slowly. In this case a formula
+(e.g. found in Bender/Orzag: Advanced Mathematical Methods for
+Scientists and Engineers, McGraw-Hill) is used.
+
+No numerical approximation for complex arguments is done.
+\end{Comments}
+
+\end{Operator}
+\subsection{Bessel Functions}
+
+\begin{Operator}{BESSELJ}
+The \name{BesselJ} operator returns the Bessel function of the first kind.
+
+\begin{Syntax}
+\name{BesselJ}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+BesselJ(1/2,pi);                &       0 \\
+on rounded; \\
+BesselJ(0,1);                   &        0.765197686558  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{BESSELY}
+\index{Weber's function}
+The \name{BesselY} operator returns the Bessel function of the second kind.
+\begin{Syntax}
+\name{BesselY}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+BesselY (1/2,pi);               &     - sqrt(2) / pi \\
+on rounded; \\
+BesselY (1,3);                  &      0.324674424792
+\end{Examples}
+
+\begin{Comments}
+The operator \name{BesselY} is also called Weber's function.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{HANKEL1}
+The \name{Hankel1} operator returns the Hankel function of the first kind.
+
+\begin{Syntax}
+\name{Hankel1}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+on complex; \\
+Hankel1 (1/2,pi);               &     - i * sqrt(2) / pi \\
+Hankel1 (1,pi);                 &   besselj(1,pi) + i*bessely(1,pi)
+
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Hankel1} is also called Bessel function of the third kind.
+There is currently no numeric evaluation of Hankel functions.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{HANKEL2}
+The \name{Hankel2} operator returns the Hankel function of the second kind.
+
+\begin{Syntax}
+\name{Hankel2}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+on complex; \\
+Hankel2 (1/2,pi);               &     - i * sqrt(2) / pi \\
+Hankel2 (1,pi);                 &   besselj(1,pi) - i*bessely(1,pi)
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Hankel2} is also called Bessel function of the third kind.
+There is currently no numeric evaluation of Hankel functions.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{BESSELI}
+The \name{BesselI} operator returns the modified Bessel function I.
+
+\begin{Syntax}
+\name{BesselI}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+on rounded; \\
+Besseli (1,1);                  &      0.565159103992
+\end{Examples}
+
+\begin{Comments}
+The knowledge about the operator \name{BesselI} is currently fairly limited.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{BESSELK}
+The \name{BesselK} operator returns the modified Bessel function K.
+
+\begin{Syntax}
+\name{BesselK}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+df(besselk(0,x),x);            &    - besselk(1,x)
+\end{Examples}
+
+\begin{Comments}
+There is currently no numeric support for the operator \name{BesselK}.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{StruveH}
+The \name{StruveH} operator returns Struve's H function.
+
+\begin{Syntax}
+\name{StruveH}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+struveh(-3/2,x);               &    - besselj(3/2,x) / i
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{StruveL}
+The \name{StruveL} operator returns the modified Struve L function .
+
+\begin{Syntax}
+\name{StruveL}\(\meta{order},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+struvel(-3/2,x);               &    besseli(3/2,x)
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{KummerM}
+\index{Confluent Hypergeometric function}
+The \name{KummerM} operator returns Kummer's M function.
+
+\begin{Syntax}
+\name{KummerM}\(\meta{parameter},\meta{parameter},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+kummerm(1,1,x);               &    e^x \\
+on rounded; \\
+kummerm(1,3,1.3);             &    1.62046942914
+\end{Examples}
+
+\begin{Comments}
+Kummer's M function is one of the Confluent Hypergeometric functions.
+For reference see the \nameref{hypergeometric} operator.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{KummerU}
+\index{Confluent Hypergeometric function}
+The \name{KummerU} operator returns Kummer's U function.
+
+\begin{Syntax}
+\name{KummerU}\(\meta{parameter},\meta{parameter},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+df(kummeru(1,1,x),x)           &    - kummeru(2,2,x)
+\end{Examples}
+
+\begin{Comments}
+Kummer's U function is one of the Confluent Hypergeometric functions.
+For reference see the \nameref{hypergeometric} operator.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{WhittakerW}
+\index{Confluent Hypergeometric function}
+The \name{WhittakerW} operator returns Whittaker's W function.
+
+\begin{Syntax}
+\name{WhittakerW}\(\meta{parameter},\meta{parameter},\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+WhittakerW(2,2,2);     &    \rfrac{4*sqrt(2)*kummeru(\rfrac{1}{2},5,2)}{e}
+\end{Examples}
+
+\begin{Comments}
+Whittaker's W function is one of the Confluent Hypergeometric functions.
+For reference see the \nameref{hypergeometric} operator.
+\end{Comments}
+\end{Operator}
+
+\subsection{Airy Functions}
+
+\begin{Operator}{Airy_Ai}
+The \name{Airy\_Ai} operator returns the Airy Ai function for a given argument.
+
+\begin{Syntax}
+\name{Airy\_Ai}\(\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+on complex;
+on rounded;
+Airy_Ai(0);              &   0.355028053888          \\
+Airy_Ai(3.45 + 17.97i);   &  - 5.5561528511e+9 - 8.80397899932e+9*i  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{Airy_Bi}
+The \name{Airy\_Bi} operator returns the Airy Bi function for a given
+argument.
+
+\begin{Syntax}
+\name{Airy\_Bi}\(\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+Airy_Bi(0);              &   0.614926627446          \\
+Airy_Bi(3.45 + 17.97i);  &  8.80397899932e+9 - 5.5561528511e+9*i   \\
+\end{Examples}
+
+\end{Operator} 
+
+\begin{Operator}{Airy_Aiprime}
+The \name{Airy\_Aiprime} operator returns the Airy Aiprime function for a
+given argument.
+
+\begin{Syntax}
+\name{Airy\_Aiprime}\(\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+Airy_Aiprime(0);              &  - 0.258819403793           \\
+Airy_Aiprime(3.45+17.97i);&  - 3.83386421824e+19 + 2.16608828136e+19*i \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{Airy_Biprime}
+The \name{Airy\_Biprime} operator returns the Airy Biprime function for a
+given argument.
+
+\begin{Syntax}
+\name{Airy\_Biprime}\(\meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+Airy_Biprime(0);              &             \\
+Airy_Biprime(3.45 + 17.97i); & 3.84251916792e+19 - 2.18006297399e+19*i\\
+\end{Examples}
+
+\end{Operator}
+
+\subsection{Jacobi's Elliptic Functions and Elliptic Integrals}
+
+\begin{Operator}{JacobiSN}
+The \name{Jacobisn} operator returns the Jacobi Elliptic function sn.
+
+\begin{Syntax}
+\name{Jacobisn}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobisn(0.672, 0.36)    & 0.609519691792 \\
+Jacobisn(1,0.9)          & 0.770085724907881 \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiCN}
+The \name{Jacobicn} operator returns the Jacobi Elliptic function cn.
+
+\begin{Syntax}
+\name{Jacobicn}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobicn(7.2, 0.6)      & 0.837288298482018  \\
+Jacobicn(0.11, 19)      & 0.994403862690043 - 1.6219006985556e-16*i  \\
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{JacobiDN}
+The \name{Jacobidn} operator returns the Jacobi Elliptic function dn.
+
+\begin{Syntax}
+\name{Jacobidn}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobidn(15, 0.683)     & 0.640574162024592 \\
+Jacobidn(0,0)           & 1 \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiCD}
+The \name{Jacobicd} operator returns the Jacobi Elliptic function cd.
+
+\begin{Syntax}
+\name{Jacobicd}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobicd(1, 0.34)       & 0.657683337805273 \\
+Jacobicd(0.8,0.8)       & 0.925587311582301 \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiSD}
+The \name{Jacobisd} operator returns the Jacobi Elliptic function sd.
+
+\begin{Syntax}
+\name{Jacobisd}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobisd(12, 0.4)       & 0.357189729437272    \\
+Jacobisd(0.35,1)        &  - 1.17713873203043  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiND}
+The \name{Jacobind} operator returns the Jacobi Elliptic function nd.
+
+\begin{Syntax}
+\name{Jacobind}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobind(0.2, 17) & 1.46553203037507 + 0.0000000000334032759313703*i \\
+Jacobind(30, 0.001)      & 1.00048958438  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiDC}
+The \name{Jacobidc} operator returns the Jacobi Elliptic function dc.
+
+\begin{Syntax}
+\name{Jacobidc}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobidc(0.003,1)        & 1 \\
+Jacobidc(2, 0.75)        & 6.43472885111  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiNC}
+The \name{Jacobinc} operator returns the Jacobi Elliptic function nc.
+
+\begin{Syntax}
+\name{Jacobinc}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobinc(1,0)           & 1.85081571768093 \\
+Jacobinc(56, 0.4387)    & 39.304842663512  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiSC}
+The \name{Jacobisc} operator returns the Jacobi Elliptic function sc.
+
+\begin{Syntax}
+\name{Jacobisc}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobisc(9, 0.88)        &  - 1.16417697982095  \\
+Jacobisc(0.34, 7)        & 0.305851938390775 - 9.8768100944891e-12*i \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiNS}
+The \name{Jacobins} operator returns the Jacobi Elliptic function ns.
+
+\begin{Syntax}
+\name{Jacobins}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobins(3, 0.9)         & 1.00945801599785 \\
+Jacobins(0.887, 15)      & 0.683578280513975 - 0.85023411082469*i \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiDS}
+The \name{Jacobisn} operator returns the Jacobi Elliptic function ds.
+
+\begin{Syntax}
+\name{Jacobids}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobids(98,0.223)       & - 1.061253961477 \\
+Jacobids(0.36,0.6)       & 2.76693172243692 \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiCS}
+The \name{Jacobics} operator returns the Jacobi Elliptic function cs.
+
+\begin{Syntax}
+\name{Jacobics}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Jacobics(0, 0.767)       & infinity   \\
+Jacobics(1.43, 0)        & 0.141734127352112 \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{JacobiAMPLITUDE}
+The \name{JacobiAmplitude} operator returns the amplitude of u.
+\begin{Syntax}
+\name{JacobiAmplitude}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+JacobiAmplitude(7.239, 0.427)  & 0.0520978301448978 \\
+JacobiAmplitude(0,0.1)         & 0 \\
+\end{Examples}
+
+\begin{Comments}
+Amplitude u = asin(\name{Jacobisn(u,m)})
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{AGM_FUNCTION}
+The \name{AGM_function} operator returns a list of (N, AGM,
+ list of aNtoa0, list of bNtob0, list of cNtoc0) where a0, b0 and c0 
+are the initial values; N is the index number of the last term
+used to generate the AGM.  AGM is the Arithmetic Geometric Mean.
+
+\begin{Syntax}
+\name{AGM_function}\(\meta{integer},\meta{integer},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+AGM_function(1,1,1)   & {1,1,{1,1},{1,1},{0,1}}  \\
+AGM_function(1, 0.1, 1.3) &
+\begin{multilineoutput}{6cm}
+\{6,
+ 2.27985615996629, 
+ \{2.27985615996629, 2.27985615996629,
+  2.2798561599706, 2.2798624278857, 
+  2.28742283656583, 2.55, 1\},
+ \{2.27985615996629, 2.27985615996629,
+  2.27985615996198, 2.2798498920555, 
+  2.27230201920557, 2.02484567313166, 4.1\},
+ \{0, 4.30803136219904e-12, 0.0000062679151007581,
+  0.00756040868012758, 0.262577163434171, - 1.55, 5.9\}\}
+\end{multilineoutput} \\
+\end{Examples}
+
+\begin{Comments}
+The other Jacobi functions use this function with initial values
+a0=1, b0=sqrt(1-m), c0=sqrt(m). 
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{LANDENTRANS}
+The \name{landentrans} operator generates the descending landen
+transformation of the given imput values, returning a list of these
+values; initial to final in each case.
+\begin{Syntax}
+\name{landentrans}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+landentrans(0,0.1)    & \{\{0,0,0,0,0\},\{0.1,0.0025041751943776, \\
+ & 0.00000156772498954046,6.1444078 9914461e-13,0\}\}  \\
+\end{Examples}
+
+\begin{Comments}
+The first list ascends in value, and the second descends in value.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{EllipticF}
+The \name{EllipticF} operator returns the Elliptic Integral of the
+First Kind.
+\begin{Syntax}
+\name{EllitpicF}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+EllipticF(0.3, 8.222)   & 0.3 \\
+EllipticF(7.396, 0.1)   & 7.58123216114307 \\ 
+\end{Examples}
+
+\begin{Comments}
+The Complete Elliptic Integral of the First Kind can be found by
+putting the first argument to pi/2 or by using \name{EllipticK}
+and the second argument.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{EllipticK}
+The \name{EllipticK} operator returns the Elliptic value K.
+
+\begin{Syntax}
+\name{EllipticK}\(\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+EllipticK(0.2)          & 1.65962359861053   \\
+EllipticK(4.3)          & 0.808442364282734 - 1.05562492399206*i  \\
+EllipticK(0.000481)     & 1.57098526617635    \\
+\end{Examples}
+
+\begin{Comments}
+The \name{EllipticK} function is the Complete Elliptic Integral of 
+the First Kind.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{EllipticKprime}
+The \name{EllipticK'} operator returns the Elliptic value K(m).
+
+\begin{Syntax}
+\name{EllipticKprime}\(\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+EllipticKprime(0.2)          & 2.25720532682085 \\
+EllipticKprime(4.3)          & 1.05562492399206 \\
+EllipticKprime(0.000481)     & 5.206621921966   \\
+\end{Examples}
+
+\begin{Comments}
+The \name{EllipticKprime} function is the Complete Elliptic Integral of 
+the First Kind of (1-m).
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{EllipticE}
+The \name{EllipticE} operator used with two arguments
+returns the Elliptic Integral of the Second Kind.
+\begin{Syntax}
+\name{EllipticE}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+EllipticE(1.2,0.22)     & 1.15094019180949 \\
+EllipticE(0,4.35)       & 0                \\
+EllipticE(9,0.00719)    & 8.98312465929145  \\
+\end{Examples}
+
+\begin{Comments}
+The Complete Elliptic Integral of the Second Kind can be obtained by
+using just the second argument, or by using pi/2 as the first argument.
+\end{Comments}
+
+The \name{EllipticE} operator used with one argument
+returns the Elliptic value E.
+\begin{Syntax}
+\name{EllipticE}\(\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+EllipticE(0.22)             & 1.48046637439519  \\
+EllipticE(pi/2, 0.22)       & 1.48046637439519  \\
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{EllipticTHETA}
+The \name{EllipticTheta} operator returns one of the four Theta 
+functions. It cannot except any number other than 1,2,3 or 4 as
+its first argument.
+
+\begin{Syntax}
+\name{EllipticTheta}\(\meta{integer},\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+EllipticTheta(1, 1.4, 0.72)    & 0.91634775373  \\
+EllipticTheta(2, 3.9, 6.1 )    & -48.0202736969 + 20.9881034377 i \\
+EllipticTheta(3, 0.67, 0.2)    & 1.0083077448   \\
+EllipticTheta(4, 8, 0.75)      & 0.894963369304 \\
+EllipticTheta(5, 1, 0.1)       & ***** In EllipticTheta(a,u,m); a = 1,2,3 or 4. 
+  \\
+\end{Examples}
+
+\begin{Comments}
+Theta functions are important because every one of the Jacobian
+Elliptic functions can be expressed as the ratio of two theta functions.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{JacobiZETA}
+The \name{JacobiZeta} operator returns the Jacobian function Zeta.
+
+\begin{Syntax}
+\name{JacobiZeta}\(\meta{expression},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+JacobiZeta(3.2, 0.8)    &  - 0.254536403439 \\
+JacobiZeta(0.2, 1.6)    &  0.171766095970451 - 0.0717028569800147*i  \\
+\end{Examples}
+
+\begin{Comments}
+The Jacobian function Zeta is related to the Jacobian function Theta.
+But it is significantly different from Riemann's Zeta Function \nameref{Zeta}.
+\end{Comments}
+\end{Operator}
+
+\subsection{Gamma and Related Functions}
+\begin{Operator}{POCHHAMMER}
+
+The \name{Pochhammer} operator implements the Pochhammer notation 
+(shifted factorial).
+
+\begin{Syntax}
+\name{Pochhammer}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+pochhammer(17,4);               &   116280 \\
+
+pochhammer(1/2,z);              & 
+ \rfrac{factorial(2*z)}{(2^{2*z}*factorial(z))}
+\end{Examples}
+
+\begin{Comments}
+A number of complex rules for \name{Pochhammer} are inactive, because they
+cause a huge system load in algebraic mode. If one wants to use more rules
+for the simplification of Pochhammer's notation, one can do: 
+\\
+let special!*pochhammer!*rules;
+
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{GAMMA}
+The \name{Gamma} operator returns the Gamma function.
+
+\begin{Syntax}
+
+\name{Gamma}\(\meta{expression}\)
+
+\end{Syntax}
+
+\begin{Examples}
+gamma(10);             &       362880    \\
+gamma(1/2);            &       sqrt(pi)
+\end{Examples}
+\end{Operator}
+
+\begin{Operator}{BETA}
+The \name{Beta} operator returns the Beta function defined by
+
+   Beta (z,w) := defint(t**(z-1)* (1 - t)**(w-1),t,0,1)  .
+
+\begin{Syntax}
+
+\name{Beta}\(\meta{expression},\meta{expression}\)
+
+\end{Syntax}
+
+\begin{Examples}
+Beta(2,2);                  &       1 / 6 \\
+Beta(x,y);                  &   gamma(x)*gamma(y) / gamma(x + y)
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Beta} is simplified towards the \nameref{GAMMA} operator.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{PSI}
+\index{Euler's constant}
+The \name{Psi} operator returns the Psi (or DiGamma) function.
+
+   Psi(x) := df(Gamma(z),z)/ Gamma (z)
+
+\begin{Syntax}
+
+\name{Gamma}\(\meta{expression}\)
+
+\end{Syntax}
+
+\begin{Examples}
+Psi(3);                 & (2*log(2) + psi(1/2) + psi(1) + 3)/2 \\
+on rounded; \\
+- Psi(1);               &  0.577215664902
+\end{Examples}
+
+\begin{Comments}
+Euler's constant can be found as  - Psi(1). 
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{POLYGAMMA}
+The \name{Polygamma} operator returns the Polygamma function.
+
+   Polygamma(n,x) := df(Psi(z),z,n);
+
+\begin{Syntax}
+\name{Polygamma}\(\meta{integer},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+ Polygamma(1,2);        &  (pi^2  - 6) / 6\\
+on rounded; \\
+Polygamma(1,2.35);      &  0.52849689109
+\end{Examples}
+
+\begin{Comments}
+The Polygamma function is used for simplification of the \nameref{ZETA} 
+function for some arguments.
+\end{Comments}
+\end{Operator}
+
+\subsection{Miscellaneous Functions}
+
+\begin{Operator}{DILOG extended}
+\index{Spence's Integral}
+The package \name{specfn} supplies an extended support for the
+\nameref{dilog} operator  which implements the \nameindex{dilogarithm function}.
+
+dilog(x) := - defint(log(t)/(t - 1),t,1,x);
+
+\begin{Syntax}
+\name{Dilog}\(\meta{order},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+defint(log(t)/(t - 1),t,1,x);  &  - dilog (x) \\
+dilog 2;                       &  - pi^2 /12 \\
+
+on rounded; \\
+Dilog 20;                      &  - 5.92783972438
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Dilog} is sometimes called Spence's Integral for n = 2.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Lambert\_W function}
+Lambert's W function is the inverse of the function w * e**w.
+It is used in the \nameref{solve} package for equations containing
+exponentials and logarithms.
+
+\begin{Syntax}
+\name{Lambert\_W}\(\meta{z}\)
+\end{Syntax}
+
+\begin{Examples}
+Lambert_W(-1/e);      &  -1 \\
+solve(w + log(w),w);  & {w=lambert\_w(1)}\\
+on rounded; \\
+Lambert_W(-0.05);     &  - 0.0527059835515
+\end{Examples}
+
+\begin{Comments}
+The current implementation will compute the principal branch in
+rounded mode only.
+\end{Comments}
+\end{Operator}
+
+\subsection{Orthogonal Polynomials}
+
+\begin{Operator}{ChebyshevT}
+The \name{ChebyshevT} operator computes the nth Chebyshev T Polynomial (of the
+first kind).
+
+\begin{Syntax}
+\name{ChebyshevT}\(\meta{integer},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+ChebyshevT(3,xx);                 &   xx*(4*xx^2  - 3) \\
+
+ChebyshevT(3,4);                  &       244
+\end{Examples}
+
+\begin{Comments}
+Chebyshev's T polynomials are computed using the recurrence relation:
+
+ChebyshevT(n,x) := 2x*ChebyshevT(n-1,x) - ChebyshevT(n-2,x)  with \\
+ChebyshevT(0,x) := 0 and ChebyshevT(1,x) := x
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{ChebyshevU}
+The \name{ChebyshevU} operator returns the nth Chebyshev U Polynomial (of the
+second kind).
+
+\begin{Syntax}
+\name{ChebyshevU}\(\meta{integer},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+ChebyshevU(3,xx);                 & 4*x*(2*x^2  - 1) \\
+
+ChebyshevU(3,4);                  &      496
+\end{Examples}
+
+\begin{Comments}
+Chebyshev's U polynomials are computed using the recurrence relation:
+
+ChebyshevU(n,x) := 2x*ChebyshevU(n-1,x) - ChebyshevU(n-2,x)  with \\
+ChebyshevU(0,x) := 0 and ChebyshevU(1,x) := 2x
+
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{HermiteP}
+The \name{HermiteP} operator returns the nth Hermite Polynomial.
+
+\begin{Syntax}
+\name{HermiteP}\(\meta{integer},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+HermiteP(3,xx);                 & 4*xx*(2*xx^2  - 3) \\
+HermiteP(3,4);                  &      464
+\end{Examples}
+
+\begin{Comments}
+Hermite polynomials are computed using the recurrence relation:
+  \\
+HermiteP(n,x) := 2x*HermiteP(n-1,x) - 2*(n-1)*HermiteP(n-2,x)  with \\
+HermiteP(0,x) := 1 and HermiteP(1,x) := 2x
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{LaguerreP}
+The \name{LaguerreP} operator computes the nth Laguerre Polynomial.
+The two argument call of LaguerreP is a (common) abbreviation of
+LaguerreP(n,0,x).
+
+\begin{Syntax}
+\name{LaguerreP}\(\meta{integer},\meta{expression}\)  or\\
+\name{LaguerreP}\(\meta{integer},\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+LaguerreP(3,xx);                        &  (- xx^3  + 9*xx^2  - 18*xx + 6)/6\\
+
+LaguerreP(2,3,4);                       &       -2
+\end{Examples}
+
+\begin{Comments}
+Laguerre polynomials are computed using the recurrence relation:
+
+LaguerreP(n,a,x) := (2n+a-1-x)/n*LaguerreP(n-1,a,x) - 
+                        (n+a-1) * LaguerreP(n-2,a,x) with \\
+ \\
+LaguerreP(0,a,x) := 1 and LaguerreP(2,a,x) := -x+1+a
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{LegendreP}
+The binary \name{LegendreP} operator computes the nth Legendre
+Polynomial which is
+a special case of the nth Jacobi Polynomial with \\
+ \\
+LegendreP(n,x) := JacobiP(n,0,0,x)\\
+  \\
+The ternary form returns the associated Legendre Polynomial (see below).
+
+\begin{Syntax}
+\name{LegendreP}\(\meta{integer},\meta{expression}\)      or\\
+\name{LegendreP}\(\meta{integer},\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+LegendreP(3,xx);                &\rfrac{xx*(5*xx^2  - 3)}{2}\\
+
+LegendreP(3,2,xx);              &15*xx*( - xx^2  + 1)
+\end{Examples}
+
+\begin{Comments}
+The ternary form of the operator \name{LegendreP} is the associated
+Legendre Polynomial defined as \\ 
+\\
+  P(n,m,x) = (-1)**m * (1-x**2)**(m/2) * df(LegendreP(n,x),x,m)
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{JacobiP}
+The \name{JacobiP} operator computes the nth Jacobi Polynomial.
+
+\begin{Syntax}
+\name{JacobiP}\(\meta{integer},\meta{expression},\meta{expression},
+   \meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+JacobiP(3,4,5,xx);      & \rfrac{7*(65*xx^3  - 13*xx^2  - 13*xx + 1)}{8}\\
+
+JacobiP(3,4,5,6);       &       94465/8
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{GegenbauerP}
+\index{ultraspherical polynomials}
+The \name{GegenbauerP} operator computes Gegenbauer's (ultraspherical)
+polynomials.
+
+\begin{Syntax}
+\name{GegenbauerP}\(\meta{integer},\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+GegenbauerP(3,2,xx);              &       4*xx*(8*xx^2  - 3)\\
+
+GegenbauerP(3,2,4);               &       2000
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{SolidHarmonicY}
+\index{Solid harmonic polynomials}
+The \name{SolidHarmonicY} operator computes Solid harmonic (Laplace)
+polynomials.
+
+\begin{Syntax}
+
+\name{SolidHarmonicY}\(\meta{integer},\meta{integer},
+\meta{expression},\meta{expression},\meta{expression},\meta{expression}\)
+
+\end{Syntax}
+
+\begin{Examples}
+
+SolidHarmonicY(3,-2,x,y,z,r2); &
+
+\rfrac{sqrt(105)*z*(-2*i*x*y + x^2 - y^2)}{4*sqrt(pi)*sqrt(2)}\\
+
+\end{Examples}
+
+\end{Operator}
+
+\begin{Operator}{SphericalHarmonicY}
+\index{Spherical harmonic polynomials}
+The \name{SphericalHarmonicY} operator computes Spherical harmonic (Laplace)
+polynomials. These are special cases of the
+solid harmonic polynomials, \nameref{SolidHarmonicY}.
+
+\begin{Syntax}
+
+\name{SphericalHarmonicY}\(\meta{integer},\meta{integer},
+\meta{expression},\meta{expression}\)
+
+\end{Syntax}
+
+\begin{Examples}
+SphericalHarmonicY(3,2,theta,phi); &
+ 
+\rfrac{sqrt(105)*cos(theta)*sin(theta)^2*(cos(phi)^2+2*cos(phi)*sin(phi)*i-
+sin(phi)^2)}{4*sqrt(pi)*sqrt(2)}\\
+
+\end{Examples}
+
+\end{Operator}
+
+
+\subsection{Integral Functions}
+\index{sine integral function}
+\begin{Operator}{Si}
+\index{Sine integral function}\index{integral function}
+The \name{Si} operator returns the Sine Integral function.
+
+\begin{Syntax}
+\name{Si}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+limit(Si(x),x,infinity);          &       pi / 2 \\
+on rounded; \\
+Si(0.35);                         &       0.347626790989
+\end{Examples}
+
+\begin{Comments}
+The numeric values for the operator \name{Si} are computed via the
+power series representation, which limits the argument range.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Shi}
+\index{hyperbolic sine integral function}\index{integral function}
+The \name{Shi} operator returns the hyperbolic Sine Integral function.
+
+\begin{Syntax}
+\name{Shi}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+df(shi(x),x);                      &     sinh(x) / x \\
+on rounded; \\
+Shi(0.35);                         &    0.352390716351
+\end{Examples}
+
+\begin{Comments}
+The numeric values for the operator \name{Shi} are computed via the
+power series representation, which limits the argument range.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{s_i}
+\index{sine integral function}\index{integral function}
+The \name{s_i} operator returns the Sine Integral function si.
+
+\begin{Syntax}
+\name{s_i}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+s_i(xx);          &       (2*Si(xx) - pi) / 2 \\
+df(s_i(x),x);     &       sin(x) / x
+\end{Examples}
+
+\begin{Comments}
+The operator name \name{s_i} is simplified towards \nameref{SI}.
+Since REDUCE is not case sensitive by default the name ``si'' can't be
+used.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Ci}
+\index{cosine integral function}
+The \name{Ci} operator returns the Cosine Integral function.
+
+\begin{Syntax}
+\name{Ci}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+defint(cos(t)/t,t,x,infinity);     &    - ci (x) \\
+on rounded; \\
+Ci(0.35);                          &    - 0.50307556932
+\end{Examples}
+
+\begin{Comments}
+The numeric values for the operator \name{Ci} are computed via the
+power series representation, which limits the argument range.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Chi}
+\index{hyperbolic cosine integral function}\index{integral function}
+The \name{Chi} operator returns the Hyperbolic Cosine Integral function.
+
+\begin{Syntax}
+\name{Chi}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+defint((cosh(t)-1)/t,t,0,x);       &   - log(x) + psi(1) + chi(x)\\
+on rounded; \\
+Chi(0.35);                         &   - 0.44182471827
+\end{Examples}
+
+\begin{Comments}
+The numeric values for the operator \name{Chi} are computed via the
+power series representation, which limits the argument range.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{ERF extended}
+\index{error function}
+The special function package supplies an extended support for the
+\nameref{erf} operator  which implements the \nameindex{error function} \\
+ \\
+  defint(e**(-x**2),x,0,infinity) * 2/sqrt(pi) \\
+.\\
+\begin{Syntax}
+\name{erf}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+erf(-x);                        &   - erf(x)\\
+on rounded; \\
+erf(0.35);                      &   0.379382053562
+\end{Examples}
+
+\begin{Comments}
+The numeric values for the operator \name{erf} are computed via the
+power series representation, which limits the argument range.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{erfc}
+\index{error function}\index{complementary error function}
+The \name{erfc} operator returns the complementary Error function\\
+ \\
+  1 - defint(e**(-x**2),x,0,infinity) * 2/sqrt(pi) \\
+.\\
+\begin{Syntax}
+\name{erfc}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+erfc(xx);                     &      - erf(xx) + 1
+\end{Examples}
+
+\begin{Comments}
+The operator \name{erfc} is simplified towards the \nameref{erf} operator.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Ei}
+\index{exponential integral function}
+The \name{Ei} operator returns the Exponential Integral function.
+
+\begin{Syntax}
+\name{Ei}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+df(ei(x),x);               &   \rfrac{e^x}{x}\\
+on rounded; \\
+Ei(0.35);                  &    - 0.0894340019184
+\end{Examples}
+
+\begin{Comments}
+The numeric values for the operator \name{Ei} are computed via the
+power series representation, which limits the argument range.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Fresnel_C}
+The \name{Fresnel_C} operator represents Fresnel's Cosine function.
+
+\begin{Syntax}
+\name{Fresnel_C}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+int(cos(t^2*pi/2),t,0,x);     &   fresnel\_c(x) \\
+on rounded; \\
+fresnel_c(2.1);                  &   0.581564135061
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Fresnel_C} has a limited numeric evaluation of 
+large values of its argument.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Fresnel_S}
+The \name{Fresnel_S} operator represents Fresnel's Sine Integral function.
+
+\begin{Syntax}
+\name{Fresnel_S}\(\meta{expression}\)
+\end{Syntax}
+
+\begin{Examples}
+int(sin(t^2*pi/2),t,0,x);     &   fresnel\_s(x) \\
+on rounded; \\
+fresnel_s(2.1);                  &   0.374273359378
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Fresnel_S} has a limited numeric evaluation of 
+large values of its argument.
+\end{Comments}
+\end{Operator}
+
+\subsection{Combinatorial Operators}
+
+\begin{Operator}{BINOMIAL}
+The \name{Binomial} operator returns the Binomial coefficient if both
+parameter are integer and expressions involving the Gamma function otherwise.
+
+\begin{Syntax}
+
+\name{Binomial}\(\meta{integer},\meta{integer}\)
+
+\end{Syntax}
+
+\begin{Examples}
+Binomial(49,6);                &  13983816 \\
+
+Binomial(n,3);                 &  \rfrac{gamma(n + 1)}{6*gamma(n - 2)}
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Binomial} evaluates the Binomial coefficients from 
+the explicit form and therefore it is not the best algorithm if you
+want to compute many binomial coefficients with big indices in which
+case a recursive algorithm is preferable.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{STIRLING1}
+The \name{Stirling1} operator returns the Stirling Numbers S(n,m) of the first
+kind, i.e. the number of permutations of n symbols which have exactly m cycles
+(divided by (-1)**(n-m)).
+
+\begin{Syntax}
+\name{Stirling1}\(\meta{integer},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Stirling1 (17,4);              &       -87077748875904 \\
+Stirling1 (n,n-1);             &  \rfrac{-gamma(n+1)}{2*gamma(n-1)}
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Stirling1} evaluates the Stirling numbers of the
+first kind by rulesets for special cases or by a computing the closed
+form, which is a series involving the operators \nameref{BINOMIAL}
+and \nameref{STIRLING2}.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{STIRLING2}
+The \name{Stirling1} operator returns the Stirling Numbers S(n,m) of the 
+second kind, i.e. the number of ways of partitioning a set of n elements
+into m non-empty subsets.
+
+\begin{Syntax}
+\name{Stirling2}\(\meta{integer},\meta{integer}\)
+\end{Syntax}
+
+\begin{Examples}
+Stirling2 (17,4);              &       694337290 \\
+Stirling2 (n,n-1);             &   \rfrac{gamma(n+1)}{2*gamma(n-1)}
+\end{Examples}
+
+\begin{Comments}
+The operator \name{Stirling2} evaluates the Stirling numbers of the
+second kind by rulesets for special cases or by a computing the closed
+form. 
+\end{Comments}
+\end{Operator}
+
+\subsection{3j and  6j symbols}
+
+\begin{Operator}{ThreejSymbol}
+The \name{ThreejSymbol} operator implements the 3j symbol.
+
+\begin{Syntax}
+
+\name{ThreejSymbol}\(\meta{list of j1,m1},\meta{list of j2,m2},
+\meta{list of j3,m3}\)
+
+\end{Syntax}
+
+\begin{Examples}
+
+ThreejSymbol({j+1,m},{j+1,-m},{1,0}); & 
+
+\rfrac{( - 1)^j *(abs(j - m + 1) - abs(j + m + 1))}
+        { 2*sqrt(2*j^3  + 9*j^2  + 13*j + 6)*( - 1)^m}\\
+
+\end{Examples}
+\end{Operator}
+
+\begin{Operator}{Clebsch_Gordan}
+The \name{Clebsch\_Gordan} operator implements the Clebsch\_Gordan
+coefficients. This is closely related to the \nameref{Threejsymbol}.
+
+\begin{Syntax}
+
+\name{Clebsch\_Gordan}\(\meta{list of j1,m1},\meta{list of j2,m2},
+\meta{list of j3,m3}\)
+
+\end{Syntax}
+
+\begin{Examples}
+ Clebsch_Gordan({2,0},{2,0},{2,0});  & \rfrac{-2}{sqrt(14)}\\
+\end{Examples}
+\end{Operator}
+
+\begin{Operator}{SixjSymbol}
+The \name{SixjSymbol} operator implements the 6j symbol.
+\begin{Syntax}
+
+\name{SixjSymbol}\(\meta{list of j1,j2,j3},\meta{list of l1,l2,l3}\)
+
+\end{Syntax}
+\begin{Examples}
+
+SixjSymbol({7,6,3},{2,4,6}); & \rfrac{1}{14*sqrt(858)}\\
+
+\end{Examples}
+
+\begin{Comments}
+The operator \name{SixjSymbol} uses the \nameref{ineq} package in order
+to find minima and maxima for the summation index.
+\end{Comments}
+\end{Operator}
+
+\subsection{Miscellaneous}
+
+
+\begin{Operator}{HYPERGEOMETRIC}
+\index{hypergeometric function}
+\index{generalized hypergeometric function}
+The \name{Hypergeometric} operator  provides simplifications for the 
+generalized hypergeometric functions. 
+The \name{Hypergeometric} operator is included in the package specfn2.
+
+\begin{Syntax}
+\name{hypergeometric}\(\meta{list of parameters},\meta{list of parameters},
+   \meta{argument}\)
+\end{Syntax}
+
+\begin{Examples}
+load specfn2;\\
+hypergeometric ({1/2,1},{3/2},-x^2); & \rfrac{atan(x)}{x}\\
+hypergeometric ({},{},z);      &   e^z
+\end{Examples}
+
+\begin{Comments}
+The special case where the length of the first list is equal to 2 and
+the length of the second list is equal to 1 is often called
+``the hypergeometric function'' (notated as 2F1(a1,a2,b;x)).
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{MeijerG}
+The \name{MeijerG} operator provides simplifications for Meijer's G  
+function. The simplifications are performed towards polynomials,
+elementary or
+special functions or (generalized) \nameref{hypergeometric} functions.
+
+The \name{MeijerG} operator is included in the package specfn2.
+
+\begin{Syntax}
+\name{MeijerG}\(\meta{list of parameters},\meta{list of parameters},
+   \meta{argument}\)
+\end{Syntax}
+The first element of the lists has to be the list containing the
+first group (mostly called ``m'' and ``n'') of parameters. This passes
+the  four parameters of a Meijer's G function implicitly via the
+length of the lists.
+
+\begin{Examples}
+load specfn2;\\
+MeijerG({{},1},{{0}},x);       &   heaviside(-x+1)\\
+MeijerG({{}},{{1+1/4},1-1/4},(x^2)/4) * sqrt pi;
+                & \rfrac{sqrt(2)*sin(x)*x^2}{4*sqrt(x)}
+\end{Examples}
+
+\begin{Comments}
+Many well-known functions can be written as G functions,
+e.g. exponentials, logarithms, trigonometric functions, Bessel functions
+and hypergeometric functions.
+The formulae can be found e.g. in \\
+A.P.Prudnikov, Yu.A.Brychkov, O.I.Marichev: 
+Integrals and Series, Volume 3: More special functions,
+Gordon and Breach Science Publishers (1990).
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{Heaviside}
+
+The \name{Heaviside} operator returns the Heaviside function. \\
+
+Heaviside(~w) => if (w < 0) then 0 else 1 \\
+    when numberp w;
+
+\begin{Syntax}
+\name{Heaviside}\(\meta{argument}\)
+\end{Syntax}
+
+\begin{Comments}
+This operator is often included in the result of the simplification
+of a generalized \nameref{hypergeometric} function or a
+\nameref{MeijerG} function.
+
+No simplification is done for this function.
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{erfi}
+
+The \name{erfi} operator returns the error function of an imaginary argument.
+
+erfi(~x) => 2/sqrt(pi) * defint(e**(t**2),t,0,x); 
+
+\begin{Syntax}
+\name{erfi}\(\meta{argument}\)
+\end{Syntax}
+
+\begin{Comments}
+This operator is sometimes included in the result of the simplification
+of a generalized \nameref{hypergeometric} function or a
+\nameref{MeijerG} function.
+
+No simplification is done for this function.
+\end{Comments}
+\end{Operator}
+

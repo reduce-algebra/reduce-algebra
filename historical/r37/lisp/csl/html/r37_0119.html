@@ -1,0 +1,53 @@
+
+<A NAME=NUMBERP>
+
+<TITLE>NUMBERP</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NUMBERP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>numberp</em> operator returns 
+<A HREF=r37_0122.html>true</A> if its argument is a number, 
+and 
+<A HREF=r37_0014.html>nil</A> otherwise. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>numberp</em>(&lt;expression&gt;) or <em>numberp</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any REDUCE scalar expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+cc := 15.3; 
+
+  CC := 15.3 
+
+
+if numberp(cc) then write &quot;number&quot; else write &quot;nonnumber&quot;; 
+
+
+  number 
+
+
+if numberp(cb) then write &quot;number&quot; else write &quot;nonnumber&quot;; 
+
+
+  nonnumber
+
+</TT></PRE><P>Logical operators can only be used in conditional expressions, suc
+h as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> and <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>

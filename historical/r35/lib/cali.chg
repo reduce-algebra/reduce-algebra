@@ -1,0 +1,214 @@
+% Author H.-G. Graebe | Univ. Leipzig 
+% graebe@informatik.uni-leipzig.dbp.de
+
+CALI Changes from v. 2.0. to v. 2.1. : 
+=====================================
+
+Changes in the interface :
+
+changed meaning :
+
+getmult             -- renamed to degree
+groebfactorize      -- renamed to groebfactor, now allows constraints
+switch lazy         -- now chooses between Mora's and Lazard's
+                            approaches
+                            
+removed :
+
+    - idealintersect  (use matintersect instead)
+    - homstbasis (off lazy now starts Lazard's approach)
+    - setecart (incorporated into setring)
+
+changed parameter list :
+
+    - setring!*(vars,tord,tag,ecart)
+    - setring(vars,tord,tag[,ecart])
+    - resolve!*(m,d)
+    - groebfactor!*(m,con)
+    - in general model were exchanged with base elements
+
+changed return code structure :
+    - getring (in accordance with setring)
+    - mod!* (returns a pair (NF . pol. unit))
+    - all symbolic primary decompositions
+        (lists of 2-element lists instead of pairs)
+
+New facilities :
+
+switch 
+hardzerotest
+        do simplification for each zerotest of base coefficients
+
+factorunits 
+detectunits
+        (deleting unit factors under a nonnoetherian term order from
+        base polynomials)
+
+14.5.93 cali!=ecart becomes local to each ring and was removed as
+        global variable. This changes ring_define and derivates of
+        them. 
+    
+        ring_ecart added, ring_checkecart, ring_2a changed.
+    
+        The algebraic mode proc. "setecart" is incorporated into
+        "setring" (and hence removed). "setring" now may be called
+        with 3 (standard ecart) or 4 arguments.
+    
+        "getring" returns also the ecart.
+    
+16.5.93 lazystbasis returns now (gb . syz . nil)
+        setecart!* changes only the ecart vector.
+        getmult is now degree.
+
+19.5.93 'dpfn became 'dp!=fn in dpoly.
+
+        primarydecomposition : Now it handles gbases and hence
+                submodulep works properly for detecting superfluous
+                components.
+
+
+21.5.93 listtest and listminimize added to unify 
+            minset (removed)
+            groeb!=crit*
+            groeb!=test*
+            matop_redtest (removed)
+            matop_reduce (removed)
+            prime!=redtest (removed)
+            prime!=reduce (removed)
+
+22.5.93 A new version of the groebner factorization package was
+        incorporated, that uses constraints.
+        
+        Hilbert series now have also denominator in accordance with
+        the ecart vector. moid_hf2dim now computes the pole order,
+        not the degree of the denominator.
+        
+23.5.93 varopt = heuristic variable optimization
+        mo_2list added and mo_varexp, mo_linear changed.        
+
+28.5.93 fctrf supplied with "where !*factor=t" to guarantee correct
+        execution in the modular case.
+
+10.6.93 red_bas added. 
+        prime!=zeroprimes and prime!=zeroprimes2 corrected to handle
+        unit ideal properly.
+        moid_hf2dim corrected : mvar f doesn't exist if denr f=1 .
+
+11.6.93 dp_unit!? : test for bc_unit removed.
+        switches !*factorunits (find them by factorization) and
+        !*detectunits (detect base elements of the form monomial *
+        unit) added.
+        bas_deleteunits and dp_deleteunits added.
+
+14.6.93 models were changed to base elements since we need also
+            auxiliary information in several places for best choises
+            (as e.g. the ecart). This concerns 
+                red_subst 
+                red_redpol 
+                mora_redpol
+                dp_simp (it became dp_simp with another syntax and
+                                bas_simpelement) 
+                groeb_spol 
+                red_divtest 
+        moid updated to handle also vector moideals where it is
+            possible.  This concerns 
+                moid_sum 
+                moid_red 
+                moid_member
+
+18.6.93 groeb_stbasis and primarydecomposition!* etc. now return lists.
+
+5.7.93  bc_zero!? modified introducing the switch "hardzerotest".
+
+6.7.93  idealintersect removed. 
+        matintersect changed to one GB computation.
+        dpmat_det added.
+
+9.7.93  moid_from_bas : bas_zerodelete added
+        new syntax : red_divtest(base list, monomial)
+
+12.7.93 idealquotient and modulequotient changed to allow prereduction 
+        of the divisor.
+
+13.7.93 matstabquot(m,id) added.
+
+15.7.93 moid_max added.
+        unmixedradical and eqhull added.
+
+19.7.93 setring changed, ring_from_a added.
+
+20.7.93 resolve!*(m,d) with d = length of the required chain.
+        all procedures in module prime updated to compute gbasis!* 
+                after the change to new coordinates.
+
+22.7.93 module prime corrected to compute the correct bc_lcm of lc for
+        the recontraction ideal.
+        genmat added.
+
+23.7.93 syzygies for zero elements added. 
+
+26.7.93 ring degree tests corrected. Primary decomposition supplied with
+        ring_rlp term orders to guarantee, that precomputed gbases remain
+                gbases after ring change.
+        codim and codim!* added.
+        idealquotient#!*, modulequotient#!*, annihilator#!* (#=1,2)
+                with different methods added.
+
+27.7.93 dp_pseudodivmod added.
+
+28.7.93 minors added.
+
+3.9.93  strcat added to the header module.
+        ring_from_a : default ecart now becomes 
+            either first tord 
+                (provided tord exists and all weights are positive)
+            or (1 .. 1).
+
+7.9.93  dp_tcecart, dp_deletecomp added. 
+        tangentcone!* added.
+        mod changed to return true reductum.
+        bc_diff corrected (difff isn't s.f's difference !)
+        dpgcd and dpgcd!* added.
+
+8.9.93  dpgcd!* for unit polynomials simplified.
+
+9.9.93  groebfactorize becomes groebfactor to avoid name conflict 
+        with the groebner package.
+        Implementation changed to a version with constraint lists
+                and ascending easydim problem list sort criterion.
+
+10.9.93 groeb_updatePL discards (0 . 0)-pairs, 
+        bas_setrelations doesn't change elements with bas_nr=0,
+        groeb_mingb discards element with bas_nr=0.
+        dpmat_rowdegrees returns degrees only with nr>0.
+        
+        red_interreduce and mora_interreduce now take base lists.    
+
+12.9.93 all stuff in newcali.red embedded into local copies of global
+                cali variables.
+                
+16.9.93 resolve(m[,d]) changed. dim, hilbseries, bettinumbers, 
+        gradedbettinumbers modified.
+        setmonset, getmonset added.
+
+29.9.93 ideal2mat -> ideal2mat!* 
+        list2mat -> ideal2mat
+        mat2list -> flatten
+        setrules, getrules, setrules!*, bc!=simp and cali!=rules added
+        and bcsf changed appropriately.
+
+7.10.93 groeb!=groebsyz -> groeb_innerstbasis
+        mora!=homstbasis replaces homstbasis!* and is incorporated as
+            one of the branches of !*lazy, called by mora_stbasis.
+        dp_homogenize and dp_dehomogenize now treat also the rep
+            part. 
+        mod!* -> matop_pseudmod
+        The new mod!* now returns pairs (NF . pol. unit) as the
+            algebraic interface mod.
+        minors, genmat, matjac, dpmat_det -> scripts_det, varopt
+            moved to the module scripts.    
+
+        module scripts added.
+
+19.10.93 analytic_spread corrected.
+         bas_sieve : bas-zerodelete inserted.

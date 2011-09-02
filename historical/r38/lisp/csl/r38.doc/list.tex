@@ -1,0 +1,154 @@
+\chapter{Lists}
+
+A list\index{List} is an object consisting of a sequence of other objects
+(including lists themselves), separated by commas and surrounded by
+braces.  Examples of lists are:
+\begin{verbatim}
+        {a,b,c}
+
+        {1,a-b,c=d}
+
+        {{a},{{b,c},d},e}.
+\end{verbatim}
+The empty list is represented as
+\begin{verbatim}
+	{}.
+\end{verbatim}
+
+\section{Operations on Lists}\index{List operation}
+
+Several operators in the system return their results as lists, and a user
+can create new lists using braces and commas.  Alternatively, one can use
+the operator LIST to construct a list.  An important class of operations
+on lists are MAP and SELECT operations.  For details, please refer to the
+chapters on MAP, SELECT and the FOR command.  See also the documentation
+on the ASSIST package.
+
+To facilitate the use of
+lists, a number of operators are also available for manipulating
+them. {\tt PART(<list>,n)}\ttindex{PART} for example will return the
+$n^{th}$ element of a list. {\tt LENGTH}\ttindex{LENGTH} will return the
+length of a list.  Several operators are also defined uniquely for lists.
+For those familiar with them, these operators in fact mirror the
+operations defined for Lisp lists.  These operators are as follows:
+
+\subsection{LIST}
+
+The operator LIST is an alternative to the usage of curly brackets. LIST
+accepts an arbitrary number of arguments and returns a list
+of its arguments. This operator is useful in cases where operators
+have to be passed as arguments. E.g.,
+\begin{verbatim}
+list(a,list(list(b,c),d),e);       ->  {{a},{{b,c},d},e}
+\end{verbatim}
+
+\subsection{FIRST}
+
+This operator\ttindex{FIRST} returns the first member of a list.  An error
+occurs if the argument is not a list, or the list is empty.
+
+\subsection{SECOND}
+
+{\tt SECOND}\ttindex{SECOND} returns the second member of a list.  An error
+occurs if the argument is not a list or has no second element.
+
+\subsection{THIRD}
+
+This operator\ttindex{THIRD} returns the third member of a list.  An error
+occurs if the argument is not a list or has no third element.
+
+\subsection{REST}
+
+{\tt REST}\ttindex{REST} returns its argument with the first element
+removed.  An error occurs if the argument is not a list, or is empty.
+
+\subsection{$.$ (Cons) Operator}
+
+This operator\ttindex{. (CONS)} adds (``conses'') an expression to the
+front of a list.  For example:
+\begin{verbatim}
+        a . {b,c}     ->   {a,b,c}.
+\end{verbatim}
+
+\subsection{APPEND}
+
+This operator\ttindex{APPEND} appends its first argument to its second to
+form a new list.
+{\it Examples:}
+\begin{verbatim}
+        append({a,b},{c,d})     ->     {a,b,c,d}
+        append({{a,b}},{c,d})   ->     {{a,b},c,d}.
+\end{verbatim}
+
+\subsection{REVERSE}
+
+The operator {\tt REVERSE}\ttindex{REVERSE} returns its argument with the
+elements in the reverse order.  It only applies to the top level list, not
+any lower level lists that may occur.  Examples are:\index{List operation}
+\begin{verbatim}
+        reverse({a,b,c})        ->     {c,b,a}
+        reverse({{a,b,c},d})    ->     {d,{a,b,c}}.
+\end{verbatim}
+
+\subsection{List Arguments of Other Operators}
+
+If an operator other than those specifically defined for lists is given a
+single argument that is a list, then the result of this operation will be
+a list in which that operator is applied to each element of the list.  For
+example, the result of evaluating {\tt log\{a,b,c\}} is the expression
+{\tt \{LOG(A),LOG(B),LOG(C)\}}.
+
+There are two ways to inhibit this operator distribution.  Firstly, the
+switch {\tt LISTARGS},\ttindex{LISTARGS} if on, will globally inhibit
+such distribution.  Secondly, one can inhibit this distribution for a
+specific operator by the declaration {\tt LISTARGP}.\ttindex{LISTARGP} For
+example, with the declaration {\tt listargp log}, {\tt log\{a,b,c\}} would
+evaluate to {\tt LOG(\{A,B,C\})}.
+
+If an operator has more than one argument, no such distribution occurs.
+
+\subsection{Caveats and Examples}
+
+Some of the natural list operations such as {\it member} or {\it delete}
+are available only after loading the package {\it ASSIST}.
+
+Please note that a non-list as second argument to CONS
+(a "dotted pair" in LISP terms) is not allowed
+and causes an "invalid as list" error.
+\begin{verbatim}
+ a := 17 . 4;
+
+***** 17 4 invalid as list
+\end{verbatim}
+Also, the initialization of a scalar variable is not the empty list --
+one has to set list type variables explicitly, as in the following
+example:
+\begin{verbatim}
+ load_package assist;
+
+ procedure lotto (n,m);
+  begin scalar list_1_n, luckies, hit;
+     list_1_n := {};
+     luckies := {};
+     for k:=1:n do list_1_n := k . list_1_n;
+     for k:=1:m do
+       << hit := part(list_1_n,random(n-k+1) + 1);
+          list_1_n := delete(hit,list_1_n);
+          luckies := hit . luckies >>;
+     return luckies;
+  end;                             % In Germany, try lotto (49,6);
+\end{verbatim}
+
+{\it Another example:} Find all coefficients of a multivariate
+polynomial with respect to a list of variables:
+
+\begin{verbatim}
+procedure allcoeffs(q,lis); % q : polynomial, lis: list of vars
+   allcoeffs1 (list q,lis);
+
+procedure allcoeffs1(q,lis);
+  if lis={} then q else
+    allcoeffs1(foreach qq in q join coeff(qq,first lis),rest lis);
+
+\end{verbatim}
+

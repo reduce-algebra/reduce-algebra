@@ -1,0 +1,712 @@
+#
+# $Id: makefile.unx,v 3.26 92/03/24 22:36:48 woo Exp Locker: woo $
+#
+############################################################
+#
+# GNUPLOT 3.2 Makefile (Unix X11 support) for
+#  Apollo/Sun/Dec5000/IBMrs6000/HP9000/SGI/3B1/386IX/Cray
+#
+# Original version by:
+#   oliveria@caen.engin.umich.edu (ROQUE DONIZETE DE OLIVEIRA)
+#   Wed, 3 Jul 91 14:31:37 -0400
+#
+#>>> Customizing: You must customize part of this makefile for your site.
+#>>> Then type 'make' for further instructions.
+#>>> Customization instructions look like these lines do (#>>>).
+#
+
+TARGET = All # What to make by default
+
+############################################################
+#>>> Decide where the binaries and manuals will go. 
+# directory where to install executables on 'make install'
+DEST=/usr/local/bin
+# directory for installing man page on 'make man_install'.
+MANDEST=/usr/local/man/manl
+# where to install help file gnuplot.gih
+HELPDEST=/usr/local/lib/gnuplot.gih
+#HELPDEST=docs/gnuplot.gih
+# Where to send email about bugs and comments (locally)
+EMAIL=bug-gnuplot@ames.arc.nasa.gov
+
+############################################################
+#>>> Choose your C compiler and basic compiler flags.
+CC     = cc # the C compiler
+COPTS  = -O # -O if you trust your compiler's optimizer
+LD     =$(CC) $(CFLAGS)	    # default loading command
+NPROC  = 2
+RCSOLD = 3.25
+RCSVER = 3.26
+RCSCOM = "gnuplot3.2  release6"
+
+############################################################
+#>>> Choose some optional features. 
+#>>> At this point there are only two optional features:
+# READLINE:
+#   If READLINE is defined, then command-line editing is supported.
+#   Otherwise, your normal terminal editing is all you get.
+#   Some machines will not support this, and they will turn this
+#   option off (for example, apollos running SR10.2 or SR10.3 and
+#   loaded with BSD4.3 instead of SYS5). Note: problems with 
+#   gnuplot prompts have been noted when this feature is selected
+#   on IBM RS/6000 AIX, and compile errors are encountered on
+#   Sequent Dynix 3 and Convex OS 9.0.
+# NOCWDRC:
+#   If NOCWDRC is defined, then any .gnuplot in the current directory
+#   is not read on startup. This is a security consideration
+#   especially for root users ( we recommend you define -DNOCWDRC ).
+OPTIONS = -DREADLINE -DNOCWDRC
+
+#>>> Optionally install the lasergnu script.
+# Lasergnu is a handy shell script for creating a plot from the
+# command line and sending it directly to the printer. It currently
+# supports postscript and imagen printers, and probably would need
+# tailoring to your site.
+# Use lasergnu_install to install lasergnu.
+# Use lasergnu_noinstall to not install lasergnu (default).
+LASERGNU = lasergnu_install
+
+############################################################
+# X11 support
+#
+
+#>>> List your X11 libraries
+X11LIBS = -lX11
+
+#>>> List where the X11 include directory is found (if other than /usr/include)
+X11INCLUDES =
+
+#>>> List additional CFLAGS for X11 compilation
+# -DOLD_SELECT if you have an old 4.2 BSD OS (e.g. Sun OS 3.5) and
+#   encounter compile error for missing include file <sys/select.h>
+X11FLAGS = 
+
+#>>> You shouldn't have to change these, since they are controlled by
+#>>> Machine dependent definitions below.
+#       Compile option for plot.c and TERMFLAGS, to include X11 support
+PLOTXFLAG = -DX11
+#       make gnuplot_x11 by default
+GNUPLOT_X11 = gnuplot_x11
+#       install gnuplot_x11 by default
+X11INSTALL = x11_install
+
+############################################################
+#>>> Okay, you've changed enough. Now type 'make'.
+
+############################################################
+# This is used to pass many of the above definitions to make
+# subprocesses. Don't change this.
+MY_FLAGS  = CC="$(CC)" 	COPTS="$(COPTS)" DEST="$(DEST)" \
+		MANDEST="$(MANDEST)" HELPDEST="$(HELPDEST)" \
+		EMAIL="$(EMAIL)" LASERGNU="$(LASERGNU)"
+
+############################################################
+# Explanations of CFLAGS definitions.
+#  These should not need to be changed by you.
+# They are set correctly for each machine below. If your machine
+# doesn't fit the one of the patterns, override on the make command
+# line or make a new target for it and a new _FLAGS definition. 
+#  -DNOVFORK if you're unix and you have don't have vfork()
+#  -DMEMSET if you need to use memset() instead of bzero() 
+#  -DMEMCPY if your bcopy() is called memcpy()
+#  -DNOCOPY if you don't have a memcpy() by any name
+#  -DGAMMA=foo if your gamma function is called foo(). Apollos have
+#    lgamma(3m). If you don't have gamma(), use -DNOGAMMA.
+#    The default is -DGAMMA=gamma.
+#  -DGETCWD if your unix uses getcwd() instead of getcd()
+#    this is needed by HP-UX and Cray Unicos systems.
+#  -DULTRIX_KLUDGE if you run X windows on Ultrix and experience the
+#    "every other plot" problem.
+#  -DCRIPPLED_SELECT if "select errors" are encountered with X. This
+#    option is needed on SVR3 platforms with incomplete support for
+#    the BSD select() system call
+#  -Dunix is required to explicitly define "unix" for SCO and IBM
+#   	   RS/6000 running AIX 3.1 
+#  -fswitch if you are compiling on a Sun3 (or even -f68881)
+#    (but -fswitch is buggy on some systems, so watch out)
+
+# Defaults in case the user types 'make All' directly
+# Should match X11_FLAGS's CFLAGS definition
+CFLAGS = $(COPTS) $(OPTIONS)
+
+############################################################
+# Terminal (device) support
+#
+# All devices available to a given machine are compiled in by default.
+# This documents the flags available in TERMFLAGS, although TERMFLAGS
+# is usually controlled by the machine-dependent definitions below.
+# See other terminal defines in term.h.
+# Define ULTRIX_KLUDGE if you have the every-other plot problem in Ultrix X11.
+#
+# -DAPOLLO      Apollo Graphics Primitive Resource (window resize after replot)
+# -DGPR         Apollo Graphics Primitive Resource (fixed-size window)
+# -DCGI         SCO CGI
+# -DIRIS4D      IRIS4D series computer
+# -DSUN         Sun Microsystems Workstation
+# -DUNIXPC      unixpc (ATT 3b1 or ATT 7300)
+# -DUNIXPLOT    unixplot
+# -DX11         X11 Window System (This is $(PLOTXFLAG))
+TERMFLAGS = -Iterm -DUNIXPLOT $(PLOTXFLAG) 
+
+############################################################
+# Library explanations. 
+#  You shouldn't need to adjust this; again, it is handled by the
+# machine-dependent definitions below.
+#
+#  -lplot if you have -DUNIXPLOT in TERMFLAGS
+#  -lsuntool -lsunwindow -lpixrect  if you have -DSUN in TERMFLAGS
+#  -lgl_s if -DIRIS4D in TERMFLAGS
+#  -lccgi if -DCGI in TERMFLAGS
+LIBS = -lm -lplot
+
+####################################################################
+# List of object files except version.o
+OBJS = bitmap.o command.o contour.o eval.o graphics.o graph3d.o help.o \
+	   internal.o misc.o parse.o plot.o readline.o scanner.o \
+	   setshow.o standard.o term.o util.o  
+
+NEXTOBJS = EPSView.o EpsViewer.o
+############################################################
+# Machine-dependent settings.
+#
+X11_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS)" \
+    	   LIBS="$(LIBS)" X11FLAGS="$(X11FLAGS)" X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="$(X11LIBS)" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="$(TERMFLAGS)"
+
+DEC_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) " \
+    	   LIBS="$(LIBS)" X11FLAGS="$(X11FLAGS)" X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="$(X11LIBS)" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="$(TERMFLAGS) -DULTRIX_KLUDGE"
+
+APOLLO_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS)  -DGAMMA=lgamma" \
+    	   LIBS="$(LIBS)" X11FLAGS="$(X11FLAGS)" \
+    	   X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="-L/usr/lib/X11 -lX11" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="$(TERMFLAGS) -DAPOLLO -DGPR"
+
+HP_FLAGS = \
+    	   CFLAGS="+O1 $(OPTIONS) -DMEMSET -DMEMCPY  -DGETCWD" \
+    	   LIBS="-lm" X11FLAGS="$(X11FLAGS)" \
+    	   X11INCLUDES="-I/usr/include/X11R4" \
+    	   X11LIBS="-L/usr/lib/X11R4 -lX11" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="-Iterm -DX11"
+
+SUN_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS)" \
+    	   LIBS="-lsuntool -lsunwindow -lpixrect $(LIBS)" \
+    	   X11FLAGS=" " X11INCLUDES=" " \
+    	   X11LIBS=" " \
+    	   PLOTXFLAG=" " GNUPLOT_X11=" " X11INSTALL=x11_noinstall \
+    	   TERMFLAGS="-Iterm -DUNIXPLOT -DSUN"
+
+SUN_X11_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS)" \
+    	   LIBS="-lsuntool -lsunwindow -lpixrect $(LIBS)" \
+    	   X11FLAGS="$(X11FLAGS)" X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="$(X11LIBS)" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="$(TERMFLAGS) -DSUN"
+
+SGI_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DNOVFORK" \
+    	   LIBS="-lgl_s -lm" X11FLAGS=" " X11INCLUDES=" " \
+    	   X11LIBS=" " \
+    	   PLOTXFLAG=" " GNUPLOT_X11=" " X11INSTALL=x11_noinstall \
+    	   TERMFLAGS="-Iterm -DIRIS4D"
+
+SGIX11_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DNOVFORK" \
+    	   LIBS="-lgl_s -lm -lc_s" X11FLAGS="$(X11FLAGS)" \
+    	   X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="-L/usr/lib/X11 -lX11" \
+     	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+     	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="-Iterm -DX11 -DIRIS4D"
+
+CGI_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -Dunix" \
+    	   LIBS="-lccgi $(LIBS)" X11FLAGS=" " X11INCLUDES=" " \
+    	   X11LIBS=" " PLOTXFLAG=" " GNUPLOT_X11=" " X11INSTALL=x11_noinstall \
+    	   TERMFLAGS="-Iterm -DUNIXPLOT -DCGI"
+
+3B1_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DMEMSET -DMEMCPY -DNOVFORK" \
+    	   LIBS="$(LIBS)" X11FLAGS=" " X11INCLUDES=" " \
+    	   X11LIBS=" " \
+    	   PLOTXFLAG=" " GNUPLOT_X11=" " X11INSTALL=x11_noinstall \
+    	   LD="ld /lib/crt0s.o /lib/shlib.ifile" \
+    	   TERMFLAGS="-Iterm -DUNIXPC"
+
+386IX_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DMEMSET -DMEMCPY -DNOVFORK -DTCSETSW -DTCGETS" \
+    	   LIBS="$(LIBS) -lcposix" X11FLAGS=" " X11INCLUDES=" " \
+    	   X11LIBS=" " PLOTXFLAG=" " GNUPLOT_X11=" " \
+    	   X11INSTALL=x11_noinstall \
+    	   TERMFLAGS="-Iterm -DUNIXPLOT"
+386IX_X11_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DMEMSET -DMEMCPY -DNOVFORK -DTCSETSW -DTCGETS" \
+    	   LIBS="$(LIBS) -lcposix" X11FLAGS="$(X11FLAGS)" X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="$(X11LIBS)" PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11="$(GNUPLOT_X11)" \
+    	   X11INSTALL= "$(X11INSTALL)" \
+    	   TERMFLAGS="-Iterm -DUNIXPLOT -DX11"
+ 	
+AIX_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -Dunix -DNOVFORK" \
+    	   LIBS="$(LIBS)" X11FLAGS="$(X11FLAGS)" \
+    	   X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="$(X11LIBS)" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="$(TERMFLAGS)"
+
+NEXT_FLAGS = \
+    	   CFLAGS="$(COPTS) -DGAMMA=lgamma -DNEXT" \
+           LIBS="-lNeXT_s -lsys_s -lm" \
+    	   X11FLAGS="$(X11FLAGS)" \
+    	   X11INCLUDES=" " X11LIBS=" " PLOTXFLAG=" " \
+    	   GNUPLOT_X11=" " X11INSTALL=x11_noinstall \
+    	   TERMFLAGS="-Iterm" OBJS=" $(OBJS) $(NEXTOBJS)"
+
+NEXT_X11_FLAGS = \
+    	   CFLAGS="$(COPTS) -DGAMMA=lgamma -DNEXT" \
+           LIBS="-lNeXT_s -lsys_s -lm" \
+           X11LIBS="-L/usr/lib/X11 -lX11" \
+    	   X11INCLUDES="$(X11INCLUDES)" X11FLAGS="$(X11FLAGS)" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="-Iterm -DX11" OBJS=" $(OBJS) $(NEXTOBJS)"
+
+CRAY_FLAGS = \
+	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DNOVFORK" \
+	   LIBS="-lm" X11FLAGS=" " \
+	   X11INCLUDES=" " \
+	   X11LIBS=" " \
+	   PLOTXFLAG=" " GNUPLOT_X11=" " \
+	   X11INSTALL=x11_noinstall \
+	   TERMFLAGS="-Iterm"
+
+CRAY_X11_FLAGS = \
+	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DNOVFORK" \
+	   LIBS="-lm" X11FLAGS="$(X11FLAGS)" \
+	   X11INCLUDES="$(X11INCLUDES)" \
+	   X11LIBS="$(X11LIBS)" \
+	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11="$(GNUPLOT_X11)" \
+	   X11INSTALL=$(X11INSTALL) \
+	   TERMFLAGS="-Iterm -DX11"
+
+PTX_X11_FLAGS = \
+	   CFLAGS="$(COPTS) $(OPTIONS) -DGETCWD -DMEMSET -DMEMCPY -DCRIPPLED_SELECT" \
+	   LIBS="-lm -lplot" X11FLAGS="$(X11FLAGS)" \
+	   X11INCLUDES="$(X11INCLUDES)" \
+	   X11LIBS="-lX11 -lseq -lsocket -linet -lnsl" \
+	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11="$(GNUPLOT_X11)" \
+	   X11INSTALL=$(X11INSTALL) \
+	   TERMFLAGS="$(TERMFLAGS)"
+
+CONVEX_X11_FLAGS = \
+    	   CFLAGS="$(COPTS) $(OPTIONS) -DHUGE=8.9e307" \
+    	   LIBS="$(LIBS)" X11FLAGS="$(X11FLAGS)" X11INCLUDES="$(X11INCLUDES)" \
+    	   X11LIBS="$(X11LIBS)" \
+    	   PLOTXFLAG="$(PLOTXFLAG)" GNUPLOT_X11=$(GNUPLOT_X11) \
+    	   X11INSTALL="$(X11INSTALL)" \
+    	   TERMFLAGS="$(TERMFLAGS)"
+
+####################################################################
+# List of source files
+# Used for makeing shar files, lint, and some dependencies.
+DIRS = term demo docs docs/latextut
+
+CSOURCE1 = command.c setshow.c 
+CSOURCE2 = help.c graphics.c graph3d.c internal.c 
+CSOURCE3 = misc.c eval.c parse.c plot.c readline.c scanner.c standard.c 
+CSOURCE4 = bitmap.c term.c util.c version.c
+CSOURCE5 = term/amiga.trm term/aed.trm term/cgi.trm term/dumb.trm term/dxf.trm \
+	term/dxy.trm term/eepic.trm term/epson.trm term/fig.trm \
+	term/hp26.trm term/hp2648.trm term/hpgl.trm term/hpljii.trm \
+	term/apollo.trm term/gpr.trm term/ai.trm term/next.trm
+CSOURCE6 = term/impcodes.h term/imagen.trm term/object.h \
+	term/iris4d.trm term/kyo.trm term/latex.trm term/pbm.trm term/pc.trm 
+CSOURCE7 = term/post.trm term/qms.trm term/regis.trm term/sun.trm \
+	term/t410x.trm term/tek.trm term/unixpc.trm term/unixplot.trm \
+	term/v384.trm term/x11.trm term/bigfig.trm term/vws.trm gnuplot_x11.c
+CSOURCE8 = contour.c
+NEXTSRC  = EPSView.m EPSView.h EpsViewer.m EpsViewer.h
+# not C code, but still needed
+
+DEMOS = demo/1.dat demo/2.dat demo/3.dat demo/contours.demo demo/controls.demo \
+	demo/electron.demo demo/glass.dat demo/param.demo demo/polar.demo \
+	demo/simple.demo demo/surface1.demo demo/surface2.demo demo/using.dat \
+	demo/using.demo demo/world.cor demo/world.dat demo/world.demo \
+	demo/err.dat demo/poldat.demo demo/polar.dat demo/errorbar.demo \
+	demo/antenna.dat demo/all.demo demo/bivariat.demo demo/hidden.demo
+
+ETC = Copyright README README.gnutex README.amiga makefile.unx makefile.vms  \
+	linkopt.amg makefile.amg makefile.ami linkopt.vms buildvms.com \
+	lasergnu  README.3d README.x11 README.NeXT \
+	term/README History gnuplot.el Intergraph.x11 README.Install
+
+#BETA files (not standard distribution files)
+BETA = BETA6
+# PC-specific files
+PC = corgraph.asm corplot.c header.mac hrcgraph.asm lineproc.mac \
+	linkopt.msc linkopt.tc linkopt.tco makefile.msc makefile.tc \
+	pcgraph.asm 
+
+# Documentation and help files
+DOCS1 = docs/Makefile docs/README docs/checkdoc.c docs/doc2gih.c \
+	docs/doc2hlp.c docs/doc2hlp.com docs/doc2ms.c docs/doc2tex.c \
+	docs/gnuplot.1 docs/lasergnu.1 docs/toc_entry.sty \
+	docs/titlepage.ms docs/titlepage.tex docs/Makefile.ami
+DOCS2 = docs/gnuplot.doc
+DOCS3 = docs/latextut/Makefile docs/latextut/eg1.plt \
+	docs/latextut/eg2.plt docs/latextut/eg3.dat docs/latextut/eg3.plt \
+	docs/latextut/eg4.plt docs/latextut/eg5.plt docs/latextut/eg6.plt \
+	docs/latextut/header.tex docs/latextut/tutorial.tex \
+	docs/latextut/linepoint.plt
+
+#########################################################################
+# Default target (informational)
+info:
+	@echo "Please do a 'make <MACHINE>' where <MACHINE> is one of the following:"
+	@echo 
+	@echo "apollo       for Apollo running SR10.3 with Apollo's X11"
+	@echo "dec          for Dec3100/5000 running Ultrix 3.1d with MIT's X11"
+	@echo "hp           for HP/9000 700 series running HP/UX 8.0 with MIT's X11R4"
+	@echo "sun          for Sun sparcstation running SunOS 4.1 with suntools (no X11) "
+	@echo "sun_x11      for Sun sparcstation running SunOS 4.1 with suntools and X11 "
+	@echo "sgi          for Silicon Graphics IRIS4D machines (no X11) "
+	@echo "sgix11       for Silicon Graphics IRIS4D machines (X11) "
+	@echo "next         for NeXT Cube and Slab running NeXTOS 2.0+ (no X11)"
+	@echo "next_11      for NeXT Cube and Slab running NeXTOS 2.0+ with X11"
+	@echo "3b1          for ATT 3b1 machines (no X11) "
+	@echo "386ix        for 386 machines running 386/ix (no X11)"
+	@echo "386ix_x11    for 386 machines running 386/ix with T.Roell X386"
+	@echo "ibmrs6000    for IBM RS/6000 running Aix 3.1 with IBM's X11"
+	@echo "x11          for a generic machine (like a sun or dec) with MIT's X11"
+	@echo "cray         for Cray Y-MP or Cray-2 running Unicos 6.0 or 6.1 (no X11)"
+	@echo "cray_x11     for Cray Y-MP or Cray-2 running Unicos 6.0 or 6.1 with X11"
+	@echo "ptx_x11      for Sequent Dynix/PTX with MIT X11"
+	@echo "convex_x11   for Convex 9.0 with MIT X11"
+	@echo 
+	@echo "Examples:"
+	@echo
+	@echo "         make x11"
+	@echo "         make apollo"
+	@echo "         make apollo       OPTIONS='-DNOCWDRC' "
+	@echo "         make apollo       DEST='/usr/um/misc/bin' "
+	@echo "         make dec"
+	@echo "         make hp"
+	@echo "         make next"
+	@echo "         make sun          HELPDEST='/usr/um/misc/lib/gnuplot.gih' "
+	@echo "         make sun          X11INCLUDES='-I/usr/local/include' "
+	@echo "         make sun_x11"
+	@echo "         make sgi"
+	@echo "         make 3b1"
+	@echo "         make 386ix"
+	@echo "         make ibmrs6000    MANDEST='/usr/um/misc/man/man1' COPTS='-O' "
+	@echo "         make cray"
+	@echo "         make cray_x11"
+	@echo 
+	@echo "If you just type 'make All' , it will build gnuplot for Unix X11"
+	@echo "and the following variables will be used as default:"
+	@echo 
+	@echo " DEST                     " $(DEST)
+	@echo " MANDEST                  " $(MANDEST)
+	@echo " HELPDEST                 " $(HELPDEST)
+	@echo " EMAIL                    " $(EMAIL)
+	@echo " CC                       " $(CC)
+	@echo " COPTS                    " $(COPTS)
+	@echo " OPTIONS                  " $(OPTIONS)
+	@echo " CFLAGS                   " $(CFLAGS)
+	@echo " LIBS                     " $(LIBS)
+	@echo " X11FLAGS                 " $(X11FLAGS)
+	@echo " X11LIBS                  " $(X11LIBS)
+	@echo " X11INCLUDES              " $(X11INCLUDES)
+	@echo " TERMFLAGS                " $(TERMFLAGS)
+	@echo " LASERGNU                 " $(LASERGNU)
+	@echo 
+	@echo "If you are not familiar with makefiles or just want to know what"
+	@echo " 'make <MACHINE>' would  do without actually doing anything, then type"
+	@echo " 'make <MACHINE> -n' "
+	@echo 
+
+###############################################################
+# Targets for each machine
+
+x11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(X11_FLAGS)    $(TARGET)
+
+dec:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(DEC_FLAGS)      $(TARGET)
+
+apollo:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(APOLLO_FLAGS)   $(TARGET)
+
+hp:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(HP_FLAGS)       $(TARGET)
+
+next:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(NEXT_FLAGS)     $(TARGET)
+
+next_x11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(NEXT_X11_FLAGS)     $(TARGET)
+
+sun:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(SUN_FLAGS)      $(TARGET)
+
+sun_x11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(SUN_X11_FLAGS)  $(TARGET)
+
+sgi:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(SGI_FLAGS)      $(TARGET)
+
+sgix11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(SGIX11_FLAGS)   $(TARGET)
+
+cgi:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(CGI_FLAGS)      $(TARGET)
+
+3b1:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(3B1_FLAGS)      $(TARGET)
+
+386ix:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(386IX_FLAGS)    $(TARGET)
+
+386ix_x11: 
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(386IX_X11_FLAGS) $(TARGET)
+
+ibmrs6000:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(AIX_FLAGS)      $(TARGET)
+
+cray:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(CRAY_FLAGS)     $(TARGET)
+cray_x11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(CRAY_X11_FLAGS) $(TARGET)
+ptx_x11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(PTX_X11_FLAGS) $(TARGET)
+convex_x11:
+	$(MAKE) $(MFLAGS) $(MY_FLAGS) $(CONVEX_X11_FLAGS) $(TARGET)
+
+#############################################################
+# Targets that really do something
+
+all:
+	@echo "Please just type  'make'  in order to get some information on "
+	@echo "how to build gnuplot under Unix and the X Window System."
+
+All:	gnuplot $(GNUPLOT_X11) doc
+
+gnuplot: $(OBJS) version.o
+	$(LD) $(OBJS) version.o $(LIBS) -o gnuplot
+
+doc:
+	( cd docs; $(MAKE) $(MFLAGS) gnuplot.gih )
+
+gnuplot_x11: gnuplot_x11.c
+	$(CC) $(CFLAGS) $(X11FLAGS) $(X11INCLUDES) -o gnuplot_x11 gnuplot_x11.c $(X11LIBS)
+
+################################################################
+# Installation instructions
+
+install:
+	@echo 
+	@echo "Please do a 'make <MACHINE> TARGET=Install' where <MACHINE> is one of the following:"
+	@echo 
+	@echo "apollo, dec, hp, sun, sun_x11, sgi, sgix11, cgi,"
+	@echo "next, next_x11, 3b1, 386ix, 386ix_x11, ibmrs6000,"
+	@echo "x11, cray, cray_x11, ptx_x11, convex_x11"
+	@echo 
+	@echo "Examples:"
+	@echo
+	@echo "         make x11          TARGET=Install "
+	@echo "         make apollo       TARGET=Install "
+	@echo "         make dec          TARGET=Install "
+	@echo "         make hp           TARGET=Install "
+	@echo "         make sun          TARGET=Install HELPDEST='/usr/um/misc/lib/gnuplot.gih' "
+	@echo "         make ibmrs6000    TARGET=Install MANDEST='/usr/um/misc/man/man1' COPTS='-O' "
+	@echo 
+################################################################
+# Installation targets
+
+Install: All man_install $(X11INSTALL) $(LASERGNU)
+	cp gnuplot     $(DEST)
+	strip $(DEST)/gnuplot
+	( cd docs; $(MAKE) $(MFLAGS) install-unix HELPDEST=$(HELPDEST) )
+
+x11_install: gnuplot_x11
+	cp gnuplot_x11 $(DEST)
+	strip $(DEST)/gnuplot_x11
+
+x11_noinstall: 
+	@echo "X11 not requested, so gnuplot_x11 program not installed"
+
+man_install: docs/gnuplot.1
+	cp docs/gnuplot.1 $(MANDEST)
+
+lasergnu_install: lasergnu docs/lasergnu.1
+	cp lasergnu $(DEST)
+	chmod 755 $(DEST)/lasergnu
+	cp docs/lasergnu.1 $(MANDEST)
+
+lasergnu_noinstall:
+	@echo 
+	@echo "Lasergnu will not be installed by default."
+	@echo "If you think you need the lasergnu script to print"
+	@echo " files on the imagen or postscript printers, then"
+	@echo " type"
+	@echo "      'make <MACHINE> TARGET=Install LASERGNU='lasergnu_install' "
+	@echo
+	@echo "Lasergnu is really not needed since within gnuplot you can"
+	@echo " can create files (in impress or postscript language) and"
+	@echo " print them through your favorite print command (lpr, lp, prf, ipr)."
+	@echo 
+
+################################################################
+# Dependencies
+
+plot.o: plot.c
+	$(CC) $(CFLAGS) $(PLOTXFLAG) -c plot.c
+
+term.o: term.h term.c $(CSOURCE5) $(CSOURCE6) $(CSOURCE7)
+	$(CC) $(CFLAGS) $(TERMFLAGS) -c term.c
+
+version.o:
+	$(CC) $(CFLAGS) -DCONTACT=\"$(EMAIL)\" -c version.c
+
+EpsViewer.o : EpsViewer.h EpsViewer.m EPSView.h
+	$(CC) -c EpsViewer.m
+
+EPSView.o : EPSView.h EPSView.m
+		$(CC) -c EPSView.m  
+
+$(OBJS): plot.h
+
+command.o: command.c
+	$(CC) $(CFLAGS) -c command.c -DHELPFILE=\"$(HELPDEST)\"
+
+command.o help.o misc.o: help.h
+
+command.o graphics.o graph3d.o misc.o plot.o setshow.o term.o: setshow.h
+
+bitmap.o term.o: bitmap.h
+
+################################################################
+# Miscellaneous targets
+
+SOURCES=plot.h help.h setshow.h bitmap.h term.h $(CSOURCE1) $(CSOURCE2) \
+	$(CSOURCE3) $(CSOURCE4) $(CSOURCE5) $(CSOURCE6) $(CSOURCE7)\
+	 $(CSOURCE8) $(NEXTSRC)
+
+DOCS  = $(DOCS1) $(DOCS2) $(DOCS3)
+
+lint:
+	lint -hx $(SOURCES)
+
+clean:
+	rm -f *.o *~ *.bak term/*~ term/*.bak
+	( cd docs; $(MAKE) $(MFLAGS) clean )
+	( cd docs/latextut; $(MAKE) $(MFLAGS) clean )
+
+spotless:
+	rm -f *.o *~ *.bak term/*~ term/*.bak TAGS gnuplot gnuplot_x11
+	( cd docs; $(MAKE) $(MFLAGS) clean )
+	( cd docs/latextut; $(MAKE) $(MFLAGS) spotless )
+
+################################################################
+# Making shar files for mailing gnuplot
+
+shar: gnuplot.sh00 gnuplot.sh01 gnuplot.sh02 gnuplot.sh03 gnuplot.sh04 \
+	gnuplot.sh05 gnuplot.sh06 gnuplot.sh07 gnuplot.sh08 \
+	gnuplot.sh09 gnuplot.sh10 gnuplot.sh11 gnuplot.sh12 \
+	gnuplot.sh13 gnuplot.sh14 gnuplot.sh15 
+
+gnuplot.sh00:
+	echo '#!/bin/sh' > gnuplot.sh00
+	echo '# This is a shell file to make directories' >> gnuplot.sh00
+	echo mkdir $(DIRS) >> gnuplot.sh00
+
+gnuplot.sh01: $(ETC)
+	shar $(ETC) > gnuplot.sh01
+
+gnuplot.sh02: $(DOCS1)
+	shar $(DOCS1) > gnuplot.sh02
+
+gnuplot.sh03: $(DOCS2)
+	shar $(DOCS2) > gnuplot.sh03
+
+gnuplot.sh04: $(DOCS3)
+	shar $(DOCS3) > gnuplot.sh04
+
+gnuplot.sh05: $(CSOURCE1)
+	shar $(CSOURCE1) > gnuplot.sh05
+
+gnuplot.sh06: $(CSOURCE2)
+	shar $(CSOURCE2) > gnuplot.sh06
+
+gnuplot.sh07: $(CSOURCE3)
+	shar $(CSOURCE3) > gnuplot.sh07
+
+gnuplot.sh08: $(CSOURCE4)
+	shar $(CSOURCE4) > gnuplot.sh08
+
+gnuplot.sh09: $(CSOURCE5)
+	shar $(CSOURCE5) > gnuplot.sh09
+
+gnuplot.sh10: $(CSOURCE6)
+	shar $(CSOURCE6) > gnuplot.sh10
+
+gnuplot.sh11: $(CSOURCE7)
+	shar $(CSOURCE7) > gnuplot.sh11
+
+gnuplot.sh12: $(PC)
+	shar $(PC) > gnuplot.sh12
+
+gnuplot.sh13: $(CSOURCE8)
+	shar $(CSOURCE8) > gnuplot.sh13
+
+gnuplot.sh14: $(DEMOS)
+	shar $(DEMOS) > gnuplot.sh14
+
+gnuplot.sh15: $(BETA)
+	shar $(BETA) > gnuplot.sh15
+
+tar: $(ETC) $(SOURCES) $(PC) $(DEMOS) $(BETA) $(DOCS)
+	$(TAR) cvf /tmp/gnuplot.tar $(ETC) $(SOURCES) $(PC)\
+		 $(DEMOS) $(BETA) $(DOCS)
+rcsdoc:
+	rcs -o-$(RCSOLD) -l$(RCSVER) $(DOCS)
+
+rcs:
+	rcs -l$(RCSVER) -c$(RCSCOM) $(ETC) $(SOURCES) $(PC)
+
+ci:
+	ci -l$(RCSVER) -m$(RCSCOM) $(SOURCES) $(PC) $(ETC)
+
+cidoc:
+	ci -l$(RCSVER) -m$(RCSCOM) $(DOCS)
+
+cidemo:
+	ci -l$(RCSVER) -m$(RCSCOM) $(DEMOS)
+
+co:
+	co -l -r$(RCSVER) $(ETC) $(SOURCES) $(PC)
+
+codoc:
+	co -l -r$(RCSVER) $(DOCS)
+
+codemo:
+	co -l -r$(RCSVER) $(DEMOS)
+

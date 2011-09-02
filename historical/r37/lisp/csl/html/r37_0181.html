@@ -1,0 +1,76 @@
+
+<A NAME=STRUCTR>
+
+<TITLE>STRUCTR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>STRUCTR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>structr</em> operator breaks its argument expression into named 
+subexpressions. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>structr</em>(&lt;expression&gt; [,&lt;identifier&gt;[,&lt;identifier&gt; ...
+]]) 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any valid REDUCE scalar expression. 
+&lt;identifier&gt; may be any valid REDUCE <em>identifier</em>. The first 
+identifier 
+is the stem for subexpression names, the second is the name to be assigned 
+to the structured expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+structr(sqrt(x**2 + 2*x) + sin(x**2*z)); 
+
+
+  ANS1 + ANS2
+      where
+                       2
+          ANS2 := SIN(X *Z)
+                             1/2
+          ANS1 := ((X + 2)*X)
+
+
+ans3; 
+
+  ANS3 
+
+
+on fort; 
+
+structr((x+1)**5 + tan(x*y*z),var,aa); 
+
+
+  VAR1=TAN(X*Y*Z)
+  AA=VAR1+X**5+5.*X**4+10.*X**3+10.X**2+5.*X+1
+
+</TT></PRE><P>The second argument to <em>structr</em> is optional. If it is not 
+given, the 
+default stem <em>ANS</em> is used by REDUCE to construct names for the 
+subexpression. The names are only for display purposes: REDUCE does not 
+store the names and their values unless the switch 
+<A HREF=r37_0331.html>savestructr</A> is 
+on. 
+<P>
+<P>
+If a third argument is given, the structured expression as a whole is named by 
+this argument, when 
+<A HREF=r37_0289.html>fort</A> is on. The expression is not stored 
+under this 
+name. You can send these structured Fortran expressions to a file with the 
+<em>out</em> command. 
+<P>
+<P>
+<P>

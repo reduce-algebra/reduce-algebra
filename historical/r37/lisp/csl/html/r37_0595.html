@@ -1,0 +1,62 @@
+
+<A NAME=jacobian>
+
+<TITLE>jacobian</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>JACOBIAN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>jacobian</em>(&lt;expr\_list&gt;,&lt;variable\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;expr\_list&gt; :- either a single algebraic expression or a list 
+ of algebraic expressions. 
+<P>
+<P>
+&lt;variable\_list&gt; :- either a single variable or a list of 
+ variables. 
+<P>
+<P>
+<em>jacobian</em>computes the jacobian matrix of &lt;expr\_list&gt; 
+w.r.t. &lt;variable\_list&gt;. 
+<P>
+<P>
+This is a matrix whose (i,j)'th entry is 
+<A HREF=r37_0148.html>df</A>(&lt;expr\_list&gt; 
+(i),&lt;variable\_list&gt;(j)). 
+<P>
+<P>
+The matrix is n by m where n is the number of variables and m the number 
+of expressions. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ 
+jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z}); 
+
+
+  [      3                 ]
+  [0  4*x     0       0    ]
+  [                        ]
+  [     2                  ]
+  [0   y    2*x*y     0    ]
+  [                        ]
+  [      3     3          2]
+  [0  y*z   x*z    3*x*y*z ]
+
+</TT></PRE><P>Related functions: 
+
+<A HREF=r37_0593.html>hessian</A>, 
+<A HREF=r37_0148.html>df</A>. 
+<P>
+<P>

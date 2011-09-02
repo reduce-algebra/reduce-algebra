@@ -1,0 +1,2699 @@
+
+<a name=r38_0100>
+
+<title>RAD2DMS</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>RAD2DMS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>rad2dms</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+In 
+<a href=r38_0300.html#r38_0330>rounded</a> mode, if &lt;expression&gt; is a real
+ number, the 
+operator <em>rad2dms</em> will interpret it as radians, and convert it to a 
+list containing the equivalent degrees, minutes and seconds. In all other 
+cases, an expression in terms of the original operator is returned. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+rad2dms 1; 
+
+  RAD2DMS(1) 
+
+
+on rounded; 
+
+ws; 
+
+  {57,17,44.8062470964} 
+
+
+rad2dms a; 
+
+  RAD2DMS(A)
+
+</tt></pre><p>
+<a name=r38_0101>
+
+<title>RECIP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>RECIP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<em>recip</em> is the alphabetical name for the division operator <em>/</em> 
+or 
+<a href=r38_0001.html#r38_0030>slash</a> used as a unary operator. The use of 
+<em>/</em> is preferred. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+recip a; 
+
+  1
+  - 
+  A
+
+
+recip 2; 
+
+  1
+  --
+  2
+
+</tt></pre><p>
+<a name=r38_0102>
+
+<title>REMAINDER</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>REMAINDER</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>remainder</em> operator returns the remainder after its first 
+argument is divided by its second argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>remainder</em>(&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE polynomial, and is not limited 
+to numeric values. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+remainder(13,6); 
+
+  1 
+
+
+remainder(x**2 + 3*x + 2,x+1); 
+
+  0  
+
+
+remainder(x**3 + 12*x + 4,x**2 + 1); 
+
+
+  11*X + 4 
+
+
+remainder(sin(2*x),x*y); 
+
+  SIN(2*X)
+
+</tt></pre><p>In the default case, remainders are calculated over the integers. 
+If you 
+need the remainder with respect to another domain, it must be declared 
+explicitly. 
+<P>
+<P>
+If the first argument to <em>remainder</em> contains a denominator not equal to 
+
+1, an error occurs. 
+<P>
+<P>
+<P>
+
+<a name=r38_0103>
+
+<title>ROUND</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ROUND</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>round</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+If its argument has a numerical value, <em>round</em> rounds it to the 
+nearest integer. For non-numeric arguments, the value is an expression in 
+the original operator. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+round 3.4; 
+
+  3 
+
+
+round 3.5; 
+
+  4 
+
+
+round a; 
+
+  ROUND(A)
+
+</tt></pre><p>
+<a name=r38_0104>
+
+<title>SETMOD</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SETMOD</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>setmod</em> command sets the modulus value for subsequent 
+<a href=r38_0300.html#r38_0305>modular</a> 
+arithmetic. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>setmod</em>&lt;integer&gt; 
+<P>
+<P>
+<P>
+&lt;integer&gt; must be positive, and greater than 1. It need not be a prime 
+number. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+setmod 6; 
+
+  1 
+
+
+on modular; 
+
+16; 
+
+  4 
+
+
+x^2 + 5x + 7; 
+
+   2
+  X  + 5*X + 1 
+
+
+x/3; 
+
+  X
+  - 
+  3
+
+
+setmod 2; 
+
+  6 
+
+
+(x+1)^4; 
+
+   4
+  X  + 1 
+
+
+x/3; 
+
+  X
+
+</tt></pre><p><em>setmod</em>returns the previous modulus, or 1 if none has been
+ set 
+before. <em>setmod</em> only has effect when 
+<a href=r38_0300.html#r38_0305>modular</a> is on. 
+<P>
+<P>
+Modular operations are done only on numbers such as coefficients of 
+polynomials, not on the exponents. The modulus need not be prime. 
+Attempts to divide by a power of the modulus produces an error message, since th
+e 
+operation is equivalent to dividing by 0. However, dividing by a factor 
+of a non-prime modulus does not produce an error message. 
+<P>
+<P>
+<P>
+
+<a name=r38_0105>
+
+<title>SIGN</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SIGN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>sign</em>&lt;expression&gt; 
+<P>
+<P>
+<P>
+<em>sign</em>tries to evaluate the sign of its argument. If this 
+is possible <em>sign</em> returns one of 1, 0 or -1. Otherwise, the result 
+is the original form or a simplified variant. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+        sign(-5) 
+
+  -1
+
+
+        sign(-a^2*b) 
+
+  -SIGN(B)
+
+</tt></pre><p>Even powers of formal expressions are assumed to be positive only 
+as long 
+as the switch 
+<a href=r38_0250.html#r38_0274>complex</a> is off. 
+<P>
+<P>
+<P>
+
+<a name=r38_0106>
+
+<title>SQRT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SQRT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>sqrt</em> operator returns the square root of its argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>sqrt</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any REDUCE scalar expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+sqrt(16*a^3); 
+
+  4*SQRT(A)*A 
+
+
+sqrt(17); 
+
+  SQRT(17) 
+
+
+on rounded; 
+
+sqrt(17); 
+
+  4.12310562562 
+
+
+off rounded; 
+
+sqrt(a*b*c^5*d^3*27); 
+
+                                             2
+  3*SQRT(D)*SQRT(C)*SQRT(B)*SQRT(A)*SQRT(3)*C *D
+
+</tt></pre><p><em>sqrt</em>checks its argument for squared factors and removes t
+hem. 
+<P>
+<P>
+Numeric values for square roots that are not exact integers are given only 
+when 
+<a href=r38_0300.html#r38_0330>rounded</a> is on. 
+<P>
+<P>
+Please note that <em>sqrt(a**2)</em> is given as <em>a</em>, which may be 
+incorrect if <em>a</em> eventually has a negative value. If you are 
+programming a calculation in which this is a concern, you can turn on the 
+
+<a href=r38_0300.html#r38_0317>precise</a> switch, which causes the absolute val
+ue of the square root 
+to be returned. 
+<P>
+<P>
+<P>
+
+<a name=r38_0107>
+
+<title>TIMES</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>TIMES</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>times</em> operator is an infix or prefix n-ary multiplication 
+operator. It is identical to <em>*</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+&lt;expression&gt; <em>times</em> &lt;expression&gt; {<em>times</em> &lt;express
+ion&gt;}* 
+<P>
+<P>
+or <em>times</em>(&lt;expression&gt;,&lt;expression&gt; {,&lt;expression&gt;}*) 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE scalar or matrix expression. 
+Matrix expressions must be of the correct dimensions. Compatible scalar 
+and matrix expressions can be mixed. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+var1 times var2; 
+
+  VAR1*VAR2 
+
+
+times(6,5); 
+
+  30 
+
+
+matrix aa,bb; 
+
+aa := mat((1),(2),(x))$ 
+
+bb := mat((0,3,1))$ 
+
+aa times bb times 5; 
+
+  [0   15    5 ]
+  [            ]
+  [0   30   10 ]
+  [            ]
+  [0  15*X  5*X]
+
+</tt></pre><p>
+<a name=r38_0108>
+
+<title>Arithmetic Operations</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<b>Arithmetic Operations</b><menu>
+<li><a href=r38_0050.html#r38_0069>ARITHMETIC\_OPERATIONS introduction</a><P>
+<li><a href=r38_0050.html#r38_0070>ABS operator</a><P>
+<li><a href=r38_0050.html#r38_0071>ADJPREC switch</a><P>
+<li><a href=r38_0050.html#r38_0072>ARG operator</a><P>
+<li><a href=r38_0050.html#r38_0073>CEILING operator</a><P>
+<li><a href=r38_0050.html#r38_0074>CHOOSE operator</a><P>
+<li><a href=r38_0050.html#r38_0075>DEG2DMS operator</a><P>
+<li><a href=r38_0050.html#r38_0076>DEG2RAD operator</a><P>
+<li><a href=r38_0050.html#r38_0077>DIFFERENCE operator</a><P>
+<li><a href=r38_0050.html#r38_0078>DILOG operator</a><P>
+<li><a href=r38_0050.html#r38_0079>DMS2DEG operator</a><P>
+<li><a href=r38_0050.html#r38_0080>DMS2RAD operator</a><P>
+<li><a href=r38_0050.html#r38_0081>FACTORIAL operator</a><P>
+<li><a href=r38_0050.html#r38_0082>FIX operator</a><P>
+<li><a href=r38_0050.html#r38_0083>FIXP operator</a><P>
+<li><a href=r38_0050.html#r38_0084>FLOOR operator</a><P>
+<li><a href=r38_0050.html#r38_0085>EXPT operator</a><P>
+<li><a href=r38_0050.html#r38_0086>GCD operator</a><P>
+<li><a href=r38_0050.html#r38_0087>LN operator</a><P>
+<li><a href=r38_0050.html#r38_0088>LOG operator</a><P>
+<li><a href=r38_0050.html#r38_0089>LOGB operator</a><P>
+<li><a href=r38_0050.html#r38_0090>MAX operator</a><P>
+<li><a href=r38_0050.html#r38_0091>MIN operator</a><P>
+<li><a href=r38_0050.html#r38_0092>MINUS operator</a><P>
+<li><a href=r38_0050.html#r38_0093>NEXTPRIME operator</a><P>
+<li><a href=r38_0050.html#r38_0094>NOCONVERT switch</a><P>
+<li><a href=r38_0050.html#r38_0095>NORM operator</a><P>
+<li><a href=r38_0050.html#r38_0096>PERM operator</a><P>
+<li><a href=r38_0050.html#r38_0097>PLUS operator</a><P>
+<li><a href=r38_0050.html#r38_0098>QUOTIENT operator</a><P>
+<li><a href=r38_0050.html#r38_0099>RAD2DEG operator</a><P>
+<li><a href=r38_0100.html#r38_0100>RAD2DMS operator</a><P>
+<li><a href=r38_0100.html#r38_0101>RECIP operator</a><P>
+<li><a href=r38_0100.html#r38_0102>REMAINDER operator</a><P>
+<li><a href=r38_0100.html#r38_0103>ROUND operator</a><P>
+<li><a href=r38_0100.html#r38_0104>SETMOD command</a><P>
+<li><a href=r38_0100.html#r38_0105>SIGN operator</a><P>
+<li><a href=r38_0100.html#r38_0106>SQRT operator</a><P>
+<li><a href=r38_0100.html#r38_0107>TIMES operator</a><P>
+</menu>
+<a name=r38_0109>
+
+<title>boolean_value</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>BOOLEAN VALUE</b><P>
+<P>
+ 
+There are no extra symbols for the truth values true 
+and false. Instead, 
+<a href=r38_0001.html#r38_0014>nil</a> and the number zero 
+are interpreted as truth value false in algebraic 
+programs (see 
+<a href=r38_0001.html#r38_0014>false</a>), while any different 
+value is considered as true (see 
+<a href=r38_0100.html#r38_0122>true</a>). 
+<P>
+<P>
+
+<a name=r38_0110>
+
+<title>EQUAL</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>EQUAL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>equal</em> is an infix binary comparison 
+operator. It is identical with <em>=</em>. It returns 
+<a href=r38_0100.html#r38_0122>true</a> if its two 
+arguments are equal. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; <em>equal</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+Equality is given between floating point numbers and integers that have 
+the same value. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+on rounded; 
+
+a := 4; 
+
+  A := 4 
+
+
+b := 4.0; 
+
+  B := 4.0 
+
+
+if a equal b then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  true 
+
+
+if a equal 5 then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  false 
+
+
+if a equal sqrt(16) then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  true
+
+</tt></pre><p>Comparison operators can only be used as conditions in conditional
+ commands 
+such as <em>if</em>...<em>then</em> and <em>repeat</em>...<em>until</em>. 
+&lt;equal&gt; can also be used as a prefix operator. However, this use 
+is not encouraged. 
+<P>
+<P>
+<P>
+
+<a name=r38_0111>
+
+<title>EVENP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>EVENP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>evenp</em> logical operator returns 
+<a href=r38_0100.html#r38_0122>true</a> if its argument is an 
+even integer, and 
+<a href=r38_0001.html#r38_0014>nil</a> if its argument is an odd integer. An err
+or 
+message is returned if its argument is not an integer. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>evenp</em>(&lt;integer&gt;) or <em>evenp</em> &lt;integer&gt; 
+<P>
+<P>
+<P>
+&lt;integer&gt; must evaluate to an integer. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+aa := 1782; 
+
+  AA := 1782 
+
+
+if evenp aa then yes else no; 
+
+  YES 
+
+
+if evenp(-3) then yes else no; 
+
+  NO 
+
+</tt></pre><p>Although you would not ordinarily enter an expression such as the 
+last 
+example above, note that the negative term must be enclosed in parentheses 
+to be correctly parsed. The <em>evenp</em> operator can only be used in 
+conditional statements such as <em>if</em>...<em>then</em>...<em>else</em> 
+or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0112>
+
+<title>false</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>FALSE</b><P>
+<P>
+ 
+The symbol 
+<a href=r38_0001.html#r38_0014>nil</a> and the number zero are considered 
+as 
+<a href=r38_0100.html#r38_0109>boolean value</a> false if used in a place where 
+
+a boolean value is required. Most builtin operators return 
+
+<a href=r38_0001.html#r38_0014>nil</a> as false value. Algebraic programs use be
+tter zero. 
+Note that <em>nil</em> is not printed when returned as result to 
+a top level evaluation. 
+<P>
+<P>
+
+<a name=r38_0113>
+
+<title>FREEOF</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>FREEOF</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>freeof</em> logical operator returns 
+
+<a href=r38_0100.html#r38_0122>true</a> if its first argument does 
+not contain its second argument anywhere in its structure. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>freeof</em>(&lt;expression&gt;,&lt;kernel&gt;) or 
+&lt;expression&gt; <em>freeof</em> &lt;kernel&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid scalar REDUCE expression, &lt;kernel&gt; mus
+t 
+be a kernel expression (see <em>kernel</em>). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+a := x + sin(y)**2 + log sin z;
+			 
+
+
+                           2
+  A := LOG(SIN(Z)) + SIN(Y)   + X 
+
+
+if freeof(a,sin(y)) then write &quot;free&quot; else write &quot;not free&quot;;
+			 
+
+
+  not free 
+
+
+if freeof(a,sin(x)) then write &quot;free&quot; else write &quot;not free&quot;;
+			 
+
+
+  free 
+
+
+if a freeof sin z then write &quot;free&quot; else write &quot;not free&quot;;
+			 
+
+
+  not free
+
+</tt></pre><p>Logical operators can only be used in conditional expressions such
+ as 
+<P>
+<P>
+<em>if</em>...<em>then</em> or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0114>
+
+<title>LEQ</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LEQ</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>leq</em> operator is a binary infix or prefix logical operator. It 
+returns 
+<a href=r38_0100.html#r38_0122>true</a> if its first argument is less than or eq
+ual to its second 
+argument. As an infix operator it is identical with <em>&lt;=</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>leq</em>(&lt;expression&gt;,&lt;expression&gt;) or &lt;expression&gt; 
+<em>leq</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE expression that evaluates to a 
+number. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+a := 15; 
+
+  A := 15 
+
+
+if leq(a,25) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  yes 
+
+
+if leq(a,15) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  yes 
+
+
+if leq(a,5) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  no
+
+</tt></pre><p>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0115>
+
+<title>LESSP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LESSP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>lessp</em> operator is a binary infix or prefix logical operator. It 
+returns 
+<a href=r38_0100.html#r38_0122>true</a> if its first argument is strictly less t
+han its second 
+argument. As an infix operator it is identical with <em>&lt;</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>lessp</em>(&lt;expression&gt;,&lt;expression&gt;) 
+or &lt;expression&gt; <em>lessp</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE expression that evaluates to a 
+number. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+a := 15; 
+
+  A := 15 
+
+
+if lessp(a,25) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  yes 
+
+
+if lessp(a,15) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  no 
+
+
+if lessp(a,5) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  no
+
+</tt></pre><p>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0116>
+
+<title>MEMBER</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>MEMBER</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; <em>member</em> &lt;list&gt; 
+<P>
+<P>
+<P>
+<em>member</em>is an infix binary comparison operator that evaluates to 
+
+<a href=r38_0100.html#r38_0122>true</a> if &lt;expression&gt; is 
+<a href=r38_0100.html#r38_0110>equal</a> to a member of 
+the 
+<a href=r38_0050.html#r38_0053>list</a> &lt;list&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+if a member {a,b} then 1 else 0; 
+
+  1 
+
+
+if 1 member(1,2,3) then a else b; 
+
+  a 
+
+
+if 1 member(1.0,2) then a else b; 
+
+  b
+
+</tt></pre><p>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+&lt;member&gt; can also be used as a prefix operator. However, this use 
+is not encouraged. Finally, 
+<a href=r38_0100.html#r38_0110>equal</a> (<em>=</em>) is used for the test 
+within the list, so expressions must be of the same type to match. 
+<P>
+<P>
+<P>
+
+<a name=r38_0117>
+
+<title>NEQ</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>NEQ</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The operator <em>neq</em> is an infix binary comparison 
+operator. It returns 
+<a href=r38_0100.html#r38_0122>true</a> if its two 
+arguments are not 
+<a href=r38_0100.html#r38_0110>equal</a>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; <em>neq</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+An inequality is satisfied between floating point numbers and integers 
+that have the same value. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+on rounded; 
+
+a := 4; 
+
+  A := 4 
+
+
+b := 4.0; 
+
+  B := 4.0 
+
+
+if a neq b then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  false 
+
+
+if a neq 5 then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  true
+
+</tt></pre><p>Comparison operators can only be used as conditions in conditional
+ commands 
+such as <em>if</em>...<em>then</em> and <em>repeat</em>...<em>until</em>. 
+&lt;neq&gt; can also be used as a prefix operator. However, this use 
+is not encouraged. 
+<P>
+<P>
+<P>
+
+<a name=r38_0118>
+
+<title>NOT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>NOT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>not</em> operator returns 
+<a href=r38_0100.html#r38_0122>true</a> if its argument evaluates to 
+
+<a href=r38_0001.html#r38_0014>nil</a>, and <em>nil</em> if its argument is <em>
+true</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>not</em>(&lt;logical expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+if not numberp(a) then write &quot;indeterminate&quot; else write a;
+			 
+
+
+  indeterminate; 
+
+
+a := 10; 
+
+  A := 10 
+
+
+if not numberp(a) then write &quot;indeterminate&quot; else write a;
+			 
+
+
+  10 
+
+
+if not(numberp(a) and a &lt; 0) then write &quot;positive number&quot;;
+			 
+
+
+  positive number
+
+</tt></pre><p>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0119>
+
+<title>NUMBERP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>NUMBERP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+The <em>numberp</em> operator returns 
+<a href=r38_0100.html#r38_0122>true</a> if its argument is a number, 
+and 
+<a href=r38_0001.html#r38_0014>nil</a> otherwise. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>numberp</em>(&lt;expression&gt;) or <em>numberp</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any REDUCE scalar expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+cc := 15.3; 
+
+  CC := 15.3 
+
+
+if numberp(cc) then write &quot;number&quot; else write &quot;nonnumber&quot;; 
+
+
+  number 
+
+
+if numberp(cb) then write &quot;number&quot; else write &quot;nonnumber&quot;; 
+
+
+  nonnumber
+
+</tt></pre><p>Logical operators can only be used in conditional expressions, suc
+h as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> and <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0120>
+
+<title>ORDP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ORDP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>ordp</em> logical operator returns 
+<a href=r38_0100.html#r38_0122>true</a> if its first argument is 
+ordered ahead of its second argument in canonical internal ordering, or is 
+identical to it. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>ordp</em>(&lt;expression1&gt;,&lt;expression2&gt;) 
+<P>
+<P>
+<P>
+<P>
+&lt;expression1&gt; and &lt;expression2&gt; can be any valid REDUCE scalar 
+expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+if ordp(x**2 + 1,x**3 + 3) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  no 
+
+
+if ordp(101,100) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  yes 
+
+
+if ordp(x,x) then write &quot;yes&quot; else write &quot;no&quot;;
+			 
+
+
+  yes
+
+</tt></pre><p>Logical operators can only be used in conditional expressions, suc
+h as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> and <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0121>
+
+<title>PRIMEP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PRIMEP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>primep</em>(&lt;expression&gt;) or <em>primep</em> &lt;simple\_expression
+&gt; 
+<P>
+<P>
+<P>
+If &lt;expression&gt; evaluates to a integer, <em>primep</em> returns 
+
+<a href=r38_0100.html#r38_0122>true</a> <P>
+<P>
+if &lt;expression&gt; is a prime number (i.e., a number other than 0 and 
+plus or minus 1 which is only exactly divisible by itself or a unit) 
+and 
+<a href=r38_0001.html#r38_0014>nil</a> otherwise. 
+If &lt;expression&gt; does not have an integer value, a type error occurs. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+if primep 3 then write &quot;yes&quot; else write &quot;no&quot;; 
+
+
+  YES 
+
+
+if primep a then 1; 
+
+  ***** A invalid as integer
+
+</tt></pre><p>
+<a name=r38_0122>
+
+<title>TRUE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>TRUE</b><P>
+<P>
+ 
+<P>
+<P>
+Any value of the boolean part of a logical expression which is neither 
+
+<a href=r38_0001.html#r38_0014>nil</a> nor <em>0</em> is considered as <em>true
+</em>. Most 
+builtin test and compare functions return 
+<a href=r38_0001.html#r38_0018>t</a> for <em>true</em> 
+and 
+<a href=r38_0001.html#r38_0014>nil</a> for <em>false</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+if member(3,{1,2,3}) then 1 else -1;
+
+
+  1
+
+
+if floor(1.7) then 1 else -1; 
+
+  1 
+
+
+if floor(0.7) then 1 else -1; 
+
+  -1
+
+</tt></pre><p>
+<a name=r38_0123>
+
+<title>Boolean Operators</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<b>Boolean Operators</b><menu>
+<li><a href=r38_0100.html#r38_0109>boolean value concept</a><P>
+<li><a href=r38_0100.html#r38_0110>EQUAL operator</a><P>
+<li><a href=r38_0100.html#r38_0111>EVENP operator</a><P>
+<li><a href=r38_0100.html#r38_0122>false concept</a><P>
+<li><a href=r38_0100.html#r38_0113>FREEOF operator</a><P>
+<li><a href=r38_0100.html#r38_0114>LEQ operator</a><P>
+<li><a href=r38_0100.html#r38_0115>LESSP operator</a><P>
+<li><a href=r38_0100.html#r38_0116>MEMBER operator</a><P>
+<li><a href=r38_0100.html#r38_0117>NEQ operator</a><P>
+<li><a href=r38_0100.html#r38_0118>NOT operator</a><P>
+<li><a href=r38_0100.html#r38_0119>NUMBERP operator</a><P>
+<li><a href=r38_0100.html#r38_0120>ORDP operator</a><P>
+<li><a href=r38_0100.html#r38_0121>PRIMEP operator</a><P>
+<li><a href=r38_0100.html#r38_0122>TRUE concept</a><P>
+</menu>
+<a name=r38_0124>
+
+<title>BYE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>BYE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The <em>bye</em> command ends the REDUCE session, returning control to the 
+program (e.g., the operating system) that called REDUCE. When you are at 
+the top level, the <em>bye</em> command exits REDUCE. <em>quit</em> is a 
+synonym for <em>bye</em>. 
+<P>
+<P>
+
+<a name=r38_0125>
+
+<title>CONT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CONT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The command <em>cont</em> returns control to an interactive file after a 
+
+<a href=r38_0100.html#r38_0128>pause</a> command that has been answered with 
+<em>n</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt></tt></pre><p>Suppose you are in the middle of an interactive file.
+<p><pre><tt> 
+
+ 
+
+  factorize(x**2 + 17*x + 60); 
+
+
+ 
+
+  {{X + 12,1},{X + 5,1}} 
+
+
+   pause; 
+
+  Cont? (Y or N) 
+
+
+n 
+
+saveas results; 
+
+factor1 := first results; 
+
+  FACTOR1 := {X + 12,1} 
+
+
+factor2 := second results; 
+
+  FACTOR2 := {X + 5,1} 
+
+
+cont; </tt></pre><p> the file resumes<p><pre><tt>
+
+</tt></pre><p> 
+<P>
+<P>
+A 
+<a href=r38_0100.html#r38_0128>pause</a> allows you to enter your own REDUCE com
+mands, change 
+switch values, inquire about results, or other such activities. When you 
+wish to resume operation of the interactive file, use <em>cont</em>. 
+<P>
+<P>
+<P>
+<P>
+
+<a name=r38_0126>
+
+<title>DISPLAY</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>DISPLAY</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+When given a numeric argument &lt;n&gt;, <em>display</em> prints the &lt;n&gt; 
+most recent input statements, identified by prompt numbers. If an empty 
+pair of parentheses is given, or if &lt;n&gt; is greater than the current 
+number of statements, all the input statements since the beginning of 
+the session are printed. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>display</em>(&lt;n&gt;) or <em>display</em>() 
+<P>
+<P>
+<P>
+&lt;n&gt; should be a positive integer. However, if it is a real number, the 
+truncated integer value is used, and if a non-numeric argument is used, all 
+the input statements are printed. 
+<P>
+<P>
+The statements are displayed in upper case, with lines split at semicolons or 
+dollar signs, as they are in editing. If long files have been input during 
+the session, the <em>display</em> command is slow to format these for 
+printing. 
+<P>
+<P>
+<P>
+
+<a name=r38_0127>
+
+<title>LOAD_PACKAGE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LOAD\_PACKAGE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>load_package</em> command is used to load REDUCE packages, such as 
+<em>gentran</em> that are not automatically loaded by the system. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>load_package &quot;</em>&lt;package\_name&gt;<em>&quot;</em> 
+<P>
+<P>
+<P>
+A package is only loaded once; subsequent calls of <em>load_package</em> 
+for the same package name are ignored. 
+<P>
+<P>
+
+<a name=r38_0128>
+
+<title>PAUSE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PAUSE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>pause</em> command, given in an interactive file, stops operation and 
+asks if you want to continue or not. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt></tt></pre><p>An interactive file is running, and at some point you 
+see the 
+question<p><pre><tt> 
+
+				   Cont? (Y or N) 
+</tt></pre><p>If you type<p><pre><tt> 
+
+ykey{Return}
+</tt></pre><p>the file continues to run until the next pause or the end.<p><pre>
+<tt> 
+</tt></pre><p>If you type <p><pre><tt> 
+
+nkey{Return} 
+</tt></pre><p>you will get a numbered REDUCE prompt, and be allowed to 
+enter and execute any REDUCE statements. If you later wish to continue with 
+the file, type<p><pre><tt> 
+
+cont; 
+</tt></pre><p>and the file resumes.<p><pre><tt></tt></pre><p> 
+<P>
+<P>
+To use <em>pause</em> in your own interactive files, type 
+<P>
+<P>
+<em>pause;</em>in the file wherever you want it. 
+<P>
+<P>
+<em>pause</em>does not allow you to continue without typing either <em>y</em> 
+or <em>n</em>. Its use is to slow down scrolling of interactive files, or to 
+let you change parameters or switch settings for the calculations. 
+<P>
+<P>
+If you have stopped an interactive file at a <em>pause,</em> and do not wish to 
+
+resume the file, type <em>end;</em>. This does not end the REDUCE session, but 
+stops input from the file. A second <em>end;</em> ends the REDUCE session. 
+However, if you have pauses from more than one file stacked up, an <em>end;</em>
+ 
+brings you back to the top level, not the file directly above. 
+<P>
+<P>
+A <em>pause</em> typed from the terminal has no effect. 
+<P>
+<P>
+<P>
+
+<a name=r38_0129>
+
+<title>QUIT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>QUIT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The <em>quit</em> command ends the REDUCE session, returning control to the 
+program (e.g., the operating system) that called REDUCE. When you are at 
+the top level, the <em>quit</em> command exits REDUCE. 
+<a href=r38_0100.html#r38_0124>bye</a> is a 
+synonym for <em>quit</em>. 
+<P>
+<P>
+
+<a name=r38_0130>
+
+<title>RECLAIM</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>RECLAIM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+REDUCE's memory is in a storage structure called a heap. As REDUCE 
+statements execute, chunks of memory are used up. When these chunks are no 
+longer needed, they remain idle. When the memory is almost full, 
+the system executes a garbage collection, reclaiming space that is no 
+longer needed, and putting all the free space at one end. Depending on 
+the size of the image REDUCE is using, 
+garbage collection needs to be done more or less often. A 
+larger image means fewer but longer garbage collections. 
+Regardless of memory size, 
+if you ask REDUCE to do something ridiculous, like <em>factorial(2000)</em>, it 
+may 
+garbage collect many times. 
+<P>
+<P>
+<P>
+
+<a name=r38_0131>
+
+<title>REDERR</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>REDERR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>rederr</em> command allows you to print an error message from inside 
+a 
+<a href=r38_0050.html#r38_0055>procedure</a> or a 
+<a href=r38_0001.html#r38_0041>block</a> statement. 
+The calculation is gracefully terminated. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>rederr</em>&lt;message&gt; 
+<P>
+<P>
+<P>
+&lt;message&gt; is an error message, usually inside double quotation marks 
+(a 
+<a href=r38_0001.html#r38_0003>string</a>). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+procedure fac(n);
+   if not (fixp(n) and n&gt;=0)
+     then  rederr &quot;Choose nonneg. integer only&quot;
+    else for i := 0:n-1 product i+1;
+ 
+
+  fac 
+
+
+fac a; 
+
+  	   ***** Choose nonneg. integer only 
+
+
+fac 5; 
+
+  120
+
+</tt></pre><p>The above procedure finds the factorial of its argument. 
+If n is not a positive integer or 0, an error message is returned. 
+<P>
+<P>
+If your procedure is executed in a file, the usual error message is 
+printed, followed by <em>Cont? (Y or N)</em>, just as any other error does from 
+
+a file. Although the procedure is gracefully terminated, any switch settings or 
+
+variable assignments you made before the error occurred are not undone. If you 
+need to clean up such items before exiting, use a group statement, with the 
+<em>rederr</em> command as its last statement. 
+<P>
+<P>
+<P>
+
+<a name=r38_0132>
+
+<title>RETRY</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>RETRY</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>retry</em> command allows you to retry the latest statement that resulte
+d 
+in an error message. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+matrix a; 
+
+det a; 
+
+  ***** Matrix A not set 
+
+
+a := mat((1,2),(3,4)); 
+
+  A(1,1) := 1
+  A(1,2) := 2
+  A(2,1) := 3
+  A(2,2) := 4
+
+
+retry; 
+
+  -2
+
+</tt></pre><p><em>retry</em>remembers only the most recent statement that result
+ed in an 
+error message. It allows you to stop and fix something obvious, then 
+continue on your way without retyping the original command. 
+<P>
+<P>
+<P>
+
+<a name=r38_0133>
+
+<title>SAVEAS</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SAVEAS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The <em>saveas</em> command saves the current workspace under the name of its 
+argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>saveas</em>&lt;identifier&gt; 
+<P>
+<P>
+<P>
+&lt;identifier&gt; can be any valid REDUCE identifier. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt></tt></pre><p>(The numbered prompts are shown below, unlike in most 
+examples)<p><pre><tt>
+
+1: solve(x^2-3);
+
+  {x=sqrt(3),x= - sqrt(3)}
+
+
+2: saveas rts(0)$
+
+3: rts(0);
+
+  {x=sqrt(3),x= - sqrt(3)}
+
+</tt></pre><p> 
+<P>
+<P>
+<em>saveas</em>works only for the current workspace, the last algebraic 
+expression produced by REDUCE. This allows you to save a result that you 
+did not assign to an identifier when you originally typed the input. 
+For access to previous output use 
+<a href=r38_0150.html#r38_0184>ws</a>. 
+<P>
+<P>
+<P>
+
+<a name=r38_0134>
+
+<title>SHOWTIME</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SHOWTIME</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>showtime</em> command prints the elapsed system time since the last 
+call of this command or since the beginning of the session, if it has not 
+been called before. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+showtime; 
+
+  Time: 1020 ms 
+
+
+factorize(x^4 - 8x^4 + 8x^2 - 136x - 153);
+			 
+
+
+          2
+  {X - 9,X  + 17,X + 1} 
+
+
+showtime; 
+
+  Time: 920 ms
+
+</tt></pre><p>The time printed is either the elapsed cpu time or the elapsed wal
+l clock 
+time, depending on your system. <em>showtime</em> allows you to see the 
+system time resources REDUCE uses in its calculations. Your time readings 
+will of course vary from this example according to the system you use. 
+<P>
+<P>
+<P>
+
+<a name=r38_0135>
+
+<title>WRITE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>WRITE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>write</em> command explicitly writes its arguments to the output device 
+
+(terminal or file). 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>write</em>&lt;item&gt;{,&lt;item&gt;}* 
+<P>
+<P>
+<P>
+&lt;item&gt; can be an expression, an assignment or a 
+<a href=r38_0001.html#r38_0003>string</a> 
+enclosed in double quotation marks (<em>&quot;</em>). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+write a, sin x, &quot;this is a string&quot;; 
+
+
+  ASIN(X)this is a string 
+
+
+write a,&quot; &quot;,sin x,&quot; this is a string&quot;; 
+
+
+  A SIN(X) this is a string 
+
+
+if not numberp(a) then write &quot;the symbol &quot;,a;
+							
+
+
+  the symbol A 
+
+
+array m(10); 
+
+for i := 1:5 do write m(i) := 2*i; 
+
+
+  M(1) := 2
+  M(2) := 4
+  M(3) := 6
+  M(4) := 8
+  M(5) := 10
+
+
+m(4); 
+
+  8
+
+</tt></pre><p>The items specified by a single <em>write</em> statement print on 
+a single line 
+unless they are too long. A printed line is always ended with a carriage 
+return, so the next item printed starts a new line. 
+<P>
+<P>
+When an assignment statement is printed, the assignment is also made. This 
+allows you to get feedback on filling slots in an array with a 
+<a href=r38_0001.html#r38_0047>for</a> 
+ statement, as shown in the last example above. 
+<P>
+<P>
+<P>
+
+<a name=r38_0136>
+
+<title>General Commands</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<b>General Commands</b><menu>
+<li><a href=r38_0100.html#r38_0124>BYE command</a><P>
+<li><a href=r38_0100.html#r38_0125>CONT command</a><P>
+<li><a href=r38_0100.html#r38_0126>DISPLAY command</a><P>
+<li><a href=r38_0100.html#r38_0127>LOAD\_PACKAGE command</a><P>
+<li><a href=r38_0100.html#r38_0128>PAUSE command</a><P>
+<li><a href=r38_0100.html#r38_0129>QUIT command</a><P>
+<li><a href=r38_0100.html#r38_0130>RECLAIM operator</a><P>
+<li><a href=r38_0100.html#r38_0131>REDERR command</a><P>
+<li><a href=r38_0100.html#r38_0132>RETRY command</a><P>
+<li><a href=r38_0100.html#r38_0133>SAVEAS command</a><P>
+<li><a href=r38_0100.html#r38_0134>SHOWTIME command</a><P>
+<li><a href=r38_0100.html#r38_0135>WRITE command</a><P>
+</menu>
+<a name=r38_0137>
+
+<title>APPEND</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>APPEND</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>append</em> operator constructs a new 
+<a href=r38_0050.html#r38_0053>list</a> 
+from the elements of its two arguments (which must be lists). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>append</em>(&lt;list&gt;,&lt;list&gt;) 
+<P>
+<P>
+<P>
+&lt;list&gt; must be a list, though it may be the empty list (<em>{}</em>). 
+Any arguments beyond the first two are ignored. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+alist := {1,2,{a,b}}; 
+
+  ALIST := {1,2,{A,B}} 
+
+
+blist := {3,4,5,sin(y)}; 
+
+  BLIST := {3,4,5,SIN(Y)} 
+
+
+append(alist,blist); 
+
+  {1,2,{A,B},3,4,5,SIN(Y)} 
+
+
+append(alist,{}); 
+
+  {1,2,{A,B}} 
+
+
+append(list z,blist); 
+
+  {Z,3,4,5,SIN(Y)}
+
+</tt></pre><p>The new list consists of the elements of the second list appended 
+to the 
+elements of the first list. You can <em>append</em> new elements to the 
+beginning or end of an existing list by putting the new element in a 
+list (use curly braces or the operator <em>list</em>). This is 
+particularly helpful in an iterative loop. 
+<P>
+<P>
+<P>
+
+<a name=r38_0138>
+
+<title>ARBINT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ARBINT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>arbint</em> is used to express arbitrary integer parts 
+of an expression, e.g. in the result of 
+<a href=r38_0150.html#r38_0179>solve</a> when 
+
+<a href=r38_0250.html#r38_0266>allbranch</a> is on. 
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+solve(log(sin(x+3)),x); 
+
+  {X=2*ARBINT(1)*PI - ASIN(1) - 3,
+   X=2*ARBINT(1)*PI + ASIN(1) + PI - 3}
+
+</tt></pre><p><P>
+<P>
+
+<a name=r38_0139>
+
+<title>ARBCOMPLEX</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ARBCOMPLEX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>arbcomplex</em> is used to express arbitrary scalar parts 
+of an expression, e.g. in the result of 
+<a href=r38_0150.html#r38_0179>solve</a> when 
+the solution is parametric in one of the variable. 
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+solve({x+3=y-2z,y-3x=0},{x,y,z}); 
+
+
+     2*ARBCOMPLEX(1) + 3
+  {X=-------------------,
+              2
+      3*ARBCOMPLEX(1) + 3
+    Y=-------------------,
+               2
+    Z=ARBCOMPLEX(1)}
+
+</tt></pre><p><P>
+<P>
+
+<a name=r38_0140>
+
+<title>ARGLENGTH</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ARGLENGTH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>arglength</em> returns the number of arguments of the top-level
+ 
+operator in its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>arglength</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE algebraic expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+arglength(a + b + c + d); 
+
+  4 
+
+
+arglength(a/b/c); 
+
+  2 
+
+
+arglength(log(sin(df(r**3*x,x)))); 
+
+
+  1
+
+</tt></pre><p>In the first example, <em>+</em> is an n-ary operator, so the numb
+er of terms 
+is returned. In the second example, since <em>/</em> is a binary operator, the 
+argument is actually (a/b)/c, so there are two terms at the top level. In 
+the last example, no matter how deeply the operators are nested, there is 
+still only one argument at the top level. 
+<P>
+<P>
+<P>
+
+<a name=r38_0141>
+
+<title>COEFF</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COEFF</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>coeff</em> operator returns the coefficients of the powers of the 
+specified variable in the given expression, in a 
+<a href=r38_0050.html#r38_0053>list</a>. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>coeff</em>(&lt;expression&gt;<em>,</em>&lt;variable&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is expected to be a polynomial expression, not a rational 
+expression. Rational expressions are accepted when the switch 
+
+<a href=r38_0300.html#r38_0322>ratarg</a> is on. &lt;variable&gt; must be a kern
+el. The results are 
+returned in a list. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+coeff((x+y)**3,x); 
+
+    3     2
+  {Y  ,3*Y  ,3*Y,1} 
+
+
+coeff((x+2)**4 + sin(x),x); 
+
+  {SIN(X) + 16,32,24,8,1} 
+
+
+high_pow; 
+
+  4 
+
+
+low_pow; 
+
+  0 
+
+
+ab := x**9 + sin(x)*x**7 + sqrt(y); 
+ 
+
+
+                          7     9
+  AB := SQRT(Y) + SIN(X)*X   + X
+
+
+coeff(ab,x); 
+
+  {SQRT(Y),0,0,0,0,0,0,SIN(X),0,1}
+
+</tt></pre><p>The variables 
+<a href=r38_0001.html#r38_0010>high_pow</a> and 
+<a href=r38_0001.html#r38_0013>low_pow</a> are set to the 
+highest and lowest powers of the variable, respectively, appearing in the 
+expression. 
+<P>
+<P>
+The coefficients are put into a list, with the coefficient of the lowest 
+(constant) term first. You can use the usual list access methods 
+(<em>first</em>, <em>second</em>, <em>third</em>, <em>rest</em>, <em>length</em>
+, and 
+<em>part</em>) to extract them. If a power does not appear in the 
+expression, the corresponding element of the list is zero. Terms involving 
+functions of the specified variable but not including powers of it (for 
+example in the expression <em>x**4 + 3*x**2 + tan(x)</em>) are placed in the 
+constant term. 
+<P>
+<P>
+Since the <em>coeff</em> command deals with the expanded form of the expression,
+ 
+you may get unexpected results when 
+<a href=r38_0250.html#r38_0284>exp</a> is off, or when 
+
+<a href=r38_0250.html#r38_0287>factor</a> or 
+<a href=r38_0250.html#r38_0296>ifactor</a> are on. 
+<P>
+<P>
+If you want only a specific coefficient rather than all of them, use the 
+
+<a href=r38_0100.html#r38_0142>coeffn</a> operator. 
+<P>
+<P>
+<P>
+<P>
+
+<a name=r38_0142>
+
+<title>COEFFN</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COEFFN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>coeffn</em> operator takes three arguments: an expression, a kernel, and
+ 
+a non-negative integer. It returns the coefficient of the kernel to that 
+integer power, appearing in the expression. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>coeffn</em>(&lt;expression&gt;,&lt;kernel&gt;,&lt;integer&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; must be a polynomial, unless 
+<a href=r38_0300.html#r38_0322>ratarg</a> is on which 
+allows rational expressions. &lt;kernel&gt; must be a kernel, and 
+&lt;integer&gt; must be a non-negative integer. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+ff := x**7 + sin(y)*x**5 + y**4 + x + 7; 
+
+
+                5     7         4
+  FF := SIN(Y)*X   + X   + X + Y   + 7 
+
+
+coeffn(ff,x,5); 
+
+  SIN(Y) 
+
+
+coeffn(ff,z,3); 
+
+  0 
+
+
+coeffn(ff,y,0); 
+
+          5     7
+  SIN(Y)*X   + X   + X + 7 
+
+
+
+rr := 1/y**2+y**3+sin(y); 
+
+                2     5
+        SIN(Y)*Y   + Y   + 1
+  RR := -------------------- 
+                  2
+                 Y
+
+
+on ratarg; 
+
+
+coeffn(rr,y,-2); 
+
+  ***** -2 invalid as COEFFN index 
+
+
+
+coeffn(rr,y,5); 
+
+  1
+  ---
+   2
+  Y
+
+</tt></pre><p>If the given power of the kernel does not appear in the expression
+, 
+<em>coeffn</em> returns 0. Negative powers are never detected, even if 
+they appear in the expression and 
+<a href=r38_0300.html#r38_0322>ratarg</a> are on. <em>coeffn</em> 
+with an integer argument of 0 returns any terms in the expression that 
+do not contain the given kernel. 
+<P>
+<P>
+<P>
+
+<a name=r38_0143>
+
+<title>CONJ</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CONJ</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>conj</em>(&lt;expression&gt;) or <em>conj</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+This operator returns the complex conjugate of an expression, if that 
+argument has an numerical value. A non-numerical argument is returned as 
+an expression in the operators 
+<a href=r38_0150.html#r38_0173>repart</a> and 
+<a href=r38_0150.html#r38_0153>impart</a>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+conj(1+i); 
+
+  1-I 
+
+
+conj(a+i*b); 
+
+  REPART(A) - REPART(B)*I - IMPART(A)*I - IMPART(B)
+
+</tt></pre><p>
+<a name=r38_0144>
+
+<title>CONTINUED_FRACTION</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CONTINUED_FRACTION</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>continued_fraction</em>(&lt;num&gt;) 
+or <em>continued_fraction</em>( &lt;num&gt;,&lt;size&gt;) 
+<P>
+<P>
+<P>
+This operator approximates the real number &lt;num&gt; 
+( 
+<a href=r38_0300.html#r38_0323>rational</a> number, 
+<a href=r38_0300.html#r38_0330>rounded</a> number) 
+into a continued fraction. The result is a list of two elements: the 
+first one is the rational value of the approximation, the second one 
+is the list of terms of the continued fraction which represents the 
+same value according to the definition <em>t0 +1/(t1 + 1/(t2 + ...))</em>. 
+Precision: the second optional parameter &lt;size&gt; is an upper bound 
+for the absolute value of the result denominator. If omitted, the 
+approximation is performed up to the current system precision. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+continued_fraction pi;
+ 
+
+   1146408
+  {-------,{3,7,15,1,292,1,1,1,2,1}} 
+   364913
+
+
+continued_fraction(pi,100);
+ 
+
+   22
+  {--,{3,7}} 
+   7
+
+</tt></pre><p>
+<a name=r38_0145>
+
+<title>DECOMPOSE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>DECOMPOSE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>decompose</em> operator takes a multivariate polynomial as argument, 
+and returns an expression and a 
+<a href=r38_0050.html#r38_0053>list</a> of 
+
+<a href=r38_0001.html#r38_0045>equation</a>s from which the 
+original polynomial can be found by composition. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>decompose</em>(&lt;expression&gt;) or <em>decompose</em> 
+ &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-
+          218900*x^3+65690*x^2-7700*x+234)
+
+ 
+
+   2                  2            2
+  U  + 35*U + 234, U=V  + 10*V, V=X  - 22*X 
+
+
+     decompose(u^2+v^2+2u*v+1) 
+
+   2
+  W   + 1, W=U + V
+
+</tt></pre><p>Unlike factorization, this decomposition is not unique. Further 
+details can be found in V.S. Alagar, M.Tanh, &lt;Fast Polynomial 
+Decomposition&gt;, Proc. EUROCAL 1985, pp 150-153 (Springer) and J. von zur 
+Gathen, &lt;Functional&gt; 
+&lt;Decomposition of Polynomials: the Tame Case&gt;, J. 
+Symbolic Computation (1990) 9, 281-299. 
+<P>
+<P>
+<P>
+
+<a name=r38_0146>
+
+<title>DEG</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>DEG</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>deg</em> returns the highest degree of its variable argument 
+found in its expression argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>deg</em>(&lt;expression&gt;,&lt;kernel&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is expected to be a polynomial expression, not a rational 
+expression. Rational expressions are accepted when the switch 
+
+<a href=r38_0300.html#r38_0322>ratarg</a> is on. &lt;variable&gt; must be a 
+<a href=r38_0001.html#r38_0002>kernel</a>. The 
+results are returned in a list. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+deg((x+y)**5,x); 
+
+  5 
+
+
+
+deg((a+b)*(c+2*d)**2,d); 
+
+  2 
+
+
+
+deg(x**2 + cos(y),sin(x)); 
+
+
+deg((x**2 + sin(x))**5,sin(x)); 
+
+  5
+
+</tt></pre><p>
+<a name=r38_0147>
+
+<title>DEN</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>DEN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>den</em> operator returns the denominator of its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>den</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; is ordinarily a rational expression, but may be any valid 
+scalar REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+a := x**3 + 3*x**2 + 12*x; 
+
+           2
+  A := X*(X   + 3*X + 12) 
+
+
+
+b := 4*x*y + x*sin(x); 
+
+  B := X*(SIN(X) + 4*Y) 
+
+
+
+den(a/b); 
+
+  SIN(X) + 4*Y 
+
+
+
+den(aa/4 + bb/5); 
+
+  20 
+
+
+
+den(100/6); 
+
+  3 
+
+
+
+den(sin(x)); 
+
+  1
+
+</tt></pre><p><em>den</em>returns the denominator of the expression after it has
+ been 
+simplified by REDUCE. As seen in the examples, this includes putting 
+sums of rational expressions over a common denominator, and reducing 
+common factors where possible. If the expression does not have any 
+other denominator, 1 is returned. 
+<P>
+<P>
+Switch settings, such as 
+<a href=r38_0300.html#r38_0304>mcd</a> or 
+<a href=r38_0300.html#r38_0323>rational</a>, have an 
+effect on the denominator of an expression. 
+<P>
+<P>
+<P>
+
+<a name=r38_0148>
+
+<title>DF</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>DF</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+The <em>df</em> operator finds partial derivatives with respect to one or 
+more variables. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>df</em>(&lt;expression&gt;<em>,</em>&lt;var&gt; 
+	 [<em>,</em>&lt;number&gt;] 
+ {<em>,</em>&lt;var&gt; [ <em>,</em>&lt;number&gt;] } ) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE algebraic expression. &lt;var&gt; 
+must be a 
+<a href=r38_0001.html#r38_0002>kernel</a>, and is the differentiation variable. 
+
+&lt;number&gt; must be a non-negative integer. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+df(x**2,x); 
+
+  2*X 
+
+
+
+df(x**2*y + sin(y),y); 
+
+            2
+  COS(Y) + X  
+
+
+
+df((x+y)**10,z); 
+
+  0 
+
+
+
+
+df(1/x**2,x,2); 
+
+  6
+  ---
+   4
+  X
+
+
+
+df(x**4*y + sin(y),y,x,3); 
+
+  24*X 
+
+
+
+for all x let df(tan(x),x) = sec(x)**2; 
+
+
+df(tan(3*x),x); 
+
+            2
+  3*SEC(3*X)
+
+</tt></pre><p>An error message results if a non-kernel is entered as a different
+iation 
+operator. If the optional number is omitted, it is assumed to be 1. 
+See the declaration 
+<a href=r38_0150.html#r38_0192>depend</a> to establish dependencies for implicit
+ 
+differentiation. 
+<P>
+<P>
+You can define your own differentiation rules, expanding REDUCE's 
+capabilities, using the 
+<a href=r38_0150.html#r38_0199>let</a> command as shown in the last example 
+above. Note that once you add your own rule for differentiating a 
+function, it supersedes REDUCE's normal handling of that function for the 
+duration of the REDUCE session. If you clear the rule 
+(
+<a href=r38_0150.html#r38_0190>clearrules</a>), you don't get back 
+to the previous rule. 
+<P>
+<P>
+<P>
+
+<a name=r38_0149>
+
+<title>EXPAND_CASES</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>EXPAND\_CASES</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ <P>
+<P>
+When a 
+<a href=r38_0150.html#r38_0176>root_of</a> form in a result of 
+<a href=r38_0150.html#r38_0179>solve</a> 
+has been converted to a 
+<a href=r38_0150.html#r38_0168>one_of</a> form, <em>expand_cases</em> 
+can be used to convert this into form corresponding to the 
+normal explicit results of 
+<a href=r38_0150.html#r38_0179>solve</a>. See 
+<a href=r38_0150.html#r38_0176>root_of</a>. 
+<P>
+<P>

@@ -1,0 +1,81 @@
+
+<A NAME=WTLEVEL>
+
+<TITLE>WTLEVEL</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>WTLEVEL</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+In conjunction with 
+<A HREF=r37_0226.html>weight</A>, <em>wtlevel</em> is used to implement 
+asymptotic constraints. Its default value is 2. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>wtlevel</em>&lt;expression&gt; 
+<P>
+<P>
+<P>
+To change the weight level, &lt;expression&gt; must evaluate to a positive 
+integer that is the greatest weight term to be retained in expressions 
+involving kernels with weight assignments. <em>wtlevel</em> returns the 
+new weight level. If you want the current weight level, but not 
+change it, say <em>wtlevel nil</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+(x+y)**4;          
+ 
+
+   4      3        2  2        3    4
+  X  + 4*X *Y + 6*X *Y  + 4*X*Y  + Y  
+
+
+weight x=2,y=3; 
+
+wtlevel 8; 
+
+(x+y)**4; 
+
+   4
+  X  
+
+
+wtlevel 10; 
+
+(x+y)**4; 
+
+   2     2            2
+  X *(6*Y  + 4*X*Y + X ) 
+
+
+int(x**2,x); 
+
+  ***** X invalid as KERNEL
+
+</TT></PRE><P><em>wtlevel</em>is used in conjunction with the command 
+<A HREF=r37_0226.html>weight</A> to 
+enable asymptotic constraints. Weight of a term is computed by multiplying 
+the weights of each variable in it by the power to which it has been 
+raised, and adding the resulting weights for each variable. If the weight 
+of the term is greater than <em>wtlevel</em>, the term is dropped from the 
+expression, and not used in any further computation involving the 
+expression. 
+<P>
+<P>
+Once a weight has been attached to a 
+<A HREF=r37_0002.html>kernel</A>, it is no longer 
+recognized by the system as a kernel, though still a variable. It cannot 
+be used in REDUCE commands and operators that need kernels. The weight 
+attachment can be undone with a 
+<A HREF=r37_0189.html>clear</A> command. <em>wtlevel</em> can 
+be changed as desired. 
+<P>
+<P>
+<P>

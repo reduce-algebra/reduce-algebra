@@ -1,0 +1,63 @@
+
+<A NAME=ATANH>
+
+<TITLE>ATANH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ATANH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>atanh</em> operator returns the hyperbolic arctangent of its argument. 
+The derivative of <em>asinh</em> and some simple transformations are known 
+to the system. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>atanh</em>(&lt;expression&gt;) or <em>atanh</em> &lt;simple\_expression&gt; 
+
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any scalar REDUCE expression, not an array, matrix or 
+
+vector expression. &lt;simple\_expression&gt; must be a single identifier or 
+begin with a prefix operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+atanh aa; 
+
+  ATANH(AA) 
+
+
+atanh(1); 
+
+  ATANH(1) 
+
+
+df(atanh(x*y),y); 
+
+     - X
+  ----------
+   2  2
+  X *Y  - 1
+
+</TT></PRE><P>A numeric value is not returned by <em>asinh</em> unless the switc
+h 
+<em>rounded</em> is on and its argument evaluates to a number. 
+You may attach additional functionality by defining <em>atanh</em> to be the 
+inverse of <em>tanh</em>. This is done by the commands 
+<P>
+<P>
+<P><PRE><TT>
+        put('tanh,'inverse,'atanh);
+        put('atanh,'inverse,'tanh);
+</TT></PRE><P><P>
+<P>

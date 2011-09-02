@@ -1,0 +1,41 @@
+
+<A NAME=NEXTPRIME>
+
+<TITLE>NEXTPRIME</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NEXTPRIME</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>nextprime</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+If the argument of <em>nextprime</em> is an integer, the least prime greater 
+than that argument is returned. Otherwise, a type error results. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+nextprime 5001; 
+
+  5003  
+
+
+nextprime(10^30); 
+
+  1000000000000000000000000000057 
+
+
+nextprime a; 
+
+  ***** A invalid as integer
+
+</TT></PRE><P>

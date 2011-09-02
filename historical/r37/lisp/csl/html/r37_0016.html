@@ -1,0 +1,32 @@
+
+<A NAME=requirements>
+
+<TITLE>requirements</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>REQUIREMENTS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>variable</B><P>
+<P>
+ 
+ <P>
+<P>
+After an attempt to solve an inconsistent equation system 
+with parameters, the variable <em>requirements</em> contains a list 
+of expressions. These expressions define a set of conditions implicitly 
+equated with zero. Any solution to this system defines a setting for 
+the parameters sufficient to make the original system consistent. 
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+solve({x-a,x-y,y-1},{x,y}); 
+
+  {}
+
+
+requirements;
+
+  {a - 1}
+
+</TT></PRE><P><P>
+<P>

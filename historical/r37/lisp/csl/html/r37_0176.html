@@ -1,0 +1,57 @@
+
+<A NAME=ROOT_OF>
+
+<TITLE>ROOT_OF</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ROOT\_OF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+When the operator 
+<A HREF=r37_0179.html>solve</A> is unable to find an explicit solution 
+or if that solution would be too complicated, the result is presented 
+as formal root expression using the internal operator <em>root_of</em> 
+and a new local variable. An expression with a top level <em>root_of</em> 
+is implicitly a list with an unknown number of elements since we 
+can't always know how many solutions an equation has. If a 
+substitution is made into such an expression, closed form solutions 
+can emerge. If this occurs, the <em>root_of</em> construct is 
+replaced by an operator 
+<A HREF=r37_0168.html>one_of</A>. At this point it is 
+of course possible to transform the result if the original <em>solve</em> 
+operator expression into a standard <em>solve</em> solution. To 
+effect this, the operator 
+<A HREF=r37_0149.html>expand_cases</A> can be used. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+solve(a*x^7-x^2+1,x);
+
+                 7     2
+  {x=root_of(a*x_  - x_  + 1,x_)}
+
+
+sub(a=0,ws);
+
+  {x=one_of(1,-1)}
+
+
+expand_cases ws;
+
+  x=1,x=-1
+
+</TT></PRE><P>The components of <em>root_of</em> and <em>one_of</em> expressions
+ can be 
+processed as usual with operators 
+<A HREF=r37_0140.html>arglength</A> and 
+<A HREF=r37_0169.html>part</A>. 
+A higher power of a <em>root_of</em> expression with a polynomial 
+as first argument is simplified by using the polynomial as a side relation. 
+<P>
+<P>

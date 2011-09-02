@@ -1,0 +1,485 @@
+/*
+ * $Id: epson.trm,v 3.26 92/03/24 22:34:52 woo Exp Locker: woo $
+ */
+
+/* GNUPLOT - epson.trm */
+/*
+ * Copyright (C) 1990, 1991, 1992   
+ *
+ * Permission to use, copy, and distribute this software and its
+ * documentation for any purpose with or without fee is hereby granted, 
+ * provided that the above copyright notice appear in all copies and 
+ * that both that copyright notice and this permission notice appear 
+ * in supporting documentation.
+ *
+ * Permission to modify the software is granted, but not the right to
+ * distribute the modified code.  Modifications are to be distributed 
+ * as patches to released version.
+ *  
+ * This software  is provided "as is" without express or implied warranty.
+ * 
+ * This file is included by ../term.c.
+ *
+ * This terminal driver supports:
+ *  epson_lx800, nec_cp6c, nec_cp6d, nec_cp6b, starc,
+ *  epson_60dpi, tandy_60dpi
+ *
+ * AUTHORS
+ *  Russell Lang
+ *  William Wilson
+ *
+ * send your comments or suggestions to (info-gnuplot@ames.arc.nasa.gov).
+ * 
+ */
+
+/* The following epson lx800 driver uses generic bit mapped graphics
+   routines to build up a bit map in memory. */
+/* by Russell Lang, rjl@monu1.cc.monash.edu.au */
+/* On PC, print using 'copy file /b lpt1:', do NOT use 'print' */
+/* EPSON_init changes outfile to binary mode on PC's */
+
+#ifdef EPSONP
+
+#define EPSONXMAX	512 
+#define EPSONYMAX	384
+
+#define EPSONXLAST (EPSONXMAX - 1)
+#define EPSONYLAST (EPSONYMAX - 1)
+
+#define EPSONVCHAR		FNT5X9_VCHAR  	
+#define EPSONHCHAR		FNT5X9_HCHAR		
+#define EPSONVTIC		6
+#define EPSONHTIC		6
+
+EPSONinit()
+{
+#ifdef PC
+	reopen_binary();
+#endif
+#ifdef vms
+	reopen_binary();
+#endif
+}
+
+
+EPSONgraphics()
+{
+	b_charsize(FNT5X9);
+	b_makebitmap((unsigned int)(EPSONXMAX*xsize),
+	             (unsigned int)(EPSONYMAX*ysize),1);
+}
+
+
+EPSONtext()
+{
+	epson_dump();
+	b_freebitmap();
+}
+
+
+#define EPSONlinetype b_setlinetype
+#define EPSONmove b_move
+#define EPSONvector b_vector
+#define EPSONput_text b_put_text
+#define EPSON_text_angle b_text_angle
+
+EPSONreset()
+{
+#ifdef vms
+	fflush_binary();
+#endif
+}
+
+
+/* output file must be binary mode for epson_dump */
+epson_dump()
+{
+  register unsigned int x;
+  int j;
+	for (j=(b_ysize/8)-1; j>=0; j--) {
+		/* select plotter graphics mode (square pixels) */
+		fprintf(outfile,"\033J\030");	/* line feed 8/72" = 8 dots */
+		fprintf(outfile,"\r\033*\005");
+		(void) fputc((char)(b_xsize%256),outfile);
+		(void) fputc((char)(b_xsize/256),outfile);
+		for (x=0; x<b_xsize; x++) {
+			(void) fputc( (char)(*((*b_p)[j]+x)), outfile );
+		}
+	}
+#ifdef PC
+	fprintf(stderr,"Print using: COPY /B\n");
+#endif
+}
+
+#endif /* EPSONP */
+
+
+/* The following NEC CP6 Pinwriter driver uses generic bit mapped graphics
+   routines to build up a bit map in memory. */
+/* by Russell Lang, rjl@monu1.cc.monash.edu.au */
+/* On PC, print using 'copy file /b lpt1:', do NOT use 'print' */
+/* NECinit changes outfile to binary mode for PC's */
+
+/* Add a Monochrome NEC printer (for faster speed and line types) jdc */
+
+#ifdef NEC
+
+#define NECXMAX	400 
+#define NECYMAX	320
+
+#define NECXLAST (NECXMAX - 1)
+#define NECYLAST (NECYMAX - 1)
+
+#define NECVCHAR		FNT5X9_VCHAR  	
+#define NECHCHAR		FNT5X9_HCHAR		
+#define NECVTIC		6
+#define NECHTIC		6
+
+/* plane 0=black, 1=cyan(blue), 2=magenta(red), 3=yellow */
+static unsigned int neccolor[] = {1,8,4,2,10,12,6,14};
+static unsigned int necpcolor[]= {0,2,1,4};
+
+NECinit()
+{
+#ifdef PC
+	reopen_binary();
+#endif
+#ifdef vms
+	reopen_binary();
+#endif
+}
+
+
+/* Monochrome only NEC CP6 printer (set term nec_cp6m or nec_cp6d). */
+/* will probably work with NEC P6 printer */
+NECMgraphics()
+{
+	b_charsize(FNT5X9);
+	b_makebitmap((unsigned int)(NECXMAX*xsize),
+	             (unsigned int)(NECYMAX*ysize),1);
+}
+
+/* Color ribbon in NEC CP6 printer (set term nec_cp6c) */
+NECCgraphics()
+{
+	b_charsize(FNT5X9);
+	b_makebitmap((unsigned int)(NECXMAX*xsize),
+	             (unsigned int)(NECYMAX*ysize),4);
+}
+
+
+NECdraft_text()
+{
+	nec_draft_dump();
+	b_freebitmap();
+}
+
+NECtext()
+{
+	nec_dump();
+	b_freebitmap();
+}
+
+NECClinetype(linetype)
+int linetype;
+{
+	if (linetype>=6)
+		linetype %= 6;
+	b_setvalue(neccolor[linetype+2]);
+}
+
+#define NECMlinetype b_setlinetype
+#define NECmove b_move
+#define NECvector b_vector
+#define NECput_text b_put_text
+#define NEC_text_angle b_text_angle
+
+	
+NECreset()
+{
+#ifdef vms
+	fflush_binary();
+#endif
+}
+
+
+/* output file must be binary mode for nec_dump */
+nec_dump()
+{
+unsigned int x;
+unsigned int plane,offset;
+int j;
+unsigned int column8;
+unsigned long column24;
+char column3, column2, column1;
+	fprintf(outfile,"\033P\033l\005");  /* 10cpi, left margin 5 char */
+	for (j=(b_ysize/8)-1;j>=0;j--) {
+			fprintf(outfile,"\033J\030");  /* 24/180" line feed */
+			for (plane=0; plane<b_planes; plane++) {
+				offset=plane*b_psize;
+				if (b_planes>1) {
+				    /* select colour for plane */
+				    fprintf(outfile,"\033r");
+				    (void) fputc((char)necpcolor[plane],outfile);
+				}
+				/* select plotter graphics mode (square pixels) */
+				fprintf(outfile,"\r\033*\047");
+				(void) fputc((char)((b_xsize*3)%256),outfile);
+				(void) fputc((char)((b_xsize*3)/256),outfile);
+				for (x=0; x<b_xsize; x++) {
+					column8= (unsigned int)(*((*b_p)[j+offset]+x));
+					column24=0;
+					if (column8&0x01) column24|=(long)0x000007;
+					if (column8&0x02) column24|=(long)0x000038;
+					if (column8&0x04) column24|=(long)0x0001c0;
+					if (column8&0x08) column24|=(long)0x000e00;
+					if (column8&0x10) column24|=(long)0x007000;
+					if (column8&0x20) column24|=(long)0x038000;
+					if (column8&0x40) column24|=(long)0x1c0000;
+					if (column8&0x80) column24|=(long)0xe00000;
+					column1 = (char) ( column24      & (long)0xff);
+					column2 = (char) ((column24>>8)  & (long)0xff);
+					column3 = (char) ((column24>>16) & (long)0xff);
+					(void) fputc(column3,outfile);
+					(void) fputc(column2,outfile);
+					(void) fputc(column1,outfile);
+					(void) fputc(column3,outfile);
+					(void) fputc(column2,outfile);
+					(void) fputc(column1,outfile);
+					(void) fputc(column3,outfile);
+					(void) fputc(column2,outfile);
+					(void) fputc(column1,outfile);
+				}
+			}
+	}
+	fprintf(outfile,"\r\033l");
+	(void) fputc('\0',outfile);				/* set left margin to 0 */
+	if (b_planes > 1) {
+		fprintf(outfile,"\033r");
+		(void) fputc('\0',outfile);				/* set color to black */
+	}
+#ifdef PC
+	fprintf(stderr,"Print using: COPY /B\n");
+#endif
+#ifdef vms
+	fflush_binary();
+#endif
+}
+
+/* output file must be binary mode for nec_dump */
+nec_draft_dump()
+{
+unsigned int x;
+unsigned int plane,offset;
+int j;
+	fprintf(outfile,"\033P\033l\005\r");  /* 10cpi, left margin 5 char */
+	for (j=(b_ysize/8)-1;j>=0;j--) {
+			fprintf(outfile,"\033J\030");  /* 24/180" line feed */
+			for (plane=0; plane<b_planes; plane++) {
+				offset=plane*b_psize;
+				if (b_planes>1) {
+				    /* select colour for plane */
+				    fprintf(outfile,"\033r");
+				    (void) fputc((char)necpcolor[plane],outfile);
+				}
+				/* select plotter graphics mode (square pixels) */
+				fprintf(outfile,"\r\033*");
+				(void) fputc('\0',outfile);
+				(void) fputc((char)(b_xsize%256),outfile);
+				(void) fputc((char)(b_xsize/256),outfile);
+				for (x=0; x<b_xsize; x++) {
+					(void) fputc( (char)(*((*b_p)[j+offset]+x)), outfile );
+				}
+			}
+	}
+	fprintf(outfile,"\r\033l");
+	(void) fputc('\0',outfile);				/* set left margin to 0 */
+	if (b_planes > 1) {
+		fprintf(outfile,"\033r");
+		(void) fputc('\0',outfile);				/* set color to black */
+	}
+#ifdef PC
+	fprintf(stderr,"Print using: COPY /B\n");
+#endif
+}
+
+#endif /* NEC */
+
+#ifdef STARC
+/* The following Star color driver uses generic bit mapped graphics
+   routines to build up a bit map in memory. */
+/* Star Color changes made by William Wilson, wew@naucse.cse.nau.edu */
+/* On PC, print using 'copy file /b lpt1:', do NOT use 'print' */
+/* STARC_init changes outfile to binary mode on PC's */
+
+#define STARCXMAX	512 
+#define STARCYMAX	384
+
+#define STARCXLAST (STARCXMAX - 1)
+#define STARCYLAST (STARCYMAX - 1)
+
+#define STARCVCHAR		FNT5X9_VCHAR  	
+#define STARCHCHAR		FNT5X9_HCHAR		
+#define STARCVTIC		6
+#define STARCHTIC		6
+
+/* plane 0=black, 1=cyan(blue), 2=magenta(red), 3=yellow */
+static unsigned int STARCcolor[] = {1,8,4,2,10,12,6,14};
+static unsigned int STARCpcolor[]= {0,2,1,4};
+
+STARCinit()
+{
+#ifdef PC
+	reopen_binary();
+#endif
+#ifdef vms
+	reopen_binary();
+#endif
+}
+
+
+STARCgraphics()
+{
+	b_charsize(FNT5X9);
+	b_makebitmap((unsigned int)(STARCXMAX*xsize),
+	             (unsigned int)(STARCYMAX*ysize),4);
+}
+
+
+STARCtext()
+{
+	STARC_dump();
+	b_freebitmap();
+}
+
+STARClinetype(linetype)
+int linetype;
+{
+	if (linetype>=6)
+		linetype %= 6;
+	b_setvalue(STARCcolor[linetype+2]);
+}
+
+
+#define STARCmove b_move
+#define STARCvector b_vector
+#define STARCput_text b_put_text
+#define STARC_text_angle b_text_angle
+
+STARCreset()
+{
+#ifdef vms
+	fflush_binary();
+#endif
+}
+
+
+/* output file must be binary mode for STARC_dump */
+STARC_dump()
+{
+unsigned int x;
+unsigned int plane,offset;
+int j;
+	for (j=(b_ysize/8)-1;j>=0;j--) {
+		fprintf(outfile,"\033J\030");	/* line feed 8/72" = 8 dots */
+		for (plane=0; plane<b_planes; plane++) {
+			offset=plane*b_psize;
+			if (b_planes>1) {
+				/* select colour for plane */
+				fprintf(outfile,"\033r");
+				(void) fputc((char)STARCpcolor[plane],outfile);
+			}
+			/* select plotter graphics mode (square pixels) */
+			fprintf(outfile,"\r\033*\005");
+			(void) fputc((char)(b_xsize%256),outfile);
+			(void) fputc((char)(b_xsize/256),outfile);
+			for (x=0; x<b_xsize; x++) {
+				(void) fputc( (char)(*((*b_p)[j+offset]+x)), outfile );
+			}
+		}
+	}
+	if (b_planes > 1) {
+		fprintf(outfile,"\033r");
+		(void) fputc('\0',outfile);				/* set color to black */
+	}
+#ifdef PC
+	fprintf(stderr,"Print using: COPY /B\n");
+#endif
+}
+
+#endif /* STARC */
+
+
+#ifdef EPS60
+
+/* make the total dimensions 8 inches by 5 inches */
+#define EPS60XMAX	480
+#define EPS60YMAX	360
+
+#define EPS60XLAST (EPS60XMAX - 1)
+#define EPS60YLAST (EPS60YMAX - 1)
+
+EPS60graphics()
+{
+	b_charsize(FNT5X9);
+	b_makebitmap((unsigned int)(EPS60XMAX*xsize),
+	             (unsigned int)(EPS60YMAX*ysize),1);
+}
+
+
+EPS60text()
+{
+	eps60_dump();
+	b_freebitmap();
+}
+
+
+
+/* output file must be binary mode for eps60_dump */
+eps60_dump()
+{
+  register unsigned int x;
+  int j;
+	fprintf(outfile,"\033%c\030",'3'); /* set line spacing 24/216" = 8 dots */
+	for (j=(b_ysize/8)-1; j>=0; j--) {
+		/* select printer graphics mode 'K' */
+		fprintf(outfile,"\r\n\033K");
+		(void) fputc((char)(b_xsize%256),outfile);
+		(void) fputc((char)(b_xsize/256),outfile);
+		for (x=0; x<b_xsize; x++) {
+			(void) fputc( (char)(*((*b_p)[j]+x)), outfile );
+		}
+	}
+	fprintf(outfile,"\033%c\044\r\n",'3'); /* set line spacing 36/216" = 1/6" */
+#ifdef PC
+	fprintf(stderr,"Print using: COPY /B\n");
+#endif
+}
+
+#endif /* EPS60 */
+
+#ifdef TANDY60
+
+/* The only difference between TANDY60 and EPS60 is the inclusion
+   of codes to swap the Tandy printer into IBM mode and back
+   into Tandy mode.  For a Tandy already in IBM mode, use EPS60. */
+
+
+TANDY60text()
+{
+#ifdef PC
+	fprintf(stderr, "Inserting Tandy/IBM mode conversion codes\n");
+#endif
+	/* Switch to IBM mode, and leave 3 inches above the plot so as
+	   to get rough vertical centring on the page.  Perform the
+	   centring by setting 1" line feeds and issuing 3 of them. */
+	fprintf(outfile, "\033!\033%c%c\n\n\n", '3',216);
+	eps60_dump();
+	b_freebitmap();
+	/* A form feed must be sent before switching back to Tandy mode,
+	   or else the form setting will be messed up. */
+	fprintf(outfile, "\f\033!");
+}
+
+
+#endif  /* TANDY60 */

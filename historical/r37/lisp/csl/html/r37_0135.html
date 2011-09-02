@@ -1,0 +1,80 @@
+
+<A NAME=WRITE>
+
+<TITLE>WRITE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>WRITE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>write</em> command explicitly writes its arguments to the output device 
+
+(terminal or file). 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>write</em>&lt;item&gt;{,&lt;item&gt;}* 
+<P>
+<P>
+<P>
+&lt;item&gt; can be an expression, an assignment or a 
+<A HREF=r37_0003.html>string</A> 
+enclosed in double quotation marks (<em>&quot;</em>). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+write a, sin x, &quot;this is a string&quot;; 
+
+
+  ASIN(X)this is a string 
+
+
+write a,&quot; &quot;,sin x,&quot; this is a string&quot;; 
+
+
+  A SIN(X) this is a string 
+
+
+if not numberp(a) then write &quot;the symbol &quot;,a;
+							
+
+
+  the symbol A 
+
+
+array m(10); 
+
+for i := 1:5 do write m(i) := 2*i; 
+
+
+  M(1) := 2
+  M(2) := 4
+  M(3) := 6
+  M(4) := 8
+  M(5) := 10
+
+
+m(4); 
+
+  8
+
+</TT></PRE><P>The items specified by a single <em>write</em> statement print on 
+a single line 
+unless they are too long. A printed line is always ended with a carriage 
+return, so the next item printed starts a new line. 
+<P>
+<P>
+When an assignment statement is printed, the assignment is also made. This 
+allows you to get feedback on filling slots in an array with a 
+<A HREF=r37_0047.html>for</A> 
+ statement, as shown in the last example above. 
+<P>
+<P>
+<P>

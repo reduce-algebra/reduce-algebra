@@ -1,0 +1,81 @@
+                  FAST PROPERTY ACCESS IN CSL/CCL
+                  ===============================
+
+The "fast-get" facility in CSL arranges that for a number of user-specified
+property names (used with both GET and FLAGP) the access has constant cost.
+Normally access to a property involves searching a property list, and if one
+symbol has many properties this can be tedious - with a worst case in the
+fairly common circumstance that the property is not found.
+
+To speed up CSL I allocate 6 bits in a symbol header that influence how that
+symbol is treated when used as a property name.  One code is reserved to
+mean "use a normal property list", leaving 63 codes for fast access. The
+first of these is reserved for a property called 'NONCOM because the built-in
+ORDERP function wants to use this for compatibility with REDUCE.
+
+A tag must be marked as "fast" before any properties with that indicated are
+set up.  If this constraint is not adhered to then properties can end up
+stored in inconsistent or redundant forms.  The protocol is to select an
+integer in the range 0 to 63 for each tag to be handled specially, and then
+to make a call such as
+
+    (symbol-make-fastget 'noncom           0)
+    (symbol-make-fastget 'my_property_name 1)
+
+    (flag '(a b c) 'noncom)
+    (put 'x 'my_property_name 'y)
+ or (setf (get 'x 'my_property_name) 'y)
+
+The fast-get status of a symbol can be inspected using
+
+    (symbol-fast-get 'x nil)
+
+or reset to have no special treatment (please do not do this!)
+
+    (symbol-fast-get 'x -1)
+
+When a symbol is given a "fast" property a vector of length 63 is created
+and a word in the symbol's header is made to point to it. The vector contains
+either property values ir a marker that indicates that no property is
+present.  A call (symbol-fastgets 'x) can retrieve the vector and can be
+useful while debugging, maybe.
+
+If you inspect the property list of an object (using the PLIST function) then
+any fast properties are extracted from the vector and built onto the front
+of the property list as returned. Of course this means that altering the
+property list using RPLACx may not be useful!
+
+The function GET retrieves a property. In Common Lisp mode the three-argument
+version (GET a b c) allows c to be returned as a default value if the
+property sought is not present. The two-argument version can not distinguish
+between a property whose value is NIL and not having a property present
+at all.  The function FLAGP returns T if a property is present (whatever
+value is associated, including the case where the stored value is NIL). The
+function FLAG just sets properties, giving them the value T in a somewhat
+arbitrary way.
+
+Clearly use of fast gets consumes memory, but because many of the extra
+vectors contain many NIL elements they compress well in image files, which
+therefore do not grow too badly.  To decide which properties are most
+critical you can run tests using the profiled version of the bytecode
+interpreter (bytes.c rather than bytes1.c), and after a run call the
+function (BYTECOUNTS).   You need to adjust your build sequence so that
+the file bytes.c is compiled with RECORD_GET defined, e.g. by putting
+                   -DRECORD_GET
+among the flags passed to your C compiler.  Note that this option will slow
+things down noticeably.  The output from BYTECOUNTS indicates which property
+tags were used, and how many unsuccessful searches for each tag occurred. This
+latter information is collected because unsuccessful searches are the worst
+case for a traditional property list search.
+
+Note that when a property is handled "fast" it is not stored on the regular
+property list (the only information about it is in the vector). Thus if the
+most commonly used properties have been handled this way the average length
+of property lists will shrink and so access to all other properties is
+slightly speeded up too.
+
+By editing FASTGET_SIZE in the source file "tags.h" if would be possible to
+make the symbol extension vectors smaller than 63 items long, so in
+cases where a much smaller set of tags is important the system can
+be configured to save some memory.
+

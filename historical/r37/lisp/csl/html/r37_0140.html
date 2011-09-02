@@ -1,0 +1,54 @@
+
+<A NAME=ARGLENGTH>
+
+<TITLE>ARGLENGTH</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ARGLENGTH</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>arglength</em> returns the number of arguments of the top-level
+ 
+operator in its argument. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>arglength</em>(&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE algebraic expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+arglength(a + b + c + d); 
+
+  4 
+
+
+arglength(a/b/c); 
+
+  2 
+
+
+arglength(log(sin(df(r**3*x,x)))); 
+
+
+  1
+
+</TT></PRE><P>In the first example, <em>+</em> is an n-ary operator, so the numb
+er of terms 
+is returned. In the second example, since <em>/</em> is a binary operator, the 
+argument is actually (a/b)/c, so there are two terms at the top level. In 
+the last example, no matter how deeply the operators are nested, there is 
+still only one argument at the top level. 
+<P>
+<P>
+<P>

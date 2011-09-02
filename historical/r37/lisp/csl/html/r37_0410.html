@@ -1,0 +1,61 @@
+
+<A NAME=EPS>
+
+<TITLE>EPS</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>EPS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>eps</em> operator denotes the completely antisymmetric tensor of 
+order 4 and its contraction with Lorentz four-vectors, as used in 
+high-energy physics calculations. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>eps</em>(&lt;vector-expr&gt;,&lt;vector-expr&gt;,&lt;vector-expr&gt;, 
+&lt;vector-expr&gt;) 
+<P>
+<P>
+<P>
+&lt;vector-expr&gt; must be a valid vector expression, and may be an index. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+vector g0,g1,g2,g3; 
+
+eps(g1,g0,g2,g3); 
+
+  - EPS(G0,G1,G2,G3); 
+
+
+eps(g1,g2,g0,g3); 
+
+  EPS(G0,G1,G2,G3); 
+
+
+eps(g1,g2,g3,g1); 
+
+  0
+
+</TT></PRE><P>Vector identifiers are ordered alphabetically by REDUCE. When an o
+dd number 
+of transpositions is required to restore the canonical order to the four 
+arguments of <em>eps</em>, the term is ordered and carries a minus sign. When an
+ 
+even number of transpositions is required, the term is returned ordered and 
+positive. When one of the arguments is repeated, the value 0 is returned. 
+A contraction of the form 
+eps(_i j mu nu p_mu q_nu) 
+is represented by <em>eps(i,j,p,q)</em> when <em>i</em> and <em>j</em> have been
+ 
+declared to be of type 
+<A HREF=r37_0412.html>index</A>. 
+<P>
+<P>
+<P>

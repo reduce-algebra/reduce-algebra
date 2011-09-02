@@ -1,0 +1,59 @@
+
+<A NAME=IFACTOR>
+
+<TITLE>IFACTOR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>IFACTOR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When the <em>ifactor</em> switch is on, any integer terms appearing as a result 
+
+of the 
+<A HREF=r37_0151.html>factorize</A> command are factored themselves into primes.
+ Default 
+is <em>off</em>. If the argument of <em>factorize</em> is an integer, 
+<em>ifactor</em> has no effect, since the integer is always factored. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+factorize(4*x**2 + 28*x + 48); 
+
+  {{4,1},{X + 4,1},{X + 3,1}} 
+
+
+factorize(22587); 
+
+  {{3,1},{7529,1}} 
+
+
+on ifactor; 
+
+factorize(4*x**2 + 28*x + 48); 
+
+  {{2,2},{X + 4,1},{X + 3,1}} 
+
+
+factorize(22587); 
+
+  {{3,1},{7529,1}} 
+
+</TT></PRE><P>Constant terms that appear within nonconstant 
+polynomial factors are not factored. 
+<P>
+<P>
+The <em>ifactor</em> switch affects only factoring done specifically 
+with 
+<A HREF=r37_0151.html>factorize</A>, not on factoring done automatically when th
+e 
+
+<A HREF=r37_0287.html>factor</A> switch is on. 
+<P>
+<P>
+<P>

@@ -1,0 +1,832 @@
+###########################################################################
+#                                                                         #
+# makefile for REDUCE 3.6 using CSL                                       #
+#                                                                         #
+###########################################################################
+
+# The following lines indicates the place on your disc where the "cslbase"
+# directory exists. This is the  place where the C sources files for CSL
+# live. There are two versions here, the first should use Unix-like
+# file name conventions (in particular "/" as a directory separator) while
+# the second will (in some cases) be a host-specific translation.
+
+UCSLBASE  = ../cslbase
+CSLBASE   = ../cslbase
+
+
+###########################################################################
+
+# DEC Alpha, with OSF (tested on 1.3) and the DEC C compiler. Note that
+# this is a 64-bit machine, but I use it with the "-taso" linker option
+# so that I run in a 32-bit address space.
+
+CC        = cc
+OPTFLAGS  = -O2
+MPIFLAGS  =
+CFLAGS     = -c $(OPTFLAGS) -std1 -Olimit 3000 -I$(CSLBASE) $(MPIFLAGS)
+LIBS       = -lm -lcurses -taso
+
+###########################################################################
+
+###########################################################################
+
+SHELL     = /bin/sh
+LINK      = $(CC)
+LFLAGS    =
+OUT       = -o
+OUTOBJ    = -o
+ASM       = $(CC)
+ASMFLAGS  = $(CFLAGS)
+ASMSRC    =
+ASMOBJ    =
+ASMOBJDEP = notused.obj
+SYS       = sysunix
+STORE     = -k8000
+XSTORE    = -k8000
+RM        = rm
+MKDIR     = mkdir
+COPY      = cp
+STRIP     = strip
+WX        =
+
+###########################################################################
+
+
+###########################################################################
+###########################################################################
+#                                                                         #
+# This is the main bulk of the "makefile" for building Reduce 3.6 and CSL #
+# on MSDOS, Windows and Unix.  This part of the file expects a number of  #
+# symbols to have been defined:                                           #
+#                                                                         #
+# CSLBASE   = file-path for CSLBASE directory                             #
+# CC        = The C compiler to use                                       #
+# CFLAGS    = Flags for C compiler when compiling CSL                     #
+# LINK      = Linker to use                                               #
+# LFLAGS    = Flags for linker                                            #
+# LIBS      = Libraries to quote to linker                                #
+# OUT       = "-o" or "-out:"   See link commands                         #
+# OUTOBJ    = "-o" often : where to put object code from C compilation    #
+# ASM       = The assembler to use                                        #
+# ASMFLAGS  = Flags for the assembler                                     #
+# ASMSRC    = Assembly code source file to use                            #
+# ASMOBJ    = Object file for above (or NULL if no assembly used)         #
+# ASMOBJDEP = Ditto, but may not be NULL                                  #
+# SYS       = name of system-specific file (sysdos or sysnt etc)          #
+# STORE     = Memory option to pass to CSL (-k2500 is minimum)            #
+# XSTORE    = Memory for the rebuild job that generates C code            #
+# RM        = del for DOS, = rm for Unix                                  #
+# MKDIR     = mkdir                                                       #
+# COPY      = copy for DOS, = cp for Unix                                 #
+# STRIP     = echo for DOS, = strip for Unix                              #
+# SYMBOLIC  = .SYMBOLIC is using Watcom's "make" utility                  #
+# WX        = wx for Windows 3.1, null in all other cases                 #
+#                                                                         #
+# The master version of this file is called "makebase" and is used to     #
+# create both DOS and Unix makefiles.  Use the Codemist "makemake"        #
+# program to perform the conversion - eg                                  #
+#     makemake -f makebase -o makemake.386 watcom dos                     #
+#     makemake -f makebase -o Makefile.sgi sgi                            #
+# Just "makemake -f makebase" gives list of systems supported             #
+###########################################################################
+###########################################################################
+
+
+
+###########################################################################
+###########################################################################
+#
+# The main final target is r36.img, the image file for full REDUCE.
+# If you want to rebuild stage-by-stage (eg while testing), try the
+# sequence
+#    make csl                compiles and links C coded kernel
+#    make csl.img                builds compiler image on top of above
+#    make slowr36.img            makes bootstrap REDUCE
+#                                 (roughly twice as slow as final one)
+#                                 only used for system recompilation.
+#    make ccode                   runs test file to collect statistics
+#                                 and create files u*.c and u*.lsp
+#                                 out of hot-spot parts of REDUCE.  Note that
+#    >>>>>>>>>>>>>>>>>>>          this is not done automatically by the main
+#    >>>>   N. B.   >>>>          set of "make" dependences, since the
+#    >>>>>>>>>>>>>>>>>>>          files u*.* provided are probably OK - but
+#                                 you need to do it again if the main REDUCE
+#                                 sources are altered
+#    make fasl36.img             final compilation of most of REDUCE
+#    make r36                build final executable binary
+#    make r36.img                build final image file
+#    make testall                 runs test files, output to log directory
+#
+###########################################################################
+###########################################################################
+
+
+#
+# C is another name for CSLBASE, the directory that CSL source files live
+# in. I introduce it here mainly because $(C) is so much more compact
+# then $(CSLBASE).
+#
+
+C =     $(CSLBASE)
+
+#
+# DOBJS is a list of all the object files that are common to all variants
+# on the system built here
+#
+
+DOBJS =		arith01.o arith02.o arith03.o arith04.o \
+		arith05.o arith06.o arith07.o arith08.o \
+		arith09.o arith10.o arith11.o arith12.o \
+		char.o csl.o cslmpi.o eval1.o eval2.o \
+		eval3.o eval4.o fns1.o fns2.o fns3.o \
+		print.o read.o restart.o $(ASMOBJ) \
+		$(SYS).o
+
+CDOBJS =	arith01.o,arith02.o,arith03.o,arith04.o,\
+		arith05.o,arith06.o,arith07.o,arith08.o,\
+		arith09.o,arith10.o,arith11.o,arith12.o,\
+		char.o,csl.o,cslmpi.o,eval1.o,eval2.o,\
+		eval3.o,eval4.o,fns1.o,fns2.o,fns3.o,\
+		print.o,read.o,restart.o,$(ASMOBJ),\
+		$(SYS).o
+
+#
+# OBJS adds in the files used when I am not building a demonstration-mode CSL
+#
+
+OBJS =		$(DOBJS) fasl.o gc.o preserve.o
+
+COBJS =		$(CDOBJS),fasl.o,gc.o,preserve.o
+
+#
+# UOBJS come from that code that is compiled from Lisp into C
+#
+
+UOBJS =		u01.o u02.o u03.o u04.o u05.o \
+		u06.o u07.o u08.o u09.o u10.o \
+		u11.o u12.o
+
+CUOBJS =	u01.o,u02.o,u03.o,u04.o,u05.o,\
+		u06.o,u07.o,u08.o,u09.o,u10.o,\
+		u11.o,u12.o
+
+
+###########################################################################
+###########################################################################
+#
+# "r36.img" is an image file for the main parts of Reduce
+
+r36.img:	fasl36.img r36
+	$(WX) r36 $(STORE) -v -z -i fasl36.img -o- ../cslsrc/r36.lsp -- r36.log
+	-$(MKDIR) log
+
+# "make patches" can be used after the "src/patches.red" file has changed
+
+patches:	../src/patches.red $(SYMBOLIC)
+	$(WX) r36 $(STORE) -v ../cslsrc/mkpatch.red -- mkpatch.log
+	$(WX) r36 $(STORE) -v -i- -o fasl36.img ../cslsrc/mkpatch1.red -- mkpatch1.log
+	$(WX) r36 $(STORE) -v -z -i fasl36.img -o- ../cslsrc/r36.lsp -- r36.log
+
+
+#
+# "make testall" tests the final production version of Reduce
+#
+
+testall:	log/algint.log log/applysym.log log/arnum.log log/assist.log log/avector.log \
+		log/boolean.log log/cali.log log/camal.log log/changevr.log \
+		log/compact.log log/complex.log log/crack.log log/cvit.log \
+		log/decompos.log log/defint.log log/desir.log log/dfpart.log \
+		log/dummy.log log/elem.log log/excalc.log log/factor.log \
+		log/fide.log log/fps.log log/gcd.log log/gentran.log \
+		log/groebner.log log/ideals.log log/ineq.log log/int.log \
+		log/invbase.log log/laplace.log log/lie.log log/limits.log \
+		log/linalg.log log/math.log log/matrix.log log/modsr.log \
+		log/ncpoly.log log/normform.log log/numeric.log log/odesolve.log \
+		log/orthovec.log log/pf.log log/physop.log log/pmrules.log \
+		log/randpoly.log log/reacteqn.log log/reduce.log log/residue.log log/rlfi.log \
+		log/rlisp88.log log/roots.log log/rounded.log log/rsolve.log \
+		log/scope.log log/sets.log log/solve.log log/spde.log \
+		log/specfn.log log/sum.log log/symmetry.log log/taylor.log \
+		log/tps.log log/tri.log log/trigsimp.log log/wu.log log/xcolor.log log/xideal.log \
+		log/zeilberg.log log/ztrans.log $(SYMBOLIC)
+	-echo all tests done
+
+
+
+###########################################################################
+###########################################################################
+#
+# The targets from here on down are used in the process of doing a full
+# system re-build
+
+# fasl36.img is a file needed during a re-build of Reduce. It contains
+# compiled versions of all the Reduce modules.
+
+fasl36.img:	csl slowr36.img
+	-$(RM) fasl36.img
+	$(WX) csl $(STORE) -v -i slowr36.img -o fasl36.img \
+		../cslsrc/fasl36.red -- fasl36.log
+
+# "make personal" downgrades a full version of Reduce to make a"personal"
+# version (without the compiler).
+
+personal:	r36 r36.img $(SYMBOLIC)
+	$(COPY) r36 ../r36
+	$(COPY) r36.img ../r36.img
+	$(WX) ../r36 ../cslsrc/remcmp.lsp
+
+# "make rl" manufactures an image file that contains just an Rlisp parser
+
+rl:	$(SYMBOLIC) rlisp rlisp.img
+
+rlisp: $(SYMBOLIC) csl
+	$(COPY) csl rlisp
+
+rlisp.img:	rlisp
+	$(WX) rlisp $(STORE) -v -z -o rlisp.img \
+		../cslsrc/mkrlisp.lsp -D@cslbase="$(C)" -- rlisp.log
+
+#
+# r36 can only be built when all the user-generated C code has been
+# built.
+#
+
+r36:	bytes.o $(OBJS) \
+		$(UOBJS)
+	$(LINK) $(LFLAGS) bytes.o $(OBJS) $(UOBJS) $(LIBS) $(OUT) r36 $(TAIL)
+	$(STRIP) r36
+
+#
+# slowr36 is a version of Reduce used just to compile the final version.
+# It is larger and slower than the final release version, and will not have
+# all the optional modules built into it.
+#
+
+slowr36.img:	csl ../cslsrc/slowr36.lsp ../src/boot.sl \
+		../src/cslprolo.red ../src/module.red \
+		../src/rlisp.red ../src/cslrend.red ../src/poly.red \
+		../src/alg.red ../src/arith.red ../src/mathpr.red \
+		../src/entry.red
+	$(WX) csl $(STORE) -o slowr36.img -v -z \
+		../cslsrc/slowr36.lsp -D@cslbase="$(C)" -- slowr36.log
+
+#
+# A few targets here may help me tidy up my filespace from time to time
+#
+
+cleansmall: $(SYMBOLIC)
+	-$(RM) slowr36.img
+
+clean: $(SYMBOLIC)
+	-$(RM) slowr36.img
+	-$(RM) r36
+	-$(RM) fasl36.img
+	-$(RM) r36.img
+
+#
+# demored is a demonstration version of Reduce with built-in resource
+# limitations.
+#
+
+demored:	csl slowr36.img bytes.o $(DOBJS) $(SYMBOLIC) \
+		stubs.o
+	$(CC) $(CFLAGS) $(C)/demo.c
+	$(LINK) $(LFLAGS) bytes.o $(DOBJS) stubs.obj demo.o $(LIBS) $(OUT) demored $(TAIL)
+	$(STRIP) demored
+	-$(RM) demored.img
+	$(WX) csl $(STORE) -i slowr36.img -v -z -i fasl36.img \
+		-o demored.img ../cslsrc/makedemo.lsp -- makedemo.log
+
+
+###########################################################################
+
+
+csl.img:	csl $(C)/compat.lsp $(C)/compiler.lsp \
+			$(C)/ccomp.lsp $(C)/extras.lsp
+	-$(RM) csl.img
+	$(WX) csl $(STORE) -v -z $(C)/build0.lsp \
+		-D@cslbase="$(C)" -- cslimg.log
+
+
+csl:	bytes.o $(OBJS) \
+		stubs.o
+	$(LINK) $(LFLAGS) bytes.o $(OBJS) stubs.o $(LIBS) $(OUT) csl $(TAIL)
+	$(STRIP) csl
+
+slowcsl:	bytes1.o $(OBJS) \
+		stubs.o
+	$(LINK) $(LFLAGS) bytes1.o $(OBJS) stubs.o $(LIBS) $(OUT) slowcsl $(TAIL)
+	$(STRIP) slowcsl
+
+
+#
+# "make lispfile"
+#           recreates compiler.lsp, extras.lsp and ccomp.lsp from
+#           the corresponding master sources which are held in RLISP
+#           form.  Temporarily builds an RLISP parser on the way.
+
+lispfile:	csl csl.img $(C)/lispfile.lsp $(SYMBOLIC)
+	$(WX) csl $(STORE) -v -z $(C)/lispfile.lsp \
+		-D@cslbase="$(C)" -- lispfile.log
+
+signature:	$(C)/version.hhh register.key $(SYMBOLIC)
+	filesign -u $(C)/version.hhh $(C)/version.h Developer or tester
+
+#
+# Now rules for re-compiling the main collection of CSL source files. I
+# write each case out individually since that makes the makefile less
+# delicate than one that relies on setting up general rules - and I want this
+# file to work on several different systems.
+#
+
+$(ASMOBJDEP):	$(C)/$(ASMSRC)
+	$(ASM) $(ASMFLAGS) $(C)/$(ASMSRC)
+
+arith01.o:	$(C)/arith01.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith01.c
+
+arith02.o:	$(C)/arith02.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith02.c
+
+arith03.o:	$(C)/arith03.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith03.c
+
+arith04.o:	$(C)/arith04.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith04.c
+
+arith05.o:	$(C)/arith05.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h $(C)/stream.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith05.c
+
+arith06.o:	$(C)/arith06.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith06.c
+
+arith07.o:	$(C)/arith07.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith07.c
+
+arith08.o:	$(C)/arith08.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith08.c
+
+arith09.o:	$(C)/arith09.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith09.c
+
+arith10.o:	$(C)/arith10.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith10.c
+
+arith11.o:	$(C)/arith11.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith11.c
+
+arith12.o:	$(C)/arith12.c $(C)/arith.h $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/arith12.c
+
+bytes.o:	$(C)/bytes1.c $(C)/bytes.c $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h \
+		$(C)/bytes.h $(C)/arith.h
+	$(CC) $(CFLAGS) \
+		$(C)/bytes.c
+
+bytes1.o:	$(C)/bytes1.c $(C)/bytes.c $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h \
+		$(C)/bytes.h $(C)/arith.h
+	$(CC) $(CFLAGS) \
+		$(C)/bytes1.c
+
+#
+# The target "bytes1a.o" recompiles bytes1.c, but with the flag set that
+# arranges that the number of GET operations performed and the associated
+# indicators will be recorded, so that (bytecounts) will display statistics
+# about it. This slows things down considerably, but can help when you are in
+# the process of deciding which indicators are specified as "fast" ones.
+#
+
+bytes1a.o:	$(C)/bytes1.c $(C)/bytes.c $(C)/tags.h $(C)/machine.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h \
+		$(C)/bytes.h $(C)/arith.h
+	$(CC) $(CFLAGS) -DRECORD_GET=1 \
+		$(C)/bytes1.c
+
+char.o:	$(C)/char.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/char.c
+
+csl.o:	$(C)/csl.c $(C)/tags.h $(C)/machine.h $(C)/externs.h $(C)/version.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/entries.h $(C)/stream.h $(C)/sockhdr.h
+	$(CC) $(CFLAGS) \
+		$(C)/csl.c
+
+
+
+eval1.o:	$(C)/eval1.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/arith.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/eval1.c
+
+eval2.o:	$(C)/eval2.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/arith.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/eval2.c
+
+eval3.o:	$(C)/eval3.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/eval3.c
+
+eval4.o:	$(C)/eval4.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/arith.h
+	$(CC) $(CFLAGS) \
+		$(C)/eval4.c
+
+fasl.o:	$(C)/fasl.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/arith.h
+	$(CC) $(CFLAGS) \
+		$(C)/fasl.c
+
+fns1.o:	$(C)/fns1.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/fns1.c
+
+fns2.o:	$(C)/fns2.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/read.h $(C)/entries.h \
+		$(C)/sockhdr.h
+	$(CC) $(CFLAGS) \
+		$(C)/fns2.c
+
+fns3.o:	$(C)/fns3.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/read.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		$(C)/fns3.c
+
+gc.o:	$(C)/gc.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/gc.c
+
+#
+# For each major target I have one file that is system specific - eg
+# sysdos.c, sysunix.c, ...
+#
+
+$(SYS).o:	$(C)/$(SYS).c $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/fileops.c $(C)/scandir.c $(C)/version.h \
+		$(C)/filename.c
+	$(CC) $(CFLAGS) \
+		$(C)/$(SYS).c
+
+preserve.o:	$(C)/preserve.c $(C)/tags.h $(C)/machine.h $(C)/stream.h \
+		$(C)/externs.h $(C)/sys.h $(C)/cslerror.h $(C)/read.h $(C)/version.h
+	$(CC) $(CFLAGS) \
+		$(C)/preserve.c
+
+print.o:	$(C)/print.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/read.h \
+		$(C)/arith.h $(C)/entries.h $(C)/stream.h $(C)/sockhdr.h
+	$(CC) $(CFLAGS) \
+		$(C)/print.c
+
+read.o:	$(C)/read.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/read.h \
+		$(C)/arith.h $(C)/entries.h $(C)/stream.h $(C)/sockhdr.h
+	$(CC) $(CFLAGS) \
+		$(C)/read.c
+
+restart.o:	$(C)/restart.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/sys.h $(C)/cslerror.h $(C)/read.h $(C)/version.h \
+		$(C)/arith.h $(C)/entries.h $(C)/stream.h
+	$(CC) $(CFLAGS) \
+		$(C)/restart.c
+
+stubs.o:	$(C)/stubs.c $(C)/machine.h $(C)/externs.h $(C)/sys.h \
+		$(C)/tags.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/stubs.c
+
+cslmpi.o:	$(C)/cslmpi.c $(C)/machine.h $(C)/externs.h $(C)/sys.h \
+		$(C)/mpipack.c $(C)/tags.h $(C)/cslerror.h
+	$(CC) $(CFLAGS) \
+		$(C)/cslmpi.c
+
+
+###########################################################################
+
+u01.o:	u01.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u01.c
+
+u02.o:	u02.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u02.c
+
+u03.o:	u03.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u03.c
+
+u04.o:	u04.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u04.c
+
+u05.o:	u05.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u05.c
+
+u06.o:	u06.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u06.c
+
+u07.o:	u07.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u07.c
+
+u08.o:	u08.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u08.c
+
+u09.o:	u09.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u09.c
+
+u10.o:	u10.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u10.c
+
+u11.o:	u11.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u11.c
+
+u12.o:	u12.c $(C)/tags.h $(C)/machine.h $(C)/externs.h \
+		$(C)/cslerror.h $(C)/entries.h
+	$(CC) $(CFLAGS) \
+		u12.c
+
+#
+# "make ccode" re-manufactures u01.c to u12.c and u01.lsp to u12.lsp
+# I do not put in dependencies that cause this to happen automatically
+# since experience shows that if I did it would happen (at significant
+# expense) much too often.  However when things alter in the Reduce
+# source directory or when major changes are made to CSL this should be
+# activated.
+#
+
+#
+# N.B. the step here used $(XSTORE) rather than $(STORE) because this
+# build step may take more memory than any other.
+#
+
+ccode:	slowcsl slowr36.img $(SYMBOLIC)
+	$(WX) slowcsl $(XSTORE) -i slowr36.img -v ../cslsrc/select36.red -- select36.log
+
+#
+# Code to recreate the log files from the production version of the system.
+#
+# Note that for Windows benefit I use my own private output redirection with
+# "--" rather than ">", since ">" seems incompatible with fully window
+# applications, even when launched from the command line. Then to make this
+# file consistent across platforms I use the same scheme all the time.
+#
+
+log/algint.log:	r36 r36.img ../xmpl/algint.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=algint -Dloadup=algint -- log/algint.log
+
+log/applysym.log:	r36 r36.img ../xmpl/applysym.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=applysym -Dloadup=applysym -- log/applysym.log
+
+log/arnum.log:	r36 r36.img ../xmpl/arnum.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=arnum -Dloadup=arnum -- log/arnum.log
+
+log/assist.log:	r36 r36.img ../xmpl/assist.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=assist -Dloadup=assist -- log/assist.log
+
+log/avector.log:	r36 r36.img ../xmpl/avector.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=avector -Dloadup=avector -- log/avector.log
+
+log/boolean.log:	r36 r36.img ../xmpl/boolean.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=boolean -Dloadup=boolean -- log/boolean.log
+
+log/cali.log:	r36 r36.img ../xmpl/cali.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=cali -Dloadup=cali -- log/cali.log
+
+log/camal.log:	r36 r36.img ../xmpl/camal.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=camal -Dloadup=camal -- log/camal.log
+
+log/changevr.log:	r36 r36.img ../xmpl/changevr.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=changevr -Dloadup=changevr -- log/changevr.log
+
+log/compact.log:	r36 r36.img ../xmpl/compact.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=compact -Dloadup=compact -- log/compact.log
+
+log/complex.log:	r36 r36.img ../xmpl/complex.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=complex -- log/complex.log
+
+log/crack.log:	r36 r36.img ../xmpl/crack.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=crack -Dloadup=crack -- log/crack.log
+
+log/cvit.log:	r36 r36.img ../xmpl/cvit.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=cvit -Dloadup=cvit -- log/cvit.log
+
+log/decompos.log:	r36 r36.img ../xmpl/decompos.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=decompos -- log/decompos.log
+
+log/defint.log:	r36 r36.img ../xmpl/defint.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=defint -Dloadup=defint -- log/defint.log
+
+log/desir.log:	r36 r36.img ../xmpl/desir.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=desir -Dloadup=desir -- log/desir.log
+
+log/dfpart.log:	r36 r36.img ../xmpl/dfpart.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=dfpart -Dloadup=dfpart -- log/dfpart.log
+
+log/dummy.log:	r36 r36.img ../xmpl/dummy.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=dummy -Dloadup=dummy -- log/dummy.log
+
+log/elem.log:	r36 r36.img ../xmpl/elem.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=elem -- log/elem.log
+
+log/excalc.log:	r36 r36.img ../xmpl/excalc.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=excalc -Dloadup=excalc -- log/excalc.log
+
+log/factor.log:	r36 r36.img ../xmpl/factor.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=factor -- log/factor.log
+
+log/fide.log:	r36 r36.img ../xmpl/fide.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=fide -Dloadup=fide -- log/fide.log
+
+log/fps.log:	r36 r36.img ../xmpl/fps.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=fps -Dloadup=fps -- log/fps.log
+
+log/gcd.log:	r36 r36.img ../xmpl/gcd.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=gcd -- log/gcd.log
+
+log/gentran.log:	r36 r36.img ../xmpl/gentran.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=gentran -Dloadup=gentran -- log/gentran.log
+
+log/groebner.log:	r36 r36.img ../xmpl/groebner.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=groebner -Dloadup=groebner -- log/groebner.log
+
+log/ideals.log:	r36 r36.img ../xmpl/ideals.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=ideals -Dloadup=ideals -- log/ideals.log
+
+log/ineq.log:	r36 r36.img ../xmpl/ineq.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=ineq -Dloadup=ineq -- log/ineq.log
+
+log/int.log:	r36 r36.img ../xmpl/int.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=int -- log/int.log
+
+log/invbase.log:	r36 r36.img ../xmpl/invbase.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=invbase -Dloadup=invbase -- log/invbase.log
+
+log/laplace.log:	r36 r36.img ../xmpl/laplace.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=laplace -Dloadup=laplace -- log/laplace.log
+
+log/lie.log:	r36 r36.img ../xmpl/lie.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=lie -Dloadup=lie -- log/lie.log
+
+log/limits.log:	r36 r36.img ../xmpl/limits.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=limits -- log/limits.log
+
+log/linalg.log:	r36 r36.img ../xmpl/linalg.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=linalg -Dloadup=linalg -- log/linalg.log
+
+log/math.log:	r36 r36.img ../xmpl/math.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=math -- log/math.log
+
+log/matrix.log:	r36 r36.img ../xmpl/matrix.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=matrix -- log/matrix.log
+
+log/modsr.log:	r36 r36.img ../xmpl/modsr.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=modsr -Dloadup=modsr -- log/modsr.log
+
+log/ncpoly.log:	r36 r36.img ../xmpl/ncpoly.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=ncpoly -Dloadup=ncpoly -- log/ncpoly.log
+
+log/normform.log:	r36 r36.img ../xmpl/normform.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=normform -Dloadup=normform -- log/normform.log
+
+log/numeric.log:	r36 r36.img ../xmpl/numeric.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=numeric -Dloadup=numeric -- log/numeric.log
+
+log/odesolve.log:	r36 r36.img ../xmpl/odesolve.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=odesolve -Dloadup=odesolve -- log/odesolve.log
+
+log/orthovec.log:	r36 r36.img ../xmpl/orthovec.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=orthovec -Dloadup=orthovec -- log/orthovec.log
+
+log/pf.log:	r36 r36.img ../xmpl/pf.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=pf -- log/pf.log
+
+log/physop.log:	r36 r36.img ../xmpl/physop.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=physop -Dloadup=physop -- log/physop.log
+
+log/pmrules.log:	r36 r36.img ../xmpl/pmrules.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=pmrules -Dloadup=pmrules -- log/pmrules.log
+
+log/randpoly.log:	r36 r36.img ../xmpl/randpoly.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=randpoly -Dloadup=randpoly -- log/randpoly.log
+
+log/reacteqn.log:	r36 r36.img ../xmpl/reacteqn.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=reacteqn -Dloadup=reacteqn -- log/reacteqn.log
+
+log/reduce.log:	r36 r36.img ../xmpl/reduce.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=reduce -- log/reduce.log
+
+log/residue.log:	r36 r36.img ../xmpl/residue.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=residue -Dloadup=residue -- log/residue.log
+
+log/rlfi.log:	r36 r36.img ../xmpl/rlfi.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=rlfi -Dloadup=rlfi -- log/rlfi.log
+
+log/rlisp88.log:	r36 r36.img ../xmpl/rlisp88.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=rlisp88 -- log/rlisp88.log
+
+log/roots.log:	r36 r36.img ../xmpl/roots.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=roots -- log/roots.log
+
+log/rounded.log:	r36 r36.img ../xmpl/rounded.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=rounded -- log/rounded.log
+
+log/rsolve.log:	r36 r36.img ../xmpl/rsolve.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=rsolve -Dloadup=rsolve -- log/rsolve.log
+
+log/scope.log:	r36 r36.img ../xmpl/scope.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=scope -Dloadup=scope -- log/scope.log
+
+log/sets.log:	r36 r36.img ../xmpl/sets.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=sets -Dloadup=sets -- log/sets.log
+
+log/solve.log:	r36 r36.img ../xmpl/solve.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=solve -- log/solve.log
+
+log/spde.log:	r36 r36.img ../xmpl/spde.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=spde -Dloadup=spde -- log/spde.log
+
+log/specfn.log:	r36 r36.img ../xmpl/specfn.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=specfn -Dloadup=specfn -- log/specfn.log
+
+log/sum.log:	r36 r36.img ../xmpl/sum.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=sum -- log/sum.log
+
+log/symmetry.log:	r36 r36.img ../xmpl/symmetry.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=symmetry -Dloadup=symmetry -- log/symmetry.log
+
+log/taylor.log:	r36 r36.img ../xmpl/taylor.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=taylor -Dloadup=taylor -- log/taylor.log
+
+log/tps.log:	r36 r36.img ../xmpl/tps.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=tps -Dloadup=tps -- log/tps.log
+
+log/tri.log:	r36 r36.img ../xmpl/tri.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=tri -Dloadup=tri -- log/tri.log
+
+log/trigsimp.log:	r36 r36.img ../xmpl/trigsimp.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=trigsimp -Dloadup=trigsimp -- log/trigsimp.log
+
+log/wu.log:	r36 r36.img ../xmpl/wu.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=wu -Dloadup=wu -- log/wu.log
+
+log/xcolor.log:	r36 r36.img ../xmpl/xcolor.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=xcolor -Dloadup=xcolor -- log/xcolor.log
+
+log/xideal.log:	r36 r36.img ../xmpl/xideal.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=xideal -Dloadup=xideal -- log/xideal.log
+
+log/zeilberg.log:	r36 r36.img ../xmpl/zeilberg.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=zeilberg -Dloadup=zeilberg -- log/zeilberg.log
+
+log/ztrans.log:	r36 r36.img ../xmpl/ztrans.tst
+	$(WX) r36 $(STORE) -b ../cslsrc/ndotest.red -Dname=ztrans -Dloadup=ztrans -- log/ztrans.log
+
+# end of makefile

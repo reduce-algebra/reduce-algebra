@@ -1,0 +1,58 @@
+
+<A NAME=SIN>
+
+<TITLE>SIN</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SIN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>sin</em> operator returns the sine of its argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>sin</em>(&lt;expression&gt;) or <em>sin</em> &lt;simple\_expression&gt; 
+<P>
+<P>
+<P>
+&lt;expression&gt; is any valid scalar REDUCE expression, 
+&lt;simple\_expression&gt; is a single identifier or begins with a prefix 
+operator name. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+sin aa; 
+
+  SIN(AA) 
+
+
+sin(pi/2); 
+
+  1 
+
+
+on rounded; 
+
+sin 3; 
+
+  0.14112000806 
+
+
+sin(pi/2); 
+
+  1.0
+
+</TT></PRE><P><em>sin</em>returns a numeric value only if <em>rounded</em> is on
+. 
+Then the sine is calculated to the current degree of floating point precision. 
+The argument in this case is assumed to be in radians. 
+<P>
+<P>
+<P>

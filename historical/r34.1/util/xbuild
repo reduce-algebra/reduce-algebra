@@ -1,0 +1,17 @@
+#!/bin/csh -f
+
+# xbuild --- Build all REDUCE fasl files from an existing (possibly
+#            minimal) REDUCE.
+
+# Author: Anthony C. Hearn.
+
+set list = (module prolog rlisp rend poly alg mathpr arith matrix  \
+            hephys entry arnum cedit compact excalc ezgcd factor   \
+            gentran dipoly groebner groebnr2 int algint            \
+            pretty rcref roots rprint scope solve spde taylor tps  \
+            misc odesolve avector orthovec)
+
+foreach x ($list)
+    echo compiling $x ...
+    $reduce/util/mkfasl $x
+end

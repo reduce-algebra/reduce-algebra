@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# package --- Recompile just one package of REDUCE
+
+# Author: Arthur C Norman
+
+./r37 -Dno_init_file -Dtarget=$1 ../util/package.red -- log/$1.log
+
+

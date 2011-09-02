@@ -1,0 +1,37 @@
+
+<A NAME=gsort>
+
+<TITLE>gsort</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GSORT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>gsort</em>(&lt;p&gt;) 
+<P>
+<P>
+<P>
+where &lt;p&gt; is a polynomial or a list of polynomials. 
+<P>
+<P>
+The polynomials are reordered and sorted corresponding to 
+the current 
+<A HREF=r37_0353.html>term order</A>. 
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+  torder lex;
+  
+  gsort(x**2+2x*y+y**2,{y,x}); 
+
+  y**2+2y*x+x**2
+
+</TT></PRE><P><P>
+<P>

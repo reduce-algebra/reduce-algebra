@@ -1,0 +1,62 @@
+
+<A NAME=diagonal>
+
+<TITLE>diagonal</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DIAGONAL</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>diagonal</em>({&lt;mat\_list&gt;}) 
+<P>
+<P>
+<P>
+(If you are feeling lazy then the braces can be omitted.) 
+<P>
+<P>
+&lt;mat\_list&gt; :- each can be either a scalar expression or a 
+square 
+<A HREF=r37_0345.html>matrix</A>. 
+<P>
+<P>
+<em>diagonal</em>creates a matrix that contains the input on the 
+diagonal. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+H := mat((66,77),(88,99)); 
+
+       [66  77]
+  h := [      ]
+       [88  99]
+
+
+
+diagonal({A,x,H}); 
+
+  [1  2  3  0  0   0 ]
+  [                  ]
+  [4  5  6  0  0   0 ]
+  [                  ]
+  [7  8  9  0  0   0 ]
+  [                  ]
+  [0  0  0  x  0   0 ]
+  [                  ]
+  [0  0  0  0  66  77]
+  [                  ]
+  [0  0  0  0  88  99]
+
+</TT></PRE><P>Related functions: 
+
+<A HREF=r37_0596.html>jordan_block</A>. 
+<P>
+<P>

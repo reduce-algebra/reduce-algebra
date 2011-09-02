@@ -1,0 +1,72 @@
+
+<A NAME=EQUAL>
+
+<TITLE>EQUAL</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>EQUAL</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>equal</em> is an infix binary comparison 
+operator. It is identical with <em>=</em>. It returns 
+<A HREF=r37_0122.html>true</A> if its two 
+arguments are equal. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; <em>equal</em> &lt;expression&gt; 
+<P>
+<P>
+<P>
+Equality is given between floating point numbers and integers that have 
+the same value. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+on rounded; 
+
+a := 4; 
+
+  A := 4 
+
+
+b := 4.0; 
+
+  B := 4.0 
+
+
+if a equal b then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  true 
+
+
+if a equal 5 then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  false 
+
+
+if a equal sqrt(16) then write &quot;true&quot; else write &quot;false&quot;;
+			 
+
+
+  true
+
+</TT></PRE><P>Comparison operators can only be used as conditions in conditional
+ commands 
+such as <em>if</em>...<em>then</em> and <em>repeat</em>...<em>until</em>. 
+&lt;equal&gt; can also be used as a prefix operator. However, this use 
+is not encouraged. 
+<P>
+<P>
+<P>

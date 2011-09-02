@@ -1,0 +1,54 @@
+
+<A NAME=GCD>
+
+<TITLE>GCD</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GCD</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>gcd</em> operator returns the greatest common divisor of two 
+polynomials. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>gcd</em>(&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; must be a polynomial (or integer), otherwise an error 
+occurs. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+gcd(2*x**2 - 2*y**2,4*x + 4*y); 
+
+  2*(X + Y) 
+
+
+gcd(sin(x),x**2 + 1); 
+
+  1  
+
+
+gcd(765,68); 
+
+  17
+
+</TT></PRE><P>The operator <em>gcd</em> described here provides an explicit mean
+s to find the 
+gcd of two expressions. The switch <em>gcd</em> described below simplifies 
+expressions by finding and canceling gcd's at every opportunity. When 
+the switch 
+<A HREF=r37_0286.html>ezgcd</A> is also on, gcd's are figured using the EZ GCD 
+algorithm, which is usually faster. 
+<P>
+<P>
+<P>

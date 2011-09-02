@@ -1,0 +1,54 @@
+
+<A NAME=PRECISE>
+
+<TITLE>PRECISE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>PRECISE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When the <em>precise</em> switch is on, simplification of roots of even 
+powers returns absolute values, a more precise answer mathematically. 
+Default is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+sqrt(x**2); 
+
+  X 
+
+
+(x**2)**(1/4); 
+
+  SQRT(X) 
+
+
+on precise; 
+
+sqrt(x**2); 
+
+  ABS(X) 
+
+
+(x**2)**(1/4); 
+
+  SQRT(ABS(X))
+
+</TT></PRE><P>In many types of mathematical work, simplification of powers and s
+urds can 
+proceed by the fastest means of simplifying the exponents arithmetically. 
+When it is important to you that the positive root be returned, turn 
+<em>precise</em> on. One situation where this is important is when graphing 
+square-root expressions such as sqrt(x^2+y^2) to 
+avoid a spike caused by REDUCE simplifying 
+sqrt(y^2) to y when x is 
+zero. 
+<P>
+<P>
+<P>

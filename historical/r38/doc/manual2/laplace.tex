@@ -1,0 +1,97 @@
+\chapter[LAPLACE: Laplace transforms etc.]%
+        {LAPLACE: Laplace and inverse Laplace transforms}
+\label{LAPLACE}
+\typeout{{LAPLACE: Laplace and inverse Laplace transforms}}
+
+{\footnotesize
+\begin{center}
+C. Kazasov, M. Spiridonova, V. Tomov \\
+Sofia, Bulgaria %%\\[0.05in]
+%%e--mail: 
+\end{center}
+}
+\ttindex{LAPLACE}
+
+The LAPLACE package provides both Laplace Transforms and Inverse
+Laplace Transforms, with the two operators
+
+\noindent{\tt LAPLACE(exp, s\_var, t\_var)}\ttindex{LAPLACE} \\
+{\tt INVLAP(exp, s\_var, t\_var)}\ttindex{INVLAP}
+
+The action is to transform the expression from the {\tt s\_var} or
+source variable into the {\tt t\_var} or target variable.  If {\tt
+t\_var} is omitted, the package uses an internal variable {\tt lp!\&} or
+{\tt il!\&} respectively. 
+
+Three switches control the transformations.  If {\tt
+lmon}\ttindex{lpon} is on then sine, cosine, hyperbolic sine and
+hyperbolic cosines are converted by LAPLACE into exponentials.  If
+{\tt lhyp} is on then exponential functions are converted into
+hyperbolic form.   The last switch {\tt ltrig}\ttindex{ltrig} has the
+same effect except it uses trigonometric functions.
+
+The system can be extended by adding Laplace transformation rules for
+single functions by rules or rule sets.  In such a rule the source
+variable {\bf must} be free, the target variable {\bf must} be {\tt
+il!\&} for LAPLACE and {\tt lp!\&} for INVLAP, with the third parameter
+omitted.  Also rules for transforming derivatives are entered in such
+a form.  For example 
+\begin{verbatim}
+    let {laplace(log(~x),x) => -log(gam * il!&)/il!&,
+         invlap(log(gam * ~x)/x,x) => -log(lp!&)};
+    operator f;
+    let {
+      laplace(df(f(~x),x),x) => il!&*laplace(f(x),x) - sub(x=0,f(x)),
+
+      laplace(df(f(~x),x,~n),x) => il!&**n*laplace(f(x),x) -
+        for i:=n-1 step -1 until 0 sum
+          sub(x=0, df(f(x),x,n-1-i)) * il!&**i
+            when fixp n,
+
+      laplace(f(~x),x) = f(il!&)
+    };
+\end{verbatim}
+
+The LAPLACE system knows about the functions {\tt DELTA} and {\tt
+GAMMA}, and used the operator {\tt ONE} for the unit step function and
+{\tt INTL} stands for the parameterised integral function, for
+instance  {\tt intl(2*y**2,y,0,x)} stands for $\int^x_0 2 y^2 dx$.
+
+\begin{verbatim}
+load_package laplace;
+
+laplace(sin(17*x),x,p);
+
+    17
+----------
+  2
+ p  + 289
+
+on lmon;
+
+laplace(-1/4*e**(a*x)*(x-k)**(-1/2), x, p);
+
+     1            a*k
+  - ---*sqrt(pi)*e
+     4
+----------------------
+  k*p
+ e   *sqrt( - a + p)
+
+invlap(c/((p-a)*(p-b)), p, t);
+
+     a*t    b*t
+ c*(e    - e   )
+-----------------
+      a - b
+
+invlap(p**(-7/3), p, t);
+
+    1/3
+   t   *t
+------------
+        7
+ gamma(---)
+        3
+\end{verbatim}
+

@@ -1,0 +1,2680 @@
++++ Transcript to mkhtml1.log started at Sat Aug 07 16:05:54 2004 +++
+Codemist Standard Lisp 6.00 for Windows: Aug  5 2004
+Created: Thu Aug 05 11:50:03 2004
+
+REDUCE 3.8, 15-Apr-04 ...
+Memory allocation: 54522624 bytes
+
++++ About to read file "mkhtml1.red"
+
+%
+% This file runs the "*.tex" to "redhelp.html" conversion code. As
+% well as providing the top level direction to the process it patches up
+% for at least some of the places where the conversion code had been
+% written in a manner not strongly related to the portability objectives of
+% Standard Lisp...
+%
+
+symbolic;
+nil
+
+
+off echo;
+nil
+
+
+on backtrace;
+nil
+
+
+on comp;
+nil
+
+
+!*windows := t;
+t
+
+
+
+fluid '(package);
+nil
+
+
+
+package := 'redhelp;
+redhelp
+
+
+
+symbolic procedure deletip(a, b);
+   delete(a, b);+++ deletip compiled as link to delete
+
+deletip
+
+
+
+symbolic procedure inf x;
+   char!-code x;+++ inf compiled as link to char-code
+
+inf
+
+
+
+symbolic procedure channellinelength(f, l);
+  begin
+    f := wrs f;
+    l := linelength l;
+    wrs f;
+    return l
+  end;+++ channellinelength compiled, 12 + 4 bytes
+
+channellinelength
+
+
+
+symbolic procedure channelprin2(f, x);
+  begin
+    f := wrs f;
+    prin2 x;
+    wrs f;
+    return x
+  end;+++ channelprin2 compiled, 10 + 8 bytes
+
+channelprin2
+
+
+
+symbolic procedure channelprin2t(f, x);
+  begin
+    f := wrs f;
+    prin2t x;
+    wrs f;
+    return x
+  end;+++ channelprin2t compiled, 10 + 8 bytes
+
+channelprin2t
+
+
+
+symbolic macro procedure channelprintf u;
+  begin
+    scalar g;
+    g := gensym();
+    return list('prog, list g,
+       list('setq, g, list('wrs, cadr u)),
+       'printf . cddr u,
+       list('wrs, g))
+  end;+++ channelprintf_76z7r3p3pl4b compiled, 33 + 24 bytes
+
+channelprintf
+
+
+
+symbolic procedure channelterpri f;
+  begin
+    f := wrs f;
+    terpri();
+    wrs f;
+  end;+++ channelterpri compiled, 10 + 4 bytes
+
+channelterpri
+
+
+
+symbolic procedure channelreadch f;
+  begin
+    scalar c;
+    f := rds f;
+    c := readch();
+    rds f;
+    return c
+  end;+++ channelreadch compiled, 12 + 4 bytes
+
+channelreadch
+
+
+
+in "comphelp.red"$
+nil
+
+nil
+
+nil
+
+nil
+
+nil
+
+nil
+
+nil
+
+nil
+
+nil
+
+nil
+
+0
+
+nil
++++++ global !*raise converted to fluid
++++ job compiled, 113 + 148 bytes
+
+job
+
+nil
+
+nil
+
+nil
++++ rdch compiled, 3 + 8 bytes
+
+rdch
++++ rdch!* compiled, 3 + 12 bytes
+
+rdch!*
++++ rdchr0 compiled, 54 + 64 bytes
+
+rdchr0
++++ unrdch compiled, 3 + 12 bytes
+
+unrdch
++++ myskip compiled, 5 + 8 bytes
+
+myskip
++++ myskipl compiled, 9 + 8 bytes
+
+myskipl
++++ myskipstring compiled, 41 + 24 bytes
+
+myskipstring
+
+nil
+
+lower
++++ mytoken compiled, 83 + 44 bytes
+
+mytoken
++++ mystring compiled, 28 + 16 bytes
+
+mystring
++++ mystring2 compiled, 14 + 12 bytes
+
+mystring2
++++ mystring2!] compiled, 14 + 12 bytes
+
+mystring2!]
++++ mystring_nodename compiled, 41 + 40 bytes
+
+mystring_nodename
++++ mystring3 compiled, 23 + 16 bytes
+
+mystring3
++++ raisestring compiled, 67 + 20 bytes
+
+raisestring
++++ lowerstring compiled, 75 + 20 bytes
+
+lowerstring
++++ mycompress compiled, 12 + 8 bytes
+
+mycompress
++++ mainloop compiled, 200 + 156 bytes
+
+mainloop
+
+*** local variable u in procedure include not used 
++++ include compiled, 129 + 100 bytes
+
+include
+
+include
+
+include
+
+null
+
+null
++++ print_indent compiled, 21 + 20 bytes
+
+print_indent
+
+nil
+
+0
+
+type
+
+seq
+
+lab
+
+count
+
+name
++++ reset compiled, 51 + 40 bytes
+
+reset
++++ sectappend compiled, 11 + 8 bytes
+
+sectappend
++++ section compiled, 10 + 20 bytes
+
+section
++++ close_section compiled, 39 + 24 bytes
+
+close_section
++++ close_section1 compiled, 40 + 40 bytes
+
+close_section1
++++ write_sections compiled, 15 + 12 bytes
+
+write_sections
++++ write_section compiled, 67 + 52 bytes
+
+write_section
++++ make_dir_entry compiled, 8 + 8 bytes
+
+make_dir_entry
++++ help_gensym compiled, 10 + 12 bytes
+
+help_gensym
++++ open_section compiled, 172 + 112 bytes
+
+open_section
+
+section
+
+section
+
+section
+
+*** local variable u in procedure beg not used 
++++ beg compiled, 87 + 68 bytes
+
+beg
+
+beg
+
+*** local variable u in procedure mmain not used 
++++ mmain compiled as link to mainloop
+
+mmain
+
+mmain
+
+nil
++++ clean_name compiled, 27 + 16 bytes
+
+clean_name
+
+(((!,) . comma_sign) ((!.) . dot_sign) ((!;) . semicolon_sign) ((!%) .
+percent_sign) ((!$) . dollar_sign) ((!: !=) . assign_sign) ((!=) . equal_sign) (
+(!+) . plus_sign) ((!-) . minus_sign) ((!*) . times_sign) ((!/) . slash_sign) ((
+!* !*) . power_sign) ((!$ !> != !$) . geq_sign) ((!> !=) . geq_sign) ((!>) .
+greater_sign) ((!$ !< != !$) . leq_sign) ((!< !=) . leq_sign) ((!<) . less_sign)
+((!< !<) . block))
++++ make_label compiled, 64 + 40 bytes
+
+make_label
++++ get_label compiled, 8 + 8 bytes
+
+get_label
++++ patch_ compiled, 29 + 16 bytes
+
+patch_
++++ get_label1 compiled, 32 + 40 bytes
+
+get_label1
++++ get_label2 compiled, 103 + 56 bytes
+
+get_label2
++++ update_labels compiled, 47 + 36 bytes
+
+update_labels
++++ node compiled, 197 + 136 bytes
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
+
+node
++++ part compiled, 63 + 68 bytes
+
+part
++++ par_heading compiled, 26 + 16 bytes
+
+par_heading
+
+*** local variable type in procedure vpart not used 
++++ vpart compiled, 13 + 32 bytes
+
+vpart
++++ vpart0 compiled, 81 + 72 bytes
+
+vpart0
++++ compareahead compiled, 6 + 8 bytes
+
+compareahead
++++ compareahead1 compiled, 28 + 12 bytes
+
+compareahead1
++++ look_ahead_suctx941k0ih compiled, 11 + 16 bytes
+
+look_ahead
+
+*** local variable type in procedure examples_part not used 
++++ examples_part compiled, 381 + 204 bytes
+
+examples_part
++++ non_verb_block compiled, 15 + 36 bytes
+
+non_verb_block
++++ make_multi_out compiled, 121 + 60 bytes
+
+make_multi_out
++++ cut_lines compiled, 37 + 8 bytes
+
+cut_lines
++++ matchleft compiled, 22 + 16 bytes
+
+matchleft
++++ matcharb compiled, 12 + 8 bytes
+
+matcharb
++++ read_one_line compiled, 15 + 12 bytes
+
+read_one_line
+
+part
+
+part
+
+part
+
+part
+
+part
+
+part
+
+part
+
+part
+
+*** local variable type in procedure do-itemize not used 
++++ do!-itemize compiled, 6 + 20 bytes
+
+do!-itemize
+
+do!-itemize
++++ context_error compiled, 11 + 20 bytes
+
+context_error
+
+*** local variable u in procedure verb not used 
++++ verb compiled, 12 + 24 bytes
+
+verb
+
+verb
+
+*** local variable u in procedure ldots not used 
++++ ldots compiled, 3 + 12 bytes
+
+ldots
+
+ldots
+
+nil
+
+*** local variable u in procedure cdots not used 
++++ cdots compiled, 3 + 12 bytes
+
+cdots
+
+cdots
+
+nil
+
+*** local variable u in procedure cdot not used 
++++ cdot compiled, 3 + 12 bytes
+
+cdot
+
+cdot
+
+nil
+
+*** local variable u in procedure write_pi not used 
++++ write_pi compiled, 3 + 12 bytes
+
+write_pi
+
+write_pi
+
+nil
+
+*** local variable u in procedure emphase not used 
++++ emphase compiled, 3 + 12 bytes
+
+emphase
+
+emphase
+
+*** local variable u in procedure meta not used 
++++ meta compiled, 18 + 20 bytes
+
+meta
+
+meta
+
+*** local variable u in procedure italic not used 
++++ italic compiled, 8 + 24 bytes
+
+italic
+
+*** local variable u in procedure switchitalic not used 
++++ switchitalic compiled, 1 + 4 bytes
+
+switchitalic
+
+italic
+
+italic
+
+italic
+
+*** local variable u in procedure nameref not used 
++++ nameref compiled, 3 + 12 bytes
+
+nameref
+
+nameref
+
+*** local variable u in procedure ref not used 
++++ ref compiled, 3 + 12 bytes
+
+ref
+
+ref
++++ see compiled, 4 + 12 bytes
+
+see
+
+see
+
+*** local variable u in procedure myname not used 
++++ myname compiled, 3 + 12 bytes
+
+myname
+
+myname
+
+*** local variable u in procedure myindex not used 
++++ myindex compiled, 5 + 20 bytes
+
+myindex
+
+myindex
+
+*** local variable u in procedure nameindex not used 
++++ nameindex compiled, 10 + 24 bytes
+
+nameindex
+
+nameindex
+
+*** local variable u in procedure reduce not used 
++++ reduce compiled, 3 + 12 bytes
+
+reduce
+
+reduce
+
+nil
+
+*** local variable u in procedure rept not used 
++++ rept compiled, 3 + 12 bytes
+
+rept
+
+rept
+
+nil
+
+*** local variable u in procedure optional not used 
++++ optional compiled, 3 + 12 bytes
+
+optional
+
+optional
+
+nil
+
+*** local variable u in procedure myexp not used 
++++ myexp compiled, 5 + 16 bytes
+
+myexp
+
+myexp
+
+*** local variable u in procedure formula not used 
++++ formula compiled, 3 + 12 bytes
+
+formula
+
+formula
+
+formula
+
+*** local variable u in procedure rfrac not used 
++++ rfrac compiled, 8 + 24 bytes
+
+rfrac
+
+rfrac
+
+*** local variable u in procedure item not used 
++++ item compiled, 14 + 32 bytes
+
+item
+
+item
+
+*** local variable u in procedure texonly1 not used 
++++ texonly1 compiled, 48 + 44 bytes
+
+texonly1
+
+texonly1
+
+*** local variable u in procedure texonly2 not used 
++++ texonly2 compiled, 67 + 68 bytes
+
+texonly2
+
+texonly2
+
+*** local variable u in procedure infoonly not used 
++++ infoonly compiled, 6 + 12 bytes
+
+infoonly
+
+infoonly
++++ reporttopic compiled, 12 + 20 bytes
+
+reporttopic
++++ substipq compiled, 32 + 12 bytes
+
+substipq
+
+nil
+
+
+in "helphtml1.red"$
+nil
+
+nil
+
+t
+
+t
+
+"R"
+
+"TT"
+
+nil
++++ rootname compiled, 13 + 16 bytes
+
+rootname
++++ dest_directory compiled, 13 + 16 bytes
+
+dest_directory
+
+nil
+
+0
++++ reset_html compiled, 8 + 24 bytes
+
+reset_html
++++ html_open compiled, 15 + 20 bytes
+
+html_open
++++ html_close compiled, 17 + 24 bytes
+
+html_close
+
+*** local variable u in procedure open_current_base_dir not used 
++++ open_current_base_dir compiled, 1 + 4 bytes
+
+open_current_base_dir
++++ close_current_base_dir compiled, 1 + 4 bytes
+
+close_current_base_dir
++++ make_html_file_name compiled, 72 + 56 bytes
+
+make_html_file_name
++++ open_node_file compiled, 92 + 80 bytes
+
+open_node_file
++++ close_node_file compiled, 1 + 4 bytes
+
+close_node_file
++++ node_file_name compiled, 2 + 8 bytes
+
+node_file_name
++++ initoutput compiled, 1 + 4 bytes
+
+initoutput
++++ endoutput compiled, 1 + 4 bytes
+
+endoutput
++++ verbatim compiled, 3 + 8 bytes
+
+verbatim
++++ newfont compiled, 10 + 16 bytes
+
+newfont
++++ fontoff compiled, 5 + 12 bytes
+
+fontoff
++++ fonton compiled, 5 + 12 bytes
+
+fonton
++++ myprin2 compiled, 6 + 16 bytes
+
+myprin2
+
+(!< !> !" !&)
+
+(!< !> !" !&)
++++ myprin2_protected compiled, 14 + 16 bytes
+
+myprin2_protected
+
+nil
++++ emit_start_verbatim compiled, 7 + 20 bytes
+
+emit_start_verbatim
++++ emit_end_verbatim compiled, 7 + 24 bytes
+
+emit_end_verbatim
++++ verbprin2 compiled, 55 + 56 bytes
+
+verbprin2
++++ myterpri compiled, 3 + 12 bytes
+
+myterpri
++++ number4out compiled, 24 + 32 bytes
+
+number4out
++++ textout compiled, 149 + 84 bytes
+
+textout
+
++++ par_heading redefined
++++ par_heading compiled, 26 + 24 bytes
+
+par_heading
++++ base_new_dir compiled, 6 + 16 bytes
+
+base_new_dir
++++ emit_dir_new compiled, 1 + 4 bytes
+
+emit_dir_new
++++ emit_dir_key compiled as link to emit_node_key
+
+emit_dir_key
++++ emit_dir_separator compiled as link to emit_node_separator
+
+emit_dir_separator
++++ emit_dir_label compiled as link to emit_node_label
+
+emit_dir_label
++++ emit_dir_title compiled, 6 + 12 bytes
+
+emit_dir_title
++++ emit_dir_browse compiled as link to emit_node_browse
+
+emit_dir_browse
++++ emit_node_separator compiled, 15 + 40 bytes
+
+emit_node_separator
++++ set_tab compiled, 1 + 4 bytes
+
+set_tab
++++ release_tab compiled, 1 + 4 bytes
+
+release_tab
++++ textout_name compiled, 26 + 16 bytes
+
+textout_name
++++ textout2 compiled, 29 + 16 bytes
+
+textout2
++++ printem compiled, 18 + 24 bytes
+
+printem
+
++++ printem redefined
++++ printem compiled, 19 + 28 bytes
+
+printem
++++ printref compiled, 235 + 128 bytes
+
+printref
++++ printnameref compiled as link to printref
+
+printnameref
+
+nil
++++ emit_node_keys compiled, 28 + 24 bytes
+
+emit_node_keys
++++ emit_node_key compiled as link to emit_hidden_node_key
+
+emit_node_key
++++ emit_hidden_node_key compiled, 33 + 16 bytes
+
+emit_hidden_node_key
++++ remove_html compiled, 13 + 4 bytes
+
+remove_html
++++ emit_node_label compiled, 25 + 40 bytes
+
+emit_node_label
+
+*** local variable dummy in procedure emit_node_title not used 
+
+*** local variable type in procedure emit_node_title not used 
++++ emit_node_title compiled, 49 + 56 bytes
+
+emit_node_title
++++ emit_node_browse compiled, 11 + 20 bytes
+
+emit_node_browse
++++ print_bold compiled, 19 + 28 bytes
+
+print_bold
++++ emit_dir_header compiled, 8 + 28 bytes
+
+emit_dir_header
++++ dig4 compiled, 14 + 16 bytes
+
+dig4
++++ refout compiled, 39 + 32 bytes
+
+refout
++++ emit_dir_entry compiled, 66 + 68 bytes
+
+emit_dir_entry
++++ print_newline compiled, 13 + 32 bytes
+
+print_newline
++++ second_newline compiled, 4 + 12 bytes
+
+second_newline
++++ print_tab compiled, 4 + 16 bytes
+
+print_tab
++++ html_indexfile compiled, 353 + 144 bytes
+
+html_indexfile
++++ sort_term compiled, 60 + 12 bytes
+
+sort_term
++++ html_indexfile_sort compiled, 4 + 8 bytes
+
+html_indexfile_sort
++++ html_indexfile_sort1 compiled, 27 + 12 bytes
+
+html_indexfile_sort1
++++ html_indexfile_subsetp compiled, 18 + 4 bytes
+
+html_indexfile_subsetp
++++ lisp_indexfile compiled, 329 + 136 bytes
+
+lisp_indexfile
++++ printstruct compiled, 7 + 16 bytes
+
+printstruct
++++ printstruct1 compiled, 58 + 16 bytes
+
+printstruct1
+
+nil
+
+
+in "minitex.red"$
+nil
+
+nil
+
+nil
+
+!\
+
+!^
+
+!_
+
+2
+
+3
+
+4
++++ mintex_convert0 compiled, 38 + 12 bytes
+
+mintex_convert0
++++ mintex_convert compiled as link to mintex_convert0
+
+mintex_convert
++++ minitex compiled, 102 + 40 bytes
+
+minitex
++++ minitex_pop_char compiled, 11 + 8 bytes
+
+minitex_pop_char
++++ minitex_skip compiled, 11 + 8 bytes
+
+minitex_skip
++++ minitex_next_char compiled, 6 + 8 bytes
+
+minitex_next_char
++++ struct compiled, 9 + 8 bytes
+
+struct
++++ make_chain compiled, 317 + 120 bytes
+
+make_chain
+
+*** local variable font in procedure make_char not used 
+
+*** local variable cs in procedure make_char not used 
++++ make_char compiled, 23 + 48 bytes
+
+make_char
++++ make_frac compiled, 211 + 76 bytes
+
+make_frac
+
+*** local variable y1 in procedure make_line not used 
++++ make_line compiled, 22 + 32 bytes
+
+make_line
++++ make_multi compiled, 63 + 60 bytes
+
+make_multi
+
+*** local variable font in procedure make_end not used 
++++ make_end compiled, 4 + 16 bytes
+
+make_end
+
+nil
+
+(chain 0 0 0)
+
+nil
+
+*** local variable term in procedure make_escape not used 
++++ make_escape compiled, 77 + 72 bytes
+
+make_escape
++++ my_compare compiled, 23 + 16 bytes
+
+my_compare
++++ minitex_collect compiled, 8 + 12 bytes
+
+minitex_collect
++++ minitex_do compiled, 25 + 20 bytes
+
+minitex_do
+
+minitex_chain
++++ minitex_chain compiled, 37 + 24 bytes
+
+minitex_chain
+
+minitex_char
+
+*** local variable font in procedure minitex_char not used 
++++ minitex_char compiled, 23 + 24 bytes
+
+minitex_char
+
+minitex_line
+
+*** local variable font in procedure minitex_line not used 
++++ minitex_line compiled, 38 + 28 bytes
+
+minitex_line
++++ minitex_putchar compiled, 31 + 24 bytes
+
+minitex_putchar
+
+nil
+
+
+
+dir_src := "../doc/help/";
+"../doc/help/"
+
+
+% dir_src := "~/reduce/doc/help/";
+
+on backtrace;
+nil
+
+
+
+reset_html();
+nil
+
+
+
+job(bldmsg("%w.tex",package), "null.fil");
+**** unknown token: documentclass 
+**** unknown token: usepackage 
+**** unknown token: usepackage 
+
+--- input file ../doc/help/concept.tex
+section 2 g2 Concepts
+   type IDENTIFIER 1 
+   type KERNEL 2 
+   type STRING 3 
+
+--- return from file ../doc/help/concept.tex
+
+--- input file ../doc/help/variable.tex
+                  section end: 4 
+section 3 g3 Variables
+   variable assumptions 5 
+   variable CARD\_NO 6 
+   constant E 7 
+   variable EVAL\_MODE 8 
+   variable FORT\_WIDTH 9 
+   variable HIGH\_POW 10 
+   constant I 11 
+   constant INFINITY 12 
+   variable LOW\_POW 13 
+   constant NIL 14 
+   constant PI 15 
+   variable requirements 16 
+   variable ROOT\_MULTIPLICITIES 17 
+   constant T 18 
+
+--- return from file ../doc/help/variable.tex
+
+--- input file ../doc/help/syntax.tex
+                  section end: 19 
+section 4 g4 Syntax
+   command semicolon 20 
+   command dollar 21 
+   command percent 22 
+   operator dot 23 
+   operator assign 24 
+   operator equalsign 25 
+   operator replace 26 
+   operator plussign 27 
+   operator minussign 28 
+   operator asterisk 29 
+   operator slash 30 
+   operator power 31 
+   operator caret 32 
+   operator geqsign 33 
+   operator greater 34 
+   operator leqsign 35 
+   operator less 36 
+   operator tilde 37 
+   command group 38 
+   operator AND 39 
+   command BEGIN 40 
+   command block 41 
+   command COMMENT 42 
+   operator CONS 43 
+   command END 44 
+   type EQUATION 45 
+   operator FIRST 46 
+   command FOR 47 
+   command FOREACH 48 
+   operator GEQ 49 
+   command GOTO 50 
+   operator GREATERP 51 
+   command IF 52 
+   operator LIST 53 
+   operator OR 54 
+   command PROCEDURE 55 
+   command REPEAT 56 
+   operator REST 57 
+   command RETURN 58 
+   operator REVERSE 59 
+   type RULE 60 
+   type Free Variable 61 
+   type Optional Free Variable 62 
+   operator SECOND 63 
+   operator SET 64 
+   operator SETQ 65 
+   operator THIRD 66 
+   operator WHEN 67 
+
+--- return from file ../doc/help/syntax.tex
+
+--- input file ../doc/help/arith.tex
+                  section end: 68 
+section 5 g5 Arithmetic Operations
+   introduction ARITHMETIC\_OPERATIONS 69 
+   operator ABS 70 
+   switch ADJPREC 71 
+   operator ARG 72 
+   operator CEILING 73 
+   operator CHOOSE 74 
+   operator DEG2DMS 75 
+   operator DEG2RAD 76 
+   operator DIFFERENCE 77 
+   operator DILOG 78 
+   operator DMS2DEG 79 
+   operator DMS2RAD 80 
+   operator FACTORIAL 81 
+   operator FIX 82 
+   operator FIXP 83 
+   operator FLOOR 84 
+   operator EXPT 85 
+   operator GCD 86 
+   operator LN 87 
+   operator LOG 88 
+   operator LOGB 89 
+   operator MAX 90 
+   operator MIN 91 
+   operator MINUS 92 
+   operator NEXTPRIME 93 
+   switch NOCONVERT 94 
+   operator NORM 95 
+   operator PERM 96 
+   operator PLUS 97 
+   operator QUOTIENT 98 
+   operator RAD2DEG 99 
+   operator RAD2DMS 100 
+   operator RECIP 101 
+   operator REMAINDER 102 
+   operator ROUND 103 
+   command SETMOD 104 
+   operator SIGN 105 
+   operator SQRT 106 
+   operator TIMES 107 
+
+--- return from file ../doc/help/arith.tex
+
+--- input file ../doc/help/boolean.tex
+                  section end: 108 
+section 6 g6 Boolean Operators
+   concept boolean value 109 
+   operator EQUAL 110 
+   operator EVENP 111 
+   concept false 112 
+   operator FREEOF 113 
+   operator LEQ 114 
+   operator LESSP 115 
+   operator MEMBER 116 
+   operator NEQ 117 
+   operator NOT 118 
+   operator NUMBERP 119 
+   operator ORDP 120 
+   operator PRIMEP 121 
+   concept TRUE 122 
+
+--- return from file ../doc/help/boolean.tex
+
+--- input file ../doc/help/command.tex
+                  section end: 123 
+section 7 g7 General Commands
+   command BYE 124 
+   command CONT 125 
+   command DISPLAY 126 
+   command LOAD\_PACKAGE 127 
+   command PAUSE 128 
+   command QUIT 129 
+   operator RECLAIM 130 
+   command REDERR 131 
+   command RETRY 132 
+   command SAVEAS 133 
+   command SHOWTIME 134 
+   command WRITE 135 
+
+--- return from file ../doc/help/command.tex
+
+--- input file ../doc/help/algebra.tex
+                  section end: 136 
+section 8 g8 Algebraic Operators
+   operator APPEND 137 
+   operator ARBINT 138 
+   operator ARBCOMPLEX 139 
+   operator ARGLENGTH 140 
+   operator COEFF 141 
+   operator COEFFN 142 
+   operator CONJ 143 
+   operator CONTINUED_FRACTION 144 
+   operator DECOMPOSE 145 
+   operator DEG 146 
+   operator DEN 147 
+   operator DF 148 
+   operator EXPAND\_CASES 149 
+   operator EXPREAD 150 
+   operator FACTORIZE 151 
+   operator HYPOT 152 
+   operator IMPART 153 
+   operator INT 154 
+   operator INTERPOL 155 
+   operator LCOF 156 
+   operator LENGTH 157 
+   operator LHS 158 
+   operator LIMIT 159 
+   operator LPOWER 160 
+   operator LTERM 161 
+   operator MAINVAR 162 
+   operator MAP 163 
+   command MKID 164 
+   operator NPRIMITIVE 165 
+   operator NUM 166 
+   operator ODESOLVE 167 
+   type ONE\_OF 168 
+   operator PART 169 
+   operator PF 170 
+   operator PROD 171 
+   operator REDUCT 172 
+   operator REPART 173 
+   operator RESULTANT 174 
+   operator RHS 175 
+   operator ROOT\_OF 176 
+   operator SELECT 177 
+   operator SHOWRULES 178 
+   operator SOLVE 179 
+   operator SORT 180 
+   operator STRUCTR 181 
+   operator SUB 182 
+   operator SUM 183 
+   operator WS 184 
+
+--- return from file ../doc/help/algebra.tex
+
+--- input file ../doc/help/declare.tex
+                  section end: 185 
+section 9 g9 Declarations
+   command ALGEBRAIC 186 
+   declaration ANTISYMMETRIC 187 
+   declaration ARRAY 188 
+   command CLEAR 189 
+   command CLEARRULES 190 
+   command DEFINE 191 
+   declaration DEPEND 192 
+   declaration EVEN 193 
+   declaration FACTOR 194 
+   command FORALL 195 
+   declaration INFIX 196 
+   declaration INTEGER 197 
+   declaration KORDER 198 
+   command LET 199 
+   declaration LINEAR 200 
+   declaration LINELENGTH 201 
+   command LISP 202 
+   declaration LISTARGP 203 
+   declaration NODEPEND 204 
+   command MATCH 205 
+   declaration NONCOM 206 
+   declaration NONZERO 207 
+   declaration ODD 208 
+   command OFF 209 
+   command ON 210 
+   declaration OPERATOR 211 
+   declaration ORDER 212 
+   declaration PRECEDENCE 213 
+   declaration PRECISION 214 
+   declaration PRINT\_PRECISION 215 
+   declaration REAL 216 
+   declaration REMFAC 217 
+   declaration SCALAR 218 
+   declaration SCIENTIFIC\_NOTATION 219 
+   declaration SHARE 220 
+   command SYMBOLIC 221 
+   declaration SYMMETRIC 222 
+   declaration TR 223 
+   declaration UNTR 224 
+   declaration VARNAME 225 
+   command WEIGHT 226 
+   operator WHERE 227 
+   command WHILE 228 
+   command WTLEVEL 229 
+
+--- return from file ../doc/help/declare.tex
+
+--- input file ../doc/help/io.tex
+                  section end: 230 
+section 10 g10 Input and Output
+   command IN 231 
+   command INPUT 232 
+   command OUT 233 
+   command SHUT 234 
+
+--- return from file ../doc/help/io.tex
+
+--- input file ../doc/help/elemfn.tex
+                  section end: 235 
+section 11 g11 Elementary Functions
+   operator ACOS 236 
+   operator ACOSH 237 
+   operator ACOT 238 
+   operator ACOTH 239 
+   operator ACSC 240 
+   operator ACSCH 241 
+   operator ASEC 242 
+   operator ASECH 243 
+   operator ASIN 244 
+   operator ASINH 245 
+   operator ATAN 246 
+   operator ATANH 247 
+   operator ATAN2 248 
+   operator COS 249 
+   operator COSH 250 
+   operator COT 251 
+   operator COTH 252 
+   operator CSC 253 
+   operator CSCH 254 
+   operator ERF 255 
+   operator EXP 256 
+   operator SEC 257 
+   operator SECH 258 
+   operator SIN 259 
+   operator SINH 260 
+   operator TAN 261 
+   operator TANH 262 
+
+--- return from file ../doc/help/elemfn.tex
+
+--- input file ../doc/help/switch.tex
+                  section end: 263 
+section 12 g12 General Switches
+   introduction SWITCHES 264 
+   switch ALGINT 265 
+   switch ALLBRANCH 266 
+   switch ALLFAC 267 
+   switch ARBVARS 268 
+   switch BALANCED\_MOD 269 
+   switch BFSPACE 270 
+   switch COMBINEEXPT 271 
+   switch COMBINELOGS 272 
+   switch COMP 273 
+   switch COMPLEX 274 
+   switch CREF 275 
+   switch CRAMER 276 
+   switch DEFN 277 
+   switch DEMO 278 
+   switch DFPRINT 279 
+   switch DIV 280 
+   switch ECHO 281 
+   switch ERRCONT 282 
+   switch EVALLHSEQP 283 
+   switch EXP 284 
+   switch EXPANDLOGS 285 
+   switch EZGCD 286 
+   switch FACTOR 287 
+   switch FAILHARD 288 
+   switch FORT 289 
+   switch FORTUPPER 290 
+   switch FULLPREC 291 
+   switch FULLROOTS 292 
+   switch GC 293 
+   switch GCD 294 
+   switch HORNER 295 
+   switch IFACTOR 296 
+   switch INT 297 
+   switch INTSTR 298 
+   switch LCM 299 
+   switch LESSSPACE 300 
+   switch LIMITEDFACTORS 301 
+   switch LIST 302 
+   switch LISTARGS 303 
+   switch MCD 304 
+   switch MODULAR 305 
+   switch MSG 306 
+   switch MULTIPLICITIES 307 
+   switch NAT 308 
+   switch NERO 309 
+   switch NOARG 310 
+   switch NOLNR 311 
+   switch NOSPLIT 312 
+   switch NUMVAL 313 
+   switch OUTPUT 314 
+   switch OVERVIEW 315 
+   switch PERIOD 316 
+   switch PRECISE 317 
+   switch PRET 318 
+   switch PRI 319 
+   switch RAISE 320 
+   switch RAT 321 
+   switch RATARG 322 
+   switch RATIONAL 323 
+   switch RATIONALIZE 324 
+   switch RATPRI 325 
+   switch REVPRI 326 
+   switch RLISP88 327 
+   switch ROUNDALL 328 
+   switch ROUNDBF 329 
+   switch ROUNDED 330 
+   switch SAVESTRUCTR 331 
+   switch SOLVESINGULAR 332 
+   switch TIME 333 
+   switch TRALLFAC 334 
+   switch TRFAC 335 
+   switch TRIGFORM 336 
+   switch TRINT 337 
+   switch TRNONLNR 338 
+   switch VAROPT 339 
+
+--- return from file ../doc/help/switch.tex
+
+--- input file ../doc/help/matrix.tex
+                  section end: 340 
+section 13 g13 Matrix Operations
+   operator COFACTOR 341 
+   operator DET 342 
+   operator MAT 343 
+   operator MATEIGEN 344 
+   declaration MATRIX 345 
+   operator NULLSPACE 346 
+   operator RANK 347 
+   operator TP 348 
+   operator TRACE 349 
+
+--- return from file ../doc/help/matrix.tex
+
+--- input file ../doc/help/pk-groeb.tex
+                  section end: 350 
+section 14 g14 Groebner package
+   introduction Groebner bases 351 
+   concept Ideal Parameters 352 
+   subsection 15 g15 Term order
+      introduction Term order 353 
+      operator torder 354 
+      operator torder_compile 355 
+      concept lex term order 356 
+      concept gradlex term order 357 
+      concept revgradlex term order 358 
+      concept gradlexgradlex term order 359 
+      concept gradlexrevgradlex term order 360 
+      concept lexgradlex term order 361 
+      concept lexrevgradlex term order 362 
+      concept weighted term order 363 
+      concept graded term order 364 
+      concept matrix term order 365 
+                     section end: 366 
+   subsection 16 g16 Basic Groebner operators
+      operator gvars 367 
+      operator groebner 368 
+      operator groebner\_walk 369 
+      switch groebopt 370 
+      variable gvarslast 371 
+      switch groebprereduce 372 
+      switch groebfullreduction 373 
+      switch gltbasis 374 
+      variable gltb 375 
+      variable glterms 376 
+      switch groebstat 377 
+      switch trgroeb 378 
+      switch trgroebs 379 
+      operator gzerodim? 380 
+      operator gdimension 381 
+      operator gindependent\_sets 382 
+      operator dd_groebner 383 
+      operator glexconvert 384 
+      operator greduce 385 
+      operator preduce 386 
+      operator idealquotient 387 
+      operator hilbertpolynomial 388 
+      operator saturation 389 
+                     section end: 390 
+   subsection 17 g17 Factorizing Groebner bases
+      operator groebnerf 391 
+      variable groebmonfac 392 
+      variable groebresmax 393 
+      variable groebrestriction 394 
+                     section end: 395 
+   subsection 18 g18 Tracing Groebner bases
+      switch groebprot 396 
+      variable groebprotfile 397 
+      operator groebnert 398 
+      operator preducet 399 
+                     section end: 400 
+   subsection 19 g19 Groebner Bases for Modules
+      concept Module 401 
+      variable gmodule 402 
+                     section end: 403 
+   subsection 20 g20 Computing with distributive polynomials
+      operator gsort 404 
+      operator gsplit 405 
+      operator gspoly 406 
+
+--- return from file ../doc/help/pk-groeb.tex
+
+--- input file ../doc/help/hephys.tex
+                     section end: 407 
+                     section end: 408 
+section 21 g21 High Energy Physics
+   introduction HEPHYS 409 
+   operator HE-dot 410 
+   operator EPS 411 
+   operator G 412 
+   declaration INDEX 413 
+   command MASS 414 
+   command MSHELL 415 
+   declaration NOSPUR 416 
+   declaration REMIND 417 
+   declaration SPUR 418 
+   command VECDIM 419 
+   declaration VECTOR 420 
+
+--- return from file ../doc/help/hephys.tex
+
+--- input file ../doc/help/pk-numer.tex
+                  section end: 421 
+section 22 g22 Numeric Package
+   introduction Numeric Package 422 
+   type Interval 423 
+   concept numeric accuracy 424 
+   switch TRNUMERIC 425 
+   operator num_min 426 
+   operator num_solve 427 
+   operator num_int 428 
+   operator num_odesolve 429 
+   operator bounds 430 
+   concept Chebyshev fit 431 
+   operator num_fit 432 
+
+--- return from file ../doc/help/pk-numer.tex
+
+--- input file ../doc/help/pk-roots.tex
+                  section end: 433 
+section 23 g23 Roots Package
+   introduction Roots Package 434 
+   operator MKPOLY 435 
+   operator NEARESTROOT 436 
+   operator REALROOTS 437 
+   operator ROOTACC 438 
+   operator ROOTS 439 
+   operator ROOT\_VAL 440 
+   variable ROOTSCOMPLEX 441 
+   variable ROOTSREAL 442 
+
+--- return from file ../doc/help/pk-roots.tex
+
+--- input file ../doc/help/pk-specf.tex
+                  section end: 443 
+section 24 g24 Special Functions
+   introduction Special Function Package 444 
+   concept Constants 445 
+   subsection 25 g25 Bernoulli Euler Zeta
+      operator BERNOULLI 446 
+      operator BERNOULLIP 447 
+      operator EULER 448 
+      operator EULERP 449 
+      operator ZETA 450 
+                     section end: 451 
+   subsection 26 g26 Bessel Functions
+      operator BESSELJ 452 
+      operator BESSELY 453 
+      operator HANKEL1 454 
+      operator HANKEL2 455 
+      operator BESSELI 456 
+      operator BESSELK 457 
+      operator StruveH 458 
+      operator StruveL 459 
+      operator KummerM 460 
+      operator KummerU 461 
+      operator WhittakerW 462 
+                     section end: 463 
+   subsection 27 g27 Airy Functions
+      operator Airy_Ai 464 
+      operator Airy_Bi 465 
+      operator Airy_Aiprime 466 
+      operator Airy_Biprime 467 
+                     section end: 468 
+   subsection 28 g28 Jacobi's Elliptic Functions and Elliptic Integrals
+      operator JacobiSN 469 
+      operator JacobiCN 470 
+      operator JacobiDN 471 
+      operator JacobiCD 472 
+      operator JacobiSD 473 
+      operator JacobiND 474 
+      operator JacobiDC 475 
+      operator JacobiNC 476 
+      operator JacobiSC 477 
+      operator JacobiNS 478 
+      operator JacobiDS 479 
+      operator JacobiCS 480 
+      operator JacobiAMPLITUDE 481 
+      operator AGM_FUNCTION 482 
+      operator LANDENTRANS 483 
+      operator EllipticF 484 
+      operator EllipticK 485 
+      operator EllipticKprime 486 
+      operator EllipticE 487 
+      operator EllipticTHETA 488 
+      operator JacobiZETA 489 
+                     section end: 490 
+   subsection 29 g29 Gamma and Related Functions
+      operator POCHHAMMER 491 
+      operator GAMMA 492 
+      operator BETA 493 
+      operator PSI 494 
+      operator POLYGAMMA 495 
+                     section end: 496 
+   subsection 30 g30 Miscellaneous Functions
+      operator DILOG extended 497 
+      operator Lambert\_W function 498 
+                     section end: 499 
+   subsection 31 g31 Orthogonal Polynomials
+      operator ChebyshevT 500 
+      operator ChebyshevU 501 
+      operator HermiteP 502 
+      operator LaguerreP 503 
+      operator LegendreP 504 
+      operator JacobiP 505 
+      operator GegenbauerP 506 
+      operator SolidHarmonicY 507 
+      operator SphericalHarmonicY 508 
+                     section end: 509 
+   subsection 32 g32 Integral Functions
+      operator Si 510 
+      operator Shi 511 
+      operator s_i 512 
+      operator Ci 513 
+      operator Chi 514 
+      operator ERF extended 515 
+      operator erfc 516 
+      operator Ei 517 
+      operator Fresnel_C 518 
+      operator Fresnel_S 519 
+                     section end: 520 
+   subsection 33 g33 Combinatorial Operators
+      operator BINOMIAL 521 
+      operator STIRLING1 522 
+      operator STIRLING2 523 
+                     section end: 524 
+   subsection 34 g34 3j and  6j symbols
+      operator ThreejSymbol 525 
+      operator Clebsch_Gordan 526 
+      operator SixjSymbol 527 
+                     section end: 528 
+   subsection 35 g35 Miscellaneous
+      operator HYPERGEOMETRIC 529 
+      operator MeijerG 530 
+      operator Heaviside 531 
+      operator erfi 532 
+
+--- return from file ../doc/help/pk-specf.tex
+
+--- input file ../doc/help/taylor.tex
+                     section end: 533 
+                     section end: 534 
+section 36 g36 Taylor series
+   introduction TAYLOR 535 
+   operator taylor 536 
+   switch taylorautocombine 537 
+   switch taylorautoexpand 538 
+   operator taylorcombine 539 
+   switch taylorkeeporiginal 540 
+   operator taylororiginal 541 
+   switch taylorprintorder 542 
+   variable taylorprintterms 543 
+   operator taylorrevert 544 
+   operator taylorseriesp 545 
+   operator taylortemplate 546 
+   operator taylortostandard 547 
+
+--- return from file ../doc/help/taylor.tex
+
+--- input file ../doc/help/pk-gplot.tex
+                  section end: 548 
+section 37 g37 Gnuplot package
+   introduction GNUPLOT and REDUCE 549 
+   concept Axes names 550 
+   type Pointset 551 
+   command PLOT 552 
+   command PLOTRESET 553 
+   variable title 554 
+   variable xlabel 555 
+   variable ylabel 556 
+   variable zlabel 557 
+   variable terminal 558 
+   variable size 559 
+   variable view 560 
+   switch contour 561 
+   switch surface 562 
+   switch hidden3d 563 
+   switch PLOTKEEP 564 
+   switch PLOTREFINE 565 
+   variable plot_xmesh 566 
+   variable plot_ymesh 567 
+   switch SHOW_GRID 568 
+   switch TRPLOT 569 
+
+--- return from file ../doc/help/pk-gplot.tex
+
+--- input file ../doc/help/linalg.tex
+                  section end: 570 
+section 38 g38 Linear Algebra package
+   introduction Linear Algebra package 571 
+   switch fast_la 572 
+   operator add_columns 573 
+   operator add_rows 574 
+   operator add_to_columns 575 
+   operator add_to_rows 576 
+   operator augment_columns 577 
+   operator band_matrix 578 
+   operator block_matrix 579 
+   operator char_matrix 580 
+   operator char_poly 581 
+   operator cholesky 582 
+   operator coeff_matrix 583 
+   operator column_dim 584 
+   operator companion 585 
+   operator copy_into 586 
+   operator diagonal 587 
+   operator extend 588 
+   operator find_companion 589 
+   operator get_columns 590 
+   operator get_rows 591 
+   operator gram_schmidt 592 
+   operator hermitian_tp 593 
+   operator hessian 594 
+   operator hilbert 595 
+   operator jacobian 596 
+   operator jordan_block 597 
+   operator lu_decom 598 
+   operator make_identity 599 
+   operator matrix_augment 600 
+   operator matrixp 601 
+   operator matrix_stack 602 
+   operator minor 603 
+   operator mult_columns 604 
+   operator mult_rows 605 
+   operator pivot 606 
+   operator pseudo_inverse 607 
+   operator random_matrix 608 
+   operator remove_columns 609 
+   operator remove_rows 610 
+   operator row_dim 611 
+   operator rows_pivot 612 
+   operator simplex 613 
+   operator squarep 614 
+   operator stack_rows 615 
+   operator sub_matrix 616 
+   operator svd 617 
+   operator swap_columns 618 
+   operator swap_entries 619 
+   operator swap_rows 620 
+   operator symmetricp 621 
+   operator toeplitz 622 
+   operator vandermonde 623 
+
+--- return from file ../doc/help/linalg.tex
+
+--- input file ../doc/help/normform.tex
+                  section end: 624 
+section 39 g39 Matrix Normal Forms
+   operator Smithex 625 
+   operator Smithex\_int 626 
+   operator Frobenius 627 
+   operator Ratjordan 628 
+   operator Jordansymbolic 629 
+   operator Jordan 630 
+
+--- return from file ../doc/help/normform.tex
+
+--- input file ../doc/help/pk-misc.tex
+                  section end: 631 
+section 40 g40 Miscellaneous Packages
+   introduction Miscellaneous Packages 632 
+   package ALGINT 633 
+   package APPLYSYM 634 
+   package ARNUM 635 
+   package ASSIST 636 
+   package AVECTOR 637 
+   package BOOLEAN 638 
+   package CALI 639 
+   package CAMAL 640 
+   package CHANGEVR 641 
+   package COMPACT 642 
+   package CRACK 643 
+   package CVIT 644 
+   package DEFINT 645 
+   package DESIR 646 
+   package DFPART 647 
+   package DUMMY 648 
+   package EXCALC 649 
+   package FPS 650 
+   package FIDE 651 
+   package GENTRAN 652 
+   package IDEALS 653 
+   package INEQ 654 
+   package INVBASE 655 
+   package LAPLACE 656 
+   package LIE 657 
+   package MODSR 658 
+   package NCPOLY 659 
+   package ORTHOVEC 660 
+   package PHYSOP 661 
+   package PM 662 
+   package RANDPOLY 663 
+   package REACTEQN 664 
+   package RESET 665 
+   package RESIDUE 666 
+   package RLFI 667 
+   package SCOPE 668 
+   package SETS 669 
+   package SPDE 670 
+   package SYMMETRY 671 
+   package TPS 672 
+   package TRI 673 
+   package TRIGSIMP 674 
+   package XCOLOR 675 
+   package XIDEAL 676 
+   package WU 677 
+   package ZEILBERG 678 
+   package ZTRANS 679 
+
+--- return from file ../doc/help/pk-misc.tex
+
+--- input file ../doc/help/outmode.tex
+                  section end: 680 
+section 41 g41 Outmoded Operations
+   command ED 681 
+   command EDITDEF 682 
+
+--- return from file ../doc/help/outmode.tex
+                  section end: 683 
+                  section end: 684 
+
+nil
+
+
+
+reset_html();
+nil
+
+
+
+job(bldmsg("%w.tex",package), "null.fil");
+
+------ updating node labels -----
+------ updating done ------------
+**** unknown token: documentclass 
+**** unknown token: usepackage 
+**** unknown token: usepackage 
+
+--- input file ../doc/help/concept.tex
+section 2 g2 Concepts
+   type IDENTIFIER 1 
+   type KERNEL 2 
+   type STRING 3 
+
+--- return from file ../doc/help/concept.tex
+
+--- input file ../doc/help/variable.tex
+                  section end: 4 
+section 3 g3 Variables
+   variable assumptions 5 
+   variable CARD\_NO 6 
+   constant E 7 
+   variable EVAL\_MODE 8 
+   variable FORT\_WIDTH 9 
+   variable HIGH\_POW 10 
+   constant I 11 
+   constant INFINITY 12 
+   variable LOW\_POW 13 
+   constant NIL 14 
+   constant PI 15 
+   variable requirements 16 
+   variable ROOT\_MULTIPLICITIES 17 
+   constant T 18 
+
+--- return from file ../doc/help/variable.tex
+
+--- input file ../doc/help/syntax.tex
+                  section end: 19 
+section 4 g4 Syntax
+   command semicolon 20 
+   command dollar 21 
+   command percent 22 
+   operator dot 23 
+   operator assign 24 
+   operator equalsign 25 
+   operator replace 26 
+   operator plussign 27 
+   operator minussign 28 
+   operator asterisk 29 
+   operator slash 30 
+   operator power 31 
+   operator caret 32 
+   operator geqsign 33 
+   operator greater 34 
+   operator leqsign 35 
+   operator less 36 
+   operator tilde 37 
+   command group 38 
+   operator AND 39 
+   command BEGIN 40 
+   command block 41 
+   command COMMENT 42 
+   operator CONS 43 
+   command END 44 
+   type EQUATION 45 
+   operator FIRST 46 
+   command FOR 47 
+   command FOREACH 48 
+   operator GEQ 49 
+   command GOTO 50 
+   operator GREATERP 51 
+   command IF 52 
+   operator LIST 53 
+   operator OR 54 
+   command PROCEDURE 55 
+   command REPEAT 56 
+   operator REST 57 
+   command RETURN 58 
+   operator REVERSE 59 
+   type RULE 60 
+   type Free Variable 61 
+   type Optional Free Variable 62 
+   operator SECOND 63 
+   operator SET 64 
+   operator SETQ 65 
+   operator THIRD 66 
+   operator WHEN 67 
+
+--- return from file ../doc/help/syntax.tex
+
+--- input file ../doc/help/arith.tex
+                  section end: 68 
+section 5 g5 Arithmetic Operations
+   introduction ARITHMETIC\_OPERATIONS 69 
+   operator ABS 70 
+   switch ADJPREC 71 
+   operator ARG 72 
+   operator CEILING 73 
+   operator CHOOSE 74 
+   operator DEG2DMS 75 
+   operator DEG2RAD 76 
+   operator DIFFERENCE 77 
+   operator DILOG 78 
+   operator DMS2DEG 79 
+   operator DMS2RAD 80 
+   operator FACTORIAL 81 
+   operator FIX 82 
+   operator FIXP 83 
+   operator FLOOR 84 
+   operator EXPT 85 
+   operator GCD 86 
+   operator LN 87 
+   operator LOG 88 
+   operator LOGB 89 
+   operator MAX 90 
+   operator MIN 91 
+   operator MINUS 92 
+   operator NEXTPRIME 93 
+   switch NOCONVERT 94 
+   operator NORM 95 
+   operator PERM 96 
+   operator PLUS 97 
+   operator QUOTIENT 98 
+   operator RAD2DEG 99 
+   operator RAD2DMS 100 
+   operator RECIP 101 
+   operator REMAINDER 102 
+   operator ROUND 103 
+   command SETMOD 104 
+   operator SIGN 105 
+   operator SQRT 106 
+   operator TIMES 107 
+
+--- return from file ../doc/help/arith.tex
+
+--- input file ../doc/help/boolean.tex
+                  section end: 108 
+section 6 g6 Boolean Operators
+   concept boolean value 109 
+   operator EQUAL 110 
+   operator EVENP 111 
+   concept false 112 
+   operator FREEOF 113 
+   operator LEQ 114 
+   operator LESSP 115 
+   operator MEMBER 116 
+   operator NEQ 117 
+   operator NOT 118 
+   operator NUMBERP 119 
+   operator ORDP 120 
+   operator PRIMEP 121 
+   concept TRUE 122 
+
+--- return from file ../doc/help/boolean.tex
+
+--- input file ../doc/help/command.tex
+                  section end: 123 
+section 7 g7 General Commands
+   command BYE 124 
+   command CONT 125 
+   command DISPLAY 126 
+   command LOAD\_PACKAGE 127 
+   command PAUSE 128 
+   command QUIT 129 
+   operator RECLAIM 130 
+   command REDERR 131 
+   command RETRY 132 
+   command SAVEAS 133 
+   command SHOWTIME 134 
+   command WRITE 135 
+
+--- return from file ../doc/help/command.tex
+
+--- input file ../doc/help/algebra.tex
+                  section end: 136 
+section 8 g8 Algebraic Operators
+   operator APPEND 137 
+   operator ARBINT 138 
+   operator ARBCOMPLEX 139 
+   operator ARGLENGTH 140 
+   operator COEFF 141 
+   operator COEFFN 142 
+   operator CONJ 143 
+   operator CONTINUED_FRACTION 144 
+   operator DECOMPOSE 145 
+   operator DEG 146 
+   operator DEN 147 
+   operator DF 148 
+   operator EXPAND\_CASES 149 
+   operator EXPREAD 150 
+   operator FACTORIZE 151 
+   operator HYPOT 152 
+   operator IMPART 153 
+   operator INT 154 
+   operator INTERPOL 155 
+   operator LCOF 156 
+   operator LENGTH 157 
+   operator LHS 158 
+   operator LIMIT 159 
+   operator LPOWER 160 
+   operator LTERM 161 
+   operator MAINVAR 162 
+   operator MAP 163 
+   command MKID 164 
+   operator NPRIMITIVE 165 
+   operator NUM 166 
+   operator ODESOLVE 167 
+   type ONE\_OF 168 
+   operator PART 169 
+   operator PF 170 
+   operator PROD 171 
+   operator REDUCT 172 
+   operator REPART 173 
+   operator RESULTANT 174 
+   operator RHS 175 
+   operator ROOT\_OF 176 
+   operator SELECT 177 
+   operator SHOWRULES 178 
+   operator SOLVE 179 
+   operator SORT 180 
+   operator STRUCTR 181 
+   operator SUB 182 
+   operator SUM 183 
+   operator WS 184 
+
+--- return from file ../doc/help/algebra.tex
+
+--- input file ../doc/help/declare.tex
+                  section end: 185 
+section 9 g9 Declarations
+   command ALGEBRAIC 186 
+   declaration ANTISYMMETRIC 187 
+   declaration ARRAY 188 
+   command CLEAR 189 
+   command CLEARRULES 190 
+   command DEFINE 191 
+   declaration DEPEND 192 
+   declaration EVEN 193 
+   declaration FACTOR 194 
+   command FORALL 195 
+   declaration INFIX 196 
+   declaration INTEGER 197 
+   declaration KORDER 198 
+   command LET 199 
+   declaration LINEAR 200 
+   declaration LINELENGTH 201 
+   command LISP 202 
+   declaration LISTARGP 203 
+   declaration NODEPEND 204 
+   command MATCH 205 
+   declaration NONCOM 206 
+   declaration NONZERO 207 
+   declaration ODD 208 
+   command OFF 209 
+   command ON 210 
+   declaration OPERATOR 211 
+   declaration ORDER 212 
+   declaration PRECEDENCE 213 
+   declaration PRECISION 214 
+   declaration PRINT\_PRECISION 215 
+   declaration REAL 216 
+   declaration REMFAC 217 
+   declaration SCALAR 218 
+   declaration SCIENTIFIC\_NOTATION 219 
+   declaration SHARE 220 
+   command SYMBOLIC 221 
+   declaration SYMMETRIC 222 
+   declaration TR 223 
+   declaration UNTR 224 
+   declaration VARNAME 225 
+   command WEIGHT 226 
+   operator WHERE 227 
+   command WHILE 228 
+   command WTLEVEL 229 
+
+--- return from file ../doc/help/declare.tex
+
+--- input file ../doc/help/io.tex
+                  section end: 230 
+section 10 g10 Input and Output
+   command IN 231 
+   command INPUT 232 
+   command OUT 233 
+   command SHUT 234 
+
+--- return from file ../doc/help/io.tex
+
+--- input file ../doc/help/elemfn.tex
+                  section end: 235 
+section 11 g11 Elementary Functions
+   operator ACOS 236 
+   operator ACOSH 237 
+   operator ACOT 238 
+   operator ACOTH 239 
+   operator ACSC 240 
+   operator ACSCH 241 
+   operator ASEC 242 
+   operator ASECH 243 
+   operator ASIN 244 
+   operator ASINH 245 
+   operator ATAN 246 
+   operator ATANH 247 
+   operator ATAN2 248 
+   operator COS 249 
+   operator COSH 250 
+   operator COT 251 
+   operator COTH 252 
+   operator CSC 253 
+   operator CSCH 254 
+   operator ERF 255 
+   operator EXP 256 
+   operator SEC 257 
+   operator SECH 258 
+   operator SIN 259 
+   operator SINH 260 
+   operator TAN 261 
+   operator TANH 262 
+
+--- return from file ../doc/help/elemfn.tex
+
+--- input file ../doc/help/switch.tex
+                  section end: 263 
+section 12 g12 General Switches
+   introduction SWITCHES 264 
+   switch ALGINT 265 
+   switch ALLBRANCH 266 
+   switch ALLFAC 267 
+   switch ARBVARS 268 
+   switch BALANCED\_MOD 269 
+   switch BFSPACE 270 
+   switch COMBINEEXPT 271 
+   switch COMBINELOGS 272 
+   switch COMP 273 
+   switch COMPLEX 274 
+   switch CREF 275 
+   switch CRAMER 276 
+   switch DEFN 277 
+   switch DEMO 278 
+   switch DFPRINT 279 
+   switch DIV 280 
+   switch ECHO 281 
+   switch ERRCONT 282 
+   switch EVALLHSEQP 283 
+   switch EXP 284 
+   switch EXPANDLOGS 285 
+   switch EZGCD 286 
+   switch FACTOR 287 
+   switch FAILHARD 288 
+   switch FORT 289 
+   switch FORTUPPER 290 
+   switch FULLPREC 291 
+   switch FULLROOTS 292 
+   switch GC 293 
+   switch GCD 294 
+   switch HORNER 295 
+   switch IFACTOR 296 
+   switch INT 297 
+   switch INTSTR 298 
+   switch LCM 299 
+   switch LESSSPACE 300 
+   switch LIMITEDFACTORS 301 
+   switch LIST 302 
+   switch LISTARGS 303 
+   switch MCD 304 
+   switch MODULAR 305 
+   switch MSG 306 
+   switch MULTIPLICITIES 307 
+   switch NAT 308 
+   switch NERO 309 
+   switch NOARG 310 
+   switch NOLNR 311 
+   switch NOSPLIT 312 
+   switch NUMVAL 313 
+   switch OUTPUT 314 
+   switch OVERVIEW 315 
+   switch PERIOD 316 
+   switch PRECISE 317 
+   switch PRET 318 
+   switch PRI 319 
+   switch RAISE 320 
+   switch RAT 321 
+   switch RATARG 322 
+   switch RATIONAL 323 
+   switch RATIONALIZE 324 
+   switch RATPRI 325 
+   switch REVPRI 326 
+   switch RLISP88 327 
+   switch ROUNDALL 328 
+   switch ROUNDBF 329 
+   switch ROUNDED 330 
+   switch SAVESTRUCTR 331 
+   switch SOLVESINGULAR 332 
+   switch TIME 333 
+   switch TRALLFAC 334 
+   switch TRFAC 335 
+   switch TRIGFORM 336 
+   switch TRINT 337 
+   switch TRNONLNR 338 
+   switch VAROPT 339 
+
+--- return from file ../doc/help/switch.tex
+
+--- input file ../doc/help/matrix.tex
+                  section end: 340 
+section 13 g13 Matrix Operations
+   operator COFACTOR 341 
+   operator DET 342 
+   operator MAT 343 
+   operator MATEIGEN 344 
+   declaration MATRIX 345 
+   operator NULLSPACE 346 
+   operator RANK 347 
+   operator TP 348 
+   operator TRACE 349 
+
+--- return from file ../doc/help/matrix.tex
+
+--- input file ../doc/help/pk-groeb.tex
+                  section end: 350 
+section 14 g14 Groebner package
+   introduction Groebner bases 351 
+   concept Ideal Parameters 352 
+   subsection 15 g15 Term order
+      introduction Term order 353 
+      operator torder 354 
+      operator torder_compile 355 
+      concept lex term order 356 
+      concept gradlex term order 357 
+      concept revgradlex term order 358 
+      concept gradlexgradlex term order 359 
+      concept gradlexrevgradlex term order 360 
+      concept lexgradlex term order 361 
+      concept lexrevgradlex term order 362 
+      concept weighted term order 363 
+      concept graded term order 364 
+      concept matrix term order 365 
+                     section end: 366 
+   subsection 16 g16 Basic Groebner operators
+      operator gvars 367 
+      operator groebner 368 
+      operator groebner\_walk 369 
+ ######## reference to (l e x)  not found,
+ ######## reference to (g r a d e d)  not found,
+ ######## reference to (w e i g h t e d)  not found,
+ ######## reference to (g r a d e d)  not found,
+ ######## reference to (w e i g h t e d)  not found,
+ ######## reference to (k e x)  not found,
+ ######## reference to (l e x)  not found,
+      switch groebopt 370 
+      variable gvarslast 371 
+      switch groebprereduce 372 
+      switch groebfullreduction 373 
+      switch gltbasis 374 
+      variable gltb 375 
+      variable glterms 376 
+      switch groebstat 377 
+      switch trgroeb 378 
+      switch trgroebs 379 
+      operator gzerodim? 380 
+      operator gdimension 381 
+      operator gindependent\_sets 382 
+      operator dd_groebner 383 
+      operator glexconvert 384 
+      operator greduce 385 
+      operator preduce 386 
+      operator idealquotient 387 
+      operator hilbertpolynomial 388 
+      operator saturation 389 
+                     section end: 390 
+   subsection 17 g17 Factorizing Groebner bases
+      operator groebnerf 391 
+      variable groebmonfac 392 
+      variable groebresmax 393 
+      variable groebrestriction 394 
+                     section end: 395 
+   subsection 18 g18 Tracing Groebner bases
+      switch groebprot 396 
+      variable groebprotfile 397 
+      operator groebnert 398 
+      operator preducet 399 
+                     section end: 400 
+   subsection 19 g19 Groebner Bases for Modules
+      concept Module 401 
+      variable gmodule 402 
+                     section end: 403 
+   subsection 20 g20 Computing with distributive polynomials
+      operator gsort 404 
+      operator gsplit 405 
+      operator gspoly 406 
+
+--- return from file ../doc/help/pk-groeb.tex
+
+--- input file ../doc/help/hephys.tex
+                     section end: 407 
+                     section end: 408 
+section 21 g21 High Energy Physics
+   introduction HEPHYS 409 
+   operator HE-dot 410 
+   operator EPS 411 
+   operator G 412 
+   declaration INDEX 413 
+   command MASS 414 
+   command MSHELL 415 
+   declaration NOSPUR 416 
+   declaration REMIND 417 
+   declaration SPUR 418 
+   command VECDIM 419 
+   declaration VECTOR 420 
+
+--- return from file ../doc/help/hephys.tex
+
+--- input file ../doc/help/pk-numer.tex
+                  section end: 421 
+section 22 g22 Numeric Package
+   introduction Numeric Package 422 
+   type Interval 423 
+   concept numeric accuracy 424 
+   switch TRNUMERIC 425 
+   operator num_min 426 
+   operator num_solve 427 
+   operator num_int 428 
+   operator num_odesolve 429 
+   operator bounds 430 
+   concept Chebyshev fit 431 
+   operator num_fit 432 
+
+--- return from file ../doc/help/pk-numer.tex
+
+--- input file ../doc/help/pk-roots.tex
+                  section end: 433 
+section 23 g23 Roots Package
+   introduction Roots Package 434 
+   operator MKPOLY 435 
+   operator NEARESTROOT 436 
+   operator REALROOTS 437 
+   operator ROOTACC 438 
+   operator ROOTS 439 
+   operator ROOT\_VAL 440 
+   variable ROOTSCOMPLEX 441 
+   variable ROOTSREAL 442 
+
+--- return from file ../doc/help/pk-roots.tex
+
+--- input file ../doc/help/pk-specf.tex
+                  section end: 443 
+section 24 g24 Special Functions
+   introduction Special Function Package 444 
+   concept Constants 445 
+   subsection 25 g25 Bernoulli Euler Zeta
+      operator BERNOULLI 446 
+      operator BERNOULLIP 447 
+      operator EULER 448 
+      operator EULERP 449 
+      operator ZETA 450 
+                     section end: 451 
+   subsection 26 g26 Bessel Functions
+      operator BESSELJ 452 
+      operator BESSELY 453 
+      operator HANKEL1 454 
+      operator HANKEL2 455 
+      operator BESSELI 456 
+      operator BESSELK 457 
+      operator StruveH 458 
+      operator StruveL 459 
+      operator KummerM 460 
+      operator KummerU 461 
+      operator WhittakerW 462 
+                     section end: 463 
+   subsection 27 g27 Airy Functions
+      operator Airy_Ai 464 
+      operator Airy_Bi 465 
+      operator Airy_Aiprime 466 
+      operator Airy_Biprime 467 
+                     section end: 468 
+   subsection 28 g28 Jacobi's Elliptic Functions and Elliptic Integrals
+      operator JacobiSN 469 
+      operator JacobiCN 470 
+      operator JacobiDN 471 
+      operator JacobiCD 472 
+      operator JacobiSD 473 
+      operator JacobiND 474 
+      operator JacobiDC 475 
+      operator JacobiNC 476 
+      operator JacobiSC 477 
+      operator JacobiNS 478 
+      operator JacobiDS 479 
+      operator JacobiCS 480 
+      operator JacobiAMPLITUDE 481 
+      operator AGM_FUNCTION 482 
+      operator LANDENTRANS 483 
+      operator EllipticF 484 
+      operator EllipticK 485 
+      operator EllipticKprime 486 
+      operator EllipticE 487 
+      operator EllipticTHETA 488 
+      operator JacobiZETA 489 
+                     section end: 490 
+   subsection 29 g29 Gamma and Related Functions
+      operator POCHHAMMER 491 
+      operator GAMMA 492 
+      operator BETA 493 
+      operator PSI 494 
+      operator POLYGAMMA 495 
+                     section end: 496 
+   subsection 30 g30 Miscellaneous Functions
+      operator DILOG extended 497 
+      operator Lambert\_W function 498 
+                     section end: 499 
+   subsection 31 g31 Orthogonal Polynomials
+      operator ChebyshevT 500 
+      operator ChebyshevU 501 
+      operator HermiteP 502 
+      operator LaguerreP 503 
+      operator LegendreP 504 
+      operator JacobiP 505 
+      operator GegenbauerP 506 
+      operator SolidHarmonicY 507 
+      operator SphericalHarmonicY 508 
+                     section end: 509 
+   subsection 32 g32 Integral Functions
+      operator Si 510 
+      operator Shi 511 
+      operator s_i 512 
+      operator Ci 513 
+      operator Chi 514 
+      operator ERF extended 515 
+      operator erfc 516 
+      operator Ei 517 
+      operator Fresnel_C 518 
+      operator Fresnel_S 519 
+                     section end: 520 
+   subsection 33 g33 Combinatorial Operators
+      operator BINOMIAL 521 
+      operator STIRLING1 522 
+      operator STIRLING2 523 
+                     section end: 524 
+   subsection 34 g34 3j and  6j symbols
+      operator ThreejSymbol 525 
+      operator Clebsch_Gordan 526 
+      operator SixjSymbol 527 
+                     section end: 528 
+   subsection 35 g35 Miscellaneous
+      operator HYPERGEOMETRIC 529 
+      operator MeijerG 530 
+      operator Heaviside 531 
+      operator erfi 532 
+
+--- return from file ../doc/help/pk-specf.tex
+
+--- input file ../doc/help/taylor.tex
+                     section end: 533 
+                     section end: 534 
+section 36 g36 Taylor series
+   introduction TAYLOR 535 
+   operator taylor 536 
+   switch taylorautocombine 537 
+   switch taylorautoexpand 538 
+   operator taylorcombine 539 
+   switch taylorkeeporiginal 540 
+   operator taylororiginal 541 
+   switch taylorprintorder 542 
+   variable taylorprintterms 543 
+   operator taylorrevert 544 
+   operator taylorseriesp 545 
+   operator taylortemplate 546 
+   operator taylortostandard 547 
+
+--- return from file ../doc/help/taylor.tex
+
+--- input file ../doc/help/pk-gplot.tex
+                  section end: 548 
+section 37 g37 Gnuplot package
+   introduction GNUPLOT and REDUCE 549 
+   concept Axes names 550 
+   type Pointset 551 
+   command PLOT 552 
+   command PLOTRESET 553 
+   variable title 554 
+   variable xlabel 555 
+   variable ylabel 556 
+   variable zlabel 557 
+   variable terminal 558 
+   variable size 559 
+   variable view 560 
+   switch contour 561 
+   switch surface 562 
+   switch hidden3d 563 
+   switch PLOTKEEP 564 
+   switch PLOTREFINE 565 
+   variable plot_xmesh 566 
+   variable plot_ymesh 567 
+   switch SHOW_GRID 568 
+   switch TRPLOT 569 
+
+--- return from file ../doc/help/pk-gplot.tex
+
+--- input file ../doc/help/linalg.tex
+                  section end: 570 
+section 38 g38 Linear Algebra package
+   introduction Linear Algebra package 571 
+   switch fast_la 572 
+   operator add_columns 573 
+   operator add_rows 574 
+   operator add_to_columns 575 
+   operator add_to_rows 576 
+   operator augment_columns 577 
+   operator band_matrix 578 
+   operator block_matrix 579 
+   operator char_matrix 580 
+   operator char_poly 581 
+   operator cholesky 582 
+   operator coeff_matrix 583 
+   operator column_dim 584 
+   operator companion 585 
+   operator copy_into 586 
+   operator diagonal 587 
+   operator extend 588 
+   operator find_companion 589 
+   operator get_columns 590 
+   operator get_rows 591 
+   operator gram_schmidt 592 
+   operator hermitian_tp 593 
+   operator hessian 594 
+   operator hilbert 595 
+   operator jacobian 596 
+   operator jordan_block 597 
+   operator lu_decom 598 
+   operator make_identity 599 
+   operator matrix_augment 600 
+   operator matrixp 601 
+   operator matrix_stack 602 
+   operator minor 603 
+   operator mult_columns 604 
+   operator mult_rows 605 
+   operator pivot 606 
+   operator pseudo_inverse 607 
+   operator random_matrix 608 
+   operator remove_columns 609 
+   operator remove_rows 610 
+   operator row_dim 611 
+   operator rows_pivot 612 
+   operator simplex 613 
+   operator squarep 614 
+   operator stack_rows 615 
+   operator sub_matrix 616 
+   operator svd 617 
+   operator swap_columns 618 
+   operator swap_entries 619 
+   operator swap_rows 620 
+   operator symmetricp 621 
+   operator toeplitz 622 
+   operator vandermonde 623 
+
+--- return from file ../doc/help/linalg.tex
+
+--- input file ../doc/help/normform.tex
+                  section end: 624 
+section 39 g39 Matrix Normal Forms
+   operator Smithex 625 
+   operator Smithex\_int 626 
+   operator Frobenius 627 
+   operator Ratjordan 628 
+   operator Jordansymbolic 629 
+   operator Jordan 630 
+
+--- return from file ../doc/help/normform.tex
+
+--- input file ../doc/help/pk-misc.tex
+                  section end: 631 
+section 40 g40 Miscellaneous Packages
+   introduction Miscellaneous Packages 632 
+   package ALGINT 633 
+   package APPLYSYM 634 
+   package ARNUM 635 
+   package ASSIST 636 
+   package AVECTOR 637 
+   package BOOLEAN 638 
+   package CALI 639 
+   package CAMAL 640 
+   package CHANGEVR 641 
+   package COMPACT 642 
+   package CRACK 643 
+   package CVIT 644 
+   package DEFINT 645 
+   package DESIR 646 
+   package DFPART 647 
+   package DUMMY 648 
+   package EXCALC 649 
+   package FPS 650 
+   package FIDE 651 
+   package GENTRAN 652 
+   package IDEALS 653 
+   package INEQ 654 
+   package INVBASE 655 
+   package LAPLACE 656 
+   package LIE 657 
+   package MODSR 658 
+   package NCPOLY 659 
+   package ORTHOVEC 660 
+   package PHYSOP 661 
+   package PM 662 
+   package RANDPOLY 663 
+   package REACTEQN 664 
+   package RESET 665 
+   package RESIDUE 666 
+   package RLFI 667 
+   package SCOPE 668 
+   package SETS 669 
+   package SPDE 670 
+   package SYMMETRY 671 
+   package TPS 672 
+   package TRI 673 
+   package TRIGSIMP 674 
+   package XCOLOR 675 
+   package XIDEAL 676 
+   package WU 677 
+   package ZEILBERG 678 
+   package ZTRANS 679 
+
+--- return from file ../doc/help/pk-misc.tex
+
+--- input file ../doc/help/outmode.tex
+                  section end: 680 
+section 41 g41 Outmoded Operations
+   command ED 681 
+   command EDITDEF 682 
+
+--- return from file ../doc/help/outmode.tex
+                  section end: 683 
+                  section end: 684 
+
+nil
+
+
+
+html_indexfile();..... compiling html index file
+
+nil
+
+
+
+LISP_indexfile();..... compiling independent index file
+
+nil
+
+
+
+bye;
+
+End of Lisp run after 11.39+0.61 seconds
+
++++ Transcript closed at end of run +++

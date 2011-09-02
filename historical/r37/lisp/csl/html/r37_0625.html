@@ -1,0 +1,51 @@
+
+<A NAME=Smithex_int>
+
+<TITLE>Smithex_int</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SMITHEX\_INT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The operator <em>smithex_int</em> performs the same task as <em>smithex</em> 
+but on matrices containing only integer entries. Namely, 
+<em>smithex_int</em> returns {S,P,P^-1} where S is the smith normal 
+form of the input 
+<A HREF=r37_0345.html>matrix</A> (A say), and P*S*P^-1 = A. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>smithex_int</em>(&lt;matrix&gt;) 
+<P>
+<P>
+&lt;matrix&gt; :- a rectangular 
+<A HREF=r37_0345.html>matrix</A> of integer entries. 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ a := mat((9,-36,30),(-36,192,-180),(30,-180,180)); 
+
+
+       [ 9   -36    30 ]
+       [               ]
+  a := [-36  192   -180]
+       [               ]
+       [30   -180  180 ]
+
+
+
+ smithex_int(a); 
+
+    [3  0   0 ]    [-17  -5   -4 ]    [1   -24  30 ]
+    [         ]    [             ]    [            ]
+  { [0  12  0 ],   [64   19   15 ],   [-1  25   -30] }
+    [         ]    [             ]    [            ] 
+    [0  0   60]    [-50  -15  -12]    [0   -1    1 ] 
+
+</TT></PRE><P>

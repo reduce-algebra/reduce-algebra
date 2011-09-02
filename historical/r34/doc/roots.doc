@@ -1,0 +1,337 @@
+
+                    The REDUCE Root Finding Package
+                         Mod 1.91, 16 May 1990
+
+                           Stanley L. Kameny
+                          valley!stan@rand.org
+
+
+Introduction.
+
+The Root Finding package is designed so that it can be used as an
+independent package, or it can be integrated with and called by Solve.
+This document describes the package in its independent use.  It can be
+used to find some or all of the roots of polynomials with real or
+complex coefficients, to the accuracy specified by the user.
+
+------------------------------------------------------------------------
+
+Modules.
+
+The file roots.red. contains the following modules needed for use with
+REDUCE 3.4:
+
+  ROOTS          - header module
+  BFDOER     \
+  BFDOER2     |  - these modules can be loaded in any order, but
+  COMPLXP     |  - after the math file.
+  ALLROOT     |
+  REALROOT   /
+
+The math module available with REDUCE 3.4, is also required, or else
+the roots file cannot be loaded or operated.
+
+
+
+------------------------------------------------------------------------
+
+Top Level Functions
+
+The top level functions can be called either as symbolic operators from
+algebraic mode, or they can be called directly from symbolic mode with
+symbolic mode arguments.  Outputs are expressed in forms that print out
+correctly in algebraic mode.
+
+
+Functions which refer to real roots only:
+
+Three top level functions refer only to real roots.  Each of these
+functions can receive 1, 2 or 3 arguments.
+
+The first argument is the polynomial p, which can be complex and can
+have multiple or zero roots.  If arg2 and arg3 are not present, all real
+roots are found.  If the additional arguments are present, they restrict
+the region of consideration.
+
+If arguments are (p,arg2) then
+  (Arg2 must be  POSITIVE or NEGATIVE)  If arg2=NEGATIVE then only
+  negative roots of p are included; if arg2=POSITIVE then only positive
+  roots of p are included. Zero roots are excluded.
+
+If arguments are (p,arg2,arg3)
+  (Arg2 and Arg3 must be r (a real number) or  EXCLUDE r  or a member of
+  the list {POSITIVE,NEGATIVE,INFINITY,-INFINITY}.  EXCLUDE r causes the
+  value r to be excluded from the region.  The order of the sequence
+  arg2, arg3 is unimportant.  Assuming that arg2 <= arg3 if both are
+  numeric, then
+
+    {-INFINITY,INFINITY} is equivalent to {} and represents all roots;
+    {arg2,NEGATIVE}   represents   -infinity < r < arg2;
+    {arg2,POSITIVE)   represents   arg2 < r < infinity;
+
+In each of the following, replacing an arg with EXCLUDE arg converts
+  the corresponding inclusive <= to the exclusive <
+    {arg2,-INFINITY}   represents   -infinity < r <= arg2;
+    {arg2,INFINITY}   represents   arg2 <= r < infinity;
+    {arg2,arg3}   represents   arg2 <= r <= arg3;
+If zero is in the interval, zero root is included.
+
+REALROOTS ---  This function finds the real roots of the polynomial p,
+using the REALROOT package to isolate real roots by the method of Sturm
+sequences, then polishing the root to the desired accuracy.  Precision
+of computation is guaranteed to be sufficient to separate all real roots
+in the specified region.  (cf. MULTIROOT for treatment of multiple
+roots.)
+
+ISOLATER ---  This function produces a list of rational intervals, each
+containing a single real root of the polynomial p, within the specified
+region, but does not find the roots.
+
+RLROOTNO ---  This function computes the number of real roots of p in
+the specified region, but does not find the roots.
+
+
+Functions which return both real and complex roots:
+
+ROOTS p;  This is the main top level function of the roots package. It
+will find all roots, real and complex, of the the polynomial p to an
+accuracy sufficient to separate them.  The value returned by ROOTS is a
+list of equations for all roots.  In addition, ROOTS stores separate
+lists of real roots and complex roots in the global variables ROOTSREAL
+and ROOTSCOMPLEX.
+
+NEARESTROOT(p,s);  This top level function uses an iterative method to
+find the root to which the method converges given the initial starting
+origin s, which can be complex.  If there are several roots in the
+vicinity of s and s is not significantly closer to one root than it is
+to all others, the convergence could arrive at a root which is not truly
+the nearest root.  This function should therefore be used only when the
+user is certain that there is only one root in the immediate vicinity of
+the starting point s.
+
+FIRSTROOT p;   Equivalent to NEARESTROOT(p,0).
+
+
+Other top level function:
+
+CSIZE p;  This function will determine the maximum coefficient size of
+the polynomial p.  The initial precision used in root finding is at
+least 2+CSIZE p (in some cases significantly greater, as determined by
+the heuristic function CALCPREC.)
+
+GETROOT(n,rr);  If rr has the form of the output of ROOTS, REALROOTS, or
+NEARESTROOTS;  GETROOT returns the rational, real, or complex value of
+the root equation.  Error occurs if n<1 or n>the number of roots in rr.
+
+MKPOLY rr;  This function can be used to reconstruct a polynomial
+whose root equation list is rr and whose denominator is 1.  Thus one can
+verify that
+if rr := ROOTS p;  then  rr1 := ROOTS MKPOLY rr;  should result in
+   rr1 = rr
+(This will be true if MULRITOOT and RATROOT are ON,  and  BIGFLOAT  and
+FLOAT are off.)
+However,   MKPOLY rr - NUM p = 0    will be true iff all roots of p
+have been computed exactly.
+
+
+Functions available for diagnostic or instructional use only:
+
+GFNEWT(p,r,cpx);  This function will do a single pass through the
+function GFNEWTON for polynomial p and root r.  If cpx=T, then any
+complex part of the root will be kept, no matter how small.
+
+GFROOT(p,r,cpx);  This function will do a single pass through the
+function GFROOTFIND for polynomial p and root r.  If cpx=T, then any
+complex part of the root will be kept, no matter how small.
+
+ROOTS2 p;  The same as ROOTS p, except that if an abort occurs, the
+roots already found will be printed and then ROOTS2 will be applied to
+the deflated polynomial which exists at that point.  (Note:  there is no
+known polynomial on which ROOTS aborts.)
+
+
+------------------------------------------------------------------------
+
+Switches Used in Input.
+
+The input of polynomials in algebraic mode is sensitive to the switches
+COMPLEX, FLOAT and BIGFLOAT.  The correct choice of input method is
+important since incorrect choices will result in undesirable truncation
+or rounding of the input coefficients.
+
+Truncation or rounding will occur if FLOAT or BIGFLOAT is on and one of
+the following is true:
+   a) a coefficient is entered in floating point form or rational form.
+   b) COMPLEX is on and a coefficient is imaginary or complex.
+
+Therefore, to avoid undesirable truncation or rounding, then:
+   c) both FLOAT and BIGFLOAT should be off and input should be in
+     integer or rational form; or
+   d) FLOAT can be on if it is acceptable to truncate or round input to
+     the machine-dependent precision limit, which may be quite small; or
+   e) BIGFLOAT can be on if PRECISION is set to a value large enough to
+     prevent undesired rounding.
+
+integer and complex modes: (off float, bigfloat)  any real polynomial
+can be input using integer coefficients of any size;  integer or
+rational coefficients can be used to input any real or complex
+polynomial, independent of the setting of the switch COMPLEX.  These are
+the most versatile input modes, since any real or complex polynomial can
+be input exactly.
+
+modes float and complex-float: (on float) polynomials can be input using
+integer coefficients of any size.  Floating point coefficients will be
+truncated or rounded, to a size dependent upon the system.  If complex
+is on, real coefficients can be input to any precision using integer
+form, but coefficients of imaginary parts of complex coefficients will
+be rounded or truncated.
+
+modes bigfloat and big-complex: (on bigfloat) the setting of precision
+determines the precision of all coefficients except for real
+coefficients input in integer form.  Floating point coefficients will be
+truncated by the system to a size dependent upon the system, the same as
+floating point coefficients in float mode.  If precision is set high
+enough, any real or complex polynomial can be input exactly provided
+that coefficients are input in integer or rational form.
+
+
+Internal and Output Use of Switches.
+
+REDUCE arithmetic mode switches BIGFLOAT, FLOAT, and COMPLEX.  These
+switches are returned in the same state in which they were set
+initially, (barring catastrophic error.)
+
+COMPLEX  --The Root Finding Package controls the switch COMPLEX
+internally, turning the switch on if it is processing a complex
+polynomial. (However, if COMPLEX is on, algebraic mode input may not
+work correctly in modes COMPLEX_FLOAT or BIG_COMPLEX, so it is best to
+use integer or rational input only.  See example 62 of roots.tst for a
+way to get this to work.) For a polynomial with real coefficients, the
+starting point argument for NEARESTROOT can be given in algebraic mode
+in complex form as rl + im * I  and will be handled correctly,
+independent of the setting of the switch COMPLEX. Complex roots will be
+computed and printed correctly regardless of the setting of the switch
+COMPLEX. However, if COMPLEX is off, the imaginary part will print out
+ahead of the real part, while the reverse order will be obtained if
+COMPLEX is on.
+
+FLOAT, BIGFLOAT  --If the switch AUTOMODE (Default ON) is ON, the Root
+Finding package performs computations using the arithmetic mode that is
+required at the time, which may be integer, Gaussian integer, float,
+bigfloat, complex float or complex bigfloat. Switch BFTAG is used
+internally to govern the mode of computation and :prec: is adjusted
+whenever necessary.  The initial position of switches FLOAT and BIGFLOAT
+are ignored. At output, these switches will emerge in their initial
+positions.  Outputs will be printed out in float format only if the
+float format of the Lisp system will properly print out quantities of
+the required accuracy.  Otherwise, the printout will be in bigfloat
+format.  (See also the paragraph describing AUTOMODE.)
+
+
+
+Root Package Switches RATROOT, MULTIROOT, TRROOT, ROOTMSG,
+(plus diagnostic switch AUTOMODE.)
+  (switches ISOROOT and ACCROOT, present in earlier versions, have been
+  eliminated.)
+
+RATROOT  --(Default OFF)  If RATROOT is on all root equations are output
+in rational form.  Assuming that the mode is COMPLEX (ie. FLOAT and
+BIGFLOAT are both off,)  the root equations are guaranteed to be able to
+be input into REDUCE without truncation or rounding errors.  (Cf. the
+function  MKPOLY  described above.)
+
+MULTIROOT  --(Default ON)  Whenever the polynomial has complex
+coefficients or has real coefficients and has multiple roots, as
+determined by the Sturm function, the function SQFRF is called
+automatically to factor the polynomial into square-free factors.  If
+MULTIROOT is on, the multiplicity of the roots will be indicated in the
+output of ROOTS or REALROOTS by printing the root output repeatedly,
+according to its multiplicity.  If MULTIROOT is off, each root will be
+printed once, and all roots should be normally be distinct. (Two
+identical roots should not appear.  If the initial precision of the
+computation or the accuracy of the output was insufficient to separate
+two closely-spaced roots,  the program attempts to increase accuracy
+and/or precision if it detects equal roots.  If however, if the initial
+accuracy specified was too low, and it was possible to separate the
+roots, the program will abort.)
+
+TRROOT  --(Default OFF)  If switch TRROOT is on, trace messages are
+printed out during the course of root determination, to show the
+progress of solution.
+
+ROOTMSG  --(Default OFF)  If switch ROOTMSG is on in addition to switch
+TRROOT, additional messages are printed out to aid in following the
+progress of Laguerre and Newton complex iteration.  These messages are
+intended for debugging use primarily.
+
+
+NOTE: the switch AUTOMODE is included mainly for diagnostic purposes.
+If it is changed from its default setting, the automatic determination
+of computation modes is bypassed, and correct root determination may not
+be achieved!
+
+AUTOMODE  --(Default ON) If switch AUTOMODE is on, then, independent of
+the user setting of the switch BIGFLOAT, all floating point computations
+are carried out in floating point mode (rather than bigfloat) if the
+system floating point mode has sufficient precision at that point in the
+computation.  If AUTOMODE is off and the user setting of BIGFLOAT is on,
+bigfloat computations are used for all floating point computations. The
+default setting of AUTOMODE is ON, in order to speed up computations and
+guarantee that the exact input polynomial is evaluated.
+
+------------------------------------------------------------------------
+
+Operational Parameters and Parameter Setting.
+
+ROOTACC#  --(Default 6) This parameter can be set using the function
+ROOTACC n;  which causes ROOTACC#  to be set to MAX(n,6).  If ACCROOT is
+on, roots will be determined to a minimum of ROOTACC# significant
+places.  (If roots are closely spaced, a higher number of significant
+places is computed where needed.)
+
+:PREC:  --(Default 8) This REDUCE parameter is used to determine the
+precision of bigfloat computations.  The function PRECISION n; causes
+:PREC: to be set to the value n+2 but returns the value n.  The roots
+package, during its operation, will change the value of :PREC: but will
+restore the original value of :PREC: at termination except that the
+value of :PREC: is increased if necessary to allow the full output to be
+printed.
+
+ROOTPREC n;  --The roots package normally sets the computation mode and
+precision automatically if AUTOMODE is on.  However, if ROOTPREC n; is
+called and n>!!NFPD  (where !!NFPD is the number of floating point
+digits in the Lisp system,) then all root computation will be done
+initially in bigfloat mode of minimum precision n.  Automatic operation
+can be restored by input of ROOTPREC 0;.
+
+-----------------------------------------------------------------------
+
+Avoiding truncation of polynomials on input;
+
+The roots package will not internally truncate polynomials provided that
+the switch automode is on (or, if automode is off, provided that
+rootprec is not set to some value smaller than the number of significant
+figures needed to represent the polynomial precisely.)  However, it is
+possible that a polynomial can be truncated by input reading functions
+of the embedding lisp system, particularly when input is given in
+floating point or bigfloat formats. (some lisp systems use the floating
+point input routines to input bigfloats.)
+
+To avoid any difficulties, input can be done in integer or Gaussian
+integer format, or mixed, with integers or rationals used to represent
+quantities of high precision. There are many examples of this in the
+test package. Note that use of bigfloat of high precision will not
+necessarily avoid truncation of coefficients if floating point input
+format is used.  It is usually sufficient to let the roots package
+determine the precision needed to compute roots.
+
+The number of digits that can be safely represented in floating point in
+the lisp system are contained in the global variable !nfpd.  Similarly,
+the maximum number of significant figures in floating point output are
+contained in the global variable !flim.  The roots package computes
+these values, which are needed to control the logic of the program.
+
+The values of intermediate root iterations (that are printed when trroot
+is on) are given in bigfloat format even when the actual values are
+computed in floating point.  This avoids intrusive rounding of root
+printout.

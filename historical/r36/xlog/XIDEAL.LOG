@@ -1,0 +1,276 @@
+REDUCE 3.6, 15-Jul-95, patched to 6 Mar 96 ...
+
+
+% Test file for XIDEAL package (Groebner bases for exterior algebra)
+
+% Just make sure excalc has been loaded
+
+load_package excalc$
+
+
+*** ^ redefined 
+
+
+% Declare exterior form variables
+
+pform x=0,y=0,z=0,t=0,u=1,v=1,w=1,f(i)=1,h=0,hx=0,ht=0;
+
+
+
+% Set switches for reduced Groebner bases in graded ideals
+
+on xfullreduce;
+
+
+
+% Reductions with xmodulo (all should be zero)
+
+d x^d y     xmodulo {d x - d y};
+
+
+0
+
+d x^d y^d z xmodulo {d x^d y - d z^d t};
+
+
+0
+
+d x^d z^d t xmodulo {d x^d y - d z^d t};
+
+
+0
+
+v^d x^d y   xmodulo {d t^u - v^w,
+                     w^u - d x^d y};
+
+
+0
+
+d t^u^d z   xmodulo {d t^u - v^w,
+                     u^d z - d x^d y,
+                     d t^d y - d x^v};
+
+
+0
+
+f(3)^f(4)^f(5)^f(6)
+            xmodulo {f(1)^f(2) + f(3)^f(4) + f(5)^f(6)};
+
+
+0
+
+f(1)^f(4)^f(5)^f(6)
+           xmodulo {f(1)^f(2) + f(2)^f(3) + f(3)^f(4) + f(4)^f(5) + f(5)^f(6)};
+
+
+0
+
+
+% Exterior system for heat equation on 1st jet bundle
+
+S := {d h - ht*d t - hx*d x,
+      d ht^d t + d hx^d x,
+      d hx^d t - ht*d x^d t};
+
+
+s := {d h - d t*ht - d x*hx,
+
+      d ht^d t + d hx^d x,
+
+      d hx^d t + d t^d x*ht}
+
+
+% Check that it's closed.
+
+dS := (for each a in S collect d a) xmodulo S;
+
+
+ds := {}
+
+
+% Some Groebner bases (0-forms generate the trivial ideal)
+
+gb := xideal {x, d y};
+
+
+gb := {1}
+
+gb := xideal {f(1)^f(2) + f(3)^f(4)};
+
+
+        1  2    3  4
+gb := {f ^f  + f ^f ,
+
+        1  3  4
+       f ^f ^f ,
+
+        2  3  4
+       f ^f ^f }
+
+gb := xideal {f(1)^f(2), f(1)^f(3)+f(2)^f(4)+f(5)^f(6)};
+
+
+        1  2
+gb := {f ^f ,
+
+        2  5  6
+       f ^f ^f ,
+
+        1  5  6
+       f ^f ^f ,
+
+        1  3    2  4    5  6
+       f ^f  + f ^f  + f ^f ,
+
+           2  3  4    3  5  6
+        - f ^f ^f  + f ^f ^f ,
+
+           3  4  5  6
+        - f ^f ^f ^f }
+
+
+% The same again, but not reduced
+
+off xfullreduce;
+
+
+gb := xideal {x, d y};
+
+
+gb := {1}
+
+gb := xideal {f(1)^f(2) + f(3)^f(4)};
+
+
+        1  2    3  4
+gb := {f ^f  + f ^f ,
+
+        1  3  4
+       f ^f ^f ,
+
+        2  3  4
+       f ^f ^f }
+
+gb := xideal {f(1)^f(2), f(1)^f(3)+f(2)^f(4)+f(5)^f(6)};
+
+
+        1  3    2  4    5  6
+gb := {f ^f  + f ^f  + f ^f ,
+
+        1  2  4    1  5  6
+       f ^f ^f  + f ^f ^f ,
+
+           2  3  4    3  5  6
+        - f ^f ^f  + f ^f ^f ,
+
+           1  2  5  6
+        - f ^f ^f ^f ,
+
+           1  4  5  6
+        - f ^f ^f ^f ,
+
+        2  3  5  6
+       f ^f ^f ^f ,
+
+           3  4  5  6
+        - f ^f ^f ^f ,
+
+          2  4  5  6
+       2*f ^f ^f ^f ,
+
+        1  2
+       f ^f ,
+
+        2  5  6
+       f ^f ^f ,
+
+        1  5  6
+       f ^f ^f }
+
+
+% Reductions with a ready Groebner basis (not all zero)
+
+on xfullreduce;
+
+
+gb := xideal {f(1)^f(2) + f(3)^f(4) + f(5)^f(6)};
+
+
+        1  2    3  4    5  6
+gb := {f ^f  + f ^f  + f ^f ,
+
+        1  3  4    1  5  6
+       f ^f ^f  + f ^f ^f ,
+
+        2  3  4    2  5  6
+       f ^f ^f  + f ^f ^f ,
+
+           1  3  5  6
+        - f ^f ^f ^f ,
+
+           1  4  5  6
+        - f ^f ^f ^f ,
+
+           2  3  5  6
+        - f ^f ^f ^f ,
+
+           2  4  5  6
+        - f ^f ^f ^f ,
+
+          3  4  5  6
+       2*f ^f ^f ^f }
+
+f(1)^f(3)^f(4) xmodulop gb;
+
+
+    1  5  6
+ - f ^f ^f
+
+f(3)^f(4)^f(5)^f(6) xmodulop gb;
+
+
+0
+
+
+% Non-graded ideals
+
+on xfullreduce;
+
+
+
+% Left and right ideals are no longer the same
+ 
+d t^(d z+d x^d y) xmodulo {d z+d x^d y};
+
+
+0
+
+(d z+d x^d y)^d t xmodulo {d z+d x^d y};
+
+
+ - 2*d t^d z
+
+
+% Higher order forms can now reduce lower order ones
+
+d x xmodulo {d y^d z + d x,d x^d y + d z};
+
+
+0
+
+
+% Anything with a 0-form term generates the trivial ideal!!
+
+gb := xideal {x + d y};
+
+
+gb := {1}
+
+gb := xideal {1 + f(1) + f(1)^f(2) + f(2)^f(3)^f(4) + f(3)^f(4)^f(5)^f(6)};
+
+
+gb := {1}
+
+
+end;
+(TIME:  xideal 1210 1250)

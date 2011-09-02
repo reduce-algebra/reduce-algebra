@@ -1,0 +1,152 @@
+
+<A NAME=FOR>
+
+<TITLE>FOR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FOR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>for</em> command is used for iterative loops. There are many 
+possible forms it can take. 
+<P>
+<P>
+<P><PRE><TT>
+                   /                   
+   /               |STEP &lt;number&gt; UNTIL|        
+   |&lt;var&gt;:=&lt;number&gt;|                   |&lt;number&gt;|
+FOR|               |         :         |        |&lt;action&gt; &lt;exprn&gt;
+   |                                  /        |
+   |EACH &lt;var&gt; IN &lt;list&gt;                        |
+                                               /
+
+ where &lt;action&gt; ::= DO|PRODUCT|SUM|COLLECT|JOIN.
+</TT></PRE><P>&lt;var&gt; can be any valid REDUCE identifier except <em>t</em> o
+r 
+<em>nil</em>, &lt;inc&gt;, &lt;start&gt; and &lt;stop&gt; can be any expression 
+
+that evaluates to a positive or negative integer. &lt;list&gt; must be a 
+valid 
+<A HREF=r37_0302.html>list</A> structure. 
+The action taken must be one of the actions shown 
+above, each of which is followed by a single REDUCE expression, statement 
+or a 
+<A HREF=r37_0038.html>group</A> (<em>&lt;&lt;</em>...<em>&gt;&gt;</em>) or 
+<A HREF=r37_0041.html>block</A> 
+(
+<A HREF=r37_0040.html>begin</A>...
+<A HREF=r37_0044.html>end</A>) statement. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+for i := 1:10 sum i;                                    
+ 
+
+
+  55 
+
+
+for a := -2 step 3 until 6 product a;
+							
+
+
+  -8 
+
+
+a := 3; 
+
+  A := 3 
+
+
+for iter := 4:a do write iter; 
+
+m := 0; 
+
+  M := 0 
+
+
+for s := 10 step -1 until 3 do &lt;&lt;d := 10*s;m := m + d&gt;&gt;; 
+
+m; 
+
+  520 
+
+
+for each x in {q,r,s} sum x**2; 
+
+   2    2    2
+  Q  + R  + S  
+
+
+for i := 1:4 collect 1/i;                              
+ 
+
+
+     1 1 1
+  {1,-,-,-} 
+     2 3 4
+
+
+for i := 1:3 join list solve(x**2 + i*x + 1,x);         
+ 
+
+
+        SQRT(3)*I + 1
+  {{X= --------------,
+              2
+        SQRT(3)*I - 1
+    X= --------------}
+              2
+   {X=-1},
+         SQRT(5) + 3   SQRT(5) - 3
+   {X= - -----------,X=-----------}}
+              2             2
+
+</TT></PRE><P>The behavior of each of the five action words follows: 
+<P>
+<P>
+<P><PRE><TT>
+                           Action Word Behavior
+Keyword   Argument Type                    Action
+   do    statement, command, group   Evaluates its argument once
+         or block                    for each iteration of the loop,
+                                     not saving results
+collect expression, statement,       Evaluates its argument once for
+        command, group, block, list  each iteration of the loop,
+                                     storing the results in a list
+                                     which is returned by the for
+                                     statement when done
+ join   list or an operator which    Evaluates its argument once for
+        produces a list              each iteration of the loop,
+                                     appending the elements in each
+                                     individual result list onto the
+                                     overall result list
+product expression, statement,       Evaluates its argument once for
+        command, group or block      each iteration of the loop,
+                                     multiplying the results together
+                                     and returning the overall product
+  sum   expression, statement,       Evaluates its argument once for
+        command, group or block      each iteration of the loop,
+                                     adding the results together and
+                                     returning the overall sum
+</TT></PRE><P>For number-driven <em>for</em> statements, if the ending limit is 
+smaller 
+than the beginning limit (larger in the case of negative steps) the action 
+statement is not executed at all. The iterative variable is local to the 
+<em>for</em> statement, and does not affect the value of an identifier with 
+the same name. For list-driven <em>for</em> statements, if the list is 
+empty, the action statement is not executed, but no error occurs. 
+<P>
+<P>
+You can use nested <em>for</em> statements, with the inner <em>for</em> 
+statement after the action keyword. You must make sure that your inner 
+statement returns an expression that the outer statement can handle. 
+<P>
+<P>
+<P>

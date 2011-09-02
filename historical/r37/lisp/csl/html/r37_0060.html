@@ -1,0 +1,84 @@
+
+<A NAME=RULE>
+
+<TITLE>RULE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RULE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>type</B><P>
+<P>
+ 
+ <P>
+<P>
+A <em>rule</em> is an instruction to replace an algebraic expression 
+or a part of an expression by another one. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+&lt;lhs&gt; =&gt; &lt;rhs&gt; or 
+&lt;lhs&gt; =&gt; &lt;rhs&gt; <em>when</em> &lt;cond&gt; 
+<P>
+<P>
+<P>
+&lt;lhs&gt; is an algebraic expression used as search pattern and 
+&lt;rhs&gt; is an algebraic expression which replaces matches of 
+&lt;rhs&gt;. <em>=&gt;</em> is the operator 
+<A HREF=r37_0026.html>replace</A>. 
+<P>
+<P>
+&lt;lhs&gt; can contain 
+<A HREF=r37_0061.html>free variable</A>s which are 
+symbols preceded by a tilde <em>~</em> in their leftmost position 
+in &lt;lhs&gt;. 
+A double tilde marks an 
+<A HREF=r37_0062.html>optional free variable</A>. 
+If a rule has a <em>when</em> &lt;cond&gt; 
+part it will fire only if the evaluation of &lt;cond&gt; has a 
+result 
+<A HREF=r37_0122.html>true</A>. &lt;cond&gt; may contain references to 
+free variables of &lt;lhs&gt;. 
+<P>
+<P>
+Rules can be collected in a 
+<A HREF=r37_0053.html>list</A> which then forms a 
+ <em>rule list</em>. <em>Rule lists</em> can be used to collect 
+algebraic knowledge for a specific evaluation context. 
+<P>
+<P>
+<em>Rules</em>and <em>rule lists</em> are globally activated and 
+deactivated by 
+<A HREF=r37_0199.html>let</A>, 
+<A HREF=r37_0195.html>forall</A>, 
+<A HREF=r37_0190.html>clearrules</A>. 
+For a single evaluation they can be locally activate by 
+<A HREF=r37_0227.html>where</A>. 
+The active rules for an operator can be visualized by 
+<A HREF=r37_0178.html>showrules</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+operator f,g,h; 
+
+let f(x) =&gt; x^2; 
+
+f(x); 
+
+   2
+  x
+
+
+g_rules:={g(~n,~x)=&gt;h(n/2,x) when evenp n,
+
+g(~n,~x)=&gt;h((1-n)/2,x) when not evenp n}$
+
+let g_rules;
+
+g(3,x); 
+
+  h(-1,x)
+
+</TT></PRE><P>

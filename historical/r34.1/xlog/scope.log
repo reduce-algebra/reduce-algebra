@@ -1,0 +1,883 @@
+Sat May 30 16:25:17 PDT 1992
+REDUCE 3.4.1, 15-Jul-92 ...
+
+1: 1: 
+2: 2: 
+(SCOPE)
+
+3: 3: 
+Time: 493 ms
+
+4: 4: % Test SCOPE Package.
+
+% NOTE:  The SCOPE, GHORNER, GSTRUCTR and GENTRAN packages must be loaded
+% to run these tests.
+
+on priall$
+
+
+optimize z:=a^2*b^2+10*a^2*m^6+a^2*m^2+2*a*b*m^4+2*b^2*m^6+b^2*m^2
+           iname s;
+
+
+Sumscheme :
+
+   || EC|Far
+------------
+  0||  1| Z
+------------
+
+
+
+Productscheme :
+
+   |  0  1  2| EC|Far
+---------------------
+  1|     2  2|  1| 0
+  2|  6     2| 10| 0
+  3|  2     2|  1| 0
+  4|  4  1  1|  2| 0
+  5|  6  2   |  2| 0
+  6|  2  2   |  1| 0
+---------------------
+0  : M
+1  : B
+2  : A
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 5
+Number of (*)-operations : 10
+Number of integer exponentiations : 11
+Number of other operations : 0
+
+Time: 17 ms
+
+Breuer search : 
+Time: 51 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 0 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Breuer search : 
+Time: 0 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 0 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Breuer search : 
+Time: 17 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 0 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Additional optimization during finishing touch :
+Time: 0 ms
+
+
+
+S0 := B*A
+S4 := M*M
+S1 := S4*B*B
+S2 := S4*A*A
+S3 := S4*S4
+Z := S1 + S2 + S0*(2*S3 + S0) + S3*(2*S1 + 10*S2)
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 5
+Number of (*)-operations : 12
+Number of integer exponentiations : 0
+Number of other operations : 0
+
+
+
+Sumscheme :
+
+   |  0  3  4  5| EC|Far
+------------------------
+  0|        1  1|  1| Z
+ 15|        2 10|  1| 14
+ 17|  2  1      |  1| 16
+------------------------
+0  : S3
+3  : S0
+4  : S1
+5  : S2
+
+
+
+Productscheme :
+
+   |  8  9 10 11 17 18 19 20| EC|Far
+------------------------------------
+  7|                    1  1|  1| S0
+  8|  1                 2   |  1| S1
+  9|  1                    2|  1| S2
+ 10|  2                     |  1| S3
+ 11|                 2      |  1| S4
+ 14|     1                  |  1| 0
+ 16|              1         |  1| 0
+------------------------------------
+8  : S4
+9  : S3
+10 : S2
+11 : S1
+17 : S0
+18 : M
+19 : B
+20 : A
+
+
+
+Time: 17 ms
+
+
+off priall$
+
+
+on primat,acinfo$
+
+
+optimize
+     ghorner <<z:=a^2*b^2+10*a^2*m^6+a^2*m^2+2*a*b*m^4+2*b^2*m^6+b^2*m^2>>
+     vorder m
+     iname s;
+
+
+      2  2    2    2    2     2           2      2      2
+Z := A *B  + M *((A  + B ) + M *(2*A*B + M *(10*A  + 2*B )))
+
+Sumscheme :
+
+   || EC|Far
+------------
+  0||  1| Z
+  3||  1| 2
+  7||  1| 6
+ 10||  1| 9
+------------
+
+
+
+Productscheme :
+
+   |  0  1  2| EC|Far
+---------------------
+  1|     2  2|  1| 0
+  2|  2      |  1| 0
+  4|        2|  1| 3
+  5|     2   |  1| 3
+  6|  2      |  1| 3
+  8|     1  1|  2| 7
+  9|  2      |  1| 7
+ 11|        2| 10| 10
+ 12|     2   |  2| 10
+---------------------
+0  : M
+1  : B
+2  : A
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 5
+Number of (*)-operations : 8
+Number of integer exponentiations : 9
+Number of other operations : 0
+
+
+S0 := B*A
+S1 := B*B
+S2 := A*A
+S3 := M*M
+Z := S0*S0 + S3*(S1 + S2 + S3*(2*S0 + S3*(2*S1 + 10*S2)))
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 5
+Number of (*)-operations : 11
+Number of integer exponentiations : 0
+Number of other operations : 0
+
+
+
+Sumscheme :
+
+   |  0  1  2| EC|Far
+---------------------
+  0|         |  1| Z
+  3|     1  1|  1| 2
+  7|  2      |  1| 6
+ 10|     2 10|  1| 9
+---------------------
+0  : S0
+1  : S1
+2  : S2
+
+
+
+Productscheme :
+
+   |  3  4  5  9 10 11 12| EC|Far
+---------------------------------
+  1|           2         |  1| 0
+  2|  1                  |  1| 0
+  6|  1                  |  1| 3
+  9|  1                  |  1| 7
+ 13|                 1  1|  1| S0
+ 14|                 2   |  1| S1
+ 15|                    2|  1| S2
+ 16|              2      |  1| S3
+---------------------------------
+3  : S3
+4  : S2
+5  : S1
+9  : S0
+10 : M
+11 : B
+12 : A
+
+
+operator a$
+
+
+k:=j:=1$
+
+
+u:=c*x+d$
+
+
+v:=sin(u)$
+
+
+optimize {a(k,j):=v*(v^2*cos(u)^2+u),
+          a(k,j)::=:v*(v^2*cos(u)^2+u)} iname s;
+
+
+              2       2
+A(K,J) := V*(V *COS(U)  + U)
+
+A(1,1) := 
+
+            3             2
+SIN(C*X + D) *COS(C*X + D)  + SIN(C*X + D)*C*X + SIN(C*X + D)*D
+
+Sumscheme :
+
+   |  7  8| EC|Far
+------------------
+  1|  1   |  1| 0
+  3|      |  1| S2
+  5|     1|  1| S4
+------------------
+7  : U
+8  : D
+
+
+
+Productscheme :
+
+   |  0  1  2  3  4  5  6| EC|Far
+---------------------------------
+  0|                    1|  1| S0
+  2|                 2  2|  1| 1
+  4|     2  3            |  1| 3
+  6|           1  1      |  1| 5
+  7|        1  1  1      |  1| 3
+  8|  1     1            |  1| 3
+---------------------------------
+0  : D
+1  : S5=COS(S4)
+2  : S3=SIN(S4)
+3  : X
+4  : C
+5  : S1=COS(U)
+6  : V
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 7
+Number of (*)-operations : 10
+Number of integer exponentiations : 4
+Number of other operations : 5
+
+
+S8 := COS(U)*V
+A(K,J) := V*(U + S8*S8)
+S4 := X*C + D
+S3 := SIN(S4)
+S9 := COS(S4)*S3
+A(1,1) := S3*(S4 + S9*S9)
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 3
+Number of (*)-operations : 7
+Number of integer exponentiations : 0
+Number of other operations : 3
+
+
+
+Sumscheme :
+
+   |  2  3 12 13| EC|Far
+------------------------
+  1|        1   |  1| 0
+  3|            |  1| S2
+  5|     1     1|  1| S4
+ 11|  1         |  1| 10
+------------------------
+2  : S4
+3  : S6
+12 : U
+13 : D
+
+
+
+Productscheme :
+
+   |  0  1  4  5  6  7  8  9 10 11| EC|Far
+------------------------------------------
+  0|                             1|  1| S0
+  2|     2                        |  1| 1
+  4|  2                           |  1| 11
+  9|                    1  1      |  1| S6
+ 10|                 1            |  1| 3
+ 13|                          1  1|  1| S8
+ 14|              1  1            |  1| S9
+------------------------------------------
+0  : S9
+1  : S8
+4  : S6
+5  : D
+6  : S5=COS(S4)
+7  : S3=SIN(S4)
+8  : X
+9  : C
+10 : S1=COS(U)
+11 : V
+
+
+off exp$
+
+
+optimize {a(k,j):=v*(v^2*cos(u)^2+u),
+          a(k,j)::=:v*(v^2*cos(u)^2+u)} iname s;
+
+
+              2       2
+A(K,J) := V*(V *COS(U)  + U)
+
+                       2             2
+A(1,1) := (SIN(C*X + D) *COS(C*X + D)  + C*X + D)*SIN(C*X + D)
+
+Sumscheme :
+
+   |  6  7| EC|Far
+------------------
+  1|  1   |  1| 0
+  4|     1|  1| 3
+  6|     1|  1| S4
+------------------
+6  : U
+7  : D
+
+
+
+Productscheme :
+
+   |  0  1  2  3  4  5| EC|Far
+------------------------------
+  0|                 1|  1| S0
+  2|              2  2|  1| 1
+  3|     1            |  1| S2
+  5|  2  2            |  1| 4
+  7|        1  1      |  1| 6
+  8|        1  1      |  1| 4
+------------------------------
+0  : S5=COS(S4)
+1  : S3=SIN(S4)
+2  : X
+3  : C
+4  : S1=COS(U)
+5  : V
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 6
+Number of (*)-operations : 8
+Number of integer exponentiations : 4
+Number of other operations : 4
+
+
+S8 := COS(U)*V
+A(K,J) := V*(U + S8*S8)
+S4 := X*C + D
+S3 := SIN(S4)
+S9 := COS(S4)*S3
+A(1,1) := S3*(S4 + S9*S9)
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 3
+Number of (*)-operations : 7
+Number of integer exponentiations : 0
+Number of other operations : 3
+
+
+
+Sumscheme :
+
+   |  2  3 11 12| EC|Far
+------------------------
+  1|        1   |  1| 0
+  4|  1         |  1| 3
+  6|     1     1|  1| S4
+------------------------
+2  : S4
+3  : S6
+11 : U
+12 : D
+
+
+
+Productscheme :
+
+   |  0  1  4  5  6  7  8  9 10| EC|Far
+---------------------------------------
+  0|                          1|  1| S0
+  2|     2                     |  1| 1
+  3|              1            |  1| S2
+  5|  2                        |  1| 4
+  9|                 1  1      |  1| S6
+ 11|                       1  1|  1| S8
+ 12|           1  1            |  1| S9
+---------------------------------------
+0  : S9
+1  : S8
+4  : S6
+5  : S5=COS(S4)
+6  : S3=SIN(S4)
+7  : X
+8  : C
+9  : S1=COS(U)
+10 : V
+
+
+off primat,acinfo,period$
+
+
+on fort$
+
+
+optimize z:=(6*a+18*b+9*c+3*d+6*e+18*f+6*g+5*h+5*k+3)^13 iname s;
+
+
+
+      S0=5.0*(H+K)+3.0*(3.0*C+D+1.0+6.0*(B+F)+2.0*(A+EXP(1.0)+G))
+      S3=S0*S0*S0
+      S2=S3*S3
+      Z=S0*S2*S2
+
+optimize {x:=3*a*p,y:=3*a*q,z:=6*a*r+2*b*p,u:=6*a*d+2*b*q,
+v:=9*a*c+4*b*d,w:=4*b} iname s;
+
+
+
+      S2=3.0*A
+      X=S2*P
+      Y=S2*Q
+      S1=2.0*B
+      S3=6.0*A
+      Z=S1*P+S3*R
+      U=S1*Q+S3*D
+      S0=4.0*B
+      V=S0*D+9.0*C*A
+      W=S0
+
+off fort$
+
+
+clear a$
+
+
+matrix a(2,2)$
+
+
+a(1,1):=x+y+z$
+
+
+a(1,2):=x*y$
+
+
+a(2,1):=(x+y)*x*y$
+
+
+a(2,2):=(x+2*y+3)^3-x$
+
+
+on acinfo$
+
+
+optimize gstructr<<a;
+                   aa:=(x+y)^2;b:=(x+y)*(y+z);c:=(x+2*y)*(y+z)*(z+x)^2>>
+name v iname s;
+
+
+A(1,1) := X + Y + Z
+
+A(1,2) := X*Y
+
+V2 := X + Y
+
+A(2,1) := V2*X*Y
+
+                       3
+A(2,2) := (X + 2*Y + 3)  - X
+
+        2
+AA := V2
+
+V5 := Y + Z
+
+B := V2*V5
+
+                      2
+C := (X + 2*Y)*(X + Z) *V5
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 9
+Number of (*)-operations : 8
+Number of integer exponentiations : 3
+Number of other operations : 0
+
+
+S5 := X + Z
+A(1,1) := S5 + Y
+S8 := Y*X
+A(1,2) := S8
+V2 := X + Y
+A(2,1) := S8*V2
+S6 := X + 2*Y
+S4 := S6 + 3
+A(2,2) := S4*S4*S4 - X
+AA := V2*V2
+V5 := Y + Z
+B := V5*V2
+C := S6*S5*S5*V5
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 7
+Number of (*)-operations : 10
+Number of integer exponentiations : 0
+Number of other operations : 0
+
+
+clear a$
+
+
+off fort;
+
+
+on priall$
+
+
+optimize z:=:for j:=2:6 sum a^(1/j) iname s;
+
+
+         1/3               1/4     1/5     1/6
+Z := (((A    + SQRT(A)) + A   ) + A   ) + A
+
+Sumscheme :
+
+   || EC|Far
+------------
+  0||  1| Z
+------------
+
+
+
+Productscheme :
+
+   |  0| EC|Far
+---------------
+  1| 20|  1| 0
+  2| 30|  1| 0
+  3| 15|  1| 0
+  4| 12|  1| 0
+  5| 10|  1| 0
+---------------
+0  : A
+
+Number of operations in the input is: 
+
+Number of (+,-)-operations : 4
+Number of (*)-operations : 0
+Number of integer exponentiations : 0
+Number of other operations : 5
+
+Time: 680 ms
+
+Breuer search : 
+Time: 17 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 17 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Breuer search : 
+Time: 17 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 0 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Breuer search : 
+Time: 17 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 0 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Breuer search : 
+Time: 0 ms
+
+
+Removal of different names for identical cse's : 
+Time: 0 ms
+
+
+Change Scheme : 
+Time: 0 ms
+
+
+Local Factorization : 
+Time: 0 ms
+
+
+Additional optimization during finishing touch :
+Time: 0 ms
+
+
+
+      1/60
+A := A
+S7 := A*A
+S6 := S7*A
+S4 := S7*S6
+S2 := S4*S4
+S1 := S7*S2
+S0 := S6*S1
+S3 := S4*S0
+Z := S2 + S1 + S0 + S3 + S3*S2
+
+
+
+Number of operations after optimization is:
+
+Number of (+,-)-operations : 4
+Number of (*)-operations : 8
+Number of integer exponentiations : 0
+Number of other operations : 1
+
+
+
+Sumscheme :
+
+   |  3  4  5  6| EC|Far
+------------------------
+  0|  1  1  1  1|  1| Z
+------------------------
+3  : S2
+4  : S1
+5  : S0
+6  : S3
+
+
+
+Productscheme :
+
+   |  9 10 12 13 14 15 16 22| EC|Far
+------------------------------------
+  2|           1  1         |  1| 0
+  6|     1           1      |  1| S0
+  7|  1           1         |  1| S1
+  8|        2               |  1| S2
+  9|        1           1   |  1| S3
+ 10|  1  1                  |  1| S4
+ 12|  1                    1|  1| S6
+ 13|                       2|  1| S7
+------------------------------------
+9  : S7
+10 : S6
+12 : S4
+13 : S3
+14 : S2
+15 : S1
+16 : S0
+22 : A
+
+
+
+Time: 34 ms
+
+
+off acinfo,priall$
+
+
+on optdecs$
+
+
+optlang!*:='fortran$
+
+
+optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
+         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+
+
+
+      INTEGER B(5),I,S1,S2
+      REAL A(4,4),S4,X(4),Y(5)
+      S1=I+1.0
+      S2=I-1.0
+      S4=B(I)
+      X(S1,S2)=A(S1,S2)+S4
+      Y(S2)=A(S2,S1)-S4
+
+optlang!*:='c$
+
+
+optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
+         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+
+
+
+int B[6],I,S1,S2;
+float A[5][5],S4,X[5],Y[6];
+{
+    S1=I+1.0;
+    S2=I-1.0;
+    S4=B[I];
+    X[S1][S2]=A[S1][S2]+S4;
+    Y[S2]=A[S2][S1]-S4;
+}
+
+optlang!*:= 'pascal$
+
+
+optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
+         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+
+
+
+VAR
+    S2,S1,I: INTEGER;
+    B: ARRAY[0..5] OF INTEGER;
+    S4: REAL;
+    Y: ARRAY[0..5] OF REAL;
+    X: ARRAY[0..4] OF REAL;
+    A: ARRAY[0..4,0..4] OF REAL;
+BEGIN
+    S1:=I+1.0;
+    S2:=I-1.0;
+    S4:=B[I];
+    X[S1,S2]:=A[S1,S2]+S4;
+    Y[S2]:=A[S2,S1]-S4
+END;
+
+optlang!*:='ratfor$
+
+
+optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
+         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+
+
+
+INTEGER B(5),I,S1,S2
+REAL A(4,4),S4,X(4),Y(5)
+{
+    S1=I+1.0
+    S2=I-1.0
+    S4=B(I)
+    X(S1,S2)=A(S1,S2)+S4
+    Y(S2)=A(S2,S1)-S4
+}
+
+
+end;
+
+5: 5: 
+Time: 153 ms
+
+6: 6: 
+Quitting
+Sat May 30 16:25:20 PDT 1992

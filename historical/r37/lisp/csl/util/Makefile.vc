@@ -1,0 +1,641 @@
+###########################################################################
+#                                                                         #
+# makefile for REDUCE 3.7 using CSL                                       #
+#                                                                         #
+###########################################################################
+
+
+###########################################################################
+#                                                                         #
+# This "makefile" is for Win32 (using Visual C++ from Visual Studio .NET) #
+# It has been tested on Visual C++ version 5 too.                         #
+#                                                                         #
+###########################################################################
+
+# I support use of some (possible) extra variables, passed down
+# as     "nmake var=val target"
+#
+# COMMAND_LINE    generate command line version not windowed one
+# DEMO_MODE       demo mode version only
+# DEMO_BUILD      version used for building the demo system
+
+!ifdef DEMO_BUILD
+CSLEXE    = csl
+EXENAME   = demor37b
+O         = obj-db
+!else
+!ifdef COMMAND_LINE
+CSLEXE    = cslc
+!ifdef DEMO_MODE
+EXENAME   = demor37c
+O         = obj-dc
+!else
+EXENAME   = r37c
+O         = obj-c
+!endif
+!else
+CSLEXE    = csl
+!ifdef DEMO_MODE
+EXENAME   = demor37
+O         = obj-d
+!else
+EXENAME   = r37
+O         = obj
+!endif
+!endif
+!endif
+MAKE      = nmake
+CC	  = cl
+!ifdef DEMO_MODE
+OPTFLAGS  = -Ox2 -G5r -D -MT
+!else
+OPTFLAGS  = -Ox2 -G5r -MT
+!endif
+MPIFLAGS  =
+!ifdef COMMAND_LINE
+CFLAGS 	  = $(OPTFLAGS) -c -W3 -DWINDOWS_NT=1 -I$(CSLBASE) -DCOMMAND_LINE_VERSION=1 $(MPIFLAGS)
+!else
+CFLAGS	  = $(OPTFLAGS) -c -W3 -DWINDOWS_NT=1 -I$(CSLBASE) -DCWIN=1 $(MPIFLAGS)
+!endif
+CPP       = cl
+CPPFLAGS  = $(CFLAGS)
+LINK      = cl
+LFLAGS    =
+!ifdef COMMAND_LINE
+LIBS      = wsock32.lib
+TAIL      = -link -subsystem:console
+!else
+LIBS      = nafxcw.lib wsock32.lib
+TAIL      = -link -subsystem:windows
+!endif
+CSLRES    = csl.res
+R37RES    = r37.res
+DEMORES   = demored.res
+FRONTRES  = r37front.res
+OUT       = -o
+OUTOBJ    = -Fo
+ASM       = $(CC)
+ASMFLAGS  = $(CFLAGS)
+ASMSRC    = imulvc.c
+ASMOBJ    = $(O)\imulvc.obj
+ASMOBJDEP = imulvc
+!ifdef COMMAND_LINE
+SYS       = sysdos
+!else
+SYS       = syscwin
+!endif
+WX        =
+RM        = del
+MKDIR     = mkdir
+COPY      = copy
+STRIP     = -echo
+
+# The following lines indicates the place on your disc where the "cslbase"
+# directory exists. This is the  place where the C sources files for CSL
+# live. There are two versions here, the first should use Unix-like
+# file name conventions (in particular "/" as a directory separator) while
+# the second will (in some cases) be a host-specific translation.
+
+UCSLBASE  = ../cslbase
+CSLBASE   = ..\cslbase
+
+###########################################################################
+###########################################################################
+#                                                                         #
+# This is the main bulk of the "makefile" for building Reduce 3.7 and CSL #
+# on MSDOS, Windows and Unix.  This part of the file expects a number of  #
+# symbols to have been defined:                                           #
+#                                                                         #
+# CSLBASE   = file-path for CSLBASE directory                             #
+# MAKE      = name of "make" utility                                      #
+# CC        = The C compiler to use                                       #
+# CFLAGS    = Flags for C compiler when compiling CSL                     #
+# LINK      = Linker to use                                               #
+# LFLAGS    = Flags for linker                                            #
+# LIBS      = Libraries to quote to linker                                #
+# OUT       = "-o" or "-out:"   See link commands                         #
+# OUTOBJ    = "-o" often : where to put object code from C compilation    #
+# O         = location to put object files                                #
+# ASM       = The assembler to use                                        #
+# ASMFLAGS  = Flags for the assembler                                     #
+# ASMSRC    = Assembly code source file to use                            #
+# ASMOBJ    = Object file for above (or NULL if no assembly used)         #
+# ASMOBJDEP = Ditto, but may not be NULL                                  #
+# SYS       = name of system-specific file (sysdos or sysnt etc)          #
+# RM        = del for DOS, = rm for Unix                                  #
+# MKDIR     = mkdir                                                       #
+# COPY      = copy for DOS, = cp for Unix                                 #
+# STRIP     = echo for DOS, = strip for Unix                              #
+# SYMBOLIC  = .SYMBOLIC is using Watcom's "make" utility                  #
+# WX        = wx for Windows 3.1, null in all other cases                 #
+#                                                                         #
+# The master version of this file is called "makebase" and is used to     #
+# create both DOS and Unix makefiles.  Use the Codemist "makemake"        #
+# program to perform the conversion - eg                                  #
+#     makemake -f makebase -o makemake.386 watcom dos                     #
+#     makemake -f makebase -o Makefile.sgi sgi                            #
+# Just "makemake -f makebase" gives list of systems supported             #
+###########################################################################
+###########################################################################
+
+
+
+###########################################################################
+###########################################################################
+#
+# The main final target is r37.img, the image file for full REDUCE.
+# If you want to rebuild stage-by-stage (eg while testing), try the
+# sequence
+#    make slowr37.exe            compiles and links C coded kernel
+#    make slowr37.img            makes bootstrap REDUCE
+#                                 (roughly twice as slow as final one)
+#                                 only used for system recompilation.
+#    make profile                 runs tests, collects profile information.
+#                                 This takes a long time!
+#    make prof-inst               installs profile data
+#    make c-code                  Create files u*.c and u*.lsp
+#                                 out of hot-spot parts of REDUCE.
+###########################################################################
+# Note that only the steps from here downwards are usually needed
+#
+#    make r37.exe                final compilation of most of REDUCE
+#    make r37.img                build final image file
+#    make testall                 runs test files, output to log directory
+#    make checkall                creates log\checkall.log
+#
+# (for Windows 95/98/NT only)
+#    make r37c.exe                command-line version
+#
+###########################################################################
+###########################################################################
+
+
+#
+# C is another name for CSLBASE, the directory that CSL source files live
+# in. I introduce it here mainly because $(C) is so much more compact
+# then $(CSLBASE).
+#
+
+C =     $(CSLBASE)
+
+#
+# DOBJS is a list of all the object files that are common to all variants
+# on the system built here
+#
+
+DOBJS =		$(O)\arith01.obj $(O)\arith02.obj $(O)\arith03.obj $(O)\arith04.obj \
+		$(O)\arith05.obj $(O)\arith06.obj $(O)\arith07.obj $(O)\arith08.obj \
+		$(O)\arith09.obj $(O)\arith10.obj $(O)\arith11.obj $(O)\arith12.obj \
+		$(O)\char.obj $(O)\csl.obj $(O)\cslmpi.obj $(O)\eval1.obj $(O)\eval2.obj \
+		$(O)\eval3.obj $(O)\eval4.obj $(O)\fns1.obj $(O)\fns2.obj $(O)\fns3.obj \
+		$(O)\print.obj $(O)\read.obj $(O)\restart.obj $(ASMOBJ) \
+!ifdef COMMAND_LINE
+                $(O)\$(SYS).obj
+!else
+		$(O)\$(SYS).obj $(O)\c_applic.obj $(O)\c_text.obj \
+		$(O)\c_graph.obj $(O)\c_render.obj $(O)\c_viewpt.obj
+!endif
+
+CDOBJS =	$(O)\arith01.obj,$(O)\arith02.obj,$(O)\arith03.obj,$(O)\arith04.obj,\
+		$(O)\arith05.obj,$(O)\arith06.obj,$(O)\arith07.obj,$(O)\arith08.obj,\
+		$(O)\arith09.obj,$(O)\arith10.obj,$(O)\arith11.obj,$(O)\arith12.obj,\
+		$(O)\char.obj,$(O)\csl.obj,$(O)\cslmpi.obj,$(O)\eval1.obj,$(O)\eval2.obj,\
+		$(O)\eval3.obj,$(O)\eval4.obj,$(O)\fns1.obj,$(O)\fns2.obj,$(O)\fns3.obj,\
+		$(O)\print.obj,$(O)\read.obj,$(O)\restart.obj,$(ASMOBJ),\
+!ifdef COMMAND_LINE
+		$(O)\$(SYS).obj
+!else
+		$(O)\$(SYS).obj,$(O)\c_applic.obj,$(O)\c_text.obj,\
+		$(O)\c_graph.obj,$(O)\c_render.obj,$(O)\c_viewpt.obj
+!endif
+
+#
+# OBJS adds in the files used when I am not building a demonstration-mode CSL
+#
+
+OBJS =		$(DOBJS) $(O)\fasl.obj $(O)\gc.obj $(O)\preserve.obj
+
+COBJS =		$(CDOBJS),$(O)\fasl.obj,$(O)\gc.obj,$(O)\preserve.obj
+
+#
+# UOBJS come from that code that is compiled from Lisp into C
+#
+
+UOBJS =		$(O)\u01.obj $(O)\u02.obj $(O)\u03.obj $(O)\u04.obj $(O)\u05.obj \
+		$(O)\u06.obj $(O)\u07.obj $(O)\u08.obj $(O)\u09.obj $(O)\u10.obj \
+		$(O)\u11.obj $(O)\u12.obj
+
+CUOBJS =	$(O)\u01.obj,$(O)\u02.obj,$(O)\u03.obj,$(O)\u04.obj,$(O)\u05.obj,\
+		$(O)\u06.obj,$(O)\u07.obj,$(O)\u08.obj,$(O)\u09.obj,$(O)\u10.obj,\
+		$(O)\u11.obj,$(O)\u12.obj
+
+
+###########################################################################
+###########################################################################
+
+# This default target may be a dangerous one to use
+# since it supposes that all the C code is up to date already.
+
+default:	$(SYMBOLIC) \
+		r37c.exe \
+		r37.exe r37.img
+
+
+
+###########################################################################
+###########################################################################
+
+$(O):
+	-$(MKDIR) $(O)
+
+r37.img:	r37.exe
+	..\util\full37
+
+$(EXENAME).exe:	$(O)\bytes.obj $(OBJS) \
+		$(R37RES) \
+		$(UOBJS)
+	$(LINK) $(LFLAGS) $(O)\bytes.obj $(OBJS) $(UOBJS) $(R37RES) $(LIBS) $(OUT)$(EXENAME).exe $(TAIL)
+	$(STRIP) $(EXENAME).exe
+	-$(MKDIR) log
+
+csl.res:	..\util\csl.rc $(C)\cwin.rc
+	rc -i..\cslsrc -i$(C) -focsl.res ..\util\csl.rc
+
+r37.res:	..\util\r37.rc $(C)\cwin.rc
+	rc -i..\cslsrc -i$(C) -for37.res ..\util\r37.rc
+
+#demored.res:	..\util\demored.rc $(C)\cwin.rc
+#	rc -i..\cslsrc -i$(C) -fodemored.res ..\util\demored.rc
+
+
+# The next few targets are a bit dodgy, but are to help with building
+# command-line and demo versions.
+
+!ifndef COMMAND_LINE
+r37c.exe:	$(SYMBOLIC)
+	$(MAKE) "COMMAND_LINE=YES" r37c.exe
+
+cslc.exe:	$(SYMBOLIC)
+	$(MAKE) "COMMAND_LINE=YES" cslc.exe
+!endif
+
+!ifndef DEMO_MODE
+demor37.exe:	$(SYMBOLIC)
+	$(MAKE) "DEMO_MODE=YES" demor37.exe
+
+demor37c.exe:	$(SYMBOLIC)
+	$(MAKE) "DEMO_MODE=YES" "COMMAND_LINE=YES" demor37c.exe
+!endif
+
+!ifndef DEMO_BUILD
+demor37b.exe:	$(SYMBOLIC)
+	$(MAKE) "DEMO_BUILD=YES" demor37b.exe
+
+demor37.img:	$(SYMBOLIC)
+	REM This is much like the command in ..\util\full37
+	start /wait .\demor37b -o demor37.img -z -Dno_init_file ../util/build37.lsp -- log/demor37.log
+
+!endif
+
+
+#
+# A few targets here may help me tidy up my filespace from time to time
+#
+
+
+clean: $(SYMBOLIC)
+	-$(RM) slowr37.exe
+	-$(RM) slowr37.img
+	-$(RM) r37.exe
+	-$(RM) r37.img
+	-$(RM) csl.exe
+	-$(RM) csl.img
+	-$(RM) slowr37c.exe
+	-$(RM) r37c.exe
+	-$(RM) cslc.exe
+	-$(RM) *.obj
+	-$(MKDIR) log
+	-$(RM) log\*.log
+
+
+###########################################################################
+
+
+$(CSLEXE).exe:	$(O)\bytes.obj $(OBJS) \
+		$(CSLRES) \
+		$(O)\stubs.obj
+	$(LINK) $(LFLAGS) $(O)\bytes.obj $(OBJS) $(O)\stubs.obj $(CSLRES) $(LIBS) $(OUT)$(CSLEXE).exe $(TAIL)
+	$(STRIP) $(CSLEXE).exe
+
+slowr37.exe:	$(O)\bytes1.obj $(OBJS) \
+		$(CSLRES) \
+		$(O)\stubs.obj
+	$(LINK) $(LFLAGS) $(O)\bytes1.obj $(OBJS) $(O)\stubs.obj $(CSLRES) $(LIBS) $(OUT)slowr37.exe $(TAIL)
+	$(STRIP) slowr37.exe
+	-$(MKDIR) log
+
+
+slowr37.img:	slowr37.exe
+	..\util\boot37
+
+profile:	slowr37.img $(SYMBOLIC)
+	..\util\profile
+
+prof-inst:	profile.dat $(SYMBOLIC)
+	$(COPY) profile.dat ..\csl-c
+	-$(RM) profile.dat
+
+c-code:	slowr37.img $(SYMBOLIC)
+	..\util\c-code37
+
+testslow:	slowr37.img $(SYMBOLIC)
+	..\util\testslow
+
+testall:	r37.img $(SYMBOLIC)
+	..\util\testrest
+
+checkall:	r37.img $(SYMBOLIC)
+	..\util\checkall
+
+patchup:	r37.img $(SYMBOLIC)
+	..\util\patchup
+
+cleanlog:	$(SYMBOLIC)
+	-$(RM) ../../../log/*.rlg
+
+
+
+csl.img:	csl.exe $(C)\compat.lsp $(C)\compiler.lsp \
+			$(C)\ccomp.lsp $(C)\extras.lsp
+	-$(RM) csl.img
+	$(WX) csl -v -z $(C)\build0.lsp \
+		-D@cslbase="$(C)" -- log\cslimg.log
+
+#
+# "make lispfile"
+#           recreates compiler.lsp, extras.lsp and ccomp.lsp from
+#           the corresponding master sources which are held in RLISP
+#           form.  Temporarily builds an RLISP parser on the way.
+#       NB: only for system maintainance use.
+
+lispfile:	csl.exe csl.img $(C)\lispfile.lsp $(SYMBOLIC)
+	$(WX) csl -v -z $(C)\lispfile.lsp \
+		-D@cslbase="$(C)" -- log\lispfile.log
+
+signature:	$(C)\version.hhh register.key $(SYMBOLIC)
+	filesign -u $(C)\version.hhh $(C)\version.h Developer or tester
+
+
+############################################################################
+# Now rules for re-compiling the main collection of CSL source files. I
+# write each case out individually since that makes the makefile less
+# delicate than one that relies on setting up general rules - and I want this
+# file to work on several different systems.
+#
+
+$(O)\$(ASMOBJDEP).obj:	$(C)\$(ASMSRC) $(O)
+	$(ASM) $(ASMFLAGS) $(OUTOBJ)$(ASMOBJ) $(C)\$(ASMSRC)
+
+$(O)\arith01.obj:	$(C)\arith01.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith01.obj $(C)\arith01.c
+
+$(O)\arith02.obj:	$(C)\arith02.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith02.obj $(C)\arith02.c
+
+$(O)\arith03.obj:	$(C)\arith03.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith03.obj $(C)\arith03.c
+
+$(O)\arith04.obj:	$(C)\arith04.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith04.obj $(C)\arith04.c
+
+$(O)\arith05.obj:	$(C)\arith05.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(C)\stream.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith05.obj $(C)\arith05.c
+
+$(O)\arith06.obj:	$(C)\arith06.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith06.obj $(C)\arith06.c
+
+$(O)\arith07.obj:	$(C)\arith07.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith07.obj $(C)\arith07.c
+
+$(O)\arith08.obj:	$(C)\arith08.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith08.obj $(C)\arith08.c
+
+$(O)\arith09.obj:	$(C)\arith09.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith09.obj $(C)\arith09.c
+
+$(O)\arith10.obj:	$(C)\arith10.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith10.obj $(C)\arith10.c
+
+$(O)\arith11.obj:	$(C)\arith11.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith11.obj $(C)\arith11.c
+
+$(O)\arith12.obj:	$(C)\arith12.c $(C)\arith.h $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\arith12.obj $(C)\arith12.c
+
+$(O)\bytes.obj:	$(C)\bytes1.c $(C)\bytes.c $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h \
+		$(C)\bytes.h $(C)\arith.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\bytes.obj $(C)\bytes.c
+
+$(O)\bytes1.obj:	$(C)\bytes1.c $(C)\bytes.c $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h \
+		$(C)\bytes.h $(C)\arith.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\bytes1.obj $(C)\bytes1.c
+
+#
+# The target "bytes1a.o" recompiles bytes1.c, but with the flag set that
+# arranges that the number of GET operations performed and the associated
+# indicators will be recorded, so that (bytecounts) will display statistics
+# about it. This slows things down considerably, but can help when you are in
+# the process of deciding which indicators are specified as "fast" ones.
+#
+
+$(O)\bytes1a.obj:	$(C)\bytes1.c $(C)\bytes.c $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h \
+		$(C)\bytes.h $(C)\arith.h $(O)
+	$(CC) $(CFLAGS) -DRECORD_GET=1 $(OUTOBJ)$(O)\bytes1.obj $(C)\bytes1.c
+
+$(O)\char.obj:	$(C)\char.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\char.obj $(C)\char.c
+
+$(O)\csl.obj:	$(C)\csl.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\version.h $(C)\sys.h $(C)\cslerror.h \
+		$(C)\entries.h $(C)\stream.h $(C)\sockhdr.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\csl.obj $(C)\csl.c
+
+$(O)\r37front.obj:	$(C)\r37front.c $(C)\tags.h $(C)\machine.h \
+		$(C)\externs.h $(C)\version.h $(C)\sys.h \
+		$(C)\cslerror.h $(C)\entries.h $(C)\stream.h \
+		$(C)\sockhdr.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\r37front.obj $(C)\r37front.c
+
+
+!ifndef COMMAND_LINE
+# the cwin window manager package is for use with Watcom C or
+# Microsoft VC++ only
+
+$(O)\c_applic.obj:	$(C)\c_applic.cpp $(C)\cwin.h $(C)\cwin.hpp \
+		$(C)\cwinres.h
+	$(CPP) $(CPPFLAGS) $(OUTOBJ)$(O)\c_applic.obj $(C)\c_applic.cpp
+
+$(O)\c_applic1.obj:	$(C)\c_applic.cpp $(C)\cwin.h $(C)\cwin.hpp $(C)\cwinres.h
+	$(CPP) $(CPPFLAGS) -DDEMOVERSION=1 \
+		$(OUTOBJ)$(O)\c_applic1.obj $(C)\c_applic.cpp
+
+$(O)\c_text.obj:	$(C)\c_text.cpp $(C)\cwin.h $(C)\cwin.hpp $(C)\cwinres.h
+	$(CPP) $(CPPFLAGS) $(OUTOBJ)$(O)\c_text.obj $(C)\c_text.cpp
+
+$(O)\c_graph.obj:	$(C)\c_graph.cpp $(C)\cwin.h $(C)\cwin.hpp $(C)\cwinres.h
+	$(CPP) $(CPPFLAGS) $(OUTOBJ)$(O)\c_graph.obj \
+		$(C)\c_graph.cpp
+
+$(O)\c_render.obj:	$(C)\c_render.cpp $(C)\cwin.h $(C)\cwin.hpp $(C)\cwinres.h
+	$(CPP) $(CPPFLAGS) $(OUTOBJ)$(O)\c_render.obj $(C)\c_render.cpp
+
+$(O)\c_viewpt.obj:	$(C)\c_viewpt.cpp $(C)\cwin.h $(C)\cwin.hpp $(C)\cwinres.h
+	$(CPP) $(CPPFLAGS) $(OUTOBJ)$(O)\c_viewpt.obj \
+		$(C)\c_viewpt.cpp
+
+!endif
+
+$(O)\eval1.obj:	$(C)\eval1.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\arith.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\eval1.obj $(C)\eval1.c
+
+$(O)\eval2.obj:	$(C)\eval2.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\arith.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\eval2.obj $(C)\eval2.c
+
+$(O)\eval3.obj:	$(C)\eval3.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\eval3.obj $(C)\eval3.c
+
+$(O)\eval4.obj:	$(C)\eval4.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\arith.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\eval4.obj $(C)\eval4.c
+
+$(O)\fasl.obj:	$(C)\fasl.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\arith.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\fasl.obj $(C)\fasl.c
+
+$(O)\fns1.obj:	$(C)\fns1.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\fns1.obj $(C)\fns1.c
+
+$(O)\fns2.obj:	$(C)\fns2.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\read.h $(C)\entries.h \
+		$(C)\sockhdr.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\fns2.obj $(C)\fns2.c
+
+$(O)\fns3.obj:	$(C)\fns3.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\read.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\fns3.obj $(C)\fns3.c
+
+$(O)\gc.obj:	$(C)\gc.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\gc.obj $(C)\gc.c
+
+#
+# For each major target I have one file that is system specific - eg
+# sysdos.c, sysunix.c, ...
+#
+
+$(O)\$(SYS).obj:	$(C)\$(SYS).c $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\fileops.c $(C)\scandir.c $(C)\version.h \
+		$(C)\filename.c $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\$(SYS).obj $(C)\$(SYS).c
+
+$(O)\preserve.obj:	$(C)\preserve.c $(C)\tags.h $(C)\machine.h $(C)\stream.h \
+		$(C)\externs.h $(C)\sys.h $(C)\cslerror.h $(C)\read.h \
+		$(C)\version.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\preserve.obj $(C)\preserve.c
+
+$(O)\print.obj:	$(C)\print.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\read.h \
+		$(C)\arith.h $(C)\entries.h $(C)\stream.h $(C)\sockhdr.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\print.obj $(C)\print.c
+
+$(O)\read.obj:	$(C)\read.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\read.h \
+		$(C)\arith.h $(C)\entries.h $(C)\stream.h $(C)\sockhdr.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\read.obj $(C)\read.c
+
+$(O)\restart.obj:	$(C)\restart.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\sys.h $(C)\cslerror.h $(C)\read.h $(C)\version.h \
+		$(C)\arith.h $(C)\entries.h $(C)\stream.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\restart.obj $(C)\restart.c
+
+$(O)\stubs.obj:	$(C)\stubs.c $(C)\machine.h $(C)\externs.h $(C)\sys.h \
+		$(C)\tags.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\stubs.obj $(C)\stubs.c
+
+$(O)\cslmpi.obj:	$(C)\cslmpi.c $(C)\machine.h $(C)\externs.h $(C)\sys.h \
+		$(C)\mpipack.c $(C)\tags.h $(C)\cslerror.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\cslmpi.obj $(C)\cslmpi.c
+
+
+###########################################################################
+
+$(O)\u01.obj:	..\csl-c\u01.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u01.obj ..\csl-c\u01.c
+
+$(O)\u02.obj:	..\csl-c\u02.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u02.obj ..\csl-c\u02.c
+
+$(O)\u03.obj:	..\csl-c\u03.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u03.obj ..\csl-c\u03.c
+
+$(O)\u04.obj:	..\csl-c\u04.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u04.obj ..\csl-c\u04.c
+
+$(O)\u05.obj:	..\csl-c\u05.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u05.obj ..\csl-c\u05.c
+
+$(O)\u06.obj:	..\csl-c\u06.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u06.obj ..\csl-c\u06.c
+
+$(O)\u07.obj:	..\csl-c\u07.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u07.obj ..\csl-c\u07.c
+
+$(O)\u08.obj:	..\csl-c\u08.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u08.obj ..\csl-c\u08.c
+
+$(O)\u09.obj:	..\csl-c\u09.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u09.obj ..\csl-c\u09.c
+
+$(O)\u10.obj:	..\csl-c\u10.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u10.obj ..\csl-c\u10.c
+
+$(O)\u11.obj:	..\csl-c\u11.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u11.obj ..\csl-c\u11.c
+
+$(O)\u12.obj:	..\csl-c\u12.c $(C)\tags.h $(C)\machine.h $(C)\externs.h \
+		$(C)\cslerror.h $(C)\entries.h $(O)
+	$(CC) $(CFLAGS) $(OUTOBJ)$(O)\u12.obj ..\csl-c\u12.c
+
+
+# end of makefile

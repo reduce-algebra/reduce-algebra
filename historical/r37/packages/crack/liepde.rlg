@@ -1,0 +1,1171 @@
+Sun Jan  3 23:51:41 MET 1999
+REDUCE 3.7, 15-Jan-99 ...
+
+1: 1: 
+2: 2: 2: 2: 2: 2: 2: 2: 2: 
+3: 3: off echo, dfprint$
+
+-------------------------------------------------------
+The following runs demonstrate the program LIEPDE for the
+computation of infinitesimal symmetries. Times given
+below refer to a 8 MB session under LINUX on a 133 MHz
+Pentium PC with the CRACK version of April 1998.
+-------------------------------------------------------
+The first example is a single ODE with a parametric
+function f=f(x) for which point symmetries are to be
+determined.
+(Time ~ 6 sec.)
+-------------------------------------------------------
+
+
+The ODE under investigation is :
+
+                                                      2        2    3
+df(y,x,2)= - df(f,x)*y - 3*df(y,x)*f - df(y,x)*y - 2*f *y - f*y  + y
+
+for the function(s) : 
+
+y(x)
+
+
+
+The symmetries are:
+
+-------- 1. Symmetry:
+
+      int(f,x)          1
+xi_x=e        *int(-----------,x)
+                     int(f,x)
+                    e
+
+          int(f,x)          1
+eta_y= - e        *int(-----------,x)*f*y - y
+                         int(f,x)
+                        e
+
+-------- 2. Symmetry:
+
+         int(f,x)
+xi_x= - e
+
+       int(f,x)
+eta_y=e        *f*y
+
+-------- 
+
+-------------------------------------------------------
+The following example demonstrates a number of things.
+The Burgers equation is investigated concerning third
+order symmetries. The equation is used to substitute
+df(u,t) and all derivatives of df(u,t). This computation
+also shows that any equations that remain unsolved are
+returned, like in this case the heat quation.
+(Time ~ 15 sec.)
+-------------------------------------------------------
+
+
+The PDE under investigation is :
+
+                           2
+df(u,t)=df(u,x,2) + df(u,x)
+
+for the function(s) : 
+
+u(x,t)
+
+
+
+The symmetries are:
+
+-------- 1. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                         2
+eta_u=df(u,x,2) + df(u,x)
+
+-------- 2. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                   2            2  2                          2
+eta_u=4*df(u,x,2)*t  + 4*df(u,x) *t  + 4*df(u,x)*t*x + 2*t + x
+
+-------- 3. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               2
+eta_u=4*df(u,x,2)*t + 4*df(u,x) *t + 2*df(u,x)*x - 1
+
+-------- 4. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                               3
+eta_u=df(u,x,3) + 3*df(u,x,2)*df(u,x) + df(u,x)
+
+-------- 5. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                   2                         2                              3  2
+eta_u=4*df(u,x,3)*t  + 12*df(u,x,2)*df(u,x)*t  + 4*df(u,x,2)*t*x + 4*df(u,x) *t
+
+            2                2
+ + 4*df(u,x) *t*x + df(u,x)*x  - x
+
+-------- 6. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                   3                         3                 2
+eta_u=8*df(u,x,3)*t  + 24*df(u,x,2)*df(u,x)*t  + 12*df(u,x,2)*t *x
+
+            3  3             2  2                 2                2
+ + 8*df(u,x) *t  + 12*df(u,x) *t *x + 12*df(u,x)*t  + 6*df(u,x)*t*x  + 6*t*x
+
+    3
+ + x
+
+-------- 7. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u
+
+                                                                3            2
+=2*df(u,x,3)*t + 6*df(u,x,2)*df(u,x)*t + df(u,x,2)*x + 2*df(u,x) *t + df(u,x) *x
+
+-------- 8. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=df(u,x)
+
+-------- 9. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=2*df(u,x)*t + x
+
+-------- 10. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=1
+
+-------- 
+
+Further symmetries:
+
+xi_t=0
+
+xi_x=0
+
+       c_27 + c_32
+eta_u=-------------
+            u
+           e
+
+with c_27(x,t), c_32(t)
+which still have to satisfy: 
+
+0=2*df( - c_27,t) - 2*df( - c_27,x,2) + df( - 2*c_32,t)
+
+-------------------------------------------------------
+Now the same equation is investigated, this time only
+df(u,x,2) and its derivatives are substituted. As a
+consequence less jet-variables (u-derivatives of lower
+order) are generated in the process of formulating the
+symmetry conditions. Less jet-variables in which the
+conditions have to be fulfilled identically means less
+overdetermined conditions and more solutions which to
+compute takes longer than before.
+(Time ~ 85 sec.)
+-------------------------------------------------------
+
+
+The PDE under investigation is :
+
+                           2
+df(u,x,2)=df(u,t) - df(u,x)
+
+for the function(s) : 
+
+u(x,t)
+
+
+
+The symmetries are:
+
+-------- 1. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u
+
+                                                                   2
+= - 2*df(u,t,x)*df(u,t) - df(u,t,2,x) - df(u,t,2)*df(u,x) - df(u,t) *df(u,x)
+
+-------- 2. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               2                2                  2
+eta_u= - 16*df(u,t,x)*df(u,t)*t  - 2*df(u,t,x)*x  - 8*df(u,t,2,x)*t
+
+                        2                              2          2
+ - 8*df(u,t,2)*df(u,x)*t  - 8*df(u,t,2)*t*x - 8*df(u,t) *df(u,x)*t
+
+            2                          2
+ - 8*df(u,t) *t*x - 2*df(u,t)*df(u,x)*x  + 2*df(u,t)*x - df(u,x)
+
+-------- 3. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               4                 2  2                   4
+eta_u= - 32*df(u,t,x)*df(u,t)*t  - 24*df(u,t,x)*t *x  - 16*df(u,t,2,x)*t
+
+                         4                 3               2          4
+ - 16*df(u,t,2)*df(u,x)*t  - 32*df(u,t,2)*t *x - 16*df(u,t) *df(u,x)*t
+
+             2  3                         2  2               2
+ - 32*df(u,t) *t *x - 24*df(u,t)*df(u,x)*t *x  + 24*df(u,t)*t *x
+
+                3               2                 2            4               3
+ - 8*df(u,t)*t*x  + 60*df(u,x)*t  + 24*df(u,x)*t*x  - df(u,x)*x  + 36*t*x + 6*x
+
+-------- 4. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               5                  4                 3  2
+eta_u= - 64*df(u,t,x)*df(u,t)*t  - 160*df(u,t,x)*t  - 80*df(u,t,x)*t *x
+
+                   5                         5                 4
+ - 32*df(u,t,2,x)*t  - 32*df(u,t,2)*df(u,x)*t  - 80*df(u,t,2)*t *x
+
+             2          5             2  4                          4
+ - 32*df(u,t) *df(u,x)*t  - 80*df(u,t) *t *x - 160*df(u,t)*df(u,x)*t
+
+                       3  2                3                 2  3
+ - 80*df(u,t)*df(u,x)*t *x  - 240*df(u,t)*t *x - 40*df(u,t)*t *x
+
+                3                2  2                 4       2           3    5
+ - 120*df(u,x)*t  - 120*df(u,x)*t *x  - 10*df(u,x)*t*x  - 60*t *x - 20*t*x  - x
+
+-------- 5. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               3                   2                   3
+eta_u= - 32*df(u,t,x)*df(u,t)*t  - 12*df(u,t,x)*t*x  - 16*df(u,t,2,x)*t
+
+                         3                 2               2          3
+ - 16*df(u,t,2)*df(u,x)*t  - 24*df(u,t,2)*t *x - 16*df(u,t) *df(u,x)*t
+
+             2  2                           2                               3
+ - 24*df(u,t) *t *x - 12*df(u,t)*df(u,x)*t*x  + 12*df(u,t)*t*x - 2*df(u,t)*x
+
+                            2
+ - 6*df(u,x)*t + 6*df(u,x)*x  - 9*x
+
+-------- 6. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u= - 4*df(u,t,x)*df(u,t)*t - 2*df(u,t,2,x)*t - 2*df(u,t,2)*df(u,x)*t
+
+                          2                    2
+ - df(u,t,2)*x - 2*df(u,t) *df(u,x)*t - df(u,t) *x
+
+-------- 7. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                  3
+eta_u= - df(u,t,3) - 3*df(u,t,2)*df(u,t) - df(u,t)
+
+-------- 8. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                              2
+eta_u= - 8*df(u,t,x)*df(u,t)*t*x + df(u,t,x)*x - 4*df(u,t,3)*t
+
+                                             2
+ - 4*df(u,t,2,x)*t*x - 12*df(u,t,2)*df(u,t)*t  - 4*df(u,t,2)*df(u,x)*t*x
+
+              2            3  2            2                      2  2
+ - df(u,t,2)*x  - 4*df(u,t) *t  - 4*df(u,t) *df(u,x)*t*x - df(u,t) *x
+
+ + df(u,t)*df(u,x)*x
+
+-------- 9. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               3                   2                    3
+eta_u= - 64*df(u,t,x)*df(u,t)*t *x + 24*df(u,t,x)*t *x - 8*df(u,t,x)*t*x
+
+                 4                   3                           4
+ - 16*df(u,t,3)*t  - 32*df(u,t,2,x)*t *x - 48*df(u,t,2)*df(u,t)*t
+
+                         3                   2  2             3  4
+ - 32*df(u,t,2)*df(u,x)*t *x - 24*df(u,t,2)*t *x  - 16*df(u,t) *t
+
+             2          3               2  2  2                       2
+ - 32*df(u,t) *df(u,x)*t *x - 24*df(u,t) *t *x  + 24*df(u,t)*df(u,x)*t *x
+
+                        3                 2            4
+ - 8*df(u,t)*df(u,x)*t*x  + 24*df(u,t)*t*x  - df(u,t)*x  - 24*df(u,x)*t*x
+
+              3              2
+ + 6*df(u,x)*x  - 30*t - 15*x
+
+-------- 10. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                5                    4                    3  3
+eta_u= - 384*df(u,t,x)*df(u,t)*t *x - 960*df(u,t,x)*t *x - 160*df(u,t,x)*t *x
+
+                 6                    5                            6
+ - 64*df(u,t,3)*t  - 192*df(u,t,2,x)*t *x - 192*df(u,t,2)*df(u,t)*t
+
+                          5                    5                  4  2
+ - 192*df(u,t,2)*df(u,x)*t *x - 480*df(u,t,2)*t  - 240*df(u,t,2)*t *x
+
+             3  6              2          5                2  5
+ - 64*df(u,t) *t  - 192*df(u,t) *df(u,x)*t *x - 480*df(u,t) *t
+
+              2  4  2                        4                          3  3
+ - 240*df(u,t) *t *x  - 960*df(u,t)*df(u,x)*t *x - 160*df(u,t)*df(u,x)*t *x
+
+                4                3  2               2  4                3
+ - 720*df(u,t)*t  - 720*df(u,t)*t *x  - 60*df(u,t)*t *x  - 720*df(u,x)*t *x
+
+                2  3                 5        3        2  2         4    6
+ - 240*df(u,x)*t *x  - 12*df(u,x)*t*x  - 120*t  - 180*t *x  - 30*t*x  - x
+
+-------- 11. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                4                   3                   2  3
+eta_u= - 160*df(u,t,x)*df(u,t)*t *x + 80*df(u,t,x)*t *x - 40*df(u,t,x)*t *x
+
+                 5                   4                           5
+ - 32*df(u,t,3)*t  - 80*df(u,t,2,x)*t *x - 96*df(u,t,2)*df(u,t)*t
+
+                         4                   3  2             3  5
+ - 80*df(u,t,2)*df(u,x)*t *x - 80*df(u,t,2)*t *x  - 32*df(u,t) *t
+
+             2          4               2  3  2                       3
+ - 80*df(u,t) *df(u,x)*t *x - 80*df(u,t) *t *x  + 80*df(u,t)*df(u,x)*t *x
+
+                       2  3                3                2  2
+ - 40*df(u,t)*df(u,x)*t *x  + 360*df(u,t)*t  + 120*df(u,t)*t *x
+
+                 4                2                   3            5        2
+ - 10*df(u,t)*t*x  + 420*df(u,x)*t *x + 60*df(u,x)*t*x  - df(u,x)*x  + 120*t
+
+          2       4
+ + 120*t*x  + 10*x
+
+-------- 12. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                               2                                     3
+eta_u= - 48*df(u,t,x)*df(u,t)*t *x + 12*df(u,t,x)*t*x - 2*df(u,t,x)*x
+
+                 3                   2                           3
+ - 16*df(u,t,3)*t  - 24*df(u,t,2,x)*t *x - 48*df(u,t,2)*df(u,t)*t
+
+                         2                     2             3  3
+ - 24*df(u,t,2)*df(u,x)*t *x - 12*df(u,t,2)*t*x  - 16*df(u,t) *t
+
+             2          2               2    2
+ - 24*df(u,t) *df(u,x)*t *x - 12*df(u,t) *t*x  + 12*df(u,t)*df(u,x)*t*x
+
+                      3              2
+ - 2*df(u,t)*df(u,x)*x  + 6*df(u,t)*x  - 6*df(u,x)*x + 3
+
+-------- 13. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u= - 2*df(u,t,x)*df(u,t)*x - 2*df(u,t,3)*t - df(u,t,2,x)*x
+
+                                                          3
+ - 6*df(u,t,2)*df(u,t)*t - df(u,t,2)*df(u,x)*x - 2*df(u,t) *t
+
+          2
+ - df(u,t) *df(u,x)*x
+
+-------- 14. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                         2
+eta_u=df(u,t,2) + df(u,t)
+
+-------- 15. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                        2            2  2
+eta_u= - 8*df(u,t,x)*t*x - 8*df(u,t,2)*t  - 8*df(u,t) *t
+
+                                      2
+ - 8*df(u,t)*df(u,x)*t*x - 2*df(u,t)*x  + 2*df(u,x)*x - 1
+
+-------- 16. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                       3                   4             2  4
+eta_u= - 32*df(u,t,x)*t *x - 16*df(u,t,2)*t  - 16*df(u,t) *t
+
+                       3                 3               2  2               2
+ - 32*df(u,t)*df(u,x)*t *x - 48*df(u,t)*t  - 24*df(u,t)*t *x  - 48*df(u,x)*t *x
+
+                3       2         2    4
+ - 8*df(u,x)*t*x  - 12*t  - 12*t*x  - x
+
+-------- 17. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                       2                  3            2  3
+eta_u= - 12*df(u,t,x)*t *x - 8*df(u,t,2)*t  - 8*df(u,t) *t
+
+                       2                  2                            3
+ - 12*df(u,t)*df(u,x)*t *x - 6*df(u,t)*t*x  + 6*df(u,x)*t*x - df(u,x)*x  + 6*t
+
+      2
+ + 3*x
+
+-------- 18. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                                                2
+eta_u= - df(u,t,x)*x - 2*df(u,t,2)*t - 2*df(u,t) *t - df(u,t)*df(u,x)*x
+
+-------- 19. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=df(u,t,x) + df(u,t)*df(u,x)
+
+-------- 20. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                      2                      2
+eta_u= - 4*df(u,t,x)*t  - 4*df(u,t)*df(u,x)*t  - 4*df(u,t)*t*x + 2*df(u,x)*t
+
+            2
+ - df(u,x)*x  + 2*x
+
+-------- 21. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                      3                      3               2                 2
+eta_u= - 8*df(u,t,x)*t  - 8*df(u,t)*df(u,x)*t  - 12*df(u,t)*t *x - 12*df(u,x)*t
+
+                2            3
+ - 6*df(u,x)*t*x  - 6*t*x - x
+
+-------- 22. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u= - 4*df(u,t,x)*t - 4*df(u,t)*df(u,x)*t - 2*df(u,t)*x + df(u,x)
+
+-------- 23. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=df(u,t)
+
+-------- 24. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+                    2                          2
+eta_u= - 4*df(u,t)*t  - 4*df(u,x)*t*x - 2*t - x
+
+-------- 25. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u= - 2*df(u,t)*t - df(u,x)*x + 1
+
+-------- 26. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u= - 2*df(u,x)*t - x
+
+-------- 27. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=df(u,x)
+
+-------- 28. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=1
+
+-------- 
+
+Further symmetries:
+
+xi_t=0
+
+xi_x=0
+
+       c_92
+eta_u=------
+         u
+        e
+
+with c_92(x,t)
+which still have to satisfy: 
+
+0=df(c_92,t) - df(c_92,x,2)
+
+-------------------------------------------------------
+The following example includes the Karpman equations
+for three unknown functions in 4 variables. 
+
+If point symmetries are to be computed for a single
+equation or a system of equations of higher than first
+order then there is the option to formulate at first
+preliminary conditions for each equation, have CRACK
+solving these conditions before the full set of conditions
+is formulated and solved. This strategy is adopted if a
+lisp flag prelim_ has the value t. The default value
+is nil. 
+
+Similarly, if a system of equations is to be investigated
+and a flag individual_ has the value t then symmetry
+conditions are formulated and investigated for each
+individual equation successively. The default value is nil.
+
+It is advantageous to split a large set of conditions
+into smaller sets to be investigated successively if
+each set is sufficiently overdetermined to be solvable
+quickly. Then any substitutions are done in the smaller
+set and the next set of conditions is shorter. For
+example, for the Karpman equations below the speedup for
+prelim_:=t; individual_:=t; is a factor of 10.
+(Time ~ 1 min.)
+-------------------------------------------------------
+
+Time: 41810 ms  plus GC time: 2430 ms
+
+
+The PDE-system under investigation is :
+
+                            2            2     2               2     2
+df(v,x,2)=( - 4*df(f,t)*a2*r  - 2*df(f,x) *a2*r *s1 - 2*df(f,y) *a2*r *s1
+
+                       2     2                    2               2
+            - 2*df(f,z) *a2*r *s2 - 4*df(f,z)*a2*r *w1 - 2*df(r,x) *a2*s1
+
+                       2
+            - 2*df(r,y) *a2*s1 - 2*df(r,z,2)*a2*r*s1 + 2*df(r,z,2)*a2*r*s2
+
+                       2                                       2
+            - 2*df(r,z) *a2*s1 + df(v,t,2)*s1 - df(v,y,2)*s1*w2
+
+                             2            2          2
+            - df(v,z,2)*s1*w2  - 4*a1*a2*r *v)/(s1*w2 )
+
+                                2               2               2
+df(r,x,2)=(2*df(f,t)*r + df(f,x) *r*s1 + df(f,y) *r*s1 + df(f,z) *r*s2
+
+            + 2*df(f,z)*r*w1 - df(r,y,2)*s1 - df(r,z,2)*s2 + 2*a1*r*v)/s1
+
+df(f,x,2)=( - 2*df(f,x)*df(r,x)*s1 - df(f,y,2)*r*s1 - 2*df(f,y)*df(r,y)*s1
+
+            - df(f,z,2)*r*s2 - 2*df(f,z)*df(r,z)*s2 - 2*df(r,t) - 2*df(r,z)*w1)/
+
+(r*s1)
+
+for the function(s) : 
+
+r(t,z,y,x), f(t,z,y,x), v(t,z,y,x)
+
+
+
+
+=============== Initializations
+time for initializations: 340 ms    GC time : 40 ms
+
+
+=============== Preconditions for the 1. equation
+time to formulate conditions: 2180 ms    GC time : 90 ms
+CRACK needed :  5550 ms    GC time : 420 ms
+
+
+=============== Preconditions for the 2. equation
+
+
+=============== Preconditions for the 3. equation
+time to formulate conditions: 800 ms    GC time : 50 ms
+CRACK needed :  1270 ms    GC time : 100 ms
+
+
+=============== Full conditions for the 1. equation
+time to formulate conditions: 510 ms    GC time : 50 ms
+CRACK needed :  11880 ms    GC time : 870 ms
+
+
+=============== Full conditions for the 2. equation
+time to formulate conditions: 170 ms    GC time : 0 ms
+CRACK needed :  520 ms    GC time : 50 ms
+
+
+=============== Full conditions for the 3. equation
+time to formulate conditions: 260 ms    GC time : 0 ms
+CRACK needed :  680 ms    GC time : 60 ms
+
+The symmetries are:
+
+-------- 1. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+        - t
+eta_f=-------
+       s1*s2
+
+          1
+eta_v=----------
+       a1*s1*s2
+
+-------- 2. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+           2
+        - t
+eta_f=-------
+       s1*s2
+
+         2*t
+eta_v=----------
+       a1*s1*s2
+
+-------- 3. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+         1
+eta_f=-------
+       s1*s2
+
+eta_v=0
+
+-------- 4. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+xi_z=0
+
+xi_t=1
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 5. Symmetry:
+
+xi_x=0
+
+xi_y=0
+
+      1
+xi_z=----
+      s1
+
+xi_t=0
+
+eta_r=0
+
+        - w1
+eta_f=-------
+       s1*s2
+
+eta_v=0
+
+-------- 6. Symmetry:
+
+xi_x=0
+
+        1
+xi_y=-------
+      s1*s2
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 7. Symmetry:
+
+        y
+xi_x=-------
+      s1*s2
+
+       - x
+xi_y=-------
+      s1*s2
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 8. Symmetry:
+
+        1
+xi_x=-------
+      s1*s2
+
+xi_y=0
+
+xi_z=0
+
+xi_t=0
+
+eta_r=0
+
+eta_f=0
+
+eta_v=0
+
+-------- 
+
+
+Time: 23830 ms  plus GC time: 1840 ms
+-------------------------------------------------------
+In the following example a system of two equations (by
+V.Sokolov) is investigated concerning a special ansatz for
+4th order symmetries. The ansatz for the symmetries includes
+two unknown functions f,g. Because x is the second variable
+in the list of variables {t,x}, the name u!`2 stands for
+df(u,x).
+Because higher order symmetries are investigated we have
+to set prelim_:=nil. The symmetries to be calculated are
+lengthy and therefore conditions are not very overdetermined.
+In that case CRACK can take long to solve a single 
+subset of conditions. The complete set of conditions would
+have been more overdetermined and easier to solve. Therefore
+the advantage of first formulating all conditions and then
+solving them together with one CRACK call is that having
+more equations, the chance of finding short integrable
+equations among then is higher, i.e. CRACK has more freedom
+in optimizing the computation. Therefore individual_:=nil
+is more appropriate in this example.
+
+Because 4th order conditions are to be computed the
+`binding stack size' is increased.
+(Time ~ 5 min.)
+-------------------------------------------------------
+
+
+The PDE-system under investigation is :
+
+df(u,t)=df(u,x,2) + df(u,x)*u + df(u,x)*v + df(v,x)*u
+
+df(v,t)=df(u,x)*v - df(v,x,2) + df(v,x)*u + df(v,x)*v
+
+for the function(s) : 
+
+u(t,x), v(t,x)
+
+
+
+
+The symmetries are:
+
+-------- 1. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=(2*df(u,x,4) + 4*df(u,x,3)*u + 4*df(u,x,3)*v + 10*df(u,x,2)*df(u,x)
+
+                                             2
+        + 6*df(u,x,2)*df(v,x) + 3*df(u,x,2)*u  + 9*df(u,x,2)*u*v
+
+                       2                          2              2
+        + 3*df(u,x,2)*v  + 2*df(u,x,2) + 6*df(u,x) *u + 9*df(u,x) *v
+
+        + 4*df(u,x)*df(v,x,2) + 9*df(u,x)*df(v,x)*u + 6*df(u,x)*df(v,x)*v
+
+                   3              2                  2
+        + df(u,x)*u  + 9*df(u,x)*u *v + 9*df(u,x)*u*v  + 2*df(u,x)*u
+
+                   3                                            3
+        + df(u,x)*v  + 2*df(u,x)*v + 2*df(v,x,3)*u + 3*df(v,x)*u
+
+                     2                  2
+        + 9*df(v,x)*u *v + 3*df(v,x)*u*v  + 2*df(v,x)*u)/2
+
+eta_v=(2*df(u,x,3)*v + 4*df(u,x,2)*df(v,x) + 6*df(u,x)*df(v,x,2)
+
+                                                                 2
+        - 6*df(u,x)*df(v,x)*u - 9*df(u,x)*df(v,x)*v + 3*df(u,x)*u *v
+
+                       2              3
+        + 9*df(u,x)*u*v  + 3*df(u,x)*v  + 2*df(u,x)*v - 2*df(v,x,4)
+
+                                                                              2
+        + 4*df(v,x,3)*u + 4*df(v,x,3)*v + 10*df(v,x,2)*df(v,x) - 3*df(v,x,2)*u
+
+                                         2                          2
+        - 9*df(v,x,2)*u*v - 3*df(v,x,2)*v  - 2*df(v,x,2) - 9*df(v,x) *u
+
+                   2              3              2                  2
+        - 6*df(v,x) *v + df(v,x)*u  + 9*df(v,x)*u *v + 9*df(v,x)*u*v
+
+                                 3
+        + 2*df(v,x)*u + df(v,x)*v  + 2*df(v,x)*v)/2
+
+-------- 2. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=(2*df(u,x,4) + 4*df(u,x,3)*u + 4*df(u,x,3)*v + 10*df(u,x,2)*df(u,x)
+
+                                                             2
+        + 6*df(u,x,2)*df(v,x) + 4*df(u,x,2)*t + 3*df(u,x,2)*u  + 9*df(u,x,2)*u*v
+
+                       2            2              2
+        + 3*df(u,x,2)*v  + 6*df(u,x) *u + 9*df(u,x) *v + 4*df(u,x)*df(v,x,2)
+
+        + 9*df(u,x)*df(v,x)*u + 6*df(u,x)*df(v,x)*v + 4*df(u,x)*t*u
+
+                                   3              2                  2
+        + 4*df(u,x)*t*v + df(u,x)*u  + 9*df(u,x)*u *v + 9*df(u,x)*u*v
+
+                   3
+        + df(u,x)*v  + 2*df(u,x)*x + 2*df(v,x,3)*u + 4*df(v,x)*t*u
+
+                     3              2                  2
+        + 3*df(v,x)*u  + 9*df(v,x)*u *v + 3*df(v,x)*u*v  + 2*u)/2
+
+eta_v=(2*df(u,x,3)*v + 4*df(u,x,2)*df(v,x) + 6*df(u,x)*df(v,x,2)
+
+        - 6*df(u,x)*df(v,x)*u - 9*df(u,x)*df(v,x)*v + 4*df(u,x)*t*v
+
+                     2                  2              3
+        + 3*df(u,x)*u *v + 9*df(u,x)*u*v  + 3*df(u,x)*v  - 2*df(v,x,4)
+
+        + 4*df(v,x,3)*u + 4*df(v,x,3)*v + 10*df(v,x,2)*df(v,x) - 4*df(v,x,2)*t
+
+                       2                                  2            2
+        - 3*df(v,x,2)*u  - 9*df(v,x,2)*u*v - 3*df(v,x,2)*v  - 9*df(v,x) *u
+
+                   2                                              3
+        - 6*df(v,x) *v + 4*df(v,x)*t*u + 4*df(v,x)*t*v + df(v,x)*u
+
+                     2                  2            3
+        + 9*df(v,x)*u *v + 9*df(v,x)*u*v  + df(v,x)*v  + 2*df(v,x)*x + 2*v)/2
+
+-------- 3. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=(2*df(u,x,4) + 4*df(u,x,3)*u + 4*df(u,x,3)*v + 8*df(u,x,3)
+
+                                                                    2
+        + 10*df(u,x,2)*df(u,x) + 6*df(u,x,2)*df(v,x) + 3*df(u,x,2)*u
+
+                                                          2
+        + 9*df(u,x,2)*u*v + 12*df(u,x,2)*u + 3*df(u,x,2)*v  + 12*df(u,x,2)*v
+
+                   2              2               2
+        + 6*df(u,x) *u + 9*df(u,x) *v + 12*df(u,x)  + 4*df(u,x)*df(v,x,2)
+
+        + 9*df(u,x)*df(v,x)*u + 6*df(u,x)*df(v,x)*v + 12*df(u,x)*df(v,x)
+
+                   3              2                2                2
+        + df(u,x)*u  + 9*df(u,x)*u *v + 6*df(u,x)*u  + 9*df(u,x)*u*v
+
+                                    3              2
+        + 24*df(u,x)*u*v + df(u,x)*v  + 6*df(u,x)*v  + 2*df(v,x,3)*u
+
+                     3              2                 2                2
+        + 3*df(v,x)*u  + 9*df(v,x)*u *v + 12*df(v,x)*u  + 3*df(v,x)*u*v
+
+        + 12*df(v,x)*u*v)/2
+
+eta_v=(2*df(u,x,3)*v + 4*df(u,x,2)*df(v,x) + 6*df(u,x)*df(v,x,2)
+
+        - 6*df(u,x)*df(v,x)*u - 9*df(u,x)*df(v,x)*v - 12*df(u,x)*df(v,x)
+
+                     2                  2                               3
+        + 3*df(u,x)*u *v + 9*df(u,x)*u*v  + 12*df(u,x)*u*v + 3*df(u,x)*v
+
+                      2
+        + 12*df(u,x)*v  - 2*df(v,x,4) + 4*df(v,x,3)*u + 4*df(v,x,3)*v
+
+                                                            2
+        + 8*df(v,x,3) + 10*df(v,x,2)*df(v,x) - 3*df(v,x,2)*u  - 9*df(v,x,2)*u*v
+
+                                        2                             2
+        - 12*df(v,x,2)*u - 3*df(v,x,2)*v  - 12*df(v,x,2)*v - 9*df(v,x) *u
+
+                   2               2            3              2
+        - 6*df(v,x) *v - 12*df(v,x)  + df(v,x)*u  + 9*df(v,x)*u *v
+
+                     2                2                             3
+        + 6*df(v,x)*u  + 9*df(v,x)*u*v  + 24*df(v,x)*u*v + df(v,x)*v
+
+                     2
+        + 6*df(v,x)*v )/2
+
+-------- 4. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=(2*df(u,x,4) + 8*df(u,x,3)*t + 4*df(u,x,3)*u + 4*df(u,x,3)*v
+
+        + 10*df(u,x,2)*df(u,x) + 6*df(u,x,2)*df(v,x) + 12*df(u,x,2)*t*u
+
+                                          2                                  2
+        + 12*df(u,x,2)*t*v + 3*df(u,x,2)*u  + 9*df(u,x,2)*u*v + 3*df(u,x,2)*v
+
+                                    2              2              2
+        + 4*df(u,x,2)*x + 12*df(u,x) *t + 6*df(u,x) *u + 9*df(u,x) *v
+
+        + 4*df(u,x)*df(v,x,2) + 12*df(u,x)*df(v,x)*t + 9*df(u,x)*df(v,x)*u
+
+                                             2
+        + 6*df(u,x)*df(v,x)*v + 6*df(u,x)*t*u  + 24*df(u,x)*t*u*v
+
+                       2            3              2                  2
+        + 6*df(u,x)*t*v  + df(u,x)*u  + 9*df(u,x)*u *v + 9*df(u,x)*u*v
+
+                                   3
+        + 4*df(u,x)*u*x + df(u,x)*v  + 4*df(u,x)*v*x + 16*df(u,x)
+
+                                        2                                 3
+        + 2*df(v,x,3)*u + 12*df(v,x)*t*u  + 12*df(v,x)*t*u*v + 3*df(v,x)*u
+
+                     2                  2                      2
+        + 9*df(v,x)*u *v + 3*df(v,x)*u*v  + 4*df(v,x)*u*x + 2*u  + 6*u*v)/2
+
+eta_v=(2*df(u,x,3)*v + 4*df(u,x,2)*df(v,x) + 6*df(u,x)*df(v,x,2)
+
+        - 12*df(u,x)*df(v,x)*t - 6*df(u,x)*df(v,x)*u - 9*df(u,x)*df(v,x)*v
+
+                                           2              2                  2
+        + 12*df(u,x)*t*u*v + 12*df(u,x)*t*v  + 3*df(u,x)*u *v + 9*df(u,x)*u*v
+
+                     3
+        + 3*df(u,x)*v  + 4*df(u,x)*v*x - 2*df(v,x,4) + 8*df(v,x,3)*t
+
+        + 4*df(v,x,3)*u + 4*df(v,x,3)*v + 10*df(v,x,2)*df(v,x)
+
+                                                             2
+        - 12*df(v,x,2)*t*u - 12*df(v,x,2)*t*v - 3*df(v,x,2)*u  - 9*df(v,x,2)*u*v
+
+                       2                             2              2
+        - 3*df(v,x,2)*v  - 4*df(v,x,2)*x - 12*df(v,x) *t - 9*df(v,x) *u
+
+                   2                  2                                   2
+        - 6*df(v,x) *v + 6*df(v,x)*t*u  + 24*df(v,x)*t*u*v + 6*df(v,x)*t*v
+
+                   3              2                  2
+        + df(v,x)*u  + 9*df(v,x)*u *v + 9*df(v,x)*u*v  + 4*df(v,x)*u*x
+
+                   3                              2
+        + df(v,x)*v  + 4*df(v,x)*v*x + 6*u*v + 2*v )/2
+
+-------- 5. Symmetry:
+
+xi_t=0
+
+xi_x=0
+
+eta_u=(2*df(u,x,4) + 4*df(u,x,3)*u + 4*df(u,x,3)*v + 10*df(u,x,2)*df(u,x)
+
+                                             2
+        + 6*df(u,x,2)*df(v,x) + 3*df(u,x,2)*u  + 9*df(u,x,2)*u*v
+
+                       2            2              2
+        + 3*df(u,x,2)*v  + 6*df(u,x) *u + 9*df(u,x) *v + 4*df(u,x)*df(v,x,2)
+
+                                                               3
+        + 9*df(u,x)*df(v,x)*u + 6*df(u,x)*df(v,x)*v + df(u,x)*u
+
+                     2                  2            3
+        + 9*df(u,x)*u *v + 9*df(u,x)*u*v  + df(u,x)*v  + 2*df(u,x)
+
+                                     3              2                  2
+        + 2*df(v,x,3)*u + 3*df(v,x)*u  + 9*df(v,x)*u *v + 3*df(v,x)*u*v )/2
+
+eta_v=(2*df(u,x,3)*v + 4*df(u,x,2)*df(v,x) + 6*df(u,x)*df(v,x,2)
+
+                                                                 2
+        - 6*df(u,x)*df(v,x)*u - 9*df(u,x)*df(v,x)*v + 3*df(u,x)*u *v
+
+                       2              3
+        + 9*df(u,x)*u*v  + 3*df(u,x)*v  - 2*df(v,x,4) + 4*df(v,x,3)*u
+
+                                                              2
+        + 4*df(v,x,3)*v + 10*df(v,x,2)*df(v,x) - 3*df(v,x,2)*u
+
+                                         2            2              2
+        - 9*df(v,x,2)*u*v - 3*df(v,x,2)*v  - 9*df(v,x) *u - 6*df(v,x) *v
+
+                   3              2                  2            3
+        + df(v,x)*u  + 9*df(v,x)*u *v + 9*df(v,x)*u*v  + df(v,x)*v  + 2*df(v,x))
+
+/2
+
+-------- 
+
+
+4: 4: 4: 4: 4: 4: 4: 4: 4: 
+
+Time for test: 141150 ms, plus GC time: 10660 ms
+
+5: 5: 
+Quitting
+Sun Jan  3 23:54:19 MET 1999

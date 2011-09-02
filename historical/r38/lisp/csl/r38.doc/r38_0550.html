@@ -1,0 +1,2696 @@
+
+<a name=r38_0550>
+
+<title>Axes_names</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>AXES NAMES</b><P>
+<P>
+ 
+Inside REDUCE the choice of variable names for a graph is completely 
+free. For referring to the GNUPLOT axes the names 
+X and Y for 2 dimensions, X,Y and Z for 3 dimensions are used 
+in the usual schoolbook sense independent from the variables of 
+the REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt></tt></pre><p>
+<a name=r38_0551>
+
+<title>Pointset</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>POINTSET</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>type</b><P>
+<P>
+ 
+ <P>
+<P>
+A curve can be give as a set of precomputed points (a polygon) 
+in 2 or 3 dimensions. Such a point set is a 
+<a href=r38_0050.html#r38_0053>list</a> 
+of points, where each point is a 
+<a href=r38_0050.html#r38_0053>list</a> 2 (or 3) 
+numbers. These numbers are interpreted as <em>(x,y)</em> 
+(or <em>x,y,z</em>) coordinates. All points of one set must have 
+the same dimension. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt></tt></pre><p>Also a surface in 3d can be given by precomputed point
+s, 
+but only on a logically orthogonal mesh: the surface is defined 
+by a list of curves (in 3d) which must have a uniform length. 
+GNUPLOT then will draw an orthogonal mesh by first drawing the 
+given lines, and second connecting the 1st point of the 1st curve 
+with the 1st point of the 2nd curve, that one with the 1st point 
+of the 3rd curve and so on for all curves and for all indexes. 
+<P>
+<P>
+
+<a name=r38_0552>
+
+<title>PLOT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PLOT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+ <P>
+<P>
+The command <em>plot</em> is the main entry for drawing a 
+picture from inside REDUCE. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>plot</em>(&lt;spec&gt;,&lt;spec&gt;,...) 
+<P>
+<P>
+<P>
+where &lt;spec&gt; is a &lt;function&gt;, a &lt;range&gt; or an &lt;option&gt;. 
+
+<P>
+<P>
+&lt;function&gt;: 
+<P>
+<P>
+- an expression depending 
+on one unknown (e.g. <em>sin(x)</em> or two unknowns (e.g. 
+<em>sin(x+y)</em>, 
+<P>
+<P>
+- an equation with a function on its right-hand 
+side and a single name on its left-hand side (e.g. 
+<em>z=sin(x+y)</em> where the name on the left-hand side specifies 
+the dependent variable. 
+<P>
+<P>
+- a list of functions: 
+if in 2 dimensions the picture should have more than one 
+curve the expressions can be given as list (e.g. <em>{sin(x),cos(x)}</em>). 
+<P>
+<P>
+- an equation with zero left or right hand side describing 
+ an implicit curve in two dimensions (e.g. <em>x**3+x*y**3-9x=0</em>). 
+<P>
+<P>
+- a point set: the graph can be given 
+as point set in 2 dimensions or a 
+<a href=r38_0550.html#r38_0551>pointset</a> or pointset list 
+in 3 dimensions. 
+<P>
+<P>
+&lt;range&gt;: 
+<P>
+<P>
+Each dependent and independent variable can be limited 
+to an interval by an equation where the left-hand side specifies 
+the variable and the right-hand side defines the 
+<a href=r38_0400.html#r38_0423>interval</a>, 
+e.g. <em>x=( -3 .. 5)</em>. 
+<P>
+<P>
+If omitted the independent variables 
+range from -10 to 10 and the dependent variable is limited only 
+by the precision of the IEEE floating point arithmetic. 
+<P>
+<P>
+&lt;option&gt;: 
+<P>
+<P>
+An option can be an equation equating a variable 
+and a value (in general a string), or a keyword(GNUPLOT switch). 
+These have to be included in the gnuplot command arguments directly. 
+Strings have to be enclosed in 
+string quotes (see 
+<a href=r38_0001.html#r38_0003>string</a>). Available options are: 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0554>title</a>: assign a heading (default: empty) 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0555>xlabel</a>: set label for the x axis 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0556>ylabel</a>: set label for the y axis 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0557>zlabel</a>: set label for the z axis 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0558>terminal</a>: select an output device 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0559>size</a>: rescale the picture 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0560>view</a>: set a viewpoint 
+<P>
+<P>
+<em>(no)</em>
+<a href=r38_0550.html#r38_0561>contour</a>: 3d: add contour lines 
+<P>
+<P>
+<em>(no)</em>
+<a href=r38_0550.html#r38_0562>surface</a>: 3d: draw surface (default: yes) 
+<P>
+<P>
+<em>(no)</em>
+<a href=r38_0550.html#r38_0563>hidden3d</a>: 3d: remove hidden lines (default: n
+o) 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+plot(cos x);
+
+plot(s=sin phi,phi=(-3 .. 3));
+
+plot(sin phi,cos phi,phi=(-3 .. 3));
+
+plot (cos sqrt(x**2 + y**2),x=(-3 .. 3),y=(-3 .. 3),hidden3d);
+
+plot {{0,0},{0,1},{1,1},{0,0},{1,0},{0,1},{0.5,1.5},{1,1},{1,0}};
+
+
+
+on rounded;
+
+w:=for j:=1:200 collect {1/j*sin j,1/j*cos j,j/200}$
+
+plot w; 
+</tt></pre><p>Additional control of the <em>plot</em> operation: 
+
+<a href=r38_0550.html#r38_0565>plotrefine</a>, 
+
+<a href=r38_0550.html#r38_0566>plot_xmesh</a>, 
+<a href=r38_0550.html#r38_0567>plot_ymesh</a>, 
+<a href=r38_0550.html#r38_0569>trplot</a>, 
+
+<a href=r38_0550.html#r38_0564>plotkeep</a>, 
+<a href=r38_0550.html#r38_0568>show_grid</a>. 
+<P>
+<P>
+
+<a name=r38_0553>
+
+<title>PLOTRESET</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PLOTRESET</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>command</b><P>
+<P>
+ 
+The command <em>plotreset</em> closes the current GNUPLOT windows. 
+The next call to 
+<a href=r38_0550.html#r38_0552>plot</a> will create a new one. <em>plotreset
+</em> 
+can also be used to reset the system status after technical problems. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>plotreset</em>; 
+<P>
+<P>
+<P>
+
+<a name=r38_0554>
+
+<title>title</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>TITLE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Assign a title to the GNUPLOT graph. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>title</em>= &lt;string&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+title=&quot;annual revenue in 1993&quot;
+</tt></pre><p>
+<a name=r38_0555>
+
+<title>xlabel</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>XLABEL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Assign a name to to the x axis (see 
+<a href=r38_0550.html#r38_0550>axes names</a>). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>xlabel</em>= &lt;string&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+xlabel=&quot;month&quot;
+</tt></pre><p>
+<a name=r38_0556>
+
+<title>ylabel</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>YLABEL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Assign a name to to the x axis (see 
+<a href=r38_0550.html#r38_0550>axes names</a>). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>ylabel</em>= &lt;string&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+ylabel=&quot;million forint&quot;
+</tt></pre><p>
+<a name=r38_0557>
+
+<title>zlabel</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ZLABEL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Assign a name to to the z axis (see 
+<a href=r38_0550.html#r38_0550>axes names</a>). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>zlabel</em>= &lt;string&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+zlabel=&quot;local weight&quot;
+</tt></pre><p>
+<a name=r38_0558>
+
+<title>terminal</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>TERMINAL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Select a different output device. The possible values here 
+depend highly on the facilities installed for your GNUPLOT 
+software. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>terminal</em>= &lt;string&gt; 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+terminal=&quot;x11&quot;
+</tt></pre><p>
+<a name=r38_0559>
+
+<title>size</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SIZE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Rescale the graph (not the window!) in x and y direction. 
+Default is 1.0 (no rescaling). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>size</em>= &quot;&lt;sx&gt;,&lt;sy&gt;&quot; 
+<P>
+<P>
+<P>
+where &lt;sx&gt;,&lt;sy&gt; are floating point number not too 
+far from 1.0. 
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+size=&quot;0.7,1&quot;
+</tt></pre><p><P>
+<P>
+
+<a name=r38_0560>
+
+<title>view</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>VIEW</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+Set a new viewpoint by turning the object around the x and then 
+around the z axis (see 
+<a href=r38_0550.html#r38_0550>axes names</a>). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>view</em>= &quot;&lt;sx&gt;,&lt;sz&gt;&quot; 
+<P>
+<P>
+<P>
+where &lt;sx&gt;,&lt;sz&gt; are floating point number representing 
+angles in degrees. 
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+view=&quot;30,130&quot;
+</tt></pre><p><P>
+<P>
+
+<a name=r38_0561>
+
+<title>contour</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CONTOUR</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+If <em>contour</em> is member of the options for a 3d 
+<a href=r38_0550.html#r38_0552>plot</a> 
+contour lines are projected to the z=0 plane 
+(see 
+<a href=r38_0550.html#r38_0550>axes names</a>). The absence of contour lines 
+can be selected explicitly by including <em>nocontour</em>. Default 
+is <em>nocontour</em>. 
+<P>
+<P>
+
+<a name=r38_0562>
+
+<title>surface</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SURFACE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+If <em>surface</em> is member of the options for a 3d 
+<a href=r38_0550.html#r38_0552>plot</a> 
+the surface is drawn. The absence of the surface plotting 
+can be selected by including <em>nosurface</em>, e.g. if 
+only the 
+<a href=r38_0550.html#r38_0561>contour</a> should be visualized. Default is <em>
+surface</em>. 
+<P>
+<P>
+
+<a name=r38_0563>
+
+<title>hidden3d</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>HIDDEN3D</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0552>plot</a>option: 
+If <em>hidden3d</em> is member of the options for a 3d 
+<a href=r38_0550.html#r38_0552>plot</a> 
+hidden lines are removed from the picture. Otherwise a 
+surface is drawn as transparent object. Default is 
+<em>nohidden3d</em>. Selecting <em>hidden3d</em> increases the 
+computing time substantially. 
+<P>
+<P>
+
+<a name=r38_0564>
+
+<title>PLOTKEEP</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PLOTKEEP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+Normally all intermediate data sets are deleted after terminating 
+a plot session. If the switch <em>plotkeep</em> is set 
+<a href=r38_0200.html#r38_0210>on</a>, 
+the data sets are kept for eventual post processing independent 
+of REDUCE. 
+<P>
+<P>
+
+<a name=r38_0565>
+
+<title>PLOTREFINE</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PLOTREFINE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+In general 
+<a href=r38_0550.html#r38_0552>plot</a> tries to generate smooth pictures by eva
+luating 
+the functions at interior points until the distances are fine 
+enough. This can require a lot of computing time if the 
+single function evaluation is expensive. The refinement is 
+controlled by the switch <em>plotrefine</em> which is 
+<a href=r38_0200.html#r38_0210>on</a> 
+by default. When you turn it 
+<a href=r38_0200.html#r38_0209>off</a> the functions will 
+be evaluated only at the basic points (see 
+<a href=r38_0550.html#r38_0566>plot_xmesh</a>, 
+
+<a href=r38_0550.html#r38_0567>plot_ymesh</a>). 
+<P>
+<P>
+
+<a name=r38_0566>
+
+<title>plot_xmesh</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PLOT_XMESH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+The integer value of the global variable <em>plot_xmesh</em> 
+defines the number of initial function evaluations in x 
+direction (see 
+<a href=r38_0550.html#r38_0550>axes names</a>) for 
+<a href=r38_0550.html#r38_0552>plot</a>. For 2d graphs additional 
+points will be used as long as 
+<a href=r38_0550.html#r38_0565>plotrefine</a> is <em>on</em>. 
+For 3d graphs this number defines also the number of mesh lines 
+orthogonal to the x axis. 
+<P>
+<P>
+
+<a name=r38_0567>
+
+<title>plot_ymesh</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>PLOT_YMESH</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>variable</b><P>
+<P>
+ 
+ <P>
+<P>
+The integer value of the global variable <em>plot_ymesh</em> 
+defines for 3d 
+<a href=r38_0550.html#r38_0552>plot</a> calls the number of function evaluations
+ in y 
+direction (see 
+<a href=r38_0550.html#r38_0550>axes names</a>) and the number of mesh lines 
+orthogonal to the y axis. 
+<P>
+<P>
+
+<a name=r38_0568>
+
+<title>SHOW_GRID</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>SHOW_GRID</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+The grid for localizing an implicitly defined curve in 
+<a href=r38_0550.html#r38_0552>plot</a> 
+consists of triangles. These are computed initially equally distributed 
+over the x-y plane controlled by 
+<a href=r38_0550.html#r38_0566>plot_xmesh</a>. The grid is 
+refined adaptively in several levels. The final grid can be visualized 
+by setting on the switch <em>show_grid</em>. 
+<P>
+<P>
+
+<a name=r38_0569>
+
+<title>TRPLOT</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>TRPLOT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+ <P>
+<P>
+In general the interaction between REDUCE and GNUPLOT is performed 
+as silently as possible. However, sometimes it might be useful 
+to see the GNUPLOT commands generated by REDUCE, e.g. for a 
+postprocessing of generated data sets independent of REDUCE. 
+When the switch <em>trplot</em> is set on all GNUPLOT commands will 
+be printed to the standard output additionally. 
+<P>
+<P>
+
+<a name=r38_0570>
+
+<title>Gnuplot package</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+<b>Gnuplot package</b><menu>
+<li><a href=r38_0500.html#r38_0549>GNUPLOT and REDUCE introduction</a><P>
+<li><a href=r38_0550.html#r38_0550>Axes names concept</a><P>
+<li><a href=r38_0550.html#r38_0551>Pointset type</a><P>
+<li><a href=r38_0550.html#r38_0552>PLOT command</a><P>
+<li><a href=r38_0550.html#r38_0553>PLOTRESET command</a><P>
+<li><a href=r38_0550.html#r38_0554>title variable</a><P>
+<li><a href=r38_0550.html#r38_0555>xlabel variable</a><P>
+<li><a href=r38_0550.html#r38_0556>ylabel variable</a><P>
+<li><a href=r38_0550.html#r38_0557>zlabel variable</a><P>
+<li><a href=r38_0550.html#r38_0558>terminal variable</a><P>
+<li><a href=r38_0550.html#r38_0559>size variable</a><P>
+<li><a href=r38_0550.html#r38_0560>view variable</a><P>
+<li><a href=r38_0550.html#r38_0561>contour switch</a><P>
+<li><a href=r38_0550.html#r38_0562>surface switch</a><P>
+<li><a href=r38_0550.html#r38_0563>hidden3d switch</a><P>
+<li><a href=r38_0550.html#r38_0564>PLOTKEEP switch</a><P>
+<li><a href=r38_0550.html#r38_0565>PLOTREFINE switch</a><P>
+<li><a href=r38_0550.html#r38_0566>plot_xmesh variable</a><P>
+<li><a href=r38_0550.html#r38_0567>plot_ymesh variable</a><P>
+<li><a href=r38_0550.html#r38_0568>SHOW_GRID switch</a><P>
+<li><a href=r38_0550.html#r38_0569>TRPLOT switch</a><P>
+</menu>
+<a name=r38_0571>
+
+<title>Linear_Algebra_package</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LINEAR ALGEBRA PACKAGE</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>introduction</b><P>
+<P>
+ 
+<P>
+<P>
+This section briefly describes what's available in the Linear Algebra 
+package. 
+<P>
+<P>
+Note on examples: In the examples throughout this 
+document, the matrix A will be 
+<p><pre><tt>
+     [1  2  3]
+     [4  5  6]
+     [7  8  9].
+</tt></pre><p><P>
+<P>
+The functions can be divided into four categories: 
+<P>
+<P>
+Basic matrix handling 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0573>add_columns</a>, 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0574>add_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0575>add_to_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0576>add_to_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0577>augment_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0581>char_poly</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0584>column_dim</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0586>copy_into</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0587>diagonal</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0588>extend</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0589>find_companion</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0590>get_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0591>get_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0593>hermitian_tp</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0600>matrix_augment</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0602>matrix_stack</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0603>minor</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0604>mult_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0605>mult_rows</a>, 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0606>pivot</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0609>remove_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0610>remove_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0611>row_dim</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0612>rows_pivot</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0615>stack_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0616>sub_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0618>swap_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0619>swap_entries</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0620>swap_rows</a>. 
+<P>
+<P>
+Constructors -- functions that create matrices 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0578>band_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0579>block_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0580>char_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0583>coeff_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0585>companion</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0594>hessian</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0595>hilbert</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0596>jacobian</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0597>jordan_block</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0599>make_identity</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0608>random_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0622>toeplitz</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0623>vandermonde</a>. 
+<P>
+<P>
+High level algorithms 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0581>char_poly</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0582>cholesky</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0592>gram_schmidt</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0598>lu_decom</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0607>pseudo_inverse</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0613>simplex</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0617>svd</a>. 
+<P>
+<P>
+Normal Forms 
+<P>
+<P>
+There is a separate package, NORMFORM, for computing 
+the following matrix normal forms in REDUCE: 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0625>smithex</a>, 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0626>smithex_int</a>, 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0627>frobenius</a>, 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0628>ratjordan</a>, 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0629>jordansymbolic</a>, 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0630>jordan</a>. 
+<P>
+<P>
+Predicates 
+<P>
+<P>
+
+<a href=r38_0600.html#r38_0601>matrixp</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0614>squarep</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0621>symmetricp</a>. 
+<P>
+<P>
+
+<a name=r38_0572>
+
+<title>fast_la</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>FAST_LA</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>switch</b><P>
+<P>
+ 
+<P>
+<P>
+By turning the <em>fast_la</em> switch on, the speed of the following 
+functions will be increased: 
+<P>
+<P>
+
+<a href=r38_0550.html#r38_0573>add_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0574>add_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0577>augment_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0584>column_dim</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0586>copy_into</a>, 
+ <P>
+<P>
+
+<a href=r38_0550.html#r38_0599>make_identity</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0600>matrix_augment</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0602>matrix_stack</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0603>minor</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0604>mult_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0605>mult_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0606>pivot</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0609>remove_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0610>remove_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0612>rows_pivot</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0614>squarep</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0615>stack_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0616>sub_matrix</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0618>swap_columns</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0619>swap_entries</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0620>swap_rows</a>, 
+ <P>
+<P>
+
+<a href=r38_0600.html#r38_0621>symmetricp</a>. 
+ <P>
+<P>
+The increase in speed will be negligible unless you are making a 
+significant number (i.e. thousands) of calls. When using this switch, 
+error checking is minimized. This means that illegal input may give 
+strange error messages. Beware. 
+<P>
+<P>
+
+<a name=r38_0573>
+
+<title>add_columns</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ADD_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+Add columns, add rows: 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>add_columns</em>(&lt;matrix&gt;,&lt;c1&gt;,&lt;c2&gt;,&lt;expr&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<a href=r38_0300.html#r38_0345>matrix</a>. 
+<P>
+<P>
+&lt;c1&gt;,&lt;c2&gt; :- positive integers. 
+<P>
+<P>
+&lt;expr&gt; :- a scalar expression. 
+<P>
+<P>
+The Operator <em>add_columns</em> replaces column &lt;\meta{c2&gt;} of 
+&lt;matrix&gt; by &lt;expr&gt; * column(&lt;matrix&gt;,&lt;c1&gt;) + 
+column(&lt;matrix&gt;,&lt;c2&gt;). 
+<P>
+<P>
+<em>add_rows</em>performs the equivalent task on the rows of 
+&lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+add_columns(A,1,2,x); 
+
+  [1   x + 2   3]
+  [             ]
+  [4  4*x + 5  6]
+  [             ]
+  [7  7*x + 8  9]
+
+
+
+add_rows(A,2,3,5); 
+
+  [1   2   3 ]
+  [          ]
+  [4   5   6 ]
+  [          ]
+  [27  33  39]
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0575>add_to_columns</a>, 
+
+<a href=r38_0550.html#r38_0576>add_to_rows</a>, 
+<a href=r38_0600.html#r38_0604>mult_columns</a>, 
+
+<a href=r38_0600.html#r38_0605>mult_rows</a>. 
+<P>
+<P>
+
+<a name=r38_0574>
+
+<title>add_rows</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ADD_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ see: 
+<a href=r38_0550.html#r38_0573>add_columns</a>. 
+<P>
+<P>
+
+<a name=r38_0575>
+
+<title>add_to_columns</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ADD_TO_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+Add to columns, add to rows: 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>add_to_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;,&lt;expr&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a matrix. 
+<P>
+<P>
+&lt;column\_list&gt; :- a positive integer or a list of positive 
+ integers. 
+<P>
+<P>
+&lt;expr&gt; :- a scalar expression. 
+<P>
+<P>
+<em>add_to_columns</em>adds &lt;expr&gt; to each column specified in 
+&lt;column\_list&gt; of &lt;matrix&gt;. 
+<P>
+<P>
+<em>add_to_rows</em>performs the equivalent task on the rows of 
+&lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+add_to_columns(A,{1,2},10); 
+
+  [11  12  3]
+  [         ]
+  [14  15  6]
+  [         ]
+  [17  18  9]
+
+
+
+add_to_rows(A,2,-x) 
+
+   
+  [   1         2         3    ]
+  [                            ]
+  [ - x + 4   - x + 5   - x + 6]
+  [                            ]
+  [   7         8         9    ]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0573>add_columns</a>, 
+<a href=r38_0550.html#r38_0574>add_rows</a>, 
+<a href=r38_0600.html#r38_0605>mult_rows</a>, 
+
+<a href=r38_0600.html#r38_0604>mult_columns</a>. 
+<P>
+<P>
+
+<a name=r38_0576>
+
+<title>add_to_rows</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>ADD_TO_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+ see: 
+<a href=r38_0550.html#r38_0575>add_to_columns</a>. 
+<P>
+<P>
+
+<a name=r38_0577>
+
+<title>augment_columns</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>AUGMENT_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+Augment columns, stack rows: 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>augment_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a matrix. 
+<P>
+<P>
+&lt;column\_list&gt; :- either a positive integer or a list of positive 
+ integers. 
+<P>
+<P>
+<em>augment_columns</em>gets hold of the columns of &lt;matrix&gt; 
+specified in <em>column_list</em> and sticks them together. 
+<P>
+<P>
+<em>stack_rows</em>performs the same task on rows of &lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+augment_columns(A,{1,2}) 
+
+   
+  [1  2]
+  [    ]
+  [4  5]
+  [    ]
+  [7  8]
+
+
+
+stack_rows(A,{1,3}) 
+
+  [1  2  3]
+  [       ]
+  [7  8  9]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0590>get_columns</a>, 
+<a href=r38_0550.html#r38_0591>get_rows</a>, 
+<a href=r38_0600.html#r38_0616>sub_matrix</a>. 
+<P>
+<P>
+
+<a name=r38_0578>
+
+<title>band_matrix</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>BAND_MATRIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>band_matrix</em>(&lt;expr\_list&gt;,&lt;square\_size&gt;) 
+<P>
+<P>
+<P>
+&lt;expr\_list&gt; :- either a single scalar expression or a list of 
+ an odd number of scalar expressions. 
+<P>
+<P>
+&lt;square\_size&gt; :- a positive integer. 
+<P>
+<P>
+<em>band_matrix</em>creates a square matrix of dimension 
+&lt;square\_size&gt;. The diagonal consists of the middle expression 
+of the &lt;expr\_list&gt;. The expressions to the left of this fill 
+the required number of sub_diagonals and the expressions to the right 
+the super_diagonals. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+band_matrix({x,y,z},6) 
+
+  [y  z  0  0  0  0]
+  [                ]
+  [x  y  z  0  0  0]
+  [                ]
+  [0  x  y  z  0  0]
+  [                ]
+  [0  0  x  y  z  0]
+  [                ]
+  [0  0  0  x  y  z]
+  [                ]
+  [0  0  0  0  x  y]
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0587>diagonal</a>. 
+<P>
+<P>
+
+<a name=r38_0579>
+
+<title>block_matrix</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>BLOCK_MATRIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>block_matrix</em>(&lt;r&gt;,&lt;c&gt;,&lt;matrix\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;r&gt;,&lt;c&gt; :- positive integers. 
+<P>
+<P>
+&lt;matrix\_list&gt; :- a list of matrices. 
+<P>
+<P>
+<em>block_matrix</em>creates a matrix that consists of &lt;r&gt; by 
+&lt;c&gt; matrices filled from the &lt;matrix\_list&gt; row wise. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+B := make_identity(2); 
+
+       [1  0]
+  b := [    ]
+       [0  1]
+
+
+
+C := mat((5),(5)); 
+
+       [5]
+  c := [ ]
+       [5]
+
+
+
+D := mat((22,33),(44,55)); 
+
+       [22  33]
+  d := [      ]
+       [44  55]
+
+
+
+block_matrix(2,3,{B,C,D,D,C,B}); 
+
+
+  [1   0   5  22  33]
+  [                 ]
+  [0   1   5  44  55]
+  [                 ]
+  [22  33  5  1   0 ]
+  [                 ]
+  [44  55  5  0   1 ]
+
+</tt></pre><p>
+<a name=r38_0580>
+
+<title>char_matrix</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CHAR_MATRIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>char_matrix</em>(&lt;matrix&gt;,&lt;lambda&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a square matrix. 
+&lt;lambda&gt; :- a symbol or algebraic expression. 
+<P>
+<P>
+&lt;char\_matrix&gt; creates the characteristic matrix C of 
+&lt;matrix&gt;. 
+<P>
+<P>
+This is C = &lt;lambda&gt; * Id - A. 
+Id is the identity matrix. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+char_matrix(A,x); 
+
+  [x - 1   -2     -3  ]
+  [                   ]
+  [ -4    x - 5   -6  ]
+  [                   ]
+  [ -7     -8    x - 9]
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0581>char_poly</a>. 
+<P>
+<P>
+
+<a name=r38_0581>
+
+<title>char_poly</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CHAR_POLY</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>char_poly</em>(&lt;matrix&gt;,&lt;lambda&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a square matrix. 
+<P>
+<P>
+&lt;lambda&gt; :- a symbol or algebraic expression. 
+<P>
+<P>
+<em>char_poly</em>finds the characteristic polynomial of &lt;matrix&gt;. 
+This is the determinant of &lt;lambda&gt; * Id - A. 
+Id is the identity matrix. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+char_poly(A,x); 
+
+   3     2
+  x -15*x -18*x
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0580>char_matrix</a>. 
+<P>
+<P>
+
+<a name=r38_0582>
+
+<title>cholesky</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>CHOLESKY</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>cholesky</em>(&lt;matrix&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a positive definite matrix containing numeric entries. 
+<P>
+<P>
+<em>cholesky</em>computes the cholesky decomposition of &lt;matrix&gt;. 
+<P>
+<P>
+It returns {L,U} where L is a lower matrix, U is an upper matrix, 
+A = LU, and U = L^T. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+F := mat((1,1,0),(1,3,1),(0,1,1)); 
+
+
+       [1  1  0]
+       [       ]
+  f := [1  3  1]
+       [       ]
+       [0  1  1]
+
+
+
+on rounded; 
+
+cholesky(F); 
+
+  {
+   [1        0               0       ]
+   [                                 ]
+   [1  1.41421356237         0       ]
+   [                                 ]
+   [0  0.707106781187  0.707106781187]
+   ,
+   [1        1              0       ]
+   [                                ]
+   [0  1.41421356237  0.707106781187]
+   [                                ]
+   [0        0        0.707106781187]
+  }
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0598>lu_decom</a>. 
+<P>
+<P>
+
+<a name=r38_0583>
+
+<title>coeff_matrix</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COEFF_MATRIX</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>coeff_matrix</em>({&lt;lineq\_list&gt;}) 
+<P>
+<P>
+<P>
+(If you are feeling lazy then the braces can be omitted.) 
+<P>
+<P>
+&lt;lineq\_list&gt; :- linear equations. Can be of the form equation = number 
+or just equation. 
+<P>
+<P>
+<em>coeff_matrix</em>creates the coefficient matrix C of the linear 
+equations. 
+<P>
+<P>
+It returns {C,X,B} such that CX = B. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+coeff_matrix({x+y+4*z=10,y+x-z=20,x+y+4}); 
+
+
+  {
+   [4   1  1]
+   [        ]
+   [-1  1  1]
+   [        ]
+   [0   1  1]
+   ,
+   [z]
+   [ ]
+   [y]
+   [ ]
+   [x]
+   ,
+   [10]
+   [  ]
+   [20]
+   [  ]
+   [-4]
+  }
+
+</tt></pre><p>
+<a name=r38_0584>
+
+<title>column_dim</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COLUMN_DIM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+Column dimension, row dimension: 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>column_dim</em>(&lt;matrix&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a matrix. 
+<P>
+<P>
+<em>column_dim</em>finds the column dimension of &lt;matrix&gt;. 
+<P>
+<P>
+<em>row_dim</em>finds the row dimension of &lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+column_dim(A); 
+
+  3 
+
+
+row_dim(A); 
+
+  3 
+
+</tt></pre><p>
+<a name=r38_0585>
+
+<title>companion</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COMPANION</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>companion</em>(&lt;poly&gt;,&lt;x&gt;) 
+<P>
+<P>
+<P>
+&lt;poly&gt; :- a monic univariate polynomial in &lt;x&gt;. 
+<P>
+<P>
+&lt;x&gt; :- the variable. 
+<P>
+<P>
+<em>companion</em>creates the companion matrix C of &lt;poly&gt;. 
+<P>
+<P>
+This is the square matrix of dimension n, where n is the degree of 
+&lt;poly&gt; w.r.t. &lt;x&gt;. 
+<P>
+<P>
+The entries of C are: 
+<P>
+<P>
+C(i,n) = -coeffn(&lt;poly&gt;,&lt;x&gt;,i-1) for i = 1 
+ ... n, C(i,i-1) = 1 for i = 2 ... n and 
+ the rest are 0. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+companion(x^4+17*x^3-9*x^2+11,x); 
+
+
+  [0  0  0  -11]
+  [            ]
+  [1  0  0   0 ]
+  [            ]
+  [0  1  0   9 ]
+  [            ]
+  [0  0  1  -17]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0589>find_companion</a>. 
+<P>
+<P>
+
+<a name=r38_0586>
+
+<title>copy_into</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>COPY_INTO</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>copy_into</em>(&lt;A&gt;,&lt;B&gt;,&lt;r&gt;,&lt;c&gt;) 
+<P>
+<P>
+<P>
+&lt;A&gt;,&lt;B&gt; :- matrices. 
+<P>
+<P>
+&lt;r&gt;,&lt;c&gt; :- positive integers. 
+<P>
+<P>
+<em>copy_into</em>copies matrix &lt;matrix&gt; into &lt;B&gt; with 
+&lt;matrix&gt;(1,1) at &lt;B&gt;(&lt;r&gt;,&lt;c&gt;). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt> 
+
+G := mat((0,0,0,0,0),(0,0,0,0,0),(0,0,0,0,0),(0,0,0,0,0),(0,0,0,0,0)); 
+
+
+       [0  0  0  0  0]
+       [             ]
+       [0  0  0  0  0]
+       [             ]
+  g := [0  0  0  0  0]
+       [             ]
+       [0  0  0  0  0]
+       [             ]
+       [0  0  0  0  0]
+
+
+
+copy_into(A,G,1,2); 
+
+  [0  1  2  3  0]
+  [             ]
+  [0  4  5  6  0]
+  [             ]
+  [0  7  8  9  0]
+  [             ]
+  [0  0  0  0  0]
+  [             ]
+  [0  0  0  0  0]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0577>augment_columns</a>, 
+<a href=r38_0550.html#r38_0588>extend</a>, 
+<a href=r38_0600.html#r38_0600>matrix_augment</a>, 
+
+<a href=r38_0600.html#r38_0602>matrix_stack</a>, 
+<a href=r38_0600.html#r38_0615>stack_rows</a>, 
+<a href=r38_0600.html#r38_0616>sub_matrix</a>. 
+<P>
+<P>
+
+<a name=r38_0587>
+
+<title>diagonal</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>DIAGONAL</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>diagonal</em>({&lt;mat\_list&gt;}) 
+<P>
+<P>
+<P>
+(If you are feeling lazy then the braces can be omitted.) 
+<P>
+<P>
+&lt;mat\_list&gt; :- each can be either a scalar expression or a 
+square 
+<a href=r38_0300.html#r38_0345>matrix</a>. 
+<P>
+<P>
+<em>diagonal</em>creates a matrix that contains the input on the 
+diagonal. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+H := mat((66,77),(88,99)); 
+
+       [66  77]
+  h := [      ]
+       [88  99]
+
+
+
+diagonal({A,x,H}); 
+
+  [1  2  3  0  0   0 ]
+  [                  ]
+  [4  5  6  0  0   0 ]
+  [                  ]
+  [7  8  9  0  0   0 ]
+  [                  ]
+  [0  0  0  x  0   0 ]
+  [                  ]
+  [0  0  0  0  66  77]
+  [                  ]
+  [0  0  0  0  88  99]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0597>jordan_block</a>. 
+<P>
+<P>
+
+<a name=r38_0588>
+
+<title>extend</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>EXTEND</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>extend</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;,&lt;expr&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<a href=r38_0300.html#r38_0345>matrix</a>. 
+<P>
+<P>
+&lt;r&gt;,&lt;c&gt; :- positive integers. 
+<P>
+<P>
+&lt;expr&gt; :- algebraic expression or symbol. 
+<P>
+<P>
+<em>extend</em>returns a copy of &lt;matrix&gt; that has been extended by 
+&lt;r&gt; rows and &lt;c&gt; columns. The new entries are made equal to 
+&lt;expr&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+extend(A,1,2,x); 
+
+  [1  2  3  x  x]
+  [             ]
+  [4  5  6  x  x]
+  [             ]
+  [7  8  9  x  x]
+  [             ]
+  [x  x  x  x  x]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0586>copy_into</a>, 
+<a href=r38_0600.html#r38_0600>matrix_augment</a>, 
+<a href=r38_0600.html#r38_0602>matrix_stack</a>, 
+
+<a href=r38_0600.html#r38_0609>remove_columns</a>, 
+<a href=r38_0600.html#r38_0610>remove_rows</a>. 
+<P>
+<P>
+
+<a name=r38_0589>
+
+<title>find_companion</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>FIND_COMPANION</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>find_companion</em>(&lt;matrix&gt;,&lt;x&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<a href=r38_0300.html#r38_0345>matrix</a>. 
+<P>
+<P>
+&lt;x&gt; :- the variable. 
+<P>
+<P>
+Given a companion matrix, <em>find_companion</em> finds the polynomial 
+from which it was made. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+C := companion(x^4+17*x^3-9*x^2+11,x); 
+
+
+       [0  0  0  -11]
+       [            ]
+       [1  0  0   0 ]
+  c := [            ]
+       [0  1  0   9 ]
+       [            ]
+       [0  0  1  -17]
+
+
+
+find_companion(C,x); 
+
+   4     3    2
+  x +17*x -9*x +11
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0585>companion</a>. 
+<P>
+<P>
+
+<a name=r38_0590>
+
+<title>get_columns</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>GET_COLUMNS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+Get columns, get rows: 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>get_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<a href=r38_0300.html#r38_0345>matrix</a>. 
+<P>
+<P>
+&lt;c&gt; :- either a positive integer or a list of positive 
+ integers. 
+<P>
+<P>
+<em>get_columns</em>removes the columns of &lt;matrix&gt; specified in 
+&lt;column\_list&gt; and returns them as a list of column matrices. 
+<P>
+<P>
+<em>get_rows</em>performs the same task on the rows of &lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+get_columns(A,{1,3}); 
+
+  {
+   [1]
+   [ ]
+   [4]
+   [ ]
+   [7]
+   ,
+   [3]
+   [ ]
+   [6]
+   [ ]
+   [9]
+  }
+
+
+
+get_rows(A,2); 
+
+  {
+   [4  5  6]
+  }
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0577>augment_columns</a>, 
+<a href=r38_0600.html#r38_0615>stack_rows</a>, 
+<a href=r38_0600.html#r38_0616>sub_matrix</a>. 
+<P>
+<P>
+
+<a name=r38_0591>
+
+<title>get_rows</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>GET_ROWS</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+see: 
+<a href=r38_0550.html#r38_0590>get_columns</a>. 
+<P>
+<P>
+
+<a name=r38_0592>
+
+<title>gram_schmidt</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>GRAM_SCHMIDT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>gram_schmidt</em>({&lt;vec\_list&gt;}) 
+<P>
+<P>
+<P>
+(If you are feeling lazy then the braces can be omitted.) 
+<P>
+<P>
+&lt;vec\_list&gt; :- linearly independent vectors. Each vector must be 
+written as a list, eg:{1,0,0}. 
+<P>
+<P>
+<em>gram_schmidt</em>performs the gram_schmidt orthonormalization on 
+the input vectors. 
+<P>
+<P>
+It returns a list of orthogonal normalized vectors. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+gram_schmidt({{1,0,0},{1,1,0},{1,1,1}}); 
+
+
+  {{1,0,0},{0,1,0},{0,0,1}} 
+
+
+
+gram_schmidt({{1,2},{3,4}}); 
+
+
+        1         2        2*sqrt(5)   -sqrt(5)
+  {{ ------- , ------- },{ --------- , -------- }}
+     sqrt(5)   sqrt(5)         5          5
+
+</tt></pre><p>
+<a name=r38_0593>
+
+<title>hermitian_tp</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>HERMITIAN_TP</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em> hermitian_tp</em>(&lt;matrix&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<a href=r38_0300.html#r38_0345>matrix</a>. 
+<P>
+<P>
+<em>hermitian_tp</em>computes the hermitian transpose of &lt;matrix&gt;. 
+<P>
+<P>
+This is a 
+<a href=r38_0300.html#r38_0345>matrix</a> in which the (i,j)'th entry is the con
+jugate 
+of the (j,i)'th entry of &lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+J := mat((i+1,i+2,i+3),(4,5,2),(1,i,0)); 
+
+
+       [i + 1  i + 2  i + 3]
+       [                   ]
+  j := [  4      5      2  ]
+       [                   ]
+       [  1      i      0  ]
+
+
+
+hermitian_tp(j); 
+
+  [ - i + 1  4   1  ]
+  [                 ]
+  [ - i + 2  5   - i]
+  [                 ]
+  [ - i + 3  2   0  ]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0300.html#r38_0348>tp</a>. 
+<P>
+<P>
+
+<a name=r38_0594>
+
+<title>hessian</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>HESSIAN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>hessian</em>(&lt;expr&gt;,&lt;variable\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;expr&gt; :- a scalar expression. 
+<P>
+<P>
+&lt;variable\_list&gt; :- either a single variable or a list of 
+ variables. 
+<P>
+<P>
+<em>hessian</em>computes the hessian matrix of &lt;expr&gt; w.r.t. the 
+variables in &lt;variable\_list&gt;. 
+<P>
+<P>
+This is an n by n matrix where n is the number of variables and the 
+(i,j)'th entry is 
+<a href=r38_0100.html#r38_0148>df</a>(&lt;expr&gt;,&lt;variable\_list&gt;(i), 
+&lt;variable\_list&gt;(j)). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+hessian(x*y*z+x^2,{w,x,y,z}); 
+
+  [0  0  0  0]
+  [          ]
+  [0  2  z  y]
+  [          ]
+  [0  z  0  x]
+  [          ]
+  [0  y  x  0]
+
+</tt></pre><p>Related functions: 
+<a href=r38_0100.html#r38_0148>df</a>. 
+<P>
+<P>
+
+<a name=r38_0595>
+
+<title>hilbert</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>HILBERT</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>hilbert</em>(&lt;square\_size&gt;,&lt;expr&gt;) 
+<P>
+<P>
+<P>
+&lt;square\_size&gt; :- a positive integer. 
+<P>
+<P>
+&lt;expr&gt; :- an algebraic expression. 
+<P>
+<P>
+<em>hilbert</em>computes the square hilbert matrix of dimension 
+&lt;square\_size&gt;. 
+<P>
+<P>
+This is the symmetric matrix in which the (i,j)'th entry is 
+1/(i+j-&lt;expr&gt;). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+hilbert(3,y+x); 
+
+  [    - 1          - 1          - 1    ]
+  [-----------  -----------  -----------]
+  [ x + y - 2    x + y - 3    x + y - 4 ]
+  [                                     ]
+  [    - 1          - 1          - 1    ]
+  [-----------  -----------  -----------]
+  [ x + y - 3    x + y - 4    x + y - 5 ]
+  [                                     ]
+  [    - 1          - 1          - 1    ]
+  [-----------  -----------  -----------]
+  [ x + y - 4    x + y - 5    x + y - 6 ]
+
+</tt></pre><p>
+<a name=r38_0596>
+
+<title>jacobian</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>JACOBIAN</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>jacobian</em>(&lt;expr\_list&gt;,&lt;variable\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;expr\_list&gt; :- either a single algebraic expression or a list 
+ of algebraic expressions. 
+<P>
+<P>
+&lt;variable\_list&gt; :- either a single variable or a list of 
+ variables. 
+<P>
+<P>
+<em>jacobian</em>computes the jacobian matrix of &lt;expr\_list&gt; 
+w.r.t. &lt;variable\_list&gt;. 
+<P>
+<P>
+This is a matrix whose (i,j)'th entry is 
+<a href=r38_0100.html#r38_0148>df</a>(&lt;expr\_list&gt; 
+(i),&lt;variable\_list&gt;(j)). 
+<P>
+<P>
+The matrix is n by m where n is the number of variables and m the number 
+of expressions. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+ 
+jacobian({x^4,x*y^2,x*y*z^3},{w,x,y,z}); 
+
+
+  [      3                 ]
+  [0  4*x     0       0    ]
+  [                        ]
+  [     2                  ]
+  [0   y    2*x*y     0    ]
+  [                        ]
+  [      3     3          2]
+  [0  y*z   x*z    3*x*y*z ]
+
+</tt></pre><p>Related functions: 
+
+<a href=r38_0550.html#r38_0594>hessian</a>, 
+<a href=r38_0100.html#r38_0148>df</a>. 
+<P>
+<P>
+
+<a name=r38_0597>
+
+<title>jordan_block</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>JORDAN_BLOCK</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>jordan_block</em>(&lt;expr&gt;,&lt;square\_size&gt;) 
+<P>
+<P>
+<P>
+&lt;expr&gt; :- an algebraic expression or symbol. 
+<P>
+<P>
+&lt;square\_size&gt; :- a positive integer. 
+<P>
+<P>
+<em>jordan_block</em>computes the square jordan block matrix J of 
+dimension &lt;square\_size&gt;. 
+<P>
+<P>
+The entries of J are: 
+<P>
+<P>
+J(i,i) = &lt;expr&gt; for i=1 
+ ... n, J(i,i+1) = 1 for i=1 
+ ... n-1, and all other entries are 0. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+jordan_block(x,5); 
+
+  [x  1  0  0  0]
+  [             ]
+  [0  x  1  0  0]
+  [             ]
+  [0  0  x  1  0]
+  [             ]
+  [0  0  0  x  1]
+  [             ]
+  [0  0  0  0  x]
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0587>diagonal</a>, 
+<a href=r38_0550.html#r38_0585>companion</a>. 
+<P>
+<P>
+
+<a name=r38_0598>
+
+<title>lu_decom</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>LU_DECOM</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>lu_decom</em>(&lt;matrix&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<a href=r38_0300.html#r38_0345>matrix</a> containing either numeric entries 
+ or imaginary entries with numeric coefficients. 
+<P>
+<P>
+<em>lu_decom</em>performs LU decomposition on &lt;matrix&gt;, ie: it 
+returns {L,U} where L is a lower diagonal 
+<a href=r38_0300.html#r38_0345>matrix</a>, U an 
+upper diagonal 
+<a href=r38_0300.html#r38_0345>matrix</a> and A = LU. 
+<P>
+<P>
+Caution: 
+<P>
+<P>
+The algorithm used can swap the rows of &lt;matrix&gt; during the 
+calculation. This means that LU does not equal &lt;matrix&gt; but a row 
+equivalent of it. Due to this, <em>lu_decom</em> returns {L,U,vec}. 
+The call <em>convert(meta{matrix</em>,vec)} will return the matrix that has 
+been decomposed, i.e: LU = convert(&lt;matrix&gt;,vec). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+K := mat((1,3,5),(-4,3,7),(8,6,4)); 
+
+
+       [1   3  5]
+       [        ]
+  k := [-4  3  7]
+       [        ]
+       [8   6  4]
+
+
+
+on rounded;
+
+lu :=  lu_decom(K); 
+
+  lu := {
+         [8    0      0  ]
+         [               ]
+         [-4  6.0     0  ]
+         [               ]
+         [1   2.25  1.125]
+         ,
+         [1  0.75  0.5]
+         [            ]
+         [0   1    1.5]
+         [            ]
+         [0   0     1 ]
+         ,
+         [3 2 3]}
+
+
+
+first lu * second lu; 
+
+  [8   6.0  4.0]
+  [            ]
+  [-4  3.0  7.0]
+  [            ]
+  [1   3.0  5.0]
+
+
+
+convert(K,third lu); 
+
+  P := mat((i+1,i+2,i+3),(4,5,2),(1,i,0));  _ _ _ 
+       [i + 1  i + 2  i + 3]
+       [                   ]
+  p := [  4      5      2  ]
+       [                   ]
+       [  1      i      0  ]
+
+
+lu :=  lu_decom(P); 
+
+  lu := {
+         [  1        0                      0                ]
+         [                                                   ]
+         [  4     - 4*i + 5                 0                ]
+         [                                                   ]
+         [i + 1      3       0.414634146341*i + 2.26829268293]
+         ,
+         [1  i                 0                ]
+         [                                      ]
+         [0  1  0.19512195122*i + 0.243902439024]
+         [                                      ]
+         [0  0                 1                ]
+         ,
+         [3 2 3]}
+
+
+
+first lu * second lu; 
+
+  [  1      i       0   ]
+  [                     ]
+  [  4      5      2.0  ]
+  [                     ]
+  [i + 1  i + 2  i + 3.0]
+
+
+
+convert(P,third lu); 
+
+  [  1      i      0  ]
+  [                   ]
+  [  4      5      2  ]
+  [                   ]
+  [i + 1  i + 2  i + 3]
+
+</tt></pre><p> 
+<P>
+<P>
+Related functions: 
+<a href=r38_0550.html#r38_0582>cholesky</a>. 
+<P>
+<P>
+
+<a name=r38_0599>
+
+<title>make_identity</title></a>
+<p align="centre"><img src="redlogo.gif" width=621 height=60 border=0 alt="REDUC
+E"></p>
+<b><a href=r38_idx.html>INDEX</a></b><p><p>
+
+
+
+<b>MAKE_IDENTITY</b> _ _ _  _ _ _  _ _ _  _ _ _ <b>operator</b><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>make_identity</em>(&lt;square\_size&gt;) 
+<P>
+<P>
+<P>
+&lt;square\_size&gt; :- a positive integer. 
+<P>
+<P>
+<em>make_identity</em>creates the identity matrix of dimension 
+&lt;square\_size&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<p><pre><tt>
+
+make_identity(4); 
+
+  [1  0  0  0]
+  [          ]
+  [0  1  0  0]
+  [          ]
+  [0  0  1  0]
+  [          ]
+  [0  0  0  1]
+
+</tt></pre><p>Related functions: 
+<a href=r38_0550.html#r38_0587>diagonal</a>. 
+<P>
+<P>

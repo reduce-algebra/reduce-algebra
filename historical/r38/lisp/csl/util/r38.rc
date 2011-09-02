@@ -1,0 +1,14 @@
+//
+// Resource file for CWIN.             Copyright (C) Codemist Ltd, 1995-2004
+//                                     A C Norman
+//
+
+
+CWIN              ICON r38.ico         // Used in "ABOUT" dialog box and
+                                       // when window is minimised
+
+#include "cwin.rc"
+
+// End of r38.rc
+
+

@@ -1,0 +1,271 @@
+\documentstyle[12pt]{article}
+\begin{document}
+\begin{center} {\Large LINEAR INEQUALITIES} \end{center}
+\begin{center} Solving sets of linear inequalities and equations \\
+and linear/integer optimization for small problems \end{center}
+\begin{center} Version 2.0 May 1991\end{center}
+
+\begin{center} Herbert Melenk \\ Konrad-Zuse-Zentrum fuer
+Informationstechnik \\
+Heilbronner Str. 10 \\ D1000 Berlin 31 \\ Federal Republic of Germany \\ 
+melenk@sc.zib-berlin.de \end{center}
+
+\section{Introduction}
+
+This package solves sets of linear inequalities with real valued numerical
+coefficients by applying the method of Fourier and Motzkin, as described
+by G.B. Dantzig in his famous work {\em Linear Programming and Extensions}.
+As input a system of linear inequalities (algebraic expressions composed
+with the relational operators $<=$ and $>=$) and equations are accepted,
+together with an optional specification, in which sequence the variables
+are to be eliminated and - if there is the freedom - which variable should
+take an extremal value in its final interval.
+
+
+\section{The Algorithm}
+The set of input formulas is treated in the following steps:
+
+\begin{itemize}
+\item The variables of the system are determined (together with a general
+analysis); variables, which are not mentioned explicitly during the
+call, are placed in front of the variable list; the following steps
+then are controlled by the variable list.
+
+\item Each equation (if any) is used to substitute one variable in the whole
+system; if here an inconsistency occurs, the procedure is stopped with
+an error message.
+
+\item The remaining variables then are eliminated from the system of
+inequalities one after the other by the technique of Fourier/Motzkin:
+a system for the variables ${x_1,\ldots ,x_n}$ is reordered in the form
+
+\[\begin{array}{cc}
+L_1(x_2,\ldots ,x_n) \ge x_1 & \\
+\ldots & \\
+L_k(x_2,\ldots ,x_n) \ge x_1 & \\
+& x_1 \ge R_1(x_2,\ldots ,x_n) \\
+& \ldots \\
+& x_1 \ge R_m(x_2,\ldots ,x_n)
+\end{array}\]
+
+and a new system in ${x_2,\ldots ,x_n}$
+
+\[\begin{array}{c}
+L_1 \ge R_1, \ldots , L_1 \ge R_m, \\
+\ldots \\
+L_k \ge R_1, \ldots , L_k \ge R_m \\
+\end{array}
+\]
+is established and processed in a recursive manner.
+
+\item When the last variable is encountered, the Li and Ri are numbers
+and they establish an interval; if that interval is not empty, an
+appropriate value for xn can be selected;
+
+\item During returning from the recursion, the values found already are
+substituted into the local Li and Ri, making them numerical values
+too and allowing a selection in a non empty interval;
+
+\item Finally the remaining variables are computed from substitutions
+into the equations.
+\end{itemize}
+
+This procedure is generally valid; its limitation lies in the fact, that
+the number of inequalities grows with each elimination step, if a variable
+occurs with both signs several times.  In order to limit this effect as
+much as possible, numerical limits are collected as early as possible (by
+taking the min resp. max value) and the inequalities are converted into a
+canonical form (which actually is {\em homogeneous integer polynomial} $\ge$
+{\em number}), such that multiplicities can be determined and eliminated.
+
+The internal operation is based completely on REDUCE standard quotients and
+standard forms.
+
+If some or all variables are restricted to integer values, the
+branch-and-bound method is used as a macro algorithm:
+
+\begin{itemize}
+\item First a solution of the system is determined without integer
+restriction.
+
+\item If the solution contains non integer values $x_0$ for an integer
+variable $x$, new subproblems are generated with the additional
+restrictions $x<=[x_0]$ resp. $x>=[x_0]+1$, where $[]$ denotes the next
+integer below (floor value).  With more than one integer variable this
+leads to a tree of subproblems.
+
+\item Among all feasable solutions the best one is selected.
+\end{itemize}
+
+\section{Algebraic Interface}
+
+When the package is loaded, the operators $>=$ and $<=$ are declared as
+operators, such that they can be used in algebraic expressions.  The
+operator for the solution of a linear system is:
+\begin{center}
+{\tt LININEQ($<$sys$>$ [,$<$vars$>$] [,RECORD=T] [,INT=$<$ivars$>$])}
+\end{center}
+\noindent
+where $<$sys$>$ is the list of equations/inequalities either as explicit
+list or as a value which evaluates to such a list, $<$vars$>$ (optional)
+is a list of variables and/or expressions of the type $<$var$>$ $=$ min or
+$<$var$>$ = max which means, that the corresponding variable is to be
+taken at the corresponding edge of its limitating interval. Note,
+that the last (or only) variable is the first one which gets a value
+assigned; so this should be the target function in a linear
+optimization context. If the keyword parameter RECORD is equated
+with T, the intermediate inequalities are included in the result.
+An equation with the lhs INT denotes a list of variables, which
+are restricted to integer values. Note, that this does not automatically
+include a restrition to poitive numbers: such limitations must
+be given explicitly in the system.
+
+The result is either an empty list, if the system is inconsistent,
+or a list of equations assigning a numeric value (in the current
+domain) to each variable. If RECORD=T was selected, each element
+of the result itself is a list with the equation for the numerical
+value for the variable, followed by the lower and upper bounds
+of the corresponding interval. In most cases these bounds are
+formal expressions in the other (following) variables, often in
+the form of calls to ``max''or ``min'' If a variable is unbound to one
+side, an {\tt INF} or {\tt -INF} appears in the corresponding place for
+``infinity''.
+
+If the switch {\tt PRLININEQ} is set, the intervals for the selection
+of variable values are printed during the evaluation.
+If the switch {\tt TRLININEQ} is set, a complete trace of the
+elimination is printed; that may help in cases, where the result of
+the process is not understood immediately; however, this printing may
+result in a large volume.
+By default {\tt PRLININEQ} and {\tt TRLININEQ} are off.
+
+If the switch {\tt TRLININEQINT} is set, a restricted protocol for
+integer problems is printed, which only shows the action of the
+branch-and-bound method. 
+
+\noindent An example:
+
+\begin{verbatim}
+linineq({ 5x1 - 4x2 + 13x3 - 2x4 +  x5 = 20,
+           x1 -  x2 +  5x3 -  x4 +  x5 = 8,
+           x1 + 6x2 -  7x3 +  x4 + 5x5 = z,
+           x1>=0,x2>=0,x3>=0,x4>=0,x5>=0},  {z=min});
+\end{verbatim}
+
+\noindent Result:
+
+\begin{verbatim}
+               12      4             60
+{X5=0,X4=0,X3=----,X2=---,X1=0,Z= - ----}
+               7       7             7
+\end{verbatim}
+
+\noindent The same with the tower of intervals:
+
+\begin{verbatim}
+linineq({ 5x1 - 4x2 + 13x3 - 2x4 +  x5 = 20,
+           x1 -  x2 +  5x3 -  x4 +  x5 = 8,
+           x1 + 6x2 -  7x3 +  x4 + 5x5 = z,
+           x1>=0,x2>=0,x3>=0,x4>=0,x5>=0},  {z=min}, record=t);
+\end{verbatim}
+
+\noindent Result:
+
+\begin{verbatim}
+{{X5=0,
+
+    - X4 + 7*X3 - 6*X2 - X1 + Z
+  ------------------------------,
+                5
+
+    - X4 + 7*X3 - 6*X2 - X1 + Z
+  ------------------------------},
+                5
+
+ {X4=0,
+
+   32*X3 - 11*X2 + 4*X1 + Z - 40
+  -------------------------------,
+                 6
+
+   32*X3 - 11*X2 + 4*X1 + Z - 40
+  -------------------------------},
+                 6
+
+      12
+ {X3=----,
+      7
+
+   7*X2 - 20*X1 + Z + 32
+  -----------------------,
+            16
+
+   7*X2 - 20*X1 + Z + 32
+  -----------------------},
+            16
+
+      4
+ {X2=---,
+      7
+
+                     20*X1 - Z - 32
+  MAX(12*X1 - Z - 8,----------------,0),
+                           7
+
+    - 12*X1 + 3*Z + 32
+  ---------------------},
+           11
+
+              7*Z + 60   2*Z + 36   3*Z + 32
+ {X1=0,0,MIN(----------,----------,----------)},
+                 72         19         12
+
+      - 60    - 60
+ {Z=-------,-------,INF}}
+       7       7
+\end{verbatim}
+
+Remark:  The operators $>$ and $<$ currently are not handled by the
+system, because in many cases there is no algebraic solution for extremal
+problems with these operators. For example ${x>0}$ has no algebraic solution.
+
+
+
+\section{Symbolic Interface}
+
+The function {\tt linineq0} offers an interface to the algorithm for symbolic
+mode operation:
+
+\begin{center} {\tt linineq0(prob,vars,dir,rec)} \end{center}
+
+where
+
+\begin{description}
+\item[prob] list (untagged) of linear algebraic expressions
+$(e_1 e_2 \ldots e_n)$ which do NOT contain any relational
+operator; the problem to be solved then is
+$e_1 \ge 0, \ldots , e_n \ge 0$
+
+\item[vars] list of variables (kernels); the variable list must be
+complete; otherwise an error will occur.
+
+\item[dir] {\tt nil} or a list of the form
+{\tt ( ( var$_1$ . mm$_1$ ) (var$_2$ . mm$_2$ ) ... )}
+where the $var_i$ are variables and the mmi are either
+{\tt MAX} or {\tt MIN}.
+
+\item[rec] if not {\tt nil}, the formal bounds for the intermediate
+intervals are collected. They are available in the
+fluid variable {\tt LININEQRECORD!*}: the value of this
+variable is a list, where each element corresponds
+to one element of {\bf vars} in the same sequence. Each
+element is a list with the lower bound and the
+upperbound as algebraic (prefix) expression.
+\end{description}
+
+The result is {\tt NIL} (if the system is inconsistent) or a list of the form
+{\tt ((var$_1$ . val$_1$) (var$_2$ . val$_2$) ... (var$_n$ . val$_n$))}
+where the val$_i$ are algebraic (prefix) expressions, that are integers
+or quotients of integers if no domain mode is selected.
+
+\end{document}

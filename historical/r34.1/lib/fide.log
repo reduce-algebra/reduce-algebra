@@ -1,0 +1,4157 @@
+REDUCE 3.4.1, 15-Jul-92 ...
+
+1: 
+SF(1) := 1
+
+SF(2) := 1
+
+SF(3) := 1
+
+(FIDE)
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****  Package  F I D E  --- T e s t Examples  Ver. 1.1  05/1991  *****
+%*****                                                             *****
+%***********************************************************************
+%***********************************************************************
+%*****                                                             *****
+%*****    T e s t     Examples   ---   Module    E X P R E S       *****
+%*****                                                             *****
+%***********************************************************************
+
+let cos th**2=1 - sin th**2,
+    cos fi**2=1 - sin fi**2;
+
+
+factor df;
+
+
+on rat;
+
+
+for all x,y let diff(x,y)=df(x,y);
+
+
+depend u,r,th,fi;
+
+
+depend v,r,th,fi;
+
+
+depend f,r,th,fi;
+
+
+depend w,r,th,fi;
+
+
+% Spherical coordinate system
+scalefactors 3,r*sin th*cos fi,r*sin th*sin fi,r*cos th,r,th,fi;
+
+
+SF(1) := 1
+
+SF(2) := R
+
+SF(3) := SIN(TH)*R
+
+tensor a1,a2,a3,a4,a5;
+
+
+vectors u,v;
+
+
+dyads w;
+
+
+a1:=grad f;
+
+A1:= ( DF(F,R) , 
+
+        DF(F,TH)
+       ---------- , 
+           R
+
+        DF(F,FI)
+       ----------- ) 
+        SIN(TH)*R
+
+
+a2:=div u;
+
+     DF(U(3),FI)     DF(U(2),TH)
+A2:=------------- + ------------- + DF(U(1),R)
+      SIN(TH)*R           R
+
+    U(2)*COS(TH) + 2*U(1)*SIN(TH)
+ + -------------------------------
+              SIN(TH)*R
+
+
+a3:=curl v;
+
+        DF(V(3),TH)      - DF(V(2),FI)     V(3)*COS(TH)
+A3:= ( ------------- + ---------------- + -------------- , 
+             R            SIN(TH)*R         SIN(TH)*R
+
+                        DF(V(1),FI)      - V(3)
+        - DF(V(3),R) + ------------- + --------- , 
+                         SIN(TH)*R         R
+
+                      - DF(V(1),TH)     V(2)
+       DF(V(2),R) + ---------------- + ------ ) 
+                           R             R
+
+
+a4:=lapl v;
+
+         - 2*DF(V(3),FI)      - 2*DF(V(2),TH)
+A4:= ( ------------------ + ------------------ + DF(V(1),R,2)
+                    2                2
+           SIN(TH)*R                R
+
+           2*DF(V(1),R)     DF(V(1),TH,2)     DF(V(1),TH)*COS(TH)
+        + -------------- + --------------- + ---------------------
+                R                 2                        2
+                                 R                SIN(TH)*R
+
+           DF(V(1),FI,2)     2*(V(2)*COS(TH) + V(1)*SIN(TH))
+        + --------------- - --------------------------------- , 
+                   2  2                         2
+            SIN(TH) *R                 SIN(TH)*R
+
+         - 2*DF(V(3),FI)*COS(TH)                    2*DF(V(2),R)
+       -------------------------- + DF(V(2),R,2) + --------------
+                     2  2                                R
+              SIN(TH) *R
+
+           DF(V(2),TH,2)     DF(V(2),TH)*COS(TH)     DF(V(2),FI,2)
+        + --------------- + --------------------- + ---------------
+                 2                        2                  2  2
+                R                SIN(TH)*R            SIN(TH) *R
+
+           2*DF(V(1),TH)        - V(2)
+        + --------------- + ------------- , 
+                 2                  2  2
+                R            SIN(TH) *R
+
+                       2*DF(V(3),R)     DF(V(3),TH,2)
+       DF(V(3),R,2) + -------------- + ---------------
+                            R                 2
+                                             R
+
+           DF(V(3),TH)*COS(TH)     DF(V(3),FI,2)
+        + --------------------- + ---------------
+                        2                  2  2
+               SIN(TH)*R            SIN(TH) *R
+
+           2*DF(V(2),FI)*COS(TH)     2*DF(V(1),FI)        - V(3)
+        + ----------------------- + --------------- + -------------
+                       2  2                    2              2  2
+                SIN(TH) *R            SIN(TH)*R        SIN(TH) *R
+
+     ) 
+
+
+a3:=2*a3+a4;
+
+        2*DF(V(3),TH)      - 2*DF(V(3),FI)      - 2*DF(V(2),TH)
+A3:= ( --------------- + ------------------ + ------------------
+              R                       2                2
+                             SIN(TH)*R                R
+
+            - 2*DF(V(2),FI)                    2*DF(V(1),R)
+        + ------------------ + DF(V(1),R,2) + --------------
+              SIN(TH)*R                             R
+
+           DF(V(1),TH,2)     DF(V(1),TH)*COS(TH)     DF(V(1),FI,2)
+        + --------------- + --------------------- + ---------------
+                 2                        2                  2  2
+                R                SIN(TH)*R            SIN(TH) *R
+
+           2*(V(3)*COS(TH)*R - V(2)*COS(TH) - V(1)*SIN(TH))
+        + -------------------------------------------------- , 
+                                       2
+                              SIN(TH)*R
+
+                           - 2*DF(V(3),FI)*COS(TH)
+        - 2*DF(V(3),R) + -------------------------- + DF(V(2),R,2)
+                                       2  2
+                                SIN(TH) *R
+
+           2*DF(V(2),R)     DF(V(2),TH,2)     DF(V(2),TH)*COS(TH)
+        + -------------- + --------------- + ---------------------
+                R                 2                        2
+                                 R                SIN(TH)*R
+
+           DF(V(2),FI,2)     2*DF(V(1),TH)     2*DF(V(1),FI)
+        + --------------- + --------------- + ---------------
+                   2  2            2             SIN(TH)*R
+            SIN(TH) *R            R
+
+                            2
+            - 2*V(3)*SIN(TH) *R - V(2)
+        + ----------------------------- , 
+                          2  2
+                   SIN(TH) *R
+
+                       2*DF(V(3),R)     DF(V(3),TH,2)
+       DF(V(3),R,2) + -------------- + ---------------
+                            R                 2
+                                             R
+
+           DF(V(3),TH)*COS(TH)     DF(V(3),FI,2)
+        + --------------------- + --------------- + 2*DF(V(2),R)
+                        2                  2  2
+               SIN(TH)*R            SIN(TH) *R
+
+           2*DF(V(2),FI)*COS(TH)      - 2*DF(V(1),TH)
+        + ----------------------- + ------------------
+                       2  2                 R
+                SIN(TH) *R
+
+                                                     2
+           2*DF(V(1),FI)      - V(3) + 2*V(2)*SIN(TH) *R
+        + --------------- + ----------------------------- ) 
+                     2                      2  2
+            SIN(TH)*R                SIN(TH) *R
+
+
+a5:=lapl f;
+
+                 2*DF(F,R)     DF(F,TH,2)     DF(F,TH)*COS(TH)
+A5:=DF(F,R,2) + ----------- + ------------ + ------------------
+                     R              2                     2
+                                   R             SIN(TH)*R
+
+    DF(F,FI,2)
+ + -------------
+           2  2
+    SIN(TH) *R
+
+
+a1:=a1+div w;
+
+        DF(W(3,1),FI)     DF(W(2,1),TH)
+A1:= ( --------------- + --------------- + DF(W(1,1),R) + DF(F,R) + (
+          SIN(TH)*R             R
+
+           - W(3,3)*SIN(TH) - W(2,2)*SIN(TH) + W(2,1)*COS(TH)
+
+           + 2*W(1,1)*SIN(TH))/(SIN(TH)*R) , 
+
+        DF(W(3,2),FI)     DF(W(2,2),TH)                    DF(F,TH)
+       --------------- + --------------- + DF(W(1,2),R) + ---------- 
+          SIN(TH)*R             R                             R
+
+       + ( - W(3,3)*COS(TH) + W(2,2)*COS(TH) + W(2,1)*SIN(TH)
+
+           + 2*W(1,2)*SIN(TH))/(SIN(TH)*R) , 
+
+        DF(W(3,3),FI)     DF(W(2,3),TH)                    DF(F,FI)
+       --------------- + --------------- + DF(W(1,3),R) + -----------
+          SIN(TH)*R             R                          SIN(TH)*R
+
+        + (W(3,2)*COS(TH) + W(3,1)*SIN(TH) + W(2,3)*COS(TH)
+
+            + 2*W(1,3)*SIN(TH))/(SIN(TH)*R) ) 
+
+
+a1:=u.dyad((a,0,1),(1,b,3),(0,c,d));
+
+A1:= ( U(2) + U(1)*A , 
+
+       U(3)*C + U(2)*B , 
+
+       U(3)*D + 3*U(2) + U(1) ) 
+
+
+a2:=vect(a,b,c);
+
+A2:= ( A , 
+
+       B , 
+
+       C ) 
+
+
+a1.a2;
+
+                                     2                    2
+U(3)*B*C + U(3)*C*D + U(2)*A + U(2)*B  + 3*U(2)*C + U(1)*A  + U(1)*C
+
+
+%  Scalar product
+u.v;
+
+U(3)*V(3) + U(2)*V(2) + U(1)*V(1)
+
+
+%  Vector product
+u?v;
+
+ (  - U(3)*V(2) + U(2)*V(3) , 
+
+   U(3)*V(1) - U(1)*V(3) , 
+
+    - U(2)*V(1) + U(1)*V(2) ) 
+
+
+%  Dyadic
+u&v;
+
+ (  ( U(1)*V(1) , 
+
+      U(1)*V(2) , 
+
+      U(1)*V(3) )  , 
+
+    ( U(2)*V(1) , 
+
+      U(2)*V(2) , 
+
+      U(2)*V(3) )  , 
+
+    ( U(3)*V(1) , 
+
+      U(3)*V(2) , 
+
+      U(3)*V(3) )  ) 
+
+
+%  Directional derivative
+dirdf(u,v);
+
+                      DF(V(1),TH)*U(2)     DF(V(1),FI)*U(3)
+ ( DF(V(1),R)*U(1) + ------------------ + ------------------
+                             R                SIN(TH)*R
+
+       U(3)*V(3) + U(2)*V(2)
+    - ----------------------- , 
+                 R
+
+                      DF(V(2),TH)*U(2)     DF(V(2),FI)*U(3)
+   DF(V(2),R)*U(1) + ------------------ + ------------------
+                             R                SIN(TH)*R
+
+        - U(3)*V(3)*COS(TH) + U(2)*V(1)*SIN(TH)
+    + ------------------------------------------ , 
+                      SIN(TH)*R
+
+                      DF(V(3),TH)*U(2)     DF(V(3),FI)*U(3)
+   DF(V(3),R)*U(1) + ------------------ + ------------------
+                             R                SIN(TH)*R
+
+       U(3)*(V(2)*COS(TH) + V(1)*SIN(TH))
+    + ------------------------------------ ) 
+                   SIN(TH)*R
+
+
+clear a1,a2,a3,a4,a5,u,v,w;
+
+
+for all x,y clear diff(x,y);
+
+
+clear cos th**2,
+      cos fi**2;
+
+
+remfac df;
+
+
+off rat;
+
+
+scalefactors 3,x,y,z,x,y,z;
+
+
+SF(1) := 1
+
+SF(2) := 1
+
+SF(3) := 1
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****      T e s t     Examples   ---   Module    I I M E T       *****
+%*****                                                             *****
+%***********************************************************************
+
+% Example I.1 - 1-D Lagrangian Hydrodynamics
+
+off exp;
+
+
+factor diff;
+
+
+on rat,eqfu;
+
+
+
+% Declare which indexes will be given to coordinates
+coordinates x,t into j,m;
+
+
+
+% Declares uniform grid in x coordinate
+grid uniform,x;
+
+
+
+% Declares dependencies of functions on coordinates
+dependence eta(t,x),v(t,x),eps(t,x),p(t,x);
+
+
+
+% Declares p as known function
+given p;
+
+
+
+same eta,v,p;
+
+
+
+iim a, eta,diff(eta,t)-eta*diff(v,x)=0,
+    v,diff(v,t)+eta/ro*diff(p,x)=0,
+    eps,diff(eps,t)+eta*p/ro*diff(v,x)=0;
+
+
+*****************************
+*****      Program      *****          IIMET Ver 1.1  17/05/91
+*****************************
+
+      Partial Differential Equations
+      ==============================
+
+ - DIFF(V,X)*ETA + DIFF(ETA,T)    =    0
+
+ DIFF(P,X)*ETA
+--------------- + DIFF(V,T)    =    0
+      RO
+
+ DIFF(V,X)*P*ETA
+----------------- + DIFF(EPS,T)    =    0
+       RO
+
+
+ Backtracking needed in grid optimalization
+0 interpolations are needed in X coordinate
+  Equation for ETA variable is integrated in HALF grid point
+  Equation for V variable is integrated in HALF grid point
+  Equation for EPS variable is integrated in HALF grid point
+0 interpolations are needed in T coordinate
+  Equation for ETA variable is integrated in HALF grid point
+  Equation for V variable is integrated in HALF grid point
+  Equation for EPS variable is integrated in HALF grid point
+
+         Equations after Discretization Using IIM :
+         ==========================================
+
+( - ((V(J + 1,M + 1) - V(J,M + 1))*(ETA(J + 1,M + 1) + ETA(J,M + 1))
+
+      + (V(J + 1,M) - V(J,M))*(ETA(J + 1,M) + ETA(J,M)))
+
+ *(HT(M + 1) + HT(M))
+
+  + 4*(ETA(J + 1,M + 1) - ETA(J + 1,M) + ETA(J,M + 1) - ETA(J,M))*HX)
+
+/(4*(HT(M + 1) + HT(M))*HX)   =   0
+
+
+(((P(J + 1,M + 1) - P(J,M + 1))*(ETA(J + 1,M + 1) + ETA(J,M + 1))
+
+   + (P(J + 1,M) - P(J,M))*(ETA(J + 1,M) + ETA(J,M)))
+
+ *(HT(M + 1) + HT(M))
+
+  + 4*(V(J + 1,M + 1) - V(J + 1,M) + V(J,M + 1) - V(J,M))*RO*HX)/(4
+
+   *(HT(M + 1) + HT(M))*RO*HX)   =   0
+
+
+(((P(J + 1,M + 1)*ETA(J + 1,M + 1) + P(J,M + 1)*ETA(J,M + 1))
+
+  *(V(J + 1,M + 1) - V(J,M + 1)) + 
+
+  (P(J + 1,M)*ETA(J + 1,M) + P(J,M)*ETA(J,M))*(V(J + 1,M) - V(J,M)))
+
+ *(HT(M + 1) + HT(M)) + 4
+
+ *(EPS(J + 1,M + 1) - EPS(J + 1,M) + EPS(J,M + 1) - EPS(J,M))*RO*HX)/
+
+(4*(HT(M + 1) + HT(M))*RO*HX)   =   0
+
+
+
+
+clear a;
+
+
+clearsame;
+
+
+cleargiven;
+
+
+
+%***********************************************************************
+
+% Example  I.2 - How other functions (here sin, cos) can be used in
+%                discretized terms
+
+diffunc sin,cos;
+
+
+difmatch all,diff(u*sin x,x),u=one,2,(u(i+1)*sin x(i+1)-u(i-1)
+                   *sin x(i-1))/(dim1+dip1),
+                 u=half,0,(u(i+1/2)*sin x(i+1/2)-u(i-1/2)*sin x(i-1/2))
+                   /di;
+
+
+difmatch all,cos x*diff(u,x,2),u=one,0,cos x i*(u(i+1)-2*u(i)+u(i-1))
+                   /di^2,
+                 u=half,3,(u(i+3/2)-u(i+1/2))/dip2/2 -
+                          (u(i-1/2)-u(i-3/2))/dim2/2;
+
+
+off exp;
+
+
+coordinates x,t into j,m;
+
+
+grid uniform,x,t;
+
+
+dependence u(x,t),v(x,t);
+
+
+iim a,u,diff(u,t)+diff(u,x)+cos x*diff(v,x,2)=0,
+      v,diff(v,t)+diff(sin x*u,x)=0;
+
+
+*****************************
+*****      Program      *****          IIMET Ver 1.1  17/05/91
+*****************************
+
+      Partial Differential Equations
+      ==============================
+
+DIFF(U,T) + DIFF(U,X) + DIFF(V,X,2)*COS(X)    =    0
+
+DIFF(SIN(X)*U,X) + DIFF(V,T)    =    0
+
+
+0 interpolations are needed in X coordinate
+  Equation for U variable is integrated in HALF grid point
+  Equation for V variable is integrated in HALF grid point
+0 interpolations are needed in T coordinate
+  Equation for U variable is integrated in HALF grid point
+  Equation for V variable is integrated in HALF grid point
+
+         Equations after Discretization Using IIM :
+         ==========================================
+
+(((U(J + 1,M + 1) + U(J + 1,M))*HT
+
+   + (U(J + 1,M + 1) - U(J + 1,M) + U(J,M + 1) - U(J,M))*HX
+
+                                        2*J - 1
+   - (U(J,M + 1) + U(J,M))*HT)*HX + (V(---------,M + 1)
+                                           2
+
+          2*J - 1          2*J + 3              2*J + 3
+     + V(---------,M) + V(---------,M + 1) + V(---------,M)
+             2                2                    2
+
+            2*J + 1                2*J + 1             2*J + 1
+     - 2*V(---------,M + 1) - 2*V(---------,M))*COS(X(---------))*HT)
+               2                      2                   2
+
+      2
+/(2*HX *HT)   =   0
+
+
+(((U(J + 1,M + 1) + U(J + 1,M))*SIN(X(J + 1))
+
+   - (U(J,M + 1) + U(J,M))*SIN(X(J)))*HT
+
+          2*J + 1              2*J + 1
+  + 2*(V(---------,M + 1) - V(---------,M))*HX)/(2*HX*HT)   =   0
+             2                    2
+
+
+
+clear a;
+
+
+
+%***********************************************************************
+
+% Example I.3 - Schrodinger equation
+
+factor diff;
+
+
+coordinates t,x into m,j;
+
+
+grid uniform,x,t;
+
+
+dependence ur(x,t),ui(x,t);
+
+
+same ui,ur;
+
+
+iim a,ur,-diff(ui,t)+1/2*diff(ur,x,2)+(ur**2+ui**2)*ur=0,
+       ui,diff(ur,t)+1/2*diff(ui,x,2)+(ur**2+ui**2)*ui=0;
+
+
+*****************************
+*****      Program      *****          IIMET Ver 1.1  17/05/91
+*****************************
+
+      Partial Differential Equations
+      ==============================
+
+ DIFF(UR,X,2)                                2     2
+-------------- - DIFF(UI,T)    =     - UR*(UR  + UI )
+      2
+
+              DIFF(UI,X,2)                   2     2
+DIFF(UR,T) + --------------    =     - UI*(UR  + UI )
+                   2
+
+
+0 interpolations are needed in T coordinate
+  Equation for UR variable is integrated in HALF grid point
+  Equation for UI variable is integrated in HALF grid point
+0 interpolations are needed in X coordinate
+  Equation for UR variable is integrated in ONE grid point
+  Equation for UI variable is integrated in ONE grid point
+
+         Equations after Discretization Using IIM :
+         ==========================================
+
+((UR(M + 1,J - 1) + UR(M + 1,J + 1) - 2*UR(M + 1,J) + UR(M,J - 1)
+
+                                                   2               2
+   + UR(M,J + 1) - 2*UR(M,J))*HT - 4*UI(M + 1,J)*HX  + 4*UI(M,J)*HX )
+
+      2                          3                          2
+/(4*HX *HT)   =    - (UR(M + 1,J)  + UR(M + 1,J)*UI(M + 1,J)
+
+             3                  2
+    + UR(M,J)  + UR(M,J)*UI(M,J) )/2
+
+
+((UI(M + 1,J - 1) + UI(M + 1,J + 1) - 2*UI(M + 1,J) + UI(M,J - 1)
+
+                                                   2               2
+   + UI(M,J + 1) - 2*UI(M,J))*HT + 4*UR(M + 1,J)*HX  - 4*UR(M,J)*HX )
+
+      2                          2                      2
+/(4*HX *HT)   =    - (UR(M + 1,J) *UI(M + 1,J) + UR(M,J) *UI(M,J)
+
+                 3          3
+    + UI(M + 1,J)  + UI(M,J) )/2
+
+
+
+clear a;
+
+
+clearsame;
+
+
+
+%***********************************************************************
+
+% Example I.4 - Vector calculus in p.d.e. input
+%               cooperation with expres module
+%               2-D hydrodynamics
+
+scalefactors 2,x,y,x,y;
+
+
+SF(1) := 1
+
+SF(2) := 1
+
+vectors u;
+
+
+off exp,twogrid;
+
+
+on eqfu;
+
+
+factor diff,ht,hx,hy;
+
+
+coordinates x,y,t into j,i,m;
+
+
+grid uniform,x,y,t;
+
+
+dependence n(t,x,y),u(t,x,y),p(t,x,y);
+
+
+iim a,n,diff(n,t)+u.grad n+n*div u=0,
+     u,m*n*(diff(u,t)+u.grad u)+grad p=vect(0,0),
+     p,3/2*(diff(p,t)+u.grad p)+5/2*p*div u=0;
+
+
+*****************************
+*****      Program      *****          IIMET Ver 1.1  17/05/91
+*****************************
+
+      Partial Differential Equations
+      ==============================
+
+DIFF(N,T) + DIFF(N,X)*U1 + DIFF(N,Y)*U2 + DIFF(U1,X)*N + DIFF(U2,Y)*N
+
+    =    0
+
+DIFF(P,X) + DIFF(U1,T)*M*N + DIFF(U1,X)*M*N*U1 + DIFF(U1,Y)*M*N*U2
+
+    =    0
+
+DIFF(P,Y) + DIFF(U2,T)*M*N + DIFF(U2,X)*M*N*U1 + DIFF(U2,Y)*M*N*U2
+
+    =    0
+
+ 3*DIFF(P,T)     3*DIFF(P,X)*U1     3*DIFF(P,Y)*U2
+------------- + ---------------- + ----------------
+      2                2                  2
+
+    5*DIFF(U1,X)*P     5*DIFF(U2,Y)*P
+ + ---------------- + ----------------    =    0
+          2                  2
+
+
+0 interpolations are needed in X coordinate
+  Equation for N variable is integrated in HALF grid point
+  Equation for U1 variable is integrated in HALF grid point
+  Equation for U2 variable is integrated in HALF grid point
+  Equation for P variable is integrated in HALF grid point
+0 interpolations are needed in Y coordinate
+  Equation for N variable is integrated in HALF grid point
+  Equation for U1 variable is integrated in HALF grid point
+  Equation for U2 variable is integrated in HALF grid point
+  Equation for P variable is integrated in HALF grid point
+0 interpolations are needed in T coordinate
+  Equation for N variable is integrated in HALF grid point
+  Equation for U1 variable is integrated in HALF grid point
+  Equation for U2 variable is integrated in HALF grid point
+  Equation for P variable is integrated in HALF grid point
+
+         Equations after Discretization Using IIM :
+         ==========================================
+
+   -1   -1
+(HY  *HX  *((U1(J + 1,I + 1,M + 1)*HY + U2(J + 1,I + 1,M + 1)*HX)
+
+            *N(J + 1,I + 1,M + 1) + 
+
+            (U1(J + 1,I + 1,M)*HY + U2(J + 1,I + 1,M)*HX)
+
+            *N(J + 1,I + 1,M) + 
+
+            (U1(J + 1,I,M + 1)*HY - U2(J + 1,I,M + 1)*HX)
+
+            *N(J + 1,I,M + 1)
+
+             + (U1(J + 1,I,M)*HY - U2(J + 1,I,M)*HX)*N(J + 1,I,M) - 
+
+            (U1(J,I + 1,M + 1)*HY - U2(J,I + 1,M + 1)*HX)
+
+            *N(J,I + 1,M + 1)
+
+             - (U1(J,I + 1,M)*HY - U2(J,I + 1,M)*HX)*N(J,I + 1,M)
+
+             - (U1(J,I,M + 1)*HY + U2(J,I,M + 1)*HX)*N(J,I,M + 1)
+
+                                                               -1
+             - (U1(J,I,M)*HY + U2(J,I,M)*HX)*N(J,I,M)))/4 + (HT  *(
+
+      N(J + 1,I + 1,M + 1) - N(J + 1,I + 1,M) + N(J + 1,I,M + 1)
+
+       - N(J + 1,I,M) + N(J,I + 1,M + 1) - N(J,I + 1,M)
+
+       + N(J,I,M + 1) - N(J,I,M)))/4   =   0
+
+
+   -1
+(HX  *((P(J + 1,I + 1,M + 1) + P(J + 1,I + 1,M) + P(J + 1,I,M + 1)
+
+         + P(J + 1,I,M))
+
+        - (P(J,I + 1,M + 1) + P(J,I + 1,M) + P(J,I,M + 1) + P(J,I,M))
+
+                 -1   -1
+       ))/4 + (HY  *HX  *(((
+
+                        N(J + 1,I + 1,M + 1)*U1(J + 1,I + 1,M + 1)
+
+                         + N(J,I + 1,M + 1)*U1(J,I + 1,M + 1))
+
+                     *(U1(J + 1,I + 1,M + 1) - U1(J,I + 1,M + 1)) + (
+
+                        N(J + 1,I + 1,M)*U1(J + 1,I + 1,M)
+
+                         + N(J,I + 1,M)*U1(J,I + 1,M))
+
+                     *(U1(J + 1,I + 1,M) - U1(J,I + 1,M)) + (
+
+                        N(J + 1,I,M + 1)*U1(J + 1,I,M + 1)
+
+                         + N(J,I,M + 1)*U1(J,I,M + 1))
+
+                     *(U1(J + 1,I,M + 1) - U1(J,I,M + 1)) + (
+
+                        N(J + 1,I,M)*U1(J + 1,I,M)
+
+                         + N(J,I,M)*U1(J,I,M))
+
+                     *(U1(J + 1,I,M) - U1(J,I,M)))*HY + ((
+
+                        N(J + 1,I + 1,M + 1)*U2(J + 1,I + 1,M + 1)
+
+                         + N(J + 1,I,M + 1)*U2(J + 1,I,M + 1))
+
+                     *(U1(J + 1,I + 1,M + 1) - U1(J + 1,I,M + 1)) + (
+
+                        N(J + 1,I + 1,M)*U2(J + 1,I + 1,M)
+
+                         + N(J + 1,I,M)*U2(J + 1,I,M))
+
+                     *(U1(J + 1,I + 1,M) - U1(J + 1,I,M)) + (
+
+                        N(J,I + 1,M + 1)*U2(J,I + 1,M + 1)
+
+                         + N(J,I,M + 1)*U2(J,I,M + 1))
+
+                     *(U1(J,I + 1,M + 1) - U1(J,I,M + 1)) + (
+
+                        N(J,I + 1,M)*U2(J,I + 1,M)
+
+                         + N(J,I,M)*U2(J,I,M))
+
+                                                                 -1
+                     *(U1(J,I + 1,M) - U1(J,I,M)))*HX)*M)/8 + (HT  *(
+
+      (N(J + 1,I + 1,M + 1) + N(J + 1,I + 1,M))
+
+      *(U1(J + 1,I + 1,M + 1) - U1(J + 1,I + 1,M)) + 
+
+      (N(J + 1,I,M + 1) + N(J + 1,I,M))
+
+      *(U1(J + 1,I,M + 1) - U1(J + 1,I,M)) + 
+
+      (N(J,I + 1,M + 1) + N(J,I + 1,M))
+
+      *(U1(J,I + 1,M + 1) - U1(J,I + 1,M))
+
+       + (N(J,I,M + 1) + N(J,I,M))*(U1(J,I,M + 1) - U1(J,I,M)))*M)/8
+
+   =   0
+
+
+   -1
+(HY  *((N(J + 1,I + 1,M + 1)*U2(J + 1,I + 1,M + 1)
+
+         + N(J + 1,I,M + 1)*U2(J + 1,I,M + 1))
+
+       *(U2(J + 1,I + 1,M + 1) - U2(J + 1,I,M + 1)) + (
+
+          N(J + 1,I + 1,M)*U2(J + 1,I + 1,M)
+
+           + N(J + 1,I,M)*U2(J + 1,I,M))
+
+       *(U2(J + 1,I + 1,M) - U2(J + 1,I,M)) + (
+
+          N(J,I + 1,M + 1)*U2(J,I + 1,M + 1)
+
+           + N(J,I,M + 1)*U2(J,I,M + 1))
+
+       *(U2(J,I + 1,M + 1) - U2(J,I,M + 1)) + 
+
+       (N(J,I + 1,M)*U2(J,I + 1,M) + N(J,I,M)*U2(J,I,M))
+
+                                               -1
+       *(U2(J,I + 1,M) - U2(J,I,M)))*M)/8 + (HX  *((
+
+         N(J + 1,I + 1,M + 1)*U1(J + 1,I + 1,M + 1)
+
+          + N(J,I + 1,M + 1)*U1(J,I + 1,M + 1))
+
+      *(U2(J + 1,I + 1,M + 1) - U2(J,I + 1,M + 1)) + (
+
+         N(J + 1,I + 1,M)*U1(J + 1,I + 1,M)
+
+          + N(J,I + 1,M)*U1(J,I + 1,M))
+
+      *(U2(J + 1,I + 1,M) - U2(J,I + 1,M)) + (
+
+         N(J + 1,I,M + 1)*U1(J + 1,I,M + 1)
+
+          + N(J,I,M + 1)*U1(J,I,M + 1))
+
+      *(U2(J + 1,I,M + 1) - U2(J,I,M + 1)) + 
+
+      (N(J + 1,I,M)*U1(J + 1,I,M) + N(J,I,M)*U1(J,I,M))
+
+                                              -1   -1
+      *(U2(J + 1,I,M) - U2(J,I,M)))*M)/8 + (HY  *HT  *((
+
+         (N(J + 1,I + 1,M + 1) + N(J + 1,I + 1,M))
+
+         *(U2(J + 1,I + 1,M + 1) - U2(J + 1,I + 1,M)) + 
+
+         (N(J + 1,I,M + 1) + N(J + 1,I,M))
+
+         *(U2(J + 1,I,M + 1) - U2(J + 1,I,M)) + 
+
+         (N(J,I + 1,M + 1) + N(J,I + 1,M))
+
+         *(U2(J,I + 1,M + 1) - U2(J,I + 1,M))
+
+          + (N(J,I,M + 1) + N(J,I,M))*(U2(J,I,M + 1) - U2(J,I,M)))*M
+
+      *HY + 2*(P(J + 1,I + 1,M + 1) + P(J + 1,I + 1,M))*HT
+
+       - 2*(P(J + 1,I,M + 1) + P(J + 1,I,M))*HT
+
+       + 2*(P(J,I + 1,M + 1) + P(J,I + 1,M))*HT
+
+       - 2*(P(J,I,M + 1) + P(J,I,M))*HT))/8   =   0
+
+
+   -1   -1
+(HY  *HX  *(5*((P(J + 1,I + 1,M + 1) + P(J + 1,I,M + 1))
+
+               *(U2(J + 1,I + 1,M + 1) - U2(J + 1,I,M + 1)) + 
+
+               (P(J + 1,I + 1,M) + P(J + 1,I,M))
+
+               *(U2(J + 1,I + 1,M) - U2(J + 1,I,M)) + 
+
+               (P(J,I + 1,M + 1) + P(J,I,M + 1))
+
+               *(U2(J,I + 1,M + 1) - U2(J,I,M + 1)) + 
+
+               (P(J,I + 1,M) + P(J,I,M))*(U2(J,I + 1,M) - U2(J,I,M)))
+
+            *HX + 3*((P(J + 1,I + 1,M + 1) - P(J + 1,I,M + 1))
+
+               *(U2(J + 1,I + 1,M + 1) + U2(J + 1,I,M + 1)) + 
+
+               (P(J + 1,I + 1,M) - P(J + 1,I,M))
+
+               *(U2(J + 1,I + 1,M) + U2(J + 1,I,M)) + 
+
+               (P(J,I + 1,M + 1) - P(J,I,M + 1))
+
+               *(U2(J,I + 1,M + 1) + U2(J,I,M + 1)) + 
+
+               (P(J,I + 1,M) - P(J,I,M))*(U2(J,I + 1,M) + U2(J,I,M)))
+
+            *HX + 5*((P(J + 1,I + 1,M + 1) + P(J,I + 1,M + 1))
+
+               *(U1(J + 1,I + 1,M + 1) - U1(J,I + 1,M + 1)) + 
+
+               (P(J + 1,I + 1,M) + P(J,I + 1,M))
+
+               *(U1(J + 1,I + 1,M) - U1(J,I + 1,M)) + 
+
+               (P(J + 1,I,M + 1) + P(J,I,M + 1))
+
+               *(U1(J + 1,I,M + 1) - U1(J,I,M + 1)) + 
+
+               (P(J + 1,I,M) + P(J,I,M))*(U1(J + 1,I,M) - U1(J,I,M)))
+
+            *HY + 3*((P(J + 1,I + 1,M + 1) - P(J,I + 1,M + 1))
+
+               *(U1(J + 1,I + 1,M + 1) + U1(J,I + 1,M + 1)) + 
+
+               (P(J + 1,I + 1,M) - P(J,I + 1,M))
+
+               *(U1(J + 1,I + 1,M) + U1(J,I + 1,M)) + 
+
+               (P(J + 1,I,M + 1) - P(J,I,M + 1))
+
+               *(U1(J + 1,I,M + 1) + U1(J,I,M + 1)) + 
+
+               (P(J + 1,I,M) - P(J,I,M))*(U1(J + 1,I,M) + U1(J,I,M)))
+
+                            -1
+            *HY))/16 + (3*HT  *(P(J + 1,I + 1,M + 1)
+
+       - P(J + 1,I + 1,M) + P(J + 1,I,M + 1) - P(J + 1,I,M)
+
+       + P(J,I + 1,M + 1) - P(J,I + 1,M) + P(J,I,M + 1) - P(J,I,M)))/
+
+8   =   0
+
+
+
+clear a,u;
+
+
+
+%***********************************************************************
+
+% Example I.5 - 1-D hydrodynamics up to 3-rd moments (heat flow)
+
+coordinates x,t into j,m;
+
+
+grid uniform,x,t;
+
+
+dependence n(x,t),u(x,t),tt(x,t),p(x,t),q(x,t);
+
+
+iim a, n,diff(n,t)+u*diff(n,x)+diff(u,x)=0,
+    u,n*m*(diff(u,t)+u*diff(u,x))+k*diff(n*tt,x)+diff(p,x)=0,
+    tt,3/2*k*n*(diff(tt,t)+u*diff(tt,x))+n*k*tt*diff(u,x)+1/2*p
+       *diff(u,x)+diff(q,x)=0,
+    p,diff(p,t)+u*diff(p,x)+p*diff(u,x)+n*k*tt*diff(u,x)+2/5*diff(q,x)
+       =0,
+    q,diff(q,t)+u*diff(q,x)+q*diff(u,x)+5/2*n*k**2*tt/m*diff(tt,x)+n*k
+       *tt*diff(p,x)-p*diff(p,x)=0;
+
+
+*****************************
+*****      Program      *****          IIMET Ver 1.1  17/05/91
+*****************************
+
+      Partial Differential Equations
+      ==============================
+
+DIFF(N,T) + DIFF(N,X)*U + DIFF(U,X)    =    0
+
+DIFF(N*TT,X)*K + DIFF(P,X) + DIFF(U,T)*M*N + DIFF(U,X)*M*N*U    =    
+
+0
+
+             DIFF(U,X)*(2*K*N*TT + P)     3*DIFF(TT,T)*K*N
+DIFF(Q,X) + -------------------------- + ------------------
+                        2                        2
+
+    3*DIFF(TT,X)*K*N*U
+ + --------------------    =    0
+            2
+
+                           2*DIFF(Q,X)
+DIFF(P,T) + DIFF(P,X)*U + ------------- + DIFF(U,X)*(K*N*TT + P)
+                                5
+
+    =    0
+
+DIFF(P,X)*(K*N*TT - P) + DIFF(Q,T) + DIFF(Q,X)*U + DIFF(U,X)*Q
+
+                  2
+    5*DIFF(TT,X)*K *N*TT
+ + ----------------------    =    0
+            2*M
+
+
+0 interpolations are needed in X coordinate
+  Equation for N variable is integrated in HALF grid point
+  Equation for U variable is integrated in HALF grid point
+  Equation for TT variable is integrated in HALF grid point
+  Equation for P variable is integrated in HALF grid point
+  Equation for Q variable is integrated in HALF grid point
+0 interpolations are needed in T coordinate
+  Equation for N variable is integrated in HALF grid point
+  Equation for U variable is integrated in HALF grid point
+  Equation for TT variable is integrated in HALF grid point
+  Equation for P variable is integrated in HALF grid point
+  Equation for Q variable is integrated in HALF grid point
+
+         Equations after Discretization Using IIM :
+         ==========================================
+
+   -1
+(HX  *(((N(J + 1,M + 1) - N(J,M + 1))*(U(J + 1,M + 1) + U(J,M + 1))
+
+         + (N(J + 1,M) - N(J,M))*(U(J + 1,M) + U(J,M)))
+
+        + 2*(U(J + 1,M + 1) + U(J + 1,M)) - 2*(U(J,M + 1) + U(J,M))))
+
+        -1
+      HT  *(N(J + 1,M + 1) - N(J + 1,M) + N(J,M + 1) - N(J,M))
+/4 + ----------------------------------------------------------
+                                 2
+
+   =   0
+
+
+   -1
+(HX  *(((N(J + 1,M + 1)*U(J + 1,M + 1) + N(J,M + 1)*U(J,M + 1))
+
+        *(U(J + 1,M + 1) - U(J,M + 1)) + 
+
+        (N(J + 1,M)*U(J + 1,M) + N(J,M)*U(J,M))*(U(J + 1,M) - U(J,M))
+
+        )*M + 2*(N(J + 1,M + 1)*TT(J + 1,M + 1)
+
+                  + N(J + 1,M)*TT(J + 1,M) - N(J,M + 1)*TT(J,M + 1)
+
+                  - N(J,M)*TT(J,M))*K
+
+        + 2*(P(J + 1,M + 1) + P(J + 1,M)) - 2*(P(J,M + 1) + P(J,M))))
+
+        -1
+/4 + (HT  *((N(J + 1,M + 1) + N(J + 1,M))
+
+            *(U(J + 1,M + 1) - U(J + 1,M))
+
+             + (N(J,M + 1) + N(J,M))*(U(J,M + 1) - U(J,M)))*M)/4
+
+   =   0
+
+
+   -1
+(HX  *(3*((N(J + 1,M + 1)*U(J + 1,M + 1) + N(J,M + 1)*U(J,M + 1))
+
+          *(TT(J + 1,M + 1) - TT(J,M + 1)) + 
+
+          (N(J + 1,M)*U(J + 1,M) + N(J,M)*U(J,M))
+
+          *(TT(J + 1,M) - TT(J,M)))*K + 2*(
+
+          (N(J + 1,M + 1)*TT(J + 1,M + 1) + N(J,M + 1)*TT(J,M + 1))
+
+          *(U(J + 1,M + 1) - U(J,M + 1)) + 
+
+          (N(J + 1,M)*TT(J + 1,M) + N(J,M)*TT(J,M))
+
+          *(U(J + 1,M) - U(J,M)))*K + (
+
+          (P(J + 1,M + 1) + P(J,M + 1))*(U(J + 1,M + 1) - U(J,M + 1))
+
+           + (P(J + 1,M) + P(J,M))*(U(J + 1,M) - U(J,M)))
+
+        + 4*(Q(J + 1,M + 1) + Q(J + 1,M)) - 4*(Q(J,M + 1) + Q(J,M))))
+
+          -1
+/8 + (3*HT  *((N(J + 1,M + 1) + N(J + 1,M))
+
+              *(TT(J + 1,M + 1) - TT(J + 1,M))
+
+               + (N(J,M + 1) + N(J,M))*(TT(J,M + 1) - TT(J,M)))*K)/8
+
+   =   0
+
+
+   -1
+(HX  *(5*(((N(J + 1,M + 1)*TT(J + 1,M + 1) + N(J,M + 1)*TT(J,M + 1))
+
+           *(U(J + 1,M + 1) - U(J,M + 1)) + 
+
+           (N(J + 1,M)*TT(J + 1,M) + N(J,M)*TT(J,M))
+
+           *(U(J + 1,M) - U(J,M)))*K + (P(J + 1,M + 1) + P(J,M + 1))
+
+          *(U(J + 1,M + 1) - U(J,M + 1)) + 
+
+          (P(J + 1,M + 1) - P(J,M + 1))*(U(J + 1,M + 1) + U(J,M + 1))
+
+           + (P(J + 1,M) + P(J,M))*(U(J + 1,M) - U(J,M))
+
+           + (P(J + 1,M) - P(J,M))*(U(J + 1,M) + U(J,M)))
+
+        + 4*(Q(J + 1,M + 1) + Q(J + 1,M)) - 4*(Q(J,M + 1) + Q(J,M))))
+
+         -1
+       HT  *(P(J + 1,M + 1) - P(J + 1,M) + P(J,M + 1) - P(J,M))
+/20 + ----------------------------------------------------------
+                                  2
+
+   =   0
+
+
+   -1
+(HX  *(2*((N(J + 1,M + 1)*TT(J + 1,M + 1) + N(J,M + 1)*TT(J,M + 1))
+
+          *(P(J + 1,M + 1) - P(J,M + 1)) + 
+
+          (N(J + 1,M)*TT(J + 1,M) + N(J,M)*TT(J,M))
+
+          *(P(J + 1,M) - P(J,M)))*K*M + 5*(
+
+          (N(J + 1,M + 1)*TT(J + 1,M + 1) + N(J,M + 1)*TT(J,M + 1))
+
+          *(TT(J + 1,M + 1) - TT(J,M + 1)) + 
+
+          (N(J + 1,M)*TT(J + 1,M) + N(J,M)*TT(J,M))
+
+                                     2
+          *(TT(J + 1,M) - TT(J,M)))*K  - 2*(
+
+          (P(J + 1,M + 1) + P(J,M + 1))*(P(J + 1,M + 1) - P(J,M + 1))
+
+           + (P(J + 1,M) + P(J,M))*(P(J + 1,M) - P(J,M)))*M + 2*(
+
+          (Q(J + 1,M + 1) + Q(J,M + 1))*(U(J + 1,M + 1) - U(J,M + 1))
+
+           + (Q(J + 1,M) + Q(J,M))*(U(J + 1,M) - U(J,M)))*M + 2*(
+
+          (Q(J + 1,M + 1) - Q(J,M + 1))*(U(J + 1,M + 1) + U(J,M + 1))
+
+           + (Q(J + 1,M) - Q(J,M))*(U(J + 1,M) + U(J,M)))*M))/(8*M)
+
+      -1
+    HT  *(Q(J + 1,M + 1) - Q(J + 1,M) + Q(J,M + 1) - Q(J,M))
+ + ----------------------------------------------------------   =   0
+                               2
+
+
+
+clear a;
+
+
+
+remfac diff,ht,hx,hy;
+
+
+on exp;
+
+
+off rat;
+
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****     T e s t     Examples   ---   Module    A P P R O X      *****
+%*****                                                             *****
+%***********************************************************************
+
+% Example A.1
+
+coordinates x,t into j,n;
+
+
+maxorder t=2,x=3;
+
+
+functions u,v;
+
+
+approx( (u(n+1/2)-u(n-1/2))/ht=(v(n+1/2,j+1/2)-v(n+1/2,j-1/2)
+                               +v(n-1/2,j+1/2)-v(n-1/2,j-1/2))/(2*hx) );
+
+
+ Difference scheme approximates differential equation DF(U,T)=DF(V,X)
+
+ with orders of approximation:
+
+  2
+HX
+
+  2
+HT
+
+
+% Example A.2
+
+maxorder t=3,x=3;
+
+
+approx( (u(n+1)-u(n))/ht=(u(n+1,j+1/2)-u(n+1,j-1/2)
+                               +u(n,j+1/2)-u(n,j-1/2))/(2*hx) );
+
+
+ Difference scheme approximates differential equation DF(U,T)=DF(U,X)
+
+ with orders of approximation:
+
+  2
+HX
+
+HT
+
+
+% Example A.3
+
+maxorder t=2,x=3;
+
+
+center t=1/2;
+
+
+approx( (u(n+1)-u(n))/ht=(v(n+1,j+1/2)-v(n+1,j-1/2)
+                               +v(n,j+1/2)-v(n,j-1/2))/(2*hx) );
+
+
+ Difference scheme approximates differential equation DF(U,T)=DF(V,X)
+
+ with orders of approximation:
+
+  2
+HX
+
+  2
+HT
+
+
+% Example A.4
+
+approx( u(n+1)/ht=(v(n+1,j+1/2)-v(n+1,j-1/2)
+                               +v(n,j+1/2)-v(n,j-1/2))/(2*hx) );
+
+
+ Reformulate difference scheme, grid steps remain in denominators
+
+ Difference scheme approximates differential equation 0=DF(V,X)
+
+ with orders of approximation:
+
+  2
+HX
+
+  -1
+HT
+
+
+% Example A.5
+
+maxorder t=3,x=3;
+
+
+approx( (u(n+1)-u(n))/ht=(u(n+1,j+1/2)-u(n+1,j-1/2))/hx);
+
+
+ Difference scheme approximates differential equation DF(U,T)=DF(U,X)
+
+ with orders of approximation:
+
+  2
+HX
+
+HT
+
+
+% Example A.6
+
+approx( (u(n+1)-u(n))/ht=(u(n+1/2,j+1/2)-u(n+1/2,j-1/2))/hx);
+
+
+ Difference scheme approximates differential equation DF(U,T)=DF(U,X)
+
+ with orders of approximation:
+
+  2
+HX
+
+  2
+HT
+
+
+% Example A.7;
+
+approx((u(n+1)-u(n))/ht=(u(n+1/2,j+1)-2*u(n+1/2,j)+u(n+1/2,j-1))/hx**2);
+
+
+ Difference scheme approximates differential equation DF(U,T)
+
+=DF(U,X,2)
+
+ with orders of approximation:
+
+1
+
+  2
+HT
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****     T e s t     Examples   ---   Module    C H A R P O L    *****
+%*****                                                             *****
+%***********************************************************************
+
+% Example C.1
+
+coordinates t,x into i,j;
+
+
+grid uniform,t,x;
+
+
+let cos ax**2=1-sin ax**2;
+
+
+unfunc u,v;
+
+
+matrix aa(1,2),bb(2,2);
+
+
+aa(1,1):=(u(i+1)-u(i))/ht+(v(j+1)-v(j))/hx$
+
+
+aa(1,2):=(v(i+1)-v(i))/ht+(u(j+1/2)-u(j-1/2))/hx$
+
+
+bb:=ampmat aa;
+
+
+       KX*HX
+AX := -------
+         2
+
+
+      [HX  0 ]
+H1 := [      ]
+      [0   HX]
+
+
+                         2                                2
+H0 := MAT((HX,HT*(SIN(AX)  - 2*SIN(AX)*COS(AX)*I - COS(AX)  + 1)),
+
+          ( - 2*SIN(AX)*I*HT,HX))
+
+
+      [                      2*SIN(AX)*HT*(SIN(AX) - COS(AX)*I) ]
+      [         1           ------------------------------------]
+      [                                      HX                 ]
+BB := [                                                         ]
+      [  - 2*SIN(AX)*I*HT                                       ]
+      [-------------------                   1                  ]
+      [        HX                                               ]
+
+
+bb:=denotemat bb;
+
+
+      [  1     I*AI12 + AR12]
+BB := [                     ]
+      [I*AI21        1      ]
+
+
+factor lam;
+
+
+pol:=charpol bb;
+
+
+          2
+POL := LAM  - 2*LAM - I*AR12*AI21 + AI12*AI21 + 1
+
+prdenot;
+
+
+                  2
+         2*SIN(AX) *HT
+AR12 := ---------------
+              HX
+
+          - 2*SIN(AX)*COS(AX)*HT
+AI12 := -------------------------
+                   HX
+
+          - 2*SIN(AX)*HT
+AI21 := -----------------
+               HX
+
+cleardenot;
+
+
+clear aa,bb,pol;
+
+
+
+%***********************************************************************
+
+% Example C.2 : Reprint Vorozcov, Ganza, Mazurik: Simvolno-cislennyj
+%               interfejs.  v zadacach ..., Novosibirsk 1986,  p.47.
+
+unfunc u;
+
+
+matrix aa(1,1),bb(1,1);
+
+
+aa(1,1):=(u(i+1)-u(i))/ht+a*(u(j)-u(j-1))/hx$
+
+
+bb:=ampmat aa;
+
+
+AX := KX*HX
+
+
+H1 := [HX]
+
+
+H0 := [ - SIN(AX)*A*I*HT + COS(AX)*A*HT - A*HT + HX]
+
+
+      [  - SIN(AX)*A*I*HT + COS(AX)*A*HT - A*HT + HX ]
+BB := [----------------------------------------------]
+      [                      HX                      ]
+
+
+bb:=denotemat bb;
+
+
+BB := [I*AI11 + AR11]
+
+
+pol:=charpol bb;
+
+
+POL := LAM - (I*AI11 + AR11)
+
+prdenot;
+
+
+         COS(AX)*A*HT - A*HT + HX
+AR11 := --------------------------
+                    HX
+
+          - SIN(AX)*A*HT
+AI11 := -----------------
+               HX
+
+cleardenot;
+
+
+clear aa,bb,pol;
+
+
+
+%***********************************************************************
+
+% Example C.3 : Reprint Vorozcov, Ganza, Mazurik: Simvolno-cislennyj
+%               interfejs.  v zadacach ..., Novosibirsk 1986,  p.52.
+
+coordinates t,x into m,j;
+
+
+unfunc u,r;
+
+
+matrix aa(1,2),bb(2,2);
+
+
+aa(1,1):=(r(m+1)-r(m))/ht+u0*(r(m+1,j+1)-r(m+1,j-1))/2/hx
+                         +r0*(u(m+1,j+1)-u(m+1,j-1))/2/hx$
+
+
+aa(1,2):=(u(m+1)-u(m))/ht+u0*(u(m+1,j+1)-u(m+1,j-1))/2/hx
+                         +c0**2/r0*(r(m,j+1)-u(m,j-1))/2/hx$
+
+
+bb:=ampmat aa;
+
+
+AX := KX*HX
+
+
+      [      SIN(AX)*I*HT*R0        SIN(AX)*I*HT*U0 + HX]
+H1 := [                                                 ]
+      [2*R0*(SIN(AX)*I*HT*U0 + HX)           0          ]
+
+
+H0 := MAT((0,HX),
+
+                             2                2
+          ( - SIN(AX)*I*HT*C0  + COS(AX)*HT*C0  + 2*HX*R0,
+
+                   2
+            - HT*C0 *(SIN(AX)*I + COS(AX))))
+
+
+                      2   2      2                       2      2
+BB := MAT((( - SIN(AX) *HT *U0*C0  - SIN(AX)*COS(AX)*I*HT *U0*C0
+
+                                                           2
+             - 2*SIN(AX)*I*HX*HT*U0*R0 - SIN(AX)*I*HX*HT*C0
+
+                               2       2
+             + COS(AX)*HX*HT*C0  + 2*HX *R0)/(2*R0
+
+                       2   2   2     2         2            2
+              *(SIN(AX) *HT *U0  + HX )),(HT*C0 *( - SIN(AX) *HT*U0
+
+                  + SIN(AX)*COS(AX)*I*HT*U0 - SIN(AX)*I*HX
+
+                                               2   2   2     2
+                  - COS(AX)*HX))/(2*R0*(SIN(AX) *HT *U0  + HX ))),
+
+                               3   3   2   2
+          ((SIN(AX)*HT*(SIN(AX) *HT *U0 *C0
+
+                         2             3   2   2
+                + SIN(AX) *COS(AX)*I*HT *U0 *C0
+
+                           2        2   2
+                + 2*SIN(AX) *I*HX*HT *U0 *R0
+
+                           2        2      2
+                + 2*SIN(AX) *I*HX*HT *U0*C0
+
+                                         2      2
+                - 2*SIN(AX)*COS(AX)*HX*HT *U0*C0
+
+                              2                      2      2
+                - 4*SIN(AX)*HX *HT*U0*R0 - SIN(AX)*HX *HT*C0
+
+                              2      2         3
+                - COS(AX)*I*HX *HT*C0  - 2*I*HX *R0))/(2
+
+                       4   4   4            2   2   2   2     4
+              *(SIN(AX) *HT *U0  + 2*SIN(AX) *HX *HT *U0  + HX )),(
+
+                     4   4   2   2          3             4   2   2
+              SIN(AX) *HT *U0 *C0  - SIN(AX) *COS(AX)*I*HT *U0 *C0
+
+                          3        3   3            3        3      2
+               - 2*SIN(AX) *I*HX*HT *U0  + 2*SIN(AX) *I*HX*HT *U0*C0
+
+                          2              3      2
+               + 2*SIN(AX) *COS(AX)*HX*HT *U0*C0
+
+                          2   2   2   2          2   2   2   2
+               + 2*SIN(AX) *HX *HT *U0  - SIN(AX) *HX *HT *C0
+
+                                     2   2   2
+               + SIN(AX)*COS(AX)*I*HX *HT *C0
+
+                               3             4
+               - 2*SIN(AX)*I*HX *HT*U0 + 2*HX )/(2
+
+                       4   4   4            2   2   2   2     4
+              *(SIN(AX) *HT *U0  + 2*SIN(AX) *HX *HT *U0  + HX ))))
+
+
+bb:=denotemat bb;
+
+
+      [I*AI11 + AR11  I*AI12 + AR12]
+BB := [                            ]
+      [I*AI21 + AR21  I*AI22 + AR22]
+
+
+pol:=charpol bb;
+
+
+          2
+POL := LAM  - LAM*(I*AI11 + I*AI22 + AR11 + AR22) - I*AR12*AI21
+
+        - I*AI12*AR21 + I*AR11*AI22 + I*AI11*AR22 - AR12*AR21
+
+        + AI12*AI21 + AR11*AR22 - AI11*AI22
+
+prdenot;
+
+
+                   2   2      2                   2       2
+          - SIN(AX) *HT *U0*C0  + COS(AX)*HX*HT*C0  + 2*HX *R0
+AR11 := -------------------------------------------------------
+                                  2   2   2     2
+                     2*R0*(SIN(AX) *HT *U0  + HX )
+
+                                        2                     2
+         SIN(AX)*HT*( - COS(AX)*HT*U0*C0  - 2*HX*U0*R0 - HX*C0 )
+AI11 := ---------------------------------------------------------
+                                   2   2   2     2
+                      2*R0*(SIN(AX) *HT *U0  + HX )
+
+                 2         2
+          - HT*C0 *(SIN(AX) *HT*U0 + COS(AX)*HX)
+AR12 := -----------------------------------------
+                           2   2   2     2
+              2*R0*(SIN(AX) *HT *U0  + HX )
+
+                      2
+         SIN(AX)*HT*C0 *(COS(AX)*HT*U0 - HX)
+AI12 := -------------------------------------
+                         2   2   2     2
+            2*R0*(SIN(AX) *HT *U0  + HX )
+
+                2   2         2   2   2   2                        2
+AR21 := (SIN(AX) *HT *(SIN(AX) *HT *U0 *C0  - 2*COS(AX)*HX*HT*U0*C0
+
+                   2           2   2
+             - 4*HX *U0*R0 - HX *C0 ))/(2
+
+                    4   4   4            2   2   2   2     4
+           *(SIN(AX) *HT *U0  + 2*SIN(AX) *HX *HT *U0  + HX ))
+
+                            2           3   2   2
+AI21 := (SIN(AX)*HT*(SIN(AX) *COS(AX)*HT *U0 *C0
+
+                        2      2   2               2      2      2
+             + 2*SIN(AX) *HX*HT *U0 *R0 + 2*SIN(AX) *HX*HT *U0*C0
+
+                         2      2       3
+             - COS(AX)*HX *HT*C0  - 2*HX *R0))/(2
+
+                    4   4   4            2   2   2   2     4
+           *(SIN(AX) *HT *U0  + 2*SIN(AX) *HX *HT *U0  + HX ))
+
+                4   4   2   2            2              3      2
+AR22 := (SIN(AX) *HT *U0 *C0  + 2*SIN(AX) *COS(AX)*HX*HT *U0*C0
+
+                     2   2   2   2          2   2   2   2       4
+          + 2*SIN(AX) *HX *HT *U0  - SIN(AX) *HX *HT *C0  + 2*HX )/(2
+
+                    4   4   4            2   2   2   2     4
+           *(SIN(AX) *HT *U0  + 2*SIN(AX) *HX *HT *U0  + HX ))
+
+                               2           3   2   2
+AI22 := (SIN(AX)*HT*( - SIN(AX) *COS(AX)*HT *U0 *C0
+
+                        2      2   3            2      2      2
+             - 2*SIN(AX) *HX*HT *U0  + 2*SIN(AX) *HX*HT *U0*C0
+
+                         2      2       3
+             + COS(AX)*HX *HT*C0  - 2*HX *U0))/(2
+
+                    4   4   4            2   2   2   2     4
+           *(SIN(AX) *HT *U0  + 2*SIN(AX) *HX *HT *U0  + HX ))
+
+cleardenot;
+
+
+clear aa,bb,pol;
+
+
+
+%***********************************************************************
+
+% Example C.4 : Richtmyer, Morton: Difference methods for initial value
+%               problems, &10.3.  p.262
+
+coordinates t,x into n,j;
+
+
+unfunc v,w;
+
+
+matrix aa(1,2),bb(2,2);
+
+
+aa(1,1):=(v(n+1)-v(n))/ht-c*(w(j+1/2)-w(j-1/2)+
+                             w(n+1,j+1/2)-w(n+1,j-1/2))/(2*hx)$
+
+
+aa(1,2):=(w(n+1,j-1/2)-w(n,j-1/2))/ht-c*(v(n+1,j)-v(n+1,j-1)+
+                                         v(j)-v(j-1))/(2*hx)$
+
+
+bb:=ampmat aa;
+
+
+       KX*HX
+AX := -------
+         2
+
+
+H1 := MAT((HX, - SIN(AX)*C*I*HT),
+
+                           2                                2
+          (C*HT*( - SIN(AX)  - 2*SIN(AX)*COS(AX)*I + COS(AX)  - 1),
+
+           2*HX*( - SIN(AX)*I + COS(AX))))
+
+
+H0 := MAT((HX,SIN(AX)*C*I*HT),
+
+                        2                                2
+          (C*HT*(SIN(AX)  + 2*SIN(AX)*COS(AX)*I - COS(AX)  + 1),
+
+           2*HX*( - SIN(AX)*I + COS(AX))))
+
+
+      [           2  2   2     2                             ]
+      [  - SIN(AX) *C *HT  + HX       2*SIN(AX)*C*I*HX*HT    ]
+      [--------------------------   -----------------------  ]
+      [         2  2   2     2              2  2   2     2   ]
+      [  SIN(AX) *C *HT  + HX        SIN(AX) *C *HT  + HX    ]
+BB := [                                                      ]
+      [                                       2  2   2     2 ]
+      [   2*SIN(AX)*C*I*HX*HT        - SIN(AX) *C *HT  + HX  ]
+      [ -----------------------    --------------------------]
+      [         2  2   2     2              2  2   2     2   ]
+      [  SIN(AX) *C *HT  + HX        SIN(AX) *C *HT  + HX    ]
+
+
+bb:=denotemat bb;
+
+
+      [ AR11   I*AI12]
+BB := [              ]
+      [I*AI21   AR22 ]
+
+
+pol:=charpol bb;
+
+
+          2
+POL := LAM  - LAM*(AR11 + AR22) + AI12*AI21 + AR11*AR22
+
+prdenot;
+
+
+                   2  2   2     2
+          - SIN(AX) *C *HT  + HX
+AR11 := --------------------------
+                 2  2   2     2
+          SIN(AX) *C *HT  + HX
+
+           2*SIN(AX)*C*HX*HT
+AI12 := -----------------------
+                2  2   2     2
+         SIN(AX) *C *HT  + HX
+
+           2*SIN(AX)*C*HX*HT
+AI21 := -----------------------
+                2  2   2     2
+         SIN(AX) *C *HT  + HX
+
+                   2  2   2     2
+          - SIN(AX) *C *HT  + HX
+AR22 := --------------------------
+                 2  2   2     2
+          SIN(AX) *C *HT  + HX
+
+cleardenot;
+
+
+clear aa,bb,pol;
+
+
+
+%***********************************************************************
+
+% Example C.5: Mazurik: Algoritmy resenia zadaci..., Preprint no.24-85,
+%               AN USSR SO, Inst. teor. i prikl. mechaniky, p.34
+
+coordinates t,x,y into n,m,k;
+
+
+grid uniform,t,x,y;
+
+
+unfunc u1,u2,u3;
+
+
+matrix aa(1,3),bb(3,3);
+
+
+aa(1,1):=(u1(n+1)-u1(n))/ht+c/2*((-u1(m-1)+2*u1(m)-u1(m+1))/hx +
+         (u2(m+1)-u2(m-1))/hx - (u1(k-1)-2*u1(k)+u1(k+1))/hy +
+         (u3(k+1)-u3(k-1))/hy)$
+
+
+aa(1,2):=(u2(n+1)-u2(n))/ht+c/2*((u1(m+1)-u1(m-1))/hx -
+         (u2(m-1)-2*u2(m)+u2(m+1))/hx)$
+
+
+aa(1,3):=(u3(n+1)-u3(n))/ht + c/2*((u1(k+1)-u1(k-1))/hy -
+         (u3(k-1)-2*u3(k)+u3(k+1))/hy)$
+
+
+off prfourmat;
+
+
+bb:=ampmat aa;
+
+
+AX := KX*HX
+
+
+AY := KY*HY
+
+
+BB := MAT(((COS(AX)*C*HY*HT + COS(AY)*C*HX*HT - C*HY*HT - C*HX*HT
+
+                                - SIN(AX)*C*I*HT    - SIN(AY)*C*I*HT
+             + HY*HX)/(HY*HX),-------------------,-------------------
+                                      HX                  HY
+
+           ),
+
+             - SIN(AX)*C*I*HT   COS(AX)*C*HT - C*HT + HX
+          (-------------------,--------------------------,0),
+                   HX                      HX
+
+             - SIN(AY)*C*I*HT     COS(AY)*C*HT - C*HT + HY
+          (-------------------,0,--------------------------))
+                   HY                        HY
+
+
+pol:=charpol bb;
+
+
+           3   2   2      2
+POL := (LAM *HY *HX  + LAM *HY*HX*( - 2*COS(AX)*C*HY*HT
+
+            - 2*COS(AY)*C*HX*HT + 2*C*HY*HT + 2*C*HX*HT - 3*HY*HX) + 
+
+                    2  2   2   2                      2         2
+        LAM*(SIN(AY) *C *HX *HT  + 3*COS(AX)*COS(AY)*C *HY*HX*HT
+
+                           2   2   2              2         2
+              - 2*COS(AX)*C *HY *HT  - 3*COS(AX)*C *HY*HX*HT
+
+                              2                2  2   2   2
+              + 4*COS(AX)*C*HY *HX*HT + COS(AY) *C *HX *HT
+
+                           2         2              2   2   2
+              - 3*COS(AY)*C *HY*HX*HT  - 2*COS(AY)*C *HX *HT
+
+                                 2         2   2   2      2         2
+              + 4*COS(AY)*C*HY*HX *HT + 2*C *HY *HT  + 3*C *HY*HX*HT
+
+                 2   2   2         2                  2
+              + C *HX *HT  - 4*C*HY *HX*HT - 4*C*HY*HX *HT
+
+                    2   2           2          3      3
+              + 3*HY *HX ) - SIN(AY) *COS(AX)*C *HX*HT
+
+                  2  3      3          2  2   2   2
+         + SIN(AY) *C *HX*HT  - SIN(AY) *C *HX *HT
+
+                          2  3      3                      3      3
+         - COS(AX)*COS(AY) *C *HX*HT  + 2*COS(AX)*COS(AY)*C *HY*HT
+
+                              3      3
+         + 2*COS(AX)*COS(AY)*C *HX*HT
+
+                              2         2              3      3
+         - 3*COS(AX)*COS(AY)*C *HY*HX*HT  - 2*COS(AX)*C *HY*HT
+
+                    3      3              2   2   2
+         - COS(AX)*C *HX*HT  + 2*COS(AX)*C *HY *HT
+
+                      2         2                 2
+         + 3*COS(AX)*C *HY*HX*HT  - 2*COS(AX)*C*HY *HX*HT
+
+                  2  3      3          2  2   2   2
+         + COS(AY) *C *HX*HT  - COS(AY) *C *HX *HT
+
+                      3      3              3      3
+         - 2*COS(AY)*C *HY*HT  - 2*COS(AY)*C *HX*HT
+
+                      2         2              2   2   2
+         + 3*COS(AY)*C *HY*HX*HT  + 2*COS(AY)*C *HX *HT
+
+                            2         3      3    3      3
+         - 2*COS(AY)*C*HY*HX *HT + 2*C *HY*HT  + C *HX*HT
+
+              2   2   2      2         2    2   2   2         2
+         - 2*C *HY *HT  - 3*C *HY*HX*HT  - C *HX *HT  + 2*C*HY *HX*HT
+
+                    2        2   2     2   2
+         + 2*C*HY*HX *HT - HY *HX )/(HY *HX )
+
+let
+  cos ax=cos ax2**2-sin ax2**2,
+  cos ay=cos ay2**2-sin ay2**2,
+  sin ax=2*sin ax2*cos ax2,
+  sin ay=2*sin ay2*cos ay2,
+  cos ax2**2=1-sin ax2**2,
+  cos ay2**2=1-sin ay2**2,
+  sin ax2=s1,
+  sin ay2=s2,
+  hx=c*ht/cap1,
+  hy=c*ht/cap2;
+
+
+order s1,s2;
+
+
+pol:=pol;
+
+
+          3      2      2            2
+POL := LAM  + LAM *(4*S1 *CAP1 + 4*S2 *CAP2 - 3) + LAM*(
+
+               2   2                 2     2       2
+          12*S1 *S2 *CAP1*CAP2 + 4*S1 *CAP1  - 8*S1 *CAP1
+
+                 2     2       2                 2   2     2
+           + 4*S2 *CAP2  - 8*S2 *CAP2 + 3) + 8*S1 *S2 *CAP1 *CAP2
+
+              2   2          2        2   2                 2     2
+        + 8*S1 *S2 *CAP1*CAP2  - 12*S1 *S2 *CAP1*CAP2 - 4*S1 *CAP1
+
+              2            2     2       2
+        + 4*S1 *CAP1 - 4*S2 *CAP2  + 4*S2 *CAP2 - 1
+
+clear cos ax,cos ay,sin ax,sin ay,cos ax2**2,cos ay2**2,sin ax2,sin ay2,
+      hx,hy;
+
+
+pol:=complexpol pol;
+
+
+         2   2
+ If  8*S1 *S2 *CAP1*CAP2*(CAP1 + CAP2)  =  0  and  0
+
+  =  0  , a root of the polynomial is equal to 1.
+
+          3      2      2            2
+POL := LAM  + LAM *(4*S1 *CAP1 + 4*S2 *CAP2 - 3) + LAM*(
+
+               2   2                 2     2       2
+          12*S1 *S2 *CAP1*CAP2 + 4*S1 *CAP1  - 8*S1 *CAP1
+
+                 2     2       2                 2   2     2
+           + 4*S2 *CAP2  - 8*S2 *CAP2 + 3) + 8*S1 *S2 *CAP1 *CAP2
+
+              2   2          2        2   2                 2     2
+        + 8*S1 *S2 *CAP1*CAP2  - 12*S1 *S2 *CAP1*CAP2 - 4*S1 *CAP1
+
+              2            2     2       2
+        + 4*S1 *CAP1 - 4*S2 *CAP2  + 4*S2 *CAP2 - 1
+
+pol1:=hurw pol;
+
+
+             3   2   2                                2
+POL1 := 8*LAM *S1 *S2 *CAP1*CAP2*(CAP1 + CAP2) + 8*LAM *(
+
+                  2   2     2            2   2          2
+            - 3*S1 *S2 *CAP1 *CAP2 - 3*S1 *S2 *CAP1*CAP2
+
+                  2   2               2     2     2     2
+            + 3*S1 *S2 *CAP1*CAP2 + S1 *CAP1  + S2 *CAP2 ) + 8*LAM*(
+
+               2   2     2            2   2          2
+           3*S1 *S2 *CAP1 *CAP2 + 3*S1 *S2 *CAP1*CAP2
+
+                  2   2                 2     2       2
+            - 6*S1 *S2 *CAP1*CAP2 - 2*S1 *CAP1  + 2*S1 *CAP1
+
+                  2     2       2                 2   2     2
+            - 2*S2 *CAP2  + 2*S2 *CAP2) + 8*( - S1 *S2 *CAP1 *CAP2
+
+                2   2          2       2   2               2     2
+            - S1 *S2 *CAP1*CAP2  + 3*S1 *S2 *CAP1*CAP2 + S1 *CAP1
+
+                  2          2     2       2
+            - 2*S1 *CAP1 + S2 *CAP2  - 2*S2 *CAP2 + 1)
+
+denotid cp;
+
+
+pol:=denotepol pol;
+
+
+          3      2
+POL := LAM  + LAM *CPR02 + LAM*CPR01 + CPR00
+
+prdenot;
+
+
+             2   2     2            2   2          2
+CPR00 := 8*S1 *S2 *CAP1 *CAP2 + 8*S1 *S2 *CAP1*CAP2
+
+                 2   2                 2     2       2
+          - 12*S1 *S2 *CAP1*CAP2 - 4*S1 *CAP1  + 4*S1 *CAP1
+
+                2     2       2
+          - 4*S2 *CAP2  + 4*S2 *CAP2 - 1
+
+              2   2                 2     2       2
+CPR01 := 12*S1 *S2 *CAP1*CAP2 + 4*S1 *CAP1  - 8*S1 *CAP1
+
+                2     2       2
+          + 4*S2 *CAP2  - 8*S2 *CAP2 + 3
+
+             2            2
+CPR02 := 4*S1 *CAP1 + 4*S2 *CAP2 - 3
+
+cleardenot;
+
+
+clear aa,bb,pol,pol1;
+
+
+
+%***********************************************************************
+
+% Example C.6 : Lax-Wendrov (V. Ganzha)
+
+coordinates t,x,y into n,m,k;
+
+
+grid uniform,t,x,y;
+
+
+let cos ax**2=1-sin ax**2,
+    cos ay**2=1-sin ay**2;
+
+
+unfunc u1,u2,u3,u4;
+
+
+matrix aa(1,4),bb(4,4);
+
+
+aa(1,1):=4*(u1(n+1)-u1(n))/ht+
+         (w*(u1(m+2)-u1(m-2)+u1(m+1,k+1)+u1(m+1,k-1)-
+         u1(m-1,k+1)-u1(m-1,k-1))+p*(u2(m+2)-u2(m-2)+u2(m+1,k+1)+
+         u2(m+1,k-1)-u2(m-1,k+1)-u2(m-1,k-1))+
+         v*(u1(m+1,k+1)+u1(m-1,k+1)-
+         u1(m+1,k-1)-u1(m-1,k-1)+u1(k+2)-u1(k-2))+p*(u3(m+1,k+1)+
+         u3(m-1,k+1)-u3(m+1,k-1)-u3(m-1,k-1)+u3(k+2)-u3(k-2)))/hx+ht*
+         (2*w**2*(-u1(m+2)+2*u1(m)-u1(m-2))+4*w*p*(-u2(m+2)+2*u2(m)-
+         u2(m-2))+2*(-u4(m+2)+2*u4(m)-u4(m-2))+2*v**2*(-u1(k+2)+
+         2*u1(k)-u1(k-2))+4*v*p*(u3(k+2)+2*u3(k)-u3(k-2))+2*(-u4(k+2)+
+         2*u4(k)-u4(k-2))+4*w*v*(-u1(m+1,k+1)+u1(m+1,k-1)+u1(m-1,k+1)-
+         u1(m-1,k-1))+4*p*v*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-
+         u2(m-1,k-1))+4*w*p*(-u3(m+1,k+1)+u3(m+1,k-1)+u3(m-1,k+1)-
+         u3(m-1,k-1)))/hx/hx$
+
+
+aa(1,2):=4*p*(u2(n+1)-u2(n))/ht+
+       (w*p*(u2(m+2)-u2(m-2)+u2(m+1,k+1)+
+         u2(m+1,k-1)-u2(m-1,k+1)-u2(m-1,k-1))+u4(m+2)-u4(m-2)+
+         u4(m+1,k+1)+
+         u4(m+1,k-1)-u4(m-1,k+1)-u4(m-1,k-1)+
+         p*v*(u2(m+1,k+1)+u2(m-1,k+1)+
+         u2(k+2)-u2(k-2)-u2(m+1,k-1)-u2(m-1,k-1)))/hx+ht*(2*w**2*p*
+         (-u2(m+2)+2*u2(m)-u2(m-2))+2*p*c**2*(-u2(m+2)+2*u2(m)-u2(m-2))
+         +4*w*(-u4(m+2)+2*u4(m)-u4(m-2))+2*p*v**2*(-u2(k+2)+2*u2(k)-
+         u2(k-2))+4*w*p*v*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-
+         u2(m-1,k-1))+2*p*c**2*(-u3(m+1,k+1)+u3(m+1,k-1)+u3(m-1,k+1)
+         -u3(m-1,k-1))+4*v*(-u4(m+1,k+1)+u4(m+1,k-1)+u4(m-1,k+1)-
+         u4(m-1,k-1)))/hx/hx$
+
+
+aa(1,3):=4*p*(u3(n+1)-u3(n))/ht+(w*p*(u3(m+2)-u3(m-2)+u3(m+1,k+1)+
+         u3(m+1,k-1)-u3(m-1,k+1)-u3(m-1,k-1))+u4(k+2)-u4(k-2)+
+         u4(m+1,k+1)-u4(m+1,k-1)+u4(m-1,k+1)-u4(m-1,k-1)+
+         p*v*(u3(m+1,k+1)+u3(m-1,k+1)+u3(k+2)-u3(k-2)-u3(m+1,k-1)-
+         u3(m-1,k-1)))/hx+ht*(2*w**2*p*(-u3(m+2)+2*u3(m)-u3(m-2))+
+         2*p*c**2*(-u3(k+2)+2*u3(k)-u3(k-2))+4*v*(-u4(k+2)+
+         2*u4(k)-u4(k-2))+2*p*v**2*(-u3(k+2)+2*u3(k)-u3(k-2))+
+         4*w*p*v*(-u3(m+1,k+1)+u3(m+1,k-1)+u3(m-1,k+1)-
+         u3(m-1,k-1))+2*p*c**2*(-u2(m+1,k+1)+u2(m+1,k-1)+
+         u2(m-1,k+1)-u2(m-1,k-1))+4*w*(u4(m+1,k+1)+u4(m+1,k-1)+
+         u4(m-1,k+1)-u4(m-1,k-1)))/hx/hx$
+
+
+aa(1,4):=4*(u4(n+1)-u4(n))/ht+(p*c**2*(u2(m+2)-u2(m-2)+u2(m+1,k+1)+
+         u2(m+1,k-1)-u2(m-1,k+1)-u2(m-1,k-1))+w*(u4(m+2)-
+         u4(m-2)+u4(m+1,k+1)+u4(m+1,k-1)-u4(m-1,k+1)-u4(m-1,k-1))+
+         +p*c**2*(u3(m+1,k+1)+u3(m-1,k+1)-u3(m+1,k-1)-
+         u3(m-1,k-1)+u3(k+2)-u3(k-2))+v*(u4(m+1,k+1)+u4(m-1,k+1)-
+         u4(m+1,k-1)-u4(m-1,k-1)+u4(k+2)-u4(k-2)))/hx+ht*
+         (2*w**2*(-u4(m+2)+2*u4(m)-u4(m-2))+4*w*p*c**2*(-u2(m+2)+
+         2*u2(m)-u2(m-2))+2*c**2*(-u4(m+2)+2*u4(m)-u4(m-2))+
+         4*p*v*c**2*(-u3(k+2)+2*u3(k)-u3(k-2))+2*c**2*(-u4(k+2)+
+         2*u4(k)-u4(k-2))+2*v**2*(-u4(k+2)+2*u4(k)-u4(k-2))+
+         4*p*v*c**2*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-
+         u2(m-1,k-1))+4*w*p*c**2*(-u3(m+1,k+1)+u3(m+1,k-1)+
+         u3(m-1,k+1)-u3(m-1,k-1))+4*w*v*(-u4(m+1,k+1)+
+         u4(m+1,k-1)+u4(m-1,k+1)-u4(m-1,k-1)))/hx/hx$
+
+
+bb:=ampmat aa;
+
+
+AX := KX*HX
+
+
+AY := KY*HY
+
+
+                        2  2   2                           2
+BB := MAT((( - 2*SIN(AX) *W *HT  - 4*SIN(AX)*SIN(AY)*V*W*HT
+
+             - SIN(AX)*COS(AX)*I*W*HX*HT - SIN(AX)*COS(AY)*I*W*HX*HT
+
+                        2  2   2
+             - 2*SIN(AY) *V *HT  - SIN(AY)*COS(AX)*I*V*HX*HT
+
+                                             2    2
+             - SIN(AY)*COS(AY)*I*V*HX*HT + HX )/HX ,(SIN(AX)*P*HT*(
+
+                  - 4*SIN(AX)*W*HT - 4*SIN(AY)*V*HT - COS(AX)*I*HX
+
+                                     2
+                  - COS(AY)*I*HX))/HX ,(P*HT*(
+
+                  - 4*SIN(AX)*SIN(AY)*W*HT - SIN(AY)*COS(AX)*I*HX
+
+                  - 4*SIN(AY)*COS(AY)*I*V*HT - SIN(AY)*COS(AY)*I*HX
+
+                                         2         2          2
+                               2   - 2*HT *(SIN(AX)  + SIN(AY) )
+                  - 2*V*HT))/HX ,--------------------------------),
+                                                 2
+                                               HX
+
+                          2  2   2            2  2   2
+          (0,( - 2*SIN(AX) *C *HT  - 2*SIN(AX) *W *HT
+
+                                         2
+               - 4*SIN(AX)*SIN(AY)*V*W*HT
+
+               - SIN(AX)*COS(AX)*I*W*HX*HT
+
+                                                      2  2   2
+               - SIN(AX)*COS(AY)*I*W*HX*HT - 2*SIN(AY) *V *HT
+
+               - SIN(AY)*COS(AX)*I*V*HX*HT
+
+                                               2    2
+               - SIN(AY)*COS(AY)*I*V*HX*HT + HX )/HX ,
+
+                                  2   2
+             - 2*SIN(AX)*SIN(AY)*C *HT
+           -----------------------------,(SIN(AX)*HT*(
+                          2
+                        HX
+
+                  - 4*SIN(AX)*W*HT - 4*SIN(AY)*V*HT - COS(AX)*I*HX
+
+                                        2
+                  - COS(AY)*I*HX))/(P*HX )),
+
+                                    2   2
+               - 2*SIN(AX)*SIN(AY)*C *HT                2  2   2
+          (0,-----------------------------,( - 2*SIN(AX) *W *HT
+                            2
+                          HX
+
+                                         2
+               - 4*SIN(AX)*SIN(AY)*V*W*HT
+
+               - SIN(AX)*COS(AX)*I*W*HX*HT
+
+                                                      2  2   2
+               - SIN(AX)*COS(AY)*I*W*HX*HT - 2*SIN(AY) *C *HT
+
+                          2  2   2
+               - 2*SIN(AY) *V *HT  - SIN(AY)*COS(AX)*I*V*HX*HT
+
+                                               2    2
+               - SIN(AY)*COS(AY)*I*V*HX*HT + HX )/HX ,(HT*(
+
+                  - 2*SIN(AX)*SIN(AY)*W*HT - 2*SIN(AX)*COS(AY)*I*W*HT
+
+                             2
+                  - 4*SIN(AY) *V*HT - 2*SIN(AY)*COS(AX)*I*W*HT
+
+                  - SIN(AY)*COS(AX)*I*HX - SIN(AY)*COS(AY)*I*HX
+
+                                                  2
+                  - 2*COS(AX)*COS(AY)*W*HT))/(P*HX )),
+
+                       2
+          (0,(SIN(AX)*C *P*HT*( - 4*SIN(AX)*W*HT - 4*SIN(AY)*V*HT
+
+                                                    2           2
+                  - COS(AX)*I*HX - COS(AY)*I*HX))/HX ,(SIN(AY)*C *P
+
+              *HT*( - 4*SIN(AX)*W*HT - 4*SIN(AY)*V*HT - COS(AX)*I*HX
+
+                                     2              2  2   2
+                  - COS(AY)*I*HX))/HX ,( - 2*SIN(AX) *C *HT
+
+                          2  2   2                           2
+               - 2*SIN(AX) *W *HT  - 4*SIN(AX)*SIN(AY)*V*W*HT
+
+               - SIN(AX)*COS(AX)*I*W*HX*HT
+
+                                                      2  2   2
+               - SIN(AX)*COS(AY)*I*W*HX*HT - 2*SIN(AY) *C *HT
+
+                          2  2   2
+               - 2*SIN(AY) *V *HT  - SIN(AY)*COS(AX)*I*V*HX*HT
+
+                                               2    2
+               - SIN(AY)*COS(AY)*I*V*HX*HT + HX )/HX ))
+
+
+let
+  sin(ax)=s1,
+  cos(ax)=c1,
+  sin(ay)=s2,
+  cos(ay)=c2,
+  w=k1*hx/ht,
+  v=k2*hx/ht,
+  c=k3*hx/ht,
+  ht=r1*hx;
+
+
+denotid a;
+
+
+bb:=denotemat bb;
+
+
+      [I*AI11 + AR11  I*AI12 + AR12  I*AI13 + AR13      AR14     ]
+      [                                                          ]
+      [      0        I*AI22 + AR22      AR23       I*AI24 + AR24]
+BB := [                                                          ]
+      [      0            AR32       I*AI33 + AR33  I*AI34 + AR34]
+      [                                                          ]
+      [      0        I*AI42 + AR42  I*AI43 + AR43  I*AI44 + AR44]
+
+
+clear sin ax,cos ax,sin ay,cos ay,w,v,c,ht;
+
+
+pol:=charpol bb;
+
+
+          4      3
+POL := LAM  - LAM *(I*AI11 + I*AI22 + I*AI33 + I*AI44 + AR11 + AR22
+
+                               2
+           + AR33 + AR44) + LAM *(I*AR11*AI22 + I*AR11*AI33
+
+           + I*AR11*AI44 + I*AI11*AR22 + I*AI11*AR33 + I*AI11*AR44
+
+           + I*AR22*AI33 + I*AR22*AI44 + I*AI22*AR33 + I*AI22*AR44
+
+           - I*AR24*AI42 - I*AI24*AR42 + I*AR33*AI44 + I*AI33*AR44
+
+           - I*AR34*AI43 - I*AI34*AR43 + AR11*AR22 + AR11*AR33
+
+           + AR11*AR44 - AI11*AI22 - AI11*AI33 - AI11*AI44
+
+           + AR22*AR33 + AR22*AR44 - AI22*AI33 - AI22*AI44
+
+           - AR23*AR32 - AR24*AR42 + AI24*AI42 + AR33*AR44
+
+           - AI33*AI44 - AR34*AR43 + AI34*AI43) + LAM*(
+
+           - I*AR11*AR22*AI33 - I*AR11*AR22*AI44 - I*AR11*AI22*AR33
+
+           - I*AR11*AI22*AR44 + I*AR11*AR24*AI42 + I*AR11*AI24*AR42
+
+           - I*AR11*AR33*AI44 - I*AR11*AI33*AR44 + I*AR11*AR34*AI43
+
+           + I*AR11*AI34*AR43 - I*AI11*AR22*AR33 - I*AI11*AR22*AR44
+
+           + I*AI11*AI22*AI33 + I*AI11*AI22*AI44 + I*AI11*AR23*AR32
+
+           + I*AI11*AR24*AR42 - I*AI11*AI24*AI42 - I*AI11*AR33*AR44
+
+           + I*AI11*AI33*AI44 + I*AI11*AR34*AR43 - I*AI11*AI34*AI43
+
+           - I*AR22*AR33*AI44 - I*AR22*AI33*AR44 + I*AR22*AR34*AI43
+
+           + I*AR22*AI34*AR43 - I*AI22*AR33*AR44 + I*AI22*AI33*AI44
+
+           + I*AI22*AR34*AR43 - I*AI22*AI34*AI43 + I*AR23*AR32*AI44
+
+           - I*AR23*AR34*AI42 - I*AR23*AI34*AR42 - I*AR24*AR32*AI43
+
+           + I*AR24*AR33*AI42 + I*AR24*AI33*AR42 - I*AI24*AR32*AR43
+
+           + I*AI24*AR33*AR42 - I*AI24*AI33*AI42 - AR11*AR22*AR33
+
+           - AR11*AR22*AR44 + AR11*AI22*AI33 + AR11*AI22*AI44
+
+           + AR11*AR23*AR32 + AR11*AR24*AR42 - AR11*AI24*AI42
+
+           - AR11*AR33*AR44 + AR11*AI33*AI44 + AR11*AR34*AR43
+
+           - AR11*AI34*AI43 + AI11*AR22*AI33 + AI11*AR22*AI44
+
+           + AI11*AI22*AR33 + AI11*AI22*AR44 - AI11*AR24*AI42
+
+           - AI11*AI24*AR42 + AI11*AR33*AI44 + AI11*AI33*AR44
+
+           - AI11*AR34*AI43 - AI11*AI34*AR43 - AR22*AR33*AR44
+
+           + AR22*AI33*AI44 + AR22*AR34*AR43 - AR22*AI34*AI43
+
+           + AI22*AR33*AI44 + AI22*AI33*AR44 - AI22*AR34*AI43
+
+           - AI22*AI34*AR43 + AR23*AR32*AR44 - AR23*AR34*AR42
+
+           + AR23*AI34*AI42 - AR24*AR32*AR43 + AR24*AR33*AR42
+
+           - AR24*AI33*AI42 + AI24*AR32*AI43 - AI24*AR33*AI42
+
+           - AI24*AI33*AR42) + I*AR11*AR22*AR33*AI44
+
+        + I*AR11*AR22*AI33*AR44 - I*AR11*AR22*AR34*AI43
+
+        - I*AR11*AR22*AI34*AR43 + I*AR11*AI22*AR33*AR44
+
+        - I*AR11*AI22*AI33*AI44 - I*AR11*AI22*AR34*AR43
+
+        + I*AR11*AI22*AI34*AI43 - I*AR11*AR23*AR32*AI44
+
+        + I*AR11*AR23*AR34*AI42 + I*AR11*AR23*AI34*AR42
+
+        + I*AR11*AR24*AR32*AI43 - I*AR11*AR24*AR33*AI42
+
+        - I*AR11*AR24*AI33*AR42 + I*AR11*AI24*AR32*AR43
+
+        - I*AR11*AI24*AR33*AR42 + I*AR11*AI24*AI33*AI42
+
+        + I*AI11*AR22*AR33*AR44 - I*AI11*AR22*AI33*AI44
+
+        - I*AI11*AR22*AR34*AR43 + I*AI11*AR22*AI34*AI43
+
+        - I*AI11*AI22*AR33*AI44 - I*AI11*AI22*AI33*AR44
+
+        + I*AI11*AI22*AR34*AI43 + I*AI11*AI22*AI34*AR43
+
+        - I*AI11*AR23*AR32*AR44 + I*AI11*AR23*AR34*AR42
+
+        - I*AI11*AR23*AI34*AI42 + I*AI11*AR24*AR32*AR43
+
+        - I*AI11*AR24*AR33*AR42 + I*AI11*AR24*AI33*AI42
+
+        - I*AI11*AI24*AR32*AI43 + I*AI11*AI24*AR33*AI42
+
+        + I*AI11*AI24*AI33*AR42 + AR11*AR22*AR33*AR44
+
+        - AR11*AR22*AI33*AI44 - AR11*AR22*AR34*AR43
+
+        + AR11*AR22*AI34*AI43 - AR11*AI22*AR33*AI44
+
+        - AR11*AI22*AI33*AR44 + AR11*AI22*AR34*AI43
+
+        + AR11*AI22*AI34*AR43 - AR11*AR23*AR32*AR44
+
+        + AR11*AR23*AR34*AR42 - AR11*AR23*AI34*AI42
+
+        + AR11*AR24*AR32*AR43 - AR11*AR24*AR33*AR42
+
+        + AR11*AR24*AI33*AI42 - AR11*AI24*AR32*AI43
+
+        + AR11*AI24*AR33*AI42 + AR11*AI24*AI33*AR42
+
+        - AI11*AR22*AR33*AI44 - AI11*AR22*AI33*AR44
+
+        + AI11*AR22*AR34*AI43 + AI11*AR22*AI34*AR43
+
+        - AI11*AI22*AR33*AR44 + AI11*AI22*AI33*AI44
+
+        + AI11*AI22*AR34*AR43 - AI11*AI22*AI34*AI43
+
+        + AI11*AR23*AR32*AI44 - AI11*AR23*AR34*AI42
+
+        - AI11*AR23*AI34*AR42 - AI11*AR24*AR32*AI43
+
+        + AI11*AR24*AR33*AI42 + AI11*AR24*AI33*AR42
+
+        - AI11*AI24*AR32*AR43 + AI11*AI24*AR33*AR42
+
+        - AI11*AI24*AI33*AI42
+
+denotid cp;
+
+
+pol:=denotepol pol;
+
+
+          4      3                        2
+POL := LAM  + LAM *(I*CPI03 + CPR03) + LAM *(I*CPI02 + CPR02)
+
+        + LAM*(I*CPI01 + CPR01) + I*CPI00 + CPR00
+
+pol:=complexpol pol;
+
+
+ If  CPR00 + CPR01 + CPR02 + CPR03 + 1  =  0  and  CPI00 + CPI01
+
+ + CPI02 + CPI03  =  0  , a root of the polynomial is equal to 1.
+
+          8        7            6                 2        2
+POL := LAM  + 2*LAM *CPR03 + LAM *(2*CPR02 + CPR03  + CPI03 )
+
+               5                                          4
+        + 2*LAM *(CPR01 + CPR02*CPR03 + CPI02*CPI03) + LAM
+
+                                                        2        2
+       *(2*CPR00 + 2*CPR01*CPR03 + 2*CPI01*CPI03 + CPR02  + CPI02 ) +
+
+             3
+        2*LAM
+
+       *(CPR00*CPR03 + CPI00*CPI03 + CPR01*CPR02 + CPI01*CPI02)
+
+             2                                       2        2
+        + LAM *(2*CPR00*CPR02 + 2*CPI00*CPI02 + CPR01  + CPI01 )
+
+                                                   2        2
+        + 2*LAM*(CPR00*CPR01 + CPI00*CPI01) + CPR00  + CPI00
+
+denotid rp;
+
+
+pol:=denotepol pol;
+
+
+          8      7            6            5            4
+POL := LAM  + LAM *RPR07 + LAM *RPR06 + LAM *RPR05 + LAM *RPR04
+
+             3            2
+        + LAM *RPR03 + LAM *RPR02 + LAM*RPR01 + RPR00
+
+prdenot;
+
+
+               2   2                       2   2
+AR11 :=  - 2*S1 *K1  - 4*S1*S2*K1*K2 - 2*S2 *K2  + 1
+
+AI11 :=  - (S1*C1*K1 + S1*C2*K1 + S2*C1*K2 + S2*C2*K2)
+
+AR12 :=  - 4*S1*P*R1*(S1*K1 + S2*K2)
+
+AI12 :=  - S1*P*R1*(C1 + C2)
+
+AR13 := 2*P*R1*( - 2*S1*S2*K1 - K2)
+
+AI13 := S2*P*R1*( - C1 - 4*C2*K2 - C2)
+
+               2    2     2
+AR14 :=  - 2*R1 *(S1  + S2 )
+
+               2   2       2   2                       2   2
+AR22 :=  - 2*S1 *K1  - 2*S1 *K3  - 4*S1*S2*K1*K2 - 2*S2 *K2  + 1
+
+AI22 :=  - (S1*C1*K1 + S1*C2*K1 + S2*C1*K2 + S2*C2*K2)
+
+                     2
+AR23 :=  - 2*S1*S2*K3
+
+          - 4*S1*R1*(S1*K1 + S2*K2)
+AR24 := ----------------------------
+                     P
+
+          - S1*R1*(C1 + C2)
+AI24 := --------------------
+                 P
+
+                     2
+AR32 :=  - 2*S1*S2*K3
+
+               2   2                       2   2       2   2
+AR33 :=  - 2*S1 *K1  - 4*S1*S2*K1*K2 - 2*S2 *K2  - 2*S2 *K3  + 1
+
+AI33 :=  - (S1*C1*K1 + S1*C2*K1 + S2*C1*K2 + S2*C2*K2)
+
+                                 2
+         2*R1*( - S1*S2*K1 - 2*S2 *K2 - C1*C2*K1)
+AR34 := ------------------------------------------
+                            P
+
+         R1*( - 2*S1*C2*K1 - 2*S2*C1*K1 - S2*C1 - S2*C2)
+AI34 := -------------------------------------------------
+                                P
+
+                     2
+          - 4*S1*P*K3 *(S1*K1 + S2*K2)
+AR42 := -------------------------------
+                      R1
+
+                   2
+          - S1*P*K3 *(C1 + C2)
+AI42 := -----------------------
+                  R1
+
+                     2
+          - 4*S2*P*K3 *(S1*K1 + S2*K2)
+AR43 := -------------------------------
+                      R1
+
+                   2
+          - S2*P*K3 *(C1 + C2)
+AI43 := -----------------------
+                  R1
+
+AR44 := 
+
+       2   2       2   2                       2   2       2   2
+ - 2*S1 *K1  - 2*S1 *K3  - 4*S1*S2*K1*K2 - 2*S2 *K2  - 2*S2 *K3  + 1
+
+AI44 :=  - (S1*C1*K1 + S1*C2*K1 + S2*C1*K2 + S2*C2*K2)
+
+CPR00 := AR11*AR22*AR33*AR44 - AR11*AR22*AI33*AI44
+
+          - AR11*AR22*AR34*AR43 + AR11*AR22*AI34*AI43
+
+          - AR11*AI22*AR33*AI44 - AR11*AI22*AI33*AR44
+
+          + AR11*AI22*AR34*AI43 + AR11*AI22*AI34*AR43
+
+          - AR11*AR23*AR32*AR44 + AR11*AR23*AR34*AR42
+
+          - AR11*AR23*AI34*AI42 + AR11*AR24*AR32*AR43
+
+          - AR11*AR24*AR33*AR42 + AR11*AR24*AI33*AI42
+
+          - AR11*AI24*AR32*AI43 + AR11*AI24*AR33*AI42
+
+          + AR11*AI24*AI33*AR42 - AI11*AR22*AR33*AI44
+
+          - AI11*AR22*AI33*AR44 + AI11*AR22*AR34*AI43
+
+          + AI11*AR22*AI34*AR43 - AI11*AI22*AR33*AR44
+
+          + AI11*AI22*AI33*AI44 + AI11*AI22*AR34*AR43
+
+          - AI11*AI22*AI34*AI43 + AI11*AR23*AR32*AI44
+
+          - AI11*AR23*AR34*AI42 - AI11*AR23*AI34*AR42
+
+          - AI11*AR24*AR32*AI43 + AI11*AR24*AR33*AI42
+
+          + AI11*AR24*AI33*AR42 - AI11*AI24*AR32*AR43
+
+          + AI11*AI24*AR33*AR42 - AI11*AI24*AI33*AI42
+
+CPI00 := AR11*AR22*AR33*AI44 + AR11*AR22*AI33*AR44
+
+          - AR11*AR22*AR34*AI43 - AR11*AR22*AI34*AR43
+
+          + AR11*AI22*AR33*AR44 - AR11*AI22*AI33*AI44
+
+          - AR11*AI22*AR34*AR43 + AR11*AI22*AI34*AI43
+
+          - AR11*AR23*AR32*AI44 + AR11*AR23*AR34*AI42
+
+          + AR11*AR23*AI34*AR42 + AR11*AR24*AR32*AI43
+
+          - AR11*AR24*AR33*AI42 - AR11*AR24*AI33*AR42
+
+          + AR11*AI24*AR32*AR43 - AR11*AI24*AR33*AR42
+
+          + AR11*AI24*AI33*AI42 + AI11*AR22*AR33*AR44
+
+          - AI11*AR22*AI33*AI44 - AI11*AR22*AR34*AR43
+
+          + AI11*AR22*AI34*AI43 - AI11*AI22*AR33*AI44
+
+          - AI11*AI22*AI33*AR44 + AI11*AI22*AR34*AI43
+
+          + AI11*AI22*AI34*AR43 - AI11*AR23*AR32*AR44
+
+          + AI11*AR23*AR34*AR42 - AI11*AR23*AI34*AI42
+
+          + AI11*AR24*AR32*AR43 - AI11*AR24*AR33*AR42
+
+          + AI11*AR24*AI33*AI42 - AI11*AI24*AR32*AI43
+
+          + AI11*AI24*AR33*AI42 + AI11*AI24*AI33*AR42
+
+CPR01 :=  - AR11*AR22*AR33 - AR11*AR22*AR44 + AR11*AI22*AI33
+
+          + AR11*AI22*AI44 + AR11*AR23*AR32 + AR11*AR24*AR42
+
+          - AR11*AI24*AI42 - AR11*AR33*AR44 + AR11*AI33*AI44
+
+          + AR11*AR34*AR43 - AR11*AI34*AI43 + AI11*AR22*AI33
+
+          + AI11*AR22*AI44 + AI11*AI22*AR33 + AI11*AI22*AR44
+
+          - AI11*AR24*AI42 - AI11*AI24*AR42 + AI11*AR33*AI44
+
+          + AI11*AI33*AR44 - AI11*AR34*AI43 - AI11*AI34*AR43
+
+          - AR22*AR33*AR44 + AR22*AI33*AI44 + AR22*AR34*AR43
+
+          - AR22*AI34*AI43 + AI22*AR33*AI44 + AI22*AI33*AR44
+
+          - AI22*AR34*AI43 - AI22*AI34*AR43 + AR23*AR32*AR44
+
+          - AR23*AR34*AR42 + AR23*AI34*AI42 - AR24*AR32*AR43
+
+          + AR24*AR33*AR42 - AR24*AI33*AI42 + AI24*AR32*AI43
+
+          - AI24*AR33*AI42 - AI24*AI33*AR42
+
+CPI01 :=  - AR11*AR22*AI33 - AR11*AR22*AI44 - AR11*AI22*AR33
+
+          - AR11*AI22*AR44 + AR11*AR24*AI42 + AR11*AI24*AR42
+
+          - AR11*AR33*AI44 - AR11*AI33*AR44 + AR11*AR34*AI43
+
+          + AR11*AI34*AR43 - AI11*AR22*AR33 - AI11*AR22*AR44
+
+          + AI11*AI22*AI33 + AI11*AI22*AI44 + AI11*AR23*AR32
+
+          + AI11*AR24*AR42 - AI11*AI24*AI42 - AI11*AR33*AR44
+
+          + AI11*AI33*AI44 + AI11*AR34*AR43 - AI11*AI34*AI43
+
+          - AR22*AR33*AI44 - AR22*AI33*AR44 + AR22*AR34*AI43
+
+          + AR22*AI34*AR43 - AI22*AR33*AR44 + AI22*AI33*AI44
+
+          + AI22*AR34*AR43 - AI22*AI34*AI43 + AR23*AR32*AI44
+
+          - AR23*AR34*AI42 - AR23*AI34*AR42 - AR24*AR32*AI43
+
+          + AR24*AR33*AI42 + AR24*AI33*AR42 - AI24*AR32*AR43
+
+          + AI24*AR33*AR42 - AI24*AI33*AI42
+
+CPR02 := AR11*AR22 + AR11*AR33 + AR11*AR44 - AI11*AI22 - AI11*AI33
+
+          - AI11*AI44 + AR22*AR33 + AR22*AR44 - AI22*AI33 - AI22*AI44
+
+          - AR23*AR32 - AR24*AR42 + AI24*AI42 + AR33*AR44 - AI33*AI44
+
+          - AR34*AR43 + AI34*AI43
+
+CPI02 := AR11*AI22 + AR11*AI33 + AR11*AI44 + AI11*AR22 + AI11*AR33
+
+          + AI11*AR44 + AR22*AI33 + AR22*AI44 + AI22*AR33 + AI22*AR44
+
+          - AR24*AI42 - AI24*AR42 + AR33*AI44 + AI33*AR44 - AR34*AI43
+
+          - AI34*AR43
+
+CPR03 :=  - (AR11 + AR22 + AR33 + AR44)
+
+CPI03 :=  - (AI11 + AI22 + AI33 + AI44)
+
+              2        2
+RPR00 := CPR00  + CPI00
+
+RPR01 := 2*(CPR00*CPR01 + CPI00*CPI01)
+
+                                              2        2
+RPR02 := 2*CPR00*CPR02 + 2*CPI00*CPI02 + CPR01  + CPI01
+
+RPR03 := 2*(CPR00*CPR03 + CPI00*CPI03 + CPR01*CPR02 + CPI01*CPI02)
+
+                                                        2        2
+RPR04 := 2*CPR00 + 2*CPR01*CPR03 + 2*CPI01*CPI03 + CPR02  + CPI02
+
+RPR05 := 2*(CPR01 + CPR02*CPR03 + CPI02*CPI03)
+
+                        2        2
+RPR06 := 2*CPR02 + CPR03  + CPI03
+
+RPR07 := 2*CPR03
+
+cleardenot;
+
+
+clear aa,bb,pol;
+
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****      T e s t     Examples   ---   Module    H U R W P       *****
+%*****                                                             *****
+%***********************************************************************
+
+% Example H.1
+
+x0:=lam-1;
+
+
+X0 := LAM - 1
+
+x1:=lam-(ar+i*ai);
+
+
+X1 := LAM - (I*AI + AR)
+
+x2:=lam-(br+i*bi);
+
+
+X2 := LAM - (I*BI + BR)
+
+x3:=lam-(cr+i*ci);
+
+
+X3 := LAM - (I*CI + CR)
+
+hurwitzp x1;
+
+Necessary and sufficient conditions are:
+ - AR  >  0
+
+
+COND
+
+
+% Example H.2
+
+x:=hurw(x0*x1);
+
+
+X := 2*LAM*( - I*AI - AR + 1) + 2*(I*AI + AR + 1)
+
+hurwitzp x;
+
+Necessary and sufficient conditions are:
+        2     2
+4*( - AR  - AI  + 1)  >  0
+
+
+COND
+
+
+% Example H.3
+
+x:=(x1*x2);
+
+
+        2
+X := LAM  - LAM*(I*AI + I*BI + AR + BR) + I*AR*BI + I*AI*BR + AR*BR
+
+      - AI*BI
+
+hurwitzp x;
+
+Necessary and sufficient conditions are:
+ - (AR + BR)  >  0
+
+         2               2               2     2
+AR*BR*(AR  + 2*AR*BR + AI  - 2*AI*BI + BR  + BI )  >  0
+
+
+COND
+
+
+% Example H.4
+
+x:=(x1*x2*x3);
+
+
+        3      2
+X := LAM  - LAM *(I*AI + I*BI + I*CI + AR + BR + CR) + LAM*(I*AR*BI
+
+         + I*AR*CI + I*AI*BR + I*AI*CR + I*BR*CI + I*BI*CR + AR*BR
+
+         + AR*CR - AI*BI - AI*CI + BR*CR - BI*CI) - I*AR*BR*CI
+
+      - I*AR*BI*CR - I*AI*BR*CR + I*AI*BI*CI - AR*BR*CR + AR*BI*CI
+
+      + AI*BR*CI + AI*BI*CR
+
+hurwitzp x;
+
+Necessary and sufficient conditions are:
+ - (AR + BR + CR)  >  0
+
+  3        3          2   2       2             2   2        2
+AR *BR + AR *CR + 2*AR *BR  + 4*AR *BR*CR + 2*AR *CR  + AR*AI *BR
+
+        2                                           3          2
+ + AR*AI *CR - 2*AR*AI*BR*BI - 2*AR*AI*CR*CI + AR*BR  + 4*AR*BR *CR
+
+           2             2        3           2     3          2   2
+ + AR*BR*BI  + 4*AR*BR*CR  + AR*CR  + AR*CR*CI  + BR *CR + 2*BR *CR
+
+        2                           3           2
+ + BR*BI *CR - 2*BR*BI*CR*CI + BR*CR  + BR*CR*CI   >  0
+
+               4   2       4           4   2       4           4   2
+AR*BR*CR*( - AR *BR  - 2*AR *BR*CR - AR *BI  + 2*AR *BI*CI - AR *CR
+
+               4   2       3   3       3   2          3      2
+           - AR *CI  - 2*AR *BR  - 6*AR *BR *CR - 2*AR *BR*BI
+
+                 3                3      2       3      2
+           + 4*AR *BR*BI*CI - 6*AR *BR*CR  - 2*AR *BR*CI
+
+                 3   2          3                3   3       3      2
+           - 2*AR *BI *CR + 4*AR *BI*CR*CI - 2*AR *CR  - 2*AR *CR*CI
+
+                 2   2   2       2   2             2   2   2
+           - 2*AR *AI *BR  - 4*AR *AI *BR*CR - 2*AR *AI *BI
+
+                 2   2             2   2   2       2   2   2
+           + 4*AR *AI *BI*CI - 2*AR *AI *CR  - 2*AR *AI *CI
+
+                 2      2          2      2          2
+           + 2*AR *AI*BR *BI + 2*AR *AI*BR *CI + 4*AR *AI*BR*BI*CR
+
+                 2                   2      3       2      2
+           + 4*AR *AI*BR*CR*CI + 2*AR *AI*BI  - 2*AR *AI*BI *CI
+
+                 2         2       2         2       2      2
+           + 2*AR *AI*BI*CR  - 2*AR *AI*BI*CI  + 2*AR *AI*CR *CI
+
+                 2      3     2   4       2   3          2   2   2
+           + 2*AR *AI*CI  - AR *BR  - 6*AR *BR *CR - 2*AR *BR *BI
+
+                 2   2              2   2   2       2   2   2
+           + 2*AR *BR *BI*CI - 10*AR *BR *CR  - 2*AR *BR *CI
+
+                 2      2          2                   2      3
+           - 6*AR *BR*BI *CR + 8*AR *BR*BI*CR*CI - 6*AR *BR*CR
+
+                 2         2     2   4       2   3          2   2   2
+           - 6*AR *BR*CR*CI  - AR *BI  + 2*AR *BI *CI - 2*AR *BI *CR
+
+                 2   2   2       2      2          2      3     2   4
+           - 2*AR *BI *CI  + 2*AR *BI*CR *CI + 2*AR *BI*CI  - AR *CR
+
+                 2   2   2     2   4          2   3          2   2
+           - 2*AR *CR *CI  - AR *CI  - 2*AR*AI *BR  - 6*AR*AI *BR *CR
+
+                    2      2          2                   2      2
+           - 2*AR*AI *BR*BI  + 4*AR*AI *BR*BI*CI - 6*AR*AI *BR*CR
+
+                    2      2          2   2             2
+           - 2*AR*AI *BR*CI  - 2*AR*AI *BI *CR + 4*AR*AI *BI*CR*CI
+
+                    2   3          2      2             3
+           - 2*AR*AI *CR  - 2*AR*AI *CR*CI  + 4*AR*AI*BR *CI
+
+                       2                   2
+           + 4*AR*AI*BR *BI*CR + 8*AR*AI*BR *CR*CI
+
+                          2                      2
+           + 4*AR*AI*BR*BI *CI + 8*AR*AI*BR*BI*CR
+
+                             2                2                   3
+           - 8*AR*AI*BR*BI*CI  + 4*AR*AI*BR*CR *CI + 4*AR*AI*BR*CI
+
+                       3                2                      3
+           + 4*AR*AI*BI *CR - 8*AR*AI*BI *CR*CI + 4*AR*AI*BI*CR
+
+                             2          4             3   2
+           + 4*AR*AI*BI*CR*CI  - 2*AR*BR *CR - 6*AR*BR *CR
+
+                    3   2          2   2             2
+           - 2*AR*BR *CI  - 4*AR*BR *BI *CR + 4*AR*BR *BI*CR*CI
+
+                    2   3          2      2             2   2
+           - 6*AR*BR *CR  - 6*AR*BR *CR*CI  - 6*AR*BR*BI *CR
+
+                       2   2                2                   3
+           - 2*AR*BR*BI *CI  + 4*AR*BR*BI*CR *CI + 4*AR*BR*BI*CI
+
+                       4             2   2             4
+           - 2*AR*BR*CR  - 4*AR*BR*CR *CI  - 2*AR*BR*CI
+
+                    4             3                2   3
+           - 2*AR*BI *CR + 4*AR*BI *CR*CI - 2*AR*BI *CR
+
+                    2      2     4   2       4           4   2
+           - 2*AR*BI *CR*CI  - AI *BR  - 2*AI *BR*CR - AI *BI
+
+                 4           4   2     4   2       3   2
+           + 2*AI *BI*CI - AI *CR  - AI *CI  + 2*AI *BR *BI
+
+                 3   2          3                3
+           + 2*AI *BR *CI + 4*AI *BR*BI*CR + 4*AI *BR*CR*CI
+
+                 3   3       3   2          3      2       3      2
+           + 2*AI *BI  - 2*AI *BI *CI + 2*AI *BI*CR  - 2*AI *BI*CI
+
+                 3   2          3   3     2   4       2   3
+           + 2*AI *CR *CI + 2*AI *CI  - AI *BR  - 2*AI *BR *CR
+
+                 2   2   2       2   2             2   2   2
+           - 2*AI *BR *BI  - 2*AI *BR *BI*CI - 2*AI *BR *CR
+
+                 2   2   2       2      2          2
+           - 2*AI *BR *CI  - 2*AI *BR*BI *CR - 8*AI *BR*BI*CR*CI
+
+                 2      3       2         2     2   4       2   3
+           - 2*AI *BR*CR  - 2*AI *BR*CR*CI  - AI *BI  - 2*AI *BI *CI
+
+                 2   2   2       2   2   2       2      2
+           - 2*AI *BI *CR  + 6*AI *BI *CI  - 2*AI *BI*CR *CI
+
+                 2      3     2   4       2   2   2     2   4
+           - 2*AI *BI*CI  - AI *CR  - 2*AI *CR *CI  - AI *CI
+
+                    4             3                2   2
+           + 2*AI*BR *CI + 4*AI*BR *CR*CI + 4*AI*BR *BI *CI
+
+                    2      2          2      2          2   2
+           + 2*AI*BR *BI*CR  - 2*AI*BR *BI*CI  + 2*AI*BR *CR *CI
+
+                    2   3             2                      3
+           + 2*AI*BR *CI  + 4*AI*BR*BI *CR*CI + 4*AI*BR*BI*CR
+
+                             2          4             3   2
+           + 4*AI*BR*BI*CR*CI  + 2*AI*BI *CI + 2*AI*BI *CR
+
+                    3   2          2   2             2   3
+           - 2*AI*BI *CI  - 2*AI*BI *CR *CI - 2*AI*BI *CI
+
+                       4             2   2             4     4   2
+           + 2*AI*BI*CR  + 4*AI*BI*CR *CI  + 2*AI*BI*CI  - BR *CR
+
+               4   2       3   3       3      2       2   2   2
+           - BR *CI  - 2*BR *CR  - 2*BR *CR*CI  - 2*BR *BI *CR
+
+                 2   2   2       2      2          2      3     2   4
+           - 2*BR *BI *CI  + 2*BR *BI*CR *CI + 2*BR *BI*CI  - BR *CR
+
+                 2   2   2     2   4          2   3          2      2
+           - 2*BR *CR *CI  - BR *CI  - 2*BR*BI *CR  - 2*BR*BI *CR*CI
+
+               4   2     4   2       3   2          3   3     2   4
+           - BI *CR  - BI *CI  + 2*BI *CR *CI + 2*BI *CI  - BI *CR
+
+                 2   2   2     2   4
+           - 2*BI *CR *CI  - BI *CI )  >  0
+
+
+COND
+
+clear x,x0,x1,x2,x3;
+
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****    T e s t     Examples   ---   Module    L I N B A N D     *****
+%*****                                                             *****
+%***********************************************************************
+
+on evallhseqp;
+
+  % So both sides of equations evaluate.
+
+% Example L.1
+
+operator v;
+
+
+off echo;
+
+      DIMENSION U(200),V(200),ACOF(200,3),ARHS(200),XL(200,3)
+      DX=5.0E-2
+      X=1.0E-1
+      DO 25001 I=1,101
+          V(I)=X**2/2.0
+          X=X+DX
+25001 CONTINUE
+      IACOF=200
+      IARHS=200
+      N=1
+      AD(N)=1.0
+      AUCD(N)=0.0
+      ARHS(N)=V(1)
+      N=N+1
+      ALCD(N)=1.0
+      AD(N)=-2.0
+      AUCD(N)=1.0
+      ARHS(N)=V(3)-(2.0*V(2))+V(1)
+      DO 25002 K=3,99,1
+          N=N+1
+          ALCD(N)=1.0
+          AD(N)=-2.0
+          AUCD(N)=1.0
+          ARHS(N)=V(K-1)+V(K+1)-(2.0*V(K))
+25002 CONTINUE
+      N=N+1
+      ALCD(N)=1.0
+      AD(N)=-2.0
+      AUCD(N)=1.0
+      ARHS(N)=V(101)-(2.0*V(100))+V(99)
+      N=N+1
+      ALCD(N)=0.0
+      AD(N)=1.0
+      ARHS(N)=V(101)
+      CALL DGTSL(N,ALCD,AD,AUCD,ARHS,IER)
+C  N IS NUMBER OF EQUATIONS
+C  ALCD,AD,AUCD,ARHS ARE ARRAYS OF DIMENSION AT LEAST (N)
+C  IF (IER.NE.0) MATRIX ACOF IS ALGORITHMICALLY SINGULAR
+      IF(IER.NE.0) CALL ERROUT
+      N=1
+      U(1)=ARHS(N)
+      N=N+1
+      U(2)=ARHS(N)
+      DO 25003 K=3,99,1
+          N=N+1
+          U(K)=ARHS(N)
+25003 CONTINUE
+      N=N+1
+      U(100)=ARHS(N)
+      N=N+1
+      U(101)=ARHS(N)
+      AMER=0.0E-1
+      ARER=0.0E-1
+      DO 25004 I=1,101
+          AM=ABS(REAL(U(I)-V(I)))
+          AR=AM/V(I)
+          IF(AM.GT.AMER) AMER=AM
+          IF(AR.GT.ARER) ARER=AR
+25004 CONTINUE
+      WRITE(*,100)AMER,ARER
+      STOP
+100     FORMAT(' MAX. ABS. ERROR = ',E12.2,' MAX. REL. ERROR = ',E12.2)
+      END
+
+
+%***********************************************************************
+
+% Example L.2
+
+on nag;
+
+
+off echo;
+
+      DIMENSION U(200),V(200),ACOF(200,3),ARHS(200),XL(200,3)
+      DX=5.0E-2
+      X=1.0E-1
+      DO 25005 I=1,101
+          V(I)=X**2/2.0
+          X=X+DX
+25005 CONTINUE
+      IACOF=200
+      IARHS=200
+      N=1
+      AD(N)=1.0
+      AUCD(N+1)=0.0
+      ARHS(N)=V(1)
+      N=N+1
+      ALCD(N)=1.0
+      AD(N)=-2.0
+      AUCD(N+1)=1.0
+      ARHS(N)=V(3)-(2.0*V(2))+V(1)
+      DO 25006 K=3,99,1
+          N=N+1
+          ALCD(N)=1.0
+          AD(N)=-2.0
+          AUCD(N+1)=1.0
+          ARHS(N)=V(K-1)+V(K+1)-(2.0*V(K))
+25006 CONTINUE
+      N=N+1
+      ALCD(N)=1.0
+      AD(N)=-2.0
+      AUCD(N+1)=1.0
+      ARHS(N)=V(101)-(2.0*V(100))+V(99)
+      N=N+1
+      ALCD(N)=0.0
+      AD(N)=1.0
+      ARHS(N)=V(101)
+      IER=0
+      CALL F01LEF(N,AD,0.,AUCD,ALCD,1.E-10,AU2CD,IN,IER)
+C  N IS NUMBER OF EQUATIONS
+C  ALCD,AD,AUCD,AU2CD,ARHS ARE ARRAYS OF DIMENSION AT LEAST (N)
+C  IN IS INTEGER ARRAY OF DIMENSION AT LEAST (N)
+      IF(IER.NE.0 .OR. IN(N).NE.0) CALL ERROUT
+      CALL F04LEF(1,N,AD,AUCD,ALCD,AU2CD,IN,ARHS,0.,IER)
+      IF(IER.NE.0) CALL ERROUT
+      N=1
+      U(1)=ARHS(N)
+      N=N+1
+      U(2)=ARHS(N)
+      DO 25007 K=3,99,1
+          N=N+1
+          U(K)=ARHS(N)
+25007 CONTINUE
+      N=N+1
+      U(100)=ARHS(N)
+      N=N+1
+      U(101)=ARHS(N)
+      AMER=0.0E-1
+      ARER=0.0E-1
+      DO 25008 I=1,101
+          AM=ABS(REAL(U(I)-V(I)))
+          AR=AM/V(I)
+          IF(AM.GT.AMER) AMER=AM
+          IF(AR.GT.ARER) ARER=AR
+25008 CONTINUE
+      WRITE(*,100)AMER,ARER
+      STOP
+100     FORMAT(' MAX. ABS. ERROR = ',E12.2,' MAX. REL. ERROR = ',E12.2)
+      END
+
+
+%***********************************************************************
+
+% Example L.3
+
+on imsl;
+
+
+off echo,nag;
+
+      DIMENSION U(200),V(200),ACOF(200,3),ARHS(200),XL(200,3)
+      DX=5.0E-2
+      X=1.0E-1
+      DO 25009 I=1,101
+          V(I)=X**2/2.0
+          X=X+DX
+25009 CONTINUE
+      IACOF=200
+      IARHS=200
+      N=1
+      ACOF(N,1)=0.0
+      ACOF(N,2)=1.0
+      ACOF(N,3)=0.0
+      ARHS(N)=V(1)
+      N=N+1
+      ACOF(N,1)=1.0
+      ACOF(N,2)=-2.0
+      ACOF(N,3)=1.0
+      ARHS(N)=V(3)-(2.0*V(2))+V(1)
+      DO 25010 K=3,99,1
+          N=N+1
+          ACOF(N,1)=1.0
+          ACOF(N,2)=-2.0
+          ACOF(N,3)=1.0
+          ARHS(N)=V(K-1)+V(K+1)-(2.0*V(K))
+25010 CONTINUE
+      N=N+1
+      ACOF(N,1)=1.0
+      ACOF(N,2)=-2.0
+      ACOF(N,3)=1.0
+      ARHS(N)=V(101)-(2.0*V(100))+V(99)
+      N=N+1
+      ACOF(N,1)=0.0
+      ACOF(N,2)=1.0
+      ACOF(N,3)=0.0
+      ARHS(N)=V(101)
+      CALL LEQT1B(ACOF,N,1,1,IACOF,ARHS,1,IARHS,0,XL,IER)
+C  IACOF IS ACTUAL 1-ST DIMENSION OF THE ACOF ARRAY
+C  IARHS IS ACTUAL 1-ST DIMENSION OF THE ARHS ARRAY
+C  XL IS WORKING ARRAY WITH SIZE N*(NLC+1)
+C  WHERE N IS NUMBER OF EQUATIONS NLC NUMBER OF LOWER
+C  CODIAGONALS
+C  IF IER=129( .NE.0) MATRIX ACOF IS ALGORITHMICALLY SINGULAR
+      IF(IER.NE.0) CALL ERROUT
+      N=1
+      U(1)=ARHS(N)
+      N=N+1
+      U(2)=ARHS(N)
+      DO 25011 K=3,99,1
+          N=N+1
+          U(K)=ARHS(N)
+25011 CONTINUE
+      N=N+1
+      U(100)=ARHS(N)
+      N=N+1
+      U(101)=ARHS(N)
+      AMER=0.0E-1
+      ARER=0.0E-1
+      DO 25012 I=1,101
+          AM=ABS(REAL(U(I)-V(I)))
+          AR=AM/V(I)
+          IF(AM.GT.AMER) AMER=AM
+          IF(AR.GT.ARER) ARER=AR
+25012 CONTINUE
+      WRITE(*,100)AMER,ARER
+      STOP
+100     FORMAT(' MAX. ABS. ERROR = ',E12.2,' MAX. REL. ERROR = ',E12.2)
+      END
+
+
+%***********************************************************************
+
+% Example L.4
+
+on essl;
+
+
+off echo,imsl;
+
+      DIMENSION U(200),V(200),ACOF(200,3),ARHS(200),XL(200,3)
+      DX=5.0E-2
+      X=1.0E-1
+      DO 25013 I=1,101
+          V(I)=X**2/2.0
+          X=X+DX
+25013 CONTINUE
+      IACOF=200
+      IARHS=200
+      N=1
+      AD(N)=1.0
+      AUCD(N)=0.0
+      ARHS(N)=V(1)
+      N=N+1
+      ALCD(N)=1.0
+      AD(N)=-2.0
+      AUCD(N)=1.0
+      ARHS(N)=V(3)-(2.0*V(2))+V(1)
+      DO 25014 K=3,99,1
+          N=N+1
+          ALCD(N)=1.0
+          AD(N)=-2.0
+          AUCD(N)=1.0
+          ARHS(N)=V(K-1)+V(K+1)-(2.0*V(K))
+25014 CONTINUE
+      N=N+1
+      ALCD(N)=1.0
+      AD(N)=-2.0
+      AUCD(N)=1.0
+      ARHS(N)=V(101)-(2.0*V(100))+V(99)
+      N=N+1
+      ALCD(N)=0.0
+      AD(N)=1.0
+      ARHS(N)=V(101)
+      CALL DGTF(N,ALCD,AD,AUCD,AF,IPVT)
+C  N IS NUMBER OF EQUATIONS
+C  ALCD,AD,AUCD,AF,ARHS ARE ARRAYS OF DIMENSION AT LEAST (N)
+C  THESE ARRAYS ARE DOUBLE PRECISION TYPE
+C  FOR SINGLE PRECISION CHANGE DGTF TO SGTF AND DGTS TO SGTS
+C  IPVT IS INTEGER ARRAY OF DIMENSION AT LEAST (N+3)/8
+      CALL DGTS(N,ALCD,AD,AUCD,AF,IPVT,ARHS)
+      N=1
+      U(1)=ARHS(N)
+      N=N+1
+      U(2)=ARHS(N)
+      DO 25015 K=3,99,1
+          N=N+1
+          U(K)=ARHS(N)
+25015 CONTINUE
+      N=N+1
+      U(100)=ARHS(N)
+      N=N+1
+      U(101)=ARHS(N)
+      AMER=0.0E-1
+      ARER=0.0E-1
+      DO 25016 I=1,101
+          AM=ABS(REAL(U(I)-V(I)))
+          AR=AM/V(I)
+          IF(AM.GT.AMER) AMER=AM
+          IF(AR.GT.ARER) ARER=AR
+25016 CONTINUE
+      WRITE(*,100)AMER,ARER
+      STOP
+100     FORMAT(' MAX. ABS. ERROR = ',E12.2,' MAX. REL. ERROR = ',E12.2)
+      END
+
+off essl;
+
+
+
+%***********************************************************************
+%*****                                                             *****
+%*****      T e s t     Complex Examples   ---   More Modules      *****
+%*****                                                             *****
+%***********************************************************************
+
+% Example M.1
+
+off exp;
+
+
+coordinates t,x into n,j;
+
+
+grid uniform,x,t;
+
+
+dependence v(t,x),w(t,x);
+
+
+%isgrid u(x..half),v(x..half);
+%grideq u(x..one),v(x..one);
+iim aa, v, diff(v,t)=c*diff(w,x),
+        w, diff(w,t)=c*diff(v,x);
+
+
+*****************************
+*****      Program      *****          IIMET Ver 1.1  17/05/91
+*****************************
+
+      Partial Differential Equations
+      ==============================
+
+DIFF(V,T) - DIFF(W,X)*C    =    0
+
+ - DIFF(V,X)*C + DIFF(W,T)    =    0
+
+
+0 interpolations are needed in T coordinate
+  Equation for V variable is integrated in HALF grid point
+  Equation for W variable is integrated in HALF grid point
+0 interpolations are needed in X coordinate
+  Equation for V variable is integrated in HALF grid point
+  Equation for W variable is integrated in ONE grid point
+
+         Equations after Discretization Using IIM :
+         ==========================================
+
+( - (W(N + 1,J + 1) - W(N + 1,J) + W(N,J + 1) - W(N,J))*C*HT
+
+               2*J + 1               2*J + 1
+  + 2*V(N + 1,---------)*HX - 2*V(N,---------)*HX)/(2*HX*HT)   =   0
+                  2                     2
+
+
+           2*J - 1              2*J + 1          2*J - 1
+((V(N + 1,---------) - V(N + 1,---------) + V(N,---------)
+              2                    2                2
+
+          2*J + 1
+   - V(N,---------))*C*HT + 2*W(N + 1,J)*HX - 2*W(N,J)*HX)/(2*HX*HT)
+             2
+
+   =   0
+
+
+
+on exp;
+
+
+center t=1/2;
+
+
+functions v,w;
+
+
+approx( aa(0,0)=aa(0,1));
+
+
+ Difference scheme approximates differential equation 
+
+DF(V,T) - DF(W,X)*C=0
+
+ with orders of approximation:
+
+  2
+HT
+
+HX
+
+center x=1/2;
+
+
+approx( aa(1,0)=aa(1,1));
+
+
+ Difference scheme approximates differential equation 
+
+ - DF(V,X)*C + DF(W,T)=0
+
+ with orders of approximation:
+
+  2
+HT
+
+HX
+
+let cos ax**2=1-sin ax**2;
+
+
+unfunc v,w;
+
+
+matrix a(1,2),b(2,2),bt(2,2);
+
+
+a(1,1):=aa(0,0);
+
+
+                      2*J + 1               2*J + 1
+A(1,1) := (2*V(N + 1,---------)*HX - 2*V(N,---------)*HX
+                         2                     2
+
+            - W(N + 1,J + 1)*C*HT + W(N + 1,J)*C*HT - W(N,J + 1)*C*HT
+
+            + W(N,J)*C*HT)/(2*HX*HT)
+
+a(1,2):=aa(1,0);
+
+
+                    2*J - 1                   2*J + 1
+A(1,2) := (V(N + 1,---------)*C*HT - V(N + 1,---------)*C*HT
+                       2                         2
+
+                   2*J - 1               2*J + 1
+            + V(N,---------)*C*HT - V(N,---------)*C*HT
+                      2                     2
+
+            + 2*W(N + 1,J)*HX - 2*W(N,J)*HX)/(2*HX*HT)
+
+off prfourmat;
+
+
+b:=ampmat a;
+
+
+       KX*HX
+AX := -------
+         2
+
+
+     [           2  2   2     2                             ]
+     [  - SIN(AX) *C *HT  + HX       2*SIN(AX)*C*I*HX*HT    ]
+     [--------------------------   -----------------------  ]
+     [         2  2   2     2              2  2   2     2   ]
+     [  SIN(AX) *C *HT  + HX        SIN(AX) *C *HT  + HX    ]
+B := [                                                      ]
+     [                                       2  2   2     2 ]
+     [   2*SIN(AX)*C*I*HX*HT        - SIN(AX) *C *HT  + HX  ]
+     [ -----------------------    --------------------------]
+     [         2  2   2     2              2  2   2     2   ]
+     [  SIN(AX) *C *HT  + HX        SIN(AX) *C *HT  + HX    ]
+
+
+clear a,aa;
+
+
+factor lam;
+
+
+pol:=charpol b;
+
+
+           2         4  4   4            2  2   2   2     4
+POL := (LAM *(SIN(AX) *C *HT  + 2*SIN(AX) *C *HX *HT  + HX )
+
+                         4  4   4     4           4  4   4
+         + 2*LAM*(SIN(AX) *C *HT  - HX ) + SIN(AX) *C *HT
+
+                    2  2   2   2     4          4  4   4
+         + 2*SIN(AX) *C *HX *HT  + HX )/(SIN(AX) *C *HT
+
+                      2  2   2   2     4
+           + 2*SIN(AX) *C *HX *HT  + HX )
+
+pol:=troot1 pol;
+
+
+                 2  2   2
+        4*SIN(AX) *C *HT
+ If  -----------------------  =  0  and  0
+             2  2   2     2
+      SIN(AX) *C *HT  + HX
+
+  =  0  , a root of the polynomial is equal to 1.
+
+           2         4  4   4            2  2   2   2     4
+POL := (LAM *(SIN(AX) *C *HT  + 2*SIN(AX) *C *HX *HT  + HX )
+
+                         4  4   4     4           4  4   4
+         + 2*LAM*(SIN(AX) *C *HT  - HX ) + SIN(AX) *C *HT
+
+                    2  2   2   2     4          4  4   4
+         + 2*SIN(AX) *C *HX *HT  + HX )/(SIN(AX) *C *HT
+
+                      2  2   2   2     4
+           + 2*SIN(AX) *C *HX *HT  + HX )
+
+pol:=hurw num pol;
+
+
+            2        2  2   2         2  2   2     2
+POL := 4*LAM *SIN(AX) *C *HT *(SIN(AX) *C *HT  + HX )
+
+              2         2  2   2     2
+        + 4*HX *(SIN(AX) *C *HT  + HX )
+
+hurwitzp pol;
+
+Necessary and sufficient conditions are:
+         2
+       HX
+-----------------  >  0
+        2  2   2
+ SIN(AX) *C *HT
+
+
+COND
+
+bt:=tcon b;
+
+
+      [           2  2   2     2                             ]
+      [  - SIN(AX) *C *HT  + HX       - 2*SIN(AX)*C*I*HX*HT  ]
+      [--------------------------   ------------------------ ]
+      [         2  2   2     2              2  2   2     2   ]
+      [  SIN(AX) *C *HT  + HX        SIN(AX) *C *HT  + HX    ]
+BT := [                                                      ]
+      [                                       2  2   2     2 ]
+      [   - 2*SIN(AX)*C*I*HX*HT      - SIN(AX) *C *HT  + HX  ]
+      [ ------------------------   --------------------------]
+      [         2  2   2     2              2  2   2     2   ]
+      [  SIN(AX) *C *HT  + HX        SIN(AX) *C *HT  + HX    ]
+
+
+bt*b;
+
+
+[1  0]
+[    ]
+[0  1]
+
+
+bt*b-b*bt;
+
+
+[0  0]
+[    ]
+[0  0]
+
+
+clear aa,a,b,bt;
+
+
+
+%***********************************************************************
+
+% Example M.2 : Richtmyer, Morton: Difference methods for initial value
+%               problems, &10.2.  p.261
+
+coordinates t,x into n,j;
+
+
+grid uniform,t,x;
+
+
+let cos ax**2=1-sin ax**2;
+
+
+unfunc v,w;
+
+
+matrix a(1,2),b(2,2),bt(2,2);
+
+
+a(1,1):=(v(n+1)-v(n))/ht-c*(w(j+1/2)-w(j-1/2))/hx$
+
+
+a(1,2):=(w(n+1,j-1/2)-w(n,j-1/2))/ht-c*(v(n+1,j)-v(n+1,j-1))/hx$
+
+
+off prfourmat;
+
+
+b:=ampmat a;
+
+
+       KX*HX
+AX := -------
+         2
+
+
+     [                          2*SIN(AX)*C*I*HT      ]
+     [        1                ------------------     ]
+     [                                 HX             ]
+     [                                                ]
+B := [                                 2  2   2     2 ]
+     [ 2*SIN(AX)*C*I*HT     - 4*SIN(AX) *C *HT  + HX  ]
+     [------------------  ----------------------------]
+     [        HX                        2             ]
+     [                                HX              ]
+
+
+clear a;
+
+
+factor lam;
+
+
+pol:=charpol b;
+
+
+           2   2                   2  2   2     2      2
+        LAM *HX  + 2*LAM*(2*SIN(AX) *C *HT  - HX ) + HX
+POL := --------------------------------------------------
+                                2
+                              HX
+
+pol:=hurw num pol;
+
+
+            2        2  2   2                2  2   2     2
+POL := 4*LAM *SIN(AX) *C *HT  + 4*( - SIN(AX) *C *HT  + HX )
+
+hurwitzp pol;
+
+Necessary and sufficient conditions are:
+           2  2   2     2
+  - SIN(AX) *C *HT  + HX
+--------------------------  >  0
+            2  2   2
+     SIN(AX) *C *HT
+
+
+COND
+
+bt:=tcon b;
+
+
+      [                            - 2*SIN(AX)*C*I*HT     ]
+      [          1               ---------------------    ]
+      [                                   HX              ]
+      [                                                   ]
+BT := [                                    2  2   2     2 ]
+      [  - 2*SIN(AX)*C*I*HT     - 4*SIN(AX) *C *HT  + HX  ]
+      [---------------------  ----------------------------]
+      [         HX                          2             ]
+      [                                   HX              ]
+
+
+bt*b;
+
+
+               2  2   2     2            3  3     3
+      4*SIN(AX) *C *HT  + HX    8*SIN(AX) *C *I*HT
+MAT((-------------------------,---------------------),
+                  2                       3
+                HX                      HX
+
+                  3  3     3
+       - 8*SIN(AX) *C *I*HT
+    (------------------------,
+                 3
+               HX
+
+                4  4   4            2  2   2   2     4
+      16*SIN(AX) *C *HT  - 4*SIN(AX) *C *HX *HT  + HX
+     --------------------------------------------------))
+                              4
+                            HX
+
+
+bt*b-b*bt;
+
+
+[                                      3  3     3 ]
+[                            16*SIN(AX) *C *I*HT  ]
+[            0              ----------------------]
+[                                      3          ]
+[                                    HX           ]
+[                                                 ]
+[              3  3     3                         ]
+[  - 16*SIN(AX) *C *I*HT                          ]
+[-------------------------            0           ]
+[             3                                   ]
+[           HX                                    ]
+
+
+clear a,b,bt;
+
+
+
+%***********************************************************************
+
+% Example M.3: Mazurik: Algoritmy resenia zadaci..., preprint no.24-85,
+%               AN USSR SO, Inst. teor. i prikl. mechaniky, p.34
+
+operator v1,v2;
+
+
+matrix a(1,3),b(3,3),bt(3,3);
+
+
+a(1,1):=(p(n+1)-p(n))/ht+c/2*((-p(m-1)+2*p(m)-p(m+1))/hx +
+         (v1(m+1)-v1(m-1))/hx - (p(k-1)-2*p(k)+p(k+1))/hy +
+         (v2(k+1)-v2(k-1))/hy)$
+
+
+a(1,2):=(v1(n+1)-v1(n))/ht+c/2*((p(m+1)-p(m-1))/hx -
+         (v1(m-1)-2*v1(m)+v1(m+1))/hx)$
+
+
+a(1,3):=(v2(n+1)-v2(n))/ht + c/2*((p(k+1)-p(k-1))/hy -
+         (v2(k-1)-2*v2(k)+v2(k+1))/hy)$
+
+
+coordinates t,x,y into n,m,k;
+
+
+functions p,v1,v2;
+
+
+for k:=1:3 do approx(a(1,k)=0);
+
+
+ Difference scheme approximates differential equation 
+
+DF(P,T) + DF(V1,X)*C + DF(V2,Y)*C=0
+
+ with orders of approximation:
+
+  2
+HT
+
+HX
+
+HY
+
+ Difference scheme approximates differential equation 
+
+DF(P,X)*C + DF(V1,T)=0
+
+ with orders of approximation:
+
+  2
+HT
+
+HX
+
+1
+
+ Difference scheme approximates differential equation 
+
+DF(P,Y)*C + DF(V2,T)=0
+
+ with orders of approximation:
+
+  2
+HT
+
+1
+
+HY
+
+grid uniform,t,x,y;
+
+
+unfunc p,v1,v2;
+
+
+hy:=hx;
+
+
+HY := HX
+
+off prfourmat;
+
+
+b:=ampmat a;
+
+
+AX := KX*HX
+
+
+AY := KY*HY
+
+
+           COS(AX)*C*HT + COS(AY)*C*HT - 2*C*HT + HX
+B := MAT((-------------------------------------------,
+                              HX
+
+            - SIN(AX)*C*I*HT    - SIN(AY)*C*I*HT
+          -------------------,-------------------),
+                  HX                  HX
+
+            - SIN(AX)*C*I*HT   COS(AX)*C*HT - C*HT + HX
+         (-------------------,--------------------------,0),
+                  HX                      HX
+
+            - SIN(AY)*C*I*HT     COS(AY)*C*HT - C*HT + HX
+         (-------------------,0,--------------------------))
+                  HX                        HX
+
+
+pol:=charpol b;
+
+
+           3   3      2   2
+POL := (LAM *HX  + LAM *HX
+
+        *( - 2*COS(AX)*C*HT - 2*COS(AY)*C*HT + 4*C*HT - 3*HX) + LAM
+
+                                2   2              2   2
+        *HX*(3*COS(AX)*COS(AY)*C *HT  - 5*COS(AX)*C *HT
+
+                                               2   2
+              + 4*COS(AX)*C*HX*HT - 5*COS(AY)*C *HT
+
+                                       2   2                   2
+              + 4*COS(AY)*C*HX*HT + 7*C *HT  - 8*C*HX*HT + 3*HX )
+
+                              3   3                      2      2
+         + 4*COS(AX)*COS(AY)*C *HT  - 3*COS(AX)*COS(AY)*C *HX*HT
+
+                      3   3              2      2
+         - 4*COS(AX)*C *HT  + 5*COS(AX)*C *HX*HT
+
+                         2                 3   3
+         - 2*COS(AX)*C*HX *HT - 4*COS(AY)*C *HT
+
+                      2      2                 2         3   3
+         + 5*COS(AY)*C *HX*HT  - 2*COS(AY)*C*HX *HT + 4*C *HT
+
+              2      2         2        3    3
+         - 7*C *HX*HT  + 4*C*HX *HT - HX )/HX
+
+let
+  cos ax=cos ax2**2-sin ax2**2,
+  cos ay=cos ay2**2-sin ay2**2,
+  sin ax=2*sin ax2*cos ax2,
+  sin ay=2*sin ay2*cos ay2,
+  cos ax2**2=1-sin ax2**2,
+  cos ay2**2=1-sin ay2**2,
+  sin ax2=s1,
+  sin ay2=s2,
+  hx=c*ht/cap;
+
+
+factor lam;
+
+
+order s1,s2;
+
+
+pol:=troot1 pol;
+
+
+          2   2    3
+ If  16*S1 *S2 *CAP   =  0  and  0
+
+  =  0  , a root of the polynomial is equal to 1.
+
+          3      2      2           2                      2   2    2
+POL := LAM  + LAM *(4*S1 *CAP + 4*S2 *CAP - 3) + LAM*(12*S1 *S2 *CAP
+
+                 2    2       2           2    2       2
+           + 4*S1 *CAP  - 8*S1 *CAP + 4*S2 *CAP  - 8*S2 *CAP + 3)
+
+               2   2    3        2   2    2       2    2       2
+        + 16*S1 *S2 *CAP  - 12*S1 *S2 *CAP  - 4*S1 *CAP  + 4*S1 *CAP
+
+              2    2       2
+        - 4*S2 *CAP  + 4*S2 *CAP - 1
+
+clear cos ax,cos ay,sin ax,sin ay,cos ax2**2,cos ay2**2,sin ax2,sin ay2,
+      hx,hy;
+
+
+pol:=hurw num pol;
+
+
+             3   2   2    3
+POL := 16*LAM *S1 *S2 *CAP
+
+               2    2         2   2           2   2     2     2
+        + 8*LAM *CAP *( - 6*S1 *S2 *CAP + 3*S1 *S2  + S1  + S2 ) + 16
+
+                     2   2    2       2   2         2         2
+       *LAM*CAP*(3*S1 *S2 *CAP  - 3*S1 *S2 *CAP - S1 *CAP + S1
+
+                      2         2              2   2    3
+                  - S2 *CAP + S2 ) + 8*( - 2*S1 *S2 *CAP
+
+                 2   2    2     2    2       2         2    2
+           + 3*S1 *S2 *CAP  + S1 *CAP  - 2*S1 *CAP + S2 *CAP
+
+                 2
+           - 2*S2 *CAP + 1)
+
+hurwitzp pol;
+
+If we denote:
+           2   2    3
+ (1)  16*S1 *S2 *CAP   >  0
+
+           2         2   2           2   2     2     2
+ (2)  8*CAP *( - 6*S1 *S2 *CAP + 3*S1 *S2  + S1  + S2 )  >  0
+
+ (3)  16*CAP
+
+      2   2    2       2   2         2         2     2         2
+*(3*S1 *S2 *CAP  - 3*S1 *S2 *CAP - S1 *CAP + S1  - S2 *CAP + S2 )
+
+  >  0
+
+                2   2    3       2   2    2     2    2       2
+ (4)  8*( - 2*S1 *S2 *CAP  + 3*S1 *S2 *CAP  + S1 *CAP  - 2*S1 *CAP
+
+              2    2       2
+          + S2 *CAP  - 2*S2 *CAP + 1)  >  0
+
+           2         2   2           2   2     2     2
+ (5)  8*CAP *( - 6*S1 *S2 *CAP + 3*S1 *S2  + S1  + S2 )  >  0
+
+             3          4   4    3        4   4    2       4   4
+ (6)  128*CAP *( - 16*S1 *S2 *CAP  + 24*S1 *S2 *CAP  - 9*S1 *S2 *CAP
+
+                       4   2    2        4   2           4   2
+                 + 8*S1 *S2 *CAP  - 10*S1 *S2 *CAP + 3*S1 *S2
+
+                     4         4       2   4    2        2   4
+                 - S1 *CAP + S1  + 8*S1 *S2 *CAP  - 10*S1 *S2 *CAP
+
+                       2   4       2   2         2   2     4
+                 + 3*S1 *S2  - 2*S1 *S2 *CAP + S1 *S2  - S2 *CAP
+
+                     4
+                 + S2 )  >  0
+
+              3       6   6    6        6   6    5        6   6    4
+ (7)  1024*CAP *(32*S1 *S2 *CAP  - 96*S1 *S2 *CAP  + 90*S1 *S2 *CAP
+
+                         6   6    3        6   4    5
+                  - 27*S1 *S2 *CAP  - 32*S1 *S2 *CAP
+
+                          6   4    4        6   4    3
+                  + 100*S1 *S2 *CAP  - 93*S1 *S2 *CAP
+
+                         6   4    2        6   2    4
+                  + 27*S1 *S2 *CAP  + 10*S1 *S2 *CAP
+
+                         6   2    3        6   2    2       6   2
+                  - 31*S1 *S2 *CAP  + 26*S1 *S2 *CAP  - 6*S1 *S2 *CAP
+
+                      6    3       6    2       6
+                  - S1 *CAP  + 3*S1 *CAP  - 2*S1 *CAP
+
+                         4   6    5         4   6    4
+                  - 32*S1 *S2 *CAP  + 100*S1 *S2 *CAP
+
+                         4   6    3        4   6    2
+                  - 93*S1 *S2 *CAP  + 27*S1 *S2 *CAP
+
+                         4   4    4        4   4    3
+                  + 20*S1 *S2 *CAP  - 76*S1 *S2 *CAP
+
+                         4   4    2        4   4           4   2    3
+                  + 73*S1 *S2 *CAP  - 21*S1 *S2 *CAP - 3*S1 *S2 *CAP
+
+                         4   2    2        4   2           4   2
+                  + 16*S1 *S2 *CAP  - 14*S1 *S2 *CAP + 3*S1 *S2
+
+                      4         4        2   6    4        2   6    3
+                  - S1 *CAP + S1  + 10*S1 *S2 *CAP  - 31*S1 *S2 *CAP
+
+                         2   6    2       2   6           2   4    3
+                  + 26*S1 *S2 *CAP  - 6*S1 *S2 *CAP - 3*S1 *S2 *CAP
+
+                         2   4    2        2   4           2   4
+                  + 16*S1 *S2 *CAP  - 14*S1 *S2 *CAP + 3*S1 *S2
+
+                        2   2         2   2     6    3       6    2
+                  - 2*S1 *S2 *CAP + S1 *S2  - S2 *CAP  + 3*S2 *CAP
+
+                        6         4         4
+                  - 2*S2 *CAP - S2 *CAP + S2 )  >  0
+
+ (C1)   (1) AND (2) AND (4)
+
+ (C2)   (1) AND (3) AND (4)
+
+ (D1)   (5) AND (7)
+
+ (D2)   (6)
+
+Necessary and sufficient conditions are:
+  (  (C1)  OR  (C2)  )  AND  (  (D1)  OR  (D2)  )
+
+COND
+
+bt:=tcon b;
+
+
+            COS(AX)*C*HT + COS(AY)*C*HT - 2*C*HT + HX
+BT := MAT((-------------------------------------------,
+                               HX
+
+            SIN(AX)*C*I*HT   SIN(AY)*C*I*HT
+           ----------------,----------------),
+                  HX               HX
+
+            SIN(AX)*C*I*HT   COS(AX)*C*HT - C*HT + HX
+          (----------------,--------------------------,0),
+                  HX                    HX
+
+            SIN(AY)*C*I*HT     COS(AY)*C*HT - C*HT + HX
+          (----------------,0,--------------------------))
+                  HX                      HX
+
+
+bt*b;
+
+
+                         2   2              2   2
+MAT(((2*COS(AX)*COS(AY)*C *HT  - 4*COS(AX)*C *HT  + 2*COS(AX)*C*HX*HT
+
+                    2   2                          2   2
+       - 4*COS(AY)*C *HT  + 2*COS(AY)*C*HX*HT + 6*C *HT  - 4*C*HX*HT
+
+                            2     2
+           2    2  SIN(AX)*C *I*HT *( - COS(AY) + 1)
+       + HX )/HX ,-----------------------------------,
+                                    2
+                                  HX
+
+               2     2
+      SIN(AY)*C *I*HT *( - COS(AX) + 1)
+     -----------------------------------),
+                       2
+                     HX
+
+               2     2
+      SIN(AX)*C *I*HT *(COS(AY) - 1)                 2   2
+    (--------------------------------,( - 2*COS(AX)*C *HT
+                     2
+                   HX
+
+                                  2   2                 2    2
+         + 2*COS(AX)*C*HX*HT + 2*C *HT  - 2*C*HX*HT + HX )/HX ,
+
+                       2   2
+      SIN(AX)*SIN(AY)*C *HT
+     ------------------------),
+                 2
+               HX
+
+               2     2                                  2   2
+      SIN(AY)*C *I*HT *(COS(AX) - 1)   SIN(AX)*SIN(AY)*C *HT
+    (--------------------------------,------------------------,(
+                     2                            2
+                   HX                           HX
+
+                      2   2                          2   2
+         - 2*COS(AY)*C *HT  + 2*COS(AY)*C*HX*HT + 2*C *HT
+
+                         2    2
+         - 2*C*HX*HT + HX )/HX ))
+
+
+bt*b-b*bt;
+
+
+                   2     2
+        2*SIN(AX)*C *I*HT *( - COS(AY) + 1)
+MAT((0,-------------------------------------,
+                          2
+                        HX
+
+                 2     2
+      2*SIN(AY)*C *I*HT *( - COS(AX) + 1)
+     -------------------------------------),
+                        2
+                      HX
+
+                 2     2
+      2*SIN(AX)*C *I*HT *(COS(AY) - 1)
+    (----------------------------------,0,0),
+                      2
+                    HX
+
+                 2     2
+      2*SIN(AY)*C *I*HT *(COS(AX) - 1)
+    (----------------------------------,0,0))
+                      2
+                    HX
+
+
+clear a,b,bt,pol;
+
+
+
+%***********************************************************************
+
+end;
+
+
+Time: 35649 ms  plus GC time: 2346 ms
+
+Quitting

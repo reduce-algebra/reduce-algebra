@@ -1,0 +1,48 @@
+
+<A NAME=DILOG>
+
+<TITLE>DILOG</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DILOG</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>dilog</em> operator is known to the differentiation and integration 
+operators, but has numeric value attached only at <em>dilog(0)</em>. Dilog is 
+defined by 
+<P>
+<P>
+dilog(x) = -int(log(x),x)/(x-1) 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+df(dilog(x**2),x); 
+
+           2
+    2*LOG(X )*X
+  - ------------
+       2
+      X   - 1
+
+
+
+int(dilog(x),x); 
+
+  DILOG(X)*X - DILOG(X) + LOG(X)*X - X 
+
+
+
+dilog(0); 
+
+    2
+  PI
+  ----
+   6
+
+</TT></PRE><P>

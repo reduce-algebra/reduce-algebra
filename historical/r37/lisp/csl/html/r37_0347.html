@@ -1,0 +1,38 @@
+
+<A NAME=RANK>
+
+<TITLE>RANK</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RANK</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>rank</em>(&lt;matrix\_expression&gt;) 
+<P>
+<P>
+<P>
+<em>rank</em>calculates the rank of its matrix argument. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+rank mat((a,b,c),(d,e,f)); 
+
+  2
+
+</TT></PRE><P>The argument to <em>rank</em> can also be a 
+<A HREF=r37_0053.html>list</A> of lists, interpreted 
+either as a row matrix or a set of equations. If that form of input is 
+chosen, the vectors in the result will be represented by lists as well. 
+This additional input syntax facilitates the use of <em>rank</em> in 
+applications different from classical linear algebra. 
+<P>
+<P>
+<P>

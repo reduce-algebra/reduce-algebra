@@ -1,0 +1,1934 @@
+REDUCE 3.4, 15-Jul-91 ...
+
+1: 
+(LAPLACE)
+
+
+% Title:  Examples of Laplace Transforms.
+
+% Author: L. Kazasov.
+
+% Date: 24 October 1988.
+
+order p;
+
+
+
+% Elementary functions with argument k*x, where x is object var.
+
+laplace(1,x,p);
+
+
+ 1
+---
+ P
+
+laplace(c,x,p);
+
+
+ C
+---
+ P
+
+laplace(sin(k*x),x,p);
+
+
+    K
+---------
+  2    2
+ P  + K
+ laplace(sin(x/a),x,p);
+
+
+        1
+-----------------
+  -1   2  2
+ A  *(P *A  + 1)
+
+laplace(sin(17*x),x,p);
+
+
+    17
+----------
+  2
+ P  + 289
+
+laplace(sinh x,x,p);
+
+
+   1
+--------
+  2
+ P  - 1
+
+laplace(cosh(k*x),x,p);
+
+
+     - P
+------------
+     2    2
+  - P  + K
+
+laplace(x,x,p);
+
+
+ 1
+----
+  2
+ P
+ laplace(x**3,x,p);
+
+
+ 6
+----
+  4
+ P
+
+off mcd;
+
+ laplace(e**(c*x) + a**x, x, s);
+
+
+                -1          -1
+ - ((LOG(A) - S)   + (C - S)  )
+
+laplace(e**x - e**(a*x) + x**2, x, p);
+
+
+   -3          -1          -1
+2*P   + (A - P)   + (P - 1)
+
+laplace(one(k*t) + sin(a*t) - cos(b*t) - e**t, t, p);
+
+
+       2    2 -1    -1     2    2 -1            -1
+ - P*(B  + P )   + P   + (A  + P )  *A - (P - 1)
+
+laplace(sqrt(x),x,p);
+
+
+               - 3/2
+1/2*SQRT(PI)*P
+ laplace(x**(1/2),x,p);
+
+
+               - 3/2
+1/2*SQRT(PI)*P
+ on mcd;
+
+
+laplace(x**(-1/2),x,p);
+
+
+ SQRT(PI)
+----------
+ SQRT(P)
+ laplace(x**(5/2),x,p);
+
+
+  15
+ ----*SQRT(PI)
+  8
+---------------
+           3
+  SQRT(P)*P
+
+laplace(-1/4*x**2*c*sqrt(x), x, p);
+
+
+     15
+  - ----*SQRT(PI)*C
+     32
+--------------------
+              3
+     SQRT(P)*P
+
+
+% Elementary functions with argument k*x - tau,
+%   where k>0, tau>=0, x is object var.
+
+laplace(cos(x-a),x,p);
+
+
+       P
+---------------
+  P*A   2
+ E   *(P  + 1)
+
+laplace(one(k*x-tau),x,p);
+
+
+      1
+--------------
+  (P*TAU)/K
+ E         *P
+
+laplace(sinh(k*x-tau),x,p);
+
+
+           - K
+-------------------------
+  (P*TAU)/K      2    2
+ E         *( - P  + K )
+ laplace(sinh(k*x),x,p);
+
+
+     - K
+------------
+     2    2
+  - P  + K
+
+laplace((a*x-b)**c,x,p);
+
+
+  C
+ A *GAMMA(C + 1)
+-----------------
+   C  (P*B)/A
+  P *E       *P
+
+% But ...
+off mcd;
+
+ laplace((a*x-b)**2,x,p);
+
+
+ -3   2  2                2
+P  *(P *B  - 2*P*A*B + 2*A )
+ on mcd;
+
+
+laplace(sin(2*x-3),x,p);
+
+
+         2
+-------------------
+  (3*P)/2   2
+ E       *(P  + 4)
+
+on lmon;
+
+ laplace(sin(2*x-3),x,p);
+
+
+         2
+-------------------
+  (3*P)/2   2
+ E       *(P  + 4)
+ off lmon;
+
+
+off mcd;
+
+ laplace(cosh(t-a) - sin(3*t-5), t, p);
+
+
+  - P*A     2     -1       - 5/3*P   2     -1
+E      *P*(P  - 1)   - 3*E        *(P  + 9)
+ on mcd;
+
+
+
+% More complicated examples - multiplication of functions.
+% We use here on lmon - a new switch that forces all
+% trigonometrical functions which depend on object var
+% to be represented as exponents.
+
+laplace(x*e**(a*x)*cos(k*x), x, p);
+
+
+  2            2    2    4      3        2  2      2  2        3
+(P  - 2*P*A + A  - K )/(P  - 4*P *A + 6*P *A  + 2*P *K  - 4*P*A
+
+             2    4      2  2    4
+    - 4*P*A*K  + A  + 2*A *K  + K )
+
+laplace(x**(1/2)*e**(a*x), x, p);
+
+
+          1
+       - ---*SQRT(PI)
+          2
+---------------------------
+ SQRT( - A + P)*( - P + A)
+
+laplace(-1/4*e**(a*x)*(x-k)**(-1/2), x, p);
+
+
+     1            A*K
+  - ---*SQRT(PI)*E
+     4
+----------------------
+  P*K
+ E   *SQRT( - A + P)
+
+laplace(x**(5/2)*e**(a*x), x, p);
+
+
+                   15
+                - ----*SQRT(PI)
+                   8
+-----------------------------------------------
+                     3      2          2    3
+ SQRT( - A + P)*( - P  + 3*P *A - 3*P*A  + A )
+
+laplace((a*x-b)**c*e**(k*x)*const/2, x, p);
+
+
+     1   (B*K)/A  C
+  - ---*E       *A *GAMMA(C + 1)*CONST
+     2
+---------------------------------------
+     (P*B)/A           C
+    E       *( - K + P) *( - P + K)
+
+off mcd;
+
+ laplace(x*e**(a*x)*sin(7*x)/c*3, x, p);
+
+
+     2            2      -2  -1
+42*(A  - 2*A*P + P  + 49)  *C  *(P - A)
+ on mcd;
+
+
+laplace(x*e**(a*x)*sin(k*x-tau), x, p);
+
+
+  (A*TAU)/K   2                            2                2
+(E         *(P *TAU - 2*P*A*TAU + 2*P*K + A *TAU - 2*A*K + K *TAU))/(
+
+    (P*TAU)/K   4      3        2  2      2  2        3          2
+   E         *(P  - 4*P *A + 6*P *A  + 2*P *K  - 4*P*A  - 4*P*A*K
+
+                   4      2  2    4
+                + A  + 2*A *K  + K ))
+
+% The next is unknown if lmon is off.
+laplace(sin(k*x)*cosh(k*x), x, p);
+
+
+*** Laplace for SIN(X*K)*COSH(X*K) not known - try ON LMON 
+
+LAPLACE(SIN(K*X)*COSH(K*X),X,P)
+
+laplace(x**(1/2)*sin(k*x), x, p);
+
+
+*** Laplace for SQRT(X)*SIN(X*K) not known - try ON LMON 
+
+LAPLACE(SQRT(X)*SIN(K*X),X,P)
+
+on lmon;
+
+  % But now is OK.
+laplace(x**(1/2)*sin(a*x)*cos(a*b), x, p);
+
+
+(SQRT(PI)*COS(A*B)*( - SQRT( - A*I + P)*P + SQRT(A*I + P)*P
+
+     + SQRT( - A*I + P)*A*I + SQRT(A*I + P)*A*I))/(4*SQRT(A*I + P)
+
+                         2    2
+   *SQRT( - A*I + P)*I*(P  + A ))
+
+laplace(sin(x)*cosh(x), x, p);
+
+
+  2
+ P  + 2
+--------
+  4
+ P  + 4
+
+laplace(sin(k*x)*cosh(k*x), x, p);
+
+
+     2      2
+ K*(P  + 2*K )
+---------------
+    4      4
+   P  + 4*K
+
+off exp;
+
+ laplace(sin(k*x-t)*cosh(k*x-t), x, p);
+
+
+      2*I*T   ((P + I*K + K)*T)/K
+( - (E     *(E                   *(I*K + K + P)
+
+                 ((P + I*K - K)*T + 2*K*T)/K
+              + E                           *(I*K - K + P))
+
+     *(I*K + K - P)*(I*K - K - P) + 
+
+      ((P + I*K + K)*T + (P + I*K - K)*T)/K
+     E                                     *(
+
+         ( - (P - I*K + K)*T + 2*K*T)/K
+        E                              *(I*K + K - P)
+
+             - ((P - I*K - K)*T)/K
+         + E                      *(I*K - K - P))*(I*K + K + P)
+
+     *(I*K - K + P)))/(4
+
+     ((I + 1)*K*T + (P + I*K + K)*T + (P + I*K - K)*T)/K
+   *E
+
+   *(I*K + K + P)*(I*K + K - P)*(I*K - K + P)*(I*K - K - P)*I)
+ on exp;
+
+
+laplace(cos(x)**2,x,p);
+
+
+    2
+   P  + 2
+------------
+     2
+ P*(P  + 4)
+laplace(c*cos(k*x)**2,x,p);
+
+
+     2      2
+ C*(P  + 2*K )
+---------------
+     2      2
+ P*(P  + 4*K )
+
+laplace(c*cos(2/3*x)**2, x, p);
+
+
+     2    8
+ C*(P  + ---)
+          9
+---------------
+     2    16
+ P*(P  + ----)
+          9
+
+laplace(5*sinh(x)*e**(a*x)*x**3, x, p);
+
+
+       3      2          2        3         8      7         6  2
+(120*(P  - 3*P *A + 3*P*A  + P - A  - A))/(P  - 8*P *A + 28*P *A
+
+         6       5  3       5         4  4       4  2      4
+    - 4*P  - 56*P *A  + 24*P *A + 70*P *A  - 60*P *A  + 6*P
+
+          3  5       3  3       3         2  6       2  4       2  2
+    - 56*P *A  + 80*P *A  - 24*P *A + 28*P *A  - 60*P *A  + 36*P *A
+
+         2        7         5         3            8      6      4
+    - 4*P  - 8*P*A  + 24*P*A  - 24*P*A  + 8*P*A + A  - 4*A  + 6*A
+
+         2
+    - 4*A  + 1)
+
+off exp;
+
+ laplace(sin(2*x-3)*cosh(7*x-5), x, p);
+
+
+  2  11    2         11              11         (3*P + 1)/2
+(P *E   + P  + 14*P*E   - 14*P + 53*E   + 53)/(E
+
+                                                             5
+   *(2*I + P + 7)*(2*I + P - 7)*(2*I - P + 7)*(2*I - P - 7)*E )
+ on exp;
+
+
+laplace(sin(a*x-b)*cosh(c*x-d), x, p);
+
+
+*** Laplace for  - 1/4*ONE((X*A - B)/A)*ONE((X*C - D)/C)*I**(-1) not known 
+
+*** Laplace for 1/4*ONE((X*A - B)/A)*ONE((X*C - D)/C)*I**(-1) not known 
+
+             B*I + 2*C*X      A*X - B        C*X - D
+LAPLACE(( - E           *ONE(---------)*ONE(---------)
+                                 A              C
+
+             B*I + 2*D      A*X - B        C*X - D
+          - E         *ONE(---------)*ONE(---------))/(4
+                               A              C
+
+             A*I*X + C*X + D
+           *E               *I),X,P) + LAPLACE((
+
+       A*I*X + 2*C*X      A*X - B        C*X - D
+      E             *ONE(---------)*ONE(---------)
+                             A              C
+
+          A*I*X + 2*D      A*X - B        C*X - D
+       + E           *ONE(---------)*ONE(---------))/(4
+                              A              C
+
+        B*I + C*X + D
+      *E             *I),X,P)
+
+% To solve this problem we must tell the program which one-function
+% is rightmost shifted.  However, in REDUCE 3.4, this rule is still
+% not sufficient.
+for all x let one(x-b/a)*one(x-d/c) = one(x-b/a);
+
+
+laplace(sin(a*x-b)*cosh(c*x-d), x, p);
+
+
+*** Laplace for  - 1/4*ONE((X*A - B)/A)*ONE( - A**(-1)*B + X)**(-1)*
+ONE(X - A**(-1)*B)*I**(-1) not known 
+
+*** Laplace for 1/4*ONE((X*A - B)/A)*ONE( - A**(-1)*B + X)**(-1)*ONE(
+X - A**(-1)*B)*I**(-1) not known 
+
+             B*I + 2*C*X      A*X - B      B*I + 2*D      A*X - B
+          - E           *ONE(---------) - E         *ONE(---------)
+                                 A                           A
+LAPLACE(------------------------------------------------------------,
+                               A*I*X + C*X + D
+                            4*E               *I
+
+        X,P) + LAPLACE(
+
+     A*I*X + 2*C*X      A*X - B      A*I*X + 2*D      A*X - B
+    E             *ONE(---------) + E           *ONE(---------)
+                           A                             A
+   -------------------------------------------------------------,X,P)
+                           B*I + C*X + D
+                        4*E             *I
+
+for all x clear one(x-b/a)*one(x-d/c) ;
+
+
+off lmon;
+
+
+
+% Floating point arithmetic.
+% laplace(3.5/c*sin(2.3*x-4.11)*e**(1.5*x), x, p);
+on rounded;
+
+
+laplace(3.5/c*sin(2.3*x-4.11)*e**(1.5*x), x, p);
+
+
+             117.461059957
+----------------------------------------
+  1.78695652174*P     2
+ E               *C*(P  - 3.0*P + 7.54)
+
+laplace(x**2.156,x,p);
+
+
+ GAMMA(3.156)
+--------------
+     3.156
+    P
+
+laplace(x**(-0.5),x,p);
+
+
+ GAMMA(0.5)
+------------
+     0.5
+    P
+
+off rounded;
+
+ laplace(x**(-0.5),x,p);
+
+
+ SQRT(PI)
+----------
+ SQRT(P)
+ on rounded;
+
+
+laplace(x*e**(2.35*x)*cos(7.42*x), x, p);
+
+
+                   2
+                  P  - 4.7*P - 49.5339
+---------------------------------------------------------
+  4        3             2
+ P  - 9.4*P  + 143.2478*P  - 569.44166*P + 3669.80312521
+
+laplace(x*e**(2.35*x)*cos(7.42*x-74.2), x, p);
+
+
+                 3                    2
+(160664647206.0*P  - 1116619298080.0*P  + 11431916240900.0*P
+
+                        10.0*P
+  - 23668120508900.0)/(E
+
+      4        3             2
+   *(P  - 9.4*P  + 143.2478*P  - 569.44166*P + 3669.80312521))
+
+% Higher precision works, but uses more memory.
+% precision 20; laplace(x**2.156,x,p);
+% laplace(x*e**(2.35*x)*cos(7.42*x-74.2), x, p);
+off rounded;
+
+
+
+% Integral from 0 to x, where x is object var.
+% Syntax is intl(<expr>,<var>,0,<obj.var>).
+
+laplace(c1/c2*intl(2*y**2,y,0,x), x,p);
+
+
+ 4*C1
+-------
+  4
+ P *C2
+
+off mcd;
+
+ laplace(intl(e**(2*y)*y**2+sqrt(y),y,0,x),x,p);
+
+
+ -1           -3                  - 3/2
+P  *(2*(P - 2)   + 1/2*SQRT(PI)*P      )
+ on mcd;
+
+
+laplace(-2/3*intl(1/2*y*e**(a*y)*sin(k*y),y,0,x), x, p);
+
+
+        2       2           4      3        2  2      2  2        3
+(K*( - ---*P + ---*A))/(P*(P  - 4*P *A + 6*P *A  + 2*P *K  - 4*P*A
+        3       3
+
+                2    4      2  2    4
+       - 4*P*A*K  + A  + 2*A *K  + K ))
+
+
+% Use of delta function and derivatives.
+
+laplace(-1/2*delta(x), x, p);
+
+
+    1
+ - ---
+    2
+ laplace(delta(x-tau), x, p);
+
+
+   1
+--------
+  P*TAU
+ E
+
+laplace(c*cos(k*x)*delta(x),x,p);
+
+
+C
+
+laplace(e**(a*x)*delta(x), x, p);
+
+
+1
+
+laplace(c*x**2*delta(x), x, p);
+
+
+0
+
+laplace(-1/4*x**2*delta(x-pi), x, p);
+
+
+     1    2
+  - ---*PI
+     4
+------------
+    P*PI
+   E
+
+laplace(cos(2*x-3)*delta(x-pi),x,p);
+
+
+ COS(2*PI - 3)
+---------------
+      P*PI
+     E
+
+laplace(e**(-b*x)*delta(x-tau), x, p);
+
+
+       1
+----------------
+  P*TAU + B*TAU
+ E
+
+on lmon;
+
+
+laplace(cos(2*x)*delta(x),x,p);
+
+
+1
+
+laplace(c*x**2*delta(x), x, p);
+
+
+0
+
+laplace(c*x**2*delta(x-pi), x, p);
+
+
+     2
+ C*PI
+-------
+  P*PI
+ E
+
+laplace(cos(a*x-b)*delta(x-pi),x,p);
+
+
+ COS(A*PI - B)
+---------------
+      P*PI
+     E
+
+laplace(e**(-b*x)*delta(x-tau), x, p);
+
+
+       1
+----------------
+  P*TAU + B*TAU
+ E
+
+off lmon;
+
+
+
+laplace(2/3*df(delta x,x),x,p);
+
+
+ 2
+---*P
+ 3
+
+off exp;
+
+ laplace(e**(a*x)*df(delta x,x,5), x, p);
+
+
+          5
+ - (A - P)
+ on exp;
+
+
+laplace(df(delta(x-a),x), x, p);
+
+
+  P
+------
+  P*A
+ E
+
+laplace(e**(k*x)*df(delta(x),x), x, p);
+
+
+P - K
+
+laplace(e**(k*x)*c*df(delta(x-tau),x,2), x, p);
+
+
+  K*TAU     2            2
+ E     *C*(P  - 2*P*K + K )
+----------------------------
+            P*TAU
+           E
+
+on lmon;
+
+laplace(e**(k*x)*sin(a*x)*df(delta(x-t),x,2),x,p);
+
+
+  K*T   1   2*A*I*T  2    1   2    2*A*I*T          2*A*I*T
+(E   *(---*E       *P  - ---*P  - E       *P*A*I - E       *P*K
+        2                 2
+
+                         1   2*A*I*T  2    2*A*I*T
+        - P*A*I + P*K - ---*E       *A  + E       *A*I*K
+                         2
+
+           1   2*A*I*T  2    1   2            1   2     P*T + A*I*T
+        + ---*E       *K  + ---*A  + A*I*K - ---*K ))/(E           *I
+           2                 2                2
+
+   )
+off lmon;
+
+
+
+% But if tau is positive, Laplace transform is not defined.
+
+laplace(e**(a*x)*delta(x+tau), x, p);
+
+
+*** Laplace for DELTA(X + TAU) not known - try ON LMON 
+
+         A*X
+LAPLACE(E   *DELTA(X + TAU),X,P)
+
+laplace(2*c*df(delta(x+tau),x), x, p);
+
+
+*** Laplace for DF(DELTA(X + TAU),X) not known - try ON LMON 
+
+LAPLACE(2*DF(DELTA(X + TAU),X)*C,X,P)
+
+laplace(e**(k*x)*df(delta(x+tau),x,3), x, p);
+
+
+*** Laplace for DF(DELTA(X + TAU),X,3) not known - try ON LMON 
+
+         K*X
+LAPLACE(E   *DF(DELTA(X + TAU),X,3),X,P)
+
+
+% Adding new let rules for Laplace operator. Note the syntax.
+
+for all x let laplace(log(x),x) = -log(gam*il!&)/il!&;
+
+
+laplace(-log(x)*a/4, x, p);
+
+
+*** Laplace for LOG(X) not known - try ON LMON 
+
+            1
+LAPLACE( - ---*LOG(X)*A,X,P)
+            4
+ laplace(-log(x),x,p);
+
+
+*** Laplace for LOG(X) not known - try ON LMON 
+
+LAPLACE( - LOG(X),X,P)
+
+laplace(a*log(x)*e**(k*x), x, p);
+
+
+*** Laplace for LOG(X) not known - try ON LMON 
+
+         K*X
+LAPLACE(E   *LOG(X)*A,X,P)
+
+for all x clear laplace(log(x),x);
+
+
+
+operator f;
+
+ for all x let
+    laplace(df(f(x),x),x) = il!&*laplace(f(x),x) - sub(x=0,f(x));
+
+
+for all x,n such that numberp n and fixp n let
+    laplace(df(f(x),x,n),x) = il!&**n*laplace(f(x),x) -
+      for i:=n-1 step -1 until 0 sum
+        sub(x=0, df(f(x),x,n-1-i)) * il!&**i ;
+
+
+for all x let laplace(f(x),x) = f(il!&);
+
+
+
+laplace(1/2*a*df(-2/3*f(x)*c,x), x,p);
+
+
+*** Laplace for DF(F(X),X) not known - try ON LMON 
+
+            1
+LAPLACE( - ---*DF(F(X),X)*A*C,X,P)
+            3
+
+laplace(1/2*a*df(-2/3*f(x)*c,x,4), x,p);
+
+
+*** Laplace for DF(F(X),X,4) not known - try ON LMON 
+
+            1
+LAPLACE( - ---*DF(F(X),X,4)*A*C,X,P)
+            3
+
+laplace(1/2*a*e**(k*x)*df(-2/3*f(x)*c,x,2), x,p);
+
+
+*** Laplace for DF(F(X),X,2) not known - try ON LMON 
+
+             K*X
+          - E   *DF(F(X),X,2)*A*C
+LAPLACE(--------------------------,X,P)
+                    3
+
+clear f;
+
+
+
+% Or if the boundary conditions are known and assume that
+% f(i,0)=sub(x=0,df(f(x),x,i)) the above may be overwritten as:
+operator f;
+
+ for all x let
+    laplace(df(f(x),x),x) = il!&*laplace(f(x),x) - f(0,0);
+
+
+for all x,n such that numberp n and fixp n let
+    laplace(df(f(x),x,n),x) = il!&**n*laplace(f(x),x) -
+      for i:=n-1 step -1 until 0 sum il!&**i * f(n-1-i,0);
+
+
+for all x let laplace(f(x),x) = f(il!&);
+
+
+let f(0,0)=0, f(1,0)=1, f(2,0)=2, f(3,0)=3;
+
+
+laplace(1/2*a*df(-2/3*f(x)*c,x), x,p);
+
+
+*** Laplace for DF(F(X),X) not known - try ON LMON 
+
+            1
+LAPLACE( - ---*DF(F(X),X)*A*C,X,P)
+            3
+
+laplace(1/2*a*df(-2/3*f(x)*c,x,4), x,p);
+
+
+*** Laplace for DF(F(X),X,4) not known - try ON LMON 
+
+            1
+LAPLACE( - ---*DF(F(X),X,4)*A*C,X,P)
+            3
+
+clear f(0,0), f(1,0), f(2,0), f(3,0);
+
+ clear f;
+
+
+
+% Very complicated examples.
+
+on lmon;
+
+
+laplace(sin(a*x-b)**2, x, p);
+
+
+     (P*B)/A  2    (P*B)/A  2      (P*B)/A  2
+  - E       *P  + E       *P  + 4*E       *A
+----------------------------------------------
+             (2*P*B)/A     2      2
+          2*E         *P*(P  + 4*A )
+
+off mcd;
+
+ laplace(x**3*(sin x)**4*e**(5*k*x)*c/2, x,p);
+
+
+                       -4                       -4
+C*(3/16*(4*I + 5*K - P)   + 3/16*(4*I - 5*K + P)
+
+                         -4                      -4                -4
+    - 3/4*(2*I + 5*K - P)   - 3/4*(2*I - 5*K + P)   + 9/8*(5*K - P)
+
+   )
+
+a:=(sin x)**4*e**(5*k*x)*c/2;
+
+
+          5*K*X       4
+A := 1/2*E     *SIN(X) *C
+ laplace(x**3*a,x,p);
+
+
+                       -4                       -4
+C*(3/16*(4*I + 5*K - P)   + 3/16*(4*I - 5*K + P)
+
+                         -4                      -4                -4
+    - 3/4*(2*I + 5*K - P)   - 3/4*(2*I - 5*K + P)   + 9/8*(5*K - P)
+
+   )
+ clear a;
+
+ on mcd;
+
+
+% And so on, but is very time consuming.
+% laplace(e**(k*x)*x**2*sin(a*x-b)**2, x, p);
+% for all x let one(a*x-b)*one(c*x-d) = one(c*x-d);
+% laplace(x*e**(-2*x)*cos(a*x-b)*sinh(c*x-d), x, p);
+% for all x clear one(a*x-b)*one(c*x-d) ;
+% laplace(x*e**(c*x)*sin(k*x)**3*cosh(x)**2*cos(a*x), x, p);
+off lmon;
+
+
+
+% Error messages.
+
+laplace(sin(-x),x,p);
+
+
+***** Laplace induces ONE( - X)  which is not allowed 
+
+LAPLACE(SIN( - X),X,P)
+
+on lmon;
+
+ laplace(sin(-a*x), x, p);
+
+
+***** Laplace induces ONE( - X*A)  which is not allowed 
+
+LAPLACE(SIN( - A*X),X,P)
+ off lmon;
+
+
+laplace(e**(k*x**2), x, p);
+
+
+*** Laplace for E**(X**2*K) not known - try ON LMON 
+
+            2
+         K*X
+LAPLACE(E    ,X,P)
+
+laplace(sin(-a*x+b)*cos(c*x+d), x, p);
+
+
+*** Laplace for  - SIN(X*A - B)*COS(X*C + D) not known - try ON LMON 
+
+LAPLACE( - SIN(A*X - B)*COS(C*X + D),X,P)
+
+laplace(x**(-5/2),x,p);
+
+
+*** Laplace for X**( - 5/2) not known - try ON LMON 
+
+          - 5/2
+LAPLACE(X      ,X,P)
+
+% With int arg, can't be shifted.
+laplace(intl(y*e**(a*y)*sin(k*y-tau),y,0,x), x, p);
+
+
+*** Laplace for SIN(X*K - TAU) not allowed 
+
+ -1          A*X
+P  *LAPLACE(E   *SIN(K*X - TAU)*X,X,P)
+
+laplace(cosh(x**2), x, p);
+
+
+*** Laplace for COSH(X**2) not known - try ON LMON 
+
+              2
+LAPLACE(COSH(X ),X,P)
+
+laplace(3*x/(x**2-5*x+6),x,p);
+
+
+*** Laplace for (X**2 - 5*X + 6)**(-1) not known - try ON LMON 
+
+            2           -1
+LAPLACE(3*(X  - 5*X + 6)  *X,X,P)
+
+laplace(1/sin(x),x,p);
+
+
+*** Laplace for SIN(X)**(-1) not known - try ON LMON 
+
+              -1
+LAPLACE(SIN(X)  ,X,P)
+   % But ...
+laplace(x/sin(-3*a**2),x,p);
+
+
+    -2        2 -1
+ - P  *SIN(3*A )
+
+% Severe errors.
+% laplace(sin x,x,cos y);
+% laplace(sin x,x,y+1);
+% laplace(sin(x+1),x+1,p);
+
+
+Comment  Examples of Inverse Laplace transformations;
+
+
+symbolic(ordl!* := nil);
+
+   % To nullify previous order declarations.
+
+order t;
+
+
+
+% Elementary ratio of polynomials.
+
+invlap(1/p, p, t);
+
+
+*** Invlap for P**(-1) not known 
+
+        -1
+INVLAP(P  ,P,T)
+
+invlap(1/p**3, p, t);
+
+
+*** Invlap for P**(-3) not known 
+
+        -3
+INVLAP(P  ,P,T)
+
+invlap(1/(p-a), p, t);
+
+
+ T*A
+E
+ invlap(1/(2*p-a),p,t);
+
+
+     1/2*T*A
+1/2*E
+ invlap(1/(p/2-a),p,t);
+
+
+   2*T*A
+2*E
+
+invlap(e**(-k*p)/(p-a), p, t);
+
+
+ T*A - A*K
+E
+ invlap(b**(-k*p)/(p-a), p, t);
+
+
+ T*A - LOG(B)*A*K
+E
+
+invlap(1/(p-a)**3, p, t);
+
+
+     T*A  2
+1/2*E   *T
+
+invlap(1/(c*p-a)**3, p, t);
+
+
+          -1
+     T*A*C    2  -3
+1/2*E       *T *C
+ invlap(1/(p/c-a)**3, p, t);
+
+
+     T*A*C  2  3
+1/2*E     *T *C
+
+invlap((c*p-a)**(-1)/(c*p-a)**2, p, t);
+
+
+          -1
+     T*A*C    2  -3
+1/2*E       *T *C
+
+invlap(c/((p/c-a)**2*(p-a*c)), p, t);
+
+
+     T*A*C  2  3
+1/2*E     *T *C
+
+invlap(1/(p*(p-a)), p, t);
+
+
+*** Invlap for P**(-1)*(P - A)**(-1) not known 
+
+                 -1  -1
+INVLAP( - (A - P)  *P  ,P,T)
+
+invlap(c/((p-a)*(p-b)), p, t);
+
+
+       -1     T*A    T*B
+(A - B)  *C*(E    - E   )
+
+invlap(p/((p-a)*(p-b)), p, t);
+
+
+*** Invlap for P*(P - A)**(-1)*(P - B)**(-1) not known 
+
+              -1        -1
+INVLAP((A - P)  *(B - P)  *P,P,T)
+
+off mcd;
+
+ invlap((p+d)/(p*(p-a)), p, t);
+
+
+*** Invlap for P**(-1)*(P - A)**(-1)*(P + D) not known 
+
+                 -1    -1          -1
+INVLAP( - (A - P)  *D*P   - (A - P)  ,P,T)
+
+invlap((p+d)/((p-a)*(p-b)), p, t);
+
+
+       -1   T*A      T*A      T*B      T*B
+(A - B)  *(E   *A + E   *D - E   *B - E   *D)
+
+invlap(1/(e**(k*p)*p*(p+1)), p, t);
+
+
+*** Invlap for E**( - P*K)*P**(-1)*(P + 1)**(-1) not known 
+
+         - K*P        -1  -1
+INVLAP(E      *(P + 1)  *P  ,P,T)
+ on mcd;
+
+
+off exp;
+
+ invlap(c/(p*(p+a)**2), p, t);
+
+
+*** Invlap for P**(-1)*(P + A)**(-2)*C not known 
+
+            C
+INVLAP(------------,P,T)
+               2
+        (A + P) *P
+ on exp;
+
+
+invlap(1, p, t);
+
+
+DELTA(T)
+ invlap(c1*p/c2, p, t);
+
+
+*** Invlap for P*C1*C2**(-1) not known 
+
+              -1
+INVLAP(P*C1*C2  ,P,T)
+
+invlap(p/(p-a), p, t);
+
+
+*** Invlap for P*(P - A)**(-1) not known 
+
+                 -1
+INVLAP( - (A - P)  *P,P,T)
+ invlap(c*p**2, p, t);
+
+
+*** Invlap for P**2*C not known 
+
+          2
+INVLAP(C*P ,P,T)
+
+invlap(p**2*e**(-a*p)*c, p, t);
+
+
+*** Invlap for E**( - P*A)*P**2*C not known 
+
+         - A*P    2
+INVLAP(E      *C*P ,P,T)
+
+off mcd;
+
+invlap(e**(-a*p)*(1/p**2-p/(p-1))+c/p, p, t);
+
+
+*** Invlap for P**(-1)*C not known 
+
+*** Invlap for  - E**( - P*A)*P**(-2)*(P**3*(P - 1)**(-1) - 1) not known 
+
+            - A*P        -1       - A*P  -2                  -1
+INVLAP( - E      *(P - 1)  *P + E      *P  ,P,T) + INVLAP(C*P  ,P,T)
+on mcd;
+
+
+invlap(a*p**2-2*p+1, p, x);
+
+
+*** Invlap for P**2*A not known 
+
+*** Invlap for P not known 
+
+                               2
+INVLAP( - 2*P,P,X) + INVLAP(A*P ,P,X) + DELTA(X)
+
+
+% P to non-integer power in denominator - i.e. gamma-function case.
+
+invlap(1/sqrt(p), p, t);
+
+
+        1
+------------------
+ SQRT(PI)*SQRT(T)
+ invlap(1/sqrt(p-a), p, t);
+
+
+        T*A
+       E
+------------------
+ SQRT(PI)*SQRT(T)
+
+invlap(c/(p*sqrt(p)), p, t);
+
+
+*** Invlap for P**( - 1/2)*P**(-1)*C not known 
+
+         - 1/2    -1
+INVLAP(P      *C*P  ,P,T)
+ invlap(c*sqrt(p)/p**2, p, t);
+
+
+*** Invlap for SQRT(P)*P**(-2)*C not known 
+
+                  -2
+INVLAP(SQRT(P)*C*P  ,P,T)
+
+invlap((p-a)**(-3/2), p, t);
+
+
+            T*A
+ 2*SQRT(T)*E
+----------------
+    SQRT(PI)
+
+invlap(sqrt(p-a)*c/(p-a)**2, p, t);
+
+
+            T*A
+ 2*SQRT(T)*E   *C
+------------------
+     SQRT(PI)
+
+invlap(1/((p-a)*b*sqrt(p-a)), p, t);
+
+
+            T*A
+ 2*SQRT(T)*E
+----------------
+   SQRT(PI)*B
+
+invlap((p/(c1-3)-a)**(-3/2), p, t);
+
+
+            T*A*C1
+ 2*SQRT(T)*E      *SQRT(C1 - 3)*(C1 - 3)
+-----------------------------------------
+                       3*T*A
+             SQRT(PI)*E
+
+invlap(1/((p/(c1-3)-a)*b*sqrt(p/(c1-3)-a)), p, t);
+
+
+            T*A*C1
+ 2*SQRT(T)*E      *SQRT(C1 - 3)*(C1 - 3)
+-----------------------------------------
+                      3*T*A
+            SQRT(PI)*E     *B
+
+invlap((p*2-a)**(-3/2), p, t);
+
+
+          (T*A)/2
+ SQRT(T)*E
+------------------
+ SQRT(PI)*SQRT(2)
+
+invlap(sqrt(2*p-a)*c/(p*2-a)**2, p, t);
+
+
+  1           (T*A)/2
+ ---*SQRT(T)*E       *SQRT(2)*C
+  2
+--------------------------------
+            SQRT(PI)
+
+invlap(c/p**(7/2), p, t);
+
+
+  8            2
+ ----*SQRT(T)*T *C
+  15
+-------------------
+     SQRT(PI)
+ invlap(p**(-7/3), p, t);
+
+
+    1/3
+   T   *T
+------------
+        7
+ GAMMA(---)
+        3
+
+invlap(gamma(b)/p**b,p,t);
+
+
+  B
+ T
+----
+ T
+ invlap(c*gamma(b)*(p-a)**(-b),p,t);
+
+
+  B  T*A
+ T *E   *C
+-----------
+     T
+
+invlap(e**(-k*p)/sqrt(p-a), p, t);
+
+
+                   1
+---------------------------------------
+            - T*A + A*K
+ SQRT(PI)*E            *SQRT( - K + T)
+
+
+% Images that give elementary object functions.
+% Use of new switches lmon, lhyp.
+
+invlap(k/(p**2+k**2), p, t);
+
+
+  1   2*T*I*K    1
+ ---*E        - ---
+  2              2
+--------------------
+       T*I*K
+      E     *I
+
+% This is made more readable by :
+on ltrig;
+
+ invlap(k/(p**2+k**2), p, t);
+
+
+SIN(K*T)
+
+invlap(p/(p**2+1), p, t);
+
+
+*** Invlap for P*(P**2 + 1)**(-1) not known 
+
+          P
+INVLAP(--------,P,T)
+         2
+        P  + 1
+
+invlap((p**2-a**2)/(p**2+a**2)**2, p, t);
+
+
+T*COS(A*T)
+
+invlap(p/(p**2+a**2)**2, p, t);
+
+
+*** Invlap for P*(P**2 + A**2)**(-2) not known 
+
+                P
+INVLAP(-------------------,P,T)
+         4      2  2    4
+        A  + 2*A *P  + P
+
+invlap((p-a)/((p-a)**2+b**2), p, t);
+
+
+ T*A
+E   *COS(B*T)
+ off ltrig;
+
+
+on lhyp;
+
+ invlap(s/(s**2-k**2), s, t);
+
+
+*** Invlap for S*(S**2 - K**2)**(-1) not known 
+
+          - S
+INVLAP(---------,S,T)
+         2    2
+        K  - S
+
+invlap(e**(-tau/k*p)*p/(p**2-k**2), p, t);
+
+
+*** Invlap for E**( - P*K**(-1)*TAU)*P*(P**2 - K**2)**(-1) not known 
+
+                     - P
+INVLAP(-------------------------------,P,T)
+         (P*TAU)/K  2    (P*TAU)/K  2
+        E         *K  - E         *P
+ off lhyp;
+
+
+% But it is not always possible to convert expt. functions, e.g.:
+on lhyp;
+
+ invlap(k/((p-a)**2-k**2), p, t);
+
+
+SINH(K*T)*(COSH(A*T) + SINH(A*T))
+ off lhyp;
+
+
+on ltrig;
+
+ invlap(e**(-tau/k*p)*k/(p**2+k**2), p, t);
+
+
+  1   2*T*I*K    1   2*I*TAU
+ ---*E        - ---*E
+  2              2
+-----------------------------
+       T*I*K + I*TAU
+      E             *I
+ off ltrig;
+
+
+% In such situations use the default switches:
+invlap(k/((p-a)**2-k**2), p, t);
+
+
+  T*A   1   2*T*K    1
+ E   *(---*E      - ---)
+        2            2
+-------------------------
+           T*K
+          E
+ % i.e. e**(a*t)*cosh(k*t).
+invlap(e**(-tau/k*p)*k/(p**2+k**2), p, t);
+
+
+  1   2*T*I*K    1   2*I*TAU
+ ---*E        - ---*E
+  2              2
+-----------------------------
+       T*I*K + I*TAU
+      E             *I
+ % i.e. sin(k*t-tau).
+
+% More complicated examples.
+
+off exp,mcd;
+
+ invlap((p+d)/(p**2*(p-a)), p, t);
+
+
+*** Invlap for P**(-2)*(P - A)**(-1)*(P + D) not known 
+
+                 -1          -2
+INVLAP( - (A - P)  *(D + P)*P  ,P,T)
+
+invlap(e**(-tau/k*p)*c/(p*(p-a)**2), p, t);
+
+
+*** Invlap for E**( - P*K**(-1)*TAU)*P**(-1)*(P - A)**(-2)*C not known 
+
+            -1
+         - K  *P*TAU        -2    -1
+INVLAP(E            *(A - P)  *C*P  ,P,T)
+
+invlap(1/((p-a)*(p-b)*(p-c)), p, t);
+
+
+ T*A   2                   -1    T*B               2       -1
+E   *(A  - A*B - A*C + B*C)   - E   *(A*B - A*C - B  + B*C)
+
+    T*C                     2 -1
+ + E   *(A*B - A*C - B*C + C )
+
+invlap((p**2+g*p+d)/(p*(p-a)**2), p, t);
+
+
+*** Invlap for P**(-1)*(P**2 + P*G + D)*(P - A)**(-2) not known 
+
+              -2             2   -1
+INVLAP((A - P)  *(D + G*P + P )*P  ,P,T)
+ on exp,mcd;
+
+
+invlap(k*c**(-b*p)/((p-a)**2+k**2), p, t);
+
+
+            1   2*B*I*K    1   2*T*I*K
+         - ---*C        + ---*E
+            2              2
+-----------------------------------------------
+   - T*A + T*I*K + LOG(C)*A*B + LOG(C)*B*I*K
+ E                                          *I
+
+on ltrig;
+
+ invlap(c/(p**2*(p**2+a**2)), p, t);
+
+
+*** Invlap for P**(-2)*(P**2 + A**2)**(-1)*C not known 
+
+            C
+INVLAP(------------,P,T)
+         2  2    4
+        A *P  + P
+
+invlap(1/(p**2-p+1), p, t);
+
+
+    T/2      1
+ 2*E   *SIN(---*SQRT(3)*T)
+             2
+---------------------------
+          SQRT(3)
+ invlap(1/(p**2-p+1)**2, p, t);
+
+
+    T/2              1                              1
+ 2*E   *( - 3*T*COS(---*SQRT(3)*T) + 2*SQRT(3)*SIN(---*SQRT(3)*T))
+                     2                              2
+-------------------------------------------------------------------
+                                 9
+
+invlap(2*a**2/(p*(p**2+4*a**2)), p, t);
+
+
+*** Invlap for 2*P**(-1)*(P**2 + 4*A**2)**(-1)*A**2 not known 
+
+              2
+           2*A
+INVLAP(-------------,P,T)
+           2      3
+        4*A *P + P
+
+% This is (sin(a*t))**2 and you can get this by using the let rules :
+for all x let sin(2*x)=2*sin x*cos x, cos(2*x)=(cos x)**2-(sin x)**2,
+(cos x)**2 =1-(sin x)**2;
+
+
+invlap(2*a**2/(p*(p**2+4*a**2)), p, t);
+
+
+*** Invlap for 2*P**(-1)*(P**2 + 4*A**2)**(-1)*A**2 not known 
+
+              2
+           2*A
+INVLAP(-------------,P,T)
+           2      3
+        4*A *P + P
+
+for all x clear sin(2*x),cos(2*x),cos(x)**2;
+
+  off ltrig;
+
+
+on lhyp;
+
+invlap((p**2-2*a**2)/(p*(p**2-4*a**2)),p,t);
+
+
+*** Invlap for P**(-1)*(P**2 - 2*A**2)*(P**2 - 4*A**2)**(-1) not known 
+
+            2    2
+         2*A  - P
+INVLAP(-------------,P,T)
+           2      3
+        4*A *P - P
+
+off lhyp;
+
+ % Analogously, the above is (cosh(a*t))**2.
+
+% Floating arithmetic.
+
+invlap(2.55/((0.5*p-2.0)*(p-3.3333)), p, t);
+
+
+    51000   (33333*T)/10000    51000   4*T
+ - -------*E                + -------*E
+    6667                       6667
+
+on rounded;
+
+
+invlap(2.55/((0.5*p-2.0)*(p-3.3333)), p, t);
+
+
+               4.0*T                  3.3333*T
+7.64961751912*E      - 7.64961751912*E
+
+invlap(1.5/sqrt(p-0.5), p, t);
+
+
+        0.5*T
+   1.5*E
+-----------------
+  0.5
+ T   *GAMMA(0.5)
+
+invlap(2.75*p**2-0.5*p+e**(-0.9*p)/p, p, t);
+
+
+*** Invlap for P**2 not known 
+
+*** Invlap for P not known 
+
+*** Invlap for E**( - 0.9*P)*P**(-1) not known 
+
+                                - 0.9*P  -1
+INVLAP( - 0.5*P,P,T) + INVLAP(E        *P  ,P,T)
+
+                2
+ + INVLAP(2.75*P ,P,T)
+
+invlap(1/(2.0*p-3.0)**3, p, t);
+
+
+        1.5*T  2
+0.0625*E     *T
+ invlap(1/(2.0*p-3.0)**(3/2), p, t);
+
+
+                 0.5  1.5*T
+ 0.353553390593*T   *E
+----------------------------
+         GAMMA(1.5)
+
+invlap(1/(p**2-5.0*p+6), p, t);
+
+
+ 3.0*T    2.0*T
+E      - E
+
+off rounded;
+
+
+
+% Adding new let rules for the invlap operator. note the syntax:
+
+for all x let invlap(log(gam*x)/x,x) = -log(lp!&);
+
+
+invlap(-1/2*log(gam*p)/p, p, t);
+
+
+*** Invlap for  - 1/2*P**(-1)*LOG(P*GAM) not known 
+
+           1              -1
+INVLAP( - ---*LOG(P*GAM)*P  ,P,T)
+           2
+
+invlap(-e**(-a*p)*log(gam*p)/(c*p), p, t);
+
+
+*** Invlap for  - E**( - P*A)*P**(-1)*LOG(P*GAM)*C**(-1) not known 
+
+            - A*P             -1  -1
+INVLAP( - E      *LOG(P*GAM)*C  *P  ,P,T)
+
+for all x clear invlap(1/x*log(gam*x),x);
+
+
+
+% Very complicated examples and use of factorizer.
+
+off exp,mcd;
+
+ invlap(c**(-k*p)*(p**2+g*p+d)/(p**2*(p-a)**3), p, t);
+
+
+*** Invlap for C**( - P*K)*P**(-2)*(P**2 + P*G + D)*(P - A)**(-3) not known 
+
+            - K*P        -3             2   -2
+INVLAP( - C      *(A - P)  *(D + G*P + P )*P  ,P,T)
+
+on exp,mcd;
+
+
+invlap(1/(2*p**3-5*p**2+4*p-1), p, t);
+
+
+ T        T/2      T
+E *T + 2*E    - 2*E
+
+on ltrig,lhyp;
+
+ invlap(1/(p**4-a**4), p, t);
+
+
+  - SIN(A*T) + SINH(A*T)
+-------------------------
+             3
+          2*A
+
+invlap(1/((b-3)*p**4-a**4*(2+b-5)), p, t);
+
+
+  - SIN(A*T) + SINH(A*T)
+-------------------------
+         3
+      2*A *(B - 3)
+ off ltrig,lhyp;
+
+
+% The next three examples are the same:
+invlap(c/(p**3/8-9*p**2/4+27/2*p-27)**2,p,t);
+
+
+*** Invlap for (1/8*P**3 - 9/4*P**2 + 27/2*P - 27)**(-2)*C not known 
+
+         1   3    9   2    27         -2
+INVLAP((---*P  - ---*P  + ----*P - 27)  *C,P,T)
+         8        4        2
+invlap(c/(p/2-3)**6,p,t);
+
+
+ 8    6*T  5
+----*E   *T *C
+ 15
+
+off exp;
+
+ a:=(p/2-3)**6;
+
+
+             6
+      (P - 6)
+A := ----------
+         64
+ on exp;
+
+ invlap(c/a, p, t);
+
+
+ 8    6*T  5
+----*E   *T *C
+ 15
+ clear a;
+
+
+% The following two examples are the same :
+invlap(c/(p**4+2*p**2+1)**2, p, t);
+
+
+*** Invlap for (P**4 + 2*P**2 + 1)**(-2)*C not known 
+
+         4      2     -2
+INVLAP((P  + 2*P  + 1)  *C,P,T)
+ invlap(c/((p-i)**4*(p+i)**4),p,t);
+
+
+     1    2*T*I  3      1    3      1    2*T*I  2    1    2
+(C*(----*E     *T *I + ----*T *I - ----*E     *T  + ----*T
+     96                 96          16               16
+
+        5    2*T*I        5          5    2*T*I    5       T*I
+     - ----*E     *T*I - ----*T*I + ----*E      - ----))/(E   *I)
+        32                32         32            32
+
+% The following three examples are the same :
+invlap(e**(-k*p)/(2*p-3)**6, p, t);
+
+
+  (3*T)/2   1   5    4        3  2      2  3      4    1   5
+ E       *(---*T  - T *K + 2*T *K  - 2*T *K  + T*K  - ---*K )
+            5                                          5
+--------------------------------------------------------------
+                              (3*K)/2
+                        1536*E
+
+invlap(e**(-k*p)/(4*p**2-12*p+9)**3, p, t);
+
+
+  (3*T)/2   1   5    4        3  2      2  3      4    1   5
+ E       *(---*T  - T *K + 2*T *K  - 2*T *K  + T*K  - ---*K )
+            5                                          5
+--------------------------------------------------------------
+                              (3*K)/2
+                        1536*E
+
+invlap(e**(-k*p)/(8*p**3-36*p**2+54*p-27)**2, p, t);
+
+
+*** Invlap for E**( - P*K)*(8*P**3 - 36*P**2 + 54*P - 27)**(-2) not known 
+
+         - K*P     3       2             -2
+INVLAP(E      *(8*P  - 36*P  + 54*P - 27)  ,P,T)
+
+
+% Error messages.
+
+invlap(e**(a*p)/p, p, t);
+
+
+*** Invlap for E**(P*A)*P**(-1) not known 
+
+        A*P  -1
+INVLAP(E   *P  ,P,T)
+
+invlap(c*p*sqrt(p), p, t);
+
+
+*** Invlap for SQRT(P)*P*C not known 
+
+INVLAP(SQRT(P)*C*P,P,T)
+
+invlap(sin(p), p, t);
+
+
+*** Invlap for SIN(P) not known 
+
+INVLAP(SIN(P),P,T)
+
+invlap(1/(a*p**3+b*p**2+c*p+d),p,t);
+
+
+*** Invlap for (P**3*A + P**2*B + P*C + D)**(-1) not known 
+
+           3      2           -1
+INVLAP((A*P  + B*P  + C*P + D)  ,P,T)
+
+invlap(1/(p**2-p*sin(p)+a**2),p,t);
+
+
+*** Invlap for (P**2 - P*SIN(P) + A**2)**(-1) not known 
+
+                       2    2 -1
+INVLAP( - (SIN(P)*P - A  - P )  ,P,T)
+
+on rounded;
+
+ invlap(1/(p**3-1), p, t);
+
+
+*** Invlap for (P**3 - 1)**(-1) not known 
+
+         3     -1
+INVLAP((P  - 1)  ,P,T)
+ off rounded;
+
+
+% Severe errors:
+%invlap(1/(p**2+1), p+1, sin(t) );
+%invlap(p/(p+1)**2, sin(p), t);
+
+end;
+
+
+Quitting

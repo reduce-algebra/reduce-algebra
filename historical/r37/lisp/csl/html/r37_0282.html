@@ -1,0 +1,43 @@
+
+<A NAME=ERRCONT>
+
+<TITLE>ERRCONT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ERRCONT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When the <em>errcont</em> switch is on, error conditions do not stop file 
+execution. Error messages will be printed whether <em>errcont</em> is on or 
+off. 
+<P>
+<P>
+Default is <em>off</em>. 
+<P>
+<P>
+The following describes what happens when an error occurs in a file under 
+each setting of <em>errcont</em> and <em>int</em>: 
+<P>
+<P>
+Both off: Message is printed and parsing continues, but no further 
+statements are executed; no commands from keyboard accepted except bye or 
+end; 
+<P>
+<P>
+<em>errcont</em>off, <em>int</em> on: Message is printed, and you are asked 
+if you wish to continue. (This is the default behavior); 
+<P>
+<P>
+<em>errcont</em>on, <em>int</em> off: Message is printed, and file continues 
+to execute without pause; 
+<P>
+<P>
+Both on: Message is printed, and file continues to execute without pause. 
+<P>
+<P>
+<P>
+<P>

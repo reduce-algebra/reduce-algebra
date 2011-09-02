@@ -1,0 +1,509 @@
+
+Codemist Standard Lisp 3.54 for DEC Alpha: May 23 1994
+Dump file created: Mon May 23 10:39:11 1994
+REDUCE 3.5, 15-Oct-93 ...
+Memory allocation: 6023424 bytes
+
++++ About to read file ndotest.red
+
+
+% Tests and demonstrations for the odesolve package
+
+% First some tests of the testdf module
+algebraic procedure showode();
+ <<write "order is ", odeorder, " and degree is ", odedegree;
+   write "linearity is ", odelinearity," and highestderiv is ",
+         highestderiv>>;
+
+
+showode
+
+
+depend y,x$
+
+
+ode1 := df(y,x);
+
+
+ode1 := df(y,x)
+
+sortoutode(ode1, y, x)$
+
+
+showode()$
+
+
+order is 1 and degree is 1
+
+linearity is 1 and highestderiv is df(y,x)
+
+sortoutode(ode1**2,y,x)$
+
+
+showode() $
+
+
+order is 1 and degree is 2
+
+linearity is 2 and highestderiv is df(y,x)
+
+sortoutode(e**ode1,y,x) $
+
+
+showode() $
+
+
+order is 1 and degree is 0
+
+              df(y,x)
+linearity is e        and highestderiv is df(y,x)
+
+sortoutode(df(y,x)*df(y,x,2),y,x) $
+
+
+showode() $
+
+
+order is 2 and degree is 1
+
+linearity is 2 and highestderiv is df(y,x,2)
+
+nodepend y,x $
+
+
+depend z,w $
+
+
+sortoutode(df(z,w,2)+3*z*df(z,w)+e**z,z,w) $
+
+
+showode() $
+
+
+order is 2 and degree is 1
+
+              z
+linearity is e  and highestderiv is df(z,w,2)
+
+nodepend z,w $
+
+
+
+% ******************************************
+% Next some tests for first-order differential equations
+depend y,x $
+
+
+% Just to test tracing
+on trode $
+
+
+
+% First-order quadrature case
+ode := df(y,x) - x**2 - e**x;
+
+
+                  x    2
+ode := df(y,x) - e  - x
+
+odesolve(ode, y, x);
+
+This first-order ODE can be solved by quadrature
+                       x    3
+    3*arbconst(1) + 3*e  + x
+{y=---------------------------}
+                3
+
+
+% A first-order linear equation, with an initial condition
+ode:=df(y,x) + y * sin x/cos x - 1/cos x;
+
+
+        cos(x)*df(y,x) + sin(x)*y - 1
+ode := -------------------------------
+                   cos(x)
+
+ans:=odesolve(ode,y,x);
+
+This is a first-order linear ODE solved by the integrating factor method
+ans := {y=arbconst(2)*cos(x) + sin(x)}
+
+% Note that arbconst is declared as an operator
+% The initial condition is y = 1 at x = 0 so we do...
+arbconst(!!arbconst)
+   := sub(y=1,x=0,rhs first solve(ans,arbconst(!!arbconst)));
+
+
+arbconst(2) := 1
+
+ans;
+
+
+{y=cos(x) + sin(x)}
+
+clear arbconst(!!arbconst) $
+
+
+
+% A simple separable case
+ans := odesolve(df(y,x) - y**2,y,x);
+
+This is a first-order separable ODE
+         arbconst(3)*y - x*y - 1
+ans := {-------------------------=0}
+                    y
+
+% We can improve this by
+solve(ans,y);
+
+
+           1
+{y=-----------------}
+    arbconst(3) - x
+
+nodepend y,x $
+
+
+
+% A separable case, in different variables, with an initial condition
+depend z,w $
+
+
+ode:= (1-z**2)*w*df(z,w)+(1+w**2)*z;
+
+
+                     2                2
+ode :=  - df(z,w)*w*z  + df(z,w)*w + w *z + z
+
+% Assign the answer so we can input the condition (z = 2 at w = 1/2)
+ans:=odesolve(ode,z,w);
+
+This is a first-order separable ODE
+                                                2    2
+         2*arbconst(4) - 2*log(w) - 2*log(z) - w  + z
+ans := {-----------------------------------------------=0}
+                               2
+
+% To tidy up the answer we will get for the constant we use
+for all x let log(x)+log(1/x)=0 $
+
+
+arbconst(!!arbconst) := sub(z=2,w=1/2,
+                            rhs first solve(ans,arbconst(!!arbconst)));
+
+
+                 - 15
+arbconst(4) := -------
+                  8
+
+ans;
+
+
+                                         2    2
+  2*arbconst(4) - 2*log(w) - 2*log(z) - w  + z
+{-----------------------------------------------=0}
+                        2
+
+clear arbconst(!!arbconst) $
+
+
+nodepend z,w $
+
+
+
+% Now a homogeneous one
+depend y,x $
+
+
+ode:=df(y,x) - (x-y)/(x+y);
+
+
+        df(y,x)*x + df(y,x)*y - x + y
+ode := -------------------------------
+                    x + y
+
+% To make this look decent...
+for all x,w let e**((log x)/w)=x**(1/w),
+                (sqrt w)*(sqrt x)=sqrt(w*x) $
+
+
+ans := odesolve(ode,y,x);
+
+This is a first-order ODE of algebraically homogeneous type
+ solved by change of variables y = vx method
+                               2            2
+ans := {arbconst(5) + sqrt( - x  + 2*x*y + y )=0}
+
+
+% Reducible to homogeneous 
+% Note this is the previous example with origin shifted
+ode:=df(y,x) - (x-y-3)/(x+y-1);
+
+
+        df(y,x)*x + df(y,x)*y - df(y,x) - x + y + 3
+ode := ---------------------------------------------
+                         x + y - 1
+
+ans := odesolve(ode,y,x);
+
+This is a first-order ODE reducible to homogeneous type
+solved by shifting the origin
+                               2                  2
+ans := {arbconst(6) + sqrt( - x  + 2*x*y + 6*x + y  - 2*y - 7)=0}
+
+
+% and the special case of reducible to homogeneous
+ode:=df(y,x)-(2*x+3*y+1)/(4*x+6*y+1);
+
+
+        4*df(y,x)*x + 6*df(y,x)*y + df(y,x) - 2*x - 3*y - 1
+ode := -----------------------------------------------------
+                           4*x + 6*y + 1
+
+ans := odesolve(ode,y,x);
+
+This is a first-order ODE reducible to homogeneous type
+belonging to the special case where top and bottomare parallel lines
+solved by new variable and separation
+         49*arbconst(7) - 3*log(14*x + 21*y + 5) - 21*x + 42*y
+ans := {-------------------------------------------------------=0}
+                                  49
+
+
+% To tidy up the next one we need
+for all x,w let e**(log x + w) = x*e**w,
+                e**(w*log x)=x**w $
+
+
+
+% a Bernoulli equation
+ode:=x*(1-x**2)*df(y,x) + (2*x**2 -1)*y - x**3*y**3;
+
+
+                   3                3  3      2
+ode :=  - df(y,x)*x  + df(y,x)*x - x *y  + 2*x *y - y
+
+odesolve(ode,y,x);
+
+This is a first-order ODE of Bernoulli type
+                          5
+  1    5*arbconst(8) + 2*x
+{----=----------------------}
+   2          4      2
+  y        5*x  - 5*x
+
+
+% and finally, in this set, an exact case
+ode:=(2*x**3 - 6*x*y + 6*x*y**2) + (-3*x**2 + 6*x**2*y - y**3)*df(y,x);
+
+
+ode := 
+
+           2                2            3      3        2
+6*df(y,x)*x *y - 3*df(y,x)*x  - df(y,x)*y  + 2*x  + 6*x*y  - 6*x*y
+
+odesolve(ode,y,x);
+
+This is an exact first order ODE
+                    4       2  2       2      4
+{4*arbconst(9) + 2*x  + 12*x *y  - 12*x *y - y =0}
+
+
+% ******************************************
+% Now for higher-order linear equations with constant coefficients
+
+% First, examples without driving terms
+% A simple one to start
+ode:=6*df(y,x,2)+df(y,x)-2*y;
+
+
+ode := 6*df(y,x,2) + df(y,x) - 2*y
+
+odesolve(ode,y,x);
+
+This is a linear ODE with constant coefficients of order 2
+                    (7*x)/6
+    arbconst(11) + e       *arbconst(10)
+{y=--------------------------------------}
+                   (2*x)/3
+                  e
+
+
+% An example with repeated and complex roots
+ode:=df(y,x,4)+2*df(y,x,2)+y;
+
+
+ode := df(y,x,4) + 2*df(y,x,2) + y
+
+odesolve(ode,y,x);
+
+This is a linear ODE with constant coefficients of order 4
+{y= - arbconst(15)*sin(x)*x + arbconst(14)*cos(x)*x
+
+  - arbconst(13)*sin(x) + arbconst(12)*cos(x)}
+
+
+% A simple right-hand-side using the above example;
+% It will need the substitution
+for all w let (sin w)**2 + (cos w)** 2 = 1 $
+
+
+ode:=ode-exp(x);
+
+
+                                  x
+ode := df(y,x,4) + 2*df(y,x,2) - e  + y
+
+odesolve(ode,y,x);
+
+This is a linear ODE with constant coefficients of order 4
+{y=( - 4*arbconst(19)*sin(x)*x + 4*arbconst(18)*cos(x)*x
+
+                                                        x
+     - 4*arbconst(17)*sin(x) + 4*arbconst(16)*cos(x) + e )/4}
+
+
+ode:=df(y,x,2)+4*df(y,x)+4*y-x*exp(x);
+
+
+                                x
+ode := df(y,x,2) + 4*df(y,x) - e *x + 4*y
+
+ans:=odesolve(ode,y,x);
+
+This is a linear ODE with constant coefficients of order 2
+                                                    3*x        3*x
+           27*arbconst(21)*x + 27*arbconst(20) + 3*e   *x - 2*e
+ans := {y=---------------------------------------------------------}
+                                       2*x
+                                   27*e
+
+% At x=1 let y=0 and df(y,x)=1
+ans2 := solve({first ans, 1 = df(rhs first ans, x)}, 
+               {arbconst(!!arbconst-1),arbconst(!!arbconst)});
+
+
+ans2 := {{arbconst(20)
+
+             2*x     x  2      x        x
+            e   *(9*e *x  - 6*e *x + 2*e  - 54*x*y - 27*x + 27*y)
+          =-------------------------------------------------------,
+                                     27
+
+                         2*x        x      x
+                        e   *( - 3*e *x + e  + 18*y + 9)
+          arbconst(21)=----------------------------------}}
+                                       9
+
+arbconst(!!arbconst -1) := sub(x=1,y=0,rhs first first ans2);
+
+
+                  2
+                 e *(5*e - 27)
+arbconst(20) := ---------------
+                      27
+
+arbconst(!!arbconst) := sub(x=1,y=0,rhs second first ans2);
+
+
+                  2
+                 e *( - 2*e + 9)
+arbconst(21) := -----------------
+                        9
+
+ans;
+
+
+       3*x        3*x      3        3       2         2
+    3*e   *x - 2*e    - 6*e *x + 5*e  + 27*e *x - 27*e
+{y=-----------------------------------------------------}
+                              2*x
+                          27*e
+
+clear arbconst(!!arbconst),arbconst(!!arbconst-1), ans, ans2 $
+
+
+
+% For simultaneous equations you can use the machine e.g. as follows
+
+depend z,x $
+
+
+ode1:=df(y,x,2)+5*y-4*z+36*cos(7*x);
+
+
+ode1 := 36*cos(7*x) + df(y,x,2) + 5*y - 4*z
+
+ode2:=y+df(z,x,2)-99*cos(7*x);
+
+
+ode2 :=  - 99*cos(7*x) + df(z,x,2) + y
+
+ode:=df(ode1,x,2)+4*ode2;
+
+
+ode :=  - 2160*cos(7*x) + df(y,x,4) + 5*df(y,x,2) + 4*y
+
+y := rhs first odesolve(ode,y,x);
+
+This is a linear ODE with constant coefficients of order 4
+y := arbconst(25)*sin(x) + arbconst(24)*cos(x)
+
+      - arbconst(23)*sin(2*x) + arbconst(22)*cos(2*x) + cos(7*x)
+
+z := rhs first solve(ode1,z);
+
+
+z := (4*arbconst(25)*sin(x) + 4*arbconst(24)*cos(x)
+
+       - arbconst(23)*sin(2*x) + arbconst(22)*cos(2*x) - 8*cos(7*x))/
+
+     4
+
+clear ode1, ode2, ode, y,z $
+
+
+nodepend z,x $
+
+
+
+% A "homogeneous" n-th order (Euler) equation
+ode := x*df(y,x,2) + df(y, x) + y/x + (log x)**3;
+
+
+                   2                     3
+        df(y,x,2)*x  + df(y,x)*x + log(x) *x + y
+ode := ------------------------------------------
+                           x
+
+odesolve(ode, y, x);
+
+This equation is of the homogeneous (Euler) type
+{y=( - 2*arbconst(27)*sin(log(x)) + 2*arbconst(26)*cos(log(x))
+
+             3             2
+     - log(x) *x + 3*log(x) *x - 3*log(x)*x)/2}
+
+
+% Not yet working
+% ode :=6*df(y,x,2)+df(y,x)-2*y + tan x;
+% odesolve(ode, y,x);
+
+% To reset the system
+!!arbconst := 0 $
+
+
+clear ode $
+
+
+off trode$
+
+
+nodepend y,x $
+
+
+end $
+(TIME:  odesolve 10099 11016)
+
+
+End of Lisp run after 10.13+1.56 seconds

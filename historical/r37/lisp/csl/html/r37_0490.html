@@ -1,0 +1,50 @@
+
+<A NAME=POCHHAMMER>
+
+<TITLE>POCHHAMMER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>POCHHAMMER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+The <em>Pochhammer</em> operator implements the Pochhammer notation 
+(shifted factorial). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>Pochhammer</em>(&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+pochhammer(17,4); 
+
+  116280 
+
+
+
+pochhammer(1/2,z); 
+
+    factorial(2*z)
+  --------------------
+    2*z
+  (2   *factorial(z))
+
+</TT></PRE><P>A number of complex rules for <em>Pochhammer</em> are inactive, be
+cause they 
+cause a huge system load in algebraic mode. If one wants to use more rules 
+for the simplification of Pochhammer's notation, one can do: 
+<P>
+<P>
+let special!*pochhammer!*rules; 
+<P>
+<P>
+<P>
+<P>

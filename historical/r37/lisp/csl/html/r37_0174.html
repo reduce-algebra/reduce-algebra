@@ -1,0 +1,116 @@
+
+<A NAME=RESULTANT>
+
+<TITLE>RESULTANT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RESULTANT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>resultant</em> operator computes the resultant of two polynomials with 
+respect to a given variable. If the resultant is 0, the polynomials have 
+a root in common. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>resultant</em>(&lt;expression&gt;,&lt;expression&gt;,&lt;kernel&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; must be a polynomial containing &lt;kernel&gt; ; 
+&lt;kernel&gt; must be a 
+<A HREF=r37_0002.html>kernel</A>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+resultant(x**2 + 2*x + 1,x+1,x); 
+
+  0 
+
+
+resultant(x**2 + 2*x + 1,x-3,x); 
+
+  16 
+
+
+resultant(z**3 + z**2 + 5*z + 5,
+          z**4 - 6*z**3 + 16*z**2 - 30*z + 55,
+          z);
+ 
+
+  0 
+
+
+resultant(x**3*y + 4*x*y + 10,y**2 + 6*y + 4,y); 
+
+
+   6       5        4        3        2
+  Y  + 18*Y  + 120*Y  + 360*Y  + 480*Y  + 288*Y + 64
+
+</TT></PRE><P>The resultant is the determinant of the Sylvester matrix, formed f
+rom the 
+coefficients of the two polynomials in the following way: 
+<P>
+<P>
+Given two polynomials: 
+<P>
+<P>
+<P><PRE><TT>
+    n       n-1 
+ a x  + a1 x     + ... + an
+
+</TT></PRE><P>and 
+<P>
+<P>
+<P><PRE><TT>
+    m       m-1 
+ b x  + b1 x     + ... + bm
+
+</TT></PRE><P>form the (m+n)x(m+n-1) Sylvester matrix by the following means: 
+<P>
+<P>
+<P><PRE><TT>
+   0.......0 a  a1 .......... an
+   0....0 a  a1 .......... an  0
+       .    .   .   .  
+   a0 a1 .......... an 0.......0
+   0.......0 b  b1 .......... bm
+   0....0 b  b1 .......... bm  0
+       .    .   .   .  
+   b  b1 .......... bm 0.......0  
+
+</TT></PRE><P>If the determinant of this matrix is 0, the two polynomials have a
+ common 
+root. Finding the resultant of large expressions is time-consuming, due 
+to the time needed to find a large determinant. 
+<P>
+<P>
+The sign conventions <em>resultant</em> uses are those given in the article, 
+``Computing in Algebraic Extensions,'' by R. Loos, appearing in 
+&lt;Computer Algebra--Symbolic and Algebraic Computation&gt;, 2nd ed., 
+edited by B. Buchberger, G.E. Collins and R. Loos, and published by 
+Springer-Verlag, 1983. 
+These are: 
+<P>
+<P>
+<P><PRE><TT>
+  resultant(p(x),q(x),x) = (-1)^{deg p(x)*deg q(x)} * resultant(q(x),p(x),x),
+  resultant(a,p(x),x)    = a^{deg p(x)},
+  resultant(a,b,x)       = 1
+</TT></PRE><P>where p(x) and q(x) are polynomials which have x as a variable, an
+d 
+a and b are free of x. 
+<P>
+<P>
+Error messages are given if <em>resultant</em> is given a non-polynomial 
+expression, or a non-kernel variable. 
+<P>
+<P>
+<P>

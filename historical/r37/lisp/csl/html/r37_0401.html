@@ -1,0 +1,33 @@
+
+<A NAME=gmodule>
+
+<TITLE>gmodule</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GMODULE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>variable</B><P>
+<P>
+ 
+The vectors of a free 
+<A HREF=r37_0400.html>module</A> over a polynomial ring R 
+are encoded as linear combinations with unit vectors of 
+M which are represented by auxiliary variables. These 
+must be collected in the variable <em>gmodule</em> before 
+any call to an operator of the Groebner package. 
+<P>
+<P>
+<P><PRE><TT>
+   torder({x,y,v1,v2,v3})$
+   gmodule := {v1,v2,v3}$
+   g:=groebner({x^2*v1 + y*v2,x*y*v1 - v3,2y*v1 + y*v3});
+</TT></PRE><P>compute the Groebner basis of the submodule 
+<P>
+<P>
+<P><PRE><TT>
+      ([x^2,y,0],[xy,0,-1],[0,2y,y])
+</TT></PRE><P>The members of the list <em>gmodule</em> are automatically 
+appended to the end of the variable list, if they are not 
+yet members there. They take part in the actual term ordering. 
+<P>
+<P>

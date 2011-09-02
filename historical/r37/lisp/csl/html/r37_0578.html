@@ -1,0 +1,68 @@
+
+<A NAME=block_matrix>
+
+<TITLE>block_matrix</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>BLOCK_MATRIX</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>block_matrix</em>(&lt;r&gt;,&lt;c&gt;,&lt;matrix\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;r&gt;,&lt;c&gt; :- positive integers. 
+<P>
+<P>
+&lt;matrix\_list&gt; :- a list of matrices. 
+<P>
+<P>
+<em>block_matrix</em>creates a matrix that consists of &lt;r&gt; by 
+&lt;c&gt; matrices filled from the &lt;matrix\_list&gt; row wise. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+B := make_identity(2); 
+
+       [1  0]
+  b := [    ]
+       [0  1]
+
+
+
+C := mat((5),(5)); 
+
+       [5]
+  c := [ ]
+       [5]
+
+
+
+D := mat((22,33),(44,55)); 
+
+       [22  33]
+  d := [      ]
+       [44  55]
+
+
+
+block_matrix(2,3,{B,C,D,D,C,B}); 
+
+
+  [1   0   5  22  33]
+  [                 ]
+  [0   1   5  44  55]
+  [                 ]
+  [22  33  5  1   0 ]
+  [                 ]
+  [44  55  5  0   1 ]
+
+</TT></PRE><P>

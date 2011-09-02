@@ -1,0 +1,141 @@
+
+<A NAME=lu_decom>
+
+<TITLE>lu_decom</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LU_DECOM</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>lu_decom</em>(&lt;matrix&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a 
+<A HREF=r37_0345.html>matrix</A> containing either numeric entries 
+ or imaginary entries with numeric coefficients. 
+<P>
+<P>
+<em>lu_decom</em>performs LU decomposition on &lt;matrix&gt;, ie: it 
+returns {L,U} where L is a lower diagonal 
+<A HREF=r37_0345.html>matrix</A>, U an 
+upper diagonal 
+<A HREF=r37_0345.html>matrix</A> and A = LU. 
+<P>
+<P>
+Caution: 
+<P>
+<P>
+The algorithm used can swap the rows of &lt;matrix&gt; during the 
+calculation. This means that LU does not equal &lt;matrix&gt; but a row 
+equivalent of it. Due to this, <em>lu_decom</em> returns {L,U,vec}. 
+The call <em>convert(meta{matrix</em>,vec)} will return the matrix that has 
+been decomposed, i.e: LU = convert(&lt;matrix&gt;,vec). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+K := mat((1,3,5),(-4,3,7),(8,6,4)); 
+
+
+       [1   3  5]
+       [        ]
+  k := [-4  3  7]
+       [        ]
+       [8   6  4]
+
+
+
+on rounded;
+
+lu :=  lu_decom(K); 
+
+  lu := {
+         [8    0      0  ]
+         [               ]
+         [-4  6.0     0  ]
+         [               ]
+         [1   2.25  1.125]
+         ,
+         [1  0.75  0.5]
+         [            ]
+         [0   1    1.5]
+         [            ]
+         [0   0     1 ]
+         ,
+         [3 2 3]}
+
+
+
+first lu * second lu; 
+
+  [8   6.0  4.0]
+  [            ]
+  [-4  3.0  7.0]
+  [            ]
+  [1   3.0  5.0]
+
+
+
+convert(K,third lu); 
+
+  P := mat((i+1,i+2,i+3),(4,5,2),(1,i,0));  _ _ _ 
+       [i + 1  i + 2  i + 3]
+       [                   ]
+  p := [  4      5      2  ]
+       [                   ]
+       [  1      i      0  ]
+
+
+lu :=  lu_decom(P); 
+
+  lu := {
+         [  1        0                      0                ]
+         [                                                   ]
+         [  4     - 4*i + 5                 0                ]
+         [                                                   ]
+         [i + 1      3       0.414634146341*i + 2.26829268293]
+         ,
+         [1  i                 0                ]
+         [                                      ]
+         [0  1  0.19512195122*i + 0.243902439024]
+         [                                      ]
+         [0  0                 1                ]
+         ,
+         [3 2 3]}
+
+
+
+first lu * second lu; 
+
+  [  1      i       0   ]
+  [                     ]
+  [  4      5      2.0  ]
+  [                     ]
+  [i + 1  i + 2  i + 3.0]
+
+
+
+convert(P,third lu); 
+
+  [  1      i      0  ]
+  [                   ]
+  [  4      5      2  ]
+  [                   ]
+  [i + 1  i + 2  i + 3]
+
+</TT></PRE><P> 
+<P>
+<P>
+Related functions: 
+<A HREF=r37_0581.html>cholesky</A>. 
+<P>
+<P>

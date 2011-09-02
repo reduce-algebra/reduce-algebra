@@ -1,0 +1,186 @@
+%%%
+%%% The tree structure for the information browser is
+%%%  given by the \section, \subsection, \subsubsection commands
+%%%
+
+\section{System interaction}
+
+%%%
+%%% Environments like Switch serve a triple purpose:
+%%%   - the node is defined
+%%%   - an index entry "demo switch" is generated
+%%%   - a cross reference with symbolic name "switch:demo" is generated.
+%%%     This can be used used the \ref, \pageref, \nameref,
+%%%      and \see commands.
+%%%   Additional \index entries or cross reference keys can be generated
+%%%    with the \index and \label commands.
+%%%
+
+\begin{Switch}{demo}
+  The \name{demo} switch is used for interactive files, causing
+  the system to pause after each command in the file until you type a
+  \key{Return}. Default is \name{off}.
+
+%%%
+%%% The parts of a node are given as environments. Defined are:
+%%%  Comments, Examples, Related
+%%%
+  \begin{Comments}
+    The switch \name{demo} has no effect on top level interactive
+    statements. Use it when you want to slow down operations in a file
+    so you can see what is happening.
+
+    You can either include the \name{on demo} command in the file,
+    or enter it from the top level before bringing in any file. Unlike
+    the \name{pause} command, \name{on demo} does not permit you to
+    interrupt the file for questions of your own.
+  \end{Comments}
+%%%
+%%% The Related environment points to related information. It should
+%%%  also use a cross ref, but that is not yet implemented
+%%%
+  \begin{Related}
+    \item [\name{in} command] Reading from files.
+    \item [\name{echo} switch] Seeing what is read in.
+  \end{Related}
+\end{Switch}
+
+\section{Polynomials}
+
+\subsection{Polynomial operators}
+
+\begin{Operator}{den}
+  The {den} operator returns the denominator of its argument.
+%%%
+%%% The syntax description needs perhaps a bit more work.
+%%%  \name and \arg are purely for printing (i.e. selecting a different
+%%%   typeface
+%%%
+  \begin{Syntax}
+    \name{den}\(\arg{expression}\)
+  \end{Syntax}
+  \arg{expression} is ordinarily a rational expression, but may be
+  any valid scalar \REDUCE\ expression.
+  \begin{Examples}
+    a := x**3 + 3*x**2 + 12*x; & A := X*(X^2 + 3*X + 12) \\
+    b := 4*x*y + x*sin(x);     & B := X*(SIN(X) + 4*Y) \\
+    den(a/b);                  & SIN(X) + 4*Y \\
+    den(a/4 + b/5);            & 20 \\
+    den(100/6);                & 3 \\
+    den(sin(x));               & 1 \\
+    for i := 1:3 sum part(firstlis,i)*part(secondlis,i); &
+              A*X + B*Y + C*Z
+  \end{Examples}
+\end{Operator}
+\begin{Comments}
+  \name{den} returns the denominator of the expression after it has
+  been simplified by \REDUCE. As seen in the examples, this includes
+  putting sums of rational expressions over a common denominator, and
+  reducing common factors where possible. If the expression does not
+  have any other denominator, $1$ is returned.
+
+  Switch settings, such as \name{mcd} or \name{rational}, have an
+  effect on the denominator of an expression.
+\end{Comments}
+
+\subsection{Dependency information}
+
+\begin{Declaration}{depend}
+  \name{depend} declares that its first argument depends on the rest
+  of its arguments.
+  \begin{Syntax}
+    \name{depend} \arg{kernel}\{,\arg{kernel}\}\repeated
+  \end{Syntax}
+  \arg{kernel} must be a legal variable name or a prefix operator
+  \see{kernel}).
+  \begin{Examples}
+    depend y,x;                              \\
+    df(y**2,x);        & 2*DF(Y,X)*Y         \\
+    depend z,cos(x),y;                       \\
+    df(sin(z),cos(x)); & COS(Z)*DF(Z,COS(X)) \\
+    df(z**2,x);        & 2*DF(Z,X)*Z         \\
+    nodepend z,y;                            \\
+    df(z**2,x);        & 2*DF(Z,X)*Z         \\
+    cc := df(y**2,x);  & CC := 2*DF(Y,x)*Y   \\
+    y := tan x;        & Y := TAN(X)         \\
+    cc;                & 2*TAN(X)*(TAN(X)^{2} + 1)
+  \end{Examples}
+  \begin{Comments}
+    Dependencies can be removed by using the declaration
+    \nameref{nodepend}. The differentiation opeartor uses this
+    information, as shown in the examples above. Linear operators alos
+    use knowledge of dependencies (see \nameref{linear}). Note that
+    dependencies can be nested: Having declared $y$ to depend on $x$,
+    and $z$ to depend on $y$, we see that the chain rule was applied
+    to the derivative of a function of $z$ wiht respect to $x$. If the
+    explicit function of the dependencyis later entered into the
+    system, terms with \name{DF(Y,X)}, for example, are expanded when
+    they are displayed again, as shown in the last example.
+  \end{Comments}
+\end{Declaration}
+
+\section{The Taylor package}
+
+\begin{Operator}{taylor}
+  The \name{taylor} operator is used for expansion in power
+  series\index{series}.
+  \begin{Syntax}
+    \name{taylor}\(\arg{expression},%
+                 \{\arg{kernel},\arg{expression},\arg{integer}\}%
+                    \repeated\)
+  \end{Syntax}
+  This returns the expansion of the first argument with respect to
+  \arg{kernel} about \arg{expression} to order \arg{integer}.
+  \begin{Examples}
+    taylor(e^(x^2+y^2),x,0,2,y,0,2); &
+               1 + Y^2 + X^2 + Y^2*X^2 + O(X^{3},Y^{3})\\
+    taylor(log(1+x),x,0,2);          & X - \rfrac{1}{2}*X^{2} + O(X^{3})
+  \end{Examples}
+  \begin{Comments}
+    The expansion is performed variable per variable, i.e.\ in the
+    example above by first expanding $\exp(x^{2}+y^{2})$ with respect
+    to $x$ and then expanding every coefficient with respect to $y$.
+
+    If the switch \nameref{taylorkeeporiginal} is set to \name{on} the
+    original expression is kept for later reference.
+
+    Printing is controlled by the variable \nameref{taylorprintterms}.
+
+  \end{Comments}
+  \begin{Related}
+    \item[tps]    Truncated Power Series.
+    \item[Koepff] Complete power series
+  \end{Related}
+\end{Operator}
+
+\subsection{Controlling the package}
+
+\begin{Switch}{taylorkeeporiginal}
+  The \name{taylorkeeporiginal} switch determines whether the
+  \nameref{taylor} operator keeps the expression to be expanded for
+  later use. Default is \name{on}.
+\end{Switch}
+
+\begin{Operator}{taylororiginal}
+  \name{taylororiginal} extracts the original expression from a Taylor
+  kernel.
+  \begin{Syntax}
+    \name{taylororiginal}\(\arg{taylor\_kernel}\)
+  \end{Syntax}
+  If the argument is not a Taylor kernel, or if the expression was not
+  kept, an error is signaled.
+\end{Operator}
+
+\begin{Variable}{taylorprintterms}
+
+    Only a certain number of (non-zero) coefficients of a Taylor
+    kernel are printed usually. If there are more, \verb|...| is
+    printed as part of the expression to indicate this. The number of
+    terms printed is given by the value of the shared algebraic
+    variable \nameref{taylorprintterms}.  Allowed values are integers
+    and the special identifier \name{all}. The latter setting
+    specifies that all terms are to be printed. The default setting is
+    $5$.
+
+\end{Variable}
+

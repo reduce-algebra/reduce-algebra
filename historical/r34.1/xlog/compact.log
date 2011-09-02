@@ -1,0 +1,370 @@
+Sat May 30 16:26:32 PDT 1992
+REDUCE 3.4.1, 15-Jul-92 ...
+
+1: 1: 
+2: 2: 
+(COMPACT)
+
+3: 3: 
+Time: 34 ms
+
+4: 4: % Tests of the COMPACT package.
+
+% Author: Anthony C. Hearn.
+
+% First some simple examples.
+
+aa := {cos(x)^2+sin(x)^2-1};
+
+
+             2         2
+AA := {SIN(X)  + COS(X)  - 1}
+
+
+xx := 2*cos(x)^2+2*sin(x)^2-2;
+
+
+               2         2
+XX := 2*(SIN(X)  + COS(X)  - 1)
+
+
+compact(xx,aa);
+
+
+0
+
+
+xx := (1-cos(x)^2)^4;
+
+
+            8           6           4           2
+XX := COS(X)  - 4*COS(X)  + 6*COS(X)  - 4*COS(X)  + 1
+
+
+compact(xx,aa);
+
+
+      8
+SIN(X)
+
+
+% These examples are from Lars Hornfeldt.
+
+compact(((1-(sin x)**2)**5)*((1-(cos x)**2)**5)
+            *(((sin x)**2+(cos x)**2)**5),
+        {cos x^2+sin x^2=1});
+
+
+      10       10
+SIN(X)  *COS(X)
+
+
+compact(s*(1-(sin x**2))+c*(1-(cos x)**2)+(sin x)**2+(cos x)**2,
+        {cos x^2+sin x^2=1});
+
+
+      2           2
+SIN(X) *C + COS(X) *S + 1
+
+
+xx := s*(1-(sin x**2))+c*(1-(cos x)**2)+(sin x)**2+(cos x)**2
+        *((sin x)**2+(cos x)**2)*(sin x)**499*(cos x)**499;
+
+
+            501       501         499       503         2           2
+XX := SIN(X)   *COS(X)    + SIN(X)   *COS(X)    - SIN(X) *S + SIN(X)
+
+               2
+       - COS(X) *C + C + S
+
+
+compact(xx,{cos(x)^2+sin(x)^2=1});
+
+
+      499       501         2           2         2
+SIN(X)   *COS(X)    + SIN(X) *C + SIN(X)  + COS(X) *S
+
+
+compact((s*(1-(sin x**2))+c*(1-(cos x)**2)+(sin x)**2+(cos x)**2)
+             *((sin x)**2+(cos x)**2)*(sin x)**499*(cos x)**499,
+         {cos x^2+sin x^2=1});
+
+
+      499       499        2           2
+SIN(X)   *COS(X)   *(SIN(X) *C + COS(X) *S + 1)
+
+
+compact(df((1-(sin x)**2)**4,x),{cos x^2+sin x^2=1});
+
+
+                  7
+ - 8*SIN(X)*COS(X)
+
+
+% End of Lars Hornfeld examples.
+
+xx := a*(cos(x)+2*sin(x))^3-w*(cos(x)-sin(x))^2;
+
+
+              3              2                  2
+XX := 8*SIN(X) *A + 12*SIN(X) *COS(X)*A - SIN(X) *W
+
+                        2                               3
+       + 6*SIN(X)*COS(X) *A + 2*SIN(X)*COS(X)*W + COS(X) *A
+
+               2
+       - COS(X) *W
+
+
+compact(xx,aa);
+
+
+                  2                                               3
+ - 2*SIN(X)*COS(X) *A + 2*SIN(X)*COS(X)*W + 8*SIN(X)*A - 11*COS(X) *A
+
+ + 12*COS(X)*A - W
+
+
+xx := (1-cos(x)^2)^2+(1-sin(x)^2)^2;
+
+
+            4           2         4           2
+XX := SIN(X)  - 2*SIN(X)  + COS(X)  - 2*COS(X)  + 2
+
+
+compact(xx,aa);
+
+
+           2       2
+ - 2*SIN(X) *COS(X)  + 1
+
+
+xx := (c^2-1)^6+7(s-1)^4+23(c+s)^5;
+
+
+       12      10       8       6       5        4         4
+XX := C   - 6*C   + 15*C  - 20*C  + 23*C  + 115*C *S + 15*C
+
+              3  2        2  3      2          4       5      4
+       + 230*C *S  + 230*C *S  - 6*C  + 115*C*S  + 23*S  + 7*S
+
+             3       2
+       - 28*S  + 42*S  - 28*S + 8
+
+
+compact(xx,{c+s=1});
+
+
+ 12      10       8       6       4      2
+C   - 6*C   + 15*C  - 20*C  + 22*C  - 6*C  + 24
+
+
+yy := (c+1)^6*s^6+7c^4+23;
+
+
+       6  6      5  6       4  6      4       3  6       2  6
+YY := C *S  + 6*C *S  + 15*C *S  + 7*C  + 20*C *S  + 15*C *S
+
+              6    6
+       + 6*C*S  + S  + 23
+
+
+compact(yy,{c+s=1});
+
+
+ 6  6      5  6       4  6      4       3  6       2  6        6    6
+C *S  + 6*C *S  + 15*C *S  + 7*C  + 20*C *S  + 15*C *S  + 6*C*S  + S
+
+ + 23
+
+
+zz := xx^3+c^6*s^6$
+
+
+
+compact(zz,{c+s=1});
+
+
+ 36       34        32        30         28         26          24
+C   - 18*C   + 153*C   - 816*C   + 3081*C   - 8820*C   + 20019*C
+
+          22          20          18           16           14
+ - 37272*C   + 58854*C   - 81314*C   + 100488*C   - 111840*C
+
+           12      11          10       9          8      7
+ + 111341*C   - 6*C   - 97545*C   - 20*C  + 80439*C  - 6*C
+
+          6          4          2
+ - 53783*C  + 40608*C  - 10368*C  + 13824
+
+
+xx := (c+s)^5 - 55(1-s)^2 + 77(1-c)^3 + (c+2s)^8;
+
+
+       8       7          6  2        5  3    5         4  4      4
+XX := C  + 16*C *S + 112*C *S  + 448*C *S  + C  + 1120*C *S  + 5*C *S
+
+               3  5       3  2       3         2  6       2  3
+       + 1792*C *S  + 10*C *S  - 77*C  + 1792*C *S  + 10*C *S
+
+              2           7        4                8    5       2
+       + 231*C  + 1024*C*S  + 5*C*S  - 231*C + 256*S  + S  - 55*S
+
+       + 110*S + 22
+
+
+% This should reduce to something like:
+
+yy := 1 - 55c^2 + 77s^3 + (1+s)^8;
+
+
+             2    8      7       6       5       4        3       2
+YY :=  - 55*C  + S  + 8*S  + 28*S  + 56*S  + 70*S  + 133*S  + 28*S
+
+       + 8*S + 2
+
+
+% The result contains the same number but different terms.
+
+compact(xx,{c+s=1});
+
+
+ 8      7       6       5       4        3       2
+S  + 8*S  + 28*S  + 56*S  + 70*S  + 133*S  - 27*S  + 118*S - 53
+
+
+compact(yy,{c+s=1});
+
+
+ 8      7       6       5       4        3       2
+S  + 8*S  + 28*S  + 56*S  + 70*S  + 133*S  - 27*S  + 118*S - 53
+
+
+% Test showing order of expressions is important.
+
+d2:= - 4*r3a**2 - 4*r3b**2 - 4*r3c**2 + 3*r3**2$
+
+
+
+d1:=  4 * r3a**2 * r3
+   +  4 * r3b**2 * r3
+   +  4 * r3c**2 * r3
+   + 16 * r3a * r3b * r3c
+   -      r3**3$
+
+
+
+d0:= 16 * r3a**4
+   + 16 * r3b**4
+   + 16 * r3c**4
+   +       r3**4
+   - 32 * r3a**2 * r3b**2
+   - 32 * r3a**2 * r3c**2
+   - 32 * r3b**2 * r3c**2
+   -  8 * r3a**2 *  r3**2
+   -  8 * r3b**2 *  r3**2
+   -  8 * r3c**2 *  r3**2
+   - 64 * r3a * r3b * r3c * r3$
+
+
+
+alist := { c0 = d0, c1 = d1, c2 = d2}$
+
+
+
+blist := { c2 = d2, c1 = d1, c0 = d0}$
+
+
+
+d:= d2 * l*l + d1 * l + d0;
+
+
+           2    2      2    2      2    2      2   2          2
+D :=  - 4*L *R3A  - 4*L *R3B  - 4*L *R3C  + 3*L *R3  + 4*L*R3A *R3
+
+                                  2             2          3
+      + 16*L*R3A*R3B*R3C + 4*L*R3B *R3 + 4*L*R3C *R3 - L*R3
+
+              4         2    2         2    2        2   2
+      + 16*R3A  - 32*R3A *R3B  - 32*R3A *R3C  - 8*R3A *R3
+
+                                  4         2    2        2   2
+      - 64*R3A*R3B*R3C*R3 + 16*R3B  - 32*R3B *R3C  - 8*R3B *R3
+
+              4        2   2     4
+      + 16*R3C  - 8*R3C *R3  + R3
+
+
+compact(d,alist);
+
+
+ 2
+L *C2 + L*C1 + C0
+ % Works fine.
+
+compact(d,blist);
+
+
+ 2                               3                   2    2
+L *C2 + 16*L*R3A*R3B*R3C + 2*L*R3  - L*R3*C2 - 64*R3A *R3B
+
+         2    2                             2    2       4       2
+ - 64*R3A *R3C  - 64*R3A*R3B*R3C*R3 - 64*R3B *R3C  + 4*R3  - 4*R3 *C2
+
+     2
+ + C2
+ % Only c2=d2 is applied.
+
+% This example illustrates why parallel application of the individual
+% side relations is necessary.
+
+lst:={x1=a+b+c, x2=a-b-c, x3=-a+b-c, x4=-a-b+c};
+
+
+LST := {X1=A + B + C,
+
+        X2=A - B - C,
+
+        X3= - A + B - C,
+
+        X4= - A - B + C}
+
+
+z1:=(a+b+c)*(a-b-c)*(-a+b-c);
+
+
+Z1 := 
+
+    3    2      2        2                2    3    2        2    3
+ - A  + A *B - A *C + A*B  + 2*A*B*C + A*C  - B  - B *C + B*C  + C
+    % This is x1*x2*x3.
+
+z2:=(a+b+c)*(a-b-c)*(-a+b-c)*(-a-b+c);
+
+
+       4      2  2      2  2    4      2  2    4
+Z2 := A  - 2*A *B  - 2*A *C  + B  - 2*B *C  + C
+   % This is x1*x2*x3*x4.
+
+compact(z1,lst);
+
+
+                       2
+X1*(4*A*B + 2*C*X1 - X1 )
+ % Not the best solution but better than nothing.
+
+compact(z2,lst);
+
+
+ 4      2  2      2  2    4      2  2    4
+A  - 2*A *B  - 2*A *C  + B  - 2*B *C  + C
+ % Does nothing.
+
+end;
+
+5: 5: 
+Time: 1836 ms
+
+6: 6: 
+Quitting
+Sat May 30 16:26:35 PDT 1992

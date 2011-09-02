@@ -1,0 +1,55 @@
+
+<A NAME=LHS>
+
+<TITLE>LHS</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>LHS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>lhs</em> operator returns the left-hand side of an 
+<A HREF=r37_0045.html>equation</A>, 
+such as those 
+returned in a list by 
+<A HREF=r37_0179.html>solve</A>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>lhs</em>(&lt;equation&gt;) or <em>lhs</em> &lt;equation&gt; 
+<P>
+<P>
+<P>
+<P>
+&lt;equation&gt; must be an equation of the form 
+<P>
+<P>
+<em>left-hand side</em><em>=</em><em>right-hand side</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+polly := (x+3)*(x^4+2x+1); 
+
+            5      4      2
+  POLLY := X  + 3*X  + 2*X  + 7*X + 3 
+
+
+pollyroots := solve(polly,x); 
+
+  POLLYROOTS := {X=ROOT F(X3 - X2 + X + 1,X ,
+                       O                   )
+                 X=-1,
+                 X=-3}
+
+
+variable := lhs first pollyroots; 
+
+  VARIABLE := X
+
+</TT></PRE><P>

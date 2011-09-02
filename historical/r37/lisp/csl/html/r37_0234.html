@@ -1,0 +1,39 @@
+
+<A NAME=SHUT>
+
+<TITLE>SHUT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>SHUT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>shut</em> command closes output files. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>shut</em>&lt;filename&gt;{,&lt;filename&gt;}* 
+<P>
+<P>
+<P>
+&lt;filename&gt; must have been a file opened by 
+<A HREF=r37_0233.html>out</A>. 
+<P>
+<P>
+A file that has been opened by 
+<A HREF=r37_0233.html>out</A> must be <em>shut</em> before it is 
+brought in by 
+<A HREF=r37_0231.html>in</A>. Files that have been opened by <em>out</em> should
+ 
+always be <em>shut</em> before the end of the REDUCE session, to avoid either 
+loss of information or the printing of extraneous information into the file. 
+In most systems, terminating a session by 
+<A HREF=r37_0124.html>bye</A> closes all open 
+output files. 
+<P>
+<P>
+<P>

@@ -1,0 +1,117 @@
+
+<A NAME=PART>
+
+<TITLE>PART</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>PART</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The operator <em>part</em> permits the extraction of various parts or 
+operators of expressions and 
+<A HREF=r37_0053.html>list</A><em>s</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>part</em>(&lt;expression,integer&gt;{,&lt;integer&gt;}*) 
+<P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE expression or a list, 
+integer may be an expression that evaluates to a positive or negative 
+integer or 0. A positive integer &lt;n&gt; picks up the n th term, 
+counting from the first term toward the end. A negative integer n 
+picks up the n th term, counting from the back toward the front. The 
+integer 0 picks up the operator (which is <em>LIST</em> when the expression 
+is a 
+<A HREF=r37_0053.html>list</A>). 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+part((x + y)**5,4); 
+
+      2  3
+  10*X *Y  
+
+
+part((x + y)**5,4,2); 
+
+   2
+  X  
+
+
+part((x + y)**5,4,2,1); 
+
+  X 
+
+
+part((x + y)**5,0); 
+
+  PLUS 
+
+
+part((x + y)**5,-5); 
+
+        4
+  5*X *Y  
+
+
+part((x + y)**5,4) := sin(x); 
+
+   5      4         3  2                 4    5
+  X  + 5*X *Y + 10*X *Y  + SIN(X) + 5*X*Y  + Y  
+
+
+alist := {x,y,{aa,bb,cc},x**2*sqrt(y)}; 
+
+
+                                        2
+  			 ALIST := {X,Y,{AA,BB,CC},SQRT(Y)*X } 
+
+
+part(alist,3,2); 
+
+  BB 
+
+
+part(alist,4,0); 
+
+  TIMES
+
+</TT></PRE><P>Additional integer arguments after the first one examine the 
+terms recursively, as shown above. In the third line, the fourth term 
+is picked from the original polynomial, 10x^2y^3, 
+then the second term from that, x^2, and finally the first 
+component, x. If an integer's absolute value is too large for 
+the appropriate expression, a message is given. 
+<P>
+<P>
+<em>part</em>works on the form of the expression as printed, or as it would 
+have been printed at that point of the calculation, bearing in mind the 
+current switch settings. It is important to realize that the switch settings 
+change the operation of <em>part</em>. 
+<A HREF=r37_0319.html>pri</A> must be on when 
+<em>part</em> is used. 
+<P>
+<P>
+When <em>part</em> is used on a polynomial expression that has minus signs, the 
+
+<em>+</em> is always returned as the top-level operator. The minus is found 
+as a unary operator attached to the negative term. 
+<P>
+<P>
+<em>part</em>can also be used to change the relevant part of the expression or 
+list as shown in the sixth example line. The <em>part</em> operator returns the 
+
+changed expression, though original expression is not changed. You can 
+also use <em>part</em> to change the operator. 
+<P>
+<P>
+<P>

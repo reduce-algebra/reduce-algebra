@@ -1,0 +1,81 @@
+
+<A NAME=ORDER>
+
+<TITLE>ORDER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ORDER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>order</em> declaration changes the order of precedence of kernels for 
+display purposes only. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>order</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a valid 
+<A HREF=r37_0002.html>kernel</A> or 
+<A HREF=r37_0211.html>operator</A> name 
+complete with argument or a 
+<A HREF=r37_0053.html>list</A> of such objects. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+x + y + z + cos(a); 
+
+  COS(A) + X + Y + Z 
+
+
+order z,y,x,cos(a); 
+
+x + y + z + cos(a); 
+
+  Z + Y + X + COS(A) 
+
+
+(x + y)**2; 
+
+   2            2
+  Y  + 2*Y*X + X  
+
+
+order nil; 
+
+(z + cos(z))**2; 
+
+        2                 2
+  COS(Z)  + 2*COS(Z)*Z + Z
+
+</TT></PRE><P><em>order</em>affects the printing order of the identifiers only; 
+internal 
+order is unchanged. Change internal order of evaluation with the 
+declaration 
+<A HREF=r37_0198.html>korder</A>. You can use <em>order</em> to feature variable
+s 
+or functions you are particularly interested in. 
+<P>
+<P>
+Declarations made with <em>order</em> are cumulative: kernels in new order 
+declarations are ordered behind those in previous declarations, and 
+previous declarations retain their relative order. Of course, specific 
+kernels named in new declarations are removed from previous ones and given 
+the new priority. Return to the standard canonical printing order with the 
+statement <em>order nil</em>. 
+<P>
+<P>
+The print order specified by <em>order</em> commands is not in effect if the 
+switch 
+<A HREF=r37_0319.html>pri</A> is off. 
+<P>
+<P>
+<P>

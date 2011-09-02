@@ -1,0 +1,58 @@
+
+<A NAME=jordan_block>
+
+<TITLE>jordan_block</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>JORDAN_BLOCK</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>jordan_block</em>(&lt;expr&gt;,&lt;square\_size&gt;) 
+<P>
+<P>
+<P>
+&lt;expr&gt; :- an algebraic expression or symbol. 
+<P>
+<P>
+&lt;square\_size&gt; :- a positive integer. 
+<P>
+<P>
+<em>jordan_block</em>computes the square jordan block matrix J of 
+dimension &lt;square\_size&gt;. 
+<P>
+<P>
+The entries of J are: 
+<P>
+<P>
+J(i,i) = &lt;expr&gt; for i=1 
+ ... n, J(i,i+1) = 1 for i=1 
+ ... n-1, and all other entries are 0. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+jordan_block(x,5); 
+
+  [x  1  0  0  0]
+  [             ]
+  [0  x  1  0  0]
+  [             ]
+  [0  0  x  1  0]
+  [             ]
+  [0  0  0  x  1]
+  [             ]
+  [0  0  0  0  x]
+
+</TT></PRE><P>Related functions: 
+<A HREF=r37_0586.html>diagonal</A>, 
+<A HREF=r37_0584.html>companion</A>. 
+<P>
+<P>

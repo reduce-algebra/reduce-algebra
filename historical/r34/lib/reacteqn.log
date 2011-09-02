@@ -1,0 +1,137 @@
+REDUCE 3.4, 15-Jul-91 ...
+
+1: 
+(REACTEQN)
+
+
+% Examples for the conversion of reaction equations to ordinary
+% differential equations.
+
+% Example taken from Feinberg (Chemical Engineering):
+
+   species := {A1,A2,A3,A4,A5};
+
+
+SPECIES := {A1,
+
+            A2,
+
+            A3,
+
+            A4,
+
+            A5}
+
+
+   reac2ode {  A1 + A4 <> 2A1,       rho, beta,
+               A1 + A2 <> A3,        gamma, epsilon,
+               A3      <> A2 + A5,   theta, mue};
+
+
+                             2
+{DF(A1,T)=RHO*A1*A4 - BETA*A1  - GAMMA*A1*A2 + EPSILON*A3,
+
+ DF(A2,T)= - GAMMA*A1*A2 + EPSILON*A3 + THETA*A3 - MUE*A2*A5,
+
+ DF(A3,T)=GAMMA*A1*A2 - EPSILON*A3 - THETA*A3 + MUE*A2*A5,
+
+                                2
+ DF(A4,T)= - RHO*A1*A4 + BETA*A1 ,
+
+ DF(A5,T)=THETA*A3 - MUE*A2*A5}
+
+        
+  inputmat;
+
+
+[1  0  0  1  0]
+[             ]
+[1  1  0  0  0]
+[             ]
+[0  0  1  0  0]
+
+
+
+  outputmat;
+
+
+[2  0  0  0  0]
+[             ]
+[0  0  1  0  0]
+[             ]
+[0  1  0  0  1]
+
+
+
+% Computation of the classical reaction matrix as difference
+% of output and input matrix:
+
+  reactmat := outputmat-inputmat;
+
+
+            [1   0   0   -1  0]
+            [                 ]
+REACTMAT := [-1  -1  1   0   0]
+            [                 ]
+            [0   1   -1  0   1]
+
+
+
+% Example with automatic generation of rate constants and automatic
+% extraction of species.
+ 
+   species := {};
+
+
+SPECIES := {}
+
+   reac2ode {  A1 + A4 <> 2A1, 
+               A1 + A2 <> A3,
+               A3      <> A2 + A5};
+
+new species: A1
+new species: A4
+new species: A2
+new species: A3
+new species: A5
+
+               2
+{DF(A1,T)= - A1 *RATE(2) + A1*A4*RATE(1) - A1*A2*RATE(3) + A3*RATE(4)
+
+ ,
+
+            2
+ DF(A4,T)=A1 *RATE(2) - A1*A4*RATE(1),
+
+ DF(A2,T)= - A1*A2*RATE(3) - A2*A5*RATE(6) + A3*RATE(5) + A3*RATE(4),
+
+ DF(A3,T)=A1*A2*RATE(3) + A2*A5*RATE(6) - A3*RATE(5) - A3*RATE(4),
+
+ DF(A5,T)= - A2*A5*RATE(6) + A3*RATE(5)}
+
+ 
+   on rounded;
+
+
+   species := {};
+
+
+SPECIES := {}
+
+   reac2ode {  A1 + A4 <> 2A1, 17.3* 22.4**1.5,
+                               0.04* 22.4**1.5 };
+
+new species: A1
+new species: A4
+
+                             2
+{DF(A1,T)= - 4.24064598853*A1  + 1834.07939004*A1*A4,
+
+                          2
+ DF(A4,T)=4.24064598853*A1  - 1834.07939004*A1*A4}
+
+
+end;
+
+
+Quitting

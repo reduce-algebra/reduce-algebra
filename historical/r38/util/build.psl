@@ -1,0 +1,22 @@
+#!/bin/csh -f
+
+# build.psl --- Build PSL REDUCE.
+
+# Author: Anthony C. Hearn.
+
+setenv lisp psl
+
+# First make basic REDUCE executable.
+
+cat $reduce/util/reduce.psl \
+   | sed "s|reducevar|$reduce|g" | sed "s/MACHINEvar/$MACHINE/g" \
+   > $reduce/reduce.psl
+chmod 755 $reduce/reduce.psl
+
+if !( -e $reduce/lisp/psl/$MACHINE/red/reduce.img ) then
+    $reduce/util/dbuild.psl
+ endif
+
+# Now compile all new source files (and make a standard executable).
+
+$reduce/util/remake

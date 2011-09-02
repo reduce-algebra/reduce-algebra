@@ -1,0 +1,63 @@
+
+<A NAME=num_int>
+
+<TITLE>num_int</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NUM_INT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+For the numerical evaluation of univariate integrals 
+over a finite interval the following strategy is used: 
+If 
+<A HREF=r37_0154.html>int</A> finds a formal antiderivative 
+ which is bounded in the integration interval, this 
+ is evaluated and the end points and the difference 
+ is returned. 
+Otherwise a 
+<A HREF=r37_0430.html>Chebyshev fit</A> is computed, 
+ starting with order 20, eventually up to order 80. 
+ If that is recognized as sufficiently convergent 
+ it is used for computing the integral by directly 
+ integrating the coefficient sequence. 
+If none of these methods is successful, an 
+ adaptive multilevel quadrature algorithm is used. 
+<P>
+<P>
+For multivariate integrals only the adaptive quadrature is used. 
+This algorithm tolerates isolated singularities. 
+The value <em>iterations</em> here limits the number of 
+local interval intersection levels. 
+&lt;a&gt; is a measure for the relative total discretization 
+error (comparison of order 1 and order 2 approximations). 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>num_int</em>(&lt;exp&gt;,&lt;var&gt;=(&lt;l&gt; .. &lt;u&gt;) 
+ [,&lt;var&gt;=(&lt;l&gt; .. &lt;u&gt;),...] 
+ [,accuracy=&lt;a&gt;][,iterations=&lt;i&gt;]) 
+<P>
+<P>
+<P>
+where &lt;exp&gt; is the function to be integrated, 
+&lt;var&gt; are the integration variables, 
+&lt;l&gt; are the lower bounds, 
+&lt;u&gt; are the upper bounds. 
+ <P>
+<P>
+Result is the value of the integral. 
+ <P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+num_int(sin x,x=(0 .. 3.1415926));
+
+  2.0000010334
+
+</TT></PRE><P>

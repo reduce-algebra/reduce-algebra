@@ -1,0 +1,158 @@
+\section{MAP Operator}
+The operator MAP applies a uniform evaluation pattern
+to all members of a composite structure: a matrix, a list or the arguments
+of an operator expression. The evaluation pattern can be a
+unary procedure, an operator, or an algebraic expression with
+one free variable. MAP is used with the syntax:
+\begin{verbatim}
+  MAP(EXPRN1:algebraic,EXPRN2:expression)
+\end{verbatim}
+{\tt EXPRN2} is a list, a matrix or an operator expression.
+
+{\tt EXPRN1} is
+\begin{itemize}
+\item the name of an operator for a single argument: the operator
+ is evaluated once with each element of {\tt EXPRN1} as its single argument,
+\item an algebraic expression with exactly one free variable, that is
+a variable preceded by the tilde symbol: the expression
+ is evaluated for each element of {\tt EXPRN1} where the element is
+ substituted for the free variable,
+\item a replacement rule of the form
+\begin{verbatim}
+  VAR => EXPRN3
+\end{verbatim} 
+  where {\tt VAR} is a variable and {\tt EXPRN3} is an expression
+  which contains {\tt VAR}.
+  Here {\tt EXPRN3} is evaluated for each element of {\tt EXPRN1} where 
+  the element is substituted for  {\tt VAR}. {\tt VAR} may be 
+  optionally preceded by a tilde.
+\end{itemize}
+The rule form for {\tt EXPRN2} is needed when more than
+one free variable occurs.
+
+{\it Examples:}
+\begin{verbatim}
+     % collect absolute values
+   map(abs,{1,-2,a,-a});
+               
+                      ->
+
+   {1,2,abs(a),abs(a)}
+
+     % integrate a matrix
+   map(int(~w,x), mat((x^2,x^5),(x^4,x^5)));
+
+                      ->
+ 
+        [  3     6 ]
+        [ x     x  ]
+        [----  ----]
+        [ 3     6  ]
+        [          ]
+        [  5     6 ]
+        [ x     x  ]
+        [----  ----]
+        [ 5     6  ]
+
+     % multiply an equation
+   map(~w*6 , x^2/3 = y^3/2 -1);
+   
+                      ->
+
+         2     3
+      2*x =3*(y  - 2)
+
+    
+\end{verbatim}
+{\tt MAP} can be applied in nested mode:
+\begin{verbatim}
+   map(sub(x=y,~q)-sub(x=0,~q),map(mat(int(~w,x),(x^2-y,x^3))));
+                      ->
+
+       [  2             4 ]
+       [ y *(y - 3)    y  ]
+       [------------  ----]
+       [     3         4  ]
+
+    % The following example needs the rule form because there are two
+    % free variables in the rightmost expression.
+ 
+   map(~w=>map(int(~r,x),w),{mat((x^2,x^4)),mat((x^3,x^5))});
+
+                      ->
+       {
+
+        [  3     5 ]
+        [ x     x  ] 
+        [----  ----]
+        [ 3     5  ]
+
+        ,
+
+        [  4     6 ]
+        [ x     x  ]
+        [----  ----]
+        [ 4     6  ]
+
+        }
+\end{verbatim}
+
+
+
+\section{SELECT Operator}
+The operator SELECT extracts from a list 
+or from the arguments of an n--ary operator elements corresponding
+to a boolean predicate. The predicate pattern can be a
+unary procedure, an operator or an algebraic expression with
+one free variable. SELECT is used with the syntax:
+\begin{verbatim}
+  SELECT(EXPRN1:expression,EXPRN2:list)
+\end{verbatim}
+
+{\tt EXPRN1} is
+\begin{itemize}
+\item the name of an operator for a single argument: the operator
+ is evaluated once with each element of {\tt EXPRN2} as its single argument,
+\item an algebraic expression with exactly one free variable, that is
+a variable preceded by the tilde symbol at least once: the expression
+ is evaluated for each element of {\tt EXPRN2} where the element is
+ substituted for the free variable,
+\item a replacement rule of the form
+\begin{verbatim}
+  VAR => EXPRN3
+\end{verbatim} 
+  where {\tt VAR} is a variable and {\tt EXPRN3} is an expression
+  which contains {\tt VAR}.
+  Here {\tt EXPRN3} is evaluated for each element of {\tt EXPRN2} where 
+  the element is substituted for  {\tt VAR}. {\tt VAR} may be 
+  optionally preceded by a tilde.
+\end{itemize}
+The rule form for {\tt EXPRN1} is needed when more than
+one free variable occurs. The result of the operation is built
+from those elements of {\tt EXPRN2} which let {\tt EXPRN1} evaluate
+to a value different from {\tt 0} or {\tt nil}, using the
+leading operator of  {\tt EXPRN2}.
+
+
+Examples:
+
+\begin{verbatim}
+  select( ~w>0, {1,-1,2,-3,3})
+                      ->
+                    {1,2,3}
+
+   % select the tersm with even powers of y 
+  select(evenp deg(~w,y), part((x+y)^5,0):=list);
+
+                      -> 
+          5     3  2      4
+        {x ,10*x *y ,5*x*y }
+
+   % select elements of a sum directly
+  select(evenp deg(~w,x), 2x^2+3x^3+4x^4);
+
+                      ->
+          2    4
+        2x  +4x    
+\end{verbatim}
+

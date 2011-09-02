@@ -1,0 +1,49 @@
+
+<A NAME=taylorprintterms>
+
+<TITLE>taylorprintterms</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TAYLORPRINTTERMS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>variable</B><P>
+<P>
+ 
+ Only a certain number of (non-zero) coefficients are printed. If 
+ there are more, an expression of the form <em>n terms</em> is printed 
+ to indicate how many non-zero terms have been suppressed. The 
+ number of terms printed is given by the value of the shared 
+ algebraic variable <em>taylorprintterms</em>. Allowed values are 
+ integers and the special identifier <em>all</em>. The latter setting 
+ specifies that all terms are to be printed. The default setting is 
+ 5. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+    taylor(e^(x^2+y^2),x,0,4,y,0,4); 
+
+
+       2   1  4    2    2  2                              5  5
+  1 + Y  + -*Y  + X  + Y *X  +             (4 terms) + O(X ,Y )
+           2
+
+
+    taylorprintterms := all; 
+
+  TAYLORPRINTTERMS := ALL 
+
+
+    taylor(e^(x^2+y^2),x,0,4,y,0,4); 
+
+
+       2   1  4    2    2  2   1  4  2   1  4   1  2  4
+  1 + Y  + -*Y  + X  + Y *X  + -*Y *X  + -*X  + -*Y *X
+           2                   2         2      2
+     1  4  4      5  5
+   + -*Y *X  + O(X ,Y )
+     4
+      
+
+</TT></PRE><P>

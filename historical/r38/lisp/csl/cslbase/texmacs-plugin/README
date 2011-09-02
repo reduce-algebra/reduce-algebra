@@ -1,0 +1,43 @@
+        TeXmacs plugin for the CSL version of REDUCE      
+        --------------------------------------------
+
+For this to work you need a working REDUCE somewhere, and in the
+directory that it lives you should have the files
+  executable:      r38 OR both r38.exe and r38.com
+  heap image file: r38.img 
+  special fonts:   r38.fonts             [a directory]
+  help files:      r38.doc               [a directory]
+
+Copy the r38 directory from here to the place where TeXmacs keeps its
+plugins. For instance on some systems this will be somewhere
+like
+     /usr/local/share/TeXmacs/plugins
+or
+     C:\Program Files\WinTeXmacs\TeXmacs\plugins
+
+On some systems a shell variable $TEXMACS_PATH might indicate where
+to look.
+
+Also read the r38/install/README file, which basically says that
+you should make a command "r38" avaiable on your standard execution
+search path.
+
+If you do not have access rights sufficient to install these files
+in the standard glocal location where TeXmacs keeps its plugins
+then you can put them in a directory of your own choice such that
+the name $TEXMACS_HOME_PATH/plugins refers to them. Ie there will be a 
+directory $TEXMACS_HOME_PATH/plugins/r38.
+
+If you do not explicitly set it, TeXmacs will treat $TEXMACS_HOME_PATH
+as referring to $HOME/.TeXmacs.
+
+If the plugin is installed and if a command called r38 is available then
+whenever TeXmacs starts up it should enable its Reduce interaface. To
+activate it use the TeXmacs menu "Insert/Session/r38 (CSL)".
+
+For further information about TeXmacs and for all advice about using
+it see the TeXmacs on-line documentation or the web pages at
+      http://www.texmacs.org
+
+
+

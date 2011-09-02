@@ -1,0 +1,62 @@
+
+<A NAME=RATIONALIZE>
+
+<TITLE>RATIONALIZE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RATIONALIZE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When the <em>rationalize</em> switch is on, denominators of rational expressions
+ 
+that contain complex numbers or root expressions are simplified by 
+multiplication by their conjugates. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+qq := (1+sqrt(3))/(sqrt(3)-7); 
+
+        SQRT(3) + 1
+  QQ := ----------- 
+        SQRT(3) - 7
+
+
+on rationalize; 
+
+qq; 
+
+  - 4*SQRT(3) - 5
+  --------------- 
+        23
+
+
+2/(4 + 6**(1/3)); 
+
+   2/3      1/3
+  6    - 4*6    + 16
+  ------------------ 
+          35
+
+
+(i-1)/(i+3); 
+
+  2*I - 1
+  ------- 
+     5
+
+
+off rationalize; 
+
+(i-1)/(i+3); 
+
+  I - 1
+  ------
+  I + 3
+
+</TT></PRE><P>

@@ -1,0 +1,42 @@
+
+<A NAME=TRUE>
+
+<TITLE>TRUE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TRUE</B><P>
+<P>
+ 
+<P>
+<P>
+Any value of the boolean part of a logical expression which is neither 
+
+<A HREF=r37_0014.html>nil</A> nor <em>0</em> is considered as <em>true</em>. Mos
+t 
+builtin test and compare functions return 
+<A HREF=r37_0018.html>t</A> for <em>true</em> 
+and 
+<A HREF=r37_0014.html>nil</A> for <em>false</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+if member(3,{1,2,3}) then 1 else -1;
+
+
+  1
+
+
+if floor(1.7) then 1 else -1; 
+
+  1 
+
+
+if floor(0.7) then 1 else -1; 
+
+  -1
+
+</TT></PRE><P>

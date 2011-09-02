@@ -1,0 +1,70 @@
+
+<A NAME=rows_pivot>
+
+<TITLE>rows_pivot</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ROWS_PIVOT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>rows_pivot</em>(&lt;matrix&gt;,&lt;r&gt;,&lt;c&gt;,{&lt;row\_list&gt;}) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a namerefmatrix. 
+<P>
+<P>
+&lt;r&gt;,&lt;c&gt; :- positive integers such that &lt;matrix&gt;(&lt;r&gt;, 
+ &lt;c&gt;) neq 0. 
+<P>
+<P>
+&lt;row\_list&gt; :- positive integer or a list of positive integers. 
+<P>
+<P>
+<em>rows_pivot</em>performs the same task as <em>pivot</em> but applies 
+the pivot only to the rows specified in &lt;row\_list&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+N := mat((1,2,3),(4,5,6),(7,8,9),(1,2,3),(4,5,6)); 
+
+
+       [1  2  3]
+       [       ]
+       [4  5  6]
+       [       ]
+  n := [7  8  9]
+       [       ]
+       [1  2  3]
+       [       ]
+       [4  5  6]
+
+
+
+rows_pivot(N,2,3,{4,5}); 
+
+  [1     2     3]
+  [             ]
+  [4     5     6]
+  [             ]
+  [7     8     9]
+  [             ]
+  [      - 1    ]
+  [-1  ------  0]
+  [      2      ]
+  [             ]
+  [0     0     0]
+
+</TT></PRE><P>Related functions: 
+<A HREF=r37_0605.html>pivot</A>. 
+<P>
+<P>

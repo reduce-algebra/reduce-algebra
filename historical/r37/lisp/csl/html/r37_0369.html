@@ -1,0 +1,47 @@
+
+<A NAME=groebner_walk>
+
+<TITLE>groebner_walk</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GROEBNER\_WALK</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The operator <em>groebner_walk</em> computes a <em>lex</em> basis 
+from a given <em>graded</em> (or <em>weighted</em>) one. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>groebner_walk</em>(&lt;g&gt;) 
+<P>
+<P>
+<P>
+where &lt;g&gt; is a <em>graded</em> basis (or <em>weighted</em> basis 
+with a weight vector with one repeated element) of the polynomial ideal. 
+<em>Groebner_walk</em> computes a sequence of monomial bases, each 
+time lifting the full system to a complete basis. <em>Groebner_walk</em> 
+should be called only in cases, where a normal <em>kex</em> computation 
+would take too much computer time. 
+<P>
+<P>
+The operator 
+<A HREF=r37_0354.html>torder</A> has to be called before in order to 
+define the variable sequence and the term order mode of &lt;g&gt;. 
+<P>
+<P>
+The variable 
+<A HREF=r37_0371.html>gvarslast</A> is not set. 
+<P>
+<P>
+Do not call <em>groebner_walk</em> with <em>on</em> 
+<A HREF=r37_0370.html>groebopt</A>. 
+<P>
+<P>
+<em>Groebner_walk</em>includes some overhead (such as e. g. 
+computation with division). On the other hand, sometimes 
+<em>groebner_walk</em> is faster than a direct <em>lex</em> computation. 
+<P>
+<P>

@@ -1,0 +1,64 @@
+
+<A NAME=PAUSE>
+
+<TITLE>PAUSE</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>PAUSE</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>command</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>pause</em> command, given in an interactive file, stops operation and 
+asks if you want to continue or not. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT></TT></PRE><P>An interactive file is running, and at some point you 
+see the 
+question<P><PRE><TT> 
+
+				   Cont? (Y or N) 
+</TT></PRE><P>If you type<P><PRE><TT> 
+
+ykey{Return}
+</TT></PRE><P>the file continues to run until the next pause or the end.<P><PRE>
+<TT> 
+</TT></PRE><P>If you type <P><PRE><TT> 
+
+nkey{Return} 
+</TT></PRE><P>you will get a numbered REDUCE prompt, and be allowed to 
+enter and execute any REDUCE statements. If you later wish to continue with 
+the file, type<P><PRE><TT> 
+
+cont; 
+</TT></PRE><P>and the file resumes.<P><PRE><TT></TT></PRE><P> 
+<P>
+<P>
+To use <em>pause</em> in your own interactive files, type 
+<P>
+<P>
+<em>pause;</em>in the file wherever you want it. 
+<P>
+<P>
+<em>pause</em>does not allow you to continue without typing either <em>y</em> 
+or <em>n</em>. Its use is to slow down scrolling of interactive files, or to 
+let you change parameters or switch settings for the calculations. 
+<P>
+<P>
+If you have stopped an interactive file at a <em>pause,</em> and do not wish to 
+
+resume the file, type <em>end;</em>. This does not end the REDUCE session, but 
+stops input from the file. A second <em>end;</em> ends the REDUCE session. 
+However, if you have pauses from more than one file stacked up, an <em>end;</em>
+ 
+brings you back to the top level, not the file directly above. 
+<P>
+<P>
+A <em>pause</em> typed from the terminal has no effect. 
+<P>
+<P>
+<P>

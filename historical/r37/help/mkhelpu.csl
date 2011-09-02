@@ -1,0 +1,20 @@
+#! /bin/csh
+
+#-------------------------------------------------------------
+#
+#  Compile REDUCE help info for GNU info format
+#
+#-------------------------------------------------------------
+
+$red36/csl/r36 -i $red36/csl/r36.img -k8000 mkinfo.red -Dpackage=redhelp -v -l mkinfo.log
+
+rm redhelp.x
+mv redhelp.y redhelp.x
+
+# makeinfo --no-split -o redhelp.inf redhelp.x
+
+# rm redhelp.x
+
+# To use the resulting redhelp.info, you need the Gnu "info" program.
+# Say "info -f redhelp.inf".
+

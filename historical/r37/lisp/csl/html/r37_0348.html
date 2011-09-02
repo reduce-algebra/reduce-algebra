@@ -1,0 +1,50 @@
+
+<A NAME=TP>
+
+<TITLE>TP</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TP</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>tp</em> operator returns the transpose of its 
+<A HREF=r37_0345.html>matrix</A> 
+ argument. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>tp</em>&lt;identifier&gt; or <em>tp</em>(&lt;identifier&gt;) 
+<P>
+<P>
+<P>
+&lt;identifier&gt; must be a matrix, which either has had its dimensions set 
+in its declaration, or has had values put into it by <em>mat</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+matrix m,n; 
+
+m := mat((1,2,3),(4,5,6))$ 
+
+n := tp m; 
+
+  N(1,1) := 1
+  N(1,2) := 4
+  N(2,1) := 2
+  N(2,2) := 5
+  N(3,1) := 3
+  N(3,2) := 6
+
+</TT></PRE><P>In an assignment statement involving <em>tp</em>, the matrix ident
+ifier on the 
+left-hand side is redimensioned to the correct size for the transpose. 
+<P>
+<P>
+<P>

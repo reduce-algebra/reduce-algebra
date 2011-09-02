@@ -1,0 +1,111 @@
+Sun Aug 18 18:57:10 2002 run on Windows
+on mathml;
+
+ % output
+
+sin (x);
+
+
+<math>
+   <apply><sin/>
+      <ci>x</ci>
+   </apply>
+</math>
+
+
+(x + y)^5;
+
+
+<math>
+   <apply><plus/>
+      <apply><power/>
+         <ci>x</ci>
+         <cn type="integer">5</cn>
+      </apply>
+      <apply><times/>
+         <cn type="integer">5</cn>
+         <apply><power/>
+            <ci>x</ci>
+            <cn type="integer">4</cn>
+         </apply>
+         <ci>y</ci>
+      </apply>
+      <apply><times/>
+         <cn type="integer">10</cn>
+         <apply><power/>
+            <ci>x</ci>
+            <cn type="integer">3</cn>
+         </apply>
+         <apply><power/>
+            <ci>y</ci>
+            <cn type="integer">2</cn>
+         </apply>
+      </apply>
+      <apply><times/>
+         <cn type="integer">10</cn>
+         <apply><power/>
+            <ci>x</ci>
+            <cn type="integer">2</cn>
+         </apply>
+         <apply><power/>
+            <ci>y</ci>
+            <cn type="integer">3</cn>
+         </apply>
+      </apply>
+      <apply><times/>
+         <cn type="integer">5</cn>
+         <ci>x</ci>
+         <apply><power/>
+            <ci>y</ci>
+            <cn type="integer">4</cn>
+         </apply>
+      </apply>
+      <apply><power/>
+         <ci>y</ci>
+         <cn type="integer">5</cn>
+      </apply>
+   </apply>
+</math>
+
+
+off mathml;
+
+
+
+
+parseml();
+
+<math> 
+<apply><plus/> 
+<cn>3</cn> 
+<cn>5</cn> 
+</apply> 
+</math>
+(plus 3 (plus 5 0))
+
+
+8
+ 
+
+operator gt;
+
+
+
+parseml();
+
+<math>
+<relation><gt/>
+<ci>x</ci>
+<ci>y</ci>
+</relation>
+</math>
+(gt x y)
+
+
+gt(x,y)
+
+
+end;
+
+
+Time for test: 90 ms

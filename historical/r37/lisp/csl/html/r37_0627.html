@@ -1,0 +1,100 @@
+
+<A NAME=Ratjordan>
+
+<TITLE>Ratjordan</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>RATJORDAN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The operator <em>ratjordan</em> computes the rational Jordan normal form R 
+of a 
+<A HREF=r37_0345.html>matrix</A> (A say). It returns {R,P,P^-1} where P*R*P^-1 =
+ A. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>ratjordan</em>(&lt;matrix&gt;) 
+<P>
+<P>
+&lt;matrix&gt; :- a square 
+<A HREF=r37_0345.html>matrix</A>. 
+<P>
+<P>
+<P>
+Field Extensions: 
+<P>
+<P>
+By default, calculations are performed in the rational numbers. To 
+extend this field the <em>arnum</em> package can be used. The package must 
+first be loaded by load_package arnum;. The field can now be extended 
+by using the defpoly command. For example, defpoly sqrt2**2-2; will 
+extend the field to include the square root of 2 (now defined by sqrt2). 
+See 
+<A HREF=r37_0626.html>frobenius</A> for an example. 
+<P>
+<P>
+Modular Arithmetic: 
+<P>
+<P>
+<em>ratjordan</em>can also be calculated in a modular base. To do this 
+first type on modular;. Then setmod p; (where p is a prime) will set 
+the modular base of calculation to p. By further typing on balanced_mod 
+the answer will appear using a symmetric modular representation. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+ a := mat((5,4*x),(2,x^2));
+
+       [5  4*x]
+       [      ]
+  a := [    2 ]
+       [2  x  ]
+
+
+
+ ratjordan(a); 
+
+    [0  x*( - 5*x + 8)]   [1  5]    [        -5 ]  
+  { [                 ],  [    ],   [1     -----] }
+    [        2        ]   [0  2]    [        2  ]
+    [1      x  + 5    ]             [           ]
+                                    [        1  ]
+                                    [0     -----]
+                                    [        2  ]
+
+
+ on modular; 
+
+ setmod 23; 
+
+ a := mat((12,34),(56,78)); 
+
+       [12  11]
+  a := [      ]
+       [10  9 ]
+
+
+
+ ratjordan(a); 
+
+    [15  0]   [16  8]   [1  21]
+  { [     ],  [     ],  [     ]  }
+    [0   6]   [19  4]   [1  4 ]
+
+
+
+ on balanced_mod;
+
+ ratjordan(a);
+
+    [- 8  0]   [ - 7  8]   [1  - 2]
+  { [      ],  [       ],  [      ]  }
+    [ 0   6]   [ - 4  4]   [1   4 ]
+
+</TT></PRE><P>

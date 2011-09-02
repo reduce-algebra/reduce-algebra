@@ -1,0 +1,47 @@
+
+<A NAME=DMS2DEG>
+
+<TITLE>DMS2DEG</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>DMS2DEG</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>dms2deg</em>(&lt;list&gt;) 
+<P>
+<P>
+<P>
+In 
+<A HREF=r37_0330.html>rounded</A> mode, if &lt;list&gt; is a list of three real 
+numbers, 
+the operator <em>dms2deg</em> will interpret the list as degrees, minutes 
+and seconds and convert it to the equivalent degrees. In all other cases, 
+an expression in terms of the original operator is returned. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+dms2deg {42,3,7}; 
+
+  DMS2DEG({42,3,7}) 
+
+
+on rounded; 
+
+ws; 
+
+  42.0519444444 
+
+
+dms2deg a; 
+
+  DMS2DEG(A)
+
+</TT></PRE><P>

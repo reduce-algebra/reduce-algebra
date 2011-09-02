@@ -1,0 +1,798 @@
+\section{Elementary Functions}
+
+\begin{Operator}{ACOS}
+\index{arccosine}
+The \name{acos} operator returns the arccosine of its argument.
+
+\begin{Syntax}
+\name{acos}\(\meta{expression}\) or \name{acos} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+acos(ab);                  &          ACOS(AB) \\
+acos 15;                   &          ACOS(15) \\
+df(acos(x*y),x);           &         \rfrac{SQRT( - X^{2}*Y^{2} + 1)*Y}{X^{2}*Y^{2} - 1} \\
+on rounded; \\
+res := acos(sqrt(2)/2);    &          RES := 0.785398163397 \\
+res-pi/4;                  &          0
+\end{Examples}
+
+\begin{Comments}
+An explicit numeric value is not given unless the switch \nameref{rounded} is
+on and the argument has an absolute numeric value less than or equal to 1.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ACOSH}
+\index{hyperbolic arccosine}
+\name{acosh} represents the hyperbolic arccosine of its argument.  It takes
+an arbitrary scalar expression as its argument. The derivative of
+\name{acosh} is known to the system.  Numerical values may also be found by
+turning on the switch \nameref{rounded}.
+
+\begin{Syntax}
+\name{acosh}\(\meta{expression}\) or \name{acosh} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+acosh a;                   &       ACOSH(A) \\
+acosh(0);                  &       ACOSH(0) \\
+df(acosh(a**2),a);         &       \rfrac{2*SQRT(A^{4} - 1)*A}{A^{4} - 1} \\
+int(acosh(x),x);           &       INT(ACOSH(X),X)
+\end{Examples}
+\begin{Comments}
+You may attach functionality by defining \name{acosh} to be the inverse of
+\name{cosh}.  This is done by the commands
+\begin{verbatim}
+        put('cosh,'inverse,'acosh);
+        put('acosh,'inverse,'cosh);
+\end{verbatim}
+You can write a procedure to attach integrals or other
+functions to \name{acosh}.  You may wish to add a check to see that its
+argument is properly restricted.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ACOT}
+\index{arccotangent}
+\name{acot} represents the arccotangent of its argument.  It takes
+an arbitrary scalar expression as its argument. The derivative of
+\name{acot} is known to the system.  Numerical values may also be found by
+turning on the switch \nameref{rounded}.
+
+\begin{Syntax}
+\name{acot}\(\meta{expression}\) or \name{acot} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+You can add functionality yourself with \name{let} and procedures.
+
+\end{Operator}
+
+
+\begin{Operator}{ACOTH}
+\index{hyperbolic cotangent}
+\name{acoth} represents the inverse hyperbolic cotangent of its argument.
+It takes an arbitrary scalar expression as its argument.  The derivative
+of \name{acoth} is known to the system.  Numerical values may also be found
+by turning on the switch \nameref{rounded}.
+
+\begin{Syntax}
+\name{acoth}\(\meta{expression}\) or \name{acoth} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array,
+matrix or vector expression. \meta{simple\_expression} must be a single
+identifier or begin with a prefix operator name.  You can add
+functionality yourself with \name{let} and procedures.
+\end{Operator}
+
+
+\begin{Operator}{ACSC}
+\index{arccosecant}
+The \name{acsc} operator returns the arccosecant of its argument.
+
+\begin{Syntax}
+\name{acsc}\(\meta{expression}\) or \name{acsc} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+acsc(ab);                  &          ACSC(AB) \\
+acsc 15;                   &          ACSC(15) \\
+df(acsc(x*y),x);           &         \rfrac{-SQRT(X^{2}*Y^{2} - 1)}{X*(X^{2}*Y^{2} - 1)} \\
+on rounded; \\
+res := acsc(2/sqrt(3));    &          RES := 1.0471975512 \\
+res-pi/3;                  &          0
+\end{Examples}
+
+\begin{Comments}
+An explicit numeric value is not given unless the switch \name{rounded} is
+on and the argument has an absolute numeric value less than or equal to 1.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ACSCH}
+\index{arccosecant}
+The \name{acsch} operator returns the hyperbolic arccosecant of its argument.
+
+\begin{Syntax}
+\name{acsch}\(\meta{expression}\) or \name{acsch} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+acsch(ab);                 &          ACSCH(AB) \\
+acsch 15;                  &          ACSCH(15) \\
+df(acsch(x*y),x);           &         \rfrac{-SQRT(X^{2}*Y^{2} + 1)}{X*(X^{2}*Y^{2} + 1)} \\
+on rounded; \\
+res := acsch(3);           &          RES := 0.327450150237
+\end{Examples}
+
+\begin{Comments}
+An explicit numeric value is not given unless the switch \name{rounded} is
+on and the argument has an absolute numeric value less than or equal to 1.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ASEC}
+\index{arccosecant}
+The \name{asec} operator returns the arccosecant of its argument.
+
+\begin{Syntax}
+\name{asec}\(\meta{expression}\) or \name{asec} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+asec(ab);                  &          ASEC(AB) \\
+asec 15;                   &          ASEC(15) \\
+df(asec(x*y),x);           &         \rfrac{SQRT(X^{2}*Y^{2} - 1)}{X*(X^{2}*Y^{2} - 1)} \\
+on rounded; \\
+res := asec sqrt(2);       &          RES := 0.785398163397 \\
+res-pi/4;                  &          0
+\end{Examples}
+
+\begin{Comments}
+An explicit numeric value is not given unless the switch \name{rounded} is
+on and the argument has an absolute numeric value greater or equal to 1.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ASECH}
+\index{hyperbolic arccosecant}
+\name{asech} represents the hyperbolic arccosecant of its argument.  It takes
+an arbitrary scalar expression as its argument. The derivative of
+\name{asech} is known to the system.  Numerical values may also be found by
+turning on the switch \nameref{rounded}.
+
+\begin{Syntax}
+\name{asech}\(\meta{expression}\) or \name{asech} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+asech a;                   &       ASECH(A) \\
+asech(1);                  &       0 \\
+df(acosh(a**2),a);         &       \rfrac{2*SQRT(- A^{4} + 1)}{A*(A^{4} - 1)} \\
+int(asech(x),x);           &       INT(ASECH(X),X)
+\end{Examples}
+\begin{Comments}
+You may attach functionality by defining \name{asech} to be the inverse of
+\name{sech}.  This is done by the commands
+\begin{verbatim}
+        put('sech,'inverse,'asech);
+        put('asech,'inverse,'sech);
+\end{verbatim}
+You can write a procedure to attach integrals or other
+functions to \name{asech}.  You may wish to add a check to see that its
+argument is properly restricted.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ASIN}
+\index{arcsine}
+The \name{asin} operator returns the arcsine of its argument.
+
+\begin{Syntax}
+\name{asin}\(\meta{expression}\) or \name{asin} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+asin(givenangle);          &      ASIN(GIVENANGLE) \\
+asin(5);                   &      ASIN(5) \\
+df(asin(2*x),x);           &      - \rfrac{2*SQRT( - 4*X^{2} + 1))}{4*X^{2} - 1} \\
+on rounded; \\
+asin .5;                   &      0.523598775598 \\
+asin(sqrt(3));             &      ASIN(1.73205080757) \\
+asin(sqrt(3)/2);           &      1.04719755120 \\
+\end{Examples}
+
+\begin{Comments}
+A numeric value is not returned by \name{asin} unless the switch
+\name{rounded} is on and its argument has an absolute value less than or
+equal to 1.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ASINH}
+\index{hyperbolic arcsine}
+The \name{asinh} operator returns the hyperbolic arcsine of its argument.
+The derivative of \name{asinh} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{asinh}\(\meta{expression}\) or \name{asinh} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+asinh d;                   &       ASINH(D) \\
+asinh(1);                  &       ASINH(1) \\
+df(asinh(2*x),x);          &       \rfrac{2*SQRT(4*X^{2} + 1))}{4*X^{2} + 1} \\
+\end{Examples}
+
+\begin{Comments}
+You may attach further functionality by defining \name{asinh} to be the
+inverse of \name{sinh}.  This is done by the commands
+\begin{verbatim}
+        put('sinh,'inverse,'asinh);
+        put('asinh,'inverse,'sinh);
+\end{verbatim}
+A numeric value is not returned by \name{asinh} unless the switch
+\name{rounded} is on and its argument evaluates to a number.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ATAN}
+\index{arctangent}
+The \name{atan} operator returns the arctangent of its argument.
+
+\begin{Syntax}
+\name{atan}\(\meta{expression}\) or \name{atan} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+atan(middle);              &      ATAN(MIDDLE) \\
+on rounded; \\
+atan 45;                   &      1.54857776147 \\
+off rounded; \\
+int(atan(x),x);            &      \rfrac{2*ATAN(X)*X - LOG(X^{2} + 1)}{2} \\
+df(atan(y**2),y);          &      \rfrac{2*Y}{Y^{4} + 1}
+\end{Examples}
+
+\begin{Comments}
+A numeric value is not returned by \name{atan} unless the switch
+\nameref{rounded} is on and its argument evaluates to a number.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ATANH}
+\index{hyperbolic arctangent}
+The \name{atanh} operator returns the hyperbolic arctangent of its argument.
+The derivative of \name{asinh} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{atanh}\(\meta{expression}\) or \name{atanh} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression.  \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+atanh aa;                  &       ATANH(AA) \\
+atanh(1);                  &       ATANH(1) \\
+df(atanh(x*y),y);          &       \rfrac{- X}{X^{2}*Y^{2} - 1}
+\end{Examples}
+
+\begin{Comments}
+A numeric value is not returned by \name{asinh} unless the switch
+\name{rounded} is on and its argument evaluates to a number.
+You may attach additional functionality by defining \name{atanh} to be the
+inverse of \name{tanh}.  This is done by the commands
+
+\begin{verbatim}
+        put('tanh,'inverse,'atanh);
+        put('atanh,'inverse,'tanh);
+\end{verbatim}
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{ATAN2}
+
+\begin{Syntax}
+\name{atan2}\(\meta{expression},\meta{expression}\)
+\end{Syntax}
+
+\meta{expression} is any valid scalar REDUCE expression.  In
+\nameref{rounded} mode, if a numerical value exists, \name{atan2} returns
+the principal value of the arc tangent of the second argument divided by
+the first in the range \[-pi,+pi\] radians, using the signs of both
+arguments to determine the quadrant of the return value.  An expression in
+terms of \name{atan2} is returned in other cases.
+
+\begin{Examples}
+atan2(3,2);                  &        ATAN2(3,2); \\
+on rounded; \\
+atan2(3,2);                  &        0.982793723247 \\
+atan2(a,b);                  &        ATAN2(A,B); \\
+atan2(1,0);                  &        1.57079632679
+\end{Examples}
+\begin{Comments}
+\name{atan2} returns a numeric value only if \nameref{rounded} is on. Then
+\name{atan2} is calculated to the current degree of floating point precision.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{COS}
+The \name{cos} operator returns the cosine of its argument.
+
+\begin{Syntax}
+\name{cos}\(\meta{expression}\) or \name{cos} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} is any valid scalar REDUCE expression,
+\meta{simple\_expression} is a single identifier or begins with a prefix
+operator name.
+
+\begin{Examples}
+
+
+cos abc;                     &        COS(ABC) \\
+
+cos(pi);                     &        -1 \\
+
+cos 4;                       &        COS(4) \\
+
+on rounded; \\
+
+cos(4);                      &        - 0.653643620864 \\
+
+cos log 5;                   &        - 0.0386319699339
+\end{Examples}
+\begin{Comments}
+\name{cos} returns a numeric value only if \nameref{rounded} is on. Then the
+cosine is calculated to the current degree of floating point precision.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{COSH}
+\index{hyperbolic cosine}
+The \name{cosh} operator returns the hyperbolic cosine of its argument.
+The derivative of \name{cosh} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{cosh}\(\meta{expression}\) or \name{cosh} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression. \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+
+cosh b;                      &             COSH(B) \\
+
+cosh(0);                     &             1 \\
+
+df(cosh(x*y),x);             &             SINH(X*Y)*Y \\
+
+int(cosh(x),x);              &             SINH(X)
+\end{Examples}
+
+\begin{Comments}
+You may attach further functionality by defining its inverse (see
+\nameref{acosh}).
+A numeric value is not returned by \name{cosh} unless the switch
+\nameref{rounded} is on and its argument evaluates to a number.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{COT}
+\name{cot} represents the cotangent of its argument.  It takes an arbitrary
+scalar expression as its argument. The derivative of \name{acot} and some
+simple properties are known to the system.
+
+\begin{Syntax}
+\name{cot}\(\meta{expression}\) or \name{cot} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression.  \meta{simple\_expression}
+must be a single identifier or begin with a prefix operator name.
+
+\begin{Examples}
+cot(a)*tan(a);               &         COT(A)*TAN(A)) \\
+cot(1);                      &         COT(1) \\
+df(cot(2*x),x);              &         - 2*(COT(2*X)^{2}  + 1)
+\end{Examples}
+\begin{Comments}
+Numerical values of expressions involving \name{cot} may be found by
+turning on the switch \nameref{rounded}.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{COTH}
+\index{hyperbolic cotangent}
+The \name{coth} operator returns the hyperbolic cotangent of its argument.
+The derivative of \name{coth} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{coth}\(\meta{expression}\) or \name{coth} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression.  \meta{simple\_expression}
+must be a single identifier or begin with a prefix operator name.
+
+\begin{Examples}
+df(coth(x*y),x);             &      - Y*(COTH(X*Y)^{2}  - 1) \\
+
+coth acoth z;                &      Z
+\end{Examples}
+
+\begin{Comments}
+You can write \nameref{let} statements and procedures to add further
+functionality to \name{coth} if you wish.  Numerical values of expressions
+involving \name{coth} may also be found by turning on the switch
+\nameref{rounded}.
+
+\end{Comments}
+\end{Operator}
+
+\begin{Operator}{CSC}
+\index{cosecant}
+The \name{csc} operator returns the cosecant of its argument.
+The derivative of \name{csc} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{csc}\(\meta{expression}\) or \name{csc} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression.  \meta{simple\_expression}
+must be a single identifier or begin with a prefix operator name.
+
+\begin{Examples}
+
+csc(q)*sin(q);               &       CSC(Q)*SIN(Q) \\
+
+df(csc(x*y),x);              &       -COT(X*Y)*CSC(X*Y)*Y
+\end{Examples}
+
+\begin{Comments}
+You can write \nameref{let} statements and procedures to add further
+functionality to \name{csc} if you wish.  Numerical values of expressions
+involving \name{csc} may also be found by turning on the switch
+\nameref{rounded}.
+
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{CSCH}
+\index{hyperbolic cosecan}
+The \name{cosh} operator returns the hyperbolic cosecant of its argument.
+The derivative of \name{csch} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{csch}\(\meta{expression}\) or \name{csch} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression. \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+
+csch b;                      &             CSCH(B) \\
+
+csch(0);                     &             0 \\
+
+df(csch(x*y),x);             &             - COTH(X*Y)*CSCH(X*Y)*Y \\
+
+int(csch(x),x);              &             INT(CSCH(X),X)
+\end{Examples}
+
+\begin{Comments}
+% You may attach further functionality by defining its inverse (see
+% \nameref{acsch}).
+A numeric value is not returned by \name{csch} unless the switch
+\nameref{rounded} is on and its argument evaluates to a number.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{ERF}
+\index{error function}
+The \name{erf} operator represents the error function, defined by
+\begin{TEX}
+\begin{displaymath}
+erf(x) = {2\over \sqrt{\pi}} \int{e^{-x^2}\,dx}
+\end{displaymath}
+\end{TEX}
+\begin{INFO}
+erf(x) = (2/sqrt(pi))*int(e^(-x^2),x)
+\end{INFO}
+
+A limited number of its properties are known to the system, including the
+fact that it is an odd function.  Its derivative is known, and from this,
+some integrals may be computed.  However, a complete integration procedure
+for this operator is not currently included.
+
+\begin{Examples}
+erf(0);                      &    0 \\
+erf(-a);                     &    - ERF(A) \\
+df(erf(x**2),x);             &    \rfrac{4*SQRT(PI)*X}{E^{X^{4}}*PI} \\\\
+int(erf(x),x);               &    \rfrac{E^{X^{2}}*ERF(X)*PI*X + SQRT(PI)}{E^{X^{2}}*PI}
+\end{Examples}
+
+\end{Operator}
+
+
+\begin{Operator}{EXP}
+\index{exponential function}
+The \name{exp} operator returns \name{e} raised to the power of its argument.
+\begin{Syntax}
+\name{exp}\(\meta{expression}\) or \name{exp} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} can be any valid REDUCE scalar expression.
+\meta{simple\_expression} must be a single identifier or begin with a
+prefix operator.
+
+\begin{Examples}
+exp(sin(x));                 &   E^{SIN X} \\
+exp(11);                     &   E^{11} \\
+on rounded; \\
+exp sin(pi/3);               &   2.37744267524
+\end{Examples}
+\begin{Comments}
+Numeric values are returned only when \name{rounded} is on.
+The single letter \name{e} with the exponential operator \name{^} or
+\name{**} may be substituted for \name{exp} without change of function.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{SEC}
+The \name{sec} operator returns the secant of its argument.
+
+\begin{Syntax}
+\name{sec}\(\meta{expression}\) or \name{sec} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} is any valid scalar REDUCE expression,
+\meta{simple\_expression} is a single identifier or begins with a prefix
+operator name.
+
+\begin{Examples}
+
+
+sec abc;                     &        SEC(ABC) \\
+
+sec(pi);                     &        -1 \\
+
+sec 4;                       &        SEC(4) \\
+
+on rounded; \\
+
+sec(4);                      &        - 1.52988565647 \\
+
+sec log 5;                   &        - 25.8852966005
+\end{Examples}
+\begin{Comments}
+\name{sec} returns a numeric value only if \nameref{rounded} is on. Then the
+secant is calculated to the current degree of floating point precision.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{SECH}
+\index{hyperbolic secant}
+The \name{sech} operator returns the hyperbolic secant of its argument.
+
+\begin{Syntax}
+\name{sech}\(\meta{expression}\) or \name{sech} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} is any valid scalar REDUCE expression,
+\meta{simple\_expression} is a single identifier or begins with a prefix
+operator name.
+
+\begin{Examples}
+sech abc;                    &        SECH(ABC) \\
+
+sech(0);                     &        1 \\
+
+sech 4;                      &        SECH(4) \\
+
+on rounded; \\
+
+sech(4);                     &        0.0366189934737 \\
+
+sech log 5;                  &        0.384615384615
+\end{Examples}
+\begin{Comments}
+\name{sech} returns a numeric value only if \nameref{rounded} is on. Then the
+expression is calculated to the current degree of floating point precision.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{SIN}
+\index{sine}
+The \name{sin} operator returns the sine of its argument.
+\begin{Syntax}
+\name{sin}\(\meta{expression}\) or \name{sin} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} is any valid scalar REDUCE expression,
+\meta{simple\_expression} is a single identifier or begins with a prefix
+operator name.
+
+\begin{Examples}
+sin aa;                      &        SIN(AA) \\
+sin(pi/2);                   &        1 \\
+on rounded; \\
+sin 3;                       &        0.14112000806 \\
+sin(pi/2);                   &        1.0
+\end{Examples}
+\begin{Comments}
+\name{sin} returns a numeric value only if \name{rounded} is on.
+Then the sine is calculated to the current degree of floating point precision.
+The argument in this case is assumed to be in radians.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{SINH}
+\index{hyperbolic sine}
+The \name{sinh} operator returns the hyperbolic sine of its argument.
+The derivative of \name{sinh} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{sinh}\(\meta{expression}\) or \name{sinh} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression. \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+
+sinh b;                      &             SINH(B) \\
+
+sinh(0);                     &             0 \\
+df(sinh(x**2),x);            &          2*COSH(X^{2})*X \\
+int(sinh(4*x),x);            &          \rfrac{COSH(4*X)}{4} \\
+on rounded; \\
+sinh 4; & 27.2899171971
+\end{Examples}
+
+\begin{Comments}
+You may attach further functionality by defining its inverse (see
+\nameref{asinh}).
+A numeric value is not returned by \name{sinh} unless the switch
+\nameref{rounded} is on and its argument evaluates to a number.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{TAN}
+The \name{tan} operator returns the tangent of its argument.
+\begin{Syntax}
+\name{tan}\(\meta{expression}\) or \name{tan} \meta{simple\_expression}
+
+\end{Syntax}
+
+\meta{expression} is any valid scalar REDUCE expression,
+\meta{simple\_expression} is a single identifier or begins with a prefix
+operator name.
+
+\begin{Examples}
+tan a;                       &        TAN(A) \\
+tan(pi/5);                   &        TAN(\rfrac{PI}{5}) \\
+on rounded;
+tan(pi/5);                   &        0.726542528005
+\end{Examples}
+\begin{Comments}
+\name{tan} returns a numeric value only if \name{rounded} is on.  Then the
+tangent is calculated to the current degree of floating point accuracy.
+
+When \nameref{rounded} is on,
+no check is made to see if the argument of \name{tan} is a multiple of
+$\pi/2$, for which the tangent goes to positive or negative infinity.
+(Of course, since REDUCE uses a fixed-point representation of $\pi/2$,
+it produces a large but not infinite number.)  You need to make a check for
+multiples of $\pi/2$ in any program you use that might possibly ask
+for the tangent of such a quantity.
+\end{Comments}
+\end{Operator}
+
+
+\begin{Operator}{TANH}
+\index{hyperbolic tangent}
+The \name{tanh} operator returns the hyperbolic tangent of its argument.
+The derivative of \name{tanh} and some simple transformations are known
+to the system.
+
+\begin{Syntax}
+\name{tanh}\(\meta{expression}\) or \name{tanh} \meta{simple\_expression}
+\end{Syntax}
+
+\meta{expression} may be any scalar REDUCE expression, not an array, matrix or
+vector expression. \meta{simple\_expression} must be a single identifier or
+begin with a prefix operator name.
+
+\begin{Examples}
+tanh b;                      &          TANH(B) \\
+tanh(0);                     &          0 \\
+df(tanh(x*y),x);             &          Y*( - TANH(X*Y)^{2} + 1) \\
+int(tanh(x),x);              &          LOG(E^{2*X} + 1) - X \\
+on rounded; tanh 2;          &          0.964027580076
+\end{Examples}
+
+\begin{Comments}
+You may attach further functionality by defining its inverse (see
+\nameref{atanh}).
+A numeric value is not returned by \name{tanh} unless the switch
+\nameref{rounded} is on and its argument evaluates to a number.
+\end{Comments}
+\end{Operator}
+
+

@@ -1,0 +1,8 @@
+#!/bin/csh -f
+
+# clean --- Remove *.old files from a tree.
+# You need to position yourself at the top of the relevant tree to use it.
+
+# Author: Anthony C. Hearn.
+
+find . -name "*.old" -print -exec rm -r {} \;

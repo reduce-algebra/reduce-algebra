@@ -1,0 +1,56 @@
+
+<A NAME=MEMBER>
+
+<TITLE>MEMBER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MEMBER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; <em>member</em> &lt;list&gt; 
+<P>
+<P>
+<P>
+<em>member</em>is an infix binary comparison operator that evaluates to 
+
+<A HREF=r37_0122.html>true</A> if &lt;expression&gt; is 
+<A HREF=r37_0110.html>equal</A> to a member of 
+the 
+<A HREF=r37_0053.html>list</A> &lt;list&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+if a member {a,b} then 1 else 0; 
+
+  1 
+
+
+if 1 member(1,2,3) then a else b; 
+
+  a 
+
+
+if 1 member(1.0,2) then a else b; 
+
+  b
+
+</TT></PRE><P>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+&lt;member&gt; can also be used as a prefix operator. However, this use 
+is not encouraged. Finally, 
+<A HREF=r37_0110.html>equal</A> (<em>=</em>) is used for the test 
+within the list, so expressions must be of the same type to match. 
+<P>
+<P>
+<P>

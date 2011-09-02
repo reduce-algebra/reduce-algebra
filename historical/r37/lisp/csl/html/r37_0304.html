@@ -1,0 +1,55 @@
+
+<A NAME=MCD>
+
+<TITLE>MCD</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MCD</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>mcd</em> is on, sums and differences of rational expressions are put 
+on a common denominator. Default is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+a/(x+1) + b/5; 
+
+  5*A + B*X + B
+  ------------- 
+    5*(X + 1)
+
+
+off mcd; 
+
+a/(x+1) + b/5; 
+
+         -1
+  (X + 1)  *A + 1/5*B 
+
+
+1/6 + 1/7; 
+
+  13/42
+
+</TT></PRE><P>Even with <em>mcd</em> off, rational expressions involving only nu
+mbers are still 
+put over a common denominator. 
+<P>
+<P>
+Turning <em>mcd</em> off is useful when explicit negative powers are needed, 
+or if no greatest common divisor calculations are desired, or when 
+differentiating complicated rational expressions. Results when <em>mcd</em> 
+is off are no longer in canonical form, and expressions equivalent to zero 
+may not simplify to 0. Some operations, such as factoring cannot be done 
+while <em>mcd</em> is off. This option should therefore be used with some 
+caution. Turning <em>mcd</em> off is most valuable in intermediate parts of 
+a complicated calculation, and should be turned back on for the last stage. 
+<P>
+<P>
+<P>

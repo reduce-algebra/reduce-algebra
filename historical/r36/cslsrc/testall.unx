@@ -1,0 +1,72 @@
+mkdir log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=algint -Dloadup=algint -- log/algint.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=applysym -Dloadup=applysym -- log/applysym.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=arnum -Dloadup=arnum -- log/arnum.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=assist -Dloadup=assist -- log/assist.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=avector -Dloadup=avector -- log/avector.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=boolean -Dloadup=boolean -- log/boolean.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=cali -Dloadup=cali -- log/cali.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=camal -Dloadup=camal -- log/camal.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=changevr -Dloadup=changevr -- log/changevr.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=compact -Dloadup=compact -- log/compact.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=complex -- log/complex.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=crack -Dloadup=crack -- log/crack.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=cvit -Dloadup=cvit -- log/cvit.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=decompos -- log/decompos.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=defint -Dloadup=defint -- log/defint.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=desir -Dloadup=desir -- log/desir.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=dfpart -Dloadup=dfpart -- log/dfpart.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=dummy -Dloadup=dummy -- log/dummy.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=elem -- log/elem.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=excalc -Dloadup=excalc -- log/excalc.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=factor -- log/factor.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=fide -Dloadup=fide -- log/fide.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=fps -Dloadup=fps -- log/fps.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=gcd -- log/gcd.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=gentran -Dloadup=gentran -- log/gentran.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=groebner -Dloadup=groebner -- log/groebner.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=ideals -Dloadup=ideals -- log/ideals.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=ineq -Dloadup=ineq -- log/ineq.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=int -- log/int.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=invbase -Dloadup=invbase -- log/invbase.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=laplace -Dloadup=laplace -- log/laplace.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=lie -Dloadup=lie -- log/lie.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=limits -- log/limits.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=linalg -Dloadup=linalg -- log/linalg.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=math -- log/math.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=matrix -- log/matrix.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=modsr -Dloadup=modsr -- log/modsr.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=ncpoly -Dloadup=ncpoly -- log/ncpoly.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=normform -Dloadup=normform -- log/normform.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=numeric -Dloadup=numeric -- log/numeric.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=odesolve -Dloadup=odesolve -- log/odesolve.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=orthovec -Dloadup=orthovec -- log/orthovec.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=pf -- log/pf.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=physop -Dloadup=physop -- log/physop.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=pmrules -Dloadup=pmrules -- log/pmrules.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=randpoly -Dloadup=randpoly -- log/randpoly.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=reacteqn -Dloadup=reacteqn -- log/reacteqn.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=reduce -- log/reduce.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=residue -Dloadup=residue -- log/residue.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=rlfi -Dloadup=rlfi -- log/rlfi.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=rlisp88 -- log/rlisp88.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=roots -- log/roots.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=rounded -- log/rounded.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=rsolve -Dloadup=rsolve -- log/rsolve.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=scope -Dloadup=scope -- log/scope.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=sets -Dloadup=sets -- log/sets.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=solve -- log/solve.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=spde -Dloadup=spde -- log/spde.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=specfn -Dloadup=specfn -- log/specfn.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=sum -- log/sum.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=symmetry -Dloadup=symmetry -- log/symmetry.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=taylor -Dloadup=taylor -- log/taylor.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=tps -Dloadup=tps -- log/tps.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=tri -Dloadup=tri -- log/tri.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=trigsimp -Dloadup=trigsimp -- log/trigsimp.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=wu -Dloadup=wu -- log/wu.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=xcolor -Dloadup=xcolor -- log/xcolor.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=xideal -Dloadup=xideal -- log/xideal.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=zeilberg -Dloadup=zeilberg -- log/zeilberg.log
+r36 -k6000 -b ../cslsrc/ndotest.red -Dname=ztrans -Dloadup=ztrans -- log/ztrans.log
+echo all tests done

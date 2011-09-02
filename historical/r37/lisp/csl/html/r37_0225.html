@@ -1,0 +1,62 @@
+
+<A NAME=VARNAME>
+
+<TITLE>VARNAME</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>VARNAME</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+The declaration <em>varname</em> instructs REDUCE to use its argument as the 
+default Fortran (when 
+<A HREF=r37_0289.html>fort</A> is on) or 
+<A HREF=r37_0181.html>structr</A> identifier 
+and identifier stem, rather than using <em>ANS</em>. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>varname</em>&lt;identifier&gt; 
+<P>
+<P>
+<P>
+&lt;identifier&gt; can be any combination of one or more alphanumeric 
+characters. Try to avoid REDUCE reserved words. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+varname ident; 
+
+  IDENT 
+
+
+on fort; 
+
+x**2 + 1; 
+
+  IDENT=X**2+1. 
+
+
+off fort,exp; 
+
+structr(((x+y)**2 + z)**3); 
+
+        3
+  IDENT2
+      where
+                         2
+         IDENT2 := IDENT1  + Z
+  IDENT1 := X + Y
+
+</TT></PRE><P>
+<A HREF=r37_0284.html>exp</A>was turned off so that 
+<A HREF=r37_0181.html>structr</A> could show the 
+structure. If <em>exp</em> had been on, the expression would have been 
+expanded into a polynomial. 
+<P>
+<P>
+<P>

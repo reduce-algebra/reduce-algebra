@@ -1,0 +1,42 @@
+
+<A NAME=taylorrevert>
+
+<TITLE>taylorrevert</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TAYLORREVERT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <em>taylorrevert</em> allows reversion of a Taylor series of a 
+ function f, i.e., to compute the first terms of the expansion of the 
+ inverse of f from the expansion of f. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>taylorrevert</em>(&lt;expression&gt;<em>,</em> 
+ &lt;var&gt;<em>,</em>&lt;var&gt;) 
+ <P>
+<P>
+<P>
+The first argument must evaluate to a Taylor kernel with the second 
+ argument being one of its expansion variables. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+    taylor(u - u**2,u,0,5); 
+
+       2      6
+  U - U  + O(U ) 
+
+
+    taylorrevert (ws,u,x); 
+
+       2      3      4       5      6
+  X + X  + 2*X  + 5*X  + 14*X  + O(X )  
+
+</TT></PRE><P>

@@ -1,0 +1,758 @@
+\chapter{LINALG: Linear algebra package}
+\label{LINALG}
+\typeout{{LINALG: Linear algebra package}}
+
+{\footnotesize
+\begin{center}
+Matt Rebbeck \\
+Konrad--Zuse--Zentrum f\"ur Informationstechnik Berlin \\
+Takustra\"se 7 \\
+D--14195 Berlin--Dahlem, Germany \\[0.05in]
+\end{center}
+}
+\ttindex{LINALG}
+
+\section{Introduction}
+
+This package provides a selection of functions that are useful
+in the world of linear algebra.  They can be classified into four
+sections:
+
+\subsection{Basic matrix handling}
+
+\begin{center}
+\begin{tabular}{l l l l}
+add\_columns\ttindex{ADD\_COLUMNS}           &
+add\_rows\ttindex{ADD\_ROWS}                 &
+add\_to\_columns\ttindex{ADD\_TO\_COLUMNS}   &
+add\_to\_rows\ttindex{ADD\_TO\_ROWS}         \\
+augment\_columns\ttindex{AUGMENT\_COLUMNS}   &
+char\_poly\ttindex{CHAR\_POLY}               &
+column\_dim\ttindex{COLUMN\_DIM}             &
+copy\_into\ttindex{COPY\_INTO}               \\
+diagonal\ttindex{DIAGONAL}                   &
+extend\ttindex{EXTEND}                       &
+find\_companion\ttindex{FIND\_COMPANION}     &
+get\_columns\ttindex{GET\_COLUMNS}           \\
+get\_rows\ttindex{GET\_ROWS}                 &
+hermitian\_tp\ttindex{HERMITIAN\_TP}         &
+matrix\_augment\ttindex{MATRIX\_AUGMENT}     &
+matrix\_stack\ttindex{MATRIX\_STACK}         \\
+minor\ttindex{MINOR}                         &
+mult\_columns\ttindex{MULT\_COLUMNS}         &
+mult\_rows\ttindex{MULT\_ROWS}               &
+pivot\ttindex{PIVOT}                         \\
+remove\_columns\ttindex{REMOVE\_COLUMNS}     &
+remove\_rows\ttindex{REMOVE\_ROWS}           &
+row\_dim\ttindex{ROW\_DIM}                   &
+rows\_pivot\ttindex{ROWS\_PIVOT}             \\
+stack\_rows\ttindex{STACK\_ROWS}             &
+sub\_matrix\ttindex{SUB\_MATRIX}             &
+swap\_columns\ttindex{SWAP\_COLUMNS}         &
+swap\_entries\ttindex{SWAP\_ENTRIES}         \\
+swap\_rows\ttindex{SWAP\_ROWS}         & & &
+\end{tabular}
+\end{center}
+
+\subsection{Constructors}
+
+Functions that create matrices.
+
+\begin{center}
+\begin{tabular}{l l l l}
+band\_matrix\ttindex{BAND\_MATRIX}        &
+block\_matrix\ttindex{BLOCK\_MATRIX}       &
+char\_matrix\ttindex{CHAR\_MATRIX}        &
+coeff\_matrix\ttindex{COEFF\_MATRIX}       \\
+companion\ttindex{COMPANION}           &
+hessian\ttindex{HESSIAN}             &
+hilbert\ttindex{HILBERT}             &
+jacobian\ttindex{JACOBIAN}            \\
+jordan\_block\ttindex{JORDAN\_BLOCK}       &
+make\_identity\ttindex{MAKE\_IDENTITY}      &
+random\_matrix\ttindex{RANDOM\_MATRIX}      &
+toeplitz\ttindex{TOEPLITZ}            \\
+vandermonde\ttindex{VANDERMONDE}         &
+Kronecker\_Product\ttindex{KRONECKER\_PRODUCT}  &
+\end{tabular}
+\end{center}
+
+\subsection{High level algorithms}
+
+\begin{center}
+\begin{tabular}{l l l l}
+char\_poly\ttindex{CHAR\_POLY}        &
+cholesky\ttindex{CHOLESKY}          &
+gram\_schmidt\ttindex{GRAM\_SCHMIDT}     &
+lu\_decom\ttindex{LU\_DECOM}         \\
+pseudo\_inverse\ttindex{PSEUDO\_INVERSE}   &
+simplex\ttindex{SIMPLEX}           &
+svd\ttindex{SVD}               &
+triang\_adjoint\ttindex{TRIANG\_ADJOINT} \\
+\end{tabular}
+\end{center}
+
+\vspace*{5mm}
+There is a separate {\small NORMFORM} package (chapter~\ref{NORMFORM})
+for computing the matrix normal forms smithex, smithex\_int,
+frobenius, ratjordan, jordansymbolic and jordan in \REDUCE. 
+
+\subsection{Predicates}
+
+\begin{center}
+\begin{tabular}{l l l}
+matrixp\ttindex{MATRIXP}      &
+squarep\ttindex{SQUAREP}      &
+symmetricp\ttindex{SYMMETRICP}
+\end{tabular}
+\end{center}
+
+\section{Explanations}
+
+In the examples the matrix ${\cal A}$ will be 
+
+\begin{flushleft}
+\begin{math}
+{\cal A} = \left( \begin{array}{ccc} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9
+\end{array} \right)
+\end{math}
+\end{flushleft}
+
+Throughout ${\cal I}$ is used to indicate the identity matrix and 
+${\cal A}^T$ to indicate the transpose of the matrix ${\cal A}$.
+
+Many of the functions have a fairly obvious meaning.  Others need a
+little explanation.  
+
+\section{Basic matrix handling}
+
+The functions \f{ADD\_COLUMNS}\ttindex{ADD\_COLUMNS} and \f{ADD\_ROWS}
+provide basic operations between rows and columns.  The form is 
+
+\noindent {\tt add\_columns(${\cal A}$,c1,c2,expr);}
+
+and it replaces column c2 of the matix by expr $*$ column(${\cal
+A}$,c1) $+$ column(${\cal A}$,c2). 
+
+\f{ADD\_TO\_COLUMNS}\ttindex{ADD\_TO\_COLUMNS} and
+\f{ADD\_TO\_ROWS}\ttindex{ADD\_TO\_ROWS} do a similar task, adding an
+expression to each of a number of columns (or rows) specified by a
+list.
+
+\begin{math}
+\begin{array}{ccc}
+{\tt add\_to\_columns}({\cal A},\{1,2\},10) & = & 
+\left( \begin{array}{ccc} 11 & 12 & 3 \\ 14 & 15 & 6 \\ 17 & 18 & 9 
+\end{array} \right)  
+\end{array}
+\end{math}
+
+The functions \f{MULT\_COLUMNS}\ttindex{MULT\_COLUMNS} and
+\f{MULT\_ROW}\ttindex{MULT\_ROW} are equivalent to multiply columns
+and rows.
+
+
+\f{COLUMN\_DIM}\ttindex{COLUMN\_DIM} and
+\f{ROW\_DIM}\ttindex{ROW\_DIM} find the column dimension and row
+dimension of their argument.
+
+Parts of a matrix can be replaced from another by using
+\f{COPY\_INTO}\ttindex{COPY\_INTO}; the last two arguments are row and
+column counters for to where to copy the matrix.
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+{\cal G} = \left( \begin{array}{cccc} 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt copy\_into}({\cal A,G},1,2) & = & 
+\left( \begin{array}{cccc} 0 & 1 & 2 & 3 \\ 0 & 4 & 5 & 6 \\ 0 & 7 & 8 
+& 9 \\ 0 & 0 & 0 & 0  
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+A diagonal matrix can be created with \f{DIAGONAL}\ttindex{DIAGONAL}.
+The argument is a list of expressions of matrices which form the
+diagonal.
+
+An existing matrix can be extended; the call \f{EXTEND}(A,r,c,exp)\ttindex{EXTEND}
+returns the matrix A extended by r rows and c columns, with the new
+entries all exp.
+
+The function \f{GET\_COLUMNS}\ttindex{GET\_COLUMNS} extracts from a
+matrix a list of the specified columns as matrices. 
+\f{GET\_ROWS}\ttindex{GET\_ROWS} does the equivalent for rows.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt get\_columns}({\cal A},\{1,3\}) & = & 
+\left\{ 
+        \left( \begin{array}{c} 1 \\ 4 \\ 7 \end{array} \right),
+        \left( \begin{array}{c} 3 \\ 6 \\ 9 \end{array} \right) 
+\right\} 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+The Hermitian transpose, that is a matrix in which the (i,$\,$j) entry is the conjugate of 
+the (j,$\,$i) entry of the input is returned by \f{HERMITIAN\_TP}\ttindex{HERMITIAN\_TP}.
+
+\f{MATRIX\_AUGMENT}(\{mat$_{1}$,mat$_{2}$, \ldots ,mat$_{n}$\})\ttindex{MATRIX\_AUGMENT}
+produces a new matrix from the list joined as new columns.
+\ttindex{MATRIX\_STACK}\f{MATRIX\_STACK} joins a list of matrices by
+stacking them.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt matrix\_stack}(\{{\cal A,A}\}) & = & 
+        \left( \begin{array}{ccc} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 
+\\ 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\f{MINOR}(A,r,c)\ttindex{MINOR} calculates the (r,c) minor of A.
+
+\f{PIVOT}\ttindex{PIVOT} pivots a matrix about its (r,c) entry.
+To do this, multiples of the $r^{th}$ row are added to every other row in
+the matrix.  This means that the $c^{th}$ column will be 0 except for
+the (r,c) entry.
+
+A variant on this operation is provided by
+\f{ROWS\_PIVOT}\ttindex{ROWS\_PIVOT}.  It applies the pivot only to the
+rows specified as the last argument.
+
+A sub matrix can be extracted, giving a list or the rows and columns
+to keep.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt sub\_matrix}({\cal A},\{1,3\},\{2,3\}) & = & 
+        \left( \begin{array}{cc} 2 & 3 \\ 8 & 9
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+The basic operation of swapping rows or columns is provided by
+\f{SWAP\_ROWS}\ttindex{SWAP\_ROWS} and
+\f{SWAP\_COLUMNS}\ttindex{SWAP\_COLUMNS}.  Individual entries can be
+swapped with \f{SWAP\_ENTRIES}\ttindex{SWAP\_ENTRIES}.
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt swap\_columns}({\cal A},2,3) & = & 
+        \left( \begin{array}{ccc} 1 & 3 & 2 \\ 4 & 6 & 5 \\ 7 & 9 & 8
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt swap\_entries}({\cal A},\{1,1\},\{3,3\}) & = & 
+        \left( \begin{array}{ccc} 9 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 1
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+
+\section{Constructors}
+
+\f{AUGMENT\_COLUMNS}\ttindex{AUGMENT\_COLUMNS} allows just specified
+columns to be selected; \f{STACK\_ROWS}\ttindex{STACK\_ROWS} does
+a similar job for rows.
+
+\begin{math}  
+\begin{array}{ccc}
+{\tt stack\_rows}({\cal A},\{1,3\}) & = & 
+\left( \begin{array}{ccc} 1 & 2 & 3 \\ 7 & 8 & 9
+\end{array} \right)  
+\end{array}  
+\end{math}
+
+Rows or columns can be removed with
+\f{REMOVE\_COLUMNS}\ttindex{REMOVE\_COLUMNS} and
+\f{REMOVE\_ROWS}\ttindex{REMOVE\_ROWS}.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt remove\_columns}({\cal A},2) & = & 
+        \left( \begin{array}{cc} 1 & 3 \\ 4 & 6 \\ 7 & 9  
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+
+{\tt BAND\_MATRIX}\ttindex{BAND\_MATRIX} creates a square matrix of
+dimension its second argument.  The diagonal consists of the middle
+expressions of the first argument, which is an expression list. The
+expressions to the left of this fill the required number of
+sub\_diagonals and the expressions to the right the super\_diagonals. 
+
+\begin{math}  
+\begin{array}{ccc}
+{\tt band\_matrix}(\{x,y,z\},6) & = & 
+\left( \begin{array}{cccccc} y & z & 0 & 0 & 0 & 0 \\ x & y & z & 0 & 0
+& 0 \\ 0 & x & y & z & 0 & 0 \\ 0 & 0 & x & y & z & 0 \\ 0 & 0 & 0 & x &
+ y & z \\ 0 & 0 & 0 & 0 & x & y 
+\end{array} \right)
+\end{array}  
+\end{math}  
+
+Related to the band matrix is a block matrix, which can be created by
+
+\noindent {\tt BLOCK\_MATRIX(r,c,matrix\_list)}.\ttindex{BLOCK\_MATRIX}
+
+The resulting matrix consists of r by c matrices filled from the
+matrix\_list row wise. 
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\cal B} = \left( \begin{array}{cc} 1 & 0 \\ 0 & 1
+\end{array} \right), & 
+{\cal C} = \left( \begin{array}{c} 5 \\ 5
+\end{array} \right), &
+{\cal D} = \left( \begin{array}{cc} 22 & 33 \\ 44 & 55
+\end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.175in}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt block\_matrix}(2,3,\{{\cal B,C,D,D,C,B}\}) & = & 
+\left( \begin{array}{ccccc} 1 & 0 & 5 & 22 & 33 \\ 0 & 1 & 5 & 44 & 55 
+\\
+22 & 33 & 5 & 1 & 0 \\ 44 & 55 & 5 & 0 & 1
+\end{array} \right)  
+\end{array}  
+\end{math}  
+\end{flushleft}
+
+Characteristic polynomials and characteristic matrices are created by 
+the functions
+{\tt CHAR\_POLY}\ttindex{CHAR\_POLY} and
+\f{CHAR\_MATRIX}\ttindex{CHAR\_MATRIX}. 
+
+A set of linear equations can be turned into the associated
+coefficient matrix and vector of unknowns and the righthandside.  
+\f{COEFF\_MATRIX} returns a list \{${\cal C,X,B}$\} such that ${\cal
+CX} = {\cal B}$. 
+
+\begin{math}
+\hspace*{0.175in}
+{\tt coeff\_matrix}(\{x+y+4*z=10,y+x-z=20,x+y+4\}) =  
+\end{math}
+
+\vspace*{0.1in}
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+\left\{ \left( \begin{array}{ccc} 4 & 1 & 1 \\ -1 & 1 & 1 \\ 0 & 1 & 1 
+\end{array} \right), \left( \begin{array}{c} z \\ y \\ x \end{array} 
+\right), \left( \begin{array}{c} 10 \\ 20 \\ -4 
+\end{array} \right) \right\} 
+\end{math}  
+\end{flushleft}
+
+\f{COMPANION}(poly,x)  creates the companion matrix ${\cal C}$ of a
+polynomial.  That is the square matrix of dimension n, where n is the
+degree of polynomial with respect to x, and the entries of ${\cal C}$ are: 
+${\cal C}$(i,n) = -coeffn(poly,x,i-1) for i = 1 \ldots n, ${\cal
+C}$(i,i-1) = 1 for i = 2 \ldots n and the rest are 0.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt companion}(x^4+17*x^3-9*x^2+11,x) & = & 
+\left( \begin{array}{cccc} 0 & 0 & 0 & -11 \\ 1 & 0 & 0 & 0 \\ 
+0 & 1 & 0 & 9 \\ 0 & 0 & 1 & -17 
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+The polynomial associated with a companion matrix can be recovered by
+calling \f{FIND\_COMPANION}\ttindex{FIND\_COMPANION}.
+
+\f{HESSIAN}(expr, var\_list)\ttindex{HESSIAN} calculates the Hessian
+matrix of the expressions with respect to the variables in the list,
+or the single variable.  That is the matrix with the (i,$\,$j) element
+the $j^{th}$ derivative of the expressions with respect to the
+$i^{th}$ variable.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}        
+\begin{array}{ccc}
+{\tt hessian}(x*y*z+x^2,\{w,x,y,z\}) & = & 
+\left( \begin{array}{cccc} 0 & 0 & 0 & 0 \\ 0 & 2 & z & y \\ 0 & z & 0 
+& x \\ 0 & y & x & 0
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+Hilbert's matrix, that is where the (i,$\,$j) element is $1/(i+j-x)$
+is constructed by \f{HILBERT}(n,x)\ttindex{HILBERT}.
+
+The Jacobian of an expression list with respect to a variable list is
+calculated by
+\f{JACOBIAN}(expr\_list,variable\_list)\ttindex{JACOBIAN}.  This is a
+matrix whose (i,$\,$j) entry is df(expr\_list(i),variable\_list(j)).
+
+
+The square Jordan block matrix of dimension $n$ is calculated by the
+function \f{JORDAN\_BLOCK}(exp,n).\ttindex{JORDAN\_BLOCK}  The entries
+of the Jordan\_block matrix are ${\cal J}$(i,i) = expr for i=1 \ldots
+n, ${\cal J}$(i,i+1) = 1 for i=1 \ldots n-1, and all other entries are 0.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}        
+\begin{array}{ccc}
+{\tt jordan\_block(x,5)} & = & 
+\left( \begin{array}{ccccc} x & 1 & 0 & 0 & 0 \\ 0 & x & 1 & 0 & 0 \\ 0 
+& 0 & x & 1 & 0 \\ 0 & 0 & 0 & x & 1 \\ 0 & 0 & 0 & 0 & x
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\f{MAKE\_IDENTITY}(n)\ttindex{MAKE\_IDENTITY} generates the $n \times
+n$ identity matrix. 
+
+\f{RANDOM\_MATRIX}(r,c,limit)\ttindex{RANDOM\_MATRIX} generates and $r
+\times c$ matrix with random values limited by {\tt limit}.  The type
+of entries is controlled by a number of switches.
+
+\begin{description}
+\item[{\tt IMAGINARY}]\ttindex{IMAGINARY}
+If on then matrix entries are $x+i*y$ where $-limit < x,y < limit$.
+\item[{\tt NOT\_NEGATIVE}]\ttindex{NOT\_NEGATIVE}
+If on then $0 < entry < limit$. In the imaginary case we have $0 < x,y
+< limit$.
+\item[{\tt ONLY\_INTEGER}]\ttindex{ONLY\_INTEGER}
+If on then each entry is an integer.  In the imaginary case $x$ and $y$ are
+integers.  If off the values are rounded.
+\item[{\tt SYMMETRIC}]\ttindex{SYMMETRIC}
+If on then the matrix is symmetric.
+\item[{\tt UPPER\_MATRIX}]\ttindex{UPPER\_MATRIX}
+If on then the matrix is upper triangular.
+\item[{\tt LOWER\_MATRIX}]\ttindex{LOWER\_MATRIX}
+If on then the matrix is lower triangular.
+\end{description}
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt random\_matrix}(3,3,10) & = & 
+        \left( \begin{array}{ccc} -4.729721 & 6.987047 & 7.521383 \\
+- 5.224177 & 5.797709 & - 4.321952 \\
+- 9.418455 & - 9.94318 & - 0.730980
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\vspace*{0.2in}
+\hspace*{0.165in}
+{\tt on only\_integer, not\_negative, upper\_matrix, imaginary;}
+\begin{flushleft}  
+%\hspace*{0.12in}
+\begin{math}        
+\begin{array}{ccc}
+{\tt random\_matrix}(4,4,10) & = & 
+\left( \begin{array}{cccc} 2*i+5 & 3*i+7 & 7*i+3 & 6 \\ 0 & 2*i+5 & 
+5*i+1 & 2*i+1 \\ 0 & 0 & 8 & i \\ 0 & 0 & 0& 5*i+9 
+\end{array} \right)
+\end{array}
+\end{math}  
+\end{flushleft}
+
+{\tt TOEPLITZ}\ttindex{TOEPLITZ} creates the Toeplitz matrix from the
+given expression list.  This is a square symmetric matrix in which the
+first expression is placed on the diagonal  and the $i^{th}$
+expression is placed on the $(i-1)^{th}$ sub- and super-diagonals.
+It has dimension equal to the number of expressions.
+
+\begin{flushleft}  
+\begin{math}  
+\begin{array}{ccc}
+{\tt toeplitz}(\{w,x,y,z\}) & = & 
+        \left( \begin{array}{cccc} w & x & y & z \\ x & w & x & y \\
+      y & x & w & x \\ z & y & x & w
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\f{VANDERMONDE}\ttindex{VANDERMONDE} creates the Vandermonde matrix
+from the expression list; the square matrix in which the (i,$\,$j)
+entry is expr\_list(i) $^{(j-1)}$.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt vandermonde}(\{x,2*y,3*z\}) & = & 
+        \left( \begin{array}{ccc} 1 & x & x^2 \\ 1 & 2*y & 4*y^2 \\ 1 
+& 3*z & 9*z^2 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+The direct product\index{direct product} (or tensor
+product\index{tensor product}) is created by the
+\f{KRONECKER\_PRODUCT}\ttindex{KRONECKER\_PRODUCT} function.
+
+\begin{verbatim}
+a1 := mat((1,2),(3,4),(5,6))$
+a2 := mat((1,1,1),(2,z,2),(3,3,3))$
+kronecker_product(a1,a2);
+\end{verbatim}
+\begin{flushleft}
+\hspace*{0.1in}
+\begin{math}
+\begin{array}{ccc}
+\left( \begin{array}{cccccc} 1 & 1 & 1 & 2 & 2 & 2 \\
+2 &  z & 2 & 4  &2*z &4 \\
+3 &  3 & 3 & 6  & 6  &6 \\
+3 &  3 & 3 & 4  & 4  &4 \\
+6 & 3*z& 6 & 8  &4*z &8 \\
+9 &  9 & 9 & 12 &12  &12\\
+5 &  5 & 5 & 6  & 6  &6 \\
+10 &5*z& 10& 12 &6*z &12 \\ 
+15 &15 & 15& 18 &18  &18 \end{array} \right)
+\end{array}
+\end{math}
+\end{flushleft}
+
+\section{Higher Algorithms}
+
+The Cholesky decomposition  of a matrix can be
+calculated with the function \f{CHOLESKY}.  It returns \{${\cal
+L,U}$\} where ${\cal L}$ is a lower matrix, ${\cal U}$ is an upper
+matrix, and ${\cal A} = {\cal LU}$, and ${\cal U} = {\cal L}^T$. 
+
+Gram--Schmidt orthonormalisation can be calculated by
+\f{GRAM\_SCHMIDT}\ttindex{GRAM\_SCHMIDT}.  It accepts a list of
+linearly independent vectors, written as lists, and returns a list of
+orthogonal normalised vectors.
+
+\begin{verbatim}
+gram_schmidt({{1,0,0},{1,1,0},{1,1,1}});
+ 
+{{1,0,0},{0,1,0},{0,0,1}}
+
+gram_schmidt({{1,2},{3,4}});
+
+      1         2        2*sqrt(5)    - sqrt(5)
+{{---------,---------},{-----------,------------}}
+   sqrt(5)   sqrt(5)         5           5
+\end{verbatim}
+
+The LU decomposition of a real or imaginary matrix with numeric
+entries is performed by {\tt LU\_DECOM(${\cal A}$)}.\ttindex{LU\_DECOM}
+It returns \{${\cal L,U}$\} where ${\cal L}$ is a lower diagonal
+matrix, ${\cal U}$ an upper diagonal matrix and ${\cal A} = {\cal LU}$.
+
+Note: the algorithm used can swap the rows of ${\cal A}$ during
+the calculation.  This means that ${\cal LU}$ does not equal ${\cal
+A}$ but a row equivalent of it.  Due to this, {\tt lu\_decom} returns
+\{${\cal L,U}$,vec\}.  The call {\tt CONVERT(${\cal
+A}$,vec)}\ttindex{CONVERT} will return the matrix that has been
+decomposed, {\em i.e.\ } ${\cal LU} = $  {\tt convert(${\cal A}$,vec)}.
+
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+{\cal K} = \left( \begin{array}{ccc} 1 & 3 & 5 \\ -4 & 3 & 7 \\ 8 & 6 & 
+4
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{flushleft}  
+%\hspace*{0.1in}
+\begin{math}  
+\begin{array}{cccc}
+$%   {\tt lu} :=
+ {\tt lu\_decom}$({\cal K}) & = & 
+\left\{ 
+        \left( \begin{array}{ccc} 8 & 0 & 0 \\ -4 & 6 & 0 \\ 1 & 2.25 & 
+1.125 1 \end{array} \right), 
+        \left( \begin{array}{ccc} 1 & 0.75 & 0.5 \\ 0 & 1 & 1.5 \\ 0 & 
+0 & 1 \end{array} \right), 
+        [\; 3 \; 2 \; 3 \; ]
+\right\} 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+{\tt PSEUDO\_INVERSE}\ttindex{PSEUDO\_INVERSE}, also known as the
+Moore--Penrose inverse\index{Moore--Penrose inverse}, computes
+the pseudo inverse of ${\cal A}$.  
+Given the singular value decomposition of ${\cal A}$, {\em i.e.\ }
+${\cal A} =  {\cal U} \sum {\cal V}^T$, then the pseudo inverse ${\cal
+A}^{-1}$ is defined by ${\cal A}^{-1} = {\cal V}^T \sum^{-1} {\cal U}$.
+
+Thus ${\cal A}$ $ * $ {\tt pseudo\_inverse}$({\cal A}) = {\cal I}$.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt pseudo\_inverse}({\cal A}) & = & 
+        \left( \begin{array}{cc} -0.2 & 0.1 \\ -0.05 & 0.05 \\ 0.1 & 0 
+\\ 0.25 & -0.05 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\label{simplex}
+The simplex linear programming algorithm\index{Simplex Algorithm} for
+maximising or minimising a function subject to lineal inequalities can
+be used with the function \f{SIMPLEX}\ttindex{SIMPLEX}.  It requires
+three arguments, the first indicates where the action is to maximising
+or minimising, the second is the test expressions, and the last is a
+list of linear inequalities.
+It returns \{optimal value,\{ values of variables at this optimal\}\}.
+The algorithm implies that all the variables are non-negative.
+
+\begin{addtolength}{\leftskip}{0.22in}
+%\begin{math}
+{\tt simplex($max,x+y,\{x>=10,y>=20,x+y<=25\}$);}
+%\end{math}
+
+{\tt ***** Error in simplex: Problem has no feasible solution.}
+
+\vspace*{0.2in}
+
+\parbox[t]{0.96\linewidth}{\tt simplex($max,10x+5y+5.5z,\{5x+3z<=200,
+x+0.1y+0.5z<=12$,\\
+\hspace*{0.55in} $0.1x+0.2y+0.3z<=9, 30x+10y+50z<=1500\}$);}
+
+\vspace*{0.1in}
+{\tt $\{525.0,\{x=40.0,y=25.0,z=0\}$\}}
+
+\end{addtolength}
+
+{\tt SVD}\ttindex{SVD} computes the singular value decomposition of
+${\cal A}$ with numeric entries.   It returns \{${\cal U},\sum,{\cal V}$\} where ${\cal A} = {\cal U} 
+\sum {\cal V}^T$ and $\sum = diag(\sigma_{1}, \ldots ,\sigma_{n}). \; 
+\sigma_{i}$ for $i= (1 \ldots n)$ are the singular values of ${\cal A}$.
+The singular values of ${\cal A}$ are the non-negative square roots of 
+the eigenvalues of ${\cal A}^T {\cal A}$. 
+
+${\cal U}$ and ${\cal V}$ are such that ${\cal UU}^T = {\cal VV}^T = 
+{\cal V}^T {\cal V} = {\cal I}_n$.
+\begin{flushleft}
+\hspace*{0.175in}
+\begin{math}  
+{\cal Q} = \left( \begin{array}{cc} 1 & 3 \\ -4 & 3 
+\end{array} \right)
+\end{math}  
+\end{flushleft}
+
+\begin{eqnarray}
+\hspace*{0.1in}
+{\tt svd({\cal Q})} & = & 
+\left\{ 
+        \left( \begin{array}{cc} 0.289784 & 0.957092 \\ -0.957092 & 
+0.289784 \end{array} \right), \left( \begin{array}{cc} 5.149162 & 0 \\ 
+0 & 2.913094 \end{array} \right), \right. \nonumber \\ & & \left. \: \; 
+\, \left( \begin{array}{cc} -0.687215 & 0.726453 \\ -0.726453 & 
+-0.687215 \end{array} \right)       
+\right\} \nonumber
+\end{eqnarray}
+
+{\tt TRIANG\_ADJOINT}\ttindex{TRIANG\_ADJOINT} computes the trianglarizing adjoint of
+the given matrix. The triangularizing adjoint is a lower triangular matrix. The
+multiplication of the triangularizing adjoint with the given matrix results in an
+upper triangular matrix. The i-th entry in the diagonal of this matrix is the
+determinant of the principal i-th minor of the given matrix.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{ccc}
+{\tt triang\_adjoint}({\cal A}) & = & 
+        \left( \begin{array}{ccc} 1 & 0 & 0 \\ -4 & 1 & 0 \\ -3 & 6 & -3 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+The multiplication of this matrix with ${\cal A}$ results in an upper triangular matrix.
+
+\begin{flushleft}  
+\hspace*{0.1in}
+\begin{math}  
+\begin{array}{cccc}
+ \left( \begin{array}{ccc} 1 & 0 & 0 \\ -4 & 1 & 0 \\ -3 & 6 & -3 
+ \end{array} \right) &
+ \left( \begin{array}{ccc} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 
+ \end{array} \right)
+ & = & 
+        \left( \begin{array}{ccc} 1 & 2 & 3 \\ 0 & -3 & -6 \\ 0 & 0 & 0 
+ \end{array} \right) 
+\end{array}
+\end{math}  
+\end{flushleft}
+
+\section{Fast Linear Algebra}
+
+By turning the {\tt FAST\_LA}\ttindex{FAST\_LA} switch on, the speed
+of the following functions will be increased:
+
+\begin{tabular}{l l l l}
+   add\_columns    & add\_rows      & augment\_columns & column\_dim  \\
+   copy\_into      & make\_identity & matrix\_augment  & matrix\_stack\\
+   minor           & mult\_column   &  mult\_row       & pivot        \\
+   remove\_columns & remove\_rows   & rows\_pivot      & squarep      \\
+   stack\_rows     & sub\_matrix    & swap\_columns    & swap\_entries\\
+   swap\_rows      & symmetricp                                     
+\end{tabular}
+
+The increase in speed will be insignificant unless you are making a 
+thousands of calls.  When using this switch, 
+error checking is minimised, and thus illegal input may give strange
+error messages.
+

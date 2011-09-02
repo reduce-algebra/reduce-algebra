@@ -1,0 +1,84 @@
+
+<A NAME=FACTOR>
+
+<TITLE>FACTOR</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>FACTOR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When the <em>factor</em> switch is on, input expressions and results are 
+automatically factored. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+on factor; 
+
+
+aa := 3*x**3*a + 6*x**2*y*a + 3*x**3*b + 6*x**2*y*b
+
++ x*y*a + 2*y**2*a + x*y*b + 2*y**2*b;
+			 
+
+
+                    2
+  AA := (A + B)*(3*X  + Y)*(X + 2*Y) 
+
+
+off factor; 
+
+aa; 
+
+       3        2                  2         3        2
+  3*A*X  + 6*A*X *Y + A*X*Y + 2*A*Y   + 3*B*X  + 6*B*X *Y
+
+
++ B*X*Y + 2*B*Y^{2} 
+
+on factor; 
+
+ab := x**2 - 2; 
+
+         2
+  AB := X  - 2
+
+</TT></PRE><P>REDUCE factors univariate and multivariate polynomials with 
+integer coefficients, finding any factors that also have integer coefficients. 
+The factoring is done by reducing multivariate problems to univariate 
+ones with symbolic coefficients, and then solving the univariate ones modulo 
+small primes. The results of these calculations are merged to 
+determine the factors of the original polynomial. The factorizer normally 
+selects evaluation points and primes using a random number generator. 
+Thus, the detailed factoring behavior may be different each time any 
+particular problem is tackled. 
+<P>
+<P>
+When the <em>factor</em> switch is turned on, the 
+<A HREF=r37_0256.html>exp</A> switch is 
+turned off, and when the <em>factor</em> switch is turned off, the 
+
+<A HREF=r37_0256.html>exp</A> switch is turned on, whether it was on previously 
+or not. 
+<P>
+<P>
+When the switch 
+<A HREF=r37_0335.html>trfac</A> is on, informative messages are generated at 
+each call to the factorizer. The 
+<A HREF=r37_0334.html>trallfac</A> switch causes the 
+production of a more verbose trace message. It takes precedence over 
+<em>trfac</em> if they are both on. 
+<P>
+<P>
+To factor a polynomial explicitly and store the results, use the operator 
+
+<A HREF=r37_0151.html>factorize</A>. 
+<P>
+<P>
+<P>

@@ -1,0 +1,65 @@
+
+<A NAME=MeijerG>
+
+<TITLE>MeijerG</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>MEIJERG</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>MeijerG</em> operator provides simplifications for Meijer's G 
+function. The simplifications are performed towards polynomials, 
+elementary or 
+special functions or (generalized) 
+<A HREF=r37_0528.html>hypergeometric</A> functions. 
+<P>
+<P>
+The <em>MeijerG</em> operator is included in the package specfn2. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>MeijerG</em>(&lt;list of parameters&gt;,&lt;list of parameters&gt;, 
+ &lt;argument&gt;) 
+<P>
+<P>
+<P>
+The first element of the lists has to be the list containing the 
+first group (mostly called ``m'' and ``n'') of parameters. This passes 
+the four parameters of a Meijer's G function implicitly via the 
+length of the lists. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+load specfn2;
+
+MeijerG({{},1},{{0}},x); 
+
+  heaviside(-x+1)
+
+
+MeijerG({{}},{{1+1/4},1-1/4},(x^2)/4) * sqrt pi;
+ 
+
+
+                  2
+  sqrt(2)*sin(x)*x
+  ------------------
+      4*sqrt(x)
+
+</TT></PRE><P>Many well-known functions can be written as G functions, 
+e.g. exponentials, logarithms, trigonometric functions, Bessel functions 
+and hypergeometric functions. 
+The formulae can be found e.g. in 
+<P>
+<P>
+A.P.Prudnikov, Yu.A.Brychkov, O.I.Marichev: 
+Integrals and Series, Volume 3: More special functions, 
+Gordon and Breach Science Publishers (1990). 
+<P>
+<P>
+<P>

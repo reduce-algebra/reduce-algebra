@@ -1,0 +1,61 @@
+
+<A NAME=ARBVARS>
+
+<TITLE>ARBVARS</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>ARBVARS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>arbvars</em> is on, the solutions of singular or underdetermined 
+systems of equations are presented in terms of arbitrary complex variables 
+(see 
+<A HREF=r37_0139.html>arbcomplex</A>). Otherwise, the solution is parametrized i
+n 
+terms of some of the input variables. Default is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+solve({2x + y,4x + 2y},{x,y}); 
+
+         arbcomplex(1)
+  {{x= - -------------,y=arbcomplex(1)}} 
+               2
+
+
+solve({sqrt(x)+ y**3-1},{x,y});				
+
+
+                            6       3
+  		   {{y=arbcomplex(2),x=y   - 2*y   + 1}} 
+
+
+off arbvars; 
+
+solve({2x + y,4x + 2y},{x,y}); 
+
+         y
+  {{x= - -}} 
+         2
+
+
+solve({sqrt(x)+ y**3-1},{x,y});				
+
+
+            6       3
+  		   {{x=y   - 2*y   + 1}} 
+
+</TT></PRE><P>With <em>arbvars</em> off, the return value <em>{{}}</em> means th
+at the 
+equations given to 
+<A HREF=r37_0179.html>solve</A> imply no relation among the input 
+variables. 
+<P>
+<P>
+<P>

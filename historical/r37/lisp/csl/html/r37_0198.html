@@ -1,0 +1,50 @@
+
+<A NAME=KORDER>
+
+<TITLE>KORDER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>KORDER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+ <P>
+<P>
+The <em>korder</em> declaration changes the internal canonical ordering of 
+kernels. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>korder</em>&lt;kernel&gt;{<em>,</em>&lt;kernel&gt;}* 
+<P>
+<P>
+<P>
+&lt;kernel&gt; must be a REDUCE 
+<A HREF=r37_0002.html>kernel</A> or a 
+<A HREF=r37_0053.html>list</A> of 
+<em>kernel</em>s. 
+<P>
+<P>
+The declaration <em>korder</em> changes the internal ordering, but not the print
+ 
+ordering, so the effects cannot be seen on output. However, in some 
+calculations, the order of the variables can have significant effects on the 
+time and space demands of a calculation. If you are doing a demanding 
+calculation with several kernels, you can experiment with changing the 
+canonical ordering to improve behavior. 
+<P>
+<P>
+The first kernel in the argument list is given the highest priority, the 
+second gets the next highest, and so on. Kernels not named in a 
+<em>korder</em> ordering otherwise. A new <em>korder</em> declaration replaces 
+the previous one. To return to canonical ordering, use the command 
+<em>korder nil</em>. 
+<P>
+<P>
+To change the print ordering, use the declaration 
+<A HREF=r37_0212.html>order</A>. 
+<P>
+<P>
+<P>

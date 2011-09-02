@@ -1,0 +1,847 @@
+
+Codemist Standard Lisp 3.54 for DEC Alpha: May 23 1994
+Dump file created: Mon May 23 10:39:11 1994
+REDUCE 3.5, 15-Oct-93 ...
+Memory allocation: 6023424 bytes
+
++++ About to read file tstlib.red
+
+
+% Initial load up list
+off echo$
+
+..........................................................................
+An example of the determination of point symmetries for ODEs
+--------------------------------------------------------------------------
+
+This is LIEPDE - a program for calculating infinitesimal symmetries
+of single ODEs/PDEs and ODE/PDE - systems
+
+The ODE/PDE (-system) under investigation is :
+
+                4            3                      2
+     df(y,x,2)*x  - df(y,x)*x  - 2*df(y,x)*x*y + 4*y
+0 = --------------------------------------------------
+                             4
+                            x
+
+for the function(s) : 
+
+y(x)  
+
+
+This is CRACK - a solver for overdetermined partial differential equations
+Version 25-08-1993
+**************************************************************************
+
+equations: expr. with 21 terms
+
+functions: eta_y(y,x)  xi_x(y,x)  
+separation w.r.t. y|1  
+new function: c1(x)  
+new function: c2(x)  
+integrated equation :  
+0=c1*y + c2 + xi_x
+
+
+separation yields 4 equations
+substitution :  
+xi_x= - c1*y - c2
+
+
+new function: c3(x)  
+new function: c4(x)  
+integrated equation :  
+              3  2         2  2         3         3           3
+0=3*df(c1,x)*x *y  + 3*c1*x *y  + 2*c1*y  + 3*c3*x *y + 3*c4*x
+
+            3
+ + 3*eta_y*x
+
+
+substitution :  
+eta_y
+
+                 3  2         2  2         3         3           3
+   - 3*df(c1,x)*x *y  - 3*c1*x *y  - 2*c1*y  - 3*c3*x *y - 3*c4*x
+=------------------------------------------------------------------
+                                   3
+                                3*x
+
+
+separation w.r.t. y  
+separation yields 3 equations
+substitution :  
+c1=0
+
+
+substitution :  
+     - df(c2,x)*x + 3*c2
+c3=----------------------
+             x
+
+
+substitution :  
+                     3               2
+     - 3*df(c2,x,2)*x  + 5*df(c2,x)*x  - 5*c2*x
+c4=---------------------------------------------
+                         2
+
+
+separation w.r.t. y  
+new constant: c5
+new constant: c6
+integrated equation :  
+0= - log(x)*c6*x + c2 - c5*x
+
+
+new constant: c7
+new constant: c8
+new constant: c9
+integrated equation :  
+                                   3
+0= - log(x)*c8*x + c2 - c7*x - c9*x
+
+
+new constant: c10
+new constant: c11
+new constant: c12
+new constant: c13
+integrated equation :  
+      2/3      2               2        2
+0= - x   *c12*x  - log(x)*c11*x  - c10*x  - c13 + c2*x
+
+
+separation yields 3 equations
+substitution :  
+c2=log(x)*c6*x + c5*x
+
+
+separation w.r.t. x  
+linear independent expressions : 
+x*log(x)
+
+
+x
+
+
+ 3
+x
+
+
+separation yields 3 equations
+substitution :  
+c9=0
+
+
+separation w.r.t. x  
+linear independent expressions : 
+ 2  2/3
+x *x
+
+
+ 2
+x *log(x)
+
+
+ 2
+x
+
+
+1
+
+
+separation yields 4 equations
+substitution :  
+c12=0
+
+
+substitution :  
+c13=0
+
+
+substitution :  
+c10=c5
+
+
+substitution :  
+c11=c6
+
+
+substitution :  
+c8=c6
+
+
+substitution :  
+c7=c5
+
+
+End of this CRACK run
+
+The solution : 
+xi_x= - log(x)*c6*x - c5*x
+
+
+                                      2
+eta_y= - 2*log(x)*c6*y - 2*c5*y - c6*x  + c6*y
+
+Free functions or constants : c5  c6  
+**************************************************************************
+
+
+CRACK needed :  6300 ms    GC time : 500 ms
+The symmetries are: 
+
+xi_x= - log(x)*c6*x - c5*x
+
+                                      2
+eta_y= - 2*log(x)*c6*y - 2*c5*y - c6*x  + c6*y
+
+
+with constants/functions: 
+c6  c5  
+
+
+which are free.
+..........................................................................
+An example of the determination of point symmetries for PDEs
+--------------------------------------------------------------------------
+
+This is LIEPDE - a program for calculating infinitesimal symmetries
+of single ODEs/PDEs and ODE/PDE - systems
+
+The ODE/PDE (-system) under investigation is :
+
+0 = df(u,x,2) - df(u,y)
+
+for the function(s) : 
+
+u(y,x)  
+
+
+This is CRACK - a solver for overdetermined partial differential equations
+Version 25-08-1993
+**************************************************************************
+
+equations: 
+0= - df(xi_y,u)*u|1
+
+
+functions: eta_u(u,y,x)  xi_y(u,y,x)  xi_x(u,y,x)  
+new function: c14(y,x)  
+integrated equation :  
+0=c14 + xi_y
+
+
+substitution :  
+xi_y= - c14
+
+
+End of this CRACK run
+
+The solution : 
+xi_y= - c14
+
+Free functions or constants : xi_x(u,y,x)  eta_u(u,y,x)  c14(y,x)  
+**************************************************************************
+
+
+CRACK needed :  50 ms    GC time : 234 ms
+This is CRACK - a solver for overdetermined partial differential equations
+Version 25-08-1993
+**************************************************************************
+
+equations: expr. with 14 terms
+
+functions: xi_x(u,y,x)  eta_u(u,y,x)  c14(y,x)  
+separation w.r.t. u|1  
+separation w.r.t. u|2  
+separation w.r.t. u|1|2  
+separation w.r.t. u|2  
+new function: c15(y,x)  
+new function: c16(y,x)  
+integrated equation :  
+0=c15*u + c16 + xi_x
+
+
+new function: c17(y,x)  
+integrated equation :  
+0=df(eta_u,u) - 2*df(xi_x,x) + c17
+
+
+new function: c18(y,x)  
+integrated equation :  
+0=c18 + xi_x
+
+
+new function: c19(y)  
+integrated equation :  
+0=c14 + c19
+
+
+separation yields 7 equations
+substitution :  
+xi_x= - c18
+
+
+substitution :  
+c14= - c19
+
+
+new function: c20(y)  
+integrated equation :  
+0=df(c19,y)*x + 2*c18 + 2*c20
+
+
+substitution :  
+      - df(c19,y)*x - 2*c20
+c18=------------------------
+               2
+
+
+new function: c21(y,x)  
+integrated equation :  
+0= - df(c19,y)*u + c17*u + c21 + eta_u
+
+
+substitution :  
+eta_u=df(c19,y)*u - c17*u - c21
+
+
+new function: c22(y)  
+integrated equation :  
+                  2
+0= - df(c19,y,2)*x  - 4*df(c20,y)*x + 8*c17 + 8*c22
+
+
+substitution :  
+                  2
+     df(c19,y,2)*x  + 4*df(c20,y)*x - 8*c22
+c17=----------------------------------------
+                       8
+
+
+separation w.r.t. u  
+separation yields 2 equations
+substitution :  
+c15=0
+
+
+separation w.r.t. u  
+separation w.r.t. x  
+new constant: c23
+new constant: c24
+new constant: c25
+integrated equation :  
+             2
+0=c19 + c23*y  + c24*y + c25
+
+
+new constant: c26
+new constant: c27
+integrated equation :  
+0=c20 + c26*y + c27
+
+
+new constant: c28
+integrated equation :  
+0=5*df(c19,y) + 4*c22 + c28
+
+
+separation yields 4 equations
+substitution :  
+      - 5*df(c19,y) - c28
+c22=----------------------
+              4
+
+
+substitution :  
+c20= - c26*y - c27
+
+
+substitution :  
+      - df(c19,y)*x + 2*c26*y + 2*c27
+c16=----------------------------------
+                    2
+
+
+substitution :  
+            2
+c19= - c23*y  - c24*y - c25
+
+
+decoupling: 
+c21
+
+
+new equations: 
+End of this CRACK run
+
+The solution : 
+         2
+c14=c23*y  + c24*y + c25
+
+
+                         2
+        - 4*c21 + c23*u*x  + 2*c23*u*y + c24*u + 2*c26*u*x - c28*u
+eta_u=-------------------------------------------------------------
+                                    4
+
+
+       - 2*c23*x*y - c24*x - 2*c26*y - 2*c27
+xi_x=----------------------------------------
+                        2
+
+Remaining conditions : 
+0=df(c21,x,2) - df(c21,y)
+
+for the functions : c28  c23  c24  c25  c26  
+c27  c21(y,x)  
+**************************************************************************
+
+
+CRACK needed :  2000 ms    GC time : 0 ms
+The symmetries are: 
+
+       - 2*c23*x*y - c24*x - 2*c26*y + 2*c27
+xi_x=----------------------------------------
+                        2
+
+             2
+xi_y= - c23*y  - c24*y + c25
+
+                      2
+       4*c21 + c23*u*x  + 2*c23*u*y + c24*u + 2*c26*u*x + 4*c28
+eta_u=----------------------------------------------------------
+                                  4
+
+
+with constants/functions: 
+c21(y,x)  c27  c26  c25  c24  
+c23  c28  
+
+
+which still have to satisfy: 
+
+0= - df(c21,x,2) + df(c21,y)
+
+..........................................................................
+An example of the determination of first integrals of ODEs
+
+
+Determination of a first integral for: 
+
+                  2  2                2
+           df(y,x) *x  - 2*df(y,x) - y
+df(y,x,2)=------------------------------
+                        x
+
+new function: h_0(y,x)  
+new function: h_1(y,x)  
+new function: h_2(y,x)  
+                    2
+of the type: df(y,x) *h_2 + df(y,x)*h_1 + h_0
+
+This is CRACK - a solver for overdetermined partial differential equations
+Version 25-08-1993
+**************************************************************************
+
+equations: expr. with 13 terms
+
+functions: h_2(y,x)  h_1(y,x)  h_0(y,x)  
+separation w.r.t. d_y(1)  
+new function: c29(x)  
+integrated equation :  
+   2*x*y
+0=e     *h_2 - c29
+
+
+separation yields 4 equations
+substitution :  
+      c29
+h_2=--------
+      2*x*y
+     e
+
+
+substitution :  
+     df(h_0,x)*x
+h_1=-------------
+          2
+         y
+
+
+new function: c30(x)  
+integrated equation :  
+                  2    2*x*y            3    x*y      3  2
+0= - df(c29,x)*x*y  + e     *df(h_0,x)*x  - e   *c30*x *y
+
+            3          2
+ + 2*c29*x*y  + 6*c29*y
+
+
+decoupling: 
+h_0
+
+
+new equations: expr. with 10 terms
+with leading derivative (df h_0 x 3) replaces a de with (df h_0 y)
+expr. with 20 terms
+with leading derivative (df h_0 x 2) replaces a de with (df h_0 x 3)
+expr. with 17 terms
+with leading derivative (df h_0 x) replaces a de with (df h_0 x 2)
+
+equations: expr. with 13 terms
+
+   2*x*y              2    2*x*y                2*x*y              2
+0=e     *df(h_0,x,2)*x  - e     *df(h_0,x)*x + e     *df(h_0,y)*x*y
+
+          4
+ - 2*c29*y
+
+
+                  2    2*x*y            3    x*y      3  2
+0= - df(c29,x)*x*y  + e     *df(h_0,x)*x  - e   *c30*x *y
+
+            3          2
+ + 2*c29*x*y  + 6*c29*y
+
+
+functions: 
+      c29
+h_2=--------
+      2*x*y
+     e
+
+
+     df(h_0,x)*x
+h_1=-------------
+          2
+         y
+
+h_0(y,x)  c30(x)  c29(x)  
+separation w.r.t. y  
+linear independent expressions : 
+1
+
+
+y
+
+
+ 2
+y
+
+
+ x*y
+e
+
+
+   x*y
+y*e
+
+
+new constant: c31
+integrated equation :  
+0=c30 - c31*x
+
+
+new constant: c32
+new constant: c33
+integrated equation :  
+0=c30 + c32*x + c33
+
+
+new constant: c34
+integrated equation :  
+             4
+0=c29 - c34*x
+
+
+new constant: c35
+new constant: c36
+integrated equation :  
+                 4              4
+0= - log(x)*c36*x  + c29 - c35*x
+
+
+new constant: c37
+new constant: c38
+new constant: c39
+integrated equation :  
+             6        4        3
+0=c29 - c37*x  - c38*x  - c39*x
+
+
+separation yields 5 equations
+substitution :  
+c30=c31*x
+
+
+separation w.r.t. x  
+separation yields 2 equations
+substitution :  
+c33=0
+
+
+substitution :  
+c32= - c31
+
+
+substitution :  
+         4
+c29=c34*x
+
+
+separation w.r.t. x  
+linear independent expressions : 
+ 4
+x *log(x)
+
+
+ 4
+x
+
+
+separation yields 2 equations
+substitution :  
+c36=0
+
+
+new function: c40(y)  
+integrated equation :  
+   2*x*y        2*x*y        x*y            x*y            2  2
+0=e     *c40 + e     *h_0 + e   *c31*x*y + e   *c31 - c34*x *y
+
+ - 2*c34*x*y - c34
+
+
+substitution :  
+c35=c34
+
+
+separation w.r.t. x  
+separation yields 3 equations
+substitution :  
+c39=0
+
+
+substitution :  
+c37=0
+
+
+substitution :  
+c38=c34
+
+
+substitution :  
+         2*x*y        x*y            x*y            2  2
+h_0=( - e     *c40 - e   *c31*x*y - e   *c31 + c34*x *y  + 2*c34*x*y
+
+              2*x*y
+      + c34)/e
+
+
+new constant: c41
+integrated equation :  
+0=c40 + c41
+
+
+substitution :  
+c40= - c41
+
+
+End of this CRACK run
+
+The solution : 
+h_0
+
+   2*x*y        x*y            x*y            2  2
+  e     *c41 - e   *c31*x*y - e   *c31 + c34*x *y  + 2*c34*x*y + c34
+=--------------------------------------------------------------------
+                                 2*x*y
+                                e
+
+
+      x*y      2          3            2
+     e   *c31*x  - 2*c34*x *y - 2*c34*x
+h_1=-------------------------------------
+                    2*x*y
+                   e
+
+
+          4
+     c34*x
+h_2=--------
+      2*x*y
+     e
+
+Free functions or constants : c31  c34  c41  
+**************************************************************************
+
+
+CRACK needed :  26899 ms    GC time : 1650 ms
+                              2      4    x*y              2
+A first integral is:  (df(y,x) *c34*x  + e   *df(y,x)*c31*x
+
+                     3                    2    x*y            x*y
+    - 2*df(y,x)*c34*x *y - 2*df(y,x)*c34*x  - e   *c31*x*y - e   *c31
+
+           2  2                     2*x*y
+    + c34*x *y  + 2*c34*x*y + c34)/e
+
+and an integrating factor:  
+
+  2                 2    x*y
+ x *(2*df(y,x)*c34*x  + e   *c31 - 2*c34*x*y - 2*c34)
+------------------------------------------------------
+                         2*x*y
+                        e
+
+free constants: c31  c34  
+..........................................................................
+An example of the determination of a Lagrangian for an ODE  
+Determination of a Lagrangian L for:
+
+                 2
+df(y,x,2)=x + 6*y
+
+                        2
+The ansatz:  L = df(y,x) *u_ + v_
+
+This is CRACK - a solver for overdetermined partial differential equations
+Version 25-08-1993
+**************************************************************************
+
+equations: 
+        2                                                           2
+0=d_y(1) *df(u_,y) + 2*d_y(1)*df(u_,x) - df(v_,y) + 2*u_*x + 12*u_*y
+
+
+functions: u_(y,x)  v_(y,x)  
+separation w.r.t. d_y(1)  
+new function: c42(y)  
+integrated equation :  
+0=c42 + u_
+
+
+new function: c43(x)  
+integrated equation :  
+0=c43 + u_
+
+
+separation yields 3 equations
+substitution :  
+u_= - c43
+
+
+generalized separation 
+new constant: c44
+substitution :  
+c42= - c44
+
+
+substitution :  
+c43= - c44
+
+
+new function: c45(x)  
+integrated equation :  
+                        3
+0= - 2*c44*x*y - 4*c44*y  + c45 + v_
+
+
+substitution :  
+                      3
+v_=2*c44*x*y + 4*c44*y  - c45
+
+
+End of this CRACK run
+
+The solution : 
+                      3
+v_=2*c44*x*y + 4*c44*y  - c45
+
+
+u_=c44
+
+Free functions or constants : c45(x)  c44  
+**************************************************************************
+
+
+CRACK needed :  367 ms    GC time : 0 ms
+                          2              3
+The solution:  L = df(y,x)  + 2*x*y + 4*y
+..........................................................................
+An example of the factorization of an ODE  
+Differential factorization of:  
+
+                  2                    2
+           df(y,x)  - df(y,x)*f*y - q*y
+df(y,x,2)=-------------------------------
+                         y
+
+The ansatz: df(y,x) = a#*y + b#
+
+This is CRACK - a solver for overdetermined partial differential equations
+Version 25-08-1993
+**************************************************************************
+
+equations: 
+                2                                2     2
+0=( - df(a#,x)*y  - df(b#,x)*y + a#*b#*y - a#*f*y  + b#  - b#*f*y
+
+         2
+    - q*y )/y
+
+
+functions: a#(x)  b#(x)  
+separation w.r.t. y  
+new constant: c46
+integrated equation :  
+   int(f,x)           int(f,x)
+0=e        *a# + int(e        *q,x) - c46
+
+
+separation yields 3 equations
+substitution :  
+b#=0
+
+
+substitution :  
+            int(f,x)
+     - int(e        *q,x) + c46
+a#=-----------------------------
+              int(f,x)
+             e
+
+
+End of this CRACK run
+
+The solution : 
+b#=0
+
+
+            int(f,x)
+     - int(e        *q,x) + c46
+a#=-----------------------------
+              int(f,x)
+             e
+
+Free functions or constants : c46  
+**************************************************************************
+
+
+CRACK needed :  1683 ms    GC time : 0 ms
+                            int(f,x)
+                     int(1/e        ,x)*c46
+                    e                      *c47
+The solution y=--------------------------------------
+                          int(f,x)       int(f,x)
+                 int(int(e        *q,x)/e        ,x)
+                e
+
+is the general solution of the original ODE
+(crack 67080 4084)
+
+
+End of Lisp run after 67.11+4.98 seconds

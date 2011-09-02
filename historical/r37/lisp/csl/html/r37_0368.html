@@ -1,0 +1,89 @@
+
+<A NAME=groebner>
+
+<TITLE>groebner</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GROEBNER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ <P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>groebner</em>({<em>exp</em>, ...}) 
+<P>
+<P>
+<P>
+<P>
+where {<em>exp</em>, ... } is a list of 
+expressions or equations. 
+<P>
+<P>
+The operator <em>groebner</em> implements the Buchberger algorithm 
+for computing Groebner bases for a given set of 
+expressions with respect to the given set of variables in the order 
+given. As a side effect, the sequence of variables is stored as a REDUCE list 
+in the shared variable 
+<A HREF=r37_0371.html>gvarslast</A> - this is important in cases 
+where the algorithm rearranges the variable sequence because 
+<A HREF=r37_0370.html>groebopt</A> 
+is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+   groebner({x**2+y**2-1,x-y}) 
+
+  {X - Y,2*Y**2 -1}
+
+</TT></PRE><P> <P> <H3> 
+related: </H3>
+<P>
+ _ _ _ 
+<A HREF=r37_0390.html>groebnerf</A>operator 
+<P>
+ _ _ _  
+<A HREF=r37_0371.html>gvarslast</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0370.html>groebopt</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0372.html>groebprereduce</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0373.html>groebfullreduction</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0374.html>gltbasis</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0375.html>gltb</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0376.html>glterms</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0377.html>groebstat</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0378.html>trgroeb</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0379.html>trgroebs</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0395.html>groebprot</A> switch 
+<P>
+ _ _ _  
+<A HREF=r37_0396.html>groebprotfile</A> variable 
+<P>
+ _ _ _  
+<A HREF=r37_0397.html>groebnert</A> operator 
+<P>
+<P>
+<P>

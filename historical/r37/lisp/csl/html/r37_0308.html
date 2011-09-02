@@ -1,0 +1,49 @@
+
+<A NAME=NAT>
+
+<TITLE>NAT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NAT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>nat</em> is on, output is printed to the screen in natural form, with 
+raised exponents. <em>nat</em> should be turned off when outputting expressions 
+
+to a file for future input. Default is <em>on</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+(x + y)**3; 
+
+   3      2          2    3
+  X  + 3*X *Y + 3*X*Y  + Y  
+
+
+off nat; 
+
+(x + y)**3; 
+
+  X**3 + 3*X**2*Y + 3*X*Y**2 + Y**3$ 
+
+
+on fort; 
+
+(x + y)**3; 
+
+  ANS=X**3+3.*X**2*Y+3.*X*Y**2+Y**3
+
+</TT></PRE><P>With <em>nat</em> off, a dollar sign is printed at the end of each
+ expression. 
+An output file written with <em>nat</em> off is ready to be read into REDUCE 
+using the command 
+<A HREF=r37_0231.html>in</A>. 
+<P>
+<P>
+<P>

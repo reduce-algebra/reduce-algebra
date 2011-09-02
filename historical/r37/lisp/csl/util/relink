@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# This file is only needed for the Linux version of REDUCE
+
+# re-link various bits of the Lisp system. This script is provided,
+# as are all the object files mentioned here, so that any user who needs or
+# wants to re-link CSL or REDUCE with a newer version of the Linux
+# libraries is in a position to do so. This capability is necessary to comply
+# with the GNU Public Library License, and may provide a way of coping
+# with different Linux releases.
+
+gcc  bytes.o arith01.o arith02.o arith03.o arith04.o arith05.o arith06.o arith07.o arith08.o arith09.o arith10.o arith11.o arith12.o char.o csl.o cslmpi.o eval1.o eval2.o eval3.o eval4.o fns1.o fns2.o fns3.o print.o read.o restart.o  sysunix.o fasl.o gc.o preserve.o stubs.o -lm -lc -lcurses -o csl 
+strip csl
+
+gcc  bytes1.o arith01.o arith02.o arith03.o arith04.o arith05.o arith06.o arith07.o arith08.o arith09.o arith10.o arith11.o arith12.o char.o csl.o cslmpi.o eval1.o eval2.o eval3.o eval4.o fns1.o fns2.o fns3.o print.o read.o restart.o  sysunix.o fasl.o gc.o preserve.o stubs.o -lm -lc -lcurses -o slowr37 
+strip slowr37
+
+gcc  bytes.o arith01.o arith02.o arith03.o arith04.o arith05.o arith06.o arith07.o arith08.o arith09.o arith10.o arith11.o arith12.o char.o csl.o cslmpi.o eval1.o eval2.o eval3.o eval4.o fns1.o fns2.o fns3.o print.o read.o restart.o  sysunix.o fasl.o gc.o preserve.o u01.o u02.o u03.o u04.o u05.o u06.o u07.o u08.o u09.o u10.o u11.o u12.o -lm -lc -lcurses -o r37 
+strip r37
+
+mkdir log
+

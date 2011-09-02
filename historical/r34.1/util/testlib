@@ -1,0 +1,27 @@
+#!/bin/csh -f
+
+# testlib - Test Package from REDUCE User Contributed Library.
+
+alias rm rm
+
+rm -rf $reduce/log/$1.log
+
+date > $reduce/log/$1.log
+
+$reduce/reduce >>& $reduce/log/$1.log << EOF
+
+on errcont;   % So that computation continues after an error.
+
+showtime;
+
+load!-package '$1;
+
+in "$reduce/lib/$1.tst";
+
+showtime;
+
+bye;
+
+EOF
+
+date >> $reduce/log/$1.log

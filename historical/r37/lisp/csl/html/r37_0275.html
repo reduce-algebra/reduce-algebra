@@ -1,0 +1,36 @@
+
+<A NAME=CREF>
+
+<TITLE>CREF</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>CREF</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+The switch <em>cref</em> invokes the CREF cross-reference program that 
+processes a set of procedure definitions to produce a summary of their 
+entry points, undefined procedures, non-local variables and so on. The 
+program will also check that procedures are called with a consistent 
+number of arguments, and print a diagnostic message otherwise. 
+<P>
+<P>
+The output is alphabetized on the first seven characters of each function 
+name. 
+<P>
+<P>
+To invoke the cross-reference program, <em>cref</em> is first turned on. 
+This causes the program to load and the cross-referencing process to 
+begin. After all the required definitions are loaded, turning <em>cref</em> 
+off will cause a cross-reference listing to be produced. 
+<P>
+<P>
+Algebraic procedures in REDUCE are treated as if they were symbolic, so 
+that algebraic constructs will actually appear as calls to symbolic 
+functions, such as <em>aeval</em>. 
+<P>
+<P>
+<P>

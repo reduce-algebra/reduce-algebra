@@ -1,0 +1,67 @@
+
+Codemist Standard Lisp 3.54 for DEC Alpha: May 23 1994
+Dump file created: Mon May 23 10:39:11 1994
+REDUCE 3.5, 15-Oct-93 ...
+Memory allocation: 6023424 bytes
+
++++ About to read file tstlib.red
+
+
+% TeX-REDUCE-Interface 0.50
+% set greek asserted
+% set lowercase asserted
+% \tolerance 10
+% \hsize=150mm
+% load tri;
+
+global '(textest!*);
+
+
+
+symbolic procedure texexa(code);
+   begin
+     prin2 "\TRIexa{"; prin2 textest!*;
+     if !*TeXindent then prin2 "}{TeXindent}{" else
+     if !*TeXbreak  then prin2 "}{TeXBreak}{" else
+     if !*TeX then prin2 "TeX" else prin2 "}{---}{";
+     if !*TeXbreak then prin2 tolerance!* else prin2 "---";
+     prin2 "}{"; prin2 code; prin2 "}"; terpri()
+   end;
+
+
+texexa
+
+
+algebraic procedure exa(expression,code);
+   begin symbolic texexa code; return expression end;
+
+
+exa
+
+
+% ----------------------------------------------------------------------
+% Examples from the Integrator Test File
+% ----------------------------------------------------------------------
+
+symbolic(textest!*:="Integration");
+
+
+"Integration"
+
+
+texsetbreak(120,1000);
+
+% \tolerance 1000
+% \hsize=120mm
+
+
+on texindent;
+
+
+
+off echo;
+
+(tri 7100 233)
+
+
+End of Lisp run after 7.13+0.91 seconds

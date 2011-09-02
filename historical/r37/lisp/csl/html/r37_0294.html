@@ -1,0 +1,64 @@
+
+<A NAME=GCD_switch>
+
+<TITLE>GCD_switch</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>GCD</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>switch</B><P>
+<P>
+ 
+ <P>
+<P>
+When <em>gcd</em> is on, common factors in numerators and denominators of 
+expressions are canceled. Default is <em>off</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+(2*(f*h)**2 - f**2*g*h - (f*g)**2 - f*h**3 + f*h*g**2
+   - h**4 + g*h**3)/(f**2*h - f**2*g - f*h**2 + 2*f*g*h
+   - f*g**2 - g*h**2 + g**2*h);
+ 
+
+   2  2    2          2  2      2        3      3    4
+  F *G  + F *G*H - 2*F *H  - F*G *H + F*H  - G*H  + H
+  ---------------------------------------------------- 
+    2      2        2                2    2        2
+   F *G - F *H + F*G  - 2*F*G*H + F*H  - G *H + G*H
+
+
+on gcd; 
+
+ws; 
+
+                 2
+  F*G + 2*F*H + H
+  ---------------- 
+       F + G
+
+
+e2 := a*c + a*d + b*c + b*d; 
+
+  E2 := A*C + A*D + B*C + B*D 
+
+
+off exp; 
+
+e2; 
+
+  (A + B)*(C + D)
+
+</TT></PRE><P>Even with <em>gcd</em> off, a check is automatically made for comm
+on variable 
+and numerical products in the numerators and denominators of expression, 
+and the appropriate cancellations made. Thus the example demonstrating the 
+use of <em>gcd</em> is somewhat complicated. Note when 
+<A HREF=r37_0256.html>exp</A> is off, 
+<em>gcd</em> has the side effect of factoring the expression. 
+<P>
+<P>
+<P>

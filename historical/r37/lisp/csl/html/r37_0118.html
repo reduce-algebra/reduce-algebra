@@ -1,0 +1,60 @@
+
+<A NAME=NOT>
+
+<TITLE>NOT</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>NOT</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>not</em> operator returns 
+<A HREF=r37_0122.html>true</A> if its argument evaluates to 
+
+<A HREF=r37_0014.html>nil</A>, and <em>nil</em> if its argument is <em>true</em>
+. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>not</em>(&lt;logical expression&gt;) 
+<P>
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+if not numberp(a) then write &quot;indeterminate&quot; else write a;
+			 
+
+
+  indeterminate; 
+
+
+a := 10; 
+
+  A := 10 
+
+
+if not numberp(a) then write &quot;indeterminate&quot; else write a;
+			 
+
+
+  10 
+
+
+if not(numberp(a) and a &lt; 0) then write &quot;positive number&quot;;
+			 
+
+
+  positive number
+
+</TT></PRE><P>Logical operators can only be used in conditional statements such 
+as 
+<P>
+<P>
+<em>if</em>...<em>then</em>...<em>else</em> or <em>while</em>...<em>do</em>. 
+<P>
+<P>
+<P>

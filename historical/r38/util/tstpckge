@@ -1,0 +1,19 @@
+#!/bin/csh -f
+
+# test --- Run a REDUCE test file.
+
+# Author: Anthony C. Hearn.
+
+alias rm rm
+
+rm -rf $reduce/log/$1.rlg
+
+date > $reduce/log/$1.rlg
+
+setenv package "$1"
+
+$reduce/reduce.$lisp < $reduce/util/tstpckge.dat >>& $reduce/log/$1.rlg
+
+unsetenv package
+
+date >> $reduce/log/$1.rlg

@@ -1,0 +1,58 @@
+
+<A NAME=minussign>
+
+<TITLE>minussign</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>-</B> _ _ _ <B>MINUSSIGN</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+The <em>-</em> operator is a prefix or infix binary subtraction operator, as wel
+l 
+as the unary minus operator. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+&lt;expression&gt; <em>-</em> &lt;expression&gt; 
+or <em>-</em>(&lt;expression&gt;,&lt;expression&gt;) 
+<P>
+<P>
+<P>
+&lt;expression&gt; may be any valid REDUCE expression. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+15 - 4; 
+
+  11 
+
+
+x*(-5); 
+
+  - 5*X 
+
+
+a - b - 15; 
+
+  A - B - 15 
+
+
+-(a,4); 
+
+  A - 4
+
+</TT></PRE><P>The subtraction operator is left associative, so that a - b - c is
+ equivalent 
+to (a - b) - c, as shown in the third example. The subtraction operator is 
+also valid with 
+<A HREF=r37_0345.html>matrix</A> expressions of the correct dimensions 
+and with 
+<A HREF=r37_0045.html>equation</A>s. 
+<P>
+<P>
+<P>

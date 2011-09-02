@@ -1,0 +1,387 @@
+REDUCE 3.6, 15-Jul-95, patched to 6 Mar 96 ...
+
+
+% Test for the univariate and multivariate polynomial decomposition.
+
+% Herbert Melenk, ZIB Berlin, 1990.
+
+procedure testdecompose u;
+   begin scalar r,p,val,nextvar;
+       write "decomposition of ",u;
+       r := decompose u;
+       if length r = 1 then rederr "decomposition failed";
+       write " leads to ",r;
+         % test if the result is algebraically correct.
+       r := reverse r;
+       nextvar := lhs first r; val := rhs first r;
+       r := rest r;
+       while not(r={}) do
+       << p := first r; r := rest r;
+          if 'equal = part(p,0) then
+          <<val := sub(nextvar=val,rhs p); nextvar := lhs p>>
+              else
+            val := sub(nextvar=val,p);     
+       >>;
+       if val = u then write "     O.K.  "
+          else
+         <<write "**** reconstructed polynomial: ";
+           write val; 
+           rederr "reconstruction leads to different polynomial";
+         >>;
+    end;
+
+
+testdecompose
+
+
+
+    % univariate decompositions
+testdecompose(x**4+x**2+1);
+
+
+                  4    2
+decomposition of x  + x  + 1
+
+            2            2
+ leads to {u  + u + 1,u=x }
+
+     O.K.  
+ 
+testdecompose(x**6+9x**5+52x**4+177x**3+435x**2+630x+593);
+
+
+                  6      5       4        3        2
+decomposition of x  + 9*x  + 52*x  + 177*x  + 435*x  + 630*x + 593
+
+            3       2                  2
+ leads to {u  + 25*u  + 210*u + 593,u=x  + 3*x}
+
+     O.K.  
+ 
+testdecompose(x**6+6x**4+x**3+9x**2+3x-5);
+
+
+                  6      4    3      2
+decomposition of x  + 6*x  + x  + 9*x  + 3*x - 5
+
+            2            3
+ leads to {u  + u - 5,u=x  + 3*x}
+
+     O.K.  
+ 
+testdecompose(x**8-88*x**7+2924*x**6-43912*x**5+263431*x**4-218900*x**3+ 
+           65690*x**2-7700*x+234);
+
+
+                  8       7         6          5           4           3
+decomposition of x  - 88*x  + 2924*x  - 43912*x  + 263431*x  - 218900*x
+
+                           2
+                  + 65690*x  - 7700*x + 234
+
+            2
+ leads to {u  + 35*u + 234,
+
+              2
+           u=v  + 10*v,
+
+              2
+           v=x  - 22*x}
+
+     O.K.  
+
+
+    % multivariate cases
+testdecompose(u**2+v**2+2u*v+1);
+
+
+                  2            2
+decomposition of u  + 2*u*v + v  + 1
+
+            2
+ leads to {w  + 1,w=u + v}
+
+     O.K.  
+ 
+testdecompose(x**4+2x**3*y + 3x**2*y**2 + 2x*y**3 + y**4 + 2x**2*y  
+         +2x*y**2 + 2y**3 + 5 x**2 + 5*x*y + 6*y**2 + 5y + 9);
+
+
+                  4      3        2  2      2        2        3        2
+decomposition of x  + 2*x *y + 3*x *y  + 2*x *y + 5*x  + 2*x*y  + 2*x*y  + 5*x*y
+
+                     4      3      2
+                  + y  + 2*y  + 6*y  + 5*y + 9
+
+            2              2          2
+ leads to {u  + 5*u + 9,u=x  + x*y + y  + y}
+
+     O.K.  
+
+testdecompose  sub(u=(2 x**2 + 17 x+y + y**3),u**2+2 u + 1);
+
+
+                    4       3      2  3      2          2         3
+decomposition of 4*x  + 68*x  + 4*x *y  + 4*x *y + 293*x  + 34*x*y  + 34*x*y
+
+                            6      4      3    2
+                  + 34*x + y  + 2*y  + 2*y  + y  + 2*y + 1
+
+            2                2           3
+ leads to {u  + 2*u + 1,u=2*x  + 17*x + y  + y}
+
+     O.K.  
+
+testdecompose  sub(u=(2 x**2 *y + 17 x+y + y**3),u**2+2 u + 1);
+
+
+                    4  2       3        2  4      2  2      2          2
+decomposition of 4*x *y  + 68*x *y + 4*x *y  + 4*x *y  + 4*x *y + 289*x
+
+                          3                    6      4      3    2
+                  + 34*x*y  + 34*x*y + 34*x + y  + 2*y  + 2*y  + y  + 2*y + 1
+
+            2                2             3
+ leads to {u  + 2*u + 1,u=2*x *y + 17*x + y  + y}
+
+     O.K.  
+
+
+    % some cases which require a special (internal) mapping
+testdecompose  ( (x + y)**2);
+
+
+                  2            2
+decomposition of x  + 2*x*y + y
+
+            2
+ leads to {u ,u=x + y}
+
+     O.K.  
+
+testdecompose ((x + y**2)**2);
+
+
+                  2        2    4
+decomposition of x  + 2*x*y  + y
+
+            2        2
+ leads to {u ,u=x + y }
+
+     O.K.  
+
+testdecompose  ( (x**2 + y)**2);
+
+
+                  4      2      2
+decomposition of x  + 2*x *y + y
+
+            2    2
+ leads to {u ,u=x  + y}
+
+     O.K.  
+
+testdecompose  ( (u + v)**2 +10 );
+
+
+                  2            2
+decomposition of u  + 2*u*v + v  + 10
+
+            2
+ leads to {w  + 10,w=u + v}
+
+     O.K.  
+
+
+    % the decomposition is not unique and might generate quite
+    % different images:
+testdecompose  ( (u + v + 10)**2 -100 );
+
+
+                  2                   2
+decomposition of u  + 2*u*v + 20*u + v  + 20*v
+
+ leads to {w*(w + 20),w=u + v}
+
+     O.K.  
+
+
+    % some special (difficult) cases
+testdecompose (X**4 + 88*X**3*Y + 2904*X**2*Y**2 - 10*X**2 
+           + 42592*X*Y**3 - 440*X*Y + 234256*Y**4 - 4840*Y**2);
+
+
+                  4       3           2  2       2            3
+decomposition of x  + 88*x *y + 2904*x *y  - 10*x  + 42592*x*y  - 440*x*y
+
+                            4         2
+                  + 234256*y  - 4840*y
+
+                         2
+ leads to {u*(u - 10),u=v ,v=x + 22*y}
+
+     O.K.  
+
+
+    % a polynomial with complex coefficients
+on complex;
+
+
+testdecompose(X**4 + (88*I)*X**3*Y - 2904*X**2*Y**2 - 10*X**2 - 
+              (42592*I)*X*Y**3 - (440*I)*X*Y + 234256*Y**4 + 4840*Y**2);
+
+
+                  4         3           2  2       2              3
+decomposition of x  + 88*i*x *y - 2904*x *y  - 10*x  - 42592*i*x*y  - 440*i*x*y
+
+                            4         2
+                  + 234256*y  + 4840*y
+
+                         2
+ leads to {u*(u - 10),u=v ,v=x + 22*i*y}
+
+     O.K.  
+
+off complex;
+
+
+
+
+    % Examples given by J. Gutierrez and J.M. Olazabal.
+
+ f1:=x**6-2x**5+x**4-3x**3+3x**2+5$
+
+
+ testdecompose(f1);
+
+
+                  6      5    4      3      2
+decomposition of x  - 2*x  + x  - 3*x  + 3*x  + 5
+
+            2              3    2
+ leads to {u  - 3*u + 5,u=x  - x }
+
+     O.K.  
+
+
+ f2:=x**32-1$
+
+
+ testdecompose(f2);
+
+
+                  32
+decomposition of x   - 1
+
+            2        2    2    2    2
+ leads to {u  - 1,u=v ,v=w ,w=a ,a=x }
+
+     O.K.  
+
+
+ f3:=x**4-(2/3)*x**3-(26/9)*x**2+x+3$
+
+
+ testdecompose(f3);
+
+
+                     4      3       2
+                  9*x  - 6*x  - 26*x  + 9*x + 27
+decomposition of --------------------------------
+                                9
+
+             2
+            u  - 9*u + 27       2
+ leads to {---------------,u=3*x  - x}
+                  9
+
+     O.K.  
+
+
+ f4:=sub(x=x**4-x**3-2x+1,x**3-x**2-1)$
+
+
+ testdecompose(f4);
+
+
+                  12      11      10      9       8       7       6       5
+decomposition of x   - 3*x   + 3*x   - 7*x  + 14*x  - 10*x  + 14*x  - 20*x
+
+                       4      3      2
+                  + 9*x  - 9*x  + 8*x  - 2*x - 1
+
+            3      2            4    3
+ leads to {u  + 2*u  + u - 1,u=x  - x  - 2*x}
+
+     O.K.  
+
+
+ f5:=sub(x=f4,x**5-5)$
+
+
+ testdecompose(f5);
+
+
+                  60       59        58        57         56         55
+decomposition of x   - 15*x   + 105*x   - 485*x   + 1795*x   - 5873*x
+
+                           54          53           52           51           50
+                  + 17255*x   - 45845*x   + 112950*x   - 261300*x   + 567203*x
+
+                             49            48            47            46
+                  - 1164475*x   + 2280835*x   - 4259830*x   + 7604415*x
+
+                              45             44             43             42
+                  - 13053437*x   + 21545220*x   - 34200855*x   + 52436150*x
+
+                              41              40              39              38
+                  - 77668230*x   + 111050794*x   - 153746645*x   + 206190770*x
+
+                               37              36              35
+                  - 267484170*x   + 336413145*x   - 410387890*x
+
+                               34              33              32
+                  + 484672110*x   - 555048350*x   + 616671710*x
+
+                               31              30              29
+                  - 663135380*x   + 690884384*x   - 697721320*x
+
+                               28              27              26
+                  + 681039235*x   - 642661265*x   + 586604975*x
+
+                               25              24              23
+                  - 516016275*x   + 437051535*x   - 356628245*x
+
+                               22              21              20
+                  + 278991765*x   - 208571965*x   + 149093999*x
+
+                               19             18             17             16
+                  - 101204325*x   + 64656350*x   - 38848040*x   + 21710870*x
+
+                              15            14            13           12
+                  - 10971599*x   + 4928210*x   - 1904450*x   + 519730*x
+
+                           11          10          9          8         7
+                  - 15845*x   - 71947*x   + 52015*x  - 26740*x  + 5510*x
+
+                          6         5       4        3
+                  + 3380*x  - 1972*x  - 75*x  + 195*x  - 10*x - 6
+
+            5      4       3       2
+ leads to {u  - 5*u  + 10*u  - 10*u  + 5*u - 6,
+
+              3      2
+           u=v  + 2*v  + v,
+
+              4    3
+           v=x  - x  - 2*x}
+
+     O.K.  
+
+
+ clear f1,f2,f3,f4,f5;
+
+
+
+end;
+(TIME:  decompos 2550 2810)

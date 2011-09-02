@@ -1,0 +1,116 @@
+
+<A NAME=taylor>
+
+<TITLE>taylor</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>TAYLOR</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+ The <em>taylor</em> operator is used for expanding an expression into a 
+ Taylor series. 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>taylor</em>(&lt;expression&gt; 
+ <em>,</em>&lt;var&gt;<em>,</em> 
+ &lt;expression&gt;<em>,</em>&lt;number&gt; 
+<P>
+<P>
+{<em>,</em>&lt;var&gt;<em>,</em> 
+ &lt;expression&gt;<em>,</em>&lt;number&gt;}*) 
+ <P>
+<P>
+<P>
+&lt;expression&gt; can be any valid REDUCE algebraic expression. 
+ &lt;var&gt; must be a 
+<A HREF=r37_0002.html>kernel</A>, and is the expansion 
+ variable. The &lt;expression&gt; following it denotes the point 
+ about which the expansion is to take place. &lt;number&gt; must be a 
+ non-negative integer and denotes the maximum expansion order. If 
+ more than one triple is specified <em>taylor</em> will expand its 
+ first argument independently with respect to all the variables. 
+ Note that once the expansion has been done it is not possible to 
+ calculate higher orders. 
+<P>
+<P>
+Instead of a 
+<A HREF=r37_0002.html>kernel</A>, &lt;var&gt; may also be a list of 
+ kernels. In this case expansion will take place in a way so that 
+ the sum/ of the degrees of the kernels does not exceed the 
+ maximum expansion order. If the expansion point evaluates to the 
+ special identifier <em>infinity</em>, <em>taylor</em> tries to expand in 
+ a series in 1/&lt;var&gt;. 
+<P>
+<P>
+The expansion is performed variable per variable, i.e. in the 
+ example above by first expanding 
+ exp(x^2+y^2) 
+ with respect to 
+ <em>x</em> and then expanding every coefficient with respect to <em>y</em>. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+    taylor(e^(x^2+y^2),x,0,2,y,0,2); 
+
+
+       2    2    2  2      2  2
+  1 + Y  + X  + Y *X  + O(X ,Y )   
+
+
+    taylor(e^(x^2+y^2),{x,y},0,2); 
+
+
+       2    2       2  2
+  1 + Y  + X  + O({X ,Y })
+
+</TT></PRE><P>The following example shows the case of a non-analytical function.
+<P><PRE><TT>
+
+    taylor(x*y/(x+y),x,0,2,y,0,2); 
+
+
+  ***** Not a unit in argument to QUOTTAYLOR 
+
+</TT></PRE><P> 
+<P>
+<P>
+Note that it is not generally possible to apply the standard 
+ reduce operators to a Taylor kernel. For example, 
+<A HREF=r37_0169.html>part</A>, 
+ 
+<A HREF=r37_0141.html>coeff</A>, or 
+<A HREF=r37_0142.html>coeffn</A> cannot be used. Instead, the 
+ expression at hand has to be converted to standard form first 
+ using the 
+<A HREF=r37_0546.html>taylortostandard</A> operator. 
+<P>
+<P>
+Differentiation of a Taylor expression is possible. If you 
+ differentiate with respect to one of the Taylor variables the 
+ order will decrease by one. 
+<P>
+<P>
+Substitution is a bit restricted: Taylor variables can only be 
+ replaced by other kernels. There is one exception to this rule: 
+ you can always substitute a Taylor variable by an expression that 
+ evaluates to a constant. Note that REDUCE will not always be able 
+ to determine that an expression is constant: an example is 
+ sin(acos(4)). 
+<P>
+<P>
+Only simple taylor kernels can be integrated. More complicated 
+ expressions that contain Taylor kernels as parts of themselves are 
+ automatically converted into a standard representation by means of 
+ the 
+<A HREF=r37_0546.html>taylortostandard</A> operator. In this case a suitable 
+ warning is printed. 
+<P>
+<P>
+<P>
+<P>

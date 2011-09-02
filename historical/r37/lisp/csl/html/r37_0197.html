@@ -1,0 +1,54 @@
+
+<A NAME=INTEGER>
+
+<TITLE>INTEGER</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>INTEGER</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>declaration</B><P>
+<P>
+ 
+The <em>integer</em> declaration must be made immediately after a 
+
+<A HREF=r37_0040.html>begin</A> (or other variable declaration such as 
+<A HREF=r37_0216.html>real</A> 
+and 
+<A HREF=r37_0218.html>scalar</A>) and declares local integer variables. They are
+ 
+initialized to 0. 
+ <P> <H3> 
+syntax: </H3>
+<P>
+<P>
+<em>integer</em>&lt;identifier&gt;{,&lt;identifier&gt;}* 
+<P>
+<P>
+<P>
+&lt;identifier&gt; may be any valid REDUCE identifier, except 
+<em>t</em> or <em>nil</em>. 
+<P>
+<P>
+Integer variables remain local, and do not share values with variables of 
+the same name outside the 
+<A HREF=r37_0040.html>begin</A>...<em>end</em> block. When the 
+block is finished, the variables are removed. You may use the words 
+
+<A HREF=r37_0216.html>real</A> or 
+<A HREF=r37_0218.html>scalar</A> in the place of <em>integer</em>. 
+<em>integer</em> does not indicate typechecking by the 
+current REDUCE; it is only for your own information. Declaration 
+statements must immediately follow the <em>begin</em>, without a semicolon 
+between <em>begin</em> and the first variable declaration. 
+<P>
+<P>
+Any variables used inside <em>begin</em>...<em>end</em> blocks that were not 
+declared <em>scalar</em>, <em>real</em> or <em>integer</em> are global, and any 
+
+change made to them inside the block affects their global value. Any 
+
+<A HREF=r37_0188.html>array</A> or 
+<A HREF=r37_0345.html>matrix</A> declared inside a block is always global. 
+<P>
+<P>
+<P>

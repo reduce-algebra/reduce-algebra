@@ -1,0 +1,15 @@
+#!/bin/csh -f
+
+# Run all REDUCE Test Files
+
+echo `hostname` s: `date` >> $reduce/log/testall.log
+
+source $reduce/xpackage.bat
+
+set xpackages=($xpackages $xpackages2 $xpackages3)
+
+foreach x ($xpackages)
+   $reduce/util/tstpckge $x
+end
+
+echo f: `date` >> $reduce/log/testall.log

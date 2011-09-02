@@ -1,0 +1,1461 @@
+Sun Jan  3 23:54:59 MET 1999
+REDUCE 3.7, 15-Jan-99 ...
+
+1: 1: 
+2: 2: 2: 2: 2: 2: 2: 2: 2: 
+3: 3: off echo, dfprint$
+
+
+If you want to see more details of the following calculation then
+change in the file `conlaw.tst' the line
+        lisp(print_:=nil)$ 
+into
+        lisp(print_:=10)$ 
+
+**************************************************************************
+
+The following example calculates all conservation laws of the KdV-
+equation with a characteristic function of order not higher than two
+
+--------------------------------------------------------------------------
+
+This is CONLAW3 - a program for calculating conservation laws of DEs
+
+The DE under investigation is :
+
+df(u,t)=df(u,x,3) + df(u,x)*u
+
+for the function(s): {u}
+
+======================================================
+Currently conservation laws with characteristic
+function(s) of order 0 are determined
+======================================================
+
+Conservation law:
+
+( 1 ) * ( df(u,t) - df(u,x,3) - df(u,x)*u )
+
+ = 
+
+df( u, t )
+
++
+
+                       2
+      - 2*df(u,x,2) - u
+df( ---------------------, x )
+              2
+
+======================================================
+
+Conservation law:
+
+( t*u + x ) * ( df(u,t) - df(u,x,3) - df(u,x)*u )
+
+ = 
+
+        2
+     t*u  + 2*u*x
+df( --------------, t )
+          2
+
++
+
+                                                   2                      3
+df( ( - 6*df(u,x,2)*t*u - 6*df(u,x,2)*x + 3*df(u,x) *t + 6*df(u,x) - 2*t*u
+
+           2
+      - 3*u *x)/6, x )
+
+======================================================
+
+Conservation law:
+
+( u ) * ( df(u,t) - df(u,x,3) - df(u,x)*u )
+
+ = 
+
+      2
+     u
+df( ----, t )
+     2
+
++
+
+                                 2      3
+      - 6*df(u,x,2)*u + 3*df(u,x)  - 2*u
+df( --------------------------------------, x )
+                      6
+
+======================================================
+Currently conservation laws with characteristic
+function(s) of order 1 are determined
+======================================================
+
+There is no conservation law of this order.
+
+======================================================
+Currently conservation laws with characteristic
+function(s) of order 2 are determined
+======================================================
+
+Conservation law:
+
+                    2
+(  - 2*df(u,x,2) - u  ) * ( df(u,t) - df(u,x,3) - df(u,x)*u )
+
+ = 
+
+              2    3
+     3*df(u,x)  - u
+df( -----------------, t )
+            3
+
++
+
+                                       2                2    4
+      - 8*df(u,t)*df(u,x) + 4*df(u,x,2)  + 4*df(u,x,2)*u  + u
+df( -----------------------------------------------------------, x )
+                                 4
+
+======================================================
+
+**************************************************************************
+
+The next example demonstrates that one can specify an ansatz
+for the characteristic function of one or more equations of the
+PDE-system. In this example all conservation laws of the wave
+equation which is written as a first order system are calculated
+such that the characteristic functions of the first of both
+equations is proportional to df(u,x,2). (This will include zero
+as it is a multiple of df(u,x,2) too.)
+
+--------------------------------------------------------------------------
+
+This is CONLAW2 - a program for calculating conservation laws of DEs
+
+The DEs under investigation are :
+
+df(u,t)=df(v,x)
+
+df(v,t)=df(u,x)
+
+for the function(s): {u,v}
+
+======================================================
+A special ansatz of order 2 for the characteristic
+function(s) is investigated.
+
+
+Conservation law:
+
+(df(u,x,2)) * (df(u,t) - df(v,x))
+
++
+
+(df(v,x,2)) * ( - df(u,x) + df(v,t))
+
+= 
+
+               2          2
+      - df(u,x)  - df(v,x)
+df( ------------------------, t )
+               2
+
++
+
+df( df(u,t)*df(u,x) - df(u,x)*df(v,x) + df(v,t)*df(v,x), x )
+
+======================================================
+
+**************************************************************************
+
+For the Burgers equation the following example finds all conservation
+laws of zero'th order in the characteristic function up to the solution
+of the linear heat equation. This is an example for what happens when not
+all conditions could be solved, but it is also an example which shows
+that not only characteristic functions of polynomial or rational form
+can be found.
+
+--------------------------------------------------------------------------
+
+This is CONLAW1 - a program for calculating conservation laws of DEs
+
+The DE under investigation is :
+
+                              2
+         2*df(u,x,2) + df(u,x)
+df(u,t)=------------------------
+                   2
+
+for the function(s): {u}
+
+======================================================
+Currently conservation laws with a conserved density
+of order 0 are determined
+======================================================
+The function c_132(x,t) is not constant!
+
+There are remaining conditions: {df(c_132,t) + df(c_132,x,2)}
+for the functions: c_132(x,t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+
+Conservation law:
+
+                                                     2
+   u/2              2*df(u,t) - 2*df(u,x,2) - df(u,x)
+( e   *c_132 ) * ( ------------------------------------ )
+                                    2
+
+ = 
+
+       u/2
+df( 2*e   *c_132, t )
+
++
+
+       u/2                u/2
+df( 2*e   *df(c_132,x) - e   *df(u,x)*c_132, x )
+
+======================================================
+
+**************************************************************************
+
+In this example all conservation laws of the Ito system are calculated
+that have a conserved density of order not higher than one.
+This is a further example of non-polynomial conservation laws.
+
+--------------------------------------------------------------------------
+
+This is CONLAW1 - a program for calculating conservation laws of DEs
+
+The DEs under investigation are :
+
+df(u,t)=df(u,x,3) + 6*df(u,x)*u + 2*df(v,x)*v
+
+df(v,t)=2*df(u,x)*v + 2*df(v,x)*u
+
+for the function(s): {u,v}
+
+======================================================
+Currently conservation laws with a conserved density
+of order 0 are determined
+======================================================
+
+Conservation law:
+
+( 0 ) * (  - 2*df(u,x)*v + df(v,t) - 2*df(v,x)*u )
+
++
+
+( 1 ) * ( df(u,t) - df(u,x,3) - 6*df(u,x)*u - 2*df(v,x)*v )
+
+ = 
+
+df( u, t )
+
++
+
+                      2    2
+df(  - df(u,x,2) - 3*u  - v , x )
+
+======================================================
+
+Conservation law:
+
+( 2*v ) * (  - 2*df(u,x)*v + df(v,t) - 2*df(v,x)*u )
+
++
+
+( 2*u ) * ( df(u,t) - df(u,x,3) - 6*df(u,x)*u - 2*df(v,x)*v )
+
+ = 
+
+     2    2
+df( u  + v , t )
+
++
+
+                              2      3        2
+df(  - 2*df(u,x,2)*u + df(u,x)  - 4*u  - 4*u*v , x )
+
+======================================================
+
+Conservation law:
+
+( -1 ) * (  - 2*df(u,x)*v + df(v,t) - 2*df(v,x)*u )
+
++
+
+( 0 ) * ( df(u,t) - df(u,x,3) - 6*df(u,x)*u - 2*df(v,x)*v )
+
+ = 
+
+df(  - v, t )
+
++
+
+df( 2*u*v, x )
+
+======================================================
+Currently conservation laws with a conserved density
+of order 1 are determined
+======================================================
+
+
+
+
+
+Conservation law:
+
+                               2        2
+    - 2*df(v,x,2)*v + 3*df(v,x)  + 4*u*v
+( ---------------------------------------- ) * (  - 2*df(u,x)*v + df(v,t)
+                      4
+                     v
+
+ - 2*df(v,x)*u )
+
++
+
+    - 4
+( ------ ) * ( df(u,t) - df(u,x,3) - 6*df(u,x)*u - 2*df(v,x)*v )
+    v
+
+ = 
+
+            2        2
+     df(v,x)  - 4*u*v
+df( -------------------, t )
+             3
+            v
+
++
+
+                  2                                                      2
+df( (4*df(u,x,2)*v  + 4*df(u,x)*df(v,x)*v - 2*df(v,t)*df(v,x) + 2*df(v,x) *u
+
+           2  2      4   3
+      + 8*u *v  + 8*v )/v , x )
+
+======================================================
+
+Conservation law:
+
+(  - 4*u*v ) * (  - 2*df(u,x)*v + df(v,t) - 2*df(v,x)*u )
+
++
+
+                      2      2
+(  - 2*df(u,x,2) - 6*u  - 2*v  ) * ( df(u,t) - df(u,x,3) - 6*df(u,x)*u
+
+ - 2*df(v,x)*v )
+
+ = 
+
+           2      3        2
+df( df(u,x)  - 2*u  - 2*u*v , t )
+
++
+
+                                    2                2                2      4
+df(  - 2*df(u,t)*df(u,x) + df(u,x,2)  + 6*df(u,x,2)*u  + 2*df(u,x,2)*v  + 9*u
+
+       2  2    4
+ + 10*u *v  + v , x )
+
+======================================================
+
+**************************************************************************
+
+In the next example the 5th order Korteweg - de Vries equation is
+investigated concerning conservation laws of order 0 and 1 in the
+conserved density P_t. Parameters a,b,c in the PDE are determined
+such that conservation laws exist. This complicates the problem by
+making it non-linear with a number of cases to be considered.
+Some of the subcases below can be combined to reduce their number
+which currently is not done automatically.
+
+--------------------------------------------------------------------------
+
+This is CONLAW1 - a program for calculating conservation laws of DEs
+
+The DE under investigation is :
+
+                                                                        2
+df(u,t)= - df(u,x,5) - df(u,x,3)*c*u - df(u,x,2)*df(u,x)*b - df(u,x)*a*u
+
+for the function(s): {u}
+
+======================================================
+Currently conservation laws with a conserved density
+of order 0 are determined
+======================================================
+
+Conservation law:
+
+   b
+c=---,
+   2
+
+
+(  - 4*u ) * ( (2*df(u,t) + 2*df(u,x,5) + df(u,x,3)*b*u + 2*df(u,x,2)*df(u,x)*b
+
+                                2
+                 + 2*df(u,x)*a*u )/2 )
+
+ = 
+
+          2
+df(  - 2*u , t )
+
++
+
+                                                        2                  2
+df(  - 4*df(u,x,4)*u + 4*df(u,x,3)*df(u,x) - 2*df(u,x,2)  - 2*df(u,x,2)*b*u
+
+      4
+ - a*u , x )
+
+======================================================
+
+Conservation law:
+
+   b
+c=---,
+   2
+
+
+( -12 ) * ( (2*df(u,t) + 2*df(u,x,5) + df(u,x,3)*b*u + 2*df(u,x,2)*df(u,x)*b
+
+                             2
+              + 2*df(u,x)*a*u )/2 )
+
+ = 
+
+df(  - 12*u, t )
+
++
+
+                                                 2          3
+df(  - 12*df(u,x,4) - 6*df(u,x,2)*b*u - 3*df(u,x) *b - 4*a*u , x )
+
+======================================================
+
+Conservation law:
+
+( -6 ) * ( df(u,t) + df(u,x,5) + df(u,x,3)*c*u + df(u,x,2)*df(u,x)*b
+
+              2
+ + df(u,x)*a*u  )
+
+ = 
+
+df(  - 6*u, t )
+
++
+
+                                                2              2          3
+df(  - 6*df(u,x,4) - 6*df(u,x,2)*c*u - 3*df(u,x) *b + 3*df(u,x) *c - 2*a*u , x )
+
+======================================================
+The function c_320(x,t) is not constant!
+The function c_328(t) is not constant!
+
+There are remaining conditions: {df(c_320,t) + df(c_320,x,5) - c_328}
+for the functions: c_328(t), c_320(x,t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+b=0,
+
+
+c=0,
+
+
+(  - 2*u ) * ( df(u,t) + df(u,x,5) )
+
+ = 
+
+        2
+df(  - u , t )
+
++
+
+                                                      2
+df(  - 2*df(u,x,4)*u + 2*df(u,x,3)*df(u,x) - df(u,x,2) , x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+b=0,
+
+
+c=0,
+
+
+(  - df(c_320,x) ) * ( df(u,t) + df(u,x,5) )
+
+ = 
+
+df(  - df(c_320,x)*u, t )
+
++
+
+df( df(c_320,t)*u + df(c_320,x,4)*df(u,x) - df(c_320,x,3)*df(u,x,2)
+
+ + df(c_320,x,2)*df(u,x,3) - df(c_320,x)*df(u,x,4) + c_328*u, x )
+
+======================================================
+The function c_303(x,t) is not constant!
+The function c_313(t) is not constant!
+
+There are remaining conditions: {df(c_303,t) + df(c_303,x,5) - c_313}
+for the functions: c_313(t), c_303(x,t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+b=0,
+
+
+c=0,
+
+
+(  - df(c_303,x) ) * ( df(u,t) + df(u,x,5) )
+
+ = 
+
+df(  - df(c_303,x)*u, t )
+
++
+
+df( df(c_303,t)*u + df(c_303,x,4)*df(u,x) - df(c_303,x,3)*df(u,x,2)
+
+ + df(c_303,x,2)*df(u,x,3) - df(c_303,x)*df(u,x,4) + c_313*u, x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+         2
+    - 3*x
+( --------- ) * ( 
+      b
+
+ 3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+----------------------------------------------------------------- )
+                                3
+
+ = 
+
+             2
+      - 3*u*x
+df( -----------, t )
+         b
+
++
+
+                     2                                  2
+df( ( - 3*df(u,x,4)*x  + 6*df(u,x,3)*x - df(u,x,2)*b*u*x  - 6*df(u,x,2)
+
+               2    2                        2
+      - df(u,x) *b*x  + 2*df(u,x)*b*u*x - b*u )/b, x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+                3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+(  - 3*x ) * ( -----------------------------------------------------------------
+                                               3
+
+ )
+
+ = 
+
+df(  - 3*u*x, t )
+
++
+
+                                                              2
+df(  - 3*df(u,x,4)*x + 3*df(u,x,3) - df(u,x,2)*b*u*x - df(u,x) *b*x
+
+ + df(u,x)*b*u, x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+            3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+( -3 ) * ( ----------------------------------------------------------------- )
+                                           3
+
+ = 
+
+df(  - 3*u, t )
+
++
+
+                                            2
+df(  - 3*df(u,x,4) - df(u,x,2)*b*u - df(u,x) *b, x )
+
+======================================================
+Currently conservation laws with a conserved density
+of order 1 are determined
+======================================================
+The function c_408(t) is not constant!
+The function c_372(t,x) is not constant!
+
+There are remaining conditions: {30*df(c_372,t) + 30*df(c_372,x,5) - c_408}
+for the functions: c_372(t,x), c_408(t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+b=0,
+
+
+c=0,
+
+
+(  - 2*df(u,x,2) ) * ( df(u,t) + df(u,x,5) )
+
+ = 
+
+           2
+df( df(u,x) , t )
+
++
+
+                                                            2
+df(  - 2*df(u,t)*df(u,x) - 2*df(u,x,4)*df(u,x,2) + df(u,x,3)
+
+                                                2              2    2
+ - 2*df(u,x,3)*df(u,x)*c*u - 2*df(u,x,2)*df(u,x) *b - 2*df(u,x) *a*u , x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+                         2
+(  - 18*df(u,x,2) - 3*b*u  ) * ( 
+
+ 3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+----------------------------------------------------------------- )
+                                3
+
+ = 
+
+             2      3
+df( 9*df(u,x)  - b*u , t )
+
++
+
+                                                                    2
+df(  - 18*df(u,t)*df(u,x) - 18*df(u,x,4)*df(u,x,2) - 3*df(u,x,4)*b*u
+
+              2
+ + 9*df(u,x,3)  + 12*df(u,x,3)*df(u,x)*b*u - 18*df(u,x,3)*df(u,x)*c*u
+
+              2                          2                2  3
+ - 6*df(u,x,2) *b*u - 6*df(u,x,2)*df(u,x) *b - df(u,x,2)*b *u
+
+             2    2
+ - 18*df(u,x) *a*u , x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+             3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+( 6*x ) * ( ----------------------------------------------------------------- )
+                                            3
+
+ = 
+
+                  2
+df(  - 3*df(u,x)*x , t )
+
++
+
+               2                                  2                    2
+df( 3*df(u,t)*x  + 6*df(u,x,4)*x - df(u,x,3)*b*u*x  + 3*df(u,x,3)*c*u*x
+
+                                              2                    2  2
+ - 6*df(u,x,3) + 2*df(u,x,2)*b*u*x + 2*df(u,x) *b*x + 3*df(u,x)*a*u *x
+
+ - 2*df(u,x)*b*u, x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+      2
+   9*x          3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+( ------ ) * ( -----------------------------------------------------------------
+    b                                          3
+
+ )
+
+ = 
+
+                   3
+      - 3*df(u,x)*x
+df( -----------------, t )
+            b
+
++
+
+                3                2                  3                    3
+df( (3*df(u,t)*x  + 9*df(u,x,4)*x  - df(u,x,3)*b*u*x  + 3*df(u,x,3)*c*u*x
+
+                                          2                           2    2
+      - 18*df(u,x,3)*x + 3*df(u,x,2)*b*u*x  + 18*df(u,x,2) + 3*df(u,x) *b*x
+
+                     2  3                          2
+      + 3*df(u,x)*a*u *x  - 6*df(u,x)*b*u*x + 3*b*u )/b, x )
+
+======================================================
+
+Conservation law:
+
+         2              2
+    - 2*b  + 7*b*c - 3*c
+a=------------------------,
+             10
+
+
+                             2          2
+(  - 1500*df(u,x,2) - 300*b*u  + 150*c*u  ) * ( (10*df(u,t) + 10*df(u,x,5)
+
+                                                             2  2
+    + 10*df(u,x,3)*c*u + 10*df(u,x,2)*df(u,x)*b - 2*df(u,x)*b *u
+
+                     2              2  2
+    + 7*df(u,x)*b*c*u  - 3*df(u,x)*c *u )/10 )
+
+ = 
+
+               2          3         3
+df( 750*df(u,x)  - 100*b*u  + 50*c*u , t )
+
++
+
+                                                                          2
+df(  - 1500*df(u,t)*df(u,x) - 1500*df(u,x,4)*df(u,x,2) - 300*df(u,x,4)*b*u
+
+                    2                2
+ + 150*df(u,x,4)*c*u  + 750*df(u,x,3)  + 600*df(u,x,3)*df(u,x)*b*u
+
+                                            2                    2
+ - 300*df(u,x,3)*df(u,x)*c*u - 300*df(u,x,2) *b*u - 600*df(u,x,2) *c*u
+
+                        2                          2                        3
+ - 600*df(u,x,2)*df(u,x) *b + 300*df(u,x,2)*df(u,x) *c - 300*df(u,x,2)*b*c*u
+
+                  2  3               2    2              2  2  2
+ + 150*df(u,x,2)*c *u  - 1500*df(u,x) *a*u  - 300*df(u,x) *b *u
+
+               2      2              2  2  2       3  5       2    5
+ + 1050*df(u,x) *b*c*u  - 450*df(u,x) *c *u  + 12*b *u  - 48*b *c*u
+
+         2  5      3  5
+ + 39*b*c *u  - 9*c *u , x )
+
+======================================================
+
+Conservation law:
+
+         2              2
+    - 2*b  + 7*b*c - 3*c
+a=------------------------,
+             10
+
+
+                                                     2    2               2
+( ( - 1500*df(u,x,2)*b*t + 4500*df(u,x,2)*c*t - 300*b *t*u  + 1050*b*c*t*u
+
+           2    2
+    - 450*c *t*u  - 1500*x)/(b - 3*c) ) * ( (10*df(u,t) + 10*df(u,x,5)
+
+                                                             2  2
+    + 10*df(u,x,3)*c*u + 10*df(u,x,2)*df(u,x)*b - 2*df(u,x)*b *u
+
+                     2              2  2
+    + 7*df(u,x)*b*c*u  - 3*df(u,x)*c *u )/10 )
+
+ = 
+
+                2                   2            2    3              3
+df( (750*df(u,x) *b*t - 2250*df(u,x) *c*t - 100*b *t*u  + 350*b*c*t*u
+
+             2    3
+      - 150*c *t*u  - 1500*u*x)/(b - 3*c), t )
+
++
+
+df( ( - 1500*df(u,t)*df(u,x)*b*t + 4500*df(u,t)*df(u,x)*c*t
+
+      - 1500*df(u,x,4)*df(u,x,2)*b*t + 4500*df(u,x,4)*df(u,x,2)*c*t
+
+                       2    2                         2                  2    2
+      - 300*df(u,x,4)*b *t*u  + 1050*df(u,x,4)*b*c*t*u  - 450*df(u,x,4)*c *t*u
+
+                                        2                     2
+      - 1500*df(u,x,4)*x + 750*df(u,x,3) *b*t - 2250*df(u,x,3) *c*t
+
+                               2
+      + 600*df(u,x,3)*df(u,x)*b *t*u - 2100*df(u,x,3)*df(u,x)*b*c*t*u
+
+                               2                                     2  2
+      + 900*df(u,x,3)*df(u,x)*c *t*u + 1500*df(u,x,3) - 300*df(u,x,2) *b *t*u
+
+                     2                         2  2
+      + 300*df(u,x,2) *b*c*t*u + 1800*df(u,x,2) *c *t*u
+
+                             2  2                           2
+      - 600*df(u,x,2)*df(u,x) *b *t + 2100*df(u,x,2)*df(u,x) *b*c*t
+
+                             2  2                    2      3
+      - 900*df(u,x,2)*df(u,x) *c *t - 300*df(u,x,2)*b *c*t*u
+
+                          2    3                  3    3
+      + 1050*df(u,x,2)*b*c *t*u  - 450*df(u,x,2)*c *t*u  - 1500*df(u,x,2)*c*u*x
+
+                    2        2               2        2              2  3    2
+      - 1500*df(u,x) *a*b*t*u  + 4500*df(u,x) *a*c*t*u  - 300*df(u,x) *b *t*u
+
+                    2  2      2               2    2    2              2
+      + 1950*df(u,x) *b *c*t*u  - 3600*df(u,x) *b*c *t*u  - 750*df(u,x) *b*x
+
+                    2  3    2              2                      2  2
+      + 1350*df(u,x) *c *t*u  + 750*df(u,x) *c*x - 750*df(u,x)*a*u *x
+
+                     2  2  2                    2  2                2  2  2
+      - 150*df(u,x)*b *u *x  + 525*df(u,x)*b*c*u *x  - 225*df(u,x)*c *u *x
+
+                               4    5       3      5        2  2    5
+      + 1500*df(u,x)*c*u + 12*b *t*u  - 84*b *c*t*u  + 183*b *c *t*u
+
+             2  3            3    5            3         4    5        2  3
+      + 100*b *u *x - 126*b*c *t*u  - 350*b*c*u *x + 27*c *t*u  + 150*c *u *x)/(
+
+   b - 3*c), x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+             3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+( 6*x ) * ( ----------------------------------------------------------------- )
+                                            3
+
+ = 
+
+                  2
+df(  - 3*df(u,x)*x , t )
+
++
+
+               2                                  2                    2
+df( 3*df(u,t)*x  + 6*df(u,x,4)*x - df(u,x,3)*b*u*x  + 3*df(u,x,3)*c*u*x
+
+                                              2                    2  2
+ - 6*df(u,x,3) + 2*df(u,x,2)*b*u*x + 2*df(u,x) *b*x + 3*df(u,x)*a*u *x
+
+ - 2*df(u,x)*b*u, x )
+
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+   b
+c=---,
+   3
+
+
+      2
+   9*x          3*df(u,t) + 3*df(u,x,5) + df(u,x,3)*b*u + 3*df(u,x,2)*df(u,x)*b
+( ------ ) * ( -----------------------------------------------------------------
+    b                                          3
+
+ )
+
+ = 
+
+                   3
+      - 3*df(u,x)*x
+df( -----------------, t )
+            b
+
++
+
+                3                2                  3                    3
+df( (3*df(u,t)*x  + 9*df(u,x,4)*x  - df(u,x,3)*b*u*x  + 3*df(u,x,3)*c*u*x
+
+                                          2                           2    2
+      - 18*df(u,x,3)*x + 3*df(u,x,2)*b*u*x  + 18*df(u,x,2) + 3*df(u,x) *b*x
+
+                     2  3                          2
+      + 3*df(u,x)*a*u *x  - 6*df(u,x)*b*u*x + 3*b*u )/b, x )
+
+======================================================
+The function c_392(t) is not constant!
+The function c_372(t,x) is not constant!
+
+There are remaining conditions: {df(c_372,t) + df(c_372,x,5) - c_392}
+for the functions: c_372(t,x), c_392(t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+The function c_443(t) is not constant!
+The function c_372(t,x) is not constant!
+
+There are remaining conditions: {20*df(c_372,t) + 20*df(c_372,x,5) - c_443}
+for the functions: c_372(t,x), c_443(t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+
+Conservation law:
+
+a=0,
+
+
+b=0,
+
+
+c=0,
+
+
+(  - 2*df(u,x,2) ) * ( df(u,t) + df(u,x,5) )
+
+ = 
+
+           2
+df( df(u,x) , t )
+
++
+
+                                                            2
+df(  - 2*df(u,t)*df(u,x) - 2*df(u,x,4)*df(u,x,2) + df(u,x,3)
+
+                                                2              2    2
+ - 2*df(u,x,3)*df(u,x)*c*u - 2*df(u,x,2)*df(u,x) *b - 2*df(u,x) *a*u , x )
+
+======================================================
+
+Conservation law:
+
+      2
+   3*b
+a=------,
+    40
+
+
+   b
+c=---,
+   2
+
+
+                             2
+(  - 4000*df(u,x,2) - 600*b*u  ) * ( (40*df(u,t) + 40*df(u,x,5)
+
+                                                             2  2
+    + 20*df(u,x,3)*b*u + 40*df(u,x,2)*df(u,x)*b + 3*df(u,x)*b *u )/40 )
+
+ = 
+
+                2          3
+df( 2000*df(u,x)  - 200*b*u , t )
+
++
+
+                                                                          2
+df(  - 4000*df(u,t)*df(u,x) - 4000*df(u,x,4)*df(u,x,2) - 600*df(u,x,4)*b*u
+
+                 2
+ + 2000*df(u,x,3)  + 3200*df(u,x,3)*df(u,x)*b*u - 4000*df(u,x,3)*df(u,x)*c*u
+
+                 2                             2                    2  3
+ - 1600*df(u,x,2) *b*u - 1200*df(u,x,2)*df(u,x) *b - 300*df(u,x,2)*b *u
+
+               2    2              2  2  2      3  5
+ - 4000*df(u,x) *a*u  + 300*df(u,x) *b *u  - 9*b *u , x )
+
+======================================================
+
+Conservation law:
+
+      2
+   3*b
+a=------,
+    40
+
+
+   b
+c=---,
+   2
+
+
+                                2    2
+    - 4000*df(u,x,2)*b*t - 600*b *t*u  + 8000*x
+( ---------------------------------------------- ) * ( (40*df(u,t)
+                        b
+
+                                                                            2  2
+    + 40*df(u,x,5) + 20*df(u,x,3)*b*u + 40*df(u,x,2)*df(u,x)*b + 3*df(u,x)*b *u
+
+   )/40 )
+
+ = 
+
+                 2            2    3
+     2000*df(u,x) *b*t - 200*b *t*u  + 8000*u*x
+df( --------------------------------------------, t )
+                         b
+
++
+
+df( ( - 4000*df(u,t)*df(u,x)*b*t - 4000*df(u,x,4)*df(u,x,2)*b*t
+
+                       2    2                                    2
+      - 600*df(u,x,4)*b *t*u  + 8000*df(u,x,4)*x + 2000*df(u,x,3) *b*t
+
+                                2
+      + 3200*df(u,x,3)*df(u,x)*b *t*u - 4000*df(u,x,3)*df(u,x)*b*c*t*u
+
+                            2                       2
+      - 2000*df(u,x,3)*b*u*x  + 4000*df(u,x,3)*c*u*x  - 8000*df(u,x,3)
+
+                      2  2                             2  2
+      - 1600*df(u,x,2) *b *t*u - 1200*df(u,x,2)*df(u,x) *b *t
+
+                       3    3                                      2        2
+      - 300*df(u,x,2)*b *t*u  + 4000*df(u,x,2)*b*u*x - 4000*df(u,x) *a*b*t*u
+
+                   2  3    2               2                       2  2
+      + 300*df(u,x) *b *t*u  + 2000*df(u,x) *b*x + 4000*df(u,x)*a*u *x
+
+                     2  2  2                         4    5        2  3
+      - 300*df(u,x)*b *u *x  - 4000*df(u,x)*b*u - 9*b *t*u  + 200*b *u *x)/b, x
+
+ )
+
+======================================================
+
+Conservation law:
+
+b=0,
+
+
+c=0,
+
+
+   3                                         2
+( --- ) * ( df(u,t) + df(u,x,5) + df(u,x)*a*u  )
+   a
+
+ = 
+
+      - 3*df(u,x)*x
+df( ----------------, t )
+           a
+
++
+
+df( 
+
+                                                                              3
+ 3*df(u,t)*x + 3*df(u,x,4) + 3*df(u,x,3)*c*u*x + 3*df(u,x,2)*df(u,x)*b*x + a*u
+--------------------------------------------------------------------------------
+                                       a
+
+, x )
+
+======================================================
+The function c_425(t) is not constant!
+The function c_372(t,x) is not constant!
+
+There are remaining conditions: {2*df(c_372,t) + 2*df(c_372,x,5) - c_425}
+for the functions: c_372(t,x), c_425(t)
+Corresponding CLs might not be shown below as they
+could be of too low order.
+======================================================
+
+**************************************************************************
+
+CONLAWi can also be used to determine first integrals of ODEs.
+The generality of the ansatz is not just specified by the order.
+For example, the Lorentz system below is a first order system
+therefore any first integrals are zero order expressions.
+The ansatz to be investigated below looks for first integrals of
+the form a1(x,1)+a2(y,t)+a3(x,t)=const. and determines parameters
+s,b,r such that first integrals exist.
+
+--------------------------------------------------------------------------
+
+This is CONLAW1 - a program for calculating conservation laws of DEs
+
+The DEs under investigation are :
+
+df(x,t)= - s*x + s*y
+
+df(y,t)=r*x + x*z - y
+
+df(z,t)= - b*z + x*y
+
+for the function(s): {x,y,z}
+
+======================================================
+A special ansatz of order 0 for the conserved current is investigated.
+
+The function c_584(x) is not constant!
+======================================================
+
+Conservation law:
+
+s=0,
+
+
+r=0,
+
+
+b=1,
+
+
+        2*t
+(  - 2*e   *z ) * ( df(z,t) - x*y + z )
+
++
+
+     2*t
+( 2*e   *y ) * ( df(y,t) - x*z + y )
+
++
+
+( 0 ) * ( df(x,t) )
+
+ = 
+
+     2*t  2    2*t  2
+df( e   *y  - e   *z , t )
+
+======================================================
+
+Conservation law:
+
+s=0,
+
+
+r=0,
+
+
+b=1,
+
+
+( 0 ) * ( df(z,t) - x*y + z )
+
++
+
+( 0 ) * ( df(y,t) - x*z + y )
+
++
+
+( df(c_584,x) ) * ( df(x,t) )
+
+ = 
+
+df( c_584, t )
+
+======================================================
+The function c_584(x) is not constant!
+======================================================
+
+Conservation law:
+
+s=0,
+
+
+r=0,
+
+
+( 0 ) * ( df(z,t) + b*z - x*y )
+
++
+
+( 0 ) * ( df(y,t) - x*z + y )
+
++
+
+( df(c_584,x) ) * ( df(x,t) )
+
+ = 
+
+df( c_584, t )
+
+======================================================
+The function c_586(x) is not constant!
+======================================================
+
+Conservation law:
+
+s=0,
+
+
+( 0 ) * ( df(z,t) + b*z - x*y )
+
++
+
+( 0 ) * ( df(y,t) - r*x - x*z + y )
+
++
+
+( df(c_586,x) ) * ( df(x,t) )
+
+ = 
+
+df( c_586, t )
+
+======================================================
+
+Conservation law:
+
+   1
+s=---,
+   2
+
+
+r=0,
+
+
+b=1,
+
+
+      t
+(  - e  ) * ( df(z,t) - x*y + z )
+
++
+
+( 0 ) * ( df(y,t) - x*z + y )
+
++
+
+     t          2*df(x,t) + x - y
+( 2*e *x ) * ( ------------------- )
+                        2
+
+ = 
+
+     t  2    t
+df( e *x  - e *z, t )
+
+======================================================
+
+Conservation law:
+
+   1
+s=---,
+   2
+
+
+r=0,
+
+
+b=1,
+
+
+        2*t
+(  - 2*e   *z ) * ( df(z,t) - x*y + z )
+
++
+
+     2*t
+( 2*e   *y ) * ( df(y,t) - x*z + y )
+
++
+
+           2*df(x,t) + x - y
+( 0 ) * ( ------------------- )
+                   2
+
+ = 
+
+     2*t  2    2*t  2
+df( e   *y  - e   *z , t )
+
+======================================================
+
+Conservation law:
+
+r=0,
+
+
+b=1,
+
+
+        2*t
+(  - 2*e   *z ) * ( df(z,t) - x*y + z )
+
++
+
+     2*t
+( 2*e   *y ) * ( df(y,t) - x*z + y )
+
++
+
+( 0 ) * ( df(x,t) + s*x - s*y )
+
+ = 
+
+     2*t  2    2*t  2
+df( e   *y  - e   *z , t )
+
+======================================================
+
+Conservation law:
+
+s=1,
+
+
+b=1,
+
+
+        2*t
+(  - 2*e   *z ) * ( df(z,t) - x*y + z )
+
++
+
+     2*t
+( 2*e   *y ) * ( df(y,t) - r*x - x*z + y )
+
++
+
+        2*t
+(  - 2*e   *r*x ) * ( df(x,t) + x - y )
+
+ = 
+
+        2*t    2    2*t  2    2*t  2
+df(  - e   *r*x  + e   *y  - e   *z , t )
+
+======================================================
+
+Conservation law:
+
+b=2*s,
+
+
+        2*s*t
+(  - 2*e      ) * ( df(z,t) + 2*s*z - x*y )
+
++
+
+( 0 ) * ( df(y,t) - r*x - x*z + y )
+
++
+
+      2*s*t
+   2*e     *x
+( ------------ ) * ( df(x,t) + s*x - s*y )
+       s
+
+ = 
+
+           2*s*t        2*s*t  2
+      - 2*e     *s*z + e     *x
+df( -----------------------------, t )
+                  s
+
+======================================================
+
+4: 4: 4: 4: 4: 4: 4: 4: 4: 
+
+Time for test: 216760 ms, plus GC time: 22500 ms
+
+5: 5: 
+Quitting
+Sun Jan  3 23:59:02 MET 1999

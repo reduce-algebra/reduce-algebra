@@ -1,0 +1,10 @@
+# Compile REDUCE help info for Microsoft help compiler format
+
+# The location of the r38 binary is actually a bit uncertain...
+
+../lisp/csl/local/r38  \
+   mkhelpw.red -D@reduce=".." -Dpackage=redhelp -v -l mkhelpw.log
+
+echo "***** Please run 'hcp reduce.hpj' with redhelp.rtf and reduce.hpj"
+echo "         on a Windows machine."
+

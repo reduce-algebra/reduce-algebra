@@ -1,0 +1,62 @@
+
+<A NAME=augment_columns>
+
+<TITLE>augment_columns</TITLE></A>
+<b><a href=r37_idx.html>INDEX</a></b><p><p>
+
+
+
+<B>AUGMENT_COLUMNS</B> _ _ _  _ _ _  _ _ _  _ _ _ <B>operator</B><P>
+<P>
+ 
+Augment columns, stack rows: 
+<P>
+<P>
+ <P> <H3> 
+syntax: </H3>
+<em>augment_columns</em>(&lt;matrix&gt;,&lt;column\_list&gt;) 
+<P>
+<P>
+<P>
+&lt;matrix&gt; :- a matrix. 
+<P>
+<P>
+&lt;column\_list&gt; :- either a positive integer or a list of positive 
+ integers. 
+<P>
+<P>
+<em>augment_columns</em>gets hold of the columns of &lt;matrix&gt; 
+specified in <em>column_list</em> and sticks them together. 
+<P>
+<P>
+<em>stack_rows</em>performs the same task on rows of &lt;matrix&gt;. 
+<P>
+<P>
+ <P> <H3> 
+examples: </H3>
+<P><PRE><TT>
+
+augment_columns(A,{1,2}) 
+
+   
+  [1  2]
+  [    ]
+  [4  5]
+  [    ]
+  [7  8]
+
+
+
+stack_rows(A,{1,3}) 
+
+  [1  2  3]
+  [       ]
+  [7  8  9]
+
+</TT></PRE><P>Related functions: 
+
+<A HREF=r37_0589.html>get_columns</A>, 
+<A HREF=r37_0590.html>get_rows</A>, 
+<A HREF=r37_0615.html>sub_matrix</A>. 
+<P>
+<P>
