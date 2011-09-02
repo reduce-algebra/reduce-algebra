@@ -482,6 +482,57 @@ has previously been declared to {\tt DEPEND} on {\tt X}, in which
 case the derivative is reported as the symbol {\tt df(z,x)}.
 
 
+\subsection{Switches influencing differentiation}
+\hypertarget{switch:COMMUTEDF}{}
+\hypertarget{switch:NOCOMMUTEDF}{}
+\hypertarget{switch:SIMPNONCOMDF}{}
+
+Consider \texttt{df(u,x,y,z)}.  If non of \texttt{x,y,z} are equal to \texttt{u}
+then the order of differentiation is commuted into a canonical form, unless the
+switch \texttt{NOCOMMUTEDF}\ttindex{NOCOMMUTEDF} is turned on (default is off).
+if at least one of \texttt{x,y,z} is equal to \texttt{u} then the order of
+differentiation is \emph{not} commuted and the derivative is emph{not} simplified
+to zero, unless the switch \texttt{COMMUTEDF}\ttindex{COMMUTEDF} is turned on.
+It is off by default.
+
+If \texttt{COMMUTEDF} is off and the switch \texttt{SIMPNONCOMDF}\ttindex{SIMPNONCOMDF}
+is on then simplify as follows:
+\begin{verbatim}
+        DF(U,X,U)        ->  DF(U,X,2) / DF(U,X)
+        DF(U,X,N,U)      ->  DF(U,X,N+1) / DF(U,X)
+\end{verbatim}
+\emph{provided} \texttt{U} depends only on the one variable \texttt{X}.
+This simplification removes the non-commutative aspect of the derivative.
+
+\hypertarget{switch:EXPANDDF}{}
+If the switch \texttt{EXPANDDF}\ttindex{EXPANDDF} is turned on then REDUCE uses
+the chain rule to expand symbolic derivatives of indirectly dependent variables
+provided the result is unambiguous, i.e. provided there is no direct dependence.
+It is off by default.  Thus, for example, given
+\begin{verbatim}
+        DEPEND F,U,V; DEPEND {U,V},X;
+        ON EXPANDDF;
+        DF(F,X)          -> DF(F,U)*DF(U,X) + DF(F,V)*DF(V,X)
+\end{verbatim}
+whereas after
+\begin{verbatim}
+        DEPEND F,X;
+\end{verbatim}
+\texttt{DF(F,X)} does not expand at all (since the result would be ambiguous
+and the algorithm would loop).
+
+\hypertarget{switch:ALLOWDFINT}{}
+\hypertarget{switch:DFINT}{}
+Turning on the switch \texttt{ALLOWDFINT}\ttindex{ALLOWDFINT} allows
+"differentiation under the integral sign", i.e. 
+\begin{verbatim}
+        DF(INT(Y, X), V) -> INT(DF(Y, V), X)
+\end{verbatim}
+if this results in a simplification.  If the switch \texttt{DFINT}\ttindex{DFINT}
+is also turned on then this happens regardless of whether the result simplifies.
+Both switches are off by default.
+
+
 \subsection{Adding Differentiation Rules}
 \hypertarget{command:LET}{}
 
