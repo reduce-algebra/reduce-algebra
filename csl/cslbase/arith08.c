@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 72a64eb9 01-Sep-2011 */
+/* Signature: 4c175fce 02-Sep-2011 */
 
 #include "headers.h"
 
@@ -1057,154 +1057,21 @@ Lisp_Object Ltruncate(Lisp_Object nil, Lisp_Object a)
     return lisp_fix(a, FIX_TRUNCATE);
 }
 
-#if 0
-
 /*
- * This is an OLD version from Reduce that got replaced long ago but that
- * had been my model for what was to be implemented in CSL.
+ * Commentary on these "safe" functions:
  *
- *  symbolic procedure safe!-fp!-plus(x,y);
- *     if zerop x then y else if zerop y then x else
- *     begin scalar u;
- *        if x>0.0 and y>0.0 then
- *           if x<!!plumax and y<!!plumax then go to ret else return nil;
- *        if x<0.0 and y<0.0 then
- *           if -x<!!plumax and -y<!!plumax then go to ret else return nil;
- *        if abs x<!!plumin and abs y<!!plumin then return nil;
- *   ret: return
- *          if (u := plus2(x,y))=0.0
- *             or x>0.0 and y>0.0 or x<0.0 and y<0.0 then u
- *          else if abs u<(abs x)*!!fleps1 then 0.0 else u end;
- *
- *
- * Now the code that I implement does not actually do the above, and it
- * contains a comments that the exact place where trouble is detected is
- * not vital. Well now (2011) I want the PSL and CSL results to match bit for
- * bit, and so I want my implementation here to do EXACTLY what the Reduce
- * source code asks for....
+ * The portable Reduce code is very conservative in the case of
+ * multiplication and division, and this is perhaps the sort of
+ * operation that can be speeded up by implementation at a kernel
+ * level. But at present I am keeping C code that should EXACTLY
+ * match the portable code in here - albeit "ifdef'd" out.
  */
 
-/*
- * The following macro is expected to select out the 32-bit word within a
- * floating point number that has the exponent field packed within it.
- * On IEEE-format machines I expect to find the exponent in the
- * 0x7ff00000 bits within this word. It sets i to the top half of the
- * floating value d, and worries somewhat about GCCs strict aliasing
- * optimisation!! Specifically it avoids the use of pointers in the
- * punning that has to go on.
- */
 
-#define top_half(ii, d)                          \
-  { union { double f; int32_t i[2]; } w;         \
-    w.f = d;                                     \
-    ii = w.i[(~current_fp_rep) & FP_WORD_ORDER]; \
-  }
-
-
-
-static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
-/*
- * safe!-fp!-plus must always be given floating point arguments.  In
- * most reasonable cases it just returns the floating point sum.  If
- * there was some chance that the sum might either overflow or underflow
- * then the value NIL is returned instead.  The exact place where this
- * function starts to report overflow is not precisely defined - all that
- * is guaranteed is that if a result is returned then it will be of full
- * precision.
- */
-{
-    Lisp_Object nil = C_nil;
-    double aa, bb, cc;
-    int32_t ah, bh;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-plus", a, b);
-/*
- * I accept here that adding 0.0 to anything is always possible without
- * problem.
- */
-    if ((aa = double_float_val(a)) == 0.0) return onevalue(b);
-    if ((bb = double_float_val(b)) == 0.0) return onevalue(a);
-    top_half(ah, aa);
-    top_half(bh, bb);
-/*
- * Here I am going to assume IEEE-format numbers. I hope that I have
- * picked out the word containing the exponent and that it is positioned in
- * the word where I expect.
- */
-/*
- * I deem overflow POSSIBLE if both numbers have the same sign and if at
- * least one of them has an exponent 0x7fe (i.e. the highest exponent that
- * a non-infinite number can have).
- */
-    if (ah >= 0)
-    {   if (bh >= 0)
-        {   if (ah >= 0x7fe00000 || bh >= 0x7fe00000) return onevalue(nil);
-            cc = aa + bb;
-        }
-        else
-/*
- * I deem underflow POSSIBLE if the numbers have opposite signs and BOTH
- * of them have exponents less than 0x035 (which is 53 in decimal, and
- * IEEE-format numbers have 53-bit mantissas.  The critical case would
- * be the subtraction
- *   (53) 1 00000000000000000000 00000000000000000000000000000001
- * - (53) 1 00000000000000000000 00000000000000000000000000000000
- * where you see the LSB (which is all that is left after the subtraction)
- * has to be shifted left 52 bits to get to the position of the implied
- * leading 1 bit in the mantissa.  As that happens 52 gets subtracted
- * from the exponent, leaving it as 1, the smallest exponent for a normalised
- * non-zero value.
- */
-        {   double eps, ra;
-            bh &= 0x7fffffff;
-            if (ah < 0x03500000 && bh < 0x03500000) return onevalue(nil);
-/*
- * The next few lines check to see if addition has led to cancellation of
- * leading digits to an extent greater than !!fleps1.  The environent cell
- * of safe!-fp!-plus must be set to !!fleps, and then the value cell of
- * this symbol is accessed to obtain the limit.
- */
-            eps = 0.0;
-            if (is_symbol(env))
-            {   Lisp_Object ve = qvalue(env);
-                if (is_float(ve)) eps = double_float_val(ve);
-            }
-            cc = aa + bb;
-            ra = cc/aa;
-            if (ra < 0.0) ra = -ra;
-            if (ra < eps) cc = 0.0; /* Force to zero if too small */
-        }
-    }
-    else
-    {   if (bh >= 0)
-        {   double eps, ra;
-            ah &= 0x7fffffff;
-            if (ah < 0x03500000 && bh < 0x03500000) return onevalue(nil);
-            eps = 0.0;
-            if (is_symbol(env))
-            {   Lisp_Object ve = qvalue(env);
-                if (is_float(ve)) eps = double_float_val(ve);
-            }
-            cc = aa + bb;
-            ra = cc/aa;
-            if (ra < 0.0) ra = -ra;
-            if (ra < eps) cc = 0.0;
-        }
-        else
-        {   ah &= 0x7fffffff;
-            bh &= 0x7fffffff;
-            if (ah >= 0x7fe00000 || bh >= 0x7fe00000) return onevalue(nil);
-            cc = aa + bb;
-        }
-    }
-    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
-}
-
-#endif
+#ifdef MATCH_REDUCE_CODE_IN_ROUNDED_RED
 
 /*
- * This is the newer Reduce code - and now I want to behave EXACTLY as it
+ * This is the Reduce code - and perhaps I want to behave EXACTLY as it
  * indicates...
  *
  * symbolic procedure safe!-fp!-plus(x,y);
@@ -1268,70 +1135,6 @@ static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object x, Lisp_Object y)
     return onevalue(x);
 }
 
-#if 0
-
-/*
- *  symbolic procedure safe!-fp!-times(x,y);
- *   if zerop x or zerop y then 0.0
- *   else if x=1.0 then y else if y=1.0 then x else
- *     begin scalar u,v; u := abs x; v := abs y;
- *        if u>=1.0 and u<=!!timmax then
- *           if v<=!!timmax then go to ret else return nil;
- *        if u>!!timmax then if v<=1.0 then go to ret else return nil;
- *        if u<1.0 and u>=!!timmin then
- *           if v>=!!timmin then go to ret else return nil;
- *        if u<!!timmin and v<1.0 then return nil;
- *   ret: return times2(x,y) end;
- */
-
-static Lisp_Object Lsafe_fp_times(Lisp_Object nil,
-                                  Lisp_Object a, Lisp_Object b)
-/*
- * safe!-fp!-times must always be given floating point arguments.  In
- * most reasonable cases it just returns the floating point product.  If
- * there was some chance that the product might either overflow or underflow
- * then the value NIL is returned instead.  REDUCE requires that if this
- * function returns a non-overflow result than two such returned values
- * can be added witjout fear of overflow, as in a*b+c*d.  Hence I ought to
- * report trouble slightly earlier than I might otherwise. - but REDUCE is
- * being changed to remove this oddity, and it seems it could only cause
- * trouble in (1.0,max)*(max, 1.0) complex multiplication, so I am not
- * going to worry...
- */
-{
-    double aa, bb, cc;
-    int32_t ah, bh;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-times", a, b);
-/*
- * Multiplication by zero is handled as a special case here - doing so
- * means that I do not have to worry about the special case of zero
- * exponents later on, and it also avoids allocating fresh space to hold
- * a new floating point zero value.
- */
-    if ((aa = double_float_val(a)) == 0.0) return onevalue(a);
-    if ((bb = double_float_val(b)) == 0.0) return onevalue(b);
-    top_half(ah, aa);
-    top_half(bh, bb);
-/*
- * Here I am going to assume IEEE-format numbers. I hope that I have
- * picked out the word containing the exponent and that it is positioned in
- * the word where I expect.
- */
-    ah = (ah >> 20) & 0x7ff;
-    bh = (bh >> 20) & 0x7ff;
-    ah = ah + bh;
-/*
- * I can estimate the value of the product by adding the exponents of the
- * two operands.
- */
-    if (ah < 0x400 || ah >= 0xbfd) return onevalue(nil);
-    cc = aa * bb;
-    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
-}
-
-#endif
 
 /*
  *  symbolic procedure safe!-fp!-times(x,y);
@@ -1390,46 +1193,6 @@ ret:
 }
 
 
-#if 0
-
-/*
- *  symbolic procedure safe!-fp!-quot(x,y);
- *   if zerop y then rdqoterr()  % error(0, "zero divisor in quotient")
- *   else if zerop x then 0.0 else if y=1.0 then x else
- *     begin scalar u,v; u := abs x; v := abs y;
- *        if u>=1.0 and u<=!!timmax then
- *           if v>=!!timmin then go to ret else return nil;
- *        if u>!!timmax then if v>=1.0 then go to ret else return nil;
- *        if u<1.0 and u>=!!timmin then
- *           if v<=!!timmax then go to ret else return nil;
- *        if u<!!timmin and v>1.0 then return nil;
- *   ret: return quotient(x,y) end;
- */
-
-static Lisp_Object Lsafe_fp_quot(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
-{
-    double aa, bb, cc;
-    int32_t ah, bh;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-quot", a, b);
-    if ((aa = double_float_val(a)) == 0.0) return onevalue(a);
-/*
- * I pass division by zero back to the general case here.
- */
-    if ((bb = double_float_val(b)) == 0.0) return onevalue(nil);
-    top_half(ah, aa);
-    top_half(bh, bb);
-    ah = (ah >> 20) & 0x7ff;
-    bh = (bh >> 20) & 0x7ff;
-    ah = ah - bh;
-    if (ah <= -0x3fe || ah >= 0x3fe) return onevalue(nil);
-    cc = aa / bb;
-    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
-    errexit();
-    return onevalue(a);
-}
-
-#endif
-
 /*
  *  symbolic procedure safe!-fp!-quot(x,y);
  *   if zerop y then rdqoterr()  % error(0, "zero divisor in quotient")
@@ -1485,98 +1248,152 @@ ret:
     return onevalue(x);
 }
 
-
-#if 0
+#else /* Portable old code */
 
 /*
- * This seems no longer to be used...
- *
- *  symbolic procedure safe!-fp!-pl(x,y);
- *    % floating plus protect from under- and over-flows but no zero
- *    % result check.
- *     if zerop x then y else if zerop y then x
- *     else if x>0 and y>0 then
- *        if x<!!plumax and y<!!plumax then plus2(x,y) else nil
- *     else if x<0 and y<0 then
- *        if (-x<!!plumax and -y<!!plumax) then plus2(x,y) else nil
- *     else if abs x<!!plumin or abs y<!!plumin then nil else plus2(x,y);
+ * Now some new code that is expected to manage to get closer to the
+ * limit in exploiting the floating point hardware. Furthermore I hope
+ * to bring PSL optimised versions and this code into exact agreement.
  */
 
-static Lisp_Object Lsafe_fp_pl(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
+
+/*
+ * The following macro is expected to select out the 32-bit word within a
+ * floating point number that has the exponent field packed within it.
+ * On IEEE-format machines I expect to find the exponent in the
+ * 0x7ff00000 bits within this word. It sets i to the top half of the
+ * floating value d, and worries somewhat about GCCs strict aliasing
+ * optimisation!! Specifically it avoids the use of pointers in the
+ * punning that has to go on.
+ */
+
+#define top_half(ii, d)                          \
+  { union { double f; int32_t i[2]; } w;         \
+    w.f = d;                                     \
+    ii = w.i[(~current_fp_rep) & FP_WORD_ORDER]; \
+  }
+
+#define BIAS   1023
+/*
+ * The MAX and MIN exponents indicated here are the limiting ones
+ * for valid normalised numbers.
+ */
+#define MAXEXP 1023
+#define MINEXP -1022
+
+static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 {
+    Lisp_Object nil = C_nil;
     double aa, bb, cc;
-    int32_t ah, bh;
-    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-pl", a, b);
+    int32_t ah, bh, s;
+    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-plus", a, b);
     if ((aa = double_float_val(a)) == 0.0) return onevalue(b);
     if ((bb = double_float_val(b)) == 0.0) return onevalue(a);
     top_half(ah, aa);
     top_half(bh, bb);
-    if (ah >= 0)
-    {   if (bh >= 0)
-        {   if (ah >= 0x7fe00000 || bh >= 0x7fe00000) return onevalue(nil);
-        }
-        else
-        {   bh &= 0x7fffffff;
-            if (ah < 0x03500000 && bh < 0x03500000) return onevalue(nil);
-        }
+    s = (ah ^ bh) & 0x80000000;
+    ah = ((ah >> 20) & 0x7ff) - BIAS;
+    bh = ((bh >> 20) & 0x7ff) - BIAS;
+/* I will reject infinities, NaNs and sub-normal numbers here. */
+    if (ah == MAXEXP-1 || ah == MINEXP-1 ||
+        bh == MAXEXP+1 || bh == MINEXP+1) return onevalue(nil);
+/*
+ * The sum of two numbers that have the same sign can overflow if either
+ * has an exponent that is the maximum valid in a finite value. In
+ * other cases I will always accept machine arithmetic.
+ */
+    if (s == 0)
+    {   if (ah >= MAXEXP || bh >= MAXEXP) return onevalue(nil);
+        a = make_boxfloat(aa+bb, TYPE_DOUBLE_FLOAT);
+        errexit();
+        return onevalue(a);
     }
-    else
-    {   if (bh >= 0)
-        {   ah &= 0x7fffffff;
-            if (ah < 0x03500000 && bh < 0x03500000) return onevalue(nil);
-        }
-        else
-        {   ah &= 0x7fffffff;
-            bh &= 0x7fffffff;
-            if (ah >= 0x7fe00000 || bh >= 0x7fe00000) return onevalue(nil);
-        }
-    }
-    cc = aa + bb;
+/*
+ * Sum might underflow into the range of subnormal numbers if the
+ * two inputs have different signs and both are small
+ */
+    else if (ah <= MINEXP+52 && bh <= MINEXP+52) return onevalue(nil);
+/*
+ * Now I have two numbers whose signs differ and neither is utterly tiny.
+ * The code in Reduce asks me to force the result to zero prematurely
+ * based on a value !!fleps1. It is not at all clear to me that that
+ * would be a good idea so as an experiment I will ignore that and
+ * leave the normal cancellation of bits to give a small result when that
+ * is the most accurate one I can produce.
+ */
+    a = make_boxfloat(aa+bb, TYPE_DOUBLE_FLOAT);
+    errexit();
+    return onevalue(a);
+}
+
+static Lisp_Object Lsafe_fp_times(Lisp_Object env, Lisp_Object a, Lisp_Object b)
+{
+    Lisp_Object nil = C_nil;
+    double aa, bb, cc;
+    int32_t ah, bh;
+    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-times", a, b);
+    if ((aa = double_float_val(a)) == 0.0) return onevalue(a);
+    if ((bb = double_float_val(b)) == 0.0) return onevalue(b);
+    if (aa == 1.0) return onevalue(b);
+    if (bb == 1.0) return onevalue(a);
+    top_half(ah, aa);
+    top_half(bh, bb);
+    ah = ((ah >> 20) & 0x7ff) - BIAS;
+    bh = ((bh >> 20) & 0x7ff) - BIAS;
+/* I will reject infinities, NaNs and sub-normal numbers here. */
+    if (ah == MAXEXP+1 || ah == MINEXP-1 ||
+        bh == MAXEXP+1 || bh == MINEXP-1) return onevalue(nil);
+    ah = ah + bh;
+/*
+ * When multiplying, the exponent of the result can be one higher than
+ * the sum of the exponents of the operands, so to be certain that
+ * I will not get overflow I stop one early here.
+ */
+    if (ah <= MINEXP+1 || ah >= MAXEXP-1) return onevalue(nil);
+    cc = aa * bb;
     a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
     errexit();
     return onevalue(a);
 }
 
-/*
- *  symbolic procedure safe!-fp!-pl0(x,y);
- *    % protects floating plus against under-flow only.
- *     if zerop x then y else if zerop y then x
- *     else if abs x<!!plumin and abs y<!!plumin then nil else plus2(x,y);
- *
- * implement as safe!-fp!-pl without MUCH loss of speed.
- */  
-
-static Lisp_Object Llose_precision(Lisp_Object nil,
-                                   Lisp_Object a, Lisp_Object n)
+static Lisp_Object Lsafe_fp_quot(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 {
-    double aa;
-    char buffer[64];
-    int32_t nn;
-    if (!is_float(a) || !is_fixnum(n)) return aerror2("lose_precision", a, n);
-    nn = int_of_fixnum(n);
-    if (nn <= 0 || nn >= 20) return onevalue(a);
-    sprintf(buffer, "%.*g", (int)nn, double_float_val(a));
-    if (sscanf(buffer, "%lg", &aa) != 1) return aerror("lose-precision");
-    a = make_boxfloat(aa, TYPE_DOUBLE_FLOAT);
+    Lisp_Object nil = C_nil;
+    double aa, bb, cc;
+    int32_t ah, bh;
+    if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-quot", a, b);
+    if ((aa = double_float_val(a)) == 0.0) return onevalue(a);
+    if ((bb = double_float_val(b)) == 0.0)
+        return aerror("divisor is zero in quotient");
+    if (bb == 1.0) return onevalue(a);
+    top_half(ah, aa);
+    top_half(bh, bb);
+    ah = ((ah >> 20) & 0x7ff) - BIAS;
+    bh = ((bh >> 20) & 0x7ff) - BIAS;
+    if (ah == MAXEXP+1 || ah == MINEXP-1 ||
+        bh == MAXEXP+1 || bh == MINEXP-1) return onevalue(nil);
+    ah = ah - bh;
+    if (ah <= MINEXP+1 || ah >= MAXEXP-1) return onevalue(nil);
+    cc = aa / bb;
+    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
     errexit();
     return onevalue(a);
 }
 
-#endif
+#endif /* Portable old code */
+
 
 
 setup_type const arith08_setup[] =
 {
 /*
  * The next few are JUST for REDUCE, but they are expected to speed up
- * rounded-mode arithmetic rather a lot.
+ * rounded-mode arithmetic rather a lot. I want them to match the behaviour
+ * or corresponding specialist code for PSL...
  */
-/*  {"lose-precision",          too_few_2, Llose_precision, wrong_no_2}, */
     {"safe-fp-plus",            too_few_2, Lsafe_fp_plus, wrong_no_2},
     {"safe-fp-times",           too_few_2, Lsafe_fp_times, wrong_no_2},
     {"safe-fp-quot",            too_few_2, Lsafe_fp_quot, wrong_no_2},
-/*  {"safe-fp-pl",              too_few_2, Lsafe_fp_pl, wrong_no_2}, */
-/*  {"safe-fp-pl0",             too_few_2, Lsafe_fp_pl, wrong_no_2}, */
 /* End of REDUCE specialities */
     {"ceiling",                 Lceiling, Lceiling_2, wrong_no_1},
     {"floor",                   Lfloor, Lfloor_2, wrong_no_1},

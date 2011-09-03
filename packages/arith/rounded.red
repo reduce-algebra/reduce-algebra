@@ -574,7 +574,8 @@ symbolic procedure hexfloat1 w1;
       if w1 = 0.0 then return "0.0";
 % The test that follows appears to behave OK on at least CSL and PSL on
 % some Linux systems...
-      if w1 = 0.5*w1 then <<
+      if not eqn(w1, w1) then return "NaN"
+      else if w1 = 0.5*w1 then <<
          if w1 > 0.0 then return "inf"
          else if w1 < 0.0 then return "-inf"
          else return "NaN" >>;
