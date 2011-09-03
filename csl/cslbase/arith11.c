@@ -39,7 +39,7 @@
 
 
 
-/* Signature: 7dd82714 24-May-2008 */
+/* Signature: 2d97cdf5 02-Sep-2011 */
 
 
 #include "headers.h"
@@ -1129,7 +1129,20 @@ static CSLbool numeqff(Lisp_Object a, Lisp_Object b)
 CSLbool numeq2(Lisp_Object a, Lisp_Object b)
 {
 #ifndef COMMON
-    if (a == b) return YES;
+/*
+ * Hmmm - arranging that numbers that are EQ are treated as being EQN
+ * is possibly incorrect as regards floating point numbers that are
+ * both NaNs. Hence I will not do this ever. The consequence is that cases
+ * of comparisons that are EQ will neverthless need to go through the
+ * type-dispatch code. This will notably apply to the case of fixnums
+ * where "==" style equality testing would have been valid. So there is
+ * a cost involved in gettiing answer correct! The Common Lisp variant
+ * used to avoid the early test in order that it could check that the
+ * operands really were numeric and complain if not. 
+ */
+/*
+ *  if (a == b) return YES;
+ */
 #endif
     switch ((int)a & TAG_BITS)
     {
@@ -1137,11 +1150,7 @@ case TAG_FIXNUM:
         switch ((int)b & TAG_BITS)
         {
     case TAG_FIXNUM:
-#ifdef COMMON
             return (a == b);
-#else
-            return NO;
-#endif
 #ifdef COMMON
     case TAG_SFLOAT:
             return numeqis(a, b);
@@ -1151,7 +1160,7 @@ case TAG_FIXNUM:
                 switch (hb)
                 {
         case TYPE_BIGNUM:
-                return 0;
+                return 0; /* fixnum can not be equal to a bignum */
 #ifdef COMMON
         case TYPE_RATNUM:
                 return 0;
@@ -1174,6 +1183,10 @@ case TAG_SFLOAT:
     case TAG_FIXNUM:
             return numeqsi(a, b);
     case TAG_SFLOAT:
+/*
+ * I take a decision here that short floats will not honour the idea
+ * of NaNs in this comparison.
+ */
             return (a == b) ||
             (a == TAG_SFLOAT && b == TAG_SFLOAT|0x80000000) ||
             (a == TAG_SFLOAT|0x80000000 && b == TAG_SFLOAT); /* !!! */
