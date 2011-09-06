@@ -58,12 +58,12 @@ operator g;
 
 off expanddf;
 
-depend g(v),A;
+depend g(v),A1;
 
-df(df(int(g(v),v),A),v);
+df(df(int(g(v),v),A1),v);
 
 on expanddf;
 
-df(df(int(g(v),v),A),v);
+df(df(int(g(v),v),A1),v);
 
 end;

@@ -142,7 +142,7 @@ on expanddf;
 df(f(r),r,x);
 
 
-df(r,x)*(df(f(r),r,f(r))*df(f(r),r) + df(f(r),r,2))
+df(f(r),r)*df(r,x)
 
 
 operator g;
@@ -153,24 +153,24 @@ off expanddf;
 
 
 
-depend g(v),A;
+depend g(v),A1;
 
 
 
-df(df(int(g(v),v),A),v);
+df(df(int(g(v),v),A1),v);
 
 
-df(g(v),a)
+df(g(v),a1)
 
 
 on expanddf;
 
 
 
-df(df(int(g(v),v),A),v);
+df(df(int(g(v),v),A1),v);
 
 
-df(g(v),a)
+df(g(v),a1)
 
 
 end;

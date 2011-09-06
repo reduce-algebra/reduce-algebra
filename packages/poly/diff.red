@@ -32,7 +32,7 @@ module diff; % Differentiation package.
 
 fluid '(!*depend frlis!* powlis!* subfg!* wtl!* depl!*);
 
-fluid '(!*allowdfint !*dfint !*intflag!*);
+fluid '(!*allowdfint !*dfint !*expanddf !*intflag!*);
 
 global '(mcond!*);
 
@@ -216,7 +216,7 @@ symbolic procedure diffp(u,v);
         z := cdr u;
         w := nil ./ 1;
         % computation of kernel derivative.
-	repeat <<
+        repeat <<
           if caar y
             then w := addsq(multsq(car y,simp subla(pair(caar x,z),
                                                     cdar x)),
@@ -253,7 +253,7 @@ symbolic procedure diffp(u,v);
         % then (essentially) depl!* = ((b v) (a v) (u b a))
         if !*expanddf
            and (not (x := atsoc(u,powlis!*)) or not depends(cadddr x,v))
-           and (x := atsoc(u, depl!*)) and not(v memq (x:=cdr x)) then <<
+           and (null(x := atsoc(u, depl!*)) or not(v memq (x:=cdr x))) then <<
            w := df!-chain!-rule(u, v, x);
            go to e
         >>;
@@ -276,7 +276,7 @@ symbolic procedure diffp(u,v);
                     w := quotsq(simp{'df,u,x},simp{'df,v,x});
                     go to e
                  >>
-%               >>
+%              >>
            else if eqcar(cadr u, 'int) then
               % (df (df (int F x) A) v) ==> (df (df (int F x) v) A) ?
               % Commute the derivatives to differentiate the integral?
@@ -303,13 +303,14 @@ symbolic procedure diffp(u,v);
                        else w := 'df . w
         >> else w := {'df,u,v};
    j:   if (x := opmtch w) then w := simp x
-         else if not depends(u,v)
+         else if not depends(u:=cadr w,v)
                  and (not (x:= atsoc(u,powlis!*))
                        or not depends(cadddr x,v))
                  and null !*depend then return nil ./ 1
-         else if !*expanddf and not atom u
+         else if !*expanddf and not atom u and not(car u eq 'int)
                  and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
-	  then <<
+                 and (null(x := atsoc(u, depl!*)) or not(v memq (x:=cdr x)))
+          then <<
             % at this point at least one of the expressions in cdr u
             % depends on v. Go through cdr u collecting kernels
             % but check that none of them has an explicit dependence on v
