@@ -215,14 +215,15 @@ symbolic procedure diffp(u,v);
         y := reverse w;
         z := cdr u;
         w := nil ./ 1;
-    b:  % computation of kernel derivative.
-        if caar y
-          then w := addsq(multsq(car y,simp subla(pair(caar x,z),
-                                                   cdar x)),
-                          w);
-        x := cdr x;
-        y := cdr y;
-        if y then go to b;
+        % computation of kernel derivative.
+	repeat <<
+          if caar y
+            then w := addsq(multsq(car y,simp subla(pair(caar x,z),
+                                                    cdar x)),
+                            w);
+          x := cdr x;
+          y := cdr y >>
+         until null y;
     c:  % save calculated deriv in case it is used again.
         % if x := atsoc(u,dsubl!*) then go to d
         %  else x := u . nil;
@@ -247,13 +248,13 @@ symbolic procedure diffp(u,v);
            and null !*depend
           then return nil ./ 1;
         % Derivative of a dependent identifier; maybe apply chain
-        % rule.  Suppose u(v) = u(a(u),b(u),...), i.e. given
+        % rule.  Suppose u(v) = u(a(v),b(v),...), i.e. given
         % depend {u}, a, b, {a, b}, v;
         % then (essentially) depl!* = ((b v) (a v) (u b a))
-        if !*expanddf and not(v memq (x:=cdr atsoc(u, depl!*))) then <<
-           w := nil ./ 1;
-           for each a in x do
-              w := addsq(w, multsq(simp{'df,u,a},simp{'df,a,v}));
+        if !*expanddf
+           and (not (x := atsoc(u,powlis!*)) or not depends(cadddr x,v))
+           and (x := atsoc(u, depl!*)) and not(v memq (x:=cdr x)) then <<
+           w := df!-chain!-rule(u, v, x);
            go to e
         >>;
         w := list('df,u,v);
@@ -261,7 +262,7 @@ symbolic procedure diffp(u,v);
         go to e;
     h:  % Final check for possible kernel deriv.
         if car u eq 'df then <<         % multiple derivative
-           if cadr u eq v then
+           if cadr u eq v then %<<
               % (df (df v x y z ...) v) ==> 0 if commutedf
               if !*commutedf and null !*depend then return nil ./ 1
               else if !*simpnoncomdf and (w:=atsoc(v, depl!*))
@@ -275,6 +276,7 @@ symbolic procedure diffp(u,v);
                     w := quotsq(simp{'df,u,x},simp{'df,v,x});
                     go to e
                  >>
+%               >>
            else if eqcar(cadr u, 'int) then
               % (df (df (int F x) A) v) ==> (df (df (int F x) v) A) ?
               % Commute the derivatives to differentiate the integral?
@@ -301,9 +303,45 @@ symbolic procedure diffp(u,v);
                        else w := 'df . w
         >> else w := {'df,u,v};
    j:   if (x := opmtch w) then w := simp x
-         else if not depends(u,v) and null !*depend then return nil ./ 1
+         else if not depends(u,v)
+                 and (not (x:= atsoc(u,powlis!*))
+                       or not depends(cadddr x,v))
+                 and null !*depend then return nil ./ 1
+         else if !*expanddf and not atom u
+                 and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
+	  then <<
+            % at this point at least one of the expressions in cdr u
+            % depends on v. Go through cdr u collecting kernels
+            % but check that none of them has an explicit dependence on v
+            x := get!-all!-kernels cdr u;
+          %  if smember(v,x) then <<
+            if member(v,x) then <<
+              % explicit dependence on v found
+              w := mksq(w,1);
+              go to e>>
+             else w := df!-chain!-rule(u, v, x)
+          >>
          else w := mksq(w,1);
       go to e
+   end;
+
+symbolic procedure get!-all!-kernels(plis);
+   % plis is a list of expressions in prefix form
+   % result is a list of all kernels in the simplified expressions
+   if atom plis then nil
+    else union((union(kernels numr sq,kernels denr sq)
+                  where sq := simp car plis),
+               get!-all!-kernels(cdr plis));
+
+symbolic procedure df!-chain!-rule(u, v, klis);
+   % compute the derivative of u w.r.t. v with intermediate
+   %  variables from klis, via the chain rule
+   % returns a s.q.
+   begin scalar w;
+     w := nil ./ 1;
+     for each krnl in klis do
+       w := addsq(w, multsq(simp{'df,u,krnl},simp{'df,krnl,v}));
+     return w;
    end;
 
 symbolic procedure dfform_int(u, v, n);
