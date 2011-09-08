@@ -253,7 +253,7 @@ symbolic procedure diffp(u,v);
         % then (essentially) depl!* = ((b v) (a v) (u b a))
         if !*expanddf
            and (not (x := atsoc(u,powlis!*)) or not depends(cadddr x,v))
-           and (null(x := atsoc(u, depl!*)) or not(v memq (x:=cdr x))) then <<
+           and (x := atsoc(u, depl!*)) and not(v memq (x:=cdr x)) then <<
            w := df!-chain!-rule(u, v, x);
            go to e
         >>;
@@ -307,21 +307,32 @@ symbolic procedure diffp(u,v);
                  and (not (x:= atsoc(u,powlis!*))
                        or not depends(cadddr x,v))
                  and null !*depend then return nil ./ 1
+%         else if !*expanddf and not atom u 
          else if !*expanddf and not atom u and not(car u eq 'int)
                  and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
-                 and (null(x := atsoc(u, depl!*)) or not(v memq (x:=cdr x)))
           then <<
-            % at this point at least one of the expressions in cdr u
-            % depends on v. Go through cdr u collecting kernels
-            % but check that none of them has an explicit dependence on v
-            x := get!-all!-kernels cdr u;
-          %  if smember(v,x) then <<
-            if member(v,x) then <<
-              % explicit dependence on v found
-              w := mksq(w,1);
-              go to e>>
-             else w := df!-chain!-rule(u, v, x)
-          >>
+            % first check for declared dependency of kernel u on v
+            x := assoc(u, depl!*);
+            % then check whether anything in cdr u has an explicit
+            % dependence on v by collecting all kernels in cdr u
+            y := (cdr u and get!-all!-kernels cdr u);
+            % but take care to exclude the kernel v when checking dependencies
+            if x and y and ldepends(delete(v,y),v) then <<
+               % possible inconsistent dependencies, do not apply chain rule
+               msgpri("Possible inconsistent dependencies in",u,
+                      nil,nil,nil);
+               w := mksq(w,1) >>
+             else if x then
+                % declared dependency
+                if (v memq (x:=cdr x))
+                  then w := mksq(w,1)
+                 else w := df!-chain!-rule(u, v, x)
+             else if y then
+              % possible dependency of kernel arglist on v
+              % note: maybe use smember instead of member???
+              w := if member(v,y) then mksq(w,1) else df!-chain!-rule(u, v, y)
+             else w := mksq(w,1)
+           >>
          else w := mksq(w,1);
       go to e
    end;

@@ -66,4 +66,22 @@ on expanddf;
 
 df(df(int(g(v),v),A1),v);
 
+% test inconsistent dependencies
+
+operator h;
+
+depend u1,a2,b1;
+
+depend {a2,b1,c1},v1;
+
+depend h(u1),a2,b1,c1;
+
+off expanddf;
+
+df(h(u1),v1);
+
+on expanddf;
+
+df(h(u1),v1);
+
 end;
