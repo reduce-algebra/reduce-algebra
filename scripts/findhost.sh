@@ -89,9 +89,9 @@ esac
 
 if test "x$1" = "x--short"
 then
-  variant=`$here/findos.sh short`
+  variant=`"$here/findos.sh" short`
 else
-  variant=`$here/findos.sh`
+  variant=`"$here/findos.sh"`
 fi
 
 # I once tried to do special things for when running under msys
