@@ -31,7 +31,8 @@ module part;  % Access and updates parts of an algebraic expression.
 fluid '(!*intstr);
 
 symbolic procedure revalpart u;
-   begin scalar !*intstr,bool,expn,v,z;
+   if null u then rerror(alg,201,"part called without arguments")
+    else begin scalar !*intstr,bool,expn,v,z;
       !*intstr := t;   % To make following result in output form.
       expn := if (z := getrtype car u) eq 'list then listeval0 car u
                else reval car u;
@@ -92,7 +93,8 @@ flag('(part),'immediate);
 
 symbolic procedure revalsetpart u;
    % Simplifies a SETPART expression.
-   begin scalar !*intstr,x,y;
+   if null cdr u then rerror(alg,201,"part called without arguments")
+    else begin scalar !*intstr,x,y;
       x := reverse cdr u;
       !*intstr := t;
       y := reval car u;

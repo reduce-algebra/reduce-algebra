@@ -32,6 +32,10 @@ global '(inputbuflis!* resultbuflis!* ws);
 
 symbolic procedure forminput(u,vars,mode);
    begin scalar x;
+      if length cdr u neq 1
+        then rerror('alg,1,list("input called with",
+                                length cdr u,
+                                "arguments instead of 1"));
       u := cadr u; if eqcar(u,'!:int!:) then u := cadr u;
       if null(x := assoc(u,inputbuflis!*))
         then rerror(alg,1,list("Entry",u,"not found"));
@@ -42,6 +46,10 @@ put('input,'formfn,'forminput);
 
 symbolic procedure formws(u,vars,mode);
    begin scalar x;
+      if length cdr u neq 1
+        then rerror('alg,1,list("ws called with",
+                                length cdr u,
+                                "arguments instead of 1"));
       u := cadr u; if eqcar(u,'!:int!:) then u := cadr u;
       if x := assoc(u,resultbuflis!*) then return mkquote cdr x
        else rerror(alg,2,list("Entry",u,"not found"))
