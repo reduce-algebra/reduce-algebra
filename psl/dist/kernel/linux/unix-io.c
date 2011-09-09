@@ -210,7 +210,6 @@ char *fname;
  
 extern int errno;
  
-/*
 
 unixopen(filename, type)
      char *filename, *type;
@@ -220,20 +219,20 @@ unixopen(filename, type)
   fptr = (int) fopen(expand_file_name(filename), type);
   return(fptr);
 }
-  */
 
+  /*
 unixopen(filename, type)
      char *filename, *type;
 {
   int fptr;
  
-  /*  printf("open %s %s ",filename,type);    */
+  /*  printf("open %s %s ",filename,type);    * /
   fptr = (int) fopen(expand_file_name(filename), type);
   if(fptr==(int)NULL)
-  { /* try file name in dos syntax */
+  { /* try file name in dos syntax * /
     char c,nfname[255];
     int i,j,k,kmax;
-    /*  printf("open failed %s %s ",filename,type); /*  */
+    /*  printf("open failed %s %s ",filename,type); 
     k=0;kmax=8;j=0;
     for(i=0;filename[i];i++)
     { c=filename[i]; nfname[j++]=c; k++; 
@@ -242,13 +241,13 @@ unixopen(filename, type)
       else if(k > kmax) j--;
     };
     nfname[j]='\0';
-    /*   printf(" reformatted  %s  ",nfname); /*  */
+    /*   printf(" reformatted  %s  ",nfname); 
     fptr = (int) fopen(expand_file_name(nfname), type);
-    /*   printf(" --> %x\n",fptr);  /* */
+    /*   printf(" --> %x\n",fptr);  
   };
   return(fptr);
 }
-
+*/
 
 unixcd(filename)
      char *filename;
