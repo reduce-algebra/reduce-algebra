@@ -72,7 +72,7 @@ fi
 # Now I need to build a copy of the "xport" utility. You may view it as
 # mildly eccentric to build this tool at configure time!
 
-mkdir xport
+mkdir -p xport
 cd xport
 $srcdir/support-packages/xport-2.05/configure
 make
@@ -81,7 +81,7 @@ cd ..
 AC_MSG_NOTICE([Will build this PSL using the $pslver initial binaries])
 
 # rm -rf psl
-mkdir psl
+mkdir -p psl
 cp -r $srcdir/psl-$pslver/* psl
 
 # Now in my new world about the only thing that will have been copied here
