@@ -16,8 +16,6 @@ df(f(u),v);
 
 let x^3=u;
 
-operator f;
-
 let f(r)^3=u;
 
 df(x,u);
@@ -65,6 +63,43 @@ df(df(int(g(v),v),A1),v);
 on expanddf;
 
 df(df(int(g(v),v),A1),v);
+
+
+% more chain rule tests: multiple derivatives
+
+off expanddf;
+
+operator y;
+depend ux,x;
+
+let df(ux,x) = 1/e**x;
+
+df(y(x),x);
+
+df(y(ux),x);
+
+df(y(x),x,ux);
+
+df(y(x),ux,x);
+
+df(y(ux),x,ux);
+
+df(y(ux),ux,x);
+
+on expanddf;
+
+df(y(x),x);
+
+df(y(ux),x);
+
+df(y(x),x,ux);
+
+df(y(x),ux,x);
+
+df(y(ux),x,ux);
+
+df(y(ux),ux,x);
+
 
 % test inconsistent dependencies
 
