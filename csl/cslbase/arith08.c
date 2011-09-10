@@ -144,7 +144,7 @@ static Lisp_Object Lbyte_size(Lisp_Object nil, Lisp_Object a)
 
 static Lisp_Object Lcomplex_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 {
-/* /* Need to coerce a and b to the same type here... */
+/* Need to coerce a and b to the same type here... */
     a = make_complex(a, b);
     errexit();
     return onevalue(a);
@@ -152,7 +152,7 @@ static Lisp_Object Lcomplex_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
 
 static Lisp_Object Lcomplex_1(Lisp_Object nil, Lisp_Object a)
 {
-/* /* Need to make zero of same type as a */
+/* Need to make zero of same type as a */
     a = make_complex(a, fixnum_of_int(0));
     errexit();
     return onevalue(a);
@@ -268,7 +268,7 @@ static Lisp_Object Limagpart(Lisp_Object nil, Lisp_Object a)
     if (!is_number(a)) return aerror1("imagpart", a);
     if (is_numbers(a) && is_complex(a))
         return onevalue(imag_part(a));
-/* /* the 0.0 returned here ought to be the same type as a has */
+/* the 0.0 returned here ought to be the same type as a has */
     else return onevalue(fixnum_of_int(0));
 }
 
@@ -525,7 +525,7 @@ static Lisp_Object Lfloat_precision(Lisp_Object nil, Lisp_Object a)
     double d = float_of_number(a);
     CSL_IGNORE(nil);
     if (d == 0.0) return onevalue(fixnum_of_int(0));
-/* /* I do not cope with de-normalised numbers here */
+/* I do not cope with de-normalised numbers here */
     switch (tag)
     {
 #ifdef COMMON
@@ -878,7 +878,7 @@ static Lisp_Object lisp_fix_ratio(Lisp_Object a, int roundmode)
 case FIX_TRUNCATE:
         break;
 case FIX_ROUND:
-        /* /* This case unfinished at present */
+        /* This case unfinished at present */
         break;
 case FIX_FLOOR:
         if (minusp(p))
@@ -982,7 +982,7 @@ case FIX_CEILING:
 
 /*
  * So far I have not implemented support for rational numbers in the 2-arg
- * versions of these functions. /*
+ * versions of these functions.
  */
 
 static Lisp_Object Lceiling_2(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
