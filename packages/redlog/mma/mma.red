@@ -43,7 +43,7 @@ load!-package 'ofsf;
 loadtime load!-package 'rltools;
 
 fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
-   mma_wd!* mma_awk!*);
+   mma_wd!* mma_awk!* !*fancy);
 
 switch rlqefbmma;
 
@@ -60,14 +60,19 @@ rl_mkserv('mma,'(rl_simp),'(reval),'(nil),
 rl_set '(ofsf);
 
 procedure mma_mma(f,fn);
-   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,origoh,ll;
+   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,origoh,ll,isfancy;
       ll := linelength(2^(32-5)-1);
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
       scsemic := semic!*;
       oldecho := !*echo;
       origoh := outputhandler!*;
+      isfancy := !*fancy;
+      if isfancy then
+      	 off1 'fancy;
       w := errorset({'mma_mma1,mkquote f,mkquote fn},T,!*backtrace);
+      if isfancy then
+      	 on1 'fancy;
       if errorp w then <<
       	 put('times,'pprifn,oldpprifn);
       	 put('expt,'prtch,oldprtch);

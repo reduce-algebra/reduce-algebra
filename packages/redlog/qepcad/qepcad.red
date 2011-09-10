@@ -44,7 +44,7 @@ load!-package 'ofsf;
 loadtime load!-package 'rltools;
 
 fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
-   !*utf8 !*nat qepcad_qepcad!* qepcad_slfq!* qepcad_wd!* qepcad_awk!*);
+   !*utf8 !*nat qepcad_qepcad!* qepcad_slfq!* qepcad_wd!* qepcad_awk!* !*fancy);
 
 qepcad_qepcad!* := "qepcad";
 qepcad_slfq!* := "slfq";
@@ -75,13 +75,18 @@ rl_mkserv('qepcadl,'(reval),nil,nil,'reval,T);
 rl_set '(ofsf);
 
 procedure qepcad_qepcad(f,fn);
-   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,oldutf8;
+   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,oldutf8,isfancy;
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
       scsemic := semic!*;
       oldecho := !*echo;
       oldutf8 := !*utf8;
+      isfancy := !*fancy;
+      if isfancy then
+      	 off1 'fancy;
       w := errorset({'qepcad_qepcad1,mkquote f,mkquote fn},T,!*backtrace);
+      if isfancy then
+      	 on1 'fancy;
       if errorp w then <<
       	 put('times,'pprifn,oldpprifn);
       	 put('expt,'prtch,oldprtch);
