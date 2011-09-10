@@ -58,17 +58,23 @@ off expanddf;
 
 depend g(v),A1;
 
+df(g(v),A1);
+
+on expanddf;
+
+df(g(v),A1);
+
+off expanddf;
+
 df(df(int(g(v),v),A1),v);
 
 on expanddf;
 
 df(df(int(g(v),v),A1),v);
 
-
 % more chain rule tests: multiple derivatives
 
 off expanddf;
-
 operator y;
 depend ux,x;
 
@@ -99,6 +105,59 @@ df(y(x),ux,x);
 df(y(ux),x,ux);
 
 df(y(ux),ux,x);
+
+% test commuting vs. non-commuting
+
+off expanddf;
+
+df(df(g(v),A1),v);
+
+on expanddf;
+
+df(df(g(v),A1),v);
+
+on commutedf;
+
+df(df(g(v),A1),v);
+
+off commutedf;
+
+df(df(g(v),A1),v);
+
+depend uuu,xxx;
+
+off expanddf;
+
+df(uuu,xxx,uuu);
+
+df(y(uuu),xxx,uuu);
+
+df(y(uuu),uuu,xxx);
+
+on commutedf;
+
+df(uuu,xxx,uuu);
+
+df(y(uuu),xxx,uuu);
+
+df(y(uuu),uuu,xxx);
+
+off commutedf;
+on expanddf;
+
+df(uuu,xxx,uuu);
+
+df(y(uuu),xxx,uuu);
+
+df(y(uuu),uuu,xxx);
+
+on commutedf;
+
+df(uuu,xxx,uuu);
+
+df(y(uuu),xxx,uuu);
+
+df(y(uuu),uuu,xxx);
 
 
 % test inconsistent dependencies

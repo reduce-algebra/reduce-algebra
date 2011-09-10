@@ -136,7 +136,7 @@ on expanddf;
 df(f(r),r,x);
 
 
-df(f(r),r)*df(r,x)
+df(f(r),r,2)*df(r,x)
 
 
 operator g;
@@ -148,6 +148,26 @@ off expanddf;
 
 
 depend g(v),A1;
+
+
+
+df(g(v),A1);
+
+
+df(g(v),a1)
+
+
+on expanddf;
+
+
+
+df(g(v),A1);
+
+
+df(g(v),a1)
+
+
+off expanddf;
 
 
 
@@ -167,11 +187,9 @@ df(df(int(g(v),v),A1),v);
 df(g(v),a1)
 
 
-
 % more chain rule tests: multiple derivatives
 
 off expanddf;
-
 
 
 operator y;
@@ -264,10 +282,147 @@ df(y(ux),x,ux);
 df(y(ux),ux,x);
 
 
- df(y(ux),ux,2)
-----------------
-        x
-       e
+ df(y(ux),ux)
+--------------
+       x
+      e
+
+
+% test commuting vs. non-commuting
+
+off expanddf;
+
+
+
+df(df(g(v),A1),v);
+
+
+df(g(v),a1,v)
+
+
+on expanddf;
+
+
+
+df(df(g(v),A1),v);
+
+
+df(g(v),a1,v)
+
+
+on commutedf;
+
+
+
+df(df(g(v),A1),v);
+
+
+df(g(v),a1,v)
+
+
+off commutedf;
+
+
+
+df(df(g(v),A1),v);
+
+
+df(g(v),a1,v)
+
+
+depend uuu,xxx;
+
+
+
+off expanddf;
+
+
+
+df(uuu,xxx,uuu);
+
+
+df(uuu,xxx,uuu)
+
+
+df(y(uuu),xxx,uuu);
+
+
+df(y(uuu),xxx,uuu)
+
+
+df(y(uuu),uuu,xxx);
+
+
+df(y(uuu),uuu,xxx)
+
+
+on commutedf;
+
+
+
+df(uuu,xxx,uuu);
+
+
+0
+
+
+df(y(uuu),xxx,uuu);
+
+
+df(y(uuu),uuu,xxx)
+
+
+df(y(uuu),uuu,xxx);
+
+
+df(y(uuu),uuu,xxx)
+
+
+off commutedf;
+
+
+on expanddf;
+
+
+
+df(uuu,xxx,uuu);
+
+
+df(uuu,xxx,uuu)
+
+
+df(y(uuu),xxx,uuu);
+
+
+df(y(uuu),uuu,2)*df(uuu,xxx) + df(y(uuu),uuu)*df(uuu,xxx,uuu)
+
+
+df(y(uuu),uuu,xxx);
+
+
+df(y(uuu),uuu,2)*df(uuu,xxx)
+
+
+on commutedf;
+
+
+
+df(uuu,xxx,uuu);
+
+
+0
+
+
+df(y(uuu),xxx,uuu);
+
+
+df(y(uuu),uuu,2)*df(uuu,xxx)
+
+
+df(y(uuu),uuu,xxx);
+
+
+df(y(uuu),uuu,2)*df(uuu,xxx)
 
 
 

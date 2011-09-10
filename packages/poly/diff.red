@@ -262,7 +262,7 @@ symbolic procedure diffp(u,v);
         go to e;
     h:  % Final check for possible kernel deriv.
         if car u eq 'df then <<         % multiple derivative
-           if cadr u eq v then %<<
+           if cadr u eq v then <<
               % (df (df v x y z ...) v) ==> 0 if commutedf
               if !*commutedf and null !*depend then return nil ./ 1
               else if !*simpnoncomdf and (w:=atsoc(v, depl!*))
@@ -276,7 +276,7 @@ symbolic procedure diffp(u,v);
                     w := quotsq(simp{'df,u,x},simp{'df,v,x});
                     go to e
                  >>
-%              >>
+              >>
            else if eqcar(cadr u, 'int) then
               % (df (df (int F x) A) v) ==> (df (df (int F x) v) A) ?
               % Commute the derivatives to differentiate the integral?
@@ -303,12 +303,21 @@ symbolic procedure diffp(u,v);
                        else w := 'df . w
         >> else w := {'df,u,v};
    j:   if (x := opmtch w) then w := simp x
-         else if not depends(u:=cadr w,v)
-                 and (not (x:= atsoc(u,powlis!*))
-                       or not depends(cadddr x,v))
+         % At this point nested df's may have been collapsed, so
+         % we have to consider all dependencies on all variables
+         % and be very careful about returning zero.
+         else if not depends(u,v)
+                 and (not (x:= atsoc(u:=cadr w,powlis!*))
+                       or not dependsl(cadddr x,cddr w))
                  and null !*depend then return nil ./ 1
 %         else if !*expanddf and not atom u 
-         else if !*expanddf and not atom u and not(car u eq 'int)
+         % do not try to apply the chain rule to cases that are handled earlier
+         % (i.e. for nested/multiple derivatives, or differentiation of integrals)
+         % or that may come from inconsistent dependencies, e.g. after
+         %  depend u(v),a;
+         % do not replace df(u(v),v) by df(u,v),a)*df(a,v) 
+         else if !*expanddf and not atom u and null cdddr w
+                 and not(car u memq '(df int)) and not smember(v,u)
                  and (not (x:= atsoc(u,powlis!*)) or not depends(cadddr x,v))
           then <<
             % first check for declared dependency of kernel u on v
@@ -329,8 +338,7 @@ symbolic procedure diffp(u,v);
                  else w := df!-chain!-rule(u, v, x)
              else if y then
               % possible dependency of kernel arglist on v
-              % note: maybe use smember instead of member???
-              w := if member(v,y) then mksq(w,1) else df!-chain!-rule(u, v, y)
+              w := if smember(v,y) then mksq(w,1) else df!-chain!-rule(u, v, y)
              else w := mksq(w,1)
            >>
          else w := mksq(w,1);
@@ -443,6 +451,9 @@ symbolic procedure merge!-ind!-vars(u,v);
    % i.e. if a in (v b c d ...)
    if !*nocommutedf or
       (not !*commutedf and (cadr u memq (v . cddr u)))
+% I believe the previous line is incorrect, but the follwoing change
+%  messes up a lot of existing code - RmS 2011-09-10
+%      (not !*commutedf and dependsl(cadr u,(v . cddr u)))
    then derad!*(v,cddr u) else derad(v,cddr u);
 
 symbolic procedure derad!*(u,v);        % Non-commuting derad
