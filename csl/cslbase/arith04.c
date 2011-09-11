@@ -218,7 +218,7 @@ static Lisp_Object rationalizef(double d)
     errexit();
     q = denominator(p);
     p = numerator(p);
-/* /* No cleaning up done, yet. Need to start to produce continued
+/* No cleaning up done, yet. Need to start to produce continued
  * fraction for p/q and truncate it at some suitable point to get
  * a sensible approximation.  Since this is only needed in Common Lisp
  * mode, and seems a bit specialist even then I am not going to rush into

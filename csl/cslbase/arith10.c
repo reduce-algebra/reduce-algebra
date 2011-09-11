@@ -303,7 +303,7 @@ static Complex MS_CDECL ctan(Complex z)
     double t2 = t*t, th2 = th*th;
     /* many risks of premature overflow here */
     double d = 1.0 + t2*th2;
-    z.real = t*(1.0-th2)/d;  /* /* if th2 is very near 1.0 this is inaccurate */
+    z.real = t*(1.0-th2)/d;  /* if th2 is very near 1.0 this is inaccurate */
     z.imag = th*(1.0+t2)/d;
     return z;
 }
@@ -448,7 +448,7 @@ static double MS_CDECL iasin(double x)
     else sign = NO;
     if (x < 2.0)
     {   x += sqrt(x*x - 1.0);
-        x = log(x);             /* /* serious inaccuracy here */
+        x = log(x);             /* serious inaccuracy here */
     }
     else if (x < 1.0e9)
     {   x += sqrt(x*x - 1.0);
@@ -474,7 +474,7 @@ static double MS_CDECL iacos(double x)
     else return 0.0;
     if (x < 2.0)
     {   x += sqrt(x*x - 1.0);
-        x = log(x);             /* /* serious inaccuracy here */
+        x = log(x);             /* serious inaccuracy here */
     }
     else if (x < 1.0e9)
     {   x += sqrt(x*x - 1.0);
@@ -972,7 +972,7 @@ static Complex MS_CDECL casinh(Complex z)
     {   z.imag = -z.imag;
         quadrant |= 2;
     }
-/* /* The next line can overflow or lose precision */
+/* The next line can overflow or lose precision */
     w.real = z.real*z.real - z.imag*z.imag + 1.0;
     w.imag = 2*z.real*z.imag;
     w = csqrt(w);
@@ -1790,7 +1790,7 @@ default:
         return aerror1("bad arg for isqrt",  a);
     }
     d = sqrt(d);
-/* /* This is not anything like good enough yet */
+/* This is not anything like good enough yet */
     return onevalue(fixnum_of_int((int32_t)d));
 }
 
@@ -1827,7 +1827,7 @@ case TAG_NUMBERS:
                     c1.real = float_of_number(real_part(a));
                     c1.imag = float_of_number(imag_part(a));
                     d = Cabs(c1);
-/* /* I wonder if I am allowed to promote short or single values to
+/* I wonder if I am allowed to promote short or single values to
       double precision here? */
                     a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
                     errexit();
@@ -1867,7 +1867,7 @@ static Lisp_Object Lphase(Lisp_Object nil, Lisp_Object a)
     a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
     errexit();
     return onevalue(a);
-/* /* Wrong precision, I guess */
+/* Wrong precision, I guess */
 }
 
 static Lisp_Object Lsignum(Lisp_Object nil, Lisp_Object a)
