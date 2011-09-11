@@ -282,10 +282,10 @@ df(y(ux),x,ux);
 df(y(ux),ux,x);
 
 
- df(y(ux),ux)
---------------
-       x
-      e
+ df(y(ux),ux,2)
+----------------
+        x
+       e
 
 
 % test commuting vs. non-commuting
@@ -347,7 +347,7 @@ df(uuu,xxx,uuu)
 df(y(uuu),xxx,uuu);
 
 
-df(y(uuu),xxx,uuu)
+df(y(uuu),uuu,xxx)
 
 
 df(y(uuu),uuu,xxx);
