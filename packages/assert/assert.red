@@ -40,7 +40,7 @@ create!-package('(assert assertcheckfn),nil);
 
 global '(assert_functionl!* exlist !*comp);
 
-fluid '(!*assert !*assertstatistics assertstatistics!* lispsystem!* !*msg);
+fluid '(lispsystem!* !*msg assertstatistics!*);
 
 switch assert,assertbreak,assertstatistics;
 
@@ -105,6 +105,7 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
 	 n := n + 1;
 	 if (cfn := get(car scargtypel,'assert_checkfn))
  	    and not apply(cfn,{a})
+	    and not(pairp a and flagp(car a,'assert_ignore))
  	 then <<
 	    bad := t;
 	    assert_error(fn,argtypel,restype,n,car scargtypel,a)
@@ -112,7 +113,10 @@ procedure assert_check1(fn,origfn,argl,argtypel,restype);
 	 scargtypel := cdr scargtypel
       >>;
       res := apply(origfn,argl);
-      if (cfn := get(restype,'assert_checkfn)) and not apply(cfn,{res}) then <<
+      if (cfn := get(restype,'assert_checkfn))
+	 and not apply(cfn,{res})
+	 and not(pairp res and flagp(car res,'assert_ignore))
+      then <<
 	 bad := t;
 	 assert_error(fn,argtypel,restype,0,restype,res)
       >>;
@@ -135,7 +139,7 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
    % with a rederr or computation continues and the error
    % message is printed as a warning. In the latter case lprim is used,
    % which is controlled by the switch !*msg.
-   begin scalar w,msg;
+   begin scalar w,msg,!*lower;
       if !*assertstatistics then <<
       	 w := cdr atsoc(fn,assertstatistics!*);
 	 caddr w := caddr w + 1
@@ -179,7 +183,7 @@ procedure assert_structstat();
       if flagp(cursym!*,'delim) then <<
 	 if not !*assert then
 	    return nil;
-	 if !*msg then lprim {"type",type,"is not checked"};
+	 if !*msg then lprim {"struct",type,"is not checked"};
       	 return nil
       >>;
       if cursym!* neq 'checked then

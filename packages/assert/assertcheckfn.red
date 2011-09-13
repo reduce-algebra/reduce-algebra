@@ -30,15 +30,102 @@
 
 module assertcheckfn;
 
-procedure sfpx(u);
-   sfpx1(u,nil,nil,0);
+% Primitive data types (2.1 of the SL Report)
+struct Integer checked by fixp;
+struct Floating checked by floatp;
+struct Id checked by idp;
+struct String checked by stringp;
+struct DottedPair checked by pairp;
+struct Vector checked by vectorp;
+struct FunctionPointer checked by codep;
 
-procedure sfpx1(u,vl,v,d);
+% Classes of Primitive Data Types (2.2. of the SL Report)
+struct Boolean checked by booleanp;
+struct ExtraBoolean;
+struct Ftype checked by ftypep;
+struct Number checked by numberp;
+struct Constant checked by constantp;
+struct Any;
+struct Atom checked by atomp;
+
+% Structures (2.3 of SL Report)
+struct List checked by listp;
+struct Alist checked by alistp;
+struct CondForm checked by condformp;
+struct LambdaExpression checked by lambdap;
+struct Function checked by functionp;
+
+% Lists of Fixed Length:
+struct List1 checked by list1p;
+struct List2 checked by list2p;
+struct List3 checked by list3p;
+struct List4 checked by list4p;
+struct List5 checked by list5p;
+struct List6 checked by list6p;
+struct List7 checked by list7p;
+
+% Standard Forms and Standard Quotients etc.
+struct SF checked by sfpx;
+struct SF!* checked by sfpx!*;
+struct NoOrdSF checked by noordsfpx;
+struct SQ checked by sqp;
+struct Domain checked by domainp;
+struct Kernel checked by assert_kernelp;
+
+procedure booleanp(x);
+   x eq t or x eq nil;
+
+procedure ftypep(x);
+   x eq 'expr or x eq 'fexpr or x eq 'macro;
+
+procedure alistp(l);
+   not l or pairp l and pairp car l and alistp cdr l;
+
+procedure condformp(x);
+   not x or pairp x and list2p car x and condformp cdr x;
+
+procedure lambdap(x);
+   pairp x and eqcar(x,'lambda) and
+      pairp cdr x and listp cadr x and
+      pairp cddr x and listp caddr x and
+      not cdddr x;
+
+procedure functionp(x);
+   codep x or lambdap x;
+
+procedure list1p(x);
+   pairp x and not cdr x;
+
+procedure list2p(x);
+   pairp x and list1p cdr x;
+
+procedure list3p(x);
+   pairp x and list2p cdr x;
+
+procedure list4p(x);
+   pairp x and list3p cdr x;
+
+procedure list5p(x);
+   pairp x and list4p cdr x;
+
+procedure list6p(x);
+   pairp x and list5p cdr x;
+
+procedure list7p(x);
+   pairp x and list6p cdr x;
+
+procedure sfpx(u);
+   sfpx1(u,nil,nil,0,t);
+
+procedure noordsfpx(u);
+   sfpx1(u,nil,nil,0,nil);
+
+procedure sfpx1(u,vl,v,d,chkord);
    % Variables from vl must not occur in u and the variable v must occur
    % in u only with a degress less than d. New-found main variables must
    % be smaller than v and smaller than all variables in vl wrt.
    % korder!* and orderp.
-   begin scalar c,l,p,r,vv,vl1,w; integer dd;
+   begin scalar c,l,p,r,vv; integer dd;
       if domainp u then
 	 return t;
       if not pairp u then
@@ -69,7 +156,7 @@ procedure sfpx1(u,vl,v,d);
       % order to use ordpp; I could not find a suitable function for
       % directly comparing (possibly composite) kernels. The relevant
       % code is mostly in alg/order.red and hardly documented.
-      if vl and ordpp(vv .** 1,car vl .** 1) then
+      if chkord and vl and ordpp(vv .** 1,car vl .** 1) then
 	 % We have seen a smaller variable before.
 	 return nil;
       return sfpx1(c,vv . vl,nil,0) and sfpx1(r,vl,vv,dd)
@@ -93,12 +180,6 @@ procedure sfpx!*(u);
 
 procedure sqp(q);
    pairp q and sfpx numr q and sfpx denr q;
-
-procedure alistp(l);
-   not l or pairp car l and alistp cdr l;
-
-procedure booleanp(u);
-   u eq t or u eq nil;
 
 procedure am_listp(u);
    listp u and eqcar(u,'list);
