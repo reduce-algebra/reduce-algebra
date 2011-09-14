@@ -240,7 +240,9 @@ procedure utf8_supscript(d);
       (!0 . (226 129 176))));
 
 procedure utf8_priabs(u);
-   if not !*utf8 then
+   if not !*nat then
+      'failed
+   else if not !*utf8 then
       'failed
    else <<
       prin2!* "|";
@@ -249,7 +251,9 @@ procedure utf8_priabs(u);
    >>;
 
 procedure utf8_pripartial(u);
-   if not !*utf8 then
+   if not !*nat then
+      'failed
+   else if not !*utf8 then
       'failed
    else <<
       utf8_prin2!* car u;
@@ -257,7 +261,9 @@ procedure utf8_pripartial(u);
    >>;
 
 procedure utf8_pridiff(u);
-   if not !*utf8 then
+   if not !*nat then
+      'failed
+   else if not !*utf8 then
       'failed
    else if !*utf8diffquot then <<
       maprin {'quotient,
@@ -287,7 +293,9 @@ procedure utf8_pripowpartial(u);
    >>;
 
 procedure utf8_priint(u);
-   if not !*utf8 then
+   if not !*nat then
+      'failed
+   else if not !*utf8 then
       'failed
    else if !*utf82d then
       intprint u
