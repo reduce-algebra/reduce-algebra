@@ -54,25 +54,14 @@ operator exteuc;
 operator degree;
 operator coefficients;
 
-struct any;
-struct sf checked by sfpx;
-struct sf!* checked by sfpx!*;
-struct domain checked by domainp;
-struct id checked by idp;
-struct pair checked by pairp;
-struct list checked by listp;
-struct alist checked by alistp;
-struct kernel checked by assert_kernelp;
-struct boolean checked by booleanp;
-struct extra!-boolean;
-struct am_list checked by am_listp;
-struct am_poly checked by am_polyp;
+struct AmList checked by am_listp;
+struct AmPoly checked by am_polyp;
 
-declare addf: (sf,sf) -> sf;
-declare multf: (sf,sf) -> sf;
-declare negf: (sf) -> sf;
+declare addf: (SF,SF) -> SF;
+declare multf: (SF,SF) -> SF;
+declare negf: (NoOrdSF) -> NoOrdSF;
 
-declare sfto_dcontentf: (sf) -> domain;
+declare sfto_dcontentf: (SF) -> Domain;
 
 procedure sfto_dcontentf(u);
    % Domain content standard form. Returns the (non-negative) content of [u]
@@ -80,7 +69,7 @@ procedure sfto_dcontentf(u);
    sfto_dcontentf1(u,nil);
 
 
-declare sfto_dcontentf1: (sf,domain) -> domain;
+declare sfto_dcontentf1: (SF,Domain) -> Domain;
 
 procedure sfto_dcontentf1(u,g);
    % Domain content standard form subroutine. Returns the gcd of the content of
@@ -93,7 +82,7 @@ procedure sfto_dcontentf1(u,g);
       sfto_dcontentf1(red u,sfto_dcontentf1(lc u,g));
 
 
-declare sfto_dprpartf: (sf) -> sf;
+declare sfto_dprpartf: (SF) -> SF;
 
 procedure sfto_dprpartf(u);
    % Domain primitive part standard form. Returns the primitive part of [u] as a
@@ -102,7 +91,7 @@ procedure sfto_dprpartf(u);
    sfto_dprpartf1(u,sfto_dcontentf u);
 
 
-declare sfto_dprpartksf: (sf) -> sf;
+declare sfto_dprpartksf: (SF) -> SF;
 
 procedure sfto_dprpartksf(u);
    % Domain primitive part standard form keep sign. Returns the primitive part
@@ -111,7 +100,7 @@ procedure sfto_dprpartksf(u);
    quotf(u,sfto_dcontentf u);
 
 
-declare sfto_dprpartf1: (sf,sf) -> sf;
+declare sfto_dprpartf1: (SF,SF) -> SF;
 
 procedure sfto_dprpartf1(u,c);
    % Domain primitive part standard form subroutine. Returns the primitive part
@@ -119,7 +108,7 @@ procedure sfto_dprpartf1(u,c);
    (if minusf w then negf w else w) where w = quotf(u,c);
 
 
-declare sfto_sqfpartf: (sf!*) -> sf!*;
+declare sfto_sqfpartf: (SF!*) -> SF!*;
 
 procedure sfto_sqfpartf(u);
    % Square-free part. Returns the square-free part of [u] as a multivariate
@@ -132,7 +121,7 @@ procedure sfto_sqfpartf(u);
    end;
 
 
-declare sfto_ucontentf: (sf) -> sf;
+declare sfto_ucontentf: (SF) -> SF;
 
 procedure sfto_ucontentf(u);
    % Univariate content standard form. Returns the content of [u] considered as
@@ -141,7 +130,7 @@ procedure sfto_ucontentf(u);
    if domainp u then u else sfto_ucontentf1(u,mvar u);
 
 
-declare sfto_ucontentf1: (sf,kernel) -> sf;
+declare sfto_ucontentf1: (SF,Kernel) -> SF;
 
 procedure sfto_ucontentf1(u,v);
    % Univariate content standard form subroutine. We assume [mvar u = v].
@@ -151,7 +140,7 @@ procedure sfto_ucontentf1(u,v);
       sfto_gcdf!*(lc u,sfto_ucontentf1(red u,v));
 
 
-declare sfto_uprpartf: (sf) -> sf;
+declare sfto_uprpartf: (SF) -> SF;
 
 procedure sfto_uprpartf(u);
    % Univariate primitive part. Returns the primitive part of [u] as a
@@ -160,7 +149,7 @@ procedure sfto_uprpartf(u);
    quotf(u,sfto_ucontentf u);
 
 
-declare sfto_tsqsumf: (sf) -> id;
+declare sfto_tsqsumf: (SF) -> Id;
 
 procedure sfto_tsqsumf(u);
    % Trivial square sum standard form. Returns one of [nil], ['stsq], or ['tsq].
@@ -174,13 +163,13 @@ procedure sfto_tsqsumf(u);
       evenp ldeg u and sfto_tsqsumf lc u and sfto_tsqsumf red u;
 
 
-declare sfto_tsqsum!$: (list) -> id;
+declare sfto_tsqsum!$: (List) -> Id;
 
 procedure sfto_tsqsum!$(argl);
    sfto_tsqsumf(numr simp car argl);
 
 
-declare sfto_sqfdecf: (sf) -> alist;
+declare sfto_sqfdecf: (SF) -> Alist;
 
 procedure sfto_sqfdecf(u);
    % Multivariate square-free decomposition standard form. Returns a (dense)
@@ -198,7 +187,7 @@ procedure sfto_sqfdecf(u);
    end;
 
 
-declare sfto_sqfdec!$: (list) -> am_list;
+declare sfto_sqfdec!$: (List) -> AmList;
 
 procedure sfto_sqfdec!$(argl);
    % Square free decomposition. [argl] is an argument list. Returns an AM list
@@ -210,7 +199,7 @@ procedure sfto_sqfdec!$(argl);
    end;
 
 
-declare sfto_usqfdecf: (sf) -> alist;
+declare sfto_usqfdecf: (SF) -> Alist;
 
 procedure sfto_usqfdecf(u);
    if !*sfto_yun then
@@ -223,7 +212,7 @@ procedure sfto_usqfdecf(u);
       rederr {"sfto_usqfdecf: select a decomposition method"};
 
 
-declare sfto_yun!-usqfdecf: (sf) -> alist;
+declare sfto_yun!-usqfdecf: (SF) -> Alist;
 
 procedure sfto_yun!-usqfdecf(p);
    % Univariate square-free decomposition after Yun. [p] is a an SF that is
@@ -248,7 +237,7 @@ procedure sfto_yun!-usqfdecf(p);
    end;
 
 
-declare sfto_musser!-usqfdecf: (sf) -> alist;
+declare sfto_musser!-usqfdecf: (SF) -> Alist;
 
 procedure sfto_musser!-usqfdecf(u);
    % Univariate square-free decomposition after Musser. [p] is a an SF that is
@@ -273,7 +262,7 @@ procedure sfto_musser!-usqfdecf(u);
    end;
 
 
-declare sfto_tobey!-usqfdecf: (sf) -> alist;
+declare sfto_tobey!-usqfdecf: (SF) -> Alist;
 
 procedure sfto_tobey!-usqfdecf(u);
    % Univariate square-free decomposition after Tobey and Horowitz. [p] is a an
@@ -298,7 +287,7 @@ procedure sfto_tobey!-usqfdecf(u);
    end;
 
 
-declare sfto_sqdmerge: (alist,alist) -> alist;
+declare sfto_sqdmerge: (Alist,Alist) -> Alist;
 
 procedure sfto_sqdmerge(l1,l2);
    % Square-free decomposition merge.
@@ -314,7 +303,7 @@ procedure sfto_sqdmerge(l1,l2);
    end;
 
 
-declare sfto_pdecf: (sf) -> pair;
+declare sfto_pdecf: (SF) -> DottedPair;
 
 procedure sfto_pdecf(u);
    % Multivariate parity decomposition. Returns $a . d$ such that $a$ is the
@@ -332,7 +321,7 @@ procedure sfto_pdecf(u);
    end;
 
 
-declare sfto_updecf: (sf) -> pair;
+declare sfto_updecf: (SF) -> DottedPair;
 
 procedure sfto_updecf(u);
    if !*sfto_yun then
@@ -343,7 +332,7 @@ procedure sfto_updecf(u);
       rederr {"sfto_updecf: select a decomposition method"};
 
 
-declare sfto_yun!-updecf: (sf) -> pair;
+declare sfto_yun!-updecf: (SF) -> DottedPair;
 
 procedure sfto_yun!-updecf(p);
    begin scalar !*gcd,x,g,c,d,w,l,od;
@@ -364,7 +353,7 @@ procedure sfto_yun!-updecf(p);
    end;
 
 
-declare sfto_musser!-updecf: (sf) -> pair;
+declare sfto_musser!-updecf: (SF) -> DottedPair;
 
 procedure sfto_musser!-updecf(u);
    begin scalar !*gcd,od,v,u1,sqfp,sqfp1,l;
@@ -392,14 +381,14 @@ procedure sfto_musser!-updecf(u);
    end;
 
 
-declare sfto_pdec!$: (list) -> am_list;
+declare sfto_pdec!$: (List) -> AmList;
 
 procedure sfto_pdec!$(argl);
    {'list,prepf car w,prepf cdr w}
       where w=sfto_pdecf numr simp car argl;
 
 
-declare sfto_decdegf: (sf,kernel,number) -> sf;
+declare sfto_decdegf: (SF,Kernel,Integer) -> SF;
 
 procedure sfto_decdegf(u,k,n);
    % Decrement degree standard form. Replace each occurence of $[k]^d$ by
@@ -419,7 +408,7 @@ procedure sfto_decdegf(u,k,n);
    end;
 
 
-declare sfto_decdegcxk: (kernel,kernel,number,boolean) -> pair;
+declare sfto_decdegcxk: (Kernel,Kernel,Integer,Boolean) -> DottedPair;
 
 procedure sfto_decdegcxk(kk,k,n,hit);
    % Decrement degree complex kernel. Returns $h . l$, where $h$ is boolean and
@@ -438,7 +427,7 @@ procedure sfto_decdegcxk(kk,k,n,hit);
    end;
 
 
-declare sfto_decdegf1: (any,kernel,number) -> any;
+declare sfto_decdegf1: (Any,Kernel,Integer) -> Any;
 
 procedure sfto_decdegf1(u,k,n);
    % Decrement degree standard form. [u] is an SF with main variable [k]; [k] is
@@ -450,7 +439,7 @@ procedure sfto_decdegf1(u,k,n);
       mvar u .** (ldeg u / n) .* lc u .+ sfto_decdegf1(red u,k,n);
 
 
-declare sfto_reorder: (sf,kernel) -> any;
+declare sfto_reorder: (SF,Kernel) -> Any;
 
 procedure sfto_reorder(u,v);
    % Reorder. Returns [u] reorderd wrt. [{v}] without modifiying the current
@@ -463,7 +452,7 @@ procedure sfto_reorder(u,v);
    end;
 
 
-declare sfto_groebnerf: (list) -> list;
+declare sfto_groebnerf: (List) -> List;
 
 procedure sfto_groebnerf(l);
    % Groebner calculation standard form. [l] is a list of SF's. Returns a list
@@ -477,7 +466,7 @@ procedure sfto_groebnerf(l);
    end;
 
 
-declare sfto_preducef: (sf,list) -> sf;
+declare sfto_preducef: (SF,List) -> SF;
 
 procedure sfto_preducef(f,gl);
    % Polynomial reduction standard form. [gl] is a list of SF's. Returns the
@@ -489,7 +478,7 @@ procedure sfto_preducef(f,gl);
    else
       numr simp preduceeval {prepf f,'list . for each sf in gl collect prepf sf};
 
-declare sfto_greducef: (sf,list) -> sf;
+declare sfto_greducef: (SF,List) -> SF;
 
 procedure sfto_greducef(f,gl);
    % Polynomial reduction standard form. [gl] is a list of SF's. Returns [f]
@@ -501,7 +490,7 @@ procedure sfto_greducef(f,gl);
    else
       numr simp greduceeval {prepf f,'list . for each sf in gl collect prepf sf};
 
-declare sfto_gcdf!*: (sf,sf) -> sf;
+declare sfto_gcdf!*: (SF,SF) -> SF;
 
 procedure sfto_gcdf!*(f,g);
    % Greatest common divisor of standard forms. Returns the GCD of [f] and [g].
@@ -511,7 +500,7 @@ procedure sfto_gcdf!*(f,g);
    sfto_gcdf(f,g) where !*gcd=T;
 
 
-declare sfto_gcdf: (sf,sf) -> sf;
+declare sfto_gcdf: (SF,SF) -> SF;
 
 procedure sfto_gcdf(f,g);
    % Greatest common divisor of standard forms. Returns the GCD of [f] and [g]
@@ -527,7 +516,7 @@ procedure sfto_gcdf(f,g);
       ezgcdf(f,g);
 
 
-declare sfto_davp: (sf,any) -> boolean;
+declare sfto_davp: (SF,Any) -> Boolean;
 
 procedure sfto_davp(f,badv);
    % Davenport predicate. [v] is a kernel or [nil]. Returns [t] if [gcdf] if
@@ -543,7 +532,7 @@ procedure sfto_davp(f,badv);
       sfto_davp(lc f,badv) and sfto_davp(red f,badv);
 
 
-declare sfto_sqrtf: (sf) -> extra!-boolean;
+declare sfto_sqrtf: (SF) -> ExtraBoolean;
 
 procedure sfto_sqrtf(f);
    % Square root standard form. Returns [nil] or an SF $g$, such that $g^2=[f]$.
@@ -568,7 +557,7 @@ procedure sfto_sqrtf(f);
    end;
 
 
-declare sfto_monfp: (sf) -> boolean;
+declare sfto_monfp: (SF) -> Boolean;
 
 procedure sfto_monfp(sf);
    % Monomial predicate. Check if [sf] is of the form $a x_1 \dots x_n$ for a
@@ -576,7 +565,7 @@ procedure sfto_monfp(sf);
    domainp sf or (null red sf and sfto_monfp lc sf);
 
 
-declare sfto_sqfpartz: (number) -> number;
+declare sfto_sqfpartz: (Integer) -> Integer;
 
 procedure sfto_sqfpartz(z);
    % Square free part of an integer. [z] is an integer with prime decomposition
@@ -584,7 +573,7 @@ procedure sfto_sqfpartz(z);
    sfto_zdgen(z,0);
 
 
-declare sfto_zdeqn: (number,number) -> number;
+declare sfto_zdeqn: (Integer,Integer) -> Integer;
 
 procedure sfto_zdeqn(z,n);
    % Z decomposition equal n. [z] is an integer with prime decomposition
@@ -594,7 +583,7 @@ procedure sfto_zdeqn(z,n);
       if cdr x = n then car x else 1;
 
 
-declare sfto_zdgtn: (number,number) -> number;
+declare sfto_zdgtn: (Integer,Integer) -> Integer;
 
 procedure sfto_zdgtn(z,n);
    % Z decomposition greater than n. [z] is an integer with prime decomposition
@@ -604,7 +593,7 @@ procedure sfto_zdgtn(z,n);
       if cdr x > n then car x else 1;
 
 
-declare sfto_zdgen: (number,number) -> number;
+declare sfto_zdgen: (Integer,Integer) -> Integer;
 
 procedure sfto_zdgen(z,n);
    % Z decomposition greater than or equal to n. [z] is an integer with prime
@@ -614,7 +603,7 @@ procedure sfto_zdgen(z,n);
       if cdr x >= n then car x else 1;
 
 
-declare sfto_exteucf: (sf,sf) -> list;
+declare sfto_exteucf: (SF,SF) -> List3;
 
 procedure sfto_exteucf(a,b);
    % Extended Euclidean Algorithm for polynomials. [a], [b] are univariate
@@ -648,7 +637,7 @@ procedure sfto_exteucf(a,b);
    end;
 
 
-declare exteuc: (am_poly,am_poly) -> am_list;
+declare exteuc: (AmPoly,AmPoly) -> AmList;
 
 procedure exteuc(a,b);
    begin scalar af,bf,ka,kb;
@@ -663,7 +652,7 @@ procedure exteuc(a,b);
    end;
 
 
-declare sfto_exteucd: (number,number) -> list;
+declare sfto_exteucd: (Integer,Integer) -> List3;
 
 procedure sfto_exteucd(a,b);
    % Extended Euclidean Algorithm for domain elements (integers). Returns a list
@@ -692,7 +681,7 @@ procedure sfto_exteucd(a,b);
    end;
 
 
-declare sfto_linp: (sf,list) -> boolean;
+declare sfto_linp: (SF,List) -> Boolean;
 
 procedure sfto_linp(f,vl);
    % Linear predicate. [vl] is a list of variables. Returns [T] iff [f] is
@@ -700,7 +689,7 @@ procedure sfto_linp(f,vl);
    sfto_linp1(f,vl,nil);
 
 
-declare sfto_linp1: (sf,list,list) -> boolean;
+declare sfto_linp1: (SF,List,List) -> Boolean;
 
 procedure sfto_linp1(f,vl,oc);
    domainp f or
@@ -710,7 +699,7 @@ procedure sfto_linp1(f,vl,oc);
 	 sfto_linp1(lc f,vl,mvar f . oc) and sfto_linp1(red f,vl,oc));
 
 
-declare sfto_linwpp: (sf,list) -> boolean;
+declare sfto_linwpp: (SF,List) -> Boolean;
 
 procedure sfto_linwpp(f,vl);
    % Linear and weakly parametric predicate. [vl] is a list of variables.
@@ -722,7 +711,7 @@ procedure sfto_linwpp(f,vl);
 	 sfto_linwpp(red f,vl));
 
 
-declare sfto_varf: (sf) -> extra!-boolean;
+declare sfto_varf: (SF) -> ExtraBoolean;
 
 procedure sfto_varf(f);
    % Variable form. If [f] is a variable then return the corresponding kernel
@@ -732,7 +721,7 @@ procedure sfto_varf(f);
       mvar f;
 
 
-declare sfto_idvarf: (sf) -> extra!-boolean;
+declare sfto_idvarf: (SF) -> ExtraBoolean;
 
 procedure sfto_idvarf(f);
    % Identifier variable form. If [f] is an atomic variable then return the
@@ -743,7 +732,7 @@ procedure sfto_idvarf(f);
       mvar f;
 
 
-declare sfto_lmultf: (list) -> sf;
+declare sfto_lmultf: (List) -> SF;
 
 procedure sfto_lmultf(fl);
    % Ordered field standard form list multf. [fl] is a list of SF. Returns the
@@ -751,13 +740,13 @@ procedure sfto_lmultf(fl);
    if null fl then 1 else multf(car fl,sfto_lmultf cdr fl);
 
 
-declare degree: (am_poly) -> number;
+declare degree: (AmPoly) -> Integer;
 
 procedure degree(u);
    sfto_tdegf numr simp u;
 
 
-declare sfto_tdegf: (sf) -> number;
+declare sfto_tdegf: (SF) -> Integer;
 
 procedure sfto_tdegf(f);
    % Ordered field standard form total degree standard form. Returns the total
@@ -779,20 +768,20 @@ procedure sfto_tdegf(f);
    end;
 
 
-declare coefficients: (am_poly,am_list) -> am_list;
+declare coefficients: (AmPoly,AmList) -> AmList;
 
 procedure coefficients(f,vl);
    'list . for each c in sfto_allcoeffs(numr simp f,cdr vl) collect
       prepf c;
 
 
-declare sfto_allcoeffs: (sf,list) -> list;
+declare sfto_allcoeffs: (SF,List) -> List;
 
 procedure sfto_allcoeffs(f,vl);
    sfto_allcoeffs1({f},vl);
 
 
-declare sfto_allcoeffs1: (list,list) -> list;
+declare sfto_allcoeffs1: (List,List) -> List;
 
 procedure sfto_allcoeffs1(l,vl);
    if null vl then
@@ -802,13 +791,13 @@ procedure sfto_allcoeffs1(l,vl);
 	 sfto_coefs(sfto_reorder(f,car vl),car vl),cdr vl);
 
 
-declare sfto_coefs: (sf,kernel) -> list;
+declare sfto_coefs: (SF,Kernel) -> List;
 
 procedure sfto_coefs(f,v);
    if not domainp f and mvar f eq v then coeffs f else {f};
 
 
-declare sfto_kernelp: (any) -> boolean;
+declare sfto_kernelp: (Any) -> Boolean;
 
 procedure sfto_kernelp(u);
    begin scalar w;
