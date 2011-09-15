@@ -1,7 +1,7 @@
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010 T. Sturm
+% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,111 +31,232 @@
 lisp <<
    fluid '(cl_qe_rcsid!* cl_qe_copyright!*);
    cl_qe_rcsid!* := "$Id$";
-   cl_qe_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
+   cl_qe_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
 >>;
 
 module clqe;
-% Common logic quantifier elimination by elimination sets. Submodule
-% of [cl]. Currently restricted to quadratic formulas.
+% Common logic quantifier elimination by elimination sets. Submodule of [cl].
+% Currently limited to quadratic formulas.
+
+struct Formula;
+struct QfFormula;
+struct Theory checked by listp;
+struct TheoryFormulaPair checked by pairp;
+struct KernelL checked by listp;
+struct Quantifier checked by idp;
+
 
 %DS
-% <CONTAINER ELEMENT> ::=
-% (<VARLIST> . <FORMULA>) . (<ANSWER> . <ANSWER TRANSFORMATION>)
-% <VARLIST> ::= <VARIABLE LIST> | 'BREAK
-% <FORMULA> ::= "quantifier-free formula"
-% <ANSWER> ::= (<SUBST_TRIPLET>,...) "[nil] if not ans"
-% <SUBST_TRIPLET> ::= (<VARIABLE>, <SUBST_FUNCTION>, <ARGUMENT LIST>, <ATR>)
-% <ANSWER TRANSFORMATION> ::= "context dependent, [nil] if not ans"
+% ContainerElement ::= (VarList . QfFormula) . (Answer . AnswerTranslation)
+% VarList ::= VariableL | "'break"
+% Answer ::= (SubstTriplet, ...) (* "nil" if not ans *)
+% SubstTriplet ::= (Variable, SubstFunction, ArgumentList, Atr)
+% AnswerTranslation ::= (* context dependent, "nil" if not ans *)
+% ContainerElementL ::= (ContainerElement, ...)
 
-smacro procedure cl_mkcoel(vl,f,an,atr);
-   % Make container element. [vl] is a list of variables; [f] is a
-   % quantifier-free formula; [an] is an answer; [atr] is an answer
-   % transformation.
+struct ContainerElement checked by containerElementP;
+struct VarList checked by varListP;
+struct Answer checked by listp;
+struct SubstTriplet checked by substTripletP;
+struct AnswerTranslation;
+struct ContainerElementL checked by listp;
+
+procedure containerElementP(x);
+   pairp x and pairp car x and pairp cdr x;
+
+procedure varListP(x);
+   x eq 'break or listp x;
+
+procedure substTripletP(x);
+   listp x and eqn(length x,4);
+
+
+%DS
+% Point ::= (Coordinate, ...)
+% Coordinate ::= Equation (* Kernel = Integer *)
+
+struct Point checked by listp;
+
+
+%DS
+% EliminationResult ::= (Theory . ExtendedQeResult)
+% ExtendedQeResult ::= (..., (QfFormula, SamplePoint), ...)
+% SamplePoint ::= EquationL (* with equations of the form kernel = ... *)
+
+struct EliminationResult checked by pairp;
+struct ExtendedQeResult checked by alistp;
+
+
+declare cl_mkCE: (VarList,QfFormula,Answer,AnswerTranslation) -> ContainerElement;
+
+smacro procedure cl_mkCE(vl,f,an,atr);
+   % Make container element.
    (vl . f) . (an . atr);
 
-smacro procedure cl_covl(x);
-   % Container variable list. [x] is a container element. Returns the
-   % variable list from [x].
+
+declare cl_coVL: (ContainerElement) -> VarList;
+
+smacro procedure cl_coVL(x);
+   % Container variable list.
    caar x;
 
-smacro procedure cl_cof(x);
-   % Container formula. [x] is a container element. Returns the formula
-   % from [x].
+
+declare cl_coF: (ContainerElement) -> QfFormula;
+
+smacro procedure cl_coF(x);
+   % Container formula.
    cdar x;
 
-smacro procedure cl_coan(x);
-   % Container answer. [x] is a container element. Returns the answer
-   % from [x].
+
+declare cl_coA: (ContainerElement) -> Answer;
+
+smacro procedure cl_coA(x);
+   % Container answer.
    cadr x;
 
-smacro procedure cl_coatr(x);
-   % Container answer translation. [x] is a container element. Returns
-   % the answer transformation from [x].
+
+declare cl_coAT: (ContainerElement) -> AnswerTranslation;
+
+smacro procedure cl_coAT(x);
+   % Container answer translation.
    cddr x;
 
-smacro procedure cl_co2j(x);
-   % Container to junction. [x] is a container element. Returns the
-   % S-expression [cl_cof(x) . cl_coan(x) . cl_coatr(x)].
+
+%DS
+% JunctionL ::= (Junction, ...)
+% Junction ::= QfFormula . Answer . AnswerTranslation
+
+struct JunctionL checked by listp;
+struct Junction checked by pairp;
+
+
+declare cl_mkJ: (QfFormula,Answer,AnswerTranslation) -> Junction;
+
+smacro procedure cl_mkJ(f,an,atr);
+   % Make junction.
+   f . an . atr;
+
+
+declare cl_jF: (Junction) -> QfFormula;
+
+smacro procedure cl_jF(j);
+   % Junction formula.
+   car j;
+
+
+declare cl_jA: (Junction) -> Answer;
+
+smacro procedure cl_jA(j);
+   % Junction answer.
+   cadr j;
+
+
+declare cl_jAT: (Junction) -> QfFormula;
+
+smacro procedure cl_jAT(j);
+   % Junction answer translation.
+   cddr j;
+
+
+declare cl_co2J: (ContainerElement) -> Junction;
+
+smacro procedure cl_co2J(x);
+   % Container to junction. Returns the S-expression [cl_coF(x) . cl_coA(x) .
+   % cl_coAT(x)].
    cdar x . cadr x . cddr x;
 
-procedure cl_comember(ce,l);
-   % Container member. [ce] is a container element; [l] is a list of
-   % container elements. Returns non-[nil], if there is an container
-   % element $e$ in [l], such that the formula and the variable list of
-   % $e$ are equal to the formula and variable list of [ce]. This
-   % procedure does not use the access functions.
-   if l then car ce = caar l or cl_comember(ce,cdr l);
+
+declare cl_coMember: (ContainerElement,ContainerElementL) -> ExtraBoolean;
+
+procedure cl_coMember(ce,l);
+   % Container member. Returns non-[nil], if there is an container element $e$
+   % in [l], such that the formula and the variable list of $e$ are equal to the
+   % formula and variable list of [ce]. This procedure does not use the access
+   % functions.
+   if l then car ce = caar l or cl_coMember(ce,cdr l);
+
+
+declare cl_erTh: (EliminationResult) -> Theory;
+
+smacro procedure cl_erTh(er);
+   % Elimination result theory.
+   car er;
+
+
+declare cl_erEQR: (EliminationResult) -> ExtendedQeResult;
+
+smacro procedure cl_erEQR(er);
+   % Elimination result extended qe result.
+   cdr er;
+
+
+declare cl_mkER: (Theory,ExtendedQeResult) -> EliminationResult;
+
+smacro procedure cl_mkER(theo,eqr);
+   % Make elimination Result.
+   theo . eqr;
+
+
+declare cl_mk1EQR: (Formula,EquationL) -> ExtendedQeResult;
+
+smacro procedure cl_mk1EQR(f,eql);
+   % Make singleton extended qe result.
+   {{f,eql}};
+
+
+declare cl_gqe: (Formula,Theory,KernelL) -> TheoryFormulaPair;
 
 procedure cl_gqe(f,theo,xbvl);
-   % Generic quantifier elimination. [f] is a formula; [theo] is a
-   % THEORY; [xbvl] is a list of variables. Returns a pair $\Theta .
-   % \phi$. $\Theta$ is a THEORY extending [theo] by assumptions on free
-   % variables of [f] that are not in [xbvl]; $\phi$ is a formula. We
-   % have $\Theta \models [f] \longleftrightarrow \phi$. $\phi$ is
-   % obtained from [f] by eliminating as much quantifiers as possible.
-   % Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to
-   % be prenex.
-   begin scalar w,theo,!*rlqegen,!*rlsipw,!*rlsipo;
+   % Generic quantifier elimination. Returns a pair $\Theta . \phi$. $\Theta$ is
+   % a THEORY extending [theo] by assumptions on free variables of [f] that are
+   % not in [xbvl]; $\phi$ is a formula. We have $\Theta \models [f]
+   % \longleftrightarrow \phi$. $\phi$ is obtained from [f] by eliminating as
+   % many quantifiers as possible. Accesses the switch [rlqepnf]; if [rlqepnf]
+   % is on, then [f] must be prenex.
+   begin scalar er,theo,!*rlqegen,!*rlsipw,!*rlsipo;
       !*rlsipw := !*rlqegen := T;
-      w := cl_qe1(f,theo,xbvl);
-      theo := rl_thsimpl car w;
-      return theo . rl_simpl(cdr w,theo,-1)
+      er := cl_qe1(f,theo,xbvl);
+      if rl_exceptionp er then
+	 return er;
+      theo := rl_thsimpl cl_erTh er;
+      return theo . rl_simpl(caar cl_erEQR er,theo,-1)
    end;
+
+
+declare cl_gqea: (Formula,Theory,ListofKernel) -> EliminationResult;
 
 procedure cl_gqea(f,theo,xbvl);
-   % Generic quantifier elimination with answer. [f] is a formula;
-   % [theo] is a THEORY; [xbvl] is a list of variables. Returns a pair
-   % $\Theta . \Phi$. $\Theta$ is a THEORY extending [theo] by
-   % assumptions on free variables of [f] that are not in [xbvl]; $\Phi$
-   % is a list $(..., (c_i, A_i), ...)$, where the $c_i$ are
-   % quantifier-free formulas, and the $A_i$ are lists of equations. We
-   % have $\Theta \models \bigvee_i c_i \longleftrightarrow [f]$.
-   % Whenever some $c_i$ holds for an interpretation of the parameters,
-   % then [f] holds, and $A_i$ describes a satisfying sample point.
-   % Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to
-   % be prenex.
-   begin scalar w,theo,!*rlqegen,!*rlsipw,!*rlsipo,!*rlqeans;
+   % Generic quantifier elimination with answer. Returns a pair $\Theta . \Phi$.
+   % $\Theta$ extends [theo] by assumptions on free variables of [f] that are
+   % not in [xbvl]; $\Phi$ is a list $(..., (c_i, A_i), ...)$, where the $c_i$
+   % are QfFormula, and the $A_i$ are lists of equations. We have $\Theta
+   % \models \bigvee_i c_i \longleftrightarrow [f]$. Whenever some $c_i$ holds
+   % for an interpretation of the parameters, then [f] holds, and $A_i$
+   % describes a satisfying sample point. Accesses the switch [rlqepnf]; if
+   % [rlqepnf] is on, then [f] must be prenex.
+   begin scalar er,!*rlqegen,!*rlsipw,!*rlsipo,!*rlqeans;
       !*rlsipw := !*rlqegen := !*rlqeans := T;
-      w := cl_qe1(f,theo,xbvl);
-      theo := rl_thsimpl car w;
-      return theo . cdr w
+      er := cl_qe1(f,theo,xbvl);
+      if rl_exceptionp er then
+	 return er;
+      return cl_mkER(rl_thsimpl cl_erTh er,cl_erEQR er)
    end;
 
+
+declare cl_lqe: (Formula,Theory,Point) -> TheoryFormulaPair;
+
 procedure cl_lqe(f,theo,pt);
-   % Local quantifier elimination. [f] is a formula; [theo] is a THEORY;
-   % [pt] is a list of equations $v=z$, where $v$ is a variable and $z$
-   % is an INTEGER, namely the suggested value for the local parameter
-   % $v$. Returns a pair $\Theta . \phi$. $\Theta$ is a THEORY extending
-   % [theo]; $\phi$ is a formula. We have $\Theta \models [f]
-   % \longleftrightarrow \phi$. $\phi$ is obtained from [f] by
-   % eliminating as much quantifiers as possible. Accesses the switch
-   % [rlqepnf]; if [rlqepnf] is on, then [f] has to be prenex. Accesses
-   % the fluids [cl_pal!*], [cl_lps!*], and [cl_theo!*]. [cl_lps!*] is
-   % the list of local parameters; [cl_pal] is a ALIST containing the
-   % suggested values for the local parameters; and [cl_theo!*] is the
+   % Local quantifier elimination. [pt] is the suggested value for the local
+   % parameter $v$. Returns a pair $\Theta . \phi$. $\Theta$ extends [theo];
+   % $\phi$ is a formula. We have $\Theta \models [f] \longleftrightarrow \phi$.
+   % $\phi$ is obtained from [f] by eliminating as much quantifiers as possible.
+   % Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to be
+   % prenex. Accesses the fluids [cl_pal!*], [cl_lps!*], and [cl_theo!*].
+   % [cl_lps!*] is the list of local parameters; [cl_pal] is an Alist containing
+   % the suggested values for the local parameters; and [cl_theo!*] is the
    % theory generated by the local quantifier elimination.
    begin scalar w,theo,!*rlqelocal,!*rlsipw,!*rlsipo,cl_pal!*,cl_lps!*,
-      	 cl_theo!*;
+	 cl_theo!*;
       !*rlsipw := !*rlqelocal := T;
       cl_pal!* := pt;
       cl_lps!* := for each x in pt collect car x;
@@ -150,6 +271,9 @@ procedure cl_lqe(f,theo,pt);
       cl_pal!* := cl_lps!* := cl_theo!* := nil;
       return rl_lthsimpl(theo) . rl_simpl(w,theo,-1)
    end;
+
+
+declare cl_aqe: (Formula,Theory,Point) -> TheoryFormulaPair;
 
 procedure cl_aqe(f,theo,pt);
    % Approximate quantifier elimination. [f] is a formula; [theo] is a
@@ -175,79 +299,86 @@ procedure cl_aqe(f,theo,pt);
 	 rederr "rllqe: inconsistent theory";
       w := cl_qe1(f,theo,nil);
       theo := nconc(cl_theo!*,theo);
-      w := cdr w;
+      w := cl_erEQR w;
       cl_pal!* := cl_lps!* := cl_theo!* := nil;
       return rl_lthsimpl(theo) . rl_simpl(w,theo,-1)
    end;
 
+
+declare cl_qe: (Formula,Theory) -> Formula;
+
 procedure cl_qe(f,theo);
-   % Quantifier elimination. [f] is a formula; [theo] is a THEORY.
-   % Returns a formula $\phi$. We have $[theo] \models [f]
-   % \longleftrightarrow \phi$. $\phi$ is obtained from [f] by
-   % eliminating as many quantifiers as possible. Accesses the switch
-   % [rlqepnf]; if [rlqepnf] is on, then [f] has to be prenex.
-   begin scalar !*rlsipw,!*rlsipo;
+   % Quantifier elimination. Returns a formula $\phi$ such that $[theo] \models
+   % [f] \longleftrightarrow \phi$. $\phi$ is obtained from [f] by eliminating
+   % as many quantifiers as possible. Accesses the switch [rlqepnf]; if
+   % [rlqepnf] is on, then [f] has to be prenex.
+   begin scalar er,!*rlsipw,!*rlsipo;
       !*rlsipw := !*rlsipo := T;
-      return cl_qe1(f,theo,nil)
+      er := cl_qe1(f,theo,nil);
+      if rl_exceptionp er then
+	 return er;
+      return caar cl_erEQR er
    end;
+
+
+declare cl_qea: (Formula,Theory) -> ExtendedQeResult;
 
 procedure cl_qea(f,theo);
-   % Quantifier elimination with answer. [f] is a formula; [theo] is a
-   % THEORY. Returns a list of pairs $(..., (c_i, A_i), ...)$. The $c_i$
-   % are quantifier-free formulas, and the $A_i$ are lists of equations.
-   % We have $[theo] \models \bigvee_i c_i \longleftrightarrow [f]$.
-   % Whenever some $c_i$ holds for an interpretation of the parameters,
-   % [f] holds, and $A_i$ describes a satisfying sample point. Accesses
-   % the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to be
-   % prenex.
-   begin scalar !*rlsipw,!*rlsipo,!*rlqeans;
+   % Quantifier elimination with answer. Returns a list of pairs $(..., (c_i,
+   % A_i), ...)$. The $c_i$ are quantifier-free formulas, and the $A_i$ are
+   % lists of equations. We have $[theo] \models \bigvee_i c_i
+   % \longleftrightarrow [f]$. Whenever some $c_i$ holds for an interpretation
+   % of the parameters, [f] holds, and $A_i$ describes a satisfying sample
+   % point. Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to
+   % be prenex.
+   begin scalar er,!*rlsipw,!*rlsipo,!*rlqeans;
       !*rlsipw := !*rlsipo := !*rlqeans := T;
-      return cl_qe1(f,theo,nil)
+      er := cl_qe1(f,theo,nil);
+      if rl_exceptionp er then
+	 return er;
+      return cl_erEQR er
    end;
 
+
+declare cl_qe1: (Formula,Theory,KernelL) -> EliminationResult;
+
 procedure cl_qe1(f,theo,xbvl);
-   % Quantifier elimination. [f] is a linear formula which is prenex if
-   % the switch [rlqepnf] is off; [theo] is a list of atomic formulas,
-   % which serve as background theory. If the switch [rlqeans] and
-   % [rlqegen] is off a quantifier-free equivalent of [f] is returned.
-   % With [rlqeans] on, a list $(...(c_i,a_i)...)$ is returned, where
-   % the $c_i$ are quantifier-free formulas, and the $a_i$ are lists of
-   % equations. With [rlqegen] on, a pair $(\theta . \phi)$ is returned,
-   % such that $\Theta \models [f] \longleftrightarrow \phi$.
-   begin scalar q,ql,varl,varll,delvarl,answer,result,w; integer n;
+   % Quantifier elimination. [f] must be prenex if the switch [rlqepnf] is off;
+   % [theo] serves as background theory.
+   begin scalar q,ql,varl,varll,bvl,result,w,rvl,jl; integer n;
       if !*rlqepnf then
 	 f := rl_pnf f;
       f := rl_simpl(f,theo,-1);
       if f eq 'inctheo then
-	 return 'inctheo;
+	 return rl_exception 'inctheo;
       if not rl_quap rl_op f then
-	 return cl_qe1!-trivial(f,theo);
-      {ql,varll,f,delvarl} := cl_split f;
-      % Remove atomic formulas containing quantified variables from
-      % the theory:
+	 return cl_mkER(theo,cl_mk1EQR(f,nil));
+      {ql,varll,f,bvl} := cl_split f;
+      % Remove from the theory atomic formulas containing quantified variables:
       theo := for each atf in theo join
-	 if null intersection(rl_varlat atf,delvarl) then {atf};
-      {answer,theo,q,ql,varl,varll} := cl_qe1!-iterate(ql,varll,f,theo,
-	 delvarl,xbvl);
-      f := cl_qe1!-requantify(answer,q,ql,varl,varll);
+	 if null intersection(rl_varlat atf,bvl) then {atf};
+      bvl := union(bvl,xbvl);
+      {ql,varll,q,rvl,jl,theo} := cl_qe1!-iterate(ql,varll,f,theo,bvl);
+      jl := cl_qe1!-requantify(ql,varll,q,rvl,jl);
       if !*rlqeans and null ql then <<
 	 if !*rlverbose then <<
 	    ioto_tprin2 "+++ Postprocessing answer:";
-	    n := length f
+	    n := length jl
 	 >>;
- 	 result := for each x in f collect <<
+ 	 result := for each j in jl join <<
 	    if !*rlverbose then ioto_prin2 {" [",n:=n-1};
- 	    w := {car x,rl_qemkans(cadr x,cddr x)};
+ 	    w := cl_mk1EQR(cl_jF j,rl_qemkans(cl_jA j,cl_jAT j));
 	    if !*rlverbose then ioto_prin2 {"]"};
 	    w
 	 >>;
       >> else <<
+	 f := cl_jF car jl;
 	 if !*rlverbose then
 	    ioto_tprin2 {"+++ Final simplification ... ",cl_atnum f," -> "};
 	 f := rl_simpl(f,theo,-1);
 	 if !*rlverbose then
  	    ioto_prin2t cl_atnum f;
-	 if !*rlqefb and car answer then <<
+	 if !*rlqefb and rvl then <<
 	    if not rl_quap rl_op f then <<
 	       if !*rlverbose then
  		  ioto_tprin2t "++++ No more quantifiers after simplification";
@@ -259,29 +390,19 @@ procedure cl_qe1(f,theo,xbvl);
 	    >>
 	 >> else
 	    result := f;
-	 if !*rlqeans then  % ... and we did never reach the outmost block
-	    result := {{result,nil}}
+	 result := cl_mk1EQR(result,nil);
       >>;
-      if !*rlqegen or !*rlqelocal then
-	 result := theo . result;
-      return result
+      return cl_mkER(theo,result)
    end;
 
-procedure cl_qe1!-trivial(f,theo);
-   % Quantifier elimination subroutine trivial case. [f] is a quantifier-free
-   % formula. Return value is that for [cl_qe1].
-   begin scalar result;
-      result := if !*rlqeans then {{f,nil}} else f;
-      if !*rlqegen or !*rlqelocal then
-	 result := theo . result;
-      return result
-   end;
+
+declare cl_split: (Formula) -> List4;
 
 procedure cl_split(f);
    % Split. [f] is a prenex formula. Returns a list of length 4 splitting [f]
    % into a quantifier list, a list of lists of quantified variables, the
    % matrix, and a flat list of all quantified variables.
-   begin scalar q,op,ql,varl,varll,delvarl;
+   begin scalar q,op,ql,varl,varll,bvl;
       q := op := rl_op f;
       repeat <<
    	 if op neq q then <<
@@ -291,20 +412,22 @@ procedure cl_split(f);
       	    varl := nil
    	 >>;
 	 push(rl_var f,varl);
-	 push(rl_var f,delvarl);
+	 push(rl_var f,bvl);
    	 f := rl_mat f
       >> until not rl_quap(op := rl_op f);
       push(q,ql);
       push(varl,varll);
-      return {ql,varll,f,delvarl}
+      return {ql,varll,f,bvl}
    end;
 
-procedure cl_qe1!-iterate(ql,varll,f,theo,delvarl,xbvl);
+
+declare cl_qe1!-iterate: (List,List,Formula,Theory,KernelL) -> List6;
+
+procedure cl_qe1!-iterate(ql,varll,f,theo,bvl);
    % Iteratively apply [cl_qeblock] to the quantifier blocks.
-   begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,answer,q,varl;
+   begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,q,varl,rvl,jl;
       svrlidentify := !*rlidentify;
-      answer := nil . nil;
-      while null car answer and ql do <<
+      while null rvl and ql do <<
 	 on1 'rlidentify;
       	 q := pop ql;
       	 varl := pop varll;
@@ -316,89 +439,85 @@ procedure cl_qe1!-iterate(ql,varll,f,theo,delvarl,xbvl);
 	    off1 'rlqeprecise;
 	    off1 'rlqeaprecise
 	 >>;
-      	 answer . theo := cl_qeblock(
-	    f,q,varl,theo,!*rlqeans and null ql,union(delvarl,xbvl));
+      	 {rvl,jl,theo} := cl_qeblock(f,q,varl,theo,!*rlqeans and null ql,bvl);
 	 if ql then <<
 	    onoff('rlqeprecise,svrlqeprecise);
 	    onoff('rlqeaprecise,svrlqeaprecise)
 	 >>;
-      	 f := cdr answer;
+      	 f := cl_jF car jl;
 	 off1 'rlidentify
       >>;
       onoff('rlidentify,svrlidentify);
-      return {answer,theo,q,ql,varl,varll}
+      return {ql,varll,q,rvl,jl,theo}
    end;
 
-procedure cl_qe1!-requantify(answer,q,ql,varl,varll);
+
+declare cl_qe1!-requantify: (List,List,Quantifier,KernelL,JunctionL) -> JunctionL;
+
+procedure cl_qe1!-requantify(ql,varll,q,rvl,jl);
    % Requantify with the variables that could not be eliminated.
-   begin scalar f,xx,xxv,scvarll;
-      f := cdr answer;
-      if null car answer then
-	 return f;
+   begin scalar xx,xxv,scvarll,varl;
+      if not rvl then
+	 return jl;
       if !*rlverbose then
 	 ioto_tprin2 "+++ Requantification ... ";
-      if !*rlqeans and null ql then <<
-	 %% rederr "cl_qe: requantification impossible";
-	 f := for each x in f collect <<
-	    xx := car x;
-	    xxv := cl_fvarl xx;
-	    for each v in car answer do
-	       if v memq xxv then
-		  xx := rl_mkq(q,v,xx);
-	    scvarll := varll;
-	    for each q in ql do <<
-	       varl := car scvarll;
-	       scvarll := cdr scvarll;
-	       for each v in varl do
-		  if v memq xxv then
-		     xx := rl_mkq(q,v,xx)
-	    >>;
-	    xx . cdr x
-	 >>
-      >> else <<
-	 for each v in car answer do f := rl_mkq(q,v,f);
+      jl := for each j in jl collect <<
+	 xx := cl_jF j;
+	 xxv := cl_fvarl xx;
+	 for each v in rvl do
+	    if v memq xxv then
+	       xx := rl_mkq(q,v,xx);
+	 scvarll := varll;
 	 for each q in ql do <<
-	    varl := pop varll;
-	    for each v in varl do f := rl_mkq(q,v,f)
-	 >>
+	    varl := car scvarll;
+	    scvarll := cdr scvarll;
+	    for each v in varl do
+	       if v memq xxv then
+		  xx := rl_mkq(q,v,xx)
+	 >>;
+	 cl_mkJ(xx,cl_jA j,cl_jAT j)
       >>;
       if !*rlverbose then
 	 ioto_prin2t "done";
-      return f
+      return jl
    end;
 
+
+declare cl_qeblock: (QfFormula,Quantifier,KernelL,Theory,Boolean,KernelL) -> List3;
+
 procedure cl_qeblock(f,q,varl,theo,ans,bvl);
-   % Quantifier elimination for one block. [f] is a quantifier-free
-   % formula; [q] is a quantifier; [varl] is a variable list; [theo] is
-   % the current theory; [ans] is Boolean. Returns $((V . J) .
-   % \theta')$: $v$ is a list of variables for which elimination failed.
-   % If [ans] is non-[nil],then $J$ is a list of junctions in the sense
-   % of procedure [cl_co2j], else $J$ is a quantifier-free formula.
-   % $\theta'$ is the new theory.
-   begin scalar w;
+   % Quantifier elimination for one block. The result contains the list of
+   % variables for which elimination failed, the (possibly partial) elimination
+   % result as a JunctionL, and the new theory.
+   begin scalar rvl,jl;
       if q eq 'ex then
  	 return cl_qeblock1(rl_simpl(f,theo,-1),varl,theo,ans,bvl);
       % [q eq 'all]
-      w . theo := cl_qeblock1(rl_simpl(rl_nnfnot f,theo,-1),varl,theo,ans,bvl);
-      if ans then
- 	 return (car w . for each x in cdr w collect
- 	    rl_nnfnot car x . cdr x) . theo;
-      return (car w . rl_nnfnot cdr w) . theo
+      {rvl,jl,theo} := cl_qeblock1(rl_simpl(rl_nnfnot f,theo,-1),varl,theo,ans,bvl);
+      return {rvl, for each x in jl collect rl_nnfnot car x . cdr x, theo}
    end;
 
+
+declare cl_qeblock1: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
+
 procedure cl_qeblock1(f,varl,theo,ans,bvl);
-   % Quantifier elimination for one block subroutine. Arguments are as
-   % in [cl_qeblock], where [q] has been dropped. Return value as well.
+   % Quantifier elimination for one block subroutine. The result contains the
+   % list of variables for which elimination failed, the (possibly partial)
+   % possibly negated elimination result as a JunctionL, and the new theory.
    if !*rlqeheu then
       cl_qeblock2(f,varl,theo,ans,bvl)
    else
       cl_qeblock3(f,varl,theo,ans,bvl);
 
+
+declare cl_qeblock2: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
+
 procedure cl_qeblock2(f,varl,theo,ans,bvl);
-   % Quantifier elimination for one block soubroutine. Arguments are as
-   % in [cl_qeblock], where [q] has been dropped. Return value as well.
-   % With [rlqeheu] on, this is in intermediate step checking for
-   % decision problems and switching to DFS in the positive case.
+   % Quantifier elimination for one block subroutine. The result contains the
+   % list of variables for which elimination failed, the (possibly partial)
+   % possibly negated elimination result as a JunctionL, and the new theory.
+   % With [rlqeheu] on, this is in intermediate step checking for decision
+   % problems and switching to DFS in the positive case.
    begin scalar !*rlqedfs,atl;
       atl := cl_atl1 f;
       !*rlqedfs := T;
@@ -409,6 +528,9 @@ procedure cl_qeblock2(f,varl,theo,ans,bvl);
 	    atl := cdr atl;
       return cl_qeblock3(f,varl,theo,ans,bvl)
    end;
+
+
+declare cl_qeblock3: (QfFormula,KernelL,Theory,Boolean,KernelL) -> List3;
 
 procedure cl_qeblock3(f,varl,theo,ans,bvl);
    % Quantifier elimination for one block soubroutine. Arguments are as
@@ -426,13 +548,13 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
       if !*rlqegsd then f := rl_gsd(f,theo);
       if rl_op f = 'or then
 	 for each x in rl_argn f do
-	    co := cl_save(co,{cl_mkcoel(cvl,x,nil,nil)})
+	    co := cl_save(co,{cl_mkCE(cvl,x,nil,nil)})
       else
-      	 co := cl_save(co,{cl_mkcoel(cvl,f,nil,nil)});
+      	 co := cl_save(co,{cl_mkCE(cvl,f,nil,nil)});
       while co do <<
 	 on1 'rlidentify;
 	 coe . co := cl_get co;
-    	 cvl := cl_covl coe;
+    	 cvl := cl_coVL coe;
 	 count := count+1;
          if !*rlverbose then
    	    if !*rlqedfs then <<
@@ -449,27 +571,26 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
 	       c := c - 1
 	    >>;
 	 w . theo := cl_qevar(
-	    cl_cof coe,cl_covl coe,cl_coan coe,cl_coatr coe,theo,ans,bvl);
+	    cl_coF coe,cl_coVL coe,cl_coA coe,cl_coAT coe,theo,ans,bvl);
 	 if car w then <<  % We have found a suitable variable.
 	    w := cdr w;
 	    if w then
-	       if cl_covl car w eq 'break then <<
+	       if cl_coVL car w eq 'break then <<
 	       	  co := nil;
-	       	  newj := {cl_co2j car w}
+	       	  newj := {cl_co2J car w}
 	       >> else if cdr cvl then <<
 		  if !*rlverbose then oldcol := cl_colength(co);
 	       	  co := cl_save(co,w);
  		  if !*rlverbose then
 		     delc := delc + oldcol + length w - cl_colength(co)
 	       >> else
-   		  for each x in w do newj := lto_insert(cl_co2j x,newj)
-	 >> else <<  % There is no eliminable variable.
-	    % Invalidate this entry, and save its variables for later
-	    % requantification.
-%	    if !*rlverbose then ioto_prtmsg("+++" . cdr w);
+   		  for each x in w do newj := lto_insert(cl_co2J x,newj)
+	 >> else <<
+	    % There is no eliminable variable. Invalidate this entry, and save
+	    % its variables for later requantification.
 	    if !*rlverbose then ioto_prin2("FAILURE:" . cdr w);
 	    remvl := union(cvl,remvl);
-	    newj := lto_insert(cl_co2j coe,newj)
+	    newj := lto_insert(cl_co2J coe,newj)
 	 >>;
 	 if !*rlverbose then <<
 	    ioto_prin2 "] ";
@@ -477,17 +598,19 @@ procedure cl_qeblock3(f,varl,theo,ans,bvl);
 	 >>
       >>;
       if !*rlverbose then ioto_prin2{"[DEL:",delc,"/",count,"]"};
-      if ans then return (remvl . newj) . theo;
-      return (remvl . rl_smkn('or,for each x in newj collect car x)) . theo
+      if ans then return {remvl, newj, theo};
+      % I am building the formula here rather than later because one might want
+      % to do some incremental simplification at some point.
+      return {remvl,
+	 {cl_mkJ(rl_smkn('or,for each x in newj collect car x),nil,nil)}, theo}
    end;
 
 procedure cl_qevar(f,vl,an,atr,theo,ans,bvl);
-   % Quantifier eliminate one variable. [f] is a quantifier-free
-   % formula; [vl] is a non-empty list of variables; [an] is an
-   % answer; [theo] is a list of atomic formulas; [ans] is Boolean.
-   % Returns a pair $a . p$. Either $a=[T]$ and $p$ is a pair of a
-   % list of container elements and a theory or $a=[nil]$ and $p$ is
-   % an error message. If there is a container element with ['break]
+   % Quantifier eliminate one variable. [f] is a quantifier-free formula; [vl]
+   % is a non-empty list of variables; [an] is an answer; [theo] is a list of
+   % atomic formulas; [ans] is Boolean. Returns a pair $a . p$. Either $a=[T]$
+   % and $p$ is a pair of a list of container elements and a theory or $a=[nil]$
+   % and $p$ is an error message. If there is a container element with ['break]
    % as varlist, this is the only one.
    begin scalar w,candvl,status; integer len;
       if (w := cl_transform(f,vl,atr,theo)) then
@@ -562,7 +685,7 @@ procedure cl_process!-candvl(f,vl,an,atr,theo,ans,bvl,candvl);
       	 alp := cl_qeatal(f,v,theo,ans);
       	 if alp = '(nil . nil) then <<  % [v] does not occur in [f].
       	    if !*rlverbose then ioto_prin2 "*";
-      	    w := {cl_mkcoel(delq(v,vl),f,ans and an,ans and atr)};
+      	    w := {cl_mkCE(delq(v,vl),f,ans and an,ans and atr)};
 	    status := 'nonocc;
 	    candvl := nil
       	 >> else if car alp = 'failed then
@@ -605,16 +728,16 @@ procedure cl_esetsubst(f,v,eset,vl,an,atr,theo,ans,bvl);
 	    if !*rlqegsd then
 	       elimres := rl_gsd(elimres,theo);
 	    if elimres eq 'true then <<
-	       junct := {cl_mkcoel('break,elimres,
+	       junct := {cl_mkCE('break,elimres,
 		  cl_updans(v,a,u,an,atr,ans),ans and atr)};
 	       eset := d := nil
 	    >> else if elimres neq 'false then
 	       if rl_op elimres eq 'or then
 		  for each subf in rl_argn elimres do
-		     junct := cl_mkcoel(vl,subf,
+		     junct := cl_mkCE(vl,subf,
 			cl_updans(v,a,u,an,atr,ans),ans and atr) . junct
 	       else
-		  junct := cl_mkcoel(vl,elimres,
+		  junct := cl_mkCE(vl,elimres,
 		     cl_updans(v,a,u,an,atr,ans),ans and atr) . junct;
       	 >>
       >>;
@@ -690,7 +813,7 @@ procedure cl_push(co,dol);
 procedure cl_coinsert(co,ce);
    % Insert into container. [co] is a container; [ce] is a container
    % element. Returns a container.
-   if cl_comember(ce,co) then co else ce . co;
+   if cl_coMember(ce,co) then co else ce . co;
 
 procedure cl_enqueue(co,dol);
    % Enqueue into container. [co] is a container; [dol] is a list of
@@ -702,7 +825,7 @@ procedure cl_enqueue(co,dol);
 	 dol := cdr dol
       >>;
       for each x in dol do
-	 if not cl_comember(x,cdr co) then
+	 if not cl_coMember(x,cdr co) then
 	    car co := (cdar co := {x});
       co
    >>;
@@ -739,7 +862,7 @@ procedure cl_betterp(new,old);
 
 procedure cl_betterp!-count(coell);
    % [coell] is a list of container elements.
-   for each x in coell sum rl_atnum cl_cof x;
+   for each x in coell sum rl_atnum cl_coF x;
 
 procedure cl_qeipo(f,theo);
    % Quantifier elimination in position. [f] is a positive formula;
@@ -809,7 +932,7 @@ procedure cl_qews(f,theo);
       f := rl_simpl(f,theo,-1);
       if not rl_quap rl_op f then
 	 return f;
-      {ql,varll,f} := cl_split f;  % drop delvarl
+      {ql,varll,f} := cl_split f;  % drop bvl
       while ql do <<
 	 q := pop ql;
 	 varl := pop varll;

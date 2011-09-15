@@ -337,9 +337,9 @@ flag('(rl_simpbop rl_simpq rl_simpbq rl_prepbop rl_prepq rl_prepbq),'full);
 
 macro procedure rl_getversion(argl);
    begin scalar v,w;
-      v := getenv("REDLOGVERSION") or "DEVELOPMENT VERSION";
+      v := getenv("REDLOGVERSION") or "Development Version";
       w := getenv("REDLOGDATE") or date();
-      return lto_sconcat {"REDLOG ",v,", ",w}
+      return lto_sconcat {"Redlog ",v,", ",w}
    end;
 
 operator rlabout;
@@ -347,12 +347,8 @@ operator rlabout;
 procedure rlabout();
    <<
       ioto_tprin2t rl_getversion();
-      if !*utf8 then <<
-%	 tyo 226; tyo 146; tyo 184
-	 tyo 194; tyo 169
-      >> else
-	 ioto_prin2 "(C)";
-      ioto_prin2t " 1995-2009 A. Dolzmann and T. Sturm";
+      ioto_prin2 "(C)";
+      ioto_prin2t " A. Dolzmann and T. Sturm";
       ioto_tprin2t "http://www.redlog.eu/"
    >>;
 
@@ -816,6 +812,14 @@ procedure rl_mkexternal(x,f,xf);
 	 al := (f . xf) . al;
       return put(x,'rl_external,al)
    end;
+
+flag('(rl_exception),'assert_ignore);
+
+smacro procedure rl_exception(s);
+   'rl_exception . s;
+
+smacro procedure rl_exceptionp(s);
+   eqcar(s,'rl_exception);
 
 endmodule;  % [redlog]
 

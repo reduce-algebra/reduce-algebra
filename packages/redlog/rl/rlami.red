@@ -644,29 +644,38 @@ procedure rl_a2s!-posf(f);
    rl_nnf rl_simp f;
 
 procedure rl_s2a!-simpl(f);
-   if f eq 'inctheo then rederr "inconsistent theory" else rl_mk!*fof f;
+   if f eq 'inctheo then
+      rederr "inconsistent theory"
+   else
+      rl_mk!*fof f;
+
+procedure rl_s2a!-qe(res);
+   if rl_exceptionp res and cdr red eq 'inctheo then
+      rederr "inconsistent theory"
+   else
+      rl_mk!*fof f;
 
 procedure rl_s2a!-gqe(res);
-   if res eq 'inctheo then
+   if rl_exceptionp res and cdr res eq 'inctheo then
       rederr "inconsistent theory"
    else
       {'list,rl_s2a!-atl car res,rl_mk!*fof cdr res};
 
 procedure rl_s2a!-gqea(res);
-   if res eq 'inctheo then
+   if rl_exceptionp res and cdr res eq 'inctheo then
       rederr "inconsistent theory"
    else
       {'list,rl_s2a!-atl car res,rl_s2a!-qea cdr res};
 
 procedure rl_s2a!-qea(res);
-   if res eq 'inctheo then
+   if rl_exceptionp res and cdr res eq 'inctheo then
       rederr "inconsistent theory"
    else
       'list . for each x in res collect
  	 {'list,rl_mk!*fof car x,'list . cadr x};
 
 procedure rl_s2a!-wqea(res);
-   if res eq 'inctheo then
+   if rl_exceptionp res and cdr res eq 'inctheo then
       rederr "inconsistent theory"
    else
       'list . for each x in res collect
