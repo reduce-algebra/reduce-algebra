@@ -5,7 +5,7 @@ nil
 
 
 struct any;
-*** type any is not checked 
+*** struct any is not checked 
 
 
 
