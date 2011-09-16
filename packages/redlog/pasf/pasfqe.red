@@ -252,9 +252,9 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
       cvl := varl;
       if rl_op psi eq 'or then
 	 for each x in rl_argn psi do
-	    co := cl_save(co,{cl_mkcoel(cvl,x,answ,nil)})
+	    co := cl_save(co,{cl_mkCE(cvl,x,answ,nil)})
       else
-      	 co := cl_save(co,{cl_mkcoel(cvl,psi,answ,nil)});
+      	 co := cl_save(co,{cl_mkCE(cvl,psi,answ,nil)});
       while co do <<
 	 w := cl_get co;
 	 co := cdr w;
@@ -280,7 +280,7 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
 	 v := car cvl;
 	 cvl := cdr cvl;
 	 % Eliminating the selected variable
-	 ans := pasf_qeex(f,v,theo,cl_coan coe,cvl,p);
+	 ans := pasf_qeex(f,v,theo,cl_coA coe,cvl,p);
 	 if cvl then <<
 	    if !*rlverbose then oldcol := cl_colength(co);
 	    co := cl_save(co,ans);
@@ -289,7 +289,7 @@ procedure pasf_qeexblock(varl,psi,dpth,vlv,theo,answ,p);
 	 >> else <<
 	    if answ then
 	       for each an in ans do
-		  newj := lto_insert(cl_coan an,newj)
+		  newj := lto_insert(cl_coA an,newj)
 	    else
 	       for each an in ans do newj := lto_insert(cl_cof an,newj)
 	 >>;
@@ -316,7 +316,7 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
       if not (x memq cl_fvarl1 psi) then <<
       	 % The formula does not contain the quantified variable
 	 if !*rlverbose then ioto_prin2 "*";
-	 return {cl_mkcoel(cvlm,psi,answ_new(psi,nil,
+	 return {cl_mkCE(cvlm,psi,answ_new(psi,nil,
 	    if answ then
 	       pasf_mk2('equal,numr simp x,simp 0) . answ_tl answ else nil),nil)}
       >>;
@@ -368,7 +368,7 @@ procedure pasf_qeex(psi,x,theo,answ,cvlm,p);
 	    cl_simpl(answ_f rs,theo,-1) else answ_f rs,answ_bl rs,answ_tl rs);
       % Answers represent directly the output disjunction
       return for each an in res collect
-	 cl_mkcoel(cvlm,answ_f an,answ_backsubst(an,answ),nil)
+	 cl_mkCE(cvlm,answ_f an,answ_backsubst(an,answ),nil)
    end;
 
 % ---- Virtual substitution --------------------------------------------------

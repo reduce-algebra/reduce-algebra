@@ -1816,7 +1816,7 @@ procedure ofsf_sqsc(f,vl,theo,ans,bvl);
 	 ioto_prin2 "#Q";
       vl := delq(a,vl);
       f := cl_simpl(ofsf_sqsc1(f,at,a,theo),theo,-1);
-      return (t . {cl_mkcoel(vl,f,nil,nil)}) . theo
+      return (t . {cl_mkCE(vl,f,nil,nil)}) . theo
    end;
 
 procedure ofsf_sqsc1(f,at,v,theo);
