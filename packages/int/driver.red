@@ -763,7 +763,7 @@ end;
 %-----------------------------------------------------------------------
 algebraic;
 
-operator ci,si;  % ei.
+%operator ci,si;  % ei.
 % FJW: ci,si also defined in specfn(sfint.red), so ...
 symbolic((algebraic operator ci,si) where !*msg=nil);
 
