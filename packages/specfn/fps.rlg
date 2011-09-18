@@ -374,10 +374,6 @@ infsum(------------------------------,k,0,infinity)
 fps(int(erf(x),x),x);
 
 
-*** ci already defined as operator 
-
-*** si already defined as operator 
-
             2*k                k
          - x   *sqrt(pi)*( - 1)
 infsum(---------------------------,k,0,infinity)
