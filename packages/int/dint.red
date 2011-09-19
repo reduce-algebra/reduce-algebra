@@ -43,15 +43,15 @@ symbolic procedure simpdint u;
        else if null getd 'new_defint then nil
        else if upp = 'infinity
         then if low = 0
-               then if not smemql('(infinity unknown),
+               then if not smemql('(infinity unknown fail),
                                   x := defint!* {fn,var})
                       then return simp!* x else nil
               else if low = '(minus infinity)
                then return mkinfint(fn,var)
               else if freeof(var,low)
-               then if not smemql('(infinity unknown),
+               then if not smemql('(infinity unknown fail),
                                   x := defint!* {fn,var})
-                     and not smemql('(infinity unknown),
+                     and not smemql('(infinity unknown fail),
                                   y := indefint!* {fn,var,low})
                       then return simp!* {'difference,x,y} else nil
               else nil
@@ -63,13 +63,13 @@ symbolic procedure simpdint u;
                      var,{'minus,upp},'infinity}
        else if low = 0
         then if freeof(var,upp)
-                and not smemql('(infinity unknown),
+                and not smemql('(infinity unknown fail),
                                x := indefint!* {fn,var,upp})
                then return simp!* x else nil
        else if freeof(var,upp) and freeof(var,low)
-                 and not smemq('(infinity unknown),
+                 and not smemql('(infinity unknown fail),
                                x := indefint!* {fn,var,upp})
-                 and not smemql('(infinity unknown),
+                 and not smemql('(infinity unknown fail),
                                y := indefint!* {fn,var,low})
         then return simp!* {'difference,x,y};
       return mkdint(fn,var,low,upp)
