@@ -20,7 +20,7 @@
 #
 #   --enable-conservative   development version not working yet!
 #   --enable-test     predefine a symbol TEST used to protect
-#                     temporary or unfinished code deleopments.
+#                     temporary or unfinished code developments.
 #   --enable-jit      another experimental and incomplete extension.
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but

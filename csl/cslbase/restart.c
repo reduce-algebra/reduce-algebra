@@ -38,7 +38,7 @@
 
 
 
-/* Signature: 17d2f321 29-Aug-2011 */
+/* Signature: 38fd5604 19-Sep-2011 */
 
 #include "headers.h"
 
@@ -4988,6 +4988,9 @@ static void set_up_variables(CSLbool restart_flag)
 #ifdef DEBUG
         w = cons(make_keyword("DEBUG"), w);
 #endif
+#ifdef TEST
+        w = cons(make_keyword("TEST"), w);
+#endif
         w = cons(make_keyword("RECORD_GET"), w);
 #ifdef HAVE_FWIN
         w = acons(make_keyword("EXECUTABLE"),
@@ -5020,6 +5023,9 @@ static void set_up_variables(CSLbool restart_flag)
 #endif
 #ifdef DEBUG
         w = cons(make_keyword("debug"), w);
+#endif
+#ifdef TEST
+        w = cons(make_keyword("test"), w);
 #endif
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);

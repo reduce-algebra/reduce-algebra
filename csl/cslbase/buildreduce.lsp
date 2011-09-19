@@ -447,7 +447,10 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 
 !@reduce := concat(!@srcdir, "/../..");
 
-rds(xxx := open("$reduce/packages/support/build.red",'input));
+rds(xxx := open((if memq('test, lispsystem!*) then
+                      "$reduce/test-packages/support/build.red"
+                 else "$reduce/packages/support/build.red"),
+                'input));
 
 (close xxx)
 
@@ -587,7 +590,9 @@ load!-module "user";
 
 !@reduce := concat(!@srcdir, "/../..");
 
-in "$reduce/packages/support/remake.red"$
+if memq('test, lispsystem!*) then
+     in "$reduce/test-packages/support/remake.red"
+else in "$reduce/packages/support/remake.red"$
 
 global '(reduce_base_modules reduce_extra_modules
          reduce_test_cases reduce_regression_tests);
@@ -604,7 +609,9 @@ symbolic procedure get_configuration_data();
 % Configuration information is held in a file called something like
 % "package.map".
     if boundp 'minireduce and symbol!-value 'minireduce then
-        i := "package.map"
+         i := "package.map"
+    else if memq('test, lispsystem!*) then
+         i := "$srcdir/../../test-packages/package.map"
     else i := "$srcdir/../../packages/package.map";
     i := open(i, 'input);
     i := rds i;
@@ -630,7 +637,9 @@ symbolic procedure get_configuration_data();
 % considered to be a test case in addition to ones explicitly shown
 % in package.map.
     reduce_regression_tests := nil;
-    r := list!-directory "$srcdir/../../packages/regressions";
+    if memq('test, lispsystem!*) then
+         r := list!-directory "$srcdir/../../test packages/regressions"
+    else r := list!-directory "$srcdir/../../packages/regressions";
     for each f in r do <<
       r1 := reverse explodec f;
       if eqcar(r1, 't) and
@@ -734,7 +743,10 @@ symbolic procedure test_a_package names;
        oll := linelength 80;
 %      princ date(); princ " run on "; printc cdr assoc('name, lispsystem!*);
        if get(packge,'folder) then packge := get(packge,'folder);
-       packge := concat("$srcdir/../../packages/",
+       packge := concat(
+                   (if memq('test, lispsystem!*) then
+                         "$srcdir/../../test-packages/"
+                    else "$srcdir/../../packages/"),
                    concat(packge,
                      concat("/",
                        concat(car names,".tst"))));
@@ -866,7 +878,9 @@ symbolic procedure profile_a_package names;
     load!-package packge;
     get_configuration_data();
     if get(packge,'folder) then packge := get(packge,'folder);
-    packge := concat("$srcdir/../../packages/",
+    packge := concat((if memq('test, lispsystem!*) then
+                      "$srcdir/../../test-packages/"
+                 else "$srcdir/../../packages/"),
                 concat(packge,
                   concat("/",
                     concat(car names,".tst"))));
@@ -1350,7 +1364,9 @@ symbolic procedure check_a_package;
        mylogname := concat(logname, concat("/", concat(packge, ".rlg")));
        if get(packge,'folder) then p1 := get(packge,'folder)
        else p1 := packge;
-       reflogname := concat("$srcdir/../../packages/",
+       reflogname := concat((if memq('test, lispsystem!*) then
+                             "$srcdir/../../test-packages/"
+                        else "$srcdir/../../packages/"),
                        concat(p1,
                          concat("/",
                            concat(packge,".rlg"))));
