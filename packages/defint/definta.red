@@ -432,7 +432,7 @@ else
 
    for each i in var do
 
-   << if listp i then
+   << if listp i and not constant_exprp i then
       << if car i = 'expt then
          << alpha := caddr i;
             expt_flag := 't>>

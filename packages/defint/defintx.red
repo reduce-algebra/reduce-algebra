@@ -110,7 +110,7 @@ load_package int;
 
 symbolic procedure defint0 u;
    begin
-      scalar rdon!*,!*msg,c,!*noneglogs,fac,!*norationalgi,
+      scalar rdon!*,!*msg,c,!*noneglogs,fac,
          !*combinelogs,!*rationalize;
       if not getd 'solvesq then load_package solve;
       if length u neq 4 then rederr
@@ -120,9 +120,8 @@ symbolic procedure defint0 u;
                     % defint11s after splitfactors has operated!
       !*noneglogs := t;
       algebraic (let logcomplex); %,atan2eval);
-      fac := !*factor; on factor; !*norationalgi := t;
-      u := errorset2 {'defint1,mkquote u};
-      !*norationalgi := nil;
+      fac := !*factor; on factor;
+      u := errorset2 {'defint1,mkquote u} where !*norationalgi = t;
       if errorp u then <<u := 'failed; go to ret>> else u := car u;
       off factor;
       if !*rounded then
@@ -148,6 +147,7 @@ symbolic procedure defint0 u;
    %   if errorp u then error(99,list("error during log simp"))
    %      else u := car u;
  ret: if fac then on factor;
+      off complex;
       algebraic (clearrules logcomplex); %,atan2eval);
       if u neq 'failed then u := prepsq u;
       off complex; on combinelogs;
@@ -246,11 +246,12 @@ symbolic procedure degreeof(p,var);
   % if smemq('besseli,p) then !*k2q 'failed else
   if smemql ('(besselj besselk bessely besseli),p) then !*k2q 'failed else
   (if null car de then de else
-    <<if d then onoff(d := get(d,'dname),nil);
+    <<%if d then onoff(d := get(d,'dname),nil);
+      if d then setdmode(get(d,'dname),nil);
       p := simp!*
               limit(list('quotient,list('times,var, prepsq de),prepf p),
                     var,'infinity);
-      if d then onoff(d,t); p>>)
+      if d then setdmode(d,t); p>>)
     where d=dmode!*,de=difff(p,var);
 
 symbolic procedure genminusp x;

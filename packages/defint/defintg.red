@@ -80,13 +80,13 @@ for each i in n do
       else if i = '(defint_choose e x) then
            coef := reval algebraic(e*coef)
 
-      else if caadr i = 'expt then
+      else if eqcar(cadr i,'expt) then
 
       << reform_test := 't;
 % Form a list of the functions which must be reformed
          reform_lst := append(reform_lst,{i})>>
 
-      else if caadr i = 'quotient
+      else if eqcar(cadr i, 'quotient)
 
 % don't reform special compound functions which are represented as a
 % single Meijer G-function
@@ -98,7 +98,7 @@ for each i in n do
 % Form a list of the functions which must be reformed
          reform_lst := append(reform_lst,{i})>>
 
-      else if caadr i = 'times then
+      else if eqcar(cadr i, 'times) then
 
       << if listp car cddadr i
                   and (caar cddadr i = 'm_chebyshevu
@@ -172,18 +172,28 @@ if not listp n then
 
 else if listp caddr n neq t then
 
-<< if numberp caddr n then coef := n
+<< if numberp caddr n then coef := n . coef
          else lst := {{'defint_choose,n,var}}; >>
 
-else if caaddr n = 'quotient then lst := {{'defint_choose,n,var}}
+else if car caddr n eq 'quotient and eqcar(cadr caddr n,'plus)
+        and not depends(caddr caddr n,var)
+   then 
+     % quotient of sum by constant
+     n := 'plus .
+         for each term in cdr cadr caddr n collect {'quotient,term,caddr caddr n}
+
+else if not(caaddr n eq 'plus) then lst := {{'defint_choose,n,var}}
 
 else
 <<  temp := cdaddr n;
    for each i in temp do
-   << lst := ({'defint_choose,{'expt,'e,car temp},var} . lst);
-      temp := cdr temp>>;
+   << if not depends(i,var) then coef := {'expt,'e,i} . coef
+       else lst := ({'defint_choose,{'expt,'e,i},var} . lst)>>;
 >>;
-if coef neq nil then lst := coef . lst else lst := 1 . lst;
+if null coef then coef := 1
+ else if null cdr coef then coef := car coef
+ else coef := 'times . reverse coef;
+lst := coef . lst;
 return lst;
 end;
 
@@ -218,32 +228,45 @@ end;
 
 symbolic procedure reform_denom(n,var);
    begin scalar temp,coef,lst,temp1;
+      % argument n is of the form (quotient 1 some_expr), extract some_expr
       temp := caddr n;
+      if not depends(temp,var) then return (n . nil);
       % if the function contains e^n where n is a number than this can
       % be taken outside the integral as a constant.
       if not(eqcar(temp,'expt) or eqcar(temp,'times))
                         then return list(1,list('defint_choose,n,var));
-
-      if temp = 'e or fixp caddr temp then <<coef := temp; temp := nil>>
-       else if car temp = 'times then
-        <<if fixp cadr temp then
-           << coef := cadr temp; temp := caddr temp>>
-           else << coef := caddr temp; temp := cadr temp>>>>;
+      % case product
+      if eqcar(temp,'times) then <<
+              for each fctr in cdr temp do
+                 if depends(fctr, var) then temp1 := fctr . temp1
+                  else coef := fctr . coef;
+	      temp := if cdr temp1 then 'times . reverse temp1 else car temp1 >>;
+      if eqcar(temp,'expt) and not (cadr temp eq 'e)
+        then if depends(cadr temp, var)
+               then lst := {{'defint_choose,{'quotient,1,temp}},var}
+              else temp := {'expt,'e,{'times,{'log,cadr temp},caddr temp}};
       % test for a single occurrence of e.
       if temp and eqcar(caddr temp ,'quotient)
-              and listp car cdaddr temp and listp cadr cdaddr temp then
+        then if eqcar(cadr caddr temp,'plus) and not depends(caddr caddr temp,var)
+              then temp := {'expt,cadr temp,
+                            'plus . for each term in cdr cadr caddr temp collect
+                                   {'quotient,term,caddr caddr temp}}
+              else if listp car cdaddr temp and listp cadr cdaddr temp then
       << off mcd; temp:= {'expt,'e,quotient_case(reval temp)}; on mcd>>;
-      if temp and car temp = 'expt and (atom caddr temp or
+      if temp and car temp eq 'expt and (atom caddr temp or
                               caaddr temp neq 'plus) then
       <<lst := {{'defint_choose,
                    {'quotient,1,{'expt,'e,caddr temp}},var}}>>
       % else if there are multiple occurrences of e
       else if pairp caddr temp then
+%      else if listp temp and length temp > 2 and pairp caddr temp then
       << temp1 := cdaddr temp;
          for each i in temp1 do
-         << lst:=({'defint_choose,
-                       {'quotient,1,{'expt,'e,car temp1}},var}
-                       . lst); temp1 := cdr temp1>>>>;
+           if not depends(i,var) then coef := {'expt,'e,i} . coef
+            else lst:=({'defint_choose,{'quotient,1,{'expt,'e,i}},var} . lst)>>;
+      if coef then
+         if not null cdr coef then coef := 'times . reverse coef
+          else coef := car coef;
   a:  return if coef then lst := ({'quotient,1,coef} . lst)
               else lst := 1 . lst
    end;
@@ -266,7 +289,14 @@ else if num = 'e or fixp caddr num then
         << num_coef := num; num := nil>>
 
 else if car num  = 'times then
-        << num_coef := caddr num; num  := cadr num>>;
+        << for each fctr in cdr num do
+             if depends(fctr,var) then num1 := fctr . num1
+              else num_coef := fctr . num_coef;
+           if null num_coef then num_coef := 1
+            else if cdr num_coef then num_coef := 'times . reverse num_coef
+            else num_coef := car num_coef;
+           if num then
+              num := if cdr num then 'times . reverse num else car num >>;
 
 if fixp denom or atom denom then
         << denom_coef := denom; denom := nil>>
@@ -274,9 +304,16 @@ if fixp denom or atom denom then
 else if denom = 'e or fixp caddr denom then
            << denom_coef := denom; denom := nil>>
 
-else if car denom  = 'times then
-        << denom_coef := caddr denom; denom  := cadr denom>>;
-
+else if car denom  = 'times then 
+        << for each fctr in cdr denom do
+             if depends(fctr,var) then denom1 := fctr . denom1
+              else denom_coef := fctr . denom_coef; 
+           if denom_coef then
+              denom_coef := if cdr denom_coef then 'times . reverse denom_coef
+                             else car denom_coef;
+           if denom then
+              denom := if cdr denom1 then 'times . reverse denom1 else car denom1>>;
+   
 if denom and car denom = 'expt and (atom caddr denom or
                         caaddr denom neq 'plus) then
      lst := {{'defint_choose,{'quotient,1,
@@ -306,12 +343,11 @@ else if not atom num then
       num1 := cdr num1>>;
 >>;
 
-if num_coef then lst := (num_coef . lst)
+if null denom_coef then lst := (num_coef . lst)
 
-else if denom_coef neq nil then
-    lst := ({'quotient,1,denom_coef} . lst)
+else 
+    lst := ({'quotient,num_coef,denom_coef} . lst);
 
-else lst := 1 . lst;
 return lst;
 end;
 
