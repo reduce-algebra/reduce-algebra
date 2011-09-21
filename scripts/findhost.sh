@@ -145,6 +145,7 @@ then
 fi
 
 debug=
+test=
 m32=
 m64=
 nogui=
@@ -164,6 +165,12 @@ do
     ;;
   --enable-debug)
     debug=-debug
+    ;;
+  --enable-test=no | --disable-test)
+    test=
+    ;;
+  --enable-test)
+    test=-test
     ;;
   --with-mingw64=no | --without-mingw64)
     host=$original
@@ -213,6 +220,6 @@ do
   esac
 done
 
-echo $host$m32$m64$nogui$fox$wx$smallpage$debug
+echo $host$m32$m64$nogui$fox$wx$smallpage$test$debug
 
 exit 0
