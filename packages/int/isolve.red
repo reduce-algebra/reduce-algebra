@@ -123,7 +123,8 @@ symbolic procedure squashconstants(express);
    else begin scalar constlst,ii,xp,cl,subby,cmt,xx;
         constlst:=reverse cmap;
         cmt:=cmatrix;
-xxx:    xx:=car cmt;            % Look at next row of Cmatrix
+xxx:    if null cmt then return express; % nothing to squash
+        xx:=car cmt;            % Look at next row of Cmatrix
         cl:=constlst;           % and list of the names.
         ii:=1;                   % will become index of removed constant.
         while not getv(xx,ii) do
