@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 2a671464 02-Sep-2011 */
+/* Signature: 18657e52 21-Sep-2011 */
 
 #include "headers.h"
 
@@ -3042,12 +3042,12 @@ void loop_print_stdout(Lisp_Object o)
  * have a definition but its vector-of-literals might not have been loaded.
  * If it gets called at that stage there could be a disaster, So as a small
  * amount of extra protection only relevant to me when I build initial images
- * based on a could-start I will try to avoid calling it then and fall back
+ * based on a cold-start I will try to avoid calling it then and fall back
  * to using the simpler version of prin.
  */
     if (!is_symbol(lp) ||
         (f = qfn1(lp)) == undefined1 ||
-         !is_vector(qenv(lp))) prin_to_stdout(o);
+        (f != bytecoded1 && !is_vector(qenv(lp)))) prin_to_stdout(o);
     else
     {   CSLbool bad = NO;
         Lisp_Object env = qenv(lp);
