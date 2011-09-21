@@ -78,11 +78,29 @@ symbolic procedure mkfil!* u;
    end;
 
 symbolic procedure in_list1(fl,echop);
-   begin scalar chan,echo,ochan;
+   begin scalar chan,echo,ochan,w,w1;
       echo := !*echo;   % Save current echo status.
       if !*reduce4 then if type fl neq 'string then typerr(fl,'string)
                          else fl := value fl;
-      chan := open(fl := mkfil!* fl,'input);
+      fl := mkfil!* fl;
+% Now fl is a string and if ifl!* is nil then input had been coming from
+% the "terminal", otherwise car ifl!* is the name of the file currently
+% being read from.
+%
+% Now I wish to arrange that if fl is of the form "$/xxx" (or $\xxx") that
+% the "$" is replaced by the directory portion of car ifl!*. Or by "." if
+% ifl!*=nil or it does not contain a "/" or "\". 
+      w := explode2 fl;
+      if eqcar(w, '!$) and
+         (eqcar(cdr w, '!/) or eqcar(cdr w, '!\)) then <<
+        if null ifl!* then fl := compress('!" . !. . append(cdr w, '(!")))
+        else <<
+          w1 := reverse explode2 car ifl!*;
+          while w1 and not (eqcar(w1, '!/) or eqcar(w1, '!\)) do w1 := cdr w1;
+          if null w1 then w1 := '(!/ !.);
+          w := '!" . append(reverse w1, append(cddr w, '(!")));
+          fl := compress w >> >>;
+      chan := open(fl,'input);
       ochan := rds chan;
       if assoc(fl,linelist!*) then nil;
       curline!* := 1;
