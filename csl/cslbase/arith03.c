@@ -780,7 +780,7 @@ Lisp_Object quotbb(Lisp_Object a, Lisp_Object b)
             r1 = r1 - p1 - 1;
         }
         else r1 = r1 - p1;
-/*
+/* /*
  * the next line is a cop-out for now - if my estimated quotient
  * was close enough to the true value than the residual I get here
  * ought to be fairly small - if it is not I have bungled.  Over several years
@@ -799,7 +799,7 @@ Lisp_Object quotbb(Lisp_Object a, Lisp_Object b)
  * That obtained the remainder from (p1,p0)/(q1,q0) - now adjust q until
  * the remainder has the sign I want it to have.
  */
-/* I do not look at carry here - I have a nasty suspicion that I should.. */
+/* /* I do not look at carry here - I have a nasty suspicion that I should.. */
         while ((int32_t)r1 > 0 ||
                (r1 == 0 && r0 != 0))
         {   q--;
