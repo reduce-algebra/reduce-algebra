@@ -419,8 +419,10 @@ begin
                                   list(var . list('expt,newvar,m))),
                             mn2m!-1);
         if !*trint then <<
-            prin2 "Integrand is transformed to ";
-            printsq integrand
+            prin2 "Integrand is transformed by substitution to ";
+            printsq integrand;
+            prin2 "using substitution "; prin2 var; prin2 " -> ";
+            printsq simp list('expt,newvar,m);
         >>;
         begin scalar intvar;
             intvar := newvar;   % To circumvent an algint bug.
@@ -488,6 +490,12 @@ symbolic procedure look_for_quad(integrand, var, zz);
            res := subsq(car res, ss) .
                   subsq(multsq(cdr res, simp list('quotient,b,
                                                   list('times,nvar,2))), ss);
+           if !*trint then <<
+              printc "Transforming back...";
+	      printsq car res;
+	      prin2 " plus a bad part of ";
+	      printsq cdr res
+           >>;
         %% Should one reject if there is a bad bit??
            return res;
         end
@@ -561,7 +569,7 @@ begin
         multsq(subsq(integrand,
                      list(var . list('difference,
                                      list('quotient,ss,sqmn), b))),
-               quotsq(onemth := simp onemth, simp sqmn));
+               onemth := quotsq(simp onemth, simp sqmn));
     if !*trint then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
@@ -612,7 +620,7 @@ begin
     integrand := subs2q
         multsq(subsq(integrand,
                list(var . list('difference,list('quotient,ss,sqmn),b))),
-               quotsq(onemth := simp onemth, simp sqmn));
+               onemth := quotsq(simp onemth, simp sqmn));
     if !*trint then <<
         prin2 "Integrand is transformed by substitution to ";
         printsq integrand;
