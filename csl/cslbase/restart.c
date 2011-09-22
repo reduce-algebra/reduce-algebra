@@ -5260,7 +5260,7 @@ static void set_up_variables(CSLbool restart_flag)
                       make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
 #endif
 #ifdef UNIX_TIMES
-/* 
+/* /*
  * ACN believes that the following is misguided, since the time-reading
  * function (defined in fns1.c) that CCL provides always returns its answer
  * in milliseconds. This the 1000 below is NOT as arbitrary as all that, it
