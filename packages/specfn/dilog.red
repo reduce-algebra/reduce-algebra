@@ -60,12 +60,30 @@ let { dilog(exp(-~t)) => - dilog(exp t) - t^2/2,
                  when numberp x and lisp !*rounded and x>=0,
       dilog 2 => -pi^2/12,
       dilog 1 => 0,
-      dilog 0 => pi^2/6};
+      dilog 0 => pi^2/6,
+      dilog(-1) => pi^2/4-i*pi*log(2)
+};
+
+%let { fps(polylog(~s,~x),~x,0) => infsum((-1)^k*x^k/k^s,k,1,infinity)};
+
+let { polylog(1,~z) => -log(1-z),
+      polylog(~n,~z) => z*df(polylog(n+1,z),z) when fixp n and n<=0,
+      polylog(1,1/2) => log(2),
+      polylog(2,-1) => -pi^2/12,
+      polylog(2,0) => 0,
+      polylog(2,1/2) => (pi^2 - 6*log(2)^2)/12,
+      polylog(2,1) => pi^2/6,
+      polylog(2,2) => pi^2/4-i*pi*log(2),
+      polylog(3,1/2) => (4*log(2)^3 - 2*pi^2*log(2) + 21*zeta(3))/24,
+      polylog(~s,1) => zeta(s),
+      df(polylog(~n,~z),~z) => polylog(n-1,z)/z when fixp n and n>1
+};
 
 let { Lerch_Phi (~z,~s,~a) => compute_lerch_phi(z,s,a)
-              when lisp !*rounded and numberp z and numberp s and numberp a,
+              when lisp !*rounded and numberp z and abs(z)<1
+                     and numberp s and numberp a,
       polylog(~n,~z) =>  compute_lerch_phi(z,n,0)
-              when lisp !*rounded and numberp z and numberp n };
+              when lisp !*rounded and numberp z and abs(z)<1 and numberp n };
 
 procedure compute_dilog(x);
    if x = 0.0 then  pi^2/6
@@ -90,7 +108,7 @@ procedure compute_dilog(x);
                 return summa; end;
 >>;
 
-procedure compute_lerch_phi(z,s,a);
+algebraic procedure compute_lerch_phi(z,s,a);
     begin scalar !*uncached,yy,summa,k,term,pow;
            !*uncached :=t;
            term := 1; pow := 1;
