@@ -62,7 +62,7 @@ uxfloat(f,i)
 
 /* Tag( uxfix )
  */
-int uxfix(f)
+long long uxfix(f)
      double *f;
 {
   return *f;

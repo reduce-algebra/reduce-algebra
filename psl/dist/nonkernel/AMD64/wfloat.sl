@@ -31,12 +31,12 @@
   (uxfloat  (inf x) y))
 
 (de *fplus2 (x y z)
-  (uxplus2 (inf x) (inf y)
-	(inf z)))
+ (when (eq (uxplus2 (inf x) (inf y) (inf z)) 0)
+      (stderror "Floating point error in fplus2")))
 
 (de *fdifference (x y z)
-  (uxdifference (inf x) (inf y)
-        (inf z)))
+ (when (eq (uxdifference (inf x) (inf y) (inf z)) 0)
+      (stderror "Floating point error in fdifference")))
 
 (de *ftimes2 (x y z)
   (when (eq (uxtimes2 (inf x) (inf y) (inf z)) 0)

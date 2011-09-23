@@ -36,8 +36,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Revisions:
 %
-% 22-Dec-86 (Leigh Stoller)
-%  Copied from vax nonkernel directory.
+% Winfried Neun, April 1, 2011
+%    adapted to the mingw-64 times function (hopefully)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (compiletime (load sys-macros))
@@ -54,7 +54,6 @@
 
 (de timc ()
   (external_timc timebuffer)
-  (wquotient (wplus2 (wshift (wshift (wgetv timebuffer 0) 32) -32)
-              500 ) 1000))
+  (wquotient (wplus2 (wshift (wshift (wgetv timebuffer 0) 32) -32) 500) 1000))
 
 (off fast-integers)
