@@ -638,7 +638,7 @@ symbolic procedure get_configuration_data();
 % in package.map.
     reduce_regression_tests := nil;
     if memq('test, lispsystem!*) then
-         r := list!-directory "$srcdir/../../test packages/regressions"
+         r := list!-directory "$srcdir/../../test-packages/regressions"
     else r := list!-directory "$srcdir/../../packages/regressions";
     for each f in r do <<
       r1 := reverse explodec f;
