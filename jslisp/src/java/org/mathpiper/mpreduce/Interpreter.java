@@ -211,6 +211,13 @@ public class Interpreter implements EntryPoint {
             //result = evaluate("2+2");
 
             result = evaluate("(X-Y)^100");
+            System.out.println(result);
+
+            result = evaluate("load ineq");
+            System.out.println(result);
+
+            result = evaluate("ineq_solve((x - 1)/(x + 2) > 0,x);");
+            System.out.println(result);
 
         } catch (Throwable t) {
             System.out.println(t.getMessage());
@@ -505,7 +512,7 @@ public class Interpreter implements EntryPoint {
 
 
 
-            System.out.println(mpreduce.test());
+            mpreduce.test();
 
 
             //Uncomment the following line to list the compiled functions that are in the package data store.
