@@ -590,9 +590,10 @@ load!-module "user";
 
 !@reduce := concat(!@srcdir, "/../..");
 
-if memq('test, lispsystem!*) then
-     in "$reduce/test-packages/support/remake.red"
-else in "$reduce/packages/support/remake.red"$
+
+in (if memq('test, lispsystem!*) then
+        "$reduce/test-packages/support/remake.red"
+   else "$reduce/packages/support/remake.red")$
 
 global '(reduce_base_modules reduce_extra_modules
          reduce_test_cases reduce_regression_tests);
