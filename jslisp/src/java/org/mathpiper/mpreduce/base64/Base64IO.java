@@ -31,12 +31,14 @@ package org.mathpiper.mpreduce.base64;
  */
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.mathpiper.mpreduce.ReduceImageInputStream;
 
 /**
  * Base64 for InputStream<br/> Licence = BSD
@@ -153,7 +155,11 @@ public class Base64IO {
     } //end method.
 
 
-    public static void main(String[] args) {
+    private static void makeBase64()
+    {
+
+        File f = new File("tmp");
+        System.out.println("Path: "+ f.getAbsolutePath());
 
         //Create base64 file.
         FileInputStream fileIn;
@@ -209,7 +215,7 @@ public class Base64IO {
                     + "\n"
                     + "        if(byteIndex == bytes.length)\n"
                     + "        {\n"
-                    + "            if(stringSelector != reduceImage.length - 1)\n"
+                    + "            if(stringSelector != reduceImage.length - 2)\n"
                     + "            {\n"
                     + "                byteIndex = 0;\n"
                     + "\n"
@@ -232,6 +238,11 @@ public class Base64IO {
                     + "        return character;\n"
                     + "\n"
                     + "    }//end read.\n"
+                    + "\n"
+                    + "    public void close()\n"
+                    + "    {\n"
+                    + "        reduceImage = null;\n"
+                    + "    }\n"
                     + "\n"
                     + "\n"
                     + "public String[] reduceImage = new String[] {\n";
@@ -258,14 +269,98 @@ public class Base64IO {
 
             }//end while.
 
-            out.write("\"\" };\n}");
+            out.write("\"\"};\n}");
 
 
             in.close();
             out.close();
+
+            System.out.println("Finished building ReduceImageInputStream.java");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }//end method.
+
+
+    private static void testBase64()
+    {
+
+        int differenceCount = 0;
+        int index = 0;
+
+        ReduceImageInputStream riis = new ReduceImageInputStream();
+
+
+        FileInputStream fileIn;
+
+        try {
+            fileIn = new FileInputStream("minireduce.img");
+
+            boolean loop = true;
+
+            while(loop)
+            {
+
+                int imageByte = fileIn.read();
+
+                int base64Byte = riis.read();
+
+                if((imageByte == -1) || (base64Byte == -1))
+                {
+                    if(imageByte != -1)
+                    {
+                        System.out.println("Error: Base64 too short.");
+                    }
+
+                    else if(base64Byte != -1)
+                    {
+                        System.out.println("Error: Image too short.");
+                    }
+                    else
+                    {
+                        System.out.println("The lengths of the Image and the Base64 copy match.");
+                    }
+
+
+                    loop = false;
+                    break;
+                }
+
+                index++;
+
+
+                if(imageByte != base64Byte)
+                {
+                    differenceCount++;
+                }
+
+
+            }//end while.
+
+
+
+            fileIn.close();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally
+        {
+
+             System.out.println("Number of different bytes: " + differenceCount + "  Index: " + index);
+        }
+    }//end method.
+
+
+
+    public static void main(String[] args) {
+
+        //testBase64();
+
+        makeBase64();
 
     }//end method.
 
