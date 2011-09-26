@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 29356c6b 28-Aug-2011 */
+/* Signature: 53a5e1ac 26-Sep-2011 */
 
 #include "headers.h"
 
@@ -1610,6 +1610,13 @@ Lisp_Object Lset(Lisp_Object nil, Lisp_Object a, Lisp_Object b)
     return onevalue(b);
 }
 
+Lisp_Object Lmakeunbound(Lisp_Object nil, Lisp_Object a)
+{
+    if (!symbolp(a) || a == nil || a == lisp_true) return aerror("makeunbound");
+    qvalue(a) = unset_var;
+    return onevalue(a);
+}
+
 Lisp_Object Lsymbol_function(Lisp_Object nil, Lisp_Object a)
 {
     one_args *f1;
@@ -2313,6 +2320,7 @@ setup_type const funcs1_setup[] =
     {"rplaca",                  too_few_2, Lrplaca, wrong_no_2},
     {"rplacd",                  too_few_2, Lrplacd, wrong_no_2},
     {"set",                     too_few_2, Lset, wrong_no_2},
+    {"makeunbound",             Lmakeunbound, too_many_1, wrong_no_1},
     {"special-form-p",          Lspecial_form_p, too_many_1, wrong_no_1},
     {"stop",                    Lstop, too_many_1, wrong_no_1},
     {"symbol-function",         Lsymbol_function, too_many_1, wrong_no_1},
