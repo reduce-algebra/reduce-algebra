@@ -145,7 +145,8 @@ procedure sfpx1(u,vl,v,d,chkord);
       dd := pdeg p;
       if vv eq v then
 	 % We are considering a reductum and the variable has not changed.
-	 return dd < d and sfpx1(c,v . vl,nil,0) and sfpx1(r,vl,v,dd);
+	 return dd < d and
+ 	    sfpx1(c,v . vl,nil,0,chkord) and sfpx1(r,vl,v,dd,chkord);
       % We are considering the original form or an lc, or a reductum
       % where the variable has changed from v to vv.
       if v then
