@@ -9291,6 +9291,20 @@ _ACEOF
 fi
 
 
+ac_fn_c_check_type "$LINENO" "struct tms" "ac_cv_type_struct_tms" "#ifdef HAVE_SYS_TIMES_H
+    #include <sys/times.h>
+    #endif
+"
+if test "x$ac_cv_type_struct_tms" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_TMS 1
+_ACEOF
+
+
+fi
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether stat file-mode macros are broken" >&5
 $as_echo_n "checking whether stat file-mode macros are broken... " >&6; }
@@ -10486,7 +10500,7 @@ _ACEOF
 fi
 done
 
-for ac_func in vsnprintf sysctlbyname gettimeofday
+for ac_func in vsnprintf sysctlbyname gettimeofday times
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

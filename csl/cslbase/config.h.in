@@ -237,6 +237,9 @@
 /* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
 
+/* Define to 1 if the system has the type `struct tms'. */
+#undef HAVE_STRUCT_TMS
+
 /* Define to 1 if you have the <syscall.h> header file. */
 #undef HAVE_SYSCALL_H
 
@@ -295,6 +298,9 @@
 
 /* Define to 1 if you have the `tgetent' function. */
 #undef HAVE_TGETENT
+
+/* Define to 1 if you have the `times' function. */
+#undef HAVE_TIMES
 
 /* Define to 1 if you have the `tputs' function. */
 #undef HAVE_TPUTS

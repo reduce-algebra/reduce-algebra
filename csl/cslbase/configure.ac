@@ -1202,6 +1202,11 @@ AC_CHECK_TYPES([cpu_set_t], [], [],
     #include <sched.h>
     #endif])
 
+AC_CHECK_TYPES([struct tms], [], [],
+   [#ifdef HAVE_SYS_TIMES_H
+    #include <sys/times.h>
+    #endif])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STAT
 AC_C_CONST
@@ -1263,7 +1268,7 @@ AC_CHECK_FUNCS([atexit ftruncate getcwd gethostbyaddr gethostbyname inet_ntoa])
 AC_CHECK_FUNCS([memmove memset mkdir pow rmdir socket sqrt strchr strdup])
 AC_CHECK_FUNCS([strrchr strstr utime popen getrlimit])
 AC_CHECK_FUNCS([fork wait waitpid shmget shmat shmdt shmctl])
-AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday])
+AC_CHECK_FUNCS([vsnprintf sysctlbyname gettimeofday times])
 AC_CHECK_FUNCS([siglongjmp sigaltstack sigaction])
 # sigsetjmp will be a macro not a function, and so the various predefined
 # tests are not very good at detecting it. So I have a custom test here.

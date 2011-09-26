@@ -381,7 +381,7 @@ char *look_in_lisp_variable(char *o, int prefix)
 }
 
 
-#if defined HAVE_SYS_TIME_H && !defined WIN32 && !defined EMBEDDED
+#if defined HAVE_SYS_TIME_H && defined HAVE_TIMES && !defined WIN32 && !defined EMBEDDED
 
 /*
  * This is a BSD-style clock facility, possibly giving a resolution of
