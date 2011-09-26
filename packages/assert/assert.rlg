@@ -56,14 +56,14 @@ hugo(0,0);
 hugo('x,0);
 
 
-*** assertion hugo: (number,any) -> number violated by arg1 x 
+*** declaration hugo: (number,any) -> number violated by arg1 x 
 
 0
 
 hugo(0,'x);
 
 
-*** assertion hugo: (number,any) -> number violated by result x 
+*** declaration hugo: (number,any) -> number violated by result x 
 
 x
 
@@ -88,13 +88,13 @@ nil
 addsq(simp 'x,numr simp 'x);
 
 
-*** assertion addsq: (sq,sq) -> sq violated by arg2 (((x . 1) . 1)) 
+*** declaration addsq: (sq,sq) -> sq violated by arg2 (((x . 1) . 1)) 
 
-*** assertion addf: (sf,sf) -> sf violated by arg2 ((x . 1) . 1) 
+*** declaration addf: (sf,sf) -> sf violated by arg2 ((x . 1) . 1) 
 
-*** assertion addf: (sf,sf) -> sf violated by result ((x . 1) . 1) 
+*** declaration addf: (sf,sf) -> sf violated by result ((x . 1) . 1) 
 
-*** assertion addsq: (sq,sq) -> sq violated by result (((x . 1) . 1)) 
+*** declaration addsq: (sq,sq) -> sq violated by result (((x . 1) . 1)) 
 
 (((x . 1) . 1))
 
@@ -122,8 +122,6 @@ assert_uninstall_all;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 5 ms
-real	0m0.441s
-user	0m0.030s
-sys	0m0.045s
+Tested on x86_64-mac_10.7_lion-darwin11.1.0-nogui CSL
+Time (counter 1): 0 ms
+real	0m0.001s

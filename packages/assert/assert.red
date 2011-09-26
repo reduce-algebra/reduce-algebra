@@ -146,11 +146,11 @@ procedure assert_error(fn,argtypel,restype,typeno,type,arg);
       >>;
       msg := if eqn(typeno,0) then
 %	 {"result of",fn,"invalid as",type,":",arg}
-	 {"assertion",assert_format(fn,argtypel,restype),
+	 {"declaration",assert_format(fn,argtypel,restype),
 	    "violated by result",arg}
       else
 %	 {"argument",typeno,"of",fn,"invalid as",type,":",arg};
-	 {"assertion",assert_format(fn,argtypel,restype),
+	 {"declaration",assert_format(fn,argtypel,restype),
 	    "violated by",mkid('arg,typeno),arg};
       if !*assertbreak then
 	 rederr msg

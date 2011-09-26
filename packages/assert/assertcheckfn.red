@@ -159,7 +159,7 @@ procedure sfpx1(u,vl,v,d,chkord);
       if chkord and vl and ordpp(vv .** 1,car vl .** 1) then
 	 % We have seen a smaller variable before.
 	 return nil;
-      return sfpx1(c,vv . vl,nil,0) and sfpx1(r,vl,vv,dd)
+      return sfpx1(c,vv . vl,nil,0,chkord) and sfpx1(r,vl,vv,dd,chkord)
    end;
 
 procedure assert_kernelp(u);
