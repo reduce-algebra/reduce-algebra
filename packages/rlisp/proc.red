@@ -117,6 +117,15 @@ symbolic procedure formproc(u,vars,mode);
 
 put('procedure,'formfn,'formproc);
 
+symbolic procedure formde(u, vars, mode);
+  formproc(
+     list('procedure, cadr u, 'symbolic, 'expr, caddr u,
+                      if null cddddr u then cadddr else 'progn . cdddr u),
+     vars,
+     mode);
+
+put('de,'formfn,'formde);
+
 symbolic procedure pairxvars(u,v,vars,mode);
    %Pairs procedure variables and their modes, taking into account
    %the convention which allows a top level prog to change the mode
