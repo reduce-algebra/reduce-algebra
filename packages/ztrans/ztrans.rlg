@@ -1508,10 +1508,6 @@ load_package odesolve;
 
 *** airy_bi already defined as operator 
 
-*** ci already defined as operator 
-
-*** si already defined as operator 
-
 oderesult:=odesolve(equation,tmp(z),z);
 
 
@@ -1541,8 +1537,3 @@ result:=preresult where solveresult;
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 1120 ms  plus GC time: 35 ms
-real	0m1.790s
-user	0m0.031s
-sys	0m0.122s
