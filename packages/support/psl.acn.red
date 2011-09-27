@@ -126,7 +126,7 @@ compiletime
 
 symbolic procedure safe!-fp!-plus(x,y);
   begin
-    scalar ex,ey,sx,sy;
+    scalar ex,ey,sx,sy,z,ez;
     if ieeezerop x then return y
     else if ieeezerop y then return x;
 % "-0.0" will merely drop down into the general case... that is not
@@ -151,7 +151,10 @@ symbolic procedure safe!-fp!-plus(x,y);
 % led to !!fleps1 lie in the past (around 2001 I believe) - I hope they
 % were mainly concerned with delivering more consistent results when
 % one could not be confident of having IEEE arithmetic...
-    return floatplus2(x, y);
+    z := floatplus2(x, y);
+    ez := ieeeexpt z;
+    if ilessp(ez, idifference(ex,44)) then return 0.0
+    else return z;
   end;
 
 symbolic procedure safe!-fp!-times(x,y);
