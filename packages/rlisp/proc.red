@@ -120,7 +120,7 @@ put('procedure,'formfn,'formproc);
 symbolic procedure formde(u, vars, mode);
   formproc(
      list('procedure, cadr u, 'symbolic, 'expr, caddr u,
-                      if null cddddr u then cadddr else 'progn . cdddr u),
+                      if null cddddr u then cadddr u else 'progn . cdddr u),
      vars,
      mode);
 
