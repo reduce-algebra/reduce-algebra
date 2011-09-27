@@ -424,10 +424,13 @@ begin
             prin2 "using substitution "; prin2 var; prin2 " -> ";
             printsq simp list('expt,newvar,m);
         >>;
-        begin scalar intvar;
-            intvar := newvar;   % To circumvent an algint bug.
-        res := integratesq(integrand, newvar, nil, nil);
-        end;
+	res := errorset!*({'integratesq,mkquote integrand,
+                           mkquote newvar, nil, nil},
+                          !*backtrace);
+        if null res or errorp res
+          then <<if !*trint then printc "Substituted integral FAILED!";
+                 return nil>>
+         else res := car res;
         ss := list(newvar . list('expt,var, list('quotient, 1, m)));
         res := subsq(car res, ss) .
                subsq(quotsq(cdr res, mn2m!-1), ss);
@@ -497,7 +500,7 @@ symbolic procedure look_for_quad(integrand, var, zz);
 	      printsq cdr res
            >>;
         %% Should one reject if there is a bad bit??
-           return res;
+           return if null numr cdr res then res else nil;
         end
         else if length zz = 3 then return begin % A quadratic
           scalar a, b, c;
@@ -750,10 +753,18 @@ begin
                        list('quotient, prepsq (nn ./ dd), 2));
     integrand := prepsq simp integrand;
     integrand := simp integrand;
-    begin scalar intvar;
-        intvar := newvar;   % To circumvent an algint bug/oddity
-        res := integratesq(integrand, newvar, nil, nil);
-    end;
+    if !*trint then <<
+          prin2 "Integrand is transformed by substitution to ";           
+          printsq integrand;                                              
+          prin2 "using substitution "; prin2 var; prin2 " -> ";           
+          printsq simp list('sqrt,newvar);
+    >>;
+    res := errorset!*({'integratesq,mkquote integrand, mkquote newvar, nil, nil},
+                      !*backtrace);
+    if null res or errorp res
+       then <<if !*trint then printc "Substituted integral FAILED";
+              return nil>>
+     else res := car res;
     ss := list(newvar . list('expt, var, 2));
     res := subsq(car res, ss) . multsq((((var .^ 1) .* 2) .+ nil) ./ 1,
                                        subsq(cdr res, ss));
