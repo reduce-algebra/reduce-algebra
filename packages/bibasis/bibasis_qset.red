@@ -45,7 +45,7 @@ begin scalar tmpMonom, tripleListIterator;
     <<
         tripleListIterator := cdr(tripleListIterator);
     >>;
-    insert(tripleListIterator, triple);
+    bibasis_insert(tripleListIterator, triple);
 end;
 
 
@@ -68,14 +68,14 @@ begin scalar iteratorQ, iteratorList; integer monomCompare;
         >>
         else
         <<
-            insert(iteratorQ, car(iteratorList));
+            bibasis_insert(iteratorQ, car(iteratorList));
             iteratorQ := cdr(iteratorQ);
             iteratorList := cdr(iteratorList);
         >>;
     >>;
     if car(iteratorList) then
     <<
-        remove(rplacd(iteratorQ, iteratorList));
+        bibasis_remove(rplacd(iteratorQ, iteratorList));
     >>;
 end;
 
@@ -83,7 +83,7 @@ end;
 expr procedure SetQGet();
 begin scalar triple;
     triple := car(FluidBibasisSetQ);
-    remove(FluidBibasisSetQ);
+    bibasis_remove(FluidBibasisSetQ);
     return triple;
 end;
 
@@ -95,7 +95,7 @@ begin scalar currentTriple;
     <<
         if TripleGetAncestorID(car(currentTriple)) = ancestorID then
         <<
-            remove(currentTriple);
+            bibasis_remove(currentTriple);
         >>
         else
         <<

@@ -2,6 +2,11 @@
 
 % TESTS OF BASIC CONSTRUCTS.
 
+% These names are used with varing numbers of arguments here in this
+% test script, so to avoid messages of complaint I tag them as
+% variadic.
+lisp flag('(f h !@), 'variadic);
+
 operator f, h$
 
 % A "literal" template.

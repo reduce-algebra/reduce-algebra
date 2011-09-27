@@ -97,7 +97,10 @@ flag ('(off on),'ignore);
 % Symbolic mode switches:
 
 switch backtrace,comp,defn,demo,echo,errcont,fastfor,   % eoldelimp
-       int,lessspace,msg,output,pret,quotenewnam,raise,time;
+       int,lessspace,msg,output,pret,quotenewnam,raise,time,
+       strict_argcount, report_colons;
+
+!*report_colons := t;
 
 put('eoldelimp,'simpfg,'((t (flag (list !$eol!$) 'delchar))
                          (nil (remflag (list !$eol!$) 'delchar))));

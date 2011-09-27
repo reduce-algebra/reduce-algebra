@@ -43,7 +43,7 @@ symbolic procedure mkprogn(u,v);
    if eqcar(v,'progn) then 'progn . u . cdr v else list('progn,u,v);
 
 symbolic procedure formproc(u,vars,mode);
-   begin scalar body,fname!*,name,type,varlis,x,y,fl;
+   begin scalar body,fname!*,name,type,varlis,x,y,fl,n;
         u := cdr u;
         name := fname!* := car u;
         if cadr u then mode := cadr u;   % overwrite previous mode
@@ -95,10 +95,19 @@ symbolic procedure formproc(u,vars,mode);
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
         if !*argnochk and type memq '(expr smacro)
-          then body := mkprogn(list('put,mkquote name,
+          then <<
+              if (n:=get(name, 'number!-of!-args)) and
+                 not flagp(name, 'variadic) and
+                 n neq length varlis then <<
+                if !*strict_argcount then
+                  lprie list ("Definition of", name,
+                      "different count from args previously called with")
+                else lprim list(name, "defined with", length varlist,
+                    "but previously called with",n,"arguments") >>;
+           body := mkprogn(list('put,mkquote name,
                                     mkquote 'number!-of!-args,
                                     length varlis),
-                               body);
+                               body) >>;
         if !*defn and type memq '(fexpr macro smacro)
           then lispeval body;
         return if !*micro!-version and type memq '(fexpr macro smacro)

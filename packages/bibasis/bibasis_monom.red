@@ -33,8 +33,8 @@ module bibasis_monom;
 % POSSIBILITY OF SUCH DAMAGE.
 
 
-smacro procedure insert(y, x); rplaca(rplacd(y, car(y) . cdr(y)), x);
-smacro procedure remove(y); rplacd(rplaca(y, cadr(y)), cddr(y));
+smacro procedure bibasis_insert(y, x); rplaca(rplacd(y, car(y) . cdr(y)), x);
+smacro procedure bibasis_remove(y); rplacd(rplaca(y, cadr(y)), cddr(y));
 
 expr procedure PushBack(list, value);
 begin scalar listIterator;
@@ -43,7 +43,7 @@ begin scalar listIterator;
     <<
         listIterator := cdr(listIterator);
     >>;
-    insert(listIterator, value);
+    bibasis_insert(listIterator, value);
 end;
 
 
@@ -136,7 +136,7 @@ begin scalar exponent;
     >>;
     if not(car(exponent) and car(exponent) = variable) then
     <<
-        insert(exponent, variable);
+        bibasis_insert(exponent, variable);
         MonomSetDegree(monom, MonomGetDegree(monom) + 1);
     >>;
 end;

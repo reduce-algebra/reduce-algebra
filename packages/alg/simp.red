@@ -1115,10 +1115,17 @@ symbolic procedure domainvalchk(fn,u);
 
 symbolic procedure valuechk(fn,u);
    begin scalar n;
-      if (n := get(fn,'number!-of!-args)) and length u neq n
-         or not n
-            and u and cdr u and (get(fn,'!:rd!:) or get(fn,'!:rn!:))
-       then rerror(alg,17,list("Wrong number of arguments to",fn));
+      if (n := get(fn,'number!-of!-args)) and
+         length u neq n and
+         not flagp(fn, 'variadic)
+         or not n and
+            u and
+            cdr u and
+            (get(fn,'!:rd!:) or get(fn,'!:rn!:))
+       then <<
+          if !*strict_argcount then
+              rerror(alg,17,list("Wrong number of arguments to",fn))
+          else lprim list("Wrong number of arguments to", fn) >>; 
       u := opfchk!!(fn . u);
       if u then return znumrnil
           ((if eqcar(u,'list) then list((u . 1) . 1) else u) ./ 1)

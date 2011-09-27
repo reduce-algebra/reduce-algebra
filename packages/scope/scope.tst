@@ -139,16 +139,16 @@ iname s;
 
 optlang fortran$
 optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
-         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+         declare <<x(4),a(4,4),y(5): real;b(5): integer>>;
 optlang c$
 optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
-         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+         declare <<x(4),a(4,4),y(5): real;b(5): integer>>;
 optlang  pascal$
 optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
-         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+         declare <<x(4),a(4,4),y(5): real;b(5): integer>>;
 optlang ratfor$
 optimize {x(i+1,i-1):=a(i+1,i-1)+b(i),y(i-1):=a(i-1,i+1)-b(i)} iname s
-         declare <<x(4),a(4,4),y(5):real;b(5):integer>>;
+         declare <<x(4),a(4,4),y(5): real;b(5): integer>>;
 precision 7$
 on rounded, double$
 optlang fortran$
@@ -158,7 +158,7 @@ optimize x1:=2         *a + 10        *b,
          x4:=6         *a + 10        *b,
          x5:=2.0000001 *a + 10.000001 *b
 iname s
-declare << x1,x2,x3,x4,x5,a,b:real>>$
+declare << x1,x2,x3,x4,x5,a,b: real>>$
 
 % Further reading: SCOPE 1.5 manual section 7, example 20.
 % Notice the double role of e: In the lhs as identifier. In the rhs as
@@ -180,7 +180,7 @@ optimize a(1,x+1)  := g + h*r^f,
          f         := d*(3 + a(1,1+x)) + sin(d),
          g         := d*(3 + a(1,1+x)) + f
 iname s
-declare << a(5,5),b(7),c,c1,d,e,f,g,h,r:real*8; x,y:integer>>$
+declare << a(5,5),b(7),c,c1,d,e,f,g,h,r: real*8; x,y: integer>>$
 
 % Further reading: SCOPE 1.5 manual section 8, examples 21 and 22.
 %                  Also recommended: section 9.

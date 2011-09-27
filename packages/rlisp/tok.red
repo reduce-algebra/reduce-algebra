@@ -30,7 +30,9 @@ module tok; % Identifier and reserved character reading.
 
 
 fluid '(!*adjprec !*comment !*defn !*eoldelimp !*lower !*minusliter
-        !*quotenewnam semic!*);
+        !*quotenewnam semic!* !*report!_colons);
+
+!*report!_colons := t;
 
 % Note *raise is global in the SL Report, but treated as fluid here.
 
@@ -43,6 +45,7 @@ global '(!$eof!$
          crbuf!*
          crbuf1!*
          crchar!*
+         peekchar!*
          curline!*
          cursym!*
          eof!*
@@ -56,6 +59,7 @@ flag('(adjprec),'switch);
 !*quotenewnam := t;
 
 crchar!* := '! ;
+peekchar!* := nil;
 
 curline!* := 1;
 
@@ -79,6 +83,19 @@ symbolic procedure mkstrng u;
 
 symbolic procedure readch1;
    begin scalar x;
+% This one-character look-ahead is used when parsing names that
+% have colons within them, as in abc:def. In particular it is active when
+% input text such as "... abc::? ...". If the character written as "?" there
+% is a letter, digit or underscore then it continues the symbol that
+% started with "abc". Otherwise the symbol will stop as just "abc" with
+% the first ":" left in crchar!* and peekchar!* set to '(!: ?).
+% I will not preserve peekchar!* across file-selection (I note that
+% curchr!* is not preserved either). This is OK provided that the Reduce
+% directive to read in a file (ie 'in "filename";') can not properly end in
+% a symbol that has colons at the end of it. 
+      if peekchar!* then progn(x := car peekchar!*,
+                              peekchar!* := cdr peekchar!*,
+                              return x);
       if null terminalp()
         then progn(x := readch(),
                    x eq !$eol!$ and (curline!* := curline!*+1),
@@ -167,7 +184,29 @@ fluid '(!*line!-marker);
 !*line!-marker := intern compress '(!! !_ l i n e !! !_);
 
 symbolic procedure token1;
-   begin scalar x,y;
+%
+% The current syntax for an identifier is that it starts with a letter (or
+% an escaped character) and can continue with letters, digits or underscores.
+% I wish to support identifiers that contain an internal unescaped ":" or "::"
+% (but just one such). In detecting this case I need to be careful that
+% the currently common case as in
+%         assignable:=123;
+% and     label:
+% are not so treated.
+%
+% This will be an INCOMPATIBLE change as illustrated by the fragment:
+%   ....   label:name:=x ....
+% which in the old world would have been a labelled assignment to "name", but
+% now will become an assignment to the package-decorated symbol "label:name".
+% I believe that this will not be a practical problem and it can always be
+% worked around by putting whitespace after a label.
+%
+% On checking the Reduce sources another incompatibility that hurts
+% is "for v = n : m do ..." where n ends with an identifier and m
+% starts with one. In this case I am adjusting the main source either to
+% parenthesize one of the loop limits or to put whitespace around the ":".
+%
+   begin scalar x,y,packname;
         x := crchar!*;
     a:  if seprp x and null(x eq !$eol!$ and !*eoldelimp)
           then progn(x := readch1(), go to a)
@@ -204,16 +243,98 @@ symbolic procedure token1;
          else if x eq '!! then go to escape
          else if x eq '!- and !*minusliter
           then progn(y := '!! . y, go to let1)
-         else if x eq '!_ then go to let1;    % Allow _ as letter.
+         else if x eq '!_ then go to let1     % Allow _ as letter.
+         else if x eq '!: then go to maybepackage;
+    ordinarysym:
         y := intern compress reversip!* y;
+% If I implement a package system I might want to check if the name
+% y here should name onto ppp:y for some package ppp.
         if y = !*line!-marker then nxtsym!* := curline!*
         else nxtsym!* := y;
         crchar!* := x;
     c:  return nxtsym!*;
-%   minusl:
-%       if digit (x := readch1())
-%         then progn(crchar!* := x, return(nxtsym!* := 'minus))
-%        else progn(y := '!- . '!! . y, go to letter);
+    maybepackage:                               % Seen abc:
+        x := readch1();
+        if x eq '!: then go to maybeextpackage
+        else if liter x then go to ispackage;
+        peekchar!* := list x;
+        x := '!:;
+        go to ordinarysym; 
+    maybeextpackage:                            % Seen abc::
+        x := readch1();
+        if liter x then go to isextpackage;
+        peekchar!* := list('!:, x);
+        x := '!:;
+        go to ordinarysym;
+    ispackage:
+% At present I merely (optonally) report the dubious name...
+           peekchar!* := list x;
+           x := '!:;
+           if !*report!_colons then
+             lprim list("Symbol with colon in starts as",
+                        compress reverse y);
+           go to ordinarysym;
+% what follows lexes the full qualifies name but does not actually look
+% it up anywhere.
+        packname := intern compress reverse y;
+        y := '!: . '!! . y;
+    packmore:
+        y := x . y;
+        if digit (x := readch1()) or liter x then go to packmore
+         else if x eq '!! then go to packescape
+         else if x eq '!- and !*minusliter
+          then progn(y := '!! . y, go to packmore)
+         else if x eq '!_ then go to packmore;    % Allow _ as letter.
+        y := intern compress reversip!* y;
+        lprim list("Name with colon in detected:", y);
+% Here the symbol was of the form ppp:nnn and the variable packname holds
+% ppp, while y is now the full token ppp!:nnn. I could as relevant map
+% the name depending on symbols tagged internal or external in the package.
+% Right now I am in a trransitional state and do not do ANYTHING beyond
+% accepting names with unescaped colons within them.
+        nxtsym!* := y;
+        crchar!* := x;
+        return nxtsym!*;
+    packescape:
+        begin scalar raise,!*lower;
+           raise := !*raise;
+           !*raise := nil;
+           y := x . y;
+           x := readch1();
+           !*raise := raise
+        end;
+        go to packmore;
+    isextpackage:
+           peekchar!* := list('!:, x);
+           x := '!:;
+           if !*report!_colons then
+             lprim list("Symbol with double colon in starts as",
+                         compress reverse y);
+           go to ordinarysym;
+% Again what follows lexes a name of the form ppp::xxx
+        packname := intern compress reverse y;
+        y := '!: . '!! . '!: . '!! . y;
+    extpackmore:
+        y := x . y;
+        if digit (x := readch1()) or liter x then go to extpackmore
+         else if x eq '!! then go to extpackescape
+         else if x eq '!- and !*minusliter
+          then progn(y := '!! . y, go to extpackmore)
+         else if x eq '!_ then go to extpackmore;    % Allow _ as letter.
+        y := intern compress reversip!* y;
+        lprim list("Name with double colon in detected:", y);
+        nxtsym!* := y;
+        crchar!* := x;
+        return nxtsym!*;
+    extpackescape:
+        begin scalar raise,!*lower;
+           raise := !*raise;
+           !*raise := nil;
+           y := x . y;
+           x := readch1();
+           !*raise := raise
+        end;
+        go to extpackmore;
     string:
         begin scalar raise,!*lower;
            raise := !*raise;

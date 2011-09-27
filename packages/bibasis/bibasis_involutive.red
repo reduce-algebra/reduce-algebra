@@ -59,7 +59,7 @@ begin scalar polynomListIterator;
     <<
         polynomListIterator := cdr(polynomListIterator);
     >>;
-    insert(polynomListIterator, polynom);
+    bibasis_insert(polynomListIterator, polynom);
 end;
 
 
@@ -108,7 +108,7 @@ begin scalar result, divisor;
         if PolynomGetLm(polynom) then
         <<
             PolynomAdd(result, (PolynomGetLm(polynom) . (nil . nil)));
-            remove(polynom);
+            bibasis_remove(polynom);
         >>;
     >>;
     
@@ -123,7 +123,7 @@ begin scalar tmpPolynomList, tmpPolynom, tmpMonom, tmpPolynomIterator;
     while car(polynomList) do
     <<
         tmpPolynom := PolynomListReduce(tmpPolynomList, car(polynomList), toGroebner);
-        remove(polynomList);
+        bibasis_remove(polynomList);
         
         if PolynomGetLm(tmpPolynom) then
         <<
@@ -134,7 +134,7 @@ begin scalar tmpPolynomList, tmpPolynom, tmpMonom, tmpPolynomIterator;
                 if MonomIsDivisibleBy(PolynomGetLm(car(tmpPolynomIterator)), tmpMonom) then
                 <<
                     PushBack(polynomList, car(tmpPolynomIterator));
-                    remove(tmpPolynomIterator);
+                    bibasis_remove(tmpPolynomIterator);
                 >>
                 else
                 <<
@@ -149,13 +149,13 @@ begin scalar tmpPolynomList, tmpPolynom, tmpMonom, tmpPolynomIterator;
     while car(tmpPolynomIterator) do
     <<
         tmpPolynom := car(tmpPolynomIterator);
-        remove(tmpPolynomIterator);
+        bibasis_remove(tmpPolynomIterator);
 
         tmpPolynom := PolynomListReduce(tmpPolynomList, tmpPolynom, toGroebner);
 
         if tmpPolynom and PolynomGetLm(tmpPolynom) then
         <<
-            insert(tmpPolynomIterator, tmpPolynom);
+            bibasis_insert(tmpPolynomIterator, tmpPolynom);
             tmpPolynomIterator := cdr(tmpPolynomIterator);
         >>;
     >>;
@@ -192,7 +192,7 @@ begin scalar involutiveDivisor, normalForm;
         if PolynomGetLm(polynom) then
         <<
             PolynomAdd(normalForm, (PolynomGetLm(polynom) . (nil . nil)));
-            remove(polynom);
+            bibasis_remove(polynom);
         >>;
     >>;
 
@@ -229,7 +229,7 @@ begin scalar tmpTriple, tmpMonom, normalForm, normalFormLm, setTIterator, newTri
                     SetQDeleteDescendants(TripleGetID(car(setTIterator)));
                     SortedTripleListInsert(newTripleList, car(setTIterator));
                     JanetTreeDelete(TripleGetLm(car(setTIterator)));
-                    remove(setTIterator);
+                    bibasis_remove(setTIterator);
                 >>
                 else
                 <<

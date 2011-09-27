@@ -61,7 +61,7 @@ begin scalar tmpPolynomNoVariable, polynomIterator;
         if eqn(MonomGetVariableDegree(car(polynomIterator), variable), 0) then
         <<
             tmpPolynomNoVariable := car(polynomIterator) . tmpPolynomNoVariable;
-            remove(polynomIterator);
+            bibasis_remove(polynomIterator);
         >>
         else
         <<
@@ -112,19 +112,19 @@ begin scalar tmpPolynom1, tmpPolynom2; integer monomCompare;
         >>
         else if monomCompare = -1 then 
         <<
-            insert(tmpPolynom1, car(tmpPolynom2));
+            bibasis_insert(tmpPolynom1, car(tmpPolynom2));
             tmpPolynom1 := cdr(tmpPolynom1);
             tmpPolynom2 := cdr(tmpPolynom2);
         >>
         else
         <<
-            remove(tmpPolynom1);
+            bibasis_remove(tmpPolynom1);
             tmpPolynom2 := cdr(tmpPolynom2);
         >>;
     >>;
     if car(tmpPolynom2) then
     <<
-        remove(rplacd(tmpPolynom1, tmpPolynom2));
+        bibasis_remove(rplacd(tmpPolynom1, tmpPolynom2));
     >>;
     return polynom1;
 end;

@@ -33,7 +33,7 @@
 module expon;
 load_package taylor;
 algebraic;
-expr procedure split(exp);
+expr procedure mrv_split(exp);
 begin scalar temp,current,ans;
 off mcd;
 ans:={};
@@ -63,7 +63,7 @@ on rational; on exp;
 return ans;
 end;
 
-%collect_power(split(1/2*(ww+x*ww^-1+2)));
+%collect_power(mrv_split(1/2*(ww+x*ww^-1+2)));
 
 expr procedure conv(li); % converts our list of powers to exponents
 begin scalar ans,current;
@@ -81,7 +81,7 @@ ans:={};
 return ans;
 end;
 
-%collect_power(split(1/2*(ww+x*ww^-1+2)));
+%collect_power(mrv_split(1/2*(ww+x*ww^-1+2)));
 
 %conv(ws);
 
@@ -89,7 +89,7 @@ end;
 
 expr procedure find_expt(exp);
 begin scalar spli, coll, con, ans,ans2;
- %spli:=split(exp); %write "split is ", spli;
+ %spli:=mrv_split(exp); %write "split is ", spli;
  coll:=collect_power(spli); write "collect is "; coll;
  con:=conv(coll); write "con is ", con;
  ans:=sortnumlist(con); write "ans is ", ans;

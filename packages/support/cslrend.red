@@ -676,8 +676,7 @@ flag('(mkquote spaces subla boundp error1),'lose);
 % to REDUCE.
 flag('(union intersection), 'lose);
 
-flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot
-    ), 'lose);
+flag('(safe!-fp!-plus safe!-fp!-times safe!-fp!-quot), 'lose);
 
 % I USED to flag ordp as LOSE, but there are three different definitions in
 % different places within Reduce and the LOSE mechanism is not quite
@@ -700,7 +699,7 @@ symbolic procedure concat(u,v);
    % This would be better supported at a lower level.
    compress('!" . append(explode2 u,nconc(explode2 v,list '!")));
 
-% Used by patching mechanism.
+% Used by the (old) patching mechanism.
 %
 % Note that DESPITE the name this MUST be an interned symbol not a
 % gensym since it will be used as the name of a function written out

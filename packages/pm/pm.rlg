@@ -2,6 +2,13 @@
 
 % TESTS OF BASIC CONSTRUCTS.
 
+% These names are used with varing numbers of arguments here in this
+% test script, so to avoid messages of complaint I tag them as
+% variadic.
+lisp flag('(f h !@), 'variadic);
+
+
+
 operator f, h$
 
 
@@ -508,8 +515,6 @@ S(Ghg(3,2,@(a-1,b,c),@(a-b,a-c),1),sghg 2);
 
 end;
 
-Tested on x86_64-w64-windows CSL
-Time (counter 1): 24 ms
-real	0m0.498s
-user	0m0.030s
-sys	0m0.060s
+Tested on i686-pc-windows-nogui CSL
+Time (counter 1): 10 ms
+real	0m0.010s

@@ -2211,9 +2211,13 @@ begin scalar ps,s,h,fl,newpdes,sol,pdes,bak,newfdep,f,sub_afterwards$
 
  % Test for contradiction or more than one solution
  % to be investigated further
+%%%%%%
+%%%%%% ACN found mkeq with 7 not 8 args here and has corrected that by
+%%%%%% passing pdes as the last arg - but he is not certain that that will
+%%%%%% be what is required...
  for each s in caar  sol do
- pdes:=eqinsert(mkeq(s,ftem_,vl_,allflags_,t,list(0),nil),
-                pdes)$
+   pdes:=eqinsert(mkeq(s,ftem_,vl_,allflags_,t,list(0),nil,pdes),
+                  pdes)$
  for each s in cadar sol do
  if pairp s and (car s='EQUAL) then <<
   h:=mkeq({'DIFFERENCE,caddr s,cadr s},ftem_,vl_,allflags_,t,list(0),nil,pdes);

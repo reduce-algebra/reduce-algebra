@@ -104,7 +104,7 @@ begin scalar set;
     >>;
     if not(car(set) and car(set) = variable) then
     <<
-        insert(set, variable);
+        bibasis_insert(set, variable);
     >>;
 end;
 

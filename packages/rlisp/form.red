@@ -184,16 +184,37 @@ put('lambda,'form2fn,'formlis);
 symbolic procedure argnochk u;
    begin scalar x;
       if null !*argnochk then return u
-       else if (x := argsofopr car u) and x neq length cdr u
+       else if (x := argsofopr car u) then <<
+          if x neq length cdr u
           %% and null get(car u,'simpfn)
-          and null (get(car u,'simpfn) or get(car u,'psopfn)) % FJW ?????
-        then rerror('rlisp,11,list(car u,"called with",
+          and null (get(car u,'simpfn) or get(car u,'psopfn) or
+                    flagp(car u, 'variadic)) % FJW ?????
+        then <<
+           if !*strict_argcount then <<
+              prin2 "+++++ "; print u;
+              rerror('rlisp,11,list(car u,"called with",
                                    length cdr u,
                                    if length cdr u=1 then "argument"
                                     else "arguments",
-                                   "instead of",x))
-      else return u
+                                   "instead of",x)) >>
+           else <<
+              lprim list(car u, "called with", length cdr u,
+                                "instead of", x, "arguments");
+              return u >>>>
+ 
+        else return u >>
+      else <<
+        put(car u, 'number!-of!-args, length cdr u);
+        return u >>
    end;
+
+flag('(cond and or list list!* plus times logand logor
+       iplus itimes ilogand ilogor defautoload
+       restart!-csl preserve checkpoint filestatus
+       bldmsg plotdriver fdeclare !& !| lpdotimes
+% I do not at present understand why a1 is needed here - but it arises via
+% the assert package.
+       a1), 'variadic);
 
 symbolic procedure argsofopr u;
    % This function may be optimizable in various implementations.

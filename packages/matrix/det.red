@@ -46,13 +46,37 @@ Comment Some general purpose hashing functions;
 
 flag('(array),'eval);      % Declared again for bootstrapping purposes.
 
+!#if memq('csl, lispsystem!)
+
+
+% Use the CSL hash tables...
+
+fluid '(!$hash);
+!$hash := mkhash(5,2,nil);
+
+symbolic procedure matrix_gethash key;
+  begin
+    scalar r;
+    r := gethash(!$hash, key, '!*nothing!*);
+    if r = '!*nothing!* then return nil
+    else return (key . r)
+  end;
+
+symbolic procedure matrix_puthash(key,valu);
+  puthash(key, !$hash, valu);
+
+symbolic procedure matrix_clrhash();
+  clrhash !$hash;
+
+!#else
+
 array !$hash 64;  % General array for hashing.
 
-symbolic procedure gethash key;
+symbolic procedure matrix_gethash key;
    % Access previously saved element.
    assoc(key,!$hash(remainder(key,64)));
 
-symbolic procedure puthash(key,valu);
+symbolic procedure matrix_puthash(key,valu);
    begin integer k; scalar buk;
       k := remainder(key,64);
       buk := (key . valu) . !$hash k;
@@ -60,8 +84,10 @@ symbolic procedure puthash(key,valu);
       return car buk
    end;
 
-symbolic procedure clrhash;
+symbolic procedure matrix_clrhash;
    for i := 0:64 do !$hash i := nil;
+
+!#endif
 
 Comment Determinant Routines;
 
@@ -72,9 +98,9 @@ symbolic procedure detq u;
       for each x in u do
         if length x neq len then rederr "Non square matrix";
       if len=1 then return caar u;
-      clrhash();
+      matrix_clrhash();
       u := detq1(u,len,0);
-      clrhash();
+      matrix_clrhash();
       return u
    end;
 
@@ -89,7 +115,7 @@ symbolic procedure detq1(u,len,ignnum);
         then return <<while twomem(n2,ignnum)
                          do <<n2 := 2*n2; row := cdr row>>;
                       car row>>;   % Last row, single element.
-      if z := gethash ignnum then return cdr z;
+      if z := matrix_gethash ignnum then return cdr z;
       len := len-1;
       u := cdr u;
       z := nil ./ 1;
@@ -101,7 +127,7 @@ symbolic procedure detq1(u,len,ignnum);
                                         z)>>;
                    sign := not sign>>;
           n2 := 2*n2>>;
-      puthash(ignnum,z);
+      matrix_puthash(ignnum,z);
       return z
    end;
 

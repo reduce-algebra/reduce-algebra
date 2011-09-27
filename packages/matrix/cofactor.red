@@ -44,9 +44,9 @@ symbolic procedure cofactorq (u,i,j);
        foreach x in u do
          if length x neq len then rerror(matrix,22,"non-square matrix");
       u := remove(u,i);
-      clrhash();
+      matrix_clrhash();
       u := detq1(u,len-1,2**(j-1));
-      clrhash();
+      matrix_clrhash();
       if remainder(i+j,2)=1 then u := negsq u;
       return u;
   end;
