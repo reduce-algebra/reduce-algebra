@@ -35,7 +35,7 @@
 
 
 
-/* Signature: 4c175fce 02-Sep-2011 */
+/* Signature: 427f6fcf 26-Sep-2011 */
 
 #include "headers.h"
 
@@ -1285,7 +1285,7 @@ static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 {
     Lisp_Object nil = C_nil;
     double aa, bb, cc;
-    int32_t ah, bh, s;
+    int32_t ah, bh, ch, s;
     if (!is_float(a) || !is_float(b)) return aerror2("safe-fp-plus", a, b);
     if ((aa = double_float_val(a)) == 0.0) return onevalue(b);
     if ((bb = double_float_val(b)) == 0.0) return onevalue(a);
@@ -1316,12 +1316,13 @@ static Lisp_Object Lsafe_fp_plus(Lisp_Object env, Lisp_Object a, Lisp_Object b)
 /*
  * Now I have two numbers whose signs differ and neither is utterly tiny.
  * The code in Reduce asks me to force the result to zero prematurely
- * based on a value !!fleps1. It is not at all clear to me that that
- * would be a good idea so as an experiment I will ignore that and
- * leave the normal cancellation of bits to give a small result when that
- * is the most accurate one I can produce.
+ * based on a value !!fleps1. This is around 44 bits below the inputs...
  */
-    a = make_boxfloat(aa+bb, TYPE_DOUBLE_FLOAT);
+    cc = aa+bb;
+    top_half(ch, cc);
+    ch = ((ch >> 20) & 0x7ff) - BIAS;
+    if (ch < ah-44) cc = 0.0;
+    a = make_boxfloat(cc, TYPE_DOUBLE_FLOAT);
     errexit();
     return onevalue(a);
 }
