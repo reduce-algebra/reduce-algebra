@@ -29,7 +29,13 @@ module numfit; % approximation of functions with least spares.
 
 
 fluid '(!*noequiv accuracy!* singularities!*);
-global '(iterations !*trnumeric);
+global '(iterations !*trnumeric numfit_count!*);
+
+numfit_count!* := 0;
+
+symbolic procedure numfit_gensym();
+   compress append(explode 'numfit_gensym!:,
+                   explode (numfit_count!* := numfit_count!* + 1));
 
 symbolic procedure fiteval u;
      % interface function;
@@ -50,8 +56,16 @@ symbolic procedure fiteval u;
     var := cadr var; pts:=cdr pts; n:=length pts;
     if !*trnumeric then prin2t "build generic approximation function";
     a:=nil./1;
+% The names of the generated symbols here will influence the ordering of them
+% as variables and hence the exact structure used to represent the formula
+% constructed here. That in turn will impact the exact numerical behaviour
+% when it is evaluated. If I use just the Lisp "gensym" function then the
+% ordering is not well defined (at least with CSL). It is also certainly
+% inconsistent as between CSL and PSL, and with CSL it can be changed if you
+% merely trace something!  To get fully repeatable results from the test
+% file I need to do something: hence numfit_gensym().
     for each b in basis do
-    <<v:=gensym(); pars:=v.pars; a:=addsq(multsq(simp v,b),a)>>;
+    <<v:=numfit_gensym(); pars:=v.pars; a:=addsq(multsq(simp v,b),a)>>;
       % generate the error expression
     oldmode:=switch!-mode!-rd nil;!*noequiv:=nil;
     b:=a:=simp prepsq a;
