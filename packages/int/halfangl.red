@@ -134,6 +134,12 @@ symbolic procedure hfaglk(k,x);
       else if car(k) = 'coth then
         quotqq(addsq(!*p2q mksp('expt.('e.cdr(k)),2), !*int2qm(1)),
               !*subtrq(!*p2q mksp('expt.('e . cdr k),2),!*int2qm(1)))
+      else if car(k) = 'sech then
+        quotqq(multsq(!*int2qm(2),!*p2q mksp('expt . ('e . cdr(k)),1)),
+               addsq(!*p2q mksp('expt.('e. cdr k),2),!*int2qm(1)))
+      else if car(k) = 'csch then
+        quotqq(multsq(!*int2qm(2),!*p2q mksp('expt . ('e . cdr(k)),1)),
+               !*subtrq(!*p2q mksp('expt.('e. cdr k),2),!*int2qm(1)))
       else if car(k) = 'acot then
         !*p2q mksp(list('atan, list('quotient, 1, cadr k)),1)
       else !*k2q(k);  % additional transformation might be added here.
