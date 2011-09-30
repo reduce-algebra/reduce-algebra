@@ -370,7 +370,7 @@ int increment;
   if ((current_size_in_bytes +  increment) >= max_image_size)
     return(0);
 
-  if ((long long)sbrk(increment) == -1)     /* the sbrk failed. */
+  if ((long long)sbrk(increment) != 0)     /* the sbrk failed. */
      return(0);
 
   newbreakvalue = (long long) sbrk(0);
@@ -397,7 +397,7 @@ int increment;
   if ((current_size_in_bytes + 2* increment) >= max_image_size)
     return(-1);
 
-  if ((long long)sbrk(2 * increment) == -1)       /* the sbrk failed. */
+  if ((long long)sbrk(2 * increment) != 0 )       /* the sbrk failed. */
      return(-2);
 
   newbreakvalue = (long long) sbrk(0);

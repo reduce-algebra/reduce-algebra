@@ -640,7 +640,7 @@
        (setq actual (wdifference heapupperbound heaplowerbound)) 
        (setq actual (wquotient actual 8)) 
        (when (null items) (return actual))
-       (when (iwgreaterp actual items) 
+       (when (wgreaterp actual items) 
           (print "Cannot shrink heap") (return nil)) 
        (setq heapenlarge* (difference items actual)) 
        (setq heap-warn-level actual) 
