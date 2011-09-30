@@ -220,6 +220,9 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
   }
 
   setupbps();
+  if (imagefile != NULL) imago = fopen (imagefile,"r");
+   /* before getheap */
+
   getheap(heapsize);
 
   if (imagefile == NULL)
@@ -235,8 +238,7 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
         hl =  heaplast; htb = heaptrapbound;
     /* save the new values around restore of the old ones */
 
-       printf("Loading image file :%s \n",imagefile); 
-       imago = fopen (imagefile,"r");
+       printf("Loading image file: %s \n",imagefile); 
        if (imago == NULL) { perror ("error"); exit (-1); }
        fread (headerword,8,2,imago);
        unexec();      /* set control vector */
@@ -438,7 +440,7 @@ int increment;
   if ((current_size_in_bytes + 2* increment) >= max_image_size)
     return(-1);
 
-  if ((long long)sbrk(2 * increment) == -1)       /* the sbrk failed. */
+  if ((long long)sbrk(2 * increment) != 0)       /* the sbrk failed. */
      return(-2);
 
   newbreakvalue = (long long) sbrk(0);
